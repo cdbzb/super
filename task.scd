@@ -1,7 +1,6 @@
 //sc3hhowto.blogspot.com
-
 (
-	SynthDef.new("rampUp", {arg out = 0, amp = 0.1, dur = 5;
+	SynthDef.new("rampUp", {arg out = 0, amp = 0.05, dur = 5;
 		var sine, env_gen, env, pEnv;
 		env_gen = LFGauss.ar(dur,0.25,loop:0);
 		pEnv = XLine.ar(40,12000,dur);
@@ -9,7 +8,7 @@
 		Out.ar(out, sine);
 	}).load(s);
 
-	SynthDef.new("rampDown", {arg out = 0, amp = 0.1, dur = 5;
+	SynthDef.new("rampDown", {arg out = 0, amp = 0.05, dur = 5;
 		var sine, env_gen, env, pEnv;
 		env_gen = LFGauss.ar(dur,0.25,loop:0);
 		pEnv = XLine.ar(12000,40,dur);
@@ -60,27 +59,52 @@ Synth(\mySine,[\busOut, 0, \fmFreq, 2000, \fmAmp, 0.1, \amAmp, 0.00, \amFreq, 11
 { Out.ar(1,PinkNoise.ar(0.2)) }.play
 );
 
-( // ramps
+
+(
+	s.boot;
+	s.recChannels_(2);
+	s.recHeaderFormat_("wav");
+	s.recSampleFormat_("float");
+	s.meter
+)
+
+s.stopRecording
+
+( // Record ramps
+//	(
+//		s.boot;
+//		s.recChannels_(2);
+//		s.recHeaderFormat_("wav");
+//		s.recSampleFormat_("float");
+//		s.meter;
+//	)
+	var density=2.4, dur=60;
+	Server.default=s=Server.local;
+	s.prepareForRecord("/tmp/Density"++density++".wav");
+	s.record("/tmp/Density"++density++"wav");
 	(
 		Task({
 			var freq;
-			inf.do({
-				  Synth(\rampUp    , [\out, 0, \dur, 80]);
-				(0.1 + 1.4.rand).wait;
+			dur.do({
+				Synth(\rampUp    , [\out, 0, \dur, 80]);
+				(0.1 + density.rand).wait;
 			});
 		}).play;
+		//recording is stopped after second task
 	);
 
 	(
 		Task({
 			var freq;
-			inf.do({
-				  Synth(\rampDown    , [\out, 1, \dur, 80]);
-				(0.1 + 1.4.rand).wait;
+			dur.do({
+				Synth(\rampDown    , [\out, 1, \dur, 80]);
+				(0.1 + density.rand).wait;
 			});
+			80.wait; //tail
+			s.stopRecording;
 		}).play;
 	);
-);
+) 
 
 Synth(\mySine,[\busOut, 0, \fmFreq, 2000, \fmAmp, 0.1, \amAmp, 0.00, \amFreq, 1100]);
 Synth(\mySine,[\busOut, 4, \fmFreq, 2000, \fmAmp, 0.1, \amAmp, 0.00, \amFreq, 1100]);

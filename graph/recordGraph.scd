@@ -4,7 +4,7 @@
 	SynthDef.new("rampUp", {arg out = 0, amp = 0.05, dur = 5;
 		var sine, env_gen, env, pEnv;
 		env_gen = LFGauss.ar(dur,0.25,loop:0);
-		pEnv = XLine.ar(40,12000,dur,0,0,2);
+		pEnv = XLine.ar(40,12000,dur,1,0,2);
 		sine = SinOsc.ar(pEnv,0,amp*env_gen);
 		Out.ar(out, sine);
 	}).load(s);
@@ -12,7 +12,7 @@
 	SynthDef.new("rampDown", {arg out = 0, amp = 0.05, dur = 5;
 		var sine, env_gen, env, pEnv;
 		env_gen = LFGauss.ar(dur,0.25,loop:0);
-		pEnv = XLine.ar(12000,40,dur,0,0,2);
+		pEnv = XLine.ar(12000,40,dur,1,0,2);
 		sine = SinOsc.ar(pEnv,0,amp*env_gen);
 		Out.ar(out, sine);
 	}).load(s);
@@ -32,7 +32,7 @@
 	r.next // run this third (to record the sinewave)
 ( // settings - run this second
   var path="/Volumes/tank/SuperCollider/";
-  var density=2.4, rampDur=2000;
+  var density=1.8, rampDur=2000;
   var sinDur=2400;
        	(
 	s.recChannels_(2);
@@ -45,6 +45,7 @@ r=Task({
 ( // ramps
 	Server.default=s=Server.local;
 	s.prepareForRecord(path++"ramps"++density++".wav");
+	//`1.wait;
 	//s.sync;
 	s.record(path++"ramps"++density++"wav");
 	(

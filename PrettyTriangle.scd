@@ -1,7 +1,7 @@
 s.reboot
 s.quit
 
-( //play here
+( //play here - record if deired below
 ~pitches = [300, 400, 402, 680,  450, 451, 612]; //initial
 a = {                                            //single note
 	var vol=0.1;
@@ -40,3 +40,23 @@ t.play
 t.stop
 b.play
 b.stop
+
+s.reboot
+//record
+       	Task({
+	s.recChannels_(2);
+	s.recHeaderFormat_("wav");
+	s.recSampleFormat_("int16");
+	~path="/home/michael/myhack/Volumes/tank/SuperCollider/";
+	Server.default=s=Server.local;
+	s.prepareForRecord(~path++"Triangle.wav");
+	1.wait;
+	s.record(~path++"Triangle.wav");
+	t.play;
+	b.play;
+	600.wait;
+	t.stop;
+	b.stop;
+	3.wait;
+	s.stopRecording;
+}).play

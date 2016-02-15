@@ -6,26 +6,18 @@ s.boot
 ~newWhiteDeck.value
 ~playMidi.value (speed:0.2).play
 ~playMidiDurs.value (speed:0.2).play
-~play.value(speed:0.1).play
+// ~play.value(speed:0.1).play
 ~shuffle.value
-Image.new(~cards.at(51));
-~window.front
 ~deck
 
-(
-r= { |speed, pause|
-	Routine.new({
-	20.do({
-		~playMidiAppClock.value (speed:speed).play;
-		wait ((speed*52)+pause);
-		~shuffle.value});
-	});
-}
-)
 
 s=r.value(speed: 0.1,pause:0.75); s.play;
 s=r.value(speed: 0.11,pause:0); s.play;
-s=r.value(speed: 0.12,pause:0.95); s.play;
+s=r.value(speed: 0.17,pause:1.3); s.play;
+s=r.value(speed: 0.25,pause:2); s.play;
+s=r.value(speed: 0.12,pause:1); s.play;
+s=r.value(speed: 0.12,pause:0.95); s.play; // the one I gave Mungo....
+s=r.value(speed: 0.12,pause:); s.play; 
 
 
 (
@@ -36,13 +28,12 @@ t=r.value(speed: 0.1,pause:8.75); t.play;
 
 ( //HERE FIRST
 
-
 ~newDeck = {~deck = Array.series(52,1)};
+~newDeck.value;
 ~whitenotes = Array.new(52);
 ~scale=[1,3,5,6,8,10,12];
-~cards = "~/Downloads/Cards_PNG/*.png".pathMatch;
+~cards = "/Volumes/tank/Cards/PNG/*.png".pathMatch;
 ~window = Window.new.front;
-
 
 8.do({ arg i;
 	~scale.do ({ arg degree,j;
@@ -83,7 +74,7 @@ t=r.value(speed: 0.1,pause:8.75); t.play;
 	speed.wait;
 	});})};
 
-~playMidiAppClock = { arg speed = 0.1;
+~playMidiAppClock = { arg speed = 0.1, vel=40, vari=25;
 	Routine ({
 	~deck.do({|item,i|
 		AppClock.sched(i*speed,{
@@ -96,7 +87,6 @@ t=r.value(speed: 0.1,pause:8.75); t.play;
 });
 	});}).play};
 
-
 ~playMidiDurs = { arg speed = 0.1;
 	Routine ({
 	~deck.do({|item,i|
@@ -104,20 +94,14 @@ t=r.value(speed: 0.1,pause:8.75); t.play;
 	(speed*~durs.at(item % 4)).wait;
 	});})};
 
-//// IMAGES
-
-//w=Window;
-//		c=Image.new(p.at);
-//w=c.plot;
-//w.close;
-//r = Routine({
-//	52.do ({ arg i;
-//		AppClock.sched((i/6),{
-//			c=Image.new(p.choose);
-//			w= c.plot;});
-//	});
-//}).play
-
+( r= { |speed, pause, vel, vari |
+	Routine.new({
+	20.do({
+		~playMidiAppClock.value (speed:speed,vel:vel,vari:vari).play;
+		wait ((speed*52)+pause);
+		~shuffle.value});
+	});
+});
 )
 
 

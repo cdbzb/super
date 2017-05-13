@@ -31,7 +31,7 @@
 	s.reboot; // run this first
 	r.next // run this third (to record the sinewave)
 ( // settings - run this second
-  var path="/Volumes/tank/SuperCollider/";
+  var path="/Volumes/tank/SuperCollider/graph/";
   var density=1.8, rampDur=2000;
   var sinDur=2400;
        	(
@@ -74,7 +74,7 @@ r=Task({
 	s.prepareForRecord(path++"sine-noise.wav");
 	s.record(path++"sine-noise.wav");
 	Task({
-		a=Synth(\mySine,[\busOut, 0, \fmFreq, 2000, \fmAmp, 0.1, \amAmp, 0.00, \amFreq, 1100]);
+		a=Synth(\mySine,[\busOut, 0, \fmFreq, 2000, \fmAmp, 0.06, \amAmp, 0.00, \amFreq, 1100]);
 		b={ Out.ar(1,PinkNoise.ar(0.2)) }.play;
 		sinDur.wait;
 		s.stopRecording;

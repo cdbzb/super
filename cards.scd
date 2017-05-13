@@ -37,7 +37,7 @@ t=r.value(speed: 0.1,pause:8.75); t.play;
 
 8.do({ arg i;
 	~scale.do ({ arg degree,j;
-		~whitenotes.add((i-1)*12+(degree+1));})});
+		~whitenotes.add((i-2)*12+(degree+1));})});
 
 ~newWhiteDeck = {~deck = ~whitenotes};
 

@@ -21,7 +21,7 @@ t=Task({ |delta|                  //play notes at random intervals
 	}
 });
 
-b=Task({                                       //change chords
+b=Task({                                        //change chords
 	z=[1,2,3];
 	loop{
 	9.wait;

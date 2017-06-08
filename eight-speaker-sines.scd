@@ -1,17 +1,34 @@
 s.boot
-s,.meter
+s.meter
 o=ServerOptions;
 o.numOutputBusChannels = 8;
 o.device="USBStreamer";
 s.reboot
-o = Server.local.options;
+o, = Server.local.options;
 
 // Better
 (
 [420,440,410,405,402,480,300,320].do ({ arg freq, index ;
 	{Out.ar(index,
-		=SinOsc.ar(freq,0,0.2))}.play;
+		SinOsc.ar(freq,0,0.2))}.play;
 });
+)
+
+(
+SynthDef ( "sine" ,
+	{ |freq=440, amp=0.2 , bus=0 |
+		freq=[ 420,440,410,405,402,480,300,320];
+		amp =[ 0.2,0.2,0.2,0.1];
+		Out.ar(bus,SinOsc.ar(freq,0,amp));
+	}).add
+)
+
+a= Synth.new("sine",[\freq,400,\bus,0]);
+a= Synth.new("sine",[\bus,0]);
+
+
+( ~pitches = [420,440,410,405,402,480,300,320]
+8.do ({ arg freq,index; Synth.new("sine", [ \freq , ~pitches[index] ])});
 )
 
 // trash this prolly

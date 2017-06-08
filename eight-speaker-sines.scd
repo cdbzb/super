@@ -1,5 +1,20 @@
 s.boot
-s.meter
+s,.meter
+o=ServerOptions;
+o.numOutputBusChannels = 8;
+o.device="USBStreamer";
+s.reboot
+o = Server.local.options;
+
+// Better
+(
+[420,440,410,405,402,480,300,320].do ({ arg freq, index ;
+	{Out.ar(index,
+		=SinOsc.ar(freq,0,0.2))}.play;
+});
+)
+
+// trash this prolly
 a={SinOsc.ar(420,0,0.2)};
 b={SinOsc.ar(440,0,0.2)};
 c={SinOsc.ar(410,0,0.2)};
@@ -18,14 +33,3 @@ a.free
 {Out.ar(2,g[2])}.play
 
 
-g[2]
-
-o=ServerOptions;
-o.numOutputBusChannels.postln;
-o.numOutputBusChannels = 8;
-o.outDevices;
-o.device="USBStreamer";
-o.numAudioBusChannels
-s.reboot
-s.meter
-o = Server.local.options;

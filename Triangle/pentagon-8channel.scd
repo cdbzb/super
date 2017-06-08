@@ -1,32 +1,47 @@
 s.reboot
 s.quit
 
+// octave divided in fifths
+{SinOsc.ar(400,0,0.1)}.play;
+{SinOsc.ar((400*(2**0.2)),0,0.1)}.play;
+{SinOsc.ar((400*(2**0.4)),0,0.09)}.play;
+{SinOsc.ar((400*(2**0.6)),0,0.07)}.play;
+{SinOsc.ar((400*(2**0.8)),0,0.06)}.play;
+
+
+
 ( //play here - record if deired below
-~pitches = [300, 400, 402, 680,  450, 451, 612]; //initial
+~pitches = [400, 400*(2**0.2), 400*(2**0.4), 400*(2**0.6), 400*(2**0.8),800, 800*(2**0.2) ]; //initial
+//r.play;
+t.play;
 a = {                                            //single note
 	var vol=0.1;
 	var env, envGen;
-	env=Env.triangle(dur: 3); // dur, lev
+	var speaker=rrand(0,8);
+	var out;
+	env=Env.triangle(dur: 12); // dur, lev
 	envGen=EnvGen.kr(env,doneAction:2,levelScale:vol);
-	Pan2.ar(
-		SinOsc.ar(~pitches.choose,mul:envGen),
-		rrand(0,1));
+	out = SinOsc.ar(~pitches.choose,mul:envGen);
+	Out.ar(speaker,out);
+		
 };
 
 t=Task({ |delta|                  //play notes at random intervals
 	loop {
 		a.play;
-		delta=rrand(0,5)*0.5;
+		delta=rrand(0,5); //pause between notes
 		delta.wait;
 	}
 });
+)
+
 
 b=Task({                                        //change chords
 	z=[1,2,3];
 	loop{
 	9.wait;
 	switch(z.choose)
-		{1}	{~pitches = [800,400,402,680,450,451,612];
+		{1}	{~pitches = [400,(400*2^0.2),402,680,450,451,612];
 			1.postln}
 		{2}	{~pitches = [300,400,402,680,450,451,612];
 			2.postln}

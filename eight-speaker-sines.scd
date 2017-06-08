@@ -1,0 +1,31 @@
+s.boot
+s.meter
+a={SinOsc.ar(420,0,0.2)};
+b={SinOsc.ar(440,0,0.2)};
+c={SinOsc.ar(410,0,0.2)};
+d={SinOsc.ar(405,0,0.2)};
+e={SinOsc.ar(402,0,0.2)};
+f={SinOsc.ar(480,0,0.2)};
+g={SinOsc.ar(300,0,0.2)};
+h={SinOsc.ar(320,0,0.2)};
+i=[a,b,c,d,e,f,g,h];
+{Out.ar(0,i)}.play;
+
+
+a.free
+{Out.ar(0,a)}.play
+{Out.ar(1,b)}.play
+{Out.ar(2,g[2])}.play
+
+
+g[2]
+
+o=ServerOptions;
+o.numOutputBusChannels.postln;
+o.numOutputBusChannels = 8;
+o.outDevices;
+o.device="USBStreamer";
+o.numAudioBusChannels
+s.reboot
+s.meter
+o = Server.local.options;

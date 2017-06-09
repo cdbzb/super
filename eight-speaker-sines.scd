@@ -8,11 +8,11 @@ o, = Server.local.options;
 
 // flitter
 
-Synth.new("flit");
 
 (
 a = {	var env, envGen , vol=0.5 , bus ;
-	env=Env.triangle(dur: 0.1); // dur, lev
+	//try a linen instead
+	env=Env.perc(0 , 0.02,(rrand(0,4)*0.1)); // dur, lev
 	envGen=EnvGen.kr(env,levelScale:vol,doneAction:2);
 	bus = rrand(0,7);
  	Out.ar(bus,WhiteNoise.ar(envGen));
@@ -20,7 +20,7 @@ a = {	var env, envGen , vol=0.5 , bus ;
 
 b= Task ({ var delta;
 	loop {
-	delta=rrand(0,10)*0.1;
+	delta=rrand(0,20)*0.01;
 	a.play;
 	delta.wait;
 };
@@ -52,6 +52,22 @@ a= Synth.new("sine",[\freq,400,\bus,0]);
 a= Synth.new("sine",[\bus,0]);
 
 
+// Sine + lfo
+(
+	SynthDef ("sine+lfo" , { |freq=440 , lfo , bus=0 , lfreq = 0.05 |
+		// lfreq = rrand(5,10)*0.009;
+		lfo = SinOsc.kr ( lfreq  , 0 , 0.5 , 0.0 );
+		Out.ar ( bus , SinOsc.ar(freq , 0 , lfo*0.2+0.2) );
+	}).add
+)
+
+(
+a= Synth.new ("sine+lfo" , [\freq , 400, \lfreq , rrand(5,10)*0.003 ]);
+a= Synth.new ("sine+lfo" , [\freq , 500, \lfreq , rrand(5,10)*0.003 ]);
+a= Synth.new ("sine+lfo" , [\freq , 440, \lfreq , rrand(5,10)*0.003 ]);
+a= Synth.new ("sine+lfo" , [\freq , 340, \lfreq , rrand(5,10)*0.003 ]);
+)
+a.free
 
 ( ~pitches = [420,440,410,405,402,480,300,320]
 8.do ({ arg freq,index; Synth.new("sine", [ \freq , ~pitches[index] ])});

@@ -6,6 +6,31 @@ o.device="USBStreamer";
 s.reboot
 o, = Server.local.options;
 
+// flitter
+
+Synth.new("flit");
+
+(
+a = {	var env, envGen , vol=0.5 , bus ;
+	env=Env.triangle(dur: 0.1); // dur, lev
+	envGen=EnvGen.kr(env,levelScale:vol,doneAction:2);
+	bus = rrand(0,7);
+ 	Out.ar(bus,WhiteNoise.ar(envGen));
+};
+
+b= Task ({ var delta;
+	loop {
+	delta=rrand(0,10)*0.1;
+	a.play;
+	delta.wait;
+};
+}).play;
+)
+	
+
+//TODO task to make flits
+//TODO fix flit envelope
+
 // Better
 (
 [420,440,410,405,402,480,300,320].do ({ arg freq, index ;
@@ -15,8 +40,8 @@ o, = Server.local.options;
 )
 
 (
-SynthDef ( "sine" ,
-	{ |freq=440, amp=0.2 , bus=0 |
+SynthDef ( "sine" , {
+	 |freq=440, amp=0.2 , bus=0 |
 		freq=[ 420,440,410,405,402,480,300,320];
 		amp =[ 0.2,0.2,0.2,0.1];
 		Out.ar(bus,SinOsc.ar(freq,0,amp));
@@ -25,6 +50,7 @@ SynthDef ( "sine" ,
 
 a= Synth.new("sine",[\freq,400,\bus,0]);
 a= Synth.new("sine",[\bus,0]);
+
 
 
 ( ~pitches = [420,440,410,405,402,480,300,320]

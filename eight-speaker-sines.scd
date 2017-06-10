@@ -6,6 +6,11 @@ o.device="USBStreamer";
 s.reboot
 o, = Server.local.options;
 
+// crackle and dust
+a={Crackle.ar(SinOsc.kr(0.11,0,0.5,1.5),0.3)}.play;
+a.free;
+{Dust.ar(SinOsc.kr(0.1)*10)}.play;
+
  
 ( // make array of rands
 ~rands = { |elements=8,resolution=10,scale=1| 

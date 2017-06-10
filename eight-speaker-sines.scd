@@ -6,6 +6,37 @@ o.device="USBStreamer";
 s.reboot
 o, = Server.local.options;
 
+ 
+( // make array of rands
+~rands = { |elements=8,resolution=10,scale=1| 
+	a = Array.new(elements);
+	b = {
+		rrand(0,resolution-1)*(scale/resolution);
+	};
+	elements.do({a.add(b.value)});
+	a.value;
+};
+)
+
+~rands.value(20);
+
+// crunchy envelope
+(
+	{
+	var rands = [ a.value,a.value, a.value, a.value, a.value, a.value, ];
+	var env, envgen;
+
+	a = {
+	rrand(1,9)*0.1;
+};
+
+env = Env(rands.value,rands.value,-4);
+envgen = EnvGen.ar(env , doneAction:2);
+
+Out.ar(1,SinOsc.ar(400,0,envgen));
+}.play
+)
+
 // flitter
 
 

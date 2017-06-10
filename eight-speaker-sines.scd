@@ -68,6 +68,22 @@ a= Synth.new ("sine+lfo" , [\freq , 440, \lfreq , rrand(5,10)*0.003 ]);
 a= Synth.new ("sine+lfo" , [\freq , 340, \lfreq , rrand(5,10)*0.003 ]);
 )
 a.free
+// function version
+
+(
+	a={ |freq=440 , lfo , bus=0 , lfreq = 0.05 , env , gate = 1 , release = 10|
+		env=EnvGen.kr(Env.asr(0.1,1,release),gate,doneAction:2);
+		// lfreq = rrand(5,10)*0.009;
+		lfo = SinOsc.kr ( lfreq  , 0 , 0.5 , 0.0 );
+		Out.ar ( bus , SinOsc.ar(freq , 0 , lfo*0.2+0.2*env) );
+	};
+)
+b=a.play;
+b.set(\freq , 500); // oooh "set"
+b.set(\gate , 0);
+
+
+////////////////////////////////////////////////////////////
 
 ( ~pitches = [420,440,410,405,402,480,300,320]
 8.do ({ arg freq,index; Synth.new("sine", [ \freq , ~pitches[index] ])});

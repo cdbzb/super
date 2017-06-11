@@ -3,6 +3,7 @@ s.meter
 s.reboot
 
 (
+
 	x = [450,500,575];
 	// rate is modulated 
 	a = {Pan2.ar(SinOsc.ar((x.at(0)),0,0.2),SinOsc.kr(SinOsc.kr(0.03,1,0.1,0.01),0,0.1))}.play;
@@ -13,4 +14,35 @@ s.reboot
 a.free;
 b.free;
 c.free;
+
+
+d={SinOsc.ar(x,0,0.2)}.play
+
+// from tutorial
+
+(
+SynthDef("help-InKr",{ arg out=0, in=0;
+	Out.ar(out,
+		SinOsc.ar(In.kr(in, 1), 0, 0.1)
+	)
+}).send(s);
+
+
+	SynthDef("help-lfo", { arg out=0; 
+	Out.kr(out, LFNoise1.kr(0.3, 200, 800)) 
+}).send(s);
+)
+
+
+b = Bus.control(s,1);
+b.set(800);
+
+f=Synth("help-InKr",[\in, b.index]); 
+b.set(400);
+b.set(300);
+g=Synth("help-lfo", [\out, b.index]);
+
+f.free
+d.free;
+b.free;
 

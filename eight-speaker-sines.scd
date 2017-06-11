@@ -6,13 +6,32 @@ o.device="USBStreamer";
 s.reboot
 o, = Server.local.options;
 
+//wind
+	//array of speaker locations
+		~speakers = [[1,2],[2,3],[5,6]]; 
+	// wind location
+		~location = [1.5,2.5]
+	//this code calculates all the distances and puts in an array
+	(
+		~distances = Array.new;
+		~speakers.do({arg item , index;  
+		var dist = ~pythag.value(~location,item);
+		~distances=~distances.add(dist);
+		})
+	)
+		~distances.value;
+	// correct this - should be pyth distance
+		~pythag = {arg one,two; var result; result = (((one[0]-two[0])^2) + (one[1]-two[1])^2)^0.5);} 
+		~pythag.value([2,3],[4,5]); //for testing
+
+
 // crackle and dust
 a={Crackle.ar(SinOsc.kr(0.11,0,0.5,1.5),0.3)}.play;
 a.free;
 {Dust.ar(SinOsc.kr(0.1)*10)}.play;
 
  
-( // make array of rands
+( // array of rands
 ~rands = { |elements=8,resolution=10,scale=1| 
 	a = Array.new(elements);
 	b = {

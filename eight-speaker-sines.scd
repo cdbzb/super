@@ -4,7 +4,7 @@ o=ServerOptions;
 o.numOutputBusChannels = 8;
 o.device="USBStreamer";
 s.reboot
-o, = Server.local.options;
+o = Server.local.options;
 
 //wind
 	//array of speaker locations
@@ -20,15 +20,19 @@ o, = Server.local.options;
 		})
 	)
 		~distances.value;
-	// correct this - should be pyth distance
-		~pythag = {arg one,two; var result; result = (((one[0]-two[0])^2) + (one[1]-two[1])^2)^0.5);} 
+		~pythag = {arg one,two; var result; result = (((one[0]-two[0])**2) + ((one[1]-two[1])**2)**0.5);} 
 		~pythag.value([2,3],[4,5]); //for testing
 
 
 // crackle and dust
-a={Crackle.ar(SinOsc.kr(0.11,0,0.5,1.5),0.3)}.play;
+
+(
+b= {Out.ar(1,Crackle.ar(SinOsc.kr(0.034,0.1,0.5,1.5),0.3))}.play;
+c= {Out.ar(0,Crackle.ar(SinOsc.kr(0.03,0,0.5,1.5),0.3))}.play;
+)
+a={Crackle.ar(SinOsc.kr(0.03,0,0.5,1.5),0.3)}.play;
 a.free;
-{Dust.ar(SinOsc.kr(0.1)*10)}.play;
+{Pan2.ar(Dust.ar(SinOsc.kr(0.07)*10),0)}.play;
 
  
 ( // array of rands

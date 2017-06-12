@@ -1,9 +1,11 @@
 s.boot
 s.meter
-o=ServerOptions;
+o = Server.local.options;
+o.devices;
 o.numOutputBusChannels = 8;
-o.device="USBStreamer";
+o.device="USBStreamer ";
 s.reboot
+<<<<<<< HEAD
 o = Server.local.options;
 
 //wind
@@ -31,6 +33,10 @@ b= {Out.ar(1,Crackle.ar(SinOsc.kr(0.034,0.1,0.5,1.5),0.3))}.play;
 c= {Out.ar(0,Crackle.ar(SinOsc.kr(0.03,0,0.5,1.5),0.3))}.play;
 )
 a={Crackle.ar(SinOsc.kr(0.03,0,0.5,1.5),0.3)}.play;
+=======
+a={Out.ar(5,Crackle.ar(SinOsc.kr(0.11,0,0.1,1.5),0.01))}.play;
+a={Out.ar(6,Crackle.ar(SinOsc.kr(0.11,0,0.1,1.5),0.011))}.play;
+>>>>>>> fac33d59b604c8b10b7abfc2d103d9cfb6e55de0
 a.free;
 {Pan2.ar(Dust.ar(SinOsc.kr(0.07)*10),0)}.play;
 
@@ -90,13 +96,8 @@ b= Task ({ var delta;
 //TODO task to make flits
 //TODO fix flit envelope
 
-// Better
-(
-[420,440,410,405,402,480,300,320].do ({ arg freq, index ;
-	{Out.ar(index,
-		SinOsc.ar(freq,0,0.2))}.play;
-});
-)
+8.do({arg num,index; {Out.ar(index,Dust.ar(0.0+(Rand(1,10)*0.1),0.03),)}.play});
+
 
 (
 SynthDef ( "sine" , {
@@ -116,15 +117,15 @@ a= Synth.new("sine",[\bus,0]);
 	SynthDef ("sine+lfo" , { |freq=440 , lfo , bus=0 , lfreq = 0.05 |
 		// lfreq = rrand(5,10)*0.009;
 		lfo = SinOsc.kr ( lfreq  , 0 , 0.5 , 0.0 );
-		Out.ar ( bus , SinOsc.ar(freq , 0 , lfo*0.2+0.2) );
+		Out.ar ( bus , SinOsc.ar(freq , 0 , lfo*0.02+0.02) );
 	}).add
 )
 
 (
-a= Synth.new ("sine+lfo" , [\freq , 400, \lfreq , rrand(5,10)*0.003 ]);
-a= Synth.new ("sine+lfo" , [\freq , 500, \lfreq , rrand(5,10)*0.003 ]);
-a= Synth.new ("sine+lfo" , [\freq , 440, \lfreq , rrand(5,10)*0.003 ]);
-a= Synth.new ("sine+lfo" , [\freq , 340, \lfreq , rrand(5,10)*0.003 ]);
+a= Synth.new ("sine+lfo" , [\bus, 0 ,\freq , 400, \lfreq , rrand(5,10)*0.003 ]);
+a= Synth.new ("sine+lfo" , [\bus , 1 ,\freq , 500, \lfreq , rrand(5,10)*0.003 ]);
+a= Synth.new ("sine+lfo" , [\bus , 2 , \freq , 440, \lfreq , rrand(5,10)*0.003 ]);
+a= Synth.new ("sine+lfo" , [\bus , 3 , \freq , 340, \lfreq , rrand(5,10)*0.003 ]);
 )
 a.free
 // function version
@@ -148,22 +149,7 @@ b.set(\gate , 0);
 8.do ({ arg freq,index; Synth.new("sine", [ \freq , ~pitches[index] ])});
 )
 
-// trash this prolly
-a={SinOsc.ar(420,0,0.2)};
-b={SinOsc.ar(440,0,0.2)};
-c={SinOsc.ar(410,0,0.2)};
-d={SinOsc.ar(405,0,0.2)};
-e={SinOsc.ar(402,0,0.2)};
-f={SinOsc.ar(480,0,0.2)};
-g={SinOsc.ar(300,0,0.2)};
-h={SinOsc.ar(320,0,0.2)};
-i=[a,b,c,d,e,f,g,h];
-{Out.ar(0,i)}.play;
-
-
 a.free
 {Out.ar(0,a)}.play
 {Out.ar(1,b)}.play
 {Out.ar(2,g[2])}.play
-
-

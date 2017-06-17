@@ -4,8 +4,8 @@ o = Server.local.options;
 o.devices;
 o.numOutputBusChannels = 8;
 o.device="USBStreamer ";
-s.reboot
-<<<<<<< HEAD
+
+,<<<<<<< HEAD
 o = Server.local.options;
 
 //wind
@@ -56,21 +56,28 @@ a.free;
 
 // crunchy envelope
 (
-	{
-	var rands = [ a.value,a.value, a.value, a.value, a.value, a.value, ];
-	var env, envgen;
 
 	a = {
 	rrand(1,9)*0.1;
 };
 
-env = Env(rands.value,rands.value,-4);
-envgen = EnvGen.ar(env , doneAction:2);
+	b= {
+		arg dur = 0.1;
+	var rands = [ a.value*dur,a.value*dur, a.value*dur, a.value*dur, a.value*dur, a.value*dur, ];
+	var env, envgen;
 
-Out.ar(1,SinOsc.ar(400,0,envgen));
-}.play
+	env = Env(rands.value,rands.value,-4);
+	envgen = EnvGen.ar(env , doneAction:2);
+	c = dur;
+
+	SinOsc.ar(400,0,envgen);
+}.play;
 )
 
+
+b(dur: 0.1);
+b.set(\dur , 5.1);
+b.play;
 // flitter
 
 

@@ -1,31 +1,32 @@
-{SinOsc.ar(440,0,0.2)}.play
-
-
-
-
+s.boot;
 s.reboot;
-a = 3;
-a.value;
-a=Rand(1,9)*0.1*1000;
-(
+( \\ triangle synth 43s
 SynthDef("mysine",{arg dur = 200, bus = 0; var env, envGen;
-	env=Env.triangle(dur: 13); // dur, lev
+	env=Env.triangle(dur: 43); // dur, lev
 	envGen=EnvGen.kr(env,doneAction:2,levelScale:0.2);
        	Out.ar(bus,SinOsc.ar(dur,0,envGen))}).add
 )
-a.postln;
-a.value;
-(
-f =Task ({
-	inf.do({
-	x=Synth("mysine",[dur: (rrand(300,570)), bus: (rrand(0,1))]);
-	g=rrand(4,13);
-	g.wait
-});
-});
-)
 
-f.start;
+( \\ function returns a task (so as you can set the bus!)
+f ={ arg bus;
+	Task ({ 
+		inf.do({
+		x=Synth("mysine",[dur: (rrand(300,570)), bus: bus]);
+		g=rrand(28,49);
+		g.wait
+		});
+	});
+});
+
+
+( \\ sets a pair of these in motion
+t=f.value(bus: 0);
+t.play;
+u=f.value(bus: 1);
+u.play;
+)
+f.stop
+
 
 
 

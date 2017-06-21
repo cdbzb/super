@@ -33,33 +33,51 @@ f.stop
 
 (
 f = { arg bus, offset=0; var one , two, funca, funcb; Task({
-	one = 100+offset;
-	two = 140+offset;
-	funca={arg freq=100+offset; Out.ar(bus, SinOsc.ar(freq,0,0.05))};
+	one = 200+offset;
+	two = 240+offset;
+	funca={arg freq=200+offset; Out.ar(bus, SinOsc.ar(freq,0,0.05))};
 	funcb=funca.play;
 	inf.do({
-		rrand(53,87).wait;
+		1.wait;
 		funcb.set(\freq , two);
-		rrand(53,87).wait;
+		rrand(13,87).wait;
 		funcb.set(\freq , one);
+		rrand(13,87).wait;
 	});
     };)
 };
-)
 
-(
 8.do({
-t=f.value(bus: (rrand(0,1)), offset: rrand(0,8)*80);
+t=f.value(bus: (rrand(0,1)), offset: rrand(0,8)*10);
 t.start;
 }
 );
 )
- s.meter;
+
+//intermodultaion
+
+(
+d =   {	arg freq1=300, freq2=400;
+	Out.ar(0,SinOsc.ar(freq1,SinOsc.ar(freq2,0,0.3),0.3));
+	Out.ar(1,SinOsc.ar(freq2,SinOsc.ar(freq1,0,0.3),0.3));
+}
 )
 
+d.value(freq1: 300, freq2: 400);
 
+// chord slowly falls
 
+(
+	~pitches = [300,400,440,442,475,500]
+	g={arg offset=0; Out.kr(1,Lag.kr(offset,1000))}.play;
+	h= ~pitches.do( { arg item, index; Out.ar(1,SinOsc.ar(item+In.kr(1),0,0.3)}.play);
+	h= ~pitches.do(  Out.ar(1,SinOsc.ar(item,0.3));
+	~pitches.do ({arg item , index;
+		{SinOsc.ar((item+In.kr(1)),0,0.1)}.play;
+	});
 
+g.set(\offset , -91);
+g.set(\offset , 100);
 
 
 

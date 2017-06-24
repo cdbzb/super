@@ -68,17 +68,51 @@ d.value(freq1: 300, freq2: 400);
 // chord slowly falls
 
 (
-	~pitches = [300,400,440,442,475,500]
+	~pitches = [300,400,440,442,475,500];
+	~offsets = [0,0,0,0,0,0];
 	g={arg offset=0; Out.kr(1,Lag.kr(offset,1000))}.play;
-	h= ~pitches.do( { arg item, index; Out.ar(1,SinOsc.ar(item+In.kr(1),0,0.3)}.play);
-	h= ~pitches.do(  Out.ar(1,SinOsc.ar(item,0.3));
+	h=Array.new(6);
+	6.do({arg index; h.add({arg offset=0; Out.kr(10+index,Lag.kr(offset,50))}.play)});
 	~pitches.do ({arg item , index;
-		{SinOsc.ar((item+In.kr(1)),0,0.1)}.play;
+		{SinOsc.ar((item+In.kr(1)+In.kr(index+10)),0,0.1)}.play;
 	});
+	
+)
 
-g.set(\offset , -91);
-g.set(\offset , 100);
+/// note to self : leaving one still whilst sliding the other is nice
+/// also nice with the f stuff above
+~deltas=[100,40,2,73,25,-200];
+6.do({arg index; h[index].set(\offset , ~deltas[index]);});// goes to same chord
+6.do({arg index; h[index].set(\offset , 0)});// goes back
+/////// Global offset
+g.set(\offset , -21);
+g.set(\offset , 21);
+(
+	z=Task({ inf.do({
+		g.set(\offset , -20);
+		50.wait;
+		g.set(\offset , 21);
+		100.wait;
+	})});
+	z.start;
+	y=Task({ inf.do ({
+		6.do({arg index; h[index].set(\offset , ~deltas[index]);});// goes to same chord
+		500.wait;
+		6.do({arg index; h[index].set(\offset , 0)});// goes back
+		500.wait;
+	})});
+	y.start;
+)
 
+x=Task({ inf.do ({  //trying to vary the cricket-y thing 
+	h[3].set(\offset , 1);
+	30.wait;
+})});
+x.start;
+
+g.set(\offset , 50);
+~h3.set(\offset , 20);
+~pitches.scramble;
 
 
 b={rrand(400,500)};

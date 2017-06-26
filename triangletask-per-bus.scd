@@ -1,3 +1,9 @@
+( // set device
+o = Server.local.options;
+o.numOutputBusChannels = 8;
+o.device="USBStreamer ";
+s.reboot;
+)
 s.boot;
 s.reboot;
 ( // triangle synth 43s
@@ -88,6 +94,7 @@ d.value(freq1: 300, freq2: 400);
 g.set(\offset , -21);
 g.set(\offset , 21);
 (
+	~deltas=[100,40,2,73,25,-200];
 	z=Task({ inf.do({
 		g.set(\offset , -20);
 		50.wait;

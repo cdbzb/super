@@ -11,7 +11,7 @@
 	SynthDef.new("rampDown", {arg out = 0, amp = 0.05, dur = 5;
 		var sine, env_gen, env, pEnv;
 		env_gen = LFGauss.ar(dur,0.25,loop:0);
-		pEnv = XLine.ar(2000,10,dur);
+		pEnv = XLine.ar(2000,10,dur,1,0,2);
 		sine = SinOsc.ar(pEnv,0,amp*env_gen);
 		Out.ar(out, sine);
 	}).load(s);
@@ -26,22 +26,12 @@
 	}).send;
 )
 //Up!
-( 
-(
-	Task({
-		var freq;
-		inf.do({
-			  Synth(\rampUp    , [\out, 0, \dur, 80]);
-			(0.1 + 1.4.rand).wait;
-		});
-	}).play;
-);
 //Down!
 (
 	Task({
 		var freq;
 		inf.do({
-			  Synth(\rampDown    , [\out, 1, \dur, 120]); //dur was 80
+			  Synth(\rampDown    , [\out, 0, \dur, 120]); //dur was 80
 			(0.1 + 2.4.rand).wait; //density is here 1.4 is default
 		});
 	}).play;

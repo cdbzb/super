@@ -19,7 +19,7 @@ c.free;
 
 d={SinOsc.ar(x,0,0.2)}.play
 
-// from tutorial
+// One Method
 
 (
 SynthDef("help-InKr",{ arg out=0, in=0;
@@ -46,6 +46,8 @@ g=Synth("help-lfo", [\out, b.index]);
 f.free
 d.free;
 b.free;
+
+//Mapping
 (
 SynthDef(\test, {arg out=0, ffreq=100; var x;
 	x=SinOsc.ar(ffreq,0,0.1);
@@ -55,9 +57,19 @@ SynthDef(\test, {arg out=0, ffreq=100; var x;
 
 x=Synth(\test);
 
+(
 b=Bus.control(s);
+c=Bus.control(s);
 
-x.map(1,b);
 b.value = 100;
+x.map(1,b);
+)
+
+b.value = 800;
+
+x.map(0,c);
+c.value = 1;
+c.value = 0;
+s.meter;
 
 s.meter;

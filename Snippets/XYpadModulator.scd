@@ -1,5 +1,4 @@
-\\qjackctl start jack (maybe
-\\ :SClangStart
+// snippet to show Mouse aquisition
 
 s.boot
 

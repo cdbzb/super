@@ -6,4 +6,5 @@
 )
 
 {Out.ar(1,SinOsc.ar(25,0,SinOsc.kr(0.1,0,1)))}.play
+s.meter
 

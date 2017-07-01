@@ -1,3 +1,4 @@
+,// Tutorial using busses 
 
 s.meter
 s.reboot
@@ -45,4 +46,18 @@ g=Synth("help-lfo", [\out, b.index]);
 f.free
 d.free;
 b.free;
+(
+SynthDef(\test, {arg out=0, ffreq=100; var x;
+	x=SinOsc.ar(ffreq,0,0.1);
+	Out.ar(out , x);
+}).add
+)
 
+x=Synth(\test);
+
+b=Bus.control(s);
+
+x.map(1,b);
+b.value = 100;
+
+s.meter;

@@ -1,3 +1,4 @@
+// Examples of Server options
 s.reboot
 
 o = Server.local.options;

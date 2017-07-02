@@ -101,7 +101,7 @@ b= Task ({ var delta;
 }).play;
 )
 	
-// Sine + lfo [see function version below]  TODO doble notes with arbitrary phase relation
+// Sine + lfo [see function version below]  TODO double notes with arbitrary phase relation
 (
 	SynthDef ("sine+lfo" , { |freq=440 , lfo , bus=0 , lfreq = 0.05 |
 		// lfreq = rrand(5,10)*0.009;
@@ -110,16 +110,37 @@ b= Task ({ var delta;
 	}).add
 )
 
+
 (
-l= Synth.new ("sine+lfo" , [\bus, 0 ,\freq , 400, \lfreq , rrand(5,10)*0.006 ]);
-l= Synth.new ("sine+lfo" , [\bus , 1 ,\freq , 500, \lfreq , rrand(5,10)*0.006 ]);
-l= Synth.new ("sine+lfo" , [\bus , 2 , \freq , 440, \lfreq , rrand(5,10)*0.006 ]);
-l= Synth.new ("sine+lfo" , [\bus, 4 ,\freq , 300, \lfreq , rrand(5,10)*0.006 ]);
-l= Synth.new ("sine+lfo" , [\bus , 5 ,\freq , 350, \lfreq , rrand(5,10)*0.006 ]);
-l= Synth.new ("sine+lfo" , [\bus , 6 , \freq , 375, \lfreq , rrand(5,10)*0.006 ]);
-l= Synth.new ("sine+lfo" , [\bus , 7 , \freq , 675, \lfreq , rrand(5,10)*0.006 ]);
-l= Synth.new ("sine+lfo" , [\bus , 3 , \freq , 340, \lfreq , rrand(5,10)*0.006 ]);
+l= Synth.new ("sine+lfo" , [\bus, 0 ,\freq , 400, \lfreq , rrand(5,10)*0.003 ]);
+l= Synth.new ("sine+lfo" , [\bus , 1 ,\freq , 500, \lfreq , rrand(5,10)*0.003 ]);
+l= Synth.new ("sine+lfo" , [\bus , 2 , \freq , 440, \lfreq , rrand(5,10)*0.003 ]);
+l= Synth.new ("sine+lfo" , [\bus, 4 ,\freq , 300, \lfreq , rrand(5,10)*0.003 ]);
+l= Synth.new ("sine+lfo" , [\bus , 5 ,\freq , 350, \lfreq , rrand(5,10)*0.003 ]);
+l= Synth.new ("sine+lfo" , [\bus , 6 , \freq , 375, \lfreq , rrand(5,10)*0.003 ]);
+l= Synth.new ("sine+lfo" , [\bus , 7 , \freq , 675, \lfreq , rrand(5,10)*0.003 ]);
+l= Synth.new ("sine+lfo" , [\bus , 3 , \freq , 340, \lfreq , rrand(5,10)*0.003 ]);
 )
+( //offfset 
+Task ({ 
+l= Synth.new ("sine+lfo" , [\bus, 0 ,\freq , 400, \lfreq , rrand(5,10)*0.003 ]);
+rrand(1,4).wait;
+l= Synth.new ("sine+lfo" , [\bus , 1 ,\freq , 500, \lfreq , rrand(5,10)*0.003 ]);
+rrand(1,4).wait;
+l= Synth.new ("sine+lfo" , [\bus , 2 , \freq , 440, \lfreq , rrand(5,10)*0.003 ]);
+rrand(1,4).wait;
+l= Synth.new ("sine+lfo" , [\bus, 4 ,\freq , 300, \lfreq , rrand(5,10)*0.003 ]);
+rrand(1,4).wait;
+l= Synth.new ("sine+lfo" , [\bus , 5 ,\freq , 350, \lfreq , rrand(5,10)*0.003 ]);
+rrand(1,4).wait;
+l= Synth.new ("sine+lfo" , [\bus , 6 , \freq , 375, \lfreq , rrand(5,10)*0.003 ]);
+rrand(1,4).wait;
+l= Synth.new ("sine+lfo" , [\bus , 7 , \freq , 675, \lfreq , rrand(5,10)*0.003 ]);
+rrand(1,4).wait;
+l= Synth.new ("sine+lfo" , [\bus , 3 , \freq , 340, \lfreq , rrand(5,10)*0.003 ]);
+}).start
+)
+
 a.free
 
 //TODO task to make flits

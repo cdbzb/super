@@ -8,11 +8,51 @@ o.device="USBStreamer ";
 s.reboot;
 )
 
+// play -- run third (record below)
+n.start; b.start;
+
+( //def	-- run first
+	SynthDef ("sine+lfo" , { |freq=440 , lfo , bus=0 , lfreq = 0.05 |
+		// lfreq = rrand(5,10)*0.009;
+		lfo = SinOsc.kr ( lfreq  , 0 , 0.5 , 0.0 );
+		Out.ar ( bus , SinOsc.ar(freq , 0 , lfo*0.02+0.02) );
+	}).add
+)
+
+( // run second
+
+n= Task ({
+l= Synth.new ("sine+lfo" , [\bus, 0 ,\freq , 400, \lfreq , rrand(5,10)*0.003 ]);
+l= Synth.new ("sine+lfo" , [\bus , 1 ,\freq , 500, \lfreq , rrand(5,10)*0.003 ]);
+l= Synth.new ("sine+lfo" , [\bus , 2 , \freq , 440, \lfreq , rrand(5,10)*0.003 ]);
+l= Synth.new ("sine+lfo" , [\bus, 4 ,\freq , 300, \lfreq , rrand(5,10)*0.003 ]);
+l= Synth.new ("sine+lfo" , [\bus , 5 ,\freq , 350, \lfreq , rrand(5,10)*0.003 ]);
+l= Synth.new ("sine+lfo" , [\bus , 6 , \freq , 375, \lfreq , rrand(5,10)*0.003 ]);
+l= Synth.new ("sine+lfo" , [\bus , 7 , \freq , 675, \lfreq , rrand(5,10)*0.003 ]);
+l= Synth.new ("sine+lfo" , [\bus , 3 , \freq , 340, \lfreq , rrand(5,10)*0.003 ]);
+
+ //offfset 
+ 
+l= Synth.new ("sine+lfo" , [\bus, 0 ,\freq , 400, \lfreq , rrand(5,10)*0.003 ]);
+rrand(1,4).wait;
+l= Synth.new ("sine+lfo" , [\bus , 1 ,\freq , 500, \lfreq , rrand(5,10)*0.003 ]);
+rrand(1,4).wait;
+l= Synth.new ("sine+lfo" , [\bus , 2 , \freq , 440, \lfreq , rrand(5,10)*0.003 ]);
+rrand(1,4).wait;
+l= Synth.new ("sine+lfo" , [\bus, 4 ,\freq , 300, \lfreq , rrand(5,10)*0.003 ]);
+rrand(1,4).wait;
+l= Synth.new ("sine+lfo" , [\bus , 5 ,\freq , 350, \lfreq , rrand(5,10)*0.003 ]);
+rrand(1,4).wait;
+l= Synth.new ("sine+lfo" , [\bus , 6 , \freq , 375, \lfreq , rrand(5,10)*0.003 ]);
+rrand(1,4).wait;
+l= Synth.new ("sine+lfo" , [\bus , 7 , \freq , 675, \lfreq , rrand(5,10)*0.003 ]);
+rrand(1,4).wait;
+l= Synth.new ("sine+lfo" , [\bus , 3 , \freq , 340, \lfreq , rrand(5,10)*0.003 ]);
+});
 
 // flitter (add in SIN+LFO below)
 
 
-(
 a = {	var env, envGen , vol=0.1 , bus ;
 	//try a linen instead
 	env=Env.perc(0 , 0.02,(rrand(0,4)*0.1)); // dur, lev
@@ -26,49 +66,35 @@ b= Task ({ var delta;
 	delta=rrand(0,20)*0.01;
 	a.play;
 	delta.wait;
-};
+}});
+)
+
+
+Task ({ //record
+  var path="/tmp/";
+  var length=60;
+	s.recChannels_(8);
+	s.recHeaderFormat_("wav");
+	s.recSampleFormat_("int16");
+	s.prepareForRecord(path++"flitter.wav");
+	s.record(path++"flitter.wav");
+b.start;	n.start;
+length.wait;
+s.stopRecording;	
+b.stop;
+n.stop;
 }).play;
 )
+
+
 	
 // Sine + lfo [see function version below]  TODO double notes with arbitrary phase relation
-(
-	SynthDef ("sine+lfo" , { |freq=440 , lfo , bus=0 , lfreq = 0.05 |
-		// lfreq = rrand(5,10)*0.009;
-		lfo = SinOsc.kr ( lfreq  , 0 , 0.5 , 0.0 );
-		Out.ar ( bus , SinOsc.ar(freq , 0 , lfo*0.02+0.02) );
-	}).add
-)
 
 
-(
-l= Synth.new ("sine+lfo" , [\bus, 0 ,\freq , 400, \lfreq , rrand(5,10)*0.003 ]);
-l= Synth.new ("sine+lfo" , [\bus , 1 ,\freq , 500, \lfreq , rrand(5,10)*0.003 ]);
-l= Synth.new ("sine+lfo" , [\bus , 2 , \freq , 440, \lfreq , rrand(5,10)*0.003 ]);
-l= Synth.new ("sine+lfo" , [\bus, 4 ,\freq , 300, \lfreq , rrand(5,10)*0.003 ]);
-l= Synth.new ("sine+lfo" , [\bus , 5 ,\freq , 350, \lfreq , rrand(5,10)*0.003 ]);
-l= Synth.new ("sine+lfo" , [\bus , 6 , \freq , 375, \lfreq , rrand(5,10)*0.003 ]);
-l= Synth.new ("sine+lfo" , [\bus , 7 , \freq , 675, \lfreq , rrand(5,10)*0.003 ]);
-l= Synth.new ("sine+lfo" , [\bus , 3 , \freq , 340, \lfreq , rrand(5,10)*0.003 ]);
-)
-( //offfset 
-Task ({ 
-l= Synth.new ("sine+lfo" , [\bus, 0 ,\freq , 400, \lfreq , rrand(5,10)*0.003 ]);
-rrand(1,4).wait;
-l= Synth.new ("sine+lfo" , [\bus , 1 ,\freq , 500, \lfreq , rrand(5,10)*0.003 ]);
-rrand(1,4).wait;
-l= Synth.new ("sine+lfo" , [\bus , 2 , \freq , 440, \lfreq , rrand(5,10)*0.003 ]);
-rrand(1,4).wait;
-l= Synth.new ("sine+lfo" , [\bus, 4 ,\freq , 300, \lfreq , rrand(5,10)*0.003 ]);
-rrand(1,4).wait;
-l= Synth.new ("sine+lfo" , [\bus , 5 ,\freq , 350, \lfreq , rrand(5,10)*0.003 ]);
-rrand(1,4).wait;
-l= Synth.new ("sine+lfo" , [\bus , 6 , \freq , 375, \lfreq , rrand(5,10)*0.003 ]);
-rrand(1,4).wait;
-l= Synth.new ("sine+lfo" , [\bus , 7 , \freq , 675, \lfreq , rrand(5,10)*0.003 ]);
-rrand(1,4).wait;
-l= Synth.new ("sine+lfo" , [\bus , 3 , \freq , 340, \lfreq , rrand(5,10)*0.003 ]);
-}).start
-)
+
+ 
+n.start;
+
 
 a.free
 

@@ -72,11 +72,12 @@ b= Task ({ var delta;
 
 Task ({ //record
   var path="/tmp/";
-  var length=60;
+  var length=600;
 	s.recChannels_(8);
 	s.recHeaderFormat_("wav");
 	s.recSampleFormat_("int16");
 	s.prepareForRecord(path++"flitter.wav");
+	1.wait;
 	s.record(path++"flitter.wav");
 b.start;	n.start;
 length.wait;

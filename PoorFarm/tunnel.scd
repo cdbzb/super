@@ -1,6 +1,8 @@
 // IDEAS!
 // very tiny window on shepards tone
 // slow random movements like a cart wheel
+//steel tube Altiverb
+
 
 s.boot
 
@@ -47,7 +49,7 @@ a.free
 (
 	Task ({
 		loop({
-			5.wait;
+,			5.wait;
 			~root = 150;
 			rrand(10,20).wait;
 			~root = 100;
@@ -57,4 +59,6 @@ a.free
 	})
 )
 s.meter;
+
+
 

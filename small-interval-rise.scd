@@ -1,9 +1,9 @@
 //sc3hhowto.blogspot.com
 (
-	SynthDef.new("rampUp", {arg out = 0, amp = 0.05, dur = 5;
+	SynthDef.new("rampUp", {arg out = 0, amp = 0.05, dur = 5, ffreq = 200;
 		var sine, env_gen, env, pEnv;
 		env_gen = LFGauss.ar(dur,0.25,loop:0);
-		pEnv = XLine.ar(40,12000,dur);
+		pEnv = XLine.ar(ffreq,ffreq*3.0,dur);
 		sine = SinOsc.ar(pEnv,0,amp*env_gen);
 		Out.ar(out, sine);
 	}).load(s);
@@ -11,8 +11,7 @@
 	SynthDef.new("rampDown", {arg out = 0, amp = 0.05, dur = 5;
 		var sine, env_gen, env, pEnv;
 		env_gen = LFGauss.ar(dur,0.25,loop:0);
-		pEnv = XLine.ar(12000,40,dur);
-		pEnv = XLine.ar(12000,40,dur);
+		pEnv = XLine.ar(2000,20,dur); //was 12k - 40
 		sine = SinOsc.ar(pEnv,0,amp*env_gen);
 		Out.ar(out, sine);
 	}).load(s);
@@ -27,39 +26,24 @@
 	}).send;
 )
 //Up!
-( 
 (
 	Task({
 		var freq;
 		inf.do({
-			  Synth(\rampUp    , [\out, 1, \dur, 80]);
-			(0.1 + 1.4.rand).wait;
+			  Synth(\rampUp    , [\ffreq , 100, \out, 0, \dur, 10]);
+			(0.2 + 0.4.rand).wait;
 		});
 	}).play;
 );
 //Down!
-(
-	Task({
-		var freq;
-		inf.do({
-			  Synth(\rampDown    , [\out, 3, \dur, 80]);
-			(0.1 + 1.4.rand).wait;
-		});
-	}).play;
-);
-
-Synth(\mySine,[\busOut, 0, \fmFreq, 2000, \fmAmp, 0.1, \amAmp, 0.00, \amFreq, 1100]);
-Synth(\mySine,[\busOut, 4, \fmFreq, 2000, \fmAmp, 0.1, \amAmp, 0.00, \amFreq, 1100]);
-
-{ Out.ar(2,PinkNoise.ar(0.2)) }.play
-)
 
 //dual stereo (for recording)
 ( // Noise + Tone
 Synth(\mySine,[\busOut, 0, \fmFreq, 2000, \fmAmp, 0.1, \amAmp, 0.00, \amFreq, 1100]);
-{ Out.ar(1,PinkNoise.ar(0.2)) }.play
+j={ Out.ar(1,PinkNoise.ar(0.2)) }.play
 );
 
+g={Out.ar(1,Crackle.ar(1.95))}.play;
 
 (
 	s.boot;

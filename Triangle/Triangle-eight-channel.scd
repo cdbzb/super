@@ -1,6 +1,14 @@
 s.reboot
 s.quit
 
+(
+o = Server.local.options;
+o.devices;
+o.numOutputBusChannels = 5;
+o.device="USBStreamer ";
+s.reboot;
+)
+
 ( //play here - record if deired below
 ~pitches = [300, 400, 402, 680,  450, 451, 612]; //initial
 a = {                                            //single note
@@ -8,7 +16,7 @@ a = {                                            //single note
 	var env, envGen;
 	env=Env.triangle(dur: 3); // dur, lev
 	envGen=EnvGen.kr(env,doneAction:2,levelScale:vol);
-	Pan2.ar(
+	Out.ar(rrand(0,4),
 		SinOsc.ar(~pitches.choose,mul:envGen),
 		rrand(0,1));
 };
@@ -16,7 +24,7 @@ a = {                                            //single note
 t=Task({ |delta|                  //play notes at random intervals
 	loop {
 		a.play;
-		delta=rrand(0,5)*0.5;
+		delta=rrand(0,5)*0.5; //tempo multiplier
 		delta.wait;
 	}
 });
@@ -40,6 +48,25 @@ t.play
 t.stop
 b.play
 b.stop
+
+Task ({ //record 5-chans
+  var path="/tmp/";
+  var length=3600;
+	s.recChannels_(5);
+	s.recHeaderFormat_("wav");
+	s.recSampleFormat_("int16");
+	s.prepareForRecord(path++"Triangles-5chans");
+	1.wait;
+	s.record(path++"Triangles-5chans");
+	t.play;
+	b.play;
+	3600.wait;
+	t.stop;
+	b.stop;
+	3.wait;
+	s.stopRecording;
+}).play;
+
 
 s.reboot
 //record

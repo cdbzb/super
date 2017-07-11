@@ -152,7 +152,7 @@ SynthDef("shep",{
 )
 
 
-~playShep.(0.03, 0.75,  0,  0);
+~playShep.(0.03, 0.75,  1,  0);
 
 (
 ~playShep.(0.035, 0.24,  0,  0);

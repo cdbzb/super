@@ -25,7 +25,6 @@ s=r.value(speed: 0.12,pause:4.95); s.play;
 t=r.value(speed: 0.1,pause:8.75); t.play;
 )
 
-
 ( //HERE FIRST
 
 ~newDeck = {~deck = Array.series(52,1)};
@@ -40,6 +39,7 @@ t=r.value(speed: 0.1,pause:8.75); t.play;
 		~whitenotes.add((i-2)*12+(degree+1));})});
 
 ~newWhiteDeck = {~deck = ~whitenotes};
+
 
 ~shuffle = { |leftcount, rightcount|
 	~left=Array.fill(26, { arg i; ~deck.at(i) });
@@ -96,10 +96,13 @@ t=r.value(speed: 0.1,pause:8.75); t.play;
 
 ( r= { |speed, pause, vel, vari |
 	Routine.new({
-	20.do({
+4.do({
+	8.do({
 		~playMidiAppClock.value (speed:speed,vel:vel,vari:vari).play;
 		wait ((speed*52)+pause);
 		~shuffle.value});
+	~newWhiteDeck.value;
+});
 	});
 });
 )

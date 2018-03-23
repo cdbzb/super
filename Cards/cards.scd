@@ -25,7 +25,6 @@ s=r.value(speed: 0.12,pause:4.95); s.play;
 t=r.value(speed: 0.1,pause:8.75); t.play;
 )
 
-
 ( //HERE FIRST
 
 ~newDeck = {~deck = Array.series(52,1)};
@@ -41,6 +40,7 @@ t=r.value(speed: 0.1,pause:8.75); t.play;
 
 ~newWhiteDeck = {~deck = ~whitenotes};
 ~newWhiteDeck.value;
+
 
 ~shuffle = { |leftcount, rightcount|
 	~left=Array.fill(26, { arg i; ~deck.at(i) });

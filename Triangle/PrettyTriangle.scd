@@ -1,7 +1,6 @@
 s.reboot
-s.quit
-
 ( //play here - record if deired below
+
 ~pitches = [300, 400, 402, 680,  450, 451, 612]; //initial
 a = {                                            //single note
 	var vol=0.1;

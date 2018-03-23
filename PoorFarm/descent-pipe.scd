@@ -68,8 +68,8 @@ s.stopRecording
 //	)
 	var density=2.4, dur=60;
 	Server.default=s=Server.local;
-	s.prepareForRecord("/tmp/Density"++density++".wav");
-	s.record("/tmp/Density"++density++"wav");
+	s.prepareforrecord("/tmp/density"++density++".wav");
+	s.record("/tmp/density"++density++"wav");
 	(
 		Task({
 			var freq;

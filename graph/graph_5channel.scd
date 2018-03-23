@@ -51,7 +51,7 @@
 Synth(\mySine,[\busOut, 0, \fmFreq, 2000, \fmAmp, 0.1, \amAmp, 0.00, \amFreq, 1100]);
 Synth(\mySine,[\busOut, 4, \fmFreq, 2000, \fmAmp, 0.1, \amAmp, 0.00, \amFreq, 1100]);
 
-{ Out.ar(2,PinkNoise.ar(0.2)) }.play
+{ Out.ar(1,PinkNoise.ar(0.2)) }.play
 )
 
 //dual stereo (for recording)

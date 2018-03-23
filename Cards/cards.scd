@@ -97,10 +97,15 @@ t=r.value(speed: 0.1,pause:8.75); t.play;
 
 ( r= { |speed, pause, vel, vari |
 	Routine.new({
-	20.do({
-		~playMidiAppClock.value (speed:speed,vel:vel,vari:vari).play;
-		wait ((speed*52)+pause);
-		~shuffle.value});
+		20.do({	
+			Routine.new({
+			rrand(8,58).do({
+				~playMidiAppClock.value (speed:speed,vel:vel,vari:vari).play;
+				wait ((speed*52)+pause);
+				~shuffle.value});
+			});
+		~newWhiteDeck.value;
+		});
 	});
 });
 )

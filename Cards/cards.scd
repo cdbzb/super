@@ -40,6 +40,7 @@ t=r.value(speed: 0.1,pause:8.75); t.play;
 		~whitenotes.add((i-2)*12+(degree+1));})});
 
 ~newWhiteDeck = {~deck = ~whitenotes};
+~newWhiteDeck.value;
 
 ~shuffle = { |leftcount, rightcount|
 	~left=Array.fill(26, { arg i; ~deck.at(i) });

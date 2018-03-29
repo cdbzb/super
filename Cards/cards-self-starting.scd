@@ -1,7 +1,6 @@
-s.boot
+s.boot;
 
-( //HERE FIRST
-
+(
 ~newDeck = {~deck = Array.series(52,1)};
 ~newDeck.value;
 ~whitenotes = Array.new(52);
@@ -63,6 +62,19 @@ s.boot
 });
 	});}).play};
 
+~playMidiAppClockOff = { arg speed = 0.1, vel=40, vari=25;
+	Routine ({
+	~deck.do({|item,i|
+		AppClock.sched(i*speed,{
+	m.noteOff(16, item+46, 40+25.rand);
+	c=Image.new(~cards.at(item-1));
+	~window.drawFunc = {
+		Pen.drawImage( Point(0, 0), c)};
+	~window.refresh;
+	// c.plot;
+});
+	});}).play};
+
 ~playMidiDurs = { arg speed = 0.1;
 	Routine ({
 	~deck.do({|item,i|
@@ -81,6 +93,30 @@ s.boot
 		});
 	});
 });
-)
 
-s=r.value(speed: 0.17,pause:1.3); s.play;
+( q= { |speed, pause, vel, vari |
+	Routine.new({
+		20.do({	
+			rrand(8,58).do({
+				~playMidiAppClockOff.value (speed:speed,vel:vel,vari:vari).play;
+				wait ((speed*52)+pause);
+		});
+	});
+});
+
+});
+);
+
+s=r.value(speed: 0.17,pause:1.3); 
+t=q.value(speed: 0.17,pause:1.3);
+
+s.play;
+t.play;
+
+( 
+	s.play;
+	wait(1);
+	t.play;
+);
+
+u.play;

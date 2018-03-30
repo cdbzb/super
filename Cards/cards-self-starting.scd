@@ -29,23 +29,6 @@ s.boot;
 
 ~durs = [0.25,0.33,0.5,0.66];
 
-~play = { arg speed = 0.1;
-	Routine ({
-	~deck.do({|item,i|
-		a=Synth(\marimba,[\freq, (item+38).midicps]);
-		speed.wait;
-	});})};
-	MIDIClient.init;
-	//m = MIDIOut(0, MIDIClient.destinations.at(0).uid);
-	m=MIDIOut.newByName("IAC Driver","Bus 1");
-
-~playMidi = { arg speed = 0.1;
-	Routine ({
-	~deck.do({|item,i|
-	m.noteOn(16, item+46, 60);
-	//(speed*(10+2.rand)/11).wait;
-	speed.wait;
-	});})};
 
 ~playMidiAppClock = { arg speed = 0.1, vel=40, vari=25;
 	Routine ({
@@ -66,13 +49,6 @@ s.boot;
 	// c.plot;
 });
 	});}).play};
-
-~playMidiDurs = { arg speed = 0.1;
-	Routine ({
-	~deck.do({|item,i|
-	m.noteOn(16, item+46, 57+6.rand);
-	(speed*~durs.at(item % 4)).wait;
-	});})};
 
 ( r= { |speed, pause, vel, vari |
 	Routine.new({

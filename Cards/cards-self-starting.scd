@@ -104,6 +104,6 @@ t=q.value(speed: 0.17,pause:1.3);
 
 (
 TempoClock.default.sched(0, s);
-TempoClock.default.sched(1, t);
+TempoClock.default.sched(1, t); //the first number in parens here will be the note length in seconds
 );
 

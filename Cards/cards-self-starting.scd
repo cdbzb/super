@@ -110,13 +110,8 @@ s.boot;
 s=r.value(speed: 0.17,pause:1.3); 
 t=q.value(speed: 0.17,pause:1.3);
 
-s.play;
-t.play;
-
-( 
-	s.play;
-	wait(1);
-	t.play;
+(
+TempoClock.default.sched(0, s);
+TempoClock.default.sched(1, t);
 );
 
-u.play;

@@ -5,8 +5,6 @@ s.boot;
 ~newDeck.value;
 ~whitenotes = Array.new(52);
 ~scale=[1,3,5,6,8,10,12];
-~cards = "/Volumes/tank/Cards/PNG/*.png".pathMatch;
-~window = Window.new.front;
 
 8.do({ arg i;
 	~scale.do ({ arg degree,j;
@@ -55,9 +53,6 @@ s.boot;
 		AppClock.sched(i*speed,{
 	m.noteOn(16, item+46, 40+25.rand);
 	c=Image.new(~cards.at(item-1));
-	~window.drawFunc = {
-		Pen.drawImage( Point(0, 0), c)};
-	~window.refresh;
 	// c.plot;
 });
 	});}).play};
@@ -68,9 +63,6 @@ s.boot;
 		AppClock.sched(i*speed,{
 	m.noteOff(16, item+46, 40+25.rand);
 	c=Image.new(~cards.at(item-1));
-	~window.drawFunc = {
-		Pen.drawImage( Point(0, 0), c)};
-	~window.refresh;
 	// c.plot;
 });
 	});}).play};

@@ -37,7 +37,7 @@ s.boot;
 	});})};
 	MIDIClient.init;
 	//m = MIDIOut(0, MIDIClient.destinations.at(0).uid);
-	m=MIDIOut.newByName("IAC Driver","Bus 1");
+	m=MIDIOut.newByName("Tbox 2X2", "Midi Out 1");
 
 ~playMidi = { arg speed = 0.1;
 	Routine ({
@@ -76,7 +76,7 @@ s.boot;
 
 ( r= { |speed, pause, vel, vari |
 	Routine.new({
-		20.do({	
+		20.do({
 			rrand(8,58).do({
 				~playMidiAppClock.value (speed:speed,vel:vel,vari:vari).play;
 				wait ((speed*52)+pause);
@@ -88,7 +88,7 @@ s.boot;
 
 ( q= { |speed, pause, vel, vari |
 	Routine.new({
-		20.do({	
+		20.do({
 			rrand(8,58).do({
 				~playMidiAppClockOff.value (speed:speed,vel:vel,vari:vari).play;
 				wait ((speed*52)+pause);
@@ -99,7 +99,7 @@ s.boot;
 });
 );
 
-s=r.value(speed: 0.17,pause:1.3); 
+s=r.value(speed: 0.17,pause:1.3);
 t=q.value(speed: 0.17,pause:1.3);
 
 (

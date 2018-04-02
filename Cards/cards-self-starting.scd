@@ -76,8 +76,8 @@ s.boot;
 
 ( r= { |speed, pause, vel, vari |
 	Routine.new({
-		20.do({
-			rrand(8,58).do({
+		inf.do({
+			rrand(8,4000).do({
 				~playMidiAppClock.value (speed:speed,vel:vel,vari:vari).play;
 				wait ((speed*52)+pause);
 				~shuffle.value});

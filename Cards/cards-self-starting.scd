@@ -77,7 +77,8 @@ s.boot;
 ( r= { |speed, pause, vel, vari |
 	Routine.new({
 		inf.do({
-			rrand(8,4000).do({
+			~length = rrand(8,4000);
+			~length.do({
 				~playMidiAppClock.value (speed:speed,vel:vel,vari:vari).play;
 				wait ((speed*52)+pause);
 				~shuffle.value});
@@ -89,7 +90,7 @@ s.boot;
 ( q= { |speed, pause, vel, vari |
 	Routine.new({
 		inf.do({
-			rrand(8,4000).do({
+			~length.do({
 				~playMidiAppClockOff.value (speed:speed,vel:vel,vari:vari).play;
 				wait ((speed*52)+pause);
 		});

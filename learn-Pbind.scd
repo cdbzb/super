@@ -136,10 +136,14 @@ e.stream = Pbind(
 )
 
 ( //from TUT
-a = Pbind(
-\degree, Pseq([1,2,3,5],inf),
-\dur, 0.2
-))
+	var pattern;
+pattern = Pbind( \dur, Pseq
+	([1,2,3],inf) );
+Pseq([
+	Pbindf(pattern, \degree, Pseq([1,2,4,7],1)),
+	Pbindf(pattern, \degree, Pseq([1,3,5,8],2))
+],inf).play
+)
 
 b= Psetp(\degree, Pseq([1,2,1.1,9],inf),a);
 b.play;

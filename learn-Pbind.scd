@@ -13,25 +13,23 @@ SynthDef(\mySin, {
 )
 
 
-~scale=[200,300,400,500,600]
-~scaleTwo=[150,300,450,500,600]
+~chords = Pseq([ [200,300,400,500] , [150,250,350,450] ], inf).asStream;
 
-c=Pseq(~scale , inf)
+Pdefn (\durs,Pseq([1,2,3],5));
 
 (
 a=Pbind (\instrument, \mySin,
-	\dur , Pseq([1,2,3,],inf),
+	\dur , Pdefn(\durs),
 	\freq , Pseq([200,300,400,500,600],inf)
 );
 
 b=Pbind (\instrument, \mySin,
 	\pan , 1,
-	\freq , Pseq(~scale,inf),
-	\dur , Pseq([1,2,3,],inf),
+	\freq , Pseq(~chords.next,inf),
+	\dur , Pdefn(\durs),
 );
 )
 
-~chords = Pseq([ [200,300,400,500] , [150,250,350,450] ], inf).asStream;
 ( //function version
 a={ arg chord;
        	Pbind (\instrument, \mySin,
@@ -43,6 +41,7 @@ a={ arg chord;
 b=a.value(~chords.next);	
 b=b.play;
 b.stream = a.value(~chords.next).asStream;
+c=a.play;
 
 a=a.play;
 

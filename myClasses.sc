@@ -1,0 +1,1 @@
+/Users/michael/Library/Application Support/SuperCollider/Extensions/myClasses.sc

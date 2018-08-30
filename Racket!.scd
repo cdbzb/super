@@ -59,4 +59,29 @@ s.meter;
 		{SinOsc.ar(Vibrato.kr(DC.kr(600.0),5,0.015,delay:0.4,rateVariation:0.05,depthVariation:0.1) )}.play
 	}.fork
 )
+////////////////modsins instead
+(
+	SynthDef(\twotube,{arg delay1=1000, delay2=500, k=0.0, loss=0.999, dur=0.5, pan=0.0; 
+		var source; 
+		source= ModSin(1000*LFNoise1.kr(1)+200).distort;
+
+		Out.ar(0,Pan2.ar(TwoTube.ar(source,k,loss,delay1,delay2)*EnvGen.ar(Env([0,1,1,0],[0.001]++((dur-0.001)*[0.4,0.6])),doneAction:2),pan, level: 0.1)); 
+	}).send(s); 
+)
+
+a=Synth(\twotube,[\dur,100]);
+
+(t={
+
+inf.do{
+
+Synth(\twotube,[\delay1, rrand(1000,3000),\delay2, rrand(1000,3000),\loss, rrand(0.99,0.9999),\dur, rrand(3.1,8.0), \pan, rrand(-1,1.0), \k, rrand(0,1.0)]);
+
+0.6.wait;
+};
+
+}.fork(k);
+)
+
+s.meter;
 

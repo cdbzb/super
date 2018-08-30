@@ -1,0 +1,3 @@
+[submodule "downloaded-quarks/panola"]
+	path = downloaded-quarks/panola
+	url = https://github.com/shimpe/panola

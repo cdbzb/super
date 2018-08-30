@@ -1,0 +1,6 @@
+[submodule "downloaded-quarks/panola"]
+	path = downloaded-quarks/panola
+	url = https://github.com/shimpe/panola
+[submodule "Extensions/PMlib"]
+	path = Extensions/PMlib
+	url = https://github.com/michaeldzjap/PMLib.git

@@ -7,3 +7,6 @@
 [submodule "downloaded-quarks/Vowel"]
 	path = downloaded-quarks/Vowel
 	url = https://github.com/supercollider-quarks/Vowel
+[submodule "Extensions/supercollider-sfz"]
+	path = Extensions/supercollider-sfz
+	url = https://github.com/snappizz/supercollider-sfz.git

@@ -4,3 +4,6 @@
 [submodule "Extensions/PMlib"]
 	path = Extensions/PMlib
 	url = https://github.com/michaeldzjap/PMLib.git
+[submodule "downloaded-quarks/Vowel"]
+	path = downloaded-quarks/Vowel
+	url = https://github.com/supercollider-quarks/Vowel

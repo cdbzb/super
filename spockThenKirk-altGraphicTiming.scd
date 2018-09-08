@@ -8,8 +8,8 @@
 		\amp,amp,
 		\pan,pan,
 
-		//\tempo, 85/60,
-		\func,Pfunc({{ w.refresh}.defer}),
+		\tempo, 85/60,
+		\func,Pfunc({{t.string=~words.next}.defer}),
 	).play
 };
 	~descant={ |synth=\default, amp=0.3 |
@@ -39,13 +39,9 @@
 			\len,Pwhite(3.1,8.0),
 		       	\pan,Pwhite(-1,1.0),
 			\amp,amp,
-		       	\k,Pwhite(0,1.0) ).play}
-		)
+		       	\k,Pwhite(0,1.0) ).play};
 
-Synth(\caw,[\delay1, rrand(1000,3000),\delay2, rrand(1000,3000),\loss, rrand(0.99,0.9999),\dur, rrand(3.1,8.0), \pan, rrand(-1,1.0), \k, rrand(0,1.0)]);
-)
-
-(//SynthDefs
+//SynthDefs
 
 	SynthDef(\caw ,{arg amp=0.01, delay1=100, delay2=50, k=0.0, loss=0.999,len=0.5, pan=0.0; 
 	var source; 
@@ -80,20 +76,28 @@ SynthDef(\twotube,{arg delay1=1000, delay2=500, k=0.0, loss=0.999, dur=0.5, pan=
 )
 (//window
 	~windowSetup = { |height=500, width=500, fontsize=64|
-		w = Window.new(bounds: Rect(0,0,500,500), border:false).front; // can't be manually closed
-		w.view.background=Color.white;
+		w = Window.new(bounds: Rect(0,0,500,500), border:true).front; // can't be manually closed
+		//w.view.background=Color.white;
 		t=StaticText(w,w.bounds);
 		t.string=" ";
 		t.align=\center;
-		t.font=Font("Monaco",64);
+		t.font=Font("Monaco",96);
 		w.front;
 		CmdPeriod.doOnce({ w.close });
-		w.drawFunc = { t.string=~words.next;};
+		//w.drawFunc = { t.string=~words.next;};
 		~words.reset;
+//c=Image.new(~cards.at(item-1));
+//~window.drawFunc = {
+//Pen.drawImage( Point(0, 0), c)};
 	};
 )
 (
 	~windowSetup.();
+	a=Image.open("/Users/michael/tank/super/Spock.png");
+	w.drawFunc_({
+		Pen.drawImage( Point(200,200), a, operation: 'sourceOver', opacity:1;
+	)});
+	w.refresh;
 	w.front;
 	~words.reset;
 
@@ -113,8 +117,8 @@ SynthDef(\twotube,{arg delay1=1000, delay2=500, k=0.0, loss=0.999, dur=0.5, pan=
 
 	3.6.wait;
 	~b1.play;
-	{t.string="(kirk)";
-	w.refresh}.defer;
+	//{t.string="(kirk)";
+	//w.refresh}.defer;
 	//s.stopRecording;
 	9.wait;
 	{w.close}.defer
@@ -132,6 +136,7 @@ ss.reboot;
 		"or"   ,
 		"some-",
 		"thing",
+		"is",
 		"is",
 		"is",
 		"try-",

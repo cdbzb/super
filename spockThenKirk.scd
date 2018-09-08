@@ -90,6 +90,9 @@ SynthDef(\twotube,{arg delay1=1000, delay2=500, k=0.0, loss=0.999, dur=0.5, pan=
 		CmdPeriod.doOnce({ w.close });
 		w.drawFunc = { t.string=~words.next;};
 		~words.reset;
+//c=Image.new(~cards.at(item-1));
+//~window.drawFunc = {
+//Pen.drawImage( Point(0, 0), c)};
 	};
 )
 (
@@ -132,6 +135,7 @@ ss.reboot;
 		"or"   ,
 		"some-",
 		"thing",
+		"is",
 		"is",
 		"is",
 		"try-",

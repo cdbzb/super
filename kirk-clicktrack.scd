@@ -1,0 +1,61 @@
+SynthDef (\clk,{ Out.ar([0,1],Impulse.ar(0)) }).add;
+SynthDef (\mute,{Out.ar(0,0)}).add;
+
+( //helper functions 
+~concatRow={|array,row| var x; 
+	array.do({|item index| x=x++array[index][row]});
+	x;
+};
+~length={|a| var x=a[1].asStream; x.all.sum};
+~bpm={|tempo| tempo/60};//rename
+)
+
+(
+
+~someone=[ 	Pseq ([8,5,7,8,5,7,8]) ,	Pseq([3, 3, 2])/4++Pseq([3/4 , ((1/4)+(1/3)), 1/3, 1/3 ]) ]; //2
+~ceeded=[ 	Pseq([9.9,5,6.9,6]) , 	Pseq([2,2,1,1])/3 ]; //2
+~ourDist=[ 	Pseq([\r,11,9,7,8,9,8]) ,	Pseq([1, 1, 0.5, 0.5, 0.5, 0.25, 0.25]) ]; //4
+~activated=[ 	Pseq([6,6,6,6,5,5])-8 , 	Pseq([1, 2, 1, 2, 1, 1])/4 ]; //2
+~activate2=[ 	Pseq([8,7,5,2.9,4,5,4]) , 	Pseq([1,1,1,1,1,1/2,1/2])/2 ]; // 3 
+)
+(
+	~secs=List[
+		~someone,	[[84,75],[3,1]] , 
+		~ceeded,	75,
+		~ourDist,	90,
+		~activated,	90,
+		~activate2,	120
+	];
+
+~tempi=~secs.copySeries(1,3);
+~sections=~secs.copySeries(0,2);
+~degrees=~concatRow.(~sections,0);
+~durs=~concatRow.(~sections,1);
+~lengths=~sections.collect({|item,index| ~length.(item)});
+~tempoMap={ var temp, dur; 
+		~tempi.do({|item index| 
+			if(item.isNumber,
+				{ temp = temp++item; dur=dur++~lengths.at(index);},
+				{ temp= temp++item[0]; dur=dur++item[1]}
+			);
+		});
+	Pstep(temp.flatten,dur.flatten);
+}.value;
+)
+
+(
+	t=TempoClock(s);
+	Ppar([
+		Pbind(	\instrument, \default,
+			\degree, ~degrees-1,
+			\dur, ~durs,
+			\root,Pstep([0,-1, 0, 0, 0],[4,2, 4,2,3])
+			//\tempo, 0.36
+	),
+		Pbind(	\instrument, \clk,
+			\tempo, ~tempoMap/60,
+			\dur, 1,
+			\func, Pfunc({(t.tempo*60).postln})
+			 )
+		 ]).play(t)
+)

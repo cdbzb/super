@@ -1,49 +1,36 @@
 (
-
  // also 4096 works on my machine; 1024 too often and amortisation too pushed, 8192 more high load FFT
 ~fftsize =4096;
 
-~prep = {|in|
-var ir, irbuffer, bufsize;
-Routine({
-	in.postln;
-
-
- irbuffer = Buffer.read(s, in);
- //irbuffer = Buffer.readChannel(s, "/Users/michael/tank/IR/Saane/Roland RE-201 Space Echo/Mode•02/Mode•02.wav",channels:0);
- //irbuffer = Buffer.readChannel(s, "/Users/michael/tank/IR/Saane/Factory\ Hall/PA\ horn\ in\ hall/PA\ horn\ in\ hall.wav",channels:1);
-
-s.sync;
-
-bufsize = PartConv.calcBufSize(~fftsize, irbuffer);
-
-// ~numpartitions= PartConv.calcNumPartitions(~fftsize, irbuffer);
-
-~irspectrum = Buffer.alloc(s, bufsize, 1);
-~irspectrum.preparePartConv(irbuffer, ~fftsize);
-
-s.sync;
-irbuffer.free; // don't need time domain data anymore, 
-
-})
+~prep = {|in label| // in is fullPath, label is symbol
+		    // to use call: PartConv.ar(Library.at(\label)) 
+	var irbuffer, bufsize, spectrum;
+	spectrum = Buffer.new;
+	irbuffer = Buffer.read(s, in, action: { |buffer|
+	bufsize = PartConv.calcBufSize(~fftsize, buffer);
+	spectrum = Buffer.alloc(s, bufsize, 1);
+	Library.put(label, spectrum.bufnum);
+	spectrum.preparePartConv(buffer, ~fftsize);
+	});
 };
-
-
 )
 
-~prep.("/Users/michael/tank/IR/Saane/Factory\ Hall/PA\ horn\ in\ hall/PA\ horn\ in\ hall.wav").play;
-~prep.("/Users/michael/tank/IR/Saane/Roland RE-201 Space Echo/Mode•02/Mode•02.wav").play;
-
+~upstairs= Library.at(\IRs,\Domestic,'Upstairs 1 floor');
+~prep.(~upstairs.fullPath, 'upstairs');
+~prep.(Library.at(\IRs,'Vintage Spring Reverb','Spring Stereo').fullPath, 'spring');
+~cup=Library.at(\IRs,\Claustrophobia,'Glass Cup stereo');
+~prep.(~cup.fullPath,\cup);
+~prep.("/Users/michael/tank/IR/Saane/Roland RE-201 Space Echo/Mode•02.wav", \space2);
+Buffer.freeAll;
 
 ( // awesome space motor
 {
     //var input = PlayBuf.ar(1, ~target, loop:1);
-    var input = SinOsc.ar(300+100*SinOsc.ar(0.1),0,0.1);
-    var input2 = SinOsc.ar(300+100*SinOsc.ar(0.11),0,0.1);
-    PartConv.ar([input,input2], ~fftsize, ~irspectrum.bufnum, 0.5)
+    var input = SinOsc.ar(2200+100*SinOsc.ar(0.1),0,0.01);
+    var input2 = SinOsc.ar(1500+100*SinOsc.ar(0.211),0,0.01);
+    PartConv.ar([input,input2], ~fftsize, Library.at(\upstairs), 0.5)
 }.play
 )
-s.meter;
 
 // convolve with live input
 (
@@ -53,11 +40,26 @@ s.meter;
 }.play
 )
 
+(//initialize IRs library entry
+var irPath;
+irPath = PathName.new("/Users/michael/tank/IR/");
+irPath.filesDo{|file| 
+	if (file.extension == "wav", {
+			(file.folderName ++ "  " ++ file.fileNameWithoutExtension).postln;
 
-// only free buffers once you're finished with examples
-// if you free whilst PartConv is still running, the server won't crash, but PartConv output will go to zero abruptly
-(
-~irspectrum.free;
-~target.free;
-currentEnvironment.clear;
+			Library.put(\IRs,file.folderName.asSymbol , file.fileNameWithoutExtension.asSymbol , file);
+	})};
+	Buffer.freeAll;
 )
+
+Library.clear;
+Library.at(\IRs).keys;
+~spring=Library.at(\IRs,'Vintage Spring Reverb','Spring Stereo');
+
+Library.at(\IRs,\Domestic).keys;
+Library.at(\IRs,'Domestic','Bathroom');
+Library.at(\IRs,'Domestic',\Bathroom);
+Library.postTree;
+Library.put("IRs");
+a=Library.at(\IRs,\Forest).keys;
+

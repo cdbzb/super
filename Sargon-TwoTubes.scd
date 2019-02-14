@@ -1,33 +1,36 @@
 (
-	SynthDef( \sargon1, { |i_out=12 fund=320 |
+	SynthDef( \sargon1, { |i_out=12 fund=320 | var env;
 		var sig = TwoTube.ar(SoundIn.ar(0), 0.9 ,0.8 , fund,16*fund+5);
-		Out.ar(i_out ,sig )}).add
+	env=EnvGen.kr(Env.asr(0.01,1,6),\gate.kr(1), doneAction:2);
+		Out.ar(i_out ,sig*env )}).add
 )
 
-a=Synth(\sargon);
-s.meter;
-MIDIIn.connect;
+a=Synth(\sargon1, [\fund, 320]);
+a.release;
 
-//set the action:
+MIDIClient.init;
+
+
 (
-~noteOn = {arg src, chan, num, vel;
-    x.set(\fund, (num-24).midicps );
-};
-MIDIIn.addFuncTo(\noteOn, ~noteOn);
 
-//~noteOff = { arg src,chan,num,vel;
-//    x.set(\gate, 0.0);
-//};
-//MIDIIn.addFuncTo(\noteOff, ~noteOff);
-//
-//~bend = { arg src,chan,val;
-//    //(val * 0.048828125).postln;
-//    x.set(\bwfreq, val * 0.048828125 );
-//};
-//MIDIIn.addFuncTo(\bend, ~bend);
+var notes, on, off;
+MIDIFunc.noteOn({|a b c d| a.postln;b.postln;c.postln;d.postln},nil,1);
+MIDIFunc.noteOff({|e f g h| "releasing".postln;},nil,1);
+
+MIDIIn.connectAll;
+
+~notes = Array.newClear(128);    // array has one slot per possible MIDI note
+
+on = MIDIFunc.noteOn({ |veloc, num, chan, src|
+	    ~notes[num] = Synth(\sargon1, [\fund, (48000/num.midicps)]); 48000/num.midicps.postln;
+},nil,1);
+
+off = MIDIFunc.noteOff({ |veloc, num, chan, src|
+    ~notes[num].release;
+});
+
+q = { on.free; off.free; };
 )
 
-//cleanup
-MIDIIn.removeFuncFrom(\noteOn, ~noteOn);
-MIDIIn.removeFuncFrom(\noteOff, ~noteOff);
-MIDIIn.removeFuncFrom(\bend, ~bend);
+~notes[60].release;
+s.meter;

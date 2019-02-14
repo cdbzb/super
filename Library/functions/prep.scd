@@ -24,12 +24,8 @@ Library.put(\functions,\prep,
 		file.numChannels.do({ |index|
 			('channel '++index).postln;
 			//// put channels into stereo buffer and write out!!!!!!!!!
-			bufs[index]=Library.at(\functions,\prep).(~file.path , channel: index);
+			bufs[index]=Library.at(\functions,\prep).(file.path , channel: index);
 		});
 		bufs;
 	})
 )
-
-Library.at(\functions,\prepStereo).("/Users/michael/tank/IR/Saane/Church_Schellingwoude/Schellingwoude_m-st.wav");
-
-

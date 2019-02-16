@@ -1,8 +1,7 @@
 ~fftsize=4096;
 
 Library.put(\functions,\prep,
-	{|in channel=0 fftsize=4096 | // in is fullPath, label is symbol
-		    // to use call: PartConv.ar(Library.at(\label)) 
+	{|in channel=0 fftsize=4096 | // returns bufnum
 	var irbuffer, bufsize, spectrum;
 	var path=PathName(in);
 	var bufnum = Buffer.new.bufnum;

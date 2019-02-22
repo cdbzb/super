@@ -1,7 +1,7 @@
+// SERVER MACHINE INIT
 (
 	o=Server.local.options;
 	o.numOutputBusChannels = 18;
-
 	s.reboot;
 )
 
@@ -18,7 +18,4 @@ s.options.maxLogins=2;
 
 	}.play
 )
-
-// randomPairs.() ~places.keys
-"/Users/michael/tank/super/Schafer/speaker-aliases.scd".load;
 

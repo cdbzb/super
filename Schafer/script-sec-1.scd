@@ -2,6 +2,9 @@ o=Server.local.options
 o.memSize;
 o.memSize=(2**16);
 s.reboot;
+
+("/Users/michael/tank/super/Schafer/init.scd").load;
+
 (//setup
 ~names={|collection| collection.collect({|item index| PathName.new(item.path).fileName}) };
 
@@ -9,6 +12,10 @@ s.reboot;
 ~upstairs2=Library.at(\functions,\prepStereo).("/Users/michael/tank/IR/Saane/Domestic/Upstairs_2_floors.wav");
 ~nextDoor01Open=Library.at(\functions,\prepStereo).("/Users/michael/tank/SchaferHouse/Next-Door/01-open-door.wav");
 ~nextDoor02Closed=Library.at(\functions,\prepStereo).("/Users/michael/tank/SchaferHouse/Next-Door/02-closed-door.wav");
+~outdoors=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/OUTDOORS/*");
+~footsteps=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/FOOTSTEPS/*");
+~doors=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/DOORS OPENING AND CLOSING/*");
+~construction={|rate=1 gate=1 | Out.ar(0, PlayBuf.ar(2,~outdoors[0], rate:rate))*EnvGen.kr(Env.asr(6,1,10),gate: gate )};
 )
 
 //Traffic
@@ -47,7 +54,7 @@ s.meter;
 	var steps=Group.new; 
 	~chord=Array.newClear(10);
 	{
-	2.do({ //repeats 
+	3.do({ //repeats 
 		|index|
 		var construction=~construction.play; //todo- add random offset and pitch
 		6.wait;

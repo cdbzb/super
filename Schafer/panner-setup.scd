@@ -1,9 +1,3 @@
-(
-	o=Server.local.options;
-	o.numOutputBusChannels = 8;
-	s.reboot;
-)
-
 //smoothening
 (
 	{
@@ -17,3 +11,6 @@
 
 ~arclengths=[30,20,45,90,15,20,35,30]; //in degrees
 //put envelope from these into buffer?
+
+//walk past right wall triple
+{Out.ar(~speakers[1],PanX.ar(3,~footsteps[1], Line.kr(-1,2,10)))}.play;

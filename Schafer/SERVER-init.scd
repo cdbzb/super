@@ -2,20 +2,22 @@
 (
 	o=Server.local.options;
 	o.numOutputBusChannels = 18;
+	o.numInputBusChannels=0;
+	o.device="ULN2 [570]";
+	o.outputStreamsEnabled="110000000011111111";
+	s.options.maxLogins=2;
 	s.reboot;
 )
 
-s.options.maxLogins=2;
-
 ( // bass management 
-	var firstChannel = Bus.audio(s, numChannels: 8);
 	~speakers=Array.series(8, start: 10);
-	~channels = Array.series(8, start: firstChannel.index);
 	~bassManagement={ |cutoff=120|
-		var bass = BLowPass.ar(Mix.ar(In.ar(~channels),120));
+		var channels=In.ar(~speakers);
+		var bass = BLowPass.ar(Mix.ar(channels,120));
 		Out.ar(~speakers[7],bass);
-		Out.ar(~speakers[0],BHiPass.ar(In.ar(~channels),cutoff));
-
+		Out.ar(~speakers[0],BHiPass.ar(channels,cutoff));
 	}.play
 )
+
+//~bassManagement.set([/cutoff,100]);
 

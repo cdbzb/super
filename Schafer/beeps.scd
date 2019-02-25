@@ -2,12 +2,26 @@
 ~beeps.size;
 ~names.(~beeps);
 
-~beeps[0].play;
+a=~beeps[4].play;
+{PlayBuf.ar(1,~beeps[rand(4)],rate:1.00)*EnvGen.ar(Env.triangle(5))}.play;
 
 (
 	~playem = { |num amp bus| 
-		4.do({
+		14.do({
 			{Out.ar(bus,PlayBuf.ar(1,~beeps[num].bufnum,rrand(0.9,1.1)+LFNoise2.kr(0.02,mul:0.1),loop:1)*LFNoise1.kr(rrand(0.1,0.15))*amp)}.play;
+		})
+	}
+)
+(
+	~playemIntervals = { |num amp bus| 
+		14.do({
+			{Out.ar
+				(bus,
+					PlayBuf.ar(1,~beeps[num].bufnum,
+					//rrand(0.9,1.1)+LFNoise2.kr(0.02,mul:0.1),
+					[7/1,1,5/4,9/8].choose,
+					loop:1
+				) *LFNoise1.kr(rrand(0.1,0.15))*amp)}.play;
 		})
 	}
 )
@@ -18,6 +32,7 @@
 ~playem.(0,0.2, 1);
 ~playem.(4,0.2,[0,1]);
 
+~playemIntervals.(0,0.2, [0,1]); //nice-ish
 s.meter;
 
 (

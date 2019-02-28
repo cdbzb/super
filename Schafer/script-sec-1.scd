@@ -109,7 +109,7 @@ s.meter;
 	{
 		s.sync;
 		~rooms.do({ |item index|
-			a.source={PlayBuf.ar(2,item)};
+			a.source={PlayBuf.ar(2,item)*0.05};
 			item.path.postln;
 			8.5.wait;
 		});
@@ -121,11 +121,12 @@ s.meter;
 (
 	b={
 		15.do({
-			a.play([0,1,0,0].choose,fadeTime:8);
+			a.play([10,11,12,13,14,15,16,17].choose,fadeTime:8);
 			3.5.wait;
 		})
 	}.fork
 )
+s.freeAll;
 
 
 

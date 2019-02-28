@@ -1,15 +1,18 @@
 (
-~names={|collection| collection.collect({|item index| PathName.new(item.path).fileName}) };
+~speakers=Array.series(8,10);
+
+~names={|collection| collection.collect({|item index| PathName.new(item.path).fileName})};
 
 ~randomPair={
 	var speakers=Array.newFrom(~speakers);
 	[speakers.remove(speakers.choose),speakers.choose];
 };
 
+//Out.ar for non-contig spkrs
+~outM={|outArray inArray| outArray.do({|item index| Out.ar(item,inArray[index])})};
 
-~outM={|outArray inArray| outArray.do({|item index| Out.ar(item,inArray[index])})};//Out.ar for non-contig spkrs
-
-~downmix={Out.ar(0,[Mix.ar(In.ar([10,11,12,13])),Mix.ar(In.ar([14,15,16,17])) ])};//mix to laptop
+//mix to laptop
+~downmix={Out.ar(0,[Mix.ar(In.ar([10,11,12,13])),Mix.ar(In.ar([14,15,16,17])) ])};
 
 ~laptop=CmdPeriod.add({{~downmix.()}.defer(0.03)});//set Cmd-. to restore mix to laptop
 

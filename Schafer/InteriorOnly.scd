@@ -1,25 +1,12 @@
 o=s.options; o.memSize=2**17; s.reboot;
 o.numOutputBusChannels=18; s.reboot;
-
-(
-	~makeNodes={ |channels=2 |
-		var d=();
-		var dry = NodeProxy(s,\audio,channels);
-		var wet = NodeProxy(s,\audio,channels);
-		wet.source=dry;
-		d.add(\wet->wet);
-		d.add(\dry->dry);
-	};
-	~setIR={|dict buffer gain=1|
-		dict.wet.source = {PartConv.ar(dict.dry,4096,buffer)*gain}
-	};
-	~bypass={|dict|
-		dict.wet.source=dict.dry};
-)
+NodeProxy
+Buffer.freeAll;
 (//IRs///////////////////////
 	var projectPath="/Users/michael/tank/SchaferHouse/";
 	~forest=Library.at(\functions,\prep).("/Users/michael/tank/IR/Saane/Forest/Forest_2.wav");
 	~speaker=Library.at(\functions,\prep).("/Users/michael/tank/IR/Saane/Speakers_&_Telephones/Very_small_speaker_stereo.wav");
+	~washRoom=Library.at(\functions,\prep).("/Users/michael/tank/IR/Saane/Domestic/Bathroom.wav");
 	~doorOp=Library.at(\functions,\prep).(projectPath ++ "/Next-Door/01-open-door.wav"); //change these!
 	~doorCl=Library.at(\functions,\prep).(projectPath ++ "/Next-Door/02-closed-door.wav");
 	~street=Library.at(\functions,\prep).(projectPath ++ "/Next-Door/Street-smooth-intimate.wav");
@@ -37,9 +24,15 @@ o.numOutputBusChannels=18; s.reboot;
 	~mid=Buffer.readChannel(s,projectPath ++ "/Freesound/empty-medium-room-tone-stereo-ms.wav",channels: [0]);
 	~side=Buffer.readChannel(s,projectPath ++ "/Freesound/empty-medium-room-tone-stereo-ms.wav",channels: [1]);
 	~carpetsteps=Buffer.read(s,projectPath ++ "/Freesound/footsteps-on-a-carpet.wav");
-)
+	~keys=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/KEYS/*");
+	~chair=Buffer.read(s,numFrames: 100000, path: "/Users/michael/tank/SchaferHouse/SOUND/FURNITURE/CHAIR,LEATHER.wav");
 
+)
+s.plotTree;
+Server.default=s;
 (//set up nodes 
+	~sources=Group.head(s);
+	~spaces=Group.after(~sources);
 	~traffic=~makeNodes.(8);
 	~traffic.wet.play(~speakers[0]);
 	~traffic.wet.fadeTime=0.1;
@@ -50,7 +43,9 @@ o.numOutputBusChannels=18; s.reboot;
 	//door
 	~doorway=~makeNodes.();
 	~bathroom=~makeNodes.();
+	~kitchen=~makeNodes.();
 	~bathroomBus=Bus.audio(s,1);
+	~kitchenBus=Bus.audio(s,1);
 	//~bathroom.dry.source={~bathroomBus.ar};
 	~setIR.(~bathroom,~doorCl);
 	~bathroom.wet.reshaping=\elastic;
@@ -59,19 +54,131 @@ o.numOutputBusChannels=18; s.reboot;
 	~elevator=NodeProxy.new(s,\audio,2).play([~speakers[2],[3]]);
 	~elevator.reshaping=\elastic;
 	~hallway=~makeNodes.();
+	~washer=~makeNodes.();
+	~centerRoom=~makeNodes.();
 )
+~carpetsteps=~footsteps[2];
+(
+	~keySit={|walk| Routine.new({  
+		~steps.dry.source={PlayBuf.ar(2,~carpetsteps,loop:1)*6};
+		~steps.wet.play(~bathroomBus,group:~sources,vol:2);
+		1.wait;
+		~steps.wet.playN([~speakers[5],~speakers[2]],fadeTime:8,vol:1);
+		walk.wait;
+		~steps.wet.stop(2.5);
+		1.wait;
+		~centerRoom.dry.source={PlayBuf.ar(1,~keys[1])};
+		~setIR.(~centerRoom,~washRoom); // really??????
+		~centerRoom.wet.playN([~speakers[0],~speakers[4]],vol:0.1); ~centerRoom.dry.playN([~speakers[2],~speakers[6]]);
+		//sit down
+		0.7.wait;
+		~bypass.(~centerRoom);
+		~centerRoom.dry.source={PlayBuf.ar(1,~chair)*0.4};
+	})};
+)
+~keySit.play(8);
 
+( // prep for routines
+	~sources=Group.head(s);
+	~spaces=Group.after(~sources);
+	~delayline=Bus.audio(s,1);
+	//~compensation={DelayN.ar(In.ar(~delayline),0.1,0.045)}.play(s,12,\addToTail);
+	~compensation=NodeProxy.audio(s,1);
+	~compensation.play(~speakers[4],1,~spaces);
+	~compensation.source={DelayN.ar(In.ar(~delayline),1.1,0.009)};
+	~bathroom.wet.playN([~speakers[0],~speakers[6]],group: ~spaces, addAction: \addToTail);
+	~bathroom.dry.source={Pan2.ar(In.ar(~bathroomBus),0.55)};
+	~kitchen.wet.play(~speaker[0]);
+	~kitchen.dry.source={Pan2.ar(In.ar(~kitchenBus),-0.5)};
+	~bypass.(~steps);
+)
 s.freeAll;
-s;
-
-( //setup lobbyscene
-	var lobbyscene = "/Users/michael/tank/SchaferHouse/SOUND/VENICE RECORDINGS/Elevator scene.wav";
-	var dooropen = 613000;
-	var exit =2250000;
-	var buf = Buffer.read(s,lobbyscene);
-	~lobbyscene={PlayBuf.ar(2,buf, startPos: dooropen)*2.5};
-	~lobbyend={PlayBuf.ar(2,buf, startPos:exit)*2.5};
+( //toiletJoy
+	Routine.new({
+s.prepareForRecord("/Users/michael/tank/SchaferHouse/toiletJoy.wav",8);
+s.sync;
+s.record(bus: 10,numChannels:8);
+/////SETUP - steps->delayline->compensated 4-5-bathroom
+		~setIR.(~bathroom,~doorOp); //|
+		//~bypass.(~bathroom);	    //|
+		~compensation.play(~speakers[4],fadeTime:0);
+			~steps.dry.source={PlayBuf.ar(1,~carpetsteps,loop:1)*6}; 
+			~steps.wet.play(~delayline,fadeTime:0, group:~sources,  addAction:\addToHead);
+	0.1.wait
+		~compensation.play(~speakers[5],fadeTime:7);
+	3.0.wait;
+		~steps.wet.play(~bathroomBus,fadeTime:4, group: ~sources, addAction:\addToHead,vol:3);
+	5.wait;
+		~steps.wet.stop(1.5);
+/////IN BATHROOM
+		~bathroom.dry[1]={Pan2.ar(PlayBuf.ar(1,~water)*0.5,0.6)};
+	3.wait;
+			{Out.ar(~speakers[6],PlayBuf.ar(1,~doors[3])*0.4)}.play;
+			~setIR.(~bathroom,~doorCl);
+	2.wait;
+		~bathroom.dry[2]={Pan2.ar(PlayBuf.ar(1,~toilet),0.5)};
+	11.wait;
+			{Out.ar(16,PlayBuf.ar(1,~doors[2])*0.4)}.play;
+			~setIR.(~bathroom,~doorOp);
+	0.5.wait;
+		~keySit.(8).play;
+	20.wait;
+s.stopRecording;
+	}).play;
 )
+
+( // toiletJoy longer -> add water after toilet
+	Routine.new({
+s.prepareForRecord("/Users/michael/tank/SchaferHouse/toiletJoy.wav",8);
+s.sync;
+s.record(bus: 10,numChannels:8);
+/////SETUP - steps->delayline->compensated 4-5-bathroom
+t=TempoClock(s);
+t.tempo=3;
+		~setIR.(~bathroom,~doorOp); //|
+		//~bypass.(~bathroom);	    //|
+		~compensation.play(~speakers[4],fadeTime:0);
+			~steps.dry.source={PlayBuf.ar(1,~carpetsteps,loop:1)*6}; 
+			~steps.wet.play(~delayline,fadeTime:0, group:~sources,  addAction:\addToHead);
+	0.1.wait
+		~compensation.play(~speakers[5],fadeTime:7);
+	3.0.wait;
+		~steps.wet.play(~bathroomBus,fadeTime:4, group: ~sources, addAction:\addToHead,vol:3);
+	5.wait;
+		~steps.wet.stop(1.5);
+/////IN BATHROOM
+		~bathroom.dry[1]={Pan2.ar(PlayBuf.ar(1,~water)*0.5,0.6)};
+	3.wait;
+			{Out.ar(~speakers[6],PlayBuf.ar(1,~doors[3])*0.4)}.play;
+			~setIR.(~bathroom,~doorCl);
+	2.wait;
+		~bathroom.dry[2]={Pan2.ar(PlayBuf.ar(1,~toilet),0.5)};
+	11.wait;
+			{Out.ar(16,PlayBuf.ar(1,~doors[2])*0.4)}.play;
+			~setIR.(~bathroom,~doorOp);
+	0.5.wait;
+		
+//////TO WATER	
+t.tempo=1;
+		//~steps.dry.source={PlayBuf.ar(2,~carpetsteps,loop:1)*6}; // necessary?
+		~steps.wet.play(~bathroomBus,group:~sources,vol:2);
+	0.1.wait;
+		~steps.wet.play(~kitchenBus,group:~sources,fadeTime:4);
+	4.wait;
+		~steps.wet.stop;
+		~fillCup=Buffer.read(1,"/Users/michael/tank/SchaferHouse/SOUND/WATER/long-fill.wav");
+		~klank=Buffer.read(1,"/Users/michael/tank/SchaferHouse/SOUND/WATER/glass down.wav");
+		~kitchen.dry[1]={PlayBuf.ar(1,~fillCup)};
+	3.wait;
+		~kitchen.dry[1]={PlayBuf.ar(1,~klank)};
+	1.wait;
+
+		~keySit.(8).play; // modify start point
+	20.wait;
+s.stopRecording;
+	}).play;
+)
+s.freeAll;
 
 (
 	Routine.new({
@@ -136,36 +243,6 @@ s;
 	
 )
 s.freeAll;
-( //flush then rinse
-	var delayline=Bus.audio(s,1);
-	var compensation={Out.ar(12,DelayN.ar(In.ar(delayline),0.1,0.045))}.play;
-	~bathroom.wet.playN([10,16],addAction: \addToTail);
-	~bathroom.dry.source={Pan2.ar(In.ar(~bathroomBus),0.55)};
-	Routine.new({
-		~hallway.wet.stop(3);
-		~setIR.(~bathroom,~doorOp);
-		1.wait;
-		~elevator.stop(4.1);
-		//~steps.dry.source={PlayBuf.ar(2,~footsteps[0],loop:1)*0.3}; //trigger fsteps
-		~steps.dry.source={Pan2.ar(PlayBuf.ar(1,~carpetsteps,loop:1),
-				Line.kr(-0.9,0.9,5))*6};
-		~steps.wet.play(delayline,fadeTime:0,addAction:\addToHead);
-		0.1.wait;
-		~steps.wet.play(~bathroomBus,fadeTime:6,addAction:\addToHead);
-		5.wait;
-		~bathroom.dry[0]={In.ar(~bathroomBus)};
-		~steps.wet.stop;
-		~bathroom.dry[0]={Pan2.ar(PlayBuf.ar(1,~water)*0.5,0.6)};
-		3.wait;
-		{Out.ar(16,PlayBuf.ar(1,~doors[3])*0.4)}.play;
-		~setIR.(~bathroom,~doorCl);
-		2.wait;
-		~bathroom.dry[1]={Pan2.ar(PlayBuf.ar(1,~toilet),0.5)};
-		16.wait;
-		delayline.free;compensation.free;
-	}).play
-)
-
 (
 	//lobbymusic plays out of 8 through spkr then to surround verb
 	~verbBus=Bus.audio(s,2);

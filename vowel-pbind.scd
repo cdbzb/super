@@ -36,26 +36,31 @@ d.play;
 Pmono(\test,
 	)
 
-	(
+	
+		s.prepareForRecord("/Users/michael/tank/SchaferHouse/SOUND/AI SOUNDS/vowel-pbind.wav");
+		s.record;
 		a=SynthDef(\test,{|freq, vowel=\i| 
 			var vib = Vibrato.ar(freq.lag(0.3), 6);
 			var asr = EnvGen.ar(Env.asr(0.2,1,0.5));
 			var sig = Formants.ar(vib,Vowel().addControls(lag: 1));
-			sig=FreeVerb.ar(sig, room:0.75);
+			////sig=FreeVerb.ar(sig, room:0.75);
 			Out.ar([0,1],sig);
 		}).add;
 
 		a.allControlNames;
 
+		(
 		PmonoArtic(\test,
-			\freq,Pxrand([200,150,160,300,200,40,623, 660,],inf),
+			\freq,Pxrand([200,150,160,300,200,40,523, 560,],inf),
 			\freqs, Pseq([Vowel(\a).freqs,Vowel(\u).freqs,Vowel(\i,\tenor).freqs],inf),
 			\widths, Pseq([Vowel(\a).widths,Vowel(\u).widths,Vowel(\i,\tenor).widths],inf),
 			\dBs, Pseq([Vowel(\a).dBs,Vowel(\u).dBs,Vowel(\i,\tenor).dBs],inf),
-			\legato, Prand([1,1,1,1,1,1,0.5],inf),
-			\dur, 0.2).play;
+			\legato, Prand([1,1,0,0,1,1,0.9],inf),
+			\dur, Pwhite(0.05,0.25,inf)).play;
 		//Synth(\test,Vowel(\i));
 	)
+	
+	s.stopRecording;
 
 
 a=Vowel(\a,\bass);

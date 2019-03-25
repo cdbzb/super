@@ -26,20 +26,26 @@
 			Routine.new({
 				10.do({
 			a={SinOsc.ar([300,350,220,550,600,480],0,0.15)*LFTri.ar(0.03)}.play;
-			40.wait;
+			10.wait;
 			a.release(10);
-			35.wait
+			35.wait;
+			a={SinOsc.ar([300,350,220,550,600,480],0,0.15)*LFTri.ar(0.03)}.play;
+			0.1.wait;
+			a.release(20);
+			30.wait;
 			});
 			}).play;
+
 		~traffic=~makeNodes.();
 		~traffic.wet.fadeTime=10;
 		~traffic.wet.play(fadeTime:10);
+		~decoder = FoaDecoderMatrix.newPanto(8, k: 'dual');         // psycho optimised 7;;
 		~traffic.dry.source={FoaDecode.ar(PlayBuf.ar(4,~ambiStreet,loop:1)*1,~decoder)};
 			Routine.new({
 				3.do({
 
 					20.wait;
-		~traffic.wet.source={Klank.ar(`[[200,300,400, 240, 260, 390, 403],[1,0.8,0.6,0.5,0.4,0.3],0.3!6],~traffic.dry)*0.08};
+		~traffic.wet.source={Klank.ar(`[[310,300,405, 246, 260, 390, 403],[0.5,0.4,0.3,0.2,0.3,0.3],0.3!6],~traffic.dry)*0.08};
 					20.wait;
 					~setIR.(~traffic,~longVerb);
 					20.wait;
@@ -53,3 +59,13 @@
 		)
 		s.plotTree;
 		c;
+
+		s.prepareForRecord("/Users/michael/tank/SchaferHouse/SOUND/trafficsong.wav");
+		s.record();
+		s.stopRecording;
+
+		a={|freq=800|SinOsc.ar(freq+(5000*LFTri.ar(9.2)),0,0.001)!2}.play;
+		a.free;
+		a.set(\freq,7900);
+		b={WhiteNoise.ar(0.001)!2}.play;
+

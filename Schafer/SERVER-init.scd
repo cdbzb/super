@@ -3,6 +3,7 @@
 	o=Server.local.options;
 	o.numOutputBusChannels = 18;
 	o.numInputBusChannels=0;
+	o.memSize=2**17;
 	o.device="ULN2 [570]";
 	o.outputStreamsEnabled="110000000011111111";
 	s.options.maxLogins=2;

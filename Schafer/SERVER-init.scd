@@ -5,10 +5,12 @@
 	o.numInputBusChannels=0;
 	o.memSize=2**17;
 	o.device="ULN2 [570]";
-	o.outputStreamsEnabled="110000000011111111";
+	o.outputStreamsEnabled="001111111100000000";
 	s.options.maxLogins=2;
 	s.reboot;
 )
+{PinkNoise.ar(0.05)!8}.play(s,2);
+{PinkNoise.ar(0.05)!8}.play(s,10);
 
 ( // bass management 
 	~speakers=Array.series(8, start: 10);

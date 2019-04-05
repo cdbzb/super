@@ -4,7 +4,7 @@
 		Server.default=s;
 	}.value;
 
-	~speakers = Array.series(8,10);
+	~speakers = Array.series(8,2);
 )
 
 //Server.fromName( 'hack' ).defaultGroup.release;

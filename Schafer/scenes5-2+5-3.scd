@@ -19,6 +19,7 @@
 	~keyDrop=~keys[1];
 	~alvarado=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/ALVARADO/*");
 	~bagDrop=Buffer.read(s,"/Users/michael/tank/SchaferHouse/SOUND/ALVARADO/ybagdrom.wav");
+	~chairLong=Buffer.read(s,numFrames: 140000, path: "/Users/michael/tank/SchaferHouse/SOUND/FURNITURE/CHAIR,LEATHER.wav");
 	~chair=Buffer.read(s,numFrames: 100000, path: "/Users/michael/tank/SchaferHouse/SOUND/FURNITURE/CHAIR,LEATHER.wav");
 	~aiSounds=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/AI SOUNDS/*");
 	~phone=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/PHONE/*");
@@ -35,12 +36,10 @@
 	~dialing=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/PRANK-CALL/*");
 	~buzzer=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/BUZZERS TONES ALARMS/*");
 	~bathroomFan=Buffer.read(s,'/Users/michael/tank/SchaferHouse/SOUND/BATHROOM-FANS/bathroom-fan1.wav');	//m-s
-	
-	
+	~mag=Buffer.read(s,"/Users/michael/tank/SchaferHouse/SOUND/magazine.wav");	
+///SAY
 	~prepAlexa.();
-	{~makeNumberBuffers.();
-	2.wait;
-	~moveNumberBuffersToRemote.(); }.fork;
+	{~makeNumberBuffers.(); 4.wait; ~moveNumberBuffersToRemote.(); }.fork;
 
 )
 
@@ -59,9 +58,11 @@
 )
 
 ( { // scene1 toiletjoy
-//s.prepareForRecord("/Users/michael/tank/SchaferHouse/toiletJoy2.wav",8);
-//s.sync;
-//s.record(bus: 10,numChannels:8);
+s.prepareForRecord("/Users/michael/tank/SchaferHouse/toiletJoy2.wav",8);
+s.sync;
+s.record(bus:~speakers[0] , numChannels:8);
+
+		c=thisThread.clock.beats;
 	~steps.fadeTime=0.1;
   	~steps[1]=\filter->{|in| DelayN(in,0.1,0.009)}; //delay compensation
 	//~steps[2]=\filter->{|in| Pan2.ar(in,-0.9)};
@@ -70,42 +71,48 @@
 	0.5.wait;
 	~steps.play(~speakers[5],1,group: ~sources, fadeTime: 7);
 	6.wait;
-		~steps.stop(1.0);
+		~steps.stop(0.6);
 	0.5.wait;
-		{Out.ar(~speakers[5],PlayBuf.ar(2,~keyDrop)*0.8)}.play;
-	0.5.wait;
-		{Out.ar(~speakers[5],PlayBuf.ar(2,~bagDrop)*1.2)}.play; //chair??
+		{Out.ar(~speakers[5],PlayBuf.ar(2,~keyDrop)*0.6)}.play;
+		//~steps.play(~speakers[5],fadeTime:2,group:~sources,vol:0.2);
+	0.7.wait;
+		{Out.ar(~speakers[5],PlayBuf.ar(1,~bagDrop)*1.2)}.play; //chair??
 	1.0.wait;
-		~setBusIR.(~bathroom,~doorOp);
-)
-({//topp
 		~steps.play(~speakers[5],fadeTime:0.8,group:~sources);
 	0.5.wait;
 		~steps.play(~bathroom.bus,fadeTime:7,group:~sources,vol:0.2);
 		~steps.fadeTime=7;~steps[1]=nil;
 	5.5.wait;
 		~steps.stop(1.5);
-/////IN BATHROOM
+///IN BATHROOM
 		//~bathroom.node[1]={Pan2.ar(BrownNoise.ar(0.004),0.6)};
-		~bathroom.node[1]={Pan2.ar(PlayBuf.ar(1,~water)*0.2,0.6)};
+		~setBusIR.(~bathroom,~doorOp);
+		//~bathroom.node[1]={Pan2.ar(PlayBuf.ar(1,~water)*0.2,0.6)};
+		~bathroom.node[1]={PlayBuf.ar(1,~bathroomFan)*0.4};
+		3.wait;
 	3.wait;
 		{Out.ar(~speakers[6],PlayBuf.ar(1,~doors[3]))}.play; ~bathroom.node.fadeTime=0.5; ~setBusIR.(~bathroom,~doorCl,);
-	11.wait;
+		2.wait;
+		~startWalking.();~steps.play(~bathroom.bus,group:~sources,fadeTime:2);
+		3.wait;
+		~steps.stop(0.3);
+	15.wait;
 		~bathroom.node[2]={Pan2.ar(PlayBuf.ar(1,~toilet)*0.5,0.5)};
-	5.wait;
+	2.wait;
 		~bathroom.node[1]={Pan2.ar(PlayBuf.ar(1,~water)*0.2,0.6)};
-	13.wait;
-		{Out.ar(16,PlayBuf.ar(1,~doors[2])*0.4)}.play;
+	11.wait;
+		{Out.ar(~speakers[6],PlayBuf.ar(1,~doors[2])*0.4)}.play;
 		~setBusIR.(~bathroom,~doorOp);
 	0.5.wait;
 		~startWalking.(); ~steps.play(~bathroom.bus,group:~sources,fadeTime:0.1);
 	0.1.wait;
 		~steps.play(~kitchen.bus,group:~sources,fadeTime: 8,vol:0.4);
 	5.0.wait; 
-		~steps.stop(1);
-	1.5.wait;
+		~steps.stop(2);
+	2.5.wait;
 ////fill carafe - put on stove open fridge - take out - microwave
 		~kitchen.node[1]={PlayBuf.ar(2,~alvarado[2])*0.15};//fill carafe
+		~names.(~alvarado);
 	7.wait;
 		~startWalking.();~steps.play(~kitchen.bus,group:~sources,fadeTime:0.1);
 	       	0.6.wait; ~steps.stop(1);
@@ -113,9 +120,9 @@
 		~kitchen.node[1]={PlayBuf.ar(2,~alvarado[1])};//put on stove
 		~startWalking.();~steps.play(~kitchen.bus,group:~sources);
 	       	1.2.wait; ~steps.stop(1);
-	4.5.wait;
+	7.5.wait;
 		~kitchen.node[0]={PlayBuf.ar(2,~alvarado[3])};//grt from fridge -4 is alt- 
-	5.wait;
+	9.wait;
 		~kitchen.node[1]={PlayBuf.ar(2,~alvarado[0])*0.4};//microwave
 	3.wait;
 ////start walking and walk to center
@@ -126,16 +133,19 @@
 	2.wait;
 		~steps.play(~speakers[2],fadeTime:6);
 	2.wait;
-		~steps.play(~speakers[4],fadeTime:7);
+		~steps.play(~speakers[5],fadeTime:7);
 	6.wait;
 		~steps.stop(0.5);
-		{ Out.ar(~speakers[3],PlayBuf.ar(2,~alvarado[6])) }.play; //open patio doo
+		{PlayBuf.ar(1,~chairLong)*0.2}.play(s,~speakers[5]); 
+	2.wait;
+		{PlayBuf.ar(1,~mag) }.play(s,~speakers[5]);
+		//{ Out.ar(~speakers[3],PlayBuf.ar(2,~alvarado[6])) }.play; //open patio doo
 	25.wait;
+		c=(thisThread.clock.beats-c);c.postln;
 
 s.stopRecording;
 }.fork;
 )
-
 (
 	~headToWasher={ |walkTime=8| Routine.new({
 		~walkFromTo.(0,~speakers[1],~speakers[6],11,fadeIn:0.3);
@@ -154,7 +164,7 @@ s.stopRecording;
 
 	~heliPlay={
 		~helicopterThroughWall=NodeProxy.audio(s,2);
-		~helicopterThroughWall[0]={Pan2.ar(PlayBuf.ar(1,~helicopter[3]),Line.kr(-1,1,40),EnvGen.kr(Env.linen(8,10,15))*0.3)};//alsotry 3 and 4
+		~helicopterThroughWall[0]={Pan2.ar(PlayBuf.ar(1,~helicopter[3]),Line.kr(-1,1,40),EnvGen.kr(Env.linen(8,10,15))*0.4)};//alsotry 3 and 4
 		~helicopterThroughWall[1]=\filter->{|in|PartConv.ar(in,4096,~doorCl)};
 		~helicopterThroughWall.reshaping=\elastic;
 		~helicopterThroughWall.playN([~speakers[3],~speakers[5]]);
@@ -168,9 +178,9 @@ s.stopRecording;
 
 	//s.recSampleFormat="int24";
 	//s.recHeaderFormat="wav";
-	//s.prepareForRecord("/Users/michael/tank/SchaferHouse/Scene2.wav",8);
-	//s.sync;
-	//s.record(bus: 2,numChannels:8);
+	s.prepareForRecord("/Users/michael/tank/SchaferHouse/Scene2-2.wav",8);
+	s.sync;
+	s.record(bus: ~speakers[0],numChannels:8);
 
 		c=thisThread.clock.beats;
 		~steps=NodeProxy.audio(s,1);
@@ -266,24 +276,25 @@ s.stopRecording;
 		4.5.wait;
 		~playNumbers.();
 		11.wait;
-		{a={Out.ar(~speakers,Impulse.ar(1),mul:0.7)}.play;0.1.wait;a.free}.fork;
+	//w={|vol=1| PlayBuf.ar(~washer.numChannels,~washer,startPos: (23*2044000))*0.6*vol}.play(s,~speakers[6]); /// TODO check if w exists and is playing!!!!!!!
+		{a={Out.ar(~speakers,Impulse.ar(1)*0.7)}.play;0.1.wait;a.free}.fork;
 		{PlayBuf.ar(~washer.numChannels,~washer,startPos:5000000)}.play(s,~speakers[6],fadeTime:10);
 		~fridge.play;
 			~fridge[0]={PlayBuf.ar(~vestfrost.numChannels,~vestfrost)*0.4};
 			~fridge[1]=\filter->{|in|PartConv.ar(in,4096,~doorOp)};
 		~hallThroughDoor.play;~hallThroughDoor.stop(120);
-		~hallThroughDoor.source= {PlayBuf.ar(~hallway.numChannels,~hallway,startPos:54*48000)*1.5};
+		~hallThroughDoor.source= {PlayBuf.ar(~hallway.numChannels,~hallway,startPos:54*48000,loop:1)*1.5};
 //~helicopterThroughWall.play;
 //~heliRumble.play;
 		w.set(\vol,1);
 		5.wait;
 		m={PlayBuf.ar(1,~marketPhrases[0],startPos:480000)*0.9 }.play(s,~speakers[4]);
 		10.wait;
-{3.do({~heliPlay.play; 27.wait })}.fork;
-		115.wait;
+		{3.do({~heliPlay.play; 27.wait })}.fork;
+		105.wait;
 		m.release(0.2);
-		{PartConv.ar(PlayBuf.ar(~doors[5].numChannels,~doors[1]),4096,~doorOp)}.play(s,5);
-//WALK TO PATIO	
+		{PartConv.ar(PlayBuf.ar(~doors[5].numChannels,~doors[1]),4096,~kitch,mul:1)}.play(s,5);
+	
 		~walkFromTo.(0,~speakers[6],~speakers[4],10);
 		~trafficThroughDoor=NodeProxy.audio(s,2).play(~speakers[3],fadeTime:10);
 		~trafficThroughDoor.source={PlayBuf.ar(2,~traffic)*1.5};
@@ -329,14 +340,42 @@ s.stopRecording;
 		5.wait;
 		~walkFromTo.(0,~speakers[3],~speakers[5],8);
 		9.wait;
+	)
+	({//topp
+		~phoneWalker=[NodeProxy.audio(s,1).play(~speakers[5]), NodeProxy.audio(s,1).play(~speakers[2])];
 		{PlayBuf.ar(~dialing[0].numChannels,~dialing[0]) }.play(s,~speakers[5]);
 		6.wait;
-		{PlayBuf.ar(~dialing[0].numChannels,~dialing[2]) }.play(s,~speakers[5]);
+		{PlayBuf.ar(~dialing[0].numChannels,~dialing[2]) }.play(s,~speakers[5]);//ring
 		7.wait;
-		h={PlayBuf.ar(~holdMusic[2].numChannels,~holdMusic[2])*0.3 }.play(s,~speakers[5]);
-		5.wait;
-		h.release(10);
+		~phoneWalker[0].source={PlayBuf.ar(~holdMusic[2].numChannels,~holdMusic[2],loop:1)*0.3 };
+		//25.wait;
+
+		{PlayBuf.ar(1,~dialing[0]) }.play(s,~speakers[2]);
+		6.wait;	
+		{PlayBuf.ar(~dialing[0].numChannels,~dialing[2]) }.play(s,~speakers[2]);//ring
+		7.wait;
+		~phoneWalker[1].source={PlayBuf.ar(~holdMusic[2].numChannels,~holdMusic[4],loop:1)*0.15 };
 		10.wait;
+
+		~where=[2,5];
+		~goThere= {| who to| ~walkFromTo.(who ,~speakers[~where[who]],to,7); ~phoneWalker[who].play(to,fadeTime:7);~where[who]=to};
+
+		6.do{
+		~goThere.([0,1].choose,~speakers[rand(7)]);
+		9.wait;
+	};
+
+		//{PlayBuf.ar(~dialing[0].numChannels,~dialing[0]) }.play(s,~speakers[5]);
+		//6.wait;
+		//{PlayBuf.ar(~dialing[0].numChannels,~dialing[2]) }.play(s,~speakers[5]);//ring
+		//7.wait;
+		//h={PlayBuf.ar(~holdMusic[2].numChannels,~holdMusic[3])*0.3 }.play(s,~speakers[5]);
+
+		//~names.(~holdMusic);
+
+		h.release(0.4);
+		5.wait;
+
 
 		s.stopRecording;
 		c=(thisThread.clock.beats-c);c.postln;

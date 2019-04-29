@@ -12,8 +12,8 @@ s.reboot;
 			    { arg x  ; var sig, frq;
 				frq=fr;
 				//sig = FSinOsc.ar( frq*x ,0,0.01/(x+1) * LFNoise1.kr(18*LFNoise1.kr));//.distort;
-				sig = FSinOsc.ar( frq*x ,0,0.01 * LFNoise1.kr(18*LFNoise1.kr));//.distort;
-				sig = sig+SinOsc.ar( frq ,0,0.01 * LFNoise1.kr(18*LFNoise1.kr));//.distort;
+				sig = FSinOsc.ar( frq*x ,0,0.01 * LFNoise1.kr(18*LFNoise1.kr)).distort;
+				sig = sig+SinOsc.ar( frq ,0,0.01 * LFNoise1.kr(18*LFNoise1.kr)).distort;
 				sig = Pan2.ar(sig, LFNoise1.kr(1));
 				sig= sig * EnvGen.kr(Env.linen(6,2,99),doneAction: 2);
 				//sig=BHiShelf.ar(sig,1200,db: -10);
@@ -51,16 +51,28 @@ s.reboot;
 		9.wait;
 		(\instrument: \cloud, \fr: [300,360], \amp: 0.1).play;
 		6.wait;
-		(\instrument: \cloud, \fr: [240,240*1.2], \amp: 0.07).play;
+		(\instrument: \cloud, \fr: [240,240*1.2], \amp: 0.17).play;
+		(\instrument: \cloud, \fr: [360,360*1.2], \amp: 0.17).play;
+		(\instrument: \cloud, \fr: [270,270*1.2], \amp: 0.07).play;
+		(\instrument: \cloud, \fr: [180,180*1.2], \amp: 0.07).play;
+		s.meter;
 	}.fork
 )
 
 (//pattern
 {
 	var vol = 0.03;
-	//s.prepareForRecord("/Users/michael/tank/THE FUTURE/SC-Bounces/cloud-pattern.wav",2);
-	//s.sync;
-	//s.record(duration:420);
+	s.prepareForRecord("/Users/michael/tank/THE FUTURE/SC-Bounces/cloud-chord-2.wav",2);
+	s.sync;
+	s.stopRecording;
+	s.prepareForRecord("/Users/michael/tank/THE FUTURE/SC-Bounces/cloud-chord-1-d.wav",2);
+	s.record(duration:200); (\instrument: \cloud, \fr: [240,240*1.2], \amp: 0.17).play;
+	s.prepareForRecord("/Users/michael/tank/THE FUTURE/SC-Bounces/cloud-chord-2-d.wav",2);
+	s.record(duration:180);(\instrument: \cloud, \fr: [360,360*1.2], \amp: 0.17).play;
+	s.prepareForRecord("/Users/michael/tank/THE FUTURE/SC-Bounces/cloud-chord-3-d.wav",2);
+	s.record(duration:180);(\instrument: \cloud, \fr: [270,270*1.2], \amp: 0.17).play;
+	y=Synth.new(\cloud,[\fr,[240,288],\amp,0.03]);
+	
 	~pattern=Pbind(	\instrument, \cloud,
 		\fr, Pseq([[240,288],[360,432],90,[200,240],[100,120,130]],inf),
 		//\amp,Pseries( 0.5,-0.09, 5),

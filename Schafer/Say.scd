@@ -37,3 +37,7 @@
 		~buf.loadToFloatArray(action: {|array| ~alexa=Buffer.sendCollection(s,array)});
 	};
 );
+
+~makeNumberBuffers.();
+~moveNumberBuffersToRemote.();
+

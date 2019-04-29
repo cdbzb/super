@@ -23,6 +23,7 @@
 	}.play
 )
 
+s.meter;
 s.plotTree;
 s.free(1006);
 ~bassManagement.set([\cutoff,90]);

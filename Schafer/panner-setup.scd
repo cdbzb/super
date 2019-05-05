@@ -9,7 +9,20 @@
 	s.meter;
 )
 
-~arclengths=[30,20,45,90,15,20,35,30]; //in degrees
+(
+	~times=~times=0.125!7;
+	~arclengths=[0, 30, 45,90,130,230, 290,360]; //in degrees
+	~levels=Array.newClear(8);
+	~levels=~arclengths/180;
+	e=Env.new(~levels,~times);
+	e.plot;
+)
+
+s.sampleRate;
+s.reboot;
+b=Env.new(~levels,~times).plot;
+b.plot;
+Buffer
 //put envelope from these into buffer?
 
 //walk past right wall triple

@@ -3,6 +3,7 @@
 ( //IRs///////////////////////
 	~projectPath="/Users/michael/tank/SchaferHouse/";
 	~washRoom=Library.at(\functions,\prep).("/Users/michael/tank/IR/Saane/Domestic/Bathroom.wav");
+	~speaker=Library.at(\functions,\prep).("/Users/michael/tank/IR/Saane/Speakers_&_Telephones/Very_small_speaker_mono.wav");
 	~doorOp=Library.at(\functions,\prep).(~projectPath ++ "/Next-Door/01-open-door.wav"); //change these!
 	~doorCl=Library.at(\functions,\prep).(~projectPath ++ "/Next-Door/02-closed-door.wav");
 	~kitch=Library.at(\functions,\prep).("/Users/michael/tank/IR/Saane/Domestic/Amsterdam_living_room_1.wav");
@@ -235,7 +236,8 @@ s.stopRecording;
 		{PlayBuf.ar(1,~phone[1].bufnum)}.play(s,~speakers[0]); //BEEP
 		0.5.wait;
 	//SpamCall
-		~spam={PlayBuf.ar(~aiSounds[8].numChannels,~aiSounds[7])*0.21!7}.play(s,~speakers);
+		//~spam={PlayBuf.ar(~aiSounds[8].numChannels,~aiSounds[7])*0.21!7}.play(s,~speakers);
+		~spam={PartConv.ar(PlayBuf.ar(~aiSounds[8].numChannels,~aiSounds[7])*0.011!7,4096,~speaker)}.play(s,~speakers);
 		10.wait;
 	//ringer2
 
@@ -288,10 +290,12 @@ s.stopRecording;
 //~heliRumble.play;
 		w.set(\vol,1);
 		5.wait;
-		m={PlayBuf.ar(1,~marketPhrases[0],startPos:480000)*0.9 }.play(s,~speakers[4]);
+		//m={PlayBuf.ar(1,~marketPhrases[0],startPos:480000)*0.9 }.play(s,~speakers[4]);
+		m={PlayBuf.ar(1,~marketPhrases[3],startPos:480000)*0.9 }.play(s,~speakers[4]);//1.6s shorter
 		10.wait;
 		{3.do({~heliPlay.play; 27.wait })}.fork;
-		105.wait;
+		//105.wait;
+		103.5.wait;
 		m.release(0.2);
 		{PartConv.ar(PlayBuf.ar(~doors[5].numChannels,~doors[1]),4096,~kitch,mul:1)}.play(s,5);
 	
@@ -328,20 +332,25 @@ s.stopRecording;
 		5.wait;
 		{PlayBuf.ar(1,~sendText)*1}.play(s,~speakers[2]);
 		6.wait;
+)
+({//topp
 //text cloud
-		{10.do({
-			{PlayBuf.ar(~texts.choose.numChannels,~texts.choose) *0.5}.play(s,~speakers.choose);
-			rrand(0.5,2).wait;
+		{       var line=Line.kr(3,0.2,10);
+			800.do({
+			{PlayBuf.ar(~texts.choose.numChannels,~texts.choose,rate:([0.2,2,10.11].choose*(rrand(0.99,1.01))) ,doneAction:2) *[0.5,0.5,0.1].choose}.play(s,~speakers.choose);
+			
+			linrand(0.3,3).wait; //use a line for the lower bound
 		})}.fork;
 		10.wait;
 		w.release();
+	}.fork
+)
+	
 		{PlayBuf.ar(~buzzer[0].numChannels,~buzzer[1])*0.4 }.play(s,~speakers[6]);
 
 		5.wait;
 		~walkFromTo.(0,~speakers[3],~speakers[5],8);
 		9.wait;
-	)
-	({//topp
 		~phoneWalker=[NodeProxy.audio(s,1).play(~speakers[5]), NodeProxy.audio(s,1).play(~speakers[2])];
 		{PlayBuf.ar(~dialing[0].numChannels,~dialing[0]) }.play(s,~speakers[5]);
 		6.wait;
@@ -359,6 +368,10 @@ s.stopRecording;
 
 		~where=[2,5];
 		~goThere= {| who to| ~walkFromTo.(who ,~speakers[~where[who]],to,7); ~phoneWalker[who].play(to,fadeTime:7);~where[who]=to};
+
+		(
+			var who=0; var to=5; ~walkFromTo.(who ,~speakers[~where[who]],to,7); ~phoneWalker[who].play(to,fadeTime:7);~where[who]=to
+		)
 
 		6.do{
 		~goThere.([0,1].choose,~speakers[rand(7)]);

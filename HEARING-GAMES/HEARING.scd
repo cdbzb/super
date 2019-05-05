@@ -11,7 +11,7 @@
 	var quartet,set;
 	~tinTone=8000;
 	~tones=Array.geom(4,6000,1.8**(1/3));
-	~vols=[0.3,1.5,0.7,3.5];
+	~vols=[0.3,1.5,0.7,1.0];
 	~indices=Array.series(4,0);
 
 )
@@ -38,7 +38,8 @@ x = Synth(\tone);
 
 s.meter;
 ~tones;
-{SinOsc.ar(400,0,0.05)}.play
+a={SinOsc.ar(9400,0,0.5)}.play(s,1);
+Server.default=s=Server.local;
 s;
 .free;
 s.meter;

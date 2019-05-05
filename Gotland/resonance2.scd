@@ -61,9 +61,9 @@ s.stopRecording;
 
 (
 	{
-		s.prepareForRecord("/Users/michael/tank/THE FUTURE/SC-Bounces/resonance2.wav",2);
+		s.prepareForRecord("/Users/michael/tank/THE FUTURE/SC-Bounces/resonance5.wav",2);
 		s.sync;
-		s.record(duration:240);
+		s.record(duration:320);
 	}.fork
 )
 s.stopRecording;
@@ -75,16 +75,15 @@ s.stopRecording;
 //~dry={PlayBuf.ar(~waves.numChannels,~waves)*5*EnvGen.kr(Env.asr(10))}.play;
 //a=~playme.([200,250,275,300]*2,len:120,vol:0.3);
 //	~fol={|vol=2|PlayBuf.ar(~foley.numChannels,~foley,rate:(48/44.1),startPos:~voSections[2])*vol }.play;
-2.do{
-	(
-		~klank.play(vol:0.4); //??
+	2.do{(
+		~klank.play(vol:0.3); //??
 		~klank.set(\time,0.01);
 		~klankBus.fadeTime=60;
-		~klankBus.put(2,250);
-		~klank.play;
+		~klaNkBus.put(2,250);
+		//~klank.play;
 		5.wait;
 		~klank.xset(\time,0.2);
-		~klankBus.source=[200,250,275,300,175,333]*rrand(1.95,1.05);
+		~klankBus.source=[200,250,275,300,175,333]*rrand(0.95,1.05);
 		30.wait;
 
 		~klankBus.source=[400,300,360,600,500];
@@ -92,8 +91,7 @@ s.stopRecording;
 		//~klankBus.put(2,550);
 		60.wait;
 		~klank.release(20);30.wait;
-	)
-}
+	)};
 	}.fork
 )
 a;
@@ -144,21 +142,51 @@ NodeProxy
 
 		a=~playme.([300,400,450,360,660,500],vol:0.1,len:100);
 		a[0].set(\fr,260);
-		a[4].set(\fr,60);
+		a[4].set(\fr,6000);
 		~cloudchord.([300,400,450,360,600,500],0.008);
+		c=~cloudchord.([300,400,450,360,600,500],0.08);
+		5.do({|i|a[i].free});
 
 
 ~membrane=NodeProxy.audio(s,2).play;
 ~membrane.source={|tensionn=0.008| MembraneCircle.ar(~ocean, tension: tensionn, loss: 0.99999, mul: 0.3, add: 0)};
 ~membrane.source={|tensionn=0.008 los=0.99999| MembraneHexagon.ar(~ocean, tension: tensionn, loss: los, mul: 0.2, add: 0)};
 ~membrane.fadeTime=90;
+~membrane.fadeTime=10;
 ~membrane.xset(\tensionn,0.219);
+~membrane.xset(\tensionn,0.019);
 ~membrane.xset(\tensionn,0.001);
-~membrane.xset(\tensionn,0.008);
-~membrane.xset(\los,0.10);
-~membrane.xset(\los,0.99999);
-		s.prepareForRecord("/Users/michael/tank/THE FUTURE/REFS/membrane2.wav",2);
+~membrane.xset(\tensionn,0.009);
+~membrane.set(\tensionn,0.008);
+~membrane.xset(\tensionn,0.007);
+~membrane.xset(\tensionn,0.004);
+
+
+~ocean.play(vol:1.0);
+~ocean.stop;
+~membrane.xset(\los,0.99); // dry
+~membrane.xset(\los,0.999); // gets wierd
+~membrane.xset(\los,0.9999,\tensionn,0.0081); //
+~membrane.xset(\los,0.9999,\tensionn,0.015); //
+~membrane.xset(\los,0.9999,\tensionn,0.019); //
+~membrane.xset(\los,0.99999); //singing
+(
+	~membrane.lag(\tensionn,140);
+	~membrane.lag(\los,40);
+	~membrane.set(\tensionn,0.008);
+	~membrane.set(\tensionn,0.0075);
+	~membrane.set(\los,0.99999);
+	~membrane.set(\los,0.9999); 
+	~membrane.set(\tensionn,0.0075);
+	~membrane.set(\los,0.999); 
+	~membrane.set(\los,0.99); 
+	~membrane.set(\tensionn,0.0070);
+);
+~membrane.get(\los);
+~membrane.play(fadeTI
+~membrane.stop;
+		s.prepareForRecord("/Users/michael/tank/THE FUTURE/REFS/membrane0.008-99999.wav",2);
 		s.sync;
-		s.record(duration:240);
+		s.record(duration:300);
 
 

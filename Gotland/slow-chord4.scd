@@ -106,25 +106,29 @@ a;
 a=~tri.(400,vol:0.06);
 a.set(\vol,0.00001);
 
+	s.prepareForRecord("/Users/michael/tank/THE FUTURE/REFS/chordWave.wav")
+s.record(duration:420);
+s.stopRecording;
 ( //chord wave
-~chords=[[440,360,400,564,604], [360,400,450,850,950], [400,1248,660,1]];
-~chord=[440,900,400,564,604];
+//~chords=[[440,360,400,564,604], [360,400,450,850,950], [400,1248,660,1]];
+~chords=[[440,500,400,564,604]];
+~chord=[440,500,400,564,604];
 	{
 		//var notes=~playme.(~chord,len:90,pause:15);
 		3.do({
-			var notes=~playme.(~chords.choose,len:60,pause:15);
+			var notes=~playme.(~chords.choose,len:90,pause:15);
 			45.wait;
 			3.do({
 				{notes[2].set(\freq,600);3.wait;notes[2].set(\vol,0);16.wait;notes[2].free;notes[2]=~tri.(~chord[2])}.fork;
 				15.wait;
 				{notes[1].set(\freq,500);3.wait;notes[1].set(\vol,0);16.wait;notes[1].free;notes[1]=~tri.(~chord[1])}.fork;
 				15.wait;
-				{notes[3].set(\freq,10);3.wait;notes[3].set(\vol,0);16.wait;notes[3].free;notes[3]=~tri.(~chord[3])}.fork;
+				{notes[3].set(\freq,10);3.wait;notes[3].set(\vol,0);16.wait;notes[3].free;notes[3]=~tri.(~chord[3])}.fork
 				15.wait;
 				{notes[0].set(\freq,1000);3.wait;notes[0].set(\vol,0);16.wait;notes[0].free;notes[0]=~tri.(~chord[0])}.fork;
 				15.wait;
 			});
-			50.wait; //?????????
+			//50.wait; //?????????
 		});
 	}.fork
 )

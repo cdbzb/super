@@ -37,8 +37,8 @@ Synth(\text);
 ~speakers=1!8;
 
 (//add curves
-	~levels=Pseq([2,0.05],inf);
-	~levelsTop=Pseg(Pseq([4,0.15],inf),35);
+	~levels=Pseq([2,0.05,0.05,2],inf);
+	~levelsTop=Pseg(Pseq([4,0.15,0.1,6],inf),35);
 	~segment=Pseg(~levels,25);
  a=Pbind.new(\instrument,\text,
 	 //\dur,1;

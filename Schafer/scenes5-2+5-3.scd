@@ -9,7 +9,8 @@
 	~kitch=Library.at(\functions,\prep).("/Users/michael/tank/IR/Saane/Domestic/Amsterdam_living_room_1.wav");
 //samples///////////////////////
 	~edm=Buffer.read(s,"/Users/michael/tank/SchaferHouse/SOUND/AI SOUNDS/[TOP 25] EDM Tracks Of 2012.wav");
-	~marketPhrases=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/MARKET PHRASES RECORDINGS/*");
+	//~marketPhrases=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/MARKET PHRASES RECORDINGS/*");
+	~marketPhrases=SoundFile.collectIntoBuffers("~/tank/SchaferHouse/SOUND/MARKET PHRASES RECORDINGS/3-voice-comp/*.wav");
 	~helicopter=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/JET HELICOPTER /*");
 	~doors=SoundFile.collectIntoBuffers(~projectPath ++ "/SOUND/DOORS OPENING AND CLOSING/*");
 	~footsteps=SoundFile.collectIntoBuffers(~projectPath ++ "/SOUND/FOOTSTEPS/*");
@@ -86,7 +87,7 @@
 		~steps.stop(1.5);
 ///IN BATHROOM
 		//~bathroom.node[1]={Pan2.ar(BrownNoise.ar(0.004),0.6)};
-		~setBusIR.(~bathroom,~doorOp);
+	~setBusIR.(~bathroom,~doorOp);
 		//~bathroom.node[1]={Pan2.ar(PlayBuf.ar(1,~water)*0.2,0.6)};
 		~bathroom.node[1]={PlayBuf.ar(1,~bathroomFan)*0.4};
 		3.wait;
@@ -285,25 +286,31 @@ s.stopRecording;
 		~hallThroughDoor.play;~hallThroughDoor.stop(120);
 		~hallThroughDoor.source= {PlayBuf.ar(~hallway.numChannels,~hallway,startPos:54*48000,loop:1)*1.5};
 		~washerRunning.set(\vol,1);
-		5.wait;
-		m={PlayBuf.ar(1,~marketPhrases[3],startPos:480000)*0.9 }.play(s,~speakers[4]);//1.6s shorter
+		4.wait;
+		//m={PlayBuf.ar(1,~marketPhrases[3],startPos:480000)*0.9 }.play(s,~speakers[4]);//1.6s shorter
+		~mk={ SplayAz.ar(  8, [ Mix.ar(PlayBuf.ar(2,~marketPhrases[1])),
+					Mix.ar(PlayBuf.ar(2,~marketPhrases[2])),
+					Mix.ar(PlayBuf.ar(2,~marketPhrases[0]))
+				], spread:0.05,center:0.875,level:0.6) }.play(s,~speakers);
 		10.wait;
 		{3.do({~heliPlay.play; 27.wait })}.fork;
 		103.5.wait;
-		m.release(0.2);
-	/// SLAM!!! scene 3 
+		~mk.release(0.2);
+	/// SLAM!!! 4 
 
 		{PartConv.ar(PlayBuf.ar(~doors[5].numChannels,~doors[1]),4096,~kitch,mul:1)}.play(s,5);
-	
+)
+({//topp
 		~walkFromTo.(0,~speakers[6],~speakers[4],10);
+	
 		~trafficThroughDoor=NodeProxy.audio(s,2).play(~speakers[3],fadeTime:10);
 		~trafficThroughDoor.source={PlayBuf.ar(2,~traffic)*1.5};
 		~trafficThroughDoor[1]=\filter->{|in|PartConv.ar(in,4096,~doorCl,mul:0.4)};
 		~trafficThroughDoor.fadeTime=3;
 		10.wait;
 		//~washerRunning={PlayBuf.ar(~washer.numChannels,~washer,startPos:2800000)}.play(s,~speakers[6],fadeTime:30);
-		{ Out.ar(~speakers[3],PlayBuf.ar(2,~alvarado[6])) }.play; //open patio door
-		1.wait;
+		{ Out.ar(~speakers[3],PlayBuf.ar(2,~alvarado[7])*EnvGen.kr(Env.linen(0,5,1))) }.play; //open patio door
+		2.wait;
 		~trafficThroughDoor[1]=\filter->{|in|PartConv.ar(in,4096,~doorOp)};
 
 		25.wait;
@@ -313,11 +320,12 @@ s.stopRecording;
 		~neighbor[1]=\filter->{|in| PartConv.ar(in,4096,~doorOp,mul:0.9)};
 		~neighbor.fadeTime=2;
 
-		4.wait;
+		6.wait;
 //CLOSE PATIO DOOR
-		{PlayBuf.ar(~alvarado[6].numChannels,~alvarado[6])}.play(s,~speakers[3]);//close
-		4.wait;
+		{PlayBuf.ar(~alvarado[5].numChannels,~alvarado[5],startPos:100000)*2}.play(s,~speakers[3]);//close
+		//3.wait;
 		~trafficThroughDoor[1]=\filter->{|in|PartConv.ar(in,4096,~doorCl,mul:0.4)};
+		~trafficThroughDoor.fadeTime=4; ~neighbor.fadeTime=4;
 		~neighbor[1]          =\filter->{|in|PartConv.ar(in,4096,~doorCl,mul:0.1)};
 	
 		~walkFromTo.(1,~speakers[4],~speakers[2],8);
@@ -328,53 +336,82 @@ s.stopRecording;
 		5.wait;
 		{PlayBuf.ar(1,~sendText)*1}.play(s,~speakers[2]);
 		6.wait;
+//text cloud
 )
 ({//topp
-//text cloud
-		{       var line=Line.kr(3,0.2,10);
+		~tcloud=Routine({       var line=Line.kr(3,0.2,10);
+			~textgroup=Group.new(s);
 			800.do({
-			{PlayBuf.ar(~texts.choose.numChannels,~texts.choose,rate:([0.2,2,10.11].choose*(rrand(0.99,1.01))) ,doneAction:2) *[0.5,0.5,0.1].choose}.play(s,~speakers.choose);
+			{PlayBuf.ar(~texts.choose.numChannels,~texts.choose,rate:([0.2,2,10.11].choose*(rrand(0.99,1.01))) ,doneAction:2) *[0.5,0.5,0.1].choose}.play(~textgroup,~speakers.choose);
 			
 			linrand(0.3,3).wait; //use a line for the lower bound
-		})}.fork;
-		10.wait;
-		w.release();
-	}.fork
-)
-	
-		{PlayBuf.ar(~buzzer[0].numChannels,~buzzer[1])*0.4 }.play(s,~speakers[6]);
-
+		})}).play;
+		25.wait;
+		~tcloud.stop;
+		~textgroup.release(0.1);
+		~washerRunning.release();
+		{PlayBuf.ar(~buzzer[0].numChannels,~buzzer[1],startPos:20000)*0.4 }.play(s,~speakers[6]);
 		5.wait;
 		~walkFromTo.(0,~speakers[3],~speakers[5],8);
 		9.wait;
+	)
+	({//topp
 		~phoneWalker=[NodeProxy.audio(s,1).play(~speakers[5]), NodeProxy.audio(s,1).play(~speakers[2])];
-		{PlayBuf.ar(~dialing[0].numChannels,~dialing[0]) }.play(s,~speakers[5]);
-		6.wait;
-		{PlayBuf.ar(~dialing[0].numChannels,~dialing[2]) }.play(s,~speakers[5]);//ring
+		{PlayBuf.ar(1,~dialing[0],startPos:58000)*3 }.play(s,~speakers[5]);
+		5.wait;
+		{PlayBuf.ar(1,~dialing[2])*2 }.play(s,~speakers[5]);//ring
 		7.wait;
-		~phoneWalker[0].source={PlayBuf.ar(~holdMusic[2].numChannels,~holdMusic[2],loop:1)*0.3 };
+		~phoneWalker[0].source={PlayBuf.ar(~holdMusic[2].numChannels,~holdMusic[2],loop:1)*0.25 };
 		//25.wait;
+		8.wait;
 
-		{PlayBuf.ar(1,~dialing[0]) }.play(s,~speakers[2]);
-		6.wait;	
-		{PlayBuf.ar(~dialing[0].numChannels,~dialing[2]) }.play(s,~speakers[2]);//ring
+		{PlayBuf.ar(1,~dialing[0],startPos:58000)*3 }.play(s,~speakers[2]);
+		5.wait;	
+		{PlayBuf.ar(1,~dialing[2])*2 }.play(s,~speakers[2]);//ring
 		7.wait;
-		~phoneWalker[1].source={PlayBuf.ar(~holdMusic[2].numChannels,~holdMusic[4],loop:1)*0.15 };
-		10.wait;
+		~phoneWalker[1].source={PlayBuf.ar(~holdMusic[2].numChannels,~holdMusic[4],loop:1)*0.07 };
+		5.wait;
 
 		~where=[2,5];
-		~goThere= {| who to| ~walkFromTo.(who ,~speakers[~where[who]],to,7); ~phoneWalker[who].play(to,fadeTime:7);~where[who]=to};
+		~goThere= {| who to| ~walkFromTo.(who ,~speakers[~where[who]],to,7); ~phoneWalker[who].play(to,fadeTime:7);~where[who]=to;};
+// add typing and alexa here 
 
-		(
-			var who=0; var to=5; ~walkFromTo.(who ,~speakers[~where[who]],to,7); ~phoneWalker[who].play(to,fadeTime:7);~where[who]=to
-		)
+		{ rrand(10,28).wait; 
+			{PlayBuf.ar(~alexa.numChannels,~alexa,rate:0.48)*0.3 }.play(s,~speakers[5]); 
+		}.fork;
+		9.do({ 
+			~goThere.(0,rand(7));
+			rrand(5,7).wait;
+			~goThere.(1,rand(7));
+			rrand(5,7).wait;
+		});
+		//{
+		//	~goThere.(0,3);7.wait;
+		//	~where.postln;
+		//	~goThere.(0,4);7.wait;
+		//	~where.postln;
+		//	~goThere.(0,5);7.wait;
+		//	~where.postln;
+		//	~goThere.(0,6);7.wait;
+		//	~where.postln;
+		//	~goThere.(0,0);7.wait;
+		//	5.wait;
+		//	~where.postln;
+		//}.fork;
+		//{
+		//	~goThere.(1,5);6.wait;
+		//	~goThere.(1,6);6.wait;
+		//	~goThere.(1,0);6.wait;
+		//	~goThere.(1,1);6.wait;
+		//	~goThere.(1,2);6.wait;
+		//}.fork;
+		40.wait;
+		~phoneWalker[0].stop(1);
+		~phoneWalker[1].stop(1);
 
-		6.do{
-		~goThere.([0,1].choose,~speakers[rand(7)]);
-		9.wait;
-	};
 
-
+}.fork;
+) // endd
 		h.release(0.4);
 		5.wait;
 		s.stopRecording;

@@ -1,3 +1,12 @@
+~hack={Server.remote(\hack,NetAddr.new("192.168.1.136",57110))};
+	
+~remote={Server.default=Server.named.at(\hack);~speakers = Array.series(8,2);};
+~local={Server.default=Server.local;~speakers=1!8};
+
+~prepPhraseToBuff={ |text="you have arrived",lang=\en, voice|
+	(~buff==nil).if({},{~buff.clear});
+	SayBuf.prepare((lang: lang, text:text, voice:voice, bufAction:{|b| b.loadToFloatArray(action: {|array| ~buff=Buffer.sendCollection(s,array)})}))};
+
 ~makeNodes={ |channels=2 |
 	var d=();
 	var dry = NodeProxy(s,\audio,channels);
@@ -39,9 +48,14 @@ if(~numberBuffers==nil,{~numberBuffers=Array.newClear(8)});
 		{PlayBuf.ar(item.numChannels,item,rate:0.5)}.play(s,~speakers[index])
 })};
 
- ~prepAlexa={  SayBuf.prepare((voice: \Samantha,lang: \en, text:"the time now, is 4:45",bufAction:{|b| ~buf=b}));
+~time={(11.rand+1).asString ++ ":" ++ (59.rand+1).asString};
+~prepAlexa={ var time = ~time.();  
+	SayBuf.prepare((voice: \Samantha,lang: \en, text:"the time now, is "++time ,bufAction:{|b| ~buf=b}));
 	~buf.loadToFloatArray(action: {|array| ~alexa=Buffer.sendCollection(s,array)});
 };
+
+~myOsc={{|freq=400,phase,amp=0.1| SinOsc.ar(freq,phase,amp)}};
+~myOsc.().play;
 
 ~makeSpace= { |channels=2|
 	var space=();

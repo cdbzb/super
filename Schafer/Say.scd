@@ -78,6 +78,10 @@ s=Server.local;
 s.boot;
 ~playFiveNumbers.();
 
+
+e.boot;
+
+
 (
 	{
 		{PlayBuf.ar(~confirmation.numChannels,~confirmation,rate:0.5)}.play(s,~speakers[2]);

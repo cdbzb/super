@@ -2,6 +2,7 @@
 ~speakers=1!8;
 ( //IRs///////////////////////
 	~projectPath="/Users/michael/tank/SchaferHouse/";
+	~sendMail=Buffer.read(s,'/Users/michael/tank/SchaferHouse/SOUND/TYPING/compose-mail.wav');
 	~washRoom=Library.at(\functions,\prep).("/Users/michael/tank/IR/Saane/Domestic/Bathroom.wav");
 	~speaker=Library.at(\functions,\prep).("/Users/michael/tank/IR/Saane/Speakers_&_Telephones/Very_small_speaker_mono.wav");
 	~doorOp=Library.at(\functions,\prep).(~projectPath ++ "/Next-Door/01-open-door.wav"); //change these!
@@ -337,8 +338,6 @@ s.stopRecording;
 		{PlayBuf.ar(1,~sendText)*1}.play(s,~speakers[2]);
 		6.wait;
 //text cloud
-)
-({//topp
 		~tcloud=Routine({       var line=Line.kr(3,0.2,10);
 			~textgroup=Group.new(s);
 			800.do({
@@ -354,8 +353,6 @@ s.stopRecording;
 		5.wait;
 		~walkFromTo.(0,~speakers[3],~speakers[5],8);
 		9.wait;
-	)
-	({//topp
 		~phoneWalker=[NodeProxy.audio(s,1).play(~speakers[5]), NodeProxy.audio(s,1).play(~speakers[2])];
 		{PlayBuf.ar(1,~dialing[0],startPos:58000)*3 }.play(s,~speakers[5]);
 		5.wait;

@@ -78,10 +78,10 @@
 );
 
 ( ////chord wave: --setup
-	SynthDef(\triangle,{ |freq len=300 vol=0.05|
+	SynthDef(\triangle,{ |freq len=300 vol=0.5 pan=0.5|
 		var env=EnvGen.kr(Env.triangle(len));
 		var sig = SinOsc.ar(freq,0,env*vol);
-		Out.ar(0,sig!2);
+		Out.ar(0,Pan2.ar(sig,pan));
 	},[1136,0,16]).add; //long lags
 
 ~tri={|freq len=300 vol=0.005| Synth.new(\triangle,[\freq,freq,\vol, vol,\len,len])};
@@ -124,5 +124,37 @@
 	}.fork
 )
 
+(//setup
+	~chord=[440,500,400,564,604];
+	~chords=[[440,500,400,564,604]];
+)
+(// chordwave version 2
+	var notes=~playme.(~chords.choose,len:90,pause:15,pan:0.9);
+	~reset={ |noteNum=0 target=600|
+		{
+			var note=notes[noteNum];
+			note.set(\freq,target,\vol,0);
+			16.wait; //decay time after movement starts
+			note.free;
+			notes[noteNum]=~tri.(~chord[noteNum])
+		}.fork
+	};
+	{
+	//TempoClock.tempo=10;
+	TempoClock.tempo=1;
+		45.wait;
+		1.do({
+			~reset.(2,600); 15.wait;
+			~reset.(1.500); 15.wait;
+			~reset.(3.10); 15.wait;
+			~reset.(0.1000); 15.wait;
+		});
+		'releasing'.postln;
+		notes.do({|item| item.set(\vol,0)});
+	}.fork;
+)
+
+
+~reset.(1,10);
 
 

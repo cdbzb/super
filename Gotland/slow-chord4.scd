@@ -49,7 +49,9 @@ a.set(\vol,0);
 		notes;
 	}
 )
-
+~playme.(~chord);
+s;
+s.meter;
 ( //////little SCORE #1
 	{
 //////// Open
@@ -123,7 +125,7 @@ s.stopRecording;
 				15.wait;
 				{notes[1].set(\freq,500);3.wait;notes[1].set(\vol,0);16.wait;notes[1].free;notes[1]=~tri.(~chord[1])}.fork;
 				15.wait;
-				{notes[3].set(\freq,10);3.wait;notes[3].set(\vol,0);16.wait;notes[3].free;notes[3]=~tri.(~chord[3])}.fork
+				{notes[3].set(\freq,10);3.wait;notes[3].set(\vol,0);16.wait;notes[3].free;notes[3]=~tri.(~chord[3])}.fork;
 				15.wait;
 				{notes[0].set(\freq,1000);3.wait;notes[0].set(\vol,0);16.wait;notes[0].free;notes[0]=~tri.(~chord[0])}.fork;
 				15.wait;

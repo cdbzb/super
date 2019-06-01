@@ -15,14 +15,31 @@
 			{var sig = PartConv.ar( PlayBuf.ar(1,~buff,rate:0.48)*0.2, 4096, ~speaker); sig=PartConv.ar(sig,4096,~washRoom)*0.04+sig; sig;}.play(s,~speakers[4]);
 		}.fork;
 		3.wait;
-		~niceParty.(0.4);
+
+
+
+
+		~niceParty.(0.1);
 		//steps (many?) 
 
 		//chairs-movement
 
+~chairs=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/ambeo/chairs*");
+~davidSteps=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/ambeo/footsteps*");
+~ice=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/ambeo/ice*");
+~names.(~chairs);
+{var num=4.rand; PlayBuf.ar(~chairs[num].numChannels,~chairs[num]) }.play(s,~speakers[8.rand]);
+{var num=19.rand; PlayBuf.ar(~ice[num].numChannels,~ice[num]) }.play(s,~speakers[8.rand]);
+{var num=2.rand; PlayBuf.ar(~davidSteps[num].numChannels,~davidSteps[num]) }.play(s,~speakers[8.rand]);
+
+~chairs[0];
+{PinkNoise.ar(0.05)}.play(s,~speakers[0]);
+
+
+
 		//numbers (try interrupt using OutReplace or whatever that is!)
 
-		//chatter starts
+		//more voices
 
 		//alexa
 		

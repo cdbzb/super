@@ -1,18 +1,20 @@
 		~waves=Buffer.read(s,"/Users/michael/tank/THE FUTURE/SC-bounces/Hayburn.wav");
 (//little composition
-		~ocean=NodeProxy.audio(s,2).play;
+		~ocean=NodeProxy.audio(s,2);
 		~ocean.source={PlayBuf.ar(~waves.numChannels,~waves,loop:1)*10};		
-		~ocean.stop;
+		//~ocean.stop;
 
 	//setup
 		~klankBus=NodeProxy.control(s,8);
 ~klankBus.fadeTime=200;
 		~klank=NodeProxy.audio(s,2).play;
 		~klank.source= {|time=0.8 bottom=300| DynKlank.ar(`[~klankBus,[0.1,0.1,0.3,0.2,0.3,0.3]*0.5,time!6],~ocean )*0.08};
+		
 
 	//play
 
 )
+~klank.stop;
 (
 	{
 	5.do{(
@@ -36,18 +38,32 @@
 
 ///////Membrane
 
-
-~membrane=NodeProxy.audio(s,2).play;
-~membrane.source={|tensionn=0.008 los=0.99999| MembraneHexagon.ar(~ocean, tension: tensionn, loss: los, mul: 0.2, add: 0)};
+	~waves=Buffer.read(s,"/Users/michael/tank/THE FUTURE/SC-bounces/Hayburn.wav");
+	~waves_3m=Buffer.read(s,"/Users/michael/tank/THE FUTURE/SC-bounces/3m-stereo\ bounce.wav");
+(
+		~ocean=NodeProxy.audio(s,2);
+		~ocean.fadeTime=5;
+		~ocean.source={PlayBuf.ar(~waves.numChannels,~waves,loop:1)*10};		
+		~membrane=NodeProxy.audio(s,2);
+		~membrane.fadeTime=5;
+		~membrane.source={|tensionn=0.008 los=0.99999| MembraneHexagon.ar(~ocean, tension: tensionn, loss: los, mul: 0.2, add: 0)};
+		//~membrane.source={|tensionn=0.008 los=0.99999| MembraneHexagon.ar(~ocean, tension: tensionn+LFNoise1.kr(0.1,0.0002), loss: los, mul: 0.2, add: 0)};//some wobbling, nice!
+		//~membrane.source={|tensionn=0.008 los=0.99999| MembraneHexagon.ar(~ocean, tension: tensionn+LFNoise1.kr(0.1,0.0001), loss: los, mul: 0.2, add: 0)};//some wobbling, nice!
+	~membrane.lag(\tensionn,140);
+	~membrane.lag(\los,40);
+	~membrane.play;
+)
+	{~ocean.fadeTime=30;~ocean.source=nil;10.wait;~membrane.set(\los,0.999993)}.fork ;//fadeOut idea
 ~membrane.fadeTime=90;
 ~membrane.fadeTime=10;
 ~membrane.xset(\tensionn,0.219); //xset has same effect as lag?
-~membrane.xset(\tensionn,0.019);
-~membrane.xset(\tensionn,0.001);
-~membrane.xset(\tensionn,0.009);
+~membrane.set(\tensionn,0.019);
+~membrane.set(\tensionn,0.001);
+~membrane.set(\tensionn,0.009);
 ~membrane.set(\tensionn,0.008);
-~membrane.xset(\tensionn,0.007);
-~membrane.xset(\tensionn,0.004);
+~membrane.set(\tensionn,0.0081);
+~membrane.set(\tensionn,0.007);
+~membrane.set(\tensionn,0.004);
 
 ~test=NodeProxy.audio;
 ~test.source={|freq=300|SinOsc.ar(freq,0,0.1)};
@@ -141,20 +157,44 @@
 	};
 	{
 	//TempoClock.tempo=10;
-	TempoClock.tempo=1;
+	TempoClock.tempo=0.5;
 		45.wait;
 		1.do({
 			~reset.(2,600); 15.wait;
 			~reset.(1.500); 15.wait;
 			~reset.(3.10); 15.wait;
 			~reset.(0.1000); 15.wait;
+			~reset.(4,400); 15.wait;
 		});
 		'releasing'.postln;
 		notes.do({|item| item.set(\vol,0)});
 	}.fork;
 )
 
+Pseq
+
 
 ~reset.(1,10);
 
 
+( //ending-test
+	{
+	//s.prepareForRecord("/Users/michael/tank/THE FUTURE/SC-Bounces/ending-test.wav");
+	//s.sync;
+	//s.record;
+		~dry={PlayBuf.ar(~waves_3m.numChannels,~waves_3m)*EnvGen.kr(Env.asr(10))}.play;
+		//~tones=[400,450,420,500,560,600];
+		~tones=[400,450,500,560,600];
+		~tones=~tones/2;
+		10.wait;
+		~chd=~tones.do({|item| {SinOsc.ar(item,0,0.001*EnvGen.kr(Env.linen(40,10,30,)))!2}.play});
+
+		~klank.source= {|time=0.8 bottom=300| DynKlank.ar(`[~klankBus,[0.1,0.1,0.3,0.2,0.3,0.3]*0.5,time!6],PlayBuf.ar(~waves_3m.numChannels,~waves_3m))*0.08};
+		~klank.play(vol:0.2,fadeTime:40);
+		30.wait;
+		~dry.release(46);
+		~klank.play(vol:0,fadeTime:46);
+		10.wait;
+	}.fork
+
+)

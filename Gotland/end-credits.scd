@@ -50,6 +50,7 @@ DetectSilence
 	//setup - buffers
 (~waves==nil).if{~waves=Buffer.read(s,"/Users/michael/tank/THE FUTURE/SC-bounces/Hayburn.wav")};
 (~waves_3m==nil).if{~waves_3m=Buffer.read(s,"/Users/michael/tank/THE FUTURE/SC-bounces/3m-stereo\ bounce.wav")};
+~waves_3m;
 
 
 //chord	
@@ -61,6 +62,7 @@ DetectSilence
 	~klankBus.source=~tones;
 //startup sound
 	~startup={(\instrument: \fibs, \fr: [4,4.5,5,6,8,9,10]*2*1.2,\amp:0.2).play};
+	//~startup={(\instrument: \cloud_staggered,\fr: [240,288,300,360], amp:0.5).play};
 	~dry={PlayBuf.ar(~waves_3m.numChannels,~waves_3m)*EnvGen.kr(Env.asr(10))}.play;
 ////// Start time
 	~gap=11; // space before video starts again in seconds;
@@ -77,17 +79,78 @@ DetectSilence
 	~klankBus.fadeTime=15;
 	~schedule.(5340,{~klankBus.source=(~tones).scramble});//is this happening?
 	~schedule.(5344,{~klank.play(vol:0,fadeTime:56)});
+
 	} .fork
 )
 
 //Cue for Walker 2
 (
-	a={|vol=0.6|PlayBuf.ar(~waves_3m.numChannels,~waves_3m)*vol}.play;
-	~klank.play;
-	~startFrom.(3858);
-	//~schedule.(3860,{~chordWave.()});
-	~schedule.(3860,{~playme.(~chords.choose,len:180,pause:30,pan:0.9)}); //play through NodeProxy 
-	~schedule.(3960,{~membrane.play(fadeTime:30)});
+	a={|vol=0.5|PlayBuf.ar(2,~waves_3m)*vol}.play;
+	a.set(\vol,1);
+	//~klank.play;
+	~startFrom.(3858); //walker 2 enters
+	~schedule.(3860,{~chordWave.(vol:0.2)});
+	//~startFrom.(4095); //death stinks
+	//~schedule.(4102,{~cloudchord.([100,210,320],0.05)});
+	//~schedule.(4102,{(\instrument: \fibs, \fr: [4,4.5,5,6,8,9,10]*2*1.2,\amp:0.2).play});
+	//~schedule.(4102,{(\instrument:, \fr: [4,4.5,5,6,8,9,10]*2*1.2,\amp:0.2).play});
+	~schedule.(4098,{(\instrument: \cloud_staggered, fr: [100,120,150,180]*2*1.2,\amp:0.5).play});
+	~schedule.(4105,{~playme.([300,400,450,444,288],90);});
+	//~schedule.(4200,)
+	//~schedule.(3860,{~playme.(~chords.choose,len:180,pause:30,pan:0.9)}); //play through NodeProxy 
+	//~schedule.(3860,{~manualWave.fork}); //play through NodeProxy 
+	//~schedule.(3960,{~membrane.play(fadeTime:30)});
+)
+
+(
+	~manualWave={
+		~notes=Array.newClear(5);
+		~notes[0]=~tri.(440,90);
+		12.wait;
+		~notes[1]=~tri.(400,90);
+		15.wait;
+		~notes[2]=~tri.(500,90);
+		30.wait;
+		~notes[3]=~tri.(560,90);
+		20.wait;
+		~notes[4]=~tri.(600,90);
+	}
+)
+	~notes[0].set(\freq,1000,\amp,0);
+	~notes[1].set(\freq,10,\amp,0);
+	~notes[2].set(\freq,10,\amp,0);
+	~notes[3].set(\freq,10,\amp,0);
+
+~membrane.stop;
+w={PlayBuf.ar(~waves_3m.numChannels,~waves_3m)*0.5 }.play;
+w.free;
+(
+	~klank.stop;
+	{
+		~klank.play(vol:0.3,fadeTime:20);
+		~klank.set(\time,0.01);
+		~klankBus.fadeTime=0;
+		~klankBus.put(2,250);
+		5.wait;
+		~klank.xset(\time,0.2);
+		~klankBus.fadeTime=60;
+		~klankBus.source=[440,400,500,575,350,666]*0.5;
+		30.wait;
+
+		~klankBus.source=[400,300,360,600,500];
+		30.wait;
+
+		~klank.play(vol:0,fadeTime:60);
+	}.fork
+)
+
+~klank.play;
+~ocean;
+~membrane.play(fadeTime:40);
+~membrane.stop(fadeTime:40);
+~membrane.stop;
+
+
 )
 
 //setup waves as proxy to feed membrane and klank

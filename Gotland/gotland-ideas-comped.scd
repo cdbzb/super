@@ -6,35 +6,87 @@
 
 	//setup
 		~klankBus=NodeProxy.control(s,8);
-~klankBus.fadeTime=200;
-		~klank=NodeProxy.audio(s,2).play;
-		~klank.source= {|time=0.8 bottom=300| DynKlank.ar(`[~klankBus,[0.1,0.1,0.3,0.2,0.3,0.3]*0.5,time!6],~ocean )*0.08};
-		
-
-	//play
-
-)
-~klank.stop;
-(
-	{
-	5.do{(
-		~klank.play(vol:0.3,fadeTime:20); //??
-		~klank.set(\time,0.01);
+		//~klankBus.fadeTime=200;
 		~klankBus.fadeTime=60;
-		~klankBus.put(2,250);
-		5.wait;
-		~klank.xset(\time,0.2);
-		~klankBus.source=[200,250,275,300,175,333]*rrand(0.95,1.05);
-		30.wait;
+		~klank=NodeProxy.audio(s,2);
+		~klank.source= {|time=0.8 bottom=300| DynKlank.ar(`[~klankBus,[0.1,0.1,0.3,0.2,0.3,0.3]*0.5,time!6],~ocean )*0.08};
+		~out=Bus.audio(s,6);
+)
 
-		~klankBus.source=[400,300,360,600,500];
-		//~klankBus.fadeTime=100;
-		//~klankBus.put(2,550);
+(
+	//play
+	~klankRoutine=Task{
+		SystemClock.seconds.postln;
+	5.do{(
+		~klank.initMonitor;
+		~klank.monitor.outs_([[0,~out.index+2],[1,~out.index+3]]);
+		~klank.playN(vol:0.3,fadeTime:20); //??
+		~klank.set(\time,0.01);
+		~klankBus.source.postln;
+		~klankBus.put(2,250);
+		~klankBus.source.postln;
+		5.wait;
+		~klank.lag(\time,20); 
+		~klank.set(\time,0.2);
+		"4".postln;
+		~klankBus.source.postln;
+		~klankBus.source=[200,250,275,300,175,333]*rrand(0.95,1.05);
+		~klankBus.source.postln;
+
+		30.wait;
+		~klankBus.source=[400,300,360,600,500,550]; //added 550
+		~klankBus.source.postln;
 		60.wait;
-		~klank.release(20);30.wait;
+		~klank.stop(25);
+		30.wait;
+		SystemClock.seconds.postln;
 	)};
+	}
+)
+
+
+
+( ///// MONITOR
+	m.play(~out.index,2,0,2,multi:true);
+	m.play(~out.index+4,2,0,2, multi:true);
+)
+( ////// RECORD
+	{
+		s.prepareForRecord("/tmp/6-chan-test.aif",numChannels:6);
+		s.sync;
+		s.record(bus:~out);
 	}.fork
 )
+
+~chordWave.(tempo:0.1);
+~chordWave.(tempo:1);
+~klankRoutine.reset; ~klankRoutine.play;
+s.stopRecording;
+~klankRoutine.pause;~klank.release(10);
+
+~w3={|vol=0.5|PlayBuf.ar(~waves_3m.numChannels,~waves_3m)*vol}.play;
+~w3.free;
+~w3.set(\vol,0.5);
+
+~out.scope;
+
+~membrane.play(fadeTime:0);
+~membrane.play(fadeTime:40);
+~membrane.stop(fadeTime: 40);
+~membrane.set(\los,0.99999)
+~membrane.lag(\los,100);
+~membrane.set(\los,0.9999)
+~membrane.set(\los,0.9995)
+~membrane.set(\los,0.9990)
+~membrane.set(\tensionn,0.0080);
+~membrane.set(\tensionn,0.0070);
+~membrane.set(\tensionn,0.0081);
+
+// MONITOR
+m=Monitor.new;
+m.play(~out.index,2,0,2,multi:true);
+m.play(~out.index+4,2,0,2, multi:true);
+m.stop;
 
 ///////Membrane
 
@@ -51,7 +103,7 @@
 		//~membrane.source={|tensionn=0.008 los=0.99999| MembraneHexagon.ar(~ocean, tension: tensionn+LFNoise1.kr(0.1,0.0001), loss: los, mul: 0.2, add: 0)};//some wobbling, nice!
 	~membrane.lag(\tensionn,140);
 	~membrane.lag(\los,40);
-	~membrane.play;
+	~membrane.play(~out.index+4);
 )
 	{~ocean.fadeTime=30;~ocean.source=nil;10.wait;~membrane.set(\los,0.999993)}.fork ;//fadeOut idea
 ~membrane.fadeTime=90;
@@ -94,30 +146,32 @@
 );
 
 ( ////chord wave: --setup
-	SynthDef(\triangle,{ |freq len=300 vol=0.5 pan=0.5|
+	SynthDef(\triangle,{ |freq len=300 vol=0.005 pan=0.5 bus=0|
 		var env=EnvGen.kr(Env.triangle(len));
 		var sig = SinOsc.ar(freq,0,env*vol);
-		Out.ar(0,Pan2.ar(sig,pan));
+		Out.ar(bus,Pan2.ar(sig,pan));
 	},[1136,0,16]).add; //long lags
 
-~tri={|freq len=300 vol=0.005| Synth.new(\triangle,[\freq,freq,\vol, vol,\len,len])};
+~tri={|freq len=300 vol=0.005 pan=0.5 bus=0| Synth.new(\triangle,[\freq,freq,\vol, vol,\len,len,\bus,bus,\pan,pan])};
+
 
 //~chords=[[440,360,400,564,604], [360,400,450,850,950], [400,1248,660,1]];
 ~chords=[[440,500,400,564,604]];
 ~chord=[440,500,400,564,604];
 
-	~playme={ |chord=#[360,460,520,660] len=300 pause=25 vol=1|
+	~playme={ |chord=#[360,460,520,660] len=300 pause=25 vol=1 pan=0.5 bus=0|
 		var notes=Array.newClear(chord.size);
 		Routine.new({ 
 			chord.do({|item index| 
 				index.postln;notes[index].postln;
-				notes[index]=~tri.(item,len);
+				notes[index]=~tri.(item,len,bus:bus);
 				pause.wait;
 			});
 		}).play;
 		notes;
 	};
 )
+NodeProxy
 (
 
 	{
@@ -145,21 +199,27 @@
 	~chords=[[440,500,400,564,604]];
 )
 (// chordwave version 2
-	var notes=~playme.(~chords.choose,len:90,pause:15,pan:0.9);
-	~reset={ |noteNum=0 target=600|
-		{
-			var note=notes[noteNum];
-			note.set(\freq,target,\vol,0);
-			16.wait; //decay time after movement starts
-			note.free;
-			notes[noteNum]=~tri.(~chord[noteNum])
-		}.fork
-	};
+	~chordWave={ |vol=0.005 tempo|
+	t=TempoClock.new.tempo=tempo;
+	
 	{
-	//TempoClock.tempo=10;
-	TempoClock.tempo=0.5;
+		var notes=~playme.(~chords.choose,len:90,pause:15,pan:0.9,vol:vol,bus:~out);
+		SystemClock.beats.postln;
+		//~playme.(~chords.choose,len:90,pause:15,pan:0.9,vol:0.5,bus:63);
+
+		~reset={ |noteNum=0 target=600|
+			{
+				var note=notes[noteNum];
+				note.set(\freq,target,\vol,0);
+				16.wait; //decay time after movement starts
+				note.free;
+				notes[noteNum]=~tri.(~chord[noteNum]*[0.9,1,1,1.2].choose,bus:~out)
+			}.fork
+		};
+		//TempoClock.tempo=10;
+		//TempoClock.tempo=0.5;
 		45.wait;
-		1.do({
+		3.do({
 			~reset.(2,600); 15.wait;
 			~reset.(1.500); 15.wait;
 			~reset.(3.10); 15.wait;
@@ -167,13 +227,13 @@
 			~reset.(4,400); 15.wait;
 		});
 		'releasing'.postln;
-		notes.do({|item| item.set(\vol,0)});
-	}.fork;
+		notes.do({|item| item.set(\vol,vol*0.5)});
+		12.wait;
+		notes.do({|item| item.set(\vol,0.0)});
+		SystemClock.beats.postln;
+	}.fork(t);
+	}
 )
-
-Pseq
-
-
 ~reset.(1,10);
 
 

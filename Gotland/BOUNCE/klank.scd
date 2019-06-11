@@ -1,6 +1,6 @@
 (//little composition
 		~ocean=NodeProxy.audio(s,2);
-		~ocean.source={PlayBuf.ar(~waves.numChannels,~waves,loop:1)*10};		
+		~ocean.source={PlayBuf.ar(2,~waves,loop:1)*10};		
 		~klankBus=NodeProxy.control(s,8);
 		//~klankBus.fadeTime=200;
 		~klankBus.fadeTime=60;

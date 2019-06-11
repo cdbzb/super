@@ -13,7 +13,7 @@
 		Routine.new({ 
 			chord.do({|item index| 
 				index.postln;notes[index].postln;
-				notes[index]=~tri.(item,len,bus:bus);
+				notes[index]=~tri.(item,len,bus:bus,vol:vol);
 				pause.wait;
 			});
 		}).play;
@@ -22,7 +22,7 @@
 
 	~chord=[440,500,400,564,604];
 	~chords=[[440,500,400,564,604]];
-	~chordWave={ |vol=0.005 tempo=1|
+	~chordWave={ |vol=0.005 tempo=1 |
 		t=TempoClock.new.play;
 		t.tempo=tempo;
 
@@ -34,14 +34,15 @@
 		SystemClock.beats.postln;
 		//~playme.(~chords.choose,len:90,pause:15,pan:0.9,vol:0.5,bus:63);
 
-		~reset={ |noteNum=0 target=600|
+		~reset={ |noteNum=0 target=600 |
 			{
 				var note=notes[noteNum];
 				note.set(\freq,target,\vol,0);
 				16.wait; //decay time after movement starts
 				note.free;
-				notes[noteNum]=~tri.(~chord[noteNum]*[0.9,1,1,1.2].choose,bus:~out)
-			}.fork
+				//notes[noteNum]=~tri.(~chord[noteNum]*[0.9,1,1,1.11].choose,bus:~out,vol:vol, len:90)
+				notes[noteNum]=~tri.(~chord[noteNum]*[0.9,1,1,1.11].choose,bus:~out,vol:vol ) //LEN WAS 300!
+			}.fork(t)
 		};
 		//TempoClock.tempo=10;
 		//TempoClock.tempo=0.5;

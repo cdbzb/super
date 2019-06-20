@@ -31,9 +31,9 @@
 	fibs;
 };
 
-	SynthDef(\fibs, { arg fr=100, amp=1, num=8; var out;  
+	SynthDef(\fibs, { arg fr=100, amp=1, num=8, bus=1; var out;  
 		fr = Lag.kr(fr,60);
-		Out.ar(1,{
+		Out.ar(bus,{
 			Mix.arFill(8, //number of harmonics
 			    { arg x  ; var sig, frq;
 				frq=fr;

@@ -1,6 +1,8 @@
-~speakers=Array.series(8,2);
-~speakers=1!8;
-( //IRs///////////////////////
+( /////// variables
+	~speakers=Array.series(8,2);
+	//~speakers=1!8;
+
+ //IRs///////////////////////
 	~loadBuffers={
 		~projectPath="/Users/michael/tank/SchaferHouse/";
 		~sendMail=Buffer.read(s,'/Users/michael/tank/SchaferHouse/SOUND/TYPING/compose-mail.wav');
@@ -43,38 +45,101 @@
 		~mag=Buffer.read(s,"/Users/michael/tank/SchaferHouse/SOUND/magazine.wav");	
 	};
 
+		~chairs=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/ambeo/chairs*");
+		~davidSteps=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/ambeo/footsteps*");
+		~ice=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/ambeo/ice*");
 ///SAY
 ~prepSay={
 		~prepAlexa.();
 		{~makeNumberBuffers.(); 4.wait; ~moveNumberBuffersToRemote.(); }.fork;
 	};
-)
-~sources;
-s.plotTree;
-{ PinkNoise.ar(0.1) }.play(target:~sources);
-Function
-
-(
+///// ServerTree add groups
 	~makeGroups={
 		~sources=Group.new(s);
 		~spaces=Group.tail(s);
 	};
 	ServerTree.add(~makeGroups);
+	CmdPeriod.add({s.freeAll});
 
-)
-~sources;
-s.plotTree;
-s.reboot;
-(
-	~bathroom=~makeSpace.(1);
-	~kitchen= ~makeSpace.();
-	~bathroom.node.playN([~speakers[6],~speakers[6]],group:~spaces);
-	~bathroom.node.source={Pan2.ar(~bathroom.bus.ar,0.55)};
-	//~bathroom.node.play(~speakers[6],group:~spaces);
-	~kitchen.node.play(~speakers[0],group:~spaces);
-	~setBusIR.(~kitchen,~kitch);
-	~steps=NodeProxy.audio(s,1);
-	~startWalking={~steps.source={ PlayBuf.ar(2,~carpetsteps, loop:1)*2.5}};
+////// functions for scene 1
+	{
+		s.sync;
+		Buffer.freeAll(s);
+		s.sync;
+		~loadBuffers.();
+		s.sync;
+		~bathroom=~makeSpace.(1);
+		~kitchen= ~makeSpace.();
+		~bathroom.node.playN([~speakers[6],~speakers[6]],group:~spaces);
+		~bathroom.node.source={Pan2.ar(~bathroom.bus.ar,0.55)};
+		//~bathroom.node.play(~speakers[6],group:~spaces);
+		~kitchen.node.play(~speakers[0],group:~spaces);
+		~setBusIR.(~kitchen,~kitch);
+		~steps=NodeProxy.audio(s,1);
+		~startWalking={~steps.source={ PlayBuf.ar(2,~carpetsteps, loop:1)*2.5}};
+
+ ////// functions for scene 2 
+		~headToWasher={ |walkTime=8| Routine.new({
+			~walkFromTo.(0,~speakers[1],~speakers[6],11,fadeIn:0.3);
+			walkTime.wait;
+			~washerRunning={|vol=1| PlayBuf.ar(~washer.numChannels,~washer,startPos: (23*44000))*0.6*vol}.play(s,~speakers[6]);
+	}).play};
+
+		~editedChatBots={	
+			var he = PlayBuf.ar(1,~bots[0],doneAction:2)*0.5;
+			var she= PlayBuf.ar(1,~bots[1])*0.5;
+			var pos = 0.38;
+			var chans=PanAz.ar(7,he,pos+0.2) +
+				  PanAz.ar(7,she,pos);
+			Out.ar(~speakers[0],chans*0.6) 
+	};
+
+		~heliPlay={
+			~helicopterThroughWall=NodeProxy.audio(s,2);
+			~helicopterThroughWall[0]={Pan2.ar(PlayBuf.ar(1,~helicopter[3]),Line.kr(-1,1,40),EnvGen.kr(Env.linen(8,10,15))*0.4)};//alsotry 3 and 4
+			~helicopterThroughWall[1]=\filter->{|in|PartConv.ar(in,4096,~doorCl)};
+			~helicopterThroughWall.reshaping=\elastic;
+			~helicopterThroughWall.playN([~speakers[3],~speakers[5]]);
+			~heliRumble=NodeProxy.audio(s,1).play(~speakers[7]);
+			~heliRumble.source={Mix.new(~helicopterThroughWall)};
+		};
+	}.fork;
+
+  //nice party
+	~niceParty={|masterVol|
+		var bots= ~aiSounds[0];
+		~jumpinessBus=NodeProxy.control;
+		~jumpinessBus.source=10000009;  //clean
+		~guest={ |vol jumpiness=10000009 |
+			BufRd.ar(1, bots, Phasor.ar(
+				0, 
+				BufRateScale.kr(bots)*Rand(0.9,1.1), 
+				0,
+				BufFrames.kr(bots)
+			)+LFBrownNoise0.kr(
+				(LFBrownNoise2.kr(1,mul:0.9,add:0.5)),0.5,mul:~jumpinessBus)
+			)*Rand(0.5,1)*vol };
+
+			~crowd=Array.fill(7,{NodeProxy.audio(s,1)});
+			~crowd.do({|m| m.source=~guest});
+			~crowd.do({|m x| m.play(~speakers[x],vol:masterVol)});
+			~crowd.do({|m| m.fadeTime=4});
+			~crowd.do({|m| m.lag(\vol,4)});
+			{100.do({ ~crowd.do({|m| m.set(\vol,[0,0.5,0.35].choose)});5.wait; })}.fork;
+			//little tingle
+			{ //take these to a seperate place ??
+				30.wait;~jumpinessBus.source=100000009;
+				30.wait;
+				~jumpinessBus.source=10000009;
+				//30.wait;~jumpinessBus.source=100000009;
+				60.wait;~jumpinessBus.source={Line.kr(1000009,109,100)};
+				60.wait;~jumpinessBus.source={Line.kr(109,10000000009,100000)};
+				60.wait; ~jumpinessBus.source={Line.kr(109,10000000009,15)};
+				15.wait;
+				~crowd.do({|m| m.stop(20)});
+			}.fork
+		}
+
 )
 
 ( { // scene1 toiletjoy
@@ -166,32 +231,7 @@ s.reboot;
 s.stopRecording;
 }.fork;
 )
-( ////// functions for scene 2 
-	~headToWasher={ |walkTime=8| Routine.new({
-		~walkFromTo.(0,~speakers[1],~speakers[6],11,fadeIn:0.3);
-		walkTime.wait;
-		~washerRunning={|vol=1| PlayBuf.ar(~washer.numChannels,~washer,startPos: (23*44000))*0.6*vol}.play(s,~speakers[6]);
-	}).play};
 
-	~editedChatBots={	
-		var he = PlayBuf.ar(1,~bots[0],doneAction:2)*0.5;
-		var she= PlayBuf.ar(1,~bots[1])*0.5;
-		var pos = 0.38;
-		var chans=PanAz.ar(7,he,pos+0.2) +
-			  PanAz.ar(7,she,pos);
-		Out.ar(~speakers[0],chans*0.6) 
-	};
-
-	~heliPlay={
-		~helicopterThroughWall=NodeProxy.audio(s,2);
-		~helicopterThroughWall[0]={Pan2.ar(PlayBuf.ar(1,~helicopter[3]),Line.kr(-1,1,40),EnvGen.kr(Env.linen(8,10,15))*0.4)};//alsotry 3 and 4
-		~helicopterThroughWall[1]=\filter->{|in|PartConv.ar(in,4096,~doorCl)};
-		~helicopterThroughWall.reshaping=\elastic;
-		~helicopterThroughWall.playN([~speakers[3],~speakers[5]]);
-		~heliRumble=NodeProxy.audio(s,1).play(~speakers[7]);
-		~heliRumble.source={Mix.new(~helicopterThroughWall)};
-	};
-)
 
 (
 	{ //////   scene2

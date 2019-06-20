@@ -34,6 +34,7 @@
 		60.wait;
 		~klank.stop(25);
 		30.wait;
+		20.rand.wait;
 		SystemClock.seconds.postln;
 	)};
 	}

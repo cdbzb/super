@@ -1,3 +1,4 @@
+
 //knock open "you have arrived at your destination"
 (
 	{
@@ -11,31 +12,24 @@
 		1.5.wait;
 		{
 			~prepPhraseToBuff.("you have arrived at your destination");
-			0.3.wait;
+			0.4.wait;
 			{var sig = PartConv.ar( PlayBuf.ar(1,~buff,rate:0.48)*0.2, 4096, ~speaker); sig=PartConv.ar(sig,4096,~washRoom)*0.04+sig; sig;}.play(s,~speakers[4]);
 		}.fork;
 		3.wait;
 
-
-
-
-		~niceParty.(0.1);
+ 		~niceParty.(0.2);
 		//steps (many?) 
 
 		//chairs-movement
 
-~chairs=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/ambeo/chairs*");
-~davidSteps=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/ambeo/footsteps*");
-~ice=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/ambeo/ice*");
-~names.(~chairs);
 {var num=19.rand; PlayBuf.ar(~ice[num].numChannels,~ice[num]) }.play(s,~speakers[8.rand]);
-{var num=2.rand; PlayBuf.ar(~davidSteps[num].numChannels,~davidSteps[num]) }.play(s,~speakers[8.rand]);
+{var num=2.rand; Play(s,~speakers[2])Buf.ar(~davidSteps[num].numChannels,~davidSteps[num]) }.play(s,~speakers[8.rand]);
 
-)
+}.fork)
 
 ( //chair-fu
 	var indices = Pxrand([0,1,2,3,4],inf).asStream;
-	(~chairs==nil).if{~chairs=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/ambeo/chairs*")};
+	//(~chairs==nil).if{~chairs=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/ambeo/chairs*")};
 	// indices = Pseq([0,1,2,3,4],inf).asStream;
 	{
 		20.do{

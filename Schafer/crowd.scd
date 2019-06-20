@@ -1,42 +1,6 @@
 //a=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/AI SOUNDS/*");
-~aiSounds=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/AI SOUNDS/*");
-~bots=~aiSounds[0];
-
-( //nice party
-	~niceParty={|masterVol|
-		~jumpinessBus=NodeProxy.control;
-		~jumpinessBus.source=10000009;  //clean
-		~guest={ |vol jumpiness=10000009 |
-			BufRd.ar(1, ~bots, Phasor.ar(
-				0, 
-				BufRateScale.kr(~bots)*Rand(0.9,1.1), 
-				0,
-				BufFrames.kr(~bots)
-			)+LFBrownNoise0.kr(
-				(LFBrownNoise2.kr(1,mul:0.9,add:0.5)),0.5,mul:~jumpinessBus)
-			)*Rand(0.5,1)*vol };
-
-			~crowd=Array.fill(7,{NodeProxy.audio(s,1)});
-			~crowd.do({|m| m.source=~guest});
-			~crowd.do({|m x| m.play(~speakers[x],vol:masterVol)});
-			~crowd.do({|m| m.fadeTime=4});
-			~crowd.do({|m| m.lag(\vol,4)});
-			{100.do({ ~crowd.do({|m| m.set(\vol,[0,0.5,0.35].choose)});5.wait; })}.fork;
-			//little tingle
-			{ //take these to a seperate place ??
-				30.wait;~jumpinessBus.source=100000009;
-				30.wait;
-				~jumpinessBus.source=10000009;
-				//30.wait;~jumpinessBus.source=100000009;
-				60.wait;~jumpinessBus.source={Line.kr(1000009,109,100)};
-				60.wait;~jumpinessBus.source={Line.kr(109,10000000009,100000)};
-				60.wait; ~jumpinessBus.source={Line.kr(109,10000000009,15)};
-				15.wait;
-				~crowd.do({|m| m.stop(20)});
-			}.fork
-		}
-)
-
+//~aiSounds=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/AI SOUNDS/*");
+//~bots=~aiSounds[0];
 
 (
 	{

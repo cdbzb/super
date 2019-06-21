@@ -138,7 +138,12 @@
 				15.wait;
 				~crowd.do({|m| m.stop(20)});
 			}.fork
-		}
+		};
+
+	//~speakersz=Bus.audio(s,12);
+	//~fu_monitor={Monitor.new.playN([2,3,4,5,6,7,8,9,2,3,4],1!12,[~speakersz])};
+
+
 
 )
 

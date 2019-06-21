@@ -1,4 +1,8 @@
-
+( ///// setup
+	~chairs=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/ambeo/chairs*");
+	~davidSteps=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/ambeo/davidSteps*");
+	~ice=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/ambeo/ice*");
+)
 //knock open "you have arrived at your destination"
 (
 	{
@@ -22,57 +26,42 @@
 
 		//chairs-movement
 
-{var num=19.rand; PlayBuf.ar(~ice[num].numChannels,~ice[num]) }.play(s,~speakers[8.rand]);
-{var num=2.rand; Play(s,~speakers[2])Buf.ar(~davidSteps[num].numChannels,~davidSteps[num]) }.play(s,~speakers[8.rand]);
-
 }.fork)
 
-( //chair-fu
-	var indices = Pxrand([0,1,2,3,4],inf).asStream;
-	//(~chairs==nil).if{~chairs=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/ambeo/chairs*")};
-	// indices = Pseq([0,1,2,3,4],inf).asStream;
-	{
-		20.do{
-			
-			//var rate=[0.8,1,1.25].choose;
-			var rate = rrand(0.8,1.2);
-			{var num=indices.next; PlayBuf.ar(4,~chairs[num],rate:rate)*0.2 }.play(s,~speakers[8.rand]);
-			[1.0.rand,1.0.rand,0.2,2].choose.wait;
-		}
-	}.fork
+( /// to enable moving around the circle ... what about random?
+	ServerTree.remove(~fu_play);
+	~speakersz.free;~speakersz=Bus.audio(s,12);
+	~fu_monitor.free;~fu_monitor=Monitor.new;
+	//scramble ?
+	~fu_play={~fu_monitor.playN(~speakers.wrapExtend(12).scramble,1,~speakersz.index+(0..11))};
+	//~fu_play={~fu_monitor.playN([~speakers.wrapExtend(12).scramble],1,~speakersz.index+(0..11))};
+	ServerTree.add(~fu_play);
 )
-~davidSteps.size;
-( //david-fu
-	var indices = Pxrand([0,1],inf).asStream;
-	(~davidSteps==nil).if{~davidSteps=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/ambeo/davidSteps*")};
-	// indices = Pseq([0,1,2,3,4],inf).asStream;
-	{
-		20.do{
-			
-			//var rate=[0.8,1,1.25].choose;
-			var rate = rrand(0.8,1.2);
-			{var num=indices.next; PlayBuf.ar(4,~davidSteps[num],rate:rate)*0.1 }.play(s,~speakers[8.rand]);
-			[1.0.rand,1.0.rand,0.2,2].choose.wait;
-		}
-	}.fork
+ServerTree.removeAll;
+ServerTree.objects;
+( //fu
+	~fu={ | bufs reps=200 rateMin=0.1 rateMax=2.5|
+		var indices=Array.series(bufs.size);
+		indices = Pxrand(indices,inf).asStream;
+		{
+			reps.do{
+				var rate = rrand(rateMin,rateMax);
+				var num=indices.next; 
+				{PlayBuf.ar(4,bufs[num],rate:rate,doneAction:2)*0.2 }.play(s,~speakersz.index+(8.rand));
+				[1.0.rand,1.0.rand,0.2,2].choose.wait;
+			}
+		}.fork;
+	}
 )
 
-( //ice-fu
-	var indices=Array.series(~ice.size);
-	indices = Pxrand(indices,inf).asStream;
-	(~ice==nil).if{~ice=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/ambeo/ice*")};
-	// indices = Pseq([0,1,2,3,4],inf).asStream;
-	{
-		200.do{
-			
-			//var rate=[0.8,1,1.25].choose;
-			var rate = rrand(0.8,1.2);
-			{var num=indices.next; PlayBuf.ar(4,~ice[num],rate:rate)*0.2 }.play(s,~speakers[8.rand]);
-			[1.0.rand,1.0.rand,0.2,2].choose.wait;
-		}
-	}.fork
-)
+~fu.(~davidSteps,20,rateMin:0.8,rateMax:1.2);
+~fu.(~chairs,50,rateMin:0.8,rateMax:1.2);
 
+(
+	s.prepareForRecord("/Users/michael/tank/SchaferHouse/ringer-foo.wav",8);
+	s.record(bus:2,numChannels:8,duration:180);
+	~fu.(~ice);
+)
 
 		//numbers (try interrupt using OutReplace or whatever that is!)
 

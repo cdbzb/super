@@ -12,7 +12,6 @@
 		s.options.maxLogins=2;
 	};
 
-
 	~bassManagement={ |cutoff=70 vol=0.3|
 	Out.ar(~speakers[7],BLowPass.ar(Mix.ar(In.ar(~speakers))*vol,cutoff));
 	};
@@ -31,3 +30,4 @@ c={PinkNoise.ar(0.05)!2}.play;
 b.free;
 b.set(\vol,0.3); // Sub Volume
 s.free(1006);
+s.reboot;

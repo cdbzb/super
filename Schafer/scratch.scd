@@ -127,3 +127,28 @@ a;
 		{PlayBuf.ar(~gps.numChannels,~gps ,rate:0.47,doneAction:2)}.play(s,~speakers[4]);
 		a={PinkNoise.ar(0.005)}.play(s,~speakers[4]);
 		a.free;
+
+
+
+
+~niceParty.(0.3,1);
+~niceParty.(0.1,2);
+~niceParty.(0.1,3);
+
+~niceParty.(0.1);
+~partyPauser.pause;~jumpinessTask.pause;~crowd.do({|m| m.set(\vol,0)});
+~fu.(~ice);
+~fu.(~chairs);
+~partyPauser.resume;~jumpinessTask.resume;
+~niceParty.set(\sound,0);
+~partyPauser.pause;~jumpinessTask.pause;
+~partyPauser;
+Task
+(
+	{
+		~beeep={ReplaceOut.ar(~speakers[0],{PinkNoise.ar(0.01)}!8)}.play(s,addAction:\addToTail);
+		1.6.wait;
+		~beeep.free;
+	}.fork
+)
+

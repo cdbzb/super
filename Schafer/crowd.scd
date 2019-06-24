@@ -37,6 +37,8 @@
 		}
 )
 
+~niceParty.(0.2);
+{ PinkNoise.ar(0.1) }.play(s,~speakers[2]);
 
 (
 	{

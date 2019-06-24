@@ -33,29 +33,80 @@
 	~speakersz.free;~speakersz=Bus.audio(s,12);
 	~fu_monitor.free;~fu_monitor=Monitor.new;
 	//scramble ?
-	~fu_play={~fu_monitor.playN(~speakers.wrapExtend(12).scramble,1,~speakersz.index+(0..11))};
+	~fu_play={|vol| ~fu_monitor.playN(~speakers.wrapExtend(12).scramble,1,~speakersz.index+(0..11),vol:vol)};
 	//~fu_play={~fu_monitor.playN([~speakers.wrapExtend(12).scramble],1,~speakersz.index+(0..11))};
 	ServerTree.add(~fu_play);
+	Monitor
 )
+
 ServerTree.removeAll;
 ServerTree.objects;
+
 ( //fu
-	~fu={ | bufs reps=200 rateMin=0.1 rateMax=2.5|
+	~fu={ | bufs reps=200 rateMin=0.1 rateMax=2.5 amp=0.2 ampVar=1 density=1|
 		var indices=Array.series(bufs.size);
 		indices = Pxrand(indices,inf).asStream;
 		{
 			reps.do{
 				var rate = rrand(rateMin,rateMax);
 				var num=indices.next; 
-				{PlayBuf.ar(4,bufs[num],rate:rate,doneAction:2)*0.2 }.play(s,~speakersz.index+(8.rand));
-				[1.0.rand,1.0.rand,0.2,2].choose.wait;
+				{PlayBuf.ar(4,bufs[num],rate:rate,doneAction:2)*(rrand( amp*ampVar , amp/ampVar)) }
+					.play(s,~speakersz.index+(8.rand));
+				([1.0.rand,1.0.rand,0.2,2].choose*1/density).wait;
 			}
 		}.fork;
 	}
 )
 
-~fu.(~davidSteps,20,rateMin:0.8,rateMax:1.2);
-~fu.(~chairs,50,rateMin:0.8,rateMax:1.2);
+~niceParty.(0.4);
+~partyPauser.pause;~jumpinessTask.pause;~crowd.do({|m| m.set(\vol,0)}); //make this a function
+~partyPauser.resume;~jumpinessTask.resume;
+( /// interrupt all 8 chans
+	{
+		~beeep={ReplaceOut.ar(~speakers[0],{PinkNoise.ar(0.03)}!8)}.play(s,addAction:\addToTail);
+		1.6.wait;
+		~beeep.free;
+	}.fork
+)
+
+~window=~doors[8];
+
+(
+	{
+		//walk to bedroom door
+		~walkFromTo.(0,~speakers[4],~speakers[2],5);
+		5.wait;
+		//bedroomsetup
+		~bedroomBus=Bus.audio(s,2);
+		~bedroom=NodeProxy.audio(s,2) .source={In.ar(~bedroomBus)};
+		~bedroom[1]=\filter -> {|in| PartConv.ar(in,4096,~washRoom)*0.2+(in)*0.2}; //should be stereo 
+		~bedroom.playN([~speakers[2],~speakers[3]],1!2,[0,1]);
+		//open bedroom door
+		{ PlayBuf.ar(1, ~doors[2])*0.4 }.play(s,~speakers[2]);
+		1.wait;
+		~walkFromTo.(0,~speakers[2],~bedroomBus,8);
+		8.wait;
+		{ PlayBuf.ar(2,~window,doneAction:2) }.play(s,~bedroomBus); // make top and tail
+		1.wait;
+		~venice=Buffer.read(s,"/Users/michael/tank/SchaferHouse/SOUND/VENICE RECORDINGS/good drivebys.wav");
+
+		a={ PlayBuf.ar(2, ~venice)*1 }.play(s,~bedroomBus);
+
+
+		//~makeSpace.()	//BR
+		//walk to window (in br)
+		//open window - traffic
+	}.fork
+)
+
+~niceParty.set(\sound,1);
+~fu.(~davidSteps,20,rateMin:0.8,rateMax:1.2,ampVar:1.1);
+~fu.(~aiSounds3],20,rateMin:0.8,rateMax:1.2,ampVar:1.1);
+~fu.(~chairs,50,rateMin:0.8,rateMax:1.2,amp:0.3,ampVar:1.1);
+~fu.(~ice,50,rateMin:0.1,rateMax:2.2,amp:1,ampVar:1.1);
+~fu.(~ice,19,rateMin:1.8,rateMax:2.2,amp:1,ampVar:1.1,density:9);
+~fu.(~chairs,10,rateMin:0.8,rateMax:1.2,amp:0.3,ampVar:1.1,density:2);
+{ PinkNoise.ar(0.05) }.play(s,~speakers[2]);
 
 (
 	s.prepareForRecord("/Users/michael/tank/SchaferHouse/ringer-foo.wav",8);

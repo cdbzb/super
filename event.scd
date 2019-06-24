@@ -7,6 +7,37 @@ Event.addEventType(\quietSine,{
 	(freq: 440))
 )
 
+(
+	~myClass=(
+		number:3,
+		bounds:{Rect(100,100,100,100)},
+		drawme:{|self| 'drawing'++self.number.postln;}
+	)
+)
+~myClass.number_(4);
+~myClass.bounds;
+~myClass.drawme;
+
+(
+
+// counter Class
+var cCounter = {
+  var num=0;
+  (
+    increment: {|self| num = num+1},
+    current: { num }
+  )
+};
+
+var counter1 = cCounter.value;
+var counter2 = cCounter.value;
+
+counter2.increment;
+
+counter1.current.postln; // 0 
+counter2.current.postln; // 1
+
+)
 (type: \quietSine).play;
 
 (
@@ -17,7 +48,14 @@ Event.addEventType(\quietSine,{
 	}).send
 )
 
+(
+	Event.addEventType(\rando,{
+		{SinOsc.ar(~freq+30.rand,0,0.1)}.play
+	})
+)
 
+a=(\type:\rando,\freq:300).play;
+s.boot;
 a = ( note: 2).play; 
 a=Synth("quietsine");
 (

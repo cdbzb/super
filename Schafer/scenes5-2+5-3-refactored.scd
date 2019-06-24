@@ -1,3 +1,4 @@
+ServerTree.removeAll;
 ( /////// variables
 	~speakers=Array.series(8,2);
 	//~speakers=1!8;
@@ -55,9 +56,13 @@
 	};
 ///// ServerTree add groups
 	~makeGroups={
+		~sources.free;~spaces.free;
 		~sources=Group.new(s);
 		~spaces=Group.tail(s);
 	};
+)
+(
+	~makeGroups.();
 	ServerTree.add(~makeGroups);
 	CmdPeriod.add({s.freeAll});
 
@@ -105,9 +110,11 @@
 		};
 	}.fork;
 
+)
+(
   //nice party
-	~niceParty={|masterVol|
-		var bots= ~aiSounds[0];
+	~niceParty={|masterVol sound=0|
+		var bots= ~aiSounds[sound];
 		~jumpinessBus=NodeProxy.control;
 		~jumpinessBus.source=10000009;  //clean
 		~guest={ |vol jumpiness=10000009 |
@@ -125,9 +132,9 @@
 			~crowd.do({|m x| m.play(~speakers[x],vol:masterVol)});
 			~crowd.do({|m| m.fadeTime=4});
 			~crowd.do({|m| m.lag(\vol,4)});
-			{100.do({ ~crowd.do({|m| m.set(\vol,[0,0.5,0.35].choose)});5.wait; })}.fork;
+			~partyPauser=Task.new({100.do({ ~crowd.do({|m| m.set(\vol,[0,0.5,0.35].choose)});5.wait; })}).play;
 			//little tingle
-			{ //take these to a seperate place ??
+			~jumpinessTask=Task({ //take these to a seperate place ??
 				30.wait;~jumpinessBus.source=100000009;
 				30.wait;
 				~jumpinessBus.source=10000009;
@@ -136,17 +143,17 @@
 				60.wait;~jumpinessBus.source={Line.kr(109,10000000009,100000)};
 				60.wait; ~jumpinessBus.source={Line.kr(109,10000000009,15)};
 				15.wait;
-				~crowd.do({|m| m.stop(20)});
-			}.fork
+				//~crowd.do({|m| m.stop(20)});
+			}).play
 		};
-
+)
 	//~speakersz=Bus.audio(s,12);
 	//~fu_monitor={Monitor.new.playN([2,3,4,5,6,7,8,9,2,3,4],1!12,[~speakersz])};
 
 
 
 )
-
+~sources
 ( { // scene1 toiletjoy
 //s.prepareForRecord("/Users/michael/tank/SchaferHouse/toiletJoy2.wav",8);
 //s.sync;

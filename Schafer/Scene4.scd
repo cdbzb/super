@@ -3,8 +3,21 @@
 	~chairs=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/ambeo/chairs*");
 	~davidSteps=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/ambeo/footsteps*");
 	~ice=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/ambeo/ice*");
-	//~noiseFu=Buffer.read(s,"Users/michael/tank/SchaferHouse/fu-noise.aif");
+	~venice=Buffer.read(s,"/Users/michael/tank/SchaferHouse/SOUND/VENICE RECORDINGS/good drivebys.wav");
+	~noiseFu.free;~noiseFu=Buffer.read(s,"/Users/michael/tank/SchaferHouse/fu-noise8-chan2.aif");
 )
+(
+	~moveNumberBuffersToRemote={
+		8.do({	|i|
+			var buf=~numberBuffers[i];
+			buf.loadToFloatArray(action:
+				{|array| 
+					~numberBuffers[i]=Buffer.sendCollection(s,array)});
+
+				});
+			};
+		)
+		~moveNumberBuffersToRemote.();
 //knock open "you have arrived at your destination"
 ( // first draft
 	{
@@ -64,35 +77,62 @@
 	}
 )
 
-//( noise-fu
-//	{
-//		s.prepareForRecord("/Users/michael/tank/SchaferHouse/fu-noise3.aif");
-//		s.sync;
-//		s.record(bus:~speakers);
-//		~fu.(~ice);
-//	}.fork
-//)
-//s.stopRecording;
+(//  noise-fu
+	//{ 
+	//	s.prepareForRecord("/Users/michael/tank/SchaferHouse/fu-noise8-chan4.aif",numChannels:8);
+	//	s.sync;
+	//	s.record(bus:~speakers[0],duration:300);
+	//	~fu.(~ice);
+	//	310.wait;
+	//  
+	//}.fork
+)
+s.stopRecording;
 
 ( // a little composition
 	{
+
+		s.prepareForRecord("/Users/michael/tank/SchaferHouse/5-6-alt1.aif",numChannels:8);
+		s.sync;
+		s.record(bus:~speakers[0]);
 		c=SystemClock.seconds;
+		{PlayBuf.ar(1,~doors[5])*0.5}.play(s,~speakers[4]);
+		2.wait;
+		~walkFromTo.(1,~speakers[5],~speakers[4],7,fadeIn:0.3);
+		7.wait;
+		{PlayBuf.ar(1,~doors[2])*0.7}.play(s,~speakers[4]);
+		~hallThroughDoor=NodeProxy.audio(s,1).play(~speakers[4]);
+		~hallThroughDoor.source= {PlayBuf.ar(~hallway.numChannels,~hallway,startPos:54*48000)*1.5};
+		1.5.wait;
+		{
+			//~prepPhraseToBuff.("you have arrived at your destination");
+			//0.4.wait;
+			{var sig = PartConv.ar( PlayBuf.ar(1,~buff,rate:0.48)*0.1, 4096, ~speaker); sig=PartConv.ar(sig,4096,~washRoom)*0.04+sig; sig;}.play(s,~speakers[4]);
+		}.fork;
+		6.wait;
+
 		//~fu.(~davidSteps,8,amp:0.2,rateMin:0.8, rateMax:1.1);
 		//15.wait;
-		~fu.(~chairs,26,rateMin:0.8,ampVar:1.2);
-		20.wait;
-		~fu.(~ice,150,density:2,amp:0.3,ampVar:1.1);
-		20.wait;
+		~fu.(~chairs,36,rateMin:0.8,ampVar:1.3);
+		~walkFromTo.(0,~speakers[4],~speakers[0],8);
+		2.wait;
+		~walkFromTo.(1,~speakers[5],~speakers[2],6);
+		{ PlayBuf.ar(1,~doors[1])*0.4 }.play(s,~speakers[4]);
+		~hallThroughDoor[1]=\filter->{|in| PartConv.ar(in,4096,~doorCl)};
+		0.2.wait;~hallThroughDoor.release(0.5);
+		24.wait;
+		~fu.(~ice,120,density:2,amp:0.3,ampVar:1.1);
+		2.wait; ~walkFromTo.(1,~speakers[2],~speakers[6],8);
+		25.wait;
 		~niceParty.(0.2,lag:1.5);
 		30.wait;
-		~fu.(~ice,60,rateMin:1,rateMax:2);
-		38.wait;
-		4.wait;
+		~fu.(~ice,60,rateMin:1,rateMax:2,amp:0.15,density:0.5);
+		42.wait;
 		//~crowd.do({|m| m.lag(\vol,0.1)});
 		4.wait;
 		~crowd.do{|m| m.release(9)};
 		~niceParty.set(\sound,1);postln('set');
-		2.wait;
+		8.wait;
 		//~partyPauser.pause;~jumpinessTask.pause;~crowd.do({|m| m.set(\vol,0)}); 
 	{
 			~crowd.do{|m| m.release(0.1)};
@@ -118,7 +158,6 @@
 		8.wait;
 		~windowOpen.play(s,~bedroomBus); // make top and tail
 		1.wait;
-		~venice=Buffer.read(s,"/Users/michael/tank/SchaferHouse/SOUND/VENICE RECORDINGS/good drivebys.wav");
 		a={ PlayBuf.ar(2, ~venice,startPos:(44000*7))*1 }.play(s,~bedroomBus);
 		30.wait;
 		~windowClose.play(s,~bedroomBus);
@@ -129,9 +168,19 @@
 		//~noizz={ PlayBuf.ar(8,~noiseFu)*0.8 }.play(s,~speakers[0]);
 		10.wait;
 		~playOneNumber.();
-		10.wait;
+		f={|vol=0.5| PlayBuf.ar(8,~noiseFu)*vol }.play(s,~speakers);
+
+		100.wait;
 		~clicks.free;
-c=SystemClock.seconds-c;
+		00.wait;
+		f.release(70);
+		{ SinOsc.ar([400,360,300,280,440,450,240,340],0,0.01)*EnvGen.kr(Env.linen(40,40,20)) }.play(s,~speakers[0]);
+		50.wait;
+		~playOneNumber.();
+		50.wait;
+	c=SystemClock.seconds-c;
+	s.stopRecording;
+	c.postln;
 	}.fork
 )
 

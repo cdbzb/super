@@ -2,7 +2,6 @@ ServerTree.removeAll;
 ( /////// variables
 	~speakers=Array.series(8,2);
 	//~speakers=1!8;
-
  //IRs///////////////////////
 	~loadBuffers={
 		~projectPath="/Users/michael/tank/SchaferHouse/";
@@ -62,16 +61,18 @@ ServerTree.removeAll;
 	};
 )
 (
-	~makeGroups.();
-	ServerTree.add(~makeGroups);
-	CmdPeriod.add({s.freeAll});
 
 ////// functions for scene 1
 	{
 		s.sync;
 		Buffer.freeAll(s);
+	~makeGroups.();
+	ServerTree.add(~makeGroups);
+	CmdPeriod.add({s.freeAll});
 		s.sync;
 		~loadBuffers.();
+		s.sync;
+		//~prepSay.(); //need to specify server in this function somewhere
 		s.sync;
 		~bathroom=~makeSpace.(1);
 		~kitchen= ~makeSpace.();
@@ -109,8 +110,8 @@ ServerTree.removeAll;
 			~heliRumble.source={Mix.new(~helicopterThroughWall)};
 		};
 	}.fork;
-
 )
+
 (
   //nice party
 	~niceParty={|masterVol sound=0 lag=1|
@@ -239,15 +240,14 @@ ServerTree.removeAll;
 s.stopRecording;
 }.fork;
 )
-
 (  ///////scenes 3-4
 	{ //////   scene2
 
-	//s.recSampleFormat="int24";
-	//s.recHeaderFormat="wav";
-	//s.prepareForRecord("/Users/michael/tank/SchaferHouse/Scene2-2.wav",8);
-	//s.sync;
-	//s.record(bus: ~speakers[0],numChannels:8);
+	s.recSampleFormat="int24";
+	s.recHeaderFormat="wav";
+	s.prepareForRecord("/Users/michael/tank/SchaferHouse/Scene3-4.wav",8);
+	s.sync;
+	s.record(bus: ~speakers,numChannels:8);
 
 		c=thisThread.clock.beats;
 	//setup
@@ -308,7 +308,6 @@ s.stopRecording;
 		~spam={PartConv.ar(PlayBuf.ar(~aiSounds[8].numChannels,~aiSounds[7])*0.011!7,4096,~speaker)}.play(s,~speakers);
 		10.wait;
 	//ringer2
-
 		~ring2=NodeProxy.audio(s,1).play(~speakers[4]);
 		{~ring2.source={|trig=(-1)| PlayBuf.ar(~phone[2].numChannels,~phone[2],trigger:trig,startPos:20000)}; 8.wait;~ring2.set(\trig,1)}.fork;
 		1.5.wait;
@@ -363,10 +362,11 @@ s.stopRecording;
 		103.5.wait;
 		~mk.release(0.2);
 	/// SLAM!!! 4 
+{ PlayBuf.ar(2,~marketPhrases[2]) }.play(s,~speakers[1]);
+s.options;
+{ PinkNoise.ar(0.1) }.play(s,~speakers[1]);
 
 		{PartConv.ar(PlayBuf.ar(~doors[5].numChannels,~doors[1]),4096,~kitch,mul:1)}.play(s,5);
-)
-({//topp
 		~walkFromTo.(0,~speakers[6],~speakers[4],10);
 	
 		~trafficThroughDoor=NodeProxy.audio(s,2).play(~speakers[3],fadeTime:10);
@@ -472,8 +472,6 @@ s.stopRecording;
 		~phoneWalker[1].stop(1);
 
 
-}.fork;
-) // endd
 		h.release(0.4);
 		5.wait;
 		s.stopRecording;

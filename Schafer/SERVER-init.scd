@@ -5,16 +5,17 @@
 	~setOptions={
 		o=Server.local.options;
 		o.numOutputBusChannels = 18;
+		o.sampleRate=48000;
 		o.numInputBusChannels=0;
 		o.memSize=2**20;
 		o.device="ULN2 [570]";
 		//o.outputStreamsEnabled="001111111100000000";
 		s.options.maxLogins=2;
-	};
-
+	}.value;
 	~bassManagement={ |cutoff=70 vol=0.3|
 	Out.ar(~speakers[7],BLowPass.ar(Mix.ar(In.ar(~speakers))*vol,cutoff));
 	};
+
 
 	ServerBoot.add(~setOptions);
 	ServerTree.add({b=~bassManagement.play});
@@ -24,6 +25,7 @@
 	});
 )
 s.reboot;
+s.options.sampleRate;
 a={PinkNoise.ar(0.05)!8}.play(s,~speakers);
 a.free;
 c={PinkNoise.ar(0.05)!2}.play;

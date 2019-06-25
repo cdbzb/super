@@ -5,6 +5,7 @@
 	}.value;
 
 	~speakers = Array.series(8,2);
+	Server.local.boot;
 )
 
 //Server.fromName( 'hack' ).defaultGroup.release;

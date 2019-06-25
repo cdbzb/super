@@ -113,7 +113,7 @@ ServerTree.removeAll;
 )
 (
   //nice party
-	~niceParty={|masterVol sound=0|
+	~niceParty={|masterVol sound=0 lag=1|
 		var bots= ~aiSounds[sound];
 		~jumpinessBus=NodeProxy.control;
 		~jumpinessBus.source=10000009;  //clean
@@ -129,7 +129,7 @@ ServerTree.removeAll;
 
 			~crowd=Array.fill(7,{NodeProxy.audio(s,1)});
 			~crowd.do({|m| m.source=~guest});
-			~crowd.do({|m x| m.play(~speakers[x],vol:masterVol)});
+			{(0..7).scramble.do{ |x| ~crowd[x].play(~speakers[x],vol:masterVol); lag+(x**1.5)/3.wait}; }.fork;
 			~crowd.do({|m| m.fadeTime=4});
 			~crowd.do({|m| m.lag(\vol,4)});
 			~partyPauser=Task.new({100.do({ ~crowd.do({|m| m.set(\vol,[0,0.5,0.35].choose)});5.wait; })}).play;
@@ -150,11 +150,7 @@ ServerTree.removeAll;
 	//~speakersz=Bus.audio(s,12);
 	//~fu_monitor={Monitor.new.playN([2,3,4,5,6,7,8,9,2,3,4],1!12,[~speakersz])};
 
-
-
-)
-~sources
-( { // scene1 toiletjoy
+( { // scene1 toiletjoy 5-2
 //s.prepareForRecord("/Users/michael/tank/SchaferHouse/toiletJoy2.wav",8);
 //s.sync;
 //s.record(bus:~speakers[0] , numChannels:8);
@@ -244,8 +240,7 @@ s.stopRecording;
 }.fork;
 )
 
-
-(
+(  ///////scenes 3-4
 	{ //////   scene2
 
 	//s.recSampleFormat="int24";

@@ -1,6 +1,26 @@
 ServerTree.removeAll;
-( /////// variables
-	~speakers=Array.series(8,2);
+
+( 
+	{
+		~speakers=Array.series(8,2);
+		~remoteInit={
+			s=Server.remote(\hack,NetAddr.new("192.168.1.136",57110));
+			Server.default=s;
+		}.value;
+		Server.local.boot;
+	}.fork;
+)
+~prepAlexa;
+(	/////// variables
+{
+		~prepAlexa.();
+		{
+			~makeNumberBuffers.(); 
+			4.wait; 
+			~moveNumberBuffersToRemote.(); 
+		}.fork;
+	};
+
 	//~speakers=1!8;
  //IRs///////////////////////
 	~loadBuffers={
@@ -48,11 +68,7 @@ ServerTree.removeAll;
 		~chairs=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/ambeo/chairs*");
 		~davidSteps=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/ambeo/footsteps*");
 		~ice=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/ambeo/ice*");
-///SAY
-~prepSay={
-		~prepAlexa.();
-		{~makeNumberBuffers.(); 4.wait; ~moveNumberBuffersToRemote.(); }.fork;
-	};
+
 ///// ServerTree add groups
 	~makeGroups={
 		~sources.free;~spaces.free;
@@ -60,9 +76,8 @@ ServerTree.removeAll;
 		~spaces=Group.tail(s);
 	};
 )
-(
 
-////// functions for scene 1
+( ////// functions for scene 1
 	{
 		s.sync;
 		Buffer.freeAll(s);
@@ -71,8 +86,6 @@ ServerTree.removeAll;
 	CmdPeriod.add({s.freeAll});
 		s.sync;
 		~loadBuffers.();
-		s.sync;
-		//~prepSay.(); //need to specify server in this function somewhere
 		s.sync;
 		~bathroom=~makeSpace.(1);
 		~kitchen= ~makeSpace.();
@@ -83,6 +96,7 @@ ServerTree.removeAll;
 		~setBusIR.(~kitchen,~kitch);
 		~steps=NodeProxy.audio(s,1);
 		~startWalking={~steps.source={ PlayBuf.ar(2,~carpetsteps, loop:1)*2.5}};
+		s.sync;
 
  ////// functions for scene 2 
 		~headToWasher={ |walkTime=8| Routine.new({
@@ -109,12 +123,12 @@ ServerTree.removeAll;
 			~heliRumble=NodeProxy.audio(s,1).play(~speakers[7]);
 			~heliRumble.source={Mix.new(~helicopterThroughWall)};
 		};
-	}.fork;
-)
 
-(
+	}.fork
+)
+	({
   //nice party
-	~niceParty={|masterVol sound=0 lag=1|
+	~niceParty={|masterVol sound=0 lag=1 playing=true|
 		var bots= ~aiSounds[sound];
 		~jumpinessBus=NodeProxy.control;
 		~jumpinessBus.source=10000009;  //clean
@@ -130,7 +144,7 @@ ServerTree.removeAll;
 
 			~crowd=Array.fill(7,{NodeProxy.audio(s,1)});
 			~crowd.do({|m| m.source=~guest});
-			{(0..7).scramble.do{ |x| ~crowd[x].play(~speakers[x],vol:masterVol); lag+(x**1.5)/3.wait}; }.fork;
+			playing.if{{(0..7).scramble.do{ |x| ~crowd[x].play(~speakers[x],vol:masterVol); lag+(x**1.5)/3.wait}; }.fork};
 			~crowd.do({|m| m.fadeTime=4});
 			~crowd.do({|m| m.lag(\vol,4)});
 			~partyPauser=Task.new({100.do({ ~crowd.do({|m| m.set(\vol,[0,0.5,0.35].choose)});5.wait; })}).play;
@@ -147,9 +161,42 @@ ServerTree.removeAll;
 				//~crowd.do({|m| m.stop(20)});
 			}).play
 		};
+	"LOADED!".postln;
+	}.fork;
 )
-	//~speakersz=Bus.audio(s,12);
-	//~fu_monitor={Monitor.new.playN([2,3,4,5,6,7,8,9,2,3,4],1!12,[~speakersz])};
+
+(///spinning party behind wall
+	~partyBehindWall={
+		var hall=NodeProxy.audio(s,2);
+		~niceParty.(playing:false);
+		0.1.wait;
+		~crowd.do{|m| m.stop};0.5.wait;
+		hall.source={ Splay.ar(~crowd) };
+		hall[1]=\filter->{|in| PartConv.ar(in,4096,~doorCl)};
+
+		7.do{|i| hall.play(~speakers[i],fadeTime:4);5.wait};
+		10.wait;
+		hall.stop;4.wait;hall.end;
+	}.fork;
+	~partyBehindWall.();
+)
+	{ SinOsc.ar([400,240,288,320,360,424,480],0,0.02)*EnvGen.kr(Env.linen(10,1,5)) }.play(s,~speakers[0]);
+	~singleNote={|len=10 vol=0.03| {SinOsc.ar([400,240,288,320,360,424,480].choose,0,vol) *EnvGen.kr(Env.triangle(len)) }.play(s,~speakers[7.rand])};
+	~singleNote.(10+2.0.rand);
+	~smallChord={|num=4| num.do({~singleNote.(10+2.0.rand)})};
+	~smallChord.();
+
+(
+	{
+		8.do({
+			{SinOsc.ar([400,240,288,320,360,424,480].choose,0,0.03) *EnvGen.kr(Env.triangle(10)) }.play(s,~speakers[7.rand]);
+			5.wait;
+		})
+	}.fork
+)
+
+}.fork
+)
 
 ( { // scene1 toiletjoy 5-2
 //s.prepareForRecord("/Users/michael/tank/SchaferHouse/toiletJoy2.wav",8);
@@ -240,19 +287,23 @@ ServerTree.removeAll;
 s.stopRecording;
 }.fork;
 )
+
 (  ///////scenes 3-4
 	{ //////   scene2
 
 	s.recSampleFormat="int24";
 	s.recHeaderFormat="wav";
-	s.prepareForRecord("/Users/michael/tank/SchaferHouse/Scene3-4.wav",8);
+	//s.prepareForRecord("/Users/michael/tank/SchaferHouse/Scene3-4.wav",8);
 	s.sync;
-	s.record(bus: ~speakers,numChannels:8);
+	//s.record(bus: ~speakers,numChannels:8);
 
 		c=thisThread.clock.beats;
 	//setup
 		~steps=NodeProxy.audio(s,1);
 		~startWalking={~steps.source={ PlayBuf.ar(2,~carpetsteps, loop:1)*2.5}};
+	// random texts
+		~text={|vol| {PlayBuf.ar(~texts.choose.numChannels,~texts.choose)*vol}.play(s,~speakers[7.rand])};
+		{ 5.wait; 10.do{ rrand(10,20).wait;~text.(1.0.rand)} }.fork;
 	//fridge
 		{
 			4.wait;
@@ -305,7 +356,7 @@ s.stopRecording;
 		0.5.wait;
 	//SpamCall
 		//~spam={PlayBuf.ar(~aiSounds[8].numChannels,~aiSounds[7])*0.21!7}.play(s,~speakers);
-		~spam={PartConv.ar(PlayBuf.ar(~aiSounds[8].numChannels,~aiSounds[7])*0.011!7,4096,~speaker)}.play(s,~speakers);
+		~spam={PartConv.ar(PlayBuf.ar(~aiSounds[8].numChannels,~aiSounds[7])*0.021!7,4096,~speaker)}.play(s,~speakers);
 		10.wait;
 	//ringer2
 		~ring2=NodeProxy.audio(s,1).play(~speakers[4]);
@@ -362,10 +413,10 @@ s.stopRecording;
 		103.5.wait;
 		~mk.release(0.2);
 	/// SLAM!!! 4 
-{ PlayBuf.ar(2,~marketPhrases[2]) }.play(s,~speakers[1]);
-s.options;
-{ PinkNoise.ar(0.1) }.play(s,~speakers[1]);
 
+})
+({//topp
+	d=SystemClock.seconds;
 		{PartConv.ar(PlayBuf.ar(~doors[5].numChannels,~doors[1]),4096,~kitch,mul:1)}.play(s,5);
 		~walkFromTo.(0,~speakers[6],~speakers[4],10);
 	
@@ -405,33 +456,38 @@ s.options;
 //text cloud
 		~tcloud=Routine({       var line=Line.kr(3,0.2,10);
 			~textgroup=Group.new(s);
-			800.do({
-			{PlayBuf.ar(~texts.choose.numChannels,~texts.choose,rate:([0.2,2,10.11].choose*(rrand(0.99,1.01))) ,doneAction:2) *[0.5,0.5,0.1].choose}.play(~textgroup,~speakers.choose);
-			
-			linrand(0.3,3).wait; //use a line for the lower bound
+			400.do({|i|
+			var rate=if(i<13,{[1,1.1,2].choose},{[0.2,2,10.11,1,1.1].choose}) ;
+			{PlayBuf.ar(~texts.choose.numChannels,~texts.choose,rate:rate*(rrand(0.99,1.01)) ,doneAction:2) *[0.5,0.5,0.1,0.4].choose}.play(~textgroup,~speakers.choose);
+			//linrrand(0.3,3).wait; //use a line for the lower bound
+			if(i<20,{linrand(450-(i*10)/200+0.9,4).wait},{linrand(0.4,3).wait});
 		})}).play;
-		25.wait;
+		16.wait;~walkFromTo.(1,~speakers[2],~speakers[5],7);
+		24.wait;
 		~tcloud.stop;
 		~textgroup.release(0.1);
 		~washerRunning.release();
-		{PlayBuf.ar(~buzzer[0].numChannels,~buzzer[1],startPos:20000)*0.4 }.play(s,~speakers[6]);
+		p={PlayBuf.ar(~buzzer[0].numChannels,~buzzer[1],startPos:20000)*0.4 }.play(s,~speakers[6]);
 		5.wait;
 		~walkFromTo.(0,~speakers[3],~speakers[5],8);
-		9.wait;
+		5.wait;~playOneNumber.();4.wait;
+		7.wait;p.free;
+	)
+	({ //topp
+
 		~phoneWalker=[NodeProxy.audio(s,1).play(~speakers[5]), NodeProxy.audio(s,1).play(~speakers[2])];
-		{PlayBuf.ar(1,~dialing[0],startPos:58000)*3 }.play(s,~speakers[5]);
+		{PlayBuf.ar(1,~dialing[0],startPos:58000)*4 }.play(s,~speakers[5]);
 		5.wait;
-		{PlayBuf.ar(1,~dialing[2])*2 }.play(s,~speakers[5]);//ring
+		{PlayBuf.ar(1,~dialing[2])*2.5 }.play(s,~speakers[5]);//ring
 		7.wait;
-		~phoneWalker[0].source={PlayBuf.ar(~holdMusic[2].numChannels,~holdMusic[2],loop:1)*0.25 };
+		~phoneWalker[0].source={PlayBuf.ar(~holdMusic[2].numChannels,~holdMusic[2],loop:1)*0.30 };
 		//25.wait;
 		8.wait;
-
-		{PlayBuf.ar(1,~dialing[0],startPos:58000)*3 }.play(s,~speakers[2]);
+		{PlayBuf.ar(1,~dialing[0],startPos:58000)*4 }.play(s,~speakers[2]);
 		5.wait;	
-		{PlayBuf.ar(1,~dialing[2])*2 }.play(s,~speakers[2]);//ring
+		{PlayBuf.ar(1,~dialing[2])*2.5 }.play(s,~speakers[2]);//ring
 		7.wait;
-		~phoneWalker[1].source={PlayBuf.ar(~holdMusic[2].numChannels,~holdMusic[4],loop:1)*0.07 };
+		~phoneWalker[1].source={PlayBuf.ar(~holdMusic[2].numChannels,~holdMusic[4],loop:1)*0.09 };
 		5.wait;
 
 		~where=[2,5];
@@ -441,12 +497,114 @@ s.options;
 		{ rrand(10,28).wait; 
 			{PlayBuf.ar(~alexa.numChannels,~alexa,rate:0.48)*0.3 }.play(s,~speakers[5]); 
 		}.fork;
-		9.do({ 
-			~goThere.(0,rand(7));
-			rrand(5,7).wait;
-			~goThere.(1,rand(7));
-			rrand(5,7).wait;
-		});
+	)
+(
+	{
+		10.do{
+		~playOneNumber.();
+		0.4.wait;
+		}
+	}.fork;
+)
+
+
+(
+	~numberString={|num=6| var wrd; num.do({wrd=wrd++rand(10).asString++' '});wrd++',';};
+	{
+		var num=~numberString.(11);
+		5.do{
+			~prepPhraseToBuff.(num.(11));
+			{ PlayBuf.ar(1,~buff,rate:0.5)*EnvGen.kr(Env.triangle(5))*0.2 }.play(s,~speakers[7.rand]);
+			rrand(3,9).wait;
+		}
+	}.fork
+
+)
+
+
+(
+	~levels=Array.series(9,0,0.285714);
+	~levels.put(8,0);
+	~arclengths=[0, 15, 60,100,180,250, 300,360,360]; //in degrees
+	~times=~arclengths*2/360;
+	~ttimes= Array.newClear(~times.size);
+       	(~arclengths.size-1).do({|index| 
+		~ttimes.put(index, ~times[index+1]-~times[index])});
+	~ttimes.put(~ttimes.size-1,0);
+	~panEnv=Env.new(~levels,~ttimes,loopNode:0 );
+	~panEnv.plot;
+	~panEnv.at(0);
+	~levels.size;
+	~levels;
+	~times.size;
+	~times;
+)
+(//circle function
+	~circleMe={ |buffer vol=0.1 phase=0 orient=2 group | { 
+		//do with a gate instead
+		var cycleLength = 60;
+		var in = PlayBuf.ar(1,buffer,loop:1)*vol;
+		var gate=Impulse.kr(1/cycleLength,phase:phase);
+		var env=EnvGen.kr(~panEnv, timeScale:(cycleLength/2),gate:gate);
+		//pan=~panEnv.at(pan);
+		(PanAz.ar(7,in,env,orientation:orient,width:2));
+	}.play(group,~speakers[0]);
+})
+
+(
+	{
+		var group=Group.new(s);
+		~circleMe.(~holdMusic[2], 0.3 , phase:0.11 , orient:5,group:group );
+		25.wait;
+		~circleMe.(~holdMusic[4], 0.09 , phase:0.61 , orient:2, group:group );
+		25.wait;
+		//~circleMe.(~footsteps[1],0.1);
+		5.wait;
+		~toness.(20,0.1); //start turning here
+		10.wait;
+		group.release(25);
+		25.wait;
+	}.fork;
+)
+
+(
+	~toness={{|num=18 vol=0.015|
+		num.do({
+			{SinOsc.ar([400,440,288,320,360,424,480].choose,0,0.02) *EnvGen.kr(Env.triangle(10)) }.play(s,~speakers[7.rand]);
+			5.wait;
+		})
+	}.fork}
+)
+
+(
+	~partyBehindWall={
+		var hall=NodeProxy.audio(s,2);
+		~niceParty.(playing:false);
+		0.1.wait;
+		~crowd.do{|m| m.stop};0.5.wait;
+		hall.source={ Splay.ar(~crowd) };
+		hall[1]=\filter->{|in| PartConv.ar(in,4096,~doorCl)};
+
+		7.do{|i| hall.play(~speakers[i],fadeTime:4);5.wait};
+		15.wait;
+		hall.stop;4.wait;hall.end;
+	}.fork;
+	~partyBehindWall.();
+)
+		1.wait;
+		//a={PlayBuf.ar(1,~edm)*0.5 }.play(s,~speakers[3]);
+		//5.wait;
+		//{PlayBuf.ar(1,~doors[3])*2}.play(s,~speakers[3]); 
+		//0.2.wait;
+		//a.free;
+	};
+//	9.do({ 
+//			~goThere.(0,rand(7));
+//			rrand(5,7).wait;
+//			~goThere.(1,rand(7));
+//			rrand(5,7).wait;
+//		});
+		
 		//{
 		//	~goThere.(0,3);7.wait;
 		//	~where.postln;

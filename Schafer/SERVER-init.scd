@@ -18,7 +18,7 @@
 
 
 	ServerBoot.add(~setOptions);
-	ServerTree.add({b=~bassManagement.play});
+	//ServerTree.add({b=~bassManagement.play});
 	s.waitForBoot({
 		s.meter;
 		s.plotTree;
@@ -26,6 +26,8 @@
 )
 s.reboot;
 s.options.sampleRate;
+ServerTree.objects;
+ServerTree.removeAll;
 a={PinkNoise.ar(0.05)!8}.play(s,~speakers);
 a.free;
 c={PinkNoise.ar(0.05)!2}.play;

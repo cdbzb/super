@@ -91,10 +91,9 @@ s.stopRecording;
 
 ( // a little composition
 	{
-
 		s.prepareForRecord("/Users/michael/tank/SchaferHouse/5-6-alt1.aif",numChannels:8);
 		s.sync;
-		s.record(bus:~speakers[0]);
+		//s.record(bus:~speakers[0]);
 		c=SystemClock.seconds;
 		{PlayBuf.ar(1,~doors[5])*0.5}.play(s,~speakers[4]);
 		2.wait;

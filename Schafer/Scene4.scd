@@ -89,12 +89,12 @@
 )
 s.stopRecording;
 
-( // a little composition
+( // Scenes 5-5 5-6
 	{
-		s.prepareForRecord("/Users/michael/tank/SchaferHouse/5-6-alt1.aif",numChannels:8);
-		s.sync;
+		//s.prepareForRecord("/Users/michael/tank/SchaferHouse/5-6-alt1.aif",numChannels:8);
+		//s.sync;
 		//s.record(bus:~speakers[0]);
-		c=SystemClock.seconds;
+		//c=SystemClock.seconds;
 		{PlayBuf.ar(1,~doors[5])*0.5}.play(s,~speakers[4]);
 		2.wait;
 		~walkFromTo.(1,~speakers[5],~speakers[4],7,fadeIn:0.3);

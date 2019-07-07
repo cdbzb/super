@@ -9,7 +9,6 @@ ServerTree.removeAll;
 		Server.local.boot;
 	}.fork;
 )
-~prepAlexa;
 (	/////// variables
 {
 		~prepAlexa.();
@@ -385,9 +384,10 @@ s.stopRecording;
 		~mk.release(0.2);
 	/// SLAM!!! 4 
 	0.5.wait;
+)
 
 
-	( // functions for 5-4 through 6
+( // functions for 5-4 through 6
 		/// set up circular panning
 
 		~levels=Array.series(9,0,0.285714);
@@ -453,7 +453,7 @@ s.stopRecording;
 				}
 			}.fork;
 		};
-	)
+)
  //// 5-4 5-5 5-6
 	 ///5-4
 
@@ -566,7 +566,8 @@ s.stopRecording;
 		~ice=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/ambeo/ice*");
 		~venice=Buffer.read(s,"/Users/michael/tank/SchaferHouse/SOUND/VENICE RECORDINGS/good drivebys.wav");
 		s.sync;
-	s.prepareForRecord('/Users/michael/tank/SchaferHouse/5-5II.aif',numChannels:8);
+		~text={|vol=1| {PlayBuf.ar(~texts.choose.numChannels,~texts.choose)*vol}.play(s,~speakers[7.rand])};
+	s.prepareForRecord("/Users/michael/tank/SchaferHouse/5-5II.aif",numChannels:8);
 ({ ///topp
 	s.record(bus:~speakers[0],numChannels:8);
 	s.sync;
@@ -589,7 +590,7 @@ s.stopRecording;
 		6.wait;
 		//~fu.(~davidSteps,8,amp:0.2,rateMin:0.8, rateMax:1.1);
 		//15.wait;
-		{6.wait;~toness.(3,0.05);6.do{rrand(2,8).wait; ~text.(0.3)}}.fork;
+		{6.wait;~toness.(3,0.03);6.do{rrand(2,8).wait; ~text.(0.3)}}.fork;
 		//~walkFromTo.(0,~speakers[4],~speakers[0],8);
 		//{ PlayBuf.ar(1,~doors[1])*0.6 }.play(s,~speakers[4]);
 		~fu.(~chairs,36,rateMin:0.7,ampVar:1.1,amp:0.3);
@@ -598,12 +599,13 @@ s.stopRecording;
 		~walkFromTo.(1,~speakers[5],~speakers[2],6);
 		0.2.wait;~hallThroughDoor.release(0.5);
 		20.wait;
-		~fu.(~ice,120,density:2,amp:0.33,ampVar:1.1);
+		~fu.(~ice,136,density:2,amp:0.33,ampVar:1.1);
 		2.wait; ~walkFromTo.(1,~speakers[2],~speakers[6],8);
 		25.wait;
 		~niceParty.(0.2,lag:1.7);
 		30.wait;
-		~fu.(~ice,60,rateMin:1,rateMax:2,amp:0.15,density:0.4);
+		~fu.(~ice,40,rateMin:1,rateMax:2,amp:0.15,density:0.4);
+		{5.do{~text.(0.2);10.rand.wait;}}.fork;
 		45.wait;
 		//~crowd.do({|m| m.lag(\vol,0.1)});
 		4.wait;

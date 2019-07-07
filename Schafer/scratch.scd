@@ -135,7 +135,31 @@ a;
 ~niceParty.(0.1,2);
 ~niceParty.(0.1,3);
 
-~niceParty.(0.1);
+~ce.push(s.boot, p);
+"abcde".do { |k| p[k.asSymbol].ar };
+m = ProxyMixer(p, 8);
+n.parent.alwaysOnTop_(true); // show mixer in front of IDE
+)
+
+p.do(_.play(0));
+m.object_(nil);
+m.object_(p);
+
+// if you have JITLibExtensions installed, try ProxyMeter to see the proxy levels:
+if (\ProxyMeter.asClass.notNil) { ProxyMeter.addMixer(m); };
+
+
+"abcdefghijk".do { |k| p[k.asSymbol].ar };
+
+"lmnopqrtuvw".do { |k| p[k.asSymbol].kr };
+
+"abcdefghijk".do { |k, i|
+    p[k.asSymbol].playN(vol: 0.8 - (0.1 * i) );
+    p[k.asSymbol].source = {
+        VarSaw.ar((i + 1 * 100) + [-1, 1])
+        * LFSaw.ar((i + 1 * 0.25));
+    };
+};)niceParty.(0.1);
 ~partyPauser.pause;~jumpinessTask.pause;~crowd.do({|m| m.set(\vol,0)});
 ~fu.(~ice);
 ~fu.(~chairs);
@@ -152,3 +176,68 @@ Task
 	}.fork
 )
 
+
+
+
+this.postln;
+this.inspect;
+(
+
+	a=[];
+	this.codeDump={|code|a=a.add(code)};
+	3+3;
+	a;
+	a[1];
+
+		
+)
+a[2];
+
+-> 	this.codeDump={|code|a=a.add(code)};
+
+
+p=ProxySpace.push(s.boot,p);
+
+"abcdef".do{|k| p[ k.asSymbol ].ar};
+
+m=ProxyMixer(p,8);
+Platform.ideName;
+Platform.userHomeDir;
+m=ProxyMixer=ProxyMixer
+w=Window.new.alwaysOnTop_(true)
+w.front;
+
+o=SoundFileView(w,Rect(0,100,900,100));
+o.elasticMode=true;
+f=SoundFile.new;
+f.openRead("/Users/michael/tank/SchaferHouse/SOUND/APPLIANCES/Air Dryer Industrial.wav");
+o.soundfile=f;
+o.read(0,f.numFrames);
+o.drawsWaveForm=true;
+o.inspect;
+o.timeCursorOn=true
+o.timeCursorPosition;
+o.bounds_(Rect(0,100,900,200));
+
+thisProcess.nowExecutingPath;
+
+"a b c | d".replace("| ", "");
+
+Pbind
+Panola
+String.
+
+d=[1,3,5,7,9,8,5,4,3,2,1, \rest];
+(
+	b=Pbind(
+		\degree , Pseq([\rest],4)++Pseq(d,inf),
+		\dur , 0.3
+	).play;
+	c=Pbind(
+		\degree , Pseq(d,inf)+12,
+		\dur , 0.3,
+		//\octave, 1
+	).play;
+)
+a;
+s.reboot;

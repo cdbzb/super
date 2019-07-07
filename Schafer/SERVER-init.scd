@@ -17,7 +17,7 @@
 	};
 
 
-	ServerBoot.add(~setOptions);
+	//ServerBoot.add(~setOptions);
 	//ServerTree.add({b=~bassManagement.play});
 	s.waitForBoot({
 		s.meter;

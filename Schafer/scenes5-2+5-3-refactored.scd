@@ -66,6 +66,7 @@ ServerTree.removeAll;
 		~chairs=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/ambeo/chairs*");
 		~davidSteps=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/ambeo/footsteps*");
 		~ice=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/ambeo/ice*");
+		~newDoor=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/new-door/*.wav");
 
 ///// ServerTree add groups
 	~makeGroups={
@@ -162,10 +163,11 @@ ServerTree.removeAll;
 )
 
 ( { // scene1 toiletjoy 5-2
-//s.prepareForRecord("/Users/michael/tank/SchaferHouse/toiletJoy2.wav",8);
-//s.sync;
-//s.record(bus:~speakers[0] , numChannels:8);
+s.prepareForRecord("/Users/michael/tank/SchaferHouse/toiletJoy2-newdoor.wav",8);
+s.sync;
+s.record(bus:~speakers[0] , numChannels:8);
 
+		~newDoor=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/new-door/*.wav");
 	c=thisThread.clock.beats;
 	~steps.fadeTime=0.1;
   	~steps[1]=\filter->{|in| DelayN(in,0.1,0.009)}; //delay compensation
@@ -205,7 +207,8 @@ ServerTree.removeAll;
 	2.wait;
 		~bathroom.node[1]={Pan2.ar(PlayBuf.ar(1,~water)*0.2,0.6)};
 	11.wait;
-		{Out.ar(~speakers[6],PlayBuf.ar(1,~doors[2])*0.4)}.play;
+		//{Out.ar(~speakers[6],PlayBuf.ar(1,~doors[2])*0.4)}.play;
+		{Out.ar(~speakers[6],PlayBuf.ar(1,~newDoor[0],startPos:10000)*5)}.play;
 		~setBusIR.(~bathroom,~doorOp);
 	0.5.wait;
 		~startWalking.(); ~steps.play(~bathroom.bus,group:~sources,fadeTime:0.1);
@@ -557,20 +560,18 @@ s.stopRecording;
 		10.wait;
 		~crowd.do({|m| m.release(4)});
 
-	s.stopRecording;
-	}.fork;
-)
 		//(SystemClock.seconds-c).postln;
-////////////////////Scene 5-5
+	
+ ////////////////////Scene 5-5
 		~chairs=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/ambeo/chairs*");
 		~ice=SoundFile.collectIntoBuffers("/Users/michael/tank/SchaferHouse/SOUND/ambeo/ice*");
 		~venice=Buffer.read(s,"/Users/michael/tank/SchaferHouse/SOUND/VENICE RECORDINGS/good drivebys.wav");
 		s.sync;
 		~text={|vol=1| {PlayBuf.ar(~texts.choose.numChannels,~texts.choose)*vol}.play(s,~speakers[7.rand])};
-	s.prepareForRecord("/Users/michael/tank/SchaferHouse/5-5II.aif",numChannels:8);
 ({ ///topp
-	s.record(bus:~speakers[0],numChannels:8);
+	s.prepareForRecord("/Users/michael/tank/SchaferHouse/5-5III-new-door.aif",numChannels:8);
 	s.sync;
+	s.record(bus:~speakers[0],numChannels:8);
 
 		{PlayBuf.ar(1,~doors[5])*0.5}.play(s,~speakers[4]);
 		2.wait;
@@ -636,7 +637,8 @@ s.stopRecording;
 		~bedroom[1]=\filter -> {|in| PartConv.ar(in,4096,~washRoom)*0.2+(in)*0.2}; //should be stereo 
 		~bedroom.playN([~speakers[2],~speakers[3]],1!2,[0,1]);
 		//open bedroom door
-		{ PlayBuf.ar(1, ~doors[2])*0.4 }.play(s,~speakers[2]);
+		//{ PlayBuf.ar(1, ~doors[2])*0.4 }.play(s,~speakers[2]);
+		{ PlayBuf.ar(1, ~newDoor[1])*5 }.play(s,~speakers[2]);
 		1.wait;
 		~walkFromTo.(0,~speakers[2],~bedroomBus,8,fadeOut:0.8);
 		8.wait;
@@ -649,7 +651,11 @@ s.stopRecording;
 		~windowClose.play(s,~bedroomBus);
 		a.release(0.3);
 		1.2.wait;
-
+//// delete these 3 lines
+	s.stopRecording;
+	}.fork;
+)
+(
 ///////////Scene 5-6
 		~clicks=Group.new(s);
 		8.do{|x| {Impulse.ar(rrand(1.5,2.0)/4,rrand(0,1.0),mul:0.4)}.play(~clicks,~speakers[x])};

@@ -125,24 +125,36 @@ a=["and","the","bo-","dy","fun-", "ctions" , "will", "race"];
 	Pbind(\dur,Pseq(~deltas),\degree,Pseq([1,2,6,5,6,2,6,5])).play
 )
 s.boot;
+s.boot;
 ~deltas.postln;
 SynthDef(\bass,{|freq=440 amp=1| Out.ar(1,Saw.ar(freq,EnvGen.kr(Env.perc(0.1,1.2)))*amp)}).add;
 SynthDef(\harp,{|freq=440 amp=1| Out.ar(1,FreeVerb.ar(Blip.ar(freq,16,EnvGen.kr(Env.perc(0.1,2.2))),room:0.9,mix:0.9)*amp)}).add;
 ( //sequence
-	var andThe = [ 0.437, 0.489, 0.322, 0.305, 0.303, 0.322, 0.333, 0.900 ];
 	var manyTimes=[ 0.654, 0.254, 0.321, 0.255, 0.318 , 0.508]; //, 0.399, 0.437, 0.463 ]
 	var metabolism=[0.372,0.401,0.407,0.44]*(41/37);
 	var soWereGoing= [ 0.243, 0.249, 0.238, 0.251, 0.244, 0.294, 0.399, 0.349, 0.35, 0.367, 0.327, 0.375, 0.379, 0.369, 0.389, 0.722, 0.755, 0.623 ];
+	~andThe=(
+		dur: [ 0.437, 0.489,   0.322, 0.305, 0.303, 0.322, 0.333,   0.900 ],
+		lick: Pseq([1,2,6,5,6,2,6,5]),
+		tune: {|self|Pbind( \dur,Pseq(self.dur),\degree,self.lick)},
+		bass: {|self|Pbind( \instrument, \bass, \dur,Pseq(self.dur)+Pwhite(-0.01,0.01,inf),
+			\degree,self.lick-14,\amp,0.3)};
+	);
+	~r_manyTimes=(
+		dur: [ 0.410, 0.474, 0.410, 0.474,    0.654, 0.254, 0.321, 0.255, 0.318,   0.508],
+		tune: {|self| Pbind(\dur,Pseq(self.dur),\note,Pseq([\r,\r, 4, 7,5,7,5,4,7]))},
+		harp:  (\instrument:\harp,\note:[2,5,9,12],\strum:0.05,\dur:1),
+		bass: {|self| Pbind(\instrument,\bass,\dur,Pseq(self.dur[0..1]++self.dur[2..3].sum++1),\note,Pseq([1,4,-3,2]-24))},
+	);
+
 	Pseq([
-		Ppar([
-			Pbind(\dur,Pseq(andThe),\degree,Pseq([1,2,6,5,6,2,6,5])),
-			Pbind(\instrument, \bass, \dur,Pseq(andThe)+Pwhite(-0.01,0.01,inf),\degree,Pseq([1,2,6,5,6,2,6,5])-14,\amp,0.3)
-		]),
+		Ppar([ ~andThe.tune,~andThe.bass,
+			 Pseq([(\type:\rest,\dur:~andThe.dur[(0..6)].sum),(\instrument:\harp,\note:[7,11,16,19],\strum:0.06)]),
+		]) , 
 		Ptpar([
-			0,Pbind(\dur,Pseq([0.884, 0.410,0.474, 0.9]),\midinote,Pseq([\rest, 76, 79, 77]-12) ),
-			(0.88+0.4+0.47),Pbind(\dur,Pseq(manyTimes),\midinote,Pseq([\r,67,65,64,67])),
-			(0.88+0.4+0.40),Pbind(\instrument, \harp, \midinote,Pseq([62,65,69,72]), \dur, Pwhite(0.05,0.1,4),\amp,0.4),
-			0,Pbind(\instrument,\bass,\dur,Pseq([0.410,0.474,0.900, 1]),\midinote,Pseq([61,64,57, 62,])-24)
+			0,									~r_manyTimes.tune ,
+			~r_manyTimes.dur[(0..3)].sum-0.1 ,	Pseq([~r_manyTimes.harp]),
+			0,									~r_manyTimes.bass 
 		]),
 		Ppar([
 			Pbind(\dur,Pseq(metabolism),\midinote,Pseq([65,64,62,60,59])),
@@ -152,8 +164,6 @@ SynthDef(\harp,{|freq=440 amp=1| Out.ar(1,FreeVerb.ar(Blip.ar(freq,16,EnvGen.kr(
 			Pbind(\dur,Pseq(soWereGoing),\note,(Pseq([8,9,11,12,14,16, 14,12,9])-[0,12])),
 			Pbind(\instrument,\bass,\dur,Pseq([0.5,1, 1]),\note,Pseq([\r,4-36,9-36 ])) //sum of first five - make function
 		])
-
-
 ]).play;
 
 )

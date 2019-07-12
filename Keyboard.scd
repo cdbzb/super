@@ -151,25 +151,6 @@ a.ret;
 ~sections.playem;
 )
 
-(
-	~song=(
-		song:[
-			"the extreme power of the","g a b- d5 b-4 a g",
-			"alien mind will make the -","e5 d c f e f g f",
-			"r r r r heart action dangerousely", "g5 g g g c6 a5 f b- a g f ",
-			//		" high and the body functions will",
-			//		" race r r many time their natural me-",
-			//		"tabolism so we're going to have to",
-			//		" monitor this very",
-			//		"carefully"
-		],
-		lyrics:{|self| self.song.copySeries(0,2,self.song.size)},
-		notes:{|self| var array = self.song.copySeries(1,3,self.song.size);
-				array.collect({|string| Panola.new(string).midinotePattern})},
-		durs:[]
-	)
-
-)
 
 Pbind(\midinote,~song.notes[0]-12).play;
 ~song.lyrics[0].postln;

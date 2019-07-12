@@ -1,0 +1,94 @@
+var o, p;
+o = [
+	Archive.prNew,  IdentityDictionary.prNew,  Array.prNew(32),  Event.prNew,  
+	Array.prNew(32),  Array.prNew(5),  Pseq.prNew,  List.prNew,  
+	Array.prNew(7),  Pseq.prNew,  List.prNew,  Array.prNew(8),  
+	Pseq.prNew,  List.prNew,  Array.prNew(12),  Pseq.prNew,  
+	List.prNew,  Array.prNew(8),  Pseq.prNew,  List.prNew,  
+	Array.prNew(10),  Array.prNew(10),  "the extreme power of the",  "g a b- d5 b-4 a g",  
+	"alien mind will make the -",  "e5 d c f e f g f",  "r r r r heart action dan ger ous ly high- ",  "r r r r  c6 a5 f b- a g f g ",  
+	" - and the body functions will",  "a5 c d a g a d a ",  " race r r many times their natural me-",  "g5 r r  e5 g5 f g f e g ",  
+	{|self|self.song.size/2},  {|self sec till | self.durs[sec].list[0..till].sum},  {|self | (0..self.sections-1).collect{|i| Pbind(\dur,self.durs[i],\midinote,self.tune[i])}},  {|self| var array = self.song.copySeries(1,3,self.song.size);
+				array.collect({|string| Panola.new(string).midinotePattern})},  
+	{|self | (0..self.sections-1).collect{|i| self.durs[i].list.sum} },  {|self| self.song.copySeries(0,2,self.song.size)}
+];
+p = [
+	// Archive
+	0, [ dictionary: o[1] ],  
+	// IdentityDictionary
+	1, [ array: o[2],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	2, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  'song',  o[3],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil ],  
+	// Event
+	3, [ array: o[4],  size: 8,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	4, [ 'durs',  o[5],  nil,  nil,  
+		nil,  nil,  'song',  o[21],  
+		'sections',  o[32],  nil,  nil,  
+		'durTill',  o[33],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'pbind',  o[34],  nil,  nil,  
+		nil,  nil,  'tune',  o[35],  
+		'secDur',  o[36],  'lyrics',  o[37] ],  
+	// Array
+	5, [ o[6],  o[9],  o[12],  o[15],  
+		o[18] ],  
+	// Pseq
+	6, [ list: o[7],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	7, [ array: o[8] ],  
+	// Array
+	8, [ 0.388,  0.407,  0.401,  0.428,  
+		0.401,  0.415,  0.459 ],  
+	// Pseq
+	9, [ list: o[10],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	10, [ array: o[11] ],  
+	// Array
+	11, [ 0.612,  0.223,  0.403,  0.846,  
+		0.477,  0.452,  0.226,  0.269 ],  
+	// Pseq
+	12, [ list: o[13],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	13, [ array: o[14] ],  
+	// Array
+	14, [ 0.431,  0.453,  0.431,  0.467,  
+		0.863,  0.419,  0.408,  0.439,  
+		0.433,  0.407,  0.236,  0.241 ],  
+	// Pseq
+	15, [ list: o[16],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	16, [ array: o[17] ],  
+	// Array
+	17, [ 0.91,  0.428,  0.471,  0.275,  
+		0.337,  0.324,  0.296,  0.35 ],  
+	// Pseq
+	18, [ list: o[19],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	19, [ array: o[20] ],  
+	// Array
+	20, [ 0.846,  0.47,  0.472,  0.448,  
+		0.48,  0.639,  0.271,  0.325,  
+		0.281,  0.312 ],  
+	// Array
+	21, [ o[22],  o[23],  o[24],  o[25],  
+		o[26],  o[27],  o[28],  o[29],  
+		o[30],  o[31] ]
+];
+prUnarchive(o,p);

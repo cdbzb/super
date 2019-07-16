@@ -296,38 +296,35 @@ a.f.play; //play now
 )
 
 (
-	~song.cursor_(0);
+	~song.cursor_(2);
 	~sections.wibbles.p;
 	~sections.do({|i| i.p});
 )
 (
-	~sections=(
-		tune1:(parent:~song,  ////////do all automatically
-		start:0,
-		music: ~song.pbind[0]
-	),	
-		tune2:(parent:~song,  ////////do all automatically
-		start:1,
-		music: ~song.pbind[1]
-	),	
-		strum1:(parent:~song,
-		start:0,
-		music:(\lag: ~song.durTill(0,2),\note:[-5,-3,-2,2,5,7],\strum:0.03,\sustain:2);
-	),
-		bassnote:(parent:~song,
-		start:0,
-		music:(note:-24+rrand(0,0.01),\amp:rrand(0.5,1),\sustain:5,\lag:rand(0.02))
-	),
-		heartActionBass:(parent:~song,
-		start:2,
+	~song.cursor_(0);
+	~sections=();
+	~sections.strum1=(parent:~song, start:0,
+		music:(\lag: ~song.durTill(0,2),\note:[-5,-3,-2,2,5,7],\strum:0.03,\sustain:2));
+	~sections.bassnote=(parent:~song, start:0,
+		music:(note:-24+rrand(0,0.01),\amp:rrand(0.5,1),\sustain:5,\lag:rand(0.02)));
+	~sections.heartActionBass=(parent:~song, start:2,
 		music: Pbind(\dur, ~song.durs[2]++Pseq([1.0]), 
 			\note, Pseq([-2,-2,-2,0,-7,\r,\r,-2,-2,-2, 0,\r,-10])-24,\amp,2,
 			\legato,Pseq([1 ,1, 1,1, 1.5,1,1, 1, 1, 1, 2, 1, 1]))
-	),
-	);
+		);
+	~song.pbind.do({|i x| var label = ("guide"++x).asSymbol; ~sections[label]=(parent:~song,start:x,music:i);label.postln});
+	~sections.weeeeuw=(parent:~song,start:2,music:{{Out.ar(0,FreeVerb.ar(Ringz.ar(WhiteNoise.ar(0.01),XLine.kr(2500,240,6),1),room:8,mix:7)*EnvGen.kr(Env.perc(0,7),doneAction:2))}});
+
+	//SynthDef(\test,{|freq|Out.ar(1,RLPF.ar(Saw.ar(freq.lag(1),0.1*EnvGen.kr(Env.linen(0.05,0.5,2))),freq*2+1500,2))}).add;
+	~sections.andthe=(parent:~song,start:3,
+				music:Pbind(\dur,~song.durs[3]++Pseq([1]), \instrument,\test,
+				\lag,Pwhite(-0.01,0.01),
+				\midinote,Pseq([\r]++~song.tune[3].list.copyRange(1,~song.tune[3].list.size)++[79])-24));
 
 ~sections.do({|i| i.p});
 )
+~sections.weeeeuw.music;
+
 ~song.cursor_(2);
 s.boot;
 ~song.cursor;

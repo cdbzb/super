@@ -1,0 +1,97 @@
+(
+	SynthDef(\flanger,{|out=0 gate=1 |
+		var in =In.ar(out,2);
+		var sig=TwoTube.ar(in,d1length:507,d2length:819,loss:0.99);
+		ReplaceOut.ar(out,sig*EnvGen.ar(Env.perc(0,7)));
+	}).add;
+
+	SynthDef(\rest,{}).add;
+
+
+ // more kicks
+SynthDef(\kick1, {
+    var snd;
+    snd = DC.ar(0);
+    snd = snd + (SinOsc.ar(XLine.ar(800, 400, 0.01)) * Env.perc(0.0005, 0.01).ar);
+    snd = snd + (BPF.ar(Hasher.ar(Sweep.ar), XLine.ar(800, 100, 0.01), 0.6) * Env.perc(0.001, 0.02).delay(0.001).ar);
+    snd = snd + (SinOsc.ar(XLine.ar(172, 50, 0.01)) * Env.perc(0.0001, 0.3, 1, \lin).delay(0.005).ar(2));
+    snd = snd.tanh;
+    Out.ar(\out.kr(0), Pan2.ar(snd, \pan.kr(0), \amp.kr(0.1)));
+}).add;
+
+SynthDef(\kick2, {
+    var snd;
+    snd = DC.ar(0);
+    snd = snd + (HPF.ar(Hasher.ar(Sweep.ar), 1320) * Env.perc(0.003, 0.03).ar * 0.5);
+    snd = snd + (SinOsc.ar(XLine.ar(750, 161, 0.02)) * Env.perc(0.0005, 0.02).ar);
+    snd = snd + (SinOsc.ar(XLine.ar(167, 52, 0.04)) * Env.perc(0.0005, 0.3).ar(2));
+    snd = snd.tanh;
+    Out.ar(\out.kr(0), Pan2.ar(snd, \pan.kr(0), \amp.kr(0.1)));
+}).add;
+
+SynthDef(\kick3, {
+    var snd;
+    snd = DC.ar(0);
+    snd = snd + (SinOsc.ar(XLine.ar(1500, 800, 0.01)) * Env.perc(0.0005, 0.01, curve: \lin).ar);
+    snd = snd + (BPF.ar(Impulse.ar(0) * SampleRate.ir / 48000, 6100, 1.0) * 3.dbamp);
+    snd = snd + (BPF.ar(Hasher.ar(Sweep.ar), 300, 0.9) * Env.perc(0.001, 0.02).ar);
+    snd = snd + (SinOsc.ar(XLine.ar(472, 60, 0.045)) * Env.perc(0.0001, 0.3, curve: \lin).delay(0.005).ar(2));
+    snd = snd.tanh;
+    Out.ar(\out.kr(0), Pan2.ar(snd, \pan.kr(0), \amp.kr(0.1)));
+}).add;
+
+
+ // Basic drum kit
+
+SynthDef("hihat", {arg out = 0, amp = 0.5, att = 0.01, rel = 0.2, ffreq = 6000, pan = 0;
+	var env, snd;
+	env = Env.perc(att, rel, amp).kr(doneAction: 2);
+	snd = WhiteNoise.ar;
+	snd = HPF.ar(in: snd, freq: ffreq, mul: env);
+	Out.ar(out, Pan2.ar(snd, pan));
+}).add;
+
+SynthDef("snare", {arg out = 0, amp = 0.1, sinfreq = 180, att = 0.01, rel = 0.2, ffreq = 2000, pan = 0;
+	var env, snd1, snd2, sum;
+	env = Env.perc(att, rel, amp).kr(doneAction: 2);
+	snd1 = HPF.ar(
+		in: WhiteNoise.ar,
+		freq: ffreq,
+		mul: env
+	);
+	snd2 = SinOsc.ar(freq: sinfreq, mul: env);
+	sum = snd1 + snd2;
+	Out.ar(out, Pan2.ar(sum, pan));
+}).add;
+
+SynthDef("kick", {arg out = 0, amp = 0.3, sinfreq = 60, glissf = 0.9, att = 0.01, rel = 0.45, pan = 0;
+	var env, snd, ramp;
+	env = Env.perc(att, rel, amp).kr(doneAction: 2);
+	ramp = XLine.kr(
+		start: sinfreq,
+		end: sinfreq * glissf,
+		dur: rel
+	);
+	snd = SinOsc.ar(freq: ramp, mul: env);
+	snd = Pan2.ar(snd, pan);
+	Out.ar(out, snd);
+}).add;
+
+// Basic saw synth for chords and bass
+SynthDef("sawSynth", { arg freq = 440, amp = 0.1, att = 0.1, rel = 2, lofreq = 1000, hifreq = 3000;
+    var env, snd;
+    env = Env.perc(
+		attackTime: att,
+		releaseTime: rel,
+		level: amp
+	).kr(doneAction: 2);
+    snd = Saw.ar(freq: freq * [0.99, 1, 1.001, 1.008], mul: env);
+	snd = LPF.ar(
+		in: snd,
+		freq: LFNoise2.kr(1).range(lofreq, hifreq)
+	);
+    snd = Splay.ar(snd);
+    Out.ar(0, snd);
+}).add;
+"LOADED".postln;
+)

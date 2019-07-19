@@ -1,9 +1,10 @@
-( //load long from disk
-Archive.read("/Users/michael/tank/super/theExtreme2");
-~a=Archive.at(\song);
-~song.durs=~a.durs;
+( //load song from disk
+//Archive.global.put(\song,~song);
+//Archive.write("/Users/michael/tank/super/theExtreme3")
 )
+
 ( // the song event
+	"/Users/michael/tank/super/song-Synthdefs.scd".load;
 	~song=(
 		song:[
 			"the extreme power of the","g a b- d5 b-4 a g",
@@ -11,40 +12,34 @@ Archive.read("/Users/michael/tank/super/theExtreme2");
 			"r r r r heart action dan ger ous ly high- ", "r r r r  c6 a5 f b- a g f g ",
 			" - and the body functions will", "a5 c d a g a d a ", 
 			" race r r many times their natural me-", "g5 r r  e5 g5 a4 g5 f e g ",
-//			"tabolism so we're going to have to", " f5 e d c r g#4 a b c5 d e "
-//			" mo- ni- tor this very", "d5 c4 a4 f f5 e "
-//			"carefully","e5 d b4 r r r"
+			"tabolism so we're going to have to", " f5 e d c r g#4 a b c5 d e ",
+			" mo- ni- tor this very", "d5 c4 a4 f f5 e ",
+			"carefully","e5 d b4 r r r"
 		],
 		sections: {|self|self.song.size/2},
 		cursor:0,
 		lyrics:{|self| self.song.copySeries(0,2,self.song.size)},
 		tune:{|self| var array = self.song.copySeries(1,3,self.song.size);
 				array.collect({|string| Panola.new(string).midinotePattern})},
-		durs:Pseq([1])!5,
+		dursFile:"/Users/michael/tank/super/theExtreme3",
+		setupDurs:{|self|self.dursFile.isNil.if(
+				{Pseq([1])!self.sections},
+				{var a; Archive.read(self.dursFile);a=Archive.at(\song);
+					self.durs=a.durs++(Pseq([1])!self.sections-a.durs.size); //copy and pad
+			})},
 		pbind:{|self | (0..self.sections-1).collect{|i| Pbind(\dur,self.durs[i],\midinote,self.tune[i])}},
 		secDur:{|self | (0..self.sections-1).collect{|i| self.durs[i].list.sum} },
 		secLoc:{|self| [0]++self.sections.asInt.collect({|i| self.secDur[0..i].sum}) },
 		durTill:{|self sec till | self.durs[sec].list[0..till].sum},
 		pbindFrom:{|self from=3| var list=self.pbind[from.asInt..(self.sections-1).asInt].postln;Pseq(list).postln},
 		when: {|self| self.secDur[self.start]}, //for sections
-		p:{|self|(self.start<self.cursor).not.if{
+		p:{|self|(self.start<self.cursor).not.if{ var offset;
+			self.syl.isNil.if({offset=0;"offset 0".postln},{offset=self.durTill(self.start,self.syl)});
 			TempoClock.sched(
-				(self.secLoc[self.start]-self.secLoc[self.cursor]),
+				(self.secLoc[self.start]-self.secLoc[self.cursor])+offset,
 				{self.music.play})};self}, //for sections
 	)
 )
-~song.secLoc[3];
-~song.secDur[0..3].sum;
-~song.pbindFrom.(3).play;
-~song.pbind[0].play;
-s.boot;
-~song.sections;
-~song.pbind[3..(~song.sections-1)];
-var till=~song.sections-1;~song.pbind[3..till.asInt];
-~song.pbind[3..6];
-~song.sections-1;
-
-
 
 ( //construct event recorder
 ~recorder= {|song  range=#[0,1] cueSecs=1 |  
@@ -134,212 +129,125 @@ var till=~song.sections-1;~song.pbind[3..till.asInt];
 			};
 		)
 	};
-a=~recorder.(~song,[0,1],2);
+a=~recorder.(~song,[7],2);
 a.makeWindow;
 )
-
-( //// moving onward
-	SynthDef(\test,{|freq|Out.ar(1,RLPF.ar(Saw.ar(freq.lag(1),0.1*EnvGen.kr(Env.linen(0.05,0.5,2))),freq*2+1500,2))}).add;
-
-		~song.sections.do{|i| ~song.lyrics[i].postln};
-		SystemClock.sched(0.5+~song.durTill(0,2),{(\note:[-5,-3,-2,2,5,7],\strum:0.03,\sustain:2).play});
-		Ptpar([
-
-			0,Pseq([ //bass notes
-				(note: -24-5,amp:3, sustain:0.5+~song.durs[0].list.sum+~song.durs[1].list.sum,\dur:~song.secDur[0]+0.5),
-				(note: -12-5,amp:3, sustain:~song.secDur[1]),
-			]),
-			0.52,Pseq([
-				~song.pbind[0],
-				Ptpar([ //sec1
-					0,~song.pbind[1], //tune 
-					~song.durTill(1,2)+(~song.durs[1].list[3]/2), //make durAt method
-					Pseq([(\note:[-5,-2,0,4,7],\strum:0.03,\dur:1,sustain:2)])
-				]),
-				Ppar([ //sec2
-					~song.pbind[2], //tune
-					Prout.new({//bassnotes
-							Pbind(\dur, ~song.durs[2]++Pseq([1.0]), 
-							\note, Pseq([-2,-2,-2,0,-7,\r,\r,-2,-2,-2, 0,\r,-10])-24,\amp,2,
-							\legato,Pseq([1 ,1, 1,1, 1.5,1,1, 1, 1, 1, 2, 1, 1])
-						).play}
-					)
-				]),
-				Ppar([ //sec3
-					~song.pbind[3], 
-					Prout({ var notes=~song.tune[3].list, width=0.01;
-						Pbind(\dur,~song.durs[3]++Pseq([1]), \instrument,\test,
-						\lag,Pwhite(-1*width,width),
-						\midinote,Pseq([\r]++notes.copyRange(1,notes.size)++[79])-24).play})
-					]),
-				Ppar([ //sec4
-					~song.pbind[4],
-					Pbindf(Panola.new("r c#2 e a1\\pdur[2.2]").asPbind,\dur,~song.durs[4],\tempo,1,\amp,0.8)
-				]),
-			]);
-		]).play
-	
-)
-TempoClock.tempo=1
-( //scheduling
-	var sec={|sec| ~song.secDur[0..sec].sum};
-	{
-		c=TempoClock.new(seconds:-0.5);
-		(note: -24-5,amp:3, sustain:0.5+~song.durs[0].list.sum+~song.durs[1].list.sum,\dur:~song.secDur[0]+0.5).play;
-		0.4.wait;
-		c.sched(0,				{~song.pbind[0].play});
-		c.sched(~song.secDur[0],{~song.pbind[1].play});
-		c.sched(sec.(1),		{
-								~song.pbind[2].play; 
-								Pbind(\dur, ~song.durs[2]++Pseq([1.7]), \note, Pseq([-2,-2,-2,0,-7,\r,\r,-2,-2,-2, 0, \r, -10])-24,\amp,2,\legato,Pseq(1!10++[1.9,1,1])).play;
-		});
-		c.sched(sec.(2),		{
-			~song.pbind[3].play;
-			Pbind(\dur,~song.durs[3]++Pseq([1]),\instrument,\test,\lag,Pwhite(-0.01,0.01),\midinote,Pseq([\r]++~song.tune[3].list.copyRange(1,~song.tune[3].list.size)++[79])-24).play;
-		});
-		c.sched(sec.(3),		{~song.pbind[4].play});
-	}.fork
-)
-
-
-(//how to make overlapping sections: wrap in an event!
-	c=TempoClock.new;
-	Pseq([
-		(play: {
-			Pbind(\note,Pseq([1,3,2,4,5],5),\dur,Pwhite(0.2,1)).play(c)
-		},\dur:3),
-		(play:{
-			Pbind(\dur,Pseq([1,1,0.5],3)).play(c)
-		},dur:3)
-		,
-		Ppar([
-			Pbind(\note,Pseq([9,8,7,6,5]),\dur,1,\sustain,6),
-		(play:{c.tempo=0.3})
-	])
-	]).play(c)
-)
-c.tempo;
-
-
-
-( //redo with keys
-	a=List.newClear(8);
-	a[0]=(
-		f:{Pbind(\dur,Pwhite(0.2,1.0),\note,Pwhite(1,3.0),\amp,(Pwhite(0.2,0.5))).play},
-		when:2,
-		play:{ TempoClock.sched(~when,~f) }
-	);
-)
-(
-	a[1]=(
-		f:{Pbind(\dur,Pwhite(3.3,4.2),\note,Pwhite(-7,-11),\sustain,Pwhite(2.0,3.0),\amp,1).play},
-		when:5,
-		play:{ TempoClock.sched(~when,~f) }
-	)
-)
-
-a[1]
-a[0].play; // play at scheduled time
-a.f;
-a.f.play; //play now
-
-~playem={a.do{|i|i.play}}; //play timeline
-~playSec={|section| //play from section
-	var startTime=~song.secDur[0..section].sum; 
-	a.do{|i| (i.when>startTime).if{
-		i.play
-}}};
-
-~playem.();
-(///2.0
-
-	song: [
-		" lyrics ", "panola", //1
-		" lyrics ", "panola", //2
-		],
-	durs: [],
-
-	sections:[
-		list:[ //1
-			some Pdef ??? - can be defined and redefined below I suppose - the key would help
-			some Pbind,
-			( some event with offset in syllables ),
-			some Pseq
-		],
-		list:[ //2
-			some Pbind,
-			( some event with offset in syllables ),
-			some Pseq
-		],
-	]
-
-	play: method to play sections
-	reshaper: method to record durs
-	cursor:
-	locate: method to convert [section,syllable] pair to seconds AND/OR
-	locate: method to convert [section,*string*] pair to seconds
-)
-
-
-////as event
-(
+( ////as 'sections' event
+	//~song.cursor_(0);
+	~song.setupDurs;
 	~sections=(
-		wibbles:(parent:~song,
-			start:3,
-			music: {Pbind(\dur,Pwhite(0.1,0.3),\note,Pwhite(0,1.0))},
-		).
-		bassnotes:(parent:~song,
-			start:2,
-			music: (note:-20,sustain:5,amp:1),
-		),
-	)
-)
-
-(
-	~song.cursor_(2);
-	~sections.wibbles.p;
-	~sections.do({|i| i.p});
-)
-(
-	~song.cursor_(0);
-	~sections=();
-	~sections.strum1=(parent:~song, start:0,
-		music:(\lag: ~song.durTill(0,2),\note:[-5,-3,-2,2,5,7],\strum:0.03,\sustain:2));
+		play:{|self| self.do({|i| i.p});};
+	);
+	~sections.strum1=(parent:~song, start:0,syl:2,
+		music:(\note:[-5,-3,-2,2,5,7],\strum:0.03,\sustain:2));
+	~sections.strum2=(parent:~song, start:1,syl:2,
+		music: (\lag:~song.durs[1].list[3]/2,\note:[-5,-2,0,4,7],\strum:0.03,\sustain:2));
 	~sections.bassnote=(parent:~song, start:0,
-		music:(note:-24+rrand(0,0.01),\amp:rrand(0.5,1),\sustain:5,\lag:rand(0.02)));
+		music: (note: -24-5,amp:3, sustain:0.5+~song.secDur[0]+~song.secDur[1],\dur:~song.secDur[0]+0.5));
+	~sections.bassnote2=(parent:~song, start:1,
+		music: (note: -12-5,amp:3, sustain:~song.secDur[1]));
 	~sections.heartActionBass=(parent:~song, start:2,
 		music: Pbind(\dur, ~song.durs[2]++Pseq([1.0]), 
 			\note, Pseq([-2,-2,-2,0,-7,\r,\r,-2,-2,-2, 0,\r,-10])-24,\amp,2,
-			\legato,Pseq([1 ,1, 1,1, 1.5,1,1, 1, 1, 1, 2, 1, 1]))
-		);
-	~song.pbind.do({|i x| var label = ("guide"++x).asSymbol; ~sections[label]=(parent:~song,start:x,music:i);label.postln});
-	~sections.weeeeuw=(parent:~song,start:2,music:{{Out.ar(0,FreeVerb.ar(Ringz.ar(WhiteNoise.ar(0.01),XLine.kr(2500,240,6),1),room:8,mix:7)*EnvGen.kr(Env.perc(0,7),doneAction:2))}});
+			\legato,Pseq([1 ,1, 1,1, 1.5,1,1, 1, 1, 1, 2, 1, 1])));
 
-	//SynthDef(\test,{|freq|Out.ar(1,RLPF.ar(Saw.ar(freq.lag(1),0.1*EnvGen.kr(Env.linen(0.05,0.5,2))),freq*2+1500,2))}).add;
+
+	~sections.weeeeuw=(parent:~song,start:2,music:{{Out.ar(0,FreeVerb.ar(Ringz.ar(WhiteNoise.ar(0.01),XLine.kr(2500,240,6),1),room:8,mix:7)*EnvGen.kr(Env.perc(0,7),doneAction:2))}});
+	~sections.weeeeuw.music= Pfxb.new(Pbind(\midinote,Pseries(60+36,-0.99,100),\dur,0.1,\sustain,1,\amp,0.01),\flanger);
+	SynthDef(\test,{|freq|Out.ar(1,RLPF.ar(Saw.ar(freq.lag(2),0.1*EnvGen.kr(Env.linen(0.05,0.5,2))),freq*2+1500+SinOsc.ar(5.2,0,350),2))}).add;
+	///tempo map for drums
+	d= ~song.durs[2].list[0..3] ++ ((~song.durs[2].list[4]/2)!2).asList ++ ~song.durs[2].list[5..8];
+	~dquarters=(d/4).round(1).asInt.collect({|i|d[i..(i+4)].sum });
+	~dquarters=2.collect({|i| i=i*4; d[i..(i+4)].sum });
+	///
+	~sections.drums=(parent:~song,start:2,music:
+		Pbind( \instrument, Pseq([\kick2, \rest, \snare, \rest, \kick2, \kick2, \snare,\rest]++
+	                             [\kick2, \rest, \snare, \rest, \kick2,  \kick2, \snare,\rest]),
+		\dur,Pseq(d,inf),
+		\lag,Pseq([0,0,-0.01,0,0,0,0,0],inf),
+		//\amp,0.5
+		\amp,Pseg([0.5,0.5,0.3]*0.5,[d[0..4].sum,d.sum-d[0..4].sum+1])
+	));
+
+	~sections.cymbal=(parent:~song,start:2,music:
+	Pbind( \instrument, Pseq([\rest, \rest, \rest, \rest, \rest, \rest, \rest,\rest]++
+	[\rest, \rest, \rest, \rest, \cymbal, \rest, \rest,\rest]),
+	\dur,Pseq(d,2),\lag,-0.05,\amp,0.4));
+	SynthDef (\cymbal, {|amp=1| var sig=PinkNoise.ar(EnvGen.kr(Env.perc(0,2)))!2; sig=TwoTube.ar(RHPF.ar(sig,500,9),d1length:502,d2length:777,loss:0.99)*0.5;Out.ar(0,sig*amp)} ).add;
+	~sections.hat=(parent:~song,start:2,music:
+	Pbind(\instrument, \hihat, 
+		\ffreq,Pwhite(4000,10000),
+		//\dur,(Pser(d,48)),
+		\dur,(Pser(d/4,96)),
+		\amp,Pseg([0.5,0.5,0]*0.15,[d[0..4].sum,d.sum-d[0..4].sum+4.2]))
+);
 	~sections.andthe=(parent:~song,start:3,
 				music:Pbind(\dur,~song.durs[3]++Pseq([1]), \instrument,\test,
 				\lag,Pwhite(-0.01,0.01),
 				\midinote,Pseq([\r]++~song.tune[3].list.copyRange(1,~song.tune[3].list.size)++[79])-24));
+	~sections.strum3=(parent:~song,start:4,music:
+				(\note: [4,16,19]-12,\dur:3,\strum: 0.03);
+			);
+	~sections.bass3=(parent:~song,start:4,
+				music:Pbindf(Panola.new("r c#2 e a1\\pdur[2.2]").asPbind,\dur,~song.durs[4],\tempo,1,\amp,0.8));
+	~sections.bass5=(parent:~song,start:5, music: 
+				Pbind(\midinote,(Pser(~song.tune[5].list,4)++Pseq([71,71-7]))-36,
+				\dur,Pseq(~song.durs[5].list[0..3]++~song.durs[5].list[4..6].sum++1),
+				\amp,0.8,
+				\lag,Pwhite(-0.02,0.02));
+			);
+~sections.drums5=(parent:~song,start:5,music:
+		Pbind( \instrument, Pseq([\kick2, \kick2, \snare, \kick2, \kick2,] ),
+		\dur,Pseq(~song.durs[5].list[0..3]++~song.durs[5].list[4..6].sum++1),
+		//\lag,Pseq([0,0,-0.01,0,0,0,0,0],inf),
+		//\amp,0.5
+		//\amp,Pseg([0.5,0.5,0.3]*0.5,[d[0..4].sum,d.sum-d[0..4].sum+1])
+	));
 
-~sections.do({|i| i.p});
+	~sections.hat5=(parent:~song,start:5,music:
+	Pbind(\instrument, \hihat, 
+		\ffreq,Pwhite(4000,11000),
+		//\dur,(Pser(d,48)),
+		//\dur,(Pser(d/4,96)),
+		\dur,Pseq(((~song.durs[5].list[0..3]++~song.durs[5].list[4..6].sum++1)/2).stutter(2)),
+		\amp,Pseq([1,0.4]*0.1,4))
+);
+	~sections.bassnote6=(parent:~song,start:6,music:
+		Pbindf(Panola(" a1 g f").asPbind,\dur,Pseq([~song.durs[6].list[1..2].sum]++~song.durs[6].list[3..4]),\tempo,1,\amp,0.8)
+	);
+
+	~sections.pad6=(parent:~song,start:6,music:
+		{
+			 a=(instrument:\sawSynth,midinote:[69,72,77],att:2,rel:3,amp:0.05,lagTime:0.2).play;
+			 //a.set(\freq,[69,74,77].midicps)
+			(type:\set,id:a[\id],freq:[69,74,77].midicps,lag:1.1).play;
+			(type:\set,id:a[\id],freq:[71,74,77].midicps,lag:2.25).play
+		});
+
+	~sections.cymbal5=(parent:~song,start:5,music:
+	(\instrument:\cymbal,\lag:~song.durs[5].list[1..4].sum););
+
+	~sections.cymbal5=(parent:~song,start:6,syl:5,music:
+		Pbind(\insrument, \pluck, \note,[7-12,7],\dur,Pwhite(0.05,0.1),\strum,0.01 ,\amp,Pseg([0.2,0.5*Pwhite(0.8,1.2,inf)*0.0001],[5.1,1.9],\exp,\offset,0))
+	);
+
+	~song.pbind.do({|i x| var label = ("guide"++x).asSymbol; ~sections[label]=(parent:~song,start:x,music:i);label.postln});
+	{s.sync;~sections.do({|i| i.p})}.fork;
+~sections.size;
 )
-~sections.weeeeuw.music;
 
-~song.cursor_(2);
-s.boot;
-~song.cursor;
-~sections.strum1.p;
-~sections.bassnote.p;
-~sections.bassnote.secDur[0];
-~sections.heartActionBass.when;
-~song.secDur[0];
-~song.secDur[1];
-~song.secDur[2];
-~song.secDur[2]-~song.secDur[0];
-~
-|2|3|
-~song.durs[2].list;
-~song.secDur;
-~song.sections;
-~sections.do({|i| i.p});
-~song.durs;
+
+( /// make the beats regular
+)
+(
+	~sections.drums=(parent:~song,start:2,music:
+		Pbind( \instrument, Pseq([\kick2, \rest, \snare, \rest, \kick2, \kick2, \snare,\rest],2),
+		\dur,Pseq(d,inf),
+		\lag,Pseq([0,0,-0.01,0,0,0,0,0],inf)
+	));
+	~sections.hat=(parent:~song,start:2,music:
+	Pbind(\instrument, \hihat, \ffreq,Pwhite(9000,11000),\dur,(Pseq(d,inf)),\amp,0.05))
+	//~sections.bassnote2.music;
+	//~sections.bassnote2;
+)
+~sections.do({|i|i.p});

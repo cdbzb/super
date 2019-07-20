@@ -1,6 +1,6 @@
 ( //load song from disk
-//Archive.global.put(\song,~song);
-//Archive.write("/Users/michael/tank/super/theExtreme3")
+Archive.global.put(\song,~song);
+Archive.write("/Users/michael/tank/super/theExtreme3")
 )
 
 ( // the song event
@@ -14,7 +14,9 @@
 			" race r r many times their natural me-", "g5 r r  e5 g5 a4 g5 f e g ",
 			"tabolism so we're going to have to", " f5 e d c r g#4 a b c5 d e ",
 			" mo- ni- tor this very", "d5 c4 a4 f f5 e ",
-			"carefully","e5 d b4 r r r"
+			"carefully","e5 d b4 r r r",
+			"r r r well... I ", "r r r a g#",
+			//"guess that's as read- y as I'm gon- na be...",""
 		],
 		sections: {|self|self.song.size/2},
 		cursor:0,
@@ -129,14 +131,14 @@
 			};
 		)
 	};
-a=~recorder.(~song,[7],2);
+a=~recorder.(~song,[8],3);
 a.makeWindow;
 )
 ( ////as 'sections' event
 	//~song.cursor_(0);
 	~song.setupDurs;
 	~sections=(
-		play:{|self| self.do({|i| i.p});};
+		ply:{|self| self.do({|i| i.p});};
 	);
 	~sections.strum1=(parent:~song, start:0,syl:2,
 		music:(\note:[-5,-3,-2,2,5,7],\strum:0.03,\sustain:2));
@@ -154,7 +156,7 @@ a.makeWindow;
 
 	~sections.weeeeuw=(parent:~song,start:2,music:{{Out.ar(0,FreeVerb.ar(Ringz.ar(WhiteNoise.ar(0.01),XLine.kr(2500,240,6),1),room:8,mix:7)*EnvGen.kr(Env.perc(0,7),doneAction:2))}});
 	~sections.weeeeuw.music= Pfxb.new(Pbind(\midinote,Pseries(60+36,-0.99,100),\dur,0.1,\sustain,1,\amp,0.01),\flanger);
-	SynthDef(\test,{|freq|Out.ar(1,RLPF.ar(Saw.ar(freq.lag(2),0.1*EnvGen.kr(Env.linen(0.05,0.5,2))),freq*2+1500+SinOsc.ar(5.2,0,350),2))}).add;
+	SynthDef(\test,{|freq amp=1|Out.ar(1,amp*RLPF.ar(Saw.ar(freq.lag(2),0.1*EnvGen.kr(Env.linen(0.05,0.5,2))),freq*2+1500+SinOsc.ar(5.2,0,350),2))}).add;
 	///tempo map for drums
 	d= ~song.durs[2].list[0..3] ++ ((~song.durs[2].list[4]/2)!2).asList ++ ~song.durs[2].list[5..8];
 	~dquarters=(d/4).round(1).asInt.collect({|i|d[i..(i+4)].sum });
@@ -183,6 +185,7 @@ a.makeWindow;
 );
 	~sections.andthe=(parent:~song,start:3,
 				music:Pbind(\dur,~song.durs[3]++Pseq([1]), \instrument,\test,
+				\amp,1,
 				\lag,Pwhite(-0.01,0.01),
 				\midinote,Pseq([\r]++~song.tune[3].list.copyRange(1,~song.tune[3].list.size)++[79])-24));
 	~sections.strum3=(parent:~song,start:4,music:
@@ -227,13 +230,19 @@ a.makeWindow;
 	~sections.cymbal5=(parent:~song,start:5,music:
 	(\instrument:\cymbal,\lag:~song.durs[5].list[1..4].sum););
 
-	~sections.cymbal5=(parent:~song,start:6,syl:5,music:
-		Pbind(\insrument, \pluck, \note,[7-12,7],\dur,Pwhite(0.05,0.1),\strum,0.01 ,\amp,Pseg([0.2,0.5*Pwhite(0.8,1.2,inf)*0.0001],[5.1,1.9],\exp,\offset,0))
+	~sections.tremolo6=(parent:~song,start:6,syl:5,music:
+		Pbind(\insrument, \pluck, \note,[7-12,7]*[1,2],\dur,Pwhite(0.05,0.1),\strum,0.01 ,\amp,Pseg([0.2,0.5*Pwhite(0.8,1.2,inf)*0.0001]*0.3,[5.1,1.9],\exp,\offset,0))
 	);
-
+	~sections.bass8=(parent:~song,start:8,music:
+	Pbind(\note,Pseq([5,4,2,1]-24),\dur,~song.durs[8],\amp,0.5)
+);
+	~sections.bass8Alt=(parent:~song,start:8,music:
+	Pbind(\instrument,\test,\note,Pseq([5,4])-[0+rand(0.02),12],\lag,Pseq([0,0]),\amp,0.5));
+	~sections.strum8=(parent:~song,start:8,syl:1,music:
+	(note:[1,4,9]-12++[1,4],strum:0.04,sustain:2,lag:0.52,amp:0.05)
+	);
 	~song.pbind.do({|i x| var label = ("guide"++x).asSymbol; ~sections[label]=(parent:~song,start:x,music:i);label.postln});
 	{s.sync;~sections.do({|i| i.p})}.fork;
-~sections.size;
 )
 
 

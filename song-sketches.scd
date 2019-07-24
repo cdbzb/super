@@ -25,8 +25,6 @@ FSSound.getSound(31362, {|f|
 });
 
 
-
-
 "/tmp/"++~snd.previewFilename.postln;
 ~buf.play;
 

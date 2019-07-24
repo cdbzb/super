@@ -28,7 +28,7 @@ v=~verb.();
 		v.set(2,1);
 		v.set(0,0);
 		v.gui;
-
+s.boot;
 
 ( //// Pianoteq
 	{
@@ -90,3 +90,71 @@ v=~verb.();
 ~verb.controller.synth.set(\mix,0.5);
 ~verb.controller.set(2,0.9);
 ~verb.controller.gui;
+(
+	SynthDef(\vsti,{|in out=0|
+			var sig=VSTPlugin.ar(nil,2);
+			Out.ar(out,sig)
+		}).add;
+
+		//TODO generalize this - seperate into proto
+		~synful=( // creates a nodeproxy playing on a private bus - .node and .bus respectively 
+			bus: Bus.audio(s,2),
+			controller: nil,
+			node:nil,
+			params:(expression:11),
+			expression:{|self expression channel | self.controller.sendMidi("B0".asHexIfPossible+channel,11,expression)},
+			plugin: "SynfulOrchestra.vst",
+			setprog:{|self program bank channel| 
+
+				self.controller.postln;
+
+				self.controller.sendMidi("B0".asHexIfPossible+channel,0,bank);//set bank then
+				self.controller.sendMidi("C0".asHexIfPossible+channel,program); //set program
+			},
+			init: { |self| //create node and controller + load plug 
+				self.controller=VSTPluginController(Synth(\vsti,[\out,self.bus]));
+				self.node=NodeProxy.audio(s,2).play;
+				self.node.source={In.ar(self.bus.index,2)};
+				{
+					s.sync;
+					self.controller.open("/Library/Audio/Plug-Ins/VST/"++self.plugin);
+					s.sync;
+					8.wait;
+					self.controller.readProgram("/Users/michael/tank/super/SynfulTest.FXP");
+				}.fork;
+			},
+			set:{|self args| self.controller.set(args)}
+		);
+		{
+			~synful.init;
+		}.fork
+)
+
+//0-4 are string secs
+~synful.setprog(4,5,0); //patch bank channel
+~synful.expression(40,0); //expression channel
+~synful.node[1]=\filter->{|in| FreeVerb.ar(in,room:0.8,mix:0.5)*2}; //verb
+(type:\midi,\midiout:~synful.controller.midi,note:[-14,-5,2,9],dur:10).play; //play a chord
+(type:\midi,\midiout:~synful.controller.midi,note:[-14,-5,2,9]-2,dur:10).play;
+(type:\midi,\midiout:~synful.controller.midi,note:[-14,-5,2,9]-3,dur:10).play;
+
+p=Pbind(\type,\midi,\midiout,~synful.controller.midi,\dur,Pwhite(0.1,1.1,inf),\note,Prand([0,2,4,5,7,9,11]*[2,1].flatten,inf),\legato,Prand([1,1,1,4,0.5,0.1],inf)).play;
+p.stop;
+
+v={var sig=In.ar(~synful.bus,1);Out.ar(1,sig)}.play;
+{SinOsc.ar(440,0,0.1)}.play(s,~synful.bus);
+v;
+v.free;
+s.meter;
+~synful.bus.scope;
+
+a[1]=\filter->{|in|FreeVerb.ar(in,room:0.8,mix:0.8)};
+a.source={Impulse.ar(1)};
+a.stop;
+a.free;
+
+
+1100nnnn 0ppppppp Program change
+64+128+1;
+
+Number

@@ -182,7 +182,7 @@ a.makeWindow;
 	Pbind( \instrument, Pseq([\rest, \rest, \rest, \rest, \rest, \rest, \rest,\rest]++
 	[\rest, \rest, \rest, \rest, \cymbal, \rest, \rest,\rest]),
 	\dur,Pseq(d,2),\lag,-0.05,\amp,0.4));
-	SynthDef (\cymbal, {|amp=1| var sig=PinkNoise.ar(EnvGen.kr(Env.perc(0,2)))!2; sig=TwoTube.ar(RHPF.ar(sig,500,9),d1length:502,d2length:777,loss:0.99)*0.5;Out.ar(0,sig*amp)} ).add;
+	SynthDef (\cymbal, {|amp=1 length=2| var sig=PinkNoise.ar(EnvGen.kr(Env.perc(0,length)))!2; sig=TwoTube.ar(RHPF.ar(sig,500,9),d1length:502,d2length:777,loss:0.99)*0.5;Out.ar(0,sig*amp)} ).add;
 	~sections.hat=(parent:~xtreme,start:2,music:
 	Pbind(\instrument, \hihat, 
 		\ffreq,Pwhite(4000,10000),
@@ -257,14 +257,6 @@ a.makeWindow;
 		(note:~panNotes.("e-2").flatten-60,dur:2,amp:0.3)
 	);
 	
-
-
-//	~sections.tremoChord=(parent:~xtreme,start:10,music:
-//		{[-3,0,3,5].do{|i| Pfindur.new(~xtreme.durs[10].list[0],
-//			Pbind(\note,i,
-//			\dur,Pwhite(0.05,0.08))).play}
-//		};
-//	);
 ~sections.tremoChord=(parent:~xtreme,start:10,music:
 		Pfxb(
 			Pfindur(~xtreme.durs[10].list[0],
@@ -302,15 +294,25 @@ a.makeWindow;
 ~sections.transformation=(parent:~xtreme,start:10,syl:4,music:
 	{ var dur=15;
 		var pitches=~panNotes.("f#3 b- c4 e")+[0,12];
+		////whrrrrr
 		var chord=pitches.collect({|item index|  Synth(\trans,[\freq,item.midicps,\amp,0.1])});
 		var chord2=pitches.collect({|item index|  Synth(\trans,[\freq,item.midicps,\amp,0.1])});
 		pitches.postln;
 		{dur.wait;chord.do{|i|i.release}}.fork;
 		{dur.wait;chord2.do{|i|i.release};5.wait;((SystemClock.seconds-c).postln)}.fork;
-		~synful.node.play;
+		////cymbal
+		(instrument:\cymbal,length:8).play;
+		////strings
 		~synful.setprog(3,5,0);
+		~synful.setprog(4,5,1);
+		~synful.node[1]=\filter->{|in| FreeVerb.ar(in,room:0.75,mix:0.55)*3};
+		{
+			8.wait;"now!".postln;127.do( {|i|~synful.expression((127-i),0);~synful.expression((127-i),1);0.18.wait} )}.fork;
+			(type:\midi,midiout:~synful.controller.midi,\midinote:~panNotes.("f#3 b- c4 e").flatten-[0,12],dur:20).play;
+			(type:\midi,midiout:~synful.controller.midi,\channel:2,\midinote:~panNotes.("f#3 b-4 c4 e").flatten-24,dur:20).play;
 		~synful.expression(127,0);
-		(type:\midi,midiout:~synful.controller.midi,\midinote:~panNotes.("f#3 b- c4 e").flatten-[12,0],dur:18).play;
+		~synful.expression(127,1);
+		//~synful.init;
 	}
 );
 //tions.transformStrings=(parent:~xtreme,start:10,syl:4,music:
@@ -324,10 +326,10 @@ a.makeWindow;
 	c=SystemClock.seconds;
 )
 
-~sections.transformation.at(\music).postcs;
+~sections.transformation.at(\music).p;
 (
 )
-~xtreme.cursor_(0);
+~xtreme.cursor_(10);
 ~song;
 ~panNotes.("f#3 b- c4 e").list
 +[0,12]

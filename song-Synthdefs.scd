@@ -1,8 +1,8 @@
 (
-	SynthDef(\trans, { |freq amp gate=1|
+	SynthDef(\trans, { |freq amp gate=1 out=0|
 		var notes= Demand.kr(Dust.kr(0.3)+Impulse.kr(0.01,0.999),0,Dseq([freq,freq*2],inf));
-		var sig=SinOsc.ar(Lag.kr(notes,0.6),0,0.1)*amp*Env.asr(0,1,5).kr(gate:gate);
-		Out.ar(0,sig!2);
+		var sig=SinOsc.ar(Lag.kr(notes,0.6),0,0.1).distort*amp*Env.asr(0,1,5).kr(gate:gate);
+		Out.ar(out,sig!2);
 	}).add ;
 
 	~panNotes={|string| Panola.new(string).midinotePattern.list};
@@ -118,11 +118,8 @@ SynthDef(\verb_fade,{|in time| FreeVerb.ar(in, room:0.8, mix:0.8)*Line.kr(1,0,ti
 			node:nil,
 			params:(expression:11),
 			expression:{|self expression channel=0 | self.controller.sendMidi("B0".asHexIfPossible+channel,11,expression)},
-			plugin: "SynfulOrchestra.vst",
+			plugin: 'SynfulOrchestra.vst',
 			setprog:{|self program bank channel| 
-
-				self.controller.postln;
-
 				self.controller.sendMidi("B0".asHexIfPossible+channel,0,bank);//set bank then
 				self.controller.sendMidi("C0".asHexIfPossible+channel,program); //set program
 			},
@@ -132,17 +129,12 @@ SynthDef(\verb_fade,{|in time| FreeVerb.ar(in, room:0.8, mix:0.8)*Line.kr(1,0,ti
 				self.node.source={In.ar(self.bus.index,2)};
 				{
 					s.sync;
-					self.controller.open("/Library/Audio/Plug-Ins/VST/"++self.plugin);
-					s.sync;
-					8.wait;
-					self.controller.readProgram("/Users/michael/tank/super/SynfulTest.FXP");
+					self.controller.open("/Library/Audio/Plug-Ins/VST/"++self.plugin,action:{self.controller.readProgram("/Users/michael/tank/super/SynfulTest.FXP"); });
 				}.fork;
 			},
 			set:{|self args| self.controller.set(args)}
 		);
-		{
 			~synful.init;
-		}.fork
 );
 "LOADED".postln;
 )

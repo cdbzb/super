@@ -20,7 +20,7 @@ Archive.write("/Users/michael/tank/super/theExtreme3")
 		pbind:{|self | (0..self.sections-1).collect{|i| Pbind(\dur,self.durs[i],\midinote,self.tune[i])}},
 		secDur:{|self | (0..self.sections-1).collect{|i| self.durs[i].list.sum} },
 		secLoc:{|self| [0]++self.sections.asInt.collect({|i| self.secDur[0..i].sum}) },
-		durTill:{|self sec till | self.durs[sec].list[0..till].sum},
+		durTill:{|self sec till | self.durs[sec].list[0..till].sum}, //in a given section
 		pbindFrom:{|self from=3| var list=self.pbind[from.asInt..(self.sections-1).asInt].postln;Pseq(list).postln},
 		when: {|self| self.secDur[self.start]}, //for sections
 		p:{|self|(self.start<self.cursor).not.if{ var offset;
@@ -28,6 +28,7 @@ Archive.write("/Users/michael/tank/super/theExtreme3")
 			TempoClock.sched(
 				(self.secLoc[self.start]-self.secLoc[self.cursor])+offset,
 				{self.music.play})};self}, //for sections
+		durTillEnd: {|self| var x=0; (self.cursor..(self.sections-1)).do{|i| x=x+self.secDur[i] };x}
 );
 
 	~xtreme=(
@@ -46,7 +47,20 @@ Archive.write("/Users/michael/tank/super/theExtreme3")
 			"guess that's as read- y as I'm gon- na ","g e- f g e- d- e- f g ", //9
 			"be. Rea- dy Sar- gon","a d5 c a4 f#", //10
 		],
+		parts:nil,
 	).setupDurs;
+)
+
+
+(
+	{
+		~xtreme.cursor_(8);
+		~xtreme.parts.ply;
+		11.collect({|i| ~xtreme.durs[i].list.sum}).sum.wait;
+		// should be ~xtreme.totaldur.wait
+		//needs to consider cursor
+		(note: [0,1,2,3],\amp:3).play
+	}.fork
 )
 
 ( //construct event recorder
@@ -124,14 +138,14 @@ Archive.write("/Users/michael/tank/super/theExtreme3")
 				recorded.postln;
 				self.range.do({|i|
 					var returnChunk=List.new;
-					var elements=~xtreme.tune[i].list.size;
+					var elements=song.tune[i].list.size;
 					elements.do(
 						{|i| 
 							if(recorded.size>0)
 							{returnChunk.add(recorded.removeAt(0)) }
 						}
 					);
-					(returnChunk[0].isNil.not).if{~xtreme.durs[i]=Pseq(returnChunk)} ;
+					(returnChunk[0].isNil.not).if{song.durs[i]=Pseq(returnChunk)} ;
 				});
 				//~xtreme.durs[nextTune]= Pseq(recorded);
 			};
@@ -147,6 +161,7 @@ a.makeWindow;
 	~sections=(
 		ply:{|self| self.do({|i| i.p});};
 	);
+	~xtreme.parts=~sections;
 	~sections.strum1=(parent:~xtreme, start:0,syl:2,
 		music:(\note:[-5,-3,-2,2,5,7],\strum:0.03,\sustain:2));
 	~sections.bassnote=(parent:~xtreme, start:0,
@@ -291,8 +306,38 @@ a.makeWindow;
 			),\verb_fade,\time,2
 		);
 	);
-~sections.transformation=(parent:~xtreme,start:10,syl:4,music:
-	{ var dur=15;
+//~sections.transformation=(parent:~xtreme,start:10,syl:4,music:
+//	{ var dur=15;
+//		var pitches=~panNotes.("f#3 b- c4 e")+[0,12];
+//		////whrrrrr
+//		var chord=pitches.collect({|item index|  Synth(\trans,[\freq,item.midicps,\amp,0.1])});
+//		var chord2=pitches.collect({|item index|  Synth(\trans,[\freq,item.midicps,\amp,0.1])});
+//		pitches.postln;
+//		{dur.wait;chord.do{|i|i.release}}.fork;
+//		{dur.wait;chord2.do{|i|i.release};5.wait;((SystemClock.seconds-c).postln)}.fork;
+//		////cymbal
+//		(instrument:\cymbal,length:8).play;
+//		////strings
+//		~synful.setprog(3,5,0);
+//		~synful.setprog(4,5,1);
+//		~synful.node[1]=\filter->{|in| FreeVerb.ar(in,room:0.75,mix:0.55)*3};
+//		{
+//			8.wait;"now!".postln;127.do( {|i|~synful.expression((127-i),0);~synful.expression((127-i),1);0.18.wait} )}.fork;
+//			(type:\midi,midiout:~synful.controller.midi,\midinote:~panNotes.("f#3 b- c4 e").flatten-[0,12],dur:20).play;
+//			(type:\midi,midiout:~synful.controller.midi,\channel:2,\midinote:~panNotes.("f#3 b-4 c4 e").flatten-24,dur:20).play;
+//		~synful.expression(127,0);
+//		~synful.expression(127,1);
+//		//~synful.init;
+//	}
+//);
+
+	~xtreme.pbind.do({|i x| var label = ("guide"++x).asSymbol; ~sections[label]=(parent:~xtreme,start:x,music:i);label.postln});
+	{s.sync;~sections.do({|i| i.p})}.fork;
+	c=SystemClock.seconds;
+)
+
+(
+	~transformation={ var dur=15;
 		var pitches=~panNotes.("f#3 b- c4 e")+[0,12];
 		////whrrrrr
 		var chord=pitches.collect({|item index|  Synth(\trans,[\freq,item.midicps,\amp,0.1])});
@@ -315,21 +360,49 @@ a.makeWindow;
 		//~synful.init;
 	}
 );
-//tions.transformStrings=(parent:~xtreme,start:10,syl:4,music:
-//{
-//}
-//
-//);
 
-	~xtreme.pbind.do({|i x| var label = ("guide"++x).asSymbol; ~sections[label]=(parent:~xtreme,start:x,music:i);label.postln});
-	{s.sync;~sections.do({|i| i.p})}.fork;
-	c=SystemClock.seconds;
+( //moving on to next song
+	~xtreme.cursor_(6);
+	TempoClock.tempo=1;
+	{
+		~xtreme.parts.ply;
+		//SystemClock.sched( ~xtreme.durTillEnd,~transformation);
+		~xtreme.durTillEnd.wait;
+		TempoClock.tempo=0.6;
+		~transformation.fork(TempoClock);
+		14.wait;
+		(note:[0,1,2]-36,\amp:2,\sustain:5).play;
+		TempoClock.tempo=0.7;
+		~complete.pbind[0].play;
+	//~complete.parts.ply;
+	}.fork
 )
 
-~sections.transformation.at(\music).p;
+~transformation;
 (
+	~complete=(
+		parent:~funs,
+		dursFile:"/Users/michael/tank/super/complete",
+		song:[
+			"the transformation is com-","f#5 d b4 a# a# g a-",
+			"plete. tep- per- a ture is high and rising","a"
+		]
+	).setupDurs;
 )
-~xtreme.cursor_(10);
-~song;
-~panNotes.("f#3 b- c4 e").list
-+[0,12]
+(
+	a=~recorder.(~complete,[0]);
+	a.makeWindow;
+)
+
+(
+Archive.global.put(\song2,~complete);
+Archive.write("/Users/michael/tank/super/complete")
+//I think both songs are present in EACH archive (conveniently)
+//this should bbe a method
+)
+
+TempoClock.tempo=1
+~complete.pbind[0].play;
+~complete.durs;
+~xtreme.pbind;
+

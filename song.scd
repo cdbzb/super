@@ -3,7 +3,6 @@ Archive.global.put(\song,~xtreme);
 Archive.write("/Users/michael/tank/super/theExtreme3")
 )
 
-
 ( // the song event
 	"/Users/michael/tank/super/song-Synthdefs.scd".load;
 	~funs=(
@@ -49,18 +48,6 @@ Archive.write("/Users/michael/tank/super/theExtreme3")
 		],
 		parts:nil,
 	).setupDurs;
-)
-
-
-(
-	{
-		~xtreme.cursor_(8);
-		~xtreme.parts.ply;
-		11.collect({|i| ~xtreme.durs[i].list.sum}).sum.wait;
-		// should be ~xtreme.totaldur.wait
-		//needs to consider cursor
-		(note: [0,1,2,3],\amp:3).play
-	}.fork
 )
 
 ( //construct event recorder
@@ -336,7 +323,7 @@ a.makeWindow;
 	c=SystemClock.seconds;
 )
 
-(
+( //transformation
 	~transformation={ var dur=15;
 		var pitches=~panNotes.("f#3 b- c4 e")+[0,12];
 		////whrrrrr
@@ -370,7 +357,10 @@ a.makeWindow;
 		~xtreme.durTillEnd.wait;
 		TempoClock.tempo=0.6;
 		~transformation.fork(TempoClock);
+		{a=Image.open("/Users/michael/tank/super/Spock.png")}.defer;
+		{w=a.plot(freeOnClose:true).alwaysOnTop_(true);}.defer;
 		14.wait;
+		{w.close}.defer;
 		(note:[0,1,2]-36,\amp:2,\sustain:5).play;
 		TempoClock.tempo=0.7;
 		~complete.pbind[0].play;
@@ -378,14 +368,17 @@ a.makeWindow;
 	}.fork
 )
 
-~transformation;
 (
 	~complete=(
 		parent:~funs,
 		dursFile:"/Users/michael/tank/super/complete",
 		song:[
-			"the transformation is com-","f#5 d b4 a# a# g a-",
-			"plete. tep- per- a ture is high and rising","a"
+			"the tran - fer is com-","f#5 d b4 a# a# g a-", //TODO new notes here
+			"plete. metabolic rate is","a",
+			"double and rising, Doctor... r Hel- ","",
+			"lo. r r r","",
+			"you are a lovely female, r a","",
+			"pleasant sight to wake up to after","",
 		]
 	).setupDurs;
 )

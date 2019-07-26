@@ -90,8 +90,8 @@ SynthDef(\twotube,{arg delay1=1000, delay2=500, k=0.0, loss=0.999, dur=0.5, pan=
 //~window.drawFunc = {
 //Pen.drawImage( Point(0, 0), c)};
 	};
-)
-(
+
+
 	~windowSetup.();
 	a=Image.open("/Users/michael/tank/super/Spock.png");
 	w.drawFunc_({
@@ -100,7 +100,8 @@ SynthDef(\twotube,{arg delay1=1000, delay2=500, k=0.0, loss=0.999, dur=0.5, pan=
 	w.refresh;
 	w.front;
 	~words.reset;
-
+)
+Gui
 	{
 	~b1=Buffer.read(s,"/Users/michael/tank/super/Trek-samples/kirk.wav");
 	s.recChannels_(2);

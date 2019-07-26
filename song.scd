@@ -11,11 +11,18 @@ Archive.write("/Users/michael/tank/super/theExtreme3")
 		lyrics:{|self| self.song.copySeries(0,2,self.song.size)},
 		tune:{|self| var array = self.song.copySeries(1,3,self.song.size);
 				array.collect({|string| Panola.new(string).midinotePattern})},
-		setupDurs:{|self|self.dursFile.isNil.if(
-				{Pseq([1])!self.sections},
-				{var a; Archive.read(self.dursFile);a=Archive.at(\song);
-					self.durs=a.durs++(Pseq([1])!(self.sections-a.durs.size)); //copy and pad
-			})},
+		setupDurs:{|self|
+				var a; Archive.read(self.dursFile);
+				"read".postln;
+				Archive.at(self.key).isNil.not.if(
+					{
+						a=Archive.at(self.key);
+						self.durs=a.durs++(Pseq([1])!(self.sections-a.durs.size)); //copy and pad
+					},{
+						self.durs=Pseq([1])!self.sections
+					}
+				)
+			},
 		pbind:{|self | (0..self.sections-1).collect{|i| Pbind(\dur,self.durs[i],\midinote,self.tune[i])}},
 		secDur:{|self | (0..self.sections-1).collect{|i| self.durs[i].list.sum} },
 		secLoc:{|self| [0]++self.sections.asInt.collect({|i| self.secDur[0..i].sum}) },
@@ -30,9 +37,16 @@ Archive.write("/Users/michael/tank/super/theExtreme3")
 		durTillEnd: {|self| var x=0; (self.cursor..(self.sections-1)).do{|i| x=x+self.secDur[i] };x}
 );
 
-	~xtreme=(
-		proto:~funs,
+~trek=(
 		dursFile:"/Users/michael/tank/super/theExtreme3",
+		durs:nil,
+);	
+
+
+~xtreme=(
+		key:\song,
+		parent:~trek,
+		proto:~funs,
 		song:[
 			"the extreme power of the","g a b- d5 b-4 a g", //0
 			"alien mind will make the -","e5 d c f e f g f", //1
@@ -138,6 +152,8 @@ Archive.write("/Users/michael/tank/super/theExtreme3")
 			};
 		)
 	};
+)
+(
 a=~recorder.(~xtreme,[10],3);
 a.makeWindow;
 )
@@ -149,6 +165,7 @@ a.makeWindow;
 		ply:{|self| self.do({|i| i.p});};
 	);
 	~xtreme.parts=~sections;
+
 	~sections.strum1=(parent:~xtreme, start:0,syl:2,
 		music:(\note:[-5,-3,-2,2,5,7],\strum:0.03,\sustain:2));
 	~sections.bassnote=(parent:~xtreme, start:0,
@@ -348,6 +365,58 @@ a.makeWindow;
 	}
 );
 
+(
+	~complete=(
+		key:\complete,
+		parent:~trek,
+		proto:~funs,
+		song:[
+			"the tran - fer is com-"," f5 c a-4 e c#", //TODO new notes here,
+			"plete. metabolic rate is","c#4 c5 b-4 c5 a-4 c4 c5",
+			"double and rising, Doctor...  Hel- ","d5 b-4 c#5 g c# a-4 g b",
+			"lo. r r r"," c#5 d2 d d",
+			//"you are a lovely female, r a","",
+			//"pleasant sight to wake up to after","",
+		]
+	).setupDurs;
+)
+
+(
+	a=~recorder.(~complete,[2],2);
+	a.makeWindow;
+)
+(
+	~sections2=(
+		ply:{|self| self.do({|i| i.p});};
+	);
+	~complete.parts=~sections2;
+	~sections2.bassnotes=(parent:~complete,start:0,syl:3,music:
+		Pseq( [
+				(note:1-24,amp:0.5,dur:~complete.durs[0].list[4]),
+				(note:1-24,amp:0.6,dur:5,sustain:5)
+			]));
+
+	~sections2.helloChord=(parent:~complete,start:3,music:
+		(instrument:\test,midinote:~panNotes.("<d4 f# a c#>").flatten,strum:0.03,amp:0.4)
+	);
+	~sections2.helloImage=(parent:~complete,start:2,syl:7,music:
+		{
+			{
+				{
+					a=Image.open("/Users/michael/tank/super/Spock.png");
+					w=a.plot(freeOnClose:true).alwaysOnTop_(true);
+					w.alwaysOnTop_(true);
+				}.defer;
+				5.wait;
+				//{w.close}.defer;
+			}.fork
+		});
+	~complete.pbind.do({|i x| var label = ("guide"++x).asSymbol; ~sections2[label]=(parent:~complete,start:x,music:i);label.postln});
+
+	~complete.parts.ply;
+	~complete.parts.bassnotes;
+)
+
 ( //moving on to next song
 	~xtreme.cursor_(6);
 	TempoClock.tempo=1;
@@ -355,41 +424,24 @@ a.makeWindow;
 		~xtreme.parts.ply;
 		//SystemClock.sched( ~xtreme.durTillEnd,~transformation);
 		~xtreme.durTillEnd.wait;
-		TempoClock.tempo=0.6;
+		TempoClock.tempo=0.7;
 		~transformation.fork(TempoClock);
 		{a=Image.open("/Users/michael/tank/super/Spock.png")}.defer;
 		{w=a.plot(freeOnClose:true).alwaysOnTop_(true);}.defer;
 		14.wait;
 		{w.close}.defer;
-		(note:[0,1,2]-36,\amp:2,\sustain:5).play;
-		TempoClock.tempo=0.7;
+		(note:[0,1,2]-48,\amp:2,\sustain:5).play;
+		TempoClock.tempo=1;
+		~complete.parts.ply;
 		~complete.pbind[0].play;
 	//~complete.parts.ply;
 	}.fork
 )
-
+Archive.at(\complete);
 (
-	~complete=(
-		parent:~funs,
-		dursFile:"/Users/michael/tank/super/complete",
-		song:[
-			"the tran - fer is com-","f#5 d b4 a# a# g a-", //TODO new notes here
-			"plete. metabolic rate is","a",
-			"double and rising, Doctor... r Hel- ","",
-			"lo. r r r","",
-			"you are a lovely female, r a","",
-			"pleasant sight to wake up to after","",
-		]
-	).setupDurs;
-)
-(
-	a=~recorder.(~complete,[0]);
-	a.makeWindow;
-)
-
-(
-Archive.global.put(\song2,~complete);
-Archive.write("/Users/michael/tank/super/complete")
+Archive.global.put(~complete.key,~complete);
+Archive.write(~complete.dursFile);
+Archive.at(\complete,\durs);
 //I think both songs are present in EACH archive (conveniently)
 //this should bbe a method
 )

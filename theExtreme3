@@ -1,761 +1,19 @@
 var o, p;
 o = [
-	Archive.prNew,  IdentityDictionary.prNew,  Array.prNew(32),  Event.prNew,  
-	Array.prNew(16),  Array.prNew(4),  Pseq.prNew,  List.prNew,  
-	Array.prNew(5),  Pseq.prNew,  List.prNew,  Array.prNew(7),  
-	Pseq.prNew,  List.prNew,  Array.prNew(8),  Pseq.prNew,  
-	List.prNew,  Array.prNew(4),  Array.prNew(8),  "the tran - fer is com-",  
-	" f5 c a-4 e c#",  "plete. metabolic rate is",  "c#4 c5 b-4 c5 a-4 c4 c5",  "double and rising, Doctor...  Hel- ",  
-	"d5 b-4 c#5 g c# a-4 g b",  "lo. r r r",  " c#5 d2 d d",  Event.prNew,  
-	Array.prNew(32),  {|self| self.do({|i| i.p});},  Event.prNew,  Array.prNew(12),  
-	Pbind.prNew,  Array.prNew(4),  Pseq.prNew,  Array.prNew(5),  
-	Event.prNew,  Array.prNew(16),  Pseq.prNew,  Array.prNew(2),  
-	Event.prNew,  Array.prNew(12),  Event.prNew,  Array.prNew(16),  
-	Event.prNew,  Array.prNew(12),  Event.prNew,  Array.prNew(64),  
-	s,  Array.prNew(4),  Array.prNew(4),  #{ arg freq, amp;
-	var	x372B17F7 = Array.new(4);
-	freq !? { x372B17F7.add('freq').add(freq) };
-	amp !? { x372B17F7.add('amp').add(amp) };
-	x372B17F7
-},  
-	Array.prNew(4),  Event.prNew,  Array.prNew(256),  Event.prNew,  
-	Array.prNew(44),  #{ arg chan=0, midinote=60, polyTouch=125;
-						[ chan, midinote, polyTouch ] },  #{ arg chan=0, progNum=1; [ chan, progNum ] },  #{ arg chan=0, val=125; [ chan, val ] },  
-	#{ arg uid, array; [array] },  #{ arg chan=0, midinote=60, amp=0.1;
-						[chan, midinote, asInteger((amp * 127).clip(0, 127)) ] },  #{ arg chan=0; [chan] },  #{ arg frames=0, seconds=0, minutes=0, hours=0, frameRate=25;
-						[frames, seconds, minutes, hours, frameRate] },  
-	#{ arg songPtr; [songPtr] },  #{ arg chan=0, ctlNum, control=125;
-						[chan, ctlNum, control ] },  #{ arg chan=0, val=125; [ chan, val ] },  #{ arg chan=0, midinote=60, amp=0.1;
-						[ chan, midinote, asInteger((amp * 127).clip(0, 127)) ] },  
-	#{
-					(((~note.value + ~gtranspose + ~root) /
-						~scale.respondsTo(\stepsPerOctave).if(
-							{ ~scale.stepsPerOctave },
-							~stepsPerOctave) + ~octave - 5.0) *
-						(12.0 * ~scale.respondsTo(\octaveRatio).if
-							({ ~scale.octaveRatio }, ~octaveRatio).log2) + 60.0);
-				},  Event.prNew,  Array.prNew(4),  { ~server.defaultGroup.nodeID },  
-	#{
-					~freq.value + ~detune
-				},  { |instrument|
-					var	synthLib, desc;
-					// if user specifies a msgFunc, prefer user's choice
-					if(~msgFunc.isNil) {
-						instrument = ~instrument = instrument.asDefName;
-
-						synthLib = ~synthLib ?? { SynthDescLib.global };
-						desc = synthLib.at(instrument);
-						if (desc.notNil) {
-							~hasGate = desc.hasGate;
-							~msgFunc = desc.msgFunc;
-						} {
-							~msgFunc = ~defaultMsgFunc;
-						};
-					} { ~msgFunc };
-				},  #{ |lag, offset, server ... bundle |
-					schedBundleArrayOnClock(offset, thisThread.clock, bundle, lag, server);
-				},  { |instrument, variant, synthDesc|
-					// allow `nil to cancel a variant in a pattern
-					instrument = instrument.asDefName;
-					variant = variant.dereference;
-					if(variant.notNil and: { synthDesc.notNil and: { synthDesc.hasVariants } })
-					{ "%.%".format(instrument, variant).asSymbol }
-					{ instrument.asSymbol };
-				},  
-	#{
-					(~midinote.value + ~ctranspose).midicps * ~harmonic;
-				},  Array.prNew(7),  {| lag, strumTime, sustain, server, msg, sendGate |
-					var dur, schedBundle = ~schedBundle;
-					schedBundle.value(lag, strumTime + ~timingOffset, server, msg);
-					if(sendGate) {
-						if (~strumEndsTogether) {
-							dur = sustain ;
-						} {
-							dur = sustain + strumTime
-						};
-						schedBundle.value(lag, dur + ~timingOffset, server,
-							[15 /* \n_set */, msg[2], \gate, 0])
-					}
-				},  "",  
-	#{ arg self, freq;
-					// conversion from frequency to scale value.
-					self.use {
-						var steps = ~scale.respondsTo(\stepsPerOctave).if(
-							{ ~scale.stepsPerOctave }, ~stepsPerOctave
-						);
-						var degree = self.freqToNote(freq).keyToDegree(~scale, steps)
-						- ~mtranspose;
-						degree.asArray.collect {|x, i|
-							x = x.round(0.01);
-							if(x.floor != x) {
-								"could not translate: %\n".postf(freq[i]);
-								nil
-							} { x }
-						}.unbubble;
-					}
-				},  #{ |releaseTime|
-					var sendGate, msg;
-					if(~id.notNil) {
-
-						releaseTime = if(releaseTime.isNil) { 0.0 } { -1.0 - releaseTime };
-						sendGate = ~sendGate ? ~hasGate;
-
-						if(sendGate) {
-							~server.sendBundle(~server.latency,
-								*["/n_set", ~id, "gate", releaseTime].flop);
-						} {
-							~server.sendBundle(~server.latency, ["/n_free"] ++ ~id);
-						};
-						~isPlaying = false;
-					};
-				},  #{ | lag, offset, server, bundleArray, latency |
-					schedBundleArrayOnClock(offset, thisThread.clock, bundleArray, lag, server, latency);
-				},  #{|freq = 440, amp = 0.1, pan = 0, out = 0|
-					[\freq, freq, \amp, amp, \pan, pan, \out, out] },  
-	#{ arg self, freq; // conversion from frequency to note value
-					self.use {
-						var midinote;
-						var steps = ~scale.respondsTo(\stepsPerOctave).if(
-							{ ~scale.stepsPerOctave }, ~stepsPerOctave
-						);
-						midinote = cpsmidi((freq / ~harmonic) - ~ctranspose);
-						midinote / 12.0 - ~octave * steps - ~root - ~gtranspose
-					}
-				},  Array.prNew(4),  Event.prNew,  Array.prNew(256),  
-	#{ |server|
-						var bundle, instrument, rate, bus;
-						var array = ~array.as(Array);
-						var numChannels = min(~numChannels.value ? 1, array.size);
-						if(numChannels > SystemSynthDefs.numChannels) {
-							Error(
-								"Can't set more than % channels with current setup in SystemSynthDefs."
-								.format(SystemSynthDefs.numChannels)
-							).throw;
-						};
-						if (~id.isNil) { ~id = server.nextNodeID };
-						// the instrumentType can be system_setbus or system_setbus_hold
-						instrument = format(
-							if(~hold != true) { "system_setbus_%_%" } { "system_setbus_hold_%_%" },
-							~rate.value ? \control,
-							numChannels
-						);
-						// addToTail, so that old bus value can be overridden:
-						bundle = [9, instrument, ~id, 1, ~group.asControlInput,
-							"values", array,
-							"out", ~out.value,
-							"fadeTime", ~fadeTime,
-							"curve", ~curve
-						].asOSCArgArray;
-						~schedBundle.value(~lag, ~timingOffset, server, bundle);
-						if(~rate == \audio) { // control rate synth frees by itself, because bus holds the value
-							~stopServerNode = { server.sendBundle(server.latency, [\n_set, ~id, \gate, 0]) }
-						};
-					},  #{|server|
-				~schedBundle.value(~lag, ~timingOffset, server, [\b_close, ~bufNum], [\b_free, ~bufNum]);
-			},  #{ |server|
-						var doTree = { |tree, currentNode, addAction=1|
-							if(tree.isKindOf(Association)) {
-								~bundle = ~bundle.add([21 /* \g_new */,
-									tree.key.asControlInput, Node.actionNumberFor(addAction),
-									currentNode.asControlInput]);
-								currentNode = tree.key;
-								tree = tree.value;
-							};
-							if(tree.isSequenceableCollection) {
-								tree.do { |x, i|
-									x ?? { tree[i] = x = server.nextNodeID };
-									doTree.(x, currentNode)
-								};
-							} {
-								~bundle = ~bundle.add([21 /* \g_new */,
-									tree.asControlInput, Node.actionNumberFor(addAction),
-									currentNode.asControlInput]);
-							};
-
-						};
-						~bundle = nil;
-						~treeGroups = ~treeGroups ?? { ~tree.deepCopy };
-						~treeGroups !? {
-							doTree.(~treeGroups, ~group, ~addAction);
-							CmdPeriod.doOnce { ~treeGroups = nil };
-						};
-						~bundle !? {
-							server.sendBundle(server.latency, *~bundle);
-						};
-						~bundle = nil;
-					},  #{|server|
-						var freqs;
-						var bndl, sendGate, ids;
-						var msgFunc, desc, synthLib, bundle, instrumentName;
-
-						freqs = ~detunedFreq.value;
-
-						~freq = freqs;
-						~amp = ~amp.value;
-						~isPlaying = true;
-						msgFunc = ~getMsgFunc.valueEnvir;
-						instrumentName = ~synthDefName.valueEnvir;
-						bndl = msgFunc.valueEnvir;
-						bndl = [9 /* \s_new */, instrumentName, ~id,
-							Node.actionNumberFor(~addAction), ~group] ++ bndl;
-						bndl = bndl.flop;
-						if ( (ids = ~id).isNil ) {
-							ids = Array.fill(bndl.size, {server.nextNodeID });
-							bndl = bndl.collect { | msg, i |
-								msg[2] = ids[i];
-								msg.asOSCArgArray
-							};
-						} {
-							bndl = bndl.asOSCArgBundle;
-
-						};
-						~schedBundleArray.value(~lag, ~timingOffset, server, bndl, ~latency);
-
-						~server = server;
-						~id = ids;
-					},  
-	#{|server|
-						~schedBundle.value(~lag, ~timingOffset, server,
-							[\b_allocRead, ~bufnum.asControlInput, ~filename,
-								~frame, ~numframes]);
-					},  #{|server|
-				~schedBundle.value(~lag, ~timingOffset, server, [\b_free, ~bufNum]);
-				server.bufferAllocator.free(~bufNum);
-			},  #{|server|
-						var bundle, cmd;
-						if (~id.isNil) { ~id = server.nextNodeID };
-						bundle = [21 /* \g_new */, ~id.asArray, Node.actionNumberFor(~addAction),
-							~group.asControlInput].flop;
-						~schedBundleArray.value(~lag, ~timingOffset, server, bundle, ~latency);
-					},  #{|server|
-				~schedBundle.value(~lag, ~timingOffset, server, [\b_free, ~bufNum]);
-			},  
-	#{|server|
-				var bufNum;
-				if ( (bufNum = ~bufNum).isNil ) { bufNum = ~bufNum = server.bufferAllocator.alloc; ~type = \allocWriteID };
-				~schedBundle.value(~lag, ~timingOffset, server,
-					[\b_alloc, bufNum, ~numFrames, ~numChannels],
-					[\b_write, bufNum, ~path, ~headerFormat, ~sampleFormat, 0, 0, 1]);
-			},  #{ | server |
-				var  bufNum, bndl, completion;
-				if ( (bufNum = ~bufNum).isNil ) { bufNum = ~bufNum = server.bufferAllocator.alloc; ~type = \cueID };
-
-				completion = ["/b_read", bufNum, ~path, ~firstFileFrame, ~bufferSize, ~firstBufferFrame, ~leaveOpen];
-				bndl = ["/b_alloc", bufNum, ~bufferSize, ~numChannels, completion];
-				~schedBundle.value(~lag, ~timingOffset, server, bndl);
-			},  #{|server|
-
-						var freqs, lag, instr;
-						var bndl, addAction, sendGate, ids;
-						var msgFunc, instrumentName, offset;
-
-						freqs = ~detunedFreq.value;
-
-						// msgFunc gets the synth's control values from the Event
-						instr = ( ~synthLib ?? { SynthDescLib.global } ).at(~instrument);
-						if(instr.isNil) {
-							"Event: instrument % not found in SynthDescLib"
-							.format(~instrument).warn;
-							^this
-						};
-						msgFunc = instr.msgFunc;
-						instrumentName = ~synthDefName.valueEnvir;
-
-						// update values in the Event that may be determined by functions
-
-						~freq = freqs;
-						~amp = ~amp.value;
-						~sustain = ~sustain.value;
-
-						addAction = Node.actionNumberFor(~addAction);
-
-						// compute the control values and generate OSC commands
-
-						bndl = msgFunc.valueEnvir;
-						bndl = [9 /* \s_new */, instrumentName, -1, addAction, ~group.asControlInput] ++ bndl;
-
-						~schedBundleArray.(
-							~lag,
-							~timingOffset,
-							server,
-							bndl.flop,
-							~latency
-						);
-					},  #{ |server|
-						var instrumentName, desc, msgFunc, sustain;
-						var bndl, synthLib, addAction, group, latency, ids, id, groupControls;
-						~server = server;
-						addAction = Node.actionNumberFor(~addAction);
-						group = ~group.asControlInput;
-						~freq = ~detunedFreq.value;
-						~amp = ~amp.value;
-						~sustain = sustain = ~sustain.value;
-						ids = ~id;
-						msgFunc = ~getMsgFunc.valueEnvir;
-						instrumentName = ~synthDefName.valueEnvir;
-
-						bndl = [9 /* \s_new */, instrumentName, ids, addAction, group]
-						++ msgFunc.valueEnvir;
-						if ((addAction == 0) || (addAction == 3)) {
-							bndl = bndl.reverse;
-						};
-
-						bndl = bndl.collect(_.asOSCArgArray);
-
-						server.sendBundle(server.latency, *bndl);
-						~id = ids;
-						~isPlaying = true;
-						NodeWatcher.register(currentEnvironment);
-
-					},  
-	#{|server|
-				~schedBundle.value(~lag, ~timingOffset, server, [\b_close, ~bufNum], [\b_free, ~bufNum]);
-				server.bufferAllocator.free(~bufNum);
-			},  #{},  #{|server|
-						~schedBundle.value(~lag, ~timingOffset, server,
-							[\b_alloc, ~bufnum.asControlInput, ~numframes, ~numchannels]);
-					},  #{ | server |
-				var bufNum,
-					array = [~freqs, ~amps].lace(~freqs.size * 2);
-				if ( (bufNum = ~bufNum).notNil) {
-					~schedBundle.value(~lag, ~timingOffset, server, [\b_gen, bufNum.asUGenInput, \sine2, ~genflags ? 7] ++ array)
-				} {
-					~type = \buffer;
-					bufNum = ~bufNum = server.bufferAllocator.alloc;
-					~numFrames = ~numFrames ? 1024;
-					~numChannels = ~numChannels ? 1;
-					~schedBundle.value(~lag, ~timingOffset, server,
-						[\b_alloc, bufNum, ~numFrames, ~numChannels,
-						[\b_gen, bufNum, \sine1, ~genflags ? 7] ++ array
-					]);
-				}
-			},  
-	#{ | server |
-				var bufNum;
-				if ( (bufNum = ~bufNum).notNil) {
-					~schedBundle.value(~lag, ~timingOffset, server, [\b_gen, bufNum.asUGenInput, \sine1, ~genflags ? 7] ++ ~amps)
-				} {
-					~type = \buffer;
-					bufNum = ~bufNum = server.bufferAllocator.alloc;
-					~numFrames = ~numFrames ? 1024;
-					~numChannels = ~numChannels ? 1;
-					~schedBundle.value(~lag, ~timingOffset, server,
-						[\b_alloc, bufNum, ~numFrames, ~numChannels,
-						[\b_gen, bufNum, \sine1, ~genflags ? 7] ++ ~amps
-					]);
-				}
-			},  #{|server|
-						var freqs, lag, dur, sustain, strum;
-						var bndl, midiout, hasGate, midicmd;
-
-						freqs = ~freq = ~detunedFreq.value;
-
-						~amp = ~amp.value;
-						~midinote = (freqs.cpsmidi).round(1).asInteger;
-						strum = ~strum;
-						lag = ~lag;
-						sustain = ~sustain = ~sustain.value;
-						midiout = ~midiout.value;
-						~uid ?? { ~uid = midiout.uid };  // mainly for sysex cmd
-						hasGate = ~hasGate ? true;
-						midicmd = ~midicmd;
-						bndl = ~midiEventFunctions[midicmd].valueEnvir.asCollection;
-
-						bndl = bndl.asControlInput.flop;
-
-						bndl.do {|msgArgs, i|
-							var latency;
-
-							latency = i * strum + lag;
-
-							if(latency == 0.0) {
-								midiout.performList(midicmd, msgArgs)
-							} {
-								thisThread.clock.sched(latency, {
-									midiout.performList(midicmd, msgArgs);
-								})
-							};
-							if(hasGate and: { midicmd === \noteOn }) {
-								thisThread.clock.sched(sustain + latency, {
-									midiout.noteOff(*msgArgs)
-								});
-							};
-						};
-					},  #{|server|
-						var freqs, lag, dur, strum, bndl, msgFunc;
-						freqs = ~freq = ~detunedFreq.value;
-
-						~server = server;
-						~amp = ~amp.value;
-
-						if(~args.size == 0) {
-							msgFunc = ~getMsgFunc.valueEnvir;
-							bndl = msgFunc.valueEnvir;
-						} {
-							bndl = ~args.envirPairs;
-						};
-
-						bndl = ([15 /* \n_set */, ~id] ++  bndl).flop.asOSCArgBundle;
-						~schedBundleArray.value(~lag, ~timingOffset, server, bndl, ~latency);
-					},  {
-						var receiver = ~receiver,
-						go = {
-							~args.do { |each|
-								var selector, value = each.envirGet;
-								if(value.notNil) {
-									selector = each.asSetter;
-									if(~doTrace == true) {
-										postf("%.%_(%)\n",receiver,selector,value)
-									};
-									receiver.perform(selector.asSetter, value)
-								};
-							}
-						};
-						if(~defer ? true) {
-							// inEnvir is needed
-							// because we'll no longer be in this Event
-							// when defer wakes up
-							go.inEnvir.defer
-						} {
-							go.value
-						};
-					},  
-	#{|server|
-						var bundle, cmd;
-						if (~id.isNil) { ~id = server.nextNodeID };
-						bundle = [63 /* \p_new */, ~id.asArray, Node.actionNumberFor(~addAction),
-							~group.asControlInput].flop;
-						~schedBundleArray.value(~lag, ~timingOffset, server, bundle, ~latency);
-					},  { | args = [  ] | "open Function" },  #{|server|
-				var bufNum;
-				if ( (bufNum = ~bufNum).isNil ) { bufNum = ~bufNum = server.bufferAllocator.alloc; ~type = \allocReadID };
-				~schedBundle.value(~lag, ~timingOffset, server, [\b_allocRead, bufNum, ~path, ~firstFileFrame, ~numFrames]);
-			},  #{ |server|
-						var bndl, id, ids, addAction, f;
-						addAction = Node.actionNumberFor(~addAction);
-						~freq = ~detunedFreq.value;
-						f = ~freq;
-						~amp = ~amp.value;
-
-						bndl = ( [9 /* \s_new */, ~instrument, ids, addAction, ~group.asControlInput]
-							++ ~msgFunc.valueEnvir).flop;
-						bndl.do { | b |
-							id = server.nextNodeID;
-							ids = ids.add(id);
-							b[2] = id;
-						};
-						~id = ids;
-
-						if ((addAction == 0) || (addAction == 3)) {
-							bndl = bndl.reverse;
-						};
-						bndl = bndl.collect(_.asOSCArgArray);
-						~schedBundle.value(~lag, ~timingOffset, server, *bndl);
-						~updatePmono.value(ids, server);
-					},  
-	#{ | server |
-				~bufNum = server.bufferAllocator.alloc(~numBufs ?? { ~numBufs =  1});
-				~schedBundle.value(~lag, ~timingOffset, server, [\b_alloc, ~bufNum, ~numFrames, ~numChannels]);
-			},  #{|server|
-						var gate;
-						if (~hasGate) {
-							gate = min(0.0, ~gate ? 0.0); // accept release times
-							~schedBundleArray.value(~lag, ~timingOffset, server,
-								[15 /* \n_set */, ~id.asControlInput, \gate, gate].flop,
-								~latency
-							)
-						} {
-							~schedBundleArray.value(~lag, ~timingOffset, server,
-								[\n_free, ~id.asControlInput].flop, ~latency)
-						};
-						~isPlaying = false;
-					},  #{|server|
-						~schedBundleArray.value(~lag, ~timingOffset, server,
-							[\n_free, ~id.asControlInput].flop, ~latency)
-					},  #{ | server |
-				~out = server.audioBusAllocator.alloc(~channels ? 1)
-			},  
-	#{|server|
-						~schedBundle.value(~lag, ~timingOffset, server,
-							[\b_read, ~bufnum.asControlInput, ~filename,
-								~frame, ~numframes, ~bufpos, ~leaveOpen]);
-					},  #{ | server |
-				var bufNum,
-					array = [~freqs, ~amps, ~phases].lace(~freqs.size * 3);
-				if ( (bufNum = ~bufNum).notNil) {
-					~schedBundle.value(~lag, ~timingOffset, server, [\b_gen, bufNum.asUGenInput, \sine3, ~genflags ? 7] ++ array)
-				} {
-					~type = \buffer;
-					bufNum = ~bufNum = server.bufferAllocator.alloc;
-					~numFrames = ~numFrames ? 1024;
-					~numChannels = ~numChannels ? 1;
-					~schedBundle.value(~lag, ~timingOffset, server,
-						[\b_alloc, bufNum, ~numFrames, ~numChannels,
-						[\b_gen, bufNum, \sine1, ~genflags ? 7] ++ array
-					]);
-				}
-			},  #{|server|
-
-						if(~hasGate == false) {
-							~schedBundle.value(~lag, ~timingOffset, server,
-								[\n_free] ++ ~id.asControlInput);
-						} {
-							~schedBundle.value(~lag, ~timingOffset, server,
-								*([15 /* \n_set */, ~id.asControlInput, \gate, 0].flop) );
-						};
-
-					},  #{ | server |
-				var bufNum = ~bufNum;
-				~schedBundleArray.value(~lag, ~timingOffset, server, [['/b_close', bufNum], ['/b_free', bufNum ]] );
-				server.bufferAllocator.free(bufNum);
-			},  
-	#{|server|
-						var freqs, lag, bndl;
-
-						freqs = ~freq = ~detunedFreq.value;
-
-						~amp = ~amp.value;
-						~sustain = ~sustain.value;
-
-						bndl = ([15 /* \n_set */, ~id.asControlInput] ++ ~msgFunc.valueEnvir).flop;
-						bndl = bndl.collect(_.asOSCArgArray);
-						~schedBundle.value(~lag, ~timingOffset, server, *bndl);
-					},  { "open Function" },  #{ | server |
-				var bufNum;
-				if ( (bufNum = ~bufNum).notNil) {
-					~schedBundle.value(~lag, ~timingOffset, server, [\b_gen, bufNum.asUGenInput, \cheby, ~genflags ? 7] ++ ~amps)
-				} {
-					~type = \buffer;
-					bufNum = ~bufNum = server.bufferAllocator.alloc;
-					~numFrames = ~numFrames ? 1024;
-					~numChannels = ~numChannels ? 1;
-					~schedBundle.value(~lag, ~timingOffset, server,
-						[\b_alloc, bufNum, ~numFrames, ~numChannels,
-						[\b_gen, bufNum, \cheby, ~genflags ? 7] ++ ~amps
-					]);
-				}
-			},  #{ | server |
-				server.controlBusAllocator.free(~out)
-			},  
-	#{ | server |
-				var bufNum;
-				if ( (bufNum = ~bufNum).notNil) {
-					~schedBundle.value(~lag, ~timingOffset, server, [\b_setn, bufNum.asUGenInput, 0, ~amps.size] ++ ~amps)
-				} {
-					~type = \buffer;
-					bufNum = ~bufNum = server.bufferAllocator.alloc;
-					~numFrames = ~amps.size;
-					~numChannels =  1;
-					~schedBundle.value(~lag, ~timingOffset, server,
-						[\b_alloc, bufNum, ~numFrames, ~numChannels,
-						[\b_setn, bufNum.asUGenInput, 0, ~amps.size] ++ ~amps
-					]);
-				}
-			},  #{|server|
-						var ids, group, addAction, bundle;
-						ids = ~id = (~id ?? { server.nextNodeID }).asArray;
-						addAction = Node.actionNumberFor(~addAction);
-						group = ~group.asControlInput;
-						~server = server;
-						if ((addAction == 0) || (addAction == 3) ) {
-							ids = ids.reverse;
-						};
-						bundle = ids.collect {|id, i|
-							[21 /* \g_new */, id, addAction, group];
-						};
-						server.sendBundle(server.latency, *bundle);
-						~isPlaying = true;
-						NodeWatcher.register(currentEnvironment);
-
-
-					},  #{ | server |
-				server.audioBusAllocator.free(~out)
-			},  #{|server|
-						var array;
-						array = ~array.asArray;
-						~schedBundle.value(~lag, ~timingOffset, server,
-							[\c_setn, ~out.asControlInput, array.size] ++ array);
-					},  
-	#{|server|
-						~schedBundle.value(~lag, ~timingOffset, server,
-							[\b_free, ~bufnum.asControlInput]);
-					},  { "open Function" },  #{|server|
-						~schedBundle.value(~lag, ~timingOffset, server,
-							[\b_gen, ~bufnum.asControlInput, ~gencmd, ~genflags] ++ ~genarray);
-					},  #{ | server |
-				~out = server.controlBusAllocator.alloc(~channels ? 1)
-			},  
-	#{|server|
-						var freqs, lag, strum, sustain;
-						var bndl, addAction, sendGate, ids;
-						var msgFunc, instrumentName, offset, strumOffset;
-
-						// var schedBundleArray;
-
-						freqs = ~detunedFreq.value;
-
-						// msgFunc gets the synth's control values from the Event
-						msgFunc = ~getMsgFunc.valueEnvir;
-						instrumentName = ~synthDefName.valueEnvir;
-
-						// determine how to send those commands
-						// sendGate == false turns off releases
-
-						sendGate = ~sendGate ? ~hasGate;
-
-						// update values in the Event that may be determined by functions
-
-						~freq = freqs;
-						~amp = ~amp.value;
-						~sustain = sustain = ~sustain.value;
-						lag = ~lag;
-						offset = ~timingOffset;
-						strum = ~strum;
-						~server = server;
-						~isPlaying = true;
-						addAction = Node.actionNumberFor(~addAction);
-
-						// compute the control values and generate OSC commands
-						bndl = msgFunc.valueEnvir;
-						bndl = [9 /* \s_new */, instrumentName, ids, addAction, ~group] ++ bndl;
-
-
-						if(strum == 0 and: { (sendGate and: { sustain.isArray })
-							or: { offset.isArray } or: { lag.isArray } }) {
-							bndl = flopTogether(
-								bndl,
-								[sustain, lag, offset]
-							);
-							#sustain, lag, offset = bndl[1].flop;
-							bndl = bndl[0];
-						} {
-							bndl = bndl.flop
-						};
-
-						// produce a node id for each synth
-
-						~id = ids = Array.fill(bndl.size, { server.nextNodeID });
-						bndl = bndl.collect { | msg, i |
-							msg[2] = ids[i];
-							msg.asOSCArgArray
-						};
-
-						// schedule when the bundles are sent
-
-						if (strum == 0) {
-							~schedBundleArray.(lag, offset, server, bndl, ~latency);
-							if (sendGate) {
-								~schedBundleArray.(
-									lag,
-									sustain + offset,
-									server,
-									[15 /* \n_set */, ids, \gate, 0].flop,
-									~latency
-								);
-							}
-						} {
-
-							if (strum < 0) { bndl = bndl.reverse };
-							strumOffset = offset + Array.series(bndl.size, 0, strum.abs);
-							~schedBundleArray.(
-								lag, strumOffset, server, bndl, ~latency
-							);
-							if (sendGate) {
-								if (~strumEndsTogether) {
-									strumOffset = sustain + offset
-								} {
-									strumOffset = sustain + strumOffset
-								};
-								~schedBundleArray.(
-									lag, strumOffset, server,
-									[15 /* \n_set */, ids, \gate, 0].flop,
-									~latency
-								);
-							}
-						}
-					},  #{ | server |
-				var bufNum = ~bufNum;
-				~schedBundleArray.value(~lag, ~timingOffset, server, [['/b_close', bufNum],['/b_free', bufNum ]] );
-			},  #{ ~db.dbamp },  #{ ~dur * ~legato * ~stretch },  
-	#{
-					if(~id.notNil) {
-						~server.sendBundle(~server.latency, ["/n_free"] ++ ~id);
-						~isPlaying = false;
-					};
-				},  { | args = [  ] | "open Function" },  Array.prNew(1),  #{
-					var tempo, server, eventTypes, parentType;
-
-					parentType = ~parentTypes[~type];
-					parentType !? { currentEnvironment.parent = parentType };
-
-					server = ~server = ~server ? Server.default;
-
-					~finish.value(currentEnvironment);
-
-					tempo = ~tempo;
-					tempo !? { thisThread.clock.tempo = tempo };
-
-
-					if(currentEnvironment.isRest.not) {
-						eventTypes = ~eventTypes;
-						(eventTypes[~type] ?? { eventTypes[\note] }).value(server)
-					};
-
-					~callback.value(currentEnvironment);
-				},  
-	#{
-					(~degree + ~mtranspose).degreeToKey(
-						~scale,
-						~scale.respondsTo(\stepsPerOctave).if(
-							{ ~scale.stepsPerOctave },
-							~stepsPerOctave
-						)
-					);
-				},  Event.prNew,  Array.prNew(12),  Pbind.prNew,  
-	Array.prNew(4),  Pseq.prNew,  Array.prNew(4),  Event.prNew,  
-	Array.prNew(12),  Pbind.prNew,  Array.prNew(4),  Pseq.prNew,  
-	Array.prNew(8),  Event.prNew,  Array.prNew(12),  Pbind.prNew,  
-	Array.prNew(4),  Pseq.prNew,  Array.prNew(7),  Event.prNew,  
-	Array.prNew(16),  {
-			{
-				{
-					a=Image.open("/Users/michael/tank/super/Spock.png");
-					w=a.plot(freeOnClose:true).alwaysOnTop_(true);
-					w.alwaysOnTop_(true);
-				}.defer;
-				5.wait;
-				//{w.close}.defer;
-			}.fork
-		},  Event.prNew,  Array.prNew(52),  
-	{|self|
-				var a; Archive.read(self.dursFile);
-				"read".postln;
-				Archive.at(self.key).isNil.not.if(
-					{
-						a=Archive.at(self.key);
-						self.durs=a.durs++(Pseq([1])!(self.sections-a.durs.size)); //copy and pad
-					},{
-						self.durs=Pseq([1])!self.sections
-					}
-				)
-			},  {|self sec till | self.durs[sec].list[0..till].sum},  {|self| self.secDur[self.start]},  {|self from=3| var list=self.pbind[from.asInt..(self.sections-1).asInt].postln;Pseq(list).postln},  
-	{|self | (0..self.sections-1).collect{|i| Pbind(\dur,self.durs[i],\midinote,self.tune[i])}},  {|self | (0..self.sections-1).collect{|i| self.durs[i].list.sum} },  {|self|(self.start<self.cursor).not.if{ var offset;
-			self.syl.isNil.if({offset=0;"offset 0".postln},{offset=self.durTill(self.start,self.syl)});
-			TempoClock.sched(
-				(self.secLoc[self.start]-self.secLoc[self.cursor])+offset,
-				{self.music.play})};self},  {|self| var x=0; (self.cursor..(self.sections-1)).do{|i| x=x+self.secDur[i] };x},  
-	{|self| [0]++self.sections.asInt.collect({|i| self.secDur[0..i].sum}) },  {|self|self.song.size/2},  {|self| self.song.copySeries(0,2,self.song.size)},  {|self| var array = self.song.copySeries(1,3,self.song.size);
-				array.collect({|string| Panola.new(string).midinotePattern})},  
-	Event.prNew,  Array.prNew(8),  "/Users/michael/tank/super/theExtreme3",  Event.prNew,  
-	Array.prNew(12),  "/Users/michael/tank/super/theExtreme3",  Array.prNew(31),  Pseq.prNew,  
+	Archive.prNew,  IdentityDictionary.prNew,  Array.prNew(32),  Array.prNew(4),  
+	Pseq.prNew,  List.prNew,  Array.prNew(5),  Pseq.prNew,  
 	List.prNew,  Array.prNew(7),  Pseq.prNew,  List.prNew,  
-	Array.prNew(8),  Pseq.prNew,  List.prNew,  Array.prNew(12),  
-	Pseq.prNew,  List.prNew,  Array.prNew(8),  Pseq.prNew,  
-	List.prNew,  Array.prNew(10),  Pseq.prNew,  List.prNew,  
-	Array.prNew(11),  Pseq.prNew,  List.prNew,  Array.prNew(6),  
-	Pseq.prNew,  List.prNew,  Array.prNew(3),  Pseq.prNew,  
-	List.prNew,  Array.prNew(5),  Pseq.prNew,  List.prNew,  
-	Array.prNew(9),  Pseq.prNew,  List.prNew,  Array.prNew(5),  
+	Array.prNew(9),  Pseq.prNew,  List.prNew,  Array.prNew(4),  
+	Event.prNew,  Array.prNew(12),  "/Users/michael/tank/super/theExtreme3",  Array.prNew(31),  
+	Pseq.prNew,  List.prNew,  Array.prNew(7),  Pseq.prNew,  
+	List.prNew,  Array.prNew(8),  Pseq.prNew,  List.prNew,  
+	Array.prNew(12),  Pseq.prNew,  List.prNew,  Array.prNew(8),  
+	Pseq.prNew,  List.prNew,  Array.prNew(10),  Pseq.prNew,  
+	List.prNew,  Array.prNew(11),  Pseq.prNew,  List.prNew,  
+	Array.prNew(6),  Pseq.prNew,  List.prNew,  Array.prNew(3),  
+	Pseq.prNew,  List.prNew,  Array.prNew(5),  Pseq.prNew,  
+	List.prNew,  Array.prNew(9),  Pseq.prNew,  List.prNew,  
+	Array.prNew(5),  Pbinop.prNew,  Pseq.prNew,  Array.prNew(1),  
 	Pbinop.prNew,  Pseq.prNew,  Array.prNew(1),  Pbinop.prNew,  
 	Pseq.prNew,  Array.prNew(1),  Pbinop.prNew,  Pseq.prNew,  
 	Array.prNew(1),  Pbinop.prNew,  Pseq.prNew,  Array.prNew(1),  
@@ -770,25 +28,25 @@ o = [
 	Array.prNew(1),  Pbinop.prNew,  Pseq.prNew,  Array.prNew(1),  
 	Pbinop.prNew,  Pseq.prNew,  Array.prNew(1),  Pbinop.prNew,  
 	Pseq.prNew,  Array.prNew(1),  Pbinop.prNew,  Pseq.prNew,  
-	Array.prNew(1),  Pbinop.prNew,  Pseq.prNew,  Array.prNew(1),  
-	Array.prNew(22),  "the extreme power of the",  "g a b- d5 b-4 a g",  "alien mind will make the -",  
-	"e5 d c f e f g f",  "r r r r heart action dan ger ous ly high- ",  "r r r r  c6 a5 f b- a g f g ",  " - and the body functions will",  
-	"a5 c d a g a d a ",  " race r r many times their natural me-",  "g5 r r  e5 g5 a4 g5 f e g ",  "tabolism so we're going to have to",  
-	" f5 e d c r g#4 a b c5 d e ",  " mo- ni- tor this very",  "d5 c4 a4 f f5 e ",  "carefully",  
-	"e5 d b4 r r r",  "r r r well... I ",  "r r r a g#",  "guess that's as read- y as I'm gon- na ",  
-	"g e- f g e- d- e- f g ",  "be. Rea- dy Sar- gon",  "g d5 c a4 f#",  Event.prNew,  
-	Array.prNew(48),  {|self| self.secDur[self.start]},  {|self|(self.start<self.cursor).not.if{ var offset;
+	Array.prNew(1),  Array.prNew(22),  "the extreme power of the",  "g a b- d5 b-4 a g",  
+	"alien mind will make the -",  "e5 d c f e f g f",  "r r r r heart action dan ger ous ly high- ",  "r r r r  c6 a5 f b- a g f g ",  
+	" - and the body functions will",  "a5 c d a g a d a ",  " race r r many times their natural me-",  "g5 r r  e5 g5 a4 g5 f e g ",  
+	"tabolism so we're going to have to",  " f5 e d c r g#4 a b c5 d e ",  " mo- ni- tor this very",  "d5 c4 a4 f f5 e ",  
+	"carefully",  "e5 d b4 r r r",  "r r r well... I ",  "r r r a g#",  
+	"guess that's as read- y as I'm gon- na ",  "g e- f g e- d- e- f g ",  "be. Rea- dy Sar- gon",  "g d5 c a4 f#",  
+	Event.prNew,  Array.prNew(48),  {|self| self.secDur[self.start]},  {|self|(self.start<self.cursor).not.if{ var offset;
 			self.syl.isNil.if({offset=0;"offset 0".postln},{offset=self.durTill(self.start,self.syl)});
 			TempoClock.sched(
 				(self.secLoc[self.start]-self.secLoc[self.cursor])+offset,
-				{self.music.play})};self},  {|self|self.song.size/2},  
-	{|self| var array = self.song.copySeries(1,3,self.song.size);
+				{self.music.play})};self},  
+	{|self|self.song.size/2},  {|self| var array = self.song.copySeries(1,3,self.song.size);
 				array.collect({|string| Panola.new(string).midinotePattern})},  {|self|self.dursFile.isNil.if(
 				{Pseq([1])!self.sections},
 				{var a; Archive.read(self.dursFile);a=Archive.at(\song);
 					self.durs=a.durs++(Pseq([1])!(self.sections-a.durs.size)); //copy and pad
-			})},  {|self | (0..self.sections-1).collect{|i| Pbind(\dur,self.durs[i],\midinote,self.tune[i])}},  {|self| self.song.copySeries(0,2,self.song.size)},  
-	{|self from=3| var list=self.pbind[from.asInt..(self.sections-1).asInt].postln;Pseq(list).postln},  {|self| [0]++self.sections.asInt.collect({|i| self.secDur[0..i].sum}) },  {|self | (0..self.sections-1).collect{|i| self.durs[i].list.sum} },  {|self sec till | self.durs[sec].list[0..till].sum}
+			})},  {|self | (0..self.sections-1).collect{|i| Pbind(\dur,self.durs[i],\midinote,self.tune[i])}},  
+	{|self| self.song.copySeries(0,2,self.song.size)},  {|self from=3| var list=self.pbind[from.asInt..(self.sections-1).asInt].postln;Pseq(list).postln},  {|self| [0]++self.sections.asInt.collect({|i| self.secDur[0..i].sum}) },  {|self | (0..self.sections-1).collect{|i| self.durs[i].list.sum} },  
+	{|self sec till | self.durs[sec].list[0..till].sum}
 ];
 p = [
 	// Archive
@@ -799,700 +57,338 @@ p = [
 		know: false ],  
 	// Array
 	2, [ 'complete',  o[3],  nil,  nil,  
-		nil,  nil,  'song',  o[179],  
+		nil,  nil,  'song',  o[16],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil ],  
-	// Event
-	3, [ array: o[4],  size: 4,  
-		proto: o[162],  parent: o[176],  
-		know: true ],  
 	// Array
-	4, [ 'durs',  o[5],  nil,  nil,  
-		nil,  nil,  'song',  o[18],  
-		'parts',  o[27],  nil,  nil,  
-		nil,  nil,  'key',  'complete' ],  
-	// Array
-	5, [ o[6],  o[9],  o[12],  o[15] ],  
+	3, [ o[4],  o[7],  o[10],  o[13] ],  
 	// Pseq
-	6, [ list: o[7],  repeats: 1,  
+	4, [ list: o[5],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	7, [ array: o[8] ],  
+	5, [ array: o[6] ],  
 	// Array
-	8, [ 0.714,  0.794,  0.888,  1.083,  
-		0.478 ],  
+	6, [ 0.646,  0.701,  0.887,  1.219,  
+		0.547 ],  
 	// Pseq
-	9, [ list: o[10],  repeats: 1,  
+	7, [ list: o[8],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	10, [ array: o[11] ],  
+	8, [ array: o[9] ],  
 	// Array
-	11, [ 0.67,  0.268,  0.265,  0.247,  
-		0.228,  0.258,  0.31 ],  
+	9, [ 0.638,  0.289,  0.282,  0.267,  
+		0.286,  0.282,  0.362 ],  
 	// Pseq
-	12, [ list: o[13],  repeats: 1,  
+	10, [ list: o[11],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	13, [ array: o[14] ],  
+	11, [ array: o[12] ],  
 	// Array
-	14, [ 0.407,  0.214,  0.204,  0.515,  
-		0.515,  0.631,  4.098,  0.623 ],  
+	12, [ 0.51,  0.259,  0.311,  0.573,  
+		0.554,  0.649,  0.899,  1.993,  
+		0.701 ],  
 	// Pseq
-	15, [ list: o[16],  repeats: 1,  
+	13, [ list: o[14],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	16, [ array: o[17] ],  
+	14, [ array: o[15] ],  
 	// Array
-	17, [ 1.272,  1.334,  1.399,  1.401 ],  
-	// Array
-	18, [ o[19],  o[20],  o[21],  o[22],  
-		o[23],  o[24],  o[25],  o[26] ],  
+	15, [ 1.181,  1.227,  1.21,  1.308 ],  
 	// Event
-	27, [ array: o[28],  size: 8,  
-		proto: nil,  parent: nil,  
+	16, [ array: o[17],  size: 3,  
+		proto: o[136],  parent: nil,  
 		know: true ],  
 	// Array
-	28, [ 'ply',  o[29],  'guide0',  o[30],  
-		nil,  nil,  nil,  nil,  
-		'bassnotes',  o[36],  nil,  nil,  
-		nil,  nil,  'helloChord',  o[44],  
-		nil,  nil,  nil,  nil,  
-		'guide3',  o[141],  nil,  nil,  
-		'guide2',  o[147],  nil,  nil,  
-		'guide1',  o[153],  'helloImage',  o[159] ],  
-	// Event
-	30, [ array: o[31],  size: 2,  
-		proto: nil,  parent: o[3],  
-		know: true ],  
-	// Array
-	31, [ 'music',  o[32],  'start',  0,  
-		nil,  nil,  nil,  nil,  
+	17, [ 'dursFile',  o[18],  nil,  nil,  
+		'durs',  o[19],  'song',  o[113],  
 		nil,  nil,  nil,  nil ],  
-	// Pbind
-	32, [ patternpairs: o[33] ],  
 	// Array
-	33, [ 'dur',  o[6],  'midinote',  o[34] ],  
+	19, [ o[20],  o[23],  o[26],  o[29],  
+		o[32],  o[35],  o[38],  o[41],  
+		o[44],  o[47],  o[50],  o[53],  
+		o[56],  o[59],  o[62],  o[65],  
+		o[68],  o[71],  o[74],  o[77],  
+		o[80],  o[83],  o[86],  o[89],  
+		o[92],  o[95],  o[98],  o[101],  
+		o[104],  o[107],  o[110] ],  
 	// Pseq
-	34, [ list: o[35],  repeats: 1,  
-		offset: 0 ],  
-	// Array
-	35, [ 77,  72,  68,  64,  
-		61 ],  
-	// Event
-	36, [ array: o[37],  size: 3,  
-		proto: nil,  parent: o[3],  
-		know: true ],  
-	// Array
-	37, [ 'syl',  3,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		'music',  o[38],  nil,  nil,  
-		nil,  nil,  'start',  0 ],  
-	// Pseq
-	38, [ list: o[39],  repeats: 1,  
-		offset: 0 ],  
-	// Array
-	39, [ o[40],  o[42] ],  
-	// Event
-	40, [ array: o[41],  size: 3,  
-		proto: nil,  parent: nil,  
-		know: true ],  
-	// Array
-	41, [ nil,  nil,  nil,  nil,  
-		nil,  nil,  'note',  -23,  
-		'amp',  0.5,  'dur',  0.478 ],  
-	// Event
-	42, [ array: o[43],  size: 4,  
-		proto: nil,  parent: nil,  
-		know: true ],  
-	// Array
-	43, [ 'sustain',  5,  nil,  nil,  
-		nil,  nil,  'dur',  5,  
-		nil,  nil,  nil,  nil,  
-		'amp',  0.6,  'note',  -23 ],  
-	// Event
-	44, [ array: o[45],  size: 2,  
-		proto: nil,  parent: o[3],  
-		know: true ],  
-	// Array
-	45, [ 'music',  o[46],  'start',  3,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil ],  
-	// Event
-	46, [ array: o[47],  size: 11,  
-		proto: nil,  parent: o[53],  
-		know: true ],  
-	// Array
-	47, [ 'instrument',  'test',  'strum',  0.03,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		'amp',  0.4,  'server',  o[48],  
-		'midinote',  o[49],  'sustain',  0.8,  
-		'isPlaying',  true,  'hasGate',  false,  
-		nil,  nil,  'id',  o[50],  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		'msgFunc',  o[51],  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		'freq',  o[52],  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil ],  
-	// Array
-	49, [ 62,  66,  69,  61 ],  
-	// Array
-	50, [ 6898,  6899,  6900,  6901 ],  
-	// Array
-	52, [ 293.66476791741,  369.99442271163,  440.0,  277.18263097687 ],  
-	// Event
-	53, [ array: o[54],  size: 61,  
-		proto: nil,  parent: nil,  
-		know: true ],  
-	// Array
-	54, [ 'instrument',  'default',  nil,  nil,  
-		'db',  -20.0,  nil,  nil,  
-		nil,  nil,  'midiEventFunctions',  o[55],  
-		nil,  nil,  'midinote',  o[68],  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		'addAction',  0,  'frame',  0,  
-		'parentTypes',  o[69],  nil,  nil,  
-		'out',  0,  'group',  o[71],  
-		nil,  nil,  nil,  nil,  
-		'mtranspose',  0,  'harmonic',  1.0,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		'strumEndsTogether',  false,  'detunedFreq',  o[72],  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  'octave',  5.0,  
-		nil,  nil,  'dur',  1.0,  
-		nil,  nil,  nil,  nil,  
-		'ctranspose',  0.0,  'pan',  0.0,  
-		nil,  nil,  'getMsgFunc',  o[73],  
-		nil,  nil,  'hasGate',  true,  
-		nil,  nil,  'root',  0.0,  
-		nil,  nil,  nil,  nil,  
-		'bufpos',  0,  'legato',  0.8,  
-		'leaveOpen',  0,  'velocity',  64,  
-		nil,  nil,  nil,  nil,  
-		'timingOffset',  0,  'schedBundle',  o[74],  
-		'synthDefName',  o[75],  nil,  nil,  
-		'freq',  o[76],  nil,  nil,  
-		nil,  nil,  'gencmd',  'sine1',  
-		nil,  nil,  nil,  nil,  
-		'numframes',  0,  nil,  nil,  
-		nil,  nil,  'trig',  0.5,  
-		'scale',  o[77],  'octaveRatio',  2.0,  
-		'schedStrummedNote',  o[78],  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  'filename',  o[79],  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  'freqToScale',  o[80],  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  'releaseServerNode',  o[81],  
-		nil,  nil,  'numchannels',  1,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  'detune',  0.0,  
-		'schedBundleArray',  o[82],  'bufnum',  0,  
-		'type',  'note',  'defaultMsgFunc',  o[83],  
-		'strum',  0.0,  'freqToNote',  o[84],  
-		'degree',  0,  'gtranspose',  0.0,  
-		'args',  o[85],  'eventTypes',  o[86],  
-		'amp',  o[134],  'sustain',  o[135],  
-		nil,  nil,  nil,  nil,  
-		'stretch',  1.0,  'freeServerNode',  o[136],  
-		'getBundleArgs',  o[137],  'genflags',  7,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  'midicmd',  'noteOn',  
-		nil,  nil,  'genarray',  o[138],  
-		'lag',  0.0,  'stepsPerOctave',  12.0,  
-		'play',  o[139],  'note',  o[140],  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil ],  
-	// Event
-	55, [ array: o[56],  size: 11,  
-		proto: nil,  parent: nil,  
-		know: true ],  
-	// Array
-	56, [ nil,  nil,  nil,  nil,  
-		'polyTouch',  o[57],  'program',  o[58],  
-		'bend',  o[59],  'sysex',  o[60],  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  'noteOn',  o[61],  
-		'allNotesOff',  o[62],  'smpte',  o[63],  
-		'songPtr',  o[64],  nil,  nil,  
-		'control',  o[65],  nil,  nil,  
-		nil,  nil,  'touch',  o[66],  
-		'noteOff',  o[67],  nil,  nil ],  
-	// Event
-	69, [ array: o[70],  size: 0,  
-		proto: nil,  parent: nil,  
-		know: true ],  
-	// Array
-	70, [ nil,  nil,  nil,  nil ],  
-	// Array
-	77, [ 0,  2,  4,  5,  
-		7,  9,  11 ],  
-	// Array
-	85, [ 'freq',  'amp',  'pan',  'trig' ],  
-	// Event
-	86, [ array: o[87],  size: 46,  
-		proto: nil,  parent: nil,  
-		know: true ],  
-	// Array
-	87, [ 'fadeBus',  o[88],  'freeAllocWrite',  o[89],  
-		'tree',  o[90],  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		'on',  o[91],  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		'load',  o[92],  nil,  nil,  
-		'freeBuffer',  o[93],  'group',  o[94],  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  'freeAllocRead',  o[95],  
-		'allocWrite',  o[96],  'cue',  o[97],  
-		nil,  nil,  'grain',  o[98],  
-		'Synth',  o[99],  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  'freeAllocWriteID',  o[100],  
-		nil,  nil,  nil,  nil,  
-		'rest',  o[101],  'alloc',  o[102],  
-		'sine2',  o[103],  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  'sine1',  o[104],  
-		'midi',  o[105],  nil,  nil,  
-		nil,  nil,  'set',  o[106],  
-		nil,  nil,  'setProperties',  o[107],  
-		'parGroup',  o[108],  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  'pbindFx',  o[109],  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  'allocRead',  o[110],  
-		'monoNote',  o[111],  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		'buffer',  o[112],  'off',  o[113],  
-		'kill',  o[114],  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		'audioBus',  o[115],  nil,  nil,  
-		'read',  o[116],  nil,  nil,  
-		'sine3',  o[117],  nil,  nil,  
-		nil,  nil,  'monoOff',  o[118],  
-		'freeCueID',  o[119],  nil,  nil,  
-		'monoSet',  o[120],  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  'phrase',  o[121],  
-		'cheby',  o[122],  'freeControlBus',  o[123],  
-		'table',  o[124],  nil,  nil,  
-		nil,  nil,  'Group',  o[125],  
-		'freeAudioBus',  o[126],  nil,  nil,  
-		'bus',  o[127],  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		'free',  o[128],  nil,  nil,  
-		'say',  o[129],  nil,  nil,  
-		'gen',  o[130],  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  'controlBus',  o[131],  
-		'note',  o[132],  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  'freeCue',  o[133] ],  
-	// Array
-	138, [ 1 ],  
-	// Event
-	141, [ array: o[142],  size: 2,  
-		proto: nil,  parent: o[3],  
-		know: true ],  
-	// Array
-	142, [ 'music',  o[143],  'start',  3,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil ],  
-	// Pbind
-	143, [ patternpairs: o[144] ],  
-	// Array
-	144, [ 'dur',  o[15],  'midinote',  o[145] ],  
-	// Pseq
-	145, [ list: o[146],  repeats: 1,  
-		offset: 0 ],  
-	// Array
-	146, [ 73,  38,  38,  38 ],  
-	// Event
-	147, [ array: o[148],  size: 2,  
-		proto: nil,  parent: o[3],  
-		know: true ],  
-	// Array
-	148, [ 'music',  o[149],  'start',  2,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil ],  
-	// Pbind
-	149, [ patternpairs: o[150] ],  
-	// Array
-	150, [ 'dur',  o[12],  'midinote',  o[151] ],  
-	// Pseq
-	151, [ list: o[152],  repeats: 1,  
-		offset: 0 ],  
-	// Array
-	152, [ 74,  70,  73,  79,  
-		73,  68,  67,  71 ],  
-	// Event
-	153, [ array: o[154],  size: 2,  
-		proto: nil,  parent: o[3],  
-		know: true ],  
-	// Array
-	154, [ 'music',  o[155],  'start',  1,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil ],  
-	// Pbind
-	155, [ patternpairs: o[156] ],  
-	// Array
-	156, [ 'dur',  o[9],  'midinote',  o[157] ],  
-	// Pseq
-	157, [ list: o[158],  repeats: 1,  
-		offset: 0 ],  
-	// Array
-	158, [ 61,  72,  70,  72,  
-		68,  60,  72 ],  
-	// Event
-	159, [ array: o[160],  size: 3,  
-		proto: nil,  parent: o[3],  
-		know: true ],  
-	// Array
-	160, [ 'syl',  7,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		'music',  o[161],  nil,  nil,  
-		nil,  nil,  'start',  2 ],  
-	// Event
-	162, [ array: o[163],  size: 13,  
-		proto: nil,  parent: nil,  
-		know: true ],  
-	// Array
-	163, [ 'setupDurs',  o[164],  'durTill',  o[165],  
-		'when',  o[166],  'pbindFrom',  o[167],  
-		'pbind',  o[168],  'secDur',  o[169],  
-		'p',  o[170],  'durTillEnd',  o[171],  
-		'secLoc',  o[172],  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  'sections',  o[173],  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  'lyrics',  o[174],  
-		'cursor',  0,  'tune',  o[175],  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil ],  
-	// Event
-	176, [ array: o[177],  size: 1,  
-		proto: nil,  parent: nil,  
-		know: true ],  
-	// Array
-	177, [ 'dursFile',  o[178],  nil,  nil,  
-		nil,  nil,  nil,  nil ],  
-	// Event
-	179, [ array: o[180],  size: 3,  
-		proto: o[299],  parent: nil,  
-		know: true ],  
-	// Array
-	180, [ 'dursFile',  o[181],  nil,  nil,  
-		'durs',  o[182],  'song',  o[276],  
-		nil,  nil,  nil,  nil ],  
-	// Array
-	182, [ o[183],  o[186],  o[189],  o[192],  
-		o[195],  o[198],  o[201],  o[204],  
-		o[207],  o[210],  o[213],  o[216],  
-		o[219],  o[222],  o[225],  o[228],  
-		o[231],  o[234],  o[237],  o[240],  
-		o[243],  o[246],  o[249],  o[252],  
-		o[255],  o[258],  o[261],  o[264],  
-		o[267],  o[270],  o[273] ],  
-	// Pseq
-	183, [ list: o[184],  repeats: 1,  
+	20, [ list: o[21],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	184, [ array: o[185] ],  
+	21, [ array: o[22] ],  
 	// Array
-	185, [ 0.388,  0.407,  0.401,  0.428,  
+	22, [ 0.388,  0.407,  0.401,  0.428,  
 		0.401,  0.415,  0.459 ],  
 	// Pseq
-	186, [ list: o[187],  repeats: 1,  
+	23, [ list: o[24],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	187, [ array: o[188] ],  
+	24, [ array: o[25] ],  
 	// Array
-	188, [ 0.612,  0.223,  0.403,  0.846,  
+	25, [ 0.612,  0.223,  0.403,  0.846,  
 		0.477,  0.452,  0.226,  0.269 ],  
 	// Pseq
-	189, [ list: o[190],  repeats: 1,  
+	26, [ list: o[27],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	190, [ array: o[191] ],  
+	27, [ array: o[28] ],  
 	// Array
-	191, [ 0.431,  0.453,  0.431,  0.467,  
+	28, [ 0.431,  0.453,  0.431,  0.467,  
 		0.863,  0.419,  0.408,  0.439,  
 		0.433,  0.407,  0.236,  0.241 ],  
 	// Pseq
-	192, [ list: o[193],  repeats: 1,  
+	29, [ list: o[30],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	193, [ array: o[194] ],  
+	30, [ array: o[31] ],  
 	// Array
-	194, [ 0.91,  0.428,  0.471,  0.275,  
+	31, [ 0.91,  0.428,  0.471,  0.275,  
 		0.337,  0.324,  0.296,  0.35 ],  
 	// Pseq
-	195, [ list: o[196],  repeats: 1,  
+	32, [ list: o[33],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	196, [ array: o[197] ],  
+	33, [ array: o[34] ],  
 	// Array
-	197, [ 0.846,  0.47,  0.472,  0.448,  
+	34, [ 0.846,  0.47,  0.472,  0.448,  
 		0.48,  0.639,  0.271,  0.325,  
 		0.281,  0.312 ],  
 	// Pseq
-	198, [ list: o[199],  repeats: 1,  
+	35, [ list: o[36],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	199, [ array: o[200] ],  
+	36, [ array: o[37] ],  
 	// Array
-	200, [ 0.5,  0.499,  0.538,  0.519,  
+	37, [ 0.5,  0.499,  0.538,  0.519,  
 		0.577,  0.26,  0.229,  0.261,  
 		0.258,  0.261,  0.304 ],  
 	// Pseq
-	201, [ list: o[202],  repeats: 1,  
+	38, [ list: o[39],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	202, [ array: o[203] ],  
+	39, [ array: o[40] ],  
 	// Array
-	203, [ 0.39,  0.37,  0.366,  0.385,  
+	40, [ 0.39,  0.37,  0.366,  0.385,  
 		0.355,  0.371 ],  
 	// Pseq
-	204, [ list: o[205],  repeats: 1,  
+	41, [ list: o[42],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	205, [ array: o[206] ],  
+	42, [ array: o[43] ],  
 	// Array
-	206, [ 0.56,  0.241,  0.368 ],  
+	43, [ 0.56,  0.241,  0.368 ],  
 	// Pseq
-	207, [ list: o[208],  repeats: 1,  
+	44, [ list: o[45],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	208, [ array: o[209] ],  
+	45, [ array: o[46] ],  
 	// Array
-	209, [ 0.681,  0.841,  0.715,  1.742,  
+	46, [ 0.681,  0.841,  0.715,  1.742,  
 		0.603 ],  
 	// Pseq
-	210, [ list: o[211],  repeats: 1,  
+	47, [ list: o[48],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	211, [ array: o[212] ],  
+	48, [ array: o[49] ],  
 	// Array
-	212, [ 0.596,  0.288,  0.336,  0.265,  
+	49, [ 0.596,  0.288,  0.336,  0.265,  
 		0.27,  0.251,  0.265,  0.273,  
 		0.354 ],  
 	// Pseq
-	213, [ list: o[214],  repeats: 1,  
+	50, [ list: o[51],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	214, [ array: o[215] ],  
+	51, [ array: o[52] ],  
 	// Array
-	215, [ 1.094,  0.479,  0.48,  0.502,  
+	52, [ 1.094,  0.479,  0.48,  0.502,  
 		0.541 ],  
 	// Pbinop
-	216, [ operator: '-',  a: o[217],  
+	53, [ operator: '-',  a: o[54],  
 		b: 5,  adverb: nil ],  
 	// Pseq
-	217, [ list: o[218],  repeats: 1,  
+	54, [ list: o[55],  repeats: 1,  
 		offset: 0 ],  
 	// Array
-	218, [ 1 ],  
+	55, [ 1 ],  
 	// Pbinop
-	219, [ operator: '-',  a: o[220],  
+	56, [ operator: '-',  a: o[57],  
 		b: 5,  adverb: nil ],  
 	// Pseq
-	220, [ list: o[221],  repeats: 1,  
+	57, [ list: o[58],  repeats: 1,  
 		offset: 0 ],  
 	// Array
-	221, [ 1 ],  
+	58, [ 1 ],  
 	// Pbinop
-	222, [ operator: '-',  a: o[223],  
+	59, [ operator: '-',  a: o[60],  
 		b: 13,  adverb: nil ],  
 	// Pseq
-	223, [ list: o[224],  repeats: 1,  
+	60, [ list: o[61],  repeats: 1,  
 		offset: 0 ],  
 	// Array
-	224, [ 1 ],  
+	61, [ 1 ],  
 	// Pbinop
-	225, [ operator: '-',  a: o[226],  
+	62, [ operator: '-',  a: o[63],  
 		b: 13,  adverb: nil ],  
 	// Pseq
-	226, [ list: o[227],  repeats: 1,  
+	63, [ list: o[64],  repeats: 1,  
 		offset: 0 ],  
 	// Array
-	227, [ 1 ],  
+	64, [ 1 ],  
 	// Pbinop
-	228, [ operator: '-',  a: o[229],  
+	65, [ operator: '-',  a: o[66],  
 		b: 13,  adverb: nil ],  
 	// Pseq
-	229, [ list: o[230],  repeats: 1,  
+	66, [ list: o[67],  repeats: 1,  
 		offset: 0 ],  
 	// Array
-	230, [ 1 ],  
+	67, [ 1 ],  
 	// Pbinop
-	231, [ operator: '-',  a: o[232],  
+	68, [ operator: '-',  a: o[69],  
 		b: 13,  adverb: nil ],  
 	// Pseq
-	232, [ list: o[233],  repeats: 1,  
+	69, [ list: o[70],  repeats: 1,  
 		offset: 0 ],  
 	// Array
-	233, [ 1 ],  
+	70, [ 1 ],  
 	// Pbinop
-	234, [ operator: '-',  a: o[235],  
+	71, [ operator: '-',  a: o[72],  
 		b: 13,  adverb: nil ],  
 	// Pseq
-	235, [ list: o[236],  repeats: 1,  
+	72, [ list: o[73],  repeats: 1,  
 		offset: 0 ],  
 	// Array
-	236, [ 1 ],  
+	73, [ 1 ],  
 	// Pbinop
-	237, [ operator: '-',  a: o[238],  
+	74, [ operator: '-',  a: o[75],  
 		b: 13,  adverb: nil ],  
 	// Pseq
-	238, [ list: o[239],  repeats: 1,  
+	75, [ list: o[76],  repeats: 1,  
 		offset: 0 ],  
 	// Array
-	239, [ 1 ],  
+	76, [ 1 ],  
 	// Pbinop
-	240, [ operator: '-',  a: o[241],  
+	77, [ operator: '-',  a: o[78],  
 		b: 13,  adverb: nil ],  
 	// Pseq
-	241, [ list: o[242],  repeats: 1,  
+	78, [ list: o[79],  repeats: 1,  
 		offset: 0 ],  
 	// Array
-	242, [ 1 ],  
+	79, [ 1 ],  
 	// Pbinop
-	243, [ operator: '-',  a: o[244],  
+	80, [ operator: '-',  a: o[81],  
 		b: 13,  adverb: nil ],  
 	// Pseq
-	244, [ list: o[245],  repeats: 1,  
+	81, [ list: o[82],  repeats: 1,  
 		offset: 0 ],  
 	// Array
-	245, [ 1 ],  
+	82, [ 1 ],  
 	// Pbinop
-	246, [ operator: '-',  a: o[247],  
+	83, [ operator: '-',  a: o[84],  
 		b: 13,  adverb: nil ],  
 	// Pseq
-	247, [ list: o[248],  repeats: 1,  
+	84, [ list: o[85],  repeats: 1,  
 		offset: 0 ],  
 	// Array
-	248, [ 1 ],  
+	85, [ 1 ],  
 	// Pbinop
-	249, [ operator: '-',  a: o[250],  
+	86, [ operator: '-',  a: o[87],  
 		b: 22,  adverb: nil ],  
 	// Pseq
-	250, [ list: o[251],  repeats: 1,  
+	87, [ list: o[88],  repeats: 1,  
 		offset: 0 ],  
 	// Array
-	251, [ 1 ],  
+	88, [ 1 ],  
 	// Pbinop
-	252, [ operator: '-',  a: o[253],  
+	89, [ operator: '-',  a: o[90],  
 		b: 22,  adverb: nil ],  
 	// Pseq
-	253, [ list: o[254],  repeats: 1,  
+	90, [ list: o[91],  repeats: 1,  
 		offset: 0 ],  
 	// Array
-	254, [ 1 ],  
+	91, [ 1 ],  
 	// Pbinop
-	255, [ operator: '-',  a: o[256],  
+	92, [ operator: '-',  a: o[93],  
 		b: 22,  adverb: nil ],  
 	// Pseq
-	256, [ list: o[257],  repeats: 1,  
+	93, [ list: o[94],  repeats: 1,  
 		offset: 0 ],  
 	// Array
-	257, [ 1 ],  
+	94, [ 1 ],  
 	// Pbinop
-	258, [ operator: '-',  a: o[259],  
+	95, [ operator: '-',  a: o[96],  
 		b: 22,  adverb: nil ],  
 	// Pseq
-	259, [ list: o[260],  repeats: 1,  
+	96, [ list: o[97],  repeats: 1,  
 		offset: 0 ],  
 	// Array
-	260, [ 1 ],  
+	97, [ 1 ],  
 	// Pbinop
-	261, [ operator: '-',  a: o[262],  
+	98, [ operator: '-',  a: o[99],  
 		b: 22,  adverb: nil ],  
 	// Pseq
-	262, [ list: o[263],  repeats: 1,  
+	99, [ list: o[100],  repeats: 1,  
 		offset: 0 ],  
 	// Array
-	263, [ 1 ],  
+	100, [ 1 ],  
 	// Pbinop
-	264, [ operator: '-',  a: o[265],  
+	101, [ operator: '-',  a: o[102],  
 		b: 22,  adverb: nil ],  
 	// Pseq
-	265, [ list: o[266],  repeats: 1,  
+	102, [ list: o[103],  repeats: 1,  
 		offset: 0 ],  
 	// Array
-	266, [ 1 ],  
+	103, [ 1 ],  
 	// Pbinop
-	267, [ operator: '-',  a: o[268],  
+	104, [ operator: '-',  a: o[105],  
 		b: 22,  adverb: nil ],  
 	// Pseq
-	268, [ list: o[269],  repeats: 1,  
+	105, [ list: o[106],  repeats: 1,  
 		offset: 0 ],  
 	// Array
-	269, [ 1 ],  
+	106, [ 1 ],  
 	// Pbinop
-	270, [ operator: '-',  a: o[271],  
+	107, [ operator: '-',  a: o[108],  
 		b: 22,  adverb: nil ],  
 	// Pseq
-	271, [ list: o[272],  repeats: 1,  
+	108, [ list: o[109],  repeats: 1,  
 		offset: 0 ],  
 	// Array
-	272, [ 1 ],  
+	109, [ 1 ],  
 	// Pbinop
-	273, [ operator: '-',  a: o[274],  
+	110, [ operator: '-',  a: o[111],  
 		b: 22,  adverb: nil ],  
 	// Pseq
-	274, [ list: o[275],  repeats: 1,  
+	111, [ list: o[112],  repeats: 1,  
 		offset: 0 ],  
 	// Array
-	275, [ 1 ],  
+	112, [ 1 ],  
 	// Array
-	276, [ o[277],  o[278],  o[279],  o[280],  
-		o[281],  o[282],  o[283],  o[284],  
-		o[285],  o[286],  o[287],  o[288],  
-		o[289],  o[290],  o[291],  o[292],  
-		o[293],  o[294],  o[295],  o[296],  
-		o[297],  o[298] ],  
+	113, [ o[114],  o[115],  o[116],  o[117],  
+		o[118],  o[119],  o[120],  o[121],  
+		o[122],  o[123],  o[124],  o[125],  
+		o[126],  o[127],  o[128],  o[129],  
+		o[130],  o[131],  o[132],  o[133],  
+		o[134],  o[135] ],  
 	// Event
-	299, [ array: o[300],  size: 12,  
+	136, [ array: o[137],  size: 12,  
 		proto: nil,  parent: nil,  
 		know: true ],  
 	// Array
-	300, [ 'when',  o[301],  'p',  o[302],  
-		nil,  nil,  'sections',  o[303],  
-		nil,  nil,  'tune',  o[304],  
+	137, [ 'when',  o[138],  'p',  o[139],  
+		nil,  nil,  'sections',  o[140],  
+		nil,  nil,  'tune',  o[141],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		'setupDurs',  o[305],  'pbind',  o[306],  
+		'setupDurs',  o[142],  'pbind',  o[143],  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  'lyrics',  o[307],  
-		'cursor',  0,  'pbindFrom',  o[308],  
+		nil,  nil,  'lyrics',  o[144],  
+		'cursor',  0,  'pbindFrom',  o[145],  
 		nil,  nil,  nil,  nil,  
-		'secLoc',  o[309],  'secDur',  o[310],  
-		'durTill',  o[311],  nil,  nil ]
+		'secLoc',  o[146],  'secDur',  o[147],  
+		'durTill',  o[148],  nil,  nil ]
 ];
 prUnarchive(o,p);

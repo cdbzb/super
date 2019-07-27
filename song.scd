@@ -1,6 +1,8 @@
 ( // write durs to disk (make this a method)
 Archive.global.put(\song,~xtreme);
 Archive.write("/Users/michael/tank/super/theExtreme3")
+Archive.global.put(~xtreme.key,~xtreme.durs);
+Archive.global;
 )
 
 ( // the song event
@@ -37,10 +39,14 @@ Archive.write("/Users/michael/tank/super/theExtreme3")
 		durTillEnd: {|self| var x=0; (self.cursor..(self.sections-1)).do{|i| x=x+self.secDur[i] };x}
 );
 
+
+
 ~trek=(
 		dursFile:"/Users/michael/tank/super/theExtreme3",
 		durs:nil,
 );	
+
+
 
 
 ~xtreme=(
@@ -161,17 +167,12 @@ a.makeWindow;
 ( ////as 'sections' event
 	//~xtreme.cursor_(0);
 	//~xtreme.setupDurs;
-	~sections=(
-		ply:{|self| self.do({|i| i.p});};
-	);
+	~sections=( ply:{|self| self.do({|i| i.p});};);
 	~xtreme.parts=~sections;
 
-	~sections.strum1=(parent:~xtreme, start:0,syl:2,
-		music:(\note:[-5,-3,-2,2,5,7],\strum:0.03,\sustain:2));
-	~sections.bassnote=(parent:~xtreme, start:0,
-		music: (note: -24-5,amp:3, sustain:0.5+~xtreme.secDur[0]+~xtreme.secDur[1],\dur:~xtreme.secDur[0]+0.5));
-	~sections.strum2=(parent:~xtreme, start:1,syl:2,
-		music: (\lag:~xtreme.durs[1].list[3]/2,\note:[-5,-2,0,4,7],\strum:0.03,\sustain:2));
+	~sections.strum1=(parent:~xtreme, start:0,syl:2, music:(\note:[-5,-3,-2,2,5,7],\strum:0.03,\sustain:2));
+	~sections.bassnote=(parent:~xtreme, start:0, music: (note: -24-5,amp:3, sustain:0.5+~xtreme.secDur[0]+~xtreme.secDur[1],\dur:~xtreme.secDur[0]+0.5));
+	~sections.strum2=(parent:~xtreme, start:1,syl:2, music: (lag:~xtreme.durs[1].list[3]/2,note:[-5,-2,0,4,7],strum:0.03,sustain:2));
 	~sections.bassnote2=(parent:~xtreme, start:1,
 		music: (note: -12-5,amp:3, sustain:~xtreme.secDur[1]));
 	~sections.heartActionBass=(parent:~xtreme, start:2,
@@ -373,7 +374,7 @@ a.makeWindow;
 		song:[
 			"the tran - fer is com-"," f5 c a-4 e c#", //TODO new notes here,
 			"plete. metabolic rate is","c#4 c5 b-4 c5 a-4 c4 c5",
-			"double and rising, Doctor...  Hel- ","d5 b-4 c#5 g c# a-4 g b",
+			"double and rising, Doctor...r  Hel- ","d5 b-4 c#5 g c# a-4 g r b",
 			"lo. r r r"," c#5 d2 d d",
 			//"you are a lovely female, r a","",
 			//"pleasant sight to wake up to after","",
@@ -382,7 +383,7 @@ a.makeWindow;
 )
 
 (
-	a=~recorder.(~complete,[2],2);
+	a=~recorder.(~complete,[3],1);
 	a.makeWindow;
 )
 (
@@ -399,7 +400,7 @@ a.makeWindow;
 	~sections2.helloChord=(parent:~complete,start:3,music:
 		(instrument:\test,midinote:~panNotes.("<d4 f# a c#>").flatten,strum:0.03,amp:0.4)
 	);
-	~sections2.helloImage=(parent:~complete,start:2,syl:7,music:
+	~sections2.helloImage=(parent:~complete,start:2,syl:8,music:
 		{
 			{
 				{
@@ -439,7 +440,8 @@ a.makeWindow;
 )
 Archive.at(\complete);
 (
-Archive.global.put(~complete.key,~complete);
+Archive.global.put(~complete.key,~complete.durs);
+~complete.dursFile;
 Archive.write(~complete.dursFile);
 Archive.at(\complete,\durs);
 //I think both songs are present in EACH archive (conveniently)
@@ -450,4 +452,11 @@ TempoClock.tempo=1
 ~complete.pbind[0].play;
 ~complete.durs;
 ~xtreme.pbind;
+~complete.do{|i|i.postln};
+Archive.leafDo{|i|i.postln}
+Archive.at(\song).postcs;
+Archive.global[\song];
+9;
+s.reboot;
+
 

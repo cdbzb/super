@@ -1,12 +1,5 @@
-( // write durs to disk (make this a method)
-Archive.global.put(\song,~xtreme);
-Archive.write("/Users/michael/tank/super/theExtreme3")
-Archive.global.put(~xtreme.key,~xtreme.durs);
-Archive.global;
-)
-
 ( // the song event
-	"/Users/michael/tank/super/song-Synthdefs.scd".load;
+	s.waitForBoot("/Users/michael/tank/super/song-Synthdefs.scd".load);
 	~funs=(
 		sections: {|self|self.song.size/2},
 		cursor:0,
@@ -19,7 +12,7 @@ Archive.global;
 				Archive.at(self.key).isNil.not.if(
 					{
 						a=Archive.at(self.key);
-						self.durs=a.durs++(Pseq([1])!(self.sections-a.durs.size)); //copy and pad
+						self.durs=a++(Pseq([1])!(self.sections-a.size)); //copy and pad
 					},{
 						self.durs=Pseq([1])!self.sections
 					}
@@ -39,15 +32,11 @@ Archive.global;
 		durTillEnd: {|self| var x=0; (self.cursor..(self.sections-1)).do{|i| x=x+self.secDur[i] };x}
 );
 
-
-
 ~trek=(
 		dursFile:"/Users/michael/tank/super/theExtreme3",
 		durs:nil,
+		save:{|self| Archive.global.put(self.key,self.durs); Archive.write(self.dursFile)},
 );	
-
-
-
 
 ~xtreme=(
 		key:\song,
@@ -68,9 +57,8 @@ Archive.global;
 		],
 		parts:nil,
 	).setupDurs;
-)
 
-( //construct event recorder
+//construct event recorder
 ~recorder= {|song  range=#[0,1] cueSecs=1 |  
 	//var range=Array.series((to-from),from);
 	var from=range[0];
@@ -159,14 +147,9 @@ Archive.global;
 		)
 	};
 )
-(
-a=~recorder.(~xtreme,[10],3);
-a.makeWindow;
-)
 
 ( ////as 'sections' event
-	//~xtreme.cursor_(0);
-	//~xtreme.setupDurs;
+	~loadXtremeSections={
 	~sections=( ply:{|self| self.do({|i| i.p});};);
 	~xtreme.parts=~sections;
 
@@ -311,37 +294,12 @@ a.makeWindow;
 			),\verb_fade,\time,2
 		);
 	);
-//~sections.transformation=(parent:~xtreme,start:10,syl:4,music:
-//	{ var dur=15;
-//		var pitches=~panNotes.("f#3 b- c4 e")+[0,12];
-//		////whrrrrr
-//		var chord=pitches.collect({|item index|  Synth(\trans,[\freq,item.midicps,\amp,0.1])});
-//		var chord2=pitches.collect({|item index|  Synth(\trans,[\freq,item.midicps,\amp,0.1])});
-//		pitches.postln;
-//		{dur.wait;chord.do{|i|i.release}}.fork;
-//		{dur.wait;chord2.do{|i|i.release};5.wait;((SystemClock.seconds-c).postln)}.fork;
-//		////cymbal
-//		(instrument:\cymbal,length:8).play;
-//		////strings
-//		~synful.setprog(3,5,0);
-//		~synful.setprog(4,5,1);
-//		~synful.node[1]=\filter->{|in| FreeVerb.ar(in,room:0.75,mix:0.55)*3};
-//		{
-//			8.wait;"now!".postln;127.do( {|i|~synful.expression((127-i),0);~synful.expression((127-i),1);0.18.wait} )}.fork;
-//			(type:\midi,midiout:~synful.controller.midi,\midinote:~panNotes.("f#3 b- c4 e").flatten-[0,12],dur:20).play;
-//			(type:\midi,midiout:~synful.controller.midi,\channel:2,\midinote:~panNotes.("f#3 b-4 c4 e").flatten-24,dur:20).play;
-//		~synful.expression(127,0);
-//		~synful.expression(127,1);
-//		//~synful.init;
-//	}
-//);
 
 	~xtreme.pbind.do({|i x| var label = ("guide"++x).asSymbol; ~sections[label]=(parent:~xtreme,start:x,music:i);label.postln});
-	{s.sync;~sections.do({|i| i.p})}.fork;
 	c=SystemClock.seconds;
-)
+};
 
-( //transformation
+ //transformation
 	~transformation={ var dur=15;
 		var pitches=~panNotes.("f#3 b- c4 e")+[0,12];
 		////whrrrrr
@@ -373,7 +331,7 @@ a.makeWindow;
 		proto:~funs,
 		song:[
 			"the tran - fer is com-"," f5 c a-4 e c#", //TODO new notes here,
-			"plete. metabolic rate is","c#4 c5 b-4 c5 a-4 c4 c5",
+			"plete. metabolic rate is","c#4 c5 b-4 c5 a-4 d4 c5",
 			"double and rising, Doctor...r  Hel- ","d5 b-4 c#5 g c# a-4 g r b",
 			"lo. r r r"," c#5 d2 d d",
 			//"you are a lovely female, r a","",
@@ -383,10 +341,11 @@ a.makeWindow;
 )
 
 (
-	a=~recorder.(~complete,[3],1);
+	a=~recorder.(~complete,[2],2);
 	a.makeWindow;
 )
-(
+
+( //// parts for ~complete
 	~sections2=(
 		ply:{|self| self.do({|i| i.p});};
 	);
@@ -394,8 +353,22 @@ a.makeWindow;
 	~sections2.bassnotes=(parent:~complete,start:0,syl:3,music:
 		Pseq( [
 				(note:1-24,amp:0.5,dur:~complete.durs[0].list[4]),
-				(note:1-24,amp:0.6,dur:5,sustain:5)
+				(note:1-24,amp:0.6,dur:5,sustain:3)
 			]));
+
+	~sections2.bassnotes2=(parent:~complete,start:1,syl:2,music:
+		(note:2,amp:0.1)
+	);
+	~sections2.bassnotes3=(parent:~complete,start:2,music:
+		(note:-2,amp:0.1)
+	);
+	~sections2.bassnotes4=(parent:~complete,start:2,syl:2,music:
+		(note:7,amp:0.1,sustain:2)
+	);
+
+	~sections2.pad0=(parent:~complete,start:0,music:
+		Pbind(\midinote,Pseq(~complete.tune[0].list[0..3])-[0,12],\instrument,\sawSynth,\dur,~complete.durs[0]);
+	);
 
 	~sections2.helloChord=(parent:~complete,start:3,music:
 		(instrument:\test,midinote:~panNotes.("<d4 f# a c#>").flatten,strum:0.03,amp:0.4)
@@ -415,11 +388,11 @@ a.makeWindow;
 	~complete.pbind.do({|i x| var label = ("guide"++x).asSymbol; ~sections2[label]=(parent:~complete,start:x,music:i);label.postln});
 
 	~complete.parts.ply;
-	~complete.parts.bassnotes;
 )
 
 ( //moving on to next song
-	~xtreme.cursor_(6);
+	~loadXtremeSections.();
+	~xtreme.cursor_(10);
 	TempoClock.tempo=1;
 	{
 		~xtreme.parts.ply;
@@ -427,14 +400,13 @@ a.makeWindow;
 		~xtreme.durTillEnd.wait;
 		TempoClock.tempo=0.7;
 		~transformation.fork(TempoClock);
-		{a=Image.open("/Users/michael/tank/super/Spock.png")}.defer;
-		{w=a.plot(freeOnClose:true).alwaysOnTop_(true);}.defer;
-		14.wait;
-		{w.close}.defer;
+		//{a=Image.open("/Users/michael/tank/super/Spock.png")}.defer;
+		//{w=a.plot(freeOnClose:true).alwaysOnTop_(true);}.defer;
+		13.wait;
+		//{w.close}.defer;
 		(note:[0,1,2]-48,\amp:2,\sustain:5).play;
 		TempoClock.tempo=1;
 		~complete.parts.ply;
-		~complete.pbind[0].play;
 	//~complete.parts.ply;
 	}.fork
 )

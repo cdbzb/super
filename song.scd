@@ -277,7 +277,6 @@
 		);
 	);
 
-
 ~sections.tremoChord2=(parent:~xtreme,start:10,syl:0,music:
 		Pfxb(
 			Pfindur(~xtreme.durs[10].list[1..4].sum-0.1,
@@ -351,16 +350,36 @@
 	);
 	~complete.parts=~sections2;
 	~sections2.bassnotes=(parent:~complete,start:0,syl:3,music:
-		Pseq( [
-				(note:1-24,amp:0.5,dur:~complete.durs[0].list[4]),
-				(note:1-24,amp:0.6,dur:5,sustain:3)
-			]));
-
-	~sections2.bassnotes2=(parent:~complete,start:1,syl:2,music:
-		(note:2,amp:0.1)
+		Pseq([
+			(note:1-24,amp:0.5,dur:~complete.durs[0].list[4]), 
+			(note:1-24,amp:0.6,dur:5,sustain:2)
+		])
 	);
+
+
+//
+
+	SynthDef(\phaser,{|out depth=0.5 fb=0.3 rate=0.03| 
+		ReplaceOut.ar(
+			out,Phaser2.ar(In.ar(out,2)+
+				PlateReverb.ar( In.ar(out,2))
+				,rate:rate,fb:fb,depth:depth))}
+			).add;
+
+	~sections2.chord0=(parent:~complete,start:0,syl:3,music:
+		Pfx(
+			Pseq([
+				(note:[1,8,13]-24,instrument:\sawSynth,release:4,strum:0.03,dur:~complete.durs[0].list[4]),
+				(note:[1,8,13]-24,instrument:\sawSynth,release:5,strum:0.03,dur:9)
+			]),\phaser
+			
+		)
+	);
+//	~sections2.bassnotes2=(parent:~complete,start:1,syl:2,music:
+//		(note:2,amp:0.1)
+//	);
 	~sections2.bassnotes3=(parent:~complete,start:2,music:
-		(note:-2,amp:0.1)
+		(note:-2-12,amp:0.1)
 	);
 	~sections2.bassnotes4=(parent:~complete,start:2,syl:2,music:
 		(note:7,amp:0.1,sustain:2)
@@ -390,6 +409,7 @@
 	~complete.parts.ply;
 )
 
+~synful.init;
 ( //moving on to next song
 	~loadXtremeSections.();
 	~xtreme.cursor_(10);
@@ -412,23 +432,12 @@
 )
 Archive.at(\complete);
 (
-Archive.global.put(~complete.key,~complete.durs);
-~complete.dursFile;
-Archive.write(~complete.dursFile);
-Archive.at(\complete,\durs);
-//I think both songs are present in EACH archive (conveniently)
-//this should bbe a method
+	Archive.global.put(~complete.key,~complete.durs);
+	~complete.dursFile;
+	Archive.write(~complete.dursFile);
+	Archive.at(\complete,\durs);
+	//I think both songs are present in EACH archive (conveniently)
+	//this should bbe a method
 )
-
-TempoClock.tempo=1
-~complete.pbind[0].play;
-~complete.durs;
-~xtreme.pbind;
-~complete.do{|i|i.postln};
-Archive.leafDo{|i|i.postln}
-Archive.at(\song).postcs;
-Archive.global[\song];
-9;
-s.reboot;
 
 

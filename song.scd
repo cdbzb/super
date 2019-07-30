@@ -30,15 +30,15 @@
 				(self.secLoc[self.start]-self.secLoc[self.cursor])+offset,
 				{self.music.play})};self}, //for sections
 		durTillEnd: {|self| var x=0; (self.cursor..(self.sections-1)).do{|i| x=x+self.secDur[i] };x}
-);
+	);
 
-~trek=(
+	~trek=(
 		dursFile:"/Users/michael/tank/super/theExtreme3",
 		durs:nil,
 		save:{|self| Archive.global.put(self.key,self.durs); Archive.write(self.dursFile)},
-);	
+	);	
 
-~xtreme=(
+	~xtreme=(
 		key:\song,
 		parent:~trek,
 		proto:~funs,
@@ -59,97 +59,94 @@
 	).setupDurs;
 
 //construct event recorder
-~recorder= {|song  range=#[0,1] cueSecs=1 |  
-	//var range=Array.series((to-from),from);
-	var from=range[0];
-	//var seq = cueSecs.collect({|i| song.tune[from-i].list-60}).flatten;
-	var seq = range.collect({|i|song.tune[i].list}).flatten;
-	seq.postln;
-	~stepper={ |seq|
-		SynthDef(\stepper, { 
-			var note = Demand.kr(KeyState.kr(38)-0.1,0, Dseq.new(seq.midicps));
-			var sig=SinOsc.ar(note,0,EnvGen.kr(Env.perc(0.1,1),gate:KeyState.kr(38)-0.1));
-			Out.ar(1,sig);
+	~recorder= {|song  range=#[0,1] cueSecs=1 |  
+		//var range=Array.series((to-from),from);
+		var from=range[0];
+		//var seq = cueSecs.collect({|i| song.tune[from-i].list-60}).flatten;
+		var seq = range.collect({|i|song.tune[i].list}).flatten;
+		seq.postln;
+		~stepper={ |seq|
+			SynthDef(\stepper, { 
+				var note = Demand.kr(KeyState.kr(38)-0.1,0, Dseq.new(seq.midicps));
+				var sig=SinOsc.ar(note,0,EnvGen.kr(Env.perc(0.1,1),gate:KeyState.kr(38)-0.1));
+				Out.ar(1,sig);
+			});
 		};
-	);
-};
- 	~stepper.(seq).add;
-		( // pseudo-object 
-			range:range,
-			time:Main.elapsedTime,
-			item:List.new,
-			cue:{|self| 
-				var range=(self.range[0]-(cueSecs-1)-1..self.range[0]-1);
-				("range"++range).postln;
-				(self.range[0]>0).if(
-					{var seq = range.collect({|i|song.pbind[i]});
-					Pseq(seq);},
-					//{song.pbind[nextTune-1]},
-					(type:\rest)
-			)},
-			captureLoop:{|self char| 
-				Routine ({ 
-					loop { 
-						self.item = self.item.add(Main.elapsedTime-self.time); self.time=Main.elapsedTime; char = 0.yield; }
-					}
+		~stepper.(seq).add;
+			( // pseudo-object 
+				range:range,
+				time:Main.elapsedTime,
+				item:List.new,
+				cue:{|self| 
+					var range=(self.range[0]-(cueSecs-1)-1..self.range[0]-1);
+					("range"++range).postln;
+					(self.range[0]>0).if(
+						{var seq = range.collect({|i|song.pbind[i]});
+						Pseq(seq);},
+						//{song.pbind[nextTune-1]},
+						(type:\rest)
 				)},
-			window:nil,
-			makeWindow: {|self| var w=Window.new.alwaysOnTop_(true).front.alwaysOnTop_(true);
-				var b=Button.new(w.view,Rect(60,10,100,100))
-					.states_(["1",Color.black,Color.white])
-					.action = {self.doOver;"do over".postln};
-				var c=Button.new(w.view,Rect(160,10,100,100))
-					.states_(["1",Color.black,Color.white])
-					.action = { var a = self.ret;a.postln};
-				var d=Button.new(w.view,Rect(260,10,100,100))
-					.states_(["1",Color.black,Color.white])
-					.action = {self.nextt;"next".postln};
-				var v=w.view;
-				self.window=w;
-				StaticText(b,Rect(0,0,100,100)).string_("Do over").align_(\center);
-				StaticText(c,Rect(0,0,100,100)).string_("Return").align_(\center);
-				StaticText(d,Rect(0,0,100,100)).string_("next").align_(\center);
-				EZText.new(v,Rect(0,110,300,50	),label:"range",initVal:self.range,);
-				v.keyDownAction={self.captureLoop.(b);"lll".postln };
-				self.item=[];
-				t=Synth(\stepper);
-				self.cue.play ;
-				self.range.do({|i|song.lyrics[i].postln})
-			},
-			doOver:{|self| self.item=[];self.cue.play;t.free;t=Synth(\stepper)},
-			nextt:{|self| self.range=(self.range+(self.range[1]-self.range[0]+1));
-					self.range.do({|i x| (i>(song.sections-1)).if {self.range[x]=(song.sections-1).asInt}}); // check if range too high
-					(self.range++" "++song.sections).postln;
-					self.window.close;
-				{
-					var newSeq=self.range.collect({|i|song.tune[i].list}).flatten;
-					~stepper.(newSeq).add;
-					s.sync;
-					t.free;self.makeWindow
-				}.fork(AppClock)
-			},
-			ret: {|self|
-				var recorded =self.item.round(0.001)[1..(self.item.size)];
-				recorded.postln;
-				self.range.do({|i|
-					var returnChunk=List.new;
-					var elements=song.tune[i].list.size;
-					elements.do(
-						{|i| 
-							if(recorded.size>0)
-							{returnChunk.add(recorded.removeAt(0)) }
+				captureLoop:{|self char| 
+					Routine ({ 
+						loop { 
+							self.item = self.item.add(Main.elapsedTime-self.time); self.time=Main.elapsedTime; char = 0.yield; }
 						}
-					);
-					(returnChunk[0].isNil.not).if{song.durs[i]=Pseq(returnChunk)} ;
-				});
-				//~xtreme.durs[nextTune]= Pseq(recorded);
-			};
-		)
-	};
-)
+					)},
+				window:nil,
+				makeWindow: {|self| var w=Window.new.alwaysOnTop_(true).front.alwaysOnTop_(true);
+					var b=Button.new(w.view,Rect(60,10,100,100))
+						.states_(["1",Color.black,Color.white])
+						.action = {self.doOver;"do over".postln};
+					var c=Button.new(w.view,Rect(160,10,100,100))
+						.states_(["1",Color.black,Color.white])
+						.action = { var a = self.ret;a.postln};
+					var d=Button.new(w.view,Rect(260,10,100,100))
+						.states_(["1",Color.black,Color.white])
+						.action = {self.nextt;"next".postln};
+					var v=w.view;
+					self.window=w;
+					StaticText(b,Rect(0,0,100,100)).string_("Do over").align_(\center);
+					StaticText(c,Rect(0,0,100,100)).string_("Return").align_(\center);
+					StaticText(d,Rect(0,0,100,100)).string_("next").align_(\center);
+					EZText.new(v,Rect(0,110,300,50	),label:"range",initVal:self.range,);
+					v.keyDownAction={self.captureLoop.(b);"lll".postln };
+					self.item=[];
+					t=Synth(\stepper);
+					self.cue.play ;
+					self.range.do({|i|song.lyrics[i].postln})
+				},
+				doOver:{|self| self.item=[];self.cue.play;t.free;t=Synth(\stepper)},
+				nextt:{|self| self.range=(self.range+(self.range[1]-self.range[0]+1));
+						self.range.do({|i x| (i>(song.sections-1)).if {self.range[x]=(song.sections-1).asInt}}); // check if range too high
+						(self.range++" "++song.sections).postln;
+						self.window.close;
+					{
+						var newSeq=self.range.collect({|i|song.tune[i].list}).flatten;
+						~stepper.(newSeq).add;
+						s.sync;
+						t.free;self.makeWindow
+					}.fork(AppClock)
+				},
+				ret: {|self|
+					var recorded =self.item.round(0.001)[1..(self.item.size)];
+					recorded.postln;
+					self.range.do({|i|
+						var returnChunk=List.new;
+						var elements=song.tune[i].list.size;
+						elements.do(
+							{|i| 
+								if(recorded.size>0)
+								{returnChunk.add(recorded.removeAt(0)) }
+							}
+						);
+						(returnChunk[0].isNil.not).if{song.durs[i]=Pseq(returnChunk)} ;
+					});
+					//~xtreme.durs[nextTune]= Pseq(recorded);
+				};
+			)
+		};
 
-( ////as 'sections' event
-	~loadXtremeSections={
+//// 'sections' event
 	~sections=( ply:{|self| self.do({|i| i.p});};);
 	~xtreme.parts=~sections;
 
@@ -162,7 +159,6 @@
 		music: Pbind(\dur, ~xtreme.durs[2]++Pseq([1.0]), 
 			\note, Pseq([-2,-2,-2,0,-7,\r,\r,-2,-2,-2, 0,\r,-10])-24,\amp,2,
 			\legato,Pseq([1 ,1, 1,1, 1.5,1,1, 1, 1, 1, 2, 1, 1])));
-
 	~sections.weeeeuw=(parent:~xtreme,start:2,music:
 		{{Out.ar(0,FreeVerb.ar(Ringz.ar(WhiteNoise.ar(0.01),XLine.kr(2500,240,6),1),room:8,mix:7)*EnvGen.kr(Env.perc(0,7),doneAction:2))}});
 	~sections.weeeeuw.music= Pfxb.new(Pbind(\midinote,Pseries(60+36,-0.99,100),\dur,0.1,\sustain,1,\amp,0.01),\two_tube);
@@ -182,17 +178,21 @@
 	));
 
 	~sections.cymbal=(parent:~xtreme,start:2,music:
-	Pbind( \instrument, Pseq([\rest, \rest, \rest, \rest, \rest, \rest, \rest,\rest]++
-	[\rest, \rest, \rest, \rest, \cymbal, \rest, \rest,\rest]),
-	\dur,Pseq(d,2),\lag,-0.05,\amp,0.4));
-	SynthDef (\cymbal, {|amp=1 length=2| var sig=PinkNoise.ar(EnvGen.kr(Env.perc(0,length)))!2; sig=TwoTube.ar(RHPF.ar(sig,500,9),d1length:502,d2length:777,loss:0.99)*0.5;Out.ar(0,sig*amp)} ).add;
+		Pbind( \instrument, Pseq([\rest, \rest, \rest, \rest, \rest, \rest, \rest,\rest]++
+		[\rest, \rest, \rest, \rest, \cymbal, \rest, \rest,\rest]),
+		\dur,Pseq(d,2),\lag,-0.05,\amp,0.4));
+	SynthDef (\cymbal, {|amp=1 length=2| 
+		var sig=PinkNoise.ar(EnvGen.kr(Env.perc(0,length)))!2; 
+		sig=TwoTube.ar(RHPF.ar(sig,500,9),d1length:502,d2length:777,loss:0.99)*0.5;
+		Out.ar(0,sig*amp)}
+	).add;
 	~sections.hat=(parent:~xtreme,start:2,music:
-	Pbind(\instrument, \hihat, 
-		\ffreq,Pwhite(4000,10000),
-		//\dur,(Pser(d,48)),
-		\dur,(Pser(d/4,96)),
-		\amp,Pseg([0.5,0.5,0]*0.15,[d[0..4].sum,d.sum-d[0..4].sum+4.2]))
-);
+		Pbind(\instrument, \hihat, 
+			\ffreq,Pwhite(4000,10000),
+			//\dur,(Pser(d,48)),
+			\dur,(Pser(d/4,96)),
+			\amp,Pseg([0.5,0.5,0]*0.15,[d[0..4].sum,d.sum-d[0..4].sum+4.2]))
+	);
 	~sections.andthe=(parent:~xtreme,start:3,
 				music:Pbind(\dur,~xtreme.durs[3]++Pseq([1]), \instrument,\test,
 				\amp,1,
@@ -247,8 +247,8 @@
 	Pbind(\note,Pseq([5,4,2,1]-24),\dur,~xtreme.durs[8],\amp,0.5)
 );
 	~sections.bass8Alt=(parent:~xtreme,start:8,music:
-	Pbind(\instrument,\test,\note,Pseq([5,4])-[0+rand(0.02),12],\lag,Pseq([0,0]),\amp,0.5)
-);
+		Pbind(\instrument,\test,\note,Pseq([5,4])-[0+rand(0.02),12],\lag,Pseq([0,0]),\amp,0.5)
+	);
 	~sections.strum8=(parent:~xtreme,start:8,syl:1,music:
 	(note:[1,4,9]-12++[1,4],strum:0.04,sustain:2,lag:0.52,amp:0.05)
 	);
@@ -260,7 +260,7 @@
 		(note:~panNotes.("e-2").flatten-60,dur:2,amp:0.3)
 	);
 	
-~sections.tremoChord=(parent:~xtreme,start:10,music:
+	~sections.tremoChord=(parent:~xtreme,start:10,music:
 		Pfxb(
 			Pfindur(~xtreme.durs[10].list[0],
 				Ppar(
@@ -277,7 +277,7 @@
 		);
 	);
 
-~sections.tremoChord2=(parent:~xtreme,start:10,syl:0,music:
+	~sections.tremoChord2=(parent:~xtreme,start:10,syl:0,music:
 		Pfxb(
 			Pfindur(~xtreme.durs[10].list[1..4].sum-0.1,
 				Ppar(
@@ -296,7 +296,6 @@
 
 	~xtreme.pbind.do({|i x| var label = ("guide"++x).asSymbol; ~sections[label]=(parent:~xtreme,start:x,music:i);label.postln});
 	c=SystemClock.seconds;
-};
 
  //transformation
 	~transformation={ var dur=15;
@@ -323,7 +322,7 @@
 	}
 );
 
-(
+( /// ~complete lyric and tune
 	~complete=(
 		key:\complete,
 		parent:~trek,
@@ -356,13 +355,10 @@
 		])
 	);
 
-
-//
-
 	SynthDef(\phaser,{|out depth=0.5 fb=0.3 rate=0.03| 
 		ReplaceOut.ar(
 			out,Phaser2.ar(In.ar(out,2)+
-				PlateReverb.ar( In.ar(out,2))
+				PlateReverb.ar( In.ar(out,2),mix:Env.linen(0,2.5,6).kr)
 				,rate:rate,fb:fb,depth:depth))}
 			).add;
 
@@ -370,9 +366,8 @@
 		Pfx(
 			Pseq([
 				(note:[1,8,13]-24,instrument:\sawSynth,release:4,strum:0.03,dur:~complete.durs[0].list[4]),
-				(note:[1,8,13]-24,instrument:\sawSynth,release:5,strum:0.03,dur:9)
+				(note:[1,8,13]-24,instrument:\sawSynth,release:5,strum:0.03,dur:11)
 			]),\phaser
-			
 		)
 	);
 //	~sections2.bassnotes2=(parent:~complete,start:1,syl:2,music:
@@ -382,7 +377,7 @@
 		(note:-2-12,amp:0.1)
 	);
 	~sections2.bassnotes4=(parent:~complete,start:2,syl:2,music:
-		(note:7,amp:0.1,sustain:2)
+		(note:[7,-5],amp:0.1,sustain:2)
 	);
 
 	~sections2.pad0=(parent:~complete,start:0,music:
@@ -391,6 +386,14 @@
 
 	~sections2.helloChord=(parent:~complete,start:3,music:
 		(instrument:\test,midinote:~panNotes.("<d4 f# a c#>").flatten,strum:0.03,amp:0.4)
+	);
+
+	~sections2.hellobass=(parent:~complete,start:3,music:
+		{
+			t=TempoClock.new.tempo_(1/~complete.durs[3].list.mean*0.875);
+			Pbind(\midinote,Pseq( ~panNotes.("r d f# a c#5 e d5 a4 g f# e d").flatten-24),
+			\dur,0.5).play(t)
+		}
 	);
 	~sections2.helloImage=(parent:~complete,start:2,syl:8,music:
 		{
@@ -409,9 +412,9 @@
 	~complete.parts.ply;
 )
 
-~synful.init;
+s.boot;
+~synful.controller.loaded==false.if(~synful.init);
 ( //moving on to next song
-	~loadXtremeSections.();
 	~xtreme.cursor_(10);
 	TempoClock.tempo=1;
 	{

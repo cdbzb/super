@@ -22,5 +22,10 @@ Send : UGen {
 	}
 }
 
++ Pbind {
+	pad { arg release=10;
+		^Pseq.new([this,Pbind.new(\note,Pseq([\r]),\dur,release)])
+	}
+}
 
 

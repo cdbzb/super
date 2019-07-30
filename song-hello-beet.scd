@@ -1,11 +1,15 @@
 
-(	SynthDef(\phaser,{|out=5 depth=0.5 fb=0.3 rate=0.03| 
+(	//s.waitForBoot{
+
+SynthDef(\phaser,{|out=5 depth=0.5 fb=0.3 rate=0.03| 
 		ReplaceOut.ar(
 			out,Phaser2.ar(In.ar(out,1)+
 				PlateReverb.ar( In.ar(out,1),mix:Env.linen(0,2.5,6).kr)
 				,rate:rate,fb:fb,depth:depth))}
 			).add;
+
 	TempoClock.tempo=(52/60);
+
 	~kickPatterns=[[3/4,1/4],1];
 	p=[0,0,0,0,1,1,1,0];
 	~kickBar=Pseq(p.collect{|i|~kickPatterns[i]}.flatten);
@@ -14,6 +18,11 @@
 	p=[0,1,2,0, 0,3,0,4];
 	~snareBar=Pseq(p.collect{|i|~snarePatterns[i]}.flatten);
 
+	~synth=
+		Pbind(\note,Pseq([2-24,2-12,-1-12,9-12])-12,
+			\instrument,\sawSynth,\dur,2,\rel,5,\amp,0.2)
+		//.play
+;
 	~helloBeat= Ppar([
 		Pbind(\instrument,\kick1,
 			\dur,~kickBar
@@ -41,11 +50,17 @@
 		),
 		\phaser),
 		~helloBass1,
-		//~helloBass2,
-		~synth
-		],4);
+		~helloBass2,
+		~synth,
+		
+	//	Ptpar([
+	//		0.15,~helloGtr1,
+	//		0.15,~helloGtr2
+	//	])
+		],2);
 	
 	~helloBeat.play;
+//}.fork
 )
 
 (
@@ -66,11 +81,65 @@
 )
 
 (//bass synth
-~synth=
-	Pbind(\note,Pseq([2-24,2-12,-1-12,9])-12,
-		\instrument,\sawSynth,\dur,2,\rel,5,\amp,0.5)
-		//.play
-;
 )
 
+s.boot;
+(
+	~strum=( // creates a nodeproxy playing on a private bus - .node and .bus respectively 
+		bus: Bus.audio(s,2),
+		controller: nil,
+		node:nil,
+		params:(expression:11),
+		expression:{|self expression channel=0 | self.controller.sendMidi("B0".asHexIfPossible+channel,11,expression)},
+		plugin: 'Strum GS-2',
+		setprog:{|self program bank channel| 
+			self.controller.sendMidi("B0".asHexIfPossible+channel,0,bank);//set bank then
+			self.controller.sendMidi("C0".asHexIfPossible+channel,program); //set program
+		},
+		init: { |self| //create node and controller + load plug 
+			self.controller=VSTPluginController(Synth(\vsti,[\out,self.bus]));
+			self.node=NodeProxy.audio(s,2).play;
+			self.node.source={In.ar(self.bus.index,2)};
+			{
+				s.sync;
+				self.controller.open("/Library/Audio/Plug-Ins/VST/"++self.plugin,action:{self.controller.readProgram("/Users/michael/tank/super/SynfulTest.FXP"); });
+			}.fork;
+		},
+		set:{|self args| self.controller.set(args)}
+	)
+)
 
+	~strum.init;
+(
+	~strum.controller.loaded;
+	//~strum.controller.set(0,2); ///how to set????
+	~strum.controller.numParameters;
+	~strum.controller.gui;
+
+		~helloGtr1=Pbind(
+			\type,\midi,
+			\midiout,~strum.controller.midi,
+			\midinote, Pseq([50,52,57],4),
+			\dur,Pseq([1/1,1/4,3/4],inf),
+			\legato,Pseq([1,Pwhite(0.25,0.55,1)],8),
+			\amp,0.5
+		)
+		;
+
+
+	~helloGtr2=Pbind(
+			\type,\midi,
+			\midiout,~strum.controller.midi,
+		\note,Pseq([127,74,72],8),
+		\dur,Pseq([1/2,1/4,1/4],inf),
+		//\amp,0.3
+	)
+	;
+
+	Ppar([
+		~helloGtr2,
+		~helloGtr1
+	]).play
+)
+s.boot;
+~helloGtr2.play;

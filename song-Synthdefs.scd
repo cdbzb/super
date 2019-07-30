@@ -105,12 +105,13 @@ SynthDef("sawSynth", { arg freq = 440, amp = 0.1, att = 0.1, rel = 2, lofreq = 1
 
 SynthDef(\verb_fade,{|in time| FreeVerb.ar(in, room:0.8, mix:0.8)*Line.kr(1,0,time)}).add;
 
-(
-	SynthDef(\vsti,{|in out=0|
+SynthDef(\vsti,{|in out=0|
 			var sig=VSTPlugin.ar(nil,2);
 			Out.ar(out,sig)
 		}).add;
 
+(
+	
 		//TODO generalize this - seperate into proto
 		~synful=( // creates a nodeproxy playing on a private bus - .node and .bus respectively 
 			bus: Bus.audio(s,2),

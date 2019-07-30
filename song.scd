@@ -1,4 +1,5 @@
 ( // the song event
+	s.options.memSize=2**17;
 	s.waitForBoot("/Users/michael/tank/super/song-Synthdefs.scd".load);
 	~funs=(
 		sections: {|self|self.song.size/2},
@@ -344,6 +345,10 @@
 )
 
 ( //// parts for ~complete
+
+	"/Users/michael/tank/super/song-hello-beet.scd".load;
+	TempoClock.tempo=1;
+
 	~sections2=(
 		ply:{|self| self.do({|i| i.p});};
 	);
@@ -373,6 +378,7 @@
 //	~sections2.bassnotes2=(parent:~complete,start:1,syl:2,music:
 //		(note:2,amp:0.1)
 //	);
+
 	~sections2.bassnotes3=(parent:~complete,start:2,music:
 		(note:-2-12,amp:0.1)
 	);
@@ -387,6 +393,9 @@
 	~sections2.helloChord=(parent:~complete,start:3,music:
 		(instrument:\test,midinote:~panNotes.("<d4 f# a c#>").flatten,strum:0.03,amp:0.4)
 	);
+
+	~helloTempo=1/~complete.durs[3].list.mean;
+	~sections2.helloSequence=(parent:~complete,start:3,music:{TempoClock.tempo_(~helloTempo);~helloBeat.play});
 
 	~sections2.hellobass=(parent:~complete,start:3,music:
 		{
@@ -407,6 +416,7 @@
 				//{w.close}.defer;
 			}.fork
 		});
+
 	~complete.pbind.do({|i x| var label = ("guide"++x).asSymbol; ~sections2[label]=(parent:~complete,start:x,music:i);label.postln});
 
 	~complete.parts.ply;
@@ -415,7 +425,7 @@
 s.boot;
 ~synful.controller.loaded==false.if(~synful.init);
 ( //moving on to next song
-	~xtreme.cursor_(10);
+	~xtreme.cursor_(6);
 	TempoClock.tempo=1;
 	{
 		~xtreme.parts.ply;
@@ -443,4 +453,4 @@ Archive.at(\complete);
 	//this should bbe a method
 )
 
-
+TempoClock.tempo=1;

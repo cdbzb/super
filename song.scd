@@ -346,7 +346,7 @@
 
 ( //// parts for ~complete
 
-	~complete.cursor_(2);
+	~complete.cursor_(3);
 	"/Users/michael/tank/super/song-hello-beet.scd".load;
 	TempoClock.tempo=1;
 
@@ -385,6 +385,10 @@
 	);
 	~sections2.bassnotes4=(parent:~complete,start:2,syl:2,music:
 		(note:[7,-5],amp:0.1,sustain:2)
+	);
+
+	~sections2.bass4=(parent:~complete,start:4,syl:6,music:
+		(instrument:\sawSynth,note:[7,-5]-12,amp:0.2,sustain:2,att:1.9)
 	);
 
 	~sections2.pad0=(parent:~complete,start:0,music:

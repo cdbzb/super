@@ -329,23 +329,24 @@
 		parent:~trek,
 		proto:~funs,
 		song:[
-			"the tran - fer is com-"," f5 c a-4 e c#", //TODO new notes here,
-			"plete. metabolic rate is","c#4 c5 b-4 c5 a-4 d4 c5",
-			"double and rising, Doctor...r  Hel- ","d5 b-4 c#5 g c# a-4 g r b",
-			"lo. r r r"," c#5 d2 d d",
-			//"you are a lovely female, r a","",
+			"the tran - fer is com-"," f5 c a-4 e c#", //0
+			"plete. metabolic rate is","c#4 c5 b-4 c5 a-4 d4 c5",//1
+			"double and rising, Doctor...r  Hel- ","d5 b-4 c#5 g c# a-4 g r b",//2
+			"lo. r r r"," c#5 d2 d d",//3
+			"you are a lovely female, r a","e5 d c# b4 a f# e e2 d5",//4
 			//"pleasant sight to wake up to after","",
 		]
 	).setupDurs;
 )
 
 (
-	a=~recorder.(~complete,[2],2);
+	a=~recorder.(~complete,[4],2);
 	a.makeWindow;
 )
 
 ( //// parts for ~complete
 
+	~complete.cursor_(2);
 	"/Users/michael/tank/super/song-hello-beet.scd".load;
 	TempoClock.tempo=1;
 
@@ -395,15 +396,19 @@
 	);
 
 	~helloTempo=1/~complete.durs[3].list.mean;
-	~sections2.helloSequence=(parent:~complete,start:3,music:{TempoClock.tempo_(~helloTempo);~helloBeat.play});
+	~helloTemp2=1/(~complete.durs[4].list[0..6].sum/5*2);
+	~sections2.helloSequence=(parent:~complete,start:3,music:{
+		//TempoClock.tempo_(~helloTempo);
+		t=TempoClock.new;
+		~helloBeat.(synthamp:0.1,drumsamp:0.7,tempo1:~helloTempo,tempo2:~helloTemp2).play(t);
+	});
 
-	~sections2.hellobass=(parent:~complete,start:3,music:
-		{
-			t=TempoClock.new.tempo_(1/~complete.durs[3].list.mean*0.875);
-			Pbind(\midinote,Pseq( ~panNotes.("r d f# a c#5 e d5 a4 g f# e d").flatten-24),
-			\dur,0.5).play(t)
-		}
-	);
+//	~sections2.hellobass=(parent:~complete,start:3,music:
+//		{
+//			Pbind(\midinote,Pseq( ~panNotes.("r d f# a c#5 e d5 a4 g f# e d").flatten-24),
+//			\dur,0.5);
+//		}
+//	);
 	~sections2.helloImage=(parent:~complete,start:2,syl:8,music:
 		{
 			{
@@ -422,12 +427,12 @@
 	~complete.parts.ply;
 )
 
-s.boot;
-~synful.controller.loaded==false.if(~synful.init);
 ( //moving on to next song
 	~xtreme.cursor_(6);
+	~complete.cursor_(0);
 	TempoClock.tempo=1;
 	{
+		~synful.controller.loaded ==false.if({~synful.init;10.wait});
 		~xtreme.parts.ply;
 		//SystemClock.sched( ~xtreme.durTillEnd,~transformation);
 		~xtreme.durTillEnd.wait;
@@ -454,3 +459,4 @@ Archive.at(\complete);
 )
 
 TempoClock.tempo=1;
+~complete.save;

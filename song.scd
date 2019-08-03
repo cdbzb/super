@@ -1,7 +1,7 @@
-( // the song event
+( // the song event				{{{1
 	s.options.memSize=2**17;
 	s.waitForBoot("/Users/michael/tank/super/song-Synthdefs.scd".load);
-	~funs=(
+	~funs=(		//				{{{2
 		sections: {|self|self.song.size/2},
 		cursor:0,
 		lyrics:{|self| self.song.copySeries(0,2,self.song.size)},
@@ -33,16 +33,14 @@
 		durTillEnd: {|self| var x=0; (self.cursor..(self.sections-1)).do{|i| x=x+self.secDur[i] };x}
 	);
 
-	~trek=(
+	~trek=(	//					{{{2
 		dursFile:"/Users/michael/tank/super/theExtreme3",
 		durs:nil,
 		save:{|self| Archive.global.put(self.key,self.durs); Archive.write(self.dursFile)},
 	);	
 
-	~xtreme=(
-		key:\song,
-		parent:~trek,
-		proto:~funs,
+	~xtreme=( //				{{{2
+		key:\song, parent:~trek, proto:~funs,
 		song:[
 			"the extreme power of the","g a b- d5 b-4 a g", //0
 			"alien mind will make the -","e5 d c f e f g f", //1
@@ -59,7 +57,7 @@
 		parts:nil,
 	).setupDurs;
 
-//construct event recorder
+//construct event recorder		{{{2
 	~recorder= {|song  range=#[0,1] cueSecs=1 |  
 		//var range=Array.series((to-from),from);
 		var from=range[0];
@@ -147,7 +145,7 @@
 			)
 		};
 
-//// 'sections' event
+//// 'sections' event		{{{2
 	~sections=( ply:{|self| self.do({|i| i.p});};);
 	~xtreme.parts=~sections;
 
@@ -298,7 +296,7 @@
 	~xtreme.pbind.do({|i x| var label = ("guide"++x).asSymbol; ~sections[label]=(parent:~xtreme,start:x,music:i);label.postln});
 	c=SystemClock.seconds;
 
- //transformation
+ //transformation			{{{2
 	~transformation={ var dur=15;
 		var pitches=~panNotes.("f#3 b- c4 e")+[0,12];
 		////whrrrrr
@@ -323,7 +321,7 @@
 	}
 );
 
-( /// ~complete lyric and tune
+( // ~complete lyric and tune	{{{1
 	~complete=(
 		key:\complete,
 		parent:~trek,
@@ -333,28 +331,29 @@
 			"plete. metabolic rate is","c#4 c5 b-4 c5 a-4 d4 c5",//1
 			"double and rising, Doctor...r  Hel- ","d5 b-4 c#5 g c# a-4 g r b",//2
 			"lo. r r r"," c#5 d2 d d",//3
-			"you are a lovely female, r a","e5 d c# b4 a f# e e2 c#5",//4
-			"pleasant sight to wake up to after","e d c# d e b a f# a ", //5
-			"half a million years- r r ","f g f e  e d c# c#"//6
+			"you are a lovely female, r a","e5 d c# b4 a f# e e2 c#4",//4
+			"pleasant sight to wake up to after","e4 d c# d e b a f# a ", //5
+			"half a million years- r r ","f5 g f e  e d c# c#"//6
 		]
 	).setupDurs;
 )
 
 (
-	a=~recorder.(~complete,[4,5],2);
+	a=~recorder.(~complete,[6],2);
 	a.makeWindow;
 )
 
-( //// parts for ~complete
+( //// parts for ~complete		{{{1
 
-	~complete.cursor_(3);
+	~complete.cursor_(0); //	{{{2
 	"/Users/michael/tank/super/song-hello-beet.scd".load;
 	TempoClock.tempo=1;
-
 	~sections2=(
 		ply:{|self| self.do({|i| i.p});};
 	);
 	~complete.parts=~sections2;
+
+	//0							{{{2
 	~sections2.bassnotes=(parent:~complete,start:0,syl:3,music:
 		Pseq([
 			(note:1-24,amp:0.5,dur:~complete.durs[0].list[4]), 
@@ -362,9 +361,17 @@
 		])
 	);
 
-	SynthDef(\phaser,{|out depth=0.5 fb=0.3 rate=0.03| 
-		ReplaceOut.ar(
-			out,Phaser2.ar(In.ar(out,2)+
+//SynthDef(\phaser,{|out depth=0.5 fb=0.3 rate=0.03| 
+//		ReplaceOut.ar(
+//			out,Phaser2.ar(In.ar(out,2)+
+//				PlateReverb.ar( In.ar(out,2),mix:Env.linen(0,2.5,6).kr)
+//				,rate:rate,fb:fb,depth:depth))}
+//			).add;
+//
+
+	SynthDef(\phaser ,{|out depth=0.5 fb=0.3 rate=0.03 gate=1| 
+		XOut.ar(
+			out,Env.cutoff(6).kr(gate),Phaser2.ar(In.ar(out,2)+
 				PlateReverb.ar( In.ar(out,2),mix:Env.linen(0,2.5,6).kr)
 				,rate:rate,fb:fb,depth:depth))}
 			).add;
@@ -380,7 +387,7 @@
 //	~sections2.bassnotes2=(parent:~complete,start:1,syl:2,music:
 //		(note:2,amp:0.1)
 //	);
-
+//1					{{{2
 	~sections2.bassnotes3=(parent:~complete,start:2,music:
 		(note:-2-12,amp:0.1)
 	);
@@ -389,10 +396,10 @@
 	);
 
 	~sections2.bass4=(parent:~complete,start:4,syl:6,music:
-		(instrument:\sawSynth,note:[7,-5]-12,amp:0.2,sustain:2,att:1.9)
+		(instrument:\sawSynth,note:[7,-5]-12,amp:0.2,sustain:2,att:1.0)
 	);
 	~sections2.bass5=(parent:~complete,start:5,syl:4,music:
-		(instrument:\sawSynth,note:[7,-5]-15,amp:0.2,sustain:2,att:1.9)
+		(instrument:\sawSynth,note:[7,-5]-15,amp:0.2,sustain:2,att:1.0)
 	);
 
 	~sections2.pad0=(parent:~complete,start:0,music:
@@ -407,15 +414,100 @@
 	~helloTemp2=1/(~complete.durs[4].list[0..6].sum/5*2);
 	~sections2.helloSequence=(parent:~complete,start:3,music:{
 		//TempoClock.tempo_(~helloTempo);
-		t=TempoClock.new;
+
+	//~helloBeat    		{{{2
+
+	SynthDef(\phaser2,{|out=5 depth=0.5 fb=0.3 rate=0.03| 
+		ReplaceOut.ar(
+			out,Phaser2.ar(In.ar(out,1)+
+				PlateReverb.ar( In.ar(out,1),mix:Env.linen(0,2.5,6).kr)
+				,rate:rate,fb:fb,depth:depth))}
+		).add;
+
+	~kickPatterns=[[3/4,1/4],1];
+	p=[0,0,0,0,1,1,1,0];
+	~kickBar=Pseq(p.collect{|i|~kickPatterns[i]}.flatten);
+
+	~snarePatterns=[[Rest(3/4),1/4],[Rest(1)],[Rest(1/2),1/2],[Rest(1/2),1/4,1/4],[Rest(1/4),1/4,1/2]];
+	p=[0,1,2,0, 0,3,0,4];
+	~snareBar=Pseq(p.collect{|i|~snarePatterns[i]}.flatten);
+
+	~synth=
+		Pbind(\note,Pseq([2-24,2-12,-1-12,9-12])-12,
+		//Pbind(\note,Pseq([2-24,2-12,[-1-12,-1,6],[1,4,9-12]])-12, //)
+			\instrument,\sawSynth,\dur,2,\rel,5,\amp,0.2)
+		//.play
+;
+
+~helloBass1=Pbind(
+	\note, Pseq([2,4],4)-24,
+	\legato,Pseq([1,Pwhite(0.25,0.55,1)],4),
+	\amp,0.5
+)
+//.play	
+;
+~helloBass2=Pbind(
+	\note,Pseq([\r,2,0],8),
+	\dur,Pseq([1/2,1/4,1/4],inf),
+	\amp,0.04
+)
+//.play
+;
+
+	~helloBeat= {|synthamp=0.3 drumsamp=1 tempo1=(52/60) tempo2=(50/60)|
+	
+	Ppar([
+		Pbind(\tempo,Pseq([tempo1,tempo2]),\dur,4,\note,\r),
+
+		Pbind(\instrument,\kick1,
+			\dur,~kickBar,
+			\amp,drumsamp*0.1
+		),
+		//Pbus(
+			Pbind(\instrument,\hihat, //ffreq rel
+				\dur,Pseq([0.245,0.255],32),
+				\amp,Pseq([Pwhite(0.3,0.4,1),Pwhite(0.2,0.3,1)],32)*0.4*drumsamp,
+				\lag, Pseq(
+					(1!16++(-1!16)).scramble*0.003),
+					\ffreq, Pwhite(6000,6500),
+					\rel,0.15
+				),
+		//	),
+		Pbind(\instrument,\snare,
+			\dur,~snareBar,
+			\amp,drumsamp*0.1
+		),
+	
+		Pfx(
+			Pbind( \instrument,\sawSynth,
+			\note,Pser(~panNotes.("d f# a c#5 e5").flatten-60,16),
+			\dur,1/2,
+			\att,0.5,
+			\octave,Pser(4!5++(5!5)++(6!5)++(7!5),42),
+			\amp, Pseq(( 0.1!5 )++(0.09!5)++(0.08!5)++Pseries(0.07,-0.005))
+		),
+		\phaser2),
+//		~helloBass1,
+		//~helloBass2,
+		Pset(\amp,synthamp,~synth),
+		//Pseq([(\type:\rest,dur:4),~complete.pbind[4]]);//remove
+		
+	//	Ptpar([
+	//		0.15,~helloGtr1,
+	//		0.15,~helloGtr2
+	//	])
+		],1   /// repeats!!
+	)};
+	
+//	~helloBeat.(synthamp:0.18,drumsamp:0.35).play;
+//}.fork
+
+		t=TempoClock.new;		//	{{{2
 		~helloBeat.(synthamp:0.1,drumsamp:0.7,tempo1:~helloTempo,tempo2:~helloTemp2).play(t);
 	});
 
 	~sections2.helloImage=(parent:~complete,start:2,syl:8,music:
-		{
-			{
-				{
-					a=Image.open("/Users/michael/tank/super/Spock.png");
+		{ { { a=Image.open("/Users/michael/tank/super/Spock.png");
 					w=a.plot(freeOnClose:true).alwaysOnTop_(true);
 					w.alwaysOnTop_(true);
 				}.defer;
@@ -429,12 +521,13 @@
 	~complete.parts.ply;
 )
 
-( //moving on to next song
+( //moving on to next song		{{{1
 	~xtreme.cursor_(6);
 	~complete.cursor_(0);
 	TempoClock.tempo=1;
 	{
-		~synful.controller.loaded ==false.if({~synful.init;10.wait});
+		//~synful.init;
+		~synful.controller.loaded==false.if({~synful.init;10.wait});
 		~xtreme.parts.ply;
 		//SystemClock.sched( ~xtreme.durTillEnd,~transformation);
 		~xtreme.durTillEnd.wait;
@@ -450,15 +543,3 @@
 	//~complete.parts.ply;
 	}.fork
 )
-Archive.at(\complete);
-(
-	Archive.global.put(~complete.key,~complete.durs);
-	~complete.dursFile;
-	Archive.write(~complete.dursFile);
-	Archive.at(\complete,\durs);
-	//I think both songs are present in EACH archive (conveniently)
-	//this should bbe a method
-)
-
-TempoClock.tempo=1;
-~complete.save;

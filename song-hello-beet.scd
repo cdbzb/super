@@ -1,7 +1,6 @@
+(	//~helloBeat    		{{{1
 
-(	//s.waitForBoot{
-
-	SynthDef(\phaser,{|out=5 depth=0.5 fb=0.3 rate=0.03| 
+	SynthDef(\phaser2,{|out=5 depth=0.5 fb=0.3 rate=0.03| 
 		ReplaceOut.ar(
 			out,Phaser2.ar(In.ar(out,1)+
 				PlateReverb.ar( In.ar(out,1),mix:Env.linen(0,2.5,6).kr)
@@ -71,7 +70,7 @@
 			\att,0.5,
 			\octave,Pser(4!5++(5!5)++(6!5)++(7!5),32),
 		),
-		\phaser),
+		\phaser2),
 //		~helloBass1,
 		//~helloBass2,
 		Pset(\amp,synthamp,~synth),
@@ -87,14 +86,7 @@
 	~helloBeat.(synthamp:0.18,drumsamp:0.35).play;
 //}.fork
 )
-
-
-
-(//bass synth
-)
-
-s.boot;
-(
+( //strum			{{{1
 	~strum=( // creates a nodeproxy playing on a private bus - .node and .bus respectively 
 		bus: Bus.audio(s,2),
 		controller: nil,
@@ -118,7 +110,6 @@ s.boot;
 		set:{|self args| self.controller.set(args)}
 	)
 )
-tion - l
 	~strum.init;
 (
 	~strum.controller.loaded;

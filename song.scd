@@ -395,13 +395,6 @@
 		(note:[7,-5],amp:0.1,sustain:2)
 	);
 
-	~sections2.bass4=(parent:~complete,start:4,syl:6,music:
-		(instrument:\sawSynth,note:[7,-5]-12,amp:0.2,sustain:2,att:1.0)
-	);
-	~sections2.bass5=(parent:~complete,start:5,syl:4,music:
-		(instrument:\sawSynth,note:[7,-5]-15,amp:0.2,sustain:2,att:1.0)
-	);
-
 	~sections2.pad0=(parent:~complete,start:0,music:
 		Pbind(\midinote,Pseq(~complete.tune[0].list[0..3])-[0,12],\instrument,\sawSynth,\dur,~complete.durs[0]);
 	);
@@ -505,6 +498,49 @@
 		t=TempoClock.new;		//	{{{2
 		~helloBeat.(synthamp:0.1,drumsamp:0.7,tempo1:~helloTempo,tempo2:~helloTemp2).play(t);
 	});
+	~sections2.bass4=(parent:~complete,start:4,syl:6,music:
+		(instrument:\sawSynth,note:[7,-5]-12,amp:0.2,sustain:2,att:1.0,rel:3)
+	);
+	~sections2.bass5=(parent:~complete,start:5,syl:4,music:
+		(instrument:\sawSynth,note:[7,-5]-13,amp:0.2,sustain:2,att:1.0,rel:3)
+	);
+
+	~phrase6quarter=~complete.durs[6].list.[0..6].sum/6;
+
+	~sections2.bass6=(parent:~complete,start:6,music:
+		Pseq([
+			(note:5-24,dur:~phrase6quarter*3,amp:0.5),
+			(note:4-24,dur:~phrase6quarter,amp:0.5),
+			(note:7-24,dur:~phrase6quarter*2,amp:0.5),
+		]));
+
+	SynthDef.new(\harp, { |gate=1 out=0 freq = 400|
+		var in=PinkNoise.ar(1);
+		var sig=Pluck.ar(in: in,  gate: gate,  maxdelaytime: 0.02,  delaytime: 1/freq,  decaytime: 10,  coef: 0.5,  mul: 1,  add: 0);
+		Out.ar(out,sig);
+	},  rates: nil,  prependArgs: nil,  variants: nil,  metadata: nil).add;
+
+	~sections2.keys5=(parent:~complete,start:6,music:
+		Pbind(
+			\instrument,\harp,
+			\midinote,Pseq(~panNotes.("f5 a4 c5")-[0,12]),
+			\dur,//Pseq(
+				~
+				complete.durs[6].list.[0..1]
+				.sum/4
+			//) //make a function for this
+		)
+	);
+
+	~sections2.keys6=(parent:~complete,start:6,syl:5,music:
+		Pbind(
+			//\instrument,\harp,
+			\note,Pseq([ [7,9,13],[7,9,13],[5,9,14] ]),
+			\dur,
+			Pseq(~complete.durs[6].list.[6..7]++[1])
+			,
+		)
+	);
 
 	~sections2.helloImage=(parent:~complete,start:2,syl:8,music:
 		{ { { a=Image.open("/Users/michael/tank/super/Spock.png");
@@ -521,6 +557,7 @@
 	~complete.parts.ply;
 )
 
+~synful.init;
 ( //moving on to next song		{{{1
 	~xtreme.cursor_(6);
 	~complete.cursor_(0);

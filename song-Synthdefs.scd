@@ -6,6 +6,7 @@
 	}).add ;
 
 	~panNotes={|string| Panola.new(string).midinotePattern.list};
+	~panList={|string| Panola.new(string).midinotePattern.list};
 
 	SynthDef(\two_tube,{|out=0 gate=1 |
 		var in =In.ar(out,2);

@@ -349,7 +349,7 @@
 )
 Pseq(~complete.pbind).play
 ( //// parts for ~complete		{{{1
-	~complete.cursor_(5); //	{{{2
+	~complete.cursor_(2); //	{{{2
 	"/Users/michael/tank/super/song-hello-beet.scd".load;
 	TempoClock.tempo=1;
 	~sections2=(
@@ -616,6 +616,20 @@ Pseq(~complete.pbind).play
 			//) //make a function for this
 		)
 	);
+
+	~sections2.trombone8=(parent:~complete,start:8,music:
+		{
+			~synful.node[1]=\filter -> {|in| PlateReverb.ar(in,mix:0.5)} ;
+			//~synful.controller.gui;
+			~synful.controller.loaded;
+			~synful.expression(100,3);
+			~synful.setprog(57,0,3);// program bank  channel trombone
+			(type:\midi,midiout:~synful.controller.midi,
+				\midinote:~panNotes.("g# ").flatten-[12,36],
+				\channel:3,
+				dur:5).play;
+			}
+		);
 
 	~complete.pbind.do({|i x| var label = ("guide"++x).asSymbol; ~sections2[label]=(parent:~complete,start:x,music:i);label.postln});
 

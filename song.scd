@@ -333,19 +333,23 @@
 			"lo. r r r"," c#5 d2 d d",//3
 			"you are a lovely female, r a","e5 d c# b4 a f# e e2 c#4",//4
 			"pleasant sight to wake up to after","e4 d c# d e b a f# a ", //5
-			"half a million years- r r ","f5 g f e  e d c# c#"//6
+			"half a million years- r r ","f5 g f e  e d c# c#",//6
+			"r r you're welcome","d5 f4  g5 f e",//7
+			"I've forgotten what it fee-","g#4 e b f# a# b c#5",//8 
+			"ls like even to brea-","d#5 a#4 c#5 d# e f# ",//9 
+			"th again, Sargon?"," g#5 f# b4 g g",//10
+			"Here, in this body","f e g f c"//11
 		]
 	).setupDurs;
 )
 
 (
-	a=~recorder.(~complete,[6],2);
+	a=~recorder.(~complete,[11],2);
 	a.makeWindow;
 )
-
+Pseq(~complete.pbind).play
 ( //// parts for ~complete		{{{1
-
-	~complete.cursor_(0); //	{{{2
+	~complete.cursor_(5); //	{{{2
 	"/Users/michael/tank/super/song-hello-beet.scd".load;
 	TempoClock.tempo=1;
 	~sections2=(
@@ -399,16 +403,37 @@
 		Pbind(\midinote,Pseq(~complete.tune[0].list[0..3])-[0,12],\instrument,\sawSynth,\dur,~complete.durs[0]);
 	);
 
+	~sections2.helloImage=(parent:~complete,start:2,syl:8,music:
+		{ { { a=Image.open("/Users/michael/tank/super/Spock.png");
+					w=a.plot(freeOnClose:true).alwaysOnTop_(true);
+					w.alwaysOnTop_(true);
+				}.defer;
+				5.wait;
+				//{w.close}.defer;
+			}.fork
+		});
+
+	//3 -                		{{{2
 	~sections2.helloChord=(parent:~complete,start:3,music:
 		(instrument:\test,midinote:~panNotes.("<d4 f# a c#>").flatten,strum:0.03,amp:0.4)
 	);
 
 	~helloTempo=1/~complete.durs[3].list.mean;
 	~helloTemp2=1/(~complete.durs[4].list[0..6].sum/5*2);
+	~sections2.helloImage=(parent:~complete,start:2,syl:8,music:
+		{ { { a=Image.open("/Users/michael/tank/super/Spock.png");
+					w=a.plot(freeOnClose:true).alwaysOnTop_(true);
+					w.alwaysOnTop_(true);
+				}.defer;
+				5.wait;
+				//{w.close}.defer;
+			}.fork
+		});
+
 	~sections2.helloSequence=(parent:~complete,start:3,music:{
 		//TempoClock.tempo_(~helloTempo);
 
-	//~helloBeat    		{{{2
+	//3 -  ~helloBeat    		{{{2
 
 	SynthDef(\phaser2,{|out=5 depth=0.5 fb=0.3 rate=0.03| 
 		ReplaceOut.ar(
@@ -495,9 +520,10 @@
 //	~helloBeat.(synthamp:0.18,drumsamp:0.35).play;
 //}.fork
 
-		t=TempoClock.new;		//	{{{2
-		~helloBeat.(synthamp:0.1,drumsamp:0.7,tempo1:~helloTempo,tempo2:~helloTemp2).play(t);
+	t=TempoClock.new;		            
+	~helloBeat.(synthamp:0.1,drumsamp:0.7,tempo1:~helloTempo,tempo2:~helloTemp2).play(t);
 	});
+// 4-6 {{{2
 	~sections2.bass4=(parent:~complete,start:4,syl:6,music:
 		(instrument:\sawSynth,note:[7,-5]-12,amp:0.2,sustain:2,att:1.0,rel:3)
 	);
@@ -511,16 +537,37 @@
 		Pseq([
 			(note:5-24,dur:~phrase6quarter*3,amp:0.5),
 			(note:4-24,dur:~phrase6quarter,amp:0.5),
-			(note:7-24,dur:~phrase6quarter*2,amp:0.5),
+			(note:7-24,dur:~phrase6quarter*4,amp:0.5),
 		]));
 
+	//harp		{{{3
 	SynthDef.new(\harp, { |gate=1 out=0 freq = 400|
 		var in=PinkNoise.ar(1);
 		var sig=Pluck.ar(in: in,  gate: gate,  maxdelaytime: 0.02,  delaytime: 1/freq,  decaytime: 10,  coef: 0.5,  mul: 1,  add: 0);
 		Out.ar(out,sig);
 	},  rates: nil,  prependArgs: nil,  variants: nil,  metadata: nil).add;
 
-	~sections2.keys5=(parent:~complete,start:6,music:
+
+	SynthDef.new(\yowbass, {|freq=400 amp gate=1 dur=1|
+		var sig=Formant.ar(freq,  formfreq: Line.kr(3060,00,dur),  bwfreq: 880,  mul: 1,  add: 0).distort;
+		var env=Env.asr(0,1,1,1.5).kr(gate:gate,doneAction:2);
+		Out.ar(0,sig*env*amp!2)}
+		,  rates: nil,  prependArgs: nil,  variants: nil,  metadata: nil).add;
+
+		~durs6=~complete.durs[6].list;
+
+	~sections2.yow6=(parent:~complete,start:6,music:
+		Pbind(\instrument,\yowbass,
+			\note,Pseq([[-3,0],[-3,0],[-5,-1]]),
+			\dur,Pseq( [~durs6[0..2].sum,~durs6[3],~durs6[4..8].sum]),
+			\amp,0.03,
+		),
+);
+
+	~sections2.yow7=(parent:~complete,start:7,syl:0,music:
+	(instrument:\yowbass,note:[-3,0,5],dur:3,amp:0.05)
+);
+	~sections2.keys6=(parent:~complete,start:6,music:
 		Pbind(
 			\instrument,\harp,
 			\midinote,Pseq(~panNotes.("f5 a4 c5")-[0,12]),
@@ -532,25 +579,43 @@
 		)
 	);
 
-	~sections2.keys6=(parent:~complete,start:6,syl:5,music:
+	//stab		{{{3
+	SynthDef.new(\stab, {|out=0 freq=400 width=0.2 gate=1 amp=1|
+		var sig=Pulse.ar(freq,width);
+		var env=Env.asr(0.06,0.1,0.4).kr(gate:gate,doneAction:2);
+		var fenv=Env.linen(0.0,0.1,0.7).kr(gate:gate)*freq*5;
+		sig=RLPF.ar(sig,fenv,rq: 1);
+		Out.ar(out, sig*env*amp);
+	},  rates: nil,  prependArgs: nil,  variants: nil,  metadata: nil).add;
+
+	~sections2.keys62=(parent:~complete,start:6,syl:5,music:
 		Pbind(
-			//\instrument,\harp,
+			\instrument,\stab,
 			\note,Pseq([ [7,9,13],[7,9,13],[5,9,14] ]),
-			\dur,
-			Pseq(~complete.durs[6].list.[6..7]++[1])
-			,
+			\dur, Pseq(~complete.durs[6].list.[6..7]++[1]) ,
+			\amp,Pseq([1,1.3,1])*0.8,
 		)
 	);
+	// 7 on {{{2
 
-	~sections2.helloImage=(parent:~complete,start:2,syl:8,music:
-		{ { { a=Image.open("/Users/michael/tank/super/Spock.png");
-					w=a.plot(freeOnClose:true).alwaysOnTop_(true);
-					w.alwaysOnTop_(true);
-				}.defer;
-				5.wait;
-				//{w.close}.defer;
-			}.fork
-		});
+	~sections2.bass7=(parent:~complete,start:7,syl:0,music:
+		Pseq([
+			(note:5-24,dur:~phrase6quarter*3,amp:0.5),
+			//(note:4-24,dur:~phrase6quarter,amp:0.5),
+			//(note:7-24,dur:~phrase6quarter*2,amp:0.5),
+		]));
+
+	~sections2.keys7=(parent:~complete,start:7,syl:0,music:
+		Pbind(
+			\instrument,\harp,
+			\midinote,Pseq(~panNotes.("f5 a4 c5")-[0,12]),
+			\dur,//Pseq(
+				~
+				complete.durs[7].list.[1..2]
+				.sum/4
+			//) //make a function for this
+		)
+	);
 
 	~complete.pbind.do({|i x| var label = ("guide"++x).asSymbol; ~sections2[label]=(parent:~complete,start:x,music:i);label.postln});
 
@@ -559,7 +624,7 @@
 
 ~synful.init;
 ( //moving on to next song		{{{1
-	~xtreme.cursor_(6);
+	~xtreme.cursor_(0);
 	~complete.cursor_(0);
 	TempoClock.tempo=1;
 	{

@@ -13,7 +13,7 @@
 		\dur, Pseq([1,2],inf),
 		\degree, Pseq([[8,10],10s],inf),
 		\blend, Pseq([0,0.5,0.3,1,0.7],inf)
-	);
+	).play;
 	
 	b=Pmono(	 \voweler,
 		\dur, Pseq([1,2],inf),

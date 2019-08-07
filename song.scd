@@ -334,11 +334,11 @@
 			"you are a lovely female, r a","e5 d c# b4 a f# e e2 c#4",//4
 			"pleasant sight to wake up to after","e4 d c# d e b a f# a ", //5
 			"half a million years- r r ","f5 g f e  e d c# c#",//6
-			"r r you're welcome","d5 f4  g5 f e",//7
+			"r r you're welcome","d5 f4  g5 f ",//7
 			"I've forgotten what it fee-","g#4 e b f# a# b c#5",//8 
 			"ls like even to brea-","d#5 a#4 c#5 d# e f# ",//9 
 			"th again, Sargon?"," g#5 f# b4 g g",//10
-			"Here, in this body","f e g f c"//11
+			//"Here, in this body","f e g f c"//11
 		]
 	).setupDurs;
 )
@@ -349,7 +349,7 @@
 )
 Pseq(~complete.pbind).play
 ( //// parts for ~complete		{{{1
-	~complete.cursor_(2); //	{{{2
+	~complete.cursor_(6); //	{{{2
 	"/Users/michael/tank/super/song-hello-beet.scd".load;
 	TempoClock.tempo=1;
 	~sections2=(
@@ -618,18 +618,27 @@ Pseq(~complete.pbind).play
 	);
 
 	~sections2.trombone8=(parent:~complete,start:8,music:
-		{
-			~synful.node[1]=\filter -> {|in| PlateReverb.ar(in,mix:0.5)} ;
+		{ | amp=0.9 exp=90|
+			~synful.node[1]=\filter -> {|in| PlateReverb.ar(in,mix:0.7,decayTime:0.4,size:0.8)} ;
 			//~synful.controller.gui;
 			~synful.controller.loaded;
-			~synful.expression(100,3);
+			~synful.expression(90,3);
 			~synful.setprog(57,0,3);// program bank  channel trombone
-			(type:\midi,midiout:~synful.controller.midi,
-				\midinote:~panNotes.("g# ").flatten-[12,36],
-				\channel:3,
-				dur:5).play;
+			Pseq([
+			(type:\midi,midiout:~synful.controller.midi, \midinote:~panNotes.("g# ").flatten-[12,36], \chan:3, dur:~complete.durs[8].list.sum,\amp:0.75).play
+			,
+			(type:\midi,midiout:~synful.controller.midi, \midinote:~panNotes.("c# ").flatten-[12,36], \chan:3, dur:~complete.durs[9].list.sum,\amp:0.75),
+			(type:\midi,midiout:~synful.controller.midi, \midinote:~panNotes.("<b e>").flat-[24,36], \chan:3, dur:3,\amp:0.75)
+		])
 			}
 		);
+
+	~sections2.sargon10=(parent:~complete,start:10,syl:2,music:
+		Pseq([
+			(note:[4,7,10],dur:~complete.durs[10].list[3],\amp:0.3),
+			(note:[4,7,10],dur:~complete.durs[10].list[4],\amp:0.3)
+		])
+	);
 
 	~complete.pbind.do({|i x| var label = ("guide"++x).asSymbol; ~sections2[label]=(parent:~complete,start:x,music:i);label.postln});
 

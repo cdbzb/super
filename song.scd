@@ -344,12 +344,12 @@
 )
 
 (
-	a=~recorder.(~complete,[8],2);
+	a=~recorder.(~complete,[11],2);
 	a.makeWindow;
 )
 Pseq(~complete.pbind).play
 ( //// parts for ~complete		{{{1
-	~complete.cursor_(2); //	{{{2
+	~complete.cursor_(6); //	{{{2
 	"/Users/michael/tank/super/song-hello-beet.scd".load;
 	TempoClock.tempo=1;
 	~sections2=(
@@ -621,7 +621,7 @@ Pseq(~complete.pbind).play
 	{
 		var du=~complete.durs[8].list;
 		var dv=~complete.durs[9].list;
-		a=(instrument:\sawSynth,midinote:[4,8,11]+60,att:4,rel:5,amp:0.05,lagTime:0.3).play;
+		a=(instrument:\sawSynth,midinote:[4,8,11]+60,att:4.5,rel:5,amp:0.05,lagTime:0.3).play;
 		Pbind.new(*[
 			type:\set,
 			id:a[\id],
@@ -638,7 +638,6 @@ Pseq(~complete.pbind).play
 			Pbind(*[
 				type:\midi, midiout:~synful.controller.midi, chan:3,
 				midinote: Pseq(~noteList.(["g#","c#","b3"]))-[12,36] ,
-				//midinote:Pseq([~panList.("g#"),~panList.("f#"),~panList.("b3")])-[12,36],
 				dur:Pseq([~complete.secDur[8],~complete.secDur[9],3]),
 				\amp:0.55
 			]).play;
@@ -649,6 +648,26 @@ Pseq(~complete.pbind).play
 		Pseq([
 			(note:[4,7,10],dur:~complete.durs[10].list[3],\amp:0.3),
 			(note:[4,7,10],dur:~complete.durs[10].list[4],\amp:0.3)
+		])
+	);
+
+	~sections2.pf11=(parent:~complete,start:11,music:
+		Ppar([
+			//(instrument:\cymbal,dur:13)
+			//,
+			Pbind(*[
+				midinote:Pseq(
+					~noteList.(["<a c5 f>","<g c5 e>","<b- d5 g>","<a c5 f>"])-12),
+					dur:~complete.durs[11],
+					strum:Pseq([0.01,0.01,0.02,0.01])
+				]),
+				Pbind(*[
+					instrument:\test,
+					amp:0.5,
+					midinote:Pseq(
+						~panList.("c g3 f c4"))-[ 12,24 ]-7,
+					dur:~complete.durs[11],
+				])
 		])
 	);
 

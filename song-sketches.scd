@@ -1,16 +1,16 @@
 (// here in this body
 	Ppar([
-	Pbind(*[
-		midinote:Pseq(
-			~noteList.(["<a c5 f>","<g c5 e>","<b- d5 g>","<a c5 f>"])-12),
-			dur:Pseq([1.5,0.5,1,1]),
-			strum:Pseq([0.01,0.01,0.02,0.01])
-		]),
 		Pbind(*[
 			midinote:Pseq(
-				~panList.("c g3 f c4"))-[ 12,24 ],
-			dur:Pseq([1.5,0.5,1,1]),
-		])
+				~noteList.(["<a c5 f>","<g c5 e>","<b- d5 g>","<a c5 f>"])-12),
+				dur:Pseq([1.5,0.5,1,1]),
+				strum:Pseq([0.01,0.01,0.02,0.01])
+			]),
+			Pbind(*[
+				midinote:Pseq(
+					~panList.("c g3 f c4"))-[ 12,24 ],
+				dur:Pseq([1.5,0.5,1,1]),
+			])
 	]).play
 
 )

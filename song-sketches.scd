@@ -1,14 +1,20 @@
-(//testing yow
-
-	SynthDef.new(\yowbass, {|freq=400 amp=0.1 gate=1 dur=1|
-		var sig=Formant.ar(freq,  formfreq: Line.kr(3060,00,dur),  bwfreq: 880,  mul: 0.1,  add: 0);
-		var env=Env.asr(0,1,0.5).kr(gate:gate);
-		Out.ar(0,sig*env!2)}
-		,  rates: nil,  prependArgs: nil,  variants: nil,  metadata: nil).add;
-
-		(instrument:\yowbass, dur:2,\freq:[100,150]).play;
+(// here in this body
+	Ppar([
+	Pbind(*[
+		midinote:Pseq(
+			~noteList.(["<a c5 f>","<g c5 e>","<b- d5 g>","<a c5 f>"])-12),
+			dur:Pseq([1.5,0.5,1,1]),
+			strum:Pseq([0.01,0.01,0.02,0.01])
+		]),
+		Pbind(*[
+			midinote:Pseq(
+				~panList.("c g3 f c4"))-[ 12,24 ],
+			dur:Pseq([1.5,0.5,1,1]),
+		])
+	]).play
 
 )
+s.boot;
 (//quartal
 	{
 		18.do(

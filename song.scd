@@ -338,18 +338,18 @@
 			"I've forgotten what it fee-","g#4 e b f# a# b c#5",//8 
 			"ls like even to brea-","d#5 a#4 c#5 d# e f# ",//9 
 			"th again, Sargon?"," g#5 f# b4 g g",//10
-			//"Here, in this body","f e g f c"//11
+			"Here, in this body","f e g f c"//11
 		]
 	).setupDurs;
 )
 
 (
-	a=~recorder.(~complete,[11],2);
+	a=~recorder.(~complete,[8],2);
 	a.makeWindow;
 )
 Pseq(~complete.pbind).play
 ( //// parts for ~complete		{{{1
-	~complete.cursor_(6); //	{{{2
+	~complete.cursor_(2); //	{{{2
 	"/Users/michael/tank/super/song-hello-beet.scd".load;
 	TempoClock.tempo=1;
 	~sections2=(
@@ -617,19 +617,31 @@ Pseq(~complete.pbind).play
 		)
 	);
 
+	~sections2.pad8=(parent:~complete,start:8,music:
+	{
+		var du=~complete.durs[8].list;
+		var dv=~complete.durs[9].list;
+		a=(instrument:\sawSynth,midinote:[4,8,11]+60,att:4,rel:5,amp:0.05,lagTime:0.3).play;
+		Pbind.new(*[
+			type:\set,
+			id:a[\id],
+			freq: Pseq([ [4,8,11],[3,6,11],[3,6,10],[1,6,10],[1,4,10],[-1,4,8] ]+72).midicps ,
+			dur:Pseq([du[0..1].sum,du[2..3].sum,du[4..6].sum,dv[0..1].sum,dv[2..5].sum,1 ])
+		]).play;
+	}
+		  );
+
 	~sections2.trombone8=(parent:~complete,start:8,music:
-		{ | amp=0.9 exp=90|
+		{ | amp=0.9 exp=80|
 			~synful.node[1]=\filter -> {|in| PlateReverb.ar(in,mix:0.7,decayTime:0.4,size:0.8)} ;
-			//~synful.controller.gui;
-			~synful.controller.loaded;
-			~synful.expression(90,3);
-			~synful.setprog(57,0,3);// program bank  channel trombone
-			Pseq([
-			(type:\midi,midiout:~synful.controller.midi, \midinote:~panNotes.("g# ").flatten-[12,36], \chan:3, dur:~complete.durs[8].list.sum,\amp:0.75).play
-			,
-			(type:\midi,midiout:~synful.controller.midi, \midinote:~panNotes.("c# ").flatten-[12,36], \chan:3, dur:~complete.durs[9].list.sum,\amp:0.75),
-			(type:\midi,midiout:~synful.controller.midi, \midinote:~panNotes.("<b e>").flat-[24,36], \chan:3, dur:3,\amp:0.75)
-		])
+			~synful.patch(\trombone,\none,3);
+			Pbind(*[
+				type:\midi, midiout:~synful.controller.midi, chan:3,
+				midinote: Pseq(~noteList.(["g#","c#","b3"]))-[12,36] ,
+				//midinote:Pseq([~panList.("g#"),~panList.("f#"),~panList.("b3")])-[12,36],
+				dur:Pseq([~complete.secDur[8],~complete.secDur[9],3]),
+				\amp:0.55
+			]).play;
 			}
 		);
 
@@ -647,7 +659,7 @@ Pseq(~complete.pbind).play
 
 ~synful.init;
 ( //moving on to next song		{{{1
-	~xtreme.cursor_(0);
+	~xtreme.cursor_(5);
 	~complete.cursor_(0);
 	TempoClock.tempo=1;
 	{

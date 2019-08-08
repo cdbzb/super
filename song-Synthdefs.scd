@@ -6,7 +6,8 @@
 	}).add ;
 
 	~panNotes={|string| Panola.new(string).midinotePattern.list};
-	~panList={|string| Panola.new(string).midinotePattern.list};
+	~panList={|string| Panola.new(string).midinotePattern.list.flatten};
+	~noteList={|list| list.collect({|x|~panNotes.(x)}).flatten };
 
 	SynthDef(\two_tube,{|out=0 gate=1 |
 		var in =In.ar(out,2);
@@ -88,8 +89,9 @@ SynthDef("kick", {arg out = 0, amp = 0.3, sinfreq = 60, glissf = 0.9, att = 0.01
 }).add;
 
 // Basic saw synth for chords and bass
-SynthDef("sawSynth", { arg freq = 440, amp = 0.1, att = 0.1, rel = 2, lofreq = 1000, hifreq = 3000;
+SynthDef("sawSynth", { arg freq = 440, amp = 0.1, att = 0.1, rel = 2, lofreq = 1000, hifreq = 3000, lagTime = 0.3;
     var env, snd;
+	freq=Lag.kr(freq,lagTime);
     env = Env.perc(
 		attackTime: att,
 		releaseTime: rel,
@@ -111,7 +113,7 @@ SynthDef(\vsti,{|in out=0|
 			Out.ar(out,sig)
 		}).add;
 
-(
+
 	
 		//TODO generalize this - seperate into proto
 		~synful=( // creates a nodeproxy playing on a private bus - .node and .bus respectively 
@@ -134,9 +136,12 @@ SynthDef(\vsti,{|in out=0|
 					self.controller.open("/Library/Audio/Plug-Ins/VST/"++self.plugin,action:{self.controller.readProgram("/Users/michael/tank/super/SynfulTest.FXP"); });
 				}.fork;
 			},
-			set:{|self args| self.controller.set(args)}
-		);
-			~synful.init;
+			set:{|self args| self.controller.set(args)},
+			patches:( flute:73, oboe:68, enghorn:69, clarinet:71, bassoon:70, horn:62, horn4:5, horn8:6, trumpet:56, trombone:57, violin:40, viola:41, cello:42, bass:43, violins:0, violins2:1, violas:2, cellos:3, basses:4),
+			banks:( none:0, mute1:2, mute2:3, stopped:4, arco:1, pizz:2, bartok:3, legno:4, trem:5, sulpont:6, tremsulpont:7, harmonics:8, mute:9),
+			patch:{| self patch bank=\none channel=0 | self.setprog( self.patches.at(patch),self.banks.at(bank),channel);postln("patch "++self.patches.at(patch)++" bank "++self.banks.at(bank))}
+
 );
+~synful.init;
 "LOADED".postln;
 )

@@ -33,20 +33,22 @@ o = [
 	Pseq.prNew,  Array.prNew(1),  Pbinop.prNew,  Pseq.prNew,  
 	Array.prNew(1),  Pbinop.prNew,  Pseq.prNew,  Array.prNew(1),  
 	Pbinop.prNew,  Pseq.prNew,  Array.prNew(1),  Pbinop.prNew,  
-	Pseq.prNew,  Array.prNew(1)
+	Pseq.prNew,  Array.prNew(1),  Array.prNew(3),  Pseq.prNew,  
+	List.prNew,  Array.prNew(1),  Pseq.prNew,  List.prNew,  
+	Array.prNew(9),  Pseq.prNew,  List.prNew,  Array.prNew(10)
 ];
 p = [
 	// Archive
 	0, [ dictionary: o[1] ],  
 	// IdentityDictionary
-	1, [ array: o[2],  size: 2,  
+	1, [ array: o[2],  size: 3,  
 		proto: nil,  parent: nil,  
 		know: false ],  
 	// Array
 	2, [ 'complete',  o[3],  nil,  nil,  
 		nil,  nil,  'song',  o[40],  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
+		nil,  nil,  'displeased',  o[134],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -412,6 +414,33 @@ p = [
 	132, [ list: o[133],  repeats: 1,  
 		offset: 0 ],  
 	// Array
-	133, [ 1 ]
+	133, [ 1 ],  
+	// Array
+	134, [ o[135],  o[138],  o[141] ],  
+	// Pseq
+	135, [ list: o[136],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	136, [ array: o[137] ],  
+	// Array
+	137, [ 3.854 ],  
+	// Pseq
+	138, [ list: o[139],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	139, [ array: o[140] ],  
+	// Array
+	140, [ 0.479,  0.324,  0.516,  0.328,  
+		2.121,  0.52,  0.545,  0.284,  
+		0.397 ],  
+	// Pseq
+	141, [ list: o[142],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	142, [ array: o[143] ],  
+	// Array
+	143, [ 0.584,  0.54,  0.36,  0.376,  
+		0.37,  0.574,  0.632,  0.614,  
+		0.326,  0.367 ]
 ];
 prUnarchive(o,p);

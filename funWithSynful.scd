@@ -185,4 +185,51 @@ s.makeWindow;
 	~synful.expEnv[0].source={Env.perc(2,9).kr*2-1*0.5.rand}
 )
 
-NodeProxy
+s.reboot;
+~syn1=~synful.();
+~syn1;
+~syn1.init;
+~syn1.expEnv[9].scope;
+~syn1=nil;
+~syn1.shuffle.();
+~syn1.proto;
+~syn1.activate;
+~syn3=~synful.();
+~syn2
+~syn1.node[1]=\filter->{|in|FreeVerb.ar(in,0.8,0.8)}
+~syn1.node[2]=\filter->{|in|Phaser2.ar(in,rate:0.02)}
+~syn1.node[2]=\filter->{|in| MembraneCircle.ar(in,0.005)}
+~syn1.node[2]=\filter->{|in| in+MembraneHexagon.ar(in,0.019,0.99)/2}
+~syn1.node[2]=nil;
+(
+	{
+		20.do{
+			16.do{|i|
+				(midinote:30+rand(49.0),midiout:~syn1.controller.midi,dur:30,chan:i,type:\midi).play;
+				//~syn1.activate(i);
+			};
+			30.rand.wait;
+		}
+	}.fork
+)
+~syn1.expEnv;
+(
+	16.do{|i|
+		//~syn1.expEnv[i].source={SinOsc.kr(0.2.rand)}
+		~syn1.expEnv[i].source={ LFBrownNoise1.kr(rrand(0.5,1.4),rand(0.9),5.rand)*2-1 }
+	}
+)
+
+
+	(midinote:60+rand(12.0),midiout:~syn1.controller.midi,dur:30,chan:0,type:\midi).play;
+	~syn1.expEnv[0].source={Env.perc(2,9).kr*2-1*0.5.rand}
+	~syn1.activate(9);
+	~syn1.patch(\horn,\none,9);
+	
+	~syn1.expEnv[9].source={Env.perc(2,9).kr*2-1*0.5.rand}
+	~syn1.init;
+
+	(
+		~syn2=~synful.();
+		~syn2.controller.loaded;
+	)

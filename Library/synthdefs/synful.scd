@@ -1,4 +1,5 @@
-s.boot;
+s.options.memSize_(2**17);
+s.reboot;
 (
 	SynthDef(\vsti,{|in out=0|
 		var sig=VSTPlugin.ar(nil,2);
@@ -13,18 +14,20 @@ s.boot;
 			controller: nil,
 			node:nil,
 			params:(expression:11),
-			expEnv:NodeProxy.control(s,1)!16, //expEnv[n].source={} is the jam....
+			expr:NodeProxy.control(s,1)!16, //expr[n].source={} is the jam....
 			fs:Array.newClear(16), //used internally by activate
+			loops:Array.newClear(16),	
 			activate:{|self chan=0 update=0.1| 
-				self.expEnv[chan].source=64;
-				{ var ch=chan;
+				self.expr[chan].source=64;
+				self.loops[chan]={ var ch=chan;
 					loop({
-						self.expEnv[ch].bus.get({|value| self.fs[ch]=value+1*64});
+						self.expr[ch].bus.get({|value| self.fs[ch]=value+1*64});
 						self.expression(self.fs[ch],ch);
 						update.wait;
 					});
 				}.fork;
 			},
+			activateAll:{|self|16.do{|chan|self.activate(chan)}},
 			expression:{|self expression channel=0 | self.controller.sendMidi("B0".asHexIfPossible+channel,11,expression)},
 			plugin: 'SynfulOrchestra.vst',
 			setprog:{|self program bank channel| 
@@ -49,7 +52,6 @@ s.boot;
 			patch:{| self patch bank=\none channel=0 | self.setprog( self.patches.at(patch),self.banks.at(bank),channel);postln("patch "++self.patches.at(patch)++" bank "++self.banks.at(bank))},
 			shuffle:{|self|16.do{
 				|chan| self.setprog(self.patches.choose,0,chan);
-				self.activate(chan);
 			};
 		}
 	);
@@ -61,7 +63,6 @@ s.boot;
 		event;
 	};
 )
-
 
 
 

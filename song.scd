@@ -322,7 +322,7 @@
 );
 
 ( // ~complete lyric and tune	{{{1
-	~synful.controller.loaded.not.if({~synful.init});
+	//~synful.controller.loaded.not.if({~synful.init});
 	~complete=(
 		key:\complete, parent:~trek, proto:~funs,
 		song:[
@@ -363,14 +363,6 @@ Pseq(~complete.pbind).play
 			(note:1-24,amp:0.6,dur:5,sustain:2)
 		])
 	);
-
-//SynthDef(\phaser,{|out depth=0.5 fb=0.3 rate=0.03|
-//		ReplaceOut.ar(
-//			out,Phaser2.ar(In.ar(out,2)+
-//				PlateReverb.ar( In.ar(out,2),mix:Env.linen(0,2.5,6).kr)
-//				,rate:rate,fb:fb,depth:depth))}
-//			).add;
-//
 
 	SynthDef(\phaser ,{|out depth=0.5 fb=0.3 rate=0.03 gate=1|
 		XOut.ar(
@@ -678,7 +670,7 @@ Pseq(~complete.pbind).play
 )
 
 ~synful.init;
-( //moving on to next song		{{{1
+( // xtreme-complete transition study		{{{1
 	~xtreme.cursor_(5);
 	~complete.cursor_(0);
 	TempoClock.tempo=1;
@@ -767,8 +759,6 @@ Pseq(~complete.pbind).play
 	a.makeWindow;
 )
 ~displeased.save;
-
-~synful.init;
 ( 
 	~displeased.cursor_(0); //	{{{2
 	~trillLength=5;
@@ -792,9 +782,6 @@ Pseq(~complete.pbind).play
 			{{ a=a.play; b=b.play; }}
 		);
 
-
-
-
 		~sections3.continueTrill=(parent:~displeased,start:0,music:
 			{{ a.isPlaying.not.if(a=a.play;b=b.play);  }}
 		);
@@ -803,7 +790,51 @@ Pseq(~complete.pbind).play
 
 		~displeased.parts.ply;
 	}.fork
+);
+
+( ~excellent=( //		{{{1
+		key:\excellent, parent:~trek, proto:~funs, song:[
+			"this is an excellent body Doctor"," c5 a4 c b- c5 d  e- d c b-4",//0
+			"I seem to have received the ","",//1
+			"best of the three",""//2
+			"strength, hearing,eyesight",""//3
+			"all far above their normal range",""//4
+		]
+	);
 )
+
+(~unnecessary=( //		{{{1
+	key:\unnecessary, parent:~trek, proto:~funs, song:[
+		"that will be unneccesary Doctor"," d# e f# d# g# f# e d# d# c#",//0
+		"r this Vulcan body is adapted to the","r b b g# f# e f# g# f# e d# e",//1
+		"r r higher metabolism"," f#3 f# a5 g# b a g# f# e "//2
+	]
+).setupDurs;
+
+~unnecessary.durs[1]=Pseq([1,1,1.5,0.25,0.25+0.5, 0.5,0.5,0.25,0.25+0.5,0.5,0.5]);
+~bl={	
+	var notes=[1,3,6,4];
+	TempoClock.tempo=1.15;
+	SynthDef(\bl,{|gate=1 out=0 freq=400  |
+		var sig= SawDPW.ar(freq*[1,2],0,0.04 );
+		var env= Env.perc(0,0.4).kr(0,gate:gate) ;
+		sig= sig+CombN.ar(sig, 1, 0.35,  decaytime: 9,  mul: 1,  add: 0);
+		sig=DFM1.ar(sig,1800,0,5.9);//.distort;
+		//sig= MoogFF.ar(sig,1800).distort;
+		//sig= CombN.ar(sig, 1, (0.66/TempoClock.tempo),  decaytime: 3,  mul: 1,  add: 0);
+		Out.ar(out,sig*env!2);
+	}).add;
+	notes=notes.collect{|i| i!4}.flatten;
+	PmonoArtic(\bl,\degree,Pseq(notes)-1,\dur,0.5,\root,4,\octave,2).play
+};
+s.plotTree;	
+~unnecessary.durs[1].list;
+~unnecessary.pbind[1].play;
+~bl.play;
+)
+y=Synth(\bl);
+y.set(\gate,1)
+//	END-JUNK	{{{1
 
 ~synful.init;
 
@@ -840,9 +871,4 @@ Pkey
 Ptime
 //Ptime.collect(function)
 // Latch.kr - make a synth that discretizes
-
-
-
-
-
 

@@ -22,3 +22,11 @@ snippet filter
 $1[$2]=\filter->{|in| $3}
 endsnippet
 
+snippet pfx
+SynthDef($1,\{|out wet=1 $3|
+	var in=In.ar(out);
+	var sig = $2;
+	XOut.ar(out, wet, sig)\}
+).add;
+endsnippet
+

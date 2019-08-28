@@ -908,15 +908,48 @@ h=NodeProxy.audio;
 );
 )
 
-(
-);
+( //	tracklist	{{{1
 
-"x000xx0x".do{|i| (i=="0").postln};
-String
-"0".isString
-"x"=="0"
-"x000xx0x".do{|i|i.postln};
+
+	a.[0]=Pmono(\bl,\degree,Pseq(~notes,4)-1,\dur,0.5,\root,4,\octave,2,\trig,1);
+	Ppar([
+		//Pseq([~unnecessary.pbind[1]],4).play; 
+		~tk.at(\snare),
+		~tk.at(\kick),
+		~tk.at(\pulse),
+		~tk.at(\saw),
+		~tk.at(\hat)
+	]).play;
 )
+
+Trig1.ar
+Decay
+Line.ar
+s.reboot;
+( //	trigger-echoFeedback	{{{1
+	SynthDef.new(\testt, {|freq=400 t_trig=0 gate=1 |
+		var env = (Decay2.kr(t_trig, 0.01, 0.3));
+		var sig= Pulse.ar(freq,  width: SinOsc.ar(1), mul: env);
+		sig=CombN.ar(sig,1,0.31,5);
+		sig=CombC.ar(sig,1,SinOsc.kr(0.1,0,0.2,0.21),4,mul:0.2);
+		sig=FreeVerb.ar(sig,0.8,0.8);
+		sig= Phaser2.ar(sig,  0.5, 0.1, 0.9,  cfb: 0.9,  rot: 1.5707963267949,  rq: 1);
+
+		//var dummy= Env.cutoff(0.2).kr(1,gate:gate);
+		Out.ar(0,sig!2);
+
+	},  rates: nil,  prependArgs: nil,  variants: nil,  metadata: nil).add;
+
+	Pmono(*[
+		//instrument:
+		\testt,
+		trig:1,
+		dur:1,
+		freq:Pwhite(200,600,inf)
+	]).play
+)
+s.plotTree;
+
 //	END-JUNK	{{{1
 
 ~synful.init;
@@ -955,47 +988,59 @@ Ptime
 //Ptime.collect(function)
 // Latch.kr - make a synth that discretizes
 
-//	trigger-echoFeedback	{{{1
-(
-	SynthDef.new(\testt, {|freq=400 t_trig=0 gate=1 |
-		var env = (Decay2.kr(t_trig, 0.01, 0.3));
-		var sig= Pulse.ar(freq,  width: SinOsc.ar(1), mul: env);
-		sig=CombN.ar(sig,1,0.31,5);
-		sig=CombC.ar(sig,1,SinOsc.kr(0.1,0,0.2,0.21),4,mul:0.2);
-		sig=FreeVerb.ar(sig,0.8,0.8);
-		sig= Phaser2.ar(sig,  0.5, 0.1, 0.9,  cfb: 0.9,  rot: 1.5707963267949,  rq: 1);
-
-		//var dummy= Env.cutoff(0.2).kr(1,gate:gate);
-		Out.ar(0,sig!2);
-
-	},  rates: nil,  prependArgs: nil,  variants: nil,  metadata: nil).add;
-
-	Pmono(*[
-		//instrument:
-		\testt,
-		trig:1,
-		dur:1,
-		freq:Pwhite(200,600,inf)
-	]).play
+(// drummachine //		{{{1
+	~pat={|array  beatsPerBar=8 reps=1|
+		var b=List.new;
+		var a=Array.newFrom(array);
+		a.do({|m| (m=="|"[0]).not.if{b.add(m)}});
+		b=b.collect{|j| (j=="x"[0]).if({1},{Rest(1)})};
+		Pseq(b/beatsPerBar,reps)
+	};
+	Pdef.new(\f,Pbind(*[
+		instrument:\kick,
+		amp:1,
+		dur:~pat.("x0x0|x0x0|xx0x|xxxx",4,inf),
+	])).play;
+	SynthDef(\fb,
+		{|out=1 |
+			XOut.ar(out,0.5,
+				FreeVerb.ar(In.ar(out,2),1.0,0.9))}
+	).add;
+SynthDef(\plate,{|out wet=1 |
+	var in=In.ar(out);
+	var sig = PlateReverb.ar(in);
+	XOut.ar(out, wet, sig)}
+).add;
+	SynthDef(\phaserr,{|out rate=0.1|
+		var sig = Phaser1.ar(In.ar(out),rate:rate);
+		XOut.ar(out, 1, sig)}
+	).add;
+	SynthDef(\dst,{|out gain=1.5|
+		var in=In.ar(out);
+		var sig = ( in*gain ).distort;
+		XOut.ar(out, 1, sig!2)}
+	).add;
+	Pdef.new(\q,Pfxb(
+		Pbind(*[
+			instrument:\snare,
+			dur:~pat.("0000x000|0000x00x",8,inf),
+			amp:0.2
+		]),
+		//\fb
+		//\phaserr
+		\dst
+	)).play;
+	Pdef.new(\h,Pbind(*[
+		instrument:\hihat,
+		amp:Pseq([0.1,0.2],inf*Pwhite(1,1.2,inf)),
+		lag:Pseq([0,0.008],inf),
+		dur:~pat.("xxxx",08,inf)]));//.play
+	Pdef(\m,Pfxb(Pdef(\h),\plate,\wet,0.8))
+	.play;
+	//h.play;
 )
-s.plotTree;
-
-//	tracklist	{{{1
-(
-
-	a.[0]=Pmono(\bl,\degree,Pseq(~notes,4)-1,\dur,0.5,\root,4,\octave,2,\trig,1);
-	Ppar([
-		//Pseq([~unnecessary.pbind[1]],4).play; 
-		~tk.at(\snare),
-		~tk.at(\kick),
-		~tk.at(\pulse),
-		~tk.at(\saw),
-		~tk.at(\hat)
-	]).play;
-)
-
-
-Trig1.ar
-Decay
-Line.ar
+Pdef(\g).play;
+Synth(\snare);
+"1-3-5x|"
+[\f,\q,\h].do{|i|Pdef(i).play};
 s.reboot;

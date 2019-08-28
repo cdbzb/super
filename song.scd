@@ -804,36 +804,119 @@ Pseq(~complete.pbind).play
 )
 
 (~unnecessary=( //		{{{1
-	key:\unnecessary, parent:~trek, proto:~funs, song:[
+	key:\unnecessary, parent:~trek, proto:~funs, 
+	song:[
 		"that will be unneccesary Doctor"," d# e f# d# g# f# e d# d# c#",//0
 		"r this Vulcan body is adapted to the","r b b g# f# e f# g# f# e d# e",//1
 		"r r higher metabolism"," f#3 f# a5 g# b a g# f# e "//2
 	]
-).setupDurs;
+	).setupDurs;
 
-~unnecessary.durs[1]=Pseq([1,1,1.5,0.25,0.25+0.5, 0.5,0.5,0.25,0.25+0.5,0.5,0.5]);
-~bl={	
-	var notes=[1,3,6,4];
-	TempoClock.tempo=1.15;
-	SynthDef(\bl,{|gate=1 out=0 freq=400  |
-		var sig= SawDPW.ar(freq*[1,2],0,0.04 );
-		var env= Env.perc(0,0.4).kr(0,gate:gate) ;
-		sig= sig+CombN.ar(sig, 1, 0.35,  decaytime: 9,  mul: 1,  add: 0);
+~unnecessary.durs[1]=Pseq([1,1,1.5,0.25,0.25+0.5, 0.5,0.5,0.25,0.25+0.5,0.5,0.5,0.5]);
+
+~bl={	//	bass	{{{2
+	~notes=[1,3,6,4].collect{|i| i!4}.flatten;
+	TempoClock.tempo=1.22;
+	SynthDef(\bl,{|gate=1 out=0 freq=400 t_trig=0  |
+		var sig= SawDPW.ar(freq*[1,2],0,0.04 );  // add these octaves better
+		//var env=Decay.kr(t_trig,0.4) ;
+		var env= Env.perc(0.00,0.3,curve:\sin).kr(0,gate:t_trig) ;
+		sig= sig+CombN.ar(sig, 1, 0.35,  decaytime: 3,  mul: 0.5,  add: 0);
 		sig=DFM1.ar(sig,1800,0,5.9);//.distort;
-		//sig= MoogFF.ar(sig,1800).distort;
-		//sig= CombN.ar(sig, 1, (0.66/TempoClock.tempo),  decaytime: 3,  mul: 1,  add: 0);
 		Out.ar(out,sig*env!2);
 	}).add;
-	notes=notes.collect{|i| i!4}.flatten;
-	PmonoArtic(\bl,\degree,Pseq(notes)-1,\dur,0.5,\root,4,\octave,2).play
-};
-s.plotTree;	
-~unnecessary.durs[1].list;
-~unnecessary.pbind[1].play;
-~bl.play;
+	a=NodeProxy.audio(s,2).play;
+	a[1]=\filterIn->{|in|in+CombN.ar(in,1,0.25/TempoClock.tempo,2,mul:0.8)/2};a.set(\wet1,0.8);
+	a[2]=\filter->{|in| Phaser1.ar(in,  depth: 0.5,  rate: 0.2,  fb: 0.3,  cfb: 0.1,  rot: 1.5707963267949) };
+}.value;
+//a.[0]=Pmono(\bl,\degree,Pseq(~notes,4)-1,\dur,0.5,\root,4,\octave,2,\trig,1);
+
+	//	drums	{{{2
+~kpat2=([1,1,0,1]!4).flatten;
+~spat2=([0,0,0,0,1,0,0,0.6]!4).flatten;
+~tk=();
+~tk.add(\kick->Pbind(*[
+	instrument:\kick2,
+	amp:Pseq(~kpat2,3)/6,
+	dur:0.5	,
+	out:[0,1]
+]));
+
+~tk.add(\snare->
+	Pbind(*[
+		instrument:\snare,
+		amp:
+		Pseq(~spat2.flatten,3)/7
+		,
+		dur:0.25,
+		out:[0,1]
+	]);
+);
+
+//	synths	{{{2
+~octaveWrap={|i a=7| (i>a).if({i-8},i)};
+SynthDef(\pulse,{|gate=1 freq=400 amp=1 ffreq=4500 rel=2 out=0 t_trig wiggle=500| //		{{{3
+	var sig=Pulse.ar(freq,SinOsc.kr(8.55,0,0.6,0.4));
+	var env= Env.perc(0,rel).kr(0,gate:t_trig)*amp;
+	//var env=0.1;
+	sig= MoogFF.ar(sig,SinOsc.kr(0.3,0,wiggle,1150));
+	sig=HPF.ar(sig,500);
+	Out.ar(0,sig*env!2)}).add;
+
+
+~tk.add(\pulse->
+		Pbind(*[ 
+			instrument:\pulse,
+			degree:Pseq(([\r,1,5,1,\r,0,5,0,\r,1,5,1]++[\r,1,6,1]).flatten,3)-1,
+			dur:0.5,
+			root:4,
+			sustain:2,
+			octave:6,
+			amp:0.17
+		]);
+);
+
+h=NodeProxy.audio;
+
+//h.source=
+~tk.add(\hat->
+	Pbind(*[
+		instrument:\hihat,
+		dur:Pwrand([1/4,Pseq([1/16],4)],[0.95,0.05],inf),
+		//offset:-0.35,
+		att:Pwhite(0,0.01),
+		amp:0.04])
+	);
+//;
+//h[1]=\filterIn->{|in| Klank.ar(`[[1100,1200,2500],nil,0.04],in)};h.set(\wet1,0.5);
+//h
+//.play;
+
+~tk.add(\saw->
+	Pbind(*[ //	saw	{{{3
+		instrument:\sawSynth,
+		att:0.05,
+		rel:5,
+		degree:Pseq(
+			[1,3,0,3,7,3,7,4].collect{|i|~octaveWrap.(i,6)}-1
+			,4
+		),
+		//degree:Pseq([[1,3],5,[2,0],5,[1,-1],5,[1,-1],6]-1,4),
+		root:4,
+		octave:6,
+	]);
+);
 )
-y=Synth(\bl);
-y.set(\gate,1)
+
+(
+);
+
+"x000xx0x".do{|i| (i=="0").postln};
+String
+"0".isString
+"x"=="0"
+"x000xx0x".do{|i|i.postln};
+)
 //	END-JUNK	{{{1
 
 ~synful.init;
@@ -872,3 +955,47 @@ Ptime
 //Ptime.collect(function)
 // Latch.kr - make a synth that discretizes
 
+//	trigger-echoFeedback	{{{1
+(
+	SynthDef.new(\testt, {|freq=400 t_trig=0 gate=1 |
+		var env = (Decay2.kr(t_trig, 0.01, 0.3));
+		var sig= Pulse.ar(freq,  width: SinOsc.ar(1), mul: env);
+		sig=CombN.ar(sig,1,0.31,5);
+		sig=CombC.ar(sig,1,SinOsc.kr(0.1,0,0.2,0.21),4,mul:0.2);
+		sig=FreeVerb.ar(sig,0.8,0.8);
+		sig= Phaser2.ar(sig,  0.5, 0.1, 0.9,  cfb: 0.9,  rot: 1.5707963267949,  rq: 1);
+
+		//var dummy= Env.cutoff(0.2).kr(1,gate:gate);
+		Out.ar(0,sig!2);
+
+	},  rates: nil,  prependArgs: nil,  variants: nil,  metadata: nil).add;
+
+	Pmono(*[
+		//instrument:
+		\testt,
+		trig:1,
+		dur:1,
+		freq:Pwhite(200,600,inf)
+	]).play
+)
+s.plotTree;
+
+//	tracklist	{{{1
+(
+
+	a.[0]=Pmono(\bl,\degree,Pseq(~notes,4)-1,\dur,0.5,\root,4,\octave,2,\trig,1);
+	Ppar([
+		//Pseq([~unnecessary.pbind[1]],4).play; 
+		~tk.at(\snare),
+		~tk.at(\kick),
+		~tk.at(\pulse),
+		~tk.at(\saw),
+		~tk.at(\hat)
+	]).play;
+)
+
+
+Trig1.ar
+Decay
+Line.ar
+s.reboot;

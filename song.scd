@@ -1,4 +1,5 @@
 ( // the song event				{{{1
+	~syn1=~synful.();
 	s.options.memSize=2**17;
 	s.waitForBoot("/Users/michael/tank/super/song-Synthdefs.scd".load);
 	~funs=(		//				{{{2
@@ -308,21 +309,22 @@
 		////cymbal
 		(instrument:\cymbal,length:8).play;
 		////strings
-		~synful.setprog(3,5,0);
-		~synful.setprog(4,5,1);
-		~synful.node[1]=\filter->{|in| FreeVerb.ar(in,room:0.75,mix:0.55)*3};
+		~syn1.setprog(3,5,0);
+		~syn1.setprog(4,5,1);
+		~syn1.node[1]=\filter->{|in| FreeVerb.ar(in,room:0.75,mix:0.55)*3};
 		{
-			8.wait;"now!".postln;127.do( {|i|~synful.expression((127-i),0);~synful.expression((127-i),1);0.18.wait} )}.fork;
-			(type:\midi,midiout:~synful.controller.midi,\midinote:~panNotes.("f#3 b- c4 e").flatten-[0,12],dur:20).play;
-			(type:\midi,midiout:~synful.controller.midi,\channel:2,\midinote:~panNotes.("f#3 b-4 c4 e").flatten-24,dur:20).play;
-		~synful.expression(127,0);
-		~synful.expression(127,1);
-		//~synful.init;
+			8.wait;"now!".postln;127.do( {|i|~syn1.expression((127-i),0);~syn1.expression((127-i),1);0.18.wait} )}.fork;
+			(type:\midi,midiout:~syn1.controller.midi,\midinote:~panNotes.("f#3 b- c4 e").flatten-[0,12],dur:20).play;
+			(type:\midi,midiout:~syn1.controller.midi,\channel:2,\midinote:~panNotes.("f#3 b-4 c4 e").flatten-24,dur:20).play;
+		~syn1.expression(127,0);
+		~syn1.expression(127,1);
+		//~syn1.init;
 	}
 );
 
 ( // ~complete lyric and tune	{{{1
-	//~synful.controller.loaded.not.if({~synful.init});
+	//~syn1.controller.loaded.not.if({~syn1.init});
+
 	~complete=(
 		key:\complete, parent:~trek, proto:~funs,
 		song:[
@@ -348,7 +350,7 @@
 )
 Pseq(~complete.pbind).play
 ( //// parts for ~complete		{{{1
-	~complete.cursor_(6); //	{{{2
+	~complete.cursor_(0); //	{{{2
 	"/Users/michael/tank/super/song-hello-beet.scd".load;
 	TempoClock.tempo=1;
 	~sections2=(
@@ -624,10 +626,10 @@ Pseq(~complete.pbind).play
 
 	~sections2.trombone8=(parent:~complete,start:8,music:
 		{ | amp=0.9 exp=80|
-			~synful.node[1]=\filter -> {|in| PlateReverb.ar(in,mix:0.7,decayTime:0.4,size:0.8)} ;
-			~synful.patch(\trombone,\none,3);
+			~syn1.node[1]=\filter -> {|in| PlateReverb.ar(in,mix:0.7,decayTime:0.4,size:0.8)} ;
+			~syn1.patch(\trombone,\none,3);
 			Pbind(*[
-				type:\midi, midiout:~synful.controller.midi, chan:3,
+				type:\midi, midiout:~syn1.controller.midi, chan:3,
 				midinote: Pseq(~noteList.(["g#","c#","b3"]))-[12,36] ,
 				dur:Pseq([~complete.secDur[8],~complete.secDur[9],3]),
 				\amp:0.55
@@ -669,14 +671,14 @@ Pseq(~complete.pbind).play
 	~complete.loaded=1;
 )
 
-~synful.init;
+~syn1.init;
 ( // xtreme-complete transition study		{{{1
-	~xtreme.cursor_(5);
+	~xtreme.cursor_(0);
 	~complete.cursor_(0);
 	TempoClock.tempo=1;
 	{
-		//~synful.init;
-		~synful.controller.loaded==false.if({~synful.init;10.wait});
+		//~syn1.init;
+		~syn1.controller.loaded==false.if({~syn1.init;10.wait});
 		~xtreme.parts.ply;
 		//SystemClock.sched( ~xtreme.durTillEnd,~transformation);
 		~xtreme.durTillEnd.wait;
@@ -708,13 +710,13 @@ Pseq(~complete.pbind).play
 	//~trill.value(\test);
 	//~trill.value;
 
-	~synful.patch(\violins,\arco,1); //put these into the Pbind
-	~synful.patch(\clarinet,\none,0); //put these into the Pbind
+	~syn1.patch(\violins,\arco,1); //put these into the Pbind
+	~syn1.patch(\clarinet,\none,0); //put these into the Pbind
 		~synTrill=
 		{|chan=1 amp=0.3 transpose=0 len=6|
 			Pfindur(len,
 				Pbind(*[
-					type:\midi,midiout:~synful.controller.midi,
+					type:\midi,midiout:~syn1.controller.midi,
 					note:Pseq([6,8],inf)+transpose,
 					dur:Pwhite(0.1,0.12)*0.8,
 					amp:Pwhite(0.1,0.11),
@@ -773,10 +775,10 @@ Pseq(~complete.pbind).play
 
 		a=~synTrill.value(0,0.9,12,len:22);
 		b=~synTrill.value(1,1.9,4,len:22);
-		~synful.expression(40,1);
-		~synful.expression(30,0);
-		~synful.node[1]=\filter->{|in| PlateReverb.ar(in,mix:0.5,decayTime:0.55)};
-		~synful.node[2]=\filter->{|in| Phaser2.ar(in,rate:0.1,fb:0.5)*5};
+		~syn1.expression(40,1);
+		~syn1.expression(30,0);
+		~syn1.node[1]=\filter->{|in| PlateReverb.ar(in,mix:0.5,decayTime:0.55)};
+		~syn1.node[2]=\filter->{|in| Phaser2.ar(in,rate:0.1,fb:0.5)*5};
 
 		~sections3.trill=(parent:~displeased,start:-1,music:
 			{{ a=a.play; b=b.play; }}
@@ -808,7 +810,17 @@ Pseq(~complete.pbind).play
 	song:[
 		"that will be unneccesary Doctor"," d# e f# d# g# f# e d# d# c#",//0
 		"r this Vulcan body is adapted to the","r b b g# f# e f# g# f# e d# e",//1
-		"r r higher metabolism"," f#3 f# a5 g# b a g# f# e "//2
+		"r r higher metabolism"," f#3 f# a5 g# b a g# f# e ",//2
+		"it won't work, Sargon!","d#5 b4 g5 d# b4",//3
+		"you have to get out before you","f d- e- f a f g a",//4
+		"kill them! we will transfer at once un-","",//5
+		"til you can administer the ","",//6
+		"metabolic reduction injection... a ","",//7
+		"what? I'll prepare the formula Sargon","",//8
+		"Henoch, your condition","",//9
+		"r I can continue in this body r for several hours","d3 f#4 d f# e c# d e d g3 a2 e d c# c# b",//10
+		"fortunate we will exit at once...","c5 a4 e a3 b c a2 e4 f# g# e g# a#",//11
+		
 	]
 	).setupDurs;
 
@@ -885,6 +897,7 @@ h=NodeProxy.audio;
 		dur:Pwrand([1/4,Pseq([1/16],4)],[0.95,0.05],inf),
 		//offset:-0.35,
 		att:Pwhite(0,0.01),
+		pan:0.4,
 		amp:0.04])
 	);
 //;
@@ -950,44 +963,6 @@ s.reboot;
 )
 s.plotTree;
 
-//	END-JUNK	{{{1
-
-~synful.init;
-
-(
-	(\type:\midi,\midicmd:\control,\ctlNum:11,\midiout:~synful.controller.midi,\control:12).play;
-	a.play;
-)
-Pfunc
-
-numPseries.new(127,  step: -1, 127);
-
-Pbind(*[
-	num: Pseries.new(127,  step: -1,  length: 127) ,
-	dur:0.1,
-	doit:Pfunc({~synful.expression(self.num,self.chan)})
-	
-])				
-
-Pchain.new(patterns: [  ])
-~synful;
-
-(// or....
-	~synful.expression(100);
-	(\midinote:60,dur:13,\type:\midi,\midiout:~synful.controller.midi,chan:0).play;
-Pbind(*[
-	dur:0.05,
-	env:Pseg.new(levels:[127,120,30,0],durs:[5,10,10],curves:\lin),
-	//control:Pfunc.new{~synful.expression(Pkey(\env).round)},
-	dev:Pfunc{postln(Pkey(\dur))},
-]).play
-)
-
-Pkey
-Ptime
-//Ptime.collect(function)
-// Latch.kr - make a synth that discretizes
-
 (// drummachine //		{{{1
 	~pat={|array  beatsPerBar=8 reps=1|
 		var b=List.new;
@@ -996,23 +971,25 @@ Ptime
 		b=b.collect{|j| (j=="x"[0]).if({1},{Rest(1)})};
 		Pseq(b/beatsPerBar,reps)
 	};
+
 	Pdef.new(\f,Pbind(*[
 		instrument:\kick,
 		amp:1,
 		dur:~pat.("x0x0|x0x0|xx0x|xxxx",4,inf),
-	])).play;
+		//tempo:Pwhite(0.59,1.11,inf)
+	]));
 	SynthDef(\fb,
 		{|out=1 |
-			XOut.ar(out,0.5,
-				FreeVerb.ar(In.ar(out,2),1.0,0.9))}
+			XOut.ar(out,0.3,
+				FreeVerb.ar(In.ar(out,2),1.0,0.9)*1.2)}
 	).add;
 SynthDef(\plate,{|out wet=1 |
 	var in=In.ar(out);
 	var sig = PlateReverb.ar(in);
 	XOut.ar(out, wet, sig)}
 ).add;
-	SynthDef(\phaserr,{|out rate=0.1|
-		var sig = Phaser1.ar(In.ar(out),rate:rate);
+	SynthDef(\phaserr,{|out rate=0.1 fb=0.3|
+		var sig = Phaser2.ar(In.ar(out),rate:rate,fb:fb);
 		XOut.ar(out, 1, sig)}
 	).add;
 	SynthDef(\dst,{|out gain=1.5|
@@ -1023,24 +1000,363 @@ SynthDef(\plate,{|out wet=1 |
 	Pdef.new(\q,Pfxb(
 		Pbind(*[
 			instrument:\snare,
-			dur:~pat.("0000x000|0000x00x",8,inf),
+			dur:~pat.("0000x000|0000x000|0000x00x|0000x00x",8,inf),
 			amp:0.2
 		]),
 		//\fb
 		//\phaserr
 		\dst
-	)).play;
-	Pdef.new(\h,Pbind(*[
+	));
+	a=Pdef.new(\h,Pbind(*[
 		instrument:\hihat,
 		amp:Pseq([0.1,0.2],inf*Pwhite(1,1.2,inf)),
 		lag:Pseq([0,0.008],inf),
-		dur:~pat.("xxxx",08,inf)]));//.play
-	Pdef(\m,Pfxb(Pdef(\h),\plate,\wet,0.8))
-	.play;
-	//h.play;
+		dur:~pat.("xxxx",08,16)]));//.play
+	a.quant=1;
+	b=Pdef(\m,Pfxb(a,\phaserr,\fb,-0.99));
+	c=Pseq([a,b],inf);
+
+	Ppar([
+		Pdef(\m),
+		Pdef(\q),
+		c,
+		Pdef(\f),
+		Pwrand([Pdef(\a),(note:Rest,dur:4)],[0.7,0.3],inf), //guitar
+	]
+	).play
 )
+
 Pdef(\g).play;
 Synth(\snare);
-"1-3-5x|"
-[\f,\q,\h].do{|i|Pdef(i).play};
-s.reboot;
+
+( // 'guitar-ish'
+	SynthDef(\pluckD,{|freq=400 amp=1|
+		var sig= Pluck.ar(WhiteNoise.ar(0.1),  trig: \trig.tr(1),  maxdelaytime: 0.2,  delaytime: freq.reciprocal,  decaytime: \del.kr(5),  coef: \coef.kr(0.6),  mul: 1,  add: 0) ;
+		sig=CrossoverDistortion.ar(sig,\drive.kr(0.5),\smooth.kr(0.5));
+		sig=Phaser2.ar(sig,0.5,0.15,rq:1);
+		Out.ar(\out.ir,  sig*amp);
+	}).add;
+
+)
+( 
+		Pdef(\a,Pfindur (8,Pmono(\pluckD,
+			//\degree,Pwrand([[1,5]-17,[3,7]-17],[0.05,0.95],inf),
+			\degree,Pseq([5,5,5,5,4,4,4,4,8,8,8,8,6,6,6,6],inf)+[0,5]-21,
+			\out,[0,1],
+			\smooth,Pwhite(0.2,0.3,inf),
+			\del,Pwhite(0.5,1,inf),
+			\dur,0.5,
+			\coef,Pbrown(0.1,0.9,0.03)));//.quant_(4);
+		);
+Pdef(\a).play
+	);
+
+
+( // fortunate   {{{1
+	~fortunate=(key:\fort,parent:~funs,proto:~trek,song:[
+	"fortunate, x x x ","a5 e c a4 b c5",
+	"x we'll leave  at once","e4 e5 f# g#  a#",
+	//"x we will exit at once","e4 e5 f# g# e g# a#"
+]).setupDurs;
+)
+
+(
+	a=~recorder.(~fortunate,[1]);
+	a.makeWindow;
+	//~fortunate.save;
+)
+
+(
+	//var t=TempoClock.new.tempo_(1.4);
+	  var t=TempoClock.new;
+
+	var dummy=SynthDef(\sq1,{
+		var vib = Vibrato.kr(\freq.kr(300,1),  rate: 6,  depth: \depth.kr(0.02),  delay: \delay.ir(0.1),  onset: \onset.ir(0.2),  rateVariation: 0.04,  depthVariation: 0.1,  iphase: 0,  trig: 0);
+		var sig = Pulse.ar(vib, \width.kr(0.5,0.1) );
+		var env = Env.adsr(0.05,0.25,0.8,1).kr(2,gate:\gate.kr(1));
+		Out.ar(\out.ir(1),sig*env*0.1);
+	}).add;
+
+	var fortunate = Pbind(*[
+		degree:Pseq([8,5,3])-1,
+		scale:Scale.minor,
+		root:9,
+		//dur:   Pseq([1.0,0.5,2]),
+		dur:~fortunate.durs[0],
+	]);
+
+	var connector = Pbind(*[
+		instrument:\sawSynth,
+		rel:Pseq([2,2,2,4]),
+		root:9,
+		octave:[4,5.005],
+		scale:Scale.minor,
+		degree:Pseq([8,5,3,1])-1,
+		//dur:   Pseq([1.0,0.5,0.5,2]),
+		dur: ~fortunate.durs[0]
+	]);
+
+	var answer = Pbind(*[
+		degree:Pseq([ 1,2,3,5-7 ])-1,
+		root:9,
+		octave:[3,4],
+		scale:Scale.minor,
+		dur:
+		Pseq(~fortunate.durs[0].list[3..5]++[5])
+		,
+		//dur:Pseq([1,0.5,0.5,5])
+	]);
+
+	var we_bass = Pbind(*[
+		//tempo:1.6,
+		degree:Pseq([ 4,5,6,[7,5] ])-1,
+		//dur:Pseq([0.5,1.5,0.5,2]),
+		dur:Pseq(
+			~fortunate.durs[1].list[1..4] 
+		),
+		root:11	,
+		octave:4,
+		instrument:\sq1,
+	]);
+	 
+
+	var aa=~fortunate.durs[1].list;
+	var we_bass2 = Pbind(*[
+		instrument:\sq1,
+		degree:Pseq([5,4,3])-1,
+		dur:Pseq( [aa[1] + (aa[2]*2/3) , aa[2]*1/3 + aa[3] , aa[4] ]),
+		root:9,
+		octave:4,
+		width:0.1
+	]);
+
+	Ptpar([
+	0, fortunate
+	,0, connector
+	//,2,
+	, ~fortunate.durTill(0,2) , answer
+	,~fortunate.secDur[ 0 ] + ~fortunate.durTill(1,0), we_bass
+	,~fortunate.secDur[ 0 ] + ~fortunate.durTill(1,0), we_bass2
+	,~fortunate.secDur[0..1].sum,Prout(~otey) 
+	]).play(t)
+)
+// cool pseadocode
+// chord at [0]
+// bassline from 3-6
+// 3rd phrase
+// F# chord and cutoff lower notes
+// bassnote (sustains)
+
+(
+	~otey={ 	SynthDef(\help_oteypiano, { |out=0, freq=440,gate=1, amp=0.5,rho=1 |
+		    var son = OteyPiano.ar(freq, amp, rho:rho)*EnvGen.ar(Env.asr(0,1,0.1),gate,doneAction:2);
+		    Out.ar(out, Pan2.ar(son * 0.1  * \scale.kr(1,0.1), LinLin.kr(freq,36.midicps,90.midicps,-0.75,0.75)));
+	}).add;
+	a=NodeProxy.audio;
+	a.play;
+	a[1]=\filterIn->{|in| PlateReverb.ar(in,   decayTime: 0.5,  damping: 0.6,  diffusion: 1)};
+	a.set(\wet1,0.7);
+	{var wet=0.7;while({wet>0},{wet=wet-0.01;a.set(\wet1,wet);(24/70).wait})}.fork;
+	a[0]= Pbind(*[
+		note:Pseq([-1,1,1,2,4]),
+		octave:[2,3],
+		lag:Pwhite(0,[0.05,0.0],inf),
+		legato:Pseq([0.9,0.98,0.98,1,1]),
+		instrument:\help_oteypiano,
+		dur:Pseq([3,0.5,0.5,4,4])*2,
+		scale:9,
+		amp:0.09]);
+
+		Pbind(*[ instrument:\sawSynth, dur:Pseq([8,4])*2, note:Pseq([Rest(),4]), octave:4,amp:0.2,rel:4 ]).play;
+	});
+//		ideas / sounds {{{1
+( //savage bowing //		{{{2
+	{
+		//var force = LFSaw.kr(12).range(-0.20,0.8);
+		var force=0.5;
+		var scale=SinOsc.ar(0.01).range(0.2,1.2);
+		var vel=SinOsc.kr(12+LFBrownNoise1.kr(1)).range(0,1);
+		//var pos=0.2;
+		var pos = LFBrownNoise1.kr(2).range(0.3,0.2);
+		var sig = DWGBowed.ar(
+			freq:[500, 440+LFBrownNoise0.kr(2).range(0,10)],  
+			velb: vel,  
+			force: force,  
+			gate: 1,  
+			pos: pos,  
+			release: 0.1,  
+			c1: 115,  //inverse of DC decaytime
+			c3: 300, // hi freq decay 
+			impZ: 0.55*LFBrownNoise1.kr(0.5).range(0.02,1),  
+			fB: 2
+		); //inharmonicity
+		sig= DWGSoundBoard.ar(sig,  c1: 20,  c3: 100,  mix: 0.8,  d1: 199*scale,  d2: 211*scale,  d3: 223*scale,  d4: 227*scale,  d5: 229*scale,  d6: 233*scale,  d7: 239*scale,  d8: 241*scale);
+		sig=HPF.ar(sig,300)*0.05;
+		//sig =PlateReverb.ar(sig,mix:0.8);
+	}.play
+)
+
+( //playable tremolo //		{{{2
+	~trem={| scale=1 gate=1 out=0| //		{{{3
+		//var force = LFSaw.kr(12).range(-0.20,0.8);
+		var force=0.5;
+		//var scale=SinOsc.ar(0.01).range(0.2,1.2);
+		var vel=SinOsc.kr(\rate.kr(12)+LFBrownNoise1.kr(1)).range(0,1);//rate
+		//var pos=0.2;
+		var pos = LFBrownNoise1.kr(2).range(0.3,0.2);
+		var env = Env.asr(0,1,0.5).kr(2,gate:gate);
+		var sig = DWGBowed.ar(
+			freq: \freq.kr(400,0.5) + LFBrownNoise0.kr(2).range(0,10),  
+			velb: vel,  
+			force: force,  
+			gate: 1,  
+			pos: pos,  
+			release: 0.5,  
+			c1: 15,  //inverse of DC decaytime
+			c3: 30, // hi freq decay 
+			//impZ: 0.55*LFBrownNoise1.kr(0.5).range(0.02,1),  
+			fB: 2 //inharmonicity
+		); 
+		sig= DWGSoundBoard.ar(sig,  c1: 20,  c3: 100,  mix: 0.8,  d1: 199*scale,  d2: 211*scale,  d3: 223*scale,  d4: 227*scale,  d5: 229*scale,  d6: 233*scale,  d7: 239*scale,  d8: 241*scale);
+		sig=HPF.ar(sig,300)*0.05;
+		//sig =PlateReverb.ar(sig,mix:0.8);
+		Out.ar(out, Splay.ar(sig*env));
+	};
+
+	~verb=NodeProxy.audio.(s,2).play(0); //		{{{3
+	//~verb[1]=\filter->{|in | FreeVerb.ar(in,room:0.8,mix: \mix.kr(0.8))};
+	~verb[0]=\filter->{|in mix=0.5| PlateReverb.ar(in,mix:mix ,decayTime:0.2)};
+
+	~len=9;
+
+	~aa=Pbind(*[
+		instrument:~trem,
+		out:~verb.bus,
+		freq:Pwhite(399,499,~len)*[1,1.2],
+		legato:1,
+		scale:0.2,
+		dur:2
+	]);
+	Ppar([ //		{{{3
+		~aa,
+		Pbind(*[ dur:Pseq([1],	~len*2) ]),//pf quarters
+	]).play
+)
+
+~verb.source;//.id;
+~verb.set(\mix,0.3);
+(type:\set,id:~verb.synth.id,mix:0).play;
+(instrument:~trem,out:~verb.bus,degree:[1,3,5,8],dur:8).play;
+
+s.boot;
+
+( //envelope version //		{{{2
+	~blurt={
+		arg gate=1,freq=400;
+		var scale=SinOsc.ar(0.01).range(0.2,1.2);
+		var force=0.5;
+		var vel = Env.sine(1/12).kr(2,gate:gate);
+		//var vel=SinOsc.kr(12+LFBrownNoise1.kr(1)).range(0,1);
+		//var pos= LFSaw.kr(Rand(1,2));
+		//var pos=0.2;
+		var pos = LFBrownNoise1.kr(2).range(0.3,0.2);
+		var sig = DWGBowed.ar(
+			freq:[500,freq+LFBrownNoise0.kr(2).range(0,10)],  
+			velb: vel,  
+			force: force,  
+			gate: 1,  
+			pos: pos,  
+			release: 0.1,  
+			c1: 115,  //inverse of DC decaytime
+			c3: 300, // hi freq decay 
+			impZ: 0.55*LFBrownNoise1.kr(0.5).range(0.02,1),  
+			fB: 2
+		); //inharmonicity
+		sig= DWGSoundBoard.ar(sig,  c1: 20,  c3: 100,  mix: 0.8,  d1: 199*scale,  d2: 211*scale,  d3: 223*scale,  d4: 227*scale,  d5: 229*scale,  d6: 233*scale,  d7: 239*scale,  d8: 241*scale);
+		sig=HPF.ar(sig,300)*0.05;
+		//sig =PlateReverb.ar(sig,mix:0.8);
+};//.play;
+
+
+	Ppar([
+		Pdef(\m),
+		Pdef(\q),
+		c,
+		Pdef(\f),
+		Pwrand([Pdef(\a),(note:Rest,dur:4)],[0.7,0.3],inf), //guitar
+	]
+	).play;
+Pbind(*[
+	instrument:~blurt,
+	//dur:Pwrand([0.125,Pseq([0.125/3],3)],[0.97,0.03],inf),
+	dur:0.125,
+	freq:300,
+	]).play;
+Pbind(*[
+	instrument:~blurt,
+	dur:0.5,
+	freq:600,
+	lag:0.02,
+	]).play
+)
+
+//	rhythm parsing	{{{1
+		z=[1,2/3,[1/3,1],1,]
+		f=z.flatten.collect{|m i|z.flatten[0..i].sum};
+		g=f.collect{|i|(i-0.001).floor};
+		g;
+		2.trunc;
+		Number
+		z.do{|i| i.isArray.not.if({i.postln},{i.do{|j|j.postln}})};
+
+		//z.collect{|m i|z[0..i].sum.round};
+		//z.deepCollect(2,{|m i|z[0..i].flatten.sum});
+		z.deepCollect(2,{|i x y| y});
+		~counter=z
+		//z.deepCollect(2,{|i x y| x+y});
+		//z.size;
+		//z.deepCollect.size;
+		Number
+		//array
+		//[[1,1],[1/3,2],[[2/3,2],[1,3]]
+
+		//array.collect{|item| item.isArray.if({item.sum},{item})};
+//	END-JUNK	{{{1
+
+~syn1.init;
+
+(
+	(\type:\midi,\midicmd:\control,\ctlNum:11,\midiout:~syn1.controller.midi,\control:12).play;
+	a.play;
+)
+Pfunc
+
+numPseries.new(127,  step: -1, 127);
+
+Pbind(*[
+	num: Pseries.new(127,  step: -1,  length: 127) ,
+	dur:0.1,
+	doit:Pfunc({~syn1.expression(self.num,self.chan)})
+	
+])				
+
+Pchain.new(patterns: [  ])
+~syn1;
+
+(// or....
+	~syn1.expression(100);
+	(\midinote:60,dur:13,\type:\midi,\midiout:~syn1.controller.midi,chan:0).play;
+Pbind(*[
+	dur:0.05,
+	env:Pseg.new(levels:[127,120,30,0],durs:[5,10,10],curves:\lin),
+	//control:Pfunc.new{~syn1.expression(Pkey(\env).round)},
+	dev:Pfunc{postln(Pkey(\dur))},
+]).play
+)
+
+Pkey
+Ptime
+//Ptime.collect(function)
+// Latch.kr - make a synth that discretizes
+
+

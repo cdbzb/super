@@ -101,5 +101,89 @@ Buffer
 					rate:0.05+LFBrownNoise1.kr(mul:0.1)) 
 				}.play;
 			}
-		})
+});
 	//x.free; b.free;
+(
+{Saw.ar(Tartini.kr(SoundIn.ar)[0],0.2)}.play
+)
+(
+a= SynthDef("testtartini",{
+    var in, freq, hasFreq, out;
+
+    in=SoundIn.ar(0);
+
+    # freq, hasFreq = Tartini.kr(in);
+
+    hasFreq.poll;
+
+    Out.ar(0,[SinOsc.ar(freq,0.1),in]);
+}).play(s);
+)
+(
+SynthDef("pitchFollow1",{
+    var in, amp, freq, hasFreq, out;
+    in = Mix.new(SoundIn.ar([0,1]));
+    amp = Amplitude.kr(in, 0.05, 0.05);
+    # freq, hasFreq = Tartini.kr(in, 0.93,1024,512,512);
+    //freq = Lag.kr(freq.cpsmidi.round(1).midicps, 0.05);
+    out = Mix.new(VarSaw.ar(freq * [0.5,1,2], 0, LFNoise1.kr(0.3,0.1,0.1), amp));
+    6.do({
+        out = AllpassN.ar(out, 0.040, [0.040.rand,0.040.rand], 2)
+    });
+    Out.ar(0,out)
+}).play(s);
+)
+
+(
+	{
+		b=Coyote.kr(SoundIn.ar());
+		d=DelayN.ar(b,1,0.15);
+		c=DelayN.ar(b,1,0.145);
+		a= RunningMax.ar(SoundIn.ar()*0.1,d);
+		Poll.ar(c-0.1,a);
+	}.play
+		
+)
+
+
+{Amplitude.ar(SoundIn.ar).poll}
+
+(
+	a=NodeProxy.audio.play;
+	a.source= {PinkNoise.ar(Decay.kr(Coyote.kr(SoundIn.ar(),fastMul:0.5)))!2};//.scope;
+	a[1]=\filter->{|in| LPF.ar(in,Tartini.kr(SoundIn.ar())*8+500,5)};
+	a[2]=\filter->{|in| NHHall.ar(in,4)};
+)
+
+
+//reset peak follower when coyote hits zero
+
+a={ SoundIn.ar()+NHHall.ar(Pan2.ar(SoundIn.ar(),\pan.kr(0.5)),5,stereo:\stereo.kr(0.5)) }.play;
+a.set(\stereo,0.99)
+a.set(\pan(0.9));
+(
+	
+		SynthDef(\hall,{|out wet=1 lorat=1 |
+			var in=In.ar(out,2);
+			var sig = NHHall.ar(in,4,lowRatio:lorat,stereo:1);
+			XOut.ar(out, wet, sig)}
+		).add;
+)
+( //happy happy
+	{
+		10.do{
+			Pfxb(
+				Pbind(*[
+					degree:Pseq([1,1,2,1,[4,6],[3,5,8]])-1,
+					amp:Pseq([23,17.5,20,18,17,19])/100,
+					dur:Pseq([3,1,4,4,4,8])/4,
+					root:10.rand,
+					lag:Pwhite(0.00,0.02),
+					pan:Pseries.new(-1,0.32,6)
+				]).pad,\hall,\wet,0.4,\lorat,2).play;
+				rrand(3,7).wait;
+			};
+		}.fork;
+)
+
+

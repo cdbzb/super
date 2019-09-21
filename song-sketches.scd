@@ -1,21 +1,4 @@
-(// here in this body
-	Ppar([
-		Pbind(*[
-			midinote:Pseq(
-				~noteList.(["<a c5 f>","<g c5 e>","<b- d5 g>","<a c5 f>"])-12),
-				dur:Pseq([1.5,0.5,1,1]),
-				strum:Pseq([0.01,0.01,0.02,0.01])
-			]),
-			Pbind(*[
-				midinote:Pseq(
-					~panList.("c g3 f c4"))-[ 12,24 ],
-				dur:Pseq([1.5,0.5,1,1]),
-			])
-	]).play
-
-)
-s.boot;
-(//quartal
+(//quartal //		{{{1
 	{
 		18.do(
 			{
@@ -32,8 +15,7 @@ s.boot;
 (note:1,dur:0.1).play
 )
 
-(
-	Freesound.token="a1e39f6de957344efe56bfb034195f33addb0a0d"
+( Freesound.token="a1e39f6de957344efe56bfb034195f33addb0a0d" //		{{{1
 )
 ~snd.name;
 FSSound.getSound(31362, {|f|
@@ -61,3 +43,33 @@ FSSound.getSound(31362, {|f|
 
 ~snd.getSimilar(action: {|p| ~snd=p[1]});
 
+( //glissandi		{{{1 
+	SynthDef(\hall,{|out wet=1 |
+		var in=In.ar(out,2);
+		var sig = NHHall.ar(in,\time.kr(3));
+		XOut.ar(out, wet, sig)}
+	).add;
+)
+
+(
+	~gliss={|length=2 root=( 12.rand ) wet=0.3|
+		Pfxb(
+			Pbind(*[
+				dur:Pseg([0.14/length,0.04,0.1],length!2,\sin),
+				degree:Pseries(-20,1,50),
+				legato:30,
+				root:root,
+				pan:1.0.rand.range(-1,1)
+			]).pad
+			,\hall,\wet,wet).play
+		}
+	
+)
+~gliss.(root:14,length:8.1);
+(
+	{19.do{
+		~gliss.(1.9.rand+1.5,wet:rrand(0.3,0.6));
+		rrand(2,5).wait;
+	}}.fork;
+)
+(Pbind(\instrument,~gliss,\dur,Pwhite(1,4,inf)).play);

@@ -73,3 +73,72 @@ FSSound.getSound(31362, {|f|
 	}}.fork;
 )
 (Pbind(\instrument,~gliss,\dur,Pwhite(1,4,inf)).play);
+//	rhythm ideas	{{{1
+(
+	var rhythm=[1,2,1,3,1];
+	{
+		10.do{|i|
+			var base=4.rand+1*100;
+			var a=
+			{|freq=333 gate=1|
+				var sig=Saw.ar(freq,0.1);
+				sig=Pan2.ar(sig,rrand(-1,1));
+				sig=sig* Env.asr(1,1,1).kr(2,gate:gate);
+			}.play;
+			Routine.new{
+				rhythm.do{|i|
+					a.set(\freq,rand(300)+base);
+					i.yield;
+				};
+				a.release
+			}.play;
+			5.rand.wait;
+		}
+	}.fork
+)
+
+( //	pattern way	{{{2
+	SynthDef(\zz,{|freq=333 gate=1|
+		var sig=Saw.ar(freq,0.1);
+		sig=Pan2.ar(sig,Rand(-1,1));
+		sig=sig* Env.asr(1,1,1).kr(2,gate:gate);
+		Out.ar(\out.ir(0),sig)
+	}).add;
+
+	Pspawn(Pbind(*[
+		method:\par,
+		pattern:{Pmono(*[ \zz ,
+			dur:Pseq(~rhythm),freq:Pwhite(0,300)+(4.rand*100)])},
+		delta:Pfin(10,Pfunc({5.rand+1})),
+	])).play
+)
+
+( //	using Pswitch for drummachine	{{{1
+	Pbind(*[
+		instrument:Pswitch(
+			[\zz,\zz,\snare,\kick,],
+			Pseq([3,1,2,1,3,3,2,1],4),
+		),
+		dur:0.5,
+		freq:Pwhite(299,305)
+	]).play
+)
+
+(//all in verb
+	SynthDef(\snareVerb,{|out wet=1 |
+		var in=In.ar(out,2)*\bypass.kr(1);
+		var sig = NHHall.ar(in,3);
+		XOut.ar(out, wet, sig)}
+	).add;
+	Pfxb(
+		Pbind(*[
+			instrument:Pswitch(
+				[\zz,\zz,\snare,\kick,],
+				Pseq([3,1,2,1,3,3,2,1],4),
+			),
+			dur:0.5,
+			freq:Pwhite(299,305),
+		]).pad,
+		\snareVerb
+	).play
+)

@@ -1086,13 +1086,8 @@ SynthDef(\pulse,{|gate=1 freq=400 amp=1 ffreq=4500 rel=2 out=0 t_trig wiggle=500
 )
 
 (// drummachine //		{{{1
-	~pat={|array  beatsPerBar=8 reps=1|
-		var b=List.new;
-		var a=Array.newFrom(array);
-		a.do({|m| (m=="|"[0]).not.if{b.add(m)}});
-		b=b.collect{|j| (j=="x"[0]).if({1},{Rest(1)})};
-		Pseq(b/beatsPerBar,reps)
-	};
+//	drums	{{{4
+	~pat={|string perBar repeats| string.asDrumPat(perBar,repeats)};
 
 	Pdef.new(\f,Pbind(*[
 		instrument:\kick,
@@ -1105,11 +1100,11 @@ SynthDef(\pulse,{|gate=1 freq=400 amp=1 ffreq=4500 rel=2 out=0 t_trig wiggle=500
 			XOut.ar(out,0.3,
 				FreeVerb.ar(In.ar(out,2),1.0,0.9)*1.2)}
 	).add;
-SynthDef(\plate,{|out wet=1 |
-	var in=In.ar(out);
-	var sig = PlateReverb.ar(in);
-	XOut.ar(out, wet, sig)}
-).add;
+	SynthDef(\plate,{|out wet=1 |
+		var in=In.ar(out);
+		var sig = PlateReverb.ar(in);
+		XOut.ar(out, wet, sig)}
+	).add;
 	SynthDef(\phaserr,{|out rate=0.1 fb=0.3|
 		var sig = Phaser2.ar(In.ar(out),rate:rate,fb:fb);
 		XOut.ar(out, 1, sig)}
@@ -1138,29 +1133,14 @@ SynthDef(\plate,{|out wet=1 |
 	b=Pdef(\m,Pfxb(a,\phaserr,\fb,-0.99));
 	c=Pseq([a,b],inf);
 
-	Ppar([
-		Pdef(\m),
-		Pdef(\q),
-		c,
-		Pdef(\f),
-		Pwrand([Pdef(\a),(note:Rest,dur:4)],[0.7,0.3],inf), //guitar
-	]
-	).play
-)
-
-Pdef(\g).play;
-Synth(\snare);
-
-( // 'guitar-ish'
+ // 'guitar-ish' //		{{{4
 	SynthDef(\pluckD,{|freq=400 amp=1|
 		var sig= Pluck.ar(WhiteNoise.ar(0.1),  trig: \trig.tr(1),  maxdelaytime: 0.2,  delaytime: freq.reciprocal,  decaytime: \del.kr(5),  coef: \coef.kr(0.6),  mul: 1,  add: 0) ;
-		sig=CrossoverDistortion.ar(sig,\drive.kr(0.5),\smooth.kr(0.5));
+		sig=CrossoverDistortion.ar(sig,\drive.kr(0.9),\smooth.kr(0.1));
 		sig=Phaser2.ar(sig,0.5,0.15,rq:1);
 		Out.ar(\out.ir,  sig*amp);
 	}).add;
-
-)
-( 
+ 
 		Pdef(\a,Pfindur (8,Pmono(\pluckD,
 			//\degree,Pwrand([[1,5]-17,[3,7]-17],[0.05,0.95],inf),
 			\degree,Pseq([5,5,5,5,4,4,4,4,8,8,8,8,6,6,6,6],inf)+[0,5]-21,
@@ -1168,11 +1148,33 @@ Synth(\snare);
 			\smooth,Pwhite(0.2,0.3,inf),
 			\del,Pwhite(0.5,1,inf),
 			\dur,0.5,
-			\coef,Pbrown(0.1,0.9,0.03)));//.quant_(4);
-		);
-Pdef(\a).play
-	);
+			\coef,Pbrown(0.1,0.9,0.03),
+			\lag,Pwhite(-0.01,0.01)
+		)));
+//Pdef(\a).play
+	
+		Pdef(\boodoo,Pbind(*[
+			//instrument:\sawSynth,
+			att:0,
+			degree:Pseq([1,2,3,5,4,2,1],inf)-1,
+			dur:Pseq([1,1,1,1,8,8,12]/4,inf),
+			root:7,
+			octave:2,
+			amp:0.6
+		])).quant([16,7])
+		;
+		//Pdef(\boodoo).play
 
+	Ppar([ //		{{{4
+		Pdef(\m),
+		Pdef(\q),
+		c,
+		Pdef(\f),
+		Pwrand([Pdef(\a),(note:Rest,dur:8)],[0.7,0.3],inf), //guitar
+		Pseq([(note:Rest,dur:7+16),Pdef(\boodoo)]),
+	]
+	).play
+)
 
 ( // fortunate   {{{1
 ~iCanContinue=(key:\iCanContinue,parent:~funs,proto:~trek,song:[
@@ -1234,12 +1236,15 @@ Pdef(\a).play
 		octave:[3,4],
 		scale:Scale.minor,
 		dur:
-		Pseq(~fortu.durs[0].list[3..5]++[5])
+		Pseq(
+			~fortu.durs[0].list[3..5]++ (
+				~fortu.durTill(1,3)+0.73)
+	)
 		,
 		//dur:Pseq([1,0.5,0.5,5])
 	])
 );
-
+//~sections4.answer.music.play;
 ~sections4.we_square = (parent:~fortu,start:1,syl:0,music: //		{{{3
 	Pbind(*[
 		//tempo:1.6,
@@ -1301,30 +1306,30 @@ SynthDef(\oteypiano, { |out=0, freq=440,gate=1, amp=0.5,rho=1 | //		{{{3
 );
 
 ~sections4.a_chord=(parent:~fortu,start:5,music:(degree:[1,3,5,8,-6,-13,-9]-1,strum:0.05,dur:3,root:-3));
-~sections4.gliss=  (parent:~fortu,start:5,music:{ ~gliss.(root:-3) },lag:-1.5);
-//~sections4.gliss.p;
+~sections4.gliss=  (parent:~fortu,start:5,music:{ ~gliss.(root:-3,amp:0.05) },lag:-1.5);
+
  //	trigger-echoFeedback	{{{3
-//	SynthDef.new(\twangInSweepDelay, {|freq=400 t_trig=0 gate=1 |
-//		var env = (Decay2.kr(t_trig, 0.01, 0.3));
-//		var sig= Pulse.ar(freq,  width: SinOsc.ar(1), mul: env);
-//		sig=CombN.ar(sig,1,0.31,5);
-//		sig=CombC.ar(sig,1,SinOsc.kr(0.1,0,0.2,0.21),4,mul:0.2);
-//		sig=FreeVerb.ar(sig,0.8,0.8);
-//		sig= Phaser2.ar(sig,  0.5, 0.1, 0.9,  cfb: 0.9,  rot: 1.5707963267949,  rq: 1);
-//
-//		//var dummy= Env.cutoff(0.2).kr(1,gate:gate);
-//		Out.ar(0,sig!2);
-//	}).add;
-//
-//	~sections4.sweep=(parent:~fortu,start:4,music:
-//		Pmono(*[
-//		//instrument:
-//		\twangInSweepDelay,
-//		trig:1,
-//		dur:0.3,
-//		degree:Prand([1,3,5,8]-1,inf),
-//		root:-3,
-//	]));
+	SynthDef.new(\twangInSweepDelay, {|freq=400 t_trig=0 gate=1 |
+		var env = (Decay2.kr(t_trig, 0.01, 0.3));
+		var sig= Pulse.ar(freq,  width: SinOsc.ar(1), mul: env);
+		sig=CombN.ar(sig,1,0.31,5);
+		sig=CombC.ar(sig,1,SinOsc.kr(0.1,0,0.2,0.21),4,mul:0.2);
+		sig=FreeVerb.ar(sig,0.8,0.8);
+		sig= Phaser2.ar(sig,  0.5, 0.1, 0.9,  cfb: 0.9,  rot: 1.5707963267949,  rq: 1);
+
+		//var dummy= Env.cutoff(0.2).kr(1,gate:gate);
+		Out.ar(0,sig!2);
+	}).add;
+
+	~sections4.sweep=(parent:~fortu,start:5,lag:-1.5,music:
+		Pmono(*[
+		//instrument:
+		\twangInSweepDelay,
+		trig:1,
+		dur:0.3,
+		degree:Prand([1,3,5,8]-1,12),
+		root:-3,
+	]));
 
 ~fortu.cursor_(0); //		{{{2
 
@@ -1498,7 +1503,7 @@ s.boot;
 		Pdef(\q),
 		c,
 		Pdef(\f),
-		Pwrand([Pdef(\a),(note:Rest,dur:4)],[0.7,0.3],inf), //guitar
+		Pwrand([Pdef(\a),(note:Rest,dur:4)],[0.7,0.3],inf), //guita
 	]
 	).play;
 Pbind(*[
@@ -1514,6 +1519,21 @@ Pbind(*[
 	lag:0.02,
 	]).play
 )
+
+//	list comprehensions	{{{1
+all {:x,x<-[1,3,4],x.odd,var z=x+1,::[z,x].postln};
+//so... get a section using list comprehensions
+~xtreme.parts;
+all {:x,x<-~xtreme.parts,x.class==Event,x.start==3}
+a= all {:x,x<-~xtreme.parts.keys,var y=~xtreme.parts[x],y.class==Event,y.start==3 }
+~xtreme.cursor_(3);
+all {:x,x<-~xtreme.parts.keys,var y=~xtreme.parts[x],y.class==Event,y.start==3,::y.p };
+a;
+a.class
+Array;
+[dur:3].p.play
+s.reboot;
+
 
 //	rhythm parsing	{{{1
 		z=[1,2/3,[1/3,1],1,]
@@ -1584,3 +1604,66 @@ Ptime
 
 
 
+(
+	SynthDef(\wha, //		{{{4
+		{
+			var freq=300;
+			var env=Env([1,[1.1,1.11],1.1],[[\len.ir(1),1.1],2],releaseNode:2).kr(0,gate:\gate.kr(1));
+			var envV= Env.linen(0.5,1.5, 2,  level: 1.0,  curve: \lin).kr(0,gate:1);
+			var sig= SawDPW.ar(freq*env,0,0.1)*envV;
+			sig=CombN.ar(sig,0.7,0.63,9);
+			DetectSilence.ar(sig,doneAction:2);
+			Out.ar (0, sig )
+		}
+	).add;
+
+	Pn(  //		{{{4
+	Ppar(
+		[
+			Pdef(\kik,Pbind(\dur,"xoxx|xoxx|xoxx|oxox".asDrumPat(4,3),\octave,3)),
+			Pbind(\note,3,\dur,"ox".asDrumPat(2,12),\instrument,\snare),
+			//Pdef(\whick,Pbind(\note,3,\dur,"ox".asDrumPat(4,24),\instrument,\kick3,\amp,0.01)),
+			Pbind(*[dur:8.reciprocal,note:15,amp:Pwhite(0.05,0.1,96)]),
+			Pdef(\whaa,Pbind(*[instrument:\wha,dur:6,note:Pseq([\r,6],1),lag:-0.50]));
+		]),4	
+	).play
+)
+s.plotTree;
+
+//	notation analog idea	{{{1
+// [[1363]] [2[3]2[3]] 6.[2] 
+// [[3 1 2]][[ 3 5 4 ]][[4 6 5]] 5 8 7 8 5 3 1 2 3 4 5 6 ]]
+//   ____   ___ 
+//  / / /  | | |
+// 3 1 2.  3 1 2
+
+// [1,3,5].inC ++ [1,3,5].inF = [1,3,5,4,6,8] 
+//	three alien minds	{{{1	
+a= ~vsti.('Pianoteq 5');
+(
+	~tune=[degree:Pseq([Rest(),4,4,3,3,3 ])-1,type:\vsti,controller:a,dur:Pseq([1,1,(2/3)!3,1].flatten),legato:1.4].p;
+	
+	~ch=[degree:Pseq([[5,8],[5,7],[4,6]])-1,
+		dur:2,
+		octave:4,
+		type:\vsti,
+		controller:a,
+		legato:1.9,
+		root:2,
+		scale:Scale.dorian
+	].p;
+
+	~bass=[
+		octave:4,
+		dur:Pseq([3,1,2.7,1.3]/2),
+		degree:Pseq([1,1,0,0,])-1,
+		root:2,
+		scale:Scale.dorian
+	].p;
+
+		Ptpar([
+			0.2,~tune,
+			0.2,~ch,
+			0,~bass
+		]).play
+)

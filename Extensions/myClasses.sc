@@ -22,10 +22,73 @@ Send : UGen {
 	}
 }
 
+//SampleObject : Object { |argb|
+//	*new {super.new.init(argb)}
+//	init{|b|
+//		chicken {
+//			^argb
+//		}
+//}}
+//
+
+Song {
+    var <array;
+	var <>cursor=0;
+    *new { |array|
+        ^super.newCopyArgs(array)
+    }
+	lyrics {^array.copySeries(0,2,array.size)}
+}
+
+Piano {
+	var <controller;
+	var <synth;
+	var vsti;
+	var synthdef;
+	var <node,<bus;
+	*new{^super.new.init}
+	init{
+		node=NodeProxy.audio().play;
+		bus=Bus.audio(numChannels:2);
+		node.source={In.ar(bus.index,2)};
+		synthdef=SynthDef(\vsti,{|out=0|
+			var sig=VSTPlugin.ar(nil,2);
+			Out.ar(bus.index,sig)
+		});
+		//synth=Synth(\vsti);
+		//controller=VSTPluginController(Synth(\vsti,[\out,self.bus]));
+		controller=VSTPluginController(synthDef:synthdef);
+		controller.open('/Library/Audio/Plug-Ins/VST/Pianoteq 5.vst',info:true)  //++self.plugin
+	
+	}
+}
+
 + Pbind {
 	pad { arg release=10;
 		^Pseq.new([this,Pbind.new(\note,Pseq([\r]),\dur,release)])
 	}
 }
 
++ String {
+	asDrumPat {| beatsPerBar=8 reps=1|
+		var b=List.new;
+		var a=Array.newFrom(this);
+		a.do({|m| (m=="|"[0]).not.if{b.add(m)}});
+		b=b.collect{|j| (j=="x"[0]).if({1},{Rest(1)})};
+		^Pseq(b/beatsPerBar,reps)
+	}
+}
 
+//a=SampleObject.new;
+//b=SampleObject.new;
+//b.chicken
+
+//a=Song([1,2,3,4]);
+//a.array;
+//a.lyrics;
+////a.testt.class;
+//a.cursorEl(0)
+//a.cursor_(2)
+//a.cursor;
+//a;
+//a.three;

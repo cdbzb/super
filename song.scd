@@ -4,6 +4,7 @@
 	s.waitForBoot("/Users/michael/tank/super/song-Synthdefs.scd".load);
 	~funs=(		//				{{{2
 		sections: {|self|self.song.size/2},
+		parts:(),
 		cursor:0,
 		lag:0,
 		lyrics:{|self| self.song.copySeries(0,2,self.song.size)},
@@ -27,6 +28,7 @@
 		durTill:{|self sec till | self.durs[sec].list[0..till].sum}, //in a given section
 		pbindFrom:{|self from=3| var list=self.pbind[from.asInt..(self.sections-1).asInt].postln;Pseq(list).postln},
 		when: {|self| self.secDur[self.start]}, //for sections
+		ply:{|self| self.parts.do({|i|i.parent=self; i.p});},
 		p:{|self|(self.start<self.cursor).not.if{ var offset;
 			self.syl.isNil.if({offset=0;"offset 0".postln},{offset=self.durTill(self.start,self.syl)});
 			offset=offset+self.lag;
@@ -82,12 +84,13 @@
 		parts:nil,
 	).setupDurs;
 
+	
 //construct event recorder		{{{2
-	~recorder= {|song  range=#[0,1] cueSecs=1 |
-		//var range=Array.series((to-from),from);
+	~recorder= {|song  rnge=#[0,1] cueSecs=1 |
+		var range = Array.with(rnge).flatten;
 		var from=range[0];
-		//var seq = cueSecs.collect({|i| song.tune[from-i].list-60}).flatten;
-		var seq = range.collect({|i|song.tune[i].list}).flatten;
+		var rr= (range[0]..range.clipAt(1));
+		var seq =rr.collect({|i|song.tune[i].list}).flatten;
 		seq.postln;
 		~stepper={ |seq|
 			SynthDef(\stepper, {
@@ -127,23 +130,37 @@
 					var d=Button.new(w.view,Rect(260,10,100,100))
 						.states_(["1",Color.black,Color.white])
 						.action = {self.nextt;"next".postln};
+					var e=Button.new(w.view,Rect(260,300,100,100))
+						.states_(["1",Color.black,Color.white])
+						.action = {song.save;"saved".postln};
 					var v=w.view;
 					self.window=w;
 					StaticText(b,Rect(0,0,100,100)).string_("Do over").align_(\center);
 					StaticText(c,Rect(0,0,100,100)).string_("Return").align_(\center);
 					StaticText(d,Rect(0,0,100,100)).string_("next").align_(\center);
+					StaticText(e,Rect(0,0,100,100)).string_("save").align_(\center);
 					EZText.new(v,Rect(0,110,300,50	),label:"range",initVal:self.range,);
-					v.keyDownAction={self.captureLoop.(b);"lll".postln };
+					v.keyDownAction={ |view char|
+						self.captureLoop.(b); 
+						switch(char,
+							$d , {self.doOver},
+							$n , {self.nextt},
+							$r , {self.ret},
+							$s , {song.save}
+						)
+					};
 					self.item=[];
 					t=Synth(\stepper);
+					w.onClose_({t.free});
 					self.cue.play ;
 					self.range.do({|i|song.lyrics[i].postln})
 				},
 				doOver:{|self| self.item=[];self.cue.play;t.free;t=Synth(\stepper)},
-				nextt:{|self| self.range=(self.range+(self.range[1]-self.range[0]+1));
-						self.range.do({|i x| (i>(song.sections-1)).if {self.range[x]=(song.sections-1).asInt}}); // check if range too high
-						(self.range++" "++song.sections).postln;
-						self.window.close;
+				nextt:{|self| 
+					self.range=(self.range+(self.range.clipAt(1)-self.range[0]+1));
+					self.range.do({|i x| (i>(song.sections-1)).if {self.range[x]=(song.sections-1).asInt}}); // check if range too high
+					(self.range++" "++song.sections).postln;
+					self.window.close;
 					{
 						var newSeq=self.range.collect({|i|song.tune[i].list}).flatten;
 						~stepper.(newSeq).add;
@@ -167,7 +184,7 @@
 					});
 					//~xtreme.durs[nextTune]= Pseq(recorded);
 				};
-			)
+			).makeWindow;
 		};
 
 //// 'sections' event		{{{2
@@ -368,11 +385,10 @@
 		]
 	).setupDurs;
 )
-
 (
-	a=~recorder.(~complete,[11],2);
-	a.makeWindow;
+	~recorder.(~complete,2,1);
 )
+
 Pseq(~complete.pbind).play
 ( //// parts for ~complete		{{{1
 	~complete.cursor_(0); //	{{{2
@@ -1541,6 +1557,7 @@ s.reboot;
 		g=f.collect{|i|(i-0.001).floor};
 (
 	~parse={|song phrase array start=0| //array of rhythms
+		// use [] to tie notes, 
 		var counter = 0;
 		var beatNum = array.flatten.collect{|m i| array.flatten.[0..i].sum};
 		beatNum = beatNum.collect{|i|(i-0.001).floor};
@@ -1639,6 +1656,7 @@ s.plotTree;
 
 // [1,3,5].inC ++ [1,3,5].inF = [1,3,5,4,6,8] 
 //	three alien minds	{{{1	
+//	sketch		{{{2	
 a= ~vsti.('Pianoteq 5');
 (
 	~tune=[degree:Pseq([Rest(),4,4,3,3,3 ])-1,type:\vsti,controller:a,dur:Pseq([1,1,(2/3)!3,1].flatten),legato:1.4].p;
@@ -1648,7 +1666,7 @@ a= ~vsti.('Pianoteq 5');
 		octave:4,
 		type:\vsti,
 		controller:a,
-		legato:1.9,
+		legato:0.9,
 		root:2,
 		scale:Scale.dorian
 	].p;
@@ -1667,3 +1685,333 @@ a= ~vsti.('Pianoteq 5');
 			0,~bass
 		]).play
 )
+//	song	{{{2
+(
+	~three= ( key:\three, parent:~trek, proto:~funs,song:[
+		"r three alien minds","d3 f5 f e e e", //0
+		"now inhabit the bodies of", "d5 c b4 a g f g a", //1
+		"Captain Kirk,science officer Spock and", "b c5 f4 c5 d c b4 a a g", //2
+		"Doctor Jane Mulhall. As - ","b c5 d d c c f",//3
+		"Planned the construction of robot","f c d c a4 c5 g f"//4
+	]).setupDurs
+)
+~recorder.(~three,[0,3],1);
+~recorder.(~three,1,1);
+(//~three sections
+	~three.parts=();
+	~three.cursor_(0);
+	"xxxxx".do({|i n| var label="guide"++n.asSymbol; (i==$x).if {~three.parts[label]=(start:n,music:~three.pbind[n])} });
+	a.isNil.if({a=~vsti.('Pianoteq 5')},{a.synth.isPlaying.not.if({a=~vsti.('Pianoteq 5')})});
+	~three.parts.chords= //		{{{
+	(lag:0.18,start:0,music:Pbind(*[ 
+	degree:Pseq([[5,8],[5,7],[4,6]])-1,
+	dur: Pseq(~three.parse(0,[[1,1],[1,1,1],[1]])) ,
+	octave:4,
+	type:\vsti,
+	controller:a,
+	legato:0.9,
+	root:2,
+	scale:Scale.dorian
+	]));// 	}}}
+	~bass0quarters=~three.parse(0,[ [1,1],[1,1,1],1 ]);
+	~setupGuitOne.();
+	~three.parts.bass0=(start:0,music: //		{{{
+		[
+			degree:Pseq([2,2,1,1,1,-2])-1,
+			dur: Pseq(
+				[~bass0quarters[0]*[3,1]/4 , ~bass0quarters[1]*[1,1.4,1.6]/4, 2].flatten
+			),
+			octave:4
+	].p
+	); //}}}
+	~three.parts.connectorBass=(start:1,music: //		{{{
+		[
+			degree:Pseq([Rest(),3,2,1,1.1,2,3,4,4-7,0,7,0])-1,
+			dur:Pseq(~three.parse(1,[[1,1,1,1,1],[1,1],1])++~three.parse(2,[[1,1,1],[1,1,1,1,1],1,1])++
+			~three.parse(3,[[1,1],1,[1,1],1,1])),
+			octave:3, root:2, scale:Scale.dorian
+		].p
+	); //}}}
+	~three.parts.chords1=(start:2,syl:2,lag:0.18,music: //		{{{
+		[
+			type:\vsti,
+			note:Pseq([6,[4,-1],5]),
+			dur: Pseq( ~three.parse(2,[[1,1,1,1,1],[1,1]],3)++2),
+			controller:a,
+			octave:4
+		].p
+	);//}}}
+	~three.parts.guitar4=( //		{{{
+		start:3,syl:4,
+		music:
+		Pmono(
+			//\degree,Pseq([5,5,5,5,4,4,4,4,8,8,8,8,6,6,6,6],inf)+[0,5]-21,
+			\pluckD,
+			\degree,Pseq([ [1,3,5],[1,4,6] ])-1,
+			\amp,0.025,
+			\out,[0,1],
+			\smooth,Pwhite(0.2,0.3,inf),
+			\del,Pwhite(0.5,1,inf),
+			\dur,Pseq(~three.parse(3,[ [1,1] ])++2),
+			\coef,0.1,//Pbrown(0.1,0.9,0.03),
+			\lag,Pwhite(-0.01,0.01)
+		);
+	);//}}}
+~three.ply;
+)
+// I		{{{4
+(//setup
+	~setupGuitOne={
+		try{~g.controller.loaded.not.if{~g=~guitar.()}}{~g=~guitar.()};
+		~g.node[1]=\filter->{|in|PlateReverb.ar(in,mix:0.5)};
+		~g.node[2]=\filter->{|in|Phaser2.ar(in,rate:0.1,mix:0.5).distort(0.95)};
+	};
+	~setupGuitOne.value
+)
+
+( //play
+	l=40;
+	~lick=[degree:Pseq([6,5,7]-1),dur:Pseq([2,2,4]),instrument:\sawSynth,att:1,rel:4,amp:0.05].p;
+	~rh=[type:\strum,switch: Pseq([\down,\down,\up],4),dur:Pseq([1,0.5,0.5],4),legato:0.5,controller:~g.controller,'Play Mode: Play Mode':0.6].p;
+	~lh=[degree:Pseq([[1,3],0,-3]-7,l),dur:Pseq([2,2,4]),legato:1,controller:~g.controller,type:\vsti].p;
+	Ptpar([0,~lh,0.02,~rh,0,~lick]).play
+)
+// add vocals
+// quant
+//	III	{{{4
+
+g=~guitar.()
+h=~guitar.();
+(//setup
+	h.node[1]=\filter->{|in| in*2};
+	g.node[1]=\filter->{|in|SmoothClipQ.ar(in*8,lo:-0.1,hi:0.1,foldRange:0.5)};
+)
+(
+	var t=TempoClock.new(0.89.reciprocal);
+	var q=0.9;
+	var gr=0.2; var a=[
+		degree:Pseq([1,2,3,5,5.1,6]-1),
+		dur:Pseq([1,1,1, (1-gr),gr,4 ]/2),
+		legato:Pseq([q,q,q,1.4,1.4,1]),
+		root:5,
+		octave:3,
+		type:\vsti,
+		controller:g.controller,
+		'Play Mode: Play Mode':0
+	].p;
+	var b=[
+		degree:Pseq([1,2,3,5,4]-1),
+		dur:Pseq(1!4++[4]/2),
+		legato:0.96,
+		root:5,
+		octave:3,
+		type:\vsti,
+		controller:h.controller,
+		'Play Mode: Play Mode':0
+	].p;
+	var b2=[//bar 2 beat 3 on
+		degree:Pseq([6.1,4]-1),
+		dur:2,
+		legato:0.96,
+		root:5,
+		octave:3,
+		type:\vsti,
+		controller:h.controller,
+	].p;
+	var b2s=[
+		type:\strum,
+		controller:h.controller,
+		switch:Pseq([\down, \up, \down,],3),
+		//dur:Pseq([2,1,1]/2,2),
+		dur:Pseq([1,1,2]/2,3),
+		'Play Mode: Play Mode':0.6
+	].p;
+	var p=[
+		degree:Pseq([Rest(),1,4,1]-1),
+		dur:Pseq([5,4,4,2 ,3])/2,
+		//type:\vsti,
+		//controller:p.controller
+		instrument:\sawSynth,
+		rel:3,att:0.2,
+		amp:0.35,
+		root:5,octave:[4,5]
+	].p;
+	k=[
+		degree:Pseq([2,4,6,6.1,1,4,5,6])-1,
+		root:5,
+		instrument:\default,
+		octave:[6,5],
+		dur:0.5,
+		legato:3,
+		amp:0.1
+	].p;
+	
+	Ptpar([
+	0.2,Pseq([ b, b2]),
+	0,p,
+	3.2,b2s,
+	0.2,a,
+	4,k
+]).play(t)
+)
+(
+	k=[
+		degree:[Pseq([2,4,6,6.1,1,4,5,6])-1],
+		octave:5,
+		dur:0.5,
+		amp:0.6
+	].p;
+	k.play
+)
+
+//	II	{{{4
+	g=~guitar.();
+(
+	g.node[1]=\filter->{|in|SmoothClipQ.ar(in*8,lo:-0.1,hi:0.1,foldRange:0.5)};
+	//g.node[2]=\filter->{|in|CombN.ar(in,0.3)};
+	//g.node[1]=nil;
+	
+~slide= [
+				note:Pseries(0,1,6)+[0,4],
+				dur:Pseq([0.6,0.1,0.1,0.1,0.1,1]),
+				legato:Pseq([1.5,1.5,1.5,1.5,0.9,1]),
+				controller:g.controller,
+				type:\vsti,'Play Mode: Play Mode',0,'Effect 1: On':0].p;
+				
+~roots=[
+				note:Pseq([-7,[2,5],-5]),
+				type:\vsti,
+				controller:g.controller,
+				dur:Pseq([2,2,4]),
+				legato:0.94].p;
+~strums=[
+				type:\strum,
+				switch:Pseq([Rest(),\down,\up])++Pseq([\down,\down,\up],3),
+				controller:g.controller,
+				dur:Pseq([2,1,1]/2,4),
+				'Play Mode: Play Mode':0.6].p;
+Pseq( [
+		[legato:2,stretch:2,note:0,octave:[4,3],amp:0.3,dur:Pseq([2]/4)].p,
+		Ptpar([
+			0.2 , ~slide,
+			1.2 , ~roots,
+			1.2 , ~strums 
+			])
+	]).play;
+)
+~three.cursor_(3);
+~three.parts.guit4=(start:4,music:Ppar([~roots,~strums]),lag:-0.25);//needs rhythm to be recorded
+~three.parts.slide=(start:3,syl:5,music:~slide,lag:-0.25);
+~three.ply
+
+//	strum studio	{{{1
+b=Bus.audio(s,2);
+m=~vsti.('Strum GS-2.vst',b);
+n=NodeProxy.audio(s,2).play.source_({In.ar(b,2)});
+n[1]=\filter->{|in|SmoothDecimator.ar(in,8000)};
+n[1]=nil
+n[2]=\filter->{|in| in.softclip(0.1)};
+n[2]=nil;
+n.free
+
+( //	~guitar DEFINITION	{{{3
+	~guitar=
+	{
+		var b=Bus.audio(s,2);
+		var n=NodeProxy.audio.play
+			.source_({In.ar(b,2)});
+		var c=~vsti.('Strum GS-2.vst',b);
+		(//guitar
+			node:n,
+			controller:c
+		)
+	}
+)
+
+( //	nice harsh chain	{{{3
+	{
+		g=~guitar.();
+		({g.controller.loaded==false}).while{0.01.wait};
+		g.node[1]=\filter->{|in|TwoTube.ar(in,-0.81,0.9,111,321).fold(0.1)*5};
+		g.node[2]=\filter->{|in| RLPFD.ar(in,2200,0.5)*15};
+		g.node[3]=\filter->{|in| Phaser2.ar(in,rate:0.1,fb:-0.9,mix:0.5)};
+		q=[strum:0.06,type:\vsti,\controller:g.controller,\midinote: Pwhite(30,70,inf).clump(3) ].p;
+		p=q.play;
+	}.fork
+)
+p.stop;
+//}}}
+(// cool pattern //		{{{4
+//setup
+	~strum= [ 'down', 'muted', 'up', 'alt-bass', 'one', 'two', 'muffle-down', 'three', 'muffle-up', 'four', 'mute', 'five', 'six', ];
+	e=();
+	~strum.do{|i x| e.[i.asSymbol]=x};
+)
+
+(
+	var len = 18;
+	~strumPattern=Pseq([e.down,e.up,e.one],len);
+	m.set('Play Mode: Play Mode',0.5);
+	p=( 
+		Ptpar([
+		0.05,[midinote:~strumPattern+72,dur:0.3,legato:0.5].p,
+		0,[midinote:Pseq([[60,63],58],len*1.5),dur:0.3,legato:0.95].p
+	])
+	<>
+	(type:\vsti,controller:m)
+).play
+) //}}}
+//old rekkerd - strum gets keyswitch order right //		{{{3
+g=~guitar.()
+(
+	Ptpar (
+		[
+			0.2,[midinote: Ptuple([Pseq([65,68],inf),Pwhite(72,80,inf)]) ,'Play Mode: Play Mode':0.6,strum:0.02,type:\vsti,controller:g.controller].p,
+			0,[instrument:\snare,dur:"0x".asDrumPat(4,inf)].p,
+			0,[instrument:\hihat,dur:0.25].p
+		]
+	).play;
+a={Dust.ar(8.9,0.4)!2}.play;
+b={BrownNoise.ar(0.01).dup}.play
+)
+//GTR EVENT TYPE (experimental) //		{{{
+
+g=~guitar.()
+(
+	Event.addEventType(\gtr,{|server| 
+		~switch.isNil.not.if { ~midinote=[~midinote,~switch].flatten };
+		~type=\vsti;
+		currentEnvironment.play},(switch:72))
+)//}}}
+( //	STRUM EVENT TYPE	{{{3
+	Event.addEventType(\strum,{|server|
+		~stru= [ 'down', 'muted', 'up', 'alt', 'one', 'two', 'muffleD', 'three', 'muffleU', 'four', 'mute', 'five', 'six' ];
+		~strums= Dictionary.new;
+		~stru.do{|i x| ~strums.add(i->(x+72))};
+		//~short.do{|i x| ~strums.add(i->(x+72))};
+		~midinote=~strums[~switch];
+		~type=\vsti;
+		currentEnvironment.play
+		}
+	);
+)
+(//examples //		{{{4
+	[type:\strum,switch:Pseq([\up,\down],8),amp:Pseq([0.8,0.5],inf),lag:Pseq([0.01,0.00],inf),dur:0.1,controller:g.controller].p.trace.play;
+	(type:\vsti,note:6,controller:g.controller,'Play Mode: Play Mode':0.6,dur:13).play;
+
+)
+(
+	[type:\strum,controller:g.controller,switch:Pxrand(~stru,inf),dur:Pbrown(0.1,0.5,0.05,inf)].p.play;
+	['Play Mode: Play Mode',0.6,type:\vsti,controller:g.controller,midinote:Pwhite(60,70,inf),dur:Pbrown(1,2,0.05,inf)].p.play;
+)
+
+~strums[\down]
+
+(type:\gtr,controller:g.controller,midinote:61,'Play Mode: Play Mode':0.6,strum:0.02,dur:4).play
+(type:\gtr,controller:g.controller,midinote:60,switch:72,'Play Mode: Play Mode':0.6,strum:0.02).play
+(dur:20,type:\gtr,controller:g.controller,midinote:[63,60],switch:e.down,'Play Mode: Play Mode':0.6,strum:0.02).play
+(dur:20,type:\vsti,controller:g.controller,midinote:[63,60],'Play Mode: Play Mode':0.6,strum:0.02).play
+[type:\gtr,controller:g.controller,switch:Pseq([e.down,e.up],inf),dur:0.4,'Play Mode: Play Mode':0.6,strum:0.03].p.trace.play
+
+
+e=e.collect({|i|i+72});

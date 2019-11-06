@@ -21,3 +21,18 @@ Event.addEventType(\xxx,~parseMe())
 
 Environment
 
+(
+	Pdef(\temp, Pmono(
+		\pluckD,
+		\degree,Pseq([ [1,3,5],[1,4,6] ])-1,
+		\amp,0.025,
+		\out,[0,1],
+		\smooth,Pwhite(0.2,0.3,inf),
+		\del,Pwhite(0.5,1,inf),
+		\dur,Pseq(~three.parse(3,[ [1,1] ])++2,inf),
+		\coef,0.1,//Pbrown(0.1,0.9,0.03),
+		\lag,Pwhite(-0.01,0.01)
+	)
+);
+)
+s.reboot

@@ -49,10 +49,14 @@ o = [
 	Array.prNew(2),  Array.prNew(2),  Array.prNew(12),  Array.prNew(12),  
 	Array.prNew(2),  Array.prNew(2),  Array.prNew(2),  Pseq.prNew,  
 	List.prNew,  Array.prNew(9),  Pseq.prNew,  Array.prNew(1),  
-	Pseq.prNew,  Array.prNew(1),  Array.prNew(4),  Pseq.prNew,  
+	Pseq.prNew,  Array.prNew(1),  Array.prNew(9),  Pseq.prNew,  
 	List.prNew,  Array.prNew(6),  Pseq.prNew,  List.prNew,  
 	Array.prNew(8),  Pseq.prNew,  List.prNew,  Array.prNew(10),  
-	Pseq.prNew,  List.prNew,  Array.prNew(7)
+	Pseq.prNew,  List.prNew,  Array.prNew(7),  Pseq.prNew,  
+	List.prNew,  Array.prNew(8),  Pseq.prNew,  List.prNew,  
+	Array.prNew(6),  Pseq.prNew,  List.prNew,  Array.prNew(16),  
+	Pseq.prNew,  List.prNew,  Array.prNew(8),  Pseq.prNew,  
+	List.prNew,  Array.prNew(10)
 ];
 p = [
 	// Archive
@@ -607,7 +611,9 @@ p = [
 	// Array
 	197, [ 1 ],  
 	// Array
-	198, [ o[199],  o[202],  o[205],  o[208] ],  
+	198, [ o[199],  o[202],  o[205],  o[208],  
+		o[211],  o[214],  o[217],  o[220],  
+		o[223] ],  
 	// Pseq
 	199, [ list: o[200],  repeats: 1,  
 		offset: 0 ],  
@@ -640,6 +646,49 @@ p = [
 	209, [ array: o[210] ],  
 	// Array
 	210, [ 0.436,  0.446,  0.904,  0.484,  
-		0.462,  0.436,  0.5 ]
+		0.462,  0.436,  0.5 ],  
+	// Pseq
+	211, [ list: o[212],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	212, [ array: o[213] ],  
+	// Array
+	213, [ 0.876,  0.646,  0.236,  0.298,  
+		0.292,  0.322,  0.44,  0.456 ],  
+	// Pseq
+	214, [ list: o[215],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	215, [ array: o[216] ],  
+	// Array
+	216, [ 0.456,  0.884,  0.438,  0.264,  
+		0.206,  1.282 ],  
+	// Pseq
+	217, [ list: o[218],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	218, [ array: o[219] ],  
+	// Array
+	219, [ 0.438,  0.4,  0.446,  0.466,  
+		0.456,  0.4,  0.43,  0.458,  
+		0.424,  0.438,  0.418,  0.458,  
+		0.434,  0.442,  0.466,  0.468 ],  
+	// Pseq
+	220, [ list: o[221],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	221, [ array: o[222] ],  
+	// Array
+	222, [ 0.476,  0.424,  0.438,  0.464,  
+		0.476,  0.498,  0.808,  0.542 ],  
+	// Pseq
+	223, [ list: o[224],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	224, [ array: o[225] ],  
+	// Array
+	225, [ 1.318,  0.636,  0.984,  0.294,  
+		0.4,  0.502,  0.49,  0.552,  
+		1.27,  1.652 ]
 ];
 prUnarchive(o,p);

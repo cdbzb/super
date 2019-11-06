@@ -20,6 +20,13 @@ s.waitForBoot({
 
 	SynthDef(\test,{|freq amp=1|Out.ar(1,amp*RLPF.ar(Saw.ar(freq.lag(2),0.1*EnvGen.kr(Env.linen(0.05,0.5,2))),freq*2+1500+SinOsc.ar(5.2,0,350),2))}).add;
 
+	SynthDef(\pluckD,{|freq=400 amp=1|
+		var sig= Pluck.ar(WhiteNoise.ar(0.1),  trig: \trig.tr(1),  maxdelaytime: 0.2,  delaytime: freq.reciprocal,  decaytime: \del.kr(5),  coef: \coef.kr(0.6),  mul: 1,  add: 0) ;
+		sig=CrossoverDistortion.ar(sig,\drive.kr(0.9),\smooth.kr(0.1));
+		sig=Phaser2.ar(sig,0.5,0.15,rq:1);
+		Out.ar(\out.ir,  sig*amp);
+	}).add;
+
 	// more kicks
 	SynthDef(\kick1, {
 		var snd;

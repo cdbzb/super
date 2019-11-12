@@ -1,7 +1,7 @@
-(
+( //Pseudo Class to open reaper files, locate and play them!!
+
 var executable="'/Applications/REAPER ƒ/REAPER64.app/Contents/MacOS/REAPER'";
 		
-~rpr=(
 address: NetAddr("192.168.1.132",8000),
 opn:    { Pipe.new(executable,"w") },
 go:		{|self seconds| self.address.sendMsg('time',seconds)},

@@ -62,6 +62,12 @@ Piano {
 	}
 }
 
++ SequenceableCollection {
+	q{ arg repeats=1;
+		^Pseq.new(this,repeats)
+	}
+}
+
 + Pbind {
 	pad { arg release=10;
 		^Pseq.new([this,Pbind.new(\note,Pseq([\r]),\dur,release)])

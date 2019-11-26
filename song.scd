@@ -1,10 +1,14 @@
-( // the song event				{{{1;
+( // 				{{{2;
 	s.options.memSize=2**17;
-//	s.waitForBoot("/Users/michael/tank/super/song-Synthdefs.scd".load);
-
-	~xtreme=( //				{{{2
-		key:\song, parent:~trek, proto:~funs,
-		play:{~parts.do(_.postln)},
+	o=s.options;
+	o.numInputBusChannels=4;
+	s.reboot;
+	s.plotTree;
+	s.meter
+)
+( ~xtreme=( //				{{{2
+		key:\song,proto:~trek,parent:~funs,
+		//play:{~parts.do(_.postln)},
 		song:[
 			"the extreme power of the","g a b- d5 b-4 a g", //0
 			"alien mind will make the -","e5 d c f e f g f", //1
@@ -21,22 +25,58 @@
 		parts:nil,
 	).setupDurs;
 
-	~xtreme.init={ try{~syn1.controller.loaded.not.if{~syn1.init}}{~syn1=~synful.()}; 
-	~synthsLoaded==nil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
-};
+	~xtreme.ready={ try{~syn1.controller.loaded.not.if{false}}{true}}; 
+	~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
+	~xtreme.init={ try{~syn1.controller.loaded.not.if{~syn1.init}}{~syn1=~synful.()}}; 
 	~xtreme.init;
-	~xtreme.parts.ply;
+	//~xtreme.parts.ply;
+	~xtreme.play
+)	
 
-//	try{z-3;'p'.postln}{z=4;{5.wait;'p'.postln}.fork};
+(//record audio in an event{{{
+	~input=RecNodeProxy.audio(s,1)
+	.source_({SoundIn.ar(2,1)})
+	.open('/tmp/test.aif')
+	.record
 )
-s.plotTree
+(// record....{{{
+	m=p{ ~input.unpause;10.wait;~input.pause };
+	~xtreme.parts.record2=(start:2,music:m);
+	~xtreme.play;
+)//}}}
+(//playback{{{
+	b=Buffer.read(s,"/Users/michael/tank/super/Trek-samples/heart-action.aif"); // when playing back
+	//b=Buffer.read(s,'/tmp/test.aif');  // when recording
+	//~xtreme.cursor_(1);
+	~xtreme.parts.record2=(start:2,music:{{
+		var env= Env.perc(5).kr(2,gate:1);
+		var sig=PlayBuf.ar(1,b.bufnum).distort*2;
+		var center= CombC.ar(sig,0.06!2,2);
+		var faster=PlayBuf.ar(1,b.bufnum,rate:1.02).fold2*2;
+		[sig,faster]+center;
+	}.play});
+~xtreme.ply
+)//}}}
+(// save after recording pseudo-code {{{
+	~sample=(
+		record: //generate name when recording
+		save:
+		name: //generate name
+		saveInArchiveUnderKey: or....
+		saveInMultilevelIdentityDict
+	);
+
+	//b.write("/Users/michael/tank/super/Trek-samples/heart-action.aif")
+
+)//}}}
+)//}}}
 
 (
 //// xtreme sections		{{{2
 	//~xtreme.parts=( ply:{|self| self.do({|i| i.p});};);
 	//~xtreme.parts=~xtreme.parts;
 
-	{~xtreme.ply}.defer(0.3);
+	//{~xtreme.ply}.defer(0.3);
 	~xtreme.parts=();
 	~xtreme.parts.strum1=( start:0,syl:2, music:
 		(\note:[-5,-3,-2,2,5,7],\strum:0.03,\sustain:2));
@@ -196,8 +236,8 @@ s.plotTree
 	~xtreme.pbind.do({|i x| var label = ("guide"++x).asSymbol; ~xtreme.parts[label]=(start:x,music:i);label.postln});
 	c=SystemClock.seconds;
  )
- //transformation			{{{2
- (
+ 
+ ( //transformation			{{{2
 	~transformation={ 
 		var dur=15;
 		var pitches=~panNotes.("f#3 b- c4 e")+[0,12];
@@ -206,27 +246,40 @@ s.plotTree
 		//~xtreme.init;
 		try{~fadeO.stop};
 		try{~syn1.controller.loaded.not.if{~syn1.init}}{~syn1=~synful.()};
-		pitches.postln;
 		{dur.wait;chord.do{|i|i.release}}.fork;
 		{dur.wait;chord2.do{|i|i.release}}.fork;
 		////cymbal
 		(instrument:\cymbal,length:8).play;
 		////strings
-		~syn1.setprog(3,5,0);
-		~syn1.setprog(4,5,1);
+		~syn1.setprog(3,5,0); ~syn1.setprog(4,5,1);
 		~syn1.node[1]=\filter->{|in| FreeVerb.ar(in,room:0.75,mix:0.55)*3};
 		~fadeO={
 			8.wait;"now!".postln;127.do( {|i|~syn1.expression((127-i),0);~syn1.expression((127-i),1);0.18.wait} )
 		}.fork;
+
 		(type:\midi,midiout:~syn1.controller.midi,\midinote:~panNotes.("f#3 b- c4 e").flatten-[0,12],dur:20).play;
 		(type:\midi,midiout:~syn1.controller.midi,\channel:2,\midinote:~panNotes.("f#3 b-4 c4 e").flatten-24,dur:20).play;
 		~syn1.expression(127,0);
 		~syn1.expression(127,1);
-		//~syn1.init;
+		//tympani
+		{ |pitchScale=1.15 loss=0.99998 |
+			var env=Env.linen(0,dur-5,8).kr(2,gate:1)*0.175;
+			var exc = Dust.ar(2!2)+Impulse.ar(0);
+			var sig;
+			exc = Decay.ar(exc,0.02);
+			exc=Integrator.ar(exc,0.8,0.1);
+			exc=PinkNoise.ar(exc);
+			sig=MembraneCircle.ar(exc,[0.007,0.0073]*pitchScale,loss)*env;
+			sig
+		}.play;
+		
 	};
 	~transform=(ply:{topEnvironment.use({~transformation.fork})},durTillEnd:15);
 ~transformation.play
 ); //}}}
+
+
+
 ( // {{{ \player Event Type
 	Event.addEventType(\player,{~dur=~song.durTillEnd;~song.ply});
 	~xtreme.cursor_(7);
@@ -610,19 +663,21 @@ Pseq(~complete.pbind).play
 	}.fork
 )
 ( //	OR in the new spelling.....	{{{2
+	var d = (note:[0,1,2]-48,\amp:1,sustain:5,dur:5);
+	~complete.parts.boom=(start:0,music:d);
 	(
-		play:{Pseq([~b,~a]).play},
-		a: Ppar([
-			Pser([(song:~complete,type:\player)])
-			,
-			Pfin(1,(note:[0,1,2]-48,\amp:1,sustain:5,dur:5))
-			,
-		]),
-		b:	(song:~transform,durTillEnd:13,type:\player),
-		c: 
-		(song:~displeased,type:\player).play
+		play:{Pseq([~c,~b,~a]).play},
+		a: Pfin(1,(song:~complete,type:\player)),
+		b:	(song:~transform,dur:13,type:\player),
+		c: (song:~displeased,type:\player)
 	).play
 )
+s.plotTree
+~playemOnce={|list| Ppar(list.collect{|i|Pfin(1,i)}) };
+~playemOnce.([ (song:~complete,type:\player) ,(note:[0,1,2]-48,amp:2),Prout({TempoClock.tempo=1})]).play
+~displeased.ply;
+~displeased.keys.do(_.postln)
+~funs.keys.do(_.postln)
 
 (// trill{{{1
 	~trill={ |instrument=\default amp=0.1 |
@@ -673,7 +728,7 @@ Pseq(~complete.pbind).play
 );
 (// ~displeased lyric and tune {{{1
 ~displeased=(
-	key:\displeased, parent:~trek, proto:~funs,
+	key:\displeased, parent:~funs, proto:~trek,
 	song: [
 		"trill","r",//0
 		"I am not displeased my husband- ","d#5 c# c a#4 g# f# f d# c# " ,//1
@@ -688,51 +743,138 @@ Pseq(~complete.pbind).play
 ).setupDurs;
 )
 
-(
+( //after so long piano sketch{{{
 	~afterSoLong=[4,5,8,7,9]++[5,6,4,7] + [ 2,2,2,2,2,2,2,2,3 ].collect{|i| [0,i]};
 	(degree:1,octave:4,dur:6).play;
 	Pbind(*[legato:1.05,degree:Pseq(~afterSoLong)-1,dur:Pseq( 0.5!4++[2.5]++(0.5!3)++[2])]).play;
 	Pbind(*[degree:Pseq([1,-3]),dur:Pseq([4,5])]).play;
-
-)
-~displeased.tune[6].list'
+)//}}}
 (
-	a=~recorder.(~displeased,[7],1);
+	a=~recorder.(~displeased,[8],1);
 	a.makeWindow;
 )
+
+([~displeased,~displeased<>(lag:5)].q).play(SystemClock,~funs);
+
+TempoClock.tempo=1
+~displeased.ply //the problem is to do with the ~trill continuing malarkey
 ~displeased.save;
-( 
-	~displeased.cursor_(0); //	{{{2
-	~trillLength=5;
-
+( ~displeased.cursor_(0); //	{{{2
+	//{ ~displeased.ply}.defer(0.2);
 	//~displeased.parts=(ply:{|self| self.do({|i| i.p});};);~displeased.parts=~displeased.parts;
-
-
 	// this should be a function
 	~displeased.pbind.do({|i x| var label = ("guide"++x).asSymbol; ~displeased.parts[label]=(start:x,music:i);label.postln});
-
 	{
-		a=~synTrill.value(0,0.9,12,len:22);
-		b=~synTrill.value(1,1.9,4,len:22);
-		~syn1.expression(40,1);
-		~syn1.expression(30,0);
-		~syn1.node[1]=\filter->{|in| PlateReverb.ar(in,mix:0.5,decayTime:0.55)};
-		~syn1.node[2]=\filter->{|in| Phaser2.ar(in,rate:0.1,fb:0.5)*5};
-		//~syn1.node[1]=nil
-
-		~displeased.parts.trill=(start:-1,music:
-			{{ a=a.play; b=b.play;'trill'.postln }}
-		);
-
-		~displeased.parts.continueTrill=(start:0,music:
-			{{ a.isPlaying.not.if(a=a.play;b=b.play);  }}
-		);
-
-		~displeased.parts.stopTrill=(start:2,music: {{a.stop;b.stop}} );
-
-		~displeased.parts.ply;
-	}.fork
+		{
+		~synTrill= //{{{2
+		{|chan=1 amp=0.3 transpose=0 len=6|
+			Pfindur(len,
+				Pbind(*[
+					type:\midi,midiout:~syn1.controller.midi,
+					note:Pseq([6,8],inf)+transpose,
+					dur:Pwhite(0.1,0.12)*0.8,
+					amp:Pwhite(0.1,0.11),
+					pan:rrand(-1,1),
+					amp:amp,
+					chan:chan
+				]));
+			}; //}}}
+			~displeased.parts.setupTrill=(start:0,music://{{{2
+				{	
+					try{~syn1.controller.loaded.not.if{~syn1.init}}{~syn1=~synful.()};
+					~syn1.expression(40,1);
+					~syn1.expression(30,0);
+					~syn1.node[1]=\filter->{|in| PlateReverb.ar(in,mix:0.5,decayTime:0.55)};
+					~syn1.node.fadeTime=8;
+					~syn1.node[2]=\filter->{|in| Phaser2.ar(in,rate:0.1,fb:0.5)*5};
+				}
+			); //}}}
+			~displeased.parts.fadeoutPlate=(start:2,music://{{{2
+				{
+					{~syn1.node[1]=nil}.value
+				}
+			); //}}}
+			~displeased.parts.trill=(start:0,music://{{{2
+				p{
+						var trillLength = ~displeased.secDur[0..1].sum;
+						TempoClock.tempo=1;  //hmmm
+						~synTrill.value(0,0.9,12,len:trillLength).play;
+						~synTrill.value(1,1.9,4,len:trillLength).play;
+				}
+			); //}}}
+		}.value;
+		~displeased.parts.bassNotes54=(start:5,music: //{{{2
+			[
+				dur: Pseq(~displeased.secDur[5..6]) ,
+				degree: Pseq([1,4],2) ,
+				legato:[1.1,0.9].q,
+				octave:3,
+				amp:1
+			].p
+		);//}}}
+	//TempoClock.tempo=1.5.reciprocal;
+	SynthDef(\trem2,{| rate=12 freq=499 scale=1 gate=1 out=0| //		{{{3
+		//var force =LFBrownNoise1.kr(1).range(-0.20,8.8);
+		var force=0.9;
+		//var scale=SinOsc.ar(0.01).range(0.2,1.2);
+		//var vel=1;
+		var vel=SinOsc.kr(rate+LFBrownNoise1.kr(1)).range(0,1);//rate
+		//var pos=0.2;
+		var pos = LFBrownNoise1.kr(2).range(0.3,0.2);
+		var env = Env.asr(0,1,0.5).kr(2,gate:gate);
+		var sig = DWGBowed.ar(
+			freq: freq,// + LFBrownNoise0.kr(2).range(0,10),  
+			velb: vel,  
+			force: force,  
+			gate: 1,  
+			pos: pos,  
+			release: 0.5,  
+			c1: 5,  //inverse of DC decaytime
+			c3: 30, // hi freq decay 
+			//impZ: 0.55*LFBrownNoise1.kr(0.5).range(0.02,1),  
+			fB: 2 //inharmonicity
+		); 
+		sig= DWGSoundBoard.ar(sig,  c1: 20,  c3: 100,  mix: 0.8,  d1: 199*scale,  d2: 211*scale,  d3: 223*scale,  d4: 227*scale,  d5: 229*scale,  d6: 233*scale,  d7: 239*scale,  d8: 241*scale);
+		sig=HPF.ar(sig,300)*0.05;
+		//sig =PlateReverb.ar(sig,mix:0.8);
+		Out.ar(out, Splay.ar(sig*env));
+	}).add; //}}}
+	SynthDef(\verb,{|out wet=1 | //{{{
+		var in=In.ar(out);
+		var sig =PlateReverb.ar(in);
+		XOut.ar(out, wet, sig*2)}
+	).add; //}}}
+	~displeased.parts.bowed7=(start:7,music:Pfx([ //{{{
+		tempo:0.8,
+		instrument:\trem2,
+		rate:Pbrown(2,0,0.3),
+		degree:Pseq([6,5,3,1,7-7,6-7,4,3,5-7]-1),
+		root:-1,
+		octave:[6,4],
+		scale:Scale.major,
+		dur:~displeased.durs[7]++Pseq([2.5]),
+		legato:1,
+		mtranspose:Pseq([ [0,2,4,7],[0,3,5,7],[0,2,5,7],[0,2,4,7],[0,3,5,7],[0,4,6,7],[0,2,4,7],[0,3,5,7],[0,7] ].collect(_-7)),
+	].p.pad,
+	\verb,\wet,0.3)  //}}}
 );
+
+	~displeased.parts.bass7=(start:7,music:
+		(instrument:\sawSynth,rel:15,att:1,octave:2,amp:0.17,degree:4,root:-1,mtranspose:[0,4,7],dur:10)
+	);	
+	}.fork
+)
+TempoClock.tempo_(1);~displeased.cursor_(6).play
+//([(song:~transform,type:\player,dur:13)].q++ [~complete,~displeased].collect((song:_,type:\player)).q).play
+//or, better 
+[~transform,~complete,~displeased].q.play(TempoClock,~funs);
+
+//
+
+~syn1.init;
+
+//easy to write function will work like this:
+// [~displeased, [~complete,{TempoClock.tempo_(1)}], {vlad.postln} ]
 
 ( ~excellent=( //		{{{1
 		key:\excellent, parent:~trek, proto:~funs, song:[
@@ -1968,7 +2110,7 @@ p.stop;
 ).play
 ) //}}}
 //old rekkerd - strum gets keyswitch order right //		{{{3
-g=~guitar.()
+g=~guitar.();
 (
 	Ptpar (
 		[

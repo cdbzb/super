@@ -1,11 +1,3 @@
-( // 				{{{2;
-	s.options.memSize=2**17;
-	o=s.options;
-	o.numInputBusChannels=4;
-	s.reboot;
-	s.plotTree;
-	s.meter
-)
 ( ~xtreme=( //				{{{2
 		key:\song,proto:~trek,parent:~funs,
 		//play:{~parts.do(_.postln)},
@@ -33,14 +25,14 @@
 	~xtreme.play
 )	
 
-(//record audio in an event{{{
+(//record audio in an event{{{2
 	~input=RecNodeProxy.audio(s,1)
 	.source_({SoundIn.ar(2,1)})
 	.open('/tmp/test.aif')
 	.record
 )
 (// record....{{{
-	m=p{ ~input.unpause;10.wait;~input.pause };
+	m=p{ ~input.unpause;10.wait;~input.close};
 	~xtreme.parts.record2=(start:2,music:m);
 	~xtreme.play;
 )//}}}
@@ -58,33 +50,105 @@
 ~xtreme.ply
 )//}}}
 (// save after recording pseudo-code {{{
-	~sample=(
-		record: //generate name when recording
-		save:
-		name: //generate name
-		saveInArchiveUnderKey: or....
-		saveInMultilevelIdentityDict
-	);
 
 	//b.write("/Users/michael/tank/super/Trek-samples/heart-action.aif")
-
-)//}}}
-)//}}}
+	//or.....
+	(
+		~recordme={|name bus=2 chan=1| var node=RecNodeProxy.audio(s,1)
+			.source_({SoundIn.ar(bus,chan)})
+			.open('/tmp/'++name.asSymbol)
+			.record;
+			node
+	}
+)
+)
 
 (
-//// xtreme sections		{{{2
-	//~xtreme.parts=( ply:{|self| self.do({|i| i.p});};);
-	//~xtreme.parts=~xtreme.parts;
+	~item=(
+		name:'test.aif',
+		arm: {|self name bus=2 chan=1| 
+			var node=RecNodeProxy.audio(s,1)
+			.source_({SoundIn.ar(bus,chan)})
+			.open('/tmp/'++self.name.asSymbol++'.aif')
+			.record;
+			self.node=node
+		},
+		record:{|self|self.node.unpause},
+		stp:{|self| self.node.close;self.buffer=Buffer.read(s,'/tmp/'++self.name.asSymbol++'.aif')},
+		playback:{|self| self.buffer}
+	);
+)
+~testtt=(name:'testtt',parent:~item);
+~testtt.name
+~testtt.arm
+~testtt.record
+~testtt.stp
+a=~testtt.playback.play
+a.play
+~testtt.buffer
+~testtt.node.close
+~testtt.node.close
+~
+NodeProxy
+a=~recordme.('testt.aif')
+(
+	~playmee={|name| Buffer.read(s,'/tmp/'++name.asSymbol)}
+)
+a=~playmee.('testt.aif')
+a.play
+a.unpause
+a.close
 
-	//{~xtreme.ply}.defer(0.3);
+//}}}
+)//}}}
+
+w=all {:x,x<-~xtreme.parts.keys,var y=~xtreme.parts[x],y.start==2}
+s.meter;
+
+~xtreme.play
+s.latency=0.2
+~xtreme.cursor_(0)
+s.plotTree
+s.reboot
+
+	s.latency=2
+( //// xtreme sections		{{{2
+	//{~xtreme.play}.defer(0.3);
+	~xtreme.bassBuss=Bus.audio(s,1);
+
+	~xtreme.infrastructure={ //bass patch lasts as long as end (durTillEnd){{{
+		try{~syn1.controller.loaded.not.if{~syn1.init}}{~syn1=~synful.()};
+		~bassDecimator=Synth(\xtremeBass,[\amp,0.6]);
+		~bassVerb=Synth(\plateReplace);
+		~bassDecimator.set(\decimate,-1);
+	}.inEnvir;
+//}}}
+	SynthDef(\xtremeBass,{|amp=1 decimate=0 out=0| //{{{
+		var sig = In.ar(~xtreme.bassBuss.index)!2;
+		Env.perc(~xtreme.durTillEnd+1).kr(2,gate:1);
+		sig= XFade2.ar(sig,Decimator.ar(sig,rate:8000,bits:4)*(-6.dbamp),Lag.kr(decimate));
+		Out.ar(out,sig*amp)
+	}).add;
+//}}}
+	SynthDef(\plateReplace,{|in gate=1| //{{{
+		var sig=In.ar(~xtreme.bassBuss.index,2);
+		sig=sig* Env.asr(0,1,0.1).kr(2,gate:gate);
+		ReplaceOut.ar(~xtreme.bassBuss.index,PlateReverb.ar(sig,mix:0.9));
+	}).add;
+//}}}
 	~xtreme.parts=();
-	~xtreme.parts.strum1=( start:0,syl:2, music:
-		(\note:[-5,-3,-2,2,5,7],\strum:0.03,\sustain:2));
-	~xtreme.parts.bassnote=( start:0, music: 
-		(note: -24-5,amp:3, sustain:0.5+~xtreme.secDur[0]+~xtreme.secDur[1],\dur:~xtreme.secDur[0]+0.5));
+	~xtreme.parts.bassT2=(start:2,lag:0,music:p{//{{{
+		~bassVerb.release(0.1);
+		0.05.wait;
+		~bassDecimator.set(\decimate,1)
+	});//}}}
+	~xtreme.parts.bassT3=(start:4,music:p{~bassDecimator.set(\decimate,-1)});
+	~xtreme.parts.strum1=( start:0,syl:2, music://{{{
+		(\note:[-5,-3,-2,2,5,7],\strum:0.03,\sustain:2));//}}}
+	~xtreme.parts.bassnote=( start:0, music: (note: -24-5,amp:3, sustain:0.5+~xtreme.secDur[0]+~xtreme.secDur[1],\dur:~xtreme.secDur[0]+0.5));
 	~xtreme.parts.strum2=( start:1,syl:2, music: (lag:~xtreme.durs[1].list[3]/2,note:[-5,-2,0,4,7],strum:0.03,sustain:2));
-	~xtreme.parts.bassnote2=( start:1, music: 
-		(note: -12-5,amp:3, sustain:~xtreme.secDur[1]));
+	~xtreme.parts.bassnote2=( start:1, music: //{{{
+		(note: -12-5,amp:3, sustain:~xtreme.secDur[1]));//}}}
 	~xtreme.parts.heartActionBass=( start:2, music: //{{{
 		Pbind(
 			\dur, ~xtreme.durs[2]++Pseq([1.0]),
@@ -93,10 +157,10 @@
 		)
 	);//}}}
 	~xtreme.parts.weeeeuw=(start:2,music://{{{
-		{{Out.ar(0,FreeVerb.ar(Ringz.ar(WhiteNoise.ar(0.01),XLine.kr(2500,240,6),1),room:8,mix:7)*EnvGen.kr(Env.perc(0,7),doneAction:2))}});
+		{{FreeVerb.ar(Ringz.ar(WhiteNoise.ar(0.01),XLine.kr(2500,240,6),1),room:8,mix:7)*EnvGen.kr(Env.perc(0,7),doneAction:2)}});
 	//~xtreme.parts.weeeeuw.music= Pfxb.new(Pbind(\midinote,Pseries(60+36,-0.99,100),\dur,0.1,\sustain,1,\amp,0.01),\two_tube);
 	//~xtreme.parts.weeeeuw.music.play}}}
-	{   ///tempo map for drums
+	{   ///tempo map for drums{{{
 		var d= ~xtreme.durs[2].list[0..3] ++ ((~xtreme.durs[2].list[4]/2)!2).asList ++ ~xtreme.durs[2].list[5..8];
 		~xtreme.parts.drums=(start:2,music://{{{
 			Pbind( \instrument, Pseq([\kick2, \rest, \snare, \rest, \kick2, \kick2, \snare,\rest]++
@@ -125,7 +189,7 @@
 				\amp,Pseg([0.5,0.5,0]*0.15,[d[0..4].sum,d.sum-d[0..4].sum+4.2])
 			)
 		);//}}}
-	}.value;
+	}.value;//}}}
 	~xtreme.parts.andthe=(start:3,//{{{
 				music:Pbind(\dur,~xtreme.durs[3]++Pseq([1]), \instrument,\test,
 				\amp,1,
@@ -189,18 +253,18 @@
 	~xtreme.parts.bass8=(start:8,music: //{{{
 		Pbind(\note,Pseq([5,4,2,1]-24),\dur,~xtreme.durs[8],\amp,0.5)
 	);//}}}
-	~xtreme.parts.bass8Alt=(start:8,music:
+	~xtreme.parts.bass8Alt=(start:8,music://{{{
 		Pbind(\instrument,\test,\note,Pseq([5,4])-[0+rand(0.02),12],\lag,Pseq([0,0]),\amp,0.5)
-	);
-	~xtreme.parts.strum8=(start:8,syl:1,music:
+	);//}}}
+	~xtreme.parts.strum8=(start:8,syl:1,music://{{{
 	(note:[1,4,9]-12++[1,4],strum:0.04,sustain:2,lag:0.52,amp:0.05)
-	);
-	~xtreme.parts.strum9=(start:9,music:
+	);//}}}
+	~xtreme.parts.strum9=(start:9,music://{{{
 		(midinote:~panNotes.(" <g b- e-5 g5>").flatten-12,strum:0.042)
-	);
-	~xtreme.parts.bass9=(start:9,music:
+	);//}}}
+	~xtreme.parts.bass9=(start:9,music://{{{
 		(note:~panNotes.("e-2").flatten-60,dur:2,amp:0.3)
-	);
+	);//}}}
 	~xtreme.parts.tremoChord=(start:10,music://{{{
 		Pfxb(
 			Pfindur(~xtreme.durs[10].list[0],
@@ -233,36 +297,95 @@
 			),\verb_fade,\time,2
 		);
 	);//}}}
+ //{{{ modify Bass Track
+ //~xtreme.play
+
+	all {:x,x<-~xtreme.parts.keys, var y=~xtreme.parts[x], x.asString.find("bass",true).isNil.not,y.music.class==Event,::y.music=Pseq([y.music])};
+ ~sendBasstoBus={all {
+	 :x,x<-~xtreme.parts.keys, var y=~xtreme.parts[x],
+	 x.asString.find("bass",true).isNil.not,
+	 ::y.music=y.music<>(out:~xtreme.bassBuss.index,addAction:\addToHead)}
+ }.value; //}}}
 	~xtreme.pbind.do({|i x| var label = ("guide"++x).asSymbol; ~xtreme.parts[label]=(start:x,music:i);label.postln});
 	c=SystemClock.seconds;
- )
- 
+	//~xtreme.cursor_(1);
+	//~xtreme.play
+	~xtreme.parts.nextSection=(start:10,lag: ~xtreme.secDur[10]+0.01,music:{~transform.ply});
+) 
+~xtreme.cursor_(0);
+~xtreme.play
+
+(//vocal sess
+ ~xtreme.parts.heartdouble=(start:2,music:{~rec.(\heartHi2,4,7)});
+ //~xtreme.parts.heartVocal=(start:2,music:{~rec.(\heart,4,7)});
+ ~xtreme.play
+)
+~syn1.keys.do(_.postln)
+~syn1.controller.info.keys.do(_.postln)
+b=Buffer.read(s,File.getcwd++"/media/heart.wav");
+c=Buffer.read(s,File.getcwd++"/media/heartd.wav");
+d=Buffer.read(s,File.getcwd++"/media/heartHi.wav");
+e=Buffer.read(s,File.getcwd++"/media/heartHi2.wav");
+
+~xtreme.cursor_(2).play;
+
+(
+	~xtreme.parts.heartdouble=nil;
+	~xtreme.parts.heartVocal=(start:2,music:(instrument:\heartVoc));
+		SynthDef(\heartVoc,{
+			var sig,sig2;
+			sig=PlayBuf.ar(1,[b,c].collect(_.bufnum))*3;
+			sig=Compander.ar(sig!2,sig,thresh:0.3,slopeAbove:0.10).tanh;
+			//sig=PlateReverb.ar(sig/1,mix:0.6);
+			sig=TwoTube.ar(sig,0.01,0.7,2222,2333)+sig.distort;
+			sig=RHPF.ar(sig,1500,rq:0.25)*2;//+HPF.ar(sig);
+			sig2=PlayBuf.ar(1,[d,e].collect(_.bufnum));
+			sig2=Mix.ar(sig2);
+			sig2=FreeVerb.ar(sig2,0.8,0.4,0.1)*2;
+			sig2=Compander.ar(sig2,sig2,thresh:0.3,slopeAbove:0.10).tanh;
+			sig+sig2;
+			Out.ar(\out.ir,sig+sig2);
+	}).add;
+	~xtreme.play;
+)
+ ~xtreme.play
+ ~xtreme.cursor_(9).play
+
  ( //transformation			{{{2
 	~transformation={ 
-		var dur=15;
-		var pitches=~panNotes.("f#3 b- c4 e")+[0,12];
-		var chord=pitches.collect({|item index|  Synth(\trans,[\freq,item.midicps,\amp,0.1])});
-		var chord2=pitches.collect({|item index|  Synth(\trans,[\freq,item.midicps,\amp,0.1])});
-		//~xtreme.init;
-		try{~fadeO.stop};
-		try{~syn1.controller.loaded.not.if{~syn1.init}}{~syn1=~synful.()};
-		{dur.wait;chord.do{|i|i.release}}.fork;
-		{dur.wait;chord2.do{|i|i.release}}.fork;
+			var dur=15;
+			var pitches=~panNotes.("f#3 b- c4 e")+[0,12];
+		s.bind{
+			var chord=pitches.collect({|item index|  Synth(\trans,[\freq,item.midicps,\amp,0.1])});
+			var chord2=pitches.collect({|item index|  Synth(\trans,[\freq,item.midicps,\amp,0.1])});
+			//~xtreme.init;
+			try{~fadeO.stop};
+			//try{~syn1.controller.loaded.not.if{~syn1.init}}{~syn1=~synful.()};
+			try{~syn1.controller.loaded.not.if{~syn1.init}}{~syn1=~synful2.()};
+			{dur.wait;chord.do{|i|i.release}}.fork;
+			{dur.wait;chord2.do{|i|i.release}}.fork;
+		};
 		////cymbal
 		(instrument:\cymbal,length:8).play;
 		////strings
+		try{~syn1.monitor.free;};~syn1.monitor=Monitor.new;~syn1.monitor.play(~syn1.bus.index,2,0,2,fadeTime:0.05);
+		v={var sig=In.ar(~syn1.bus);sig=FreeVerb.ar(sig,room:0.75,mix:0.55)*3;ReplaceOut.ar(~syn1.bus,sig)};v=v.play;
+		{20.wait;v.free}.fork;
+		//~myFree.(~syn1)
 		~syn1.setprog(3,5,0); ~syn1.setprog(4,5,1);
-		~syn1.node[1]=\filter->{|in| FreeVerb.ar(in,room:0.75,mix:0.55)*3};
+		//~syn1.node[1]=\filter->{|in| FreeVerb.ar(in,room:0.75,mix:0.55)*3};
 		~fadeO={
 			8.wait;"now!".postln;127.do( {|i|~syn1.expression((127-i),0);~syn1.expression((127-i),1);0.18.wait} )
 		}.fork;
 
-		(type:\midi,midiout:~syn1.controller.midi,\midinote:~panNotes.("f#3 b- c4 e").flatten-[0,12],dur:20).play;
-		(type:\midi,midiout:~syn1.controller.midi,\channel:2,\midinote:~panNotes.("f#3 b-4 c4 e").flatten-24,dur:20).play;
-		~syn1.expression(127,0);
-		~syn1.expression(127,1);
+		s.bind{
+			(type:\midi,midiout:~syn1.controller.midi,\midinote:~panNotes.("f#3 b- c4 e").flatten-[0,12],dur:20).play;
+			(type:\midi,midiout:~syn1.controller.midi,\channel:2,\midinote:~panNotes.("f#3 b-4 c4 e").flatten-24,dur:20).play;
+			~syn1.expression(127,0);
+			~syn1.expression(127,1);
+		};
 		//tympani
-		{ |pitchScale=1.15 loss=0.99998 |
+		s.bind{{ |pitchScale=1.15 loss=0.99998 |
 			var env=Env.linen(0,dur-5,8).kr(2,gate:1)*0.175;
 			var exc = Dust.ar(2!2)+Impulse.ar(0);
 			var sig;
@@ -271,13 +394,13 @@
 			exc=PinkNoise.ar(exc);
 			sig=MembraneCircle.ar(exc,[0.007,0.0073]*pitchScale,loss)*env;
 			sig
-		}.play;
+		}.play;}
 		
 	};
 	~transform=(ply:{topEnvironment.use({~transformation.fork})},durTillEnd:15);
-~transformation.play
+~transform.ply
 ); //}}}
-
+p({~xtreme.play;~xtreme.durTillEnd.wait;~transformation.play}).play
 
 
 ( // {{{ \player Event Type
@@ -1958,18 +2081,28 @@ Pbind(*[
 
 //	list comprehensions	{{{1
 all {:x,x<-[1,3,4],x.odd,var z=x+1,::[z,x].postln};
-//so... get a section using list comprehensions
-~xtreme.parts;
+// get a section using list comprehensions
+
 all {:x,x<-~xtreme.parts,x.class==Event,x.start==3}
-a= all {:x,x<-~xtreme.parts.keys,var y=~xtreme.parts[x],y.class==Event,y.start==3 }
-~xtreme.cursor_(3);
+//gets the keys and the parts
+all {:x,x<-~xtreme.parts.keys,var y=~xtreme.parts[x],y.class==Event,y.start==3 }
+//find all Events
 all {:x,x<-~xtreme.parts.keys,var y=~xtreme.parts[x],y.class==Event,y.start==3,::y.p };
+//find and play with bass in name
+all {:x,x<-~xtreme.parts.keys,x.asString.find("bass",true).isNil.not,::~xtreme.parts[x].p}
+all {:x,x<-~xtreme.parts.keys,x.asString.find("bass",true).isNil.not,::~xtreme.parts[x].music.class.postln}
+
+s.plotTree
+)
+~xtreme.parts.bassnote2.music.out
+
+s.meter;
+
 a;
 a.class
 Array;
 [dur:3].p.play
 s.reboot;
-
 
 //	rhythm parsing	{{{1
 		z=[1,2/3,[1/3,1],1,]
@@ -2179,3 +2312,7 @@ b=a.collect{|i x| i->x}.asDict
 TempoClock.tempo_(1)
 ~c.play
 ~c.cursor
+(note:-20,out:0,pan:-1).play
+
+
+

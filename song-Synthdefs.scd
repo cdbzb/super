@@ -93,7 +93,7 @@ s.waitForBoot({
 	}).add;
 
 	// Basic saw synth for chords and bass
-	SynthDef("sawSynth", { arg freq = 440, amp = 0.1, att = 0.1, rel = 2, lofreq = 1000, hifreq = 3000, lagTime = 0.3;
+	SynthDef("sawSynth", { arg out=0, freq = 440, amp = 0.1, att = 0.1, rel = 2, lofreq = 1000, hifreq = 3000, lagTime = 0.3;
 		var env, snd;
 		freq=Lag.kr(freq,lagTime);
 		env = Env.perc(
@@ -107,7 +107,7 @@ s.waitForBoot({
 			freq: LFNoise2.kr(1).range(lofreq, hifreq)
 		);
 		snd = Splay.ar(snd);
-		Out.ar(0, snd);
+		Out.ar(out, snd);
 	}).add;
 
 	SynthDef(\verb_fade,{|in time| FreeVerb.ar(in, room:0.8, mix:0.8)*Line.kr(1,0,time)}).add;

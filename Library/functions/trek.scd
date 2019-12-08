@@ -230,7 +230,7 @@
 		|vsti|
 		s.freeMyDefaultGroup;
 		TempoClock.clear;
-		[dur:0.01,note:Pseries(1,1,128),amp:0,type:\vsti,controller:vsti.controller].pp;
+		16.do{|i|[chan:i,dur:0.01,note:Pseries(1,1,128),amp:0,type:\vsti,controller:vsti.controller].pp};
 	}//}}}
 )
 

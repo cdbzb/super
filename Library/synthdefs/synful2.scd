@@ -1,5 +1,3 @@
-s.options.memSize_(2**17);
-s.reboot;
 (
 	SynthDef(\vsti,{|in out=0|
 		var sig=VSTPlugin.ar(nil,2);
@@ -36,6 +34,7 @@ s.reboot;
 			},
 			init: { |self| //create node and controller + load plug 
 				self.controller=VSTPluginController(Synth(\vsti,[\out,self.bus],target:RootNode(s)));
+				self.monitor=Monitor.new(self.bus,2,0,2);
 				//self.node=NodeProxy.audio(s,2).play;
 				//self.node.source={In.ar(self.bus.index,2)};
 				{
@@ -63,11 +62,4 @@ s.reboot;
 		event;
 	};
 )
-~syn1=~synful2.()
-~syn1.bus
-a=Monitor.new.play(~syn1.bus.index,2,0,2);
-[type:\vsti,note:Pwhite(3,8,88),controller:~syn1.controller].pp
-v={var sig=In.ar(~syn1.bus);sig=PlateReverb.ar(sig);ReplaceOut.ar(~syn1.bus,sig)};v.play
-~myFree.(~syn1)
-s.plotTree
 

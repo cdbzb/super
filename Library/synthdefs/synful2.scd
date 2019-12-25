@@ -7,7 +7,7 @@
 	~synful2=
 	{
 		var event=
-		( // creates a nodeproxy playing on a private bus - .node and .bus respectively 
+		( 
 			bus: Bus.audio(s,2),
 			controller: nil,
 			node:nil,
@@ -34,7 +34,7 @@
 			},
 			init: { |self| //create node and controller + load plug 
 				self.controller=VSTPluginController(Synth(\vsti,[\out,self.bus],target:RootNode(s)));
-				self.monitor=Monitor.new(self.bus,2,0,2);
+				self.monitor=Monitor.new.play(self.bus,2,0,2);
 				//self.node=NodeProxy.audio(s,2).play;
 				//self.node.source={In.ar(self.bus.index,2)};
 				{

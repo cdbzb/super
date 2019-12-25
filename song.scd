@@ -453,6 +453,7 @@ p({~xtreme.play;~xtreme.durTillEnd.wait;~transformation.play}).play
 	~recorder.(~complete,2,1);
 )
 
+TempoClock.play
 ~complete.play
 ~complete.cursor_(3)
 all {:x,x<-~complete.parts,x.start==3};
@@ -466,8 +467,10 @@ all {:x,x<-~complete.parts,x.start==3,::x.p};
 a=Pseries(0.1,-0.05).asStream
 a.next
 ~complete.cursor_(3).play;
+s.boot
 ~complete.play
 
+[~complete.player].q(2).play
 ( //// parts for ~complete		{{{1
 	~syn1.isNil.if({~syn1=~synful2.()},{~syn1.controller.loaded.not.if{~syn1.init}});
 //	~complete.cursor_(0); //	{{{2
@@ -554,9 +557,8 @@ a.next
 //}}}
 	//3 -  ~helloBeat    		{{{2
 
-	~complete.parts.helloSequence=(start:3,clock:TempoClock.new,music:{|self| //returns a function
+	~complete.parts.helloSequence=(start:3,clock:TempoClock.new,bus:Bus.audio,music:{|self| //returns a function
 		var kickPatterns,kickBar,snarePatterns,snareBar,synth,helloBass2,helloBass1,helloBeat;
-
 		SynthDef( \phaser2,{//{{{
 				|out=5 depth=0.5 fb=0.3 rate=0.03|
 				ReplaceOut.ar(
@@ -594,56 +596,66 @@ a.next
 //}}}
 			helloBeat= { |synthamp=0.3 drumsamp=1 tempo1=(52/60) tempo2=(50/60)|
 				Ppar([
-					Pbind(\tempo,Pseq([tempo1,tempo2]),\dur,4,\note,\r),
-
-					Pbind(\instrument,\kick1,
+					Pbind(
+						\tempo,Pseq([tempo1,tempo2]),\dur,4,\note,\r),
+					Pbind(
+						\instrument,\kick1,
 						\dur,kickBar,
 						\amp,drumsamp*0.1
 					),
-					//Pbus(
-					Pfin(42,   ///XTENDED
-						Pn(
-					Pbind(\instrument,\hihat, //ffreq rel
-						//\dur,Pseq([0.245,0.255],32),
-						\dur,Pseq([0.245,0.255],32),
-						\amp,Pseq([Pwhite(0.3,0.4,1),Pwhite(0.2,0.3,1)],32)*0.4*drumsamp,
-						\lag, Pseq(
-							(1!16++(-1!16)).scramble*0.003),
-							\ffreq, Pwhite(6000,6500),
-							\rel,0.15) 
-							,2))
-						,
-						//	),
-						Pbind(\instrument,\snare,
-							\dur,snareBar,
-							\amp,drumsamp*0.1
+					Pfin(
+						42, Pn( ///XTENDED
+							Pbind(\instrument,\hihat, //ffreq rel
+								//\dur,Pseq([0.245,0.255],32),
+								\dur,Pseq([0.245,0.255],32),
+								\amp,Pseq([Pwhite(0.3,0.4,1),Pwhite(0.2,0.3,1)],32)*0.4*drumsamp,
+								\lag, Pseq(
+									(1!16++(-1!16)).scramble*0.003),
+									\ffreq, Pwhite(6000,6500),
+									\rel,0.15
+								) ,2
+							)
 						),
+					Pbind(
+						\instrument,\snare,
+						\dur,snareBar,
+						\amp,drumsamp*0.1
+					),
+					Pfx(
+						Pbind( \instrument,\sawSynth,
+							\note,Pser(~panNotes.("d f# a c#5 e5").flatten-60,16),
+							\dur,1/2,
+							\att,0.5,
+							\octave,Pser(4!5++(5!5)++(6!5)++(7!5),42),
+							\amp, Pseq(( 0.1!5 )++(0.09!5)++(0.08!5)++Pseries(0.07,-0.005))
+						).pad,
+						\phaser2
+					),
+						//~helloBass1,
+						//~helloBass2,
+						Pset(\amp,synthamp,synth),
+						//Pseq([(\type:\rest,dur:4),~complete.pbind[4]]);//remove
+						//	Ptpar([
+						//		0.15,~helloGtr1,
+						//		0.15,~helloGtr2
+						//	])
+					],1   /// repeats!!
+				)<>(out:self.bus)};
 
-						Pfx(
-							Pbind( \instrument,\sawSynth,
-								\note,Pser(~panNotes.("d f# a c#5 e5").flatten-60,16),
-								\dur,1/2,
-								\att,0.5,
-								\octave,Pser(4!5++(5!5)++(6!5)++(7!5),42),
-								\amp, Pseq(( 0.1!5 )++(0.09!5)++(0.08!5)++Pseries(0.07,-0.005))
-							).pad,
-							\phaser2),
-							//		~helloBass1,
-							//~helloBass2,
-							Pset(\amp,synthamp,synth),
-							//Pseq([(\type:\rest,dur:4),~complete.pbind[4]]);//remove
-
-							//	Ptpar([
-							//		0.15,~helloGtr1,
-							//		0.15,~helloGtr2
-							//	])
-						],1   /// repeats!!
-					)};
-				//t=TempoClock.new;
+				'self bus '.post;self.bus.postln;
+				self.mon=Monitor.new.play(self.bus.index,2,0);
 				{s.bind {helloBeat.(synthamp:0.1,drumsamp:0.7,tempo1:~helloTempo,tempo2:~helloTemp2).play(self.clock)}};
 			});
-			//~complete.parts.helloSequence.music.play;
 // 4-6 {{{2
+	~complete.parts.drumPan4=(start:4,music:{
+		{
+			~complete.parts.helloSequence.mon.play(
+				~complete.parts.helloSequence.bus.index,2,1,1,
+				fadeTime:~complete.secDur[4..5].sum,
+				volume:0.2);
+		}.fork
+	}
+	);
 	~complete.parts.bass4=(start:4,syl:6,music:
 		(instrument:\sawSynth,note:[7,-5]-12,amp:0.2,sustain:2,att:1.0,rel:3)
 	);
@@ -709,16 +721,15 @@ a.next
 		Out.ar(out, sig*env*amp);
 	},  rates: nil,  prependArgs: nil,  variants: nil,  metadata: nil).add;
 
-	~complete.parts.keys62=(start:6,syl:5,music:
+	~complete.parts.keys62=(start:6,syl:5,music://{{{
 		Pbind(
 			\instrument,\stab,
 			\note,Pseq([ [7,9,13],[7,9,13],[5,9,14] ]),
 			\dur, Pseq(~complete.durs[6].list.[6..7]++[1]) ,
 			\amp,Pseq([1,1.3,1])*0.8,
 		)
-	);
+	);//}}}
 	// 7 on {{{2
-
 	~complete.parts.bass7=(start:7,syl:0,music://{{{
 		Pseq([
 			(note:5-24,dur:~phrase6quarter*3,amp:0.5),
@@ -752,26 +763,27 @@ a.next
 	}
 		  );
 //}}}
-SynthDef(\tromboneVerb,{//{{{
+SynthDef(\tromboneVerb,{ |room=0.8 mix=0.7| //{{{
 	var sig=In.ar(~syn1.bus,2);
-	sig=FreeVerb.ar(sig,room:0.8,mix:0.7)*3;
-	ReplaceOut.ar(~syn1.bus,sig);DetectSilence.ar(sig,doneAction:2) 
+	sig=FreeVerb.ar(sig,room:room,mix:mix)*3;
+	ReplaceOut.ar(~syn1.bus,sig);DetectSilence.ar(sig,time:2,doneAction:2) 
 }).add;
 //}}}
 			//~complete.cursor_(0).play;
 	~complete.parts.trombone8=(start:8,music://{{{
 		{ | amp=0.9 exp=80|
-				~syn1.monitor.play(~syn1.bus.index,2,0,2,fadeTime:0.05,volume:1);
-				~syn1.patch(\trombone,\none,3);
-				~syn1.expression(84,3);
-				Ppar([[instrument:Pseq([\tromboneVerb])].p,
-				Pbind(*[lag:s.latency,
-					type:\vsti,
-					controller:~syn1.controller,
-					chan:3,
-					midinote: Pseq(~noteList.(["g#","c#","b3"]))-[12,36] ,
-					dur:Pseq([~complete.secDur[8],~complete.secDur[9],3]),
-					\amp:0.55 ])]);
+			~syn1.monitor.free;
+			~syn1.monitor.play(~syn1.bus.index,2,0,2,fadeTime:0.05,volume:1);
+			~syn1.patch(\trombone,\none,3);
+			~syn1.expression(84,3);
+			Ppar([[instrument:Pseq([\tromboneVerb])].p,
+			Pbind(*[lag:s.latency,
+				type:\vsti,
+				controller:~syn1.controller,
+				chan:3,
+				midinote: Pseq(~noteList.(["g#","c#","b3"]))-[12,36] ,
+				dur:Pseq([~complete.secDur[8],~complete.secDur[9],3]),
+				\amp:0.55 ])]);
 			}
 		);
 //}}}
@@ -862,43 +874,60 @@ s.plotTree
 ~funs.keys.do(_.postln)
 
 (// trill{{{1
-	~trill={ |instrument=\default amp=0.1 |
-		//Pfindur(5,
+	~trill={ |instrument=\default amp=0.1 len=5 |
+		Pfindur(len,
 			Pbind(*[
 				instrument:instrument,
 				note:Pseq([6,8],100),
 				dur:Pwhite(0.1,0.12)*0.8,
 				amp:Pwhite(0.1,0.11)*amp,
 				pan:rrand(-1,1)
-			]).play
-		//).play
+			])
+		).play
 	};
 	//~trill.value(\test);
 	//~trill.value;
-	~syn1.expression(64,1);
-	~syn1.expression(64,2);
-	~syn1.patch(\violins,\arco,1); //put these into the Pbind
-	~syn1.patch(\clarinet,\none,0); //put these into the Pbind
+
 		~synTrill=
 		{|chan=1 amp=0.3 transpose=0 len=6|
 			Pfindur(len,
 				Pbind(*[
-					type:\midi,midiout:~syn1.controller.midi,
+					type:\vsti,controller:~syn1.controller,
 					note:Pseq([6,8],inf)+transpose,
 					dur:Pwhite(0.1,0.12)*0.8,
-					amp:Pwhite(0.1,0.11),
+					amp:Pwhite(0.1,0.11)*amp,
+					legato:Prand([0.95,1,1,1,1],inf),
 					pan:rrand(-1,1),
-					amp:amp,
+					//amp:amp,
 					chan:chan
 				]));
 			};
-	~trill.value(\test);
-	~trill.value;
-			//~synTrill.value().play;
-			~synTrill.value(0,2.9).play;
-			~synTrill.value(1,1.9,4).play;
+
+			~trl=(dur:6,play: 
+				topEnvironment.use{
+					Routine{var len=6;
+						~syn1.expression(64,1);
+						~syn1.expression(64,2);
+						~syn1.patch(\violins,\arco,1); //put these into the Pbind
+						~syn1.patch(\clarinet,\none,0); //put these into the Pbind
+						~syn1.monitor.free;
+						~syn1.monitor.play(~syn1.bus.index,2,0);
+						Synth(\tromboneVerb,[mix:0.4]); //change??
+						//~trill.value(\test,len:len);
+						~trill.value(len:len);
+						~synTrill.value(0,3.0).play;
+						~synTrill.value(1,3.9,4).play;
+					};
+				}
+			)
 )
-(//trill with preroll {{{2
+.play
+
+~trl.play;
+~trl.stop;
+[~trl,~complete.player].q.play
+
+//trill with preroll {{{2
 	~complete.cursor_(8);
 	{
 		~complete.parts.ply;
@@ -936,8 +965,13 @@ s.plotTree
 	a.makeWindow;
 )
 
-([~displeased,~displeased<>(lag:5)].q).play(SystemClock,~funs);
+[~complete.player,~displeased.player].q.play;
+~syn1=~synful2.()
+~displeased.play
+~syn1.controller.loaded
 
+([~displeased,~displeased<>(lag:5)].q).play(SystemClock,~funs);
+~displeased.play
 TempoClock.tempo=1
 ~displeased.ply //the problem is to do with the ~trill continuing malarkey
 ~displeased.save;
@@ -961,22 +995,40 @@ TempoClock.tempo=1
 					chan:chan
 				]));
 			}; //}}}
+
+			SynthDef(\plate_phaser_insert,{|inBus=0 gate=1| //{{{
+				var env= Env.cutoff(15,curve:\cub).kr(2,gate:gate);
+				var sig = In.ar(inBus,2);
+					sig=PlateReverb.ar(sig,mix:0.5,decayTime:0.55);
+					sig=Phaser2.ar(sig,rate:0.1,fb:0.5)*2;
+					ReplaceOut.ar(inBus,sig*env)
+			}).add;//}}}
+
+			SynthDef(\syn1_Monitor,{|out=0| //{{{
+				Out.ar(out,In.ar(~syn1.bus.index,2))
+			}).add;//}}}
+
 			~displeased.parts.setupTrill=(start:0,music://{{{2
-				{	
-					try{~syn1.controller.loaded.not.if{~syn1.init}}{~syn1=~synful.()};
-					~syn1.expression(40,1);
-					~syn1.expression(30,0);
-					~syn1.node[1]=\filter->{|in| PlateReverb.ar(in,mix:0.5,decayTime:0.55)};
-					~syn1.node.fadeTime=8;
-					~syn1.node[2]=\filter->{|in| Phaser2.ar(in,rate:0.1,fb:0.5)*5};
-				}
+					p{	
+						try{~syn1.controller.loaded.not.if{~syn1.init}}{~syn1=~synful2.()};
+						~syn1.expression(40,1);
+						~syn1.expression(30,0);
+						~syn1.monitor=Synth(\syn1_Monitor);
+						~syn1.insert=Synth(\plate_phaser_insert,[\inBus,~syn1.bus.index],addAction:\addBefore,target:~syn1.monitor);
+					}
+				
 			); //}}}
+
 			~displeased.parts.fadeoutPlate=(start:2,music://{{{2
 				{
-					{~syn1.node[1]=nil}.value
+					{
+						~syn1.insert.release;
+					}.fork
+					//{~syn1.node[1]=nil}.value
 				}
 			); //}}}
-			~displeased.parts.trill=(start:0,music://{{{2
+
+			~displeased.parts.trill=(start:0,lag:0.1,music://{{{2
 				p{
 						var trillLength = ~displeased.secDur[0..1].sum;
 						TempoClock.tempo=1;  //hmmm
@@ -1192,11 +1244,10 @@ SynthDef(\pulse,{|gate=1 freq=400 amp=1 ffreq=4500 rel=2 out=0 t_trig wiggle=500
 	]);
 );
 	~unnecessary.cursor_(0); //		{{{1
-	TempoClock.tempo=1;
-	//~sections5=(ply:{|self| self.do({|i| i.p});};);~unnecessary.parts=~sections5;
+	//TempoClock.tempo=1;
 	~unnecessary.parts.unnecessary=(start:0,music:~unnecessary.pbind[0]);
-	~unnecessary.parts.tempo1=(start:0,music:{{TempoClock.tempo=1}.play});
-	~unnecessary.parts.tempo2=(start:1,music:{{TempoClock.tempo=1.2}.play});
+	~unnecessary.parts.tempo1=(start:0,music:{{TempoClock.tempo=1}.fork});
+	~unnecessary.parts.tempo2=(start:1,music:{{TempoClock.tempo=1.2}.fork});
 	~unnecessary.parts.descant=(start:0,music: //		{{{
 		Pbind(*[ 
 			instrument:\sawSynth,
@@ -1267,7 +1318,6 @@ SynthDef(\pulse,{|gate=1 freq=400 amp=1 ffreq=4500 rel=2 out=0 t_trig wiggle=500
 //~sections5.metabolism.p;//just making louder hmmm
 ~unnecessary.ply;
 )
-
 
 ( //	metabolism sketh	{{{2
 	t=TempoClock.new.tempo_( 1.2 );
@@ -1639,7 +1689,6 @@ SynthDef(\delay,{|out wet=1 |
 			type:\strum,controller:~g.controller,
 			switch:Pseq([\down,\down,\up],3)++Pseq([\down]),
 			lag:0.2,
-			//dur:Pseq( ~three.parse(0,[ 1, 0.5 , 0.5 , 1.5, 0.75 ,0.75]),2) ,
 			dur:Pseq( 
 					~bass0quarters[0]*[2,1,1]/4 ++ (~bass0quarters[1]*[1.9,1,1.1]/4)//moved with bass
 				,3 ),
@@ -1726,9 +1775,6 @@ SynthDef(\delay,{|out wet=1 |
 			lag:0.2
 		].p;
 	);//}}}
-//Ptpar([0.2,a,0.2,b,0.2+~three.durs[1].list.sum,v,
-//0.2,Pseq(~three.pbind[1..2])
-//]).play
 	~three.parts.connectorBass=(start:1,music: //		{{{
 		[
 			degree:Pseq([Rest(),3,2,1,1.1,2,3,4,4-7,0,7,0])-1,
@@ -1897,15 +1943,6 @@ SynthDef(\delay,{|out wet=1 |
 		amp:0.10
 	].p;
 );//}}}
-	{ ~three.cursor_(0); //		{{{
-		2.wait;  //to give time for vstis
-		~three.ply;
-	}.fork //}}}
-//~three.parts.guit0.music.play
-)
-//waaaa		{{{1
-s.plotTree
-(
 	SynthDef(\avsd, //		{{{
 		{
 			|freq=400 att=0.05 |
@@ -1919,33 +1956,16 @@ s.plotTree
 			sig=PlateReverb.ar(sig,mix:0.2);
 			Out.ar(\out.ir(0),sig*env);
 		},[0.3]
-	).add;
-	//(instrument:\avsd,att:2,degree:[1,3,5,8],amp:0.05).play
-)//}}}
-(
-	SynthDef(\tritri,{
+	).add; //}}}
+	SynthDef(\tritri,{//{{{
 		|freq=400 gate=1|
 		var sig=DPW3Tri.ar(freq,\amp.kr(0.1));
 		var env= Env.asr(\att.kr(0.1),\sus.kr(1),\rel.kr(2)).kr(2,gate:gate);
 		Out.ar(\out.ir(0),sig*env);
 
-	}).add
-)
-(
-		[
-			degree:Pseq([\r,[0,2,5],[-1,1.1,4]]-1),
-			root:2,
-			scale:Scale.mixolydian,
-			octave:4,
-			instrument:\tritri,
-			att:0.2,
-			rel:4,
-			amp:0.2,
-			dur:Pseq(~three.parse(8,[1!3,1!5,1!2])),
-		].p.play
-)
-(
-	Ppar([
+	}).add; //}}}
+	~three.parts.forboding8=(start:8,music://{{{
+		Ppar([
 		[
 			degree:Pseq([\r,[0,2,5],[-1,1.1]]-1),
 			root:2,
@@ -1978,12 +1998,18 @@ s.plotTree
 			scale:Scale.mixolydian
 		].p,
 
-		[
+		[ //final chord
 			instrument:\avsd,att:8,amp:0.018,degree:Pseq([\r,[5,7,9,11.1]-1]),dur:Pseq([8,12]),octave:4,root:2,
 		].p
 	])
-	.play
-)
+);//}}}
+);
+(
+	{ ~three.cursor_(0); //		{{{
+	2.wait;  //to give time for vstis
+	~three.ply;
+}.fork //}}}
+	)
 
 //		ideas / sounds {{{1
 ( //	trigger-echoFeedback	{{{2
@@ -2142,7 +2168,6 @@ Pbind(*[
 //	list comprehensions	{{{1
 all {:x,x<-[1,3,4],x.odd,var z=x+1,::[z,x].postln};
 // get a section using list comprehensions
-
 all {:x,x<-~xtreme.parts,x.class==Event,x.start==3}
 //gets the keys and the parts
 all {:x,x<-~xtreme.parts.keys,var y=~xtreme.parts[x],y.class==Event,y.start==3 }
@@ -2151,48 +2176,6 @@ all {:x,x<-~xtreme.parts.keys,var y=~xtreme.parts[x],y.class==Event,y.start==3,:
 //find and play with bass in name
 all {:x,x<-~xtreme.parts.keys,x.asString.find("bass",true).isNil.not,::~xtreme.parts[x].p}
 all {:x,x<-~xtreme.parts.keys,x.asString.find("bass",true).isNil.not,::~xtreme.parts[x].music.class.postln}
-
-s.plotTree
-)
-~xtreme.parts.bassnote2.music.out
-
-s.meter;
-
-a;
-a.class
-Array;
-[dur:3].p.play
-s.reboot;
-
-//	rhythm parsing	{{{1
-		z=[1,2/3,[1/3,1],1,]
-		f=z.flatten.collect{|m i|z.flatten[0..i].sum};
-		g=f.collect{|i|(i-0.001).floor};
-(
-	~parse={|song phrase array start=0| //array of rhythms
-		// use [] to tie notes, 
-		var counter = 0;
-		var beatNum = array.flatten.collect{|m i| array.flatten.[0..i].sum};
-		beatNum = beatNum.collect{|i|(i-0.001).floor};
-		array.collect{ |item|
-			item.isArray.not.if(
-				{
-					var b=beatNum[counter];
-					counter=counter+1;
-					item*song.durs[phrase].list[b+start]
-				},
-				{
-					var subArray=item.collect{|i x| 
-						var b = beatNum[counter+x];
-						i*song.durs[phrase].list[b+start]
-					}; 
-					counter=counter+item.size; 
-					subArray.sum;
-				}
-			);
-		}
-	};
-~parse.(~fortu,1,z);
 )
 //	END-JUNK	{{{1
 
@@ -2367,12 +2350,46 @@ b=a.collect{|i x| i->x}.asDict
 //concat		{{{1
 }}
 ~c=~concatSongs.(~three,~unnecessary);
+//	my strum	{{{
 
-~c.locate(0)
-TempoClock.tempo_(1)
-~c.play
-~c.cursor
-(note:-20,out:0,pan:-1).play
+(
+	//DWGSoundBoard.ar(inp: 0,  c1: 20,  c3: 20,  mix: 0.8,  d1:103,  d2:188,  d3:202,  d4:223,  d5:231,  d6:262,  d7:315,  d8:385)
+	SynthDef(\myG,{ |out=0, freq=440, amp=0.5, gate=1, c3=20, pan=0,fB = 80 pos=0.14 c1=1 rel=0.1|
+		var env = Env.new([0,1, 1, 0],[0.001,0.001, 0.005],[5,-5, -8]);
+		var inp = amp *LFClipNoise.ar(2000) * EnvGen.ar(env,gate);
+		 var sig = DWGPluckedStiff.ar(freq+SinOsc.kr(1.9), /*amp*/0.1, gate,pos,1,c3,inp,fB);
+		 sig = DWGPluckedStiff.ar(freq+SinOsc.kr(1.9,mul:0.1), amp, gate,pos,c1,c3,sig*env.kr/2,rel,fB);
+		//DWGPluckedStiff.ar(freq: 440,  amp: 0.5,  gate: 1,  pos: 0.14,  c1: 1,  c3: 30,  inp: 0,  release: 0.1,  fB: 2)
+		//these are cool!
+		 //sig = DWGPluckedStiff.ar(freq+SinOsc.kr(1.9), /*amp*/0.1, gate,pos,1,c3,sig*0.01,fB);
+		sig= DWGSoundBoard.ar(sig,  c1: 80,  c3: 20,  mix: 0.9,  d1:103,  d2:188,  d3:202,  d4:223,  d5:231,  d6:262,  d7:315,  d8:385);
+		DetectSilence.ar(sig, 0.01, doneAction:2);
+		Out.ar(out, Pan2.ar(sig * 0.1, pan));
+	}).add
+)
 
+(
+	{
+		loop{
+			{var fb=rand(100);var pos=rand(0.4)+0.08;fb.postln;6.do{ Synth(\myG,[\pos,pos,\freq,rrand(30,80).midicps,\fb,fb]);rrand(0.015,0.05).wait }}.fork;
+			rrand(0.2,2.5).wait;
+		}
+
+	}.fork
+)
+(
+	var strings = [0,5,10,15,19,24];
+	var fingers = strings.collect(_+rand(3));
+	{var fret=rand(2);fingers.do{|i|Synth(\myG,[\freq,((fret+40+i).midicps),
+	\c1,1.5,
+	\rel,0.78,
+	\fB,5,
+	\pos,0.3,
+	\c3,1]);0.01.wait}}.fork
+)
+
+//play a few of each of these...
+PmonoArtic(*[\sawSynth,legato:Prand([1,1,1,1,0.1,0.5],inf),amp:0.02,rel:4,note:Pwhite(-20,20,inf),dur:Pbrown(0.1,1)]).play;
+PmonoArtic(*[\myG,note:Pwhite(0,12)+rrand(-10,10),legato:Prand([0.9,1.1],inf),pan:rrand(-1,1)]).play
 
 

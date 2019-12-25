@@ -32,6 +32,7 @@
 		when: {|self| self.secDur[self.start]}, //for sections
 		ply:{|self| self.parts.do({|i|i.parent=self; i.p});},
 		play:{~infrastructure.();~ply.(currentEnvironment)},
+		player:{|self|(type:\player,song:self)},
 		p:{|self|(self.start<self.cursor).not.if{ var offset;
 			self.syl.isNil.if({offset=0;"offset 0".postln},{offset=self.durTill(self.start,self.syl)});
 			offset=offset+self.lag;
@@ -68,6 +69,7 @@
 		}; //}}}
 	);
 
+	
 			~trek=(	// specific proto for trek song:specifies file for durs		{{{2
 				dursFile:"/Users/michael/tank/super/theExtreme3",
 				durs:nil,

@@ -25,12 +25,20 @@ Send {
 Song {
 	classvar <> dursFile="/Users/michael/tank/super/theExtreme3";
 	var <song, <key, <>cursor=0, <sections, <lyrics, <tune; 
-	var <pbind, <durs, <secDur, <secLoc ,<>resources;
+	var <durs,  <>resources;
 
 	*new { |key array|
 		^super.new.init(key, array);
 	}
 
+	//there should be a way to make it so you can insert lines
+	// or add lines individually
+	// 
+
+	//c=[1,2,3,4].asAssociations(List)
+	//c.insert(1,("aaa"->"c3"))
+	//c.asPairs
+	
 	init {|symbol array|
 		key=symbol;
 		song=array;
@@ -41,10 +49,13 @@ Song {
 			Panola.new(i).midinotePattern
 		});
 		this.setupDurs;
-		pbind=(..sections-1).collect{|i|Pbind(\dur,durs[i],\midinote,tune[i])};
-		secDur=(..sections-1).collect{|i|durs[i].list.sum};
-		secLoc=[0]++(sections-1).collect{|i| secDur[..i].sum};
 	}
+
+	secLoc {^[0]++(sections-1).collect{|i| this.secDur[..i].sum}}
+
+	secDur {^(..sections-1).collect{|i|durs[i].list.sum}}
+
+	pbind {^(..sections-1).collect{|i|Pbind(\dur,durs[i],\midinote,tune[i])};}
 
 	setupDurs {
 		Archive.read(dursFile);
@@ -58,13 +69,15 @@ Song {
 		)
 	}
 
+	save { Archive.global.put(key,durs);Archive.write(dursFile) }
+
 	durTill {|sec till|
 		var list= durs[sec].list;
 		^list[0..till].sum
 	}
 
 	pbindFrom {|from=3| 
-		var list = pbind[from.asInt..(sections-1)].postln;
+		var list = this.pbind[from.asInt..(sections-1)].postln;
 		^Pseq(list)
 	}
 
@@ -113,7 +126,7 @@ Song {
 	addPart {|key part| resources.put(key,part);part.name=key;part.parent=this;^resources}
 
 	durTillEnd {
-		^(cursor..(sections-1)).collect{|i|secDur[i]}.sum
+		^(cursor..(sections-1)).collect{|i|this.secDur[i]}.sum
 	}
 
 	parse {|phrase array start=0| 
@@ -174,7 +187,12 @@ Part {
 		) 
 	}
 
+//TempoClock.sched(2,{2.postln;Routine{1.postln}}.value)
+
 	sched { |when=1|
+		////////////////trying to make setup be part of Part
+		//////////delete this line if not work
+		//(music.class=Routine).if(music.play);
 		TempoClock.sched(when,{this.play})
 	}
 
@@ -216,7 +234,7 @@ Part {
 // ~x.parts.kkk=(start)
 // ~.parts
 
-Piano {
+PF {
 	var <controller;
 	var <synth;
 	var vsti;
@@ -272,4 +290,25 @@ Piano {
 
 + Array {
  ply {this.do{|x|x.p}}
+}
+
++ Object{
+	ll {|a| ^a.(this)}
+	=> {|a| ^a.(this)}
+	
+	pipe {|...fns|
+		^fns.inject({|x| x}, {|acc, el| el<>acc }).(this)
+	}
+}
++ Server { plotTreeL {|interval=0.5 x=(-800) y=400 dx=400 dy=800|
+		var onClose, window = Window.new(name.asString + "Node Tree",
+			Rect(x,y,dx,dy),
+			scroll:true
+		).front;
+		window.view.hasHorizontalScroller_(false).background_(Color.grey(0.9));
+		onClose = this.plotTreeView(interval, window.view, { defer {window.close}; });
+		window.onClose = {
+			onClose.value;
+		};
+	}
 }

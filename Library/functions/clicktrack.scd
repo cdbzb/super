@@ -4,8 +4,8 @@ m=MultiLevelIdentityDictionary.new;
 ~playBoth={|dict| ~parseNotes.(dict[\notes]);~playme.(dict[\tempi]);};
 ~parseNotes={|list| 
 	list.pairsDo({|item data index|
-	m.put(item,\degree,data[0]-1);
-	m.put(item,\dur,data[1]);
+		m.put(item,\degree,data[0]-1);
+		m.put(item,\dur,data[1]);
 })};
 ~length={|a| var x = a.asStream; x.all.sum};
 ~interpretTempo={|list| var temp, dur;
@@ -25,16 +25,17 @@ m=MultiLevelIdentityDictionary.new;
 	});
 	tempo=Pstep(temp.flatten,dur.flatten);
 	Ppar([
-Pbind(	\instrument, \default,
-	\degree, degrees,
-	\dur, durs,
-	//\tempo, tempo,
-	\func, Pfunc({(t.tempo*60).postln})),
-Pbind(	\instrument, \clk,
-	\dur, 1,
-	\tempo, tempo	)
-	]).play(t)
-}});
-
+		Pbind(	\instrument, \default,
+			\degree, degrees,
+			\dur, durs,
+			//\tempo, tempo,
+			\func, Pfunc({(t.tempo*60).postln})),
+			Pbind(	\instrument, \clk,
+				\dur, 1,
+				\tempo, tempo	)
+			]).play(t)
+		}
+	}
+);
 "Startup File Loaded".postln;
 

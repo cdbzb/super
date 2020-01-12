@@ -139,7 +139,8 @@
 									$d , {self.doOver},
 									$n , {self.nextt},
 									$r , {self.ret},
-									$s , {song.save}
+									$s , {song.save},
+									$w , {self.window.close;t.free}
 								)
 							};//}}}
 							self.item=[];

@@ -1,4 +1,3 @@
-(
 Library.put(\functions,\reverb,\mono,{ |in fftSize=4096 irbufnum|
 	var sig = PartConv.ar(in,fftSize,irbufnum);
 	Out.ar(0,sig);
@@ -9,11 +8,6 @@ Library.put(\functions,\reverb,\single_stereo,{ |in fftSize=4096 bufarray | // n
 	Out.ar(0,sig);
 });
 
-)
-
 Library.put(\functions,\reverb,\true_stereo,{
-
+	nil
 })
-
-
-

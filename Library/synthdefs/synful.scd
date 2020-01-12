@@ -1,5 +1,3 @@
-s.options.memSize_(2**17);
-s.reboot;
 (
 	SynthDef(\vsti,{|in out=0|
 		var sig=VSTPlugin.ar(nil,2);

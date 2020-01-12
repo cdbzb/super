@@ -15,16 +15,15 @@ Library.put(\functions,\prep,
 	bufnum;
 });
 
-(
-	Library.put(\functions,\prepStereo, { | in| //returns aray of bufs
-		var bufs=Array.newClear(2);
-		var file = SoundFile.openRead(in);
-		('num chans ' ++ file.numChannels).postln;
-		file.numChannels.do({ |index|
-			('channel '++index).postln;
-			//// put channels into stereo buffer and write out!!!!!!!!!
-			bufs[index]=Library.at(\functions,\prep).(file.path , channel: index);
-		});
-		bufs;
-	})
-)
+Library.put(\functions,\prepStereo, { | in| //returns aray of bufs
+	var bufs=Array.newClear(2);
+	var file = SoundFile.openRead(in);
+	('num chans ' ++ file.numChannels).postln;
+	file.numChannels.do({ |index|
+		('channel '++index).postln;
+		//// put channels into stereo buffer and write out!!!!!!!!!
+		bufs[index]=Library.at(\functions,\prep).(file.path , channel: index);
+	});
+	bufs;
+})
+

@@ -1,6 +1,5 @@
 ModSin : SinOsc {
-	*new {|freq=400, rate=5,width=0.05, amp=0.1|
-		^SinOsc.ar( SinOsc.kr (rate,0,width*freq,freq),0,amp)
+	*new {|freq=400, rate=5,width=0.05, amp=0.1| ^SinOsc.ar( SinOsc.kr (rate,0,width*freq,freq),0,amp)
 	}
 }
 
@@ -295,6 +294,7 @@ PF {
 + Object{
 	ll {|a| ^a.(this)}
 	=> {|a| ^a.(this)}
+	=>+ {|a b| ^a.(this,this)}//a is a fn of 2 vars
 	
 	pipe {|...fns|
 		^fns.inject({|x| x}, {|acc, el| el<>acc }).(this)

@@ -60,11 +60,12 @@ o = [
 	List.prNew,  Array.prNew(10),  Pseq.prNew,  List.prNew,  
 	Array.prNew(7),  Pseq.prNew,  List.prNew,  Array.prNew(10),  
 	Pseq.prNew,  List.prNew,  Array.prNew(5),  Pseq.prNew,  
-	List.prNew,  Array.prNew(9),  Array.prNew(6),  Pseq.prNew,  
+	List.prNew,  Array.prNew(9),  Array.prNew(7),  Pseq.prNew,  
 	List.prNew,  Array.prNew(6),  Pseq.prNew,  List.prNew,  
 	Array.prNew(11),  Pseq.prNew,  List.prNew,  Array.prNew(1),  
 	Pseq.prNew,  List.prNew,  Array.prNew(9),  Pseq.prNew,  
-	List.prNew,  Array.prNew(4),  Pseq.prNew,  Array.prNew(1)
+	List.prNew,  Array.prNew(4),  Pseq.prNew,  List.prNew,  
+	Array.prNew(10),  Pseq.prNew,  List.prNew,  Array.prNew(7)
 ];
 p = [
 	// Archive
@@ -746,7 +747,7 @@ p = [
 		0.772 ],  
 	// Array
 	242, [ o[243],  o[246],  o[249],  o[252],  
-		o[255],  o[258] ],  
+		o[255],  o[258],  o[261] ],  
 	// Pseq
 	243, [ list: o[244],  repeats: 1,  
 		offset: 0 ],  
@@ -786,11 +787,23 @@ p = [
 	// List
 	256, [ array: o[257] ],  
 	// Array
-	257, [ 0.542,  1.086,  0.608,  1.188 ],  
+	257, [ 0.54,  1.006,  0.578,  1.066 ],  
 	// Pseq
 	258, [ list: o[259],  repeats: 1,  
 		offset: 0 ],  
+	// List
+	259, [ array: o[260] ],  
 	// Array
-	259, [ 1 ]
+	260, [ 0.229,  0.282,  0.242,  0.286,  
+		0.515,  0.784,  0.304,  0.688,  
+		0.318,  0.593 ],  
+	// Pseq
+	261, [ list: o[262],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	262, [ array: o[263] ],  
+	// Array
+	263, [ 2.426,  0.366,  0.325,  0.414,  
+		0.437,  0.35,  0.425 ]
 ];
 prUnarchive(o,p);

@@ -23,11 +23,23 @@ Send {
 
 Song {
 	classvar <> dursFile="/Users/michael/tank/super/theExtreme3";
+	classvar < songs;
 	var <song, <key, <>cursor=0, <sections, <lyrics, <tune; 
 	var <durs,  <>resources;
 
+	*initClass {
+		songs=();
+	}
+
 	*new { |key array|
 		^super.new.init(key, array);
+	}
+
+	*doesNotUnderstand { |selector   args|
+		var key = selector.asString;
+		//key.contains($_).if{
+		//}
+		^songs.at(selector)
 	}
 
 	//there should be a way to make it so you can insert lines
@@ -40,6 +52,7 @@ Song {
 	
 	init {|symbol array|
 		key=symbol;
+		songs.put(symbol,this);
 		song=array;
 		resources=();
 		sections=(song.size/2).asInt;
@@ -73,6 +86,10 @@ Song {
 	durTill {|sec till|
 		var list= durs[sec].list;
 		^list[0..till].sum
+	}
+
+	postLyrics {
+		lyrics.do{|i x| (x.asString++' '++i).postln}
 	}
 
 	pbindFrom {|from=3| 

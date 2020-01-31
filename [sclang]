@@ -1,0 +1,366 @@
+
+compiling class library...
+	Found 714 primitives.
+	Compiling directory '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/Extensions'
+Open ended string started on line 241 of file '/Users/michael/Library/Application Support/SuperCollider/Extensions/APEX_Client/csvnumarrayloader.sc'
+Open ended symbol started on line 212 of file '/Users/michael/Library/Application Support/SuperCollider/Extensions/SCVim.sc'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Automation'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/JITLibExtensions'
+WARNING: Could not open directory: '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/crucial-library'
+	To resolve this, either create the directory or remove it from your compilation paths.
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Vowel'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/panola'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Freesound'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/FreeAfter'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/wslib'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/SynthDefPool'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/say'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/MathLib'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/VectorSpace'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Unit-Lib'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/BatLib'
+Open ended symbol started on line 35 of file '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/BatLib/LessKeys.sc'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/SpeakersCorner'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/AmbIEM'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/AllGui'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/FileLog'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Hilbert'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/XML'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/atk-sc3'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Ctk'
+WARNING: Could not open directory: '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/ddwCommon'
+	To resolve this, either create the directory or remove it from your compilation paths.
+WARNING: Could not open directory: '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/ddwGUIEnhancements'
+	To resolve this, either create the directory or remove it from your compilation paths.
+WARNING: Could not open directory: '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/ddwMIDI'
+	To resolve this, either create the directory or remove it from your compilation paths.
+WARNING: Could not open directory: '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/ddwPrototype'
+	To resolve this, either create the directory or remove it from your compilation paths.
+WARNING: Could not open directory: '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/ddwMixerChannel'
+	To resolve this, either create the directory or remove it from your compilation paths.
+WARNING: Could not open directory: '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/ddwPatterns'
+	To resolve this, either create the directory or remove it from your compilation paths.
+WARNING: Could not open directory: '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/ddwTemperament'
+	To resolve this, either create the directory or remove it from your compilation paths.
+WARNING: Could not open directory: '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/ddwChucklib'
+	To resolve this, either create the directory or remove it from your compilation paths.
+WARNING: Could not open directory: '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/ddwTimeline'
+	To resolve this, either create the directory or remove it from your compilation paths.
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/ixiViews'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/SFPlayer'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/ScoreClock'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/ZArchive'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/KDTree'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/SuperSampler'
+ERROR: Class extension for nonexistent class 'Document'
+     In file:'../../../../../Users/michael/tank/super/downloaded-quarks/wslib/wslib-classes/Lang/Workflow/extDocument-closeAllHelp.sc'
+ERROR: Class extension for nonexistent class 'Document'
+     In file:'../../../../../Users/michael/tank/super/downloaded-quarks/wslib/wslib-classes/Lang/Workflow/extDocument-openStartup.sc'
+	numentries = 2301708 / 58188412 = 0.04
+	11647 method selectors, 4996 classes
+	method table size 47747816 bytes, big table size 465507296
+	Number of Symbols 28251
+	Byte Code Size 1294444
+	compiled 1132 files in 1.20 seconds
+Info: 18 methods are currently overwritten by extensions. To see which, execute:
+MethodOverride.printAll
+compile done
+localhost : setting clientID to 0.
+internal : setting clientID to 0.
+2019-07-18 11:28:18.928 defaults[72985:4629830] 
+The domain/default pair of (com.apple.speech.voice.prefs, SelectedVoiceName) does not exist
+Class tree inited in 0.18 seconds
+address,go,ply,stp,new,saveas
+/Users/michael/tank/super/Library/functions/REAPER.scd
+WARNING: server 'localhost' not running.
+/Users/michael/tank/super/Library/functions/Schafer.scd
+Startup File Loaded
+/Users/michael/tank/super/Library/functions/clicktrack.scd
+ERROR: syntax error, unexpected CLASSNAME, expecting $end
+  in interpreted text
+  line 14 char 7:
+  Library.put(\functions,\reverb,\true_stereo,{
+  ^^^^^^^
+  
+-----------------------------------
+ERROR: Command line parse failed
+/Users/michael/tank/super/Library/functions/convo.scd
+/Users/michael/tank/super/Library/functions/load.scd
+/Users/michael/tank/super/Library/functions/prep.scd
+/Users/michael/tank/super/Library/synthdefs/clk.scd
+functions: 
+	prep: 	a Function
+	prepStereo: 	a Function
+	clicktrack: 	a Function
+synthdefs: 
+	clk: 	
+a SynthDef
+Ctk init class runs
+*** Welcome to SuperCollider 3.9.3. *** For help type :SChelp.
+file "/Users/michael/tank/super/song-Synthdefs.scd" does not exist.
+-> nil
+file "/Users/michael/tank/super/song-Synthdefs.scd" does not exist.
+-> nil
+ERROR: Message 'load' not understood.
+RECEIVER:
+   Symbol '/Users/michael/tank/super/song-Synthdefs.scd'
+ARGS:
+CALL STACK:
+	DoesNotUnderstandError:reportError
+		arg this = <instance of DoesNotUnderstandError>
+	Nil:handleError
+		arg this = nil
+		arg error = <instance of DoesNotUnderstandError>
+	Thread:handleError
+		arg this = <instance of Thread>
+		arg error = <instance of DoesNotUnderstandError>
+	Object:throw
+		arg this = <instance of DoesNotUnderstandError>
+	Object:doesNotUnderstand
+		arg this = '/Users/michael/tank/super/song-Synthdefs.scd'
+		arg selector = 'load'
+		arg args = [*0]
+	Interpreter:interpretPrintCmdLine
+		arg this = <instance of Interpreter>
+		var res = nil
+		var func = <instance of Function>
+		var code = "	'/Users/michael/tank/super/..."
+		var doc = nil
+		var ideClass = nil
+	Process:interpretPrintCmdLine
+		arg this = <instance of Main>
+^^ The preceding error dump is for ERROR: Message 'load' not understood.
+RECEIVER: /Users/michael/tank/super/song-Synthdefs.scd
+ERROR: syntax error, unexpected '(', expecting $end
+  in interpreted text
+  line 2 char 1:
+  (
+  ^
+  	SynthDef(\flanger,{|out=0 gate=1 |
+-----------------------------------
+ERROR: Command line parse failed
+-> nil
+ERROR: syntax error, unexpected '(', expecting $end
+  in interpreted text
+  line 12 char 1:
+  ( // more kicks
+  ^
+  SynthDef(\kick1, {
+-----------------------------------
+ERROR: Command line parse failed
+-> nil
+ERROR: syntax error, unexpected STRING, expecting $end
+  in interpreted text
+  line 97 char 15:
+  "LOADED.postln";
+   ^^^^^^^^^^^^^^
+   
+-----------------------------------
+ERROR: Command line parse failed
+-> nil
+-> LOADED.postln
+LOADED
+-> LOADED
+-> ( 'durTill': a Function, 'song': [ the extreme power of the, g a b- d5 b-4 a g, alien mind will make the -, e5 d c f e f g f, r r r r heart action dan ger ous ly high- , r r r r  c6 a5 f b- a g f g ,  - and the body functions will, a5 c d a g a d a ,  race r r many times their natural me-, g5 r r  e5 g5 a4 g5 f e g , tabolism so we're going to have to,  f5 e d c r g#4 a b c5 d e ,  mo- ni- tor this very, d5 c4 a4 f f5 e , carefully, e5 d b4 r r r ], 'when': a Function, 'pbindFrom': a Function, 
+  'pbind': a...etc...
+-> ( 'durTill': a Function, 'song': [ the extreme power of the, g a b- d5 b-4 a g, alien mind will make the -, e5 d c f e f g f, r r r r heart action dan ger ous ly high- , r r r r  c6 a5 f b- a g f g ,  - and the body functions will, a5 c d a g a d a ,  race r r many times their natural me-, g5 r r  e5 g5 a4 g5 f e g , tabolism so we're going to have to,  f5 e d c r g#4 a b c5 d e ,  mo- ni- tor this very, d5 c4 a4 f f5 e , carefully, e5 d b4 r r r ], 'when': a Function, 'pbindFrom': a Function, 
+  'pbind': a...etc...
+LOADED
+ERROR: ListPattern (Pseq) requires a non-empty collection; received nil.
+CALL STACK:
+	Exception:reportError
+		arg this = <instance of Error>
+	Nil:handleError
+		arg this = nil
+		arg error = <instance of Error>
+	Thread:handleError
+		arg this = <instance of Thread>
+		arg error = <instance of Error>
+	Object:throw
+		arg this = <instance of Error>
+	Meta_ListPattern:new
+		arg this = <instance of Meta_Pseq>
+		arg list = nil
+		arg repeats = inf
+	Meta_Pseq:new
+		arg this = <instance of Meta_Pseq>
+		arg list = nil
+		arg repeats = inf
+		arg offset = 0
+	< closed FunctionDef >  (no arguments or variables)
+	Interpreter:interpretPrintCmdLine
+		arg this = <instance of Interpreter>
+		var res = nil
+		var func = <instance of Function>
+		var code = "( ////as 'sections' event
+	/..."
+		var doc = nil
+		var ideClass = nil
+	Process:interpretPrintCmdLine
+		arg this = <instance of Main>
+^^ The preceding error dump is for ERROR: ListPattern (Pseq) requires a non-empty collection; received nil.
+ERROR: Message 'durs' not understood.
+RECEIVER:
+   nil
+ARGS:
+CALL STACK:
+	DoesNotUnderstandError:reportError
+		arg this = <instance of DoesNotUnderstandError>
+	Nil:handleError
+		arg this = nil
+		arg error = <instance of DoesNotUnderstandError>
+	Thread:handleError
+		arg this = <instance of Thread>
+		arg error = <instance of DoesNotUnderstandError>
+	Object:throw
+		arg this = <instance of DoesNotUnderstandError>
+	Object:doesNotUnderstand
+		arg this = nil
+		arg selector = 'durs'
+		arg args = [*0]
+	Interpreter:interpretPrintCmdLine
+		arg this = <instance of Interpreter>
+		var res = nil
+		var func = <instance of Function>
+		var code = "a.durs;"
+		var doc = nil
+		var ideClass = nil
+	Process:interpretPrintCmdLine
+		arg this = <instance of Main>
+^^ The preceding error dump is for ERROR: Message 'durs' not understood.
+RECEIVER: nil
+-> nil
+-> ( 'durTill': a Function, 'song': [ the extreme power of the, g a b- d5 b-4 a g, alien mind will make the -, e5 d c f e f g f, r r r r heart action dan ger ous ly high- , r r r r  c6 a5 f b- a g f g ,  - and the body functions will, a5 c d a g a d a ,  race r r many times their natural me-, g5 r r  e5 g5 a4 g5 f e g , tabolism so we're going to have to,  f5 e d c r g#4 a b c5 d e ,  mo- ni- tor this very, d5 c4 a4 f f5 e , carefully, e5 d b4 r r r ], 'when': a Function, 'pbindFrom': a Function, 
+  'pbind': a...etc...
+-> ( 'durTill': a Function, 'song': [ the extreme power of the, g a b- d5 b-4 a g, alien mind will make the -, e5 d c f e f g f, r r r r heart action dan ger ous ly high- , r r r r  c6 a5 f b- a g f g ,  - and the body functions will, a5 c d a g a d a ,  race r r many times their natural me-, g5 r r  e5 g5 a4 g5 f e g , tabolism so we're going to have to,  f5 e d c r g#4 a b c5 d e ,  mo- ni- tor this very, d5 c4 a4 f f5 e , carefully, e5 d b4 r r r ], 'when': a Function, 'pbindFrom': a Function, 
+  'pbind': a...etc...
+-> [ a Pseq, a Pseq, a Pseq, a Pseq, a Pseq, a Pseq, a Pseq, a Pseq, a Pbinop, a Pbinop, a Pbinop, a Pbinop, a Pbinop, a Pbinop, a Pbinop, a Pbinop, a Pbinop, a Pbinop, a Pbinop, a Pbinop, a Pbinop ]
+-> 21
+-> an EventStreamPlayer
+LOADED
+guide0
+guide1
+guide2
+guide3
+guide4
+guide5
+guide6
+guide7
+offset 0
+offset 0
+offset 0
+offset 0
+offset 0
+offset 0
+offset 0
+offset 0
+offset 0
+offset 0
+offset 0
+offset 0
+offset 0
+offset 0
+offset 0
+offset 0
+offset 0
+offset 0
+-> 21
+-> localhost
+booting server 'localhost' on address: 127.0.0.1:57110
+Found 0 LADSPA plugins
+ERROR: API version mismatch: /Users/michael/Library/Application Support/SuperCollider/Extensions/UGens/KLVocalTract.scx
+    This plugin is not compatible with SuperCollider >=3.9.0
+    The plugin has not been loaded; please find or compile a newer version.
+    (Plugin's API version: 2. Expected: 3)
+ERROR: API version mismatch: /Users/michael/Library/Application Support/SuperCollider/Extensions/UGens/VocaltractArea.scx
+    This plugin is not compatible with SuperCollider >=3.9.0
+    The plugin has not been loaded; please find or compile a newer version.
+    (Plugin's API version: 2. Expected: 3)
+Number of Devices: 2
+   0 : "Built-in Microph"
+   1 : "Built-in Output"
+"Built-in Microph" Input Device
+   Streams: 1
+      0  channels 2
+"Built-in Output" Output Device
+   Streams: 1
+      0  channels 2
+SC_AudioDriver: sample rate = 44100.000000, driver's block size = 512
+SuperCollider 3 server ready.
+Requested notification messages from server 'localhost'
+localhost: server process's maxLogins (1) matches with my options.
+localhost: keeping clientID (0) as confirmed by server process.
+Shared memory server interface initialized
+LOADED
+guide0
+guide1
+guide2
+guide3
+guide4
+guide5
+guide6
+guide7
+offset 0
+offset 0
+offset 0
+offset 0
+offset 0
+offset 0
+offset 0
+offset 0
+offset 0
+offset 0
+offset 0
+offset 0
+offset 0
+offset 0
+offset 0
+offset 0
+offset 0
+offset 0
+-> 21
+late 0.083078644
+late 0.083078644
+-> a Routine
+-> a Routine
+ERROR: binary operator 'rrand' failed.
+RECEIVER:
+   nil
+ARGS:
+   Float 0.020000   47AE147B 3F947AE1
+   nil
+CALL STACK:
+	DoesNotUnderstandError:reportError
+		arg this = <instance of BinaryOpFailureError>
+	Nil:handleError
+		arg this = nil
+		arg error = <instance of BinaryOpFailureError>
+	Thread:handleError
+		arg this = <instance of Thread>
+		arg error = <instance of BinaryOpFailureError>
+	Thread:handleError
+		arg this = <instance of Routine>
+		arg error = <instance of BinaryOpFailureError>
+	Object:throw
+		arg this = <instance of BinaryOpFailureError>
+	Object:performBinaryOpOnSomething
+		arg this = nil
+		arg aSelector = 'rrand'
+		arg thing = 0.02
+		arg adverb = nil
+	< closed FunctionDef >  (no arguments or variables)
+	Integer:do
+		arg this = 8
+		arg function = <instance of Function>
+		var i = 0
+	Routine:prStart
+		arg this = <instance of Routine>
+		arg inval = 2107.112993
+^^ The preceding error dump is for ERROR: binary operator 'rrand' failed.
+RECEIVER: nil
+-> a Routine
+-> a SynthDef
+-> a Routine
+-> a Routine
+-> a Routine

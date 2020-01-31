@@ -7,14 +7,16 @@
 		"Sar- gon what's wrong?","b4 g b e5", //4
 		"no- thing of im- portance, Fa- tigue per- haps","f g- a- g- b- g- b- a- g- e-", //5
 		"(beat) (formula) Sar- gon's for- mu- la...","d d5 e f# a f# c", //6
-		//"yes, I wan- ted to be cer- tain there was no" //7
-		//"er- ror. For- mu- la is co- rrect. This is an"
+		"yes, I wan- ted to be cer- tain there was no","f4 c#4 c c# f c# c b-3 a- b- e-4", //7
+		"er- ror. For- mu- la is co- ","d4 f3 g a b g b ",//8
+		"rrect. Don't be concer -- ned, this is an","d4 c# e d f# g f#", //9
 		//"ex- cel- lent bo- dy. There I feel be- tter al- rea- dy"
 		//"in Time...."
 	])
 );
 
-//~recorder.(~sickBay,5)
+//~recorder.(~sickBay,8,2)
+
 //}}}
 (/// sickBay sections {{{1
 ~sickBay.resources=();
@@ -83,9 +85,9 @@
 				octave:[3,2],
 				amp:0.5
 			].p,
-			Pseq([(degree: [5,7,10]+[0,0,0,7,7,7] ,octave:4,strum:0.1,amp:0.1,sustain:1)])
+			Pseq([(degree: [5,7,10]+[0,0,0,7,7,7]-1 ,octave:4,strum:0.1,amp:0.1,sustain:1)])
 	])
-	=>_.play
+//=>_.play
 ); //}}}
 ~sickBay.verbFade4=(start:4,music:{~sickBay.thalassaVerb.release(5)});
 ~sickBay.plucks5=(start:5,music:[ //{{{
@@ -145,12 +147,12 @@
 		(type:\set,id:b[\id],degree:[5.1-7,5.1,5.1+4,5.1+7]-1,root:6,octave:[2,3]).play//bend
 	});
 ); //}}}
-~sickBay.formulaImage6=(start:6,syl:1,music:{{~stills.preview(\sargonsFormula)}.defer})
+~sickBay.formulaImage6=(start:6,syl:1,music:{{~stills.preview(\sargonsFormula)}.defer});
 );
 //}}}
-//DEFS
-(
- SynthDef(\wash,{| att=2 rel=3| //{{{
+
+//DEFS{{{
+( SynthDef(\wash,{| att=2 rel=3| //{{{
 		Saw.ar(\freq.kr(400,\freqLag.kr(2.5))*Rand(0.99!4,1.01),\amp.kr(0.1,1))*
 		Env.perc(att,rel).kr(2,gate:\gate.kr(1))
 		=>MoogLadder.ar(_,800*Rand(0.5,8.3!4)*SinOsc.kr(Rand(2.5,3.1)).range(Rand(0.95!4,0.98),1.03),res:0.8)
@@ -204,4 +206,5 @@ SynthDef(\door,{ //{{{
 	SynthDef(\crackle,{ Env.cutoff(0.1).kr(2,gate:\gate.kr(1)) * Dust.ar(5,\amp.kr(0.5))=> //{{{
 	Decay.ar(_,0.003)=>
 	Out.ar(\out.ir(0),_)}).add;//}}}
-)
+)//}}}
+

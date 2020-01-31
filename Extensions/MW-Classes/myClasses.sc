@@ -24,6 +24,7 @@ Send {
 Song {
 	classvar <> dursFile="/Users/michael/tank/super/theExtreme3";
 	classvar < songs;
+	classvar <> current;
 	var <song, <key, <>cursor=0, <sections, <lyrics, <tune; 
 	var <durs,  <>resources;
 
@@ -34,6 +35,8 @@ Song {
 	*new { |key array|
 		^super.new.init(key, array);
 	}
+
+	*play {current.play}
 
 	*doesNotUnderstand { |selector   args|
 		var key = selector.asString;
@@ -309,7 +312,6 @@ PF {
 }
 
 + Object{
-	ll {|a| ^a.(this)}
 	=> {|a| ^a.(this)}
 	=>+ {|a b| ^a.(this,this)}//a is a fn of 2 vars
 	

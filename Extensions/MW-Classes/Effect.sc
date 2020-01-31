@@ -33,3 +33,7 @@ Effect  {
 	}
 
 }
+
++Object {
+	wrapp { ^{this}}
+}

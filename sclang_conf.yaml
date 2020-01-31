@@ -1,0 +1,34 @@
+includePaths:
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Automation
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/JITLibExtensions
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Vowel
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/panola
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Freesound
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/FreeAfter
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/wslib
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/SynthDefPool
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/say
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/MathLib
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/VectorSpace
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Unit-Lib
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/BatLib
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/SpeakersCorner
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/AmbIEM
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/AllGui
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/FileLog
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Hilbert
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/XML
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/atk-sc3
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Ctk
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/ixiViews
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/SFPlayer
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/ScoreClock
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/ZArchive
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/KDTree
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/SuperSampler
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Modality-toolkit
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/FPLib
+    -   /Users/michael/.local/share/SuperCollider/downloaded-quarks/autogui
+excludePaths:
+    []
+postInlineWarnings: false

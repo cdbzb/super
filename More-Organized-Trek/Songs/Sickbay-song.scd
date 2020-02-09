@@ -9,13 +9,17 @@
 		"(beat) (formula) Sar- gon's for- mu- la...","d d5 e f# a f# c", //6
 		"yes, I wan- ted to be cer- tain there was no","f4 c#4 c c# f c# c b-3 a- b- e-4", //7
 		"er- ror. For- mu- la is co- ","d4 f3 g a b g b ",//8
-		"rrect. Don't be concer -- ned, this is an","d4 c# e d f# g f#", //9
-		//"ex- cel- lent bo- dy. There I feel be- tter al- rea- dy"
-		//"in Time...."
+		"rrect. Don't be concer -- ned, this is an","d4 c# e d f# g f# d e f# ", //9
+		"ex- cel- lent bo- dy. "," g#4 e d d c#",//10
+		"There I feel be- tter al- rea- dy","c4 g3 a b c4 b3 a b d4 c",//11
+		//in Time
+		"in Time a host ","b3 b4 a b",//12
+		" -- body will become... (cis) ","c# b a g a b c#3"//13
+		//"(d a fis) accustomed to us (fis)"
 	])
 );
 
-//~recorder.(~sickBay,8,2)
+//~recorder.(~sickBay,9,2)
 
 //}}}
 (/// sickBay sections {{{1
@@ -33,7 +37,7 @@
 	~sickBay.kirkFace=(start:0,music:{//{{{
 		{~stills.preview('kirk-face',~sickBay.secLoc[2],monitor:0)}.defer
 	});//}}}
-	~sickBay.guide1=(start:1,music:~sickBay.pbind[1]);
+	//~sickBay.guide1=(start:1,music:~sickBay.pbind[1]);
 	//should this be done as an event?	
 	~sickBay.mcCoyBus=Bus.audio.index;
 	~sickBay.mcCoyBusMonitor=(start:0,syl:1,music: //{{{

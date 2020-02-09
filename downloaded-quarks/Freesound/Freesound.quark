@@ -1,7 +1,0 @@
-(
-name: "Freesound",
-summary: "Client or the Fresound API",
-author: "Gerard Roma",
-version: 1.0,
-ext_dependancy: "curl",
-)

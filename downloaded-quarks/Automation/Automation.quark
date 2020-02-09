@@ -1,9 +1,0 @@
-(
-    \name:    "Automation",
-    \path:    "Automation",
-    \summary: "Record and playback live GUI (or any other) activity.",
-    \author:  "neels@hofmeyr.de",
-    \url:     "http://github.com/neeels/Automation",
-    \helpdoc: "Help/Automation.scd",
-    \since:   "2009"
-)

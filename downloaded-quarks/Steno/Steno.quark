@@ -1,8 +1,0 @@
-(
-	\name: 			"Steno",
-	\summary:		"Concatenative live coding metalanguage",
-	\author: 		"Julian Rohrhuber, developed together with: Armin Badde, Florian Zeeh, Raffael Seyfried, Hans W. Koch and Till Bovermann",
-	\organization: 	"Institute for Music and Media Duesseldorf",
-	\country: 		"Germany",
-	\since: 		"2014"
-)

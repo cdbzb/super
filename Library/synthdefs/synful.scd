@@ -34,16 +34,19 @@
 			},
 			init: { |self| //create node and controller + load plug 
 				self.controller=VSTPluginController(Synth(\vsti,[\out,self.bus]));
+				self.condition.test_(false);
 				self.node=NodeProxy.audio(s,2).play;
 				self.node.source={In.ar(self.bus.index,2)};
 				{
 					s.sync;
 					self.controller.open("/Library/Audio/Plug-Ins/VST/"++self.plugin,
 						action:{
+							self.condition.test_(true).signal;
 							self.controller.readProgram("/Users/michael/tank/super/SynfulTest.FXP"); 
 						});
 				}.fork;
 			},
+			condition:Condition.new,
 			set:{|self args| self.controller.set(args)},
 			patches:( flute:73, oboe:68, enghorn:69, clarinet:71, bassoon:70, horn:62, horn4:5, horn8:6, trumpet:56, trombone:57, violin:40, viola:41, cello:42, bass:43, violins:0, violins2:1, violas:2, cellos:3, basses:4),
 			banks:( none:0, mute1:2, mute2:3, stopped:4, arco:1, pizz:2, bartok:3, legno:4, trem:5, sulpont:6, tremsulpont:7, harmonics:8, mute:9),

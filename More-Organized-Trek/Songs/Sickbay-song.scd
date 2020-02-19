@@ -24,8 +24,11 @@
 //}}}
 (/// sickBay sections {{{1
 ~sickBay.resources=();
-~speaker.isNil.if {~speaker=Library.at(\functions,\prep).("/Users/michael/tank/IR/Saane/Speakers_&_Telephones/Very_small_speaker_mono.wav")};//{{{
+
+~speaker ? ~speaker=Library.at(\functions,\prep).("/Users/michael/tank/IR/Saane/Speakers_&_Telephones/Very_small_speaker_mono.wav");
+
 ~speakerSt.isNil.if {Library.at(\functions,\prepStereo).("/Users/michael/tank/IR/Saane/Speakers_&_Telephones/Small_speaker_stereo.wav")};//}}}
+
 //Stills   ! {{{
 ~stills.isNil.if{~stills=Stills("/Users/michael/tank/Trek/video for stills etc/media/return to tomorrow.mov")}; 
 ~stills.set('whatsWrong?',2288.6);

@@ -1,9 +1,15 @@
-"~/tank/super/More-Organized-Trek/Songs/Sickbay-song.scd".standardizePath.load;
-~sickBay.addGuides("..x....x")
+File.getcwd +/+ "More-Organized-Trek/Songs/Sickbay-song.scd".load
+~sickBay.at(3).do(_.p)
+~sickBay.cursor_(3)
+~sickBay.addGuides(".x.....x")
+//~sickBay.addGuides("xxxxxxxx")
 ~sickBay.cursor_(0).play
-~sickBay.guide8.play
+~sickBay.cursor_(7).play
+
+~sickBay.pts.do({|i|i.music.class.postln})
+
 (
-	~sickBay.iWantedToBe=(start:7,music://{{{
+	~sickBay.iWantedToBe=(start:7,music: //{{{
 		[
 			(instrument:\cymbalsDS,out:2,att:0.001,amp:0.03)
 			=>Pfin(1,_),
@@ -39,8 +45,8 @@
 		((res * 1) + (lodriver * 2) + thwack).dup * \amp.kr(0.1)
 		=> ( Out.ar(\out.ir,_) <! DetectSilence.ar(_,doneAction:2))
 	}=>SynthDef(\cymbalsDS,_)=>_.add;
-);//}}}
- ~sickBay.error=(start:8,music://{{{
+ //}}}
+ ~sickBay.error=(start:8,music: //{{{
 	[
 		~sickBay.pbind[8],
 
@@ -60,9 +66,9 @@
 	}=>SynthDef(\error,_)=>_.add;
 
 //}}}
-	~sickBay.bassnote9=(start:9,music://{{{
+	~sickBay.bassnote9=(start:9,music: //{{{
 		(instrument:\error,degree:3-1,dur:2,octave:3)// .play
-	);//}}}
+	); //}}}
       ~sickBay.dontBeConcerned9=(start:9,music: //{{{
 			[
 				[
@@ -113,7 +119,7 @@
 );//}}}
 )
 
-(
+( // stringy SynthDef {{{
 	{|gate=1| 
 		var freq=\freq.kr(400,0.05);
 	var width=\width.kr(6);
@@ -131,12 +137,12 @@
 	=>Out.ar(\out.kr(0),_)
 }
 =>SynthDef(\stringyy,_)
-=>_.add;
-
-	a=(instrument:\stringyy,type:\on,out:2).play;
+=>_.add;}}}
+)
+a=(instrument:\stringyy,type:\on,out:2).play;
 b=(type:\set,id:a[\id]);
 (
-	[
+	[  //{{{ Harp model
 		[
 			//(note:1,out:1)
 			[root:-1,scale:Scale.minor,octave:4,degree:[1,5,10,5].q(1)-1,parent:b].p
@@ -153,7 +159,6 @@ b=(type:\set,id:a[\id]);
 		].q
 	]=>Ppar(_,2)
 	=>_.trace=>_.play;
-
 
 		SynthDef(\strang_pos,{|gate=1,pos=0.2,amp=0.5 c3=30 c1=1|
 			var env = Env.new([0,1, 1, 0],[0.001,0.006, 0.0005],[5,-5, -8]);
@@ -175,24 +180,19 @@ b=(type:\set,id:a[\id]);
 		var in = In.ar(out);
 		var sig = DWGSoundBoard.ar(inp: in,  c1: 20,  c3: 20,  mix: 0.8,  d1:array[0],  d2:array[1],  d3:array[2],  d4:array[3],  d5:array[4],  d6:array[5],  d7:array[6],  d8:array@@7);
 		ReplaceOut.ar(out,sig)
-	}).add
-
-
+	}).add//}}}
 )
-	//make a purty harp!!
+	//make a purty harp!!{{{
 	(
 		d=Bus.control;
 		a=Arpeggio([0,2,4],16).collect{|i|Synth(\strang_pos,[\c1,1.3,\c3,180,\out,0,\amp,0.1,\freq,(48+i).midicps,\pos,i*0.1+0.2])};
 		a.do{|i|i.map(\gate,d)};
-		{SinOsc.kr(0.1)*3=>Out.kr(d,_)}.play(addAction:\addToHead)
-		{SinOsc.kr(1)=>Out.kr(d,_)}.play(addAction:\addToHead)
-		{SinOsc.kr(10)=>Out.kr(d,_)}.play(addAction:\addToHead)
-		Synth(\sbrd,[\out,[0,1],addAction:\addToTail])
 	)
-	{WhiteNoise.ar(5000)}.play
-
-
-
+	{SinOsc.kr(0.1)*3=>Out.kr(d,_)}.play(addAction:\addToHead);
+	{SinOsc.kr(1)=>Out.kr(d,_)}.play(addAction:\addToHead);
+	{SinOsc.kr(10)=>Out.kr(d,_)}.play(addAction:\addToHead);
+	Synth(\sbrd,[\out,[0,1],addAction:\addToTail]);
+	{WhiteNoise.ar(5000)}.play;//}}}
 
 (//some stills{{{
 	~stills.set('sargonWhatIsIt',2285.76)
@@ -208,7 +208,6 @@ b=(type:\set,id:a[\id]);
 	Reaper.go(37*60+54.30)//door open
 
 )//}}}
-
 
 	( //	some \wash examples	{{{
 		///fire a bunch of the first one a second apart

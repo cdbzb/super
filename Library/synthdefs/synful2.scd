@@ -10,6 +10,7 @@
 		( 
 			bus: Bus.audio(s,2),
 			controller: nil,
+			condition:Condition.new(),
 			node:nil,
 			params:(expression:11),
 			expr:NodeProxy.control(s,1)!16, //expr[n].source={} is the jam....
@@ -34,13 +35,14 @@
 			},
 			init: { |self| //create node and controller + load plug 
 				self.controller=VSTPluginController(Synth(\vsti,[\out,self.bus],target:RootNode(s)));
-				self.monitor=Monitor.new.play(self.bus,2,0,2);
+				self.monitor=Monitor.new.play(self.bus.index,2,0,2);
 				//self.node=NodeProxy.audio(s,2).play;
 				//self.node.source={In.ar(self.bus.index,2)};
 				{
 					s.sync;
 					self.controller.open("/Library/Audio/Plug-Ins/VST/"++self.plugin,
 						action:{
+							self.condition.test_(true).signal;
 							self.controller.readProgram("/Users/michael/tank/super/SynfulTest.FXP"); 
 						});
 				}.fork;

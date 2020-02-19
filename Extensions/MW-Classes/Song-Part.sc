@@ -81,7 +81,12 @@ Song {
 
 	play { |...args|
 		var list = this.getPartsList(args);
-		list.do(_.p)
+		fork{
+			resources.condition.test_(false);
+			this.resources.at(\infrastructure) !? (_.value);
+			resources.condition.wait;
+			list.do(_.p)
+		}
 	}		
 
 	getPartsList { |args|

@@ -34,6 +34,37 @@ Effect  {
 
 }
 
-+Object {
-	wrapp { ^{this}}
+// TODO can we just send a function in instead of a defName ?
+
+//(
+//	{|in out| In.ar(in,1)=>PlateReverb.ar (_,1,\room.kr(1,19))=>Out.ar(0,_)}=>SynthDef(\verb,_)=>_.add;
+//	a=[note:Pwhite(0,12),dur:((0.9!30).rand).q].p=>Effect(_,\verb)
+//)
+//{a.play;0.05.wait; a.synth.set(\room,0.0)}.fork
+FX { 
+	var <>bus;
+
+	*new { |synth fx|
+		^super.new.init(synth,fx )
+	}
+
+	*newN{ |synth fx|
+		^super.new.initN(synth,fx);
+	}
+
+	init { |synth fx fxArgs numChannels=1|
+		bus=Bus.audio(Server.default);
+		synth.set(\out,bus.index);
+		^Synth(fx,[\in,bus.index]++fxArgs,addAction:\addToTail)
+	}
+
+	initN { |synth fx fxArgs numChannels=1|
+		bus=Bus.audio(Server.default);
+		synth.set(\out,bus.index);
+		^Synths(fx,[\in,bus.index]++fxArgs,addAction:\addToTail)
+	}
+
 }
+
+
+

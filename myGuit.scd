@@ -1,4 +1,4 @@
-(
+( //defs
 	{
 		SynthDef(\strang,{|freq=400,gate=1|
 			var env = Env.new([0,1, 1, 0],[0.001,0.006, 0.0005],[5,-5, -8]);
@@ -6,7 +6,8 @@
 			var sig = DWGPlucked2.ar(freq:freq,  amp: 0.5,  gate: 1,  pos: 0.14,  c1: 1,  c3: 30,  inp: inp,  release: 0.1,  mistune: 1.008,  mp: 0.55,  gc: 0.01);
 			Out.ar(\out.kr(1),sig)
 		}).play;
-		1.wait;
+
+		s.sync;
 
 		SynthDef(\strang_pos,{|gate=1,pos=0.2,amp=0.5 c3=30 c1=1|
 			var env = Env.new([0,1, 1, 0],[0.001,0.006, 0.0005],[5,-5, -8]);
@@ -18,7 +19,6 @@
 			var sig = DWGPlucked2.ar(freq:\freq.kr(400,0.01),  amp:speed*amp,  gate: 1,  pos: 0.14,  c1: c1,  c3:c3 ,  inp: inp,  release: 0.1,  mistune: 1.008,  mp: 0.55,  gc: 0.01);
 			Out.ar(\out.kr(1),sig*0.05)
 		}).play;
-
 	}.fork;
 
 	~modes1=#[90, 140, 185, 211, 250, 363, 427];
@@ -29,7 +29,6 @@
 		var sig = DWGSoundBoard.ar(inp: in,  c1: 20,  c3: 20,  mix: 0.8,  d1:array[0],  d2:array[1],  d3:array[2],  d4:array[3],  d5:array[4],  d6:array[5],  d7:array[6],  d8:array@@7);
 		ReplaceOut.ar(out,sig)
 	}).add
-
 )
 
 (//nice

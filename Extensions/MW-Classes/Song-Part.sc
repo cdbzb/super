@@ -13,7 +13,22 @@ Song {
 		^super.new.init(key, array);
 	}
 
-	*play {current.play}
+	*play { |...args|
+		args ? current.play;
+		(args.class == Array).if{
+			fork{
+				//args.do({|i|argss.at(i).play;argss.at(i).durTillEnd.wait})
+				args.do({|i|
+					songs.at(i).valueInfrastructure;
+					songs.at(i).condition.wait;
+				});
+				args.do({|i|
+					songs.at(i).playParts;
+					songs.at(i).durTillEnd.wait;
+				})
+			}
+		}
+	}
 
 	*doesNotUnderstand { |selector   args|
 		var key = selector.asString;
@@ -79,12 +94,22 @@ Song {
 
 	pts {^all {:x,x<-resources,x.class==Part}}
 
+	valueInfrastructure {
+			  resources.condition !? (_.test_(false));
+			this.resources.at(\infrastructure) !? (_.value);
+	}
+
+	playParts { |...args|
+		this.getPartsList(args).do(_.p)
+	}
+
 	play { |...args|
 		var list = this.getPartsList(args);
 		fork{
-			resources.condition.test_(false);
+			//resources.condition ? resources.condition.test_(false);
+			  resources.condition !? (_.test_(false));
 			this.resources.at(\infrastructure) !? (_.value);
-			resources.condition.wait;
+			resources.condition !? _.wait;
 			list.do(_.p)
 		}
 	}		
@@ -203,13 +228,16 @@ Part {
 		) 
 	}
 
+	awake { this.play }
+
+
 //TempoClock.sched(2,{2.postln;Routine{1.postln}}.value)
 
 	sched { |when=1|
 		////////////////trying to make setup be part of Part
 		//////////delete this line if not work
 		//(music.class=Routine).if(music.play);
-		TempoClock.sched(when,{this.play})
+		TempoClock.sched(when,this)
 	}
 
 	calcTime {

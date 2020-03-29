@@ -397,23 +397,10 @@ e=Buffer.read(s,File.getcwd++"/media/heartHi2.wav");
 		
 	};
 	//cue (could add conditions for this.....)
-	~transform=(ply:{topEnvironment.use({~transformation.fork})},durTillEnd:15);
+	~transform=(play:{topEnvironment.use({~transformation.fork})},durTillEnd:15);
 ); //}}}
 
 p({~xtreme.play;~xtreme.durTillEnd.wait;~transformation.play}).play
-
-(
-	{//aaaak envelope
-	TempoClock.tempo_(1);
-		~xtreme.cursor_(0);
-		~xtreme.play;
-		~xtreme.durTillEnd.wait;
-		//~transformation.play;
-		~transform.ply;
-		15.wait;
-		~complete.play;
-	}.fork
-)
 
 ( // {{{ \player Event Type
 	Event.addEventType(\player,{~dur=~song.durTillEnd;~song.ply});
@@ -872,6 +859,7 @@ s.plotTree
 ~displeased.ply;
 ~displeased.keys.do(_.postln)
 ~funs.keys.do(_.postln)
+
 
 (// trill{{{1
 	~trill={ |instrument=\default amp=0.1 len=5 |

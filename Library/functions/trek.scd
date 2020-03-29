@@ -232,8 +232,7 @@
 	~myFree={//{{{
 		|vsti|
 		s.freeMyDefaultGroup;
-		TempoClock.clear;
-		16.do{|i|[chan:i,dur:0.01,note:Pseries(1,1,128),amp:0,type:\vsti,controller:vsti.controller].pp};
+		TempoClock.all.do(_.clear);
+		~vstRegistry.do{|i| 16.do{|x| i.midi.allNotesOff(x)}}
 	}//}}}
 )
-

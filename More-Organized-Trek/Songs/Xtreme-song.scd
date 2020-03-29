@@ -16,7 +16,6 @@
 		],
 	);
 
-	~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
 	//}}}
 
  //// xtreme sections		{{{2
@@ -28,6 +27,7 @@
 	~xtreme.infrastructure={ //bass patch lasts as long as end (durTillEnd){{{ ~xtreme.condition.test_(false);
 		//~syn1.condition.test_(false);
 		FunctionList.new.array_([
+			~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load},
 			{fork{
 				try{~syn1.controller.loaded.not.if{~syn1=~synful2.()}}{~syn1=~synful2.()};
 				~syn1.condition.wait;
@@ -240,41 +240,41 @@
 
 	c=SystemClock.seconds;
 
-) 
+); 
 
-(//vocal sess
- ~xtreme.heartdouble=(start:2,music:{~rec.(\heartHi2,4,7)});
- //~xtreme.heartVocal=(start:2,music:{~rec.(\heart,4,7)});
- ~xtreme.play
-)
-~syn1.keys.do(_.postln)
-~syn1.controller.info.keys.do(_.postln)
-b=Buffer.read(s,File.getcwd++"/media/heart.wav");
-c=Buffer.read(s,File.getcwd++"/media/heartd.wav");
-d=Buffer.read(s,File.getcwd++"/media/heartHi.wav");
-e=Buffer.read(s,File.getcwd++"/media/heartHi2.wav");
-
-~xtreme.cursor_(2).play;
-
-(//Heart Vocal Sess 1{{{
-	~xtreme.heartdouble=nil;
-	~xtreme.heartVocal=(start:2,music:(instrument:\heartVoc));
-		SynthDef(\heartVoc,{
-			var sig,sig2;
-			sig=PlayBuf.ar(1,[b,c].collect(_.bufnum))*3;
-			sig=Compander.ar(sig!2,sig,thresh:0.3,slopeAbove:0.10).tanh;
-			//sig=PlateReverb.ar(sig/1,mix:0.6);
-			sig=TwoTube.ar(sig,0.01,0.7,2222,2333)+sig.distort;
-			sig=RHPF.ar(sig,1500,rq:0.25)*2;//+HPF.ar(sig);
-			sig2=PlayBuf.ar(1,[d,e].collect(_.bufnum));
-			sig2=Mix.ar(sig2);
-			sig2=FreeVerb.ar(sig2,0.8,0.4,0.1)*2;
-			sig2=Compander.ar(sig2,sig2,thresh:0.3,slopeAbove:0.10).tanh;
-			sig+sig2;
-			Out.ar(\out.ir,sig+sig2);
-	}).add;
-	~xtreme.play;
-)//}}}
- ~xtreme.play
- ~xtreme.cursor_(9).play
-
+//( //vocal sess
+// ~xtreme.heartdouble=(start:2,music:{~rec.(\heartHi2,4,7)});
+// //~xtreme.heartVocal=(start:2,music:{~rec.(\heart,4,7)});
+// ~xtreme.play
+//)
+//~syn1.keys.do(_.postln)
+//~syn1.controller.info.keys.do(_.postln)
+//b=Buffer.read(s,File.getcwd++"/media/heart.wav");
+//c=Buffer.read(s,File.getcwd++"/media/heartd.wav");
+//d=Buffer.read(s,File.getcwd++"/media/heartHi.wav");
+//e=Buffer.read(s,File.getcwd++"/media/heartHi2.wav");
+//
+//~xtreme.cursor_(2).play;
+//
+//(//Heart Vocal Sess 1{{{
+//	~xtreme.heartdouble=nil;
+//	~xtreme.heartVocal=(start:2,music:(instrument:\heartVoc));
+//		SynthDef(\heartVoc,{
+//			var sig,sig2;
+//			sig=PlayBuf.ar(1,[b,c].collect(_.bufnum))*3;
+//			sig=Compander.ar(sig!2,sig,thresh:0.3,slopeAbove:0.10).tanh;
+//			//sig=PlateReverb.ar(sig/1,mix:0.6);
+//			sig=TwoTube.ar(sig,0.01,0.7,2222,2333)+sig.distort;
+//			sig=RHPF.ar(sig,1500,rq:0.25)*2;//+HPF.ar(sig);
+//			sig2=PlayBuf.ar(1,[d,e].collect(_.bufnum));
+//			sig2=Mix.ar(sig2);
+//			sig2=FreeVerb.ar(sig2,0.8,0.4,0.1)*2;
+//			sig2=Compander.ar(sig2,sig2,thresh:0.3,slopeAbove:0.10).tanh;
+//			sig+sig2;
+//			Out.ar(\out.ir,sig+sig2);
+//	}).add;
+//	~xtreme.play;
+//)//}}}
+// ~xtreme.play
+// ~xtreme.cursor_(9).play
+//

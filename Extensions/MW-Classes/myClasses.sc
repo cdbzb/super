@@ -1,24 +1,4 @@
-PF {
-	var <controller;
-	var <synth;
-	var vsti;
-	var synthdef;
-	var <node,<bus;
-	*new{^super.new.init}
-	init{
-		node=NodeProxy.audio().play;
-		bus=Bus.audio(numChannels:2);
-		node.source={In.ar(bus.index,2)};
-		synthdef=SynthDef(\vsti,{|out=0|
-			var sig=VSTPlugin.ar(nil,2);
-			Out.ar(out,sig)
-		}).add;
-		//synth=Synth(\vsti);
-		//controller=VSTPluginController(Synth(\vsti,[\out,self.bus]));
-		controller=VSTPluginController(Synth(\vsti,[\out,bus.index]));
-		controller.open('/Library/Audio/Plug-Ins/VST/Pianoteq 5.vst',info:true)  //++self.plugin
-	}
-}
+
 
 + SequenceableCollection {
 	q{ arg repeats=1;
@@ -36,7 +16,8 @@ PF {
 	asDrumPat {| beatsPerBar=8 reps=1|
 		var b=List.new;
 		var a=Array.newFrom(this);
-		a.do({|m| (m=="|"[0]).not.if{b.add(m)}});
+		//a.do({|m| (m=="|"[0]).not.if{b.add(m)}});
+		b=a.replace(" "[0],"").replace("|"[0],"");
 		b=b.collect{|j| (j=="x"[0]).if({1},{Rest(1)})};
 		^Pseq(b/beatsPerBar,reps)
 	}

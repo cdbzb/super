@@ -11,100 +11,16 @@
 		"I can see no rea- son for con-","e-5 d c b-4 g b- c5 d",//7
 		"cern. And yet, I am filled with fore- bo- ding...","d5 c b4 a b c5 e4 a g f#" //8
 	])
-)
-
-
-(//////test parts{{{
-
-	~three.aa=Part(start:0,music:(note:0))
-	~three.aa.play
-	~three.play
-	~three.gg=Part(start:0,music:(lag:s.latency-0.03,type:\vsti,controller:~g.controller,note:3))
-	~three.gg.play
-	~three.play(\aa,\gg)
-	~three.cursor_(0).play(\aa,\gg)
-	all {:x,x<-~three.parts,x.music.class==Event,::~three.play(x)}
-	all {:x,x<-~three.parts,x.start>=2,x.start<=3,::~three.play(x)}
-	~three.cursor_(2)
-	~three.play
-	s.latency=0.1;
-	
-)//}}}
-~three.cursor_(3)//{{{
-a=~three@2
-a=all{:x,x<-~three.parts,x.syl<>0}
-~three.play2(a.array)
-b=~three.getPartsList(a.array)
-a.array[0].class
-~three.play(a.array)
-a.array
-~three.play2(\)
-	//////// make this
-	//~three.play(\slide,\bass8)
-	////////
-~three@2	
-play(~three@5)
-~three.play
-a=~three@5
-a.song
-a.play
-a.array
-play(~three@2)
-~three.play(\guide2)
-~three.resources.at("guide2")
-~three.resources.at(\guit0).play
-~three.guit0.play
-~three.play(\guit0,\pf6)
-~three.play(~three@3).array
-(~three@3).play
-~three.slide.lag
-~three.slide.play
-~three.resources
-~three@3
-play(~three@3)
-(~three@2).array
-~three.cursor_(3)
-~three.play((~three@3).array)
-s.latency=-0.1
-
-
-~three.guide3.class
-~three@2.play
-play(~three@2)
-~three.play(\guide2)
-
-~three.play(( ~three@2 ).array)
-a=~three@3
-a.array
-~three.slide.parent
-
-~three.slide
-~three@3.array
-~three.play(a.array)
-a.array.do({|i|~three.play(i)})
-~three.pbind
-a.array
-a.song
-a.postcs
-
-~three.play(2,3)
-b=PartArray([1,2],~three)
-b.song
-b.array
-~three.play
-play((~three@2).array.unpack)
-Array
-a={|...args| args.valueArray}
-a.(1,2,3,[4,5])
-~three.resources
-(~three@3).array//}}}
-
+);
+//}}}
 
 ( //~three sections {{{2
-	~three.cursor_(0);
+	~three.infrastructure={'no infra!'.postln};
+	//~three.cursor_(0);
 	//~three.parts=();
-	"xxxxx..xx".do({|i n| var label=("guide"++n).asSymbol; (i==$x).if {~three.resources[label]=Part(start:n,music:~three.pbind[n])} });
-	//a.isNil.if({a=~vsti.('Pianoteq 5')},{a.synth.isPlaying.not.if({a=~vsti.('Pianoteq 5')})});
+	~three.addGuides("xxxxx..xx");
+	//~a=nil;
+	~three.piano.isNil.if({~three.piano=~vsti.('Pianoteq 5')},{~three.piano.synth.isPlaying.not.if({~three.piano=~vsti.('Pianoteq 5')})});
 	~bass0quarters=~three.parse(0,[ [1,1],[1,1,1],1 ]);
 	//setup guitars now //		{{{
 	try{~g.controller.loaded.not.if{~g=~guitar.()}}{~g=~guitar.()};
@@ -132,7 +48,7 @@ a.(1,2,3,[4,5])
 					~bass0quarters[0]*[2,1,1]/4 ++ (~bass0quarters[1]*[1.9,1,1.1]/4)//moved with bass
 				,3 ),
 			amp:Pseq([4,3,3]/10,3),
-			'Play Mode: Play Mode':0.6
+			'Play Mode: Play Mode':0.6,
 		].p,
 		[
 			type:\vsti,controller:~g.controller,
@@ -141,7 +57,6 @@ a.(1,2,3,[4,5])
 			dur:Pseq(
 				~bass0quarters+[0,0,3]
 			),
-			lag:0.1
 		].p
 		])
 	);//}}}
@@ -216,7 +131,7 @@ a.(1,2,3,[4,5])
 			type:\vsti,
 			note:Pseq([6,[4,-1],5]),
 			dur: Pseq( ~three.parse(2,[[1,1,1,1,1],[1,1]],3)++2),
-			controller:a,
+			controller:~three.piano,
 			octave:4
 		].p
 	);//}}}
@@ -269,7 +184,7 @@ a.(1,2,3,[4,5])
 		].p
 	);//}}}
 	~three.guit4 = Part (start:4,music: //		{{{
-		{ { //do these with an event instead??
+		 { //do these with an event instead??
 				var roots=[
 					//lag:0.19,
 					note:Pseq([-7,[2,5],-5]),
@@ -286,7 +201,7 @@ a.(1,2,3,[4,5])
 				~g.node.play(vol:0.5);
 				Ppar([roots,strums]);
 				}.value
-			}
+			
 		);//}}}
 	try{~h.controller.loaded.not.if{~h=~guitar.()}}{~h=~guitar.()};
 	~three.guitarPatches5 = Part(start:5,lag:-1,music: //		{{{
@@ -436,10 +351,4 @@ a.(1,2,3,[4,5])
 	])
 );//}}}
 );
-(
-	{ ~three.cursor_(0); //		{{{
-	2.wait;  //to give time for vstis
-	~three.play;
-}.fork //}}}
-	)
 

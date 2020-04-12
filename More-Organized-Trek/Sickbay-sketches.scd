@@ -137,7 +137,7 @@ File.getcwd +/+ "Songs/Sickbay-song.scd".load
 	=>Out.ar(\out.kr(0),_)
 }
 =>SynthDef(\stringyy,_)
-=>_.add;}}}
+=>_.add; //}}}
 )
 a=(instrument:\stringyy,type:\on,out:2).play;
 b=(type:\set,id:a[\id]);

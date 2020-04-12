@@ -35,9 +35,9 @@
 			},
 			init: { |self| //create node and controller + load plug 
 				self.controller=VSTPluginController(Synth(\vsti,[\out,self.bus],target:RootNode(s)));
+				~vstRegistry ?? {~vstRegistry=List.new};
+				~vstRegistry.add(self.controller);
 				self.monitor=Monitor.new.play(self.bus.index,2,0,2);
-				//self.node=NodeProxy.audio(s,2).play;
-				//self.node.source={In.ar(self.bus.index,2)};
 				{
 					s.sync;
 					self.controller.open("/Library/Audio/Plug-Ins/VST/"++self.plugin,

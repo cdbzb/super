@@ -114,6 +114,9 @@ Song {
 		}
 	}		
 
+	current {
+		current = this;
+	}
 	getPartsList { |args|
 		var a =
 		case
@@ -222,12 +225,18 @@ Part {
 
 	//play immediately
 	play {switch (music.class,
-		Function,Server.default.bind{music.value},
-		Message,Server.default.bind{music.value},
+		Function,{Server.default.bind{
+			music.value(
+				parent,
+				//durs from event start
+				parent.durs[start].list.drop(syl?0)
+			)
+		}},
+		Message,{Server.default.bind{music.value}},
 		{music.play}
 		) 
 	}
-
+	test{^start}
 	awake { this.play }
 
 

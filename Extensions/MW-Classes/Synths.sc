@@ -29,6 +29,15 @@ Synths {
 		args.flop.do({|i x| 
 			synths[x].set(i)})
 	}
+
+	map { |control bus|
+		(bus.numChannels==1).if( 
+			{synths.do(_.map(control,bus))}
+			,
+			{bus.numChannels.do{|i| synths[i].map(control,bus.subBus(i))}}
+		)
+	}
+
 	doesNotUnderstand { |selector val|
 		synths.do({|i| selector.postln; i.postln})
 	}

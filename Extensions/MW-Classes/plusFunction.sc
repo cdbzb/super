@@ -6,6 +6,15 @@
 		fun.value;
 		^fun
 	}
+	schedL { |when clock|
+		var fun;
+		clock ? clock = TempoClock.default;
+		when=when.asArray.collect(_+Server.default.latency);
+		fun={when.do(clock.sched(_,this))};
+		fun.value;
+		^fun
+	}
+
 }
 
 + Synth {
@@ -13,6 +22,14 @@
 		var fun;
 		clock ? clock = TempoClock.default;
 		fun={when.asArray.do(clock.sched(_,{this.run}))};
+		fun.value;
+		^fun
+	}
+	schedL { |when clock|
+		var fun;
+		clock ? clock = TempoClock.default;
+		when=when.asArray.collect(_+Server.default.latency);
+		fun={when.do(clock.sched(_,{this.run}))};
 		fun.value;
 		^fun
 	}

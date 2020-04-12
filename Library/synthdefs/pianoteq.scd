@@ -7,8 +7,8 @@
 			::i.controller.set(x,i.at(x))
 		};
 		//(type:\midi,dur:i.dur,midiout:i.controller.midi,midinote:i.midinote,note:i.note,degree:i.degree,amp:i.amp,legato:i.legato).play	
-		~type=\midi;
-		~midiout=i.controller.midi;
+		~type=\vst_midi;
+		~vst=i.controller;
 		currentEnvironment.play;
 	};
 
@@ -32,7 +32,9 @@
 		Out.ar(out,sig)}
 	).add;
 
-	~vsti={|plug bus|VSTPluginController(Synth(\vsti,[\out,bus])).open(plug)};
+	~vsti={|plug bus target|
+		VSTPluginController(Synth(\vsti,[\out,bus],target:target)).open(plug)
+	};
 
 	~vstiN=
 	{ |plug|

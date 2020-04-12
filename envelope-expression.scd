@@ -58,7 +58,7 @@ b.play;
 	//~s1.expr[0].source={Amplitude.kr( PlayBuf.ar(1, b.bufnum ) )};
 	~s1.expr[0].source={Amplitude.kr(SoundIn.ar(),attackTime:0.1,releaseTime:0.5)*2-1};
 )
-(//little song
+(//little song{{{
 	{
 		b=Buffer.read(s,"/Users/michael/tank/super/dum-dum.aiff");
 		x.play;
@@ -71,7 +71,7 @@ b.play;
 			8.wait;
 		}
 	}.fork
-)
+)//}}}
 Server.killAll;
 s.reboot;
 b.write("/Users/michael/tank/super/dum-dum.aiff");
@@ -80,14 +80,12 @@ b=Buffer.read(s,"/Users/michael/tank/super/dum-dum.aiff");
 b.plot;
 Buffer
 
-(
+(//prep tamboura{{{
 	w=Buffer.alloc(s, 512, 1);
-
 	w.cheby([1,0,1,1,0,1]);
 	w.cheby([1,0.01,1,1,0.1,0.8,0.5,0.05,0.1,0.1,0.1,0.3,0.4,0.1,0,0.5]);
-
-)
-(//tamboura-esque
+)//}}}
+(//tamboura-esque{{{
 	x = {[300,360,400,540].do{|i|
 		{
 			Phaser1.ar(
@@ -99,28 +97,50 @@ Buffer
 					),
 					0.7,0.7),
 					rate:0.05+LFBrownNoise1.kr(mul:0.1)) 
-				}.play;
+				}.play 
+				//(s,(3.rand+1));
 			}
-});
+};
+x.play;
 	//x.free; b.free;
-(
-{Saw.ar(Tartini.kr(SoundIn.ar)[0],0.2)}.play
-)
-(
-a= SynthDef("testtartini",{
-    var in, freq, hasFreq, out;
+)//}}}
+( //record ~b{{{
+	~b={
+		[
+			{b=Buffer.alloc(s,40100*4,1).bufnum}.value,
+			{SoundIn.ar()=>RecordBuf.ar(_,b,run:1,doneAction:2,loop:0)}.play
+		]
+	}.value
+)//}}}
+( //formant pitchfollower{{{
+	//{PlayBuf.ar(1,~b[0])}.play
 
-    in=SoundIn.ar(0);
+	SynthDef("pitchFollow1",{|in=4|
+		var amp, freq, hasFreq, out;
 
-    # freq, hasFreq = Tartini.kr(in);
+		in = In.ar(in);
 
-    hasFreq.poll;
+		amp = Amplitude.kr(in, 0.05, 0.05);
 
-    Out.ar(0,[SinOsc.ar(freq,0.1),in]);
-}).play(s);
-)
-(
-SynthDef("pitchFollow1",{
+		# freq, hasFreq = Tartini.kr(in);
+
+		//out = Mix.new(VarSaw.ar(freq * [0.5,1,2], 0, LFNoise1.kr(0.3,0.1,0.1), amp))
+		//out = Formants.ar(Vibrato.kr([freq,freq*2],rrand(5!4,6)),Vowel())*amp;
+		out = Formants.ar(Vibrato.kr(Scale.major.degreeToRatio([1,3,5,7]-1)*freq,rrand(5!4,6)),Vowel())*amp
+		=>Splay.ar(_)
+		=>FreeVerb.ar(_,0.8,0.5);
+
+		Out.ar(1,out)
+	}).play;
+)//}}}
+(// play a chorus after recording ~b{{{
+	{PlayBuf.ar(1,~b[0])}.play(s,1).dur(4);
+	{PlayBuf.ar(1,~b[0])}.play(s,10).dur(4);
+	Synth(\pitchFollow1,[\in,10])
+
+)//}}}
+( //original pitchFollow1 with AllpassN{{{
+SynthDef("pitchFollow1",{//{{{
     var in, amp, freq, hasFreq, out;
     in = Mix.new(SoundIn.ar([0,1]));
     amp = Amplitude.kr(in, 0.05, 0.05);
@@ -131,22 +151,20 @@ SynthDef("pitchFollow1",{
         out = AllpassN.ar(out, 0.040, [0.040.rand,0.040.rand], 2)
     });
     Out.ar(0,out)
-}).play(s);
+}).play(s);}}}
 )
-
-(
+//}}}
+( //volume grabber{{{
 	{
+		//add amplitude in here......
 		b=Coyote.kr(SoundIn.ar());
 		d=DelayN.ar(b,1,0.15);
 		c=DelayN.ar(b,1,0.145);
 		a= RunningMax.ar(SoundIn.ar()*0.1,d);
 		Poll.ar(c-0.1,a);
 	}.play
-		
-)
+)//}}}
 
-
-{Amplitude.ar(SoundIn.ar).poll}
 
 (
 	a=NodeProxy.audio.play;
@@ -169,7 +187,7 @@ a.set(\pan(0.9));
 			XOut.ar(out, wet, sig)}
 		).add;
 )
-( //happy happy
+( //happy happy{{{
 	{
 		10.do{
 			Pfxb(
@@ -184,6 +202,6 @@ a.set(\pan(0.9));
 				rrand(3,7).wait;
 			};
 		}.fork;
-)
+)//}}}
 
 

@@ -3,7 +3,7 @@ Song {
 	classvar < songs;
 	classvar <> current;
 	var <song, <key, <>cursor=0, <sections, <lyrics, <tune; 
-	var <durs,  <>resources;
+	var <>durs,  <>resources;
 
 	*initClass {
 		songs=();
@@ -47,7 +47,7 @@ Song {
 	
 	init {|symbol array|
 		key=symbol;
-		songs.put(symbol,this);
+		songs.put(symbol.asSymbol,this);
 		song=array;
 		resources=();
 		sections=(song.size/2).asInt;

@@ -8,6 +8,13 @@ o.outputStreamsEnabled="0000000000111111";
 o.inputStreamsEnabled="11111111111111";
 s.reboot;
 )
-{Out.ar([10,11],In.ar(0,2))}.play.tail;
-
-s.meter;
+//
+//s.meter;
+//ServerOptions.inDevice
+//s.options.inDevice
+//o=s.options;
+//o.inDevice="One"
+//o.outDevice="One"
+//s.reboot
+//
+//

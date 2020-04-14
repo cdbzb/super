@@ -76,10 +76,12 @@ Item {
 		^{
 			arg out;
 			var sig;
+			//server.post;'  '.post;server.sampleRate.postln;this.p_sampleRate.postln;
+(rate*this.p_sampleRate/server.sampleRate).postln;
 			 sig=PlayBuf.ar(
 				inChans, 
 				buffer.bufnum,
-				rate:rate*this.p_sampleRate/server.sampleRate,
+				rate:rate,///this.p_sampleRate*server.sampleRate,
 				startPos:startPos,
 				trigger:trigger,
 				loop:loop);
@@ -89,6 +91,10 @@ Item {
 	p_sampleRate { ^SoundFile(this.mostRecent).sampleRate }
 	current { current=this; }
 	refresh { buffer=Buffer.read(Server.default,this.mostRecent); }
+	playbufMon {|...args|
+		this.armed.if{^SoundIn.ar(inBus)}
+		{^this.playbuf(*args)}
+	}
 	playbuf { |rate=1 startPos=0 trigger=1 loop=0 doneAction=2|
 		^PlayBuf.ar(//{{{
 			inChans, 

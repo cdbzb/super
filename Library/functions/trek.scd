@@ -73,7 +73,7 @@
 			~trek=(	// specific proto for trek song:specifies file for durs		{{{2
 				dursFile:"/Users/michael/tank/super/theExtreme3",
 				durs:nil,
-				save:{|self| Archive.global.put(self.key,self.durs); Archive.write(self.dursFile)},
+				save:{|self| Archive.global.put(self.key,self.durs); Archive.write(self.dursFile);'saved '.post;self.dursFile.postln},
 			);
 
 			// event recorder		{{{2
@@ -140,7 +140,8 @@
 									$n , {self.nextt},
 									$r , {self.ret},
 									$s , {song.save},
-									$w , {self.window.close;t.free}
+									$w , {self.window.close;t.free},
+									$q , {self.window.close;t.free}
 								)
 							};//}}}
 							self.item=[];

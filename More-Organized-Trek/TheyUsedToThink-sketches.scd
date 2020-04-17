@@ -43,12 +43,24 @@
 //~tu.pbind[2].play
 ~tu.cursor_(2).play;
 )//}}}
-s.makeWindow
-s.options.dump
+
 ServerOptions.outDevice_(\ONE)
 s.options.device="ONE"
 s.reboot
-(
+
+Monitor.new.play(0,1,3,1)
+SynthDef(\fl,{StkFlute.ar(\freq.kr(499))=>Out.ar(\out.kr(1),_)}).add;
+SynthDef(\shak,
+
+
+
+~recorder.(~im2,8,1)
+	{StkShakers.ar(8)}.play(s,2) 
+	{StkBlowHole.ar(249,64,20,64,11,64,1,0,1,1,1)}.play(s,2) 
+)
+
+s.meter
+(//{{{
 	~im=Song(\ImInControl,[ //{{{
 		"I'm (boom) in (boom) con-","g4 a-3 g4 a-3  f4",//0
 		"trol, I can order this (boom) but I'm","f4 e- f g- f d- f#3 c4 d- ",//1
@@ -57,7 +69,13 @@ s.reboot
 		"(boom) right in pointing out (boom) the e-nor--","c#3 c#4 d# c# c b-3 d#2 c4 a3 a-", //4
 		"-mous da-(__) -nger potential in any","f4 c# b3 f#4 d# a-3 b a# g# a# b",//5
 		"(boom) (boom) con-- tact with ","c2 c2 c4 c4 d",//6
-		"life and intelligence so fan-","g4 d g f# e d e f#"
+		"life and intelligence so fan-","g4 d g f# e d e f#",//7
+		"(trill) --tas --tic --ly ad-- va -- --nced as","e3 g#4 f# e d b- c5 b-4 a ",//8
+		"this, but I must point out that the possi","f# e4 c# d e g3 b c#4 d e ",//9
+		"-bilities,the potential, for knowledge and ad-","f#4 d a3 d4 f#4 " //10/
+		//"vancement is equally great...."
+		//"risk, risk is our business (ooo --ooh)"
+		//"(boom) thats what a starship is all a-"
 	]).setupDurs;//}}}
 //{{{
  // ~im parts
@@ -232,23 +250,24 @@ s.reboot
 //}}}
 		//~im2.keys3=(start:4,syl:1,music:{Synths(\sawzz,\att,1.5,\freq,[1,3,5,8].degreescps(root:1,scale:\minor)).dur(3) });
 		//~im2.keysLow4=(start:4,syl:1,music:{Synth(\sawzz,[\freq,[1].degreescps(octave:4,root:0,scale:\major)]).dur(3)});
+//// 4 /////{{{
 ~im2.bass4=(start:4,music:[octave:[3,4], note:[1,0,4,3].q, dur:~im2.parse(4,[1,[1,1],[1,1,1],1]).q ].p);
+~im2.lowBass4=(start:4,music:{
+	var a = Synths(\portBass,\amp,0.02,\freq,[1,11].degreescps(octave:2,root:1)).dur(2);
+	{a.set(\freq,[1,11].degreescps(octave:2))}.sched(~im2.durs[4].list[0]+0.1)
+});//}}}
 
+///// 5 /////{{{
 ~im2.bass5=(start:5,music:(octave:[3,4]-1,note:5,dur:2));
 ~im2.bass5ii=(start:5,syl:2,music:(octave:[3,4],note:-3,dur:2));
 ~im2.bass5iii=(start:5,syl:5,music:(amp:0.2,octave:[3,4],note:-6,dur:2));
 
 //[\key,[\bass5,\bass5ii,\bass5iii],\start,5,\syl,[0,2,5],\music,[(octave:[3,4]-1,note:5,dur:2),(octave:[3,4],note:-3,dur:2),(amp:0.2,octave:[3,4],note:-6,dur:2) ]].flopEvents
 
-
 ~im2.guide5= (start:5,music:Pbindf(~im2.pbind[5],\ctranspose,12,\amp,[0.15,0.05].q(inf)));
 ~im2.chord5=(start:5,music:(strum:0.03,amp:0.1,degree:[0,2,7,9],octave:4,root:5,dur:1,scale:Scale.minor));
 ~im2.lowBass5=(start:5,music:(instrument:\sawzz,amp:0.3,note:5,octave:[2,3]));
 //~im2.lowBass4=(start:4,music:{var a = (instrument:\sawzz,amp:0.3,note:0,octave:[2,3])});
-~im2.lowBass4=(start:4,music:{
-	var a = Synths(\portBass,\amp,0.02,\freq,[1,11].degreescps(octave:2,root:1)).dur(2);
-	{a.set(\freq,[1,11].degreescps(octave:2))}.sched(~im2.durs[4].list[0]+0.1)
-});
 ~im2.passing5=(start:5,music:[instrument:\tri,out:1,octave:[5,4],note:[0,1,2,3].q,dur:~im2.parse(5,[1,1,1,[1,1,1]]).q].p);
 ~im2.passing5b =(start:5,music://{{{
 	[
@@ -261,8 +280,9 @@ s.reboot
 ].p
 );//}}}
 ~im2.chord5II =(start:5,syl:5,music:(out:0,instrument:\tri,note:[6,11,13],dur:1));
-~im2.chord5III =(start:5,syl:2,music:(out:1,instrument:\tri,note:[3,6,9],dur:1));
-// 6
+~im2.chord5III =(start:5,syl:2,music:(out:1,instrument:\tri,note:[3,6,9],dur:1));//}}}
+
+///// 6 /////{{{
 ~im2.bompbomp6=(start:6,music://{{{
 	[
 		amp:0.3,
@@ -278,24 +298,25 @@ s.reboot
 );//}}}
 // drums6
 ~im2.snares6=(start:6,music: [instrument:[\snare,\snare,Rest(),Rest()].q,dur:~im2.parse(6,[1,1,[1,1/2],[1/2,1]]).q].p);
-~im2.contactBeep=(start:6,music:[
+~im2.contactBeep=(start:6,music:[//{{{
 	octave:8,
 	dur:
 	~im2.parse(6,[2/3,2/3,1/4,1/2])
 	.q
-].p);
-//~recorder.(~im2,6,1)
+].p);//}}}
 //~im2.hat6=(start:6,music: [instrument:\hihat,pan:0.5,dur:~im2.durs[6].list[0..1].sum/4,degree:Pseq([0],8)].p);
-~im2.slide6=(sstarttart:6,syl:2,lag:0.2,music:[amp:0.02,root:4,degree:Pseries(30,-1,38),dur:Pwhite(0.01,0.012)*1.85,instrument:\mda,vel:60].p);
-~im2.slide6echo=(start:6,syl:2,lag:0.55,music:[amp:0.005,root:4,degree:Pseries(30,-1,38),dur:Pwhite(0.01,0.012)*1.85,instrument:\mda,vel:60].p);
-//s.options.device="ONE";s.reboot
+~im2.slide6=(start:6,syl:2,lag:0.2,music:[amp:0.02,root:4,degree:Pseries(30,-1,38),dur:Pwhite(0.01,0.012)*1.85,instrument:\mda,vel:60].p);
+~im2.slide6echo=(start:6,syl:2,lag:0.55,music:[amp:0.005,root:4,degree:Pseries(30,-1,38),dur:Pwhite(0.01,0.012)*1.85,instrument:\mda,vel:60].p);//}}}
+
+///// 7 /////{{{
 ~im2.crash7=(start:7,music:(instrument:\cymbalsDS,dur:5,amp:0.02));
-~im2.keys7=(start:7 ,music:
-	[ freq:[[3,11],5,[3,11],[2,7],5,[2,7]].degreescps(root:7).q,
-	dur: ~im2.parse(7,[1,1,1,[1,1],[1,1/2],[1/2,1]]).q
-].p
-);
-~im2.bass7=(start:7,music:
+~im2.keys7=(start:7 ,music://{{{
+	[
+		freq:[[3,11],5,[3,11],[2,7],5,[2,7]].degreescps(root:7).q,
+		dur: ~im2.parse(7,[1,1,1,[1,1],[1,1/2],[1/2,1]]).q
+	].p
+);//}}}
+~im2.bass7=(start:7,music://{{{
 	[
 		instrument:\pulseBBass2,
 		amp:0.3,
@@ -304,11 +325,44 @@ s.reboot
 		root:7,
 		dur:~im2.parse(7,[[1,1],1,[1,1,1,1/2],[1/2,1]]).q
 	].p
-);
-//~im2.pbind[7].play
-~im2.cursor_(7);
-~im2.addGuides(".xxxx.xx");
+); //}}}
+//}}}
 
+///// 8 ///// {{{
+~im2.kltrill8=	(start:8,music:{{StkClarinet.ar(441/480*[1,3].degreescps(root:4,octave:5)*Pulse.kr(LFBrownNoise2.kr([0.5,0.51],mul:0.5,add:6)).range(1,2.midiratio),breathpressure:20,vibgain:10,vibfreq:64)*0.04}.play(s,2).dur(1) });
+//~im2.pbind[7].play;
+~im2.bass8=(start:8,music:[note:[Rest(),8,6,4,2,0,-1].q,octave:3,dur: ~im2.parse(8,[1,1,1,1,1,[1,1,1,1]]).q++[2].q ].p);//}}}
+
+~im2.chord9=(start:9,music:(strum:0.07,freq:[2,4,5,7].degreescps(root:4)));
+~im2.voiceleading9=( start:9, music: (//{{{
+		[
+			[
+				octave:[4,5],
+				amp:0.5,
+				dur: ~im2.parse(9,[1,1,1]).q,
+				instrument:\stringyy,note:[3,[2,4],[1,4]].q
+			].p
+			,
+			[
+				amp:0.2,dur:~im2.parse(9,[1,1,1]).q,out:2,instrument:\stringyy,note:[-3,-4,-5].q
+			].p
+		]=>Ppar(_)
+	));//}}}
+//lick 8
+~im2.lick8=(start:8,syl:4,music://{{{
+	[
+		out:3,
+		freq:
+		([0,10]+.x[6,5,3,2,1])
+
+		.degreescps(root:3,octave:4).q,dur:
+	~im2.parse(8,[1,1,1,1],5).q++([1].q)
+
+].p
+);//}}}
+~im2.cursor_(8);
+~im2.addGuides(".xxxx.xx");
+//}}}
 )
 a=PF.new
 (
@@ -316,22 +370,16 @@ a=PF.new
 		var sig=MdaPiano.ar(\freq.kr(400),\gate.kr(1)) * \amp.kr(0.1);
 		Out.ar(\out.kr(0),sig);
 		DetectSilence.ar(sig,0.01)
-	}).add
-)
-~im2.snares6.play
+	}).add;
 
-[instrument:\snare,dur:1].pp
-
-(
 	SynthDef(\portBass,{
 		Formants.ar(\freq.kr(300,\port.kr(0.2)),Vowel())
 		=>FreeVerb.ar(_,0.3,1)
 		*\amp.kr(0.1)
 		* Env.cutoff(1).kr(2,gate:\gate.kr(1))
 		=>Out.ar(\out.kr(1),_)
-	}).add
-)
-(
+	}).add;
+
 	SynthDef(\tri,{
 		DPW3Tri.ar(\freq.kr(300)) * \amp.kr(0.1).distort
 		* Env.asr(0.05,1,2).kr(2,gate:\gate.kr(1))
@@ -348,10 +396,8 @@ a=PF.new
 		a
 		=>MoogFF.ar(_,fenv,\res.kr(2)) * env 
 		=>Out.ar(\out.kr(0),_)
-	}
-).add;
-)
-(
+	}).add;
+
 	{ //Dan Stowall Cymbals
 		var lodriver, locutoffenv, hidriver, hicutoffenv, freqs, res, thwack;
 		locutoffenv = EnvGen.ar(Env.perc(0.5, 5)) * 20000 + 10;
@@ -366,7 +412,7 @@ a=PF.new
 		=> ( Out.ar(\out.ir,_) <! DetectSilence.ar(_,doneAction:2))
 	}=>SynthDef(\cymbalsDS,_)=>_.add
 )
-~im2.cursor_(5).play
+
 ~recorder.(~im2,6,1)
 ~im2.chord5b.play;~im2.guide5.play;
 ~im2.passing5.play;
@@ -412,7 +458,7 @@ Archive.at( ~im2.key.asSymbol)
 // ngyy * -> make a lookup script!!
 ( // stringyy {{{
 {
-	SynthDef // 
+	//def
 		{|gate=1| 
 			var freq=\freq.kr(400,0.05);
 			var width=\width.kr(6);
@@ -427,6 +473,7 @@ Archive.at( ~im2.key.asSymbol)
 			=>
 			Mix.ar(_)
 			* Env.asr(0.5,1,8).kr(2,gate:gate)
+			* \amp.kr(1)
 			=>Out.ar(\out.kr(0),_)
 		}
 		=>SynthDef(\stringyy,_)

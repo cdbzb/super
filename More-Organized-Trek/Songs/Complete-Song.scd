@@ -340,6 +340,7 @@ SynthDef(\tromboneVerb,{ |room=0.8 mix=0.7| //{{{
 		//	~complete.trombone8.play
 		//~complete.trombone8.play
 		//s.plotTreeL;
+		//~syn1.controller.loaded
 
 	~complete.trombone8=(start:8,music: //{{{
 		p{ | amp=0.9 exp=80|
@@ -348,9 +349,9 @@ SynthDef(\tromboneVerb,{ |room=0.8 mix=0.7| //{{{
 			~syn1.patch(\trombone,\none,3);
 			~syn1.expression(84,3);
 			Ppar([
-				Pbind(*[lag:s.latency,
-					type:\vsti,
-					controller:~syn1.controller,
+				Pbind(*[
+					type:\vst_midi,
+					vst:~syn1.controller,
 					chan:3,
 					midinote: Pseq(~noteList.(["g#","c#","b3"]))-[12,36] ,
 					dur:Pseq([~complete.secDur[8],~complete.secDur[9],3]),

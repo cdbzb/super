@@ -2,6 +2,7 @@ Song {
 	classvar <> dursFile="/Users/michael/tank/super/theExtreme3";
 	classvar < songs;
 	classvar <> current;
+	classvar lyricWindow;
 	var <song, <key, <>cursor=0, <sections, <lyrics, <tune; 
 	var <>durs,  <>resources;
 
@@ -28,6 +29,24 @@ Song {
 				})
 			}
 		}
+	}
+
+	*showLyricWindow {
+		lyricWindow=Window(bounds:Rect(0,300,300,300)).alwaysOnTop_(true).front;
+		//a=StaticText.new(w,Rect(120,10,600,300)).string_(~im2.lyrics).font_(Font("Helvetica",20)).align_(\left);
+		current.lyrics.size.do{|i|
+			StaticText.new(lyricWindow,Rect(120,25*i,600,300))
+			.string_(current.lyrics[i])
+			.font_(Font("Helvetica",20));
+
+			StaticText.new(lyricWindow,Rect(100,25*i,600,300))
+			.string_(i.asString)
+		};
+		//{w.close}.defer(5)
+	}
+
+	*closeLyricWindow{
+		lyricWindow.close
 	}
 
 	*doesNotUnderstand { |selector   args|
@@ -196,16 +215,18 @@ Song {
 	)
 }
 
+
+
 	doesNotUnderstand { |selector   args|
 		var key = selector.asString;
 		key.contains($_).if
 		(
 			{
 				key=key[..key.size-2];
-				(args.class==Event).if{args=this.asPart(args)};
+				(args.class==Event).if{Part.current=this.asPart(args);args=this.asPart(args)};
 				resources.put(key.asSymbol,args);
 				args.postln;
-				(args.class==Part).if{args.name=key;args.parent=this}
+				(args.class==Part).if{args.name=key;args.parent=this;Part.current=args}
 			},{
 				^resources.at(key.asSymbol);
 			}
@@ -214,7 +235,10 @@ Song {
 }
 
 Part { 
+	classvar <>current;
 	var <>start,<>syl,<>lag,<>music,<>resources,<>parent,<>name;
+
+	*play{^current.play}
 
 	*new {|start=0,syl,lag=0,music|
 		^super.new.init(start,syl,lag,music)

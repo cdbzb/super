@@ -32,7 +32,7 @@ Song {
 	}
 
 	*showLyricWindow {
-		lyricWindow=Window(bounds:Rect(0,300,300,300)).alwaysOnTop_(true).front;
+		lyricWindow=Window(bounds:Rect(0,000,600,600)).alwaysOnTop_(true).front;
 		//a=StaticText.new(w,Rect(120,10,600,300)).string_(~im2.lyrics).font_(Font("Helvetica",20)).align_(\left);
 		current.lyrics.size.do{|i|
 			StaticText.new(lyricWindow,Rect(120,25*i,600,300))
@@ -95,7 +95,7 @@ Song {
 		)
 	}
 
-	save { Archive.global.put(key,durs);Archive.write(dursFile) }
+	save { Archive.global.put(key,durs);Archive.write(dursFile);'archive written'.postln }
 
 	durTill {|sec till|
 		var list= durs[sec].list;
@@ -205,6 +205,7 @@ Song {
 
 	addGuides {|string|
 		string.isNil.if{string="x"};
+		string=string.reject(_==$|);
 		string.clipExtend(this.sections)
 		.do({|i n|
 			(i==$x).if{
@@ -287,8 +288,13 @@ Part {
 		(start>=parent.cursor).if{
 			var when=this.calcTime;
 			this.sched(when);
-			when.postln
+			{this.name.postln}.sched(when);
+			//when.postln
 		}
+	}
+	ppost {
+		this.p;
+		{this.name.postln}.sched(this.calcTime);
 	}
 	 
 	//add random stuff to resources

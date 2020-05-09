@@ -125,7 +125,7 @@
 							.action = {self.nextt;"next".postln};
 							var e=Button.new(w.view,Rect(260,300,100,100))
 							.states_(["1",Color.black,Color.white])
-							.action = {song.save;"saved".postln};
+							.action = {song.save};
 							var v=w.view;
 							self.window=w;
 							StaticText(b,Rect(0,0,100,100)).string_("Do over").align_(\center);

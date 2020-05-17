@@ -72,7 +72,8 @@ Song {
 		sections=(song.size/2).asInt;
 		lyrics=song.copySeries(0,2,song.size);
 		tune=song[1,3..song.size].collect({|i|
-			Panola.new(i).midinotePattern
+			case {i.class==String} { Panola.new(i).midinotePattern }
+			{i.class==Array } {i.q}
 		});
 		this.setupDurs;
 	}
@@ -182,7 +183,18 @@ Song {
 
 	parse {|phrase array start=0| 
 		var counter = 0;
-		var beatNum = array.flatten.collect{|m i| array.flatten.[0..i].sum};
+		var beatNum; 
+		//expand numbers greater than one
+		//doesn't currently support numbers greater than one in sub-arrays
+		//or decimal numbers greater than one
+		array=array.collect{|i| 
+			( i.class==Integer ).if{
+			(i>1).if{ 1.dup(i) }{ i }
+		}{
+			i
+		}};
+		beatNum = array.flatten.collect{|m i| array.flatten.[0..i].sum};
+		array.postln;
 		beatNum = beatNum.collect{|i|(i-0.001).floor};
 		^array.collect{ |item|
 			item.isArray.not.if(
@@ -311,4 +323,39 @@ Part {
 			}
 		)
 	}
+}
+
+SongList {
+	classvar <> current;
+	var < arrayOfSongs;
+
+	*new {| ...args |
+		^super.new.init(args)
+	}
+
+	init { | args |
+		arrayOfSongs= args;
+	}
+
+	*play {
+		current.play;
+	}
+
+	play {
+		var durations = arrayOfSongs.collect(_.durTillEnd);
+		//save and restore the cursors for sections after the first 
+		var cursors = arrayOfSongs.collect(_.cursor);
+		arrayOfSongs.do{ |i x|
+			var offset =0; 
+			var playFrom=cursors[0];
+			(x>0).if{
+				offset=durations[0..x-1];
+				playFrom=0;
+			};
+			i.postln;offset.postln;
+			{ i.cursor_(playFrom).play }.sched(offset);
+			{ i.cursor_(cursors[x])}.sched(offset+1) 
+		};
+	}
+//		~playMultipleSongs.([~tu,~im2]);
 }

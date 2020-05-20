@@ -119,6 +119,22 @@ s.waitForBoot({
 	}).add;
 
 
+	SynthDef(\stringyy,{ |gate=1| //{{{
+		var freq=\freq.kr(400,0.05);
+		var width=\width.kr(6);
+		//var gate=\gate.kr(0);
+
+		Gendy2.ar(minfreq:freq-width,maxfreq:freq+width)
+		=>Mix.ar(_) *0.5
+		+Gendy1.ar(minfreq:freq-width,maxfreq:freq+width) 
+		* 0.1 * \amp.kr(0.5)
+		=>
+		(PlateReverb.ar(_,10) ++ (_*0.5))
+		=>
+		Mix.ar(_)
+		* Env.asr(0.5,1,8).kr(2,gate:gate)
+		=>Out.ar(\out.kr(0),_)
+	}).add; //}}}
 
 	//TODO generalize this - seperate into proto
 //	~synful=( // creates a nodeproxy playing on a private bus - .node and .bus respectively 

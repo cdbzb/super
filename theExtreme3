@@ -429,7 +429,7 @@ p = [
 	// List
 	102, [ array: o[103] ],  
 	// Array
-	103, [ 0.002 ],  
+	103, [ 0.388 ],  
 	// Pseq
 	104, [ list: o[105],  repeats: 1,  
 		offset: 0 ],  

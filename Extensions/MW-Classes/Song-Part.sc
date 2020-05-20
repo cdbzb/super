@@ -32,7 +32,7 @@ Song {
 	}
 
 	*showLyricWindow {
-		lyricWindow=Window(bounds:Rect(0,000,600,600)).alwaysOnTop_(true).front;
+		lyricWindow=Window(bounds:Rect(-500,000,600,600)).alwaysOnTop_(true).front;
 		//a=StaticText.new(w,Rect(120,10,600,300)).string_(~im2.lyrics).font_(Font("Helvetica",20)).align_(\left);
 		current.lyrics.size.do{|i|
 			StaticText.new(lyricWindow,Rect(120,25*i,600,300))

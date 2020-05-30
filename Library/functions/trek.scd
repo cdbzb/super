@@ -1,4 +1,5 @@
 (
+	s.waitForBoot { StageLimiter.activate };
 	~funs=(		//	A Pseudo Class for Song with elastic rhythm			{{{2
 		// written for trek project
 		sections: {|self|self.song.size/2},

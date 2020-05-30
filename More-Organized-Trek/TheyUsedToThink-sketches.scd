@@ -2,9 +2,19 @@
 		([0]++collection).integrate
 	};//}}}
 
+	l = SongList(~tu,~im2)
+	l.play
+
+		MIDIClient.init;
+		MIDIIn.connectAll;
+		MIDIFunc.noteOn({ |vel num| ~myFree.(~syn1)},93);
+		{PinkNoise.ar(0.1)}.play
+		XTouch()
+
 ( //  Song(\theyUsed) {{{
 
-~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
+	~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
+
 	~tu=Song(\theyUsed,[
 		"they used to think if man could ","f3 f g g a a b ", //0
 		"fly, he`d have wings, but he","b3 a g c#4 b3 c#4", //1
@@ -24,7 +34,7 @@
 	]).setupDurs;
 	//	~recorder.(~tu,13,1);
 	//	~tu.pbind[10].play
-	Song.current=~tu;
+	~tu.current.next_(\ImInControl2).chain;
 	~moonChord="e- f a c#" => ~panNotes.(_);
 	~marsChords=[0,2].collect{|root| [ freq:	[ [1,4,6].dup++[1,3,5] .dup ].flatten.degreescps(root:root).q ].p }.q;
 	//	~recorder.(~tu,3,1);
@@ -41,7 +51,16 @@
 	~tu.resources=();
 
 	//// 2 ///// {{{
-	~tu.boom=(start:2,syl:1,lag:0,music://{{{
+
+//	~tu.durs[4].list
+//	~tu.pbind[4].psslay
+	~tu.chordi2=(start:2,music:[
+//		dur:~tu.secDur[2..3].q,
+		dur:~tu.secDur[2..4].q,
+		freq:[[2,5,7],[1,4,6],[1,3,5]].df(\g,3).q,
+		amp:0.04,
+	].p);
+	~tu.wowowow=(start:2,syl:1,lag:0,music://{{{
 		{{
 			var notes = [11,6,3].degreescps;
 			var durs = [0]++(~tu.durs[2].list[2..3]).integrate;// + ~tu.durs[2].list[2] ;
@@ -52,7 +71,7 @@
 	);//}}}
 //}}}
 //// 3 //// {{{
-	~tu.boomBass=Part(3,music:(note:0,octave:3,amp:0.2,dur:~tu.secDur(3)));
+	~tu.boomBass=Part(3,music:(note:0,octave:3,amp:0.5,dur:~tu.secDur[3]));
 //}}}
 SynthDef(\ooh, {| out=0 gate=1| //{{{
 	Formants.ar(
@@ -66,13 +85,28 @@ SynthDef(\ooh, {| out=0 gate=1| //{{{
 } ).add; 
 								//}}}
 
+	~tu.bass4a=(start:4,music:( //{{{
+		freq:[5].df(\c,2),
+		amp:0.5,
+		dur:~tu.parse(4,[4]),
+	));//}}}
+	~tu.bass4=(start:4,syl:3,music:[ //{{{
+		freq:[5,6,2].df(\e,2,\mixolydian).q,
+		amp:0.5,
+		dur: ( ~tu.parse(4,[[1,1,1,2/3],1/3],4) + ([0]++~tu.parse(5,[1,2]))).q ,
+	].p);//}}}
+	~tu.wowowow4=(start:4,syl:1,music:Pmono( //{{{
+		\sawzz,
+		\freq, [15,13,7].df(\e,4,\mixolydian).q,
+		\dur, ~tu.parse(4,[1,1,3],2).q
+	));//}}}
 ~tu.baas6=(start:6,music:(//{{{
 	freq:[1].dm('e-',3),
 	dur: ~tu.secDur[6],
 	amp:0.5,
 ));//}}}
 ~tu.ooh=(start:6,music: {{ //{{{
-		var choir=Synths(\ooh,
+		var choir=Synth(\ooh,
 //			\freq,[500,600,660,750]/2,
 			\freq,~moonChord.midicps,
 			\blend,0,
@@ -90,6 +124,7 @@ SynthDef(\ooh, {| out=0 gate=1| //{{{
 								//}}}
 //~tu.pbind[7].play
 ~tu.bass7=(start:7, music:[//{{{
+	amp:0.5,
 	freq:[3,3.5,1].df(\b,2,\minor).q,
 	dur: ~tu.parse(7,[[1,1/3],2/3,1]).q,
 ].p,);//}}}
@@ -105,6 +140,7 @@ SynthDef(\ooh, {| out=0 gate=1| //{{{
 ));//}}}
 ~tu.middleVoice=(start:8,music:(note:0,dur:2,instrument:\sawzz,));
 ~tu.bass8=(start:8,music:[ //{{{
+	amp:0.5,
 	freq: [11,7,7].df(\f,2).q ,
 	dur: ~tu.parse(8,[1,1,1]).q,
 ].p);//}}}
@@ -134,7 +170,27 @@ SynthDef(\pluckD,{|freq=400 amp=1| //{{{
 ));
 ~tu.quarters8=~tu.parse(8,[2/3,[1/3,1],3,2]);
 
+~tu.sewed12=(start:12,syl:4,music:Pmono(*[
+	//	instrument:
+	\tri,
+	attack:3,
+	freq:[5,11,11].df(\a,3).q,
+	port:1.1,
+	dur: ~tu.parse(12,[4],5).q ++ ~tu.parse(13,[1,3]).q,
+]));
+
+//~tu.sewed12.p;~tu.pbind[12].play
+~tu.patience12=(start:12,syl:5,music:[
+	pan:1,
+	amp:0.1,
+	instrument: \sawzz,
+	freq:[2,1,1].df(\d,5).q,
+	dur:~tu.parse(12,[2,1],5).q++[1].q,
+].p);
+
+
 ~tu.bass8=(start:8,music:[ //{{{
+	amp:[0.5,0.4,0.1,0.5,0.5,0.1,0.1,0.5,0.5].q,
 	freq:[4,4,4,2,3,3,3,3,2].df(octave:3,).q,
 //	freq:[4,4,4,3,3,3,2].df(octave:3,).q,
 	dur:
@@ -179,6 +235,23 @@ SynthDef(\pluckD,{|freq=400 amp=1| //{{{
 	freq:[ 11,5 ].df(\d,2),
 	dur: ~tu.parse(13,[4])
 ));//}}}
+
+		SynthDef( \harpsichord, { Pulse.ar(\freq.kr(300),0.25,\amp.kr(0.1))* Env.perc().kr(2,gate:1) => Out.ar(\out.kr(0),_)} ).add; 
+		~tu.harpsichord13=(start:13,syl:3,music: //{{{
+			[
+				drive:0,
+				decaytime:50,
+				strum:0.03,
+				dur: ~tu.parse(13,[1,1,1,1],4).q++[~tu.secDur[14]].q,
+//				amp:0.02,
+//				detune: [-3,10],
+//				instrument: \harpsichord,
+		  		instrument:\pluckD,
+				coef:0.1,
+				//		drive:0.1,
+				freq:[[5,11,13],[5,12,14],[5,7,12],[5,11,13],[4,6.66,13]].df(\b,3,\harmonicMinor).q * [1,2],
+			].p
+);//}}}
 ~tu.lickharmony13=(start:13,syl:3,music:Pbindf( //{{{
 	~tu.lick13.music ,
 	\freq, [13,14,12,13,7].df(\b,3,\minor).q,
@@ -206,6 +279,7 @@ SynthDef(\pluckD,{|freq=400 amp=1| //{{{
 	//~tu.cursor_(2).play;
 	);//}}}
 
+
 	( //{{{
 		\test.postln;
 		~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
@@ -232,9 +306,7 @@ SynthDef(\pluckD,{|freq=400 amp=1| //{{{
 			"engineer stand by to be aboard three receptacles","d4 c# d d5 c# g4 f# e g f# e c# d" //18
 		]).setupDurs;//}}}
 
-		//~im2.pbind[15..18].q.play;
-		//{{{
-		// ~im parts
+		//{{{ ~im parts
 		~im.current;//{{{
 		~im.resources=();
 		//Item(\testVoc2).arm;
@@ -303,8 +375,8 @@ SynthDef(\pluckD,{|freq=400 amp=1| //{{{
 		].pp
 	});
 	//}}}
-	SynthDef(\sawzz,{ //{{{
-		Saw.ar(\freq.kr(400,0.5)+Rand(-4,4.0!3),\amp.kr(0.1))
+	SynthDef(\sawzz2,{ //{{{
+		Saw.ar(\freq.kr(400,0.5)+( Rand(-4,4.0!2)++[0] ),\amp.kr(0.1))
 		//Saw.ar(\freq.kr(400,0.5)+Rand(4.0!3),\amp.kr(0.1))
 		=>MoogFF.ar(_,\cutoff.kr(800,\fLag.kr(1)),\res.kr(3))
 		* Env.asr(\att.kr(0.2),1,3).kr(2,gate:\gate.kr(1))
@@ -317,7 +389,7 @@ SynthDef(\pluckD,{|freq=400 amp=1| //{{{
 		att:0.9,
 		\cutoff:2222,
 		res:1.6,
-		instrument:\sawzz,
+		instrument:\sawzz2,
 		amp:0.5,
 		degree:0,
 		root:6,
@@ -347,7 +419,7 @@ SynthDef(\pluckD,{|freq=400 amp=1| //{{{
 	~im.addGuides("xxx");
 	~im.waaah2= (start:2, lag:(-0.30), music:{//{{{
 		{
-			Synths(\sawzz,\out,1,\cutoff,1600,\freq,[(1-13),(6-13),1,3,5,7].degreescps(root:5,octave:4)).dur(5)
+			Synths(\sawzz2,\out,1,\cutoff,1600,\freq,[(1-13),(6-13),1,3,5,7].degreescps(root:5,octave:4)).dur(5)
 			.map(\cutoff,{
 				var b = Bus.control(s);
 				//{Env([0000,1400,600],[1,2,3]).kr(2,gate:1)=>Out.kr(b.index,_)}.play;
@@ -384,6 +456,23 @@ SynthDef(\pluckD,{|freq=400 amp=1| //{{{
 	~bassnotes0=~im2.parse(0,[[1,1],[1,1],[1,1]])++~im2.parse(1,[1]);
 	~chords0=~im2.parse(0,[[1,1],[1,1],1],1) ++~im2.parse(1,[1]);
 
+	SynthDef(\timpany,{
+		MembraneCircle.ar( PinkNoise.ar(0.1) * Env.perc().ar(0,gate:\tgate.tr(1)),\tension.kr(0.01),\loss.kr(0.9999) )
+		=>LeakDC.ar(_)
+		* Env.cutoff(5).kr(2,gate:\gate.kr(1))
+		* \amp.kr(0.1)
+		=>Out.ar(\out.kr(1),_)
+	}).add;
+	~im2.timpany0=(start:0,music:Pmono(*[
+		\timpany,
+		amp:0.3,
+		tgate:1,
+		//		instrument:\timpany,
+		dur:~bassnotes0.q,
+		loss:0.99995,
+//		out:[0,1].q(2),
+		tension:0.01*6/5/[1 , 2 ],
+	]));
 	~im2.bassnotes0=(start:0,music: [amp:0.7,instrument:\default,dur:~bassnotes0.q,legato:[1,1,1,2].q,degree:[0,0,0,3].q,root:-4,octave:[3]].p);
 	~im2.chords0=(start:0,syl:0,music:[amp:0.05,legato:[1,1,1,2].q,degree:[1,3,5,7]-1,root:-4,dur:~chords0.q].p);
 //}}}
@@ -432,8 +521,11 @@ SynthDef(\pluckD,{|freq=400 amp=1| //{{{
 		a.set(*[freq:[5].degreescps(root:6,octave:1),gate:1]).dur(2);
 		//a.set(*[freq:[9].degreescps(root:6,octave:2)]).dur(0.3);
 	}});//}}}
-	//~im2.keys3=(start:4,syl:1,music:{Synths(\sawzz,\att,1.5,\freq,[1,3,5,8].degreescps(root:1,scale:\minor)).dur(3) });
-	~im2.keysLow4=(start:4,syl:1,music:{Synth(\sawzz,[\freq,[1].degreescps(octave:4,root:1,scale:\major)]).dur(3)});
+	//~im2.keys3=(start:4,syl:1,music:{Synths(\sawzz2,\att,1.5,\freq,[1,3,5,8].degreescps(root:1,scale:\minor)).dur(3) });
+	~im2.keysLow4=(start:4,syl:0,music:{
+		Synth(\sawzz2,[\freq,[1].degreescps(octave:4,root:1,scale:\major)])
+		.dur( ~im2.parse(4,[5],1).sum)
+	});
 
 	///// 4 /////{{{
 	~im2.bass4=(start:4,music:[octave:[3,4], note:[1,0,4,3].q, dur:~im2.parse(4,[1,[1,1],[1,1,1],1]).q ].p);
@@ -450,8 +542,8 @@ SynthDef(\pluckD,{|freq=400 amp=1| //{{{
 
 	~im2.guide5= (start:5,music:Pbindf(~im2.pbind[5],\ctranspose,12,\amp,[0.15,0.05].q(inf)));
 	~im2.chord5=(start:5,music:(strum:0.03,amp:0.1,degree:[0,2,7,9],octave:4,root:5,dur:1,scale:Scale.minor));
-	~im2.lowBass5=(start:5,music:(instrument:\sawzz,amp:0.3,note:5,octave:[2,3]));
-	//~im2.lowBass4=(start:4,music:{var a = (instrument:\sawzz,amp:0.3,note:0,octave:[2,3])});
+	~im2.lowBass5=(start:5,music:(instrument:\sawzz2,amp:0.3,note:5,octave:[2,3]));
+	//~im2.lowBass4=(start:4,music:{var a = (instrument:\sawzz2,amp:0.3,note:0,octave:[2,3])});
 	~im2.passing5=(start:5,music:[instrument:\tri,out:1,octave:[5,4],note:[0,1,2,3].q,dur:~im2.parse(5,[1,1,1,[1,1,1]]).q].p);
 	~im2.passing5b =(start:5,music://{{{
 		[
@@ -707,8 +799,8 @@ SynthDef(\pluckD,{|freq=400 amp=1| //{{{
 			}).add; //}}}
 
 			SynthDef(\tri,{ //{{{
-				DPW3Tri.ar(\freq.kr(300)) * \amp.kr(0.1).distort
-				* Env.asr(0.05,1,2).kr(2,gate:\gate.kr(1))
+				DPW3Tri.ar(\freq.kr(300,\port.kr(0))) * \amp.kr(0.1).distort
+				* Env.asr(\attack.kr( 0.05 ),1,2).kr(2,gate:\gate.kr(1))
 				=> FreeVerb.ar(_,0.7,1)
 				=>Out.ar (\out.kr(1),_)
 			}).add; //}}}
@@ -848,8 +940,26 @@ SynthDef(\pluckD,{|freq=400 amp=1| //{{{
 	);
 
 	( //shakers{{{
-		{StkShakers.ar(1,LFSaw.kr(4).range(164,0) * 0.1)=>Klank.ar(`[[1300,2330,377,900,4100,3300,3359,8000,2100,2250],nil,0.21!8],_)}.play(s,1) 
-		{StkShakers.ar(1,LFSaw.kr(3).range(164,0) * 0.1)=>Klank.ar(`[[130,3300,3771,1900,2100,3300,3359,8000,2100,2250],nil,0.21!8],_)}.play(s,1) 
-		{StkBlowHole.ar(249,64,20,64,11,64,1,0,1,1,1)}.play(s,2) 
+		{StkShakers.ar(1,LFSaw.kr(4).range(164,0) * 0.1)=>Klank.ar(`[[1300,2330,377,900,4100,3300,3359,8000,2100,2250],nil,0.21!8],_)}.play(s,1) ;
+		{StkShakers.ar(1,LFSaw.kr(3).range(164,0) * 0.1)=>Klank.ar(`[[130,3300,3771,1900,2100,3300,3359,8000,2100,2250],nil,0.21!8],_)}.play(s,1) ;
 	)//}}}
 
+//	100
+(
+	SynthDef(\stairs, {	//{{{
+		var frequency = \freq.kr(40,\portamentoTime.kr(2));
+		var step = \step.kr(0.5);
+		frequency = ( frequency / step ).floor * step;
+		Pulse.ar(frequency.midicps,0.25,\amp.kr(0.1))
+		* Env.cutoff(1).kr(2,gate:\gate.kr(1))
+		=>Out.ar(\out.kr(0),_)
+	}).add;
+	
+	~verb=Bus.audio(s,1);
+	{In.ar(~verb.index)=>FreeVerb.ar(_,1,0.81)=>Out.ar([0,1].choose,_)}.play(addAction:\addToTail);
+3.do{|i|
+	var a;
+	a=Synth(\stairs,[\freq,35+(i*15),\out,~verb]).dur(18);
+	{ia.set(\freq,rrand(35+(i*15),88)) }.sched(rand(15!8))
+}//}}}
+)

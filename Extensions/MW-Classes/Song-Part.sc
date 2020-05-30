@@ -5,23 +5,46 @@ Song {
 	classvar lyricWindow;
 	var <song, <key, <>cursor=0, <sections, <lyrics, <tune; 
 	var <>durs,  <>resources;
+	var <>next; 
+	classvar <>songList;
 
 	*initClass {
-		songs=();
+		songs=Dictionary.new;
 	}
 
 	*new { |key array|
 		^super.new.init(key, array);
 	}
 
-	*play { |...args|
-		args ? current.play;
-		(args.class == Array).if{
+	*playArray { |array|
 			fork{
-				//args.do({|i|argss.at(i).play;argss.at(i).durTillEnd.wait})
+				array.do({|i|
+					songs.at(i).valueInfrastructure;
+					{ songs.at(i).condition.wait }.try;
+				});
+				array.do({|i|
+					songs.at(i).playParts;
+					songs.at(i).durTillEnd.wait;
+				})
+			}
+	}
+	
+	*currentSong {
+		^songs.at(current)
+	}
+	
+	*play { |...args|
+		( args.size == 0 ).if{ 
+			songList.isNil.if{
+				songs.at(current).play 
+			}{
+				this.playArray(songList)
+			}		
+		}{
+			fork{
 				args.do({|i|
 					songs.at(i).valueInfrastructure;
-					songs.at(i).condition.wait;
+					{ songs.at(i).condition.wait }.try;
 				});
 				args.do({|i|
 					songs.at(i).playParts;
@@ -34,9 +57,9 @@ Song {
 	*showLyricWindow {
 		lyricWindow=Window(bounds:Rect(-500,000,600,600)).alwaysOnTop_(true).front;
 		//a=StaticText.new(w,Rect(120,10,600,300)).string_(~im2.lyrics).font_(Font("Helvetica",20)).align_(\left);
-		current.lyrics.size.do{|i|
+		songs.at(current).lyrics.size.do{|i|
 			StaticText.new(lyricWindow,Rect(120,25*i,600,300))
-			.string_(current.lyrics[i])
+			.string_(songs.at(current).lyrics[i])
 			.font_(Font("Helvetica",20));
 
 			StaticText.new(lyricWindow,Rect(100,25*i,600,300))
@@ -50,10 +73,14 @@ Song {
 	}
 
 	*doesNotUnderstand { |selector   args|
-		var key = selector.asString;
-		//key.contains($_).if{
-		//}
-		^songs.at(selector)
+		this.currentSong.respondsTo(selector).if{
+			^Message(this.currentSong,selector).value(args)
+	} {
+			var key = selector.asString;
+			//key.contains($_).if{
+			//}
+			^songs.at(selector)
+		}
 	}
 
 	//there should be a way to make it so you can insert lines
@@ -123,6 +150,10 @@ Song {
 		this.getPartsList(args).do(_.p)
 	}
 
+	chain {
+		songList=[key,next]
+	}
+
 	play { |...args|
 		var list = this.getPartsList(args);
 		fork{
@@ -135,7 +166,9 @@ Song {
 	}		
 
 	current {
-		current = this;
+		current = key;
+		songList = nil;
+		key.postln;
 	}
 	getPartsList { |args|
 		var a =
@@ -170,6 +203,12 @@ Song {
 		array = all {:x,x<-this.pts,args.flatten.includes(x.start)};
 		array.do({|i|i.name.postln})
 		^array
+	}
+
+	contains { |string|
+		var array =	all {:x,x<-resources.keys,var y=resources.at(x.asSymbol),y.class==Part,(x.asString).contains(string)};
+		array.postln;
+		^array.collect{|i| resources.at(i)};
 	}
 
 	addPart {|key part| 
@@ -358,4 +397,12 @@ SongList {
 		};
 	}
 //		~playMultipleSongs.([~tu,~im2]);
+}
++ Symbol {
+	cursor {
+		^Song.songs.at(this).cursor
+	}
+	cursor_ {|i|
+		Song.songs.at(this).cursor_(i)
+	}
 }

@@ -1,0 +1,197 @@
+TITLE:: VSTPluginDesc
+summary:: VST plugin description
+categories:: Undocumented classes
+related:: Classes/VSTPlugin, Classes/VSTPluginController
+
+DESCRIPTION::
+
+This class describes the structure and properties of a VST plugin. Instances are stored in a global dictionary and can be retrieved with link::Classes/VSTPlugin#plugins:: using the link::#-key::.
+
+note::Plugin descriptions are read-only and shouldn't be modified by the user::
+
+CLASSMETHODS::
+
+PRIVATE:: prParse, prBashPath
+
+INSTANCEMETHODS::
+
+PRIVATE:: prToString, prParamIndexMap, prPresetIndex, prSortPresets
+
+METHOD:: key
+
+a symbol used to identify this plugin.
+
+Discussion::
+For VST 2.x plugins, the key is simply the plugin name; for VST 3 plugins, the key has an additional ".vst3" extension
+(to distinguish it from a VST 2.x plugin of the same name). It can be used in link::Classes/VSTPluginController#-open::.
+
+METHOD:: path
+
+the full path to the module containing this plugin.
+
+METHOD:: name
+
+the plugin name.
+
+METHOD:: vendor
+
+the plugin vendor.
+
+METHOD:: category
+
+the plugin category. Multiple (sub)categories are seperated with the '|' character.
+
+METHOD:: version
+
+the plugin version.
+
+METHOD:: sdkVersion
+
+the VST SDK version.
+
+METHOD:: id
+
+the unique ID.
+
+METHOD:: numInputs
+
+number of (main) audio inputs
+
+METHOD:: numOutputs
+
+number of (main) audio outputs
+
+METHOD:: numAuxInputs
+
+number of auxiliary audio inputs (VST3 only)
+
+METHOD:: numAuxOutputs
+
+number of auxiliary audio outputs (VST3 only)
+
+METHOD:: hasEditor
+
+whether the plugin has a VST GUI editor
+
+METHOD:: isSynth
+
+whether the plugin is a VST instrument
+
+METHOD:: singlePrecision
+
+whether the plugin supports single precision processing
+
+METHOD:: doublePrecision
+
+whether the plugin supports double precision processing
+
+METHOD:: midiInput
+
+whether the plugin accepts MIDI input
+
+METHOD:: midiOutput
+
+whether the plugin accepts MIDI output
+
+METHOD:: sysexInput
+
+whether the plugin accepts SysEx input (undefined for VST3)
+
+METHOD:: sysexOutput
+
+whether the plugin accepts SysEx output (undefined for VST3)
+
+METHOD:: parameters
+
+link::Classes/Array:: of (automatable) parameters. Each parameter is represented as an link::Classes/Event:: containing the following fields:
+
+table::
+## name || parameter name
+## label || the unit of measurement (e.g. 'dB')
+::
+
+More entries might be added later.
+
+METHOD:: numParameters
+
+RETURNS:: the number of parameters.
+
+METHOD:: programs
+
+link::Classes/Array:: of built-in plugin programs. Each program is represented as an link::Classes/Event:: which currently only contains a single field 'name'. More entries might be added later.
+
+
+METHOD:: numPrograms
+
+RETURNS:: the number of built-in programs.
+
+METHOD:: presets
+
+link::Classes/Array:: of VST presets. Each preset is represented as an link::Classes/Event:: with the following fields:
+table::
+## name || preset name
+## path || file path
+## type || preset type (code::user::, code::userFactory::, code::sharedFactory:: or code::global::)
+::
+More entries might be added later.
+
+The preset list is populated automatically and updated whenever you call link::Classes/VSTPluginController#-savePreset::, link::Classes/VSTPluginController#-deletePreset:: or link::Classes/VSTPluginController#-renamePreset::.
+
+These are the standard VST3 preset paths:
+table::
+## Windows ||
+table::
+## user || %USERPROFILE%\Documents\VST3 Presets\[VENDOR]\[PLUGIN]
+## user factory || %APPDATA%\VST3 Presets\[VENDOR]\[PLUGIN]
+## shared factory || %PROGRAMDATA%\VST3 Presets\[VENDOR]\[PLUGIN]
+::
+## OSX ||
+table::
+## user || ~/Library/Audio/presets/[VENDOR]/[PLUGIN]
+## shared factory || /Library/Audio/presets/[VENDOR]/[PLUGIN]
+::
+## Linux ||
+table::
+## user || ~/.vst3/presets/[VENDOR]/[PLUGIN]
+## shared factory || /usr/local/share/vst3/presets/[VENDOR]/[PLUGIN]
+## global || /usr/share/vst3/presets/[VENDOR]/[PLUGIN]
+::
+::
+
+note::Only the emphasis::user:: preset paths are writeable.::
+
+For VST2 plugins, the following (non-standard) paths are used:
+
+table::
+## Windows || %USERPROFILE%\Documents\VST2 Presets\[VENDOR]\[PLUGIN]
+## OSX || ~/Library/Audio/Presets/[VENDOR]/[PLUGIN]
+## Linux || ~/.vst/presets/[VENDOR]/[PLUGIN]
+::
+
+Presets are searched in the following order: emphasis::user, userFactory, sharedFactory, global::. The folders are automatically scanned everytime you boot the Server and call link::Classes/VSTPlugin#*search::.
+
+METHOD:: numPresets
+
+RETURNS:: the number of VST presets.
+
+METHOD:: print
+
+post plugin info to the console.
+
+ARGUMENT:: long
+
+also post parameters and programs.
+
+METHOD:: printParameters
+
+post parameters.
+
+METHOD:: printPrograms
+
+post programs.
+
+
+METHOD:: findParamIndex
+
+get the index of parameter by name.
+

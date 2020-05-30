@@ -83,104 +83,106 @@ p=PF.new
 		{|out rate=0.1 fb=0.3|
 			var sig = Phaser2.ar(In.ar(out,2),rate:rate,fb:fb);
 			XOut.ar(out, 1, sig)}
+		).add;
+		SynthDef(\dst,
+			{|out gain=1.5|
+				var in=In.ar(out);
+				var sig = ( in*gain ).distort;
+				XOut.ar(out, 1, sig!2)}
 			).add;
-			SynthDef(\dst,
-				{|out gain=1.5|
-					var in=In.ar(out);
-					var sig = ( in*gain ).distort;
-					XOut.ar(out, 1, sig!2)}
-				).add;
-				Pdef.new(\q,
-					Pfxb(
-						Pbind(*[
-							instrument:\snare,
-							dur:~pat.("0000x000|0000x000|0000x00x|0000x00x",8,inf),
-							amp:0.2
-						]),
-						//\fb
-						//\phaserr
-						\dst
-					));
-					a=Pdef.new(\h,
-						Pbind(*[
-							instrument:\hihat,
-							amp:Pseq([0.1,0.2],inf*Pwhite(1,1.2,inf)),
-							//lag:Pseq([0,0.008],inf),
-							dur:~pat.("xxxx",08,16)]));//.play
-							a.quant=1;
-							b=Pdef(\m,Pfxb(a,\phaserr,\fb,-0.99));
-							c=Pseq([a,b],inf);
+			Pdef.new(\q,
+				Pfxb(
+					Pbind(*[
+						instrument:\snare,
+						dur:~pat.("0000x000|0000x000|0000x00x|0000x00x",8,inf),
+						amp:0.2
+					]),
+					//\fb
+					//\phaserr
+					\dst
+				));
+				a=Pdef.new(\h,
+					Pbind(*[
+						instrument:\hihat,
+						amp:Pseq([0.1,0.2],inf*Pwhite(1,1.2,inf)),
+						//lag:Pseq([0,0.008],inf),
+						dur:~pat.("xxxx",08,16)
+					])
+				);//.play
+				a.quant=1;
+				b=Pdef(\m,Pfxb(a,\phaserr,\fb,-0.99));
+				c=Pseq([a,b],inf);
 
-							// 'guitar-ish' //		{{{4
+				// 'guitar-ish' //		{{{4
 
-							~synthsLoaded ?? {"~/tank/super/song-Synthdefs.scd".standardizePath.load};
-							~synthsLoaded=nil;
+				~synthsLoaded ?? {"~/tank/super/song-Synthdefs.scd".standardizePath.load};
+				~synthsLoaded=nil;
 
-							SynthDef(\pluckD,{|freq=400 amp=1|
-								var sig= Pluck.ar(
-									WhiteNoise.ar(0.1),
-									trig: \trig.tr(1),
-									maxdelaytime: 0.2,
-									delaytime: freq.reciprocal,
-									decaytime: \del.kr(5),
-									coef: \coef.kr(0.6)
-								) ;
-								sig=CrossoverDistortion.ar(sig,\drive.kr(0.9),\smooth.kr(0.1));
-								sig=Phaser2.ar(sig,0.5,0.15,rq:1);
-								Out.ar(\out.ir, sig*amp);
-							}).add;
+				SynthDef(\pluckD,{|freq=400 amp=1|
+					var sig= Pluck.ar(
+						WhiteNoise.ar(0.1),
+						trig: \trig.tr(1),
+						maxdelaytime: 0.2,
+						delaytime: freq.reciprocal,
+						decaytime: \del.kr(5),
+						coef: \coef.kr(0.6)
+					) ;
+					sig=CrossoverDistortion.ar(sig,\drive.kr(0.9),\smooth.kr(0.1));
+					sig=Phaser2.ar(sig,0.5,0.15,rq:1);
+					Out.ar(\out.ir, sig*amp);
+				}).add;
 
-							Pdef(\a,Pfindur (16,Pmono(\pluckD,
-								///or is the minor third better!!!
-								\root,-1,
-								\degree, 8.dup(8)++2.1.dup(4)++5.dup(4)=>_.flatten=>_.q(inf)-1,
-								\octave,2,
-								\out,[0,1],
-								\smooth,Pwhite(0.2,0.3,inf),
-								\del,Pwhite(0.5,1,inf),
-								\dur,0.25,
-								\coef,Pbrown(0.1,0.9,0.03),
-								\lag,Pwhite(-0.01,0.01)
-							)));
-							//Pdef(\a).play
+				Pdef(\a,Pfindur (16,Pmono(\pluckD,
+					///or is the minor third better!!!
+					\root,-1,
+					\degree, 8.dup(8)++2.1.dup(4)++5.dup(4)=>_.flatten=>_.q(inf)-1,
+					\octave,2,
+					\out,[0,1],
+					\smooth,Pwhite(0.2,0.3,inf),
+					\del,Pwhite(0.5,1,inf),
+					\dur,0.25,
+					\coef,Pbrown(0.1,0.9,0.03),
+					\lag,Pwhite(-0.01,0.01)
+				)));
+				//Pdef(\a).play
 
-							[
-								degree:[3,4,6,5,7,3,4,6,5,8].q-1,
-								root:-1,
-								dur: [1.dup(4)++4].flatten.q(12)/4,
-								octave:4,
-								amp:0.3
-							].p
-							=> Pdef (\lick,_);
+				[
+					degree:[3,4,6,5,7,3,4,6,5,8].q-1,
+					root:-1,
+					dur: [1.dup(4)++4].flatten.q(12)/4,
+					octave:4,
+					amp:0.3
+				].p
+				=> Pdef (\lick,_);
 
-							//.play;
+				//.play;
 
-							Pdef(\boodoo,Pbind(*[
-								//instrument:\sawSynth,
-								att:0,
-								degree:Pseq([1,2,3,5,4,2,1],inf)-1,
-								dur:Pseq([1,1,1,1,8,8,12]/4,inf),
-								root:7,
-								octave:2,
-								amp:0.6
-							])).quant([16,7])
-							;
-							//Pdef(\boodoo).play
-							t=TempoClock.new.tempo_(88.bpm).permanent_(true);
-							t.tempo_(45.bpm);
+				Pdef(\boodoo,Pbind(*[
+					//instrument:\sawSynth,
+					att:0,
+					degree:Pseq([1,2,3,5,4,2,1],inf)-1,
+					dur:Pseq([1,1,1,1,8,8,12]/4,inf),
+					root:7,
+					octave:2,
+					amp:0.6
+				])).quant([16,7])
+				;
+				//Pdef(\boodoo).play
+				t=TempoClock.new.tempo_(88.bpm).permanent_(true);
+				t.tempo_(45.bpm);
 
-							//p=PF.new;
-							Ptpar([ //		{{{4
-								0,Pdef(\m),
-								//2,Pdef(\lick),
-								0,Pdef(\q),
-								0,c,
-								0,Pdef(\f),
-								0,Pwrand([Pdef(\a),(note:Rest,dur:8)],[0.7,0.3],inf), //guitar
-								//Pseq([(note:Rest,dur:7+16),Pdef(\boodoo)]),
-							]
-						)
-						.play(t)
+				//p=PF.new;
+				Ptpar([ //		{{{4
+					0,Pdef(\m),
+					//2,Pdef(\lick),
+					0,Pdef(\q),
+					0,c,
+					0,Pdef(\f),
+					0,Pwrand([Pdef(\a),(note:Rest,dur:8)],[0.7,0.3],inf), //guitar
+					//Pseq([(note:Rest,dur:7+16),Pdef(\boodoo)]),
+				]
+			)
+			.play(t)
 )
 
 (

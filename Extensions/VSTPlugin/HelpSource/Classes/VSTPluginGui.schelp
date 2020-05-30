@@ -1,0 +1,168 @@
+TITLE:: VSTPluginGui
+summary:: a generic Qt GUI for VSTPluginController
+categories:: GUI
+related:: Classes/VSTPlugin, Classes/VSTPluginController, Classes/VSTPluginDesc
+
+DESCRIPTION::
+This class is the default Qt GUI class for link::Classes/VSTPluginController::, see link::Classes/VSTPluginController#-gui::.
+
+For each parameter, the GUI shows the parameter name, a slider, a text display and the parameter label (e.g. "dB").
+
+note::For performance reasons, the Qt GUI will emphasis::not:: reflect parameter automation via link::Classes/VSTPluginController#-map:: or UGen arguments
+(link::Classes/VSTPlugin#*ar::).::
+
+You can automate parameters by moving the slider or entering text into the text display (not supported by all plugins).
+
+note::Automating parameters from the Qt GUI will automatically unmap it from any control busses (see link::Classes/VSTPluginController#-map::)::
+
+To get some information about the plugin, just hover over the name.
+
+The GUI also has a simple preset manager and plugin browser.
+
+IMAGE::editor.jpg::
+
+Pressing the "Browse" button will open a dialog where you can browse already loaded plugins, start a new search in the default directories
+(see link::Classes/VSTPlugin#*search::) or load a plugin from a file dialog.
+
+IMAGE::browser.jpg::
+
+note::You can use the VSTPluginGui together with the VST editor (see link::Classes/VSTPluginController#-editor::)::
+
+CLASSMETHODS::
+
+Global defaults for GUI properties, see link::#Customization::.
+
+PRIVATE:: prMakePluginBrowser
+
+INSTANCEMETHODS::
+
+PRIVATE:: guify, prOpen, prClose, prFree, prParam, prProgram, prProgramIndex, prUpdateGui, writeName
+
+METHOD:: gui
+Initialize the GUI.
+
+ARGUMENT:: parent
+If parent is code::nil::, the GUI will be displayed in a new top level link::Classes/Window::, otherwise it is embedded
+in the given parent (see link::#Embedding::).
+
+ARGUMENT:: bounds
+If parent is code::nil::, this will set the window geometry, otherwise it
+determines the size and position of the embedded GUI.
+
+ARGUMENT:: params
+Show/hide parameters. Set to code::false::, if you only want to show the preset manager!
+
+IMAGE::noparams.jpg::
+
+DISCUSSION::
+Usually, this is called indirectly by link::Classes/VSTPluginController#-gui::.
+
+Occasionally you might want to call it directly, e.g. to create an initially empty view where you can
+set the link::#-model:: later.
+
+METHOD:: model
+the model (a link::Classes/VSTPluginController:: instance).
+
+DISCUSSION::
+VSTPluginGui receives notifications for relevant changes in the model, e.g. when a new plugin has been loaded or a parameter has changed.
+
+You can always set another model and the view will update automatically (see link::#Changing Models::).
+
+SUBSECTION:: Customization
+
+The following instance methods allow you to customize the appearance and behavior of link::Classes/VSTPluginGui::.
+You can also customize globally by setting the class methods of the same name. Instance members override class members.
+
+METHOD:: closeOnFree
+whether the GUI window should be closed when the link::Classes/VSTPlugin:: is freed (default: code::true::).
+DISCUSSION::
+This is only for top level windows, embedded GUIs are not affected.
+
+METHOD:: displayWidth
+the parameter display width in characters (default: 7)
+DISCUSSION::
+The default size should be fine for most number displays but might need to be increased for larger text displays.
+
+METHOD:: menu
+whether a program menu should be created (default: code::true::)
+
+METHOD:: numRows
+the maximal number of rows (default: 10).
+
+METHOD:: sliderWidth
+the slider width in pixels (default: 200)
+
+METHOD:: sliderHeight
+the slider height in pixels (default: 20)
+
+METHOD:: update
+Update the view.
+DISCUSSION::
+This method is usually called by the model to notify the view for important changes (see link::Classes/Object#-update::).
+However, it can also be called by the user (with no arguments) to update the view, e.g. after changing GUI properties:
+code::
+// here it's not necessary to call update because the GUI is customized *before* the 'gui' method is called
+~gui = VSTPluginGui.new(~model).sliderWidth_(250).gui;
+// otherwise you need to call 'update' to see the effect of your customization
+~gui.sliderWidth_(300).displayWidth_(80).update;
+// also here
+~fx.gui.sliderWidth_(500).update;
+::
+
+EXAMPLES::
+Prolog:
+code::
+(
+// a simple insert FX:
+SynthDef.new(\insert, {arg bus = 0;
+	ReplaceOut.ar(bus, VSTPlugin.ar(In.ar(bus, 2), 2));
+}).add;
+)
+
+(
+// create 2 VSTPlugins
+~fx1 = VSTPluginController(Synth(\insert));
+~fx2 = VSTPluginController(Synth(\insert));
+)
+
+// show each GUI in its own window
+~fx1.gui;
+~fx2.gui;
+
+// close the windows
+::
+
+SUBSECTION:: Embedding
+It's possible to embed several VSTPluginGui instances within a single view.
+
+The emphasis::bounds:: argument determines the size and position of each subview.
+(In link::Classes/FlowLayout::s the position is managed automatically,
+so it's enough to provide a link::Classes/Point:: instead of a link::Classes/Rect::.)
+
+IMAGE::embed.jpg::
+
+code::
+(
+// create a Window with a FlowLayout
+~view = Window.new(bounds: 850@450, scroll: true);
+~view.view.decorator = FlowLayout(w.view.bounds);
+~view.front;
+)
+// add 2 plugin GUIs
+~fx1.gui(~view); // default size
+~fx2.gui(~view, bounds:300@300); // custom size
+::
+
+SUBSECTION:: Changing Models
+Here we use a emphasis::single:: VSTPluginGui instance to show different link::Classes/VSTPluginController::s.
+Say you have an FX chain with several link::Classes/VSTPlugin:: instances, but you only need to see one at the time.
+
+code::
+// make an empty GUI
+~gui = VSTPluginGui.new.gui;
+// show fx1
+~gui.model_(~fx1);
+// show fx2
+~gui.model_(~fx2);
+::
+You could even build a link::Classes/PopUpMenu:: to switch between link::Classes/VSTPluginController:: instances.

@@ -19,12 +19,12 @@ Song {
 	*playArray { |array|
 			fork{
 				array.do({|i|
-					songs.at(i).valueInfrastructure;
+					{ songs.at(i).valueInfrastructure }.try;
 					{ songs.at(i).condition.wait }.try;
 				});
 				array.do({|i|
-					songs.at(i).playParts;
-					songs.at(i).durTillEnd.wait;
+					{ songs.at(i).playParts }.try;
+					{ songs.at(i).durTillEnd.wait }.try;
 				})
 			}
 	}
@@ -103,6 +103,23 @@ Song {
 			{i.class==Array } {i.q}
 		});
 		this.setupDurs;
+	}
+
+	refreshArray {
+		sections=(song.size/2).asInt;
+		lyrics=song.copySeries(0,2,song.size);
+		tune=song[1,3..song.size].collect({|i|
+			case {i.class==String} { Panola.new(i).midinotePattern }
+			{i.class==Array } {i.q}
+		});
+	}
+
+	addLine { |line dur=1| //array
+		line[1].isNil.if{line=line++["r"]};
+		song=song++line;
+		this.refreshArray;
+		durs=durs++[dur].q;
+		^this;
 	}
 
 	secLoc {^[0]++(sections-1).collect{|i| this.secDur[..i].sum}}
@@ -363,6 +380,15 @@ Part {
 		)
 	}
 }
+// a part which registers itself with its parent song
+P { 
+	*new{
+		|key start=0 syl lag=0 music song|
+		var part=Part(start,syl,lag,music);
+		key=(key++\_).asSymbol;
+		Message(  Song.songs.at(Song.current) , key ).value(part)
+	}
+}
 
 SongList {
 	classvar <> current;
@@ -398,11 +424,15 @@ SongList {
 	}
 //		~playMultipleSongs.([~tu,~im2]);
 }
+
 + Symbol {
 	cursor {
 		^Song.songs.at(this).cursor
 	}
 	cursor_ {|i|
 		Song.songs.at(this).cursor_(i)
+	}
+	current {
+		^Song.songs.at(this).current
 	}
 }

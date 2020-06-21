@@ -1,13 +1,13 @@
 + Synth {
-	dur {|time clock|
+	dur {|time releaseTime=0 clock|
 		clock ? clock = TempoClock.default;
-		clock.sched(time,{this.release()});
+		clock.sched(time,{this.release(releaseTime)});
 	}
 }
 
 + Synths {
-	dur {|time clock|
+	dur {|time releaseTime=0 clock|
 		clock ? clock = TempoClock.default;
-		clock.sched(time,{this.release()});
+		clock.sched(time,{this.release(releaseTime)});
 	}
 }

@@ -3,6 +3,7 @@ Item {
 	classvar <>items, <>current;
 	var <>name,<>node,<>buffer,dir;
 	var <>inBus=0, <>inChans=1, <>sampleRate;
+	var <>recordLength, <>bus=1;
 
 	*initClass {
 		items=();
@@ -26,6 +27,8 @@ Item {
 		}
 	}//}}}
 	*play { |...args| ^current.play(*args) }
+	// let's add a length argument here 
+	// also add Item.stop to the xtouch function 
 	*record { |...args| current.record(*args) }
 	*stop { current.stop }
 	*arm { |...args| current.arm(*args) }
@@ -53,13 +56,14 @@ Item {
 		}//}}}
 	recIfArmed { |...args|
 		this.armed.if{//{{{
-			this.record
+			this.record(length:recordLength)
 		}{
 			this.play(*args)
 		} 
 	}//}}}
-	arm  {|s bus chan| 
+	arm  {|s bus chan length=3| 
 		var p_node;//{{{
+		recordLength=length;
 		inBus=(bus ? inBus); inChans=(chan ? inChans);
 		s ?? {s=Server.default};
 		p_node=RecNodeProxy.audio(s,1)
@@ -68,33 +72,72 @@ Item {
 		.record;
 		node=p_node
 	}//}}}
-	record {node.unpause;CmdPeriod.add(this.node)}
-	stop {node.close;buffer=Buffer.read(Server.default,this.mostRecent)}
-	play {|server bus=1 rate=1 startPos=0 trigger=1 loop=0| 
-		server ?? {server=Server.default};//{{{
-		buffer.isNil.if(this.refresh);
-		^{
-			arg out;
-			var sig;
-			//server.post;'  '.post;server.sampleRate.postln;this.p_sampleRate.postln;
-(rate*this.p_sampleRate/server.sampleRate).postln;
-			 sig=PlayBuf.ar(
-				inChans, 
-				buffer.bufnum,
-				rate:rate,///this.p_sampleRate*server.sampleRate,
-				startPos:startPos,
-				trigger:trigger,
-				loop:loop);
-			Out.ar(out,sig)
+	monitor {
+		{SoundIn.ar()}.play(Server.default,bus)
+//		node.play(bus,addAction:\addToTail);
+	}
+	record {|length| //{{{
+		node.unpause;
+		CmdPeriod.add(this.node);
+		{this.stop}.sched(length ? recordLength);
+	}//}}}
+	stop {//{{{
+		node.isNil.not.if{node.close}; 
+		buffer=Buffer.read(Server.default,this.mostRecent)
+	}//}}}
+	tapeMode { //{{{
+		this.armed.if{
+			// monitor input
+		}{
+			// play as per usual
+		}
+	}//}}}
+
+	// warning argument order was changed!!!
+	play {|server out  rate=1 startPos=0 trigger=1 loop=0| //{{{
+		bus = (out ? bus);
+		server ?? {server=Server.default};
+		this.armed.if{
+			this.record;
+		}{
+			buffer.isNil.if(this.refresh);
+
+			^{
+				arg out;
+				var sig;
+				(rate*this.p_sampleRate/server.sampleRate).postln;
+				sig=PlayBuf.ar(
+					inChans, 
+					buffer.bufnum,
+					rate:rate,///this.p_sampleRate*server.sampleRate,
+					startPos:startPos,
+					trigger:trigger,
+					loop:loop);
+					Out.ar(bus,sig)
+				}.play;
+		}
+	}//}}}
+	prepVocoder {|numberOfBands=20| //{{{
+		var s,f;
+		s=Server.default;
+		f=Buffer.alloc(s,buffer.numFrames/64,numberOfBands);
+		{
+			PlayBuf.ar(1,buffer.bufnum)
+			=> Vocoder.control(_,numberOfBands-1)
+			=> RecordBuf.kr(_,f.bufnum,loop:0,doneAction:2)
 		}.play;
+		^f;
 	}//}}}
 	p_sampleRate { ^SoundFile(this.mostRecent).sampleRate }
 	current { current=this; }
-	refresh { buffer=Buffer.read(Server.default,this.mostRecent); }
-	playbufMon {|...args|
+	refresh {
+		buffer=Buffer.read(Server.default,this.mostRecent);
+		recordLength=buffer.numFrames;
+}
+	playbufMon {|...args| //{{{
 		this.armed.if{^SoundIn.ar(inBus)}
 		{^this.playbuf(*args)}
-	}
+	}//}}}
 	playbuf { |rate=1 startPos=0 trigger=1 loop=0 doneAction=2|
 		^PlayBuf.ar(//{{{
 			inChans, 

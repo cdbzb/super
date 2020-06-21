@@ -3,11 +3,19 @@ XTouch {
 		fork{ 	MIDIClient.init;
 			MIDIIn.connectAll;
 			MIDIFunc.noteOn({ |vel num| 
+				Item.stop;
 				Server.default.freeMyDefaultGroup;
 				TempoClock.all.do(_.clear);
+				Pipe.new("pressf1.sh","w");
+
 			},93,
 			srcID:1779843049
 		); 
+			MIDIFunc.noteOn({ 
+				Item.arm;
+			},95,
+			srcID:1779843049
+		);
 			MIDIFunc.noteOn({ 
 				Song.play
 			},94,

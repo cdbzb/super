@@ -20,6 +20,11 @@
 	flopEvents {
 		^this.flop.collect(_.asEvent)
 	}
+
+	addLine {
+//		Song.songs.at(Song.current).addLine(this);
+		Song.currentSong.addLine(this);
+	}
 }
 
 + SimpleNumber {

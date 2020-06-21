@@ -1,4 +1,81 @@
-Effect  {
+	Effect { //|function out=0| // node proxy version 
+		var <>numChannels,<>bus,<>node, <>sidechain;
+
+		*new { |function out=0 inputChannels=1|
+			^super.new.init(function , out,inputChannels);
+		}
+
+		*newSidechain {|function out=0 inputChannels=1| ^super.new.initSidechain(function,out,inputChannels) }
+
+		init { |function out inputChannels=1 |
+			var desc=SynthDef(\temp,{In.ar(1,inputChannels)=>function=>Out.ar(0,_)});
+			var numChannels=desc.asSynthDesc.outputData[0].at(\numChannels);
+			bus=Bus.audio(numChannels:numChannels);
+			node=NodeProxy.audio(numChannels:numChannels).play(out);
+			node.reshaping_(\elastic);
+			node.source= {In.ar(bus,numChannels)=>function};
+			^this;
+		}
+
+		initSidechain { |function out inputChannels=1 |
+			var desc=SynthDef(\temp,{In.ar(1,inputChannels)=>function=>Out.ar(0,_)});
+			var numChannels=desc.asSynthDesc.outputData[0].at(\numChannels);
+			'sidechain is at input[0]: example:'.postln;
+//			'Effect.newSidechain( 'postln;
+				'({|input| Vocoder.ar(input[1..4],input[0],20)},'.postln;
+				'inputChannels:5)'.postln;
+			bus=Bus.audio(numChannels:numChannels);
+			sidechain=Bus.audio;
+			node=NodeProxy.audio(numChannels:numChannels).play(out);
+			node.reshaping_(\elastic);
+			node.source= {[In.ar(sidechain),In.ar(bus,numChannels)]=>function};
+			^this;
+		}
+
+
+
+		release { |releaseTime|
+			node.end(releaseTime)
+		}
+
+		dur {|time fade|
+			{node.end(fade)}.sched(time);
+			{bus.free}.sched(time + fade);
+		}	
+		
+		doesNotUnderstand { |selector ...args|
+			Message(node,selector,args).value;
+		}
+	}
+
+FX { 
+	var <>bus;
+
+	*new { |synth fx|
+		^super.new.init(synth,fx )
+	}
+
+	*newN{ |synth fx|
+		^super.new.initN(synth,fx);
+	}
+
+	init { |synth fx fxArgs numChannels=1|
+		bus=Bus.audio(Server.default);
+		synth.set(\out,bus.index);
+		^Synth(fx,[\in,bus.index]++fxArgs,addAction:\addToTail)
+	}
+
+	initN { |synth fx fxArgs numChannels=1|
+		bus=Bus.audio(Server.default);
+		synth.set(\out,bus.index);
+		^Synths(fx,[\in,bus.index]++fxArgs,addAction:\addToTail)
+	}
+
+}
+
+
+
+EffectOld  { //deprecated
 	var <>bus, <>synth, <>pattern, <>def, <>out, <>dur;
 	*new {|inPattern def out dur|
 		^super.new.init(inPattern, def, out, dur)
@@ -33,38 +110,3 @@ Effect  {
 	}
 
 }
-
-// TODO can we just send a function in instead of a defName ?
-
-//(
-//	{|in out| In.ar(in,1)=>PlateReverb.ar (_,1,\room.kr(1,19))=>Out.ar(0,_)}=>SynthDef(\verb,_)=>_.add;
-//	a=[note:Pwhite(0,12),dur:((0.9!30).rand).q].p=>Effect(_,\verb)
-//)
-//{a.play;0.05.wait; a.synth.set(\room,0.0)}.fork
-FX { 
-	var <>bus;
-
-	*new { |synth fx|
-		^super.new.init(synth,fx )
-	}
-
-	*newN{ |synth fx|
-		^super.new.initN(synth,fx);
-	}
-
-	init { |synth fx fxArgs numChannels=1|
-		bus=Bus.audio(Server.default);
-		synth.set(\out,bus.index);
-		^Synth(fx,[\in,bus.index]++fxArgs,addAction:\addToTail)
-	}
-
-	initN { |synth fx fxArgs numChannels=1|
-		bus=Bus.audio(Server.default);
-		synth.set(\out,bus.index);
-		^Synths(fx,[\in,bus.index]++fxArgs,addAction:\addToTail)
-	}
-
-}
-
-
-

@@ -26,6 +26,11 @@ SynthDef($1,\{|out wet=1 $3|
 ).add;
 endsnippet
 
+snippet part
+P($1,start:$2,music:$3
+);
+endsnippet
+
 snippet pdef
 Pdef($1,${VISUAL:/.play;//});
 endsnippet

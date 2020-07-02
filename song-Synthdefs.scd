@@ -23,6 +23,14 @@ s.waitForBoot({
 		Out.ar(\out.ir,  sig*amp);
 	}).add;
 
+	SynthDef(\pluckDEnv,{|freq=400 amp=1 release=3|
+		var envelope= Env.cutoff(release).kr(2,gate:\gate.kr(1));
+		var sig= Pluck.ar(WhiteNoise.ar(0.1),  trig: \trig.tr(1),  maxdelaytime: 0.2,  delaytime: freq.reciprocal,  decaytime: \del.kr(5),  coef: \coef.kr(0.6),  mul: 1,  add: 0) ;
+		sig=CrossoverDistortion.ar(sig,\drive.kr(0.9),\smooth.kr(0.1));
+		sig=Phaser2.ar(sig,0.5,0.15,rq:1);
+		Out.ar(\out.kr,  sig*amp*envelope);
+	}).add;
+
 	// more kicks
 	SynthDef(\kick1, {
 		var snd;
@@ -93,6 +101,23 @@ s.waitForBoot({
 	}).add;
 
 	// Basic saw synth for chords and bass
+	SynthDef("sawSynthSustain", { arg out=0, freq = 440, amp = 0.1, att = 0.1, rel = 2, lofreq = 1000, hifreq = 3000, lagTime = 0.3;
+		var env, snd;
+		freq=Lag.kr(freq,lagTime);
+		env = Env.asr(
+			attackTime: att,
+			sustainLevel: amp,
+			releaseTime: rel,
+		).kr(gate:\gate.kr(1),doneAction: 2);
+		snd = Saw.ar(freq: freq * [0.99, 1, 1.001, 1.008]) * env;
+		snd = LPF.ar(
+			in: snd,
+			freq: LFNoise2.kr(1).range(lofreq, hifreq)
+		);
+		snd = Splay.ar(snd);
+		Out.ar(out, snd);
+	}).add;
+
 	SynthDef("sawSynth", { arg out=0, freq = 440, amp = 0.1, att = 0.1, rel = 2, lofreq = 1000, hifreq = 3000, lagTime = 0.3;
 		var env, snd;
 		freq=Lag.kr(freq,lagTime);

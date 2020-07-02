@@ -12,6 +12,21 @@ XTouch {
 			srcID:1779843049
 		); 
 			MIDIFunc.noteOn({ 
+				defer{Window.closeAll}
+			},51,
+			srcID:1779843049
+		);
+			MIDIFunc.noteOn({ 
+				defer{Server.default.meter};
+			},63,
+			srcID:1779843049
+		);
+			MIDIFunc.noteOn({ 
+				defer{Server.default.plotTreeL};
+			},62,
+			srcID:1779843049
+		);
+			MIDIFunc.noteOn({ 
 				Item.arm;
 			},95,
 			srcID:1779843049

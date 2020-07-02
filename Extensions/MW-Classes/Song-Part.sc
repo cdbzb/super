@@ -72,9 +72,14 @@ Song {
 		lyricWindow.close
 	}
 
-	*doesNotUnderstand { |selector   args|
-		this.currentSong.respondsTo(selector).if{
-			^Message(this.currentSong,selector).value(args)
+	*doesNotUnderstand { |selector   ...args|
+		songs.at(current).respondsTo(selector).if{
+			\responds.postln;
+			'selector '.post;selector.postln;
+			'args '.post;args.postln;
+			^Message(songs.at(current),selector).value(*args)
+//		this.currentSong.respondsTo(selector).if{
+//			^Message(this.currentSong,selector).value(args)
 	} {
 			var key = selector.asString;
 			//key.contains($_).if{
@@ -383,8 +388,13 @@ Part {
 // a part which registers itself with its parent song
 P { 
 	*new{
-		|key start=0 syl lag=0 music song|
-		var part=Part(start,syl,lag,music);
+		|key start syl lag=0 music song|
+		var part;
+		start.isNil.if{
+			start=(Song.song.size-2)/2;
+			start.postln;
+		};//guess start from context
+		part=Part(start,syl,lag,music);
 		key=(key++\_).asSymbol;
 		Message(  Song.songs.at(Song.current) , key ).value(part)
 	}

@@ -1,7 +1,7 @@
 ( //line 178 ~/tank/Trek/return-to-tomorrow.txt
 	
-		//this should be a method
-		Song.chamber.isNil.not.if{ Song.chamber.resources.do(_.free) };
+	
+	Song.chamber.isNil.not.if{ Song.chamber.resources.do(_.free) };	//this should be a method
 	Song(\chamber,[]).current;
 	Song.currentSong.resources.infrastructure=FunctionList([ {
 			~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
@@ -33,8 +33,8 @@
 		note:Arpeggio([0,3,7,11],20),
 		dur:3,
 	));
-	Song.chamber.addLine ( [ /*MCCOY*/ 'Is it you, Jim? (a nod)', "c"  ] );//3
-	Song.chamber.addLine ( ['Good, his metabolic rate is back to normal.',"r"] );//4
+	[ /*MCCOY*/ 'Is it you, Jim? (a nod)', "c"  ].addLine; //3
+	['Good, his metabolic rate is back to normal.',"r"].addLine;//4
 	['/*SPOCK:*/ Captain, do you know what happened? Do you remember any part of it? ',"r"].addLine; //5
 	['/*KIRK:*/ Yes. ',"r"].addLine; //6
 	['Sargon borrowed my body. ',"r"].addLine; //7
@@ -59,7 +59,7 @@
 			(dur:10,freq:[1,3,5,7].df(octave:3),out:[0,1,2,3],amp:0.3).play;
 		}.value;
 	});
-	['I know him now. ',[7,11,5,13].dm('a-')].addLine; //14
+['I know him now. ',[7,11,5,13].dm('a-')].addLine; //14
 	P(\figure14,start:14,music:[
 		out:3,
 		dur: Song.parse(14,[1,2/3,[1/3,1],1/2,1/2]).q,
@@ -85,7 +85,7 @@
 		].pm(\pluckD)
 	);
 	P(\temp,start:14,music:Song.currentSong.pbind[14]=>Pbindf(_,\amp,0.3,\instrument,\stringyy));
-	['I know what he is and what he wants, ',[15,14,13,12,14,13,7,11,12.5].dm('a-')].addLine; //15
+['I know what he is and what he wants, ',[15,14,13,12,14,13,7,11,12.5].dm('a-')].addLine; //15
 	P(\cymbal15,start:15,music:[
 		instrument:\cymbalsDS,
 		dur: Song.parse(15,[1,4,1]).q ,
@@ -185,7 +185,7 @@ P(\tune16,start:16,music:Song.currentSong.pbind[16]=>Pbindf(_,\instrument,\strin
 			amp:0.06,
 		].p.fin
 	);
-	['/*MCCOY:*/ That`s the most ri (boom) ',"c#4 a3 d#4 b3 r "].addLine; //17
+['/*MCCOY:*/ That`s the most ri (boom) ',"c#4 a3 d#4 b3 r "].addLine; //17
 	P(\tune17,start:17,music:Song.pbind[17] 
 );
 P(\boom17,start:17,syl:3,syl:3,music:
@@ -214,7 +214,7 @@ P(\line17,start:17,music:{
 }.value);
 P(\bassnote17,start:17,syl:3,music:(degree:3,octave:[3,2],amp:0.4,dur:2,)
 	);
-	['diculous statement I`ve ever heard. An ',[5,2,1,4,3,1,2,3,4.5,].dm('b-')++[5].dm(\d)].addLine; //18
+['diculous statement I`ve ever heard. An ',[5,2,1,4,3,1,2,3,4.5,].dm('b-')++[5].dm(\d)].addLine; //18
 	P(\chord18,start:18,music:[ 
 		strum:0.05,
 		effect:{ Effect(
@@ -252,7 +252,7 @@ P(\tune19,start:19,music:Song.currentSong.pbind[19]);
 ['corks you into a bo -- ttle  and', [1,2,3,4,5,6,7,1,6].dm('c',octave:6)].addLine; //20
 P(\tune20,music:Song.currentSong.pbind[20]);
 //	P(\tune20,start:20,music:Song.currentSong.pbind[20]);
-P('swell20',lag: -0.1,start:20,music:{
+P('swell20',lag: -0.1,start:20,music:Routine{
 	SynthDef(\swell20,{
 		var freq = \freq.kr(300);
 		//			var width = 4;
@@ -262,12 +262,66 @@ P('swell20',lag: -0.1,start:20,music:{
 		/ 2
 		=>Out.ar(\bus.kr(0),_)
 	}).add;
-	(curve:'sin',instrument:\swell20,attack:2,release:5,amp:0.04,freq: [1,11].df('c',octave: 3)).play
+	s.sync;
+	(
+		curve:'sin',instrument:\swell20,attack:2,release:5,amp:0.04,freq: [1,11].df('c',octave: 3)).play
 }
 	);
-	['/*MULHALL:*/ I`m afraid that I must agree with Doctor McCoy. You could be suffering from a form of false euphoria. ',"r"].addLine; //21
-	['/*KIRK:*/ Sargon. ',"r"].addLine; //22
-	['/*SARGON [OC]:*/ I understand, my son. Go to your vessel.', [11,11,11,11,7,7,7,11,12,14,13].dm('c')].addLine; //23
+//['/*MULHALL:*/ I`m afraid that I must agree with Doctor McCoy. You could be suffering from a form of false euphoria. ',"r"].addLine; //21
+['/*MULHALL:*/ I`m afraid I agree with Doctor McCoy. You could be suffering from a form of false euphoria.(ooh -- --) ',
+	[ 3,4,2,3,1, 5,3,4,5,3,6, 4,5,6,11,7,2 ].dm('e',scale:\dorian)
+	++ [4,5,6,7].dm('c')
+	++ [13,14,13,12,11, 12,11,7].dm('f#',octave: 5)
+].addLine; //21
+P(\bassNote21,start:21,syl:13,music:
+	[ 
+	dur:Song.currentSong.parse(21,[3,4],14).q ,
+	freq:[7,4].df('c',octave: 3).q,
+//	octave:3,
+].p
+);
+//17,21
+P(\euphoriaChords21,start:21,syl:20,music:{|parent durations|
+	[
+		freq:[[ 1,3,5 ]].df('f#',octave: 4).q(2)
+		++ [[5,11,13]].df('b-',octave: 3).q(2)
+		++ [[3,5,11]].df('e-',scale:\minor,octave: 4).q(2)
+		++ [[5,11]].df('c#',scale:\minor,octave: 4).q(2)
+		,
+		dur:parent.parse(21,[2/3,[1/3,1,1/7],4/7,[2/7,1,1/7],4/7,[2/7,1,1/5],4/5
+		,1
+	],21).q,
+		effect:Effect(EchoCubic.ar(_,0.3,0.25,4)).bus.index,
+		out:Pkey(\effect),
+	].p.play
+}
+);
+P(\tune21,start:21,music:Song.currentSong.pbind[21]
+);
+['/*KIRK:*/ Sargon. ',[3,2].dm('a')].addLine; //22
+P(\tune22,start:22,music:Song.currentSong.pbind[22]
+);
+P(\bas122,start:22,music:(
+	strum:0.04,
+	out:[0,2],
+	amp:0.03,
+	instrument:\sawSynthSustain,
+	freq:[1,5,11,16.5].df('a',octave: 2),
+	rel:5,
+)
+);
+P(\arpeggio22,start:22,music: [ 
+	amp:0.02,
+	freq: [7,11,13,15]+.x [0,10,20] => _.sort
+	=>_.df('a',octave:3),
+	strum:0.07,
+//	lag:-0.1,
+	effect: { Effect(EchoCubic.ar(_,rrand(0.2,0.6!4),1,7!4),inputChannels:4).bus.index },
+	scale:Scale.mixolydian,root:-3,
+	out:Pkey(\effect)+[0,2],
+].p.fin
+);
+['/*SARGON [OC]:*/ I understand, my son. Go to your vessel.', [11,11,11,11,7,7,7,11,12,14,13].dm('c')].addLine; //23
 	//MUTEDP(\drone,start:23,music:{|parent| (
 //MUTED
 		//MUTEDinstrument:\sawSynthSustain,
@@ -335,6 +389,8 @@ Song.resources.infrastructure.addFunc({
 			=>_.q ,
 		].p.play
 	});
+	//example vocoder idea
+//{ Vocode.ar(Item(\iUnderstand).playbuf,Pulse.ar([100,200,350,500]+SinOsc.kr(0.2).range(0,30),0.05,1)=>FreeVerb.ar(_),PinkNoise.ar(1))*6=>EchoNone.ar(_,0.3,[0.26, 0.3 ]) }.play(s,2); { Vocoder.ar(Impulse.ar([100,200,350,500],1)=>Mix.ar(_),Item(\iUnderstand).playbuf=>EchoNone.ar(_),20) }.play
 	P(\vocal,start:23,music:{|parent|
 		Item(\iUnderstand).play(out:parent.modulator.index)
 	}
@@ -372,12 +428,13 @@ P(\vocal24,start:24,music:{|parent|
 	}
 );
 //~bypass=nil;
+~bypassState=~toggle.isNil.if{~toggle=[false,true].q(inf).asStream;~toggle.next}{~toggle.next;~toggle.next};
 ~toggleBypass={
-		var toggle;
-		~bypassState=toggle.isNil.if{toggle=[true,false].q(inf).asStream;toggle.next}{toggle.next};
+		~bypassState=~toggle.isNil.if{~toggle=[true,false].q(inf).asStream;~toggle.next}{~toggle.next};
 		\bypass_state.post;~bypassState.postln;
  };
 ~refreshVocoderBypass={//|bool=true|
+		~toggle.isNil.if{~toggle=[true,false].q(inf).asStream};
 		~bypassMonitor.isNil.if{~bypassMonitor=Monitor()};
 		 'vocoder bypass state'.post;~bypassState.postln;
 		Song.currentSong.vocoder.run(~bypassState.not);
@@ -390,7 +447,6 @@ P(\vocal24,start:24,music:{|parent|
 		};
 };
 Song.currentSong.resources.infrastructure.addFunc(~refreshVocoderBypass);
-//XTouch.add(~refreshVocoderBypass,54);
 MIDIdef.noteOn(\f1, {~toggleBypass.();~refreshVocoderBypass.()},54, srcID:XTouch.id);
 //MUTEDP(\bypass,start:24,music:{~refreshVocoderBypass.(
 		//MUTEDfalse
@@ -462,10 +518,9 @@ P(\resolution26,start:26,syl:5,music:{ |parent durs|
 );
 P('tune26',start:26,music:Song.currentSong.pbind[26]
 );
-//
 //	// (see ../vocoder2.scd for voice of Sargon)	
-	['/*MCCOY:*/ And what if we decide against you? ',
-			[7,6,5,4,5,6,7,12,11.5].dm('e')].addLine;
+//	['/*MCCOY:*/ And what if we should decide against you? '].addLine;
+['/*MCCOY:*/ And what if we decide against you? ', [7,6,5,4,5,6,7,12,11.5].dm('e')].addLine;
 P(\resolution27,start:27,syl:6,music:{ |parent durs|
 		[
 				freq:[3,2].df('e-',octave: 5,scale:\minor).q,
@@ -477,8 +532,7 @@ P(\resolution27,start:27,syl:6,music:{ |parent durs|
 );
 P('tune27',start:27,music:Song.currentSong.pbind[27]
 );
-//	['/*MCCOY:*/ And what if we should decide against you? '].addLine;
-	['/*SARGON [OC]:*/ (beat) Then you may',[1,5,5,4].dm('c#')].addLine;
+['/*SARGON [OC]:*/ (beat) Then you may',[1,5,5,4].dm('c#')].addLine;
 P('tune28',start:28,music:Song.currentSong.pbind[28]
 		=>Pbindf(_,\amp,[0].q++[0.1].q(inf))
 );
@@ -488,7 +542,7 @@ P('extra-note28',start:28,music: (
 		instrument:\sawSynth,
 		)
 );
-	[' go as free -- ly as you came.',[13,12,13,14,13,12,7,11].dm('c#')].addLine;
+[' go as free -- ly as you came.',[13,12,13,14,13,12,7,11].dm('c#')].addLine;
 P('tune29',start:29,music:Song.currentSong.pbind[29]
 );
 SynthDef(\cleanPluck,{
@@ -506,23 +560,23 @@ SynthDef(\cleanPluck,{
 }
 ).add;
 P(\accompaniment,music:
-		{|parent durs|
-				[
-						emp:0.07,
-						coupling:0.001,
-						midinote:[3,5,11,3,  4,6,11,3,  2,5,11,2,  4,6,11,2, [3,6]].dm('c#',octave:5 ).q,
-						position:Pwhite(0.1,0.16),
-						legato:1.55,
-						effect: Effect(DWGSoundBoard.ar(_)++DelayN.ar(_,0.1,0.1),inputChannels:2).bus.index,
-						out:Pkey(\effect),
-						dur:parent.parse(29,[1/7,1/7,1/7,1/7,1/7,1/7,1/7,
-								1,1,1,
-								1/4,1/4,1/4,1/4,
-								1,1,
-								1
-						]).q,
-						instrument:\cleanPluck,
-				].pp;
+	{|parent durs|
+		[
+			amp:0.07,
+			coupling:0.001,
+			midinote:[3,5,11,3,  4,6,11,3,  2,5,11,2,  4,6,11,2, [3,6]].dm('c#',octave:5 ).q,
+			position:Pwhite(0.1,0.16),
+			legato:1.55,
+			effect: Effect(DWGSoundBoard.ar(_)++DelayN.ar(_,0.1,0.1),inputChannels:2).bus.index,
+			out:Pkey(\effect),
+			dur:parent.parse(29,[1/7,1/7,1/7,1/7,1/7,1/7,1/7,
+				1,1,1,
+				1/4,1/4,1/4,1/4,
+				1,1,
+				1
+			]).q,
+			instrument:\cleanPluck,
+		].pp;
 		}
 );
 P(\bass29,start:29,music:
@@ -535,6 +589,6 @@ P(\bass29,start:29,music:
 						1
 				]).clumps([ 3,1 ]).collect(_.sum).q
 		].p;
-);
 
 );
+)

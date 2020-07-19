@@ -61,9 +61,9 @@ Item {
 			this.play(*args)
 		} 
 	}//}}}
-	arm  {|s bus chan length=3| 
+	arm  {|s bus chan length| 
 		var p_node;//{{{
-		recordLength=length;
+		length.isNil.not.if{recordLength=length};
 		inBus=(bus ? inBus); inChans=(chan ? inChans);
 		s ?? {s=Server.default};
 		p_node=RecNodeProxy.audio(s,1)
@@ -72,8 +72,9 @@ Item {
 		.record;
 		node=p_node
 	}//}}}
-	monitor {
-		{SoundIn.ar()}.play(Server.default,bus)
+	monitor { |target addAction|
+		target.isNil.if{target=Server.default}
+		{SoundIn.ar()}.play(target,bus,addAction: addAction)
 //		node.play(bus,addAction:\addToTail);
 	}
 	record {|length| //{{{
@@ -94,7 +95,7 @@ Item {
 	}//}}}
 
 	// warning argument order was changed!!!
-	play {|server out  rate=1 startPos=0 trigger=1 loop=0| //{{{
+	play {|server out  rate=1 startPos=0 trigger=1 loop=0 amp=1| //{{{
 		bus = (out ? bus);
 		server ?? {server=Server.default};
 		this.armed.if{
@@ -113,7 +114,7 @@ Item {
 					startPos:startPos,
 					trigger:trigger,
 					loop:loop);
-					Out.ar(bus,sig)
+					Out.ar(bus,sig*amp)
 				}.play;
 		}
 	}//}}}

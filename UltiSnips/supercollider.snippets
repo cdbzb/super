@@ -31,12 +31,16 @@ P($1,start:$2,music:$3
 );
 endsnippet
 
-snippet df
+snippet df  "me freq" i
 [$1].df('$2'${3:,octave: $4})${5:.q}
 endsnippet
 
-snippet dm
+snippet dm  "mid degrees" i
 [$1].dm('$2'${3:,octave: $4})${5:.q}
+endsnippet
+
+snippet parse "parse rhythms" i
+Song.parse($1,[$2]${3:,$4})${5:.q}
 endsnippet
 
 snippet out

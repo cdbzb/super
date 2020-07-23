@@ -147,6 +147,10 @@ Song {
 
 	save { Archive.global.put(key,durs);Archive.write(dursFile);'archive written'.postln }
 
+	backup {
+		var backup = dursFile++Date.getDate.stamp;
+		Archive.write(backup); 'archive backed up to '.post;backup.postln}
+
 	durTill {|sec till|
 		var list= durs[sec].list;
 		^list[0..till].sum

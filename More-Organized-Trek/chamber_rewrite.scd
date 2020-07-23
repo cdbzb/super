@@ -17,7 +17,8 @@
 		}.play 
 	});
 	['then the sphere glows bright again' , "c"].addLine;//1
-	Song.chamber.durs[0]=[3].q; Song.chamber.durs[1]=[8].q;
+	Song.chamber.durs[0]=[3].q; Song.chamber.durs[1]=[8].q; 
+	Song.chamber.durs[2]=[ 7 ].q;
 	P(\sphere1, start:1, music: {
 		{
 			{ Song.chamber.painSynth.free }.sched(Song.chamber.secDur[1]);
@@ -27,38 +28,194 @@
 		}.play.dur(Song.chamber.secDur[1],5)
 	});
 	['and he falls to his knees.' ,"r" ].addLine;//2
-	P(\knee,start:2,music:(
-		out:[0,1,2,3],
+	P(\knee,start:2,music:[ 
 		strum:0.05,
 		note:Arpeggio([0,3,7,11],20),
 		dur:3,
-	));
-	[ /*MCCOY*/ 'Is it you, Jim? (a nod)', "c"  ].addLine; //3
-	['Good, his metabolic rate is back to normal.',"r"].addLine;//4
-	['/*SPOCK:*/ Captain, do you know what happened? Do you remember any part of it? ',"r"].addLine; //5
-	['/*KIRK:*/ Yes. ',"r"].addLine; //6
-	['Sargon borrowed my body. ',"r"].addLine; //7
-	['I was floating in time and space. ',"r"].addLine; //8
-	['/*MCCOY:*/ He doesnt appear to be harmed. Physically, anyway. ',"r"].addLine; //9
-	['/*KIRK:*/ Spock, I remember. ',"r"].addLine; //10
-	['When Sargon and I exchanged, ',"r"].addLine; //11
-	['as we passed each other, for an instant...',"r"].addLine; //12
-	['we were one. ',"r"].addLine; //13
-	P(\convergenceTest,start:13,music:{
-		{ // we are one idea
-			var divergence = Bus.control(s,4);
-			{ { LFBrownNoise2.kr(90) }!4 => Out.kr(divergence,_) }.play;
-			{ 
-				Saw.ar( In.kr(divergence.index,4)
-				*  Line.kr(40,0,dur:6)
-				+ [5,10].df() 
-				+ LFBrownNoise2.kr(20,mul: Line.kr(30,0,dur:6))
-				,0.1)
-				*  Env.linen(1,5,3).kr(2)
-			}.play;
-			(dur:10,freq:[1,3,5,7].df(octave:3),out:[0,1,2,3],amp:0.3).play;
-		}.value;
-	});
+		effect:{ Effect(FreeVerb.ar(_,0.6,1),inputChannels:2).dur(Song.secDur[2]+5).bus.index},
+
+		//		out:[0,1,2,3],
+		out:Pkey(\effect),
+	].p.fin);
+	[ /*MCCOY*/ 'Is it you, Jim? (a nod)', [3,4,7,5, 5.5].dm('d')  ].addLine; //3
+	P(\nod3,start:3,syl:3,music:[
+		strum:[ 0.06 ].q,
+		freq:[1,3,5,11].df('e-',octave: 4),
+		effect:
+		{ Effect({|i| EchoNone.ar(i,1,0.3,5) => DetectSilenceDry.ar(_,doneAction:2)=> MoogFF.ar(_,6000,3) },inputChannels:2).dur(Song.secDur[3]+5).bus.index  }, 
+//		out:Pkey(\effect), 
+	].p
+	);
+	P(\tune3,start:3,music:Song.currentSong.pbind[3]
+);
+	['Good, his metabolic rate is back to normal.',[15,14,15,16.5,15,14,13,12,15,12,11,7].dm('a',scale:\harmonicMinor,octave:4)].addLine;//4
+	P(\bassLine4,start:4,music:[
+		dur:
+		Song.currentSong.parse(4,[3,1,2,1,3,2]).q
+		,
+		freq:[11,7,5,4,3,2].df('e',octave: 3,scale:\mixolydian).q,
+	].p
+	);
+	P(\tune4,start:4,music:Song.currentSong.pbind[4]
+	);
+	['/*SPOCK:*/ Captain, do you know what happened? Do you remember any part of it? ',[13,11,7,11,12,13,14,13 ].dm('g',octave:4,scale:\mixolydian)++[7,11,12,14,13,12,11,13,11,5].dm('a',octave:4,scale:\mixolydian)].addLine; //5
+	P(\bassNote5,start:5,music:(instrument:\stringyy,freq:[4].df('c',octave: [4,3]),amp:0.2,)
+	);
+	P(\tune5,start:5,music:Song.currentSong.pbind[5]
+	);
+	['/*KIRK:*/ Yes. ',[1].dm('a-')].addLine; //6
+	P(\tune6,start:6,music:Song.currentSong.pbind[6]
+	);
+	P(\chord6,start:6,music:(
+		strum:0.02,
+		dur:4,
+		out:
+		( 4!4 ).rand
+		,
+//out:2,
+		instrument:
+//			\cleanPluck,
+			\default,
+		freq:
+		[1,5,3,11]+.x[0,10] =>_.df('a-',octave: 3),
+		amp:0.05
+	)
+	);
+	['Sargon borrowed my body. ',[7,6,5,6,7,4,3].dm('b',scale:\dorian)].addLine; //7
+	P(\tune7,start:7,music:Song.currentSong.pbind[7]
+	);
+	P(\bass7,start:7,music:[
+		freq: [7,6,5,6,7,11].df('b',scale:\dorian,octave:2).q ,
+		legato:2,
+		dur: Song.currentSong.parse(7,[1,1,1,1,1,2]).q ,
+
+	].p
+	);
+	['I was floating (boom) in time and space. ',[3,4,13,11,4.5,13].dm('a')++ [13,11,6].dm('a-')++ [16,15,13,7].dm('d') ].addLine; //8
+	P(\tune8,start:8,music:Song.currentSong.pbind[8]
+		=>Pbindf(_,
+			\effect,{Effect(FreeVerb.ar(_,1,1),inputChannels:2).dur(Song.secDur[8]+3).bus.index},
+			\out,Pkey(\effect)
+		)
+	);
+	P(\bass8b,start:8,syl:1,music:[
+//		instrument:\stringyy,
+		freqLag:[0,0,0].q,
+		freq:[11,7,4].df('a',octave: [2,3]).q,
+		dur:Song.parse(8,[4,4,3],2).q,
+	].pm(\stringyy)
+	);
+	P(\bass8,start:8,syl:1,music:[
+//		instrument:\stringyy,
+		freqLag:[0,14,95].q,
+		freq:[11,7,4].df('a',octave: 3).q,
+		dur:Song.parse(8,[4,4,3],2).q,
+	].pm(\stringyy)
+	);
+	['/*MCCOY:*/ He doesnt appear to be harmed - -. Physically, anyway. ',[4,5,6,5,4,5,6, 7,11,7].dm('e' )++[13,11,7,5,4,3].dm('e-',scale:\mixolydian)].addLine; //9
+	P(\bass9,start:9,syl:9,music:Song.currentSong.pbind[9]
+		=>Pbindf(_,\instrument,\sawSynth,\amp,0.03)
+		=>Padd(\midinote,(-24),_)
+		=>Pdrop(10,_)
+	);
+	P(\tune9,start:9,music:Song.currentSong.pbind[9]
+	);
+	P(\baseline9,start:9,syl:0,music:[ 
+		freq:
+		[1,11].df('b',octave: 2).q
+		,
+		dur:Song.parse(9,[9],1).q,
+].p
+
+	);
+	['/*KIRK:*/ Spock, I remember. ',[13,13,13,13.5,5].dm('b-',octave:3,scale:\minor )].addLine; //10
+	P(\cello,start:10,music:(
+		instrument:\stringyy,
+		freq:[1].df('b-',octave: 3),
+	)
+	);
+	P(\tune10,start:10,music:Song.currentSong.pbind[10]
+	);
+	P(\chord10,start:10,music:(
+		strum:0.06,
+		freq:[5,11,13].df('b-',octave: 4,scale:\minor),
+		amp:0.05,
+	)
+	);
+	['When Sargon and I exchanged, ',[6,5,4,5,6,7,11].dm('e-',octave:4)].addLine; //11
+	P(\tune11,start:11,music:Song.currentSong.pbind[11]
+);
+	P(\chord11,start:11,syl:5,music:[ 
+		strum:0.06,
+		instrument:\sawSynthSustain,
+		freq: [3,5,11].df('f#',octave: 4) ,
+		amp:0.02,
+		dur:Song.parse(12,[3],2).q,
+	].p
+	);
+	P(\bass11,start:11,syl:5,music:(
+		instrument:\sawSynth,
+		freq:[1].df('a-',octave: 4),
+//		freq:[1].df('c',octave: 4),
+		amp:0.01,
+	)
+	);	
+	['as we passed each other, for an instant...',[5.5,6].dm('f#',octave:4)++[3,2,2,1].dm('c',octave:5)++[3,2,2,1].dm('c#',octave:5)].addLine; //12
+	P(\tune12,start:12,music:Song.currentSong.pbind[12]
+);
+	P(\bass12,start:12,syl:1,music:(
+		instrument:\sawSynth,
+		freq:[1,4].df('g',octave: 4),
+//		freq:[1].df('c',octave: 4),
+		amp:0.01,
+	)
+	);	
+	P(\chord12,start:12,syl:1,music:[ 
+		strum:0.06,
+		instrument:\sawSynthSustain,
+		freq: [5,7,13].df('c',octave: 5) ,
+		amp:0.02,
+		dur:Song.parse(12,[3],2).q,
+	].p
+	);
+	P(\bassNote12,start:12,music:[
+		freq: [Rest(),[1].df('f#',octave:3)].q ,
+		dur: 
+		Song.parse(12,[[ 5,0.5 ],[ 0.5,4 ]]) + [0,Song.parse(13,[2]) ]=>_.flatten=>_.q
+		,
+		instrument: \stringyy ,
+	].p=>{|i|Ppar([\stringyy,\default].collect{|k x|Pbindf(i,\instrument,k,\amp,{0.1-(x/20)},\out,x)})}
+	);
+	['we were one. ',[4,4,5].dm('c')].addLine; //13
+
+	P(\bend13,start:13,music:{{
+		var line=Line.kr(1.degreescps('a-'),1.degreescps('g'),Song.parse(13,[3]),[0.5,1]);
+		var saturation=Line.kr(0.3,0.8,Song.parse(13,[3]));
+		SinOscFB.ar(line,saturation,0.004)
+		* Env.linen(1,1,3).kr(2,gate:1)
+		=> EchoCubic.ar(_,1,0.3,6)
+	}.play;(instrument:\stringyy,note:-2,dur:2).play} 
+	);
+	P(\tune13,start:13,music:Song.currentSong.pbind[13]
+);
+	//idea: maybe this convergence can be done with phase instead of frequency! 
+	//try this with a recording of say water or something 
+	//MUTEDP(\convergenceTest,start:13,music:{
+		//MUTED{ // we are one idea
+			//MUTEDvar divergence = Bus.control(s,4);
+			//MUTED{ { LFBrownNoise2.kr(90) }!4 => Out.kr(divergence,_) }.play;
+			//MUTED{ 
+				//MUTEDSaw.ar( In.kr(divergence.index,4)
+				//MUTED*  Line.kr(40,0,dur:6)
+				//MUTED+ [5,10].df() 
+				//MUTED+ LFBrownNoise2.kr(20,mul: Line.kr(30,0,dur:6))
+				//MUTED,0.1)
+				//MUTED*  Env.linen(1,5,3).kr(2)
+			//MUTED}
+			//MUTED.play;
+			//MUTED(dur:10,freq:[1,3,5,7].df(octave:3),out:[0,1,2,3],amp:0.3).play;
+		//MUTED}.value;
+	//MUTED});
 ['I know him now. ',[7,11,5,13].dm('a-')].addLine; //14
 	P(\figure14,start:14,music:[
 		out:3,
@@ -121,7 +278,7 @@
 		addAction:\addToHead,
 		dur: Song.currentSong.durs[15].list[8],
 		out:{ Effect(
-			FreeVerb.ar(_,0.5,1),out:[0,1],inputChannels:2).bus.index 
+			FreeVerb.ar(_,0.5,1),out:[0,1],inputChannels:2).dur(Song.secDur[15]+5).bus.index 
 			 => DetectSilenceDry.ar(_,doneAction:2)
 		}
 
@@ -143,7 +300,7 @@
 			* 1.3
 			=>( CombC.ar(_,0.5,SinOsc.kr(0.3).range(0.4,0.405),decaytime:4)+Gain.ar(_,3) )
 			=> DetectSilenceDry.ar(_,doneAction:2)
-		},out:2,inputChannels:2).bus.index },
+		},out:2,inputChannels:2).dur(Song.secDur[15]+3).bus.index },
 		out:Pkey(\effect),
 	].p
 ); 
@@ -172,7 +329,7 @@ P(\tune16,start:16,music:Song.currentSong.pbind[16]=>Pbindf(_,\instrument,\strin
 			rel:3,
 			lofreq:5000,
 			hifreq:6000,
-			effect:{ Effect(MoogFF.ar(_,5000,3),out:2,inputChannels:2).bus.index },
+			effect:{ Effect(MoogFF.ar(_,5000,3),out:2,inputChannels:2).dur(Song.secDur[16]).bus.index },
 			addAction:\addToHead,
 			out:Pkey(\effect),
 			//			out:2,
@@ -224,7 +381,7 @@ P(\bassnote17,start:17,syl:3,music:(degree:3,octave:[3,2],amp:0.4,dur:2,)
 				=> DetectSilenceDry.ar(_,doneAction:2)
 			}
 			,inputChannels:2
-		).bus.index },
+		).dur(Song.secDur[18]+3).bus.index },
 		out:Pkey(\effect),
 		freq:[11,13,15,17,1].df(\f,octave:4),
 		dur:
@@ -235,7 +392,7 @@ P(\bassnote17,start:17,syl:3,music:(degree:3,octave:[3,2],amp:0.4,dur:2,)
 );
 P(\bassNote18,start:18,syl:7,music:[ 
 	amp:0.3,
-	effect:{ Effect({|i| FreeVerb.ar(i,0.5,1)  =>  DetectSilenceDry.ar(_,doneAction:2) },inputChannels:2).bus.index },
+	effect:{ Effect({|i| FreeVerb.ar(i,0.5,1)  =>  DetectSilenceDry.ar(_,doneAction:2) },inputChannels:2).dur(Song.secDur[18]+5).bus.index },
 	out:Pkey(\effect),
 	freq:[1,11].df(\g,octave:2),
 	dur: Song.parse(18,[2],8).q,
@@ -273,6 +430,22 @@ P('swell20',lag: -0.1,start:20,music:Routine{
 	++ [4,5,6,7].dm('c')
 	++ [13,14,13,12,11, 12,11,7].dm('f#',octave: 5)
 ].addLine; //21
+P(\bassline21,start:21,music:[
+	dur:Song.parse(21,[2,2,5,5],).q,
+	freq:[3,2,1,13].df('e',octave: 3,scale:\minor).q,
+	legato:[0.95,0.95,2,1].q,
+].p
+);
+P(\arpeggio21,start:21,syl:9,music:[
+	amp:0.6,
+	dur:3,
+	effect:{ Effect({|i|Pan2.ar(i,SinOsc.kr(2))=>EchoNone.ar(_,0.9,[0.3, 0.21 ],4)=>Phaser2.ar(_,0.5,1/4)},inputChannels:2,out:1).dur(6).bus.index},
+	out:Pkey(\effect),
+	instrument:\cleanPluck,
+	strum:0.08,
+	freq:[7,13,15,20,23].df('a',octave:3,scale:\mixolydian ),
+].p.fin
+);
 P(\bassNote21,start:21,syl:13,music:
 	[ 
 	dur:Song.currentSong.parse(21,[3,4],14).q ,
@@ -291,7 +464,7 @@ P(\euphoriaChords21,start:21,syl:20,music:{|parent durations|
 		dur:parent.parse(21,[2/3,[1/3,1,1/7],4/7,[2/7,1,1/7],4/7,[2/7,1,1/5],4/5
 		,1
 	],21).q,
-		effect:Effect(EchoCubic.ar(_,0.3,0.25,4)).bus.index,
+		effect:Effect(EchoCubic.ar(_,0.3,0.25,4)).dur(Song.secDur[21]+3).bus.index,
 		out:Pkey(\effect),
 	].p.play
 }
@@ -316,21 +489,22 @@ P(\arpeggio22,start:22,music: [
 	=>_.df('a',octave:3),
 	strum:0.07,
 //	lag:-0.1,
-	effect: { Effect(EchoCubic.ar(_,rrand(0.2,0.6!4),1,7!4),inputChannels:4).bus.index },
+	effect: { Effect(EchoCubic.ar(_,rrand(0.2,0.6!4),1,7!4),inputChannels:4).dur(Song.secDur[22]+7).bus.index },
 	scale:Scale.mixolydian,root:-3,
 	out:Pkey(\effect)+[0,2],
 ].p.fin
 );
 ['/*SARGON [OC]:*/ I understand, my son. Go to your vessel.', [11,11,11,11,7,7,7,11,12,14,13].dm('c')].addLine; //23
-	//MUTEDP(\drone,start:23,music:{|parent| (
-//MUTED
-		//MUTEDinstrument:\sawSynthSustain,
-		//MUTEDamp:3,
-		//MUTEDfreq: 200,
-		//MUTEDdur:8,
-		//MUTEDout:parent.carrier.index,
-	//MUTED).play }
-	//MUTED);
+P(\drone,start:23,music:{|parent| 
+	[ instrument:\sawSynthSustain,
+	amp:0.012,
+	freq: [ [2,12],[1,11] ] =>_.df('c',octave: 3)=>_.q ,
+	legato: 1,
+	dur: Song.parse(23,[9,2],).q
+	,
+	//		out:parent.carrier.index,
+].p.play }
+	);
 	// make this infrastructure
 //	~unnecessary.infrastructure={
 //		~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
@@ -416,7 +590,7 @@ Song.resources.infrastructure.addFunc({
 P(\descant,start:24,music:[
 		freq:[[7, 12 ],[ 13,11 ],[ 11,5 ],[11,5.5]].df('g',octave: 5).q,
 		dur: Song.parse(24,[2,2,5,1]).q,
-		effect: { Effect(EchoNone.ar(_,1,[0.2, 0.3 ],3),inputChannels:2).bus.index },
+		effect: { Effect(EchoNone.ar(_,1,[0.2, 0.3 ],3),inputChannels:2).dur(Song.secDur[24]+4).bus.index },
 		amp:0.01,
 		out:Pkey(\effect),
 ].pm(\sawSynthSustain)
@@ -488,7 +662,7 @@ P(\wobble25,start:25,music: [
 		amp:0.05,
 //		instrument:\tri,
 		freq:[3,4].df('b',octave:4 ).q(inf),
-		effect:{ Effect(EchoNone.ar(_,1,0.3,decaytime:5)).bus.index },
+		effect:{ Effect(EchoNone.ar(_,1,0.3,decaytime:5)).dur(Song.secDur[25]+6).bus.index },
 		dur: Song.parse(25,1!4).q,
 		out:Pkey(\effect),
 ].pm(\sawSynth)
@@ -499,7 +673,7 @@ P(\wobble26,start:26,music: [
 		amp:0.05,
 //		instrument:\tri,
 		freq:[1,2].df('d',octave:4 ).q(inf),
-		effect:{ Effect(EchoNone.ar(_,1,0.3,decaytime:5),out:1).bus.index },
+		effect:{ Effect(EchoNone.ar(_,1,0.3,decaytime:5),out:1).dur(Song.secDur[26]+5).bus.index },
 		dur: Song.parse(25,1!4).q,
 		out:Pkey(\effect),
 ].pm(\sawSynth)
@@ -567,7 +741,7 @@ P(\accompaniment,music:
 			midinote:[3,5,11,3,  4,6,11,3,  2,5,11,2,  4,6,11,2, [3,6]].dm('c#',octave:5 ).q,
 			position:Pwhite(0.1,0.16),
 			legato:1.55,
-			effect: Effect(DWGSoundBoard.ar(_)++DelayN.ar(_,0.1,0.1),inputChannels:2).bus.index,
+			effect: Effect(DWGSoundBoard.ar(_)++DelayN.ar(_,0.1,0.1),inputChannels:2).dur(Song.secDur[29]+1).bus.index,
 			out:Pkey(\effect),
 			dur:parent.parse(29,[1/7,1/7,1/7,1/7,1/7,1/7,1/7,
 				1,1,1,
@@ -591,4 +765,10 @@ P(\bass29,start:29,music:
 		].p;
 
 );
+//MUTEDP(\machine30,start:30,music:
+	//MUTED{ 6.do{{ SinOscFB.ar(100.rand+300+SinOscFB.kr(1/5,3,mul:5),SinOscFB.kr(1/2,3).unipolar*3,0.1) =>LPF.ar(_,6000)=>Pan4.ar(_,rrand(-1,1),rrand(-1,1))
+	//MUTED=>EchoNone.ar(_,1,0.6,3)
+	//MUTED* 0.04
+//MUTED}.play(s)} }
+//MUTED);
 )

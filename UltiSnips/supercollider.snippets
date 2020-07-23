@@ -43,6 +43,15 @@ snippet parse "parse rhythms" i
 Song.parse($1,[$2]${3:,$4})${5:.q}
 endsnippet
 
+snippet eugen "Ugen" i
+$1.${2:a}r
+endsnippet
+
+snippet fxdur "temporary " i
+.dur(Song.secDur[$1])
+endsnippet
+
+
 snippet out
 ${1:=> }Out.ar(${2:0},${3:_})
 endsnippet

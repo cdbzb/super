@@ -38,7 +38,7 @@
 			node.end(releaseTime)
 		}
 
-		dur {|time fade|
+		dur {|time fade=3|
 			{node.end(fade)}.sched(time);
 			{bus.free}.sched(time + fade);
 		}	

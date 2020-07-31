@@ -25,10 +25,10 @@ includePaths:
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/ScoreClock
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/ZArchive
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/KDTree
-    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/SuperSampler
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Modality-toolkit
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/FPLib
     -   /Users/michael/.local/share/SuperCollider/downloaded-quarks/autogui
+    -   /Users/michael/.local/share/SuperCollider/downloaded-quarks/Scintillator
 excludePaths:
     []
 postInlineWarnings: false

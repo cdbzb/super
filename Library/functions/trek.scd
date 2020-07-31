@@ -89,7 +89,9 @@
 				~stepper={ |seq|
 					SynthDef(\stepper, {
 						var note = Demand.kr(KeyState.kr(38)-0.1,0, Dseq.new(seq.midicps));
-						var sig=SinOsc.ar(note,0,EnvGen.kr(Env.perc(0.1,1)*0.1,gate:KeyState.kr(38)-0.1));
+						var sig=SinOsc.ar(note,0,EnvGen.kr(
+							Env.perc(0.1,1,0.1)
+							,gate:KeyState.kr(38)-0.1));
 						Out.ar(1,sig);
 					});
 				};

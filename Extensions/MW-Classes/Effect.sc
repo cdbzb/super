@@ -1,12 +1,33 @@
 	Effect { //|function out=0| // node proxy version 
-		var <>numChannels,<>bus,<>node, <>sidechain;
+		var <>numChannels,<>bus,<>node, <>sidechain, <>synth;
 
-		*new { |function out=0 inputChannels=1|
+		
+		*newOld { |function out=0 inputChannels=1|
 			^super.new.init(function , out,inputChannels);
+		}
+		*new { |function out=0 inputChannels=1|
+			^super.new.init2(function , out,inputChannels);
 		}
 
 		*newSidechain {|function out=0 inputChannels=1| ^super.new.initSidechain(function,out,inputChannels) }
 
+		*new2 {|function out=0 inputChannels=1| ^super.new.init2(function,out,inputChannels)}
+
+		init2 { |function out inputChannels=1 |
+			var desc=SynthDef(\temp,{In.ar(1,inputChannels)=>function=>Out.ar(0,_)});
+			var numChannels=desc.asSynthDesc.outputData[0].at(\numChannels);
+			bus=Bus.audio(numChannels:numChannels);
+			synth={In.ar(bus,numChannels)=>function=>Out.ar(out,_)}.play(addAction:\addToTail);
+			NodeWatcher.register(synth, assumePlaying: true);
+			fork{
+				while ( {synth.isPlaying},{0.2.wait} );
+				\freeing_Bus.postln;
+				bus.free
+			};
+			^this;
+		}
+
+		//deprecated
 		init { |function out inputChannels=1 |
 			var desc=SynthDef(\temp,{In.ar(1,inputChannels)=>function=>Out.ar(0,_)});
 			var numChannels=desc.asSynthDesc.outputData[0].at(\numChannels);
@@ -34,16 +55,21 @@
 
 
 
+//	asStream {
+//		^bus.index
+//	}
 		release { |releaseTime|
 			node.end(releaseTime)
 		}
 
 		dur {|time fade=3|
-			{node.end(fade)}.sched(time);
+			node.isNil.not.if({node.end(fade)}.sched(time));
+			synth.isNil.not.if({synth.release(fade)}.sched(time));
 			{bus.free}.sched(time + fade);
 		}	
 		
 		doesNotUnderstand { |selector ...args|
+			Message(synth,selector,args).value;
 			Message(node,selector,args).value;
 		}
 	}
@@ -58,6 +84,7 @@ FX {
 	*newN{ |synth fx|
 		^super.new.initN(synth,fx);
 	}
+
 
 	init { |synth fx fxArgs numChannels=1|
 		bus=Bus.audio(Server.default);

@@ -40,7 +40,13 @@ snippet dm  "mid degrees" i
 endsnippet
 
 snippet function "function" i
-{${1:|$2|} }
+{${1: |$2|} $3 }$4
+endsnippet
+
+snippet pbind "vertical pbind" i
+[
+	$1
+].p
 endsnippet
 
 snippet parse "parse rhythms" i

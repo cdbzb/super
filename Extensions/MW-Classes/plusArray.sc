@@ -21,6 +21,21 @@
 		^this.flop.collect(_.asEvent)
 	}
 
+	quantize {
+		| percent=1| ^( this*(1-percent) + ( this.mean*(percent) ) )
+	}
+
+	quantizeWindow {
+		|percent=0.25 windowSize=5|
+		(this.size-windowSize).postln;
+		this[0..(this.size-windowSize)].do{|i x|
+			var chunk = this[x..(x +windowSize)];
+			chunk=chunk.quantize(percent);
+			chunk.do{|it in| this.put(in+x,it)}
+		};
+		^this;
+	}
+
 	addLine {
 //		Song.songs.at(Song.current).addLine(this);
 		Song.currentSong.addLine(this);
@@ -54,3 +69,29 @@
 	}
 
 }
+
++Symbol {
+	degreesmidi {
+		^this
+	}
+	degreescps {
+		^this
+	}
+}
++Pseq {
+	quantize { |amount|
+		var pseq= this.copy;
+		var list =pseq.list.asArray.quantize(amount);
+		pseq.list_(list);
+		^pseq
+	}
+
+	quantizeWindow { |amount|
+		var pseq= this.copy;
+		var list =pseq.list.asArray.quantize(amount);
+		pseq.list_(list);
+		^pseq
+	}
+}
+
+

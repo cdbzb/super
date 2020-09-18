@@ -177,7 +177,8 @@ Song {
 	}
 
 	chain {
-		songList=[key,next]
+		songList=[key,next];
+		songList.postln;
 	}
 
 	play { |...args|
@@ -231,6 +232,11 @@ Song {
 		^array
 	}
 
+	playSection {|sec|
+		cursor=sec;
+		this.play(this.at(sec))
+	}
+
 	contains { |string|
 		var array =	all {:x,x<-resources.keys,var y=resources.at(x.asSymbol),y.class==Part,(x.asString).contains(string)};
 		array.postln;
@@ -252,24 +258,26 @@ Song {
 		//expand numbers greater than one
 		//doesn't currently support numbers greater than one in sub-arrays
 		//or decimal numbers greater than one
-		array=array.collect{|i| 
-			( i.class==Integer ).if{
+		array=array.deepCollect(2,{|i| 
+			//( i.class==Integer ).if{
 			(i>1).if{ 1.dup(i) }{ i }
-		}{
-			i
-		}};
+			//}{
+			//		i
+			//	}
+		});
+		array=array.collect{|i| i.isArray.if({i.flatten},{i})};
 		beatNum = array.flatten.collect{|m i| array.flatten.[0..i].sum};
 		array.postln;
 		beatNum = beatNum.collect{|i|(i-0.001).floor};
 		^array.collect{ |item|
 			item.isArray.not.if(
 				{
-					var b=beatNum[counter];
-					counter=counter+1;
+					var b = beatNum[counter];
+					counter =counter+1;
 					item*durs[phrase].list[b+start]
-				},
-				{
-					var subArray=item.collect{|i x| 
+				},{
+					var subArray = item.collect{
+						|i x| 
 						var b = beatNum[counter+x];
 						i*durs[phrase].list[b+start]
 					}; 
@@ -279,6 +287,49 @@ Song {
 			);
 		}
 	} 
+	parseBeats { |phrase array start=0|
+		var beatCounter = List.new, denominators = List.new;
+		var result = List.new;
+		array=array++1;
+		array.do{
+			|i|
+			var denominator = i;
+			\looptop.postln;
+			case 
+			{i < (1 - beatCounter.sum)}{
+				\less.postln;
+				denominators.add(denominator);
+				beatCounter.add(i);
+				i.postln;\less.post;beatCounter.postln;
+			}{i == (1-beatCounter.sum)}{
+				\equals.postln;
+				denominators.add(denominator);
+				beatCounter.add(i);
+				( beatCounter.size==1 ).if({result.add(1)},{result.add(beatCounter/denominators)});
+				beatCounter=List.new;denominators=List.new;
+			}{i > (1 - beatCounter.sum)}{
+				\grader.postln;
+				i.postln;
+				while ( {i > (1 - beatCounter.sum)},{
+					i = i-(1-beatCounter.sum);
+					((1-beatCounter.sum)>0).if {
+						beatCounter.add(1-beatCounter.sum);
+						denominators.add(denominator);
+					};
+					( beatCounter.size==1 ).if(
+						{result.add(1/denominators[0])},
+						{result.add(beatCounter/denominators)});
+						beatCounter=List.new;denominators=List.new;
+					} );
+					denominators.add(denominator);
+					beatCounter.add(i);
+
+				}
+
+			};
+			^this.parse(phrase,result,start)
+}
+
 
 	addGuides {|string|
 		string.isNil.if{string="x"};
@@ -395,7 +446,7 @@ P {
 		|key start syl lag=0 music song|
 		var part;
 		start.isNil.if{
-			start=(Song.song.size-2)/2;
+			start=((Song.song.size-2)/2).asInt;
 			start.postln;
 		};//guess start from context
 		part=Part(start,syl,lag,music);

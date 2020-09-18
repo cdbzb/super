@@ -1,6 +1,6 @@
-( ~xtreme=Song( //				{{{
+( //Line 219 The three volunteers are lying on beds, with the spheres on tables beside them.) 
+	~xtreme=Song( //				{{{
 		\song,
-		//play:{~parts.do(_.postln)},
 		[
 			"the extreme power of the","g a b- d5 b-4 a g", //0
 			"alien mind will make the -","e5 d c f e f g f", //1

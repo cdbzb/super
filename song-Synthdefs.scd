@@ -22,7 +22,14 @@ s.waitForBoot({
 		sig=Phaser2.ar(sig,0.5,0.15,rq:1);
 		Out.ar(\out.ir,  sig*amp);
 	}).add;
-	{ //Dan Stowall Cymbals
+	SynthDef(\pluckDEnv,{|freq=400 amp=1 release=3|
+		var envelope= Env.cutoff(release).kr(2,gate:\gate.kr(1));
+		var sig= Pluck.ar(WhiteNoise.ar(0.1),  trig: \trig.tr(1),  maxdelaytime: 0.2,  delaytime: freq.reciprocal,  decaytime: \del.kr(5),  coef: \coef.kr(0.6),  mul: 1,  add: 0) ;
+		sig=CrossoverDistortion.ar(sig,\drive.kr(0.9),\smooth.kr(0.1));
+		sig=Phaser2.ar(sig,0.5,0.15,rq:1);
+		Out.ar(\out.kr,  sig*amp*envelope);
+	}).add;
+	SynthDef (\cymbalsDS,{ //Dan Stowall Cymbals
 		var lodriver, locutoffenv, hidriver, hicutoffenv, freqs, res, thwack;
 		locutoffenv = EnvGen.ar(Env.perc(0.5, 5)) * 20000 + 10;
 		lodriver = LPF.ar(WhiteNoise.ar(0.1), locutoffenv);
@@ -34,16 +41,7 @@ s.waitForBoot({
 		res	= Ringz.ar(lodriver + hidriver + thwack, freqs).mean;
 		((res * 1) + (lodriver * 2) + thwack).dup * \amp.kr(0.1)
 		=> ( Out.ar(\out.ir,_) <! DetectSilence.ar(_,doneAction:2))
-	}=>SynthDef(\cymbalsDS,_)=>_.add;
-
-	SynthDef(\pluckDEnv,{|freq=400 amp=1 release=3|
-		var envelope= Env.cutoff(release).kr(2,gate:\gate.kr(1));
-		var sig= Pluck.ar(WhiteNoise.ar(0.1),  trig: \trig.tr(1),  maxdelaytime: 0.2,  delaytime: freq.reciprocal,  decaytime: \del.kr(5),  coef: \coef.kr(0.6),  mul: 1,  add: 0) ;
-		sig=CrossoverDistortion.ar(sig,\drive.kr(0.9),\smooth.kr(0.1));
-		sig=Phaser2.ar(sig,0.5,0.15,rq:1);
-		Out.ar(\out.kr,  sig*amp*envelope);
 	}).add;
-
 	// more kicks
 	SynthDef(\kick1, {
 		var snd;
@@ -54,7 +52,6 @@ s.waitForBoot({
 		snd = snd.tanh;
 		Out.ar(\out.kr(0), Pan2.ar(snd, \pan.kr(0), \amp.kr(0.1)));
 	}).add;
-
 	SynthDef(\kick2, {
 		var snd;
 		snd = DC.ar(0);
@@ -64,7 +61,6 @@ s.waitForBoot({
 		snd = snd.tanh;
 		Out.ar(\out.kr(0), Pan2.ar(snd, \pan.kr(0), \amp.kr(0.1)));
 	}).add;
-
 	SynthDef(\kick3, {
 		var snd;
 		snd = DC.ar(0);
@@ -75,10 +71,7 @@ s.waitForBoot({
 		snd = snd.tanh;
 		Out.ar(\out.kr(0), Pan2.ar(snd, \pan.kr(0), \amp.kr(0.1)));
 	}).add;
-
-
 	// Basic drum kit
-
 	SynthDef("hihat", {arg out = 0, amp = 0.5, att = 0.01, rel = 0.2, ffreq = 6000, pan = 0;
 		var env, snd;
 		env = Env.perc(att, rel, amp).kr(doneAction: 2);
@@ -86,7 +79,6 @@ s.waitForBoot({
 		snd = HPF.ar(in: snd, freq: ffreq, mul: env);
 		Out.ar(out, Pan2.ar(snd, pan));
 	}).add;
-
 	SynthDef("snare", {arg out = 0, amp = 0.1, sinfreq = 180, att = 0.01, rel = 0.2, ffreq = 2000, pan = 0;
 		var env, snd1, snd2, sum;
 		env = Env.perc(att, rel, amp).kr(doneAction: 2);
@@ -99,7 +91,6 @@ s.waitForBoot({
 		sum = snd1 + snd2;
 		Out.ar(out, Pan2.ar(sum, pan));
 	}).add;
-
 	SynthDef("kick", {arg out = 0, amp = 0.3, sinfreq = 60, glissf = 0.9, att = 0.01, rel = 0.45, pan = 0;
 		var env, snd, ramp;
 		env = Env.perc(att, rel, amp).kr(doneAction: 2);
@@ -112,7 +103,6 @@ s.waitForBoot({
 		snd = Pan2.ar(snd, pan);
 		Out.ar(out, snd);
 	}).add;
-
 	// Basic saw synth for chords and bass
 	SynthDef("sawSynthSustain", { arg out=0, freq = 440, amp = 0.1, att = 0.1, rel = 2, lofreq = 1000, hifreq = 3000, lagTime = 0.3;
 		var env, snd;
@@ -150,12 +140,11 @@ s.waitForBoot({
 
 	SynthDef(\verb_fade,{|in time| FreeVerb.ar(in, room:0.8, mix:0.8)*Line.kr(1,0,time)}).add;
 
-//				 {{{1 moved to Library/sythdefs
+	//				 {{{1 moved to Library/sythdefs
 	SynthDef(\vsti,{|in out=0|
 		var sig=VSTPlugin.ar(nil,2);
 		Out.ar(out,sig)
 	}).add;
-
 
 	SynthDef(\stringyy,{ |gate=1| //{{{
 		var freq=\freq.kr(400,\freqLag.kr(0.05));
@@ -166,15 +155,33 @@ s.waitForBoot({
 		=>Mix.ar(_) *0.5
 		+Gendy1.ar(minfreq:freq-width,maxfreq:freq+width) 
 		* 0.1 * \amp.kr(0.5)
-		=>
-		(PlateReverb.ar(_,10) ++ (_*0.5))
-		=>
-		Mix.ar(_)
+		=> (PlateReverb.ar(_,10) ++ (_*0.5)) => Mix.ar(_)
 		* Env.asr(0.5,1,8).kr(2,gate:gate)
 		=>Out.ar(\out.kr(0),_)
 	}).add; //}}}
 
-	//TODO generalize this - seperate into proto
+	SynthDef(\FreeVerb,{
+		In.ar(\in.kr(0))
+		=> FreeVerb.ar(_,\mix.kr(1/3),\room.kr(1/2),\damp.kr(1/2))
+		=> Out.ar(\out.kr(0),_)
+	},variants:(long:[mix:1,room:1,damp:0.5],dry:[mix:0])
+).add;
+
+SynthDef(\defaultPorto,{
+	var freq=\freq.kr(400,0.5)-5;
+
+	Gendy4.ar(4,1,1,1,freq-19,freq+19,\ampScale.kr(0.1),\durScale.kr(0.1),Rand(11)+1)
+	+ Saw.ar(freq,0.05)
+	* Env.asr(0.2,1,3).kr(2,gate:\gate.kr(1))
+	* 0.1
+	=> BMoog.ar(_,1800,0.2,2.1)
+	=>FreeVerb.ar(_,0.4,1)
+	=> Out.ar(Rand(4),_)
+},variants:(
+	noisy1: [\ampScale,1.0,\durScale,1.5],
+	clean: [\ampScale,0.5,\durScale,5.5]
+ )).add;
+//TODO generalize this - seperate into proto
 //	~synful=( // creates a nodeproxy playing on a private bus - .node and .bus respectively 
 //		bus: Bus.audio(s,2),
 //		controller: nil,
@@ -215,8 +222,9 @@ s.waitForBoot({
 //
 //	);
 //	~synful.init;
-	"LOADED".postln;
-	~synthsLoaded=true;
+"LOADED".postln;
+~synthsLoaded=true;
+
 }
 )
 ;

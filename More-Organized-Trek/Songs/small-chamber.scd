@@ -5,8 +5,12 @@
 Song.smallChamber.isNil.not.if{ Song.smallChamber.resources.do(_.free) };
 Song(\smallChamber,[]).current;
 Song.currentSong.resources.infrastructure=FunctionList([ {
-			~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
-	} ]);
+	~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
+} ]);
+Song.chamber.isNil.if{"/Users/michael/tank/super/More-Organized-Trek/chamber_rewrite.scd".load};
+Song.smallChamber.next_(\chamber);
+Song.smallChamber.chain;
+Song.smallChamber.current;
 
 ///////how to use stills
 //	~stills.isNil.if{~stills=Stills("/Users/michael/tank/Trek/video for stills etc/media/return to tomorrow.mov")}; //{{{
@@ -790,42 +794,19 @@ P(\tune++(~intend+6),start:~intend+6,music:Song.currentSong.pbind[~intend+6]
 
 ~lick=Array.series(4,0,2).collect(_+[11,12,7.5,11].dm('c#',octave:5,scale:\diminished )).flatten ;
 ["time dum dum dum dum dum etc ",~lick].addLine;
-P(\lick++(~intend+7),start:~intend+7,music:Song.currentSong.pbind[~intend+7]=>{|i|
-	Ppar([i,
-		i=>Pbindf(_,\instrument,\stringyy,\amp,0.3)
-		=>Pmul(\freq,1/2,_)
-	
-}
-);
-
 //(They help him back to Sargon's sphere.)
+P(\lick++(~intend+7),start:~intend+7,music:Song.currentSong.pbind[~intend+7]
+	=>{
+		|i|
+		Ppar([i,
+			i=>Pbindf(_,\instrument,\stringyy,\amp,0.3)
+			=>Pmul(\freq,1/2,_)
+
+		]);
+	}
+
+);
 )
 
 
-(
-SynthDef(\vocalFry ,{
-		Impulse.ar(\freq.kr(200,\freqLag.kr(0.5)))
-		* \amp.kr(0.1)
-		* Env.asr(0.1,1,0.1).kr(2,gate:\gate.kr(1))
-		=> Out.ar(\out.kr(0),_)	
-}).add;
-)
-(
-		//:call scnvim#sclang#send("Song.current.cursor_(13)")
-		Song.play;
-		~carrier.isNil.if{~carrier=Bus.audio};
-		Song.currentSong.pbind[13]=>Pbindf(_,\legato,1,\instrument,\vocalFry,\out,~carrier.index)
-		=>Pmul(\freq,[1/4, 1/2 ],_)
-		=>_.play;
-		{
-				Vocoder.ar(
-						In.ar( ~carrier.index ),
-						Item(\eyeWillReturn).playbuf*2,
-						10,
-						q: 0.2
 
-				)
-//				*1/4
-		}.play;
-		Item(\eyeWillReturn).play(out:1,amp:0.05)
-)

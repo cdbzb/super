@@ -1,4 +1,4 @@
-( // ~complete lyric and tune	{{{1
+( // Line 225                        
 	//~syn1.controller.loaded.not.if({~syn1.init});
 	~complete=Song( //{{{
 		\complete, [

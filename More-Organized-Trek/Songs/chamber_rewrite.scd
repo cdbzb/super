@@ -771,4 +771,5 @@ P(\bass29,start:29,music:
 	//MUTED* 0.04
 //MUTED}.play(s)} }
 //MUTED);
+Song.current
 )

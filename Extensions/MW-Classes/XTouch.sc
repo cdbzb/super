@@ -50,6 +50,7 @@ XTouch {
 			{ Item.arm; },95,
 			{ Song.play },94,
 			{ Part.play; },47,
+			{Document.current.path.load},91,
 		]);
 
 

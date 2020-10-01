@@ -1,7 +1,7 @@
 (
 //(Kirk staggers back slightly, then there is a high-pitched sound as his head is flung back.) 
 
-Song.new(\panel2,[]);
+Song.new(\panel2,[],\dursAreInFile);
 Song.panel2.current;
 Song.resources.infrastructure=FunctionList.new.array_([]);
  Song.resources.infrastructure.addFunc({ //~syn1
@@ -9,9 +9,13 @@ Song.resources.infrastructure=FunctionList.new.array_([]);
 });
 Song.resources.infrastructure.addFunc({TempoClock.tempo_(1)});
 /*SPOCK:*/[" Just a moment, Doctor. ","r",].addLine; 
+[ 1 ].addDurs;
 /*KIRK:*/[" I am Sargon. ","r",].addLine; 
+[ 1 ].addDurs;
 /*MCCOY:*/[" Where's our captain? Where's Jim Kirk? ","r",].addLine; 
+[ 1 ].addDurs;
 /*KIRK:*/[" He is unharmed. I have taken his body to demonstrate ", [7,11,12,13, 12,13,14,11,7,7,6, 5,15,14,12.5].dm('a',scale:\mixolydian)].addLine; 
+[ 0.398, 0.372, 0.436, 1.5, 0.39, 0.376, 0.406, 0.376, 0.38, 0.528, 0.624, 0.385, 0.368, 0.324, 0.416 ].addDurs;
 P(\tune3,start:3,music:
 	Song.currentSong.pbind[3]
 );
@@ -69,10 +73,12 @@ P(\chord3,start:3,syl:2,music:
 	++[1,2,3,4,5].dm('g',scale:\whole)
 	++ [15,14,13,12,14,12,11,7].dm('d',octave: 4)
 ].addLine; 
+[ 0.203, 0.245, 0.232, 0.248, 0.363, 0.341, 0.438, 0.218, 0.225, 0.211, 0.308, 0.53, 0.401, 0.24, 0.269, 0.271, 0.342, 0.354, 0.396, 0.558 ].addDurs;
 P(\tune4,start:4,music:
 	Song.currentSong.pbind[4]
 );
 /*SPOCK:*/[" And if he refuses, Doctor, (dum) what do you propose to do with your phaser?", [13,12,11,13,15,13,11,6, 6.5].dm('c',scale:\whole )++ [5,7,11, 5,6,7,11,7,11, 4,3,2].dm('e')].addLine; //5
+[ 0.216, 0.259, 0.221, 0.253, 0.436, 0.506, 0.514, 0.603, 1.097, 0.488, 0.326, 0.43, 0.266, 0.26, 0.304, 0.361, 0.398, 0.392, 0.592, 0.628, 0.62 ].addDurs;
 P(\bassnote5,start:5,music:
 	(note:0)
 );
@@ -108,6 +114,7 @@ P(\bassNote5,start:5,music:
 	].p
 );
 	["That is still Jim's body. ", [2,3,4,6,4,1].dm('a',scale:\dorian,octave:5)].addLine; 
+[ 0.326, 0.302, 0.531, 0.614, 0.662, 0.638 ].addDurs;
 	P(\bassNote6,start:6,syl:1,music:
 		(freq:[1].df('f#',octave:2),instrument:\sawSynth,att:2)
 	);
@@ -149,6 +156,7 @@ P(\lungsIntro,start:6,syl:5,music:
 //(Kirk convulses briefly, and the sphere has dimmed a lot.) 
 Song.sections.postln;//7
 /*KIRK:*/["(dum dum dum dum) Lungs filled with air again.(dum dum dum)",[1,1,1,1,3,3,3,3,2,2,2,2,2].dm('a-')].addLine;
+[ 0.482, 0.456, 0.47, 0.51, 0.867, 0.459, 0.515, 1.287, 0.518, 0.499, 0.489, 0.447, 0.496 ].addDurs;
 //Song.durs[7]=[ 0.499, 0.461, 0.461, 0.529, 0.919, 0.506, 0.503, 1.374, 0.536, 4.69, 0.46, 1.18, 0.488, 3.426,0.411,1.08 ].q;
 //~quarters7=Song.parse(7,[2,2,1,2,2/3,[1/3,1],2,2,2,
 //Song.durs[7]= Song.durs[7].list[0..3]!3=>_.flatten++Song.durs[7].list[4..]=>_.q;
@@ -270,6 +278,7 @@ P(\lungs,music:{
 );
 ~eighths8= Song.parse(8,1!8++[1/3,1/3,1/3,1,1,1,1,1,1,1,1,1,1,1,1/2,1/2],) .q;
 ["(dum *7) To see again. Heart,",[2,2,2,2, 2,2,2,4, 4,3, 3,2,2,2, 2,2,2,2,  2,2,5].dm('a-')].addLine; //8
+[ 0.49, 0.484, 0.484, 0.484, 0.491, 0.482, 0.454, 0.509, 1.389, 0.492, 0.442, 0.469, 0.474, 0.479, 0.45, 0.468, 0.462, 0.468, 0.47, 0.485, 0.914 ].addDurs;
 P(\tune8,start:8,music:
 	Song.currentSong.pbind[8].collect({|e|(e.midinote==([2].dm('a-')[0])).if{e.midinote=\};e})
 	=> Pset(\legato,[1!10,5,1!12].flatten=>_.q,_)=>_.trace
@@ -299,6 +308,7 @@ P(\lungsB8,music:
 		++ [3,2,1].dm('f',scale:\minor ) ++[3,4,5].dm('g')
 		++ [13,12,5, 7].dm('e')
 ].addLine;  
+[ 0.879, 4.798, 0.646, 0.62, 2.428, 0.686, 0.629, 0.657, 3.151, 0.498, 1.36, 0.499 ].addDurs;
 ~quarters9=Song.parseBeats(9,[1,5,2/3,2/3,2/3+2,2/3,2/3,2/3,3.5,0.5,1.5,0.5]);
 ~eighths9=~quarters9.stutter(2)/2=>_.quantizeWindow;
 P(\pumping,start:9,lag:-0.152,music:
@@ -365,6 +375,7 @@ P(\piano9,start:9,syl:7,music:
 	}
 );
 	["half a million years -- ", [4,1,3,4,5,4.5].dm('b') ].addLine; 
+[ 0.561, 0.553, 0.571, 0.795, 2.88, 0.758 ].addDurs;
 	~quarters10=Song.parseBeats(10,[0.5,0.5,0.5,0.5,3/2]);
 	~eighths10=~quarters10.stutter(2).quantizeWindow(0.2,2)/2;
 P(\lungsB10,start:10,music:
@@ -431,6 +442,7 @@ P(\base10,start:10,
 	)
 );
 ["(boom boom boom boom )To be again.", [11,11,7,7,15,15,13,13].dm('c#',octave:4) ].addLine;
+[ 0.619, 0.616, 0.618, 0.356, 0.422, 2.622, 0.474, 3.428 ].addDurs;
 ~bassnotes11=[11,7,6,5,4,3,2];
 ~eighths11=Song.parseBeats(11,[1,1,1,0.5,0.5, 3.5,0.5, ]).q;
 P(\tune11,start:11,music:
@@ -449,6 +461,7 @@ P(\bass11,start:11,music:[
 /*MULHALL:*/[" Yes, I have the same readings. ","r",].addLine; 
 \aware.post;Song.sections.postln;
 /*MCCOY:*/[" Are you aware of what's happening to his body? ",[7,11,5,13,12,11,7,11,5, 7,11,14,13].dm('f',scale:\mixolydian)].addLine; 
+[ 0.295, 0.347, 0.315, 0.566, 0.3, 0.322, 0.291, 0.313, 0.6065, 0.278, 0.361, 0.62, 0.633 ].addDurs;
 	Song.durs.put(14,[ 0.295, 0.347, 0.315, 0.566, 0.3, 0.322, 0.291, 0.313, 1.213/2, 0.278, 0.361, 0.62, 0.633, /*3.236*/ ].q);
 P(\tune14,start:14,music:Song.currentSong.pbind[14]
 );
@@ -481,7 +494,9 @@ P(\kick14,start:14,music:1111.postln;{
 	].pp
 }
 );
+
 	["Heart action (almost) doubled, ",[13,12,11,7,11,7,11,16,15].dm('e',scale:\mixolydian)].addLine; 
+[ 0.406, 0.487, 0.472, 0.445, 0.398, 0.478, 0.487, 0.456, 0.509, 1.478 ].addDurs;
 //Song.durs.put(14,[ 0.545, 0.304, 0.31, 0.302, 0.327, 0.311, 0.332, 0.555, 0.429, 2.165 ].q);
 P(\tune15,start:15,music:Song.currentSong.pbind[15]
 );
@@ -504,11 +519,13 @@ P(\kick15,start:15,music:{
 }
 );
 	["temperature a hundred and four degrees? ",[13,12,11,7,11,12,7,13,13,16].dm('f#',scale:\mixolydian)].addLine;
+[ 0.406, 0.487, 0.472, 0.445, 0.398, 0.478, 0.487, 0.456, 0.509, 1.478 ].addDurs;
 
 P(\tune16,start:16,music:Song.currentSong.pbind[16]
 
 );
 /*MULHALL:*/[" He'll die if you don't leave his body. Soon! ", [15,21,15,13,12,11, 7.5,12,11, 11.5].dm('c#',scale:\minor) ].addLine; 
+[ 1 ].addDurs;
 /*SPOCK:*/[" What is it you want of us? ","r",].addLine; 
 /*KIRK:*/[" In the next room, there are other receptacles. ","r"].addLine;
 	["The other two of us that survived. ","r"].addLine; 

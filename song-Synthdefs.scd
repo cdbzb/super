@@ -156,7 +156,7 @@ s.waitForBoot({
 		+Gendy1.ar(minfreq:freq-width,maxfreq:freq+width) 
 		* 0.1 * \amp.kr(0.5)
 		=> (PlateReverb.ar(_,10) ++ (_*0.5)) => Mix.ar(_)
-		* Env.asr(0.5,1,8).kr(2,gate:gate)
+		* Env.asr(\attack.kr(0.5),1,8).kr(2,gate:gate)
 		=>Out.ar(\out.kr(0),_)
 	}).add; //}}}
 
@@ -169,14 +169,18 @@ s.waitForBoot({
 
 SynthDef(\defaultPorto,{
 	var freq=\freq.kr(400,0.5)-5;
-
-	Gendy4.ar(4,1,1,1,freq-19,freq+19,\ampScale.kr(0.1),\durScale.kr(0.1),Rand(11)+1)
+	var gate=\gate.kr(1);
+	var width=\width.kr(19);
+	var release=\release.kr(3);
+	Gendy4.ar(4,1,1,1,freq-width,freq+width,\ampScale.kr(0.1),\durScale.kr(0.1),Rand(11)+1)
 	+ Saw.ar(freq,0.05)
-	* Env.asr(0.2,1,3).kr(2,gate:\gate.kr(1))
+	* Env.asr(\attack.kr(2),1,release).kr(0,gate:gate)
 	* 0.1
 	=> BMoog.ar(_,1800,0.2,2.1)
 	=>FreeVerb.ar(_,0.4,1)
-	=> Out.ar(Rand(4),_)
+	=> DetectSilenceDry.ar(_,doneAction:2)
+	=> Out.ar(Rand(4),_);
+//	Env.cutoff(release+3).kr(2,gate:gate)
 },variants:(
 	noisy1: [\ampScale,1.0,\durScale,1.5],
 	clean: [\ampScale,0.5,\durScale,5.5]

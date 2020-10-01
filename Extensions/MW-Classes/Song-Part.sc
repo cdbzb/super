@@ -4,7 +4,7 @@ Song {
 	classvar <> current;
 	classvar lyricWindow;
 	var <song, <key, <>cursor=0, <sections, <lyrics, <tune; 
-	var <>durs,  <>resources;
+	var <>durs,  <>resources; <> linesToDurs
 	var <>next; 
 	classvar <>songList;
 
@@ -12,8 +12,8 @@ Song {
 		songs=Dictionary.new;
 	}
 
-	*new { |key array|
-		^super.new.init(key, array);
+	*new { |key array dursInFile|
+		^super.new.init(key, array,dursInFile);
 	}
 
 	*playArray { |array|
@@ -96,7 +96,7 @@ Song {
 	//c.insert(1,("aaa"->"c3"))
 	//c.asPairs
 	
-	init {|symbol array|
+	init {|symbol array dursInFile|
 		key=symbol;
 		songs.put(symbol.asSymbol,this);
 		song=array;
@@ -107,7 +107,11 @@ Song {
 			case {i.class==String} { Panola.new(i).midinotePattern }
 			{i.class==Array } {i.q}
 		});
-		this.setupDurs;
+		dursInFile.isNil.if({this.setupDurs;\setup.postln},{durs=[]});
+	}
+
+	writeDurs {|section|
+		File("/tmp/durs","w").write(Song.durs[section].list.asString.replace("List","")++".addDurs;").close
 	}
 
 	refreshArray {
@@ -119,12 +123,17 @@ Song {
 		});
 	}
 
-	addLine { |line dur=1| //array
+	addLine { |line| //array
 		line[1].isNil.if{line=line++["r"]};
-		song=song++line;
+		line[2].isNil.if{line=line++[[1]]};
+		song=song++line[0..1];
 		this.refreshArray;
-		durs=durs++[dur].q;
-		^this;
+		durs=durs++line[2].q;
+		^Song.sections-1;
+	}
+
+	addDurs {|array|
+		durs=durs[0..durs.size-2]++array.q
 	}
 
 	secLoc {^[0]++(sections-1).collect{|i| this.secDur[..i].sum}}
@@ -145,7 +154,16 @@ Song {
 		)
 	}
 
-	save { Archive.global.put(key,durs);Archive.write(dursFile);'archive written'.postln }
+	save { 
+		// associate durs with lines
+		// TODO can we associate Parts with lines?
+		linesToDurs = Dictionary.new(sections);
+		lines.do{|i x| linesToDurs.add( i -> durs[i] ) }
+		//save associations to check during setup
+		Archive.global.put((key ++ linesToDurs).asSymbol, linesToDurs);
+		Archive.global.put(key,durs);
+		Archive.write(dursFile);'archive written'.postln 
+	}
 
 	backup {
 		var backup = dursFile++Date.getDate.stamp;
@@ -237,6 +255,13 @@ Song {
 		this.play(this.at(sec))
 	}
 
+	section {|string| 
+		//returns section number which contains lyric
+		var array = (..lyrics.size-1).select{|i |lyrics[i].contains(string.asString)};
+		(array.size>1).if{'!!! more than one section with: '.post;string.postln; array.postln};
+		^array[0]
+	}
+
 	contains { |string|
 		var array =	all {:x,x<-resources.keys,var y=resources.at(x.asSymbol),y.class==Part,(x.asString).contains(string)};
 		array.postln;
@@ -252,9 +277,19 @@ Song {
 		^(cursor..(sections-1)).collect{|i|this.secDur[i]}.sum
 	}
 
+	getSection {|a| 
+		a.isNil.if{a=sections};
+		(a.class==String).if{a=a.asSymbol};
+		(a.class==Symbol).if({
+			^this.section(a)
+		},{
+			^a
+		})
+	}
 	parse {|phrase array start=0| 
 		var counter = 0;
 		var beatNum; 
+		phrase=this.getSection(phrase);
 		//expand numbers greater than one
 		//doesn't currently support numbers greater than one in sub-arrays
 		//or decimal numbers greater than one
@@ -290,6 +325,7 @@ Song {
 	parseBeats { |phrase array start=0|
 		var beatCounter = List.new, denominators = List.new;
 		var result = List.new;
+		phrase=this.getSection(phrase);
 		array=array++1;
 		array.do{
 			|i|
@@ -449,9 +485,14 @@ P {
 			start=((Song.song.size-2)/2).asInt;
 			start.postln;
 		};//guess start from context
+		(start.class==Symbol).if{
+			start = Song.section(start);
+			start.postln;
+		};
 		part=Part(start,syl,lag,music);
 		key=(key++\_).asSymbol;
-		Message(  Song.songs.at(Song.current) , key ).value(part)
+		Message(  Song.songs.at(Song.current) , key ).value(part);
+		key.postln;
 	}
 }
 
@@ -490,6 +531,27 @@ SongList {
 //		~playMultipleSongs.([~tu,~im2]);
 }
 
+
+Dur[slot] : List { 
+	var array;
+	*current {
+		^Song.currentSong.durs[Song.currentSong.sections-1]
+	}
+	*printOn {333.postln}
+	*new {
+		^super.new.setCollection(Array.new(8))
+	}
+	setCollection { arg aColl;
+		aColl.isNil.if(
+			{
+				array=[3,4,5];
+			},{
+				array = aColl.asArray;
+	})
+	}
+
+	
+}
 + Symbol {
 	cursor {
 		^Song.songs.at(this).cursor

@@ -17,7 +17,7 @@
 			var desc=SynthDef(\temp,{In.ar(1,inputChannels)=>function=>Out.ar(0,_)});
 			var numChannels=desc.asSynthDesc.outputData[0].at(\numChannels);
 			bus=Bus.audio(numChannels:numChannels);
-			synth={In.ar(bus,numChannels)=>function=>Out.ar(out,_)}.play(addAction:\addToTail);
+			synth={In.ar(bus.index,numChannels)=>function=>Out.ar(out,_)}.play(addAction:\addToTail);
 			NodeWatcher.register(synth, assumePlaying: true);
 			fork{
 				while ( {synth.isPlaying},{0.2.wait} );

@@ -4,7 +4,7 @@ Song {
 	classvar <> current;
 	classvar lyricWindow;
 	var <song, <key, <>cursor=0, <sections, <lyrics, <tune; 
-	var <>durs,  <>resources; <> linesToDurs
+	var <durs,  <>resources, <>lyricsToDurs;
 	var <>next; 
 	classvar <>songList;
 
@@ -107,8 +107,13 @@ Song {
 			case {i.class==String} { Panola.new(i).midinotePattern }
 			{i.class==Array } {i.q}
 		});
-		dursInFile.isNil.if({this.setupDurs;\setup.postln},{durs=[]});
+		this.setupLyricsToDurs;
+		//dursInFile.isNil.if({this.setupDurs;\setup.postln},{durs=[]});
+		//dursInFile.isNil.if({this.setupDurs;\setup.postln},{durs=Foo()});
+		durs=Foo(this);
 	}
+
+	//durs_ {|a| durs=a;a.postln}
 
 	writeDurs {|section|
 		File("/tmp/durs","w").write(Song.durs[section].list.asString.replace("List","")++".addDurs;").close
@@ -121,6 +126,8 @@ Song {
 			case {i.class==String} { Panola.new(i).midinotePattern }
 			{i.class==Array } {i.q}
 		});
+		//durs=lyrics.collect{|i| lyricsToDurs.at(i) };
+		//durs=durs.collect{|i| i.isNil.if( {[1].q} , {i} )}
 	}
 
 	addLine { |line| //array
@@ -128,11 +135,14 @@ Song {
 		line[2].isNil.if{line=line++[[1]]};
 		song=song++line[0..1];
 		this.refreshArray;
-		durs=durs++line[2].q;
+		//no need to do anything here as durs now works as expected
+		//this.rebuildLyricstoDurs;
+		durs.put(line[0],line[2]);
 		^Song.sections-1;
 	}
 
 	addDurs {|array|
+		//TODO
 		durs=durs[0..durs.size-2]++array.q
 	}
 
@@ -142,25 +152,41 @@ Song {
 
 	pbind {^(..sections-1).collect{|i|Pbind(\dur,durs[i],\midinote,tune[i])};}
 
+	setupLyricsToDurs {
+		Archive.read(dursFile);
+		Archive.at(key).isNil.not.if(
+				{lyricsToDurs = Archive.at((key++\lyricsToDurs).asSymbol)},
+				{lyricsToDurs= Dictionary.new(128)}
+		)
+	}
+
+	//TODO make a method to convert one time -- aaaaaaarg
+
 	setupDurs {
 		Archive.read(dursFile);
 		Archive.at(key).isNil.not.if(
 			{
 				var a=Archive.at(key);
-				durs=a++(Pseq([1])!(sections-a.size)); //copy or pad
+				//durs=a++(Pseq([1])!(sections-a.size)); //copy or pad
+				lyricsToDurs = Archive.at((key++\lyricsToDurs).asSymbol);
 			},{
 				durs=Pseq([1])!sections
 			}
-		)
+		);
+			
+	}
+
+	rebuildLyricstoDurs {
+		lyricsToDurs = Dictionary.new(sections);
+		lyrics.do{|i x| lyricsToDurs.add( i -> durs[x] ) };
 	}
 
 	save { 
 		// associate durs with lines
 		// TODO can we associate Parts with lines?
-		linesToDurs = Dictionary.new(sections);
-		lines.do{|i x| linesToDurs.add( i -> durs[i] ) }
 		//save associations to check during setup
-		Archive.global.put((key ++ linesToDurs).asSymbol, linesToDurs);
+		this.rebuildLyricstoDurs;
+		Archive.global.put((key ++ \lyricsToDurs).asSymbol, lyricsToDurs);
 		Archive.global.put(key,durs);
 		Archive.write(dursFile);'archive written'.postln 
 	}

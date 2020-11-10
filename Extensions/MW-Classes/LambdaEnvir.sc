@@ -25,13 +25,15 @@ LazyResult : AbstractFunction {
 LambdaEnvir {
 	var envir;
 	var resolvingKeys;
+	var know;
 
-	*new { |env|
+	*new { | env |
 		^super.new.init(env);
 	}
 
 	init { |env|
 		envir = Environment.new;
+		envir.know_(true);
 		env.keysValuesDo { |key, value|
 			envir.put(key, LazyResult(value));
 		};
@@ -87,6 +89,7 @@ LambdaEnvir {
 	reset {
 		this.keysValuesDo { |key, value| value.reset }
 	}
+	doesNotUnderstand { |selector| ^this.at(selector)}
 }
 
 

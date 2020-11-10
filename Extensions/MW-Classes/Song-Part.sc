@@ -6,13 +6,15 @@ Song {
 	var <song, <key, <>cursor=0, <sections, <lyrics, <tune; 
 	var <durs,  <>resources, <>lyricsToDurs;
 	var <>next; 
+	var <>clock;
 	classvar <>songList;
 
 	*initClass {
 		songs=Dictionary.new;
 	}
-
-	*new { |key array dursInFile|
+	
+	*new { 
+		|key array dursInFile|
 		^super.new.init(key, array,dursInFile);
 	}
 
@@ -78,9 +80,7 @@ Song {
 			'selector '.post;selector.postln;
 			'args '.post;args.postln;
 			^Message(songs.at(current),selector).value(*args)
-//		this.currentSong.respondsTo(selector).if{
-//			^Message(this.currentSong,selector).value(args)
-	} {
+		} {
 			var key = selector.asString;
 			//key.contains($_).if{
 			//}
@@ -88,14 +88,6 @@ Song {
 		}
 	}
 
-	//there should be a way to make it so you can insert lines
-	// or add lines individually
-	// 
-
-	//c=[1,2,3,4].asAssociations(List)
-	//c.insert(1,("aaa"->"c3"))
-	//c.asPairs
-	
 	init {|symbol array dursInFile|
 		key=symbol;
 		songs.put(symbol.asSymbol,this);
@@ -108,12 +100,23 @@ Song {
 			{i.class==Array } {i.q}
 		});
 		this.setupLyricsToDurs;
-		//dursInFile.isNil.if({this.setupDurs;\setup.postln},{durs=[]});
-		//dursInFile.isNil.if({this.setupDurs;\setup.postln},{durs=Foo()});
-		durs=Foo(this);
+		durs=Durs(this);
+		clock=TempoClock.new(queueSize:512);
 	}
 
-	//durs_ {|a| durs=a;a.postln}
+	hasDursButNotLyricsToDurs {
+		Archive.at(key).isNil.not.if({
+			Archive.at((key++"lyricsToDurs").asSymbol).isNil.if(
+				{ 
+					^true 
+				},{ 
+					^false 
+				})
+			},{
+				^false
+			}
+		)
+	}
 
 	writeDurs {|section|
 		File("/tmp/durs","w").write(Song.durs[section].list.asString.replace("List","")++".addDurs;").close
@@ -132,35 +135,62 @@ Song {
 
 	addLine { |line| //array
 		line[1].isNil.if{line=line++["r"]};
-		line[2].isNil.if{line=line++[[1]]};
-		song=song++line[0..1];
-		this.refreshArray;
-		//no need to do anything here as durs now works as expected
-		//this.rebuildLyricstoDurs;
-		durs.put(line[0],line[2]);
+
+
+		//TODO merge lyricsToDurs with Archive when saving!!
+		this.hasDursButNotLyricsToDurs.if{
+			lyricsToDurs.add(line[0] -> Archive.at(key)[sections]);
+		};
+
+		//FIXME
+		song=song++line[0..1]; this.refreshArray;
+		line[2].isNil.if({ 
+			//line=line++[[1]]
+			//durs.put(line[0].asSymbol,[1].q)
+
+		},{
+			durs.put(line[0].asSymbol,(line[2]).q);
+		});
 		^Song.sections-1;
 	}
 
 	addDurs {|array|
-		//TODO
-		durs=durs[0..durs.size-2]++array.q
+		durs[sections-1]=array.q
 	}
 
-	secLoc {^[0]++(sections-1).collect{|i| this.secDur[..i].sum}}
-
-	secDur {^(..sections-1).collect{|i|durs[i].list.sum}}
-
-	pbind {^(..sections-1).collect{|i|Pbind(\dur,durs[i],\midinote,tune[i])};}
-
-	setupLyricsToDurs {
-		Archive.read(dursFile);
-		Archive.at(key).isNil.not.if(
-				{lyricsToDurs = Archive.at((key++\lyricsToDurs).asSymbol)},
-				{lyricsToDurs= Dictionary.new(128)}
+	secLoc {
+		var secDurs = this.secDur;
+		^SongArray(
+			[0]++(sections-1).collect{|i| secDurs[..i].sum}
+			,key
 		)
 	}
 
-	//TODO make a method to convert one time -- aaaaaaarg
+	secDur{
+		var dursNow=this.durs;
+		^SongArray(
+			//this,
+			(..sections-1).collect{|i|dursNow[i].list.sum}
+			,key
+		)
+	}
+
+	pbind {
+		var dursNow=this.durs;
+		^SongArray.new(
+			(..sections-1).collect{|i|Pbind(\dur,dursNow[i],\midinote,tune[i])}
+			,key
+		)
+	}
+
+	setupLyricsToDurs {
+		Archive.read(dursFile);
+		Archive.at((key++\lyricsToDurs).asSymbol).isNil.not.if(
+				{lyricsToDurs = Archive.at((key++\lyricsToDurs).asSymbol)},
+				{lyricsToDurs= Dictionary.new(128)}
+
+		)
+	}
 
 	setupDurs {
 		Archive.read(dursFile);
@@ -182,12 +212,12 @@ Song {
 	}
 
 	save { 
-		// associate durs with lines
 		// TODO can we associate Parts with lines?
-		//save associations to check during setup
-		this.rebuildLyricstoDurs;
-		Archive.global.put((key ++ \lyricsToDurs).asSymbol, lyricsToDurs);
-		Archive.global.put(key,durs);
+		var location = (key++\lyricsToDurs).asSymbol;
+		var merge=Archive.global.at(location) ? Dictionary.new(128);
+		lyrics.do{|i| merge.add(i -> lyricsToDurs.at(i))};
+		Archive.global.put(location, merge);
+		'loc '.post;location.post;' merge '.post;merge.postln;
 		Archive.write(dursFile);'archive written'.postln 
 	}
 
@@ -229,9 +259,10 @@ Song {
 		var list = this.getPartsList(args);
 		fork{
 			//resources.condition ? resources.condition.test_(false);
-			  resources.condition !? (_.test_(false));
+			resources.condition !? (_.test_(false));
 			this.resources.at(\infrastructure) !? (_.value);
 			resources.condition !? _.wait;
+			'Condition Met'.postln;
 			list.do(_.p)
 		}
 	}		
@@ -300,7 +331,7 @@ Song {
 		part.parent=this;^resources}
 
 	durTillEnd {
-		^(cursor..(sections-1)).collect{|i|this.secDur[i]}.sum
+		^this.secDur[cursor..(sections-1)].sum
 	}
 
 	getSection {|a| 
@@ -444,7 +475,8 @@ Part {
 			music.value(
 				parent,
 				//durs from event start
-				parent.durs[start].list.drop(syl?0)
+				parent.durs[start].list.drop(syl?0),
+				this
 			)
 		}},
 		Message,{Server.default.bind{music.value}},
@@ -461,7 +493,11 @@ Part {
 		////////////////trying to make setup be part of Part
 		//////////delete this line if not work
 		//(music.class=Routine).if(music.play);
-		TempoClock.sched(when,this)
+
+		//TempoClock.sched(when,this)
+		parent.clock.sched(when,this)
+		//AppClock.sched(when,this)
+		//SystemClock.sched(when,this)
 	}
 
 	calcTime {

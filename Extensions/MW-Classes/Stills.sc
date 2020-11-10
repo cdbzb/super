@@ -22,6 +22,10 @@ Stills {
 		^w}
 
 
+	viewer {
+		("open "++"'"++this.file++"'").unixCmd
+	}
+
 	plot{|markerName monitor=(-1)|
 		var image=this.mark(markerName);
 		var w = Window(bounds:Rect(1500*monitor,200,1400,800),border:false)
@@ -45,7 +49,11 @@ Stills {
 		.font_(Font(\helvetica,90,bold:true))
 	}
 
-	set {|markerName seconds| markers.put(markerName,seconds);this.fetch(markers.at(markerName))}
+	set {|markerName seconds| 
+		( markers.at(markerName) == seconds ).not.if {
+			markers.put(markerName,seconds);this.fetch(markers.at(markerName))
+		}
+	}
 
 	//gets frame at |seconds| and saves it in classvar stillsLocation
 	fetch { |seconds |

@@ -130,6 +130,11 @@
 							.states_(["1",Color.black,Color.white])
 							.action = {song.save};
 							var v=w.view;
+							////////// MIDI FUNCTION //////////
+//							XTouch.addKey({
+//								Pipe("osascript -e 'tell application \"System Events\" to keystroke \"j\"'","w")
+//							},\f8);
+							///////////////////////////////////
 							self.window=w;
 							StaticText(b,Rect(0,0,100,100)).string_("Do over").align_(\center);
 							StaticText(c,Rect(0,0,100,100)).string_("Return").align_(\center);

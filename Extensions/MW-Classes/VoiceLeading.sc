@@ -1,5 +1,6 @@
 VoiceLeading {
 	var lines,durs,<>durationArray, <>valuesArray;
+	var key=\degree;
 	*new { |lines durs|
 		^super.new.init(lines,durs)
 	}
@@ -70,18 +71,46 @@ VoiceLeading {
 		)
 	}
 	df {|root='c' octave=5 scale='major'|
+		key = \freq;
 		valuesArray=valuesArray.collect{|i|i.df(root,octave,scale)};
 		lines=lines.collect(_.df(root,octave,scale))
 	}
 	dm {|root='c' octave=5 scale='major'|
+		key = \midinote;
 		valuesArray=valuesArray.collect{|i|i.dm(root,octave,scale)};
 		lines=lines.collect(_.dm(root,octave,scale))
 	}
-	pbind {
+	p {
 		^lines.collect{|i x|
-			[val:valuesArray[x].q,dur:durationArray[x].q].p
+			[key,valuesArray[x].q,dur:durationArray[x].q].p
 		}
+			=> Ppar(_)
 	}
+	pp { this.p.play }
+	pm { |instrument|
+		^lines.collect{|i x|
+			[key,valuesArray[x].q,dur:durationArray[x].q].pm(instrument.asSymbol)
+		}
+			=> Ppar(_)
+	}
+	pma { |instrument|
+		^lines.collect{|i x|
+			[key,valuesArray[x].q,dur:durationArray[x].q].pma(instrument.asSymbol)
+		}
+			=> Ppar(_)
+	}
+	setPattern { |array|
+		var lists = lines.collect{|i x|
+			 [key,valuesArray[x].q,dur:durationArray[x].q];
+		 };
+			^[lists,array]
+			.flop
+			.collect(_.reshapeLike([[1,2,3,4],[1,2]]))
+			.collect({|i|Message(i[0],i[1][0]).value(i[1][1])})
+			=> Ppar(_)
+	}
+	// do this again for multiple keys
+//	set {|key values| ^( this.p.bubble ++ values.bubble =>_.flopWith{|p i| Pset(key,i,p) })}
 
 }
 

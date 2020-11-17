@@ -185,6 +185,14 @@ SynthDef(\defaultPorto,{
 	noisy1: [\ampScale,1.0,\durScale,1.5],
 	clean: [\ampScale,0.5,\durScale,5.5]
  )).add;
+SynthDef(\sparkTriangle,{
+
+					var vibrato=Vibrato.kr(\freq.kr(400,0.2),5);
+					DPW3Tri.ar(vibrato)
+					* Env.asr(1,\amp.kr(0.2),3).kr(2,gate:\gate.kr(1))
+					=> Out.ar(\out.kr(0),_)
+				}).add;
+
 //TODO generalize this - seperate into proto
 //	~synful=( // creates a nodeproxy playing on a private bus - .node and .bus respectively 
 //		bus: Bus.audio(s,2),

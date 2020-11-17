@@ -11,6 +11,7 @@ Stills {
 	var <>markers;
 	var <>fade;
 	var <>font;
+	var <>window;
 	*new {|movie| ^super.new.init(movie)}
 	init {|movie| file=movie; markers=()  }
 
@@ -34,6 +35,7 @@ Stills {
 		.front;  //}.defer(Server.default.latency);
 		^w
 	}
+	
 
 	title { |window text|
 		StaticText(window,Rect (0,600,1400,200))
@@ -86,7 +88,24 @@ Stills {
 		var image;
 		seconds.isNil.if{image=this.image(markerName);^image}{this.set(markerName,seconds)}
 	}
+	still { | key wait=5 fade=0 monitor text|
+		^Still.new(this,key,wait,fade,monitor,text)
+	}
 	
+}
+
+Still {
+	var <>stills;
+	var <>markerName,<>wait,<>fade,<>monitor,<>text;
+	var <>window;
+
+	*new{|stills markerName wait=5 fade=0 monitor text| ^super.newCopyArgs(stills,markerName,wait,fade,monitor,text)}
+
+	play { defer{ window=stills.preview(markerName,wait,fade,monitor,text) } }
+
+	add {|seconds| stills.set(markerName,seconds) }
+
+	//wiggle - get frames +- 10 
 }
 
 + Window {

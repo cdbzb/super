@@ -1,32 +1,35 @@
 
 ( // {{{1
-	~unnecessary = Song(
-		\unnecessary, 
-		[
-			"that will be unneccesary Doctor"," d# e f# d# g# f# e d# d# c#",//0
-			"r this Vulcan body is adapted to the","r b b g# f# e f# g# f# e d# e",//1
-			"r r higher metabolism"," f#3 f# a5 g# b a g# f# e ",//2
-			"it won't work, Sargon!","d#5 b4 g5 d# b4",//3
-			"you have to get out before you","f d- e- f a f g a",//4
-			//"kill them! we will transfer at once un-","",//5
-			//"til you can administer the ","",//6
-			//"metabolic reduction injection... a ","",//7
-			//"what? I'll prepare the formula Sargon","",//8
-			//"Henoch, your condition","",//9
-			//"r I can continue in this body r for several hours","d3 f#4 d f# e c# d e d g3 a2 e d c# c# b",//10
-			//"fortunate we will exit at once...","c5 a4 e a3 b c a2 e4 f# g# e g# a#",//11
-		]
-	);
+	~unnecessary = Song( \unnecessary,[]); 
+	Song.unnecessary.current;
+		
+["that will be unneccesary Doctor"," d# e f# d# g# f# e d# d# c#"].addLine;//0
+["r this Vulcan body is adapted to the","r b b g# f# e f# g# f# e d# e"].addLine;//1
+["r r higher metabolism"," f#3 f# a5 g# b a g# f# e "].addLine;//2
+["it won't work, Sargon!","d#5 b4 g5 d# b4"].addLine;//3
+["you have to get out before you","f d- e- f a f g a"].addLine;//4
+["kill them! we will transfer at once un-","r"].addLine;//5
+["til you can administer the ","r"].addLine;//6
+["metabolic reduction injection... a ","r"].addLine;//7
+["what? I'll prepare the formula Sargon","r"].addLine;//8
+["Henoch, your condition","r"].addLine;//9
+["r I can continue in this body r for several hours","d3 f#4 d f# e c# d e d g3 a2 e d c# c# b"].addLine;//10
+["fortunate we will vacate at once...","c5 a4 e a3 b c a2 e4 f# g# e g# a#"].addLine;//11
+["/*SPOCK*/ This woman will assist me. (to Chapel) You will take me to your pharmacology laboratory. ","r"].addLine;
+["(They leave.) ","r"].addLine;
+["/*KIRK*/ Bones, what? ","r"].addLine;
+["/*MCCOY*/ It was close, Jim. You ","r"].addLine;
+["both barely got back alive. ","r"].addLine;
+["Unless the formula works, we can't risk it again.","r"].addLine;
+		
 
 	~unnecessary.durs[1]=Pseq([1,1,1.5,0.25,0.25+0.5, 0.5,0.5,0.25,0.25+0.5,0.5,0.5,0.5]);
 	~unnecessary.durs[1]=Pseq((~unnecessary.durs[1].list!2).flatten	);
 	'!!!'.postln;
-);
 
-( //	unnecessary sections	{{{2
-	~unnecessary.resources=();
 
-	//~unnecessary.play;
+ //	unnecessary sections	{{{2
+	//~unnecessary.resources=();
 	~unnecessary.condition=Condition.new;
 	~unnecessary.infrastructure={
 		~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};

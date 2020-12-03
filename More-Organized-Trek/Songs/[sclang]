@@ -1,0 +1,1256 @@
+
+compiling class library...
+	Found 850 primitives.
+	Compiling directory '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/Extensions'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Automation'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/JITLibExtensions'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Vowel'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/panola'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Freesound'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/FreeAfter'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/wslib'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/SynthDefPool'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/say'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/MathLib'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/VectorSpace'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Unit-Lib'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/BatLib'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/SpeakersCorner'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/AmbIEM'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/AllGui'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/FileLog'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Hilbert'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/XML'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/atk-sc3'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Ctk'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/ixiViews'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/SFPlayer'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/ScoreClock'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/ZArchive'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/KDTree'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Modality-toolkit'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/FPLib'
+	Compiling directory '/Users/michael/.local/share/SuperCollider/downloaded-quarks/autogui'
+	Compiling directory '/Users/michael/.local/share/SuperCollider/downloaded-quarks/Scintillator'
+	numentries = 2874520 / 70345120 = 0.041
+	12652 method selectors, 5560 classes
+	method table size 59748440 bytes, big table size 562760960
+	Number of Symbols 30705
+	Byte Code Size 1398865
+	compiled 1332 files in 1.68 seconds
+Info: 21 methods are currently overwritten by extensions. To see which, execute:
+MethodOverride.printAll
+compile done
+localhost : setting clientID to 0.
+internal : setting clientID to 0.
+WARNING: Called from Meta_GlobalPathDict:initClass, method Meta_String:scDir is deprecated and will be removed. Use Meta_Platform:resourceDir instead.
+The definition of 'Meta_String:scDir' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+2020-11-23 14:07:21.479 defaults[7114:619674] 
+The domain/default pair of (com.apple.speech.voice.prefs, SelectedVoiceName) does not exist
+Class tree inited in 0.37 seconds
+WARNING: server 'localhost' not running.
+/Users/michael/tank/super/Library/functions/Schafer.scd
+ERROR: syntax error, unexpected CLASSNAME, expecting $end
+  in interpreted text
+  line 1 char 15:
+  let SessionLoad = 1
+      ^^^^^^^^^^^
+  let s:so_save = &so | let s:siso_save = &siso | set so=0 siso=0
+-----------------------------------
+ERROR: Command line parse failed
+/Users/michael/tank/super/Library/functions/Session.vim
+Startup File Loaded
+/Users/michael/tank/super/Library/functions/clicktrack.scd
+/Users/michael/tank/super/Library/functions/convo.scd
+/Users/michael/tank/super/Library/functions/load.scd
+/Users/michael/tank/super/Library/functions/prep.scd
+WARNING: Called from Function:prTry, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/Library/functions/server-options.scd
+/Users/michael/tank/super/Library/functions/server-options.scd
+server 'localhost' already booting
+/Users/michael/tank/super/Library/functions/trek.scd
+/Users/michael/tank/super/Library/synthdefs/clk.scd
+/Users/michael/tank/super/Library/synthdefs/pianoteq.scd
+/Users/michael/tank/super/Library/synthdefs/synful.scd
+/Users/michael/tank/super/Library/synthdefs/synful2.scd
+/Users/michael/tank/super/Library/synthdefs/synful3.scd
+functions: 
+	prep: 	a Function
+	prepStereo: 	a Function
+	clicktrack: 	a Function
+	reverb: 
+		true_stereo: 	a Function
+		mono: 	a Function
+		single_stereo: 	a Function
+synthdefs: 
+	clk: 	a SynthDef
+Ctk init class runs
+WARNING: Called from Meta_BarMap:formatEvent, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+WARNING: Extension in '/Users/michael/.local/share/SuperCollider/downloaded-quarks/autogui/Classes/synthDefStorageExt.sc' overwrites SynthDef:build in main class library.
+WARNING: 
+WARNING: Extension in '/Users/michael/.local/share/SuperCollider/downloaded-quarks/autogui/Classes/synthDefStorageExt.sc' overwrites SynthDef:build in main class library.
+WARNING: Extension in '/Users/michael/.local/share/SuperCollider/downloaded-quarks/autogui/Classes/ArrayWarp.sc' overwrites ControlSpec:constrain in main class library.
+WARNING: Extension in '/Users/michael/.local/share/SuperCollider/downloaded-quarks/autogui/Classes/ArrayWarp.sc' overwrites ControlSpec:map in main class library.
+Intentional overwrites must be put in a 'SystemOverwrites' subfolder.
+*** Welcome to SuperCollider 3.11.1. *** For help type cmd-d.
+MIDI Sources:
+	MIDIEndPoint("IAC Driver", "Bus 1", 1222620153)
+	MIDIEndPoint("IAC Driver", "IAC Bus 2", 5356331)
+	MIDIEndPoint("IAC Driver", "IAC Bus 3", -649347929)
+	MIDIEndPoint("IAC Driver", "IAC Bus 4", 719229864)
+	MIDIEndPoint("CASIO USB-MIDI", "CASIO USB-MIDI", 602392681)
+	MIDIEndPoint("X-Touch", "INT", 1779843049)
+	MIDIEndPoint("X-Touch", "EXT", -181842512)
+	MIDIEndPoint("RME ARC", "RME ARC", 335163963)
+	MIDIEndPoint("ipMIDI", "Port 1", -1157686251)
+MIDI Destinations:
+	MIDIEndPoint("IAC Driver", "Bus 1", -1513577802)
+	MIDIEndPoint("IAC Driver", "IAC Bus 2", -723420066)
+	MIDIEndPoint("IAC Driver", "IAC Bus 3", -715708506)
+	MIDIEndPoint("IAC Driver", "IAC Bus 4", 1256206411)
+	MIDIEndPoint("CASIO USB-MIDI", "CASIO USB-MIDI", 1981760746)
+	MIDIEndPoint("X-Touch", "INT", -1972777358)
+	MIDIEndPoint("X-Touch", "EXT", -922613860)
+	MIDIEndPoint("RME ARC", "RME ARC", -1510553930)
+	MIDIEndPoint("ipMIDI", "Port 1", -1157686271)
+objc[7264]: Class CocoaEditorWindow is implemented in both /Users/michael/Library/Application Support/SuperCollider/Extensions/VSTPlugin/plugins/VSTPlugin.scx (0x10fd46570) and /Users/michael/Library/Application Support/SuperCollider/Extensions/VSTPlugin/plugins/VSTPlugin_supernova.scx (0x10fde0570). One of the two will be used. Which one is undefined.
+objc[7264]: Class EventLoopProxy is implemented in both /Users/michael/Library/Application Support/SuperCollider/Extensions/VSTPlugin/plugins/VSTPlugin.scx (0x10fd46598) and /Users/michael/Library/Application Support/SuperCollider/Extensions/VSTPlugin/plugins/VSTPlugin_supernova.scx (0x10fde0598). One of the two will be used. Which one is undefined.
+Booting server 'localhost' on address 127.0.0.1:57110.
+ERROR: API version mismatch: /Users/michael/Library/Application Support/SuperCollider/Extensions/KBVerb/untitled folder/FaustKBVerb.scx
+    This plugin is not compatible with SuperCollider >=3.9.0
+    The plugin has not been loaded; please find or compile a newer version.
+    (Plugin's API version: 2. Expected: 3)
+ERROR: API version mismatch: /Users/michael/Library/Application Support/SuperCollider/Extensions/KBVerb/untitled folder/KBVerb.scx
+    This plugin is not compatible with SuperCollider >=3.9.0
+    The plugin has not been loaded; please find or compile a newer version.
+    (Plugin's API version: 2. Expected: 3)
+VSTPlugin 0.4.1
+Found 0 LADSPA plugins
+Number of Devices: 6
+   0 : "Built-in Output"
+   1 : "HDMI"
+   2 : "Unknown USB Audio Device"
+   3 : "Merging RA"
+   4 : "Premiere Pro 6.0"
+   5 : "Digiface USB (23953833)"
+"Digiface USB (23953833)" Input Device
+   Streams: 4
+      0  channels 8
+      1  channels 8
+      2  channels 8
+      3  channels 8
+"Digiface USB (23953833)" Output Device
+   Streams: 5
+      0  channels 8
+      1  channels 8
+      2  channels 8
+      3  channels 8
+      4  channels 2
+SC_AudioDriver: sample rate = 48000.000000, driver's block size = 512
+SuperCollider 3 server ready.
+Requested notification messages from server 'localhost'
+localhost: server process's maxLogins (1) matches with my options.
+localhost: keeping clientID (0) as confirmed by server process.
+WARNING: Called from Song:init, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+unnecessary
+!!!
+a Condition
+a Function
+a FunctionList
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+a Part
+unnecessary_
+a Part
+descant_
+a Part
+unnecBass_
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ four bar intro ]
+1
+a Part
+tempo1_
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ adapted to ]
+2
+a Part
+tempo2_
+responds
+selector section
+args [ adapted to ]
+2
+a Part
+bass1_
+responds
+selector section
+args [ is adapted ]
+2
+a Part
+is adaptedTune_
+responds
+selector section
+args [ four bar intro ]
+1
+a Part
+leadIn_
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ higher metabolism ]
+3
+a Part
+bass3_
+responds
+selector section
+args [ higher metabolism ]
+3
+a Part
+higher metabolismTune_
+responds
+selector section
+args [ higher metabolism ]
+3
+a Part
+metabolism_
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ work, Sargon ]
+4
+a Part
+work, SargonTune_
+responds
+selector section
+args [ work, Sargon ]
+4
+a Part
+baseNoteWork_
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+-> 18
+Shared memory server interface initialized
+StageLimiter active
+WARNING: Called from Song:init, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+unnecessary
+!!!
+a Condition
+a Function
+a FunctionList
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+a Part
+unnecessary_
+a Part
+descant_
+a Part
+unnecBass_
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ four bar intro ]
+1
+a Part
+tempo1_
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ adapted to ]
+2
+a Part
+tempo2_
+responds
+selector section
+args [ adapted to ]
+2
+a Part
+bass1_
+responds
+selector section
+args [ is adapted ]
+2
+a Part
+is adaptedTune_
+responds
+selector section
+args [ four bar intro ]
+1
+a Part
+leadIn_
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ higher metabolism ]
+3
+a Part
+bass3_
+responds
+selector section
+args [ higher metabolism ]
+3
+a Part
+higher metabolismTune_
+responds
+selector section
+args [ higher metabolism ]
+3
+a Part
+metabolism_
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ work, Sargon ]
+4
+a Part
+work, SargonTune_
+responds
+selector section
+args [ work, Sargon ]
+4
+a Part
+baseNoteWork_
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+-> 18
+-> unnecessary
+[ a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part ]
+-> Song
+NodeProxy.audio(localhost, 2)
+Condition Met
+bass1
+is adaptedTune
+tempo2
+LOADED
+bass3
+metabolism
+higher metabolismTune
+work, SargonTune
+baseNoteWork
+[ a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part ]
+NodeProxy.audio(localhost, 2)
+Condition Met
+bass1
+is adaptedTune
+tempo2
+bass3
+metabolism
+higher metabolismTune
+work, SargonTune
+baseNoteWork
+FAILURE IN SERVER /n_set Node 1189 not found
+FAILURE IN SERVER /n_set Node 1190 not found
+FAILURE IN SERVER /n_set Node 1191 not found
+FAILURE IN SERVER /n_set Node 1192 not found
+responds
+selector section
+args [ four bar intro ]
+1
+a Part
+leadIn_
+-> P
+-> a Part
+WARNING: Called from Song:init, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+unnecessary
+!!!
+a Condition
+a Function
+a FunctionList
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+a Part
+unnecessary_
+a Part
+descant_
+a Part
+unnecBass_
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ four bar intro ]
+1
+a Part
+tempo1_
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ adapted to ]
+2
+a Part
+tempo2_
+responds
+selector section
+args [ adapted to ]
+2
+a Part
+bass1_
+responds
+selector section
+args [ is adapted ]
+2
+a Part
+is adaptedTune_
+responds
+selector section
+args [ four bar intro ]
+1
+a Part
+leadIn_
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ higher metabolism ]
+3
+a Part
+leadInB_
+responds
+selector section
+args [ higher metabolism ]
+3
+a Part
+bass3_
+responds
+selector section
+args [ higher metabolism ]
+3
+a Part
+higher metabolismTune_
+responds
+selector section
+args [ higher metabolism ]
+3
+a Part
+metabolism_
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ work, Sargon ]
+4
+a Part
+work, SargonTune_
+responds
+selector section
+args [ work, Sargon ]
+4
+a Part
+baseNoteWork_
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+-> 18
+-> unnecessary
+[ a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part ]
+-> Song
+NodeProxy.audio(localhost, 2)
+Condition Met
+bass1
+is adaptedTune
+tempo2
+bass3
+metabolism
+leadInB
+higher metabolismTune
+work, SargonTune
+baseNoteWork
+FAILURE IN SERVER /n_set Node 1720 not found
+WARNING: Called from Song:init, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+unnecessary
+!!!
+a Condition
+a Function
+a FunctionList
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+a Part
+unnecessary_
+a Part
+descant_
+a Part
+unnecBass_
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ four bar intro ]
+1
+a Part
+leadIn_
+responds
+selector section
+args [ four bar intro ]
+1
+a Part
+tempo1_
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ adapted to ]
+2
+a Part
+tempo2_
+responds
+selector section
+args [ adapted to ]
+2
+a Part
+bass1_
+responds
+selector section
+args [ is adapted ]
+2
+a Part
+is adaptedTune_
+responds
+selector section
+args [ adapted to ]
+2
+a Part
+leadInB_
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ higher metabolism ]
+3
+a Part
+bass3_
+responds
+selector section
+args [ higher metabolism ]
+3
+a Part
+higher metabolismTune_
+responds
+selector section
+args [ higher metabolism ]
+3
+a Part
+metabolism_
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ work, Sargon ]
+4
+a Part
+work, SargonTune_
+responds
+selector section
+args [ work, Sargon ]
+4
+a Part
+baseNoteWork_
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+WARNING: Called from Song:refreshArray, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+responds
+selector sections
+args [  ]
+-> 18
+-> unnecessary
+[ a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part ]
+-> Song
+NodeProxy.audio(localhost, 2)
+Condition Met
+bass1
+is adaptedTune
+leadInB
+tempo2
+bass3
+metabolism
+higher metabolismTune
+work, SargonTune
+baseNoteWork
+-> unnecessary
+[ a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part ]
+-> Song
+NodeProxy.audio(localhost, 2)
+Condition Met
+leadIn
+tempo1
+bass1
+is adaptedTune
+leadInB
+tempo2
+bass3
+metabolism
+higher metabolismTune
+work, SargonTune
+baseNoteWork
+compiling class library...
+	Found 850 primitives.
+	Compiling directory '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/Extensions'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Automation'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/JITLibExtensions'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Vowel'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/panola'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Freesound'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/FreeAfter'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/wslib'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/SynthDefPool'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/say'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/MathLib'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/VectorSpace'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Unit-Lib'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/BatLib'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/SpeakersCorner'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/AmbIEM'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/AllGui'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/FileLog'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Hilbert'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/XML'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/atk-sc3'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Ctk'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/ixiViews'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/SFPlayer'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/ScoreClock'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/ZArchive'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/KDTree'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Modality-toolkit'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/FPLib'
+	Compiling directory '/Users/michael/.local/share/SuperCollider/downloaded-quarks/autogui'
+	Compiling directory '/Users/michael/.local/share/SuperCollider/downloaded-quarks/Scintillator'
+	numentries = 2874520 / 70345120 = 0.041
+	12652 method selectors, 5560 classes
+	method table size 59748440 bytes, big table size 562760960
+	Number of Symbols 30705
+	Byte Code Size 1398865
+	compiled 1332 files in 1.69 seconds
+Info: 21 methods are currently overwritten by extensions. To see which, execute:
+MethodOverride.printAll
+compile done
+localhost : setting clientID to 0.
+internal : setting clientID to 0.
+WARNING: Called from Meta_GlobalPathDict:initClass, method Meta_String:scDir is deprecated and will be removed. Use Meta_Platform:resourceDir instead.
+The definition of 'Meta_String:scDir' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+2020-11-28 08:03:48.294 defaults[18295:1946001] 
+The domain/default pair of (com.apple.speech.voice.prefs, SelectedVoiceName) does not exist
+Class tree inited in 0.56 seconds
+WARNING: server 'localhost' not running.
+/Users/michael/tank/super/Library/functions/Schafer.scd
+compiling class library...
+	Found 850 primitives.
+	Compiling directory '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/Extensions'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Automation'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/JITLibExtensions'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Vowel'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/panola'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Freesound'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/FreeAfter'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/wslib'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/SynthDefPool'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/say'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/MathLib'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/VectorSpace'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Unit-Lib'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/BatLib'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/SpeakersCorner'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/AmbIEM'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/AllGui'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/FileLog'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Hilbert'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/XML'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/atk-sc3'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Ctk'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/ixiViews'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/SFPlayer'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/ScoreClock'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/ZArchive'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/KDTree'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Modality-toolkit'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/FPLib'
+	Compiling directory '/Users/michael/.local/share/SuperCollider/downloaded-quarks/autogui'
+	Compiling directory '/Users/michael/.local/share/SuperCollider/downloaded-quarks/Scintillator'
+	numentries = 2880081 / 70350680 = 0.041
+	12653 method selectors, 5560 classes
+	method table size 59792920 bytes, big table size 562805440
+	Number of Symbols 30706
+	Byte Code Size 1398884
+	compiled 1332 files in 1.47 seconds
+Info: 21 methods are currently overwritten by extensions. To see which, execute:
+MethodOverride.printAll
+compile done
+localhost : setting clientID to 0.
+internal : setting clientID to 0.
+WARNING: Called from Meta_GlobalPathDict:initClass, method Meta_String:scDir is deprecated and will be removed. Use Meta_Platform:resourceDir instead.
+The definition of 'Meta_String:scDir' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+2020-12-02 11:30:04.084 defaults[36923:3199706] 
+The domain/default pair of (com.apple.speech.voice.prefs, SelectedVoiceName) does not exist
+Class tree inited in 0.22 seconds
+WARNING: server 'localhost' not running.
+/Users/michael/tank/super/Library/functions/Schafer.scd
+ERROR: syntax error, unexpected CLASSNAME, expecting $end
+  in interpreted text
+  line 1 char 15:
+  let SessionLoad = 1
+      ^^^^^^^^^^^
+  let s:so_save = &so | let s:siso_save = &siso | set so=0 siso=0
+-----------------------------------
+ERROR: Command line parse failed
+/Users/michael/tank/super/Library/functions/Session.vim
+Startup File Loaded
+/Users/michael/tank/super/Library/functions/clicktrack.scd
+/Users/michael/tank/super/Library/functions/convo.scd
+/Users/michael/tank/super/Library/functions/load.scd
+/Users/michael/tank/super/Library/functions/prep.scd
+WARNING: Called from Function:prTry, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+PATH: /Users/michael/tank/super/Library/functions/server-options.scd
+/Users/michael/tank/super/Library/functions/server-options.scd
+server 'localhost' already booting
+/Users/michael/tank/super/Library/functions/trek.scd
+ERROR: syntax error, unexpected CLASSNAME, expecting $end
+  in interpreted text
+  line 1 char 15:
+  let SessionLoad = 1
+      ^^^^^^^^^^^
+  let s:so_save = &so | let s:siso_save = &siso | set so=0 siso=0
+-----------------------------------
+ERROR: Command line parse failed
+/Users/michael/tank/super/Library/synthdefs/Session.vim
+/Users/michael/tank/super/Library/synthdefs/clk.scd
+/Users/michael/tank/super/Library/synthdefs/pianoteq.scd
+ERROR: syntax error, unexpected '(', expecting $end
+  in interpreted text
+  line 56 char 1:
+  ( //tune up sound - sounds good with gongs...
+  ^
+  ~tuneUp = { |freq=150 amp=0.2 out=0|
+-----------------------------------
+ERROR: Command line parse failed
+/Users/michael/tank/super/Library/synthdefs/reedy.scd
+/Users/michael/tank/super/Library/synthdefs/synful.scd
+/Users/michael/tank/super/Library/synthdefs/synful2.scd
+ERROR: syntax error, unexpected NAME, expecting $end
+  in interpreted text
+  line 69 char 9:
+  compiling class library...
+  ^^^^^^^^^
+  	Found 850 primitives.
+-----------------------------------
+ERROR: Command line parse failed
+/Users/michael/tank/super/Library/synthdefs/synful3.scd
+functions: 
+	prep: 	a Function
+	prepStereo: 	a Function
+	clicktrack: 	a Function
+	reverb: 
+		true_stereo: 	a Function
+	
+	mono: 	a Function
+		single_stereo: 	a Function
+synthdefs: 
+	clk: 	a SynthDef
+Ctk init class runs
+WARNING: Called from Meta_BarMap:formatEvent, method Object:asInt is deprecated and will be removed.
+The definition of 'Object:asInt' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+WARNING: Extension in '/Users/michael/.local/share/SuperCollider/downloaded-quarks/autogui/Classes/synthDefStorageExt.sc' overwrites SynthDef:build in main class library.
+WARNING: Extension in '/Users/michael/.local/share/SuperCollider/downloaded-quarks/autogui/Classes/ArrayWarp.sc' overwrites ControlSpec:constrain in main class library.
+WARNING: Extension in '/Users/michael/.local/share/SuperCollider/downloaded-quarks/autogui/Classes/ArrayWarp.sc' overwrites ControlSpec:map in main class library.
+Intentional overwrites must be put in a 'SystemOverwrites' subfolder.
+*** Welcome to SuperCollider 3.11.1. *** For help type cmd-d.
+MIDI Sources:
+	MIDIEndPoint("IAC Driver", "Bus 1", 1222620153)
+	MIDIEndPoint("IAC Driver", "IAC Bus 2", 5356331)
+	MIDIEndPoint("IAC Driver", "IAC Bus 3", -649347929)
+	MIDIEndPoint("IAC Driver", "IAC Bus 4", 719229864)
+	MIDIEndPoint("CASIO USB-MIDI", "CASIO USB-MIDI", 602392681)
+	MIDIEndPoint("X-Touch", "INT", 1779843049)
+	MIDIEndPoint("X-Touch", "EXT", -181842512)
+	MIDIEndPoint("RME ARC", "RME ARC", 335163963)
+	MIDIEndPoint("ipMIDI", "Port 1", -1157686251)
+MIDI Destinations:
+	MIDIEndPoint("IAC Driver", "Bus 1", -1513577802)
+	MIDIEndPoint("IAC Driver", "IAC Bus 2",
+	MIDIEndPoint("IAC Driver", "Bus 1", 1222620153)
+	MIDIEndPoint("IAC Driver", "IAC Bus 2", 5356331)
+	MIDIEndPoint("IAC Driver", "IAC Bus 3", -649347929)
+	MIDIEndPoint("IAC Driver", "IAC Bus 4", 719229864)
+	MIDIEndPoint("CASIO USB-MIDI", "CASIO USB-MIDI", 602392681)
+	MIDIEndPoint("X-Touch", "INT", 1779843049)
+	MIDIEndPoint("X-Touch", "EXT", -181842512)
+	MIDIEndPoint("RME ARC", "RME ARC", 335163963)
+	MIDIEndPoint("ipMIDI", "Port 1", -1157686251)
+MIDI Destinations:
+	MIDIEndPoint("IAC Driver", "Bus 1", -1513577802)
+	MIDIEndPoint("IAC Driver", "IAC Bus 2", -723420066)
+	MIDIEndPoint("IAC Driver", "IAC Bus 3", -715708506)
+	MIDIEndPoint("IAC Driver", "IAC Bus 4", 1256206411)
+	MIDIEndPoint("CASIO USB-MIDI", "CASIO USB-MIDI", 1981760746)
+	MIDIEndPoint("X-Touch", "INT", -1972777358)
+	MIDIEndPoint("X-Touch", "EXT", -922613860)
+	MIDIEndPoint("RME ARC", "RME ARC", -1510553930)
+	MIDIEndPoint("ipMIDI", "Port 1", -1157686271)
+Booting server 'localhost' on address 127.0.0.1:57110.
+ERROR: API version mismatch: /Users/michael/Library/Application Support/SuperCollider/Extensions/KBVerb/untitled folder/FaustKBVerb.scx
+    This plugin is not compatible with SuperCollider >=3.9.0
+    The plugin has not been loaded; please find or compile a newer version.
+    (Plugin's API version: 2. Expected: 3)
+ERROR: API version mismatch: /Users/michael/Library/Application Support/SuperCollider/Extensions/KBVerb/untitled folder/KBVerb.scx
+    This plugin is not compatible with SuperCollider >=3.9.0
+    The plugin has not been loaded; please find or compile a newer version.
+    (Plugin's API version: 2. Expected: 3)
+VSTPlugin 0.4.1
+objc[37073]: Class CocoaEditorWindow is implemented in both /Users/michael/Library/Application Support/SuperCollider/Extensions/VSTPlugin/plugins/VSTPlugin.scx (0x109ca1570) and /Users/michael/Library/Application Support/SuperCollider/Extensions/VSTPlugin/plugins/VSTPlugin_supernova.scx (0x109d3b570). One of the two will be used. Which one is undefined.
+objc[37073]: Class EventLoopProxy is implemented in both /Users/michael/Library/Application Support/SuperCollider/Extensions/VSTPlugin/plugins/VSTPlugin.scx (0x109ca1598) and /Users/michael/Library/Application Support/SuperCollider/Extensions/VSTPlugin/plugins/VSTPlugin_supernova.scx (0x109d3b598). One of the two will be used. Which one is undefined.
+Found 0 LADSPA plugins
+Number of Devices: 6
+   0 : "Built-in Output"
+   1 : "HDMI"
+   2 : "Unknown USB Audio Device"
+   3 : "Merging RA"
+   4 : "Premiere Pro 6.0"
+   5 : "Digiface USB (23953833)"
+"Digiface USB (23953833)" Input Device
+   Streams: 4
+      0  channels 8
+      1  channels 8
+      2  channels 8
+      3  channels 8
+"Digiface USB (23953833)" Output Device
+   Streams: 5
+      0  channels 8
+      1  channels 8
+      2  channels 8
+      3  channels 8
+      4  channels 2
+SC_AudioDriver: sample rate = 48000.000000, driver's block size = 512
+SuperCollider 3 server ready.
+Requested notification messages from server 'localhost'
+localhost: server process's maxLogins (1) matches with my options.
+localhost: keeping clientID (0) as confirmed by server process.
+Shared memory server interface initialized
+StageLimiter active
+-> Event
+s.forceReboot

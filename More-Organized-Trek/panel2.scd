@@ -47,14 +47,6 @@ P('high pitched noise',start:'staggers',music:
 	}
 );
 /*SPOCK:*/[" Just a moment, Doctor. ", [12,11,13,11,5.5,5].dm('a-')].addLine; 
-~justTheTune={ |key function syl| P( (key++"Tune").asSymbol, key, music:
-	{ 
-		var pbind = Song.currentSong.pbind[key] ;
-		function.isNil.if{function={|i|i}};
-		function.value(pbind).play;
-	}, syl:syl
-	;
-).value};
 
 //P(\JustTune,start:\Just,music:Song.currentSong.pbind[\Just]
 //);
@@ -581,7 +573,7 @@ P(\bass11,start:'To be',music:[
 	].p
 );
 //	["Your captain has an excellent body, Doctor McCoy. I ","r"].addLine; 
-//	["compliment you both on the condition in which you maintained it. ","r",].addLine; 
+//	["compliment you both on the condition in which you maintained it. ","r",].addLine;
 ///*SPOCK:*/[" What are your plans for it? Can you exchange places again when you wish? ","r",].addLine; 
 ///*KIRK:*/[" Have no fear. Your captain is quite unharmed, although his mind generates insufficient energy for him to speak from there as I do.","r",].addLine; 
 /*SPOCK:*/[" Doctor? ","d4 a-3",].addLine; 

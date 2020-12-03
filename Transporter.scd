@@ -24,7 +24,6 @@ x = {
 	activate = BPF.ar(activate, [775,1550,2325], 13.reciprocal).sum * 0.5;
 
 
-
 	// Beam Sound
 
 	beam = LFSaw.ar(467.1, 1, 0.5, 0.5 ) - 0.5;

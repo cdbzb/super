@@ -153,10 +153,10 @@ s.waitForBoot({
 
 		Gendy2.ar(minfreq:freq-width,maxfreq:freq+width)
 		=>Mix.ar(_) *0.5
-		+Gendy1.ar(minfreq:freq-width,maxfreq:freq+width) 
+		+Gendy1.ar(minfreq:freq-width,maxfreq:freq+width)
 		* 0.1 * \amp.kr(0.5)
-		=> (PlateReverb.ar(_,10) ++ (_*0.5)) => Mix.ar(_)
-		* Env.asr(\attack.kr(0.5),1,8).kr(2,gate:gate)
+		=> (PlateReverb.ar(_,10,mix:\mix.kr(1)) ++ (_*0.5)) => Mix.ar(_)
+		* Env.asr(\attack.kr(0.5),1,\release.kr(8)).kr(2,gate:gate)
 		=>Out.ar(\out.kr(0),_)
 	}).add; //}}}
 
@@ -194,14 +194,14 @@ SynthDef(\sparkTriangle,{
 				}).add;
 
 //TODO generalize this - seperate into proto
-//	~synful=( // creates a nodeproxy playing on a private bus - .node and .bus respectively 
+//	~synful=( // creates a nodeproxy playing on a private bus - .node and .bus respectively
 //		bus: Bus.audio(s,2),
 //		controller: nil,
 //		node:nil,
 //		params:(expression:11),
 //		expEnv:NodeProxy.control(s,1)!16, //expEnv[n].source={} is the jam....
 //		fs:Array.newClear(16), //used internally by activate
-//		activate:{|self chan=0 update=0.1| 
+//		activate:{|self chan=0 update=0.1|
 //			self.expEnv[chan].source=64;
 //			{ var ch=chan;
 //				loop({
@@ -213,11 +213,11 @@ SynthDef(\sparkTriangle,{
 //		},
 //		expression:{|self expression channel=0 | self.controller.sendMidi("B0".asHexIfPossible+channel,11,expression)},
 //		plugin: 'SynfulOrchestra.vst',
-//		setprog:{|self program bank channel| 
+//		setprog:{|self program bank channel|
 //			self.controller.sendMidi("B0".asHexIfPossible+channel,0,bank);//set bank then
 //			self.controller.sendMidi("C0".asHexIfPossible+channel,program); //set program
 //		},
-//		init: { |self| //create node and controller + load plug 
+//		init: { |self| //create node and controller + load plug
 //			self.controller=VSTPluginController(Synth(\vsti,[\out,self.bus]));
 //			self.node=NodeProxy.audio(s,2).play;
 //			self.node.source={In.ar(self.bus.index,2)};

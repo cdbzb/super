@@ -494,8 +494,8 @@ Part {
 		//////////delete this line if not work
 		//(music.class=Routine).if(music.play);
 
-		//TempoClock.sched(when,this)
-		parent.clock.sched(when,this)
+		TempoClock.sched(when,this)
+//		parent.clock.sched(when,this)
 		//AppClock.sched(when,this)
 		//SystemClock.sched(when,this)
 	}
@@ -510,7 +510,7 @@ Part {
 	}
 
 	//play in context of parent song
-	p { 
+	p {
 		(start>=parent.cursor).if{
 			var when=this.calcTime;
 			this.sched(when);

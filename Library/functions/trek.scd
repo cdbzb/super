@@ -242,6 +242,14 @@
 		|vsti|
 		s.freeMyDefaultGroup;
 		TempoClock.all.do(_.clear);
+		SystemClock.do(_.clear);
 		~vstRegistry.do{|i| 16.do{|x| i.midi.allNotesOff(x)}}
-	}//}}}
+	};//}}}
+
+	~justTheTune={ |key function syl| P( (key++"Tune").asSymbol, key, music: {
+		var pbind = Song.currentSong.pbind[key] ;
+		function.isNil.if{function={|i|i}};
+		function.value(pbind).play;
+	}, syl:syl ;).value};
+
 )

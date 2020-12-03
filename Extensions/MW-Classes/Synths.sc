@@ -1,5 +1,6 @@
 Synths {
 	var <>synths;
+	var defName;
 
 	*new {|def ...args|
 		^super.new.init(def,args)
@@ -7,6 +8,7 @@ Synths {
 
 	init {|def args|
 		var voices = args.collect(_.size).inject(0,(_ max: _));
+		defName = def;
 		args.postln;
 		synths=Array.newClear(voices);
 		args.flop.do({|i x| synths[x]=Synth(def,i)})
@@ -16,6 +18,10 @@ Synths {
 		//^this.synths;
 
 	}
+	add {|...args|
+		synths=synths.add(Synth(defName,args))
+	}
+
 	free {
 		synths.do(_.free)
 	}
@@ -31,7 +37,7 @@ Synths {
 	}
 
 	map { |control bus|
-		(bus.numChannels==1).if( 
+		(bus.numChannels==1).if(
 			{synths.do(_.map(control,bus))}
 			,
 			{bus.numChannels.do{|i| synths[i].map(control,bus.subBus(i))}}

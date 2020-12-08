@@ -219,6 +219,8 @@
 	);
 P(\workChord,syl:1,start:'work, Sargon',music:{|p d|
 
+	var a=Scale.new((0..8),pitchesPerOctave:9);
+
 	//b=Effect(FreeVerb.ar(_,0.9,1),out:1).bus.index;
 	var b=Effect({|i|PlateReverb.ar(i,0.8,mix:Line.kr(0.5,1,30),decayTime:0.7*Gendy1.kr(minfreq:1/10,maxfreq:2).unipolar)[0]},inputChannels:2).bus.index;
 	var length = 2;
@@ -236,7 +238,8 @@ P(\workChord,syl:1,start:'work, Sargon',music:{|p d|
 		[dur:0.3,root:-1,scale:a,out:b,amp:Pseries(0.1,-0.01),degree:( 0..9 ).q(inf),legato:[3,0.5,0.5].q(inf)*2.2].p
 		=>Pfindur(length+0.3,_)
 		=>_.play;
-		(strum:0.04,degree:[0,2,4]-1,scale:Scale.whole,root:9,dur:length).play
+		(strum:0.04,degree:[0,2,4]-1,scale:Scale.whole,root:9,dur:length).play;
+	(release:5,type:\tuningGong,amp:0.02,freq:1.dm('g')).play
 }
 );
 P(\baseNoteWork,syl:1,start:'work, Sargon',music:{|p b|
@@ -247,23 +250,26 @@ P(\baseNoteWork,syl:1,start:'work, Sargon',music:{|p b|
 	(freq:[1,3,5,11,13,15].df('g',scale:\whole),strum:0.05).play
 }
 );
-["you have to get out before you","f5 d- e- f a f g a"].addLine;//4
-	~justTheTune.('get out');
-P(\baseNoteOut,syl:3,start:'get out',music:{|p b|
+["(boom) you have to get out before you","f4 f5 d- e- f a f g a"].addLine;//4
+	~justTheTune.('get out',(_.drop(1)),syl:0);
+P(\baseNoteOut,syl:4,start:'get out',music:{|p b|
 	(
 		freq:[1 ,11 ].df('a',octave:2 ),
 		instrument:\sawSynthSustain,
 	).play;
-	(freq:[1,3,5,11,13,15].df('g',scale:\whole),strum:0.05).play
+	(freq:[1,3,5,11,13,15].df('g',scale:\whole),strum:0.05).play;
+	(release:5,type:\tuningGong,amp:0.02,freq:1.dm('a')).play
+
 }
 );
-P(\outChord,syl:3,start:'get out',music:{|p d|
-
+P(\outChord,syl:4,start:'get out',music:{|p d|
 	//b=Effect(FreeVerb.ar(_,0.9,1),out:1).bus.index;
+	var a=Scale.new((0..8),pitchesPerOctave:9);
 	var b=Effect({|i|PlateReverb.ar(i,0.8,mix:Line.kr(0.5,1,30),decayTime:0.7*Gendy1.kr(minfreq:1/10,maxfreq:2).unipolar)[0]},
 	out:2,
 	inputChannels:2).bus.index;
 	var length = 2;
+
 	[
 		degree:
 		Ptuple([
@@ -271,7 +277,7 @@ P(\outChord,syl:3,start:'get out',music:{|p d|
 			,( 40..56 ).q(inf) + 5.rand, (40..60).q(inf) ])
 			,
 			root:[0,3,6]+2,scale:a,dur:0.05,legato:1,
-			out:b+Pwhite(0,1)
+//			out:b+Pwhite(0,1)
 		] .p
 		=>Pfindur(length+0.5,_)
 		=>_.play;
@@ -317,20 +323,155 @@ P(\baselineCondition,start:'your condition',music:{|p b|
 	].pp
 }
 );
-["r I can continue in this body for for several hours","d3 f#4 d f# e c# d e d g3 a2 e4 d c# c# b3"].addLine;//10
+["r I can continue in this body for for several hours","d3 f#4 d f# e c# d e d g3 e2 e4 d c#  b3 a"].addLine;//10
 ~justTheTune.('several hours');
-["fortunate (dum dum dum dum) we will vacate at once...","c5 a4 e a3 b c a2 e4 f# g# e g# a#"].addLine;//11
+~continueQuarters = Song.parseBeats('several hours',[1/4,1/4,1/4,1/4,1/4,1/4,1/4,1/4,1/2,1/2]);
+P(\continueSnare,start:'continue',music:
+{
+	var a="....x..x".asDrumPat(4).list * ~continueQuarters.stutter(8) => _.q;
+	var b="x.x...x.".asDrumPat(4).list * ~continueQuarters.stutter(8) => _.q;
+	[instrument:\snare,dur:a,amp:0.03].p.fin(8).play;
+	[instrument:\kick,dur:b].p.fin(4).play;
+}
+);
+P(\reedHours,start:'several hours',music:{ |p b|
+	(instrument:\reedy,freq: 1.df('a') ).play
+}
+);
+P(\baselineHours,start:'several hours',music:{|p b|
+	[
+		freq:[ 11,7,4,2,3,4,5 ].df('d',octave:3).q,
+		dur:Song.parse('several hours',[4,4,2,2,1,1,1,1]).q,
+	].pp
+}
+);
+["fortunate (dum dum dum dum) we will vacate at once...",[14,12,7,5,6,7, 1,11,12,13,11,13,13].dm('g',octave:4,scale:\mixolydian,)].addLine;//11
+~justTheTune.('fortunate');
+P(\baseNoteFortunate,start:'fortunate',syl:5,music:{ |p b|
+	(instrument:\sawSynthSustain,freq:[1,11].df('g',octave:2),att:0.6,dur:b[6..].sum).play
+}
+);
+P(\reedChordFortunate,lag:-0.15,start:'fortunate',music:{ |p b|
+		(freq:[1,3,5,7].df('d',scale:\minor),out:{4.rand}!4, instrument:\reedy,sustain:1,release:4,amp:0.08 ).play 
+	}
+);
 ["/*SPOCK*/ This woman will assist me. (boom boom)",[11,5,6,7,5,11,5, 2,2].dm('c')].addLine;
-["(to Chapel) (boom) /*You will*/ take me to your","r"].addLine;
-["(boom) pharmacology laboratory. ",[11,7,11,5,7,4,5,4,3].dm('f',scale:\mixolydian)].addLine;
-["(They leave.) ","r"].addLine;
+~justTheTune.('woman',_.fin(7));
+P(\baseNoteWoman,start:'woman',music:{ |p b|
+	[
+		instrument:\sawSynthSustain,
+		freq:[1,2,2,3].df('c',octave:2,scale:\minor).q,
+		dur:p.parse('woman',[7,1,1]).q,
+	].pp
+	}
+);
+["(to Chapel) (boom) /*You will*/ take me to your",[1,11,7,6,5].dm('e-')].addLine;
+~justTheTune.('take me');
+P(\baseNoteTake,start:'take me',music:{|p b|
+	[
+		instrument:\sawSynthSustain,
+		freq:[3,13].df('c',octave:2,scale:\minor).q,
+		dur:p.parse('take me',[[1,1,2/5],[3/5,1,1]]).q,
+	].pp
+}
+);
+["(boom) pharmacology laboratory. ",[1,11,7,11,5,7,4,5,4,3].dm('f',scale:\mixolydian)].addLine;
+~justTheTune.('pharmacology',{|i|i.drop(1)},syl:0);
+P(\soundEffectPharmacology,lag:0.26,start:'pharmacology',music:{|p b|
+	(type:\tuneUp,freq:1.df('c',octave:4),amp:0.01).play
+}
+);
+P(\basedNotePharmacology,start:'pharmacology',music:{|p b|
+	(instrument:\sawSynthSustain,\freq:[1].df('f',octave:2 )).play;
+}
+);
+["(They leave.) ","r",[4]].addLine;
+P(\door,start:'They leave',music:{|p b|
+	var line= Line.kr(0,1,b.sum);
+	var panBus=Bus.audio(s,1);
+	{WhiteNoise.ar(0.03)}.play.dur(b.sum);
+	(instrument:\stringyy,freq:[1,11].df('b-',octave:2 ),
+	out:panBus.index,
+	amp:0.4,
+	dur:b.sum).play;
+	{In.ar(panBus.index,1)=>Pan2.ar(_,Line.kr(-1,1,b.sum))}.play(addAction:\addToTail);
+	[
+		freq:[7,11,7,6,5,4,3,2].df('b-',octave:4, ).q,
+		dur:b.sum/8,
+		legato:2,
+	].pp
+}
+);
 // idea  do the doors with  additive synthesis
-["/*KIRK*/ (frown) Bones, what? ","r"].addLine;
-["/*MCCOY*/ It was close, Jim. You ","r"].addLine;
-["both barely got back alive. ","r"].addLine;
-["Unless the formula works, we can't risk it again.","r"].addLine;
+["/*KIRK*/ (frown) Bones, what?, it was", [7,17,14,15,15].dm('c',octave:3)].addLine;
+~justTheTune.('frown',{|i| i.drop(1)},syl:0);
+P(\frownFrown,start:'frown',music:{|p b|
 
+			var function={|freq out| {
+				Array.fill(30,{freq.pareto(3)})
+				=>{|j| var i = \freq.kr(j,8);
+					FSinOsc.ar(i,0,24*i.reciprocal**2
+						*Env.linen(2.5,10, 14.rand).kr(2)
+					)
+				}
+				=>Mix.ar(_)}.play(s,out) };
+			function.(300,0);
+			function.(900,3);
+			function.(1900,1);
+}
+);
+["/*MCCOY*/ close, Jim. You both barely got back a -- ",[13,5,6,12,11,7,11,12,7].dm('c',octave:4,scale:\melodicMinor )].addLine;
+~justTheTune.('close');
+~justTheTune.('barely',{|i| i.drop(2) => Pmul(\freq,[1/2,1],_) =>Pbindf(_,\instrument,\stringyy,\mix,0.1)},syl:1);
+P(\barelyRead8,start:'barely',lag:0.1,syl:2,music:{|p b|
+	(
+		instrument:\reedy,
+		freq:[1,3,11,13].df('f',octave:4),
+		//lag:0.1,
+		sustain:1,
+		out:{4.rand}!4,
+		release:4,
+		amp:0.05
+	).play 
+});
+P(\firstChord,start:'barely',music:{|p b|
+	(
+		freq:[1,3,5,11].df('c',scale:\minor),
+		strum:0.05,
+	).play;
+	(att:0.8,instrument:\sawSynth,rel:3,freq:[1,11].df('c',octave:2 )).play
+});
+["live. Unless the formula works, we can't risk it again.", [11.5,11,5,3,11,7,6,7].dm('e-') ++ [5,5,11,5,3,1].dm('f#',scale:\minor) ].addLine;
+~justTheTune.('risk it');
+~justTheTune.('risk it ',{|i| i.drop(1) => Pbindf(_,\instrument,\sawSynth,)=>Pmul(\freq,0.5,_)},syl:0);
+P(\reedPedalRisk,start:'risk it',music:{|p b|
+
+	[release:5,sustain:1,amp:0.01!2,out:3, freqLag:1,instrument:\reedy,
+		freq:[ \r,[6, 11 ],[5,11],[5.5,7] ].df('b-',3).q,
+		dur:p.parse('risk it',[4,3,3,4])+[0,0,0,5]=>_.q ].pm(\reedy).play
+}
+);
+//MUTEDP(\dingRisk,start:'risk it',syl:0,music: {|p b|
+	//MUTED{Array.fill(50,{500.pareto(2)})=>FSinOsc.ar(_,0,0.01* Env.perc(0,3).kr(2,gate:1))=>Mix.ar(_)}.play
+//MUTED}
+//MUTED);
+P(\highChords,start:'risk it',music:{|p b|
+	[
+		freq: [[5,11,13].df('e',tuning:\sept1),[5,11,13].df('e-',tuning:\sept1),[11,13,15].df('b-',octave:4,tuning:\sept1),[3,5,11].df('f#',scale:\minor,tuning:\sept1)] .q,
+		amp:0.06,
+		dur:p.parse('risk it',[1,6,3,4]).q,
+		freqLag:1,
+		width:40,
+		mix:0,
+
+	].pm(\stringyy)
+	.play
+}
+);
 )
 asCompileString
 a=Harmonics()
-a.ramp(1,1).size
+a.ramp(1,1).sizeS
+c=SystemClock.seconds;Song.play
+SystemClock.seconds-c
+

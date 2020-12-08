@@ -1,5 +1,5 @@
 ~cents=2**((1200/_).reciprocal);
-( ~reedy = { |freq = 400|
+( ~reedy = { |freq = 400 sustain = 3 release = 9 amp = 0.1|
 	{
 		var numberOfPartials = s.sampleRate/freq/2 => _.floor => _.asInteger;
 		var detune = 25;//cents
@@ -12,7 +12,7 @@
 			*(1..numberOfPartials) *blur,
 			0
 			,
-			0.1 *
+			amp *
 			((1..numberOfPartials)*2).reciprocal
 			//higr number is darker
 			**rrand(1.0,2.0)
@@ -22,14 +22,17 @@
 		)
 
 		=>Mix.ar(_) =>_.tanh
-		* Env.linen(0.5,3,9).kr(2,gate:1)
+		* Env.linen(0.5,sustain,release).kr(2,gate:\gate.kr(1))
 		=> Out.ar((0..3).choose,_)
 	}.play };
-
-Event.addEventType(\reedy,{var freq= ~freq; topEnvironment.use{~reedy.(freq)}},(type:\on,amp:0.1,freq:300));
+Event.addEventType(\reedy,{var args= [ ~freq,~sustain,~release,~amp ]; topEnvironment.use{~reedy.(*args)}},(type:\note,amp:0.1,freq:300,sustain:3,release:9));
 );
+a = ~reedy.(release:1,sustain:7);
+a.trace;
+a.controlNames
+a.set(\freq,290)
 ( //rising gongs no globals version
-~gong = { |freq group tolerance = 0.03 lowest=400 |
+~gong = { |freq group tolerance = 0.03 lowest=400 amp=0.1 release=20 |
 	freq.isNil.if  { \help.postln; }
 	{ {
 		var even = Array.rand(100,lowest,20000);
@@ -39,13 +42,13 @@ Event.addEventType(\reedy,{var freq= ~freq; topEnvironment.use{~reedy.(freq)}},(
 		SinOsc.ar(even*VarLag.kr(\transpose.kr(1),\lag.kr(5),warp:\exp),0,0.01*blend)
 		* blend
 		=> Mix.ar(_)
-		* Env.linen([ 0,0,0,5 ].choose,8,20).kr(2,gate:1)
-		* 1
+		* Env.linen([ 0,0,0,5 ].choose,8,release).kr(2,gate:1)
+		* 10 * amp
 		=> Out.ar(4.rand,_)
 	}.play(group ? s); }
     };
 Event.addEventType(\tuningGong,{
-	    var args = [~freq,~group,~tolerance,~lowest];
+	    var args = [~freq,~group,~tolerance,~lowest,~amp,~release];
 	    topEnvironment.use{~gong.(*args)}
     },(freq:400,lowest:300,tolerance:0.03,group:s))
 );

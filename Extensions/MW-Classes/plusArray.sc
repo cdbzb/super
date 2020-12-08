@@ -1,19 +1,19 @@
 + Array {
-	asDegrees { |root=0 octave=5 scale=\major| 
+	asDegrees { |root=0 octave=5 scale=\major tuning| 
 		^this.collect{|i| 
-			i.asDegrees(root,octave,scale)
+			i.asDegrees(root,octave,scale,tuning)
 		}
 	}
 
-	degreescps { |root=0 octave=5 scale=\major|
+	degreescps { |root=0 octave=5 scale=\major tuning|
 		^this.collect{|i|
-			i.degreescps(root,octave,scale)
+			i.degreescps(root,octave,scale,tuning)
 		}
 	}
 
-	degreesmidi {|root=0 octave=5 scale=\major|
+	degreesmidi {|root=0 octave=5 scale=\major tuning|
 		^this.collect{|i|
-			i.degreesmidi(root,octave,scale)
+			i.degreesmidi(root,octave,scale,tuning)
 		}
 	}
 
@@ -48,8 +48,12 @@
 }
 
 + SimpleNumber {
-	asDegrees { |root=0 octave=5 scale=\major| 
+	asDegrees { |root=0 octave=5 scale=\major tuning| 
 		var i=this;
+		scale = Scale.at(scale,tuning).deepCopy;
+		tuning !? {|i|scale.tuning_(i)};
+		scale.postln;
+
 		(root.class==Symbol).if{ root=
 			(
 				c:0,'d-':1,'c#':1 ,d:2,'d#':3,'e-':3,e:4,f:5,'f#':6,'g-':6,g:7,'g#i':8,'a-':8,a:9,'a#':10,'b-':10,b:11,
@@ -59,19 +63,20 @@
 		i=i-1; 
 		^[
 			(i / 10).floor * 12, 
-			Scale.at(scale)[i % 10]
-		].sum.asInteger
+			scale[i % 10]
+		].sum
+		//.asInteger
 
 		+ (i.frac*2)
 		+root+(octave*12)
 	}
 
-	degreesmidi {|root=0 octave=5 scale=\major|
-		^this.asDegrees(root,octave,scale)
+	degreesmidi {|root=0 octave=5 scale=\major tuning|
+		^this.asDegrees(root,octave,scale,tuning)
 	}
 
-	degreescps { |root=0 octave=5 scale=\major|
-		^this.asDegrees(root,octave,scale).midicps
+	degreescps { |root=0 octave=5 scale=\major tuning|
+		^this.asDegrees(root,octave,scale,tuning).midicps
 	}
 
 	q {

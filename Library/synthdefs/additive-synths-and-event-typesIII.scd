@@ -1,35 +1,7 @@
 ~cents=2**((1200/_).reciprocal);
-( ~reedy = { |freq = 400|
-	{
-		var numberOfPartials = s.sampleRate/freq/2 => _.floor => _.asInteger;
-		var detune = 25;//cents
-		var noise = Array.rand(numberOfPartials,~cents.(detune),~cents.(detune).reciprocal);
-		var line = Line.kr(1,0,10)+LFBrownNoise1.kr().range(0,0.5);
-		var blur = noise*line+(1-line);
-		SinOsc.ar(
-			freq
-			+SinOsc.kr(5).range(0,1)
-			*(1..numberOfPartials) *blur,
-			0
-			,
-			0.1 *
-			((1..numberOfPartials)*2).reciprocal
-			//higr number is darker
-			**rrand(1.0,2.0)
-			//makes is organ-y
-			*Array.fill(100,{[0,1,1,1].choose})
-
-		)
-
-		=>Mix.ar(_) =>_.tanh
-		* Env.linen(0.5,3,9).kr(2,gate:1)
-		=> Out.ar((0..3).choose,_)
-	}.play };
-
-Event.addEventType(\reedy,{var freq= ~freq; topEnvironment.use{~reedy.(freq)}},(type:\on,amp:0.1,freq:300));
-);
+~partialsBelowNyquist = {|freq| s.sampleRate/2/freq => _.floor};
 ( //rising gongs no globals version
-~gong = { |freq group tolerance = 0.03 lowest=400 |
+~gong = { |freq group tolerance = 0.03 lowest=400 amp=0.1 |
 	freq.isNil.if  { \help.postln; }
 	{ {
 		var even = Array.rand(100,lowest,20000);
@@ -40,14 +12,14 @@ Event.addEventType(\reedy,{var freq= ~freq; topEnvironment.use{~reedy.(freq)}},(
 		* blend
 		=> Mix.ar(_)
 		* Env.linen([ 0,0,0,5 ].choose,8,20).kr(2,gate:1)
-		* 1
+		* 10 * amp
 		=> Out.ar(4.rand,_)
 	}.play(group ? s); }
     };
 Event.addEventType(\tuningGong,{
-	    var args = [~freq,~group,~tolerance,~lowest];
+	    var args = [~freq,~group,~tolerance,~lowest,~amp];
 	    topEnvironment.use{~gong.(*args)}
-    },(freq:400,lowest:300,tolerance:0.03,group:s))
+    },(freq:400,lowest:300,tolerance:0.03,group:s,amp:0.1,))
 );
 
 //{ ~gong.(400,g,lowest:1000) }.sched([1,2,4]);
@@ -72,4 +44,3 @@ var tone = (numberOfPartials-1).asInteger.collect({|i| ( i + 1 ) * freq });
 };
 Event.addEventType(\tuneUp,{var args = [~freq,~amp,~out]; topEnvironment.use{~tuneUp.(*args)}},(type:\on,freq:300,amp:0.001,out:0));
 );
-

@@ -12,6 +12,20 @@
 		*newSidechain {|function out=0 inputChannels=1| ^super.new.initSidechain(function,out,inputChannels) }
 
 		*new2 {|function out=0 inputChannels=1| ^super.new.init2(function,out,inputChannels)}
+		*lfo {|function out=0 inputChannels=1| ^super.new.initLfo(function,out,inputChannels)}
+
+		initLfo { |function out inputChannels=1 |
+			bus=Bus.control();
+			synth={function=>Out.kr(bus.index,_)}.play;
+			NodeWatcher.register(synth, assumePlaying: true);
+			fork{
+				while ( {synth.isPlaying},{0.2.wait} );
+				\freeing_Bus.postln;
+				bus.free
+			};
+//			^this;
+			^Pfunc({bus.index.isNil.not.if{bus.asMap}{nil}})
+		}
 
 		init2 { |function out inputChannels=1 |
 			var desc=SynthDef(\temp,{In.ar(1,inputChannels)=>function=>Out.ar(0,_)});

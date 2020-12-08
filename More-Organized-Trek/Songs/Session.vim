@@ -25,7 +25,7 @@ let NERDTreeUseTCD = "0"
 let UltiSnipsRemoveSelectModeMappings =  1 
 let NERDTreeMapPreview = "go"
 let NERDTreeCascadeSingleChildDir = "1"
-let Taboo_tabs = "1	Talon\n2	Classes\n3	Project\n4	Functions\n7	SynthDefs\n8	additive \n"
+let Taboo_tabs = "1	Talon\n2	Classes\n3	Panel2\n5	SynthDefs\n"
 let NERDTreeMapActivateNode = "o"
 let NERDTreeMapCustomOpen = "<CR>"
 let NERDTreeDirArrowExpandable = "▸"
@@ -105,57 +105,36 @@ if expand('%') == '' && !&modified && line('$') <= 1 && getline(1) == ''
   let s:wipebuf = bufnr('%')
 endif
 set shortmess=aoO
-badd +186 ~/.talon/user/knausj_talon/code/numbers.py
-badd +15 ~/.talon/user/mw_talon/sclang.talon
+badd +16 ~/.config/nvim/init.vim
+badd +25 ~/.talon/user/mw_talon/sclang.talon
 badd +12 ~/.talon/user/mw_talon/vocabulary.py
 badd +356 ~/.talon/user/mw_talon/vim.talon
 badd +491 ~/tank/super/Extensions/MW-Classes/Song-Part.sc
-badd +34 ~/tank/super/Extensions/MW-Classes/XTouch.sc
+badd +1 ~/tank/super/Extensions/MW-Classes
+badd +27 ~/tank/super/Extensions/MW-Classes/XTouch.sc
 badd +1 ~/tank/super/More-Organized-Trek/panelTesting2.scd
 badd +5 ~/.talon/user/knausj_talon/settings/additional_words.csv
 badd +1 ~/.talon/user/knausj_talon/misc/macro.talon
 badd +2 ~/.talon/user/knausj_talon/misc/micropone_selection.talon
+badd +1 ~/.talon/user/knausj_talon/misc
 badd +9 ~/.talon/user/knausj_talon/misc/standard.talon
 badd +10 ~/.talon/user/w2l.py
-badd +11 ~/.talon/user/knausj_talon/misc/keys.talon
+badd +1 ~/.talon/user/knausj_talon/misc/keys.talon
 badd +48 ~/.talon/COPY/knausj_talon_copy/apps/terminal.talon
 badd +22 ~/.talon/user/knausj_talon/apps/mac/terminal.talon
 badd +1 ~/.talon/user/knausj_talon/apps/linux/terminal.talon
 badd +1 ~/.talon/user/mw_talon/iterm.talon
-badd +11 /private/tmp/trashme.scd
-badd +159 ~/tank/super/song-Synthdefs.scd
+badd +1 /private/tmp/trashme.scd
+badd +1 ~/tank/super/song-Synthdefs.scd
 badd +1 ~/tank/super/More-Organized-Trek/\[sclang]
 badd +50 ~/tank/super/More-Organized-Trek/panel2.scd
 badd +1 ~/tank/super/return-to-tomorrow.txt
-badd +326 ~/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
-badd +245 ~/tank/super/Library/functions/trek.scd
-badd +2 ~/.talon/user/mw_talon/symbols.talon
-badd +3 ~/.talon/user/mw_talon/symbols2.talon
-badd +31 ~/.talon/user/knausj_talon/text/symbols.talon
-badd +3 ~/.talon/user/knausj_talon/text/numbers.talon
-badd +35 ~/.talon/user/knausj_talon/code/user_settings.py
-badd +133 ~/.talon/user/knausj_talon/code/keys.py
-badd +1 ~/.talon/user/mw_talon/key.py
-badd +1 ~/.talon/user/knausj_talon/code
-badd +1 ~/tank/super/scales.scd
-badd +6 ~/tank/super/nine-note-scale.scd
-badd +73 ~/Library/Application\ Support/SuperCollider/Help/Classes/Scale.txt
-badd +4 ~/tank/super/additive2020.scd
-badd +1004 ~/Library/Application\ Support/SuperCollider/Help/Classes/Array.txt
-badd +3062 ~/tank/super/\[sclang]
-badd +1 ~/tank/super/Extensions/MW-Classes/Synths
-badd +22 ~/tank/super/Extensions/MW-Classes/Synths.sc
-badd +370 ~/Library/Application\ Support/SuperCollider/Help/Classes/Stream.txt
-badd +1557 ~/Library/Application\ Support/SuperCollider/Help/Classes/SequenceableCollection.txt
-badd +1255 ~/tank/super/More-Organized-Trek/Songs/\[sclang]
-badd +1 ~/.talon/user/knausj_talon/misc/history.talon
-badd +775 ~/Library/Application\ Support/SuperCollider/Help/Classes/Server.txt
-badd +81 ~/Library/Application\ Support/SuperCollider/Help/Classes/Event.txt
-badd +74 ~/tank/super/Library/synthdefs/reedy.scd
-badd +390 ~/Library/Application\ Support/SuperCollider/Help/Classes/SynthDef.txt
-badd +349 ~/Library/Application\ Support/SuperCollider/Help/Classes/Group.txt
-badd +79 ~/Library/Application\ Support/SuperCollider/Help/Classes/Function.txt
-badd +268 ~/tank/super/Library/synthdefs/\[sclang]
+badd +334 ~/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
+badd +246 ~/tank/super/Library/functions/trek.scd
+badd +1 ~/tank/super/More-Organized-Trek/Songs/\[sclang]
+badd +1 ~/tank/super/NERD_tree_3
+badd +1 ~/tank/super/song-more-event-play.scd
+badd +31 ~/tank/super/More-Organized-Trek/all-the-songs.scd
 argglobal
 %argdel
 set stal=2
@@ -183,15 +162,15 @@ set winminheight=0
 set winheight=1
 set winminwidth=0
 set winwidth=1
-exe '1resize ' . ((&lines * 18 + 20) / 40)
-exe 'vert 1resize ' . ((&columns * 50 + 75) / 151)
-exe '2resize ' . ((&lines * 18 + 20) / 40)
-exe 'vert 2resize ' . ((&columns * 50 + 75) / 151)
-exe '3resize ' . ((&lines * 18 + 20) / 40)
-exe 'vert 3resize ' . ((&columns * 22 + 75) / 151)
-exe '4resize ' . ((&lines * 18 + 20) / 40)
-exe 'vert 4resize ' . ((&columns * 22 + 75) / 151)
-exe 'vert 5resize ' . ((&columns * 77 + 75) / 151)
+exe '1resize ' . ((&lines * 26 + 27) / 55)
+exe 'vert 1resize ' . ((&columns * 84 + 126) / 253)
+exe '2resize ' . ((&lines * 25 + 27) / 55)
+exe 'vert 2resize ' . ((&columns * 84 + 126) / 253)
+exe '3resize ' . ((&lines * 26 + 27) / 55)
+exe 'vert 3resize ' . ((&columns * 83 + 126) / 253)
+exe '4resize ' . ((&lines * 25 + 27) / 55)
+exe 'vert 4resize ' . ((&columns * 83 + 126) / 253)
+exe 'vert 5resize ' . ((&columns * 84 + 126) / 253)
 argglobal
 setlocal fdm=manual
 setlocal fde=FoldParts(v:lnum)
@@ -202,18 +181,15 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 15 - ((0 * winheight(0) + 9) / 18)
+let s:l = 25 - ((11 * winheight(0) + 13) / 26)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-15
-normal! 0
+25
+normal! 06|
 wincmd w
 argglobal
 if bufexists("~/.talon/user/mw_talon/iterm.talon") | buffer ~/.talon/user/mw_talon/iterm.talon | else | edit ~/.talon/user/mw_talon/iterm.talon | endif
-if &buftype ==# 'terminal'
-  silent file ~/.talon/user/mw_talon/iterm.talon
-endif
 setlocal fdm=manual
 setlocal fde=0
 setlocal fmr={{{,}}}
@@ -223,18 +199,15 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 8 - ((0 * winheight(0) + 9) / 18)
+let s:l = 11 - ((0 * winheight(0) + 12) / 25)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-8
-normal! 0
+11
+normal! 04|
 wincmd w
 argglobal
-if bufexists("~/.talon/user/knausj_talon/misc/history.talon") | buffer ~/.talon/user/knausj_talon/misc/history.talon | else | edit ~/.talon/user/knausj_talon/misc/history.talon | endif
-if &buftype ==# 'terminal'
-  silent file ~/.talon/user/knausj_talon/misc/history.talon
-endif
+if bufexists("~/.talon/user/knausj_talon/misc/keys.talon") | buffer ~/.talon/user/knausj_talon/misc/keys.talon | else | edit ~/.talon/user/knausj_talon/misc/keys.talon | endif
 setlocal fdm=manual
 setlocal fde=0
 setlocal fmr={{{,}}}
@@ -244,18 +217,15 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 4 - ((3 * winheight(0) + 9) / 18)
+let s:l = 11 - ((9 * winheight(0) + 13) / 26)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-4
+11
 normal! 0
 wincmd w
 argglobal
 if bufexists("~/.talon/user/mw_talon/vim.talon") | buffer ~/.talon/user/mw_talon/vim.talon | else | edit ~/.talon/user/mw_talon/vim.talon | endif
-if &buftype ==# 'terminal'
-  silent file ~/.talon/user/mw_talon/vim.talon
-endif
 setlocal fdm=manual
 setlocal fde=0
 setlocal fmr={{{,}}}
@@ -265,18 +235,15 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 82 - ((5 * winheight(0) + 9) / 18)
+let s:l = 214 - ((9 * winheight(0) + 12) / 25)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-82
+214
 normal! 0
 wincmd w
 argglobal
 if bufexists("~/.talon/user/mw_talon/vocabulary.py") | buffer ~/.talon/user/mw_talon/vocabulary.py | else | edit ~/.talon/user/mw_talon/vocabulary.py | endif
-if &buftype ==# 'terminal'
-  silent file ~/.talon/user/mw_talon/vocabulary.py
-endif
 setlocal fdm=manual
 setlocal fde=0
 setlocal fmr={{{,}}}
@@ -286,33 +253,29 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 12 - ((8 * winheight(0) + 18) / 37)
+let s:l = 12 - ((11 * winheight(0) + 26) / 52)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
 12
 normal! 0
 wincmd w
-exe '1resize ' . ((&lines * 18 + 20) / 40)
-exe 'vert 1resize ' . ((&columns * 50 + 75) / 151)
-exe '2resize ' . ((&lines * 18 + 20) / 40)
-exe 'vert 2resize ' . ((&columns * 50 + 75) / 151)
-exe '3resize ' . ((&lines * 18 + 20) / 40)
-exe 'vert 3resize ' . ((&columns * 22 + 75) / 151)
-exe '4resize ' . ((&lines * 18 + 20) / 40)
-exe 'vert 4resize ' . ((&columns * 22 + 75) / 151)
-exe 'vert 5resize ' . ((&columns * 77 + 75) / 151)
-tabedit ~/tank/super/Extensions/MW-Classes/Synths.sc
+exe '1resize ' . ((&lines * 26 + 27) / 55)
+exe 'vert 1resize ' . ((&columns * 84 + 126) / 253)
+exe '2resize ' . ((&lines * 25 + 27) / 55)
+exe 'vert 2resize ' . ((&columns * 84 + 126) / 253)
+exe '3resize ' . ((&lines * 26 + 27) / 55)
+exe 'vert 3resize ' . ((&columns * 83 + 126) / 253)
+exe '4resize ' . ((&lines * 25 + 27) / 55)
+exe 'vert 4resize ' . ((&columns * 83 + 126) / 253)
+exe 'vert 5resize ' . ((&columns * 84 + 126) / 253)
+tabedit ~/tank/super/Extensions/MW-Classes/Song-Part.sc
 set splitbelow splitright
 wincmd _ | wincmd |
 vsplit
 wincmd _ | wincmd |
 vsplit
 2wincmd h
-wincmd _ | wincmd |
-split
-1wincmd k
-wincmd w
 wincmd w
 wincmd w
 set nosplitbelow
@@ -322,34 +285,10 @@ set winminheight=0
 set winheight=1
 set winminwidth=0
 set winwidth=1
-exe '1resize ' . ((&lines * 18 + 20) / 40)
-exe 'vert 1resize ' . ((&columns * 50 + 75) / 151)
-exe '2resize ' . ((&lines * 18 + 20) / 40)
-exe 'vert 2resize ' . ((&columns * 50 + 75) / 151)
-exe 'vert 3resize ' . ((&columns * 69 + 75) / 151)
-exe 'vert 4resize ' . ((&columns * 30 + 75) / 151)
+exe 'vert 1resize ' . ((&columns * 84 + 126) / 253)
+exe 'vert 2resize ' . ((&columns * 117 + 126) / 253)
+exe 'vert 3resize ' . ((&columns * 50 + 126) / 253)
 argglobal
-setlocal fdm=manual
-setlocal fde=FoldParts(v:lnum)
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=0
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-silent! normal! zE
-let s:l = 22 - ((0 * winheight(0) + 9) / 18)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-22
-normal! 09|
-wincmd w
-argglobal
-if bufexists("~/tank/super/Extensions/MW-Classes/Song-Part.sc") | buffer ~/tank/super/Extensions/MW-Classes/Song-Part.sc | else | edit ~/tank/super/Extensions/MW-Classes/Song-Part.sc | endif
-if &buftype ==# 'terminal'
-  silent file ~/tank/super/Extensions/MW-Classes/Song-Part.sc
-endif
 setlocal fdm=manual
 setlocal fde=FoldParts(v:lnum)
 setlocal fmr={{{,}}}
@@ -372,7 +311,7 @@ normal! zo
 normal! zo
 106
 normal! zo
-let s:l = 491 - ((10 * winheight(0) + 9) / 18)
+let s:l = 491 - ((27 * winheight(0) + 26) / 52)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
@@ -380,10 +319,7 @@ normal! zt
 normal! 0
 wincmd w
 argglobal
-if bufexists("~/tank/super/Extensions/MW-Classes/Synths.sc") | buffer ~/tank/super/Extensions/MW-Classes/Synths.sc | else | edit ~/tank/super/Extensions/MW-Classes/Synths.sc | endif
-if &buftype ==# 'terminal'
-  silent file ~/tank/super/Extensions/MW-Classes/Synths.sc
-endif
+if bufexists("~/tank/super/Extensions/MW-Classes/XTouch.sc") | buffer ~/tank/super/Extensions/MW-Classes/XTouch.sc | else | edit ~/tank/super/Extensions/MW-Classes/XTouch.sc | endif
 setlocal fdm=manual
 setlocal fde=FoldParts(v:lnum)
 setlocal fmr={{{,}}}
@@ -393,16 +329,15 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 22 - ((15 * winheight(0) + 18) / 37)
+let s:l = 27 - ((25 * winheight(0) + 26) / 52)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-22
-normal! 039|
+27
+normal! 09|
 wincmd w
 argglobal
-enew
-file ~/tank/super/Library/synthdefs/\[sclang]
+if bufexists("~/tank/super/More-Organized-Trek/Songs/\[sclang]") | buffer ~/tank/super/More-Organized-Trek/Songs/\[sclang] | else | edit ~/tank/super/More-Organized-Trek/Songs/\[sclang] | endif
 setlocal fdm=manual
 setlocal fde=0
 setlocal fmr={{{,}}}
@@ -411,13 +346,17 @@ setlocal fdl=0
 setlocal fml=1
 setlocal fdn=20
 setlocal nofen
+silent! normal! zE
+let s:l = 1 - ((0 * winheight(0) + 26) / 52)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+1
+normal! 0
 wincmd w
-exe '1resize ' . ((&lines * 18 + 20) / 40)
-exe 'vert 1resize ' . ((&columns * 50 + 75) / 151)
-exe '2resize ' . ((&lines * 18 + 20) / 40)
-exe 'vert 2resize ' . ((&columns * 50 + 75) / 151)
-exe 'vert 3resize ' . ((&columns * 69 + 75) / 151)
-exe 'vert 4resize ' . ((&columns * 30 + 75) / 151)
+exe 'vert 1resize ' . ((&columns * 84 + 126) / 253)
+exe 'vert 2resize ' . ((&columns * 117 + 126) / 253)
+exe 'vert 3resize ' . ((&columns * 50 + 126) / 253)
 tabedit /private/tmp/trashme.scd
 set splitbelow splitright
 wincmd _ | wincmd |
@@ -435,11 +374,11 @@ set winminheight=0
 set winheight=1
 set winminwidth=0
 set winwidth=1
-exe '1resize ' . ((&lines * 9 + 20) / 40)
-exe 'vert 1resize ' . ((&columns * 120 + 75) / 151)
-exe '2resize ' . ((&lines * 27 + 20) / 40)
-exe 'vert 2resize ' . ((&columns * 120 + 75) / 151)
-exe 'vert 3resize ' . ((&columns * 30 + 75) / 151)
+exe '1resize ' . ((&lines * 13 + 27) / 55)
+exe 'vert 1resize ' . ((&columns * 123 + 126) / 253)
+exe '2resize ' . ((&lines * 38 + 27) / 55)
+exe 'vert 2resize ' . ((&columns * 123 + 126) / 253)
+exe 'vert 3resize ' . ((&columns * 129 + 126) / 253)
 argglobal
 setlocal fdm=manual
 setlocal fde=FoldParts(v:lnum)
@@ -450,18 +389,15 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 11 - ((0 * winheight(0) + 4) / 9)
+let s:l = 1 - ((0 * winheight(0) + 6) / 13)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-11
+1
 normal! 0
 wincmd w
 argglobal
 if bufexists("~/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd") | buffer ~/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd | else | edit ~/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd | endif
-if &buftype ==# 'terminal'
-  silent file ~/tank/super/More-Organized-Trek/Songs/Unnecessary-refmt.scd
-endif
 setlocal fdm=expr
 setlocal fde=FoldParts(v:lnum)
 setlocal fmr={{{,}}}
@@ -475,51 +411,58 @@ normal! zo
 1
 normal! zo
 1
+normal! zo
+135
+normal! zo
+136
+normal! zo
+151
+normal! zo
+165
 normal! zo
 177
 normal! zo
 195
 normal! zo
-215
-normal! zo
-242
-normal! zo
-250
-normal! zo
-260
-normal! zo
-284
-normal! zo
-286
-normal! zo
-288
-normal! zo
-290
-normal! zo
-297
-normal! zo
-299
-normal! zo
-307
-normal! zo
-320
-normal! zo
-323
-normal! zo
 326
 normal! zo
-let s:l = 320 - ((0 * winheight(0) + 13) / 27)
+329
+normal! zo
+337
+normal! zo
+341
+normal! zo
+348
+normal! zo
+350
+normal! zo
+354
+normal! zo
+360
+normal! zo
+362
+normal! zo
+370
+normal! zo
+372
+normal! zo
+380
+normal! zo
+382
+normal! zo
+386
+normal! zo
+395
+normal! zo
+let s:l = 338 - ((123 * winheight(0) + 19) / 38)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-320
-normal! 0
+338
+normal! 017|
 wincmd w
 argglobal
 if bufexists("~/tank/super/More-Organized-Trek/Songs/\[sclang]") | buffer ~/tank/super/More-Organized-Trek/Songs/\[sclang] | else | edit ~/tank/super/More-Organized-Trek/Songs/\[sclang] | endif
-if &buftype ==# 'terminal'
-  silent file ~/tank/super/More-Organized-Trek/Songs/\[sclang]
-endif
 setlocal fdm=expr
 setlocal fde=FoldParts(v:lnum)
 setlocal fmr={{{,}}}
@@ -528,167 +471,19 @@ setlocal fdl=1
 setlocal fml=1
 setlocal fdn=20
 setlocal nofen
-let s:l = 1254 - ((23 * winheight(0) + 18) / 37)
+let s:l = 585 - ((28 * winheight(0) + 26) / 52)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-1254
+585
 normal! 0
 wincmd w
-exe '1resize ' . ((&lines * 9 + 20) / 40)
-exe 'vert 1resize ' . ((&columns * 120 + 75) / 151)
-exe '2resize ' . ((&lines * 27 + 20) / 40)
-exe 'vert 2resize ' . ((&columns * 120 + 75) / 151)
-exe 'vert 3resize ' . ((&columns * 30 + 75) / 151)
-tabedit ~/tank/super/Library/functions/trek.scd
-set splitbelow splitright
-wincmd _ | wincmd |
-vsplit
-1wincmd h
-wincmd w
-set nosplitbelow
-set nosplitright
-wincmd t
-set winminheight=0
-set winheight=1
-set winminwidth=0
-set winwidth=1
-exe 'vert 1resize ' . ((&columns * 44 + 75) / 151)
-exe 'vert 2resize ' . ((&columns * 106 + 75) / 151)
-argglobal
-setlocal fdm=marker
-setlocal fde=FoldParts(v:lnum)
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=0
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-3
-normal! zo
-74
-normal! zo
-80
-normal! zo
-241
-normal! zo
-let s:l = 245 - ((60 * winheight(0) + 18) / 37)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-245
-normal! 09|
-wincmd w
-argglobal
-if bufexists("~/tank/super/Library/synthdefs/reedy.scd") | buffer ~/tank/super/Library/synthdefs/reedy.scd | else | edit ~/tank/super/Library/synthdefs/reedy.scd | endif
-if &buftype ==# 'terminal'
-  silent file ~/tank/super/Library/synthdefs/reedy.scd
-endif
-setlocal fdm=expr
-setlocal fde=FoldParts(v:lnum)
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=0
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-2
-normal! zo
-2
-normal! zo
-31
-normal! zo
-56
-normal! zo
-let s:l = 47 - ((15 * winheight(0) + 18) / 37)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-47
-normal! 025|
-wincmd w
-exe 'vert 1resize ' . ((&columns * 44 + 75) / 151)
-exe 'vert 2resize ' . ((&columns * 106 + 75) / 151)
-tabedit ~/tank/super/Library/synthdefs/reedy.scd
-set splitbelow splitright
-wincmd _ | wincmd |
-vsplit
-wincmd _ | wincmd |
-vsplit
-2wincmd h
-wincmd w
-wincmd w
-set nosplitbelow
-set nosplitright
-wincmd t
-set winminheight=0
-set winheight=1
-set winminwidth=0
-set winwidth=1
-exe 'vert 1resize ' . ((&columns * 50 + 75) / 151)
-exe 'vert 2resize ' . ((&columns * 49 + 75) / 151)
-exe 'vert 3resize ' . ((&columns * 50 + 75) / 151)
-argglobal
-setlocal fdm=expr
-setlocal fde=FoldParts(v:lnum)
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=0
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-2
-normal! zo
-2
-normal! zo
-2
-normal! zo
-31
-normal! zo
-56
-normal! zo
-let s:l = 32 - ((25 * winheight(0) + 18) / 37)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-32
-normal! 051|
-wincmd w
-argglobal
-if bufexists("~/tank/super/More-Organized-Trek/Songs/\[sclang]") | buffer ~/tank/super/More-Organized-Trek/Songs/\[sclang] | else | edit ~/tank/super/More-Organized-Trek/Songs/\[sclang] | endif
-if &buftype ==# 'terminal'
-  silent file ~/tank/super/More-Organized-Trek/Songs/\[sclang]
-endif
-setlocal fdm=expr
-setlocal fde=FoldParts(v:lnum)
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=1
-setlocal fml=1
-setlocal fdn=20
-setlocal nofen
-let s:l = 1245 - ((14 * winheight(0) + 18) / 37)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-1245
-normal! 07|
-wincmd w
-argglobal
-enew
-file ~/tank/super/Library/synthdefs/\[sclang]
-setlocal fdm=manual
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=0
-setlocal fml=1
-setlocal fdn=20
-setlocal nofen
-wincmd w
-exe 'vert 1resize ' . ((&columns * 50 + 75) / 151)
-exe 'vert 2resize ' . ((&columns * 49 + 75) / 151)
-exe 'vert 3resize ' . ((&columns * 50 + 75) / 151)
+2wincmd w
+exe '1resize ' . ((&lines * 13 + 27) / 55)
+exe 'vert 1resize ' . ((&columns * 123 + 126) / 253)
+exe '2resize ' . ((&lines * 38 + 27) / 55)
+exe 'vert 2resize ' . ((&columns * 123 + 126) / 253)
+exe 'vert 3resize ' . ((&columns * 129 + 126) / 253)
 tabedit ~/tank/super/return-to-tomorrow.txt
 set splitbelow splitright
 set nosplitbelow
@@ -707,7 +502,7 @@ setlocal fdl=0
 setlocal fml=1
 setlocal fdn=20
 setlocal fen
-let s:l = 331 - ((257 * winheight(0) + 18) / 37)
+let s:l = 331 - ((330 * winheight(0) + 26) / 52)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
@@ -715,13 +510,6 @@ normal! zt
 normal! 0
 tabedit ~/tank/super/song-Synthdefs.scd
 set splitbelow splitright
-wincmd _ | wincmd |
-vsplit
-wincmd _ | wincmd |
-vsplit
-2wincmd h
-wincmd w
-wincmd w
 set nosplitbelow
 set nosplitright
 wincmd t
@@ -729,9 +517,6 @@ set winminheight=0
 set winheight=1
 set winminwidth=0
 set winwidth=1
-exe 'vert 1resize ' . ((&columns * 50 + 75) / 151)
-exe 'vert 2resize ' . ((&columns * 49 + 75) / 151)
-exe 'vert 3resize ' . ((&columns * 50 + 75) / 151)
 argglobal
 setlocal fdm=expr
 setlocal fde=FoldParts(v:lnum)
@@ -749,118 +534,13 @@ normal! zo
 normal! zo
 3
 normal! zo
-149
-normal! zo
-let s:l = 159 - ((113 * winheight(0) + 18) / 37)
+let s:l = 4 - ((3 * winheight(0) + 26) / 52)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-159
-normal! 09|
-wincmd w
-argglobal
-enew
-setlocal fdm=manual
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=0
-setlocal fml=1
-setlocal fdn=20
-setlocal nofen
-wincmd w
-argglobal
-enew
-setlocal fdm=manual
-setlocal fde=FoldParts(v:lnum)
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=0
-setlocal fml=1
-setlocal fdn=20
-setlocal nofen
-wincmd w
-exe 'vert 1resize ' . ((&columns * 50 + 75) / 151)
-exe 'vert 2resize ' . ((&columns * 49 + 75) / 151)
-exe 'vert 3resize ' . ((&columns * 50 + 75) / 151)
-tabedit ~/Library/Application\ Support/SuperCollider/Help/Classes/Array.txt
-set splitbelow splitright
-wincmd _ | wincmd |
-vsplit
-1wincmd h
-wincmd _ | wincmd |
-split
-1wincmd k
-wincmd w
-wincmd w
-set nosplitbelow
-set nosplitright
-wincmd t
-set winminheight=0
-set winheight=1
-set winminwidth=0
-set winwidth=1
-exe '1resize ' . ((&lines * 18 + 20) / 40)
-exe 'vert 1resize ' . ((&columns * 106 + 75) / 151)
-exe '2resize ' . ((&lines * 18 + 20) / 40)
-exe 'vert 2resize ' . ((&columns * 106 + 75) / 151)
-exe 'vert 3resize ' . ((&columns * 44 + 75) / 151)
-argglobal
-setlocal fdm=manual
-setlocal fde=FoldParts(v:lnum)
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=0
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-silent! normal! zE
-let s:l = 1004 - ((8 * winheight(0) + 9) / 18)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-1004
+4
 normal! 0
-wincmd w
-argglobal
-if bufexists("~/tank/super/additive2020.scd") | buffer ~/tank/super/additive2020.scd | else | edit ~/tank/super/additive2020.scd | endif
-if &buftype ==# 'terminal'
-  silent file ~/tank/super/additive2020.scd
-endif
-setlocal fdm=manual
-setlocal fde=FoldParts(v:lnum)
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=0
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-silent! normal! zE
-let s:l = 7 - ((6 * winheight(0) + 9) / 18)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-7
-normal! 0
-wincmd w
-argglobal
-enew
-file ~/tank/super/Library/synthdefs/\[sclang]
-setlocal fdm=manual
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=0
-setlocal fml=1
-setlocal fdn=20
-setlocal nofen
-wincmd w
-exe '1resize ' . ((&lines * 18 + 20) / 40)
-exe 'vert 1resize ' . ((&columns * 106 + 75) / 151)
-exe '2resize ' . ((&lines * 18 + 20) / 40)
-exe 'vert 2resize ' . ((&columns * 106 + 75) / 151)
-exe 'vert 3resize ' . ((&columns * 44 + 75) / 151)
-tabnext 5
+tabnext 3
 set stal=1
 if exists('s:wipebuf') && getbufvar(s:wipebuf, '&buftype') isnot# 'terminal'
   silent exe 'bwipe ' . s:wipebuf

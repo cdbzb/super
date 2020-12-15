@@ -93,7 +93,7 @@ Song {
 		songs.put(symbol.asSymbol,this);
 		song=array;
 		resources=();
-		sections=(song.size/2).asInt;
+		sections=(song.size/2).asInteger;
 		lyrics=song.copySeries(0,2,song.size);
 		tune=song[1,3..song.size].collect({|i|
 			case {i.class==String} { Panola.new(i).midinotePattern }
@@ -123,7 +123,7 @@ Song {
 	}
 
 	refreshArray {
-		sections=(song.size/2).asInt;
+		sections=(song.size/2).asInteger;
 		lyrics=song.copySeries(0,2,song.size);
 		tune=song[1,3..song.size].collect({|i|
 			case {i.class==String} { Panola.new(i).midinotePattern }
@@ -235,7 +235,7 @@ Song {
 	}
 
 	pbindFrom {|from=3| 
-		var list = this.pbind[from.asInt..(sections-1)].postln;
+		var list = this.pbind[from.asInteger..(sections-1)].postln;
 		^Pseq(list)
 	}
 
@@ -467,7 +467,9 @@ Part {
 	}
 
 	init { |s,y,l,m|
-		start=s;syl=y;music=m;lag=l}
+		start=s;syl=y;music=m;lag=l;
+		resources=();
+	}
 
 	//play immediately
 	play {switch (music.class,
@@ -544,7 +546,7 @@ P {
 		|key start syl lag=0 music song|
 		var part;
 		start.isNil.if{
-			start=((Song.song.size-2)/2).asInt;
+			start=((Song.song.size-2)/2).asInteger;
 			start.postln;
 		};//guess start from context
 		(start.class==Symbol).if{

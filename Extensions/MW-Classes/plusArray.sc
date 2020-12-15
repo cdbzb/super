@@ -1,5 +1,6 @@
 + Array {
-	asDegrees { |root=0 octave=5 scale=\major tuning| 
+	asDegrees { 
+		|root=0 octave=5 scale=\major tuning| 
 		^this.collect{|i| 
 			i.asDegrees(root,octave,scale,tuning)
 		}
@@ -36,6 +37,78 @@
 		^this;
 	}
 
+	//taken from Song-Part - should replace for modularity
+	//TODO error check if array is too long
+	parse {|array start=0| 
+		var counter = 0;
+		var beatNum; 
+		array=array.deepCollect(2,{|i| 
+			(i>1).if{ 1.dup(i) }{ i }
+		});
+		array=array.collect{|i| i.isArray.if({i.flatten},{i})};
+		beatNum = array.flatten.collect{|m i| array.flatten.[0..i].sum};
+		array.postln;
+		beatNum = beatNum.collect{|i|(i-0.001).floor};
+		^array.collect{ |item|
+			item.isArray.not.if(
+				{
+					var b = beatNum[counter];
+					counter =counter+1;
+					item*this[b+start]
+				},{
+					var subArray = item.collect{
+						|i x| 
+						var b = beatNum[counter+x];
+						i*this[b+start]
+					}; 
+					counter=counter+item.size; 
+					subArray.sum;
+				}
+			);
+		}
+	} 
+	parseBeats { |array start=0|
+		var beatCounter = List.new, denominators = List.new;
+		var result = List.new;
+		array=array++1;
+		array.do{
+			|i|
+			var denominator = i;
+			\looptop.postln;
+			case 
+			{i < (1 - beatCounter.sum)}{
+				\less.postln;
+				denominators.add(denominator);
+				beatCounter.add(i);
+				i.postln;\less.post;beatCounter.postln;
+			}{i == (1-beatCounter.sum)}{
+				\equals.postln;
+				denominators.add(denominator);
+				beatCounter.add(i);
+				( beatCounter.size==1 ).if({result.add(1)},{result.add(beatCounter/denominators)});
+				beatCounter=List.new;denominators=List.new;
+			}{i > (1 - beatCounter.sum)}{
+				\grader.postln;
+				i.postln;
+				while ( {i > (1 - beatCounter.sum)},{
+					i = i-(1-beatCounter.sum);
+					((1-beatCounter.sum)>0).if {
+						beatCounter.add(1-beatCounter.sum);
+						denominators.add(denominator);
+					};
+					( beatCounter.size==1 ).if(
+						{result.add(1/denominators[0])},
+						{result.add(beatCounter/denominators)});
+						beatCounter=List.new;denominators=List.new;
+					} );
+					denominators.add(denominator);
+					beatCounter.add(i);
+
+				}
+
+			};
+			^this.parse(result,start)
+}
 	addDurs {
 //		Song.songs.at(Song.current).addLine(this);
 		Song.currentSong.addDurs(this);
@@ -47,52 +120,6 @@
 	}
 }
 
-+ SimpleNumber {
-	asDegrees { |root=0 octave=5 scale=\major tuning| 
-		var i=this;
-		scale = Scale.at(scale,tuning).deepCopy;
-		tuning !? {|i|scale.tuning_(i)};
-		scale.postln;
-
-		(root.class==Symbol).if{ root=
-			(
-				c:0,'d-':1,'c#':1 ,d:2,'d#':3,'e-':3,e:4,f:5,'f#':6,'g-':6,g:7,'g#i':8,'a-':8,a:9,'a#':10,'b-':10,b:11,
-				C:-12,'C#':-11 ,D:-10,'D#':-9,'E-':-9,E:-8,F:-7,'F#':-6,'G-':-6,G:-5,'G#I':-4,'A-':-4,A:-3,'A#':-2,'B-':-2,B:-1
-			).at(root)
-		};
-		i=i-1; 
-		^[
-			(i / 10).floor * 12, 
-			scale[i % 10]
-		].sum
-		//.asInteger
-
-		+ (i.frac*2)
-		+root+(octave*12)
-	}
-
-	degreesmidi {|root=0 octave=5 scale=\major tuning|
-		^this.asDegrees(root,octave,scale,tuning)
-	}
-
-	degreescps { |root=0 octave=5 scale=\major tuning|
-		^this.asDegrees(root,octave,scale,tuning).midicps
-	}
-
-	q {
-		^[this].q
-	}
-
-}
-
-+Symbol {
-	degreesmidi {
-		^this
-	}
-	degreescps {
-		^this
-	}
-}
 +Pseq {
 	quantize { |amount|
 		var pseq= this.copy;

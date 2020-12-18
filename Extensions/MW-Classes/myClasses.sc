@@ -13,12 +13,17 @@
 }
 
 + String {
-	asDrumPat {| beatsPerBar=8 reps=1|
+	asDrumPat {| beatsPerBar=8 reps=1 beats|
 		var b=List.new;
 		var a=Array.newFrom(this);
 		//a.do({|m| (m=="|"[0]).not.if{b.add(m)}});
 		b=a.replace(" "[0],"").replace("|"[0],"");
 		b=b.collect{|j| (j=="x"[0]).if({1},{Rest(1)})};
+		beats.isNil.not.if{
+			beats = beats.stutter(beatsPerBar);
+			b = b * beats;
+		}
+		
 		^Pseq(b/beatsPerBar,reps)
 	}
 }

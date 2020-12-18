@@ -1,27 +1,128 @@
-
 (
 Song('this formnula',[]).current;
 Song.resources.quarters_(());
 Song.infrastructure=FunctionList.new.array_([
 
 		~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
+		"/Users/michael/tank/super/808-mod.scd".load;
 ]);
+~quarters=SongArray.new(size:64);
 //This Formula (REAPER?) 
 [" /*[Pharmacy] SPOCK:*/ Now.  ","r"].addLine;
 ["(boom) this formula -- -- will reduce the ",[11,13,13,12,11,12,11, 7,11, 12, 13].dm('d',octave:4 )].addLine;
+Pbind
+		~clock=TempoClock.new;
+P(\bassFormula,'this formula',music:
+	{|p b e|
+		[
+			instrument:\sawSynth,
+			//rel:0.5,
+			freq:[1,-7,-6,-5].stutter(2)
+			=>_.df('d',tuning:\sept1,octave:[3 ])
+			=>_.q,
+			dur: [3,1].q(4)/2 ++ [1/4].q(2) ++ [1].q ,
+		].p.play(clock:~clock);
+		[
+			amp:0,
+			tempotrack: ~quarters['this formula'].q,
+			setclock: Pfunc({|e| ~clock.tempo_(e.tempotrack.reciprocal)})
+		].p.play(clock:~clock)
+
+	});
+~justTheTune.(
+	'formula --',
+	{ |i| i },
+	clock:  {
+		var clock=TempoClock.new(),newTemp=~quarters['this formula'].mean.reciprocal;
+		~quarters['this formula'].do({ 
+			|i x| clock.sched(x,{clock.tempo_(i*newTemp)}) 
+		});
+		clock}.value ;
+	);
+	Song.currentSong.play('formula --Tune');
+	[dur:"x.x.xx..".asDrumPat(1)/1.5,instrument:\snare].pp;
 P(\drumz,'this formula',music:
-{|p b|
-	//p.quarters.put('this formula',p.parseBeats('this formula',
-		//[1,1,1/2,1/4,1/4+2+1/2, 1/4,1/4]));
-	[
-	"x.x.x.x.".asDrumPat(4,4) => [dur:_,instrument:\snare]=>_ .p,
-	"x.x..x.x".asDrumPat(4,4) => [dur:_,instrument:\kick2]=>_ .pp
-	] => Ppar(_) => Pmul(\dur,p.quarters.at('this formula')).play
+{|p b e|
+	~quarters['this formula']=Song.parseBeats('this formula', [1,1,1/2,1/4,11/4,1/4,1/4,1/2,1/4,3/4,1/2]);
+	"x.".asDrumPat(2,1,
+		~quarters['this formula'][0..7]
+		//.quantizeWindow
+		.quantize
+	) 
+	=> [dur:_,
+		//instrument:\snare
+		instrument:\sn_808
+	]=>_ .pp;
+	"x.x..x.x".asDrumPat(2,1,~quarters['this formula'][0..7]
+	//.quantizeWindow
+	.quantize
+) 
+	=> [dur:_,
+		//instrument:\bd_808,
+		instrument:\kick2,
+//		lag:-0.04,
+	] =>_ .pp
 }
 );
-~justTheTune.('formula --');
+P(\highHat,start:'this formula',music:{|p b e|
+	"xxxx".asDrumPat(4,1,~quarters['this formula'][0..7]
+	.quantizeWindow
+//	.quantize
+)
+	=> [dur:_,instrument:\hihat,] =>_.pp
+}
+);
 ["(boom )heart action and the bodily ",[6, 14,13,11, 7,11,12,13,11,].dm('d',octave:4 )].addLine;
 ~justTheTune.('and the bodily');
+
+P(\bassBodily,'bodily',music:
+	{|p b e|
+		[
+			instrument:\sawSynth,
+			freq: [-4,-5,-6,-7,1].df('d',tuning:\sept1,octave:[3,4]).q,
+			dur: 0.5,
+		].p.play(clock:~clock);
+		[
+			amp:0,
+			tempotrack: ~quarters['bodily'].q,
+			setclock: Pfunc({|e| ~clock.tempo_(e.tempotrack.reciprocal)})
+		].p.play(clock:~clock)
+
+	});
+~justTheTune.('formula --');
+P(\drumzBodily,'bodily',music:
+{|p b e|
+	~quarters['bodily']=Song.parseBeats('bodily', [1,7/4,3/4,6/4, 1/2,1/2, 2/3,2/3,2/3 ]);
+	"x.".asDrumPat(2,1,
+		~quarters['bodily'].do(_.postln)
+//		[0..7]
+		.quantizeWindow
+//		.quantize
+	) 
+	=> [dur:_,instrument:\snare]=>_ .pp;
+	"x.x..x.x".asDrumPat(2,1,~quarters['bodily']
+//	[0..7]
+	.quantizeWindow
+//	.quantize
+) 
+	=> [dur:_,
+		instrument:\bd_808,
+		instrument:\kick3,
+//		lag:-0.04,
+	] =>_ .pp
+}
+);
+P(\highHatBodily,start:'bodily',music:{|p b e|
+	"xxxx".asDrumPat(4,1,~quarters['bodily']
+	//[0..7]
+	.quantizeWindow
+//	.quantize
+)
+	=> [dur:_,instrument:\hihat,] =>_.pp
+}
+);
+
+
 ["functions to normal. ",[7,6, 2,11,7 ].dm('d',octave:4 )].addLine;
 ~justTheTune.('to normal');
 ["(boom) While the bodies are occupied, ","r"].addLine;

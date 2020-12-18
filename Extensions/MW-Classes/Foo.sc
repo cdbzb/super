@@ -24,11 +24,12 @@ Durs {
 		{i.class==Symbol}{song.lyricsToDurs.put(song.lyrics[song.section(i)],j)}
 	}
 }
+
 SongArray { //array which can be indexed by current song lyric
 	var <>array,<>song;
 	*new {|array key| ^super.new.init(array,key)}
-	init {|ary key| 
-		array=ary ? [];
+	init {|ary key size=128| 
+		array=ary ? Order(size);
 		key.isNil.if (
 			{song=Song.currentSong},
 			{song=Song.songs.at(key)}

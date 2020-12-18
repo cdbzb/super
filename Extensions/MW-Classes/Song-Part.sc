@@ -366,12 +366,12 @@ Song {
 				{
 					var b = beatNum[counter];
 					counter =counter+1;
-					item*durs[phrase].list[b+start]
+					item*durs[phrase].list.clipAt( b+start )
 				},{
 					var subArray = item.collect{
 						|i x| 
 						var b = beatNum[counter+x];
-						i*durs[phrase].list[b+start]
+						i*durs[phrase].list.clipAt( b+start )
 					}; 
 					counter=counter+item.size; 
 					subArray.sum;

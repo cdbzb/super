@@ -33,7 +33,7 @@ Synths {
 		(args.flop.size==1).if{args=[args[0]]++[args[1].dup(synths.size)]};
 		args.postln;
 		args.flop.do({|i x| 
-			synths[x].set(i)})
+			synths[x].set(*i)})
 	}
 
 	map { |control bus|

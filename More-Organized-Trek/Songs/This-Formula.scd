@@ -2,10 +2,11 @@
 
 Song('this formnula',[]).current;
 Song.resources.quarters_(());
-Song.infrastructure=FunctionList.new.array_([
-
+Song.currentSong.infrastructure=FunctionList.new.array_([
+	{ 
 		~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
-		"/Users/michael/tank/super/808-mod.scd".load;
+		"/Users/michael/tank/super/808-mod.scd".load 
+	}
 ]);
 ~quarters=SongArray.new(size:64);
 ~clocks=SongArray.new(size:64);
@@ -80,11 +81,12 @@ P(\bassBodily,'bodily',music:
 	{|p b e|
 		[
 			instrument:\sawSynth,
-			freq: [-4,-5,-6,-7,1].df('d',tuning:\sept1,octave:[3,4]).q,
-			dur: 0.5,
+			freq: [-4,-5,-6,-7,1,1,4,4,3,3].df('d',tuning:\sept1,octave:[3,4]).q,
+			dur: 
+			0.5!4 ++ ( "ex x".asBeats *2 !3 ).flatten=>_.q
+			,
 		].p
 	=>_.play(TempoClock.newFromQuarters(~quarters['bodily'].quantizeWindow),
-//	quant:1
 );
 });
 
@@ -111,8 +113,18 @@ P(\drumzBodily,'bodily',music: {|p b e|
 	.asTempoClock);
 }
 );
-["functions to normal. ",[7,6, 2,11,7 ].dm('d',octave:4 )].addLine;
+["functions to normal. ",[7,6, 12,11,7 ].dm('d',octave:4 )].addLine;
 ~quarters['to normal']= Song.parseBeats('to normal',[2/3, 2/3, 2/3,  1,1]);
+P(\bassNormal,'to normal',music:
+	{|p b e|
+		[
+			instrument:\sawSynth,
+			freq: [6,6,5,5].df('d',tuning:\sept1,octave:[3,4]-1).q,
+			dur: "ex x e e".asBeats.q*2,
+		].p
+	=>_.play(TempoClock.newFromQuarters(~quarters['to normal'].quantizeWindow),
+);
+});
 P(\highHatNormal,start:'to normal',music:{|p b e|
 	p.hatPattern => Pfin(16,_)
 	=>_.play(~quarters[e.start].quantize.asTempoClock);
@@ -138,11 +150,55 @@ P(\drumzNormal,'to normal',music:
 }
 );
 ~justTheTune.('to normal');
-["(boom) While the bodies are occupied, ","r"].addLine;
-["you will administer one injection of ten cc's each hour. ","r"].addLine;
-["/*CHAPEL:*/ I understand. ","r"].addLine;
+["(boom) While the bodies are occupied, ",[-15,-5,-6,-7,1,2,4,3,1].dm('c')].addLine;
+~justTheTune.('occupied',{|i| i.drop(1)},syl:0);
+~quarters[\occupied]=Song.parseBeats('occupied',(1/3)!6 ++ ( (2/3)!3 ));
+
+P(\chordsOccupied,start:\occupied,music:{|p b e|
+	[
+		freq:[[1,3,5],[1,4,6]].df('g',octave:4 ).stutter(2).q*[1,1.01],
+//		out:1,
+		pan:0,
+		out:Effect({|i| MoogLadder.ar(i,1200,1) => EchoNone.ar(_, 0.2,  delaytime: 0.1,  decaytime: 2.0)},out:1).bus.index,
+		amp:0.2,
+//		out:Effect(FreeVerb.ar(_,0.51,0.5),out:1).bus.index,
+		dur:"e e e e".asBeats.q*2,
+	].p.trace.play(~quarters[e.start].asTempoClock)
+}
+);
+["you will administer one injection of  ",[3,4,1,3,2,1, -7,1,2,-7,-5].dm('a',scale:\harmonicMinor)].addLine;
+~justTheTune.('administer one',Pmul(\freq,0.5,_));
+["ten cc's each hour.",[-7,1,-7,1,-6].dm('g',octave:4 )].addLine;
+~justTheTune.('each hour');
+~quarters['each hour']= Song.parse('each hour',[2,2,1]);
+P(\chordsHour,start:'each hour',music:{|p b e|
+	[
+		midinote: [0,-2]+.t[1,3,5,7].dm('d',octave:4 ) =>_.q,
+		dur:"qq q".asBeats.q,
+		instrument:\sawSynthSustain,
+		att:1
+	].p.trace.play(~quarters[e.start].asTempoClock)
+}
+);
+["/*CHAPEL:*/ I understand. ",[5,6,7,11].dm('a-')].addLine;
+~justTheTune.('understand',Pmul(\freq,0.5,_));
+~quarters[\understand]=Song.parseBeats('understand',"e x x q".asBeats);
+P(\chordsUnderstand,start:\understand,music:{|p b e|
+	[
+		freq: [[-5,5],[-5,4],[1,3]].df('a-',octave:4 ).q,
+//		instrument:\sparkTriangle,
+		release:1.5,
+		dur:"ex x e".asBeats.q,
+		amp:0.045,
+		out:[0,3],
+	].pm(\sparkTriangle).play(
+		~quarters[\understand]
+		.asTempoClock
+	)
+}
+);
 ["/*SPOCK:*/ This hypo you will code mark for Tha lassa. And ",[5,4,3,2,1,3,2,3,4,3,2,2, 2].dm('d')].addLine;
-~justTheTune.('hypo you will');
+~justTheTune.('hypo you will',Pmul(\freq,0.5,_));
 ~quarters['hypo you will'] = Song.parseBeats('hypo you will',[1, 1,1,1,1, 1,1,3/2,1/2, 1,1,5, 1]);
 P(\hypoBase,'hypo you will', music:{|p b e|
 	[
@@ -159,6 +215,9 @@ P(\hypoBase,'hypo you will', music:{|p b e|
 	)
 });
 ["this one you will code mark for -- ",[4,3,2,1,3,3,4,3].dm('a')].addLine;
+~justTheTune.('for --'
+	,Pmul(\freq,0.25,_)
+);
 ~quarters['for --'] = Song.parseBeats('for --',[1,1,1,1, 3/2,3/2,1/2,1/2]);
 P(\forBase,'for --', music:{|p b e|
 	[
@@ -171,15 +230,57 @@ P(\forBase,'for --', music:{|p b e|
 //	.quantizeWindow
 	.asTempoClock)
 });
-~justTheTune.('for --');
-["me.  /*CHAPEL:*/ Yes, sir. ","r"].addLine;
-["/*SPOCK:*/ This one you will administer to Captain Kirk while ","r"].addLine;
-["Sargon is in his body. ","r"].addLine;
-["/*CHAPEL:*/ This hypo does not contain the same formula. ","r"].addLine;
-["/*SPOCK:*/ No, that's correct. But since I will arrange for ","r"].addLine;
-["you to administer each of the injections, ","r"].addLine;
-["no one else will notice. ","r"].addLine;
-["/*CHAPEL:*/ Without the same formula, Captain Kirk will die. ","r"].addLine;
+["me.  /*CHAPEL:*/ Yes, sir. ",[-2,7,11].dm('c')].addLine;
+~justTheTune.('Yes, sir');
+P(\chordSir,start:'Yes, sir',syl:0,music:{|p b e|
+	b=b.drop(1);
+	[
+		freq:[[-5,7,2],[1,11,11]].df('c',octave:5,tuning:\sept1,).q,
+		dur: "q q".asBeats.q,
+		amp:0.05,
+	].p.play(b.asArray.asTempoClock)
+}
+);
+["/*SPOCK:*/ This one you will administer to Captain Kirk while ",[3,2,-7,7,6,5,4,3,1.5,3,4,4.5,5].dm('f#',scale:\minor,)].addLine;
+~quarters['This one']=Song.parseBeats('This one',"q qe e e e e e e e e e e e".asBeats);
+~justTheTune.('This one');
+P(\baseThisOne,start:'This one',music:{|p b e|
+	[
+		freq:[1,2,3, 1.5,3,4,4.5,5].df('f#',scale:\minor,octave:3 ).q,
+		dur:"qq qq qe e e e e e".asBeats.q,
+	].p.play(~quarters[e.start].asTempoClock)
+}
+);
+["Sargon is in his body. ",[11,5,3,2,-7,2,1].dm('d',octave:5,scale:\harmonicMinor, )].addLine;
+~justTheTune.('in his body');
+P(\strumBody,start:'in his body',lag:-0.03,music:{|p b e|
+	(
+		freq:[1,3,5,11,13,15,21].df('d',octave:4,scale:\minor, ),
+		amp:0.06,
+		strum:0.06	
+	).play
+}
+
+);
+["/*CHAPEL:*/ This hypo does not contain the same formula. ",[5,4,3,1,2,3,5,4,5].dm('g',scale:\whole)++[7,5,1.5].dm('g',scale:\mixolydian)].addLine;
+P(\swellContain,start:'does not contain',music:{|p b e|
+	(
+		instrument:\stringyy,
+		mix:0,
+		freq:1.df('e-',octave:3),
+		out:(0..3),
+	).play
+}
+);
+~justTheTune.('does not contain');
+["/*SPOCK:*/ No, that's correct. But since I will arrange for ",[1, 5,4,1].dm('b-')++[4,2,4, 3,2,1,-7].dm('f#')].addLine;
+~justTheTune.('correct');
+["you to administer each of the injections, ",[5, 4,3,2,3,1, 5.5, 4.5, 1,2,3,2].dm('f#')].addLine;
+~justTheTune.('administer each');
+["no one else will notice. ",[1,2,3,-7,-7,-6].dm('b-',scale:\minor)].addLine;
+~justTheTune.('notice');
+["/*CHAPEL:*/ Without the same formula, Captain Kirk will die. ",[3,1,2,3,5,4,3,1,2,3,5,6].dm('g',scale:\whole,)].addLine;
+~justTheTune.('Without');
 ["(He touches her forehead.) /*SPOCK:*/ What were you saying? ",[3,  3,4,2,4,3].dm('c')].addLine;
 ~justTheTune.('touches her');
 P(\touchBaseNote,start:'touches her',music:{|p b e|
@@ -291,13 +392,15 @@ P(\basedNotesYes,start:'that was it',music:{|p b e|
 	
 }
 );
-["I will inform Doctor McCoy that each is ",[1,-5,1,2 ,3,1,3,4, 5,4,3,5,4,3,2,-6,-7,2,1].dm('f#')].addLine;
+["I will inform Doctor McCoy that each is ",[1,-5,1,2 ,3,1,3,4, 5,4,3,].dm('f#')].addLine;
 ~justTheTune.('inform');
-["properly filled for each patient. ","r"].addLine;
+["properly filled for each patient. ",[5,4,3,2,-6,-7,2,1].dm('f#')].addLine;
+~justTheTune.('properly');
 ["/*SPOCK:*/ Very good. ","r"].addLine;
 ["You see, Sargon ","r"].addLine;
 ["would not permit me ","r"].addLine;
 ["to keep this body. ","r"].addLine;
 ["It is therefore necessary for you to kill your captain ","r"].addLine;
-["so that Sargon will die with him.","r"].addLine;
+["so that Sargon will die with him.","r"].addLine
+
 )

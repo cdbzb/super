@@ -140,7 +140,6 @@ s.waitForBoot({
 
 	SynthDef(\verb_fade,{|in time| FreeVerb.ar(in, room:0.8, mix:0.8)*Line.kr(1,0,time)}).add;
 
-	//				 {{{1 moved to Library/sythdefs
 	SynthDef(\vsti,{|in out=0|
 		var sig=VSTPlugin.ar(nil,2);
 		Out.ar(out,sig)
@@ -196,7 +195,7 @@ SynthDef(\sparkTriangle,{
 SynthDef( \reedy , { |freq = 400 amp = 0.1 attack=0.5 sustain=3 release=9|
 				//		var numberOfPartials = s.sampleRate/freq/2 => _.floor => _.asInteger;
 				var numberOfPartials =120;
-				var nyquist = s.sampleRate/2;
+				var nyquist = s.sampleRate.isNil.not.if  {s.sampleRate/2}{22050};
 				var detune = 25;//cents
 				var noise = {Rand(~cents.(detune),~cents.(detune).reciprocal)} ! numberOfPartials;
 				var line = Line.kr(1,0,10)+LFBrownNoise1.kr().range(0,0.5);

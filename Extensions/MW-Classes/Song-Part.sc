@@ -314,7 +314,7 @@ Song {
 
 	section {|string| 
 		//returns section number which contains lyric
-		var array = (..lyrics.size-1).select{|i |lyrics[i].contains(string.asString)};
+		var array = (..lyrics.size-1).select{|i |lyrics[i].asString.contains(string.asString)};
 		(array.size>1).if{'!!! more than one section with: '.post;string.postln; array.postln};
 		^array[0]
 	}
@@ -382,6 +382,7 @@ Song {
 	parseBeats { |phrase array start=0|
 		var beatCounter = List.new, denominators = List.new;
 		var result = List.new;
+		var desiredLength = array.sum;
 		phrase=this.getSection(phrase);
 		array=array++1;
 		array.do{
@@ -420,6 +421,8 @@ Song {
 				}
 
 			};
+			//sanity check - if result is 1 too long
+			(result.size>desiredLength).if{result=result[0..(result.size-2)]};
 			^this.parse(phrase,result,start)
 }
 

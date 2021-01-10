@@ -1,0 +1,403 @@
+var o, p;
+o = [
+	Dictionary.prNew,  Array.prNew(512),  "you to administer each of the injections, ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(12),  "ten cc's each hour.",  Pseq.prNew,  
+	List.prNew,  Array.prNew(5),  "/*CHAPEL:*/ I (breath). I was. (breath) ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(5),  "no one else will notice. ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(6),  "(He touches her fosehead.) /*SPOCK:*/ What were you saying? ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(6),  "(boom) this formula -- -- will reduce the ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(11),  "/*SPOCK:*/ Yes. Well, you were about to say that ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(9),  "/*CHAPEL:*/ This hypo does not contain the same formula. ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(12),  "/*SPOCK:*/ This hypo you will code mark for Tha lassa. And ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(13),  "/*CHAPEL:*/ I understand. ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(4),  "(boom) While the bodies are occupied, ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(9),  "I wanted to say-- something. I've for",  Pseq.prNew,  
+	List.prNew,  Array.prNew(10),  "/*CHAPEL:*/ Without the same formula, Captain Kirk will die. ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(12),  "I will inform Doctor McCoy that each is ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(11),  "you watched me prepare the formula and fill each of the hypos. ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(16),  "(He touches her forehead.) /*SPOCK:*/ What were you saying? ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(6),  "/*SPOCK:*/ This one you will administer to Captain Kirk while ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(13),  "/*SPOCK:*/ No, that's correct. But since I will arrange for ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(5),  "/*CHAPEL:*/ I. I was. ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(3),  "(boom )heart action and the bodily ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(9),  "properly filled for each patient. ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(8),  "/*CHAPEL:*/ Yes, that, that was it. ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(5),  "me.  /*CHAPEL:*/ Yes, sir. ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(3),  "this one you will code mark for -- ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(8),  "gotten what it was. ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(5),  "you will administer one injection of  ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(11),  "functions to normal. ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(5),  "Sargon is in his body. ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(7)
+];
+p = [
+	// Dictionary
+	0, [ array: o[1],  size: 28 ],  
+	// Array
+	1, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[2],  o[3],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[6],  o[7],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		o[10],  o[11],  o[14],  o[15],  
+		nil,  nil,  nil,  nil,  
+		o[18],  o[19],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[22],  o[23],  
+		o[26],  o[27],  o[30],  o[31],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[34],  o[35],  
+		o[38],  o[39],  o[42],  o[43],  
+		nil,  nil,  nil,  nil,  
+		o[46],  o[47],  o[50],  o[51],  
+		o[54],  o[55],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[58],  o[59],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		o[62],  o[63],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		o[66],  o[67],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[70],  o[71],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[74],  o[75],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[78],  o[79],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[82],  o[83],  
+		o[86],  o[87],  o[90],  o[91],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[94],  o[95],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[98],  o[99],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		o[102],  o[103],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		o[106],  o[107],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		o[110],  o[111],  nil,  nil,  
+		nil,  nil,  nil,  nil ],  
+	// Pseq
+	3, [ list: o[4],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	4, [ array: o[5] ],  
+	// Array
+	5, [ 0.604,  0.364,  0.44,  0.274,  
+		0.316,  0.37,  0.478,  0.34,  
+		0.466,  0.404,  1.006,  0.518 ],  
+	// Pseq
+	7, [ list: o[8],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	8, [ array: o[9] ],  
+	// Array
+	9, [ 0.723,  0.376,  0.761,  0.432,  
+		0.846 ],  
+	// Pseq
+	11, [ list: o[12],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	12, [ array: o[13] ],  
+	// Array
+	13, [ 0.796,  1.336,  0.506,  0.782,  
+		1.332 ],  
+	// Pseq
+	15, [ list: o[16],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	16, [ array: o[17] ],  
+	// Array
+	17, [ 0.46,  0.431,  0.413,  0.557,  
+		0.887,  0.529 ],  
+	// Pseq
+	19, [ list: o[20],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	20, [ array: o[21] ],  
+	// Array
+	21, [ 1.362,  0.369,  0.34,  0.408,  
+		0.502,  0.532 ],  
+	// Pseq
+	23, [ list: o[24],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	24, [ array: o[25] ],  
+	// Array
+	25, [ 0.693,  0.732,  0.386,  0.194,  
+		1.96,  0.166,  0.189,  0.345,  
+		0.191,  0.541,  0.402 ],  
+	// Pseq
+	27, [ list: o[28],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	28, [ array: o[29] ],  
+	// Array
+	29, [ 1.112,  0.948,  0.258,  0.19,  
+		0.23,  0.424,  0.37,  0.816,  
+		0.416 ],  
+	// Pseq
+	31, [ list: o[32],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	32, [ array: o[33] ],  
+	// Array
+	33, [ 0.612,  0.353,  0.384,  0.272,  
+		0.256,  0.302,  0.311,  0.263,  
+		0.316,  0.446,  0.317,  0.398 ],  
+	// Pseq
+	35, [ list: o[36],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	36, [ array: o[37] ],  
+	// Array
+	37, [ 0.38,  0.352,  0.372,  0.379,  
+		0.387,  0.369,  0.386,  0.56,  
+		0.174,  0.367,  0.398,  0.211,  
+		1.583 ],  
+	// Pseq
+	39, [ list: o[40],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	40, [ array: o[41] ],  
+	// Array
+	41, [ 0.536,  0.289,  0.317,  0.631 ],  
+	// Pseq
+	43, [ list: o[44],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	44, [ array: o[45] ],  
+	// Array
+	45, [ 0.29,  0.234,  0.261,  0.227,  
+		0.273,  0.306,  0.558,  0.516,  
+		0.582 ],  
+	// Pseq
+	47, [ list: o[48],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	48, [ array: o[49] ],  
+	// Array
+	49, [ 0.474,  0.492,  0.298,  0.332,  
+		0.46,  0.442,  0.538,  1.316,  
+		0.372,  0.42 ],  
+	// Pseq
+	51, [ list: o[52],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	52, [ array: o[53] ],  
+	// Array
+	53, [ 0.312,  0.347,  0.186,  0.278,  
+		0.42,  0.203,  0.267,  0.226,  
+		0.24,  0.267,  0.385,  0.872 ],  
+	// Pseq
+	55, [ list: o[56],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	56, [ array: o[57] ],  
+	// Array
+	57, [ 0.545,  0.287,  0.217,  0.454,  
+		0.508,  0.327,  0.206,  0.402,  
+		0.248,  0.358,  0.238 ],  
+	// Pseq
+	59, [ list: o[60],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	60, [ array: o[61] ],  
+	// Array
+	61, [ 0.398,  0.354,  0.352,  0.346,  
+		0.344,  0.294,  0.352,  0.331,  
+		0.315,  0.32,  0.348,  0.354,  
+		0.388,  0.47,  0.702,  0.79 ],  
+	// Pseq
+	63, [ list: o[64],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	64, [ array: o[65] ],  
+	// Array
+	65, [ 1.398,  0.396,  0.36,  0.378,  
+		0.444,  0.992 ],  
+	// Pseq
+	67, [ list: o[68],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	68, [ array: o[69] ],  
+	// Array
+	69, [ 0.711,  1.082,  0.384,  0.342,  
+		0.348,  0.318,  0.358,  0.315,  
+		0.322,  0.293,  0.32,  0.335,  
+		0.396 ],  
+	// Pseq
+	71, [ list: o[72],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	72, [ array: o[73] ],  
+	// Array
+	73, [ 0.001,  0.001,  0.001,  0.001,  
+		0.001 ],  
+	// Pseq
+	75, [ list: o[76],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	76, [ array: o[77] ],  
+	// Array
+	77, [ 1.806,  0.708,  1.99 ],  
+	// Pseq
+	79, [ list: o[80],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	80, [ array: o[81] ],  
+	// Array
+	81, [ 0.739,  1.266,  0.438,  1.15,  
+		0.354,  0.394,  0.48,  0.412,  
+		0.48 ],  
+	// Pseq
+	83, [ list: o[84],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	84, [ array: o[85] ],  
+	// Array
+	85, [ 0.233,  0.234,  0.281,  0.258,  
+		0.249,  0.274,  0.538,  0.386 ],  
+	// Pseq
+	87, [ list: o[88],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	88, [ array: o[89] ],  
+	// Array
+	89, [ 1.393,  1.473,  0.518,  0.322,  
+		0.802 ],  
+	// Pseq
+	91, [ list: o[92],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	92, [ array: o[93] ],  
+	// Array
+	93, [ 0.906,  0.63,  0.683 ],  
+	// Pseq
+	95, [ list: o[96],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	96, [ array: o[97] ],  
+	// Array
+	97, [ 0.386,  0.382,  0.366,  0.356,  
+		0.422,  0.534,  0.542,  0.222 ],  
+	// Pseq
+	99, [ list: o[100],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	100, [ array: o[101] ],  
+	// Array
+	101, [ 0.402,  0.406,  0.468,  0.5,  
+		1.782 ],  
+	// Pseq
+	103, [ list: o[104],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	104, [ array: o[105] ],  
+	// Array
+	105, [ 0.254,  0.281,  0.289,  0.306,  
+		0.312,  0.295,  0.469,  0.324,  
+		0.292,  0.291,  0.393 ],  
+	// Pseq
+	107, [ list: o[108],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	108, [ array: o[109] ],  
+	// Array
+	109, [ 0.51,  0.49,  0.478,  0.646,  
+		0.682 ],  
+	// Pseq
+	111, [ list: o[112],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	112, [ array: o[113] ],  
+	// Array
+	113, [ 0.49,  0.23,  0.341,  0.404,  
+		0.41,  0.5,  0.542 ]
+];
+prUnarchive(o,p);

@@ -1,5 +1,6 @@
 Song {
 	classvar <> dursFile="/Users/michael/tank/super/theExtreme3";
+	classvar <> dursFolder="/Users/michael/tank/super/Dur";
 	classvar < songs;
 	classvar <> current;
 	classvar lyricWindow;
@@ -183,13 +184,26 @@ Song {
 		)
 	}
 
+	writeLyricDurationFile {
+		File.exists(dursFolder +/+ key).if{
+			File.exists(dursFolder +/+ 'Old').not.if{"mkdir "++dursFolder+/+'Old'=>_.unixCmd};
+			//move to old
+			File.copy(dursFolder +/+ key , dursFolder +/+'Old' +/+ key ++ Date.getDate.stamp)
+		};
+		lyricsToDurs.writeArchive(dursFolder +/+ key);
+	}
+
 	setupLyricsToDurs {
+		// Load from file, otherwise fall back to archive
+		File.exists(dursFolder +/+ key).if{
+			lyricsToDurs = Object.readArchive(dursFolder +/+ key)
+		}{
 		Archive.read(dursFile);
 		Archive.at((key++\lyricsToDurs).asSymbol).isNil.not.if(
 				{lyricsToDurs = Archive.at((key++\lyricsToDurs).asSymbol)},
 				{lyricsToDurs= Dictionary.new(128)}
-
 		)
+		}
 	}
 
 	setupDurs {
@@ -212,13 +226,17 @@ Song {
 	}
 
 	save { 
-		// TODO can we associate Parts with lines?
-		var location = (key++\lyricsToDurs).asSymbol;
-		var merge=Archive.global.at(location) ? Dictionary.new(128);
-		lyrics.do{|i| merge.add(i -> lyricsToDurs.at(i))};
-		Archive.global.put(location, merge);
-		'loc '.post;location.post;' merge '.post;merge.postln;
-		Archive.write(dursFile);'archive written'.postln 
+		File.exists(dursFolder +/+ key).if{
+			this.writeLyricDurationFile
+		} {
+			var location = (key++\lyricsToDurs).asSymbol;
+			var merge=Archive.global.at(location) ? Dictionary.new(128);
+			lyrics.do{|i| merge.add(i -> lyricsToDurs.at(i))};
+			Archive.global.put(location, merge);
+			'loc '.post;location.post;' merge '.post;merge.postln;
+			Archive.write(dursFile);'archive written'.postln 
+		}
+
 	}
 
 	backup {

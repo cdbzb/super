@@ -136,4 +136,7 @@
 	}
 }
 
++ List {
 
+	parse {|array start=0| ^this.asArray.parse(array,start) }
+}

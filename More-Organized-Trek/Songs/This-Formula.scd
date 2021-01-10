@@ -129,10 +129,7 @@ P(\highHatNormal,start:'to normal',music:{|p b e|
 	p.hatPattern => Pfin(16,_)
 	=>_.play(~quarters[e.start].quantize.asTempoClock);
 });
-P(\drumzNormal,'to normal',music:
-{|p b e|
-	
-	~quarters['bodily']=Song.parseBeats('bodily', [1,7/4,2/4,7/4, 1/2,1/2, 2/3,2/3,2/3 ]);
+P(\drumzNormal,'to normal',music: {|p b e|
 	(
 		"x.x.x.x.".asDrumPat(2,1) 
 		=> [dur:_,instrument:\snare]=>_ .p
@@ -153,6 +150,7 @@ P(\drumzNormal,'to normal',music:
 ["(boom) While the bodies are occupied, ",[-15,-5,-6,-7,1,2,4,3,1].dm('c')].addLine;
 ~justTheTune.('occupied',{|i| i.drop(1)},syl:0);
 ~quarters[\occupied]=Song.parseBeats('occupied',(1/3)!6 ++ ( (2/3)!3 ));
+//~quarters[\occupied]
 
 P(\chordsOccupied,start:\occupied,music:{|p b e|
 	[
@@ -214,6 +212,19 @@ P(\hypoBase,'hypo you will', music:{|p b e|
 	.asTempoClock
 	)
 });
+P(\hypoAnswer,start:'hypo you will',music:{|p b e|
+	[
+		freq:\r!12 ++ [5,4,3,2,1] =>_.df('a',octave:5 ) =>_.q,
+
+		detune:[1,2,2.8,-2]*2,
+		att:0.3,
+		amp:0.03,
+		instrument:\sawSynthSustain,
+		lofreq:4000,
+		rel:4
+	].p.play(~quarters['hypo you will'].asTempoClock)
+}
+);
 ["this one you will code mark for -- ",[4,3,2,1,3,3,4,3].dm('a')].addLine;
 ~justTheTune.('for --'
 	,Pmul(\freq,0.25,_)
@@ -273,15 +284,70 @@ P(\swellContain,start:'does not contain',music:{|p b e|
 }
 );
 ~justTheTune.('does not contain');
-["/*SPOCK:*/ No, that's correct. But since I will arrange for ",[1, 5,4,1].dm('b-')++[4,2,4, 3,2,1,-7].dm('f#')].addLine;
+// TODO
+["/*SPOCK:*/ No, that's correct. But since I will arrange for ",[1, 1.5,1,1].dm('b-')++[4,2,4, 3,2,1,-7].dm('f#')].addLine;
 ~justTheTune.('correct');
+P(\correctBase,start:'correct',music:{|p b e|
+	( freq:1.df('b-',octave:2), ).play
+}
+);
+~quarters['correct'] = Song.parseBeats('correct',"qq Q E qe e e e e Q E".asBeats);
+
+P(\correctBaseLine,start:'correct',music:{|p b e|
+	[
+		freq:[1,-5, -5,-3].df('b-',octave:3 ).q,
+		dur:[1,2,1,1] + [-1/10,1/10,0,0] =>_.q,
+		instrument:\sawSynthSustain,
+		att:0.6,
+		amp:0.1,
+		legato:[1,0.9, 1,0.9].q,
+	].p=>
+	{|i| Ppar([Pset(\instrument,\default,i),Pbindf(i,\amp,0.04,\out,2)])}
+	=>_.play(~quarters[e.start].asTempoClock)
+}
+);
+P(\correctBaselineSecondHalf,start:'correct',syl:3,music:{|p b e|
+	b=b.drop(1);
+	[
+		freq:[4,2,4, 3,2,1,-7, -6.5].df('f#',octave:3).q,
+		instrument:\sparkTriangle,
+//		dur:b * [1,1,1,1,1,2/3,4/3] ++ 1 =>_.q,
+		dur: b.asArray.parse([ 1,1,1,1,1,2/3,[1/3,1] ]) ++ 1 =>_.q,
+	].pp
+}
+);
 ["you to administer each of the injections, ",[5, 4,3,2,3,1, 5.5, 4.5, 1,2,3,2].dm('f#')].addLine;
 ~justTheTune.('administer each');
-["no one else will notice. ",[1,2,3,-7,-7,-6].dm('b-',scale:\minor)].addLine;
+P(\administerBaseNotes,start:'administer each',music:{|p b e|
+	[
+		freq: [4,3,2.5,2].df('b',octave:2 ).q,
+		dur: b.asArray.parse([3,3,4,2]).q,
+		legato: 1,
+	].pp;
+	[
+		freq: [3].df('e',octave:4 ).q,
+		instrument: \stringyy,
+		out:1,
+	].pp;
+
+}
+);
+P(\administerMiddleVoice,syl:9,start:'administer each',music:{|p b e|
+	[
+		freq: [4,3].df('c#',octave:4 ).q,
+		dur: b.asArray.drop(1).parse([2/3,[1/3,1]]).q,
+		legato:1,
+		instrument:\stringyy,
+		out:1,
+//		dur: b.drop(1).q
+	].pp
+}
+);
+["no one else will notice. ",[1,2,3.5,-7,-7,-6].dm('b-',scale:\minor)].addLine;
 ~justTheTune.('notice');
 ["/*CHAPEL:*/ Without the same formula, Captain Kirk will die. ",[3,1,2,3,5,4,3,1,2,3,5,6].dm('g',scale:\whole,)].addLine;
 ~justTheTune.('Without');
-["(He touches her forehead.) /*SPOCK:*/ What were you saying? ",[3,  3,4,2,4,3].dm('c')].addLine;
+["(He touches her fosehead.) /*SPOCK:*/ What were you saying? ",[3,  3,4,2,4,3].dm('c')].addLine;
 ~justTheTune.('touches her');
 P(\touchBaseNote,start:'touches her',music:{|p b e|
 	(
@@ -363,12 +429,14 @@ P(\forgetting,start:'I was.',music:{|p b e|
 P(\harmonyWatched,start:'me prepare',music:
 	{|p b e|
 	[
-		freq:[11,11,7,11,12,13,12,11,7,6,5,3,4,5,6,6].df('d').q,
+		instrument:\sawSynth,
+		freq:[11,11,7,11,12,13,12,11,7,6,5,3,4,5,6,6].df('d',octave:[4,5],).q,
 		out: 1,
 		dur:b.q,
 	].pp
 }
 );
+
 ["/*CHAPEL:*/ Yes, that, that was it. ",[7, 7, 12,11,3].dm('f#')].addLine;
 ~justTheTune.('that was it');
 P(\tremoloYes,start:'that was it',music:{|p b e|
@@ -396,11 +464,35 @@ P(\basedNotesYes,start:'that was it',music:{|p b e|
 ~justTheTune.('inform');
 ["properly filled for each patient. ",[5,4,3,2,-6,-7,2,1].dm('f#')].addLine;
 ~justTheTune.('properly');
-["/*SPOCK:*/ Very good. ","r"].addLine;
-["You see, Sargon ","r"].addLine;
-["would not permit me ","r"].addLine;
-["to keep this body. ","r"].addLine;
-["It is therefore necessary for you to kill your captain ","r"].addLine;
+
+["/*SPOCK:*/ Very good. ",[5,5,11].dm('b-',octave:4)].addLine;
+~justTheTune.('Very');
+["You see, Sargon would not let me keep this body",[5,6,12,11,5,6,11,12, 13,14,14,13].dm('b-',octave:4 )].addLine;
+~justTheTune.('keep this');
+P(\keepThisOctaves,start:'keep this',music:{|p b e|
+	[
+		freq: [\r,1,-6,-5].df('b-',octave:[2,3,1] ).q,
+		dur: b.parse([2, 4,2,4]) + [0,0,0,1] =>_.q,
+		legato:1,
+		out:[ 0 ]++Effect(
+			{|i|
+
+				var chain = FFT({ LocalBuf(2048) }!2,i);
+				chain = PV_MagSmear.new(chain,  bins: 10.0);
+				chain = PV_MagSmooth.new(chain,  factor: 0.9);
+				IFFT(chain)
+			},
+			out:0,inputChannels:2
+		).bus.index,
+
+	].p.play
+}
+);
+//["would not permit me to keep this body","r"].addLine;
+["It is therefore necessary for", [3,4,5,6,5,4,3,4,2].dm('f',octave:5)].addLine;
+~justTheTune.('necessary');
+["you to kill your captain ", [11,7,12,11,7,6].dm('e-',octave:5)].addLine;
+~justTheTune.('kill');
 ["so that Sargon will die with him.","r"].addLine
 
 )

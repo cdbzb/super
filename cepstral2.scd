@@ -11,50 +11,11 @@
 
 
 (
-SynthDef(\morphintime, {|out = 0, modBuf = 0, carBuf = 1|
-var in, in2, chain, chain2, chain3, cepsch, cepsch2, fftsize;
-fftsize = 2048;
-
-
-// 1. STFT of signal
-// 2. smooth spectral envelope
-// get cepstrum of modulating signal
-in = PlayBuf.ar(1, modBuf, BufRateScale.kr(modBuf), \trigger.tr(1), 0, 1);
-chain = FFT(LocalBuf(2048), in);
-cepsch = Cepstrum(~cepbufm, chain);
-// get cepstrum of carrier signal
-in2 = PlayBuf.ar(1, carBuf, BufRateScale.kr(carBuf), 1, 0, 1);
-//in2 = WhiteNoise.ar(0.1);
-chain2 = FFT(LocalBuf(2048), in2);
-cepsch2 = Cepstrum(~cepbufc, chain2);
-
-// PV_BrickWall can act as a low-pass filter, or here, as a wol-pass lifter...
-// ...in practical terms, produces a smoothed version of the spectrum
-// get smooth version of modulator
-cepsch = PV_BrickWall(cepsch, -0.92);
-ICepstrum(cepsch, ~envm);
-// get smoothed version of carrier
-cepsch2 = PV_BrickWall(cepsch2, \smoothCarrier.kr(-0.92));
-ICepstrum(cepsch2, ~envc);
-
-// 3. divide spectrum of each carrier frame by smooth spectral envelope (to flatten)
-chain2 = PV_MagDiv(chain2,~envc);
-
-// 4. multiply flattened spectral carrier frame with smooth spectral envelope of modulator
-chain2 = PV_MagMul(chain2, ~envm);
-
-Out.ar( out, Pan2.ar(IFFT(chain2) *\amp.kr(0.5),\pan.kr(0)) );
-
-}).add;
-
 SynthDef(\localBufferMorph, {|out = 0, modBuf = 0, carBuf = 1|
-var in, in2, chain, chain2, chain3, cepsch, cepsch2, fftsize;
-var modulatorEnvelope,carrierEnvelope;
-fftsize = 2048;
-modulatorEnvelope=LocalBuf(fftsize);
-carrierEnvelope=LocalBuf(fftsize);
-modulatorCepstrum=LocalBuf(fftsize/2);
-carrierCepstrum=LocalBuf(fftsize/2);
+var in, in2, chain, chain2, chain3, cepsch, cepsch2;
+var fftsize = 2048;
+var modulatorEnvelope=LocalBuf(fftsize), carrierEnvelope=LocalBuf(fftsize);
+var modulatorCepstrum=LocalBuf(fftsize/2), carrierCepstrum=LocalBuf(fftsize/2);
 
 
 // 1. STFT of signal
@@ -161,7 +122,6 @@ SynthDef(\soundInMorph, {
  )
  { Item(\order).playbuf([1,1.03],loop:1,) * 0.1 => EarlyRef.ar(_,[1,1,1],[4,4,4],[5,7,8])=> DWGReverbC1C3.ar(_,1200,mix:0.1,c3:20)}.play
  { Item(\order).playbuf(loop:1,) * 0.1 => EarlyRef.ar(_,[1,1,1],[4,4,4],[5,7,8])=> DWGReverbC1C3.ar(_,1200,mix:0.1,c3:20)}.play
- s.meter
  (degree:1,dur:10,instrument:\sawSynthSustain,amp:0.01,att:4,octave:3,).play
  s.plotTree
 
@@ -175,24 +135,33 @@ SynthDef(\soundInMorph, {
 	 {RecordBuf.ar(Impulse.ar(5),~buffer.bufnum,loop:0,doneAction:2)}.play;
 	 {PlayBuf.ar(1,~buffer.bufnum)}.play(s,1)
  )
- ~buffer.plot
-	
  PV_ChainUGen.dumpClassSubtree
  (
-	 SynthDef(\justTheTone, {
-		 |fftsize= 2048|
-		 var fbuffer=LocalBuf(fftsize);
-		 var cbuffer=LocalBuf(fftsize/2);
-		 SoundIn.ar()
-		 => FFT(fbuffer,_)
-		 => Cepstrum(cbuffer,_)
 
-		 => PV_BrickWall(_,SinOsc.kr(5.reciprocal).range(0.2,0.8))
+	 "/Users/michael/tank/super/song-Synthdefs.scd".load;
+SynthDef(\busVersion, {
+	|out = 0, carrier = 1,modulator=0 fftsize=2048 hop=0.5| //carrier is a bufnum
+	var in, in2, chain, carrierChain, chain3, cepsch, cepsch2;
+	var modulatorEnvelope=LocalBuf(fftsize); var carrierEnvelope=LocalBuf(fftsize);
+	In.ar(bus: modulator )
+	=> FFT(LocalBuf(fftsize), _,hop,1)
+	=> Cepstrum(LocalBuf(fftsize/2), _)
+	=> PV_BrickWall(_, -0.92)
+	=> ICepstrum(_, modulatorEnvelope);
+	// get cepstrum of carrier signal
+	carrierChain = 
+		In.ar(carrier)
+		=> FFT(LocalBuf(fftsize), _,hop,1);
+	cepsch2 = 
+		Cepstrum(LocalBuf(fftsize/2), carrierChain)
+		=> PV_BrickWall(_, \smoothCarrier.kr(-0.92))
+		=> ICepstrum(_, LocalBuf(fftsize));
+	// 3. divide spectrum of each carrier frame by smooth spectral envelope (to flatten)
+	// 4. multiply flattened spectral carrier frame with smooth spectral envelope of modulator
+	carrierChain = PV_MagDiv(carrierChain,cepsch2)
+	 => PV_MagMul(_, modulatorEnvelope);
+	Out.ar( out, Pan2.ar(IFFT(carrierChain) *\amp.kr(0.5),\pan.kr(0)) );
 
-		 => ICepstrum(_,fbuffer)
-		 => IFFT(fbuffer)
-		 * 0.1
-		 => Out.ar(0,_ )
-	 }).add
+}).add;
  )
- Synth(\justTheTone)
+ (

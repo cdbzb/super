@@ -78,3 +78,20 @@ Ptpar([
 x.set(\trigger,1)
 Item(\order).play
 (note:1)
+(
+
+	[[instrument:\sawSynthSustain,amp:1].p<>(c.p++ a.p)].q(2)
+	=> ~vocoderPattern.(_,\feeelingz,rate:0.91.reciprocal);
+	Ptpar([
+	0,"xx.x".asDrumPat(2,16)=>{|i| [dur:i,instrument:\kick1].p },
+	0,"..x.".asDrumPat(2,16)=>{|i| [dur:i,instrument:\snare].p },
+	0,"xxxx".asDrumPat(2,16)=>{|i| [dur:i,instrument:\hihat].p },
+	]).play;
+//Item(\feeelingz).play
+
+)
+Item(\feeelingz).arm(s,0)
+Item(\feEelingz).play
+Item(\feeelingz).play
+Item.refrese
+u8

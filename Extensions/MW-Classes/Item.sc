@@ -40,9 +40,13 @@ Item {
 		name = n;//{{{
 		items.at(name).isNil.if{
 			items.put(n,this);
-			File.mkdir(samplesDir++name);
+			File.exists(samplesDir ++ name).not.if { 
+				File.mkdir(samplesDir++name) 
+			}{ 
+				"using existing directory".postln ;
+				buffer=Buffer.read(Server.default,this.mostRecent);
+			};
 			dir=samplesDir++name++"/";
-			buffer=Buffer.read(Server.default,this.mostRecent);
 		}{
 			^items.at(n).refresh
 		}
@@ -110,7 +114,7 @@ Item {
 				sig=PlayBuf.ar(
 					inChans, 
 					buffer.bufnum,
-					rate:rate,///this.p_sampleRate*server.sampleRate,
+					rate:rate*BufRateScale.kr(buffer.bufnum),///this.p_sampleRate*server.sampleRate,
 					startPos:startPos,
 					trigger:trigger,
 					loop:loop);
@@ -134,7 +138,7 @@ Item {
 	refresh {
 		buffer=Buffer.read(Server.default,this.mostRecent);
 		recordLength=buffer.numFrames;
-}
+	}
 	playbufMon {|...args| //{{{
 		this.armed.if{^SoundIn.ar(inBus)}
 		{^this.playbuf(*args)}
@@ -143,7 +147,7 @@ Item {
 		^PlayBuf.ar(//{{{
 			inChans, 
 			buffer.bufnum,
-			rate:rate*this.p_sampleRate/Server.default.sampleRate,
+			rate:rate*BufRateScale.kr(buffer.bufnum),//this.p_sampleRate/Server.default.sampleRate,
 			startPos:startPos,
 			trigger:trigger,
 			loop:loop,

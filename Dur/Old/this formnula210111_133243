@@ -16,7 +16,7 @@ o = [
 	List.prNew,  Array.prNew(10),  "/*CHAPEL:*/ Without the same formula, Captain Kirk will die. ",  Pseq.prNew,  
 	List.prNew,  Array.prNew(12),  "I will inform Doctor McCoy that each is ",  Pseq.prNew,  
 	List.prNew,  Array.prNew(11),  "so that Sargon will die with him.",  Pseq.prNew,  
-	List.prNew,  Array.prNew(8),  "you watched me prepare the formula and fill each of the hypos. ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(4),  "you watched me prepare the formula and fill each of the hypos. ",  Pseq.prNew,  
 	List.prNew,  Array.prNew(16),  "you to kill your captain ",  Pseq.prNew,  
 	List.prNew,  Array.prNew(6),  "(He touches her forehead.) /*SPOCK:*/ What were you saying? ",  Pseq.prNew,  
 	List.prNew,  Array.prNew(6),  "/*SPOCK:*/ This one you will administer to Captain Kirk while ",  Pseq.prNew,  
@@ -301,8 +301,7 @@ p = [
 	// List
 	64, [ array: o[65] ],  
 	// Array
-	65, [ 0.528,  0.555,  0.56,  0.593,  
-		0.648,  0.76,  1.172,  0.677 ],  
+	65, [ 0.523,  0.543,  0.586,  0.581 ],  
 	// Pseq
 	67, [ list: o[68],  repeats: 1,  
 		offset: 0 ],  

@@ -489,10 +489,136 @@ P(\keepThisOctaves,start:'keep this',music:{|p b e|
 }
 );
 //["would not permit me to keep this body","r"].addLine;
-["It is therefore necessary for", [3,4,5,6,5,4,3,4,2].dm('f',octave:5)].addLine;
+["It is therefore necessary for", [-7,1,2,3,2,1,-7,1,-6].dm('b-',octave:5)].addLine;
 ~justTheTune.('necessary');
-["you to kill your captain ", [11,7,12,11,7,6].dm('e-',octave:5)].addLine;
+~justTheTune.('therefore',{|i| i.fin(4)=> Pmul(\freq,[ 0.5 , 0.25 ],_)=>Pbindf(_,\instrument,\sparkTriangle,\amp,0.06)});
+P(\necessaryBaseNote,start:'necessary',music:{|p b e|
+	[out:
+		[ 0 ]++
+		Effect(
+			{|i|
+
+				var chain = FFT({ LocalBuf(2048) }!2,i);
+				chain = PV_MagSmear.new(chain,  bins: 10.0);
+				chain = PV_MagSmooth.new(chain,  factor: 0.9);
+				IFFT(chain)
+				=> EchoNone.ar(_,1,0.2,2)
+			},
+			out:0,inputChannels:2
+		).bus.index,
+		freq:[\r,6].df('b-',octave:[2,3] ).q,
+		amp:0.25,
+		[ \instrument,\amp,\mix,\release ]:[ \stringyy,0.15 ,0,4 ],
+		legato:1,
+		dur:b.parse([4,5]).q,
+	].pp
+}
+);
+["you to kill your captain ", [4,3,5,4,3,2].dm('b-',octave:5)].addLine;
 ~justTheTune.('kill');
-["so that Sargon will die with him.","r"].addLine
+P(\killBaseNote,start:'kill',music:{|p b e|
+	[out:[ 0 ]++Effect(
+			{|i|
+
+				var chain = FFT({ LocalBuf(2048) }!2,i);
+				chain = PV_MagSmear.new(chain,  bins: 10.0);
+				chain = PV_MagSmooth.new(chain,  factor: 0.9);
+				IFFT(chain)
+			},
+			out:0,inputChannels:2
+		).bus.index,
+		freq:[5.5,5].df('b-',octave:[2,3] ).q,
+		amp:0.25,
+		legato:1,
+		[ \instrument,\amp,\mix,\release ]:[ \stringyy,0.15 ,0,4 ],
+		dur:b.parse([4,2]).q,
+	].pp
+}
+);
+["so that Sargon will die with him.",[-7,1,3,2.5,-6,-7,2,1].dm('b-')].addLine;
+~justTheTune.('with him');
+//MUTEDP(\sargonLowerBase,start:'with him',music:{|p b e|
+	//MUTED[
+		//MUTEDfreq: [\r,5.5,6,7,11].df('b-',octave:[ 1,2 ] ).q,
+		//MUTEDamp:0.2,
+		//MUTEDdur:b.parse([2,2,2,1,1]).q,
+	//MUTED].pp
+//MUTED
+//MUTED}
+//MUTED);
+	// This item is the version from reaper which is probably better 
+P(\sargonBaseline,start:'with him',music:{|p b e|
+	[
+		freq: [\r,4.5,12,4].df('f',octave:[2,3] ).q,
+		legato:1.1,
+		[ \instrument,\amp,\mix,\release ]:[ \stringyy,0.15 ,0,4 ],
+
+		dur:b.parse([2,2,2,2]).q,
+	].pp
+}
+);
+P(\sargonNote,start:'with him',syl:5,music:{|p b e|
+	[ 
+		instrument:\sawSynthSustain, 
+		att:13, 
+		dur:b.q,
+		amp:[ 0.3,0.1 ].q/3,
+		rel:5,
+		lag:[ b[0]/3,b[0]/5 ].q, 
+		freq: [6,5].df('b-',octave:5 ).q ,
+		out:[0,1].q,
+	].p.play
+}
+);
+P(\sargonMiddleVoice,start:'with him',music:{|p b e|
+	[
+		freq: [\r,1.5,6,5,4,3].df('b-',octave:3 ).q,
+//		instrument:\stringyy,
+		amp:0.3,
+
+		lag:-64/44100*3,
+		mix:0,
+		out:
+//		[ 3 ]++
+		Effect(
+			{|i|
+
+				var chain = FFT({ LocalBuf(2048) }!2,i);
+				chain = PV_MagSmear.new(chain,  bins: 10.0);
+				chain = PV_MagSmooth.new(chain,  factor: 0.9);
+				IFFT(chain)
+				=>MoogFF.ar(_,2800,2)
+			},
+			out:2,inputChannels:2
+		).bus.index,
+//		out: 3,
+		dur:b.parse([2,2,1,1,1,1]).q,
+		legato:[1,1,1,1,1,1,1].q,
+	].pm(\sawSynthSustain).play
+}
+);
+P(\sargonTuningGong,start:'with him',syl:1,music:{|p b e|
+	(type:\tuningGong,
+		amp:0.005,
+		sustain:0,
+		release:6,
+		freq:
+		[1].df('f#',octave:5).unbubble
+	).play
+}
+);
+P(\sargonStrum,start:'with him',music:{|p b e|
+	[
+
+		freq: [\r,[5,11,13,15,21]].df('b',octave:4,scale:\minor,tuning:\sept1,).q,
+		lfo: Effect.lfo({ SinOsc.kr(3.5).range(0.02 , 0.1) }),
+		amp:Pfunc({|e|e.lfo}) ,
+		out:Effect({|i|i.distort => EarlyRef.ar(_,[1,1,1],[2,3,1],[5,6,4])=> DWGReverbC1C3.ar(_,2000,1,30,mix:0.5)},inputChannels:2,out:2,).bus.index,
+		strum:0.06,
+		dur:b.parse([2,3]).q,
+
+	].pp
+}
+);
 
 )

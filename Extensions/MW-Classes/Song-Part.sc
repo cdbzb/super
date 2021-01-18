@@ -227,7 +227,8 @@ Song {
 
 	save { 
 		File.exists(dursFolder +/+ key).if{
-			this.writeLyricDurationFile
+			this.writeLyricDurationFile;
+			'file written'.postln;
 		} {
 			var location = (key++\lyricsToDurs).asSymbol;
 			var merge=Archive.global.at(location) ? Dictionary.new(128);
@@ -574,6 +575,7 @@ P {
 			start = Song.section(start);
 			start.postln;
 		};
+		key = key++start;//asSymbol?
 		part=Part(start,syl,lag,music);
 		key=(key++\_).asSymbol;
 		Message(  Song.songs.at(Song.current) , key ).value(part);

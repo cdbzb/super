@@ -21,7 +21,7 @@ XTouch {
 	*applyMappings {
 			mappings.pairsDo{|function midinote| 
 //				MIDIdef.noteOn(midinote, function, srcID:id);
-				MIDIFunc.noteOn(function,midinote,srcID:1779843049);
+				MIDIFunc.noteOn(function,midinote,srcID:1779843049).permanent;
 			};
 	}
 	*initClass {

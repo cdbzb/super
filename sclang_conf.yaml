@@ -29,6 +29,8 @@ includePaths:
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/FPLib
     -   /Users/michael/.local/share/SuperCollider/downloaded-quarks/autogui
     -   /Users/michael/.local/share/SuperCollider/downloaded-quarks/Scintillator
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/OfflineProcess
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Deferred
 excludePaths:
     []
 postInlineWarnings: false

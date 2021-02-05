@@ -265,7 +265,7 @@ SynthDef(\recc,{|buf bus=0|DiskOut.ar(buf,In.ar(bus))}).add;
 	function.value(pbind).play;
 }, syl:syl ;).value}; 
 
-~vocoderPattern = { |pattern item effect out=0 bypass=0 rate=1 amp=0.1 dry=0 inputEffect| 
+~vocoderPattern = { |pattern item effect out=0 bypass=0 rate=1 amp=0.1 dry=0 inputEffect loop=0 stretch| 
 	var environment = ();
 	environment.use {
 		~modulator=Bus.audio(s,1);
@@ -280,7 +280,7 @@ SynthDef(\recc,{|buf bus=0|DiskOut.ar(buf,In.ar(bus))}).add;
 		( bypass==0 ).if {
 			Item(item);
 			{
-				Item(item).playbuf(loop:1,rate:rate) 
+				Item(item).playbuf(loop:loop,rate:rate) 
 				=> ( inputEffect ? {|i|i} )
 			}.play(s,~modulator.index);
 		}{
@@ -309,8 +309,6 @@ SynthDef(\recc,{|buf bus=0|DiskOut.ar(buf,In.ar(bus))}).add;
 			\amp,amp,
 			\dry,dry
 		]);
-			NodeWatcher.register(~synth, assumePlaying: true);
-			fork{
 				while ( {~synth.isPlaying},{1.wait} );
 				\freeing_Bus.postln;
 				~carrier.free; ~modulator.free;
@@ -318,8 +316,7 @@ SynthDef(\recc,{|buf bus=0|DiskOut.ar(buf,In.ar(bus))}).add;
 			(effect.isNil.not).if{
 				~effect={ In.ar(~verb.index,2) => effect } =>_.play(s,out,addAction:\addToTail);
 			};
-	};
 	environment;
+	};
 
-} 
 )

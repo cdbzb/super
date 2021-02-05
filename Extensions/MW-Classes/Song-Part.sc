@@ -282,6 +282,8 @@ Song {
 			this.resources.at(\infrastructure) !? (_.value);
 			resources.condition !? _.wait;
 			'Condition Met'.postln;
+//			1.wait;
+			Server.default.sync;
 			list.do(_.p)
 		}
 	}		
@@ -482,7 +484,7 @@ Part {
 	classvar <>current;
 	var <>start,<>syl,<>lag,<>music,<>resources,<>parent,<>name;
 
-	*play{^current.play}
+	*play{fork{Server.default.sync;current.play};^current}
 
 	*new {|start=0,syl,lag=0,music|
 		^super.new.init(start,syl,lag,music)
@@ -504,6 +506,7 @@ Part {
 			)
 		}},
 		Message,{Server.default.bind{music.value}},
+		VocoderPattern,{music.play;\vocoderPatternPlaying.postln},
 		{music.play}
 		) 
 	}
@@ -521,7 +524,7 @@ Part {
 		TempoClock.sched(when,this)
 //		parent.clock.sched(when,this)
 		//AppClock.sched(when,this)
-		//SystemClock.sched(when,this)
+//		SystemClock.sched(when,this)
 	}
 
 	calcTime {
@@ -537,9 +540,9 @@ Part {
 	p {
 		(start>=parent.cursor).if{
 			var when=this.calcTime;
-			this.sched(when);
+			this.sched(when+Server.default.latency);
 			{this.name.postln}.sched(when);
-			//when.postln
+//			when.postln
 		}
 	}
 	ppost {

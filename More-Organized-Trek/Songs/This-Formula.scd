@@ -468,7 +468,32 @@ P(\basedNotesYes,start:'that was it',music:{|p b e|
 ["/*SPOCK:*/ Very good. ",[5,5,11].dm('b-',octave:4)].addLine;
 ~justTheTune.('Very');
 ["You see, Sargon would not let me keep this body",[5,6,12,11,5,6,11,12, 13,14,14,13].dm('b-',octave:4 )].addLine;
+//~justTheTune.('keep this');
+SynthDef(\whiteNoise,{WhiteNoise.ar(\amp.kr(0.1))=>LPF.ar(_,2000)* Env.cutoff(1).kr(2,gate:\gate.kr(1)) => Out.ar(\out.kr(0),_)}).add;
 ~justTheTune.('keep this');
+P(\vocoder,start:'keep this',music:{|p b e|
+	\b++b =>_.postln;
+	Song.pbind['keep this']
+	=>Pbindf(_,\legato,1,
+//		\instrument,\sawSynth,
+	)
+	=>Pmul(\freq,[0.25, 0.5 ],_)
+	+= [amp:0.0002, instrument: \whiteNoise, dur:[ 2 ].q(inf) ].p
+//	=>{|i| VocoderPattern(i,'keep this body').play }
+	=> VocoderPattern(_,'keep this body',
+		warp:0,
+		durs:Song.durs['keep this'].list.asArray,
+		dry:0.0,
+//		fftSize:4096,
+		out:1
+	)
+//	=>~vocoderPattern.(_, 'keep this body',
+//		out:1,
+//		dry:0.0,
+//		inputEffect:(EchoNone.ar(_,0.4,0.3,1.5))
+//	)
+}.value
+);
 P(\keepThisOctaves,start:'keep this',music:{|p b e|
 	[
 		freq: [\r,1,-6,-5].df('b-',octave:[2,3,1] ).q,
@@ -490,7 +515,22 @@ P(\keepThisOctaves,start:'keep this',music:{|p b e|
 );
 //["would not permit me to keep this body","r"].addLine;
 ["It is therefore necessary for", [-7,1,2,3,2,1,-7,1,-6].dm('b-',octave:5)].addLine;
-~justTheTune.('necessary');
+//~justTheTune.('necessary');
+P(\vocoder,start:'necessary',music:{|p b e|
+	Song.pbind['necessary']
+	=>Pbindf(_,\legato,1,
+//		\instrument,\sawSynth,
+	)
+	=>Pmul(\freq,[0.25, 0.5 ],_)
+	+= [amp:0.0002, instrument: \whiteNoise, dur:[ 2 ].q(inf) ].p
+	=>VocoderPattern(_, 'necessary',
+		out:1,
+//		warp:0,
+		dry:0.0,
+//		inputEffect:(EchoNone.ar(_,0.4,0.3,1.5))
+	)
+}.value
+);
 ~justTheTune.('therefore',{|i| i.fin(4)=> Pmul(\freq,[ 0.5 , 0.25 ],_)=>Pbindf(_,\instrument,\sparkTriangle,\amp,0.06)});
 P(\necessaryBaseNote,start:'necessary',music:{|p b e|
 	[out:
@@ -617,7 +657,7 @@ P(\sargonStrum,start:'with him',music:{|p b e|
 		strum:0.06,
 		dur:b.parse([2,3]).q,
 
-	].pp
+	].pp;
 }
 );
 

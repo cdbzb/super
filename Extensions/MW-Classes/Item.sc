@@ -1,13 +1,32 @@
 Item {
 	classvar <samplesDir='/Users/michael/tank/super/samples/';
-	classvar <>items, <>current;
-	var <>name,<>node,<>buffer,dir;
-	var <>inBus=0, <>inChans=1, <>sampleRate;
+	classvar <>items, <>current, <>latencyCompensation=0;
+	var <>stamps,<>warpEnvelope,<>name,<>node,<>buffer,<>dir;
+	var <>inBus, <>inChans=1, <>sampleRate;
 	var <>recordLength, <>bus=1;
+	var <>pvBuffer;
+	classvar <>abort;
 
 	*initClass {
 		items=();
-		samplesDir='/Users/michael/tank/super/samples/'
+		samplesDir='/Users/michael/tank/super/samples/';
+		SynthDef("pvrec", { |recBuf=1 soundBufnum=2 fftSize=2048 hop= 0.5 window=1|
+			var in, chain, bufnum;
+			bufnum = LocalBuf.new(fftSize);
+			Line.kr(1, 1, BufDur.kr(soundBufnum), doneAction: 2);
+			in = PlayBuf.ar(1, soundBufnum, 1, loop: 0);
+			//in = PlayBuf.ar(1, soundBufnum, BufRateScale.kr(soundBufnum), loop: 0);
+			// note the window type and overlaps... this is important for resynth parameters
+			chain = FFT(bufnum, in, hop, window);
+			chain = PV_RecordBuf(chain, recBuf, 0, 1, 0, hop, window);
+			// no ouput ... simply save the analysis to recBuf
+		}).add;
+		SynthDef("pvplay", { | out=0, recBuf=1, rate=1 fftSize=2048 hop= 0.5 window = 1|
+			var in, chain, bufnum;
+			bufnum = LocalBuf.new(fftSize);
+			chain = PV_PlayBuf(bufnum, recBuf, rate, 0, 1, 1, 0.25, 1);
+			Out.ar(out, IFFT(chain, window).dup);
+		}).and;
 	}
 	//only clones the mostRecent - sets samplesDir
 	*new {| name="item" | 
@@ -32,12 +51,15 @@ Item {
 	*record { |...args| current.record(*args) }
 	*stop { current.stop }
 	*arm { |...args| current.arm(*args) }
+	*armSection { |...args| current.armSection(*args) }
 	*samplesDir_ {|newDir|
 		(newDir[newDir.size-1]!=$/).if{newDir=newDir++'/'};//{{{
 		samplesDir=newDir
 	}//}}}
+	*list {|options = "-tr"| "ls " ++ options ++ " " ++ samplesDir => _.unixCmd}
 	init { | n |
 		name = n;//{{{
+		dir=samplesDir++name++"/";
 		items.at(name).isNil.if{
 			items.put(n,this);
 			File.exists(samplesDir ++ name).not.if { 
@@ -45,14 +67,34 @@ Item {
 			}{ 
 				"using existing directory".postln ;
 				buffer=Buffer.read(Server.default,this.mostRecent);
+				File.exists(samplesDir ++ name ++ "/stamps").if{
+					stamps=Object.readArchive(samplesDir++name++"/stamps")
+				}	
 			};
-			dir=samplesDir++name++"/";
 		}{
 			^items.at(n).refresh
 		}
 	}
 //}}}
-	armed { node.isNil.if{^false}{^node.isRecording} }
+	armed { node.isNil.if{^false}
+	{^node.isPlaying} 
+}
+// stamp returns warp envelope, stamps returns stamps
+	stamp {
+		|array| stamps.isNil.if{
+			stamps=array;this.writeStamps;
+			^1
+		} {
+
+			var ratios=stamps/array;
+			^warpEnvelope=Env([ ratios[0] ]++ratios,array,\step)
+		}
+	}
+	writeStamps {stamps.writeArchive(samplesDir++ name ++"/"++"stamps")}
+	clearStamps {
+		stamps=nil;  
+		( "rm "++samplesDir++ name.asString.escapeChar($ ) ++"/"++"stamps" ).unixCmd
+	}
 	newFrom{|name|
 		var i = Item(name);//{{{
 		//try{File.mkdir(samplesDir++newName)};
@@ -65,27 +107,98 @@ Item {
 			this.play(*args)
 		} 
 	}//}}}
-	arm  {|s bus chan length| 
-		var p_node;//{{{
+	latency {^(latencyCompensation * Server.default.latency;)}
+	arm {|s bus chan length| 
+		var p_node;
 		length.isNil.not.if{recordLength=length};
-		inBus=(bus ? inBus); inChans=(chan ? inChans);
-		s ?? {s=Server.default};
-		p_node=RecNodeProxy.audio(s,1)
-		.source_({SoundIn.ar(inBus,inChans)})
-		.open(dir++'/'++Date.getDate.stamp++'.aif')
-		.record;
-		node=p_node
-	}//}}}
+		buffer=Buffer.alloc(Server.default,recordLength*Server.default.sampleRate);
+		bus.isNil.if {
+			inBus.isNil.if{
+				inBus=Server.default.options.numOutputBusChannels
+			} 
+		} {
+			inBus = bus
+		};
+		inChans=(chan ? inChans);
+
+		^node= {
+			RecordBuf.ar(
+				In.ar(inBus,inChans),buffer,recLevel:1,preLevel:0,
+//				run:0,
+				loop:\loop.kr(1),
+				trigger:\trigger.kr(-1),
+				doneAction: 2
+			);
+		}.play;
+	}
+
+// old method
+//	arm {|s bus chan length| 
+//		var p_node;//{{{
+//		length.isNil.not.if{recordLength=length};
+//		inBus=(bus ? inBus); inChans=(chan ? inChans);
+//		s ?? {s=Server.default};
+//		p_node=RecNodeProxy.audio(s,1)
+//		.source_({
+//			In.ar(inBus,inChans)
+//			//=>DelayN.ar(_,this.latency,this.latency)
+//		//WhiteNoise.ar(0.2)
+//	})
+//		.open(dir++'/'++Date.getDate.stamp++'.aif')
+//		.record;
+//		node=p_node
+//	} //}}}
+
+	allocatePVBuffer {|fftSize=2048 hop=0.5|
+		var file = SoundFile(this.mostRecent);
+		file.openRead;
+		^Buffer.alloc(Server.default,file.duration.calcPVRecSize(fftSize,hop));
+//		file.close
+	}
+
+	getFFT {|fftSize=2048 hop= 0.5 window = 0|
+		pvBuffer = this.allocatePVBuffer(fftSize,hop,window);
+		Synth(\pvrec,[\recBuf,pvBuffer,\soundBufnum,buffer.bufnum,\fftSize,fftSize,\hop,hop,\window,window]);
+		^pvBuffer
+	}
+	playFFT {|fftSize=2048 rate=1 window=0 hop=0.5|
+		Synth(\pvplay,[\out,0,\recBuf,pvBuffer,\rate,rate,\window,window,\hop,hop,\fftSize,fftSize])
+	}
+
+	armSection {|s bus channel padding=0.2|
+		var length = Song.secDur[name] + padding;
+		this.arm(s,bus,channel,length)
+	}
 	monitor { |target addAction|
 		target.isNil.if{target=Server.default}
 		{SoundIn.ar()}.play(target,bus,addAction: addAction)
 //		node.play(bus,addAction:\addToTail);
 	}
-	record {|length| //{{{
-		node.unpause;
-		CmdPeriod.add(this.node);
-		{this.stop}.sched(length ? recordLength);
-	}//}}}
+	write {
+		abort.if{
+			'recording aborted'.postln;
+			node.free;
+			this.refresh;
+			abort=false;
+		}{
+			'recording done'.postln;
+			buffer.write(dir++'/'++Date.getDate.stamp++'.aif', headerFormat: "aiff", sampleFormat: "int24", numFrames: -1, startFrame: 0, leaveOpen: false,)
+		}
+	}
+	record {|length|
+		Server.default.bind{
+			node.set(\loop,0,\trigger,1);
+			node.onFree({
+				this.write
+			})
+		}
+	}
+	//old method
+	//record {|length| //{{{
+	//	node.unpause;
+	//	CmdPeriod.add(this.node);
+	//	{this.stop}.sched(length ? recordLength,clock:SystemClock);
+	//}//}}}
 	stop {//{{{
 		node.isNil.not.if{node.close}; 
 		buffer=Buffer.read(Server.default,this.mostRecent)
@@ -105,9 +218,10 @@ Item {
 		this.armed.if{
 			this.record;
 		}{
-			buffer.isNil.if(this.refresh);
+			buffer.isNil.if({ this.refresh });
 
-			^{
+			^Server.default.bind{
+				{
 				arg out;
 				var sig;
 				(rate*this.p_sampleRate/server.sampleRate).postln;
@@ -120,8 +234,10 @@ Item {
 					loop:loop);
 					Out.ar(bus,sig*amp)
 				}.play;
-		}
-	}//}}}
+				
+			}
+			
+	}} //}}}
 	prepVocoder {|numberOfBands=20| //{{{
 		var s,f;
 		s=Server.default;
@@ -159,8 +275,30 @@ Item {
 		^dir//{{{
 		++ PathName(dir.asString++"/").files.collect{|i|
 			i.fileNameWithoutExtension
-		}.sort.reverse[0]
+		}
+		.reject{|i| i=="stamps"}
+		.sort.reverse[0]
 		++ ".aif"
 	}//}}}
 
+	*test {
+		~b=Bus.audio();
+		//Item(\latencyTest);
+		//Item.latencyCompensation_(0);
+		Item(\latencyTest).arm(length:5,bus:~b.index);
+		fork{
+			0.5.wait;
+			Item(\latencyTest).play;
+			[note:Pseries(1,2,5)+4.rand,out:~b.index].pp;
+			6.wait;
+				Item(\latencyTest).play;
+				[note:Pseries(1,1,5)-4,out:0].pp;
+
+		}
+
+	}
+	*replay {
+				Item(\latencyTest).play;
+				[note:Pseries(1,1,5)-4,out:0].pp;
+	}
 }

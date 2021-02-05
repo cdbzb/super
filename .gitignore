@@ -1,6 +1,7 @@
 *.mp3
 *.wav
 **.wav
+**/*.wav
 *DS_Store*
 *.JPG
 *.stversions*

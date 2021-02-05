@@ -40,25 +40,24 @@ SynthDef(\plate_phaser_insert,{|inBus=0 gate=1|
 	var env= Env.cutoff(15,curve:\cub).kr(2,gate:gate);
 	var sig = In.ar(inBus,2);
 	sig=PlateReverb.ar(sig,mix:0.5,decayTime:0.55);
-	sig=Phaser2.ar(sig,rate:0.1,fb:0.5)*2;
-	ReplaceOut.ar(inBus,sig*env)
-}
 ).add;
 P(\trill,start:0,lag:0.1,music:
-	{ 
+	{ |p b e| 
+		var reverbBus = Bus.audio(s,1);
+		var reverb = Synth(\plate_phaser_insert,[\inBus,reverbBus.index,\gate,1]);
+		~syn1.syn.set(\out,reverbBus.index);
 		fork{
 			var trillLength = Song.currentSong.secDur[0..1].sum;
 			~syn1.expression(40,1);
 			~syn1.expression(30,0);
-			~syn1.monitor=Synth(\syn1_Bus);
-			~syn1.insert=Synth(\plate_phaser_insert,[\inBus,~syn1.bus.index],addAction:\addBefore,target:~syn1.monitor);
-			TempoClock.tempo=1;  //hmmm
 			0.05.wait;
 			~synTrill.value(0,0.9,12,len:trillLength).play;
 			~synTrill.value(1,1.9,4,len:trillLength).play;
 			{
 				Song.secDur[0..1].sum.wait;
-				~syn1.insert.release;
+				reverb.release;
+				~syn1.syn.set(\out,0);
+				reverbBus.free;
 			}.fork
 		} 
 	}
@@ -69,7 +68,7 @@ P(\trill,start:0,lag:0.1,music:
 ~justTheTune.('unlike');
 [ "that which was your own (dum dum dum)","d-4 c d- b-3  g-3 f g- a-" ].addLine; //3
 ~justTheTune.('your own');
-[ "and I too am pleased beloved","f# e g f# f# e d c#" ].addLine; //4 -or Bb!
+[ "and I too am pleased beloved", [3,2,4,3,3,2,1,-7].dm('d' ) ].addLine; //4 -or Bb!
 ~justTheTune.('beloved');
 [ " boom after so- long... (boom) so very long... Kiss ","d3 a b e4 d f g3 b c4 a3 e4 r" ].addLine; //5
 ~justTheTune.('very long');

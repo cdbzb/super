@@ -40,14 +40,16 @@ XTouch {
 		mappings=Dictionary.newFrom([
 			{
 				Item.stop;
-				Server.default.freeMyDefaultGroup;
 				TempoClock.all.do(_.clear);
+				Server.default.freeMyDefaultGroup;
 				Pipe.new("pressf1.sh","w");
 			},93,
 			{ defer{Window.closeAll} },51,
 			{ defer{Server.default.meter}; },63,
 			{ defer{Server.default.plotTreeL}; },62,
 			{ Item.arm; },95,
+			{ Item.armSection; },101,
+			{ Item.abort_(true) },92,
 			{ Song.play },94,
 			{ Part.play; },47,
 			{Document.current.path.load},91,

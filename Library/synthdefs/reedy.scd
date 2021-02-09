@@ -27,10 +27,6 @@
 	}.play };
 Event.addEventType(\reedy,{var args= [ ~freq,~sustain,~release,~amp ]; topEnvironment.use{~reedy.(*args)}},(type:\note,amp:0.1,freq:300,sustain:3,release:9));
 );
-a = ~reedy.(release:1,sustain:7);
-a.trace;
-a.controlNames
-a.set(\freq,290)
 ( //rising gongs no globals version
 ~gong = { |freq group tolerance = 0.03 lowest=400 amp=0.1 release=20 |
 	freq.isNil.if  { \help.postln; }

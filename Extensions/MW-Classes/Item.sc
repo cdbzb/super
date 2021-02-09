@@ -5,7 +5,7 @@ Item {
 	var <>inBus, <>inChans=1, <>sampleRate;
 	var <>recordLength, <>bus=1;
 	var <>pvBuffer;
-	classvar <>abort;
+	classvar <>abort=false;
 
 	*initClass {
 		items=();
@@ -26,7 +26,7 @@ Item {
 			bufnum = LocalBuf.new(fftSize);
 			chain = PV_PlayBuf(bufnum, recBuf, rate, 0, 1, 1, 0.25, 1);
 			Out.ar(out, IFFT(chain, window).dup);
-		}).and;
+		}).add;
 	}
 	//only clones the mostRecent - sets samplesDir
 	*new {| name="item" | 
@@ -110,6 +110,7 @@ Item {
 	latency {^(latencyCompensation * Server.default.latency;)}
 	arm {|s bus chan length| 
 		var p_node;
+		this.current;
 		length.isNil.not.if{recordLength=length};
 		buffer=Buffer.alloc(Server.default,recordLength*Server.default.sampleRate);
 		bus.isNil.if {
@@ -129,7 +130,10 @@ Item {
 				trigger:\trigger.kr(-1),
 				doneAction: 2
 			);
-		}.play;
+			// implement monitor with conditionals
+			\recording.postln;
+			nil;
+		}.play.register;
 	}
 
 // old method
@@ -177,16 +181,20 @@ Item {
 	write {
 		abort.if{
 			'recording aborted'.postln;
-			node.free;
+//			node.free;
 			this.refresh;
 			abort=false;
 		}{
 			'recording done'.postln;
-			buffer.write(dir++'/'++Date.getDate.stamp++'.aif', headerFormat: "aiff", sampleFormat: "int24", numFrames: -1, startFrame: 0, leaveOpen: false,)
+			buffer.write(dir++'/'++Date.getDate.stamp++'.aif', headerFormat: "aiff", sampleFormat: "int24", numFrames: -1, startFrame: 0, leaveOpen: false);
+			this.getFFT;
+			// clearStamps??
 		}
 	}
 	record {|length|
+		'filling buffer'.postln;
 		Server.default.bind{
+			'writing file'.postln;
 			node.set(\loop,0,\trigger,1);
 			node.onFree({
 				this.write

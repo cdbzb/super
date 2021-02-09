@@ -484,14 +484,10 @@ P(\vocoder,start:'keep this',music:{|p b e|
 		warp:0,
 		durs:Song.durs['keep this'].list.asArray,
 		dry:0.0,
+//		inputEffect:(EchoNone.ar(_,0.4,0.3,1.5))
 //		fftSize:4096,
 		out:1
 	)
-//	=>~vocoderPattern.(_, 'keep this body',
-//		out:1,
-//		dry:0.0,
-//		inputEffect:(EchoNone.ar(_,0.4,0.3,1.5))
-//	)
 }.value
 );
 P(\keepThisOctaves,start:'keep this',music:{|p b e|

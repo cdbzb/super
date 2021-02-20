@@ -467,6 +467,16 @@ P(\basedNotesYes,start:'that was it',music:{|p b e|
 
 ["/*SPOCK:*/ Very good. ",[5,5,11].dm('b-',octave:4)].addLine;
 ~justTheTune.('Very');
+P(\chord,start:'Very',music:{|p, b, e|
+	[
+//		freq:[[2,4],[1,3]].df('b-',octave:3 ).q,
+		freq:[5,4,1].df('b-',octave:3 ).q,
+		dur:b.parse([2/3,[1/3,1],1]).q,
+
+	].pp
+}
+
+);
 ["You see, Sargon would not let me keep this body",[5,6,12,11,5,6,11,12, 13,14,14,13].dm('b-',octave:4 )].addLine;
 //~justTheTune.('keep this');
 SynthDef(\whiteNoise,{WhiteNoise.ar(\amp.kr(0.1))=>LPF.ar(_,2000)* Env.cutoff(1).kr(2,gate:\gate.kr(1)) => Out.ar(\out.kr(0),_)}).add;
@@ -521,8 +531,8 @@ P(\vocoder,start:'necessary',music:{|p b e|
 	+= [amp:0.0002, instrument: \whiteNoise, dur:[ 2 ].q(inf) ].p
 	=>VocoderPattern(_, 'necessary',
 		out:1,
-//		warp:0,
-		dry:0.0,
+		warp:1,
+		ry:0.0,
 //		inputEffect:(EchoNone.ar(_,0.4,0.3,1.5))
 	)
 }.value
@@ -552,6 +562,21 @@ P(\necessaryBaseNote,start:'necessary',music:{|p b e|
 );
 ["you to kill your captain ", [4,3,5,4,3,2].dm('b-',octave:5)].addLine;
 ~justTheTune.('kill');
+P(\vocoder,start:'kill',music:{|p b e|
+	Song.pbind['kill']
+	=>Pbindf(_,\legato,1,
+//		\instrument,\sawSynth,
+	)
+	=>Pmul(\freq,[0.25, 0.5 ],_)
+	+= [amp:0.0002, instrument: \whiteNoise, dur:[ 2 ].q(inf) ].p
+	=>VocoderPattern(_, 'kill',
+		out:1,
+		warp:0,
+		dry:0.0,
+//		inputEffect:(EchoNone.ar(_,0.4,0.3,1.5))
+	)
+}.value
+);
 P(\killBaseNote,start:'kill',music:{|p b e|
 	[out:[ 0 ]++Effect(
 			{|i|

@@ -1,6 +1,6 @@
 VocoderPattern {
 //	var durs , <pattern, <item, effect, out, bypass, hop, fftSize, window=1;
-	var pattern,key,effect,inputEffect,fftSize,hop,window,>warp,out,amp,pan,loop,rate,durs,dry;
+	var pattern,key,effect,inputEffect,fftSize,hop,window,>warp,out,amp,pan,loop,rate,durs,>dry;
 	var <modulator,verb,<carrier,<synthOut,<synth,<item;
 	classvar <>server;
 	*initClass {
@@ -202,4 +202,5 @@ VocoderPattern {
 			effect={ In.ar(verb.index,2) => effect } =>_.play(server,out,addAction:\addToTail);
 		};
 	}
+	arm {|bus| item.armSection(bus:bus) }
 }

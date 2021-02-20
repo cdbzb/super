@@ -10,3 +10,6 @@
 [submodule "Extensions/supercollider-sfz"]
 	path = Extensions/supercollider-sfz
 	url = https://github.com/snappizz/supercollider-sfz.git
+[submodule "downloaded-quarks/FPLib"]
+	path = downloaded-quarks/FPLib
+	url = https://github.com/miguel-negrao/FPLib

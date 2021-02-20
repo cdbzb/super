@@ -1,10 +1,11 @@
 Song {
+	classvar lastSectionPlayed=0;
 	classvar <> dursFile="/Users/michael/tank/super/theExtreme3";
 	classvar <> dursFolder="/Users/michael/tank/super/Dur";
 	classvar < songs;
 	classvar <> current;
 	classvar lyricWindow;
-	var <song, <key, <>cursor=0, <sections, <lyrics, <tune; 
+	var <song, <key, <cursor=0, <sections, <lyrics, <tune; 
 	var <durs,  <>resources, <>lyricsToDurs;
 	var <>next; 
 	var <>clock;
@@ -91,6 +92,7 @@ Song {
 
 	init {|symbol array dursInFile|
 		key=symbol;
+		songs.at(symbol.asSymbol).notNil.if {cursor=lastSectionPlayed};
 		songs.put(symbol.asSymbol,this);
 		song=array;
 		resources=();
@@ -104,6 +106,7 @@ Song {
 		durs=Durs(this);
 		clock=TempoClock.new(queueSize:512);
 	}
+	cursor_ {|i| cursor = i; lastSectionPlayed = i;}
 
 	hasDursButNotLyricsToDurs {
 		Archive.at(key).isNil.not.if({
@@ -260,6 +263,14 @@ Song {
 
 	pts {^all {:x,x<-resources,x.class==Part}}
 
+	track { 
+		|trackName| 
+		trackName=trackName.asString;
+		^this.pts.collect(_.name)
+			.select(_.contains(trackName))
+			.sort
+	}
+
 	valueInfrastructure {
 			  resources.condition !? (_.test_(false));
 			this.resources.at(\infrastructure) !? (_.value);
@@ -329,6 +340,7 @@ Song {
 	}
 
 	playSection {|sec|
+		( sec.class==Integer ).not.if{sec=this.section(sec)};
 		cursor=sec;
 		this.play(this.at(sec))
 	}
@@ -641,6 +653,23 @@ Dur[slot] : List {
 	}
 
 	
+}
+
+Track {
+	var <>name,song;
+	var <names, <parts;
+	*new {|...args| ^super.newCopyArgs(*args).init }
+	init {
+		song = (song ? Song.currentSong);
+		name = name.asString;
+		names=song.track(name,song);
+		parts =  names.collect({|i| song.resources.at(i.asSymbol)}) 
+	}
+	number {|string| ^string.replace(name,"").asInteger}
+	blocks { ^names.separate({|x y|( (this.number(y)-this.number(x))==1 ).not }) }
+	play { song.play(names.collect(_.asSymbol));^names }
+	dry_ {|amount| parts.do({ |i| i.music.dry_(amount) })}
+	arm {|bus| parts.do({ |i| i.music.arm(bus:bus) })}
 }
 + Symbol {
 	cursor {

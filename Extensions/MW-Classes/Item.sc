@@ -101,12 +101,12 @@ Item {
 		File.copy(i.mostRecent,dir++'/'++Date.getDate.stamp++'.aif')
 		}//}}}
 	recIfArmed { |...args|
-		this.armed.if{//{{{
+		this.armed.if{
 			this.record(length:recordLength)
 		}{
 			this.play(*args)
 		} 
-	}//}}}
+	}
 	latency {^(latencyCompensation * Server.default.latency;)}
 	arm {|s bus chan length| 
 		var p_node;
@@ -208,7 +208,10 @@ Item {
 	//	{this.stop}.sched(length ? recordLength,clock:SystemClock);
 	//}//}}}
 	stop {//{{{
-		node.isNil.not.if{node.close}; 
+		node.isNil.not.if{
+//			abort=true;
+			node.free
+		}; 
 		buffer=Buffer.read(Server.default,this.mostRecent)
 	}//}}}
 	tapeMode { //{{{

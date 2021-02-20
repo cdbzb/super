@@ -4,13 +4,13 @@ XTouch {
 	classvar <>mappings;
 	classvar functionKeyToggles;
 //	classvar functionKeyNotes=(54..61);
-	classvar labels;
+	classvar <labels;
 	*add { |function,note| 
 		mappings.add(function->note);
 		this.applyMappings;
 //		functions.add{ MIDIFunc.noteOn(function,note,srcID:id) } }
 }
-	*addKey { |function key|
+	*map { |function key|
 		var note=labels.at(key.asSymbol);
 		this.add(function,note);
 		^this
@@ -19,8 +19,9 @@ XTouch {
 		
 	}
 	*applyMappings {
-			mappings.pairsDo{|function midinote| 
-//				MIDIdef.noteOn(midinote, function, srcID:id);
+			mappings.pairsDo{|function label| 
+				var midinote = labels.at(label);
+				function.cs.post;' '.post;midinote.postln;
 				MIDIFunc.noteOn(function,midinote,srcID:1779843049).permanent;
 			};
 	}
@@ -28,6 +29,21 @@ XTouch {
 		functions=List.new();
 		functionKeyToggles=Bus.control(Server.default,8);
 		labels=Dictionary.newFrom([
+			'track',40,
+			'pan',42,
+			'eq',44,
+			'send',41,
+			'plug-in',43,
+			'inst',45,
+			'global',51,
+			'midi',62,
+			'inputs',63,
+			'audio tracks',64,
+			'audio inst',65,
+			'aux',66,
+			'buses',67,
+			'outputs',68,
+			'user',69,
 			'f1',54,
 			'f2',55,
 			'f3',56,
@@ -36,6 +52,27 @@ XTouch {
 			'f6',59,
 			'f7',60,
 			'f8',61,
+			'shift',70,
+			'option',71,
+			'read',74,
+			'write',75,
+			'trim',76,
+			'save',80,
+			'undo',81,
+
+			'click',89,
+
+			'solo',90,
+			'rewind',91,
+			'fast forward',92,
+			'stop',93,
+			'play',94,
+			'record',81,
+
+			'scrub',101,
+			'bank up',47,
+
+
 	]);
 		mappings=Dictionary.newFrom([
 			{
@@ -43,16 +80,17 @@ XTouch {
 				TempoClock.all.do(_.clear);
 				Server.default.freeMyDefaultGroup;
 				Pipe.new("pressf1.sh","w");
-			},93,
-			{ defer{Window.closeAll} },51,
-			{ defer{Server.default.meter}; },63,
-			{ defer{Server.default.plotTreeL}; },62,
-			{ Item.arm; },95,
-			{ Item.armSection; },101,
-			{ Item.abort_(true) },92,
-			{ Song.play },94,
-			{ Part.play; },47,
-			{Document.current.path.load},91,
+			},\stop,
+			{ defer{Window.closeAll} },\global,
+			{ defer{Server.default.meter}; },\inputs,
+			{ defer{Server.default.plotTreeL}; },\midi,
+			{ Item.arm; },\scrub,
+			{ Item.armSection; },\solo,
+			{ Item.abort_(true) },'fast forward',
+			{ Song.play },\play,
+			{ Part.play; },'bank up',
+			{Document.current.path.load},\rewind,
+			{ Song.playSection(Song.cursor)} ,\click
 		]);
 
 
@@ -80,8 +118,7 @@ XTouch {
 	}
 	init {
 		111.postln;
-		MIDIFunc.noteOn({ |vel num| vel.postln; num.postln;}
-	)
+		MIDIFunc.noteOn({ |vel num| vel.postln; num.postln;})
 
 	}
 }

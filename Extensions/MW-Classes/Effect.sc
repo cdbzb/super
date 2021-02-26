@@ -12,18 +12,20 @@
 		*newSidechain {|function out=0 inputChannels=1| ^super.new.initSidechain(function,out,inputChannels) }
 
 		*new2 {|function out=0 inputChannels=1| ^super.new.init2(function,out,inputChannels)}
-		*lfo {|function out=0 inputChannels=1| ^super.new.initLfo(function,out,inputChannels)}
+		*lfo {|function out=0 inputChannels=1 dur| ^super.new.initLfo(function,out,inputChannels,dur)}
 
-		initLfo { |function out inputChannels=1 |
+		initLfo { |function out inputChannels=1 dur |
 			bus=Bus.control();
-			synth={function=>Out.kr(bus.index,_)}.play;
-			NodeWatcher.register(synth, assumePlaying: true);
-			fork{
-				while ( {synth.isPlaying},{0.2.wait} );
-				\freeing_Bus.postln;
-				bus.free
+			synth={ function => Out.kr(bus.index , _ )}.play;
+			dur.notNil.if{
+				fork{dur.wait;synth.free}
 			};
-//			^this;
+			synth.onFree({bus.free});
+  			^this;
+//			^Pfunc({bus.index.isNil.not.if{bus.asMap}{nil}})
+		}
+
+		pfunc {
 			^Pfunc({bus.index.isNil.not.if{bus.asMap}{nil}})
 		}
 

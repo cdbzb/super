@@ -57,6 +57,7 @@ Item {
 		samplesDir=newDir
 	}//}}}
 	*list {|options = "-tr"| "ls " ++ options ++ " " ++ samplesDir => _.unixCmd}
+	*open {"open "++Item.samplesDir=> _.unixCmd}
 	init { | n |
 		name = n;//{{{
 		dir=samplesDir++name++"/";
@@ -135,31 +136,12 @@ Item {
 			nil;
 		}.play.register;
 	}
-
-// old method
-//	arm {|s bus chan length| 
-//		var p_node;//{{{
-//		length.isNil.not.if{recordLength=length};
-//		inBus=(bus ? inBus); inChans=(chan ? inChans);
-//		s ?? {s=Server.default};
-//		p_node=RecNodeProxy.audio(s,1)
-//		.source_({
-//			In.ar(inBus,inChans)
-//			//=>DelayN.ar(_,this.latency,this.latency)
-//		//WhiteNoise.ar(0.2)
-//	})
-//		.open(dir++'/'++Date.getDate.stamp++'.aif')
-//		.record;
-//		node=p_node
-//	} //}}}
-
 	allocatePVBuffer {|fftSize=2048 hop=0.5|
 		var file = SoundFile(this.mostRecent);
 		file.openRead;
 		^Buffer.alloc(Server.default,file.duration.calcPVRecSize(fftSize,hop));
 //		file.close
 	}
-
 	getFFT {|fftSize=2048 hop= 0.5 window = 0|
 		pvBuffer = this.allocatePVBuffer(fftSize,hop,window);
 		Synth(\pvrec,[\recBuf,pvBuffer,\soundBufnum,buffer.bufnum,\fftSize,fftSize,\hop,hop,\window,window]);
@@ -168,7 +150,6 @@ Item {
 	playFFT {|fftSize=2048 rate=1 window=0 hop=0.5|
 		Synth(\pvplay,[\out,0,\recBuf,pvBuffer,\rate,rate,\window,window,\hop,hop,\fftSize,fftSize])
 	}
-
 	armSection {|s bus channel padding=0.2|
 		var length = Song.secDur[name] + padding;
 		this.arm(s,bus,channel,length)
@@ -181,7 +162,6 @@ Item {
 	write {
 		abort.if{
 			'recording aborted'.postln;
-//			node.free;
 			this.refresh;
 			abort=false;
 		}{
@@ -201,12 +181,6 @@ Item {
 			})
 		}
 	}
-	//old method
-	//record {|length| //{{{
-	//	node.unpause;
-	//	CmdPeriod.add(this.node);
-	//	{this.stop}.sched(length ? recordLength,clock:SystemClock);
-	//}//}}}
 	stop {//{{{
 		node.isNil.not.if{
 //			abort=true;
@@ -233,16 +207,18 @@ Item {
 
 			^Server.default.bind{
 				{
-				arg out;
-				var sig;
-				(rate*this.p_sampleRate/server.sampleRate).postln;
-				sig=PlayBuf.ar(
-					inChans, 
-					buffer.bufnum,
-					rate:rate*BufRateScale.kr(buffer.bufnum),///this.p_sampleRate*server.sampleRate,
-					startPos:startPos,
-					trigger:trigger,
-					loop:loop);
+					arg out;
+					var sig;
+					(rate*this.p_sampleRate/server.sampleRate).postln;
+					sig=PlayBuf.ar(
+						inChans, 
+						buffer.bufnum,
+						rate:rate*BufRateScale.kr(buffer.bufnum),///this.p_sampleRate*server.sampleRate,
+						startPos:startPos,
+						trigger:trigger,
+						loop:loop,
+						doneAction:2
+					);
 					Out.ar(bus,sig*amp)
 				}.play;
 				
@@ -313,3 +289,31 @@ Item {
 				[note:Pseries(1,1,5)-4,out:0].pp;
 	}
 }
+
+Items {
+	var <directory,<items,files;
+	*new { |directory| ^super.newCopyArgs(directory).init}
+	init { 
+		directory = directory.asString;
+		files=List() 
+	}
+	refreshItems {
+		items = files.collect(directory+/+_ ).collect(Item(_))
+	}
+	add {
+		|...args| 
+		args.do({|i| 
+			files.includes(i).not.if{
+				files.add(i)
+			}
+		}) ;
+		this.refreshItems
+	}
+	list {
+		   "ls "++Item.samplesDir++"directory" =>_.unixCmd()
+	}
+	at { |i|
+		^items[i]
+	}
+}
+

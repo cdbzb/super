@@ -484,7 +484,16 @@ Song {
 				(args.class==Event).if{Part.current=this.asPart(args);args=this.asPart(args)};
 				resources.put(key.asSymbol,args);
 				args.postln;
-				(args.class==Part).if{args.name=key;args.parent=this;Part.current=args}
+				(args.class==Part).if{
+					args.name=key;
+					args.parent=this;
+					Part.current=args;
+					(args.music.class==Event).if{
+						args.music.b=this.durs[args.start].list.drop(args.syl?0);
+						args.music.p=this;
+						args.music.e=args;
+					};
+				};
 			},{
 				^resources.at(key.asSymbol);
 			}
@@ -498,13 +507,11 @@ Part {
 
 	*play{fork{Server.default.sync;current.play};^current}
 
-	*new {|start=0,syl,lag=0,music|
-		^super.new.init(start,syl,lag,music)
+	*new {|start=0,syl,lag=0,music,resources|
+		^super.new.init(start,syl,lag,music,resources)
 	}
-
 	init { |s,y,l,m|
 		start=s;syl=y;music=m;lag=l;
-		resources=();
 	}
 
 	//play immediately
@@ -517,6 +524,7 @@ Part {
 				this
 			)
 		}},
+		// Event,{ music.play},
 		Message,{Server.default.bind{music.value}},
 		VocoderPattern,{music.play;\vocoderPatternPlaying.postln},
 		{music.play}
@@ -580,7 +588,7 @@ Part {
 // a part which registers itself with its parent song
 P { 
 	*new{
-		|key start syl lag=0 music song|
+		|key start syl lag=0 music song resources|
 		var part;
 		start.isNil.if{
 			start=((Song.song.size-2)/2).asInteger;
@@ -595,6 +603,7 @@ P {
 		key=(key++\_).asSymbol;
 		Message(  Song.songs.at(Song.current) , key ).value(part);
 		key.postln;
+		^part
 	}
 }
 

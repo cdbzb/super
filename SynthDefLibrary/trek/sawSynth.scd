@@ -1,0 +1,34 @@
+	SynthDef("sawSynthSustain", { arg out=0, freq = 440, amp = 0.1, att = 0.1, rel = 2, lofreq = 1000, hifreq = 3000, lagTime = 0.3;
+		var env, snd;
+		freq=Lag.kr(freq,lagTime);
+		env = Env.asr(
+			attackTime: att,
+			sustainLevel: amp,
+			releaseTime: rel,
+		).kr(gate:\gate.kr(1),doneAction: 2);
+		snd = Saw.ar(freq: freq * [0.99, 1, 1.001, 1.008]) * env;
+		snd = LPF.ar(
+			in: snd,
+			freq: LFNoise2.kr(1).range(lofreq, hifreq)
+		);
+		snd = Splay.ar(snd);
+		Out.ar(out, snd);
+	}).add;
+//
+	SynthDef("sawSynth", { arg out=0, freq = 440, amp = 0.1, att = 0.1, rel = 2, lofreq = 1000, hifreq = 3000, lagTime = 0.3;
+		var env, snd;
+		freq=Lag.kr(freq,lagTime);
+		env = Env.perc(
+			attackTime: att,
+			releaseTime: rel,
+			level: amp
+		).kr(doneAction: 2);
+		snd = Saw.ar(freq: freq * [0.99, 1, 1.001, 1.008], mul: env);
+		snd = LPF.ar(
+			in: snd,
+			freq: LFNoise2.kr(1).range(lofreq, hifreq)
+		);
+		snd = Splay.ar(snd);
+		Out.ar(out, snd);
+	}).add;
+

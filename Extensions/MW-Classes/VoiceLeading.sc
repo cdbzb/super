@@ -114,7 +114,9 @@ VoiceLeading {
 
 }
 
-//a=VoiceLeading([[1,2,3,4]+3,[1,\_,8,\_]],[0.1,0.2,0.11,2])
-//a.voice(1);a.voice(0)
-//[note:a.voice(1).line.q,dur:a.voice(1).durs.q].pp;
-//[note:a.voice(0).line.q,dur:a.voice(0).durs.q].pp
+/*
+a=VoiceLeading([[1,2,3,4]+3,[1,\_,8,\_]],[0.1,0.2,0.11,2])
+a.voice(1);a.voice(0)
+[note:a.voice(1).line.q,dur:a.voice(1).durs.q].pp;
+[note:a.voice(0).line.q,dur:a.voice(0).durs.q].pp
+*/

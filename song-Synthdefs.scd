@@ -6,6 +6,7 @@ s.waitForBoot({
 		Out.ar(out,sig!2);
 	}).add ;
 
+
 	SynthDef(\two_tube,{|out=0 gate=1 |
 		var in =In.ar(out,2);
 		var sig=TwoTube.ar(in,d1length:507,d2length:819,loss:0.99);
@@ -29,6 +30,7 @@ s.waitForBoot({
 		sig=Phaser2.ar(sig,0.5,0.15,rq:1);
 		Out.ar(\out.kr,  sig*amp*envelope);
 	}).add;
+
 	SynthDef (\cymbalsDS,{ //Dan Stowall Cymbals
 		var lodriver, locutoffenv, hidriver, hicutoffenv, freqs, res, thwack;
 		locutoffenv = EnvGen.ar(Env.perc(0.5, 5)) * 20000 + 10;
@@ -37,12 +39,13 @@ s.waitForBoot({
 		hidriver = HPF.ar(WhiteNoise.ar(0.1), hicutoffenv)
 		* EnvGen.ar(Env.perc(1, 1, 0.25));
 		thwack = EnvGen.ar(Env.perc(\att.kr(0.001),0.0001,1));
-		freqs  = {exprand(300, 20000)}.dup(30);
+		freqs  = {ExpRand(300, 20000)}.dup(30);
 		res	= Ringz.ar(lodriver + hidriver + thwack, freqs).mean;
 		((res * 1) + (lodriver * 2) + thwack).dup * \amp.kr(0.1)
 		=> ( Out.ar(\out.ir,_) <! DetectSilence.ar(_,doneAction:2))
 	}).add;
 	// more kicks
+
 	SynthDef(\kick1, {
 		var snd;
 		snd = DC.ar(0);

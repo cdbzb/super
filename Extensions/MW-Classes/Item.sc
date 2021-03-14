@@ -5,6 +5,7 @@ Item {
 	var <>inBus, <>inChans=1, <>sampleRate;
 	var <>recordLength, <>bus=1;
 	var <>pvBuffer;
+	var <>synth;
 	classvar <>abort=false;
 
 	*initClass {
@@ -27,6 +28,9 @@ Item {
 			chain = PV_PlayBuf(bufnum, recBuf, rate, 0, 1, 1, 0.25, 1);
 			Out.ar(out, IFFT(chain, window).dup);
 		}).add;
+		Event.addEventType(\item,{~item.play(rate:~rate,amp:~amp,out:~out)});
+		Event.addEventType(\items,{~items[~index].play(rate:~rate,amp:~amp,out:~out)});
+		this.makePlayer;
 	}
 	//only clones the mostRecent - sets samplesDir
 	*new {| name="item" | 
@@ -195,7 +199,27 @@ Item {
 			// play as per usual
 		}
 	}//}}}
+*makePlayer {
+	   [1,2,4,8].do { |i|
+			 SynthDef("itemPlayer"++i, {
+				    |bufnum=0,rate=1,startPos=0,trigger=1,loop=0,amp=0.1,out=0|
+				    var sig;
+				    //(rate*this.p_sampleRate/server.sampleRate).postln;
+				    sig=PlayBuf.ar(
+						  i,
+						  bufnum,
+						  rate:rate*BufRateScale.kr(bufnum),
+						  startPos:startPos,
+						  trigger:trigger,
+						  loop:loop,
+						  doneAction:2
+				    );
+				    Out.ar(out,sig*amp)
+			 } )
+			 .add
+	   }
 
+}
 	// warning argument order was changed!!!
 	play {|server out  rate=1 startPos=0 trigger=1 loop=0 amp=1| //{{{
 		bus = (out ? bus);
@@ -204,25 +228,21 @@ Item {
 			this.record;
 		}{
 			buffer.isNil.if({ this.refresh });
+			synth = Synth.newPaused("itemPlayer"++inChans,
+				   [
+						 bufnum: buffer.bufnum,
+						 rate: rate,
+						 startPos: startPos,
+						 trigger: trigger,
+						 loop: loop,
+						 amp: amp,
+						 out: bus
+				   ]);
 
-			^Server.default.bind{
-				{
-					arg out;
-					var sig;
-					(rate*this.p_sampleRate/server.sampleRate).postln;
-					sig=PlayBuf.ar(
-						inChans, 
-						buffer.bufnum,
-						rate:rate*BufRateScale.kr(buffer.bufnum),///this.p_sampleRate*server.sampleRate,
-						startPos:startPos,
-						trigger:trigger,
-						loop:loop,
-						doneAction:2
-					);
-					Out.ar(bus,sig*amp)
-				}.play;
-				
+			Server.default.bind{
+				   synth.run;
 			}
+			^synth
 			
 	}} //}}}
 	prepVocoder {|numberOfBands=20| //{{{
@@ -291,7 +311,7 @@ Item {
 }
 
 Items {
-	var <directory,<items,files;
+	var <directory,<items,<files;
 	*new { |directory| ^super.newCopyArgs(directory).init}
 	init { 
 		directory = directory.asString;
@@ -313,7 +333,17 @@ Items {
 		   "ls "++Item.samplesDir++"directory" =>_.unixCmd()
 	}
 	at { |i|
-		^items[i]
+		   var counter = i;
+		   (counter.class==Integer).if{ 
+				 ^items[counter]
+		   }{
+				 counter = files.indexOf(counter);
+				 ^items[counter]
+		   }
+	}
+	doesNotUnderstand { |selector ...args |
+		   var expandedArgs = args.flop;
+		   ^items.collect{|i x| i.perform(selector, *expandedArgs[x]) }
 	}
 }
 

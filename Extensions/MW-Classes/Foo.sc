@@ -1,7 +1,7 @@
 Durs { 
 	//Song.durs returns a Durs
 	var <>song;
-	*new { |song|  ^super.new.init()}
+	*new { |song|  ^super.new.init(song)}
 	init { |i|  song=i ? Song.currentSong }
 	at{|i|
 		song ? song=Song.currentSong; 

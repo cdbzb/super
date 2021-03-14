@@ -29,6 +29,21 @@
 			^Pfunc({bus.index.isNil.not.if{bus.asMap}{nil}})
 		}
 
+		asStream {
+			"embedded!".postln
+		}
+
+		embedInStream {|inevent|
+			var cleanup = EventStreamCleanup.new;
+			var event = inevent.copy;
+			cleanup.addFunction(event,{|flag| flag.if{this.synth.free}});
+			loop {
+				event =inevent ?? { ^cleanup.exit(inevent) };
+				inevent = event.yield;
+		};
+event.yield
+		}
+
 		init2 { |function out inputChannels=1 |
 			var desc=SynthDef(\temp,{In.ar(1,inputChannels)=>function=>Out.ar(0,_)});
 			var numChannels=desc.asSynthDesc.outputData[0].at(\numChannels);
@@ -152,4 +167,23 @@ EffectOld  { //deprecated
 		synth.set(args)
 	}
 
+}
++Function {
+	lfo {^Effect.lfo(this).bus.index}
+	lfoAsMap {|dur| ^Effect.lfo(this,dur:dur).pfunc}
+	asBusNumber {|...args| 
+		//NodeWatcher.register(this);
+		^Effect(this,*args).bus.index}
+}
+
++Node{
+	mapLfo { |key function|
+		var effect = Effect.lfo(function);
+		this.onFree({ try{ effect.synth.free };try{effect.free} });
+		fork{
+			this.server.sync;
+			this.map(key,effect.bus.index)
+		};
+		^(synth:this,lfo:effect.synth)
+	}
 }

@@ -1,23 +1,6 @@
-
-(
-~items=(
-	directory: "directory",
-	files: List(),
-	addd: { |self ...args| 
-		args.do({|i| 
-			self.files.includes(i).not.if{
-				self.files.add(i)
-			}
-		}) 
-	},
-	items: {|self| self.files.collect(self.directory+/+_ ).collect(Item(_))},
-
-)
-)
- includes
 Item('directory/test').arm(length:5)
 Item('directory/mouth').bus_(1).play
-(
+( //hahaha
 a={|out| Effect({|i|
 	var chain = FFT(LocalBuf(2048),i);
 	chain =PV_RandComb(chain,SinOsc.kr(10.rand).unipolar);
@@ -41,9 +24,7 @@ a={|out| Effect({|i|
  }
 )
 
-  PV_Invert
-
-(
+( //noizzzz
 a={|out| Effect({|i|
 	var chain = FFT(LocalBuf(2048),i);
 	chain =PV_RandComb(chain,SinOsc.kr(100.rand.reciprocal,rrand(0,2*pi)).range(0.05,0.9));
@@ -65,7 +46,7 @@ d={PinkNoise.ar(0.1)}.play(s,c);
 d={PinkNoise.ar(0.1)}.play(s,e);
 )
 
-(
+( //glitchy invert
 Item('directory/moreTalking').bus_(
 	Effect({|i|
 		var chain = FFT(LocalBuf(2048),i);
@@ -80,7 +61,7 @@ Item('directory/moreTalking').bus_(
 ).play
 )
 PV_ChainUGen.dumpClassSubtree
-(
+( //samples only
 a=Items(\directory);
 a.directory;
 a.add(\mouth,\test,\otherOne);
@@ -90,3 +71,8 @@ fork{
 		5.wait}
 }
 )
+
+b=[index:Pwhite(0,2,inf),item:Pfunc{|e|a[e.index]},rate:Pwhite(0.5,2,inf),play:{~item.play(rate:~rate)}].p;
+b.play;b.play;
+b.play
+(type:\item,item:a[0],rate:2,).play

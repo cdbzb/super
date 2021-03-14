@@ -82,36 +82,39 @@ p=PF.new
 	SynthDef(\phaserr,
 		{|out rate=0.1 fb=0.3|
 			var sig = Phaser2.ar(In.ar(out,2),rate:rate,fb:fb);
-			XOut.ar(out, 1, sig)}
-		).add;
-		SynthDef(\dst,
-			{|out gain=1.5|
-				var in=In.ar(out);
-				var sig = ( in*gain ).distort;
-				XOut.ar(out, 1, sig!2)}
-			).add;
-			Pdef.new(\q,
-				Pfxb(
-					Pbind(*[
-						instrument:\snare,
-						dur:~pat.("0000x000|0000x000|0000x00x|0000x00x",8,inf),
-						amp:0.2
-					]),
-					//\fb
-					//\phaserr
-					\dst
-				));
-				a=Pdef.new(\h,
-					Pbind(*[
-						instrument:\hihat,
-						amp:Pseq([0.1,0.2],inf*Pwhite(1,1.2,inf)),
-						//lag:Pseq([0,0.008],inf),
-						dur:~pat.("xxxx",08,16)
-					])
-				);//.play
-				a.quant=1;
-				b=Pdef(\m,Pfxb(a,\phaserr,\fb,-0.99));
-				c=Pseq([a,b],inf);
+			XOut.ar(out, 1, sig)
+		}
+	).add;
+	SynthDef(\dst,
+		{|out gain=1.5|
+			var in=In.ar(out);
+			var sig = ( in*gain ).distort;
+			XOut.ar(out, 1, sig!2)
+		}
+	).add;
+	Pdef.new(\q,
+		Pfxb(
+			Pbind(*[
+				instrument:\snare,
+				dur:~pat.("0000x000|0000x000|0000x00x|0000x00x",8,inf),
+				amp:0.2
+			]),
+			//\fb
+			//\phaserr
+			\dst
+		)
+	);
+	a=Pdef.new(\h,
+		Pbind(*[
+			instrument:\hihat,
+			amp:Pseq([0.1,0.2],inf*Pwhite(1,1.2,inf)),
+			//lag:Pseq([0,0.008],inf),
+			dur:~pat.("xxxx",08,16)
+		])
+	);//.play
+	a.quant=1;
+	b=Pdef(\m,Pfxb(a,\phaserr,\fb,-0.99));
+	c=Pseq([a,b],inf);
 
 				// 'guitar-ish' //		{{{4
 
@@ -304,6 +307,7 @@ p=PF.new
 			sig=Phaser2.ar(sig,0.5,0.15,rq:1);
 			Out.ar(\out.ir, sig*amp);
 		}).add;
+
 		SynthDef (\cymbal, {|amp=1 length=2| //{{{
 			var sig=PinkNoise.ar(EnvGen.kr(Env.perc(0,length)))!2;
 			sig=TwoTube.ar(RHPF.ar(sig,500,9),d1length:502,d2length:777,loss:0.99)*0.5;

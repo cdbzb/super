@@ -30,6 +30,7 @@ includePaths:
     -   /Users/michael/.local/share/SuperCollider/downloaded-quarks/Scintillator
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/OfflineProcess
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Deferred
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Cluster
 excludePaths:
     []
 postInlineWarnings: false

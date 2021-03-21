@@ -16,4 +16,7 @@
 	.deepCollect(2, {|i| dict.at(i) ? 0})
 	.collect(_.sum)
 }
+fileName {
+	^try{this.asPathName.fileName}
+}
 }

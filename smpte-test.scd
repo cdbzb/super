@@ -1,6 +1,7 @@
 // OR BETTER -> just send OSC to drive the picture !?!
 
 ~rpr=NetAddr("192.168.1.130",8000);
+~rpr=NetAddr("192.168.1.185",8000);
 ~rpr.sendMsg("/play");
 ~rpr.sendMsg("/stop");
 ~rpr.sendMsg('/marker',1);
@@ -8,6 +9,7 @@
 
 ~tone={SinOsc.ar(350+Rand(200),0,EnvGen.kr(Env.perc))};
 ~tone.play;
+CmdPeriod.add({~rpr.sendMsg("/stop")})
 (
 	var startTime=9;
 	t=TempoClock.new;

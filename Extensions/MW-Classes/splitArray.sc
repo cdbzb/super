@@ -1,14 +1,13 @@
 +Array{
 	split{ |test|
-		^
-		this//.collect({|i| if(i.class==String, {i=Ref(i)},{i})})
-		.collect{|i j| [j,i]}
+		^ this .collect{|i j| [j,i]}
 		.select{|i| i[1]=>test}
 		.collect(_[0])++this.size
 		=> {|i| (i.size-1).collect{|x| i[x+1]-i[x]}}
 		=> _.collect(1!_)
 		=> this.reshapeLike(_)
 	}
+
 	dmx {
 		^this.split({|i| i.class==String})
 		.collect({|a| 
@@ -20,40 +19,43 @@
 			}.valueArray(a)
 		})
 	}
-	melody { |root='c' octave=5 scale='major' beat=1|
-		^[ 
-			midinote:
-			 
-
-				this.dm(root,octave,scale).flat.collect{ |i| 
-					if( i.class==Tuple2,{[ i.at1,i.at2 ]},{i} )
-				}.q,
-				dur:
-				this.subdivide(beat).q
-			
-		]
-
-	}
 
 	subdivide { |beat=1|
-		^this.collect({|i| 
-			if( i.size==0, {
-				if (i == \r,{Rest(beat)},{beat})
-			},{
-				i.subdivide(i.size.reciprocal*beat)} 
-			)}).flat 
+			var a = this.collect({
+					|i| 
+					(i.isKindOf(Tuple)).if{i=i.at1};
+					if( i.size==0, {
+							if (i == \r,{Rest(beat)},{(i/i.abs)*beat})
+					},{
+							i.subdivide(i.size.reciprocal*beat)
+					} 
+			)}).flat.collect({|i|i.isNumber.if{i.abs}{i.value}});
+			^a;
 	}
 
 }
+
 + String{
 	prFlat {|list|^list add: this}
 }
 /*
-["lll",1].reshapeLike([[1,[2]]])
-[0,1,0,2,4].split({|i|i==0})
+[
+		[1,3,2,[-2,2],T(2,3)!3,[T(3,4,21),T(3,5,17)]].melody++
+		[\legato,2.2,out:Effect( TwoTube.ar(_,0.1,0.8,2000,111,mul:3),out:1).bus.index]=>_ .p=>Pn(_,2) , 
+		[\r,\r,\r,\r,\r,\r,[17,[-17, 16]],15].melody++
+
+		[\legato,2.2,out:Effect( TwoTube.ar(_,0.1,0.8,2000,111,mul:3),out:1).bus.index]=>_ .p , 
+] => Ppar(_,4)
+=>_.play
+Tuple2
+[1,[2,2],[-2,4]].melody.pp
+T(1,2).isKindOf(Tuple)
 a=Ref("aaa")
 a.class
 Ref("aaa")
+[1,2,-1,3].tie
+[1,1,[-1,1]].subdivide.tie
+'-'/class
 [\mm,0,9,8,\n,9,8,8,\z,9,9].split({|i|i.class==Symbol})
 (
 [

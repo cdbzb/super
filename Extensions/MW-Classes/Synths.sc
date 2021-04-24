@@ -43,6 +43,9 @@ Synths {
 			{bus.numChannels.do{|i| synths[i].map(control,bus.subBus(i))}}
 		)
 	}
+	dur { |length, release|
+		synths.do{|i| i.dur(length,release)}
+	}
 
 	doesNotUnderstand { |selector val|
 		synths.do({|i| selector.postln; i.postln})

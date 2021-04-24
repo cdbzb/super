@@ -330,7 +330,7 @@ Items {
 		this.refreshItems
 	}
 	list {
-		   "ls "++Item.samplesDir++"directory" =>_.unixCmd()
+		   "ls "++Item.samplesDir++"Items" =>_.unixCmd()
 	}
 	at { |i|
 		   var counter = i;

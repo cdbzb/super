@@ -1,4 +1,4 @@
-XTouch {
+XTouch : XMIDIController {
 	classvar <>id = 1779843049;
 	classvar functions;
 	classvar <>mappings;
@@ -94,10 +94,11 @@ XTouch {
 		]);
 
 
-		fork{ 	MIDIClient.init;
-			MIDIIn.connectAll;
+		fork{ 	
+		//	MIDIClient.init;
+		//	MIDIIn.connectAll;
 			this.applyMappings;
-			StageLimiter.activate;
+		//	StageLimiter.activate;
 		}
 	}
 	junk {

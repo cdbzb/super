@@ -20,7 +20,10 @@ Reaper {
 			lastPlayLength=stopAt-seconds
 		}
 	}
-	*sched { |time, function| clock.schedAbs(time.asFloat.asSeconds,function) }
+	*sched { |time, function| ( time.asFloat.asSeconds>cursor ).if {
+		clock.schedAbs(time.asFloat.asSeconds,function
+		)} 
+	}
 	*new	{Pipe.new(executable ++ " -new" , "w");
 }
 	*saveas	{|filename| 

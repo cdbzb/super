@@ -70,6 +70,8 @@ VoiceLeading {
 			durs:durationArray[number]
 		)
 	}
+	at {|i| var line=this.voice(i);^[dur:line.durs.q,freq:line.line.q]}
+	env {|i| ^Env(this.voice(i).line,this.voice(i).durs)}
 	df {|root='c' octave=5 scale='major'|
 		key = \freq;
 		valuesArray=valuesArray.collect{|i|i.df(root,octave,scale)};

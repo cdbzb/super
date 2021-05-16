@@ -29,6 +29,9 @@ Melody[slot] : Array {
 	dm { |root='a' octave=3 scale=\major|
 		^this.collect{|i|[i.value,i.duration]}.flop=>{|i| [midinote:i[0].dm(root,octave,scale).q,dur:i[1].q] }
 	}
+	df { |root='a' octave=3 scale=\major|
+		^this.collect{|i|[i.value,i.duration]}.flop=>{|i| [freq:i[0].df(root,octave,scale).q,dur:i[1].q] }
+	}
 
 }
 

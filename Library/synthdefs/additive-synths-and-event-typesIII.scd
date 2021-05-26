@@ -1,9 +1,10 @@
 ~cents=2**((1200/_).reciprocal);
 ~partialsBelowNyquist = {|freq| s.sampleRate/2/freq => _.floor};
 ( //rising gongs no globals version
-~gong = { |freq group tolerance = 0.03 lowest=400 amp=0.1 time=9 sustain=8 release=20|
+~gong = { |freq group tolerance = 0.03 lowest=400 amp=0.1 time=9 sustain=8 release=20 channels |
 	freq.isNil.if  { \help.postln; }
 	{ {
+		var out = channels ? 4.rand;
 		var even = Array.rand(100,lowest,20000);
 		var near = { |fund| even.collect({|i| (nearHarmonic.(fund,i)<tolerance).if{0}{1}  })};
 		var nearHarmonic = {|freq x| 20.collect({|i| (i*freq / x)-1 }).abs.inject(100,_ min: _)};
@@ -13,11 +14,11 @@
 		=> Mix.ar(_)
 		* Env.linen([ 0,0,0,5 ].choose,sustain,release).kr(2,gate:1)
 		* 10 * amp
-		=> Out.ar(4.rand,_)
+		=> Out.ar(out,_)
 	}.play(group ? s); }
     };
 Event.addEventType(\tuningGong,{
-	    var args = [~freq,~group,~tolerance,~lowest,~amp,~time,~sustain,~release];
+	    var args = [~freq,~group,~tolerance,~lowest,~amp,~time,~sustain,~release,~channels];
 	    topEnvironment.use{~gong.(*args)}
     },(freq:400,lowest:300,tolerance:0.03,group:s,amp:0.1,time:9,sustain:8,release:20))
 );

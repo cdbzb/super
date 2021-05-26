@@ -1,6 +1,13 @@
+// Item(\aaaa).context_("wes").playWarp([1,2,3])
+// or
+// Item(\aaa).stamp([1,2],\saww).playWarp
+
+// stamps should be dictionary
+
 Item {
 	classvar <samplesDir='/Users/michael/tank/super/samples/';
 	classvar <>items, <>current, <>latencyCompensation=0;
+	var context;
 	var <>stamps,<>warpEnvelope,<>name,<>node,<>buffer,<>dir;
 	var <>inBus, <>inChans=1, <>sampleRate;
 	var <>recordLength, <>bus=1;
@@ -85,17 +92,28 @@ Item {
 	{^node.isPlaying} 
 }
 // stamp returns warp envelope, stamps returns stamps
-	stamp {
-		|array| stamps.isNil.if{
-			stamps=array;this.writeStamps;
-			^1
-		} {
-
-			var ratios=stamps/array;
-			^warpEnvelope=Env([ ratios[0] ]++ratios,array,\step)
-		}
+stamp { 
+	   // arggg but default stamp is not nil!!!!!
+	   |array key| 
+	   stamps.isNil.if{stamps=()};
+	   (
+			 stamps.notNil.if{
+				    stamps.at(key)
+			 } {
+				    stamps
+			 }
+	   ).isNil.if{
+			 stamps.put(key,array);
+			 this.writeStamps;
+			 ^1
+	   } {
+			 var ratios=stamps.at(key)/array;
+			 ^warpEnvelope=Env([ ratios[0] ]++ratios,array,\step)
+	   }
+}
+	writeStamps {  
+		   stamps.writeArchive(samplesDir++ name +/+ "stamps")
 	}
-	writeStamps {stamps.writeArchive(samplesDir++ name ++"/"++"stamps")}
 	clearStamps {
 		stamps=nil;  
 		( "rm "++samplesDir++ name.asString.escapeChar($ ) ++"/"++"stamps" ).unixCmd
@@ -113,7 +131,7 @@ Item {
 		} 
 	}
 	latency {^(latencyCompensation * Server.default.latency;)}
-	arm {|s bus chan length| 
+	arm {|s bus chan length=5| 
 		var p_node;
 		this.current;
 		length.isNil.not.if{recordLength=length};
@@ -152,7 +170,7 @@ Item {
 		^pvBuffer
 	}
 	playFFT {|fftSize=2048 rate=1 window=0 hop=0.5|
-		Synth(\pvplay,[\out,0,\recBuf,pvBuffer,\rate,rate,\window,window,\hop,hop,\fftSize,fftSize])
+		^Synth(\pvplay,[\out,0,\recBuf,pvBuffer,\rate,rate,\window,window,\hop,hop,\fftSize,fftSize])
 	}
 	armSection {|s bus channel padding=0.2|
 		var length = Song.secDur[name] + padding;
@@ -174,6 +192,14 @@ Item {
 			this.getFFT;
 			// clearStamps??
 		}
+	}
+	recordNow {|length|
+		'filling buffer'.postln;
+			'writing file'.postln;
+			node.set(\loop,0,\trigger,1);
+			node.onFree({
+				this.write
+			})
 	}
 	record {|length|
 		'filling buffer'.postln;
@@ -221,6 +247,41 @@ Item {
 
 }
 	// warning argument order was changed!!!
+	playNow {|server out  rate=1 startPos=0 trigger=1 loop=0 amp=1| //{{{
+		bus = (out ? bus);
+		server ?? {server=Server.default};
+		this.armed.if{
+			this.recordNow;
+		}{
+			buffer.isNil.if({ this.refresh });
+			synth = Synth("itemPlayer"++inChans,
+				   [
+						 bufnum: buffer.bufnum,
+						 rate: rate,
+						 startPos: startPos,
+						 trigger: trigger,
+						 loop: loop,
+						 amp: amp,
+						 out: bus
+				   ]);
+
+			^synth
+			
+	}} //}}}
+	playWarp { |durs key fftSize=4096 hop=0.25 |
+		   var env = this.stamp(durs,key);
+		   var bus = Bus.control;
+		   var syn = this.playFFT (fftSize, hop);
+		   { EnvGen.kr(env) }.play(Server.default,bus);
+		   syn.map(\rate,bus)
+	}
+	warp { |durs |
+		   var env = this.stamp(durs);
+		   var bus = Bus.control;
+		   //var syn = this.playFFT (fftSize, hop);
+		   { EnvGen.kr(env) }.play(Server.default,bus);
+		   synth.map(\rate,bus)
+	}
 	play {|server out  rate=1 startPos=0 trigger=1 loop=0 amp=1| //{{{
 		bus = (out ? bus);
 		server ?? {server=Server.default};
@@ -283,7 +344,7 @@ Item {
 		++ PathName(dir.asString++"/").files.collect{|i|
 			i.fileNameWithoutExtension
 		}
-		.reject{|i| i=="stamps"}
+		.reject{|i| i[0..5]=="stamps"}
 		.sort.reverse[0]
 		++ ".aif"
 	}//}}}
@@ -313,6 +374,10 @@ Item {
 Items {
 	var <directory,<items,<files;
 	*new { |directory| ^super.newCopyArgs(directory).init}
+	*list {
+
+		   "ls "++Item.samplesDir++"Items" =>_.unixCmd()
+	}
 	init { 
 		directory = directory.asString;
 		files=List() 
@@ -330,7 +395,7 @@ Items {
 		this.refreshItems
 	}
 	list {
-		   "ls "++Item.samplesDir++"Items" =>_.unixCmd()
+		   "ls "++Item.samplesDir++"Items" +/+ directory =>_.unixCmd()
 	}
 	at { |i|
 		   var counter = i;

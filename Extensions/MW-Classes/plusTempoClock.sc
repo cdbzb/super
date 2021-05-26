@@ -11,3 +11,9 @@
 		^TempoClock.newFromQuarters(this)
 	}
 }
+
++ List {
+	asTempoClock {
+		^TempoClock.newFromQuarters(this)
+	}
+}

@@ -1,6 +1,6 @@
 VocoderPattern {
 //	var durs , <pattern, <item, effect, out, bypass, hop, fftSize, window=1;
-	var pattern,key,effect,inputEffect,fftSize,hop,window,>warp,out,amp,pan,loop,rate,durs,>dry;
+	var pattern,key,effect,<inputEffect,fftSize,hop,window,<>warp,out,amp,pan,loop,rate,durs,>dry;
 	var <modulator,verb,<carrier,<synthOut,<synth,<item;
 	classvar <>server;
 	*initClass {
@@ -113,18 +113,17 @@ VocoderPattern {
 			bypass=1 ;
 			item.play;
 			\recording.postln
-		};
-//		fork{
-		{
+		} {
 			( bypass==0 ).if {
-				{
 					\playing.postln;
 					server.bind{
-//						server.sync;
-						item.playbuf(loop:loop,rate:rate) 
-						=> ( inputEffect ? {|i|i} )
-					}.play(server ,modulator.index);
-				}
+						{
+							item.playbuf(loop:loop,rate:rate) 
+							=> ( inputEffect ? {|i|i} )
+						}.play(server ,modulator.index);
+					}
+					
+				
 			}{
 				{SoundIn.ar()}.play(server,modulator.index) ;
 			};

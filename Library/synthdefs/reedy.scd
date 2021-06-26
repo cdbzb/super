@@ -48,7 +48,6 @@ Event.addEventType(\tuningGong,{
 	    topEnvironment.use{~gong.(*args)}
     },(freq:400,lowest:300,tolerance:0.03,group:s))
 );
-
 //{ ~gong.(400,g,lowest:1000) }.sched([1,2,4]);
 //{ g.set(\transpose,1.1) }.sched(10);
 
@@ -72,3 +71,12 @@ var tone = (numberOfPartials-1).asInteger.collect({|i| ( i + 1 ) * freq });
 Event.addEventType(\tuneUp,{var args = [~freq,~amp,~out]; topEnvironment.use{~tuneUp.(*args)}},(type:\on,freq:300,amp:0.001,out:0));
 );
 
+SynthDef(\x,{  
+	var freqs = NamedControl.kr(\freqs, { Rand(400,500) }!64);
+	var sig = freqs.collect{|i| (i==0).if{0}{SinOsc.ar(i,0,0.1)}};
+	sig=Mix.ar(sig);
+	Out.ar(1,sig)
+}).add
+
+a=Synth(\x,[\freqs,[100,120,1230,1990,2000,8000,8001,4000]]);
+a.set(\freqs,[500,506,0,0,0,0,0,0]);

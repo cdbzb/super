@@ -1,0 +1,780 @@
+
+compiling class library...
+[0607/110546.585103:WARNING:resource_bundle_qt.cpp(115)] locale_file_path.empty() for locale 
+	Found 850 primitives.
+	Compiling directory '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary'
+	Compiling directory '/Library/Application Support/SuperCollider/Extensions'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/Extensions'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Automation'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/JITLibExtensions'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Vowel'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/panola'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Freesound'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/FreeAfter'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/wslib'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/SynthDefPool'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/say'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/MathLib'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/VectorSpace'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Unit-Lib'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/BatLib'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/SpeakersCorner'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/AmbIEM'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/AllGui'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/FileLog'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Hilbert'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/XML'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/atk-sc3'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Ctk'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/ixiViews'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/SFPlayer'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/ScoreClock'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/ZArchive'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/KDTree'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Modality-toolkit'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/FPLib'
+	Compiling directory '/Users/michael/.local/share/SuperCollider/downloaded-quarks/Scintillator'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/OfflineProcess'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Deferred'
+	Compiling directory '/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Cluster'
+	numentries = 2979653 / 73621560 = 0.04
+	12835 method selectors, 5736 classes
+	method table size 62432920 bytes, big table size 588972480
+	Number of Symbols 31356
+	Byte Code Size 1428582
+	compiled 1381 files in 1.93 seconds
+Info: 20 methods are currently overwritten by extensions. To see which, execute:
+MethodOverride.printAll
+compile done
+localhost : setting clientID to 0.
+internal : setting clientID to 0.
+addingEvent
+WARNING: Called from Meta_GlobalPathDict:initClass, method Meta_String:scDir is deprecated and will be removed. Use Meta_Platform:resourceDir instead.
+The definition of 'Meta_String:scDir' is to be found here: '/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/deprecated/3.11/deprecated-3.11.sc'
+2021-06-07 11:05:48.674 defaults[42481:2747679] 
+The domain/default pair of (com.apple.speech.voice.prefs, SelectedVoiceName) does not exist
+Class tree inited in 0.74 seconds
+Startup File Loaded
+/Users/michael/tank/super/Library/functions/clicktrack.scd
+/Users/michael/tank/super/Library/functions/convo.scd
+/Users/michael/tank/super/Library/functions/load.scd
+/Users/michael/tank/super/Library/functions/prep.scd
+/Users/michael/tank/super/Library/functions/synthdefLibrary.scd
+/Users/michael/tank/super/Library/functions/trek.scd
+/Users/michael/tank/super/Library/functions/vocoderPattern.scd
+/Users/michael/tank/super/Library/synthdefs/additive-synths-and-event-typesIII.scd
+/Users/michael/tank/super/Library/synthdefs/clk.scd
+/Users/michael/tank/super/Library/synthdefs/pianoteq.scd
+/Users/michael/tank/super/Library/synthdefs/reedy.scd
+/Users/michael/tank/super/Library/synthdefs/synful.scd
+/Users/michael/tank/super/Library/synthdefs/synful2.scd
+/Users/michael/tank/super/Library/synthdefs/synful3.scd
+/Users/michael/tank/super/SynthDefLibrary/808-mod.scd
+/Users/michael/tank/super/SynthDefLibrary/FreeVerb.scd
+/Users/michael/tank/super/SynthDefLibrary/additive-functions.scd
+/Users/michael/tank/super/SynthDefLibrary/additive-synths-and-event-typesIII.scd
+/Users/michael/tank/super/SynthDefLibrary/cepstral-vocoder-bus.scd
+/Users/michael/tank/super/SynthDefLibrary/cymbalsDS.scd
+/Users/michael/tank/super/SynthDefLibrary/defaultPorto.scd
+/Users/michael/tank/super/SynthDefLibrary/diskOut.scd
+/Users/michael/tank/super/SynthDefLibrary/hihat.scd
+/Users/michael/tank/super/SynthDefLibrary/kick.scd
+/Users/michael/tank/super/SynthDefLibrary/kick1.scd
+/Users/michael/tank/super/SynthDefLibrary/kick2.scd
+/Users/michael/tank/super/SynthDefLibrary/kick3.scd
+/Users/michael/tank/super/SynthDefLibrary/pianoteq.scd
+/Users/michael/tank/super/SynthDefLibrary/pluckD.scd
+/Users/michael/tank/super/SynthDefLibrary/pluckDEnv.scd
+/Users/michael/tank/super/SynthDefLibrary/sawSynth.scd
+/Users/michael/tank/super/SynthDefLibrary/snare.scd
+/Users/michael/tank/super/SynthDefLibrary/sparkTriangle.scd
+/Users/michael/tank/super/SynthDefLibrary/stringyy.scd
+/Users/michael/tank/super/SynthDefLibrary/synful3.scd
+/Users/michael/tank/super/SynthDefLibrary/test.scd
+/Users/michael/tank/super/SynthDefLibrary/trek/
+/Users/michael/tank/super/SynthDefLibrary/two_tube.scd
+/Users/michael/tank/super/SynthDefLibrary/verb_fade.scd
+/Users/michael/tank/super/SynthDefLibrary/verbs/
+/Users/michael/tank/super/SynthDefLibrary/vsti.scd
+functions: 
+	prep: 	a Function
+	prepStereo: 	a Function
+	clicktrack: 	a Function
+	reverb: 
+		true_stereo: 	a Function
+		mono: 	a Function
+		single_stereo: 	a Function
+synthdefs: 
+	clk: 	a SynthDef
+Ctk init class runs
+ERROR: Primitive '_FileWrite' failed.
+Failed.
+RECEIVER:
+Instance of File {    (0x7fb511c96d48, gc=34, fmt=00, flg=00, set=02)
+  instance variables [1]
+    fileptr : nil
+}
+CALL STACK:
+	MethodError:reportError
+		arg this = <instance of PrimitiveFailedError>
+	Nil:handleError
+		arg this = nil
+		arg error = <instance of PrimitiveFailedError>
+	Thread:handleError
+		arg this = <instance of Thread>
+		arg error = <instance of PrimitiveFailedError>
+	Object:throw
+		arg this = <instance of PrimitiveFailedError>
+	Object:primitiveFailed
+		arg this = <instance of File>
+	< closed FunctionDef >
+		var classList = [*5735]
+		var file = <instance of File>
+		var hugeString = "syn keyword scObject Freesou..."
+		var basePath = "~/.vim/bundle/scvim"
+	Function:doOnStartUp
+		arg this = <instance of Function>
+	ArrayedCollection:do
+		arg this = [*18]
+		arg function = <instance of Function>
+		var i = 10
+	List:do
+		arg this = <instance of List>
+		arg function = <instance of Function>
+	Meta_StartUp:run
+		arg this = <instance of Meta_StartUp>
+	Main:startup
+		arg this = <instance of Main>
+		var didWarnOverwrite = false
+^^ The preceding error dump is for ERROR: Primitive '_FileWrite' failed.
+Failed.
+RECEIVER: a File
+MIDI Sources:
+	MIDIEndPoint("IAC Driver", "Bus 1", 1222620153)
+	MIDIEndPoint("IAC Driver", "IAC Bus 2", 5356331)
+	MIDIEndPoint("IAC Driver", "IAC Bus 3", -649347929)
+	MIDIEndPoint("IAC Driver", "IAC Bus 4", 719229864)
+	MIDIEndPoint("X-Touch", "INT", 1779843049)
+	MIDIEndPoint("X-Touch", "EXT", -181842512)
+	MIDIEndPoint("RME ARC", "RME ARC", 335163963)
+	MIDIEndPoint("Breath Controller 5.0-15260AD7", "Breath Controller 5.0-15260AD7", -1124974306)
+	MIDIEndPoint("ipMIDI", "Port 1", -1157686251)
+MIDI Destinations:
+	MIDIEndPoint("IAC Driver", "Bus 1", -1513577802)
+	MIDIEndPoint("IAC Driver", "IAC Bus 2", -723420066)
+	MIDIEndPoint("IAC Driver", "IAC Bus 3", -715708506)
+	MIDIEndPoint("IAC Driver", "IAC Bus 4", 1256206411)
+	MIDIEndPoint("X-Touch", "INT", -1972777358)
+	MIDIEndPoint("X-Touch", "EXT", -922613860)
+	MIDIEndPoint("RME ARC", "RME ARC", -1510553930)
+	MIDIEndPoint("ipMIDI", "Port 1", -1157686271)
+{
+				Item.stop;
+				TempoClock.all.do(_.clear);
+				Server.default.freeMyDefaultGroup;
+				Pipe.new("pressf1.sh","w");
+			} 93
+{ defer{Window.closeAll} } 51
+{ defer{Server.default.plotTreeL}; } 62
+{ Item.arm; } 101
+{ Song.play } 94
+{ Part.play; } 47
+{ defer{Server.default.meter}; } 63
+{ Item.armSection; } 90
+{Document.current.path.load} 91
+{ Item.abort_(true) } 92
+{ Song.playSection(Song.cursor)} 89
+Booting server 'localhost' on address 127.0.0.1:57110.
+VSTPlugin 0.5-pre4
+objc[42506]: Class CocoaEditorWindow is implemented in both /Users/michael/Library/Application Support/SuperCollider/Extensions/VSTPlugin/plugins/VSTPlugin.scx (0x11193e930) and /Users/michael/Library/Application Support/SuperCollider/Extensions/VSTPlugin/plugins/VSTPlugin_supernova.scx (0x1119df930). One of the two will be used. Which one is undefined.
+objc[42506]: Class EventLoopProxy is implemented in both /Users/michael/Library/Application Support/SuperCollider/Extensions/VSTPlugin/plugins/VSTPlugin.scx (0x11193e958) and /Users/michael/Library/Application Support/SuperCollider/Extensions/VSTPlugin/plugins/VSTPlugin_supernova.scx (0x1119df958). One of the two will be used. Which one is undefined.
+silverLake
+a Function
+responds
+selector sections
+args [  ]
+responds
+selector durs
+args [  ]
+responds
+selector section
+args [ working ]
+0
+a Part
+lick0_
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ hands ]
+1
+a Part
+handsTune1_
+responds
+selector sections
+args [  ]
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ go. ]
+3
+a Part
+go.Tune3_
+responds
+selector section
+args [ go. ]
+3
+a Part
+bass3_
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ sat ]
+4
+a Part
+bass4_
+responds
+selector section
+args [ sat ]
+4
+a Part
+satTune4_
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ lake ]
+5
+a Part
+bass5_
+responds
+selector section
+args [ scented ]
+5
+a Part
+scentedTune5_
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ flowers ]
+6
+a Part
+bass6_
+responds
+selector section
+args [ flowers ]
+6
+a Part
+chord6_
+responds
+selector section
+args [ flowers ]
+6
+a Part
+planet6_
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ I remember. ]
+7
+a Part
+I remember.Tune7_
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ this ]
+8
+a Part
+thisTune8_
+responds
+selector section
+args [ kisses ]
+8
+a Part
+chords8_
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ best ]
+9
+a Part
+bestTune9_
+responds
+selector section
+args [ best not ]
+9
+a Part
+bassNote9_
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ two days ]
+10
+a Part
+two daysTune10_
+responds
+selector section
+args [ two days ]
+10
+a Part
+bass10_
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ intro ]
+11
+a Part
+bass11_
+responds
+selector section
+args [ intro ]
+11
+a Part
+80811_
+responds
+selector section
+args [ intro ]
+11
+a Part
+lick11_
+responds
+selector sections
+args [  ]
+responds
+selector sections
+args [  ]
+responds
+selector sections
+args [  ]
+responds
+selector sections
+args [  ]
+responds
+selector sections
+args [  ]
+responds
+selector sections
+args [  ]
+responds
+selector sections
+args [  ]
+responds
+selector sections
+args [  ]
+responds
+selector sections
+args [  ]
+responds
+selector sections
+args [  ]
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ renovate ]
+22
+a Part
+renovateTune22_
+responds
+selector section
+args [ renovate ]
+22
+a Part
+dyad22_
+responds
+selector section
+args [ renovate ]
+22
+a Part
+cord22_
+responds
+selector section
+args [ renovate ]
+22
+a Part
+baseNote22_
+responds
+selector sections
+args [  ]
+-> 23
+Found 0 LADSPA plugins
+Number of Devices: 6
+   0 : "Built-in Output"
+   1 : "HDMI"
+   2 : "Unknown USB Audio Device"
+   3 : "Merging RA"
+   4 : "Premiere Pro 6.0"
+   5 : "Digiface USB (23953833)"
+"Digiface USB (23953833)" Input Device
+   Streams: 4
+      0  channels 8
+      1  channels 8
+      2  channels 8
+      3  channels 8
+"Digiface USB (23953833)" Output Device
+   Streams: 5
+      0  channels 8
+      1  channels 8
+      2  channels 8
+      3  channels 8
+      4  channels 2
+SC_AudioDriver: sample rate = 48000.000000, driver's block size = 512
+SuperCollider 3 server ready.
+Requested notification messages from server 'localhost'
+localhost: server process's maxLogins (2) matches with my options.
+localhost: keeping clientID (0) as confirmed by server process.
+Shared memory server interface initialized
+StageLimiter active
+silverLake
+a Function
+responds
+selector sections
+args [  ]
+responds
+selector durs
+args [  ]
+responds
+selector section
+args [ working ]
+0
+a Part
+lick0_
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ hands ]
+1
+a Part
+handsTune1_
+responds
+selector sections
+args [  ]
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ go. ]
+3
+a Part
+go.Tune3_
+responds
+selector section
+args [ go. ]
+3
+a Part
+bass3_
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ sat ]
+4
+a Part
+bass4_
+responds
+selector section
+args [ sat ]
+4
+a Part
+satTune4_
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ lake ]
+5
+a Part
+bass5_
+responds
+selector section
+args [ scented ]
+5
+a Part
+scentedTune5_
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ flowers ]
+6
+a Part
+bass6_
+responds
+selector section
+args [ flowers ]
+6
+a Part
+chord6_
+responds
+selector section
+args [ flowers ]
+6
+a Part
+planet6_
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ I remember. ]
+7
+a Part
+I remember.Tune7_
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ this ]
+8
+a Part
+thisTune8_
+responds
+selector section
+args [ kisses ]
+8
+a Part
+chords8_
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ best ]
+9
+a Part
+bestTune9_
+responds
+selector section
+args [ best not ]
+9
+a Part
+bassNote9_
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ two days ]
+10
+a Part
+two daysTune10_
+responds
+selector section
+args [ two days ]
+10
+a Part
+bass10_
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ intro ]
+11
+a Part
+bass11_
+responds
+selector section
+args [ intro ]
+11
+a Part
+80811_
+responds
+selector section
+args [ intro ]
+11
+a Part
+lick11_
+responds
+selector sections
+args [  ]
+responds
+selector sections
+args [  ]
+responds
+selector sections
+args [  ]
+responds
+selector sections
+args [  ]
+responds
+selector sections
+args [  ]
+responds
+selector sections
+args [  ]
+responds
+selector sections
+args [  ]
+responds
+selector sections
+args [  ]
+responds
+selector sections
+args [  ]
+responds
+selector sections
+args [  ]
+responds
+selector sections
+args [  ]
+responds
+selector section
+args [ renovate ]
+22
+a Part
+renovateTune22_
+responds
+selector section
+args [ renovate ]
+22
+a Part
+dyad22_
+responds
+selector section
+args [ renovate ]
+22
+a Part
+cord22_
+responds
+selector section
+args [ renovate ]
+22
+a Part
+baseNote22_
+responds
+selector sections
+args [  ]
+-> 23
+[ a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part, a Part ]
+-> Song
+Condition Met
+lick0
+WARNING: SynthDef reedy too big for sending. Retrying via synthdef file
+LOADED
+late 0.848526276
+late 0.859193353
+late 0.459193353
+late 0.359193353
+handsTune1
+!!! more than one section with: hands
+[ 1, 10, 14 ]
+go.Tune3
+bass3
+bass4
+satTune4
+scentedTune5
+bass5
+chord6
+bass6
+planet6
+looptop
+less
+0.5
+lessList[ 0.5 ]
+looptop
+grader
+1.5
+looptop
+grader
+0.5
+looptop
+grader
+1.5
+looptop
+grader
+0.5
+looptop
+grader
+1.5
+looptop
+grader
+0.5
+looptop
+equals
+looptop
+equals
+looptop
+equals
+[ [ 1.0, 0.33333333333333 ], 0.66666666666667, [ 1.0, 0.33333333333333 ], 0.66666666666667, [ 1.0, 0.33333333333333 ], 0.66666666666667, [ 1.0, 1.0 ], 1, 1 ]
+b List[ 0.5, 0.615, 1.285, 0.517, 1.386, 0.584, 1.369, 0.585, 0.594 ]
+I remember.Tune7
+chords8
+thisTune8
+List[ 1.157, 0.601, 0.697, 0.666, 0.975 ]
+bestTune9
+bassNote9
+two daysTune10
+bass10
+looptop
+equals
+looptop
+less
+0.33333333333333
+lessList[ 0.33333333333333 ]
+looptop
+less
+0.33333333333333
+lessList[ 0.33333333333333, 0.33333333333333 ]
+looptop
+less
+0.33333333333333
+lessList[ 0.33333333333333, 0.33333333333333, 0.33333333333333 ]
+looptop
+grader
+0.66666666666667
+looptop
+grader
+1.0833333333333
+looptop
+less
+0.25
+lessList[ 0.75, 0.25 ]
+looptop
+grader
+0.75
+looptop
+grader
+1.25
+looptop
+grader
+1
+[ 1, [ 1.0, 1.0, 1.0 ], [ 1.0, 0.30769230769231 ], [ 0.69230769230769, 1.0, 1.4802973661669e-16 ], [ 1.0, 0.2 ], [ 0.8, 1.1102230246252e-16 ] ]
+( 'instrument': stringyy, 'dur': 2, 'amp': 0.35, 'freq': [ 138.59131548844 ] )
+( 'instrument': stringyy, 'dur': 2, 'amp': 0.35, 'freq': [ 174.6141157165 ] )
+( 'instrument': stringyy, 'dur': 2, 'amp': 0.35, 'freq': [ 155.56349186104 ] )
+80811
+lick11
+bass11
+renovateTune22
+dyad22
+[ 1, [ 1, 1 ], [ 1, 1, 1, 1, 1 ] ]
+cord22
+baseNote22
+-> nil

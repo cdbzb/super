@@ -1,4 +1,8 @@
 + Array {
+	pick { | indices |
+		^this.copySeries( *indices )
+	}
+
 	asDegrees { 
 		|root=0 octave=5 scale=\major tuning| 
 		^this.collect{|i| 

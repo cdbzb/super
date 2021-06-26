@@ -87,32 +87,33 @@ Item {
 			^items.at(n).refresh
 		}
 	}
-//}}}
-	armed { node.isNil.if{^false}
-	{^node.isPlaying} 
-}
-// stamp returns warp envelope, stamps returns stamps
-stamp { 
-	   // arggg but default stamp is not nil!!!!!
-	   |array key| 
-	   stamps.isNil.if{stamps=()};
-	   (
-			 stamps.notNil.if{
-				    stamps.at(key)
-			 } {
-				    stamps
-			 }
-	   ).isNil.if{
-			 stamps.put(key,array);
-			 this.writeStamps;
-			 ^1
-	   } {
-			 var ratios=stamps.at(key)/array;
-			 ^warpEnvelope=Env([ ratios[0] ]++ratios,array,\step)
-	   }
-}
+	//}}}
+	armed { 
+		node.isNil.if{^false}
+		{^node.isPlaying} 
+	}
+	// stamp returns warp envelope, stamps returns stamps
+	stamp { 
+		// arggg but default stamp is not nil!!!!!
+		|array key| 
+		stamps.isNil.if{stamps=()};
+		(
+			stamps.notNil.if{
+				stamps.at(key)
+			} {
+				stamps
+			}
+		).isNil.if{
+			stamps.put(key,array);
+			this.writeStamps;
+			^1
+		} {
+			var ratios=stamps.at(key)/array;
+			^warpEnvelope=Env([ ratios[0] ]++ratios,array,\step)
+		}
+	}
 	writeStamps {  
-		   stamps.writeArchive(samplesDir++ name +/+ "stamps")
+		stamps.writeArchive(samplesDir++ name +/+ "stamps")
 	}
 	clearStamps {
 		stamps=nil;  
@@ -122,7 +123,7 @@ stamp {
 		var i = Item(name);//{{{
 		//try{File.mkdir(samplesDir++newName)};
 		File.copy(i.mostRecent,dir++'/'++Date.getDate.stamp++'.aif')
-		}//}}}
+	}//}}}
 	recIfArmed { |...args|
 		this.armed.if{
 			this.record(length:recordLength)
@@ -148,7 +149,7 @@ stamp {
 		^node= {
 			RecordBuf.ar(
 				In.ar(inBus,inChans),buffer,recLevel:1,preLevel:0,
-//				run:0,
+				//				run:0,
 				loop:\loop.kr(1),
 				trigger:\trigger.kr(-1),
 				doneAction: 2
@@ -162,7 +163,7 @@ stamp {
 		var file = SoundFile(this.mostRecent);
 		file.openRead;
 		^Buffer.alloc(Server.default,file.duration.calcPVRecSize(fftSize,hop));
-//		file.close
+		//		file.close
 	}
 	getFFT {|fftSize=2048 hop= 0.5 window = 0|
 		pvBuffer = this.allocatePVBuffer(fftSize,hop,window);
@@ -179,7 +180,7 @@ stamp {
 	monitor { |target addAction|
 		target.isNil.if{target=Server.default}
 		{SoundIn.ar()}.play(target,bus,addAction: addAction)
-//		node.play(bus,addAction:\addToTail);
+		//		node.play(bus,addAction:\addToTail);
 	}
 	write {
 		abort.if{
@@ -195,11 +196,11 @@ stamp {
 	}
 	recordNow {|length|
 		'filling buffer'.postln;
-			'writing file'.postln;
-			node.set(\loop,0,\trigger,1);
-			node.onFree({
-				this.write
-			})
+		'writing file'.postln;
+		node.set(\loop,0,\trigger,1);
+		node.onFree({
+			this.write
+		})
 	}
 	record {|length|
 		'filling buffer'.postln;
@@ -213,7 +214,7 @@ stamp {
 	}
 	stop {//{{{
 		node.isNil.not.if{
-//			abort=true;
+			//			abort=true;
 			node.free
 		}; 
 		buffer=Buffer.read(Server.default,this.mostRecent)
@@ -225,29 +226,30 @@ stamp {
 			// play as per usual
 		}
 	}//}}}
-*makePlayer {
-	   [1,2,4,8].do { |i|
-			 SynthDef("itemPlayer"++i, {
-				    |bufnum=0,rate=1,startPos=0,trigger=1,loop=0,amp=0.1,out=0|
-				    var sig;
-				    //(rate*this.p_sampleRate/server.sampleRate).postln;
-				    sig=PlayBuf.ar(
-						  i,
-						  bufnum,
-						  rate:rate*BufRateScale.kr(bufnum),
-						  startPos:startPos,
-						  trigger:trigger,
-						  loop:loop,
-						  doneAction:2
-				    );
-				    Out.ar(out,sig*amp)
-			 } )
-			 .add
-	   }
+	*makePlayer {
+		[1,2,4,8].do { |i|
+			SynthDef("itemPlayer"++i, {
+				|bufnum=0,rate=1,startPos=0,trigger=1,loop=0,amp=0.1,out=0|
+				var sig;
+				//(rate*this.p_sampleRate/server.sampleRate).postln;
+				sig=PlayBuf.ar(
+					i,
+					bufnum,
+					rate:rate*BufRateScale.kr(bufnum),
+					startPos:startPos,
+					trigger:trigger,
+					loop:loop,
+					doneAction:2
+				);
+				Out.ar(out,sig*amp)
+			} )
+			.add
+		}
 
-}
+	}
 	// warning argument order was changed!!!
-	playNow {|server out  rate=1 startPos=0 trigger=1 loop=0 amp=1| //{{{
+	playNow {
+		|server out  rate=1 startPos=0 trigger=1 loop=0 amp=1| //{{{
 		bus = (out ? bus);
 		server ?? {server=Server.default};
 		this.armed.if{
@@ -255,32 +257,33 @@ stamp {
 		}{
 			buffer.isNil.if({ this.refresh });
 			synth = Synth("itemPlayer"++inChans,
-				   [
-						 bufnum: buffer.bufnum,
-						 rate: rate,
-						 startPos: startPos,
-						 trigger: trigger,
-						 loop: loop,
-						 amp: amp,
-						 out: bus
-				   ]);
+				[
+					bufnum: buffer.bufnum,
+					rate: rate,
+					startPos: startPos,
+					trigger: trigger,
+					loop: loop,
+					amp: amp,
+					out: bus
+				]);
 
-			^synth
-			
-	}} //}}}
+				^synth
+
+			}
+		} //}}}
 	playWarp { |durs key fftSize=4096 hop=0.25 |
-		   var env = this.stamp(durs,key);
-		   var bus = Bus.control;
-		   var syn = this.playFFT (fftSize, hop);
-		   { EnvGen.kr(env) }.play(Server.default,bus);
-		   syn.map(\rate,bus)
+		var env = this.stamp(durs,key);
+		var bus = Bus.control;
+		var syn = this.playFFT (fftSize, hop);
+		{ EnvGen.kr(env) }.play(Server.default,bus);
+		syn.map(\rate,bus)
 	}
 	warp { |durs |
-		   var env = this.stamp(durs);
-		   var bus = Bus.control;
-		   //var syn = this.playFFT (fftSize, hop);
-		   { EnvGen.kr(env) }.play(Server.default,bus);
-		   synth.map(\rate,bus)
+		var env = this.stamp(durs);
+		var bus = Bus.control;
+		//var syn = this.playFFT (fftSize, hop);
+		{ EnvGen.kr(env) }.play(Server.default,bus);
+		synth.map(\rate,bus)
 	}
 	play {|server out  rate=1 startPos=0 trigger=1 loop=0 amp=1| //{{{
 		bus = (out ? bus);
@@ -290,22 +293,22 @@ stamp {
 		}{
 			buffer.isNil.if({ this.refresh });
 			synth = Synth.newPaused("itemPlayer"++inChans,
-				   [
-						 bufnum: buffer.bufnum,
-						 rate: rate,
-						 startPos: startPos,
-						 trigger: trigger,
-						 loop: loop,
-						 amp: amp,
-						 out: bus
-				   ]);
-
+				[
+					bufnum: buffer.bufnum,
+					rate: rate,
+					startPos: startPos,
+					trigger: trigger,
+					loop: loop,
+					amp: amp,
+					out: bus
+				]
+			);
 			Server.default.bind{
-				   synth.run;
+				synth.run;
 			}
 			^synth
-			
-	}} //}}}
+		}
+	} //}}}
 	prepVocoder {|numberOfBands=20| //{{{
 		var s,f;
 		s=Server.default;
@@ -359,15 +362,15 @@ stamp {
 			Item(\latencyTest).play;
 			[note:Pseries(1,2,5)+4.rand,out:~b.index].pp;
 			6.wait;
-				Item(\latencyTest).play;
-				[note:Pseries(1,1,5)-4,out:0].pp;
+			Item(\latencyTest).play;
+			[note:Pseries(1,1,5)-4,out:0].pp;
 
 		}
 
 	}
 	*replay {
-				Item(\latencyTest).play;
-				[note:Pseries(1,1,5)-4,out:0].pp;
+		Item(\latencyTest).play;
+		[note:Pseries(1,1,5)-4,out:0].pp;
 	}
 }
 
@@ -376,7 +379,7 @@ Items {
 	*new { |directory| ^super.newCopyArgs(directory).init}
 	*list {
 
-		   "ls "++Item.samplesDir++"Items" =>_.unixCmd()
+		"ls "++Item.samplesDir++"Items" =>_.unixCmd()
 	}
 	init { 
 		directory = directory.asString;
@@ -395,20 +398,20 @@ Items {
 		this.refreshItems
 	}
 	list {
-		   "ls "++Item.samplesDir++"Items" +/+ directory =>_.unixCmd()
+		"ls "++Item.samplesDir++"Items" +/+ directory =>_.unixCmd()
 	}
 	at { |i|
-		   var counter = i;
-		   (counter.class==Integer).if{ 
-				 ^items[counter]
-		   }{
-				 counter = files.indexOf(counter);
-				 ^items[counter]
-		   }
+		var counter = i;
+		(counter.class==Integer).if{ 
+			^items[counter]
+		}{
+			counter = files.indexOf(counter);
+			^items[counter]
+		}
 	}
 	doesNotUnderstand { |selector ...args |
-		   var expandedArgs = args.flop;
-		   ^items.collect{|i x| i.perform(selector, *expandedArgs[x]) }
+		var expandedArgs = args.flop;
+		^items.collect{|i x| i.perform(selector, *expandedArgs[x]) }
 	}
 }
 

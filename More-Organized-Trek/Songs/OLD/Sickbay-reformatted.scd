@@ -1,21 +1,20 @@
 (/// line 326
-	Song.dursFile_("/Users/michael/tank/super/theExtreme_Sep18");
-	~sickBay=Song(\sickBay,[]).current;
-		["Sick Bay.. Sick Bay, Mc- Coy","e c f# d e g#"].addLine; //0
-		["Sar- gon here, i'm in your deck six brief- ing room","b- g- c  e- f g- a- b- b g# d "].addLine; //1
-		["(enter Thalassa)","e5"].addLine; //f maj 7 //2
-		["You sound ter- ri- ble wait there for me","c4 d e c g3 e-4 d b-3 f"].addLine;  //3
-		["Sar- gon what's wrong?","b4 g b e5"].addLine;  //4
-		["no- thing of im- portance, Fa- tigue per- haps","f g- a- g- b- g- b- a- g- e-"].addLine;  //5
-		["(beat) (formula) Sar- gon's for- mu- la...","d d5 e f# a f# c"].addLine;  //6
-		["yes, I wan- ted to be cer- tain there was no","f4 c#4 c c# f c# c b-3 a- b- e-4"].addLine;  //7
-		["er- ror. For- mu- la is co- ","d4 f3 g a b g b "].addLine; //8
-		["rrect. Don't be concer -- ned, this is an","d4 c# e d f# g f# d e f# "].addLine;  //9
-		["ex- cel- lent bo- dy. "," g#4 e d d c#"].addLine; //10
-		["There I feel be- tter al- rea- dy","c4 g3 a b c4 b3 a b d4 c"].addLine; //11
+	~sickBay=Song(\sickBay,[]);
+		["Sick Bay.. Sick Bay, Mc- Coy","e c f# d e g#"].addList; //0
+		["Sar- gon here, i'm in your deck six brief- ing room","b- g- c  e- f g- a- b- b g# d "].addList; //1
+		["(enter Thalassa)","e5"].addList; //f maj 7 //2
+		["You sound ter- ri- ble wait there for me","c4 d e c g3 e-4 d b-3 f"].addList;  //3
+		["Sar- gon what's wrong?","b4 g b e5"].addList;  //4
+		["no- thing of im- portance, Fa- tigue per- haps","f g- a- g- b- g- b- a- g- e-"].addList;  //5
+		["(beat) (formula) Sar- gon's for- mu- la...","d d5 e f# a f# c"].addList;  //6
+		["yes, I wan- ted to be cer- tain there was no","f4 c#4 c c# f c# c b-3 a- b- e-4"].addList;  //7
+		["er- ror. For- mu- la is co- ","d4 f3 g a b g b "].addList; //8
+		["rrect. Don't be concer -- ned, this is an","d4 c# e d f# g f# d e f# "].addList;  //9
+		["ex- cel- lent bo- dy. "," g#4 e d d c#"].addList; //10
+		["There I feel be- tter al- rea- dy","c4 g3 a b c4 b3 a b d4 c"].addList; //11
 		//in Time
-		["in Time a host ","b3 b4 a b"].addLine; //12
-		[" -- body will become... (cis) ","c# b a g a b c#3"].addLine; //13
+		["in Time a host ","b3 b4 a b"].addList; //12
+		[" -- body will become... (cis) ","c# b a g a b c#3"].addList; //13
 		//"(d a fis) accustomed to us (fis)"
 /// sickBay sections {{{1
 ~sickBay.resources=();
@@ -172,15 +171,15 @@ SynthDef(\door,{ //{{{
 	=>Out.ar(0,_)
 }).add;
 	//}}}
-//	a=SynthDef(\sawTw,{ |freq=400 amp=1 spread=5 | //{{{
-//		var env= Env.perc(0.2,6!4.rand).kr(2,gate:1);
-//		var sig=Splay.ar ( Saw.ar( rrand(spread,(-1*spread))+freq,0.2) )
-//			.distort*env;
-//		sig=sig+CombN.ar(sig,1,0.3,3);
-//		sig=sig/1.5+Phaser2.ar(sig,rate:0.2	);
-//		Out.ar(\out.ir(0),sig*amp)
-//		//Out.ar(0,sig)
-//	});a.add;
+	a=SynthDef(\sawTw,{ |freq=400 amp=1 spread=5 | //{{{
+		var env= Env.perc(0.2,6!4.rand).kr(2,gate:1);
+		var sig=Splay.ar ( Saw.ar( rrand(spread,(-1*spread))+freq,0.2) )
+			.distort*env;
+		sig=sig+CombN.ar(sig,1,0.3,3);
+		sig=sig/1.5+Phaser2.ar(sig,rate:0.2	);
+		Out.ar(\out.ir(0),sig*amp)
+		//Out.ar(0,sig)
+	});a.add;
 //}}}
 	SynthDef(\verbb,{|in out| //{{{
 		var sig= In.ar(in,2);

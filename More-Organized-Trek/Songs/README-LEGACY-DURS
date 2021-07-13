@@ -1,0 +1,6 @@
+
+// 1
+Song.dursFile_("/Users/michael/tank/super/theExtreme3-legacy");
+// Load song ... then 
+Song.currentSong.writeLyricDurationFile
+// and done!

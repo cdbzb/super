@@ -16,6 +16,7 @@
 		~unnecessary.bass.set(\wet1,0.8);
 		~unnecessary.bass[2]=\filter->{|in| Phaser1.ar(in,  depth: 0.5,  rate: 0.2,  fb: 0.3,  cfb: 0.1,  rot: 1.5707963267949) };
 	} );
+//TODO CLEAN THIS UP!!!!!!
 
 	~notes=[1,3,6,4].collect{|i| i!4}.flatten;
 

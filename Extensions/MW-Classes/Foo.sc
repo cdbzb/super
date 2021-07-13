@@ -45,6 +45,18 @@ SongArray { //array which can be indexed by current song lyric
 		array.put(i,x)
 	}
 }
+/*
+a=SongArray()
+a.put(3,\polanet)
+a.array
+a.at(3)
+a=Order()
+a.put(0,3.5)
+*/
+
+
+
+
 
 
 

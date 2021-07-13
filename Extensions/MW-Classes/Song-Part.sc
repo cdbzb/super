@@ -5,11 +5,12 @@ Song {
 	classvar < songs;
 	classvar <> current;
 	classvar lyricWindow;
+	classvar <>songList;
 	var <song, <key, <cursor=0, <sections, <lyrics, <tune; 
 	var <durs,  <>resources, <>lyricsToDurs;
-	var <>next; 
+	var <>next;
+	var <>quarters;
 	var <>clock;
-	classvar <>songList;
 
 	*initClass {
 		songs=Dictionary.new;
@@ -105,6 +106,7 @@ Song {
 		this.setupLyricsToDurs;
 		durs=Durs(this);
 		clock=TempoClock.new(queueSize:512);
+		quarters=SongArray(key:key);
 	}
 	cursor_ {|i| cursor = i; lastSectionPlayed = i;}
 
@@ -526,6 +528,14 @@ Part {
 		}},
 		// Event,{ music.play},
 		Message,{Server.default.bind{music.value}},
+		Routine,{
+			music.value(
+				parent,
+				//durs from event start
+				parent.durs[start].list.drop(syl?0),
+				this
+			)
+		},
 		VocoderPattern,{music.play;\vocoderPatternPlaying.postln},
 		{music.play}
 		) 

@@ -254,8 +254,11 @@ SynthDef(\recc,{|buf bus=0|DiskOut.ar(buf,In.ar(bus))}).add;
 ~myFree={ 
 	|vsti|
 	s.freeMyDefaultGroup;
-	TempoClock.all.do(_.clear);
-	SystemClock.do(_.clear);
+	fork{
+		s.latency.wait;
+		TempoClock.all.do(_.clear);
+		SystemClock.do(_.clear);
+	};
 	~vstRegistry.do{|i| 16.do{|x| i.midi.allNotesOff(x)}}
 }; 
 

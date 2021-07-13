@@ -20,14 +20,13 @@ o = [
 	"/*KIRK:*/ Nothing. Our next injection will renovate me. (boom) ",  Pseq.prNew,  List.prNew,  Array.prNew(13),  
 	"when their hands touch.",  Pseq.prNew,  Array.prNew(1),  "/*MULHALL:*/ Sargon, I remember a day long a- ",  
 	Pseq.prNew,  List.prNew,  Array.prNew(10),  "go. (ta da da boom da) We ",  
-	Pseq.prNew,  List.prNew,  Array.prNew(7),  "/*KIRK:*/ I remember. You held my han-- -- -- -- -- -- -- -- -- -- -- -- -- d like ",  
-	Pseq.prNew,  List.prNew,  Array.prNew(21),  "(intro)",  
+	Pseq.prNew,  List.prNew,  Array.prNew(7),  "(intro)",  
 	Pseq.prNew,  Array.prNew(1),  "this.  (He kisses it, as Spock comes in.) ",  Pseq.prNew,  
 	List.prNew,  Array.prNew(5)
 ];
 p = [
 	// Dictionary
-	0, [ array: o[1],  size: 24 ],  
+	0, [ array: o[1],  size: 23 ],  
 	// Array
 	1, [ nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -134,7 +133,6 @@ p = [
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		o[83],  o[84],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -142,14 +140,15 @@ p = [
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  o[87],  o[88],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[83],  o[84],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		o[90],  o[91],  nil,  nil,  
+		o[86],  o[87],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -212,7 +211,7 @@ p = [
 	26, [ list: o[27],  repeats: 1,  
 		offset: 0 ],  
 	// Array
-	27, [ 6 ],  
+	27, [ 8 ],  
 	// Pseq
 	29, [ list: o[30],  repeats: 1,  
 		offset: 0 ],  
@@ -251,7 +250,7 @@ p = [
 	// Array
 	43, [ 0.484,  0.55,  0.516,  0.41,  
 		0.488,  0.251,  0.278,  0.388,  
-		3.6804375 ],  
+		2.453625 ],  
 	// Pseq
 	45, [ list: o[46],  repeats: 1,  
 		offset: 0 ],  
@@ -321,7 +320,7 @@ p = [
 	73, [ list: o[74],  repeats: 1,  
 		offset: 0 ],  
 	// Array
-	74, [ 4 ],  
+	74, [ 6 ],  
 	// Pseq
 	76, [ list: o[77],  repeats: 1,  
 		offset: 0 ],  
@@ -342,27 +341,15 @@ p = [
 	// Pseq
 	84, [ list: o[85],  repeats: 1,  
 		offset: 0 ],  
-	// List
-	85, [ array: o[86] ],  
 	// Array
-	86, [ 0.596,  0.414,  0.748,  0.374,  
-		0.32,  0.304,  0.31,  0.282,  
-		0.33,  0.284,  0.288,  0.32,  
-		0.326,  0.304,  0.314,  0.31,  
-		0.316,  0.322,  0.336,  0.378,  
-		0.454 ],  
+	85, [ 9.2307692307692 ],  
 	// Pseq
-	88, [ list: o[89],  repeats: 1,  
-		offset: 0 ],  
-	// Array
-	89, [ 9.2307692307692 ],  
-	// Pseq
-	91, [ list: o[92],  repeats: 1,  
+	87, [ list: o[88],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	92, [ array: o[93] ],  
+	88, [ array: o[89] ],  
 	// Array
-	93, [ 1.157,  0.601,  0.697,  0.666,  
+	89, [ 1.157,  0.601,  0.697,  0.666,  
 		0.975 ]
 ];
 prUnarchive(o,p);

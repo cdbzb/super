@@ -90,7 +90,9 @@ XTouch : XMIDIController {
 			{ Song.play },\play,
 			{ Part.play; },'bank up',
 			{Document.current.path.load},\rewind,
-			{ Song.playSection(Song.cursor)} ,\click
+			{ Song.playSection(Song.cursor)} ,\click,
+
+			{defer{ SynthDescLib.default.browse }},'inst',
 		]);
 
 

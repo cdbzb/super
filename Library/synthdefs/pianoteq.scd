@@ -22,7 +22,7 @@
 		~struShort.do{|i x| ~strums.add(i->(x+72))};
 		//~short.do{|i x| ~strums.add(i->(x+72))};
 		~midinote=~strums[~switch];
-		~type=\vsti;
+		~type=\vst_midi;
 		currentEnvironment.play
 		}
 	);

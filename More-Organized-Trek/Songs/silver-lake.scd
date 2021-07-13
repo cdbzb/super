@@ -12,19 +12,71 @@ Song(\silverLake,[]).current;
 		]).value
 	}.inEnvir;
 	
-[ "(Sargon and Thalassa are working...","r",~test].addLine;
-Song.durs['working']=[8].q;
-[1,3,5,1,4,6,5,4].df(\a).q(2)=>[dur:0.5,freq:_]=>_.p => {|i| P(\lick,start:\working,music:{|p b e| i.play})};
-[ "when their hands touch.","r" ].addLine; 
+[ "(Sargon and Thalassa are working...","r"].addLine;
+Song.durs['working']=[6].q;
+[1,3,5,1,4,6,5,4].df(\g).q(2)=>[dur:0.5,freq:_,legato:1]=>_.p => _.fin(13) => {|i| P(\lick,start:\working,music:{|p b e| i.play})};
+[ "when their hands touch.","r",4 ].addLine; 
 ~justTheTune.(\touch);
-["/*MULHALL:*/ Sargon, I remember a day long a-- ","r"].addLine;
+P(\arpeggio,\touch,music:
+		{
+				[7,6,4.5,3,2,1] => {|i| [i,(-1)*i]} => _.flat => {|i| 
+						[ 
+								freq:i.df(\d,scale:\dorian,octave:6).q,
+								dur:1/2/3,
+								legato:3.05,
+								out:Effect({ |i| 
+										EchoNone.ar(i,0.5,{0.5.rand}!4,18)
+										=>FreeVerb.ar(_,0.9,0.9) 
+										=>Resonator.ar(_,SinOsc.ar(0.01).range(1400,1000),damping:0.2) 
+										* 0.3
+								},inputChannels:4,out:[0,1,2,3]).bus.index
+						].pp;
+						(
+								instrument:\stringyy,
+								freq:[1,3,4.5,7].df(\d,scale:\dorian),
+								dur:6
+						).play
+				}
+});
+
+
+//~chordIdea = [ [-1,3,4.5,7], [-3.5,2,5,7] ].df(\d,scale:\minor).q => {|i| [freq:i,legato:1,dur:2.5].p};
+
+["/*MULHALL:*/ Sargon, I remember a day long a- ",[2,1, 3,2,-6,1,-7,-7,-6,-5].dm(\d,scale:\dorian,octave:6)].addLine;
+
+P(\bassnote,start:'long a',music: { |p b e|
+		b.postln;
+		b.sum.postln;
+		(
+				instrument:\sawSynthSustain,
+				freq:[11,21].df(\d,octave:3),
+				att:9,
+				dur:3,
+				rel: b.sum
+		).play
+});
+~justTheTune.('long a');
 ["go. (ta da da boom da) We ", [3, 5,5,5,-4,4].dm(\e)++[3].dm(\a)].addLine;
-~justTheTune.('go.');
-P(\bass,start:'go.',syl:3,music:{|p b e|
+~justTheTune.('go.', {|i| Pbindf(i,\amp,[0.1,\r,\r,\r,\r,\r,0.1].q,\legato,[5,1,1,1,1,1,1].q)});
+P(\bass,start:'go.',music:{|p b e|
 	Routine{
+
 		//b[0]*2/3=>_.wait;
+		(freq:[1,11].df(\e,octave:4),dur:3).play;
+		b[0..3].sum.wait;
 		(freq:[4,14].df(\e,octave:4),dur:3).play
 	}.play
+});
+P(\chords,'go.',syl:0,music: {|p b e|
+		[
+				freq:
+				[3,5].df(\e)!3++\r++[[1,3].df(\a)]
+				=>_.q
+				,
+				instrument:\sparkTriangle,
+				legato:0.1,
+				dur:b[1..6].q
+		].pp
 });
 ["sat beside a si -- lve --r ",[1,-7,-6,-7,-5,3,4,1,3].dm(\d,octave:6)].addLine;
 P(\bass,start:'sat',music:{|p b e|
@@ -43,7 +95,8 @@ P(\bass,start:\lake,music:{|p b e|
 });
 ~justTheTune.('scented',{|e| Pbindf(e,\legato,2)});
 ["flowers of our planet. ",[1,-7,1].dm(\g,scale:\mixolydian)++[6,5,4,3,6,5,4,3].dm(\d)+12].addLine;
-Song.quarters[\planet]= Song.parseBeats(\planet,[2.5,1.5,0.5,0.5,1.5,0.5,1.5,0.5,1.5,0.5,1.5]);
+Song.quarters[\planet]= Song.parseBeats(\planet,[1.5,1.5,0.5,0.5,1.5,0.5,1.5,0.5,1.5,0.5,1.5]);
+//Song.quarters[\planet]
 
 P(\arpeggio,start: \flowers,music:{|p b e|
 	[1,2,3,5,7,11,7].dm('a-')
@@ -55,8 +108,19 @@ P(\arpeggio,start: \flowers,music:{|p b e|
 		dur:1/2,
 		out:1,
 		legato:2.1
-	].p.play(clock:Song.quarters[\planet].asTempoClock)
+	].p
+	//.play(clock:Song.quarters[\planet].asTempoClock)
 }});
+//Song.quarters[\planet]
+P(\ride,\flowers, //syl:3, 
+		music:{|p b e|
+		[
+				//instrument:\claves_808,
+				instrument:\openhihat_808,
+				dur: Rest(1)!4++{  1!7  }.value => _.q,
+				out:Effect(EchoNone.ar(_,0.2,0.1,6),out:3).bus.index
+		].p.play(clock: Song.quarters[\planet] .asTempoClock)
+});
 ~justTheTune.(\flowers);
 P(\bass,start:\flowers,music:{|p b e|
 	var effect=Effect(DWGReverbC1C3.ar(_,len:2000,c1:1,c3:10,mix:1),inputChannels:2);
@@ -102,8 +166,34 @@ P(\planet,start:\flowers,syl:2,music: { |p b e |
 		=> _.play(~quarters.asTempoClock);
 	'b '.post;b.postln
  });
-["/*KIRK:*/ I remember. You held my han-- -- -- -- -- -- -- -- -- -- -- d like ",[4,3,3,2].dm(\c)++[-4,-5,-6,-7,1,-7,-6,-7,1,2,3,2,1,2,3].dm(\g)].addLine;
+["/*KIRK:*/ I remember. You held my han-- -- -- -- -- -- -- -- -- -- -- -- -- d like ",[4,3,3,2].dm(\c)++[-4,-5,-6,-7,1,-7,-6,-7,1,2,3,2,1,2,3, 4,5].dm(\g)].addLine;
 ~justTheTune.('I remember.');
+~justTheTune.('I remember.',{|i| Pmul(\freq,0.5,i) });
+P(\bass,'I remember.',music: {|p b e|
+		[
+				freq:[[4,14],[3,13], 5 ,-5].df(\c,octave:3).q,
+				instrument:\sawSynth,
+				rel:2.5,
+				dur:b.q,
+				legato:1,
+				amp:[1,1,1,2].q/10
+
+		].pp
+});
+P(\chords,'I remember.',music: {|p b e|
+		[
+				freq:[ [6,11], [5,11], [5,7]].df(\c).q,
+				instrument:\sparkTriangle,
+				dur: b.parse([1,1,2]).q,
+				amp:0.05
+		].pp
+});
+P(\doubling,'I remember.',syl:12,music: {|p b e|
+		[
+				freq:[7,11,7,6,7,11,12,13].df(\g,octave:4).q,
+				dur:b.q
+		].pp
+});
 ["this.  (He kisses it, as Spock comes in.) ",[5,4,4,3,3 ].dm(\c,octave:6)].addLine;
 ~justTheTune.('this');
 P(\chords,start:'kisses',music: {|p b e|
@@ -123,6 +213,8 @@ P(\bassNote,start:'best not',syl:11,music: {|p b e|
 ["/*SPOCK:*/ In two days, you'll have your own hands, Thalassa. ",[3,2,4,3,4,3,3,2,4,1,-7].dm('a-')].addLine;
 ~justTheTune.('two days');
 //~twoDaysQuarters= Song.durs['two days'].list.asArray.parseBeats([0.5,0.5,1,1/3,1/3,1/3,3/4,(1/4+(3/4)), 1/4,3/4,(1/4+1)]);
+//Song.durs['two days'].list.postcs
+Song.durs['two days'].list[10]=(1.33);
 P(\bass,start:'two days',syl:1,music:{|p b e|
 	var quarters = b.drop(1).asArray.parseBeats([1,1/3,1/3,1/3,2/3,(1/3+(3/4)), 1/4,3/4,(1/4+1)]);
 
@@ -132,9 +224,12 @@ P(\bass,start:'two days',syl:1,music:{|p b e|
 	=>Pmul(\dur,2,_)
 	=>_.trace=>_.play(quarters.asTempoClock)
 });
-["(intro)","r",[ (104/60).reciprocal*16 ]].addLine;
 
-Song.resources.introClock=TempoClock.new(104/60 * 0.98);
+
+["(intro)","r",[ (104/60).reciprocal*16 ]].addLine;
+//Song.durs['intro'] = Song.durs['intro'].list*0.98=>_.q;
+//Song.resources.introClock=TempoClock.new(104/60 * 0.98);
+Song.resources.introClock=TempoClock.new(104/60);
 P(\bass,start:'intro',music: {|p b e|
 	[5,5,14,5]++( 5!4 )++( 11!7 ) ++ 7
 	=>_.df('e-',octave:2)
@@ -174,9 +269,36 @@ P(\lick,start:'intro',music: {|p b e|
 	]
 	=>_.pma(\sawSynthSustain)=>Pmul(\dur,2,_)=>Ptrace(_)=>_.play (Song.resources.introClock)
 });
-["Mechanically efficient and ","r"].addLine;
+["Mechanically efficient and ",[\r,2, 1, 2,  4, 3].dm('e-'),"qq Q Q Q qe eqe eqe e".asBeats*60/104].addLine;
 //needs to start on beat 3
-P(\keys,start:\efficient,music: {
+~justTheTune.(\efficient);
+P(\bass,start:'efficient',music: {|p b e|
+	[5,5,14,5]++( 5!4 )++( 11!7 ) ++ 7
+	=>_.df('e-',octave:2)
+	=>{|i| [
+		amp:0.2,
+		out:0,
+		freq:i.q(2),
+		dur:0.5,
+		rel:0.9,
+		trigger:1,
+		instrument:\sawSynth
+	].pma(
+//		\sawSynthTrigger
+		\sawSynthSustain
+	).play(clock:p.resources.introClock) };
+} );
+
+P(\808,start:'efficient',music: {|p b e|
+	\intro.post;t.postln;
+	[
+		"x.x...x.x.x...x.".asDrumPat(4,4)=>[instrument:\bd_808,dur:_,amp:0.5]=>_.p  ,
+		"xxxxxxxxxxxxxxxx".asDrumPat(4,4)=>[amp:0.08,instrument:\hat_808,dur:_]=>_.p,
+		"....x.......x...".asDrumPat(4,4)=>[amp:0.10,instrument:\sn_808,dur:_]=>_.p ,
+	] => Ppar(_) => _.play(clock:Song.resources.introClock)
+	
+});
+P(\keys,syl:0,start:\efficient,music: {
 	\gotHere.postln;
 	~lick1=VoiceLeading(
 		[
@@ -185,7 +307,7 @@ P(\keys,start:\efficient,music: {
 			[-5,\_,\_,-4,-3, \r,-2]
 		] ,  
 		"Q Q Q qe eqe eqe e".asBeats
-	).df('b-').pma
+	).df('e-').pma
 
 	//tune3
 
@@ -195,7 +317,7 @@ P(\keys,start:\efficient,music: {
 			[-5,\_,\_, -4, -3, \r,-2]
 		],
 		"Q Q Q qe eqe eqe e".asBeats
-	).df('b-').pma;
+	).df('e-').pma;
 	[instrument:\sawSynthSustain].p<>~lick1=>_.play(clock:Song.resources.introClock) ;
 } );
 
@@ -205,6 +327,7 @@ P(\keys,start:\efficient,music: {
 ["Hands without feeling. ","r"].addLine;
 ["Enjoy the taste of life while you can. ","r"].addLine;
 ["/*KIRK:*/ (boom But.. boom) our minds will have survived. ",[-2,2,-3,3,7,6,5,3,2.5].dm(\f)].addLine;
+Song.durs[\survived].list .put(8,Song.durs[\survived].list[8]*1.5);
 ~justTheTune.(\survived);
 P(\mindChord,syl:3,lag:-0.06, start:\survived, music: {
 	[-11,-15,-1,1,3,5,7].df(\f)
@@ -219,6 +342,16 @@ P(\bassNote,start:\survived,syl:7,music:{
 		release:4
 	].pp
 });
+P(\extra,syl:7,start:\survived,music:{|p b e|
+	b.postln;
+		[
+				freq: [-1,[-4,-5]].df('a-').q,
+				amp:0.025,
+				dur:[b[1]/2,b[1]/2].q,
+				legato:[3,2].q
+		].pp
+}
+);
 ["And as androids, we can move among the people who do live ",[1,-5,1,-7,1,2].dm('b-')++[7,5,3,5,7,11,7,7,6].dm(\d)].addLine;
 ~justTheTune.(\people);
 P(\moveChord,start:\move,syl:5,music:{ |p b e|
@@ -230,7 +363,6 @@ P(\moveChord,start:\move,syl:5,music:{ |p b e|
 		legato:1.1,
 		amp:0.03,
 		//dur:[b[0..2].sum,b[3..6].sum,b[7..8].sum].q
-		[1,2,3].sum(2,3)
 		dur:b.parse([3,[1,1,1,1,0.5],[0.5,1,0.5]]).q
 	].p.play
 });
@@ -249,6 +381,7 @@ P(\bassnote,start:'tea -- ching',syl:0,music:{|p b e|
 	].pp
 });
 ["helping them (boom) not to make the errors we -- did. (pain) ",[4,3,1,-7,1,2,3,1,4,5,5,6,5,-7.5].dm(\a,scale:\mixolydian)].addLine;
+Song.durs[\pain].list.put(13,4); //'pain' length
 ~justTheTune.('helping');
 //Song.durs[\helping].list.postln
 P(\answer,start:'helping',syl:2,music:{|p b e|
@@ -288,23 +421,30 @@ P(\pain,start:'helping', syl:12,music: {| p, b, e|
 	).play
 });
 
-["/*MULHALL:*/ What is it, Sargon? ","r"].addLine;
+["/*MULHALL:*/ What is it, Sargon? ",[1,5,4,1,-7].dm(\c)].addLine;
+~justTheTune.('What');
 ["/*KIRK:*/ Nothing. Our next injection will renovate me. (boom) ",[1,1].dm('e-')++[2,3,1,3,-7,1,2,1,-7,-5,-3].dm('d',scale:\mixolydian,)].addLine;
-~justTheTune.('renovate',(_.fin(12)));
+Song.resources.renovateKey='e-';
+Song.resources.renovateKey='b-';
+Song.resources.renovateKey='d';
+~justTheTune.('renovate',({|i| 
+	i.fin(12)=>
+	Pmul(\freq,midiratio(-13),_) //'e- to b-'
+}));
 P(\dyad,start:'renovate',music:{|p b e|
 	[
 		freq:
 		 [-5,-7]!2=>_.unbubble ++ [-17.5,-7.5] 
-		=>_.df('e-',octave:4,scale:\mixolydian )=>_.q,
+		=>_.df(p.renovateKey,octave:4,scale:\mixolydian )=>_.q,
 		dur:b.parse([1,2,5]).q,
 		instrument:\stringyy,
 		amp:0.25,
 	].pp
 }
 );
-P(\cord,start:'renovate',lag:-1.5,syl:7,music:{|p b e|
+P(\chord,start:'renovate',lag:-1.5,syl:7,music:{|p b e|
 	( 
-		freq:[-5,-7,1,3].df('d',scale:\mixolydian),
+		freq:[-5,-7,1,3].df(p.renovateKey,scale:\mixolydian) * midiratio(-1) ,
 		instrument:\sawSynthSustain,
 		att:7,
 		dur:4,
@@ -318,7 +458,7 @@ P(\baseNote,start:'renovate',syl:11,music:{|p b e|
 		instrument:\stringyy, 
 		attack:2,
 		dur:4,
-		freq:[1,11].df('a-',octave:2 ),
+		freq:[1,11].df(p.renovateKey,octave:2 ) * midiratio(5),
 		amp:0.25,
 	).play
 }

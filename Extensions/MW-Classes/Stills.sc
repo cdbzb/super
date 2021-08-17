@@ -29,10 +29,18 @@ Stills {
 
 	plot{|markerName monitor=(-1)|
 		var image=this.mark(markerName);
-		var w = Window(bounds:Rect(1500*monitor,200,1400,800),border:false)
-		.background_( Color.black)
-		.drawFunc_({Pen.drawImage(Point(100,100),image,operation:'sourceOver',opacity:1)})
-		.front;  //}.defer(Server.default.latency);
+		var w;
+		try{
+			w = Window(bounds:Rect(1500*monitor,200,1400,800),border:false)
+			.background_( Color.black)
+			.drawFunc_({Pen.drawImage(Point(100,100),image,operation:'sourceOver',opacity:1)})
+			.front;  //}.defer(Server.default.latency);
+		}{
+			w = Window(bounds:Rect(0,200,1400,800),border:false)
+			.background_( Color.black)
+			.drawFunc_({Pen.drawImage(Point(100,100),image,operation:'sourceOver',opacity:1)})
+			.front;  //}.defer(Server.default.latency);
+		}
 		^w
 	}
 	

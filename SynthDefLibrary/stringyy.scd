@@ -1,4 +1,3 @@
-
 	SynthDef(\stringyy,{ |gate=1 ampLag=0| //{{{
 		var freq=\freq.kr(400,\freqLag.kr(0.05));
 		var width=\width.kr(6);
@@ -10,5 +9,5 @@
 		=> (PlateReverb.ar(_,10,mix:\mix.kr(1)) ++ (_*0.5)) => Mix.ar(_)
 		* Env.asr(\attack.kr(0.5),1,\release.kr(8)).kr(2,gate:gate)
 		=>Out.ar(\out.kr(0),_)
-	}).add; //}}}
+	}).add.tag(\gendy); //}}}
 

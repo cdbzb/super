@@ -21,5 +21,5 @@ SynthDef('cepstral-vocoder-bus', {
 	 => PV_MagMul(_, modulatorEnvelope);
 	Out.ar( out, Pan2.ar(IFFT(carrierChain) *\amp.kr(0.5),\pan.kr(0)) );
 
-}).add;
+}).add.tag(\vocoder);
 

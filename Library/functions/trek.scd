@@ -262,11 +262,21 @@ SynthDef(\recc,{|buf bus=0|DiskOut.ar(buf,In.ar(bus))}).add;
 	~vstRegistry.do{|i| 16.do{|x| i.midi.allNotesOff(x)}}
 }; 
 
-~justTheTune={ |key function syl| P( (key++"Tune").asSymbol, key, music: {  
-	var pbind = Song.currentSong.pbind[key] ;
-	function.isNil.if{function={|i|i}};
-	function.value(pbind).play;
-}, syl:syl ;).value}; 
+~justTheTune={ |key function syl range| 
+	P( 
+		(key++"Tune").asSymbol, key, music: {  
+			var drop, length;
+			var pbind = Song.currentSong.pbind[key] ;
+			range.notNil.if{
+				drop = range[0];
+				length = range[1] - range[0] + 1;
+				pbind=pbind.drop(drop) ;
+				pbind=pbind.fin(length) ;
+				(drop > 0).if{ syl = drop - 1 };
+			};
+			function.isNil.if{function={|i|i}};
+			function.value(pbind).play;
+		}, syl:syl ).value}; 
 
 ~vocoderPattern = { |pattern item effect out=0 bypass=0 rate=1 amp=0.1 dry=0 inputEffect loop=0 stretch| 
 	var environment = ();

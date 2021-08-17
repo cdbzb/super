@@ -1,8 +1,4 @@
 (
-	SynthDef(\vsti2,{|in |
-		var sig=VSTPlugin.ar(nil,2);
-		Out.ar(\out.kr(0),sig)
-	}).add;
 
 	~synful3 = {
 		var event=

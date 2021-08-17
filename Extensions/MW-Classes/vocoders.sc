@@ -5,74 +5,77 @@ VocoderPattern {
 	classvar <>server;
 	*initClass {
 		server = Server.default;
-		SynthDef(\busVersion, {
-			|out = 0, carrier = 1,modulator=0 fftsize=2048 hop=0.5 dry=0  window| //carrier is a bufnum
-			var in, in2, chain, carrierChain, chain3, cepsch, cepsch2;
-			var modulatorEnvelope=LocalBuf(fftsize); var carrierEnvelope=LocalBuf(fftsize);
-			In.ar(bus: modulator )
-			=> FFT(LocalBuf(fftsize), _,hop,window)
-			=> Cepstrum(LocalBuf(fftsize/2), _)
-			=> PV_BrickWall(_, -0.92)
-			=> ICepstrum(_, modulatorEnvelope);
-			// get cepstrum of carrier signal
-			carrierChain = 
-				In.ar(carrier)
-				=> FFT(LocalBuf(fftsize), _,hop,window);
-			cepsch2 = 
-				Cepstrum(LocalBuf(fftsize/2), carrierChain)
-				=> PV_BrickWall(_, \smoothCarrier.kr(-0.92))
-				=> ICepstrum(_, LocalBuf(fftsize));
-			// 3. divide spectrum of each carrier frame by smooth spectral envelope (to flatten)
-			// 4. multiply flattened spectral carrier frame with smooth spectral envelope of modulator
-			carrierChain = 
-				PV_MagDiv(carrierChain,cepsch2)
-				=> PV_MagMul(_, modulatorEnvelope)
-				=> PV_BrickWall(_,0.02);//remove ultra low hopefully
-			Out.ar( out
-				, 
-				Pan2.ar(
-					dry * In.ar( carrier ) 
-					+ ( (dry-1) * IFFT(carrierChain,window) ) 
-					* \amp.kr(0.1)
-					,
-					\pan.kr(0)
-				) 
-			);
-		}).add;
-		SynthDef(\bufferVersion, {
-			|out = 0, carrier = 1,modulator=0 fftsize=2048 hop=0.5 dry=0 rate=1  window| //carrier is a bufnum
-			var in, in2, chain, carrierChain, chain3, cepsch, cepsch2;
-			var modulatorEnvelope=LocalBuf(fftsize); var carrierEnvelope=LocalBuf(fftsize);
-			//	In.ar(bus: modulator )
-			PV_PlayBuf(LocalBuf(fftsize),modulator,rate)
-			//	=> FFT(LocalBuf(fftsize), _,hop,1)
-			=> Cepstrum(LocalBuf(fftsize/2), _)
-			=> PV_BrickWall(_, -0.92)
-			=> ICepstrum(_, modulatorEnvelope);
-			// get cepstrum of carrier signal
-			carrierChain = 
-			In.ar(carrier)
-			=> FFT(LocalBuf(fftsize), _,hop,window);
-			cepsch2 = 
-			Cepstrum(LocalBuf(fftsize/2), carrierChain)
-			=> PV_BrickWall(_, \smoothCarrier.kr(-0.92))
-			=> ICepstrum(_, LocalBuf(fftsize));
-			// 3. divide spectrum of each carrier frame by smooth spectral envelope (to flatten)
-			// 4. multiply flattened spectral carrier frame with smooth spectral envelope of modulator
-			carrierChain = PV_MagDiv(carrierChain,cepsch2)
-			=> PV_MagMul(_, modulatorEnvelope)
-			=> PV_BrickWall(_,0.02);//remove ultra low hopefully
-			Out.ar( out
-				, 
-				Pan2.ar(
-					dry * In.ar( carrier ) 
-					+ ( (dry-1) * IFFT(carrierChain,window) ) 
-					* \amp.kr(0.1)
-					,
-					\pan.kr(0)) );
+                Class.initClassTree(SynthDescLib);
+                {
+                  SynthDef(\busVersion, {
+                    |out = 0, carrier = 1,modulator=0 fftsize=2048 hop=0.5 dry=0  window| //carrier is a bufnum
+                    var in, in2, chain, carrierChain, chain3, cepsch, cepsch2;
+                    var modulatorEnvelope=LocalBuf(fftsize); var carrierEnvelope=LocalBuf(fftsize);
+                    In.ar(bus: modulator )
+                    => FFT(LocalBuf(fftsize), _,hop,window)
+                    => Cepstrum(LocalBuf(fftsize/2), _)
+                    => PV_BrickWall(_, -0.92)
+                    => ICepstrum(_, modulatorEnvelope);
+                    // get cepstrum of carrier signal
+                    carrierChain = 
+                    In.ar(carrier)
+                    => FFT(LocalBuf(fftsize), _,hop,window);
+                    cepsch2 = 
+                    Cepstrum(LocalBuf(fftsize/2), carrierChain)
+                    => PV_BrickWall(_, \smoothCarrier.kr(-0.92))
+                    => ICepstrum(_, LocalBuf(fftsize));
+                    // 3. divide spectrum of each carrier frame by smooth spectral envelope (to flatten)
+                    // 4. multiply flattened spectral carrier frame with smooth spectral envelope of modulator
+                    carrierChain = 
+                    PV_MagDiv(carrierChain,cepsch2)
+                    => PV_MagMul(_, modulatorEnvelope)
+                    => PV_BrickWall(_,0.02);//remove ultra low hopefully
+                    Out.ar( out
+                      , 
+                      Pan2.ar(
+                        dry * In.ar( carrier ) 
+                        + ( (dry-1) * IFFT(carrierChain,window) ) 
+                        * \amp.kr(0.1)
+                        ,
+                        \pan.kr(0)
+                      ) 
+                    );
+                  }).add;
+                  SynthDef(\bufferVersion, {
+                    |out = 0, carrier = 1,modulator=0 fftsize=2048 hop=0.5 dry=0 rate=1  window| //carrier is a bufnum
+                    var in, in2, chain, carrierChain, chain3, cepsch, cepsch2;
+                    var modulatorEnvelope=LocalBuf(fftsize); var carrierEnvelope=LocalBuf(fftsize);
+                    //  In.ar(bus: modulator )
+                    PV_PlayBuf(LocalBuf(fftsize),modulator,rate)
+                    //  => FFT(LocalBuf(fftsize), _,hop,1)
+                    => Cepstrum(LocalBuf(fftsize/2), _)
+                    => PV_BrickWall(_, -0.92)
+                    => ICepstrum(_, modulatorEnvelope);
+                    // get cepstrum of carrier signal
+                    carrierChain = 
+                    In.ar(carrier)
+                    => FFT(LocalBuf(fftsize), _,hop,window);
+                    cepsch2 = 
+                    Cepstrum(LocalBuf(fftsize/2), carrierChain)
+                    => PV_BrickWall(_, \smoothCarrier.kr(-0.92))
+                    => ICepstrum(_, LocalBuf(fftsize));
+                    // 3. divide spectrum of each carrier frame by smooth spectral envelope (to flatten)
+                    // 4. multiply flattened spectral carrier frame with smooth spectral envelope of modulator
+                    carrierChain = PV_MagDiv(carrierChain,cepsch2)
+                    => PV_MagMul(_, modulatorEnvelope)
+                    => PV_BrickWall(_,0.02);//remove ultra low hopefully
+                    Out.ar( out
+                      , 
+                      Pan2.ar(
+                        dry * In.ar( carrier ) 
+                        + ( (dry-1) * IFFT(carrierChain,window) ) 
+                        * \amp.kr(0.1)
+                        ,
+                        \pan.kr(0)) );
 
-				}).add;
-	}
+                      }).add;
+                    }
+                  }
 	// Fft arguments are set by the item when you use warp
 	*new { 
 		|pattern key effect inputEffect fftSize=2048 hop=0.5 window warp=0 out amp=0.1 pan=( -1 ) loop=0 rate=1 durs dry=0|

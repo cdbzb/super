@@ -28,6 +28,7 @@ Song {
 					{ songs.at(i).condition.wait }.try;
 				});
 				array.do({|i|
+					{ songs.at(i).current }.try;
 					{ songs.at(i).playParts }.try;
 					{ songs.at(i).durTillEnd.wait }.try;
 				})
@@ -111,17 +112,23 @@ Song {
 	cursor_ {|i| cursor = i; lastSectionPlayed = i;}
 
 	hasDursButNotLyricsToDurs {
-		Archive.at(key).isNil.not.if({
-			Archive.at((key++"lyricsToDurs").asSymbol).isNil.if(
-				{ 
-					^true 
-				},{ 
-					^false 
-				})
-			},{
-				^false
-			}
-		)
+		// Is there a file in the Dur folder?
+		File.exists(dursFolder +/+ key).if{
+			^false
+		} { 
+			// otherwise check the old Archive file (ie theExtreme)
+			Archive.at(key).isNil.not.if({
+				Archive.at((key++"lyricsToDurs").asSymbol).isNil.if(
+					{ 
+						^true 
+					},{ 
+						^false 
+					})
+				},{
+					^false
+				}
+			)
+		}
 	}
 
 	writeDurs {|section|
@@ -203,6 +210,7 @@ Song {
 		File.exists(dursFolder +/+ key).if{
 			lyricsToDurs = Object.readArchive(dursFolder +/+ key)
 		}{
+			\falling_back_to_durs_file.postln;
 		Archive.read(dursFile);
 		Archive.at((key++\lyricsToDurs).asSymbol).isNil.not.if(
 				{lyricsToDurs = Archive.at((key++\lyricsToDurs).asSymbol)},
@@ -355,7 +363,13 @@ Song {
 	}
 
 	contains { |string|
-		var array =	all {:x,x<-resources.keys,var y=resources.at(x.asSymbol),y.class==Part,(x.asString).contains(string)};
+		var array =	all {
+                  :x,
+                  x<-resources.keys,
+                  var y=resources.at(x.asSymbol),
+                  y.class==Part,
+                  (x.asString).contains(string)
+                };
 		array.postln;
 		^array.collect{|i| resources.at(i)};
 	}
@@ -461,7 +475,6 @@ Song {
 			^this.parse(phrase,result,start)
 }
 
-
 	addGuides {|string|
 		string.isNil.if{string="x"};
 		string=string.reject(_==$|);
@@ -474,8 +487,6 @@ Song {
 		}
 	)
 }
-
-
 
 	doesNotUnderstand { |selector   args|
 		var key = selector.asString;
@@ -595,26 +606,54 @@ Part {
 		)
 	}
 }
-// a part which registers itself with its parent song
+// makes a part which registers itself with its parent song
 P { 
-	*new{
-		|key start syl lag=0 music song resources|
-		var part;
-		start.isNil.if{
-			start=((Song.song.size-2)/2).asInteger;
-			start.postln;
-		};//guess start from context
-		(start.class==Symbol).if{
-			start = Song.section(start);
-			start.postln;
-		};
-		key = key++start;//asSymbol?
-		part=Part(start,syl,lag,music);
-		key=(key++\_).asSymbol;
-		Message(  Song.songs.at(Song.current) , key ).value(part);
-		key.postln;
-		^part
-	}
+    *new {
+        |key start syl lag=0 music song resources|
+        var part;
+        start.isNil.if{
+            start=((Song.song.size-2)/2).asInteger;
+        }{
+            (start.class==Symbol).if{
+                start = Song.section(start);
+            };
+        };
+        start.postln;
+        key = (key ++ start ++ \_).asSymbol;
+        part = Part(start,syl,lag,music);
+        Message(Song.songs.at(Song.current), key).value(part);
+        key.postln;
+        ^part
+    }
+
+    *tune {
+        |key function range lag syl| 
+        // range is [start,end] or just [start]
+        // range sets syllable automatically
+        P( 
+            key: (key++"Tune").asSymbol, 
+            start: key, 
+            music: {  
+                var drop, length;
+                var pbind = Song.currentSong.pbind[key] ;
+
+                range.notNil.if{
+                    drop = range[0];
+                    range[1].notNil.if {
+                        length = range[1] - range[0] + 1;
+                        pbind=pbind.fin(length) ;
+                    };
+                    pbind=pbind.drop(drop) ;
+                    (drop > 0).if{ syl = drop - 1 };
+                };
+
+                function.isNil.if{function={|i|i}};
+                function.value(pbind).play;
+            }, 
+            syl:syl, 
+            lag:lag 
+        ).value
+    }
 }
 
 SongList {

@@ -1,13 +1,28 @@
  ( //transformation			{{{1
-			var dur=15;
-
+	 //line 245
+	Song(\transform,[]).current;
+	Song.condition=Condition.new;
+( Song.infrastructure={
+		FunctionList.new.array_([
+			//~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load},
+			{fork{
+				try{~syn1.controller.loaded.not.if{~syn1=~synful2.()}}{~syn1=~synful2.()};
+				try{~syn2.controller.loaded.not.if{~syn2=~synful2.()}}{~syn2=~synful2.()};
+				~syn1.condition.wait;
+				~syn2.condition.wait;
+				Song.condition.test_(true).signal;
+			}},
+		]).value
+	}.inEnvir;
+);
 	SynthDef(\trans, { |freq amp gate=1 out=0|
 		var notes= Demand.kr(Dust.kr(0.3)+Impulse.kr(0.01,0.999),0,Dseq([freq,freq*2],inf));
 		var sig=SinOsc.ar(Lag.kr(notes,0.6),0,0.1).distort*amp*Env.asr(0,1,5).kr(gate:gate);
 		Out.ar(out,sig!4);
 	}).add ;
-
-	~transformation={ 
+	["(transformation!)","r",15].addLine;
+	P(\transform,start:0,music:{ |p b e| 
+		var dur = b.sum; 
 			var pitches=~panNotes.("f#3 b- c4 e")+[0,12];
 		s.bind{
 			var chord=pitches.collect({|item index|  Synth(\trans,[\freq,item.midicps,\amp,0.1])});
@@ -76,24 +91,5 @@
 			sig
 		}.play;}
 		
-	};
-	//cue (could add conditions for this.....)
-	~transform=Song(\transform,["r","r"]);
-	~transform.durs[0]=[dur].q;
-	~transform.transform=Part(start:0,music:{topEnvironment.use({~transformation.fork})});
-	
-	~transform.condition=Condition.new;
-	~transform.infrastructure={
-		FunctionList.new.array_([
-			//~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load},
-			{fork{
-				try{~syn1.controller.loaded.not.if{~syn1=~synful2.()}}{~syn1=~synful2.()};
-				try{~syn2.controller.loaded.not.if{~syn2=~synful2.()}}{~syn2=~synful2.()};
-				~syn1.condition.wait;
-				~syn2.condition.wait;
-				~transform.condition.test_(true).signal;
-			}},
-		]).value
-	};
-	//~transform.play;
+	});
 ) //}}}

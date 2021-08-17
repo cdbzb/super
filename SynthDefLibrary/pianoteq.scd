@@ -22,15 +22,10 @@
 		~struShort.do{|i x| ~strums.add(i->(x+72))};
 		//~short.do{|i x| ~strums.add(i->(x+72))};
 		~midinote=~strums[~switch];
-		~type=\vsti;
+		~type=\vst_midi;
 		currentEnvironment.play
 		}
 	);
-
-	SynthDef(\vsti,{|out=0|
-		var sig=VSTPlugin.ar(nil,2);
-		Out.ar(out,sig)}
-	).add;
 
 	~vsti={|plug bus target|
 		VSTPluginController(Synth(\vsti,[\out,bus],target:target)).open(plug)

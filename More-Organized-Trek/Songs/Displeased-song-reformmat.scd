@@ -1,12 +1,11 @@
 (
 Song.new(\displeased,[]).current;
 	Song.currentSong.condition=Condition.new;
-
-	 Song.currentSong.infrastructure={
+	Song.currentSong.infrastructure={
 		FunctionList.new.array_([
 			~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load},
 			{fork{
-//				try{~syn1.controller.loaded.not.if{~syn1=~synful2.()}}{~syn1=~synful2.()};
+				try{~syn1.controller.loaded.not.if{~syn1=~synful2.()}}{~syn1=~synful2.()};
 				try{~syn1.controller.loaded.not.if{~syn1=~synful3.()}}{~syn1=~synful3.()};
 				~syn1.condition.wait;
 				Song.currentSong.condition.test_(true).signal;
@@ -36,11 +35,14 @@ Song.new(\displeased,[]).current;
 		);
 	}; 
 );
-SynthDef(\plate_phaser_insert,{|inBus=0 gate=1|      
+
+SynthDef(\plate_phaser_insert,{
+	|inBus=0 gate=1|      
 	var env= Env.cutoff(15,curve:\cub).kr(2,gate:gate);
 	var sig = In.ar(inBus,2);
 	sig=PlateReverb.ar(sig,mix:0.5,decayTime:0.55);
-).add;
+}).add;
+
 P(\trill,start:0,lag:0.1,music:
 	{ |p b e| 
 		var reverbBus = Bus.audio(s,1);

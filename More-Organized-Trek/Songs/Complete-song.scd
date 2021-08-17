@@ -1,7 +1,9 @@
 ( // ~complete lyric and tune	{{{1
-	//~syn1.controller.loaded.not.if({~syn1.init});
+	// line 246
 
+	/*
 	Song.dursFile_("/Users/michael/tank/super/theExtreme3-legacy");
+	*/
 
 	~complete=Song(\complete, []).current;
 

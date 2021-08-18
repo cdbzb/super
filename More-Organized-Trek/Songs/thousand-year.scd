@@ -24,9 +24,35 @@ P(\reflection,start:\reflection,music:{|p b e|
 ["pulley that does what a muscle does.","r"].addLine;
 ["/*MULHALL:*/ That would be highly inefficient.","r"].addLine;
 ["/*SCOTT:*/ I tell you, lady, this thing won't work.","r"].addLine;
-["/*SPOCK:*/ It will have twice the strength and agility of","r"].addLine;
-["your body, engineer, and will","r"].addLine;
-["last a thousand years.","r"].addLine;
+["/*SPOCK:*/ It will have twice the strength and agility of",[2,3,1].dm(\c)++[3,1].dm(\e)++[-7,1,2].dm(\f,scale:\mixolydian)++[3,5,4,3,4,2,1].dm(\g)].addLine;
+P.tune(\twice);
+["your body, engineer, and it will",[11,12,11,7,6,5,4,5,6, 3,4,5].dm('c#',scale:\mixolydian)].addLine;
+Song.quarters[\engineer]=Song.parseBeats(\engineer,[3,1,2,4,2,2,1,1,2,2,2,2]/4);
+P(\bass,start:\engineer,music:{
+	[
+		freq:[1,-7,-4,-3,-4,-5].df('c#',scale:\mixolydian,octave:4).q,
+		dur:[2,2,0.5,0.5,0.5,0.5].q
+	].p.play(Song.quarters[\engineer].asTempoClock)
+});
+P.tune(\engineer);
+["last a thousand years.",[2,1,2,3,1,2, 5.5].dm(\c,octave:6)].addLine;
+Song.quarters['last a thousand']=Song.parseBeats('last a thousand',[1.5,0.5,0.5,0.5,0.5,0.5,1]);
+P.tune(\last);
+P(\chord,start:'last a thousand',music:{
+	[
+		freq: [[1,3,5,7].df('b-'),[5,7,11,13].df('e',octave:5,scale:\mixolydian)].q,
+		freqLag:1.5,
+		instrument: \stringyy,
+		dur:Song.parse('last a thousand',[6,1]) + [-0.2,0.5] =>_.q
+	].pm(\stringyy).play
+});
+P(\bass,start:'last a thousand',music:{
+	[
+		instrument:\sawSynth,
+		midinote:[1,-7,-6,4.5].dm('b-',octave:[2, 3 ]).q,
+		dur:[1,1,2,1].q,
+	].p.play(Song.quarters['last a thousand'].asTempoClock)
+})
 ["That is, assuming you'll stop wasting your time and allow us to complete it.","r"].addLine;
 ["(Scott leaves as 'Spock' laughs.)","r"].addLine;
 ["/*SPOCK:*/ (boom) A thousand-year prison, Thalassa.","r"].addLine;

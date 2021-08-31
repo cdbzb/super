@@ -10,5 +10,5 @@
 		snd2 = SinOsc.ar(freq: sinfreq, mul: env);
 		sum = snd1 + snd2;
 		Out.ar(out, Pan2.ar(sum, pan));
-	}).add;
+	}).add.tag(\snare);
 

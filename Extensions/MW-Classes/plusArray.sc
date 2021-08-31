@@ -10,6 +10,10 @@
 		}
 	}
 
+        alter { |alteration|
+          ^this + (alteration / 2)
+        }
+
 	degreescps { |root=0 octave=5 scale=\major tuning|
 		^this.collect{|i|
 			i.degreescps(root,octave,scale,tuning)

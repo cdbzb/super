@@ -1,6 +1,6 @@
 Reaper {
 	classvar executable="'/Applications/REAPER ƒ/REAPER64.app/Contents/MacOS/REAPER'";
-	classvar <>ip="192.168.1.185",<>port=8000;
+	classvar <>ip="192.168.1.234",<>port=8000;
 	classvar <clock,cursor,<>lastPlayLength;
 	*initClass {
 		clock=TempoClock.new().permanent_(true);
@@ -8,7 +8,21 @@ Reaper {
 	}
 	*address {^NetAddr(ip,port)}
 	*open { Pipe.new(executable,"w") }
+	*open2 {|path|
+		Pipe.new(executable ++ " " ++ path,"w")
+	}
 	*go		{| seconds| this.address.sendMsg('time',seconds.asFloat.asSeconds); cursor=seconds.asFloat.asSeconds}
+	*record {| seconds, stopAt | 
+		seconds.isNil.not.if{
+			this.go(seconds);
+		};
+		this.address.sendMsg('/play'); 
+		clock.beats_(cursor);
+		stopAt.notNil.if {
+			this.sched(stopAt,{this.stop});
+			lastPlayLength=stopAt-seconds
+		}
+	}
 	*play	{| seconds, stopAt | 
 		seconds.isNil.not.if{
 			this.go(seconds);

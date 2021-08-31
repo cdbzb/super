@@ -11,4 +11,4 @@
 		res	= Ringz.ar(lodriver + hidriver + thwack, freqs).mean;
 		((res * 1) + (lodriver * 2) + thwack).dup * \amp.kr(0.1)
 		=> ( Out.ar(\out.ir,_) <! DetectSilence.ar(_,doneAction:2))
-	}).add;
+	}).add.tag(\cymbal);

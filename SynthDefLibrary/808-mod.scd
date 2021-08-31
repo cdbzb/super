@@ -15,7 +15,7 @@ SynthDef.new(\bd_808, {
 	sig = Limiter.ar(sig, 0.5) * amp;
 	sig = Pan2.ar(sig, 0);
 	Out.ar(\out.kr(0), sig);
-}).add;
+}).add.tag(\kick).startPack(\808);
 
 SynthDef.new(\sn_808, {
 	arg amp=2, tone=340, tone2=189, snappy=0.3, gate=0, amp2=1;
@@ -32,7 +32,7 @@ SynthDef.new(\sn_808, {
 	sig = Pan2.ar((noise + sum) * amp * 2.5, 0);
 	sig = HPF.ar(sig, 340);
 	Out.ar(\out.kr(0), sig);
-}).add;
+}).add.tag(\snare);
 
 SynthDef.new(\cp_808, {
 	arg amp=1, gate=0;
@@ -45,7 +45,7 @@ SynthDef.new(\cp_808, {
 	sum = HPF.ar(sum, 500);
 	sum = BPF.ar(sum, 1062, 0.5);
 	Out.ar(\out.kr(0), Pan2.ar(sum * 1.5, 0));
-}).add;
+}).add.tag(\clap);
 
 SynthDef.new(\cpReverb_808, {
 	arg amp=1, gate=0;
@@ -55,7 +55,7 @@ SynthDef.new(\cpReverb_808, {
 	reverb = HPF.ar(reverb, 500);
 	reverb = LPF.ar(reverb, 1000);
 	Out.ar(\out.kr(0), Pan2.ar(reverb * amp, 0));
-}).add;
+}).add.tag(\clap);
 
 SynthDef.new(\LT_808, {
 	arg amp=1, freq=80;
@@ -66,7 +66,7 @@ SynthDef.new(\LT_808, {
 	sig = SinOsc.ar(fenv, pi/2) * env;
 	sig = Pan2.ar(sig * amp * 3, 0);
 	Out.ar(\out.kr(0), sig);
-}).add;
+}).add.tag(\tom);
 
 SynthDef.new(\MT_808, {
 	arg amp, freq=120;
@@ -76,7 +76,7 @@ SynthDef.new(\MT_808, {
 	sig = SinOsc.ar(fenv, pi/2);
 	sig = Pan2.ar(sig * env * amp * 2, 0);
 	Out.ar(\out.kr(0), sig);
-}).add;
+}).add.tag(\tom);
 
 SynthDef.new(\HT_808, {
 	arg amp, freq=165;
@@ -86,7 +86,7 @@ SynthDef.new(\HT_808, {
 	sig = SinOsc.ar(fenv, pi/2);
 	sig = Pan2.ar(sig * env * amp * 2, 0);
 	Out.ar(\out.kr(0), sig);
-}).add;
+}).add.tag(\tom);
 
 SynthDef.new(\LC_808, {
 	arg amp=1, freq=165;
@@ -97,7 +97,7 @@ SynthDef.new(\LC_808, {
 	sig = SinOsc.ar(fenv, pi/2) * env;
 	sig = Pan2.ar(sig * amp * 3, 0);
 	Out.ar(\out.kr(0), sig);
-}).add;
+}).add.tag(\tom);
 
 SynthDef.new(\MC_808, {
 	arg amp=1, freq=250;
@@ -107,7 +107,7 @@ SynthDef.new(\MC_808, {
 	sig = SinOsc.ar(fenv, pi/2);
 	sig = Pan2.ar(sig * env * amp * 2, 0);
 	Out.ar(\out.kr(0), sig);
-}).add;
+}).add.tag(\tom);
 
 SynthDef.new(\HC_808, {
 	arg amp=1, freq=370;
@@ -117,7 +117,7 @@ SynthDef.new(\HC_808, {
 	sig = SinOsc.ar(fenv, pi/2);
 	sig = Pan2.ar(sig * env * amp * 2, 0);
 	Out.ar(\out.kr(0), sig);
-}).add;
+}).add.tag(\tom);
 
 SynthDef.new(\rimshot_808, {
 	arg amp=1;
@@ -132,7 +132,7 @@ SynthDef.new(\rimshot_808, {
 	sig = LPF.ar(sig, 7300);
 	sig = Pan2.ar(sig * amp, 0);
 	Out.ar(\out.kr(0), sig);
-}).add;
+}).add.tag(\snare);
 
 SynthDef.new(\claves_808, {
 	arg amp=1;
@@ -141,7 +141,7 @@ SynthDef.new(\claves_808, {
 	sig = SinOsc.ar(2500, pi/2) * env * amp;
 	sig = Pan2.ar(sig, 0);
 	Out.ar(\out.kr(0), sig);
-}).add;
+}).add.tag(\perc);
 
 SynthDef.new(\maracas_808, {
 	arg amp=1, gate=0;
@@ -151,7 +151,7 @@ SynthDef.new(\maracas_808, {
 	sig = HPF.ar(sig, 5500);
 	sig = Pan2.ar(sig, 0);
 	Out.ar(\out.kr(0), sig);
-}).add;
+}).add.tag(\perc);
 
 SynthDef.new(\cowbell_808, {
 	arg amp=1;
@@ -167,7 +167,7 @@ SynthDef.new(\cowbell_808, {
 	sig = LPF.ar(sig, 4500);
 	sig = Pan2.ar(sig, 0);
 	Out.ar(\out.kr(0), sig);
-}).add;
+}).add.tag(\perc);
 
 SynthDef.new(\hat_808, {
 	arg decay=0.42, amp=1, pan=0;
@@ -189,7 +189,7 @@ SynthDef.new(\hat_808, {
 	sig = sig * env * amp;
 	sig = Pan2.ar(sig, pan);
 	Out.ar(\out.kr(0), sig);
-}).add;
+}).add.tag(\hat);
 
 SynthDef.new(\openhihat_808, {
 	arg decay=0.5, amp=4, pan=0;
@@ -215,7 +215,7 @@ SynthDef.new(\openhihat_808, {
 	sum = Pan2.ar(sum, 0);
 	sum = sum * amp * 2;
 	Out.ar(\out.kr(0), sum);
-}).add;
+}).add.tag(\hat);
 
 SynthDef.new(\cymbal_808, {
 	arg decay=2, amp=20, pan=0, gate=0, tone=0.002;
@@ -255,6 +255,6 @@ SynthDef.new(\cymbal_808, {
 	sum = Pan2.ar(sum, 0);
 	sum = sum * amp;
 	Out.ar(\out.kr(0), sum);
-}).add;
+}).add.tag(\cymbal).endPack();
 
 )

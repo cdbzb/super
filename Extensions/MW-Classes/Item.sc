@@ -69,6 +69,7 @@ Item {
 	}//}}}
 	*list {|options = "-tr"| "ls " ++ options ++ " " ++ samplesDir => _.unixCmd}
 	*open {"open "++Item.samplesDir=> _.unixCmd}
+
 	init { | n |
 		name = n;//{{{
 		dir=samplesDir++name++"/";
@@ -88,6 +89,9 @@ Item {
 		}
 	}
 	//}}}
+	reaper {
+		Reaper.open2(this.mostRecent)
+	}
 	armed { 
 		node.isNil.if{^false}
 		{^node.isPlaying} 

@@ -7,5 +7,5 @@
 		snd = snd + (SinOsc.ar(XLine.ar(167, 52, 0.04)) * Env.perc(0.0005, 0.3).ar(2));
 		snd = snd.tanh;
 		Out.ar(\out.kr(0), Pan2.ar(snd, \pan.kr(0), \amp.kr(0.1)));
-	}).add;
+	}).add.tag(\kick);
 

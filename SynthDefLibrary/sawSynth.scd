@@ -1,4 +1,4 @@
-	SynthDef("sawSynthSustain", { arg out=0, freq = 440, amp = 0.1, att = 0.1, rel = 2, lofreq = 1000, hifreq = 3000, lagTime = 0.3;
+	SynthDef("sawSynthSustain", { arg out=0, freq = 440, amp = 0.1, att = 0.1, rel = 2, lofreq = 1000, hifreq = 3000, lagTime = 0.3, spread=1, center=0;
 		var env, snd;
 		freq=Lag.kr(freq,lagTime);
 		env = Env.asr(
@@ -11,11 +11,11 @@
 			in: snd,
 			freq: LFNoise2.kr(1).range(lofreq, hifreq)
 		);
-		snd = Splay.ar(snd);
+		snd = Splay.ar(snd,spread:spread,center:center);
 		Out.ar(out, snd);
 	}).add;
 //
-	SynthDef("sawSynth", { arg out=0, freq = 440, amp = 0.1, att = 0.1, rel = 2, lofreq = 1000, hifreq = 3000, lagTime = 0.3;
+	SynthDef("sawSynth", { arg out=0, freq = 440, amp = 0.1, att = 0.1, rel = 2, lofreq = 1000, hifreq = 3000, lagTime = 0.3, spread = 1, center = 0;
 		var env, snd;
 		freq=Lag.kr(freq,lagTime);
 		env = Env.perc(
@@ -28,7 +28,7 @@
 			in: snd,
 			freq: LFNoise2.kr(1).range(lofreq, hifreq)
 		);
-		snd = Splay.ar(snd);
+		snd = Splay.ar(snd,spread:spread,center:center);
 		Out.ar(out, snd);
 	}).add;
 

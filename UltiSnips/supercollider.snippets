@@ -31,10 +31,22 @@ SynthDef($1,\{|out wet=1 $3|
 endsnippet
 
 snippet part
-P($1,start:$2,music:$3
-);
+P($1,start:$2,music:{|p b e| 
+$3
+});
 endsnippet
 
+snippet event
+(
+$1
+).play
+endsnippet
+
+snippet pp
+[
+$1
+].pp;
+endsnippet
 snippet df  "me freq" i
 [$1].df('$2'${3:,octave: $4})${5:.q}
 endsnippet

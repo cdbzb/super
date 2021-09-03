@@ -512,6 +512,38 @@ Song {
 			}
 		)
 	}
+
+	playIncremental {
+		var parts = Song.currentSong.pts;
+		var order = parts.collect(_.start);
+		var a = fork{
+			///;/NOPE need to play all the parts in each section!
+			this.sections.do{|i|
+				this.cursor_(i);
+				this.[i].do(_.p);
+				nil.yield 
+			};
+			parts.do{
+				|i|
+				i.play.yield;
+				i.start.postln;
+			}
+		};
+		var w = Window.new().front;
+		var v = w.view;
+		v.keyDownAction={ |view char|
+				a.resume;a.postln
+				
+			//	$d , {self.doOver},
+			//	$n , {self.nextt},
+			//	$r , {self.ret},
+			//	$s , {song.save},
+			//	$w , {self.window.close;t.free},
+			//	$q , {self.window.close;t.free}
+		};
+		^a
+		// play in loop waiting for trigger before advancing
+	}
 }
 
 Part { 

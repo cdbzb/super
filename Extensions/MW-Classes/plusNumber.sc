@@ -10,7 +10,18 @@
         sharp { 
           ^this + 0.5
         }
+        seconds {
+          ^this.asFloat.seconds
+        }
 
+}
+
++Float {
+  seconds {
+    var minutes = this / 100 => _.floor;
+    var seconds = this % 100;
+    ^(minutes * 60 + seconds)
+  }
 }
 /*
 301f:20

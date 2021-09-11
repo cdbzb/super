@@ -86,9 +86,13 @@ Song {
 			^Message(songs.at(current),selector).value(*args)
 		} {
 			var key = selector.asString;
-			//key.contains($_).if{
-			//}
-			^songs.at(selector)
+			key.endsWith("_").if{
+                key=key.replace("_","").asSymbol;
+                ^this.currentSong.resources.put(key, *args);
+            }{
+                ^Song.currentSong.resources.at(key.asSymbol)
+            }
+			//^songs.at(selector)
 		}
 	}
 
@@ -555,8 +559,8 @@ Part {
 	*new {|start=0,syl,lag=0,music,resources|
 		^super.new.init(start,syl,lag,music,resources)
 	}
-	init { |s,y,l,m|
-		start=s;syl=y;music=m;lag=l;
+	init { |s,y,l,m, r|
+		start=s;syl=y;music=m;lag=l;resources = r.isNil.if{()}{r};
 	}
 
 	//play immediately
@@ -652,12 +656,28 @@ P {
         };
         start.postln;
         key = (key ++ start ++ \_).asSymbol;
-        part = Part(start,syl,lag,music);
+        part = Part(start,syl,lag,music,resources);
         Message(Song.songs.at(Song.current), key).value(part);
         key.postln;
         ^part
     }
+    *still{   // renders the still when compiled
+              // and stores a function to preview it in resources.still (e.still)
+        |key start syl lag=0 timecode=60 music|
+        Stills.current.set(key++start=>_.asSymbol, timecode);
+        ^P(
+            key: ( key ++ start ).asSymbol, 
+            resources: (
+                still: {| monitor=0 wait fade=2 fadeIn=0 text| defer{ Stills.current.preview( key ++ start => _.asSymbol, monitor:monitor,fade:fade,fadeIn:fadeIn,text:text,wait:wait ) }}
+            ),
+            start: start,
+            syl: syl,
+            lag: lag,
+            music: music
+        )
 
+
+    }
     *tune {
         |key function range lag syl| 
         // range is [start,end] or just [start]

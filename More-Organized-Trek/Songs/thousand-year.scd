@@ -2,11 +2,23 @@
 (
 Song(\thousand,[]).current;
 
-["(Thalassa is looking at her reflection in a metallic surface) (Scott comes in with a small doo-dad.)","r",[ 5,1 ]].addLine;
+~stills = Stills.new("/Users/michael/tank/Trek/video for stills etc/media/return to tomorrow.mov");
+Stills.current=~stills;
+["(Thalassa is looking at her reflection in a metallic surface) (Scott comes in with a small doo-dad.)","r",[ 8,6,1 ]].addLine;
+P.still(\thalassa,start:\reflection,timecode:35*60+34.5,syl:0,music:{|p b e| 
+	e.still.value(wait:6,fade:3,monitor:0,fadeIn:2)
+});
+P(\door,start:\reflection,syl:1,music:{|p b e| 
+	Synth(\door,[\amp,0.1,\out,0])
+});
+P.still(\scotty_enters,timecode:35*60+43.3,start:\reflection,syl:1,music:{|p b e| 
+	e.still.value(wait:3,monitor:0)
+
+});
 P(\reflection,start:\reflection,music:{|p b e|
 	{
 		var line = LFBrownNoise1.kr(LFBrownNoise1.kr((3..6)/4.5).range(13,16)).range(700,900);
-		([line,1200-line]*.x ( (11..14) / 12 ))//.postln
+	([line,1200-line]*.x ( (11..14) / 12 ))//.postln
 		.collect{|i|
 			SinOsc.ar(i) 
 			=> CombC.ar(_,3,SinOsc.ar(0.1).range(1,3),15)
@@ -15,17 +27,28 @@ P(\reflection,start:\reflection,music:{|p b e|
 		=> FreeVerb.ar(_,0.8,0.5)
 		
 		*0.02
-		*Env([0,0,1,1,0],[4,7,5,8]).kr(gate:1,doneAction:2)
+		*Env([0,0,1,1,0],[7,7,5,8]).kr(gate:1,doneAction:2)
 	}.play(s,0)
 });
 //P(\door,start:\reflection,music:{Synth(\door)})
 ["/*MULHALL:*/ Thank you. Have you prepared the negaton hydracoils for the drawing Sargon supplied?","r"].addLine;
 ["/*SCOTT:*/ For all the good it'll do you. It's a fancy name, but","r"].addLine;
-["how will something that looks like a drop of jelly make this thing work?","r"].addLine;
-["You'll need microgears and a","r"].addLine;
-["pulley that does what a muscle does.","r"].addLine;
+["how will something that looks like a drop of jelly make this thing work?",[3,1,4,3,4,5 ,3,4,5,1 ,6,5,7,7,4.5,2].dm('g',scale:\mixolydian,octave:4)].addLine;
+P.tune(\jelly);
+["You'll need microgears and a pulley that work like a muscle does.",[-7,-7,4,3,1].dm('d')++ [4,3,2,1,-6,-7,-6,-5,-4,-3,-17].dm(\e,scale:\mixolydian)].addLine;
+P.tune(\microgears);
 ["/*MULHALL:*/ That would be highly inefficient.","r"].addLine;
-["/*SCOTT:*/ I tell you, lady, this thing won't work.","r"].addLine;
+["/*SCOTT:*/ I tell you, lady, this thing won't work.",[7,13,11,7,5].dm('b',scale:\mixolydian) ++ [5,6,7,11].dm('d')].addLine;
+P.tune('lady');
+P(\bass,start:\lady,syl:3, music:{|p b e| 
+	[
+		instrument:\stringyy,
+		freq: [\r,3,2,1].df('b-',octave:4 ).q,
+		amp:0.2,
+		legato:1,	
+		dur:b.drop(1).parse([0.5,[0.5,1,1],1,1]).q
+	].pp;
+});
 ["/*SPOCK:*/ It will have twice the strength and agility of",[2,3,1].dm(\c)++[3,1].dm(\e)++[-7,1,2].dm(\f,scale:\mixolydian)++[3,5,4,3,4,2,1].dm(\g)].addLine;
 P.tune(\twice);
 P(\bass,syl:2,start:\twice,music:{|p b e|
@@ -59,6 +82,15 @@ P(\chord2,start:\twice,syl:7,music:{ |p b e|
 		rel:5
 	).play
 });
+	~stills.set(\twice,36*60+18);
+P(\still,start:\twice, 
+	music: {|p b e| 
+		defer{ 
+			
+			~stills.preview(\twice,b.sum,3,0,[ "It will have twice","the strength" ]) 
+		}
+
+} );
 ["your body, engineer, and it will",[11,12,11,7,6,5,4,5,6, 3,4,5].dm('c#',scale:\mixolydian)].addLine;
 Song.quarters[\engineer]=Song.parseBeats(\engineer,[3,1,2,4,2,2,1,1,2,2,2,2]/4)
 //	.quantizeWindow
@@ -144,7 +176,23 @@ P(\chords2,start:\assuming,syl:14,music:{ |p b e|
 //		legato:1
 //	].p.play(Song.quarters(\assuming).asTempoClock)
 //});
-["(Scott leaves as 'Spock' laughs.)","r"].addLine;
+["(Scott leaves as 'Spock' laughs.)",[11,7,6,5,7,6,5,4,3,2,4,3,2,1,0].dm(\c)].addLine;
+//set pause between sections
+Song.durs[\laugh]=Song.durs[\laugh].list.put(Song.durs[\laugh].list.size - 1, 3).q;
+P.tune(\laughs,_.fin(14));
+P(\door,start:\laughs,syl:6,music:{|p b e| 
+	Synth(\door,[\out,0,\amp,0.1])
+});
+
+	~stills.set(\door_close,36*60+32.5);
+P(\still,start:\laughs,syl:6,
+	music: {|p b e| 
+		defer{ 
+			
+			~stills.preview(\door_close,b.sum,3,0,) 
+		}
+
+} );
 ["/*SPOCK:*/ (boom) A thousand-year prison, Thalassa.",[1,2,3,1,6,3,1,-7,-6].dm(\c)].addLine;
 P.tune(\prison);
 P(\arpeggio,start:\prison,syl:3,lag:-0.15,music:{
@@ -168,6 +216,13 @@ P(\stab,start:\prison,syl:3,music:{
 	).play
 });
 ["And when it wears out we'll build another one, ",[5,4,3,2,3,4,-7,1,4,3,2,-5].dm(\c)].addLine;
+P(\bass,start:\wears,music:{|p b e| 
+	[
+		freq:[[-4, 11 ],7,[11]].df('g',scale:\mixolydian,octave:[3,4]).q,
+		dur:b.parse([5,4,3]).q
+		//dur:b.parse([9,3])++(b.last/2).dup => _.q
+	].pp
+});
 P.tune(\wears);
 ["and we'll lock ourselves into it for another thousand years. And another, and another.", 
 	[1,2,3,4,2,3,2,1.5,2,3].dm(\a) 
@@ -175,23 +230,93 @@ P.tune(\wears);
 	++[2,2,3,2,2,2,3,2].dm('a-',scale:\minor,octave: 6) 
 ].addLine;
 P.tune('And another',Pmul(\freq,0.5,_));
-P(\bit,start: 'And another',syl: 9,music:{|p b e|
+P(\bass,start:'And another',syl:1,music:{|p b e| 
+	[
+		freq:[3,4,5].df(\a,octave:2).q,
+		//instrument:\sawSynth,
+		att:0.1,rel:4,
+		dur:b.drop(1).parse([1,2,1]).q,
+		out:Effect({|i| MoogFF.ar(i,1000) => Pan2.ar(_,1) },out:2).bus.index
+	].pm(\sawSynth).play
+});
+P(\chord,start:'And another',music:{|p b e| 
+	[		instrument:\stringyy,
+		freq:[\r, [5,7,11,13].df('f',scale:\mixolydian) ].q,
+		dur:b.parse([16,2]).q
+	].pp
+});
+P(\chords,start:'And another',syl:16,music:{|p b e| 
+	
+	b.postln;
+		VoiceLeading(
+			[
+				[5,5,6, 5].dup.flat,
+				[3,3,4, 3 ].dup.flat,
+				[1,1,1,1].dup.flat
+			],b[(1..8)].asArray
+		).dm('e-',scale:\minor).p
+		=> Pset(\instrument,\sparkTriangle,_)
+		=> _.play
+});
+
+P(\pad,start:'And another',syl:9,music:{|p b e| 
+	(
+		freq:[1].df('e-',octave:3),
+		dur: b.parse([1]).sum,
+		instrument:\sawSynth,
+		rel:6,
+		att:2,
+		lofreq:5000,
+		hifreq:7000,
+		amp:0.03,
+	).pp
+});
+P(\sizzle,syl:9,start:'And another',music:{|p b e| 
+	(
+		instrument:\sawSynthSustain,
+		freq:[1].dm('e-'),
+		att:2.5,
+		out:Effect( {|i| Phaser2.ar(i,rate:0.12) => TwoTube.ar(_,loss:0.8,d1length:410)} ).bus.index
+	).play
+});
+P(\threeNoteFigure,start: 'And another',syl: 9,music:{|p b e|
 	[
 		freq: [1,-6,-4].df('e-',scale:\whole).q/2,
 		dur:b.drop(1) + [0,0,1] => _.q,
-		out:2
+		out:1
 	].pp
 });
-P(\bit2,start: 'And another',syl: 15,music:{|p b e|
+P(\threeNoteFigure2,start: 'And another',syl: 15,music:{|p b e|
 	//b[1].bubble++b[2..3].sum++b[3];
 	[
 		freq: [3,2,2,1].df('a-').q/2,
 		dur:b.drop(1) + [0,0,0,1] => _.q,
-		out:3
+		out:0
 	].pp
 });
 ["Sargon has closed his mind to a better way.",[11,5,3,6,5,5,4,3,2,3].dm(\c,scale:\minor)++[3,4,2,3,3].dm(\g)].addLine;
+P.still(\spock,start:\mind,timecode:3648.5.seconds,music:{ |p b e|
+	e.still.value(wait:b.sum,fade:1,text:["Sargon has closed his mind","to a better way"])
+});
 P.tune(\closed);
+
+P(\bass,start:\closed,music:{|p b e| 
+	[
+		freq:[1,-5,-5,-5].df(\c,octave:4).q,
+		dur:b.parse([10,3,1,1]).q,
+		instrument:\sawSynth
+	].pp;
+});
+P(\figure,start:\closed,syl:2,music:{|p b e|
+[
+	freq: [[4,6],[3,5],[3,5],\r,[2,5]].df(\c,scale:\minor).q,
+	dur: b.parse([1,1,1,4,5]).q,
+	lag: [0,0,0,0,-0.1].q,
+	legato: [0.95,0.85,1.5,2,0,1].q,
+	instrument: \sawSynthSustain,
+	rel:[1,0.8,1,1,1].q,att:[0.5,0.5,0.3,0.5,0.5].q,hifreq:2000
+].pp
+});
 P(\strum,start:\closed,music:{|p b e|
 	(
 		freq:[1,3,5,11].df(\c,scale:\minor,octave:4),
@@ -207,6 +332,13 @@ P.tune('With these bodies',Pbindf(_,\instrument,\stringyy,\wet,0.0,\release,2,\a
 	//Reaper.play
 //});
 Song.quarters['With these bodies']=Song.parseBeats('With these bodies',[1, 1,1, 1/2, 1 , 1, 1/2, 1/2, 1/2, 1/2,1/2, 1,1,1,1/2,1,1/2  ]);
+P(\extraChords,start:'With these bodies',syl:11,music:{|p b e| 
+	[
+		freq:[[5,7,12],[5,11,13],[3,5,11],[3,5,11],[1,4,6]].df(\c).q,
+		dur:b.drop(1).q,
+		out:Effect({|i| i.distort=>MoogLadder.ar(_,1800,1.0)*4=>DWGReverbC1C3.ar(_,mix:0.2)=>AnalogPhaserMod.ar(_).tanh/2}).bus.index,
+	].pp
+});
 P(\chords,start:'With these bodies',music:{
 	[
 		[
@@ -237,7 +369,6 @@ P(\chords,start:'With these bodies',music:{
 		].p.fin(32).play(clock:Song.quarters['With these bodies'].quantizeWindow.asTempoClock);
 		(instrument:\cymbalsDS,amp:0.01).play
 });
-//["(with the--se bodies)", [3,4,2,2,1].dm(\g)].addLine;
 ["/*MULHALL:*/ They're not ours, Henoch.",[3,1,7,6,4.5].dm(\d,scale:\dorian)].addLine;
 P.tune(\Henoch);
 P(\chord,start:\Henoch,syl:1,music:{|p b e|
@@ -248,15 +379,23 @@ P(\chord,start:\Henoch,syl:1,music:{|p b e|
 	).play
 });
 
+P.still(\thalassa,start:'not ours',timecode:3657.seconds,music:{|p b e|
+	e.still.value(wait:b.sum,text:["they`re not ours,","Henoch!"],fade:2)
+});
 ["/*SPOCK:*/ (boom) When you awoke in this body, Thalassa,",[-1,1,2,3,6].dm('f#')++[1,3,5].dm(\a)++[3,1,3,2].dm(\b)].addLine;
 P.tune(\awoke,range:[ 1 ],syl:1);
 P(\bass,start:'awoke',music: {|p b e|
-	(
-		instrument:\stringyy,
-		freq:[-21,-11].df('f#'),
-		dur:b.parse([9])
-	).play
+	[ instrument:\stringyy,
+		freq:[[-21,-11],[-22,-12]].df('f#').q,
+		dur:b.parse([7,3]).q
+	].pp
 });
+P.still(\embrace,start:\awoke,timecode:3702.seconds,music:{|p b e|
+		e.still.value(fadeIn:1,wait:b.sum-1).postln;
+});
+P.still(\embraceTitle,syl:1,start:\awoke,timecode:3702.5.seconds,music:{|p b e|
+	e.still.value(wait:b.sum,fadeIn:1,text:["when you awoke","in this body"])
+})
 ["you said how go--od it was _. to breathe again,",[1,2,3, 3,4, 3, 3,2, 1, 4, 3, 2].dm('c#',octave:6),].addLine;
 Song.quarters[\breathe]= Song.parseBeats(\breathe,[1,1,1/2,1/4,3/4,1/2,1/2,11/2,1/2,1,1/2, 5/2]);
 P.tune(\breathe);
@@ -330,6 +469,13 @@ P(\chord,start:\return,syl:16,music:{|p b e|
 )
 /*
 a=Buffer.read(s,"/Users/michael/reaper-subproject/media/01-210826_1331.rpp-PROX")
-a
-{ PlayBuf.ar(2,a.bufnum) =>TwoTube.ar(_,0.7,0.8,678,876) }.play(s,1)
+a{ PlayBuf.ar(2,a.bufnum) =>TwoTube.ar(_,0.7,0.8,678,876) }.play(s,1)
+P(\test,start:\rushes,resources:(impulse:{Impulse.ar(5)}.asDefName),music:{|p b e|
+	(
+		instrument: e.impulse,
+		dur: b.sum
+ ).play
+});
 */
+
+

@@ -154,6 +154,16 @@ P(\padBass5,start:5,music:
 /// sickBay sections {{{1
 //~sickBay.resources=();
 
+["/*KIRK:*/ That will take months, perhaps years. We haven't that choice, Thalassa. ","r"].addLine;
+["/*MULHALL:*/ Husband. Feel the touch of my hand, husband. ","r"].addLine;
+["/*KIRK:*/ No, belove. If we torment ourselves ","r"].addLine;
+["/*MULHALL:*/ Belove. What will that word mean to a machine? ","r"].addLine;
+["/*KIRK:*/ Our thoughts will intertwine. ","r"].addLine;
+["/*MULHALL:*/ Will they, husban? Will they intertwine like this? Can two minds press close like this? Can robot lips do this? (they kiss, then Kirk falls gently to the floor) Sargon, what is it? ","r"].addLine;
+["(McCoy an Chapel enter.) ","r"].addLine;
+["*0vf*S/","r"].addLine;
+["/*MULHALL:*/ Doctor, help him! ","r"].addLine;
+["/*MCCOY:*/ He's ead.","r"].addLine;
 )
 (
 

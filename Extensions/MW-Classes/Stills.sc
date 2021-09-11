@@ -7,6 +7,7 @@
 //)
 Stills {
 	classvar <>stillsLocation = "/tmp/";
+        classvar <>current;
 	var <>file;
 	var <>markers;
 	var <>fade;
@@ -15,17 +16,25 @@ Stills {
 	*new {|movie| ^super.new.init(movie)}
 	init {|movie| file=movie; markers=()  }
 
+        *reaper {
+		("open "++ "/Users/michael/trek/video for stills etc/video for stills etc.RPP".escapeChar(Char.space)).unixCmd
+        }
 	//monitor -1 for left 0 for center default is -1
-	preview {|markerName wait=5 fade=0 monitor text| 
+	preview {|markerName wait=5 fade=0 monitor text fadeIn| 
 		var w=this.plot(markerName,monitor);
-		text.isNil.not.if{this.title(w,text)};
+                fadeIn.notNil.if{w.fadeIn(fadeIn)};
+		text.notNil.if{this.title(w,text)};
 		{w.fade(fade)}.defer(wait);
 		^w}
 
 
+        current {
+          super.current = this
+        }
 	viewer {
 		("open "++"'"++this.file++"'").unixCmd
 	}
+
 
 	plot{|markerName monitor=(-1)|
 		var image=this.mark(markerName);
@@ -45,23 +54,34 @@ Stills {
 	}
 	
 
-	title { |window text|
-		StaticText(window,Rect (0,600,1400,200))
-		.string_(text[0])
-		.stringColor_(Color.rand)
-		.align_(\center)
-		.font_(Font(\helvetica,90,bold:true))
-		;
-		StaticText(window,Rect (0,810,1400,200))
-		.string_(text[1])
-		.stringColor_(Color.rand)
-		.align_(\center)
-		.font_(Font(\helvetica,90,bold:true))
+        title { |window text|
+          ( text.size == 1 ).if
+          {
+            StaticText(window,Rect (0,600,1400,200))
+            .string_(text[0])
+            .stringColor_(Color.rand)
+            .align_(\center)
+            .font_(Font(\helvetica,90,bold:true))
+          }{
+            StaticText(window,Rect (0,100,1400,200))
+            .string_(text[0])
+            .stringColor_(Color.rand)
+            .align_(\center)
+            .font_(Font(\helvetica,90,bold:true))
+            ;
+            StaticText(window,Rect (0,600,1400,200))
+            .string_(text[1])
+            .stringColor_(Color.rand)
+            .align_(\center)
+            .font_(Font(\helvetica,90,bold:true))
+          }
 	}
 
 	set {|markerName seconds| 
 		( markers.at(markerName) == seconds ).not.if {
-			markers.put(markerName,seconds);this.fetch(markers.at(markerName))
+                  try{
+                    markers.put(markerName,seconds);this.fetch(markers.at(markerName))
+                  }
 		}
 	}
 
@@ -127,4 +147,17 @@ Still {
 			{this.close}.defer;
 		}
 	}
+        fadeIn {
+          | time fps=24 alpha=1 | 
+          var alphaGoal = alpha; 
+          var a = Env([0,alphaGoal],time).asStream;
+          alpha = 0;
+          fork{
+            {alpha<alphaGoal}.while
+            {
+              { this.alpha = a.value; alpha = a.value }.defer;
+              fps.reciprocal.wait;
+            }
+          }
+        }
 }

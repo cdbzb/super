@@ -11,6 +11,9 @@ Reaper {
 	*open2 {|path|
 		Pipe.new(executable ++ " " ++ path,"w")
 	}
+        *openAndSaveas {|path|
+		Pipe.new(executable ++ " -saveas " ++ path + path,"w")
+        }
 	*go		{| seconds| this.address.sendMsg('time',seconds.asFloat.asSeconds); cursor=seconds.asFloat.asSeconds}
 	*record {| seconds, stopAt | 
 		seconds.isNil.not.if{

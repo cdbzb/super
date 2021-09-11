@@ -34,6 +34,14 @@ P(\reflection,start:\reflection,music:{|p b e|
 ["/*MULHALL:*/ Thank you. ","r"].addLine;
 ["Have you prepared the negaton hydracoils for the drawing Sargon supplied?",[5,4,3,2,1,3,4,-7,3,2,-6,-7,1,2,-7,1,-6,-3,-1].dm(\g)].addLine;
 P.tune(\prepared);
+P(\bass,start:\prepared,music:{|p b e| 
+	[
+		freq:[\r,11,5.5,[4.5, 6 ],4,[-6,3]].df(\g,octave:3).q,
+		dur:b.parse([0.5,[0.5,4],3,3,4,4]).q,
+		legato:1
+	].pp;
+	(amp:0.06,att:1,freq:[-11,-1].df(\g),dur:b.sum,instrument:\sawSynth,rel:b.sum).play
+});
 ["/*SCOTT:*/ For all the good it'll do you. It's a fa -- -- ncy name, but",[5,6,7,12,11,7,12,11].dm('b-',octave:4) ++ [-7,1,4,3,2,1,5,3].dm('g')].addLine;
 P.tune(\name);
 ["how will something that looks like a drop of jelly make this thing work?",[3,4, 3,4,5, 3, 3,4,5,3, 6,4, 7,7,4.5,2].dm('g',scale:\mixolydian,octave:5)].addLine;

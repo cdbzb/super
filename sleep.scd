@@ -1,10 +1,7 @@
 (
 o=s.options;
-o.dump;
-//o.outDevice="TREKZ Titanium by AfterShokz";
-o.outDevice=nil;
-o.outDevice=nil;
-//o.inDevice="Built-in Microph";
+o.outDevice="TREKZ Titanium by AfterShokz";
+o.inDevice="Built-in Microph";
 s.reboot;
 )
 (
@@ -16,31 +13,29 @@ b=a.collect{
 	var length = file.numFrames;
 	( bufnum: Buffer.cueSoundFile(s,i,0,1) ,length:length,full:full)
 };
-)
-
-(
 ~stories={
 	fork{
-		b.scramble.do{ |c|
+		loop{
+			b.scramble.do{ |c|
 
-			//c=b.choose;
-			//c.full.plot
-			//{DiskIn.ar(1,c.bufnum)}.play(s,1);
-			{
-				//PlayBuf.ar(1,c.full.bufnum,rate:1,startPos:120*s.sampleRate)
-				PlayBuf.ar(1,c.full.bufnum,rate:1)
-				//PlayBuf.ar(1,c.full.bufnum,rate:48/44,startPos:120*s.sampleRate)
-				=> Pan2.ar(_,0)
-		}.play;
-		\waiting.postln;
-		( c.length / s.sampleRate /60).round(1).postln;
-		( c.length /s.sampleRate).wait;
+				//c=b.choose;
+				//c.full.plot
+				//{DiskIn.ar(1,c.bufnum)}.play(s,1);
+				{
+					//PlayBuf.ar(1,c.full.bufnum,rate:1,startPos:120*s.sampleRate)
+					PlayBuf.ar(1,c.full.bufnum,rate:1)
+					//PlayBuf.ar(1,c.full.bufnum,rate:48/44,startPos:120*s.sampleRate)
+					=> Pan2.ar(_,0)
+				}.play;
+				\waiting.postln;
+				( c.length / s.sampleRate /60).round(1).postln;
+				( c.length /s.sampleRate).wait;
+			}
 		}
 	}
 }
 )
 ~stories.value
-
 c.length/s.sampleRate/60
 s.reboot
 
@@ -71,7 +66,7 @@ s.reboot
 		length:Pwhite(5,60,inf),
 	
 
-		pan:Pwhite(0.5,0.5,inf),
+		pan:Pwhite(-0.5,0.5,inf),
 		rawAmp:Pgauss(0.06,0.01),
 		amp:Pfunc{|e| e.rawAmp.min(0.12)},
 		out:Effect(FreeVerb.ar(_,1,1)*0.1,inputChannels:2)
@@ -100,13 +95,13 @@ s.reboot
 	}.play;
 	{ Pan2.ar(
 		~filter.rhpf(~noise.white, 800)*EnvGen.kr(Env([0,1,0.9,0],[5.1,3,5]),doneAction:2)*0.03 ,
-	rrand(-0.8,0.1))
+	rrand(0.8,-0.1))
 	}.play;
 	rand(3.5).wait;
 	})}).play;
 
 	//n={Out.ar(1,SinOsc.ar(440,0,0.05) )}.play;
-	s.makeWindow
+	//s.makeWindow
 	//s.meter
 )
 

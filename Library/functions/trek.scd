@@ -115,9 +115,12 @@ s.waitForBoot { StageLimiter.activate };
 			|self char|
 			Routine ({
 				loop {
-					self.item = self.item.add(Main.elapsedTime-self.time); self.time=Main.elapsedTime; char = 0.yield; }
+					self.item = self.item.add(Main.elapsedTime-self.time); 
+					synth.set(\t_trigger,1);
+					self.time=Main.elapsedTime; 
+					char = 0.yield; 
 				}
-			)
+			})
 		},
 		window:nil,
 		makeWindow: {
@@ -157,7 +160,7 @@ s.waitForBoot { StageLimiter.activate };
 				)
 			};
 			self.item=[];
-			fork{s.sync; synth=Synth(\stepper) };
+			fork{s.sync; synth=Synth(\stepper); a=synth };
 			w.onClose_({synth.free});
 			self.cue.play ;
 			self.range.do({|i|song.lyrics[i].postln});
@@ -195,9 +198,10 @@ s.waitForBoot { StageLimiter.activate };
 		).makeWindow;
 		fork{
 			s.sync;
+			'registering midifunc'.postln;
 			MIDIFunc.noteOn({
 				recorder.captureLoop.();
-					synth.set(\t_trigger,1);
+				synth.set(\t_trigger,1);
 				synth.postln}
 			)}
 }; 

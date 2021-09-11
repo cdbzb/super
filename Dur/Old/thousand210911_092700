@@ -29,12 +29,11 @@ o = [
 	Array.prNew(17),  "That is, assuming you'll stop wasting your time and allow us to complete it.",  Pseq.prNew,  List.prNew,  
 	Array.prNew(21),  "Sargon has closed his mind to a better way.",  Pseq.prNew,  List.prNew,  
 	Array.prNew(15),  "you said how go--od it was _. to breathe again,",  Pseq.prNew,  List.prNew,  
-	Array.prNew(12),  "/*SCOTT:*/ For all the good it'll do you. It's a fa -- -- ncy name, but",  Pseq.prNew,  List.prNew,  
-	Array.prNew(16)
+	Array.prNew(12)
 ];
 p = [
 	// Dictionary
-	0, [ array: o[1],  size: 30 ],  
+	0, [ array: o[1],  size: 29 ],  
 	// Array
 	1, [ nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -162,7 +161,7 @@ p = [
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  o[109],  o[110],  
 		nil,  nil,  o[113],  o[114],  
-		o[117],  o[118],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil ],  
 	// Pseq
 	3, [ list: o[4],  repeats: 1,  
@@ -170,9 +169,9 @@ p = [
 	// List
 	4, [ array: o[5] ],  
 	// Array
-	5, [ 0.496,  0.324,  0.324,  0.442,  
-		0.308,  0.348,  0.388,  0.55,  
-		0.476 ],  
+	5, [ 0.512,  0.3,  0.338,  0.42,  
+		0.322,  0.302,  0.378,  0.552,  
+		0.386 ],  
 	// Pseq
 	7, [ list: o[8],  repeats: 1,  
 		offset: 0 ],  
@@ -441,16 +440,6 @@ p = [
 	// Array
 	116, [ 0.592,  0.539,  0.286,  0.124,  
 		0.468,  0.312,  0.345,  3.146,  
-		0.338,  0.572,  0.338,  0.585 ],  
-	// Pseq
-	118, [ list: o[119],  repeats: 1,  
-		offset: 0 ],  
-	// List
-	119, [ array: o[120] ],  
-	// Array
-	120, [ 0.388,  0.366,  0.424,  0.34,  
-		0.234,  0.292,  0.462,  0.726,  
-		0.28,  0.306,  0.238,  0.266,  
-		0.238,  0.368,  0.488,  0.552 ]
+		0.338,  0.572,  0.338,  0.585 ]
 ];
 prUnarchive(o,p);

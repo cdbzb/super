@@ -31,13 +31,17 @@ P(\reflection,start:\reflection,music:{|p b e|
 	}.play(s,0)
 });
 //P(\door,start:\reflection,music:{Synth(\door)})
-["/*MULHALL:*/ Thank you. Have you prepared the negaton hydracoils for the drawing Sargon supplied?","r"].addLine;
-["/*SCOTT:*/ For all the good it'll do you. It's a fancy name, but","r"].addLine;
-["how will something that looks like a drop of jelly make this thing work?",[3,1,4,3,4,5 ,3,4,5,1 ,6,5,7,7,4.5,2].dm('g',scale:\mixolydian,octave:4)].addLine;
+["/*MULHALL:*/ Thank you. ","r"].addLine;
+["Have you prepared the negaton hydracoils for the drawing Sargon supplied?",[5,4,3,2,1,3,4,-7,3,2,-6,-7,1,2,-7,1,-6,-3,-1].dm(\g)].addLine;
+P.tune(\prepared);
+["/*SCOTT:*/ For all the good it'll do you. It's a fa -- -- ncy name, but",[5,6,7,12,11,7,12,11].dm('b-',octave:4) ++ [-7,1,4,3,2,1,5,3].dm('g')].addLine;
+P.tune(\name);
+["how will something that looks like a drop of jelly make this thing work?",[3,4, 3,4,5, 3, 3,4,5,3, 6,4, 7,7,4.5,2].dm('g',scale:\mixolydian,octave:5)].addLine;
 P.tune(\jelly);
-["You'll need microgears and a pulley that work like a muscle does.",[-7,-7,4,3,1].dm('d')++ [4,3,2,1,-6,-7,-6,-5,-4,-3,-17].dm(\e,scale:\mixolydian)].addLine;
+["You'll need microgears and a pulley that work like a muscle does.",[2,2,4,3,1].dm('d',octave:6)++ [4,3,2,1,-6,-7,-6,-5,-4,-3,-17].dm(\e,scale:\mixolydian,octave:6)].addLine;
 P.tune(\microgears);
-["/*MULHALL:*/ That would be highly inefficient.","r"].addLine;
+["/*MULHALL:*/ That would be highly inefficient.",[7,5,2,11,7,5,2,6,4.5].dm(\d,scale:\mixolydian)].addLine;
+P.tune(\inefficient);
 ["/*SCOTT:*/ I tell you, lady, this thing won't work.",[7,13,11,7,5].dm('b',scale:\mixolydian) ++ [5,6,7,11].dm('d')].addLine;
 P.tune('lady');
 P(\bass,start:\lady,syl:3, music:{|p b e| 
@@ -395,7 +399,7 @@ P.still(\embrace,start:\awoke,timecode:3702.seconds,music:{|p b e|
 });
 P.still(\embraceTitle,syl:1,start:\awoke,timecode:3702.5.seconds,music:{|p b e|
 	e.still.value(wait:b.sum,fadeIn:1,text:["when you awoke","in this body"])
-})
+});
 ["you said how go--od it was _. to breathe again,",[1,2,3, 3,4, 3, 3,2, 1, 4, 3, 2].dm('c#',octave:6),].addLine;
 Song.quarters[\breathe]= Song.parseBeats(\breathe,[1,1,1/2,1/4,3/4,1/2,1/2,11/2,1/2,1,1/2, 5/2]);
 P.tune(\breathe);

@@ -46,8 +46,38 @@ P(\bass,start:\prepared,music:{|p b e|
 P.tune(\name);
 ["how will something that looks like a drop of jelly make this thing work?",[3,4, 3,4,5, 3, 3,4,5,3, 6,4, 7,7,4.5,2].dm('g',scale:\mixolydian,octave:5)].addLine;
 P.tune(\jelly);
+P(\accent,start:\jelly,music:{|p b e| 
+	[
+		instrument:\cymbal_808,
+		dur:b.parse([2,3,1,4,2]).q,
+		amp:0.3
+	].pp;
+	[
+		instrument:\stringyy,
+		mix:0.3,
+		attack:0.05,
+		release:1.5,
+
+		dur:b.parse([2,3,1,4,2]).q,
+		octave: Ptuple( [ Prand([4,5],inf),3 ] ),
+		degree:-1 //b 
+
+	].p.trace.play;
+});
 ["You'll need microgears and a pulley that work like a muscle does.",[2,2,4,3,1].dm('d',octave:6)++ [4,3,2,1,-6,-7,-6,-5,-4,-3,-17].dm(\e,scale:\mixolydian,octave:6)].addLine;
 P.tune(\microgears);
+P(\chords,start:\microgears,music:{|p b e| 
+	[
+		freq:[[-5,-7,2],[-5,-7,2], [1,4,6],[1,3,5],[-5,1,3] ].df(\d).q,
+		dur:b.q
+	].pp;
+	[
+		instrument:\sawSynthSustain,
+		freq:[-5,1].df(\d,octave:3).q,
+		dur:b.parse([2,3]).q
+	].pp;
+
+});
 ["/*MULHALL:*/ That would be highly inefficient.",[7,5,2,11,7,5,2,6,4.5].dm(\d,scale:\mixolydian)].addLine;
 P.tune(\inefficient);
 ["/*SCOTT:*/ I tell you, lady, this thing won't work.",[7,13,11,7,5].dm('b',scale:\mixolydian) ++ [5,6,7,11].dm('d')].addLine;
@@ -144,7 +174,16 @@ P(\bass,start:'last a thousand',music:{
 	[6,5,4,2.5,4,2,5.5].dm(\a,)++[7,6,5, 4,5,4 ,3,4, 4,5].dm(\f,scale:\melodicMinor)++[6,7,7,11].dm(\c)
 ].addLine;
 Song.quarters[\assuming]= Song.parseBeats(\assuming,[[1,1,1]/3,[1,1,1,1]/2,[2,1,1]/2,[1,1,1]/3,[1,1,1,1,1,1,3,1]/2].flat/1);
-P.tune(\assuming);
+//P.tune(\assuming);
+~path="/tmp/media/subproject.rpp-PROX";
+~test=Buffer.read(s,~path);
+//~Song.reaperSection(\assuming) makes subproject initially...
+//"rpr /tmp/test3.RPP" opens this file
+//need to handle the naming etc
+P(\vox,start:\assuming,music:{|p b e| 
+//~test.play;
+{PlayBuf.ar(2,~test.bufnum)=>TwoTube.ar(_,0.01,0.9,500,666)*0.01}.play
+});
 P(\bass_next_next,start:'last a thousand',syl:5,music:{
 	[
 		[ [3,4,2,-7].dm(\c), [4,2,1,1]/2 ],

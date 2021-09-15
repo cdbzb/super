@@ -26,10 +26,10 @@ P(\chord,start:'one death',music:
 [ "weeks, or a month. For all the good it'll do.","r" ].addLine;
 )
 
-~recorder.(Song.currentSong,1)
-Song.pbind[0].play
-Song.writeLyricDurationFile
-Song.save
+//~recorder.(Song.currentSong,1)
+//Song.pbind[0].play
+//Song.writeLyricDurationFile
+//Song.save
 
 /*
 */

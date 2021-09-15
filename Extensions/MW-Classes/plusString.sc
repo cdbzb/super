@@ -19,4 +19,7 @@
 	fileName {
 		^try{this.asPathName.fileName}
 	}
+        fixLineEndings { |out|
+          "tr '\r' '\n' <" + this ++ ">" + out => _.unixCmd;
+        }
 }

@@ -1,10 +1,10 @@
 (/// line 326
  
-
-	Monitor.new().play(2,2,0,2);
+ 
+       Monitor.new().play(2,2,0,2);
 ~speaker ? ~speaker=Library.at(\functions,\prep).("/Users/michael/tank/IR/Saane/Speakers_&_Telephones/Very_small_speaker_mono.wav");
-	Song.dursFile_("/Users/michael/tank/super/theExtreme_Sep18");
-	~sickBay=Song(\sickBay,[]).current;
+       Song.dursFile_("/Users/michael/tank/super/theExtreme_Sep18");
+       ~sickBay=Song(\sickBay,[]).current;
 	["Sick Bay.. Sick Bay, Mc- Coy","e c f# d e g#"].addLine; //0
 	P(\guide0,start:0,music:~sickBay.pbind[0]=>Pfin(2,_));
 	P(\kirkFace,start:0,music:{
@@ -143,10 +143,15 @@ P(\padBass5,start:5,music:
 		~justTheTune.('(formula)');
 
 		["yes, I wan- ted to be cer- tain there was no","f4 c#4 c c# f c# c b-3 a- b- e-4"].addLine;  //7
+		P.tune('cer- tain');
 		["er- ror. For- mu- la is co- ","d4 f3 g a b g b "].addLine; //8
+		P.tune('For- mu- la');
 		["rrect. Don't be concer -- ned, this is an","d4 c# e d f# g f# d e f# "].addLine;  //9
+		P.tune('rrect.');
 		["ex- cel- lent bo- dy. "," g#4 e d d c#"].addLine; //10
+		P.tune('bo- dy');
 		["There I feel be- tter al- rea- dy","c4 g3 a b c4 b3 a b d4 c"].addLine; //11
+		P.tune('be- tter');
 		//in Time
 		["in Time a host ","b3 b4 a b"].addLine; //12
 		[" -- body will become... (cis) ","c# b a g a b c#3"].addLine; //13
@@ -156,14 +161,22 @@ P(\padBass5,start:5,music:
 
 ["/*KIRK:*/ That will take months, perhaps years. We haven't that choice, Thalassa. ","r"].addLine;
 ["/*MULHALL:*/ Husband. Feel the touch of my hand, husband. ","r"].addLine;
-["/*KIRK:*/ No, belove. If we torment ourselves ","r"].addLine;
-["/*MULHALL:*/ Belove. What will that word mean to a machine? ","r"].addLine;
+["/*KIRK:*/ No, beloved. If we torment ourselves ","r"].addLine;
+["/*MULHALL:*/ Beloved. What will that word mean to a machine? ","r"].addLine;
 ["/*KIRK:*/ Our thoughts will intertwine. ","r"].addLine;
-["/*MULHALL:*/ Will they, husban? Will they intertwine like this? Can two minds press close like this? Can robot lips do this? (they kiss, then Kirk falls gently to the floor) Sargon, what is it? ","r"].addLine;
-["(McCoy an Chapel enter.) ","r"].addLine;
-["*0vf*S/","r"].addLine;
+["/*MULHALL:*/ Will they, husband? ","r"].addLine;
+[ "Will they intertwine like this? ","r" ].addLine;
+P.still(\embrace,start:'Will they',timecode:3914.542.seconds,music:{|p b e| e.still.value()});
+[ "Can two minds press close like this?","r"].addLine; 
+P.still(\embrace,start:'press close',timecode:3915.542.seconds,music:{|p b e| e.still.value()});
+["Can robot lips do this?" ,"r" ].addLine;
+P.still(\embrace,start:'robot lips',timecode:3920.5.seconds,music:{|p b e| e.still.value()});
+[ "(they kiss, then Kirk falls gently to the floor) Sargon, what is it? ","r"].addLine;
+P.still(\kiss,start:'kiss',timecode:3924.seconds,music:{|p b e| e.still.value()});
+["(McCoy and Chapel enter.) ","r"].addLine;
+["hypo","r"].addLine;
 ["/*MULHALL:*/ Doctor, help him! ","r"].addLine;
-["/*MCCOY:*/ He's ead.","r"].addLine;
+["/*MCCOY:*/ He's dead.","r"].addLine;
 )
 (
 

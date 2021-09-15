@@ -1,5 +1,6 @@
 Song {
 	classvar lastSectionPlayed=0;
+    classvar <>reaperFolder = "/Users/michael/tank/super/RPP";
 	classvar <> dursFile="/Users/michael/tank/super/theExtreme3";
 	classvar <> dursFolder="/Users/michael/tank/super/Dur";
 	classvar < songs;
@@ -359,6 +360,29 @@ Song {
 		this.play(this.at(sec))
 	}
 
+    // TRASHME
+    reaperSection {|sec range=1 tail=5| 
+        var path;
+        var reaperProjectPath = reaperFolder +/+ key;
+        var section = this.section(sec);
+        var s = Server.default;
+        File.exists(reaperProjectPath).not.if(File.mkdir(reaperProjectPath +/+ "media"));
+        path=reaperProjectPath +/+ "media" +/+ sec.asString ++ ".wav";
+        fork{
+            s.prepareForRecord(path);
+            0.1.wait;
+            Song.cursor_(section);
+            range.do(
+                { |i|
+                    Song.currentSong.play(Song.at(section+i));
+                }
+            );
+            s.record(duration: range.collect{|i| Song.secDur[ i ]}.sum + tail);
+            (range.collect{|i| Song.secDur[ i ]}.sum + tail + 0.5).wait;
+            Reaper.buildVocalRPP(path,durs[sec].list,reaperProjectPath)
+        };
+
+    }
 	section {|string| 
 		//returns section number which contains lyric
 		var array = (..lyrics.size-1).select{|i |lyrics[i].asString.contains(string.asString)};
@@ -781,6 +805,110 @@ Track {
 	dry_ {|amount| parts.do({ |i| i.music.dry_(amount) })}
 	arm {|bus| parts.do({ |i| i.music.arm(bus:bus) })}
 }
+
+VocalRPP {
+    var <>key, <>name, <>range=1, <>tail=5, <>song;
+    var section;
+    var <>reaperProjectPath,<>rpp,<>buffer;
+
+    *new { |...args| ^super.newCopyArgs(*args).init}
+init{ 
+
+    song.isNil.if{song=Song.currentSong};
+    section =song.section(key);
+    reaperProjectPath = Song.reaperFolder +/+ song.key;
+    //(reaperProjectPath +/+ "media" +/+ "*PROX" => _.pathMatch => _.first) !? { 
+    //    |i|
+    //    buffer=Buffer.read(Server.default,i)
+    //};
+    name.notNil.if{
+        key = key ++ "-" ++ name
+    };
+    buffer = Buffer.read(Server.default,this.proxy)
+}
+
+    makeRPPs { 
+        |durs=#[1,2,3] |
+        var guide=reaperProjectPath +/+ "media" +/+ key.asString ++ ".wav";
+        var examplesPath = "/Users/michael/tank/super/RPP/";
+        // build subproject
+        var subprojectOutPath = "mkdir" + reaperProjectPath +/+ "media" => _.unixCmd;
+        var sink = examplesPath ++ "example-sub"
+        => File.readAllString(_,"r")
+        => _.replace("PTS",durs.makePTs)
+        => _.replace("ENDMARKER",durs.sum + 5 => _.asString)
+        => _.write(reaperProjectPath +/+ "media" +/+ key ++  "-" ++ "subproject.rpp",overwrite:true); //maybe datestamp
+        var sections = [
+            "Part1",
+            "afterPT-uptoLENGTH",
+            "afterLENGTH-uptoFILE",
+            "afterFILE-uptosubprojectFILE",
+            "tail",
+        ].collect({|i| 
+            File.readAllString(examplesPath ++ i,"r") 
+        });
+        var outFile = reaperProjectPath +/+ key++ ".RPP";
+        var length = "      LENGTH" +  ( durs.sum + 5 ) ++ "\n";
+        var file = "        FILE " ++ guide.quote++"\n";
+        //var subproject = "        FILE " ++ "/Users/michael/tank/super/RPP/EXAMPLE/media/02-210914_0752.rpp".quote++"\n";
+        var subproject = "        FILE " ++ (reaperProjectPath +/+ "media" +/+ key ++"-" ++ "subproject.rpp").quote++"\n";
+        ^(
+            sections[0] ++ 
+            // durs.makePTs ++
+            sections[1] ++
+            length ++
+            sections[2] ++
+            file ++
+            sections[3] ++
+            subproject ++
+            sections[4]
+        ).replace("GUIDEOFFSET","SOFFS 0.4") //adjust for server latency 
+        .replace("LENGTH 5.00000","LENGTH"+(durs.sum + 5 - 0.4))
+        // may not be necessary
+        .write(outFile,overwrite:true )
+}
+
+build {
+    var path;
+    var s = Server.default;
+    File.exists(reaperProjectPath).not.if(File.mkdir(reaperProjectPath +/+ "media"));
+    path=reaperProjectPath +/+ "media" +/+ key.asString ++ ".wav";
+    fork{
+        s.prepareForRecord(path);
+        0.1.wait;
+        Song.cursor_(section);
+        range.do(
+            { |i|
+                song.play(song.at(section+i));
+            }
+        );
+        s.record(duration: range.collect{|i| Song.secDur[ i ]}.sum + tail);
+        (range.collect{|i| song.secDur[ i ]}.sum + tail + 0.5).wait;
+        //put name in variable
+        this.makeRPPs(
+            song.durs[section].list, //durs
+             //path to reaper dir (redundant!!)
+        );
+        this.storeDurs;
+    };
+
+}
+
+storeDurs{
+    song.durs[section].list.writeArchive(
+        reaperProjectPath +/+ "media" +/+ key.asString ++ "_durs"
+    )
+}
+
+proxy {
+    ^reaperProjectPath +/+ "media" +/+ key++"*PROX" => _.pathMatch => _.first;
+}
+
+open {
+    "open" + reaperProjectPath +/+ key ++ "*RPP" => _.unixCmd
+}
+}
+
 + Symbol {
 	cursor {
 		^Song.songs.at(this).cursor

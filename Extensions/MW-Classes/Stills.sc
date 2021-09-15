@@ -14,6 +14,7 @@ Stills {
 	var <>font;
 	var <>window;
         var <>stills;
+        var muted=false;
 
 	*new {|movie| ^super.new.init(movie)}
 
@@ -128,7 +129,7 @@ Still {
 	*new{|markerName timecode wait=5 fade=0 monitor text fadeIn stills  | ^super.new.init(markerName,timecode,wait,fade,monitor,text,fadeIn,stills)}
 
         init{| n c w f m x i t |
-          //DO WE NEED A MARKER NAME???????
+          //DO WE EVEN NEED A MARKER NAME???????
           markerName = n;
           x.isNil.if{text=["",""]}{text=x};
           t.isNil.if{ stills = Stills.current }{ stills = t };
@@ -140,7 +141,7 @@ Still {
 
         play { 
           { 
-            window = stills.preview(markerName, wait,fade, monitor,fadeIn);
+            window = stills.preview(markerName, wait,fade, monitor,fadeIn:fadeIn);
             this.title(["",""]);
           }.defer; 
           {

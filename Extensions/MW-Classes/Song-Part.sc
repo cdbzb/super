@@ -900,6 +900,35 @@ storeDurs{
     )
 }
 
+checkDursChanged{
+    ^song.durs[section].list != Object.readArchive(
+        reaperProjectPath +/+ "media" +/+ key.asString ++ "_durs"
+    )
+}
+
+updateDurs{
+    var endings;
+    var out="";
+    var line="";
+    var filename = reaperProjectPath +/+ "media" +/+ key ++  "-" ++ "subproject.rpp" ;
+    var file=File.open(filename,"r");
+    var next = {out = out ++ line ++ "\n"; line = file.getLine};
+    next.();
+    endings = line.contains($);
+    line.postln;
+    while ({ line.contains("TEMPOENVEX").not },{next.()});
+    while ({ line.contains("PT").not },{next.()});
+    while({line.contains("PT")},{line=getLine(file)});
+    out = out ++ song.durs[section].list.makePTs;
+    while({line.notNil},next);
+    endings.if {
+        out.write("/tmp/xxx",overwrite:true);
+        "/tmp/xxx".fixLineEndings(filename); 
+    }{
+        out.write(filename)
+    }
+}
+
 proxy {
     ^reaperProjectPath +/+ "media" +/+ key++"*PROX" => _.pathMatch => _.first;
 }

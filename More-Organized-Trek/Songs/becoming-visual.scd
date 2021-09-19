@@ -87,22 +87,6 @@ P(\sfx,start:\yellow, music:{
 				), -1, 0.03
 			), 0.0
 		)};
-		SynthDef(\visual_sine,{   arg freq=400, gate=1, release=3 , pan = 0.5; var sig;
-			freq =	 Lag.kr(freq,3);		 // =>
-			sig =	 SinOsc.ar(freq,0,0.1);	 // =>
-			sig =	 Pan2.ar(sig,pos: pan);	 // =>
-			sig =   EnvGen.kr( Env.adsr(0.02, release), gate, doneAction: 2) * sig;
-			sig =	Out.ar(verbBus.index,sig);// =>
-			sig;
-		}).add;
-		SynthDef(\visual_verb,{
-			var sig = In.ar(verbBus.index,2);
-			//
-			sig = FreeVerb.ar(sig, mix: 0.5, room:7 );
-			//	
-			sig = Out.ar(0,sig);
-			sig;
-		}).add;
 		Routine( { 
 			var r,b,c;
 			wibble.play.dur(13);

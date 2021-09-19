@@ -1,10 +1,10 @@
 (/// line 326
  
  
-       Monitor.new().play(2,2,0,2);
+Monitor.new().play(2,2,0,2);
 ~speaker ? ~speaker=Library.at(\functions,\prep).("/Users/michael/tank/IR/Saane/Speakers_&_Telephones/Very_small_speaker_mono.wav");
-       Song.dursFile_("/Users/michael/tank/super/theExtreme_Sep18");
-       ~sickBay=Song(\sickBay,[]).current;
+Song.dursFile_("/Users/michael/tank/super/theExtreme_Sep18");
+~sickBay=Song(\sickBay,[]).current;
 	["Sick Bay.. Sick Bay, Mc- Coy","e c f# d e g#"].addLine; //0
 	P(\guide0,start:0,music:~sickBay.pbind[0]=>Pfin(2,_));
 	P(\kirkFace,start:0,music:{
@@ -72,41 +72,43 @@
 ["You sound ter- ri- ble wait there for me","c4 d e c g3 e-4 d b-3 f"].addLine;  //3
 ~justTheTune.('ter- ri');
 
-	P(\mcCoy3,start:3,music: {
-		( Song.currentSong.pbind[3]<>(instrument:\mcCoy,
-			//out:~sickBay.mcCoyBus,
-			out:Effect({|i| PartConv.ar(i,2048,~speaker)},out:0).bus.index,
-			amp:0.03) ).play  
-	});
-	P(\static3,start:3,music: 
-		(instrument:\crackle,dur:5,out:~sickBay.mcCoyBus,amp:0.3));
-		["Sar- gon what's wrong?","b4 g b e5"].addLine;  //4
-	P(\image,start:4,music:{{
-		~stills.preview('whatsWrong?')
-	}.defer(0.01)});
-	P(\whatsWrong4,start:4,music:
-		Ppar([
-			Song.currentSong.tune[4]<>(instrument:\sawTw,\amp:0.5)
+P(\mcCoy3,start:3,music: {
+	 Song.currentSong.pbind[3]<>(instrument:\mcCoy,
+		//out:~sickBay.mcCoyBus,
+		out:Effect({|i| PartConv.ar(i,2048,~speaker)},out:0).bus.index,
+		amp:0.03) 
+	=> _.play  
+});
+P(\static3,start:3,music: 
+	(instrument:\crackle,dur:5,out:~sickBay.mcCoyBus,amp:0.3)
+);
+["Sar- gon what's wrong?","b4 g b e5"].addLine;  //4
+P(\image,start:4,music:{{
+	~stills.preview('whatsWrong?')
+}.defer(0.01)});
+P(\whatsWrong4,start:4,music:
+	Ppar([
+		Song.currentSong.tune[4]<>(instrument:\sawTw,\amp:0.5)
 
-			,
-			[		instrument:\sawTw,
-				dur:~sickBay.parse(4,[[1,0.5],[0.5,1,1]]).q,
-				spread:3,
-				degree:[\r,4].q,
-				out:[0,1,2],
-				root:0,
-				octave:[3,2],
-				amp:0.5
-			].p,
-			Pseq([(degree: [5,7,10]+[0,0,0,7,7,7]-1 ,octave:4,strum:0.1,amp:0.1,sustain:1)])
+		,
+		[		instrument:\sawTw,
+			dur:~sickBay.parse(4,[[1,0.5],[0.5,1,1]]).q,
+			spread:3,
+			degree:[\r,4].q,
+			out:[0,1,2],
+			root:0,
+			octave:[3,2],
+			amp:0.5
+		].p,
+		Pseq([(degree: [5,7,10]+[0,0,0,7,7,7]-1 ,octave:4,strum:0.1,amp:0.1,sustain:1)])
 	])
-//=>_.play
+	//=>_.play
 ); 
 P(\verbFade4,start:4,music:{~sickBay.thalassaVerb.release(5)});
-		["no- thing of im- portance, Fa- tigue per- haps","f g- a- g- b- g- b- a- g- e-"].addLine;  //5
-		~justTheTune.('Fa- tigue');
+["no- thing of im- portance, Fa- tigue per- haps","f g- a- g- b- g- b- a- g- e-"].addLine;  //5
+~justTheTune.('Fa- tigue');
 P(\padBass5,start:5,music: 
-	 Prout({
+	Prout({
 		var b, p = (out:2,root:6, instrument:\wash, amp:0.2, att:2,); //proto
 		var a=~sickBay.parse(5,[[1,1,1,1],[1,1,1],[1,1,1]]);
 		a[0].wait;
@@ -118,47 +120,59 @@ P(\padBass5,start:5,music:
 		(type:\set,id:b[\id],degree:[5.1-7,5.1,5.1+4,5.1+7]-1,root:6,octave:[2,3]).play//bend
 	});
 ); 
-	P(\doorOpen,start:2,music: 
-		//~stills.set('enter-Thalassa',(37*60+54.30));
-		 
-		Prout({
-			var vol=0.5;
-			var thalassaBus=Bus.audio(s,1).index;
-			~sickBay.thalassaVerb=Synth(\verbb,[\in,thalassaBus]);
-			s.bind{Synth(\door,[\amp,vol])};
-			1.05.wait;
-			{~stills.preview('enter-Thalassa')}.defer(0.01);
-			0.01.wait;
-			(
-				out:thalassaBus,
-				amp:vol,
-				instrument:\sawTw,
-				degree:[4-7,6-7,8-7,10-7,4,6,8,10]-1,
-				strum:0.1,octave:[5],sustain:4
-			).play;
-		})
-		
-	); 
-		["(beat) (formula) Sar- gon's for- mu- la...","d d5 e f# a f# c"].addLine;  //6
-		~justTheTune.('(formula)');
+P(\doorOpen,start:2,music: 
+	//~stills.set('enter-Thalassa',(37*60+54.30));
 
-		["yes, I wan- ted to be cer- tain there was no","f4 c#4 c c# f c# c b-3 a- b- e-4"].addLine;  //7
-		P.tune('cer- tain');
-		["er- ror. For- mu- la is co- ","d4 f3 g a b g b "].addLine; //8
-		P.tune('For- mu- la');
-		["rrect. Don't be concer -- ned, this is an","d4 c# e d f# g f# d e f# "].addLine;  //9
-		P.tune('rrect.');
-		["ex- cel- lent bo- dy. "," g#4 e d d c#"].addLine; //10
-		P.tune('bo- dy');
-		["There I feel be- tter al- rea- dy","c4 g3 a b c4 b3 a b d4 c"].addLine; //11
-		P.tune('be- tter');
-		//in Time
-		["in Time a host ","b3 b4 a b"].addLine; //12
-		[" -- body will become... (cis) ","c# b a g a b c#3"].addLine; //13
-		//"(d a fis) accustomed to us (fis)"
-/// sickBay sections {{{1
-//~sickBay.resources=();
+	Prout({
+		var vol=0.5;
+		var thalassaBus=Bus.audio(s,1).index;
+		~sickBay.thalassaVerb=Synth(\verbb,[\in,thalassaBus]);
+		s.bind{Synth(\door,[\amp,vol])};
+		1.05.wait;
+		{~stills.preview('enter-Thalassa')}.defer(0.01);
+		0.01.wait;
+		(
+			out:thalassaBus,
+			amp:vol,
+			instrument:\sawTw,
+			degree:[4-7,6-7,8-7,10-7,4,6,8,10]-1,
+			strum:0.1,octave:[5],sustain:4
+		).play;
+	})
 
+); 
+["(beat) (formula) Sar- gon's for- mu- la...","d d5 e f# a f# c"].addLine;  //6
+~justTheTune.('(formula)');
+
+["yes, I wan- ted to be cer- tain there was no","f4 c#4 c c# f c# c b-3 a- b- e-4"].addLine;  //7
+P.tune('cer- tain');
+["er- ror. For- mu- la is co- ","d4 f3 g a b g b "].addLine; //8
+P.tune('For- mu- la');
+["rrect. Don't be concer -- ned, this is an","d4 c# e d f# g f# d e f# "].addLine;  //9
+P.tune('rrect.');
+P(\lick,start:\rrect,music:{|p b e| 
+	[
+		freq:[5,4,3,2,1].df(\e,scale:\minor,octave:[3,4]).q,
+		dur:b.parse([1,1,1,1,3]).q,
+		legato:1!4++5 =>_.q
+	].pp;
+});
+["ex- cel- lent bo- dy. "," g#4 e d d c#"].addLine; //10
+P(\strum,start:'ex- cel',music:{|p b e| 
+	(
+		strum:0.055,
+		freq:[-5,-7,1,3,5,7,11,13].df(\e,scale:\mixolydian),
+		dur:{rrand(2,4)}.dup(4),
+		out:Effect(MoogFF.ar(_,SinOsc.ar({ 2.0.rand }.dup(4)).range(580,2000)*0.5),inputChannels:2).bus.index
+	).play
+});
+P.tune('bo- dy');
+["There I feel be- tter al- rea- dy","c4 g3 a b c4 b3 a b d4 c"].addLine; //11
+P.tune('be- tter');
+//in Time
+["in Time a host  -- body will become... (cis)  ","b3 b4 a b c# b a g a b c#3"].addLine; //12
+["(d a fis) accustomed to us (fis)","r"].addLine;
+["injections will no longer be necessary","r"].addLine;
 ["/*KIRK:*/ That will take months, perhaps years. We haven't that choice, Thalassa. ","r"].addLine;
 ["/*MULHALL:*/ Husband. Feel the touch of my hand, husband. ","r"].addLine;
 ["/*KIRK:*/ No, beloved. If we torment ourselves ","r"].addLine;

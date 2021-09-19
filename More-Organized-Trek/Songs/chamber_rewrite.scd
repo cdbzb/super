@@ -346,21 +346,9 @@ P(\tune16,start:16,music:Song.currentSong.pbind[16]=>Pbindf(_,\instrument,\strin
 	P(\tune17,start:17,music:Song.pbind[17] 
 );
 P(\boom17,start:17,syl:3,syl:3,music:
-	{
-		{ 
-			Impulse.ar(0)
-			=>Decay.ar(_,0.05)
-			* ClipNoise.ar(0.1)
-			=>MembraneHexagon.ar(_,tension:0.008,loss: 0.99996) 
-			=>Out.ar(\out.kr(0),_)
-		}
-		=>SynthDef(\membrane,_)=>_.add; 
-		(instrument:\membrane,out:2) 
-	}.value
+		(instrument:\membrane,out:2).play 
 );
 P(\line17,start:17,music:{
-	{Pulse.ar(\freq.kr(300),0.1,\amp.kr(0.1))* Env.perc(0.01,1).kr(2,gate:\gate.kr(1))=>Out.ar(\out.kr(0),_)}
-	=>SynthDef(\twang,_)=>_.add;
 	[
 		instrument:\twang,
 		amp:0.03,
@@ -409,21 +397,10 @@ P(\tune19,start:19,music:Song.currentSong.pbind[19]);
 ['corks you into a bo -- ttle  and', [1,2,3,4,5,6,7,1,6].dm('c',octave:6)].addLine; //20
 P(\tune20,music:Song.currentSong.pbind[20]);
 //	P(\tune20,start:20,music:Song.currentSong.pbind[20]);
-P('swell20',lag: -0.1,start:20,music:Routine{
-	SynthDef(\swell20,{
-		var freq = \freq.kr(300);
-		//			var width = 4;
-		var width = [4,5];
-		Env.perc(\attack.kr(1),\release.kr(1),\amp.kr(0.1),\curve.ir()).kr(2,gate:\gate.kr(1))
-		* Gendy1.ar(minfreq:freq-width,maxfreq:freq+width)
-		/ 2
-		=>Out.ar(\bus.kr(0),_)
-	}).add;
-	s.sync;
+P('swell20',lag: -0.1,start:20,music:{|p b e|
 	(
 		curve:'sin',instrument:\swell20,attack:2,release:5,amp:0.04,freq: [1,11].df('c',octave: 3)).play
-}
-	);
+});
 //['/*MULHALL:*/ I`m afraid that I must agree with Doctor McCoy. You could be suffering from a form of false euphoria. ',"r"].addLine; //21
 ['/*MULHALL:*/ I`m afraid I agree with Doctor McCoy. You could be suffering from a form of false euphoria.(ooh -- --) ',
 	[ 3,4,2,3,1, 5,3,4,5,3,6, 4,5,6,11,7,2 ].dm('e',scale:\dorian)

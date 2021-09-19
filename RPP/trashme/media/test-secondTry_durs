@@ -1,0 +1,12 @@
+var o, p;
+o = [
+	List.prNew,  Array.prNew(8)
+];
+p = [
+	// List
+	0, [ array: o[1] ],  
+	// Array
+	1, [ 0.483,  0.48,  0.698,  0.288,  
+		0.248,  0.282,  0.272,  0.347 ]
+];
+prUnarchive(o,p);

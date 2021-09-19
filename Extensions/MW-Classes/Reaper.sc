@@ -1,7 +1,7 @@
 Reaper {
-	classvar executable="'/Applications/REAPER ƒ/REAPER64.app/Contents/MacOS/REAPER'";
-	classvar <>ip="192.168.1.234",<>port=8000;
-	classvar <clock,cursor,<>lastPlayLength;
+	classvar <>executable="'/Applications/REAPER ƒ/REAPER64.app/Contents/MacOS/REAPER'";
+	classvar <>ip="192.168.1.213",<>port=8000;
+	classvar <clock,<cursor=0,<>lastPlayLength;
 	*initClass {
 		clock=TempoClock.new().permanent_(true);
 		CmdPeriod.add({Reaper.stop})
@@ -26,8 +26,11 @@ Reaper {
 			lastPlayLength=stopAt-seconds
 		}
 	}
+	*updateTempo {
+		this.address.sendMsg('action','_RSdbf0557c9d37b721397192124cb1b286f3c3bab4')
+	}
         
-	*play	{| seconds, stopAt | 
+	*play {| seconds, stopAt | 
 		seconds.isNil.not.if{
 			this.go(seconds);
 		};
@@ -48,6 +51,11 @@ Reaper {
 		Pipe.new(executable++ " -saveas " ++File.getcwd.asString++"/"++filename, "w")
 	}
 	*stop	{this.address.sendMsg('/stop')}
+	*save { this.address.sendMsg('action',40026) }
+	*render{ this.address.sendMsg('action',41824) }
+	*selectAllItems{ this.address.sendMsg('action',40182) }
+	*setItemTimeBaseToAuto{ this.address.sendMsg('action','_SWS_AWITEMTBASEBEATSTRETCH') }
+	
 
 }
 +Float {

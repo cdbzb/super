@@ -334,7 +334,7 @@ MCCOY: You look tired, Miss Chapel. Perhaps you'd care for me to administer the 
 CHAPEL: Tired? Well, not at all, Doctor. Thank you for asking.
 (Leaves a puzzled McCoy.)
 }}}
-[Laboratory] TO DO {{{
+[Laboratory] (thousand-year) {{{
 
 (Mulhall/Thalassa is looking at her reflection in a metallic surface when Scott comes in with a small doo-dad.) 
 MULHALL: Thank you. Have you prepared the negaton hydracoils for the drawing Sargon supplied? 
@@ -363,8 +363,6 @@ KIRK: Nothing of importance. Fatigue perhaps.
 MULHALL: Henoch's formula. 
 KIRK: Yes. I wanted to be certain there was no error. Formula is correct. Don't be concerned. It is an excellent body. There. You see? I feel better already. 
 MULHALL: In time, a host body will become accustomed to us, husband. Injections will no longer be necessary. 
-}}}
-TO DO add to sick bay {{{
 KIRK: That will take months, perhaps years. We haven't that choice, Thalassa. 
 MULHALL: Husband. Feel the touch of my hand, husband. 
 KIRK: No, beloved. If we torment ourselves 

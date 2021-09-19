@@ -1,66 +1,71 @@
+// OR BETTER -> just send OSC to drive the picture !?!
+
+~rpr=NetAddr("192.168.1.130",8000);
+~rpr=NetAddr("192.168.1.185",8000);
+~rpr.sendMsg("/play");
+~rpr.sendMsg("/stop");
+~rpr.sendMsg('/marker',1);
+~rpr.sendMsg('/time',2);
+
+~tone={SinOsc.ar(350+Rand(200),0,EnvGen.kr(Env.perc))};
+~tone.play;
+CmdPeriod.add({~rpr.sendMsg("/stop")})
 (
-/*
-"rpr ~/tank/Maura-PCS/PCS.RPP".unixCmd;
-*/
-~samplesDir="~/tank/Maura-PCS/sfx".standardizePath;
-~samples={|folder| ~samplesDir +/+ folder.asString ++ "/*" => _.pathMatch=>_.collect({|i| Buffer.read(s,i)}) };
-~air = ~samples.("air");
-~bills = ~samples.(\bills);
-Item.samplesDir_("~/tank/Maura-PCS/sfx/");
-
-~sections=();
-
-~sections.fincen={
-	Reaper.play(135,150);
-	Reaper.sched(136.01,{(
-	//note:6,
-	freq:[6].df(\c,octave:2),
-	instrument:\sawSynthSustain,
-	att:9,
-	dur:9).play}
-);
-Reaper.sched( 137.9,{(note:3,dur:3).play} );
-//Reaper.clock.sched(3,{(note:1).play});
-Reaper.sched( 140.4,{(note:[1,3,5,7],dur:3,instrument:\stringyy).play
-} );
-//2:15 bills
-};
-
-~sections.bills = {
-	//Reaper.play(215,301);
-	Reaper.play(213,400);
-	Reaper.clock.seconds.postln;
-	//~bills[0].play;
-	{PlayBuf.ar(2,~bills[0],rate:0.85)}.play;
-
-	{
-		[
-			[freq:[11,1].df(\a).q(inf)].p,
-			[freq:[[4,6],[5,7],[3,11]].df(\d).q(inf),dur:[2,2,4].q(inf)].p,
-			[\r,4,3,2,1,3,2,1,-6].df(\d,octave:6).q=>[freq:_]=>_.p
-		] => Ppar(_) =>_.play; 
-	}=>Reaper.sched(215,_)
-};
-~sections.gas = {
-	Reaper.play(1558,1624);
-	a=~air[0].play(mul:9);
-	Reaper.sched(1616,{a.free});
-	Reaper.sched(1612.6,{(note:2,dur:5).play});
-	Reaper.sched(1619.33,{(note:[1,3],instrument:\stringyy,dur:6).play})
-};
-
-~sections.slides = {
-	Reaper.play(1650);
-	Reaper.sched(1651.0,{[note:Pwhite(0,10.0),instrument:\claves_808,dur:[1.2].q(10)].pp})
-};
+	var startTime=9;
+	t=TempoClock.new;
+	t.permanent=true;
+	~rpr.sendMsg("/time",startTime);
+	~rpr.sendMsg("/play");
+	t.beats=startTime;
+	t.schedAbs(13,{~tone.play});
+	t.beats;
 )
 
-/*/
-End
-~sections.hands.value
-~sections.slides.value
-~sections.gas.value
-~sections.bills.value
-~sections.fincen.value
-Start
-*/ 
+(
+	t.schedAbs(13,{~tone.play});
+	t.beats;
+)
+
+(
+var start = 13*60+58;
+t.beats = 13*60+58;
+~rpr.sendMsg("/time",start);
+~rpr.sendMsg("/play");
+t.schedAbs(13*60+58.26,{
+	{PinkNoise.ar(0.2)=>MoogFF.ar(_,LFBrownNoise2.kr(1).range(2800,5000)=>EchoNone.ar(_,0.7,0.5,3))}.play(s,1).dur(5)
+});
+
+)
+
+(
+	~timeline=();
+	~timeline.putPairs([13,{~tone.play},15,{~tone.play}]);
+)
+
+(
+	var start = 10;
+	t.beats = start;
+	~rpr.sendMsg("/time",start);
+	~rpr.sendMsg("/play");
+	~timeline.keys.do{|item| (item>start).if(
+		{t.schedAbs(item,~timeline[item])}
+	)};
+)
+(
+	~timeline2=[
+	13,{
+	~tone.play
+	},15,{
+	{Saw.ar(200,0.05*EnvGen.kr(Env.perc))}.play;
+}
+	]
+)
+
+
+
+	a=(time:3,play:{{SinOsc.ar(400,0,0.1)}.play}).play;
+(
+	t.beats=0;
+	t.schedAbs(a[\time],{a.play});
+)
+

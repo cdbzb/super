@@ -13,7 +13,7 @@ SynthDef(\door,{
 	var fenv= Env.linen(len-0.21,0.18,0.03).kr(2,gate:1);
 	sig=RHPF.ar(sig,fenv.range(200,2000),rq:5);
 	Pan2.ar(sig*env*\amp.kr(1),Line.kr(0.2,1,len))
-	=>Out.ar(0,_)
+	=>Out.ar(\out.kr,_)
 }).add.tag(\sfx);
 
 SynthDef(\sawTw,{ |freq=400 amp=1 spread=5 | 

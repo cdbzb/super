@@ -1,0 +1,70 @@
+* coding [0/4]
+ 
+ 
+* TODO get rid of the whole theExtreme thing - remove from being automatically used
+* TODO static IP for the macbook 
+* TODO git-fat 
+  
+** Vocal RPP Class
+ 
+***  To update the tempo....
+**** TODO * pick it up here:
+    <2021-09-19 Sun> 
+     * these could all be combined into a single script
+       * selectAllItems
+       * set item Timebase to auto-stretch
+       * Reaper.updateTempo
+       * save
+     * and that's it!!
+  
+** TODO more modular RPP builder
+** TODO Stills [2/5]
+    - [ ] make Stills toggleable at the Song level
+    - [ ] global monitor selection
+    - [X] (how do I know which machine? in /etc ?) *Platform.machine
+    - [ ] make Stills exportable !!
+    - [X] explore making a Still class for individual still (could then have a .export method)
+** TODO copy more synthDefs to the library!
+ SCHEDULED  <2021-09-16 Thu> 
+    - [ ] OR just generalize some of the existing ?? to make sort of "big" synths
+* presentation ideas 
+**   - individual memes plus music for posting?
+*** TODO try a few?? 
+    SCHEDULED:<2021-10-01 Fri> 
+    :LOGBOOK:
+    CLOCK: [2021-09-15 Wed 10:44]--[2021-09-15 Wed 11:09] =>  0:25
+    CLOCK: [2021-09-15 Wed 09:48]--[2021-09-15 Wed 10:13] =>  0:25
+    CLOCK: [2021-09-15 Wed 09:17]--[2021-09-15 Wed 09:42] =>  0:25
+    CLOCK: [2021-09-15 Wed 08:46]--[2021-09-15 Wed 09:11] =>  0:25
+    :END:
+    maybe Sulu up top?
+*** first gotta get the vocal thing going!!
+*** Blog posts or "how  I did it videos        
+    - [ ] work out a list of subjects
+* TODO mu4e settings - crib from old file
+* Vacations 
+** Amtrak Santa Fe
+*** TODO Santa Fe look at dates? 
+*** TODO Santa Fe AirBnb?
+* Appointments 
+** therapy
+  <2021-09-14 Tue 14:00>
+  <2021-09-21 Tue 21:00>
+** physTherapy 
+  <2021-09-14 Tue 15:00>
+  <2021-09-21 Tue 10:00> 
+
+* Composition
+** Work on Sickbay
+   SCHEDULED: <2021-09-15 Wed> 
+* excercize! 
+** TODO Push up!
+ <2021-09-15 Wed 10:00 +1d>
+** TODO Vocal Function Excercize
+  <2021-09-15 Wed +1d> 
+** TODO Ride or home PT  
+  <2021-09-18 Sat +1w> 
+  <2021-09-19 Sun +1w> 
+* Tasks
+** TODO Walgreens
+  <2021-09-17 Fri> 

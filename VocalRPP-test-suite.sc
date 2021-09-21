@@ -1,0 +1,9 @@
+(
+"/Users/michael/tank/super/More-Organized-Trek/Songs/thousand-year.scd".load;
+VocalRPP(\engineer,\test).build;
+Song.reaperFolder
+)
+Synth(\shush)
+Song.play
+(note:1).play
+s.reboot

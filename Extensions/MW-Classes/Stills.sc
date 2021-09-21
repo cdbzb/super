@@ -25,15 +25,23 @@ Stills {
 	init {|movie| file=movie; markers=()  }
 
 	//monitor -1 for left 0 for center default is -1
-	preview {|markerName wait=5 fade=0 monitor text fadeIn| 
-		var w=this.plot(markerName,monitor);
-                fadeIn.notNil.if{w.fadeIn(fadeIn)};
-		text.notNil.if{this.title(w,text)};
-		{w.fade(fade)}.defer(wait);
-		^w}
+	preview { |markerName wait=5 fade=0 monitor text fadeIn| 
+
+          muted.not.if{
+            var w=this.plot(markerName,monitor);
+
+            fadeIn.notNil.if{w.fadeIn(fadeIn)};
+
+            text.notNil.if{this.title(w,text)};
+
+            {w.fade(fade)}.defer(wait);
+
+            ^w
+          }
+              }
 
         current {
-          super.current = this
+          Stills.current = this
         }
 
 	set {|markerName seconds| 

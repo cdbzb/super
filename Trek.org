@@ -1,14 +1,14 @@
-* coding [0/4]
- 
- 
-* TODO get rid of the whole theExtreme thing - remove from being automatically used
-* TODO static IP for the macbook 
-* TODO git-fat 
-  
+
+* Work for hire
+** Jacks film 
+   delivery around year end
+   SCHEDULED<2021-10-25 Mon> 
+** Peter Wafer ? 
+* coding [0/2]
 ** Vocal RPP Class
- 
 ***  To update the tempo....
-**** TODO * pick it up here:
+**** DONE * pick it up here:
+     CLOSED: [2021-09-19 Sun 12:35]
     <2021-09-19 Sun> 
      * these could all be combined into a single script
        * selectAllItems
@@ -16,10 +16,12 @@
        * Reaper.updateTempo
        * save
      * and that's it!!
-  
-** TODO more modular RPP builder
-** TODO Stills [2/5]
+** more modular RPP builder
+** TODO Stills [2/6]
     - [ ] make Stills toggleable at the Song level
+         try using //Stills tag like with RPP ??
+         there are some good things about using a Class though - we can alter the monitor etc
+         of course we can do that in the Stills class I think
     - [ ] global monitor selection
     - [X] (how do I know which machine? in /etc ?) *Platform.machine
     - [ ] make Stills exportable !!
@@ -41,6 +43,8 @@
 *** first gotta get the vocal thing going!!
 *** Blog posts or "how  I did it videos        
     - [ ] work out a list of subjects
+**  demo vid ideas 
+*** write a quick song and reflow for vocal emphasis
 * TODO mu4e settings - crib from old file
 * Vacations 
 ** Amtrak Santa Fe
@@ -56,7 +60,7 @@
 
 * Composition
 ** Work on Sickbay
-   SCHEDULED: <2021-09-15 Wed> 
+   SCHEDULED: <2021-09-18 Sat> 
 * excercize! 
 ** TODO Push up!
  <2021-09-15 Wed 10:00 +1d>

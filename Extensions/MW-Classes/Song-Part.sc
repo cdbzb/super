@@ -214,13 +214,16 @@ Song {
 		// Load from file, otherwise fall back to archive
 		File.exists(dursFolder +/+ key).if{
 			lyricsToDurs = Object.readArchive(dursFolder +/+ key)
-		}{
-			\falling_back_to_durs_file.postln;
-		Archive.read(dursFile);
-		Archive.at((key++\lyricsToDurs).asSymbol).isNil.not.if(
-				{lyricsToDurs = Archive.at((key++\lyricsToDurs).asSymbol)},
-				{lyricsToDurs= Dictionary.new(128)}
-		)
+		} {
+            "checking durs file".postln;
+            Archive.read(dursFile);
+            Archive.at((key++\lyricsToDurs).asSymbol).isNil.not.if {
+                "loading from archive".postln;
+                lyricsToDurs = Archive.at((key++\lyricsToDurs).asSymbol)
+            } {
+                lyricsToDurs= Dictionary.new(128);
+                this.writeLyricDurationFile;
+                }
 		}
 	}
 
@@ -244,7 +247,7 @@ Song {
 	}
 
 	save { 
-		File.exists(dursFolder +/+ key).if{
+        File.exists(dursFolder +/+ key).if{
 			this.writeLyricDurationFile;
 			'file written'.postln;
 		} {
@@ -540,6 +543,9 @@ Song {
 			}
 		)
 	}
+    setQuarters { | section array|
+        quarters[section] = this.parseBeats(section,array).q
+    }
 
 	playIncremental {
 		var parts = Song.currentSong.pts;
@@ -650,6 +656,14 @@ Part {
 		this.p;
 		{this.name.postln}.sched(this.calcTime);
 	}
+
+    hasStill {
+        resources.still.notNil || music.cs.contains("still") 
+    }
+
+    isTune {
+        name.asString.contains("TUNE")
+    }
 	 
 	//add random stuff to resources
 	doesNotUnderstand { |selector   args|
@@ -707,7 +721,7 @@ P {
         // range is [start,end] or just [start]
         // range sets syllable automatically
         P( 
-            key: (key++"Tune").asSymbol, 
+            key: (key++"TUNE").asSymbol, 
             start: key, 
             music: {  
                 var drop, length;
@@ -731,7 +745,6 @@ P {
         ).value
     }
 }
-
 SongList {
 	classvar <> current;
 	var < arrayOfSongs;

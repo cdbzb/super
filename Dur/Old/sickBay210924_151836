@@ -22,13 +22,12 @@ o = [
 	List.prNew,  Array.prNew(7),  "ex- cel- lent bo- dy. ",  Pseq.prNew,  
 	List.prNew,  Array.prNew(5),  "(beat) (formula) Sar- gon's for- mu- la...",  Pseq.prNew,  
 	List.prNew,  Array.prNew(7),  "/*MULHALL:*/ Beloved. What will that word mean to a machine? ",  Pseq.prNew,  
-	List.prNew,  Array.prNew(12),  "(they kiss, then Kirk falls gently to the floor) Sargon, what is it? ",  Pseq.prNew,  
-	Array.prNew(2),  "There I feel be- tter al- rea- dy",  Pseq.prNew,  List.prNew,  
-	Array.prNew(10)
+	List.prNew,  Array.prNew(12),  "There I feel be- tter al- rea- dy",  Pseq.prNew,  
+	List.prNew,  Array.prNew(10)
 ];
 p = [
 	// Dictionary
-	0, [ array: o[1],  size: 24 ],  
+	0, [ array: o[1],  size: 23 ],  
 	// Array
 	1, [ nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -145,10 +144,10 @@ p = [
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  o[90],  o[91],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		o[93],  o[94],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		o[90],  o[91],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -290,8 +289,8 @@ p = [
 	// List
 	60, [ array: o[61] ],  
 	// Array
-	61, [ 0.406,  0.388,  0.398,  0.44,  
-		0.588,  1.964 ],  
+	61, [ 0.422,  0.421,  0.453,  0.469,  
+		0.56,  21.493 ],  
 	// Pseq
 	63, [ list: o[64],  repeats: 1,  
 		offset: 0 ],  
@@ -352,15 +351,10 @@ p = [
 	// Pseq
 	91, [ list: o[92],  repeats: 1,  
 		offset: 0 ],  
-	// Array
-	92, [ 3,  3 ],  
-	// Pseq
-	94, [ list: o[95],  repeats: 1,  
-		offset: 0 ],  
 	// List
-	95, [ array: o[96] ],  
+	92, [ array: o[93] ],  
 	// Array
-	96, [ 0.696,  0.297,  0.246,  0.291,  
+	93, [ 0.696,  0.297,  0.246,  0.291,  
 		0.17,  0.199,  0.307,  0.457,  
 		0.762,  1.912 ]
 ];

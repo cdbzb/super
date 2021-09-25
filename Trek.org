@@ -4,7 +4,10 @@
    delivery around year end
    SCHEDULED<2021-10-25 Mon> 
 ** Peter Wafer ? 
-* coding [0/2]
+* coding [2/6]
+** TODO does Song include the ~recorder function? it should!!
+** TODO why does my vimscript to launch recorder only sometimes work? 
+** TODO buy REAPER 
 ** Vocal RPP Class
 ***  To update the tempo....
 **** DONE * pick it up here:
@@ -30,15 +33,20 @@
  SCHEDULED  <2021-09-16 Thu> 
     - [ ] OR just generalize some of the existing ?? to make sort of "big" synths
 * presentation ideas 
+** Idea: make a method of song that renders out a section:
+   - still
+   - music
+**    - invoke ffmpeg to make a short .mov
+   [[http://trac.ffmpeg.org/wiki/Slideshow][ffmpeg wiki]]
+*** TODO get superuser animated GIF example from email!
+    
+    alternative is to use Reaper :(
+    https://superuser.com/questions/833232/create-video-with-5-images-with-fadein-out-effect-in-ffmpeg/834035#834035 
+
+*** or check out melt [[http://mltframework.org][mlt]]
 **   - individual memes plus music for posting?
 *** TODO try a few?? 
     SCHEDULED:<2021-10-01 Fri> 
-    :LOGBOOK:
-    CLOCK: [2021-09-15 Wed 10:44]--[2021-09-15 Wed 11:09] =>  0:25
-    CLOCK: [2021-09-15 Wed 09:48]--[2021-09-15 Wed 10:13] =>  0:25
-    CLOCK: [2021-09-15 Wed 09:17]--[2021-09-15 Wed 09:42] =>  0:25
-    CLOCK: [2021-09-15 Wed 08:46]--[2021-09-15 Wed 09:11] =>  0:25
-    :END:
     maybe Sulu up top?
 *** first gotta get the vocal thing going!!
 *** Blog posts or "how  I did it videos        
@@ -61,6 +69,7 @@
 * Composition
 ** Work on Sickbay
    SCHEDULED: <2021-09-18 Sat> 
+** check out what video is available for Sargon's death 
 * excercize! 
 ** TODO Push up!
  <2021-09-15 Wed 10:00 +1d>
@@ -72,3 +81,5 @@
 * Tasks
 ** TODO Walgreens
   <2021-09-17 Fri> 
+* instructions
+* mlt

@@ -32,6 +32,11 @@
 	)
 )
 if
+//reverse!!
+MIDIClient.init;
+MIDIdef.noteOn(\noteon,{|vel num| ~midi.notes[num]=Synth(\default,[\freq,(128-num).midicps])});
+	MIDIdef.noteOff(\noteoff,{|vel num| ~midi.notes[num].free});
+/////////
 s.boot;
 (nil>0);
 ~midi.item;

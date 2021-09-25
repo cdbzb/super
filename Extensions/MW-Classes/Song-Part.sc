@@ -729,12 +729,12 @@ P {
 
                 range.notNil.if{
                     drop = range[0];
+                    pbind=pbind.drop(drop) ;
                     range[1].notNil.if {
                         length = range[1] - range[0] + 1;
                         pbind=pbind.fin(length) ;
                     };
-                    pbind=pbind.drop(drop) ;
-                    (drop > 0).if{ syl = drop - 1 };
+                    (drop > 0).if{ syl = drop - 1; \syl.post;syl.postln };
                 };
 
                 function.isNil.if{function={|i|i}};

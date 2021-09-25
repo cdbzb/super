@@ -1,7 +1,7 @@
 (
 /// line 326
 Monitor.new().play(2,2,0,2);
-~stills=Stills("/Users/michael/trek/BySection/media/return to tomorrow.mov").current;
+~stills.isNil.if{~stills=Stills("/Users/michael/trek/BySection/media/return to tomorrow.mov").current};
 ~speaker ? ~speaker=Library.at(\functions,\prep).("/Users/michael/tank/IR/Saane/Speakers_&_Telephones/Very_small_speaker_mono.wav");
 Song.dursFile_("/Users/michael/tank/super/theExtreme_Sep18");
 ~sickBay=Song(\sickBay,[]).current;
@@ -20,6 +20,7 @@ P(\mcCoy0,start:0,syl:1,music: {
 				midinote: ~sickBay.tune[0].list [ 2..5 ].q,dur:~sickBay.durs[0].list[ 2..5 ].q
 		].pp;
 }); 
+//TODO Sargon should sound sick!
 ["Sar- gon here, i'm in your deck six brief- ing room","b- g- c  e- f g- a- b- b g# d "].addLine; //1
 ~justTheTune.('Sar- gon here');
 ["(enter Thalassa)","e5"].addLine; //f maj 7 //2
@@ -216,23 +217,148 @@ P(\dyads,start:\torment,music:{|p b e|
 				[7,\_, -4,-5]
 		],b.parse([0.5,[0.5,1],2,4])).df(\c,scale:\mixolydian).pp
 });
-["/*MULHALL:*/ Beloved. What will that word mean to a machine? ","r"].addLine;
-["/*KIRK:*/ Our thoughts will intertwine. ","r"].addLine;
-["/*MULHALL:*/ Will they, husband? ","r"].addLine;
-[ "Will they intertwine like this? ","r" ].addLine;
-P.still(\embrace,start:'Will they',timecode:3914.542.seconds,music:{|p b e| 
-		e.still.value()
+// Idea C min or Ab ala Waldstein?
+["/*MULHALL:*/ Beloved. What will that word mean to a machine? ",[1,6,5].dm(\a)++[-7,1,5,3,-7,1,2,4,6].dm('c#')].addLine;
+P.tune('to a machine');
+P.tune(\mean,{|i|Pbindf(i,\out,Effect(EchoNone.ar(_,0.4,0.3,4)).bus.index)},range:[0,2]);
+P(\chord,start:\machine,syl:10,lag:-0.05,music:{|p b e| 
+	(
+		freq:[1,3,4.5,7].df(\c,scale:\minor),
+		instrument:\sawSynthSustain,amp:0.02,
+		strum:0.1,
+		dur:b.last-0.3,
+		out:Effect(TwoTube.ar(_,0.1,0.95,345,1430)).bus.index
+
+
+	).play
 });
-[ "Can two minds press close like this?","r"].addLine; 
+
+
+["/*KIRK:*/ Our thoughts boom boom boom boom will intertwine. (boom boom boom boom) ",[1,7,-1,-2,-3,-4,6,7,11,3, 1,2,3,4].dm(\d,scale:\dorian)].addLine;
+P.tune(\thoughts);
+//idea - Will they - Will they
+["/*MULHALL:*/ Will they, husband?  Will they intertwine like this? ",[4,1,3,2].dm(\b,octave:5) ++ [-7,1,4,2,5,5.5,5,4,7].dm('c#')].addLine;
+P.tune('Will they');
+P(\bass_stab,start:'Will they',music:{|p b e| 
+		[ instrument:\sawTw,
+				freq:[1].df('c#',octave:[5,6,7]) ++ [1,4].df('b-',octave:[3,4,5]) => _.q,
+				amp:0.05,
+				dur:b.parse([2,2]).q,
+				wet:0,
+
+		].p.play
+});
+
+P(\extra_notes,start:'Will they',syl:11,music:{|p b e| 
+		[
+				freq:[[1,3,7],[2,4,7],[3,5,7],[-7,2,4,7]].df(\d,scale:\mixolydian).q,
+				dur: b.drop(1) ++ p.durs[\press].list[ 0..3 ] + [0,0,0,1] =>_.q,
+				instrument:\sawSynth,
+				rel:[3,3,3,6].q,
+				att:[3,3,3,6]/10=>_.q,
+				amp:0.08
+
+		].pp;
+});
+
+P.tune('Will they int', {|i| 
+		Pbindf(i,\instrument,\stringyy,\amp,0.2)
+		=>Pmul(\freq,0.5,_)},
+		//TODO Why is syl not set automagically??
+		syl:3,range:[4,13]
+);
+P(\this,start:'Will they',syl:11,music:{|p b e| 
+		(
+				instrument:\wash,
+				freq:[1,3,5,7].df(\d,scale:\mixolydian),
+				dur:2
+		).play
+});
+P.still(\embrace,start:'Will they',syl:3,timecode:3914.542.seconds,music:{|p b e| 
+		{e.still.value(wait:b.sum)}.defer
+});
+P(\bass,start:'Will they',syl:11,music:{|p b e| 
+		[
+				freq:[1,2,3,4].df(\d,octave:3).q,
+				amp:0.05,
+				instrument:\sawSynthSustain,
+				dur: b.drop(1) ++ p.durs[\press].list[ 0..3 ] =>_.q,
+				legato:1,
+				lagTime:0.1
+		].pma(\sawSynthSustain).play;
+				
+});
+[ "Can two minds press close like this?",[5,6,7,6.5,6.5,6,11.5].dm(\c)].addLine; 
+P.tune(\press);
+P(\this,start:\press,syl:5,music:{|p b e| 
+		(
+				instrument:\wash,
+				freq:[-5,1,5,3].df(\a),
+				dur:2
+		).play
+});
 P.still(\embrace,start:'press close',timecode:3915.542.seconds,music:{|p b e| e.still.value()});
-["Can robot lips do this?" ,"r" ].addLine;
-P.still(\embrace,start:'robot lips',timecode:3920.5.seconds,music:{|p b e| e.still.value()});
-[ "(they kiss, then Kirk falls gently to the floor) Sargon, what is it? ","r"].addLine;
-P.still(\kiss,start:'kiss',timecode:3924.seconds,music:{|p b e| e.still.value()});
-["(McCoy and Chapel enter.) ","r"].addLine;
+["Can robot lips do this?" , [3,5,4,3,2,11].dm(\e) ].addLine;
+P.tune(\robot);
+P(\this,start:\robot,syl:4,music:{|p b e| 
+		(
+				instrument:\wash,
+				freq:[1,3,5,7].df(\f),
+				dur:b.sum,
+				legato:0.8
+		).play
+});
+P.still(\embrace,start:'robot lips',timecode:3920.5.seconds,music:{|p b e| e.still.value(wait:b.sum-2,fade:2)});
+[ "(they kiss, then Kirk falls gently to the floor) Sargon, what is it? ","r",[3,3]].addLine;
+P.still(\kiss,start:'kiss',
+		timecode:3926.seconds
+		//timecode:3927.5.seconds
+		,music:{|p b e| e.still.value(wait:b[0])});
+P(\chord,start:\kiss,music:{|p b e| 
+	(
+		freq: [-11,11,13,16].df('c#'),
+		instrument:\wash,
+		dur: b[0]
+	).play
+});
+P.still(\falling, start:\kiss, syl:0,  timecode: 3937.5.seconds,  music: {|p b e|
+		e.still.value(
+				//b.sum.wait
+				wait:b[1]
+		)
+});
+["(McCoy and Chapel enter.) ","r",[5,3]].addLine;
+
+P.still(\mcCoyEnters, start:\Chapel,timecode: 3940.5.seconds, music:{|p b e|
+		e.still.value(wait:b.sum);
+		Synth(\door,[])
+});
 ["hypo","r"].addLine;
-["/*MULHALL:*/ Doctor, help him! ","r"].addLine;
-["/*MCCOY:*/ He's dead.","r"].addLine;
+P.still(\sensor, start:\hypo, timecode:3947.seconds, music:{ |p b e|
+		e.still.value(
+				wait:b.sum
+		)
+});
+P.still(\hypo, start:\hypo,syl:0, timecode:3949.5.seconds, music:{ |p b e|
+		e.still.value(
+				wait:b.sum
+		)
+});
+["/*MULHALL:*/ Doctor, help him! ","r",[2]].addLine;
+P.still(\mulhall, start:'help him', timecode:3953.0.seconds, music:{ |p b e|
+		e.still.value(
+				wait:b.sum,
+				text:["Help","him!"]
+		)
+});
+["/*MCCOY:*/ (boom) He's dead.","r",[1,2]].addLine;
+
+P.still(\mcCoy,syl:0, start:\dead, timecode:4003.0.seconds, music:{ |p b e|
+		e.still.value(
+				wait:b.sum,
+				text:["He's","dead"]
+		)
+});
 )
 (
 

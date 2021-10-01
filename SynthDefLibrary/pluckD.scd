@@ -3,7 +3,7 @@
 		sig=CrossoverDistortion.ar(sig,\drive.kr(0.9),\smooth.kr(0.1));
 		sig=Phaser2.ar(sig,0.5,0.15,rq:1);
 		Out.ar(\out.ir,  sig*amp);
-	}).add;
+	}).add.tag(\pluck);
 
 	SynthDef(\pluckDEnv,{|freq=400 amp=1 release=3|
 		var envelope= Env.cutoff(release).kr(2,gate:\gate.kr(1));
@@ -11,5 +11,5 @@
 		sig=CrossoverDistortion.ar(sig,\drive.kr(0.9),\smooth.kr(0.1));
 		sig=Phaser2.ar(sig,0.5,0.15,rq:1);
 		Out.ar(\out.kr,  sig*amp*envelope);
-	}).add;
+	}).add.tag(\pluck);
 

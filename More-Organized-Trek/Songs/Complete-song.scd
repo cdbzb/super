@@ -31,25 +31,13 @@ P(\bassnotes,start:0,syl:3,music:
 				(note:1-24,amp:0.6,dur:5,sustain:2)
 			])
 );
-	SynthDef(\phaser ,{|out=0 depth=0.5 fb=0.3 rate=0.03 gate=1| //{{{
-		XOut.ar(
-			out,
-			//Env.cutoff(6).kr(gate),
-			Env.linen(0,8.5,6).kr(doneAction:2),
-			Phaser2.ar(In.ar(out,2)+
-			PlateReverb.ar(
-				In.ar(out,2),mix:Env.linen(0,2.5,6).kr)
-				,rate:rate,fb:fb,depth:depth
-			)
-		)
-	}).add;//}}}
 P(\chord0,start:0,syl:3,music://{{{
 	Pfx(
 		Pseq([
 			(note:[1,8,13]-24,instrument:\sawSynth,release:4,strum:0.03,dur:~complete.durs[0].list[4]),
 			(note:[1,8,13]-24,instrument:\sawSynth,release:5,strum:0.03,dur:11),
 			(note:\r,dur:12),
-		]),\phaser
+		]),\phase_verb
 	)
 );//}}}
 P(\pad0,start:0,music:
@@ -80,14 +68,6 @@ P(\helloImage,start:3,music:
 P(\helloChord,start:3,music:
 	(instrument:\test,midinote:~panNotes.("<d4 f# a c#>").flatten,strum:0.03,amp:0.4)
 );
-SynthDef( \phaser2,{//{{{
-	|out=5 depth=0.5 fb=0.3 rate=0.03|
-	ReplaceOut.ar(
-		out,Phaser2.ar(In.ar(out,1)+
-		PlateReverb.ar( In.ar(out,1),mix:Env.linen(0,2.5,6).kr)
-		,rate:rate,fb:fb,depth:depth))
-	}
-).add;
 ~helloTempo=1/~complete.durs[3].list.mean;
 ~helloTemp2=1/(~complete.durs[4].list[0..6].sum/5*2);
 P(\helloSequence,start:3,music:
@@ -158,7 +138,7 @@ P(\helloSequence,start:3,music:
 									\octave,Pser(4!5++(5!5)++(6!5)++(7!5),42),
 									\amp, Pseq(( 0.1!5 )++(0.09!5)++(0.08!5)++Pseries(0.07,-0.005))
 								).pad,
-								\phaser2
+								\phase_verb2
 							),
 							//~helloBass1,
 							//~helloBass2,
@@ -197,13 +177,6 @@ P(\bass5,start:5,syl:4,music:
 );
 ["half a million years- r r ","f5 g f e  e d c# c#"].addLine;//6
 ~phrase6quarter=~complete.durs[6].list.[0..6].sum/6;
- SynthDef(\harp, { |gate=1 out=0 freq = 400|
-	var in=PinkNoise.ar(1);
-	var sig=Pluck.ar(in: in,  gate: gate,  maxdelaytime: 0.02,  delaytime: 1/freq,  decaytime: 10,  coef: 0.5,  mul: 0.7,  add: 0);
-	Out.ar(out,sig);
-	DetectSilence.ar(sig,doneAction:2);
-},  rates: nil,  prependArgs: nil,  variants: nil,  metadata: nil
-).add;
 P(\bass6,start:6,music:
 	Pseq([
 		(note:5-24,dur:~phrase6quarter*3,amp:0.5),
@@ -211,12 +184,6 @@ P(\bass6,start:6,music:
 		(note:7-24,dur:~phrase6quarter*4,amp:0.5),
 	])
 );
- SynthDef(\yowbass, {|freq=400 amp gate=1 dur=1|
-	var sig=Formant.ar(freq,  formfreq: Line.kr(3060,00,dur),  bwfreq: 880,  mul: 1,  add: 0).distort;
-	var env=Env.asr(0,1,1,1.5).kr(gate:gate,doneAction:2);
-	Out.ar(0,sig*env*amp!2)}
-	,  rates: nil,  prependArgs: nil,  variants: nil,  metadata: nil
-).add;
 ~durs6=~complete.durs[6].list;
 P(\yow6,start:6,music:
 	Pbind(\instrument,\yowbass,
@@ -225,14 +192,6 @@ P(\yow6,start:6,music:
 		\amp,0.03,
 	),
 );
- SynthDef(\stab, {|out=0 freq=400 width=0.2 gate=1 amp=1|
-	var sig=Pulse.ar(freq,width);
-	var env=Env.asr(0.06,0.1,0.4).kr(gate:gate,doneAction:2);
-	var fenv=Env.linen(0.0,0.1,0.7).kr(gate:gate)*freq*5;
-	sig=RLPF.ar(sig,fenv,rq: 1);
-	Out.ar(out, sig*env*amp);
-},  rates: nil,  prependArgs: nil,  variants: nil,  metadata: nil
-).add;
 P(\keys6,start:6,music:
 	Pbind(
 		\instrument,\harp,

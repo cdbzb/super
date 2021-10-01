@@ -19,7 +19,8 @@ SynthDef(\visual_aaa, { |out|
 	var vib = Vibrato.ar(\freq.kr(400,\flag.kr(0.1)),
 	\rate.kr(6,0.1),
 	\width.kr(0.005,0.1));
-	var sig = Saw.ar(vib,\amp.kr(0.1));
+	var sig = Saw.ar(vib,\amp.kr(0.1))
+	* Env.asr(\attack.kr(0),1,\release.kr(1)).kr(2,gate:\gate.kr(1));
 	Out.ar(out,Pan2.ar(sig,\pan.kr(0),\amp.kr));
 }).add.tag(\vox);
 
@@ -36,8 +37,9 @@ SynthDef(\visual_twotube,{arg delay1=1000, delay2=500, k=0.0, loss=0.999, dur=0.
 }).add.tag(\sfx);
 
 SynthDef(\visual_vowel, {|freq = 420|
-	Out.ar([0,1],
+	Out.ar([0,1]+\out.kr(0),
 	Formants.ar(Vibrato.kr(freq.lag(0.1)), Vowel(\a).addControls(lag: 1)) * 0.1 * \amp.kr(1)
+	* Env.asr(\attack.kr(0),1,\release.kr(1)).kr(2,gate:\gate.kr(1));
 ) }).add.tag(\vox);
 
 )

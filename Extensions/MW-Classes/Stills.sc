@@ -7,86 +7,89 @@
 //)
 Stills {
 	classvar <>stillsLocation = "/tmp/";
-        classvar <>current;
+	classvar <>current;
+	classvar <>muted=false;
 	var <>file;
 	var <>markers;
 	var <>fade;
 	var <>font;
 	var <>window;
-        var <>stills;
-        var muted=false;
+	var <>stills;
 
 	*new {|movie| ^super.new.init(movie)}
 
-        *reaper {
+	*reaper {
 		("open "++ "/Users/michael/trek/video for stills etc/video for stills etc.RPP".escapeChar(Char.space)).unixCmd
-        }
+	}
 
 	init {|movie| file=movie; markers=()  }
 
 	//monitor -1 for left 0 for center default is -1
-	preview { |markerName wait=5 fade=0 monitor text fadeIn| 
+	preview { |markerName wait=5 fade=0 monitor=0 text fadeIn| 
 
-          //muted.not.if{
-            var w=this.plot(markerName,monitor);
+		var w;
 
-            fadeIn.notNil.if{w.fadeIn(fadeIn)};
+		muted.not.if{
 
-            text.notNil.if{this.title(w,text)};
+			w=this.plot(markerName,monitor);
 
-            {w.fade(fade)}.defer(wait);
+			fadeIn.notNil.if{w.fadeIn(fadeIn)};
 
-            ^w
-          //}
-              }
+			text.notNil.if{this.title(w,text)};
 
-        current {
-          Stills.current = this
-        }
+			{w.fade(fade)}.defer(wait);
+
+			^w
+		}
+	}
+
+	current {
+		Stills.current = this
+	}
 
 	set {|markerName seconds| 
 		( markers.at(markerName) == seconds ).not.if {
-                  try{
-                    markers.put(markerName,seconds);
-                    this.writeImage(seconds)
-                  }
+			try{
+				markers.put(markerName,seconds);
+				this.writeImage(seconds)
+			}
 		}
 	}
 
 	writeImage { |seconds |
 		(
-                  "ffmpeg -y -ss "++ seconds.asString++" -i "++"'"++file.asSymbol++"'"++ "  -vframes 1  -f image2 "++stillsLocation++seconds.asString++".png ").systemCmd;
-                  ("ffmpeg -ss "++ seconds.asString++" -i "++"'"++file.asSymbol++"'"++ "  -vframes 1  -f image2 "++stillsLocation++seconds.asString++".png ").postln
+			"ffmpeg -y -ss "++ seconds.asString++" -i "++"'"++file.asSymbol++"'"++ "  -vframes 1  -f image2 "++stillsLocation++seconds.asString++".png ").systemCmd;
+			("ffmpeg -ss "++ seconds.asString++" -i "++"'"++file.asSymbol++"'"++ "  -vframes 1  -f image2 "++stillsLocation++seconds.asString++".png ").postln
 		}
 
-	viewer {
-		("open "++"'"++this.file++"'").unixCmd
-	}
+		viewer {
+			("open "++"'"++this.file++"'").unixCmd
+		}
 
 
-        image {|symbol| 
-          var img;
-          var seconds = markers.at(symbol);
-          var fileName = stillsLocation++seconds.asString++".png";
-          try{ img = Image.open(fileName) }
-          ^img
-	}
+		image {|symbol| 
+			var img;
+			var seconds = markers.at(symbol);
+			var fileName = stillsLocation++seconds.asString++".png";
+			try{ img = Image.open(fileName) }
+			^img
+		}
 
-	//set marker or retrieve image
-	mark { |markerName seconds |
-		var image;
-		seconds.isNil.if{image=this.image(markerName);^image}{this.set(markerName,seconds)}
-	}
-	still { | key wait=5 fade=0 monitor text|
-		^Still.new(this,key,wait,fade,monitor,text)
-	}
+		//set marker or retrieve image
+		mark { |markerName seconds |
+			var image;
+			seconds.isNil.if{image=this.image(markerName);^image}{this.set(markerName,seconds)}
+		}
+		still { | key wait=5 fade=0 monitor text|
+			^Still.new(this,key,wait,fade,monitor,text)
+		}
 
-        at {|seconds|
-                var fileName = stillsLocation++seconds.asString++".png";
-                ^Image.open(fileName)
-        }
+		at {|seconds|
+			var fileName = stillsLocation++seconds.asString++".png";
+			^Image.open(fileName)
+		}
 
-	plot{|markerName monitor=(-1)|
+		plot{|markerName monitor=(-1)|
 		var image=this.mark(markerName);
 		var w;
 		try{
@@ -131,8 +134,8 @@ Stills {
 
 Still {
   var <>stills,<>image;
-	var <>markerName,<>wait,<>fade,fadeIn,<>monitor;
-        var <>window,<>textUpper,<>textLower,timecode,<text;
+	var <>markerName,<>wait,<>fade,<>fadeIn,<>monitor;
+        var <>window,<>textUpper,<>textLower,timecode,<>text;
 
 	*new{|markerName timecode wait=5 fade=0 monitor text fadeIn stills  | ^super.new.init(markerName,timecode,wait,fade,monitor,text,fadeIn,stills)}
 
@@ -148,17 +151,19 @@ Still {
         }
 
         play { 
-          { 
-            window = stills.preview(markerName, wait,fade, monitor,fadeIn:fadeIn);
-            this.title(["",""]);
-          }.defer; 
-          {
-            this.text_(text) 
-          }.defer
+			Stills.muted.not.if{
+				{ 
+					window = stills.preview(markerName, wait,fade, monitor,fadeIn:fadeIn);
+					this.title(["",""]);
+					this.setText(text) 
+				}.defer; 
+			}
+          //{
+          //}.defer
           ^this 
         }
 
-        text_ { 
+        setText { 
           |strings|
           text = strings;
             ( strings.size==1 ).if{
@@ -221,6 +226,16 @@ Still {
             .font_(Font(\helvetica,90,bold:true))
           }
 	}
+	value { //for backward comp
+		|monitor=0 wait fade fadeIn text|
+		monitor.notNil.if{ this.monitor = monitor};
+		wait.notNil.if{ this.wait = wait};
+		fade.notNil.if{ this.fade = fade};
+		fadeIn.notNil.if{ this.fadeIn = fadeIn};
+		text.notNil.if{ this.text = text};
+		this.play
+	}
+
 }
 
 + Window {

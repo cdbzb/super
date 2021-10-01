@@ -21,14 +21,16 @@
      * and that's it!!
 ** more modular RPP builder
 ** TODO Stills [2/6]
+    - [ ] Window.availableBounds!! check this downstairs!!!
+     <2021-09-28 Tue> 
     - [ ] make Stills toggleable at the Song level
-         try using //Stills tag like with RPP ??
-         there are some good things about using a Class though - we can alter the monitor etc
-         of course we can do that in the Stills class I think
+      use .hasStill method
+      question: toggle holds after reloading??
+      yes->:w
+       ..store the state in Song just like "last section played"
     - [ ] global monitor selection
     - [X] (how do I know which machine? in /etc ?) *Platform.machine
     - [ ] make Stills exportable !!
-    - [X] explore making a Still class for individual still (could then have a .export method)
 ** TODO copy more synthDefs to the library!
  SCHEDULED  <2021-09-16 Thu> 
     - [ ] OR just generalize some of the existing ?? to make sort of "big" synths
@@ -68,8 +70,8 @@
 
 * Composition
 ** Work on Sickbay
-   SCHEDULED: <2021-09-18 Sat> 
-** check out what video is available for Sargon's death 
+** flow the rhythms for end of Sickbay per ReMarkable
+  <2021-09-26 Sun> 
 * excercize! 
 ** TODO Push up!
  <2021-09-15 Wed 10:00 +1d>
@@ -79,7 +81,12 @@
   <2021-09-18 Sat +1w> 
   <2021-09-19 Sun +1w> 
 * Tasks
-** TODO Walgreens
+** DONE Walgreens
+   CLOSED: [2021-09-25 Sat 07:53]
   <2021-09-17 Fri> 
 * instructions
 * mlt
+* Meta 
+** TODO insert cursor for emacs
+** TODO org capture templates 
+** TODO merge "notes" and Trek ?

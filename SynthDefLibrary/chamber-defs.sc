@@ -11,7 +11,7 @@
 
 
 	{Pulse.ar(\freq.kr(300),0.1,\amp.kr(0.1))* Env.perc(0.01,1).kr(2,gate:\gate.kr(1))=>Out.ar(\out.kr(0),_)}
-        =>SynthDef(\twang,_)=>_.add =>_.tag(\key,\\pluck);
+        =>SynthDef(\twang,_)=>_.add =>_.tag(\key,\pluck);
 
 	SynthDef(\swell20,{
 		var freq = \freq.kr(300);

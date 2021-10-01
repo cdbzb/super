@@ -30,6 +30,14 @@ SynthDef($1,\{|out wet=1 $3|
 ).add;
 endsnippet
 
+snippet still
+P.still( $2, start: $3, timecode:$1, music: { |p b e|
+	e.still.value(
+		wait: $4,
+	);
+});
+endsnippet
+
 snippet freq "wrap in freq"
 freq: ${VISUAL},
 $1
@@ -42,8 +50,8 @@ snippet wrapp
 endsnippet
 
 snippet part
-P($1,start:$2,music:{|p b e| 
-	$3
+P($2,start:$3,music:{|p b e| 
+	$1
 });
 endsnippet
 

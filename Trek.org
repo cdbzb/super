@@ -1,4 +1,45 @@
 
+* Website!
+ 
+**  learnings!
+   browser-sync start --server --files .
+   ffmpeg -i <input>
+    -vcodec -libx265
+    -crf(20-30 lower is nicer)
+    -pix_fmt yuv420p 
+    -hvc 1
+
+** TODO add missing itemses
+   - Beckett opera
+   - poorfarmweb
+
+   files are here:
+   [[/Users/michael/tank/poorfarmweb/]]
+   inside /src/small directory
+   movies are front and flitter
+
+   - Enka
+   - Trek
+   - Fade on Family Movie and docs
+    [[/Volumes/michael/tank/Fade on Family/PRB Moca Video/.][vids live here]]
+     full size:
+    [[/Volumes/michael/tank/Fade on Family/PRB Moca Video/Composite12-18.mov]]   
+    compressed (40M)
+    [[/Volumes/michael/tank/Fade on Family/PRB Moca Video/Composite-crf18-hvc1.mp4]]
+    [[https://www.latimes.com/archives/la-xpm-2005-aug-29-et-mak29-story.html][LA Times]]
+   
+*** OClllTODO get bigger media and put it somewhere! 
+*** TODO start writing some contents! 
+*** Question - worth doing siloed stuffses? tie in to social media mebbe
+**** TODO Sound the kids out about this 
+*** TODO rationalize online services!!!
+    - git
+    - google
+    - dropbox
+    - godaddy
+     
+     
+     
 * Work for hire
 ** Jacks film 
    delivery around year end

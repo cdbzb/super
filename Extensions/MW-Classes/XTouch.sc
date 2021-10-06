@@ -22,8 +22,14 @@ XTouch : XMIDIController {
 			mappings.pairsDo{|function label| 
 				var midinote = labels.at(label);
 				function.cs.post;' '.post;midinote.postln;
-				MIDIFunc.noteOn(function,midinote,srcID:1779843049).permanent;
+				//MIDIFunc.noteOn(function,midinote,srcID:1779843049).permanent_(true);
+				MIDIdef.noteOn(\X ++ label =>_.asSymbol, function,midinote,srcID:1779843049).permanent_(true);
 			};
+	}
+	*dump{
+		mappings.pairsDo { |function label| 
+			function.cs + label => _.postln;
+		}
 	}
 	*initClass {
 		functions=List.new();
@@ -81,6 +87,7 @@ XTouch : XMIDIController {
 				Server.default.freeMyDefaultGroup;
 				Pipe.new("pressf1.sh","w");
 			},\stop,
+			{ this.dump },\user,
 			{ defer{Window.closeAll} },\global,
 			{ defer{Server.default.meter}; },\inputs,
 			{ defer{Server.default.plotTreeL}; },\midi,
@@ -91,7 +98,6 @@ XTouch : XMIDIController {
 			{ Part.play; },'bank up',
 			{Document.current.path.load},\rewind,
 			{ Song.playSection(Song.cursor)} ,\click,
-
 			{defer{ SynthDescLib.default.browse }},'inst',
 		]);
 

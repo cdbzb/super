@@ -38,6 +38,10 @@ P.still( $2, start: $3, timecode:$1, music: { |p b e|
 });
 endsnippet
 
+snippet func "wrap curried function"
+{ |i| ${VISUAL:/_/i/} } 
+endsnippet
+
 snippet freq "wrap in freq"
 freq: ${VISUAL},
 $1
@@ -67,7 +71,7 @@ endsnippet
 
 snippet pp
 [
-$1
+	$1
 ].pp;
 endsnippet
 snippet df  "me freq" i

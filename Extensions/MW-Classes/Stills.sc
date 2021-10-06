@@ -59,7 +59,7 @@ Stills {
 	writeImage { |seconds |
 		(
 			"ffmpeg -y -ss "++ seconds.asString++" -i "++"'"++file.asSymbol++"'"++ "  -vframes 1  -f image2 "++stillsLocation++seconds.asString++".png ").systemCmd;
-			("ffmpeg -ss "++ seconds.asString++" -i "++"'"++file.asSymbol++"'"++ "  -vframes 1  -f image2 "++stillsLocation++seconds.asString++".png ").postln
+			//("ffmpeg -ss "++ seconds.asString++" -i "++"'"++file.asSymbol++"'"++ "  -vframes 1  -f image2 "++stillsLocation++seconds.asString++".png ").postln
 		}
 
 		viewer {
@@ -255,8 +255,7 @@ Still {
           var a = Env([0,alphaGoal],time).asStream;
           alpha = 0;
           fork{
-            {alpha<alphaGoal}.while
-            {
+            {alpha<alphaGoal}.while {
               { this.alpha = a.value; alpha = a.value }.defer;
               fps.reciprocal.wait;
             }

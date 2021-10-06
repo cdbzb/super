@@ -1,23 +1,29 @@
 var o, p;
 o = [
 	Dictionary.prNew,  Array.prNew(512),  "Do I list one death or two? ",  Pseq.prNew,  
-	List.prNew,  Array.prNew(7),  "Medical Log. (boom) Stardate 4770.3. ",  Pseq.prNew,  
-	List.prNew,  Array.prNew(15),  "Medical Log. Stardate 4770.3. ",  Pseq.prNew,  
-	List.prNew,  Array.prNew(15),  "// into which it was transferred earlier.",  Pseq.prNew,  
-	List.prNew,  Array.prNew(10),  "// it had been transferred into earlier.",  Pseq.prNew,  
-	List.prNew,  Array.prNew(10),  "His body is, but his ",  Pseq.prNew,  
-	List.prNew,  Array.prNew(6),  "Sargon is dead. ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(7),  "Medical Log. Stardate 4770.3. ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(15),  "Sargon is dead. ",  Pseq.prNew,  
 	List.prNew,  Array.prNew(10),  "Do I list one death or two? When ",  Pseq.prNew,  
-	List.prNew,  Array.prNew(7),  "Sargon is dead. But is captain Kirk dead? (boom) ",  Pseq.prNew,  
-	List.prNew,  Array.prNew(11),  "consciousness is still in the receptacle ",  Pseq.prNew,  
-	List.prNew,  Array.prNew(11)
+	List.prNew,  Array.prNew(7)
 ];
 p = [
 	// Dictionary
-	0, [ array: o[1],  size: 10 ],  
+	0, [ array: o[1],  size: 4 ],  
 	// Array
 	1, [ nil,  nil,  nil,  nil,  
 		o[2],  o[3],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -34,7 +40,6 @@ p = [
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  o[10],  o[11],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -86,19 +91,10 @@ p = [
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
+		o[10],  o[11],  nil,  nil,  
 		nil,  nil,  o[14],  o[15],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  o[18],  o[19],  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  o[22],  o[23],  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		o[26],  o[27],  nil,  nil,  
-		nil,  nil,  o[30],  o[31],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -137,11 +133,9 @@ p = [
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  o[34],  o[35],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  o[38],  o[39],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil ],  
 	// Pseq
@@ -158,80 +152,26 @@ p = [
 	// List
 	8, [ array: o[9] ],  
 	// Array
-	9, [ 0.234,  0.278,  0.24,  0.304,  
-		0.466,  0.491,  0.515,  0.486,  
-		0.23,  0.256,  0.228,  0.312,  
-		0.532,  0.589,  1.149 ],  
+	9, [ 0.244,  0.273,  0.245,  0.292,  
+		0.531,  0.512,  0.537,  0.572,  
+		0.257,  0.306,  0.31,  0.365,  
+		0.598,  0.69,  0.907 ],  
 	// Pseq
 	11, [ list: o[12],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	12, [ array: o[13] ],  
 	// Array
-	13, [ 0.244,  0.273,  0.245,  0.292,  
-		0.531,  0.512,  0.537,  0.572,  
-		0.257,  0.306,  0.31,  0.365,  
-		0.598,  0.69,  0.907 ],  
+	13, [ 0.354,  0.348,  0.378,  0.514,  
+		0.24,  0.284,  0.254,  0.33,  
+		0.544,  0.582 ],  
 	// Pseq
 	15, [ list: o[16],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	16, [ array: o[17] ],  
 	// Array
-	17, [ 0.306,  0.264,  0.312,  0.328,  
-		0.352,  0.37,  0.377,  0.371,  
-		0.282,  0.784 ],  
-	// Pseq
-	19, [ list: o[20],  repeats: 1,  
-		offset: 0 ],  
-	// List
-	20, [ array: o[21] ],  
-	// Array
-	21, [ 0.278,  0.3,  0.32,  0.346,  
-		0.35,  0.372,  0.392,  0.416,  
-		0.47,  1.244 ],  
-	// Pseq
-	23, [ list: o[24],  repeats: 1,  
-		offset: 0 ],  
-	// List
-	24, [ array: o[25] ],  
-	// Array
-	25, [ 0.346,  0.38,  0.354,  0.64,  
-		0.336,  0.396 ],  
-	// Pseq
-	27, [ list: o[28],  repeats: 1,  
-		offset: 0 ],  
-	// List
-	28, [ array: o[29] ],  
-	// Array
-	29, [ 0.354,  0.348,  0.378,  0.514,  
-		0.24,  0.284,  0.254,  0.33,  
-		0.544,  0.582 ],  
-	// Pseq
-	31, [ list: o[32],  repeats: 1,  
-		offset: 0 ],  
-	// List
-	32, [ array: o[33] ],  
-	// Array
-	33, [ 0.27,  0.312,  0.588,  1.024,  
-		0.762,  0.354,  1.14 ],  
-	// Pseq
-	35, [ list: o[36],  repeats: 1,  
-		offset: 0 ],  
-	// List
-	36, [ array: o[37] ],  
-	// Array
-	37, [ 0.332,  0.355,  0.413,  0.49,  
-		0.268,  0.266,  0.274,  0.304,  
-		0.51,  0.49,  0.278 ],  
-	// Pseq
-	39, [ list: o[40],  repeats: 1,  
-		offset: 0 ],  
-	// List
-	40, [ array: o[41] ],  
-	// Array
-	41, [ 0.343,  0.296,  0.366,  0.416,  
-		0.346,  0.34,  0.34,  0.403,  
-		0.403,  0.397,  0.379 ]
+	17, [ 0.27,  0.312,  0.588,  1.024,  
+		0.762,  0.354,  1.14 ]
 ];
 prUnarchive(o,p);

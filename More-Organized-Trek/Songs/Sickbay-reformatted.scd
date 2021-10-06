@@ -3,8 +3,13 @@
 Monitor.new().play(2,2,0,2);
 ~stills.isNil.if{~stills=Stills("/Users/michael/trek/BySection/media/return to tomorrow.mov").current};
 ~speaker ? ~speaker=Library.at(\functions,\prep).("/Users/michael/tank/IR/Saane/Speakers_&_Telephones/Very_small_speaker_mono.wav");
-Song.dursFile_("/Users/michael/tank/super/theExtreme_Sep18");
+//Song.dursFile_("/Users/michael/tank/super/theExtreme_Sep18");
 ~sickBay=Song(\sickBay,[]).current;
+
+P(\filter,start:0,music:{|p b e| 
+		p.pts.select{|i| i.still.notNil}.select{|i| i.name.asString.contains("halass") }.do{|i|i.monitor.postln}
+});
+
 ["Sick Bay.. Sick Bay, Mc- Coy","e c f# d e g#"].addLine; //0
 P(\guide0,start:0,music:~sickBay.pbind[0]=>Pfin(2,_));
 P(\kirkFace,start:0,music:{
@@ -281,7 +286,7 @@ P(\bass,start:\months,music:{|p b e|
 		].pma(\sawSynthSustain).play
 });
 ["/*MULHALL:*/ Husband. Feel the touch of my hand, husband. ", [3,2, 7,6,6,5,4,6, 5,4].dm('a-',scale:\minor)].addLine;
-P.still( \touch, start: \Feel, timecode:3854.seconds, music: { |p b e|
+P.still( \thalassa, start: \Feel, timecode:3854.seconds, music: { |p b e|
 		fork{
 				e.still.text_(["husband..."]).wait_(b.sum).monitor_(0).fade_(2).play;
 				b[0..1].sum.wait;
@@ -304,7 +309,7 @@ P(\click,start:\Feel,music:{|p b e|
 
 ["/*KIRK:*/ No, beloved. (boom) If we torment ourselves ",[6,5,3,1,-1, 4,5,11,7,6,5].dm(\f)].addLine;
 P.tune(\torment);
-P.still( \no, start: \torment, timecode:3859.seconds, music: { |p b e|
+P.still( \kirk, start: \torment, timecode:3859.seconds, music: { |p b e|
 		e.still.value(
 				wait: b.sum ,
 				text:["No, beloved","if we torment ourselves"]
@@ -320,7 +325,7 @@ P(\dyads,start:\torment,music:{|p b e|
 // Idea C min or Ab ala Waldstein?
 ["/*MULHALL:*/ Beloved. What will that word mean to a machine? ",[1,6,5].dm(\a)++[-7,1,5,3,-7,1,2,4,6].dm('c#',octave:6)].addLine;
 P.tune('to a machine');
-P.still( \beloved, start: 'to a machine', timecode: 3903.5.seconds, music: { |p b e|
+P.still( \thalassa, start: 'to a machine', timecode: 3903.5.seconds, music: { |p b e|
 		fork{
 				e.still.value(
 						wait: b.sum ,
@@ -430,8 +435,11 @@ P(\this,start:'Will they',syl:11,music:{|p b e|
 				dur:2
 		).play
 });
-P.still(\embrace,start:'Will they',syl:3,timecode:3914.542.seconds,music:{|p b e| 
-		{e.still.value(wait:b.sum,text:["will they intertwine","like this?"])}.defer
+P.still(\thalassa,start:'Will they',syl:3,timecode:3914.542.seconds,music:{|p b e| 
+		{e.still.value(
+				wait:b.sum,
+				text:["will they intertwine","like this?"]
+		)}.defer
 });
 P(\bass,start:'Will they',syl:11,music:{|p b e| 
 		[
@@ -466,7 +474,7 @@ P(\this,start:\press,syl:5,music:{|p b e|
 				dur:2
 		).play
 });
-P.still(\embrace,start:'press close',timecode:3915.542.seconds,music:{|p b e| 
+P.still(\thalassa,start:'press close',timecode:3915.542.seconds,music:{|p b e| 
 		e.still.value(
 				wait: b.sum,
 				text:["can two minds press close","like this?"]
@@ -481,7 +489,7 @@ P(\this,start:\robot,syl:4,music:{|p b e|
 				legato:0.8
 		).play
 });
-P.still(\embrace,start:'robot lips',timecode:3920.5.seconds,music:{|p b e| 
+P.still(\thalassa,start:'robot lips',timecode:3920.5.seconds,music:{|p b e| 
 		e.still.value(
 				wait:b.sum-2,
 				fade:2,
@@ -530,6 +538,26 @@ P.still( \thalassa, start: \kiss,syl:8, timecode:3939.46.seconds, music: { |p b 
 		);
 });
 ["(McCoy and Chapel enter.) ","r",[1,3]].addLine;
+P(\trill,start:\Chapel,music:{|p b e| 
+	
+	var strings = Synths(\stringyy,\freq,[7,11,7,11].df(\d),\out,(0..3));
+	var bus = Bus.control(s,3);
+	var time = 10;
+	
+	{SinOsc.kr(time.reciprocal/4)}.play(s,bus.index);
+	{LFNoise0.kr(0.4).unipolar*30}.play(s,bus.index+1);
+	//{Line.kr(0,0.3,10,doneAction:2)}.play(s,bus.index+2);
+	{Env([0,1,0]/10,[10,0.1]).kr(doneAction:1)}.play(s,bus.index+2);
+	fork{
+		0.2.wait;
+		bus.postln;
+		strings.map(\mix,bus.index);
+		strings.map(\width,bus.index+1);
+		strings.map(\amp,bus.index+2);
+		
+	};
+	//d=Synths(\wash,\freq,[7,1,-7].df(\d),\out,[(0..3)])
+});
 P.still(\mcCoyEnters, start:\Chapel,timecode: 3940.5.seconds, music:{|p b e|
 		e.still.value(wait:b.sum);
 		Synth(\door,[\amp,0.3])
@@ -544,7 +572,7 @@ P(\wibble,start:\hypo,music:{|p b e|
 			* Env.linen(0.2, b[0..2].sum-0.2-0.5,  releaseTime: 1.0,  level: 1.0,  curve: \lin).kr(2)
 		}.play;
 		b[0..2].sum.wait;
-		Synth(\door,[\amp,0.05,\out,Effect( BPF.ar(_,1000,7.5)).bus.index ])
+		Synth(\door,[\amp,0.05,\out,Effect( BPF.ar(_,1000,7.5),out:1).bus.index ])
 	}
 });
 		

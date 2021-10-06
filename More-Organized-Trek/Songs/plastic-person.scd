@@ -1,55 +1,55 @@
-/*[Laboratory]*/
-/*(There is a shiny plastic person on the table now.) */
-/*MULHALL:*/ Why pretend to work on that thing, Henoch? 
-You know you never intended to leave Spock's body. 
-/*SPOCK:*/ This is your new home, Thalassa. 
-Once occupied, I'll add female features and some texturing. 
-You no doubt want the mechanism to at least appear to be a woman. 
-(he tests its hand movement.) 
-It is ready, Thalassa. 
-/*MULHALL:*/ No! 
-/*SPOCK:*/ You have no excuse to keep the real body any longer. 
-Sargon would've required that you enter the mechanism immediately. 
-/*MULHALL:*/ I cannot live in that thing.
+[ "/*[Laboratory]*/","r" ].addLine;
+[ "/*(There is a shiny plastic person on the table now.) */","r" ].addLine;
+[ "/*MULHALL:*/ Why pretend to work on that thing, Henoch? ","r" ].addLine;
+[ "You know you never intended to leave Spock's body. ","r" ].addLine;
+[ "/*SPOCK:*/ This is your new home, Thalassa. ","r" ].addLine;
+[ "Once occupied, I'll add female features and some texturing. ","r" ].addLine;
+[ "You no doubt want the mechanism to at least appear to be a woman. ","r" ].addLine;
+[ "(he tests its hand movement.) ","r" ].addLine;
+[ "It is ready, Thalassa. ","r" ].addLine;
+[ "/*MULHALL:*/ No! ","r" ].addLine;
+[ "/*SPOCK:*/ You have no excuse to keep the real body any longer. ","r" ].addLine;
+[ "Sargon would've required that you enter the mechanism immediately. ","r" ].addLine;
+[ "/*MULHALL:*/ I cannot live in that thing.","r" ].addLine;
 
 //[Sickbay]
 
-/*MULHALL:*/ Doctor. 
-/*MCCOY:*/ Yes? 
-/*MULHALL:*/ Would you like to save your Captain Kirk? 
-/*MCCOY:*/ But you said that was impossible. 
-/*MULHALL:*/ We have many powers Sargon did not permit us to use. 
-/*He thought them too tempting to us.*/ 
-This body pleases me. I intend to keep it. 
-/*MCCOY:*/ I see. And Henoch intends to keep Spock's body, of course. 
-/*MULHALL:*/ Henoch's plans are his own affair. 
-I wish only to exist in peace as a living woman. 
-/*MCCOY:*/ If you're asking my approval 
-/*MULHALL:*/ I require only your silence. 
-Only you and I will know that 
-Doctor Mulhall has not returned to her body. 
-Isn't that worth your captain's life? 
-Doctor, we can take what we wish. 
-Neither you, this ship, nor worlds have the power to stop us. 
-/*MCCOY:*/ Neither Jim nor I can trade a body we don't own. 
-It happens to belong to a young woman. 
-/*MULHALL:*/ Who you hardly know. 
-Almost a stranger to you. 
-/*MCCOY:*/ I will not peddle flesh. I'm a physician. 
-/*MULHALL:*/ A physician? In contrast to what we are, you are a prancing, savage medicine man. 
-You dare defy one you should be on your knees worshipping? 
-I could destroy you with a single thought. 
-(McCoy is suddenly writhing in pain as he is surrounded by flames.) 
-/*MULHALL:*/ Stop! (the flames are gone) Sargon was right. The temptations within a living body are too great. Forgive me. 
-/*SARGON [OC]:*/ I am pleased, my beloved. 
-It is good you have found the truth yourself. 
-/*MULHALL:*/ Sargon? Where are you? 
-I thought you destroyed by Henoch. 
-/*SARGON:*/ I have power even Henoch does not suspect, beloved. 
-/*MULHALL:*/ Yes. Yes, I see. I understand. 
-Just as we would have placed our consciousness within robots, 
-Sargon has placed his into your vessel. 
-/*CHAPEL:*/ Doctor. 
-/*MULHALL:*/ Doctor, leave us. 
-Sargon has a plan. We have much work to do.
+[ "/*MULHALL:*/ Doctor. ","r" ].addLine;
+[ "/*MCCOY:*/ Yes? ","r" ].addLine;
+[ "/*MULHALL:*/ Would you like to save your Captain Kirk? ","r" ].addLine;
+[ "/*MCCOY:*/ But you said that was impossible. ","r" ].addLine;
+[ "/*MULHALL:*/ We have many powers Sargon did not permit us to use. ","r" ].addLine;
+[ "/*He thought them too tempting to us.*/ ","r" ].addLine;
+[ "This body pleases me. I intend to keep it. ","r" ].addLine;
+[ "/*MCCOY:*/ I see. And Henoch intends to keep Spock's body, of course. ","r" ].addLine;
+[ "/*MULHALL:*/ Henoch's plans are his own affair. ","r" ].addLine;
+[ "I wish only to exist in peace as a living woman. ","r" ].addLine;
+[ "/*MCCOY:*/ If you're asking my approval ","r" ].addLine;
+[ "/*MULHALL:*/ I require only your silence. ","r" ].addLine;
+[ "Only you and I will know that ","r" ].addLine;
+[ "Doctor Mulhall has not returned to her body. ","r" ].addLine;
+[ "Isn't that worth your captain's life? ","r" ].addLine;
+[ "Doctor, we can take what we wish. ","r" ].addLine;
+[ "Neither you, this ship, nor worlds have the power to stop us. ","r" ].addLine;
+[ "/*MCCOY:*/ Neither Jim nor I can trade a body we don't own. ","r" ].addLine;
+[ "It happens to belong to a young woman. ","r" ].addLine;
+[ "/*MULHALL:*/ Who you hardly know. ","r" ].addLine;
+[ "Almost a stranger to you. ","r" ].addLine;
+[ "/*MCCOY:*/ I will not peddle flesh. I'm a physician. ","r" ].addLine;
+[ "/*MULHALL:*/ A physician? In contrast to what we are, you are a prancing, savage medicine man. ","r" ].addLine;
+[ "You dare defy one you should be on your knees worshipping? ","r" ].addLine;
+[ "I could destroy you with a single thought. ","r" ].addLine;
+[ "(McCoy is suddenly writhing in pain as he is surrounded by flames.) ","r" ].addLine;
+[ "/*MULHALL:*/ Stop! (the flames are gone) Sargon was right. The temptations within a living body are too great. Forgive me. ","r" ].addLine;
+[ "/*SARGON [OC]:*/ I am pleased, my beloved. ","r" ].addLine;
+//[ "It is good you have found the truth yourself. ","r" ].addLine;
+[ "/*MULHALL:*/ Sargon? Where are you? ","r" ].addLine;
+[ "I thought you destroyed by Henoch. ","r" ].addLine;
+[ "/*SARGON:*/ I have power even Henoch does not suspect, beloved. ","r" ].addLine;
+[ "/*MULHALL:*/ Yes. Yes, I see. I understand. ","r" ].addLine;
+[ "Just as we would have placed our consciousness within robots, ","r" ].addLine;
+[ "Sargon has placed his into your vessel. ","r" ].addLine;
+[ "/*CHAPEL:*/ Doctor. ","r" ].addLine;
+[ "/*MULHALL:*/ Doctor, leave us. ","r" ].addLine;
+[ "/*Sargon has a plan.*/ We have much work to do.","r" ].addLine;
 

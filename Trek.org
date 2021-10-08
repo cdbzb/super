@@ -1,4 +1,4 @@
-
+* TODO can we get the IP address for REAPER in /.config/nvim/init.vim to be programmatic? or should I put 127.0.0.1??
 * Website!
  
 **  learnings!

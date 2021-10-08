@@ -90,12 +90,23 @@ P(\bassUp,syl:2,start:\earlier,music:{|p b e|
 		dur:b.sum
 	)
 	++ p.bassUp => _.play
-	
 });
-//
-//[Sickbay]
-//
-[ "(The medical team hook Kirk's body up to a life support machine.) ","r" ].addLine;
+[ "[SickBay] (The medical team hook Kirk's body up to a life support machine.) ","r" ].addLine;
+P(\machines,start:\SickBay,music:{|p b e| 
+	var chord=[1,3,5,7].df(\b,scale:\locrian);
+	{
+		{
+			var pitchClasses = Dseq(chord,inf);
+			var octaves = Dseq([1,2,4,8]/2,inf);
+			octaves = Demand.kr(Dust.kr(5),1,octaves);
+			pitchClasses = Demand.kr(Dust.kr(15),1,pitchClasses);
+			Saw.ar(pitchClasses * octaves,0.01) 
+		}!4
+		//=> FreeVerb.ar(_,1,1)
+		=> DWGReverbC1C3.ar(_)
+		*Env([0,1,1,0],[5,5,10],\sin).kr(1,2)
+	}.play
+});
 [ "NURSE: All his vital organs are now working, Doctor. ","r" ].addLine;
 [ "MCCOY: Yes, we can keep them going for a few ","r" ].addLine;
 [ "weeks, or a month. For all the good it'll do.","r" ].addLine;

@@ -2,9 +2,9 @@
 /// line 326
 Monitor.new().play(2,2,0,2);
 ~stills.isNil.if{~stills=Stills("/Users/michael/trek/BySection/media/return to tomorrow.mov").current};
-~speaker ? ~speaker=Library.at(\functions,\prep).("/Users/michael/tank/IR/Saane/Speakers_&_Telephones/Very_small_speaker_mono.wav");
 //Song.dursFile_("/Users/michael/tank/super/theExtreme_Sep18");
 ~sickBay=Song(\sickBay,[]).current;
+Song.speaker =Library.at(\functions,\prep).("/Users/michael/tank/IR/Saane/Speakers_&_Telephones/Very_small_speaker_mono.wav");
 
 P(\filter,start:0,music:{|p b e| 
 		p.pts.select{|i| i.still.notNil}.select{|i| i.name.asString.contains("halass") }.do{|i|i.monitor.postln}
@@ -12,16 +12,18 @@ P(\filter,start:0,music:{|p b e|
 
 ["Sick Bay.. Sick Bay, Mc- Coy","e c f# d e g#"].addLine; //0
 P(\guide0,start:0,music:~sickBay.pbind[0]=>Pfin(2,_));
-P(\kirkFace,start:0,music:{
-		{~stills.preview('kirk-face',~sickBay.secLoc[2],monitor:0)}.defer
+P.still( \kirk, start:0 , timecode:3802.81.seconds, music: { |p b e|
+		e.still.value(
+				wait: b.sum,
+				monitor:0
+		);
 });
-
-P(\mcCoy0,start:0,syl:1,music: {
+P(\mcCoy0,start:0,syl:1,music: { |p b e|
 		[
 				amp:0.03,
 				instrument:\mcCoy,
 				//out:~sickBay.mcCoyBus,
-				out:Effect({|i| PartConv.ar(i,2048,~speaker)},out:0).bus.index,
+				out:Effect({|i| PartConv.ar(i,2048,p.speaker)},out:0).bus.index,
 				midinote: ~sickBay.tune[0].list [ 2..5 ].q,dur:~sickBay.durs[0].list[ 2..5 ].q
 		].pp;
 }); 
@@ -80,10 +82,10 @@ P(\gliss,start:5,syl:6,music:{
 }=>SynthDef(\glissChord,_)=>_.add; 
 ["You sound ter- ri- ble wait there for me","c4 d e c g3 e-4 d b-3 f"].addLine;  //3
 P.tune('ter- ri');
-P(\mcCoy3,start:3,music: {
+P(\mcCoy3,start:3,music: { |p b e|
 		Song.currentSong.pbind[3]<>(instrument:\mcCoy,
 				//out:~sickBay.mcCoyBus,
-				out:Effect({|i| PartConv.ar(i,2048,~speaker)},out:0).bus.index,
+				out:Effect({|i| PartConv.ar(i,2048,p.speaker)},out:0).bus.index,
 				amp:0.03
 		) => _.play  
 });
@@ -170,14 +172,43 @@ P(\bass,start:'cer- tain',music:{|p b e|
 });
 ["er- ror. For- mu- la is co- ","d4 f3 g a b g b "].addLine; //8
 P.tune('For- mu- la');
+P(\bass,syl:1,start:'For- mu- la',music:{|p b e| 
+		{
+				[
+						[1,-7].df(\g).dq ,
+						b.parse([[1,1,1,1/2],[1/2,1]]).dq,
+						1
+				].duty
+				=> { |i| 
+						Saw.ar(i * [0.99,1,1.013]/[4,8] , 0.1) 
+						+SinOsc.ar(Vibrato.kr(i*[ 2,4 ] + [0,2]),0,0.005)
+				} 
+				=>MoogFF.ar(_,3000,1)
+				=>Phaser2.ar(_,rate:0.09)
+				* Env.perc(Line.kr(0.01,0.05,1),Line.kr(3,5,1)).kr(0,gate:TDuty.kr(b.parse([ [1,1,1,1/2],[1/2,1] ].dropLast).dq))
+				=> EchoNone.ar(_,0.444,0.444,2.5) * 0.5
+		}.play
+
+});
 ["rrect. Don't be concer -- ned, this is an","d4 c# e d f# g f# d e f# "].addLine;  //9
 P.tune('rrect.');
 P(\lick,start:\rrect,music:{|p b e| 
-		[
-				freq:[5,4,3,2,1].df(\e,scale:\minor,octave:[3,4]).q,
-				dur:b.parse([1,1,1,1,3]).q,
-				legato:1!4++5 =>_.q
-		].pp;
+		{|i|
+				[
+				[5,4,3,2,1].df(\e,scale:\minor).dq,
+				b.parse([1,1,1,1,3]).dq,
+						1
+				].duty
+				=> {|freq|
+						Pulse.ar( freq / [2,4], 0.2 ,0.1)
+						* Env.perc( 0.3, [ [3,3,3,3,6].dq,b[0..4].dq,1 ].duty)
+                             .kr( 0, gate:TDuty.kr(b[0..4].dq))
+						*0.2
+						=> FreeVerb.ar(_,0.2,1)
+
+				}
+		}.play
+				//legato:1!4++5 =>_.q
 });
 ["ex- cel- lent bo- dy. "," g#4 e d d c#"].addLine; //10
 P.tune('ex- cel');
@@ -618,8 +649,6 @@ P.still(\mcCoy,syl:0, start:\dead, timecode:4003.0.seconds, music:{ |p b e|
 )
 (
 
-
-~speakerSt.isNil.if {Library.at(\functions,\prepStereo).("/Users/michael/tank/IR/Saane/Speakers_&_Telephones/Small_speaker_stereo.wav")};
 
 //Stills   ! {{{
 ~stills.isNil.if{~stills=Stills("/Users/michael/tank/Trek/video for stills etc/media/return to tomorrow.mov")}; 

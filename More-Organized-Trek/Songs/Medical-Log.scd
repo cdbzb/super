@@ -1,6 +1,8 @@
 (
 // line 380
 Song(\medical,[]).current;
+~stills ? ~stills = Stills.new("/Users/michael/tank/Trek/video for stills etc/media/return to tomorrow.mov");
+Stills.current=~stills;
 ["Medical Log. (boom) Stardate 4770.3. ",[4,3,2,1,-5, 1,-7,-4, -7,1,2,3, 1, -7,3].dm(\f)].addLine;
 ~justTheTune.('Stardate');
 [ "Do I list one death or two? " , [1,2,1,5,5,6,4.5].dm(\g)].addLine;
@@ -91,7 +93,7 @@ P(\bassUp,syl:2,start:\earlier,music:{|p b e|
 	)
 	++ p.bassUp => _.play
 });
-[ "[SickBay] (The medical team hook Kirk's body up to a life support machine.) ","r" ].addLine;
+[ "[SickBay] (The medical team hook Kirk's body up to a life support machine.) ","r",[6] ].addLine;
 P(\machines,start:\SickBay,music:{|p b e| 
 	var chord=[1,3,5,7].df(\b,scale:\locrian);
 	{
@@ -107,9 +109,93 @@ P(\machines,start:\SickBay,music:{|p b e|
 		*Env([0,1,1,0],[5,5,10],\sin).kr(1,2)
 	}.play
 });
-[ "NURSE: All his vital organs are now working, Doctor. ","r" ].addLine;
+[ "NURSE: All his vital organs are now working, Doctor. ",[3,4,5,3,7,6,5,4,11,5,4,3].dm(\b,scale:\mixolydian) ].addLine;
+P.tune(\vital);
+P(\tuneTest,start:\vital,music:{|p b e| 
+	{
+		Duty.kr(
+			b.dq,
+			0,
+			[3,4,5,3,7,6,5,4,11,5,4,3].df(\b,scale:\mixolydian).dq
+		) => 
+		Pulse.ar(_ ,0.2,0.1) => Phaser2.ar(_,rate:0.1)
+		* 
+		(
+			Env([0.1,0.2,0.1,0],b.parse([ 3,5,4 ])).kr(0)
+			+
+			Env.perc().kr(0,gate: TDuty.kr(b.dropLast.dq))
+		)
+		=> FreeVerb.ar(_,0.8,0.8)
+
+	}.play
+});
+P(\bass,start:\vital,music:{|p b e| 
+	{
+		var freq = [
+			[1,4,2].df(\b,scale:\mixolydian).dq ,
+			b.parse([4,4,4]).dq,
+			1
+		].duty / [4,8] * [1.01,1,1.0033];
+  		Saw.ar(freq,0.1)
+
+	 * ( (Env.perc(0.2,2).kr(0,gate: TDuty.kr(b.dropLast.dq))) /1.5+0.3  ) 
+	 * Env([1,1,0],[b.sum,3]).kr(2,gate:1)
+	}.play
+});
+	
 [ "MCCOY: Yes, we can keep them going for a few ","r" ].addLine;
 [ "weeks, or a month. For all the good it'll do.","r" ].addLine;
+
+P.still(\controls, start: 1, timecode:4105.05.seconds, music: { |p b e|
+	e.still.value(
+		wait: b.sum,
+		fade: 
+		Song.durTill(4)
+	);
+});
+P.still( \plasticPerson, start: \weeks, timecode:4148.5.seconds, music: { |p b e|
+	e.still.value(
+		wait: b.sum ,
+	);
+});
+P.still( \receptacle, start: \consciousness, syl:4, timecode:4127.seconds, music: { |p b e|
+	e.still.value(
+		wait: b.sum + Song.durs[e.start+1].list[0..8].sum ,
+		text: [ "still in the","receptacle" ],
+		fadeIn: b.parse([4])
+	);
+});
+P.still( \kirk, start: 'His body', timecode:4122.seconds, music: { |p b e|
+	e.still.value(
+		wait: b.sum ,
+		text: ["his body is","but his consciousness"],
+		fade:5
+	);
+});
+P.still( \looking, start: \machine, timecode:4131.5.seconds, music: { |p b e|
+	e.still.value(
+		wait: 3 ,
+		fade:2
+		//text: ["all his vital organs","are now working, Doctor"]
+
+	);
+});
+P.still( \console, start: \machine,lag:3, timecode:4138.seconds, music: { |p b e|
+	e.still.value(
+		wait: b.sum - 2 ,
+		fadeIn:2
+		//text: ["all his vital organs","are now working, Doctor"]
+
+	);
+});
+P.still( \nurse, start: \vital, timecode:4139.seconds, music: { |p b e|
+	e.still.value(
+		wait: b.sum ,
+		text: ["all his vital organs","are now working, Doctor"]
+
+	);
+});
+
 )
 
 //next up: Plastic person
@@ -121,4 +207,3 @@ P(\machines,start:\SickBay,music:{|p b e|
 
 /*
 */
-)

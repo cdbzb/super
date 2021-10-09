@@ -1,4 +1,8 @@
 + Array {
+
+        dq { | repeats=1 |
+               ^ Dseq(this,repeats)
+        }          
 	pick { | indices |
 		^this.copySeries( *indices )
 	}
@@ -126,6 +130,10 @@
 //		Song.songs.at(Song.current).addLine(this);
 		^Song.currentSong.addLine(this);
 	}
+
+        duty {
+                ^Duty.kr(this[1],this[2],this[0])
+        }
 }
 
 +Pseq {
@@ -142,9 +150,15 @@
 		pseq.list_(list);
 		^pseq
 	}
+        dropLast{
+                this.copy[0..(this.size - 2)]
+        }
 }
 
 + List {
 
 	parse {|array start=0| ^this.asArray.parse(array,start) }
+        dq { | repeats=1 |
+                ^Dseq(this,repeats)
+        }          
 }

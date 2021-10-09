@@ -31,6 +31,8 @@ includePaths:
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/OfflineProcess
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Deferred
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Cluster
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/persistentmainfx
 excludePaths:
     []
 postInlineWarnings: false
+excludeDefaultPaths: false

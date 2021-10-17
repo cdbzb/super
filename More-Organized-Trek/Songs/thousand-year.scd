@@ -44,6 +44,16 @@ P(\bass,start:\prepared,music:{|p b e|
 });
 ["/*SCOTT:*/ For all the good it'll do you. It's a fa -- -- ncy name, but",[5,6,7,12,11,7,12,11].dm('b-',octave:4) ++ [-7,1,4,3,2,1,5,3].dm('g')].addLine;
 P.tune(\name);
+P(\bass,start:\name,music:{|p b e| 
+	{
+		var freq = [5,4, [ 1,3 ] ].df('b-',octave:3).dq => Demand.kr(TDuty.kr(b.parse([2,1,5]).dq),0,_);
+		var cutoff = [500,2000,1000].dq(2).duty(b.dq(2));
+		Pulse.ar(freq,0.5,0.1)
+		=> MoogFF.ar(_,cutoff,2.5)
+		* Env.linen(0, b[0..7].sum, 7,  level: 1.0,  curve: -4).kr(2,gate:1)
+		=> EchoNone.ar(_,0.4,0.231,5)
+	}.play
+});
 ["how will something that looks like a drop of jelly make this thing work?",[3,4, 3,4,5, 3, 3,4,5,3, 6,4, 7,7,4.5,2].dm('g',scale:\mixolydian,octave:5)].addLine;
 P.tune(\jelly);
 P(\accent,start:\jelly,music:{|p b e| 
@@ -268,11 +278,19 @@ P(\stab,start:\prison,syl:3,music:{
 });
 ["And when it wears out we'll build another one, ",[5,4,3,2,3,4,-7,1,4,3,2,-5].dm(\c)].addLine;
 P(\bass,start:\wears,music:{|p b e| 
-	[
-		freq:[[-4, 11 ],7,[11]].df('g',scale:\mixolydian,octave:[3,4]).q,
-		dur:b.parse([5,4,3]).q
-		//dur:b.parse([9,3])++(b.last/2).dup => _.q
-	].pp
+	
+	{
+		{
+			var dur = b.parse([5,4,3]),
+			freq = [[-4, 11 ],7,[11,11.01]].df('g',scale:\mixolydian,octave:3).dq.demand(dur);
+			Pulse.ar(
+				freq + Select.ar(PulseCount.kr(TDuty.kr(dur.dq))-1%2,[SinOsc.ar(3),Pulse.ar(5,0.5,2)]),
+				[0.3,0.4,0.5].dq.duty(dur.dq)
+				,0.02)  
+			* Env.linen(0.01, b.sum, 2).kr(2)
+		} 
+		
+	}.play
 });
 P.tune(\wears);
 ["and we'll lock ourselves into it for another thousand years. And another, and another.", 
@@ -282,19 +300,40 @@ P.tune(\wears);
 ].addLine;
 P.tune('And another',Pmul(\freq,0.5,_));
 P(\bass,start:'And another',syl:1,music:{|p b e| 
-	[
-		freq:[3,4,5].df(\a,octave:2).q,
-		//instrument:\sawSynth,
-		att:0.1,rel:4,
-		dur:b.drop(1).parse([1,2,1]).q,
-		out:Effect({|i| MoogFF.ar(i,1000) => Pan2.ar(_,1) },out:2).bus.index
-	].pm(\sawSynth).play
+	
+	var 
+	freq = [3,4,5].df(\a,octave:2),
+	dur = b.drop(1).parse([1,2,1]);
+	p.twangBass = { |freq dur out amp=0.1|
+		{
+			Pulse.ar(freq.dq.duty(dur.dq) * [1,2,3,14,21],0.3,0.1)
+			*[21,5,3,2,1]/11
+			=>Mix.ar(_)
+			* Env([0,1,0],[0.03, [ 1.5,2.2 ] ]).kr(0,gate: TDuty.kr(dur.dropLast.dq,0))
+			* Dseries(1,-0.1).demand(dur)
+			* amp * 10
+			=> FreeVerb.ar(_,0.5,1)
+			* 0.4
+		}.play(s,out)
+	};
+	p.twangBass.(
+		freq:freq,dur:dur
+	)
 });
-P(\chord,start:'And another',music:{|p b e| 
-	[		instrument:\stringyy,
-		freq:[\r, [5,7,11,13].df('f',scale:\mixolydian) ].q,
-		dur:b.parse([16,2]).q
-	].pp
+P(\chord,syl:15,start:'And another',music:{|p b e| 
+	var freq = [5,7,11,13].df('f',scale: \mixolydian),
+	dur = b.drop(1).sum ;
+	{
+		Gendy2.arWidth(freq:freq/2,width:1.001) ++
+		Gendy1.arWidth(freq:freq,width:1.001) * 0.5 
+		* Env.linen(0,1,4).kr(0,gate:1)
+		=> DelayN.ar(_,1,( 0,0.02..0.8 ))
+		//=> Phaser2.ar(_,rate:0.1)
+		=> Splay.ar(_)
+		=> Phaser2.ar(_,rate:0.1)
+		* 0.05
+		* Env.linen(0,5,1).kr(2,gate:1)
+	}.play
 });
 P(\chords,start:'And another',syl:16,music:{|p b e| 
 	
@@ -313,8 +352,8 @@ P(\chords,start:'And another',syl:16,music:{|p b e|
 P(\pad,start:'And another',syl:9,music:{|p b e| 
 	(
 		freq:[1].df('e-',octave:3),
-		dur: b.parse([1]).sum,
-		instrument:\sawSynth,
+	dur: b.parse([1]).sum,
+	instrument:\sawSynth,
 		rel:6,
 		att:2,
 		lofreq:5000,
@@ -331,19 +370,31 @@ P(\sizzle,syl:9,start:'And another',music:{|p b e|
 	).play
 });
 P(\threeNoteFigure,start: 'And another',syl: 9,music:{|p b e|
-	[
-		freq: [1,-6,-4].df('e-',scale:\whole).q/2,
-		dur:b.drop(1) + [0,0,1] => _.q,
-		out:1
-	].pp
+	p.twangBass.
+	(
+		freq: [1,-6,-4].df('e-',scale:\whole)/2,
+		dur:b.drop(1) + [0,0,1] => {|i| i[0..2]} ,
+		out:1,
+		amp:0.06
+	)
 });
 P(\threeNoteFigure2,start: 'And another',syl: 15,music:{|p b e|
 	//b[1].bubble++b[2..3].sum++b[3];
-	[
-		freq: [3,2,2,1].df('a-').q/2,
-		dur:b.drop(1) + [0,0,0,1] => _.q,
-		out:0
-	].pp
+		var freq= [3,2,2,1].df('a-')/4,
+		dur=b.drop(1) + [0,0,0,1];
+		p.twangBass.(
+			freq:freq,
+			dur:dur[0..3],
+			amp:0.04,
+			out:0
+		);
+		p.twangBass.(
+			freq:freq*2,
+			dur:dur[0..3],
+			amp:0.04,
+			out:0
+		)
+
 });
 ["Sargon has closed his mind to a better way.",[11,5,3,6,5,5,4,3,2,3].dm(\c,scale:\minor)++[3,4,2,3,3].dm(\g)].addLine;
 P.still(\spock,start:\mind,timecode:3648.5.seconds,music:{ |p b e|
@@ -434,7 +485,7 @@ P.still(\thalassa,start:'not ours',timecode:3657.seconds,music:{|p b e|
 	e.still.value(wait:b.sum,text:["they`re not ours,","Henoch!"],fade:2)
 });
 ["/*SPOCK:*/ (boom) When you awoke in this body, Thalassa,",[-1,1,2,3,6].dm('f#')++[1,3,5].dm(\a)++[3,1,3,2].dm(\b)].addLine;
-P.tune(\awoke,range:[ 1 ],syl:1);
+P.tune(\awoke,range:[ 1 ],syl:0);
 P(\bass,start:'awoke',music: {|p b e|
 	[ instrument:\stringyy,
 		freq:[[-21,-11],[-22,-12]].df('f#').q,

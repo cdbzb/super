@@ -1,5 +1,6 @@
 VoiceLeading {
-	var lines,durs,<>durationArray, <>valuesArray;
+        var lines,durs,<>durationArray, <>valuesArray, <>triggers;
+        var <>demandDurations, <>demandValues;
 	var key=\degree;
 	*new { |lines durs|
 		^super.new.init(lines,durs)
@@ -18,8 +19,26 @@ VoiceLeading {
 	init { |array durss|
 		lines=array;
 		durs=durss;
-		durationArray=this.makeDurationsArray;
-		valuesArray=this.makeValuesArray
+                ////////// these are for Pbinds
+		durationArray=this.makeDurationsArray;        //hmmm but I need 2 versions!
+		valuesArray=this.makeValuesArray;
+                ////////// 
+                triggers =lines.deepCollect(2 , { |i|  //set triggers
+                  (i == \r ).if{0}{1} 
+                });
+                triggers = triggers.collect(_ ++ 0); // for release
+                lines = lines.collect{|line|                  //set first rest to 20k
+                  (line[0]==\r ).if{
+                    [ 20 ] ++ line.tail => _.postln
+                    }{
+                      line
+                    }
+                };
+                lines = lines.collect{|line|                  //replace rests with ties
+                  line.replace(\r,\_).postln
+                };
+                demandDurations = this.makeDurationsArray; 
+                demandValues = this.makeValuesArray;
 	}
 
 	durs { | index |
@@ -61,7 +80,7 @@ VoiceLeading {
 		} 
 	}
 	makeValuesArray {
-		^lines.collect{|i|i.reject{|x| x == \_ }}
+		^lines.collect{|i|i.reject{|x| x == \_ }}.postln
 	}
 
 	voice {|number|
@@ -75,11 +94,13 @@ VoiceLeading {
 	df {|root='c' octave=5 scale='major'|
 		key = \freq;
 		valuesArray=valuesArray.collect{|i|i.df(root,octave,scale)};
+		demandValues=demandValues.collect{|i|i.df(root,octave,scale)};
 		lines=lines.collect(_.df(root,octave,scale))
 	}
 	dm {|root='c' octave=5 scale='major'|
 		key = \midinote;
 		valuesArray=valuesArray.collect{|i|i.dm(root,octave,scale)};
+		demandValues=demandValues.collect{|i|i.dm(root,octave,scale)};
 		lines=lines.collect(_.dm(root,octave,scale))
 	}
 	p {
@@ -88,6 +109,19 @@ VoiceLeading {
 		}
 			=> Ppar(_)
 	}
+        dur {^durationArray}
+        gate { ^demandDurations.collect{ |i x|
+          Demand.kr(( durs  ).tduty, 0, this.triggers[x].dq)} 
+          ++ 0 //for release
+        }
+        duty { | voice=0 repeats=1 |
+          ^valuesArray[voice].dq(repeats).duty(durationArray[voice].dq(repeats))
+        }
+        demand { 
+          ^demandDurations.collect{ |i x|
+            Demand.kr(i.tduty,0,demandValues[x].dq)
+          }
+        }
 	pp { this.p.play }
 	pm { |instrument|
 		^lines.collect{|i x|

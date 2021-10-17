@@ -1,8 +1,5 @@
 + Array {
 
-        dq { | repeats=1 |
-               ^ Dseq(this,repeats)
-        }          
 	pick { | indices |
 		^this.copySeries( *indices )
 	}
@@ -41,7 +38,7 @@
 	quantizeWindow {
 		|percent=0.25 windowSize=5|
 		(this.size-windowSize).postln;
-		this[0..(this.size-windowSize)].do{|i x|
+		this[0..(this.size-windowSize-1)].do{|i x|
 			var chunk = this[x..(x +windowSize)];
 			chunk=chunk.quantize(percent);
 			chunk.do{|it in| this.put(in+x,it)}
@@ -131,9 +128,10 @@
 		^Song.currentSong.addLine(this);
 	}
 
-        duty {
-                ^Duty.kr(this[1],this[2],this[0])
+        duty { |...args|
+    ^Duty.kr( args[0],  args[1] ? 1 , this.dq)
         }
+
 }
 
 +Pseq {
@@ -158,7 +156,5 @@
 + List {
 
 	parse {|array start=0| ^this.asArray.parse(array,start) }
-        dq { | repeats=1 |
-                ^Dseq(this,repeats)
-        }          
+
 }

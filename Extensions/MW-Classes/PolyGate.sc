@@ -37,8 +37,27 @@
     //^Dseq(this,repeats)
     ^Dseq.multiNewList([ 'demand',repeats ] ++ this)
   }          
-  //dq { | repeats=1 |
-  //       ^ Dseq(this,repeats)
-  //}          
+  asDemandFreqs{
 
+	  var result = this.copy;
+	  var firstNonRest = (0..result.size).select{|i|result[i].isNumber}.minItem; //first non rest
+	  //c=result[firstNonRest];
+	  firstNonRest.do{|i| result[i]=result[firstNonRest]}; //change initial rests to first non rest
+	  result => {|a| 
+		  a.do{|i x| (i==\r).if{a[x]=a[x-1]}{a[x]=i}}; 
+	  ^a 
+	  }; //change subsequent rests to be previous non rest
+  }
+  asDemandGate{
+	  ^this.collect{|i| i.isNumber.binaryValue} ++ 0
+  }
+  spanRests { 
+      // [1,2,3].spanRests([4,\r,5,6]) == [1,1,2,3]
+      |tune| 
+      var a = \r; 
+      var stream = this.q.asStream; 
+      ^tune.collect{ |i|
+          (i != \r).if{ a = stream.next } { a }
+      }
+  }
 }

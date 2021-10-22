@@ -114,6 +114,12 @@ VoiceLeading {
           Demand.kr(( durs  ).tduty, 0, this.triggers[x].dq)} 
           ++ 0 //for release
         }
+        everyNoteTrigger {
+          ^this.dur.collect {|i|
+            TDuty.kr(i.dropLast.dq, 0, 1)
+          } 
+        }
+        
         duty { | voice=0 repeats=1 |
           ^valuesArray[voice].dq(repeats).duty(durationArray[voice].dq(repeats))
         }
@@ -149,10 +155,3 @@ VoiceLeading {
 //	set {|key values| ^( this.p.bubble ++ values.bubble =>_.flopWith{|p i| Pset(key,i,p) })}
 
 }
-
-/*
-a=VoiceLeading([[1,2,3,4]+3,[1,\_,8,\_]],[0.1,0.2,0.11,2])
-a.voice(1);a.voice(0)
-[note:a.voice(1).line.q,dur:a.voice(1).durs.q].pp;
-[note:a.voice(0).line.q,dur:a.voice(0).durs.q].pp
-*/

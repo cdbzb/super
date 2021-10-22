@@ -355,28 +355,27 @@ a=VoiceLeading(
 			[1, 3,  5,  3, \r,  \r,  6,  5,  4],
 			[-1, \_, -17, -16, -15, -14, \r, \r, -17 ] 
 		],
-		[1,1,1,0.5,0.5,1,1,1,1]		
+		[1,1,1,0.5,0.5,1,1,1,1]/2		
 ).df(\e,tuning:\sept7);
 //not passing tuning grrr
 
-	{ | offset | 
-		Pulse.ar(
-			a.demand //array of levels demanded by durs
-                         .lag([ 0.6,0,0,0,0.5,0,0,0 ].dq.demand(a.dur.dq))
-			+ [1,-0.8] 
-			+ SinOsc.kr(Dwhite(2,70).demand(a.dur),0,5), 
-			LFBrownNoise1.kr({2.0.rand}!2).range(0.1,0.5), 
-			Env.asr(0.05,0.1,2).kr(0,gate:a.gate) // array of gates for rests
-		) 
-		 *  ( 0.5 + 2.collect{ |i| 
-		        	 Env.adsr(0.01,0.3,0.8,1)
-                                    .kr(
-					    0,
-					    // Tduty OR phrase gate
-					    gate:TDuty.kr(a.dur[i].dropLast.dq,0,1) * a.gate[i])
-		 } *2 )
+{|offset out| { 
+	Pulse.ar(
+		a.demand + offset //array of levels demanded by durs
+		.lag([ 0.6,0,0,0,0.5,0,0,0 ].dq.demand(a.dur.dq))
+		+ [1,-0.8] 
+		+ SinOsc.kr(Dwhite(2,70).demand(a.dur),0,5), 
+		LFBrownNoise1.kr({2.0.rand}!2).range(0.1,0.5), 
+		Env.asr(0.05,0.1,2).kr(0,gate:a.gate) // array of gates for rests
+	) 
+	*  ( 0.5 + 2.collect{ |i| 
+		Env.asr(0.01,3.1,0.1)
+		.kr(
+			0,
+			// Tduty OR phrase gate
+			gate: a.everyNoteTrigger[i] * a.gate[i])
+		} *2 )
 		=> Splay.ar(_)
 		=> EchoNone.ar(_,0.4,0.333,4) 
-		//* Env.adsr().kr(0,gate:a.durs.dropLast.dq.tduty-0.5 && a.gate)
-	} => {|i| [play:{ i.play },\amp:[0].q(3),dur:8].pp}
+	}.play(s,out) } =>  {|i| [offset:Pwhite(0,1000),\out:Pseries(0,1),play:{ i.value(~offset,~out) },\amp:[0].q(3),dur:8].pp}
 )

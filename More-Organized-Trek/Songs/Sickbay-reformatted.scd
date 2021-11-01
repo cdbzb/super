@@ -174,11 +174,10 @@ P(\bass,start:'cer- tain',music:{|p b e|
 P.tune('For- mu- la');
 P(\bass,syl:1,start:'For- mu- la',music:{|p b e| 
 		{
-				[
-						[1,-7].df(\g).dq ,
-						b.parse([[1,1,1,1/2],[1/2,1]]).dq,
-						1
-				].duty
+			b.postln;
+						[1,-7].df(\g).dq.demand 
+						(b.parse([[1,1,1,1/2],[1/2,1]]))
+//						,
 				=> { |i| 
 						Saw.ar(i * [0.99,1,1.013]/[4,8] , 0.1) 
 						+SinOsc.ar(Vibrato.kr(i*[ 2,4 ] + [0,2]),0,0.005)
@@ -194,15 +193,13 @@ P(\bass,syl:1,start:'For- mu- la',music:{|p b e|
 P.tune('rrect.');
 P(\lick,start:\rrect,music:{|p b e| 
 		{|i|
-				[
-				[5,4,3,2,1].df(\e,scale:\minor).dq,
-				b.parse([1,1,1,1,3]).dq,
-						1
-				].duty
+				
+				[5,4,3,2,1].df(\e,scale:\minor).dq.demand(b.parse([1,1,1,1,3]))
 				=> {|freq|
 						Pulse.ar( freq / [2,4], 0.2 ,0.1)
-						* Env.perc( 0.3, [ [3,3,3,3,6].dq,b[0..4].dq,1 ].duty)
-                             .kr( 0, gate:TDuty.kr(b[0..4].dq))
+						// AAAARh
+						* Env.perc( 0.3, [ [3,3,3,3,6].dq.demand(b),b[0..4].dq.demand(b),1 ]).kr(0,gate:b.parse([1,1,1,1,3]).dropLast.tduty)
+                             //.kr( 0, gate:TDuty.kr(b[0..4].dq))
 						*0.2
 						=> FreeVerb.ar(_,0.2,1)
 

@@ -44,7 +44,7 @@
 
 + Object{
 	=> {|a| ^a.(this)}
-	==> {|a| a.(this)}
+	=>| {|a| a.(this)}
 	=>+ {|a b| ^a.(this,this)}//a is a fn of 2 vars
 	
 	pipe {|...fns|

@@ -23,6 +23,8 @@
     ^(minutes * 60 + seconds)
   }
 }
+
++ Number { sum{^this} }
 /*
 301f:20
 */

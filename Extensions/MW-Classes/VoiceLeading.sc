@@ -17,6 +17,9 @@ VoiceLeading {
 
 	}
 	init { |array durss|
+                (array.rank == 1).if { array = array.bubble };
+                (durss.isNumber).if{durss = durss.bubble; \bubble.postln};
+                durss = array[0].size.collect{|i| durss.wrapAt(i)};
 		lines=array;
 		durs=durss;
                 ////////// these are for Pbinds

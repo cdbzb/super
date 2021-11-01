@@ -155,58 +155,95 @@ var mod;
 
 )
 
+a.parent
 (
 b=(
 
 	array: { VoiceLeading(~pitches,~durs) => {|i| [i.valuesArray,i.durationArray]}}.flop  ,
-	preset: {[freq: ~array[0],dur:~array[1]]},
+	freqAndDur: {[freq: ~array[0],dur:~array[1]]},
+	voices: {
+		( ~freqAndDur ++ ~bind
+			 ).flop.collect {|i| Event.newFrom(i)} 
+	},
+	outer:I.d,
+	inner:I.d,
+	release: {Env.linen(~durs.sum+5).kr(2,gate:1)},
+	play:{3.postln}
 );
 
 a=LambdaEnvir( (
+	play: {
+		{
+			~release; 
+			~voices.collect(~inner)
+		//everything outside the loop applies to the array of channels
+		=> ~outer
+		}.play
+	},
+
 	pitches:[[ 1, 3,  4,  \r, 3, 5,  4,  2 ].df(\e),
 	         [ 2,\r,11,  \_, \r,\r,\r,\r, ].df(\e),
 		 [ 1,  \_, \_, 4.5,  5 , \_, 6, \_ ].df(\e, octave:4)],
 	durs: [1,2,3,2,2,3,2,3]/5,
-	res: {
-		( ~preset ++
-			[
-				amp: [0.1,0.08,0.1 * [2,1,2.5].dq.demand(~array[1][2]) + SinOsc.ar(7,0,0.05)],
-				echo:[{ Phaser2.ar(_,rate:0.1,fb:1)*5 },{EchoNone.ar(_,0.4,0.4,19)},{ AnalogPhaser.ar(_,SinOsc.kr(1).unipolar,modulation:0.5,feedback:0.9) }],
-				lag: [0,1,0],
-				//echo:{{|i| [i[0],EchoNone.ar(i[1],0.4,0.4,19),i[2]]}}
-			
+	bind:{ // these are expanded to voices
+		[
+			amp: [0.1,0.08,0.1 * [2,1,2.5].dq.demand(~array[1][2]) + SinOsc.ar(7,0,0.05)*18],
+			echo:[{ Phaser2.ar(_,rate:0.1,fb:1)*5 },{EchoNone.ar(_,0.4,0.4,19)},{ AnalogPhaser.ar(_,SinOsc.kr(1).unipolar,modulation:0.5,feedback:0.9) }],
+			lag: [0,1,0],
+			//echo:{{|i| [i[0],EchoNone.ar(i[1],0.4,0.4,19),i[2]]}}
 
-			] ).flop.collect {|i| Event.newFrom(i)} 
+		]
 	},
-	play: {
-		{
-			Env.linen(~durs.sum+5).kr(2,gate:1);
-			~res.collect{ |i x|
-				{
-					Saw.ar(i.freq.asDemandFreqs.dq.demand(i.dur).max(100).lag(i.lag) 
+	inner:{
+		{ |i x| //voices are passed in freq, dur + keys in bind
+			{
+				Saw.ar(i.freq.asDemandFreqs.dq.demand(i.dur).max(100).lag(i.lag) 
 
-					+ SinOsc.ar([3,5,7],0,2)
-				)
-				* Env.asr(0).kr(0,gate:i.freq.asDemandGate.dq.demand(i.dur))
-				* i.amp
-				* (x!=2).if{Env.perc().kr(0,gate:i.dur.dropLast => _.tduty)}{1}
-				//[I.d,I.d,I.d]=> {|i| [i[0],EchoNone.ar(i[1],0.4,0.4,5),i[2]]}
-				=> i.echo
-				=> MoogFF.ar(_,XLine.kr(10000,100,12),2.99)
-				
-			}
+				+ SinOsc.ar([3,5,7],0,2)
+			)
+			* Env.asr(0).kr(0,gate:i.freq.asDemandGate.dq.demand(i.dur))
+			* i.amp
+			* (x!=2).if{Env.perc().kr(0,gate:i.dur.dropLast => _.tduty)}{1}
+			=> i.echo
+			=> MoogFF.ar(_,XLine.kr(10000,100,12),2.99)
+
 		}
-		=>EarlyRef.ar(_,[[1,2,3],1,1],[2,0,0],[5,5,5]) => DWGReverbC1C3.ar(_,mix:0.2)
-		=> Splay.ar(_)
-		=>Limiter.ar(_,0.01) *5
-		}.play
-	}
+		}
+	},
+	outer:{
+		{|i|
+			EarlyRef.ar(i,[[1,2,3],1,1],[2,0,0],[5,5,5]) => DWGReverbC1C3.ar(_,mix:0.2)
+			=> Splay.ar(_)
+			=>Limiter.ar(_,0.01) *5
+		}
+	},
 ) ).proto_(b); a.play
 )
-a
-a.res
-a.play
-.collect(_.pp)
-[0].play
-(note:1).play
+/////////megaBind!!!!!
+(
+a= MegaBind(
+	release:16,
+	pitches: [
+		[6,3,3].df(\b),
+		[1,3,5].df(\e)
+	],
+	durs: [1,2,1]/2,
+	bind: [
+		amp: [{SinOsc.ar([4,7]).unipolar}],
+		lag: [[0,5],0]
+	],
+	inner:{|i| 
+		VarSaw.ar(i.freq.dq.demand(i.dur)+100 => {|j| j.lag(i.lag.dq.demand(i.dur))},0,0.1)
+		* i.amp
+		* Env.asr().kr(0,gate: i.freq.asDemandGate.dq.demand(i.dur))
+		* (i==1).if{ Env.perc().kr(0,gate:i.dur.tduty)}{1}
+	},
+	fx: { 
+		|i| FreeVerb.ar(i,0.5,1) 
+		* SinOsc.ar([4,6,3,4])
+		*0.1
+	} 
 
+);
+a.play
+)

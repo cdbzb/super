@@ -15,11 +15,6 @@
 		]).value
 	}.inEnvir;
 );
-	SynthDef(\trans, { |freq amp gate=1 out=0|
-		var notes= Demand.kr(Dust.kr(0.3)+Impulse.kr(0.01,0.999),0,Dseq([freq,freq*2],inf));
-		var sig=SinOsc.ar(Lag.kr(notes,0.6),0,0.1).distort*amp*Env.asr(0,1,5).kr(gate:gate);
-		Out.ar(out,sig!4);
-	}).add ;
 	["(transformation!)","r",15].addLine;
 	P(\transform,start:0,music:{ |p b e| 
 		var dur = b.sum; 

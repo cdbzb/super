@@ -2,11 +2,13 @@ var o, p;
 o = [
 	Dictionary.prNew,  Array.prNew(512),  "SARGON [OC]: I could not allow your sacrifice of one so close to you. ",  Pseq.prNew,  
 	List.prNew,  Array.prNew(15),  "SARGON [OC]: (boom) I could not allow your sacrifice of one so close to you. ",  Pseq.prNew,  
-	List.prNew,  Array.prNew(16)
+	List.prNew,  Array.prNew(16),  "KIRK: You're alive. ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(3),  "(Lights dim and glow, then Chapel wobbles.) ",  Pseq.prNew,  
+	Array.prNew(1)
 ];
 p = [
 	// Dictionary
-	0, [ array: o[1],  size: 2 ],  
+	0, [ array: o[1],  size: 4 ],  
 	// Array
 	1, [ nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -79,11 +81,11 @@ p = [
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
+		o[10],  o[11],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
+		o[14],  o[15],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -155,6 +157,18 @@ p = [
 	9, [ 0.838,  1.31,  0.278,  0.436,  
 		0.308,  2.552,  0.376,  0.504,  
 		0.226,  1.75,  0.458,  0.444,  
-		0.564,  0.776,  0.516,  0.538 ]
+		0.564,  0.776,  0.516,  0.538 ],  
+	// Pseq
+	11, [ list: o[12],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	12, [ array: o[13] ],  
+	// Array
+	13, [ 0.818,  0.506,  0.81 ],  
+	// Pseq
+	15, [ list: o[16],  repeats: 1,  
+		offset: 0 ],  
+	// Array
+	16, [ 10 ]
 ];
 prUnarchive(o,p);

@@ -81,7 +81,7 @@ s.waitForBoot { StageLimiter.activate };
 // takes an song-Event of proto ~funs a range of lines to perform and a number of lines before to use as cues
 ~recorder= {
 	|song  rnge=#[0,1] cueSecs=1 |
-	var synth,recorder;
+	var synth,recorder,a;
 	var range = Array.with(rnge).flatten;
 	var seq = (range[0]..range.clipAt(1))
 	.collect({|i|song.tune[i].list}).flatten;

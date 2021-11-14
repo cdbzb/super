@@ -24,15 +24,14 @@ VocalRPP {
         prox =subproject ++ "-PROX";
         wav=mediaFolder +/+ key ++ "-subproject.wav";
         this.checkDursChanged.if{
+		// Does this wk???
+	    //this.updateGuide;
             this.updateProxy;
-            this.storeDurs;
+            //this.storeDurs;
         } {
             this.copyPROXtowav;
             buffer=Buffer.read(Server.default,wav);
         };
-        fork{
-            0.01.wait;
-        }
     }
 
     copyPROXtowav{
@@ -58,8 +57,33 @@ VocalRPP {
 
 
     updateProxy {
-      this.writeReaperAction;
-      fork{
+	    var path=reaperProjectPath +/+ "media" +/+ key.asString ++ ".wav";
+	    var s = Server.default;
+	    this.writeReaperAction;
+	    fork{
+		    s.prepareForRecord(path);
+		    0.1.wait;
+		    s.sync;
+		    Song.cursor_(section);
+		    range.do(
+			    { |i|
+				    //crude method delete if second method works!
+				    var parts = song.at(section + i).select{
+					    |part| part.music.cs.contains("RPP").not
+				    };
+				    // look exactly for this rpp 
+				    parts = parts.select{
+					    |part|
+					    part.resources.rpp == nil // this
+				    };
+				    //song.play(song.at(section+i));
+				    parts.do(_.p)
+			    }
+		    );
+		    s.record(duration: range.collect{|i| Song.secDur[ section + i ]}.sum + tail);
+		    (range.collect{|i| song.secDur[ section + i ]}.sum + tail + 0.5).wait;
+		    //put name in variable
+		    //open the project and subProject and fire reapercommand
           this.open;
           0.1.wait;
           "open" + subproject => _.unixCmd;
@@ -70,6 +94,9 @@ VocalRPP {
           this.copyPROXtowav;
           0.05.wait;
           buffer=Buffer.read(Server.default,wav);
+
+
+            this.storeDurs;
       }
     }
 
@@ -113,6 +140,33 @@ VocalRPP {
         .write(outFile,overwrite:true )
     }
 
+    updateGuide{
+	    var path=reaperProjectPath +/+ "media" +/+ key.asString ++ ".wav";
+	    var s = Server.default;
+	    fork{
+		    s.prepareForRecord(path);
+		    0.1.wait;
+		    Song.cursor_(section);
+		    range.do(
+			    { |i|
+				    //crude method delete if second method works!
+				    var parts = song.at(section + i).select{
+					    |part| part.music.cs.contains("RPP").not
+				    };
+				    // look exactly for this rpp 
+				    parts = parts.select{
+					    |part|
+					    part.resources.rpp == nil // this
+				    };
+				    //song.play(song.at(section+i));
+				    parts.do(_.p)
+			    }
+		    );
+		    s.record(duration: range.collect{|i| Song.secDur[ section + i ]}.sum + tail);
+		    (range.collect{|i| song.secDur[ i ]}.sum + tail + 0.5).wait;
+		    //put name in variable
+	    }
+    }
 build {
     var path;
     var s = Server.default;
@@ -124,13 +178,20 @@ build {
         Song.cursor_(section);
         range.do(
             { |i|
-                var parts = song.(section + i).select{
+		    //crude method delete if second method works!
+                var parts = song.at(section + i).select{
                     |part| part.music.cs.contains("RPP").not
                 };
-                song.play(song.at(section+i));
+		    // look exactly for this rpp 
+		parts = parts.select{
+			|part|
+			part.resources.rpp == nil // this
+		};
+                //song.play(song.at(section+i));
+		parts.do(_.p)
             }
         );
-        s.record(duration: range.collect{|i| Song.secDur[ i ]}.sum + tail);
+        s.record(duration: range.collect{|i| Song.secDur[ section + i ]}.sum + tail);
         (range.collect{|i| song.secDur[ i ]}.sum + tail + 0.5).wait;
         //put name in variable
         this.makeRPPs(

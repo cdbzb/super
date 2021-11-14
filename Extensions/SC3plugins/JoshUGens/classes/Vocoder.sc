@@ -1,82 +1,7 @@
-// car is "pitch you hear" (like a saw wave, or sound), mod is voice, num is number of bands
-// to be spaced over the threshhold, , hpf and scale add back some of mod
-Vocoder {
-	
-	*ar { 	arg car, mod, num=10, low=100, high=5000, q=0.02, hpf=5000, hpfscal=0.05, outscal=25;
-	
-			var width, cf, hf,  out, filtmod, filtcar, tracker, ratio;
-	
-	
-		out = Mix.arFill(( num + 1 ), { arg i; 
-					
-					ratio = (( high / low)**num.reciprocal );
-	
-				 	cf =  ( ratio**i) * low;
-				 	
-					filtmod = BPF.ar( mod, cf, q);
-				
-					tracker = Amplitude.kr(filtmod);
-				
-					filtcar = BPF.ar( car, cf, q);	
-				
-					( outscal * ( filtcar * tracker ));
-					});
+// car is "pitch you hear" (like a saw wave, or sound), mod is voice, num is number of bands// to be spaced over the threshhold, , hpf and scale add back some of modVocoder {				*ar { 	arg car, mod, num, low=100, high=5000, q=0.02, hpf=5000, hpfscal=0.05, outscal=25;				var width, cf, hf,  out, filtmod, filtcar, tracker, ratio;				out = Mix.arFill(( num + 1 ), { arg i; 										ratio = (( high / low)**num.reciprocal );					 	cf =  ( ratio**i) * low;				 						filtmod = BPF.ar( mod, cf, q);									tracker = Amplitude.kr(filtmod);									filtcar = BPF.ar( car, cf, q);						 					( outscal * ( filtcar * tracker ));					});
 
 		hf = HPF.ar(HPF.ar( mod, hpf), hpf);
-
-		
-		^out + ( hpfscal * hf )
-	}
-
-	*sidechain { 	arg car, buffer, notUsed=10, low=100, high=5000, q=0.02, hpf=5000, hpfscal=0.05, outscal=25, rate=1;
-		var num=buffer.numChannels;
-		var mod=PlayBuf.ar(num,buffer.bufnum,doneAction:2,rate:rate/64);
-
-			var width, cf, hf,  out, filtmod, filtcar, tracker, ratio;
-	
-		out = Mix.arFill(( num /* + 1*/ ), { arg i; 
-					
-					ratio = (( high / low)**num.reciprocal );
-	
-				 	cf =  ( ratio**i) * low;
-				 	
-					tracker = mod[i];
-				
-					filtcar = BPF.ar( car, cf, q);	
-				
-					( outscal * ( filtcar * tracker ));
-					});
-
-// this missing high frequency stuff needs to be fixed
-hf=0;
-//		hf = HPF.ar(HPF.ar( mod, hpf), hpf);
-
-		
-		^out + ( hpfscal * hf )
-	}
-
-	*control { 	arg mod, num=10, low=100, high=5000, q=0.02, hpf=5000, hpfscal=0.05, outscal=25;
-	
-			var width, cf, hf,  out, filtmod, filtcar, tracker, ratio;
-	
-	
-		out = ( num + 1 ).collect { arg i; 
-					
-					ratio = (( high / low)**num.reciprocal );
-	
-				 	cf =  ( ratio**i) * low;
-				 	
-					filtmod = BPF.ar( mod, cf, q);
-				
-					Amplitude.kr(filtmod);
-				
-					};
-
-//		hf = HPF.ar(HPF.ar( mod, hpf), hpf);
-
-		^out //need to do something about the high frequency hpfscal
-//		^out + ( hpfscal * hf )
-	}
+				^out + ( hpfscal * hf )}
 
 	*bark {arg signal, input, mull = 10;
 
@@ -96,5 +21,5 @@ hf=0;
                         bandWidth = bwArray.at(i);
                         output = BPF.ar(signal, freqArray.at(i),bandWidth/freq, sourceAmp)*mull
                 })
-     }
+        }
      }

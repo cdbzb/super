@@ -131,5 +131,10 @@ XTouch : XMIDIController {
 
 	}
 }
-
++Object{
+	xplay{ |key|
+		XTouch.map({this.play},key);
+		^this
+	}
+}
 

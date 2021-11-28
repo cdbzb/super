@@ -17,7 +17,7 @@ MegaBind {
 		voices = voices.flop.collect{|i| Event.newFrom(i)};
 		voices.do({|e| e.freqSeq={e.freq.asDemandFreqs.dq.demand(e.dur)}});
 		voices.do({|e| e.gateSeq={e.freq.asDemandGate.dq.demand(e.dur)}});
-		voices.do({|e| e.trigSeq={TDuty.kr(e.dur.dropLast.dq,0,1)}})
+		voices.do({|e| e.trigSeq={TDuty.kr(e.dur.dq.dropLast,0,1)}})
 	}
 	reinit{
 		voices = VoiceLeading(pitches,durs) => {|i| [i.valuesArray,i.durationArray]} ;//=> _.flop;
@@ -25,7 +25,7 @@ MegaBind {
 		voices = voices.flop.collect{|i| Event.newFrom(i)};
 		voices.do({|e| e.freqSeq={e.freq.asDemandFreqs.dq.demand(e.dur)}});
 		voices.do({|e| e.gateSeq={e.freq.asDemandGate.dq.demand(e.dur)}});
-		voices.do({|e| e.trigSeq={TDuty.kr(e.dur.dropLast.dq,0,1)}})
+		voices.do({|e| e.trigSeq={TDuty.kr(e.dur.dq.dropLast,0,1)}})
 	}
 	play{
 		^{

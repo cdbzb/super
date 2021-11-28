@@ -1,13 +1,14 @@
 var o, p;
 o = [
-	Dictionary.prNew,  Array.prNew(512),  "more more",  Pseq.prNew,  
-	List.prNew,  Array.prNew(3),  "now what",  Pseq.prNew,  
-	List.prNew,  Array.prNew(3),  "test",  Pseq.prNew,  
-	List.prNew,  Array.prNew(9)
+	Dictionary.prNew,  Array.prNew(512),  "SARGON [OC]: I could not allow your sacrifice of one so close to you. ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(15),  "SARGON [OC]: (boom) I could not allow your sacrifice of one so close to you. ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(16),  "KIRK: You're alive. ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(3),  "(Lights dim and glow, then Chapel wobbles.) ",  Pseq.prNew,  
+	Array.prNew(1)
 ];
 p = [
 	// Dictionary
-	0, [ array: o[1],  size: 3 ],  
+	0, [ array: o[1],  size: 4 ],  
 	// Array
 	1, [ nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -20,7 +21,6 @@ p = [
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		o[2],  o[3],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -34,6 +34,7 @@ p = [
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[2],  o[3],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -43,7 +44,6 @@ p = [
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		o[6],  o[7],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -74,15 +74,18 @@ p = [
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[6],  o[7],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
+		o[10],  o[11],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
+		o[14],  o[15],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -104,8 +107,6 @@ p = [
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  o[10],  o[11],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -143,22 +144,31 @@ p = [
 	// List
 	4, [ array: o[5] ],  
 	// Array
-	5, [ 0.983,  0.896,  0.115 ],  
+	5, [ 0.49,  0.264,  0.482,  0.316,  
+		1.282,  0.39,  0.438,  0.27,  
+		0.894,  0.41,  0.43,  0.514,  
+		0.606,  0.432,  0.964 ],  
 	// Pseq
 	7, [ list: o[8],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	8, [ array: o[9] ],  
 	// Array
-	9, [ 1.032,  1.713,  0.957 ],  
+	9, [ 0.912,  1.332,  0.257,  0.514,  
+		0.34,  1.282,  0.446,  0.68,  
+		0.25,  1.36,  0.496,  0.506,  
+		0.508,  0.92,  0.504,  0.548 ],  
 	// Pseq
 	11, [ list: o[12],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	12, [ array: o[13] ],  
 	// Array
-	13, [ 0.367,  0.366,  0.391,  0.502,  
-		0.959,  1.091,  0.534,  0.655,  
-		0.972 ]
+	13, [ 0.818,  0.506,  0.81 ],  
+	// Pseq
+	15, [ list: o[16],  repeats: 1,  
+		offset: 0 ],  
+	// Array
+	16, [ 10 ]
 ];
 prUnarchive(o,p);

@@ -1,12 +1,12 @@
 +Array{
-	split{ |test|
-		^ this .collect{|i j| [j,i]}
-		.select{|i| i[1]=>test}
-		.collect(_[0])++this.size
-		=> {|i| (i.size-1).collect{|x| i[x+1]-i[x]}}
-		=> _.collect(1!_)
-		=> this.reshapeLike(_)
+	split  { | test | 
+		var b=this.collect{|i x| i.isSymbol.if{x}}.reject(_.isNil).flat;
+		b =b ++( this.size  );
+		(b[0] == 0).not.if{b = [0]++b};
+		b=b.dropLast.collect{|i x| b.at(x+1)-i};
+		^this.clumps(b)
 	}
+
 
 	dmx {
 		^this.split({|i| i.class==String})

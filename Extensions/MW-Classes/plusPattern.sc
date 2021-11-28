@@ -1,13 +1,29 @@
 +Pattern {
 	+= { |that|
 			(that.class==Ppar).if{
+				(that.class == Array).if {
+					var ppar1 = this.list.collect{|i| [0,this]}.flatten;
+					ppar1.list_(ppar1.list++this);
+					^ppar1
+				}{
 					that.list_(that.list++this)
 					^that
+				}
 			}{
+				
+				( that.class == Array ).if { ^Ptpar([0,this]++that=>_.flatten) }
 					^Ppar([this,that])
 			}
 	}
 	set { |...args| ^Pbindf(this,*args) }
+}
++Array{
+	par{|num=1| ^Ppar(this,num)}
+}
++Pattern{
+	findur{|i |
+		^Pfindur(i,this)
+	}
 }
 +Ppar {
 	set { |...args| var first = [this.list,args.flop].flop;

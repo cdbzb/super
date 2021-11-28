@@ -84,9 +84,9 @@ SynthDef(\shakeEnv,{
 )
 (
 [time:[0.05,1,0.1].q(inf),amp:0.2,resonantFreq:60,dur:1/8,up:[1,0].q(inf),down:[0,1],q(inf)].pm(\shakeEnv).play;
-[instrument:\bd_808].pp;
+[instrument:\bd_808,amp:0.15].pp;
 [instrument:\hat_808,amp:[[1].q([3,5,6].q(1)),0].q(inf)/10,dur:1/16,out:Pwhite(0,5,inf)].pp;
-[freq:[1,4,6.5,12.5].df(\c,octave:[3,2]).q(inf).stutter(4),dur:0.25,legato:0.3,amp:0.15,out:Effect(DelayC.ar(_,0.1,SinOsc.ar(6).range(0,0.001)).tanh).bus.index].pp;
+Pdef(\bassline,[freq:[1,4,6.5,12.5].df(\c,octave:[3,2]).q(inf).stutter(4),dur:0.25,legato:0.3,amp:0.15,out:Effect(DelayC.ar(_,0.1,SinOsc.ar(6).range(0,0.001)).tanh).bus.index].p);
 [instrument:\yowbass,freq:[1,4,6.5,12.5].df(\c,octave:[3,2]).q(inf).stutter(4),dur:0.25,legato:0.3,amp:0.015,out:2].pp;
 [freq:[\r,3,2,4,3,2,1].df(\c)++[3,2,4,3,2,1].df('f',octave:6)=>_.q(inf),dur:[2,1,1,1,1,1,3,1,1,1,1,1,1].q(inf)/4,instrument:\stringyy].pp;
 [freq:[\r,3,2,4,3,2,1].df(\f)++[3,2,4,3,2,1].df('b-',octave:6)=>_.q(inf),dur:[2,1,1,1,1,1,3,1,1,1,1,1,1].q(inf)/4,instrument:\stringyy,out:2].pp;
@@ -98,19 +98,61 @@ SynthDef(\shakeEnv,{
 [dur:"..xx..x.".asDrumPat(4,inf),amp:0.1,instrument:\sn_808].pp
 
 )
-a=Synth(\shakeEnv);
-a.set(\amp,0.1);
-a.set(\up,1)
-a.set(\down,1)
+TempoClock.tempo_(0.1)
+{var env=Env.triangle(10).asStream;Routine( {1000.do{0.02.wait;TempoClock.tempo_(env.next+0.01);env.next.postln}} ).play(TempoClock.new())}.value
+{~env=Env.triangle(10).asStream;fork{100.do{~env.postln}}}.value
+
+
+Si equenceableCollection
+b = ()
+[1,2,2,3].do{|i x| b.put(i,( b.at(i).isNil ).if{1}{b.at(i)+1})}
+b
+b.values.collect{|i|i}.max
+[3,9].max
+b.values
+[1,2,2,3].occurrencesOf(2)
+[1,2,2,3].collect(|i|)
+[1,2,2,3].asSet
+
+b.at(2)=3
+b.indices.do{|i| }
+
+(
+~bassLine=[midinote:[1,4,6.5,12.5].dm('b-',octave:[3,2]).q(inf).stutter(4),dur:0.25,legato:0.3,amp:0.15,out:Effect(DelayC.ar(_,0.1,SinOsc.ar(6).range(0,0.001)).tanh).bus.index].p;
+~lick= [freq:[\r,3,2,4,3,2,1].df('e-')++[3,2,4,3,2,1].df('a-',octave:6)=>_.q(inf),dur:[2,1,1,1,1,1,3,1,1,1,1,1,1].q(inf)/4,instrument:\stringyy,amp:0.3].p.findur(6);
+~lick2 = [freq:[5,4,2.5,2].df(\a).q,dur:[3,8,8,1].q/4,amp:0.9,instrument:\stringyy].p;
+~lick2 = VoiceLeading(
+	[
+		[5,  4,  \_, \r,  \r,  \r],
+		[\r, \r, 4,  2.5, \r,  \r],
+		[\r, \r, \r, \r,  2.5, 2]
+	],      [3,  5,  3,  5,   3,   1]/4
+).df(\a).p.set(\out,[0,1,0],\instrument,\stringyy,\amp,[0.8,0.7,0.6]);
+~bassLine.set(\instrument,\yowbass) => {|i| 
+	i.findur(6) 
+	+= ~lick
+
+	++ ((
+		i.set(\ctranspose,11,\amp,Env([0.1,0.1,0.05],[2,2])).findur(4)
+		++  i.set(\ctranspose,31,\amp,Env([0.05,0],4)).findur(4) 
+	 += [ dur:[ 8 ].q,freq:[1].df(\a,octave:[3,4],amp:0.2),instrument:\stringyy].p)
+	 += ~lick2
+	)	
+} => _.value => _.play;
+
+[time:[0.05,1,0.1].q(inf),amp:0.2,resonantFreq:60,dur:1/8,up:[1,0].q(inf),down:[0,1],q(inf)].pm(\shakeEnv).findur(10).play;
+[instrument:\bd_808,amp:0.15].pp;
+[instrument:\hat_808,amp:[[1].q([3,5,6].q(1)),0].q(inf)/10,dur:1/16,out:Pwhite(0,5,inf)].pp;
+)
+TempoClock.tempo_( 0.98 )
 (
 [
-	type:\set,
-	id:a.nodeID,
-	params:#[\up,down],
-	up:[1,-1].q(inf),
-	down:[0,1].q(inf)
+	type:\phrase,
+	phrase:\bassLine,
+	dur:[ 6,4,4 ].q,
+	legato:1,
+	ctranspose:[0,11,31].q,
+	instrument:\yowbass,out:0,
 ].p.trace.play
 )
-Pbind
-
 

@@ -28,7 +28,6 @@ fork{
 				],
 				~func,
 				{|i v|
-					//TwoTube.ar()
 					FreeVerb.ar(i,Line.ar(1,0,v.durs.sum),1.0.rand).tanh.tanh
 				}
 			).play;

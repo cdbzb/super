@@ -414,9 +414,12 @@ P(\echo,start:'echo',music:{|p b e|
 ["KIRK: Is there any way we can help you, Sargon? ",[12,11,13,11,7,6,5,11,7,7,6].dm(\c)].addLine;
 P.tune(\help,Pbindf(_,\legato,1.5));
 
-["SARGON: Yes, my son. ","r"].addLine;
-["You can allow Thalassa and me to ","r"].addLine;
-["(boom boom) share your bodies again. ","r"].addLine;
+["SARGON: Yes, my son. ",[1,-7,-5].dm('a-',scale:\mixolydian)].addLine;
+P.tune('my son');
+["You can allow Thalassa and me to ",[1,2,4,5,6,5,6,4,12,11].dm('a-')].addLine;
+P.tune('Thalassa and me');
+["(boom boom) share your bodies again. ",[1,1,13,12, 13,14,13,12,11].dm(\f)].addLine;
+P.tune(\bodies);
 ["A last moment together. ","r"].addLine;
 ["(Mulhall nods, and they go over to the science station for the light trick and voice change.) ","r"].addLine;
 ["MULHALL: Oblivion together does not frighten me, beloved. Promise we'll be together. ","r"].addLine;

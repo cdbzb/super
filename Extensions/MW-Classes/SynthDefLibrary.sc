@@ -1,10 +1,14 @@
 SynthDefLibrary {
 
-    classvar <>listings,<>taglist,<>currentPack;
+    classvar <>listings,<>taglist,<>currentPack,<>files;
 
     *initClass {
         listings=List.new;
         taglist = ();
+        Server.default.waitForBoot{
+            files=files++"/Users/michael/tank/super/SynthDefLibrary/*".pathMatch;
+            files.do{|file| file.load}
+        }
     }
 
     *add { |def tags|

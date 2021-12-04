@@ -121,23 +121,75 @@ P.tune(\alive);
 ["He is destroyed. ","r"].addLine;
 ["KIRK: But your vessel was destroyed, too. Where was your consciousness kept? ","r"].addLine;
 ["SPOCK: The place Henoch would least suspect, Captain. ","r"].addLine;
-["CHAPEL: That is why I was summoned into Sickbay, Doctor. ","r"].addLine;
-["Mister Spock's consciousness was placed in me. ","r"].addLine;
+["CHAPEL: (boom) That is why I was summoned into Sickbay, Doctor. ",[-5,5,4,3,2,1, 1,-7,1,2, 1,-7,-6,-5].dm(\a,scale:\melodicMinor)].addLine;
+P.tune(\summoned);
+P(\bass,start:\summoned,music:{|p b e| 
+	MegaBind(
+		
+			[
+				[4,5]
+			].df(\a) ,
+			b.parse([10,4]),
+			[
+				//amp:[1]
+			],
+			{|i|
+				Gendy1.arWidth(freq:i.freqSeq)//Dust.ar(50)
+				=> { |j| Convolution.ar(
+					Saw.ar(i.freqSeq.lag(0.5)*[1,2]/8 ),
+					j => FreeVerb.ar(_,0.8,0.9)
+					
+				)
+				* Env.asr(release:6).kr(2,gate:i.gateSeq)
+				*0.01
+ } 			},
+			{|i| Splay.ar(i/5)}
+		
+	).play
+		
+});
+["Mister Spock's consciousness was placed in me. ",[1,2,3,4,3,2,1,6,6,5].dm(\g,octave:4)].addLine;
+P.tune(\placed);
+P(\bass,start:\placed,music:{|p b e| 
+	MegaBind(
+		[
+			[1,4,5,1, 6,5,4,1, 4,1,4,3]
+		].df(\g),
+		b.parse([
+			1,1,0.5,0.5,
+			1,1,1,1,
+			0.5,0.5,1,1]),
+		[
+			amp:0.06,
+		],
+		{|i|
+			var sig=Formant.ar(
+				i.freqSeq * [1,0.491],  
+				//formfreq: Line.kr(3060,00,i.dur),  
+				formfreq: Env.perc(level:3600).kr(0,gate:i.trigSeq),
+				bwfreq: 880
+			).distort;
+			var env=Env.asr(0,1,1,1.5).kr(0,gate:i.gateSeq);
+			sig*env*i.amp //=> DelayN.ar(_,1,0.2)
+		},
+		{|i v| FreeVerb.ar(i,0.5,1)}
+	).play
+});
 ["(boom boom) We shared consciousness (we shared consciousness... ) to",[-5,-5,3,2,4,3,2,1].dm('e-')++[3,2,4,3,2,1].dm( 'a-' )++[3,2,4,3,2,1].dm('e-') ].addLine;
-Song.quarters[\shared]=Song.parseBeats(\shared,[1,1,1,1,1,1,1,3,1,1,1,1,1,1]/2);
+Song.quarters[\shared]=Song.parseBeats(\shared,[1,1,1,1,1,1,1,3,1,1,1,1,1,3,1,1,1,1,1,1]/2);
 P.tune(\shared,Pset(\dur,Song.quarters[\shared].mean/2 * [1,1,1,1,1,1,1,3,1,1,1,1,1,3,1,1,1,1,1,1].q,_));
 Song.sharedClock=TempoClock.new().permanent_(true);
 P(\newVersion,start:\shared,music:{|p b e| 
 	var tracks;
 	var group = p.sharedGroup=Group.new;
 	var clock = p.sharedClock.tempo_(p.quarters[\shared].mean.reciprocal/2);
-	var shaker =	[time:[0.05,1,0.1].q(inf),amp:0.2,resonantFreq:60,dur:1/8,up:[1,0].q(inf),down:[0,1],q(inf)].pm(\shakeEnv);
+	var shaker =	[time:[0.05,1,0.1].q(inf),amp:0.2,resonantFreq:60,dur:1/8,up:[1,0].q(inf),down:[0,1],q(inf),inst:13.rand].pm(\shakeEnv);
 	var bd =[instrument:\bd_808,amp:0.15].p;
 	var hat =[instrument:\hat_808,amp:[[1].q([3,5,6].q(1)),0].q(inf)/10,dur:1/16,out:Pwhite(0,5,inf)].p;
 	var bass = [freq:[1,4,6.5,12.5].df(\c,octave:[3,2]).q(inf).stutter(4),dur:0.25,legato:0.3,amp:0.15,out:Effect(DelayC.ar(_,0.1,SinOsc.ar(6).range(0,0.001)).tanh).bus.index].p;
 	var yow = [instrument:\yowbass,freq:[1,4,6.5,12.5].df(\c,octave:[3,2]).q(inf).stutter(4),dur:0.25,legato:0.3,amp:0.015,out:2].p;
 	var stringyy1 = [freq:[\r,3,2,4,3,2,1].df([\c,\f])++[3,2,4,3,2,1].df([\f,'b-'],octave:6)=>_.q(inf),dur:[2,1,1,1,1,1,3,1,1,1,1,1,1].q(inf)/4,instrument:\stringyy,out:[0,2]].p;
-		var saw1 = [freq:[\r,5,13,12,\r].df(\c).q(inf),dur:[15,1,3,6,7].q(inf)/4,instrument:\sawSynthSustain,legato:1.1].p;
+		var saw1 = [amp:0.05,freq:[\r,5,13,12,\r].df(\c).q(inf),dur:[15,1,3,6,7].q(inf)/4,instrument:\sawSynthSustain,legato:1.1].p;
 		//there's a better way to write these echoing lines!
 		//var saw2 = [freq:[\r,12,11,\r].df(\c).q(inf),out:3,amp:0.07,dur:[24,3,6,7].q(inf)/4,instrument:\sawSynthSustain,legato:1.1].p;
 		//var saw3 = [freq:[\r,11,6.5,\r].df(\c).q(inf),out:2,amp:0.06,dur:[32,3,6,7].q(inf)/4,instrument:\sawSynthSustain,legato:1.1].p;
@@ -219,8 +271,8 @@ Song.getherLines=
 		[12, 11, \_,  \r, \r, \r],
 		[\r, \r, 11,  7,  \_, \r],
 		[\r, \r, \r,  \r, 7,  6],
-		[4,  3,  2.5, 2,  1,  \_],
 		[6,  5,  \_,  \_, 3,  \_],
+		[4,  3,  2.5, 2,  1,  \_],
 	].df(\d);
 P(\echos,start:'gether.(1) ',music:{|p b e| 
 	MegaBind(
@@ -277,13 +329,23 @@ P(\bassPad,start:'gether.(1)',music:{|p b e|
 		}
 	).play
 });
-["SARGON [OC]: We now know we cannot permit ourselves (boom) to exist in your world, my children. ",[5,4,3,-7,4,3,2,1,-7,-5,-3,-7,1].dm(\b,scale:\mixolydian) ++ [3,2,5,4,-7,3,2].dm(\g,scale:\minor)].addLine;
+["SARGON [OC]: We now know we cannot permit ourselves (boom) to exist in your world, my children. ",[5,4,3,-7,4,3,2,1,-7,-5,-3,-7,1].dm(\b,scale:\mixolydian) ++ [2.5,2,6,5,1,4,3].dm(\g)].addLine;
+(
 Song.weNowKnowLines= [
 	[6, 5, 4.5, 1,  5,  4.5, 3,  2,  1,  -6, \_],
 	[3, 3, 2,   \_, \_, \_,  \_, \r, \r, \r, -4.5],
 	[1, 1, -6,  \_, \_, \_,  \_, \r, \r, \r, -14.5],
 	[6, 5, 4.5, 1,  5,  4.5, 3,  2,  1,  16, \_]*(-1)
 ].df(\a);
+);
+P(\bass,start:\cannot,syl:12,music:{|p b e| 
+	[
+		freq: [2,1.5,-5,-4.5,-1,-13].df(\f,octave:[3,4]).q,
+		dur:b.drop(1).parse([2/3,[ 1/3,1 ],[1,2/3],[1/3,1],1,1, ])++3 =>_.q,
+		legato:1
+	].pp
+	
+});
 P(\lines,start:\cannot,music:{|p b e| 
 	a=MegaBind(
 		p.weNowKnowLines,
@@ -305,11 +367,53 @@ P(\lines,start:\cannot,music:{|p b e|
 	).play
 });
 P.tune(\cannot);
-["Thalassa and I must now (boom) also depart",[1,2,3,1,4,2,5, 5,4.5, 4.5,7].dm(\d)].addLine;
+["(boom) Thalassa and I must now (boom) also depart",[-1,1,2,3,1,4,2,5, 5,4.5, 4.5,7].dm(\d)].addLine;
+P(\bass,start:\depart,music:{|p b e| 
+	[
+		freq: [1,2,1.5].df(\d,octave:[3,2]).q,
+		dur: b.parse([8,4]) ++ 1 =>_.q,
+		instrument: \stringyy,
+		amp:0.3
+	].pp
+	
+});
 P.tune(\depart);
 ["(boom) into oblivion. ",[-2,-7,1,2,1,-5,-4].dm('c#',octave:6)].addLine;
-P.tune('into oblivion');
-["KIRK: Is there any way we can help you, Sargon? ","r"].addLine;
+P.tune('into oblivion',Pbindf(_,\amp,0.06,\out,Effect( { |i| EchoNone.ar(i,2,[1.3, 2 ]*0.6,9)*0.6=> { |i| i+( 0.5*PitchShift.ar(i,pitchRatio:[1.5,2]) ) }  } ).bus.index,inputChannels:2));
+P(\counter,start:'into oblivion',music:{|p b e| 
+	[
+		freq: [5,4,3,2,1].df('a-',octave:4).q,
+		dur: b.parse([2,1,1,[ 2,0.5 ],0.5]) => _.q,
+		legato:1.1,
+		amp:0.07
+		//out:Effect(EchoNone.ar(_,b.sum+b.last,b.sum+b.last,9)).bus.index
+	].pp
+	
+});
+
+["(echo)","r", Song.durs['into oblivion'].list.asArray ].addLine;
+P(\counterEcho,start:'echo',music:{|p b e| 
+	[
+		instrument:\stringyy,
+		freq: [5,4,3,2,1].df('a-',octave:4).q,
+		dur: b.parse([2,1,1,[ 2,0.5 ],0.5]) => _.q,
+		amp:0.2,
+		legato:1,
+		//out:Effect(EchoNone.ar(_,b.sum+b.last,b.sum+b.last,9)).bus.index
+	].pp
+	
+});
+
+P(\echo,start:'echo',music:{|p b e| 
+	[
+		freq:[\r,-7,1,2,1,-5,-4].df('c#',octave:6).q,
+		dur:b.q,
+		instrument:\sawSynthSustain,amp:0.02,
+	].pp
+});
+["KIRK: Is there any way we can help you, Sargon? ",[12,11,13,11,7,6,5,11,7,7,6].dm(\c)].addLine;
+P.tune(\help,Pbindf(_,\legato,1.5));
+
 ["SARGON: Yes, my son. ","r"].addLine;
 ["You can allow Thalassa and me to ","r"].addLine;
 ["(boom boom) share your bodies again. ","r"].addLine;

@@ -25,12 +25,11 @@ o = [
 	"KIRK: But your vessel was destroyed, too. Where was your consciousness kept? ",  Pseq.prNew,  List.prNew,  Array.prNew(17),  
 	"SARGON: Yes, my son. ",  Pseq.prNew,  List.prNew,  Array.prNew(3),  
 	"Mister Spock's consciousness was placed in me. ",  Pseq.prNew,  List.prNew,  Array.prNew(10),  
-	"Henoch would (boom) read your thoughts and believe it also. ",  Pseq.prNew,  List.prNew,  Array.prNew(13),  
 	"SARGON [OC]: We now know we cannot permit ourselves to exist in your world, my children. ",  Pseq.prNew,  List.prNew,  Array.prNew(20)
 ];
 p = [
 	// Dictionary
-	0, [ array: o[1],  size: 27 ],  
+	0, [ array: o[1],  size: 26 ],  
 	// Array
 	1, [ nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -146,17 +145,17 @@ p = [
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
 		o[100],  o[101],  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		o[104],  o[105],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil ],  
@@ -385,17 +384,7 @@ p = [
 	// List
 	102, [ array: o[103] ],  
 	// Array
-	103, [ 0.412,  0.288,  0.346,  0.392,  
-		0.4,  0.428,  0.49,  0.272,  
-		0.276,  0.448,  0.452,  0.486,  
-		0.64 ],  
-	// Pseq
-	105, [ list: o[106],  repeats: 1,  
-		offset: 0 ],  
-	// List
-	106, [ array: o[107] ],  
-	// Array
-	107, [ 0.752,  0.96,  0.771,  0.41,  
+	103, [ 0.752,  0.96,  0.771,  0.41,  
 		0.426,  0.275,  0.392,  0.473,  
 		0.339,  0.481,  0.679,  0.826,  
 		0.406,  0.623,  0.499,  0.561,  

@@ -18,7 +18,8 @@ MegaBind {
 		voices.do({|e| e.freqSeq={e.freq.asDemandFreqs.dq.demand(e.dur)}});
 		voices.do({|e| e.freqDq={e.freq.asDemandFreqs.dq}}); // i.freqDq.demand(i.dur);
 		voices.do({|e| e.gateSeq={e.freq.asDemandGate.dq.demand(e.dur)}});
-		voices.do({|e| e.trigSeq={TDuty.kr(e.dur.dropLast.dq,0,1)}})
+		voices.do({|e| e.trigSeq={TDuty.kr(e.dur.dropLast.dq,0,1)}});
+                voices.do({|e| e.seq={{|i| i.dq.demand(e.durs)}}})
 	}
         pitches_{ |p|
           pitches = p;

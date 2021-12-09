@@ -113,14 +113,110 @@ P(\bass,start:\sacrifice,music:{|p b e|
 ["KIRK: You're alive. ",[1,1,7].dm(\f,scale:\mixolydian)].addLine;
 P.tune(\alive);
 ["MCCOY: There was enough poison in that hypo to kill ten Vulcans. ","r"].addLine;
-["SARGON [OC]: No, Doctor. I allowed you to believe that to be true so that ","r"].addLine;
-["Henoch would read your thoughts and believe it also. ","r"].addLine;
-["MCCOY: Sargon. ","r"].addLine;
+["SARGON [OC]: No, Doctor.","r"].addLine;
+[" I allowed you to believe that 5to be true so that ",[3,2,4,3,1,-5,-7,-6,-4,-1,2,-6,-5].dm(\c,scale:\mixolydian,octave:6)].addLine;
+P.tune(\allowed);
+Song.allowedInner= {|i x| 
+			Saw.ar( i.freqSeq.lag(0.01) + i.width, 0.1)
+			//* Env.perc(0.05,3).kr(0,gate:i.trigSeq * i.gateSeq)
+			* Env.asr(0,1,3).kr(0,gate:i.gateSeq)
+		};
+Song.allowedFx = {|i v|
+		       i[[1,0,2]]	
+		       * 0.4
+		       //=>Splay.ar(_)
+		};
+P(\keys,start:\allowed,music:{|p b e| 
+	MegaBind(
+		[
+			[3,  2,  4, 3,  1,  -5, -7, -6, -4, -1, 2,    -6, -5],
+			[\r, \r, 1, \_, \r, \r, -4, \_, \r, \r, -4.5, \_, \r ],
+			[\r, \r, 5, \_, \_, \r, 1, \_, \_, \r, -6,   \r, \r]
+		].df(\c,scale:\mixolydian),
+		b,
+		[
+			width: [0,{SinOsc.ar(3,0,3/2)},{ SinOsc.ar(5,0.2,2) }],
+		],
+		p.allowedInner,
+		p.allowedFx
+	).play
+});
+P(\bass,start:\allowed,music:{|p b e| 
+	[
+		freq: [\r,1,4,2,5,4,3,6,5].df(\c,octave:[3,4]).q,
+		dur: b ++ Song.durs[\read].list => _.parse([2,4,4,3,3,3,3,2,2]) => _.q,
+		amp: 0.1
+	].pp
+});
+["Henoch would (boom) read your thoughts and believe it also. ",[11,7,5,-4,13,12,15,13,12,11,7,14,13].dm(\c,octave:4)].addLine;
+P.tune(\read);
+P(\line,start:\read,music:{|p b e| 
+	MegaBind(
+		[
+			[11, 7,  5,  \r, 13, 12, 15, 13, 12, 11, 7, 14, 13],
+			[\r, \r, \r, -4, -5, -6, -7,\r,\r,-6,\_,-5],
+
+		].df(\c,octave:4),
+		b,
+		[
+
+			width:[0],
+
+		],
+		p.allowedInner,
+		{|i| i*0.4
+			=> Splay.ar(_)
+		}
+		
+	).play
+});
+[ "MCCOY: Sargon. ",[5.5, 1].dm(\g)].addLine;
+P.tune('MCCOY: Sargon');
+P(\chord,start:'MCCOY: S',music:{|p b e| 
+	[
+		freq: [1,3,5.5].df(\g),
+		dur:b.sum.q,
+		strum:0.05
+	].pp
+	
+});
 ["SPOCK: It seems, Doctor, the injection was only enough to cause unconsciousness. ","r"].addLine;
 ["SARGON [OC]: But Henoch believed and fled the body. ","r"].addLine;
 ["He is destroyed. ","r"].addLine;
-["KIRK: But your vessel was destroyed, too. Where was your consciousness kept? ","r"].addLine;
-["SPOCK: The place Henoch would least suspect, Captain. ","r"].addLine;
+["KIRK: But your vessel was destroyed, too. Where was your consciousness kept? ",[7,13,11,7,5,4,3,4,5,-7].dm(\g,scale:\mixolydian)++[7,11,14,13,11,7,5].dm(\d,scale:\mixolydian)].addLine;
+P.tune(\kept);
+["SPOCK: The place Henoch would least suspect, Captain. ",[2,3,4,3,1,5,4,6, 4,3].dm(\e,scale:\whole)].addLine;
+P.tune(\suspect);
+Song.suspectInner_(
+{|i|
+			Gendy1.arWidth(freq:i.freqSeq+[1,2,3,4])//Dust.ar(50)
+			=> { 
+				|j| Convolution.ar(
+					Saw.ar(i.freqSeq.lag(0.5)*[1,2]/8 ),
+					j => FreeVerb.ar(_,0.8,0.9)
+				)
+				* Env.asr(release:6).kr(2,gate:i.gateSeq)
+				*0.005
+				*  i.amp 
+
+			} 			
+		}
+);
+P(\bass,start:\suspect,music:{|p b e| 
+	MegaBind(
+		[
+			//[2,  3,  4,  3,  1,  5,  4,  6, 4, 3],
+			[\r, 3, 4, \_, \_, 5, \_, 6,\_,\_,\_]
+		].df(\e,scale:\whole),
+		b[(0..(b.size-2))]++( b.last+p.durs[e.start+1].list[(0..8)].sum ),
+[
+	amp:[
+		{ Env([1,1,0.5],b.parse([6,3])).kr(0,gate:1) }		
+	]
+],
+		p.suspectInner,
+	).play
+});
 ["CHAPEL: (boom) That is why I was summoned into Sickbay, Doctor. ",[-5,5,4,3,2,1, 1,-7,1,2, 1,-7,-6,-5].dm(\a,scale:\melodicMinor)].addLine;
 P.tune(\summoned);
 P(\bass,start:\summoned,music:{|p b e| 
@@ -131,19 +227,10 @@ P(\bass,start:\summoned,music:{|p b e|
 			].df(\a) ,
 			b.parse([10,4]),
 			[
-				//amp:[1]
+				amp:[1]
 			],
-			{|i|
-				Gendy1.arWidth(freq:i.freqSeq)//Dust.ar(50)
-				=> { |j| Convolution.ar(
-					Saw.ar(i.freqSeq.lag(0.5)*[1,2]/8 ),
-					j => FreeVerb.ar(_,0.8,0.9)
-					
-				)
-				* Env.asr(release:6).kr(2,gate:i.gateSeq)
-				*0.01
- } 			},
-			{|i| Splay.ar(i/5)}
+			p.suspectInner,
+			{|i| i};//Splay.ar(i/5)}
 		
 	).play
 		
@@ -418,11 +505,20 @@ P.tune(\help,Pbindf(_,\legato,1.5));
 P.tune('my son');
 ["You can allow Thalassa and me to ",[1,2,4,5,6,5,6,4,12,11].dm('a-')].addLine;
 P.tune('Thalassa and me');
+P(\bass,start:'Thalassa and me',music:{|p b e| 
+	[
+		freq: [11,7,5].df('a-',octave:3,scale:\mixolydian).q,
+		dur: b.parse([3,5,2]).q
+	].pp
+	
+});
 ["(boom boom) share your bodies again. ",[1,1,13,12, 13,14,13,12,11].dm(\f)].addLine;
 P.tune(\bodies);
 ["A last moment together. ","r"].addLine;
 ["(Mulhall nods, and they go over to the science station for the light trick and voice change.) ","r"].addLine;
-["MULHALL: Oblivion together does not frighten me, beloved. Promise we'll be together. ","r"].addLine;
+["MULHALL: Oblivion together","r"].addLine;
+[" does not frighten me, beloved.","r"].addLine;
+[" Promise we'll be together. ","r"].addLine;
 ["KIRK: I promise, beloved. ","r"].addLine;
 ["MULHALL: Together forever. ","r"].addLine;
 ["KIRK: Forever beloved. Forever. ","r"].addLine;

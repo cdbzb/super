@@ -15,22 +15,37 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 */
 ( s.waitForBoot( {
 	Song(\ending,[]).current;
+	~stills.isNil.if{~stills=Stills("/Users/michael/trek/BySection/media/return to tomorrow.mov").current};
 	//Song.currentSong.synful1 = Synful();
 	//Song.currentSong.synful2 = Synful();
+	Song.resources.condition=Condition();
 	Song.resources.infrastructure=
 	{
 		FunctionList.new.array_([
 			{ Song.currentSong.synful1 = ~synful1 = Synful()},
 			{  Song.currentSong.synful2 = ~synful2 = Synful()},
 			{ fork {
-				~synful2.condition.wait;
-				Song.condition.test_(true).signal
+				while( {
+					~synful2.controller.loaded.not;
+
+				},{0.05.wait});
+				Song.resources.condition.test_(true).signal
 			}}
 		]).value
 	}.inEnvir;
 	["SPOCK: Sargon! No, Sargon, please. Let me. Let me transfer. ",[1,2,3].dm(\c)].addLine;
 	["(He falls to the floor and his victims are freed from their pain.) ","r"].addLine;
 	["KIRK: Spock. My friend Spock. If there'd only been another way. ",[5,3,11,7, 5,6,7,5,13, 7,11,3,12].dm(\e)].addLine;
+	P.still( \friend, start: \friend, timecode:4926.seconds, music: { |p b e|
+		e.still.value(
+			wait: b.sum-1,
+			text:["Spock","my friend Spock"]
+		);
+		fork{
+			b[(0..3)].sum.wait;
+			e.still.setText(["If there'd only been","another way"])
+		}
+	});
 	P.tune(\friend);
 	P(\chords,start:\friend,music:{|p b e| 
 		[
@@ -49,6 +64,12 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 	["SARGON [OC]: (boom) I could not allow your sacrifice of one so close to you. ",[1,13,12,14,13,12,11,7,6,5,4,3,2,4,3,2].dm(\c)].addLine;
 	//P.tune(\sacrifice);
 	Song.voxSacrifice=VocalRPP(\sacrifice,\test);
+	P.still( \kirk, start: \sacrifice, timecode:4942.582.seconds, music: { |p b e|
+		e.still.value(
+			wait: b.sum,
+			fadeIn: 2
+		);
+	});
 	P(\boom,start:\sacrifice,music:{|p b e| 
 		(instrument:\cymbalsDS,amp:0.003,att:1).play
 	});
@@ -99,7 +120,7 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 			].pp
 
 		});
-		["(Lights dim and glow, then Chapel wobbles.) ","r",[10]].addLine;
+		["(Lights dim and glow, then Chapel wobbles., MCCOY: Jim. ) ","r",[8]].addLine;
 		P(\transform,start:\wobbles,music:{ |p b e| 
 			Synths(\transLinen,\sustain,b.sum,\freq,[1,3,11,13].df(\c),\amp,0.1,\out,1);
 			Synths(\transLinen,\sustain,b.sum,\freq,[1,3,11,13].df(\g,scale:\minor),\amp,0.1,\out,2);
@@ -108,10 +129,23 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 			//////////strings
 			p.synful1.patch(\violas,\tremsulpont,0);
 			p.synful2.patch(\violins2,\tremsulpont,0);
-			(expression:100,freq:[1,3,5,6.5,11,13].df(\c),type:\synful,instance:p.synful1,dur:b.sum,amp:1).play;
-			(expression:200,note:[1,3,5,6.5,11,13].df('f#'),type:\synful,instance:p.synful2,dur:b.sum,amp:2).play;
+			(expression:100,freq:[3,5,6.5,11,13].df(\c),type:\synful,instance:p.synful1,dur:b.sum,legato:1,amp:1).play;
+			[ 
+				expression:100,
+				freq:[1,1].df(\c).q,
+				type:\synful,
+				instance:p.synful1,
+				dur:[ b.sum, p.durs[e.start+1].list.sum ].q,
+				legato:1,amp:1 
+			].p.play;
+			(expression:200,note:[3,5,6.5,11,13].df('f#'),type:\synful,instance:p.synful2,
+			dur:b.sum,
+			legato:1,amp:2).play;
+			[ expression:100,freq:[[ 1 ],[ -7,-17 ]].df('f#').q,type:\synful,instance:p.synful1,
+				dur:[ b.sum, p.durs[e.start+1].list.sum ].q,
+			legato:1,amp:1 ].p.play;
 			p.synful1.syn.set(\out,Effect(FreeVerb.ar(_,0.75,0.55)).bus.index);
-			p.synful2.syn.set(\out,Effect(PlateReverb.ar(_,mix:0.55),out:2).bus.index);
+			p.synful2.syn.set(\out,Effect(PlateReverb.ar(_,mix:0.55),out:0).bus.index);
 			////////timpani
 			s.bind{{ |pitchScale=1.15 loss=0.99998 |
 				var env=Env.linen(0,b.sum-5,8).kr(2,gate:1)*0.175;
@@ -126,18 +160,53 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 			}.play;}
 
 		});
-		["MCCOY: Jim. ","r"].addLine;
-		["(Spock stands up.) ",[1,-1].dm(\f)].addLine;
+		["(Spock stands up.) ",[1,11].dm(\f)].addLine;
 		P(\bass,start:'stands up',music:{|p b e| 
-			
 			p.synful1.syn.set(\out,Effect(FreeVerb.ar(_,0.75,0.55)).bus.index);
-			(expression:100,freq:[-11,-1].df(\f),type:\synful,instance:p.synful1,dur:b.sum+p.durs[e.start+1].list.sum + p.durs[e.start+2].list[0],amp:1).play;
+			(dur:b.sum,amp:0.2,instrument:\stringyy,freq:[1,11].df(\f,octave:[3,2])).play
+			//(expression:100,freq:[-11,-1].df(\f),type:\synful,instance:p.synful1,dur:b.sum+p.durs[e.start+1].list.sum + p.durs[e.start+2].list[0],amp:1).play;
 		});
 		["KIRK: You're alive. ",[1,1,7].dm(\f,scale:\mixolydian)].addLine;
 		P.tune(\alive);
-		["MCCOY: There was enough poison in that hypo to kill ten Vulcans. ","r"].addLine;
+		["MCCOY: There was enough poison in that hypo to kill ten Vulcans. ",[3,2,1,-7].dm(\c,scale:\mixolydian) ++ [5,3,2,1,4,3,4,5,12,5,4].dm('e-')].addLine;
+
+		P.tune(\poison);
+		P(\chord,start:\poison,music:{|p b e| 
+			MegaBind(
+				[
+					[1,\_,1.5,2,2.5,\_]
+				].df(\c,octave:3),
+				b,
+				[],
+				{|i|
+					Saw.ar( i.freqSeq, 0.1)
+					* Env.asr(0.2,1,4).kr(0,gate: i.gateSeq)
+				}
+			).play
+		});
 		["SARGON [OC]: No, Doctor. (Boom)",[1,-5,-3, -17].dm(\a,scale:\minor)].addLine;
+		P(\bass,start:'No, Doc',music:{|p b e| 
+			MegaBind(
+				[
+					[1,2]
+				].df(\a,octave:3),
+				b.parse([3,1]),
+				[
+					lag: { [0,0.4].dq.demand(b.parse([3,1])) }
+				],
+				{|i|
+					Pulse.ar( i.freqSeq.lag2(i.lag), 0.3,0.1)
+					* Env.asr(0.2,1,2).kr(0,gate:i.gateSeq)
+				},
+				{|i v|
+
+					 TwoTube.ar(i, 0.1, 0.99, [ 1111, 1222 ],[ 762, 674 ],  mul: 1.0,  add: 0.0)
+					*0.2
+				}
+			).play
+		});
 		P.tune('No, Doc');
+
 		[" I allowed you to believe that to be true so that ",[3,2,4,3,1,-5,-7,-6,-4,-1,2,-6,-5].dm(\c,scale:\mixolydian,octave:6)].addLine;
 		P.tune(\allowed);
 		Song.allowedInner= {|i x| 
@@ -204,8 +273,8 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 			].pp
 
 		});
-		["SPOCK: It seems, Doctor, the injection was only enough to cause unconsciousness. ","r"].addLine;
-		["SARGON [OC]: But Henoch believed and fled the body. ","r"].addLine;
+["SPOCK: It seems, Doctor, the injection was (boom) only enough to cause unconsciousness. ","r"].addLine;
+["SARGON [OC]: But Henoch believed and fled the body. ","r"].addLine;
 		["(boom) He is (boom) destroyed. ",[-5,5,5,-5,5,5].dm(\g)].addLine;
 		P.tune(\destroyed);
 		P(\chord,start:\destroyed,music:{|p b e| 
@@ -564,17 +633,17 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 			});
 			["(boom boom) share your bodies again. ",[1,1,13,12, 13,14,13,12,11].dm(\f)].addLine;
 			P.tune(\bodies);
-			["A last moment together. ","r"].addLine;
-			["(Mulhall nods, and they go over to the science station for the light trick and voice change.) ","r"].addLine;
-			["MULHALL: Oblivion together","r"].addLine;
-			[" does not frighten me, beloved.","r"].addLine;
-			[" Promise we'll be together. ","r"].addLine;
-			["KIRK: I promise, beloved. ","r"].addLine;
-			["MULHALL: Together forever. ","r"].addLine;
-			["KIRK: Forever beloved. Forever. ","r"].addLine;
-			["(They embrace and kiss, and the light thing happens again during it.) ","r"].addLine;
-			["KIRK: Well, I'm sure that Sargon appreciated your co-operation, Doctor Mulhall. ","r"].addLine;
-			["MULHALL: Yes. I was happy to co-operate, Captain. ","r"].addLine;
+["A last moment together. ","r"].addLine;
+["(Mulhall nods, and they go over to the science station for the light trick and voice change.) ","r"].addLine;
+["MULHALL: Oblivion together","r"].addLine;
+[" does not frighten me, beloved.","r"].addLine;
+[" Promise we'll be together. ","r"].addLine;
+["KIRK: I promise, beloved. ","r"].addLine;
+["MULHALL: Together forever. ","r"].addLine;
+["KIRK: Forever beloved. Forever. ","r"].addLine;
+["(They embrace and kiss, and the light thing happens again during it.) ","r"].addLine;
+["KIRK: Well, I'm sure that Sargon appreciated your co-operation, Doctor Mulhall. ","r"].addLine;
+["MULHALL: Yes. I was happy to co-operate, Captain. ","r"].addLine;
 			["CHAPEL: It was beautiful.","r"].addLine;
 		})
 	)

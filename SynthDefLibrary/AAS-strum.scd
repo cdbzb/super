@@ -12,7 +12,7 @@
 		currentEnvironment.play;
 	};
 
-	Event.addEventType(\vsti,play,(parent:()));
+	//Event.addEventType(\vsti,play,(parent:()));
 
 	Event.addEventType(\strum,{|server|
 		~stru= [ 'down', 'muted', 'up', 'alt', 'one', 'two', 'muffleD', 'three', 'muffleU', 'four', 'mute', 'five', 'six' ];

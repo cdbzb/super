@@ -21,7 +21,8 @@ Synful {
 	init {  
 		syn = Synth(\vsti2,target:RootNode(Server.default));
 		controller = VSTPluginController(syn);
-		condition = Condition.new();
+		//condition = Condition.new();
+                condition = CondVar.new();
 		plugin = 'SynfulOrchestra.vst';
 		expr = 0.5 ! 16;
 		patches = ( flute:73, oboe:68, enghorn:69, clarinet:71, bassoon:70, horn:62, horn4:5, horn8:6, trumpet:56, trombone:57, violin:40, viola:41, cello:42, bass:43, violins:0, violins2:1, violas:2, cellos:3, basses:4);
@@ -32,7 +33,8 @@ Synful {
 			Server.default.sync;
 			controller.open("/Library/Audio/Plug-Ins/VST/"++plugin,
 				action:{
-					condition.test_(true).signal;
+					//condition.test_(true).signal;
+                                        condition.signalOne;
 					controller.readProgram(defaultProgram); 
 				}
 			);

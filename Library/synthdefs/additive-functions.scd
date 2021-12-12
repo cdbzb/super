@@ -1,3 +1,4 @@
+/*
 ~cents=2**((1200/_).reciprocal);
 ( ~reedy = { |freq = 400 sustain = 3 release = 9 amp = 0.1|
 	{
@@ -15,7 +16,7 @@
 			amp *
 			((1..numberOfPartials)*2).reciprocal
 			//higr number is darker
-			**rrand(1.0,2.0)
+			** rrand(1.0,2.0)
 			//makes is organ-y
 			*Array.fill(100,{[0,1,1,1].choose})
 
@@ -78,5 +79,8 @@ SynthDef(\x,{
 	Out.ar(1,sig)
 }).add
 
+/*
 a=Synth(\x,[\freqs,[100,120,1230,1990,2000,8000,8001,4000]]);
 a.set(\freqs,[500,506,0,0,0,0,0,0]);
+*/
+*/

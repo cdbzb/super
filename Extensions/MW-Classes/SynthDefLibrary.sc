@@ -3,6 +3,7 @@ SynthDefLibrary {
     classvar <>listings,<>taglist,<>currentPack,<>files;
 
     *initClass {
+        Class.initClassTree(SynthDef);
         listings=List.new;
         taglist = ();
         Server.default.waitForBoot{

@@ -121,6 +121,12 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 
 		});
 		["(Lights dim and glow, then Chapel wobbles., MCCOY: Jim. ) ","r",[8]].addLine;
+		P.still( \spock, start: \wobbles, lag:2, timecode:4948.seconds, music: { |p b e|
+			e.still.value(
+				wait: b.sum-e.lag,
+				fadeIn:0.5
+			);
+		});
 		P(\transform,start:\wobbles,music:{ |p b e| 
 			Synths(\transLinen,\sustain,b.sum,\freq,[1,3,11,13].df(\c),\amp,0.1,\out,1);
 			Synths(\transLinen,\sustain,b.sum,\freq,[1,3,11,13].df(\g,scale:\minor),\amp,0.1,\out,2);
@@ -161,6 +167,12 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 
 		});
 		["(Spock stands up.) ",[1,11].dm(\f)].addLine;
+		P.still( \wide, start: \stands, timecode:4956.5.seconds, music: { |p b e|
+			e.still.value(
+				wait: b.sum,
+				fade:4
+			);
+		});
 		P(\bass,start:'stands up',music:{|p b e| 
 			p.synful1.syn.set(\out,Effect(FreeVerb.ar(_,0.75,0.55)).bus.index);
 			(dur:b.sum,amp:0.2,instrument:\stringyy,freq:[1,11].df(\f,octave:[3,2])).play

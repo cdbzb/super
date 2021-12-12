@@ -1,4 +1,4 @@
-(// piano	TODO put it on a node
+(fork{ // piano	TODO put it on a node
 	var play =
 	{ 
 		i=currentEnvironment; 
@@ -12,7 +12,7 @@
 		currentEnvironment.play;
 	};
 
-	Event.addEventType(\vsti,play,(parent:()));
+	//Event.addEventType(\vsti,play,(parent:()));
 
 	Event.addEventType(\strum,{|server|
 		~stru= [ 'down', 'muted', 'up', 'alt', 'one', 'two', 'muffleD', 'three', 'muffleU', 'four', 'mute', 'five', 'six' ];
@@ -24,37 +24,39 @@
 		~midinote=~strums[~switch];
 		~type=\vst_midi;
 		currentEnvironment.play
-		}
-	);
-
-	~vsti={|plug bus target|
-		VSTPluginController(Synth(\vsti,[\out,bus],target:target)).open(plug)
-	};
-
-	~vstiN=
-	{ |plug|
-		var b=Bus.audio(s,2);
-		var n=NodeProxy.audio.play
-			.source_({In.ar(b,2)});
-		var c=~vsti.(plug,b);
-		(//guitar
-			node:n,
-			controller:c
-		)
-	};
-
-	~guitar=
-	{
-		var b=Bus.audio(s,2);
-		var n=NodeProxy.audio.play
-			.source_({In.ar(b,2)});
-		var c=~vsti.('Strum GS-2.vst',b);
-		(//guitar
-			node:n,
-			controller:c
-		)
 	}
-)
+);
+
+3.wait;
+~vsti={|plug bus target|
+	VSTPluginController(Synth(\vsti,[\out,bus],target:target)).open(plug)
+};
+
+~vstiN=
+{ |plug|
+	var b=Bus.audio(s,2);
+	var n=NodeProxy.audio.play
+	.source_({In.ar(b,2)});
+	var c=~vsti.(plug,b);
+	(//guitar
+		node:n,
+		controller:c
+	)
+};
+
+10.wait;
+~guitar=
+{
+	var b=Bus.audio(s,2);
+	var n=NodeProxy.audio.play
+	.source_({In.ar(b,2)});
+	var c=~vsti.('Strum GS-2.vst',b);
+	(//guitar
+		node:n,
+		controller:c
+	)
+}
+ })
 
 	//a=~vst.('Pianoteq 5')
 	//(type:vsti,controller.a)

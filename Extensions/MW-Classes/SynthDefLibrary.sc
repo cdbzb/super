@@ -3,13 +3,14 @@ SynthDefLibrary {
     classvar <>listings,<>taglist,<>currentPack,<>files;
 
     *initClass {
-        Class.initClassTree(SynthDef);
+        Class.initClassTree(Phaser2);
         listings=List.new;
         taglist = ();
-        Server.default.waitForBoot{
-            files=files++"/Users/michael/tank/super/SynthDefLibrary/*".pathMatch;
+        //Server.default.waitForBoot
+        StartUp.add( {
+            var files=files++"/Users/michael/tank/super/SynthDefLibrary/*".pathMatch;
             files.do{|file| file.load}
-        }
+        } )
     }
 
     *add { |def tags|

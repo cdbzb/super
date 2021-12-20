@@ -26,19 +26,17 @@ Stills {
 
 	//monitor -1 for left 0 for center default is -1
 	preview { |markerName wait=5 fade=0 monitor=0 text fadeIn| 
-
 		var w;
-
 		muted.not.if{
-
-			w=this.plot(markerName,monitor);
+                        (markerName.asString.contains ( "clear")).if{
+                          w=this.plotClear(markerName,monitor)
+                        }{
+                          w=this.plot(markerName,monitor)
+                        };
 
 			fadeIn.notNil.if{w.fadeIn(fadeIn)};
-
 			text.notNil.if{this.title(w,text)};
-
 			{w.fade(fade)}.defer(wait);
-
 			^w
 		}
 	}
@@ -89,21 +87,36 @@ Stills {
 			^Image.open(fileName)
 		}
 
+                plotClear{
+                  |markerName monitor=(-1)|
+                  var image=this.mark(markerName);
+                  var w;
+                  try{
+                    w = Window(bounds:Rect(1500*monitor,200,1400,800),border:false)
+                    .background_( Color.clear)
+                    .front;  
+                  }{
+                    w = Window(bounds:Rect(0,200,1400,800),border:false)
+                    .background_( Color.clear)
+                    .front;  
+                  }
+                  ^w
+                }
 		plot{|markerName monitor=(-1)|
-		var image=this.mark(markerName);
-		var w;
-		try{
-			w = Window(bounds:Rect(1500*monitor,200,1400,800),border:false)
-			.background_( Color.black)
-			.drawFunc_({Pen.drawImage(Point(100,100),image,operation:'sourceOver',opacity:1)})
-			.front;  //}.defer(Server.default.latency);
-		}{
-			w = Window(bounds:Rect(0,200,1400,800),border:false)
-			.background_( Color.black)
-			.drawFunc_({Pen.drawImage(Point(100,100),image,operation:'sourceOver',opacity:1)})
-			.front;  //}.defer(Server.default.latency);
-		}
-		^w
+                  var image=this.mark(markerName);
+                  var w;
+                  try{
+                          w = Window(bounds:Rect(1500*monitor,200,1400,800),border:false)
+                          .background_( Color.black)
+                          .drawFunc_({Pen.drawImage(Point(100,100),image,operation:'sourceOver',opacity:1)})
+                          .front;  
+                  }{
+                          w = Window(bounds:Rect(0,200,1400,800),border:false)
+                          .background_( Color.black)
+                          .drawFunc_({Pen.drawImage(Point(100,100),image,operation:'sourceOver',opacity:1)})
+                          .front;  
+                  }
+                  ^w
 	}
 	//wiggle - get frames +- 10 
 
@@ -177,6 +190,15 @@ Still {
             }
         }
 
+        sequenceText { | array |
+          fork{
+            array.pairsDo{ |time, textt|
+              time.wait;
+              this.setText(textt)
+            }            
+          }
+
+        }
 	plot{|markerName monitor=(-1)|
 		var image=this.mark(markerName);
 		var w;

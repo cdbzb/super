@@ -702,16 +702,14 @@ P {
     *still{   // renders the still when compiled
               // and stores a function to preview it in resources.still (e.still)
         |key start syl lag=0 timecode=60 music|
-        //Stills.current.set(key++start=>_.asSymbol, timecode);
-		var aStill = Still(key++start=> _.asSymbol,timecode:timecode);
-        //nope - make a Still instead
-        //like define Still here and in the music:{
+		var aStill = Still(key ++ start => _.asSymbol, timecode:timecode);
+        // nope - make a Still instead
+        // like define Still here and in the music:{
         // e.still.wait_(4).fadeIn_(2).text_   etc etc
         //}
         ^P(
             key: ( key ++ start ).asSymbol, 
             resources: (
-                //still: {| monitor=0 wait fade=2 fadeIn=0 text| defer{ Stills.current.preview( key ++ start => _.asSymbol, monitor:monitor,fade:fade,fadeIn:fadeIn,text:text,wait:wait ) }}
 				still: aStill
             ),
             start: start,

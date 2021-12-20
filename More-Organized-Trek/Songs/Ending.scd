@@ -16,8 +16,8 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 ( s.waitForBoot( {
 	Song(\ending,[]).current;
 	~stills.isNil.if{~stills=Stills("/Users/michael/trek/BySection/media/return to tomorrow.mov").current};
-	//Song.currentSong.synful1 = Synful();
-	//Song.currentSong.synful2 = Synful();
+			 Song.currentSong.synful1 = ~synful1 = Synful();
+			 Song.currentSong.synful2 = ~synful2 = Synful();
 	Song.resources.condition=Condition();
 	Song.resources.infrastructure=
 	{
@@ -62,6 +62,38 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 		].pp
 	});
 	["SARGON [OC]: (boom) I could not allow your sacrifice of one so close to you. ",[1,13,12,14,13,12,11,7,6,5,4,3,2,4,3,2].dm(\c)].addLine;
+	Song.carrierBus = Bus.audio(s,1);
+	Song.modulatorBus = Bus.audio(s,1);
+
+	( Song.sargonCarrier = {|p b e| {  
+		var tune = p.tune[e.start].list;
+		var freqs = Demand.ar(
+			TDuty.ar(b.dq,1,1),
+			1,
+			tune.asArray.midicps /.t [1,2,4,5,6,8] => _.dq
+		);
+		var car = Gendy1.arWidth( freq: freqs , width:1.10) => Mix.ar(_)
+		* Env.linen(3,5,6).kr(2,gate:1);
+		var saw = Saw.ar(freqs) * 0.1
+		=> Splay.ar(_)
+		=> RLPF.ar(_,100,2)
+		* Env.linen(3,5,6).kr(2,gate:1);
+		car => FreeVerb.ar(_,1,0.8)
+		+saw
+		/10
+	}.play(s,Song.carrierBus.index)
+}	;
+
+Song.sargonModulator = {|rpp| { 
+	PlayBuf.ar( 1,rpp.buffer) 
+	=> EchoNone.ar(_,1,0.4,2) * 2
+	//=> MoogFF.ar(_,8000,1)
+	=> LPF.ar(_,6000)
+	*5	 => SafetyLimiter.ar(_) /5
+	//+ ( In.ar(carrierBus.index,1) )
+}.play(s,Song.modulatorBus.index);
+ });
+
 	//P.tune(\sacrifice);
 	Song.voxSacrifice=VocalRPP(\sacrifice,\test);
 	P.still( \kirk, start: \sacrifice, timecode:4942.582.seconds, music: { |p b e|
@@ -74,43 +106,17 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 		(instrument:\cymbalsDS,amp:0.003,att:1).play
 	});
 	P(\vox,start:\sacrifice,music:{|p b e| 
-		e.resources.rpp=VocalRPP(\sacrifice,\test); // set rpp in the Part to the vocalRPP
 		// TODO now make the relevant guide check to see if they should mute this!!
 		Synth(\soundInMorph,[
-			modulator: 13,
-			carrier: 11,
-			amp:0.32
+			modulator: Song.modulatorBus.index,
+			carrier: Song.carrierBus.index,
+			amp:0.32,
+			amp:0.2 // WHEN buses are set to 1 channel otherwise comment out!
+			//out:4,amp:0.9
 		]);
-
-		{ //carrier
-			var tune = p.tune[e.start].list;
-			var freqs = Demand.ar(
-				TDuty.ar(b.dq,1,1),
-				1,
-				tune.asArray.midicps /.t [1,2,4,5,6,8] => _.dq
-			);
-			var car = Gendy1.arWidth(
-				freq: freqs
-				,
-				width:1.10) =>Mix.ar(_)
-				* Env.linen(3,5,6).kr(2,gate:1);
-				var saw = Saw.ar(freqs) * 0.1
-				=> RLPF.ar(_,100,2)
-				* Env.linen(3,5,6).kr(2,gate:1);
-				car => FreeVerb.ar(_,1,0.8)
-				+saw
-				/10
-				=> {|i|i[[0, 2 ]]}//!3 * [1,0.1,0.1]
-				//		=>Mix.ar(_)
-			}.play(s,11); // set this bus
-			{ //modulator
-				PlayBuf.ar( 1,p.voxSacrifice.buffer) 
-				=> EchoNone.ar(_,1,0.4,2) * 2
-				//=> MoogFF.ar(_,8000,1)
-				=> LPF.ar(_,6000)
-				*10 	=> SafetyLimiter.ar(_) /5
-			}.play(s,13);
-		});
+		Song.sargonCarrier.(p,b,e);
+		Song.sargonModulator.(p.voxSacrifice)
+	});
 		P(\bass,start:\sacrifice,music:{|p b e| 
 			[
 				instrument:\stringyy,
@@ -171,34 +177,98 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 		P.still( \wide, start: \stands, timecode:4956.5.seconds, music: { |p b e|
 			e.still.value(
 				wait: b.sum,
-				fade:4
+				fade:4,
+				//text:["you're","alive!"]
 			);
+			fork{
+				b[0].wait;
+				e.still.setText( ["you're","alive!"])
+			}
 		});
-		P(\bass,start:'stands up',music:{|p b e| 
-			p.synful1.syn.set(\out,Effect(FreeVerb.ar(_,0.75,0.55)).bus.index);
-			(dur:b.sum,amp:0.2,instrument:\stringyy,freq:[1,11].df(\f,octave:[3,2])).play;
-			{
-				Impulse.ar([-1,1,3,5,7,11,13,15,17].df(\f,scale:\mixolydian))
-				=> Convolution.ar(_,Dust.ar((LFBrownNoise2.kr({2.0.rand}!9).range(10,100)))=>FreeVerb.ar(_,0.5,0.5),2048)
-				=> Splay.ar(_)
-				*0.4
-				* Env.linen(3,b.sum-3,3).kr(0,gate:1)
-				=> {|i| DWGReverbC1C3.ar(i,c1:0.2) + i }
-				
-			}.play
-			//(expression:100,freq:[-11,-1].df(\f),type:\synful,instance:p.synful1,dur:b.sum+p.durs[e.start+1].list.sum + p.durs[e.start+2].list[0],amp:1).play;
+		
+
+		P(\bassPad,start:'stands up',music:{|p b e| 
+			[
+				dur:[b.sum, p.durs[e.start+1].list.parse([8,3])].flat.q,
+				amp:0.2,
+				freqLag:1,
+				instrument:\stringyy,
+				freq:[[1,11],[-7,7]].df(\f).q,
+				octave:[3,2]
+				,legato:1
+			].pm(\stringyy).play;
 		});
-		["MCCOY: There was enough poison in that hypo to kill ten Vulcans. ",
+		P(\sparkle,start:'stands up',music:{|p b e| 
+			//p.synful1.syn.set(\out,Effect(FreeVerb.ar(_,0.75,0.55)).bus.index);
+			MegaBind(
+				[
+
+					[-1,  1, 3,  5,  7,  11, 13, 15, 17].df(\f, scale:\mixolydian),
+					[ -1, 1, \r, \r, 11, 11, \r, \r, \_ ].df(\e),
+					[ -1, 1, \r, \r, 11, 11, \r, \r, \r ].df('d#'),
+				].flop,
+				//b.parse([3,1])+[1,0.5],
+				[b.sum-0.1, p.durs[e.start+1].list.parse([8,3])].flat,
+				[lag:{[0,b[3]+0.1].dq.demand(i.dur)}],
+				{|i|
+					Impulse.ar( i.freqSeq.lag({[0,b[3]+0.1].dq.demand(i.dur)}) )
+				},
+				{ |i v|
+					Convolution.ar(i,Dust.ar((LFBrownNoise2.kr({2.0.rand}!9).range(10,100)))=>FreeVerb.ar(_,0.5,0.5),2048)
+					=> SplayAz.ar(2,_)
+					* Env.linen(3,b.sum-6,p.secDur[ e.start+1 ]).kr(0,gate:1)
+					=> {|i| DWGReverbC1C3.ar(i,c1:Line.kr(0.2,1,b.sum+2))/2 + i }
+					* 0.4
+				}
+
+			).play
+		});
+["MCCOY: There was enough poison in that hypo to kill ten Vulcans. ",
 			//[3,2,1,-7].dm(\c,scale:\mixolydian) ++ [5,3,2,1,4,3,4,5,12,5,4].dm('e-')
 
-			[1,-7,1,-6,-5,-4.5,-5,-6].dm(\e) ++ [3,2,3,1, 6.5,4.5,2].dm('e-')
+			[4,3,4,2,1,-7,1,2].dm(\b,octave:4) ++ [3,2,3,4, 6.5,5,2].dm('e-')
 		].addLine;
 		P.tune(\poison);
+		P(\bass,start:\poison,music:{|p b e| 
+			MegaBind(
+				[
+					[4,3,\r]
+				].df(\b),
+				b.parse([8,4,3]),
+				[],
+				//{|i| 
+				//	Gendy1.arWidth(freq:i.freqSeq/[ 2,3,4 ])
+				//	/2
+				//	+ Gendy2.arWidth(freq:i.freqSeq/[ 2,3,4 ])
+				//	*0.1
+				//	* Env.asr(1,1,4).kr(0,gate:i.gateSeq)
+				//},
+				{|i|
+					VarSaw.ar(i.freqSeq/4,0,0.1)
+					=> Convolution.ar(_,Dust.ar((LFBrownNoise2.kr({2.0.rand}!9).range(10,100)))=>FreeVerb.ar(_,0.5,0.5),2048)
+					=> Splay.ar(_)
+					//* Env.linen(3,b.sum-3,5).kr(0,gate:1)
+					* Env.asr(3,1,3).kr(0,gate:i.gateSeq)
+					//=> {|i| DWGReverbC1C3.ar(i,1000,c1:0.9) + i }
+				},
+				{|i v|
+					Splay.ar(i)
+					* 0.1
+					/3
+					//=>DWGReverbC1C3.ar(_,2000,1,5)
+					//*0.1
+				}
+
+			).play
+		});
 		P.still( \mccoy, start: \poison, timecode:5001.5.seconds, music: { |p b e|
 			e.still.value(
 				wait: b.sum,
 				text: ["There was enough poison","in that hypo"]
 			);
+			e.still.sequenceText([
+				b.parse([10]).sum,[ "to kill ten","Vulcans!" ]
+			])
 		});
 		P(\chord,start:\poison,music:{|p b e| 
 			//Muted
@@ -215,30 +285,82 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 			)
 			//.play
 		});
-		["SARGON [OC]: No, Doctor. (Boom)",[1,-5,-3, -17].dm(\a,scale:\minor)].addLine;
+		["SARGON [OC]: No, Doctor. (Boom)",[1,-5,-3, -17].dm(\a,scale:\minor,octave:4)].addLine;
+		Song.voxNo=VocalRPP('Doctor.',\test);
+		P(\vox,start:'Doctor.',music:{|p b e| 
+
+			var modulator = Bus.audio(s,1);
+			var carrier= Bus.audio(s,1);
+			Synth(\soundInMorph,[
+				modulator: modulator.index,
+				carrier: carrier.index ,
+				amp:0.32,
+				//out:4,amp:0.9
+				amp:0.2
+			]);
+			
+			{
+				PlayBuf.ar(1,p.voxNo.buffer,rate:1)
+				=> EchoNone.ar(_,0.5,0.31,2)
+			}.play(s,modulator.index);
+			{ p.sargonCarrier.(p,b,e) }.play(s,carrier.index)
+		});
+		P(\test,start:'No, Doc',music:{|p b e| 
+			{
+				PlayBuf.ar(1,p.voxNo.buffer)
+				=> DelayN.ar(_,0.05,0.5)
+				=> PitchShift.ar(_,pitchRatio:[1,0.5],pitchDispersion: 0.0)
+				*0.4
+			}
+		});
 		P(\bass,start:'No, Doc',music:{|p b e| 
 			MegaBind(
 				[
-					[1,2]
-				].df(\a,octave:3),
-				b.parse([3,1]),
+					[1,\_,\_,2.5],
+					[1,-5,-3,-17]
+				].df(\a,octave:3,scale:\minor),
+				b,//.parse([3,1]),
 				[
 					lag: { [0,0.4].dq.demand(b.parse([3,1])) }
 				],
 				{|i|
-					Pulse.ar( i.freqSeq.lag2(i.lag), 0.3,0.1)
+					Pulse.ar( i.freqSeq.lag2(i.lag) 
+					//*.t [1,2,3].reciprocal
+					, 
+					0.3,0.1)
+					=> Mix.ar(_)
 					* Env.asr(0.2,1,2).kr(0,gate:i.gateSeq)
 				},
 				{|i v|
 
 					 TwoTube.ar(i, 0.1, 0.99, [ 1111, 1222 ],[ 762, 674 ],  mul: 1.0,  add: 0.0)
 					*0.2
+					//=> {|i| Out.ar(carrier.index,i[1]); 
+					//Out.ar(1,i[0])
+				//}
+
 				}
 			).play
+		});
+		P.still( \wide, start: 'No, Doctor', timecode:5006.seconds, music: { |p b e|
+			e.still.value(
+				wait: 1,
+				fade:5,
+				text:[ "No Doctor!","" ]
+			);
 		});
 		P.tune('No, Doc');
 
 		[" I allowed you to believe that to be true so that ",[3,2,4,3,1,-5,-7,-6,-4,-1,2,-6,-5].dm(\c,scale:\mixolydian,octave:6)].addLine;
+		P.still( \clear, start: \allowed, timecode:0, music: { |p b e|
+			e.still.value(
+				wait: b.sum,
+				text:["I allowed you to","believe that to be"]
+			);
+			e.still.sequenceText(
+				[b[(0..9)].sum,[ "true","so that" ]]
+			)
+		});
 		P.tune(\allowed);
 		Song.allowedInner= {|i x| 
 			Saw.ar( i.freqSeq.lag(0.01) + i.width, 0.1)
@@ -274,6 +396,16 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 		});
 		["Henoch would (boom) read your thoughts and believe it also. ",[11,7,5,-4,13,12,15,13,12,11,7,14,13].dm(\c,octave:4)].addLine;
 		P.tune(\read);
+		P.still( \clear, start: \read, timecode:0, music: { |p b e|
+			e.still.value(
+				wait: b.sum,
+				text:["Henoch would",""]
+			);
+			fork{
+				b[(0..3)].wait;
+				e.still.setText([" "," "])
+			}
+		});
 		P(\line,start:\read,music:{|p b e| 
 			MegaBind(
 				[
@@ -294,6 +426,7 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 
 			).play
 		});
+
 		[ "MCCOY: Sargon. ",[5.5, 1].dm(\g)].addLine;
 		P.tune('MCCOY: Sargon');
 		P(\chord,start:'MCCOY: S',music:{|p b e| 
@@ -304,10 +437,35 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 			].pp
 
 		});
-["SPOCK: It seems, Doctor, the injection was (boom) only enough to cause unconsciousness. ",[5,11,5,3,11,7,6,4,1,4,3,2,5,6,5,6,5.5,6,5.5].dm('b-',octave:5)].addLine;
+["SPOCK: It seems, Doctor, the injection was (boom) only enough to cause unconsciousness. ",[5,11,5,3,11,7,6,4,1,4,3,2,5,6,5,6,5.5,6,5.5].dm('b-',octave:4)].addLine;
 P.tune(\unconsciousness);
 ["SARGON [OC]: But Henoch believed and fled the body. ",[5,11,5,3,6.5].dm('c#',scale:\dorian)++[5,11,5,4,3].dm('e-')].addLine;
 P.tune(\believed);
+P(\bass,start:\believed,music:{|p b e| 
+	MegaBind(
+		[
+			[\r,1,2]
+		].df('c#'),
+		b.parse([1,5,4]),
+		[
+			lag: {[0,1,1,1,1,1,1,1,1,1,1].dq.demand(b)}
+		],
+		{|i|
+			Saw.ar( 
+				i.freqSeq.lag2( i.lag ) / 2 
+				* [1,0.5]
+				* LFBrownNoise2.kr([2,2.2,2.3,2.4]).range(0.99,1.01),
+				0.1
+			)
+			* Env.asr(0.1,1,4).kr(2,gate:i.gateSeq)
+		},
+		{|i|
+			Splay.ar(i)
+			=> FreeVerb.ar(_,0.7,0.7)
+		}
+
+	).play
+});
 		["(boom) He is (boom) destroyed. ",[-5,5,5,-5,5,5].dm(\g)].addLine;
 		P.tune(\destroyed);
 		P(\chord,start:\destroyed,music:{|p b e| 

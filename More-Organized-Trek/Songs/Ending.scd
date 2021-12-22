@@ -62,10 +62,11 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 		].pp
 	});
 	["SARGON [OC]: (boom) I could not allow your sacrifice of one so close to you. ",[1,13,12,14,13,12,11,7,6,5,4,3,2,4,3,2].dm(\c)].addLine;
+( //Vocoder resources
 	Song.carrierBus = Bus.audio(s,1);
 	Song.modulatorBus = Bus.audio(s,1);
-
-	( Song.sargonCarrier = {|p b e| {  
+	Song.sargonCarrier = {|p b e att=3 sus=5 rel=6| 
+		{  
 		var tune = p.tune[e.start].list;
 		var freqs = Demand.ar(
 			TDuty.ar(b.dq,1,1),
@@ -73,7 +74,7 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 			tune.asArray.midicps /.t [1,2,4,5,6,8] => _.dq
 		);
 		var car = Gendy1.arWidth( freq: freqs , width:1.10) => Mix.ar(_)
-		* Env.linen(3,5,6).kr(2,gate:1);
+		* Env.linen(att,sus,rel).kr(2,gate:1);
 		var saw = Saw.ar(freqs) * 0.1
 		=> Splay.ar(_)
 		=> RLPF.ar(_,100,2)
@@ -84,17 +85,30 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 	}.play(s,Song.carrierBus.index)
 }	;
 
-Song.sargonModulator = {|rpp| { 
-	PlayBuf.ar( 1,rpp.buffer) 
-	=> EchoNone.ar(_,1,0.4,2) * 2
-	//=> MoogFF.ar(_,8000,1)
-	=> LPF.ar(_,6000)
-	*5	 => SafetyLimiter.ar(_) /5
-	//+ ( In.ar(carrierBus.index,1) )
-}.play(s,Song.modulatorBus.index);
- });
-
-	//P.tune(\sacrifice);
+	Song.sargonModulator = {|rpp| 
+		{ 
+			rpp=Song.resources.at(rpp);
+			PlayBuf.ar( 1,rpp.buffer) 
+			=> EchoNone.ar(_,1,0.4,2) * 2
+			//=> MoogFF.ar(_,8000,1)
+			=> LPF.ar(_,6000)
+			*5	 => SafetyLimiter.ar(_) /5
+			//+ ( In.ar(carrierBus.index,1) )
+	}.play(s,Song.modulatorBus.index)
+};
+	Song.vocodeTune = { |p b e rppName amp=2 att sus rel|
+		Synth(\soundInMorph,[
+			modulator: Song.modulatorBus.index,
+			carrier: Song.carrierBus.index,
+			amp:0.32,
+			amp:0.2, // WHEN buses are set to 1 channel otherwise comment out!
+			amp:amp
+			//out:4,amp:0.9
+		]).dur(b.sum+3);
+		Song.sargonCarrier.(p,b,e,att, sus, rel);
+		Song.sargonModulator.(rppName)
+	}
+);
 	Song.voxSacrifice=VocalRPP(\sacrifice,\test);
 	P.still( \kirk, start: \sacrifice, timecode:4942.582.seconds, music: { |p b e|
 		e.still.value(
@@ -107,15 +121,7 @@ Song.sargonModulator = {|rpp| {
 	});
 	P(\vox,start:\sacrifice,music:{|p b e| 
 		// TODO now make the relevant guide check to see if they should mute this!!
-		Synth(\soundInMorph,[
-			modulator: Song.modulatorBus.index,
-			carrier: Song.carrierBus.index,
-			amp:0.32,
-			amp:0.2 // WHEN buses are set to 1 channel otherwise comment out!
-			//out:4,amp:0.9
-		]);
-		Song.sargonCarrier.(p,b,e);
-		Song.sargonModulator.(p.voxSacrifice)
+		p.vocodeTune.(p,b,e,\voxSacrifice)
 	});
 		P(\bass,start:\sacrifice,music:{|p b e| 
 			[
@@ -287,23 +293,8 @@ Song.sargonModulator = {|rpp| {
 		});
 		["SARGON [OC]: No, Doctor. (Boom)",[1,-5,-3, -17].dm(\a,scale:\minor,octave:4)].addLine;
 		Song.voxNo=VocalRPP('Doctor.',\test);
-		P(\vox,start:'Doctor.',music:{|p b e| 
-
-			var modulator = Bus.audio(s,1);
-			var carrier= Bus.audio(s,1);
-			Synth(\soundInMorph,[
-				modulator: modulator.index,
-				carrier: carrier.index ,
-				amp:0.32,
-				//out:4,amp:0.9
-				amp:0.2
-			]);
-			
-			{
-				PlayBuf.ar(1,p.voxNo.buffer,rate:1)
-				=> EchoNone.ar(_,0.5,0.31,2)
-			}.play(s,modulator.index);
-			{ p.sargonCarrier.(p,b,e) }.play(s,carrier.index)
+		P(\vox,start:'Doctor.',music:{|p b e|
+			p.vocodeTune.(p,b,e,\voxNo)
 		});
 		P(\test,start:'No, Doc',music:{|p b e| 
 			{
@@ -352,6 +343,10 @@ Song.sargonModulator = {|rpp| {
 		P.tune('No, Doc');
 
 		[" I allowed you to believe that to be true so that ",[3,2,4,3,1,-5,-7,-6,-4,-1,2,-6,-5].dm(\c,scale:\mixolydian,octave:6)].addLine;
+		Song.voxAllow=VocalRPP(\allowed,\tune);
+		P(\vox,start:\allowed,music:{|p b e|
+			p.vocodeTune.(p,b,e,\voxAllow,0.3,1,b.sum-3,2)
+		});
 		P.still( \clear, start: \allowed, timecode:0, music: { |p b e|
 			e.still.value(
 				wait: b.sum,
@@ -361,7 +356,7 @@ Song.sargonModulator = {|rpp| {
 				[b[(0..9)].sum,[ "true","so that" ]]
 			)
 		});
-		P.tune(\allowed);
+		//P.tune(\allowed);
 		Song.allowedInner= {|i x| 
 			Saw.ar( i.freqSeq.lag(0.01) + i.width, 0.1)
 			//* Env.perc(0.05,3).kr(0,gate:i.trigSeq * i.gateSeq)
@@ -370,7 +365,7 @@ Song.sargonModulator = {|rpp| {
 		Song.allowedFx = {|i v|
 			i[[1,0,2]]	
 			* 0.4
-			//=>Splay.ar(_)
+			=>Splay.ar(_)
 		};
 		P(\keys,start:\allowed,music:{|p b e| 
 			MegaBind(
@@ -395,7 +390,7 @@ Song.sargonModulator = {|rpp| {
 			].pp
 		});
 		["Henoch would (boom) read your thoughts and believe it also. ",[11,7,5,-4,13,12,15,13,12,11,7,14,13].dm(\c,octave:4)].addLine;
-		P.tune(\read);
+		//P.tune(\read);
 		P.still( \clear, start: \read, timecode:0, music: { |p b e|
 			e.still.value(
 				wait: b.sum,
@@ -420,7 +415,7 @@ Song.sargonModulator = {|rpp| {
 
 				],
 				p.allowedInner,
-				{|i| i*0.4
+				{|i| i * 0.4
 					=> Splay.ar(_)
 				}
 
@@ -428,12 +423,21 @@ Song.sargonModulator = {|rpp| {
 		});
 
 		[ "MCCOY: Sargon. ",[5.5, 1].dm(\g)].addLine;
-		P.tune('MCCOY: Sargon');
+		P.tune('MCCOY: Sargon',Pbindf(_,\instrument,\sawSynthSustain));
 		P(\chord,start:'MCCOY: S',music:{|p b e| 
 			[
 				freq: [1,3,5.5].df(\g),
 				dur:b.sum.q,
-				strum:0.05
+				strum:0.05,
+				out: Effect( { |i| 
+					EchoCubic.ar(
+						i,
+						0.5,
+						Array.fill(4,{rrand(0.2,0.4) })
+						=>{|i| LFBrownNoise2.kr({rrand(1.0,2)}!4).range(i,i*0.9) }
+						 ,
+						5
+					)+i/2} ,inputChannels:1).bus.index
 			].pp
 
 		});

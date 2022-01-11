@@ -51,7 +51,7 @@ SynthDef('cepstral-vocoder-bus', {
                       }).add;
 
 SynthDef(\soundInMorph, {
-	|out = 0, modulator = 0, carrier = 1| // takes bus indices
+	|out = 0, modulator = 0, carrier = 1, dur = 10| // takes bus indices
 	var in, in2, chain, chain2, chain3, cepsch, cepsch2, fftsize = 2048;
 	var modulatorEnvelope=LocalBuf(fftsize); var carrierEnvelope=LocalBuf(fftsize);
 	var modulatorCepstrum=LocalBuf(fftsize/2); var carrierCepstrum=LocalBuf(fftsize/2);
@@ -69,4 +69,5 @@ SynthDef(\soundInMorph, {
 	chain2 = PV_MagDiv(chain2,carrierEnvelope);
 	chain2 = PV_MagMul(chain2, modulatorEnvelope);
 	Out.ar( out, Pan2.ar(IFFT(chain2) *\amp.kr(0.5),\pan.kr(0)) );
+	Line.kr(0,1,dur,doneAction:2)
 }).add;

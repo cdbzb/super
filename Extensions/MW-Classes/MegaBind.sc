@@ -6,12 +6,12 @@ MegaBind {
 	*new {|pitches durs bind inner fx release| ^super.new.init(pitches,durs,bind,inner,fx,release)}
 	init{|p d b i f r| 
 		pitches = p; durs = d; bind = ( b ? [] ) ; inner = i ? I.d; fx = f ? I.d; release = r ? release;
-		names=pitches.select(_.isSymbol);
+		names=pitches.select(_.class == Symbol);
 		//TODO associate names with tracks correctly so
-		names = pitches.collect{|i x| [i,x]}.select{|i| i[0].isSymbol}.collect{|i x| i[0]->(i[1]-x)}.asEvent;
+		names = pitches.collect{|i x| [i,x]}.select{|i| i[0].class == Symbol}.collect{|i x| i[0]->(i[1]-x)}.asEvent;
 
 		//pitches=pitches.split({|i| i.isSymbol}).collect(_.tail).flatten;
-		pitches = pitches.reject({|i| i.isSymbol});
+		pitches = pitches.reject({|i| i.class == Symbol});
 		voices = VoiceLeading(pitches,durs) => {|i| [i.valuesArray,i.durationArray]} ;//=> _.flop;
 		voices = [freq: voices[0],dur: voices[1]] ++ bind;
 		voices = voices.flop.collect{|i| Event.newFrom(i)};

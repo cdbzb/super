@@ -2,6 +2,21 @@ snippet fork
 \{$1\}.fork;
 endsnippet
 
+snippet mega
+MegaBind(
+		[
+			[$1]
+		],
+		${2:durs},
+		[$3],
+		{|i|
+		$4
+		},
+		{|i|
+		$4
+		}
+	)$5
+endsnippet
 snippet do
 $1.do{|$2| $3};
 endsnippet

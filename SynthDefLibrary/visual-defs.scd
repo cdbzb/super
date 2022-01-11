@@ -27,7 +27,7 @@ SynthDef(\visual_aaa, { |out|
 SynthDef(\visual_pad, {|freq=300 gate=1|
 	var sig = Splay.ar({ Saw.ar(freq+rrand(-8,8),0.1)}!8);  
 	var env = EnvGen.kr(Env.asr(0.05,\vel.kr(0.5),1,4),gate);
-	Out.ar(0,sig*env*\amp.kr(0.5))
+	Out.ar(\out.kr(0),sig*env*\amp.kr(0.5))
 }).add.tag(\pad);
 
 SynthDef(\visual_twotube,{arg delay1=1000, delay2=500, k=0.0, loss=0.999, dur=0.5, pan=0.0; 

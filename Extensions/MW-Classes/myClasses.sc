@@ -40,12 +40,18 @@
 
 + Array {
  ply {this.do{|x|x.p}}
+ wet {|wet| ^this * [wet,(1-wet)]=>_.sum }
 }
-
++ Function {
+  wet { |wet| 
+    ^ {|i| i * (1-wet) + ( this.(i) * wet )}
+  }
+}
 + Object{
 	=> {|a| ^a.(this)}
 	=>| {|a| a.(this)}
 	=>+ {|a b| ^a.(this,this)}//a is a fn of 2 vars
+        =< {|a| ^[a.(this),this]}
 	
 	pipe {|...fns|
 		^fns.inject({|x| x}, {|acc, el| el<>acc }).(this)

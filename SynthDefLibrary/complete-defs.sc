@@ -20,6 +20,7 @@ SynthDef( \phase_verb2,{//{{{
 		,rate:rate,fb:fb,depth:depth))
 	}
 ).add.tag(\effect);
+
  SynthDef(\harp, { |gate=1 out=0 freq = 400|
 	var in=PinkNoise.ar(1);
 	var sig=Pluck.ar(in: in,  gate: gate,  maxdelaytime: 0.02,  delaytime: 1/freq,  decaytime: 10,  coef: 0.5,  mul: 0.7,  add: 0);
@@ -28,6 +29,7 @@ SynthDef( \phase_verb2,{//{{{
 	DetectSilence.ar(sig,doneAction:2);
 },  rates: nil,  prependArgs: nil,  variants: nil,  metadata: nil
 ).add.tag(\pluck);
+
  SynthDef(\yowbass, {|freq=400 amp gate=1 dur=1|
 	var sig=Formant.ar(freq,  formfreq: Line.kr(3060,00,dur),  bwfreq: 880,  mul: 1,  add: 0).distort;
 	var env=Env.asr(0,1,1,1.5).kr(gate:gate,doneAction:2);

@@ -65,13 +65,13 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 ( //Vocoder resources
 	Song.carrierBus = Bus.audio(s,1);
 	Song.modulatorBus = Bus.audio(s,1);
-	Song.sargonCarrier = {|p b e att=3 sus=5 rel=6| 
-		{  
-		var tune = p.tune[e.start].list;
+	Song.sargonCarrier = {|p b e att=3 sus=5 rel=6 chord=#[1,2,4,5,6,8] aTune| 
+	{  
+		var tune = aTune ? p.tune[e.start].list;
 		var freqs = Demand.ar(
 			TDuty.ar(b.dq,1,1),
 			1,
-			tune.asArray.midicps /.t [1,2,4,5,6,8] => _.dq
+			tune.asArray.midicps /.t chord => _.dq
 		);
 		var car = Gendy1.arWidth( freq: freqs , width:1.10) => Mix.ar(_)
 		* Env.linen(att,sus,rel).kr(2,gate:1);
@@ -85,8 +85,9 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 	}.play(s,Song.carrierBus.index)
 }	;
 
-	Song.sargonModulator = {|rpp| 
+	Song.sargonModulator = {|rpp dur| 
 		{ 
+			Line.kr(dur:dur,doneAction:2);
 			rpp=Song.resources.at(rpp);
 			PlayBuf.ar( 1,rpp.buffer) 
 			=> EchoNone.ar(_,1,0.4,2) * 2
@@ -96,7 +97,7 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 			//+ ( In.ar(carrierBus.index,1) )
 	}.play(s,Song.modulatorBus.index)
 };
-	Song.vocodeTune = { |p b e rppName amp=2 att sus rel dur=10|
+	Song.vocodeTune = { |p b e rppName amp=2 att sus rel dur=10 chord=#[1,2,4,5,6,8] tune|
 		Synth(\soundInMorph,[
 			modulator: Song.modulatorBus.index,
 			carrier: Song.carrierBus.index,
@@ -106,8 +107,8 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 			dur:dur
 			//out:4,amp:0.9
 		]);
-		Song.sargonCarrier.(p,b,e,att, sus, rel);
-		Song.sargonModulator.(rppName)
+		Song.sargonCarrier.(p,b,e,att, sus, rel, chord,tune);
+		Song.sargonModulator.(rppName,dur,tune)
 	}
 );
 	Song.voxSacrifice=VocalRPP(\sacrifice,\test);
@@ -925,9 +926,14 @@ P(\bass,start:\believed,music:{|p b e|
 				].pma(\sawSynthSustain).play
 
 			});
-			["(boom boom) share your bodies again. ",[1,1,13,12, 13,14,13,12,11].dm(\f)].addLine;
-			P.tune(\bodies,_.drop(2),syl:1);
-			Song.setQuarters(\bodies,[1,1,1,1/4,1/4,1,1/2,1/2,1/2]);
+["(boom boom) share your bodies again. ",[1,1,13,12, 13,14,13,12,11].dm(\f)].addLine;
+//P.tune(\bodies,_.drop(2),syl:1);
+Song.shareVox=VocalRPP(\bodies,\share);
+P(\vox,start:\bodies,music:{|p b e| 
+	p.vocodeTune.(p,b,e,\shareVox,0.2,0,b.sum,2,dur:b.sum+2,tune:[\r,\r]++p.tune[e.start].list=>_.drop(2))
+});
+Song.setQuarters(\bodies,[1,1,1,1/4,1/4,1,1/2,1/2,1/2]);
+
 			P(\drums,start:\bodies,music:{|p b e| 
 				[
 					freq:[\r,\r,1].q,
@@ -984,9 +990,16 @@ P(\bass,start:\believed,music:{|p b e|
 			});
 ["A last moment together. ",[1,11,7,6,4,3,-7].dm('f#')].addLine;
 P.tune(\last);
+P.still( \clear, start: \last, timecode:0, music: { |p b e|
+	e.still.value(
+		wait: b.sum-3,
+		fade:3,
+		text: ["a last moment","together"]
+	);
+});
 Song.lastMoment=VocalRPP(\last,\tune);
 P(\vox,start:\last,music:{|p b e|
-	p.vocodeTune.(p,b,e,\lastMoment,0.3,1,b.sum+5,2,dur:b.sum+2)
+	p.vocodeTune.(p,b,e,\lastMoment,0.3,1,b.sum+5,2,dur:b.sum+2,chord:#[1,2,0.33])
 });
 P(\chord,start:\last,music:{|p b e| 
 	MegaBind(

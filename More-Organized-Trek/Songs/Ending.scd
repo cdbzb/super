@@ -1,6 +1,9 @@
 
+
+
 /*
 [Bridge]
+
 
 (Uhura is screaming in terror before collapsing across her console. Chapel is standing rigid by the Captain's chair.) ,
 [4,3,2.5,2,1,\_]
@@ -14,20 +17,40 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 (He whirls around.) 
 */
 ( s.waitForBoot( {
+	// Setup Monitor for back channels
+a=Pipe("sysctl hw.model","r");
+b=a.getLine;
+a.close;
+(b == "hw.model: MacBookPro16,2").if{
+	m=Monitor.new;
+	m.play(3,3,0,2,target:RootNode(s));
+	CmdPeriod.add({m.play(3,3,0,2,target:RootNode(s))})
+};
+// Song
 	Song(\ending,[]).current;
+	Song.currentSong.preroll_(1);
 	~stills.isNil.if{~stills=Stills("/Users/michael/trek/BySection/media/return to tomorrow.mov").current};
-	Song.currentSong.synful1 = ~synful1 = Synful();
-	Song.currentSong.synful2 = ~synful2 = Synful();
+	( ~synful1.isNil or: try{ ~synful1.syn.isPlaying.not } ).if
+	{
+		Song.currentSong.synful1 = ~synful1 = Synful();
+		Song.currentSong.synful2 = ~synful2 = Synful();
+	}{
+
+		Song.currentSong.synful1 = ~synful1
+		Song.currentSong.synful2 = ~synful2;
+	};
 	Song.resources.condition=Condition();
 	Song.resources.infrastructure=
 	{
 		FunctionList.new.array_([
-			{ Song.currentSong.synful1 = ~synful1 = Synful()},
-			{  Song.currentSong.synful2 = ~synful2 = Synful()},
+			( ~synful1.isNil or: try{ ~synful1.syn.isPlaying.not } ).if
+			{
+				Song.currentSong.synful1 = ~synful1 = Synful();
+				Song.currentSong.synful2 = ~synful2 = Synful();
+			},
 			{ fork {
 				while( {
 					~synful2.controller.loaded.not;
-
 				},{0.05.wait});
 				Song.resources.condition.test_(true).signal
 			}}
@@ -80,7 +103,7 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 		=> RLPF.ar(_,100,2)
 		* Env.linen(3,5,6).kr(2,gate:1);
 		car => FreeVerb.ar(_,1,0.8)
-		+saw
+		+ saw
 		/10
 	}.play(s,Song.carrierBus.index)
 }	;

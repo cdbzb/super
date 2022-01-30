@@ -24,7 +24,8 @@ VSTPluginController {
 	var window; // do we have a VST editor?
 	var loading; // are we currently loading a plugin?
 	var browser; // handle to currently opened browser
-	var didQuery; // do we need to query parameters?
+	var needQueryParams;
+	var needQueryPrograms;
 
 	*initClass {
 		Class.initClassTree(Event);
@@ -175,7 +176,8 @@ VSTPluginController {
 		this.wait = wait;
 		loading = false;
 		window = false;
-		didQuery = false;
+		needQueryParams = true;
+		needQueryPrograms = true;
 		midi = VSTPluginMIDIProxy(this);
 		oscFuncs = List.new;
 		// parameter changed:
@@ -299,11 +301,18 @@ VSTPluginController {
 	open { arg path, editor=true, verbose=false, action, multiThreading=false, mode;
 		var intMode = 0;
 		loading.if {
-			"already opening!".error;
+			// should be rather throw an Error?
+			"VSTPluginController: already opening another plugin".warn;
+			action.value(this, false);
 			^this;
 		};
-		loading = true;
-		// multi-threading is not supported for Supernova
+		// if path is nil we try to get it from VSTPlugin
+		path ?? {
+			this.info !? { path = this.info.key } ?? {
+				MethodError("'path' is nil but VSTPlugin doesn't have a plugin info", this).throw;
+			}
+		};
+		// multi-threading is not supported with Supernova
 		multiThreading.if {
 			Server.program.find("supernova").notNil.if {
 				"'multiThreading' option is not supported on Supernova; use ParGroup instead.".warn;
@@ -318,31 +327,28 @@ VSTPluginController {
 				{ MethodError("bad value '%' for 'mode' argument".format(mode), this).throw; }
 			);
 		};
-		// if path is nil we try to get it from VSTPlugin
-		path ?? {
-			this.info !? { path = this.info.key } ?? {
-				MethodError("'path' is nil but VSTPlugin doesn't have a plugin info", this).throw;
-			}
-		};
-		path.isString.if { path = path.standardizePath }; // or: path = path.asString.standardizePath ?
-		VSTPlugin.prGetInfo(synth.server, path, wait, { arg info;
+		// *now* we can start loading
+		loading = true;
+		VSTPlugin.prQuery(synth.server, path, wait, { arg info;
 			info.notNil.if {
 				this.prClear;
-				this.prMakeOscFunc({arg msg;
+				loading = true; // HACK for prClear!
+				this.prMakeOscFunc({ arg msg;
 					var loaded = msg[3].asBoolean;
 					loaded.if {
 						window = msg[4].asBoolean;
 						latency = msg[5].asInteger;
 						this.info = info; // now set 'info' property
 						info.addDependant(this);
+
 						parameterCache = Array.fill(info.numParameters, [0, nil]);
-						program = 0;
+						this.prQueryParams;
+
 						// copy default program names (might change later when loading banks)
 						programCache = info.programs.collect(_.name);
-						// only query parameters if we have dependants!
-						(this.dependants.size > 0).if {
-							this.prQueryParams;
-						};
+						needQueryPrograms = false; // !
+						program = 0;
+
 						// post info if wanted
 						verbose.if { info.print };
 					} {
@@ -355,8 +361,9 @@ VSTPluginController {
 					// report latency (if loaded)
 					latency !? { latencyChanged.value(latency); }
 				}, '/vst_open').oneShot;
-				// don't set 'info' property yet
-				this.sendMsg('/open', info.key, editor.asInteger, multiThreading.asInteger, intMode);
+				// don't set 'info' property yet; use original path!
+				this.sendMsg('/open', path.asString.standardizePath,
+					editor.asInteger, multiThreading.asInteger, intMode);
 			} {
 				"couldn't open '%'".format(path).error;
 				// just notify failure, but keep old plugin (if present)
@@ -388,15 +395,18 @@ VSTPluginController {
 	prClear {
 		info !? { info.removeDependant(this) };
 		window = false; latency = nil; info = nil;
-		parameterCache = nil; programCache = nil; didQuery = false;
+		parameterCache = nil; needQueryParams = false;
+		programCache = nil; needQueryPrograms = true;
 		program = nil; currentPreset = nil; loading = false;
 	}
 	addDependant { arg dependant;
-		// only query parameters for the first dependant!
-		(this.loaded && didQuery.not).if {
-			this.prQueryParams;
-		};
 		super.addDependant(dependant);
+		// query after adding dependant!
+		this.loaded.if {
+			needQueryParams.if { this.prQueryParams };
+			needQueryPrograms.if { this.prQueryPrograms };
+		};
+
 	}
 	update { arg who, what ... args;
 		((who === info) and: { what == \presets }).if {
@@ -421,6 +431,12 @@ VSTPluginController {
 	}
 	resetMsg { arg async = false;
 		^this.makeMsg('/reset', async.asInteger);
+	}
+	setOffline { arg bool;
+		this.sendMsg('/mode', bool.asInteger);
+	}
+	setOfflineMsg { arg bool;
+		^this.makeMsg('/mode',  bool.asInteger);
 	}
 	// parameters
 	numParameters {
@@ -944,11 +960,16 @@ VSTPluginController {
 		} { ^"" };
 	}
 	prQueryParams { arg wait;
-		this.prQuery(wait, this.numParameters, '/param_query');
-		didQuery = true;
+		(this.dependants.size > 0).if {
+			this.prQuery(wait, this.numParameters, '/param_query');
+			needQueryParams = false;
+		} { needQueryParams = true; }
 	}
 	prQueryPrograms { arg wait;
-		this.prQuery(wait, this.numPrograms, '/program_query');
+		(this.dependants.size > 0).if {
+			this.prQuery(wait, this.numPrograms, '/program_query');
+			needQueryPrograms = false;
+		} { needQueryPrograms = true; }
 	}
 	prQuery { arg wait, num, cmd;
 		{

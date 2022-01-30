@@ -9,7 +9,7 @@ SynthDefLibrary {
         //Server.default.waitForBoot
         StartUp.add( {
             var files=files++"/Users/michael/tank/super/SynthDefLibrary/*".pathMatch;
-            files.do{|file| file.load}
+            files.do{|file| try{ file.load }}
         } )
     }
 

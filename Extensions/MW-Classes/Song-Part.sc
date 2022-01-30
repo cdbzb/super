@@ -12,6 +12,7 @@ Song {
     var <>next;
 	var <>quarters;
 	var <>clock;
+	var playInitiatedAt,<>preroll=0;
 
 	*initClass {
 		songs=Dictionary.new;
@@ -305,6 +306,7 @@ Song {
 
 	play { |...args|
 		var list = this.getPartsList(args);
+		playInitiatedAt = SystemClock.seconds;
 		fork{
 			//resources.condition ? resources.condition.test_(false);
 			resources.condition !? (_.test_(false));
@@ -314,6 +316,7 @@ Song {
 //			1.wait;
 			Server.default.sync;
 			list.do(_.p)
+			//list.do(_.pAbs)
 		}
 	}		
 
@@ -638,12 +641,20 @@ Part {
 		var when;
 		lag.isNil.if{lag=0};
 		when = parent.secLoc[start]-parent.secLoc[parent.cursor];
-		when = when + lag;
+		when = when + lag + parent.preroll; // per song setting to allow for negative lags
 		syl !? {when = when + parent.durTill(start,syl)};
 		^when
 	}
 
 	//play in context of parent song
+	pAbs {
+		(start>=parent.cursor).if{
+			var when=this.calcTime+parent.playInitiatedAt;
+			this.schedAbs(when+Server.default.latency);
+			{this.name.postln}.schedAbs(when);
+//			when.postln
+		}
+	}
 	p {
 		(start>=parent.cursor).if{
 			var when=this.calcTime;

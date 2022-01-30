@@ -11,15 +11,15 @@ Have a look at `VSTPlugin.sc` and `VSTPluginController.sc` in the *classes* fold
 ### UGen inputs
 | name         | rate  ||
 | ------------ | ----- |-|
-| flags        | ir    | creation flags (reserved for future use)      |
-| blockSize    | ir    | desired block size or 0 (= Server block size) |
-| bypass       | ir/kr | bypass state                                  |
-| numInputs    | ir    | number of audio input busses; can be 0        |
-| numOutputs   | ir    | number of audio output busses; can be 0       |
-| numParamCtls | ir    | number of parameter controls; can be 0        |
-| inputBus...  |       | (optional) `<numInputs>` audio input busses   |
-| outputBus... |       | (optional) `<numOutputs>` audio output busses |
-| paramCtl...  |       | (optional) `<numParamCtls>` parameter controls   |
+| flags        | ir    | creation flags (reserved for future use)       |
+| blockSize    | ir    | desired block size or 0 (= Server block size)  |
+| bypass       | ir/kr | bypass state                                   |
+| numInputs    | ir    | number of audio input busses; can be 0         |
+| inputBus...  |       | (optional) `<numInputs>` audio input busses    |
+| numOutputs   | ir    | number of audio output busses; can be 0        |
+| outputBus... |       | (optional) `<numOutputs>` audio output busses  |
+| numParamCtls | ir    | number of parameter controls; can be 0         |
+| paramCtl...  |       | (optional) `<numParamCtls>` parameter controls |
 
 *inputBus*
 
@@ -93,20 +93,23 @@ Arguments:
 | type       ||
 | ---------- |-|
 | int        | a bitset of options (see below)
-| int/string | where to write the search results; either a buffer number or a file path. -1 means don't write results.
-| string...  | (optional) user supplied search paths
+| int/string | where to write the search results; either a buffer number or a file path; -1 means don't write results.
+| float      | timeout (the time to wait for each plugin before it is regarded as stuck and ignored); 0.0 means no timeout.
+| int        | the number of user supplied search paths; 0 means none.
+| string...  | (optional) list of user supplied search paths
+| int        | the number of exclude paths; 0 means none
+| string...  | (optional) list of user supplied exclude paths
 
 This will search the given paths recursively for VST plugins, probe them, and write the results to a file or buffer. Valid plugins are stored in a server-side plugin dictionary. If no plugin could be found, the buffer or file will be empty.
 
 The following options can be combined with a bitwise OR operation:
 | value ||
 | ----- |-|
-| 0x1   | use standard VST paths, see below.
-| 0x2   | verbose (print plugin paths and probe results)
-| 0x4   | add search results to cache file.
-| 0x8   | probe in parallel (faster, but might cause audio dropouts because of full CPU utilization)
+| 0x1   | verbose (print plugin paths and probe results)
+| 0x2   | write search results to cache file.
+| 0x4   | probe in parallel (faster, but might cause audio dropouts because of full CPU utilization)
 
-The standard VST search paths are:
+If there are no user supplied search paths, the standard VST search paths are used instead:
 
 - VST 2.x
   - Windows
@@ -138,17 +141,18 @@ The standard VST search paths are:
 
 Stop a running search. (No arguments)
 
-##### /vst_probe
+##### /vst_query
 
-Probe a VST plugin.
+Try to obtain a plugin description from the plugin cache.
 
 Arguments:
 | type       ||
 | ---------- |-|
-| string     | plugin path (absolute or relative)
-| int/string | where to write the search results; either a buffer number or a file path. -1 means don't write results.
+| string     | plugin path/key (absolute or relative)
+| int/string | where to write the result; either a buffer number or a file path. -1 means don't write results.
 
-This will probe a given plugin file in a seperate process, so that bad plugins don't crash the server. On success, the plugin information is written to a file or buffer and the plugin is stored in a server-side plugin dictionary; on fail, nothing is written. If you don't need the result (e.g. in NRT synthesis), you can pass a negative buffer number.
+If the plugin is not contained in the plugin cache, it is searched in the standard VST search paths and probed in a seperate process (so that bad plugins don't crash the server).
+On success, the plugin information is written to a file or buffer and the plugin is stored in a server-side plugin dictionary; on fail, nothing is written.
 
 For VST 2.x plugins, you can omit the file extension. Relative paths are resolved recursively based on the standard VST directories.
 
@@ -252,6 +256,20 @@ Arguments:
 
 **NOTE**: If the plugin is opened with the VST GUI editor, the command is always performed asynchronously and the `async` argument is ignored.
 
+##### /mode
+
+Set the processing mode.
+
+Arguments:
+| type ||
+| ---- |-|
+| int  | mode; 0 = realtime, 1 = offline |
+
+In non-realtime (NRT) synthesis, some VST plugins don't render correctly unless you explicitly put them into offline processing mode.
+Some plugins also render at a higher quality in offline mode than in realtime mode.
+
+On the other hand, with a few buggy plugins, certain plugin methods only work correctly in realtime mode, so you have to switch modes accordingly.
+
 ### Parameters
 
 ##### /set
@@ -320,7 +338,7 @@ Replies with:
 
 To get all parameter values, you can do `/u_cmd, <nodeID>, <synthIndex>, /getn, 0, -1`.
 
-##### /parameter_query
+##### /param_query
 
 Query parameter states.
 
@@ -709,7 +727,7 @@ VSTPlugin uses a custom format similar to .ini files to exchange plugin descript
 
 ### Plugin info
 
-This is the structure of a single plugin description, as used by `/vst_probe`:
+This is the structure of a single plugin description, as used by `/vst_query`:
 
 ```
 [plugin]\n
@@ -720,25 +738,33 @@ vendor=<vendor name>\n
 category=<category name>\n
 version=<plugin version string>\n
 sdkversion=<VST SDK version string>\n
-inputs=<max. number of audio inputs>\n
-auxinputs=<max. number of auxiliary inputs>\n // optional
-outputs=<max. number of audio outputs>\n
-auxoutputs=<max. number of auxiliary inputs>\n // optional
 pgmchange=<program change parameter index in hex>\n // optional
 bypass=<bypass parameter index in hex>\n // optional
 flags=<bitset>\n
+[inputs]\n
+n=<input bus count>
+<channel count #0>, <type #0>, <name #0>\n
+<channel count #1>, <type #1>, <name #1>\n
+...
+<channel count #N-1>, <type #N-1>, <name #N-1>\n
+[outputs]\n
+n=<output bus count>
+<channel count #0>, <type #0>, <name #0>\n
+<channel count #1>, <type #1>, <name #1>\n
+...
+<channel count #N-1>, <type #N-1>, <name #N-1>\n
 [parameters]\n
-n=<number of parameters>\n
-<parameter name #0>, <parameter label #0>, <parameter ID #0>\n
-<parameter name #1>, <parameter label #1>, <parameter ID #1>\n
+n=<parameter count>\n
+<name #0>, <label #0>, <ID #0>\n
+<name #1>, <label #1>, <ID #1>\n
 ...
-<parameter name #N-1>, <parameter label #N-1>, <parameter ID #N-1>\n
+<name #N-1>, <label #N-1>, <ID #N-1>\n
 [programs]\n
-n=<number of programs>\n
-<program name #0>\n
-<program name #1>\n
+n=<program count>\n
+<name #0>\n
+<name #1>\n
 ...
-<program name #N-1>\n
+<name #N-1>\n
 [keys]\n
 n=<number of keys>\n
 <key #0>\n
@@ -747,43 +773,61 @@ n=<number of keys>\n
 <key #N-1>\n
 ```
 
+String values, like plugin/parameter/program names, can contain any characters except newlines and commas (those are bashed to a replacement symbol by the UGen).
+
+##### flags
+
 `flags` is a bitset of boolean properties, written as a hexidecimal number. The following flags can be combined with a bitwise OR operation:
 | value ||
 | ----- |-|
-| 0x1   | supports the GUI editor
-| 0x2   | is a VST instrument
-| 0x4   | supports single precision processing
-| 0x8   | supports double precision processing
-| 0x10  | has MIDI input
-| 0x20  | has MIDI output
-| 0x40  | has SysEx input
-| 0x80  | has SysEx output
+| 0x001 | supports the GUI editor
+| 0x002 | is a VST instrument
+| 0x004 | supports single precision processing
+| 0x008 | supports double precision processing
+| 0x010 | has MIDI input
+| 0x020 | has MIDI output
+| 0x040 | has SysEx input
+| 0x080 | has SysEx output
+| 0x100 | is bridged
 
-String values, like plugin/parameter/program names, can contain any characters except newlines and commas. (Those are bashed to a replacement symbol by the UGen.)
+##### input/output busses
 
-Each parameter entry takes up a single line and consists of three fields, separated by a comma: `:<parameter name>, <parameber label>, <parameter ID>`.
+Each bus entry takes up a single line and consists of three fields, separated by a comma: `<channel count>, <type>, <name>`.
 
-The parameter label is the unit of measurement (e.g. "dB", "ms", "%"); it can be an empty string!
+`<type>` can be either 0 (= main) or 1 (= aux). `<name` is always empty for VST2 plugins (because they only have a single input/output bus).
+
+##### parameters
+
+Each parameter entry takes up a single line and consists of three fields, separated by a comma: `<name>, <label>, <ID>`.
+
+`<label>` is the unit of measurement (e.g. "dB", "ms", "%"); it can be an empty string!
 
 The parameter ID is a hexidecimal number. For VST 2.x plugins it is the same as the parameter index, but for VST 3.x plugins it can be an arbitrary 32 bit integer.
 
+##### programs
+
 **NOTE**: Program names can be empty strings; this means that empty lines after the `[programs]` section are significant and must not be ignored!
+
 
 Each plugin can be referred to by one or more *keys*. The primary key always comes first in the list.
 
 *EXAMPLE:*
 ```
 [plugin]
-id=6779416F
 path=C:/Program Files/VSTPlugins/GVST/GChorus.dll
+id=6779416F
 name=GChorus
 vendor=GVST
 category=Effect
 version=1200
 sdkversion=VST 2.4
-inputs=2
-outputs=2
-flags=d
+flags=10d
+[inputs]
+n=1
+2,0,
+[outputs]
+n=1
+2,0,
 [parameters]
 n=4
 Depth,cents,0
@@ -826,9 +870,12 @@ Each `<plugin info>` entry has the same structure as in "Plugin info".
 
 ### Plugin cache file
 
-Probing lots of (large) VST plugins can be a slow process. To speed up subsequent searches, the search results can be written to a cache file (see `/vst_search`), which is located in a hidden folder named *.VSTPlugin* in the user's home directory. The cache file itself is named *cache.ini* for 64-bit servers and *cache32.ini* for 32-bit servers.
+Probing lots of (large) VST plugins can be a slow process.
+To speed up subsequent searches, the search results can be written to a cache file (see `/vst_search`), which is located in a hidden folder named *.VSTPlugin* in the user's home directory.
+The cache file itself is named *cache.ini* for 64-bit servers and *cache32.ini* for 32-bit servers.
 
-The cache file structure is very similar to that in "Search results". The only difference is that it also contains a black-list (marked by `[ignore]`).
+The cache file structure is very similar to that in "Search results".
+The only difference is that it also contains a black-list (marked by `[ignore]`).
 
 ```
 [plugins]\n
@@ -845,5 +892,6 @@ n=<number of paths>
 <path #N-1>\n
 ```
 
-Plugins are black-listed if the probe process failed (see `/vst_probe`). If you want to replace a "bad" plugin with a "good" one, you have to first remove the cache file (see `/vst_clear`).
+Plugins are black-listed if the probe process failed (see `/vst_query`).
+If you want to replace a "bad" plugin with a "good" one, you have to first remove the cache file (see `/vst_clear`).
 

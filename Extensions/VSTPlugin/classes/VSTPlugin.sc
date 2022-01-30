@@ -1,8 +1,8 @@
 VSTPlugin : MultiOutUGen {
 	// class members
 	classvar <versionMajor=0;
-	classvar <versionMinor=4;
-	classvar <versionBugfix=1;
+	classvar <versionMinor=5;
+	classvar <versionBugfix=3;
 	classvar pluginDict;
 	classvar <platformExtension;
 	// instance members
@@ -71,7 +71,7 @@ VSTPlugin : MultiOutUGen {
 		this.deprecated(thisMethod, this.class.findMethod(\clear));
 		this.clear(server);
 	}
-	*search { arg server, dir, useDefault=true, verbose=true, wait = -1, action, save=true, parallel=true, timeout=nil;
+	*search { arg server, dir, options, verbose=true, wait = -1, action;
 		server = server ?? Server.default;
 		server.serverRunning.not.if {
 			"VSTPlugin.search requires the Server to be running!".warn;
@@ -80,28 +80,50 @@ VSTPlugin : MultiOutUGen {
 		};
 		// add dictionary if it doesn't exist yet
 		pluginDict[server].isNil.if { pluginDict[server] = IdentityDictionary.new };
-		server.isLocal.if { this.prSearchLocal(server, dir, useDefault, verbose, save, parallel, timeout, action) }
-		{ this.prSearchRemote(server, dir, useDefault, verbose, save, parallel, timeout, wait, action) };
+		server.isLocal.if { this.prSearchLocal(server, dir, options, verbose, action) }
+		{ this.prSearchRemote(server, dir, options, verbose, wait, action) };
 	}
-	*searchMsg { arg dir, useDefault=true, verbose=false, save=true, parallel=true, dest=nil, timeout=nil;
-		var flags = 0;
+	*searchMsg { arg dir, options, verbose=false, dest=nil;
+		var flags = 0, timeout, save = true, parallel = true, exclude;
+		// search directories
 		dir.isString.if { dir = [dir] };
 		(dir.isNil or: dir.isArray).not.if { MethodError("bad type % for 'dir' argument!".format(dir.class), this).throw };
-		dir = dir.collect({ arg p; p.asString.standardizePath});
+		dir = dir.collect({ arg p; p.asString.standardizePath });
+		// parse options
+		options.notNil.if {
+			// make sure that options is really an dictionary!
+			// this helps to catch errors with existing code because
+			// 'useDefault' has been replaced by 'options' in VSTPlugin v0.5
+			options.isKindOf(IdentityDictionary).not.if {
+				MethodError("bad type % for 'options' argument!".format(options.class), this).throw
+			};
+			options.keysValuesDo { arg key, value;
+				switch(key,
+					\save, { save = value.asBoolean },
+					\parallel, { parallel = value.asBoolean },
+					\timeout, { timeout = value !? { value.asFloat } },
+					\exclude, { exclude = value },
+					{ MethodError("unknown option '%'".format(key), this).throw; }
+				)
+			}
+		};
+		// exclude directories
+		exclude.isString.if { exclude = [exclude] };
+		(exclude.isNil or: exclude.isArray).not.if { MethodError("bad type % for 'exclude' argument!".format(exclude.class), this).throw };
+		exclude = exclude.collect({ arg p; p.asString.standardizePath });
 		// make flags
-		[useDefault, verbose, save, parallel].do { arg value, bit;
+		[verbose, save, parallel].do { arg value, bit;
 			flags = flags | (value.asBoolean.asInteger << bit);
 		};
-		timeout = timeout !? { timeout.asFloat } ?? 0.0;
 		dest = this.prMakeDest(dest); // nil -> -1 = don't write results
-		^['/cmd', '/vst_search', flags, dest, timeout, dir.size] ++ dir;
+		^['/cmd', '/vst_search', flags, dest, timeout ?? 0.0, dir.size] ++ dir ++ exclude.size ++ exclude;
 	}
-	*prSearchLocal { arg server, dir, useDefault, verbose, save, parallel, timeout, action;
+	*prSearchLocal { arg server, dir, options, verbose, action;
 		{
 			var stream, dict = pluginDict[server];
 			var tmpPath = this.prMakeTmpPath;
 			// ask VSTPlugin to store the search results in a temp file
-			server.listSendMsg(this.searchMsg(dir, useDefault, verbose, save, parallel, tmpPath, timeout));
+			server.listSendMsg(this.searchMsg(dir, options, verbose, tmpPath));
 			// wait for cmd to finish
 			server.sync;
 			// read file
@@ -121,13 +143,13 @@ VSTPlugin : MultiOutUGen {
 			action.value;
 		}.forkIfNeeded;
 	}
-	*prSearchRemote { arg server, dir, useDefault, verbose, save, parallel, timeout, wait, action;
+	*prSearchRemote { arg server, dir, options, verbose, wait, action;
 		{
 			var dict = pluginDict[server];
 			var buf = Buffer(server); // get free Buffer
 			// ask VSTPlugin to store the search results in this Buffer
 			// (it will allocate the memory for us!)
-			server.listSendMsg(this.searchMsg(dir, useDefault, verbose, save, parallel, buf, timeout));
+			server.listSendMsg(this.searchMsg(dir, options, verbose, buf));
 			// wait for cmd to finish and update buffer info
 			server.sync;
 			buf.updateInfo({
@@ -148,32 +170,32 @@ VSTPlugin : MultiOutUGen {
 		server = server ?? Server.default;
 		server.listSendMsg(this.stopSearchMsg);
 	}
-	*stopSearchMsg { ^['/cmd', '/vst_search_stop']; }
-	*probe { arg server, path, key, wait = -1, action;
-		server = server ?? Server.default;
-		server.serverRunning.not.if {
-			"VSTPlugin.probe requires the Server to be running!".warn;
-			action.value;
-			^this;
-		};
-		path = path.asString.standardizePath;
+	*stopSearchMsg {
+		^['/cmd', '/vst_search_stop'];
+	}
+	*prQuery { arg server, path, wait = -1, action;
+		var info;
 		// add dictionary if it doesn't exist yet
 		pluginDict[server].isNil.if { pluginDict[server] = IdentityDictionary.new };
-		server.isLocal.if { this.prProbeLocal(server, path, key, action); }
-		{ this.prProbeRemote(server, path, key, wait, action); };
+		// if the key already exists, return the info;
+		// otherwise query the plugin and store it under the given key
+		info = pluginDict[server][path.asSymbol];
+		info.notNil.if {
+			action.value(info);
+		} {
+			server.isLocal.if { this.prQueryLocal(server, path, action) }
+			{ this.prQueryRemote(server, path, wait, action) }
+		}
 	}
-	*probeMsg { arg path, dest=nil;
-		path = path.asString.standardizePath;
-		dest = this.prMakeDest(dest);
-		// use remote probe (won't write to temp file)!
-		^['/cmd', '/vst_probe', path, dest];
+	*prQueryMsg { arg path, dest;
+		^['/cmd', '/vst_query', path.asString.standardizePath, this.prMakeDest(dest)];
 	}
-	*prProbeLocal { arg server, path, key, action;
-		{
+	*prQueryLocal { arg server, path, action;
+		forkIfNeeded {
 			var stream, info, dict = pluginDict[server];
 			var tmpPath = this.prMakeTmpPath;
 			// ask server to write plugin info to tmp file
-			server.listSendMsg(this.probeMsg(path, tmpPath));
+			server.listSendMsg(this.prQueryMsg(path, tmpPath));
 			// wait for cmd to finish
 			server.sync;
 			// read file (only written if the plugin could be probed)
@@ -186,26 +208,22 @@ VSTPlugin : MultiOutUGen {
 				File.delete(tmpPath).not.if { ("Could not delete tmp file:" + tmpPath).warn };
 				stream.notNil.if {
 					info = VSTPluginDesc.prParse(stream).scanPresets;
-					// store under key
+					// store under key + path
 					this.prAddPlugin(dict, info.key, info);
-					// also store under resolved path and custom key
 					this.prAddPlugin(dict, path, info);
-					key !? {
-						this.prAddPlugin(dict, key, info);
-					}
 				};
 			};
 			// done (on fail, info is nil)
 			action.value(info);
-		}.forkIfNeeded;
+		};
 	}
-	*prProbeRemote { arg server, path, key, wait, action;
-		{
+	*prQueryRemote { arg server, path, wait, action;
+		forkIfNeeded {
 			var dict = pluginDict[server];
 			var buf = Buffer(server); // get free Buffer
 			// ask VSTPlugin to store the probe result in this Buffer
 			// (it will allocate the memory for us!)
-			server.listSendMsg(this.probeMsg(path, buf));
+			server.listSendMsg(this.prQueryMsg(path, buf));
 			// wait for cmd to finish and update buffer info
 			server.sync;
 			buf.updateInfo({
@@ -215,19 +233,15 @@ VSTPlugin : MultiOutUGen {
 					var info;
 					(string.size > 0).if {
 						info = VSTPluginDesc.prParse(CollStream.new(string)).scanPresets;
-						// store under key
+						// store under key + path
 						this.prAddPlugin(dict, info.key, info);
-						// also store under resolved path and custom key
 						this.prAddPlugin(dict, path, info);
-						key !? {
-							this.prAddPlugin(dict, key, info);
-						}
 					};
 					buf.free;
 					action.value(info); // done
 				});
 			});
-		}.forkIfNeeded;
+		}
 	}
 	*readPlugins {
 		var path, stream, dict = IdentityDictionary.new;
@@ -314,14 +328,6 @@ VSTPlugin : MultiOutUGen {
 			VSTPluginDesc.prParse(stream, major, minor, bugfix).scanPresets;
 		};
 	}
-	*prGetInfo { arg server, key, wait, action;
-		var info, dict = pluginDict[server];
-		key = key.asSymbol;
-		// if the key already exists, return the info.
-		// otherwise probe the plugin and store it under the given key
-		dict !? { info = dict[key] } !? { action.value(info) }
-		?? { this.probe(server, key, key, wait, action) };
-	}
 	*prMakeTmpPath {
 		^PathName.tmp +/+ "vst_" ++ UniqueID.next;
 	}
@@ -404,7 +410,8 @@ VSTPlugin : MultiOutUGen {
 		outputArray = numOut.value.asArray.collect { arg item, i;
 			// check that the item is a number >= 0! 'nil' is treated as 0.
 			item.notNil.if {
-				item.isNumber.if { item.max(0) }
+				// must be Integer!
+				item.isNumber.if { item.max(0).asInteger }
 				{ MethodError("bad value for output % (%)".format(i, item), this) }
 			} { 0 };
 		};

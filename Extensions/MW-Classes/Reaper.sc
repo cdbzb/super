@@ -1,6 +1,7 @@
 Reaper {
 	classvar <>executable="'/Applications/REAPER ƒ/REAPER64.app/Contents/MacOS/REAPER'";
-	classvar <>ip="192.168.1.213",<>port=8000;
+	//classvar <>ip="192.168.1.213",<>port=8000;
+	classvar <>ip="127.0.0.1",<>port=8000;
 	classvar <clock,<cursor=0,<>lastPlayLength;
 	*initClass {
 		clock=TempoClock.new().permanent_(true);

@@ -63,8 +63,8 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 	});
 	["SARGON [OC]: (boom) I could not allow your sacrifice of one so close to you. ",[1,13,12,14,13,12,11,7,6,5,4,3,2,4,3,2].dm(\c)].addLine;
 ( //Vocoder resources
-	Song.carrierBus = Bus.audio(s,1);
-	Song.modulatorBus = Bus.audio(s,1);
+	Song.carrierBus = Bus.audio(s,2);
+	Song.modulatorBus = Bus.audio(s,2);
 	Song.sargonCarrier = {|p b e att=3 sus=5 rel=6 chord=#[1,2,4,5,6,8] aTune| 
 	{  
 		var tune = aTune ? p.tune[e.start].list;
@@ -85,7 +85,7 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 	}.play(s,Song.carrierBus.index)
 }	;
 
-	Song.sargonModulator = {|rpp dur| 
+	Song.sargonModulator = {|rpp dur modGain=1| 
 		{ 
 			Line.kr(dur:dur,doneAction:2);
 			rpp=Song.resources.at(rpp);
@@ -93,22 +93,23 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 			=> EchoNone.ar(_,1,0.4,2) * 2
 			//=> MoogFF.ar(_,8000,1)
 			=> LPF.ar(_,6000)
+			* modGain
 			*5	 => SafetyLimiter.ar(_) /5
 			//+ ( In.ar(carrierBus.index,1) )
 	}.play(s,Song.modulatorBus.index)
 };
-	Song.vocodeTune = { |p b e rppName amp=2 att sus rel dur=10 chord=#[1,2,4,5,6,8] tune|
+	Song.vocodeTune = { |p b e rppName amp=0.2 att=3 sus=1 rel=5 dur=10 chord=#[1,2,4,5,6,8] tune out=0 modGain=1|
 		Synth(\soundInMorph,[
 			modulator: Song.modulatorBus.index,
 			carrier: Song.carrierBus.index,
 			amp:0.32,
 			amp:0.2, // WHEN buses are set to 1 channel otherwise comment out!
 			amp:amp, 
-			dur:dur
-			//out:4,amp:0.9
+			dur:dur,
+			out:out
 		]);
 		Song.sargonCarrier.(p,b,e,att, sus, rel, chord,tune);
-		Song.sargonModulator.(rppName,dur,tune)
+		Song.sargonModulator.(rppName,dur,modGain)
 	}
 );
 	Song.voxSacrifice=VocalRPP(\sacrifice,\test);
@@ -123,7 +124,15 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 	});
 	P(\vox,start:\sacrifice,music:{|p b e| 
 		// TODO now make the relevant guide check to see if they should mute this!!
-		p.vocodeTune.(p,b,e,\voxSacrifice,dur:b+3)
+		p.vocodeTune.(p,b,e,
+			\voxSacrifice,
+			amp:0.8,
+			out:4,
+			dur:b.sum+5,
+			att:3,
+			sus:b.sum-5,
+			rel:3
+		)
 	});
 		P(\bass,start:\sacrifice,music:{|p b e| 
 			[
@@ -296,7 +305,7 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 		["SARGON [OC]: No, Doctor. (Boom)",[1,-5,-3, -17].dm(\a,scale:\minor,octave:4)].addLine;
 		Song.voxNo=VocalRPP('Doctor.',\test);
 		P(\vox,start:'Doctor.',music:{|p b e|
-			p.vocodeTune.(p,b,e,\voxNo,dur:b+2)
+			p.vocodeTune.(p,b,e,\voxNo,amp:0.3,dur:b.sum+3,att:1,sus:b.sum-1,rel:2)
 		});
 		P(\test,start:'No, Doc',music:{|p b e| 
 			{
@@ -347,7 +356,7 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 		[" I allowed you to believe that to be true so that ",[3,2,4,3,1,-5,-7,-6,-4,-1,2,-6,-5].dm(\c,scale:\mixolydian,octave:6)].addLine;
 		Song.voxAllow=VocalRPP(\allowed,\tune);
 		P(\vox,start:\allowed,music:{|p b e|
-			p.vocodeTune.(p,b,e,\voxAllow,0.3,1,b.sum-3,2,dur:b+2)
+			p.vocodeTune.(p,b,e,\voxAllow,0.2,att:1,sus:b.sum-3,rel:2,dur:b.sum+2)
 		});
 		P.still( \clear, start: \allowed, timecode:0, music: { |p b e|
 			e.still.value(
@@ -392,15 +401,26 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 			].pp
 		});
 		["Henoch would (boom) read your thoughts and believe it also. ",[11,7,5,-4,13,12,15,13,12,11,7,14,13].dm(\c,octave:4)].addLine;
-		//P.tune(\read);
+		Song.voxRead=VocalRPP(\read,\tune);
+			P(\vox,start:\read,music:{|p b e|
+			p.vocodeTune.(p,b,e,\voxRead,
+				amp:0.35,
+				att:1,
+				sus:b.sum-3,
+				rel:2,
+				dur:b.sum+2,
+				chord:#[1,2,4,6,8],
+				modGain:1
+			)
+		});	//P.tune(\read);
 		P.still( \clear, start: \read, timecode:0, music: { |p b e|
 			e.still.value(
 				wait: b.sum,
-				text:["Henoch would",""]
+				text:["Henoch would","read your thoughts"]
 			);
 			fork{
-				b[(0..3)].wait;
-				e.still.setText([" "," "])
+				b[(0..5)].sum.wait;
+				e.still.setText(["and believe it ","also"])
 			}
 		});
 		P(\line,start:\read,music:{|p b e| 
@@ -474,6 +494,16 @@ P.tune(\unconsciousness);
 ["SARGON [OC]: But Henoch believed and fled the body. ",[5,11,5,3,6.5].dm('c#',scale:\dorian)++[5,11,5,4,3].dm('e-')].addLine;
 //P.tune(\believed);
 Song.voxBelieve = VocalRPP(\believed,\vox);
+		P.still( \clear, start: \believed, timecode:0, music: { |p b e|
+			e.still.value(
+				wait: b.sum,
+				text:["but Henoch","believed"]
+			);
+			fork{
+				b[(0..4)].sum.wait;
+				e.still.setText(["and fled","the body"])
+			}
+		});
 P(\vox,start:\believed,music:{|p b e| 
 			p.vocodeTune.(p,b,e,\voxBelieve,0.3,1,b.sum-3,2)
 });
@@ -1060,18 +1090,17 @@ P(\transform,start:\nods,syl:1,music:{|p b e|
 	//	width:13,
 	//	wet:0.2
 	//).play;
-
 	var synths,bus;
 			Synths(\transLinen,\sustain,b.sum,\freq,[1,3,4,6].df(\e,scale:\whole),\amp,0.1,\out,1);
 			Synths(\transLinen,\sustain,b.sum,\freq,[1,3,4,6].df(\e,scale:\whole),\amp,0.1,\out,2);
 			
 				synths= Synths(\trem2 ,\amp,0.05,\scale,2,\freq,[1,3,4,6,11,13,14,16,21,23].df(\e,scale:\whole),\out,[0,1,2,3,0,1,2,3,0,1]);
 				bus = Bus.control;
-				{Env.linen(0,b.sum,5).kr(2,gate:1)*0.05}.play(s,bus.index);
+				{Env.linen(0,b.sum-5,5).kr(2,gate:1)*0.05}.play(s,bus.index);
 				synths.map(\amp,bus);
 
 			s.bind{{ |pitchScale=1.15 loss=0.99998 |
-				var env=Env.linen(0,b.sum-5,8).kr(2,gate:1)*0.175;
+				var env=Env.linen(0,b.sum-8,8).kr(2,gate:1)*0.175;
 				var numChannels=4;
 				var exc = Dust.ar(2!numChannels)+Impulse.ar(0);
 				var sig;
@@ -1080,7 +1109,8 @@ P(\transform,start:\nods,syl:1,music:{|p b e|
 				exc=PinkNoise.ar(exc);
 				sig=MembraneCircle.ar(exc,[0.007,0.0073]*pitchScale,loss)*env;
 				sig * 0.5
-			}.play;}
+			}.play};
+			fork{b.sum+5=>_.wait;synths.free}
 });
 P.still( \purple, start: \nods,syl:1, timecode:5116.5.seconds, music: { |p b e|
 	e.still.value(
@@ -1112,7 +1142,7 @@ P(\tune,start:'Oblivion together',music:{|p b e|
 });
 P.still( \oblivion, start: 'Oblivion together', timecode:5125.5.seconds, music: { |p b e|
 	e.still.value(
-		wait: b.sum ,
+		wait: b.sum+6 ,
 		fadeIn:8,
 		text: [ "","" ]
 	);

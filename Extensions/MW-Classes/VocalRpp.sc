@@ -144,8 +144,9 @@ VocalRPP {
 	    var path=reaperProjectPath +/+ "media" +/+ key.asString ++ ".wav";
 	    var s = Server.default;
 	    fork{
-		    s.prepareForRecord(path);
+		    s.prepareForRecord(path,2);
 		    0.1.wait;
+		    Monitor.new=>_.play(0,6,0,2);
 		    Song.cursor_(section);
 		    range.do(
 			    { |i|
@@ -158,7 +159,12 @@ VocalRPP {
 					    |part|
 					    part.resources.rpp == nil // this
 				    };
+				    parts = parts.reject{
+					    |part|
+					    part.music.cs.contains("vocodeTune")
+				    };
 				    //song.play(song.at(section+i));
+				    Server.default.sync;
 				    parts.do(_.p)
 			    }
 		    );

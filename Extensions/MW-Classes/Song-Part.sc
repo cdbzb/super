@@ -295,7 +295,7 @@ Song {
 	}
 
 	playParts { |...args|
-		this.getPartsList(args).do(_.p)
+		this.getPartsList(args).sort({|i j| i.start<j.start}).do(_.p)
 	}
 
 	chain {
@@ -628,10 +628,10 @@ Part {
 		//////////delete this line if not work
 		//(music.class=Routine).if(music.play);
 
-		TempoClock.sched(when,this)
+		//TempoClock.sched(when,this)
 //		parent.clock.sched(when,this)
 		//AppClock.sched(when,this)
-//		SystemClock.sched(when,this)
+		SystemClock.sched(when,this)
 	}
 
 	calcTime {

@@ -1,5 +1,8 @@
 XTouch : XMIDIController {
-	classvar <>id = 1779843049;
+	classvar <>id = 1879431245;// INT
+	//classvar <>id =  -1378392801;// EXT
+	//classvar <>id = 1779843049;
+
 	classvar functions;
 	classvar <>mappings;
 	classvar functionKeyToggles;
@@ -20,15 +23,18 @@ XTouch : XMIDIController {
 	}
 	*applyMappings {
 			mappings.pairsDo{|function label| 
+			// use event for mapping (function, description)
+			// mappings.pairsDo{| event label | 
+			// var function = pair.function
 				var midinote = labels.at(label);
 				function.cs.post;' '.post;midinote.postln;
 				//MIDIFunc.noteOn(function,midinote,srcID:1779843049).permanent_(true);
-				MIDIdef.noteOn(\X ++ label =>_.asSymbol, function,midinote,srcID:1779843049).permanent_(true);
+				MIDIdef.noteOn(\X ++ label =>_.asSymbol, function,midinote,srcID:XTouch.id).permanent_(true);
 			};
 	}
 	*dump{
 		mappings.pairsDo { |function label| 
-			function.cs + label => _.postln;
+			label + function.cs => _.postln;
 		}
 	}
 	*initClass {

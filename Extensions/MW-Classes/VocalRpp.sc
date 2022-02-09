@@ -14,7 +14,7 @@ VocalRPP {
     init { 
         song.isNil.if{song=Song.currentSong};
         section =song.section(key);
-        reaperProjectPath = Song.reaperFolder +/+ song.key;
+        reaperProjectPath = Song.reaperFolder +/+ song.key +/+ name;
         name.notNil.if{
             key = key ++ "-" ++ name
         };
@@ -84,20 +84,34 @@ VocalRPP {
 		    (range.collect{|i| song.secDur[ section + i ]}.sum + tail + 0.5).wait;
 		    //put name in variable
 		    //open the project and subProject and fire reapercommand
-          this.open;
-          0.1.wait;
-          "open" + subproject => _.unixCmd;
-          0.1.wait;
-          Reaper.updateTempo;
-          0.1.wait;
-          Reaper.save;
-          this.copyPROXtowav;
-          0.05.wait;
-          buffer=Buffer.read(Server.default,wav);
+		    this.open;
+		    0.1.wait;
+		    "open" + subproject => _.unixCmd;
+		    0.1.wait;
+		    Reaper.updateTempo;
+		    0.1.wait;
+		    Reaper.save;
+		    this.copyPROXtowav;
+		    0.05.wait;
+		    buffer=Buffer.read(Server.default,wav);
 
 
-            this.storeDurs;
+		    this.storeDurs;
       }
+    }
+
+    // "~/Library/Application Support/REAPER/Scripts/createSend.lua"
+    addRecordedItemToRPP{
+	    Reaper.action("_RS3e2c76052d7ffef247e1f00edaed2e61cf30dfb0")
+    }
+
+    recordSection{ |bus=0 channels=2 tail=5|
+	    var fileName = "CARRIER_SC.wav";
+	    fork{
+		    song.recordSection( section, bus, mediaFolder +/+ fileName, channels );
+		    (song.secDur[section]+tail+0.5).wait;
+		    this.addRecordedItemToRPP;//make sure action in Scripts specifies correct fileName!!
+	    }
     }
 
     makeRPPs { 
@@ -201,7 +215,9 @@ build {
         (range.collect{|i| song.secDur[ i ]}.sum + tail + 0.5).wait;
         //put name in variable
         this.makeRPPs(
-            song.durs[section].list, //durs
+
+		// should make this Song.preroll
+            [1] ++ song.durs[section].list, //durs
              //path to reaper dir (redundant!!)
         );
         this.storeDurs;

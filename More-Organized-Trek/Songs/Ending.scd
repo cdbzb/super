@@ -4,6 +4,7 @@
 /*
 [Bridge]
 
+Song.recordSection(\depart,Song.carrierBus.index,)
 
 (Uhura is screaming in terror before collapsing across her console. Chapel is standing rigid by the Captain's chair.) ,
 [4,3,2.5,2,1,\_]
@@ -17,15 +18,12 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 (He whirls around.) 
 */
 ( s.waitForBoot( {
-	// Setup Monitor for back channels
-a=Pipe("sysctl hw.model","r");
-b=a.getLine;
-a.close;
-(b == "hw.model: MacBookPro16,2").if{
-	m=Monitor.new;
-	m.play(3,3,0,2,target:RootNode(s));
-	CmdPeriod.add({m.play(3,3,0,2,target:RootNode(s))})
-};
+	 //Setup Monitor for back channels
+	(s.options.device != "Digiface USB (23953833)") .if{
+		m=Monitor.new;
+		m.play(3,3,0,2,target:RootNode(s));
+		CmdPeriod.add({ m.play(3, 3, 0, 2, target:RootNode(s))})
+	};
 // Song
 	Song(\ending,[]).current;
 	Song.currentSong.preroll_(1);
@@ -36,7 +34,7 @@ a.close;
 		Song.currentSong.synful2 = ~synful2 = Synful();
 	}{
 
-		Song.currentSong.synful1 = ~synful1
+		Song.currentSong.synful1 = ~synful1;
 		Song.currentSong.synful2 = ~synful2;
 	};
 	Song.resources.condition=Condition();
@@ -86,7 +84,7 @@ a.close;
 	});
 	["SARGON [OC]: (boom) I could not allow your sacrifice of one so close to you. ",[1,13,12,14,13,12,11,7,6,5,4,3,2,4,3,2].dm(\c)].addLine;
 ( //Vocoder resources
-	Song.carrierBus = Bus.audio(s,2);
+	Song.carrierBus = Bus.audio(s,5);
 	Song.modulatorBus = Bus.audio(s,2);
 	Song.sargonCarrier = {|p b e att=3 sus=5 rel=6 chord=#[1,2,4,5,6,8] aTune| 
 	{  
@@ -99,7 +97,7 @@ a.close;
 		var car = Gendy1.arWidth( freq: freqs , width:1.10) => Mix.ar(_)
 		* Env.linen(att,sus,rel).kr(2,gate:1);
 		var saw = Saw.ar(freqs) * 0.1
-		=> Splay.ar(_)
+		=> SplayAz.ar(5,_)
 		=> RLPF.ar(_,100,2)
 		* Env.linen(3,5,6).kr(2,gate:1);
 		car => FreeVerb.ar(_,1,0.8)
@@ -118,6 +116,9 @@ a.close;
 			=> LPF.ar(_,6000)
 			* modGain
 			*5	 => SafetyLimiter.ar(_) /5
+			//=> DCompressor.ar( _,  sidechainIn: 0,  sidechain: 0,  ratio: 4,  threshold: -47,  attack: 0.1,  release: 100.1,  makeup: 0.5,  automakeup: 1) /4.9
+			 
+			
 			//+ ( In.ar(carrierBus.index,1) )
 	}.play(s,Song.modulatorBus.index)
 };
@@ -328,7 +329,8 @@ a.close;
 		["SARGON [OC]: No, Doctor. (Boom)",[1,-5,-3, -17].dm(\a,scale:\minor,octave:4)].addLine;
 		Song.voxNo=VocalRPP('Doctor.',\test);
 		P(\vox,start:'Doctor.',music:{|p b e|
-			p.vocodeTune.(p,b,e,\voxNo,amp:0.3,dur:b.sum+3,att:1,sus:b.sum-1,rel:2)
+			p.vocodeTune.(p,b,e,\voxNo,amp:0.3,dur:b.sum+3,att:1,sus:b.sum-1,rel:2,chord:[1],out:3);
+			p.vocodeTune.(p,b,e,\voxNo,amp:0.3,dur:b.sum+3,att:1,sus:b.sum-1,rel:2,chord:[2])
 		});
 		P(\test,start:'No, Doc',music:{|p b e| 
 			{
@@ -544,7 +546,7 @@ P(\bass,start:\believed,music:{|p b e|
 				i.freqSeq.lag2( i.lag ) / 2 
 				* [1,0.5]
 				* LFBrownNoise2.kr([2,2.2,2.3,2.4]).range(0.99,1.01),
-				0.1
+				0.03
 			)
 			* Env.asr(0.1,1,4).kr(2,gate:i.gateSeq)
 		},
@@ -557,7 +559,7 @@ P(\bass,start:\believed,music:{|p b e|
 });
 		["(boom) He is (boom) destroyed. ",[-5,5,5,-5,5,5].dm(\g)].addLine;
 		P.tune(\destroyed);
-		P(\chord,start:\destroyed,music:{|p b e| 
+		P(\chord,start:'He is (boom)',music:{|p b e| 
 			MegaBind(
 
 				[5,\_,\_,\r,\r,-1].bubble ++ 
@@ -854,6 +856,7 @@ P(\bass,start:\believed,music:{|p b e|
 			});
 			P.tune(\cannot);
 			["(boom) Thalassa and I must now (boom) also depart",[-1,1,2,3,1,4,2,5, 5,4.5, 4.5,7].dm(\d)].addLine;
+Song.voxDepart= VocalRPP(\depart,\vox);
 			P(\bass,start:\depart,music:{|p b e| 
 				[
 					freq: [1,[12, 2 ],11.5].df(\d,octave:[3,2]).q,
@@ -897,7 +900,7 @@ P(\bass,start:\believed,music:{|p b e|
 					release:b.sum+3
 				).play
 			});
-			P.tune(\depart);
+			P.tune(\depart,Pset(\out,Song.carrierBus.index,_));
 			["(boom) into oblivion. ",[-2,-7,1,2,1,-5,-4].dm('c#',octave:6)].addLine;
 			P.tune('into oblivion',Pbindf(_,\amp,0.06,\out,Effect( { |i| EchoNone.ar(i,2,[1.3, 2 ]*0.6,9)*0.6=> { |i| i+( 0.5*PitchShift.ar(i,pitchRatio:[1.5,2]) ) }  } ).bus.index,inputChannels:2));
 			P(\counter,start:'into oblivion',music:{|p b e| 
@@ -1142,12 +1145,12 @@ P.still( \purple, start: \nods,syl:1, timecode:5116.5.seconds, music: { |p b e|
 		fade:2
 	);
 });
-["MULHALL: Oblivion together",[2,1,2,1].dm(\c)].addLine;
+["MULHALL: Oblivion together does not",[2,1,2,1].dm(\c) ++ [4,4, 3, 1, -5,-3,-6,1,3,3,2,-7,-4.5,-2,-5,-7,2,2,1,-6,-3,-1,-4,-6,2,1,-7,2,1 ].dm(\a)].addLine;
 P(\tune,start:'Oblivion together',music:{|p b e| 
 	MegaBind(
 			[
-				[2,1,2,1]
-			].df(\c),
+				[2,1,2,1].df(\c) ++ [4,4,3].df(\a,octave:4)
+			],
 			b,
 			[],
 			{|i|
@@ -1156,8 +1159,9 @@ P(\tune,start:'Oblivion together',music:{|p b e|
 			},
 			{|i|
 				Mix.ar(i)
-				=> EchoCubic.ar(_,1,0.3,7)
+				=> EchoCubic.ar(_,1,0.3,9)
 				=> Phaser2.ar(_,rate:0.1)
+				//=>PlateReverb.ar(_,  size: 0.8,  decayTime: 2,  damping: 0.6,  diffusion: 1.0,  mix: 1)
 				*0.05
 			
 			}
@@ -1174,8 +1178,80 @@ P.still( \oblivion, start: 'Oblivion together', timecode:5125.5.seconds, music: 
 		e.still.setText(["oblivion",""])
 	}
 });
-[" does not frighten me, beloved.","r"].addLine;
-[" Promise we'll be together. ","r"].addLine;
+P(\arp,start:'Oblivion together',syl:4,music:{|p b e| 
+	var score = VoiceLeading([
+		[4, 3,  1,  -5, -3, -6, 1,  3,  3,  2,  -7, -4.5, -2, -5, -7, 2,  2,  1,  -6, -3, -1, -4, -6, 1,  -5, \_, \_, \_, ],
+		[4, \_, 3,  \_, \r, \r, \r, \r, 3,  \_, 2,  \_,   \r, \r, \r, 2,  2,  \_, 1,  \_, \r, \r, \r, 2,  1,  -7, 2,  1,  ],
+		[1, \_, \_, \_, 6,  \_, \_, \_, -7, \_, \_, \_,   5,  \_, \_, \_, -6, \_, \_, \_, 4,  \_, \_, \_, -5, \_, \_, \_, ]
+	].df(\a),b.drop(1)!8=>_.flat);
+	[	
+	//freq: 	[4,3,1,-5,-3,-5,1,3,  3,2,-7,-5,-4,-5,-7,2].df(\a).q,
+		//freq: 	[4,3,1,-5,-3,-6,1,3,  3,2,-7,-5,-2,-5,-7,2].df(\a).q,
+		freq:score.lines(0),
+		amp:0.02,
+		dur:score.voice(0).durs.q,
+		legato:3,
+		pan:-1,
+		out:2
+
+	].pp;
+	[
+	//	freq:[4,3,\r,\r, 3,2,\r,\r, 2,1, \r, \r, 1,-7,2,1].df(\a).q,
+		freq:score.lines(1),
+		dur:score.voice(1).durs.q,
+		instrument:\stringyy,
+		amp:0.31,
+		legato:1,
+		out:4
+	].pp;
+	[
+		freq:[1,6,-7,5, -6,4, -5,3].df(\a,octave:4).q,
+		instrument:\sawSynthSustain,
+		amp:0.06,att:2,
+		dur:b.drop(1).clump(4).collect(_.sum).q(4),
+		freq:score.lines(2)/2,
+		dur:score.voice(2).durs.q,
+		legato:[2,1,2,1,2,1,1,1].q
+	].pp
+	
+});
+[" frighten me (b b ), beloved(b b b).",[-7,-6,-3,-4, -17, -2, -7, -6, -5, -17, -2, -1].dm(\a)].addLine;
+P(\arp2,start:'frighten',music:{|p b e| 
+	var score = VoiceLeading([
+		[-7, -6, -3, -4, -17, -2, -7, -6, -5, -17, -2, -1],
+		[-7, -6, -3, \_, \_,  \r, -7, -6, -5, \_,  \_, \_],
+		[1,  \_, \_, \_, \_, \_, \_, -7, \_, \_, \_, \_ ]//  5, \_, \_, \_, -6, \_, \_, \_, 4, \_, \_, \_, -5, \_, \_, \_, -4, \_, \_]
+	].df(\a),b.drop(1)!4=>_.flat);
+	[
+	//freq: 	[4,3,1,-5,-3,-5,1,3,  3,2,-7,-5,-4,-5,-7,2].df(\a).q,
+		//freq: 	[4,3,1,-5,-3,-6,1,3,  3,2,-7,-5,-2,-5,-7,2].df(\a).q,
+		freq:score.lines(0),
+		amp:0.02,
+		dur:score.voice(0).durs.q,
+		legato:3,
+		pan:1
+
+	].pp;
+	[
+	//	freq:[4,3,\r,\r, 3,2,\r,\r, 2,1, \r, \r, 1,-7,2,1].df(\a).q,
+		freq:score.lines(1),
+		dur:score.voice(1).durs.q,
+		instrument:\stringyy,
+		amp:0.31,
+		legato:1,
+		pan:-1
+	].pp;
+	[
+		instrument:\sawSynthSustain,
+		amp:0.06,att:2,
+		freq:score.lines(2)/2,
+		dur:score.voice(2).durs.q,
+		//legato:[2,1,2,1,2,1,1,1].q
+	].pp
+	
+});
+[" Promise we'll be together. ",[6,5,3,5,6,11,7,6].dm('b-')].addLine;
+P.tune('Promise',Pset(\instrument,\stringyy,_));
 ["KIRK: I promise, beloved. ","r"].addLine;
 ["MULHALL: Together forever. ","r"].addLine;
 ["KIRK: Forever beloved. Forever. ","r"].addLine;
@@ -1186,3 +1262,4 @@ P.still( \oblivion, start: 'Oblivion together', timecode:5125.5.seconds, music: 
 		}
 	)
 )
+Imag

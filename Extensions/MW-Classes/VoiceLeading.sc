@@ -17,9 +17,19 @@ VoiceLeading {
 
 	}
 	init { |array durss|
+                var longest = ( array.size>1 ).if{
+                  array.collect({|i| i.size}).sort.tail.unbubble  //size of longest subarray
+                }{
+                  array[0].size
+                };
                 (array.rank == 1).if { array = array.bubble };
                 (durss.isNumber).if{durss = durss.bubble; \bubble.postln};
-                durss = array[0].size.collect{|i| durss.wrapAt(i)};
+                //pad durs using wrapAt (should this be clipAt??)
+                //durss = longest.collect{|i| durss.wrapAt(i)};
+		  durss = array[0].size.collect{|i| durss.wrapAt(i)};
+
+                //pad array using clipAt
+                //\xya.post;array.reshapeLike( ( 1 ! array.collect({|i| i.size}).sort.tail.unbubble) ! array.size, \clipAt ).postln;
 		lines=array;
 		durs=durss;
                 ////////// these are for Pbinds

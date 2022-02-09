@@ -40,12 +40,11 @@ o = [
 	Pseq.prNew,  List.prNew,  Array.prNew(13),  "SARGON [OC]: We now know we cannot permit ourselves to exist in your world, my children. ",  
 	Pseq.prNew,  List.prNew,  Array.prNew(20),  "SPOCK: It seems, Doctor, the injection was (boom) only enough to cause unconsciousness. ",  
 	Pseq.prNew,  List.prNew,  Array.prNew(20),  "(Spock stands up.) KIRK: You're alive.  ",  
-	Pseq.prNew,  List.prNew,  Array.prNew(4),  " Promise we'll be together. ",  
-	Pseq.prNew,  List.prNew,  Array.prNew(8)
+	Pseq.prNew,  List.prNew,  Array.prNew(4)
 ];
 p = [
 	// Dictionary
-	0, [ array: o[1],  size: 42 ],  
+	0, [ array: o[1],  size: 41 ],  
 	// Array
 	1, [ nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -174,7 +173,7 @@ p = [
 		o[151],  o[152],  o[155],  o[156],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  o[159],  o[160],  
-		o[163],  o[164],  nil,  nil ],  
+		nil,  nil,  nil,  nil ],  
 	// Pseq
 	3, [ list: o[4],  repeats: 1,  
 		offset: 0 ],  
@@ -541,14 +540,6 @@ p = [
 	// List
 	161, [ array: o[162] ],  
 	// Array
-	162, [ 1.631,  0.627,  0.629,  1.617 ],  
-	// Pseq
-	164, [ list: o[165],  repeats: 1,  
-		offset: 0 ],  
-	// List
-	165, [ array: o[166] ],  
-	// Array
-	166, [ 0.631,  0.524,  1.249,  0.535,  
-		0.682,  0.414,  0.864,  0.486 ]
+	162, [ 1.631,  0.627,  0.629,  1.617 ]
 ];
 prUnarchive(o,p);

@@ -27,6 +27,9 @@ Reaper {
 			lastPlayLength=stopAt-seconds
 		}
 	}
+	*action{ |actionID|
+		this.address.sendMsg('action', actionID )
+	}
 	*updateTempo {
 		this.address.sendMsg('action','_RSdbf0557c9d37b721397192124cb1b286f3c3bab4')
 	}

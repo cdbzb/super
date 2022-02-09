@@ -15,6 +15,7 @@ Song {
 	var playInitiatedAt,<>preroll=0;
 
 	*initClass {
+		Class.initClassTree(Recorder);
 		songs=Dictionary.new;
 	}
 	
@@ -360,10 +361,30 @@ Song {
 		^array
 	}
 
-	playSection {|sec|
+	playSection {|sec| //uses play method which prepares infrastructure
 		( sec.class==Integer ).not.if{sec=this.section(sec)};
 		cursor=sec;
 		this.play(this.at(sec))
+	}
+	playSectionParts {|sec| // uses .p method which doesn't prepare infrastructure
+		(sec.class==Integer).not.if{sec=this.section(sec)};
+		cursor=sec;
+		this.at(sec).do(_.p)
+	}
+
+	recordSection { |sec bus path channels=2 tail=3|
+		var s = Server.default;
+		fork{
+			s.prepareForRecord(path);
+			0.1.wait;
+			//Server.default.sync;
+			this.playSectionParts (sec);
+			//preroll.wait;
+			0.4.wait; // double latency for somereason
+			s.record(
+				bus:bus,
+				duration:this.secDur[sec] + tail);
+			}
 	}
 
     // TRASHME

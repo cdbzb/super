@@ -78,7 +78,6 @@ SynthDef('cepstral-vocoder-buffer', {
 		var in, in2, chain, chain2, chain3, cepsch, cepsch2, fftsize = 2048;
 		var modulatorEnvelope=LocalBuf(fftsize); var carrierEnvelope=LocalBuf(fftsize);
 		var modulatorCepstrum=LocalBuf(fftsize/2); var carrierCepstrum=LocalBuf(fftsize/2);
-		fftsize = 2048;
 		in = In.ar(modulator);
 		chain = FFT(LocalBuf(fftsize), in);
 		cepsch = Cepstrum(modulatorCepstrum, chain);
@@ -131,11 +130,10 @@ SynthDef('cepstral-vocoder-buffer', {
 
     SynthDef(defname2, {|out=0 modulator=0 carrier=1 release=0.05 attack = 0.01|
         // Input signal. Should be replaced with Input.ar 
-        //var sig = In.ar(modulator,1);
-	var sig = SoundIn.ar(0);
+        var sig = In.ar(modulator,1);
         var bandrq = \rq.kr(0.05);
         carrier = In.ar(carrier,1);
-	carrier= SelectX.ar((ZeroCrossing.ar(sig).cpsmidi.lag(0.05) > 5000.cpsmidi).lag(0.05), [carrier, PinkNoise.ar]);
+	carrier= SelectX.ar((ZeroCrossing.ar(sig).cpsmidi.lag(0.05) > 5000.cpsmidi).lag(0.05), [carrier, PinkNoise.ar(1)]);
 
         sig = Array.fill(numbands, {|bandNum|
             var bandfreq = bandNum.linexp(0,numbands-1, \minFreq.ir(100), \maxFreq.ir(8000));
@@ -150,7 +148,7 @@ SynthDef('cepstral-vocoder-buffer', {
 
         sig = sig.sum!2;
 
-        Out.ar(out, sig * \amp.kr(1))
+        Out.ar(out, sig * \amp.kr(1) *20)
     }).add;
 
 }

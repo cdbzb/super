@@ -4,8 +4,6 @@
 /*
 [Bridge]
 
-Song.recordSection(\depart,Song.carrierBus.index,)
-
 (Uhura is screaming in terror before collapsing across her console. Chapel is standing rigid by the Captain's chair.) ,
 [4,3,2.5,2,1,\_]
 
@@ -28,6 +26,7 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 	Song(\ending,[]).current;
 	Song.currentSong.preroll_(1);
 	~stills.isNil.if{~stills=Stills("/Users/michael/trek/BySection/media/return to tomorrow.mov").current};
+	Song.sawWaves = "~/tank/super/waveforms/AKWF/AKWF-1024/AKWF_oboe/*".pathMatch.collect(SoundFile.openRead(_))[[1,3,12,12]];
 	( ~synful1.isNil or: try{ ~synful1.syn.isPlaying.not } ).if
 	{
 		Song.currentSong.synful1 = ~synful1 = Synful();
@@ -89,8 +88,10 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 	Song.sargonCarrier = {|p b e att=3 sus=5 rel=6 chord=#[1,2,4,5,6,8] aTune| 
 	{  
 		var tune = aTune ? p.tune[e.start].list;
+		// account for preroll!!
+		var dursWithPreroll = b[0] + 1 => _.bubble ++ b.drop(Song.preroll);
 		var freqs = Demand.ar(
-			TDuty.ar(b.dq,1,1),
+			TDuty.ar(dursWithPreroll.dq,1,1),
 			1,
 			tune.asArray.midicps /.t chord => _.dq
 		);
@@ -115,14 +116,15 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 			//=> MoogFF.ar(_,8000,1)
 			=> LPF.ar(_,6000)
 			* modGain
-			*5	 => SafetyLimiter.ar(_) /5
-			//=> DCompressor.ar( _,  sidechainIn: 0,  sidechain: 0,  ratio: 4,  threshold: -47,  attack: 0.1,  release: 100.1,  makeup: 0.5,  automakeup: 1) /4.9
+			//*5	 => SafetyLimiter.ar(_) /5
+			=> DCompressor.ar( _,  sidechainIn: 0,  sidechain: 0,  ratio: 4,  threshold: -47,  attack: 0.1,  release: 100.1,  makeup: 0.5,  automakeup: 1) /4.9
 			 
 			
 			//+ ( In.ar(carrierBus.index,1) )
 	}.play(s,Song.modulatorBus.index)
 };
 	Song.vocodeTune = { |p b e rppName amp=0.2 att=3 sus=1 rel=5 dur=10 chord=#[1,2,4,5,6,8] tune out=0 modGain=1|
+	var foa = Bus.audio(s,1);
 		Synth(\soundInMorph,[
 			modulator: Song.modulatorBus.index,
 			carrier: Song.carrierBus.index,
@@ -130,8 +132,19 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 			amp:0.2, // WHEN buses are set to 1 channel otherwise comment out!
 			amp:amp, 
 			dur:dur,
-			out:out
+			out:foa.index, // out
+			//out:out
 		]);
+		// restore line above to 'out' to get rid of ambisonics!!
+		~encoder = FoaEncoderMatrix.newOmni;
+		{In.ar(foa.index) 
+
+		=> FoaEncode.ar(_, ~encoder)
+		=> FoaTransform.ar(_, 'press', LFBrownNoise2.ar(1)*pi/1,LFBrownNoise2.ar(1)*pi)
+		=> FoaTransform.ar(_,'pressZ',SinOsc.ar(1))
+		=> FoaDecode.ar(_,Monitors.decoder)
+		*3
+		}.play(addAction:\addToTail);
 		Song.sargonCarrier.(p,b,e,att, sus, rel, chord,tune);
 		Song.sargonModulator.(rppName,dur,modGain)
 	}
@@ -856,7 +869,26 @@ P(\bass,start:\believed,music:{|p b e|
 			});
 			P.tune(\cannot);
 			["(boom) Thalassa and I must now (boom) also depart",[-1,1,2,3,1,4,2,5, 5,4.5, 4.5,7].dm(\d)].addLine;
-Song.voxDepart= VocalRPP(\depart,\vox);
+//Song.voxDepart= VocalRPP(\depart,\vox);
+Song.voxDepart= VocalRPP(\depart,\newTest);
+P(\clusterVox,start:\depart,lag:-1,music:{|p b e| 
+	p.vocodeTune.(p,b,e,\voxDepart);
+	MegaBind(
+			[
+				p.tune[e.start].list.midicps/.t[2,4].flatten
+			],
+			b[0]+1 =>_.bubble ++ b.drop(1),
+			[],
+			{|i|
+				Saw.ar(i.freqSeq,40)
+				* Env.asr().kr(0,gate:i.gateSeq)
+				//* 0.2
+			},
+			{|i|
+				Mix.ar(i)=>Out.ar(p.carrierBus.index,_)
+			}
+		).play
+});
 			P(\bass,start:\depart,music:{|p b e| 
 				[
 					freq: [1,[12, 2 ],11.5].df(\d,octave:[3,2]).q,
@@ -936,6 +968,53 @@ Song.voxDepart= VocalRPP(\depart,\vox);
 			});
 			["KIRK: Is there any way we can help you, Sargon? ",[12,11,13,11,7,6,5,11,7,7,6].dm(\c)].addLine;
 			P.tune(\help,Pbindf(_,\legato,1.5));
+(
+// can I do this without using 'b' ??
+b = Song.sawWaves.size.collect({ FloatArray.newClear(Song.sawWaves[0].numFrames) }) ;
+4.do({ |i| Song.sawWaves[i].readData( b[i])});
+Song.sawBuffers = b.collect({|i| i.as(Signal)})
+.collect({|i| i.asWavetable})
+.collect{|i|Buffer.loadCollection(s, i)};
+);
+
+			P(\line,start:\help,music:{|p b e| 
+				var encoder = FoaEncoderMatrix.newOmni;
+				MegaBind(
+						[
+							p.tune[e.start].list.midicps,
+							p.tune[e.start].list.midicps/2
+						],
+						b,
+						[ 
+							pan: [35,-35].degrad,
+							delay: [0,0.1]
+
+						],
+						{|i|
+							Osc.ar( p.sawBuffers.choose.bufnum, i.freqSeq => Vibrato.kr(
+								_,5,
+								depth:0.01,
+								delay:0.3,onset:0.3
+							), 0.1 )
+							//Saw.ar(  i.freqSeq, 0.1 )
+							* Env.asr().kr(0,gate:i.gateSeq)
+							=> DelayN.ar(_,0.2,i.delay)
+							=> FoaEncode.ar(_,encoder)
+							=> FoaTransform.ar(_, 'press',pi/2,i.pan)
+						},
+						{|i|
+							
+							Mix.ar(i) => FreeVerb.ar(_,0.7,0.5) 
+							=> Monitors.ambi(_)
+							//=> FoaDecode.ar(_,Monitors.decoder) //=> Out.ar(3,_)
+							//=> {|i|i[[0,1,3,4,2]]}
+							//* 0.2
+							//s.meter
+							//Monitors.ar(Dust.ar(100))
+						}
+					).play
+			});
+
 
 			["SARGON: Yes, my son. ",[1,-7,-5].dm('a-',scale:\mixolydian)].addLine;
 			P.tune('my son');

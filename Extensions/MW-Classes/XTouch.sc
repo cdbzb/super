@@ -90,6 +90,7 @@ XTouch : XMIDIController {
 			{
 				Item.stop;
 				TempoClock.all.do(_.clear);
+				SystemClock.clear;
 				Server.default.freeMyDefaultGroup;
 				Pipe.new("pressf1.sh","w");
 			},\stop,

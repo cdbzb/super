@@ -50,6 +50,52 @@ SPOCK: Must I make an example of you, too, Helm?
 	}.inEnvir;
 	[ "/*SPOCK*/ Pain, Captain. (oooh) A-- nd you, my dear? " ,[12,11,7,6,13,12,13,11,5].dm(\g,octave:4)].addLine;
 	P.tune(\Pain);
+	P(\chord,start:\Pain,music:{|p b e| 
+		MegaBind(
+				[
+					[1,\r,3],
+					[3,\r,11],
+					[5,\r,6],
+					[7,\r,4]
+				].df(\g),
+				b.parse([3,3,2]),
+				[
+					vowel1: [\a,\i,\e,\u],
+					vowel2: [\a,\i,\e,\u].scramble,
+					rate: {0.25.rrand(0.15)}!4
+				],
+				{|i|
+					Formants.ar( i.freqSeq, Vowel(i.vowel1,\alto).blend(Vowel(i.vowel2), SinOsc.kr(i.rate).range(0,1)))
+					* Env.asr(3,1,3).kr(2,gate: i.gateSeq)
+				},
+				{|i|
+					Splay.ar(i)
+					*0.1
+				}
+			).play
+	});
+	P(\bassnote,start:\Pain,syl:2,music:{|p b e| 
+		(degree:4s,instrument:\stringyy,octave:[4],amp:0.4).play
+	});
+	P(\cymbals,start:\Pain,music:{|p b e| 
+		Synth(\cymbalsDS,[out:Effect(_*Line.kr(0,1,5)).bus.index])
+	});
+	P(\cymbals,start:\Pain,music:{|p b e| 
+		Synth(\cymbalsDS,[out:Effect(_*Line.kr(0,1,5)).bus.index])
+	});
+	P(\cymbals2,start:\Pain,syl:5,music:{|p b e| 
+		Synth(\cymbalsDS,[out:Effect(_*Line.kr(0,1,5)).bus.index])
+	});
+	P(\bassNote2,start:\Pain,music:{|p b e| 
+		[
+			dur:b.parse([3,3,2]).q,
+			freq:[1,\r,-4].df(\g,octave:3).q,
+			instrument:\sawSynthSustain,
+			octave:3,
+			att:1,
+			amp:0.1 
+		].p.play
+	});
 	[ "As Kirk and Mulhall double over, McCoy dashes to Spock's side, to inject him.) /*SPOCK*/ Fortunately, Doctor," ,[-1.5,3,2,1,-7,-6.5,-7].dm(\f,scale:\minor)].addLine;
 	P.tune(\Fortunately);
 	[ "I know every thou-- ght of every mind around me." ,[3, 1, 4, 2, -7, -6, -5, 3,4,5,7,6,5,4].dm('e-',scale:\mixolydian)].addLine;

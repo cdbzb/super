@@ -1,8 +1,6 @@
 **syncthing**
-*.mp3
-*.wav
-**.wav
-**/*.wav
+*.PROX
 *DS_Store*
-*.JPG
+*.reapeaks
+*.rpp-bak
 *.stversions*

@@ -8,12 +8,7 @@
 [4,3,2.5,2,1,\_]
 
 SPOCK: Must I make an example of you, too, Helm? 
-(Kirk, Mulhall and McCoy enter.) SPOCK: Pain, Captain. And you, my dear? 
-(As Kirk and Mulhall double over, McCoy dashes to Spock's side, ready to inject him.) 
-SPOCK: Fortunately, Doctor, I know every thought of every mind around me. See? (to Chapel) Take the hypo from him. And inject him with it. 
-(But she injects Spock/Henoch instead! He leaps from his seat.) 
-SPOCK: Fools. I'll simply transfer to another place, another body. 
-(He whirls around.) 
+(Kirk, Mulhall and McCoy enter.) 
 */
 ( s.waitForBoot( {
 	 //Setup Monitor for back channels
@@ -53,6 +48,14 @@ SPOCK: Fools. I'll simply transfer to another place, another body.
 			}}
 		]).value
 	}.inEnvir;
+	[ "/*SPOCK*/ Pain, Captain. (oooh) A-- nd you, my dear? " ,[12,11,7,6,13,12,13,11,5].dm(\g,octave:4)].addLine;
+	P.tune(\Pain);
+	[ "As Kirk and Mulhall double over, McCoy dashes to Spock's side, to inject him.) /*SPOCK*/ Fortunately, Doctor," ,[-1.5,3,2,1,-7,-6.5,-7].dm(\f,scale:\minor)].addLine;
+	P.tune(\Fortunately);
+	[ "I know every thou-- ght of every mind around me." ,[3, 1, 4, 2, -7, -6, -5, 3,4,5,7,6,5,4].dm('e-',scale:\mixolydian)].addLine;
+	[ "See? (to Chapel) Take the hypo from him. And inject him with it. " ,[1,5,5,12,12,6,6].dm(\a) ++ [3,4,2,3,1,-4.5].dm(\a,scale:\minor)].addLine;
+	[ "(But she injects Spock/Henoch instead! He leaps from his seat.) /*SPOCK*/ Fools. I'll simply transfer to another place, another body. " ,[-6,11.5,3,4,5, 11, 7, 6, 5, 4, 7, 6, 2, 4,5,2,4,3].dm(\e)].addLine;
+//(He whirls around.) 
 	["SPOCK: Sargon! No, Sargon, please. Let me. Let me transfer. ",[1,2,3].dm(\c)].addLine;
 	["(He falls to the floor and his victims are freed from their pain.) ","r"].addLine;
 	["KIRK: Spock. My friend Spock. If there'd only been another way. ",[5,3,11,7, 5,6,7,5,13, 7,11,3,12].dm(\e)].addLine;

@@ -98,12 +98,65 @@ SPOCK: Must I make an example of you, too, Helm?
 	});
 	[ "As Kirk and Mulhall double over, McCoy dashes to Spock's side, to inject him.) /*SPOCK*/ Fortunately, Doctor," ,[-1.5,3,2,1,-7,-6.5,-7].dm(\f,scale:\minor)].addLine;
 	P.tune(\Fortunately);
-	[ "I know every thou-- ght of every mind around me." ,[3, 1, 4, 2, -7, -6, -5, 3,4,5,7,6,5,4].dm('e-',scale:\mixolydian)].addLine;
-	[ "See? (to Chapel) Take the hypo from him. And inject him with it. " ,[1,5,5,12,12,6,6].dm(\a) ++ [3,4,2,3,1,-4.5].dm(\a,scale:\minor)].addLine;
-	[ "(But she injects Spock/Henoch instead! He leaps from his seat.) /*SPOCK*/ Fools. I'll simply transfer to another place, another body. " ,[-6,11.5,3,4,5, 11, 7, 6, 5, 4, 7, 6, 2, 4,5,2,4,3].dm(\e)].addLine;
+	[ "I know every thou-- ght of every mind around me." ,[3, 1, 4, 2, -7.5, -6, -5, 3,4,5,7,6,5,4].dm('e-',scale:\mixolydian)].addLine;
+	P.tune('every mind');
+	P(\bass,start:'every mind',music:{|p b e| 
+		[
+			freq: [1,-4,-5,1,7,1].df('e-',scale:\mixolydian,octave:3).q,
+			instrument:\sawSynthSustain,
+			amp:0.06,
+			dur: b.parse([3,[1,1/3],[2/3,2]]).q
+		].pp
+	});
+	[ "See? (to Chapel) Take the hypo from him. And inject him with it. " ,[1,5,5,12,12,6,6].dm(\a,octave:4) ++ [3,4,2,3,1,-4.5].dm(\a,scale:\minor,octave:4)].addLine;
+	P.tune('Take the hypo');
+	[ "(But she injects Spock/Henoch instead! He leaps from his seat.) /*SPOCK*/ Fools. I'll simply transfer to another place, another body. " ,[-6,11.5,3,4,5, 6, 7, 6, 5, 4, 7, 6, 2, 4,5,2,4,3].dm(\e,octave:4,scale:\mixolydian)].addLine;
+	P.tune(\leaps);
+	P(\line,start:\leaps,syl:11,music:{|p b e| 
+		var omni = FoaEncoderMatrix.newOmni;
+		var stereo = FoaEncoderMatrix.newDirection(0);
+		MegaBind(
+				[
+					[2,1.5,-6,-5],
+					[-17,\_,-1,\_]
+				].df(\e,scale:\mixolydian),
+				b.drop(1).parse([1,3,2/3,[1/3,1]]),
+				[
+					azimuth: [-pi/2, pi/2]
+				],
+				{|i|
+					Saw.ar( i.freqSeq.lag(0.1)/2 )
+					* Env.asr(1,1,3).kr(0,gate:i.gateSeq)
+					=> FoaEncode.ar(_,omni)
+					//=>FoaTransform.ar(_,'push',i.azimuth,i.azimuth,i.azimuth)
+					=>FoaPushX.ar(_,pi/2)
+					=> FoaRTT.ar(_,i.azimuth)
+				},
+				{|i|
+					Mix.ar(i)
+					=> Monitors.ambi(_)
+					*0.05
+				}
+			).play
+		
+	});
+
+		~spread = FoaEncoderKernel.newDiffuse(sampleRate:48000);
+	P(\stab,start:\leaps,music:{|p b e| 
+		var amb = { |i| FoaEncode.ar(i,~spread)	=> FoaRTT.ar(_,SinOsc.ar(0.15).range(-pi,pi))=> Monitors.ambi(_) };
+		Synth(\cymbalsDS,[out:Effect({|i| i=> PitchShift.ar(_,0.1)=> CrossoverDistortion.ar(_) *0.065 * Env.linen(0,3,5).kr(2,gate:1) => amb }).bus.index]);
+		Synth(\default,[\freq,[1,-1].df('c#',octave:[3]),out:Effect({|i| i=> CrossoverDistortion.ar(_) *0.065 * Env.linen(0,3,5).kr(2,gate:1) => amb }).bus.index])
+
+		 
+	});
 //(He whirls around.) 
-	["SPOCK: Sargon! No, Sargon, please. Let me. Let me transfer. ",[1,2,3].dm(\c)].addLine;
-	["(He falls to the floor and his victims are freed from their pain.) ","r"].addLine;
+	["SPOCK: (Sargon!) No, Sargon, please. Let me. Let me transfer. ",[5,3,1].dm('b-',scale:\whole) ++ [5,5,4,3,2].dm(\d,octave:6) ++ [3,1].dm('f#',octave:6)].addLine;
+	P.tune(\please,Pmul(\freq,0.5,_));
+	["(He falls to the floor and his victims are freed from their pain.) " ,[1].dm(\c),[8]].addLine;
+	P(\pinano,start:\freed,music:{|p b e| 
+		(amp:2,freq:[-21,-11].df(\b),out:Effect(FreeVerb.ar(_,1,1)).bus.index).play
+	});
+
 	["KIRK: Spock. My friend Spock. If there'd only been another way. ",[5,3,11,7, 5,6,7,5,13, 7,11,3,12].dm(\e)].addLine;
 	P.still( \friend, start: \friend, timecode:4926.seconds, music: { |p b e|
 		e.still.value(

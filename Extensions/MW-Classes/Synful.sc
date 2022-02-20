@@ -31,7 +31,7 @@ Synful {
                   ~vstRegistry.add(controller);
                   {
                     Server.default.sync;
-                    controller.open("/Library/Audio/Plug-Ins/VST/"++plugin,
+                    controller.open("/Library/Audio/Plug-Ins/VST/"++plugin, verbose:false,
                       action:{
                         //condition.test_(true).signal;
                         condition.signalOne;

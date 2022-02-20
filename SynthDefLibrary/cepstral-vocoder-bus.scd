@@ -101,7 +101,6 @@ SynthDef('cepstral-vocoder-buffer', {
 [8, 16, 32].do{|numbands|
     var defname = "vocoder%bands".format(numbands).asSymbol.postln;
     var defname2;
-
     SynthDef(defname, {|out=0 modulator=0 carrier=1 release=0.05 attack = 0.01|
         // Input signal. Should be replaced with Input.ar 
         var sig = PlayBuf.ar(numChannels:1, bufnum:modulator, rate:BufRateScale.kr(modulator), trigger:1.0, startPos:0.0, loop:1.0, doneAction:0);
@@ -121,7 +120,7 @@ SynthDef('cepstral-vocoder-buffer', {
             osc * thisGain * Amplitude.ar(in:filtered, attackTime:atk, releaseTime:rel) * bandrq.reciprocal
         });
 
-        sig = sig.sum!2;
+        sig = sig.sum;
 
         Out.ar(out, sig * \amp.kr(1))
     }).add;
@@ -146,7 +145,7 @@ SynthDef('cepstral-vocoder-buffer', {
             osc * thisGain * Amplitude.ar(in:filtered, attackTime:atk, releaseTime:rel) * bandrq.reciprocal
         });
 
-        sig = sig.sum!2;
+        sig = sig.sum;
 
         Out.ar(out, sig * \amp.kr(1) *20)
     }).add;

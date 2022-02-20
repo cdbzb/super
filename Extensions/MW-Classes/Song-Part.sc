@@ -83,9 +83,9 @@ Song {
 
 	*doesNotUnderstand { |selector   ...args|
 		songs.at(current).respondsTo(selector).if{
-			\responds.postln;
-			'selector '.post;selector.postln;
-			'args '.post;args.postln;
+			//\responds.postln;
+			//'selector '.post;selector.postln;
+			//'args '.post;args.postln;
 			^Message(songs.at(current),selector).value(*args)
 		} {
 			var key = selector.asString;

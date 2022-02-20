@@ -20,6 +20,11 @@ SPOCK: Must I make an example of you, too, Helm?
 // Song
 	Song(\ending,[]).current;
 	Song.currentSong.preroll_(1);
+	~encoders = ~encoders ? (
+		omni:FoaEncoderMatrix.newOmni,
+		spread:FoaEncoderKernel.newDiffuse
+	);
+	Song.encoders=~encoders;
 	~stills.isNil.if{~stills=Stills("/Users/michael/trek/BySection/media/return to tomorrow.mov").current};
 	Song.sawWaves = "~/tank/super/waveforms/AKWF/AKWF-1024/AKWF_oboe/*".pathMatch.collect(SoundFile.openRead(_))[[1,3,12,12]];
 	( ~synful1.isNil or: try{ ~synful1.syn.isPlaying.not } ).if
@@ -113,21 +118,23 @@ SPOCK: Must I make an example of you, too, Helm?
 	[ "(But she injects Spock/Henoch instead! He leaps from his seat.) /*SPOCK*/ Fools. I'll simply transfer to another place, another body. " ,[-6,11.5,3,4,5, 6, 7, 6, 5, 4, 7, 6, 2, 4,5,2,4,3].dm(\e,octave:4,scale:\mixolydian)].addLine;
 	P.tune(\leaps);
 	P(\line,start:\leaps,syl:11,music:{|p b e| 
-		var omni = FoaEncoderMatrix.newOmni;
-		var stereo = FoaEncoderMatrix.newDirection(0);
 		MegaBind(
 				[
-					[2,1.5,-6,-5],
+					[2,1.5,\r,\r],
+					[\r,\r,-6,-5],
 					[-17,\_,-1,\_]
 				].df(\e,scale:\mixolydian),
 				b.drop(1).parse([1,3,2/3,[1/3,1]]),
 				[
-					azimuth: [-pi/2, pi/2]
+					azimuth: [-pi/2, pi/2, -pi], //l,r,r
+					cutoff: [8000,5000,2000],
+					q:[1,2,1]
 				],
 				{|i|
 					Saw.ar( i.freqSeq.lag(0.1)/2 )
 					* Env.asr(1,1,3).kr(0,gate:i.gateSeq)
-					=> FoaEncode.ar(_,omni)
+					//=> MoogFF.ar(_,i.cutoff)
+					=> FoaEncode.ar(_,Song.encoders.omni)
 					//=>FoaTransform.ar(_,'push',i.azimuth,i.azimuth,i.azimuth)
 					=>FoaPushX.ar(_,pi/2)
 					=> FoaRTT.ar(_,i.azimuth)
@@ -137,13 +144,12 @@ SPOCK: Must I make an example of you, too, Helm?
 					=> Monitors.ambi(_)
 					*0.05
 				}
-			).play
+			).play;
 		
 	});
 
-		~spread = FoaEncoderKernel.newDiffuse(sampleRate:48000);
 	P(\stab,start:\leaps,music:{|p b e| 
-		var amb = { |i| FoaEncode.ar(i,~spread)	=> FoaRTT.ar(_,SinOsc.ar(0.15).range(-pi,pi))=> Monitors.ambi(_) };
+		var amb = { |i| FoaEncode.ar(i,Song.encoders.spread)	=> FoaRTT.ar(_,SinOsc.ar(0.15).range(-pi,pi))=> Monitors.ambi(_) };
 		Synth(\cymbalsDS,[out:Effect({|i| i=> PitchShift.ar(_,0.1)=> CrossoverDistortion.ar(_) *0.065 * Env.linen(0,3,5).kr(2,gate:1) => amb }).bus.index]);
 		Synth(\default,[\freq,[1,-1].df('c#',octave:[3]),out:Effect({|i| i=> CrossoverDistortion.ar(_) *0.065 * Env.linen(0,3,5).kr(2,gate:1) => amb }).bus.index])
 
@@ -187,27 +193,28 @@ SPOCK: Must I make an example of you, too, Helm?
 ( //Vocoder resources
 	Song.carrierBus = Bus.audio(s,5);
 	Song.modulatorBus = Bus.audio(s,2);
-	Song.sargonCarrier = {|p b e att=3 sus=5 rel=6 chord=#[1,2,4,5,6,8] aTune| 
-	{  
-		var tune = aTune ? p.tune[e.start].list;
-		// account for preroll!!
-		var dursWithPreroll = b[0] + 1 => _.bubble ++ b.drop(Song.preroll);
-		var freqs = Demand.ar(
-			TDuty.ar(dursWithPreroll.dq,1,1),
-			1,
-			tune.asArray.midicps /.t chord => _.dq
-		);
-		var car = Gendy1.arWidth( freq: freqs , width:1.10) => Mix.ar(_)
-		* Env.linen(att,sus,rel).kr(2,gate:1);
-		var saw = Saw.ar(freqs) * 0.1
-		=> SplayAz.ar(5,_)
-		=> RLPF.ar(_,100,2)
-		* Env.linen(3,5,6).kr(2,gate:1);
-		car => FreeVerb.ar(_,1,0.8)
-		+ saw
-		/10
-	}.play(s,Song.carrierBus.index)
-}	;
+	Song.sargonCarrier = {
+		|p b e att=3 sus=5 rel=6 chord=#[1,2,4,5,6,8] aTune| 
+		{  
+			var tune = aTune ? p.tune[e.start].list;
+			// account for preroll!!
+			var dursWithPreroll = b[0] + 1 => _.bubble ++ b.drop(Song.preroll);
+			var freqs = Demand.ar(
+				TDuty.ar(dursWithPreroll.dq,1,1),
+				1,
+				tune.asArray.midicps /.t chord => _.dq
+			);
+			var car = Gendy1.arWidth( freq: freqs , width:1.10) => Mix.ar(_)
+			* Env.linen(att,sus,rel).kr(2,gate:1);
+			var saw = Saw.ar(freqs) * 0.1
+			=> SplayAz.ar(5,_)
+			=> RLPF.ar(_,100,2)
+			* Env.linen(3,5,6).kr(2,gate:1);
+			car => FreeVerb.ar(_,1,0.8)
+			+ saw
+			/10
+		}.play(s,Song.carrierBus.index)
+	};
 
 	Song.sargonModulator = {|rpp dur modGain=1| 
 		{ 
@@ -224,9 +231,23 @@ SPOCK: Must I make an example of you, too, Helm?
 			
 			//+ ( In.ar(carrierBus.index,1) )
 	}.play(s,Song.modulatorBus.index)
-};
-	Song.vocodeTune = { |p b e rppName amp=0.2 att=3 sus=1 rel=5 dur=10 chord=#[1,2,4,5,6,8] tune out=0 modGain=1|
-	var foa = Bus.audio(s,1);
+	};
+
+	Song.auditionVocoder = {
+		Synth(
+			\soundInMorph, [
+				modulator: s.options.numOutputBusChannels + 9,
+				carrier:  s.options.numOutputBusChannels  + 8,
+				amp:0.32,
+				dur: 999,
+				amp:0.2, // WHEN buses are set to 1 channel otherwise comment out!
+			]
+		)
+	};
+
+	Song.vocodeTune = { 
+		|p b e rppName amp=0.2 att=3 sus=1 rel=5 dur=10 chord=#[1,2,4,5,6,8] tune out=0 modGain=1|
+		var foa = Bus.audio(s,1);
 		Synth(\soundInMorph,[
 			modulator: Song.modulatorBus.index,
 			carrier: Song.carrierBus.index,
@@ -238,21 +259,23 @@ SPOCK: Must I make an example of you, too, Helm?
 			//out:out
 		]);
 		// restore line above to 'out' to get rid of ambisonics!!
-		~encoder = FoaEncoderMatrix.newOmni;
-		{In.ar(foa.index) 
-
-		=> FoaEncode.ar(_, ~encoder)
-		=> FoaTransform.ar(_, 'press', LFBrownNoise2.ar(1)*pi/1,LFBrownNoise2.ar(1)*pi)
-		=> FoaTransform.ar(_,'pressZ',SinOsc.ar(1))
-		=> FoaDecode.ar(_,Monitors.decoder)
-		*3
+		{
+			In.ar(foa.index) 
+			=> FoaEncode.ar(_,Song.encoders.omni)
+			=> FoaTransform.ar(_, 'press', LFBrownNoise2.ar(1)*pi/1,LFBrownNoise2.ar(1)*pi)
+			=> FoaTransform.ar(_,'pressZ',SinOsc.ar(1))
+			=> FoaDecode.ar(_,Monitors.decoder)
+			*3
 		}.play(addAction:\addToTail);
 		Song.sargonCarrier.(p,b,e,att, sus, rel, chord,tune);
 		Song.sargonModulator.(rppName,dur,modGain)
 	}
 );
 	Song.voxSacrifice=VocalRPP(\sacrifice,\test);
+	Song.laMer = Song.laMer ?  Buffer.read(s,"~/tank/super/samples/La_Mer_clean.aif".standardizePath);
+	//{ BufRd.ar(2,b,Phasor.ar(1,BufRateScale.kr(b.bufnum),0,BufFrames.kr(b.bufnum)*~len))*0.1 };
 	P.still( \kirk, start: \sacrifice, timecode:4942.582.seconds, music: { |p b e|
+		{ BufRd.ar(2,Song.laMer,Phasor.ar(1,BufRateScale.kr(Song.laMer.bufnum),0,BufFrames.kr(Song.laMer.bufnum)*0.185))*0.1 }.play(s,Song.carrierBus);
 		e.still.value(
 			wait: b.sum,
 			fadeIn: 2
@@ -261,25 +284,82 @@ SPOCK: Must I make an example of you, too, Helm?
 	P(\boom,start:\sacrifice,music:{|p b e| 
 		(instrument:\cymbalsDS,amp:0.003,att:1).play
 	});
-	P(\vox,start:\sacrifice,music:{|p b e| 
+	P(\vox,start:\sacrifice,lag:-1,music:{|p b e| 
 		// TODO now make the relevant guide check to see if they should mute this!!
 		p.vocodeTune.(p,b,e,
 			\voxSacrifice,
-			amp:0.8,
+			amp:0.9,
 			out:4,
 			dur:b.sum+5,
 			att:3,
 			sus:b.sum-5,
-			rel:3
+			rel:3,
+			modGain:2
 		)
 	});
-		P(\bass,start:\sacrifice,music:{|p b e| 
+	P(\lagTest,start:\sacrifice,lag:-1,music:{|p b e| 
+		(note:[1,2,3])//.play
+	);
+	P(\addlVox,start:\sacrifice,lag:-1,music:{|p b e| 
+		MegaBind(
 			[
-				instrument:\stringyy,
-				freq: [11,6,4,2,5].df(\c,octave:3).q,
-				dur: b.parse([[ 1,1/3 ],[2/3,1,1,1],2,4,2,1,1]).q,
-				out:2,amp:0.2
-			].pp
+				p.tune[e.start].list.midicps/.t[4,8].flatten
+			],
+			b[0]+1 =>_.bubble ++ b.drop(1),
+			[],
+			{|i|
+				Saw.ar(i.freqSeq,40)
+				* Env.asr().kr(0,gate:i.gateSeq)
+				//* 0.2
+			}
+			,
+			{|i|
+				Mix.ar(i)*8=>Out.ar(p.carrierBus.index,_)
+			}
+		).play
+	});
+	
+	P(\oldSkool,start:\sacrifice,lag:-1,music:{ |p b e|
+		var carrier = Bus.audio;
+		var modulator = Bus.audio;
+		{p.voxSacrifice.buffer.bufnum => PlayBuf.ar(1,_)}.play(s,modulator.index);
+		MegaBind(
+			[
+				p.tune[e.start].list.midicps /1,
+				p.tune[e.start].list.midicps /2,
+
+			],
+			b[0]+1 =>_.bubble ++ b.drop(1),
+			[],
+			{|i|
+				Saw.ar(i.freqSeq,0.1)
+				* Env.asr().kr(0,gate:i.gateSeq)
+			},
+			{|i|
+				Mix.ar(i)
+				+ BufRd.ar( 1, p.laMer, Phasor.ar(
+					trig: 1,
+					rate: BufRateScale.kr(p.laMer.bufnum),
+					start: 0,
+					end: BufFrames.kr(p.laMer.bufnum)*0.185)
+				) * 0.7 
+				=> LPF.ar(_,200) 
+				=> Out.ar(carrier.index,_);
+			}
+		).play.onFree({[carrier,modulator].do(_.free)});
+		Synth( 'vocoder16bands-bus',
+			[carrier:carrier.index,modulator:modulator.index],
+			addAction:\addToTail
+		).dur(b.sum+2);
+	});
+	
+	P(\bass,start:\sacrifice,music:{|p b e| 
+		[
+			instrument:\stringyy,
+			freq: [11,6,4,2,5].df(\c,octave:3).q,
+			dur: b.parse([[ 1,1/3 ],[2/3,1,1,1],2,4,2,1,1]).q,
+			out:2,amp:0.2
+		].pp
 
 		});
 ["(Lights dim and glow, then Chapel wobbles., MCCOY: Jim. ) ","r",[8]].addLine;
@@ -1072,9 +1152,9 @@ P(\clusterVox,start:\depart,lag:-1,music:{|p b e|
 			P.tune(\help,Pbindf(_,\legato,1.5));
 (
 // can I do this without using 'b' ??
-b = Song.sawWaves.size.collect({ FloatArray.newClear(Song.sawWaves[0].numFrames) }) ;
-4.do({ |i| Song.sawWaves[i].readData( b[i])});
-Song.sawBuffers = b.collect({|i| i.as(Signal)})
+Song.akSaws = Song.sawWaves.size.collect({ FloatArray.newClear(Song.sawWaves[0].numFrames) }) ;
+4.do({ |i| Song.sawWaves[i].readData( Song.akSaws[i])});
+Song.sawBuffers = Song.akSaws.collect({|i| i.as(Signal)})
 .collect({|i| i.asWavetable})
 .collect{|i|Buffer.loadCollection(s, i)};
 );

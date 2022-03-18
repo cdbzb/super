@@ -57,7 +57,8 @@
 		^fns.inject({|x| x}, {|acc, el| el<>acc }).(this)
 	}
 }
-+ Server { plotTreeL {|interval=0.5 x=(-800) y=400 dx=400 dy=800|
++ Server { 
+	plotTreeL {|interval=0.5 x=(-800) y=400 dx=400 dy=800|
 		var onClose, window = Window.new(name.asString + "Node Tree",
 			Rect(x,y,dx,dy),
 			scroll:true
@@ -67,5 +68,15 @@
 		window.onClose = {
 			onClose.value;
 		};
+		{Pipe.new("osascript -e \'activate application \"VimR\"\'", "w").close}.defer(0.1)
+	}
+
+	meter { |numIns, numOuts|
+		^if( GUI.id == \swing and: { \JSCPeakMeter.asClass.notNil }, {
+			\JSCPeakMeter.asClass.meterServer( this );
+		}, {
+			ServerMeter(this, numIns, numOuts);
+			{Pipe.new("osascript -e \'activate application \"VimR\"\'", "w").close}.defer(0.1)
+		});
 	}
 }

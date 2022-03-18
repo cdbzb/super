@@ -39,8 +39,7 @@ o = [
 	Pseq.prNew,  List.prNew,  Array.prNew(17),  "/*SPOCK*/ Pain, Captain. (oooh) A-- nd you, my dear? ",  
 	Pseq.prNew,  List.prNew,  Array.prNew(8),  "SARGON: Yes, my son. ",  
 	Pseq.prNew,  List.prNew,  Array.prNew(3),  "Mister Spock's consciousness was placed in me. ",  
-	Pseq.prNew,  List.prNew,  Array.prNew(10),  "SPOCK: Sargon! No, Sargon, please. Let me. Let me transfer. ",  
-	Pseq.prNew,  List.prNew,  Array.prNew(12),  "(He falls to the floor and his victims are freed from their pain.) ",  
+	Pseq.prNew,  List.prNew,  Array.prNew(10),  "(He falls to the floor and his victims are freed from their pain.) ",  
 	Pseq.prNew,  Array.prNew(1),  "Henoch would (boom) read your thoughts and believe it also. ",  Pseq.prNew,  
 	List.prNew,  Array.prNew(13),  "SARGON [OC]: But Henoch believed and fled the body. ",  Pseq.prNew,  
 	List.prNew,  Array.prNew(10),  "A last moment together. ",  Pseq.prNew,  
@@ -55,7 +54,7 @@ o = [
 ];
 p = [
 	// Dictionary
-	0, [ array: o[1],  size: 52 ],  
+	0, [ array: o[1],  size: 51 ],  
 	// Array
 	1, [ nil,  nil,  nil,  nil,  
 		o[2],  o[3],  nil,  nil,  
@@ -164,27 +163,27 @@ p = [
 		nil,  nil,  nil,  nil,  
 		o[147],  o[148],  o[151],  o[152],  
 		nil,  nil,  nil,  nil,  
-		o[155],  o[156],  o[159],  o[160],  
+		o[155],  o[156],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		o[163],  o[164],  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		o[166],  o[167],  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		o[170],  o[171],  o[174],  o[175],  
+		o[159],  o[160],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		o[178],  o[179],  o[182],  o[183],  
+		nil,  nil,  nil,  nil,  
+		o[162],  o[163],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		o[166],  o[167],  o[170],  o[171],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  o[186],  o[187],  
-		o[190],  o[191],  o[194],  o[195],  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  o[198],  o[199],  
-		o[202],  o[203],  nil,  nil ],  
+		o[174],  o[175],  o[178],  o[179],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[182],  o[183],  
+		o[186],  o[187],  o[190],  o[191],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[194],  o[195],  
+		o[198],  o[199],  nil,  nil ],  
 	// Pseq
 	3, [ list: o[4],  repeats: 1,  
 		offset: 0 ],  
@@ -216,10 +215,10 @@ p = [
 	// List
 	16, [ array: o[17] ],  
 	// Array
-	17, [ 0.592,  0.288,  0.336,  0.282,  
-		0.348,  0.289,  0.377,  0.256,  
-		0.317,  0.328,  0.313,  0.381,  
-		0.483 ],  
+	17, [ 0.672,  0.287,  0.316,  0.298,  
+		0.311,  0.312,  0.307,  0.423,  
+		0.244,  0.255,  0.436,  0.297,  
+		0.383 ],  
 	// Pseq
 	19, [ list: o[20],  repeats: 1,  
 		offset: 0 ],  
@@ -537,61 +536,52 @@ p = [
 	// Pseq
 	160, [ list: o[161],  repeats: 1,  
 		offset: 0 ],  
-	// List
-	161, [ array: o[162] ],  
 	// Array
-	162, [ 0.705,  1.252,  0.65,  0.325,  
-		0.464,  0.896,  0.543,  0.673,  
-		0.298,  0.411,  0.606,  1.453 ],  
+	161, [ 8 ],  
 	// Pseq
-	164, [ list: o[165],  repeats: 1,  
+	163, [ list: o[164],  repeats: 1,  
 		offset: 0 ],  
+	// List
+	164, [ array: o[165] ],  
 	// Array
-	165, [ 8 ],  
+	165, [ 0.412,  0.288,  0.346,  0.392,  
+		0.4,  0.428,  0.49,  0.272,  
+		0.276,  0.448,  0.452,  0.486,  
+		0.64 ],  
 	// Pseq
 	167, [ list: o[168],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	168, [ array: o[169] ],  
 	// Array
-	169, [ 0.412,  0.288,  0.346,  0.392,  
-		0.4,  0.428,  0.49,  0.272,  
-		0.276,  0.448,  0.452,  0.486,  
-		0.64 ],  
+	169, [ 0.407,  0.402,  0.296,  0.468,  
+		0.633,  0.468,  0.537,  0.433,  
+		0.65,  1.132 ],  
 	// Pseq
 	171, [ list: o[172],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	172, [ array: o[173] ],  
 	// Array
-	173, [ 0.407,  0.402,  0.296,  0.468,  
-		0.633,  0.468,  0.537,  0.433,  
-		0.65,  1.132 ],  
+	173, [ 0.816,  1.35,  0.51,  0.496,  
+		0.55,  0.758,  3.508 ],  
 	// Pseq
 	175, [ list: o[176],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	176, [ array: o[177] ],  
 	// Array
-	177, [ 0.816,  1.35,  0.51,  0.496,  
-		0.55,  0.758,  3.508 ],  
+	177, [ 0.429,  0.447,  0.456,  0.377,  
+		0.622,  0.267,  0.322,  0.459,  
+		0.45,  0.454,  0.294,  0.476,  
+		0.266,  0.41 ],  
 	// Pseq
 	179, [ list: o[180],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	180, [ array: o[181] ],  
 	// Array
-	181, [ 0.429,  0.447,  0.456,  0.377,  
-		0.622,  0.267,  0.322,  0.459,  
-		0.45,  0.454,  0.294,  0.476,  
-		0.266,  0.41 ],  
-	// Pseq
-	183, [ list: o[184],  repeats: 1,  
-		offset: 0 ],  
-	// List
-	184, [ array: o[185] ],  
-	// Array
-	185, [ 0.412,  0.426,  0.41,  3.372,  
+	181, [ 0.412,  0.426,  0.41,  3.372,  
 		0.375,  0.593,  0.625,  0.668,  
 		0.695,  0.634,  0.591,  0.591,  
 		0.602,  0.662,  0.589,  0.607,  
@@ -601,51 +591,51 @@ p = [
 		0.688,  0.666,  0.686,  0.665,  
 		0.697 ],  
 	// Pseq
+	183, [ list: o[184],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	184, [ array: o[185] ],  
+	// Array
+	185, [ 1.454,  0.473,  1.059,  2.334,  
+		0.366,  0.328,  0.344,  0.468,  
+		1.39,  0.47,  0.557,  0.74,  
+		1.504 ],  
+	// Pseq
 	187, [ list: o[188],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	188, [ array: o[189] ],  
 	// Array
-	189, [ 1.454,  0.473,  1.059,  2.334,  
-		0.366,  0.328,  0.344,  0.468,  
-		1.39,  0.47,  0.557,  0.74,  
-		1.504 ],  
+	189, [ 0.752,  0.96,  0.771,  0.41,  
+		0.426,  0.275,  0.392,  0.473,  
+		0.339,  0.481,  0.679,  0.826,  
+		0.406,  0.623,  0.499,  0.561,  
+		1.118,  0.571,  0.666,  0.604 ],  
 	// Pseq
 	191, [ list: o[192],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	192, [ array: o[193] ],  
 	// Array
-	193, [ 0.752,  0.96,  0.771,  0.41,  
-		0.426,  0.275,  0.392,  0.473,  
-		0.339,  0.481,  0.679,  0.826,  
-		0.406,  0.623,  0.499,  0.561,  
-		1.118,  0.571,  0.666,  0.604 ],  
+	193, [ 0.348,  0.549,  0.276,  0.265,  
+		0.259,  0.275,  0.375,  0.208,  
+		0.291,  0.325,  0.4,  0.234,  
+		0.285,  0.322,  0.323,  0.681,  
+		0.33,  0.309,  0.344,  0.59 ],  
 	// Pseq
 	195, [ list: o[196],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	196, [ array: o[197] ],  
 	// Array
-	197, [ 0.348,  0.549,  0.276,  0.265,  
-		0.259,  0.275,  0.375,  0.208,  
-		0.291,  0.325,  0.4,  0.234,  
-		0.285,  0.322,  0.323,  0.681,  
-		0.33,  0.309,  0.344,  0.59 ],  
+	197, [ 1.631,  0.627,  0.629,  1.617 ],  
 	// Pseq
 	199, [ list: o[200],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	200, [ array: o[201] ],  
 	// Array
-	201, [ 1.631,  0.627,  0.629,  1.617 ],  
-	// Pseq
-	203, [ list: o[204],  repeats: 1,  
-		offset: 0 ],  
-	// List
-	204, [ array: o[205] ],  
-	// Array
-	205, [ 0.631,  0.524,  1.249,  0.535,  
+	201, [ 0.631,  0.524,  1.249,  0.535,  
 		0.682,  0.414,  0.864,  0.486 ]
 ];
 prUnarchive(o,p);

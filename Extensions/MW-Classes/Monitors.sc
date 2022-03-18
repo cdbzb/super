@@ -22,7 +22,7 @@ Monitors {
 	}
 	*az { | i angle=0 width=1 | ^PanAz.ar(5,i,angle,width)[speakerOrder] }
 	*stereo {
-		decoder = FoaDecoderKernel.newUHJ();
+		decoder =FoaDecoderMatrix.newStereo();
 		channels = 2;
 		speakerOrder = #[0,1]
 	}

@@ -46,6 +46,15 @@
 		^this;
 	}
 
+        warpTo {
+                | quarters |
+                var atInterpolated = {|array index| 
+                        ([0] ++ array).integrate.at( index.floor ) + 
+                        (index.frac * array[index.floor]) 
+                };
+                ^this.integrate.collect{|i| atInterpolated.(quarters,i)}.differentiate
+        }
+
 	//taken from Song-Part - should replace for modularity
 	//TODO error check if array is too long
 	parse {|array start=0| 

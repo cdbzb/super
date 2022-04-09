@@ -14,12 +14,26 @@ Monitors {
 			}
 		});
 	}
+	*pentagon {
+		decoder = FoaDecoderMatrix.newPanto(5,'flat','dual');
+		speakerOrder=#[0,4,1,3,2]
+	}
+
+	*decode { |i| 
+		^(
+			FoaDecode.ar(i,decoder) 
+			=> {|i| i[speakerOrder]}
+		)
+	}
+
+	//deprecated!
 	*ambi { |i| 
 		^(
 			FoaDecode.ar(i,decoder) 
 			=> {|i| i[speakerOrder]}
 		)
 	}
+
 	*az { | i angle=0 width=1 | ^PanAz.ar(5,i,angle,width)[speakerOrder] }
 	*stereo {
 		decoder =FoaDecoderMatrix.newStereo();

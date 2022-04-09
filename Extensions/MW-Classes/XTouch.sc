@@ -27,14 +27,27 @@ XTouch : XMIDIController {
 			// mappings.pairsDo{| event label | 
 			// var function = pair.function
 				var midinote = labels.at(label);
+				function = (function.class == Event).if{
+					function.function.value //because function.funtion is a Ref
+				}{
+					function
+				};
 				function.cs.post;' '.post;midinote.postln;
 				//MIDIFunc.noteOn(function,midinote,srcID:1779843049).permanent_(true);
 				MIDIdef.noteOn(\X ++ label =>_.asSymbol, function,midinote,srcID:XTouch.id).permanent_(true);
 			};
 	}
 	*dump{
-		mappings.pairsDo { |function label| 
-			label + function.cs => _.postln;
+
+		mappings.keys.do{ |i|
+			mappings.at(i).asString
+			+
+			(i.class == Event).if{
+				i.name
+			}{
+				i.cs
+			}
+			=> _.postln
 		}
 	}
 	*initClass {
@@ -93,17 +106,17 @@ XTouch : XMIDIController {
 				SystemClock.clear;
 				Server.default.freeMyDefaultGroup;
 				Pipe.new("pressf1.sh","w");
-			},\stop,
-			{ this.dump },\user,
-			{ defer{Window.closeAll} },\global,
-			{ defer{Server.default.meter}; },\inputs,
-			{ defer{Server.default.plotTreeL}; },\midi,
+			}.addName(\stop),\stop,
+			{ this.dump }.addName(\dump),\user,
+			{ defer{Window.closeAll} }.addName( 'Close Windows' ),\global,
+			{ defer{Server.default.meter}.addName('Meter'); },\inputs,
+			{ defer{Server.default.plotTreeL}; }.addName( 'Plot Tree'),\midi,
 			{ Item.arm; },\scrub,
 			{ Item.armSection; },\solo,
 			{ Item.abort_(true) },'fast forward',
 			{ Song.play },\play,
-			{ Part.play; },'bank up',
-			{Document.current.path.load},\rewind,
+			{ Part.play },'bank up',
+			{Document.current.path.load}.addName('Load Document'),\rewind,
 			{ Song.playSection(Song.cursor)} ,\click,
 			{defer{ SynthDescLib.default.browse }},'inst',
 		]);
@@ -145,3 +158,8 @@ XTouch : XMIDIController {
 	}
 }
 
++Function{
+	addName { |name|
+		^(name: name, function:`this)
+	}
+}

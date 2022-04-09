@@ -25,7 +25,7 @@ Song.encoders=~encoders;
 		{  
 			var tune = aTune ? p.tune[e.start].list;
 			// account for preroll!!
-			var dursWithPreroll = b[0] + 1 => _.bubble ++ b.drop(Song.preroll);
+			var dursWithPreroll = b[0] + Song.preroll => _.bubble ++ b.drop(1);
 			var freqs = Demand.ar(
 				TDuty.ar(dursWithPreroll.dq,1,1),
 				1,

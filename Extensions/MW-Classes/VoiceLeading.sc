@@ -122,7 +122,8 @@ VoiceLeading {
 		}
 			=> Ppar(_)
 	}
-        dur {^durationArray}
+        //dur {^durationArray}
+        dur {^demandDurations}
         gate { ^demandDurations.collect{ |i x|
           Demand.kr(( durs  ).tduty, 0, this.triggers[x].dq)} 
           ++ 0 //for release

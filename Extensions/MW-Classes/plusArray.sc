@@ -141,6 +141,31 @@
     ^Duty.kr( args[0],  args[1] ? 1 , this.dq)
         }
 
+	octaveUp {
+		^ this.collect{ |i| 
+			case { i < -10 }{ i + 10 }
+			{ i < 0 }{ -1 * i }
+			{ i > 0 }{ i + 10 }
+		}
+	}
+	octaveDown {
+		^ this.collect{ |i| 
+			case { i > 10 }{ i - 10 }
+			{ i > 0 }{ -1 * i }
+			{ i < 0 }{ i - 10 }
+		}
+	}
+	shiftOctaves {|i|
+		var result = this;
+		i.abs.do{
+			i.isPositive.if{
+				result = result.octaveUp;
+			}{
+				result = result.octaveDown;
+			}
+		};
+		^result
+	}
 }
 
 +Pseq {

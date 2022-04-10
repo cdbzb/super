@@ -182,7 +182,7 @@ s.waitForBoot { StageLimiter.activate };
 		ret: {|self|
 			var recorded =self.item.round(0.001)[1..(self.item.size)];
 			recorded.postln;
-			self.range.do({|i|
+			( self.range[0]..self.range.clipAt(1) ).do({|i|
 				var returnChunk=List.new;
 				var elements=song.tune[i].list.size;
 				elements.do(
@@ -263,6 +263,7 @@ SynthDef(\recc,{|buf bus=0|DiskOut.ar(buf,In.ar(bus))}).add;
 		TempoClock.all.do(_.clear);
 		SystemClock.do(_.clear);
 	};
+	Alga.parGroups[s] = AlgaParGroup(s.defaultGroup);
 	~vstRegistry.do{|i| 16.do{|x| i.midi.allNotesOff(x)}}
 }; 
 

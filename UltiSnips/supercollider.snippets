@@ -10,16 +10,20 @@ MegaBind(
 		${2:durs},
 		[$3],
 		{|i|
-		$4
+			$4
 		},
 		{|i|
-		$4
+			$5
 		}
 	)$5
 endsnippet
 
+snippet freqseq
+$1.ar( i.freqSeq$2 )
+endsnippet
+
 snippet gateseq
-Env.asr($1).kr(gate:0, i.gateSeq)
+Env.asr($1).kr(gate:i.gateSeq)
 endsnippet
 
 snippet do
@@ -31,7 +35,7 @@ snippet fold
 endsnippet
 
 snippet env
-Env.$1($2).kr(2,gate:$3)
+Env.$1($2).kr(2,${3:gate:})
 endsnippet
 
 snippet envelope

@@ -501,9 +501,34 @@ s.waitForBoot{
 	["(Then we see the three blackened and broken spheres.) ","r"].addLine;
 	["MCCOY: Jim, the receptacles. Spock's consciousness was in one of them. ","r"].addLine;
 	["KIRK: It was necessary. ","r"].addLine;
-	["MCCOY: What are you talking about? There is no ","r"].addLine;
-	["Spock to return to his body. You've ","r"].addLine;
-	["killed a loyal officer,(boom) your (boom) best friend. ",[11,5,11,12,13,12,11,7].dm('b-') ++ [-1,5,-4,6,7].dm(\a,scale:\mixolydian)].addLine;
+	["MCCOY: What are you talking about? There is no Spock to return to his body. (boom) You've ",[-7, -7, 1, 2, 3, 2, -6, -7,  2, 1, 5, 6, 5, 4, 3, 4, 5, 5, 4].dm(\d, scale:\mixolydian) ++ [-5, 5].dm('b-',octave:4)].addLine;
+	P.tune(\talking);
+	P(\dyad,start:\talking,music:{|p b e| 
+		[
+			freq:[\r, [3,5],\r, [1,3, 6],\r, [2,6] ].df(\d, scale:\mixolydian).q,
+			instrument: \sparkTriangle,
+			dur: b.parse([4,3,4,3, 3,2]).q,
+			amp: 0.03,
+			out: Effect({|i| 
+				FoaEncode.ar(i,Song.encoders.omni) 
+				=> FoaPush.ar(_,0.8,-pi/4)
+				=> FoaDecode.ar(_,Monitors.decoder)}
+			).bus.index
+		].pp
+	});
+	P(\bass,start:\talking,music:{|p b e| 
+		[
+			freq: [-7, 3, 1, 2, 2.5].df(\d,scale:\mixolydian, octave:[3,4]).q,
+			dur: b.parse([4, 7, 6, 2]).q,
+			instrument:\stringyy,
+			release:2,
+			legato:1,
+			amp:0.25
+
+		].pp
+		
+	});
+	["killed a loyal officer,(boom) your (boom) best friend. ",[11,5,11,12,13,12,11,7].dm('b-',octave:4) ++ [-1,5,-4,6,7].dm(\a,scale:\mixolydian, octave:4)].addLine;
 	P.tune(\loyal);
 	P(\chord,start:\loyal,syl:11,lag:-0.05, music:{|p b e| 
 		(

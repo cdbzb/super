@@ -15,10 +15,43 @@ s.waitForBoot{
 	[ "I intend to keep it. ","r" ].addLine;
 	[ "MCCOY: I see. And Henoch intends to keep Spock's body, of course. ","r" ].addLine;
 	[ "MULHALL: Henoch's plans are his own affair. ","r" ].addLine;
-	[ "I wish only to exist in peace as a living woman. ","r" ].addLine;
+	[ "I wish only to exist in peace as a living woman. ",[3, 6, 5, 6, 4.5, 5, 3, 7, 11, 7, 7, 4, 5, 5, 6, 5, 1, 2, 1].dm('f#') ].addLine;
+	Song.quarters[\exist] = Song.parseBeats(\exist,[
+		1,
+		2,1/2, 1/2, 1/2,1/2,
+		1, 1/2, 3/2, 1, 
+		2, 1/2, 5/2, 
+		1/2,1, 1/2, 1/4, 3/4, 1
+	]);
+	P.tune(\exist);
+	
+	P(\piano,start:\exist,syl:12,music:{|p b e| 
+		[
+			freq: 
+		[[2,5],3,2].df(_) => [\b,\e].collect(_) => _.flatten
+			=> _.q,
+			dur: b.drop(1).q,
+			legato: [[1,3],1,1, [1,9],1,1].q,
+			instrument:\twang
+		].pp;
+	});
+	P(\test,start:\exist,syl:0,lag:-3/100,music:{|p b e| 
+		(
+			freq: [-4,1,3, 5].df('e-', scale: \minor),
+			strum: 3/100,
+			dur: b.drop(1)[(0..4)].sum
+		).play	
+	});
+	P(\bass,start:\exist,music:{|p b e| 
+		[
+			freq: [\r, 3, 2, 5, 4, 4, 5, 1, -7 ].df('e', octave:3).q,
+			//dur: b.parse([1,5,4, 2, ]).q
+			dur: [1/2, 2, 2, 3/2, 1/2, 1/2, 1, 1, 1].q*2
+		].p.play(clock:TempoClock.newFromQuarters(p.quarters[\exist]));
+	});
 	[ "MCCOY: If you're asking my approval ","r" ].addLine;
 	[ "MULHALL: I require only your silence.","r"].addLine; 
-	["Only you and I will know that Doctor Mulhall has not returned to her body. ",[1,2,3,1,4.5,2,-6].dm('e-') ++ [2,3,1,4.5,2].dm(\c) ++ [1,2,3,4].dm(\e,scale: \whole) ].addLine;
+	[ "Only you and I will know that Doctor Mulhall has not returned to her body. ",[1,2,3,1,4.5,2,-6].dm('e-') ++ [2,3,1,4.5,2].dm(\c) ++ [1,2,3,4].dm(\e,scale: \whole) ].addLine;
 	P.tune(\returned);
 	P(\bassDyad1,start:\returned,music:{|p b e| 
 		MegaBind(
@@ -67,10 +100,47 @@ s.waitForBoot{
 		).play
 	});
 	[ "Isn't that worth your captain's life? ","r" ].addLine;
-	[ "MCCOY: Neither Jim nor I can trade a body we don't own. It happens to belong to a young woman. ","r" ].addLine;
-	[ "MULHALL: Who you hardly know. Almost a stranger to you. ","r" ].addLine;
-	[ "MCCOY: I will not peddle flesh. I'm a physician. ","r" ].addLine;
-	[ "MULHALL: A physician? ","r" ].addLine;
+	// ????????
+[ "Doctor, we can take what we wish. ","r" ].addLine;
+[ "Neither you, this ship, nor worlds have the power to stop us. ","r" ].addLine;
+	// ????????
+	[ "MCCOY: Neither Jim nor I can trade a body we don't own",[1, 2, 3, 1, 4, 2, 3, 4, 5, 4, 3, 2, 6].dm(\g,4,scale:\lydian)].addLine;
+	P.tune(\trade);
+	P(\bassline,start:\trade,music:{|p b e| 
+		[
+			freq: [\r, 1, 2, 1.5, -7, -6].df(\g).q / 4,
+			dur: b.parse([2, 2,2,  2, 4,1]).q,
+			instrument:\wash,
+			out: [0,1].q(inf),
+			att:0.5
+		].pp;
+	});
+	[ "It happens to belong to a young woman. ",[-5, 1, -7, 1, 2, 3, 1, -7, -6, 4, 3, 2].dm(\f) ].addLine;
+	P(\chords,start:\happens,music:{|p b e| 
+		[
+			freq: [\r, [1,5,1], [-4], [-5, 2, 4] ].df(\f).q / [1,2],
+			dur: b.parse([1,7,2,2 ]).q,
+			instrument:\wash
+		].pp;
+	});
+	P.tune(\happens);
+	[ "MULHALL: Who you hardly know. Almost a stranger to you. ",[3, 1, 5, 4, 3.5].dm(\b,5,\whole) ++ [-7, 1, 2, 2.5, -7, -6, -4.5].dm(\c,6) ].addLine;
+	P.tune(\hardly);
+	[ "MCCOY: I will not peddle flesh. I'm a physician. ",[11, 11, 11, 7, 7, 6 ].dm(\g,scale:\mixolydian) ++ [5, 5.5, 7, 11, 1].dm('a-',scale:\mixolydian)].addLine;
+	P.tune(\peddle);
+	P(\chords,start:\peddle,music:{|p b e| 
+		[
+			freq: [5,7,12,15] ! 3 ++ [5,7,12,14].dup ++ [[5,11,13]] => _.df(\c) => _.q,
+			dur: b.q
+		].pp
+	});
+	[ "MULHALL: A physician? ",[1, 1, 11, 1].dm('b-') ].addLine;
+	P(\chord,start:'physician?',syl:1,music:{|p b e| 
+		(
+		freq: [1,3,5,7,11].df('b-',4,\diminished)
+		).play
+	});
+	P.tune('physician?');
 	[ "In contrast to what we are, you are a ", [-7, 1, 2, 3, 4.5, 5, 2, 6, 7 ,4].dm(\g,scale:\mixolydian) ].addLine;
 	P.tune(\contrast);
 	["prancing, savage, monkey ",[-1, -1, 3, 1, -4, -4, 4, 1, -7, -7, -7, -7, -7, -7, 2, 1 ].dm(\g, scale:\mixolydian)].addLine;
@@ -184,14 +254,16 @@ s.waitForBoot{
 	P(\swoop,start:\writhing,music:{|p b e| 
 		//change chord here
 		var chord = [1, 3, 2, 7, 12].df(\e); 
-		var onsets = [0,0.666, 1.321] +.x [0,0,1,2,0.5 ] /3  => _.integrate ;
+		//var onsets = [0,0.666, 1.321] +.x [0,0,1,2,0.5 ] /3  => _.integrate ;
+		var onsets = {0.6.rand}!8;
+		//var onsets = 0!8;
 		p.fireGroup = Group.new;
 
 		{var register = [1.25,1.5,1.666].choose;
 		{
 			var a, freq, trig;
 			a = Dseq([Dshuf( chord, 3)], inf) * 1.rrand(3);
-			trig = XLine.kr(1000,0.1,10) => Impulse.ar(_);
+			trig = XLine.kr(1000.rand,0.1.rand,10) => Impulse.ar(_);
 			freq = Demand.ar(trig, 0, a);
 			[ Saw,Pulse,LFTri,SinOsc ].choose.ar(freq/register) * 0.01 *.t [[0,1],[1,0],[0.6,0.6]].choose
 			* Env.linen(0,5,12).kr(2)
@@ -205,6 +277,7 @@ s.waitForBoot{
 			freq:[1,3,5,11].df(\f,scale:\minor,octave:3),
 			out:Effect({|i| 
 				PlateReverb.ar(i,mix:0.8)
+					//=> CrossoverDistortion.ar(_,smooth:0.98)
 				=> HPF.ar(_, Env([30,30,6000],[b.sum,6]).kr(2,gate:1))
 			}).bus.index,
 			amp:0.2
@@ -483,7 +556,8 @@ s.waitForBoot{
 			[
 				[3, 2, 3, 4].df(\b)
 			],
-			[1,1,1,1]/2 => _.warpTo(p.quarters[e.start][[5,6,7]]),
+			[1,1,1,1]/2 => _.warpTo(p.quarters[e.start][[5,6,7]]) 
+			* 2,
 			[],
 			{|i|
 				LFTri.ar( i.freqSeq ) 
@@ -493,14 +567,26 @@ s.waitForBoot{
 				Mix.ar(i) /30 
 				=> EchoNone.ar(_,0.2,0.2,5)
 				=> Pan2.ar(_,SinOsc.kr(0.7))
-				=> CrossoverDistortion.ar(_).wet(0.09) / 3
+		//		=> CrossoverDistortion.ar(_).wet(0.09) / 3
 				* Env.linen(0,2,3).kr(2,gate:1)
 			}
 		).play
 	});
-	["(Then we see the three blackened and broken spheres.) ","r"].addLine;
-	["MCCOY: Jim, the receptacles. Spock's consciousness was in one of them. ","r"].addLine;
-	["KIRK: It was necessary. ","r"].addLine;
+	["(Then we see the three blackened and broken spheres.) ",[1,2].dm(\f),[3,3]].addLine;
+	P(\clang,start:'broken',music:{|p b e| 
+		(
+			[
+				freq: [\f,\g,\a].collect{|i| [-21,-11].df(i)} => _.q,
+				out: Effect( { |i| PlateReverb.ar(i)  * Env.linen(0,b.sum,4).kr(gate:1)}).bus.index,
+				dur: b ++ [1] => _.q
+			].pp
+			
+		)
+	});
+	["MCCOY: Jim, the receptacles. Spock's consciousness was in one of them. ",[3,2,1,5,4,3].dm(\g) ++ [2, 5, 4, 3, 1].dm('a-',scale:\whole) ++ [11, 6, 4, 2].dm(\f,scale:\minor)].addLine;
+	P.tune(\receptacles);
+	["KIRK: (boom) It was necessary. ",[-2, 5, 5, 11, 5, 3, 1].dm(\c,scale:\minor)].addLine;
+	P.tune(\necessary);
 	["MCCOY: What are you talking about? There is no Spock to return to his body. (boom) You've ",[-7, -7, 1, 2, 3, 2, -6, -7,  2, 1, 5, 6, 5, 4, 3, 4, 5, 5, 4].dm(\d, scale:\mixolydian) ++ [-5, 5].dm('b-',octave:4)].addLine;
 	P.tune(\talking);
 	P(\dyad,start:\talking,music:{|p b e| 
@@ -526,10 +612,28 @@ s.waitForBoot{
 			amp:0.25
 
 		].pp
-		
+	
 	});
 	["killed a loyal officer,(boom) your (boom) best friend. ",[11,5,11,12,13,12,11,7].dm('b-',octave:4) ++ [-1,5,-4,6,7].dm(\a,scale:\mixolydian, octave:4)].addLine;
+	P(\bassMirror,start:\loyal,music:{|p b e| 
+		[
+			freq: [1, -7, -6, -7, 1].df('b-', octave:[3,4]).q,
+			dur: b.parse([3, 1, 1, 1, 2]).q,
+			instrument:\sawSynthSustain,
+			amp:0.07,
+			lagTime:0.1
+		].pm(\sawSynthSustain).play
+		
+	});
 	P.tune(\loyal);
+	P(\bass2,start:\loyal,syl:7,music:{|p b e| 
+		[
+			freq: [2,\r, 5,\r, 1].df(\g,octave:3).q ,
+			dur:b.drop(1) ++ [ p.durs[e.start+1].list[0] ] => _.q,
+			instrument:\sawSynth
+		].pp
+		
+	});
 	P(\chord,start:\loyal,syl:11,lag:-0.05, music:{|p b e| 
 		(
 			strum:0.06,
@@ -544,14 +648,42 @@ s.waitForBoot{
 		].pp
 	});
 	P.tune(\prepare);
-	["(boom boom) Spock's consciousness is-- gone. We must kill his body, the thing in it.",[-1, -3, 3, 4, 4, 4, 3, 2, 2].dm(\d) ++ [2, 3, 6, 7, 11, 5, 11, 12, 11, 5].dm(\a,octave:4)].addLine;
+	["(boom boom) Spock's consciousness is-- gone. We must kill his body, the thing in it.",[-1, -3, 3, 4, 4, 4, 3, 2, 2].dm(\a) ++ [2, 3, 6, 7, 11, 5, 11, 12, 11, 5].dm(\e)].addLine;
+	P(\figure,start:'kill his body',music:{|p b e| 
+		[
+			freq: [1, 3, 5, 1, 4, 6, 11, 3, -7].df(\a).q / [1,2],
+			dur: b.parse([1, 1, 0.5, 0.5, 1, 1, 1, 2, 1, 1]).q,
+			instrument:\sawSynth,
+		].pp
+		
+	});
+	P(\bass,start:'kill his body',syl:12,music:{|p b e| 
+		[
+			freq: [1, 11, 1].df(\e).q /[ 4],
+			dur: b.drop(1).parse([ [1, 1/2],[1/2, 1], 1 ]).q,
+		].pma(\default).play;
+	});
 	P(\chords,start:'kill his body',syl:1,music:{|p b e| 
 		
 		[
-			freq:[[1, 5],[1, 5],[1, 5],[1, 5],[1, 5],[-7,4.5]].df(\d).q,
+			freq:[[1, 5],[1, 5],[1, 5],[1, 5],[1, 5],[-7,4.5]].df(\a).q,
 			dur:b.drop(1).parse([1,1,1,1,2,1]).postln.q
 		].pp
 	});
-	P.tune('kill his body');
-}
+	P.tune('kill his body',_.drop(2),syl:1);
+P(\chords2,start:'kill his body',syl:12,music:{|p b e| 
+	[
+		freq: [
+			[1,3,5,11],
+			[1,3,5,11],
+			[2,4,6,12],
+			[1,3,5,11],
+		].df(\e,scale:\minor).q,
+		dur: b.drop(1).parse([2,1,1,2]).q,
+		strum: [5, 0.5, 2, 1]/100 => _.q
+	].pp
+
+	
+});
+};
 )

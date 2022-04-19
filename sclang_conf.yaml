@@ -8,7 +8,6 @@ includePaths:
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/wslib
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/SynthDefPool
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/say
-    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/MathLib
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/VectorSpace
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Unit-Lib
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/BatLib
@@ -31,6 +30,7 @@ includePaths:
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Deferred
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Cluster
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/persistentmainfx
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/MathLib
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/atk-sc3
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/AmbiVerbSC
 excludePaths:

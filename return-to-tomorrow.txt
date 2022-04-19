@@ -402,7 +402,7 @@ MULHALL: No!
 SPOCK: You have no excuse to keep the real body any longer. Sargon would've required that you enter the mechanism immediately. 
 MULHALL: I cannot live in that thing.
 }}}
-Mccoy and Thalassa TO DO {{{
+McCoyandThalassa.scd {{{
 [Sickbay]
 
 MULHALL: Doctor. 
@@ -413,7 +413,7 @@ MULHALL: We have many powers Sargon did not permit us to use. He thought them to
 MCCOY: I see. And Henoch intends to keep Spock's body, of course. 
 MULHALL: Henoch's plans are his own affair. I wish only to exist in peace as a living woman. 
 MCCOY: If you're asking my approval 
-MULHALL: I require only your silence. Only you and I will know that Doctor Mulhall has not returned to her body. Isn't that worth your captain's life? Doctor, we can take what we wish. Neither you, this ship, nor worlds have the power to stop us. 
+MULHALL: I require only your silence. Only you and I will know that Doctor Mulhall has not returned to her body. Isn't that worth your captain's life? Doctor, we can take  what we wish. Neither you, this ship, nor worlds have the power to stop us. 
 MCCOY: Neither Jim nor I can trade a body we don't own. It happens to belong to a young woman. 
 MULHALL: Who you hardly know. Almost a stranger to you. 
 MCCOY: I will not peddle flesh. I'm a physician. 
@@ -426,8 +426,6 @@ SARGON: I have power even Henoch does not suspect, beloved.
 MULHALL: Yes. Yes, I see. I understand. Just as we would have placed our consciousness within robots, Sargon has placed his into your vessel. 
 CHAPEL: Doctor. 
 MULHALL: Doctor, leave us. Sargon has a plan. We have much work to do.
-}}}
-wind up TO DO {{{
 [McCoy's office]
 
 (McCoy leaves the room, and the door shuts and locks behind him. The ship shakes as he activates his desk monitor.) 
@@ -448,7 +446,7 @@ KIRK: It was necessary.
 MCCOY: What are you talking about? There is no Spock to return to his body. You've killed a loyal officer, your best friend. 
 KIRK: Bones, prepare a hypo. The fastest, deadliest poison to Vulcans. Spock's consciousness is gone. We must kill his body, the thing in it.
 }}}
-denouement TO DO {{{
+Ending.scd {{{
 [Bridge]
 
 (Uhura is screaming in terror before collapsing across her console. Chapel is standing rigid by the Captain's chair.) 
@@ -471,8 +469,6 @@ KIRK: You're alive.
 MCCOY: There was enough poison in that hypo to kill ten Vulcans. 
 SARGON [OC]: No, Doctor. I allowed you to believe that to be true so that Henoch would read your thoughts and believe it also. 
 MCCOY: Sargon. 
-}}}
-oblivion TO DO {{{
 SPOCK: It seems, Doctor, the injection was only enough to cause unconsciousness. 
 SARGON [OC]: But Henoch believed and fled the body. He is destroyed. 
 KIRK: But your vessel was destroyed, too. Where was your consciousness kept? 
@@ -491,3 +487,4 @@ KIRK: Well, I'm sure that Sargon appreciated your co-operation, Doctor Mulhall.
 MULHALL: Yes. I was happy to co-operate, Captain. 
 CHAPEL: It was beautiful.
 }}}
+J

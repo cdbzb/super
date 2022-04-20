@@ -102,7 +102,8 @@ s.waitForBoot{
 	[ "Isn't that worth your captain's life? ","r" ].addLine;
 	// ????????
 [ "Doctor, we can take what we wish. ","r" ].addLine;
-[ "Neither you, this ship, nor worlds have the power to stop us. ","r" ].addLine;
+[ "Neither you, this ship, nor worlds have the power to stop us." ,[5, 5, 6, 5, 6, 5].dm('c#',5,\minor) ++ [7, 6, 11, 7, 6, 5, 4 ].dm(\c,5,\mixolydian) ++ [7, 11, 7, 7, 6].dm(\d,5,\mixolydian) ].addLine;
+	P.tune(\worlds);
 	// ????????
 	[ "MCCOY: Neither Jim nor I can trade a body we don't own",[1, 2, 3, 1, 4, 2, 3, 4, 5, 4, 3, 2, 6].dm(\g,4,scale:\lydian)].addLine;
 	P.tune(\trade);
@@ -124,25 +125,93 @@ s.waitForBoot{
 		].pp;
 	});
 	P.tune(\happens);
-	[ "MULHALL: Who you hardly know. Almost a stranger to you. ",[3, 1, 5, 4, 3.5].dm(\b,5,\whole) ++ [-7, 1, 2, 2.5, -7, -6, -4.5].dm(\c,6) ].addLine;
+	[ "MULHALL: Who you hardly know. Almost a stranger to you. (boom) ",[3, 1, 5, 4, 3.5].dm(\b,5,\whole) ++ [-7, 1, 2, 2.5, -7, -6, -4.5, -2.5].dm(\c,6) ].addLine;
+// add a beat with e flat in the bass here
 	P.tune(\hardly);
+	P(\chord,start:\hardly,music:{|p b e| 
+		[
+			freq: [[1,3,5].df(\b,4,\whole),[1,3,5].df('a-',4,\whole), \r, [-5].df(\g),[-17,-7,12,14].df(\e,3)].q,
+			dur:b.parse([4,1,3,2,2]).q,
+			instrument: \stringyy,
+			amp:0.2,
+			legato:1
+		].pp
+	});
+	P(\boom,start:\hardly,syl:11,music:{|p b e| 
+		(
+			freq: 1.df('e-',[2,3]),
+			amp:0.4,
+			instrument:\stringyy,
+			attack:0.01,
+			out: Effect( FreeVerb.ar(_,1,1),out:3 ).bus.index
+		).play
+	});
+	Song.encoders.put(\quad,FoaEncoderMatrix.newQuad);
+	P(\chords,start:\hardly,music:{|p b e| 
+		MegaBind(
+				[
+					[\r, 3, \_, \_, 4, 3, 4, 5, -7, \_, \_, \_, -5.5 ].df(\g)
+				],
+				b,
+				[],
+				{|i x|
+					Gendy2.arWidth(
+						ampdist: 1,
+						durdist: 1,
+						adparam: 1.0,
+						ddparam: 1.0,
+						freq: i.freqSeq / [1,2],
+						width: 1.015,
+						ampscale: 0.25,
+						durscale: 0.5,
+						initCPs: [2,3,4],
+						knum: nil,
+						a: 1.17,
+						c: 1.31,
+							mul:[1,1.3,1]
+						)
+					* Env.asr().kr(gate:i.gateSeq)
+					* 0.05
+						//=> FoaEncode.ar(_,~encoders.omni)
+						//=> FoaPress.ar(_,pi/4,pi*x/2,pi/2)
+				},
+				{|i|
+
+					Splay.ar(i)
+					=> FreeVerb.ar(_,0.5,0.8)
+						//i
+						
+			//			=>  AmbiVerbSC.ar(_,0.5,lowRT:1,highRT:3)
+					//=> Monitors.decode(_)
+				}
+			).play
+	});
 	[ "MCCOY: I will not peddle flesh. I'm a physician. ",[11, 11, 11, 7, 7, 6 ].dm(\g,scale:\mixolydian) ++ [5, 5.5, 7, 11, 1].dm('a-',scale:\mixolydian)].addLine;
 	P.tune(\peddle);
+	P(\bass,start:\peddle,music:{|p b e| 
+		[
+			freq: [5,5,5,5,5,11,].df(\c,3).q ++ [5,1].df('a-',3).q,
+			dur: b.parse([1, 1, 1, 1, 1, 1, 3, 2]).q,
+			instrument: \sawSynth
+		].pp;
+	});
 	P(\chords,start:\peddle,music:{|p b e| 
 		[
-			freq: [5,7,12,15] ! 3 ++ [5,7,12,14].dup ++ [[5,11,13]] => _.df(\c) => _.q,
+			freq: [5,7,12,15] ! 3 ++ [5,7,12,14].dup ++ [[5,11,13]] => _.df(\c,[3,4]) => _.q,
 			dur: b.q
 		].pp
 	});
-	[ "MULHALL: A physician? ",[1, 1, 11, 1].dm('b-') ].addLine;
+	Song.physicianKey = 'b-';
+	[ "MULHALL: A physician? ",[1, 1, 11, 1].dm(Song.physicianKey) ].addLine;
 	P(\chord,start:'physician?',syl:1,music:{|p b e| 
 		(
-		freq: [1,3,5,7,11].df('b-',4,\diminished)
+		freq: [1,3,5,7,11].df(p.physicianKey,4,\diminished)
 		).play
 	});
 	P.tune('physician?');
 	[ "In contrast to what we are, you are a ", [-7, 1, 2, 3, 4.5, 5, 2, 6, 7 ,4].dm(\g,scale:\mixolydian) ].addLine;
-	P.tune(\contrast);
+	P.tune(\contrast, { |i| Pmul(\freq,[0.5,1],i) => Pbindf(_,\instrument,\stringyy,\amp,0.2,\release,4) } );
+	
 	["prancing, savage, monkey ",[-1, -1, 3, 1, -4, -4, 4, 1, -7, -7, -7, -7, -7, -7, 2, 1 ].dm(\g, scale:\mixolydian)].addLine;
 	Song.quarters[\prancing] = Song.parseBeats(\prancing,[1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1.5,0.5]).quantize(0.5)  ;
 	P(\test,start:\prancing,music:{|p b e| 
@@ -155,6 +224,14 @@ s.waitForBoot{
 	//P.tune(\prancing);
 	P(\bass,start:\prancing,music:{|p b e| 
 		b = b.asArray.quantizeWindow();
+		[
+			freq:[\r,\r,3,1,\r,\r,4,1,\r,\r,\r,\r,\r,\r,2,1].df(\g).q,
+			dur:1!14 ++ 1.5 ++ 0.49  => _.warpTo(p.quarters[e.start]) => _.q,
+			instrument:\wash,
+			att:0.5
+
+
+		].pp;
 		[
 			freq: [1,1,1,1,4,4,4,4,7,7,7,7,7,7,7,7].df(\g, scale:\mixolydian ).q/8,
 			instrument:\yowbass,
@@ -201,6 +278,7 @@ s.waitForBoot{
 			amp:2
 		].p;
 	});
+	
 	[ "(r) You dare defy one you should be on your knees wo -- rshipping? ",[-1,1, 1.5, 1, -6.5].dm(\c) ++ [1, 3, 4, 5, 3, 5, 6].dm(\d,scale: \whole) ++ [3,4,3,-5].dm(\b) ].addLine;
 	P.tune(\defy,Pmul(\freq,[1,1.33]!5 => _.q ++ [1].q(inf),_));
 	P.tune(\knees,{|i| Pfin(6,i) => Pmul(\freq,[4/3,4/3,4/3,4/3,4/3,1].q/2,_) => Pset(\legato,[1,1,1,1,1,6].q,_)});

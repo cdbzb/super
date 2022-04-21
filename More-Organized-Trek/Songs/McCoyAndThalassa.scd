@@ -100,10 +100,23 @@ s.waitForBoot{
 		).play
 	});
 	[ "Isn't that worth your captain's life? ","r" ].addLine;
-	// ????????
-[ "Doctor, we can take what we wish. ","r" ].addLine;
-[ "Neither you, this ship, nor worlds have the power to stop us." ,[5, 5, 6, 5, 6, 5].dm('c#',5,\minor) ++ [7, 6, 11, 7, 6, 5, 4 ].dm(\c,5,\mixolydian) ++ [7, 11, 7, 7, 6].dm(\d,5,\mixolydian) ].addLine;
+	[ "Doctor, we can take what we wish. ",[11, 5, 3, 5, 12, 11, 7, 6].dm(\e,4) ].addLine; //?????
+	P.tune('we can take');
+	P(\bass,start:'we can take what we wish',music:{|p b e| 
+		[
+			freq: [11, 7, 6, 5, 4].df(\e).q /4 + 2,
+			dur: b.parse([4,1,1,1,1]).q,
+			width: [2,2,2,2,2]/2 
+		].pma(\defaultPorto).play
+	});
+	[ "Neither you, this ship, nor worlds have the power to stop us." ,[5, 5, 6, 5, 6, 5].dm('c#',5,\minor) ++ [7, 6, 11, 7, 6, 5, 4 ].dm(\c,5,\mixolydian) ++ [7, 11, 7, 7, 6].dm(\d,5,\mixolydian) ].addLine;
 	P.tune(\worlds);
+	P(\bassNotes,start:\worlds,music:{|p b e| 
+		[
+			freq: [1, 1, 4, 1, 2, 1, -7, 2, 3,  1.5, 4.5].df('c#',[3,4]).q,
+			dur: b.parse([1,1,1, 1, 1, 1, 3, 1, 4, [1,1,0.5],[0.5,1]]).q
+		].pp
+	});
 	// ????????
 	[ "MCCOY: Neither Jim nor I can trade a body we don't own",[1, 2, 3, 1, 4, 2, 3, 4, 5, 4, 3, 2, 6].dm(\g,4,scale:\lydian)].addLine;
 	P.tune(\trade);
@@ -280,7 +293,7 @@ s.waitForBoot{
 	});
 	
 	[ "(r) You dare defy one you should be on your knees wo -- rshipping? ",[-1,1, 1.5, 1, -6.5].dm(\c) ++ [1, 3, 4, 5, 3, 5, 6].dm(\d,scale: \whole) ++ [3,4,3,-5].dm(\b) ].addLine;
-	P.tune(\defy,Pmul(\freq,[1,1.33]!5 => _.q ++ [1].q(inf),_));
+	P.tune(\defy, {|i| Pset(\out,Effect(CrossoverDistortion.ar(_,drive:0.9,smooth:0.1) * 0.04).bus.index,i) => Pmul(\freq,[1,1.33]!5 => _.q ++ [1].q(inf),_)});
 	P.tune(\knees,{|i| Pfin(6,i) => Pmul(\freq,[4/3,4/3,4/3,4/3,4/3,1].q/2,_) => Pset(\legato,[1,1,1,1,1,6].q,_)});
 	P(\bass,start:\defy, syl: 12, music:{|p b e| 
 		(lag:b[0]/2,freq:[-21,-11].df(\b),out:Effect(PlateReverb.ar(_,mix:0.8)).bus.index).play
@@ -331,7 +344,8 @@ s.waitForBoot{
 	[ "(McCoy is suddenly writhing in pain as he is surrounded by flames.) ","r",[11] ].addLine;
 	P(\swoop,start:\writhing,music:{|p b e| 
 		//change chord here
-		var chord = [1, 3, 2, 7, 12].df(\e); 
+		//var chord = [1, 3, 2, 7, 12].df(\e); 
+		var chord = Array.fill(5,{rrand(400,800)});
 		//var onsets = [0,0.666, 1.321] +.x [0,0,1,2,0.5 ] /3  => _.integrate ;
 		var onsets = {0.6.rand}!8;
 		//var onsets = 0!8;

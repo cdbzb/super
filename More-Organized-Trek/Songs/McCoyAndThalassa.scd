@@ -100,15 +100,24 @@ s.waitForBoot{
 		).play
 	});
 	[ "Isn't that worth your captain's life? ","r" ].addLine;
-	[ "Doctor, we can take what we wish. ",[11, 5, 3, 5, 12, 11, 7, 6].dm(\e,4) ].addLine; //?????
+	//[ "Doctor, we can take what we wish. ",[11, 5, 3, 5, 12, 11, 7, 6].dm(\e,4) ].addLine; //?????
+	[ "Doctor, we can take what we wish--. ",[3, 2, 6, 6, 6, 5, 6, 6, 7].dm(\a) ].addLine; //?????
 	P.tune('we can take');
-	P(\bass,start:'we can take what we wish',music:{|p b e| 
+	P(\chords,start:'we can take',music:{|p b e| 
+		var fs=[-6,1,3,6].df(\a);
+		var a = [-5,1,3,5].df(\a);
 		[
-			freq: [11, 7, 6, 5, 4].df(\e).q /4 + 2,
-			dur: b.parse([4,1,1,1,1]).q,
-			width: [2,2,2,2,2]/2 
-		].pma(\defaultPorto).play
+			freq: [\r,\r,fs,fs,fs,a,fs,fs,[-7,7].df(\a)].q,
+			dur: b.q
+		].pp;
 	});
+//	P(\bass,start:'we can take what we wish',music:{|p b e| 
+//		[
+//			freq: [11, 7, 6, 5, 4].df(\e).q /4 + 2,
+//			dur: b.parse([4,1,1,1,1]).q,
+//			width: [2,2,2,2,2]/2 
+//		].pma(\defaultPorto).play
+	//});
 	[ "Neither you, this ship, nor worlds have the power to stop us." ,[5, 5, 6, 5, 6, 5].dm('c#',5,\minor) ++ [7, 6, 11, 7, 6, 5, 4 ].dm(\c,5,\mixolydian) ++ [7, 11, 7, 7, 6].dm(\d,5,\mixolydian) ].addLine;
 	P.tune(\worlds);
 	P(\bassNotes,start:\worlds,music:{|p b e| 
@@ -588,6 +597,12 @@ s.waitForBoot{
 			amp:0.04
 		].pm(\sawSynthSustain).play
 	});
+	P(\chords,start:\work,syl:3,music:{|p b e| 
+		[
+			freq: [5,5,5,5,5].df('f').q,
+			dur:b.drop(1).parse([1,1,1,2,1]).q
+		].pp;
+	});
 	P(\endChord,syl:16,start:\work,music:{|p b e| 
 		(
 			freq: [-1,1,3,5].df(\d,octave:4),
@@ -598,6 +613,7 @@ s.waitForBoot{
 			amp:0.03
 		).play;
 	});
+
 	//[McCoy's office]
 	["(McCoy leaves the room, and the door shuts and locks behind him. The ship shakes as he activates his desk monitor.) MCCOY: This is Sickbay. Get me ","r"].addLine;
 
@@ -763,6 +779,12 @@ s.waitForBoot{
 		].pp
 	});
 	P.tune('kill his body',_.drop(2),syl:1);
+	P(\guiro,start:'kill his body',syl:11,music:{|p b e| 
+		//FIXME!!!!!
+		
+			{Shakers.ar(19, 1, 1, 1, 32, 60, Env([0,0.5],1,\sin).kr(0,1))}.play
+		
+	});
 P(\chords2,start:'kill his body',syl:12,music:{|p b e| 
 	[
 		freq: [

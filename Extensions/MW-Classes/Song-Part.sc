@@ -1,11 +1,12 @@
 Song {
 	classvar lastSectionPlayed=0;
-    classvar <>reaperFolder = "/Users/michael/tank/super/RPP";
+	classvar <>reaperFolder = "/Users/michael/tank/super/RPP";
 	classvar <> dursFile="/Users/michael/tank/super/theExtreme3";
 	classvar <> dursFolder="/Users/michael/tank/super/Dur";
 	classvar < songs;
 	classvar <> current;
 	classvar lyricWindow;
+	classvar <>loading;
 	classvar <>songList;
 	var <song, <key, <cursor=0, <sections, <lyrics, <tune; 
 	var <durs,  <>resources, <>lyricsToDurs;
@@ -17,6 +18,7 @@ Song {
 	*initClass {
 		Class.initClassTree(Recorder);
 		songs=Dictionary.new;
+		loading = CondVar();
 	}
 	
 	*new { 
@@ -146,8 +148,10 @@ Song {
 		sections=(song.size/2).asInteger;
 		lyrics=song.copySeries(0,2,song.size);
 		tune=song[1,3..song.size].collect({|i|
-			case {i.class==String} { Panola.new(i).midinotePattern }
-			{i.class==Array } {i.q}
+			case 
+				{i=="r"} {[\r].q}
+				{i.class==Array } {i.q}
+				{i.class==String} { Panola.new(i).midinotePattern }
 		});
 		//durs=lyrics.collect{|i| lyricsToDurs.at(i) };
 		//durs=durs.collect{|i| i.isNil.if( {[1].q} , {i} )}
@@ -163,7 +167,9 @@ Song {
 		};
 
 		//FIXME
-		song=song++line[0..1]; this.refreshArray;
+		song=song++line[0..1]; 
+		//fork{ loading.wait; this.refreshArray };
+		this.refreshArray ;
 		line[2].isNil.if({ 
 			//line=line++[[1]]
 			//durs.put(line[0].asSymbol,[1].q)
@@ -316,10 +322,16 @@ Song {
 			'Condition Met'.postln;
 //			1.wait;
 			Server.default.sync;
-			list.do(_.p)
+			fork{ list.do(_.p) }
 			//list.do(_.pAbs)
 		}
 	}		
+	playAfterLoad {
+		fork{
+			loading.wait;
+			this.play
+		}
+	}
 
 	current {
 		current = key;

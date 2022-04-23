@@ -259,7 +259,7 @@ SynthDef(\recc,{|buf bus=0|DiskOut.ar(buf,In.ar(bus))}).add;
 	|vsti|
 	s.freeMyDefaultGroup;
 	fork{
-		s.latency.wait;
+		//s.latency.wait;
 		TempoClock.all.do(_.clear);
 		SystemClock.do(_.clear);
 	};

@@ -51,14 +51,17 @@ VocalRPP {
 					"cp" + prox + wav => _.unixCmd;
 					"touch" + prox => _.unixCmd;
 					'dirty - copied'.postln;
+				buffer= Buffer.read(Server.default,wav)
 				} 
 			}{
 
 				"cp" + prox + wav => _.unixCmd;
 				"touch" + prox => _.unixCmd;
-				'clean copied'
+				'clean copied';
 
 				//open project and send a save message to generate a prox ??
+
+				buffer= Buffer.read(Server.default,wav)
 			}
 		}{
 			'no PROX!'.postln;
@@ -67,6 +70,7 @@ VocalRPP {
 
 
 	updateProxy {
+
 		var path=reaperProjectPath +/+ "media" +/+ key.asString ++ ".wav";
 		var s = Server.default;
 		this.writeReaperAction;

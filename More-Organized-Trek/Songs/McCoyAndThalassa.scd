@@ -101,14 +101,27 @@ s.waitForBoot{
 	});
 	[ "Isn't that worth your captain's life? ","r" ].addLine;
 	//[ "Doctor, we can take what we wish. ",[11, 5, 3, 5, 12, 11, 7, 6].dm(\e,4) ].addLine; //?????
-	[ "Doctor, we can take what we wish--. ",[3, 2, 6, 6, 6, 5, 6, 6, 7].dm(\a) ].addLine; //?????
+	[ "Doctor, we can take what we wish--. ",[3, 2, 6, 6, 6, 5, 6, 6, 7].dm(\a,4) ].addLine; //?????
+	Song.wishVocalTwoSections = VocalRPP('wish--',\wish);
+	P(\lead,start:'wish--',lag:-1,music:{|p b e| 
+		{Song.wishVocalTwoSections.buffer.bufnum => PlayBuf.ar(2,_) *0.1}.play
+	});
 	P.tune('we can take');
+	P(\bass,start:'we can take',music:{|p b e| 
+		[
+			freq: [\r, 1, 1, -4].df(\b,3).q,
+			dur: b.parse([2,4,1,2]).q
+		].pp
+		
+	});
 	P(\chords,start:'we can take',music:{|p b e| 
 		var fs=[-6,1,3,6].df(\a);
 		var a = [-5,1,3,5].df(\a);
 		[
 			freq: [\r,\r,fs,fs,fs,a,fs,fs,[-7,7].df(\a)].q,
-			dur: b.q
+			dur: b.q,
+			instrument:\sawSynthSustain,
+			amp:0.03
 		].pp;
 	});
 //	P(\bass,start:'we can take what we wish',music:{|p b e| 
@@ -119,11 +132,59 @@ s.waitForBoot{
 //		].pma(\defaultPorto).play
 	//});
 	[ "Neither you, this ship, nor worlds have the power to stop us." ,[5, 5, 6, 5, 6, 5].dm('c#',5,\minor) ++ [7, 6, 11, 7, 6, 5, 4 ].dm(\c,5,\mixolydian) ++ [7, 11, 7, 7, 6].dm(\d,5,\mixolydian) ].addLine;
-	P.tune(\worlds);
+	P.tune(\worlds, { |i| Pmul(\freq,0.5,i) => Pbindf(_,\instrument,\sawSynthSustain,\amp,0.1,out:3) } );
+	Song.worldsVocal=VocalRPP(\worlds,\lead);
+	Song.encoders.spread=FoaEncoderKernel.newDiffuse;
+	P(\vocal,lag:-1.0,start:\worlds,music:{|p b e| 
+		{
+		PlayBuf.ar(2, p.worldsVocal.buffer.bufnum )
+				* 0.8
+				=> Phaser2.ar(_,fb:0.9,rate:0.15)
+			=> FoaEncode.ar(_,Song.encoders.spread)
+			=> FoaDecode.ar(_,Monitors.decoder)
+		}.play
+	});
+	P(\figure,start:\worlds,music:{|p b e| 
+		[
+			freq: [\r, 1, -5, \r, 1, -5].df('c#').q,
+			dur: b.parse([2,0.5,0.5,1,0.5,0.5]).q,
+			instrument:\harp,
+			out:Effect(_ * 0.2, out:[2,1]).bus.index
+		].pp
+		
+	});
+	P(\chords,start:\worlds,music:{|p b e| 
+		var you = [-11,-5,1,3].df('f#', scale: \minor),
+		ship = [1,3,5,7].df(\c,scale:\diminished),
+		worlds = [-1,1,3,5,7].df(\c,scale:\mixolydian)
+		;
+		[
+			freq: [\r,you,\r, ship,\r, worlds].q,
+			dur: b.parse([2,1,1,1,1,4]).q,
+			instrument:\stringyy,
+			mix:[\r,0.5,\r, 0.5,\r, 1].q /2, amp: [\r,0.2,\r,0.2,\r,0.3].q,
+			width:[\r, 7, \r, 10, \r, 12].q * 2,
+			out: [
+				\r,0,\r, 0,\r, Effect(
+				Phaser2.ar(_,rate:0.2,fb:(-0.9))
+				).bus.index
+			].q,
+			release:1,
+			legato:0.97
+		].pp;
+	});
+	P(\crash,start:\worlds,music:{|p b e| 
+		[ amp:[0.04,0.03],
+			instrument:\cymbalsDS,
+		out:Effect(Phaser2.ar(_,fb:0.95,rate:0.13)).bus.index,
+			dur:b.parse([2,2,2,1]).q,
+			freq:[\r,1,1,1,1].q
+		].pp
+	});
 	P(\bassNotes,start:\worlds,music:{|p b e| 
 		[
 			freq: [1, 1, 4, 1, 2, 1, -7, 2, 3,  1.5, 4.5].df('c#',[3,4]).q,
-			dur: b.parse([1,1,1, 1, 1, 1, 3, 1, 4, [1,1,0.5],[0.5,1]]).q
+			dur: b.parse([1,1,1, 1, 1, 1, 3, 1, 3, [1,1,1,0.5],[0.5,1]]).q
 		].pp
 	});
 	// ????????
@@ -147,6 +208,7 @@ s.waitForBoot{
 		].pp;
 	});
 	P.tune(\happens);
+
 	[ "MULHALL: Who you hardly know. Almost a stranger to you. (boom) ",[3, 1, 5, 4, 3.5].dm(\b,5,\whole) ++ [-7, 1, 2, 2.5, -7, -6, -4.5, -2.5].dm(\c,6) ].addLine;
 // add a beat with e flat in the bass here
 	P.tune(\hardly);

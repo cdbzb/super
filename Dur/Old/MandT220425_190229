@@ -17,7 +17,7 @@ o = [
 	List.prNew,  Array.prNew(19),  "killed a loyal officer,(boom) your (boom) best friend. ",  Pseq.prNew,  
 	List.prNew,  Array.prNew(13),  "Neither you, this ship, nor worlds have the power to stop us.",  Pseq.prNew,  
 	List.prNew,  Array.prNew(18),  "Only you and I will know that Doctor Mulhall has not returned to her body. ",  Pseq.prNew,  
-	List.prNew,  Array.prNew(23),  "The temptations (boom boom) in a living body are too great. ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(16),  "The temptations (boom boom) in a living body are too great. ",  Pseq.prNew,  
 	List.prNew,  Array.prNew(15),  "MULHALL: Doctor. ",  Pseq.prNew,  
 	List.prNew,  Array.prNew(2),  "(boom boom) Spock's consciousness is gone. We must kill his body, the thing in it.",  Pseq.prNew,  
 	List.prNew,  Array.prNew(19),  "MULHALL: Sargon? Where are you? I thought you destroyed by Henoch. ",  Pseq.prNew,  
@@ -335,12 +335,10 @@ p = [
 	// List
 	68, [ array: o[69] ],  
 	// Array
-	69, [ 0.399,  0.423,  0.456,  0.483,  
-		0.518,  0.523,  0.516,  0.392,  
-		0.378,  0.441,  0.477,  0.448,  
-		0.366,  0.315,  0.479,  0.433,  
-		0.248,  0.223,  0.314,  0.306,  
-		0.526,  1.289,  0.561 ],  
+	69, [ 0.328,  0.405,  0.463,  0.386,  
+		0.508,  0.465,  0.507,  0.391,  
+		0.546,  0.524,  0.622,  0.467,  
+		0.487,  0.448,  0.831,  1.894 ],  
 	// Pseq
 	71, [ list: o[72],  repeats: 1,  
 		offset: 0 ],  

@@ -313,6 +313,9 @@ Song {
 
 	play { |...args|
 		var list = this.getPartsList(args);
+		var first = list.select{|part| part.start == cursor};
+		var wait = first.select{|part| part.lag < 0}.collect({ |part| part.lag }).sort[0];
+		wait.notNil.if {Song.preroll_(wait.abs + Server.default.latency + 0.1)};
 		playInitiatedAt = SystemClock.seconds;
 		fork{
 			//resources.condition ? resources.condition.test_(false);
@@ -765,7 +768,7 @@ P {
 
     }
     *tune {
-        |key function range lag syl| 
+        |key function range lag=0 syl| 
         // range is [start,end] or just [start]
         // range sets syllable automatically
         P( 

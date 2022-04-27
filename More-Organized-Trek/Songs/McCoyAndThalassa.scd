@@ -20,9 +20,13 @@ s.waitForBoot{
 		1,
 		2,1/2, 1/2, 1/2,1/2,
 		1, 1/2, 3/2, 1, 
-		2, 1/2, 5/2, 
+		4+4/3,2/3,2/3+2,	
+		//5/2, 1, 5/2, 
 		1/2,1, 1/2, 1/4, 3/4, 1
 	]);
+	P(\click,start:\exist,music:{|p b e| 
+		//[dur:1].p.play(TempoClock.newFromQuarters(p.quarters[e.start]))
+	});
 	P.tune(\exist);
 	
 	P(\piano,start:\exist,syl:12,music:{|p b e| 
@@ -44,14 +48,32 @@ s.waitForBoot{
 	});
 	P(\bass,start:\exist,music:{|p b e| 
 		[
-			freq: [\r, 3, 2, 5, 4, 4, 5, 1, -7 ].df('e', octave:3).q,
+			freq: [\r, 3, 13, 5, 3, 2, 12, 2, 5, 5, -5, 4, 4, 5, 1, -7 ].df('e', octave:3).q,
+			instrument:\sawSynth,
 			//dur: b.parse([1,5,4, 2, ]).q
-			dur: [1/2, 2, 2, 3/2, 1/2, 1/2, 1, 1, 1].q*2
+			dur: [1/2,
+				0.75, 0.75, 0.25, 0.25,
+				1, 0.5, 0.5,
+				0.75, 0.25, 1, 1/2, 1/2, 1, 1, 1].q*2
 		].p.play(clock:TempoClock.newFromQuarters(p.quarters[\exist]));
 	});
-	[ "MCCOY: If you're asking my approval ","r" ].addLine;
-	[ "MULHALL: I require only your silence.","r"].addLine; 
-	[ "Only you and I will know that Doctor Mulhall has not returned to her body. ",[1,2,3,1,4.5,2,-6].dm('e-') ++ [2,3,1,4.5,2].dm(\c) ++ [1,2,3,4].dm(\e,scale: \whole) ].addLine;
+	[ "MCCOY: If you're asking my approval ",[3, 4, 5, 4, 3, 5, 11, 7].dm(\f,4,\harmonicMinor) ].addLine;
+	P.tune(\approval);
+	[ "MULHALL: I require only your silence", [7,11,12,7,11,12,12.5,2.5].dm(\c) ].addLine; 
+	P.tune(\require);
+	P(\bass,start:\require,music:{|p b e| 
+		[
+			freq: [7,6,5,4.5,3,4.5].df(\c,[4]).q,
+			dur: b.q
+		].pp;
+		[
+
+			freq: [7,6,5,4.5, [-2.5, 2.5 ]].df(\c,[3]).q,
+			dur: b.parse([1,1,1,3,1]).q,
+			legato: [1,1,1,1,6].q
+		].pp
+	});
+	[ "Only you and I will know that Doctor Mulhall has not returned to her body. ",[1,2,3,1,4.5,2,-6].dm('e-') ++ [2,3,1,4.5,2].dm(\c) ++ [1,2,3,4].dm(\e,scale: \whole) ++ [11,7,6,7,5,12,4.5].dm(\b,4) ].addLine;
 	P.tune(\returned);
 	P(\bassDyad1,start:\returned,music:{|p b e| 
 		MegaBind(
@@ -99,7 +121,7 @@ s.waitForBoot{
 			} ,inputChannels:2).bus.index
 		).play
 	});
-	[ "Isn't that worth your captain's life? ","r" ].addLine;
+	//[ "Isn't that worth your captain's life? ","r" ].addLine;
 	//[ "Doctor, we can take what we wish. ",[11, 5, 3, 5, 12, 11, 7, 6].dm(\e,4) ].addLine; //?????
 	[ "Doctor, we can take what we wish--. ",[3, 2, 6, 6, 6, 5, 6, 6, 7].dm(\a,4) ].addLine; //?????
 	Song.wishVocalTwoSections = VocalRPP('wish--',\wish);
@@ -109,7 +131,8 @@ s.waitForBoot{
 	P.tune('we can take');
 	P(\bass,start:'we can take',music:{|p b e| 
 		[
-			freq: [\r, 1, 1, -4].df(\b,3).q,
+			//freq: [\r, 1, 1, -4].df(\b,3).q,
+			freq: [1, 1, 1, -4].df(\b,3).q,
 			dur: b.parse([2,4,1,2]).q
 		].pp
 		
@@ -286,6 +309,7 @@ s.waitForBoot{
 		].pp
 	});
 	Song.physicianKey = 'b-';
+	//Song.physicianKey = 'g';
 	[ "MULHALL: A physician? ",[1, 1, 11, 1].dm(Song.physicianKey) ].addLine;
 	P(\chord,start:'physician?',syl:1,music:{|p b e| 
 		(
@@ -294,7 +318,18 @@ s.waitForBoot{
 	});
 	P.tune('physician?');
 	[ "In contrast to what we are, you are a ", [-7, 1, 2, 3, 4.5, 5, 2, 6, 7 ,4].dm(\g,scale:\mixolydian) ].addLine;
-	P.tune(\contrast, { |i| Pmul(\freq,[0.5,1],i) => Pbindf(_,\instrument,\stringyy,\amp,0.2,\release,4) } );
+	P.tune(                \contrast,
+                { |i| Pmul(\freq,[0.5,1,2.01],i) => Pbindf(
+                		_,
+			*[
+                                \instrument:\stringyy,
+                                \amp:[ 0.2,0.2,0.1 ]/4 *.x [4,5,6,7,8,9,7,8,9,4]/10 => _.q,
+					\out: Effect({|i| Monitors.az(i,[0,2/3,4/3])}).bus.index,
+                                \release, 4,
+					\legato: 1,
+					\mix: 0.1
+                        ]
+                	)} );
 	
 	["prancing, savage, monkey ",[-1, -1, 3, 1, -4, -4, 4, 1, -7, -7, -7, -7, -7, -7, 2, 1 ].dm(\g, scale:\mixolydian)].addLine;
 	Song.quarters[\prancing] = Song.parseBeats(\prancing,[1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1.5,0.5]).quantize(0.5)  ;
@@ -365,7 +400,18 @@ s.waitForBoot{
 	
 	[ "(r) You dare defy one you should be on your knees wo -- rshipping? ",[-1,1, 1.5, 1, -6.5].dm(\c) ++ [1, 3, 4, 5, 3, 5, 6].dm(\d,scale: \whole) ++ [3,4,3,-5].dm(\b) ].addLine;
 	P.tune(\defy, {|i| Pset(\out,Effect(CrossoverDistortion.ar(_,drive:0.9,smooth:0.1) * 0.04).bus.index,i) => Pmul(\freq,[1,1.33]!5 => _.q ++ [1].q(inf),_)});
-	P.tune(\knees,{|i| Pfin(6,i) => Pmul(\freq,[4/3,4/3,4/3,4/3,4/3,1].q/2,_) => Pset(\legato,[1,1,1,1,1,6].q,_)});
+	P.tune(\knees,{|i| Pfin(6,i) => Pmul(\freq,[4/3,4/3,4/3,4/3,4/3,1].q/2,_) => Pset(\legato,[1,1,1,1,1,6].q,_) => Pset(\out, Effect(FreeVerb.ar(_,1,1).distort * 2,out:1).bus.index,_)});
+	P(\bassline,start:\defy,syl:7,music:{|p b e| 
+		var knees = 6.df(\d,scale:\whole);
+		var be = 5.df(\d,scale:\whole);
+		[
+			freq: [\r, knees].q /[4]*5/6,
+			dur: b.drop(1).parse([3,2]).q,
+			amp:0.3,
+			out:Effect({|i| Line.kr(0,1,4) * CrossoverDistortion.ar(i,smooth:0.98) => TwoTube.ar(_,  0.01, 0.98, 999, 2101)}).bus.index
+		].pp
+		
+	});
 	P(\bass,start:\defy, syl: 12, music:{|p b e| 
 		(lag:b[0]/2,freq:[-21,-11].df(\b),out:Effect(PlateReverb.ar(_,mix:0.8)).bus.index).play
 	});
@@ -810,14 +856,14 @@ s.waitForBoot{
 			freq: [1,3,5,11].df(\g,scale:\minor)
 		).play
 	});
-	["KIRK: (boom ba boom ba) Bones, prepare a hypo. The fastest, deadliest poison to Vulcans. ",[-5, -5, -5, -5, 5, 5, 5, 5, 11, 5, 11].dm(\b,octave:4) ++ [5, 4, 2].dm(\f)++[5,4,2].dm('f#') ++ [5,4,2].dm('g') ++ [4, 3].dm(\e)].addLine;
+	["KIRK: (boom ba boom ba) Bones, prepare a hypo. The fastest, deadliest poison to Vulcans. ",[-5, -5, -5, -5, 5, 5, 5, 5, 11, 5, 12,  ].dm(\b,octave:4) ++ [12,13,12,5, 13,14,13,6, 14,15,14,5,11,7].dm(\c)].addLine;
+	P.tune(\prepare);
 	P(\lick,start:\fastest,syl:10,music:{|p b e| 
 		[
 			freq: [\f,'f#',\g].collect( [2,4,7].df(_) ) => _.flat => _.q / 2,
 			dur: b.drop(1).q
 		].pp
 	});
-	P.tune(\prepare);
 	["(boom boom) Spock's consciousness is-- gone. We must kill his body, the thing in it.",[-1, -3, 3, 4, 4, 4, 3, 2, 2].dm(\a) ++ [2, 3, 6, 7, 11, 5, 11, 12, 11, 5].dm(\e)].addLine;
 	P(\figure,start:'kill his body',music:{|p b e| 
 		[

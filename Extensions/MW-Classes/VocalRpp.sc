@@ -35,8 +35,11 @@ VocalRPP {
 			this.updateProxy;
 			//this.storeDurs;
 		} {
-			this.copyPROXtowav;
-			buffer=Buffer.read(Server.default,wav);
+			fork{
+				this.copyPROXtowav;
+				0.1.wait;
+				buffer=Buffer.read(Server.default,wav);
+			}
 		};
 	}
 
@@ -51,7 +54,6 @@ VocalRPP {
 					"cp" + prox + wav => _.unixCmd;
 					"touch" + prox => _.unixCmd;
 					'dirty - copied'.postln;
-				buffer= Buffer.read(Server.default,wav)
 				} 
 			}{
 
@@ -61,7 +63,6 @@ VocalRPP {
 
 				//open project and send a save message to generate a prox ??
 
-				buffer= Buffer.read(Server.default,wav)
 			}
 		}{
 			'no PROX!'.postln;

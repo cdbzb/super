@@ -4,10 +4,6 @@
 /*
 [Bridge]
 
-(Uhura is screaming in terror before collapsing across her console. Chapel is standing rigid by the Captain's chair.) ,
-[4,3,2.5,2,1,\_]
-
-SPOCK: Must I make an example of you, too, Helm? 
 (Kirk, Mulhall and McCoy enter.) 
 */
 ( s.waitForBoot( {
@@ -53,6 +49,9 @@ SPOCK: Must I make an example of you, too, Helm?
 			}}
 		]).value
 	}.inEnvir;
+	[ "(Uhura is screaming in terror before collapsing across her console. Chapel is standing rigid by the Captain's chair.) ","r" ].addLine;
+	["SPOCK: Must I make an example of you, too, Helm? ",[1, 2, 2, 3, 3, 3, 4.5, 4.5, 7, 5.5,7, 1].dm('f#',scale:\mixolydian)].addLine;
+	P.tune(\example);
 	[ "/*SPOCK*/ Pain, Captain. (oooh) A-- nd you, my dear? " ,[12,11,7,6].dm(\g) ++ [7,11,5,3].dm('c#',octave:6)].addLine;
 	P.tune(\Pain);
 	P(\chord,start:\Pain,music:{|p b e| 
@@ -107,7 +106,7 @@ SPOCK: Must I make an example of you, too, Helm?
 			amp:0.1 
 		].p.play
 	});
-	[ "As Kirk and Mulhall double over, McCoy dashes to Spock's side, to inject him.) /*SPOCK*/ Fortunately, Doctor," ,[-14.5,3,2,1,-7,-6.5,-7].dm(\f,scale:\minor)].addLine;
+	[ "As Kirk and Mulhall double over, McCoy dashes to Spock's side, to inject him. /*SPOCK*/ Fortunately, Doctor," ,[-14.5,3,2,1,-7,-6.5,-7].dm(\f,scale:\minor)].addLine;
 	P.tune(\Fortunately,_.drop(1),syl:0);
 	P(\trem,start:\Fortunately,music:{|p b e| 
 		(freq:[-11,-21].df('b-'),instrument:\trem2,amp:0.2,out:1,scale:2,dur:b.sum,
@@ -1584,8 +1583,7 @@ P.tune('Promise',Pset(\instrument,\stringyy,_));
 ["(They embrace and kiss, and the light thing happens again during it.) ","r"].addLine;
 ["KIRK: Well, I'm sure that Sargon appreciated your co-operation, Doctor Mulhall. ","r"].addLine;
 ["MULHALL: Yes. I was happy to co-operate, Captain. ","r"].addLine;
-			["CHAPEL: It was beautiful.","r"].addLine;
-		}
-	)
+["CHAPEL: It was beautiful.","r"].addLine;
+	})
 )
-Imag
+

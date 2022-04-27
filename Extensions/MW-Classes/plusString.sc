@@ -22,4 +22,16 @@
         fixLineEndings { |out|
           "tr '\r' '\n' <" + this ++ ">" + out => _.unixCmd;
         }
+        df { | ...args |
+          ^this.split(Char.space)
+		.reject({|i| i.size == 0})
+		.collect(_.asInteger)
+		.df(*args)
+        }
+        dm { | ...args |
+          ^this.split(Char.space)
+		.reject({|i| i.size == 0})
+		.collect(_.asInteger)
+		.dm(*args)
+        }
 }

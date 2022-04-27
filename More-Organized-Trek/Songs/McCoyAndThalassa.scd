@@ -121,19 +121,26 @@ s.waitForBoot{
 			} ,inputChannels:2).bus.index
 		).play
 	});
-	//[ "Isn't that worth your captain's life? ","r" ].addLine;
+	[ "Isn't that worth your captain's life? ",[3,2,4,2,3,1,2,5].dm(\a,5,\minor) ].addLine;
+	P.tune(\life);
+	P(\bass,start:\life,music:{|p b e| 
+		[
+			freq: "11 7 5 7 11 6 4 -6.5".df(\a, 3, \harmonicMinor).q,
+			dur: b.q
+		].pp
+	});
 	//[ "Doctor, we can take what we wish. ",[11, 5, 3, 5, 12, 11, 7, 6].dm(\e,4) ].addLine; //?????
-	[ "Doctor, we can take what we wish--. ",[3, 2, 6, 6, 6, 5, 6, 6, 7].dm(\a,4) ].addLine; //?????
+	[ "Doctor, we can take what we wish--. ",[4.5, 3, 6, 6, 6, 5, 6, 6, 7].dm(\a,4) ].addLine; //?????
 	Song.wishVocalTwoSections = VocalRPP('wish--',\wish);
 	P(\lead,start:'wish--',lag:-1,music:{|p b e| 
-		{Song.wishVocalTwoSections.buffer.bufnum => PlayBuf.ar(2,_) *0.1}.play
+		{Song.wishVocalTwoSections.buffer.bufnum => PlayBuf.ar(2,_ ) *0.1}.play
 	});
 	P.tune('we can take');
 	P(\bass,start:'we can take',music:{|p b e| 
 		[
 			//freq: [\r, 1, 1, -4].df(\b,3).q,
-			freq: [1, 1, 1, -4].df(\b,3).q,
-			dur: b.parse([2,4,1,2]).q
+			freq: [1, 1, 1, 1, -4].df(\b,3).q,
+			dur: b.parse([3,1,2, 1,2]).q
 		].pp
 		
 	});
@@ -206,8 +213,9 @@ s.waitForBoot{
 	});
 	P(\bassNotes,start:\worlds,music:{|p b e| 
 		[
-			freq: [1, 1, 4, 1, 2, 1, -7, 2, 3,  1.5, 4.5].df('c#',[3,4]).q,
-			dur: b.parse([1,1,1, 1, 1, 1, 3, 1, 3, [1,1,1,0.5],[0.5,1]]).q
+			//freq: [1, 1, 4, 1, 2, 1, -7, 2, 3,  1.5, 4.5].df('c#',[3,4]).q,
+			freq: [\r, 1, 2, -7, 2, 3,  1.5, 4.5].df('c#',[3,4]).q,
+			dur: b.parse([2,2, 2, 3, 1, 3, [1,1,1,0.5],[0.5,1]]).q
 		].pp
 	});
 	// ????????

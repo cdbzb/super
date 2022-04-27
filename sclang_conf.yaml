@@ -33,6 +33,7 @@ includePaths:
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/MathLib
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/atk-sc3
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/AmbiVerbSC
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/ReaCollider
 excludePaths:
     []
 postInlineWarnings: false

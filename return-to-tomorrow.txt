@@ -307,7 +307,7 @@ Enterprise Medical Log. Stardate 4769.1. Three alien minds now inhabit the bodie
 MCCOY: As planned, the construction of android robots is underway. All is proceeding as expected and as promised. I can find no reason for concern, but yet I am filled with foreboding.
 
 }}}
-Silver-Lake - Android Hands {{{
+silver-lake.scd  Silver-Lake - Android Hands - Chapel forgets {{{
 [Laboratory]
 
 	(Sargon and Thalassa are working, when their hands touch.) 
@@ -319,8 +319,6 @@ Silver-Lake - Android Hands {{{
 		KIRK: Our minds will have survived. And as androids, we can move among the people who do live, teaching them, helping them not to make the errors we did. 
 		MULHALL: What is it, Sargon? 
 		KIRK: Nothing. Our next injection will renovate me. Do not be concerned.
-  }}}
-Chapel forgets TO DO {{{
 [Sickbay]
 
 (Chapel is holding the hypos and trying to remember something very important.)
@@ -334,7 +332,7 @@ MCCOY: You look tired, Miss Chapel. Perhaps you'd care for me to administer the 
 CHAPEL: Tired? Well, not at all, Doctor. Thank you for asking.
 (Leaves a puzzled McCoy.)
 }}}
-[Laboratory] (thousand-year) {{{
+[Laboratory] (thousand-year.scd) {{{
 
 (Mulhall/Thalassa is looking at her reflection in a metallic surface when Scott comes in with a small doo-dad.) 
 MULHALL: Thank you. Have you prepared the negaton hydracoils for the drawing Sargon supplied? 
@@ -374,7 +372,7 @@ MCCOY: Hypo.
 MULHALL: Doctor, help him! 
 MCCOY: He's dead.
 }}}
-medical-log.scd TODO {{{
+medical-log.scd  {{{
 Medical Log. Stardate 4770.3. 
 Do I list one death or two? When 
 Kirk's body died, 
@@ -391,8 +389,7 @@ into which it was transferred earlier.
 (The medical team hook Kirk's body up to a life support machine.) 
 NURSE: All his vital organs are now working, Doctor. 
 MCCOY: Yes, we can keep them going for a few weeks, or a month. For all the good it'll do.
-}}}
-Plastic Person TODO {{{
+
 [Laboratory]
 
 (There is a shiny plastic person on the table now.) 

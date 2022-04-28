@@ -133,7 +133,7 @@ s.waitForBoot{
 	[ "Doctor, we can take what we wish--. ",[4.5, 3, 6, 6, 6, 5, 6, 6, 7].dm(\a,4) ].addLine; //?????
 	Song.wishVocalTwoSections = VocalRPP('wish--',\wish);
 	P(\lead,start:'wish--',lag:-1,music:{|p b e| 
-		{Song.wishVocalTwoSections.buffer.bufnum => PlayBuf.ar(2,_ ) *0.1}.play
+		//{Song.wishVocalTwoSections.buffer.bufnum => PlayBuf.ar(2,_ ) *0.1}.play
 	});
 	P.tune('we can take');
 	P(\bass,start:'we can take',music:{|p b e| 
@@ -172,7 +172,7 @@ s.waitForBoot{
 				=> Phaser2.ar(_,fb:0.9,rate:0.15)
 			=> FoaEncode.ar(_,Song.encoders.spread)
 			=> FoaDecode.ar(_,Monitors.decoder)
-		}.play
+		}//.play
 	});
 	P(\figure,start:\worlds,music:{|p b e| 
 		[

@@ -1,17 +1,21 @@
  ( //transformation			{{{1
 	 //line 245
 	Song(\transform,[]).current;
-	Song.condition=Condition.new;
-( Song.infrastructure={
+	Song.resources.condition=Condition.new;
+	"boilerplate.scd".load;
+( Song.resources.infrastructure={
 		FunctionList.new.array_([
-			//~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load},
-			{fork{
-				try{~syn1.controller.loaded.not.if{~syn1=~synful2.()}}{~syn1=~synful2.()};
-				try{~syn2.controller.loaded.not.if{~syn2=~synful2.()}}{~syn2=~synful2.()};
-				~syn1.condition.wait;
-				~syn2.condition.wait;
-				Song.condition.test_(true).signal;
-			}},
+			( ~syn1.isNil or: try{ ~syn1.syn.isPlaying.not } ).if
+			{
+				Song.currentSong.synful1 = ~syn1 = Synful();
+				Song.currentSong.synful2 = ~syn2 = Synful();
+			},
+			{ fork {
+				while( {
+					~syn2.controller.loaded.not;
+				},{0.05.wait});
+				Song.resources.condition.test_(true).signal
+			}}
 		]).value
 	}.inEnvir;
 );
@@ -32,8 +36,10 @@
 		////cymbal
 		(instrument:\cymbal,length:8).play;
 		////strings
-		try{~syn1.monitor.free;};~syn1.monitor=Monitor.new;~syn1.monitor.play(~syn1.bus.index,2,0,2,fadeTime:0.05);
-		try{~syn2.monitor.free;};~syn2.monitor=Monitor.new;~syn2.monitor.play(~syn2.bus.index,2,2,2,fadeTime:0.05);
+		//try{~syn1.monitor.free;};~syn1.monitor=Monitor.new;~syn1.monitor.play(~syn1.bus.index,2,0,2,fadeTime:0.05);
+		//try{~syn2.monitor.free;};~syn2.monitor=Monitor.new;~syn2.monitor.play(~syn2.bus.index,2,2,2,fadeTime:0.05);
+		~syn1.syn.set(\out,2);
+		~syn2.syn.set(\out,0);
 		//TODO these need to turn themselves off with DoneActions rather than routines
 		{
 			var v,w;

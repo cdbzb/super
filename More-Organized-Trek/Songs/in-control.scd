@@ -3,7 +3,7 @@
 		//old one has durs
 //		Song.dursFile_("/Users/michael/tank/super/theExtreme3-legacy");
 //		Song.dursFile_("/Users/michael/tank/super/theExtreme3");
-		~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
+		//~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
 		~im2=Song(\ImInControl2,[]).current; //{{{
 		//~im2.resources=();
 		//~im2.current;
@@ -468,7 +468,7 @@ P(\bass16,start:16,syl:2,music:{
 				=>Out.ar(\out.ir(0),_)
 			}).add;
 
-			P(\basedouble18,start:18,music:Pset(\instrument,\basepluck,~im2.baas18.music));
+			P(\basedouble18,start:18,music:Pset(\instrument,\basepluck,~im2.baas1818.music));
 
 			P(\run18,start:18,music:[//{{{
 				instrument: \stringyy,

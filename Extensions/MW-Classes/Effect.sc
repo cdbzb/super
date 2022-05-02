@@ -5,8 +5,8 @@
 		*newOld { |function out=0 inputChannels=1|
 			^super.new.init(function , out,inputChannels);
 		}
-		*new { |function out=0 inputChannels=1|
-			^super.new.init2(function , out,inputChannels);
+		*new { |function out=0 inputChannels=1 target|
+			^super.new.init2(function , out,inputChannels, target);
 		}
 
 		*newSidechain {|function out=0 inputChannels=1| ^super.new.initSidechain(function,out,inputChannels) }
@@ -44,11 +44,12 @@
 event.yield
 		}
 
-		init2 { |function out inputChannels=1 |
+		init2 { |function out inputChannels=1 target |
 			var desc=SynthDef(\temp,{In.ar(1,inputChannels)=>function=>Out.ar(0,_)});
 			var numChannels=desc.asSynthDesc.outputData[0].at(\numChannels);
+			target = target ? Server.default;
 			bus=Bus.audio(numChannels:numChannels);
-			synth={In.ar(bus.index,numChannels)=>function=>Out.ar(out,_)}.play(addAction:\addToTail);
+			synth={|gate| In.ar(bus.index,numChannels)=>function=>Out.ar(out,_);}.play(addAction:\addToTail, target:target);
 			NodeWatcher.register(synth, assumePlaying: true);
 			fork{
 				while ( {synth.isPlaying},{0.2.wait} );

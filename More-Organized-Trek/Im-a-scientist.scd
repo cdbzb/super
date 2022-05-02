@@ -1,6 +1,3 @@
-//s.reboot
-p=PF.new
-
 ( //cool tinkling pattern
 	[
 		dur:0.5,
@@ -49,8 +46,8 @@ p=PF.new
 	Pdef(\port).quant_(8).phase_(0) .play(t)
 
 )
-(// drummachine //		{{{1
-	//	drums	{{{4
+(// drummachine //		
+	//	drums	
 	~pat={|string perBar repeats| string.asDrumPat(perBar,repeats)};
 
 	Pdef.new(\f,Pbind(*[
@@ -116,7 +113,7 @@ p=PF.new
 	b=Pdef(\m,Pfxb(a,\phaserr,\fb,-0.99));
 	c=Pseq([a,b],inf);
 
-				// 'guitar-ish' //		{{{4
+				// 'guitar-ish' //		
 
 				~synthsLoaded ?? {"~/tank/super/song-Synthdefs.scd".standardizePath.load};
 
@@ -160,7 +157,7 @@ p=PF.new
 				t.tempo_(45.bpm);
 
 				//p=PF.new;
-				Ptpar([ //		{{{4
+				Ptpar([ //		
 					0,Pdef(\m),
 					//2,Pdef(\lick),
 					0,Pdef(\q),
@@ -318,7 +315,7 @@ p=PF.new
 		{
 			var  a="..x.|..xx".asDrumPat(1,inf).asStream;
 			{
-				a.next.isNumber.if({Synth(\snare,[\amp,0.15])})
+				//a.next.isNumber.if({Synth(\snare,[\amp,0.15])})
 			}
 			.sched(Array.series(60),t)
 		}.sched(8,t);

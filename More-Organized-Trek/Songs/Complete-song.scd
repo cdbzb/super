@@ -9,10 +9,10 @@
 
 	~complete.resources=();
 	~complete.addGuides.("xxx.xxxxxxx");
-	~complete.condition=Condition.new;
+	//~complete.condition=Condition.new;
 	~complete.infrastructure={ //bass patch lasts as long as end (durTillEnd){{{ ~xtreme.condition.test_(false);
 		FunctionList.new.array_([
-			~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load},
+			//~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load},
 			{fork{
 				try{~syn1.controller.loaded.not.if{~syn1=~synful2.()}}{~syn1=~synful2.()};
 				~syn1.condition.wait;
@@ -25,13 +25,13 @@
 	//"/Users/michael/tank/super/song-hello-beet.scd".load;
 	TempoClock.tempo=1;
 ["the tran - fer is com-"," f5 c a-4 e c#"].addLine;  //0
-P(\bassnotes,start:0,syl:3,music:
+P(\bassnotes,start:'tran - fer',syl:3,music:
 			Pseq([
 				(note:1-24,amp:0.5,dur:~complete.durs[0].list[4]),
 				(note:1-24,amp:0.6,dur:5,sustain:2)
 			])
 );
-P(\chord0,start:0,syl:3,music://{{{
+P(\chord0,start:'tran - fer',syl:3,music://{{{
 	Pfx(
 		Pseq([
 			(note:[1,8,13]-24,instrument:\sawSynth,release:4,strum:0.03,dur:~complete.durs[0].list[4]),
@@ -40,19 +40,19 @@ P(\chord0,start:0,syl:3,music://{{{
 		]),\phase_verb
 	)
 );//}}}
-P(\pad0,start:0,music:
+P(\pad0,start:'tran - fer',music:
 	Pbind(\midinote,Pseq(~complete.tune[0].list[0..3])-[0,12],\instrument,\sawSynth,\dur,~complete.durs[0]);
 );
 			   ["plete. metabolic rate is","c#4 c5 b-4 c5 a-4 d4 c5"].addLine; //1
 ["double and rising, Doctor...r  Hel- ", "d5 b-4 c#5 g c# a-4 g r b"].addLine; //2
-P(\bassnotes3,start:2,music:
+P(\bassnotes3,start:'Hel-',music:
 	(note:-2-12,amp:0.1)
 );
-P(\bassnotes4,start:2,syl:2,music:
+P(\bassnotes4,start:'Hel-',syl:2,music:
 	(note:[7,-5],amp:0.1,sustain:2)
 );
 			["lo. r r r"," c#5 d2 d d"].addLine; //3
-P(\helloImage,start:3,music:
+P(\helloImage,start:'lo. ',music:
 	p{
 		{
 			a=Image.open("/Users/michael/tank/super/Spock.png");
@@ -65,12 +65,12 @@ P(\helloImage,start:3,music:
 		}.fork
 	}
 );
-P(\helloChord,start:3,music:
+P(\helloChord,start:'lo. ',music:
 	(instrument:\test,midinote:~panNotes.("<d4 f# a c#>").flatten,strum:0.03,amp:0.4)
 );
 ~helloTempo=1/~complete.durs[3].list.mean;
 ~helloTemp2=1/(~complete.durs[4].list[0..6].sum/5*2);
-P(\helloSequence,start:3,music:
+P(\helloSequence,start:'lo. ',music:
 	p{
 		{
 			var bus,clock,monitor,
@@ -159,7 +159,7 @@ P(\helloSequence,start:3,music:
 			}
 );
 ["you are a lovely female, r a","e5 d c# b4 a f# e e2 c#4"].addLine;//4
-P(\drumPan4,start:4,music:
+P(\drumPan4,start:'lovely female',music:
 p{
 	~complete.helloSequenceMonitor.play(
 		~complete.helloSequenceBus.index,2,1,1,
@@ -168,16 +168,16 @@ p{
 
 	}
 );
-P(\bass4,start:4,syl:6,music:
+P(\bass4,start:'lovely female',syl:6,music:
 	(instrument:\sawSynth,note:[7,-5]-12,amp:0.2,sustain:2,att:1.0,rel:3)
 );
 ["pleasant sight to wake up to after","e4 d c# d e b a f# a "].addLine; //5
-P(\bass5,start:5,syl:4,music:
+P(\bass5,start:\pleasant,syl:4,music:
 	(instrument:\sawSynth,note:[7,-5]-13,amp:0.2,sustain:2,att:1.0,rel:3)
 );
 ["half a million years- r r ","f5 g f e  e d c# c#"].addLine;//6
 ~phrase6quarter=~complete.durs[6].list.[0..6].sum/6;
-P(\bass6,start:6,music:
+P(\bass6,start:'half a million',music:
 	Pseq([
 		(note:5-24,dur:~phrase6quarter*3,amp:0.5),
 		(note:4-24,dur:~phrase6quarter,amp:0.5),
@@ -185,14 +185,14 @@ P(\bass6,start:6,music:
 	])
 );
 ~durs6=~complete.durs[6].list;
-P(\yow6,start:6,music:
+P(\yow6,start:'half a million',music:
 	Pbind(\instrument,\yowbass,
 		\note,Pseq([[-3,0],[-3,0],[-5,-1]]),
 		\dur,Pseq( [~durs6[0..2].sum,~durs6[3],~durs6[4..8].sum]),
 		\amp,0.03,
 	),
 );
-P(\keys6,start:6,music:
+P(\keys6,start:'half a million',music:
 	Pbind(
 		\instrument,\harp,
 		\midinote,Pseq(~panNotes.("f5 a4 c5")-[0,12]),
@@ -203,7 +203,7 @@ P(\keys6,start:6,music:
 		//) //make a function for this
 	)
 );
-P(\keys62,start:6,syl:5,music://{{{
+P(\keys62,start:'half a million',syl:5,music://{{{
 	Pbind(
 		\instrument,\stab,
 		\note,Pseq([ [7,9,13],[7,9,13],[5,9,14] ]),
@@ -243,7 +243,7 @@ Out.ar([0,2],sig);
 DetectSilence.ar(sig,time:2,doneAction:2) 
 }
 ).add;
-P(\pad8,start:8,music://{{{
+P(\pad8,start:'what it fee',music://{{{
 		p{
 			var du=~complete.durs[8].list;
 			var dv=~complete.durs[9].list;
@@ -256,7 +256,7 @@ P(\pad8,start:8,music://{{{
 			]).play;
 		}
 );
-P(\trombone8,start:8,music: //{{{
+P(\trombone8,start:'what it fee',music: //{{{
 	p{ | amp=0.9 exp=80|
 		~syn1.monitor.clear;
 		//Synth(\tromboneVerb);\verb.postln;
@@ -279,14 +279,14 @@ P(\trombone8,start:8,music: //{{{
 );
                ["ls like even to brea-","d#5 a#4 c#5 d# e f# "].addLine;//9
 ["th again, Sargon?"," g#5 f# b4 g g"].addLine;//10
-P(\sargon10,start:10,syl:2,music://{{{
+P(\sargon10,'like even',syl:2,music://{{{
 	Pseq([
 		(note:[4,7,10],dur:~complete.durs[10].list[3],\amp:0.3),
 		(note:[4,7,10],dur:~complete.durs[10].list[4],\amp:0.3)
 	])
 );
                ["Here, in this body","f e g f c"].addLine;//11
-P(\pf11,start:11,music:
+P(\pf11,start:'Here, in this',music:
 	Ppar([
 		//(instrument:\cymbal,dur:13)
 		//,

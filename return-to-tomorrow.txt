@@ -36,8 +36,7 @@ I read what is in your mind.
 Words are unnecessary.
 KIRK: The planet is dead.
 There's no possibility of life there as we understand life.
-SARGON [OC]: And I am as dead as my planet.
-Does that frighten you, James Kirk?
+
 For if it does, if you let what is left of me perish, then all of you, my children, all of mankind must perish, too.
 
 Captain's Log. Stardate 4768.3. The Enterprise is in orbit above a planet whose surface, our sensors tell us, is devoid of all life, a world destroyed and dead for at least a half million years. Yet from it comes a voice, the energy of pure thought, telling us something has survived here for those thousands of centuries.
@@ -96,7 +95,7 @@ KIRK: Doctor, if you prefer to stay behind?
 MCCOY: No. No, if I'd be useful, as long as you're going down, I might as well take a medical look at whatever this is. 
 (The landing party and two guards gather on the pads, Scotty stands sulking with arms crossed as the transporter activates, and just sends the four officers somewhere.)
 }}}
-chamber-Scotty TO DO {{{
+chamber1 TO DO {{{
 [Chamber] 
 
 SPOCK: Captain, the security guards. 
@@ -112,8 +111,6 @@ SCOTT: They're fine. They Just didn't dematerialise.
 
 SCOTT [OC]: I don't like it, sir. 
 KIRK: No problem yet. Maintain alert. Kirk out. 
-}}}
-chamber-Atmosphere Report TO DO {{{
 MULHALL: Atmosphere report, Captain. A fraction richer in oxygen than usual for us, but otherwise normal. 
 SPOCK: This vault was constructed about a half a million years ago. About the same time the planet surface was destroyed, if our sensor readings are accurate. 
 KIRK: Composition of walls? 
@@ -185,7 +182,7 @@ MULHALL: We have engineers, technicians. Why can't they build your robots for yo
 KIRK: No. Our methods, our skills are far beyond your abilities. It is time. 
 (They help him back to Sargon's sphere.)
 }}}
-chamber.scd {{{
+chamber2.scd {{{
 [Chamber]
 
 (Kirk briefly convulses with pain, then the sphere glows bright again, and he falls to his knees.) 
@@ -201,7 +198,7 @@ SARGON [OC]: I understand, my son. Go to your vessel. All who are involved must 
 MCCOY: And what if we should decide against you? 
 SARGON [OC]: Then you may go as freely as you came.
 }}}
-[Briefing room] TO DO (combine with scientist) {{{
+briefing-room.scd TO DO scientist walnut{{{
 
 SCOTT: You're going to what? Are they all right in the head, Doctor? 
 MCCOY: No comment. 
@@ -218,16 +215,12 @@ SPOCK: No, he's not.
 MCCOY: They're giants, and we're insects beside them. They could destroy us without meaning to. And all he wants is the body of our captain and our second in command, too. Coincidence? 
 KIRK: They selected us as the most compatible bodies. 
 MCCOY: What's your attitude on that, Doctor? 
-}}}
-I'm a scientist.scd (sketch) {{{
 MULHALL: Well, if we all agree, I'm willing to host Thalassa's mind. I'm a scientist. The opportunity is an extraordinary one for experimentation, observation. 
-}}}
-the size of a walnut (TODO){{{
 SCOTT: A starship engine the size of a walnut? That's impossible. But I don't suppose there'd be any harm in looking over diagrams on it. 
 	       KIRK: Bones? You could stop all this by saying no. That's why I called you all here together. We'll all be deeply involved. It must be unanimous. 
 	       MCCOY: Then I'll still want one question answered to my satisfaction. Why? Not a list of possible miracles, but a simple basic understandable why that overrides all danger. And let's not kid ourselves that there is no potential danger in this. 
   }}}
-They Used to Think.scd {{{
+Briefing2-they-used-to-think.scd - In control.scd (should be command!) {{{
 KIRK: They used to say if man could fly, he'd have wings. But he did fly. He discovered he had to. Do you wish that the first Apollo mission hadn't reached the moon, or that we hadn't gone on to Mars and then to the nearest star? That's like saying you wish that you still operated with scalpels and sewed your patients up with catgut like your great-great-great-great-grandfather used to. 
 
 I'm in command. I could order this. But I'm not because, Doctor McCoy is right in pointing out the enormous danger potential in any contact with life and intelligence as fantastically advanced as this. But I must point out that the possibilities, the potential for knowledge and advancement is equally great. Risk. Risk is our business. That's what the starship is all about. That's why we're aboard her. You may dissent without prejudice. Do I hear a negative vote? (silence around the table) Engineer, stand by to beam aboard three receptacles.
@@ -372,7 +365,7 @@ MCCOY: Hypo.
 MULHALL: Doctor, help him! 
 MCCOY: He's dead.
 }}}
-medical-log.scd  {{{
+medical-log.scd - plastic person (TODO)  {{{
 Medical Log. Stardate 4770.3. 
 Do I list one death or two? When 
 Kirk's body died, 

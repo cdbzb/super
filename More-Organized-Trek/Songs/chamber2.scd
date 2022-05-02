@@ -1,14 +1,13 @@
 ( //line 178 ~/tank/Trek/return-to-tomorrow.txt
 	
-	
-	Song.chamber.isNil.not.if{ Song.chamber.resources.do(_.free) };	//this should be a method
+	Song.isNil.not.if{ Song.resources.do(_.free) };	//this should be a method
 	Song(\chamber,[]).current;
 	Song.currentSong.resources.infrastructure=FunctionList([ {
 			~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
 	} ]);
 	['Kirk briefly convulses with pain', "c" ].addLine;//0
 	P(\pains0, start:0, music: { 
-		Song.chamber.painSynth={
+		Song.painSynth={
 			Impulse.ar(
 				LFBrownNoise0.ar( 5 +1.0.rand!4) *100
 			)
@@ -17,15 +16,15 @@
 		}.play 
 	});
 	['then the sphere glows bright again' , "c"].addLine;//1
-	Song.chamber.durs[0]=[3].q; Song.chamber.durs[1]=[8].q; 
-	Song.chamber.durs[2]=[ 7 ].q;
+	Song.durs[0]=[3].q; Song.durs[1]=[8].q; 
+	Song.durs[2]=[ 7 ].q;
 	P(\sphere1, start:1, music: {
 		{
-			{ Song.chamber.painSynth.free }.sched(Song.chamber.secDur[1]);
+			{ Song.painSynth.free }.sched(Song.secDur[1]);
 			Saw.ar( LFBrownNoise2.ar(0.1,3!4)*1300+20, 0.1 )
 			*  Env.asr(16,1,5).kr(0,gate:\gate.kr(1))
 			=> CombC.ar(_,0.5,\delayTime.kr(0.2,0.1,3))
-		}.play.dur(Song.chamber.secDur[1],5)
+		}.play.dur(Song.secDur[1],5)
 	});
 	['and he falls to his knees.' ,"r" ].addLine;//2
 	P(\knee,start:2,music:[ 

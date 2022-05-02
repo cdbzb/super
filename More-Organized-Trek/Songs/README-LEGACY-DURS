@@ -1,4 +1,5 @@
 
+(see notes in LogSeq - this is not working right ATM)
 // 1
 Song.dursFile_("/Users/michael/tank/super/theExtreme3-legacy");
 // Load song ... then 

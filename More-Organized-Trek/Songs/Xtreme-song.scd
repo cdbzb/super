@@ -1,46 +1,37 @@
-( //Line 239 The three volunteers are lying on beds, with the spheres on tables beside them.) 
-/*
-Song.dursFile_("/Users/michael/tank/super/theExtreme3-legacy");
-Song.writeLyricDurationFile
-Song.durs[3].list
-Song.dursFile
-
-*/
+( //Line 239 The three volunteers are lying on beds, with the spheres on tables beside them. 
 	~xtreme=Song( \song,[]).current;
-			["the extreme power of the","g a b- d5 b-4 a g", ].addLine; //0
-			["alien mind will make the -","e5 d c f e f g f", ].addLine; //1
-			["r r r r heart action dan ger ous ly high- ", "r r r r  c6 a5 f b- a g f g ", ].addLine; //2
-			[" - and the body functions will", "a5 c d a g a d a ", ].addLine; //3
-			[" race r r many times their natural me-", "g5 r r  e5 g5 a4 g5 f e g ", ].addLine; //4
-			["tabolism so we're going to have to", " f5 e d c r g#4 a b c5 d e ", ].addLine; //5
-			[" mo- ni- tor this very", "d5 c4 a4 f f5 e ", ].addLine; //6
-			["carefully","e5 d b4 r r r", ].addLine; //7
-			["r r r well... I ", "r r r a g#", ].addLine; //8
-			["guess that's as read- y as I'm gon- na ","g e- f g e- d- e- f g ", ].addLine; //9
-			["be. Rea- dy Sar- gon","a d5 c a4 f#", ].addLine; //10
 
 	//}}}
 
  //// xtreme sections		{{{2
 
-	~xtreme.bassBuss=Bus.audio(s,1);
+	Song.bassBuss=Bus.audio(s,1);
 
 	~xtreme.condition=Condition.new();
 
 	~xtreme.infrastructure={ //bass patch lasts as long as end (durTillEnd){{{ ~xtreme.condition.test_(false);
 	//~syn1.condition.test_(false);
+	SynthDef(\plateReplace,{|in gate=1| //{{{
+		var sig=In.ar(Song.bassBuss.index,2);
+		sig=sig* Env.asr(0,1,0.1).kr(2,gate:gate);
+		ReplaceOut.ar(Song.bassBuss.index,PlateReverb.ar(sig,mix:0.9));
+	}).add;
+	SynthDef(\xtremeBass,{|amp=1 decimate=0 out=0| //{{{
+		var sig = In.ar(Song.bassBuss.index)!2;
+		Env.perc(~xtreme.durTillEnd+1).kr(2,gate:1);
+		sig= XFade2.ar(sig,Decimator.ar(sig,rate:8000,bits:4)*(-6.dbamp),Lag.kr(decimate,1));
+		Out.ar(out,sig*amp)
+	}).add;
 	FunctionList.new.array_([
-		~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load},
+		//~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load},
+		~bassDecimator=Synth(\xtremeBass,[\amp,0.6,\decimate,-1]),
+		~bassVerb=Synth(\plateReplace),
 		{
 			fork{
-				try{~syn1.controller.loaded.not.if{~syn1=~synful2.()}}{~syn1=~synful2.()};
-				~syn1.condition.wait;
-				~xtreme.condition.test_(true).signal;
+				s.sync;
+				Song.condition.test_(true).signal
 			}
-		},
-		~bassDecimator=Synth(\xtremeBass,[\amp,0.6]),
-		~bassVerb=Synth(\plateReplace),
-		~bassDecimator.set(\decimate,-1)
+		}
 	]).value
 	}.inEnvir;
 	//~syn1.condition.test
@@ -50,32 +41,45 @@ Song.dursFile
 	//~syn1.controller.loaded
 
 //}}}
-	SynthDef(\xtremeBass,{|amp=1 decimate=0 out=0| //{{{
-		var sig = In.ar(~xtreme.bassBuss.index)!2;
-		Env.perc(~xtreme.durTillEnd+1).kr(2,gate:1);
-		sig= XFade2.ar(sig,Decimator.ar(sig,rate:8000,bits:4)*(-6.dbamp),Lag.kr(decimate,1));
-		Out.ar(out,sig*amp)
-	}).add;
+
+
 //}}}
 	//~xtreme.parts=();
 
 	P(\bassT2,start:2,lag:0,music:{{ //{{{
-		~bassVerb.set(\mix,0);
+		//~bassVerb.set(\mix,0);
+		~bassVerb.release(0.1);
 		(type:\set,id:~bassDecimator.nodeID,args:#[\decimate],decimate:1,lag:0.05).play;
 	}.value});//}}}
 	P(\bassT3,start:4,music:p{~bassDecimator.set(\decimate,-1)});
+			["the extreme power of the","g a b- d5 b-4 a g", ].addLine; //0
 	P(\strum1, start:0,syl:2, music://{{{
 		(\note:[-5,-3,-2,2,5,7],\strum:0.03,\sustain:2));//}}}
-	P(\bassnote, start:0, music: (note: -24-5,amp:3, sustain:0.5+~xtreme.secDur[0]+~xtreme.secDur[1],\dur:~xtreme.secDur[0]+0.5));
+	P(\bassnote, start:0, music: 
+		{ |p b e|
+			(
+				note: -24-5,
+				amp:3,
+				sustain:0.5 + Song.secDur[0],
+				dur:Song.secDur[0]+0.5,
+				out:Song.bassBuss.index
+			).play
+		}
+	);
+			["alien mind will make the -","e5 d c f e f g f", ].addLine; //1
 	P(\strum2, start:1,syl:2, music: (lag:~xtreme.durs[1].list[3]/2,note:[-5,-2,0,4,7],strum:0.03,sustain:2));
 	P(\bassnote2, start:1, music: //{{{
-		(note: -12-5,amp:3, sustain:~xtreme.secDur[1]));//}}}
+		(note: -12-5,amp:3, sustain:~xtreme.secDur[1])
+	);//}}}
+			["r r r r heart action dan ger ous ly high- ", "r r r r  c6 a5 f b- a g f g ", ].addLine; //2
 	P(\heartActionBass, start:2, music: //{{{
-		Pbind(
-			\dur, ~xtreme.durs[2]++Pseq([1.0]),
-			\note, Pseq([-2,-2,-2,0,-7,\r,\r,-2,-2,-2, 0,\r,-10])-24,\amp,2,
-			\legato,Pseq([1 ,1, 1,1, 1.5,1,1, 1, 1, 1, 2, 1, 1])
-		)
+		
+			Pbind(
+				\dur, ~xtreme.durs[2]++Pseq([1.0]),
+				\note, Pseq([-2,-2,-2,0,-7,\r,\r,-2,-2,-2, 0,\r,-10])-24,\amp,2,
+				\legato,Pseq([1 ,1, 1,1, 1.5,1,1, 1, 1, 1, 2, 1, 1])
+			)
+		
 	);//}}}
 	P(\weeeeuw,start:2,music://{{{
 		{{FreeVerb.ar(Ringz.ar(WhiteNoise.ar(0.01),XLine.kr(2500,240,6),1),room:8,mix:7)*EnvGen.kr(Env.perc(0,7),doneAction:2)}.play});
@@ -111,17 +115,20 @@ Song.dursFile
 			)
 		);//}}}
 	}.value;//}}}
+			[" - and the body functions will", "a5 c d a g a d a ", ].addLine; //3
 	P(\andthe,start:3,//{{{
 				music:Pbind(\dur,~xtreme.durs[3]++Pseq([1]), \instrument,\test,
 				\amp,1,
 				\lag,Pwhite(-0.01,0.01),
 				\midinote,Pseq([\r]++~xtreme.tune[3].list.copyRange(1,~xtreme.tune[3].list.size)++[79])-24));//}}}
+			[" race r r many times their natural me-", "g5 r r  e5 g5 a4 g5 f e g ", ].addLine; //4
 	P(\strum3,start:4,music://{{{
 				(\note: [4,16,19]-12,\dur:3,\strum: 0.03);
 	);//}}}
 	P(\bass3,start:4,//{{{
 		music:Pbindf(Panola.new("r c#2 e a1\\pdur[2.2]").asPbind,\dur,~xtreme.durs[4],\tempo,1,\amp,0.8)
 	);//}}}
+			["tabolism so we're going to have to", " f5 e d c r g#4 a b c5 d e ", ].addLine; //5
 	P(\bass5,start:5, music://{{{
 		Pbind(
 			\midinote,(Pser(~xtreme.tune[5].list,4)++Pseq([71,71-7]))-36,
@@ -150,6 +157,7 @@ Song.dursFile
 	P(\bassnote6,start:6,music://{{{
 		Pbindf(Panola(" a1 g f").asPbind,\dur,Pseq([~xtreme.durs[6].list[1..2].sum]++~xtreme.durs[6].list[3..4]),\tempo,1,\amp,0.8)
 	);//}}}
+			[" mo- ni- tor this very", "d5 c4 a4 f f5 e ", ].addLine; //6
 	P(\pad6,start:6,music://{{{
 		{
 			{
@@ -174,6 +182,8 @@ Song.dursFile
 			\amp,Pseg([0.2,0.5*Pwhite(0.8,1.2,inf)*0.0001]*0.3,[5.1,1.9], \exp, \offset,0)
 		) //TODO set synth
 	);//}}}
+			["carefully","e5 d b4 r r r", ].addLine; //7
+			["r r r well... I ", "r r r a g#", ].addLine; //8
 	P(\bass8,start:8,music: //{{{
 		Pbind(\note,Pseq([5,4,2,1]-24),\dur,~xtreme.durs[8],\amp,0.5)
 	);//}}}
@@ -183,12 +193,14 @@ Song.dursFile
 	P(\strum8,start:8,syl:1,music://{{{
 	(note:[1,4,9]-12++[1,4],strum:0.04,sustain:2,lag:0.52,amp:0.05)
 	);//}}}
+			["guess that's as read- y as I'm gon- na ","g e- f g e- d- e- f g ", ].addLine; //9
 	P(\strum9,start:9,music://{{{
 		(midinote:~panNotes.(" <g b- e-5 g5>").flatten-12,strum:0.042)
 	);//}}}
 	P(\bass9,start:9,music: //{{{
 		(note:~panNotes.("e-2").flatten-60,dur:2,amp:0.3)
 	);//}}}
+			["be. Rea- dy Sar- gon","a d5 c a4 f#", ].addLine; //10
 	P(\tremoChord,start:10,music://{{{
 		Pfxb(
 			Pfindur(~xtreme.durs[10].list[0],
@@ -233,7 +245,7 @@ Song.dursFile
 	 x.asString.find("ssT",true).isNil
 	 ,
 	 //::x.post;y.music.postln
-	 ::y.music=y.music<>(out:~xtreme.bassBuss.index,addAction:\addToHead)
+	 ::y.music=y.music<>(out:Song.bassBuss.index,addAction:\addToHead)
  }
  }.value; //}}}
 

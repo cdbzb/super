@@ -501,6 +501,18 @@ s.waitForBoot{
 		).play
 		
 	});
+	P(\fire2,start:\writhing,music:{|p b e| 
+			    3.do { {
+		    Sieve1.ar(
+			    LocalBuf.newFrom([60] ++ {1-exprand(0.0001,0.9)}!10.rand ++ (0!19.rand)++( { rrand(0.01,0.99) }!12.rand ) ),  gap: [0,1,2,3,4,5],  alternate: [2, 5 ],  mul: 1.0,  add: 0.0)
+			    => { |i| [i, SinOsc.ar(i * 1000,0,0.1) ]} 
+			    * Env.linen(3,[3,4,5],[2,6,9]).kr(gate:1)
+			    /50
+			    
+			    //=> Disintegrator.ar(_)
+		    }.play(p.fireGroup)
+	    }    
+	});
 	[ "MULHALL: Stop! (the flames are gone) ~Sargon was right.~ ",[1].dm(\e) ].addLine;
 	P(\muteFire,start:\Stop,music:{|p b e| 
 		p.fireGroup.release(0.1)

@@ -3,7 +3,7 @@ Song.new(\displeased,[]).current;
 	Song.currentSong.condition=Condition.new;
 	Song.currentSong.infrastructure={
 		FunctionList.new.array_([
-			~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load},
+			//~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load},
 			{fork{
 				try{~syn1.controller.loaded.not.if{~syn1=~synful2.()}}{~syn1=~synful2.()};
 				try{~syn1.controller.loaded.not.if{~syn1=~synful3.()}}{~syn1=~synful3.()};

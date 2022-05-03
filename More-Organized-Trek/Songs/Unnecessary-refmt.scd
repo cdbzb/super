@@ -1,24 +1,23 @@
 (
-	~unnecessary = Song( \unnecessary,[]);
-	Song.unnecessary.current;
-	'!!!'.postln;
+	Song( \unnecessary,[]).current;
 
  //	unnecessary sections	{{{2
-	//~unnecessary.resources=();
-	~unnecessary.condition=Condition.new;
-	~unnecessary.infrastructure={
-		~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
-		~unnecessary.condition.test_(true).signal;
+	//Song.resources=();
+	Song.currentSong.condition=Condition.new;
+	Song.currentSong.infrastructure={
+		//~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
+		Song.condition.test_(true).signal;
 	};
-	~unnecessary.infrastructure = ~unnecessary.infrastructure.addFunc( {
-		~unnecessary.bass=NodeProxy.audio(s,2).play; //	bass setup	{{{3
-		~unnecessary.bass[1]=\filterIn->{|in|in+CombN.ar(in,1,0.25/TempoClock.tempo,2,mul:0.8)/2};
-		~unnecessary.bass.set(\wet1,0.8);
-		~unnecessary.bass[2]=\filter->{|in| Phaser1.ar(in,  depth: 0.5,  rate: 0.2,  fb: 0.3,  cfb: 0.1,  rot: 1.5707963267949) };
+	Song.currentSong.infrastructure = Song.infrastructure.addFunc( {
+		Song.unnecessaryBass=NodeProxy.audio(s,2).play; //	bass setup	{{{3
+		Song.unnecessaryBass[1]=\filterIn->{|in|in+CombN.ar(in,1,0.25/TempoClock.tempo,2,mul:0.8)/2};
+		Song.unnecessaryBass.set(\wet1,0.8);
+		Song.unnecessaryBass[2]=\filter->{|in| Phaser1.ar(in,  depth: 0.5,  rate: 0.2,  fb: 0.3,  cfb: 0.1,  rot: 1.5707963267949) };
 	} );
 //TODO CLEAN THIS UP!!!!!!
 
-	~notes=[1,3,6,4].collect{|i| i!4}.flatten;
+e = Environment.new.push;
+	Song.notes=[1,3,6,4].collect{|i| i!4}.flatten;
 
 	SynthDef(\bl,{|gate=1 out=0 freq=400 t_trig=0  | //{{{
 		var sig= SawDPW.ar(freq*[1,2],0,0.04 );  // add these octaves better
@@ -105,12 +104,12 @@
 	);
 );
 
-	~unnecessary.cursor_(0); //
+	Song.cursor_(0); //
 	//{{{1
 	//TempoClock.tempo=1;
 ["that will be unneccesary Doctor"," d# e f# d# g# f# e d# d# c#"].addLine;//0
 
-	P(\unnecessary, start:0,music:~unnecessary.pbind[0]);
+	P(\unnecessary, start:0,music:Song.pbind[0]);
 	P(\descant,start:0,music: //		{{{
 		Pbind(*[
 			instrument:\sawSynth,
@@ -118,7 +117,7 @@
 			att:0.7,
 			root:4,
 			dur:Pseq(
-				[~unnecessary.durTill(0,3)]++~unnecessary.durs[0].list [4..9]++[0.5,2]
+				[Song.durTill(0,3)]++Song.durs[0].list [4..9]++[0.5,2]
 			)
 		])
 	);//}}}
@@ -127,7 +126,7 @@
 			instrument:\sawSynth,
 			degree:Pseq([5,2])-1,
 			rel:4,
-			dur:~unnecessary.durTill(0,7),
+			dur:Song.durTill(0,7),
 			//dur:Pseq([2.3,1]),
 			root:4,
 			octave:3
@@ -137,7 +136,7 @@
 	P(\leadIn,start:'four bar intro',music: //		{{{
 		Pfindur(8,
 			Ppar([
-				//Pseq([~unnecessary.pbind[1]],4).play;
+				//Pseq([Song.pbind[1]],4).play;
 				~tk.at(\snare),
 				~tk.at(\kick),
 				~tk.at(\pulse),
@@ -147,26 +146,26 @@
 		)
 	); //}}}
 
-	~unnecessary.durs['four bar intro']=Pseq([1,1,1.5,0.25,0.25+0.5, 0.5,0.5,0.25,0.25+0.5,0.5,0.5,0.5]);
+	Song.durs['four bar intro']=Pseq([1,1,1.5,0.25,0.25+0.5, 0.5,0.5,0.25,0.25+0.5,0.5,0.5,0.5]);
 	P(\tempo1,start:'four bar intro',music:{{TempoClock.tempo=1.2}.fork});
 ["r this Vulcan body is adapted to the","r b b g# f# e f# g# f# e d# e"].addLine;//1
-	~unnecessary.durs['is adapted']=Pseq([1,1,1.5,0.25,0.25+0.5, 0.5,0.5,0.25,0.25+0.5,0.5,0.5,0.5]);
-//	~unnecessary.durs[1]=Pseq((~unnecessary.durs[1].list!2).flatten	);
+	Song.durs['is adapted']=Pseq([1,1,1.5,0.25,0.25+0.5, 0.5,0.5,0.25,0.25+0.5,0.5,0.5,0.5]);
+//	Song.durs[1]=Pseq((Song.durs[1].list!2).flatten	);
 	P(\tempo2,start:'adapted to',music:{{TempoClock.tempo=1.2}.fork});
 	P(\bass1,start:'adapted to',music: {
 		{
-//			~unnecessary.bass[0]=Pseq([Rest(8),Pmono(\bl,\degree,Pseq(~notes,4)-1,\dur,0.5,\root,4,\octave,2,\trig,Pseq(1!16))])
-			~unnecessary.bass[0]=Pseq([Pmono(\bl,\degree,Pseq(~notes,4)-1,\dur,0.5,\root,4,\octave,2,\trig,Pseq(1!16))]);
-			~unnecessary.bass[1]=\filterIn->{|in|in+CombN.ar(in,1,0.25/TempoClock.tempo,2,mul:0.8)/2};
-			~unnecessary.bass.set(\wet1,0.8);
+//			Song.unnecessaryBass[0]=Pseq([Rest(8),Pmono(\bl,\degree,Pseq(Song.notes,4)-1,\dur,0.5,\root,4,\octave,2,\trig,Pseq(1!16))])
+			Song.unnecessaryBass[0]=Pseq([Pmono(\bl,\degree,Pseq(Song.notes,4)-1,\dur,0.5,\root,4,\octave,2,\trig,Pseq(1!16))]);
+			Song.unnecessaryBass[1]=\filterIn->{|in|in+CombN.ar(in,1,0.25/TempoClock.tempo,2,mul:0.8)/2};
+			Song.unnecessaryBass.set(\wet1,0.8);
 
 		}.value
 	});
-	~justTheTune.('is adapted',{|i|i=>Pbindf(_,\amp,0.3,\instrument,\stringyy)});
+	P.tune('is adapted',{|i|i=>Pbindf(_,\amp,0.3,\instrument,\stringyy)});
 	P(\leadInB,start:'adapted to',music: //		{{{
 		Pfindur(8,
 			Ppar([
-				//Pseq([~unnecessary.pbind[1]],4).play;
+				//Pseq([Song.pbind[1]],4).play;
 				~tk.at(\snare),
 				~tk.at(\kick),
 				~tk.at(\pulse),
@@ -178,20 +177,20 @@
 ["r r higher metabolism"," f#3 f# a5 g# b a g# f# e "].addLine;//2
 //	P(\tempo3,start:'higher metabolism',music:{{TempoClock.tempo=1}.fork});
 	P(\bass3,start:'higher metabolism',music: //		{{{
-				{~unnecessary.bass[0]=Pmono(
+				{Song.unnecessaryBass[0]=Pmono(
 					\bl,
 					\degree, Pseq([ 2,2,1,1 ])-1,
 					//\dur,Pseq([0.5,1.5]*1.24,2),
 					\dur,
 					Pseq(
-						[ ~unnecessary.durs['higher metabolism'].list[0] ,~unnecessary.durs['higher metabolism'].list[1..4].sum  , ~unnecessary.durs['higher metabolism'].list[5..6].sum,1])
+						[ Song.durs['higher metabolism'].list[0] ,Song.durs['higher metabolism'].list[1..4].sum  , Song.durs['higher metabolism'].list[5..6].sum,1])
 					,
 					\root,4,
 					\octave,2,
 					\trig,1);}
 	); //}}}
 
-	~justTheTune.('higher metabolism',{|i| Pbindf(i,\instrument,\stringyy,\amp,0.3,\mix,1.0,\release,2)=>_.drop(2) },syl:1);
+	P.tune('higher metabolism',{|i| Pbindf(i,\instrument,\stringyy,\amp,0.3,\mix,1.0,\release,2)=>_.drop(2) },syl:1);
 
 	P(\metabolism,start:'higher metabolism',music: //{{{
 		//t=TempoClock.new.tempo_( 1.2 );
@@ -199,9 +198,9 @@
 
 		Pfindur(4,//12,
 			Ppar([
-				//Pseq(~unnecessary.pbind[1..2]),
+				//Pseq(Song.pbind[1..2]),
 				//a.[0]=Pmono(\bl,\degree,2-1,\dur,0.5,\root,4,\octave,2,\trig,1);
-//				~unnecessary.pbind['higher metabolism'],
+//				Song.pbind['higher metabolism'],
 				~tk.at(\hat),
 				Pbindf(~tk.at(\pulse), \degree,Pseq([\r,-2,4,-2],1),\dur,0.662 ),//.play
 				Pbindf(~tk.at(\saw), \degree,Pseq([-1,4,-1,3]) ),//( ,\dur,0.331),
@@ -211,10 +210,10 @@
 		//~tk.at(\hat).play(u)
 	);//}}}
 //~sections5.metabolism.p;//just making louder hmmm
-//~unnecessary.play;
+//Song.play;
 
 ["it won't work, Sargon!","d#5 b4 g5 d# b4"].addLine;//3
-	~justTheTune.('work, Sargon');
+	P.tune('work, Sargon');
 	P(\tempoWork,start:'work',music:{
 		{TempoClock.tempo=1}.fork}
 	);
@@ -252,7 +251,7 @@ P(\baseNoteWork,syl:1,start:'work, Sargon',music:{|p b|
 }
 );
 ["(boom) you have to get out before you","f4 f5 d- e- f a f g a"].addLine;//4
-	~justTheTune.('get out',(_.drop(1)),syl:0);
+	P.tune('get out',(_.drop(1)),syl:0);
 P(\baseNoteOut,syl:4,start:'get out',music:{|p b|
 	(
 		freq:[1 ,11 ].df('a',octave:2 ),
@@ -289,11 +288,11 @@ P(\outChord,syl:4,start:'get out',music:{|p d|
 }
 );
 ["kill them! /*SARGON*/  we will transfer at once un-",[11,7,5,6,7,5,7,7,7].dm('c')].addLine;//5
-~justTheTune.('we will transfer');
+P.tune('we will transfer');
 ["til you can administer the ",[7,6,5,4,7,11,6,5].dm('d')].addLine;//6
-~justTheTune.('administer');
+P.tune('administer');
 ["(boom) metabolic reduction injection... a ",[11,15,14,15,12,14,12,11,14.5,11,7.5, 7].dm('a-',octave:4,scale:\mixolydian )].addLine;//7
-~justTheTune.('injection',Pbindf(_,\legato,1.5,\out,Effect(PlateReverb.ar(_,decayTime:0.4,mix:0.6)).bus.index));
+P.tune('injection',Pbindf(_,\legato,1.5,\out,Effect(PlateReverb.ar(_,decayTime:0.4,mix:0.6)).bus.index));
 P(\baseNoteMetabolic,start:'metabolic',music:{|p b|
 	var length=b[0..(b.size-1)].sum;
 	var freq=[1,11].df('a-',octave:2 );
@@ -302,7 +301,7 @@ P(\baseNoteMetabolic,start:'metabolic',music:{|p b|
 }
 );
 ["what? I'll prepare the formula Sargon",[14, 13,14,15,13,14,13,12,11,3].dm('b',octave:4)].addLine;//8
-~justTheTune.('prepare the formula');
+P.tune('prepare the formula');
 P(\whatChord,start:'prepare the formula',music:{|p b|
 	(
 		midinote:[1,3,5,7].dm('f#',octave:4,scale:\mixolydian),
@@ -312,7 +311,7 @@ P(\whatChord,start:'prepare the formula',music:{|p b|
 }
 );
 ["Henoch, your condition",[4.5,1,3,4.5,6.5,5.5].dm('e',scale:\minor)].addLine;//9
-~justTheTune.('your condition');
+P.tune('your condition');
 P(\baselineCondition,start:'your condition',music:{|p b|
 	[
 		freq:[ [1,11],[2,12] ].df('g',octave:3 ).q,
@@ -325,7 +324,7 @@ P(\baselineCondition,start:'your condition',music:{|p b|
 }
 );
 ["r I can continue in this body for for several hours","d3 f#4 d f# e c# d e d g3 e2 e4 d c#  b3 a"].addLine;//10
-~justTheTune.('several hours');
+P.tune('several hours');
 ~continueQuarters = Song.parseBeats('several hours',[1/4,1/4,1/4,1/4,1/4,1/4,1/4,1/4,1/2,1/2]);
 P(\continueSnare,start:'continue',music:
 {
@@ -347,7 +346,7 @@ P(\baselineHours,start:'several hours',music:{|p b|
 }
 );
 ["fortunate (dum dum dum dum) we will vacate at once...",[14,12,7,5,6,7, 1,11,12,13,11,13,13].dm('g',octave:4,scale:\mixolydian,)].addLine;//11
-~justTheTune.('fortunate');
+P.tune('fortunate');
 P(\baseNoteFortunate,start:'fortunate',syl:5,music:{ |p b|
 	(instrument:\sawSynthSustain,freq:[1,11].df('g',octave:2),att:0.6,dur:b[6..].sum).play
 }
@@ -357,7 +356,7 @@ P(\reedChordFortunate,lag:-0.15,start:'fortunate',music:{ |p b|
 	}
 );
 ["/*SPOCK*/ This woman will assist me. (boom boom)",[11,5,6,7,5,11,5, 2,2].dm('c')].addLine;
-~justTheTune.('woman',_.fin(7));
+P.tune('woman',_.fin(7));
 P(\baseNoteWoman,start:'woman',music:{ |p b|
 	[
 		instrument:\sawSynthSustain,
@@ -367,7 +366,7 @@ P(\baseNoteWoman,start:'woman',music:{ |p b|
 	}
 );
 ["(to Chapel) (boom) /*You will*/ take me to your",[1,11,7,6,5].dm('e-')].addLine;
-~justTheTune.('take me');
+P.tune('take me');
 P(\baseNoteTake,start:'take me',music:{|p b|
 	[
 		instrument:\sawSynthSustain,
@@ -377,7 +376,7 @@ P(\baseNoteTake,start:'take me',music:{|p b|
 }
 );
 ["(boom) pharmacology laboratory. ",[1,11,7,11,5,7,4,5,4,3].dm('f',scale:\mixolydian)].addLine;
-~justTheTune.('pharmacology',{|i|i.drop(1)},syl:0);
+P.tune('pharmacology',{|i|i.drop(1)},syl:0);
 P(\soundEffectPharmacology,lag:0.26,start:'pharmacology',music:{|p b|
 	(type:\tuneUp,freq:1.df('c',octave:4),amp:0.01).play
 }
@@ -405,7 +404,7 @@ P(\door,start:'They leave',music:{|p b|
 );
 // idea  do the doors with  additive synthesis
 ["/*KIRK*/ (frown) Bones, what?, it was", [7,17,14,15,15].dm('c',octave:3)].addLine;
-~justTheTune.('frown',{|i| i.drop(1)},syl:0);
+P.tune('frown',{|i| i.drop(1)},syl:0);
 P(\frownFrown,start:'frown',music:{|p b|
 
 			var function={|freq out| {
@@ -422,8 +421,8 @@ P(\frownFrown,start:'frown',music:{|p b|
 }
 );
 ["/*MCCOY*/ close, Jim. You both barely got back a -- ",[13,5,6,12,11,7,11,12,7].dm('c',octave:4,scale:\melodicMinor )].addLine;
-~justTheTune.('close');
-~justTheTune.('barely',{|i| i.drop(2) => Pmul(\freq,[1/2,1],_) =>Pbindf(_,\instrument,\stringyy,\mix,0.1)},syl:1);
+P.tune('close');
+P.tune('barely',{|i| i.drop(2) => Pmul(\freq,[1/2,1],_) =>Pbindf(_,\instrument,\stringyy,\mix,0.1)},syl:1);
 P(\barelyRead8,start:'barely',lag:0.1,syl:2,music:{|p b|
 	(
 		instrument:\reedy,
@@ -443,8 +442,8 @@ P(\firstChord,start:'barely',music:{|p b|
 	(att:0.8,instrument:\sawSynth,rel:3,freq:[1,11].df('c',octave:2 )).play
 });
 ["live. Unless the formula works, we can't risk it again.", [11.5,11,5,3,11,7,6,7].dm('e-') ++ [5,5,11,5,3,1].dm('f#',scale:\minor) ].addLine;
-~justTheTune.('risk it');
-~justTheTune.('risk it ',{|i| i.drop(1) => Pbindf(_,\instrument,\sawSynth,)=>Pmul(\freq,0.5,_)},syl:0);
+P.tune('risk it');
+P.tune('risk it ',{|i| i.drop(1) => Pbindf(_,\instrument,\sawSynth,)=>Pmul(\freq,0.5,_)},syl:0);
 P(\reedPedalRisk,start:'risk it',music:{|p b|
 
 	[release:5,sustain:1,amp:0.01!2,out:3, freqLag:1,instrument:\reedy,
@@ -467,8 +466,9 @@ P(\highChords,start:'risk it',music:{|p b|
 
 	].pm(\stringyy)
 	.play
-}
-);
+});
+
+e.pop;
 )
 asCompileString
 a=Harmonics()

@@ -1,6 +1,7 @@
 
 
 //Briefing Room
+(
 Song(\briefing,[]).current;
 [ "SCOTT: You're going to what?","r" ].addLine;
 [ "Are they all right in the head, Doctor? ","r" ].addLine;
@@ -36,8 +37,12 @@ Song(\briefing,[]).current;
 ["KIRK: Bones? You could stop all this by saying no. ","r"].addLine;
 ["That's why I called you all here together. ","r"].addLine;
 ["We'll all be deeply involved. It must be unanimous. ","r"].addLine; //p11
-["MCCOY: Then I'll still want one question answered to my satisfaction.","r"].addLine;//p13
-["Why? ","r"].addLine;
-["Not a list of possible miracles,","r"].addLine;
-["but a simple basic understandable why that overrides all danger. ","r"].addLine;
-["And let's not kid ourselves that there is no potential danger in this. ","r"].addLine;
+["MCCOY: Then I'll still want one question answered to my satisfaction.", "1 2 -8 1 3 4 2 5 1".dm(\f, 5, \diminished) ++ "3 4 5 1 7 6".dm(\c, 5, \mixolydian) ].addLine;//p13
+["Why? Not a list of possible miracles, but a ","6 3 1 5 3".dm(\f) ++ "6.5 6 3 5 4 -7".dm('c#',5) ++ "3 4".dm('e-')].addLine;
+P.tune(\list);
+["simple basic understandable","5 5 6 6 7 11 7 6 5".dm('e-',5,\mixolydian)].addLine;
+P.tune(\understandable);
+[" why that overrides all danger. And let's not ", "6 5 12 11 7.5 6.5  12 13 11 3 4 5".dm(\d,5,\minor)].addLine;
+P.tune(\overrides);
+["kid ourselves that there is no potential danger in this. ", "5 4 2 -6 -7 1 1.5 1.5 2 3 4 2 -7 -5".dm(\f)].addLine;
+)

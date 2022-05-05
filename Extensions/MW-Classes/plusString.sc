@@ -25,13 +25,13 @@
         df { | ...args |
           ^this.split(Char.space)
 		.reject({|i| i.size == 0})
-		.collect(_.asInteger)
+		.collect(_.asFloat)
 		.df(*args)
         }
         dm { | ...args |
           ^this.split(Char.space)
 		.reject({|i| i.size == 0})
-		.collect(_.asInteger)
+		.collect(_.asFloat)
 		.dm(*args)
         }
 }

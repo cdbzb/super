@@ -381,6 +381,25 @@ Song {
 		cursor=sec;
 		this.play(this.at(sec))
 	}
+	playRange { |start end |
+		var from,to;
+		# from, to = [start, end].collect{
+			|sec| ( sec.class==Integer ).not.if{ sec = this.section(sec) }{sec};
+		};
+		this.cursor_( from );
+		(from..to).do{
+			|sec| this.play(this.at(sec))
+		}
+	}
+	screengrab { |start end path tail=2|
+		//var player = P(start:) -- this would make it start with the music
+		var length = (start..( end ? start )).collect(this.secDur[_]).sum;
+		length.postln;
+		path.postln;
+		//-G to add an audio source
+		"screencapture -V" + length + path => _.unixCmd
+
+	}
 	playSectionParts {|sec| // uses .p method which doesn't prepare infrastructure
 		(sec.class==Integer).not.if{sec=this.section(sec)};
 		cursor=sec;
@@ -390,16 +409,57 @@ Song {
 	recordSection { |sec bus path channels=2 tail=3|
 		var s = Server.default;
 		fork{
+
+			//s.recSampleFormat = \int24;
 			s.prepareForRecord(path);
 			0.1.wait;
-			//Server.default.sync;
 			this.playSectionParts (sec);
-			//preroll.wait;
 			0.4.wait; // double latency for somereason
 			s.record(
 				bus:bus,
 				duration:this.secDur[sec] + tail);
 			}
+	}
+	makeVid1 { |start dir|
+		var now = Date.getDate.stamp;
+		var path = dir +/+ now;
+		fork{
+			P(\video, start:start,lag:-0.8 ,music: { |p b e|
+					p.screengrab(start,path: path ++ ".mov");
+			});
+			Song.recordSection(start,0, path ++ ".aif",2, 0);
+			while ( {File.exists(path++".mov") == false},{0.1.wait} );
+			1.wait;
+			try{ Server.default.stopRecording };
+			0.1.wait;
+			"ffmpeg -i" + path ++ ".mov" + "-i" + path ++ ".aif" + "-c copy -map 0:v:0 -map 1:a:0" + path ++ "together.mov" => _.unixCmd
+			//"ffmpeg -i" + path ++ ".aif" + "-itsoffset 1 -i" + path ++ ".mov" + "-c copy -map 0:v:0 -map 1:a:0" + path ++ "together.mov" => _.unixCmd
+		}
+	}
+	makeVid{ |start dir tail=0|
+
+		var now = Date.getDate.stamp;
+		var path = dir +/+ now;
+		fork{
+			Server.default.recSampleFormat_(\int24);
+			Server.default.prepareForRecord(path++".aif");
+
+			Server.default.sync;
+			//0.2.wait;
+			Server.default.record(
+				bus:0,
+				duration:this.secDur[start] + tail
+			);
+			Song.playSectionParts(start);
+			//////latency?
+			//0.2.wait;
+			this.screengrab(start,start,path++".mov");
+			while ( {File.exists(path++".mov") == false},{0.1.wait} );
+			1.wait;
+			try{ Server.default.stopRecording };
+			0.1.wait;
+			"ffmpeg -i" + path ++ ".mov" + "-i" + path ++ ".aif" + "-c copy -map 0:v:0 -map 1:a:0" + path ++ "together.mov" => _.unixCmd
+		}
 	}
 
     // TRASHME

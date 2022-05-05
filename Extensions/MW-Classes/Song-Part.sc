@@ -436,24 +436,24 @@ Song {
 			//"ffmpeg -i" + path ++ ".aif" + "-itsoffset 1 -i" + path ++ ".mov" + "-c copy -map 0:v:0 -map 1:a:0" + path ++ "together.mov" => _.unixCmd
 		}
 	}
-	makeVid{ |start dir tail=0|
+	makeVid{ |start end dir tail=2|
 
 		var now = Date.getDate.stamp;
 		var path = dir +/+ now;
+		var range;
+		end = end ? start;
+		range = (start..end);
 		fork{
 			Server.default.recSampleFormat_(\int24);
 			Server.default.prepareForRecord(path++".aif");
-
 			Server.default.sync;
-			//0.2.wait;
 			Server.default.record(
 				bus:0,
-				duration:this.secDur[start] + tail
+				duration:(start..(end ? start)).collect{this.secDur[start]}.sum + tail
 			);
-			Song.playSectionParts(start);
-			//////latency?
-			//0.2.wait;
-			this.screengrab(start,start,path++".mov");
+			this.cursor_(start);
+			range.do{|i| this.at(i).do(_.p)};
+			this.screengrab(start,end,path++".mov",tail);
 			while ( {File.exists(path++".mov") == false},{0.1.wait} );
 			1.wait;
 			try{ Server.default.stopRecording };

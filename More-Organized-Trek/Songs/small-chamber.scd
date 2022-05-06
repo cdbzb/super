@@ -1,5 +1,5 @@
 ( //line 159 
-/*[Small chamber]
+/* [Small chamber]
 
 (There are a group of boxes on the wall, containing spheres. Only two are alight.) */
 Song.smallChamber.isNil.not.if{ Song.smallChamber.resources.do(_.free) };

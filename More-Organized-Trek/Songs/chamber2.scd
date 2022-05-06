@@ -1,9 +1,9 @@
 ( //line 178 ~/tank/Trek/return-to-tomorrow.txt
 	
-	Song.isNil.not.if{ Song.resources.do(_.free) };	//this should be a method
+	Song.currentSong.isNil.not.if{ Song.resources.do(_.free) };	//this should be a method
 	Song(\chamber,[]).current;
 	Song.currentSong.resources.infrastructure=FunctionList([ {
-			~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
+//			~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
 	} ]);
 	['Kirk briefly convulses with pain', "c" ].addLine;//0
 	P(\pains0, start:0, music: { 
@@ -15,6 +15,7 @@
 			=>Out.ar(\out.kr(0),_)
 		}.play 
 	});
+
 	['then the sphere glows bright again' , "c"].addLine;//1
 	Song.durs[0]=[3].q; Song.durs[1]=[8].q; 
 	Song.durs[2]=[ 7 ].q;
@@ -27,24 +28,27 @@
 		}.play.dur(Song.secDur[1],5)
 	});
 	['and he falls to his knees.' ,"r" ].addLine;//2
-	P(\knee,start:2,music:[ 
-		strum:0.05,
-		note:Arpeggio([0,3,7,11],20),
-		dur:3,
-		effect:{ Effect(FreeVerb.ar(_,0.6,1),inputChannels:2).dur(Song.secDur[2]+5).bus.index},
+	P(\knee,start:2,music:{ |p b e |
+		[ 
+			strum:0.05,
+			note:Arpeggio([0,3,7,11],20),
+			dur:3,
+			effect:{ Effect( { |i|  FreeVerb.ar(i,0.6,1) * Env.linen(0, b.sum + 0, 3).kr(2,gate:1)} ,inputChannels:2).bus.index},
 
-		//		out:[0,1,2,3],
-		out:Pkey(\effect),
-	].p.fin);
+			//		out:[0,1,2,3],
+			out:Pkey(\effect),
+		].p.fin.play
+});
 	[ /*MCCOY*/ 'Is it you, Jim? (a nod)', [3,4,7,5, 5.5].dm('d')  ].addLine; //3
-	P(\nod3,start:3,syl:3,music:[
+	P(\nod3,start:3,syl:3,music:{ | p b e |
+		[
 		strum:[ 0.06 ].q,
 		freq:[1,3,5,11].df('e-',octave: 4),
-		effect:
-		{ Effect({|i| EchoNone.ar(i,1,0.3,5) => DetectSilenceDry.ar(_,doneAction:2)=> MoogFF.ar(_,6000,3) },inputChannels:2).dur(Song.secDur[3]+5).bus.index  }, 
-//		out:Pkey(\effect), 
-	].p
-	);
+		out:
+		{ Effect({|i| EchoNone.ar(i,1,0.3,5) => DetectSilenceDry.ar(_,doneAction:2)=> MoogFF.ar(_,6000,3) * Env.linen(0,b.sum,2).kr(2,gate:1) },inputChannels:2).bus.index  }, 
+		//		out:Pkey(\effect), 
+	].pp
+});
 	P(\tune3,start:3,music:Song.currentSong.pbind[3]
 );
 	['Good, his metabolic rate is back to normal.',[15,14,15,16.5,15,14,13,12,15,12,11,7].dm('a',scale:\harmonicMinor,octave:4)].addLine;//4

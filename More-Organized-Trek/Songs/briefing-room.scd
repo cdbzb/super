@@ -85,20 +85,31 @@ P.tune(\answered);
 P.tune('answered to', {|i| Pbindf(i,\legato,0.9, \instrument,\stringyy,\wet,0.3,\release,2,\amp,0.2) => Pmul(\freq,1/[2,4],_)});
 ["Why? Not a list of possible miracles, (boom) but a ","6 3 1 5 3".dm(\f) ++ "6.5 6 3 5 4 -7".dm('c#',5) ++ "-5 3 4".dm('e-')].addLine;
 P.tune('possible miracles');
+P(\bass,start:'possible miracles',music:{|p b e| 
+	[
+		//freq: [1, 2, 1.5, 4, 1, -5].df('e-',3,\mixolydian).q,
+		freq: [1, 2, 1.5, 2.5, 1, -5].df('e-',3,\mixolydian).q,
+		dur: b.parse([1,2,2,3,3,3]).q,
+		//instrument:\sawSynthSustain
+		out: Effect( { |i|  SineShaper.ar(i*10,limit:0.1) => FreeVerb.ar(_,0.5,0.9) }  ).bus.index
+	].pp
+});
 P(\strum,start:'possible miracles',music:{|p b e| 
 	(
 		freq: "-1 1 3 5 7".df('e-'),
 		strum: 0.06
 	).play
 });
-["simple basic understandable","5 5 6 6 7 11 7 6 5".dm('e-',5,\mixolydian)].addLine;
+["simple basic understandable","5 5 6 6 7 11 7 6 4".dm('e-',5,\mixolydian)].addLine;
 P.tune(\understandable);
 Song.quarters[\understandable] = Song.parseBeats(\understandable,"q q q q q e ee e q".asBeats);
 P(\bass,start:\understandable,music:{|p b e| 
 	[
 		freq: "1 1 4 4 7 7 4 4".df('e-',3,\mixolydian).q,
 		dur: p.quarters[\understandable].q,
-		instrument:\sawSynth
+		//instrument:\sawSynth
+
+		out: Effect( { |i|  SineShaper.ar(i*10,limit:0.1) => FreeVerb.ar(_,0.5,0.9) }  ).bus.index
 	].pp
 });
 [" why that overrides all danger. And let's not ", "6 5 12 11 7.5 6.5  12 13 11 3 4 5".dm(\d,5,\minor)].addLine;

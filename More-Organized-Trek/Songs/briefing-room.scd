@@ -43,27 +43,54 @@ The opportunity is an extraordinary one. for experimentation, observation.
 //["But I don't suppose there'd be any harm in looking over diagrams on it. ","r"].addLine;
 ["KIRK: Bones? You could stop all this by saying no. ",[7].dm(\b,4,\mixolydian) ++ [3,4,7,4,3,2,3,4].dm(\c,5,\mixolydian) ++ [5].dm(\a,4)].addLine;
 P.tune('stop all this');
+P(\double,start:'stop all this',syl:0,music:{|p b e| 
+	p.tune[e.start].list[1..].dropLast
+	=> { |i| [
+		midinote: i.q - [ 12, 24 ],
+		dur: b.drop(1).q,
+		rel: [2,2,2,2,2,2,2,4].q,
+		legato: [1,1,1,1,1,1,1.1,1.1] - 0.1 =>_.q,
+		instrument:\sawSynthSustain,
+		amp:0.065
+
+
+	].pma(\sawSynthSustain).play } 
+
+});
 P(\chord,start:'stop all this',music:{|p b e| 
 	[
 		//freq: [1,3,5,7].df(\b,4,\mixolydian),
-		freq: [ [1,3,4.5,7].df(\b,4,\mixolydian), \r, [1,3,5,11].df(\a,4,\minor) ].q,
-		dur: b.parse([1, 8, 1]).q
+		//freq: [ [1,3,4.5,7].df(\b,4,\mixolydian), \r, [1,3,5,11].df(\a,4,\minor) ].q,
+		freq: [ [1,3,5,7].df(\b,4,\mixolydian), \r, [1,3,5,11].df(\a,4,\minor) ].q,
+		dur: b.parse([1, 8, 1]).q,
+		strum: [ 0.055, 0, 0 ].q
 	].pp
 });
-["That's why-- I called you all here together. ","r"].addLine;
+["That's why-- I called you all here together. ","2  2 3  -6  3 4  4 5 2 5  5 6 6 7 6".dm('e-',5,\lydian)].addLine;
+P.tune('here together');
+P(\bass,start:'here together',music:{
+	|p b e| 
+	[
+		freq: [ \r, 1, 2, 3, -7, 1 ].df('e-',[3,4],\lydian).q,
+		dur: b.parse([1, 3, 2, 2, 1, 6]).q
+	].pp
+}
+);	
 ["(boom) We'll all be deeply involved. It must be unanimous. ","-1 12 13 12 12 11 7 6".dm(\c) ++ "2 6 5 4 3 4 1 -6".dm('f#')].addLine; //p11
-P.tune(\involved);
+P.tune(\involved, Pmul(\freq,[1,2],_));
 P(\bass,start:\involved,music:{|p b e|  // passing tone right before end please
 	[
-		freq: [1, 1, 4, 1.5, 2.5, 4.5].df(\c,3).q,
-		dur: b.parse([ [1, 1, 0.5],[0.5, 1], 4, [1,1,1, 2/3],[1/3,1], 3 ]).q
+		freq: [1, 1, 1.5, 2.5, 4.5].df(\c,3).q,
+		dur: b.parse([ [1, 1, 0.5],[0.5, 1, 1,1,1,1],  [1,1,1, 2/3],[1/3,1], 3 ]).q,
+		out: Effect({ |i| SineShaper.ar(i, 0.2) *5 }, out:[0,1]).bus.index 
 	].pp; 
 	
 });
 P(\chords,start:\involved,music:{|p b e| 
 	[
-		freq: [\r, [3,5,7],[3,5,7], [-6, 1, 4]].df(\c).q,
-		dur: b.parse([1, [1, 1/2], [1/2, 1], 1]).q
+		freq: [\r, [3,5,7],[3,5,7], [-6,1,4]].df(\c) ++ [ [1,3,5,7], [ -7,2,4,7 ] ].df('c#',5,\mixolydian) => _.q,
+		dur: b.parse([1, [1, 1/2], [1/2, 1], 4, 5,3]).q,
+		out: Effect(PlateReverb.ar(_,mix:0.5,decayTime: 0.3,damping:0.7)).bus.index
 	].pp
 	
 });
@@ -115,13 +142,20 @@ P(\bass,start:\understandable,music:{|p b e|
 [" why that overrides all danger. And let's not ", "6 5 12 11 7.5 6.5  12 13 11 3 4 5".dm(\d,5,\minor)].addLine;
 P(\bass,start:\override,music:{|p b e| 
 	[
-		freq: [1, 1.5, 2, -5].df(\g,3,\minor).q,
-		dur: b.parse([3,1,3,2]).q,
+		freq: [1, 1.5, 2, -5, -4].df(\g,3,\minor).q,
+		dur: b.parse([3,1,3,4, 1]).q,
 		instrument: \sawSynthSustain
 	].pp
 });
 P.tune(\overrides);
 ["kid ourselves that there is no potential danger in this. ", "5 4 2 -6 -7 1 1.5 1.5 2 3 4 2 -7 -5".dm(\f)].addLine;
+P(\bass,start:\kid,music:{|p b e| 
+	[
+		freq: [1, 6, -6].df('b-',2).q,
+		dur: b.parse([6,4, 3]).q,
+		instrument:\sawSynthSustain
+	].pp
+});
 P.tune(\kid);
 }
 )

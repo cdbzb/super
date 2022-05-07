@@ -27,7 +27,27 @@ s.waitForBoot {
 [ "MCCOY: They're giants, and we're insects beside them. ","r" ].addLine;
 [ "They could destroy us without meaning to. ","r" ].addLine;
 [ "And all he wants is the body of our captain and our second in command, too. Coincidence? ","r" ].addLine;
-[ "KIRK: They selected us as the most compatible bodies. ","r" ].addLine;
+[ "KIRK: They selected us as the most compatible bodies. ","1 2 3 4 5 4 3 7 11 6 5 4 6 5".dm(\d,5,\mixolydian) ].addLine;
+//// add a boom before "Most"
+P.tune(\selected);
+P(\bass,start:\selected,music:{|p b e| 
+	[
+		freq: [1, 5, -7, -5, -6, -6.5, -4, 2, ].df(\d,[3,4]).q,
+		dur: b.parse([ 2/3, [1/3,1], 2, 1, 2, 2, 3, 2  ]).q
+	].pp
+	
+});
+P(\chords,start:\selected,syl:6,music:{|p b e| 
+	[		
+		midinote: 
+		[ 
+			"3 5 11".dm(\c), "2 5 7".dm(\c),"1 3 6".dm(\d)  ].q
+		,
+		dur: b.drop(1).parse([2,3,2]).q, 
+	out: Effect(FreeVerb.ar(_,0.6,[0.9, 1 ])).bus.index,
+	strum:0.054
+].pp
+});
 [ "MCCOY: What's your attitude on that, Doctor? ","r" ].addLine;
 ["MULHALL: Well, if we all agree, I'm willing to host Thalassa's mind.","r"].addLine;
 /*

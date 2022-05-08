@@ -48,7 +48,8 @@ P(\chords,start:\selected,syl:6,music:{|p b e|
 	strum:0.054
 ].pp
 });
-[ "MCCOY: What's your attitude on that, Doctor? ","r" ].addLine;
+[ "MCCOY:(boom boom boom boom) What's your attitude on that, Doctor? ", [ -1, -1, -17, -17, -5, 3, -7, 1, -7, -5, 3, 2, 1 ].dm(\a,5,\mixolydian) ].addLine;
+P.tune(\attitude);
 ["MULHALL: Well, if we all agree, I'm willing to host Thalassa's mind.","r"].addLine;
 /*
 Well .. if we all agree.....

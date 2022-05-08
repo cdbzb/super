@@ -677,6 +677,9 @@ Song {
 		^a
 		// play in loop waiting for trigger before advancing
 	}
+	length {
+		^sections.collect(this.secDur[_]).sum
+	}
 }
 
 Part { 

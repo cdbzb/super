@@ -143,7 +143,7 @@ Item {
 		buffer=Buffer.alloc(Server.default,recordLength*Server.default.sampleRate);
 		bus.isNil.if {
 			inBus.isNil.if{
-				inBus=Server.default.options.numOutputBusChannels
+				inBus=Server.default.options.numOutputBusChannels * (chan ? inChans)
 			} 
 		} {
 			inBus = bus
@@ -166,7 +166,7 @@ Item {
 	allocatePVBuffer {|fftSize=2048 hop=0.5|
 		var file = SoundFile(this.mostRecent);
 		file.openRead;
-		^Buffer.alloc(Server.default,file.duration.calcPVRecSize(fftSize,hop));
+		^Buffer.alloc(Server.default,file.duration.calcPVRecSize(fftSize,hop), file.numChannels);
 		//		file.close
 	}
 	getFFT {|fftSize=2048 hop= 0.5 window = 0|

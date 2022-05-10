@@ -99,6 +99,8 @@ P(\bass,start:'here together',music:{
 );	
 ["(boom) We'll all be deeply involved. It must be unanimous. ","-1 12 13 12 12 11 7 6".dm(\c) ++ "2 6 5 4 3 4 1 -6".dm('f#')].addLine; //p11
 P.tune(\involved, Pmul(\freq,[1,2],_));
+Song.quarters[\involved] = Song.parseBeats(\involved,[1, 1/2, 1, 1/2, 2/3, 2/3, 1/3, 1/3, 3/2, 1/2, 2/3, 2/3, 2/3, 1/2,1/2,1]);
+P.click(\involved);
 P(\bass,start:\involved,music:{|p b e|  // passing tone right before end please
 	[
 		freq: [1, 1, 1.5, 2.5, 4.5].df(\c,3).q,
@@ -107,12 +109,33 @@ P(\bass,start:\involved,music:{|p b e|  // passing tone right before end please
 	].pp; 
 	
 });
+
+SynthDef(\defaultRetrig,{ | out=0 freq=400 amp=0.1 gate=1 t_trig=1 pan=0 curve=( -8 ),fatness=0.3 | 
+			var z;
+			var damper = Env.asr(0,1,0.3).kr(2,gate:gate);
+			var decay = Env.perc(0.005, freq/440 => _.reciprocal * 4, curve:curve).kr(0,gate:t_trig);
+			var envelope = damper * decay;
+			z = LPF.ar(
+				Mix.new(VarSaw.ar(freq + [0, Rand(-0.4,0.0), Rand(0.0,0.4)], 0,fatness, 0.3)),
+				XLine.kr(Rand(4000,5000), Rand(2500,3200), 1)
+			//) * Linen.kr(gate, 0.01, 0.7, 0.3, 0);
+			) * envelope;
+			OffsetOut.ar(out, Pan2.ar(z, pan, amp));
+		}).add;
+
 P(\chords,start:\involved,music:{|p b e| 
+	var oneM7 = [3,5,7];
+	var four6 = [-6, 1, 4];
+	var six = [-6, 1, 3];
 	[
-		freq: [\r, [3,5,7],[3,5,7], [-6,1,4]].df(\c) ++ [ [1,3,5,7], [ -7,2,4,7 ] ].df('c#',5,\mixolydian) => _.q,
-		dur: b.parse([1, [1, 1/2], [1/2, 1], 4, 5,3]).q,
+		freq: [\r, oneM7, oneM7, oneM7, \r, oneM7, four6, six].df(\c) ++ 
+		[ [1,3,5,7], [ -7,2,4,7 ]].df('c#',5,\mixolydian) => _.q,
+		t_trig:1,
+		legato: [1,1,1,1,0,1,1,0.9,1].q(inf),
+		//dur: b.parse([1, [1, 1/2], [1/2, 1], 4, 5,3]).q,
+		dur: p.quarters[e.start].parse([1,1,1,1, 1,1, 2, 2, 8, 3]/2).q,
 		out: Effect(PlateReverb.ar(_,mix:0.5,decayTime: 0.3,damping:0.7)).bus.index
-	].pp
+	].pma(\defaultRetrig).play
 	
 });
 ["MCCOY: Then I'll still want one question answered to my satisfaction.", "1 2 -8 1 3 4 2 5 1".dm(\f, 5, \diminished) ++ "3 4 5 1 6.5 6".dm(\c, 5, \mixolydian) ].addLine;//p13

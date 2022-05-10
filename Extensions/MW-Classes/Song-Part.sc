@@ -858,6 +858,19 @@ P {
             lag:lag 
         ).value
     }
+    *click { | key |
+
+	    P(
+		    key: (key++"CLICK").asSymbol, 
+		    start: key,
+		    music: { |p b e| 
+			    [
+				    instrument:\hat_808,
+				    dur: p.quarters[e.start].q
+			    ].pp 
+		    }
+	    )
+    }
 }
 SongList {
 	classvar <> current;

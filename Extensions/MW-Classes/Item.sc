@@ -41,21 +41,21 @@ Item {
 	}
 	//only clones the mostRecent - sets samplesDir
 	*new {| name="item" | 
-		items.at(name).isNil.not.if{//{{{
+		items.at(name).isNil.not.if{
 			^items.at(name)
 		}{
 			^super.new.init(name)
 		}
-	}//}}}
+	}//
 	*clone {|newDir|
-		(newDir[newDir.size-1]!=$/).if{newDir=newDir++'/'};//{{{
+		(newDir[newDir.size-1]!=$/).if{newDir=newDir++'/'};
 		try{File.mkdir(newDir)};
 		items.do{|item|
 			File.mkdir(newDir++"/"++item.name);
 			File.copy(item.mostRecent,newDir++'/'++item.name++'/'++Date.getDate.stamp++'.aif');
 			samplesDir=newDir
 		}
-	}//}}}
+	}//
 	*play { |...args| ^current.play(*args) }
 	// let's add a length argument here 
 	// also add Item.stop to the xtouch function 
@@ -64,14 +64,14 @@ Item {
 	*arm { |...args| current.arm(*args) }
 	*armSection { |...args| current.armSection(*args) }
 	*samplesDir_ {|newDir|
-		(newDir[newDir.size-1]!=$/).if{newDir=newDir++'/'};//{{{
+		(newDir[newDir.size-1]!=$/).if{newDir=newDir++'/'};
 		samplesDir=newDir
-	}//}}}
+	}//
 	*list {|options = "-tr"| "ls " ++ options ++ " " ++ samplesDir => _.unixCmd}
 	*open {"open "++Item.samplesDir=> _.unixCmd}
 
 	init { | n |
-		name = n;//{{{
+		name = n;
 		dir=samplesDir++name++"/";
 		items.at(name).isNil.if{
 			items.put(n,this);
@@ -88,7 +88,7 @@ Item {
 			^items.at(n).refresh
 		}
 	}
-	//}}}
+	//
 	reaper {
 		Reaper.open2(this.mostRecent)
 	}
@@ -124,10 +124,10 @@ Item {
 		( "rm "++samplesDir++ name.asString.escapeChar($ ) ++"/"++"stamps" ).unixCmd
 	}
 	newFrom{|name|
-		var i = Item(name);//{{{
+		var i = Item(name);
 		//try{File.mkdir(samplesDir++newName)};
 		File.copy(i.mostRecent,dir++'/'++Date.getDate.stamp++'.aif')
-	}//}}}
+	}//
 	recIfArmed { |...args|
 		this.armed.if{
 			this.record(length:recordLength)
@@ -194,8 +194,8 @@ Item {
 		}{
 			'recording done'.postln;
 			buffer.write(dir++'/'++Date.getDate.stamp++'.aif', headerFormat: "aiff", sampleFormat: "int24", numFrames: -1, startFrame: 0, leaveOpen: false);
-			this.getFFT;
-			// clearStamps??
+			//this temporarily disabled for debugging
+			//this.getFFT;
 		}
 	}
 	recordNow {|length|
@@ -216,20 +216,20 @@ Item {
 			})
 		}
 	}
-	stop {//{{{
+	stop {
 		node.isNil.not.if{
 			//			abort=true;
 			node.free
 		}; 
 		buffer=Buffer.read(Server.default,this.mostRecent)
-	}//}}}
-	tapeMode { //{{{
+	}//
+	tapeMode { 
 		this.armed.if{
 			// monitor input
 		}{
 			// play as per usual
 		}
-	}//}}}
+	}//
 	*makePlayer {
 		[1,2,4,8].do { |i|
 			SynthDef("itemPlayer"++i, {
@@ -253,7 +253,7 @@ Item {
 	}
 	// warning argument order was changed!!!
 	playNow {
-		|server out  rate=1 startPos=0 trigger=1 loop=0 amp=1| //{{{
+		|server out  rate=1 startPos=0 trigger=1 loop=0 amp=1| 
 		bus = (out ? bus);
 		server ?? {server=Server.default};
 		this.armed.if{
@@ -274,7 +274,7 @@ Item {
 				^synth
 
 			}
-		} //}}}
+		} //
 	playWarp { |durs key fftSize=4096 hop=0.25 |
 		var env = this.stamp(durs,key);
 		var bus = Bus.control;
@@ -289,7 +289,7 @@ Item {
 		{ EnvGen.kr(env) }.play(Server.default,bus);
 		synth.map(\rate,bus)
 	}
-	play {|server out  rate=1 startPos=0 trigger=1 loop=0 amp=1| //{{{
+	play {|server out  rate=1 startPos=0 trigger=1 loop=0 amp=1| 
 		bus = (out ? bus);
 		server ?? {server=Server.default};
 		this.armed.if{
@@ -312,8 +312,8 @@ Item {
 			}
 			^synth
 		}
-	} //}}}
-	prepVocoder {|numberOfBands=20| //{{{
+	} 
+	prepVocoder {|numberOfBands=20| 
 		var s,f;
 		s=Server.default;
 		f=Buffer.alloc(s,buffer.numFrames/64,numberOfBands);
@@ -323,19 +323,20 @@ Item {
 			=> RecordBuf.kr(_,f.bufnum,loop:0,doneAction:2)
 		}.play;
 		^f;
-	}//}}}
+	}
 	p_sampleRate { ^SoundFile(this.mostRecent).sampleRate }
 	current { current=this; }
 	refresh {
+		try{buffer.free};
 		buffer=Buffer.read(Server.default,this.mostRecent);
 		recordLength=buffer.numFrames;
 	}
-	playbufMon {|...args| //{{{
+	playbufMon {|...args| 
 		this.armed.if{^SoundIn.ar(inBus)}
 		{^this.playbuf(*args)}
-	}//}}}
+	}
 	playbuf { |rate=1 startPos=0 trigger=1 loop=0 doneAction=2|
-		^PlayBuf.ar(//{{{
+		^PlayBuf.ar(
 			inChans, 
 			buffer.bufnum,
 			rate:rate*BufRateScale.kr(buffer.bufnum),//this.p_sampleRate/Server.default.sampleRate,
@@ -344,17 +345,17 @@ Item {
 			loop:loop,
 			doneAction:doneAction
 		)
-	}//}}}
+	}
 	takes { ^SoundFile.collect(dir++name.asString++"/*")}
 	mostRecent { 
-		^dir//{{{
+		^dir
 		++ PathName(dir.asString++"/").files.collect{|i|
 			i.fileNameWithoutExtension
 		}
 		.reject{|i| i[0..5]=="stamps"}
 		.sort.reverse[0]
 		++ ".aif"
-	}//}}}
+	}//
 
 	*test {
 		~b=Bus.audio();

@@ -687,14 +687,12 @@ Part {
 	var <>start,<>syl,<>lag,<>music,<>resources,<>parent,<>name;
 
 	*play{fork{Server.default.sync;current.play};^current}
-
 	*new {|start=0,syl,lag=0,music,resources|
 		^super.new.init(start,syl,lag,music,resources)
 	}
 	init { |s,y,l,m, r|
 		start=s;syl=y;music=m;lag=l;resources = r.isNil.if{()}{r};
 	}
-
 	//play immediately
 	play {switch (music.class,
 		Function,{Server.default.bind{
@@ -721,10 +719,6 @@ Part {
 	}
 	test{^start}
 	awake { this.play }
-
-
-//TempoClock.sched(2,{2.postln;Routine{1.postln}}.value)
-
 	sched { |when=1|
 		////////////////trying to make setup be part of Part
 		//////////delete this line if not work
@@ -735,7 +729,6 @@ Part {
 		//AppClock.sched(when,this)
 		//SystemClock.sched(when,this)
 	}
-
 	calcTime {
 		var when;
 		lag.isNil.if{lag=0};
@@ -744,14 +737,12 @@ Part {
 		syl !? {when = when + parent.durTill(start,syl)};
 		^when
 	}
-
-	//play in context of parent song
+	// adds .playInitiatedAt to the start time - not used ATM
 	pAbs {
 		(start>=parent.cursor).if{
-			var when=this.calcTime+parent.playInitiatedAt;
-			this.schedAbs(when+Server.default.latency);
+			var when = this.calcTime + parent.playInitiatedAt;
+			this.schedAbs( when + Server.default.latency);
 			{this.name.postln}.schedAbs(when);
-//			when.postln
 		}
 	}
 	p {
@@ -766,15 +757,12 @@ Part {
 		this.p;
 		{this.name.postln}.sched(this.calcTime);
 	}
-
     hasStill {
         resources.still.notNil || music.cs.contains("still") 
     }
-
     isTune {
         name.asString.contains("TUNE")
     }
-	 
 	//add random stuff to resources
 	doesNotUnderstand { |selector   args|
 		var key = selector.asString;
@@ -790,7 +778,7 @@ Part {
 		)
 	}
 }
-// makes a part which registers itself with its parent song
+// Constructor for Parts
 P { 
     *new {
         |key start syl lag=0 music song resources|
@@ -859,19 +847,19 @@ P {
         ).value
     }
     *click { | key |
-
 	    P(
 		    key: (key++"CLICK").asSymbol, 
 		    start: key,
 		    music: { |p b e| 
 			    [
 				    instrument:\hat_808,
-				    dur: p.quarters[e.start].q
+				    dur: p.quarters[e.start]
 			    ].pp 
 		    }
 	    )
     }
 }
+
 SongList {
 	classvar <> current;
 	var < arrayOfSongs;

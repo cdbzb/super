@@ -50,17 +50,45 @@ P(\chords,start:\selected,syl:6,music:{|p b e|
 });
 [ "MCCOY:(boom boom boom boom) What's your attitude on that, Doctor? ", [ -1, -1, -17, -17, -5, 3, -7, 1, -7, -5, 3, 2, 1 ].dm(\a,5,\mixolydian) ].addLine;
 P.tune(\attitude);
-["MULHALL: Well, if we all agree, I'm willing to host Thalassa's mind.","r"].addLine;
-/*
-Well .. if we all agree.....
-Im a scientist - and I'm willing
-to host Thalassa's mind
-The opportunity is an extraordinary one. for experimentation, observation.
-*/
-["I'm a scientist. (and I'm willing)","r"].addLine;
+// ["MULHALL: Well, if we all agree, I'm willing to host Thalassa's mind.","r"].addLine;
+[" ( boom x 7 ) I'm a scientist.  ( boom x 7 ) and I'm","3 4 6 5 7 3 4 11 12 13 14 13 5 3 4 6 5 7 3 4 5 15  ".dm(\b)].addLine;
+Song.setQuarters(\scientist,"q q q q qqqq q q q e e ee e eqq q q q q qqqq q q q q".asBeats);
+P.click(\scientist);
+P.tune(\scientist);
+P(\lead,start:\scientist,music:{ |p b e|
+MegaBind(
+		[
+			[3,4,6,5,7,3,4,6,5,11].dup(2).flat
+		].df(\b,4),
+		p.quarters[e.start].list.parse([1,1,1,1,4].dup(3).flat),
+		[ 
+			lag: { 0.5.dup(8)
+			//.put(0,0)
+			.dq }
+		],
+		{|i|
+		Saw.ar( i.freqSeq.lag([0, i.lag.demand(i.dur) ],0.1) )	
+		*( Env.asr(0.1, 1, 2).kr(2,gate: i.gateSeq)
+		   + Env.perc(0.01, 0.23).kr(0,gate: i.trigSeq)
+		)
+		=> EchoCubic.ar(_,1,
+			//envelope of delay mod
+			Env([0, 0, 1, 1], i.dur.parse([4],3)).kr(gate:1)
+			* SinOsc.kr(2).range(-0.002,0.002)+0.2
+		) * 0.3
+	},
+		{|i|
+			Splay.ar(i).distort
+			*0.4
+		}
+	).play
+});
+[" willing I'm willin I'm willing", "r"].addLine;
+["to host Thalassa's mind","r"].addLine;
 ["The opportunity is an extraordinary one for experimentation, observation. ","r"].addLine;//p14
 ["SCOTT: A starship engine the size of a walnut? ","r"].addLine;
 ["Thats impossible","5 5 11 5 1".dm('a-')].addLine;
+P.tune(\impossible);
 //["But I don't suppose there'd be any harm in looking over diagrams on it. ","r"].addLine;
 ["KIRK: Bones? You could stop all this by saying no. ",[7].dm(\b,4,\mixolydian) ++ [3,4,7,4,3,2,3,4].dm(\c,5,\mixolydian) ++ [5].dm(\a,4)].addLine;
 P.tune('stop all this');
@@ -110,6 +138,7 @@ P(\bass,start:\involved,music:{|p b e|  // passing tone right before end please
 	
 });
 
+
 SynthDef(\defaultRetrig,{ | out=0 freq=400 amp=0.1 gate=1 t_trig=1 pan=0 curve=( -8 ),fatness=0.3 | 
 			var z;
 			var damper = Env.asr(0,1,0.3).kr(2,gate:gate);
@@ -130,6 +159,7 @@ P(\chords,start:\involved,music:{|p b e|
 	[
 		freq: [\r, oneM7, oneM7, oneM7, \r, oneM7, four6, six].df(\c) ++ 
 		[ [1,3,5,7], [ -7,2,4,7 ]].df('c#',5,\mixolydian) => _.q,
+		curve:-9,
 		t_trig:1,
 		legato: [1,1,1,1,0,1,1,0.9,1].q(inf),
 		//dur: b.parse([1, [1, 1/2], [1/2, 1], 4, 5,3]).q,
@@ -172,12 +202,50 @@ P(\strum,start:'possible miracles',music:{|p b e|
 	).play
 });
 ["simple basic understandable","5 5 6 6 7 11 7 6 4".dm('e-',5,\mixolydian)].addLine;
+Song.setQuarters(\understandable,"q q q q q e q e e ".asBeats);
+//Song.quarters[\understandable].list
+	P(\chords,start:\understandable,music:{|p b e| 
+		var one, four, seven;
+		# one, four, seven = [[1,3,5],[1,4,6],[2,4,7]].df('e-',scale:\mixolydian);
+		\one.post;one.postln;
+		MegaBind(
+			[one, one, four, four, seven, seven, four, four ].flop,
+			p.quarters[e.start].list.gaussian(dev:0.005),
+			//1,
+			[
+				pan:[ -1,0,1 ],
+				limit:[ 0.5,0.1,0.005 ],
+				lag: { 0.01 dup: 8 => _.put(0,0) => _.dq => _.demand(p.quarters[e.start].list) }
+			],
+			{|i|
+				SinOsc.ar( i.freqSeq.lag(i.lag), 0, 0.1 )
+				* 
+				(
+					Env.asr(0.01,1,0.001).kr(gate:i.gateSeq)
+					+
+					Env.perc(0.05,1).kr(0,gate: i.trigSeq)
+				)
+				=> SineShaper.ar(_, i.limit)
+				=> Pan2.ar(_,i.pan).fold2(0.01)
+				=> AnalogPhaser.ar(_, SinOsc.ar(rrand(0.2,0.3)), feedback: 0.8)
+				=> LPF.ar(_,6000)
+			},
+			{|i|
+				Mix.ar(i)
+				=>HPF.ar(_,200)
+				/2
+				=> PlateReverb.ar(_,decayTime:0.2, mix:0.25)
+				/2
+
+			}
+		).play
+
+	});
 P.tune(\understandable);
-Song.quarters[\understandable] = Song.parseBeats(\understandable,"q q q q q e ee e q".asBeats);
 P(\bass,start:\understandable,music:{|p b e| 
 	[
 		freq: "1 1 4 4 7 7 4 4".df('e-',3,\mixolydian).q,
-		dur: p.quarters[\understandable].q,
+		dur: p.quarters[\understandable],
 		//instrument:\sawSynth
 
 		out: Effect( { |i|  SineShaper.ar(i*10,limit:0.1) => FreeVerb.ar(_,0.5,0.9) }  ).bus.index

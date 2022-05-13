@@ -643,6 +643,7 @@ Song {
 		)
 	}
     setQuarters { | section array|
+	    ( array.class == String ).if{ array = array.asBeats } ;
         quarters[section] = this.parseBeats(section,array).q
     }
 

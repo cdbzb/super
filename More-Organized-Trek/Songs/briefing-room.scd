@@ -83,9 +83,28 @@ MegaBind(
 		}
 	).play
 });
-[" willing I'm willin I'm willing", "r"].addLine;
-["to host Thalassa's mind","r"].addLine;
-["The opportunity is an extraordinary one for experimentation, observation. ","r"].addLine;//p14
+[" willing I'm willin I'm willing", "14 13 11 13 12 5 14 13 ".dm(\b)].addLine;
+Song.setQuarters('willin ', "qe eqe e qe eqe e qe eqe  ");
+//P.click('willin ');
+P.tune(\willing);
+Song.mindKey = 'f#';
+["to host Thalassa's mind",[4,3,5,4,3,7].dm( Song.mindKey, 5, \mixolydian)].addLine;
+P.tune('to host');
+P(\chords,start:'to host',music:{|p b e| 
+	[
+		freq: [\r, [-6,1],-2, [-15, 2, 4, 7]  ].df(p.mindKey, 5, \mixolydian).q,
+		dur: b.parse([1,2,2,1]).q,
+		instrument:\sawSynthSustain,
+		strum:[0,0,0,0.05].q
+
+	].pp;
+});
+
+["The opportunity is an extraordinary one ","-1 3 3 3 3 2 2 1 2 3 5 4.5 2 1 -7.5".dm('f#',5,\minor)].addLine;//p14
+P.tune(\extraordinary);
+//P.click(\extraordinary);
+Song.setQuarters(\extraordinary, "e x xe x xe x xqe x xe x xe x xe x xe");
+[" for experimentation, observation. ","r"].addLine;//p14
 ["SCOTT: A starship engine the size of a walnut? ","r"].addLine;
 ["Thats impossible","5 5 11 5 1".dm('a-')].addLine;
 P.tune(\impossible);

@@ -21,6 +21,11 @@ s.waitForBoot {
 [ "KIRK: Bones, they'll show us medical advances,","r" ].addLine;
 [ "miracles you never dreamed possible.","r" ].addLine;
 [ "Scotty, engineering advances.","r" ].addLine;
+P(\test,start:\engine,music:{|p b e| 
+	{
+		RecEnv("20220515_092222", length:4, durs:[1,1,1,1]).playbuf.().lag(0.1)  * Saw.ar(400 * [1,2.5,4.5,1.135,6,12])
+	}.play
+});
 [ "Vessels this size with engines the size of walnuts. ","r" ].addLine;
 [ "SCOTT: Ach! You're joking. ","r" ].addLine;
 [ "SPOCK: No, he's not. ","r" ].addLine;
@@ -88,26 +93,46 @@ Song.setQuarters('willin ', "qe eqe e qe eqe e qe eqe  ");
 //P.click('willin ');
 P.tune(\willing);
 Song.mindKey = 'f#';
-["to host Thalassa's mind",[4,3,5,4,3,7].dm( Song.mindKey, 5, \mixolydian)].addLine;
+["to host Thalassa's mind",[4,3,5,4,3,7, 2, 3, 4,5, 6].dm( Song.mindKey, 5, \mixolydian)].addLine;
 P.tune('to host');
 P(\chords,start:'to host',music:{|p b e| 
 	[
-		freq: [\r, [-6,1],-2, [-15, 2, 4, 7]  ].df(p.mindKey, 5, \mixolydian).q,
-		dur: b.parse([1,2,2,1]).q,
+		freq: [\r, [-6,1],-2, [-15, 2, 4, 7], [-1, 1, 4, 6]  ].df(p.mindKey, 5, \mixolydian).q,
+		dur: b.parse([1,2,2,5,1]).q,
 		instrument:\sawSynthSustain,
-		strum:[0,0,0,0.05].q
+		strum:[0,0,0,0.05, 0.05].q
 
 	].pp;
 });
 
 ["The opportunity is an extraordinary one ","-1 3 3 3 3 2 2 1 2 3 5 4.5 2 1 -7.5".dm('f#',5,\minor)].addLine;//p14
+Song.setQuarters(\extraordinary,"e x xe x xe xqe xe xe xe xe".asBeats)	;
+P(\bass,start:\extraordinary,music:{|p b e| 
+	[
+		freq: [11, 7, 6.5, 6].df('f#', 2).q,
+		dur: p.quarters[e.start].list.parse([2,2,2,2]).q,
+		legato: [1,1,1,3].
+	].pp
+});
 P.tune(\extraordinary);
 //P.click(\extraordinary);
 Song.setQuarters(\extraordinary, "e x xe x xe x xqe x xe x xe x xe x xe");
-[" for experimentation, observation. ","r"].addLine;//p14
-["SCOTT: A starship engine the size of a walnut? ","r"].addLine;
-["Thats impossible","5 5 11 5 1".dm('a-')].addLine;
+[" for experimentation, observation. ","2 3 4 5 -6 1 1 -7 5 5 4 3 3 2  1".dm('c#')].addLine;//p14ngyy
+P.tune(\experimentation);
+["SCOTT: A starship engine the size of a walnut? Thats impossible! "," 2 3 1 -7 -6 -5.5 4 3 4 5 -7".dm(\a) ++ "5 5 11 5 1".dm('a-',5)].addLine;
 P.tune(\impossible);
+P(\chord,start:\impossible,syl:0,music:{|p b e| 
+	(
+		freq:[1,3,5.5,7].df(\f),
+		instrument:\stringyy
+	).play
+});
+P(\bass,start:\impossible,music:{|p b e| 
+	[
+		freq: [\r] ++ "5 4 3 2".df(\a,3) ++ "5 1".df('a-',3) =>_.q,
+		dur: b.parse([1,5,3,2,0.75,[0.25,1],2]).q
+	].pp
+});
 //["But I don't suppose there'd be any harm in looking over diagrams on it. ","r"].addLine;
 ["KIRK: Bones? You could stop all this by saying no. ",[7].dm(\b,4,\mixolydian) ++ [3,4,7,4,3,2,3,4].dm(\c,5,\mixolydian) ++ [5].dm(\a,4)].addLine;
 P.tune('stop all this');
@@ -129,9 +154,9 @@ P(\chord,start:'stop all this',music:{|p b e|
 	[
 		//freq: [1,3,5,7].df(\b,4,\mixolydian),
 		//freq: [ [1,3,4.5,7].df(\b,4,\mixolydian), \r, [1,3,5,11].df(\a,4,\minor) ].q,
-		freq: [ [1,3,5,7].df(\b,4,\mixolydian), \r, [1,3,5,11].df(\a,4,\minor) ].q,
+		freq: [ [-1 ,1,3,5,7].df(\b,4,\mixolydian), \r, [-1, -7, 1,3,5].df(\a,4,\minor) ].q,
 		dur: b.parse([1, 8, 1]).q,
-		strum: [ 0.055, 0, 0 ].q
+		strum: [ 0.055, 0, 0.04 ].q
 	].pp
 });
 ["That's why-- I called you all here together. ","2  2 3  -6  3 4  4 5 2 5  5 6 6 7 6".dm('e-',5,\lydian)].addLine;

@@ -53,7 +53,7 @@
 	Pdef.new(\f,Pbind(*[
 		instrument:\kick,
 		amp:1,
-		dur:~pat.("x0x0|x0x0|xx0x|xxxx",4,inf),
+		dur:"x0x0|x0x0|xx0x|xxxx".asDrumPat(4,inf),
 		//tempo:Pwhite(0.59,1.11,inf)
 	]));
 	SynthDef(\fb,
@@ -93,7 +93,7 @@
 		Pfxb(
 			Pbind(*[
 				instrument:\snare,
-				dur:~pat.("0000x000|0000x000|0000x00x|0000x00x",8,inf),
+				dur:"0000x000|0000x000|0000x00x|0000x00x".asDrumPat(8,inf),
 				amp:0.2
 			]),
 			//\fb

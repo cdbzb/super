@@ -48,7 +48,10 @@
 
         warpTo {
                 | quarters |
-                var atInterpolated = {|array index| 
+		var atInterpolated;
+		( quarters.class==Pseq ).if{ quarters = quarters.list };
+		( quarters.class==Symbol).if{ quarters = Song.quarters[quarters] };
+                atInterpolated = {|array index| 
                         ([0] ++ array).integrate.at( index.floor ) + 
                         (index.frac * array[index.floor]) 
                 };
@@ -70,14 +73,14 @@
 		^array.collect{ |item|
 			item.isArray.not.if(
 				{
-					var b = beatNum[counter];
+					var b = beatNum.clipAt( counter );
 					counter =counter+1;
-					item*this[b+start]
+					item*this.clipAt( b+start )
 				},{
 					var subArray = item.collect{
 						|i x| 
-						var b = beatNum[counter+x];
-						i*this[b+start]
+						var b = beatNum.clipAt( counter+x );
+						i*this.clipAt( b+start )
 					}; 
 					counter=counter+item.size; 
 					subArray.sum;

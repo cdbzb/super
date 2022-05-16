@@ -59,23 +59,27 @@ P.tune(\attitude);
 //[" ( boom x 7 ) I'm a scientist.  ( boom x 7 ) and I'm","3 4 6 5 7 3 4 11 12 13 14 13 5 3 4 6 5 7 3 4 5 15  ".dm(\b)].addLine;
 [" ( boom x 7 ) I'm a scientist.  ( boom x 7 ) and I'm","3 4 6 5 7 3 4 11 7 11 12 11 3 3 4 6 5 7 3 4 5 15  ".dm(\b)].addLine;
 Song.setQuarters(\scientist,"q q q q qqqq q q q e e ee e eqq q q q q qqqq q q q q".asBeats);
-P.click(\scientist);
+//P.click(\scientist);
 P.tune(\scientist);
 P(\jank,start:\scientist,music:{|p b e| 
 	
 	[
 		freq: [\r,7, 11, 7].df(\b,[2,3]).q,
-		dur: "qqqq qqqqqqqq qqqqqqqq qqqq".asBeats.warpTo(Song.quarters[ \scientist ].list).q ,
+		dur: "qqqq qqqqqqqq qqqqqqqq qqqq".asBeats.warpTo(p.quarters[e.start]).q ,
 		amp:0.4,
 		coef:0.8,
 		del:0.7,
 		smooth:0.25,
-		instrument:\pluckD,
+		instrument:\pluckDEnvPan,
+		pan: Prand([-1,1],inf),
+		legato: 0.125,
+		release:1.3,
 		out: Effect(
-			(CombN.ar(_,1,(t.tempo).reciprocal/1,4)
-			+Gain.ar(_,1!2))
-			*0.1*0.4
-			//* Env.linen(0,1.3,1, 0.05).kr(0,gate:1)
+			{ |i| CombN.ar(i,1,(p.quarters[e.start].list.mean),4)
+			      + Gain.ar(i, 1 )
+			      *0.1*0.4
+		      } ,
+		      inputChannels:2
 		).bus.index
 	].pp
 });
@@ -114,6 +118,102 @@ Song.setQuarters('willin ', "qe eqe e qe eqe e qe eqe  ");
 //P.click('willin ');
 P.tune(\willing);
 Song.mindKey = 'f#';
+P(\bass,start:'willin ',music:{|p b e| 
+	[
+
+					root:-1,
+					degree: 8.dup(8)++2.1.dup(4)++5.dup(4)=>_.flatten=>_.q(inf)-1,
+					octave:2,
+					out:[0,1],
+					smooth:Pwhite(0.2,0.3,inf),
+					del:Pwhite(0.5,1,inf),
+					dur:0.25,
+					coef:Pbrown(0.1,0.9,0.03),
+					lag:Pwhite(-0.01,0.01),
+					dur: 0.5,
+					amp:0.05
+	].pm(\pluckD).fin(24).play(TempoClock.newFromQuarters(p.quarters[e.start]))
+});
+P(\oldArr,start:\willing,music:{|p b e| 
+	
+	//	drums	
+	Pdef.new(\f,Pbind(*[
+		instrument:\kick,
+		amp:1,
+		dur:"x0x0|x0x0|xx0x|xxxx".asDrumPat(4,inf),
+		//tempo:Pwhite(0.59,1.11,inf)
+	]));
+	Pdef.new(\q,
+		Pfxb(
+			Pbind(*[
+				instrument:\snare,
+				dur:"0000x000|0000x000|0000x00x|0000x00x".asDrumPat(8,inf),
+				amp:0.2
+			]),
+			//\fb
+			//\phaserr
+			\dst
+		)
+	);
+	a=Pdef.new(\h,
+		Pbind(*[
+			instrument:\hihat,
+			amp:Pseq([0.1,0.2],inf*Pwhite(1,1.2,inf)),
+			//lag:Pseq([0,0.008],inf),
+			dur:"xxxx".asDrumPat(8,16)
+		])
+	);//.play
+	a.quant=1;
+	b=Pdef(\m,Pfxb(a,\phaserr,\fb,-0.99));
+	c=Pseq([a,b],inf);
+
+				// 'guitar-ish' //		
+
+				//~synthsLoaded ?? {"~/tank/super/song-Synthdefs.scd".standardizePath.load};
+
+			
+
+				[
+					degree:[3,4,6,5,7,3,4,6,5,8].q-1,
+					root:-1,
+					dur: [1.dup(4)++4].flatten.q(12)/4,
+					octave:4,
+					amp:0.3
+				].p
+				=> Pdef (\lick,_);
+
+				//.play;
+
+				Pdef(\boodoo,Pbind(*[
+					//instrument:\sawSynth,
+					att:0,
+					degree:Pseq([1,2,3,5,4,2,1],inf)-1,
+					dur:Pseq([1,1,1,1,8,8,12]/4,inf),
+					root:7,
+					octave:2,
+					amp:0.6
+				])).quant([16,7])
+				;
+				Pdef(\boodoo);//.play;
+				//t=TempoClock.new.tempo_(88.bpm).permanent_(true);
+				//t.tempo_(45.bpm);
+
+				//p=PF.new;
+				t=(Song.quarters[\scientist].list/2 =>_.asTempoClock);
+				//t.tempo
+				Ptpar([ //		
+					0,Pdef(\m),
+					//2,Pdef(\lick),
+					0,Pdef(\q),
+					0,c,
+					0,Pdef(\f),
+					0,Pwrand([Pdef(\a),(note:Rest,dur:8)],[0.7,0.3],inf), //guitar
+					//Pseq([(note:Rest,dur:7+16),Pdef(\boodoo)]),
+				]
+			)
+			//.play(t)
+
+});
 ["to host Thalassa's mind",[4,3,5,4,3,7, 2, 3, 4,5, 6].dm( Song.mindKey, 5, \mixolydian)].addLine;
 P.tune('to host');
 P(\chords,start:'to host',music:{|p b e| 

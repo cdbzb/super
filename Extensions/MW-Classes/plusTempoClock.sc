@@ -17,3 +17,9 @@
 		^TempoClock.newFromQuarters(this)
 	}
 }
+
++ Pseq {
+	asTempoClock {
+		^TempoClock.newFromQuarters(this.list)
+	}
+}

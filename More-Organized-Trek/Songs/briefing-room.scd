@@ -56,35 +56,56 @@ P(\chords,start:\selected,syl:6,music:{|p b e|
 [ "MCCOY:(boom boom boom boom) What's your attitude on that, Doctor? ", [ -1, -1, -17, -17, -5, 3, -7, 1, -7, -5, 3, 2, 1 ].dm(\a,5,\mixolydian) ].addLine;
 P.tune(\attitude);
 // ["MULHALL: Well, if we all agree, I'm willing to host Thalassa's mind.","r"].addLine;
-[" ( boom x 7 ) I'm a scientist.  ( boom x 7 ) and I'm","3 4 6 5 7 3 4 11 12 13 14 13 5 3 4 6 5 7 3 4 5 15  ".dm(\b)].addLine;
+//[" ( boom x 7 ) I'm a scientist.  ( boom x 7 ) and I'm","3 4 6 5 7 3 4 11 12 13 14 13 5 3 4 6 5 7 3 4 5 15  ".dm(\b)].addLine;
+[" ( boom x 7 ) I'm a scientist.  ( boom x 7 ) and I'm","3 4 6 5 7 3 4 11 7 11 12 11 3 3 4 6 5 7 3 4 5 15  ".dm(\b)].addLine;
 Song.setQuarters(\scientist,"q q q q qqqq q q q e e ee e eqq q q q q qqqq q q q q".asBeats);
 P.click(\scientist);
 P.tune(\scientist);
+P(\jank,start:\scientist,music:{|p b e| 
+	
+	[
+		freq: [\r,7, 11, 7].df(\b,[2,3]).q,
+		dur: "qqqq qqqqqqqq qqqqqqqq qqqq".asBeats.warpTo(Song.quarters[ \scientist ].list).q ,
+		amp:0.4,
+		coef:0.8,
+		del:0.7,
+		smooth:0.25,
+		instrument:\pluckD,
+		out: Effect(
+			(CombN.ar(_,1,(t.tempo).reciprocal/1,4)
+			+Gain.ar(_,1!2))
+			*0.1*0.4
+			//* Env.linen(0,1.3,1, 0.05).kr(0,gate:1)
+		).bus.index
+	].pp
+});
 P(\lead,start:\scientist,music:{ |p b e|
 MegaBind(
 		[
-			[3,4,6,5,7,3,4,6,5,11].dup(2).flat
-		].df(\b,4),
+			[3,  4,  6,  5,  7,  \r, \r, \r, \r, \r] .dup(2).flat,
+			[\r, \r, \r, \r, \r, 3,  4,  6,  5,  11].dup(2).flat
+		].df(\b,3),
 		p.quarters[e.start].list.parse([1,1,1,1,4].dup(3).flat),
 		[ 
 			lag: { 0.5.dup(8)
-			//.put(0,0)
+			.put(0,0)
 			.dq }
 		],
 		{|i|
-		Saw.ar( i.freqSeq.lag([0, i.lag.demand(i.dur) ],0.1) )	
-		*( Env.asr(0.1, 1, 2).kr(2,gate: i.gateSeq)
-		   + Env.perc(0.01, 0.23).kr(0,gate: i.trigSeq)
+		Saw.ar( i.freqSeq.lag( i.lag.demand(i.dur)) ,0.1 )	
+		*( Env.asr(0.1, 1, 2).kr(0,gate: i.gateSeq)
+		   + Env.perc(0.01, 0.23).kr(0,gate: i.trigSeq * i.gateSeq)
 		)
-		=> EchoCubic.ar(_,1,
+		=> ( CombC.ar(_,1,
 			//envelope of delay mod
-			Env([0, 0, 1, 1], i.dur.parse([4],3)).kr(gate:1)
-			* SinOsc.kr(2).range(-0.002,0.002)+0.2
-		) * 0.3
-	},
+			Env([0, 0, 1, 1], i.dur.parse([4],2)).kr(gate:1)
+			* SinOsc.kr(2).range(-0.002,0.002)+0.2,
+			10
+		) *0.4 + Gain.ar(_,0.8) 
+	)	},
 		{|i|
 			Splay.ar(i).distort
-			*0.4
+			=> Mix.ar(_) => Pan2.ar(_,0)
 		}
 	).play
 });
@@ -111,7 +132,7 @@ P(\bass,start:\extraordinary,music:{|p b e|
 	[
 		freq: [11, 7, 6.5, 6].df('f#', 2).q,
 		dur: p.quarters[e.start].list.parse([2,2,2,2]).q,
-		legato: [1,1,1,3].
+		legato: [1,1,1,3].q
 	].pp
 });
 P.tune(\extraordinary);

@@ -40,10 +40,17 @@ Monitors {
 		channels = 2;
 		speakerOrder = #[0,1]
 	}
-	* epos {
+	*epos {
 		var o =Server.default.options;
 		o.inDevice_("EPOS PC 8 USB");
 		o.outDevice_("EPOS PC 8 USB");
 		Server.default.reboot
 	}
+	*airpods {
+		var o =Server.default.options;
+		o.inDevice_("Pro Ag");
+		o.outDevice_("Pro Ag");
+		Server.default.reboot
+	}
+
 }

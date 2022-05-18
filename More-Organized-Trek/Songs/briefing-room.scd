@@ -56,7 +56,7 @@ P(\chords,start:\selected,syl:6,music:{|p b e|
 [ "MCCOY:(boom boom boom boom) What's your attitude on that, Doctor? ", [ -1, -1, -17, -17, -5, 3, -7, 1, -7, -5, 3, 2, 1 ].dm(\a,5,\mixolydian) ].addLine;
 P.tune(\attitude);
 // ["MULHALL: Well, if we all agree, I'm willing to host Thalassa's mind.","r"].addLine;
-//[" ( boom x 7 ) I'm a scientist.  ( boom x 7 ) and I'm","3 4 6 5 7 3 4 11 12 13 14 13 5 3 4 6 5 7 3 4 5 15  ".dm(\b)].addLine;
+//[" ( boom x 7 ) I'm a scientist.  ( boom x 7 ) and I'm","3 4 6 5 7 3 4 11 12 13 14 13 5 3 4 6 5 7 3 4 5 15  ".dm(\b)].addLine;g
 [" ( boom x 7 ) I'm a scientist.  ( boom x 7 ) and I'm","3 4 6 5 7 3 4 11 7 11 12 11 3 3 4 6 5 7 3 4 5 15  ".dm(\b)].addLine;
 Song.setQuarters(\scientist,"q q q q qqqq q q q e e ee e eqq q q q q qqqq q q q q".asBeats);
 //P.click(\scientist);
@@ -113,11 +113,37 @@ MegaBind(
 		}
 	).play
 });
-[" willing I'm willin I'm willing", "14 13 11 13 12 5 14 13 ".dm(\b)].addLine;
-Song.setQuarters('willin ', "qe eqe e qe eqe e qe eqe  ");
+[" willing I'm willin I'm willing I'm", "14 13 11 13 12 5 14 13 11".dm(\b)].addLine;
+Song.setQuarters('willin ', "qe eqe e qe eqe e qe eqe e ");
+P(\cymbal,start:'willin ',music:{|p b e| 
+(instrument:\cymbal,amp:1,length:4).play	
+});
 //P.click('willin ');
-P.tune(\willing);
-Song.mindKey = 'f#';
+P.tune('willin ');
+P(\drums,start:'willin ',music:{|p b e| 
+	var length = 12;
+	Ppar( [
+		[
+			instrument:\kick,
+			amp:1,
+			dur:"x0x0|x0x0|xx0x|xxxx".asDrumPat(8,inf),
+		].p,
+		Pfxb(
+			Pbind(*[
+				instrument:\snare,
+				dur:"0000x000|0000x000|0000x00x|0000x00x".asDrumPat(4,inf),
+				amp:0.2
+			]),
+			\dst
+		),
+
+		[
+			instrument:\hihat,
+			amp:Pseq([0.1,0.2],inf)*Pwhite(1,1.2,inf),
+			dur:"xxxx".asDrumPat(8,inf)
+		].p
+	] ) => Pfindur(length,_) =>_.play(e.quarters.list  => _.asTempoClock)
+});
 P(\bass,start:'willin ',music:{|p b e| 
 	[
 
@@ -136,35 +162,7 @@ P(\bass,start:'willin ',music:{|p b e|
 });
 P(\oldArr,start:\willing,music:{|p b e| 
 	
-	//	drums	
-	Pdef.new(\f,Pbind(*[
-		instrument:\kick,
-		amp:1,
-		dur:"x0x0|x0x0|xx0x|xxxx".asDrumPat(4,inf),
-		//tempo:Pwhite(0.59,1.11,inf)
-	]));
-	Pdef.new(\q,
-		Pfxb(
-			Pbind(*[
-				instrument:\snare,
-				dur:"0000x000|0000x000|0000x00x|0000x00x".asDrumPat(8,inf),
-				amp:0.2
-			]),
-			//\fb
-			//\phaserr
-			\dst
-		)
-	);
-	a=Pdef.new(\h,
-		Pbind(*[
-			instrument:\hihat,
-			amp:Pseq([0.1,0.2],inf*Pwhite(1,1.2,inf)),
-			//lag:Pseq([0,0.008],inf),
-			dur:"xxxx".asDrumPat(8,16)
-		])
-	);//.play
-	a.quant=1;
-	b=Pdef(\m,Pfxb(a,\phaserr,\fb,-0.99));
+	//b=Pdef(\m,Pfxb(a,\phaserr,\fb,-0.99));
 	c=Pseq([a,b],inf);
 
 				// 'guitar-ish' //		
@@ -214,11 +212,57 @@ P(\oldArr,start:\willing,music:{|p b e|
 			//.play(t)
 
 });
-["to host Thalassa's mind",[4,3,5,4,3,7, 2, 3, 4,5, 6].dm( Song.mindKey, 5, \mixolydian)].addLine;
+Song.mindKey = 'e-';
+["willing la laaa la", " 13 12 11 7 6".dm(\b,5)].addLine;
+Song.setQuarters('la laaa', "qe eqe e qe qq");
+P(\drums,start:'la laaa',music:{|p b e| 
+	
+	var length = 8 ;
+	Ppar( [
+		[
+			instrument:\kick,
+			amp:1,
+			dur:"x0x0|x0x0|xx0x|xxxx".asDrumPat(8,inf),
+		].p,
+		Pfxb(
+			Pbind(*[
+				instrument:\snare,
+				dur:"0000x000|0000x000|0000x00x|0000x00x".asDrumPat(4,inf),
+				amp:0.2
+			]),
+			\dst
+		),
+
+		[
+			instrument:\hihat,
+			amp:Pseq([0.1,0.2],inf)*Pwhite(1,1.2,inf),
+			dur:"xxxx".asDrumPat(8,inf)
+		].p
+	] ) => Pfindur(length,_) =>_.play(e.quarters.list  => _.asTempoClock)
+});
+P(\setClock,start:'la laaa',music:{|p b e| 
+});
+P.click('la laaa');
+P.tune('la laaa');
+P(\bass,start:'la laaa la',music:{|p b e| 
+	[
+
+		freq: [-2.5,-2.5,-2.5,-2.5,-5,-5,-5,-5, -6, -6, -6, -6, -6, -6, -6, -6].df('b',2).q,
+					outs:[0,1],
+					smooth:Pwhite(0.2,0.3,inf),
+					del:Pwhite(0.5,1,inf),
+					dur:0.25,
+					coef:Pbrown(0.1,0.9,0.03),
+					lag:Pwhite(-0.01,0.01),
+					dur: 0.5,
+					amp:0.05
+	].pm(\pluckD).fin(24).play(TempoClock.newFromQuarters(p.quarters[e.start]))
+});
+["to host Thalassa's mind",[4,3,5,4,3,7, 2, 3, 4,5, 6].dm( Song.mindKey, 6, \mixolydian)].addLine;
 P.tune('to host');
 P(\chords,start:'to host',music:{|p b e| 
 	[
-		freq: [\r, [-6,1],-2, [-15, 2, 4, 7], [-1, 1, 4, 6]  ].df(p.mindKey, 5, \mixolydian).q,
+		freq: [\r, [-6,1],-2, [-15, 2, 4, 7], [-1, 1, 3, 6]  ].df(p.mindKey, 5, \mixolydian).q,
 		dur: b.parse([1,2,2,5,1]).q,
 		instrument:\sawSynthSustain,
 		strum:[0,0,0,0.05, 0.05].q
@@ -226,19 +270,30 @@ P(\chords,start:'to host',music:{|p b e|
 	].pp;
 });
 
-["The opportunity is an extraordinary one ","-1 3 3 3 3 2 2 1 2 3 5 4.5 2 1 -7.5".dm('f#',5,\minor)].addLine;//p14
+Song.opportunityKey='b';
+["The opportunity is an extraordinary one ","-1 3.5 3.5 3.5 3.5 2 2 1 2 3 5 4.5 2 1 -7.5".dm(Song.opportunityKey,6,\minor)].addLine;//p14
 Song.setQuarters(\extraordinary,"e x xe x xe xqe xe xe xe xe".asBeats)	;
+P.click(\extraordinary);
 P(\bass,start:\extraordinary,music:{|p b e| 
 	[
-		freq: [11, 7, 6.5, 6].df('f#', 2).q,
-		dur: p.quarters[e.start].list.parse([2,2,2,2]).q,
-		legato: [1,1,1,3].q
+		freq: [11, 7, 6.5, 6].df(p.opportunityKey, 2).q,
+	dur: e.quarters.list.parse([2,2,2,2]) 
+		+ [ 0,0,0, p.durs[e.start +1].list.parse([5])] => _.q,
+		legato: [1,1,1,1].q,
+		instrument: \sawSynthSustain
 	].pp
 });
 P.tune(\extraordinary);
 //P.click(\extraordinary);
 Song.setQuarters(\extraordinary, "e x xe x xe x xqe x xe x xe x xe x xe");
-[" for experimentation, observation. ","2 3 4 5 -6 1 1 -7 5 5 4 3 3 2  1".dm('c#')].addLine;//p14ngyy
+[" for experimentation, observation. ","2 3 4 5 -6 1 1 -7 5 5 4 3 3 2  1".dm('f#',6)].addLine;//p14ngyy
+P(\bass,start:\experimentation,music:{|p b e| 
+	[
+		freq: [\r, 12, 15, 12].df(p.opportunityKey,2).q,
+		dur: b.parse([5,6, [1,1,0.5], [0.5,1]]).q,
+		instrument:\sawSynthSustain
+	].pp;	
+});
 P.tune(\experimentation);
 ["SCOTT: A starship engine the size of a walnut? Thats impossible! "," 2 3 1 -7 -6 -5.5 4 3 4 5 -7".dm(\a) ++ "5 5 11 5 1".dm('a-',5)].addLine;
 P.tune(\impossible);

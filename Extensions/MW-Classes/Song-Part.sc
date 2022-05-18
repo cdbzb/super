@@ -758,12 +758,18 @@ Part {
 		this.p;
 		{this.name.postln}.sched(this.calcTime);
 	}
-    hasStill {
-        resources.still.notNil || music.cs.contains("still") 
-    }
-    isTune {
-        name.asString.contains("TUNE")
-    }
+	hasStill {
+		resources.still.notNil || music.cs.contains("still") 
+	}
+	isTune {
+		name.asString.contains("TUNE")
+	}
+	quarters {
+		^parent.quarters[start]
+	}
+	next {
+		^start + 1
+	}
 	//add random stuff to resources
 	doesNotUnderstand { |selector   args|
 		var key = selector.asString;

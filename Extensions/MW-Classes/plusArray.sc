@@ -46,18 +46,29 @@
 		^this;
 	}
 
+	pr_getQuarters { |quarters|
+		( quarters.class==Pseq ).if{ quarters = quarters.list };
+		( quarters.class==Symbol).if{ quarters = Song.quarters[quarters] };
+		^quarters
+	}
+
         warpTo {
                 | quarters |
 		var atInterpolated;
-		( quarters.class==Pseq ).if{ quarters = quarters.list };
-		( quarters.class==Symbol).if{ quarters = Song.quarters[quarters] };
+		quarters = this.pr_getQuarters(quarters);
                 atInterpolated = {|array index| 
                         ([0] ++ array).integrate.at( index.floor ) + 
                         (index.frac * array[index.floor]) 
                 };
                 ^this.integrate.collect{|i| atInterpolated.(quarters,i)}.differentiate
         }
-
+	warpToPickup {
+		| quarters pickup |
+		var array = this.put(0,this[0] * pickup.reciprocal);
+		quarters = this.pr_getQuarters(quarters);
+		^ array.warpTo(quarters)
+	}
+	
 	//taken from Song-Part - should replace for modularity
 	//TODO error check if array is too long
 	parse {|array start=0| 

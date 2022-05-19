@@ -581,8 +581,6 @@ Song {
 				( beatCounter.size==1 ).if({result.add(1)},{result.add(beatCounter/denominators)});
 				beatCounter=List.new;denominators=List.new;
 			}{i > (1 - beatCounter.sum)}{
-				\grader.postln;
-				i.postln;
 				while ( {i > (1 - beatCounter.sum)},{
 					i = i-(1-beatCounter.sum);
 					((1-beatCounter.sum)>0).if {
@@ -642,9 +640,15 @@ Song {
 			}
 		)
 	}
-    setQuarters { | section array|
+    setQuarters { |section array|
 	    ( array.class == String ).if{ array = array.asBeats } ;
         quarters[section] = this.parseBeats(section,array).q
+    }
+
+    setQuartersPickup { |section array pickup| // one pickup note only
+	    ( array.class == String ).if{ array = array.asBeats } ;
+	    //^ array[0].bubble ++ this.parseBeats(section, array, start: 1)
+	    quarters[section] = this.durs[section].list[0].bubble ++ this.parseBeats(section, array, start: 1)
     }
 
 	playIncremental {

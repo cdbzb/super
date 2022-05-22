@@ -12,7 +12,7 @@
 				i
 			}
 		}) => Dictionary.newFrom(_);
-		^this.split(Char.space).ascii
+		^this.split(Char.space).reject{|i| i==""}.ascii
 		.deepCollect(2, {|i| dict.at(i) ? 0})
 		.collect(_.sum)
 	}

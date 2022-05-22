@@ -12,6 +12,7 @@ Song {
 	var <durs,  <>resources, <>lyricsToDurs;
     var <>next;
 	var <>quarters;
+	var <>beatString;
 	var <>clock;
 	var playInitiatedAt,<>preroll=0;
 
@@ -117,6 +118,7 @@ Song {
 		durs=Durs(this);
 		clock=TempoClock.new(queueSize:512);
 		quarters=SongArray(key:key);
+		beatString=SongArray(key:key);
 	}
 	cursor_ {|i| cursor = i; lastSectionPlayed = i;}
 
@@ -559,9 +561,11 @@ Song {
 		}
 	} 
 	parseBeats { |phrase array start=0|
-		var beatCounter = List.new, denominators = List.new;
-		var result = List.new;
-		var desiredLength = array.sum;
+		var beatCounter, result, desiredLength, denominators;
+		array = array.drop(start);
+		beatCounter = List.new; denominators = List.new;
+		result = List.new;
+		desiredLength = array.sum;
 		phrase=this.getSection(phrase);
 		array=array++1;
 		array.do{
@@ -594,9 +598,7 @@ Song {
 					} );
 					denominators.add(denominator);
 					beatCounter.add(i);
-
 				}
-
 			};
 			//sanity check - if result is 1 too long
 			(result.size>desiredLength).if{result=result[0..(result.size-2)]};
@@ -645,42 +647,55 @@ Song {
         quarters[section] = this.parseBeats(section,array).q
     }
 
+    asBeatsPickup {|section string |
+	    string.contains( "|" ).if{
+		    var pickup,beats;
+		    beatString[section] = string;
+		    # pickup,beats = string.split($|);
+		    pickup = pickup.split(Char.space).reject{|i| i==""}.size; // how many notes
+		    'pickup '.post;pickup.post;'beats '.post;beats.post;
+		    string = string.reject{|i| i== $|}.reject{|i| i==""};
+		    //^this.setQuartersPickup(section,string,pickup)
+	    ^quarters[section] = this.durs[section].list[0].bubble ++ this.parseBeats(section,string, start: pickup)
+	    }
+    }
+
     setQuartersPickup { |section array pickup| // one pickup note only
 	    ( array.class == String ).if{ array = array.asBeats } ;
 	    //^ array[0].bubble ++ this.parseBeats(section, array, start: 1)
-	    quarters[section] = this.durs[section].list[0].bubble ++ this.parseBeats(section, array, start: 1)
+	    quarters[section] = this.durs[section].list[0].bubble ++ this.parseBeats(section, array, start: pickup)
     }
 
-	playIncremental {
-		var parts = Song.currentSong.pts;
-		var order = parts.collect(_.start);
-		var a = fork{
-			///;/NOPE need to play all the parts in each section!
-			this.sections.do{|i|
-				this.cursor_(i);
-				this.[i].do(_.p);
-				nil.yield 
-			};
-			parts.do{
-				|i|
-				i.play.yield;
-				i.start.postln;
-			}
-		};
-		var w = Window.new().front;
-		var v = w.view;
-		v.keyDownAction={ |view char|
-				a.resume;a.postln
-				
-			//	$d , {self.doOver},
-			//	$n , {self.nextt},
-			//	$r , {self.ret},
-			//	$s , {song.save},
-			//	$w , {self.window.close;t.free},
-			//	$q , {self.window.close;t.free}
-		};
-		^a
-		// play in loop waiting for trigger before advancing
+    playIncremental {
+	    var parts = Song.currentSong.pts;
+	    var order = parts.collect(_.start);
+	    var a = fork{
+		    ///;/NOPE need to play all the parts in each section!
+		    this.sections.do{|i|
+			    this.cursor_(i);
+			    this.[i].do(_.p);
+			    nil.yield 
+		    };
+		    parts.do{
+			    |i|
+			    i.play.yield;
+			    i.start.postln;
+		    }
+	    };
+	    var w = Window.new().front;
+	    var v = w.view;
+	    v.keyDownAction={ |view char|
+		    a.resume;a.postln
+
+		    //	$d , {self.doOver},
+		    //	$n , {self.nextt},
+		    //	$r , {self.ret},
+		    //	$s , {song.save},
+		    //	$w , {self.window.close;t.free},
+		    //	$q , {self.window.close;t.free}
+	    };
+	    ^a
+	    // play in loop waiting for trigger before advancing
 	}
 	length {
 		^sections.collect(this.secDur[_]).sum
@@ -864,7 +879,7 @@ P {
 		    music: { |p b e| 
 			    [
 				    instrument:\hat_808,
-				    dur: p.quarters[e.start]
+				    dur: p.quarters[e.start].q
 			    ].pp 
 		    }
 	    )

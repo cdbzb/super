@@ -56,13 +56,18 @@
                 | quarters |
 		var atInterpolated;
 		quarters = this.pr_getQuarters(quarters);
-                atInterpolated = {|array index| 
-                        ([0] ++ array).integrate.at( index.floor ) + 
-                        (index.frac * array[index.floor]) 
-                };
-                ^this.integrate.collect{|i| atInterpolated.(quarters,i)}.differentiate
+		( quarters.class==TempoMap ).if{
+			^quarters.mapBeats(this)
+		} {
+			atInterpolated = {|array index| 
+				([0] ++ array).integrate.at( index.floor ) + 
+				(index.frac * array[index.floor]) 
+			};
+			^this.integrate.collect{|i| atInterpolated.(quarters,i)}.differentiate
+		}
         }
-	warpToPickup {
+
+	warpToPickup { //deprecated
 		| quarters pickup |
 		var array = this.put(0,this[0] * pickup.reciprocal);
 		quarters = this.pr_getQuarters(quarters);

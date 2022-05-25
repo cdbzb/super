@@ -21,7 +21,7 @@ o = [
 	List.prNew,  Array.prNew(14),  " willing I'm willin I'm willing",  Pseq.prNew,  
 	List.prNew,  Array.prNew(8),  "We'll all be deeply involved. It must be unanimous. ",  Pseq.prNew,  
 	List.prNew,  Array.prNew(15),  "to host Thalassa's mind",  Pseq.prNew,  
-	List.prNew,  Array.prNew(8)
+	List.prNew,  Array.prNew(10)
 ];
 p = [
 	// Dictionary
@@ -210,10 +210,10 @@ p = [
 	// List
 	24, [ array: o[25] ],  
 	// Array
-	25, [ 1.029,  0.522,  0.922,  0.509,  
-		0.567,  0.459,  0.264,  0.26,  
-		1.01,  0.366,  0.507,  0.505,  
-		0.508,  0.386,  0.44,  0.802 ],  
+	25, [ 1.067,  0.527,  0.953,  0.513,  
+		0.454,  0.471,  0.203,  0.3,  
+		0.938,  0.403,  0.481,  0.443,  
+		0.468,  0.397,  0.458,  0.813 ],  
 	// Pseq
 	27, [ list: o[28],  repeats: 1,  
 		offset: 0 ],  
@@ -353,6 +353,7 @@ p = [
 	84, [ array: o[85] ],  
 	// Array
 	85, [ 0.406,  0.527,  0.406,  0.546,  
-		0.534,  1.781,  0.512,  0.54 ]
+		0.534,  1.781,  0.512,  0.54,  
+		0.322,  0.391 ]
 ];
 prUnarchive(o,p);

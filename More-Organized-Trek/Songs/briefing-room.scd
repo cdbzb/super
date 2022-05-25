@@ -336,8 +336,7 @@ P(\bass,start:\experimentation,music:{|p b e|
 });
 P.tune(\experimentation);
 ["SCOTT: A starship engine the size of a walnut? Thats impossible! "," 2 3 1 -7 -6 -5.5 4 3 4 5 -7".dm(\a) ++ "5 5 11 5 1".dm('a-',5)].addLine;
-Song.setQuarters(\impossible,"e e e E E E e x x e e q e e E E E q".asBeats).pickup(0.5);
-P.click(\impossible,pickup:0.5) ;
+Song.impossibleCurve=TempoMap("e e e E E E e x x e e qe e E E E q".asBeats,Song.durs[\impossible].list);
 P.tune(\impossible);
 P(\chord,start:\impossible,syl:0,music:{|p b e| 
 	(
@@ -347,9 +346,12 @@ P(\chord,start:\impossible,syl:0,music:{|p b e|
 });
 P(\bass,start:\impossible,music:{|p b e| 
 	[
-		freq: [\r] ++ "5 4 3 2".df(\a,3) ++ "5 1".df('a-',3) =>_.q,
-		dur: b.parse([1,5,3,2,0.75,[0.25,1],2]).q
-	].p//p
+		freq: [\r] ++ "5 -5 4  3 -3 2".df(\a,3) ++ "5 1".df('a-',3) =>_.q,
+	dur:p.impossibleCurve.mapBeats(  "e eee e exx e e q ee e ".asBeats).q,
+	out: Effect( SineShaper.ar(_,limit:0.05) * 2, inputChannels:2).bus.index,
+	legato: [1,1,1,1,1,1,1,1,1.5].q
+	].pp//.findur(b.sum)
+	//.play
 });
 //["But I don't suppose there'd be any harm in looking over diagrams on it. ","r"].addLine;
 ["KIRK: Bones? You could stop all this by saying no. ",[7].dm(\b,4,\mixolydian) ++ [3,4,7,4,3,2,3,4].dm(\c,5,\mixolydian) ++ [5].dm(\a,4)].addLine;
@@ -390,7 +392,15 @@ P(\bass,start:'here together',music:{
 ["(boom) We'll all be deeply involved. It must be unanimous. ","-1 12 13 12 12 11 7 6".dm(\c) ++ "2 6 5 4 3 4 1 -6".dm('f#')].addLine; //p11
 P.tune(\involved, Pmul(\freq,[1,2],_));
 Song.quarters[\involved] = Song.parseBeats(\involved,[1, 1/2, 1, 1/2, 2/3, 2/3, 1/3, 1/3, 3/2, 1/2, 2/3, 2/3, 2/3, 1/2,1/2,1]);
-P.click(\involved);
+Song.setTempoMap(\involved,[1, 1/2, 1, 1/2, 2/3, 2/3, 1/3, 1/3, 3/2, 1/2, 2/3, 2/3, 2/3, 1/2,1/2,1] );
+//P.click(\involved);
+P(\click,start:\involved,music:{|p b e| 
+	[
+		dur: e.tempoMap.mapBeats("ee e x x q e e x x x x q q q e x x ee e".asBeats).q,
+		instrument: \hat_808,
+		out: Effect( EchoNone.ar(_,1, delaytime:0.5) / 27).bus.index
+	].pp;
+});
 P(\bass,start:\involved,music:{|p b e|  // passing tone right before end please
 	[
 		freq: [1, 1, 1.5, 2.5, 4.5].df(\c,3).q,

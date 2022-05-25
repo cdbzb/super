@@ -9,7 +9,7 @@ includePaths:
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/SynthDefPool
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/say
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/VectorSpace
-    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Unit-Lib
+      # -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Unit-Lib
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/BatLib
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/SpeakersCorner
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/AmbIEM

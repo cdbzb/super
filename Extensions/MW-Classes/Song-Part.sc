@@ -11,8 +11,7 @@ Song {
 	var <song, <key, <cursor=0, <sections, <lyrics, <tune; 
 	var <durs,  <>resources, <>lyricsToDurs;
     var <>next;
-	var <>quarters;
-	var <>beatString;
+	var <>quarters, <>tempoMap;
 	var <>clock;
 	var playInitiatedAt,<>preroll=0;
 
@@ -118,7 +117,7 @@ Song {
 		durs=Durs(this);
 		clock=TempoClock.new(queueSize:512);
 		quarters=SongArray(key:key);
-		beatString=SongArray(key:key);
+		tempoMap=SongArray(key:key);
 	}
 	cursor_ {|i| cursor = i; lastSectionPlayed = i;}
 
@@ -647,10 +646,14 @@ Song {
         quarters[section] = this.parseBeats(section,array).q
     }
 
+    setTempoMap {| section array|
+	    ( array.class == String ).if{ array = array.asBeats } ;
+	    tempoMap[section] = TempoMap(array, durs[section].list)
+    }
+
     asBeatsPickup {|section string |
 	    string.contains( "|" ).if{
 		    var pickup,beats;
-		    beatString[section] = string;
 		    # pickup,beats = string.split($|);
 		    pickup = pickup.split(Char.space).reject{|i| i==""}.size; // how many notes
 		    'pickup '.post;pickup.post;'beats '.post;beats.post;
@@ -785,6 +788,9 @@ Part {
 	}
 	quarters {
 		^parent.quarters[start]
+	}
+	tempoMap {
+		^parent.tempoMap[start]
 	}
 	next {
 		^start + 1

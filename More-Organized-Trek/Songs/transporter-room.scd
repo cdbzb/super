@@ -41,7 +41,20 @@ P.tune('down there', Pset(\dev, [1,1,1,1,1,1,1,1,1,1,1,\r].q(2),_));
 
 ["The rest is only guesses. ","r" ].addLine;
 [ "SCOTT: I don't like it, sir. The transporter co-ordinates preset by an alien of some sort. You could materialise inside ","r" ].addLine;
-["solid rock. ","r" ].addLine;
+["solid rock. ",[7, 6, 6, 11, 7, 7].dm(\c) ].addLine;
+P.tune('rock.');
+//Song.setTempoMap('rock.', "q ex xqq q ex xqq");
+Song.setTempoMap('rock.', "q ex xqq q ex xqq");
+P(\bass,start:'rock.',music:{|p b e| 
+	[
+		freq: [[1, 11],[1,11],11, -7,1,-7,1, 5,6] => {|i| [ i.df(\c,3).q, i.df(\d,3,scale:\mixolydian).q ].q},
+		dur: 
+		"e ee e x x x x e e".asBeats!2 => _.flat  => _.warpTo(Song.tempoMap['rock.']) => _.q,
+		instrument:\sawSynth
+		
+		//.warpTo(e.tempoMap).q
+	].pp
+});
 [ "MCCOY: Inside solid rock? ","r" ].addLine;
 [ "SPOCK: Unlikely. These co-ordinates correspond with the location of the subterranean chamber. ","r" ].addLine;
 [ "KIRK: I have a feeling that they or it could destroy us just standing here if they or it wanted to. ","r" ].addLine;

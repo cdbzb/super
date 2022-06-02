@@ -67,6 +67,9 @@
 		}
         }
 
+	dupFlat {|n|
+		^this.dup(n).flatten
+	}
 	warpToPickup { //deprecated
 		| quarters pickup |
 		var array = this.put(0,this[0] * pickup.reciprocal);

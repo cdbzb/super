@@ -5,13 +5,12 @@ o = [
 	List.prNew,  Array.prNew(19),  "As long as you know there's something down there, you know as much as we do.",  Pseq.prNew,  
 	List.prNew,  Array.prNew(17),  "MCCOY: Jim, why no briefing on this? I'd at least like to kno-o-ow what we're getting into. ",  Pseq.prNew,  
 	List.prNew,  Array.prNew(21),  "solid rock. ",  Pseq.prNew,  
-	List.prNew,  Array.prNew(6),  "MULHALL: They or it? ",  Pseq.prNew,  
-	List.prNew,  Array.prNew(3),  "SPOCK: Unlikely. These co-ordinates correspond with the location of the",  Pseq.prNew,  
+	List.prNew,  Array.prNew(6),  "SPOCK: Unlikely. These co-ordinates correspond with the location of the",  Pseq.prNew,  
 	List.prNew,  Array.prNew(18)
 ];
 p = [
 	// Dictionary
-	0, [ array: o[1],  size: 7 ],  
+	0, [ array: o[1],  size: 6 ],  
 	// Array
 	1, [ nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -111,10 +110,10 @@ p = [
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		o[22],  o[23],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  o[26],  o[27],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[22],  o[23],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -196,14 +195,7 @@ p = [
 	// List
 	24, [ array: o[25] ],  
 	// Array
-	25, [ 0.745,  0.606,  1.462 ],  
-	// Pseq
-	27, [ list: o[28],  repeats: 1,  
-		offset: 0 ],  
-	// List
-	28, [ array: o[29] ],  
-	// Array
-	29, [ 0.589,  0.698,  0.835,  0.466,  
+	25, [ 0.589,  0.698,  0.835,  0.466,  
 		0.366,  0.278,  0.36,  0.436,  
 		0.304,  0.328,  0.312,  0.335,  
 		0.304,  0.343,  0.438,  0.352,  

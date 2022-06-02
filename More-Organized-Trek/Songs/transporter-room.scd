@@ -39,8 +39,11 @@ P(\click,start:'down there',music:{|p b e|
 });
 P.tune('down there', Pset(\dev, [1,1,1,1,1,1,1,1,1,1,1,\r].q(2),_));
 
-["The rest is only guesses. ","r" ].addLine;
-[ "SCOTT: I don't like it, sir. The transporter co-ordinates preset by an alien of some sort. You could materialise inside ","r" ].addLine;
+["The rest is only guesses. ","5 11 5 3 5 7 11".dm(\f,5,\harmonicMinor) ].addLine;
+P.tune(\guesses);
+[ "SCOTT: I don't like it, sir. The trans-- ","r" ].addLine;
+[ "porter co-ordinates preset by an alien of some sort. ","r" ].addLine;
+["You could materialise inside ","r" ].addLine;
 ["solid rock. ",[7, 6, 6, 11, 7, 7].dm(\c) ].addLine;
 P.tune('rock.');
 //Song.setTempoMap('rock.', "q ex xqq q ex xqq");
@@ -56,9 +59,28 @@ P(\bass,start:'rock.',music:{|p b e|
 	].pp
 });
 [ "MCCOY: Inside solid rock? ","r" ].addLine;
-[ "SPOCK: Unlikely. These co-ordinates correspond with the location of the subterranean chamber. ","r" ].addLine;
+[ "SPOCK: Unlikely. These co-ordinates correspond with the location of the","5 11 5  7 5 4 3 2 6 4 3 2 1 -7 4 2 -6 -5".dm('c#')].addLine;
+P.tune(\correspond);
+P(\line,start:\correspond,music:{|p b e| 
+	[
+		freq: [\r, 1, 7, 6, 5].df('c#',3).q,
+		dur: b.parse([1,2,5,6,4,]).q,
+		instrument:\sawSynthSustain,
+		att: 1,
+		legato: [4,4,1,1,1].q
+	].pp;
+});
+[" subterranean chamber. ", "r" ].addLine;
+P(\bassnote,start:\subterranean,music:{|p b e| 
+	(
+		instrument:\stringyy,
+		freq: [-1,1].df(\d),
+		dur: b.sum
+	).play
+});
 [ "KIRK: I have a feeling that they or it could destroy us just standing here if they or it wanted to. ","r" ].addLine;
-[ "MULHALL: They or it? ","r" ].addLine;
+[ "MULHALL: They or it? "," 3 1 5.5".dm(\c) ].addLine;
+P.tune('it?');
 [ "KIRK: Who are you? ","r" ].addLine;
 [ "MULHALL: Doctor Ann Mulhall, Astro-biology.","r" ].addLine;
 [ "Well, I was ordered to report here for landing party duty. ","r" ].addLine;

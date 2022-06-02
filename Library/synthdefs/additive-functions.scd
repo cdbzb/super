@@ -1,4 +1,4 @@
-/*
+
 ~cents=2**((1200/_).reciprocal);
 ( ~reedy = { |freq = 400 sustain = 3 release = 9 amp = 0.1|
 	{

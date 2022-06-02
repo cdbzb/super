@@ -1,6 +1,7 @@
 (
 //Line 239 The three volunteers are lying on beds, with the spheres on tables beside them. 
 ~xtreme=Song( \song,[]).current;
+Song.preroll_(1);
 
 
 
@@ -34,36 +35,38 @@
 		}},
 
 		{
-			Song.unnecessaryBass=NodeProxy.audio(s,2).play; //	bass setup	{{{3
+			Song.unnecessaryBass=NodeProxy.audio(s,2).play; //	bass setup	
 			Song.unnecessaryBass[1]=\filterIn->{|in|in+CombN.ar(in,1,0.25/TempoClock.tempo,2,mul:0.8)/2};
 			Song.unnecessaryBass.set(\wet1,0.8);
 			Song.unnecessaryBass[2]=\filter->{|in| Phaser1.ar(in,  depth: 0.5,  rate: 0.2,  fb: 0.3,  cfb: 0.1,  rot: 1.5707963267949) };
 		},
 		{TempoClock.tempo_(1)  }
 	]).value
-}.inEnvir;
+}.inEnvir.value;
 );
 
 Song.bassBuss=Bus.audio;
-//SynthDef(\plateReplace,{|in gate=1| 
-//	var sig=In.ar(Song.bassBuss.index,2);
-//	sig=sig* Env.asr(0,1,0.1).kr(2,gate:gate);
-//	ReplaceOut.ar(Song.bassBuss.index,PlateReverb.ar(sig,mix:0.9));
-//}).add;
-//SynthDef(\xtremeBass,{|amp=1 decimate=0 out=0| 
-//	var sig = In.ar(Song.bassBuss.index)!2;
-//	Env.perc(~xtreme.durTillEnd+1).kr(2,gate:1);
-//	sig= XFade2.ar(sig,Decimator.ar(sig,rate:8000,bits:4)*(-6.dbamp),Lag.kr(decimate,1));
-//	Out.ar(out,sig*amp)
-//}).add;
+SynthDef(\plateReplace,{|in gate=1 bus| 
+	//var sig=In.ar(Song.bassBuss.index,2);
+	var sig=In.ar(bus,2);
+	sig=sig* Env.asr(0,1,0.1).kr(2,gate:gate);
+	ReplaceOut.ar(bus,PlateReverb.ar(sig,mix:0.9));
+}).add;
+SynthDef(\xtremeBass,{|amp=1 decimate=0 out=0 dur=1 bus| 
+	var sig = In.ar(bus)!2;
+	//Env.perc(~xtreme.durTillEnd+1).kr(2,gate:1);
+	Env.perc(dur+1).kr(2,gate:1);
+	sig= XFade2.ar(sig,Decimator.ar(sig,rate:8000,bits:4)*(-6.dbamp),Lag.kr(decimate,1));
+	Out.ar(out,sig*amp)
+}).add;
 
 ~xtreme.condition.test_(false);
 ~xtreme.infrastructure={ //bass patch lasts as long as end (durTillEnd) 
 //~syn1.condition.test_(false);
 FunctionList.new.array_([
 	//~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load},
-	{~bassDecimator=Synth(\xtremeBass,[\amp,0.6,\decimate,-1])},
-	{ ~bassVerb=Synth(\plateReplace) },
+	{~bassDecimator=Synth(\xtremeBass,[\amp,0.6,\decimate,-1, \bus,Song.bassBuss.index,\dur,Song.durTill(10)])},
+	{ ~bassVerb=Synth(\plateReplace,[\bus,Song.bassBuss.index]) },
 	Song.sendBasstoBus;
 	{"LOADED".postln},
 	{ Song.condition.test_(true).signal },
@@ -423,7 +426,7 @@ P(\helloChord,start:'lo. ',music:
 ~helloTempo={1/Song.durs['lo. r'].list.mean};
 ~helloTemp2={1/(Song.durs['lovely female'].list[0..6].sum/5*2)};
 P(\helloSequence,start:'lo. ',music:
-	p{
+	{
 		{
 			var bus,clock,monitor,
 			kickPatterns,kickBar,snarePatterns,snareBar,synth,helloBass2,helloBass1,helloBeat;
@@ -504,8 +507,8 @@ P(\helloSequence,start:'lo. ',music:
 					)<>(out:bus)};
 
 					'self bus '.post;bus.postln;
-					~complete.helloSequenceBus=bus;
-					~complete.helloSequenceMonitor=Monitor.new.play(bus.index,2,0);
+					Song.helloSequenceBus=bus;
+					Song.helloSequenceMonitor=Monitor.new.play(bus.index,2,0);
 					{s.bind {helloBeat.(synthamp:0.1,drumsamp:0.7,tempo1:~helloTempo.(),tempo2:~helloTemp2.()).play(clock)}};
 				}.play
 			}
@@ -514,8 +517,8 @@ P(\helloSequence,start:'lo. ',music:
 P.tune('lovely female');
 P(\drumPan4,start:'lovely female',music:
 p{
-	~complete.helloSequenceMonitor.play(
-		~complete.helloSequenceBus.index,2,1,1,
+	Song.helloSequenceMonitor.play(
+		Song.helloSequenceBus.index,2,1,1,
 		fadeTime:~complete.secDur[4..5].sum,
 		volume:0.2);
 
@@ -723,7 +726,7 @@ P(\trill,start:'trill',lag:0.1,music:
 ~justTheTune.('unlike');
 [ "that which was your own (dum dum dum)","d-4 c d- b-3  g-3 f g- a-" ].addLine; //3
 ~justTheTune.('your own');
-[ "and I too am pleased beloved", [3,2,4,3,3,2,1,-7].dm('d' ) ].addLine; //4 -or Bb!
+[ "and i too am pleased beloved", [3,2,4,3,3,2,1,-7].dm('d' ) ].addLine; //4 -or Bb!
 ~justTheTune.('beloved');
 [ " boom after so- long... (boom) so very long... Kiss ","d3 a b e4 d f g3 b c4 a3 e4 r" ].addLine; //5
 ~justTheTune.('very long');
@@ -987,15 +990,22 @@ Song.tk.add(\snare->
 ["r this Vulcan body is adapted to the","r b b g# f# e f# g# f# e d# e"].addLine;//1
 	Song.durs['is adapted']=Pseq([1,1,1.5,0.25,0.25+0.5, 0.5,0.5,0.25,0.25+0.5,0.5,0.5,0.5]);
 //	Song.durs[1]=Pseq((Song.durs[1].list!2).flatten	);
-	P(\tempo2,start:'adapted to',music:{{TempoClock.tempo=1.2}.fork});
+	Song.adaptedTempo=1.2;
+	P(\tempo2,start:'adapted to',music:{{TempoClock.tempo=Song.adaptedTempo}.fork});
 	P(\bass1,start:'adapted to',music: {
-		{
-//			Song.unnecessaryBass[0]=Pseq([Rest(8),Pmono(\bl,\degree,Pseq(Song.notes,4)-1,\dur,0.5,\root,4,\octave,2,\trig,Pseq(1!16))])
-			Song.unnecessaryBass[0]=Pseq([Pmono(\bl,\degree,Pseq(Song.notes,4)-1,\dur,0.5,\root,4,\octave,2,\trig,Pseq(1!16))]);
-			Song.unnecessaryBass[1]=\filterIn->{|in|in+CombN.ar(in,1,0.25/TempoClock.tempo,2,mul:0.8)/2};
-			Song.unnecessaryBass.set(\wet1,0.8);
-
-		}.value
+		var notes=[1,3,6,4].collect{|i| i!4}.flatten;
+		[
+		degree:Pseq(notes,4)-1,
+			dur:0.5,
+			root:4,
+			octave:2,
+			trig:Pseq(1!16),
+			out: Effect(
+				{|i| i + CombN.ar( i, 1, 0.25/Song.adaptedTempo,2,mul:( 0.8*0.8 ) )/2
+				=> Phaser1.ar(_,  depth: 0.5,  rate: 0.2,  fb: 0.3,  cfb: 0.1,  rot: 1.5707963267949)
+			}
+			).bus.index
+		].pm(\bl).play;
 	});
 	P.tune('is adapted',{|i|i=>Pbindf(_,\amp,0.3,\instrument,\stringyy)});
 	P(\leadInB,start:'adapted to',music: //		{{{
@@ -1013,17 +1023,20 @@ Song.tk.add(\snare->
 ["r r higher metabolism"," f#3 f# a5 g# b a g# f# e "].addLine;//2
 //	P(\tempo3,start:'higher metabolism',music:{{TempoClock.tempo=1}.fork});
 	P(\bass3,start:'higher metabolism',music: //		{{{
-				{Song.unnecessaryBass[0]=Pmono(
-					\bl,
-					\degree, Pseq([ 2,2,1,1 ])-1,
-					//\dur,Pseq([0.5,1.5]*1.24,2),
-					\dur,
-					Pseq(
-						[ Song.durs['higher metabolism'].list[0] ,Song.durs['higher metabolism'].list[1..4].sum  , Song.durs['higher metabolism'].list[5..6].sum,1])
-					,
-					\root,4,
-					\octave,2,
-					\trig,1);}
+		{|p b e|
+			[
+				degree: Pseq([ 2,2,1,1 ])-1,
+				//dur: [ Song.durs['higher metabolism'].list[0] ,Song.durs['higher metabolism'].list[1..4].sum  , Song.durs['higher metabolism'].list[5..6].sum,1].q ,
+				dur: b.parse( [1,4,2] ) ++ [1] => _.q,
+				root:4,
+				octave:2,
+				out: Effect({|i| 
+					i + CombN.ar( i, 1, 0.25/Song.adaptedTempo,2,mul:( 0.8*0.8 ) )/2
+					=> Phaser1.ar(_,  depth: 0.5,  rate: 0.2,  fb: 0.3,  cfb: 0.1,  rot: 1.5707963267949)
+				}).bus.index,
+				trig:1
+			].pm(\bl).play
+		}
 	); 
 
 	P.tune('higher metabolism',{|i| Pbindf(i,\instrument,\stringyy,\amp,0.3,\mix,1.0,\release,2)=>_.drop(2) },syl:1);
@@ -1129,7 +1142,7 @@ P.tune('we will transfer');
 P.tune('administer');
 ["(boom) metabolic reduction injection... a ",[11,15,14,15,12,14,12,11,14.5,11,7.5, 7].dm('a-',octave:4,scale:\mixolydian )].addLine;//7
 P.tune('injection',Pbindf(_,\legato,1.5,\out,Effect(PlateReverb.ar(_,decayTime:0.4,mix:0.6)).bus.index));
-P(\baseNoteMetabolic,start:'metabolic',music:{|p b|
+P(\baseNoteMetabolic,start:'injection',music:{|p b|
 	var length=b[0..(b.size-1)].sum;
 	var freq=[1,11].df('a-',octave:2 );
 	{Saw.ar(freq + {3.0.rand} dup: 4 ) * Env.perc(0.4,length).kr(2,gate:1)*0.07 }.play;

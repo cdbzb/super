@@ -4,13 +4,12 @@ Monitors {
 	classvar <>speakerOrder=#[0,4,1,3,2]; //for Trek
 	*initClass {
 		decoder = FoaDecoderMatrix.newPanto(5,'flat','dual');
-		StartUp.add ({ 
+		ServerTree.add ({ 
 			(Server.default.options.outDevice == "MacBook Pro Speakers").if{
-				Server.default.waitForBoot{
 					Monitors.stereo;
-					Monitor.new => _.play(0,5,0,2,target:RootNode(Server.default));
-				};
-				CmdPeriod.add({ Monitor.new => _.play(0,5,0,2)})
+					{
+						Monitor.new => _.play(0,5,0,2,target:RootNode(Server.default));
+					}.defer(0.1)
 			}
 		});
 	}

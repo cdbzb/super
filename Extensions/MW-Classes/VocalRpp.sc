@@ -99,13 +99,9 @@ VocalRPP {
 			(range.collect{|i| song.secDur[ section + i ]}.sum + tail + 0.5).wait;
 			//put name in variable
 			//open the project and subProject and fire reapercommand
-			this.open;
-			0.1.wait;
-			"open" + subproject => _.unixCmd;
-			0.1.wait;
+			//this.open;
+			//0.2.wait;
 			Reaper.updateTempo;
-			0.1.wait;
-			Reaper.save;
 			this.copyPROXtowav;
 			0.05.wait;
 			buffer=Buffer.read(Server.default,wav);
@@ -236,7 +232,7 @@ VocalRPP {
 			this.makeRPPs(
 
 				// should make this Song.preroll
-				[1] ++ song.durs[section].list, //durs
+				Song.preroll.bubble ++ song.durs[section].list, //durs
 				//path to reaper dir (redundant!!)
 			);
 			this.storeDurs;
@@ -246,11 +242,14 @@ VocalRPP {
 	}
 
 	writeReaperAction{
-		var string = "durs = {" + Song.durs[section].list.asString.replace("]","").replace("[","").replace("List","") ++ "}\n"
+		var string = "durs = {" + ([Song.preroll] ++ Song.durs[section].list ).asString.replace("]","").replace("[","").replace("List","") ++ "}\n"
 		++ File.readAllString(
 			Song.reaperFolder +/+ "updateTempo.lua"
 		);
 		var file = File("/Users/michael/Library/Application Support/REAPER/Scripts/updateTempo.lua","w");
+		string = "reaper.Main_openProject(\"" ++ subproject ++ "\")\n" + string + "\n reaper.Main_OnCommand(40026,-1)";
+
+		//reaper.Main_SaveProject(-1); 
 		file.write(string);
 		file.close;
 

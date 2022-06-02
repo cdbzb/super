@@ -54,6 +54,27 @@ P(\chords,start:\selected,syl:6,music:{|p b e|
 ].pp
 });
 [ "MCCOY:(boom boom boom boom) What's your attitude on that, Doctor? ", [ -1, -1, -17, -17, -5, 3, -7, 1, -7, -5, 3, 2, 1 ].dm(\a,5,\mixolydian) ].addLine;
+P(\bass,start:\attitude,music:{|p b e| 
+	MegaBind(
+			[
+				[11, 11, 7, 7, 11, 1].df(\a,3,\mixolydian)
+			],
+			b.drop(1).parse([1,1,1,1,5,4]),
+			[],
+			{|i|
+				Pulse.ar( i.freqSeq * [1,2.01,3.0201] /4 )
+				* 
+				(
+					0.5 * Env.asr().kr(gate:i.gateSeq)
+					+ Env.perc().kr(0,gate:(i.trigSeq*i.gateSeq))
+				)
+				* 0.06
+			},
+			{|i|
+				Splay.ar(i)
+			}
+		).play
+});
 P.tune(\attitude);
 // ["MULHALL: Well, if we all agree, I'm willing to host Thalassa's mind.","r"].addLine;
 //[" ( boom x 7 ) I'm a scientist.  ( boom x 7 ) and I'm","3 4 6 5 7 3 4 11 12 13 14 13 5 3 4 6 5 7 3 4 5 15  ".dm(\b)].addLine;g
@@ -76,7 +97,7 @@ P(\jank,start:\scientist,music:{|p b e|
 		release:1.3,
 		out: Effect(
 			{ |i| CombN.ar(i,1,(p.quarters[e.start].list.mean),4)
-			      + Gain.ar(i, 1 )
+			      + i
 			      *0.1*0.4
 		      } ,
 		      inputChannels:2
@@ -105,8 +126,8 @@ MegaBind(
 			Env([0, 0, 1, 1], i.dur.parse([4],2)).kr(gate:1)
 			* SinOsc.kr(2).range(-0.002,0.002)+0.2,
 			10
-		) *0.4 + Gain.ar(_,0.8) 
-	)	},
+		) *0.4  + MulAdd(_,0.8)
+	)},
 		{|i|
 			Splay.ar(i).distort
 			=> Mix.ar(_) => Pan2.ar(_,0)

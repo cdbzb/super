@@ -8,9 +8,9 @@ Song.currentSong.resources.infrastructure=FunctionList([ {
 	~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
 } ]);
 Song.chamber.isNil.if{"/Users/michael/tank/super/More-Organized-Trek/chamber_rewrite.scd".load};
-Song.smallChamber.next_(\chamber);
-Song.smallChamber.chain;
-Song.smallChamber.current;
+//Song.smallChamber.next_(\chamber);
+//Song.smallChamber.chain;
+//Song.smallChamber.current;
 
 ///////how to use stills
 //	~stills.isNil.if{~stills=Stills("/Users/michael/tank/Trek/video for stills etc/media/return to tomorrow.mov")}; //{{{

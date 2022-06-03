@@ -41,11 +41,16 @@ P.tune('down there', Pset(\dev, [1,1,1,1,1,1,1,1,1,1,1,\r].q(2),_));
 
 ["The rest is only guesses. ","5 11 5 3 5 7 11".dm(\f,5,\harmonicMinor) ].addLine;
 P.tune(\guesses);
-[ "SCOTT: I don't like it, sir. The trans-- ","r" ].addLine;
-[ "porter co-ordinates preset by an alien of some sort. ","r" ].addLine;
-["You could materialise inside ","r" ].addLine;
+[ "SCOTT: I don't like it, sir. The trans-- ","1 -7 3 1 -5".dm(\c,5,\mixolydian)++" 1 -7 ".dm(\d,5,\mixolydian) ].addLine;
+P.tune('like it');
+[ "porter co-ordinates preset by an","3 1 -6.5 -5 -5.5 -5 -7 4 3 4".dm(\d)].addLine;
+["(boom boom) alien of some sort. ","-1 -1 3 2 1".dm(\e) ++ "3 2 -5".dm(\c,5,\minor)].addLine;
+P.tune('some sort');
+P.tune('co-ordinates');
+["You could materiali--se inside ","4 3 2 4 3 2 1.5 2 1.5 2".dm(\b,4) ].addLine;
+P.tune(\material);
 ["solid rock. ",[7, 6, 6, 11, 7, 7].dm(\c) ].addLine;
-P.tune('rock.');
+//P.tune('rock.');
 //Song.setTempoMap('rock.', "q ex xqq q ex xqq");
 Song.setTempoMap('rock.', "q ex xqq q ex xqq");
 P(\bass,start:'rock.',music:{|p b e| 
@@ -70,7 +75,8 @@ P(\line,start:\correspond,music:{|p b e|
 		legato: [4,4,1,1,1].q
 	].pp;
 });
-[" subterranean chamber. ", "r" ].addLine;
+[" (boom) subterranean chamber. ", "-1 1 2 3 4 3 2 1".dm(\d,5,\minor) ].addLine;
+P.tune(\subterranean);
 P(\bassnote,start:\subterranean,music:{|p b e| 
 	(
 		instrument:\stringyy,
@@ -78,16 +84,37 @@ P(\bassnote,start:\subterranean,music:{|p b e|
 		dur: b.sum
 	).play
 });
-[ "KIRK: I have a feeling that they or it could destroy us just standing here if they or it wanted to. ","r" ].addLine;
+[ "KIRK: I have a feeling that they or it could destroy us just standing here if they or it wanted to. ","3.5 4 5 7 6 5".dm(\c,5,\minor) ++ "3 1 2 -7 1 4 3 1 6 5 3 1 3 1 2 1 -7 -5".dm('a-') ].addLine;
+P.tune(\feeling);
 [ "MULHALL: They or it? "," 3 1 5.5".dm(\c) ].addLine;
 P.tune('it?');
-[ "KIRK: Who are you? ","r" ].addLine;
-[ "MULHALL: Doctor Ann Mulhall, Astro-biology.","r" ].addLine;
-[ "Well, I was ordered to report here for landing party duty. ","r" ].addLine;
-[ "KIRK: By whom? ","r" ].addLine;
-[ "MULHALL: Strange, I'm not sure. Well, I'm not a liar, Captain. I did receive an order to report here for duty. ","r" ].addLine;
+[ "KIRK: Who are you? (boom) ","3 1 7 -6".dm(\f,5,\mixolydian) ].addLine;
+P.tune('you?', Pfin(3,_));
+P(\chord,start:'you?',syl:2,music:{|p b e| 
+	[\stringyy,\sawSynthSustain].do
+	{ |i| (
+	      	(
+	      		freq: [1,3,5,11].df(\d,[2,4,5]),
+	      		instrument:i,
+	      		dur: b+p.durs[e.start+1].list[0..5].sum,
+			att: 4,
+			amp:0.05,
+			rel:8
+	      	).play
+	      ) } 
+});
+[ "MULHALL: Doctor Ann Mulhall, Astro-biology.",[7, 11, 3, 5, 4.5, 6, 6.5, 2, 4, 3, -5].dm(\d,6) ].addLine;
+P.tune(\biology);
+[ "Well, I was ordered to report here for landing party duty. ", [3, 2, 3, 6, 5.5].dm('c#',6) ++ [4, 5, 6, 7, 5, 11, 5, 4, 3, 2, 1].dm(\c,6) ].addLine;
+P.tune(\landing);
+[ "KIRK: By whom? ",[7, 13].dm(\c,4,\mixolydian) ].addLine;
+P.tune('whom?');
+[ "MULHALL: Strange, I'm not sure. Well, I'm not a liar, Captain. i"," 2 1 2 4 2 3 4 5 6 4 3 2".dm('e-',6,\whole) ++ [5].dm(\d,6)].addLine; 
+P.tune('Strange');
+["did receive an order to report here for duty. "," 11 5 4 3 7 6 4 2 6 5 4 3 1".dm(\d,6,\mixolydian) ].addLine;
+P.tune(\receive);
 [ "SPOCK: I'm sure she did, Captain, Just as you received an order to bring me along. ","r" ].addLine;
-[ "KIRK: Oh, yes. ","r" ].addLine;
+[ "KIRK: Oh, yes. ","5 11".dm(\g) ].addLine;
 [ "MCCOY: Let's get back to this solid rock business...","r" ].addLine;
 ["Just how much rock are we going to go through? ","r" ].addLine;
 [ "SPOCK: Approximately one hundred twelve point three seven miles, Doctor. ","r" ].addLine;

@@ -87,32 +87,73 @@ P(\bassnote,start:\subterranean,music:{|p b e|
 [ "KIRK: I have a feeling that they or it could destroy us just standing here if they or it wanted to. ","3.5 4 5 7 6 5".dm(\c,5,\minor) ++ "3 1 2 -7 1 4 3 1 6 5 3 1 3 1 2 1 -7 -5".dm('a-') ].addLine;
 P.tune(\feeling);
 [ "MULHALL: They or it? "," 3 1 5.5".dm(\c) ].addLine;
-P.tune('it?');
+Song.mulhallTune=Pset(\out,Effect(EchoNone.ar(_,0.3,0.3,4)*0.5).bus.index,_);
+P.tune('it?',Song.mulhallTune);
 [ "KIRK: Who are you? (boom) ","3 1 7 -6".dm(\f,5,\mixolydian) ].addLine;
 P.tune('you?', Pfin(3,_));
 P(\chord,start:'you?',syl:2,music:{|p b e| 
 	[\stringyy,\sawSynthSustain].do
 	{ |i| (
 	      	(
-	      		freq: [1,3,5,11].df(\d,[2,4,5]),
+	      		freq: [1,3,5,11].df(\d,[3,4,5]),
 	      		instrument:i,
 	      		dur: b+p.durs[e.start+1].list[0..5].sum,
-			att: 4,
+			att: 6,
 			amp:0.05,
 			rel:8
 	      	).play
 	      ) } 
 });
-[ "MULHALL: Doctor Ann Mulhall, Astro-biology.",[7, 11, 3, 5, 4.5, 6, 6.5, 2, 4, 3, -5].dm(\d,6) ].addLine;
-P.tune(\biology);
+
+[ "MULHALL: Doctor Ann Mulhall, Astro-biology.",[7, 11, 3, 5, 4.5, 6, 6.5, 2, 4, 3, -5].dm(\d,6,tuning:\sept1) ].addLine;
+P(\chord,start:\biology,syl:4,music:{|p b e| 
+	(
+		freq: [1,11].df(\c,3),
+		dur:b.sum,
+		instrument:\stringyy,
+		attack:2,
+		amp:0.25
+
+	).play
+});
+P.tune(\biology,Song.mulhallTune );
 [ "Well, I was ordered to report here for landing party duty. ", [3, 2, 3, 6, 5.5].dm('c#',6) ++ [4, 5, 6, 7, 5, 11, 5, 4, 3, 2, 1].dm(\c,6) ].addLine;
-P.tune(\landing);
+P.tune(\landing,Song.mulhallTune);
+P(\bass,start:\landing,music:{|p b e| 
+	(
+		freq: [1 ].df('c#',[5,4,3]),
+		dur:b.parse([4]).sum
+	).play
+});
 [ "KIRK: By whom? ",[7, 13].dm(\c,4,\mixolydian) ].addLine;
 P.tune('whom?');
+P(\strum1,start:'whom?',music:{|p b e| 
+	(
+		freq:[5,7,11,13].df(\c,4,\mixolydian),
+		strum:0.05,
+		dur:b.sum
+	).play
+});
+	
+
 [ "MULHALL: Strange, I'm not sure. Well, I'm not a liar, Captain. i"," 2 1 2 4 2 3 4 5 6 4 3 2".dm('e-',6,\whole) ++ [5].dm(\d,6)].addLine; 
-P.tune('Strange');
+P(\chord,start:'Strange',music:{|p b e| 
+	[ instrument:\wash,
+		freq:[[1,3,4.5].df(\b,3), [3,4.5,6.5].df(\b,3)].q,
+		dur: b.parse([3,2]).q
+
+	].p.play
+});
+P.tune('Strange',Song.mulhallTune);
 ["did receive an order to report here for duty. "," 11 5 4 3 7 6 4 2 6 5 4 3 1".dm(\d,6,\mixolydian) ].addLine;
-P.tune(\receive);
+P(\bass,start:'did receive',music:{|p b e| 
+	[
+		freq: [1,4,2,-5].df(\d,[3,4]).q,
+		dur: b.parse([4,4,3,2]).q,
+		legato:1
+	].pp;
+});
+P.tune(\receive,Song.mulhallTune);
 [ "SPOCK: I'm sure she did, Captain, Just as you received an order to bring me along. ","r" ].addLine;
 [ "KIRK: Oh, yes. ","5 11".dm(\g) ].addLine;
 [ "MCCOY: Let's get back to this solid rock business...","r" ].addLine;

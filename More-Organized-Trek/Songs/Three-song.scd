@@ -1,5 +1,6 @@
 (
 Song.dursFile_("/Users/michael/tank/super/theExtreme_Sep18");
+"/Users/michael/tank/super/Library/synthdefs/AAS-strum.scd".load;
 ~three = Song( \three, []).current;
 
 ~three.infrastructure={'no infra!'.postln};

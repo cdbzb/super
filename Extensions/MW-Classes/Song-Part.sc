@@ -813,7 +813,7 @@ Part {
 // Constructor for Parts
 P { 
     *new {
-        |key start syl lag=0 music song resources|
+        |key start syl lag=0 music song resources rpp|
         var part;
         start.isNil.if{
             start=((Song.song.size-2)/2).asInteger;
@@ -824,6 +824,7 @@ P {
         };
         start.postln;
         key = (key ++ start ++ \_).asSymbol;
+	resources = ( resources ++ (rpp: rpp) ? resources );
         part = Part(start,syl,lag,music,resources);
         Message(Song.songs.at(Song.current), key).value(part);
         key.postln;

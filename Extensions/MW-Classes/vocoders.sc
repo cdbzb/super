@@ -74,7 +74,7 @@ VocoderPattern {
                         \pan.kr(0)) );
 
                       }).add;
-                    }
+                    }.value
                   }
 	// Fft arguments are set by the item when you use warp
 	*new { 

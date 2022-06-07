@@ -67,7 +67,7 @@ P(\comp,start:\attempting,music: {
 ["Not even a Vulcan can know the unknown, Captain.","r"].addLine;
 ["We are hundreds of light years past where any Earth ship has ever explored.","r"].addLine;
 ["/*SULU:*/ Planet dead ahead, Captain. Becoming visual.","r"].addLine;
-P(\sfx,start:\yellow, music:{
+P(\sfx,start:\visual, music:{
 	var sine,verb,verbBus=Bus.audio;
 	var wibble = {
 		Pan2.ar(

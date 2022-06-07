@@ -50,7 +50,7 @@
 	var b=Bus.audio(s,2);
 	var n=NodeProxy.audio.play
 	.source_({In.ar(b,2)});
-	var c=~vsti.('Strum GS-2.vst',b);
+	var c=~vsti.('Strum GS-2.vst',b, RootNode(Server.default));
 	(//guitar
 		node:n,
 		controller:c

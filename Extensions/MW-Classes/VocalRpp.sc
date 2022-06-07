@@ -20,7 +20,7 @@ VocalRPP {
 	init { 
 		song.isNil.if{song=Song.currentSong};
 		section =song.section(key);
-		reaperProjectPath = Song.reaperFolder +/+ song.key +/+ name;
+		reaperProjectPath = Song.reaperFolder +/+ song.key +/+ key;
 		name.notNil.if{
 			key = key ++ "-" ++ name
 		};
@@ -42,7 +42,9 @@ VocalRPP {
 			}
 		};
 	}
-
+	refresh {
+				buffer=Buffer.read(Server.default,wav);
+	}
 	current{
 		VocalRPP.current = this
 	}
@@ -87,9 +89,9 @@ VocalRPP {
 						|part| part.music.cs.contains("RPP").not
 					};
 					// look exactly for this rpp 
-					parts = parts.select{
+					parts = parts.reject{
 						|part|
-						part.resources.rpp == nil // this
+						part.resources.rpp != nil // this
 					};
 					//song.play(song.at(section+i));
 					parts.do(_.p)
@@ -101,23 +103,24 @@ VocalRPP {
 			//open the project and subProject and fire reapercommand
 			//this.open;
 			//0.2.wait;
+			this.openSubproject;
 			Reaper.updateTempo;
+			Reaper.save;
 			this.copyPROXtowav;
 			0.05.wait;
 			buffer=Buffer.read(Server.default,wav);
-
-
 			this.storeDurs;
 		}
 	}
 
 	// "~/Library/Application Support/REAPER/Scripts/createSend.lua"
 	addRecordedItemToRPP{
+
 		Reaper.action("_RS3e2c76052d7ffef247e1f00edaed2e61cf30dfb0")
 	}
 
 	recordSection{ |filename="CARRIER_SC.wav", bus=0 channels=2 tail=5|
-
+		this.open(hidden:1);
 		fork{
 			song.recordSection( section, bus, mediaFolder +/+ filename, channels );
 			(song.secDur[section]+tail+0.5).wait;
@@ -247,7 +250,7 @@ VocalRPP {
 			Song.reaperFolder +/+ "updateTempo.lua"
 		);
 		var file = File("/Users/michael/Library/Application Support/REAPER/Scripts/updateTempo.lua","w");
-		string = "reaper.Main_openProject(\"" ++ subproject ++ "\")\n" + string + "\n reaper.Main_OnCommand(40026,-1)";
+		//string = "reaper.Main_openProject(\"" ++ subproject ++ "\")\n" + string + "\n reaper.Main_OnCommand(40026,-1)";
 
 		//reaper.Main_SaveProject(-1); 
 		file.write(string);
@@ -275,7 +278,16 @@ VocalRPP {
 
 	}
 
-	open {
-		"open" + reaperProjectPath +/+ key ++ "*RPP" => _.unixCmd
+	open { |hidden|
+		hidden.isNil.if {
+			"open" + reaperProjectPath +/+ key ++ "*RPP" => _.unixCmd
+		}{
+
+			"open -g" + reaperProjectPath +/+ key ++ "*RPP" => _.unixCmd
+		}
+	}
+
+	openSubproject {
+		"open -g" + subproject => _.unixCmd
 	}
 }

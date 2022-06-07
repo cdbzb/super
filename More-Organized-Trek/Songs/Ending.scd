@@ -260,7 +260,7 @@ P(\trem,start:\please,syl:1,music:{|p b e|
 		{  
 			var tune = aTune ? p.tune[e.start].list;
 			// account for preroll!!
-			var dursWithPreroll = b[0] + 1 => _.bubble ++ b.drop(Song.preroll);
+			var dursWithPreroll = b[0] + 1 => _.bubble ++ b.drop(1);
 			var freqs = Demand.ar(
 				TDuty.ar(dursWithPreroll.dq,1,1),
 				1,
@@ -281,8 +281,8 @@ P(\trem,start:\please,syl:1,music:{|p b e|
 	Song.sargonModulator = {|rpp dur modGain=1| 
 		{ 
 			Line.kr(dur:dur,doneAction:2);
-			rpp=Song.resources.at(rpp);
-			PlayBuf.ar( 1,rpp.buffer) 
+			//rpp=Song.resources.at(rpp);
+			PlayBuf.ar( 2,rpp.buffer) 
 			=> EchoNone.ar(_,1,0.4,2) * 2
 			//=> MoogFF.ar(_,8000,1)
 			=> LPF.ar(_,6000)
@@ -308,7 +308,7 @@ P(\trem,start:\please,syl:1,music:{|p b e|
 	};
 
 	Song.vocodeTune = { 
-		|p b e rppName amp=0.2 att=3 sus=1 rel=5 dur=10 chord=#[1,2,4,5,6,8] tune out=0 modGain=1|
+		|p b e rpp amp=0.2 att=3 sus=1 rel=5 dur=10 chord=#[1,2,4,5,6,8] tune out=0 modGain=1|
 		var foa = Bus.audio(s,1);
 		Synth(\soundInMorph,[
 			modulator: Song.modulatorBus.index,
@@ -330,11 +330,11 @@ P(\trem,start:\please,syl:1,music:{|p b e|
 			*3
 		}.play(addAction:\addToTail);
 		Song.sargonCarrier.(p,b,e,att, sus, rel, chord,tune);
-		Song.sargonModulator.(rppName,dur,modGain)
+		Song.sargonModulator.(rpp,dur,modGain)
 	};
 	Song.laMer = Song.laMer ?  Buffer.read(s,"~/tank/super/samples/La_Mer_clean.aif".standardizePath);
 );
-	Song.voxSacrifice=VocalRPP(\sacrifice,\test);
+	Song.voxSacrifice=VocalRPP(\sacrifice,\test).refresh;
 	//{ BufRd.ar(2,b,Phasor.ar(1,BufRateScale.kr(b.bufnum),0,BufFrames.kr(b.bufnum)*~len))*0.1 };
 	P.still( \kirk, start: \sacrifice, timecode:4942.582.seconds, music: { |p b e|
 		{ BufRd.ar(2,Song.laMer,Phasor.ar(1,BufRateScale.kr(Song.laMer.bufnum),0,BufFrames.kr(Song.laMer.bufnum)*0.185))*0.1 }.play(s,Song.carrierBus);
@@ -346,10 +346,10 @@ P(\trem,start:\please,syl:1,music:{|p b e|
 	P(\boom,start:\sacrifice,music:{|p b e| 
 		(instrument:\cymbalsDS,amp:0.003,att:1).play
 	});
-	P(\vox,start:\sacrifice,lag:-1,music:{|p b e| 
+	P(\vox,start:\sacrifice, rpp:VocalRPP(\sacrifice,\test).refresh,lag:-1,music:{|p b e| 
 		// TODO now make the relevant guide check to see if they should mute this!!
 		p.vocodeTune.(p,b,e,
-			\voxSacrifice,
+			e.rpp,
 			amp:0.9,
 			out:4,
 			dur:b.sum+5,
@@ -584,10 +584,10 @@ P(\trem,start:\please,syl:1,music:{|p b e|
 			//.play
 		});
 		["SARGON [OC]: No, Doctor. (Boom)",[1,-5,-3, -17].dm(\a,scale:\minor,octave:4)].addLine;
-		Song.voxNo=VocalRPP('Doctor.',\test);
-		P(\vox,start:'Doctor.',music:{|p b e|
-			p.vocodeTune.(p,b,e,\voxNo,amp:0.3,dur:b.sum+3,att:1,sus:b.sum-1,rel:2,chord:[1],out:3);
-			p.vocodeTune.(p,b,e,\voxNo,amp:0.3,dur:b.sum+3,att:1,sus:b.sum-1,rel:2,chord:[2])
+		//Song.voxNo=VocalRPP('Doctor.',\test);
+		P(\vox,start:'Doctor.', rpp:VocalRPP('Doctor.',\test).refresh,music:{|p b e|
+			p.vocodeTune.(p,b,e,e.rpp,amp:0.3,dur:b.sum+3,att:1,sus:b.sum-1,rel:2,chord:[1],out:3);
+			p.vocodeTune.(p,b,e,e.rpp,amp:0.3,dur:b.sum+3,att:1,sus:b.sum-1,rel:2,chord:[2])
 		});
 		P(\test,start:'No, Doc',music:{|p b e| 
 			{
@@ -636,9 +636,9 @@ P(\trem,start:\please,syl:1,music:{|p b e|
 		P.tune('No, Doc');
 
 		[" I allowed you to believe that to be true so that ",[3,2,4,3,1,-5,-7,-6,-4,-1,2,-6,-5].dm(\c,scale:\mixolydian,octave:6)].addLine;
-		Song.voxAllow=VocalRPP(\allowed,\tune);
-		P(\vox,start:\allowed,music:{|p b e|
-			p.vocodeTune.(p,b,e,\voxAllow,0.2,att:1,sus:b.sum-3,rel:2,dur:b.sum+2)
+		//Song.voxAllow=VocalRPP(\allowed,\tune).refresh;
+		P(\vox,start:\allowed,lag:-1,rpp:VocalRPP(\allowed,\tune).refresh,music:{|p b e|
+			p.vocodeTune.(p,b,e,e.rpp,amp:0.1,att:1,sus:b.sum-3,rel:2,dur:b.sum+2)
 		});
 		P.still( \clear, start: \allowed, timecode:0, music: { |p b e|
 			e.still.value(
@@ -683,9 +683,9 @@ P(\trem,start:\please,syl:1,music:{|p b e|
 			].pp
 		});
 		["Henoch would (boom) read your thoughts and believe it also. ",[11,7,5,-4,13,12,15,13,12,11,7,14,13].dm(\c,octave:4)].addLine;
-		Song.voxRead=VocalRPP(\read,\tune);
-			P(\vox,start:\read,music:{|p b e|
-			p.vocodeTune.(p,b,e,\voxRead,
+		//Song.voxRead=VocalRPP(\read,\tune);
+		P(\vox,start:\read, rpp:VocalRPP(\read,\tune).refresh,music:{|p b e|
+			p.vocodeTune.(p,b,e,e.rpp,
 				amp:0.35,
 				att:1,
 				sus:b.sum-3,
@@ -775,7 +775,7 @@ P(\phrase1,start:\injection,music:{|p b e|
 P.tune(\unconsciousness);
 ["SARGON [OC]: But Henoch believed and fled the body. ",[5,11,5,3,6.5].dm('c#',scale:\dorian)++[5,11,5,4,3].dm('e-')].addLine;
 //P.tune(\believed);
-Song.voxBelieve = VocalRPP(\believed,\vox);
+//Song.voxBelieve = VocalRPP(\believed,\vox);
 		P.still( \clear, start: \believed, timecode:0, music: { |p b e|
 			e.still.value(
 				wait: b.sum,
@@ -786,8 +786,8 @@ Song.voxBelieve = VocalRPP(\believed,\vox);
 				e.still.setText(["and fled","the body"])
 			}
 		});
-P(\vox,start:\believed,music:{|p b e| 
-			p.vocodeTune.(p,b,e,\voxBelieve,0.3,1,b.sum-3,2)
+P(\vox,start:\believed, rpp:VocalRPP(\believed,\tune).refresh,music:{|p b e| 
+			p.vocodeTune.(p,b,e,e.rpp,0.3,1,b.sum-3,2)
 });
 P(\bass,start:\believed,music:{|p b e| 
 	MegaBind(
@@ -1114,9 +1114,9 @@ P(\bass,start:\believed,music:{|p b e|
 			P.tune(\cannot);
 			["(boom) Thalassa and I must now (boom) also depart",[-1,1,2,3,1,4,2,5, 5,4.5, 4.5,7].dm(\d)].addLine;
 //Song.voxDepart= VocalRPP(\depart,\vox);
-Song.voxDepart= VocalRPP(\depart,\newTest);
-P(\clusterVox,start:\depart,lag:-1,music:{|p b e| 
-	p.vocodeTune.(p,b,e,\voxDepart);
+//Song.voxDepart= VocalRPP(\depart,\newTest);
+P(\clusterVox,start:\depart, rpp:VocalRPP(\depart,\tune).refresh,lag:-1,music:{|p b e| 
+	p.vocodeTune.(p,b,e,e.rpp);
 	MegaBind(
 			[
 				p.tune[e.start].list.midicps/.t[2,4].flatten
@@ -1307,9 +1307,9 @@ Song.sawBuffers = Song.akSaws.collect({|i| i.as(Signal)})
 			});
 ["(boom boom) share your bodies again. ",[1,1,13,12, 13,14,13,12,11].dm(\f)].addLine;
 //P.tune(\bodies,_.drop(2),syl:1);
-Song.shareVox=VocalRPP(\bodies,\share);
-P(\vox,start:\bodies,music:{|p b e| 
-	p.vocodeTune.(p,b,e,\shareVox,0.2,0,b.sum,2,dur:b.sum+2,tune:[\r,\r]++p.tune[e.start].list=>_.drop(2))
+//Song.shareVox=VocalRPP(\bodies,\share);
+P(\vox,start:\bodies, rpp:VocalRPP(\bodies,\share).refresh,music:{|p b e| 
+	p.vocodeTune.(p,b,e,e.rpp,0.2,0,b.sum,2,dur:b.sum+2,tune:[\r,\r]++p.tune[e.start].list=>_.drop(2))
 });
 Song.setQuarters(\bodies,[1,1,1,1/4,1/4,1,1/2,1/2,1/2]);
 
@@ -1376,9 +1376,9 @@ P.still( \clear, start: \last, timecode:0, music: { |p b e|
 		text: ["a last moment","together"]
 	);
 });
-Song.lastMoment=VocalRPP(\last,\tune);
-P(\vox,start:\last,music:{|p b e|
-	p.vocodeTune.(p,b,e,\lastMoment,0.3,1,b.sum+5,2,dur:b.sum+2,chord:#[1,2,0.33])
+//Song.lastMoment=VocalRPP(\last,\tune);
+P(\vox,start:\last, rpp:VocalRPP(\last,\tune).refresh,music:{|p b e|
+	p.vocodeTune.(p,b,e,e.rpp,0.3,1,b.sum+5,2,dur:b.sum+2,chord:#[1,2,0.33])
 });
 P(\chord,start:\last,music:{|p b e| 
 	MegaBind(

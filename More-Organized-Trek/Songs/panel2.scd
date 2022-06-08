@@ -2,6 +2,7 @@
 
 
 ~stills ??  {~stills=Stills("/Users/michael/tank/Trek/video for stills etc/media/return to tomorrow.mov")};
+~stills.current;
 
 ~stills.set('lungs1',(12*60+53+4.5));
 ~stills.set('lungs2',(13*60+19.5));
@@ -29,9 +30,9 @@
 	}
 };
 //("open "++"'"++~stills.file++"'").unixCmd
-Song.new(\panel2,[]);
-Song.panel2.current;
+Song.new(\panel2,[]).current;
 Song.resources.infrastructure=FunctionList.new.array_([]);
+~syn1=Synful();
  Song.resources.infrastructure.addFunc({ //~syn1
 	~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load}
 });
@@ -54,7 +55,9 @@ P('high pitched noise',start:'staggers',music:
 /*KIRK:*/[" (boom) I am Sargon. ",[6,6,5,11,1].dm('c#',scale:\minor)].addLine; 
 ~justTheTune.('I am Sargon',{|i|i=>_.drop(1)},syl:0);
 P(\stillsGag,start:'I am Sargon',music:
-	{ ~talking.defer }
+	{ 
+		~talking.defer
+	}
 );
 P(\sargonBoom,start:'I am Sargon',music:{|p b|
 	(
@@ -300,12 +303,12 @@ P(\trapsLungs,start:\Lungs,music:
 		amp:0.3
 	].p
 );
-P(\tremoloSwell,music:
+P(\tremoloSwell,start:\Lungs,music:
 	{
 
 		(type:\vst_midi,vst:~syn1.controller,midicmd:\allNotesOff).play;
 		~syn1.patch(\violas,\trem,0);
-		~syn1.setOut( ~verbchannels=Effect(FreeVerb.ar(_,1,1),out:0,inputChannels:4).bus.index) ;
+		~syn1.syn.set(\out,~verbchannels=Effect(FreeVerb.ar(_,1,1),out:0,inputChannels:4).bus.index) ;
 		~syn1.expression(100,0);
 		~stringChords=[12,10,2,14,20,20,10];
 		~stringChords=[12,0,2,4,0,0,0]-1;
@@ -340,7 +343,7 @@ P(\tremoloSwell,music:
 			//		\midinote: Prand([1,3,5,11].dm('f',scale:\minor,octave: 4),inf)+Prand([12,0,2,4,0,0,0],inf),
 			dur:0.1,
 			legato:Pwhite(3,9,inf),
-			panning:Pfunc({~syn1.setOut(4.rand+~verbchannels)})
+			panning:Pfunc({~syn1.syn.set(\out,(4.rand+~verbchannels))})
 
 		].p=>Pfin(290,_)
 		=>_.play;
@@ -618,9 +621,11 @@ P(\accent14,start:\aware,syl:2,music:
 			instrument:\cymbal_808,
 			amp:0.25,
 			tone:0.01,
-			out:Effect({|i|TwoTube.ar(i,0.5,0.2,1300,1455)=>Decimator.ar(_,[9000,10000],8)*
-			Env.linen(0,1,4).kr(2,gate:1)
-			=> DetectSilenceDry.ar(_,doneAction:2)}).bus.index
+			out:Effect({|i|
+				TwoTube.ar(i,0.5,0.2,1300,1455)=>Decimator.ar(_,[9000,10000],8)*
+				Env.linen(0,1,4).kr(2,gate:1)
+			//	=> DetectSilenceDry.ar(_,doneAction:2)
+		}).bus.index
 		).play
 	}
 );
@@ -769,7 +774,7 @@ P(\triadReceptacles,start:'two receptacles',music: { |p b|
 );
 P(\stillReceptacles,start:'two receptacles',music:
 	{ |p b|
-		Still(~stills,'next room',5,b.sum-5,nil,["in tne next room...",""]).add(14*60+51).play
+		//Still(~stills,'next room',5,b.sum-5,nil,["in tne next room...",""]).add(14*60+51).play
 	}
 );
 	["(boom) The other two of us that survived. ", [6,6,14,15,13,12,11,13,12.5,12].dm(\a,octave:4) ].addLine; 
@@ -797,7 +802,8 @@ P(\triadSurvived,start:'that survived',music:{ |p b|
 );
 	["You, Doctor A-- nn Mulhall, and ",[21,15,14,13,12,11,5,21].dm(\c,scale:\minor,octave:4)].addLine; 
 	P(\stillMulhall,start:'nn Mulhall',music:
-		Still(~stills,'Jane Mulhall',text:[ "You!","r" ],fade:2,wait:1).add(15*60+2.0)
+		//Still(~stills,'Jane Mulhall',text:[ "You!","r" ],fade:2,wait:1).add(15*60+2.0)
+		{}
 	);
 	P(\chordYouAnn,start:'nn Mulhall',music:
 		{ |p b|
@@ -820,7 +826,8 @@ P(\triadSurvived,start:'that survived',music:{ |p b|
 	["you --, Mister Spock, ",[11,7,6,5,7].dm('c',octave: 5,scale:\minor)].addLine;
 	P(\stillYouSpark,start:'you --',music:
 		//defer{~stills.preview('Mister Spock',text:[ "You!","r" ])}}
-		Still(~stills,'Mister Spock',5,0,text:["You!",""]).add(15*60+5)
+		//Still(~stills,'Mister Spock',5,0,text:["You!",""]).add(15*60+5)
+		{}
 	);
 	~justTheTune.('Mister Spock');
 	P(\continuedLineMisSpock,start:'you --',music:{|p b|

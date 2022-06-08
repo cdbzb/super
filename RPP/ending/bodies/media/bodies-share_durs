@@ -1,13 +1,11 @@
 var o, p;
 o = [
-	List.prNew,  Array.prNew(9)
+	Array.prNew(9)
 ];
 p = [
-	// List
-	0, [ array: o[1] ],  
 	// Array
-	1, [ 0.62,  0.645,  0.564,  0.25,  
+	0, [ 0.62,  0.645,  0.564,  0.25,  
 		0.132,  0.586,  0.345,  0.363,  
-		0.396 ]
+		0.796 ]
 ];
 prUnarchive(o,p);

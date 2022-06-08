@@ -64,6 +64,9 @@ Synful {
 		
 
 	}
+	setOut {|out|
+		syn.set(\out,out)
+	}
 	env {|envelope, interval=0.025, channel=0| 
 		var env=envelope.asStream;
 		var duration = envelope.times.sum;

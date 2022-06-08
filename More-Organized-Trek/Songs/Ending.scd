@@ -8,6 +8,7 @@
 */
 ( s.waitForBoot( {
 	 //Setup Monitor for back channels
+	 Song.currentSong.notNil.if{Song.resources.do{|i| try{i.free}}};
 	(s.options.device != "Digiface USB (23953833)") .if{
 		m=Monitor.new;
 		m.play(3,3,0,2,target:RootNode(s));
@@ -189,7 +190,14 @@ P(\alarum,start:\please,music:{|p b e|
 			 * Env.perc(0,b.sum,curve:\cub).kr(2,gate:1)
 			}
 		).play;
-		{Impulse.ar([3,5,7,11,13],{3.0.rand}!5)=>Mix.ar(_)=>FoaEncode.ar(_, Song.encoders.omni)=> FoaTransform.ar(_,'press',pi/2,pi,WhiteNoise.ar().range(pi,-pi),WhiteNoise.kr().range(0,pi/2))=>Monitors.ambi(_)}.play.dur(b.sum)
+		{
+			Impulse.ar([3,5,7,11,13],{3.0.rand}!5)
+			* Env.linen(0,b.sum,8).kr(2)
+			=>Mix.ar(_)
+			=>FoaEncode.ar(_, Song.encoders.omni)
+			=> FoaTransform.ar(_,'press',pi/2,pi,WhiteNoise.ar().range(pi,-pi),WhiteNoise.kr().range(0,pi/2))
+			=>Monitors.ambi(_)
+		}.play
 });
 P(\chord,start:\please,syl:1,music:{|p b e| 
 	var bus = Bus.audio(s,1);
@@ -350,12 +358,12 @@ P(\trem,start:\please,syl:1,music:{|p b e|
 		// TODO now make the relevant guide check to see if they should mute this!!
 		p.vocodeTune.(p,b,e,
 			e.rpp,
-			amp:0.9,
+			amp:0.1,
 			out:4,
 			dur:b.sum+5,
 			att:3,
 			sus:b.sum-5,
-			rel:3,
+			rel:4,
 			modGain:2
 		)
 	});
@@ -410,8 +418,12 @@ P(\trem,start:\please,syl:1,music:{|p b e|
 			}
 		).play.onFree({[carrier,modulator].do(_.free)});
 		Synth( 'vocoder16bands-bus',
-			[carrier:carrier.index,modulator:modulator.index],
-			addAction:\addToTail
+			[
+				carrier:carrier.index,
+				modulator:modulator.index,
+				amp:0.5
+			 ],
+			addAction:\addToTail,
 		).dur(b.sum+2);
 	});
 	
@@ -585,9 +597,9 @@ P(\trem,start:\please,syl:1,music:{|p b e|
 		});
 		["SARGON [OC]: No, Doctor. (Boom)",[1,-5,-3, -17].dm(\a,scale:\minor,octave:4)].addLine;
 		//Song.voxNo=VocalRPP('Doctor.',\test);
-		P(\vox,start:'Doctor.', rpp:VocalRPP('Doctor.',\test).refresh,music:{|p b e|
-			p.vocodeTune.(p,b,e,e.rpp,amp:0.3,dur:b.sum+3,att:1,sus:b.sum-1,rel:2,chord:[1],out:3);
-			p.vocodeTune.(p,b,e,e.rpp,amp:0.3,dur:b.sum+3,att:1,sus:b.sum-1,rel:2,chord:[2])
+		P(\vox,start:'Doctor.', rpp:VocalRPP('Doctor.',\test).refresh,lag:-1,music:{|p b e|
+			p.vocodeTune.(p,b,e,e.rpp,amp:0.05,dur:b.sum+1,att:1,sus:b.sum-1,rel:2,chord:[1],out:3);
+			p.vocodeTune.(p,b,e,e.rpp,amp:0.05,dur:b.sum+1,att:1,sus:b.sum-1,rel:2,chord:[2])
 		});
 		P(\test,start:'No, Doc',music:{|p b e| 
 			{
@@ -638,7 +650,7 @@ P(\trem,start:\please,syl:1,music:{|p b e|
 		[" I allowed you to believe that to be true so that ",[3,2,4,3,1,-5,-7,-6,-4,-1,2,-6,-5].dm(\c,scale:\mixolydian,octave:6)].addLine;
 		//Song.voxAllow=VocalRPP(\allowed,\tune).refresh;
 		P(\vox,start:\allowed,lag:-1,rpp:VocalRPP(\allowed,\tune).refresh,music:{|p b e|
-			p.vocodeTune.(p,b,e,e.rpp,amp:0.1,att:1,sus:b.sum-3,rel:2,dur:b.sum+2)
+			p.vocodeTune.(p,b,e,e.rpp,amp:0.25,att:1,sus:b.sum-2,rel:2,dur:b.sum+2)
 		});
 		P.still( \clear, start: \allowed, timecode:0, music: { |p b e|
 			e.still.value(
@@ -684,11 +696,11 @@ P(\trem,start:\please,syl:1,music:{|p b e|
 		});
 		["Henoch would (boom) read your thoughts and believe it also. ",[11,7,5,-4,13,12,15,13,12,11,7,14,13].dm(\c,octave:4)].addLine;
 		//Song.voxRead=VocalRPP(\read,\tune);
-		P(\vox,start:\read, rpp:VocalRPP(\read,\tune).refresh,music:{|p b e|
+		P(\vox,start:\read,lag:-1, rpp:VocalRPP(\read,\tune).refresh,music:{|p b e|
 			p.vocodeTune.(p,b,e,e.rpp,
-				amp:0.35,
+				amp:0.15,
 				att:1,
-				sus:b.sum-3,
+				sus:b.sum,
 				rel:2,
 				dur:b.sum+2,
 				chord:#[1,2,4,6,8],
@@ -786,8 +798,9 @@ P.tune(\unconsciousness);
 				e.still.setText(["and fled","the body"])
 			}
 		});
-P(\vox,start:\believed, rpp:VocalRPP(\believed,\tune).refresh,music:{|p b e| 
-			p.vocodeTune.(p,b,e,e.rpp,0.3,1,b.sum-3,2)
+P(\vox,start:\believed, rpp:VocalRPP(\believed,\tune).refresh,lag:-1,music:{|p b e| 
+		//|p b e rpp amp=0.2 att=3 sus=1 rel=5 dur=10 chord=#[1,2,4,5,6,8] tune out=0 modGain=1|
+			p.vocodeTune.(p,b,e,e.rpp,0.2,1,b.sum-2,2)
 });
 P(\bass,start:\believed,music:{|p b e| 
 	MegaBind(
@@ -895,6 +908,12 @@ P(\bass,start:\believed,music:{|p b e|
 		});
 		["Mister Spock's consciousness was placed in me. ",[1,2,3,4,3,2,1,6,6,5].dm(\g,octave:4)].addLine;
 		P.tune(\placed);
+		P.still( \chapel1, start: \placed, timecode:5030.5.seconds, music: { |p b e|
+			e.still.value(
+				wait: b.sum,
+				text: ["Mister Spock's consciousness","was placed in me!"]
+			);
+		});
 		P(\bass,start:\placed,music:{|p b e| 
 			MegaBind(
 				[
@@ -1116,8 +1135,10 @@ P(\bass,start:\believed,music:{|p b e|
 //Song.voxDepart= VocalRPP(\depart,\vox);
 //Song.voxDepart= VocalRPP(\depart,\newTest);
 P(\clusterVox,start:\depart, rpp:VocalRPP(\depart,\tune).refresh,lag:-1,music:{|p b e| 
-	p.vocodeTune.(p,b,e,e.rpp);
-	MegaBind(
+	p.vocodeTune.(p,b,e,e.rpp,0.1);
+	fork{
+		1.wait;
+		MegaBind(
 			[
 				p.tune[e.start].list.midicps/.t[2,4].flatten
 			],
@@ -1132,6 +1153,7 @@ P(\clusterVox,start:\depart, rpp:VocalRPP(\depart,\tune).refresh,lag:-1,music:{|
 				Mix.ar(i)=>Out.ar(p.carrierBus.index,_)
 			}
 		).play
+	}
 });
 			P(\bass,start:\depart,music:{|p b e| 
 				[
@@ -1212,13 +1234,13 @@ P(\clusterVox,start:\depart, rpp:VocalRPP(\depart,\tune).refresh,lag:-1,music:{|
 			});
 			["KIRK: Is there any way we can help you, Sargon? ",[12,11,13,11,7,6,5,11,7,7,6].dm(\c)].addLine;
 			P.tune(\help,Pbindf(_,\legato,1.5));
-(
-// can I do this without using 'b' ??
-Song.akSaws = Song.sawWaves.size.collect({ FloatArray.newClear(Song.sawWaves[0].numFrames) }) ;
-4.do({ |i| Song.sawWaves[i].readData( Song.akSaws[i])});
-Song.sawBuffers = Song.akSaws.collect({|i| i.as(Signal)})
-.collect({|i| i.asWavetable})
-.collect{|i|Buffer.loadCollection(s, i)};
+( Song.akSaws.isNil.if {
+	Song.akSaws = Song.sawWaves.size.collect({ FloatArray.newClear(Song.sawWaves[0].numFrames) }) ;
+	4.do({ |i| Song.sawWaves[i].readData( Song.akSaws[i])});
+	Song.sawBuffers = Song.akSaws.collect({|i| i.as(Signal)})
+	.collect({|i| i.asWavetable})
+	.collect{|i|Buffer.loadCollection(s, i)};
+}
 );
 
 			P(\line,start:\help,music:{|p b e| 
@@ -1249,6 +1271,7 @@ Song.sawBuffers = Song.akSaws.collect({|i| i.as(Signal)})
 						{|i|
 							
 							Mix.ar(i) => FreeVerb.ar(_,0.7,0.5) 
+							* 0.2
 							=> Monitors.ambi(_)
 							//=> FoaDecode.ar(_,Monitors.decoder) //=> Out.ar(3,_)
 							//=> {|i|i[[0,1,3,4,2]]}
@@ -1306,10 +1329,13 @@ Song.sawBuffers = Song.akSaws.collect({|i| i.as(Signal)})
 
 			});
 ["(boom boom) share your bodies again. ",[1,1,13,12, 13,14,13,12,11].dm(\f)].addLine;
+Song.durs[\bodies] = Song.durs[\bodies].list + [0,0,0,0,0,0,0,0,0.2] => _.q;
 //P.tune(\bodies,_.drop(2),syl:1);
-//Song.shareVox=VocalRPP(\bodies,\share);
-P(\vox,start:\bodies, rpp:VocalRPP(\bodies,\share).refresh,music:{|p b e| 
-	p.vocodeTune.(p,b,e,e.rpp,0.2,0,b.sum,2,dur:b.sum+2,tune:[\r,\r]++p.tune[e.start].list=>_.drop(2))
+Song.shareVox=VocalRPP(\bodies,\share);
+P.tune(\bodies);
+P(\vox,start:\bodies, rpp:VocalRPP(\bodies,\share).refresh,lag:-1,music:{|p b e| 
+	//p.vocodeTune.(p,b,e,e.rpp,0.1,0,b.sum,2,dur:b.sum+2,tune:[\r,\r]++p.tune[e.start].list=>_.drop(2))
+	p.vocodeTune.(p,b,e,e.rpp,0.1,0,b.sum,2,dur:b.sum+1)
 });
 Song.setQuarters(\bodies,[1,1,1,1/4,1/4,1,1/2,1/2,1/2]);
 
@@ -1377,8 +1403,8 @@ P.still( \clear, start: \last, timecode:0, music: { |p b e|
 	);
 });
 //Song.lastMoment=VocalRPP(\last,\tune);
-P(\vox,start:\last, rpp:VocalRPP(\last,\tune).refresh,music:{|p b e|
-	p.vocodeTune.(p,b,e,e.rpp,0.3,1,b.sum+5,2,dur:b.sum+2,chord:#[1,2,0.33])
+P(\vox,start:\last, rpp:VocalRPP(\last,\tune).refresh,lag:-1+0.2,music:{|p b e|
+	p.vocodeTune.(p,b,e,e.rpp,0.1,1,b.sum+5,2,dur:b.sum+2,chord:#[1,2,0.33])
 });
 P(\chord,start:\last,music:{|p b e| 
 	MegaBind(
@@ -1393,16 +1419,21 @@ P(\chord,start:\last,music:{|p b e|
 			,
 			b.dropLast ++ (b.last * 1/2),
 			//b.drop(1).parse([1,3,2]),
-			[ finalRel: [10,1,1,1,1,1]],
+			[ 
+				finalRel: [10,1,1,1,1,1],
+				amp: ( [1,1,1,1,2,2]/2 )
+			],
 			{|i x|
 
-	 Saw.ar(i.freqSeq*({rrand(1.01,0.99)}!4),0.1)  
-	* Env.asr(releaseTime:i.finalRel).kr(0,gate:i.gateSeq)
-	* 0.05
+				Saw.ar(i.freqSeq*({rrand(1.01,0.99)}!4),0.1)  
+				* Env.asr(releaseTime:i.finalRel).kr(0,gate:i.gateSeq)
+				* 0.05
+				* i.amp
+				
 			},
 			{|i|
 				i.collect(Mix.ar(i))
-			=> DWGReverbC1C3.ar(_)
+				=> DWGReverbC1C3.ar(_)
 			
 			},
 			release:12

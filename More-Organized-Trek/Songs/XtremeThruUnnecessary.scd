@@ -616,23 +616,20 @@ P(\pad8,start:'what it fee',music:
 		}
 );
 P(\trombone8,start:'what it fee',music: 
-	p{ | amp=0.9 exp=80|
+	{ | amp=0.9 exp=80|
 		//~syn1.monitor.clear;
 		//Synth(\tromboneVerb);\verb.postln;
 		~syn1.patch(\trombone,\none,3);
-		~syn1.syn.set(\out,0);
+		~syn1.syn.set(\out,Effect( { |i| FreeVerb.ar(i,0.8,0.7) * 3 => Out.ar([0,2],_) }  ).bus.index);
 		~syn1.expression(84,3);
-		Ppar([
 			Pbind(*[
 				type:\vst_midi,
 				vst:~syn1.controller,
 				chan:3,
 				midinote: Pseq(~noteList.(["g#","c#","b3"]))-[12,36] ,
 				dur:Pseq([Song.secDur['what it fee'],Song.secDur['even to br'],3]),
-				\amp:0.55 ])
-				,
-				[instrument:\tromboneVerb,dur:[5].q,addAction:\addToTail].p
-			]).play;
+				\amp:0.55,
+			]).play
 			//~syn1.monitor.play(~syn1.bus.index,2,111,2,fadeTime:0.05,volume:0.6);
 
 		}
@@ -680,13 +677,15 @@ P(\pf11,start:'Here, in this',music:
 		Pfindur(
 			len,
 			Pbind(*[
-				type:\midi,midiout:~syn1.controller.midi,
+				type:\synful,
+				instance:~syn1,
 				note:Pseq([6,8],inf)+transpose,
 				dur:Pwhite(0.1,0.12)*0.8,
 				amp:Pwhite(0.1,0.11),
 				pan:rrand(-1,1),
 				amp:amp,
-				chan:chan
+				chan:chan,
+				legato:1
 			])
 		);
 	}; 
@@ -701,22 +700,19 @@ SynthDef(\plate_phaser_insert,{
 
 P(\trill,start:'trill',lag:0.1,music:
 	{ |p b e| 
-		var reverbBus = Bus.audio(s,1);
-		var reverb = Synth(\plate_phaser_insert,[\inBus,reverbBus.index,\gate,1]);
-		~syn1.syn.set(\out,reverbBus.index);
+		//var reverbBus = Bus.audio(s,1);
+		//var reverb = Synth(\plate_phaser_insert,[\inBus,reverbBus.index,\gate,1]);
+		var trillLength = b.sum +( Song.durs[e.start+1].list.sum );
+		~syn1.syn.set(\out,
+			Effect( { |i| PlateReverb.ar(i,mix:0.5,decayTime:0.55)  * Env.linen(0,trillLength,5).kr(2  )}).bus.index
+		);
+		//~syn1.syn.set(\out,reverbBus.index);
 		fork{
-			var trillLength = Song.currentSong.secDur[0..1].sum;
 			~syn1.expression(40,1);
 			~syn1.expression(30,0);
 			0.05.wait;
 			~synTrill.value(0,0.9,12,len:trillLength).play;
 			~synTrill.value(1,1.9,4,len:trillLength).play;
-			{
-				Song.secDur[0..1].sum.wait;
-				reverb.release;
-				~syn1.syn.set(\out,0);
-				reverbBus.free;
-			}.fork
 		} 
 	}
 ); 
@@ -847,7 +843,7 @@ P(\collapseTremolo,start:'collapses',music:{|p b e|
 	~syn1.expression(127,1);
 //	~syn1.monitor.isRunning.not.if{~syn1.monitor=Synth(\syn1_Bus)};
 	~syn1.patch(\violas,\trem,0);
-	~syn1.setOut(Effect(FreeVerb.ar(_,0.8,0.8)).bus.index);
+	~syn1.syn.set(\out, (Effect(FreeVerb.ar(_,0.8,0.8)).bus.index) );
 //////////
 //idea delays without interpolation in the four channels
 //////////
@@ -988,6 +984,19 @@ Song.tk.add(\snare->
 	Song.durs['four bar intro']=Pseq([1,1,1.5,0.25,0.25+0.5, 0.5,0.5,0.25,0.25+0.5,0.5,0.5,0.5]);
 	P(\tempo1,start:'four bar intro',music:{{TempoClock.tempo=1.2}.fork});
 ["r this Vulcan body is adapted to the","r b b g# f# e f# g# f# e d# e"].addLine;//1
+P.still( \clear, start: 'adapted to', timecode:0 ,syl:0, music: { |p b e|
+	e.still.value(
+		wait: b.drop(1).sum,
+		text: ["this Vulcan body",""]
+	);
+	fork{
+		b[1..4].sum.wait;
+		defer{
+			e.still.setText(["this Vulcan body","is adapted to the"])
+		}
+	}
+
+});
 	Song.durs['is adapted']=Pseq([1,1,1.5,0.25,0.25+0.5, 0.5,0.5,0.25,0.25+0.5,0.5,0.5,0.5]);
 //	Song.durs[1]=Pseq((Song.durs[1].list!2).flatten	);
 	Song.adaptedTempo=1.2;
@@ -1021,6 +1030,12 @@ Song.tk.add(\snare->
 		)
 	); 
 ["r r higher metabolism"," f#3 f# a5 g# b a g# f# e "].addLine;//2
+P.still( \clear , start:\higher , timecode:0, syl:1, music: { |p b e|
+	e.still.value(
+		wait: b.drop(1).sum ,
+		text:["higher","metabolism"]
+	);
+});
 //	P(\tempo3,start:'higher metabolism',music:{{TempoClock.tempo=1}.fork});
 	P(\bass3,start:'higher metabolism',music: //		{{{
 		{|p b e|

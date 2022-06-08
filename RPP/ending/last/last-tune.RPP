@@ -1,4 +1,4 @@
-<REAPER_PROJECT 0.1 "6.47/OSX64-clang" 1654550582
+<REAPER_PROJECT 0.1 "6.47/OSX64-clang" 1654642508
   RIPPLE 0
   GROUPOVERRIDE 0 0 0
   AUTOXFADE 1
@@ -16,7 +16,7 @@
   PANMODE 3
   CURSOR 0
   ZOOM 28.3305995 0 0
-  VZOOMEX 0 0
+  VZOOMEX 0 175
   USE_REC_CFG 0
   RECMODE 1
   SMPTESYNC 0 30 100 40 1000 300 0 0 1 0 0
@@ -92,7 +92,7 @@
     PEAKCOL 16576
     BEAT -1
     AUTOMODE 0
-    VOLPAN 1 0 -1 -1 1
+    VOLPAN 0.17338831332889 0 -1 -1 1
     MUTESOLO 0 0 0
     IPHASE 0
     PLAYOFFS 0 1
@@ -103,7 +103,7 @@
     SEL 0
     REC 0 5088 1 0 0 0 0
     VU 2
-    TRACKHEIGHT 0 0 0 0 -1 0
+    TRACKHEIGHT 122 0 0 0 -1 0
     INQ 0 0 0 0.5 100 0 0 100
     NCHAN 2
     FX 1
@@ -120,7 +120,7 @@
       FADEIN 1 0 0 1 0 0 0
       FADEOUT 1 0 0 1 0 0 0
       MUTE 0 0
-      SEL 1
+      SEL 0
       IGUID {4ED0D3DE-7498-FB41-BEE5-1F3557905D1F}
       IID 1
       NAME prison.wav
@@ -150,7 +150,7 @@
     SEL 0
     REC 0 5088 1 0 0 0 0
     VU 2
-    TRACKHEIGHT 0 0 0 0 -1 0
+    TRACKHEIGHT 235 0 0 0 -1 0
     INQ 0 0 0 0.5 100 0 0 100
     NCHAN 2
     FX 1
@@ -162,18 +162,18 @@
     <ITEM
       POSITION 0
       SNAPOFFS 0
-      LENGTH 10.988
+      LENGTH 9.988
       LOOP 0
       ALLTAKES 0
       FADEIN 1 0 0 1 0 0 0
       FADEOUT 1 0 0 1 0 0 0
       MUTE 0 0
-      SEL 1
+      SEL 0
       IGUID {13FFCC29-189E-1D42-9D43-C72205DE4B51}
       IID 1
       NAME CARRIER_SC.wav
       VOLPAN 1 0 1 -1
-      SOFFS 0
+      SOFFS 1
       PLAYRATE 1 1 0 -1 0 0.0025
       CHANMODE 0
       GUID {B5D867EE-8505-E748-A072-E030C38BC71D}
@@ -188,17 +188,17 @@
     BEAT -1
     AUTOMODE 0
     VOLPAN 1 0 -1 -1 1
-    MUTESOLO 0 0 0
+    MUTESOLO 1 0 0
     IPHASE 0
     PLAYOFFS 0 1
     ISBUS 0 0
     BUSCOMP 0 0 0 0 0
     SHOWINMIX 1 0.6667 0.5 1 0.5 -1 -1 -1
     FREEMODE 0
-    SEL 0
+    SEL 1
     REC 0 5088 1 0 0 0 0
     VU 2
-    TRACKHEIGHT 0 0 0 0 -1 0
+    TRACKHEIGHT 197 0 0 0 -1 0
     INQ 0 0 0 0.5 100 0 0 100
     NCHAN 2
     FX 1
@@ -209,23 +209,23 @@
     <ITEM
       POSITION 0
       SNAPOFFS 0
-      LENGTH 13.588
+      LENGTH 13.988
       LOOP 0
       ALLTAKES 0
       FADEIN 1 0 0 1 0 0 0
       FADEOUT 1 0 0 1 0 0 0
       MUTE 0 0
       SEL 1
-      IGUID {22DD4B56-9DCB-4442-A637-83874976AA8A}
-      IID 1
-      NAME 02-210914_0748.rpp
+      IGUID {3424CBCD-AFFC-054C-A9B1-C9F113A245CB}
+      IID 4
+      NAME last-tune-subproject.RPP
       VOLPAN 1 0 1 -1
       SOFFS 0
       PLAYRATE 1 1 0 -1 0 0.0025
       CHANMODE 0
-      GUID {271F5E0C-E78D-AE4A-9FAF-7AA3B13D6330}
+      GUID {D7CEE12B-146F-CB4B-BD2F-9A2CD39A7900}
       <SOURCE RPP_PROJECT
-        FILE "media/last-tune-subproject.rpp"
+        FILE "media/last-tune-subproject/last-tune-subproject.RPP"
       >
     >
   >

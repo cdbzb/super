@@ -150,7 +150,7 @@ P.tune('willin ');
 		[
 			instrument:\kick,
 			amp:1,
-			dur:"x0x0|x0x0|xx0x|xxxx".asDrumPat(8,inf),
+			dur:"x0x0|x0x0|xx0x|xxxx".asDrumPat(3,inf),
 		].p,
 		Pfxb(
 			Pbind(*[

@@ -5,7 +5,22 @@ MegaBind {
 
 	*new {|pitches durs bind inner fx release| ^super.new.init(pitches,durs,bind,inner,fx,release)}
 	init{|p d b i f r| 
-		pitches = p; durs = d; bind = ( b ? [] ) ; inner = i ? I.d; fx = f ? I.d; release = r ? release;
+		pitches = p; durs = d; bind = ( b ? [] ) ; 
+		( bind.class==Function ).if{bind=[];i=b};
+		inner = i ?
+		{|i|
+			Saw.ar( i.freqSeq )
+			* 
+			(
+				Env([0,1,0.7,0],[0.02,0.7,0.3]).kr(0,gate:(i.gateSeq*i.trigSeq))
+				* 0.1
+			)
+		}
+		; 
+		fx = f ? 
+		{|i| Mix.ar(i)}
+		; 
+		release = r ? release;
 		names=pitches.select(_.class == Symbol);
 		//TODO associate names with tracks correctly so
 		names = pitches.collect{|i x| [i,x]}.select{|i| i[0].class == Symbol}.collect{|i x| i[0]->(i[1]-x)}.asEvent;

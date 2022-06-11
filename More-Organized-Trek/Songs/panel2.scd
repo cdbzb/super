@@ -422,10 +422,6 @@ P(\lungsB8,music:
 );
 //, 2/3,[1/3,1],1/5,1/5,1/5,1/5,1/5,1,1]).q;
 //TempoClock.tempo=1
-( Song.resources.infrastructure.addFunc({ //~syn1
-	try{~syn1.controller.loaded.not.if{~syn1=~synful3.()}}{~syn1=~synful3.()};
-});
-);
 ["pumping, arteries surging with blood again. A", [13,5].dm('c') //9
 		++ [3,2,1].dm('f',scale:\minor ) ++[3,4,5].dm('g')
 		++ [13,12,5, 7].dm('e')

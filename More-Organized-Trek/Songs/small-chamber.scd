@@ -2,7 +2,7 @@
 /* [Small chamber]
 
 (There are a group of boxes on the wall, containing spheres. Only two are alight.) */
-Song.smallChamber.isNil.not.if{ Song.smallChamber.resources.do(_.free) };
+Song.songs.at(\smallChamber).isNil.not.if{try{  Song.smallChamber.resources.do(_.free)  }};
 Song(\smallChamber,[]).current;
 Song.currentSong.resources.infrastructure=FunctionList([ {
 	~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};

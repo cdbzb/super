@@ -23,6 +23,12 @@ Stills {
 	*reaper {
 		("open "++ "/Users/michael/trek/video for stills etc/video for stills etc.RPP".escapeChar(Char.space)).unixCmd
 	}
+	dual {
+		monitors= [
+			Rect(left:0,top:200,width:1400,height:800),
+			Rect(left:-1500,top:200,width:1400,height:800)
+		]
+	}
 
 	init {|movie| 
 		file=movie; 

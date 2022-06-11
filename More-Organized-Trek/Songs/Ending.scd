@@ -162,9 +162,11 @@
 
 	P(\stab,start:\leaps,music:{|p b e| 
 		var amb = { |i| FoaEncode.ar(i,Song.encoders.spread)	=> FoaRTT.ar(_,SinOsc.ar(0.15).range(-pi,pi))=> Monitors.ambi(_) };
-		Synth(\cymbalsDS,[out:Effect({|i| i=> PitchShift.ar(_,0.1)=> CrossoverDistortion.ar(_) *0.065 * Env.linen(0,3,5).kr(2,gate:1) => amb }).bus.index]);
-		Synth(\default,[\freq,[1,-1].df('c#',octave:[3]),out:Effect({|i| i=> CrossoverDistortion.ar(_) *0.065 * Env.linen(0,3,5).kr(2,gate:1) => amb }).bus.index])
+		var g = Group.new;
+		Synth(\cymbalsDS,[out:Effect({|i| i=> PitchShift.ar(_,0.1)=> CrossoverDistortion.ar(_) *0.065 * Env.linen(0,3,5).kr(2,gate:1) => amb }).bus.index],target:g);
+		Synth(\default,[\freq,[1,-1].df('c#',octave:[3]),out:Effect({|i| i=> CrossoverDistortion.ar(_) *0.065 * Env.linen(0,3,5).kr(2,gate:1) => amb }).bus.index],target:g);
 
+		fork{8.wait;g.free}
 		 
 	});
 //(He whirls around.) 
@@ -207,7 +209,9 @@ P(\chord,start:\please,syl:1,music:{|p b e|
 		amp:2,
 		dur: b.drop(1).parse([3,1]).q,
 		sustain:[0.9,0.5].q,
-		out:Effect({|i| i=>CrossoverDistortion.ar(_,smooth:0.96)*2=>FoaEncode.ar(_,Song.encoders.omni)=>FoaRTT.ar(_,SinOsc.ar(0.1))=>Monitors.ambi(_)}).bus.index
+		out:Effect({|i| i=>CrossoverDistortion.ar(_,smooth:0.96)*2 
+		* Env.linen(0,b.sum,3).kr(2,gate:1)
+		=>FoaEncode.ar(_,Song.encoders.omni)=>FoaRTT.ar(_,SinOsc.ar(0.1))=>Monitors.ambi(_)}).bus.index
 		//addAction:\addToHead
 
 	].pp;
@@ -417,14 +421,14 @@ P(\trem,start:\please,syl:1,music:{|p b e|
 				=> Out.ar(carrier.index,_);
 			}
 		).play.onFree({[carrier,modulator].do(_.free)});
-		Synth( 'vocoder16bands-bus',
+		Song.oldSkool = Synth( 'vocoder16bands-bus',
 			[
 				carrier:carrier.index,
 				modulator:modulator.index,
-				amp:0.5
+				amp:0.3
 			 ],
 			addAction:\addToTail,
-		).dur(b.sum+2);
+		)//.dur(b.sum+2);
 	});
 	
 	P(\bass,start:\sacrifice,music:{|p b e| 
@@ -437,6 +441,9 @@ P(\trem,start:\please,syl:1,music:{|p b e|
 
 		});
 ["(Lights dim and glow, then Chapel wobbles., MCCOY: Jim. ) ","r",[8]].addLine;
+P(\release,start:\wobbles,music:{|p b e| 
+	p.oldskool.free;
+});
 		P.still( \spock, start: \wobbles, lag:2, timecode:4948.seconds, music: { |p b e|
 			e.still.value(
 				wait: b.sum-e.lag,
@@ -598,8 +605,8 @@ P(\trem,start:\please,syl:1,music:{|p b e|
 		["SARGON [OC]: No, Doctor. (Boom)",[1,-5,-3, -17].dm(\a,scale:\minor,octave:4)].addLine;
 		//Song.voxNo=VocalRPP('Doctor.',\test);
 		P(\vox,start:'Doctor.', rpp:VocalRPP('Doctor.',\test).refresh,lag:-1,music:{|p b e|
-			p.vocodeTune.(p,b,e,e.rpp,amp:0.05,dur:b.sum+1,att:1,sus:b.sum-1,rel:2,chord:[1],out:3);
-			p.vocodeTune.(p,b,e,e.rpp,amp:0.05,dur:b.sum+1,att:1,sus:b.sum-1,rel:2,chord:[2])
+			p.vocodeTune.(p,b,e,e.rpp,amp:0.12,dur:b.sum+1,att:1,sus:b.sum-1,rel:2,chord:[1],out:3);
+			p.vocodeTune.(p,b,e,e.rpp,amp:0.12,dur:b.sum+1,att:1,sus:b.sum-1,rel:2,chord:[2])
 		});
 		P(\test,start:'No, Doc',music:{|p b e| 
 			{
@@ -650,7 +657,7 @@ P(\trem,start:\please,syl:1,music:{|p b e|
 		[" I allowed you to believe that to be true so that ",[3,2,4,3,1,-5,-7,-6,-4,-1,2,-6,-5].dm(\c,scale:\mixolydian,octave:6)].addLine;
 		//Song.voxAllow=VocalRPP(\allowed,\tune).refresh;
 		P(\vox,start:\allowed,lag:-1,rpp:VocalRPP(\allowed,\tune).refresh,music:{|p b e|
-			p.vocodeTune.(p,b,e,e.rpp,amp:0.25,att:1,sus:b.sum-2,rel:2,dur:b.sum+2)
+			p.vocodeTune.(p,b,e,e.rpp,amp:0.15,att:1,sus:b.sum-1,rel:1.2,dur:b.sum+1.1)
 		});
 		P.still( \clear, start: \allowed, timecode:0, music: { |p b e|
 			e.still.value(
@@ -698,7 +705,7 @@ P(\trem,start:\please,syl:1,music:{|p b e|
 		//Song.voxRead=VocalRPP(\read,\tune);
 		P(\vox,start:\read,lag:-1, rpp:VocalRPP(\read,\tune).refresh,music:{|p b e|
 			p.vocodeTune.(p,b,e,e.rpp,
-				amp:0.15,
+				amp:0.18,
 				att:1,
 				sus:b.sum,
 				rel:2,

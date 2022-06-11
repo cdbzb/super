@@ -19,6 +19,19 @@ MegaBind(
 		}
 	)${6:.play}
 endsnippet
+snippet inner
+{|i|
+	Saw.ar( i.freqSeq )
+	* (
+		Env([0,1,0.7,0],[0.02,0.7,0.3]).kr(0,gate:(i.gateSeq*i.trigSeq))
+		* 0.1
+	)
+}
+endsnippet
+snippet outer
+{|i|
+	Mix.ar( i )
+}
 snippet freqseq
 $1.ar( i.freqSeq$2 )
 endsnippet

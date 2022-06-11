@@ -426,7 +426,7 @@ P(\strum,start:\closed,music:{|p b e|
 		dur:b[0..9].sum
 	).play
 });
-["(boom) With these bodies. (la la la la la la  with the-- ese bodies) ",[1,5,5.5,3,2,1,-7,1,2,1,-7,-6, ].dm(\d) ++ [7,11,5,5,4].dm(\c)].addLine;
+["(boom) With these bodies. (la la la la la la  with the-- ese bodies) )",[1,5,5.5,3,2,1,-7,1,2,1,-7,-6, ].dm(\d) ++ [7,11,5,5,4].dm(\c)].addLine;
 //Reaper.new;Reaper.saveas("/Users/michael/tank/super/More-Organized-Trek/Songs/with-these-bodies");
 P.tune('With these bodies',Pbindf(_,\instrument,\stringyy,\wet,0.0,\release,2,\amp,0.2));
 //P(\vox,start:'With these bodies', music:{
@@ -529,7 +529,7 @@ P(\bass,start:\mankind,syl:2,music:{|p b e|
 		dur: b.parse([[1,1,1,1/3],[2/3,1,1,1]]).q
 	].pp
 });
-["Are these bodies too much to ask for in return? /*(or) Would you prefer this? */ ",[1,3,4,3,1,2,3,2,1,-7,-6,1.5].dm(\e) ++ [1,2,3,2,3,6.5].dm(\c) ].addLine;
+["Are these bodies too much to ask for in return? /*(or) Would you prefer this? )*/ ",[1,3,4,3,1,2,3,2,1,-7,-6,1.5].dm(\e) ++ [1,2,3,2,3,6.5].dm(\c) ].addLine;
 P.tune(\return);
 P(\lick,start:\return,syl:3,music:{|p b e| 
 	[

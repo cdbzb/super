@@ -1,4 +1,5 @@
 (
+Stills("/Users/michael/trek/BySection/media/return to tomorrow.mov").current;
 //Line 239 The three volunteers are lying on beds, with the spheres on tables beside them. 
 ~xtreme=Song( \song,[]).current;
 Song.preroll_(1);
@@ -72,18 +73,6 @@ FunctionList.new.array_([
 	{ Song.condition.test_(true).signal },
 ]).value
 	}.inEnvir;
-	//~syn1.condition.test
-	//~syn1.controller.loaded
-	//s.plotTreeL
-	//~xtreme.resources.condition.test
-	//~syn1.controller.loaded
-
-	
-
-
-	
-	//~xtreme.parts=();
-
 //	P(\bassT2,start:2,lag:0,music:{ 
 //
 //		//~bassVerb.set(\mix,0);
@@ -321,17 +310,9 @@ FunctionList.new.array_([
 		////strings
 		//try{~syn1.monitor.free;};~syn1.monitor=Monitor.new;~syn1.monitor.play(~syn1.bus.index,2,0,2,fadeTime:0.05);
 		//try{~syn2.monitor.free;};~syn2.monitor=Monitor.new;~syn2.monitor.play(~syn2.bus.index,2,2,2,fadeTime:0.05);
-		~syn1.syn.set(\out,2);
-		~syn2.syn.set(\out,0);
+		~syn1.syn.set(\out,Effect(FreeVerb.ar(_,0.75,0.55)*3).bus.index);
+		~syn2.syn.set(\out,Effect( { |i| PlateReverb.ar(i,mix:0.55)*2 * Env.linen(0,b.sum,5).kr(doneAction:2,gate:1) } ,out:2).bus.index);
 		//TODO these need to turn themselves off with DoneActions rather than routines
-		{
-			var v,w;
-			v={var sig=In.ar(~syn1.bus);sig=FreeVerb.ar(sig,room:0.75,mix:0.55)*3;ReplaceOut.ar(~syn1.bus,sig)};v=v.play;
-			w={var sig=In.ar(~syn2.bus);sig=PlateReverb.ar(sig,mix:0.55)*2;ReplaceOut.ar(~syn2.bus,sig)};w=w.play;
-			{20.wait;v.free}.fork;
-			{20.wait;w.free}.fork;
-		};
-
 		
 		~syn1.setprog(3,5,0); ~syn1.setprog(4,5,1);
 		//~syn2.setprog(3,5,0); ~syn2.setprog(4,5,1);
@@ -344,7 +325,9 @@ FunctionList.new.array_([
 				{|i|
 					[~syn1,~syn2].do(_.expression((127-i),0));
 					[~syn1,~syn2].do(_.expression((127-i),1));
-					0.18.wait
+					0.18.wait;
+					//'---->'.post;i.postln;
+
 				}
 				);
 		}.fork;
@@ -519,7 +502,7 @@ P(\drumPan4,start:'lovely female',music:
 p{
 	Song.helloSequenceMonitor.play(
 		Song.helloSequenceBus.index,2,1,1,
-		fadeTime:~complete.secDur[4..5].sum,
+		fadeTime:Song.secDur[4..5].sum,
 		volume:0.2);
 
 	}
@@ -594,14 +577,6 @@ P(\yow7,start:'r r you',syl:0,music:
 );
 ["I've forgotten what it fee-","g#4 e b f# a# b c#5"].addLine;//8
 P.tune('what it fee');
-SynthDef(\tromboneVerb,{ |room=0.8 mix=0.7| 
-var sig=In.ar(111,2);
-sig=FreeVerb.ar(sig,room:room,mix:mix)*3;
-Out.ar([0,2],sig);
-//ReplaceOut.ar(~syn1.bus,sig);
-DetectSilence.ar(sig,time:2,doneAction:2) 
-}
-).add;
 P(\pad8,start:'what it fee',music:
 		p{
 			var du=Song.durs['what it fee'].list;
@@ -617,10 +592,13 @@ P(\pad8,start:'what it fee',music:
 );
 P(\trombone8,start:'what it fee',music: 
 	{ | amp=0.9 exp=80|
+		'NOWWWWWW'.postln;
 		//~syn1.monitor.clear;
 		//Synth(\tromboneVerb);\verb.postln;
 		~syn1.patch(\trombone,\none,3);
-		~syn1.syn.set(\out,Effect( { |i| FreeVerb.ar(i,0.8,0.7) * 3 => Out.ar([0,2],_) }  ).bus.index);
+		//~syn1.syn.set(\out,Effect( { |i| FreeVerb.ar(i,0.8,0.7) * 3 },out:2  ).bus.index);
+		~syn1.syn.set(\out,Effect( { |i| DWGReverbC1C3.ar(i,mix:0.2,c1:2) * 0.4 } ,out:2).bus.index);
+		//~syn1.syn.set(\out,Effect( { |i| FreeVerb.ar(i,0.8,0.7) * 3 => Out.ar([0,2],_) }  ).bus.index);
 		~syn1.expression(84,3);
 			Pbind(*[
 				type:\vst_midi,
@@ -732,11 +710,15 @@ P(\afterSoLongSketch,start:'very long',music: {|p b e|
 		[
 			legato:1.05,
 			degree:Pseq(afterSoLong)-1,
-			dur:b.q
+			dur:b.q,
+			out: Effect(PlateReverb.ar(_,mix:0.1),out:3).bus.index,
+			amp: 0.08
 		].pp;
 		[
 			degree:Pseq([1,-3]),
-			dur:b.parse([6,5]).q
+			dur:b.parse([6,5]).q,
+			out: Effect(PlateReverb.ar(_,mix:0.2),out:1).bus.index,
+			amp: 0.08
 		].pp
 	}
 );
@@ -747,7 +729,8 @@ P(\bassNotes54,start:'very long',music:
 			degree: Pseq([1,4],2) ,
 			legato:[1.1,0.9].q,
 			octave:3,
-			amp:1
+			amp:0.5,
+			out: Effect( SineShaper.ar(_,0.2) ).bus.index
 		].pp
 	}
 );

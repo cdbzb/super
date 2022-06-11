@@ -535,7 +535,7 @@ P(\vocoder,start:'necessary',music:{|p b e|
 		ry:0.0,
 		//		inputEffect:(EchoNone.ar(_,0.4,0.3,1.5))
 	)
-}.value
+}// .value
 );
 ~justTheTune.('therefore',{|i| i.fin(4)=> Pmul(\freq,[ 0.5 , 0.25 ],_)=>Pbindf(_,\instrument,\sparkTriangle,\amp,0.06)});
 P(\necessaryBaseNote,start:'necessary',music:{|p b e|

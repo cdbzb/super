@@ -14,6 +14,7 @@ Song {
 	var <>quarters, <>tempoMap;
 	var <>clock;
 	var playInitiatedAt,<>preroll=0;
+	classvar <>muteTunes;
 
 	*initClass {
 		Class.initClassTree(Recorder);
@@ -352,6 +353,7 @@ Song {
 
 	getParts { |list|
 		list.postln;
+		( muteTunes == true ).if{ list=list.reject{|i| i.name.contains( "TUNE" )} };
 		^list.collect{|x|(x.class==Symbol).if({resources.at(x)},{x})}
 	}
 

@@ -52,9 +52,22 @@ s.waitForBoot{
 	["You could materiali--se inside ","4 3 2 4 3 2 1.5 2 ".dm(\b,4) ].addLine;
 	P.tune(\material);
 	["solid rock. ",[7, 6, 6, 11, 7, 7].dm(\c) ].addLine;
-	//P.tune('rock.');
+	P.tune('rock.');
 	//Song.setTempoMap('rock.', "q ex xqq q ex xqq");
-	Song.setTempoMap('rock.', "q ex xqq q ex xqq");
+	Song.setTempoMap('rock.', "qe e qq qe e qq");
+// in hook Bones-Scotty.RPP
+	P(\chords,start:'rock.',music:{|p b e| 
+		[
+			freq: 
+			[[1, 3, 5, 7],[1, 3,5, 6],[1, 3, 5, 6]].df(\c).q
+			++[[1, 3, 5, 7],[1, 3,5, 6],[1, 3, 5, 6]].df(\d,5,\mixolydian).q
+			,
+			dur: "q ex xqq".asBeats.warpTo(e.tempoMap).dup.flatten.q,
+		].pp
+		
+	});
+		
+
 	P(\bass,start:'rock.',music:{|p b e| 
 		[
 			freq: [[1, 11],[1,11],11, -7,1,-7,1, 5,6] => {|i| [ i.df(\c,3).q, i.df(\d,3,scale:\mixolydian).q ].q},
@@ -172,11 +185,32 @@ s.waitForBoot{
 	P.tune(\receive,Song.mulhallTune);
 	[ "SPOCK: I'm sure she did, Captain, Just as you received an order to bring me along. ","r" ].addLine;
 	[ "KIRK: Oh, yes. ","5 11".dm(\g) ].addLine;
-	[ "MCCOY: Let's get back to this solid rock business...","r" ].addLine;
-	["Just how much rock are we going to go through? ","r" ].addLine;
-	[ "SPOCK: Approximately one hundred twelve point three seven miles, Doctor. ","r" ].addLine;
+	[ "MCCOY: Let's (boom boom) get back to this ","1 -7 -5 -7 3 2 1 ".dm(\c,5,\mixolydian) ].addLine;
+	P.tune('get back',Pset(\amp,[1,0,0,1,1,1,1]/10=>_.q,_));
+	Song.setQuarters('get back',"x e ex e | e x x");
+	P(\bass,start:'get back',music:{|p b e| 
+		[
+			freq: [1, -7, -5, -17, -1].df(\c, 4, \mixolydian).q,
+			dur: b.q
+		].pp	
+		
+		
+	});
+	[ "( boom boom ) solid rock business...","1 1 7 6 7 11 7 6".dm('f#')].addLine;
+	P.tune(\business);
+	P(\bass,start:\business,music:{|p b e| 
+		[
+			freq: [1, 1, 2].df('f#',[3,4]).q,
+			dur: b.parse([1,5,2]).q
+		].pp
+	});
+		
+	//add pickup bassnote to line following?
+	[" (boom) Just how much rock are we going to go through? ","1 5 5 5 5 3 4 5 4 3 2 1 5 6 5".dm('b-') ].addLine;
+	P.tune(\through);
+	[ "SPOCK: Approximately one hundred twelve point three seven miles, Doctor. ","6 5 4 3 4 5 3 1 6 4 ".dm(\d) ].addLine;
 	[ "MCCOY: Miles? Are you joking? ","r" ].addLine;
-	[ "KIRK: No, we're not. Let's go. ","r" ].addLine;
+	[ "KIRK: No, we're not. Let's go. ",[-5, -5, 1].dm(\f) ++ [-5, -5, 1].dm(\a) ].addLine;
 	[ "SARGON [OC]: Please stand ready. I will operate your controls. ","r" ].addLine;
 	//[ "KIRK: Doctor, if you prefer to stay behind? ","r" ].addLine;
 }

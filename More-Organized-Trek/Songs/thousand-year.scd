@@ -78,15 +78,44 @@ P(\accent,start:\jelly,music:{|p b e|
 P.tune(\microgears);
 P(\chords,start:\microgears,music:{|p b e| 
 	[
-		freq:[[-5,-7,2],[-5,-7,2], [1,4,6],[1,3,5],[-5,1,3] ].df(\d).q,
+		freq:[
+			[-5,-7,2],[-5,-7,2], [1,4,6],[1,3,5],[-5,1,3],
+			[-6, 2, 5], [ -6, 2, 4.5], [-5,1,3], [-5,-7,2]
+		
+		].df(\d).q,
 		dur:b.q
 	].pp;
 	[
 		instrument:\sawSynthSustain,
-		freq:[-5,1].df(\d,octave:3).q,
-		dur:b.parse([2,3]).q
+		freq:[-5,1, 2, -5].df(\d,octave:3).q,
+		dur:b.parse([2,3, 2, 2]).q
 	].pp;
 
+});
+P(\moreChords,start:\microgears,syl:4,music:{|p b e| 
+	
+	MegaBind(
+		[
+			[1, \_, \r, 4, 5],
+			[-5, -6, \r,2, 1]
+		].df(\e),
+		b.drop(1).parse([2,2,1, 3, 3]),
+		[
+				lag:{[0,0.6].dq.demand(b)},
+		],
+		{|i|
+			Saw.ar( i.freqSeq.lag(i.lag)/2 => Vibrato.ar(_,4.5,0.01, delay:b.parse([2]).unbubble) )
+			* (
+				Env.asr().kr(gate:i.gateSeq)
+				* 0.04
+			)
+		},
+		{
+			|i|
+			i = Mix.ar(i);
+			DWGReverbC1C3.ar(i,mix:0.1)
+		}
+	).play;
 });
 ["/*MULHALL:*/ That would be highly inefficient.",[7,5,2,11,7,5,2,6,4.5].dm(\d,scale:\mixolydian)].addLine;
 P.tune(\inefficient);

@@ -4,7 +4,7 @@ o = [
 	List.prNew,  Array.prNew(13),  "KIRK: Easy, Bones. ",  Pseq.prNew,  
 	List.prNew,  Array.prNew(3),  "Just how much rock are we going to go through? ",  Pseq.prNew,  
 	List.prNew,  Array.prNew(14),  "SPOCK: I'm sure she did, Captain, Just as you received an order to bring me along. ",  Pseq.prNew,  
-	List.prNew,  Array.prNew(20),  "porter co-ordinates preset by an alien of some sort. ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(19),  "porter co-ordinates preset by an alien of some sort. ",  Pseq.prNew,  
 	List.prNew,  Array.prNew(10),  "KIRK: I have a feeling that they or it could destroy us just standing here if they or it wanted to. ",  Pseq.prNew,  
 	List.prNew,  Array.prNew(24),  "( boom boom ) solid rock business...",  Pseq.prNew,  
 	List.prNew,  Array.prNew(8),  "MULHALL: Strange, I'm not sure. Well, I'm not a liar, Captain.",  Pseq.prNew,  
@@ -198,11 +198,11 @@ p = [
 	// List
 	16, [ array: o[17] ],  
 	// Array
-	17, [ 0.393,  0.524,  0.262,  0.659,  
-		0.44,  0.647,  0.446,  0.224,  
-		0.377,  0.348,  0.366,  0.425,  
-		0.29,  0.292,  0.25,  0.349,  
-		0.288,  0.382,  0.41,  0.568 ],  
+	17, [ 0.452,  0.655,  0.267,  0.705,  
+		0.448,  1.18,  0.629,  0.286,  
+		0.37,  0.404,  0.391,  0.496,  
+		0.376,  0.443,  0.397,  0.441,  
+		0.768,  0.437,  1.352 ],  
 	// Pseq
 	19, [ list: o[20],  repeats: 1,  
 		offset: 0 ],  

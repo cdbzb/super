@@ -183,7 +183,8 @@ s.waitForBoot{
 		].pp;
 	});
 	P.tune(\receive,Song.mulhallTune);
-	[ "SPOCK: I'm sure she did, Captain, Just as you received an order to bring me along. ","r" ].addLine;
+	[ "SPOCK: I'm sure she did, Captain, Just as you received an order to bring me along. ",[5, 5, 6, 5, 4, 3].dm('e-') ++ [5, 6, 5, 3, 4, 5].dm(\e) ++ [5, 4, 5, 6, 6, 7, 5, 2].dm(\f) ].addLine;
+	P.tune(\along);
 	[ "KIRK: Oh, yes. ","5 11".dm(\g) ].addLine;
 	[ "MCCOY: Let's (boom boom) get back to this ","1 -7 -5 -7 3 2 1 ".dm(\c,5,\mixolydian) ].addLine;
 	P.tune('get back',Pset(\amp,[1,0,0,1,1,1,1]/10=>_.q,_));
@@ -207,8 +208,61 @@ s.waitForBoot{
 		
 	//add pickup bassnote to line following?
 	[" (boom) Just how much rock are we going to go through? ","1 5 5 5 5 3 4 5 4 3 2 1 5 6 5".dm('b-') ].addLine;
-	P.tune(\through);
-	[ "SPOCK: Approximately one hundred twelve point three seven miles, Doctor. ","6 5 4 3 4 5 3 1 6 4 ".dm(\d) ].addLine;
+	Song.setQuarters(\through,"q q q| q q e e| Q Q Q| Q Q E Eq q");
+	Song.quarters[\through] = Song.quarters[\through].list.quantizeWindow.q;
+	P.tune(\through,Pset(
+		\dur,
+		"q q q| q q e e| Q Q Q| Q Q E Eq ex ".asBeats .warpTo(Song.quarters[\through]).q
+		,_));
+	
+	P(\click,start:\through,music:{|p b e| 
+		(instrument:\cymbalsDS,amp:0.05).play;
+		e.quarters.postln;
+		[
+			instrument:\sn_808,
+			dur:e.quarters
+		].pp;
+		[
+			dur:"x....x.x".asDrumPat(2,4),
+			instrument:\bd_808,
+			amp:1
+		].p.fin(b.sum).play(e.quarters.asTempoClock)
+	});
+	P(\bass,start:\through,music:{|p b e| 
+		[3,1]/2=>_.dup(6)=>_.flat => _.warpTo( Song.quarters[\through].list ++ 1 => _.q) => _.postln;
+		MegaBind(
+			[
+				[11, 11, 7,  7,  6,  6,  5,  5,  4,  4,  3,  3,  2],
+				[1,  \r, -7, \r, -6, \r, -5, \r, -4, \r, -3, \r, -2]
+			].df('b-',3),
+			[3,1]/2=>_.dup(6)=>_.flat => _.warpTo(e.quarters.list ++ 1 => _.q) ++ p.durs[e.next].list[0]	,
+			[],
+			{|i|
+				Pulse.ar( i.freqSeq/[1,2] )
+				* (
+					Env([0,1,0.7,0],[0.02,0.7,0.3]).kr(0,gate:(i.gateSeq*i.trigSeq))
+					* 0.1
+				)
+			}
+		).play
+	});
+	[ "SPOCK: (boom) Approximately one hundred twelve point three seven miles, Doctor. ","-2 6 5 4 3 4 5 3 1 6 4 ".dm(\d) ++  "5 3 1 6 4".dm(\a,4) ].addLine;
+	P.tune(\Approximately);
+	P(\fifths,start:\Approximately,syl:5,music:{|p b e| 
+		MegaBind(
+			[
+				"5 3 1 6 4".df(\d) ++ "5 3 1 6 4".df(\a,4)
+			],
+			b.drop(1),
+			{|i|
+				Saw.ar( i.freqSeq * [ 2/3,1 ] )
+				* (
+					Env([0,1,0.7,0],[0.02,0.7,0.3]).kr(0,gate:(i.gateSeq*i.trigSeq))
+					* 0.1
+				)
+			}
+		).play
+	});
 	[ "MCCOY: Miles? Are you joking? ","r" ].addLine;
 	[ "KIRK: No, we're not. Let's go. ",[-5, -5, 1].dm(\f) ++ [-5, -5, 1].dm(\a) ].addLine;
 	[ "SARGON [OC]: Please stand ready. I will operate your controls. ","r" ].addLine;

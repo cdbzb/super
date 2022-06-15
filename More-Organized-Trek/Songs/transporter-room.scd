@@ -183,8 +183,35 @@ s.waitForBoot{
 		].pp;
 	});
 	P.tune(\receive,Song.mulhallTune);
-	[ "SPOCK: I'm sure she did, Captain, Just as you received an order to bring me along. ",[5, 5, 6, 5, 4, 3].dm('e-') ++ [5, 6, 5, 3, 4, 5].dm(\e) ++ [5, 4, 5, 6, 6, 7, 5, 2].dm(\f) ].addLine;
+	[ "SPOCK:(boom) I'm sure she did, Captain, Just as you received an order to bring me along. ",[1,5, 5, 6, 5, 4, 3].dm('e-') ++ [5, 6, 5, 3, 4, 5].dm(\e) ++ [5, 4, 5, 6, 6, 7, 5, 2].dm(\f) ].addLine;
 	P.tune(\along);
+	Song.setQuarters(\along,"e e ex x q e ee  ex x e e e e  e e e e ex x q");
+	//Song.quarters[\along]=Song.quarters[\along].list.reject{|i| i.isPositive.not}.q;
+	P(\click,start:\along,music:{|p b e| 
+		e.quarters.postln;
+		[
+			dur: e.quarters,
+			instrument:\hat_808
+		].p;
+	});
+
+	P(\bass,start:\along,music:{|p b e| 
+		var lick = [5, 4, 1];
+		MegaBind(
+			[
+				lick.df('e-') ++ lick.df(\e) ++ lick.df(\f) => _.flat
+			],
+			"qe e qq| q e qq| qe e ".asBeats.warpTo(e.quarters),
+			{|i|
+				VarSaw.ar( i.freqSeq/[2,4]*[0.994,1,1.013],0,0.3 )
+				* (
+					//Env([0,1,0.7,0],[0.02,0.7,0.3]).kr(0,gate:(i.gateSeq*i.trigSeq))
+					Env.asr().kr(gate:i.gateSeq)
+					* 0.1
+				)
+			}
+		).play
+	});
 	[ "KIRK: Oh, yes. ","5 11".dm(\g) ].addLine;
 	[ "MCCOY: Let's (boom boom) get back to this ","1 -7 -5 -7 3 2 1 ".dm(\c,5,\mixolydian) ].addLine;
 	P.tune('get back',Pset(\amp,[1,0,0,1,1,1,1]/10=>_.q,_));

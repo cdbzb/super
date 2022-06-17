@@ -17,7 +17,7 @@ o = [
 	List.prNew,  Array.prNew(3),  " (boom) subterranean chamber. ",  Pseq.prNew,  
 	List.prNew,  Array.prNew(8),  "MCCOY: Let's (boom boom) get back to this ",  Pseq.prNew,  
 	List.prNew,  Array.prNew(7),  "SCOTT: I don't like it, sir. The trans-- ",  Pseq.prNew,  
-	List.prNew,  Array.prNew(7),  "As long as you know there's somethi--ng down there, you know as much as we do.",  Pseq.prNew,  
+	List.prNew,  Array.prNew(3),  "As long as you know there's somethi--ng down there, you know as much as we do.",  Pseq.prNew,  
 	List.prNew,  Array.prNew(19),  " (boom) Just how much rock are we going to go through? ",  Pseq.prNew,  
 	List.prNew,  Array.prNew(15),  "As long as you know there's something down there, you know as much as we do.",  Pseq.prNew,  
 	List.prNew,  Array.prNew(17),  "You could materiali--se inside ",  Pseq.prNew,  
@@ -316,19 +316,18 @@ p = [
 	// List
 	68, [ array: o[69] ],  
 	// Array
-	69, [ 0.43,  0.569,  0.591,  0.415,  
-		0.589,  0.442,  0.451 ],  
+	69, [ 1.111,  0.391,  0.452 ],  
 	// Pseq
 	71, [ list: o[72],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	72, [ array: o[73] ],  
 	// Array
-	73, [ 0.452,  0.434,  0.483,  1.239,  
-		0.805,  0.44,  0.425,  0.193,  
-		0.233,  1.166,  0.464,  0.844,  
-		0.779,  1.226,  0.174,  0.658,  
-		0.476,  1.165,  0.939 ],  
+	73, [ 0.435,  0.429,  0.479,  1.365,  
+		0.791,  0.377,  0.389,  0.194,  
+		0.303,  1.213,  0.449,  0.866,  
+		0.81,  1.189,  0.197,  0.58,  
+		0.5,  1.214,  0.9 ],  
 	// Pseq
 	75, [ list: o[76],  repeats: 1,  
 		offset: 0 ],  
@@ -376,8 +375,8 @@ p = [
 	// List
 	92, [ array: o[93] ],  
 	// Array
-	93, [ 0.481,  0.393,  0.441,  0.429,  
-		0.485,  0.483,  0.464 ],  
+	93, [ 0.394,  0.441,  0.449,  0.426,  
+		0.492,  0.461,  0.531 ],  
 	// Pseq
 	95, [ list: o[96],  repeats: 1,  
 		offset: 0 ],  

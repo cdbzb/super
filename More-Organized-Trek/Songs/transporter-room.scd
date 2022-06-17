@@ -21,12 +21,20 @@ s.waitForBoot{
 	[ "KIRK: Easy, Bones. ","7 5 3".dm(\c,5,\mixolydian)].addLine;
 	P.tune(\Easy);
 	["As long as you know there's somethi--ng down there, you know as much as we do."," 1 2 3 3 2  -5 -6 -7 1 2 1 -4 4 3 2 1 -7 2 1".dm(\c) ].addLine;
+	P(\xtra_notes,start:'down there',syl:11,music:{|p b e| 
+		[
+			freq: [-6, 1, -11, -4, -7].df(\c).q,
+			legato: [1, 1/3, 3,2,1].q,
+			dur: b.drop(1).parse([1,4, 1/3, 1/3, [1/3,1]]).q
+		].pp
+	});
 	Song.setTempoMap('down there',"e e e eee ee e e x x eee e ee ee eee x xe e eee");
 	P(\bass,start:'down there',music:{|p b e| 
 		[
 			freq: [\r, -5, 5, -5, \r, -6, 6, 5, 4, -4, -4.5, -5, 5, -7, 1].df(\c,3).q,
 			dur: "eee q q q q q e e q qe e q e e q  ".asBeats.warpTo(e.tempoMap).q,
-			instrument:\sawSynth
+			instrument:\sawSynthSustain,
+			legato:[0.9!14,2].flat.q
 		].pp;
 	});
 	P(\click,start:'down there',music:{|p b e| 
@@ -40,10 +48,69 @@ s.waitForBoot{
 	});
 	P.tune('down there', Pset(\dev, [1,1,1,1,1,1,1,1,1,1,1,\r].q(2),_));
 
-	["The rest is only guesses. ","5 11 5 3 5 7 11".dm(\f,5,\harmonicMinor) ].addLine;
+	["The rest is only guesses. ","5 11 5 3 5 7 11".dm('c#',4,\harmonicMinor) ].addLine;
 	P.tune(\guesses);
+P(\bass,start:\guesses,music:{|p b e| 
+		MegaBind(
+			[
+				[5,-1].df('c#',4),
+				[5,1].df('c#',4)
+			],
+			b.parse([1,6]),
+			[],
+			{|i|
+				Saw.ar( i.freqSeq + ChaosGen.subclasses.choose.ar(2).wrap(1) )
+				*(
+					 Env.asr(1).kr(gate:i.gateSeq)
+				)
+					* 0.08
+				
+					=> MoogFF.ar(_, XLine.kr(6000,300,b[1..6].sum*[2,1.5]))
+			},
+			{|i|
+				Splay.ar(i)
+				=> DWGReverbC1C3.ar(_,500,mix:0.15)
+			}
+		)//.play
+		;
+		[
+			freq:[-15,[-21]].df('c#').q,
+			dur:b.parse([1,6]).q,
+			instrument:\sawSynthSustain
+		].pp;
+	});
 	[ "SCOTT: I don't like it, sir. The trans-- ","1 -7 3 1 -5".dm(\c,5,\mixolydian)++" 1 -7 ".dm(\d,5,\mixolydian) ].addLine;
 	P.tune('like it');
+	P(\pad,start:'like it',music:{|p b e| 
+		MegaBind(
+			
+				[
+					\r,[5,7,1,3].df(\c,4,\mixolydian), [-5,-6.5,1,3].df(\d),\r,[-7,2,4,5].df(\d,5), \r, [1,5,11,13].df(\e,4),[-5,5,12,13].df(\c,4,\minor)
+				].flop
+			,
+			b.parse([2,5]) ++ p.durs[e.next].list.parse([5,2,3]) ++ p.durs[e.start+2].list.parse([2, 3, 3]) => _.flat 
+			+ [0,0,0.5,-0.5,0,0,0,0]
+			,
+			[],
+			{|i|
+				var a = Saw.ar( i.freqSeq * [1,2,3].lag([0,1,0,0,1.5].dq.demand( b.sum )) )
+				* (
+					Env.asr(0.2).kr(gate:i.gateSeq)
+					* 0.1
+					/3
+				);
+				a => Convolution.ar(_, Dust.ar(36)=> Decay.ar(_,0.1) * WhiteNoise.ar(0.1) =>FreeVerb.ar(_,0.6,1))
+				+ ( a/8 )
+			}	,
+			{
+				|i| i
+				=> Splay.ar(_)
+				=> EchoNone.ar(_,0.3,0.3,3)
+			}
+		).play
+		
+		
+	});
 	[ "porter co-ordinates preset by an","3 1 -6.5 -5 -5.5 -5 -7 4 3 4".dm(\d)].addLine;
 	P.tune('ordinates');
 	["(boom boom) alien of some sort. ","-1 -1 3 2 1".dm(\e) ++ "3 2 -5".dm(\c,5,\minor)].addLine;
@@ -184,8 +251,8 @@ s.waitForBoot{
 	});
 	P.tune(\receive,Song.mulhallTune);
 	[ "SPOCK:(boom) I'm sure she did, Captain, Just as you received an order to bring me along. ",[1,5, 5, 6, 5, 4, 3].dm('e-') ++ [5, 6, 5, 3, 4, 5].dm(\e) ++ [5, 4, 5, 6, 6, 7, 5, 2].dm(\f) ].addLine;
-	P.tune(\along);
-	Song.setQuarters(\along,"e e ex x q e ee  ex x e e e e  e e e e ex x q");
+	P.tune(\along,Pdrop(1,_),syl:0);
+	Song.setQuarters(\along,"e e ex x q e ee  ex x e e e e  e e e e x e x q");
 	//Song.quarters[\along]=Song.quarters[\along].list.reject{|i| i.isPositive.not}.q;
 	P(\click,start:\along,music:{|p b e| 
 		e.quarters.postln;
@@ -199,7 +266,7 @@ s.waitForBoot{
 		var lick = [5, 4, 1];
 		MegaBind(
 			[
-				lick.df('e-') ++ lick.df(\e) ++ lick.df(\f) => _.flat
+				lick.df('e-') ++ lick.df(\e,4) ++ [5,4,11].df(\f,4) => _.flat
 			],
 			"qe e qq| q e qq| qe e ".asBeats.warpTo(e.quarters),
 			{|i|
@@ -213,6 +280,16 @@ s.waitForBoot{
 		).play
 	});
 	[ "KIRK: Oh, yes. ","5 11".dm(\g) ].addLine;
+P(\slide,start:'Oh, yes',music:{|p b e| 
+		{
+			Env([5,5,11].dm(\g),b[0]/2!2,curve:2.2).kr(0,gate:1)
+			=> { |i| VarSaw.ar(i.lag( [0,2].dq.demand([1,1])   ).floor.midicps /[2,4],0,0.4) } 
+			* 0.04
+			=> EchoNone.ar(_)
+			* Env.linen(0,b.sum,1).kr(2,gate:1)
+				
+		}.play
+	});
 	[ "MCCOY: Let's (boom boom) get back to this ","1 -7 -5 -7 3 2 1 ".dm(\c,5,\mixolydian) ].addLine;
 	P.tune('get back',Pset(\amp,[1,0,0,1,1,1,1]/10=>_.q,_));
 	Song.setQuarters('get back',"x e ex e | e x x");
@@ -242,7 +319,7 @@ s.waitForBoot{
 		"q q q| q q e e| Q Q Q| Q Q E Eq ex ".asBeats .warpTo(Song.quarters[\through]).q
 		,_));
 	
-	P(\click,start:\through,music:{|p b e| 
+	P(\drums,start:\through,music:{|p b e| 
 		(instrument:\cymbalsDS,amp:0.05).play;
 		e.quarters.postln;
 		[
@@ -253,7 +330,7 @@ s.waitForBoot{
 			dur:"x....x.x".asDrumPat(2,4),
 			instrument:\bd_808,
 			amp:1
-		].p.fin(b.sum).play(e.quarters.asTempoClock)
+		].p.fin(25).play(e.quarters.asTempoClock)
 	});
 	P(\bass,start:\through,music:{|p b e| 
 		[3,1]/2=>_.dup(6)=>_.flat => _.warpTo( Song.quarters[\through].list ++ 1 => _.q) => _.postln;
@@ -273,20 +350,27 @@ s.waitForBoot{
 			}
 		).play
 	});
-	[ "SPOCK: (boom) Approximately one hundred twelve point three seven miles, Doctor. ","-2 6 5 4 3 4 5 3 1 6 4 ".dm(\d) ++  "5 3 1 6 4".dm(\a,4) ].addLine;
-	P.tune(\Approximately);
+	[ "SPOCK: (boom) Approximately one hundred twelve point three five two se-- ven miles, Doctor. ","-2 6 5 4 3 4 5 3 1 6 4 ".dm(\d) ++  "5 3 1 6 4 2".dm(\a,4) ].addLine;
+	P.tune(\Approximately,Pfin(7,_));
 	P(\fifths,start:\Approximately,syl:5,music:{|p b e| 
 		MegaBind(
 			[
-				"5 3 1 6 4".df(\d) ++ "5 3 1 6 4".df(\a,4)
+				"5 3 1 6 4".df(\d) ++ [5, 3, 1, 6, \_, 4, 2].df(\a,4),
+				"5 3 1 6 4".df(\g,4) ++ [5, 3, 1, 6, 4, \_, 2].df(\d,4)
 			],
-			b.drop(1),
+			[1,1,1,1,1,1,1,1,2/3,1/3,1].warpTo(b.drop(1)),
+			[],
 			{|i|
-				Saw.ar( i.freqSeq * [ 2/3,1 ] )
+				Saw.ar( i.freqSeq  )
 				* (
 					Env([0,1,0.7,0],[0.02,0.7,0.3]).kr(0,gate:(i.gateSeq*i.trigSeq))
 					* 0.1
 				)
+				=> MoogFF.ar(_, i.freqSeq*6 +1500)
+			},
+			{|i| i
+				=> DWGReverbC1C3.ar(_,4000,mix:0.2)
+				//=> Phaser2.ar(_,rate:0.1)
 			}
 		).play
 	});

@@ -113,11 +113,46 @@ P(\bass,start:\guesses,music:{|p b e|
 	});
 	[ "porter co-ordinates preset by an","3 1 -6.5 -5 -5.5 -5 -7 4 3 4".dm(\d)].addLine;
 	P.tune('ordinates');
+	P(\bass,start:'ordinates',syl:6,music:{|p b e| 
+		
+		[
+			freq:[1,-5, -5].df(\a,[3,4]).q,
+			instrument:\sawSynth,
+			dur: b.drop(1).sum.bubble ++ p.durs[e.next].list.parse([1,1]) => _.flat => _.q
+		].pp
+	});
 	["(boom boom) alien of some sort. ","-1 -1 3 2 1".dm(\e) ++ "3 2 -5".dm(\c,5,\minor)].addLine;
-	P.tune('some sort');
+	P.tune('some sort',_.drop(2),syl:1);
+	P(\bass,start:'some sort',music:{|p b e| 
+		var t;
+		MegaBind(
+			[[ 1, 1, 3, 5, 4.5 ].df(\e,3,\whole) ],
+			t = b.parse([1,1,[1,1,0.5],[0.5,1,1,1]]++p.durs[e.next].list.sum),
+			[rel:{ [0.3,0.3,1,1,3].dq.demand(t) }],
+			{|i|
+
+				//[lag:{[0,b[3]+0.1].dq.demand(i.dur)}],
+				Saw.ar( i.freqSeq / [1,2] + ChaosGen.subclasses.choose.ar(12).range(0,1!3) )
+				=>RLPF.ar(_,5000)
+				* (
+				EnvGen.kr(Env([0,1,0.7,0],[0.02,1.5,i.rel]),gate:(i.gateSeq*i.trigSeq))
+					* 0.1
+				)
+			}
+
+		).play
+	});
+		
 	P.tune('co-ordinates');
-	["You could materiali--se inside ","4 3 2 4 3 2 1.5 2 ".dm(\b,4) ].addLine;
-	P.tune(\material);
+	["(boom) You could materiali--se inside ","-1 4 3 2 4 3 2 1.5 2 ".dm(\b,4) ].addLine;
+	P.tune(\material, _.drop(1),syl:0);
+	P(\bass,start:\material,music:{|p b e| 
+		{
+			VarSaw.ar(1.df(\b,[3,4]))
+			* Line.kr(0.1,0,b.sum)
+		}.play
+	});
+		
 	["solid rock. ",[7, 6, 6, 11, 7, 7].dm(\c) ].addLine;
 	P.tune('rock.');
 	//Song.setTempoMap('rock.', "q ex xqq q ex xqq");

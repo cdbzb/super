@@ -81,19 +81,32 @@ P(\bass,start:\guesses,music:{|p b e|
 	});
 	[ "SCOTT: I don't like it, sir. The trans-- ","1 -7 3 1 -5".dm(\c,5,\mixolydian)++" 1 -7 ".dm(\d,5,\mixolydian) ].addLine;
 	P.tune('like it');
-	P(\pad,start:'like it',music:{|p b e| 
+	P(\zzz
+		,start:\pointqa,music:{|p b e| 
+		1
+	});
+	P(\spazzPad,start:'like it',music:{|p b e| 
 		MegaBind(
 			
 				[
-					\r,[5,7,1,3].df(\c,4,\mixolydian), [-5,-6.5,1,3].df(\d),\r,[-7,2,4,5].df(\d,5), \r, [1,5,11,13].df(\e,4),[-5,5,12,13].df(\c,4,\minor)
+					\r,
+					[5,7,1,3].df(\c,4,\mixolydian), 
+					[-5,-6.5,1,3].df(\d),\r,
+					[-7,2,4,5].df(\d,5), \r, 
+					[1,5,11,13].df(\e,4),
+					[-5,5,12,13].df(\c,4,\minor),
+					[1,1.5, 5, 11, 15].df(\b,4)
 				].flop
 			,
-			b.parse([2,5]) ++ p.durs[e.next].list.parse([5,2,3]) ++ p.durs[e.start+2].list.parse([2, 3, 3]) => _.flat 
+			b.parse([2,5]) 
+			++ p.durs[e.next].list.parse([5,2,3]) 
+			++ p.durs[e.start+2].list.parse([2, 3, 3] 
+			++ ( p.durs[e.start+3].list.sum + 1 )) => _.flat 
 			+ [0,0,0.5,-0.5,0,0,0,0]
 			,
 			[],
 			{|i|
-				var a = Saw.ar( i.freqSeq * [1,2,3].lag([0,1,0,0,1.5].dq.demand( b.sum )) )
+				var a = Saw.ar( i.freqSeq * [1,2,3]=>_.lag([0,0,0.8,0,0,0,0,0.5,0.5].dq.demand( i.dur )) )
 				* (
 					Env.asr(0.2).kr(gate:i.gateSeq)
 					* 0.1
@@ -153,9 +166,8 @@ P(\bass,start:\guesses,music:{|p b e|
 		}.play
 	});
 		
-	["solid rock. ",[7, 6, 6, 11, 7, 7].dm(\c) ].addLine;
+	//["solid rock. ",[7, 6, 6, 11, 7, 7].dm(\c) ].addLine;
 	P.tune('rock.');
-	//Song.setTempoMap('rock.', "q ex xqq q ex xqq");
 	Song.setTempoMap('rock.', "qe e qq qe e qq");
 // in hook Bones-Scotty.RPP
 	P(\chords,start:'rock.',music:{|p b e| 
@@ -180,7 +192,11 @@ P(\bass,start:\guesses,music:{|p b e|
 			//.warpTo(e.tempoMap).q
 		].pp
 	});
-	[ "MCCOY: Inside solid rock? ","r" ].addLine;
+	["(boom boom) solid rock2. ",[1,1, 7, 6, 7, 11 ].dm(\f) ].addLine;
+	P.tune(\rock2);
+	[ "MCCOY: Inside solid rock? "," 1 1 7 5 13".dm(\g) ].addLine;
+	P.tune('rock?');
+
 	[ "SPOCK: Unlikely. These co-ordinates correspond with the location of the","5 11 5  7 5 4 3 2 6 4 3 2 1 -7 4 2 -6 -5".dm('c#')].addLine;
 	P.tune(\correspond);
 	P(\line,start:\correspond,music:{|p b e| 

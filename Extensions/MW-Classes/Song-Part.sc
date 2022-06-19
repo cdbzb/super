@@ -627,7 +627,9 @@ Song {
 		//returns section number which contains lyric
 		var array = (..lyrics.size-1).select{|i |lyrics[i].asString.contains(string.asString)};
 		(array.size>1).if{'!!! more than one section with: '.post;string.postln; array.postln};
-		^array[0]
+		( array.size==0 ).if{'no section with: '.post; string.postln; ^-1}
+
+		{ ^array[0] }
 	}
 
 	contains { |string|
@@ -785,7 +787,10 @@ Song {
 
     setTempoMap {| section array|
 	    ( array.class == String ).if{ array = array.asBeats } ;
-	    tempoMap[section] = TempoMap(array, durs[section].list)
+	    ( Song.section(section)!=(-1) ).if
+	    {
+		    tempoMap[section] = TempoMap(array, durs[section].list)
+	    }
     }
 
     asBeatsPickup {|section string |

@@ -131,6 +131,7 @@ P(\bass,start:\guesses,music:{|p b e|
 		[
 			freq:[1,-5, -5].df(\a,[3,4]).q,
 			instrument:\sawSynth,
+			att: [1,0.1,0.1].q,
 			dur: b.drop(1).sum.bubble ++ p.durs[e.next].list.parse([1,1]) => _.flat => _.q
 		].pp
 	});
@@ -139,17 +140,21 @@ P(\bass,start:\guesses,music:{|p b e|
 	P(\bass,start:'some sort',music:{|p b e| 
 		var t;
 		MegaBind(
-			[[ 1, 1, 3, 5, 4.5 ].df(\e,3,\whole) ],
+			[[ 1, 1, -3, -5, -4.5 ].df(\e,3,\whole) ],
 			t = b.parse([1,1,[1,1,0.5],[0.5,1,1,1]]++p.durs[e.next].list.sum),
-			[rel:{ [0.3,0.3,1,1,3].dq.demand(t) }],
+			[
+				rel:{ [0.3,  0.3,  1,    1,    3].dq.demand(t) },
+				att:{ [0.02, 0.02, 0.05, 0.05, 0.5].dq.demand(t) },
+				amp:{ [0.07,    0.09,    0.1,    0.1,    0.08].dq.demand(t) }
+			],
 			{|i|
 
 				//[lag:{[0,b[3]+0.1].dq.demand(i.dur)}],
 				Saw.ar( i.freqSeq / [1,2] + ChaosGen.subclasses.choose.ar(12).range(0,1!3) )
 				=>RLPF.ar(_,5000)
 				* (
-				EnvGen.kr(Env([0,1,0.7,0],[0.02,1.5,i.rel]),gate:(i.gateSeq*i.trigSeq))
-					* 0.1
+				EnvGen.kr(Env([0,1,0.7,0],[i.att,1.5,i.rel]),gate:(i.gateSeq*i.trigSeq))
+					* i.amp
 				)
 			}
 
@@ -186,7 +191,7 @@ P(\bass,start:\guesses,music:{|p b e|
 		[
 			freq: [[1, 11],[1,11],11, -7,1,-7,1, 5,6] => {|i| [ i.df(\c,3).q, i.df(\d,3,scale:\mixolydian).q ].q},
 			dur: 
-			"e ee e x x x x e e".asBeats!2 => _.flat  => _.warpTo(Song.tempoMap['rock.']) => _.q,
+			"e ee e x x x x e e".asBeats.dup.flat.warpTo(Song.tempoMap['rock.']) => _.q,
 			instrument:\sawSynth
 
 			//.warpTo(e.tempoMap).q
@@ -194,6 +199,63 @@ P(\bass,start:\guesses,music:{|p b e|
 	});
 	["(boom boom) solid rock2. ",[1,1, 7, 6, 7, 11 ].dm(\f) ].addLine;
 	P.tune(\rock2);
+	Song.setTempoMap(\rock2,"q q q e e qqqq");
+	P(\chord,start:\rock2,syl:1,music:{|p b e| 
+		[
+			freq: [ [1,3,5,7],[2,4.5,6,11.5] ].df(\f,[4,5]).q,
+		instrument: \wash,
+		dur: [b.drop(1).sum, e.bNext.sum].q
+	].p.play;
+	});
+		
+P(\bass,start:'rock2.',music:{|p b e| 
+		[
+			freq: [[1, 11],[1,11],11, -7,1,-7,1, 5,6].df(\f,[2,3]).q,
+			dur: 
+			//[0, 0.03,-0.03,0,0,0,0,0,0] +
+			//"q qq q e e e e q q".asBeats.flat.warpTo(e.tempoMap.quantize(0.4)) => _.q,
+			
+			//recorded!!
+			[ 0.536, 0.805, 0.767, 0.22, 0.301, 0.239, 0.302, 0.556, 0.558, 2.157 ]
+			=> _.warpRecordedTo(e.tempoMap)
+			=>_.q,
+			instrument:\sawSynth,
+			amp:[1,1,0.7,1,1,0.9,1,0.9,1,1].q/12
+
+			//.warpTo(e.tempoMap).q
+		].pp
+	});
+	P(\chord,start:\rock2,music:{|p b e| 
+		[
+			freq: [1,3,5,7].df(\f),
+
+			dur: "qq qe eq".asBeats.warpTo(e.tempoMap).q,
+			amp: [0.1,1,1].q/10,
+			instrument:\pulse
+
+		].pp
+	});
+	
+	P(\crashing,start:'rock2',music:{|p b e| 
+		//(instrument:\cymbalsDS).play
+{ //Dan Stowall Cymbals
+		var lodriver, locutoffenv, hidriver, hicutoffenv, freqs, res, thwack;
+		locutoffenv = EnvGen.ar(Env.perc(0.5, 5)) * 20000 + 10;
+		lodriver = LPF.ar(WhiteNoise.ar(0.1), locutoffenv);
+		hicutoffenv = (EnvGen.ar(Env.perc(1, 3))).range(10000,1);
+		hidriver = HPF.ar(WhiteNoise.ar(0.1), hicutoffenv)
+		* EnvGen.ar(Env.perc(1, 1, 0.25));
+		thwack = EnvGen.ar(Env.perc(\att.kr(0.001),0.0001,1), TDuty.ar(
+		"q q q q q q q q q q q ".asBeats .warpTo( p.tempoMap[\rock2]).quantize 
+		. dq
+	));
+		freqs  = {ExpRand(300, 20000)}.dup(30);
+		res	= Ringz.ar(lodriver + hidriver + thwack, freqs).mean;
+		((res * 1) + (lodriver * 2) + thwack).dup * 0.01
+		* Env.linen(0,1,b.sum).kr(2,gate:1)
+		=>  Out.ar(0,_)
+	}.play
+	});
 	[ "MCCOY: Inside solid rock? "," 1 1 7 5 13".dm(\g) ].addLine;
 	P.tune('rock?');
 

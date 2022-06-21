@@ -937,6 +937,10 @@ Part {
 	next {
 		^start + 1
 	}
+	bNext { |offset=1|
+		^parent.durs[start+offset].list
+	}
+
 	//add random stuff to resources
 	doesNotUnderstand { |selector   args|
 		var key = selector.asString;

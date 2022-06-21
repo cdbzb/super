@@ -70,6 +70,14 @@
 		}
         }
 
+	warpRecordedTo { | tempoMap |
+		^tempoMap.mapRecordedDurs(this)
+	}
+
+	remap { |from to|
+		^TempoMap(from, this).mapBeats(to)
+	}
+
 	dupFlat {|n|
 		^this.dup(n).flatten
 	}

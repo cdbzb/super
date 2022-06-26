@@ -217,6 +217,7 @@ P(\bass,start:'rock2.',music:{|p b e|
 			
 			//recorded!!
 			[ 0.536, 0.805, 0.767, 0.22, 0.301, 0.239, 0.302, 0.556, 0.558, 2.157 ]
+			//=> _.remap("q qe eq e e e e e e q q".asBeats,"e e e e e e e e".asBeats)
 			=> _.warpRecordedTo(e.tempoMap)
 			=>_.q,
 			instrument:\sawSynth,
@@ -229,8 +230,12 @@ P(\bass,start:'rock2.',music:{|p b e|
 		[
 			freq: [1,3,5,7].df(\f),
 
-			dur: "qq qe eq".asBeats.warpTo(e.tempoMap).q,
-			amp: [0.1,1,1].q/10,
+			//dur: "qq qe eq q q qe".asBeats.warpTo(e.tempoMap).q,
+
+			dur:[ 0.536, 0.805, 0.767, 0.22, 0.301, 0.239, 0.302, 0.556, 0.5587 ]
+			=> _.remap("q qe eq e e e e  q q".asBeats,"qq qe e|qq qe e".asBeats) + [0,0,0,-0.07,0] => _.warpTo(e.tempomap) => _.q,
+			//dur:"e e e e e e e e e e e e e e e e e e ".asBeats.warpTo(e.tempoMap).q,
+			amp: [0.01] ++ (0.1!22) => _.flat =>_.q,
 			instrument:\pulse
 
 		].pp
@@ -261,6 +266,17 @@ P(\bass,start:'rock2.',music:{|p b e|
 
 	[ "SPOCK: Unlikely. These co-ordinates correspond with the location of the","5 11 5  7 5 4 3 2 6 4 3 2 1 -7 4 2 -6 -5".dm('c#')].addLine;
 	P.tune(\correspond);
+	Song.setTempoMap(\correspond,"e e e XX X X X XXX X X X X X X e e e e".asBeats * 2);
+	P(\bass,start:\correspond,syl:0,music:{|p b e| 
+		[
+			dur: [ 1.052, 2.037, 1.895, 2.101 ]
+			//.warpRecordedTo(e.tempoMap)
+			.q,
+			freq: 1.df('c#',3) ,
+			amp:1,
+			out: Effect(SineShaper.ar(_,0.1)).bus.index
+		].pp
+	});
 	P(\line,start:\correspond,music:{|p b e| 
 		[
 			freq: [\r, 1, 7, 6, 5].df('c#',3).q,

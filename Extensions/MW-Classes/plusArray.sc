@@ -32,7 +32,9 @@
 	}
 
 	quantize {
-		| percent=1| ^( this*(1-percent) + ( this.mean*(percent) ) )
+		| percent=1| 
+		var out = this.collect( _.value );
+		^( out*(1-percent) + ( out.mean*(percent) ) )
 	}
 
 	quantizeWindow {
@@ -46,33 +48,77 @@
 		^this;
 	}
 
+	asBeats { | map |
+		var tempomap=TempoMap();
+
+		map.isSymbol.if{
+			tempomap = Song.tempoMap[map];
+		};
+		(map.class==Part).if{
+			tempomap = map.tempoMap;
+		};
+		( map.class == TempoMap ).if{
+			tempomap = map
+		};
+		^tempomap.dursToBeats(this)
+
+	}
+
 	pr_getQuarters { |quarters|
 		( quarters.class==Pseq ).if{ quarters = quarters.list };
 		( quarters.class==Symbol).if{ quarters = Song.quarters[quarters] };
 		^quarters
 	}
 
+	atInterpolated {|index| 
+		( index >= this.size).if{^0} {
+			^([0] ++ this).integrate.at( index.floor ) + 
+			(index.frac * this[index.floor]) 
+		}
+	}
+	warpToTempoMap { | tempoMap |
+				^tempoMap.mapBeats(this)
+	}
+	warpToArray{ |quarters|
+
+		^this.integrate.collect{|i|quarters.atInterpolated(i)}.differentiate
+		.select(_.isStrictlyPositive)
+	}
+
         warpTo {
                 | quarters |
-		var atInterpolated;
 		quarters.isNil.if{^this}
 		{
 			quarters = this.pr_getQuarters(quarters);
 			( quarters.class==TempoMap ).if{
 				^quarters.mapBeats(this)
 			} {
-				atInterpolated = {|array index| 
-					([0] ++ array).integrate.at( index.floor ) + 
-					(index.frac * array[index.floor]) 
-				};
-				^this.integrate.collect{|i| atInterpolated.(quarters,i)}.differentiate
+				
+				^this.integrate.collect{|i|quarters.atInterpolated(i)}.differentiate
 			}
 		}
         }
 
-	warpRecordedTo { | tempoMap |
+
+	warpRecordedTo { | tempoMap | ///deprecate this method
 		^tempoMap.mapRecordedDurs(this)
 	}
+
+	pushOne { | index amount |
+		var offset = this[index-1] * (amount -1);
+		this.put(index-1, this[index-1] + offset);
+		this.put(index, this[index] - offset)
+	}
+	pushMany { |array|
+		array = array.collect({|i| ( i==0 ).if{1}{i}});
+		array.do{ |i x|
+			( i!=1 ).if {this.pushOne( x, i )}
+		}
+
+	}
+	 push { | i a |
+		 i.isKindOf(SequenceableCollection).if{ ^this.pushMany(i) }{^this.pushOne(i,a)}
+	 }
 
 	remap { |from to|
 		^TempoMap(from, this).mapBeats(to)

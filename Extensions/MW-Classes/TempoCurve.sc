@@ -1,9 +1,9 @@
 
 TempoMap { 
-  var <storebeats,<storedurs;
+  var <>beats,<>durs;
   var polynomial;
   *new { |beats = #[1,1,1,1,1,1,1] durs = #[1,1,1,1,1,1,1,1]|
-    ^super.new.init(beats ,durs )
+    ^super.newCopyArgs(beats ,durs )
   }
   init { |beats durs|
 
@@ -17,7 +17,8 @@ TempoMap {
 	//	i.eval(points[x][0])/points[x][1] => _.reciprocal
 	//};
 	//polynomial = polynomials * coefficients => _.sum ;
-	storebeats = beats; storedurs = durs;
+	//storebeats = beats; storedurs = durs;
+	beats = beats;durs = durs;
         ^this;
   }
 
@@ -26,20 +27,20 @@ TempoMap {
 	^beats.collect{|i| polynomial.eval(i)}.differentiate;
   }
   quarter {
-	  ^ storedurs.sum / storebeats.sum
+	  ^ durs.sum / beats.sum
   }
    
   interpolateBeat { |beat|
-	  var timesInBeats = [ 0 ] ++ storebeats ++ storebeats.last => _.integrate;
-	  var timesInDurs = [ 0 ] ++ storedurs ++ storedurs.last => _.integrate;
+	  var timesInBeats = [ 0 ] ++ beats ++ beats.last => _.integrate;
+	  var timesInDurs = [ 0 ] ++ durs ++ durs.last => _.integrate;
 	  var prev = timesInBeats.select{|i| i <= beat}.maxIndex;
 	  [[ prev, prev + 1 ],[ timesInBeats[prev], timesInBeats[prev + 1] ]].postln;
 	  ^beat-timesInBeats[prev] / ( timesInBeats.clipAt(prev + 1) - timesInBeats[prev] ) * ( timesInDurs.clipAt( prev + 1 ) - timesInDurs[prev] ) + timesInDurs[prev]
   }
   interpolateBeatInverse { |beat|
 	  //I simply swtched timesInBeats and timesInDurs !!
-	  var timesInDurs = [ 0 ] ++ storebeats ++ storebeats.last => _.integrate;
-	  var timesInBeats = [ 0 ] ++ storedurs ++ storedurs.last => _.integrate;
+	  var timesInDurs = [ 0 ] ++ beats ++ beats.last => _.integrate;
+	  var timesInBeats = [ 0 ] ++ durs ++ durs.last => _.integrate;
 	  var prev = timesInBeats.select{|i| i <= beat}.maxIndex;
 	  [[ prev, prev + 1 ],[ timesInBeats[prev], timesInBeats[prev + 1] ]].postln;
 	  ^beat-timesInBeats[prev] / ( timesInBeats.clipAt(prev + 1) - timesInBeats[prev] ) * ( timesInDurs.clipAt( prev + 1 ) - timesInDurs[prev] ) + timesInDurs[prev]
@@ -51,43 +52,55 @@ TempoMap {
   }
 
   mapBeats { | beats |
-	  ^beats.integrate.collect{|i| this.interpolateBeat(i)}.differentiate
+	  ^beats.integrate.collect{|i| this.interpolateBeat(i)}.differentiate.select(_.isStrictlyPositive)
   }
 
   mapRecordedDurs { | durs |
 	  ^this.mapBeats( durs/this.quarters.mean )
-	  //^this.mapBeats( durs/storedurs.sum )
+	  //^this.mapBeats( durs/durs.sum )
   }
 
   at { |time|
     ^this.eval(time)
   }
   quarters {
-      ^this.mapBeats( 1.dup(storedurs.sum.floor) )
+      ^this.mapBeats( 1.dup(beats.sum.floor) )
   }
   quantize { |amount = 1|
-	  var quantized = storedurs.sum/storebeats.sum * storebeats * amount 
-		+ (storedurs * (1 - amount));
-	  ^TempoMap.new( storebeats, quantized)
+	  var quantized = durs.sum/beats.sum * beats * amount 
+		+ (durs * (1 - amount));
+	  ^TempoMap.new( beats.copy, quantized)
   }
-  quantizeRange { | amount start end|
-	  var sections = [(0..(start-1)),(start..end),(end+1..128)];
-	  var newStoredurs = storedurs[sections[0]]
-	  ++ (
-		  storedurs[sections[1]].sum/storebeats[sections[1]].sum * storebeats[sections[1]] * amount 
-		  + (storedurs[sections[1]]*(1-amount)) 
-	  )
-	  ++ storedurs[sections[2]]
+  quantizeRangeInPlace { | amount start end|
+	  var sections = [
+		  (start>1).if{(0..(start-1))}{0},
+		  (start..end),(end+1..128)];
+	  var newStoredurs = durs[sections[0]].bubble.flat
+	  ++ this.quantizeRange(amount,[start,end])
+	  ++ durs[sections[2]]
 	  => _.select(_.notNil)
 	  ;
-	  ^TempoMap(storebeats,newStoredurs)
-	  
+	  ^TempoMap(beats.copy,newStoredurs)
   }
+  quantizeRange { |amount range| // returns new durs
+	  range = range ? [0,durs.size];
+	  range = (range[0]..range[1]);
+		  ^durs[range].sum/beats[range].sum * beats[range] * amount 
+		  + (durs[range]*(1-amount)) 
+  }
+
+
   quantizeWindow { |amount=1 window=3|
-	  var new = this.quarters.quantizeWindow(amount, window);
-	  new = storebeats.warpTo(new );
-	  ^TempoMap(storebeats,new)
-	  
+	        var result = TempoMap(beats.copy,durs.copy);
+		(result.durs.size-window).postln;
+		result.durs[0..(result.durs.size-window-1)].do{|i x|
+			//var chunk = this[x..(x +windowSize)];
+			var range = [x,(x + window)];
+			var chunk =result.quantizeRange(amount,range);
+			chunk.do{|it in|result.durs.put(in+x,it)}
+		};
+
+		^result;
   }
 }
 

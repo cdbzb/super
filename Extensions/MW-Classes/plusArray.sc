@@ -87,15 +87,11 @@
 
         warpTo {
                 | quarters |
-		quarters.isNil.if{^this}
-		{
-			quarters = this.pr_getQuarters(quarters);
-			( quarters.class==TempoMap ).if{
-				^quarters.mapBeats(this)
-			} {
-				
-				^this.integrate.collect{|i|quarters.atInterpolated(i)}.differentiate
-			}
+		quarters.isNil.if{^this};
+		( quarters.class==TempoMap ).if{
+			^this.warpToTempoMap(quarters)
+		}{
+			^this.warpToArray(quarters)
 		}
         }
 

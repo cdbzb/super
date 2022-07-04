@@ -426,7 +426,7 @@ P(\bass,start:\involved,music:{|p b e|  // passing tone right before end please
 	[
 		freq: [1, 1, 1.5, 2.5, 4.5].df(\c,3).q,
 		dur: b.parse([ [1, 1, 0.5],[0.5, 1, 1,1,1,1],  [1,1,1, 2/3],[1/3,1], 3 ]).q,
-		out: Effect({ |i| SineShaper.ar(i, 0.2) *5 }, out:[0,1]).bus.index 
+		out: Effect({ |i| SineShaper.ar(i, 0.2) *5 * Env.linen(0.001,b.sum,1).kr(2,gate:1) }, out:[0,1]).bus.index ,
 	].pp; 
 	
 });

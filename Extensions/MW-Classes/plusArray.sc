@@ -70,12 +70,6 @@
 		^quarters
 	}
 
-	atInterpolated {|index| 
-		( index >= this.size).if{^0} {
-			^([0] ++ this).integrate.at( index.floor ) + 
-			(index.frac * this[index.floor]) 
-		}
-	}
 	warpToTempoMap { | tempoMap |
 				^tempoMap.mapBeats(this)
 	}
@@ -88,6 +82,7 @@
         warpTo {
                 | quarters |
 		quarters.isNil.if{^this};
+		quarters = this.pr_getQuarters(quarters);
 		( quarters.class==TempoMap ).if{
 			^this.warpToTempoMap(quarters)
 		}{
@@ -266,4 +261,14 @@
 
 	parse {|array start=0| ^this.asArray.parse(array,start) }
 
+}
+
++SequenceableCollection {
+
+	atInterpolated {|index| 
+		( index >= this.size).if{^0} {
+			^([0] ++ this).integrate.at( index.floor ) + 
+			(index.frac * this[index.floor]) 
+		}
+	}
 }

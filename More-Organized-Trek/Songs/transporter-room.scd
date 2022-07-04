@@ -462,13 +462,13 @@ P(\slide,start:'Oh, yes',music:{|p b e|
 		].p.fin(25).play(e.quarters.asTempoClock)
 	});
 	P(\bass,start:\through,music:{|p b e| 
-		[3,1]/2=>_.dup(6)=>_.flat => _.warpTo( Song.quarters[\through].list ++ 1 => _.q) => _.postln;
+		[3,1]/2=>_.dup(6)=>_.flat => _.warpTo( Song.quarters[\through].list ++ 1) => _.postln;
 		MegaBind(
 			[
 				[11, 11, 7,  7,  6,  6,  5,  5,  4,  4,  3,  3,  2],
 				[1,  \r, -7, \r, -6, \r, -5, \r, -4, \r, -3, \r, -2]
 			].df('b-',3),
-			[3,1]/2=>_.dup(6)=>_.flat => _.warpTo(e.quarters.list ++ 1 => _.q) ++ p.durs[e.next].list[0]	,
+			[3,1]/2=>_.dup(6)=>_.flat => _.warpTo(e.quarters.list ++ 1 ) ++ p.durs[e.next].list[0]	,
 			[],
 			{|i|
 				Pulse.ar( i.freqSeq/[1,2] )
@@ -479,7 +479,7 @@ P(\slide,start:'Oh, yes',music:{|p b e|
 			}
 		).play
 	});
-	[ "SPOCK: (boom) Approximately one hundred twelve point three five two se-- ven miles, Doctor. ","-2 6 5 4 3 4 5 3 1 6 4 ".dm(\d) ++  "5 3 1 6 4 2".dm(\a,4) ].addLine;
+	[ "SPOCK: (boom) Approximately one hundred twelve point three five two se-- ven miles, Doctor. ","-2 6 5 4 3 4 5 3 1 6 4 ".dm(\d) ++  "5 3 1 6 4 2".dm(\a,4) ].addLine; // point three se-ven five two miles....
 	P.tune(\Approximately,Pfin(7,_));
 	P(\fifths,start:\Approximately,syl:5,music:{|p b e| 
 		MegaBind(

@@ -58,6 +58,9 @@ KeyRecorder {
   }
   return { 
 	  var out = list.differentiate.drop(1).asArray;
-	  section.notNil.if{ ^out.asBeats(section).round(0.001).reject{|i|i.isStrictlyPositive.not}}{^out.round(0.001)}
+	  out = section.notNil.if{ out.asBeats(section).round(0.001).reject{|i|i.isStrictlyPositive.not}}{out.round(0.001)};
+	  "vim.fn.setreg('d',{\"%\"})".format(out.asString) // register 'd' for Durs
+	  => SCNvim.luaeval(_);
+	  ^out
   }
 }

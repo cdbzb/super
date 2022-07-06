@@ -9,7 +9,6 @@ includePaths:
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/SynthDefPool
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/say
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/VectorSpace
-      # -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Unit-Lib
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/BatLib
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/SpeakersCorner
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/AmbIEM
@@ -34,6 +33,14 @@ includePaths:
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/atk-sc3
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/AmbiVerbSC
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/ReaCollider
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/PolyBuf
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Singleton
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Collapse
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/WindowViewRecall
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Log
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/faust
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/fxpatterns
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/komet
 excludePaths:
     []
 postInlineWarnings: false

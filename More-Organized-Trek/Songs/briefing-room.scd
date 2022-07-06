@@ -432,18 +432,6 @@ P(\bass,start:\involved,music:{|p b e|  // passing tone right before end please
 });
 
 
-SynthDef(\defaultRetrig,{ | out=0 freq=400 amp=0.1 gate=1 t_trig=1 pan=0 curve=( -8 ),fatness=0.3 | 
-			var z;
-			var damper = Env.asr(0,1,0.3).kr(2,gate:gate);
-			var decay = Env.perc(0.005, freq/440 => _.reciprocal * 4, curve:curve).kr(0,gate:t_trig);
-			var envelope = damper * decay;
-			z = LPF.ar(
-				Mix.new(VarSaw.ar(freq + [0, Rand(-0.4,0.0), Rand(0.0,0.4)], 0,fatness, 0.3)),
-				XLine.kr(Rand(4000,5000), Rand(2500,3200), 1)
-			//) * Linen.kr(gate, 0.01, 0.7, 0.3, 0);
-			) * envelope;
-			OffsetOut.ar(out, Pan2.ar(z, pan, amp));
-		}).add;
 
 P(\chords,start:\involved,music:{|p b e| 
 	var oneM7 = [3,5,7];

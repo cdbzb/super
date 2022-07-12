@@ -2,8 +2,8 @@
 /*
 	This file is part of miSCellaneous, a program library for SuperCollider 3
 
-	Created: 2018-07-25, version 0.21
-	Copyright (C) 2009-2018 Daniel Mayer
+	Created: 2020-07-08, version 0.24
+	Copyright (C) 2009-2020 Daniel Mayer
 	Email: 	daniel-mayer@email.de
 	URL:	http://daniel-mayer.at
 
@@ -126,6 +126,7 @@ AddEventTypes_PbindFx {
 					// gateDelay adds delay times depending on env type,
 					// it refers to beats and thus will be added to ~timingOffset.
 
+					~instrument = ~instrument.asSymbol;
 					hasGate = SynthDescLib.global[~instrument].controlNames.includes(\gate);
 					gateDelay = hasGate.if { ~sustain.value }{ 0 };
 
@@ -230,21 +231,21 @@ AddEventTypes_PbindFx {
 	*makeZeroSynthDef {
 		SynthDef(\pbindFx_zero, { |out|
 		 	ReplaceOut.ar(out, DC.ar(0))
-		}, [\ir]).writeDefFile;
+		}, [\ir]).store;
 	}
 
 	// like \pbindFx_zero, but makes order more clear when doing s.queryAllNodes while running
 	*makeSplitZeroSynthDef {
 		SynthDef(\pbindFx_splitZero, { |out|
 		 	ReplaceOut.ar(out, DC.ar(0))
-		}, [\ir]).writeDefFile;
+		}, [\ir]).store;
 	}
 
 	*makeSplitSynthDef { |splitNum, channelNum|
 		SynthDef("pbindFx_split_" ++ splitNum ++ "x" ++ channelNum, { |in|
 		 	var out = \out.kr(0!splitNum);
 			Out.ar(out, In.ar(in, channelNum))
-		}, [\ir]).writeDefFile;
+		}, [\ir]).store;
 	}
 
 	*makeSplitSynthDefs { |maxSplitNum, maxChannelNum|

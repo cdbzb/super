@@ -1,15 +1,15 @@
 CLASS:: Fb1
 summary:: single sample feedback / feedforward pseudo ugen
 categories:: Libraries>miSCellaneous>Nonlinear
-related:: Overviews/miSCellaneous, Guides/Introduction_to_miSCellaneous, Classes/GFIS
+related:: Overviews/miSCellaneous, Guides/Introduction_to_miSCellaneous, Classes/GFIS, Classes/Fb1_ODE, Classes/Fb1_ODEdef, Classes/Fb1_ODEintdef, Classes/Fb1_MSD, Classes/Fb1_SD, Classes/Fb1_Lorenz, Classes/Fb1_Hopf, Classes/Fb1_HopfA, Classes/Fb1_HopfAFDC, Classes/Fb1_VanDerPol, Classes/Fb1_Duffing
 
 
 DESCRIPTION::
 
 
-Fb1 provides an interface for single sample feedback and feedforward at audio rate, the defining relation with (formal) access to previous samples is passed as a Function, which might involve additional UGens. Fb1 works with arbitrary blockSizes and also allows to refer to samples earlier than one blockSize before. This includes linear filter definitions of arbitrary length with dynamic coefficients as well as all kinds of nonlinear calculations of feedback and feedforward data (FOS and SOS UGens cover the linear case with lengths 1 and 2, LTI the general linear case).
+Fb1 provides an interface for single sample feedback and feedforward at audio and control rate, the defining relation with (formal) access to previous samples is passed as a Function, which might involve additional UGens. Fb1.ar works with arbitrary blockSizes and also allows to refer to samples earlier than one blockSize before. This includes linear filter definitions of arbitrary length with dynamic coefficients as well as all kinds of nonlinear calculations of feedback and feedforward data (FOS and SOS UGens cover the linear case with lengths 1 and 2, LTI the general linear case). 
 
-
+Fb1 at control rate exists since miSCellaneous v0.22, for compatibility reasons I left the convention that Fb1.new generates an ar UGen, so Fb1.new is now equivalent to Fb1.ar and Fb1.kr is possible in addition, see link::#Ex. 5#Ex.5::. Fb1 is the base of an ordinary differential equation integrator framework for initial value problems, that also came with v0.22, see link::Classes/Fb1_ODE:: for an introduction.
 
 strong::HISTORY AND CREDITS: :: There have been long discussions on single-sample feedback in SC. The most simple, but CPU-intense strategy is setting the server's blockSize to 1. Julian Rohrhuber gave a number of examples with Dbufrd / Dbufwr. SC's folder 'Examples' contains the files single_sample_feedback.scd and single_sample_feedback_02.scd. Special solutions are also possible with Delay1, Delay2 and other UGens. This particular implementation is based on Nathaniel Virgo's suggestion of iteratively writing to and reading from Buffers of blockSize – big credit for this! See also Nathaniel Virgo's Feedback quark for his feedback classes Fb and FbNode. Thanks also to James Harkins for his remarks on graph order. See link::#Ex. 1a#Ex.1a:: for the basic feedback implementation principle. I implemented the ar feedforward option by temporary buffers for ar writing and kr reading, the feedback / feedforward relation can now be passed via a Function with 'in' and 'out' args. That way the syntax looks very similar to the common notations used for filter descriptions and also applies directly to the multichannel case. Most other options of Fb1 are for special multichannel handling and differentiated lookback definitions, which can help to save a lot of UGens.
 
@@ -29,7 +29,7 @@ private:: checkInits
 
 method::new
 
-Creates a new Fb1 object.
+Creates a new Fb1 ar object.
 
 
 argument::func
@@ -89,6 +89,66 @@ argument::leakCoef
 Number, the strong::leakDC:: coefficient. Defaults to 0.995.
 
 
+method::ar
+
+Equivalent to link::#*new::.
+
+
+
+method::kr
+
+Creates a new Fb1 kr object.
+
+
+argument::func
+The Function to define the feedback / feedforward relation. The Function should take the two arguments 'in' and 'out', both understood as nested multichannel signals, additionally a block index is passed (link::#Ex. 3e#Ex.3e::). Each 'in' / 'out' item of the arrays represents current or previous control samples, for all points in time the control samples are passed in specific array shapes, which are determined by the shapes of strong::in:: and strong::outSize::. Allowed are pure signals (size = 0) and nested SequenceableCollections at maximum: e.g. strong::outSize:: can be 0, 3, or [0, 2, 5], accordingly in signals can be of sizes 0, i or [i1, ... , in] with i, ij >= 0. Note that 'in' and 'out' only formally represent feedback and feedforward signals, technically kr UGens (BufRd.kr) are passed.
+
+The Function should return the multichannel UGen to be referred to with 'out', the shapes of the returned UGens and strong::outSize:: must be the same. Furthermore the meaning of 'in' and 'out' depends on the strong::inDepth:: and strong::outDepth:: arguments. If an Integer is passed to them (default), the indices of 'in' resp. 'out'  correspond to the lookback indices: E.g. out[1] refers to the last control output sample(s) (of shape strong::outSize::), out[2] to the control output sample(s) before the last control sample(s) etc. This is compliant with the convention of writing out[i-1], out[i-2] etc. For a multichannel 'in' / 'out' signal, depth can be differentiated, which saves UGens in the case of "gaps" in the recursion: E.g. for a three-channel out signal strong::outDepth:: can look like [3, [7, 18], [2, 5, 6]]. Then out[1] is a three-channel signal, whereby out[1][0] corresponds to out[i-1] of the first, out[1][1] to out[i-18] of the second and out[1][2] to out[i-5] of the third component. If the size of strong::inDepth:: / strong::outDepth:: is smaller than outSize, wrapping is applied. As a result double-bracketing can be used to define specific lookback indices for all components of the multichannel signal: E.g. if strong::outDepth:: equals [[7, 18]] for a three-channel signal then out[0] means the three-channel signal out[i-7] and out[1] means out[i-18]. See link::#Ex. 3a#Ex.3a:: for multichannel feedback / feedforward.
+
+
+argument::in
+A single kr input signal or a SequenceableCollection of kr input signals to be referred to with strong::func:: (feedforward data). See link::#Ex. 3a#Ex.3a:: for multichannel feedback / feedforward.
+
+
+argument::outSize
+Integer or SequenceableCollection thereof, the size(s) defined by the UGen(s) returned by strong::func::. It's the user's responsibilty to pass the correct size(s)! Defaults to 0.
+
+
+argument::inDepth
+Integer or SequenceableCollection of Integers or SequenceableCollections thereof, this determines the behaviour of func (see there). If an Integer is passed, it means the maximum storage size for feedforward data. If a SequenceableCollection is passed, lookback indices for feedforward data can be differentiated, its items can again be Integers or SequenceableCollections (see strong::func::). Usually the inner SequenceableCollections should be ordered, but this is not compulsory. Defaults to 1 (no lookback). See link::#Ex. 3c#Ex.3c::.
+
+
+argument::outDepth
+Integer or SequenceableCollection of Integers or SequenceableCollections thereof, this determines the behaviour of func (see there). If an Integer is passed, it means the maximum storage size for feedback data. If a SequenceableCollection is passed, lookback indices for feedback data can be differentiated, its items can again be Integers or SequenceableCollections (see strong::func::). Usually the inner SequenceableCollections should be ordered, but this is not compulsory. Defaults to 2 (look back to last control sample at maximum). See link::#Ex. 3c#Ex.3c::.
+
+
+argument::inInit
+Number or SequenceableCollection, feedforward init data. If a Number is passed, it means the previous init value for the calculation of the first control sample(s), if the size of in is larger than 1, this init value is taken for all components of the multichannel signal. If a SequenceableCollection is passed, this differentiates the init values for a multichannel signal 'in' used by strong::func::. Then the components must be Numbers (again defining one init value) or SequenceableCollections, which define a lookback collection: first Number is the previous value, second the value before and so on. If the size of strong::inInit:: is smaller than the size of strong::in::, wrapping is applied, that way a double-bracket array, e.g. [[3, 0, 1]], defines the same init sequence for all components of a multichannel strong::in::. See link::#Ex. 3b#Ex.3b::.
+
+
+argument::outInit
+Number or SequenceableCollection, feedback init data. If a Number is passed, it means the previous init value for the calculation of the first control sample(s), if strong::outSize:: is larger than 1, this init value is taken for all components of the multichannel signal 'out' used by strong::func::. If a SequenceableCollection is passed, this differentiates the init values for this multichannel signal. Then the components must be Numbers (again defining one init value) or SequenceableCollections, which define a lookback collection: first Number is the previous value, second the value before and so on. If the size of strong::outInit:: is smaller than strong::outSize::, wrapping is applied, that way a double-bracket array, e.g. [[3, 0, 1]], defines the same init sequence for all components of the multichannel signal 'out' used by strong::func::. See link::#Ex. 3b#Ex.3b::.
+
+
+argument::graphOrderType
+0, 1 or 2. Determines if topological order of generated BufRd and BufWr instances in the SynthDef graph is forced by additional UGens.
+list::
+##Type 0: forced graph order is turned off.
+##Type 1 (default): graph order is forced by summation and <!.
+##Type 2: graph order is forced by <! operators only.
+::
+Default 1 is recommended, but with CPU-intense SynthDefs it might be worth trying it with the value 0. This saves a lot of UGens and in all my examples I didn't encounter cases with different results. Type 2 can shorten the SynthDef compilation time for certain graphs with a large number of UGens, which can be lengthy with type 1. However, CPU usage doesn't directly correspond to the number of UGens.
+
+
+argument::leakDC
+Boolean. Determines if a LeakDC is applied to the output. Defaults to true.
+
+
+argument::leakCoef
+Number, the strong::leakDC:: coefficient. Defaults to 0.995.
+
+
+
 
 
 section::Overview - what can / cannot be done ?
@@ -96,27 +156,28 @@ section::Overview - what can / cannot be done ?
 subsection::What can be done:
 The feedback / feedforward relation is defined within func, it's important to note that this Function is applied in a very special way to build the feedback relation into the synthdef graph.
 
-
 Let n be the given blockSize, then
 numberedlist::
 
-##func is applied n times to establish the iteration in the synthdef graph.
+##ar / kr: func (only formally) takes over previous (multichannel) out samples for calculation of next (multichannel) out samples via its 'out' arg, technically BufRd.krs are passed to 'out' arg, in the ar case signals are reconstructed thereafter
 
-##func (only formally) takes over previous (multichannel) samples for calculation of next (multichannel) samples via 'out' arg, technically BufRd.krs are passed to 'out' arg, the ar signals are reconstructed thereafter
+##ar: func is applied n times to establish the iteration in the synthdef graph
 
-##unary and binary operators are the basic tools for this calculation
+##ar / kr: unary and binary operators are the basic tools for this calculation
 
-##func can take over modulating kr UGens from outside via simple reference, no linear interpolation in this case though, you might therefore consider (5)
+##ar / kr: func can take over modulating kr UGens from outside via simple reference, for ar no linear interpolation in this case though, you might therefore consider (5)
 
-##func can take over modulating ar UGens from outside via Fb1's and func's 'in' arg
+##ar / kr: func can take over feedforward UGens with reference to their past data from outside via Fb1's and func's 'in' arg
 
-##func can contain explicitely defined kr UGens, note that for every UGen in func, n instances are built into the SynthDef graph!
+##ar / kr: func can contain explicitely defined kr UGens. ar: note that for every UGen in func, n instances are built into the SynthDef graph!
 
-##kr UGens in func can be applied to data passed via 'in' or 'out'
+##ar / kr: kr UGens in func can be applied to data passed via 'in' or 'out'
 
-##func's index argument can be used to specify the feedback / feedforward relation per block index
+##ar: func's index argument can be used to specify the feedback / feedforward relation per block index
 ::
-subsection::What cannot / shouldn't be done:
+
+
+subsection::What cannot / shouldn't be done (ar case considerations):
 
 Writing ar UGens in func that produce a time-varying signal itself (e.g. SinOsc.ar, in contrast to SinOsc.kr and operator UGens like '+', '*' etc.) - instead, if such ar UGens aren't applied to data from inside func, they can be passed via Fb1's and func's 'in' arg.
 It remains the case of such ar UGens that should process data that is provided by func (e.g. letting the fb out modulate a parameter of a VarSaw.ar). This is currently not possible and I don't have a clear picture if and how it would be possible at all or if it would make much sense.
@@ -241,6 +302,14 @@ subsection::Ex. 1b: OnePole
 
 
 code::
+// check blockSize before (or reset blockSize in examples)
+
+(
+if (s.options.blockSize != 64) {
+	s.options.blockSize = 64;
+	s.quit.reboot;
+}
+)
 
 // OnePole as lopass
 
@@ -344,6 +413,14 @@ anchor::Ex. 1c::
 subsection::Ex. 1c: SOS
 
 code::
+// check blockSize before (or reset blockSize in examples)
+
+(
+if (s.options.blockSize != 64) {
+	s.options.blockSize = 64;
+	s.quit.reboot;
+}
+)
 
 // SOS as bandreject, note its convention:
 // SOS.ar(in, a0, a1, a2, b1, b2, mul, add)
@@ -401,6 +478,15 @@ anchor::Ex. 1d::
 subsection::Ex. 1d: LTI
 
 code::
+// check blockSize before (or reset blockSize in examples)
+
+(
+if (s.options.blockSize != 64) {
+	s.options.blockSize = 64;
+	s.quit.reboot;
+}
+)
+
 // You need to have the SC-3 plugins installed in order to use LTI,
 // which is part of Nick Collins' SLUGens.
 
@@ -478,6 +564,15 @@ anchor::Ex. 2a::
 subsection::Ex. 2a: %
 
 code::
+// check blockSize before (or reset blockSize in examples)
+
+(
+if (s.options.blockSize != 64) {
+	s.options.blockSize = 64;
+	s.quit.reboot;
+}
+)
+
 s.scope
 
 // start fb fx Synth
@@ -535,6 +630,15 @@ subsection::Ex. 2b: sin
 
 
 code::
+// check blockSize before (or reset blockSize in examples)
+
+(
+if (s.options.blockSize != 64) {
+	s.options.blockSize = 64;
+	s.quit.reboot;
+}
+)
+
 // sin can work as a limiter as well as a nonlinear dynamics engine,
 // here it causes a wavefolding-like effect
 
@@ -586,6 +690,14 @@ subsection::Ex. 2c: *
 
 
 code::
+// check blockSize before (or reset blockSize in examples)
+
+(
+if (s.options.blockSize != 64) {
+	s.options.blockSize = 64;
+	s.quit.reboot;
+}
+)
 
 // rather irrational concatenation of simple operations
 // depth changes cause frequency changes
@@ -638,6 +750,14 @@ subsection::Ex. 2d: /
 
 
 code::
+// check blockSize before (or reset blockSize in examples)
+
+(
+if (s.options.blockSize != 64) {
+	s.options.blockSize = 64;
+	s.quit.reboot;
+}
+)
 
 // With divisions we must avoid division by zero resp. blowup, here it's max in the divisor.
 // The example also establishes a cross-feedback of the two channels by using reverse.
@@ -678,6 +798,16 @@ subsection::Ex. 2e: **
 
 
 code::
+// check blockSize before (or reset blockSize in examples)
+
+(
+if (s.options.blockSize != 64) {
+	s.options.blockSize = 64;
+	s.quit.reboot;
+}
+)
+
+
 // exponentiation can also be interesting
 // here an area of instability is crossed by a stereo lfo
 
@@ -722,6 +852,14 @@ subsection::Ex. 2f: Conditional feedback
 
 
 code::
+// check blockSize before (or reset blockSize in examples)
+
+(
+if (s.options.blockSize != 64) {
+	s.options.blockSize = 64;
+	s.quit.reboot;
+}
+)
 
 // defining the next sample depending on some characteristics of the previous one(s)
 // This can be done with the if UGen and Select.
@@ -777,6 +915,14 @@ subsection::Ex. 3a: Multichannel feedback / feedforward
 
 
 code::
+// check blockSize before (or reset blockSize in examples)
+
+(
+if (s.options.blockSize != 64) {
+	s.options.blockSize = 64;
+	s.quit.reboot;
+}
+)
 
 // in and out can be multichannel signals of arbitrary size or collections thereof,
 // however arbitrary nesting is not supported,
@@ -965,6 +1111,15 @@ subsection::Ex. 3b: inInit / outInit
 
 
 code::
+// check blockSize before (or reset blockSize in examples)
+
+(
+if (s.options.blockSize != 64) {
+	s.options.blockSize = 64;
+	s.quit.reboot;
+}
+)
+
 // linear congruential generator
 
 // this is not a strict linear congruential generator
@@ -1105,6 +1260,15 @@ subsection::Ex. 3c: inDepth / outDepth
 
 
 code::
+// check blockSize before (or reset blockSize in examples)
+
+(
+if (s.options.blockSize != 64) {
+	s.options.blockSize = 64;
+	s.quit.reboot;
+}
+)
+
 // Normally, and like in most previous examples,
 // out[j] and in[j] in func refer to samples out[i-j] and in[i-j],
 // in[0] to the current input samples.
@@ -1261,6 +1425,15 @@ subsection::Ex. 3e: func index
 
 
 code::
+// check blockSize before (or reset blockSize in examples)
+
+(
+if (s.options.blockSize != 64) {
+	s.options.blockSize = 64;
+	s.quit.reboot;
+}
+)
+
 // func can take an index as third arg, it runs from 0 to blockSize - 1
 // this can be used to define the feedback relation depending on it
 
@@ -1299,6 +1472,14 @@ section::Ex. 4: Saving CPU
 
 
 code::
+// check blockSize before (or reset blockSize in examples)
+
+(
+if (s.options.blockSize != 64) {
+	s.options.blockSize = 64;
+	s.quit.reboot;
+}
+)
 
 // UGens written in func are generated as often as blockSize.
 // Therefore, if possible, references to kr UGens outside save resources.
@@ -1418,6 +1599,54 @@ x = {
 )
 
 x.release
+
+// see also Ex.5 for saving CPU with kr
 ::
 
+
+
+anchor::Ex. 5::
+section::Ex. 5: Control rate
+
+
+code::
+// Ex.4 with kr and K2A
+
+(
+x = {
+	var sig, src, lfo;
+	src = SinOsc.kr(90 * LFDNoise3.kr(0.3!2).range(0.98, 1.02)) * SinOsc.kr(45.25);
+	lfo = SinOsc.kr(SinOsc.kr(0.1).range(0.03, 1)).range(0.001, 0.01);
+	sig = Fb1.kr({ |in, out|
+		var a = in[0];
+		var b = out[1];
+		// with SC's L/R-precendence we can write without brackets
+		softclip(a + b * a + a * a + a / max(lfo, a + b));
+	}, src, 2, graphOrderType: 0) * 0.1;
+	LPF.ar(K2A.ar(sig), 3000)
+}.play
+)
+
+x.release
+
+
+// FM with same signal
+
+(
+x = {
+	var sig, src, lfo;
+	src = SinOsc.kr(90 * LFDNoise3.kr(0.3!2).range(0.98, 1.02)) * SinOsc.kr(45.25);
+	lfo = SinOsc.kr(SinOsc.kr(0.1).range(0.03, 1)).range(0.001, 0.01);
+	sig = Fb1.kr({ |in, out|
+		var a = in[0];
+		var b = out[1];
+		// with SC's L/R-precendence we can write without brackets
+		softclip(a + b * a + a * a + a / max(lfo, a + b));
+	}, src, 2, graphOrderType: 0) * 0.1;
+	SinOsc.ar(2000 * sig, 0, 0.1) 
+}.play
+)
+
+x.release
+::
 

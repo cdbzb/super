@@ -8,7 +8,7 @@ DESCRIPTION::
 
 At the beginning of 2017, it was almost 10 years ago when I did my first steps in systematically ordering and extending personal SC tools. At that time I already had some experience in SC, but project-oriented composition was my main focus. Meanwhile miSCellaneous lib has grown and when I look at its readme file, although I always tried to keep stuff documented properly, I doubt that the connections between the different classes would be easy to get at a first glance. Topics accumulated, some help files have become huge (VarGui, PbindFx) and a lot of examples and documented (extra-)features might hide the basic motivations. As I was asked by colleagues at the Institute of Electronic Music and Acoustic Graz (IEM) we organized a one-day lecture/workshop on miSCellaneous lib on November 5th, 2016, and this tutorial summarizes the overview given then. At that point I'd like to say that I'm very grateful to IEM Graz and the interested SC community from here and abroad for support and feedback, we are going to have further SC meetings at the same place – Hanns Holger Rutz already continued in December. There's also a focus on artistic research here at IEM, and research projects, events and discussions are lighting an ongoing discourse in the field between art and science, creating an inspiring environment.
 
-Concerning the structure of this file: after a brief history and a grouping of content the tour will guide through selected topics in an order which, hopefully, will outline the central ideas. It will start with VarGui, PLx, then go over PbindFx, EventShortcuts to live coding aspects of PLx, continue with independant classes, class families, methods and SC tutorials and end with the Buffer Granulation tutorial, which again integrates some of the previous topics. PbindFx gets more space, as it's in my recent focus and you can use it for a number of things which are not, or at least not easily doable in plain SC. To a large extent the tour consists of references to selected already existing examples, which are spread over various help files. Conitinuative, but less central topics are marked as such, as well as some legacy code, which is still working, but not very relevant, as other possibilities have been invented meanwhile. A few new examples have been added, the reader is invited to check the exercises and to have fun with his/her favourite instrument resp. effect SynthDefs. 
+Concerning the structure of this file: after a brief history and a grouping of content the tour will guide through selected topics in an order which, hopefully, will outline the central ideas. It will start with VarGui, PLx, then go over PbindFx, EventShortcuts to live coding aspects of PLx, continue with independent classes, class families, methods and SC tutorials and end with the Buffer Granulation tutorial, which again integrates some of the previous topics. PbindFx gets more space, as it's in my recent focus and you can use it for a number of things which are not, or at least not easily doable in plain SC. To a large extent the tour consists of references to selected already existing examples, which are spread over various help files. Conitinuative, but less central topics are marked as such, as well as some legacy code, which is still working, but not very relevant, as other possibilities have been invented meanwhile. A few new examples have been added, the reader is invited to check the exercises and to have fun with his/her favourite instrument resp. effect SynthDefs. 
 
 
 
@@ -20,7 +20,7 @@ emphasis::Lokale Orbits:: is a series of works for small instrumentations and mu
 
 Between 2009 and 2016 a number of pattern families was added, some of them with granular synthesis in mind. The one I'm using most is the PLx proxy pattern family which takes advantage of environmental variables and dynamic scoping and goes well together with the VarGui interface concerning control of running Patterns/EventStreamPlayers. PLx also opens nice opportunities for live-coding with very condensed syntax. I'm not doing this on stage but I see live-coding as valuable part of a dynamic compositional process. As a side remark, PLx patterns mirror most of SC's main lib patterns and can also be used as non-proxies. In contrast to main lib's list patterns they default to repeats = inf, which probably saved myself the typing of many thousands of 'infs' over the years.
 
-Another part of miSCellaneous is a number of tutorials, which I added from time to time. Some refer to general SC topics, independant from miSCellaneous (e.g. Event patterns and array args), others to topics specific to miSCellaneous (e.g. PLx and live coding with Strings) and in some I tried a general overview of principal SC strategies, but also used examples with features of miSCellaneous (Buffer Granulation). Finally there's other stuff that doesn't fall into the above categories, e.g. the class EventShortcuts for customized shortcuts with Events and event patterns. Classes related to nonlinear dynamics (single sample feedback with Fb1, generailzed functional iteration synthesis with GFIS) have been added in 2018.
+Another part of miSCellaneous is a number of tutorials, which I added from time to time. Some refer to general SC topics, independent from miSCellaneous (e.g. Event patterns and array args), others to topics specific to miSCellaneous (e.g. PLx and live coding with Strings) and in some I tried a general overview of principal SC strategies, but also used examples with features of miSCellaneous (Buffer Granulation). Finally there's other stuff that doesn't fall into the above categories, e.g. the class EventShortcuts for customized shortcuts with Events and event patterns. Classes related to nonlinear dynamics (single sample feedback with Fb1, generailzed functional iteration synthesis with GFIS) have been added in 2018, Fb1_ODE and related, a framework for general ordinary differential equation integration of initial value problems in 2019.
 
 SECTION::Groups of content
 
@@ -90,6 +90,10 @@ list::
 ## Idev suite (2018): patterns and drate ugen searching for numbers with integer distance from a source pattern / signal
 
 ## Fb1, GFIS (2018): single sample feedback and generalized functional iteration synthesis
+
+## Fb1_ODE (2019): general ordinary differential equation integration
+
+## ZeroXBufWr / ZeroXBufRd / TZeroXBufRd (2020): playing sequences of segments between zero crossings with demand rate control
 
 ## Other
 ::
@@ -457,7 +461,7 @@ subsection::Tour 6b: PLx and live coding with Strings
 Already in plain SC Strings as Arrays of Characters can be used for sequencing. PLx patterns fit and continuate this concept, see link::Tutorials/PLx_and_live_coding_with_Strings:: for some options, also in connection with PLbindef, PLbindefPar and PbindFx.
 
 
-SECTION::Tour 7: Independant classes, class families and methods
+SECTION::Tour 7: independent classes, class families and methods
 
 subsection::Tour 7a: PSx stream patterns
 
@@ -497,7 +501,7 @@ See link::Tutorials/PSx_stream_patterns:: for an overview.
 
 subsection::Tour 7b: PSVx sieve patterns and Sieves
 
-Sieves, recommended by Iannis Xenakis as generative principles for arbitrary musical parameters, are implemented twice: with the class Sieve and Psieve patterns, which adapt the sieve calculus for realtime interactions. The tutorial link::Tutorials/Sieves_and_Psieve_patterns:: starts from scratch, thus can be studied completely independant from other miSCellaneous stuff and most other SC requirements. The last chapter gives some audio examples, granular rhythms might be an especially interesting application.
+Sieves, recommended by Iannis Xenakis as generative principles for arbitrary musical parameters, are implemented twice: with the class Sieve and Psieve patterns, which adapt the sieve calculus for realtime interactions. The tutorial link::Tutorials/Sieves_and_Psieve_patterns:: starts from scratch, thus can be studied completely independent from other miSCellaneous stuff and most other SC requirements. The last chapter gives some audio examples, granular rhythms might be an especially interesting application.
 
 
 subsection::Tour 7c: PmonoPar and PpolyPar
@@ -537,13 +541,17 @@ patterns and drate ugen searching for numbers with integer distance from a sourc
 
 subsection::Tour 7j: Nonlinear dynamics
 
-pseudo ugens for single sample feedback and generalized functional iteration synthesis, see link::Classes/Fb1:: and link::Classes/GFIS::.
+pseudo ugens for single sample feedback and generalized functional iteration synthesis, see link::Classes/Fb1:: and link::Classes/GFIS::. General ordinary differential equation integration, see link::Classes/Fb1_ODE:: and related classes.
+
+subsection::Tour 7k: ZeroXBufWr / ZeroXBufRd / TZeroXBufRd
+
+pseudo ugens for zero crossing analysis and playing sequences of segments between them with demand rate control, see link::Classes/ZeroXBufWr::, link::Classes/ZeroXBufRd::, link::Classes/TZeroXBufRd::.
 
 
 
 
 
-SECTION::Tour 8: (Rather) independant SC tutorials
+SECTION::Tour 8: (Rather) independent SC tutorials
 
 
 subsection::Tour 8a: Event patterns and Functions

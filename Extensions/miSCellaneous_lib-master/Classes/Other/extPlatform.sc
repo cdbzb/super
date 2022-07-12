@@ -1,10 +1,9 @@
 
-
 /*
 	This file is part of miSCellaneous, a program library for SuperCollider 3
 
-	Created: 2018-07-25, version 0.21
-	Copyright (C) 2009-2018 Daniel Mayer
+	Created: 2020-07-08, version 0.24
+	Copyright (C) 2009-2020 Daniel Mayer
 	Email: 	daniel-mayer@email.de
 	URL:	http://daniel-mayer.at
 

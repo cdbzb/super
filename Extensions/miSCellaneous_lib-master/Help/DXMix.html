@@ -23,8 +23,6 @@ p.p13 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #cd1c00}
 p.p14 {margin: 0.0px 0.0px 0.0px 57.0px; text-indent: -57.0px; font: 14.0px Helvetica; min-height: 17.0px}
 p.p15 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #cd1c00; min-height: 12.0px}
 p.p16 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #0326cb}
-p.p17 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #000000}
-p.p18 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #000000; min-height: 12.0px}
 span.s1 {font: 18.0px Helvetica}
 span.s2 {color: #000000}
 span.s3 {text-decoration: underline}
@@ -60,7 +58,7 @@ span.Apple-tab-span {white-space:pre}
 <p class="p1"><b>CREDITS: </b>Thanks to Wouter Snoei for his PlayBufCF class. It gave me a lot of inspiration for DX ugens – although in the end the implementation with PanAz and DemandEnvGen is quite different. Thanks also to Till Bovermann for ironing out a longstanding bug in PanAz.</p>
 <p class="p2"><br></p>
 <p class="p2"><br></p>
-<p class="p3"><span class="s2"><b>See also: </b><a href="../DX suite.html"><span class="s4">DX suite</span></a>,<b> </b><a href="../DXMixIn.html"><span class="s4">DXMixIn</span></a>, <a href="../DXEnvFan.html"><span class="s4">DXEnvFan</span></a>,<b> </b><a href="../DXEnvFanOut.html"><span class="s4">DXEnvFanOut</span></a>, <a href="../DXFan.html"><span class="s4">DXFan</span></a>,<b> </b><a href="../DXFanOut.html"><span class="s4">DXFanOut </span></a>,<b> </b><a href="../Buffer Granulation.html"><span class="s3">Buffer Granulation</span></a>, <a href="../Live Granulation.html"><span class="s3">Live Granulation</span></a>, <a href="../PbindFx.html"><span class="s3">PbindFx</span></a></span><span class="s5">,</span><span class="s2"> <a href="../kitchen studies.html"><span class="s3">kitchen studies</span></a></span></p>
+<p class="p3"><span class="s2"><b>See also: </b><a href="../DX suite.html"><span class="s4">DX suite</span></a>,<b> </b><a href="../DXMixIn.html"><span class="s4">DXMixIn</span></a>, <a href="../DXEnvFan.html"><span class="s4">DXEnvFan</span></a>,<b> </b><a href="../DXEnvFanOut.html"><span class="s4">DXEnvFanOut</span></a>, <a href="../DXFan.html"><span class="s4">DXFan</span></a>,<b> </b><a href="../DXFanOut.html"><span class="s4">DXFanOut </span></a>,<b> </b><a href="../Buffer Granulation.html"><span class="s3">Buffer Granulation</span></a>, <a href="../Live Granulation.html"><span class="s3">Live Granulation</span></a>, <a href="../PbindFx.html"><span class="s3">PbindFx</span></a></span><span class="s5">,</span><span class="s2"> <a href="../kitchen studies.html"><span class="s3">kitchen studies</span></a></span><span class="s5">,</span><span class="s2"> <a href="../../ZeroXBufRd.html"><span class="s4">ZeroXBufRd</span></a>,<b> </b><a href="../../TZeroXBufRd.html"><span class="s4">TZeroXBufRd</span></a>,<b> </b><a href="../../ZeroXBufWr.html"><span class="s4">ZeroXBufWr</span></a></span></p>
 <p class="p2"><br></p>
 <p class="p2"><br></p>
 <p class="p5"><b>Creation / Class Methods</b></p>
@@ -438,7 +436,7 @@ span.Apple-tab-span {white-space:pre}
 <p class="p4"><br></p>
 <p class="p13">// width = 2:</p>
 <p class="p4"><br></p>
-<p class="p1"><span class="Apple-tab-span">	</span><img src="attachments/DXMix/sliding_ex_1.png" alt="attachments/DXMix/sliding_ex_1.png"></p>
+<p class="p1"><span class="Apple-tab-span">	</span></p>
 <p class="p4"><br></p>
 <p class="p13">// For an arbitrary integer width n the number of active channels lies between n-1 and n,<span class="Apple-converted-space"> </span></p>
 <p class="p13">// here a scheme of the number of affected channels:</p>
@@ -477,12 +475,12 @@ span.Apple-tab-span {white-space:pre}
 <p class="p4"><br></p>
 <p class="p13">// width = 3:</p>
 <p class="p15"><br></p>
-<p class="p1"><span class="Apple-tab-span">	</span><img src="attachments/DXMix/sliding_ex_2.png" alt="attachments/DXMix/sliding_ex_2.png"></p>
+<p class="p1"><span class="Apple-tab-span">	</span></p>
 <p class="p15"><br></p>
 <p class="p15"><br></p>
 <p class="p13">// width = 4:</p>
 <p class="p15"><br></p>
-<p class="p1"><span class="Apple-tab-span">	</span><img src="attachments/DXMix/sliding_ex_3.png" alt="attachments/DXMix/sliding_ex_3.png"></p>
+<p class="p1"><span class="Apple-tab-span">	</span></p>
 <p class="p4"><br></p>
 <p class="p4"><br></p>
 <p class="p13">// If one wants to start width full width there's the possibility to do this by<span class="Apple-converted-space"> </span></p>
@@ -513,7 +511,7 @@ span.Apple-tab-span {white-space:pre}
 <p class="p4"><br></p>
 <p class="p13">// overlap scheme with width = 3 and initOutOffset = 1:</p>
 <p class="p4"><br></p>
-<p class="p1"><span class="Apple-tab-span">	</span><img src="attachments/DXMix/sliding_ex_4.png" alt="attachments/DXMix/sliding_ex_4.png"></p>
+<p class="p1"><span class="Apple-tab-span">	</span></p>
 <p class="p4"><br></p>
 <p class="p4"><br></p>
 <p class="p13">// Here we start with initOutOffset = 0.5, fadeMode = 1 (step first),</p>
@@ -541,7 +539,7 @@ span.Apple-tab-span {white-space:pre}
 <p class="p13">// overlap scheme with width = 3 and initOutOffset = 0.5:</p>
 <p class="p4"><br></p>
 <p class="p4"><br></p>
-<p class="p1"><span class="Apple-tab-span">	</span><img src="attachments/DXMix/sliding_ex_5.png" alt="attachments/DXMix/sliding_ex_5.png"></p>
+<p class="p1"><span class="Apple-tab-span">	</span></p>
 <p class="p4"><br></p>
 <p class="p4"><br></p>
 <p class="p4"><br></p>
@@ -567,7 +565,7 @@ span.Apple-tab-span {white-space:pre}
 <p class="p13">// overlap scheme with width = 2 and initOutOffset = -1:</p>
 <p class="p4"><br></p>
 <p class="p4"><br></p>
-<p class="p1"><span class="Apple-tab-span">	</span><img src="attachments/DXMix/sliding_ex_6.png" alt="attachments/DXMix/sliding_ex_6.png"></p>
+<p class="p1"><span class="Apple-tab-span">	</span></p>
 <p class="p4"><br></p>
 <p class="p4"><br></p>
 <p class="p4"><br></p>
@@ -676,27 +674,27 @@ span.Apple-tab-span {white-space:pre}
 <p class="p4"><br></p>
 <p class="p13">// widths (default 2) means overlap, thus grain length = 0.02</p>
 <p class="p15"><br></p>
-<p class="p17">(</p>
-<p class="p17">x = {</p>
-<p class="p17"><span class="Apple-converted-space">    </span><span class="s8">var</span> durs, trig, sig, thr = 0.5;</p>
-<p class="p17"><span class="Apple-converted-space">    </span>sig = { <span class="s8">|i|</span></p>
-<p class="p17"><span class="Apple-converted-space">        </span><span class="s6">DXMix</span>.ar(</p>
-<p class="p17"><span class="Apple-converted-space">            </span><span class="s6">Dseq</span>((49..0), <span class="s7">inf</span>),</p>
-<p class="p17"><span class="Apple-converted-space">            </span>`(<span class="s6">PlayBuf</span>.ar(</p>
-<p class="p17"><span class="Apple-converted-space">                    </span>1,</p>
-<p class="p17"><span class="Apple-converted-space">                    </span>b,</p>
-<p class="p17"><span class="Apple-converted-space">                    </span><span class="s6">BufRateScale</span>.kr(b) * ({ <span class="s8">|j|</span> j / 500 + 0.7 + (i * 0.02) } ! 50),</p>
-<p class="p17"><span class="Apple-converted-space">                    </span>loop: 1</p>
-<p class="p17"><span class="Apple-converted-space">                </span>)),</p>
-<p class="p17"><span class="Apple-converted-space">            </span>fadeTime: 0.01</p>
-<p class="p17"><span class="Apple-converted-space">        </span>)</p>
-<p class="p17"><span class="Apple-converted-space">    </span>} ! 2;</p>
+<p class="p12">(</p>
+<p class="p12">x = {</p>
+<p class="p12"><span class="Apple-converted-space">    </span><span class="s8">var</span> durs, trig, sig, thr = 0.5;</p>
+<p class="p12"><span class="Apple-converted-space">    </span>sig = { <span class="s8">|i|</span></p>
+<p class="p12"><span class="Apple-converted-space">        </span><span class="s6">DXMix</span>.ar(</p>
+<p class="p12"><span class="Apple-converted-space">            </span><span class="s6">Dseq</span>((49..0), <span class="s7">inf</span>),</p>
+<p class="p12"><span class="Apple-converted-space">            </span>`(<span class="s6">PlayBuf</span>.ar(</p>
+<p class="p12"><span class="Apple-converted-space">                    </span>1,</p>
+<p class="p12"><span class="Apple-converted-space">                    </span>b,</p>
+<p class="p12"><span class="Apple-converted-space">                    </span><span class="s6">BufRateScale</span>.kr(b) * ({ <span class="s8">|j|</span> j / 500 + 0.7 + (i * 0.02) } ! 50),</p>
+<p class="p12"><span class="Apple-converted-space">                    </span>loop: 1</p>
+<p class="p12"><span class="Apple-converted-space">                </span>)),</p>
+<p class="p12"><span class="Apple-converted-space">            </span>fadeTime: 0.01</p>
+<p class="p12"><span class="Apple-converted-space">        </span>)</p>
+<p class="p12"><span class="Apple-converted-space">    </span>} ! 2;</p>
 <p class="p13"><span class="s2"><span class="Apple-converted-space">    </span></span>// do a bit correlation</p>
-<p class="p17"><span class="Apple-converted-space">    </span><span class="s6">Splay</span>.ar(sig, 0.8)</p>
-<p class="p17">}.play</p>
-<p class="p17">)</p>
-<p class="p18"><br></p>
-<p class="p17">x.release</p>
+<p class="p12"><span class="Apple-converted-space">    </span><span class="s6">Splay</span>.ar(sig, 0.8)</p>
+<p class="p12">}.play</p>
+<p class="p12">)</p>
+<p class="p4"><br></p>
+<p class="p12">x.release</p>
 <p class="p14"><br></p>
 <p class="p6"><br></p>
 <p class="p13">// microsound with synthesized sources</p>

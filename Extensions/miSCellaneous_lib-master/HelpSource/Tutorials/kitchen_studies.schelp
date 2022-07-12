@@ -1,7 +1,7 @@
 TITLE::kitchen studies
 summary::source code of the corresponding fixed media piece
 categories:: Libraries>miSCellaneous
-related:: Overviews/miSCellaneous, Guides/Introduction_to_miSCellaneous, Classes/PbindFx, Tutorials/Buffer_Granulation, Tutorials/Live_Granulation, Classes/VarGui, Tutorials/DX_suite, Classes/DXMix, Classes/DXMixIn, Classes/DXEnvFan, Classes/DXEnvFanOut, Classes/DXFan, Classes/DXFanOut 
+related:: Overviews/miSCellaneous, Guides/Introduction_to_miSCellaneous, Classes/PbindFx, Tutorials/Buffer_Granulation, Tutorials/Live_Granulation, Classes/VarGui, Tutorials/DX_suite, Classes/DXMix, Classes/DXMixIn, Classes/DXEnvFan, Classes/DXEnvFanOut, Classes/DXFan, Classes/DXFanOut, Classes/ZeroXBufRd, Classes/TZeroXBufRd, Classes/ZeroXBufWr 
 
 	
 DESCRIPTION::

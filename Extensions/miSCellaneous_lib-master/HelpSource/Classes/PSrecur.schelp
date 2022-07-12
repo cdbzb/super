@@ -12,7 +12,7 @@ method::new
 Creates a new PSrecur object.
 
 argument::recurFunc
-Recursive Function, the PSrecur will be passed as first arg, count as second arg.
+Recursive Function, the the array of last values will be passed as first arg, count as second arg.
 
 argument::length
 Number of output items, may be pattern or stream, defaults to inf.

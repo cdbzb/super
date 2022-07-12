@@ -1,7 +1,7 @@
 CLASS:: DXFanOut
 summary:: crossfades signals between out buses according to demand-rate control
 categories:: Libraries>miSCellaneous>DX suite
-related:: Overviews/miSCellaneous, Guides/Introduction_to_miSCellaneous, Tutorials/DX_suite, Classes/DXMix, Classes/DXMixIn, Classes/DXEnvFan, Classes/DXEnvFanOut, Classes/DXFan, Tutorials/Buffer_Granulation, Tutorials/Live_Granulation, Classes/PbindFx, Tutorials/kitchen_studies
+related:: Overviews/miSCellaneous, Guides/Introduction_to_miSCellaneous, Tutorials/DX_suite, Classes/DXMix, Classes/DXMixIn, Classes/DXEnvFan, Classes/DXEnvFanOut, Classes/DXFan, Tutorials/Buffer_Granulation, Tutorials/Live_Granulation, Classes/PbindFx, Tutorials/kitchen_studies, Classes/ZeroXBufRd, Classes/TZeroXBufRd, Classes/ZeroXBufWr
 
 DESCRIPTION::
 

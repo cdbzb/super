@@ -28,3 +28,5 @@ private:: miSC_isPointSel, miSC_isIntervalSel
 private:: miSC_unifySize
 
 private:: miSC_Dmultiply
+
+private:: miSC_Dmultiply2

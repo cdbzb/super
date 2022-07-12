@@ -20,11 +20,13 @@ private:: miSC_getClutch, miSC_atKey, miSC_makeStartFxBundle, miSC_makeStartZero
 
 private:: miSC_lowestIndexForWhichGreaterEqual, miSC_highestIndexForWhichLessEqual, miSC_checkSymmetricPeriods, miSC_checkCharacteristicPeriod, miSC_streamifySieveItems, miSC_streamifySieveItems, miSC_isQuasiSymmetricRange, miSC_isSymmetricRange, miSC_smallestPeriodLength, miSC_symmetryType
 
-private:: miSC_getFFTbufSizes
+private:: miSC_getFFTbufSize
 
 private:: miSC_unifySize
 
 private:: miSC_Dmultiply
+
+private:: miSC_Dmultiply2
 
 
 method:: specPairsDup
@@ -180,4 +182,14 @@ Expects a SequenceableCollection of Integers and calculates the least common mul
 This can avoid problems with large numbers. Returns an array with lcm as first item, an array with prime factors of
 lcm as second item and an array of receiver's and all arguments' prime factors.
 See link::Tutorials/Sieves_and_Psieve_patterns#4b::
+
+
+method:: adjustZeroXs
+Sets all zero crossing positions of (sound) Buffers in a SequenceableCollection to 0. In most cases this ensures smoother waveforms when using ZeroXBufRd / TZeroXBufRd. See link::Classes/ZeroXBufRd#Éx. 7:: and link::Classes/ZeroXBufWr#Éx. 2::, it works in analogy to ZeroXBufWr's flag adjustZeroXs set to 1. Asynchronous.
+
+argument::zeroXBuf
+SequenceableColletion of Buffers of zero crossings, analysed with ZeroXBufWr.
+
+argument::action
+Action function or SequenceableCollection of such to be performed after the setting messages have been sent. Gets array of zero crossings as argument.
 

@@ -2,8 +2,8 @@
 /*
 	This file is part of miSCellaneous, a program library for SuperCollider 3
 
-	Created: 2018-07-25, version 0.21
-	Copyright (C) 2009-2018 Daniel Mayer
+	Created: 2020-07-08, version 0.24
+	Copyright (C) 2009-2020 Daniel Mayer
 	Email: 	daniel-mayer@email.de
 	URL:	http://daniel-mayer.at
 
@@ -30,10 +30,10 @@ PV_BinRange : PV_ChainUGen {
 	}
 
 	*new1 { |rate, buffer, loBin, hiBin|
-		var bufSizes = buffer.miSC_getFFTbufSizes, wipe;
-		var bufSize = bufSizes[0];
-		var chain_clipped = bufSizes.collect { LocalBuf(bufSize) };
+		var wipe, bufSize, chain_clipped;
 
+		bufSize = buffer.miSC_getFFTbufSize;
+		chain_clipped = LocalBuf(bufSize);
 		chain_clipped = PV_Copy(buffer, chain_clipped);
 
 		wipe = loBin * 2 / bufSize;
@@ -42,7 +42,7 @@ PV_BinRange : PV_ChainUGen {
 		wipe = hiBin * 2 / bufSize - 1;
 		chain_clipped = PV_BrickWall(chain_clipped, wipe);
 
-		^chain_clipped[0]
+		^chain_clipped
 	}
 }
 
@@ -53,10 +53,11 @@ PV_BinGap : PV_ChainUGen {
 	}
 
 	*new1 { |rate, buffer, loBin, hiBin|
-		var bufSizes = buffer.miSC_getFFTbufSizes, wipe;
-		var bufSize = bufSizes[0];
-		var chain_gap_1 = bufSizes.collect { LocalBuf(bufSize) };
-		var chain_gap_2 = bufSizes.collect { LocalBuf(bufSize) };
+		var wipe, bufSize, chain_gap_1, chain_gap_2;
+
+		bufSize = buffer.miSC_getFFTbufSize;
+		chain_gap_1 = LocalBuf(bufSize);
+		chain_gap_2 = LocalBuf(bufSize);
 
 		chain_gap_1 = PV_Copy(buffer, chain_gap_1);
 		chain_gap_2 = PV_Copy(buffer, chain_gap_2);
@@ -67,7 +68,8 @@ PV_BinGap : PV_ChainUGen {
 		wipe = hiBin + 1 * 2 / bufSize;
 		chain_gap_2 = PV_BrickWall(chain_gap_2, wipe);
 
-		^PV_Add(chain_gap_1, chain_gap_2)[0];
+		^PV_Add(chain_gap_1, chain_gap_2);
 	}
 }
+
 

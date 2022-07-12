@@ -1,9 +1,9 @@
 
 ======================================================================================
-miSCellaneous - a library of SuperCollider extensions (c) 2009-2018 Daniel Mayer 
+miSCellaneous - a library of SuperCollider extensions (c) 2009-2020 Daniel Mayer 
 ======================================================================================
 
-Version 0.21 contains these class and help files (SCDoc and old HTML system):
+Version 0.24 contains these class and help files (SCDoc and old HTML system):
 
 
 1.	Guide "Introduction to miSCellaneous": recommended starting point.
@@ -68,9 +68,14 @@ Version 0.21 contains these class and help files (SCDoc and old HTML system):
 	source pattern / signal.
 	
 16.	Nonlinear dynamics: Fb1 for single sample feedback / feedforward and GFIS for 
-	generalized functional iteration synthesis. 
+	generalized functional iteration synthesis.
+	Fb1_ODE for ordinary differential equation integration. 
 	
-		 
+17.	ZeroXBufWr, ZeroXBufRd, TZeroXBufRd: pseudo ugens for analysis of zero crossings and 
+	playing sequences of segments between them with demand rate control. Dwalk, a 	
+	pseudo demand rate ugen that supports specific synthesis options with ZeroXBufRd.
+	
+			 
 Many of the examples here are using patterns, resp. event patterns but do not cover 
 their basic concepts. For a detailled description of SC's sequencing capabilities see 
 James Harkins' Practical Guide to Patterns (PG_01_Introduction), the tutorial 
@@ -89,8 +94,10 @@ event patterns resp. EventStreamPlayers.
 
 Requirements
 
-At least SuperCollider version 3.5, though with 3.5 and 3.6 you'd have
-to use Qt GUI kit, which is the only option anyway from 3.7 onwards. 
+At least SuperCollider version 3.6 but newer versions are recommended, 
+with 3.6 you'd have to use Qt GUI kit, which is the only option anyway from 3.7 onwards. 
+Unable to test on 3.5 anymore, code might work, anyway old help is still supported.
+
 If you still use Cocoa or SwingOSC with these old SC versions,
 you can take miSCellaneous 0.15b and add classes and help files from a 
 newer version of miSCellaneous.
@@ -99,17 +106,26 @@ For using VarGui with EZSmoothSlider and EZRoundSlider you would need to
 install Wouter Snoei's wslib Quark, one buffer granulation
 example using Wavesets depends on Alberto de Campo's Wavesets Quark. 
 
-I tested examples on SC versions 3.5 - 3.9, 
-on OS 10.5 - 10.11, Ubuntu 12.04 and Windows 7, though not every 
-platform / OS version / SC version combination.
+I tested examples on SC versions 3.6 - 3.11, 
+on OS 10.8 - 10.13, Ubuntu 12.04 and Windows 7, 10; 
+though not every platform / OS version / SC version combination.
 
-If you still use SC 3.5.x I'd suggest taking a SC version >= 3.5.3.
-There have been some changes in SCDoc (especially from 3.5.1 to 3.5.2)
-due to which wrong renderings (broken links) of newer SCDoc help files 
-can happen with elder SC versions in some rare cases.
-Reciprocally elder versions of miSCellaneous SCDoc help files 
-- due to formerly tolerated syntax inaccuracies - 
-might not be rendered correctly or at all in newer versions of SC.
+
+SCDoc issues (SC 3.10)
+
+With SC 3.10.0 - SC 3.10.2 there are issues with evaluating code in the 
+help file examples (double evaluation).
+For these versions you'd rather copy the help file code 
+into scd files and run it there. 
+Double evaluation has been fixed with 3.10.3 (August 2019).
+With SC updates to 3.10 it might happen that help file examples are invisible.
+In that case delete the Help folder which resides in one of these places, depending
+where you have installed:
+
+Platform.userAppSupportDir;
+Platform.systemAppSupportDir;
+
+Then restart SC.
 
 
 Installation
@@ -129,8 +145,8 @@ https://github.com/supercollider-quarks/quarks
 
 After a install of a newer version of miSCellaneous do a SCDoc update by
 
-SCDoc.indexAllDocuments(true) // from SC 3.5.2 onwards
-SCDoc.cleanState(true)  // only for SC version 3.5.0 - 3.5.1
+SCDoc.indexAllDocuments(true)
+
 
 2.) Manual installation from a downloaded zip
 
@@ -167,6 +183,10 @@ On Windows and OSX you might have to make the concerned folders visible,
 if they aren't already. The miSCellaneous folder should be placed directly
 into the Extensions folder, not into a subfolder.
 
+After a install of a newer version of miSCellaneous do a SCDoc update by
+
+SCDoc.indexAllDocuments(true)
+
 
 License
 
@@ -189,6 +209,7 @@ Many thanks to James McCartney for developing SuperCollider,
 Alberto de Campo for showing me its capabilities,
 Wouter Snoei for his nice slider classes in wslib, 
 Nathaniel Virgo for his suggestions for feedback, 
+David Pirrò for his hints concerning ODE integration,
 James Harkins for his remarks on many things and 
 the whole community for contributions and hints !
 
@@ -198,6 +219,31 @@ the whole community for contributions and hints !
 
 History
 
+
+v0.24		2020-07-08
+
+	.) Dwalk, demand rate ugen that supports specific synthesis options with ZeroXBufRd
+	.) New examples #9, #10 in ZeroXBufRd help with applications of Dwalk
+	.) New examples #8, #9 in TZeroXBufRd help (pulsar synthesis)	
+	.) Bugfix related to PV_BinRange and PV_BinGap, usage in FFT chains enabled	
+	
+
+v0.23		2020-04-19
+
+	.) ZeroXBufWr, ZeroXBufRd, TZeroXBufRd: playing half wavesets with demand rate control
+	.) Remove doubled method lincurve_3_9, which caused a warning without harm
+	.) AddEventTypes_PbindFx: use store instead of writeDefFile in private methods
+	.) Minor fixes in help files	
+	
+
+v0.22		2019-08-14
+
+	.) Fb1_ODE and related: ordinary differential equation integration 
+	.) Fb1: now also runs at control rate, Fb1.new is equivalent to Fb1.ar	
+	.) Fb1: minor change of forced graph ordering
+	.) PbindFx: accept instruments/fxs given as Strings in pbindData key/value pairs
+	.) Minor fixes in help files	
+	
 
 v0.21		2018-07-25
 

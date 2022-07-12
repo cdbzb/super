@@ -1,7 +1,7 @@
 CLASS:: PbindFx
 summary:: event pattern for effect handling on per-event base
 categories:: Libraries>miSCellaneous>Other patterns
-related:: Overviews/miSCellaneous, Guides/Introduction_to_miSCellaneous, Tutorials/kitchen_studies, Tutorials/Buffer_Granulation, Tutorials/Live_Granulation, Classes/PmonoPar, Classes/PpolyPar, Tutorials/DX_suite, Classes/DXMix, Classes/DXMixIn, Classes/DXEnvFan, Classes/DXEnvFanOut, Classes/DXFan, Classes/DXFanOut
+related:: Overviews/miSCellaneous, Guides/Introduction_to_miSCellaneous, Tutorials/kitchen_studies, Tutorials/Buffer_Granulation, Tutorials/Live_Granulation, Classes/PmonoPar, Classes/PpolyPar, Tutorials/DX_suite, Classes/DXMix, Classes/DXMixIn, Classes/DXEnvFan, Classes/DXEnvFanOut, Classes/DXFan, Classes/DXFanOut, Classes/ZeroXBufRd, Classes/TZeroXBufRd, Classes/ZeroXBufWr
 
 
 DESCRIPTION::

@@ -1,7 +1,7 @@
 CLASS:: DXMix
 summary:: crossfades between signals according to demand-rate control
 categories:: Libraries>miSCellaneous>DX suite
-related:: Overviews/miSCellaneous, Guides/Introduction_to_miSCellaneous, Tutorials/DX_suite, Classes/DXMixIn, Classes/DXEnvFan, Classes/DXEnvFanOut, Classes/DXFan, Classes/DXFanOut, Tutorials/Buffer_Granulation, Tutorials/Live_Granulation, Classes/PbindFx, Tutorials/kitchen_studies
+related:: Overviews/miSCellaneous, Guides/Introduction_to_miSCellaneous, Tutorials/DX_suite, Classes/DXMixIn, Classes/DXEnvFan, Classes/DXEnvFanOut, Classes/DXFan, Classes/DXFanOut, Tutorials/Buffer_Granulation, Tutorials/Live_Granulation, Classes/PbindFx, Tutorials/kitchen_studies, Classes/ZeroXBufRd, Classes/TZeroXBufRd, Classes/ZeroXBufWr
 
 DESCRIPTION::
 
@@ -253,7 +253,7 @@ x = {
 x.release
 
 
-// some overtone fun with large width, independant DXMixs for L and R
+// some overtone fun with large width, independent DXMixs for L and R
 
 (
 x = {
@@ -982,7 +982,7 @@ x.release
 ::
 
 note::
-Also see link::Classes/DXEnvFan#Ex.2#DXEnvFan, Ex.2:: and link::Classes/DXEnvFan#Ex.4#DXEnvFan, Ex.4:: for CPU aspects. Note that the use of the options allowTypeSeq and zeroThr also needs more CPU. Rescaling, which is necessary for SC versions before 3.9 with audio rate, is also more CPU-costy.
+Also see link::Classes/DXEnvFan#Ex.2#DXEnvFan, Ex.2:: and link::Classes/DXEnvFan#Ex.4#DXEnvFan, Ex.4:: for CPU aspects. Note that the use of the options allowTypeSeq and zeroThr also needs more CPU. Rescaling, which is necessary for SC versions before 3.9 with audio rate, is also more CPU-costly.
 ::
 
 

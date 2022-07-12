@@ -12,10 +12,10 @@ Song(\chamber1,[]).current;
 ["KIRK: No problem yet. Maintain alert. Kirk out. ","r"].addLine;
 ["MULHALL: Atmosphere report, Captain. ",[11,7,5,4,3,2,3].dm(\b,5,\mixolydian)].addLine;
 P.tune(\Atmosphere, {|i| Pmul(\freq,[1,0.5],i) => Pset(\legato,4,_) });
-( Song.trillFunc = {|lowerNoteDegree p b e|
+( Song.trillFunc = {|lowerNoteDegree p b e octave=5|
 	3.do{
 		[
-			freq:[lowerNoteDegree,11].df(\c).q(inf),
+			freq:[lowerNoteDegree,11].df(\c,octave).q(inf),
 			dur: Pwhite(0.05,0.16,inf),
 			legato:Prand([0.8,1.1],inf),
 			pan:(-1).rrand(1.0),
@@ -32,11 +32,25 @@ P.tune(\oxygen,{|i| Pmul(\freq,[1,0.5],i) => Pset(\legato,4,_) });
 ["SPOCK: This vault was constructed about a half a million years ago.", "5 7 6 5 4 3 2 3 4 6 5 4 3 2 1".dm(\c,5,\mixolydian)].addLine;
 P.tune(\vault);
 P(\trill,start:\vault,music:{|p b e| 
-	p.trillFunc.(6.5,p,b,e)
+	p.trillFunc.(6.5,p,b ++ e.bNext => _.flat, e)
 });
-["About the same time the planet surface was destroyed, if our sensor readings are accurate. ","5 6 7 11 3".dm(\f,5,\minor) ++ "6 7 11 13 12 11 7 6".dm('f#',5) ++ [ 1,2,4,5,2,3,4,1 ].dm(\d,5,\minor)].addLine;
+["About the same time the planet surface was destroyed, if our sensor readings are accurate. ","5 6 7 11 3".dm(\f,4,\minor) ++ "6 7 11 13 12 11 7 6".dm('f#',4) ++ [ 1,2,3,4,-5,4,3,2 ].dm(\d,5,\diminished)].addLine;
 P.tune(\surface);
-["KIRK: Composition of walls? ","r"].addLine;
+P(\bass,start:\surface,music:{|p b e| 
+	[
+		freq: 
+		\r.bubble ++ [1,-7].df('a-',3,\mixolydian) => _.flat => _.q,
+		dur: b.parse([4,4,5]).q,
+		instrument:\sawSynthSustain,
+		att:2,
+		amp:0.07
+	].pp;
+});
+["KIRK:(boom) Composition of walls? ","-4 4 5 4 3 4 7".dm(\c)].addLine;
+P.tune(\Composition,Pdrop(1,_),syl:0);
+P(\triller,start:\Composition,music:{|p b e| 
+	p.trillFunc.(6, p,b,e);
+});
 ["SPOCK: They're an alloy or substance completely unknown to me.","5 6 11 6 5 11.5 6 4 12 11.5 12 12 13 11.5 6".dm('e-',4)].addLine;
 P.tune(\alloy);
 ["Much stronger and harder than-- ","2 6 5 4 3 7 6 5 4".dm('c#',5)].addLine;
@@ -49,23 +63,97 @@ P(\bass,start:\harder,music:{|p b e|
 	
 });
 ["anything I've measured before. ","3 2 1 -7 -6 -5 -4 1 2 ".dm('b-',5,\mixolydian)].addLine;
-Song.setTempoMap(\measured, "E E qE e E E E x xee".asBeats);
+P.tune(\measured);
+Song.setTempoMap(\measured, 
+	"e e ee|q e | e x x x xeq".asBeats
+);
+P(\crash,start:\measured,music:{|p b e| 
+	(
+		instrument:\cymbalsDS,
+		amp:0.05,
+		out: Effect.new(Decimator.ar(_,20000),  out: 0,  inputChannels: 1,  target: nil).bus.index
+	).play
+});
+P(\measured,start:\measured,music:{|p b e| 
+	[
+		instrument:\hihat,
+		dur: 1.dup(6)=>_.warpTo(e.tempoMap) => _.q
+	].p//p;
+});
 P(\bass,start:\measured,music:{|p b e| 
 	[
-		freq: "1 1 3 4 4 ".df('b-',3,\mixolydian) ++ "1 1 3 4".df('a-',3,\mixolydian) =>_.q,
-		dur: "q e e q q    q e e qq".asBeats.warpTo(e.tempoMap).q
+		freq: "1 3 4  ".df('f',4,\mixolydian) ++ "1 3 4".df('e-',4,\mixolydian) =>_.q * [1,3/2],
+		dur: 
+		//"qe ex xq  |ex x q".asBeats.warpTo(Song.tempoMap[\measured]).reject{ |i| i>1024 }
+		[ 1.675, 0.838, 0.989, 0.686,        0.345,         1.388 ]
+		+ [0,     0,     0,     (0.25-0.188) + 0.05, -0.7 * (0.25-0.188), 0]
+		//[ 1.675, 0.838, 0.989, 0.686].sum
+			//, 0.345, 1.388 ]
+		=> _.warpTo(e.tempoMap)=>_.q,
+		out:Effect( { |i| SineShaper.ar(i,0.02).tanh !2 *0.6 },inputChannels:4  ).bus.index
+	].pp;
+	[
+		freq: "1 3 4  ".df('b-',3,\mixolydian) ++ "1 3 4".df('a-',3,\mixolydian) =>_.q * [1,3/2],
+		dur: 
+		//"qe ex xq  |ex x q".asBeats.warpTo(Song.tempoMap[\measured]).reject{ |i| i>1024 }
+		[ 1.675, 0.838, 0.989, 0.686,        0.345,         1.388 ]
+		+ [0,     0,     0,     (0.25-0.188) + 0.05, -0.7 * (0.25-0.188), 0]
+		//[ 1.675, 0.838, 0.989, 0.686].sum
+			//, 0.345, 1.388 ]
+		=> _.warpTo(e.tempoMap)=>_.q,
+		out:Effect( { |i| SineShaper.ar(i,0.02).tanh !2 *0.6 },inputChannels:4  ).bus.index
 	].pp
 	
 });
-P.tune(\measured);
-["MULHALL: All readings are off the scale, Captain. ","r"].addLine;
-["MCCOY: The air seems fresh. It must be re-circulated somehow. ","4 3 2 5 ".dm(\c) ++ "4 5 6 7 6 5 4 2 4 3.5".dm(\c,5,\minor)].addLine;
-P.tune(\circulated);
-P(\triller,start:\circulated,music:{|p b e| 
-	p.trillFunc.(5.5,p,b,e)
+["MULHALL: All readings are off the scale, Captain. (ooh) "," 6 5 4 3 2 1 7 6 5 4.5".dm(\d,5,\mixolydian)].addLine;
+P.tune(\scale, { |i| Pmul(\freq,[1,2],i).fin(9)  } );
+P(\triller,start:\scale,syl:8,music:{|p b e| 
+	p.trillFunc.(5.5,p,b,e,octave:4);
+	(
+		instrument:\stringyy,
+		attack:5,
+		freq:[1,3].df('a-',[4,5]),
+		dur:b.sum+e.bNext.sum,
+		amp:0.2
+	).play
 });
+["MCCOY: The air seems fresh. It must be re-circulated somehow. ","4 3 2 5 ".dm(\c) ++ "4 5 6 7 6 5 4 2 4 3.5".dm(\c,5,\minor)].addLine;
+P(\triller,start:\circulated, music:{ |p b e|
+	p.trillFunc.(5.5,p,b,e,octave:4);
+});
+P(\chord,start:\circulated,music:{|p b e| 
+	[
+		freq:"16 15 14 13 12 11 5.5 4 5.5 11 12 14 16 21".df(\c,3).q,
+		dur:b.q
+	].pp;
+	[
+		freq:"1 1 1 1".df(\c,4).q,
+		dur:b.q
+	].pp;
+});
+P.tune(\circulated);
 ["KIRK: Is that for us, or does it need fresh air? ","1 2 3 5 4 5 6 4 3 1.5 ".dm(\g,4,\whole)].addLine;
 P.tune('Is that for us');
+P(\pad,start:'fresh air',music:{|p b e| 
+	(
+		freq: [-1,1,3,5].df(\g,5,\whole),
+		instrument: \wash,
+		att: 3,
+		rel:7,
+		amp:0.03
+	).play;
+	fork{
+		b.parse([6]).unbubble.wait;
+		(
+			freq:[1,11].df(\f,4),
+			instrument:\sawSynthSustain,
+			att:5,
+			rel:7,
+			dur: b.parse([6,4]).tail.unbubble,
+			amp:0.03
+		).play
+	}
+});
 ["(door opens and...)","r",[10]].addLine;
 P(\door,start:\opens,music:{|p b e| 
 	

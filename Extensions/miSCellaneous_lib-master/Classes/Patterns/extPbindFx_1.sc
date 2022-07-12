@@ -2,8 +2,8 @@
 /*
 	This file is part of miSCellaneous, a program library for SuperCollider 3
 
-	Created: 2018-07-25, version 0.21
-	Copyright (C) 2009-2018 Daniel Mayer
+	Created: 2020-07-08, version 0.24
+	Copyright (C) 2009-2020 Daniel Mayer
 	Email: 	daniel-mayer@email.de
 	URL:	http://daniel-mayer.at
 
@@ -22,7 +22,6 @@
 	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
-
 +SequenceableCollection {
 
 	miSC_makeStartFxBundle { |successors, fxOrderPositions, fxBuses, splitBuses,
@@ -39,7 +38,7 @@
 			// prepare fxPairs from msgFunc
 			// fx should not have default amp and freq
 
-			msgFunc = SynthDescLib.global[fxEvent[\fx]].msgFunc;
+			msgFunc = SynthDescLib.global[fxEvent[\fx].asSymbol].msgFunc;
 			fxPairs = fxEvent.use { msgFunc.valueEnvir };
 
 			hasAmp = #[amp, db].any { |x| fxEvent.keys.includes(x) };
@@ -75,7 +74,7 @@
 				);
 
 				startFxBundle = startFxBundle ++ [
-					([\s_new, fxEvent[\fx], fxIds.last[j], actionNum, referenceId] ++
+					([\s_new, fxEvent[\fx].asSymbol, fxIds.last[j], actionNum, referenceId] ++
 					fxMsg ++ (fxBuses[i].isNil).if { [] }{ [\in, fxBuses[i].index] } ++
 					[\out, outBus]).asOSCArgArray
 				];

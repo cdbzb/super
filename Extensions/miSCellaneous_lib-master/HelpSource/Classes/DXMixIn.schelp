@@ -1,7 +1,7 @@
 CLASS:: DXMixIn
 summary:: crossfades between signals from buses according to demand-rate control
 categories:: Libraries>miSCellaneous>DX suite
-related:: Overviews/miSCellaneous, Guides/Introduction_to_miSCellaneous, Tutorials/DX_suite, Classes/DXMix, Classes/DXEnvFan, Classes/DXEnvFanOut, Classes/DXFan, Classes/DXFanOut, Tutorials/Buffer_Granulation, Tutorials/Live_Granulation, Classes/PbindFx, Tutorials/kitchen_studies
+related:: Overviews/miSCellaneous, Guides/Introduction_to_miSCellaneous, Tutorials/DX_suite, Classes/DXMix, Classes/DXEnvFan, Classes/DXEnvFanOut, Classes/DXFan, Classes/DXFanOut, Tutorials/Buffer_Granulation, Tutorials/Live_Granulation, Classes/PbindFx, Tutorials/kitchen_studies, Classes/ZeroXBufRd, Classes/TZeroXBufRd, Classes/ZeroXBufWr
 
 DESCRIPTION::
 

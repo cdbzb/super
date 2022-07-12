@@ -1,7 +1,7 @@
 CLASS:: DXEnvFan
 summary:: returns crossfade envelopes according to demand-rate control
 categories:: Libraries>miSCellaneous>DX suite
-related:: Overviews/miSCellaneous, Guides/Introduction_to_miSCellaneous, Tutorials/DX_suite, Classes/DXMix, Classes/DXMixIn, Classes/DXEnvFanOut, Classes/DXFan, Classes/DXFanOut, Tutorials/Buffer_Granulation, Tutorials/Live_Granulation, Classes/PbindFx, Tutorials/kitchen_studies
+related:: Overviews/miSCellaneous, Guides/Introduction_to_miSCellaneous, Tutorials/DX_suite, Classes/DXMix, Classes/DXMixIn, Classes/DXEnvFanOut, Classes/DXFan, Classes/DXFanOut, Tutorials/Buffer_Granulation, Tutorials/Live_Granulation, Classes/PbindFx, Tutorials/kitchen_studies, Classes/ZeroXBufRd, Classes/TZeroXBufRd, Classes/ZeroXBufWr
 
 DESCRIPTION::
 
@@ -339,7 +339,7 @@ subsection::Ex.2: Sequencing crossfade types and parameters
 
 code::
 // sequencing crossfade types and parameters must be allowed explicitely as 
-// it is more CPU-costy
+// it is more CPU-costly
 
 // alternate linear and pure sine
 (
@@ -418,7 +418,7 @@ subsection::Ex.4: The 'bus' arg
 
 code::
 // As channel switching with DXEnvFan / DXFan is implemented by "watcher ugens",
-// it becomes costy if the number of output channels increases (growth of quadratic order).
+// it becomes costly if the number of output channels increases (growth of quadratic order).
 // The effort is lowered significantly if you pass a reserved bus for this or use DXEnvFanOut,
 // this also concerns DXFan / DXFanOut.
 

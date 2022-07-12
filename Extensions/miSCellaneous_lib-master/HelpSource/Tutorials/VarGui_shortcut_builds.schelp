@@ -631,7 +631,7 @@ code::
 // Symbols / Strings must be collected, also the corresponding Dictionaries
 
 // spVarGui just takes input in reversed order (synth first).
-// This is independant from representation in the GUI
+// This is independent from representation in the GUI
 // which can be determined by args sliderPriority (\var or \synth)
 // and playerPriority (\stream or \synth)
 
@@ -698,7 +698,7 @@ link::Classes/SequenceableCollection#-pVarGui::
 
 
 note::
-The following two methods are equivalent, just take opposite arg order. This is independant of arrangement, which can be determined by gui args sliderPriority (\var or \synth) and playerPriority (\stream or \synth).
+The following two methods are equivalent, just take opposite arg order. This is independent of arrangement, which can be determined by gui args sliderPriority (\var or \synth) and playerPriority (\stream or \synth).
 ::
 
 link::Classes/SequenceableCollection#-spVarGui::

@@ -2,8 +2,8 @@
 /*
 	This file is part of miSCellaneous, a program library for SuperCollider 3
 
-	Created: 2018-07-25, version 0.21
-	Copyright (C) 2009-2018 Daniel Mayer
+	Created: 2020-07-08, version 0.24
+	Copyright (C) 2009-2020 Daniel Mayer
 	Email: 	daniel-mayer@email.de
 	URL:	http://daniel-mayer.at
 
@@ -21,7 +21,6 @@
 	along with this program; if not, write to the Free Software
 	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
-
 
 
 // this provides the newer version of lincurve for older SC versions with DX UGens
@@ -56,10 +55,6 @@
 	lincurve_3_9 { arg inMin = 0, inMax = 1, outMin = 0, outMax = 1, curve = -4, clip = \minmax;
 		^this.composeNAryOp('lincurve_3_9', [inMin, inMax, outMin, outMax, curve, clip])
 	}
-}
-
-+ SequenceableCollection {
-	lincurve_3_9 { arg ... args; ^this.multiChannelPerform('lincurve_3_9', *args) }
 }
 
 + SequenceableCollection {

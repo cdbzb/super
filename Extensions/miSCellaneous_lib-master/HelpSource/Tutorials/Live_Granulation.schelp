@@ -3,7 +3,7 @@
 TITLE::Live Granulation
 summary::different approaches to live granulation with gui examples
 categories:: Libraries>miSCellaneous>General Tutorials, Streams-Patterns-Events
-related:: Overviews/miSCellaneous, Guides/Introduction_to_miSCellaneous, Tutorials/Buffer_Granulation, Classes/VarGui, Tutorials/VarGui_shortcut_builds, Tutorials/PLx_suite, Classes/PbindFx, Tutorials/kitchen_studies, Tutorials/Sieves_and_Psieve_patterns, Classes/PSPdiv, Tutorials/DX_suite, Classes/DXMix, Classes/DXMixIn, Classes/DXEnvFan, Classes/DXEnvFanOut, Classes/DXFan, Classes/DXFanOut
+related:: Overviews/miSCellaneous, Guides/Introduction_to_miSCellaneous, Tutorials/Buffer_Granulation, Classes/VarGui, Tutorials/VarGui_shortcut_builds, Tutorials/PLx_suite, Classes/PbindFx, Tutorials/kitchen_studies, Tutorials/Sieves_and_Psieve_patterns, Classes/PSPdiv, Tutorials/DX_suite, Classes/DXMix, Classes/DXMixIn, Classes/DXEnvFan, Classes/DXEnvFanOut, Classes/DXFan, Classes/DXFanOut, Classes/ZeroXBufRd, Classes/TZeroXBufRd, Classes/ZeroXBufWr
 
 DESCRIPTION::
 

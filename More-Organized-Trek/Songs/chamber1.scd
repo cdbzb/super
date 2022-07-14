@@ -12,15 +12,18 @@ Song(\chamber1,[]).current;
 ["KIRK: No problem yet. Maintain alert. Kirk out. ","r"].addLine;
 ["MULHALL: Atmosphere report, Captain. ",[11,7,5,4,3,2,3].dm(\b,5,\mixolydian)].addLine;
 P.tune(\Atmosphere, {|i| Pmul(\freq,[1,0.5],i) => Pset(\legato,4,_) });
-( Song.trillFunc = {|lowerNoteDegree p b e octave=5|
+( Song.trillFunc = {|lowerNoteDegree p b e octave=5 amp=0.03|
 	3.do{
 		[
 			freq:[lowerNoteDegree,11].df(\c,octave).q(inf),
 			dur: Pwhite(0.05,0.16,inf),
 			legato:Prand([0.8,1.1],inf),
 			pan:(-1).rrand(1.0),
-			out: Effect({|i| i * Env.linen(0,b.sum,4).kr(2,gate:1) },inputChannels:2).bus.index
-		].pm(\default).play
+			amp:amp,
+			out: 
+			Effect({|i| i =>FreeVerb.ar(_,0.8,0.8) * Env.linen(0,[9,8].sum,4).kr(2,gate:1) },inputChannels:2).bus.index
+			
+		].pm(\default) => Pfindur(b.sum,_) => _.play
 	}
 };
 );
@@ -53,6 +56,9 @@ P(\triller,start:\Composition,music:{|p b e|
 });
 ["SPOCK: They're an alloy or substance completely unknown to me.","5 6 11 6 5 11.5 6 4 12 11.5 12 12 13 11.5 6".dm('e-',4)].addLine;
 P.tune(\alloy);
+P(\triller,start:\alloy,music:{|p b e| 
+	 p.trillFunc.(6.5, p,b/0.8,e);
+});
 ["Much stronger and harder than-- ","2 6 5 4 3 7 6 5 4".dm('c#',5)].addLine;
 P.tune(\harder);
 P(\bass,start:\harder,music:{|p b e| 
@@ -106,6 +112,16 @@ P(\bass,start:\measured,music:{|p b e|
 	
 });
 ["MULHALL: All readings are off the scale, Captain. (ooh) "," 6 5 4 3 2 1 7 6 5 4.5".dm(\d,5,\mixolydian)].addLine;
+Song.setTempoMap(\scale,"q Q Q Qq Q E q e e q".asBeats);
+P(\chords,start:\scale,music:{|p b e| 
+	[
+		instrument:\pluckDVerb,
+		freq: [[1,3],[1,3], -7,1,1,1].df(\d,5,\mixolydian).q,
+		//dur:b.parse([1,3]).q
+		dur: "q qq x x x xq".asBeats.warpTo(e.tempoMap).q,
+		amp:0.03
+	].pp
+});
 P.tune(\scale, { |i| Pmul(\freq,[1,2],i).fin(9)  } );
 P(\triller,start:\scale,syl:8,music:{|p b e| 
 	p.trillFunc.(5.5,p,b,e,octave:4);

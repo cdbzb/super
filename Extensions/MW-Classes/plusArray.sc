@@ -16,12 +16,16 @@
         }
 
 	degreescps { |root=0 octave=5 scale=\major tuning|
+
+		octave.isKindOf(Symbol).if{scale=octave;octave=5};
 		^this.collect{|i|
 			i.degreescps(root,octave,scale,tuning)
 		}
 	}
 
 	degreesmidi {|root=0 octave=5 scale=\major tuning|
+
+		octave.isKindOf(Symbol).if{scale=octave;octave=5};
 		^this.collect{|i|
 			i.degreesmidi(root,octave,scale,tuning)
 		}

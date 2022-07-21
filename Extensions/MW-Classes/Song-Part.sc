@@ -662,6 +662,18 @@ Song {
 			^a
 		})
 	}
+	getStartString { |x|
+		var a=this.lyrics.collect( { |i| i.split($ ).collect(_.asSymbol)} );
+		var q={|array index| array.keep(index)++array.copyToEnd(index + 1)};
+		var start = a[x].difference(q.(a,x).flat);
+		var luacode = "local pos = vim.api.nvim_win_get_cursor(0)[2] ;"
+		" local line = vim.api.nvim_get_current_line() ;"
+		" local nline = line:sub(0, pos) .. \"%\"  .. line:sub(pos + 1) ;"
+		" vim.api.nvim_set_current_line(nline) ;"
+		.format(start[0]);
+		SCNvim.luaeval(luacode)
+
+	}
 	parse {|phrase array start=0| 
 		var counter = 0;
 		var beatNum; 

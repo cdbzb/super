@@ -27,6 +27,7 @@ Melody[slot] : Array {
 		) 
 	}
 	dm { |root='a' octave=3 scale=\major|
+		octave.isKindOf(Symbol).if{scale=octave;octave=5};
 		^this.collect{|i|[i.value,i.duration]}.flop=>{|i| [midinote:i[0].dm(root,octave,scale).q,dur:i[1].q] }
 	}
 	df { |root='a' octave=3 scale=\major|

@@ -40,15 +40,21 @@ Pdefn(\lower,7.df.bubble.q(inf)); ///NOW WHAT?
 Song.triller = { 
 	VarSaw.ar( LFPulse.ar(
 		LFBrownNoise1.kr(1).range(5.5,7)
-	).range(\lower.kr(7.df,Rand(1,3)),\higher.kr(11.df)
+	).range(\lower.kr(7.df,Rand(1,3)),\higher.kr(11.df,6)
 	),0,0.5.rand, 0.05 )
 	=> Pan2.ar(_,Rand(-1,1.0))
-	=> LPF.ar(_,8000)
+	=> LPF.ar(_,4000)
 	//=> TwoTube.ar(_, k:0.01, loss:0.997, d1length:[333,456], d2length:[543,611], mul:1.0, add:0.0)
 	=> { |i| DWGReverbC1C3.ar(i, len:100, c1:1, c3:10, mix:0.1, coefs:nil, perm:nil, doprime:0) => Pan2.ar(_,0.9)+i}
 	* \amp.kr(0.1)
+	* Env.asr(0.05).kr(2,gate:1)
 }.asSynthDef.add.name;
-Song.trillSynthFunc = {|note| (1..3).collect{Synth(Song.triller,[\lower,note.df]).register}};
+Song.trillSynthFunc = {|note| 
+	Song.trillBus = Song.trillBus ? Bus.control; 
+	Song.trillBus.set(0.1);
+	(1..3).collect{Synth(Song.triller,[\lower,note.df]).register.map(\amp,Song.trillBus)}
+	
+};
 Song.changeTrill = { |note|
 	( try{ Song.trillSynth[0].isRunning }==true ).if{
 		fork{ Song.trillSynth.do( { |i| i.set(\lower,note.df);0.4.rand.wait} )}
@@ -58,7 +64,6 @@ Song.changeTrill = { |note|
 P(\trill,start:\Atmos,music:{|p b e| 
 	Song.trillSynth = Song.trillSynthFunc.(7)
 });
-
 
 ["A fraction richer in oxygen than usual for us, but otherwise normal. "," 3 4 5 7 11 6 13 12 5 6 12 11.5 6, 4.5 5.5 4 5 6 7 12 11".dm(\c)].addLine;
 P.tune(\oxygen,{|i| Pmul(\freq,[1,0.5],i) => Pset(\legato,4,_) });
@@ -88,6 +93,7 @@ P(\triller,start:\Composition,music:{|p b e|
 P.tune(\alloy);
 P(\triller,start:\alloy,music:{|p b e| 
 	p.changeTrill.(6.5,2, p,b/0.8,e);
+	{ Env([0.1,0.1,0.0001],[1,9],\sin).kr(2) }.play(s,Song.trillBus)
 });
 ["Much stronger and harder than-- ","2 6 5 4 3 7 6 5 4".dm('c#',5)].addLine;
 P.tune(\harder);
@@ -144,11 +150,11 @@ P(\chords,start:\scale,music:{|p b e|
 		instrument:\pluckDVerb,
 		freq: [[1,3],[1,3], -7,1,1,1].df(\d,5,\mixolydian).q,
 		//dur:b.parse([1,3]).q
-		dur: "q qq x x x xq".asBeats.warpTo(e.tempoMap).q,
+		dur: "q qq x x x xq".asBeats.warpTo(e.tempoMap.quantizeRangeInPlace(1,0,7)).q,
 		amp:0.03
 	].pp
 });
-P.tune(\scale, { |i| Pmul(\freq,[1,2],i).fin(9)  } );
+P.tune(\scale, { |i| Pmul(\freq,[1,2],i).fin(9) => Pset(\dur, Song.tempoMap[\scale].quantizeRangeInPlace(1,0,7).durs.q ,_)  } );
 P(\triller,start:\scale,syl:8,music:{|p b e| 
 	p.changeTrill.(5.5,p,b,e,octave:4);
 	(
@@ -159,10 +165,22 @@ P(\triller,start:\scale,syl:8,music:{|p b e|
 		amp:0.2
 	).play
 });
-["MCCOY: The air seems fresh. It must be re-circulated somehow. ","4 3 2 5 ".dm(\c) ++ "4 5 6 7 6 5 4 2 4 3.5".dm(\c,5,\minor)].addLine;
-P(\triller,start:\circulated, music:{ |p b e|
+P(\triller,start:\scale,syl:8, music:{ |p b e|
 	p.changeTrill.(5.5,p,b,e,octave:4);
+	//Song.trillSynth[0].set( \amp,0.1 )
+	Song.trillBus.set(0.05)
+	/*
+	Song.trillBus.get
+	*/
 });
+P('click',start:\All,music: {|p b e|
+	[
+		instrument:\sn_808,
+		dur:1.dup(7).warpTo(e.tempoMap.quantizeRangeInPlace(1,0,7)).q
+	].pp
+});
+
+["MCCOY: The air seems fresh. It must be re-circulated somehow. ","4 3 2 5 ".dm(\c) ++ "4 5 6 7 6 5 4 2 4 3.5".dm(\c,5,\minor)].addLine;
 P(\chord,start:\circulated,music:{|p b e| 
 	[
 		freq:"16 15 14 13 12 11 5.5 4 5.5 11 12 14 16 21".df(\c,3).q,
@@ -175,6 +193,11 @@ P(\chord,start:\circulated,music:{|p b e|
 });
 P.tune(\circulated);
 ["KIRK: Is that for us, or does it need fresh air? ","1 2 3 5 4 5 6 4 3 1.5 ".dm(\g,4,\whole)].addLine;
+P('tril',start:\that,music: {|p b e|
+	//p.changeTrill.(5);
+	
+	Song.trillSynth.do(_.set(\higher,7.df))
+});
 P.tune('Is that for us');
 P(\pad,start:'fresh air',music:{|p b e| 
 	(
@@ -218,6 +241,10 @@ P(\crunch,start:\opens,music: { |p b e|
 });
 ["I am Sargon!","1 2 1 -7 -7".dm('b',5,\harmonicMinor)].addLine;
 P.tune(\Sargon);
+P('tril',start:\Sargon,music: { |p b e|
+	Song.changeTrill.(4.5);
+	{Env([0.1,0],3).kr(2,gate:1)}.play(s,p.trillBus)
+});
 P(\chords,start:\Sargon,music: { |p b e|
 	[
 		freq: [[1, 2, 1, -7, -7],[11, 12, 11, 7, 7], 3, 5].flop.df(\b,\harmonicMinor) *.t [0.5,1] => _.q,

@@ -150,11 +150,12 @@ P(\chords,start:\scale,music:{|p b e|
 		instrument:\pluckDVerb,
 		freq: [[1,3],[1,3], -7,1,1,1].df(\d,5,\mixolydian).q,
 		//dur:b.parse([1,3]).q
-		dur: "q qq x x x xq".asBeats.warpTo(e.tempoMap.quantizeRangeInPlace(1,0,7)).q,
+		dur: "q qq x x x xq".asBeats.warpTo(e.tempoMap.quantize(1,0,7)).q,
 		amp:0.03
 	].pp
 });
-P.tune(\scale, { |i| Pmul(\freq,[1,2],i).fin(9) => Pset(\dur, Song.tempoMap[\scale].quantizeRangeInPlace(1,0,7).durs.q ,_)  } );
+P.tune(\scale, { |i| Pmul(\freq,[1,2],i).fin(9) => Pset(\dur, Song.tempoMap[\scale].quantize(1,0,7).durs.q ,_)  } );
+
 P(\triller,start:\scale,syl:8,music:{|p b e| 
 	p.changeTrill.(5.5,p,b,e,octave:4);
 	(
@@ -163,24 +164,35 @@ P(\triller,start:\scale,syl:8,music:{|p b e|
 		freq:[1,3].df('a-',[4,5]),
 		dur:b.sum+e.bNext.sum,
 		amp:0.2
-	).play
-});
-P(\triller,start:\scale,syl:8, music:{ |p b e|
-	p.changeTrill.(5.5,p,b,e,octave:4);
-	//Song.trillSynth[0].set( \amp,0.1 )
+	).play;
 	Song.trillBus.set(0.05)
-	/*
-	Song.trillBus.get
-	*/
 });
 P('click',start:\All,music: {|p b e|
 	[
 		instrument:\sn_808,
-		dur:1.dup(7).warpTo(e.tempoMap.quantizeRangeInPlace(1,0,7)).q
-	].pp
+		dur:1.dup(7).warpTo(e.tempoMap.quantize(1,0,7)).q
+	].p//p
+	//=>  { |i| Ptpar( [ [1].warpTo(e.tempoMap.quantize(1,0,7)).unbubble, i ] ).play} 
 });
-
+P('cymbal',start:\All,music: {|p b e| 
+	var pat = "k k s ks ks kk s";
+	var dur = pat.split(Char.space).collect({|i| ( i.size == 1 ).if{ i.asSymbol }{i.asList.collect({|j|j.asSymbol})}}).deepCollect(2,{1}).subdivide;
+	[ 
+		inst: [1] ++ pat.replace(Char.space).asArray => _.q,
+		instrument: [\r, Pfunc({|e| ( e.inst == $k ).if{\bd_808}{\sn_808}})].q(2),
+		dur:  [2] ++ dur /2 => _.warpTo(e.tempoMap.quantize(1,0,7)) => _.q(2) ,
+	].p.play;
+	[
+		instrument:\cymbal,
+		amp:0.7,
+		dur: [1,1].warpTo(e.tempoMap.quantize(1,0,7)).q,
+		rests: [\r,1].q].pp
+});
 ["MCCOY: The air seems fresh. It must be re-circulated somehow. ","4 3 2 5 ".dm(\c) ++ "4 5 6 7 6 5 4 2 4 3.5".dm(\c,5,\minor)].addLine;
+P('trill',start:\MCCOY,music: {|p b e|
+	p.changeTrill(5.5,p,b,e);
+	p.trillBus.set(0.05)
+});
 P(\chord,start:\circulated,music:{|p b e| 
 	[
 		freq:"16 15 14 13 12 11 5.5 4 5.5 11 12 14 16 21".df(\c,3).q,

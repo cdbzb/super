@@ -66,24 +66,17 @@ TempoMap {
   quarters {
       ^this.mapBeats( 1.dup(beats.sum.floor) )
   }
-  quantize { |amount = 1|
-	  var quantized = durs.sum/beats.sum * beats * amount 
-		+ (durs * (1 - amount));
-	  ^TempoMap.new( beats.copy, quantized)
+  quantize { |amount = 1 start end|
+	  start.isNil.if {
+		  var quantized = durs.sum/beats.sum * beats * amount 
+		  + (durs * (1 - amount));
+		  ^TempoMap.new( beats.copy, quantized)
+	  }{
+		  end.isNil.if{ end = this.durs.size };
+		  ^this.quantizeRangeInPlace( amount, start, end )
+	  }
   }
-  quantizeRangeInPlaceOld { | amount start end|
-	  // 3 choices: 0->start-1 start->end-1 end->END , 0->end-1 end->END, 0, start->END
-	  var sections = 
-		  (start>1).if{(0..(start-1))} ++
-		  [ (start..end),  (end+1..128) ];
-	  var newStoredurs = durs[sections[0]].bubble.flat
-	  ++ this.quantizeRange(amount,[start,end])
-	  ++ durs[sections[2]]
-	  => _.select(_.notNil)
-	  ;
-		  Post << "sections: " << sections;
-	  ^TempoMap(beats.copy,newStoredurs)
-  }
+
   quantizeRangeInPlace { |amount start end|
 	  var quantized = this.quantizeRange(amount,[start,end]);
 	  var dursCopy = durs.copy;

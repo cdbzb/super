@@ -14,7 +14,7 @@
 
 	//Event.addEventType(\vsti,play,(parent:()));
 
-	Event.addEventType(\strum,{|server|
+	Event.addEventType(\strumOld,{|server|
 		~stru= [ 'down', 'muted', 'up', 'alt', 'one', 'two', 'muffleD', 'three', 'muffleU', 'four', 'mute', 'five', 'six' ];
 		~struShort=['d','m','u','a','1','2','f','3','fu','4','x','5','6'];
 		~strums= Dictionary.new;

@@ -2,18 +2,19 @@ Synful {
 	var <syn,<controller,<condition ;
 	var plugin;
 	var expr;
-	var <patches,<banks; 
+	classvar <patches,<banks; 
 	classvar defaultProgram = "/Users/michael/tank/super/SynfulTest.FXP";
 	*initClass{
-
-		\addingEvent.postln;
+		patches = ( flute:73, oboe:68, enghorn:69, clarinet:71, bassoon:70, horn:62, horn4:5, horn8:6, trumpet:56, trombone:57, violin:40, viola:41, cello:42, bass:43, violins:0, violins2:1, violas:2, cellos:3, basses:4);
+		banks = ( none:1, mute1:2, mute2:3, stopped:4, arco:1, pizz:2, bartok:3, legno:4, trem:5, sulpont:6, tremsulpont:7, harmonics:8, mute:9);
 		Event.addEventType(\synful,{
-			~channel.isNil.if{~channel=0};
+			~channel = ~channel ? 0;
 			~type=\vst_midi;
+			~out !? {~instance.controller.synth.set(\out,~out)};
 			~vst=~instance.controller;
-			~patch.notNil.if{ ~instance.patch(~patch,~bank,~channel)};
+			~patch !? { ~instance.patch(~patch,~bank,~channel)};
 			~chan=~channel;
-			~expression.notNil.if{~instance.expression(~expression,~channel,~expressionLag)};
+			~expression !? { ~instance.expression(~expression, ~channel, ~expressionLag) };
 			currentEnvironment.play
 		})
 	} 
@@ -21,18 +22,14 @@ Synful {
 	init {  
 		syn = Synth(\vsti2,target:RootNode(Server.default));
 		controller = VSTPluginController(syn);
-		//condition = Condition.new();
                 condition = CondVar.new();
 		plugin = 'SynfulOrchestra.vst';
 		expr = 0.5 ! 16;
-		patches = ( flute:73, oboe:68, enghorn:69, clarinet:71, bassoon:70, horn:62, horn4:5, horn8:6, trumpet:56, trombone:57, violin:40, viola:41, cello:42, bass:43, violins:0, violins2:1, violas:2, cellos:3, basses:4);
-		banks = ( none:1, mute1:2, mute2:3, stopped:4, arco:1, pizz:2, bartok:3, legno:4, trem:5, sulpont:6, tremsulpont:7, harmonics:8, mute:9);
-                  ~vstRegistry ?? {~vstRegistry=List.new}; //should be an object
+                  ~vstRegistry ?? { ~vstRegistry=List.new }; //should be an object
                   ~vstRegistry.add(controller);
                   {
                     Server.default.sync;
-                    controller.open("/Library/Audio/Plug-Ins/VST/"++plugin, verbose:false,
-                      action:{
+                    controller.open("/Library/Audio/Plug-Ins/VST/" ++ plugin, verbose:false, action:{
                         //condition.test_(true).signal;
                         condition.signalOne;
                         controller.readProgram(defaultProgram); 

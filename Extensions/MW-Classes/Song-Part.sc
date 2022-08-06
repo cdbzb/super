@@ -5,12 +5,12 @@ Song {
 	classvar <> dursFolder="/Users/michael/tank/super/Dur";
 	classvar < songs;
 	classvar <> current;
-	classvar lyricWindow;
 	classvar <>loading;
 	classvar <>songList;
+	var <lyricWindow,lyricWindowText;
 	var <song, <key, <cursor=0, <sections, <lyrics, <tune; 
 	var <durs,  <>resources, <>lyricsToDurs;
-    var <>next;
+	var <>next;
 	var <>quarters, <>tempoMap;
 	var <>clock;
 	var playInitiatedAt,<>preroll=0;
@@ -23,8 +23,8 @@ Song {
 	}
 	
 	*new { 
-		|key array dursInFile|
-		^super.new.init(key, array,dursInFile);
+		|key array dursInFile resources|
+		^super.new.init(key, array,dursInFile, resources);
 	}
 
 	//depends on this function currently in Library/Functions/trek.scd
@@ -201,21 +201,26 @@ Song {
 		}
 	}
 
-	*showLyricWindow {
-		lyricWindow=Window(bounds:Rect(-500,000,600,600)).alwaysOnTop_(true).front;
-		//a=StaticText.new(w,Rect(120,10,600,300)).string_(~im2.lyrics).font_(Font("Helvetica",20)).align_(\left);
-		songs.at(current).lyrics.size.do{|i|
-			StaticText.new(lyricWindow,Rect(120,25*i,600,300))
-			.string_(songs.at(current).lyrics[i])
-			.font_(Font("Helvetica",20));
-
-			StaticText.new(lyricWindow,Rect(100,25*i,600,300))
-			.string_(i.asString)
-		};
-		//{w.close}.defer(5)
+	showLyricWindow {
+		lyricWindow = Window.new(bounds:Rect(0,00,1040,200))
+			.background_(Color.clear)
+		;
+		lyricWindowText = StaticText.new(lyricWindow,  bounds: Rect(0,0,1040,300))
+			.align_(\center)
+			.font_(Font(\helvetica,40,bold:true))
+		;
+		Song.currentSong.sections.do{ |i| 
+			P(\lyric, start:i, music:{ |p b e|
+				lyricWindow.front;
+				{
+					lyricWindowText.string_(Song.lyrics[i])
+					.stringColor_(Color.rand)
+				}.defer
+			})
+		}
 	}
 
-	*closeLyricWindow{
+	closeLyricWindow{
 		lyricWindow.close
 	}
 
@@ -237,7 +242,8 @@ Song {
 		}
 	}
 
-	init {|symbol array dursInFile|
+	init {|symbol array dursInFile r|
+		resources = r;
 		key=symbol;
 		songs.at(symbol.asSymbol).notNil.if {cursor=lastSectionPlayed};
 		songs.put(symbol.asSymbol,this);

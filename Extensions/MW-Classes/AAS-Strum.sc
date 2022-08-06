@@ -1,34 +1,33 @@
 AAS_Strum { // piano	TODO put it on a node
-	var <syn,<controller,<condition ;
+	var <syn,<>controller,<condition ;
 	var plugin;
-	var expr;
 	var <patches,<banks; 
-	classvar foo;
+	classvar strums,stru,struShort;
 
 
 	*initClass{
+		stru= [ 'down', 'muted', 'up', 'alt', 'one', 'two', 'muffleD', 'three', 'muffleU', 'four', 'mute', 'five', 'six' ];
+		struShort=['d','m','u','a','1','2','f','3','fu','4','x','5','6'];
+		strums = Dictionary.new;
+		stru.do{|i x| strums.add(i->(x+72))};
+		struShort.do{|i x| strums.add(i->(x+72))};
 		Class.initClassTree(Event);
-Event.addEventType(\strum,{
-	~stru= [ 'down', 'muted', 'up', 'alt', 'one', 'two', 'muffleD', 'three', 'muffleU', 'four', 'mute', 'five', 'six' ];
-	~struShort=['d','m','u','a','1','2','f','3','fu','4','x','5','6'];
-	~strums= Dictionary.new;
-	~stru.do{|i x| ~strums.add(i->(x+72))};
-	~struShort.do{|i x| ~strums.add(i->(x+72))};
-	//~short.do{|i x| ~strums.add(i->(x+72))};
-	~midinote=~strums[~switch];
-	~type=\vst_midi;
+		Event.addEventType(\strum,{
+			~out !? {~instance.controller.synth.set(\out,~out)};
 			~channel.isNil.if{~channel=0};
+			~type=\vst_midi;
+			~switch !? {~midinote= strums[~switch]};
 			~vst=~instance.controller;
 			~chan=~channel;
-	currentEnvironment.play
-})
+			currentEnvironment.play
+		})
 			}
 
 	*new {^super.new.init()}
+	*dump { stru.cs.postln;struShort.cs.postln }
 	init {  
 		syn = Synth(\vsti2,target:RootNode(Server.default));
 		controller = VSTPluginController(syn);
-		//condition = Condition.new();
 		condition = CondVar.new();
 		plugin = 'Strum GS-2.vst';
 
@@ -46,6 +45,47 @@ Event.addEventType(\strum,{
 				}
 			);
 		}.fork;
+
+		CmdPeriod.add( {
+
+			
+			fork{
+				0.1.wait;
+				syn = Synth(\vsti2,target:RootNode(Server.default));
+				controller = VSTPluginController(syn);
+				Server.default.sync;
+				controller.open("/Library/Audio/Plug-Ins/VST/"++plugin,
+					action:{
+						//condition.test_(true).signal;
+						condition.signalOne;
+						//controller.readProgram(defaultProgram); 
+					}
+				);
+			}
+			
+		} )
+	}
+	setPlayMode { | mode |
+		case
+		{ mode == \strum } {
+			(
+				type:\vst_set,
+				vst:controller,
+				params:['Play Mode: Play Mode'],
+				'Play Mode: Play Mode':0.6
+			).play
+		}{ mode == \pick }{
+			(
+				type:\vst_set,
+				vst:controller,
+				params:['Play Mode: Play Mode'],
+				'Play Mode: Play Mode':0.0
+			).play
+		}
+
+	}
+	setOut{|out|
+		controller.synth.set(\out,out)
 	}
 	////////////////
 	/*

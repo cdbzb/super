@@ -40,7 +40,7 @@ Pdefn(\lower,7.df.bubble.q(inf)); ///NOW WHAT?
 Song.triller = { 
 	VarSaw.ar( LFPulse.ar(
 		LFBrownNoise1.kr(1).range(5.5,7)
-	).range(\lower.kr(7.df,Rand(1,3)),\higher.kr(11.df,6)
+	).range(\lower.kr(7.df,\portamentoRate.kr(1)),\higher.kr(11.df,6)
 	),0,0.5.rand, 0.05 )
 	=> Pan2.ar(_,Rand(-1,1.0))
 	=> LPF.ar(_,4000)
@@ -77,8 +77,8 @@ P.tune(\surface);
 P(\bass,start:\surface,music:{|p b e| 
 	[
 		freq: 
-		\r.bubble ++ [1,-7].df('a-',3,\mixolydian) => _.flat => _.q,
-		dur: b.parse([4,4,5]).q,
+		\r.bubble ++ [1,-7,3].df('a-',3,\mixolydian) => _.flat => _.q,
+		dur: b.parse([4,4,3,5]).q,
 		instrument:\sawSynthSustain,
 		att:2,
 		amp:0.07
@@ -86,25 +86,85 @@ P(\bass,start:\surface,music:{|p b e|
 });
 ["KIRK:(boom) Composition of walls? ","-4 4 5 4 3 4 7".dm(\c)].addLine;
 P.tune(\Composition,Pdrop(1,_),syl:0);
+P('wall',start:'KIRK:(boom)',syl:5,music: {|p b e|
+	{
+		[3,3,5,7].df(\g,\mixolydian)
+		=> Saw.ar(_,0.1)
+		=>MoogFF.ar(_, 
+			freq: Env.triangle(b[0] + 6, 9000).kr(0,gate:1) +100 ,
+			rq:3.0
+		)
+	}.play
+});
 P(\triller,start:\Composition,music:{|p b e| 
 	p.changeTrill.(6);
 });
 ["SPOCK: They're an alloy or substance completely unknown to me.","5 6 11 6 5 11.5 6 4 12 11.5 12 12 13 11.5 6".dm('e-',4)].addLine;
 P.tune(\alloy);
+P('lick',start:\alloy,music: {|p b e|
+	MegaBind(
+		[
+			[ 5, 6,  11, \_, \r, 11.5, \_, \_, 6, \_, \_, \r, 5 ],
+			[-5, -6, 1,  -6, -5, -4,   \_, \_, -3, \_]
+		].df('e-')
+		,
+		b,
+		[
+			amp:[0.7, { Env.linen(0,b.parse([5]),b[6..10].sum +3).kr(0,gate:1) }]
+		],
+		{|i| 
+			Saw.ar(i.freqSeq * [1, LFBrownNoise1.kr([ 1,1.01 ]).range(0.99,1.005)] ,0.1)
+			* Env.asr(0,1,8).kr(2,gate:i.gateSeq)
+			/8
+			* i.amp
+		},
+		{|i|  Mix.ar(i)
+		=> DWGReverbC1C3.ar(_, len:3000, c1:1, c3:10, mix:1, coefs:nil, perm:nil, doprime:0)
+	}
+	).play
+});
 P(\triller,start:\alloy,music:{|p b e| 
 	p.changeTrill.(6.5,2, p,b/0.8,e);
 	{ Env([0.1,0.1,0.0001],[1,9],\sin).kr(2) }.play(s,Song.trillBus)
 });
 ["Much stronger and harder than-- ","2 6 5 4 3 7 6 5 4".dm('c#',5)].addLine;
 P.tune(\harder);
+P('guitar',start:\Much, music: {|p b e|
+	MegaBind(
+		[
+			[5,5,5,5,5],
+			[1,-5,1,-5,1]
+		].df('c#')
+		,
+		b.parse([1,2,2,2,2]),
+		[],
+		{|i|  
+			//SinOsc.ar(i.freqSeq,0,0.1)
+			Gendy2.ar([ 3,2,1 ], [ 4,5,6 ], 1.0, 1.0, i.freqSeq *0.98, i.freqSeq * 1.02, ampscale:0.9, durscale:0.9, initCPs:[ 12,2 ], knum:[2,12])
+			/2 + Gendy1.ar([ 3,2,1 ], [ 4,5,6 ], 1.0, 1.0, i.freqSeq *0.98, i.freqSeq * 1.02, ampscale:0.9, durscale:0.9, initCPs:[ 12,2 ], knum:[2,12])
+			=> HPF.ar(_,150)
+			* Env.asr(0,b.sum,2).kr(2,gate:i.gateSeq) /50
+	},
+		{|i|  Mix.ar(i) 
+		/3 
+
+		=> Out.ar(2,_) 
+		
+	}
+	).play
+});
+
+
 P(\bass,start:\harder,music:{|p b e| 
 	[
-		freq: "2 5 1 5".df('c#',[3,4]).q,
-		dur: b.parse([1,2,2,4]).q
+		freq: "2 5 1 5".df('c#',[3]).q,
+		dur: b.parse([1,2,2,4]).q,
+		instrument: \sawSynthSustain
 	].pp
 
 });
 ["anything I've measured before. ","3 2 1 -7 -6 -5 -4 1 2 ".dm('b-',5,\mixolydian)].addLine;
+Song.durs[\measured] =  Song.durs[\measured].list.dropLast ++ (Song.durs[\measured].list.last  * 0.66 ) => _.q;
 P.tune(\measured);
 Song.setTempoMap(\measured, 
 	"e e ee|q e | e x x x xeq".asBeats
@@ -145,6 +205,20 @@ P(\bass,start:\measured,music:{|p b e|
 });
 ["MULHALL: All readings are off the scale, Captain. (ooh) "," 6 5 4 3 2 1 7 6 5 4.5".dm(\d,5,\mixolydian)].addLine;
 Song.setTempoMap(\scale,"q Q Q Qq Q E q e e q".asBeats);
+P('bass',start:\All,music: {|p b e|
+	[
+		instrument: \pulse_gentle,
+		pw:Pwhite(0.1,0.4,inf),
+		pitch:1.df(\d,octave:2),
+		envAmount:2,
+		filterfreq:Pwhite(400,1200,inf),
+		dec:1,
+		dur:0.25! 26 => _.warpTo(e.tempoMap.quantize(1,0,7)) => _.q(2) => _.fin(28),
+		rest: \r!4 ++ (1!32) => _.flat => _.q,
+		amp:0.15
+		//vol:0.08
+	].p.play
+});
 P(\chords,start:\scale,music:{|p b e| 
 	[
 		instrument:\pluckDVerb,
@@ -175,11 +249,19 @@ P('click',start:\All,music: {|p b e|
 	//=>  { |i| Ptpar( [ [1].warpTo(e.tempoMap.quantize(1,0,7)).unbubble, i ] ).play} 
 });
 P('cymbal',start:\All,music: {|p b e| 
-	var pat = "k k s ks ks kk s";
-	var dur = pat.split(Char.space).collect({|i| ( i.size == 1 ).if{ i.asSymbol }{i.asList.collect({|j|j.asSymbol})}}).deepCollect(2,{1}).subdivide;
+	var dur,pat = "k k s ks ks kk s k k k s " ; 
+	dur = pat.split(Char.space).collect{  // function to make "words" into subarrays
+		|i| 
+		( i.size == 1 ).if{
+			i.asSymbol 
+		}{
+			i.asList.collect({|j|j.asSymbol})
+		}
+	}.deepCollect(2,{1}).subdivide;
 	[ 
 		inst: [1] ++ pat.replace(Char.space).asArray => _.q,
-		instrument: [\r, Pfunc({|e| ( e.inst == $k ).if{\bd_808}{\sn_808}})].q(2),
+		instrument: [\r, Pfunc({|e| ( e.inst == $k ).if{\kick_gentle}{\sn_808}})].q(2),
+		vol:0.1,
 		dur:  [2] ++ dur /2 => _.warpTo(e.tempoMap.quantize(1,0,7)) => _.q(2) ,
 	].p.play;
 	[
@@ -194,13 +276,22 @@ P('trill',start:\MCCOY,music: {|p b e|
 	p.trillBus.set(0.05)
 });
 P(\chord,start:\circulated,music:{|p b e| 
-	[
+	var a = [
 		freq:"16 15 14 13 12 11 5.5 4 5.5 11 12 14 16 21".df(\c,3).q,
-		dur:b.q
+		dur:b.q,
+		out:3
+	].p;
+	a <> [instrument:\sparkTriangle,amp:0.06].p => _.play;
+	a <> [instrument:\wash,amp:0.02,out:1].p => _.play;
+	[
+		freq:"16 15 14 13 ".df(\c,3).q,
+		dur:b.q,
+		out:2
 	].pp;
 	[
 		freq:"1 1 1 1".df(\c,4).q,
-		dur:b.q
+		dur:b.q,
+		out:2
 	].pp;
 });
 P.tune(\circulated);

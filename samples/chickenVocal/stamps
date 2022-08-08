@@ -1,0 +1,18 @@
+var o, p;
+o = [
+	Event.prNew,  Array.prNew(4),  List.prNew,  Array.prNew(8)
+];
+p = [
+	// Event
+	0, [ array: o[1],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	1, [ nil,  nil,  'foo',  o[2] ],  
+	// List
+	2, [ array: o[3] ],  
+	// Array
+	3, [ 0.375,  0.404,  0.406,  1.278,  
+		0.225,  0.206,  0.395,  0.47 ]
+];
+prUnarchive(o,p);

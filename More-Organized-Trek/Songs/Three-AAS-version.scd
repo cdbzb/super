@@ -1,31 +1,36 @@
 (
 //Song.dursFile_("/Users/michael/tank/super/theExtreme_Sep18");
-var guitar,guitar2;
+var guitar,guitar2,piano;
 
 //re-connect if vst exists
 try{ ( Song.currentSong == \three ).not.if{ 
 	guitar = Song.guitar;
 	guitar2 = Song.guitar2;
+	piano = Song.piano;
 } };
 
-Song( \three, []).current;
-
-//Song.piano.isNil.if({Song.piano=~vsti.('Pianoteq 5')},{Song.piano.synth.isPlaying.not.if({Song.piano=~vsti.('Pianoteq 5')})});
+Song( \three, [] ).current;
 
 Song.resources.condition=Condition.new;
 
 // initialize if none
 guitar.isNil.if{Song.guitar=AAS_Strum()}{Song.guitar=guitar}; 
 guitar2.isNil.if{Song.guitar2=AAS_Strum()}{Song.guitar2=guitar2};
+piano.isNil.if{Song.piano = PF()};
+
+Song.resources.vstis = [Song.guitar, Song.guitar2, Song.piano];
 
 Song.resources.infrastructure=FunctionList.new([
 	{
 		 fork {
 			Song.guitar.condition.wait{Song.guitar.controller.loaded};
 			Song.guitar2.condition.wait{Song.guitar2.controller.loaded};
+			Song.piano.condition.wait{Song.piano.controller.loaded};
 			Song.resources.condition.test_(true).signal;
 
 			Song.guitar.setPlayMode(\strum);
+			Song.allNotesOff;
+			0.05.wait;
 	}
 
 	}
@@ -40,27 +45,29 @@ Song.resources.infrastructure=FunctionList.new([
 ~bass0quarters=Song.parse(0,[ [1,1],[1,1,1],1 ]);
 //Song.preroll_(0.3);
 
+Song.guitarFx={ |b|
+	Effect( { |i|  
+		PlateReverb.ar(i,mix:0.5,decayTime:0.5)  
+		=> Phaser2.ar(_,rate:0.1).distort(0.95) *0.3 
+		* Env.linen(0,b.sum,3).kr(2,gate:1)
+	},inputChannels:2 ).bus.index
+};
 P(\guit0,start:\minds,music: { |p b e|
-	Song.guitarFx={Effect( { |i|  PlateReverb.ar(i,mix:0.5)  => Phaser2.ar(_,rate:0.1).distort(0.95) *0.3 },inputChannels:2 ).bus.index};
 		[
-			type:\strum,
-			instance:Song.guitar,
 			legato:0.95,
 			midinote: [ [2,4],1,-5 ].dm().q,
 			dur: ~bass0quarters + [0,0,3] => _.q ,
 		].p 
 		+=
 		[
-			type:\strum,
-			instance:Song.guitar,
-			switch:Pseq([\down,\down,\up],2)++Pseq([\down]),
+			switch:[\down,\down,\up].q(2) ++ [\down].q,
 			dur:Pseq( 
 				~bass0quarters[0]*[2,1,1]/4 ++ (~bass0quarters[1]*[1.9,1,1.1]/4)//moved with bass
 				,3 
 			),
 			amp:Pseq([4,3,3]/10,3),
 		].p 
-		<> (out: p.guitarFx)
+		<> (out: p.guitarFx.(b), type:\strum, instance:p.guitar)
 		 => _.play
 });
 
@@ -86,44 +93,29 @@ P(\bass0,start:0,music: {
 ["now inhabit the bodies of", "d5 c b4 a g f g a"].addLine;  //1
 P(\guit1,start:1,music: { |p b e|
 	Song.guitar.setPlayMode(\strum);
-	Song.guitarFx={Effect( { |i|  PlateReverb.ar(i,mix:0.5)  => Phaser2.ar(_,rate:0.1).distort(0.95) *0.3 },inputChannels:2 ).bus.index};
 	[
-		type:\strum,
-		instance:Song.guitar,
-		degree:Pseq([5,[4,6,8],[3,5,8],[2,4],[2.1,4.1,6,8],[3,6,7],[3,5,7]]-1),
-		octave:4,
-		dur:Pseq(
-			Song.parse(1,[5,2,1])
-			++
-			Song.parse(2,[3,5,1,1])
-		),
-		legato:0.96,
+		degree: [5,[4,6,8],[3,5,8],[2,4],[2.1,4.1,6,8],[3,6,7],[3,5,7]].q - 1,
+		octave: 4,
+		dur: p.parse(1,[5,2,1]).q
+		++ p.parse(2,[3,5,1,1]).q,
+		legato: 0.96,
 	].p
 	+=
 	[
-
-		type:\strum,instance:Song.guitar,
-		dur:
-			Song.parse(1,[1,1,[1,1],1,[1,1],1])
-			++ 
-			Song.parse(2,[1,1,1,[1,1,1,1,1],1,1])
-			=> _.q
+		dur: p.parse(1,[1,1,2,1,2,1])
+		++ p.parse(2,[1,1,1,5,1,1])
+		=> _.q,
+		switch: [\down,\up,\down].q(2)
+		++ [\up,\four,\three,\down].q
+		++ [\down,\five].q
 		,
-		switch:Pseq([\down,\up,\down],2)
-		++
-		Pseq([\up,\four,\three,\down])
-		++
-		Pseq([\down,\five])
-		,
-		amp:Pseq([0.2,0.01,0.2],2)
-		++
-		Pseq([0.2,0.1,0.1,0.2],1)
-		++
-		Pseq([0.2,0.1])
+		amp:[0.2,0.01,0.2].q(2)
+		++ [0.2,0.1,0.1,0.2].q
+		++ [0.2,0.1].q
 	].p 
-	<> (\out:p.guitarFx) => _.play
-}
-);
+	<> (\out:p.guitarFx.(b ++ [5]), type:\strum, instance:p.guitar) 
+	=> _.play
+});
 P(\connectorBass,start:1,music: //		{{{
 	{
 		[
@@ -137,26 +129,24 @@ P(\connectorBass,start:1,music: //		{{{
 P(\strum,start:\inhabit,music: { 
 });
 ["Captain Kirk,science officer Spock and", "b c5 f4 c5 d c b4 a a g"].addLine;  //2
-P(\chords1,start:2,syl:2,music: //		{{{
-	{
+P(\chords,start:2,syl:2,music:{|p b e|
+	
+		Song.piano.controller.synth.set(\out,
+			Effect(SineShaper.ar(_, limit:0.03, mul:3.0, add:0)).bus.index
+	);
+	
 		[
-		type:\strum,
+		type:\vst_midi,
 		note:Pseq([6,[4,-1],5]),
-		dur: Pseq( Song.parse(2,[[1,1,1,1,1],[1,1]],3)++2),
-		vst: Song.piano ,
-
-		octave:4
-	].pp }
+		dur: Pseq(p.parse(2,[[1,1,1,1,1],[1,1]],3)++2),
+		vst:p.piano.controller ,
+		amp:0.2,
+		octave:4,
+		legato:1,
+	].pp 
+}
 );
 ["Doctor Jane Mulhall. As -- ","b c5 d d c c f"].addLine; //3
-P(\guitarSetup,start:3,syl:3,music: //		{{{
-	{ 
-		Song.guitar.node.fadeTime_(0.5);//make this right
-		Song.guitar.node.play(vol:1);
-		Song.guitar.node[1]=\filter->{|in|SmoothClipQ.ar(in*6,lo:-0.1,hi:0.1,foldRange:0.5)*0.6};
-	};
-
-);
 P(\playMode,start:3,syl:4,music:  //////////////FFFFFFFIIIIIIIIXXXXXXXX
 	{
 		(
@@ -177,7 +167,11 @@ P(\slide,start:3,syl:4,music: { |p b e|
 		//dur:[b[0..1].sum]++((b[2]/7)!4)++2=>_.flat=>_.q,
 		legato:Pseq([1.5,1.5,1.5,1.5,0.9,2]),
 		instance:Song.guitar,
-		out:Effect( { |i| SmoothClipQ.ar(i*6,lo:-0.1,hi:0.1,foldRange:0.5)} ).bus.index
+		out:Effect( { |i| 
+			var env = Env.linen(0.5,b.drop(1).sum+3,1).kr(2,gate:1);
+			SmoothClipQ.ar(i*(env*5+1),lo:-1+( env*0.9 ),hi:1-( env*0.9 )) 
+			*0.6
+	} ).bus.index
 	].pp;
 }) ;  
 P(\guitar24,start:3,syl:4,
@@ -199,8 +193,7 @@ P(\guitar24,start:3,syl:4,
 );
 ["Planned the con- struc- tion of an- droid","f5 c d c a4 c5 g f"].addLine; //4
 ~quarters4=Song.parse(4,[1,2,3,2]);
-P(\bass4,start:4,music:
-	{
+P(\bass4,start:4,music: {|p b e|
 		[
 			dur:Pseq( 
 				[
@@ -213,7 +206,7 @@ P(\bass4,start:4,music:
 			amp:0.5,
 			degree:Pseq([4,3,2,2,5-7,5-7,5-7]-1),
 			octave:3
-		].p
+		].pp
 	}
 );
 P(\guit4,start:4,music: //		{{{
@@ -231,49 +224,48 @@ P(\guit4,start:4,music: //		{{{
 			type:\strum, switch:Pseq([Rest(),\down,\up])++Pseq([\down,\down,[Rest(),\up].choose],3),
 			instance:Song.guitar2,
 			dur:[2,1,1]/2 => _.q(4) * ~quarters4.sum/4,
+			amp:0.05
 		].p;
 
 			Song.guitar2.setPlayMode(\strum);
-		//Song.guitar2.node.play(vol:0.5);
 		Ppar([roots,strums]).play;
 	}
 
 );
 ["ro- bots is un- der- way","e5 d c d  e g4"].addLine; //5
-P(\guitar2Patches5,start:5,lag:-1,music: //		{{{
-	{
-		{
-			Song.guitar2.node[1]=\filter->{|in| in*2*0.5};
-			Song.guitar2.node[1]=\filter->{|in|SmoothClipQ.ar(in*8,lo:-0.1,hi:0.1,foldRange:0.5)*0.5};
-		}.value
-	}
-);
 ["All is pro- cee- ding as ex- pect- ed and as pro- mised (ba- by)","f g a c5 d b-4 c5 d e- b-4 d5 e- d b-4 c5 d"].addLine; //6
 ~quarters6= Song.parse(6,1!4!4);
 q=0.9; ~gr=0.2; 
-P(\guitar2h5,start:6,music: //		{{{
-	{ [
+P(\guitar2h5,start:6,music: {|p b e|
+	p.guitar2.setPlayMode(\pick);
+	//p.guitar2.controller.synth.set(\out,Effect( { |i| 
+	//	SmoothClipQ.ar(i*8,lo:-0.1,hi:0.1) 
+	//	*0.5
+	//}).bus.index));
+	[
 		degree:Pseq([1,2,3,5,4]-1),
 		//dur:Pseq(1!4++[4]/2),
 		dur: Pseq(Song.durs[6].list[0..3]++Song.durs[6].list[4..7].sum),
 		legato:0.96,
 		root:5,
 		octave:3,
-		type:\strum,instance:Song.guitar2,
-		//'Play Mode: Play Mode':0
-	].pp; }
-); 
-P(\guitar2h6II,start:6,syl:7,lag:0.10,music:
-	{ [ 
-		degree:Pseq([6.1,4]-1),
+		type:\strum,instance:p.guitar2,
+	 
+	].pp; 
+}); 
+P(\guitar2h6II,start:6,syl:7,music: {|p b e|
+	[ 
+		degree:Pseq([[4, 6.1, 2 ],4]-1),
 		dur: Pseq(~quarters6[2..3]) ,
 		legato:0.96,
 		root:5,
 		octave:3,
 		type:\strum,instance:Song.guitar2,
+
 	].pp; }
 ); 
-P(\guitar2h5Strum,start:6,syl:5,music:{
+P(\guitar2h5Strum,start:6,syl:5,music:{|p b e|
+	p.guitar2.setPlayMode(\strum);
 	[ //		{{{
 		//var b2s=[
 		type:\strum,
@@ -282,11 +274,6 @@ P(\guitar2h5Strum,start:6,syl:5,music:{
 		//dur:Pseq([1,1,2]/2,3),
 		dur:Pseq(Song.durs[6].list[6..7]++Song.durs[6].list[8..9].sum,3),
 	].pp;
-	( type:\vst_set,
-		instance:Song.guitar2,
-		params:['Play Mode: Play Mode'],
-		'Play Mode: Play Mode':0.6
-	).play;
 
 }); 
 P(\guit6,start:6,music: {
@@ -305,7 +292,7 @@ P(\guit6,start:6,music: {
 );
 P(\bass6,start:6,music:
 	{
-		[ 
+		[
 			degree:Pseq([Rest(),1,4,1,2]-1),
 			root:10,
 			octave:2,

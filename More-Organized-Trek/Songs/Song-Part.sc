@@ -864,8 +864,7 @@ Song {
 		^sections.collect(this.secDur[_]).sum
 	}
 	allNotesOff {
-		resources.vstis.postln;
-		resources.vstis !? _.do{|i| 
+		resources.vsits !? _.do{|i| 
 			(type:\vst_midi, vst:i.controller, midicmd:\allNotesOff).play
 		}
 	}
@@ -884,7 +883,6 @@ Part {
 	}
 	//play immediately
 	play {
-		//Song.allNotesOff;
 		switch (music.class,
 			Function,{Server.default.bind{
 				music.value(

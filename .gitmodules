@@ -13,3 +13,6 @@
 [submodule "downloaded-quarks/FPLib"]
 	path = downloaded-quarks/FPLib
 	url = https://github.com/miguel-negrao/FPLib
+[submodule "waveforms"]
+	path = waveforms
+	url = https://github.com/cdbzb/waveforms.git

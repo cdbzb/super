@@ -1,8 +1,6 @@
 includePaths:
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Automation
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/JITLibExtensions
-    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Vowel
-    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/panola
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Freesound
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/FreeAfter
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/wslib
@@ -41,6 +39,11 @@ includePaths:
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/faust
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/fxpatterns
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/komet
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Vowel
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/panola
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/miSCellaneous_lib
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/AlgaLib
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/MP3
 excludePaths:
     []
 postInlineWarnings: false

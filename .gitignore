@@ -5,3 +5,6 @@
 *.rpp-bak
 *.RPP-bak
 *.stversions*
+
+
+.undodir

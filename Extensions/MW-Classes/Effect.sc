@@ -101,8 +101,11 @@ event.yield
 		}	
 		
 		doesNotUnderstand { |selector ...args|
-			Message(synth,selector,args).value;
-			Message(node,selector,args).value;
+			[synth, node].do{ |receiver|
+				receiver.respondsTo{selector}.if{
+					Message(receiver,selector).value(*args);
+				}
+			}
 		}
 	}
 

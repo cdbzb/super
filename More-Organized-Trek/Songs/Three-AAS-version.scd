@@ -46,13 +46,19 @@ Song.resources.infrastructure=FunctionList.new([
 //Song.preroll_(0.3);
 
 Song.guitarFx={ |b|
-	Effect( { |i|  
+	var e = Effect( { |i|  
 		PlateReverb.ar(i,mix:0.5,decayTime:0.5)  
 		=> Phaser2.ar(_,rate:0.1).distort(0.95) *0.3 
 		* Env.linen(0,b.sum,3).kr(2,gate:1)
-	},inputChannels:2 ).bus.index
+	},inputChannels:2 );
+	e.synth.run(false);
+	e
 };
+
+Song.guitarFx0= Song.guitarFx.(Song.durs[0].list.sum + 5);
+
 P(\guit0,start:\minds,music: { |p b e|
+	var out = Song.guitarFx0.synth.run(true);
 		[
 			legato:0.95,
 			midinote: [ [2,4],1,-5 ].dm().q,
@@ -67,7 +73,7 @@ P(\guit0,start:\minds,music: { |p b e|
 			),
 			amp:Pseq([4,3,3]/10,3),
 		].p 
-		<> (out: p.guitarFx.(b), type:\strum, instance:p.guitar)
+		<> (out: p.guitarFx.(b).bus.index, type:\strum, instance:p.guitar)
 		 => _.play
 });
 
@@ -91,7 +97,10 @@ P(\bass0,start:0,music: {
 }
 ); 
 ["now inhabit the bodies of", "d5 c b4 a g f g a"].addLine;  //1
+//Song.gfx1.synth.run(false);
 P(\guit1,start:1,music: { |p b e|
+	var out = Song.guitarFx.(Song.durs[1].list.sum+5);
+	out.synth.run(true);
 	Song.guitar.setPlayMode(\strum);
 	[
 		degree: [5,[4,6,8],[3,5,8],[2,4],[2.1,4.1,6,8],[3,6,7],[3,5,7]].q - 1,
@@ -102,8 +111,8 @@ P(\guit1,start:1,music: { |p b e|
 	].p
 	+=
 	[
-		dur: p.parse(1,[1,1,2,1,2,1])
-		++ p.parse(2,[1,1,1,5,1,1])
+		dur: p.parse(1, [1,1,2,1,2,1])
+		++ p.parse(2, [1,1,1,5,1,1])
 		=> _.q,
 		switch: [\down,\up,\down].q(2)
 		++ [\up,\four,\three,\down].q
@@ -113,7 +122,10 @@ P(\guit1,start:1,music: { |p b e|
 		++ [0.2,0.1,0.1,0.2].q
 		++ [0.2,0.1].q
 	].p 
-	<> (\out:p.guitarFx.(b ++ [5]), type:\strum, instance:p.guitar) 
+	<> (\out:
+		out.bus.index
+		//p.guitarFx.(b ++ [5])
+		, type:\strum, instance:p.guitar) 
 	=> _.play
 });
 P(\connectorBass,start:1,music: //		{{{
@@ -126,19 +138,19 @@ P(\connectorBass,start:1,music: //		{{{
 		].pp
 	}
 ); 
-P(\strum,start:\inhabit,music: { 
-});
 ["Captain Kirk,science officer Spock and", "b c5 f4 c5 d c b4 a a g"].addLine;  //2
 P(\chords,start:2,syl:2,music:{|p b e|
 	
 		Song.piano.controller.synth.set(\out,
-			Effect(SineShaper.ar(_, limit:0.03, mul:3.0, add:0)).bus.index
+			Effect(SineShaper.ar(_, limit:0.03, mul:3.0, add:0) * [0.8,0.2], inputChannels:2).bus.index
 	);
 	
 		[
 		type:\vst_midi,
-		note:Pseq([6,[4,-1],5]),
-		dur: Pseq(p.parse(2,[[1,1,1,1,1],[1,1]],3)++2),
+		//note:[6,[4,-1],5].q,
+		freq: [4.5, [-7, 3], [4], [3,5]].df(octave:4).q,
+		legato: [1, [2, 1],  1,      1 ].q,
+		dur: p.parse(2,[[1,1,1,1,1],[1,1]],3)++[ e.bNext.parse([3]), 2 ] => _.flat => _.q,
 		vst:p.piano.controller ,
 		amp:0.2,
 		octave:4,
@@ -237,21 +249,35 @@ P(\guit4,start:4,music: //		{{{
 ~quarters6= Song.parse(6,1!4!4);
 q=0.9; ~gr=0.2; 
 P(\guitar2h5,start:6,music: {|p b e|
+	var out;
 	p.guitar2.setPlayMode(\pick);
-	//p.guitar2.controller.synth.set(\out,Effect( { |i| 
-	//	SmoothClipQ.ar(i*8,lo:-0.1,hi:0.1) 
-	//	*0.5
-	//}).bus.index));
+	p.guitar2.controller.synth.set(\out,
+		out = Effect( { |i| 
+		SmoothClipQ.ar(i*8,lo:-0.1,hi:0.1) 
+		*0.5
+	}).bus.index);
 	[
 		degree:Pseq([1,2,3,5,4]-1),
 		//dur:Pseq(1!4++[4]/2),
 		dur: Pseq(Song.durs[6].list[0..3]++Song.durs[6].list[4..7].sum),
-		legato:0.96,
+		legato:0.95,
 		root:5,
 		octave:3,
 		type:\strum,instance:p.guitar2,
 	 
-	].pp; 
+	].p += 
+
+		[ 
+			degree:Pseq([1,2,3,5,5.1,6]-1),
+			//dur:Pseq([1,1,1, (1-~gr),~gr,4 ]/2*0.98),
+			dur:Pseq(Song.durs[6].list[0..2]++[Song.durs[6].list[3]-~gr,~gr,3.5]),
+			legato:Pseq([q,q,q,1.4,1.4,1]),
+			root:5,
+			octave:3,
+			type:\strum,
+			instance:Song.guitar2,
+		].p
+	<> (out:out) =>_.play; 
 }); 
 P(\guitar2h6II,start:6,syl:7,music: {|p b e|
 	[ 
@@ -277,17 +303,6 @@ P(\guitar2h5Strum,start:6,syl:5,music:{|p b e|
 
 }); 
 P(\guit6,start:6,music: {
-		[ 
-			degree:Pseq([1,2,3,5,5.1,6]-1),
-			//dur:Pseq([1,1,1, (1-~gr),~gr,4 ]/2*0.98),
-			dur:Pseq(Song.durs[6].list[0..2]++[Song.durs[6].list[3]-~gr,~gr,3.5]),
-			legato:Pseq([q,q,q,1.4,1.4,1]),
-			root:5,
-			octave:3,
-			type:\strum,
-			instance:Song.guitar2,
-			'Play Mode: Play Mode':0
-		].pp;
 	}
 );
 P(\bass6,start:6,music:
@@ -333,7 +348,7 @@ P(\pf6,start:6,syl:7,music:
 );
 ["I can see no rea- son for con-","e-5 d c b-4 g b- c5 d"].addLine; //7
 ["cern. And yet, I am filled with fore- bo- ding...", "d5 c b4 a b c5 e4 a g f#"].addLine; //8
-SynthDef(\avsd, //		{{{
+SynthDef(\avsd, 
 	{
 		|freq=400 att=0.05 |
 		var fenv= Env.perc(att,8.5).kr(gate:1);
@@ -411,5 +426,5 @@ P(\forboding8,start:8,music:
 //????
 
 
-Song.addGuides("xxxxx..xx");
+Song.addGuides("xxxxxxxxx");
 )

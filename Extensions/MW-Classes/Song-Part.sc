@@ -1,10 +1,10 @@
 Song {
 	classvar lastSectionPlayed=0;
-	classvar <>reaperFolder = "/Users/michael/tank/super/RPP";
-	classvar <> dursFile="/Users/michael/tank/super/theExtreme3";
-	classvar <> dursFolder="/Users/michael/tank/super/Dur";
-	classvar < songs;
-	classvar <> current;
+	classvar <reaperFolder = "/Users/michael/tank/super/RPP";
+	classvar <>dursFile="/Users/michael/tank/super/theExtreme3";
+	classvar <>dursFolder="/Users/michael/tank/super/Dur";
+	classvar <songs;
+	classvar <>current;
 	classvar <>loading;
 	classvar <>songList;
 	var <lyricWindow,lyricWindowText;

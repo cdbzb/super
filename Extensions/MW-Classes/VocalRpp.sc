@@ -18,8 +18,8 @@ VocalRPP {
 	//          * else (free and?) reload buffer
 	//
 	init { 
-		song.isNil.if{song=Song.currentSong};
-		section =song.section(key);
+		song.isNil.if{ song = Song.currentSong };
+		section = song.section(key);
 		reaperProjectPath = Song.reaperFolder +/+ song.key +/+ key;
 		name.notNil.if{
 			key = key ++ "-" ++ name
@@ -77,6 +77,7 @@ VocalRPP {
 		var path=reaperProjectPath +/+ "media" +/+ key.asString ++ ".wav";
 		var s = Server.default;
 		this.writeReaperAction;
+		///// this part updates the GUIDE
 		fork{
 			s.prepareForRecord(path);
 			0.1.wait;
@@ -103,8 +104,13 @@ VocalRPP {
 			//open the project and subProject and fire reapercommand
 			//this.open;
 			//0.2.wait;
+
+
+			///// this part updates the subproject
 			this.openSubproject;
 			Reaper.updateTempo;
+
+			////// this should be save and render RPP-PROX
 			Reaper.save;
 			this.copyPROXtowav;
 			0.05.wait;

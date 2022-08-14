@@ -46,6 +46,7 @@ Song.triller = {
 	=> LPF.ar(_,4000)
 	//=> TwoTube.ar(_, k:0.01, loss:0.997, d1length:[333,456], d2length:[543,611], mul:1.0, add:0.0)
 	=> { |i| DWGReverbC1C3.ar(i, len:100, c1:1, c3:10, mix:0.1, coefs:nil, perm:nil, doprime:0) => Pan2.ar(_,0.9)+i}
+	=> Disintegrator.ar(_, probability:\noise.kr(0), multiplier:WhiteNoise.kr().range(0,-1))
 	* \amp.kr(0.1)
 	* Env.asr(0.05).kr(2,gate:1)
 }.asSynthDef.add.name;
@@ -97,7 +98,24 @@ P('wall',start:'KIRK:(boom)',syl:5,music: {|p b e|
 	}.play
 });
 P(\triller,start:\Composition,music:{|p b e| 
+	var envBus=Bus.control;
+	var envBus2=Bus.control;
+
 	p.changeTrill.(6);
+	{Line.kr (0,0.5,9)}.play(s,envBus);
+	{Line.kr (0.1,0,12)}.play(s,envBus2);
+
+
+	fork{
+		0.3.wait;
+		p.trillSynth[0].register;
+		p.trillSynth[0].onFree({envBus.free;envBus2.free});
+		p.trillSynth.do({
+			|i|
+			i.map(\noise,envBus);
+			i.map(\amp,envBus2);
+		});
+	}
 });
 ["SPOCK: They're an alloy or substance completely unknown to me.","5 6 11 6 5 11.5 6 4 12 11.5 12 12 13 11.5 6".dm('e-',4)].addLine;
 P.tune(\alloy);

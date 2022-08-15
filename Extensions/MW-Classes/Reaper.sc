@@ -56,6 +56,7 @@ Reaper {
 	}
 	*stop	{this.address.sendMsg('/stop')}
 	*save { this.address.sendMsg('action',40026) }
+	*saveAndRenderPROX { this.address.sendMsg('action',42332 ) }
 	*render{ this.address.sendMsg('action',41824) }
 	*selectAllItems{ this.address.sendMsg('action',40182) }
 	*setItemTimeBaseToAuto{ this.address.sendMsg('action','_SWS_AWITEMTBASEBEATSTRETCH') }

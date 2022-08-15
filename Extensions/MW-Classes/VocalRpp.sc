@@ -110,10 +110,14 @@ VocalRPP {
 			this.openSubproject;
 			Reaper.updateTempo;
 
-			////// this should be save and render RPP-PROX
-			Reaper.save;
+			Reaper.saveAndRenderPROX; //do we need time here?
+
+			0.01.wait;
+
+			while {File.mtime(prox)<File.mtime(subproject)}{\waiting.postln;0.01.wait};
+
 			this.copyPROXtowav;
-			0.05.wait;
+			0.05.wait; // or compare mtimes again!
 			buffer=Buffer.read(Server.default,wav);
 			this.storeDurs;
 		}

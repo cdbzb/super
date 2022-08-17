@@ -5,6 +5,8 @@ TempoMap {
   *new { |beats = #[1,1,1,1,1,1,1] durs = #[1,1,1,1,1,1,1,1]|
     ^super.newCopyArgs(beats ,durs )
   }
+  *fromDurs{ | dur | ^TempoMap( 1!dur.list.size,dur.list) }
+  *fromB { | b| ^TempoMap( 1!b.size,b) }
   init { |beats durs|
 
 	//var points = [beats,durs].collect{|i| [0] ++ i => _.integrate => _.drop(1)}.flop;

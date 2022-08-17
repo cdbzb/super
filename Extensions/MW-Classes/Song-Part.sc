@@ -32,10 +32,11 @@ Song {
 		section = this.currentSong.section(section);
 		~recorder.(this.currentSong,[ section, section + length - 1 ], cueSections)	
 	}
-	* rhythmRecorder {
-		var stepper;
-^{
-	|song  rnge=#[0,1] cueSecs=1 |
+	*rhythmRecorder {
+	| rnge=#[0,1] cueSecs=1 |
+
+	var stepper;
+	var song = Song.currentSong;
 	var synth,recorder,a;
 	var range = Array.with(rnge).flatten;
 	var seq = (range[0]..range.clipAt(1))
@@ -159,7 +160,6 @@ Song {
 				synth.set(\t_trigger,1);
 				synth.postln}
 			)}
-}
 	}
 
 	*playArray { |array|

@@ -11,7 +11,7 @@ s.waitForBoot{ Song(\chamber1,[]).current;
 ["SCOTT [OC]: I don't like it, sir. ","r"].addLine;
 ["KIRK: No problem yet. Maintain alert. Kirk out. ","r"].addLine;
 ["MULHALL: Atmosphere report, Captain. ",[11,7,5,4,3,2,3].dm(\b,5,\mixolydian)].addLine;
-P.tune(\Atmosphere, {|i| Pmul(\freq,[1,0.5],i) => Pset(\legato,4,_) });
+P.tune(\Atmosphere, {|i| Pmul(\freq,[1,0.5],i) <> [out: Effect(FreeVerb.ar(_,0.8,0.8), inputChannels:2).bus.index, \legato:[6,2,5,2,4,2,3].q ].p });
 Pdefn(\lower,7.df.bubble.q(inf)); ///NOW WHAT?
 ( Song.trillStart = { |lowerNoteDegree p b e octave=5 amp=0.03|
 	Song.trillFreq=lowerNoteDegree;

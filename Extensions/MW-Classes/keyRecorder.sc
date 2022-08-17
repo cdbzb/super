@@ -2,8 +2,9 @@ KeyRecorder {
   var <list,time;
   var window;
   var section;
+  var <playMethod;
   var <>cue, clickSynth;
-  *new {|section cue| ^super.new.init(section,cue); }
+  *new {|section cue playMethod| ^super.new.init(section,cue,playMethod); }
   *initClass {
 	  Class.initClassTree(SynthDescLib);
 	  SynthDef(\fourClicks, { | dur = 1|
@@ -12,37 +13,39 @@ KeyRecorder {
 		  => Out.ar(\out.kr(0),_)
 		  }).add.tag(\click);
 		    }
-  init {|s c|
-    var v,b,f,d,e,w;
-    section = s;
-    cue = c ? {};
-    window = Window.new.front.alwaysOnTop_(true);
-    w=window;
-    v = window.view;
-    b=Button.new(w.view,Rect(60,10,100,100));
-    f=Button.new(w.view,Rect(160,10,100,100));
-    d=Button.new(w.view,Rect(260,10,100,100));
-    e=Button.new(w.view,Rect(260,300,100,100));
-			StaticText(b,Rect(0,0,100,100)).string_("Do over").align_(\center);
-			StaticText(f,Rect(0,0,100,100)).string_("Return").align_(\center);
-			StaticText(d,Rect(0,0,100,100)).string_("").align_(\center);
-			StaticText(e,Rect(0,0,100,100)).string_("").align_(\center);
-			EZText.new(v,Rect(0,110,300,50	),label:"range",initVal:"return is in register d",);
+  init {
+	  |s c p |
 
-			v.keyDownAction = { |view char|
-				( "dcrwq".includes(char) ).not.if{list = list.add(SystemClock.seconds).postln}; 
-				switch(char,
-					Char.space, { this.playCue },
-					$C, {this.playCue},
-					$d , { list=List.new },
-					$c , {this.countoff},
-					//$n , {nextt},
-					$r , {this.return.postln;list=List.new},
-					//$s , {save},
-					$w , { window.close; this.free },
-					$q , { window.close; this.free }
-				)
-			}
+	  var v,buttons,f,d,e,w;
+	  playMethod = p ? \tune; // alternative is \parts
+	  section = s;
+	  cue = c ? {};
+	  window = Window.new.front.alwaysOnTop_(true);
+	  w=window;
+	  v = window.view;
+	  list = List.new;
+	  buttons = 4.collect{
+		  |i| 
+		  Button.new(w.view,Rect( [60,160,260,260][i],[10,10,10,300][i],100,100 ))
+	  };
+	  buttons.do{
+		  |i x| 
+		  StaticText(i, Rect(0,0,100,100)).string_(["Do over","Return","Cue","Quit"][x]).align_(\center)
+	  };
+	  EZText.new(v,Rect(0,110,300,50	),label:"range",initVal:"return is in register d",);
+
+	  v.keyDownAction = { |view char|
+		  ( "dwcq".includes(char) ).not.if{list = list.add(SystemClock.seconds).postln}; //leave $r out we need it for final duration
+		  switch(char,
+			  //Char.space, { this.playCue },
+			  $c, {this.playSectionBefore},
+			  $d , { list=List.new },
+			  $r , {this.return.postln;list=List.new},
+			  //$s , {save},
+			  $w , { window.close; this.free },
+			  $q , { window.close; this.free }
+		  )
+	  }
   }
 
   countoff{ |dur=1| //with-latency version
@@ -51,11 +54,34 @@ KeyRecorder {
 			  Synth(\fourClicks,[\dur,dur]);
 		  };
 		  dur * 4 => _.wait;
-		  this.playCue;
+		  this.playTune;
 		  list.add(SystemClock.seconds + Server.default.latency).postln
 	  }
   }
+  playSectionBefore{
+	  var sectionBefore = Song.section(section) - 1;
+	  var cue, guide;
+	  (playMethod == \tune).if{
+		  cue = { Song.pbind[sectionBefore].play };
+		  guide = { Song.pbind[Song.section(section)].play };
+	  }{
 
+		  cue = { Song.at(sectionBefore).do(_.p);Song.secDur[sectionBefore] };
+		  guide = { Song.at().do(_.p);Song.secDur[sectionBefore] };
+	  };
+	  fork{
+		  //Song.playSection(Song.section(section)-1); Song.secDur[ Song.section(section)-1 ].wait;
+
+		  cue.();
+		  Song.secDur[Song.section(section)-1].wait;
+		  list.add(SystemClock.seconds + Server.default.latency).postln;
+		  guide.()
+	  }
+  }
+  playTune{
+	  //Song.playSection(section)
+	  Song.at(Song.section(section)).do(_.p)
+  }
   makeClickSynth { | array |
 	  SynthDef(\arrayClicks, { 
 		  TDuty.ar(array.dq) => Decay.ar(_,0.2)

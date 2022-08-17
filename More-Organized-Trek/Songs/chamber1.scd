@@ -181,6 +181,17 @@ P(\bass,start:\harder,music:{|p b e|
 	].pp
 
 });
+P('kerRecorde',start:\harder,music: {|p b e|
+	[
+		dur: [ 1.136, 1.005, 0.547, 2.382, 1.457, 2.081 ].push(1,0.85).push(4,0.93).push(5,0.95).warpTo( b )
+		.q,
+		rest: [\r,1,1,1,1,1,1].q,
+		instrument:\cymbal_808,
+		out:Effect(SineShaper.ar(_,0.2,5) * [0.8,0.2]).bus.index,
+		amp:0.5
+	].pp
+});
+
 ["anything I've measured before. ","3 2 1 -7 -6 -5 -4 1 2 ".dm('b-',5,\mixolydian)].addLine;
 Song.durs[\measured] =  Song.durs[\measured].list.dropLast ++ (Song.durs[\measured].list.last  * 0.66 ) => _.q;
 P.tune(\measured);

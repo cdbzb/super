@@ -183,12 +183,12 @@ P(\bass,start:\harder,music:{|p b e|
 });
 P('kerRecorde',start:\harder,music: {|p b e|
 	[
-		dur: [ 1.136, 1.005, 0.547, 2.382, 1.457, 2.081 ].push(1,0.85).push(4,0.93).push(5,0.95).warpTo( b )
-		.q,
+		dur: [ 1.136, 1.005, 0.547, 2.382, 1.457, 2.081 ].push(1,0.85).push(4,0.93).push(5,0.95).warpTo( b ).q,
+		amp: [0,5,4,3,5,4,3]/10 => _.q,
 		rest: [\r,1,1,1,1,1,1].q,
 		instrument:\cymbal_808,
-		out:Effect(SineShaper.ar(_,0.2,5) * [0.8,0.2]).bus.index,
-		amp:0.5
+		out:Effect( { |i| SineShaper.ar(i,0.2,5) * [0.8,0.2] =< CombN.ar(_,0.1,0.3,decaytime:2,mul:0.4) *0.7  } ).bus.index ,
+		CombN.ar()
 	].pp
 });
 
@@ -205,32 +205,30 @@ P(\crash,start:\measured,music:{|p b e|
 		out: Effect.new(Decimator.ar(_,20000),  out: 0,  inputChannels: 1,  target: nil).bus.index
 	).play
 });
-P(\measured,start:\measured,music:{|p b e| 
-	[
-		instrument:\hihat,
-		dur: 1.dup(6)=>_.warpTo(e.tempoMap) => _.q
-	].p//p;
-});
-P(\bass,start:\measured,music:{|p b e| 
-	[
-		freq: "1 3 4  ".df('f',4,\mixolydian) ++ "1 3 4".df('e-',4,\mixolydian) =>_.q * [1,3/2],
-		dur: 
-		//"qe ex xq  |ex x q".asBeats.warpTo(Song.tempoMap[\measured]).reject{ |i| i>1024 }
-		[ 1.675, 0.838, 0.989, 0.686,	0.345,	 1.388 ]
-		+ [0,     0,     0,     (0.25-0.188) + 0.05, -0.7 * (0.25-0.188), 0]
-		=> _.warpTo(e.tempoMap)=>_.q,
-		out:Effect( { |i| SineShaper.ar(i,0.02).tanh !2 *0.6 },inputChannels:4  ).bus.index
-	].pp;
-	[
-		freq: "1 3 4  ".df('b-',3,\mixolydian) ++ "1 3 4".df('a-',3,\mixolydian) =>_.q * [1,3/2],
-		dur: 
-		//"qe ex xq  |ex x q".asBeats.warpTo(Song.tempoMap[\measured]).reject{ |i| i>1024 }
-		[ 1.675, 0.838, 0.989, 0.686,	0.345,	 1.388 ]
-		+ [0,     0,     0,     (0.25-0.188) + 0.05, -0.7 * (0.25-0.188), 0]
-		=> _.warpTo(e.tempoMap)=>_.q,
-		out:Effect( { |i| SineShaper.ar(i,0.02).tanh !2 *0.6 },inputChannels:4  ).bus.index
-	].pp
+P('guitar',start:\anything,music: {|p b e|
+	MegaBind(
+		[
+			[5, 7, 11,12, 4, 6, 7].df('b-',\minor),
+			[1,3,4,\_, -7, 1.5, 3].df('b-',\minor)
+		]
+		,
+		[ 1.675, 0.838, ( 0.989 * [3,1]/4 ), 0.686,	0.345,	 1.388 ] => _.flat
+		+ [0,     0,     0, 0,     (0.25-0.188) + 0.05, -0.7 * (0.25-0.188), 0]
+		=> _.warpTo(e.tempoMap),
+		[],
+		{|i|  
+			//SinOsc.ar(i.freqSeq,0,0.1)
+			Pluck.ar( PinkNoise.ar(0.1),i.trigSeq,1,   ( i.freqSeq + 0.0001 ).reciprocal* [4,8] ,decaytime:10)
+			=> CrossoverDistortion.ar(_,amp:0.20,smooth:0.9)
+			+ VarSaw.ar(i.freqSeq + SinOsc.ar([5,6]).range(0,5),0,0,mul:0.01)
+			* ( Env.asr().kr(2,gate:(i.gateSeq))  
+			//+ Env.perc(0.01,1).kr(0,gate:i.trigSeq)
+		)
+			//* Env.perc(i.gate).kr(2,gate:1)
 
+		},
+		{|i|  Mix.ar(i)}
+	).play
 });
 ["MULHALL: All readings are off the scale, Captain. (ooh) "," 6 5 4 3 2 1 7 6 5 4.5".dm(\d,5,\mixolydian)].addLine;
 Song.setTempoMap(\scale,"q Q Q Qq Q E q e e q".asBeats);

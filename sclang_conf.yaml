@@ -15,7 +15,6 @@ includePaths:
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Hilbert
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/XML
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Ctk
-    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/ixiViews
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/SFPlayer
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/ScoreClock
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/ZArchive
@@ -38,12 +37,13 @@ includePaths:
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Log
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/faust
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/fxpatterns
-    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/komet
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/Vowel
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/panola
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/miSCellaneous_lib
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/AlgaLib
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/MP3
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/SignalBox
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/ExtraWindows
 excludePaths:
     []
 postInlineWarnings: false

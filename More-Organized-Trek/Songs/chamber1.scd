@@ -69,12 +69,14 @@ P(\trill,start:\Atmos,music:{|p b e|
 ["A fraction richer in oxygen than usual for us, but otherwise normal. "," 3 4 5 7 11 6 13 12 5 6 12 11.5 6, 4.5 5.5 4 5 6 7 12 11".dm(\c)].addLine;
 P.tune(\oxygen,{|i| Pmul(\freq,[1,0.5],i) => Pset(\legato,4,_) });
 ["SPOCK: This vault was constructed about a half a million years ago.", "5 7 6 5 4 3 2 3 4 6 5 4 3 2 1".dm(\c,5,\mixolydian)].addLine;
-P.tune(\vault);
+P.tune(\vault, { |i| Pmul(\freq,[1,0.5],i) <> [amp:
+	[4,5,4,4,5,4,4,4,4,5,4,4,5,4,4]
+	.q/45,legato:[1,2,2,1,2,2,2,2,2,2,2,2,2,2,2]+18/20=>_.q].p});
 P(\trill,start:\vault,music:{|p b e| 
 	p.changeTrill.(6.5)
 });
 ["About the same time the planet surface was destroyed, if our sensor readings are accurate. ","5 6 7 11 3".dm(\f,4,\minor) ++ "6 7 11 13 12 11 7 6".dm('f#',4) ++ [ 1,2,3,4,-5,4,3,2 ].dm(\d,5,\diminished)].addLine;
-P.tune(\surface);
+P.tune(\surface,Pmul(\freq,[0.5,1],_));
 P(\bass,start:\surface,music:{|p b e| 
 	[
 		freq: 
@@ -220,14 +222,16 @@ P('guitar',start:\anything,music: {|p b e|
 			//SinOsc.ar(i.freqSeq,0,0.1)
 			Pluck.ar( PinkNoise.ar(0.1),i.trigSeq,1,   ( i.freqSeq + 0.0001 ).reciprocal* [4,8] ,decaytime:10)
 			=> CrossoverDistortion.ar(_,amp:0.20,smooth:0.9)
-			+ VarSaw.ar(i.freqSeq + SinOsc.ar([5,6]).range(0,5),0,0,mul:0.01)
+			+ (i==0).if { VarSaw.ar(i.freqSeq + SinOsc.ar([5,6]).range(0,5),0,0,mul:0.01) }{0}
 			* ( Env.asr().kr(2,gate:(i.gateSeq))  
 			//+ Env.perc(0.01,1).kr(0,gate:i.trigSeq)
 		)
 			//* Env.perc(i.gate).kr(2,gate:1)
 
 		},
-		{|i|  Mix.ar(i)}
+		{|i|  Mix.ar(i)
+		=> BRF.ar(_,1200,1)
+	}
 	).play
 });
 ["MULHALL: All readings are off the scale, Captain. (ooh) "," 6 5 4 3 2 1 7 6 5 4.5".dm(\d,5,\mixolydian)].addLine;
@@ -310,6 +314,7 @@ P(\chord,start:\circulated,music:{|p b e|
 	].p;
 	a <> [instrument:\sparkTriangle,amp:0.06].p => _.play;
 	a <> [instrument:\wash,amp:0.02,out:1].p => _.play;
+	a <> [instrument:\stringyy,amp:[0,0,0,0,1,1,1,1,1,1,1,0.8,0.7,0.4].q/2,out:1].pm(\stringyy) => _.play;
 	[
 		freq:"16 15 14 13 ".df(\c,3).q,
 		dur:b.q,
@@ -333,8 +338,9 @@ P(\pad,start:'fresh air',music:{|p b e|
 	(
 		freq: [-1,1,3,5].df(\g,5,\whole),
 		instrument: \wash,
-		att: 3,
-		rel:7,
+		curve:2,
+		att: 2.5,
+		rel:5,
 		amp:0.03
 	).play;
 	fork{

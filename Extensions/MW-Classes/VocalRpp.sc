@@ -1,23 +1,38 @@
 VocalRPP {
-	classvar <>current;
+	classvar <>current, <all;
 	var <>key, <>name, <>range=1, <>tail=5, <>song;
 	var section,<>mediaFolder,<>wav,<>prox,<>subproject;
 	var <>reaperProjectPath,<>rpp,<>buffer;
+	*initClass{
+		all = MultiLevelIdentityDictionary.new;
+	}
 	*doesNotUnderstand { |selector ...args|
 		try{
 			^Message(VocalRPP.current,selector).value(*args)
 		}
 	}
 
-	*new { |...args| ^super.newCopyArgs(*args).init}
+	*new { | ...args| //key name range tail song
+		var key = args[0], name = args[1];
+		var res = all.at(args[0]).at(args[1]);
+		if(res.isNil) {
+			res = super.newCopyArgs(*args).init.prAdd(key, name);
+		}{res.reinit};
+		^res
 
-
+	}
+	prAdd { |key name| all.put(key,name, this)  }
+//	*new { |...args|
+//		super.newCopyArgs(*args).init}
+//
+//
 	//      * check tempo changed
 	//        if so open project - VocalRPP.writeReaperAction - reaper.updateTempo - render - reload buffer
 	//        else check dirty if so render reload buffer
 	//          * else (free and?) reload buffer
 	//
 	init { 
+		buffer = Deferred();
 		song.isNil.if{ song = Song.currentSong };
 		section = song.section(key);
 		reaperProjectPath = Song.reaperFolder +/+ song.key +/+ key;
@@ -36,33 +51,46 @@ VocalRPP {
 			//this.storeDurs;
 		} {
 			fork{
-				this.copyPROXtowav;
-				0.1.wait;
-				buffer=Buffer.read(Server.default,wav);
+				this.copyPROXtowav.wait;
+				Buffer.read(Server.default,wav,action:buffer.valueCallback);
 			}
 		};
 	}
+	reinit{
+		fork{
+			this.copyPROXtowav.wait;
+			buffer = Deferred();
+			Buffer.read(Server.default,wav,action:buffer.valueCallback);
+		}
+
+	}
+
 	refresh {
-				buffer=Buffer.read(Server.default,wav);
+				Buffer.read(Server.default,wav,action:buffer.valueCallback);
 	}
 	current{
 		VocalRPP.current = this
 	}
 
 	copyPROXtowav{
+		var d = Deferred();
 		File.exists(prox).if { 
 			File.exists(wav).if{
-				((File.mtime(prox) - File.mtime(wav)).abs > 0 ).if {
+				((File.mtime(prox) - File.mtime(wav)).abs > 5 ).if {
 					"cp" + prox + wav => _.unixCmd;
 					"touch" + prox => _.unixCmd;
 					'dirty - copied'.postln;
-				} 
+				} ;
+				d.value = wav;
+				^d
 			}{
 
 				"cp" + prox + wav => _.unixCmd;
 				"touch" + prox => _.unixCmd;
 				'clean copied';
 
+				d.value = wav;
+				^d
 				//open project and send a save message to generate a prox ??
 
 			}

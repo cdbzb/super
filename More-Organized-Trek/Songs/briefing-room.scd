@@ -139,9 +139,10 @@ MegaBind(
 //Song.durs['willin ']=Song.durs['willin '].list * 0.9 => _.q;
 Song.setQuarters('willin ', "qe eqe e qe eqe e qe eqe e ");
 //Song.vocalWill=VocalRPP(\willin,\vocal1);
-P('vocal',start:\willin,rpp:VocalRPP(\willin,\vocal1),lag:-1,music: {|p b e|
-	e.rpp.buffer.value
-	=>
+//P('vocal',start:\willin,rpp:VocalRPP(\willin,\vocal1),lag:-1,music: {|p b e|
+//)
+p = P('vocal',start:\willin,rpp:VocalRPP(\willin,\vocal1),lag:-1,music: {|p b e|
+	e.rpp.buffer.() =>
 	{ |i|
 		{
 			PlayBuf.ar(numChannels:2, bufnum:i.bufnum, rate:1.0, trigger:1.0, startPos:0.0, loop:0.0, doneAction:0)
@@ -154,6 +155,7 @@ P('vocal',start:\willin,rpp:VocalRPP(\willin,\vocal1),lag:-1,music: {|p b e|
 			=> DWGReverbC1C3_16.ar(_, len:2000, c1:1, c3:10, mix:0.15, coefs:nil, perm:nil, doprime:0)
 			//=> Decimator.ar(_, rate:44100.0, bits:6, mul:1.0, add:0)
 			* [0.5,0.3]
+			/2
 		}.play
 	} 
 });

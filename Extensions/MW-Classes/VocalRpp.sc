@@ -14,23 +14,16 @@ VocalRPP {
 
 	*new { | ...args| //key name range tail song
 		var key = args[0], name = args[1];
-		var res = all.at(args[0]).at(args[1]);
-		if(res.isNil) {
+		var res = all.at(key,name);
+		res.isNil.if{
 			res = super.newCopyArgs(*args).init.prAdd(key, name);
-		}{res.reinit};
+		}{
+			res.reinit
+		};
 		^res
 
 	}
 	prAdd { |key name| all.put(key,name, this)  }
-//	*new { |...args|
-//		super.newCopyArgs(*args).init}
-//
-//
-	//      * check tempo changed
-	//        if so open project - VocalRPP.writeReaperAction - reaper.updateTempo - render - reload buffer
-	//        else check dirty if so render reload buffer
-	//          * else (free and?) reload buffer
-	//
 	init { 
 		buffer = Deferred();
 		song.isNil.if{ song = Song.currentSong };
@@ -45,29 +38,34 @@ VocalRPP {
 		prox =subproject ++ "-PROX";
 		wav=mediaFolder +/+ key ++ "-subproject.wav";
 		this.checkDursChanged.if{
-			// Does this wk???
 			//this.updateGuide;
 			this.updateProxy;
 			//this.storeDurs;
 		} {
 			fork{
-				this.copyPROXtowav.wait;
-				Buffer.read(Server.default,wav,action:buffer.valueCallback);
+				this.copyPROXtowav.wait; ///is this right???
+				this.refreshBuffer
 			}
 		};
 	}
 	reinit{
 		fork{
-			this.copyPROXtowav.wait;
-			buffer = Deferred();
-			Buffer.read(Server.default,wav,action:buffer.valueCallback);
-		}
-
+			((File.mtime(prox) - File.mtime(wav)).abs > 5 ).if {
+				buffer = Deferred();
+				"cp" + prox + wav => _.unixCmd;
+				"touch" + prox => _.unixCmd;
+				'dirty - copied'.postln;
+				while{ File.mtime( prox ) != File.mtime( wav )}{ 0.01.wait };
+				this.refreshBuffer;
+			} ;
+		};
 	}
 
-	refresh {
-				Buffer.read(Server.default,wav,action:buffer.valueCallback);
+	refreshBuffer {
+		buffer = Deferred();
+		Buffer.read(Server.default,wav,action:buffer.valueCallback);
 	}
+
 	current{
 		VocalRPP.current = this
 	}
@@ -81,19 +79,19 @@ VocalRPP {
 					"touch" + prox => _.unixCmd;
 					'dirty - copied'.postln;
 				} ;
+				while{ File.mtime( prox ) != File.mtime( wav )}{ 0.01.wait };
 				d.value = wav;
-				^d
 			}{
 
 				"cp" + prox + wav => _.unixCmd;
 				"touch" + prox => _.unixCmd;
 				'clean copied';
-
+				while{ File.mtime( prox ) != File.mtime( wav )}{ 0.01.wait };
 				d.value = wav;
-				^d
 				//open project and send a save message to generate a prox ??
 
-			}
+			};
+			^d
 		}{
 			'no PROX!'.postln;
 		}

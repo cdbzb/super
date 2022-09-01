@@ -1058,7 +1058,7 @@ P {
 		    music: { |p b e| 
 			    [
 				    instrument:\hat_808,
-				    dur: p.quarters[e.start].q
+				    dur: p.quarters[e.start]
 			    ].pp 
 		    }
 	    )

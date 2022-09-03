@@ -1,10 +1,10 @@
 Song {
 	classvar lastSectionPlayed=0;
-	classvar <>reaperFolder = "/Users/michael/tank/super/RPP";
-	classvar <> dursFile="/Users/michael/tank/super/theExtreme3";
-	classvar <> dursFolder="/Users/michael/tank/super/Dur";
-	classvar < songs;
-	classvar <> current;
+	classvar <reaperFolder = "/Users/michael/tank/super/RPP";
+	classvar <>dursFile="/Users/michael/tank/super/theExtreme3";
+	classvar <>dursFolder="/Users/michael/tank/super/Dur";
+	classvar <songs;
+	classvar <>current;
 	classvar <>loading;
 	classvar <>songList;
 	var <lyricWindow,lyricWindowText;
@@ -32,10 +32,11 @@ Song {
 		section = this.currentSong.section(section);
 		~recorder.(this.currentSong,[ section, section + length - 1 ], cueSections)	
 	}
-	* rhythmRecorder {
-		var stepper;
-^{
-	|song  rnge=#[0,1] cueSecs=1 |
+	*rhythmRecorder {
+	| rnge=#[0,1] cueSecs=1 |
+
+	var stepper;
+	var song = Song.currentSong;
 	var synth,recorder,a;
 	var range = Array.with(rnge).flatten;
 	var seq = (range[0]..range.clipAt(1))
@@ -159,7 +160,6 @@ Song {
 				synth.set(\t_trigger,1);
 				synth.postln}
 			)}
-}
 	}
 
 	*playArray { |array|
@@ -864,7 +864,8 @@ Song {
 		^sections.collect(this.secDur[_]).sum
 	}
 	allNotesOff {
-		resources.vsits !? _.do{|i| 
+		resources.vstis.postln;
+		resources.vstis !? _.do{|i| 
 			(type:\vst_midi, vst:i.controller, midicmd:\allNotesOff).play
 		}
 	}
@@ -883,6 +884,7 @@ Part {
 	}
 	//play immediately
 	play {
+		//Song.allNotesOff;
 		switch (music.class,
 			Function,{Server.default.bind{
 				music.value(
@@ -1056,10 +1058,15 @@ P {
 		    music: { |p b e| 
 			    [
 				    instrument:\hat_808,
-				    dur: p.quarters[e.start].q
+				    dur: p.quarters[e.start]
 			    ].pp 
 		    }
 	    )
+    }
+    *rpp { | key start syl lag=0 music song resources rpp |
+	res = P(key,start,syl,lag,music,song,resources);
+	res.resources.rpp = VocalRPP(key,start);
+	^res
     }
 }
 

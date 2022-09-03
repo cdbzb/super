@@ -15,17 +15,11 @@ VocalRPP {
 	*new { | ...args| //key name range tail song
 		var key = args[0], name = args[1];
 		var res = all.at(key,name);
-		res.isNil.if{
-			res = super.newCopyArgs(*args).init.prAdd(key, name);
-		}{
-			res.reinit
-		};
+		res.isNil.if{ res = super.newCopyArgs(*args).init.prAdd(key, name)}{res.refresh};
 		^res
-
 	}
 	prAdd { |key name| all.put(key,name, this)  }
 	init { 
-		buffer = Deferred();
 		song.isNil.if{ song = Song.currentSong };
 		section = song.section(key);
 		reaperProjectPath = Song.reaperFolder +/+ song.key +/+ key;
@@ -38,27 +32,22 @@ VocalRPP {
 		prox =subproject ++ "-PROX";
 		wav=mediaFolder +/+ key ++ "-subproject.wav";
 		this.checkDursChanged.if{
-			//this.updateGuide;
-			this.updateProxy;
-			//this.storeDurs;
+			this.updateProxyWindow;
+			this.refreshBuffer
 		} {
-			fork{
-				this.copyPROXtowav.wait; ///is this right???
-				this.refreshBuffer
-			}
+			this.refresh;
 		};
 	}
-	reinit{
-		fork{
-			((File.mtime(prox) - File.mtime(wav)).abs > 5 ).if {
-				buffer = Deferred();
-				"cp" + prox + wav => _.unixCmd;
-				"touch" + prox => _.unixCmd;
-				'dirty - copied'.postln;
-				while{ File.mtime( prox ) != File.mtime( wav )}{ 0.01.wait };
-				this.refreshBuffer;
-			} ;
-		};
+	refresh{  //if has already been openned
+		( song.key == Song.currentSong.key ).if{ song=Song.currentSong };//if Song has changed reattach!
+		this.checkDursChanged.if{
+			this.updateProxyWindow;
+		} {
+			fork{
+				this.copyPROXtowav.wait; 
+				this.refreshBuffer
+			}
+		}
 	}
 
 	refreshBuffer {
@@ -72,32 +61,45 @@ VocalRPP {
 
 	copyPROXtowav{
 		var d = Deferred();
-		File.exists(prox).if { 
-			File.exists(wav).if{
-				((File.mtime(prox) - File.mtime(wav)).abs > 5 ).if {
+		File.exists(prox).if {  //
+			fork{
+				File.exists(wav).if{ // if proxy and wav check if dirty and copy if so
+					((File.mtime(prox) - File.mtime(wav)).abs > 5 ).if {
+						"cp" + prox + wav => _.unixCmd;
+						"touch" + prox => _.unixCmd;
+						'dirty - copied'.postln;
+						while{ File.mtime( prox ) != File.mtime( wav )}{ 0.01.wait };
+					} ;
+				}{ // if proxy but no wav - copy
 					"cp" + prox + wav => _.unixCmd;
 					"touch" + prox => _.unixCmd;
-					'dirty - copied'.postln;
-				} ;
-				while{ File.mtime( prox ) != File.mtime( wav )}{ 0.01.wait };
+					while{ File.exists(wav).not }{0.01.wait};
+				};
 				d.value = wav;
-			}{
-
-				"cp" + prox + wav => _.unixCmd;
-				"touch" + prox => _.unixCmd;
-				'clean copied';
-				while{ File.mtime( prox ) != File.mtime( wav )}{ 0.01.wait };
-				d.value = wav;
-				//open project and send a save message to generate a prox ??
-
-			};
-			^d
+			}
 		}{
 			'no PROX!'.postln;
+			d.value = 0;
 		}
+		^d
 	}
 
 
+	updateProxyWindow{
+		defer{
+			var w = Window.new("The Four Noble Truths");
+			var b = Button(w, Rect(20, 20, 340, 30))
+			.states_([
+				["there is suffering", Color.black, Color.red],
+				["the origin of suffering", Color.white, Color.black],
+			])
+			.action_({ arg butt;
+				this.updateProxy
+			});
+			w.front;
+		}
+
+	}
 	updateProxy {
 
 		var path=reaperProjectPath +/+ "media" +/+ key.asString ++ ".wav";
@@ -134,7 +136,7 @@ VocalRPP {
 
 			///// this part updates the subproject
 			this.openSubproject;
-			Reaper.updateTempo;
+			Reaper.updateTempo; \updatingTempo.postln;
 
 			Reaper.saveAndRenderPROX; //do we need time here?
 
@@ -142,9 +144,9 @@ VocalRPP {
 
 			while {File.mtime(prox)<File.mtime(subproject)}{\waiting.postln;0.01.wait};
 
-			this.copyPROXtowav;
-			0.05.wait; // or compare mtimes again!
-			buffer=Buffer.read(Server.default,wav);
+			this.copyPROXtowav.wait;
+			this.refreshBuffer;
+			//0.05.wait; // or compare mtimes again!
 			this.storeDurs;
 		}
 	}

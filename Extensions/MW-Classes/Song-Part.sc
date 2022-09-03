@@ -1063,6 +1063,10 @@ P {
 		    }
 	    )
     }
+    *rpp {
+        | key start syl lag=0 music song resources tail |
+	^P(key,start,syl,lag, music,song,resources, VocalRPP(start,key,tail:tail)); // order of section and key are reversed!!
+    }
 }
 
 SongList {

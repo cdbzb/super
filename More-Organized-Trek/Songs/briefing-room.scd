@@ -141,7 +141,7 @@ Song.setQuarters('willin ', "qe eqe e qe eqe e qe eqe e ");
 //Song.vocalWill=VocalRPP(\willin,\vocal1);
 //P('vocal',start:\willin,rpp:VocalRPP(\willin,\vocal1),lag:-1,music: {|p b e|
 //)
-p = P('vocal',start:\willin,rpp:VocalRPP(\willin,\vocal1),lag:-1,music: {|p b e|
+P('vocal',start:\willin,rpp:VocalRPP(\willin,\vocal1),lag:-1,music: {|p b e|
 	e.rpp.buffer.() =>
 	{ |i|
 		{
@@ -149,13 +149,13 @@ p = P('vocal',start:\willin,rpp:VocalRPP(\willin,\vocal1),lag:-1,music: {|p b e|
 			* Env([0,0,1,1],[0.8,0.1,10]).kr(2,gate:1)
 			=> HPF.ar(_,200)
 			=> SoftKneeCompressor.rms(_, control:nil, thresh:-5, ratio:8, knee:6, attack:0, release:0.05, makeUp:0, rms:40)
-			=> BPeakEQ.ar(_, freq:1200.0, rq:1.0, db:6.0, mul:1.0, add:0.0)
+			=> BPeakEQ.ar(_, freq:1200.0, rq:1.0, db:16.0, mul:1.0, add:0.0)
 			=> SineShaper.ar(_,0.2,2)
 			=> BHiShelf.ar(_, freq:1800.0, rs:1.0, db:6.0, mul:1.0, add:0.0)
 			=> DWGReverbC1C3_16.ar(_, len:2000, c1:1, c3:10, mix:0.15, coefs:nil, perm:nil, doprime:0)
 			//=> Decimator.ar(_, rate:44100.0, bits:6, mul:1.0, add:0)
 			* [0.5,0.3]
-			/2
+			/4
 		}.play
 	} 
 });

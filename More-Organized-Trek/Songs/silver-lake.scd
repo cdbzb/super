@@ -16,7 +16,7 @@ Song(\silverLake,[]).current;
 Song.durs['working']=[6].q;
 [1,3,5,1,4,6,5,4].df(\g).q(2)=>[dur:0.5,freq:_,legato:1]=>_.p => _.fin(13) => {|i| P(\lick,start:\working,music:{|p b e| i.play})};
 [ "when their hands touch.","r",4 ].addLine; 
-~justTheTune.(\touch);
+P.tune(\touch);
 P(\arpeggio,\touch,music:
 		{
 				[7,6,4.5,3,2,1] => {|i| [i,(-1)*i]} => _.flat => {|i| 
@@ -55,9 +55,9 @@ P(\bassnote,start:'long a',music: { |p b e|
 				rel: b.sum
 		).play
 });
-~justTheTune.('long a');
+P.tune('long a');
 ["go. (ta da da boom da) We ", [3, 5,5,5,-4,4].dm(\e)++[3].dm(\a)].addLine;
-~justTheTune.('go.', {|i| Pbindf(i,\amp,[0.1,\r,\r,\r,\r,\r,0.1].q,\legato,[5,1,1,1,1,1,1].q)});
+P.tune('go.', {|i| Pbindf(i,\amp,[0.1,\r,\r,\r,\r,\r,0.1].q,\legato,[5,1,1,1,1,1,1].q)});
 P(\bass,start:'go.',music:{|p b e|
 	Routine{
 
@@ -88,12 +88,12 @@ P(\bass,start:'sat',music:{|p b e|
 		].q.play
 	}.play
 });
-~justTheTune.(\sat);
+P.tune(\sat);
 ["lake. (boom boom) The air (boom boom) was scented with the ",[11,-7,2,3,6].dm('f#',scale:\mixolydian)++[-7,2,3,5,4,3,4].dm(\g,scale:\mixolydian)].addLine;
 P(\bass,start:\lake,music:{|p b e|
 	(freq:[3,13].df(\d,octave:3),dur:b[0..3].sum).play
 });
-~justTheTune.('scented',{|e| Pbindf(e,\legato,2)});
+P.tune('scented',{|e| Pbindf(e,\legato,2)});
 ["flowers of our planet. ",[1,-7,1].dm(\g,scale:\mixolydian)++[6,5,4,3,6,5,4,3].dm(\d)+12].addLine;
 Song.quarters[\planet]= Song.parseBeats(\planet,[1.5,1.5,0.5,0.5,1.5,0.5,1.5,0.5,1.5,0.5,1.5]);
 //Song.quarters[\planet]
@@ -121,7 +121,7 @@ P(\ride,\flowers, //syl:3,
 				out:Effect(EchoNone.ar(_,0.2,0.1,6),out:3).bus.index
 		].p.play(clock: Song.quarters[\planet] .asTempoClock)
 });
-~justTheTune.(\flowers);
+P.tune(\flowers);
 P(\bass,start:\flowers,music:{|p b e|
 	var effect=Effect(DWGReverbC1C3.ar(_,len:2000,c1:1,c3:10,mix:1),inputChannels:2);
 	(freq:[1,-1].df('a-',octave:[3,4]),rel:5,dur:2,out:effect.bus.index).play
@@ -167,8 +167,8 @@ P(\planet,start:\flowers,syl:2,music: { |p b e |
 	'b '.post;b.postln
  });
 ["/*KIRK:*/ I remember. You held my han-- -- -- -- -- -- -- -- -- -- -- -- -- d like ",[4,3,3,2].dm(\c)++[-4,-5,-6,-7,1,-7,-6,-7,1,2,3,2,1,2,3, 4,5].dm(\g)].addLine;
-~justTheTune.('I remember.');
-~justTheTune.('I remember.',{|i| Pmul(\freq,0.5,i) });
+P.tune('I remember.');
+P.tune('I remember.',{|i| Pmul(\freq,0.5,i) });
 P(\bass,'I remember.',music: {|p b e|
 		[
 				freq:[[4,14],[3,13], 5 ,-5].df(\c,octave:3).q,
@@ -195,7 +195,7 @@ P(\doubling,'I remember.',syl:12,music: {|p b e|
 		].pp
 });
 ["this.  (He kisses it, as Spock comes in.) ",[5,4,4,3,3 ].dm(\c,octave:6)].addLine;
-~justTheTune.('this');
+P.tune('this');
 P(\chords,start:'kisses',music: {|p b e|
 	b.postln;
 	VoiceLeading([
@@ -205,13 +205,65 @@ P(\chords,start:'kisses',music: {|p b e|
 	],b.asArray
 	).dm('b-',scale:\mixolydian,octave:5).pp
 });
-["I think it is best not to remember so well. (boom) ",[3,2,3,1,-5,2,1,-7,-6,-7,-5,-2.5,-4.5].dm(\d)].addLine;
-~justTheTune.('best');
+["I think it is best not to remember so well. (boom) ",[3,2,3,1,-5,2,1,-7,-6,-7,-5,-2.5,-4.5].dm(\d)].addLine; 
+P.tune('best');
+P.tune('not to r',  { |i| Pmul(\freq,0.5,i).fin(6) <> (instrument:\sawSynth,amp:0.05)});
+P('bass2',syl:4,start:\think,music: {|p b e|
+	[
+		freq:[2,1,-7,-6,-5].df(\d,4).q,
+		dur: b.drop(1).parse([1,1,1,2,2]).q,
+		instrument:\sparkTriangle,
+		out: Effect( _ * Env([1,0.7,0.2],b.parse([1,2,3])).kr() ).bus.index
+	].pm(\sparkTriangle).play
+
+});
+P('bass3',syl:7,start:\think,music: {|p b e|
+	[
+		freq:[6,5].df(\d,4).q,
+		freqLag:1.5,
+		amp:0.05,
+		dur:b.drop(1).parse([2,2]).q,
+		instrument:\wash
+	].pm(\wash).play
+});
+P('lick',start:\think,music: {|p b e|
+	[
+		freq: [\r, 2, 1, -4, -3, -2, -1,-17].df(\d).q,
+		dur: b.parse([1,2,2,1,1,1,2,2]).q,
+		instrument: \wash,
+		rel:b.sum+1,
+		freqLag:0.05,
+		out: Effect( { |i| EchoNone.ar(i,1,b.sum/8,4) / 4} ).bus.index
+
+	].pm(\wash)
+	.play
+});
+P('pad',syl:0,start:\think,music: {|p b e|
+	[
+		instrument:\stringyy,
+		freq:[ 1,\r, [-5, 5 ],[-5.5, 5.5] ].df(\a,5).q,
+		legato:[19,19,20,19].q/20,
+		amp: [ 0.1 ,0.07,0.07 ].q ,  ///muting last freq
+		freqLag: [0,0,2,3].q,
+		dur:b.drop(1).parse([4,3,3,1]) * [1,1,1,0.1] => _.q
+	].pma(\stringyy).play
+});
+P('lick2',start:\think,music: {|p b e|
+	[
+		freq: [\r,[-1],-2,-2.5].df(\d).q,
+		dur: b.parse([1,4,5,3]).q,
+		freqLag:[0.1,1,2].q,
+		legato:1,
+		instrument:\wash,
+		att:1,
+		rel: b.sum+4
+	].pm(\wash).play
+});
 P(\bassNote,start:'best not',syl:11,music: {|p b e|
 	(instrument:\stringyy,freq:[1].df('a-',octave:4)).play
 });
 ["/*SPOCK:*/ In two days, you'll have your own hands, Thalassa. ",[3,2,4,3,4,3,3,2,4,1,-7].dm('a-')].addLine;
-~justTheTune.('two days');
+P.tune('two days');
 //~twoDaysQuarters= Song.durs['two days'].list.asArray.parseBeats([0.5,0.5,1,1/3,1/3,1/3,3/4,(1/4+(3/4)), 1/4,3/4,(1/4+1)]);
 //Song.durs['two days'].list.postcs
 Song.durs['two days'].list[10]=(1.33);
@@ -271,7 +323,7 @@ P(\lick,start:'intro',music: {|p b e|
 });
 ["Mechanically efficient and ",[\r,2, 1, 2,  4, 3].dm('e-'),"qq Q Q Q qe eqe eqe e".asBeats*60/104].addLine;
 //needs to start on beat 3
-~justTheTune.(\efficient);
+P.tune(\efficient);
 P(\bass,start:'efficient',music: {|p b e|
 	[5,5,14,5]++( 5!4 )++( 11!7 ) ++ 7
 	=>_.df('e-',octave:2)
@@ -328,7 +380,7 @@ P(\keys,syl:0,start:\efficient,music: {
 ["Enjoy the taste of life while you can. ","r"].addLine;
 ["/*KIRK:*/ (boom But.. boom) our minds will have survived. ",[-2,2,-3,3,7,6,5,3,2.5].dm(\f)].addLine;
 Song.durs[\survived].list .put(8,Song.durs[\survived].list[8]*1.5);
-~justTheTune.(\survived);
+P.tune(\survived);
 P(\mindChord,syl:3,lag:-0.06, start:\survived, music: {
 	[-11,-15,-1,1,3,5,7].df(\f)
 	=> 
@@ -353,7 +405,7 @@ P(\extra,syl:7,start:\survived,music:{|p b e|
 }
 );
 ["And as androids, we can move among the people who do live ",[1,-5,1,-7,1,2].dm('b-')++[7,5,3,5,7,11,7,7,6].dm(\d)].addLine;
-~justTheTune.(\people);
+P.tune(\people);
 P(\moveChord,start:\move,syl:5,music:{ |p b e|
 	b.postln;
 	[
@@ -367,7 +419,7 @@ P(\moveChord,start:\move,syl:5,music:{ |p b e|
 	].p.play
 });
 ["tea -- ching them (ba da da da da), ",[3,4,3,1,-5,-4,-3,-4,-5].dm(\b)].addLine;
-~justTheTune.('tea -- ching');
+P.tune('tea -- ching');
 
 P(\bassnote,start:'tea -- ching',syl:0,music:{|p b e|
 	//b[0].postln;
@@ -382,7 +434,7 @@ P(\bassnote,start:'tea -- ching',syl:0,music:{|p b e|
 });
 ["helping them (boom) not to make the errors we -- did. (pain) ",[4,3,1,-7,1,2,3,1,4,5,5,6,5,-7.5].dm(\a,scale:\mixolydian)].addLine;
 Song.durs[\pain].list.put(13,4); //'pain' length
-~justTheTune.('helping');
+P.tune('helping');
 //Song.durs[\helping].list.postln
 P(\answer,start:'helping',syl:2,music:{|p b e|
 	[
@@ -422,7 +474,7 @@ P(\pain,start:'helping', syl:12,music: {| p, b, e|
 });
 
 ["/*MULHALL:*/ What is it, Sargon? ",[1,5,4,1,-7].dm(\c)].addLine;
-~justTheTune.('What');
+P.tune('What');
 ["/*KIRK:*/ Nothing. Our next injection will renovate me. (boom) ",[1,1].dm('e-')++[2,3,1,3,-7,1,2,1,-7,-5,-3].dm('d',scale:\mixolydian,)].addLine;
 Song.resources.renovateKey='e-';
 Song.resources.renovateKey='b-';

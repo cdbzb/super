@@ -38,7 +38,7 @@ KeyRecorder {
 		  ( "dwcq".includes(char) ).not.if{list = list.add(SystemClock.seconds).postln}; //leave $r out we need it for final duration
 		  switch(char,
 			  //Char.space, { this.playCue },
-			  $c, {this.playSectionBefore},
+			  $c, {this.playCueThenSection},
 			  $d , { list=List.new },
 			  $r , {this.return.postln;list=List.new},
 			  //$s , {save},
@@ -58,7 +58,7 @@ KeyRecorder {
 		  list.add(SystemClock.seconds + Server.default.latency).postln
 	  }
   }
-  playSectionBefore{
+  playCueThenSection{
 	  var sectionBefore = Song.section(section) - 1;
 	  var cue, guide;
 	  (playMethod == \tune).if{

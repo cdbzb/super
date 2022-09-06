@@ -203,11 +203,19 @@ P(\chords,start:'kisses',music: {|p b e|
 		//[1,\_,-7,\_,\_,]
 		[1,\_,-7.5,\_,-7,]
 	],b.asArray
-	).dm('b-',scale:\mixolydian,octave:5).pp
+	).df('b-',scale:\mixolydian,octave:5)
+	.array.do {|i| i <> [
+		instrument:\trem2,
+		scale:1,
+		legato:1,
+		rel:3,
+		amp:0.05
+
+	].pm(\trem2) => _.play } 
 });
 ["I think it is best not to remember so well. (boom) ",[3,2,3,1,-5,2,1,-7,-6,-7,-5,-2.5,-4.5].dm(\d)].addLine; 
 P.tune('best');
-P.tune('not to r',  { |i| Pmul(\freq,0.5,i).fin(6) <> (instrument:\sawSynth,amp:0.05)});
+P.tune('not to r',  { |i| Pmul(\freq,0.5,i).fin(6) <> [ instrument:\sawSynth,amp:[1,1,1,1,1,1]/30=>_.q ].p});
 P('bass2',syl:4,start:\think,music: {|p b e|
 	[
 		freq:[2,1,-7,-6,-5].df(\d,4).q,
@@ -236,7 +244,7 @@ P('lick',start:\think,music: {|p b e|
 		out: Effect( { |i| EchoNone.ar(i,1,b.sum/8,4) / 4} ).bus.index
 
 	].pm(\wash)
-	.play
+	//.play
 });
 P('pad',syl:0,start:\think,music: {|p b e|
 	[
@@ -247,6 +255,18 @@ P('pad',syl:0,start:\think,music: {|p b e|
 		freqLag: [0,0,2,3].q,
 		dur:b.drop(1).parse([4,3,3,1]) * [1,1,1,0.1] => _.q
 	].pma(\stringyy).play
+});
+P('lick3',start:\think,music: {|p b e|
+	[
+		freq: [\r,2,1].df(\d,[4,5]).q,
+		dur: b.parse([1,2,5,3]).q,
+		freqLag:[0.1,2,2].q,
+		legato:1,
+		instrument:\wash,
+		att:1,
+		amp:0.04,
+		rel: b.sum+4
+	].pm(\wash).play
 });
 P('lick2',start:\think,music: {|p b e|
 	[

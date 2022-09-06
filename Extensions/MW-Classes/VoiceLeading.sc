@@ -122,6 +122,12 @@ VoiceLeading {
 		}
 			=> Ppar(_)
 	}
+	array {
+
+		^lines.collect{|i x|
+			[key,valuesArray[x].q,dur:durationArray[x].q].p
+		}
+	}
         //dur {^durationArray}
         dur {^demandDurations}
         gate { ^demandDurations.collect{ |i x|

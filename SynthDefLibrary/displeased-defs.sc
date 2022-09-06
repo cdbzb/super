@@ -7,7 +7,7 @@ SynthDef(\trem2,{| rate=12 freq=499 scale=1 gate=1 out=0| //		{{{3
 	var vel=SinOsc.kr(rate+LFBrownNoise1.kr(1)).range(0,1);//rate
 	//var pos=0.2;
 	var pos = LFBrownNoise1.kr(2).range(0.3,0.2);
-	var env = Env.asr(0,1,0.5).kr(2,gate:gate);
+	var env = Env.asr(0,1,\rel.kr(0.5)).kr(2,gate:gate);
 	var sig = DWGBowed.ar(
 		freq: freq,// + LFBrownNoise0.kr(2).range(0,10),  
 		velb: vel,  

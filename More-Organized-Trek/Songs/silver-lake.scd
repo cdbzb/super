@@ -236,74 +236,38 @@ P(\chords,start:'kisses',music: {|p b e|
 
 	].pm(\trem2) => _.play } 
 });
-["I think it is best not to remember so well. (boom) ",[3,2,3,1,-5,2,1,-7,-6,-7,-5,-2.5,-4.5].dm(\d)].addLine; 
-P.tune('best');
-P.tune('not to r',  { |i| Pmul(\freq,0.5,i).fin(6) <> [ instrument:\sawSynth,amp:[1,1,1,1,1,1]/30=>_.q ].p});
-P('bass2',syl:4,start:\think,music: {|p b e|
+["I think it is best not to remember so well. (boom) ",[3,2,3,1,-5,2,1,-7,-6,-7,-5,-2.5,-4.5].dm(\d)].addLine;
+P.tune('best',_ <> [amp: 0.1 * [1,1,1,1,1,1,1,1,1,1,1,1,0].q].p);
+P('arrangement',start:\think,music: {|p b e|
 	[
-		freq:[2,1,-7,-6,-5].df(\d,4).q,
-		dur: b.drop(1).parse([1,1,1,2,2]).q,
-		instrument:\sparkTriangle,
-		out: Effect( _ * Env([1,0.7,0.2],b.parse([1,2,3])).kr() ).bus.index
-	].pm(\sparkTriangle).play
+		freq: [\r,11, 5, 4, 2.5].df(\d,3).q,
+		dur: b.parse([ 1, 3, 4, 3, 2 ]).q,
+		instrument: \sawSynth
 
-});
-P('bass3',syl:7,start:\think,music: {|p b e|
+	].pp;
 	[
-		freq:[6,5].df(\d,4).q,
-		freqLag:1.5,
-		amp:0.05,
-		dur:b.drop(1).parse([2,2]).q,
+		instrument:\wash,
+		freq: [\r,2,1,\r,-6,-5].df(\d).q,
+		dur: b.parse([1,2,1,4,2,1]).q,
+		legato: [1,1,1,0.1,1,1].q
+
+
+	].pma(\wash).play;
+	[
+		freq:[\r,5, \r,12].df(\d).q,
+		dur:b.parse([1,3,4,3]).q,
+		legato:5,
 		instrument:\wash
-	].pm(\wash).play
-});
-P('lick',start:\think,music: {|p b e|
+	].pp;
 	[
-		freq: [\r, 2, 1, -4, -3, -2, -1,-17].df(\d).q,
-		dur: b.parse([1,2,2,1,1,1,2,2]).q,
-		instrument: \wash,
-		rel:b.sum+1,
-		freqLag:0.05,
-		out: Effect( { |i| EchoNone.ar(i,1,b.sum/8,4) / 4} ).bus.index
-
-	].pm(\wash)
-	//.play
+		freq:[\r,5,12,\r,2.5].df(\d,[4,5],tuning:\pythagorean).q,
+		legato:[4,4,4,4,1].q,
+		dur: b.parse([4,1,1,5,1]).q
+	].pp
 });
-P('pad',syl:0,start:\think,music: {|p b e|
-	[
-		instrument:\stringyy,
-		freq:[ 1,\r, [-5, 5 ],[-5.5, 5.5] ].df(\a,5).q,
-		legato:[19,19,20,19].q/20,
-		amp: [ 0.1 ,0.07,0.07 ].q ,  ///muting last freq
-		freqLag: [0,0,2,3].q,
-		dur:b.drop(1).parse([4,3,3,1]) * [1,1,1,0.1] => _.q
-	].pma(\stringyy).play
-});
-P('lick3',start:\think,music: {|p b e|
-	[
-		freq: [\r,2,1].df(\d,[4,5]).q,
-		dur: b.parse([1,2,5,3]).q,
-		freqLag:[0.1,2,2].q,
-		legato:1,
-		instrument:\wash,
-		att:1,
-		amp:0.04,
-		rel: b.sum+4
-	].pm(\wash).play
-});
-P('lick2',start:\think,music: {|p b e|
-	[
-		freq: [\r,[-1],-2,-2.5].df(\d).q,
-		dur: b.parse([1,4,5,3]).q,
-		freqLag:[0.1,1,2].q,
-		legato:1,
-		instrument:\wash,
-		att:1,
-		rel: b.sum+4
-	].pm(\wash).play
-});
-P(\bassNote,start:'best not',syl:11,music: {|p b e|
-	(instrument:\stringyy,freq:[1].df('a-',octave:4)).play
+Song.bassSoundTwoDays = (instrument:\stringyy,amp:0.35,attack:0.1);
+P('bassNote',start:\think, syl:11, music: {|p b e|
+	[dur: b[0].q,freq:1.df('a-',4)].p <> p.bassSoundTwoDays => _.postln => _.play
 });
 ["/*SPOCK:*/ In two days, you'll have your own hands, Thalassa. ",[3,2,4,3,4,3,3,2,4,1,-7].dm('a-')].addLine;
 P.tune('two days');
@@ -314,9 +278,10 @@ P(\bass,start:'two days',syl:1,music:{|p b e|
 	var quarters = b.drop(1).asArray.parseBeats([1,1/3,1/3,1/3,2/3,(1/3+(3/4)), 1/4,3/4,(1/4+1)]);
 
 
-	[dur:1,freq: [-4,-6,-5].df('a-',octave:[  4 ]).q,instrument: \stringyy, amp:0.35]
+	[dur:1,freq: [-4,-6,-5].df('a-',octave:[  4 ]).q]
 	=>_.p
-	=>Pmul(\dur,2,_)
+	<> p.bassSoundTwoDays
+	=> Pmul(\dur,2,_)
 	=>_.trace=>_.play(quarters.asTempoClock)
 });
 

@@ -1,5 +1,6 @@
 (
 Song(\chicken3,[]).current.preroll_(1);
+["a first","r"].addLine;
 ["I would like some chicken and cheese",[1, 2, 3, 4, 3, 4, 2, 5].dm(\d)].addLine;
 Song.setTempoMap(\chicken,"qe e qe e e ee e q ");
 P('click',start:\I,music: {|p b e|
@@ -28,8 +29,17 @@ P(\swelly,start:\chicken,music:{|p b e|
 		(instrument: \cymbalsDS, amp:0.05).play
 	}
 });
-P(\vocal,start:\chicken,rpp:VocalRPP(\chicken,\test8),lag: -1,music:{|p b e| 
-	e.rpp.buffer.play
+P(\vocal,start:\chicken,rpp:VocalRPP(\chicken,\test9),lag: -1,music:{|p b e| 
+	{
+		e.rpp.buffer.() => PlayBuf.ar(1,_)
+		*3
+		=> DCompressor.ar(_,ratio:40,threshold:-40,makeup:10,automakeup:1)
+		=> EchoNone.ar(_,0.5,0.41,4)
+		=> Pan2.ar(_,-1.rrand(1))
+	}
+	.play;
+	r = e.rpp
 });
+["another line","r",[5]].addLine;
 
 )

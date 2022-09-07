@@ -167,11 +167,23 @@ P(\planet,start:\flowers,syl:2,music: { |p b e |
 	'b '.post;b.postln
  });
 ["/*KIRK:*/ I remember. You held my han-- -- -- -- -- -- -- -- -- -- -- -- -- d like ",[4,3,3,2].dm(\c)++[-4,-5,-6,-7,1,-7,-6,-7,1,2,3,2,1,2,3, 4,5].dm(\g)].addLine;
-P.tune('I remember.');
-P.tune('I remember.',{|i| Pmul(\freq,0.5,i) });
+P.tune('I remember.',  { |i| Pmul(\freq,0.5,i) <> (instrument:\twang,amp:0.05)});
+P('tune',start:\held,music: {|p b e|
+	[
+		midinote: Song.tune[Song.section(\held)].list 
+		=> {|i| i ++ i.last} 
+		//+.t [0,-12] 
+		=> _.q,
+		dur: b ++ b.last => _.q ,
+		instrument: \harp,
+		amp: 0.05
+
+	].pp
+});
+//P.tune('I remember.',{|i| Pmul(\freq,0.5,i) });
 P(\bass,'I remember.',music: {|p b e|
 		[
-				freq:[[4,14],[3,13], 5 ,-5].df(\c,octave:3).q,
+				freq:[[4,14],[3,13], [15, 5 ] ,-5].df(\c,octave:3).q,
 				instrument:\sawSynth,
 				rel:2.5,
 				dur:b.q,
@@ -195,7 +207,18 @@ P(\doubling,'I remember.',syl:12,music: {|p b e|
 		].pp
 });
 ["this.  (He kisses it, as Spock comes in.) ",[5,4,4,3,3 ].dm(\c,octave:6)].addLine;
-P.tune('this');
+P.tune(\this);
+P.tune('this', 
+	{ |i| Pmul(\freq,[1],i) <> [
+		instrument:\sawSynthSustain,
+		lagTime:0.01,
+		amp:0.04,
+		att: [1,0,0.1,0,0.1].q,
+		legato: [1,0.5,1,0.3,1].q
+	].pma(\sawSynthSustain)
+	}
+
+);
 P(\chords,start:'kisses',music: {|p b e|
 	b.postln;
 	VoiceLeading([

@@ -32,9 +32,9 @@ Song {
 		section = this.currentSong.section(section);
 		~recorder.(this.currentSong,[ section, section + length - 1 ], cueSections)	
 	}
-	*rhythmRecorder {
-	| rnge=#[0,1] cueSecs=1 |
-
+	*rhythmRecorder { // 
+	|  length=1 cueSecs=1 |
+	var rnge=[Song.cursor, Song.cursor + length -1];
 	var stepper;
 	var song = Song.currentSong;
 	var synth,recorder,a;

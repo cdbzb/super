@@ -10,20 +10,25 @@ Song(\panel1,[]).current;
 /*SPOCK:*/[" Pure energy. Matter without form. ","r",].addLine; 
 /*KIRK:*/[" Impossible. ","r",].addLine; 
 /*MCCOY:*/[" But you once had a body of some type? ","r",].addLine; 
-/*SARGON:*/[" A body much as yours, my children, although our minds were infinitely greater. ","r",].addLine; 
-/*KIRK:*/[" That's twice you've referred to us as my children. ","r",].addLine; 
+/*SARGON:*/[" A body much as yours, my children, although our minds were infinitely greater. ","-5 1 2 2 1 3".dm(\g) ++ "4 3 2 -6 -7 1 ".dm('a-') ++ "11 7 12 11 7 6 6 5".dm(\e)].addLine; 
+P.tune(\much);
+/*KIRK:*/[" That's twice you've referred to us as my children. ","1 6 2 3 2 3 7 6 6 7.5 2".dm(\f,\mixolydian) ].addLine; 
+P.tune(\That);
 
-/*SARGON:*/[" Because it is possible you are our descendants, Captain Kirk. ","r"].addLine; 
+/*SARGON:*/[" Because it is possible you are our descendants, Captain Kirk. ","1 3 5 7 12 7 5 3 2 4.5 6 11.5 13 12 14.5 12".dm(\f,4)].addLine; 
+P.tune(\Because);
 ["Six thousand centuries ago, our vessels were ","r"].addLine;
 ["colonising this galaxy, just as your own starships have now ","r"].addLine;
 ["begun to explore that vastness... ","r"].addLine;
 ["As you now leave your own seed on distant planets, ","r"].addLine;
 ["so we left our seed behind us.","r",].addLine; 
 
-/*MULHALL:*/[" Our studies indicate that life on our planet, Earth, evolved independently. ","r",].addLine; 
+///*MULHALL:*/[" Our studies indicate that life on our planet, Earth, evolved independently. ","r",].addLine; 
 ///*SPOCK:*/[" That would tend, however, to explain certain elements of Vulcan prehistory. ","r",].addLine; 
 
-/*SARGON:*/[" In any case, I do not know. It was so long ago, and the records of our travels were","r"].addLine;
+/*SARGON:*/[" In any case, I do not know. (baby) It was","5 11 5 3 7 6 5 5 6 5 4 3 4 3 2 1 6".dm(\d)].addLine;
+P.tune(\In);
+["so long ago, and the records of our travels were","r"].addLine;
 ["lost in the cataclysm which we unleashed upon ourselves. ","r",].addLine; 
 /*KIRK:*/[" A war? ","r",].addLine; 
 /*SARGON:*/[" A struggle for such goals and the unleashing of such power that you could not comprehend. ","r",].addLine; 

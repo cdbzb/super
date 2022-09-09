@@ -59,13 +59,13 @@ P.tune('long a');
 ["go. (ta da da boom da) We ", [3, 5,5,5,-4,4].dm(\e)++[3].dm(\a)].addLine;
 P.tune('go.', {|i| Pbindf(i,\amp,[0.1,\r,\r,\r,\r,\r,0.1].q,\legato,[5,1,1,1,1,1,1].q)});
 P(\bass,start:'go.',music:{|p b e|
-	Routine{
-
-		//b[0]*2/3=>_.wait;
-		(freq:[1,11].df(\e,octave:4),dur:3).play;
-		b[0..3].sum.wait;
-		(freq:[4,14].df(\e,octave:4),dur:3).play
-	}.play
+	[
+		freq:[ [1,11], [4,14] ].df(\e,4).q,
+		dur:b.parse([4,3]).q,
+		legato:[0.5,1] * 0.9 => _.q,
+		instrument:\foo,
+		amp:0.05
+	].pp
 });
 P(\chords,'go.',syl:0,music: {|p b e|
 		[
@@ -79,14 +79,26 @@ P(\chords,'go.',syl:0,music: {|p b e|
 		].pp
 });
 ["sat beside a si -- lve --r ",[1,-7,-6,-7,-5,3,4,1,3].dm(\d,octave:6)].addLine;
-P(\bass,start:'sat',music:{|p b e|
-	Routine{
-		b[0]*2/3=>_.wait;
+SynthDef(\foo,{ |freq|
+	var b = Song.durs[\sat].list;
+	[
+		Pulse.ar(freq,0.4,0.08) ,
+
+		Gendy2.ar(minfreq:freq*0.995,maxfreq:1.005*freq) * 0.03
+	]
+
+	//* Env.asr(1,1,8).kr(2,gate:\gate.kr(1))
+	* 6
+	* \amp.kr(0.1)
+	* Env([0.1, 1, 0.5, 0.7, 0],b.parse([0.1,0.9,[ 4,1 ],4,1] )).kr(2,gate:\gate.kr(1))
+	=> RLPF.ar(_, XLine.kr(1000,8000,b.sum), 1/2)
+	=> Out.ar(0,_)
+}).add;
+P(\bass,start:'sat',lag:-0.05,music:{|p b e|
 		[
-			(freq:[3,13].df(\e,octave:4),dur:b[0] * 1/3 + b[1..4].sum),
-			(freq:[1,11].df(\g,octave:4),dur:3)
-		].q.play
-	}.play
+			freq: [\r, [3,13].df(\e,4),[1,11 ].df(\g,4)].q /2,
+			dur:b.parse([ 2/3, [1/3,4 ], 4]).q,
+		].pm(\foo).play;
 });
 P.tune(\sat);
 ["lake. (boom boom) The air (boom boom) was scented with the ",[11,-7,2,3,6].dm('f#',scale:\mixolydian)++[-7,2,3,5,4,3,4].dm(\g,scale:\mixolydian)].addLine;
@@ -94,6 +106,23 @@ P(\bass,start:\lake,music:{|p b e|
 	(freq:[3,13].df(\d,octave:3),dur:b[0..3].sum).play
 });
 P.tune('scented',{|e| Pbindf(e,\legato,2)});
+P('phrase',start:\lake,syl:0,music: {|p b e|
+	var amp = 0.06;
+	[
+		freq:[ -7,2,3,6 ].df('f#',\mixolydian).q,
+		instrument:\wash,
+		dur:b.drop(1).q,
+		out: Effect(_ * [0,1]).bus.index,
+		amp: amp
+	].pp;
+	[
+		freq:[\r,\r,\r,\r, -7,2,3,5 ].df('g',\mixolydian).q,
+		instrument:\wash,
+		dur:b.drop(1).q,
+		out: Effect(_ * [1,0]).bus.index,
+		amp: amp
+	].pp;
+});
 ["flowers of our planet. ",[1,-7,1].dm(\g,scale:\mixolydian)++[6,5,4,3,6,5,4,3].dm(\d)+12].addLine;
 Song.quarters[\planet]= Song.parseBeats(\planet,[1.5,1.5,0.5,0.5,1.5,0.5,1.5,0.5,1.5,0.5,1.5]);
 //Song.quarters[\planet]
@@ -329,7 +358,7 @@ P(\lick,start:'intro',music: {|p b e|
 	]
 	=>_.pma(\sawSynthSustain)=>Pmul(\dur,2,_)=>Ptrace(_)=>_.play (Song.resources.introClock)
 });
-["Mechanically efficient and ",[\r,2, 1, 2,  4, 3].dm('e-'),"qq Q Q Q qe eqe eqe e".asBeats*60/104].addLine;
+["Mechanically efficient and ",[\r,2, 1, 2,  4, 3,\r].dm('e-'),"qq Q Q Q qe eqe e".asBeats*60/104].addLine;
 //needs to start on beat 3
 P.tune(\efficient);
 P(\bass,start:'efficient',music: {|p b e|
@@ -377,7 +406,8 @@ P(\keys,syl:0,start:\efficient,music: {
 			[-5,\_,\_, -4, -3, \r,-2]
 		],
 		"Q Q Q qe eqe eqe e".asBeats
-	).df('e-').pma;
+	).df('e-').pma
+	=> Pn(_,2);
 	[instrument:\sawSynthSustain].p<>~lick1=>_.play(clock:Song.resources.introClock) ;
 } );
 

@@ -804,7 +804,7 @@ Song {
     }
 
     setTempoMap {| section array|
-	    ( array.class == String ).if{ array = array.asBeats } ;
+	    ( array.class == String ).if{ array = array.asBeats.collect({|i| (i==0).if{0.000001}{i}}) } ;
 	    ( Song.section(section)!=(-1) ).if
 	    {
 		    tempoMap[section] = TempoMap(array, durs[section].list)

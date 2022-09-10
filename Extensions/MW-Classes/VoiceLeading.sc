@@ -1,9 +1,9 @@
 VoiceLeading {
         var lines,durs,<>durationArray, <>valuesArray, <>triggers;
         var <>demandDurations, <>demandValues;
-	var key=\degree;
-	*new { |lines durs|
-		^super.new.init(lines,durs)
+	var <>key;
+	*new { |lines durs key = \freq|
+		^super.new.init(lines,durs,key)
 	}
 	*initClass {
 	}
@@ -16,12 +16,14 @@ VoiceLeading {
 		)
 
 	}
-	init { |array durss|
+	init { |array durss k|
+
                 var longest = ( array.size>1 ).if{
                   array.collect({|i| i.size}).sort.tail.unbubble  //size of longest subarray
                 }{
                   array[0].size
                 };
+		key=k;
                 (array.rank == 1).if { array = array.bubble };
                 (durss.isNumber).if{durss = durss.bubble; \bubble.postln};
                 //pad durs using wrapAt (should this be clipAt??)
@@ -122,8 +124,7 @@ VoiceLeading {
 		}
 			=> Ppar(_)
 	}
-	array {
-
+	pbinds {
 		^lines.collect{|i x|
 			[key,valuesArray[x].q,dur:durationArray[x].q].p
 		}

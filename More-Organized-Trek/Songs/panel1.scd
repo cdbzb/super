@@ -12,6 +12,40 @@ Song(\panel1,[]).current;
 /*MCCOY:*/[" But you once had a body of some type? ","r",].addLine; 
 /*SARGON:*/[" A body much as yours, my children, although our minds were infinitely greater. ","-5 1 2 2 1 3".dm(\g) ++ "4 3 2 -6 -7 1 ".dm('a-') ++ "11 7 12 11 7 6 6 5".dm(\e)].addLine; 
 P.tune(\much);
+P.tune('much ', { |i| Pmul(\freq,0.5,i) => Pbindf(_,\instrument, \sawSynthSustain,\amp,0.04)});
+P('dyad',start:\much,syl:17,music: {|p b e|
+	(
+		freq: [ -1,1, 3 ].df(\a),
+		instrument:\sawSynthSustain,
+		att:1.5,
+		amp:0.05,
+		rel:3
+	).play
+});
+P('chords',start:\much,syl:5,music: {|p b e|
+	v = VoiceLeading(
+		[
+			[ 4,  3,  \_, 2 ],
+			[ 1,  1,  -7, \_ ],
+			[ -6, -5, \_, \_ ]
+		],
+		b.drop(1).parse([1, 0.66,0.34,1  ])
+	).df('a-').p
+	=> {|i| i<> (instrument: \visual_pad,amp:0.2) => _.play; i<>(instrument:\harp, amp:0.03) => _.play}
+	//=> _.play
+});
+P('bass',start:\much,syl:8,music: {|p b e|
+	[
+		freq: [ [-6, 6 ], [-5.5, 5.5 ]  ].df('a-',3) ++ "7 12 11 7 6 4".df(\e,3) =>_.q,
+		dur: b.drop(1).parse([3,1, 1, 1, 1, 1, 1, 2]).q,
+		depth:0,
+		freqLag:0.15,
+		legato: [0.9,0.9,1,1,1,1,1,1].q
+		
+	].pma(\sparkTriangle).play
+});
+["(infinitely)","4 3 2 1".dm(\e,\whole)].addLine;
+P.tune('(infinitely)', Pmul(\freq, [1,0.5],_));
 /*KIRK:*/[" That's twice you've referred to us as my children. ","1 6 2 3 2 3 7 6 6 7.5 2".dm(\f,\mixolydian) ].addLine; 
 P.tune(\That);
 

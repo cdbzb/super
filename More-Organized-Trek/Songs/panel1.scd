@@ -60,8 +60,26 @@ P.tune(\Because);
 ///*MULHALL:*/[" Our studies indicate that life on our planet, Earth, evolved independently. ","r",].addLine; 
 ///*SPOCK:*/[" That would tend, however, to explain certain elements of Vulcan prehistory. ","r",].addLine; 
 
-/*SARGON:*/[" In any case, I do not know. (baby) It was","5 11 5 3 7 6 5 5 6 5 4 3 4 3 2 1 6".dm(\d)].addLine;
+/*SARGON:*/[" In any case, I do not know. (baby) It was","5 11 5 3  7 6 5 5 6 5 4 3 4  3 2 1 5 6".dm(\d,\mixolydian)].addLine;
+Song.durs[\In].list.do(_.postln);
+Song.setTempoMap(\In,"e | e e qe e e e e eq e e e e qq q e x xqq");
 P.tune(\In);
+P('bass',start:\In,music: {|p b e|
+	[
+		freq: 
+		[\r] ++ "1 11 1 -7 7 -7 -4 4 -4 -5 5 -5".df(\d,3,\mixolydian) =>_.q
+		,
+		dur: [ 0.5 ] ++ "q e e ".asBeats.dup(4) =>_.flat =>_.warpTo(e.tempoMap.quantizeWindow()) =>_.q,
+		instrument:\sawSynth
+	].pp
+});
+P('click',start:\In,music: {|p b e|
+	[
+		dur: ( 0.5 ).dup(48) => _.warpTo(e.tempoMap.quantizeWindow()) =>_.q,
+		freq:  [ \r ] ++ 440.dup(32) => _.q,
+		instrument: \hihat
+	].p//p
+});
 ["so long ago, and the records of our travels were","r"].addLine;
 ["lost in the cataclysm which we unleashed upon ourselves. ","r",].addLine; 
 /*KIRK:*/[" A war? ","r",].addLine; 

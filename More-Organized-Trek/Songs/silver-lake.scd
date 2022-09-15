@@ -313,8 +313,6 @@ P(\bass,start:'two days',syl:1,music:{|p b e|
 	=> Pmul(\dur,2,_)
 	=>_.trace=>_.play(quarters.asTempoClock)
 });
-
-
 ["(intro)","r",[ (104/60).reciprocal*16 ]].addLine;
 //Song.durs['intro'] = Song.durs['intro'].list*0.98=>_.q;
 //Song.resources.introClock=TempoClock.new(104/60 * 0.98);
@@ -339,7 +337,6 @@ P(\bass,start:'intro',music: {|p b e|
 		\sawSynthSustain
 	) <> p.handsBassArray.p =>_.play(clock:p.resources.introClock) };
 } );
-
 P(\808,start:'intro',music: {|p b e|
 	\intro.post;t.postln;
 	[
@@ -415,11 +412,50 @@ P(\keys,syl:0,start:\efficient,music: { |p b e|
 	p.handsSynth<>~lick1<> [ detune: [0, 0.1,0.201 ] ].p=>_.play(clock:Song.resources.introClock) ;
 		
 } );
+["quite human-looking. ","\r 2 1 2 -7 -6 \r","qq Q Q Q qe eqe e".asBeats*60/104].addLine;
+["(boom boom) Android (boom boom) robot hands, of course. ","1 1 11 7 1 1 7 6 5 4 3 ".dm(\f,4,\mixolydian),"q q q q q q q q QQ Q QQ".asBeats*60/104].addLine;
+P.tune(\course, _ <> [instrument:\sawSynth,amp:0.15].p);
+["Hands without feeling. ",[\r, 2, 1, 2, 4, 3, \r, \r, 2, 1, 2, -6, -5].dm('e-',\mixolydian),"qq Q Q Q qe eqe e".asBeats.dup.flat* 60/104].addLine;
+P.tune(\Hands);
+P(\bass,start:'Hands',music: {|p b e|
+	[5,5,14,5]++( 5!4 )++( 11!7 ) ++ 7
+	=>_.df('e-',octave:2)
+	=>{|i| 
+		[
+
+		freq:i.q(2),
+		].pma(
+//		\sawSynthTrigger
+		\sawSynthSustain
+	) <> p.handsBassArray.p =>_.play(clock:p.resources.introClock) };
+} );
+P(\808,start:'Hands',music: {|p b e|
+	\Hands.post;t.postln;
+	[
+		"x.x...x.x.x...x.".asDrumPat(4,4)=>[instrument:\kick_gentle,dur:_,amp:0.5]=>_.p  ,
+		"xxxxxxxxxxxxxxxx".asDrumPat(4,4)=>[amp:0.08,instrument:\hat_808,dur:_]=>_.p,
+		"....x.......x...".asDrumPat(4,4)=>[amp:0.10,instrument:\sn_808,dur:_]=>_.p ,
+	] => Ppar(_) => _.play(clock:Song.resources.introClock)
+	
+});
+Song.handsSynth = [instrument:\sawSynthEnv, lofreq: 1260,hifreq:2500].p;
+P(\lick,start:'Hands',music: {|p b e|
+	 [
+		freq: [\r,5,4,6,\r,5,4,4].df('b-').q * [0.5,1],
+		dur: [2,1,1,4,2,1,1,4].q ,
+		rawLegato: [1,1,1,1,0.8, 1,1,1,0.8]=>_.flat=>_.q,
+		detune: [0, 0.1,0.201 ],
+		//amp:0.25,
+		legato: Pfunc({|e| (e.rawLegato==1).if{1}{0.6}}),
+		//out:Effect({|i| MoogFF.ar(i,1500)=>FreeVerb.ar(_,0.5,0.9) }).bus.index
 
 
-["quite human-looking. ","r"].addLine;
-["Android robot hands, of course. ","r"].addLine;
-["Hands without feeling. ","r"].addLine;
+	].p
+	<> p.handsSynth
+	//=>_.pma(\sawSynthSustain)
+	//=> _.p
+	=>_.play (clock:Song.resources.introClock)
+});
 ["Enjoy the taste of life while you can. ","r"].addLine;
 ["/*KIRK:*/ (boom But.. boom) our minds will have survived. ",[-2,2,-3,3,7,6,5,3,2.5].dm(\f)].addLine;
 //Song.durs[\survived] = Song.durs[\survived].list.put(8,Song.durs[\survived].list[8]*1.5) => _.q;
@@ -526,8 +562,12 @@ P(\pain,start:'helping', syl:12,music: {| p, b, e|
 		amp:0.2,
 		dur:3
 
-	).play
+	).play;
+	{[ Dust.ar(30) , Crackle.ar(2,mul:0.09) ] 
+		* Env.linen(0,b.sum,3).kr(2,gate:1)
+	}.play
 });
+
 
 ["/*MULHALL:*/ What is it, Sargon? ",[1,5,4,1,-7].dm(\c)].addLine;
 P.tune('What');
@@ -571,7 +611,7 @@ P(\baseNote,start:'renovate',syl:11,music:{|p b e|
 	).play
 }
 );
-["Do not be concerned.",[3,4,2,3,-7].dm('c',octave:5,scale:\minor )].addLine;
+["Do not be concerned.",[3,4,2,3,-7].dm('d',octave:5,scale:\minor )].addLine;
 P.tune('be concerned');
 ["(Chapel is holding the hypos and trying to remember something very important.)","r"].addLine;
 ["MCCOY: Nurse, how are the last metabolic readings on our patients?","r"].addLine;

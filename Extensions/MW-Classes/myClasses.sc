@@ -45,8 +45,19 @@
     ^ {|i| i * (1-wet) + ( this.(i) * wet )}
   }
 }
++ UGen {
+	++ {|that|
+		^[this,that]
+	}
+}
 + Object{
-	=> {|a| ^a.(this)}
+	=> {|a adverb|
+		^switch (adverb,
+			nil, { a.( this ) },
+			\first, { a.(this); this },
+			\split, { [a.(this), this ] }
+		)
+	}
 	ooo {|a| ^a.(this)}
 	=>| {|a| a.(this)}
 	=>+ {|a b| ^a.(this,this)}//a is a fn of 2 vars

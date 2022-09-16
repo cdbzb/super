@@ -1,3 +1,22 @@
+NoteName {
+	classvar <names;
+	*initClass{ 
+		names = (
+					c:0,'d-':1,'c#':1 ,d:2,'d#':3,'e-':3,e:4,f:5,'f#':6,'g-':6,g:7,'g#i':8,'a-':8,a:9,'a#':10,'b-':10,b:11,
+					C:-12,'C#':-11 ,D:-10,'D#':-9,'E-':-9,E:-8,F:-7,'F#':-6,'G-':-6,G:-5,'G#I':-4,'A-':-4,A:-3,'A#':-2,'B-':-2,B:-1
+				)
+	}
+	*doesNotUnderstand{ |i|
+		i.postln;
+		^try{names.at(i)}
+	}
+}
++Symbol {
+	asNum {
+		^NoteName.names.at(this)
+	}
+}
+
 + Object {
 	//?= {|that| this ? (this=that) }
 
@@ -13,6 +32,11 @@
 
 }
 
++ Symbol {
+	asNote{
+
+	}
+}
 + SimpleNumber {
 	asDegrees { |root=0 octave=5 scale=\major tuning| 
 		var i=this;

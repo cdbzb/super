@@ -1,5 +1,3 @@
-
-
 + SequenceableCollection {
 	q{ arg repeats=1;
 		^Pseq.new(this,repeats)
@@ -80,4 +78,5 @@
 			{Pipe.new("osascript -e \'activate application \"VimR\"\'", "w").close}.defer(0.1)
 		});
 	}
+
 }

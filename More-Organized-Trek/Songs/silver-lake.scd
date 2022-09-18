@@ -322,7 +322,7 @@ P(\bass,start:'two days',syl:1,music:{|p b e|
 		hifreq:2500,
 		out: Effect(HPF.ar(_,250),inputChannels:2).bus.index
 	].p;
-	Song.handsKeys = (intro: 'b-', bridge: \d, reprise: \g);
+	Song.handsKeys = (intro: 'b-', bridge: \d, reprise: \g, outro:\g);
 	Song.introClock=TempoClock.new(104/60);
 	Song.handsBassArray = [
 		amp:0.2,
@@ -492,14 +492,54 @@ P(\lick,start:'Hands',music: {|p b e|
 	//=> _.p
 	//=>_.play (clock:Song.introClock)
 });
-["Enjoy the taste of life while you can. ","r"].addLine;
+["Enjoy the taste of life while you can. ","11 7 6 5 4 3 4 3 2 3 12".dm(Song.handsKeys.outro,\dorian)].addLine;
+P.tune(\Enjoy);
+P('bass',start:\Enjoy,syl:0,music: {|p b e|
+	(
+		instrument: \sawSynth,
+		freq: 1.df( p.handsKeys.outro,[3,2]),
+		out: Effect(EchoNone.ar(
+			_,
+			0.3,
+			( 60/104/2 ),
+			11	
+		),inputChannels:2).bus.index
+	).play
+});
+P('chord2',start:\Enjoy,music: {|p b e|
+	[
+
+		freq:	[\r,[5,7,15,16],[1, 4, 11, 12, 14, 16, 21]].df(p.handsKeys.outro,2).q,
+		dur:3,
+		//strum: 0.05,offset:-0.05,
+		instrument:\wash,
+		amp:0.05,
+		dur:b.parse([1,9,1]).q
+].p.play
+});
+
 ["/*KIRK:*/ (boom But.. boom) our minds will have survived. ",[-2,2,-3,3,7,6,5,3,2.5].dm(\f)].addLine;
 //Song.durs[\survived] = Song.durs[\survived].list.put(8,Song.durs[\survived].list[8]*1.5) => _.q;
 P.tune(\survived);
+P('bass',start:\But,music: {|p b e|
+	[
+		freq: [2,3].df(\f,[2,3]).q,
+		dur:b.parse([2,1]).q,
+		instrument:\sawSynth, amp:0.05
+	].pp
+});
 P(\mindChord,syl:3,lag:-0.06, start:\survived, music: {
 	[-11,-15,-1,1,3,5,7].df(\f)
 	=> 
-	{|i| (amp:0.02,freq:i,strum:0.06,dur:2,instrument:\sawSynthSustain).play}
+	{|i| (amp:0.02,
+		freq:i,
+		strum:0.06,
+		lag:-0.06,
+		dur:2,
+		instrument:\sawSynthSustain,
+		out:[0,1,2,3,4]
+		//out:Effect(Phaser2.ar(_,rate:0.2,fb:-0.9),inputChannels:4,out:[0,1,2,3]).bus.index
+	).play}
 });
 P(\bassNote,start:\survived,syl:7,music:{
 	[

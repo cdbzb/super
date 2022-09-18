@@ -1,21 +1,18 @@
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+(
+a=Signal.gaussianBank(2048,[400,900],1,s.sampleRate)[2] => 
+Buffer.loadCollection(s,_) 
+=>_.syncThen{|i| {Convolution2.ar(WhiteNoise.ar(0.1),i)}.play;
+};
+(lag: 4096/s.sampleRate) .play
+)
+(
+SynthDef(\test,{Saw.ar(SinOsc.ar(1).range(100,400),0.1) => Out.ar(0,_)}).add.syncThen{|i| 
+	Synth(i.name);
+};
+Synth(\default)
+)
 
 
 SynthDef(\test,{Out.ar(0,SinOsc.ar(456,0,0.1))}).doAdd.then({ Synth(\test) })

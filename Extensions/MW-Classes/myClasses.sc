@@ -55,7 +55,8 @@
 		^switch (adverb,
 			nil, { a.( this ) },
 			\first, { a.(this); this },
-			\split, { [a.(this), this ] }
+			\split, { [a.(this), this ] },
+			\array, { a.valueArray(this) }
 		)
 	}
 	ooo {|a| ^a.(this)}

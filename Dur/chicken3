@@ -1,13 +1,13 @@
 var o, p;
 o = [
-	Dictionary.prNew,  Array.prNew(512),  "testing 1 2 3",  Pseq.prNew,  
-	List.prNew,  Array.prNew(5),  "I would like some chicken and cheese",  Pseq.prNew,  
-	List.prNew,  Array.prNew(8),  "nop",  Pseq.prNew,  
-	Array.prNew(1)
+	Dictionary.prNew,  Array.prNew(512),  "another line",  Pseq.prNew,  
+	Array.prNew(1),  "testing 1 2 3",  Pseq.prNew,  List.prNew,  
+	Array.prNew(5),  "I would like some chicken and cheese",  Pseq.prNew,  List.prNew,  
+	Array.prNew(8),  "nop",  Pseq.prNew,  Array.prNew(1)
 ];
 p = [
 	// Dictionary
-	0, [ array: o[1],  size: 3 ],  
+	0, [ array: o[1],  size: 4 ],  
 	// Array
 	1, [ nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -29,6 +29,7 @@ p = [
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
+		o[2],  o[3],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -78,8 +79,8 @@ p = [
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[5],  o[6],  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  o[2],  o[3],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -114,15 +115,14 @@ p = [
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[9],  o[10],  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  o[6],  o[7],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		o[10],  o[11],  nil,  nil,  
+		o[13],  o[14],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -140,23 +140,28 @@ p = [
 	// Pseq
 	3, [ list: o[4],  repeats: 1,  
 		offset: 0 ],  
-	// List
-	4, [ array: o[5] ],  
 	// Array
-	5, [ 0.839,  0.252,  0.264,  1.045,  
+	4, [ 5 ],  
+	// Pseq
+	6, [ list: o[7],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	7, [ array: o[8] ],  
+	// Array
+	8, [ 0.839,  0.252,  0.264,  1.045,  
 		1.052 ],  
 	// Pseq
-	7, [ list: o[8],  repeats: 1,  
+	10, [ list: o[11],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	8, [ array: o[9] ],  
+	11, [ array: o[12] ],  
 	// Array
-	9, [ 0.887,  0.342,  0.798,  0.313,  
-		0.349,  0.659,  0.359,  0.875 ],  
+	12, [ 1.584,  0.364,  1.411,  0.461,  
+		0.466,  1.229,  0.479,  1.016 ],  
 	// Pseq
-	11, [ list: o[12],  repeats: 1,  
+	14, [ list: o[15],  repeats: 1,  
 		offset: 0 ],  
 	// Array
-	12, [ 2 ]
+	15, [ 2 ]
 ];
 prUnarchive(o,p);

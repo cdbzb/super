@@ -4,6 +4,9 @@
         function.value({|res| def.value = res });
         ^def
     }
+    --> {|that|
+	    this.then(that)
+    }
 }
 + Function {
 	deferred { ^Deferred().using(this) }
@@ -15,4 +18,5 @@
 		}.then(i)
 	}
 }
+
 // usage

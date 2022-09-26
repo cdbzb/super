@@ -51,7 +51,15 @@ P.tune(\That);
 
 /*SARGON:*/[" Because it is possible you are our descendants, Captain Kirk. ","1 3 5 7 12 7 5 3 2 4.5 6 11.5 13 12 14.5 12".dm(\f,4)].addLine; 
 P.tune(\Because);
-["Six thousand centuries ago, our vessels were ","r"].addLine;
+["Six thousand centuries ago, our vessels were ","3 3 3 3 2 2 -7 1 2 2 3 -4".dm('a-',\minor)].addLine;
+P.tune(\Six, Pset(\amp, Pfunc({ |e|(e.midinote < 1.dm('a-')).if{0}{0.1}}), _ ));
+P('bass',start:\Six,music: {|p b e|
+	[
+		freq: [11, 11, 7, 7 , 4].df('a-',2,\minor).q,
+		dur: b.parse([[1,1,0.5],0.5, 3,5,1]).q
+	].pp
+});
+
 ["colonising this galaxy, just as your own starships have now ","r"].addLine;
 ["begun to explore that vastness... ","r"].addLine;
 ["As you now leave your own seed on distant planets, ","r"].addLine;

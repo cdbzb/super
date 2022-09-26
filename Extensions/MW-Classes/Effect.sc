@@ -12,9 +12,11 @@
 		*newSidechain {|function out=0 inputChannels=1| ^super.new.initSidechain(function,out,inputChannels) }
 
 		*new2 {|function out=0 inputChannels=1| ^super.new.init2(function,out,inputChannels)}
-		*lfo {|function out=0 inputChannels=1 dur| ^super.new.initLfo(function,out,inputChannels,dur)}
+		*lfo {|function inputChannels=1 dur| ^super.new.initLfo(function,inputChannels,dur)}
+		*bus {|function out=0 inputChannels=1 target| ^Effect.new(function , out,inputChannels, target).bus.index}
+		*kbus {|function inputChannels=1 dur| ^super.new.initLfo(function,inputChannels,dur).bus.index}
 
-		initLfo { |function out inputChannels=1 dur |
+		initLfo { |function inputChannels=1 dur |
 			bus=Bus.control();
 			synth={ function => Out.kr(bus.index , _ )}.play;
 			dur.notNil.if{

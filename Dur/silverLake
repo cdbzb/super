@@ -16,7 +16,7 @@ o = [
 	Pseq.prNew,  List.prNew,  Array.prNew(11),  "helping them (boom) not to make the errors we -- did. (pain) ",  
 	Pseq.prNew,  List.prNew,  Array.prNew(14),  "Do not be concerned.",  
 	Pseq.prNew,  List.prNew,  Array.prNew(5),  "Enjoy the taste of life while you can. ",  
-	Pseq.prNew,  List.prNew,  Array.prNew(11),  "sat beside a si -- lve --r ",  
+	Pseq.prNew,  List.prNew,  Array.prNew(12),  "sat beside a si -- lve --r ",  
 	Pseq.prNew,  List.prNew,  Array.prNew(9),  "/*KIRK:*/ Nothing. Our next injection will renovate me. ",  
 	Pseq.prNew,  List.prNew,  Array.prNew(12),  "I think it is best not to remember so well. (boom) ",  
 	Pseq.prNew,  List.prNew,  Array.prNew(13),  "/*KIRK:*/ Nothing. Our next injection will renovate me. (boom) ",  
@@ -305,9 +305,9 @@ p = [
 	// List
 	65, [ array: o[66] ],  
 	// Array
-	66, [ 0.364,  0.552,  0.355,  0.318,  
-		0.391,  0.506,  0.31,  0.389,  
-		0.411,  0.578,  3.396 ],  
+	66, [ 0.728,  0.423,  0.759,  0.403,  
+		0.351,  0.482,  0.603,  0.264,  
+		0.381,  0.383,  0.461,  1.316 ],  
 	// Pseq
 	68, [ list: o[69],  repeats: 1,  
 		offset: 0 ],  

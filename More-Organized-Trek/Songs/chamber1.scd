@@ -39,9 +39,11 @@ Pdefn(\lower,7.df.bubble.q(inf)); ///NOW WHAT?
 (
 Song.triller = { 
 	VarSaw.ar( LFPulse.ar(
-		LFBrownNoise1.kr(1).range(5.5,7)
-	).range(\lower.kr(7.df,\portamentoRate.kr(1)),\higher.kr(11.df,6)
-	),0,0.5.rand, 0.05 )
+		LFBrownNoise1.kr([ 1, 1.01, 1.02 ]).range(5.5,7)  // for multi-chan
+	).range(\lower.kr(7.df,\portamentoRate.kr(1)),\higher.kr(11.df,6))
+	* [3, 2,1 ], //octaves
+	0,0.5.rand, 0.05 )
+	* 0.15 // amp
 	=> Pan2.ar(_,Rand(-1,1.0))
 	=> LPF.ar(_,4000)
 	//=> TwoTube.ar(_, k:0.01, loss:0.997, d1length:[333,456], d2length:[543,611], mul:1.0, add:0.0)
@@ -67,7 +69,22 @@ P(\trill,start:\Atmos,music:{|p b e|
 });
 
 ["A fraction richer in oxygen than usual for us, but otherwise normal. "," 3 4 5 7 11 6 13 12 5 6 12 11.5 6, 4.5 5.5 4 5 6 7 12 11".dm(\c)].addLine;
-P.tune(\oxygen,{|i| Pmul(\freq,[1,0.5],i) => Pset(\legato,4,_) });
+P.tune(\oxygen,{|i| Pmul(\freq,[1,0.5],i) => Pset(\legato,1,_) });
+P('chord',start:\oxygen,music: {|p b e|
+	(
+		oxygen: [13, 12, 5],
+		usual: [12,11.5,6],
+		otherwise: [5,12,11]
+	) => {|i| 
+		[
+			freq: [\r,i.oxygen, i.usual, i.otherwise].df(\c,tuning:\just).q,
+			dur: b.parse([6,4,6,4]).q,
+			instrument: \wash,
+			att:3, lag:-0.5,amp:0.03
+			
+		].pp
+	}
+});
 ["SPOCK: This vault was constructed about a half a million years ago.", "5 7 6 5 4 3 2 3 4 6 5 4 3 2 1".dm(\c,5,\mixolydian)].addLine;
 P.tune(\vault, { |i| Pmul(\freq,[1,0.5],i) <> [amp:
 	[4,5,4,4,5,4,4,4,4,5,4,4,5,4,4]

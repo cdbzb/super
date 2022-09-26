@@ -431,6 +431,8 @@ Song {
 	}
 
 	pts {^all {:x,x<-resources,x.class==Part}}
+	solo {|key| ^all{:x,x<-this.pts,x.name.asString.contains(key.asString)}}
+	playOnly {|...args| args.collect{|i| this.solo(i)}.flat.do(_.p)}
 
 	track { 
 		|trackName| 
@@ -602,7 +604,7 @@ Song {
 			1.wait;
 			try{ Server.default.stopRecording };
 			0.1.wait;
-			"ffmpeg -i" + path ++ ".mov" + "-i" + path ++ ".aif" + "-c copy -map 0:v:0 -map 1:a:0" + path ++ "together.mov" => _.unixCmd
+			"ffmpeg -i" + path ++ ".mov" + "-i" + path ++ ".aif" + "-c copy -map 0:v:0 -map 1:a:0" + path ++ "screenRecording.mov" => _.unixCmd
 		}
 	}
 

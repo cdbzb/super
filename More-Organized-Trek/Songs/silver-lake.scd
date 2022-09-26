@@ -249,20 +249,20 @@ P(\ride,\flowers, //syl:3,
 );
 P(\chords,start:'kisses',music: {|p b e|
 	b.postln;
-	VoiceLeading([
+	a = VoiceLeading([
 		[3,\_,2 ,\_,\_,],
 		//[1,\_,-7,\_,\_,]
 		[1,\_,-7.5,\_,-7,]
 	],b.asArray
-).df('b-',scale:\mixolydian,octave:5)
-.array.do {|i| i <> [
-	instrument:\trem2,
-	scale:1,
-	legato:1,
-	rel:3,
-	amp:0.05
+	).df('b-',scale:\mixolydian,octave:5)
+	.pbinds.do {|i| i <> [
+		instrument:\trem2,
+		scale:1,
+		legato:1,
+		rel:3,
+		amp:0.05
 
-].pm(\trem2) => _.play } 
+	].pm(\trem2) => _.play } 
 });
 ["I think it is best not to remember so well. (boom) ",[3,2,3,1,-5,2,1,-7,-6,-7,-5,-2.5,-4.5].dm(\d)].addLine;
 P.tune('best',_ <> [amp: 0.1 * [1,1,1,1,1,1,1,1,1,1,1,1,0].q].p);

@@ -14,6 +14,7 @@ Song {
 	var <>quarters, <>tempoMap;
 	var <>clock;
 	var playInitiatedAt,<>preroll=0;
+	var <secLoc, <secDur;
 	classvar <>muteTunes;
 
 	*initClass {
@@ -260,9 +261,18 @@ Song {
 		clock=TempoClock.new(queueSize:512);
 		quarters=SongArray(key:key);
 		tempoMap=SongArray(key:key);
-	}
-	cursor_ {|i| cursor = i; lastSectionPlayed = i;}
+		secLoc = SectionAccessor({
+			|i| 
+			Song.secDur[..(i-1)].sum
+		});
+		secDur = SectionAccessor({
+			|i|
+			Song.durs[ i ].list.sum
+		})
 
+	}
+
+		cursor_ {|i| cursor = i; lastSectionPlayed = i;}
 	hasDursButNotLyricsToDurs {
 		// Is there a file in the Dur folder?
 		File.exists(dursFolder +/+ key).if{
@@ -327,22 +337,14 @@ Song {
 		durs[sections-1]=array.q
 	}
 
-	secLoc {
-		var secDurs = this.secDur;
-		^SongArray(
-			[0]++(sections-1).collect{|i| secDurs[..i].sum}
-			,key
-		)
-	}
-
-	secDur{
-		var dursNow=this.durs;
-		^SongArray(
-			//this,
-			(..sections-1).collect{|i|dursNow[i].list.sum}
-			,key
-		)
-	}
+//	secDur{
+//		var dursNow=this.durs;
+//		^SongArray(
+//			//this,
+//			(..sections-1).collect{|i|dursNow[i].list.sum}
+//			,key
+//		)
+//	}
 
 	pbind {
 		var dursNow=this.durs;
@@ -1145,6 +1147,13 @@ Track {
 	arm {|bus| parts.do({ |i| i.music.arm(bus:bus) })}
 }
 
+SectionAccessor {
+	var function;
+	*new {|function| ^super.new.init(function) }
+	init {|f| function = f} 
+	at {|section| ^(section.isNumber).if{section}{Song.section(section)}  => function }
+	copySeries {|i j k| ^(0..Song.sections).copySeries(i,j,k).collect( { |i| this.at(i)} )}
+}
 
 + Symbol {
 	cursor {

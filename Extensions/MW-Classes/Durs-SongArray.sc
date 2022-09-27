@@ -23,6 +23,9 @@ Durs {
 		{i.isInteger}{song.lyricsToDurs.put(song.lyrics[i],j)}
 		{i.class==Symbol}{song.lyricsToDurs.put(song.lyrics[song.section(i)],j)}
 	}
+	scale {|section amount|
+		this.put(section,this.at(section).list * amount => _.q)
+	}
 }
 
 SongArray { //array which can be indexed by current song lyric

@@ -6,13 +6,20 @@
 		b=b.dropLast.collect{|i x| b.at(x+1)-i};
 		^this.clumps(b)
 	}
-
+	oldSplit { |test|
+		^ this .collect{|i j| [j,i]}
+		.select{|i| i[1]=>test}
+		.collect(_[0])++this.size
+		=> {|i| (i.size-1).collect{|x| i[x+1]-i[x]}}
+		=> _.collect(1!_)
+		=> this.reshapeLike(_)
+	}
 
 	dmx {
-		^this.split({|i| i.class==String})
+		^this.oldSplit({|i| i.class==String})
 		.collect({|a| 
 			//a.postln
-			{|durs ins...pairs| 
+			{|durs ins ...pairs| 
 				ins.postln; 
 				[instrument:ins,dur:durs.asDrumPat.list.q(inf) ]++pairs
 				=>_.p

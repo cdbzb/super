@@ -1,7 +1,7 @@
 
 ( // {{{1
-	~unnecessary = Song( \unnecessary,[]); 
-	Song.unnecessary.current;
+	~unnecessary = Song( \unnecessary,[]).current; 
+	//Song.unnecessary.current;
 		
 ["that will be unneccesary Doctor"," d# e f# d# g# f# e d# d# c#"].addLine;//0
 ["r this Vulcan body is adapted to the","r b b g# f# e f# g# f# e d# e"].addLine;//1

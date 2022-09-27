@@ -769,15 +769,17 @@ SynthDef(\verb,{|out wet=1 |
 [ " r","f#4" ].addLine; //8
 //}.fork
 
+
 ["/*SPOCK*/ This is an excellent body, Doctor." ,"r"].addLine;
 ["I seem to have received the best of the three. ","r"].addLine;
 ["Strength, hearing, eyesight, all far above your human norms. ","r"].addLine;
 ["I'm surprised the Vulcans never conquered your race. ","r"].addLine;
-//get this from reaper
-// /Users/michael/tank/Trek/Vulcan's worship peace/Vulcan's worship peace.RPP 
+//get this from reaper (HOOK) "/Users/michael/Trek/Vulcan's worship peace/Vulcan's worship peace.RPP" => {|i| ( "open "+i ).unixCmd }
 ["/*MCCOY*/ Vulcans worship peace above a-- ll, Henoch. ",[5,5,4,4,3, 2,1,2,3, -6,-5].dm('d')].addLine;
 ~justTheTune.('worship');
 ~quarters[\worship] = Song.parseBeats('worship',"e e e e qqq e e e eq q q".asBeats);
+Song.setTempoMap(\worship,"e e e e qqq e e e eq q q");
+//Song.tempoMap[\worship]=Song.tempoMap[\worship].quantize;
 P(\harmonyPart,start:'worship',music:{|p b e|
 	[
 		freq:[2,2,2,2,1].df('a',octave:5 ).q,
@@ -785,14 +787,45 @@ P(\harmonyPart,start:'worship',music:{|p b e|
 	].pp
 }
 );
-P(\worshipBase,start:'worship',music:{|p b e|
+P('key',start:\worship,music: {|p b e|
 	[
-		freq:[4,4,5,5,1,1,5,5,5,6,7].df('d',octave:3 ).q(2),
-		dur:
-		 "e e e e qe e e q e qe e".asBeats.q(2),
-	].p => _.fin(16)=>_.play(~quarters[e.start].asTempoClock)
-}
-);
+		freq: [\r,3,1, 3, 2, 2, 1, 2, 3, 2, 1].df(\d,octave:6).q,
+		dur: [4,2,1,1,2,1,1, 1,1,1,1]/2 =>_.warpTo(e.tempoMap) =>_.q,
+		out: 
+		Effect.bus({|i| CombC.ar(i,1,b[0]) * 0.5 + i})
+	].pp
+});
+P(\bass,start:'worship',music:{|p b e|
+	[
+		freq:[4,4,5,5,11,11,5,5,5,6,7].df('d',octave:3 ).q(2),
+		dur: "e e e e qe e e q e qe e".asBeats.warpTo(e.tempoMap).q(2),
+		instrument: \sawSynth
+	].p => _.fin(15) => _.play
+});
+P('drum',start:\worship,music: {|p b e|
+	var volScale = 0.7;
+	[
+		dur:0.5.dup(20).warpTo(e.tempoMap).q ,
+		rest:[1,1,\r,1,1,\r,\r,\r].q(inf),
+		//instrument:\bd_808,
+		instrument:\kick_gentle,
+		vol:0.15 * volScale
+	].pp;
+	[
+		dur:1.dup(16).warpTo(e.tempoMap).q,
+		rest:[\r,1].q(8),
+		instrument:\sn_808,
+		amp:0.08  * volScale
+	].pp;
+	[
+		dur:0.5.dup(19).warpTo(e.tempoMap).q,
+		instrument:\hihat,
+		ffreq:[4400,6600].q(inf),
+		amp:[\r,\r,\r,\r].q++[0.1,0.07].q(inf) /3
+
+	].pp;
+	[ instrument:\cymbalsDS,amp:0.01,rest:[\r,1].q,dur:[2,1].warpTo(e.tempoMap).q ].p.play
+});
 P(\pianoWorship,start:'worship',music:{|p b e|
 	[
 		freq:[-6,-6, -5,1,3,2,-5].df('d',octave:5 ).q,
@@ -922,50 +955,53 @@ Song.tk.add(\snare->
 	);
 );
 
-["that will be unnecessary Doctor"," d# e f# d# g# f# e d# d# c#"].addLine;//0
+["that will be unnecessary Doctor"," d# e f# d# g# f# e d# d# c#"].addLine;//
 
-	P(\unnecessary, start:'unnecessary',music:
-		Song.pbind[ Song.section(\unnecessary) ]
-	);
-	P(\descant,start:'unnecessary',music: //		{{{
-		Pbind(*[
-			instrument:\sawSynth,
-			degree:Pseq([\r,8,7,6,5,5,4.1])-1,
-			att:0.7,
-			root:4,
-			dur:Pseq(
-				[Song.durTill(Song.section( 'unnecessary' ),3)]++Song.durs['unnecessary'].list [4..9]++[0.5,2]
-
-			)
-		])
+	P.tune(\unnecessary);
+	P(\descant,start:'unnecessary',music: {|p b e|
+			[
+				instrument:\sawSynth,
+				degree:Pseq([\r,8,7,6,5,5,4.1])-1,
+				att:0.7,
+				root:4,
+				dur:Pseq( [Song.durTill(Song.section( 'unnecessary' ),3)]++Song.durs['unnecessary'].list [4..9]++[0.5,2]),
+				dur: b.parse([4,1,1,1,1,1,1]).q,
+			].pp
+		}
 	);
 	P(\unnecBass,start:'unnecessary',music: //		{{{
-		Pbind(*[
-			instrument:\sawSynth,
-			degree:Pseq([5,2])-1,
-			rel:4,
-			dur:Song.durTill(Song.section(\unnecessary),7),
-			//dur:Pseq([2.3,1]),
-			root:4,
-			octave:3
-		])
+		{|p b e|
+			[
+				instrument:\sawSynth,
+				degree:Pseq([5,2])-1,
+				rel:4,
+				dur: b.parse([8,2]).q,
+				//dur:Pseq([2.3,1]),
+				root:4,
+				octave:3
+			].pp
+		}
 	);
-["(four bar intro)","r"].addLine;
+["(four bar intro)" , "r",[16]].addLine;
+Song.vulcanBodyTempo = 1.2;
+Song.tk.asPairs.pairsDo{|name pattern| Song.tk.put(name, Song.tk.at(name) => Pmul(\dur,Song.vulcanBodyTempo.reciprocal,_))}; //scale pattern
+Song.durs['four bar intro']=Pseq([1,1,1.5,0.25,0.25+0.5, 0.5,0.5,0.25,0.25+0.5,0.5,0.5,0.5]);
+Song.durs.scale('four bar intro',Song.vulcanBodyTempo.reciprocal);
 	P(\leadIn,start:'four bar intro',music: //		{{{
-		Pfindur(8,
-			Ppar([
-				//Pseq([Song.pbind[1]],4).play;
-				Song.tk.at(\snare),
-				Song.tk.at(\kick),
-				Song.tk.at(\pulse),
-				Song.tk.at(\saw),
-				Song.tk.at(\hat)
-			])
-		)
+		{ |p b e|
+			Pfindur(8/p.vulcanBodyTempo,
+				Ppar(
+					[
+					//Pseq([Song.pbind[1]],4).play;
+					Song.tk.at(\snare),
+					Song.tk.at(\kick),
+					Song.tk.at(\pulse),
+					Song.tk.at(\saw),
+					Song.tk.at(\hat)
+				])
+			).play
+		}
 	); 
-
-	Song.durs['four bar intro']=Pseq([1,1,1.5,0.25,0.25+0.5, 0.5,0.5,0.25,0.25+0.5,0.5,0.5,0.5]);
-	P(\tempo1,start:'four bar intro',music:{{TempoClock.tempo=1.2}.fork});
 ["r this Vulcan body is adapted to the","r b b g# f# e f# g# f# e d# e"].addLine;//1
 P.still( \clear, start: 'adapted to', timecode:0 ,syl:0, music: { |p b e|
 	e.still.value(
@@ -981,19 +1017,18 @@ P.still( \clear, start: 'adapted to', timecode:0 ,syl:0, music: { |p b e|
 
 });
 	Song.durs['is adapted']=Pseq([1,1,1.5,0.25,0.25+0.5, 0.5,0.5,0.25,0.25+0.5,0.5,0.5,0.5]);
+	Song.durs.scale('is adapted',Song.vulcanBodyTempo.reciprocal);
 //	Song.durs[1]=Pseq((Song.durs[1].list!2).flatten	);
-	Song.adaptedTempo=1.2;
-	P(\tempo2,start:'adapted to',music:{{TempoClock.tempo=Song.adaptedTempo}.fork});
 	P(\bass1,start:'adapted to',music: {
 		var notes=[1,3,6,4].collect{|i| i!4}.flatten;
 		[
 		degree:Pseq(notes,4)-1,
-			dur:0.5,
+			dur:0.5/Song.vulcanBodyTempo,
 			root:4,
 			octave:2,
 			trig:Pseq(1!16),
 			out: Effect(
-				{|i| i + CombN.ar( i, 1, 0.25/Song.adaptedTempo,2,mul:( 0.8*0.8 ) )/2
+				{|i| i + CombN.ar( i, 1, 0.25/Song.vulcanBodyTempo,2,mul:( 0.8*0.8 ) )/2
 				=> Phaser1.ar(_,  depth: 0.5,  rate: 0.2,  fb: 0.3,  cfb: 0.1,  rot: 1.5707963267949)
 			}
 			).bus.index
@@ -1019,7 +1054,6 @@ P.still( \clear , start:\higher , timecode:0, syl:1, music: { |p b e|
 		text:["higher","metabolism"]
 	);
 });
-//	P(\tempo3,start:'higher metabolism',music:{{TempoClock.tempo=1}.fork});
 	P(\bass3,start:'higher metabolism',music: //		{{{
 		{|p b e|
 			[
@@ -1029,7 +1063,7 @@ P.still( \clear , start:\higher , timecode:0, syl:1, music: { |p b e|
 				root:4,
 				octave:2,
 				out: Effect({|i| 
-					i + CombN.ar( i, 1, 0.25/Song.adaptedTempo,2,mul:( 0.8*0.8 ) )/2
+					i + CombN.ar( i, 1, 0.25/Song.vulcanBodyTempo,2,mul:( 0.8*0.8 ) )/2
 					=> Phaser1.ar(_,  depth: 0.5,  rate: 0.2,  fb: 0.3,  cfb: 0.1,  rot: 1.5707963267949)
 				}).bus.index,
 				trig:1
@@ -1056,14 +1090,8 @@ P.still( \clear , start:\higher , timecode:0, syl:1, music: { |p b e|
 		);
 		//Song.tk.at(\hat).play(u)
 	);
-//~sections5.metabolism.p;//just making louder hmmm
-//Song.play;
-
 ["it won't work, Sargon!","d#5 b4 g5 d# b4"].addLine;//3
-	P.tune('work, Sargon');
-	P(\tempoWork,start:'work',music:{
-		{TempoClock.tempo=1}.fork}
-	);
+P.tune('work, Sargon');
 P(\workChord,syl:1,start:'work, Sargon',music:{|p d|
 
 	var a=Scale.new((0..8),pitchesPerOctave:9);
@@ -1136,6 +1164,22 @@ P(\outChord,syl:4,start:'get out',music:{|p d|
 );
 ["kill them! /*SARGON*/  we will transfer at once un-",[11,7,5,6,7,5,7,7,7].dm('c')].addLine;//5
 P.tune('we will transfer');
+P('bass',start:\kill,music: {|p b e|
+	[
+		freq: [\r,5,5].df(\c,[2,3,4]).q,
+		dur: b.parse([5,[1,1,0.5],[0.5,1]]).q,
+		out:[1,4],
+		instrument: \pulse,amp:0.25
+
+	].pp;
+	[
+		freq:[\r,7,7].df(\c,[3,4,5]).q,
+		dur:b.parse([4,3,3]).q,
+		out:Effect.bus(TwoTube.ar(_,loss:0.99,d1length:992) * 0.4,inputChannels:2,out:[2,3]),
+		instrument:\twang
+
+	].pp
+});
 ["til you can administer the ",[7,6,5,4,7,11,6,5].dm('d')].addLine;//6
 P.tune('administer');
 ["(boom) metabolic reduction injection... a ",[11,15,14,15,12,14,12,11,14.5,11,7.5, 7].dm('a-',octave:4,scale:\mixolydian )].addLine;//7
@@ -1315,15 +1359,5 @@ P(\highChords,start:'risk it',music:{|p b|
 	.play
 });
 
-e.pop;
-)
-asCompileString
-a=Harmonics()
-a.ramp(1,1).sizeS
-c=SystemClock.seconds;Song.play
-SystemClock.seconds-c
-
-)
-// to Unnecessary
 )
 

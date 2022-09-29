@@ -53,35 +53,42 @@ P(\chords,start:\selected,syl:6,music:{|p b e|
 	strum:0.054
 ].pp
 });
+
 [ "MCCOY:(boom boom boom boom) What's your attitude on that, Doctor? ", [ -1, -1, -17, -17, -5, 3, -7, 1, -7, -5, 3, 2, 1 ].dm(\a,5,\mixolydian) ].addLine;
+
 P(\bass,start:\attitude,music:{|p b e| 
 	MegaBind(
 			[
 				[11, 11, 7, 7, 11, 1].df(\a,3,\mixolydian)
 			],
-			b.drop(1).parse([1,1,1,1,5,4]),
+			b.parse([1,1,1,1,5,4]),
 			[],
 			{|i|
 				Pulse.ar( i.freqSeq * [1,2.01,3.0201] /4 )
-				* 
-				(
-					0.5 * Env.asr().kr(gate:i.gateSeq)
-					+ Env.perc().kr(0,gate:(i.trigSeq*i.gateSeq))
+				* (
+					Env.asr().kr(gate:i.gateSeq)
+					//+ Env.perc().kr(0,gate:(i.trigSeq*i.gateSeq))
 				)
+				=>MoogFF.ar(_,Env.perc(0.01,0.5).kr(0,gate:(i.trigSeq*i.gateSeq))*4000+1000,0.4)
 				* 0.06
 			},
 			{|i|
-				Splay.ar(i)
+				Splay.ar(i) 
+				*2
+				=> FreeVerb.ar(_,0.3,1)
+				=> _.tanh
+				/2
 			}
 		).play
 });
-P.tune(\attitude);
+
+P.tune(\attitude,_ <> [rest:[\,\,\,\,1,1,1,1,1,1,1,1,1].q].p);
 // ["MULHALL: Well, if we all agree, I'm willing to host Thalassa's mind.","r"].addLine;
 //[" ( boom x 7 ) I'm a scientist.  ( boom x 7 ) and I'm","3 4 6 5 7 3 4 11 12 13 14 13 5 3 4 6 5 7 3 4 5 15  ".dm(\b)].addLine;g
 [" ( boom x 7 ) I'm a scientist.  ( boom x 7 ) and I'm","3 4 6 5 7 3 4 11 7 11 12 11 3 3 4 6 5 7 3 4 5 15  ".dm(\b)].addLine;
 Song.setQuarters(\scientist,"q q q q qqqq q q q e e ee e eqq q q q q qqqq q q q q".asBeats);
 //P.click(\scientist);
-P.tune(\scientist);
+P.tune(\scientist, _ <> [rest:[\,\,\,\,\,\,\,1,1,1,1,1,1,\,\,\,\,\,\,\,1,1].q].p);
 P(\jank,start:\scientist,music:{|p b e| 
 	
 	[
@@ -426,8 +433,8 @@ P.tune('here together');
 P(\bass,start:'here together',music:{
 	|p b e| 
 	[
-		freq: [ \r, 1, 2, 3, -7, 1 ].df('e-',[3,4],\lydian).q,
-		dur: b.parse([1, 3, 2, 2, 1, 6]).q
+		freq: [ \r, 1, 2, 3, -7, 1, -1 ].df('e-',[3,4],\lydian).q,
+		dur: b.parse([1, 3, 2, 2, 1, [ 4,0.67 ], [0.33, 1 ]]).q
 	].pp
 }
 );	
@@ -436,7 +443,7 @@ P.tune(\involved, Pmul(\freq,[1,2],_));
 Song.quarters[\involved] = Song.parseBeats(\involved,[1, 1/2, 1, 1/2, 2/3, 2/3, 1/3, 1/3, 3/2, 1/2, 2/3, 2/3, 2/3, 1/2,1/2,1]);
 Song.setTempoMap(\involved,[1, 1/2, 1, 1/2, 2/3, 2/3, 1/3, 1/3, 3/2, 1/2, 2/3, 2/3, 2/3, 1/2,1/2,1] );
 //P.click(\involved);
-P(\click,start:\involved,music:{|p b e| 
+P(\hat,start:\involved,music:{|p b e| 
 	[
 		dur: e.tempoMap.mapBeats("ee e x x q e e x x x x q q q e x x ee e".asBeats).q,
 		instrument: \hat_808,
@@ -445,8 +452,8 @@ P(\click,start:\involved,music:{|p b e|
 });
 P(\bass,start:\involved,music:{|p b e|  // passing tone right before end please
 	[
-		freq: [1, 1, 1.5, 2.5, 4.5].df(\c,3).q,
-		dur: b.parse([ [1, 1, 0.5],[0.5, 1, 1,1,1,1],  [1,1,1, 2/3],[1/3,1], 3 ]).q,
+		freq: [1, 1,1, 1.5, 2.5, 4.5].df(\c,3).q,
+		dur: b.parse([ [1, 1, 0.5],[0.5, 1],[ 1,1,1,1],  [1,1,1, 1/3],[2/3,1], 3 ]).q,
 		out: Effect({ |i| SineShaper.ar(i, 0.2) *5 * Env.linen(0.001,b.sum,1).kr(2,gate:1) }, out:[0,1]).bus.index ,
 	].pp; 
 	
@@ -460,7 +467,7 @@ P(\chords,start:\involved,music:{|p b e|
 	var six = [-6, 1, 3];
 	[
 		freq: [\r, oneM7, oneM7, oneM7, \r, oneM7, four6, six].df(\c) ++ 
-		[ [1,3,5,7], [ -7,2,4,7 ]].df('c#',5,\mixolydian) => _.q,
+		[ [1,3,5,-7], [ -7,2,4,7 ]].df('c#',5,\mixolydian) => _.q,
 		curve:-9,
 		t_trig:1,
 		legato: [1,1,1,1,0,1,1,0.9,1].q(inf),

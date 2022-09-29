@@ -8,13 +8,13 @@ Song {
 	classvar <>loading;
 	classvar <>songList;
 	var <lyricWindow,lyricWindowText;
-	var <song, <key, <cursor=0, <sections, <lyrics, <tune; 
+	var <song, <key, <cursor=0, sections, <lyrics, <tune; 
 	var <durs,  <>resources, <>lyricsToDurs;
 	var <>next;
 	var <>quarters, <>tempoMap;
 	var <>clock;
 	var playInitiatedAt,<>preroll=0;
-	var <secLoc, <secDur;
+	var <secLoc, <secDur, <pbind;
 	classvar <>muteTunes;
 
 	*initClass {
@@ -250,7 +250,7 @@ Song {
 		songs.put(symbol.asSymbol,this);
 		song=array;
 		resources=();
-		sections=(song.size/2).asInteger;
+		//sections=(song.size/2).asInteger;
 		lyrics=song.copySeries(0,2,song.size);
 		tune=song[1,3..song.size].collect({|i|
 			case {i.class==String} { Panola.new(i).midinotePattern }
@@ -261,13 +261,14 @@ Song {
 		clock=TempoClock.new(queueSize:512);
 		quarters=SongArray(key:key);
 		tempoMap=SongArray(key:key);
-		secLoc = SectionAccessor({
-			|i| 
+		secLoc = SectionAccessor({ |i| 
 			Song.secDur[..(i-1)].sum
 		});
-		secDur = SectionAccessor({
-			|i|
+		secDur = SectionAccessor({ |i|
 			Song.durs[ i ].list.sum
+		});
+		pbind = SectionAccessor({ |i|
+			Pbind(\dur,durs[i],\midinote,tune[i])
 		})
 
 	}
@@ -297,18 +298,7 @@ Song {
 		File("/tmp/durs","w").write(Song.durs[section].list.asString.replace("List","")++".addDurs;").close
 	}
 
-	refreshArray {
-		sections=(song.size/2).asInteger;
-		lyrics=song.copySeries(0,2,song.size);
-		tune=song[1,3..song.size].collect({|i|
-			case 
-				{i=="r"} {[\r].q}
-				{i.class==Array } {i.q}
-				{i.class==String} { Panola.new(i).midinotePattern }
-		});
-		//durs=lyrics.collect{|i| lyricsToDurs.at(i) };
-		//durs=durs.collect{|i| i.isNil.if( {[1].q} , {i} )}
-	}
+	sections { ^( song.size / 2 ).asInteger }
 
 	addLine { |line| //array
 		line[1].isNil.if{line=line++["r"]};
@@ -318,40 +308,23 @@ Song {
 		this.hasDursButNotLyricsToDurs.if{
 			lyricsToDurs.add(line[0] -> Archive.at(key)[sections]);
 		};
-
-		//FIXME
 		song=song++line[0..1]; 
-		//fork{ loading.wait; this.refreshArray };
-		this.refreshArray ;
-		line[2].isNil.if({ 
-			//line=line++[[1]]
-			//durs.put(line[0].asSymbol,[1].q)
-
-		},{
+		lyrics = lyrics.add(line[0]);
+		tune = tune.add(
+			case 
+			{line[1]=="r"} {[\r].q}
+			{line[1].class==Array } {line[1].q}
+			{line[1].class==String} { Panola.new(line[1]).midinotePattern}
+		).postln;
+		
+		line[2].notNil.if{
 			durs.put(line[0].asSymbol,(line[2]).q);
-		});
+		};
 		^Song.sections-1;
 	}
 
 	addDurs {|array|
 		durs[sections-1]=array.q
-	}
-
-//	secDur{
-//		var dursNow=this.durs;
-//		^SongArray(
-//			//this,
-//			(..sections-1).collect{|i|dursNow[i].list.sum}
-//			,key
-//		)
-//	}
-
-	pbind {
-		var dursNow=this.durs;
-		^SongArray.new(
-			(..sections-1).collect{|i|Pbind(\dur,dursNow[i],\midinote,tune[i])}
-			,key
-		)
 	}
 
 	writeLyricDurationFile {
@@ -433,8 +406,12 @@ Song {
 	}
 
 	pts {^all {:x,x<-resources,x.class==Part}}
+	part {|name, section| 
+		var key = name++Song.section(section).asString;
+		^this.pts.select({|i| i.name contains: key })[0].unbubble
+	}
 	solo {|key| ^all{:x,x<-this.pts,x.name.asString.contains(key.asString)}}
-	playOnly {|...args| args.collect{|i| this.solo(i)}.flat.do(_.p)}
+	playOnly {|...args| args.collect{|i| this.solo(i)}.reject{|i| i.isNil}.flat.do(_.p)}
 
 	track { 
 		|trackName| 
@@ -887,6 +864,7 @@ Part {
 		start=s;syl=y;music=m;lag=l;resources = r.isNil.if{()}{r};
 	}
 	//play immediately
+	printOn {|stream| ^this.name.printOn(stream) }
 	play {
 		//Song.allNotesOff;
 		switch (music.class,
@@ -1002,7 +980,7 @@ P {
         key = (key ++ start ++ \_).asSymbol;
 	resources = ( resources ++ (rpp: rpp) ? resources );
         part = Part(start,syl,lag,music,resources);
-        Message(Song.songs.at(Song.current), key).value(part);
+        Message(Song.currentSong, key).value(part); //set Song.resources.key to part
         key.postln;
         ^part
     }
@@ -1166,3 +1144,4 @@ SectionAccessor {
 		^Song.songs.at(this).current
 	}
 }
+

@@ -22,9 +22,17 @@ s.waitForBoot {
 [ "miracles you never dreamed possible.","r" ].addLine;
 [ "Scotty, engineering advances.","r" ].addLine;
 P(\test,start:\engine,music:{|p b e| 
-	{
-		RecEnv("20220515_092222", length:4, durs:[1,1,1,1]).playbuf.().lag(0.1)  * Saw.ar(400 * [1,2.5,4.5,1.135,6,12])
-	}.play
+	
+	fork{
+		20.do( { {
+			RecEnv("20220515_092223", length:4, durs:[1,1,1,1]/0.5.rand)
+			.playbuf.().lag(0.1)  * [Pulse, Saw ].choose.ar(400 * 12.rand.midiratio * [1,2.5,4.5,1.135,6,12])
+			=> SoftKneeCompressor.ar(_,thresh:-50,ratio:1/10,makeUp:0)
+			* Env([1,1,0],[ 4,8 ]).kr(2,gate:1)
+		}.play;
+		3.wait }
+		)
+	}
 });
 [ "Vessels this size with engines the size of walnuts. ","r" ].addLine;
 [ "SCOTT: Ach! You're joking. ","r" ].addLine;

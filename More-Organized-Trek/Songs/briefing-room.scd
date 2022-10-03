@@ -20,20 +20,27 @@ s.waitForBoot {
 [ "With their knowledge, mankind could leap ahead ten thousand years. ","r" ].addLine;
 [ "KIRK: Bones, they'll show us medical advances,","r" ].addLine;
 [ "miracles you never dreamed possible.","r" ].addLine;
-[ "Scotty, engineering advances.","r" ].addLine;
-P(\test,start:\engine,music:{|p b e| 
-	
-	fork{
-		20.do( { {
-			RecEnv("20220515_092223", length:4, durs:[1,1,1,1]/0.5.rand)
-			.playbuf.().lag(0.1)  * [Pulse, Saw ].choose.ar(400 * 12.rand.midiratio * [1,2.5,4.5,1.135,6,12])
-			=> SoftKneeCompressor.ar(_,thresh:-50,ratio:1/10,makeUp:0)
-			* Env([1,1,0],[ 4,8 ]).kr(2,gate:1)
-		}.play;
-		3.wait }
-		)
-	}
+[ "Scotty, engineering advances.","1 2 3 4".dm,[1,1,1,1] ].addLine;
+P.tune(\engineering);
+P('test2',start:\engineering,music: {|p b e|
+	{
+		a = RecEnv(\test2,\engineering,arm:true)
+		.playbuf.()
+		* Gendy1.arWidth(freq:445)
+	}.play
 });
+//P(\test,start:\engineering,music:{|p b e| 
+//	fork{
+//		20.do( { {
+//			RecEnv("20220515_092223", length:4, durs:[1,1,1,1]/0.5.rand)
+//			.playbuf.().lag(0.1)  * [Pulse, Saw ].choose.ar(400 * 12.rand.midiratio * [1,2.5,4.5,1.135,6,12])
+//			=> SoftKneeCompressor.ar(_,thresh:-50,ratio:1/10,makeUp:0)
+//			* Env([1,1,0],[ 4,8 ]).kr(2,gate:1)
+//		}.play;
+//		3.wait }
+//		)
+//	}
+//});
 [ "Vessels this size with engines the size of walnuts. ","r" ].addLine;
 [ "SCOTT: Ach! You're joking. ","r" ].addLine;
 [ "SPOCK: No, he's not. ","r" ].addLine;

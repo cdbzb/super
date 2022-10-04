@@ -1,6 +1,6 @@
 Rec {  // a little media item that knows the durations of an associated Song section
 	var <length, <armed, <section;
-	var size, <path, <buffer;
+	var size, <path, <buffer, <saved;
 	var <durs, <newDurs, <array;
 	var s, <tail;
 	var <ratios;
@@ -22,7 +22,7 @@ Rec {  // a little media item that knows the durations of an associated Song sec
 		tail = t;
 		size = sampleRate * (  length + tail );
 		File.exists(path).if{
-			var saved = Object.readArchive(path); \exists.postln;
+			saved = Object.readArchive(path); \exists.postln;
 			buffer = Buffer.read(s, path ++ ".wav" );
 			saved.durs.isNil.if{
 				durs = d 
@@ -106,42 +106,41 @@ RecIn : Rec {
 	var <>fftBuffer, <test;
 	*initClass {
 		File.exists(directory).not.if{File.mkdir(directory)};
-		SynthDef("pvIn", { |recBuf=1 soundBufnum=2 fftSize=2048 hop= 0.5 window=1|
+		SynthDef("pvIn", { arg recBuf=1, length=4;
 			var in, chain, bufnum;
-			bufnum = LocalBuf.new(fftSize);
-			//Line.kr(1, 1, BufDur.kr(soundBufnum), doneAction: 2);
-
-			//need to set duration
-			in = SoundIn.ar(0) ;
+			bufnum = LocalBuf.new(2048, 1);
+			Line.kr(1, 1, length, doneAction: 2);
+			in = SoundIn.ar(0);
 			// note the window type and overlaps... this is important for resynth parameters
-			chain = FFT(bufnum, in, hop, window);
-			chain = PV_RecordBuf(chain, recBuf, 0, 1, 0, hop, window);
+			chain = FFT(bufnum, in, 0.5, 0);
+			chain = PV_RecordBuf(chain, recBuf, 0, 1, 0, 0.5, 0);
+			// no ouput ... simply save the analysis to recBuf
 		}).add;
 	}
 	*new {|name section tail| ^super.new(name, section, tail, directory, 48000).pinit}
-	pinit {\initializing.postln; test = 666}
+	pinit {
+		fftBuffer = saved.notNil.if{saved.fftBuffer}{this.allocatePVBuffer}
+	}
 	inputUgen { ^{SoundIn.ar(0)} }
 	playRaw {|rate=1 loop=0 doneAction=2| ^{ PlayBuf.ar (1,buffer.bufnum,rate:rate, doneAction:doneAction,loop:loop)} }
 	allocatePVBuffer {|fftSize=2048 hop=0.5|
-		^Buffer.alloc(s,length.calcPVRecSize(fftSize,hop), 1 );
-	}
-	record {|fftSize=2048, hop=0.5, window=0|
-		fftBuffer = this.allocatePVBuffer(fftSize,hop,window);
-		Synth(\pvIn,[fftBuffer,buffer]);
-		super.record
+		^Buffer.doAlloc(s,( length + tail ).calcPVRecSize(fftSize,hop).asInteger, 1 );
 	}
 
-	getFFT {|fftSize=2048 hop= 0.5 window = 0|
-		fftBuffer = this.allocatePVBuffer(fftSize,hop,window);
-		Synth(\pvrec,[\recBuf,fftBuffer,\soundBufnum,buffer.bufnum,\fftSize,fftSize,\hop,hop,\window,window]);
-		^fftBuffer
+	recordFFT{ |fftSize=2048 hop=0.5 window=0|
+			
+		fork{
+			fftBuffer = this.allocatePVBuffer(fftSize,hop,window).wait.();
+			Synth(\pvIn,[\recBuf,fftBuffer.bufnum,length:(length+tail)]);
+			this.record;
+		}
 	}
 
 	playFFT{ |out=0, rate=1 fftSize=2048 hop= 0.5 window = 1|
 		^{
 			var in, chain, bufnum;
 			bufnum = LocalBuf.new(fftSize);
-			chain = PV_PlayBuf(bufnum, fftBuffer, this.scale, 0, 1, 1, 0.25, 1);
+			chain = PV_PlayBuf(bufnum, fftBuffer, this.scale, 0, 0);
 			IFFT(chain, window);
 		}
 

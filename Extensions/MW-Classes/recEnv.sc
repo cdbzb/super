@@ -53,12 +53,15 @@ Rec {  // a little media item that knows the durations of an associated Song sec
 				);nil}.play;
 				0.1 + length + tail => _.wait;
 				armed = false;
-				buffer.write(path++".wav", "wav", "int16"); //epos sampleRate 
+				this.writeFiles;
 				"buffer written".postln;
 				durs = Song.durs[section].list;
 				this.writeArchive(path);
 
 			};
+	}
+	writeFiles {
+		this.subclassResponsibility(thisMethod);
 	}
 
 	durs_ { | array |
@@ -93,50 +96,75 @@ Rec {  // a little media item that knows the durations of an associated Song sec
 
 RecEnv : Rec {
 	classvar directory = "/Users/michael/tank/super/Envelopes";
-	*initClass {
-		File.exists(directory).not.if{File.mkdir(directory)};
-	}
+	*initClass { File.exists(directory).not.if{File.mkdir(directory)}; }
 	*new {|name section tail| ^super.new(name,section,tail, directory, 1024)}
+	writeFiles { buffer.write(path++".wav", "wav", "int16");} //epos sampleRate 
 	inputUgen { ^{SoundIn.ar(0) => Amplitude.ar(_)} }
 }
 
 RecIn : Rec {
 
 	classvar directory = "/Users/michael/tank/super/samples2";
-	var <>fftBuffer, <test;
+	var <>fftBuffer, <fftSize=2048, <hop=0.5, <window=1;
 	*initClass {
 		File.exists(directory).not.if{File.mkdir(directory)};
-		SynthDef("pvIn", { arg recBuf=1, length=4;
+		SynthDef("pvIn", { arg recBuf=1, length=4, hop=0.5, window=0;
 			var in, chain, bufnum;
-			bufnum = LocalBuf.new(2048, 1);
+			bufnum = LocalBuf.new(\fftSize.ir, 1);
 			Line.kr(1, 1, length, doneAction: 2);
 			in = SoundIn.ar(0);
 			// note the window type and overlaps... this is important for resynth parameters
-			chain = FFT(bufnum, in, 0.5, 0);
-			chain = PV_RecordBuf(chain, recBuf, 0, 1, 0, 0.5, 0);
+			chain = FFT(bufnum, in, hop, window);
+			chain = PV_RecordBuf(chain, recBuf, 0, 1, 0, hop, window);
 			// no ouput ... simply save the analysis to recBuf
+			nil
 		}).add;
 	}
-	*new {|name section tail| ^super.new(name, section, tail, directory, 48000).pinit}
-	pinit {
-		fftBuffer = saved.notNil.if{saved.fftBuffer}{this.allocatePVBuffer}
-	}
-	inputUgen { ^{SoundIn.ar(0)} }
-	playRaw {|rate=1 loop=0 doneAction=2| ^{ PlayBuf.ar (1,buffer.bufnum,rate:rate, doneAction:doneAction,loop:loop)} }
-	allocatePVBuffer {|fftSize=2048 hop=0.5|
-		^Buffer.doAlloc(s,( length + tail ).calcPVRecSize(fftSize,hop).asInteger, 1 );
-	}
-
-	recordFFT{ |fftSize=2048 hop=0.5 window=0|
-			
-		fork{
-			fftBuffer = this.allocatePVBuffer(fftSize,hop,window).wait.();
-			Synth(\pvIn,[\recBuf,fftBuffer.bufnum,length:(length+tail)]);
-			this.record;
+	*new {|name section tail fftSize hop window| ^super.new(name, section, tail, directory, 48000 ).subclassInit(fftSize, hop, window)}
+	subclassInit { |fsize h w|
+		fftSize = fsize; hop = h; window = w;
+		saved.notNil.if{
+			fftBuffer = Buffer.read(s,path++"-fft.wav")	
+		}{
+			fork{ fftBuffer = this.allocatePVBuffer.wait.() }
 		}
 	}
 
-	playFFT{ |out=0, rate=1 fftSize=2048 hop= 0.5 window = 1|
+	writeFiles {
+		buffer.write(path++".wav", "wav", "int16"); //epos sampleRate 
+		fftBuffer.write(path++"-fft.wav", "wav", "float32");
+	}
+	inputUgen { ^{SoundIn.ar(0)} }
+	playFFT {
+		armed.if{
+			this.record;
+			^this.inputUgen
+		}{
+			^this.pr_playFFT
+		}
+	}
+	playRaw {|rate=1 loop=0 doneAction=2| ^{ PlayBuf.ar (1,buffer.bufnum,rate:rate, doneAction:doneAction,loop:loop)} }
+	allocatePVBuffer {
+		^Buffer.doAlloc(s,( length + tail ).calcPVRecSize(fftSize,hop).asInteger, 1 );
+	}
+
+	record{ 
+		fork{
+			fftBuffer = this.allocatePVBuffer(hop,window).wait.();
+			Synth(\pvIn,[\recBuf,fftBuffer.bufnum,length:(length+tail),\fftSize,fftSize,\hop,hop]);
+			super.record;
+		}
+	}
+
+	fftChain {
+		^
+		{
+			var in, chain, bufnum;
+			bufnum = LocalBuf.new(fftSize);
+			chain = PV_PlayBuf(bufnum, fftBuffer, this.scale, 0, 0);
+		}
+	}
+	pr_playFFT{ |out=0 |
 		^{
 			var in, chain, bufnum;
 			bufnum = LocalBuf.new(fftSize);
@@ -145,4 +173,5 @@ RecIn : Rec {
 		}
 
 	}
+
 }

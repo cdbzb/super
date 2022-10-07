@@ -121,33 +121,42 @@ RecOnsets {
 			list = saved.list;
 		} 	
 	}
-	play {
-		armed.if{
-			^this.record
+	recordIfArmed {
+		^armed.if{
+			this.record
 		}{
-			^this.playback
+			{ Silent.ar }
 		}
 
+	}
+	play{
+		^armed.if{
+			'armed!'.postln;
+			[1]
+		}{
+			list
+		}
 	}
 	arm {armed = true}
 	record {
 		var o;
 		var string = '/'++name;
-		list = List[SystemClock.seconds + Server.default.latency ].postln;
+		list = List[];
 		o = OSCFunc({list.add(SystemClock.seconds).postln},string);
-		fork{ (Song.secDur[section]+ tail).wait; o.free; 
-		list = list.differentiate.drop(1).asArray ;
-		list = list.asBeats(section).round(0.001).reject{|i|i.isStrictlyPositive.not};
-		this.writeArchive(path)
-	};
-		
-			^{
-				var trig = 
-				SoundIn.ar(0)
-				=> Coyote.kr(_,fastMul:0.65);
-				trig => SendReply.kr(_,string);
-			};
-		
+		fork{ 
+			(Song.secDur[section]+ tail).wait; o.free; 
+			list = list.differentiate.drop(1).asArray ;
+			list = list.asBeats(section).round(0.001).reject{|i|i.isStrictlyPositive.not};
+			this.writeArchive(path)
+		};
+		^{
+			var trig = 
+			Impulse.ar(0) => Decay.ar(_,0.1) * WhiteNoise.ar(0.1)
+			+ SoundIn.ar(0)
+			=> Coyote.kr(_,fastMul:0.65);
+			trig => SendReply.kr(_,string);
+		};
+
 	}
 	inputUgens {
 		^{
@@ -157,8 +166,8 @@ RecOnsets {
 	}
 	playback {
 		^
-			TDuty.ar(list.asArray.drop(1).dq,0,[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1].dq)
-		
+		TDuty.ar(list.asArray.drop(1).dq,0,[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1].dq)
+
 	}
 }
 

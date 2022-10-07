@@ -70,6 +70,13 @@ P(\trill,start:\Atmos,music:{|p b e|
 
 ["A fraction richer in oxygen than usual for us, but otherwise normal. "," 3 4 5 7 11 6 13 12 5 6 12 11.5 6, 4.5 5.5 4 5 6 7 12 11".dm(\c)].addLine;
 P.tune(\oxygen,{|i| Pmul(\freq,[1,0.5],i) => Pset(\legato,1,_) });
+P('testrec',start:\oxygen,music: {|p b e|
+	a = RecOnsets(\test,\oxygen);
+	//a.armed_(true);
+	a.recordIfArmed.play;
+	[ dur: a.play.asArray.warpTo(b).q, instrument:\cymbalsDS,amp:0.005 ].pp
+
+});
 P('chord',start:\oxygen,music: {|p b e|
 	(
 		oxygen: [13, 12, 5],

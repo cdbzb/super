@@ -60,6 +60,7 @@ Rec {  // a little media item that knows the durations of an associated Song sec
 
 			};
 	}
+
 	writeFiles {
 		this.subclassResponsibility(thisMethod);
 	}
@@ -102,6 +103,65 @@ RecEnv : Rec {
 	inputUgen { ^{SoundIn.ar(0) => Amplitude.ar(_)} }
 }
 
+RecOnsets {
+	var <>armed=false, path, name, <section, tail, <saved, s, <list;
+	classvar directory = "/Users/michael/tank/super/Onsets";
+	*initClass { File.exists(directory).not.if{File.mkdir(directory)}; }
+	*new {|name section tail=0| ^super.new.init(name,section,tail)}
+	init { |n sec t|
+		name = sec ++ "-" ++ n;
+		section = sec;
+		s = Server.default;
+		directory +/+ Song.current => {|i| File.exists(i).not.if{ File.mkdir(i)}};
+		path = directory +/+ Song.current +/+ name;
+		armed = false;
+		tail = t;
+		File.exists(path).if{
+			var saved = Object.readArchive(path); \exists.postln;
+			list = saved.list;
+		} 	
+	}
+	play {
+		armed.if{
+			^this.record
+		}{
+			^this.playback
+		}
+
+	}
+	arm {armed = true}
+	record {
+		var o;
+		var string = '/'++name;
+		list = List[SystemClock.seconds + Server.default.latency ].postln;
+		o = OSCFunc({list.add(SystemClock.seconds).postln},string);
+		fork{ (Song.secDur[section]+ tail).wait; o.free; 
+		list = list.differentiate.drop(1).asArray ;
+		list = list.asBeats(section).round(0.001).reject{|i|i.isStrictlyPositive.not};
+		this.writeArchive(path)
+	};
+		
+			^{
+				var trig = 
+				SoundIn.ar(0)
+				=> Coyote.kr(_,fastMul:0.65);
+				trig => SendReply.kr(_,string);
+			};
+		
+	}
+	inputUgens {
+		^{
+			//Coyote.kr(SoundIn.ar(0),fastMul:0.65)
+			Silent.ar()
+		}
+	}
+	playback {
+		^
+			TDuty.ar(list.asArray.drop(1).dq,0,[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1].dq)
+		
+	}
+}
+
 RecIn : Rec {
 
 	classvar directory = "/Users/michael/tank/super/samples2";
@@ -135,12 +195,12 @@ RecIn : Rec {
 		fftBuffer.write(path++"-fft.wav", "wav", "float32");
 	}
 	inputUgen { ^{SoundIn.ar(0)} }
-	playFFT {
+	playFFT { | function |
 		armed.if{
 			this.record;
 			^this.inputUgen
 		}{
-			^this.pr_playFFT
+			^this.pr_playFFT(function)
 		}
 	}
 	playRaw {|rate=1 loop=0 doneAction=2| ^{ PlayBuf.ar (1,buffer.bufnum,rate:rate, doneAction:doneAction,loop:loop)} }
@@ -157,21 +217,30 @@ RecIn : Rec {
 	}
 
 	fftChain {
-		^
-		{
+		^{
 			var in, chain, bufnum;
 			bufnum = LocalBuf.new(fftSize);
 			chain = PV_PlayBuf(bufnum, fftBuffer, this.scale, 0, 0);
 		}
 	}
-	pr_playFFT{ |out=0 |
+	pr_playFFT{ | function |
 		^{
 			var in, chain, bufnum;
-			bufnum = LocalBuf.new(fftSize);
-			chain = PV_PlayBuf(bufnum, fftBuffer, this.scale, 0, 0);
-			IFFT(chain, window);
+			function = function ? {|i| i};
+
+			PV_PlayBuf(LocalBuf.new(fftSize), fftBuffer, this.scale, 0, 0)
+			=> function
+			=> IFFT(_, window);
 		}
 
 	}
 
 }
+
++ Function{
+
+	triggerMe {|func|
+			^ (this => Coyote.kr(_,fastMul:0.65) => Demand.kr(_,0,func))
+	}
+		
+} 

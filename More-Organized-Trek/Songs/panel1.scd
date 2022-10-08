@@ -13,6 +13,7 @@ Song(\panel1,[]).current;
 /*SARGON:*/[" A body much as yours, my children, although our minds were infinitely greater. ","-5 1 2 2 1 3".dm(\g) ++ "4 3 2 -6 -7 1 ".dm('a-') ++ "11 7 12 11 7 6 6 5".dm(\e)].addLine; 
 P.tune(\much);
 P.tune('much ', { |i| Pmul(\freq,0.5,i) => Pbindf(_,\instrument, \sawSynthSustain,\amp,0.04)});
+
 P('dyad',start:\much,syl:17,music: {|p b e|
 	(
 		freq: [ -1,1, 3 ].df(\a),
@@ -60,10 +61,33 @@ P('bass',start:\Six,music: {|p b e|
 	].pp
 });
 
-["colonising this galaxy, just as your own starships have now ","r"].addLine;
-["begun to explore that vastness... ","r"].addLine;
-["As you now leave your own seed on distant planets, ","r"].addLine;
-["so we left our seed behind us.","r",].addLine; 
+["colonising this galaxy, ","r"].addLine;
+["just as your own starships have ",[1,4,7,6,6,5].dm(\e,4,\mixolydian) ++ [1].dm('a-',4)].addLine;
+P.tune(\just);
+["now begun to explore that",[2,5,3,2,1,7,6].dm('a-',4,\mixolydian)].addLine;
+P.tune(\begun);
+[" vastness... ",[6,5].dm('a-',4)].addLine;// illustrate the dots
+P.tune(\vastness);
+P('bassNote',start:\vastness,music: {|p b e|
+(freq:[-7].df(\b,3,\mixolydian) / [1,2],out:Effect.bus(DWGReverbC1C3.ar(_))).play;
+(freq:[11,5].df(\b,3),instrument:\defaultPiano,dur:b.sum).play
+});
+["As you now leave your own seed on distant planets, ",[1,3,1,4,3,1,3,4,5,3,7,6].dm(\d,\dorian)].addLine;
+P('montuno',start:\As,music: {|p b e|
+	[
+		freq:[1, [3,5], 1, [4,6], [3,5],1, 3, 4, 5, 3].df(\d,4,\dorian).q,
+		dur:b.q,
+		//instrument:\defaultPiano
+		instrument:\default
+	].pp
+});
+P('bassNote',start:\seed,syl:9,music: {|p b e|
+(freq:[1].df(\g,3,\mixolydian) / [1,2],out:Effect.bus(DWGReverbC1C3.ar(_))).play;
+(freq:[11,6].df(\g,3),instrument:\defaultPiano,dur:b.sum).play
+});
+P.tune(\As);
+["(boom) so we left our seed behind us.",[1,11,7,6,5,4,3,2,1,3,3,4].dm(\g,4,\mixolydian)].addLine; 
+P.tune(\left);
 
 ///*MULHALL:*/[" Our studies indicate that life on our planet, Earth, evolved independently. ","r",].addLine; 
 ///*SPOCK:*/[" That would tend, however, to explain certain elements of Vulcan prehistory. ","r",].addLine; 

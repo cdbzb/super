@@ -50,10 +50,11 @@ P.tune('(infinitely)', Pmul(\freq, [1,0.5],_));
 /*KIRK:*/[" That's twice you've referred to us as my children. ","1 6 2 3 2 3 7 6 6 7.5 2".dm(\f,\mixolydian) ].addLine; 
 P.tune(\That);
 
-/*SARGON:*/[" Because it is possible you are our descendants, Captain Kirk. ","1 3 5 7 12 7 5 3 ".dm(\f,4) ++ "1 3 5 7 12 11 13 11 7 6".dm(\g,4)].addLine; 
+/*SARGON:*/[" Because it is possible you are our descendants, Captain Kirk. ","1 3 5 7 12 7 5 3 ".dm(\f,4) ++ "1 3 5 7 12 11 13 11 7 6".dm(\g,4)].addLine;
 P.tune(\Because,_ <> [instrument:\defaultPiano].p);
 ["(boom) Six thousand centuries ago, our vessels were ","-1 3 3 3 3 2 2 1 2 2 3 -4".dm('a-',\minor) ++ "11 5 6 3".dm(\c,5)].addLine;
 P.tune(\Six, Pset(\amp, Pfunc({ |e|(e.midinote < -5.dm('a-')).if{0}{0.1}}), _ ));
+P.tune('x th', { |i| Pbindf(i, \amp,[1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1].q/15, \instrument, \defaultPiano) => Pmul (\freq,0.5,_)});
 P('bass',start:\Six,music: {|p b e|
 	[
 		freq:[1,-7,-4].df('a-',3,\minor).q,
@@ -62,10 +63,25 @@ P('bass',start:\Six,music: {|p b e|
 });
 
 ["colonising this galaxy . . . ",[1,2,4,5,2,5.5,5,-7,-5.5,-5,-17].dm('e-')].addLine;
-P.tune(\colonising,Pset(\amp,[1,1,1,1,1,1,1,1,0,0,0].q/10,_));
+P('bassnote',start:\colonising,music: {|p b e|
+	[
+		freq:[[-6],  [-1,-5,1] ].df('f#',4).q, 
+		out: Effect.bus(DWGReverbC1C3.ar(_,mix:0.3)) ,
+		dur: b.parse([5,3]).q
+	].p.play;
+});
+P.tune(\colonising,Pbindf(_,\amp,[1,1,1,1,1,1,1,1,0,0,0].q/10,\instrument,\defaultPiano));
 
 ["just as your own starships have ",[1,4,7,6,6,5].dm(\e,\mixolydian) ++ [1].dm('a-')].addLine;
 P.tune(\just);
+P('bass',start:\just,music: {|p b e|
+	
+	[
+		freq:[1].df('e',[4,  3 ]).q,
+		dur: b.parse([4]).q,
+		instrument:\defaultPiano
+	].pp
+});
 ["now begun to explore that",[2,5,3,2,1,7,6].dm('a-',4,\mixolydian)].addLine;
 P.tune(\begun);
 [" vastness... ",[6,5].dm('a-',4)].addLine;// illustrate the dots
@@ -92,7 +108,7 @@ P.tune(\As);
 P.tune(\left);
 
 ///*MULHALL:*/[" Our studies indicate that life on our planet, Earth, evolved independently. ","r",].addLine; 
-///*SPOCK:*/[" That would tend, however, to explain certain elements of Vulcan prehistory. ","r",].addLine; 
+/*SPOCK:*/[" That would tend, however, to explain certain elements of Vulcan prehistory. ","r",[5]].addLine; 
 
 /*SARGON:*/[" In any case, I do not know. (baby) It was","5 11 5 3  7 6 5 5 6 5 4 3 4  ".dm(\d,\mixolydian)].addLine;
 Song.durs[\In].list.do(_.postln);

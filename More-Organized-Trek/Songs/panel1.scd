@@ -50,19 +50,21 @@ P.tune('(infinitely)', Pmul(\freq, [1,0.5],_));
 /*KIRK:*/[" That's twice you've referred to us as my children. ","1 6 2 3 2 3 7 6 6 7.5 2".dm(\f,\mixolydian) ].addLine; 
 P.tune(\That);
 
-/*SARGON:*/[" Because it is possible you are our descendants, Captain Kirk. ","1 3 5 7 12 7 5 3 2 4.5 6 11.5 13 12 14.5 12".dm(\f,4)].addLine; 
-P.tune(\Because);
-["Six thousand centuries ago, our vessels were ","3 3 3 3 2 2 -7 1 2 2 3 -4".dm('a-',\minor)].addLine;
-P.tune(\Six, Pset(\amp, Pfunc({ |e|(e.midinote < 1.dm('a-')).if{0}{0.1}}), _ ));
+/*SARGON:*/[" Because it is possible you are our descendants, Captain Kirk. ","1 3 5 7 12 7 5 3 ".dm(\f,4) ++ "1 3 5 7 12 11 13 11 7 6".dm(\g,4)].addLine; 
+P.tune(\Because,_ <> [instrument:\defaultPiano].p);
+["(boom) Six thousand centuries ago, our vessels were ","-1 3 3 3 3 2 2 1 2 2 3 -4".dm('a-',\minor) ++ "11 5 6 3".dm(\c,5)].addLine;
+P.tune(\Six, Pset(\amp, Pfunc({ |e|(e.midinote < -5.dm('a-')).if{0}{0.1}}), _ ));
 P('bass',start:\Six,music: {|p b e|
 	[
-		freq: [11, 11, 7, 7 , 4].df('a-',2,\minor).q,
-		dur: b.parse([[1,1,0.5],0.5, 3,5,1]).q
+		freq:[1,-7,-4].df('a-',3,\minor).q,
+		dur: b.parse([4,7,1]).q
 	].pp
 });
 
-["colonising this galaxy, ","r"].addLine;
-["just as your own starships have ",[1,4,7,6,6,5].dm(\e,4,\mixolydian) ++ [1].dm('a-',4)].addLine;
+["colonising this galaxy . . . ",[1,2,4,5,2,5.5,5,-7,-5.5,-5,-17].dm('e-')].addLine;
+P.tune(\colonising,Pset(\amp,[1,1,1,1,1,1,1,1,0,0,0].q/10,_));
+
+["just as your own starships have ",[1,4,7,6,6,5].dm(\e,\mixolydian) ++ [1].dm('a-')].addLine;
 P.tune(\just);
 ["now begun to explore that",[2,5,3,2,1,7,6].dm('a-',4,\mixolydian)].addLine;
 P.tune(\begun);

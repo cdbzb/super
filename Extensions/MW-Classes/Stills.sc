@@ -4,6 +4,7 @@
 //	.stringColor_(Color.rand)
 //	//.align_(\left)
 //	.font_(Font(\helvetica,90,bold:true))
+
 //)
 Stills {
 	classvar <>stillsLocation = "/tmp/";
@@ -191,7 +192,7 @@ Still {
 					window = stills.preview(markerName, wait,fade, monitor,fadeIn:fadeIn);
 					this.title(["",""]);
 					this.setText(text) 
-				}.defer; 
+				}.defer(Server.default.latency - 0.1); // timing fudge factor!! why does this work(or does it?) 
 			}
           //{
           //}.defer

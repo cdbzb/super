@@ -502,7 +502,7 @@ Song {
 	}
 
 	playSection {|sec| //uses play method which prepares infrastructure
-		( sec.class==Integer ).not.if{sec=this.section(sec)};
+		sec=this.section(sec);
 		cursor=sec;
 		this.play(this.at(sec))
 	}
@@ -522,68 +522,51 @@ Song {
 		length.postln;
 		path.postln;
 		//-G to add an audio source
-		"screencapture -V" + length + path => _.unixCmd
+		fork{
+			"screencapture -V" + length + path => _.unixCmd
+		}
 
 	}
-	playSectionParts {|sec| // uses .p method which doesn't prepare infrastructure
-		(sec.class==Integer).not.if{sec=this.section(sec)};
-		cursor=sec;
-		this.at(sec).do(_.p)
+	playSectionParts {|start end| // uses .p method which doesn't prepare infrastructure
+		start = this.section(start);
+		end.notNil.if{ this.section(end) }{start};
+		cursor=start;
+		(start..end).do {|i| this.at(i).do(_.p) }
 	}
 
-	recordSection { |sec bus path channels=2 tail=3|
+	recordSection { |start end bus path channels=2 tail=3|
 		var s = Server.default;
 		fork{
-
-			//s.recSampleFormat = \int24;
+			s.recSampleFormat = \int16;
 			s.prepareForRecord(path);
-			0.1.wait;
-			this.playSectionParts (sec);
-			0.4.wait; // double latency for somereason
+			s.sync;
+			this.playSectionParts (start, end); // latency is added here due to use of p
+			Server.default.latency * 2 => _.wait; // double latency
 			s.record(
 				bus:bus,
-				duration:this.secDur[sec] + tail);
+				duration:(start..end).collect(this.secDur[_]).sum + tail);
 			}
 	}
-	makeVid1 { |start dir|
+	makeVid { |start end dir tail| // check Sync
 		var now = Date.getDate.stamp;
 		var path = dir +/+ now;
+		start = Song.section(start);
+		end = Song.section(end);
 		fork{
-			P(\video, start:start,lag:-0.8 ,music: { |p b e|
-					p.screengrab(start,path: path ++ ".mov");
+			P(\video, start:start,lag: 0,music: { |p b e|
+					p.screengrab(start,end,path ++ ".mov",tail);
 			});
-			Song.recordSection(start,0, path ++ ".aif",2, 0);
-			while ( {File.exists(path++".mov") == false},{0.1.wait} );
-			1.wait;
-			try{ Server.default.stopRecording };
-			0.1.wait;
-			"ffmpeg -i" + path ++ ".mov" + "-i" + path ++ ".aif" + "-c copy -map 0:v:0 -map 1:a:0" + path ++ "together.mov" => _.unixCmd
-			//"ffmpeg -i" + path ++ ".aif" + "-itsoffset 1 -i" + path ++ ".mov" + "-c copy -map 0:v:0 -map 1:a:0" + path ++ "together.mov" => _.unixCmd
-		}
-	}
-	makeVid{ |start end dir tail=2|
-
-		var now = Date.getDate.stamp;
-		var path = dir +/+ now;
-		var range;
-		end = end ? start;
-		range = (start..end);
-		fork{
-			Server.default.recSampleFormat_(\int24);
-			Server.default.prepareForRecord(path++".aif");
-			Server.default.sync;
-			Server.default.record(
-				bus:0,
-				duration:(start..(end ? start)).collect{this.secDur[start]}.sum + tail
-			);
 			this.cursor_(start);
-			range.do{|i| this.at(i).do(_.p)};
-			this.screengrab(start,end,path++".mov",tail);
+			Song.recordSection(start,end,0, path ++ ".aif",2, 0);
 			while ( {File.exists(path++".mov") == false},{0.1.wait} );
-			1.wait;
+			tail.wait;
 			try{ Server.default.stopRecording };
 			0.1.wait;
-			"ffmpeg -i" + path ++ ".mov" + "-i" + path ++ ".aif" + "-c copy -map 0:v:0 -map 1:a:0" + path ++ "screenRecording.mov" => _.unixCmd
+			"ffmpeg -i" + path ++ ".mov" + "-i" + path ++ ".aif" + "-c copy -map 0:v:0 -map 1:a:0" + path ++ "screenCapture.mov" => _.unixCmd;
+			5.wait;
+			"ffmpeg -i" + path++"screenCapture.mov" + "-filter:v fps=30" + path++"30fps.mov" => _.unixCmd
+
+			//"ffmpeg -i" + path ++ ".aif" + "-itsoffset 1 -i" + path ++ ".mov" + "-c copy -map 0:v:0 -map 1:a:0" + path ++ "together.mov" => _.unixCmd
 		}
 	}
 
@@ -610,13 +593,16 @@ Song {
         };
 
     }
-	section {|string| 
+	section {|section| 
 		//returns section number which contains lyric
-		var array = (..lyrics.size-1).select{|i |lyrics[i].asString.contains(string.asString)};
-		(array.size>1).if{'!!! more than one section with: '.post;string.postln; array.postln};
-		( array.size==0 ).if{'no section with: '.post; string.postln; ^-1}
+		section.isInteger.if{^section}
+		{
+			var array = (..lyrics.size-1).select{|i |lyrics[i].asString.contains(section.asString)};
+			(array.size>1).if{'!!! more than one section with: '.post;section.postln; array.postln};
+			( array.size==0 ).if{'no section with: '.post; section.postln; ^-1}
 
-		{ ^array[0] }
+			{ ^array[0] }
+		}
 	}
 
 	contains { |string|

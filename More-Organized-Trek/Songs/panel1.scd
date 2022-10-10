@@ -62,15 +62,17 @@ P('bass',start:\Six,music: {|p b e|
 	].pp
 });
 
-["colonising this galaxy . . . ",[1,2,4,5,2,5.5,5,-7,-5.5,-5,-17].dm('e-')].addLine;
+//["colonising this galaxy . . . ",[1,2,4,5,2,5.5,5,-7,-5.5,-5,-17].dm('e-')].addLine;
+["colonising this galaxy . . . ",[1,2,4,5,6,6,5,-7,-5.5,-5,-2].dm('e-')].addLine;
+P.tune(\colonising,Pbindf(_,\amp,[1,1,1,1,1,1,1,1,0,0,0].q/10,\instrument,\defaultPiano));
 P('bassnote',start:\colonising,music: {|p b e|
 	[
-		freq:[[-6],  [-1,-5,1] ].df('f#',4).q, 
+		freq:[1,2,4,5,6,6.5 ].df('e-',4,\mixolydian).q, 
+		//freq:[[-6],  [-1,-5,1] ].df('f#',4).q, 
 		out: Effect.bus(DWGReverbC1C3.ar(_,mix:0.3)) ,
-		dur: b.parse([5,3]).q
+		dur: b.parse([1,1,1,1,1,3]).q
 	].p.play;
 });
-P.tune(\colonising,Pbindf(_,\amp,[1,1,1,1,1,1,1,1,0,0,0].q/10,\instrument,\defaultPiano));
 
 ["just as your own starships have ",[1,4,7,6,6,5].dm(\e,\mixolydian) ++ [1].dm('a-')].addLine;
 P.tune(\just);
@@ -82,9 +84,16 @@ P('bass',start:\just,music: {|p b e|
 		instrument:\defaultPiano
 	].pp
 });
-["now begun to explore that",[2,5,3,2,1,7,6].dm('a-',4,\mixolydian)].addLine;
+["now begun to explore that",[2,5,3,2,1,7,6].dm('a-',\mixolydian)].addLine;
 P.tune(\begun);
-[" vastness... ",[6,5].dm('a-',4)].addLine;// illustrate the dots
+P('bass',start:\begun,music: {|p b e|
+	[
+		freq:[1].df('a-',[4,  3 ]).q,
+		dur: b.parse([4]).q,
+		instrument:\defaultPiano
+	].pp
+});
+[" vastness... ",[6,5].dm('a-')].addLine;// illustrate the dots
 P.tune(\vastness);
 P('bassNote',start:\vastness,music: {|p b e|
 (freq:[-7].df(\b,3,\mixolydian) / [1,2],out:Effect.bus(DWGReverbC1C3.ar(_))).play;

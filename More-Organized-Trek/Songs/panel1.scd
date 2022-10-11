@@ -6,8 +6,66 @@ Song(\panel1,[]).current;
 /*SPOCK:*/[" Sargon, would it harm you if I ","r",].addLine; 
 /*SARGON:*/[" You may use your tricorder, Mister Spock.","r"].addLine;
 ["Your readings will show energy but no substance. ","r"].addLine;
-["Sealed in this receptacle is the essence of my mind. ","r",].addLine; 
+["Sealed in this receptacle is the ",[5, 4,3,2,3,4,3,-5,-6,-7].dm(\c,6)].addLine;
+Song.setTempoMap(\Sealed,"q e eq e x xq e e Q Q");
+P.tune(\Sealed);
+P('chords',start:\Sealed,music: {|p b e|
+	[
+		freq: [[1,3,5,7]].df(\f).q,
+		dur: b.sum,
+		instrument:\wash
+	].pp
+});
+P('click',start:\Sealed,music: {|p b e|
+	[
+		dur: 2.dup(4).warpTo(e.tempoMap).q,
+		instrument:\hat_808
+	].pp
+});
+P('bas',start:\Sealed,music: {|p b e|
+	[
+		freq: [1,-6].df(\f,[3,4]).q,
+		//dur: b.parse([5,5]).q
+		dur: [4,4].warpTo(e.tempoMap).q
+	].pp
+});
+["essence of my mind. ",[7,7,6,7,6,5,6, 5].dm(\g)].addLine; 
+P('cymbal',start:\essence,music: {|p b e|
+	(
+		instrument:\cymbalsDS,
+		amp:0.02
+	).play
+});
+Song.setTempoMap(\essence,"q qe ee e e e qqe e");
+P(\click,start:\essence,music: { |p b e|
+	[
+		dur:1.dup(8).warpTo(e.tempoMap).q,
+		instrument:\hihat
+	].pp
+});
+P.tune(\essence);
+P(\chord,start:\essence,music: { |p b e|
+	[
+		freq:[ [1,3,5,7], [ 1,3,4,6 ] ].df(\g).q,
+		instrument: \stringyy,
+		dur: "qqqq qqqq".asBeats.warpTo(e.tempoMap).q
+	].pp
+});
+P(\bass,start:\essence,music: { |p b e|
+	[
+		freq:[1,-7,-4,-3].df(\g,[3,4]).q,
+		dur: "qq qq qq qq".asBeats.warpTo(e.tempoMap).q
+
+	].pp
+});
 /*SPOCK:*/[" Pure energy. Matter without form. ","r",].addLine; 
+P('arpeggio',start:\Pure,music: {|p b e|
+	[-1,-3,-5,-7,2,4,6,11, 13,15,17,22,17,15,13,11].dm	 
+		 => _.q(1)
+		 => {|i| [midinote:i,ctranspose:[0,-2].stutter(32).q(2),dur:0.1,lagTime:0].pm(\sawSynthSustain) => Pn(_,3) => _.play}
+
+	
+});
 /*KIRK:*/[" Impossible. ","r",].addLine; 
 /*MCCOY:*/[" But you once had a body of some type? ","r",].addLine; 
 /*SARGON:*/[" A body much as yours, my children, although our minds were infinitely greater. ","-5 1 2 2 1 3".dm(\g) ++ "4 3 2 -6 -7 1 ".dm('a-') ++ "11 7 12 11 7 6 6 5".dm(\e)].addLine; 
@@ -53,6 +111,25 @@ P.tune(\That);
 /*SARGON:*/[" Because it is possible you are our descendants, Captain Kirk. ","1 3 5 7 12 7 5 3 ".dm(\f,4) ++ "1 3 5 7 12 11 13 11 7 6".dm(\g,4)].addLine;
 P.tune(\Because,_ <> [instrument:\defaultPiano].p);
 ["(boom) Six thousand centuries ago, our vessels were ","-1 3 3 3 3 2 2 1 2 2 3 -4".dm('a-',\minor) ++ "11 5 6 3".dm(\c,5)].addLine;
+Song.setTempoMap(\Six,"e e e e e x e x e x x");
+P('dmx',start:\Six,music: {|p b e|
+	[
+		"....x..x....x... .....x.",\snare,\amp,Pseg([0.05,0.05,0.02],b.parse([12,3]).q),
+		"x.......x.x..... x......",\kick_gentle,\vol,0.1,
+	].dmx(4)
+	=> Ppar(_) => Pfindur(b.sum,_)
+	=> _.play(clock:TempoClock.newFromQuarters(1!4=>_.warpTo(e.tempoMap)))
+});
+P('chords',start:\Six,music: {|p b e|
+	[
+		freq:[ [5,11],[4,7],[4,1] ].df('a-',4,\minor).q,
+		att: 2,
+		rel:[6,6,5].q,
+		amp:[1,1,0.4].q/10 /2,
+		dur: b.parse([4,7,1]) - [0.05,-0.05,0] => _.q,
+		instrument:\sawSynthSustain
+	].pm(\sawSynthSustain).play
+});
 P.tune(\Six, Pset(\amp, Pfunc({ |e|(e.midinote < -5.dm('a-')).if{0}{0.1}}), _ ));
 P.tune('x th', { |i| Pbindf(i, \amp,[1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1].q/15, \instrument, \defaultPiano) => Pmul (\freq,0.5,_)});
 P('bass',start:\Six,music: {|p b e|
@@ -63,7 +140,14 @@ P('bass',start:\Six,music: {|p b e|
 });
 
 //["colonising this galaxy . . . ",[1,2,4,5,2,5.5,5,-7,-5.5,-5,-17].dm('e-')].addLine;
-["colonising this galaxy . . . ",[1,2,4,5,6,6,5,-7,-5.5,-5,-2].dm('e-')].addLine;
+["colonising this galaxy . . . ",[1,2,4,5,6,6,5,-7/*,-6,-5,-2*/].dm('e-')].addLine;
+P('drumsNextPart',start:\colonising,music: {|p b e|
+	[
+		"x..",\kick_gentle,\vol,\amp,0.02,
+		"x..",\cymbalsDS,\amp,0.008
+	].dmx
+	=> Ppar(_)=> Pfin(3,_) => _.play
+});
 P.tune(\colonising,Pbindf(_,\amp,[1,1,1,1,1,1,1,1,0,0,0].q/10,\instrument,\defaultPiano));
 P('bassnote',start:\colonising,music: {|p b e|
 	[
@@ -76,6 +160,14 @@ P('bassnote',start:\colonising,music: {|p b e|
 
 ["just as your own starships have ",[1,4,7,6,6,5].dm(\e,\mixolydian) ++ [1].dm('a-')].addLine;
 P.tune(\just);
+P('line',start:\just,music: {|p b e|
+	[
+		freq: [1,4,7,6,5,5.5].df(\e,\mixolydian).q * [1,0.5],
+		dur: b.parse([1,1,1,2,2,1]) + [0,0,0,0,0,0.1] => _.q,
+		instrument: \stringyy,
+		freqLag: [1,1,1,1,10,10]/20=>_.q
+	].pm(\stringyy).play
+});
 P('bass',start:\just,music: {|p b e|
 	
 	[
@@ -88,8 +180,8 @@ P('bass',start:\just,music: {|p b e|
 P.tune(\begun);
 P('bass',start:\begun,music: {|p b e|
 	[
-		freq:[1].df('a-',[4,  3 ]).q,
-		dur: b.parse([4]).q,
+		freq:[1,7].df('a-',[4,  3 ],\mixolydian).q,
+		dur: b.parse([5,2]).q,
 		instrument:\defaultPiano
 	].pp
 });
@@ -100,9 +192,17 @@ P('bassNote',start:\vastness,music: {|p b e|
 (freq:[11,5].df(\b,3),instrument:\defaultPiano,dur:b.sum).play
 });
 ["As you now leave your own seed on distant planets, ",[1,3,1,4,3,1,3,4,5,3,7,6].dm(\d,\dorian)].addLine;
+P('line',start:\As,syl:5,music: {|p b e|
+	[
+		freq:[4,5,6,7,11,12,13].df(\c).q,
+		instrument: \stringyy,
+		dur: b.drop(1).parse([1/3,1/3,1/3,1,1,1,1]).q
+	]
+	//.pp
+});
 P('montuno',start:\As,music: {|p b e|
 	[
-		freq:[1, [3,5], 1, [4,6], [3,5],1, 3, 4, 5, 3].df(\d,4,\dorian).q,
+		freq:[1, [3,5], 1, [4,6], [3,5],1, 3,4, 5, 3].df(\d,4,\dorian).q,
 		dur:b.q,
 		//instrument:\defaultPiano
 		instrument:\default
@@ -114,7 +214,32 @@ P('bassNote',start:\seed,syl:9,music: {|p b e|
 });
 P.tune(\As);
 ["(boom) so we left our seed behind us.",[1,11,7,6,5,4,3,2,1,3,3,4].dm(\g,4,\mixolydian)].addLine; 
-P.tune(\left);
+
+P('boom',start:\left,music: {|p b e|
+	(
+		freq:[1,-11,-21].df(\g,3),
+		out: Effect.bus({|i| i * 1.5 => FreeVerb.ar(_,0.5,1) => SineShaper.ar(_,0.2,2)},inputChannels:2),
+		dur:b.parse([6]).unbubble
+	).play;
+	(
+		instrument:\cymbalsDS,amp:0.01,
+		out: Effect.bus(_ * Env([0,1,1],[0.1,1]).kr(0,gate:1))
+	).play
+});
+P('chords', start:\left, music: {|p b e|
+	[\r,11,[11,7],[11,6],[11,5],[11,6,4],3,2,1,[7,11,11],[7,11,11],[6,11]].df(\g,5,\mixolydian)
+	=> _.flop => _.do
+	{|i x|
+		[
+			freq:i.q/2 ,
+			dur: b.q,
+			instrument:\pluckD,
+			amp:0.06,
+			out: Effect.bus({|i| FreeVerb.ar(i,0.5,0.9) * [x, (1-x)] /3 })
+		].pm(\pluckD).play
+	}
+});
+P.tune(\left,_ <> [amp:[0,1,1,1,1,1,0,0,0,1,1,1].q/10, legato:[1,1,1,1,1,3,1,1,1,1,1,1].q*0.9].p);
 
 ///*MULHALL:*/[" Our studies indicate that life on our planet, Earth, evolved independently. ","r",].addLine; 
 /*SPOCK:*/[" That would tend, however, to explain certain elements of Vulcan prehistory. ","r",[5]].addLine; 

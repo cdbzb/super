@@ -15,13 +15,13 @@
 		=> this.reshapeLike(_)
 	}
 
-	dmx {
+	dmx { |beatsPerBar=8|
 		^this.oldSplit({|i| i.class==String})
 		.collect({|a| 
 			//a.postln
 			{|durs ins ...pairs| 
 				ins.postln; 
-				[instrument:ins,dur:durs.asDrumPat.list.q(inf) ]++pairs
+				[instrument:ins,dur:durs.asDrumPat(beatsPerBar).list.q(inf) ]++pairs
 				=>_.p
 			}.valueArray(a)
 		})

@@ -5,14 +5,23 @@ Song(\panel1,[]).current;
 /*SARGON: (the glowing sphere)*/[" Welcome. I am Sargon. ","r",].addLine; 
 /*SPOCK:*/[" Sargon, would it harm you if I ","r",].addLine; 
 /*SARGON:*/[" You may use your tricorder, Mister Spock.","r"].addLine;
-["Your readings will show energy but no substance. ","r"].addLine;
+["Your readings will show","r"].addLine;
+["energy but no substance. ","3 2 3 2 1 -7 1 -7 -6 -5 4 3 3 1 2 -7".dm(\e)].addLine;
+P.tune(\substance);
+P('bassline',start:\substance,music: {|p b e|
+	[
+		freq:[1, 5, 2, 4].stutter(2).df(\e,3).q,
+		dur:[3,1] => _.dup(4) => _.flat=> _.warpTo(b) => _.q
+	].pp
+});
 ["Sealed in this receptacle is the ",[5, 4,3,2,3,4,3,-5,-6,-7].dm(\c,6)].addLine;
 Song.setTempoMap(\Sealed,"q e eq e x xq e e Q Q");
 P.tune(\Sealed);
+
 P('chords',start:\Sealed,music: {|p b e|
 	[
-		freq: [[1,3,5,7]].df(\f).q,
-		dur: b.sum,
+		freq: [[1,3,5,7],[-6,1,2,5]].df(\f).q,
+		dur: "hh h".asBeats.warpTo(e.tempoMap).q,
 		instrument:\wash
 	].pp
 });

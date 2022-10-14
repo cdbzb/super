@@ -29,16 +29,30 @@ P('click',start:\Sealed,music: {|p b e|
 	[
 		dur: 2.dup(4).warpTo(e.tempoMap).q,
 		instrument:\hat_808
-	].pp
+	]//.pp
 });
 P('bas',start:\Sealed,music: {|p b e|
 	[
 		freq: [1,-6].df(\f,[3,4]).q,
 		//dur: b.parse([5,5]).q
-		dur: [4,4].warpTo(e.tempoMap).q
-	].pp
+		dur: [4,3].warpTo(e.tempoMap).q
+	].p
+	=> _.play;
+	[
+		"ex ex e ex ex  e e",\snare,
+		"e e e e e e e e",\hihat
+	].dmx2()=>Ppar(_)//=>_.play(clock:TempoClock.newFromQuarters(1!6=>_.warpTo(e.tempoClock)))
+	;
+	RecOnsets(\boom,\Sealed)
+	//.arm
+	.play
+	 - [0.12,0.00,0] ;
+	 [2,3.75,1.5].push(1,1.05)=> {|i| [dur:i .warpTo(e.tempoMap) .q,instrument:\sn_808,rest:[\r,1,1,1].q,out:Effect.bus(EchoNone.ar(_,0.2,0.2,3)/1)].pp} ;
+
+
 });
 ["essence of my mind. ",[7,7,6,7,6,5,6, 5].dm(\g)].addLine; 
+Song.durs[\essence]=Song.durs[\essence].list.dup(2).flat[(0..15)].q(); //only 15
 P('cymbal',start:\essence,music: {|p b e|
 	(
 		instrument:\cymbalsDS,
@@ -48,24 +62,53 @@ P('cymbal',start:\essence,music: {|p b e|
 Song.setTempoMap(\essence,"q qe ee e e e qqe e");
 P(\click,start:\essence,music: { |p b e|
 	[
-		dur:1.dup(8).warpTo(e.tempoMap).q,
+		dur:1.dup(8).warpTo(e.tempoMap).q(2),
 		instrument:\hihat
 	].pp
 });
-P.tune(\essence);
+P.tune(\essence,_ => {|i| [i,Pmul(\freq,midiratio(2),i)].q});
 P(\chord,start:\essence,music: { |p b e|
 	[
 		freq:[ [1,3,5,7], [ 1,3,4,6 ] ].df(\g).q,
 		instrument: \stringyy,
 		dur: "qqqq qqqq".asBeats.warpTo(e.tempoMap).q
-	].pp
+	].p
+	=> {|i| [i,Pmul(\freq,midiratio(2),i)].q}
+	=> _.play
 });
 P(\bass,start:\essence,music: { |p b e|
 	[
 		freq:[1,-7,-4,-3].df(\g,[3,4]).q,
 		dur: "qq qq qq qq".asBeats.warpTo(e.tempoMap).q
 
+	].p
+	=> {|i| [i,Pmul(\freq,midiratio(-10),i)].q}
+	=> _.play
+});
+["my mind outtro",[1, 11,7,6,6,5,6,7,7,6,5,5 ].dm(\b,\mixolydian) ].addLine;
+P.tune(\outtro);
+P('bass',start:\outtro,music: {|p b e|
+	
+[ [1, -7, -4, -3],[2,3,2,2] ].flop.collect({ |i| i[0].dup(i[1]) }).flat.df(\b,\mixolydian)
+=> {|i| 
+	[
+		freq: i.q/[8,4],
+		dur: "qe e e ee e qe e q q".asBeats.warpTo(1!9=>_.warpTo(e .tempoMap)).q
 	].pp
+}
+});
+
+Song.setTempoMap(\outtro, "q qe ee e qq q q q qe ee e qq" );
+P('chords',start:\outtro,music: {|p b e|
+	
+	[
+		freq:[ [1,3,5,11], [ -7,3,5,7 ], [-6,1, 4,6],[-5,5],[-6,6],[2,5,7] ].df(\b,\mixolydian).q,
+		instrument: \stringyy,
+		dur: "qq qq qq q q qq".asBeats.warpTo(e.tempoMap).q
+	].pp
+});
+P('click',start:\outtro,music: {|p b e|
+	1.dup(16)=>{|i| [dur:i.warpTo(e.tempoMap).q,instrument:\hihat].pp }
 });
 /*SPOCK:*/[" Pure energy. Matter without form. ","r",].addLine; 
 P('arpeggio',start:\Pure,music: {|p b e|

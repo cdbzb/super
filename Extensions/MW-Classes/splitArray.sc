@@ -27,6 +27,18 @@
 		})
 	}
 
+	dmx2 { |beatsPerBar=8 tempoMap|
+		tempoMap = tempoMap ? 1.dup(32);
+		^this.oldSplit({|i| i.class==String})
+		.collect({|a| 
+			//a.postln
+			{|durs ins ...pairs| 
+				ins.postln; 
+				[instrument:ins,dur:durs.asBeats.warpTo(tempoMap).q() ]++pairs
+				=>_.p
+			}.valueArray(a)
+		})
+	}
 	subdivide { |beat=1|
 			var a = this.collect({
 					|i| 

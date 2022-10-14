@@ -131,7 +131,8 @@ RecOnsets {
 	}
 	play{
 		^armed.if{
-			'armed!'.postln;
+			'recording!'.postln;
+			this.record.play;
 			[1]
 		}{
 			list
@@ -141,11 +142,13 @@ RecOnsets {
 	record {
 		var o;
 		var string = '/'++name;
+		\rreeccoorr.postln;
 		list = List[];
-		o = OSCFunc({list.add(SystemClock.seconds).postln},string);
+		o = OSCFunc({list.add(TempoClock.seconds).postln},string);
 		fork{ 
 			(Song.secDur[section]+ tail).wait; o.free; 
-			list = list.differentiate.drop(1).asArray ;
+			list = list.differentiate .drop(1).asArray 
+			++ ( Song.secDur[section]-list.differentiate.drop(1).sum ) ; //time remaining is section
 			list = list.asBeats(section).round(0.001).reject{|i|i.isStrictlyPositive.not};
 			this.writeArchive(path)
 		};

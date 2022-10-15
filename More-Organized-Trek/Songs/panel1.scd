@@ -31,22 +31,16 @@ P('click',start:\Sealed,music: {|p b e|
 		instrument:\hat_808
 	]//.pp
 });
-P('bas',start:\Sealed,music: {|p b e|
+P('bass',start:\Sealed,music: {|p b e|
 	[
 		freq: [1,-6].df(\f,[3,4]).q,
-		//dur: b.parse([5,5]).q
 		dur: [4,3].warpTo(e.tempoMap).q
-	].p
-	=> _.play;
-	[
-		"ex ex e ex ex  e e",\snare,
-		"e e e e e e e e",\hihat
-	].dmx2()=>Ppar(_)//=>_.play(clock:TempoClock.newFromQuarters(1!6=>_.warpTo(e.tempoClock)))
-	;
+	].pp;
+	/*
 	RecOnsets(\boom,\Sealed)
 	//.arm
-	.play
-	 - [0.12,0.00,0] ;
+	.play - [0.12,0.00,0] ;
+	*/
 	 [2,3.75,1.5].push(1,1.05)=> {|i| [dur:i .warpTo(e.tempoMap) .q,instrument:\sn_808,rest:[\r,1,1,1].q,out:Effect.bus(EchoNone.ar(_,0.2,0.2,3)/1)].pp} ;
 
 
@@ -89,11 +83,11 @@ P(\bass,start:\essence,music: { |p b e|
 P.tune(\outtro);
 P('bass',start:\outtro,music: {|p b e|
 	
-[ [1, -7, -4, -3],[2,3,2,2] ].flop.collect({ |i| i[0].dup(i[1]) }).flat.df(\b,\mixolydian)
+[ [1, -7, -4, -3, -5, -4, -1],[2,3,2,2, 2,2, 1] ].flop.collect({ |i| i[0].dup(i[1]) }).flat .df(\b,\mixolydian)
 => {|i| 
 	[
 		freq: i.q/[8,4],
-		dur: "qe e e ee e qe e q q".asBeats.warpTo(1!9=>_.warpTo(e .tempoMap)).q
+		dur: "qe e| e ee e| qe e| q q| qe e| qe e| q".asBeats.warpTo(1!16=>_.warpTo(e .tempoMap)).q
 	].pp
 }
 });
@@ -102,13 +96,13 @@ Song.setTempoMap(\outtro, "q qe ee e qq q q q qe ee e qq" );
 P('chords',start:\outtro,music: {|p b e|
 	
 	[
-		freq:[ [1,3,5,11], [ -7,3,5,7 ], [-6,1, 4,6],[-5,5],[-6,6],[2,5,7] ].df(\b,\mixolydian).q,
+		freq:[ [1,3,5,11], [ -7,3,5,7 ], [-6,1, 4,6],[-5,5],[-6,6],[2,5,7],[1,4,6],5,[1,3,5] ].df(\b,\mixolydian).q,
 		instrument: \stringyy,
-		dur: "qq qq qq q q qq".asBeats.warpTo(e.tempoMap).q
+		dur: "qq qq qq q q qqe ee e q".asBeats.warpTo(e.tempoMap).q
 	].pp
 });
 P('click',start:\outtro,music: {|p b e|
-	1.dup(16)=>{|i| [dur:i.warpTo(e.tempoMap).q,instrument:\hihat].pp }
+	1.dup(13)=>{|i| [dur:i.warpTo(e.tempoMap).q,instrument:\hihat].pp }
 });
 /*SPOCK:*/[" Pure energy. Matter without form. ","r",].addLine; 
 P('arpeggio',start:\Pure,music: {|p b e|

@@ -119,7 +119,8 @@ RecOnsets {
 		File.exists(path).if{
 			var saved = Object.readArchive(path); \exists.postln;
 			list = saved.list;
-		} 	
+		};
+		try{ this.list.asArray.registerD }
 	}
 	recordIfArmed {
 		^armed.if{
@@ -150,7 +151,8 @@ RecOnsets {
 			list = list.differentiate .drop(1).asArray 
 			++ ( Song.secDur[section]-list.differentiate.drop(1).sum ) ; //time remaining is section
 			list = list.asBeats(section).round(0.001).reject{|i|i.isStrictlyPositive.not};
-			this.writeArchive(path)
+			this.writeArchive(path);
+			this.list.asArray.registerD
 		};
 		^{
 			var trig = 

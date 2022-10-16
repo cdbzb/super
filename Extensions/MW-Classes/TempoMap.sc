@@ -1,27 +1,26 @@
 
 TempoMap { 
-  var <>beats,<>durs;
+  var <beats,<durs,<timesInBeats,<>timesInDurs;
   var polynomial;
   *new { |beats = #[1,1,1,1,1,1,1] durs = #[1,1,1,1,1,1,1,1]|
-    ^super.newCopyArgs(beats ,durs )
+    ^super.new.init(beats ,durs )
   }
   *fromDurs{ | dur | ^TempoMap( 1!dur.list.size,dur.list) }
   *fromB { | b| ^TempoMap( 1!b.size,b) }
-  init { |beats durs|
-
-	//var points = [beats,durs].collect{|i| [0] ++ i => _.integrate => _.drop(1)}.flop;
-	//var binomials = points.collect{|i| Polynomial.newFrom([ i[0]*(-1), 1 ])};
-	//var expandTheOthers = {|element| binomials.reject{|i| i == element}};
-	//var polynomials = points.size.collect { |i|
-	//	Polynomial.expandBinomialFactors( expandTheOthers.(binomials[i]))
-	//};
-	//var coefficients = polynomials.collect{|i x| 
-	//	i.eval(points[x][0])/points[x][1] => _.reciprocal
-	//};
-	//polynomial = polynomials * coefficients => _.sum ;
-	//storebeats = beats; storedurs = durs;
-	beats = beats;durs = durs;
+  init { |b d|
+	beats = b; durs = d;
+	timesInBeats = [ 0 ] ++ beats ++ beats.last => _.integrate;
+	timesInDurs = [ 0 ] ++ durs ++ durs.last => _.integrate;
         ^this;
+  }
+
+  beats_{|i| 
+	  beats = i;  
+	  timesInBeats = [ 0 ] ++ beats ++ beats.last => _.integrate;
+  }
+  durs_{|i| 
+	  durs= i;  
+	  timesInDurs = [ 0 ] ++ durs++durs.last => _.integrate;
   }
 
   mapBeatsPoly { | beats |
@@ -33,16 +32,14 @@ TempoMap {
   }
    
   interpolateBeat { |beat|
-	  var timesInBeats = [ 0 ] ++ beats ++ beats.last => _.integrate;
-	  var timesInDurs = [ 0 ] ++ durs ++ durs.last => _.integrate;
 	  var prev = timesInBeats.select{|i| i <= beat}.maxIndex;
 	  [[ prev, prev + 1 ],[ timesInBeats[prev], timesInBeats[prev + 1] ]].postln;
 	  ^beat-timesInBeats[prev] / ( timesInBeats.clipAt(prev + 1) - timesInBeats[prev] ) * ( timesInDurs.clipAt( prev + 1 ) - timesInDurs[prev] ) + timesInDurs[prev]
   }
   interpolateBeatInverse { |beat|
 	  //I simply swtched timesInBeats and timesInDurs !!
-	  var timesInDurs = [ 0 ] ++ beats ++ beats.last => _.integrate;
-	  var timesInBeats = [ 0 ] ++ durs ++ durs.last => _.integrate;
+	  var timesInDurs = timesInBeats;
+	  var timesInBeats = timesInDurs;
 	  var prev = timesInBeats.select{|i| i <= beat}.maxIndex;
 	  [[ prev, prev + 1 ],[ timesInBeats[prev], timesInBeats[prev + 1] ]].postln;
 	  ^beat-timesInBeats[prev] / ( timesInBeats.clipAt(prev + 1) - timesInBeats[prev] ) * ( timesInDurs.clipAt( prev + 1 ) - timesInDurs[prev] ) + timesInDurs[prev]
@@ -53,9 +50,9 @@ TempoMap {
 	  ^array.integrate.collect{|i| this.interpolateBeatInverse(i)}.differentiate
   }
 
-  mapBeats { | beats |
-	  beats.collect{|i| ( i==0 ).if{0.000001}{i}};
-	  ^beats.integrate.collect{|i| this.interpolateBeat(i)}.differentiate.select(_.isStrictlyPositive)
+  mapBeats { | b |
+	  b.collect{|i| 0.000001 max: i};
+	  ^b.integrate.collect{|i| this.interpolateBeat(i)}.differentiate.select(_.isStrictlyPositive)
   }
 
   mapRecordedDurs { | durs |
@@ -89,6 +86,7 @@ TempoMap {
 	  ^TempoMap.new(beats.copy,dursCopy)
 
   }
+
   quantizeRange { |amount range| // returns new durs
 	  range = range ? [0,durs.size];
 	  range = (range[0]..range[1]);
@@ -107,7 +105,21 @@ TempoMap {
 			chunk.do{|it in|result.durs.put(in+x,it)}
 		};
 
+		result.timesInDurs = [ 0 ] ++ result.durs ++ result.durs.last => _.integrate;
+
 		^result;
   }
+  goodBeats {|amount ...args|
+	  args = [0] ++ args => _.flat => _.postln;
+	  ^(args.size-1 ) 
+	  .collect {|i|args[[i,i+1]] - [0,1]}.postln
+	  .collect {|i|this.quantizeRange(amount,i)}
+	  .flat ++ durs[( args.last..( durs.size-1 ))]
+  }
+}
++Array{
+	goodBeats { |array|
+		^this.reshapeLike(array.differentiate.collect({|i| 1.dup(i)}))
+	}
 }
 

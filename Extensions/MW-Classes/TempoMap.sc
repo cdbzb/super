@@ -77,6 +77,19 @@ TempoMap {
 	  }
   }
 
+  quantizeDft{ |amt = 0.78| //returns array of durs
+	  //var beats = 0.25!64 warpTo: this;
+	  var size = this.quarters.size;
+	  //var size = beats.size;
+	  var imag = Signal.newClear(size);
+	  var complex = Signal.newFrom(this.quarters).dft(imag);
+	  var mask = amt * size => _.floor;
+	  var filtered = complex.real * Signal.rectWindow(size,mask).postln;
+	  var filtered2 = complex.imag * Signal.hammingWindow(size,mask).postln; //why ?
+	  complex = Complex(filtered,filtered2);
+	  ^complex.real.idft(complex.imag).real
+  }
+
   quantizeRangeInPlace { |amount start end|
 	  var quantized = this.quantizeRange(amount,[start,end]);
 	  var dursCopy = durs.copy;

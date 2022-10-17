@@ -56,7 +56,9 @@ P('cymbal',start:\essence,music: {|p b e|
 Song.setTempoMap(\essence,"q qe ee e e e qqe e");
 P(\click,start:\essence,music: { |p b e|
 	[
-		dur:1.dup(8).warpTo(e.tempoMap).q(2),
+		dur:1.dup(8).warpTo(e.tempoMap
+			.quantizeDft
+		).q(2),
 		instrument:\hihat
 	].pp
 });
@@ -102,7 +104,9 @@ P('chords',start:\outtro,music: {|p b e|
 	].pp
 });
 P('click',start:\outtro,music: {|p b e|
-	1.dup(13)=>{|i| [dur:i.warpTo(e.tempoMap).q,instrument:\hihat].pp }
+	1.dup(13)=>{|i| [dur:i.warpTo(e.tempoMap
+		.quantizeDft
+	).q,instrument:\hihat].pp }
 });
 /*SPOCK:*/[" Pure energy. Matter without form. ","r",].addLine; 
 P('arpeggio',start:\Pure,music: {|p b e|

@@ -79,6 +79,7 @@
 				^tempoMap.mapBeats(this)
 	}
 	warpToArray{ |quarters|
+		quarters = quarters ++ quarters.last;
 
 		^this.integrate.collect{|i|quarters.atInterpolated(i)}.differentiate
 		.select(_.isStrictlyPositive)

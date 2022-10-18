@@ -1,7 +1,7 @@
 (
 (s.options.device != "Digiface USB (23953833)") .if{
-	g = Group.new(target:RootNode(s));
-	m = Monitor.new;
+	g = g ? Group.new(target:RootNode(s));
+	m = m ? Monitor.new;
 	m.play(2,3,0,2,g);
 	ServerTree.add({
 		g = Group.new(target:RootNode(s));
@@ -21,7 +21,7 @@ Song.encoders=~encoders;
 	Song.carrierBus = Bus.audio(s,5);
 	Song.modulatorBus = Bus.audio(s,2);
 	Song.sargonCarrier = {
-		|p b e att=3 sus=5 rel=6 chord=#[1,2,4,5,6,8] aTune| 
+		|p b e att=3 sus=5 rel=6 chord=#[1,2,4,5,6,8] aTune mix=0.5| 
 		{  
 			var tune = aTune ? p.tune[e.start].list;
 			// account for preroll!!
@@ -36,19 +36,23 @@ Song.encoders=~encoders;
 			var saw = Saw.ar(freqs) * 0.1
 			=> SplayAz.ar(5,_)
 			=> RLPF.ar(_,100,2)
-			* Env.linen(3,5,6).kr(2,gate:1);
-			car => FreeVerb.ar(_,1,0.8)
-			+ saw
+			;//* Env.linen(3,5,6).kr(2,gate:1);
+			(1-mix * car min: 0.001  )=> FreeVerb.ar(_,1,0.8)
+			+ (mix * saw )
 			/10
 		}.play(s,Song.carrierBus.index)
 	};
 
-	Song.sargonModulator = {|rpp dur modGain=1| 
+	Song.sargonModulator = {|rpp dur modGain=1 echo=1| 
 		{ 
 			Line.kr(dur:dur,doneAction:2);
-			rpp=Song.resources.at(rpp);
-			PlayBuf.ar( 1,rpp.buffer) 
-			=> EchoNone.ar(_,1,0.4,2) * 2
+			rpp = (rpp.class == VocalRPP).if{
+				rpp
+			} {
+				rpp=Song.resources.at(rpp)
+			};
+			PlayBuf.ar( 1,rpp.buffer.()) 
+			=> {|i| echo* EchoNone.ar(i,1,0.4,2) +(i * (1-echo)) } * 2
 			//=> MoogFF.ar(_,8000,1)
 			=> LPF.ar(_,6000)
 			* modGain
@@ -73,8 +77,9 @@ Song.encoders=~encoders;
 	};
 
 	Song.vocodeTune = { 
-		|p b e rppName amp=0.2 att=3 sus=1 rel=5 dur=10 chord=#[1,2,4,5,6,8] tune out=0 modGain=1|
+		|p b e rppName amp=0.2 att=3 sus=1 rel=5 dur=10 chord=#[1,2,4,5,6,8] tune out=0 modGain=1 echo=1 mix=0.5|
 		var foa = Bus.audio(s,1);
+		e.rpp.notNil.if{rppName = e.rpp};
 		Synth(\soundInMorph,[
 			modulator: Song.modulatorBus.index,
 			carrier: Song.carrierBus.index,
@@ -94,8 +99,8 @@ Song.encoders=~encoders;
 			=> FoaDecode.ar(_,Monitors.decoder)
 			*3
 		}.play(addAction:\addToTail);
-		Song.sargonCarrier.(p,b,e,att, sus, rel, chord,tune);
-		Song.sargonModulator.(rppName,dur,modGain)
+		Song.sargonCarrier.(p,b,e,att, sus, rel, chord,tune,mix);
+		Song.sargonModulator.(rppName,dur,modGain,echo)
 	};
 	Song.laMer = Song.laMer ?  Buffer.read(s,"~/tank/super/samples/La_Mer_clean.aif".standardizePath);
 );

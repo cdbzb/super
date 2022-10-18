@@ -1,12 +1,15 @@
 (
 s.waitForBoot{ 
-Song(\panel1,[]).current;
+Song(\panel1,[]).current
+;//.preroll_(1);
+"~/tank/super/More-Organized-Trek/Songs/boilerplate.scd".standardizePath.load;
 //(A panel slides back to reveal a much larger area, with rock walls, and a glowing sphere elegantly poised on an angled support.) 
 /*SARGON: (the glowing sphere)*/[" Welcome. I am Sargon. ","r",].addLine; 
 /*SPOCK:*/[" Sargon, would it harm you if I ","r",].addLine; 
 /*SARGON:*/[" You may use your tricorder, Mister Spock.","r"].addLine;
 ["Your readings will show","r"].addLine;
 ["energy but no substance. ","3 2 3 2 1 -7 1 -7 -6 -5 4 3 3 1 2 -7".dm(\e)].addLine;
+
 P.tune(\substance);
 P('bassline',start:\substance,music: {|p b e|
 	[
@@ -14,9 +17,32 @@ P('bassline',start:\substance,music: {|p b e|
 		dur:[3,1] => _.dup(4) => _.flat=> _.warpTo(b) => _.q
 	].pp
 });
+P('chord',start:\energy,music: {|p b e|
+	var one = [1,3,5], six = [-6,3,1],two = [2,4,6], four = [-4,-6,1], five = [-5,-7,2];
+	//progression = [one, six, four, five];
+	var progression = [one, five, two, four];
+	[
+		freq: progression.stutter(2).df(\e).q,
+		dur: "h h h h h h h h".asBeats.warpTo(b).q,
+		instrument:\sawSynth,amp:0.04
+
+	].pp
+});
 ["Sealed in this receptacle is the ",[5, 4,3,2,3,4,3,-5,-6,-7].dm(\c,6)].addLine;
+P.rpp('vox',start:\Sealed,lag:-1,music: {|p b e|
+	{ Song.laMer => PlayBuf.ar(2,_,rate: [5,0].midiratio.dq.demand(b.parse([5,3])+[1,0]).poll)/2 * 0.1=> Out.ar(Song.carrierBus,_) }.play;
+	p.vocodeTune.(p,b,e,
+		modGain:9,
+		chord:#[1,0.5,2,8],
+		echo:0.5,
+		mix:0.8
+	)
+});
+P('cymbal',start:\Sealed,music: {|p b e|
+	[ instrument:\cymbal_808,amp:0.5,decay:4,dur:2.dup(5).warpTo(e.tempoMap.quantizeDft).q ].p.play
+});
 Song.setTempoMap(\Sealed,"q e eq e x xq e e Q Q");
-P.tune(\Sealed);
+P.tune(\Sealed,Pbindf(_,\instrument,\sparkTriangle,\depth,0.001,amp:0.03));
 
 P('chords',start:\Sealed,music: {|p b e|
 	[
@@ -82,6 +108,7 @@ P(\bass,start:\essence,music: { |p b e|
 	=> _.play
 });
 ["my mind outtro",[1, 11,7,6,6,5,6,7,7,6,5,5 ].dm(\b,\mixolydian) ].addLine;
+Song.setTempoMap(\outtro, "q qe ee e qq q q q qe ee e q" );
 P.tune(\outtro);
 P('bass',start:\outtro,music: {|p b e|
 	
@@ -89,12 +116,11 @@ P('bass',start:\outtro,music: {|p b e|
 => {|i| 
 	[
 		freq: i.q/[8,4],
-		dur: "qe e| e ee e| qe e| q q| qe e| qe e| q".asBeats.warpTo(1!16=>_.warpTo(e .tempoMap)).q
+		dur: "qe e| e ee e| qe e| q q| qe e| qe e| q".asBeats.warpTo(1!16=>_.warpTo(e .tempoMap.quantizeDft)).q
 	].pp
 }
 });
 
-Song.setTempoMap(\outtro, "q qe ee e qq q q q qe ee e qq" );
 P('chords',start:\outtro,music: {|p b e|
 	
 	[
@@ -104,9 +130,28 @@ P('chords',start:\outtro,music: {|p b e|
 	].pp
 });
 P('click',start:\outtro,music: {|p b e|
-	1.dup(13)=>{|i| [dur:i.warpTo(e.tempoMap
+	1.dup(23)=>{|i| [dur:i.warpTo(e.tempoMap
 		.quantizeDft
-	).q,instrument:\hihat].pp }
+	).q,instrument:\hihat].pp };
+	
+	[
+		dur: "q qq qq qq qq qq qq q ".asBeats.warpTo(e.tempoMap
+			.quantizeDft
+		//.quantizeWindow
+		).q,
+		//amp:0.05,
+		//lag:0.005,
+		instrument: \sn_808,
+		rest:[\r,0,0,0,0,0,0].q
+	].pp;
+	[
+		dur: "e eqe ee e qq e ee e e eqe ee e qq ".asBeats-[0.01,0,0,0,0,0,0,0,0,0] =>_.warpTo(e.tempoMap
+			.quantizeDft
+		//.quantizeWindow
+		)=>_.q,
+		vol:0.08,
+		instrument: \kick_gentle
+	].pp
 });
 /*SPOCK:*/[" Pure energy. Matter without form. ","r",].addLine; 
 P('arpeggio',start:\Pure,music: {|p b e|

@@ -3,7 +3,7 @@
 //Briefing Room
 (
 s.waitForBoot { 
-	Song(\briefing,[]).current.preroll_(1);
+	Song(\briefing,[]).current;
 
 [ "SCOTT: You're going to what?","r" ].addLine;
 [ "Are they all right in the head, Doctor? ","r" ].addLine;

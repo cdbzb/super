@@ -2,7 +2,6 @@
 Stills("/Users/michael/trek/BySection/media/return to tomorrow.mov").current;
 //Line 239 The three volunteers are lying on beds, with the spheres on tables beside them. 
 ~xtreme=Song( \song,[]).current;
-Song.preroll_(1);
 
 
 

@@ -1,7 +1,7 @@
 (
 s.waitForBoot{ 
 Song(\panel1,[]).current
-;//.preroll_(1);
+;
 "~/tank/super/More-Organized-Trek/Songs/boilerplate.scd".standardizePath.load;
 //(A panel slides back to reveal a much larger area, with rock walls, and a glowing sphere elegantly poised on an angled support.) 
 /*SARGON: (the glowing sphere)*/[" Welcome. I am Sargon. ","r",].addLine; 

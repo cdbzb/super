@@ -16,7 +16,6 @@
 	};
 // Song
 	Song(\ending,[]).current;
-	Song.currentSong.preroll_(1);
 	~encoders = ~encoders ?? { (
 		omni:FoaEncoderMatrix.newOmni,
 		spread:FoaEncoderKernel.newDiffuse

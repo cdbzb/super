@@ -13,7 +13,7 @@ Song {
 	var <>next;
 	var <>quarters, <>tempoMap;
 	var <>clock;
-	var playInitiatedAt,<>preroll=0;
+	var playInitiatedAt,<preroll=0;
 	var <secLoc, <secDur, <pbind;
 	classvar <>muteTunes;
 

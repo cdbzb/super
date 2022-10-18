@@ -43,7 +43,6 @@ Song.resources.infrastructure=FunctionList.new([
 ~justTheTune.('minds');
 
 ~bass0quarters=Song.parse(0,[ [1,1],[1,1,1],1 ]);
-//Song.preroll_(0.3);
 
 Song.guitarFx={ |b|
 	var e = Effect( { |i|  

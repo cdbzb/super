@@ -13,14 +13,11 @@
 ~complex = Complex(~filtered,~filtered2);
 
 ///////////
-[ ~complex.real.idft(~complex.imag).real, ~real].plot
+[ ~complex.real.idft(~complex.imag).real, ~real].plot;
 
-(
+
 [ dur:~complex.real.idft(~complex.imag).real.q , instrument:\snare ].pp;
 [ dur: ~real.q, instrument:\hihat ].pp
-)
-
-
 
 
 )

@@ -642,9 +642,7 @@ P(\pf11,start:'Here, in this',music:
 	])
 );
 
-//~complete.pbind.do({|i x| var label = ("guide"++x).asSymbol; ~complete.label]=(start:x,music:i);label.postln});
-//"xxx.xxxxxxx".do({|i n| var label="guide"++n.asSymbol; (i==$x).if {~complete.label]=(start:n,music:~complete.pbind[n])} });
-Song.addGuides("xxx.xxxxxxx");
+Song.addGuides("xxxxxxxxxxx");
 
 ~quarters=SongArray.new();
 [ "trill","r",[5] ].addLine; //0

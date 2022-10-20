@@ -2,30 +2,68 @@
 (
 s.waitForBoot{
 	Song(\transporter,[]).current;
+
 	[ "MCCOY: Jim, why no briefing on this? I'd at least like to kno-o-ow what we're getting into. ",[3,4,2,5,3,1, -7, -6, -7, 1, 2, 3, 4,5, 4, 3, 4, 5, 6, 6, -7].dm(\g) ].addLine;
 	P.tune('kno-o-ow');//, Pset(\lag,[0,0,0,0,0,0,0,0,0,0,0,0,0.06, 0,0,0,0,0,0,0.06].q(2),_));
 	Song.setTempoMap('kno-o-ow',
 		"q e e  e e e ee x x E E E e x x   x x x x  ex x"
 	);
-	P(\myClick,start:'kno-o-ow',music:{|p b e| 
+	P(\keys,start:'kno-o-ow',music:{|p b e| 
 		[
-			dur: "q q q q q q q q e x x".asBeats.warpTo(e.tempoMap).q,
-			freq:[3, 4, 5, 1, [ -17, -7 ], [-16, -6 ], [ -12, -22, -6, 2, 4 ], [ -11,-1 ], [-17, -7, 2,4,6 ], -7,-6,-5].df(\g, 4).q,
-			legato:1.5,
+			dur: "q q q q q q q q ex x".asBeats.warpTo(e.tempoMap).q,
+			freq:[3, 4, 5, 1, [ -17, -7 ], [-16, -6 ], [ -12, -22, -6, 2, 4 ], [ -11,-1 ], [-17, -7, 2,4,6 ], -7,6].df(\g, 4).q,
+			legato:[1,1,1,1, 1, 1, 1, 1, [2,0,1,1,1.2],1,1].q * 0.8,
+			att:0.01,
 			amp:0.15,
+			sus:0.5,
+			dec:0.2,
 			strum:[0,0,0,0,0,0,0.05,0,0.05].q(inf),
 			lag:(-1)*[0,0,0,0,0,0,0.05,0,0.05].q(inf),
-			instrument:\sawSynth
+			instrument:\sawSynthAdsr,
+			hiFreq:9000
 		].pp;
 	});
 	[ "KIRK: Easy, Bones. ","7 5 3".dm(\c,5,\mixolydian)].addLine;
 	P.tune(\Easy);
+	P('answer',start:\Easy,music: {|p b e|
+		[
+			freq:[1.5,-6.5,-3].df.q,
+			dur:RecOnsets('answer','Easy')
+			//.arm
+			.play.q
+		]//.p//p
+	});
+	P('wash',start:\Easy,music: {|p b e|
+		[
+			freq: [[5,7]].df(\c,[4,5],\mixolydian).q,
+			dur: b.sum
+			att:b.sum,
+			amp:0.02,
+			instrument:\reedy,
+			sustain:0,
+			release:3
+		].pp
+	});
 	["As long as you know there's somethi--ng down there, you know as much as we do."," 1 2 3 3 2  -5 -6 -7 1 2 1 -4 4 3 2 1 -7 2 1".dm(\c) ].addLine;
+	P('wash',start:\somethi,music: {|p b e|
+		[
+			freq: [\r,11,7.5,\r,3,\r,\r,[6,11],5].df(\c,[4,5],\mixolydian).q,
+			dur: b.parse([3,1,1,4, 1,1,1, 1,1]).q,
+			legato:[1,1,1,1,1,1,1,[1,2]].q(2),
+	//		att:b.sum,
+			amp:0.02,
+			//instrument:\wash,
+			instrument:\pulse, amp:0.1,
+	//		sustain:0,
+			release:3
+		].pp
+	});
 	P(\xtra_notes,start:'down there',syl:11,music:{|p b e| 
 		[
-			freq: [-6, 1, -11, -4, -7].df(\c).q,
-			legato: [1, 1/3, 3,2,1].q,
-			dur: b.drop(1).parse([1,4, 1/3, 1/3, [1/3,1]]).q
+			freq: [-6, 1, -11, -4, -7, 1].df(\c).q,
+			legato: [1, 1/3, 3,2,1,1].q,
+			dur: b.drop(1).parse([1,4, 1/3, 1/3, [1/3],1]).q,
+			instrument: \sawSynthSustain
 		].pp
 	});
 	Song.setTempoMap('down there',"e e e eee ee e e x x eee e ee ee eee x xe e eee");

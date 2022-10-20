@@ -547,9 +547,10 @@ Song {
 				duration:(start..end).collect(this.secDur[_]).sum + tail);
 			}
 	}
-	makeVid { |start end dir tail| // check Sync
+	makeVid { |start end dir tail=2| // check Sync
 		var now = Date.getDate.stamp;
 		var path = dir +/+ now;
+		//preroll = 0.5;
 		start = Song.section(start);
 		end = Song.section(end);
 		fork{

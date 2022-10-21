@@ -67,6 +67,11 @@
 	pipe {|...fns|
 		^fns.inject({|x| x}, {|acc, el| el<>acc }).(this)
 	}
+<| { |f|
+	^if(f.isKindOf(Function), 
+		{ {|i| this.( f.(i) )} },
+		{ this.(f) })
+}
 }
 + Server { 
 	plotTreeL {|interval=0.5 x=(-800) y=400 dx=400 dy=800|

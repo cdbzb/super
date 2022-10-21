@@ -5,7 +5,7 @@ TempoMap {
   *new { |beats = #[1,1,1,1,1,1,1] durs = #[1,1,1,1,1,1,1,1]|
     ^super.new.init(beats ,durs )
   }
-  *fromDurs{ | dur | ^TempoMap( 1!dur.list.size,dur.list) }
+  *fromDurs{ | dur | ^TempoMap( 1!dur.list.size,dur.list.array) } //expects a Pseq
   *fromB { | b| ^TempoMap( 1!b.size,b) }
   init { |b d|
 	beats = b; durs = d;
@@ -37,12 +37,12 @@ TempoMap {
 	  ^beat-timesInBeats[prev] / ( timesInBeats.clipAt(prev + 1) - timesInBeats[prev] ) * ( timesInDurs.clipAt( prev + 1 ) - timesInDurs[prev] ) + timesInDurs[prev]
   }
   interpolateBeatInverse { |beat|
-	  //I simply swtched timesInBeats and timesInDurs !!
-	  var timesInDurs = timesInBeats;
-	  var timesInBeats = timesInDurs;
-	  var prev = timesInBeats.select{|i| i <= beat}.maxIndex;
-	  [[ prev, prev + 1 ],[ timesInBeats[prev], timesInBeats[prev + 1] ]].postln;
-	  ^beat-timesInBeats[prev] / ( timesInBeats.clipAt(prev + 1) - timesInBeats[prev] ) * ( timesInDurs.clipAt( prev + 1 ) - timesInDurs[prev] ) + timesInDurs[prev]
+	  //simply swtched timesInBeats and timesInDurs !!
+	  var timesInDurz = timesInBeats;
+	  var timesInBeatz = timesInDurs;
+	  var prev = timesInBeatz.select{|i| i <= beat}.maxIndex;
+	  [[ prev, prev + 1 ],[ timesInBeatz[prev], timesInBeatz[prev + 1] ]].postln;
+	  ^beat-timesInBeatz[prev] / ( timesInBeatz.clipAt(prev + 1) - timesInBeatz[prev] ) * ( timesInDurz.clipAt( prev + 1 ) - timesInDurz[prev] ) + timesInDurz[prev]
 
   }
 

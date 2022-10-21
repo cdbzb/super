@@ -1,18 +1,19 @@
 (
 s.waitForBoot{ Song(\chamber1,[]).current;
-	//[ Chamber ] 
-["SPOCK: Captain, the security guards. ","r"].addLine;
+/*[ Chamber ] */ ["SPOCK: Captain, the security guards. ","r"].addLine;
 ["KIRK: Kirk here. ","r"].addLine;
 ["SCOTT [OC]: Can you read me, Captain? ","r"].addLine;
-["KIRK: Yes, Scotty, and I shouldn't be able to this deep inside the planet, but perhaps this has been arranged for us, too. Is the security guard up there?","r"].addLine;
-//[ Transporter Room ]
-["SCOTT: They're fine. They Just didn't dematerialise.","r"].addLine;
-//[ Chamber ]
-["SCOTT [OC]: I don't like it, sir. ","r"].addLine;
+["KIRK: Yes, Scotty, and I shouldn't be able to","r"].addLine;
+[ "this deep inside the planet, but perhaps this has been arranged for us, too. ","r" ].addLine;
+["Is the security guard up there?","r"].addLine;
+/*[ Transporter Room ]*/ ["SCOTT: They're fine. They Just didn't dematerialise.","r"].addLine;
+/*[ Chamber ]*/ ["SCOTT [OC]: I don't like it, sir. ","r"].addLine;
 ["KIRK: No problem yet. Maintain alert. Kirk out. ","r"].addLine;
 ["MULHALL: Atmosphere report, Captain. ",[11,7,5,4,3,2,3].dm(\b,5,\mixolydian)].addLine;
 P.tune(\Atmosphere, {|i| Pmul(\freq,[1,0.5],i) <> [out: Effect(FreeVerb.ar(_,0.8,0.8), inputChannels:2).bus.index, \legato:[6,2,5,2,4,2,3].q ].p });
+
 Pdefn(\lower,7.df.bubble.q(inf)); ///NOW WHAT?
+
 ( Song.trillStart = { |lowerNoteDegree p b e octave=5 amp=0.03|
 	Song.trillFreq=lowerNoteDegree;
 	3.do{
@@ -71,10 +72,14 @@ P(\trill,start:\Atmos,music:{|p b e|
 ["A fraction richer in oxygen than usual for us, but otherwise normal. "," 3 4 5 7 11 6 13 12 5 6 12 11.5 6, 4.5 5.5 4 5 6 7 12 11".dm(\c)].addLine;
 P.tune(\oxygen,{|i| Pmul(\freq,[1,0.5],i) => Pset(\legato,1,_) });
 P('testrec',start:\oxygen,music: {|p b e|
-	a = RecOnsets(\test,\oxygen);
-	//a.armed_(true);
-	a.recordIfArmed.play;
-	[ dur: a.play.asArray.warpTo(b).q, instrument:\cymbalsDS,amp:0.005 ].pp
+	RecOnsets(\test,\oxygen)
+	//.armed_(true)
+	//.play;
+	.play
+	.warpTo(b)
+	.q
+	=> [ dur: _, instrument:\cymbalsDS,amp:0.005,rests: MuteFirst() ] =>_.pp
+	//a.list
 
 });
 P('chord',start:\oxygen,music: {|p b e|

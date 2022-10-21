@@ -115,7 +115,7 @@ RecOnsets {
 		directory +/+ Song.current => {|i| File.exists(i).not.if{ File.mkdir(i)}};
 		path = directory +/+ Song.current +/+ name;
 		armed = false;
-		tail = t;
+		tail = t ? 0;
 		File.exists(path).if{
 			var saved = Object.readArchive(path); \exists.postln;
 			list = saved.list;
@@ -143,7 +143,7 @@ RecOnsets {
 	record {
 		var o;
 		var string = '/'++name;
-		\rreeccoorr.postln;
+		\rreeccoorrd.postln;
 		list = List[];
 		o = OSCFunc({list.add(TempoClock.seconds).postln},string);
 		fork{ 

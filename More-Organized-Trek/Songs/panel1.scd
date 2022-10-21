@@ -5,7 +5,8 @@ Song(\panel1,[]).current
 "~/tank/super/More-Organized-Trek/Songs/boilerplate.scd".standardizePath.load;
 //(A panel slides back to reveal a much larger area, with rock walls, and a glowing sphere elegantly poised on an angled support.) 
 /*SARGON: (the glowing sphere)*/[" Welcome. I am Sargon. ","r",].addLine; 
-/*SPOCK:*/[" Sargon, would it harm you if I ","r",].addLine; 
+/*SPOCK:*/[" Sargon, would it harm you if I ","4 5 7 11 12 6 5 4".dm(\d)].addLine; 
+P.tune('harm');
 /*SARGON:*/[" You may use your tricorder, Mister Spock.","r"].addLine;
 ["Your readings will show","r"].addLine;
 ["energy but no substance. ","3 2 3 2 1 -7 1 -7 -6 -5 4 3 3 1 2 -7".dm(\e)].addLine;

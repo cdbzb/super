@@ -1,6 +1,7 @@
 
 (
 s.waitForBoot{
+
 	Song(\transporter,[]).current;
 
 	[ "MCCOY: Jim, why no briefing on this? I'd at least like to kno-o-ow what we're getting into. ",[3,4,2,5,3,1, -7, -6, -7, 1, 2, 3, 4,5, 4, 3, 4, 5, 6, 6, -7].dm(\g) ].addLine;
@@ -480,10 +481,12 @@ P(\slide,start:'Oh, yes',music:{|p b e|
 	//add pickup bassnote to line following?
 	[" (boom) Just how much rock are we going to go through? ","1 5 5 5 5 3 4 5 4 3 2 1 5 6 5".dm('b-') ].addLine;
 	Song.setQuarters(\through,"q q q| q q e e| Q Q Q| Q Q E Eq q");
-	Song.quarters[\through] = Song.quarters[\through].list.quantizeWindow.q;
+	Song.quarters[\through] = Song.quarters[\through].list
+	.quantizeWindow
+	.q;
 	P.tune(\through,Pset(
 		\dur,
-		"q q q| q q e e| Q Q Q| Q Q E Eq ex ".asBeats .warpTo(Song.quarters[\through]).q
+		"q q q| q q e e| Q Q Q| Q Q E Eq ex ".asBeats.warpTo(Song.quarters[\through]).q
 		,_));
 	
 	P(\drums,start:\through,music:{|p b e| 
@@ -541,11 +544,97 @@ P(\slide,start:'Oh, yes',music:{|p b e|
 			}
 		).play
 	});
-	[ "MCCOY: Miles? Are you joking? ","r" ].addLine;
-	[ "KIRK: No, we're not. Let's go. ",[-5, -5, 1].dm(\f) ++ [-5, -5, 1].dm(\a) ].addLine;
-	[ "SARGON [OC]: Please stand ready. I will operate your controls. ","r" ].addLine;
-	//[ "KIRK: Doctor, if you prefer to stay behind? ","r" ].addLine;
+	[ "MCCOY: Miles? Are you joking? ",[7,4.5,5,11,5].dm('a-') ].addLine;
+	P('chord',start:'Miles?',music: {|p b e|
+		[
+			freq: 
+			[ [1,3,5].df(\b,\whole),[1,5,7,11].df('a-',\mixolydian)]
+			.q,
+			dur: b.parse([3,2]).q,
+			instrument:\stringyy
+		].pp
+	});
+	P.tune('Miles?');
+	[ "KIRK: No, we're not. Let's go. ",[-5, -5, 1].dm(\f) ++ [ -5, 1].dm(\a) ].addLine;
+	P.tune('No,');
+	P('chords',start:'No,',music: {|p b e|
+		[
+			freq: [-1,1,5,13,21] => {|i| [\r, i.df(\f),i.df(\a) ]} => _.q /2,
+			dur:b.parse([2,2, 1]).q,
+			strum:0.04,
+		].pp
+	});
+	[ "SARGON [OC]: Please stand ready. I will operate your controls. ","12 11 7 6  11 7 6 5 4 3 2 11".dm('a-') ].addLine;
+	P('bass',start:\operate,music: {|p b e|
+		[
+			freq:
+			[\r, 4,5, 2, 3, [ 1,2.4,5.5 ]].df('a-',[3,4]).q
+			,
+			dur: b.parse([2,[1,0.5],[0.5,1,1],[1,1,0.6],[0.4,1,1],1]).q
+		].pp
+	});
+	P.tune('stand ready');
+	["( transporter! )","r",[8]].addLine;
+P('transporter',start:'transporter!',music: {|p b e|
+	{
+	var beam_envelope, phasor, beam, feedback, transporter, reverb, activateEnv, percEnv, activate, buffer;
+
+	buffer = LocalBuf(SampleRate.ir * 0.12);
+
+	// feedback has to be 0 at the beginning, to avoid input
+	// nil before sound has been produced
+	feedback = 0;
+
+
+	// Activate Sound (fig 56.3)
+
+	activateEnv = EnvGen.ar(Env.new([0, 1, 1, 0], [0.01, 0.01, 5]));
+	percEnv = EnvGen.ar(Env.new([1, 1, 0], [0.01, 0.12]));
+
+	activate = (1 - activateEnv * 120 + 775) + (WhiteNoise.ar(0.1) + SinOsc.ar(30, mul:40));
+	activate = OnePole.ar(activateEnv, exp(-2pi * (30 * SampleDur.ir))) * LFSaw.ar(activate, 1, 0.5, 0.5 );
+
+	// adding a percussive shape at the beginning of the sound
+	activate = (activate + (WhiteNoise.ar * percEnv)) * 3;
+
+	activate = Clip.ar(activate, -1, 1);
+	activate = BPF.ar(activate, [775,1550,2325], 13.reciprocal).sum * 0.5;
+
+
+	// Beam Sound
+
+	beam = LFSaw.ar(467.1, 1, 0.5, 0.5 ) - 0.5;
+	beam = beam - (Wrap.ar(beam) - 0.5);
+	// two stage FM process
+	phasor = LFSaw.ar( beam * 6500 + 277, 1, 0.5, 0.5) - 0.5;
+	beam = beam * (phasor - (Wrap.ar(phasor) - 0.5));
+	beam = DelTapWr.ar(buffer, beam + (feedback * 0.7));
+
+	beam_envelope = Line.ar(0,1,12);
+
+	feedback = DelTapRd.ar(buffer, beam,
+		(1 - beam_envelope * 12 + 1
+			// flanger effect w/ variable delays spaced 12ms apart [0,12,24]
+			+ 12 * (0..2))
+		// DelTapRd requires delaytime in seconds (the equivalence in pd [vd~]
+		// calculates with miliseconds, for it the division by 1000)
+	 	/ 1000,
+		interp: 4).sum * 0.3;
+
+	transporter = (beam_envelope * (-1) + 1).min(beam_envelope) * 4 * feedback;
+	transporter = (transporter - OnePole.ar(transporter, exp(-2pi * (100 * SampleDur.ir))));
+	transporter = BPF.ar(transporter,
+		// whole tone scale
+		Array.geom(12, 466.164, 1.12247),
+		[1200, 1100, 930, 910, 880, 840, 800, 760, 720, 680, 640, 620].reciprocal).sum * 12;
+	reverb = GVerb.ar(transporter + (activate * 0.1), 100, 8, 0.1, 0.9)
+	+ (activate * 0.5)!2
+	/5
+
+}.play
+});
 }
+//[ "KIRK: Doctor, if you prefer to stay behind? ","r" ].addLine;
 //[ "MCCOY: No. No, if I'd be useful, as long as you're going down, I might as well take a medical look at whatever this is. ","r" ].addLine;
 //(The landing party and two guards gather on the pads, Scotty stands sulking with arms crossed as the transporter activates, and just sends the four officers somewhere.)
 )

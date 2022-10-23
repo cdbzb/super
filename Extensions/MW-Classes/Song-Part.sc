@@ -407,7 +407,10 @@ Song {
 
 	pts {^all {:x,x<-resources,x.class==Part}}
 	part {|name, section| 
-		var key = name++Song.section(section).asString;
+		var key;
+		section = section ? "";
+		//section.notNil.if {section = Song.section(section).asString}{section=""};
+		key = name++section => _.postln;
 		^this.pts.select({|i| i.name contains: key })[0].unbubble
 	}
 	solo {|key| ^all{:x,x<-this.pts,x.name.asString.contains(key.asString)}}
@@ -971,10 +974,16 @@ P {
         key.postln;
         ^part
     }
-    *still{   // renders the still when compiled
+    *still {   // renders the still when compiled
               // and stores a function to preview it in resources.still (e.still)
         |key start syl lag=0 timecode=60 music|
-		var aStill = Still(key ++ start => _.asSymbol, timecode:timecode);
+		var aStill = timecode.isNumber.if{
+			Still(key ++ start => _.asSymbol, timecode:timecode);
+		}{
+			timecode.collect{|i x|
+				Still(key ++ start ++ x => _.asSymbol, timecode: i);
+			}
+		};
         // nope - make a Still instead
         // like define Still here and in the music:{
         // e.still.wait_(4).fadeIn_(2).text_   etc etc

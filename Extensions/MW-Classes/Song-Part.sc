@@ -22,12 +22,10 @@ Song {
 		songs=Dictionary.new;
 		loading = CondVar();
 	}
-	
 	*new { 
 		|key array dursInFile resources|
 		^super.new.init(key, array,dursInFile, resources);
 	}
-
 	//depends on this function currently in Library/Functions/trek.scd
 	*rhythm { |section=0 length=1 cueSections=1 |
 		section = this.currentSong.section(section);
@@ -162,7 +160,6 @@ Song {
 				synth.postln}
 			)}
 	}
-
 	*playArray { |array|
 			fork{
 				array.do({|i|
@@ -176,11 +173,9 @@ Song {
 				})
 			}
 	}
-	
 	*currentSong {
 		^songs.at(current)
 	}
-	
 	*play { |...args|
 		( args.size == 0 ).if{ 
 			songList.isNil.if{
@@ -201,7 +196,6 @@ Song {
 			}
 		}
 	}
-
 	showLyricWindow {
 		lyricWindow = Window.new(bounds:Rect(0,00,1040,200))
 			.background_(Color.clear)
@@ -220,11 +214,9 @@ Song {
 			})
 		}
 	}
-
 	closeLyricWindow{
 		lyricWindow.close
 	}
-
 	*doesNotUnderstand { |selector   ...args|
 		songs.at(current).respondsTo(selector).if{
 			//\responds.postln;
@@ -242,7 +234,6 @@ Song {
 			//^songs.at(selector)
 		}
 	}
-
 	init {|symbol array dursInFile r|
 		resources = r;
 		key=symbol;
@@ -272,7 +263,6 @@ Song {
 		})
 
 	}
-
 		cursor_ {|i| cursor = i; lastSectionPlayed = i;}
 	hasDursButNotLyricsToDurs {
 		// Is there a file in the Dur folder?
@@ -293,13 +283,10 @@ Song {
 			)
 		}
 	}
-
 	writeDurs {|section|
 		File("/tmp/durs","w").write(Song.durs[section].list.asString.replace("List","")++".addDurs;").close
 	}
-
 	sections { ^( song.size / 2 ).asInteger }
-
 	addLine { |line| //array
 		line[1].isNil.if{line=line++["r"]};
 
@@ -322,11 +309,9 @@ Song {
 		};
 		^Song.sections-1;
 	}
-
 	addDurs {|array|
 		durs[sections-1]=array.q
 	}
-
 	writeLyricDurationFile {
 		File.exists(dursFolder +/+ key).if{
 			File.exists(dursFolder +/+ 'Old').not.if{"mkdir "++dursFolder+/+'Old'=>_.unixCmd};
@@ -335,7 +320,6 @@ Song {
 		};
 		lyricsToDurs.writeArchive(dursFolder +/+ key);
 	}
-
 	setupLyricsToDurs {
 		// Load from file, otherwise fall back to archive
 		File.exists(dursFolder +/+ key).if{
@@ -352,7 +336,6 @@ Song {
                 }
 		}
 	}
-
 	setupDurs {
 		Archive.read(dursFile);
 		Archive.at(key).isNil.not.if(
@@ -366,12 +349,10 @@ Song {
 		);
 			
 	}
-
 	rebuildLyricstoDurs {
 		lyricsToDurs = Dictionary.new(sections);
 		lyrics.do{|i x| lyricsToDurs.add( i -> durs[x] ) };
 	}
-
 	save { 
         File.exists(dursFolder +/+ key).if{
 			this.writeLyricDurationFile;
@@ -386,25 +367,20 @@ Song {
 		}
 
 	}
-
 	backup {
 		var backup = dursFile++Date.getDate.stamp;
 		Archive.write(backup); 'archive backed up to '.post;backup.postln}
-
 	durTill {|sec till|
 		var list= durs[sec].list;
 		^list[0..till].sum
 	}
-
 	postLyrics {
 		lyrics.do{|i x| (x.asString++' '++i).postln}
 	}
-
 	pbindFrom {|from=3| 
 		var list = this.pbind[from.asInteger..(sections-1)].postln;
 		^Pseq(list)
 	}
-
 	pts {^all {:x,x<-resources,x.class==Part}}
 	part {|name, section| 
 		var key;
@@ -415,7 +391,6 @@ Song {
 	}
 	solo {|key| ^all{:x,x<-this.pts,x.name.asString.contains(key.asString)}}
 	playOnly {|...args| args.collect{|i| this.solo(i)}.reject{|i| i.isNil}.flat.do(_.p)}
-
 	track { 
 		|trackName| 
 		trackName=trackName.asString;
@@ -423,21 +398,17 @@ Song {
 			.select(_.contains(trackName))
 			.sort
 	}
-
 	valueInfrastructure {
 			  resources.condition !? (_.test_(false));
 			this.resources.at(\infrastructure) !? (_.value);
 	}
-
 	playParts { |...args|
 		this.getPartsList(args).sort({|i j| i.start<j.start}).do(_.p)
 	}
-
 	chain {
 		songList=[key,next];
 		songList.postln;
 	}
-
 	play { |...args|
 		var list = this.getPartsList(args);
 		var first = list.select{|part| part.start == cursor};
@@ -462,7 +433,6 @@ Song {
 			this.play
 		}
 	}
-
 	current {
 		current = key;
 		songList = nil;
@@ -475,18 +445,15 @@ Song {
 		{true}{args.flatten};
 		^this.getParts(a)
 	}
-
 	getParts { |list|
 		list.postln;
 		( muteTunes == true ).if{ list=list.reject{|i| i.name.contains( "TUNE" )} };
 		^list.collect{|x|(x.class==Symbol).if({resources.at(x)},{x})}
 	}
-
 	///these are for backwards compat
 	parts {|selector event| 
 		^this
 	}
-
 	asPart { |event|
 		var part=Part();
 		part.music=event.at(\music);
@@ -496,14 +463,12 @@ Song {
 		part.parent=this;
 		^part;
 	}
-
 	at {|...args|
 		var array;
 		array = all {:x,x<-this.pts,args.flatten.includes(x.start)};
 		array.do({|i|i.name.postln})
 		^array
 	}
-
 	playSection {|sec| //uses play method which prepares infrastructure
 		sec=this.section(sec);
 		cursor=sec;
@@ -536,7 +501,6 @@ Song {
 		cursor=start;
 		(start..end).do {|i| this.at(i).do(_.p) }
 	}
-
 	recordSection { |start end bus path channels=2 tail=3|
 		var s = Server.default;
 		fork{
@@ -573,7 +537,6 @@ Song {
 			//"ffmpeg -i" + path ++ ".aif" + "-itsoffset 1 -i" + path ++ ".mov" + "-c copy -map 0:v:0 -map 1:a:0" + path ++ "together.mov" => _.unixCmd
 		}
 	}
-
     // TRASHME
     reaperSection {|sec range=1 tail=5| 
         var path;
@@ -608,28 +571,23 @@ Song {
 			{ ^array[0] }
 		}
 	}
-
-	contains { |string|
-		var array =	all {
-                  :x,
-                  x<-resources.keys,
-                  var y=resources.at(x.asSymbol),
-                  y.class==Part,
-                  (x.asString).contains(string)
-                };
-		array.postln;
-		^array.collect{|i| resources.at(i)};
+	contains {
+		|string|
+		var array = all{ :x, x<-resources.keys,
+			var y=resources.at(x.asSymbol),
+			y.class==Part,
+			(x.asString).contains(string) 
+	};
+	array.postln;
+	^array.collect{|i| resources.at(i)};
 	}
-
 	addPart {|key part| 
 		resources.put(key,part);
 		part.name=key;
 		part.parent=this;^resources}
-
 	durTillEnd {
 		^this.secDur[cursor..(sections-1)].sum
 	}
-
 	getSection {|a| 
 		a.isNil.if{a=sections};
 		(a.class==String).if{a=a.asSymbol};
@@ -731,7 +689,6 @@ Song {
 			(result.size>desiredLength).if{result=result[0..(result.size-2)]};
 			^this.parse(phrase,result,start)
 }
-
 	addGuides {|string|
 		string.isNil.if{string="x"};
 		string=string.reject(_==$|);
@@ -744,7 +701,6 @@ Song {
 		}
 	)
 }
-
 	doesNotUnderstand { |selector   args|
 		var key = selector.asString;
 		key.contains($_).if
@@ -773,7 +729,6 @@ Song {
 	    ( array.class == String ).if{ array = array.asBeats } ;
         quarters[section] = this.parseBeats(section,array).q
     }
-
     setTempoMap {| section array|
 	    ( array.class == String ).if{ array = array.asBeats.collect({|i| (i==0).if{0.000001}{i}}) } ;
 	    ( Song.section(section)!=(-1) ).if
@@ -781,7 +736,6 @@ Song {
 		    tempoMap[section] = TempoMap(array, durs[section].list)
 	    }
     }
-
     asBeatsPickup {|section string |
 	    string.contains( "|" ).if{
 		    var pickup,beats;
@@ -793,13 +747,11 @@ Song {
 	    ^quarters[section] = this.durs[section].list[0].bubble ++ this.parseBeats(section,string, start: pickup)
 	    }
     }
-
     setQuartersPickup { |section array pickup| // one pickup note only
 	    ( array.class == String ).if{ array = array.asBeats } ;
 	    //^ array[0].bubble ++ this.parseBeats(section, array, start: 1)
 	    quarters[section] = this.durs[section].list[0].bubble ++ this.parseBeats(section, array, start: pickup)
     }
-
     playIncremental {
 	    var parts = Song.currentSong.pts;
 	    var order = parts.collect(_.start);

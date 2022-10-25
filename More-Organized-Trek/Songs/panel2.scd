@@ -8,13 +8,14 @@ s.waitForBoot{
 	Song.resources.condition=Condition.new;
 	Song.resources.infrastructure.addFunc({Song.resources.condition.test_(true)});
 	[ "(Kirk staggers back slightly, then there is a high-pitched sound as his head is flung back.)" ,"r",[6]].addLine; 
-	P.still('high pitched noise',start:'staggers',timecode:[1235.seconds,1236.seconds],music:
-	{ |p b e|
-		{Impulse.ar(Gendy1.kr(minfreq:2,maxfreq:10!4).range(1,[800,1700,3440,8000]))*0.2*EnvGen.kr(Env.linen(0,3,15,0.2,-6),doneAction:2)}.play;
-		e.still[1].value(wait:4,fade:2);
+	P.still('high pitched noise',start:'staggers',timecode:[1235.seconds,1236.seconds],music: { |p b e|
+		{
+			Impulse.ar(Gendy1.kr(minfreq:2,maxfreq:10!4).range(1,[800,1700,3440,8000]))
+			* 0.2 * EnvGen.kr(Env.linen(0,3,15,0.2,-6),doneAction:2)
+		}.play;
+		e.still[1].value(wait:4,fade:2); //listed first because behind
 		e.still[0].value(wait:1,fade:1);
-	}
-);
+	});
 /*SPOCK:*/[" Just a moment, Doctor. ", [12,11,13,11,5.5,5].dm('a-')].addLine; 
 
 //P(\JustTune,start:\Just,music:Song.currentSong.pbind[\Just]
@@ -22,11 +23,10 @@ s.waitForBoot{
 ~justTheTune.(\Just,{|i|i=>Pset(\legato,2,_)});
 P.still(\spock,\moment,timecode:1238.seconds,music:{|p b e|
 	e.still.value
-})
+});
 /*KIRK:*/[" (boom) I am Sargon. ",[6,6,5,11,1].dm('c#',scale:\minor)].addLine; 
 ~justTheTune.('I am Sargon',{|i|i=>_.drop(1)},syl:0);
 P.still(\stillsGag,start:'I am Sargon',timecode:[633,633.04],music: { |p b e|
-
 	fork{
 		7.do{
 			e.still[0].value;
@@ -67,8 +67,7 @@ P(\chordCaptain,start:'our captain',music:{ |p b|
 		,
 		dur:[ b[0],b[1..3].sum,b[4..5].sum ].q,
 	].p.play
-}
-);
+});
 P(\baseNotesCaptain,syl:5,start:'our captain',music:{ |p b|
 	[
 		freq:[4,2].df('c',octave:3 ).q,
@@ -142,19 +141,60 @@ P(\chord3,start:\unharmed,syl:2,music:
 	].pm(\stringyy)
 );
 [/*MCCOY:*/" (drawing his phaser) I won't go along with this. Back to where you were, Sargon, or whatever you are. ",
-[4,3,2,1].dm('b-',scale:\whole)
-++[13,11,5].dm('d-')
-//	[12,11,6,7,13,11,5].dm('a',scale:\mixolydian,octave:4)
-++[1,2,3,4,5].dm('g',scale:\whole)
+[4,3,2,1].dm('b-',scale:\whole) ++[13,11,5].dm('d-') ++[1,2,3,4,5].dm('g',scale:\whole)
 ++ [15,14,13,12,14,12,11,7].dm('d',octave: 4) , [ 
 	0.203, 0.245, 0.232, 0.248, 
 	0.363, 0.341, 0.438, 
 	0.218, 0.225, 0.211, 0.308, 0.53, 
 	0.401, 0.24, 0.269, 0.271, 0.342, 0.354, 0.396, 0.558 ]
 ].addLine; 
-P(\tune4,start:'drawing his phaser',music:
-	Song.currentSong.pbind['drawing his phaser']
-);
+	P.tune(\drawing);
+	P('trem',start:\drawing,music: {|p b e|
+		[
+			freq: [4,4.5].df('b-',[4,5],\whole).q,
+			instrument:\stringyy,
+			att:0.01,
+			amp:0.3,
+			dur:b.parse([4,5]).q,
+			instrument:\trem2,amp:0.02,
+			rel:2,
+			scale:1,
+			freqLag:1
+		].pm(\trem2).play
+	});
+	P('trem2',start:\drawing,music: {|p b e|
+		[
+			freq: [\r,1,-6.6].df('b-',[4,5],\whole).q,
+			instrument:\stringyy,
+			att:0.01,
+			amp:0.3,
+			dur:b.parse([3,2,5]).q,
+			instrument:\trem2,amp:0.02,
+			rel:2,
+			scale:1,
+			freqLag:1
+		].pm(\trem2).play;
+		(freq:[1,2].df(\d,\minor,dur:b.parse([7])),instrument:\stringyy).play
+	});
+	P('answer',start:\drawing,music: {|p b e|
+		[
+		freq:[\r,1,2,3,4,5].df(\g,[4,5],\whole).q,
+		dur:b.parse([7, 1,1,1,1,1]).q,
+			legato:[1, 5,4,3,2,2].q,
+			instrument:\sparkTriangle,
+			//instrument:\harp,
+			depth:0.001,
+			amp:0.02
+		].pm(\sparkTriangle).play
+	});
+	P('cymbal',start:\drawing,music: {|p b e|
+		[ instrument: \cymbalsDS,
+			amp:0.01,
+			att:[ 1,0.01 ].q,
+			dur:b.parse([11,1]).q
+		].p.play
+	});
+
 /*SPOCK:*/[" And if he refuses, Doctor, (dum) what do you propose to do with your phaser?", [13,12,11,13,15,13,11,6, 6.5].dm('c',scale:\whole )++ [5,7,11, 5,6,7,11,7,11, 4,3,2].dm('e'),[ 0.216, 0.259, 0.221, 0.253, 0.436, 0.506, 0.514, 0.603, 1.097, 0.488, 0.326, 0.43, 0.266, 0.26, 0.304, 0.361, 0.398, 0.392, 0.592, 0.628, 0.62 ]].addLine; //5
 P(\bassnote5,start:'if he refuses',music:
 	(note:0)
@@ -959,4 +999,4 @@ P(\liveChord,syl:10,start:'live again',music:{ |p b|
 	P(\finalBassNote,start:'live again',syl:12,music:
 		(note:2,octave:[3,4,3,2],amp:0.3,attack:0,instrument:\stringyy)
 	);
-)}
+})

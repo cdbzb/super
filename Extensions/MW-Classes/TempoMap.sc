@@ -13,7 +13,6 @@ TempoMap {
 	timesInDurs = [ 0 ] ++ durs ++ durs.last => _.integrate;
         ^this;
   }
-
   beats_{|i| 
 	  beats = i;  
 	  timesInBeats = [ 0 ] ++ beats ++ beats.last => _.integrate;
@@ -22,7 +21,6 @@ TempoMap {
 	  durs= i;  
 	  timesInDurs = [ 0 ] ++ durs++durs.last => _.integrate;
   }
-
   mapBeatsPoly { | beats |
 	beats = beats.integrate;
 	^beats.collect{|i| polynomial.eval(i)}.differentiate;
@@ -30,7 +28,6 @@ TempoMap {
   quarter {
 	  ^ durs.sum / beats.sum
   }
-   
   interpolateBeat { |beat|
 	  var prev = timesInBeats.select{|i| i <= beat}.maxIndex;
 	  [[ prev, prev + 1 ],[ timesInBeats[prev], timesInBeats[prev + 1] ]].postln;
@@ -45,21 +42,17 @@ TempoMap {
 	  ^beat-timesInBeatz[prev] / ( timesInBeatz.clipAt(prev + 1) - timesInBeatz[prev] ) * ( timesInDurz.clipAt( prev + 1 ) - timesInDurz[prev] ) + timesInDurz[prev]
 
   }
-
   dursToBeats { | array |
 	  ^array.integrate.collect{|i| this.interpolateBeatInverse(i)}.differentiate
   }
-
   mapBeats { | b |
 	  b.collect{|i| 0.000001 max: i};
 	  ^b.integrate.collect{|i| this.interpolateBeat(i)}.differentiate.select(_.isStrictlyPositive)
   }
-
   mapRecordedDurs { | durs |
 	  ^this.mapBeats( durs/this.quarters.mean )
 	  //^this.mapBeats( durs/durs.sum )
   }
-
   at { |time|
     ^this.eval(time)
   }
@@ -76,7 +69,6 @@ TempoMap {
 		  ^this.quantizeRangeInPlace( amount, start, end )
 	  }
   }
-
   quantizeDft{ |amt = 0.78| //returns array of durs
 	  //var beats = 0.25!64 warpTo: this;
 	  var size = this.quarters.size;
@@ -99,15 +91,12 @@ TempoMap {
 	  ^TempoMap.new(beats.copy,dursCopy)
 
   }
-
   quantizeRange { |amount range| // returns new durs
 	  range = range ? [0,durs.size];
 	  range = (range[0]..range[1]);
 		  ^durs[range].sum/beats[range].sum * beats[range] * amount 
 		  + (durs[range]*(1-amount)) 
   }
-
-
   quantizeWindow { |amount=1 window=3|
 	        var result = TempoMap(beats.copy,durs.copy);
 		(result.durs.size-window).postln;

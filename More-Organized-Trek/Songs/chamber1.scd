@@ -63,17 +63,60 @@ beam = beam * (phasor - (Wrap.ar(phasor) - 0.5));
 
 /*[ Chamber ] */ ["SPOCK: Captain, the security guards. ","5 3 5 7 12 7 5 3".dm(\c,\mixolydian)].addLine;
 	P.tune(\Captain,);
+
+	P('crash',start:\Captain,music: {|p b e|
+		(
+		instrument:\cymbalsDSStereo,
+			amp:0.02
+		).play
+	});
 ["KIRK: Kirk here. ",[11,3].dm('c#')].addLine;
 	P.tune('here.');
-["SCOTT [OC]: Can you read me, Captain? ","r"].addLine;
-["KIRK: Yes, Scotty (boom), and I shouldn't be able to this deeo inside the panet", [11, 7, 5, 3,  6, 7, 11, 7, 6, 7, 5, 1, 6, 6, 5, 4, 3,3,2].dm('a-')].addLine;
+
+
+	Song.smallSpeaker = [0,1].collect({ |i| IR("~/tank/IR/Saane/Speakers_&_Telephones/Small_speaker_stereo.wav".standardizePath,i)});
+
+	Song.offCamEffect = { Effect.bus( { |i|  PartConv.ar(i => SineShaper.ar(_,0.03),4096,Song.smallSpeaker) * 0.15}) };
+["SCOTT [OC]: Can you read me, Captain? ","3 2 5 3 2 1".dm(\b,\whole)].addLine;
+
+	P.tune('Can you',Pset(\out,Song.offCamEffect.(),_));
+	
+["KIRK: Yes, Scotty (boom), and I shouldn't be able to this deep inside the planet", [11, 7, 5, 2,  6, 7, 11, 7, 6, 7, 5, 1, 6, 6, 5, 4, 3,3,2].dm('a-')].addLine;
+	Song.setTempoMap('Yes',"q e e e x x E E E e e e e Q E Q E Q Eq");
+	P('click',start:\Yes,music: {|p b e|
+		[
+			dur: 1!10 => _.warpTo(e.tempoMap)=> _.postln => _.q,
+			instrument:\hihat,
+		].p
+		//p
+	});
 	P.tune(\Yes);
-[ "but perhaps this has been arranged for us, too. ","r" ].addLine;
+	P('bass',start:\Yes,music: {|p b e|
+		[
+			freq:[\r,2,1,4,4,3,2,1,-7].df('a-',[3],\mixolydian).q,
+			//dur:b.parse([3, 8, 1, 1,1, 1,1 ,1 ,1]).q
+			dur: "qq qqq e e e e e e qe".asBeats.warpTo(e.tempoMap).q,
+			instrument:\sawSynthSustain,amp:0.06,
+			out:Effect.bus( { |i| Monitors.az(i,SinOsc.ar(0.02))=> Reflector5.ar(i,20)   =>DWGReverbC1C3.ar(i,mix:0.5)} )
+		].pp
+	});
+[ "but perhaps this has been arranged for us, too. ","5 6 1 3 4 5 6 7 7.5 4 12".dm(\a,\minor) ].addLine;
+	
+	P.tune(\perhaps);
+	P('chord',start:\perhaps,syl:9,music: {|p b e|
+		(
+			freq: [ -7,1,3,5 ].df('e',\mixolydian),
+			instrument:\stringyy
+		).play
+	});
 ["Is the security guard up there?","1 2 3 4 3 2 1 3 5".dm('e-',\lydian)].addLine;
 	P.tune('guard up');
-/*[ Transporter Room ]*/ ["SCOTT: They're fine. They Just didn't dematerialise.","6 12 6 7 4 5 6 7 11 5 4 3".dm('e-')].addLine;
+/*[ Transporter Room ]*/ ["SCOTT: They're fine. They Just didn't dematerialise.","6 12 6 7 4 5 6 7 11 5 4 3".dm('e-',4)].addLine;
 P.tune(\dematerialise);
-/*[ Chamber ]*/ ["SCOTT [OC]: I don't like it, sir. ","r"].addLine;
+/*[ Chamber ]*/ ["SCOTT [OC]: I don't like it, sir. ","3 2 5 3 1".dm(\b,\whole)].addLine;
+
+	P.tune('like it', { |i| Pbindf(i,\out,Song.offCamEffect.())},lag:-1 *(4096/2-s.options.blockSize/s.sampleRate));
+	P.tune('like it,', { |i| Pbindf(i,\legato,5,\instrument,\harp,\amp,0.02,\lag,Pwhite(-0.01,0.01),\instrument,\wash)=>Pmul(\freq,0.5,_)});
 ["KIRK: No problem yet. Maintain alert. Kirk out. ","1 5 3 4.5".dm('f#') ++ "3 4 5 1".dm(\e,\minor)++ "5 11".dm('c#')].addLine;
 P.tune(\No);
 ["MULHALL: Atmosphere report, Captain. ",[11,7,5,4,3,2,3].dm(\b,5,\mixolydian)].addLine;
@@ -132,7 +175,7 @@ Song.changeTrill = { |note|
 	}{Song.trillSynth = Song.trillSynthFunc.(note)}
 };
 );
-P(\trill,start:\Atmos,music:{|p b e| 
+P(\trill,start:'Atmos',music:{|p b e| 
 	Song.trillSynth = Song.trillSynthFunc.(7)
 });
 

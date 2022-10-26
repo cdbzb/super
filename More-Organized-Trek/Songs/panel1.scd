@@ -1,5 +1,6 @@
 (
 s.waitForBoot{ 
+
 Song(\panel1,[]).current
 ;
 "~/tank/super/More-Organized-Trek/Songs/boilerplate.scd".standardizePath.load;

@@ -1,4 +1,5 @@
-SynthDef(\wash,{| att=2 rel=3 curve=( -4 )| 
+fork{
+	SynthDef(\wash,{| att=2 rel=3 curve=( -4 )| 
 	Saw.ar(\freq.kr(400,\freqLag.kr(2.5))*Rand(0.99!4,1.01),\amp.kr(0.1,1))*
 	Env.perc(att,rel,curve:curve).kr(2,gate:\gate.kr(1))
 	=>MoogLadder.ar(_,800*Rand(0.5,8.3!4)*SinOsc.kr(Rand(2.5,3.1)).range(Rand(0.95!4,0.98),1.03),res:0.8)
@@ -19,8 +20,8 @@ SynthDef(\door,{
 SynthDef(\sawTw,{ |freq=400 amp=1 spread=5 | 
 	var env= Env.perc(0.2,6!4.rand).kr(2,gate:1);
 	var sig=Splay.ar ( Saw.ar( rrand(spread,(-1*spread))+freq,0.2) )
-		.distort*env
-		;
+	.distort*env
+	;
 	sig=sig+CombN.ar(sig,1,0.3,3);
 	sig=sig/1.5+Phaser2.ar(sig,rate:0.2	);
 	Out.ar(\out.kr(0),sig*amp)
@@ -43,6 +44,8 @@ SynthDef(\mcCoy,{|freq out=0 amp=0.1|
 SynthDef(\crackle,{ Env.cutoff(0.1).kr(2,gate:\gate.kr(1)) * Dust.ar(5,\amp.kr(0.5))=> 
 Decay.ar(_,0.003)=>
 Out.ar(\out.ir(0),_)}).add.tag(\sfx);
+}
+
 
 
 

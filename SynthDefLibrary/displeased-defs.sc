@@ -9,7 +9,7 @@ SynthDef(\trem2,{| rate=12 freq=499 scale=1 gate=1 out=0| //		{{{3
 	var pos = LFBrownNoise1.kr(2).range(0.3,0.2);
 	var env = Env.asr(0,1,\rel.kr(0.5)).kr(2,gate:gate);
 	var sig = DWGBowed.ar(
-		freq: freq,// + LFBrownNoise0.kr(2).range(0,10),  
+		freq: freq.lag2(\freqLag.kr(0)),// + LFBrownNoise0.kr(2).range(0,10),  
 		velb: vel,  
 		force: force,  
 		gate: 1,  

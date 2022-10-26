@@ -1,6 +1,7 @@
 (
 s.waitForBoot{ Song(\chamber1,[]).current;
 
+
 ["( transporter! )","r",[8]].addLine;
 P('transporter',start:'stand ready',music: {|p b e|
 	{
@@ -34,7 +35,7 @@ P('transporter',start:'stand ready',music: {|p b e|
 	beam = beam - (Wrap.ar(beam) - 0.5);
 	// two stage FM process
 	phasor = LFSaw.ar( beam * 6500 + 277, 1, 0.5, 0.5) - 0.5;
-	beam = beam * (phasor - (Wrap.ar(phasor) - 0.5));
+beam = beam * (phasor - (Wrap.ar(phasor) - 0.5));
 	beam = DelTapWr.ar(buffer, beam + (feedback * 0.7));
 
 	beam_envelope = Line.ar(0,1,12);
@@ -60,15 +61,21 @@ P('transporter',start:'stand ready',music: {|p b e|
 }.play
 });
 
-/*[ Chamber ] */ ["SPOCK: Captain, the security guards. ","r"].addLine;
-["KIRK: Kirk here. ","r"].addLine;
+/*[ Chamber ] */ ["SPOCK: Captain, the security guards. ","5 3 5 7 12 7 5 3".dm(\c,\mixolydian)].addLine;
+	P.tune(\Captain,);
+["KIRK: Kirk here. ",[11,3].dm('c#')].addLine;
+	P.tune('here.');
 ["SCOTT [OC]: Can you read me, Captain? ","r"].addLine;
-["KIRK: Yes, Scotty, and I shouldn't be able to","r"].addLine;
-[ "this deep inside the planet, but perhaps this has been arranged for us, too. ","r" ].addLine;
-["Is the security guard up there?","r"].addLine;
-/*[ Transporter Room ]*/ ["SCOTT: They're fine. They Just didn't dematerialise.","r"].addLine;
+["KIRK: Yes, Scotty (boom), and I shouldn't be able to this deeo inside the panet", [11, 7, 5, 3,  6, 7, 11, 7, 6, 7, 5, 1, 6, 6, 5, 4, 3,3,2].dm('a-')].addLine;
+	P.tune(\Yes);
+[ "but perhaps this has been arranged for us, too. ","r" ].addLine;
+["Is the security guard up there?","1 2 3 4 3 2 1 3 5".dm('e-',\lydian)].addLine;
+	P.tune('guard up');
+/*[ Transporter Room ]*/ ["SCOTT: They're fine. They Just didn't dematerialise.","6 12 6 7 4 5 6 7 11 5 4 3".dm('e-')].addLine;
+P.tune(\dematerialise);
 /*[ Chamber ]*/ ["SCOTT [OC]: I don't like it, sir. ","r"].addLine;
-["KIRK: No problem yet. Maintain alert. Kirk out. ","r"].addLine;
+["KIRK: No problem yet. Maintain alert. Kirk out. ","1 5 3 4.5".dm('f#') ++ "3 4 5 1".dm(\e,\minor)++ "5 11".dm('c#')].addLine;
+P.tune(\No);
 ["MULHALL: Atmosphere report, Captain. ",[11,7,5,4,3,2,3].dm(\b,5,\mixolydian)].addLine;
 P.tune(\Atmosphere, {|i| Pmul(\freq,[1,0.5],i) <> [out: Effect(FreeVerb.ar(_,0.8,0.8), inputChannels:2).bus.index, \legato:[6,2,5,2,4,2,3].q ].p });
 

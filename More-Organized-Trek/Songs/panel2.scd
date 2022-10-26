@@ -190,7 +190,7 @@ P(\chord3,start:\unharmed,syl:2,music:
 	P('cymbal',start:\drawing,music: {|p b e|
 		[ instrument: \cymbalsDS,
 			amp:0.01,
-			att:[ 1,0.01 ].q,
+			att:[ 0,0.01 ].q,
 			dur:b.parse([11,1]).q
 		].p.play
 	});

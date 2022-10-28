@@ -5,6 +5,7 @@
 	Song.currentSong.resources.infrastructure=FunctionList([ {
 //			~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
 	} ]);
+"~/tank/super/More-Organized-Trek/Songs/boilerplate.scd".standardizePath.load;
 	['Kirk briefly convulses with pain', "c" ].addLine;//0
 	P(\pains0, start:0, music: { 
 		Song.painSynth={
@@ -485,84 +486,47 @@ P(\drone,start:23,music:{|parent|
 	//		out:parent.carrier.index,
 ].p.play }
 	);
-	// make this infrastructure
-//	~unnecessary.infrastructure={
-//		~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
-//		~unnecessary.condition.test_(true).signal;
-//	};
-Song.resources.infrastructure.addFunc({
-		Song.currentSong.carrier=Bus.audio(numChannels:2);
-		Song.currentSong.modulator=Bus.audio(numChannels:2);
+P.tune(\understand, _ => Pbindf(_,\instrument,\stringyy,\amp,0.3, \out,Song.carrierBus)); 
 
-		Song.currentSong.vocoderGroup=Group(addAction:\addToTail);
-		Song.currentSong.vocoder={
-			Vocoder.ar(In.ar(Song.currentSong.carrier),In.ar(Song.currentSong.modulator),20,100,5000,0.02,
-//			hpfscal:4
-		)}
-		.play(Song.currentSong.vocoderGroup);
-});
-	//MUTEDP(\vocoder23,start:23,music:{ |parent durs|
-		//MUTED{
-			//MUTED//cleanup
-			//MUTEDparent.vocoder.free;
-			//MUTEDparent.modulator.free;
-			//MUTEDparent.carrier.free;
-			//MUTEDparent.vocoderGroup.free;
-		//MUTED}//.sched(20)
-	//MUTED});
-	P(\tuneSargon,music:{|parent| 
-		Song.pbind[23] 
-		=> Pbindf(_,\instrument,\stringyy,\amp,0.3,
-			\out,parent.carrier.index
-		)=> _.play
-}	);
-	P(\chordsSargon,start:23,lag:-0.0,music:{|parent durs| 
 
-		parent.carrier.index.postln;
-		defer{Server.default.scope(4,parent.carrier.index)};
-		[
-			instrument:\sawSynthSustain,
-			effect:{var a=Bus.audio;
-//				Synth(\phaser,[\in,a.index],addAction:\addToTail);
-				{In.ar(\in.kr(0)) 
-				=> Phaser2.ar(_) 
-				=> FreeVerb.ar(_,0.5,1)
-				=> DetectSilenceDry.ar(_,doneAction:2,time:3) 
-				=> Decimator.ar(_,8000,8)
-//				=> Out.ar(\out.kr(0),_)}.asSynthDef(name:\test, fadeTime:0.09)
-				=> Out.ar(\out.kr(parent.carrier.index),_)}.asSynthDef(name:\test, fadeTime:0.09)
-				.play(parent.vocoderGroup,[\in,a.index],addAction:\addBefore);
-				a.index}.value,
-			out:Pkey(\effect),
-			legato:0.95,
-			amp:1.4,
-			dur:durs.q,
-			freq: [2,4,6,11].dup(4) ++ [2,4,5,7].dup(2) 
-			=> _.df('c',octave:5)
-//			*[1,3]	=>_.flatten
-			=>_.q ,
-		].p.play
-	});
-	//example vocoder idea
-//{ Vocode.ar(Item(\iUnderstand).playbuf,Pulse.ar([100,200,350,500]+SinOsc.kr(0.2).range(0,30),0.05,1)=>FreeVerb.ar(_),PinkNoise.ar(1))*6=>EchoNone.ar(_,0.3,[0.26, 0.3 ]) }.play(s,2); { Vocoder.ar(Impulse.ar([100,200,350,500],1)=>Mix.ar(_),Item(\iUnderstand).playbuf=>EchoNone.ar(_),20) }.play
-	P(\vocal,start:23,music:{|parent|
-		Item(\iUnderstand).play(out:parent.modulator.index)
-	}
+P(\chordsSargon,start:23,lag:-0.0,music:{|parent durs| 
+	var effect = Effect( 
+		{|i|
+			Phaser2.ar(i) 
+			=> FreeVerb.ar(_,0.5,1)
+			=> Decimator.ar(_,8000,8)
+		} ,
+		out:Song.carrierBus,
+
 	);
+	[
+		freq: [2,4,6,11].dup(4) ++ [2,4,5,7].dup(2) => _.df('c',octave:5) =>_.q ,
+		instrument:\sawSynthSustain,
+		legato:0.95,
+		amp:1.4,
+		dur:durs.q,
+		out:effect.bus.index,
+	].pp;
+	//effect.synth.moveBefore()
+
+});
+
+P.rpp(\vocal,start:\understand,lag:-1,music:{|p b e|
+
+	//p.vocodeTune(p,b,e,e.rpp)
+
+
+			p.vocodeTune.(p,b,e,e.rpp,amp:0.12,dur:b.sum+1,att:1,sus:b.sum-1,rel:2,chord:[1],out:3);
+});
 	P(\bass23,syl:8,start:23,music:
-		{ |parent durs| 
+		{ |p b e| 
 			[
 				amp:0.3,
-				effect:{ var a=Bus.audio;Synth(\test,[\in,a.index,
-//					\out,0
-				],
-				target: parent.vocoderGroup,
-				addAction:\addBefore);a.index }.value,
 				amp:2,
-				freq: [1].df('c',octave: 2).q(1),
-				dur: durs.sum,
-				out:Pkey(\effect),
-//out:0,
+				indstrument:\test,
+				freq: [1].df('c',octave: 3).q(1),
+				dur:b.sum,
+				out: p.carrierBus.index
 			].pp
 		}
 	);
@@ -575,36 +539,12 @@ P(\descant,start:24,music:[
 		out:Pkey(\effect),
 ].pm(\sawSynthSustain)
 );
-P(\vocal24,start:24,music:{|parent|
-		Item(\allThatAreInvolved)
-		.play(out:parent.modulator.index)
-//.play
-	}
-);
-//~bypass=nil;
-~bypassState=~toggle.isNil.if{~toggle=[false,true].q(inf).asStream;~toggle.next}{~toggle.next;~toggle.next};
-~toggleBypass={
-		~bypassState=~toggle.isNil.if{~toggle=[true,false].q(inf).asStream;~toggle.next}{~toggle.next};
-		\bypass_state.post;~bypassState.postln;
- };
-~refreshVocoderBypass={//|bool=true|
-		~toggle.isNil.if{~toggle=[true,false].q(inf).asStream};
-		~bypassMonitor.isNil.if{~bypassMonitor=Monitor()};
-		 'vocoder bypass state'.post;~bypassState.postln;
-		Song.currentSong.vocoder.run(~bypassState.not);
-		~bypassState.if{ 
-				~bypassMonitor.play( 
-				Song.currentSong.carrier.index
-				,1,1,1 ) 
-		}{
-		~bypassMonitor.stop;
-		};
-};
-Song.currentSong.resources.infrastructure.addFunc(~refreshVocoderBypass);
-MIDIdef.noteOn(\f1, {~toggleBypass.();~refreshVocoderBypass.()},54, srcID:XTouch.id);
-//MUTEDP(\bypass,start:24,music:{~refreshVocoderBypass.(
-		//MUTEDfalse
-//MUTED)});
+P.tune('must agree');
+P.rpp(\vocal,'must agree',lag:-1,music:{|p b e|
+	//	e.rpp.postln.key.postln
+	p.vocodeTune.(p,b,e).postln;//(p,b,e,amp:0.12,dur:b.sum+1,chord:[1,2,3])
+	p.postln;
+});
 P('tune24',start:24,music:{|parent| 
 		parent.pbind[24]=>Pbindf(_,
 				//		\instrument,\stringyy,
@@ -653,9 +593,8 @@ P(\wobble26,start:26,music: [
 		amp:0.05,
 //		instrument:\tri,
 		freq:[1,2].df('d',octave:4 ).q(inf),
-		effect:{ Effect(EchoNone.ar(_,1,0.3,decaytime:5),out:1).dur(Song.secDur[26]+5).bus.index },
+		out: Effect.bus(EchoNone.ar(_,1,0.3,decaytime:5),out:1),
 		dur: Song.parse(25,1!4).q,
-		out:Pkey(\effect),
 ].pm(\sawSynth)
 
 );

@@ -1,7 +1,7 @@
 VocalRPP {
 	classvar <>current, <all;
 	var <>key, <>name, <>range=1, <>tail=5, <>song;
-	var section,<>mediaFolder,<>wav,<>prox,<>subproject;
+	var <section,<>mediaFolder,<>wav,<>prox,<>subproject;
 	var <>reaperProjectPath,<>rpp,<>buffer;
 	*initClass{
 		all = MultiLevelIdentityDictionary.new;
@@ -20,8 +20,10 @@ VocalRPP {
 	}
 	prAdd { |key name| all.put(key,name, this)  }
 	init { 
+		key = key.asString.replace(Char.space,$_);
+
 		song.isNil.if{ song = Song.currentSong };
-		section = song.section(key);
+		section = song.section(key.replace($_,Char.space));
 		reaperProjectPath = Song.reaperFolder +/+ song.key +/+ key;
 		name.notNil.if{
 			key = key ++ "-" ++ name

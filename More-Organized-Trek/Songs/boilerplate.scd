@@ -5,10 +5,13 @@
 	m.play(2,3,0,2,g);
 	ServerTree.add({
 		g = Group.new(target:RootNode(s));
-		m = Monitor.new;
-		m.play(2,3,0,2,g);
+		m = m ? Monitor.new;
+		m.isPlaying.not.if({m.play(2,3,0,2,g)});
 		})
 };
+
+	v = Group(addAction:\addToTail);
+
 Song.currentSong.preroll_(1);
 ~encoders = ~encoders ?? { (
 	omni:FoaEncoderMatrix.newOmni,
@@ -79,6 +82,7 @@ Song.encoders=~encoders;
 	Song.vocodeTune = { 
 		|p b e rppName amp=0.2 att=3 sus=1 rel=5 dur=10 chord=#[1,2,4,5,6,8] tune out=0 modGain=1 echo=1 mix=0.5|
 		var foa = Bus.audio(s,1);
+		v = Group.new(addAction:\addToTail);
 		e.rpp.notNil.if{rppName = e.rpp};
 		Synth(\soundInMorph,[
 			modulator: Song.modulatorBus.index,
@@ -88,6 +92,8 @@ Song.encoders=~encoders;
 			amp:amp, 
 			dur:dur,
 			out:foa.index, // out
+
+			target:v
 			//out:out
 		]);
 		// restore line above to 'out' to get rid of ambisonics!!
@@ -98,7 +104,9 @@ Song.encoders=~encoders;
 			=> FoaTransform.ar(_,'pressZ',SinOsc.ar(1))
 			=> FoaDecode.ar(_,Monitors.decoder)
 			*3
-		}.play(addAction:\addToTail);
+		}.play(
+			target:v,
+			addAction:\addToTail);
 		Song.sargonCarrier.(p,b,e,att, sus, rel, chord,tune,mix);
 		Song.sargonModulator.(rppName,dur,modGain,echo)
 	};

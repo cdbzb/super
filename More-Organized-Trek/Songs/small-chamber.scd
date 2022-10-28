@@ -1,10 +1,9 @@
 ( //line 159 
-/* [Small chamber] 
+/* [Small chamber]
 
 (There are a group of boxes on the wall, containing spheres. Only two are alight.) */
 Song.songs.at(\smallChamber).isNil.not.if{try{  Song.smallChamber.resources.do(_.free)  }};
 Song(\smallChamber,[]).current;
-
 Song.currentSong.resources.infrastructure=FunctionList([ {
 	~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
 } ]);
@@ -351,7 +350,7 @@ legato:3,
 ].p
 
 );
-["(boom) Thalassa, my Thalassa. I`m pleased you survived with me.",[1,  11,7,6,14,13,13,12,11,15,13,15,14,13,11].dm('c#')].addLine; //2
+["(boom) Thalassa, my Thalassa. I`m ",[1,  11,7,6,14,13,13,12,11,15,13,15,14,13,11].dm('c#')].addLine; //2
 P(\chord2,start:2,music:[
 		instrument:\stringyy,
 		effect:{Effect(Phaser1.ar(_,0.5,1/6,0.9)).bus.index},
@@ -392,32 +391,22 @@ P(\baseline2,start:2,syl:1,music:[
 		pulse:1,
 ].pm(\pulsar)
 );
-
+		["pleased you survived with me.","r"].addLine; //3
 ["Forgive me. It has been so very long. ","r"]; //4
+
 ["/*SPOCK:*/ When the struggle came which devastated your planet ","r"].addLine;
-["/*KIRK:*/ Only the best minds were chosen to survive.","r"].addLine;
-[ "Thalassa, my wife, as you may have guessed."                  ,"r" ].addLine;
-[ "Henoch, from the other side."                                 ,"r" ].addLine;
-[ "Realising our mistake, we attempted to perpetuate both sides.","r" ].addLine;
-["We built this chamber here in order to preserve our essence in this fashion. ","r"].addLine;
+["/*KIRK:*/ Only the best minds were chosen to survive. Thalassa, my wife, as you may have guessed. Henoch, from the other side. Realising our mistake, we attempted to perpetuate both sides. We built this chamber here in order to preserve our essence in this fashion. ","r"].addLine;
 ["/*SPOCK:*/ Fascinating. ","r"].addLine;
-["/*KIRK:*/ We knew the seed that we had planted on other planets would take root,","r"].addLine;
-[ "that one day you would build vessels as we did, and one day","r" ].addLine;
-["you would come here. ","r"].addLine;
+["/*KIRK:*/ We knew the seed that we had planted on other planets would take root, that one day you would build vessels as we did, and one day you would come here. ","r"].addLine;
 ["/*SPOCK:*/ These others, they were stored differently than you, but it was your task to remain in the receptacle out there ","r"].addLine;
 ["/*KIRK:*/ and search the heavens with my mind, probing, waiting, probing. And then one day my mind touched your vessel and brought you here. ","r"].addLine;
-
 ["/*MULHALL:*/ So you could steal our bodies from us? ",[6,7,11,12,7,13.5,11,7,5].dm('c',scale:\minor)].addLine;
-P.tune('steal our');
-
 ["/*KIRK:*/ To steal? To take them from you? No, no, my children, you misunderstand. We mean only that you should lend us your bodies for a short time. ","r"].addLine;
-
 ["/*MCCOY:*/ And destroy them, just as you're burning that one up now. Heartbeat's two hundred and sixty two, Spock. Entire metabolic rate correspondingly high. ","r"].addLine;
-
 ( SynthDef(\pulsar,{
 				var pulse = Env.perc(0.05,1).kr(0,gate:\pulse.tr(0));
-				//var envelope = Env.asr(0,1,5).kr(0,gate:\gate.kr(1));
-				var envelope = Env.asr(0,1,6,curve:\sine).kr(2,gate:\gate2.kr(1));
+				var envelope = Env.asr(0,1,5).kr(0,gate:\gate.kr(1));
+				envelope = Env.asr(0,1,6,curve:\sine).kr(2,gate:\gate2.kr(1));
 				Saw.ar(\freq.kr(300),\amp.kr(0.1))
 				=>MoogFF.ar(_,pulse*1000+1000,2)
 				* envelope *2
@@ -425,10 +414,9 @@ P.tune('steal our');
 				=> Out.ar(\out.kr(0),_)
 		}).add;
 );
-
+~section= Song.sections.postln;
 ["/*KIRK:*/ I will return your captain to you before the body limit has been reached. ",[1,2,3,4,3,5,3,2,1,4,5,6,7,6,5,6,5,4,3,2].dm('c',scale:\mixolydian)].addLine;
-
-P(\IWillReturnVocal,start:\reached,music:
+P(\IWillReturnVocal,start:~section,music:
 		{
 				Item(\eyeWillReturn).play(
 						rate: [1,1.01],

@@ -296,7 +296,8 @@ Item {
 			this.record;
 		}{
 			buffer.isNil.if({ this.refresh });
-			synth = Synth.newPaused("itemPlayer"++inChans,
+			Server.default.bind{
+				Synth("itemPlayer"++inChans,
 				[
 					bufnum: buffer.bufnum,
 					rate: rate,
@@ -306,11 +307,7 @@ Item {
 					amp: amp,
 					out: bus
 				]
-			);
-			Server.default.bind{
-				synth.run;
-			}
-			^synth
+			)}
 		}
 	} 
 	prepVocoder {|numberOfBands=20| 

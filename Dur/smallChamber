@@ -21,13 +21,15 @@ o = [
 	Pseq.prNew,  Array.prNew(1),  "need your bodies long enough to have the use of your ",  Pseq.prNew,  
 	List.prNew,  Array.prNew(13),  "/*KIRK:*/ I will return your captain to you before the body limit has been reached. ",  Pseq.prNew,  
 	Array.prNew(19),  "/*SPOCK:*/ Fascinating. ",  Pseq.prNew,  Array.prNew(1),  
-	"pleased you survived with me.",  Pseq.prNew,  Array.prNew(1),  "Two others still survive. Henoch (boom) and Thalassa.",  
+	"pleased you survived with me.",  Pseq.prNew,  Array.prNew(1),  "(boom) and search the heavens with my mind, ",  
+	Pseq.prNew,  List.prNew,  Array.prNew(9),  " and search the heavens with my mind, ",  
+	Pseq.prNew,  List.prNew,  Array.prNew(8),  "Two others still survive. Henoch (boom) and Thalassa.",  
 	Pseq.prNew,  List.prNew,  Array.prNew(13),  "/*KIRK:*/ (boom) To build. To build humanoid robots. We ",  
 	Pseq.prNew,  List.prNew,  Array.prNew(11)
 ];
 p = [
 	// Dictionary
-	0, [ array: o[1],  size: 26 ],  
+	0, [ array: o[1],  size: 28 ],  
 	// Array
 	1, [ nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -137,20 +139,20 @@ p = [
 		nil,  nil,  o[81],  o[82],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  o[84],  o[85],  
+		o[87],  o[88],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[91],  o[92],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[95],  o[96],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  o[87],  o[88],  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		o[91],  o[92],  nil,  nil,  
+		o[99],  o[100],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -340,17 +342,34 @@ p = [
 	// List
 	89, [ array: o[90] ],  
 	// Array
-	90, [ 0.626,  0.624,  0.714,  1.008,  
-		0.63,  1.334,  0.342,  0.788,  
-		0.666,  0.532,  0.278,  0.962,  
-		0.434 ],  
+	90, [ 0.419,  0.448,  0.473,  0.485,  
+		0.517,  0.492,  0.496,  0.528,  
+		1.082 ],  
 	// Pseq
 	92, [ list: o[93],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	93, [ array: o[94] ],  
 	// Array
-	94, [ 0.438,  0.444,  0.716,  0.4,  
+	94, [ 0.508,  0.467,  0.476,  0.5,  
+		0.492,  0.466,  0.56,  1.475 ],  
+	// Pseq
+	96, [ list: o[97],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	97, [ array: o[98] ],  
+	// Array
+	98, [ 0.626,  0.624,  0.714,  1.008,  
+		0.63,  1.334,  0.342,  0.788,  
+		0.666,  0.532,  0.278,  0.962,  
+		0.434 ],  
+	// Pseq
+	100, [ list: o[101],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	101, [ array: o[102] ],  
+	// Array
+	102, [ 0.438,  0.444,  0.716,  0.4,  
 		0.424,  0.504,  0.462,  0.478,  
 		0.516,  0.632,  0.414 ]
 ];

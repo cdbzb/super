@@ -9,9 +9,7 @@
 		m.isPlaying.not.if({m.play(2,3,0,2,g)});
 		})
 };
-
-	v = Group(addAction:\addToTail);
-
+v = Group(addAction:\addToTail);
 Song.currentSong.preroll_(1);
 ~encoders = ~encoders ?? { (
 	omni:FoaEncoderMatrix.newOmni,
@@ -45,9 +43,7 @@ Song.encoders=~encoders;
 			/10
 		}.play(s,Song.carrierBus.index)
 	};
-
-	Song.sargonModulator = {|rpp dur modGain=1 echo=1| 
-		{ 
+	Song.sargonModulator = {|rpp dur modGain=1 echo=1| { 
 			Line.kr(dur:dur,doneAction:2);
 			rpp = (rpp.class == VocalRPP).if{
 				rpp
@@ -64,9 +60,7 @@ Song.encoders=~encoders;
 			 
 			
 			//+ ( In.ar(carrierBus.index,1) )
-	}.play(s,Song.modulatorBus.index)
-	};
-
+	}.play(s,Song.modulatorBus.index) };
 	Song.auditionVocoder = {
 		Synth(
 			\soundInMorph, [
@@ -78,7 +72,6 @@ Song.encoders=~encoders;
 			]
 		)
 	};
-
 	Song.vocodeTune = { 
 		|p b e rppName amp=0.2 att=3 sus=1 rel=5 dur=10 chord=#[1,2,4,5,6,8] tune out=0 modGain=1 echo=1 mix=0.5|
 		var foa = Bus.audio(s,1);

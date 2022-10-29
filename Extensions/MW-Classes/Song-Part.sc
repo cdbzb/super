@@ -26,10 +26,9 @@ Song {
 		|key array dursInFile resources|
 		^super.new.init(key, array,dursInFile, resources);
 	}
-	//depends on this function currently in Library/Functions/trek.scd
-	*rhythm { |section=0 length=1 cueSections=1 |
-		section = this.currentSong.section(section);
-		~recorder.(this.currentSong,[ section, section + length - 1 ], cueSections)	
+	*rhythm { |section=0 length=1 cueSections=1 | //this method uses arg section - use rhythmRecorder to use cursor (should rename!)
+		this.currentSong.cursor = this.currentSong.section(section);
+		this.rhythmRecorder(length, cueSections);
 	}
 	*rhythmRecorder { // 
 	|  length=1 cueSecs=1 |
@@ -42,12 +41,18 @@ Song {
 	.collect({|i|song.tune[i].list}).flatten;
 	seq.postln;
 	stepper={ |seq|
+		var rests = seq.collect{|i| ( i == \r ).if{0}{1} };
+
+		seq = seq.collect{|i| ( i == \r ).if{400}{i} };
+
 		SynthDef(\stepper, { |t_trigger=0|
 			var note = Demand.kr(t_trigger + KeyState.kr(38)-0.1,0, Dseq.new(seq.midicps));
+			var amp = Demand.kr(t_trigger + KeyState.kr(38)-0.1,0, Dseq.new(rests.midicps));
 			var sig=SinOsc.ar(note,0,EnvGen.kr(
 				Env.perc(0.01,1,0.1)
-				,gate:t_trigger + KeyState.kr(38)-0.1));
-				Out.ar(1,sig);
+				,gate:t_trigger + KeyState.kr(38)-0.1
+			));
+				Out.ar(1,sig * amp);
 			});
 		};
 	stepper.(seq).add;

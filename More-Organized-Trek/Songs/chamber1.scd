@@ -1,7 +1,5 @@
 (
 s.waitForBoot{ Song(\chamber1,[]).current;
-
-
 ["( transporter! )","r",[8]].addLine;
 P('transporter',start:'stand ready',music: {|p b e|
 	{

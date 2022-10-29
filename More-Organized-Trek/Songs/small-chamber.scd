@@ -4,7 +4,7 @@
 Song.songs.at(\smallChamber).isNil.not.if{try{  Song.smallChamber.resources.do(_.free)  }};
 Song(\smallChamber,[]).current;
 Song.currentSong.resources.infrastructure=FunctionList([ {
-	~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
+	//~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
 } ]);
 Song.chamber.isNil.if{"/Users/michael/tank/super/More-Organized-Trek/chamber_rewrite.scd".load};
 //Song.smallChamber.next_(\chamber);
@@ -369,9 +369,9 @@ P(\chord2,start:'I`m',music:[
 //MUTED].p.fin
 //MUTED);
 P(\tune2,start:'I`m',
-		syl:0,
-		music:Song.currentSong.pbind[2]
-		.drop(1)
+	syl:0,
+	music:Song.currentSong.pbind[2]
+	.drop(1)
 );
 P(\baseline2,start:'I`m',syl:1,music:[
 		amp:0.2,
@@ -387,18 +387,44 @@ P(\baseline2,start:'I`m',syl:1,music:[
 		pulse:1,
 ].pm(\pulsar)
 );
-		["pleased you survived with me.","r"].addLine; //3
-["Forgive me. It has been so very long. ","r"]; //4
+["pleased you survived with me.","r"].addLine; 
+["Forgive me. It has been so very long. ","r"];
 
-["/*SPOCK:*/ When the struggle came which devastated your planet ","r"].addLine;
-["/*KIRK:*/ Only the best minds were chosen to survive. Thalassa, my wife, as you may have guessed. Henoch, from the other side. Realising our mistake, we attempted to perpetuate both sides. We built this chamber here in order to preserve our essence in this fashion. ","r"].addLine;
-["/*SPOCK:*/ Fascinating. ","r"].addLine;
-["/*KIRK:*/ We knew the seed that we had planted on other planets would take root, that one day you would build vessels as we did, and one day you would come here. ","r"].addLine;
-["/*SPOCK:*/ These others, they were stored differently than you, but it was your task to remain in the receptacle out there ","r"].addLine;
-["/*KIRK:*/ and search the heavens with my mind, probing, waiting, probing. And then one day my mind touched your vessel and brought you here. ","r"].addLine;
+[" When the struggle came which devastated your planet ","r"].addLine;/*SPOCK:*/
+
+[" Only the best minds were chosen to survive.","r"].addLine;/*KIRK:*/
+["Thalassa, my wife, as you may have guessed. ","r"].addLine;
+["Henoch, from the other side. ","r"].addLine;
+
+["Realising our mistake, we attempted to perpetuate both sides. ","r"].addLine;
+["We built this chamber here in order to preserve our essence in this fashion. ","r"].addLine;
+
+[" Fascinating. ","r"].addLine;/*SPOCK:*/
+
+[" We knew the seed that we had planted on other planets would take root,","r"].addLine;/*KIRK:*/
+["that one day you would build vessels as we did, and one day you would come here. ","r"].addLine;
+
+[" These others, they were stored differently than you,","r"].addLine;/*SPOCK:*/
+["but it was your task to remain in the receptacle out there ","r"].addLine;
+
+["(boom) and search the heavens with my mind, ",[\r,5,5,5,5,5,5,5,5].dm(\b)].addLine;/*KIRK:*/
+
+P.tune(\search);
+P('bass',start:\search,music: {|p b e|
+	[
+		freq:[5,4,1].dupEach(3).df(\e,3).q,
+		dur:b.parse([1,2,1,1,2,1,1]).q,
+		out: Effect.bus( CrossoverDistortion.ar(_) *0.1 )
+	].pp
+});
+["probing, waiting, probing. ","r"].addLine;
+["And then one day my mind touched your vessel and brought you here. ","r"].addLine;
 ["/*MULHALL:*/ So you could steal our bodies from us? ",[6,7,11,12,7,13.5,11,7,5].dm('c',scale:\minor)].addLine;
-["/*KIRK:*/ To steal? To take them from you? No, no, my children, you misunderstand. We mean only that you should lend us your bodies for a short time. ","r"].addLine;
-["/*MCCOY:*/ And destroy them, just as you're burning that one up now. Heartbeat's two hundred and sixty two, Spock. Entire metabolic rate correspondingly high. ","r"].addLine;
+[" To steal? To take them from you? No, no, my children, you misunderstand.","r"].addLine; /*KIRK:*/
+["We mean only that you should lend us your bodies for a short time. ","r"].addLine;
+[" And destroy them, just as you're burning that one up now.","r"].addLine;/*MCCOY:*/
+[ "Heartbeat's two hundred and sixty two, Spock.","r" ].addLine;
+["Entire metabolic rate correspondingly high. ","r"].addLine;
 ( SynthDef(\pulsar,{
 				var pulse = Env.perc(0.05,1).kr(0,gate:\pulse.tr(0));
 				var envelope = Env.asr(0,1,5).kr(0,gate:\gate.kr(1));
@@ -476,20 +502,12 @@ P(\bass,start:\limit,syl:1,music:
 		],2).q,
 ].p
 );
-P(\tune,start:\limit,music:Song.currentSong.pbind[~section]);
-( // timing adjustment
-		Song.currentSong.durs[13]=( 
-				Song.currentSong.durs[13].list
-				.put(18,0.55)
-				.asArray 
-		).q;
-		'before adjustment'.postln
-);
+P(\tune,start:\limit,music:Song.currentSong.pbind[\limit]);
 ["/*SPOCK:*/ Our bodies, Sargon, for what purpose? ", [5,7,5,4,3,2,1,5,3].dm('d',scale:\diminished)].addLine;
-P(\tune,start:~section+1,music:Song.currentSong.pbind[~section+1]=>Pbindf(_,\instrument,\stringyy,\amp,0.3)
+P(\tune,start:\purpose,music:Song.currentSong.pbind[\purpose]=>Pbindf(_,\instrument,\stringyy,\amp,0.3)
 );
 ["/*KIRK:*/ (boom) To build. To build humanoid robots. We ",[5,5,11,5,11,7,6,4,6,5,6].dm('e-',scale:\mixolydian)].addLine;
-P(\shaker++(~section+2),syl:1,start:\build,music:
+P(\shaker,syl:1,start:\humanoid,music:
 		{		
 				{ 
 						StkShakers.ar(0,LFSaw.kr(8).range(-10,128),95) 
@@ -501,19 +519,19 @@ P(\shaker++(~section+2),syl:1,start:\build,music:
 				}.play
 		}
 );
-P( \baseline++(~section+2),syl:1,start:\build,music:
+P( \baseline,syl:1,start:\humanoid,music:
 [
 		freq:[11,11,4,4,11].df('e-',octave: 3).q,
 		dur:
-		Song.parse(\build,[2,1,2,1,2],2)
+		Song.parse(\humanoid,[2,1,2,1,2],2)
 		//Song.durs[ 15 ].list
 		.q,
 ].p
 );
-P(\tune,start:\build,syl:0,music:
-		Song.currentSong.pbind[~section+2]=>_.drop(1)
+P(\tune,start:\humanoid,syl:0,music:
+		Song.currentSong.pbind[\humaniod]=>_.drop(1)
 );
-P(\boom,start:\build,music:
+P(\boom,start:\humanoid,music:
 				{
 						//								Impulse.ar([1].dm('b-',octave: 3))
 						Impulse.ar( \freq.kr(300),\amp.kr(0.1) )
@@ -527,100 +545,108 @@ P(\boom,start:\build,music:
 						//out:3,
 						freq: [5,11].df('b-',octave: 2).q,
 						amp:0.3,
-						dur: Song.parse(\build,[[1,1,1,1,1,1,1,1,1,1/2],[1/2,1]]) .q,
+						dur: Song.parse(\humanoid,[[1,1,1,1,1,1,1,1,1,1/2],[1/2,1]]) .q,
 				].p
 );
 ["need your bodies long enough to have the use of your ",[11,6,5,4,7,6,2,1,2,3,4,5,3].dm('g',scale:\mixolydian)].addLine;
+Song.setTempoMap(\need,"qqq e q q q e e e e e Q Q Q ");
+P('click',start:\need,music: {|p b e|
+	[
+		dur:1!8 => _.warpTo(e.tempoMap.quantizeDft) => _.q,
+		instrument: \hihat,
+		amp:0.03
+	].pp
+});
+P.tune(\need);
 P(\cymbal,start:\need,music:
 	(
-			instrument:\cymbalsDS,
-			amp:0.015,
-			out:Effect({|i|i.tanh=>Phaser1.ar(_,0.9,0.2,0.7)*0.4},out:[1,3]).bus.index,
+		instrument:\cymbalsDS,
+		amp:0.015,
+		out:Effect({|i|i.tanh=>Phaser1.ar(_,0.9,0.2,0.7)*0.4},out:[1,3]).bus.index,
 	)
 );
-P(\tune,start:\need,music:Song.currentSong.pbind[~section+3]
-);
-P(\baselineC,start:\need,syl:5,music:[
+P(\baselineC,start:\need,syl:5,music:
+	[
 		instrument:\stringyy,
 		freq:[1,2,3,4].df('d',octave: 3).q,
-		dur:Song.parse(~section+3,[4,3],6).q
-		++ Song.parse(~section+4,[2,2]).q
+		dur:Song.parse(\need,[4,3],6).q
+		++ Song.parse(\hands,[2,2]).q
 		,
-].p
-=>{
+	].p
+	=>{
 		|i| 
 		Ppar([
-				i,
-				i=>Pbindf(i,
-						\instrument,\default,
-						\out,2,
-						\amp,0.05
-				)]) }
+			i,
+			i=>Pbindf(i,
+				\instrument,\default,
+				\out,2,
+				\amp,0.05
+			)
+		]) 
+	}
 );
-P(\baseline,syl:2,start:\need,music:
-		{
-				var freq=\freq.kr(300);
-				Pulse.ar([freq/2, freq ],\width.kr(0.3),\amp.kr(0.1))
-				* Env.adsr(0.01,0.2,\sustain.kr(1),\release.kr(2)).kr(2,gate:\gate.kr(1))
-		}.asSynthDef(name:\pulseBase).add;
-		~pulseamp=0.05;
-		[
-				instrument:\pulseBase,
-				sustain:0.6,
-				amp:~pulseamp,
-				freq:[ Rest() ].q++[4,3,2,3].df('c',octave: 3).q,
-				dur:Song.parse(~section+3,[1/2,[1/2,1],2,3],4).q,
-		].p
+(
+SynthDef(\pulseBase,{
+	var freq=\freq.kr(300);
+	Pulse.ar([freq/2, freq ],\width.kr(0.3),\amp.kr(0.1))
+	* Env.adsr(0.01,0.2,\sustain.kr(1),\release.kr(2)).kr(2,gate:\gate.kr(1))
+	=> Out.ar(\out.kr(0),_)
+}).add;
 );
 P(\lick,start:\need,syl:1,music:
-{ //SynthDef(\)
+		{ //SynthDef(\)
 		var freq=\freq.kr(400);
 		40.collect{ 
-				|i| SinOsc.ar(freq*i,0.04) 
-				* Env.adsr([((30-i)/90),0.1.rand],0.2,1.0.rand,2.0.rand+2.5).kr(2,gate:\gate.kr(1)) / (i+5)
-				* 0.01
+			|i| SinOsc.ar(freq*i,0.04) 
+			* Env.adsr([((30-i)/90),0.1.rand],0.2,1.0.rand,2.0.rand+2.5).kr(2,gate:\gate.kr(1)) / (i+5)
+			* 0.01
 		}
 		=> Mix.ar(_).tanh
 		=> EchoNone.ar(_,0.5,0.3,3)
-}.asSynthDef(name:\dingy).add;
-[
+	}.asSynthDef(name:\dingy).add;
+	[
 		instrument:\dingy,
 		pan:-1,
 		freq:[12,11,4].df(octave:6).q ++[14,13,6].df('c',octave: 5 ).q,
 		out: [[0,3]].q(3)++[[2,1]].q(3) ,
-//		out: [[0,3]].q(2)++[99]++[[2,1]].q(2)++[99] , //rest hack
-		dur:Song.parse(~section+3,[1,1/2, 1/2,1,1,1,1],2).q,
+		//		out: [[0,3]].q(2)++[99]++[[2,1]].q(2)++[99] , //rest hack
+		dur:Song.parse(\need,[1,1/2, 1/2,1,1,1,1],2).q,
 		legato:2
-].p
+	].p
 );
-P(\baselineA,start:\need,music:[
-		width:0.5,
-		sustain:0.6,
-		amp:~pulseamp,
-		instrument:\pulseBase,
-		freq:[11,7,6].collect{|i|[i,i]}.flatten =>_.df('c',octave: 3)=>_.q,
-		dur:
-		Song.parse(~section+3,[2/3,[1/3,1,1/2],[1/2,1]])*.x[3/4,1/4]
-		=>_.q=>_.fin(5),
-].p
-);
-P(\chords,start:\need,music:
+P(\bassline,start:\need,music:
+	{|p b e|
 		[
-				freq:[[11,11,13],[11,11,13],[7,12,13],[7,12,13],[6,11,13],[6,11,13]].df('c').q,	
-				out:1,
-				dur:Song.parse(\need,[1/3,1/3,1/3,[1,1/2],[1/2,1]],).q,
-		].p
+			width:0.5,
+			sustain:0.6,
+			amp:0.05,
+			instrument:\pulseBase,
+			freq:[11,7].dupEach ++ [6,4,3,2] => _.df('c',octave: 3) => _.q,
+			dur: "qe e qe e q q q q".asBeats.warpTo(e.tempoMap.quantizeDft).q
+		].pp
+	}
+);
+P(\chords,start:\need,music: {|p b e|
+		[
+			freq:[[11,11,13],[11,11,13],[7,12,13],[7,12,13],[6,11,13],[6,11,13]].df('c').q,	
+			out:1,
+			//dur:Song.parse(\need,[1/3,1/3,1/3,[1,1/2],[1/2,1]],).q,
+			dur: "q q q q qq".asBeats.warpTo(e.tempoMap.quantizeDft).q
+		].pp
+	}
+);
+(
+SynthDef(\whaFingers, {
+	Formants.ar(
+		\freq.kr(300,\freqLag.kr(1)),
+		Vowel(\a).blend(Vowel(\u), Line.kr(0,1,\length.kr(3),doneAction:0))
+		* Env.asr(1,1,\release.kr(1)).kr(2,gate:\gate.kr(1))
+	)
+	* \amp.kr(0.03)
+	=> Out.ar( \out.ir(3) ,_)
+} ).add;
 );
 ["hands, your fingers. ",[6,5,4,3].dm('g')].addLine;
-SynthDef(\whaFingers, {
-		Formants.ar(
-				\freq.kr(300,\freqLag.kr(1)),
-				Vowel(\a).blend(Vowel(\u), Line.kr(0,1,\length.kr(3),doneAction:0))
-				* Env.asr(1,1,\release.kr(1)).kr(2,gate:\gate.kr(1))
-		)
-		* \amp.kr(0.03)
-		=> Out.ar( \out.ir(3) ,_)
-} ).add;
 P(\harmony,start:\hands,music: {|p b e|
 				Ppar([
 						[
@@ -630,7 +656,7 @@ P(\harmony,start:\hands,music: {|p b e|
 										=>.first DetectSilence.ar(_,doneAction:2)
 								},out:2 ),
 								amp:0.005*1/2,
-								dur:Song.parse(~section+4,[2,2],).q,
+								dur:Song.parse(\hands,[2,2],).q,
 								release:1,
 						].pm( \whaFingers),
 						[
@@ -641,7 +667,7 @@ P(\harmony,start:\hands,music: {|p b e|
 								,
 								amp:0.001*1/2,
 								freq:[3,2].df('c',octave: 4).q,
-								dur:Song.parse(~section+4,[3,1],).q,
+								dur:Song.parse(\hands,[3,1],).q,
 								release:1,
 						].pm( \whaFingers)
 						,
@@ -651,9 +677,9 @@ P(\harmony,start:\hands,music: {|p b e|
 P(\tune,start:\hands,music:Song.currentSong.pbind[\hands]);
 \intend.post;~intend= Song.sections.postln;
 ["/*SPOCK:*/ Then you intend to construct mechanical ",[3,4,2,3,4,5,6,7,6,5,4].dm('e',scale:\mixolydian)].addLine;
-P(\tune++~intend=>_.asSymbol,start:~intend,music:Song.currentSong.pbind[~intend]
+P(\tune,start:\intend,music:Song.currentSong.pbind[~intend]
 );
-P(\dyad++~intend=>_.asSymbol,syl:5,start:~intend,music:
+P(\dyad,syl:5,start:\intend,music:
 		[
 				freq:[5,1,4,[3,5],2,1].df('a',octave: 4).q,
 				instrument:\sawSynth,
@@ -661,7 +687,7 @@ P(\dyad++~intend=>_.asSymbol,syl:5,start:~intend,music:
 				dur:Song.parse(~intend,[2/3,1/3,1,1,1,1],6).q,
 		].p
 );
-P(\bass++~intend=>_.asSymbol,start:~intend,music:
+P(\bass,start:\intend,music:
 		[
 				freq:[4.5,3,4.5, 7,11,7,6,5, 
 //					4
@@ -676,61 +702,61 @@ P(\bass++~intend=>_.asSymbol,start:~intend,music:
 		++[13,11,7,5].dm('e-',octave: 5,scale:\mixolydian)
 		++ [6,7,4].dm('c',octave: 5)
 ].addLine;
-P(\intoThemBass++( ~intend+1 ),start:~intend+1,syl:4,music:
-	Song.currentSong.pbind[~intend+1]
+P(\intoThemBass,start:\move,syl:4,music:
+	Song.currentSong.pbind[\move]
 	=>Pdrop(5,_)
 	=>Pfin(3,_)
 	=>Pmul(\freq,1/2,_)
 	=>Pbindf(_,\instrument,\pulseBase,\amp,0.02)
 );
-P(\tune++(~intend+1),start:~intend+1,music:Song.currentSong.pbind[~intend+1]
+P(\tune,start:\move,music:Song.currentSong.pbind[~intend+1]
 );
-P(\bass++(~intend+1)=>_.asSymbol,start:~intend+1,music:
+P(\bass,start:\move,music:
 	[
 		freq:[1,1,1,1,2,2,2,2].df('d',octave: 3).q++[3].df('a-',octave: 2).q,
 		dur:
-		Song.parse(~intend+1,
+		Song.parse(\move,
 				(1/3)!6++((1/2)!2) => _.flatten ++ 2
 				,)
 		.q,
 	].p
 );
-P(\stringyBass++(~intend+1),start:~intend+1,syl:6,music:
+P(\stringyBass,start:\move,syl:6,music:
 	[
 			freq:[11,7,6.5].df('b-',octave: 2).q,
 			instrument:\stringyy,
-			dur:Song.parse(~intend+1,[2/3,[1/3,1],1],7).q,
+			dur:Song.parse(\move,[2/3,[1/3,1],1],7).q,
 	].p
 );
 ["turn our bodies to us. ",[1,2,3,4,3,5].dm('g',octave: 5)].addLine;
-P(\tune++(~intend+2),start:~intend+2,music:Song.currentSong.pbind[~intend+2]
+P(\tune,start:'to us',music:Song.currentSong.pbind[~intend+2]
 );
-P(\bassnote++(~intend+2),start:~intend+2,music:
+P(\bassnote,start:'to us',music:
 	(
 		freq: [1].df('g',octave: 3),
-		dur:Song.parse(~intend+2,[5],),
+		dur:Song.parse('to us',[5],),
 	)
 );
 //if args have no numbers, append the section # ?
-P(\chord++(~intend+2),start:~intend+2,syl:3,music:
+P(\chord,start:'to us',syl:3,music:
 	{
 		[ 
 			freq:[7,11,13,15].df('g',octave: 3),
 			effect:Effect({|i|FreeVerb.ar(i,0.7,0.8) =>.first DetectSilence.ar(_,doneAction:2)},inputChannels:2),
 			out:Pfunc({|e|e.effect.bus.index}),
 			strum:0.07,
-			dur:Song.currentSong.secDur[~intend+2]-0.5,
+			dur:Song.currentSong.secDur['to us']-0.5,
 		].p.fin(1).play
 	}
 );
 ["/*MULHALL*/We have engineers, technicians, ",[11,7,11,5,3,5,5,4].dm('f#',scale:\mixolydian)].addLine;
-P(\traps,start:~intend+3,music:
+P(\traps,start:\technicians,music:
 	//~fx=Effect(Phaser1.ar(_,0.4,1/5,0.3));
-	{
+	{ |p b e|
 		~div=[3,4].choose;
 		[
 			dur: "xxxx".asDrumPat(8,reps:12)
-			* (Song.parse(~intend,[8],).sum/~div*2),
+			* (Song.parse(\technicians,[8],).sum/~div*2),
 			instrument: \hihat,
 
 			effect:Effect({
@@ -751,19 +777,19 @@ P(\traps,start:~intend+3,music:
 //				\sn
 				,amp:0.05,
 				dur: "..x.".asDrumPat(8,reps:12)
-				* (Song.parse(~intend,[8],).sum/~div*2),
+				* (Song.parse(\technicians,[8],).sum/~div*2),
 			].p
 		]).play}
 	}
 );
-P(\pedal++( ~intend+3 )=>_.asSymbol,start:~intend+3,music:
+P(\pedal,start:\technicians,music:
 		(instrument:\stringyy,freq:[1,11].df('f#',octave: 2),dur:4,)
-);
+		);
 
 //idea: what about auto picking the start from context? ie Song.sections?
-P(\tune++(~intend+3),start:~intend+3,music:
+P(\tune,start:\technicians,music:
 	{
-	    Song.currentSong.pbind[~intend+3] => Pbindf(_,
+	    Song.currentSong.pbind[\technicians] => Pbindf(_,
 			\effect, {Effect(FreeVerb.ar(_,0.9,0.9)).bus.index},
 			\out,Pkey(\effect)
 	    ) => _.play
@@ -771,16 +797,15 @@ P(\tune++(~intend+3),start:~intend+3,music:
 );
 
 ["why can't they (just) build your robots for you?", [7,6,7,4,2,4,4,3,2,1].dm('f#',scale:\mixolydian)].addLine;
-
-P(\tune++(~intend+4),start:~intend+4,music:Song.currentSong.pbind[~intend+4]
+P(\tune,start:\why,music:Song.currentSong.pbind[~intend+4]
 	=>Pbindf(_,\effect,
 		{Effect(FreeVerb.ar(_,0.9,0.9)).bus.index},
 		\out,Pkey(\effect))
 );
 ["/*KIRK:*/ No. Our methods, our skill --s are (boom) ",[12, 12,12,11,7,13,7,11 ,6, ].dm('c')].addLine;
-P(\tune++(~intend+5),start:~intend+5,music:Song.currentSong.pbind[~intend+5]
+P(\tune,start:\skill,music:Song.currentSong.pbind[~intend+5]
 );
-P(\chords++(~intend+5),start:~intend+5,music:
+P(\chords,start:\skill,music:
 		[
 				freq:[
 						[5,6.5],
@@ -788,19 +813,19 @@ P(\chords++(~intend+5),start:~intend+5,music:
 						[5,7],[5,11],
 						[6,11]
 				].df('c',octave:4).q,
-				dur:Song.parse(~intend+5,[1, 1,3, 2,1, 1],).q,
+				dur:Song.parse(\skill,[1, 1,3, 2,1, 1],).q,
 				instrument:\sawSynthSustain,
 				amp:0.06
 		].p
 );
 ["far , far beyond your abilities. It is. ",[14, 14,13,13,14,13,12,7,3, 5.5,5.5,5.5].dm('c')].addLine;
-P(\tune++(~intend+6),start:~intend+6,music:Song.currentSong.pbind[~intend+6]
+P(\tune,start:\far,music:Song.currentSong.pbind[~intend+6]
 );
 
-~lick=Array.series(4,0,2).collect(_+[11,12,7.5,11].dm('c#',octave:5,scale:\diminished )).flatten ;
-["time dum dum dum dum dum etc ",~lick].addLine;
+Song.lick=Array.series(4,0,2).collect(_+[11,12,7.5,11].dm('c#',octave:5,scale:\diminished )).flatten ;
+["time dum dum dum dum dum etc ",Song.lick].addLine;
 //(They help him back to Sargon's sphere.)
-P(\lick++(~intend+7),start:~intend+7,music:Song.currentSong.pbind[~intend+7]
+P(\lick,start:~intend+7,music:Song.currentSong.pbind[~intend+7]
 	=>{
 		|i|
 		Ppar([i,

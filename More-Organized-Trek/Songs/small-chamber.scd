@@ -550,6 +550,7 @@ P(\boom,start:\humanoid,music:
 );
 ["need your bodies long enough to have the use of your ",[11,6,5,4,7,6,2,1,2,3,4,5,3].dm('g',scale:\mixolydian)].addLine;
 Song.setTempoMap(\need,"qqq e q q q e e e e e Q Q Q ");
+
 P('click',start:\need,music: {|p b e|
 	[
 		dur:1!8 => _.warpTo(e.tempoMap.quantizeDft) => _.q,

@@ -46,7 +46,7 @@
 		strum:[ 0.06 ].q,
 		freq:[1,3,5,11].df('e-',octave: 4),
 		out:
-		{ Effect({|i| EchoNone.ar(i,1,0.3,5) => DetectSilenceDry.ar(_,doneAction:2)=> MoogFF.ar(_,6000,3) * Env.linen(0,b.sum,2).kr(2,gate:1) },inputChannels:2).bus.index  }, 
+		{ Effect({|i| EchoNone.ar(i,1,0.3,5) =>.array DetectSilenceDry.ar(_,doneAction:2)=> MoogFF.ar(_,6000,3) * Env.linen(0,b.sum,2).kr(2,gate:1) },inputChannels:2).bus.index  }, 
 		//		out:Pkey(\effect), 
 	].pp
 });

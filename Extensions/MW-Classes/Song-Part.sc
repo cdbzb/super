@@ -15,6 +15,7 @@ Song {
 	var <>clock;
 	var playInitiatedAt,<>preroll=0;
 	var <secLoc, <secDur, <pbind;
+	classvar <>lastPlayOnly;
 	classvar <>muteTunes;
 
 	*initClass {
@@ -395,7 +396,12 @@ Song {
 		^this.pts.select({|i| i.name contains: key })[0].unbubble
 	}
 	solo {|key| ^all{:x,x<-this.pts,x.name.asString.contains(key.asString)}}
-	playOnly {|...args| args.collect{|i| this.solo(i)}.reject{|i| i.isNil}.flat.do(_.p)}
+	playOnly {|...args|
+		var strings;
+		(args.size == 0).if{ strings  = lastPlayOnly }{strings = args};
+		lastPlayOnly = strings;
+		strings.collect{|i| this.solo(i)}.reject{|i| i.isNil}.flat.do(_.p)
+	}
 	track { 
 		|trackName| 
 		trackName=trackName.asString;

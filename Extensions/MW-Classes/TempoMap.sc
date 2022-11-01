@@ -9,6 +9,11 @@ TempoMap {
   *fromB { | b| ^TempoMap( 1!b.size,b) }
   init { |b d|
 	beats = b; durs = d;
+	( durs.size != beats.size ).if{
+		var newSize = ( beats.size min: durs.size ) - 1;
+		beats = beats[(0..newSize)];
+		durs = durs[(0..newSize)];
+	};
 	timesInBeats = [ 0 ] ++ beats ++ beats.last => _.integrate;
 	timesInDurs = [ 0 ] ++ durs ++ durs.last => _.integrate;
         ^this;

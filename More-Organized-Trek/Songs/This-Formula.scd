@@ -1,14 +1,12 @@
 (
 s.waitForBoot{ 
 	Song('this formnula',[]).current;
-	Song.resources.quarters_(());
 	Song.currentSong.infrastructure=FunctionList.new.array_([
 		{ 
 			~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
 			"/Users/michael/tank/super/808-mod.scd".load 
 		}
 	]);
-	~quarters=SongArray.new(size:64);
 	~clocks=SongArray.new(size:64);
 	~clock={|tempi| 
 		var clock;
@@ -20,10 +18,10 @@ s.waitForBoot{
 	//This Formula (REAPER?) 
 	[" /*[Pharmacy] SPOCK:*/ Now.  ","r"].addLine;
 	["(boom) this formula -- -- will reduce the ",[11,13,13,12,11,12,11, 7,11, 12, 13].dm('d',octave:4 )].addLine;
-	~quarters['this formula']= Song.parseBeats('this formula', [1,1,1/2,1/4,11/4,1/4,1/4,1/2,1/4,3/4,1/2]);
+	Song.quarters['this formula']= Song.parseBeats('this formula', [1,1,1/2,1/4,11/4,1/4,1/4,1/2,1/4,3/4,1/2]);
 	//		~clock=TempoClock.new;
-	//~justTheTune.('this formula');
-	~justTheTune.( 'formula --');
+	//P.tune('this formula');
+	P.tune( 'formula --');
 	P(\drumz,'this formula',music:
 		{|p b e|
 			[
@@ -41,7 +39,7 @@ s.waitForBoot{
 					instrument:\kick2,
 				] =>_ .p
 			] => Ppar(_)
-			=>_.play(~quarters['this formula'].quantizeWindow.asTempoClock)
+			=>_.play(Song.quarters['this formula'].quantizeWindow.asTempoClock)
 		}
 	);
 	P(\bassFormula,'this formula',music:
@@ -59,7 +57,7 @@ s.waitForBoot{
 				,
 				dur: [3,1, 1,2,1, 3,1, 3,1].q/2,
 			].p
-			=>_.play(TempoClock.newFromQuarters(~quarters[e.start].quantizeWindow));
+			=>_.play(TempoClock.newFromQuarters(Song.quarters[e.start].quantizeWindow));
 		});
 
 		( Song.resources.hatPattern="xxxx".asDrumPat(4,8)
@@ -72,11 +70,11 @@ s.waitForBoot{
 	);
 	P(\highHat,start:'this formula',music:{|p b e|
 		p.hatPattern
-		=>_.play( ~quarters[e.start].quantizeWindow.asTempoClock)
+		=>_.play( Song.quarters[e.start].quantizeWindow.asTempoClock)
 	});
 	["(boom )heart action and the bodily ",[6, 14,13,11, 7,11,12,13,11,].dm('d',octave:4 )].addLine;
-	~justTheTune.('and the bodily');
-	~quarters['bodily']=Song.parseBeats('bodily', [1,7/4,2/4,7/4, 1/2,1/2, 2/3,2/3,2/3 ]);
+	P.tune('and the bodily');
+	Song.quarters['bodily']=Song.parseBeats('bodily', [1,7/4,2/4,7/4, 1/2,1/2, 2/3,2/3,2/3 ]);
 	P(\bassBodily,'bodily',music:
 		{|p b e|
 			[
@@ -86,7 +84,7 @@ s.waitForBoot{
 				0.5!4 ++ ( "ex x".asBeats *2 !3 ).flatten=>_.q
 				,
 			].p
-			=>_.play(TempoClock.newFromQuarters(~quarters['bodily'].quantizeWindow),
+			=>_.play(TempoClock.newFromQuarters(Song.quarters['bodily'].quantizeWindow),
 		);
 	});
 
@@ -107,14 +105,14 @@ s.waitForBoot{
 		)
 		+=
 		p.hatPattern
-		=>_.play(~quarters[e.start]
+		=>_.play(Song.quarters[e.start]
 		.quantizeWindow
 		//	.quantize
 		.asTempoClock);
 	}
 );
 ["functions to normal. ",[7,6, 12,11,7 ].dm('d',octave:4 )].addLine;
-~quarters['to normal']= Song.parseBeats('to normal',[2/3, 2/3, 2/3,  1,1]);
+Song.quarters['to normal']= Song.parseBeats('to normal',[2/3, 2/3, 2/3,  1,1]);
 P(\bassNormal,'to normal',music:
 	{|p b e|
 		[
@@ -122,12 +120,12 @@ P(\bassNormal,'to normal',music:
 			freq: [6,6,5,5].df('d',tuning:\sept1,octave:[3,4]-1).q,
 			dur: "ex x e e".asBeats.q*2,
 		].p
-		=>_.play(TempoClock.newFromQuarters(~quarters['to normal'].quantizeWindow),
+		=>_.play(TempoClock.newFromQuarters(Song.quarters['to normal'].quantizeWindow),
 	);
 });
 P(\highHatNormal,start:'to normal',music:{|p b e|
 	p.hatPattern => Pfin(16,_)
-	=>_.play(~quarters[e.start].quantize.asTempoClock);
+	=>_.play(Song.quarters[e.start].quantize.asTempoClock);
 });
 P(\drumzNormal,'to normal',music: {|p b e|
 	(
@@ -143,14 +141,14 @@ P(\drumzNormal,'to normal',music: {|p b e|
 			//		lag:-0.04,
 		] =>_ .p
 	)
-	=>_.play(~quarters[e.start].quantizeWindow.asTempoClock);
+	=>_.play(Song.quarters[e.start].quantizeWindow.asTempoClock);
 }
 );
-~justTheTune.('to normal');
+P.tune('to normal');
 ["(boom) While the bodies are occupied, ",[-15,-5,-6,-7,1,2,4,3,1].dm('c')].addLine;
-~justTheTune.('occupied',{|i| i.drop(1)},syl:0);
-~quarters[\occupied]=Song.parseBeats('occupied',(1/3)!6 ++ ( (2/3)!3 ));
-//~quarters[\occupied]
+P.tune('occupied',{|i| i.drop(1)},syl:0);
+Song.quarters[\occupied]=Song.parseBeats('occupied',(1/3)!6 ++ ( (2/3)!3 ));
+//Song.quarters[\occupied]
 
 P(\chordsOccupied,start:\occupied,music:{|p b e|
 	[
@@ -161,26 +159,26 @@ P(\chordsOccupied,start:\occupied,music:{|p b e|
 		amp:0.2,
 		//		out:Effect(FreeVerb.ar(_,0.51,0.5),out:1).bus.index,
 		dur:"e e e e".asBeats.q*2,
-	].p.trace.play(~quarters[e.start].asTempoClock)
+	].p.trace.play(Song.quarters[e.start].asTempoClock)
 }
 );
 ["you will administer one injection of  ",[3,4,1,3,2,1, -7,1,2,-7,-5].dm('a',scale:\harmonicMinor)].addLine;
-~justTheTune.('administer one',Pmul(\freq,0.5,_));
+P.tune('administer one',Pmul(\freq,0.5,_));
 ["ten cc's each hour.",[-7,1,-7,1,-6].dm('g',octave:4 )].addLine;
-~justTheTune.('each hour');
-~quarters['each hour']= Song.parse('each hour',[2,2,1]);
+P.tune('each hour');
+Song.quarters['each hour']= Song.parse('each hour',[2,2,1]);
 P(\chordsHour,start:'each hour',music:{|p b e|
 	[
 		midinote: [0,-2]+.t[1,3,5,7].dm('d',octave:4 ) =>_.q,
 		dur:"qq q".asBeats.q,
 		instrument:\sawSynthSustain,
 		att:1
-	].p.trace.play(~quarters[e.start].asTempoClock)
+	].p.trace.play(Song.quarters[e.start].asTempoClock)
 }
 );
 ["/*CHAPEL:*/ I understand. ",[5,6,7,11].dm('a-')].addLine;
-~justTheTune.('understand',Pmul(\freq,0.5,_));
-~quarters[\understand]=Song.parseBeats('understand',"e x x q".asBeats);
+P.tune('understand',Pmul(\freq,0.5,_));
+Song.quarters[\understand]=Song.parseBeats('understand',"e x x q".asBeats);
 P(\chordsUnderstand,start:\understand,music:{|p b e|
 	[
 		freq: [[-5,5],[-5,4],[1,3]].df('a-',octave:4 ).q,
@@ -190,14 +188,14 @@ P(\chordsUnderstand,start:\understand,music:{|p b e|
 		amp:0.045,
 		out:[0,3],
 	].pm(\sparkTriangle).play(
-		~quarters[\understand]
+		Song.quarters[\understand]
 		.asTempoClock
 	)
 }
 );
 ["/*SPOCK:*/ This hypo you will code mark for Tha lassa. And ",[5,4,3,2,1,3,2,3,4,3,2,2, 2].dm('d')].addLine;
-~justTheTune.('hypo you will',Pmul(\freq,0.5,_));
-~quarters['hypo you will'] = Song.parseBeats('hypo you will',[1, 1,1,1,1, 1,1,3/2,1/2, 1,1,5, 1]);
+P.tune('hypo you will',Pmul(\freq,0.5,_));
+Song.quarters['hypo you will'] = Song.parseBeats('hypo you will',[1, 1,1,1,1, 1,1,3/2,1/2, 1,1,5, 1]);
 P(\hypoBase,'hypo you will', music:{|p b e|
 	[
 		//	instrument:\pluckD,
@@ -207,7 +205,7 @@ P(\hypoBase,'hypo you will', music:{|p b e|
 	].pm(\pluckD)
 	.play
 	(
-		~quarters['hypo you will']
+		Song.quarters['hypo you will']
 		//	.quantizeWindow
 		.asTempoClock
 	)
@@ -222,14 +220,14 @@ P(\hypoAnswer,start:'hypo you will',music:{|p b e|
 		instrument:\sawSynthSustain,
 		lofreq:4000,
 		rel:4
-	].p.play(~quarters['hypo you will'].asTempoClock)
+	].p.play(Song.quarters['hypo you will'].asTempoClock)
 }
 );
 ["this one you will code mark for -- ",[4,3,2,1,3,3,4,3].dm('a')].addLine;
-~justTheTune.('for --'
+P.tune('for --'
 	,Pmul(\freq,0.25,_)
 );
-~quarters['for --'] = Song.parseBeats('for --',[1,1,1,1, 3/2,3/2,1/2,1/2]);
+Song.quarters['for --'] = Song.parseBeats('for --',[1,1,1,1, 3/2,3/2,1/2,1/2]);
 P(\forBase,'for --', music:{|p b e|
 	[
 		//	instrument:\pluckD,
@@ -237,12 +235,12 @@ P(\forBase,'for --', music:{|p b e|
 		=> _.df('d',octave:3) =>_.q,
 		amp:0.01,
 	].pm(\pluckD).play (
-		~quarters['for --']
+		Song.quarters['for --']
 		//	.quantizeWindow
 		.asTempoClock)
 	});
 	["me.  /*CHAPEL:*/ Yes, sir. ",[-2,7,11].dm('c')].addLine;
-	~justTheTune.('Yes, sir');
+	P.tune('Yes, sir');
 	P(\chordSir,start:'Yes, sir',syl:0,music:{|p b e|
 		b=b.drop(1);
 		[
@@ -253,17 +251,17 @@ P(\forBase,'for --', music:{|p b e|
 	}
 );
 ["/*SPOCK:*/ This one you will administer to Captain Kirk while ",[3,2,-7,7,6,5,4,3,1.5,3,4,4.5,5].dm('f#',scale:\minor,)].addLine;
-~quarters['This one']=Song.parseBeats('This one',"q qe e e e e e e e e e e e".asBeats);
-~justTheTune.('This one');
+Song.quarters['This one']=Song.parseBeats('This one',"q qe e e e e e e e e e e e".asBeats);
+P.tune('This one');
 P(\baseThisOne,start:'This one',music:{|p b e|
 	[
 		freq:[1,2,3, 1.5,3,4,4.5,5].df('f#',scale:\minor,octave:3 ).q,
 		dur:"qq qq qe e e e e e".asBeats.q,
-	].p.play(~quarters[e.start].asTempoClock)
+	].p.play(Song.quarters[e.start].asTempoClock)
 }
 );
 ["Sargon is in his body. ",[11,5,3,2,-7,2,1].dm('d',octave:5,scale:\harmonicMinor, )].addLine;
-~justTheTune.('in his body');
+P.tune('in his body');
 P(\strumBody,start:'in his body',lag:-0.03,music:{|p b e|
 	(
 		freq:[1,3,5,11,13,15,21].df('d',octave:4,scale:\minor, ),
@@ -283,15 +281,15 @@ P(\swellContain,start:'does not contain',music:{|p b e|
 	).play
 }
 );
-~justTheTune.('does not contain');
+P.tune('does not contain');
 // TODO
 ["/*SPOCK:*/ No, that's correct. But since I will arrange for ",[1, 1.5,1,1].dm('b-')++[4,2,4, 3,2,1,-7].dm('f#')].addLine;
-~justTheTune.('correct');
+P.tune('correct');
 P(\correctBase,start:'correct',music:{|p b e|
 	( freq:1.df('b-',octave:2), ).play
 }
 );
-~quarters['correct'] = Song.parseBeats('correct',"qq Q E qe e e e e Q E".asBeats);
+Song.quarters['correct'] = Song.parseBeats('correct',"qq Q E qe e e e e Q E".asBeats);
 
 P(\correctBaseLine,start:'correct',music:{|p b e|
 	[
@@ -303,7 +301,7 @@ P(\correctBaseLine,start:'correct',music:{|p b e|
 		legato:[1,0.9, 1,0.9].q,
 	].p=>
 	{|i| Ppar([Pset(\instrument,\default,i),Pbindf(i,\amp,0.04,\out,2)])}
-	=>_.play(~quarters[e.start].asTempoClock)
+	=>_.play(Song.quarters[e.start].asTempoClock)
 }
 );
 P(\correctBaselineSecondHalf,start:'correct',syl:3,music:{|p b e|
@@ -317,7 +315,7 @@ P(\correctBaselineSecondHalf,start:'correct',syl:3,music:{|p b e|
 }
 );
 ["you to administer each of the injections, ",[5, 4,3,2,3,1, 5.5, 4.5, 1,2,3,2].dm('f#')].addLine;
-~justTheTune.('administer each');
+P.tune('administer each');
 P(\administerBaseNotes,start:'administer each',music:{|p b e|
 	[
 		freq: [4,3,2.5,2].df('b',octave:2 ).q,
@@ -344,11 +342,11 @@ P(\administerMiddleVoice,syl:9,start:'administer each',music:{|p b e|
 }
 );
 ["no one else will notice. ",[1,2,3.5,-7,-7,-6].dm('b-',scale:\minor)].addLine;
-~justTheTune.('notice');
+P.tune('notice');
 ["/*CHAPEL:*/ Without the same formula, Captain Kirk will die. ",[3,1,2,3,5,4,3,1,2,3,5,6].dm('g',scale:\whole,)].addLine;
-~justTheTune.('Without');
+P.tune('Without');
 ["(He touches her fosehead.) /*SPOCK:*/ What were you saying? ",[3,  3,4,2,4,3].dm('c')].addLine;
-~justTheTune.('touches her');
+P.tune('touches her');
 P(\touchBaseNote,start:'touches her',music:{|p b e|
 	(
 		instrument:\stringyy,
@@ -367,7 +365,7 @@ P(\touchBaseNote,start:'touches her',music:{|p b e|
 }
 );
 ["/*CHAPEL:*/ I (breath). I was. (breath) ",[7,1, 6,7,1].dm('b')].addLine;
-~justTheTune.('I was.',{|i| Pbindf(i,\amp,[1,0,1,1,0]/10=>_.q)});
+P.tune('I was.',{|i| Pbindf(i,\amp,[1,0,1,1,0]/10=>_.q)});
 P(\forgettingPad ,start:'I was.',music:{|p b e|
 	//should pulsate
 	(instrument:\stringyy,
@@ -419,13 +417,13 @@ fork{
 
 });
 ["I wanted to say-- something. I've for",[7,11,7,6, 6,12,7,5, 3,4].dm('b')].addLine;
-~justTheTune.('something');
+P.tune('something');
 ["gotten what it was. ",[3,4,5,6,7].dm('b')].addLine;
-~justTheTune.('gotten');
+P.tune('gotten');
 ["/*SPOCK:*/ Yes. Well, you were about to say that ",[5,12, 5,6,7,11,6, 12, 11,].dm('d',scale:\major)].addLine;
-~justTheTune.('about to say');
+P.tune('about to say');
 ["you watched me prepare the formula and fill each of the hypos. ",[13,13,12,13,14,15,14,13,12,11,7,5,6,7,12,11].dm('d',octave:5 )].addLine;
-~justTheTune.('me prepare');
+P.tune('me prepare');
 P(\harmonyWatched,start:'me prepare',music:
 	{|p b e|
 		[
@@ -436,9 +434,8 @@ P(\harmonyWatched,start:'me prepare',music:
 		].pp
 	}
 );
-
 ["/*CHAPEL:*/ Yes, that, that was it. ",[7, 7, 12,11,3].dm('f#')].addLine;
-~justTheTune.('that was it');
+P.tune('that was it');
 P(\tremoloYes,start:'that was it',music:{|p b e|
 	[
 		freq:[[11,14,16],[11,14,15],[13,15,17]].df('f#',octave:3,scale:\mixolydian,).q,
@@ -461,12 +458,12 @@ P(\basedNotesYes,start:'that was it',music:{|p b e|
 }
 );
 ["I will inform Doctor McCoy that each is ",[1,-5,1,2 ,3,1,3,4, 5,4,3,].dm('f#')].addLine;
-~justTheTune.('inform');
+P.tune('inform');
 ["properly filled for each patient. ",[5,4,3,2,-6,-7,2,1].dm('f#')].addLine;
-~justTheTune.('properly');
+P.tune('properly');
 
 ["/*SPOCK:*/ Very good. ",[5,5,11].dm('b-',octave:4)].addLine;
-~justTheTune.('Very');
+P.tune('Very');
 P(\chord,start:'Very',music:{|p, b, e|
 	[
 		//		freq:[[2,4],[1,3]].df('b-',octave:3 ).q,
@@ -478,9 +475,9 @@ P(\chord,start:'Very',music:{|p, b, e|
 
 );
 ["You see, Sargon would not let me keep this body",[5,6,12,11,5,6,11,12, 13,14,14,13].dm('b-',octave:4 )].addLine;
-//~justTheTune.('keep this');
+//P.tune('keep this');
 SynthDef(\whiteNoise,{WhiteNoise.ar(\amp.kr(0.1))=>LPF.ar(_,2000)* Env.cutoff(1).kr(2,gate:\gate.kr(1)) => Out.ar(\out.kr(0),_)}).add;
-~justTheTune.('keep this');
+P.tune('keep this');
 P(\vocoder,start:'keep this',music:{|p b e|
 	\b++b =>_.postln;
 	Song.pbind['keep this']
@@ -521,7 +518,7 @@ P(\keepThisOctaves,start:'keep this',music:{|p b e|
 );
 //["would not permit me to keep this body","r"].addLine;
 ["It is therefore necessary for", [-7,1,2,3,2,1,-7,1,-6].dm('b-',octave:5)].addLine;
-//~justTheTune.('necessary');
+//P.tune('necessary');
 P(\vocoder,start:'necessary',music:{|p b e|
 	Song.pbind['necessary']
 	=>Pbindf(_,\legato,1,
@@ -537,7 +534,7 @@ P(\vocoder,start:'necessary',music:{|p b e|
 	)
 }// .value
 );
-~justTheTune.('therefore',{|i| i.fin(4)=> Pmul(\freq,[ 0.5 , 0.25 ],_)=>Pbindf(_,\instrument,\sparkTriangle,\amp,0.06)});
+P.tune('therefore',{|i| i.fin(4)=> Pmul(\freq,[ 0.5 , 0.25 ],_)=>Pbindf(_,\instrument,\sparkTriangle,\amp,0.06)});
 P(\necessaryBaseNote,start:'necessary',music:{|p b e|
 	[out:
 		[ 0 ]++
@@ -561,7 +558,7 @@ P(\necessaryBaseNote,start:'necessary',music:{|p b e|
 }
 );
 ["you to kill your captain ", [4,3,5,4,3,2].dm('b-',octave:5)].addLine;
-~justTheTune.('kill');
+P.tune('kill');
 P(\vocoder,start:'kill',music:{|p b e|
 	Song.pbind['kill']
 	=>Pbindf(_,\legato,1,
@@ -597,7 +594,7 @@ P(\killBaseNote,start:'kill',music:{|p b e|
 }
 );
 ["so that Sargon will die with him.",[-7,1,3,2.5,-6,-7,2,1].dm('b-')].addLine;
-~justTheTune.('with him');
+P.tune('with him');
 //MUTEDP(\sargonLowerBase,start:'with him',music:{|p b e|
 //MUTED[
 //MUTEDfreq: [\r,5.5,6,7,11].df('b-',octave:[ 1,2 ] ).q,

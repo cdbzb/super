@@ -609,7 +609,7 @@ Song {
 		})
 	}
 	getStartString { |x|
-		var a=this.lyrics.collect( { |i| i.split($ ).collect(_.asSymbol)} );
+		var a=this.lyrics.collect( { |i| i.asString.split($ ).collect(_.asSymbol)} );
 		var q={|array index| array.keep(index)++array.copyToEnd(index + 1)};
 		var start = a[x].difference(q.(a,x).flat);
 		var luacode = "local pos = vim.api.nvim_win_get_cursor(0)[2] ;"
@@ -619,6 +619,12 @@ Song {
 		.format(start[0]);
 		SCNvim.luaeval(luacode)
 
+	}
+	returnStartString {|x|
+		var a=this.lyrics.collect( { |i| i.asString.split($ ).collect(_.asSymbol)} );
+		var q={|array index| array.keep(index)++array.copyToEnd(index + 1)};
+		var start = a[x].difference(q.(a,x).flat);
+		^start[0]
 	}
 	parse {|phrase array start=0| 
 		var counter = 0;

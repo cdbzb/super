@@ -692,13 +692,50 @@ P(\trill,start:'trill',lag:0.1,music:
 	}
 ); 
 [ "I am not displeased my husband- ","d#5 c# c a#4 g# f# f d# c# " ].addLine; //1
-~justTheTune.('husband');
+//~justTheTune.('husband');
+P.tune(\displeased);
 [ "r your body is r r  not unlike ","c#3 f4 d# c# g#3 f#2 f# f#4 f d#" ].addLine; //2
 ~justTheTune.('unlike');
+P.tune(\unlike, Pset(\amp,Pfunc({|e| ( e.midinote<56 ).if{0}{0.1}}),_));
+P('bass',start:\unlike,music: {|p b e|
+	[
+		freq:[1,\r,\r,-4,-4,\r,5].df('c#',[3,4]).q,
+		dur:b.parse([1,1,3, 1,1,3]) ++ e.bNext.sum => _.q,
+		out: Effect.bus({|i| 
+			Amplitude.kr(i) * 50 
+			*  CrossoverDistortion.ar(i,amp:0.1,smooth:0.9) 
+			=> DWGReverbC1C3.ar(_,mix:0.1)  
+			* Env([1,1,0.06,0.5,0.01],b.parse([7,3])++e.bNext.sum,2).kr
+		})
+	].pp
+});
 [ "that which was your own (dum dum dum)","d-4 c d- b-3  g-3 f g- a-" ].addLine; //3
+
+P('pad',start:\which,music: {|p b e|
+	(
+		instrument: \reedy,
+		release: b.sum,
+		dur:1,
+		freq: [1].df('a-',[ 3,4 ]),
+		amp:0.02
+	).play
+});
 ~justTheTune.('your own');
 [ "and i too am pleased beloved", [3,2,4,3,3,2,1,-7].dm('d' ) ].addLine; //4 -or Bb!
 ~justTheTune.('beloved');
+P('pad',start:\beloved,music: {|p b e|
+	(
+		instrument: \wash,
+		freq: [-7,1,5].df(\d),
+		dur: b.sum,
+		att: b.parse([3]),
+		rel: b.sum - b.parse([3]),
+		amp:0.02
+
+	).play
+});
+P.tune('i too',{|i| Pmul(\freq,0.5,i) =>Pbindf(_,\amp,0.2,\instrument,\stringyy,\legato,1) });
+//P.tune('too am', {|i| Pbindf(i,\amp,0.01,\freq,1.df(\d,[4,5]))});
 [ " boom after so- long... (boom) so very long... Kiss ","d3 a b e4 d f g3 b c4 a3 e4 r" ].addLine; //5
 ~justTheTune.('very long');
 P(\afterSoLongSketch,start:'very long',music: {|p b e|
@@ -706,13 +743,17 @@ P(\afterSoLongSketch,start:'very long',music: {|p b e|
 	(degree:1,octave:4,dur:6).play;
 	[
 		legato:1.05,
+		instrument:\sawSynthSustain,
 		degree:Pseq(afterSoLong)-1,
 		dur:b.q,
 		out: Effect(PlateReverb.ar(_,mix:0.1),out:3).bus.index,
 		amp: 0.08
-	].pp;
+	] => {|i| i.p => Pset(\amp,0.04,_)=>_.play; i .ppm}
+	//m
+	;
 	[
 		degree:Pseq([1,-3]),
+		instrument:\reedy,
 		dur:b.parse([6,5]).q,
 		out: Effect(PlateReverb.ar(_,mix:0.2),out:1).bus.index,
 		amp: 0.08
@@ -727,7 +768,7 @@ P(\bassNotes54,start:'very long',music:
 			legato:[1.1,0.9].q,
 			octave:3,
 			amp:0.5,
-			out: Effect( SineShaper.ar(_,0.2) ).bus.index
+			out: Effect( { |i|  SineShaper.ar(i,0.2) * Env([0,1,1],[0.05]).kr }).bus.index
 		].pp
 	}
 );

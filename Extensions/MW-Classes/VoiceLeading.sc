@@ -16,7 +16,7 @@ VoiceLeading {
 		)
 
 	}
-	init { |array durss k|
+	init { |array durss=1 k|
 
                 var longest = ( array.size>1 ).if{
                   array.collect({|i| i.size}).sort.tail.unbubble  //size of longest subarray
@@ -32,7 +32,7 @@ VoiceLeading {
 
                 //pad array using clipAt
                 //\xya.post;array.reshapeLike( ( 1 ! array.collect({|i| i.size}).sort.tail.unbubble) ! array.size, \clipAt ).postln;
-		lines=array;
+		lines=array.collect{|i| i.isString.if{i.asVoice}{i}};
 		durs=durss;
                 ////////// these are for Pbinds
 		durationArray=this.makeDurationsArray;        //hmmm but I need 2 versions!
@@ -175,4 +175,16 @@ VoiceLeading {
 	// do this again for multiple keys
 //	set {|key values| ^( this.p.bubble ++ values.bubble =>_.flopWith{|p i| Pset(key,i,p) })}
 
+}
+
++ String {
+	asVoice {
+		^this.split(Char.space)
+		.collect{|i|
+			case
+			{  i.asFloat != 0  }{i.asFloat}
+			{ i == "_" }{ \_ }
+			{ true }{i.asSymbol}
+		}
+	}
 }

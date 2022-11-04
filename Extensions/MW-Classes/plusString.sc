@@ -20,6 +20,19 @@
 		.collect(_.sum)
 		//.reject({|i| i == 0})
 	}
+	
+	rhythm {
+		^this.split($%) 
+		.collect({|i x|
+			var list = List[];
+			x.even.if{
+				"\\w".matchRegexp(i).if{ list.add(i.asBeats) };
+			}{
+				list.add([i.asBeats.sum.floor, i.asBeats].convertRhythm);
+			};
+			list
+		}).flat
+	}
 	fileName {
 		^try{this.asPathName.fileName}
 	}

@@ -392,32 +392,70 @@ P(\baseline2,start:'I`m',syl:1,music:[
 
 [" When the struggle came which devastated your planet ","r"].addLine;/*SPOCK:*/
 
-[" Only the best minds were chosen to survive.","r"].addLine;/*KIRK:*/
-["Thalassa, my wife, as you may have guessed. ","r"].addLine;
-["Henoch, from the other side. ","r"].addLine;
+[" Only the best minds were chosen to survive.","5 6 7 11 7 5 6 4 2 1 -7".dm(\e,6,\phrygian)].addLine;/*KIRK:*/
+P.tune(\Only);
+P('chords',start:\Only,music: {|p b e|
+	[
+		freq:[\r , [1,3,5,7], [1,4,6,8]].df(\c).q,
+	strum:0.03,
+	out: Effect.bus({|i| PitchShift.ar(i,0.2,2) + i => EchoNone.ar(_,decaytime:4)},out:3),
+	dur: b.parse([3,3,1,]).q,
+	amp:0.04
+].p.play
+});
+P('spaceBass',start:\Only,syl: 7,music: {|p b e|
+	[
+		freq: [\r,[-17,-7],[-1,1]].df(\d,4,\harmonicMinor).q,
+		instrument:\stringyy,
+		dur:b.drop(1).parse([0.5,[0.5,1],1]).q,
+		attack:1.5,
 
-["Realising our mistake, we attempted to perpetuate both sides. ","r"].addLine;
-["We built this chamber here in order to preserve our essence in this fashion. ","r"].addLine;
+	].ppm
+});
+["Thalassa,(boom boom boom) my wife, as you may have guessed. ","-5 3 2 -1, -17 -16 3 6  5 3 1.5 2 3".dm(\e,6)].addLine;
+P.tune(\wife,_ <> [out:Effect.bus(DWGReverbC1C3.ar(_,len:3000))].p);
+["and Henoch, from the other side. ","4 3 1 -5 -6.5 -7 -5 -3.5".dm('f#',6,\minor)].addLine;
+P.tune('Henoch,');
 
-[" Fascinating. ","r"].addLine;/*SPOCK:*/
+//["Realising our mistake, we attempted to perpetuate both sides. ","r"].addLine;
+//["We built this chamber here in order to preserve our essence in this fashion. ","r"].addLine;
 
-[" We knew the seed that we had planted on other planets would take root,","r"].addLine;/*KIRK:*/
-["that one day you would build vessels as we did, and one day you would come here. ","r"].addLine;
+//[" Fascinating. ","r"].addLine;/*SPOCK:*/
 
-[" These others, they were stored differently than you,","r"].addLine;/*SPOCK:*/
-["but it was your task to remain in the receptacle out there ","r"].addLine;
+//[" We knew the seed that we had planted on other planets would take root,","r"].addLine;/*KIRK:*/
+//["that one day you would build vessels as we did, and one day you would come here. ","r"].addLine;
+
+[" These others, they were stored differently than you,","1 3 -7 5 3 4 7 6 4 5 1".dm(\a,\mixolydian)].addLine;/*SPOCK:*/
+P.tune(\These);
+["but it was your task to remain in the receptacle out there ","6 7 5 11 3 7 11".dm('f#') ++ "3 5 6 7 11 5 4".dm('a-') ++ "15 16".dm(\c)].addLine;
+P.tune(\but);
 
 ["(boom) and search the heavens with my mind, ",[\r,5,5,5,5,5,5,5,5].dm(\b)].addLine;/*KIRK:*/
-
-
 P.tune(\search);
+
+
+Song.setTempoMap(\search,"e e e e e e e e q");
+//P.tune(\search,Pset(\dur, 0.5! 9 =>_.warpTo(Song.tempoMap[\search]) =>_.q ,_));
+//P.tune('search ');
+P('tune',start:\search,music: {|p b e|
+	[
+		freq:[\r, 1,1,1,1,1,1,1,1].df('f#').q,
+		dur: 0.5 !8 => _.warpTo(e.tempoMap
+		//.quantizeDft
+		) => _.postln =>_.q
+	].pp
+});
+
 P('crash',start:\search,music: {|p b e|
 	(instrument:\cymbalsDS, amp:0.01).play
 });
 P('chords',start:\search,music: {|p b e|
 	[
 		freq:[ \r, [1,3].df(\b),[1,3].df(\a),[3,11].df(\e) ].q,
-		dur: b.parse([1,3,4,1]).q,
+		dur: (0.5 * [1,3,4,1]).warpTo(e.tempoMap
+		//.quantizeDft
+		).q,
+		out: (1..3)
 
 	].pp
 });
@@ -425,33 +463,71 @@ P('bass',start:\search,music: {|p b e|
 	[
 		freq:[5,4,1].dupEach(3).df(\e,[ 2 ]).q * [1,2, 3,6,7,14] => _.poll,
 		amp:[1,1] * [1,2,3,6,7,17].reciprocal /10,
-		dur:b.parse([1,2,1,1,2,1,1]).warpTo(1.dup(5).warpTo(e.tempoMap)).q,
+		//dur:b.parse([1,2,1,1,2,1,1]).warpTo(e.tempoMap.quantizeDft).q,
+		dur: (0.5 * [1,2,1,1,2,1,1] ).warpTo(e.tempoMap
+		//quantizeDft
+		).q,
 		out: Effect.bus({ |i| i => Amplitude.kr(_) * 50 *  CrossoverDistortion.ar(i) *0.1 + i => LPF.ar(_,4000) },inputChannels:6)
 	].pp
 });
-["probing, waiting, probing. ","5 4 3 2 6 5.5".dm(\c,6)].addLine;
-Song.setTempoMap(\probing," QQ Qqq QQ Qq QQ Qq q".asBeats);
-P('click',start:\probing,music: {|p b e|
+//["probing, waiting, probing. ","5 4 3 2 6 5.5".dm(\c,6)].addLine;
+["probing, (boom boom) waiting, (boom) probing. ","5 4 -1 -2 3 2 -4 6 5.5".dm(\c,6)].addLine;
+//Song.setTempoMap(\probing," QQ Qqq QQ Qq QQ Qq q".asBeats);
+P('chords',start:\probing,music: {|p b e|
 	[
-		dur:1!8 => _.warpTo(e.tempoMap) => _.q,
-		instrument:\hihat
-	].p//p
+		freq:[ [11,13,15,1].df([\g]), [1,11,13,15].df(\f), [3,5,11,13].df(\c,6),[2,4,7,12].df(\c,6),[1,3,5,11].df(\a,6,\harmonicMinor),[-7,3,5,7].df(\a,6,\harmonicMinor)].q /2,
+		dur: b.parse([1,3,1,2,1,1]).q,
+		strum: [1,1/3]/20=>_.q(3),
+		lag: {~strum * (-1)},
+		amp:0.04,
+		out: Effect.bus({|i| SineShaper.ar(i*2,[ 0.2,0.1 ]) => DWGReverbC1C3.ar(_,mix:0.2) /3},inputChannels:4,out:(0..3))
+
+	].ppm(\default)
 });
 P('bass',start:\probing,music: {|p b e|
 	[
 		freq: " 3 -7 1 3 4 ".df(\d,[2,3,4],\dorian).q,
-		dur: "qq q qqq q qq".asBeats => _.warpTo(e.tempoMap) => _.q,
+		//dur: "qq q qqq q qq".asBeats => _.warpTo(e.tempoMap) => _.q,
+		dur: b.parse([2,1,3,1,2]).q
 
 		//out: Effect.bus({ |i| i => Amplitude.kr(_) * 50 *  CrossoverDistortion.ar(i,smooth:0.9) *0.1 + i => LPF.ar(_,4000) },inputChannels:6)
 	].pp
 });
 P.tune(\probing,);
-["And then one day my mind touched your vessel and brought you here. ","r"].addLine;
+["And then one day my mind","1 4 4 5 3 6".dm('f#')].addLine;
+P.tune('day my');
+P.tune('day my ', { |i| Pmul(\freq,0.5,i) =>Pbindf(_,\instrument,\sawSynthSustain,\out,Effect.bus( { |i| DWGReverbC1C3.ar(i,mix:0.3) => Phaser2.ar(_,rate:0.2)} /2 ))});
+["touched your vessel and brought you here. ","11 5 4 3 2 1 -7 -6.5".dm(\e)].addLine;
+Song.setTempoMap(\touched,"q e eQ Q Q q e q".asBeats);
+P.tune(\touched);
+P(\chords,start:\touched,music: { |p b e|
+	[
+		freq:[ [1,3,5].df(\a),[1,3,5].df(\e) ].q,
+		dur: "qq qq".asBeats.warpTo(e.tempoMap).q,
+		instrument:\visual_pad,
+		out:2,
+		amp:0.2
+	].pp
+});
+P(\powerChord,start:\touched,music: { |p b e|
+	[
+		freq:[ -1, -5, 1, -5, 2, 5 ].clump(3).df(\a,3).q,
+		dur: "qq qq".asBeats.warpTo(e.tempoMap).q,
+		out:Effect.bus({ |i|  SineShaper.ar(i,0.15,5) => FreeVerb.ar(_,1,1) })
+	].pp
+});
+P(\bass,start:\touched,music: { |p b e|	
+	[
+		freq: "1 3 5 7  3 2.5 2".df(\a,3).q,
+		dur: "q q q q q e q".asBeats.warpTo(e.tempoMap).q
+	].pp
+});
 ["/*MULHALL:*/ So you could steal our bodies from us? ",[6,7,11,12,7,13.5,11,7,5].dm('c',scale:\minor)].addLine;
+P.tune('could steal');
 [" To steal? To take them from you? No, no, my children, you misunderstand.","r"].addLine; /*KIRK:*/
 ["We mean only that you should lend us your bodies for a short time. ","r"].addLine;
-[" And destroy them, just as you're burning that one up now.","r"].addLine;/*MCCOY:*/
-[ "Heartbeat's two hundred and sixty two, Spock.","r" ].addLine;
+//[" And destroy them, just as you're burning that one up now.","r"].addLine;/*MCCOY:*/
+//[ "Heartbeat's two hundred and sixty two, Spock.","r" ].addLine;
 ["Entire metabolic rate correspondingly high. ","r"].addLine;
 ( SynthDef(\pulsar,{
 				var pulse = Env.perc(0.05,1).kr(0,gate:\pulse.tr(0));

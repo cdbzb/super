@@ -53,7 +53,7 @@ Song {
 				Env.perc(0.01,1,0.1)
 				,gate:t_trigger + KeyState.kr(38)-0.1
 			));
-				Out.ar(1,sig * amp);
+				Out.ar(1,sig * amp * 0.1);
 			});
 		};
 	stepper.(seq).add;

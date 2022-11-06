@@ -24,12 +24,13 @@ o = [
 	"pleased you survived with me.",  Pseq.prNew,  Array.prNew(1),  "(boom) and search the heavens with my mind, ",  
 	Pseq.prNew,  List.prNew,  Array.prNew(9),  " and search the heavens with my mind, ",  
 	Pseq.prNew,  List.prNew,  Array.prNew(8),  "Two others still survive. Henoch (boom) and Thalassa.",  
-	Pseq.prNew,  List.prNew,  Array.prNew(13),  "/*KIRK:*/ (boom) To build. To build humanoid robots. We ",  
+	Pseq.prNew,  List.prNew,  Array.prNew(13),  "probing, waiting, probing. ",  
+	Pseq.prNew,  List.prNew,  Array.prNew(6),  "/*KIRK:*/ (boom) To build. To build humanoid robots. We ",  
 	Pseq.prNew,  List.prNew,  Array.prNew(11)
 ];
 p = [
 	// Dictionary
-	0, [ array: o[1],  size: 28 ],  
+	0, [ array: o[1],  size: 29 ],  
 	// Array
 	1, [ nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -150,9 +151,9 @@ p = [
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[99],  o[100],  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		o[99],  o[100],  nil,  nil,  
+		o[103],  o[104],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -369,7 +370,15 @@ p = [
 	// List
 	101, [ array: o[102] ],  
 	// Array
-	102, [ 0.438,  0.444,  0.716,  0.4,  
+	102, [ 1.051,  1.785,  1.054,  1.343,  
+		1.099,  1.117 ],  
+	// Pseq
+	104, [ list: o[105],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	105, [ array: o[106] ],  
+	// Array
+	106, [ 0.438,  0.444,  0.716,  0.4,  
 		0.424,  0.504,  0.462,  0.478,  
 		0.516,  0.632,  0.414 ]
 ];

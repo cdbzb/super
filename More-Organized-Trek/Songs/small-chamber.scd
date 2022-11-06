@@ -409,15 +409,43 @@ P(\baseline2,start:'I`m',syl:1,music:[
 
 ["(boom) and search the heavens with my mind, ",[\r,5,5,5,5,5,5,5,5].dm(\b)].addLine;/*KIRK:*/
 
+
 P.tune(\search);
-P('bass',start:\search,music: {|p b e|
+P('crash',start:\search,music: {|p b e|
+	(instrument:\cymbalsDS, amp:0.01).play
+});
+P('chords',start:\search,music: {|p b e|
 	[
-		freq:[5,4,1].dupEach(3).df(\e,3).q,
-		dur:b.parse([1,2,1,1,2,1,1]).q,
-		out: Effect.bus( CrossoverDistortion.ar(_) *0.1 )
+		freq:[ \r, [1,3].df(\b),[1,3].df(\a),[3,11].df(\e) ].q,
+		dur: b.parse([1,3,4,1]).q,
+
 	].pp
 });
-["probing, waiting, probing. ","r"].addLine;
+P('bass',start:\search,music: {|p b e|
+	[
+		freq:[5,4,1].dupEach(3).df(\e,[ 2 ]).q * [1,2, 3,6,7,14] => _.poll,
+		amp:[1,1] * [1,2,3,6,7,17].reciprocal /10,
+		dur:b.parse([1,2,1,1,2,1,1]).warpTo(1.dup(5).warpTo(e.tempoMap)).q,
+		out: Effect.bus({ |i| i => Amplitude.kr(_) * 50 *  CrossoverDistortion.ar(i) *0.1 + i => LPF.ar(_,4000) },inputChannels:6)
+	].pp
+});
+["probing, waiting, probing. ","5 4 3 2 6 5.5".dm(\c,6)].addLine;
+Song.setTempoMap(\probing," QQ Qqq QQ Qq QQ Qq q".asBeats);
+P('click',start:\probing,music: {|p b e|
+	[
+		dur:1!8 => _.warpTo(e.tempoMap) => _.q,
+		instrument:\hihat
+	].p//p
+});
+P('bass',start:\probing,music: {|p b e|
+	[
+		freq: " 3 -7 1 3 4 ".df(\d,[2,3,4],\dorian).q,
+		dur: "qq q qqq q qq".asBeats => _.warpTo(e.tempoMap) => _.q,
+
+		//out: Effect.bus({ |i| i => Amplitude.kr(_) * 50 *  CrossoverDistortion.ar(i,smooth:0.9) *0.1 + i => LPF.ar(_,4000) },inputChannels:6)
+	].pp
+});
+P.tune(\probing,);
 ["And then one day my mind touched your vessel and brought you here. ","r"].addLine;
 ["/*MULHALL:*/ So you could steal our bodies from us? ",[6,7,11,12,7,13.5,11,7,5].dm('c',scale:\minor)].addLine;
 [" To steal? To take them from you? No, no, my children, you misunderstand.","r"].addLine; /*KIRK:*/

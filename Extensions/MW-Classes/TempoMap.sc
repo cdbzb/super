@@ -74,8 +74,9 @@ TempoMap {
 		  ^this.quantizeRangeInPlace( amount, start, end )
 	  }
   }
-  quantizeDft{ |amt = 0.78| //returns array of durs
+  quantizeDft{ |amt = 0.78| 
 	  //var beats = 0.25!64 warpTo: this;
+	  var real;
 	  var size = this.quarters.size;
 	  //var size = beats.size;
 	  var imag = Signal.newClear(size);
@@ -84,7 +85,9 @@ TempoMap {
 	  var filtered = complex.real * Signal.rectWindow(size,mask).postln;
 	  var filtered2 = complex.imag * Signal.hammingWindow(size,mask).postln; //why ?
 	  complex = Complex(filtered,filtered2);
-	  ^complex.real.idft(complex.imag).real
+	  real = complex.real.idft(complex.imag).real; //quarters
+	  ^TempoMap(this.beats,this.beats.warpTo(real))
+
   }
 
   quantizeRangeInPlace { |amount start end|
@@ -115,6 +118,9 @@ TempoMap {
 		result.timesInDurs = [ 0 ] ++ result.durs ++ result.durs.last => _.integrate;
 
 		^result;
+  }
+  bpm {
+	 ^ durs.sum / beats.sum => _.reciprocal * 60
   }
   goodBeats {|amount ...args|
 	  args = [0] ++ args => _.flat => _.postln;

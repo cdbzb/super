@@ -622,14 +622,14 @@ P(\tremReadings,start:'same reading',music:
 //Song.durs[ 'Doctor?' ].list
 /*MCCOY:*/[" Are you aware of what's happening to his body? ",[7,11,5,13,12,11,7,11,5, 7,11,14,13].dm('f',scale:\mixolydian),[ 0.295, 0.347, 0.315, 0.566, 0.3, 0.322, 0.291, 0.313, 0.6065, 0.278, 0.361, 0.62, 0.633 ]].addLine; 
 
-//MUTEDP(\tremAware,start:'aware',music:
-//MUTED(instrument:\stringyy,
-//MUTEDfreq:[1,11,1,11].df('d',octave:3),
-//MUTEDwidth:[6,20,5,100],
-//MUTEDout:(0..3).rotate,
-//MUTEDattack:0
-//MUTED)
-//MUTED);
+P(\tremAware,start:'aware',music:
+(instrument:\stringyy,
+freq:[1,11,1,11].df('d',octave:3),
+width:[6,20,5,100],
+out:(0..3).rotate,
+attack:0
+)
+);
 //	Song.durs[14]=[ 0.295, 0.347, 0.315, 0.566, 0.3, 0.322, 0.291, 0.313, 1.213/2, 0.278, 0.361, 0.62, 0.633, /*3.236*/ ].q;
 P(\tune14,start:\aware,music:Song.currentSong.pbind[\happening]
 );
@@ -923,7 +923,7 @@ P(\sparkBassNote,start:'you --',music:
 		}
 	);
 
-	["We /*must have*/ need Captain Kirk and you so that we may live again.",[5,6,7,7,11].dm('b-',octave: 4,scale:\minor)
+["We /*must have*/ need Captain Kirk and you so that we may live again.",[5,6,7,7,11].dm('b-',octave: 4,scale:\minor)
 	++[7,13,12,11,5.5,7,5,4,4].dm('a',octave: 4,scale:\mixolydian)
 ].addLine; 
 

@@ -18,60 +18,45 @@ s.waitForBoot{
 	//This Formula (REAPER?) 
 	[" /*[Pharmacy] SPOCK:*/ Now.  ","r"].addLine;
 	["(boom) this formula -- -- will reduce the ", [11,13,13,12,11,12,11, 7,11, 12, 13].dm('d',octave:4 )].addLine;
+	Song.formulaQuantAmount = 0.78;
 	Song.quarters['this formula']= Song.parseBeats('this formula', [1,1,1/2,1/4,11/4,1/4,1/4,1/2,1/4,3/4,1/2]);
 	Song.setTempoMap('this formula', [1,1,1/2,1/4,11/4,1/4,1/4,1/2,1/4,3/4,1/2]);
-	//		~clock=TempoClock.new;
-	//P.tune('this formula');
 	P.tune( 'formula --',Pset(\dur, Song.tempoMap[ 'this for' ] .beats.warpTo(Song.tempoMap[ 'this for' ].quantizeDft).q,_));
 	P(\drumz,'this formula',music:
 		{|p b e|
-			var map = e.tempoMap.quantizeDft(0.78).postln;
+			//move this out to apply to whole section??
+			var map = e.tempoMap.quantizeDft(p.formulaQuantAmount).postln;
 			[
-				//"x.x.x.x.".asDrumPat(2,2,).list 
 				"q q q q".asBeats
 				.dup.flat
 				.warpTo(map)
 				.q
-				=> [dur:_,
-					//instrument:\snare
-					instrument:\sn_808
-				]=>_ .p
+				=> [dur:_, instrument:\sn_808 ]=>_ .p
 				,
-				//"x.x..x.x".asDrumPat(2,2) 
 				"q qe ee e".asBeats
 				.dup.flat
 				.warpTo(map)
 				.q
-				=> [dur:_,
-					//instrument:\bd_808,
-					//lag:-0.04,
-					instrument:\kick2,
-				] =>_ .p
+				=> [dur:_, instrument:\kick2, ] =>_ .p
 			] => Ppar(_)
 			=> _.play
-			//=>_.play(Song.quarters['this formula'].quantizeWindow.asTempoClock)
 		}
 	);
-	P(\bassFormula,'this formula',music:
-		{|p b e|
-			[
-				//			out: Effect.new(
-				//				{|i| i +
-				//					TwoTube.ar(i,0.5,0.8,9000,12100,mul:0.4)
-				//				}
-				//			).bus.index,
+	Song.formulaBass = [
+
 				instrument:\sawSynth,
-				freq:
-				[1,-7,-6,-5].collect{|i x| i.dup([2,3,2,2][x])}.flat
-			.df('d',tuning:\sept1,octave:[3,4]).q
-				,
+				amp: 0.08
+	];
+	P(\bass,'this formula',music: {|p b e|
+			[ 
+				freq: [1,-7,-6,-5].collect{|i x| i.dup([2,3,2,2][x])}.flat
+				.df('d',tuning:\sept1,octave:[3,4]).q ,
 				dur: [3,1, 1,2,1, 3,1, 3,1]/2=>_.warpTo(e.tempoMap.quantizeDft) =>_.q,
-			].pp
-			//=>_.play(TempoClock.newFromQuarters(Song.quarters[e.start].quantizeWindow));
+			] ++ Song.formulaBass => _.pp
 		});
 
-( Song.resources.hatPattern={ | map | 
-		(1/4).dup(64)
+( Song.hatPattern={ | map num=64 | 
+		(1/4).dup(num)
 		.warpTo(map)
 		.q
 		=> [
@@ -84,20 +69,20 @@ s.waitForBoot{
 );
 	P(\highHat,start:'this formula',music:{|p b e|
 		p.hatPattern.(
-			e.tempoMap.quantizeDft(0.78)
+			e.tempoMap.quantizeDft(p.formulaQuantAmount)
 		)
 		.play
 		//.patternpairs[1].list.postln
 		//=>_.play( Song.quarters[e.start].quantizeWindow.asTempoClock)
 	});
-	["(boom )heart action and the bodily ",[6, 14,13,11, 7,11,12,13,11,].dm('d',octave:4 )].addLine;
+	["(boom )heart action and the bodily " , [6, 14,13,11, 7,11,12,13,11].dm('d',octave:4 )].addLine;
 	Song.setTempoMap('and the bodily', [1,7/4,2/4,7/4, 1/2,1/2, 2/3,2/3,2/3 ]);
 	//P.tune('and the bodily');
 
 	P.tune( 'the bodily',Pset(\dur, Song.tempoMap[ 'the bodily' ] .beats.warpTo(Song.tempoMap[ 'the bodily' ].quantizeDft).q,_));
 	P(\highHat,start:'and the bodil',music:{|p b e|
 		p.hatPattern.(
-			e.tempoMap.quantizeDft(0.78)
+			e.tempoMap.quantizeDft(p.formulaQuantAmount)
 		)
 		.play
 		//.patternpairs[1].list.postln
@@ -105,7 +90,7 @@ s.waitForBoot{
 	});
 	P(\drumz,'and the bodily',music:
 		{|p b e|
-			var map = e.tempoMap.quantizeDft(0.78).postln;
+			var map = e.tempoMap.quantizeDft(p.formulaQuantAmount).postln;
 			[
 				//"x.x.x.x.".asDrumPat(2,2,).list 
 				"q q q q".asBeats
@@ -133,23 +118,18 @@ s.waitForBoot{
 		}
 	);
 	Song.quarters['bodily']=Song.parseBeats('bodily', [1,7/4,2/4,7/4, 1/2,1/2, 2/3,2/3,2/3 ]);
-	P(\bassBodily,'bodily',music:
-		{|p b e|
+	P(\bass,'bodily',music: {|p b e|
 			[
-				instrument:\sawSynth,
 				freq: [-4,-5,-6,-7,1,1,4,4,3,3].df('d',tuning:\sept1,octave:[3,4]).q,
-				dur: 
-				0.5!4 ++ ( "ex x".asBeats *2 !3 ).flatten=>_.q
-				,
-			].p
-			=>_.play(TempoClock.newFromQuarters(Song.quarters['bodily'].quantizeWindow),
-		);
+				dur: 0.5!4 ++ ( "ex x".asBeats *2 !3 ).flatten
+				=> _.warpTo(e.tempoMap.quantizeDft(p.formulaQuantAmount))
+				=>_.q
+			] ++ p.formulaBass => _.pp
 	});
-
 ["functions to normal. ",[7,6, 12,11,7 ].dm('d',octave:4 )].addLine;
 	P(\drumz,'functions to normal',music:
 		{|p b e|
-			var map = e.tempoMap.quantizeDft(0.78).postln;
+			var map = e.tempoMap.quantizeDft(p.formulaQuantAmount).postln;
 			[
 				//"x.x.x.x.".asDrumPat(2,2,).list 
 				"q q q q".asBeats
@@ -178,23 +158,23 @@ s.waitForBoot{
 	Song.quarters['bodily']=Song.parseBeats('bodily', [1,7/4,2/4,7/4, 1/2,1/2, 2/3,2/3,2/3 ]);
 Song.quarters['to normal']= Song.parseBeats('to normal',[2/3, 2/3, 2/3,  1,1]);
 Song.setTempoMap('to normal', [2/3, 2/3, 2/3,  1,1]);
-P(\bassNormal,'to normal',music:
-	{|p b e|
+P(\bass,'to normal',music: {|p b e|
 		[
-			instrument:\sawSynth,
 			freq: [6,6,5,5].df('d',tuning:\sept1,octave:[3,4]-1).q,
-			dur: "ex x e e".asBeats.warpTo(e.tempoMap.quantizeDft).q*2,
-		].pp
-		//=>_.play(TempoClock.newFromQuarters(Song.quarters['to normal'].quantizeWindow),
-	//);
+			dur: "ex x e e".asBeats.warpTo(e.tempoMap.quantizeDft(p.formulaQuantAmount)).q*2,
+		] ++ p.formulaBass => _.pp
 });
 P(\highHatNormal,start:'to normal',music:{|p b e|
-	p.hatPattern.(e.tempoMap.quantizeDft)// => Pfin(8,_)
+	p.hatPattern.(e.tempoMap.quantizeDft(p.formulaQuantAmount), 16)// => Pfin(8,_)
 	=>_.play
 	//=>_.play(Song.quarters[e.start].quantize.asTempoClock);
 });
-P.tune('to normal');
+//P.tune('to normal',);
+	P.tune( 'to normal',Pset(\dur, Song.tempoMap[ 'to normal' ] .beats.warpTo(Song.tempoMap[ 'to normal' ].quantizeDft).q,_));
 ["(boom) While the bodies are occupied, ",[-15,-5,-6,-7,1,2,4,3,1].dm('c')].addLine;
+P('cymbal',start:\While,music: {|p b e|
+	(instrument:\cymbalsDS,amp:0.01).play
+});
 P.tune('occupied',{|i| i.drop(1)},syl:0);
 Song.quarters[\occupied]=Song.parseBeats('occupied',(1/3)!6 ++ ( (2/3)!3 ));
 //Song.quarters[\occupied]
@@ -213,6 +193,20 @@ P(\chordsOccupied,start:\occupied,music:{|p b e|
 );
 ["you will administer one injection of  ",[3,4,1,3,2,1, -7,1,2,-7,-5].dm('a',scale:\harmonicMinor)].addLine;
 P.tune('administer one',Pmul(\freq,0.5,_));
+Song.setTempoMap('administer one',"E E E E E E EE E E E E");
+P(\chords,start:\administer,music:{|p b e|
+	[
+		freq:[[1,3,5],[-7,2,5]].df('a',4,\harmonicMinor ).stutter(2).q*[1,1.01],
+		//		out:1,
+		pan:0,
+		out:Effect({|i| MoogLadder.ar(i,1200,1) => EchoNone.ar(_, 0.2,  delaytime: 0.1,  decaytime: 2.0)},out:1).bus.index,
+		amp:0.2,
+		//		out:Effect(FreeVerb.ar(_,0.51,0.5),out:1).bus.index,
+		//dur:"e e e e".asBeats.q*2,
+		dur:"q q qq ".asBeats.warpTo(e.tempoMap).q
+	].pp//.p.trace.play(Song.quarters[e.start].asTempoClock)
+}
+);
 ["ten cc's each hour.",[-7,1,-7,1,-6].dm('g',octave:4 )].addLine;
 P.tune('each hour');
 Song.quarters['each hour']= Song.parse('each hour',[2,2,1]);
@@ -644,15 +638,17 @@ P(\killBaseNote,start:'kill',music:{|p b e|
 );
 ["so that Sargon will die with him.",[-7,1,3,2.5,-6,-7,2,1].dm('b-')].addLine;
 P.tune('with him');
-//MUTEDP(\sargonLowerBase,start:'with him',music:{|p b e|
-//MUTED[
-//MUTEDfreq: [\r,5.5,6,7,11].df('b-',octave:[ 1,2 ] ).q,
-//MUTEDamp:0.2,
-//MUTEDdur:b.parse([2,2,2,1,1]).q,
-//MUTED].pp
-//MUTED
-//MUTED}
-//MUTED);
+P(\sargonLowerBase,start:'with him',music:{|p b e|
+[
+freq: [\r,5.5,6,7,11].df('b-',octave:[ 1,2 ] ).q,
+amp:0.2,
+dur:b.parse([2,2,2,1,1]).q,
+		legato:1.1,
+		[ \instrument,\amp,\mix,\release ]:[ \stringyy,0.15 ,0,4 ],
+].pp
+
+}
+);
 // This item is the version from reaper which is probably better 
 P(\sargonBaseline,start:'with him',music:{|p b e|
 	[
@@ -661,7 +657,7 @@ P(\sargonBaseline,start:'with him',music:{|p b e|
 		[ \instrument,\amp,\mix,\release ]:[ \stringyy,0.15 ,0,4 ],
 
 		dur:b.parse([2,2,2,2]).q,
-	].pp
+	].p//p
 }
 );
 P(\sargonNote,start:'with him',syl:5,music:{|p b e|

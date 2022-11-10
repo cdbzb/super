@@ -928,20 +928,29 @@ P {
     *new {
         |key start syl lag=0 music song resources rpp|
         var part;
-        start.isNil.if{
-            start=((Song.song.size-2)/2).asInteger;
-        }{
-            (start.class==Symbol).if{
-                start = Song.section(start);
-            };
-        };
-        start.postln;
+	start = this.calcStart(start);
+	( start.class==Function ).if{music = start; start = nil};
+                start.postln;
         key = (key ++ start ++ \_).asSymbol;
 	resources = ( resources ++ (rpp: rpp) ? resources );
         part = Part(start,syl,lag,music,resources);
         Message(Song.currentSong, key).value(part); //set Song.resources.key to part
         key.postln;
         ^part
+    }
+    *calcStart { |start|
+	    ^start.isNil.if{
+		    Song.partCursor.notNil.if{
+			    Song.partCursor
+		    } {
+			    ((Song.song.size-2)/2).asInteger
+		    };
+	    }{
+		    (start.class==Symbol).if{
+			    Song.section(start);
+		    }{start}
+	    };
+
     }
     *still {   // renders the still when compiled
               // and stores a function to preview it in resources.still (e.still)
@@ -974,12 +983,15 @@ P {
         |key function range lag=0 syl| 
         // range is [start,end] or just [start]
         // range sets syllable automatically
-        P( 
+	var start;
+	( key.class==Function ).if{function=key; key=nil};
+	start = key ? this.calcStart(key);
+        ^P( 
             key: (key++"TUNE").asSymbol, 
-            start: key, 
+            start:start, 
             music: {  
                 var drop, length;
-                var pbind = Song.currentSong.pbind[key] ;
+                var pbind = Song.currentSong.pbind[start] ;
 
                 range.notNil.if{
                     drop = range[0];
@@ -996,7 +1008,7 @@ P {
             }, 
             syl:syl, 
             lag:lag 
-        ).value
+        )//.value
     }
     *click { | key |
 	    P(

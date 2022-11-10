@@ -46,9 +46,11 @@
 		.df(*args)
         }
         dm { | ...args |
-          ^this.split(Char.space)
+          ^this.replace($, , Char.space)
+	  .split(Char.space)
 		.reject({|i| i.size == 0})
 		.collect(_.asFloat)
+		.reject({|i| i == 0.0})
 		.dm(*args)
         }
 }

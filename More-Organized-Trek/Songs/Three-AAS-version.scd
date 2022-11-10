@@ -50,7 +50,7 @@ Song.guitarFx={ |b|
 		=> Phaser2.ar(_,rate:0.1).distort(0.95) *0.3 
 		* Env.linen(0,b.sum,3).kr(2,gate:1)
 	},inputChannels:2 );
-	e.synth.run(false);
+	//e.synth.run(false);
 	e
 };
 
@@ -99,7 +99,6 @@ P(\bass0,start:0,music: {
 //Song.gfx1.synth.run(false);
 P(\guit1,start:1,music: { |p b e|
 	var out = Song.guitarFx.(Song.durs[1].list.sum+5);
-	out.synth.run(true);
 	Song.guitar.setPlayMode(\strum);
 	[
 		degree: [5,[4,6,8],[3,5,8],[2,4],[2.1,4.1,6,8],[3,6,7],[3,5,7]].q - 1,

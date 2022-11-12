@@ -524,17 +524,26 @@ P(\bass,start:\touched,music: { |p b e|
 P.tune(_ <> [
 	instrument:\pinn
 ].p);
-[" To steal? To take them from you?","r"].addLine;/*KIRK:*/
-["No, no, my children,","r"].addLine;
-[" you misunderstand.","3 2 3 4 3".dm(\a,4)].addLine; 
+[" To steal? To take them from you?","1,7,3,11,8,7,6".dm(\e,\diminished)].addLine;/*KIRK:*/
 P.tune();
-["We mean only that you should","1 2 1 2 1 2 3".dm(\d)].addLine;
+["No, no, my children,","13 13 12 12 11 ".dm(\d)].addLine;
 P.tune();
-[" (boom) lend us your bodies for a short time. ","-1 3 2 1 -7 -6 -5.5 -6 -5.5 -3".dm(\g)].addLine;
+[" you misunderstand.","3 2 3 4 3".dm(\a)].addLine; 
+P.tune();
+["We mean only that you should","1 2 1 2 1 2 3".dm(\d,6)].addLine;
+P.tune();
+[" (boom) lend us your bodies for a short time. ","-11 3 2 1 -7 -6 -5.5 -6 -5.5 -3".dm(\g,6)].addLine;
 P.tune();
 [" And destroy them","-7,-5,3,-7".dm(\g,\mixolydian)].addLine;
 P.tune();
 [" just as you're burning that one up now.","1 -7 -6 -7 1 3 4 1 5 ".dm(\g,\mixolydian)].addLine;/*MCCOY:*/
+Song.setTempoMap(\burning,"e e e x e e x e ee");
+P(\click, music: { |p b e|
+[
+	dur:"e q q q q".asBeats.warpTo(e.tempoMap).q,
+	instrument: \bd_808
+].pp
+});
 P.tune();
 //[ "Heartbeat's two hundred and sixty two, Spock.","r" ].addLine;
 //["Entire metabolic rate correspondingly high. ","r"].addLine;
@@ -556,8 +565,7 @@ P(\IWillReturnVocal,music: { |p b e|
 		rate: [1,1.01],
 		//amp: 0.1,
 		amp:0,
-		out: Effect(
-			{|i|
+		out: Effect.bus( {|i|
 				[
 					FreeVerb.ar(i,1,1)
 					=> HPF.ar(_,300)
@@ -570,24 +578,23 @@ P(\IWillReturnVocal,music: { |p b e|
 			}
 			//out:1,
 			//,inputChannels:2
-		).bus.index
+		)
 	)
 });
 P(\figure,start:\limit,syl:0,music:
-		{|p b e|
-				[
-						legato:2.2,
-						freq:[ 3,5,11, 1,4,6,11, 2,5,7,11 ].df('c',octave: 6).q
-						++ [1,3,5,11, 2,4,6,11, 2,5,7,12].df('f',octave: 6).q
-						,
-						amp:0.5 * 0.1,
-						dur:
-						b.drop(1).parse([1,1,1, 1/3,1/3,1/3,1, 1,1,1,0.5, 0.5,1,1,1, 1/3,1/3,1/3,1, 1,1,1,1,]).q
-						,
-						effect:{ Effect({|i| Phaser1.ar(i,rate:3,fb:0.6) }).bus.index },
-						out:Pkey(\effect),
-				].pp
-		}
+	{|p b e|
+		[
+			legato:2.2,
+			freq:[ 3,5,11, 1,4,6,11, 2,5,7,11 ].df('c',octave: 6).q
+			++ [1,3,5,11, 2,4,6,11, 2,5,7,12].df('f',octave: 6).q
+			,
+			amp:0.5 * 0.1,
+			dur:
+			b.drop(1).parse([1,1,1, 1/3,1/3,1/3,1, 1,1,1,0.5, 0.5,1,1,1, 1/3,1/3,1/3,1, 1,1,1,1,]).q
+			,
+			out: Effect.bus({|i| Phaser1.ar(i,rate:3,fb:0.6) }),
+		].pp
+	}
 );
 P(\double,start:\limit,music:{
 		Item(\eyeWillReturnDouble).play(
@@ -602,22 +609,24 @@ P(\double,start:\limit,music:{
 		)
 }
 );
-P(\bass,start:\limit,syl:1,music:
-	{|p b e|
-		[
-			freq:
-			[\r,5,11,11,12,12,13,13,12,11,7,11,7,6,4].df('f',octave: 2) .q ,
-			dur: Song.parse(\limit,[
-				1,
-				1,1,
-				1,3,
-				0.5, [0.5,1,1],
-				1,1,1,1,1,1,1,1
-			],2).q,
-		].pp
+P(\bass,start:\limit,music: {|p b e|
+	[
+		freq:
+		//[\r,5,11,11,12,12,13,13,12,11,7,11,7,6,4].df('f',octave: 2) .q ,
+		[5,5,11,11,12,12,13,13,12,11,7,11,7,6,4].df('f',octave: 2) .q ,
+		dur:b.parse([
+			3,
+			1,1,
+			1,3,
+			0.5, [0.5,1,1],
+			1,1,1,1,1,1,1,1
+		]).q,
+		//amp:1
+	].pp
 	}
 );
-P(\tune,start:\limit,music:Song.currentSong.pbind[\limit]);
+//P(\tune,start:\limit,music:Song.currentSong.pbind[\limit]);
+P.tune(_ <> [amp:p{\r.yield;loop{0.1.yield}}].p);
 ["/*SPOCK:*/ Our bodies, Sargon, for what purpose? ", [5,7,5,4,3,2,1,5,3].dm('d',scale:\diminished)].addLine;
 P(\tune,start:\purpose,music:Song.currentSong.pbind[\purpose]=>Pbindf(_,\instrument,\stringyy,\amp,0.3)
 );
@@ -701,8 +710,7 @@ P(\baselineC,start:\need,syl:5,music:
 		]) 
 	}
 );
-(
-SynthDef(\pulseBase,{
+( SynthDef(\pulseBase,{
 	var freq=\freq.kr(300);
 	Pulse.ar([freq/2, freq ],\width.kr(0.3),\amp.kr(0.1))
 	* Env.adsr(0.01,0.2,\sustain.kr(1),\release.kr(2)).kr(2,gate:\gate.kr(1))
@@ -753,8 +761,7 @@ P(\chords,start:\need,music: {|p b e|
 		].pp
 	}
 );
-(
-SynthDef(\whaFingers, {
+( SynthDef(\whaFingers, {
 	Formants.ar(
 		\freq.kr(300,\freqLag.kr(1)),
 		Vowel(\a).blend(Vowel(\u), Line.kr(0,1,\length.kr(3),doneAction:0))

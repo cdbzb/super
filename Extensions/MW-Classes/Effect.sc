@@ -6,12 +6,12 @@
 			^super.new.init(function , out,inputChannels);
 		}
 		*new { |function out=0 inputChannels=1 target|
-			^super.new.init2(function , out,inputChannels, target);
+			^super.new.init(function , out,inputChannels, target);
 		}
 
 		*newSidechain {|function out=0 inputChannels=1| ^super.new.initSidechain(function,out,inputChannels) }
 
-		*new2 {|function out=0 inputChannels=1| ^super.new.init2(function,out,inputChannels)}
+		*new2 {|function out=0 inputChannels=1| ^super.new.init(function,out,inputChannels)}
 		*lfo {|function inputChannels=1 dur| ^super.new.initLfo(function,inputChannels,dur)}
 		*bus {|function out=0 inputChannels=1 target| ^Effect.new(function , out,inputChannels, target).bus.index}
 		*kbus {|function inputChannels=1 dur| ^super.new.initLfo(function,inputChannels,dur).bus.index}
@@ -46,12 +46,17 @@
 event.yield
 		}
 
-		init2 { |function out inputChannels=1 target |
+		init { |function out inputChannels=1 target |
 			var desc=SynthDef(\temp,{In.ar(1,inputChannels)=>function=>Out.ar(0,_)});
 			var numChannels=desc.asSynthDesc.outputData[0].at(\numChannels);
 			target = target ? Server.default;
 			bus=Bus.audio(numChannels:numChannels);
-			synth={|gate| In.ar(bus.index,numChannels)=>function=>Out.ar(out,_);}.play(addAction:\addToTail, target:target);
+			synth={|gate| 
+				In.ar(bus.index,numChannels)
+				=> function
+				=>.first DetectSilence.ar(_,doneAction:2)
+				=> Out.ar(out,_)
+			}.play(addAction:\addToTail, target:target);
 			NodeWatcher.register(synth, assumePlaying: true);
 			fork{
 				while ( {synth.isPlaying},{0.2.wait} );
@@ -61,16 +66,6 @@ event.yield
 			^this;
 		}
 
-		//deprecated
-		init { |function out inputChannels=1 |
-			var desc=SynthDef(\temp,{In.ar(1,inputChannels)=>function=>Out.ar(0,_)});
-			var numChannels=desc.asSynthDesc.outputData[0].at(\numChannels);
-			bus=Bus.audio(numChannels:numChannels);
-			node=NodeProxy.audio(numChannels:numChannels).play(out);
-			node.reshaping_(\elastic);
-			node.source= {In.ar(bus,numChannels)=>function};
-			^this;
-		}
 
 		initSidechain { |function out inputChannels=1 |
 			var desc=SynthDef(\temp,{In.ar(1,inputChannels)=>function=>Out.ar(0,_)});

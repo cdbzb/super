@@ -599,6 +599,18 @@ Song {
 	durTillEnd {
 		^this.secDur[cursor..(sections-1)].sum
 	}
+	durFromTo { | from to|
+		from = Song.section(from);
+		to = Song.section(to);
+		^(
+			(from .. to)
+			.inject(0,{|x y| x + Song.secDur[y]})
+			- Song.secDur[to]
+		)
+	}
+	rppOffset { | e |
+		^( this.durFromTo(e.rpp.section,e.start).abs + 1 * e.rpp.buffer.().sampleRate )
+	}
 	getSection {|a| 
 		a.isNil.if{a=sections};
 		(a.class==String).if{a=a.asSymbol};
@@ -608,6 +620,7 @@ Song {
 			^a
 		})
 	}
+
 	getStartString { |x|
 		var a=this.lyrics.collect( { |i| i.asString.split($ ).collect(_.asSymbol)} );
 		var q={|array index| array.keep(index)++array.copyToEnd(index + 1)};
@@ -809,6 +822,12 @@ Song {
 			(type:\vst_midi, vst:i.controller, midicmd:\allNotesOff).play
 		}
 	}
+	span { | e |
+
+		//stripping out section number should be fixed!!
+		this.at(e.start+1).select({|i| i.name.contains(e.name.dropLast.dropLast.asString)}).postln.unbubble.span_(true);
+	}
+
 }
 
 Part { 
@@ -1117,4 +1136,5 @@ SectionAccessor {
 		^Song.songs.at(this).current
 	}
 }
+
 

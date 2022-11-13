@@ -1,6 +1,6 @@
 VocalRPP {
+	var <>key, <>name, <>range=1, <>tail, <>song;
 	classvar <>current, <all;
-	var <>key, <>name, <>range=1, <>tail=5, <>song;
 	var <section,<>mediaFolder,<>wav,<>prox,<>subproject;
 	var <>reaperProjectPath,<>rpp,<>buffer;
 	*initClass{
@@ -12,10 +12,9 @@ VocalRPP {
 		}
 	}
 
-	*new { | ...args| //key name range tail song
-		var key = args[0], name = args[1];
+	*new { | key name range tail=4 song| //key name range tail song
 		var res = all.at(key,name);
-		res.isNil.if{ res = super.newCopyArgs(*args).init.prAdd(key, name)}{res.refresh};
+		res.isNil.if{ res = super.newCopyArgs(key, name, range, tail, song).init.prAdd(key, name)}{res.refresh};
 		^res
 	}
 	prAdd { |key name| all.put(key,name, this)  }
@@ -266,17 +265,15 @@ VocalRPP {
 						part.resources.rpp == nil // this
 					};
 					//song.play(song.at(section+i));
-					parts.do(_.p)
+					parts.do(_.p);
+					parts.do(_.postln)
 				}
 			);
 			s.record(duration: range.collect{|i| Song.secDur[ section + i ]}.sum + tail);
 			(range.collect{|i| song.secDur[ i ]}.sum + tail + 0.5).wait;
 			//put name in variable
 			this.makeRPPs(
-
-				// should make this Song.preroll
-				Song.preroll.bubble ++ song.durs[section].list, //durs
-				//path to reaper dir (redundant!!)
+				Song.preroll.bubble ++ range.collect({|i| song.durs[section + i].list}).flat
 			);
 			this.storeDurs;
 			//try{ buffer = Buffer.read(Server.default,wav) };
@@ -334,7 +331,10 @@ VocalRPP {
 
 + P {
     *rpp {
-        | key start syl lag=0 music song resources tail |
-	^P(key,start,syl,lag, music,song,resources, VocalRPP(start,key,tail:tail)); // order of section and key are reversed!!
+        | key rppStart syl lag=0 music song resources tail |
+	var start = P.calcStart(start);
+	^P(key,start,syl,lag, music,song,resources, VocalRPP(rppStart ,key,tail:tail)); // order of section and key are reversed!!
     }
 }
+
+

@@ -145,26 +145,32 @@ P(\cello,music:(
 				release:8
 			).play
 		});
-		P(\chord,music:{|p b e|
-			[strum:0.06,
-				freq:[5,11,13].df('b-',octave: [3,4],scale:\minor),
+		P(\chord,music:{ |p b e|
+			b.postln;
+			[
+				strum:0.06,
+				freq:[5,11,13].df('b-',octave:[3,4],scale:\minor),
 				amp:0.02,
 				instrument:\sawSynthSustain,
-				dur:b.parse([3])
-			].pp}
+				dur:b.parse([3]).q
+			].pp
+		}
 		);
+
 		['When Sargon and I exchanged, ',[6,5,4,5,6,7,11].dm('e-',octave:4)].addLine; 
 		P.tune();
 		P(\chord,syl:5,music:{|p b e|
-			[ 
-				strum:0.06,
+			( 
+				strum:0.09,
 				instrument:\sawSynthSustain,
-				freq: [1,3,5,11].df('f#',octave: 4) ,
+				freq: [1,3,5,6].df('f#',octave: 4) ,
 				amp:0.02,
 				//dur:Song.parse(12,[3],2).q,
-				dur:b.drop(1).parse([1]) + e.bNext.parse([2]),
-				rel:3
-			].pp }
+				dur:b.drop(1).parse([1]) + e.bNext.parse([2]),// => _.q,
+				rel:3,
+				//att:1
+			).play
+		}
 		);
 		P(\bass,syl:5,music:(
 			instrument:\sawSynth,
@@ -184,22 +190,23 @@ P(\bass,syl:1,music:(
 )
 		);	
 		P(\chord,syl:1,music:{|p b e|
-			[ 
-				strum:0.06,
+			( 
+				strum:0.09,
 				instrument:\sawSynthSustain,
-				freq: [5,11].df('c',5) ,
+				freq: [5,11].df('c',4) ,
 				amp:0.02,
-				//dur:Song.parse(12,[3],2).q,
-			].p//p
+				dur:Song.parse(12,[3],2), 
+			).play
 	}	);
 	P(\chordz,syl:1, music: { |p b e|
 		[
 			[
-				freq:[[7,11].df(\c),[7,11].df('f#')].q,
+				freq:[[7,11].df(\c,4),[7,11].df('f#',4)].q,
 				out:0,
 
 			]
 			,
+			
 			[
 				freq:[[3,5].df(\c),[3,5].df('f#',4)].q,
 				out:1,
@@ -229,14 +236,34 @@ P(\bass,syl:1,music:(
 P(\bend,music:{{
 	var line=Line.kr(1.degreescps('a-'),1.degreescps('g'),Song.parse(13,[3]),[0.5,1]);
 	var saturation=Line.kr(0.3,0.8,Song.parse(13,[3]));
-	SinOscFB.ar(line,saturation,0.004)
+	SinOscFB.ar(line 
+		* [1,1.501,2.01]
+		,
+		saturation,0.004)
+		* [1,0.1,0.2]
 	* Env.linen(1,1,3).kr(2,gate:1)
 	=> EchoCubic.ar(_,1,0.3,6)
 	* 3
 }.play;
-(instrument:\stringyy,note:-2,dur:2,amp:0.15).play
+(instrument:\stringyy,note:-2,dur:2,amp:0.15,
+	//octave: [6,5]
+).play
 	} 
 );
+P(\triangle,syl:1, music: { |p b e|
+		{
+			var num = 10;
+			Klank.ar(
+				`[
+					Array.fill(num,{exprand(4000,9000)}),
+					Array.series(num,0.1,-0.02),
+					{8.0.rand}!num
+				],
+				Env.perc().kr(0,gate:1) + Impulse.ar(0) * WhiteNoise.ar(0.1)
+				/ 60
+			)
+		}.play
+});
 P(\chord, music: { |p b e|
 	[
 		freq: [\r, [3,4,6]].df(\a,4,\whole).q,
@@ -295,12 +322,12 @@ P(\bassKnow,  music:
 );
 P(\temp,music:Song.currentSong.pbind[14]=>Pbindf(_,\amp,0.3,\instrument,\stringyy));
 ['I know what he is and what he wants, ',[15,14,13,12,14,13,7,11,12.5].dm('a-')].addLine; 
-P(\cymbal,music:[
-	instrument:\cymbalsDS,
-	dur: Song.parse(15,[1,4,1]).q ,
-	amp:0.01,
-	note:[ Rest(),1,1 ].q,
-].p);
+//P(\cymbal,music:[
+//	instrument:\cymbalsDS,
+//	dur: Song.parse(15,[1,4,1]).q ,
+//	amp:0.01,
+//	note:[ Rest(),1,1 ].q,
+//].p);
 P(\snare,music:[
 	note:"..x.".asDrumPat(reps:2),
 	amp:0.05,
@@ -308,15 +335,16 @@ P(\snare,music:[
 	//		dur: Song.parse(15,1!8).q,
 	dur: Song.currentSong.durs[15].list[..7].sum/8
 ].p);
-P(\kick,music:[
-	note:"xx.x".asDrumPat(reps:2),
-	instrument:\kick,
-	//		dur: Song.parse(15,1!8).q,
-	dur: 
-	Song.currentSong.durs[15].list[..7].sum/8
-	,
-].p
-		);
+P(\kick,music:{|p b e|
+	[
+		note:"xx.x".asDrumPat(reps:2),
+		instrument:\kick,
+		//		dur: Song.parse(15,1!8).q,
+		dur: 
+		Song.currentSong.durs[e.start].list[..7].sum/8
+		,
+	].pp }
+);
 		P(\tune,music:Song.currentSong.pbind[15]=>Pbindf(_,\instrument,\stringyy,\amp,0.3)
 	);
 	P(\bass,music:[
@@ -327,7 +355,7 @@ P(\kick,music:[
 );
 P(\finalBaseNote,syl:7,music: (
 	release:4,instrument:\pluckDEnv,freq:[4.5].df('a-',octave:1),amp:0.03,
-	addAction:\addToHead,
+	//addAction:\addToHead,
 	dur: Song.currentSong.durs[15].list[8],
 	out: Effect.bus(
 		FreeVerb.ar(_,0.5,1),out:[0,1],inputChannels:2
@@ -353,7 +381,6 @@ P(\figure,music:[
 		MoogFF.ar(i,2000,2)
 		* 1.3
 		=>( CombC.ar(_,0.5,SinOsc.kr(0.3).range(0.4,0.405),decaytime:4)+Gain.ar(_,3) )
-		=>.first DetectSilence.ar(_,doneAction:2)
 	},out:2,inputChannels:2)
 ].p
 	); 

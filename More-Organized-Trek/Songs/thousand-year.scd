@@ -132,6 +132,20 @@ P(\bass,start:\lady,syl:3, music:{|p b e|
 });
 ["/*SPOCK:*/ It will have twice the strength and agility of",[2,3,1].dm(\c)++[3,1].dm(\e)++[-7,1,2].dm(\f,scale:\mixolydian)++[3,5,4,3,4,2,1].dm(\g)].addLine;
 P.tune(\twice);
+P.rpp(\test0,\agility,lag:-1, music: { |p b e|
+	{
+		p.span(e);
+
+		e.rpp.buffer.() => PlayBuf.ar(1,_,startPos:
+			p.durFromTo(\agility,\agility) => _.postln
+			 * s.sampleRate
+		)
+
+		
+	}.play
+	.dur(b.sum,1)
+
+});
 P(\bass,syl:2,start:\twice,music:{|p b e|
 	[
 		instrument:\sparkTriangle,
@@ -185,6 +199,21 @@ P(\bass,start:\engineer,music:{
 	].p.play(Song.quarters[\engineer].asTempoClock)
 });
 P.tune(\engineer);
+
+P.rpp(\test0,\agility, music: { |p b e|
+	//e.span.isNil.if{
+		{
+			e.rpp.buffer.() => PlayBuf.ar(1,_,startPos: p.rppOffset(e)
+			)
+			=> AnalogVintageDistortion.ar(_)
+			/2
+			=> PitchShift.ar(_,0.1,[1,2,3,5])
+			* [0.5,1,0.3,0.1]
+			=> EchoNone.ar(_,decaytime:4) /8
+		}.play
+	//}
+
+});
 ["last a thousand years.",[2,1,2,3,1,2, 5.5].dm(\c,octave:6)].addLine;
 Song.quarters['last a thousand']=Song.parseBeats('last a thousand',[1.5,0.5,0.5,0.5,0.5,0.5,1]);
 P.tune(\last);

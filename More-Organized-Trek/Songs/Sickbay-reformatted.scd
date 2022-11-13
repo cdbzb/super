@@ -223,7 +223,7 @@ P.tune('be- tter');
 //in Time
 ["in Time a host  -- body will become...  ",[-1,1,-7,1,2,1,-7,-6,-7,1].dm(\b,scale:\minor)].addLine; //12
 Song.quarters[ \Time ]=Song.parseBeats(\Time,[1,3,3/4,1/4,2,1,1,1.5,0.5,1]);
-P.tune(\Time);
+//P.tune(\Time);
 P(\chords,start:\Time,music:{|p b e| 
 		[
 				instrument:\sawSynthSustain,
@@ -234,6 +234,18 @@ P(\chords,start:\Time,music:{|p b e|
 			//	dur:b.drop(1).parse([3,3,3]).q
 				dur:[ 3 ,4,4,2].q,
 		].p.play(clock:p.quarters[\Time].asTempoClock);
+});
+P.rpp(\testVocal,\Time,music:{ |p b e|
+//	p.span(e);
+	e.rpp.buffer.() => {|i| {
+		PlayBuf.ar(1,i,startPos:p.rppOffset(e))
+		//=> TwoTube.ar(_,loss:0.9,d1length:101)
+		=> FreeVerb.ar(_,[1,0.9,0.8,0.7]/3,0.9)
+		
+				=> HPF.ar(_,200)
+		/4
+	}.play
+}
 });
 P(\bass,start:\Time,music:{|p b e| 
 	[
@@ -248,7 +260,7 @@ P(\bass,start:\Time,music:{|p b e|
 ["(cis d a fis) accustomed to us (fis)",[-7,1,2,3,7,12,11,7,11,3].dm(\d)].addLine;
 
 Song.quarters[\accustomed]=Song.parseBeats(\accustomed,[1,1,1,1,1,0.5,0.5,0.5,0.5]);
-P.tune(\accustomed);
+//P.tune(\accustomed);
 P(\extraNote,start:\accustomed,syl:4,music:{|p b e| 
 	(
 		freq: [-12,-5,1].df(\a),
@@ -263,13 +275,28 @@ P(\extraNote,start:\accustomed,syl:4,music:{|p b e|
 //	].p.play(clock:p.quarters[e.start] ++ p.quarters[\accustomed] =>_.asTempoClock)
 //});
 ["injections will no longer be necessary",[6,5,4,3,4,5,6,2,5,3,2,1].dm(\d)].addLine;
+
+P.rpp(\testVocal,\Time,music:{ |p b e|
+	e.span.postln.isNil.if
+	{
+		e.rpp.buffer.() => {|i| 
+			{
+				PlayBuf.ar(1,i,startPos:p.rppOffset(e))
+				=> HPF.ar(_,200)
+
+		=> FreeVerb.ar(_,[1,0.9,0.8,0.7]/3,0.9)
+		/4
+		}.play}
+	}
+});
 P(\bass,start:\injections,syl:0,music:{|p b e| 
 	[
 		instrument:\sawSynthSustain,
-		freq: [[4,12,-2],5,1].df(\d,octave:4).q,
-		amp:[0.07,0.05,0.05].q,
+		freq: [[-4,12,-2],-5,-1].df(\d,octave:[5]).q,
+		amp:[[0.07,0.03,0.02],0.05,0.05].q,
 		legato:0.8,
-		dur:b.drop(1).parse([4,3,4]).q
+		dur:b.drop(1).parse([4,3,4]).q,
+		out:(-1)+[[5,4,3],2,1].q
 	].pp;
 });
 P(\lick,start:\injections,syl:1,music:{|p b e| 
@@ -293,7 +320,7 @@ P(\lick2,start:\injections,syl:0,music:{|p b e|
 		freqLag:0.05
 	].pma(\sparkTriangle).play;
 });
-P.tune(\injections);
+//P.tune(\injections);
 ["/*KIRK:*/ That will take months, perhaps years. We haven't that choice, Thalassa. ",[1,-7,1,3, 2,1,5,2,5,4.5,5,6,11,7,6,5].dm(\c)].addLine;
 P.tune(\months);
 P(\extraNotes,start:\months,syl:2,music:{|p b e| 

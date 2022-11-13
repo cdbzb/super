@@ -390,17 +390,17 @@ Song {
 	pts {^all {:x,x<-resources,x.class==Part}}
 	part {|name, section| 
 		var key;
-		section = section ? "";
-		//section.notNil.if {section = Song.section(section).asString}{section=""};
+		//section = section ? "";
+		section = section.notNil.if {this.section(section).asString}{""};
 		key = name++section => _.postln;
 		^this.pts.select({|i| i.name contains: key })[0].unbubble
 	}
-	solo {|key| ^all{:x,x<-this.pts,x.name.asString.contains(key.asString)}}
+	partsWith {|key| ^all{:x,x<-this.pts,x.name.asString.contains(key.asString)}}
 	playOnly {|...args|
 		var strings;
 		(args.size == 0).if{ strings  = lastPlayOnly }{strings = args};
 		lastPlayOnly = strings;
-		strings.collect{|i| this.solo(i)}.reject{|i| i.isNil}.flat.do(_.p)
+		strings.collect{|i| this.partsWith(i)}.reject{|i| i.isNil}.flat.do(_.p)
 	}
 	track { 
 		|trackName| 

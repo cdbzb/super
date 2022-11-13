@@ -177,11 +177,14 @@ Synful : VSTI {
 
 PF : VSTI {
 	classvar plugin = 'Pianoteq 5.vst';  //++self.plugin
-	*new{ ^super.new(plugin).attachMIDI }
+	*new{ ^super.new(plugin).attachMIDI.init }
 	attachMIDI {
 		MIDIClient.init;
 		MIDIIn.connectAll;
 		MIDIFunc.noteOn({ |vel num| var a=controller.midi;a.noteOn(0,num,vel)},srcID:602392681 );
-		MIDIFunc.noteOff({ |vel num| var a=controller.midi;a.noteOff(0,num,vel)},srcID:602392681)
+		MIDIFunc.noteOff({ |vel num| var a=controller.midi;a.noteOff(0,num,vel)},srcID:602392681);
+
+		MIDIFunc.noteOff({ |vel num| var a=controller.midi;a.noteOff(0,num,vel)},srcID: -682393637).permanent_(true);
+		MIDIFunc.noteOn({ |vel num| var a=controller.midi;a.noteOn(0,num,vel)},srcID:-682393637).permanent_(true);
 	}
 }

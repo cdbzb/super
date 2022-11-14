@@ -75,7 +75,7 @@ Stills {
 	}
 
 	writeImage { |seconds |
-		File(stillsLocation++seconds.asString).exists.not.if {
+		File.exists(stillsLocation++seconds.asString).not.if {
 			(
 				"ffmpeg -y -ss "++ seconds.asString++" -i "++"'"++file.asSymbol++"'"++ "  -vframes 1  -f image2 "++stillsLocation++seconds.asString++".png ").systemCmd;
 			}

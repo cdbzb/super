@@ -263,13 +263,28 @@ P(\extraNote,start:\accustomed,syl:4,music:{|p b e|
 //	].p.play(clock:p.quarters[e.start] ++ p.quarters[\accustomed] =>_.asTempoClock)
 //});
 ["injections will no longer be necessary",[6,5,4,3,4,5,6,2,5,3,2,1].dm(\d)].addLine;
+
+P.rpp(\testVocal,\Time,music:{ |p b e|
+	e.span.postln.isNil.if
+	{
+		e.rpp.buffer.() => {|i| 
+			{
+				PlayBuf.ar(1,i,startPos:p.rppOffset(e))
+				=> HPF.ar(_,200)
+
+		=> FreeVerb.ar(_,[1,0.9,0.8,0.7]/3,0.9)
+		/4
+		}.play}
+	}
+});
 P(\bass,start:\injections,syl:0,music:{|p b e| 
 	[
 		instrument:\sawSynthSustain,
-		freq: [[4,12,-2],5,1].df(\d,octave:4).q,
-		amp:[0.07,0.05,0.05].q,
+		freq: [[-4,12,-2],-5,-1].df(\d,octave:[5]).q,
+		amp:[[0.07,0.03,0.02],0.05,0.05].q,
 		legato:0.8,
-		dur:b.drop(1).parse([4,3,4]).q
+		dur:b.drop(1).parse([4,3,4]).q,
+		out:(-1)+[[5,4,3],2,1].q
 	].pp;
 });
 P(\lick,start:\injections,syl:1,music:{|p b e| 

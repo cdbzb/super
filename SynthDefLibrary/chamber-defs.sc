@@ -4,6 +4,7 @@
     =>Decay.ar(_,0.05)
     * ClipNoise.ar(0.1)
     =>MembraneHexagon.ar(_,\tension.kr( 0.008, 0.01 ),\loss.kr ( 0.99996 ) ) 
+    * \amp.kr(0.1) * 10
     =>Out.ar(\out.kr(0),_)
   }
   =>SynthDef(\membrane,_)=>_.add=>_.tag(\perc); 

@@ -44,6 +44,7 @@ includePaths:
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/MP3
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/ExtraWindows
     -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/SignalBox
+    -   /Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/API
 excludePaths:
     []
 postInlineWarnings: false

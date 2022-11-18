@@ -945,13 +945,14 @@ Part {
 // Constructor for Parts
 P { 
     *new {
-        |key start syl lag=0 music song resources rpp|
+        |key start syl lag=0 music song resources rpp synthV|
         var part;
 	start = this.calcStart(start);
 	( start.class==Function ).if{music = start; start = nil};
                 start.postln;
         key = (key ++ start ++ \_).asSymbol;
 	resources = ( resources ++ (rpp: rpp) ? resources );
+	resources = ( resources ++ (synthV: synthV) ? resources );
         part = Part(start,syl,lag,music,resources);
         Message(Song.currentSong, key).value(part); //set Song.resources.key to part
         key.postln;
@@ -999,35 +1000,36 @@ P {
 
     }
     *tune {
-        |key function range lag=0 syl| 
+        |key function range lag=0 syl synthV=false lyrics music| 
         // range is [start,end] or just [start]
         // range sets syllable automatically
 	var start;
 	( key.class==Function ).if{function=key; key=nil};
 	start = key ? this.calcStart(key);
-        ^P( 
-            key: (key++"TUNE").asSymbol, 
-            start:start, 
-            music: {  
-                var drop, length;
-                var pbind = Song.currentSong.pbind[start] ;
+	^P( 
+		key: (key++"TUNE").asSymbol, 
+		start:start, 
+		music: {  
+			var drop, length;
+			var pbind = Song.currentSong.pbind[start] ;
 
-                range.notNil.if{
-                    drop = range[0];
-                    pbind=pbind.drop(drop) ;
-                    range[1].notNil.if {
-                        length = range[1] - range[0] + 1;
-                        pbind=pbind.fin(length) ;
-                    };
-                    (drop > 0).if{ syl = drop - 1; \syl.post;syl.postln };
-                };
+			range.notNil.if{
+				drop = range[0];
+				pbind=pbind.drop(drop) ;
+				range[1].notNil.if {
+					length = range[1] - range[0] + 1;
+					pbind=pbind.fin(length) ;
+				};
+				(drop > 0).if{ syl = drop - 1; \syl.post;syl.postln };
+			};
 
-                function.isNil.if{function={|i|i}};
-                function.value(pbind).play;
-            }, 
-            syl:syl, 
-            lag:lag 
-        )//.value
+			function.isNil.if{function={|i|i}};
+			function.value(pbind).play;
+		}, 
+		syl:syl, 
+		lag:lag 
+	)//.value
+	
     }
     *click { | key |
 	    P(

@@ -223,7 +223,22 @@ P.tune('be- tter');
 //in Time
 ["in Time a host  -- body will become...  ",[-1,1,-7,1,2,1,-7,-6,-7,1].dm(\b,scale:\minor)].addLine; //12
 Song.quarters[ \Time ]=Song.parseBeats(\Time,[1,3,3/4,1/4,2,1,1,1.5,0.5,1]);
-P.tune(\Time);
+//P.tune(\Time);
+Song.vocaloidTest=Buffer.read(s,"/tmp/Time.wav");
+a=Vocaloid("Time").makeNotes(10).set((
+	dur:Song.durs[\Time].list * 2,
+	lyric:["in","time","a","ho-","ost","bo-","dy","will","be-","come"],
+	number: Song.tune[ Song.section(\Time) ].list.asInteger
+));
+//a.writeProject;
+//a.open
+//"~/scripts/renderVocaloid.sh".unixCmd
+P(\vocaloid, music: { |p b e|
+	{
+		PlayBuf.ar(1,p.vocaloidTest,rate:BufSampleRate.kr(p.vocaloidTest)/s.sampleRate)=>FreeVerb.ar(_,0.3,[ 0.5,1 ]) *0.1
+	}.play
+
+});
 P(\chords,start:\Time,music:{|p b e| 
 		[
 				instrument:\sawSynthSustain,
@@ -245,10 +260,37 @@ P(\bass,start:\Time,music:{|p b e|
 		dur: [2,8,8,2,2,2,2,2,2,2, 2,2,2,2,2].q/2
 	].p.play(clock:p.quarters[e.start] ++ p.quarters[\accustomed] =>_.asTempoClock)
 });
+
 ["(cis d a fis) accustomed to us (fis)",[-7,1,2,3,7,12,11,7,11,3].dm(\d)].addLine;
+Song.accustomedVocaloid= 
+Song.makeVocaloid={|section lyric| 
+
+	(
+		dur:Song.durs[section].postln.list * 2,
+		lyric: lyric.split(Char.space).reject{|i| i.size == 0},
+		number: Song.tune[ Song.section(section) ].list.asInteger
+	)
+};
+Song.makeVocaloid.('accustomed',"bum bum bum bum a cus tummed to us")
+ => {|i| Vocaloid(\injection).makeNotes(10).set(i) };
+
+//Song.accustomedVocaloid.writeProject
+//Song.accustomedVocaloid.open
+
+//"~/scripts/renderVocaloid.sh injections".unixCmd
+
+Song.vocaloidTest3=Buffer.read(s,"/tmp/accustomed.wav");
+
+P(\vocaloid, music: { |p b e|
+	{
+		PlayBuf.ar(1,p.vocaloidTest3,rate:BufSampleRate.kr(p.vocaloidTest)/s.sampleRate)=>FreeVerb.ar(_,0.3,[ 0.5,1 ]) 
+	}.play
+}
+);
+
 
 Song.quarters[\accustomed]=Song.parseBeats(\accustomed,[1,1,1,1,1,0.5,0.5,0.5,0.5]);
-P.tune(\accustomed);
+//P.tune(\accustomed);
 P(\extraNote,start:\accustomed,syl:4,music:{|p b e| 
 	(
 		freq: [-12,-5,1].df(\a),
@@ -264,18 +306,20 @@ P(\extraNote,start:\accustomed,syl:4,music:{|p b e|
 //});
 ["injections will no longer be necessary",[6,5,4,3,4,5,6,2,5,3,2,1].dm(\d)].addLine;
 
-P.rpp(\testVocal,\Time,music:{ |p b e|
-	e.span.postln.isNil.if
-	{
-		e.rpp.buffer.() => {|i| 
-			{
-				PlayBuf.ar(1,i,startPos:p.rppOffset(e))
-				=> HPF.ar(_,200)
+Song.injectVocaloid= Song.makeVocaloid.("injection","in jec shuns will no long er be ness sse ssa ry") => {|i| Vocaloid(\injection).makeNotes(12).set(i) };
 
-		=> FreeVerb.ar(_,[1,0.9,0.8,0.7]/3,0.9)
-		/4
-		}.play}
-	}
+//Song.injectVocaloid.writeProject
+//Song.injectVocaloid.open
+
+//"~/scripts/renderVocaloid.sh injections".unixCmd
+
+Song.vocaloidTest2=Buffer.read(s,"/tmp/injections.wav");
+
+P(\vocaloid, music: { |p b e|
+	{
+		PlayBuf.ar(1,p.vocaloidTest2,rate:BufSampleRate.kr(p.vocaloidTest)/s.sampleRate)=>FreeVerb.ar(_,0.3,[ 0.5,1 ]) 
+	}//.play
+
 });
 P(\bass,start:\injections,syl:0,music:{|p b e| 
 	[
@@ -297,6 +341,14 @@ P(\lick,start:\injections,syl:1,music:{|p b e|
 		legato:[1,1,1,1,0.5,0,1,1,1].q
 	].pma(\sawSynthSustain).play;
 });
+P.synthV(\aiko,\injections,lyrics:"in jek shuns will no lan gur bi ne se sse ri",music:{|p b e|
+	var f = e.synthV.buffer.();
+	{
+		PlayBuf.ar(1,f,rate:BufSampleRate.kr(f)/s.sampleRate)
+		/8
+		=> FreeVerb.ar(_,0.3,[0.9, 1 ])
+}.play
+});
 P(\lick2,start:\injections,syl:0,music:{|p b e| 
 	[
 		freq: [5,4,3,2,1,2].df(\d).q,
@@ -308,7 +360,6 @@ P(\lick2,start:\injections,syl:0,music:{|p b e|
 		freqLag:0.05
 	].pma(\sparkTriangle).play;
 });
-P.tune(\injections);
 ["/*KIRK:*/ That will take months, perhaps years. We haven't that choice, Thalassa. ",[1,-7,1,3, 2,1,5,2,5,4.5,5,6,11,7,6,5].dm(\c)].addLine;
 P.tune(\months);
 P(\extraNotes,start:\months,syl:2,music:{|p b e| 
@@ -398,7 +449,9 @@ P(\chord,start:\machine,syl:10,lag:-0.05,music:{|p b e|
 		out:[2,4],
 		strum:0.1,
 		dur:b.last-0.3,
-		out:Effect(TwoTube.ar(_,0.1,0.95,345,930)).bus.index
+		out:Effect.bus( { |i| TwoTube.ar(i,0.1,0.95,345,930)
+	//	* Env([1,1,0],[b.sum,0.5]).kr(2,gate:1)
+	} ).post;\BUS.postln
 
 
 	).play
@@ -419,9 +472,15 @@ P(\chord,syl:0,start:\thoughts,music:{|p b e|
 });
 P.tune(\thoughts,Pbindf(_,\amp,[1,1,0,0,0,0,1,1,1,1,0,0,0,0].q/10,\legato,[1,3,0,0,0,0,1,1,1,3,0,0,0,0].q));
 //idea - Will they - Will they
-P.tune('thoughts boom',{|i| Pmul(\freq,0.5,i) =>Pbindf(_,\instrument,\sawSynth,\rel,4,\att,0.1,
-	\out, Effect({|i| MoogLadder.ar(i,Line.kr(500,900,3),1)}).bus.index,
-	\amp,0.5
+P.tune('thoughts boom',{|i| Pmul(\freq,0.5,i) =>Pbindf(
+	_,
+	\instrument,
+	\sawSynth,
+	\rel,4,
+	\att,0.1,
+	\amp,0.5,
+	\out, Effect.bus({|i| MoogLadder.ar(i,Line.kr(500,900,3),1)},inputChannels:2),
+	//\addAction,\addToTail
 )},range:[2,5],syl:1);
 P(\lick1,start:\thoughts,syl:8,music:{|p b e| 
 	[
@@ -443,6 +502,24 @@ P(\lick2,start:\thoughts,syl:10,music:{|p b e|
 });
 ["/*MULHALL:*/ Will they, husband?  Will they intertwine like this? ",[4,1,3,2].dm(\b,octave:5) ++ [-7,1,4,2,5,5.5,5,4,7].dm('c#')].addLine;
 P.tune('Will they');
+Song.synthV1 = SynthV(\sickbay1);
+Song.synthV1.makeNotes(4).set((pitch: Song.tune [ Song.section( 'Will they' ) ] .list[ 0..3 ] ,dur: Song.durs['Will they'].list[ 0..3 ] ,lyrics:["will","they","hus","band"]));
+/*
+Song.synthV1.writeProject;
+Song.synthV1.open;
+*/
+
+P(\synthV, music: { |p b e|
+	Song.synthV1.buffer.() => 
+	 {|i| 
+		{
+			PlayBuf.ar(1,i,rate:BufSampleRate.new(bufnum:i)/s.sampleRate)
+			/8
+			=> DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:0.1, coefs:nil, perm:nil, doprime:0)
+			//=> DelayN.ar(_,0.2)
+		}.play
+	}
+});
 P(\bass_stab,start:'Will they',music:{|p b e| 
 		[ instrument:\sawTw,
 				freq:[1].df('c#',octave:[5,6,7]) ++ [1,4].df('b-',octave:[3,4,5]) => _.q,
@@ -659,6 +736,7 @@ P.still(\mcCoy,syl:0, start:\dead, timecode:4003.0.seconds, music:{ |p b e|
 		)
 });
 )
+/*
 (
 
 

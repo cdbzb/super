@@ -5,6 +5,7 @@ Monitor.new().play(2,2,0,2);
 //Song.dursFile_("/Users/michael/tank/super/theExtreme_Sep18");
 ~sickBay=Song(\sickBay,[]).current;
 Song.speaker =Library.at(\functions,\prep).("/Users/michael/tank/IR/Saane/Speakers_&_Telephones/Very_small_speaker_mono.wav");
+SynthV.setRole(\Thalassa,\aiko);
 
 P(\filter,start:0,music:{|p b e| 
 		p.pts.select{|i| i.still.notNil}.select{|i| i.name.asString.contains("halass") }.do{|i|i.monitor.postln}
@@ -223,22 +224,6 @@ P.tune('be- tter');
 //in Time
 ["in Time a host  -- body will become...  ",[-1,1,-7,1,2,1,-7,-6,-7,1].dm(\b,scale:\minor)].addLine; //12
 Song.quarters[ \Time ]=Song.parseBeats(\Time,[1,3,3/4,1/4,2,1,1,1.5,0.5,1]);
-//P.tune(\Time);
-Song.vocaloidTest=Buffer.read(s,"/tmp/Time.wav");
-a=Vocaloid("Time").makeNotes(10).set((
-	dur:Song.durs[\Time].list * 2,
-	lyric:["in","time","a","ho-","ost","bo-","dy","will","be-","come"],
-	number: Song.tune[ Song.section(\Time) ].list.asInteger
-));
-//a.writeProject;
-//a.open
-//"~/scripts/renderVocaloid.sh".unixCmd
-P(\vocaloid, music: { |p b e|
-	{
-		PlayBuf.ar(1,p.vocaloidTest,rate:BufSampleRate.kr(p.vocaloidTest)/s.sampleRate)=>FreeVerb.ar(_,0.3,[ 0.5,1 ]) *0.1
-	}.play
-
-});
 P(\chords,start:\Time,music:{|p b e| 
 		[
 				instrument:\sawSynthSustain,
@@ -279,18 +264,8 @@ Song.makeVocaloid.('accustomed',"bum bum bum bum a cus tummed to us")
 
 //"~/scripts/renderVocaloid.sh injections".unixCmd
 
-Song.vocaloidTest3=Buffer.read(s,"/tmp/accustomed.wav");
-
-P(\vocaloid, music: { |p b e|
-	{
-		PlayBuf.ar(1,p.vocaloidTest3,rate:BufSampleRate.kr(p.vocaloidTest)/s.sampleRate)=>FreeVerb.ar(_,0.3,[ 0.5,1 ]) 
-	}.play
-}
-);
-
-
 Song.quarters[\accustomed]=Song.parseBeats(\accustomed,[1,1,1,1,1,0.5,0.5,0.5,0.5]);
-//P.tune(\accustomed);
+P.tune(\accustomed);
 P(\extraNote,start:\accustomed,syl:4,music:{|p b e| 
 	(
 		freq: [-12,-5,1].df(\a),
@@ -306,21 +281,12 @@ P(\extraNote,start:\accustomed,syl:4,music:{|p b e|
 //});
 ["injections will no longer be necessary",[6,5,4,3,4,5,6,2,5,3,2,1].dm(\d)].addLine;
 
-Song.injectVocaloid= Song.makeVocaloid.("injection","in jec shuns will no long er be ness sse ssa ry") => {|i| Vocaloid(\injection).makeNotes(12).set(i) };
 
 //Song.injectVocaloid.writeProject
 //Song.injectVocaloid.open
 
 //"~/scripts/renderVocaloid.sh injections".unixCmd
 
-Song.vocaloidTest2=Buffer.read(s,"/tmp/injections.wav");
-
-P(\vocaloid, music: { |p b e|
-	{
-		PlayBuf.ar(1,p.vocaloidTest2,rate:BufSampleRate.kr(p.vocaloidTest)/s.sampleRate)=>FreeVerb.ar(_,0.3,[ 0.5,1 ]) 
-	}//.play
-
-});
 P(\bass,start:\injections,syl:0,music:{|p b e| 
 	[
 		instrument:\sawSynthSustain,
@@ -341,13 +307,18 @@ P(\lick,start:\injections,syl:1,music:{|p b e|
 		legato:[1,1,1,1,0.5,0,1,1,1].q
 	].pma(\sawSynthSustain).play;
 });
-P.synthV(\aiko,\injections,lyrics:"in jek shuns will no lan gur bi ne se sse ri",music:{|p b e|
-	var f = e.synthV.buffer.();
-	{
-		PlayBuf.ar(1,f,rate:BufSampleRate.kr(f)/s.sampleRate)
-		/8
-		=> FreeVerb.ar(_,0.3,[0.9, 1 ])
-}.play
+P.synthV(\aiko,\injections,
+	[
+		lyrics:"in jek shuns will no lan gur bi ne se sse ri"
+	],
+	// legato:,
+	music:{|p b e|
+		var f = e.synthV.buffer.();
+		{
+			PlayBuf.ar(1,f,rate:BufSampleRate.kr(f)/s.sampleRate)
+			/8
+			=> FreeVerb.ar(_,0.3,[0.9, 1 ])
+		}.play
 });
 P(\lick2,start:\injections,syl:0,music:{|p b e| 
 	[
@@ -380,6 +351,21 @@ P(\bass,start:\months,music:{|p b e|
 		].pma(\sawSynthSustain).play
 });
 ["/*MULHALL:*/ Husband. Feel the touch of my hand, husband. ", [3,2, 7,6,6,5,4,6, 5,4].dm('a-',scale:\minor)].addLine;
+P.synthV(\aiko,\Husband,
+	[
+		lyrics:"Hus band feel the tuch of my hand hus band",
+		legato:[1,0.95,1,1,1,1,1,0.9,1,1] 
+	],
+	music:{|p b e|
+		var f = e.synthV.buffer.().postln;
+		{
+			PlayBuf.ar(1,f
+				,rate:BufSampleRate.kr(f.bufnum)/s.sampleRate
+			)
+			/4
+			=> FreeVerb.ar(_,0.3,[0.9, 1 ])
+		}.play
+});
 P.still( \thalassa, start: \Feel, timecode:3854.seconds, music: { |p b e|
 		fork{
 				e.still.text_(["husband..."]).wait_(b.sum).monitor_(0).fade_(2).play;
@@ -403,6 +389,7 @@ P(\click,start:\Feel,music:{|p b e|
 
 ["/*KIRK:*/ No, beloved. (boom) If we torment ourselves ",[6,5,3,1,-1, 4,5,11,7,6,5].dm(\f)].addLine;
 P.tune(\torment);
+
 P.still( \kirk, start: \torment, timecode:3859.seconds, music: { |p b e|
 		e.still.value(
 				wait: b.sum ,
@@ -418,7 +405,22 @@ P(\dyads,start:\torment,music:{|p b e|
 });
 // Idea C min or Ab ala Waldstein?
 ["/*MULHALL:*/ Beloved. What will that word mean to a machine? ",[1,6,5].dm(\a)++[-7,1,5,3,-7,1,2,4,6].dm('c#',octave:6)].addLine;
-P.tune('to a machine');
+//P.tune('to a machine');
+P.synthV(\aiko,'to a machine',
+	[
+		lyrics:" bi lu ved? wat will zat word min tu a ma xin"
+	],
+	music: { |p b e|
+
+		var f = e.synthV.buffer.();
+		{
+			PlayBuf.ar(1,f,rate:BufSampleRate.kr(f)/s.sampleRate)
+			/8
+			
+			=> FreeVerb.ar(_,0.3,[0.9, 0.8 ])
+			
+		}.play
+});
 P.still( \thalassa, start: 'to a machine', timecode: 3903.5.seconds, music: { |p b e|
 		fork{
 				e.still.value(
@@ -501,20 +503,21 @@ P(\lick2,start:\thoughts,syl:10,music:{|p b e|
 	].pp;
 });
 ["/*MULHALL:*/ Will they, husband?  Will they intertwine like this? ",[4,1,3,2].dm(\b,octave:5) ++ [-7,1,4,2,5,5.5,5,4,7].dm('c#')].addLine;
-P.tune('Will they');
-Song.synthV1 = SynthV(\sickbay1);
-Song.synthV1.makeNotes(4).set((pitch: Song.tune [ Song.section( 'Will they' ) ] .list[ 0..3 ] ,dur: Song.durs['Will they'].list[ 0..3 ] ,lyrics:["will","they","hus","band"]));
+//P.tune('Will they');
 /*
 Song.synthV1.writeProject;
 Song.synthV1.open;
 */
 
-P(\synthV, music: { |p b e|
-	Song.synthV1.buffer.() => 
+P.synthV(\aiko, 'Will they',
+	[
+		lyrics: "wil they huz band wil they in ter twa a an laik zis"
+	], music: { |p b e|
+	e.synthV.buffer.() => 
 	 {|i| 
 		{
 			PlayBuf.ar(1,i,rate:BufSampleRate.new(bufnum:i)/s.sampleRate)
-			/8
+			/7
 			=> DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:0.1, coefs:nil, perm:nil, doprime:0)
 			//=> DelayN.ar(_,0.2)
 		}.play
@@ -542,12 +545,12 @@ P(\extra_notes,start:'Will they',syl:11,music:{|p b e|
 		].pp;
 });
 
-P.tune('Will they int', {|i| 
-		Pbindf(i,\instrument,\stringyy,\amp,0.2)
-		=>Pmul(\freq,0.5,_)},
-		//TODO Why is syl not set automagically??
-		syl:3,range:[4,13]
-);
+//P.tune('Will they int', {|i| 
+//		Pbindf(i,\instrument,\stringyy,\amp,0.2)
+//		=>Pmul(\freq,0.5,_)},
+//		//TODO Why is syl not set automagically??
+//		syl:3,range:[4,13]
+//);
 P(\this,start:'Will they',syl:11,music:{|p b e| 
 		(
 				instrument:\wash,
@@ -578,6 +581,20 @@ P(\xtraBassnote,start:'Will they',syl:7,music:{|p b e|
 	).play
 });
 [ "Can two minds press close like this?",[5,6,7,6.5,6.5,6,11.5].dm(\c)].addLine;
+P.synthV(\aiko,\press,
+	[
+		lyrics:" kan tu maindz press klos laik zis"
+	],music: { |p b e|
+	
+	e.synthV.buffer.() => {|i| 
+		{
+			PlayBuf.ar(1,i,rate:BufSampleRate.new(bufnum:i)/s.sampleRate)
+			/7
+			=> DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:0.1, coefs:nil, perm:nil, doprime:0)
+			//=> DelayN.ar(_,0.2)
+		}.play
+	}
+});
 P(\chord,start:\press,syl:2,music:{|p b e| 
 	[
 		freq: [[1,3,4,7],[1,3,4,7],[1,3,4,6.5]].df(\c,scale:\minor).q,
@@ -586,7 +603,7 @@ P(\chord,start:\press,syl:2,music:{|p b e|
 		out:3
 	].pp
 });
-P.tune(\press);
+//P.tune(\press);
 P(\this,start:\press,syl:5,music:{|p b e| 
 		(
 				instrument:\wash,
@@ -600,7 +617,20 @@ P.still(\thalassa,start:'press close',timecode:3915.542.seconds,music:{|p b e|
 				text:["can two minds press close","like this?"]
 		)});
 ["Can robot lips do this?" , [3,5,4,3,2,11].dm(\e) ].addLine;
-P.tune(\robot);
+//P.tune(\robot);
+P.synthV(\aiko,\robot,[
+	lyrics: "kan ro bot lips do zis"
+],music:{|p b e|
+	e.synthV.buffer.() => {|i| 
+		{
+			PlayBuf.ar(1,i,rate:BufSampleRate.new(bufnum:i)/s.sampleRate)
+			/7
+			=> DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:0.1, coefs:nil, perm:nil, doprime:0)
+			//=> DelayN.ar(_,0.2)
+		}.play
+	}
+} 
+);
 P(\this,start:\robot,syl:4,music:{|p b e| 
 		(
 				instrument:\wash,
@@ -616,6 +646,18 @@ P.still(\thalassa,start:'robot lips',timecode:3920.5.seconds,music:{|p b e|
 				text:["can robot lips","do this?"]
 		)});
 [ "(they kiss, then Kirk falls gently to the floor) (boooom boom boom boom boom boom boom boom) Sargon, /*what is it?*/ what's wrong? ",[11,7,6,5,4,3,2,1].dm('b-',scale:\minor)++[3,-7,1,4.5].dm(\f,scale:\mixolydian)].addLine;
+P.synthV(\aiko,\kiss, [lyrics:"Sar gon wats rong"],syl:7,range:[8,11],music: { |p b e|
+		e.synthV.buffer.().postln => {|i| 
+		
+			{
+				PlayBuf.ar(1,i,rate:BufSampleRate.new(bufnum:i)/s.sampleRate)
+				/7
+				=> DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:0.1, coefs:nil, perm:nil, doprime:0)
+				//=> DelayN.ar(_,0.2)
+			}.play
+		}
+		
+});
 P.still(\kiss,start:'kiss',
 		timecode:3926.seconds
 		//timecode:3927.5.seconds
@@ -657,6 +699,7 @@ P.still( \thalassa, start: \kiss,syl:8, timecode:3939.46.seconds, music: { |p b 
 				text:["Sargon!","What's wrong?!"]
 		);
 });
+
 ["(McCoy and Chapel enter.) ","r",[1,3]].addLine;
 P(\trill,start:\Chapel,music:{|p b e| 
 	
@@ -718,7 +761,18 @@ P.still(\hypo, start:\hypo,syl:2, timecode:3949.5.seconds, music:{ |p b e|
 
 
 ["/*MULHALL:*/ Doctor, help him! ",[1,-7,3,-7].dm(\e,scale:\mixolydian)].addLine;
-P.tune(\Doctor);
+P.synthV(\aiko,\Doctor,[ lyrics:" dak tar help him" ], music:{|p b e |
+	e.synthV.buffer.() => {|i| 
+		
+		{
+			PlayBuf.ar(1,i,rate:BufSampleRate.new(bufnum:i)/s.sampleRate)
+			/7
+			=> DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:0.1, coefs:nil, perm:nil, doprime:0)
+			//=> DelayN.ar(_,0.2)
+		}.play
+	}
+});
+//P.tune(\Doctor);
 		
 P.still(\mulhall, start:'help him', timecode:3953.0.seconds, music:{ |p b e|
 		e.still.value(

@@ -116,6 +116,7 @@ SynthV{
 	set { |event|
 		event.dur.size.postln;// => this.makeNotes(_+1);
 		event.dur = event.dur * 2 * 70560 => _.asInteger;
+		
 		event.legato = event.legato ? 1;
 		event.onset = [0] ++ event.dur.integrate => _.dropLast();
 		event.duration = event.dur * event.legato => _.collect{|i| i.asInteger .asString ++ "0000"};
@@ -141,6 +142,12 @@ SynthV{
 	}
 	makeNotes {|num track=0|
 		project.tracks[track].mainGroup.notes = notePrototype ! num
+	}
+	filterRests { |track=0|
+		project.tracks[track].maingroup.put(
+			\notes,
+			this.notes.reject({|i| i.at("lyrics")=="r"})
+		)
 	}
 	refreshBuffer{
 		File.exists(location+/+"synthV_MixDown.wav").if{
@@ -177,7 +184,9 @@ SynthV{
 		pbind.pitch=pbind.midinote.asInteger;
 		synthV.makeNotes(pbind.dur.size);
 
+
 		synthV.set(pbind);
+
 		synthV.writeProject; 'synthV written!'.postln;
 		//^P(
 		//	key: (key++"SYNTHV").asSymbol, 

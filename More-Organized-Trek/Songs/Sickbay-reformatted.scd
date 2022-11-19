@@ -223,6 +223,13 @@ P.tune('bo- dy');
 P.tune('be- tter');
 //in Time
 ["in Time a host  -- body will become...  ",[-1,1,-7,1,2,1,-7,-6,-7,1].dm(\b,scale:\minor)].addLine; //12
+P.synthV(\aiko, \Time, [lyrics:"in taim a ho ost ba di will bi kum "], music:{ |p b e|
+	{
+		PlayBuf.auto(1,e.synthV.buffer.())
+		/8
+		=> DWGReverbC1C3.ar(_,mix:0.1)
+	}.play
+});
 Song.quarters[ \Time ]=Song.parseBeats(\Time,[1,3,3/4,1/4,2,1,1,1.5,0.5,1]);
 P(\chords,start:\Time,music:{|p b e| 
 		[
@@ -247,23 +254,15 @@ P(\bass,start:\Time,music:{|p b e|
 });
 
 ["(cis d a fis) accustomed to us (fis)",[-7,1,2,3,7,12,11,7,11,3].dm(\d)].addLine;
-Song.accustomedVocaloid= 
-Song.makeVocaloid={|section lyric| 
 
-	(
-		dur:Song.durs[section].postln.list * 2,
-		lyric: lyric.split(Char.space).reject{|i| i.size == 0},
-		number: Song.tune[ Song.section(section) ].list.asInteger
-	)
-};
-Song.makeVocaloid.('accustomed',"bum bum bum bum a cus tummed to us")
- => {|i| Vocaloid(\injection).makeNotes(10).set(i) };
+P.synthV(\aiko, \accustomed,[lyrics:"u ku stum too us"],range:[4,8],syl:3, music: { |p b e|
+	{  
+		PlayBuf.auto(1,e.synthV.buffer.())
+		/8
+		=> DWGReverbC1C3.ar(_,mix:0.1)
+	}.play
 
-//Song.accustomedVocaloid.writeProject
-//Song.accustomedVocaloid.open
-
-//"~/scripts/renderVocaloid.sh injections".unixCmd
-
+});
 Song.quarters[\accustomed]=Song.parseBeats(\accustomed,[1,1,1,1,1,0.5,0.5,0.5,0.5]);
 P.tune(\accustomed);
 P(\extraNote,start:\accustomed,syl:4,music:{|p b e| 
@@ -315,7 +314,7 @@ P.synthV(\aiko,\injections,
 	music:{|p b e|
 		var f = e.synthV.buffer.();
 		{
-			PlayBuf.ar(1,f,rate:BufSampleRate.kr(f)/s.sampleRate)
+			PlayBuf.auto(1,f)
 			/8
 			=> FreeVerb.ar(_,0.3,[0.9, 1 ])
 		}.play
@@ -414,7 +413,8 @@ P.synthV(\aiko,'to a machine',
 
 		var f = e.synthV.buffer.();
 		{
-			PlayBuf.ar(1,f,rate:BufSampleRate.kr(f)/s.sampleRate)
+
+			PlayBuf.auto(1,f)
 			/8
 			
 			=> FreeVerb.ar(_,0.3,[0.9, 0.8 ])
@@ -435,7 +435,8 @@ P(\bass,start:'to a machine',syl:2,music:{|p b e|
 	[ instrument:\sawSynthSustain,
 		freq: [-7,1,5,3,-6,-2].df('c#',octave:[3,4]).q,
 		legato:1,
-		att:1!5++3 =>_.q,
+		att:0.7!5++3 =>_.q,
+		lag:(-0.03)!5++0,
 		out:[1,3],
 		rel:2!5++4 =>_.q,
 		amp:0.05,
@@ -588,7 +589,7 @@ P.synthV(\aiko,\press,
 	
 	e.synthV.buffer.() => {|i| 
 		{
-			PlayBuf.ar(1,i,rate:BufSampleRate.new(bufnum:i)/s.sampleRate)
+			PlayBuf.auto(1,i)
 			/7
 			=> DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:0.1, coefs:nil, perm:nil, doprime:0)
 			//=> DelayN.ar(_,0.2)
@@ -618,12 +619,12 @@ P.still(\thalassa,start:'press close',timecode:3915.542.seconds,music:{|p b e|
 		)});
 ["Can robot lips do this?" , [3,5,4,3,2,11].dm(\e) ].addLine;
 //P.tune(\robot);
-P.synthV(\aiko,\robot,[
-	lyrics: "kan ro bot lips do zis"
-],music:{|p b e|
+P.synthV(\aiko,\robot,
+	[ lyrics: "kan ro bot lips do zis" ],
+	music:{ |p b e|
 	e.synthV.buffer.() => {|i| 
 		{
-			PlayBuf.ar(1,i,rate:BufSampleRate.new(bufnum:i)/s.sampleRate)
+			PlayBuf.auto(1,i)
 			/7
 			=> DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:0.1, coefs:nil, perm:nil, doprime:0)
 			//=> DelayN.ar(_,0.2)
@@ -693,7 +694,7 @@ P.still(\falling, start:\kiss, syl:4,  timecode: 3937.5.seconds,  music: {|p b e
 				wait:b[1..3].sum,
 		)
 });
-P.still( \thalassa, start: \kiss,syl:8, timecode:3939.46.seconds, music: { |p b e|
+P.still( \thalassa, start: \kiss,syl:7, timecode:3939.46.seconds, music: { |p b e|
 		e.still.value(
 				wait: b[0..3].sum ,
 				text:["Sargon!","What's wrong?!"]

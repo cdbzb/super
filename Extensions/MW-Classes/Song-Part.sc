@@ -838,6 +838,7 @@ Part {
 	*new {|start=0,syl,lag=0,music,resources|
 		^super.new.init(start,syl,lag,music,resources)
 	}
+	key {^name.split($_)[0].asSymbol}
 	init { |s,y,l,m, r|
 		start=s;syl=y;music=m;lag=l;resources = r.isNil.if{()}{r};
 	}
@@ -947,14 +948,14 @@ P {
     *new {
         |key start syl lag=0 music song resources rpp synthV|
         var part;
-	start = this.calcStart(start);
-	( start.class==Function ).if{music = start; start = nil};
+	start = this.calcStart(start); //finds it if not provided!
+	( start.class==Function ).if{music = start; start = nil}; //syntactic sugar
                 start.postln;
-        key = (key ++ start ++ \_).asSymbol;
+        key = (key ++ "_" ++ start).asSymbol;
 	resources = ( resources ++ (rpp: rpp) ? resources );
-	resources = ( resources ++ (synthV: synthV) ? resources );
+	//resources = ( resources ++ (synthV: synthV) ? resources );
         part = Part(start,syl,lag,music,resources);
-        Message(Song.currentSong, key).value(part); //set Song.resources.key to part
+        Message(Song.currentSong, ( key ++ $_ => _.asSymbol )).value(part); //set Song.resources.key to part
         key.postln;
         ^part
     }
@@ -1000,7 +1001,7 @@ P {
 
     }
     *tune {
-        |key function range lag=0 syl synthV=false lyrics music| 
+        |key function range lag=0 syl lyrics music| 
         // range is [start,end] or just [start]
         // range sets syllable automatically
 	var start;

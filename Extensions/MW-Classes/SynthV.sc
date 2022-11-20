@@ -3,7 +3,7 @@ SynthV{
 	classvar <>directory = "~/tank/super/SynthV";
 	classvar <notePrototype, <databasePrototype;
 	classvar <roles;
-	var <name, <project, <path, <file,<location,<buffer, <key, <song, <section;
+	var <name, <project, <file,<location,<buffer, <key, <song, <section;
 	*new {|key name| ^super.new.init(key,name) }
 	*setRole {|name database|
 		roles.put(name,database)
@@ -62,24 +62,12 @@ SynthV{
 		^String.readNew(path.standardizePath => File(_,"r")) => JSON.parse(_)
 	}
 	init{ |n k|
-
-
-
 		key = k.asString.replace(Char.space,$_);
-
 		song.isNil.if{ song = Song.currentSong };
-		section = song.section(key.replace($_,Char.space));
-		//reaperProjectPath = Song.reaperFolder +/+ song.key +/+ key;
+		section = song.section(key.replace($_,Char.space)); //does this do anything?
 		name = n;
-		//name.notNil.if{
-		//	key = key ++ "-" ++ name
-		//};
-		///////////
-
 		directory = directory.standardizePath;
-		path = directory +/+ song.key +/+ key; //change storage scheme here
-
-		location = path +/+ name;
+		location= directory +/+ song.key +/+ key +/+ name; //change storage scheme here
 
 		file = location +/+ "project.svp";
 
@@ -124,7 +112,9 @@ SynthV{
 		event.keys.do{|key|
 			key.postln;
 			this.setNotes(key,event.at(key))
-		}
+		};
+		//this should be done with an array flop and pairsDo instad but...
+		//this.filterRests 
 	}
 	setPbind { |pbind|
 		var event = Event.newFrom(pbind.patternpairs);
@@ -157,45 +147,38 @@ SynthV{
 }
 
 + P {
-	*synthV{ | key synthVstart array syl lag=0 music song resources range |
-		var start = P.calcStart(synthVstart );
-		var pbind = Song.currentSong.pbind[synthVstart ] ;
+	*synthV{ | key start array syl lag=0 music song resources range |
 
-		var synthV = SynthV(key,synthVstart );
+		var section = P.calcStart(start );
 
-		//range.notNil.if{
-		//	var drop, length;
-		//	drop = range[0];
-		//	pbind=pbind.drop(drop) ;
-		//	range[1].notNil.if {
-		//		length = range[1] - range[0] + 1;
-		//		pbind=pbind.fin(length) ;
-		//	};
-		//	(drop > 0).if{ syl = drop - 1; \syl.post;syl.postln };
-		//};
-		pbind = pbind.patternpairs.collect{|i| ( i.class==Pseq ).if{i.list}{i}}
+		var pbind = Song.currentSong.pbind[start ] ;
+
+		var synthV = SynthV(key,start );
+
+		pbind = pbind.patternpairs.collect{|i|
+			( i.class==Pseq ).if{i.list}{i}
+		}
 		++ array
 		=> Event.newFrom(_);
-		\PBIND.post;pbind.postln;
-		pbind.keys.do{|k| ( pbind.at(k).isCollection && pbind.at(k).isString.not ).if{
-			pbind.put(k, pbind.at(k)[range[0]..range[1]])
+
+		pbind.keys.do{|k| 
+			( pbind.at(k).isCollection && pbind.at(k).isString.not ).if{
+				pbind.put(k, pbind.at(k)[range[0]..range[1]])
 		}};
 		pbind.lyrics=pbind.lyrics.split(Char.space).reject{|i| i.size==0};
 		pbind.pitch=pbind.midinote.asInteger;
 		synthV.makeNotes(pbind.dur.size);
 
-
-		synthV.set(pbind);
+		synthV.set(pbind); //set should filter for \r
 
 		synthV.writeProject; 'synthV written!'.postln;
-		//^P(
-		//	key: (key++"SYNTHV").asSymbol, 
-		//	synthV: synthV,
-		//	start:start, 
-		//	music:music, 
-		//	syl:syl, 
-		//	lag:lag 
-		//)
-		^P(key,start,syl,lag, music,song,resources,synthV:synthV ); // order of section and key are reversed!!
+		
+		^P(key,section,syl,lag, music,song,
+			resources:(
+				synthV: synthV,
+				playbuf: { PlayBuf.auto(1,synthV.buffer.()) }
+
+			) ,
+			); // order of section and key are reversed!!
 	}
 }

@@ -223,12 +223,22 @@ P.tune('bo- dy');
 P.tune('be- tter');
 //in Time
 ["in Time a host  -- body will become...  ",[-1,1,-7,1,2,1,-7,-6,-7,1].dm(\b,scale:\minor)].addLine; //12
+Song.synthVTracks=();
+Song.synthVTracks.aiko= { |preGain=1 ratio=2 amp = (1/8) len=2000 mix=0.1 |
+	{ |i|
+
+		i.() * preGain
+		=> SoftKneeCompressor.rms(_,  thresh:-10, ratio: ratio, knee:6, attack:0, release:0.05, makeUp:0, rms:40) 
+		* amp
+		=> DWGReverbC1C3.ar(_,len:len,mix:mix)
+		=>.first DetectSilence.ar(_,doneAction:2)
+	}
+};
 P.synthV(\aiko, \Time, [lyrics:"in taim a ho ost ba di will bi kum "], music:{ |p b e|
-	{
-		PlayBuf.auto(1,e.synthV.buffer.())
-		/8
-		=> DWGReverbC1C3.ar(_,mix:0.1)
-	}.play
+		{
+			e.playbuf  =>
+			p.synthVTracks.at(e.key).()   
+		}.play
 });
 Song.quarters[ \Time ]=Song.parseBeats(\Time,[1,3,3/4,1/4,2,1,1,1.5,0.5,1]);
 P(\chords,start:\Time,music:{|p b e| 
@@ -256,11 +266,10 @@ P(\bass,start:\Time,music:{|p b e|
 ["(cis d a fis) accustomed to us (fis)",[-7,1,2,3,7,12,11,7,11,3].dm(\d)].addLine;
 
 P.synthV(\aiko, \accustomed,[lyrics:"u ku stum too us"],range:[4,8],syl:3, music: { |p b e|
-	{  
-		PlayBuf.auto(1,e.synthV.buffer.())
-		/8
-		=> DWGReverbC1C3.ar(_,mix:0.1)
-	}.play
+		{
+			e.playbuf  =>
+			p.synthVTracks.at(e.key).()   
+		}.play
 
 });
 Song.quarters[\accustomed]=Song.parseBeats(\accustomed,[1,1,1,1,1,0.5,0.5,0.5,0.5]);
@@ -312,11 +321,10 @@ P.synthV(\aiko,\injections,
 	],
 	// legato:,
 	music:{|p b e|
-		var f = e.synthV.buffer.();
+	
 		{
-			PlayBuf.auto(1,f)
-			/8
-			=> FreeVerb.ar(_,0.3,[0.9, 1 ])
+			e.playbuf  =>
+			p.synthVTracks.at(e.key).()   
 		}.play
 });
 P(\lick2,start:\injections,syl:0,music:{|p b e| 
@@ -356,13 +364,10 @@ P.synthV(\aiko,\Husband,
 		legato:[1,0.95,1,1,1,1,1,0.9,1,1] 
 	],
 	music:{|p b e|
-		var f = e.synthV.buffer.().postln;
+		
 		{
-			PlayBuf.ar(1,f
-				,rate:BufSampleRate.kr(f.bufnum)/s.sampleRate
-			)
-			/4
-			=> FreeVerb.ar(_,0.3,[0.9, 1 ])
+			e.playbuf  =>
+			p.synthVTracks.at(e.key).()   
 		}.play
 });
 P.still( \thalassa, start: \Feel, timecode:3854.seconds, music: { |p b e|
@@ -411,14 +416,9 @@ P.synthV(\aiko,'to a machine',
 	],
 	music: { |p b e|
 
-		var f = e.synthV.buffer.();
 		{
-
-			PlayBuf.auto(1,f)
-			/8
-			
-			=> FreeVerb.ar(_,0.3,[0.9, 0.8 ])
-			
+			e.playbuf  =>
+			p.synthVTracks.at(e.key).()   
 		}.play
 });
 P.still( \thalassa, start: 'to a machine', timecode: 3903.5.seconds, music: { |p b e|
@@ -516,12 +516,12 @@ P.synthV(\aiko, 'Will they',
 	], music: { |p b e|
 	e.synthV.buffer.() => 
 	 {|i| 
+		
 		{
-			PlayBuf.ar(1,i,rate:BufSampleRate.new(bufnum:i)/s.sampleRate)
-			/7
-			=> DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:0.1, coefs:nil, perm:nil, doprime:0)
-			//=> DelayN.ar(_,0.2)
+			e.playbuf  =>
+			p.synthVTracks.at(e.key).()   
 		}.play
+.play
 	}
 });
 P(\bass_stab,start:'Will they',music:{|p b e| 
@@ -587,12 +587,9 @@ P.synthV(\aiko,\press,
 		lyrics:" kan tu maindz press klos laik zis"
 	],music: { |p b e|
 	
-	e.synthV.buffer.() => {|i| 
 		{
-			PlayBuf.auto(1,i)
-			/7
-			=> DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:0.1, coefs:nil, perm:nil, doprime:0)
-			//=> DelayN.ar(_,0.2)
+			e.playbuf  =>
+			p.synthVTracks.at(e.key).()   
 		}.play
 	}
 });
@@ -622,15 +619,11 @@ P.still(\thalassa,start:'press close',timecode:3915.542.seconds,music:{|p b e|
 P.synthV(\aiko,\robot,
 	[ lyrics: "kan ro bot lips do zis" ],
 	music:{ |p b e|
-	e.synthV.buffer.() => {|i| 
 		{
-			PlayBuf.auto(1,i)
-			/7
-			=> DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:0.1, coefs:nil, perm:nil, doprime:0)
-			//=> DelayN.ar(_,0.2)
+			e.playbuf  =>
+			p.synthVTracks.at(e.key).()   
 		}.play
 	}
-} 
 );
 P(\this,start:\robot,syl:4,music:{|p b e| 
 		(
@@ -648,15 +641,10 @@ P.still(\thalassa,start:'robot lips',timecode:3920.5.seconds,music:{|p b e|
 		)});
 [ "(they kiss, then Kirk falls gently to the floor) (boooom boom boom boom boom boom boom boom) Sargon, /*what is it?*/ what's wrong? ",[11,7,6,5,4,3,2,1].dm('b-',scale:\minor)++[3,-7,1,4.5].dm(\f,scale:\mixolydian)].addLine;
 P.synthV(\aiko,\kiss, [lyrics:"Sar gon wats rong"],syl:7,range:[8,11],music: { |p b e|
-		e.synthV.buffer.().postln => {|i| 
-		
-			{
-				PlayBuf.ar(1,i,rate:BufSampleRate.new(bufnum:i)/s.sampleRate)
-				/7
-				=> DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:0.1, coefs:nil, perm:nil, doprime:0)
-				//=> DelayN.ar(_,0.2)
-			}.play
-		}
+		{
+			e.playbuf  =>
+			p.synthVTracks.at(e.key).()   
+		}.play
 		
 });
 P.still(\kiss,start:'kiss',
@@ -763,15 +751,10 @@ P.still(\hypo, start:\hypo,syl:2, timecode:3949.5.seconds, music:{ |p b e|
 
 ["/*MULHALL:*/ Doctor, help him! ",[1,-7,3,-7].dm(\e,scale:\mixolydian)].addLine;
 P.synthV(\aiko,\Doctor,[ lyrics:" dak tar help him" ], music:{|p b e |
-	e.synthV.buffer.() => {|i| 
-		
 		{
-			PlayBuf.ar(1,i,rate:BufSampleRate.new(bufnum:i)/s.sampleRate)
-			/7
-			=> DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:0.1, coefs:nil, perm:nil, doprime:0)
-			//=> DelayN.ar(_,0.2)
+			e.playbuf  =>
+			p.synthVTracks.at(e.key).()   
 		}.play
-	}
 });
 //P.tune(\Doctor);
 		

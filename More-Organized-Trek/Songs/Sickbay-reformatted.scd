@@ -391,7 +391,16 @@ P(\click,start:\Feel,music:{|p b e|
 		].pp;
 });
 
-["/*KIRK:*/ No, beloved. (boom) If we torment ourselves ",[6,5,3,1,-1, 4,5,11,7,6,5].dm(\f)].addLine;
+["/*KIRK:*/ No, beloved. (boom) If we torment ourselves ",[6,5,3,1,-1, 4,5,11,7,6,5].dm(\f,4)].addLine;
+P.synthV(\genbu,\torment,[
+	lyrics:"no bi la ved r if wi tar ment ar selvs"
+],music: {|p b e|
+	{
+		e.playbuf.() 
+		=> p.synthVTracks.at(\aiko).()   
+	}.play
+}
+);
 P.tune(\torment);
 
 P.still( \kirk, start: \torment, timecode:3859.seconds, music: { |p b e|
@@ -462,6 +471,14 @@ P(\chord,start:\machine,syl:10,lag:-0.05,music:{|p b e|
 
 
 ["/*KIRK:*/ Our thoughts boom boom boom boom will intertwine. (boom boom boom boom) ",[1,7,-1,-2,-3,-4,6,7,11,3, 1,2,3,4].dm(\d,scale:\dorian)].addLine;
+P.still(\clear,music: {|p b e|
+		e.still.(
+
+			wait:b.sum,
+			test:["our thoughts","will intertwine"]
+		)
+	}
+);
 P(\chord,syl:0,start:\thoughts,music:{|p b e| 
 	[
 		freq: [[1,3,5,7],\r,[-4,1,3],[-4,-7,2]].df(\d,scale:\dorian,octave:4).q,
@@ -592,7 +609,7 @@ P.synthV(\aiko,\press,
 			p.synthVTracks.at(e.key).()   
 		}.play
 	}
-});
+);
 P(\chord,start:\press,syl:2,music:{|p b e| 
 	[
 		freq: [[1,3,4,7],[1,3,4,7],[1,3,4,6.5]].df(\c,scale:\minor).q,

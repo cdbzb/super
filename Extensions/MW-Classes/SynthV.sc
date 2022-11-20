@@ -1,7 +1,7 @@
 SynthV{
 	// project.tracks[0].database = "AiKO Lite"
 	classvar <>directory = "~/tank/super/SynthV";
-	classvar <notePrototype, <databasePrototype;
+	classvar <notePrototype, <databasePrototype, <databaseLib;
 	classvar <roles;
 	var <name, <project, <file,<location,<buffer, <key, <song, <section;
 	*new {|key name| ^super.new.init(key,name) }
@@ -31,6 +31,19 @@ SynthV{
 			'language': "mandarin", 
 			'languageOverride': "", 
 			'backendType': "SVR2Standard"
+		);
+		databaseLib = (
+			genbu:( 'backendType': "SVR2Standard", 'version': 100, 'name': "GENBU (Lite)", 'phoneset': "romaji", 'language': "japanese", 'languageOverride': "", 'phonesetOverride': "" ), 
+			aiko: ( 
+			'version': 100, 
+			'phonesetOverride': "", 
+			'name': "AiKO (Lite)", 
+			'phoneset': "xsampa", 
+			'language': "mandarin", 
+			'languageOverride': "", 
+			'backendType': "SVR2Standard"
+		)
+
 		)
 		/*
 		(
@@ -98,6 +111,9 @@ SynthV{
 	open {
 		"open -a 'Synthesizer V Studio Basic'" + file => _.unixCmd 
 	}
+	database { |track=0|
+		^project.tracks[track].mainRef.database
+	}
 	notes { | track=0  |
 		^project.tracks[track].mainGroup.notes
 	}
@@ -114,7 +130,7 @@ SynthV{
 			this.setNotes(key,event.at(key))
 		};
 		//this should be done with an array flop and pairsDo instad but...
-		//this.filterRests 
+		this.filterRests 
 	}
 	setPbind { |pbind|
 		var event = Event.newFrom(pbind.patternpairs);
@@ -130,14 +146,16 @@ SynthV{
 			this.setNote(x, key, i)
 		}
 	}
+	setDatabase { |key|
+		project.tracks[0].mainRef.put(\database, databaseLib.at(key) )
+
+	}
 	makeNotes {|num track=0|
 		project.tracks[track].mainGroup.notes = notePrototype ! num
 	}
 	filterRests { |track=0|
-		project.tracks[track].maingroup.put(
-			\notes,
-			this.notes.reject({|i| i.at("lyrics")=="r"})
-		)
+		project.tracks[track].mainGroup.notes =
+			this.notes.reject({|i| i.at(\lyrics)=="r"})
 	}
 	refreshBuffer{
 		File.exists(location+/+"synthV_MixDown.wav").if{
@@ -170,6 +188,7 @@ SynthV{
 		synthV.makeNotes(pbind.dur.size);
 
 		synthV.set(pbind); //set should filter for \r
+		synthV.setDatabase(key);
 
 		synthV.writeProject; 'synthV written!'.postln;
 		

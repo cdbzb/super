@@ -66,21 +66,21 @@ P(\gliss,start:5,syl:6,music:{
 				(type:\set,id:a[\id],degree:[1,5,8,11,12]-1,octave:4,root:2).play
 		}
 });
-//glissChord
-{Saw.ar(
-		(\freq.kr(400,\freqLag.kr(2))
-		+(LFBrownNoise1.ar(2!5))*rrand(0.99,1.01!5)
-		=> Vibrato.kr(_,3,depth:0.004,delay:4,onset:4)))
-		+ WhiteNoise.ar(0.001)
-		* Env.asr(\att.kr(1),\amp.kr(1),\rel.kr(3)).kr(0,gate:\gate.kr(1))
-		//=>MoogFF.ar(_,2800)
-		=>RHPF.ar(_,Line.kr(0.1,2,17)*\cutoff.kr(1000),\q.kr(1))
-		=>MoogFF.ar(_,6666,1,mul:2)
-		=>Splay.ar(_)
-		//=>FreeVerb.ar(_,1,\wet.kr(0.7)) *3
-		=>( JPverb.ar(_,3,mix:\wet.kr(0.7))<!DetectSilence.ar(_,time:1,doneAction:2) ) 
-		=>Out.ar(\out.ir(2),_)
+( /*glissChord*/ {Saw.ar(
+	(\freq.kr(400,\freqLag.kr(2))
+	+(LFBrownNoise1.ar(2!5))*rrand(0.99,1.01!5)
+	=> Vibrato.kr(_,3,depth:0.004,delay:4,onset:4)))
+	+ WhiteNoise.ar(0.001)
+	* Env.asr(\att.kr(1),\amp.kr(1),\rel.kr(3)).kr(0,gate:\gate.kr(1))
+	//=>MoogFF.ar(_,2800)
+	=>RHPF.ar(_,Line.kr(0.1,2,17)*\cutoff.kr(1000),\q.kr(1))
+	=>MoogFF.ar(_,6666,1,mul:2)
+	=>Splay.ar(_)
+	//=>FreeVerb.ar(_,1,\wet.kr(0.7)) *3
+	=>( JPverb.ar(_,3,mix:\wet.kr(0.7))<!DetectSilence.ar(_,time:1,doneAction:2) ) 
+	=>Out.ar(\out.ir(2),_)
 }=>SynthDef(\glissChord,_)=>_.add; 
+);
 ["You sound ter- ri- ble wait there for me","c4 d e c g3 e-4 d b-3 f"].addLine;  //3
 P.tune('ter- ri');
 P(\mcCoy3,start:3,music: { |p b e|
@@ -223,8 +223,8 @@ P.tune('bo- dy');
 P.tune('be- tter');
 //in Time
 ["in Time a host  -- body will become...  ",[-1,1,-7,1,2,1,-7,-6,-7,1].dm(\b,scale:\minor)].addLine; //12
-Song.synthVTracks=();
-Song.synthVTracks.aiko= { |preGain=1 ratio=2 amp = (1/8) len=2000 mix=0.1 |
+Song.synthVTracks=EventWithDefault();
+Song.synthVTracks.aiko = { |preGain=1 ratio=2 amp = (1/8) len=2000 mix=0.1 |
 	{ |i|
 
 		i.() * preGain
@@ -234,6 +234,8 @@ Song.synthVTracks.aiko= { |preGain=1 ratio=2 amp = (1/8) len=2000 mix=0.1 |
 		=>.first DetectSilence.ar(_,doneAction:2)
 	}
 };
+Song.synthVTracks.default = Song.synthVTracks.aiko;
+
 P.synthV(\aiko, \Time, [lyrics:"in taim a ho ost ba di will bi kum "], music:{ |p b e|
 		{
 			e.playbuf  =>
@@ -338,8 +340,27 @@ P(\lick2,start:\injections,syl:0,music:{|p b e|
 		freqLag:0.05
 	].pma(\sparkTriangle).play;
 });
-["/*KIRK:*/ That will take months, perhaps years. We haven't that choice, Thalassa. ",[1,-7,1,3, 2,1,5,2,5,4.5,5,6,11,7,6,5].dm(\c)].addLine;
+["/*KIRK:*/ That will take months, perhaps years. We haven't that choice, Thalassa. ",[1,-7,1,3, 2,1,5,2,5,4.5,5,6,11,7,6,5].dm(\c,4)].addLine;
 P.tune(\months);
+P.still(\clear,\months,music:{|p b e|
+	e.still.(
+		text:["that will take months","perhaps years"],
+		wait:b.sum
+	);
+	e.still.sequenceText(
+		
+			b.parse([7]).sum,["we havn't that choice", "Thalassa"]
+	)
+});
+P.synthV(\genbu,\months,[
+	lyrics:"that will teik mons per haps yirs wi ha fent da at choisu tha la ssa"
+],music:{|p b e|
+	{
+		e.playbuf 
+		* Env([1.7,1.5,1],b.parse([3,4])).kr(0,gate:1)
+		=> p.synthVTracks.at(e.key).(1.5)
+	}.play
+});
 P(\extraNotes,start:\months,syl:2,music:{|p b e| 
 	[
 		freq: [[7,3].df(\e,scale:\mixolydian),[7,3].df(\a,scale:\mixolydian),[5,7].df(\d,scale:\mixolydian),[4,6,12].df(\d),[3,5].df(\d)].q,
@@ -397,7 +418,7 @@ P.synthV(\genbu,\torment,[
 ],music: {|p b e|
 	{
 		e.playbuf.() 
-		=> p.synthVTracks.at(\aiko).()   
+		=> p.synthVTracks.at(e.key).()   
 	}.play
 }
 );
@@ -470,12 +491,22 @@ P(\chord,start:\machine,syl:10,lag:-0.05,music:{|p b e|
 });
 
 
-["/*KIRK:*/ Our thoughts boom boom boom boom will intertwine. (boom boom boom boom) ",[1,7,-1,-2,-3,-4,6,7,11,3, 1,2,3,4].dm(\d,scale:\dorian)].addLine;
-P.still(\clear,music: {|p b e|
-		e.still.(
+["/*KIRK:*/ Our thoughts boom boom boom boom will intertwine. (boom boom boom boom) ",[1,7,-1,-2,-3,-4,6,7,11,3, 1,2,3,4].dm(\d,4,scale:\dorian)].addLine;
+P.synthV(\genbu,'will intertwine',[
+	lyrics:" ar tats r r r r wil in ter twan r r r r",
+	legato:[ 1,3, 1,1,1,1,1,  1,1,3 ]
+],music:{|p b e|
+
+	{
+		e.playbuf =>
+		p.synthVTracks.at(e.key).()
+	}.play
+});
+P.still(\clear,timecode:0,music: {|p b e|
+		e.still.value(
 
 			wait:b.sum,
-			test:["our thoughts","will intertwine"]
+			text:["our thoughts","will intertwine"]
 		)
 	}
 );
@@ -531,15 +562,11 @@ P.synthV(\aiko, 'Will they',
 	[
 		lyrics: "wil they huz band wil they in ter twa a an laik zis"
 	], music: { |p b e|
-	e.synthV.buffer.() => 
-	 {|i| 
 		
 		{
 			e.playbuf  =>
 			p.synthVTracks.at(e.key).()   
 		}.play
-.play
-	}
 });
 P(\bass_stab,start:'Will they',music:{|p b e| 
 		[ instrument:\sawTw,

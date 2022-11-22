@@ -7,6 +7,7 @@ Song {
 	classvar <>current;
 	classvar <>loading;
 	classvar <>songList;
+	classvar <>muteList,<muted;
 	var <lyricWindow,lyricWindowText;
 	var <song, <key, <cursor=0, sections, <lyrics, <tune; 
 	var <durs,  <>resources, <>lyricsToDurs;
@@ -20,8 +21,10 @@ Song {
 
 	*initClass {
 		Class.initClassTree(Recorder);
-		songs=Dictionary.new;
+		songs= Dictionary.new;
 		loading = CondVar();
+		muteList = List[];
+		muted = List[];
 	}
 	*new { 
 		|key array dursInFile resources|
@@ -449,6 +452,10 @@ Song {
 		songList = nil;
 		key.postln;
 	}
+	*mute { |symbol|
+		symbol.notNil.if{ muted.add(symbol); };
+		^muted
+	}
 	getPartsList { |args|
 		var a =
 		case
@@ -458,7 +465,14 @@ Song {
 	}
 	getParts { |list|
 		list.postln;
-		( muteTunes == true ).if{ list=list.reject{|i| i.name.contains( "TUNE" )} };
+		( muteTunes == true ).if{ list=list.select{|i| i.name.contains( "TUNE" )} };
+		list = list.reject{ |i|
+			muted.collect{ |m|
+				var res = i.resources.at(m).notNil or:  i.name.asString.contains(m.asString);
+				res.postln
+			}
+			.inject(false, _ or: _ )
+		};
 		^list.collect{|x|(x.class==Symbol).if({resources.at(x)},{x})}
 	}
 	///these are for backwards compat

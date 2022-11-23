@@ -7,6 +7,18 @@ Monitor.new().play(2,2,0,2);
 Song.speaker =Library.at(\functions,\prep).("/Users/michael/tank/IR/Saane/Speakers_&_Telephones/Very_small_speaker_mono.wav");
 SynthV.setRole(\Thalassa,\aiko);
 
+Song.synthVTracks=EventWithDefault();
+Song.synthVTracks.aiko = { |preGain=1 ratio=2 amp = (1/8) len=2000 mix=0.1 |
+	{ |i|
+
+		i.() * preGain
+		=> SoftKneeCompressor.rms(_,  thresh:-10, ratio: ratio, knee:6, attack:0, release:0.05, makeUp:0, rms:40) 
+		* amp
+		=> DWGReverbC1C3.ar(_,len:len,mix:mix)
+		=>.first DetectSilence.ar(_,doneAction:2)
+	}
+};
+Song.synthVTracks.default = Song.synthVTracks.aiko;
 P(\filter,start:0,music:{|p b e| 
 		p.pts.select{|i| i.still.notNil}.select{|i| i.name.asString.contains("halass") }.do{|i|i.monitor.postln}
 });
@@ -154,6 +166,18 @@ P(\doorOpen,start:2,music:
 ["(beat) (formula) Sar- gon's for- mu- la...","d d5 e f# a f# c"].addLine;  //6
 P.tune('(formula)');
 ["yes, I wan- ted to be cer- tain there was no","f4 c#4 c c# f c# c b-3 a- b- e-4"].addLine;  //7
+P.synthV(\genbu, 'cer- tain',
+	[
+		lyrics: "yes ai won ted tu bi sur ten zer was no",
+		legato:[ 0.5,1,1,1,1,0.8,1,1,1,1,1 ],
+		phonemes: ["y e s","","","","","","","","","w a s",""]
+	],music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	}
+);
 P.tune('cer- tain');
 Song.quarters['cer- tain']=Song.parseBeats('cer- tain',[1.5,0.5,0.5,0.5,0.5,0.5,1,0.5,0.5,0.5,0.5,]);
 P(\chords,start:'cer- tain',music:{|p b e| 
@@ -173,6 +197,17 @@ P(\bass,start:'cer- tain',music:{|p b e|
 });
 ["er- ror. For- mu- la is co- ","d4 f3 g a b g b "].addLine; //8
 P.tune('For- mu- la');
+P.synthV(\genbu,'er- ror',
+	[
+		lyrics: "er ror for mu la is ko",
+		phonemes: ["","","","","","i s",""]
+	],music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	}
+);
 P(\bass,syl:1,start:'For- mu- la',music:{|p b e| 
 		{
 			b.postln;
@@ -191,6 +226,17 @@ P(\bass,syl:1,start:'For- mu- la',music:{|p b e|
 
 });
 ["rrect. Don't be concer -- ned, this is an","d4 c# e d f# g f# d e f# "].addLine;  //9
+P.synthV(\genbu, 'rrect',
+[
+	lyrics: "rekt dont bi kan ser - nd dis is an",
+	phonemes: ["","","","","","","","d i s","i s",""]
+],music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+}
+);
 P.tune('rrect.');
 P(\lick,start:\rrect,music:{|p b e| 
 		{|i|
@@ -210,6 +256,16 @@ P(\lick,start:\rrect,music:{|p b e|
 });
 ["ex- cel- lent bo- dy. "," g#4 e d d c#"].addLine; //10
 P.tune('ex- cel');
+P.synthV(\genbu,'ex- cel',
+[
+	lyrics: "ek se lent ba di",
+],music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+}
+);
 P(\strum,start:'ex- cel',music:{|p b e| 
 		(
 				strum:0.055,
@@ -220,21 +276,21 @@ P(\strum,start:'ex- cel',music:{|p b e|
 });
 P.tune('bo- dy');
 ["There I feel be- tter al- rea- dy","c4 g3 a b c4 b3 a b d4 c"].addLine; //11
+	P.synthV(\genbu, 'be- tter',
+	[
+		lyrics: "de ai fil be - - te al re di",
+		legato: [9,10,10,10,10,10,10,10,10,8]/10
+	],music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	}
+);
 P.tune('be- tter');
 //in Time
 ["in Time a host  -- body will become...  ",[-1,1,-7,1,2,1,-7,-6,-7,1].dm(\b,scale:\minor)].addLine; //12
-Song.synthVTracks=EventWithDefault();
-Song.synthVTracks.aiko = { |preGain=1 ratio=2 amp = (1/8) len=2000 mix=0.1 |
-	{ |i|
 
-		i.() * preGain
-		=> SoftKneeCompressor.rms(_,  thresh:-10, ratio: ratio, knee:6, attack:0, release:0.05, makeUp:0, rms:40) 
-		* amp
-		=> DWGReverbC1C3.ar(_,len:len,mix:mix)
-		=>.first DetectSilence.ar(_,doneAction:2)
-	}
-};
-Song.synthVTracks.default = Song.synthVTracks.aiko;
 
 P.synthV(\aiko, \Time, [lyrics:"in taim a ho ost ba di will bi kum "], music:{ |p b e|
 		{
@@ -326,7 +382,7 @@ P.synthV(\aiko,\injections,
 	
 		{
 			e.playbuf  =>
-			p.synthVTracks.at(e.key).()   
+			p.synthVTracks[e.key].()   
 		}.play
 });
 P(\lick2,start:\injections,syl:0,music:{|p b e| 
@@ -381,7 +437,7 @@ P(\bass,start:\months,music:{|p b e|
 ["/*MULHALL:*/ Husband. Feel the touch of my hand, husband. ", [3,2, 7,6,6,5,4,6, 5,4].dm('a-',scale:\minor)].addLine;
 P.synthV(\aiko,\Husband,
 	[
-		lyrics:"Hus band feel the tuch of my hand hus band",
+		lyrics:"Heus band feel the teuch of my hand heus band",
 		legato:[1,0.95,1,1,1,1,1,0.9,1,1] 
 	],
 	music:{|p b e|

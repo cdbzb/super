@@ -30,135 +30,142 @@ Song {
 		|key array dursInFile resources|
 		^super.new.init(key, array,dursInFile, resources);
 	}
+	*mute { |symbol|
+		symbol.notNil.if{ muted.add(symbol); }{muted = List[]};
+		^muted
+	}
+	*unmute { |symbol|
+		symbol.notNil.if{ muted.remove(symbol) }{muted = List[]}
+	}
 	*rhythm { |section=0 length=1 cueSections=1 | //this method uses arg section - use rhythmRecorder to use cursor (should rename!)
 		this.currentSong.cursor = this.currentSong.section(section);
 		this.rhythmRecorder(length, cueSections);
 	}
 	*rhythmRecorder { // 
-	|  length=1 cueSecs=1 |
-	var rnge=[Song.cursor, Song.cursor + length -1];
-	var stepper;
-	var song = Song.currentSong;
-	var synth,recorder,a;
-	var range = Array.with(rnge).flatten;
-	var seq = (range[0]..range.clipAt(1))
-	.collect({|i|song.tune[i].list}).flatten;
-	seq.postln;
-	stepper={ |seq|
-		var rests = seq.collect{|i| ( i == \r ).if{0}{1} };
+		|  length=1 cueSecs=1 |
+		var rnge=[Song.cursor, Song.cursor + length -1];
+		var stepper;
+		var song = Song.currentSong;
+		var synth,recorder,a;
+		var range = Array.with(rnge).flatten;
+		var seq = (range[0]..range.clipAt(1))
+		.collect({|i|song.tune[i].list}).flatten;
+		seq.postln;
+		stepper={ |seq|
+			var rests = seq.collect{|i| ( i == \r ).if{0}{1} };
 
-		seq = seq.collect{|i| ( i == \r ).if{400}{i} };
+			seq = seq.collect{|i| ( i == \r ).if{400}{i} };
 
-		SynthDef(\stepper, { |t_trigger=0|
-			var note = Demand.kr(t_trigger + KeyState.kr(38)-0.1,0, Dseq.new(seq.midicps));
-			var amp = Demand.kr(t_trigger + KeyState.kr(38)-0.1,0, Dseq.new(rests.midicps));
-			var sig=SinOsc.ar(note,0,EnvGen.kr(
-				Env.perc(0.01,1,0.1)
-				,gate:t_trigger + KeyState.kr(38)-0.1
-			));
+			SynthDef(\stepper, { |t_trigger=0|
+				var note = Demand.kr(t_trigger + KeyState.kr(38)-0.1,0, Dseq.new(seq.midicps));
+				var amp = Demand.kr(t_trigger + KeyState.kr(38)-0.1,0, Dseq.new(rests.midicps));
+				var sig=SinOsc.ar(note,0,EnvGen.kr(
+					Env.perc(0.01,1,0.1)
+					,gate:t_trigger + KeyState.kr(38)-0.1
+				));
 				Out.ar(1,sig * amp * 0.1);
 			});
 		};
-	stepper.(seq).add;
-	recorder=( // function returns this pseudo-object and calls makeWindow on it
-		range:range,
-		time:Main.elapsedTime,
-		item:List.new,
-		cue:{
-			|self|
-			var range=(self.range[0]-(cueSecs-1)-1..self.range[0]-1);
-			("range"++range).postln;
-			(self.range[0]>0).if(
-				{var seq = range.collect({|i|song.pbind[i]});
-				Pseq(seq);},
-				//{song.pbind[nextTune-1]},
-				(type:\rest)
-			)
-		},
-		captureLoop:{
-			|self char|
-			Routine ({
-				loop {
-					self.item = self.item.add(Main.elapsedTime-self.time); 
-					synth.set(\t_trigger,1);
-					self.time=Main.elapsedTime; 
-					char = 0.yield; 
-				}
-			})
-		},
-		window:nil,
-		makeWindow: {
-			|self| var w=Window.new.alwaysOnTop_(true).front.alwaysOnTop_(true);
-			var b=Button.new(w.view,Rect(60,10,100,100))
-			.states_(["1",Color.black,Color.white])
-			.action = {self.doOver;"do over".postln};
-			var c=Button.new(w.view,Rect(160,10,100,100))
-			.states_(["1",Color.black,Color.white])
-			.action = { var a = self.ret;a.postln};
-			var d=Button.new(w.view,Rect(260,10,100,100))
-			.states_(["1",Color.black,Color.white])
-			.action = {self.nextt;"next".postln};
-			var e=Button.new(w.view,Rect(260,300,100,100))
-			.states_(["1",Color.black,Color.white])
-			.action = {song.save};
-			var v=w.view;
-			////////// MIDI FUNCTION //////////
-			//							XTouch.addKey({
-			//								Pipe("osascript -e 'tell application \"System Events\" to keystroke \"j\"'","w")
-			//							},\f8);
-			self.window=w;
-			StaticText(b,Rect(0,0,100,100)).string_("Do over").align_(\center);
-			StaticText(c,Rect(0,0,100,100)).string_("Return").align_(\center);
-			StaticText(d,Rect(0,0,100,100)).string_("next").align_(\center);
-			StaticText(e,Rect(0,0,100,100)).string_("save").align_(\center);
-			EZText.new(v,Rect(0,110,300,50	),label:"range",initVal:self.range,);
-			v.keyDownAction={ |view char|
-				self.captureLoop.(b); 
-				switch(char,
-					$d , {self.doOver},
-					$n , {self.nextt},
-					$r , {self.ret},
-					$s , {song.save},
-					$w , {self.window.close;},
-					$q , {self.window.close;}
+		stepper.(seq).add;
+		recorder=( // function returns this pseudo-object and calls makeWindow on it
+			range:range,
+			time:Main.elapsedTime,
+			item:List.new,
+			cue:{
+				|self|
+				var range=(self.range[0]-(cueSecs-1)-1..self.range[0]-1);
+				("range"++range).postln;
+				(self.range[0]>0).if(
+					{var seq = range.collect({|i|song.pbind[i]});
+					Pseq(seq);},
+					//{song.pbind[nextTune-1]},
+					(type:\rest)
 				)
-			};
-			self.item=[];
-			fork{Server.default.sync; synth=Synth(\stepper); a=synth };
-			w.onClose_({synth.free});
-			self.cue.play ;
-			self.range.do({|i|song.lyrics[i].postln});
-			self
-		},
-		doOver:{|self| self.item=[];self.cue.play;synth.free;synth=Synth(\stepper)},
-		nextt:{|self| 
-			self.range=(self.range+(self.range.clipAt(1)-self.range[0]+1));
-			self.range.do({|i x| (i>(song.sections-1)).if {self.range[x]=(song.sections-1).asInt}}); // check if range too high
-			(self.range++" "++song.sections).postln;
-			self.window.close;
-			{
-				var newSeq=self.range.collect({|i|song.tune[i].list}).flatten;
-				stepper.(newSeq).add;
-				Server.default.sync;
-				self.makeWindow
-			}.fork(AppClock)
-		},
-		ret: {|self|
-			var recorded =self.item.round(0.001)[1..(self.item.size)];
-			recorded.postln;
-			( self.range[0]..self.range.clipAt(1) ).do({|i|
-				var returnChunk=List.new;
-				var elements=song.tune[i].list.size;
-				elements.do(
-					{|i|
-						if(recorded.size>0)
-						{returnChunk.add(recorded.removeAt(0)) }
+			},
+			captureLoop:{
+				|self char|
+				Routine ({
+					loop {
+						self.item = self.item.add(Main.elapsedTime-self.time); 
+						synth.set(\t_trigger,1);
+						self.time=Main.elapsedTime; 
+						char = 0.yield; 
 					}
-				);
-				(returnChunk[0].isNil.not).if{song.durs[i]=Pseq(returnChunk)} ;
-			});
-			//~xtreme.durs[nextTune]= Pseq(recorded);
-		};
+				})
+			},
+			window:nil,
+			makeWindow: {
+				|self| var w=Window.new.alwaysOnTop_(true).front.alwaysOnTop_(true);
+				var b=Button.new(w.view,Rect(60,10,100,100))
+				.states_(["1",Color.black,Color.white])
+				.action = {self.doOver;"do over".postln};
+				var c=Button.new(w.view,Rect(160,10,100,100))
+				.states_(["1",Color.black,Color.white])
+				.action = { var a = self.ret;a.postln};
+				var d=Button.new(w.view,Rect(260,10,100,100))
+				.states_(["1",Color.black,Color.white])
+				.action = {self.nextt;"next".postln};
+				var e=Button.new(w.view,Rect(260,300,100,100))
+				.states_(["1",Color.black,Color.white])
+				.action = {song.save};
+				var v=w.view;
+				////////// MIDI FUNCTION //////////
+				//							XTouch.addKey({
+				//								Pipe("osascript -e 'tell application \"System Events\" to keystroke \"j\"'","w")
+				//							},\f8);
+				self.window=w;
+				StaticText(b,Rect(0,0,100,100)).string_("Do over").align_(\center);
+				StaticText(c,Rect(0,0,100,100)).string_("Return").align_(\center);
+				StaticText(d,Rect(0,0,100,100)).string_("next").align_(\center);
+				StaticText(e,Rect(0,0,100,100)).string_("save").align_(\center);
+				EZText.new(v,Rect(0,110,300,50	),label:"range",initVal:self.range,);
+				v.keyDownAction={ |view char|
+					self.captureLoop.(b); 
+					switch(char,
+						$d , {self.doOver},
+						$n , {self.nextt},
+						$r , {self.ret},
+						$s , {song.save},
+						$w , {self.window.close;},
+						$q , {self.window.close;}
+					)
+				};
+				self.item=[];
+				fork{Server.default.sync; synth=Synth(\stepper); a=synth };
+				w.onClose_({synth.free});
+				self.cue.play ;
+				self.range.do({|i|song.lyrics[i].postln});
+				self
+			},
+			doOver:{|self| self.item=[];self.cue.play;synth.free;synth=Synth(\stepper)},
+			nextt:{|self| 
+				self.range=(self.range+(self.range.clipAt(1)-self.range[0]+1));
+				self.range.do({|i x| (i>(song.sections-1)).if {self.range[x]=(song.sections-1).asInt}}); // check if range too high
+				(self.range++" "++song.sections).postln;
+				self.window.close;
+				{
+					var newSeq=self.range.collect({|i|song.tune[i].list}).flatten;
+					stepper.(newSeq).add;
+					Server.default.sync;
+					self.makeWindow
+				}.fork(AppClock)
+			},
+			ret: {|self|
+				var recorded =self.item.round(0.001)[1..(self.item.size)];
+				recorded.postln;
+				( self.range[0]..self.range.clipAt(1) ).do({|i|
+					var returnChunk=List.new;
+					var elements=song.tune[i].list.size;
+					elements.do(
+						{|i|
+							if(recorded.size>0)
+							{returnChunk.add(recorded.removeAt(0)) }
+						}
+					);
+					(returnChunk[0].isNil.not).if{song.durs[i]=Pseq(returnChunk)} ;
+				});
+				//~xtreme.durs[nextTune]= Pseq(recorded);
+			};
 		).makeWindow;
 		fork{
 			Server.default.sync;
@@ -228,18 +235,15 @@ Song {
 	}
 	*doesNotUnderstand { |selector   ...args|
 		songs.at(current).respondsTo(selector).if{
-			//\responds.postln;
-			//'selector '.post;selector.postln;
-			//'args '.post;args.postln;
 			^Message(songs.at(current),selector).value(*args)
 		} {
 			var key = selector.asString;
 			key.endsWith("_").if{
-                key=key.replace("_","").asSymbol;
-                ^this.currentSong.resources.put(key, *args);
-            }{
-                ^Song.currentSong.resources.at(key.asSymbol)
-            }
+				key=key.replace("_","").asSymbol;
+				^this.currentSong.resources.put(key, *args);
+			} {
+				^Song.currentSong.resources.at(key.asSymbol)
+			}
 			//^songs.at(selector)
 		}
 	}
@@ -451,10 +455,6 @@ Song {
 		current = key;
 		songList = nil;
 		key.postln;
-	}
-	*mute { |symbol|
-		symbol.notNil.if{ muted.add(symbol); };
-		^muted
 	}
 	getPartsList { |args|
 		var a =

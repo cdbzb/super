@@ -5,7 +5,6 @@ Monitor.new().play(2,2,0,2);
 //Song.dursFile_("/Users/michael/tank/super/theExtreme_Sep18");
 ~sickBay=Song(\sickBay,[]).current;
 Song.speaker =Library.at(\functions,\prep).("/Users/michael/tank/IR/Saane/Speakers_&_Telephones/Very_small_speaker_mono.wav");
-SynthV.setRole(\Thalassa,\aiko);
 
 Song.synthVTracks=EventWithDefault();
 Song.synthVTracks.aiko = { |preGain=1 ratio=2 amp = (1/8) len=2000 mix=0.1 |
@@ -42,6 +41,18 @@ P(\mcCoy0,start:0,syl:1,music: { |p b e|
 }); 
 //TODO Sargon should sound sick!
 ["Sar- gon here, i'm in your deck six brief- ing room","b- g- c  e- f g- a- b- b g# d "].addLine; //1
+P.synthV(\genbu,'Sar- gon here', take:"low", params: 
+	[
+		lyrics: "Sa gon hi aim in yur dek siks bri fin rum",
+	],
+	filter:{|e| e.midinote = e.midinote - 12},
+	music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	}
+);
 P.tune('Sar- gon here');
 ["(enter Thalassa)","e5"].addLine; //f maj 7 //2
 P.tune('enter Thalassa');
@@ -94,6 +105,16 @@ P(\gliss,start:5,syl:6,music:{
 }=>SynthDef(\glissChord,_)=>_.add; 
 );
 ["You sound ter- ri- ble wait there for me","c4 d e c g3 e-4 d b-3 f"].addLine;  //3
+//	P.synthV(\aiko,'ter- ri',
+//	[
+//		lyrics: "yu sound te ri bu weit zer for mi",
+//	],music:{|p b e|
+//		{
+//			e.playbuf
+//			=> p.synthVTracks.at(e.key).()
+//		}.play
+//	}
+//));
 P.tune('ter- ri');
 P(\mcCoy3,start:3,music: { |p b e|
 		Song.currentSong.pbind[3]<>(instrument:\mcCoy,
@@ -106,6 +127,16 @@ P(\static3,start:3,music:
 		(instrument:\crackle,dur:5,out:~sickBay.mcCoyBus,amp:0.3)
 );
 ["Sar- gon what's wrong?","b4 g b e5"].addLine;  //4
+	P.synthV(\aiko, 'wrong?',
+	[
+		lyrics: "sar gan wats rong?",
+	],music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	}
+);
 P(\image,start:4,music:{{
 		~stills.preview('whatsWrong?')
 }.defer(0.01)});
@@ -128,6 +159,18 @@ P(\whatsWrong4,start:4,music:
 ); 
 P(\verbFade4,start:4,music:{~sickBay.thalassaVerb.release(5)});
 ["no- thing of im- portance, Fa- tigue per- haps","f g- a- g- b- g- b- a- g- e-"].addLine;  //5
+	P.synthV(\genbu, 'Fa-', take: "low", params:
+	[
+		lyrics: "neu zing af im po tans fa tig peu haps"
+	],
+	filter: {|e| e.midinote = e.midinote - 12},
+	music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	}
+);
 P.tune('Fa- tigue');
 P(\padBass5,start:5,music: 
 		Prout({
@@ -165,6 +208,16 @@ P(\doorOpen,start:2,music:
 ); 
 ["(beat) (formula) Sar- gon's for- mu- la...","d d5 e f# a f# c"].addLine;  //6
 P.tune('(formula)');
+	P.synthV(\aiko, 'la...',
+	[
+		lyrics: "r r sar ganz for mu la",
+	],music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	}
+);
 ["yes, I wan- ted to be cer- tain there was no","f4 c#4 c c# f c# c b-3 a- b- e-4"].addLine;  //7
 P.synthV(\genbu, 'cer- tain',
 	[
@@ -178,6 +231,7 @@ P.synthV(\genbu, 'cer- tain',
 		}.play
 	}
 );
+
 P.tune('cer- tain');
 Song.quarters['cer- tain']=Song.parseBeats('cer- tain',[1.5,0.5,0.5,0.5,0.5,0.5,1,0.5,0.5,0.5,0.5,]);
 P(\chords,start:'cer- tain',music:{|p b e| 
@@ -290,8 +344,6 @@ P.tune('bo- dy');
 P.tune('be- tter');
 //in Time
 ["in Time a host  -- body will become...  ",[-1,1,-7,1,2,1,-7,-6,-7,1].dm(\b,scale:\minor)].addLine; //12
-
-
 P.synthV(\aiko, \Time, [lyrics:"in taim a ho ost ba di will bi kum "], music:{ |p b e|
 		{
 			e.playbuf  =>
@@ -404,8 +456,9 @@ P.still(\clear,\months,music:{|p b e|
 		wait:b.sum
 	);
 	e.still.sequenceText(
-		
+		[
 			b.parse([7]).sum,["we havn't that choice", "Thalassa"]
+		]
 	)
 });
 P.synthV(\genbu,\months,[

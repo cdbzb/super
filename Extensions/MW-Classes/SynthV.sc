@@ -4,10 +4,7 @@ SynthV{
 	classvar <notePrototype, <databasePrototype, <databaseLib;
 	classvar <roles;
 	var <name, <project, <file,<location,<buffer, <key, <song, <section;
-	*new {|key name| ^super.new.init(key,name) }
-	*setRole {|name database|
-		roles.put(name,database)
-	}
+	*new {|key name take| ^super.new.init(key, name, take) }
 	*initClass {
 		roles = ();
 
@@ -58,7 +55,6 @@ SynthV{
 		*/
 	}
 	checkDirty {
-
 		^project => JSON.stringify(_) != String.readNew(File( file ,"r"))
 	}
 	refresh {
@@ -74,13 +70,15 @@ SynthV{
 	*load { |path|
 		^String.readNew(path.standardizePath => File(_,"r")) => JSON.parse(_)
 	}
-	init{ |n k|
+	init{ |n k take|
 		key = k.asString.replace(Char.space,$_);
 		song.isNil.if{ song = Song.currentSong };
 		section = song.section(key.replace($_,Char.space)); //does this do anything?
 		name = n;
 		directory = directory.standardizePath;
+
 		location= directory +/+ song.key +/+ key +/+ name; //change storage scheme here
+		take.notNil.if{ location = location ++ "-" ++ take };
 
 		file = location +/+ "project.svp";
 
@@ -132,10 +130,6 @@ SynthV{
 		//this should be done with an array flop and pairsDo instad but...
 		this.filterRests 
 	}
-	setPbind { |pbind|
-		var event = Event.newFrom(pbind.patternpairs);
-		event.postln
-	}
 	setNote {| index key value|
 		
 		key.post;" ".post;value.postln;
@@ -165,20 +159,26 @@ SynthV{
 }
 
 + P {
-	*synthV{ | key start array syl lag=0 music song resources range |
+	*synthV{ | key start params syl lag=0 take music song resources range filter |
 
 		var section = P.calcStart(start );
 
 		var pbind = Song.currentSong.pbind[start ] ;
 
-		var synthV = SynthV(key,start );
+		var synthV = SynthV(key,start,take );
 
 		pbind = pbind.patternpairs.collect{|i|
 			( i.class==Pseq ).if{i.list}{i}
 		}
-		++ array
-		=> Event.newFrom(_);
-
+		++ params 
+		=> Event.newFrom(_)
+		=> {|i| 
+			filter.notNil.if{
+				filter.( i )
+			}{
+				i
+			}
+		};
 		pbind.keys.do{|k| 
 			( pbind.at(k).isCollection && pbind.at(k).isString.not ).if{
 				pbind.put(k, pbind.at(k)[range[0]..range[1]])
@@ -195,7 +195,8 @@ SynthV{
 		^P(key,section,syl,lag, music,song,
 			resources:(
 				synthV: synthV,
-				playbuf: { PlayBuf.auto(1,synthV.buffer.()) }
+				playbuf: { PlayBuf.auto(1,synthV.buffer.()) },
+				take: take
 
 			) ,
 			); // order of section and key are reversed!!

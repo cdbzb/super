@@ -42,6 +42,27 @@ P(\arpeggio,\touch,music: {
 //~chordIdea = [ [-1,3,4.5,7], [-3.5,2,5,7] ].df(\d,scale:\minor).q => {|i| [freq:i,legato:1,dur:2.5].p};
 
 ["/*MULHALL:*/ Sargon, I remember a day long a- ",[2,1, 3,2,-6,1,-7,-7,-6,-5].dm(\d,scale:\dorian,octave:6)].addLine;
+Song.synthVTracks=EventWithDefault();
+Song.synthVTracks.aiko = { |preGain=1 ratio=2 amp = (1/8) len=2000 mix=0.1 |
+	{ |i|
+		i.() * preGain
+		=> SoftKneeCompressor.rms(_,  thresh:-10, ratio: ratio, knee:6, attack:0, release:0.05, makeUp:0, rms:40) 
+		* amp
+		=> DWGReverbC1C3.ar(_,len:len,mix:mix)
+		=>.first DetectSilence.ar(_,doneAction:2)
+	}
+};
+Song.synthVTracks.default = Song.synthVTracks.aiko;
+P.synthV(\aiko, 'long a', params:[
+	lyrics: "sar gon ai re mem ber a dai long a" ,
+	legato:[1,  0.5, 1, 1, 1,  1,  1,  1,  1, 1] ,
+	phonemes: ["","","","","m e m","","","",""]
+],music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 
 P(\bassnote,start:'long a',music: { |p b e|
 	b.postln;
@@ -56,6 +77,17 @@ P(\bassnote,start:'long a',music: { |p b e|
 });
 P.tune('long a');
 ["go. (ta da da boom da) We ", [3, 5,5,5,-4,4].dm(\e)++[3].dm(\a)].addLine;
+P.synthV(\aiko, 'go.',
+	params:[
+		lyrics: "go r r r r r wi" ,
+		legato: [2, 1, 1, 1, 1, 1, 1]
+	],music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	}
+);
 P.tune('go.', {|i| Pbindf(i,\amp,[0.1,\r,\r,\r,\r,\r,0.1].q,\legato,[5,1,1,1,1,1,1].q)});
 P(\bass,start:'go.',music:{|p b e|
 	[
@@ -78,6 +110,16 @@ P(\chords,'go.',syl:0,music: {|p b e|
 	].pp
 });
 ["sat beside a si -- lve --r ",[1,-7,-6,-7,-5,3,4,1,3].dm(\d,octave:6)].addLine;
+P.synthV(\aiko,\sat,
+	params:[
+		lyrics:"sat bi said -  a sil - - ver" ,
+	],music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	}
+);
 SynthDef(\foo,{ |freq|
 	var b = Song.durs[\sat].list;
 	[
@@ -101,6 +143,16 @@ P(\bass,start:'sat',lag:-0.05,music:{|p b e|
 });
 P.tune(\sat);
 ["lake. (boom boom) The air (boom boom) was scented with the ",[11,-7,2,3,6].dm('f#',scale:\mixolydian)++[-7,2,3,5,4,3,4].dm(\g,scale:\mixolydian)].addLine;
+	P.synthV(\aiko, \scented,params:[
+		lyrics:"lek r r the air r r was sen ted with the" ,
+		legato:[2,1,1,1,1,1,1,1,1,1,1,1]
+	],music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	}
+);
 P(\bass,start:\lake,music:{|p b e|
 	(freq:[3,13].df(\d,octave:3),dur:b[0..3].sum).play
 });
@@ -123,6 +175,15 @@ P('phrase',start:\lake,syl:0,music: {|p b e|
 	].pp;
 });
 ["flowers of our planet. ",[1,-7,1].dm(\g,scale:\mixolydian)++[6,5,4,3,6,5,4,3].dm(\d)+12].addLine;
+	P.synthV(\aiko,\flowers,params: [
+		lyrics: "fla werz af ar pla net r r r r r",
+	],music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	}
+);
 Song.quarters[\planet]= Song.parseBeats(\planet,[1.5,1.5,0.5,0.5,1.5,0.5,1.5,0.5,1.5,0.5,1.5]);
 //Song.quarters[\planet]
 

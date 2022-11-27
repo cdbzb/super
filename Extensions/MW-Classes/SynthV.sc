@@ -2,7 +2,7 @@ SynthV{
 	// project.tracks[0].database = "AiKO Lite"
 	classvar <>directory = "~/tank/super/SynthV";
 	classvar <notePrototype, <databasePrototype, <databaseLib;
-	classvar <roles;
+	classvar <roles,<envelopes=#[ \toneShift, \pitchDelta, \voicing, \tension, \vibratoEnv, \loudness, \breathiness, \gender ];
 	var <name, <project, <file,<location,<buffer, <key, <song, <section;
 	*new {|key name take| ^super.new.init(key, name, take) }
 	*initClass {
@@ -65,7 +65,7 @@ SynthV{
 		}
 	}
 	render {
-		"~/scripts/renderSynthesizerV.sh".standardizePath.unixCmd
+		"~/scripts/renderSynthesizerV.sh".standardizePath + file =>_.unixCmd
 	}
 	*load { |path|
 		^String.readNew(path.standardizePath => File(_,"r")) => JSON.parse(_)
@@ -84,6 +84,9 @@ SynthV{
 
 		project = String.readNew(File( directory +/+ "test.svp"=>_.standardizePath,"r" ))
 		=> JSON.parse(_);
+
+		//strip erroneous points data - TODO clean this up
+		project.tracks[0].mainRef.systemPitchDelta.put(\points,[]);
 
 		this.refreshBuffer;
 	}
@@ -115,17 +118,29 @@ SynthV{
 	notes { | track=0  |
 		^project.tracks[track].mainGroup.notes
 	}
+	*secondsToBlicks{|seconds|
+		^seconds * 2 * 7056 * 10e4 => _.round(1)// => _.asString => _.dropLast(2)
+	}
+	setEnv{ |param env|
+		var points = [env.timeLine.collect({|i| this.class.secondsToBlicks(i)}),env.levels].flop.flat;
+		project.tracks[0].mainGroup.parameters.at(param).put(\points,points)
+	}
 	set { |event|
 		event.dur.size.postln;// => this.makeNotes(_+1);
+		//event.dur = event.dur.collect{|i| this.class.secondsToBlicks(i)};
+		event.dur = [0] ++ event.dur.integrate + (event.lag ? 0) => _.differentiate => _.drop(1);
+		// trim the last duration to account for inital lag!!
+		//event.dur.put(event.dur[event.dur.size],event.dur.last - (event.lag[0] ? 0));
+		
 		event.dur = event.dur * 2 * 70560 => _.asInteger;
 		
-		event.legato = event.legato ? 1;
-		event.onset = [0] ++ event.dur.integrate => _.dropLast();
-		event.duration = event.dur * event.legato => _.collect{|i| i.asInteger .asString ++ "0000"};
+		event.onset = [0] ++ event.dur.integrate => _.dropLast() + ( ( event.lag[0] ? 0 ) * 70560 * 2  );
+		event.duration = event.dur * ( event.legato ? 1 ) => _.collect{|i| i.asInteger .asString ++ "0000"};
 		event.onset= event.onset.collect {|i| i.asInteger.asString ++ "0000"};
-		event.keys.do{|key|
-			key.postln;
-			this.setNotes(key,event.at(key))
+		event.keys.reject({|i| ( i == \dur ) or: ( i == \legato )}).do{|key|
+			envelopes.includes(key).if{|i|
+				this.setEnv(key,event.at(key))
+			} { this.setNotes(key,event.at(key)) }
 		};
 		//this should be done with an array flop and pairsDo instad but...
 		this.filterRests 
@@ -166,11 +181,14 @@ SynthV{
 		var pbind = Song.currentSong.pbind[start ] ;
 
 		var synthV = SynthV(key,start,take );
-
+		song = song ? Song.currentSong;
 		pbind = pbind.patternpairs.collect{|i|
 			( i.class==Pseq ).if{i.list}{i}
 		}
-		++ params 
+		++ params.value(
+			song,
+			song.durs[start].list, //drop range
+		) 
 		=> Event.newFrom(_)
 		=> {|i| 
 			filter.notNil.if{
@@ -192,7 +210,7 @@ SynthV{
 
 		synthV.writeProject; 'synthV written!'.postln;
 		
-		^P(key,section,syl,lag, music,song,
+		^P(key++"_"++take,section,syl,lag, music,song,
 			resources:(
 				synthV: synthV,
 				playbuf: { PlayBuf.auto(1,synthV.buffer.()) },

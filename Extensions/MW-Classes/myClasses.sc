@@ -84,7 +84,7 @@
 		window.onClose = {
 			onClose.value;
 		};
-		{Pipe.new("osascript -e \'activate application \"VimR\"\'", "w").close}.defer(0.1)
+		{Pipe.new("osascript -e \'activate application \"Kitty.app\"\'", "w").close}.defer(0.1)
 	}
 
 	meter { |numIns, numOuts|

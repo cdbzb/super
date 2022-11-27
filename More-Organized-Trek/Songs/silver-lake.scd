@@ -53,11 +53,14 @@ Song.synthVTracks.aiko = { |preGain=1 ratio=2 amp = (1/8) len=2000 mix=0.1 |
 	}
 };
 Song.synthVTracks.default = Song.synthVTracks.aiko;
-P.synthV(\aiko, 'long a', params:[
+P.synthV(\aiko, 'long a', params:{|p b| [
 	lyrics: "sar gon ai re mem ber a dai long a" ,
 	legato:[1,  0.5, 1, 1, 1,  1,  1,  1,  1, 1] ,
-	phonemes: ["","","","","m e m","","","",""]
-],music:{|p b e|
+	lag:[0.15,0,0,0,0,0,0,0,0],
+	phonemes: ["","","","","m e m","","","",""],
+	tension: Env([-0.4,-0.4],[2])
+
+] },music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
@@ -75,7 +78,8 @@ P(\bassnote,start:'long a',music: { |p b e|
 		rel: b.sum
 	).play
 });
-P.tune('long a');
+Song.stringyyTuneLow = {|start| P.tune(start,  Pbindf(_,\instrument,\stringyy,\freq,Pfunc({|e| e.midinote-12=>_.midicps})))};
+Song.stringyyTuneLow.('long a');
 ["go. (ta da da boom da) We ", [3, 5,5,5,-4,4].dm(\e)++[3].dm(\a)].addLine;
 P.synthV(\aiko, 'go.',
 	params:[
@@ -88,7 +92,7 @@ P.synthV(\aiko, 'go.',
 		}.play
 	}
 );
-P.tune('go.', {|i| Pbindf(i,\amp,[0.1,\r,\r,\r,\r,\r,0.1].q,\legato,[5,1,1,1,1,1,1].q)});
+P.tune('go.', {|i| Pbindf(i,\amp,[0.1,\r,\r,\r,\r,\r,0.1].q,\legato,[5,1,1,1,1,1,1].q,\instrument,\stringyy,\freq,Pfunc({|e| e.midinote -12 => _.midicps}))});
 P(\bass,start:'go.',music:{|p b e|
 	[
 		freq:[ [1,11], [4,14] ].df(\e,4).q,
@@ -111,9 +115,12 @@ P(\chords,'go.',syl:0,music: {|p b e|
 });
 ["sat beside a si -- lve --r ",[1,-7,-6,-7,-5,3,4,1,3].dm(\d,octave:6)].addLine;
 P.synthV(\aiko,\sat,
-	params:[
-		lyrics:"sat bi said -  a sil - - ver" ,
-	],music:{|p b e|
+	params:{|p b| [
+		lyrics:"sat bi sa id  a si i il ver" ,
+		phonemes:["","","s a ","i t","a ","s i","i","j l","v e \r`"],
+
+		tension:Env([-0.4,-0.4,-0.4],[b.sum]),
+	] },music:{|p b e|
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
@@ -141,12 +148,14 @@ P(\bass,start:'sat',lag:-0.05,music:{|p b e|
 		dur:b.parse([ 2/3, [1/3,4 ], 4]).q,
 	].pm(\foo).play;
 });
-P.tune(\sat);
+Song.stringyyTuneLow.(\sat);
 ["lake. (boom boom) The air (boom boom) was scented with the ",[11,-7,2,3,6].dm('f#',scale:\mixolydian)++[-7,2,3,5,4,3,4].dm(\g,scale:\mixolydian)].addLine;
-	P.synthV(\aiko, \scented,params:[
-		lyrics:"lek r r the air r r was sen ted with the" ,
-		legato:[2,1,1,1,1,1,1,1,1,1,1,1]
-	],music:{|p b e|
+P.synthV(\aiko, \scented,params:{|p b| [
+	lyrics:"lek r r the eir r r was sen ted with the" ,
+	tension:Env([-0.4,-0.4,-0.4],[b.sum]),
+	phonemes:["l e i k","","","","e z`","",""],
+	legato:[1.5,1,1,1,2,1,1,1,1,1,1,1]
+] },music:{|p b e|
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
@@ -156,7 +165,8 @@ P.tune(\sat);
 P(\bass,start:\lake,music:{|p b e|
 	(freq:[3,13].df(\d,octave:3),dur:b[0..3].sum).play
 });
-P.tune('scented',{|e| Pbindf(e,\legato,2)});
+P.tune('scented',{|e| Pbindf(e,\legato,2,\instrument,\stringyy,\amp,0.2,\release,3,\attack,0.05,\freq,Pfunc({|e| e.midinote.midicps/2}))});
+P.tune('scented ',{|e| Pbindf(e,\legato,2,\amp,0.05,\release,3,\attack,0.05,\freq,Pfunc({|e| e.midinote.midicps/[1, 2 ]}))});
 P('phrase',start:\lake,syl:0,music: {|p b e|
 	var amp = 0.06;
 	[
@@ -175,15 +185,43 @@ P('phrase',start:\lake,syl:0,music: {|p b e|
 	].pp;
 });
 ["flowers of our planet. ",[1,-7,1].dm(\g,scale:\mixolydian)++[6,5,4,3,6,5,4,3].dm(\d)+12].addLine;
-	P.synthV(\aiko,\flowers,params: [
-		lyrics: "fla werz af ar pla net r r r r r",
-	],music:{|p b e|
+Song.durs[\flowers].list.do(_.postln);
+P.synthV(\aiko,\flowers,params: {|p b| [
+	lyrics: "fla werz af ar pla net r r r r r",
+	phonemes:["","","","a z`","ph l a","n e t","","","","",""],
+	legato: [20,18,19,20,20,20]/20,
+	//lag: [0,0,0.25,0.0,0,0],
+	tension: Env([-0.5,-0.5],b),
+	loudness: Env([-1,1,1,0,1,0],b),
+	//pitchDelta: Env([10,0,5,-5,0,3,0],levelScale:3)
+] },music:{|p b e|
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
+			//* [1,0]
+			//*0.2
 		}.play
 	}
 );
+P.synthV(\aiko,\flowers,take:2,params: {|p b| [
+	lyrics: "fla werz af ar pla net r r r r r",
+	phonemes:["","","","a z`","ph l a","n e t","","","","",""],
+	legato: [19,18,19,20,20,20]/20,
+	lag: [0] ++ Array.fill(10,rrand(-0.07,0.07)),
+	//tension: Env([0,0,0,0,1,1],b),
+	loudness: Env([1,2,1,0,1,0],b)
+] },music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+			//=> Pan2.ar(_,1)
+			* [0,1]
+			*0.2
+		}//.play
+
+	}
+);
+P.tune(\flowers,Pbindf(_,\instrument,\stringyy,\freq,Pfunc({|e| e.midinote.midicps/2})));
 Song.quarters[\planet]= Song.parseBeats(\planet,[1.5,1.5,0.5,0.5,1.5,0.5,1.5,0.5,1.5,0.5,1.5]);
 //Song.quarters[\planet]
 
@@ -191,14 +229,14 @@ P(\arpeggio,start: \flowers,music:{|p b e|
 	[1,2,3,5,7,11,7].dm('a-')
 	=> {|i| [
 		instrument:\sparkTriangle,
-		amp:0.02,
+		amp:0.014,
 		midinote:i.q,
 		ctranspose:[0,-12],
 		dur:1/2,
-		out:1,
+		out:Effect.bus(_ * Env([1,1,0],[1,4]).kr(2,gate:1)),
 		legato:2.1
 	].p
-	//.play(clock:Song.quarters[\planet].asTempoClock)
+	.play(clock:Song.quarters[\planet].asTempoClock)
 }});
 //Song.quarters[\planet]
 P(\ride,\flowers, //syl:3, 
@@ -210,13 +248,17 @@ P(\ride,\flowers, //syl:3,
 			out:Effect(EchoNone.ar(_,0.2,0.1,6),out:3).bus.index
 		].p.play(clock: Song.quarters[\planet] .asTempoClock)
 	});
-	P.tune(\flowers);
+	P.tune(\flowers,Pbindf(_,\instrument,\stringyy,\freq,Pfunc({|e| e.midinote.midicps/2})));
 	P(\bass,start:\flowers,music:{|p b e|
 		var effect=Effect(DWGReverbC1C3.ar(_,len:2000,c1:1,c3:10,mix:1),inputChannels:2);
 		(freq:[1,-1].df('a-',octave:[3,4]),rel:5,dur:2,out:effect.bus.index).play
 	});
 	P(\chord,start:\flowers,music:{|p b e|
-		(freq:[1,3,5,7].df('a-'),strum:0.05).play
+		(
+			freq:[1,3,5,7].df('a-'),
+			strum:0.05,
+			out: Effect.bus( _ => EchoNone.ar(_,0.5,0.43,6) * [0.1,1] /2 )
+		).play
 	});
 
 	P(\planet,start:\flowers,syl:2,music: { |p b e |
@@ -256,6 +298,16 @@ P(\ride,\flowers, //syl:3,
 		'b '.post;b.postln
 	});
 	["/*KIRK:*/ I remember. You held my han-- -- -- -- -- -- -- -- -- -- -- -- -- d like ",[4,3,3,2].dm(\c)++[-4,-5,-6,-7,1,-7,-6,-7,1,2,3,2,1,2,3, 4,5].dm(\g)].addLine;
+		P.synthV(\genbu,\held,
+			params:{|p b| [
+				lyrics: "ai re mem ba yu held mai ha - - - - - - - - - - - and laik " ,
+			] },filter:{|e| e.midinote = e.midinote - 12},music:{|p b e|
+			{
+				e.playbuf
+				=> p.synthVTracks.at(e.key).()
+			}.play
+		}
+	);
 	P.tune('I remember.',  { |i| Pmul(\freq,0.5,i) <> (instrument:\twang,amp:0.05)});
 	P('tune',start:\held,music: {|p b e|
 		[

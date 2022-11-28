@@ -301,7 +301,15 @@ P(\ride,\flowers, //syl:3,
 		P.synthV(\genbu,\held,
 			params:{|p b| [
 				lyrics: "ai re mem ba yu held mai ha - - - - - - - - - - - and laik " ,
-			] },filter:{|e| e.midinote = e.midinote - 12},music:{|p b e|
+				tension: Env([0.4,0.4],2),
+			] },filter:{|e|
+				e.midinote = e.midinote - 
+				//(0!4 ++ 12.dup(e.midinote.size-4))
+				(0!e.midinote.size => _.dropLast() ++ 
+				12
+				//7
+			)
+			},music:{|p b e|
 			{
 				e.playbuf
 				=> p.synthVTracks.at(e.key).()
@@ -317,7 +325,7 @@ P(\ride,\flowers, //syl:3,
 			=> _.q,
 			dur: b ++ b.last => _.q ,
 			instrument: \harp,
-			amp: 0.05
+			amp: 0.015
 
 		].pp
 	});
@@ -348,6 +356,16 @@ P(\ride,\flowers, //syl:3,
 		].pp
 	});
 	["this.  (He kisses it, as Spock comes in.) ",[5,4,4,3,3 ].dm(\c,octave:6)].addLine;
+	P.synthV(\genbu, \this, params: {|p b| [
+		lyrics: "this r r r r" ,
+	] },
+	filter:{|e| e.midinote = e.midinote -12},
+	music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 	P.tune(\this);
 	P.tune('this', 
 		{ |i| Pmul(\freq,[1],i) <> [
@@ -379,6 +397,14 @@ P(\chords,start:'kisses',music: {|p b e|
 });
 ["I think it is best not to remember so well. (boom) ",[3,2,3,1,-5,2,1,-7,-6,-7,-5,-2.5,-4.5].dm(\d)].addLine;
 P.tune('best',_ <> [amp: 0.1 * [1,1,1,1,1,1,1,1,1,1,1,1,0].q].p);
+P.synthV(\genbu, \think, params: {|p b| [
+	lyrics: "ai think it is best not to re mem ba so well r" ,
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 P('arrangement',start:\think,music: {|p b e|
 	[
 		freq: [\r,11, 5, 4, 2.5].df(\d,3).q,
@@ -411,7 +437,15 @@ P('bassNote',start:\think, syl:11, music: {|p b e|
 	[dur: b[0].q,freq:1.df('a-',4)].p <> p.bassSoundTwoDays => _.postln => _.play
 });
 ["/*SPOCK:*/ In two days, you'll have your own hands, Thalassa. ",[3,2,4,3,4,3,3,2,4,1,-7].dm('a-')].addLine;
-P.tune('two days');
+P.synthV(\kevin,\two, params: {|p b| [
+	lyrics: "in two days youll have your own hands Tha la ssa" ,
+] }, music:{|p b e||
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+//P.tune('two days');
 //~twoDaysQuarters= Song.durs['two days'].list.asArray.parseBeats([0.5,0.5,1,1/3,1/3,1/3,3/4,(1/4+(3/4)), 1/4,3/4,(1/4+1)]);
 //Song.durs['two days'].list.postcs
 Song.durs['two days'].list[10]=(1.33);

@@ -39,7 +39,16 @@ SynthV{
 			'language': "mandarin", 
 			'languageOverride': "", 
 			'backendType': "SVR2Standard"
-		)
+		),
+		kevin: ( 
+			'name':             "Kevin",
+			'language':         "english",
+			'phoneset':         "arpabet",
+			'languageOverride': "",
+			'phonesetOverride': "",
+			'backendType':      "SVR2AI",
+			'version':          "107b1"
+		),
 
 		)
 		/*

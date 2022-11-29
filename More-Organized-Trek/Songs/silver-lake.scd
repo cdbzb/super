@@ -439,7 +439,7 @@ P('bassNote',start:\think, syl:11, music: {|p b e|
 ["/*SPOCK:*/ In two days, you'll have your own hands, Thalassa. ",[3,2,4,3,4,3,3,2,4,1,-7].dm('a-')].addLine;
 P.synthV(\kevin,\two, params: {|p b| [
 	lyrics: "in two days youll have your own hands Tha la ssa" ,
-] }, music:{|p b e||
+] }, music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
@@ -463,14 +463,14 @@ P(\bass,start:'two days',syl:1,music:{|p b e|
 //Song.durs['intro'] = Song.durs['intro'].list*0.98=>_.q;
 //Song.introClock=TempoClock.new(104/60 * 0.98);
 ( // Hands setup
-	Song.handsSynth = [
+	Song.handsSynth = { [
 		instrument:\sawSynthEnv,
 		lofreq: 1270,
 		hifreq:2500,
 		out: Effect(HPF.ar(_,250),inputChannels:2).bus.index
-	].p;
+	].p };
 	Song.handsKeys = (intro: 'b-', bridge: \d, reprise: \g, outro:\g);
-	Song.handsKeys = (intro: 'b-', bridge: \g, reprise: \f, outro:\d);
+	Song.handsKeys = (intro: 'b-', bridge: \g, reprise: \c, outro:\a);
 	Song.introClock=TempoClock.new(104/60);
 	Song.handsBassArray = [
 		amp:0.2,
@@ -508,7 +508,7 @@ P(\808,start:'intro',music: {|p b e|
 
 });
 P(\lick,start:'intro',music: {|p b e|
-	p.handsSynth
+	p.handsSynth.()
 	<>
 	[
 		freq: [\r,5,4,6,\r,5,4,4].df('b-').q * [0.5,1],
@@ -526,9 +526,23 @@ P(\lick,start:'intro',music: {|p b e|
 	=>_.trace =>_.play (clock:Song.introClock)
 });
 ["Mechanically efficient and ",[\r,2, 1, 2,  4, 3,\r].dm('e-'),"qq Q Q Q qe eqe e".asBeats*60/104].addLine;
-Song.handsBassConstructor.('b-', \efficient);
-P.tune(\efficient);
+Song.setTempoMap(\efficient,"qq Q Q Q qe eqe e");
 
+Song.handsBassConstructor.('b-', \efficient);
+P.synthV(\genbu,\efficient, params: {|p b| [
+	lyrics: "r me ka ni kli i fi shent" ,
+] },pbind:{ |p b| [
+	dur: "qe e e e e e qe e".asBeats
+	.warpTo(p.tempoMap[\efficient])
+	.q,
+	midinote: "2,  2, 2, 2, 1, 2, 4, 3".dm('e-')
+].p },
+music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 P(\808,start:'efficient',music: {|p b e|
 	\intro.post;t.postln;
 	[
@@ -558,10 +572,25 @@ P(\keys,syl:0,start:\efficient,music: { |p b e|
 		"Q Q Q qe eqe eqe e".asBeats
 	).df('e-',[5,6]).p//ma
 	=> Pn(_,1) => _.fin(26);
-	p.handsSynth<>lick1<> [ detune: [0, 0.1,0.201 ] ].p=>_.play(clock:Song.introClock) ;
+	p.handsSynth.()<>lick1<> [ detune: [0, 0.1,0.201 ] ].p=>_.play(clock:Song.introClock) ;
 
 } );
 ["quite human-looking. ","\r 2 1 2 -7 -6 \r","qq Q Q Q qe eqe e".asBeats*60/104].addLine;
+Song.setTempoMap('quite',"qq Q Q Q qe eqe e");
+P.synthV(\genbu,'human-look', params: {|p b| [
+	lyrics: "r and qwait hu man lu king" ,
+] },pbind:{ |p b| [
+	dur: "qe e Q Q Q qe e".asBeats
+	.warpTo(p.tempoMap[\quite])
+	.q,
+	midinote: "2,  2, 2, 1, 2, -7, -6".dm('e-')
+].p },
+music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 ["(boom boom) Android (boom boom) robot hands, of course. ","-1 -1 11 7 12 7 6 11 6 5 7 5 4".dm(Song.handsKeys.bridge,4,\mixolydian),"q q q q qq q q qq q q qqq e e".asBeats*60/104].addLine;
 P('bass',start:\Android,music: {|p b e|
 	[
@@ -609,7 +638,7 @@ P(\keys,syl:0,start:\Hands,music: { |p b e|
 		"Q Q Q qe eqe eqe e".asBeats
 	).df(p.handsKeys.reprise.asNum - 7 ,[5,6]).p//ma
 	=> Pn(_,1) => _.fin(26);
-	p.handsSynth<>lick1<> [ detune: [0, 0.1,0.201 ] ].p=>_.play(clock:Song.introClock) ;
+	p.handsSynth.()<>lick1<> [ detune: [0, 0.1,0.201 ] ].p=>_.play(clock:Song.introClock) ;
 
 } );
 P.tune(\Hands);
@@ -635,7 +664,7 @@ P(\lick,start:'Hands',music: {|p b e|
 
 
 	].p
-	<> p.handsSynth
+	<> p.handsSynth.()
 	//=>_.pma(\sawSynthSustain)
 	//=> _.p
 	//=>_.play (clock:Song.introClock)
@@ -914,15 +943,5 @@ P(\baseNote,start:'renovate',syl:11,music:{|p b e|
 );
 ["Do not be concerned.",[3,4,2,3,-7].dm('d',octave:5,scale:\minor )].addLine;
 P.tune('be concerned');
-["(Chapel is holding the hypos and trying to remember something very important.)","r"].addLine;
-["MCCOY: Nurse, how are the last metabolic readings on our patients?","r"].addLine;
-["CHAPEL: You'll find them excellent, Doctor. Well within normal.","r"].addLine;
-["MCCOY: Is something wrong, Miss Chapel?","r"].addLine;
-["CHAPEL: Er, yes. I, er, I had something to say. I can't seem to remember.","r"].addLine;
-["MCCOY: Regarding our patients?","r"].addLine;
-["CHAPEL: Yes. That must be it. I am so pleased the way they are responding, Doctor. The formula's working perfectly.","r"].addLine;
-["MCCOY: You look tired, Miss Chapel. Perhaps you'd care for me to administer the last few injections.","r"].addLine;
-["CHAPEL: Tired? Well, not at all, Doctor. Thank you for asking.","r"].addLine;
-["(Leaves a puzzled McCoy.)","r"].addLine;
 }
 ) 

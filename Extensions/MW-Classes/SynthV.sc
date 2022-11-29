@@ -183,15 +183,18 @@ SynthV{
 }
 
 + P {
-	*synthV{ | key start params syl lag=0 take music song resources range filter |
+	*synthV{ | key start params syl lag=0 take music song resources range filter pbind |
 
+		var event;
 		var section = P.calcStart(start );
-
-		var pbind = Song.currentSong.pbind[start ] ;
-
 		var synthV = SynthV(key,start,take );
 		song = song ? Song.currentSong;
-		pbind = pbind.patternpairs.collect{|i|
+		pbind = pbind.notNil.if{  // pass in a pbind or get it from the song
+			pbind.value(song,song.durs[start].list)
+		} {
+			Song.currentSong.pbind[start ] 
+		};
+		event = pbind.patternpairs.collect{|i|
 			( i.class==Pseq ).if{i.list}{i}
 		}
 		++ params.value(
@@ -206,15 +209,15 @@ SynthV{
 				i
 			}
 		};
-		pbind.keys.do{|k| 
-			( pbind.at(k).isCollection && pbind.at(k).isString.not ).if{
-				pbind.put(k, pbind.at(k)[range[0]..range[1]])
+		event.keys.do{|k| 
+			( event.at(k).isCollection && event.at(k).isString.not ).if{
+				event.put(k, event.at(k)[range[0]..range[1]])
 		}};
-		pbind.lyrics=pbind.lyrics.split(Char.space).reject{|i| i.size==0};
-		pbind.pitch=pbind.midinote.asInteger;
-		synthV.makeNotes(pbind.dur.size);
+		event.lyrics=event.lyrics.split(Char.space).reject{|i| i.size==0};
+		event.pitch=event.midinote.asInteger;
+		synthV.makeNotes(event.dur.size);
 
-		synthV.set(pbind); //set should filter for \r
+		synthV.set(event); //set should filter for \r
 		synthV.setDatabase(key);
 
 		synthV.writeProject; 'synthV written!'.postln;

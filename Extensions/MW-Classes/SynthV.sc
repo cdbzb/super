@@ -221,8 +221,8 @@ SynthV{
 		synthV.setDatabase(key);
 
 		synthV.writeProject; 'synthV written!'.postln;
-		
-		^P(key++"_"++take,section,syl,lag, music,song,
+		take.notNil.if{key = key ++ "_" ++ take};
+		^P(key,section,syl,lag, music,song,
 			resources:(
 				synthV: synthV,
 				playbuf: { PlayBuf.auto(1,synthV.buffer.()) },

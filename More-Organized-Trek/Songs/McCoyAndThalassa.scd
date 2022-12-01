@@ -16,6 +16,17 @@ s.waitForBoot{
 	[ "MCCOY: I see. And Henoch intends to keep Spock's body, of course. ","r" ].addLine;
 	[ "MULHALL: Henoch's plans are his own affair. ","r" ].addLine;
 	[ "I wish only to exist in peace as a living woman. ",[3, 6, 5, 6, 4.5, 5, 3, 7, 11, 7, 7, 4, 5, 5, 6, 5, 1, 2, 1].dm('f#') ].addLine;
+	Song.synthVTracks=EventWithDefault();
+	Song.synthVTracks.aiko = { |preGain=1 ratio=2 amp = (1/8) len=2000 mix=0.1 |
+	{ |i|
+		i.() * preGain
+		=> SoftKneeCompressor.rms(_,  thresh:-10, ratio: ratio, knee:6, attack:0, release:0.05, makeUp:0, rms:40) 
+		* amp
+		=> DWGReverbC1C3.ar(_,len:len,mix:mix)
+		=>.first DetectSilence.ar(_,doneAction:2)
+	}
+};
+	Song.synthVTracks.default = Song.synthVTracks.aiko;
 	Song.quarters[\exist] = Song.parseBeats(\exist,[
 		1,
 		2,1/2, 1/2, 1/2,1/2,
@@ -24,10 +35,18 @@ s.waitForBoot{
 		//5/2, 1, 5/2, 
 		1/2,1, 1/2, 1/4, 3/4, 1
 	]);
+	P.synthV(\aiko,\exist, params: {|p b| [
+		lyrics: "ai wish on li tu ex i - ist in pis as a li ving wu man",
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key.postln).postln.(1).postln
+		}.play
+	});
 	P(\click,start:\exist,music:{|p b e| 
 		//[dur:1].p.play(TempoClock.newFromQuarters(p.quarters[e.start]))
 	});
-	P.tune(\exist);
+	//P.tune(\exist);
 	
 	P(\piano,start:\exist,syl:12,music:{|p b e| 
 		[
@@ -60,18 +79,47 @@ s.waitForBoot{
 	[ "MCCOY: If you're asking my approval ",[3, 4, 5, 4, 3, 5, 11, 7].dm(\f,4,\harmonicMinor) ].addLine;
 	P.tune(\approval);
 	[ "MULHALL: I require only your silence", [7,11,12,7,11,12,12.5,2.5].dm(\c) ].addLine; 
-	P.tune(\require);
-	P(\bass,start:\require,music:{|p b e| 
+	P.synthV(\aiko,\require, params: {|p b| [
+		lyrics: "ai ri kwair on li your sai lence" ,
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
+P.tune(\require);
+		Song.pulse = {
+			Pulse.ar(\freq.kr(300),0.4)
+			* \amp.kr(0.1)
+			=> Out.ar(\out.kr(0),_)
+		}.asDefName;
+		Song.impulseBass = {
+			var freq;
+			Impulse.ar(freq = \freq.kr(300))
+			* Env.asr(0.2,1,1).kr(2,gate:\gate.kr(1))
+			=> OnePole.ar(_, coef:0.5, mul:1.0, add:0.0)
+			=> Phaser1.ar(_, depth:0.5, rate:1, fb:0.3, cfb:0.1, rot:1.5707963267949)
+			+ VarSaw.ar(freq,0,0.9,0.2)
+			* \amp.kr(0.1)
+			=> Out.ar(\out.kr(0),_)
+		}.asDefName;
+P(\bass,start:\require,music:{|p b e| 
 		[
 			freq: [7,6,5,4.5,3,4.5].df(\c,[4]).q,
-			dur: b.q
-		].pp;
+			dur: b.q,
+			instrument: p.pulse,
+			amp:0.02
+		].ppm
+		;
 		[
 
 			freq: [7,6,5,4.5, [-2.5, 2.5 ]].df(\c,[3]).q,
 			dur: b.parse([1,1,1,3,1]).q,
-			legato: [1,1,1,1,6].q
-		].pp
+			legato: [1,1,1,1,6].q,
+			instrument: Song.impulseBass,
+			amp:0.07
+
+		].ppm
 	});
 	[ "Only you and I will know that Doctor Mulhall has not returned to her body. ",[1,2,3,1,4.5,2,-6].dm('e-') ++ [2,3,1,4.5,2].dm(\c) ++ [1,2,3,4].dm(\e,scale: \whole) ++ [11,7,6,7,5,12,4.5].dm(\b,4) ].addLine;
 	P.tune(\returned);
@@ -121,7 +169,23 @@ s.waitForBoot{
 			} ,inputChannels:2).bus.index
 		).play
 	});
+	P.synthV(\aiko,\returned, params: {|p b| [
+		lyrics: "on li yu an ai will no that dak ter mul hall haz nat ri tu - - urned to her ba di",
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 	[ "Isn't that worth your captain's life? ",[3,2,4,2,3,1,2,5].dm(\a,5,\minor) ].addLine;
+	P.synthV(\aiko, \worth, params: {|p b| [
+		lyrics:"iz nt that wurth yor kap tinz laif" ,
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 	P.tune(\life);
 	P(\bass,start:\life,music:{|p b e| 
 		[
@@ -132,7 +196,16 @@ s.waitForBoot{
 	//[ "Doctor, we can take what we wish. ",[11, 5, 3, 5, 12, 11, 7, 6].dm(\e,4) ].addLine; //?????
 	[ "Doctor, we can take what we wish--. ",[4.5, 3, 6, 6, 6, 5, 6, 6, 7].dm(\a,4) ].addLine; //?????
 	Song.wishVocalTwoSections = VocalRPP('wish--',\wish);
-	P(\lead,start:'wish--',lag:-1,music:{|p b e| 
+	P.synthV(\aiko,'wish--', params: {|p b| [
+		lyrics:"dak ter wi kan taik wat wi wi ish" ,
+		tension: Env([0.6],[ 1 ])
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
+	P(\wish,start:'wish--',lag:-1,music:{|p b e| 
 		//{Song.wishVocalTwoSections.buffer.bufnum => PlayBuf.ar(2,_ ) *0.1}.play
 	});
 	P.tune('we can take');
@@ -162,6 +235,15 @@ s.waitForBoot{
 //		].pma(\defaultPorto).play
 	//});
 	[ "Neither you, this ship, nor worlds have the power to stop us." ,[5, 5, 6, 5, 6, 5].dm('c#',5,\minor) ++ [7, 6, 11, 7, 6, 5, 4 ].dm(\c,5,\mixolydian) ++ [7, 11, 7, 7, 6].dm(\d,5,\mixolydian) ].addLine;
+P.synthV(\aiko,\worlds, params: {|p b| [
+		lyrics: "ni ther you this ship nor wo orlds have the pa wer to sta a ap  us -" ,
+		tension: Env([1,1],[3])
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).(2)
+		}.play
+	});
 	P.tune(\worlds, { |i| Pmul(\freq,0.5,i) => Pbindf(_,\instrument,\sawSynthSustain,\amp,0.1,out:3) } );
 	Song.worldsVocal=VocalRPP(\worlds,\lead);
 	Song.encoders.spread=FoaEncoderKernel.newDiffuse;
@@ -754,6 +836,18 @@ s.waitForBoot{
 	["MULHALL: She is now with Sargon, Doctor. ","r"].addLine;
 	["I'm Ann Mulhall, back in my own body. ",[-5, 3, 3, 2, 3, 2, 3, 4, 3, 2].dm(\g)].addLine;
 	P.tune('own body');
+P.synthV(\aiko,'own body',params: {|p b| [
+		lyrics: "aim jain mul hal bak in mai on ba dy" ,
+		//lag: [0,0,0,0,-0.06,0,0,0,-0.05,-0.05],
+		lag:[ 0, 0, 0, 0, 0, 0, 0, 0, 0, -0.15 ],
+		legato: [1,1,1,0.9, 1,1,1,1,1,1]
+	] }, music:{|p b e|
+		{
+			e.playbuf / 5
+			=> FreeVerb.ar(_,0.5,[0.8,0.9])
+			//=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 	Song.quarters['own body']=Song.parseBeats('own body',[2,2,2,2,1,1, 1, 1, 2, 2]);
 	P(\bass,start:'own body',music:{|p b e| 
 		Synth(\cymbalsDS,[out:Effect(_*Line.kr(1,0,5)).bus.index,amp:0.01]);

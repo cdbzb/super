@@ -3,6 +3,7 @@ SynthV{
 	classvar <>directory = "~/tank/super/SynthV";
 	classvar <notePrototype, <databasePrototype, <databaseLib;
 	classvar <roles,<envelopes=#[ \toneShift, \pitchDelta, \voicing, \tension, \vibratoEnv, \loudness, \breathiness, \gender ];
+	classvar <vocalModes;
 	var <name, <project, <file,<location,<buffer, <key, <song, <section;
 	*new {|key name take| ^super.new.init(key, name, take) }
 	*initClass {
@@ -29,8 +30,12 @@ SynthV{
 			'languageOverride': "", 
 			'backendType': "SVR2Standard"
 		);
+		vocalModes = (
+			kevin: Set[\Clear,\Soft,\Belt,\Solid]
+		);
 		databaseLib = (
-			genbu:( 'backendType': "SVR2Standard", 'version': 100, 'name': "GENBU (Lite)", 'phoneset': "romaji", 'language': "japanese", 'languageOverride': "", 'phonesetOverride': "" ), 
+			genbu:( 'backendType': "SVR2Standard", 'version': 100, 'name': "GENBU", 'phoneset': "romaji", 'language': "japanese", 'languageOverride': "", 'phonesetOverride': "" ), 
+
 			aiko: ( 
 			'version': 100, 
 			'phonesetOverride': "", 
@@ -47,7 +52,7 @@ SynthV{
 			'languageOverride': "",
 			'phonesetOverride': "",
 			'backendType':      "SVR2AI",
-			'version':          "107b1"
+			'version':          "107"
 		),
 
 		)
@@ -119,13 +124,16 @@ SynthV{
 	}
 
 	open {
-		"open -a 'Synthesizer V Studio Basic'" + file => _.unixCmd 
+		"open -a 'Synthesizer V Studio Pro'" + file => _.unixCmd 
 	}
 	database { |track=0|
 		^project.tracks[track].mainRef.database
 	}
 	notes { | track=0  |
 		^project.tracks[track].mainGroup.notes
+	}
+	voice{ |track=0|
+		^project.tracks[track].mainRef.voice
 	}
 	*secondsToBlicks{|seconds|
 		^seconds * 2 * 7056 * 10e4 => _.round(1)// => _.asString => _.dropLast(2)
@@ -142,11 +150,13 @@ SynthV{
 		//event.dur.put(event.dur[event.dur.size],event.dur.last - (event.lag[0] ? 0));
 		
 		event.dur = event.dur * 2 * 70560 => _.asInteger;
+
+		event.vocalMode.notNil.if{ this.voice.put(\vocalModePreset, event.vocalMode) };
 		
 		event.onset = [0] ++ event.dur.integrate => _.dropLast() + ( ( event.lag[0] ? 0 ) * 70560 * 2  );
 		event.duration = event.dur * ( event.legato ? 1 ) => _.collect{|i| i.asInteger .asString ++ "0000"};
 		event.onset= event.onset.collect {|i| i.asInteger.asString ++ "0000"};
-		event.keys.reject({|i| ( i == \dur ) or: ( i == \legato )}).do{|key|
+		event.keys.reject({|i| [\dur,\legato,\vocalMode].includes(i) }).do{|key|
 			envelopes.includes(key).if{|i|
 				this.setEnv(key,event.at(key))
 			} { this.setNotes(key,event.at(key)) }

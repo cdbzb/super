@@ -439,7 +439,8 @@ P('bassNote',start:\think, syl:11, music: {|p b e|
 ["/*SPOCK:*/ In two days, you'll have your own hands, Thalassa. ",[3,2,4,3,4,3,3,2,4,1,-7].dm('a-')].addLine;
 P.synthV(\kevin,\two, params: {|p b| [
 	lyrics: "in two days youll have your own hands Tha la ssa" ,
-] }, music:{|p b e|
+	vocalMode: \Belt
+]},filter:{|e| e.midinote = e.midinote -12}, music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
@@ -470,7 +471,7 @@ P(\bass,start:'two days',syl:1,music:{|p b e|
 		out: Effect(HPF.ar(_,250),inputChannels:2).bus.index
 	].p };
 	Song.handsKeys = (intro: 'b-', bridge: \d, reprise: \g, outro:\g);
-	Song.handsKeys = (intro: 'b-', bridge: \g, reprise: \c, outro:\a);
+	Song.handsKeys = (intro: 'b-', bridge: \g, reprise: 'b-', outro:\g);
 	Song.introClock=TempoClock.new(104/60);
 	Song.handsBassArray = [
 		amp:0.2,
@@ -529,8 +530,10 @@ P(\lick,start:'intro',music: {|p b e|
 Song.setTempoMap(\efficient,"qq Q Q Q qe eqe e");
 
 Song.handsBassConstructor.('b-', \efficient);
-P.synthV(\genbu,\efficient, params: {|p b| [
-	lyrics: "r me ka ni kli i fi shent" ,
+P.synthV(\kevin,\efficient, params: {|p b| [
+	//lyrics: "r me ka ni kli i fi shent" ,
+	lyrics: "r mechanically + + + efficient + + ",
+	vocalMode: \Belt
 ] },pbind:{ |p b| [
 	dur: "qe e e e e e qe e".asBeats
 	.warpTo(p.tempoMap[\efficient])
@@ -541,6 +544,7 @@ music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		* 2
 	}.play
 });
 P(\808,start:'efficient',music: {|p b e|
@@ -575,20 +579,22 @@ P(\keys,syl:0,start:\efficient,music: { |p b e|
 	p.handsSynth.()<>lick1<> [ detune: [0, 0.1,0.201 ] ].p=>_.play(clock:Song.introClock) ;
 
 } );
-["quite human-looking. ","\r 2 1 2 -7 -6 \r","qq Q Q Q qe eqe e".asBeats*60/104].addLine;
+["quite human-looking. ","\r 2 1 2 -6 -5 \r","qq Q Q Q qe eqe e".asBeats*60/104].addLine;
 Song.setTempoMap('quite',"qq Q Q Q qe eqe e");
-P.synthV(\genbu,'human-look', params: {|p b| [
-	lyrics: "r and qwait hu man lu king" ,
+P.synthV(\kevin,'human-look', params: {|p b| [
+	//lyrics: "r and qwait hu man lu king" ,
+	lyrics:" r and quite human + looking +"
 ] },pbind:{ |p b| [
 	dur: "qe e Q Q Q qe e".asBeats
 	.warpTo(p.tempoMap[\quite])
 	.q,
-	midinote: "2,  2, 2, 1, 2, -7, -6".dm('e-')
+	midinote: "2,  2, 2, 1, 2, -6, -5".dm('e-')
 ].p },
 music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		*2
 	}.play
 });
 ["(boom boom) Android (boom boom) robot hands, of course. ","-1 -1 11 7 12 7 6 11 6 5 7 5 4".dm(Song.handsKeys.bridge,4,\mixolydian),"q q q q qq q q qq q q qqq e e".asBeats*60/104].addLine;
@@ -612,11 +618,24 @@ P(\808,start:'course',music: {|p b e|
 });
 P.tune(\course, _ <> [instrument:\sawSynth,amp:0.15].p);
 ["Hands without feeling. ",[\r, 5,4,5,7,6,\r,\r,5,4,5,2,1].dm(Song.handsKeys.reprise,\mixolydian),"qq Q Q Q qe eqe e".asBeats.dup.flat* 60/104].addLine;
+P.synthV(\kevin,\without, params: {|p b| [
+	lyrics: "r hands without + feeling + r r hands without + feeling + r",
+	vocalMode:\Solid
+] }, music:{|p b e|
+	{
+		e.playbuf => p.synthVTracks.at(e.key).()
+	}.play
+});
+P.synthV(\kevin,\without,take:\low, params: {|p b| [
+	lyrics: "r hands without + feeling + r r hands without + feeling + r",
+] }, filter:{|e| e.midinote = e.midinote -12}, music:{|p b e|
+	{
+		e.playbuf => p.synthVTracks.at(e.key).()
+	}.play
+});
 P('cymbal',start:\Hands,music: {|p b e|
-
 	(instrument:\cymbalsDS,amp:0.04).play;
 	(instrument:\cymbal_808,amp:5,pan:-1).play
-
 });
 P(\keys,syl:0,start:\Hands,music: { |p b e|
 	var lick1=VoiceLeading(

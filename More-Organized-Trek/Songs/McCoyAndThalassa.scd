@@ -81,48 +81,60 @@ s.waitForBoot{
 	[ "MULHALL: I require only your silence", [7,11,12,7,11,12,12.5,2.5].dm(\c) ].addLine; 
 	P.synthV(\aiko,\require, params: {|p b| [
 		lyrics: "ai ri kwair on li your sai lence" ,
-	] }, music:{|p b e|
+	] }, music: {|p b e|
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
 		}.play
 	});
-P.tune(\require);
+//P.tune(\require);
 		Song.pulse = {
 			Pulse.ar(\freq.kr(300),0.4)
 			* \amp.kr(0.1)
 			=> Out.ar(\out.kr(0),_)
 		}.asDefName;
-		Song.impulseBass = {
+		Song.impulseBass = { |dur=2|
 			var freq;
 			Impulse.ar(freq = \freq.kr(300))
-			* Env.asr(0.2,1,1).kr(2,gate:\gate.kr(1))
 			=> OnePole.ar(_, coef:0.5, mul:1.0, add:0.0)
 			=> Phaser1.ar(_, depth:0.5, rate:1, fb:0.3, cfb:0.1, rot:1.5707963267949)
 			+ VarSaw.ar(freq,0,0.9,0.2)
 			* \amp.kr(0.1)
+			* Env.linen([0,1,1,0],[0.05,dur,4]).kr(0,gate:\gate.kr(1))
 			=> Out.ar(\out.kr(0),_)
 		}.asDefName;
-P(\bass,start:\require,music:{|p b e| 
+		P(\bass,start:\require,music:{|p b e| 
 		[
 			freq: [7,6,5,4.5,3,4.5].df(\c,[4]).q,
 			dur: b.q,
 			instrument: p.pulse,
 			amp:0.02
-		].ppm
+		]//.ppm
 		;
 		[
 
-			freq: [7,6,5,4.5, [-2.5, 2.5 ]].df(\c,[3]).q,
-			dur: b.parse([1,1,1,3,1]).q,
-			legato: [1,1,1,1,6].q,
+			freq: [7,6,5,4.5, ].df(\c,[3]).q,
+			dur: b.parse([1,1,1,3,1]) + [0,0,0,0,2]=>_.q,
+			legato: [1,1,1,0.9,6].q,
 			instrument: Song.impulseBass,
 			amp:0.07
 
-		].ppm
+		].pma.trace.play;
+		(
+			freq:[-2.5, 2.5 ].df(\c,3),
+			instrument: p.impulseBass,
+			lag: b.parse([6]),
+			dur:0.1
+		).play
 	});
 	[ "Only you and I will know that Doctor Mulhall has not returned to her body. ",[1,2,3,1,4.5,2,-6].dm('e-') ++ [2,3,1,4.5,2].dm(\c) ++ [1,2,3,4].dm(\e,scale: \whole) ++ [11,7,6,7,5,12,4.5].dm(\b,4) ].addLine;
-	P.tune(\returned);
+	P.tune(\returned,_<> [instrument:\wash,amp:0.03].p);
+	P(\bassnote,syl:20, music: { |p b e|
+		[
+			freq:[2,-2 /*,14.5*/,-6].df(\b,3),
+			dur: [ 2 ].q
+		].pp
+	});
 	P(\bassDyad1,start:\returned,music:{|p b e| 
 		MegaBind(
 			[
@@ -170,20 +182,30 @@ P(\bass,start:\require,music:{|p b e|
 		).play
 	});
 	P.synthV(\aiko,\returned, params: {|p b| [
-		lyrics: "on li yu an ai will no that dak ter mul hall haz nat ri tu - - urned to her ba di",
-	] }, music:{|p b e|
+		lyrics: 
+		"on li yu an ai will no that dak ter mul hall haz nat ri tu - - urned to her ba di"
+		,
+		legato: 
+		[ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,1,1, 0.5 ]
+		,
+	] },filter:{|e|
+		e.midinote = e.midinote -12
+	},music:{|p b e|
 		{
 			e.playbuf
-			=> p.synthVTracks.at(e.key).()
+			=> p.synthVTracks.at(e.key).(2)
 		}.play
 	});
 	[ "Isn't that worth your captain's life? ",[3,2,4,2,3,1,2,5].dm(\a,5,\minor) ].addLine;
 	P.synthV(\aiko, \worth, params: {|p b| [
 		lyrics:"iz nt that wurth yor kap tinz laif" ,
-	] }, music:{|p b e|
+		legato: [1,1,1,1,1,1,1,0.6]
+	] },filter:{|e|
+		e.midinote = e.midinote -12
+	},music:{|p b e|
 		{
 			e.playbuf
-			=> p.synthVTracks.at(e.key).()
+			=> p.synthVTracks.at(e.key).(2)
 		}.play
 	});
 	P.tune(\life);
@@ -198,11 +220,13 @@ P(\bass,start:\require,music:{|p b e|
 	Song.wishVocalTwoSections = VocalRPP('wish--',\wish);
 	P.synthV(\aiko,'wish--', params: {|p b| [
 		lyrics:"dak ter wi kan taik wat wi wi ish" ,
-		tension: Env([0.6],[ 1 ])
+		tension: Env([0.2],[ 1 ]),
+		legato:[1,0.9,1,1,0.9,1,1,1,0.7]
 	] }, music:{|p b e|
 		{
 			e.playbuf
-			=> p.synthVTracks.at(e.key).()
+			=> p.synthVTracks.at(e.key).(2)
+			=> Phaser2.ar(_,rate:0.2)
 		}.play
 	});
 	P(\wish,start:'wish--',lag:-1,music:{|p b e| 

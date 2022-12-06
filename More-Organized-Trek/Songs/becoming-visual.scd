@@ -6,7 +6,8 @@ Song(\visual,[]).current;
 ["/*SULU:*/ The reading's growing stronger, Captain.","r"].addLine;
 ["Coming from a star system directly ahead.","r"].addLine;
 ["/*UHURA:*/ It's not a signal, sir.","r"].addLine;
-["It does not seem to even exist, and yet it's affecting all my channels.","r"].addLine;
+["It does not seem to even exist, and yet",".r"].addLine;
+["it's affecting all my channels.","r"].addLine;
 ["/*KIRK:*/ Well?","r"].addLine;
 ["/*SPOCK:*/ Someone or something is attempting to attract our attention.","r"].addLine;
 P(\comp,start:\attempting,music: {
@@ -87,8 +88,26 @@ P(\sfx,start:\visual, music:{
 				), -1, 0.03
 			), 0.0
 		)};
+		
 		Routine( { 
 			var r,b,c;
+			SynthDef(\visual_sine,{   arg freq=400, gate=1, release=3 , pan = 0.5; var sig;
+				freq =	 Lag.kr(freq,3);		 // =>
+				sig =	 SinOsc.ar(freq,0,0.1);	 // =>
+				sig =	 Pan2.ar(sig,pos: pan);	 // =>
+				sig =   EnvGen.kr( Env.adsr(0.02, release), gate, doneAction: 2) * sig;
+				sig =	Out.ar(verbBus.index,sig);// =>
+				sig;
+			}).add;
+			SynthDef(\visual_verb,{
+				var sig = In.ar(verbBus.index,2);
+				//
+				sig = FreeVerb.ar(sig, mix: 0.5, room:7 );
+				//	
+				sig = Out.ar(0,sig);
+				sig;
+			}).add;
+			s.sync;
 			wibble.play.dur(13);
 			//0.2.wait;
 			r=Synth(\visual_verb);
@@ -116,7 +135,8 @@ P(\sfx,start:\visual, music:{
 ["/*SPOCK:*/ Class M planet, Captain.","r"].addLine;
 ["/*KIRK:*/ Close to Earth conditions.","r"].addLine;
 ["/*SPOCK:*/ With two very important exceptions.","r"].addLine;
-["It's much older than Earth, and about a half million years ago, its atmosphere was totally ripped away by some sort of cataclysm.","r"].addLine;
+["It's much older than Earth, and about a half million years ago, its atmosphere was","r".addLine;
+["totally ripped away by some sort of cataclysm.","r"].addLine;
 ["The planet has evidently been dead since then.","r"].addLine;
 ["Sensors detect no life of any kind.","r"].addLine;
 ["/*SARGON [OC]:*/ All of your questions will be answered in time, Captain Kirk.","r"].addLine;

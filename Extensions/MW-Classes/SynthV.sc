@@ -37,23 +37,23 @@ SynthV{
 			genbu:( 'backendType': "SVR2Standard", 'version': 100, 'name': "GENBU", 'phoneset': "romaji", 'language': "japanese", 'languageOverride': "", 'phonesetOverride': "" ), 
 
 			aiko: ( 
-			'version': 100, 
-			'phonesetOverride': "", 
-			'name': "AiKO (Lite)", 
-			'phoneset': "xsampa", 
-			'language': "mandarin", 
-			'languageOverride': "", 
-			'backendType': "SVR2Standard"
-		),
-		kevin: ( 
-			'name':             "Kevin",
-			'language':         "english",
-			'phoneset':         "arpabet",
-			'languageOverride': "",
-			'phonesetOverride': "",
-			'backendType':      "SVR2AI",
-			'version':          "107"
-		),
+				'version': 100, 
+				'phonesetOverride': "", 
+				'name': "AiKO (Lite)", 
+				'phoneset': "xsampa", 
+				'language': "mandarin", 
+				'languageOverride': "", 
+				'backendType': "SVR2Standard"
+			),
+			kevin: ( 
+				'name':             "Kevin",
+				'language':         "english",
+				'phoneset':         "arpabet",
+				'languageOverride': "",
+				'phonesetOverride': "",
+				'backendType':      "SVR2AI",
+				'version':          "107"
+			),
 
 		)
 		/*
@@ -214,10 +214,19 @@ SynthV{
 		=> Event.newFrom(_)
 		=> {|i| 
 			filter.notNil.if{
-				filter.( i )
-			}{
-				i
-			}
+				( filter.class == Function ).if {
+					filter.( i )
+				}{ //filter is an Event 
+					filter.keys.postln.do{|key|
+						\KEY_.post;key.postln;
+						\i_.post;i.postln;
+						i.put(key, filter.at( key ).( i.at( key ) ))
+					}
+
+				}
+			};
+			i
+			
 		};
 		event.keys.do{|k| 
 			( event.at(k).isCollection && event.at(k).isString.not ).if{

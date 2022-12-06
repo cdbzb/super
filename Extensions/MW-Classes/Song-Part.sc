@@ -266,13 +266,13 @@ Song {
 		quarters=SongArray(key:key);
 		tempoMap=SongArray(key:key);
 		secLoc = SectionAccessor({ |i| 
-			Song.secDur[..(i-1)].sum
+			Song.currentSong.secDur[..(i-1)].sum
 		});
 		secDur = SectionAccessor({ |i|
-			Song.durs[ i ].list.sum
+			Song.currentSong.durs[ i ].list.sum
 		});
 		pbind = SectionAccessor({ |i|
-			Pbind(\dur,durs[i],\midinote,tune[i])
+			Pbind(\dur,Song.currentSong.durs[i],\midinote,Song.currentSong.tune[i])
 		})
 
 	}

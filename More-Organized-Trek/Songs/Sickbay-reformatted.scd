@@ -26,12 +26,14 @@ P(\filter,start:0,music:{|p b e|
 P(\guide0,start:0,music:~sickBay.pbind[0]=>Pfin(2,_));
 P.still( \kirk, start:0 , timecode:3802.81.seconds, music: { |p b e|
 		e.still.value(
+
 				wait: b.sum,
-				monitor:0
+				monitor: 0,
 		);
 });
 P(\mcCoy0,start:0,syl:1,music: { |p b e|
 		[
+		
 				amp:0.03,
 				instrument:\mcCoy,
 				//out:~sickBay.mcCoyBus,
@@ -53,6 +55,7 @@ P.synthV(\genbu,'Sar- gon here', take:"low", params:
 		}.play
 	}
 );
+
 P.tune('Sar- gon here');
 ["(enter Thalassa)","e5"].addLine; //f maj 7 //2
 P.tune('enter Thalassa');
@@ -114,7 +117,7 @@ P(\gliss,start:5,syl:6,music:{
 //			=> p.synthVTracks.at(e.key).()
 //		}.play
 //	}
-//));
+//);
 P.tune('ter- ri');
 P(\mcCoy3,start:3,music: { |p b e|
 		Song.currentSong.pbind[3]<>(instrument:\mcCoy,
@@ -238,15 +241,20 @@ P(\chords,start:'cer- tain',music:{|p b e|
 	[
 		freq: [[1,3,5],[1,3,5],[-7,3,5],[-7,3,5],[-7,3,5],[-6,3,5],[-6,2,5]].df('c#') ++ [[1,3,5]].df('b-',octave:4) => _.q,
 		dur: p.quarters[e.start] ++ Song.durs[\rrect].list[0..2] => _.q,
-		out: Effect({|i|CrossoverDistortion.ar(i,0.01,0.9,0.4) => DelayC.ar(_,0.2,SinOsc.ar(5).range(0,0.001)) =>MoogVCF.ar(_,SinOsc.ar([0.11,0.1,0.13]).range(900,2000),0.8) * 2},inputChannels:3).bus.index
-
+		out: Effect(
+			{|i|
+				CrossoverDistortion.ar(i,0.01,0.9,0.4) 
+				=> DelayC.ar(_,0.2,SinOsc.ar(5).range(0,0.001)) 
+				=> MoogVCF.ar(_,SinOsc.ar([0.11,0.1,0.13]).range(900,2000),0.8) * 2
+			},inputChannels:3
+		).bus.index
 	].pp
 	
 });
 P(\bass,start:'cer- tain',music:{|p b e| 
 	[
 		freq: [1,1,-7,-7,-4].df('c#',octave:3).q,
-		dur:[3,1,3,1,4].q/2
+		dur: [3,1,3,1,4].q/2
 	].p.play(p.quarters[e.start].asTempoClock);
 });
 ["er- ror. For- mu- la is co- ","d4 f3 g a b g b "].addLine; //8
@@ -265,25 +273,27 @@ P.synthV(\genbu,'er- ror',
 P(\bass,syl:1,start:'For- mu- la',music:{|p b e| 
 		{
 			b.postln;
-						[1,-7].df(\g).dq.demand 
-						(b.parse([[1,1,1,1/2],[1/2,1]]))
-//						,
-				=> { |i| 
-						Saw.ar(i * [0.99,1,1.013]/[4,8] , 0.1) 
-						+SinOsc.ar(Vibrato.kr(i*[ 2,4 ] + [0,2]),0,0.005)
-				} 
-				=>MoogFF.ar(_,3000,1)
-				=>Phaser2.ar(_,rate:0.09)
-				* Env.perc(Line.kr(0.01,0.05,1),Line.kr(3,5,1)).kr(0,gate:TDuty.kr(b.parse([ [1,1,1,1/2],[1/2,1] ].dropLast).dq))
-				=> EchoNone.ar(_,0.444,0.444,2.5) * 0.5
+			[1,-7].df(\g).dq.demand 
+			(b.parse([[1,1,1,1/2],[1/2,1]]))
+			//						,
+			=> { |i| 
+				Saw.ar(i * [0.99,1,1.013]/[4,8] , 0.1) 
+				+SinOsc.ar(Vibrato.kr(i*[ 2,4 ] + [0,2]),0,0.005)
+			} 
+			=> MoogFF.ar(_,3000,1)
+			=> Phaser2.ar(_,rate:0.09)
+			* Env.perc(Line.kr(0.01,0.05,1),Line.kr(3,5,1)).kr(0,gate:TDuty.kr(b.parse([ [1,1,1,1/2],[1/2,1] ].dropLast).dq))
+			=> EchoNone.ar(_,0.444,0.444,2.5) * 0.5
 		}.play
 
 });
 ["rrect. Don't be concer -- ned, this is an","d4 c# e d f# g f# d e f# "].addLine;  //9
 P.synthV(\genbu, 'rrect',
 [
-	lyrics: "rekt dont bi kan ser - nd dis is an",
-	phonemes: ["","","","","","","","d i s","i s",""]
+	lyrics: "rekt dont bi kan ser - nd this is an",
+	phonemes: ["","","","k o n","s a a","","","d i s","i s",""],
+	lag: [0,    0,    0.05, 0, 0, 0, 0,    0.05, 0, 0],
+	legato: [1, 0.85, 1,    1, 1, 1, 0.85, 1,    1, 1]
 ],music:{|p b e|
 	{
 		e.playbuf
@@ -291,7 +301,7 @@ P.synthV(\genbu, 'rrect',
 	}.play
 }
 );
-P.tune('rrect.');
+//P.tune('rrect.');
 P(\lick,start:\rrect,music:{|p b e| 
 		{|i|
 				
@@ -309,10 +319,11 @@ P(\lick,start:\rrect,music:{|p b e|
 				//legato:1!4++5 =>_.q
 });
 ["ex- cel- lent bo- dy. "," g#4 e d d c#"].addLine; //10
-P.tune('ex- cel');
+//P.tune('ex- cel');
 P.synthV(\genbu,'ex- cel',
 [
 	lyrics: "ek se lent ba di",
+	legato: [1, 1,   1, 1, 0.75]
 ],music:{|p b e|
 	{
 		e.playbuf
@@ -330,21 +341,66 @@ P(\strum,start:'ex- cel',music:{|p b e|
 });
 P.tune('bo- dy');
 ["There I feel be- tter al- rea- dy","c4 g3 a b c4 b3 a b d4 c"].addLine; //11
-	P.synthV(\genbu, 'be- tter',
+	SynthDef( \synth_simpleSine, {
+			arg freq=220, rate=0.1, pan=0.0, amp=1.0, dur=1.0, lfor1=0.08, lfor2=0.05, nl=0.5, filt=5000;
+			var sig, sub, lfo1, lfo2, env, noise;
+			lfo1  = SinOsc.kr(lfor1, 0.5, 1, 0);
+			lfo2  = SinOsc.kr(lfor2, 0, 1, 0);
+			sig   = SinOscFB.ar(freq, lfo1, 1, 0);
+			sub   = SinOscFB.ar(freq*0.25, lfo2, 1, 0);
+			env   = Line.kr(1, 0, dur*4.0, doneAction: Done.freeSelf);
+			noise = PinkNoise.ar(nl, 0);
+			sig   = (sig + sub + noise) * env;
+		  //sig   = BLowPass4.ar(sig, filt);
+			sig   = MoogFF.ar(sig, filt * 0.5, 0, 0, 1, 0);
+			sig   = Pan2.ar(sig, pan, amp);
+			sig   = FreeVerb2.ar(sig[0], sig[1], 0.5, 0.99, 0.9);
+			sig = LeakDC.ar(sig);
+			Out.ar(0, sig * 0.6);
+	}).add;
+P(\middleVoice, music: { |p b e|
 	[
-		lyrics: "de ai fil be - - te al re di",
-		legato: [9,10,10,10,10,10,10,10,10,8]/10
-	],music:{|p b e|
-		{
-			e.playbuf
-			=> p.synthVTracks.at(e.key).()
-		}.play
-	}
+		freq: [\r, 4, 4, 3].df(\c).q,
+		dur: b.parse([3,5, 1, 1]).q
+	].pp
+});
+P(\bassnotes, music: { |p b e|
+	[
+		freq: [\r, [-5,-2], 1].df(\c,4).q,
+		dur: b.parse([ 3, 5, 2 ]).q
+	].pp
+});
+P.synthV(\genbu, 'be- tter',
+[
+	lyrics: "zer ai fir be - - ta al re di",
+	legato: [9, 10, 10, 10, 10, 10, 10, 10, 10, 8]/10,
+	lag: [0.1,  0,  0,  0,  0,  0,  0,  0,  0,  0]
+],music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+}
 );
-P.tune('be- tter');
+P(\note, syl: 7, music: { |p b e|
+	(
+		instrument: \stringyy,
+		freq: [ 1,11 ].df(\c),
+		out: Effect.bus( _ * Env.triangle(5).kr(2,gate:1), inputChannels:2 ),
+		amp:0.3
+	).play
+});
+//P.tune('be- tter');
 //in Time
+P(\ting,lag:0.07, music: { |p b e|
+		Synth(\synth_simpleSine, [\freq: 61.df(\c),\amp,0.1])
+});
+
 ["in Time a host  -- body will become...  ",[-1,1,-7,1,2,1,-7,-6,-7,1].dm(\b,scale:\minor)].addLine; //12
-P.synthV(\aiko, \Time, [lyrics:"in taim a ho ost ba di will bi kum "], music:{ |p b e|
+P.synthV(\aiko, \Time, [
+	lyrics:"in taim a ho ost ba di will bi kum ",
+	phonemes:["","","","","","","","","","k @ m"]
+], music:{ |p b e|
 		{
 			e.playbuf  =>
 			p.synthVTracks.at(e.key).()   

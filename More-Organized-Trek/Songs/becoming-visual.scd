@@ -135,7 +135,7 @@ P(\sfx,start:\visual, music:{
 ["/*SPOCK:*/ Class M planet, Captain.","r"].addLine;
 ["/*KIRK:*/ Close to Earth conditions.","r"].addLine;
 ["/*SPOCK:*/ With two very important exceptions.","r"].addLine;
-["It's much older than Earth, and about a half million years ago, its atmosphere was","r".addLine;
+["It's much older than Earth, and about a half million years ago, its atmosphere was","r"].addLine;
 ["totally ripped away by some sort of cataclysm.","r"].addLine;
 ["The planet has evidently been dead since then.","r"].addLine;
 ["Sensors detect no life of any kind.","r"].addLine;
@@ -155,6 +155,9 @@ P(\sfx,start:\visual, music:{
 ["There's no possibility of life there as we understand life.","r"].addLine;
 ["/*SARGON:*/ [OC]: And I am as dead as my planet.","r"].addLine;
 ["Does that frighten you, James Kirk?","r"].addLine;
-["For if it does, if you let what is left of me perish, then all of you, my children, all of mankind must perish, too.","r"].addLine;
+["For if it does,","r"].addLine;
+["if you let what is left of me perish,","r"].addLine;
+["then all of you, my children,","r"].addline;
+["all of mankind must perish, too.","r"].addLine;
 
 )

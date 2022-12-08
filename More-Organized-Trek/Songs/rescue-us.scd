@@ -18,14 +18,30 @@ Song(\rescue,[]).current;
 ["/*KIRK:*/ Got something?","r"].addLine;
 ["Sensors registering some form of energy deep inside the planet.","3 1 4 3 1 3 4 5 7 6 4  2 1 -7 -6 -6 -5".dm(\e,\mixolydian)].addLine; /*SPOCK:*/ 
 P.tune();
-["/*SARGON [OC]*/: Your probes have touched me, Mister Spock.","r"].addLine;
-["/*SPOCK:*/ Reading energy only, Captain. No life forms.","r"].addLine;
+["/*SARGON [OC]*/(boom) Your probes have touched me, Mister Spock.",[\r, 4, 4, 4, 4, 3, 2, 1, 2, 3].dm(\c,\minor)].addLine;
+P.tune();
+P(\bass, music: { |p b e|
+	[
+		freq:[1, 7, 4].df(\f, [2,3],\mixolydian).q,
+		dur:b.parse([4,4,2]).q
+	].pp
+});
+["/*SPOCK:*/ Reading energy only, Captain. No life forms.", "1 2 3 2 1 4 2 1 -6 4 5.5 2".dm('f#',\lydian)].addLine;
+P.tune;
 [" I have locked your transporter device on my co-ordinates.","5 5 5 6 5 4 3 2 4 3 2 1 3 2 2".dm(\a,4)].addLine;/*SARGON [OC]*/
 Song.setTempoMap('co-ordinates',"q e eq e eq e eq e eq e eq e eq e eq");
 P(\bass, music: { |p b e|
 	[
 		freq: [6, 5, 4, 5, 6, 7, 11, 5].df(\a,2).q,
 		dur: [4,4,1,1,1,1,2,2].warpTo(e.tempoMap).q
+	].pp
+});
+P(\chords, music: { |p b e|
+	[
+		freq: [ -12,-2,1,3,5,11 ].dup(4) ++ [ -1,1,3,5,11 ] =>_.df(\e) =>_.q,
+		dur: "q e eq e eqq".asBeats.warpTo(e.tempoMap).q,
+		instrument:\sawSynth,
+		out: Effect.bus( _ * Env([1,0.2,0],b.parse([4,8])).kr(2,gate:1) )
 	].pp
 });
 P.tune();
@@ -44,11 +60,35 @@ P(\laMerChords, music: { |p b e|
 });
 P(\bass, music: { |p b e|
 	[
-		freq: [\r,1,-7,6,7.5].df('f#',[3,2],\minor).q,
-		dur: b.parse([1,3, 2,3, 3]).q
+		freq: [\r,1,-7,6,].df('f#',[3,2],\minor) ++ [5,11].dup.df('f',[3,2]) =>_.q,
+		dur: b.parse([1,3, 2,2,  1,3]).q
 	].pp
 });
-["/*SPOCK:*/ Coming from deep under the planet's surface, Captain. Under at least one hundred miles of solid rock.","r"].addLine;
+P(\answer, syl: 10,music: { |p b e|
+	[
+		freq: [4,3,1,-6,1,2,3].df(\f).q,
+		dur:0.5,
+		instrument:\ooh,
+		amp:Pseries(0.1,-0.018,inf) / 6
+	].pp
+});
+["/*SPOCK:*/ Coming from deep under the planet's surface, Captain. ","11 12 13 7 12 11 7 5 7 5 4 3 2".dm(\c,\mixolydian)].addLine;
+["Under at least one hundred miles of "," 1 2 3 4 5 4".dm(\c,\lydian) ++ "1 2 3 4 5 4 3".dm(\d,\lydian)].addLine;
+["(boom boom) solid rock.","-7 1 7 6 7 11".dm(\f)].addLine;
+P(\harmony, music: { |p b e|
+	[
+		freq:"r 11 11 6 5 6".df(\c).q,
+		dur: "qq q e eqq q q".asBeats.warpTo(e.tempoMap).q
+	].pp
+});
+Song.setTempoMap(\solid,"q q q e e qq".asBeats);
+P.tune;
+P(\bass, music: { |p b e|
+	[
+		freq: "3 4 7 11 3 4 3 4 7 11 12 5 2 2".df(\c,3).q,
+		dur: "e e e e x x x x e x x ex x q".asBeats * 2 =>_.warpTo(e.tempoMap) =>_.q
+	].pp
+});
 ["I will make it possible for your transporter to beam you"," 5 5 5 6 5 4 3 1 2 3 3  2 2 1 2 3".dm(\b)].addLine;/*SARGON [OC]*/
 P.tune();
 ["(boom) that deep (that deep that deep) beneath the surface. Have no fear."," -5 3 2 3 2 3 2 1 2 3 2 1 -7 1".dm(\b)].addLine;

@@ -159,8 +159,57 @@ P(\bass, music: { |p b e|
 ["/*KIRK:*/ Lieutenant Uhura, have Doctor McCoy report to the transporter room in ten minutes with standard landing party equipment.","r"].addLine;
 ["/*UHURA:*/ Yes, sir.","r"].addLine;
 ["/*KIRK:*/ Spock.","r"].addLine;
-["/*SPOCK:*/ Captain, I do wish to inspect whatever this is that lived that long ago.","r"].addLine;
-["/*KIRK:*/ And I would like to have my science officer with me on something as unusual as this, but it is full of unknowns and we can't risk both of us being off the ship.","r"].addLine;
+["/*SPOCK:*/ Captain, I do wish to inspect whatever this is that lived that long ago.","7 4 7 7.5 5 6.5 7.5 11 5 3 4 2 3 5 11 12 11 7.5 7.5".dm('e',\minor)].addLine;
+P.tune();
+P(\bass, music: { |p b e|
+	[
+		freq: [-1.5,-7,-7.5,-1.5,1,-3,-2,-3, [-4,-5]] .df(\e,[5],\minor).postln.q,
+		dur:b.parse([[1, 0.34], [0.66,1], [1,0.34], [0.66,1,  1], 2, 2, 1, 4, 3]).postln.q,
+		legato: [2,1,2,1,1,1,1,1,1].q
+	].p.trace.play
+
+});
+["/*KIRK:*/ And I would like to have my--","-7 3 2 3 1 4 5 4".dm(\g)].addLine;
+P.tune();
+P(\bass, music: { |p b e|
+	[
+		freq: [-7, 1].df(\g,[ 3,4 ]).q,
+		dur: b.parse([4,4]).q
+	].pp
+});
+["(boom) science officer with me on something as unusual as this, but it i--s","-1 3 2 3 2 3 2 1 -7 1 -6  2 3 4 5 4 3 2 -7 1 2 1".dm(\c,6)].addLine;
+Song.setTempoMap(\unusual,"q %x x x x x% e ee e e e e e e x xe x xe e e x xq".rhythm);
+P(\click, music: { |p b e|
+	[instrument: \hihat,dur:1.dup(10).warpTo(e.tempoMap).q]//.pp
+});
+P(\bass, music: { |p b e|
+	[
+		freq: "11 6 13 11 4 14 6 2 12 2 5 15 5".df(\c,3).q,
+		dur: b.parse([6, [1,0.5],0.5,1, 2, 1,1, [2,0.34],0.66,[1,0.34],[ 0.66,1 ],1,2]).q
+	].pp
+});
+P.tune();
+["(boom) full of unknowns","-1 3 2 2 2".dm('f#',6,\minor)].addLine;
+Song.setTempoMap(\unknowns,"q qq Q E q ");
+P.tune();
+P(\click, music: { |p b e|
+	[dur: 1.dup(4).warpTo(e.tempoMap).q,instrument:\hihat].pp
+});
+P(\bass, music: { |p b e|
+	[
+		freq: "1 1 -7 -7 -6".df('f#',[3,4],\mixolydian).q,
+		dur: "qe e qe e ee".asBeats/1 warpTo: e.tempoMap q: 1
+	].pp
+});
+P(\dyad, music: { |p b e|
+	(
+		instrument: \stringyy,
+		freq: [5,1].df('f#',4),
+		dur: b.parse([4])
+	).play
+});
+["and we can't risk both of us being off the ship.","5 6 5 4 3 2 1 -7 -6 -7 -5 1".dm(\e)].addLine;
+P.tune();
 // (The lights go out.)
 ["SULU: All power gone, sir.","r"].addLine;
 ["KIRK: On the other hand, perhaps this Sargon would like you to come with us.","r"].addLine;

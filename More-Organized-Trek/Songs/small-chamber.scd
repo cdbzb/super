@@ -17,55 +17,109 @@ Song.chamber.isNil.if{"/Users/michael/tank/super/More-Organized-Trek/chamber_rew
 //				SystemClock.sched(4,{{~stills.preview('kirk-face',wait:0.51,fade:2,monitor:0,text:['Sargon here','' ])}.defer});
 
 [ "/*KIRK:*/ Even for us, a half million years is almost too long to wait. (chord)", [ 5,6,4,7 ,5,11,12,6.5,13 ,12,11,12 ,14.5,15,14.5,14.5 ,11.5 ].dm('a') ].addLine;
-P(\lineB,start:\almost,music:{
-		var effect=Effect(FreeVerb.ar(_,0.8,1),out:2);
-		[
-			legato:[1.1,0.8,1,0.9,1].q,
-			amp:0.05,
-			//				instrument:\sawSynthSustain,
-			lagTime:2,
-			out:effect.bus.index,
-			freq:[2,1,5,4,6].df('d',octave: 5).q,
-			dur:Song.parse(0,[2,3,2,5,4],).q,
-		]=>PmonoArtic(\sawSynthSustain,*_)=>_.trace=>_.play
-				}
+P.synthV(\genbu,\wait,
+	range:[0,15], params: {|p b| [
+		// lyrics: "even +  for as a half million + years is alost  too long to wait",
+		lyrics: "i ven fo as a haf mi ryan yiryz iz or mosyt tsu lang tsu weit",
+		phonemes:[ "i","v e n","f o","a s","","h a f","","","y i r y z","i z","","","","","","" ],
+		legato: [1, 1, 0.8, 0.9,1, 0.8, 1, 0.90, 0.8, 1, 1, 1, 1, 0.85, 1, 1, 1]
+	]}, filter: (
+		midinote: _ - 24
+	), music: {|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P(\lineB,music:{
+	var effect=Effect(FreeVerb.ar(_,0.8,1),out:2);
+	[
+		legato:[1.1,0.8,1,0.9,1].q,
+		amp:0.05,
+		//				instrument:\sawSynthSustain,
+		lagTime:2,
+		out:effect.bus.index,
+		freq:[2,1,5,4,6].df('d',octave: 5).q,
+		dur:Song.parse(0,[2,3,2,5,4],).q,
+	].ppma(\sawSynthSustain)
+}
 );
-P(\lineA,start:\almost,music:[
-//				instrument:\sawSynthSustain,
-				amp:0.07,
-				out:3,
-				freq:[1,3,4,6,7].df('e',octave: 5).q,
-				dur:Song.parse(0,[3,2,3,4,4],).q,
-				legato:[1,1,0.9,1,1].q,
-		]=>PmonoArtic(\sawSynthSustain,*_)
-);
-P(\tuneWas00gt,start:\almost,music:Song.currentSong.pbind[0]=>Pmul(\freq,1/2, _)=>_.fin(16)
-		);
-P(\chords,start:\almost,syl:11,music:[
-				amp:0.06,
-				freq:[[5,11,13],[5,11,13],[5,7,13]].df('b',octave: 4).q,
-				dur:
-				Song.parse(0,[2,2,1],11)+[0,0,2]
-				=>_.q,
-		].p
-);
-P(\experiment,start:\almost,syl:11,music:{{
-				SinOsc.ar([300,500],0,0.002)
-				* Env.perc(( Song.parse(0,[4],12)!2 ).flatten+3,1).kr(2,gate:1)
-		}.play}
-);
+P(\lineA,start:\almost,music:{ |p b e| 
+	[
+		instrument:\sawSynthSustain,
+		amp:0.07,
+		out:3,
+		freq:[1,3,4,6,7].df('e',octave: 5).q,
+		dur:Song.parse(0,[3,2,3,4,4],).q,
+		legato:[1,1,0.9,1,1].q,
+	].ppma
+});
+// P(\tuneWas00gt,start:\almost,music:Song.currentSong.pbind[0]=>Pmul(\freq,1/2, _)=>_.fin(16));
+P(\chords,music:{|p b e|
+	[
+		amp:0.06,
+		freq:[[5,11,13],[5,11,13],[5,7,13]].df('b',octave: 4).q,
+		dur:
+		Song.parse(0,[2,2,1],11)+[0,0,2]
+		=>_.q,
+	].p 
+});
+P(\experiment,music:{ |p b e|
+	{
+		SinOsc.ar([300,500],0,0.002)
+		* Env.perc(( Song.parse(0,[4],12)!2 ).flatten+3,1).kr(2,gate:1)
+	}.play
+});
 ["Two others still survive. Henoch (boom) and Thalassa.", [6,5,4,3,2,4].dm('d',scale:\diminished) ++[5,5,5,5,5,4,3].dm('c#') ].addLine; 
-P(\baseFirstHalf2,start:\Two,music:
-		[
-				midinote: Song.currentSong.tune[1].list[0..4]++[1].dm('c')=>_.q 
-//				-12 
-				,
-				instrument:\sawSynth,
-				rel:3,
-				dur:Song.durs[1],
-				amp:0.01
-		].p
+Song.synthVTracks = EventWithDefault.new(
+	\default, {|i|
+		DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:0.20, coefs:nil, perm:nil)
+		/5
+	}
 );
+P.synthV(\genbu,\survive,range:[0,5],
+	filter: ( midinote: _ - 12 ),
+	params: {|p b| [
+		lyrics: "tsu a zaz stiru sa vaiv",
+		legato: [1, 1, 0.8, 0.8, 1, 0.7]
+	]}, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	}
+);
+P.synthV(\genbu, \survive,syl:5, take: 2, range: [6,7],
+	filter: ( midinote: _ - 12 ),
+	params: {|p b| [
+		lyrics: "he nok ",
+	]}, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.synthV(\genbu, \survive,syl:8, take: 3, range:[9,12],
+		filter: ( midinote: _ - 12 ),
+params: {|p b| [
+	lyrics: "and se la sa",
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P(\baseFirstHalf2,start:\Two,music: {|p b e|
+	[
+		midinote: Song.currentSong.tune[1].list[0..4]++[1].dm('c')=>_.q 
+		//				-12 
+		,
+		instrument:\sawSynth,
+		rel:3,
+		dur:Song.durs[1],
+		amp:0.01
+	].p
+});
 P(\baseFirstHalf1,start:\Two,music:Song.currentSong.pbind[1].fin(6)
 		=>Pbindf(_,
 				\instrument,
@@ -336,6 +390,38 @@ legato:3,
 
 );
 ["(boom) Thalassa, my Thalassa. I`m ",[1,  11,7,6,14,13,13,12,11,15,13,15,14,13,11].dm('c#')].addLine; //2
+P.tune();
+Song.setTempoMap('my Thalassa',"e e e e ex x e ee e q e e Q Q Q");
+P.synthV(\genbu, 'my Thalassa',syl:0, filter: (midinote: _-12),range:[1,15],
+	params: {|p b| [
+	lyrics: "za la sa mai za la sa aim prizd yu sa vaived uis mi",
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P(\snare, music: { |p b e|
+	[
+		"q|q qq qq qq q",\snare,\amp,[0].q(1) ++ [0.1].q(inf),
+		"q | e eq e eq e eq e eq ",\kick3,\amp,[0].q(1) ++ [0.1].q(inf),
+		"q qqqq",\cymbalsDS,\amp,[\r,0.01].q,
+		//"q x x x x x x x x x x x x x x x x x x x ",\hat_808,\amp,[0].q++[0.1,0.05].q(inf),
+		
+	].dmx2(8,e.tempoMap).collect(_.play)
+});
+P.synthV(\genbu, 'my Thalassa',syl:0, take: \double, filter: (midinote: _-12),range:[1,15],
+	//filter: ( onset: _+10000.rand ),
+	params: {|p b| [
+	lag:  {0.1.rand}!14,
+	lyrics: "za la sa mai Tha la sa aim prizd yu sa vaived uis mi",
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+		*[0.5,1.2]
+	}.play
+});
 P(\chord2,start:'I`m',music:[
 		instrument:\stringyy,
 		effect:{Effect(Phaser1.ar(_,0.5,1/6,0.9)).bus.index},
@@ -357,11 +443,7 @@ P(\chord2,start:'I`m',music:[
 		//MUTEDamp:0.02,
 //MUTED].p.fin
 //MUTED);
-P(\tune2,start:'I`m',
-	syl:0,
-	music:Song.currentSong.pbind[2]
-	.drop(1)
-);
+// P(\tune2, syl:0, music:Song.currentSong.pbind[2] .drop(1));
 P(\baseline2,start:'I`m',syl:1,music:[
 		amp:0.2,
 		dur:Song.parse(2,[
@@ -420,6 +502,16 @@ P.tune(\These);
 P.tune(\but);
 
 ["(boom) and search the heavens with my mind, ",[\r,5,5,5,5,5,5,5,5].dm(\b)].addLine;/*KIRK:*/
+P.synthV(\genbu, \heavens,syl:0, range:[ 1,8 ],filter:(midinote: _ -12), params: {|p b| [
+	lyrics: "and shiach za he venz wiz mai maind",
+	phonemes: ["","","","","","","",""];
+
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 P.tune(\search);
 
 

@@ -73,7 +73,7 @@ P(\experiment,music:{ |p b e|
 ["Two others still survive. Henoch (boom) and Thalassa.", [6,5,4,3,2,4].dm('d',scale:\diminished) ++[5,5,5,5,5,4,3].dm('c#') ].addLine; 
 Song.synthVTracks = EventWithDefault.new(
 	\default, {|i|
-		DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:0.20, coefs:nil, perm:nil)
+		DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:0.15, coefs:nil, perm:nil)
 		/5
 	}
 );
@@ -92,7 +92,7 @@ P.synthV(\genbu,\survive,range:[0,5],
 P.synthV(\genbu, \survive,syl:5, take: 2, range: [6,7],
 	filter: ( midinote: _ - 12 ),
 	params: {|p b| [
-		lyrics: "he nok ",
+		lyrics: "he nak ",
 	]}, music:{|p b e|
 		{
 			e.playbuf
@@ -464,7 +464,17 @@ P(\baseline2,start:'I`m',syl:1,music:[
 [" When the struggle came which devastated your planet ","r"].addLine;/*SPOCK:*/
 
 [" Only the best minds were chosen to survive.","5 6 7 11 7 5 6 4 2 1 -7".dm(\e,6,\phrygian)].addLine;/*KIRK:*/
-P.tune(\Only);
+// P.tune(\Oly);
+P.synthV(\genbu, filter:(midinote:_-24), params: {|p b| [
+	lyrics: "on li ze best mainds wa cho zen tsu sa vaiv" ,
+	legato: [1, 1, 1,  1,    1,    1,  1,  1,  0.8,  1, 0.8]
+	
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 P('chords',start:\Only,music: {|p b e|
 	[
 		freq:[\r , [1,3,5,7], [1,4,6,8]].df(\c).q,
@@ -484,7 +494,20 @@ P('spaceBass',start:\Only,syl: 7,music: {|p b e|
 	].ppm
 });
 ["Thalassa,(boom boom boom) my wife, as you may have guessed. ","-5 3 2 -1, -17 -16 3 6  5 3 1.5 2 3".dm(\e,6)].addLine;
-P.tune(\wife,_ <> [out:Effect.bus(DWGReverbC1C3.ar(_,len:3000))].p);
+P.synthV(\genbu,\wife,filter:(midinote:_-12), params: {|p b| [
+	lyrics: "tha,        la,   sa,    r,  r,  r,  mai, waif,      az,    yu, mei, hav,     gesyd",
+	phonemes: ["",       "",   "",    "", "", "", "",  "w a i f", "a z", "", "",  "h a v", "" ],
+	tension: Env.step([0, -0.1, -0.05, 0,  0,  0,  0,   -0.2, -0.1, -0.5, 0],     b[..10]),
+	legato: [1,          1,    1,     1,  1,  1,  1,   1,         1,     1,  1,   1,       0.8]
+] }, music:{|p b e|
+	{
+		e.playbuf
+		//=> PitchShift.ar(_, windowSize:0.2, pitchRatio:0.5, pitchDispersion:0.0, timeDispersion:0.0, mul:1.0, add:0.0)
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+
+P.tune(\wife,_ <> [out:Effect.bus(DWGReverbC1C3.ar(_,len:3000)),rest:[\r,\r,\r,0,0,0].q].p);
 ["and Henoch, from the other side. ","4 3 1 -5 -6.5 -7 -5 -3.5".dm('f#',6,\minor)].addLine;
 P.tune('Henoch,');
 

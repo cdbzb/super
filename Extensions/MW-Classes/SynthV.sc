@@ -143,6 +143,7 @@ SynthV{
 		project.tracks[0].mainGroup.parameters.at(param).put(\points,points)
 	}
 	set { |event|
+		(event.lyric == "\r").not.if(
 		event.dur.size.postln;// => this.makeNotes(_+1);
 		//event.dur = event.dur.collect{|i| this.class.secondsToBlicks(i)};
 		event.dur = [0] ++ event.dur.integrate + (event.lag ? 0) => _.differentiate => _.drop(1);
@@ -163,6 +164,7 @@ SynthV{
 		};
 		//this should be done with an array flop and pairsDo instad but...
 		this.filterRests 
+	)
 	}
 	setNote {| index key value|
 		
@@ -200,16 +202,16 @@ SynthV{
 		var synthV = SynthV(key,start,take );
 		song = song ? Song.currentSong;
 		pbind = pbind.notNil.if{  // pass in a pbind or get it from the song
-			pbind.value(song,song.durs[start].list)
+			pbind.value(song,song.durs[section].list)
 		} {
-			Song.currentSong.pbind[start ] 
+			Song.currentSong.pbind[section] 
 		};
 		event = pbind.patternpairs.collect{|i|
 			( i.class==Pseq ).if{i.list}{i}
 		}
 		++ params.value(
 			song,
-			song.durs[start].list, //drop range
+			song.durs[section].list, //drop range
 		) 
 		=> Event.newFrom(_)
 		=> {|i| 
@@ -232,7 +234,7 @@ SynthV{
 			( event.at(k).isCollection && event.at(k).isString.not ).if{
 				event.put(k, event.at(k)[range[0]..range[1]])
 		}};
-		event.lyrics=event.lyrics.split(Char.space).reject{|i| i.size==0};
+		event.lyrics=event.lyrics.replace($, , "").split(Char.space).reject{|i| i.size==0};
 		event.pitch=event.midinote.asInteger;
 		synthV.makeNotes(event.dur.size);
 
@@ -241,7 +243,7 @@ SynthV{
 
 		synthV.writeProject; 'synthV written!'.postln;
 		take.notNil.if{key = key ++ "_" ++ take};
-		^P(key,section,syl,lag, music,song,
+		^P(key,start,syl,lag, music,song,
 			resources:(
 				synthV: synthV,
 				playbuf: { PlayBuf.auto(1,synthV.buffer.()) },

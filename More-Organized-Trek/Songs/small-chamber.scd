@@ -674,8 +674,30 @@ P.tune();
 		}).add;
 );
 ~section= Song.sections.postln;
-["/*KIRK:*/(boom) I will return your captain to you before the body limit has been reached. ",[-1,1,2,3,4,3,5,3,2,1,4,5,6,7,6,5,6,5,4,3,2].dm('c',scale:\mixolydian)].addLine;
+["/*KIRK:*/(boom) I will return your captain to you before the body limit has been reached. ",[-1,1,2,3,4,3,5,3,2,1,4,5,6,7,6,5,6,5,4,3].dm('c',scale:\mixolydian)].addLine;
+P.synthV(\genbu, filter:(midinote: _-12), params: {|p b| [
+	lyrics: "r,   ai, wil, ri, taan, yur, kap, ten, tu, yu,   bi, fo, za, ba, di, li, mit, haz,     bin, richt, ",
+	phonemes:["", "", "",  "", "",   "",  "",  "",  "", "",   "", "", "", "", "", "", "",  "h a z", ""  ],
+	legato: [1,   1,  1,   1,  1,    0.7, 1,   1,   1,  0.95, 1,  1,  1,  1,  1,  1,  1,   0.9,       1  ],
+	tension: Env([-0.5,-0.5],3),
+	breathiness: Env([0.3,0.3],3),
+	voicing: Env([0.6,0.6],3),
+
+	loudness: Env([6,6],3)
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> Phaser2.ar(_,rate:0.1)
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+a = Item(\eyeWillReturn);
 P(\IWillReturnVocal,music: { |p b e|
+	{0.2 * PlayBuf.ar(1,a.buffer.bufnum, rate:[0.99,1.012]) => FreeVerb.ar(_, mix:0.33, room:0.5, damp:0.5, mul:1.0, add:0.0)
+	=> DelayN.ar(_,0.2)
+}
+// .play
+;
 	Item(\eyeWillReturn).refresh.play(
 		rate: [1,1.01],
 		//amp: 0.1,
@@ -741,7 +763,7 @@ P(\bass,start:\limit,music: {|p b e|
 	}
 );
 //P(\tune,start:\limit,music:Song.currentSong.pbind[\limit]);
-P.tune(_ <> [amp:p{\r.yield;loop{0.1.yield}}].p);
+// P.tune(_ <> [amp:p{\r.yield;loop{0.1.yield}}].p);
 ["/*SPOCK:*/ Our bodies, Sargon, for what purpose? ", [5,7,5,4,3,2,1,5,3].dm('d',scale:\diminished)].addLine;
 P(\tune,start:\purpose,music:Song.currentSong.pbind[\purpose]=>Pbindf(_,\instrument,\stringyy,\amp,0.3)
 );

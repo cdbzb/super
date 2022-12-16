@@ -28,7 +28,7 @@ o = [
 	Array.prNew(17),  "/*KIRK:*/ Only the best minds were chosen to survive. Thalassa, my wife, as you may have guessed. Henoch, from the other side. Realising our mistake, we attempted to perpetuate both sides. We built this chamber here in order to preserve our essence in this fashion. ",  Pseq.prNew,  Array.prNew(1),  
 	" These others, they were stored differently than you,",  Pseq.prNew,  List.prNew,  Array.prNew(11),  
 	"why can't they (just) build your robots for you?",  Pseq.prNew,  List.prNew,  Array.prNew(10),  
-	"/*KIRK:*/(boom) I will return your captain to you before the body limit has been reached. ",  Pseq.prNew,  List.prNew,  Array.prNew(21),  
+	"/*KIRK:*/(boom) I will return your captain to you before the body limit has been reached. ",  Pseq.prNew,  List.prNew,  Array.prNew(20),  
 	"far , far beyond your abilities. It is. ",  Pseq.prNew,  List.prNew,  Array.prNew(12),  
 	"time dum dum dum dum dum etc ",  Pseq.prNew,  List.prNew,  Array.prNew(16),  
 	"/*KIRK:*/ and search the heavens with my mind, probing, waiting, probing. And then one day my mind touched your vessel and brought you here. ",  Pseq.prNew,  Array.prNew(1),  " And destroy them",  
@@ -419,12 +419,11 @@ p = [
 	// List
 	114, [ array: o[115] ],  
 	// Array
-	115, [ 0.356,  0.37,  0.349,  0.396,  
-		1.127,  0.398,  0.352,  0.361,  
-		0.363,  0.737,  0.365,  0.311,  
-		0.389,  1.05,  0.379,  0.334,  
-		0.363,  0.35,  0.37,  0.515,  
-		0.552 ],  
+	115, [ 0.368,  0.356,  0.391,  0.386,  
+		1.092,  0.361,  0.353,  0.368,  
+		0.332,  0.746,  0.406,  0.34,  
+		0.37,  1.054,  0.378,  0.347,  
+		0.36,  0.347,  0.381,  0.535 ],  
 	// Pseq
 	117, [ list: o[118],  repeats: 1,  
 		offset: 0 ],  

@@ -768,17 +768,27 @@ P(\bass,start:\limit,music: {|p b e|
 P(\tune,start:\purpose,music:Song.currentSong.pbind[\purpose]=>Pbindf(_,\instrument,\stringyy,\amp,0.3)
 );
 ["/*KIRK:*/ (boom) To build. To build humanoid robots. We ",[5,5,11,5,11,7,6,4,6,5,6].dm('e-',scale:\mixolydian)].addLine;
-P(\shaker,syl:1,start:\humanoid,music:
-		{		
-				{ 
-						StkShakers.ar(0,LFSaw.kr(8).range(-10,128),95) 
-//						* Env.linen(0,2,8,curve:\exp).kr(2,gate:1)
-* Env.perc(0,10).kr(2)
-						=> Phaser1.ar(_,0.5,1/6)
-						* 0.1
-						=> FreeVerb.ar(_, Env([0,0,1],[2,8]).kr(0),0.9)
-				}.play
-		}
+P.synthV(\genbu, filter: (midinote: _-12),params: {|p b| [
+	lyrics: "r, tu, bild, tu, bild, hyu, ma, noid, ro,  batz, wi",
+	legato: [1, 0.9,  1,    1,  0.9,     1,   1,  1,    0.9, 0.5, 1],
+	lag: [0,    0,  0,    0,  0,     0,   0,  0,    0,   0, 0.1],
+	phonemes:["","","b i r d y","","b i d y","","","","","b a t s "]
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P(\shaker,syl:1,start:\humanoid,music: {|p b e|		
+	{ 
+		StkShakers.ar(0,LFSaw.kr(8).range(-10,128),95) 
+		//						* Env.linen(0,2,8,curve:\exp).kr(2,gate:1)
+		* Env.perc(0,10).kr(2)
+		=> Phaser1.ar(_,0.5,1/6)
+		* 0.1
+		=> FreeVerb.ar(_, Env([0,0,1],[2,8]).kr(0),0.9)
+	}.play
+}
 );
 P( \baseline,syl:1,start:\humanoid,music:
 [
@@ -810,6 +820,17 @@ P(\boom,start:\humanoid,music:
 				].p
 );
 ["need your bodies long enough to have the use of your ",[11,6,5,4,7,6,2,1,2,3,4,5,3].dm('g',scale:\mixolydian)].addLine;
+P.synthV(\genbu, filter:(midinote: _-12), params: {|p b| [
+	lyrics: "nid, ya, ba, diz,     lang, i,  nef, tu,      hav,     ze,    us,      af,     ya",
+	phonemes:["", "", "", "d i z", "",   "", "n a f f",  "t s u", "h a v", "z a", "y u z", "a v ", "y u r y"],
+	legato:[1,    1,  1,  0.75,    1,    1,  1,   1,       1,       1,     1,       1,      1,          ]
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+
 Song.setTempoMap(\need,"qqq e q q q e e e e e Q Q Q ");
 
 P('click',start:\need,music: {|p b e|

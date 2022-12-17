@@ -295,9 +295,10 @@ Item {
 		this.armed.if{
 			this.record;
 		}{
+			Post <<< \buffer << buffer;
 			buffer.isNil.if({ this.refresh });
-			Server.default.bind{
-				Synth("itemPlayer"++inChans,
+			// Server.default.bind{
+				^Synth("itemPlayer"++inChans,
 				[
 					bufnum: buffer.bufnum,
 					rate: rate,
@@ -307,7 +308,8 @@ Item {
 					amp: amp,
 					out: bus
 				]
-			)}
+			)
+		// }
 		}
 	} 
 	prepVocoder {|numberOfBands=20| 

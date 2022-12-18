@@ -199,7 +199,7 @@ SynthV{
 
 		var event;
 		var section = P.calcStart(start );
-		var synthV = SynthV(key,section,take );
+		var synthV = SynthV(key,( start ? section ),take );
 		song = song ? Song.currentSong;
 		pbind = pbind.notNil.if{  // pass in a pbind or get it from the song
 			pbind.value(song,song.durs[section].list)

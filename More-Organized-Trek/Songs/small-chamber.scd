@@ -494,7 +494,10 @@ P('spaceBass',start:\Only,syl: 7,music: {|p b e|
 	].ppm
 });
 ["Thalassa,(boom boom boom) my wife, as you may have guessed. ","-5 3 2 -1, -17 -16 3 6  5 3 1.5 2 3".dm(\e,6)].addLine;
-P.synthV(\genbu,\wife,filter:(midinote:_-12), params: {|p b| [
+P.synthV(\genbu,\wife,
+	take:\low,filter:(midinote:_-24),
+	// filter:(midinote:_-12),
+	params: {|p b| [
 	lyrics: "tha,        la,   sa,    r,  r,  r,  mai, waif,      az,    yu, mei, hav,     gesyd",
 	phonemes: ["",       "",   "",    "", "", "", "",  "w a i f", "a z", "", "",  "h a v", "" ],
 	tension: Env.step([0, -0.1, -0.05, 0,  0,  0,  0,   -0.2, -0.1, -0.5, 0],     b[..10]),
@@ -502,13 +505,25 @@ P.synthV(\genbu,\wife,filter:(midinote:_-12), params: {|p b| [
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		//=> PitchShift.ar(_, windowSize:0.2, pitchRatio:0.5, pitchDispersion:0.0, timeDispersion:0.0, mul:1.0, add:0.0)
+		// => PitchShift.ar(_, windowSize:0.2, pitchRatio:0.5, pitchDispersion:0.0, timeDispersion:0.0, mul:1.0, add:0.0)
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
 
-P.tune(\wife,_ <> [out:Effect.bus(DWGReverbC1C3.ar(_,len:3000)),rest:[\r,\r,\r,0,0,0].q].p);
+P.tune(\wife,_ <> [instrument:\wash,amp:0.03,out:Effect.bus(DWGReverbC1C3.ar(_,len:3000)),
+// rest:[\r,\r,\r,0,0,0].q
+].p );
+P.tune('my wife',_ <> [amp:0.03,out:Effect.bus(DWGReverbC1C3.ar(_,len:3000)), rest:[\r,\r,\r,0,0,0].q ].p );
+
 ["and Henoch, from the other side. ","4 3 1 -5 -6.5 -7 -5 -3.5".dm('f#',6,\minor)].addLine;
+P.synthV(\genbu, filter:(midinote: _-24), params: {|p b| [
+	lyrics: "and, he nok fran za a za said",
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 P.tune('Henoch,');
 
 //["Realising our mistake, we attempted to perpetuate both sides. ","r"].addLine;
@@ -525,6 +540,17 @@ P.tune(\These);
 P.tune(\but);
 
 ["(boom) and search the heavens with my mind, ",[\r,5,5,5,5,5,5,5,5].dm(\b)].addLine;/*KIRK:*/
+P(\line, music: { |p b e|
+	{
+		var freq = "r 5 4 3 4 3 2 3 4".df(\b).dq.demand(b);
+		Pulse.ar( freq.lag2, 0.4 ) ++ VarSaw.ar(freq,0.4)
+		* 0.03
+		=> {|i|  CombC.ar(i,0.3,0.3,5) + i }
+		* Env([1,1,0],[b.sum - b.last,b.last+1]).kr(2,gate:1)
+		//=>Mix.ar(_)
+		
+	}.play
+});
 P.synthV(\genbu, \heavens,syl:0, range:[ 1,8 ],filter:(midinote: _ -12), params: {|p b| [
 	lyrics: "and shiach za he venz wiz mai maind",
 	phonemes: ["","","","","","","",""];
@@ -535,12 +561,11 @@ P.synthV(\genbu, \heavens,syl:0, range:[ 1,8 ],filter:(midinote: _ -12), params:
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.tune(\search);
-
+//P.tune(\search);
 
 Song.setTempoMap(\search,"e e e e e e e e q");
 //P.tune(\search,Pset(\dur, 0.5! 9 =>_.warpTo(Song.tempoMap[\search]) =>_.q ,_));
-//P.tune('search ');
+P.tune('search ');
 P('tune',start:\search,music: {|p b e|
 	[
 		freq:[\r, 1,1,1,1,1,1,1,1].df('f#').q,
@@ -553,16 +578,29 @@ P('tune',start:\search,music: {|p b e|
 P('crash',start:\search,music: {|p b e|
 	(instrument:\cymbalsDS, amp:0.01).play
 });
-P('chords',start:\search,music: {|p b e|
-	[
-		freq:[ \r, [1,3].df(\b),[1,3].df(\a),[3,11].df(\e) ].q,
-		dur: (0.5 * [1,3,4,1]).warpTo(e.tempoMap
-		//.quantizeDft
-		).q,
-		out: (1..3)
+P( 'chords',
+	resources:(
+		synth: {
+			SinOsc.ar(\freq.kr(400,0))
+			* Env.perc(attackTime:0.01, releaseTime:8.0, level:1.0, curve:-4.0).kr(2)
+			*0.05
+			* SinOsc.kr(2.2)
+			=> _.tanh
+			=> Pan2.ar(_,\pan.kr(0))
+		}.asDefName 
+	),music: {|p b e|
+		[
+			freq:[ \r, [1,3].df(\b),[1,3].df(\a),[3,11].df(\e) ].q,
+			dur: (0.5 * [1,3,4,1]).warpTo(e.tempoMap
+				//.quantizeDft
+			).q,
+			instrument:e.synth,
+			pan:[-1,1],
+			 out: 1,
 
-	].pp
-});
+
+		].pp
+	});
 P('bass',start:\search,music: {|p b e|
 	[
 		freq:[5,4,1].dupEach(3).df(\e,[ 2 ]).q * [1,2, 3,6,7,14] => _.poll,
@@ -576,6 +614,14 @@ P('bass',start:\search,music: {|p b e|
 });
 //["probing, waiting, probing. ","5 4 3 2 6 5.5".dm(\c,6)].addLine;
 ["probing, (boom boom) waiting, (boom) probing. ","5 4 -1 -2 3 2 -4 6 5.5".dm(\c,6)].addLine;
+P.synthV(\genbu, filter:(midinote: _-12), params: {|p b| [
+	lyrics: "pro, bing, r, r, we, ting, r, pro, bing",
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 //Song.setTempoMap(\probing," QQ Qqq QQ Qq QQ Qq q".asBeats);
 P('chords',start:\probing,music: {|p b e|
 	[
@@ -768,15 +814,16 @@ P(\bass,start:\limit,music: {|p b e|
 P(\tune,start:\purpose,music:Song.currentSong.pbind[\purpose]=>Pbindf(_,\instrument,\stringyy,\amp,0.3)
 );
 ["/*KIRK:*/ (boom) To build. To build humanoid robots. We ",[5,5,11,5,11,7,6,4,6,5,6].dm('e-',scale:\mixolydian)].addLine;
-P.synthV(\genbu, filter: (midinote: _-12),params: {|p b| [
-	lyrics: "r, tu, bild, tu, bild, hyu, ma, noid, ro,  batz, wi",
-	legato: [1, 0.9,  1,    1,  0.9,     1,   1,  1,    0.9, 0.5, 1],
-	lag: [0,    0,  0,    0,  0,     0,   0,  0,    0,   0, 0.1],
-	phonemes:["","","b i r d y","","b i d y","","","","","b a t s "]
+P.synthV(\genbu,range:[0,9], filter: (midinote: _-12),params: {|p b| [
+	lyrics: "r,   tu,  bild,        tu, bild,      hyu, ma, noid, ro,   batz",
+	legato: [1,   0.9, 1,           1,  0.9,       1,   1,  1,    0.9, 0.5],
+	lag: [0,      0,   0,           0,  0,         0,   0,  0,    0,    0],
+	phonemes:["", "",  "b i r d y", "", "b i d y", "",  "", "",   "",   "b a t s "]
 ] }, music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		// * Env([1,1,0],[b[0..(b.size-2)].sum,0.01]).kr(2,gate:1)
 	}.play
 });
 P(\shaker,syl:1,start:\humanoid,music: {|p b e|		
@@ -820,6 +867,21 @@ P(\boom,start:\humanoid,music:
 				].p
 );
 ["need your bodies long enough to have the use of your ",[11,6,5,4,7,6,2,1,2,3,4,5,3].dm('g',scale:\mixolydian)].addLine;
+P.synthV(\genbu,lag: -1 * Song.durs[P.calcStart(nil)].list.last,take: \longer, filter:(midinote: _-12),
+ pbind: {|p b | var e = P.calcStart(nil).postln; [
+	 midinote:p.tune[e-1].list.last.bubble ++ p.tune[e].list => _.q,
+	 dur: p.durs[e-1].list.last.bubble ++ p.durs[e].list => _.q
+ ].p.postln} ,
+params: {|p b| [
+	lyrics: "wi, nid, ya, ba, diz,     lang, i,  nef, tu,      hav,     ze,    us,      af,     ya",
+	phonemes:["","", "", "", "d i z", "",   "", "n a f f",  "t s u", "h a v", "z a", "y u z", "a v ", "y u r y"],
+	legato:[1,1,    1,  1,  0.75,    1,    1,  1,   1,       1,       1,     1,       1,      1,          ]
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 P.synthV(\genbu, filter:(midinote: _-12), params: {|p b| [
 	lyrics: "nid, ya, ba, diz,     lang, i,  nef, tu,      hav,     ze,    us,      af,     ya",
 	phonemes:["", "", "", "d i z", "",   "", "n a f f",  "t s u", "h a v", "z a", "y u z", "a v ", "y u r y"],
@@ -930,6 +992,16 @@ P(\chords,start:\need,music: {|p b e|
 } ).add;
 );
 ["hands, your fingers. ",[6,5,4,3].dm('g')].addLine;
+P.synthV(\genbu,filter:(midinote: _-12), params: {|p b| [
+	lyrics: "hanz yu fin gaz",
+	phonemes: ["h a n z ","y u r y","","g a z"],
+	legato:[ 0.8, 1, 1, 1 ]
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 P(\harmony,start:\hands,music: {|p b e|
 				Ppar([
 						[

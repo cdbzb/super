@@ -81,7 +81,8 @@ P.synthV(\genbu,\survive,range:[0,5],
 	filter: ( midinote: _ - 12 ),
 	params: {|p b| [
 		lyrics: "tsu a zaz stiru sa vaiv",
-		legato: [1, 1, 0.8, 0.8, 1, 0.7]
+		phonemes: ["","","","s t i r y","",""],
+		legato: [1, 1, 0.8, 0.8, 1, 0.76]
 	]}, music:{|p b e|
 		{
 			e.playbuf
@@ -102,7 +103,8 @@ P.synthV(\genbu, \survive,syl:5, take: 2, range: [6,7],
 P.synthV(\genbu, \survive,syl:8, take: 3, range:[9,12],
 		filter: ( midinote: _ - 12 ),
 params: {|p b| [
-	lyrics: "and se la sa",
+	lyrics: "and se ra sa",
+	// legato: [0.9,1,1,1]
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -551,9 +553,10 @@ P(\line, music: { |p b e|
 		
 	}.play
 });
-P.synthV(\genbu, \heavens,syl:0, range:[ 1,8 ],filter:(midinote: _ -12), params: {|p b| [
-	lyrics: "and shiach za he venz wiz mai maind",
-	phonemes: ["","","","","","","",""];
+P.synthV(\genbu, \heavens, filter:(midinote: _ -12), params: {|p b| [
+	lyrics: "r,    and, shiach, za, he, venz, wiz,     mai, maind",
+	phonemes: ["", "",  "",     "", "", "v e n z",   "w i z", "",  ""],
+	legato: [1,    1,   1,      1,  1,  0.95,    1,       1,   0.90]
 
 ] }, music:{|p b e|
 	{
@@ -616,6 +619,8 @@ P('bass',start:\search,music: {|p b e|
 ["probing, (boom boom) waiting, (boom) probing. ","5 4 -1 -2 3 2 -4 6 5.5".dm(\c,6)].addLine;
 P.synthV(\genbu, filter:(midinote: _-12), params: {|p b| [
 	lyrics: "pro, bing, r, r, we, ting, r, pro, bing",
+	lag: [0.1,      0,    0, 0, 0,  0,    0, 0,   0],
+	legato:[1, 1, 1, 1, 1, 1, 1, 1, 0.85]
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -645,9 +650,26 @@ P('bass',start:\probing,music: {|p b e|
 });
 P.tune(\probing,);
 ["And then one day my mind","1 4 4 5 3 6".dm('f#')].addLine;
+P.synthV(\genbu, filter: (midinote: _ - 12),  params: {|p b| [
+	lyrics: "and zen won dei mai maind",
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 P.tune('day my');
 P.tune('day my ', { |i| Pmul(\freq,0.5,i) =>Pbindf(_,\instrument,\sawSynthSustain,\out,Effect.bus( { |i| DWGReverbC1C3.ar(i,mix:0.3) => Phaser2.ar(_,rate:0.2)} /2 ))});
 ["touched your vessel and brought you here. ","11 5 4 3 2 1 -7 -6.5".dm(\e)].addLine;
+P.synthV(\genbu, filter: (midinote: _ - 12),  params: {|p b| [
+	lyrics: "tatsed yor ve sser and brat yu hir",
+	phonemes["t a u ch t","y u r","","s e r","","","","h i e r"]
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 Song.setTempoMap(\touched,"q e eQ Q Q q e q".asBeats);
 P.tune(\touched);
 P(\chords,music: { |p b e|

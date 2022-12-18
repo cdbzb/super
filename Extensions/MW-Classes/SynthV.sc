@@ -69,7 +69,10 @@ SynthV{
 		*/
 	}
 	checkDirty {
-		^project => JSON.stringify(_) != String.readNew(File( file ,"r"))
+		^project => JSON.stringify(_) != try{ String.readNew(File( file ,"r") )}
+	}
+	needsRender {
+		^( File.mtime(file) > File.mtime(location +/+ "synthV_MixDown.wav") )
 	}
 	refresh {
 		this.checkDirty.if{
@@ -106,9 +109,12 @@ SynthV{
 	}
 	writeProject {
 		this.setRenderConfig;
-		JSON.stringify( project ).write(
-			file, overwrite: true, ask: false
-		);
+		this.checkDirty.if
+		{
+			JSON.stringify( project ).write(
+				file, overwrite: true, ask: false
+			);
+		}
 	}
 
 	setRenderConfig { 
@@ -195,7 +201,7 @@ SynthV{
 }
 
 + P {
-	*synthV{ | key start params syl lag=0 take music song resources range filter pbind |
+	*synthV{ | key start params syl lag=0 take music song resources range filter pbind tied |
 
 		var event;
 		var section = P.calcStart(start );
@@ -228,7 +234,6 @@ SynthV{
 				}
 			};
 			i
-			
 		};
 		event.keys.do{|k| 
 			( event.at(k).isCollection && event.at(k).isString.not ).if{
@@ -238,10 +243,14 @@ SynthV{
 		event.pitch=event.midinote.asInteger;
 		synthV.makeNotes(event.dur.size);
 
-		synthV.set(event); //set should filter for \r
+		synthV.set(event); 
 		synthV.setDatabase(key);
 
 		synthV.writeProject; 'synthV written!'.postln;
+		// write project only does so if dirty !!
+
+		// synthV.checkDirty.if{synthV.refresh};
+		
 		take.notNil.if{key = key ++ "_" ++ take};
 		^P(key,start,syl,lag, music,song,
 			resources:(
@@ -251,5 +260,33 @@ SynthV{
 
 			) ,
 			); // order of section and key are reversed!!
+	}
+}
+
++String{
+	timeSinceModified {
+		var a = Pipe.new("echo $(($(date +%s) - $(date -r" + this + "+%s)))","r");
+		var b = a.getLine;
+		a.close;
+		^b.asInteger
+	}
+}
+
++Song {
+	refreshSynthV {
+		fork{
+			var dirty = Song.pts
+			.select{ |i| i.synthV != nil }
+			.select{ |i| i.synthV.needsRender};
+			dirty.do{ |i|
+				var wav = i.synthV.location +/+ "synthV_MixDown.wav";
+				1.wait;
+				i.synthV.render;
+				Post <<< 'time: ' <<< wav.timeSinceModified;
+				while { wav.timeSinceModified > 10} {0.1.wait;Post << \waiting <<  wav.timeSinceModified << Char.nl}
+				// while {12>10} {0.01.wait;\waiting.postln}
+			};
+			// ^dirty
+		}
 	}
 }

@@ -5,6 +5,8 @@ SynthV{
 	classvar <roles,<envelopes=#[ \toneShift, \pitchDelta, \voicing, \tension, \vibratoEnv, \loudness, \breathiness, \gender ];
 	classvar <vocalModes;
 	var <name, <project, <file,<location,<buffer, <key, <song, <section;
+	var <>firstNoteOffset = 0;
+	var <> offset = 0;
 	*new {|key name take| ^super.new.init(key, name, take) }
 	*initClass {
 		roles = ();
@@ -102,7 +104,7 @@ SynthV{
 		project = String.readNew(File( directory +/+ "test.svp"=>_.standardizePath,"r" ))
 		=> JSON.parse(_);
 
-		//strip erroneous points data - TODO clean this up
+		//strip erroneous points data - TODO clean this up in original file!
 		project.tracks[0].mainRef.systemPitchDelta.put(\points,[]);
 
 		this.refreshBuffer;
@@ -152,11 +154,11 @@ SynthV{
 		(event.lyric == "\r").not.if(
 		event.dur.size.postln;// => this.makeNotes(_+1);
 		//event.dur = event.dur.collect{|i| this.class.secondsToBlicks(i)};
-		event.dur = [0] ++ event.dur.integrate + (event.lag ? 0) => _.differentiate => _.drop(1);
+		event.dur = [ 0 ] ++ event.dur.integrate + (event.lag ? 0) => _.differentiate => _.drop(1);
 		// trim the last duration to account for inital lag!!
 		//event.dur.put(event.dur[event.dur.size],event.dur.last - (event.lag[0] ? 0));
 		
-		event.dur = event.dur * 2 * 70560 => _.asInteger;
+		event.dur = event.dur + firstNoteOffset * 2 * 70560  => _.asInteger;
 
 		event.vocalMode.notNil.if{ this.voice.put(\vocalModePreset, event.vocalMode) };
 		
@@ -189,6 +191,22 @@ SynthV{
 	makeNotes {|num track=0|
 		project.tracks[track].mainGroup.notes = notePrototype ! num
 	}
+	shiftNotes {| seconds |
+		this.notes.do{ |e| 
+			e.put(\onset, e.onset.blicksToSeconds + seconds => _.secondsToBlicks)
+		}
+	}
+	findPartBefore{
+		^ Song.pts
+		.select{|i| i.name.contains(name.asString)}
+		.select{|i| i.name.contains(key.asInteger - 1 => _.asString)}
+		.unbubble
+	}
+	prependNotes {|section synthV track=0|
+		offset = Song.secDur[ key.asInteger - 1 ];
+		this.shiftNotes( offset );
+		project.tracks[track].mainGroup.put(\notes, this.findPartBefore.synthV.notes ++ this.notes )
+	}
 	filterRests { |track=0|
 		project.tracks[track].mainGroup.notes =
 			this.notes.reject({|i| i.at(\lyrics)=="r"})
@@ -201,7 +219,7 @@ SynthV{
 }
 
 + P {
-	*synthV{ | key start params syl lag=0 take music song resources range filter pbind tied |
+	*synthV{ | key start params syl lag=0 take music song resources range filter pbind prepend|
 
 		var event;
 		var section = P.calcStart(start );
@@ -246,6 +264,9 @@ SynthV{
 		synthV.set(event); 
 		synthV.setDatabase(key);
 
+		prepend.notNil.if{ 
+			synthV.prependNotes;
+		};
 		synthV.writeProject; 'synthV written!'.postln;
 		// write project only does so if dirty !!
 
@@ -255,7 +276,7 @@ SynthV{
 		^P(key,start,syl,lag, music,song,
 			resources:(
 				synthV: synthV,
-				playbuf: { PlayBuf.auto(1,synthV.buffer.()) },
+				playbuf: { PlayBuf.auto(1,synthV.buffer.(), startPos: ( synthV.offset ) * BufSampleRate.kr(synthV.buffer.()))},
 				take: take
 
 			) ,
@@ -269,6 +290,9 @@ SynthV{
 		var b = a.getLine;
 		a.close;
 		^b.asInteger
+	}
+	blicksToSeconds {
+		^this.dropLast(4).asInteger / 2 / 70560
 	}
 }
 
@@ -288,5 +312,11 @@ SynthV{
 			};
 			// ^dirty
 		}
+	}
+}
+
++ SimpleNumber {
+	secondsToBlicks {
+		^this * 2 * 70560 => _.asInteger => _.asString ++ "0000"
 	}
 }

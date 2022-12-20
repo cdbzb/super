@@ -650,23 +650,25 @@ P('bass',start:\probing,music: {|p b e|
 });
 P.tune(\probing,);
 ["And then one day my mind","1 4 4 5 3 6".dm('f#')].addLine;
-P.synthV(\genbu, filter: (midinote: _ - 12),  params: {|p b| [
+P.synthV(\genbu,prepend: true, filter: (midinote: _ - 12),  params: {|p b| [
 	lyrics: "and zen won dei mai maind",
+	legato:[1,1,1,1,1,0.9]
 ] }, music:{|p b e|
 	{
-		e.playbuf
+		e.playbuf.(0)
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.tune('day my');
+P.tune('day my', {|i| i<>[instrument:\stringyy].p => Pmul(\freq,[0.5,1],_) });
 P.tune('day my ', { |i| Pmul(\freq,0.5,i) =>Pbindf(_,\instrument,\sawSynthSustain,\out,Effect.bus( { |i| DWGReverbC1C3.ar(i,mix:0.3) => Phaser2.ar(_,rate:0.2)} /2 ))});
 ["touched your vessel and brought you here. ","11 5 4 3 2 1 -7 -6.5".dm(\e)].addLine;
-P.synthV(\genbu, filter: (midinote: _ - 12),  params: {|p b| [
+P.synthV(\genbu,prepend: true, filter: (midinote: _ - 12),  params: {|p b| 
 	lyrics: "tatsed yor ve sser and brat yu hir",
-	phonemes["t a u ch t","y u r","","s e r","","","","h i e r"]
+	phonemes: ["t a u ch t", "y u r", "", "s e r", "", "", "", "h i e r"],
+	lag: [0.05,              0,       0,  0,       0,  0,  0,   0]
 ] }, music:{|p b e|
 	{
-		e.playbuf
+		e.playbuf.(lag:0)
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });

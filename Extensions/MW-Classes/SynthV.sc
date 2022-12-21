@@ -203,9 +203,13 @@ SynthV{
 		.unbubble
 	}
 	prependNotes {|section synthV track=0|
-		offset = Song.secDur[ key.asInteger - 1 ];
+		var last = this.findPartBefore.synthV.notes.last;
+		last = last.put(\onset,"0");
+		offset = last.duration.blicksToSeconds;
+		// offset = Song.secDur[ key.asInteger - 1 ];
 		this.shiftNotes( offset );
-		project.tracks[track].mainGroup.put(\notes, this.findPartBefore.synthV.notes ++ this.notes )
+		// project.tracks[track].mainGroup.put(\notes, this.findPartBefore.synthV.notes ++ this.notes )
+		project.tracks[track].mainGroup.put(\notes, last.bubble ++ this.notes )
 	}
 	filterRests { |track=0|
 		project.tracks[track].mainGroup.notes =
@@ -317,6 +321,6 @@ SynthV{
 
 + SimpleNumber {
 	secondsToBlicks {
-		^this * 2 * 70560 => _.asInteger => _.asString ++ "0000"
+		^this * 2 * 70560 => _.round() => _.asInteger => _.asString ++ "0000"
 	}
 }

@@ -631,6 +631,7 @@ P.synthV(\genbu, filter:(midinote: _-12), params: {|p b| [
 P('chords',start:\probing,music: {|p b e|
 	[
 		freq:[ [11,13,15,1].df([\g]), [1,11,13,15].df(\f), [3,5,11,13].df(\c,6),[2,4,7,12].df(\c,6),[1,3,5,11].df(\a,6,\harmonicMinor),[-7,3,5,7].df(\a,6,\harmonicMinor)].q /2,
+
 		dur: b.parse([1,3,1,2,1,1]).q,
 		strum: [1,1/3]/20=>_.q(3),
 		lag: {~strum * (-1)},
@@ -650,6 +651,15 @@ P('bass',start:\probing,music: {|p b e|
 });
 P.tune(\probing,);
 ["And then one day my mind","1 4 4 5 3 6".dm('f#')].addLine;
+P(\stringyy, music: { |p b e|
+	{
+		Gendy1.arWidth(ampdist:1, durdist:1, adparam:1.0, ddparam:0.1,
+			freq: [6].df('g',[6,3,4,5]), width:1.018, ampscale:0.9, durscale:0.9, initCPs:12, knum:[4,3], mul:1.0, add:0.0)
+		/90
+		* Env([0,1,0],b.parse([ 6,1 ]+[0,1]),[2,-4]).kr(2,gate:1)
+		* [1,1/2,1/4,1/8]
+	}.play
+});
 P.synthV(\genbu,prepend: true, filter: (midinote: _ - 12),  params: {|p b| [
 	lyrics: "and zen won dei mai maind",
 	legato:[1,1,1,1,1,0.9]
@@ -662,9 +672,9 @@ P.synthV(\genbu,prepend: true, filter: (midinote: _ - 12),  params: {|p b| [
 P.tune('day my', {|i| i<>[instrument:\stringyy].p => Pmul(\freq,[0.5,1],_) });
 P.tune('day my ', { |i| Pmul(\freq,0.5,i) =>Pbindf(_,\instrument,\sawSynthSustain,\out,Effect.bus( { |i| DWGReverbC1C3.ar(i,mix:0.3) => Phaser2.ar(_,rate:0.2)} /2 ))});
 ["touched your vessel and brought you here. ","11 5 4 3 2 1 -7 -6.5".dm(\e)].addLine;
-P.synthV(\genbu,prepend: true, filter: (midinote: _ - 12),  params: {|p b| 
+P.synthV(\genbu, prepend:true, filter: (midinote: _ - 12),  params: {|p b| [
 	lyrics: "tatsed yor ve sser and brat yu hir",
-	phonemes: ["t a u ch t", "y u r", "", "s e r", "", "", "", "h i e r"],
+	phonemes: ["t a u ch t", "y u r", "", "s e r", "", "b r a ty", "", "h i e r"],
 	lag: [0.05,              0,       0,  0,       0,  0,  0,   0]
 ] }, music:{|p b e|
 	{
@@ -673,7 +683,7 @@ P.synthV(\genbu,prepend: true, filter: (midinote: _ - 12),  params: {|p b|
 	}.play
 });
 Song.setTempoMap(\touched,"q e eQ Q Q q e q".asBeats);
-P.tune(\touched);
+P.tune(\touched, _ <> [instrument: \sparkTriangle,amp:0.04,out:1].p);
 P(\chords,music: { |p b e|
 	[
 		freq:[ [1,3,5].df(\a),[1,3,5].df(\e) ].q,
@@ -690,11 +700,23 @@ P(\powerChord,start:\touched,music: { |p b e|
 		out:Effect.bus({ |i|  SineShaper.ar(i,0.15,5) => FreeVerb.ar(_,1,1) })
 	].pp
 });
+P(\hiString, music: { |p b e|
+		var freq=[1,11,21].df(\e) + 1;
+		{
+			Gendy1.arWidth(ampdist:1, durdist:1, adparam:1.0, ddparam:1.0, freq:[1,2,3,4].df(\e,[5,7]).dq.demand(b.parse([ 4,1,2,1 ])), width: 1.015, ampscale:0.5, durscale:0.5, initCPs:12, knum:2, mul:1.0, add:0.0)
+			/20
+			* Env.linen(attackTime:0, sustainTime: b.sum-2, releaseTime:3.5, level:1.0, curve:\lin).kr(2,gate:1)
+			=> FreeVerb.ar(_,0.9,0.9)
+		}.play
+});
 P(\bass,start:\touched,music: { |p b e|	
 	[
-		freq: "1 3 5 7  3 2.5 2".df(\a,3).q,
-		dur: "q q q q q e q".asBeats.warpTo(e.tempoMap).q
-	].pp
+		freq: "1 3 5 7  3 2.5 2".df(\a,[2,3]).q,
+		dur: "q q q q q e q".asBeats.warpTo(e.tempoMap).q,
+		instrument:\sawSynthSustain,
+		amp:0.03,
+		out: Effect.bus( EchoNone.ar(_, maxdelaytime:0.3, delaytime:[ 0.2, 0.3 ], decaytime:3, mul:1.0, add:0.0, gain:0) )
+	].ppm
 });
 ["/*MULHALL:*/ So you could steal our bodies from us? ",[6,7,11,12,7,13.5,11,7,5].dm('c',scale:\minor)].addLine;
 ( SynthDef(\pinn,{
@@ -710,11 +732,90 @@ P.tune(_ <> [
 	instrument:\pinn
 ].p);
 [" To steal? To take them from you?","1,7,3,11,8,7,6".dm(\e,\diminished)].addLine;/*KIRK:*/
+P.synthV(\genbu, filter: (midinote: _ - 12),  params: {|p b| [
+	lyrics: "tu stil tu tek zem fram yu",
+	legato:[1,0.7,1,1,1,1,0.5],
+	phonemes: ["","s t i ly", "","","","",""]
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P(\chord, syl:0, music: { |p b e|
+	{
+		var freq = [1,3,5,7] +.t [10,20,30] => _.flat => _.postln=> _.df(\e,4,\diminished);
+		freq = freq * [0,2].midiratio.dq.demand(b.drop(1).parse([2,4])) => _.lag2([5,2,3,4]*.x[0,1].dq.demand(b.parse([1,1]))=>_.flat );
+		Gendy1.arWidth(ampdist:1, durdist:1, adparam:0.5, ddparam:0.5, freq:freq, width:1.015, ampscale:0.5, durscale:0.5, initCPs:3, knum:nil, mul:1.0, add:0.0)
+		/39
+		=> Splay.ar(_)
+		* Env.cutoff(1).kr(2,gate:[1,0].dq.demand(b.sum.bubble))
+		=> Out.ar(1, _)
+
+	}.play
+});
 P.tune();
 ["No, no, my children,","13 13 12 12 11 ".dm(\d)].addLine;
-P.tune();
+P.synthV(\genbu, filter: (midinote: _ - 12),  params: {|p b| [
+	lyrics: "no no mai chil dren",
+	tension: Env([-0.2,-0.1,0],b.parse([1,1,3]))
+
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+		* Env([1.3, 1.3, 1, 1.2, 1],b.parse([1,1,1,2])).kr(0,gate:1)
+	}.play
+});
+// P.tune();
+P(\chord, music: { |p b e|
+	[ 
+		instrument: \sawSynthSustain,
+		freq:[ [ 5,5 ], [3, 6], [2,5]].df(\d,4).q,
+		dur: b.parse([3,2]) ++ e.bNext.parse([5]) => _.postln =>_.q,
+		freqLag: [0,0,1].q,
+		amp:0.01
+	].ppm
+});
+P(\bass, music: { |p b e|
+	{
+		var freq = [11,7,3, 5].df(\d,[3,4,2]).dq.demand(b.parse([1,2,2,4]))
+		.lag([0,0.2].dq.demand(b.parse([1,2,2,4])) * [1,3]
+	);
+		Pulse.ar(freq, SinOsc.kr([ 4,5 ]).range(0.3,0.4))
+		/ 20
+		/ [3,4,6]
+
+		=> {|i| 0.5 * CombC.ar(i) + i}
+		* Env.asr(0.1,1,2).kr(2,gate:[1,0].dq.demand(b.sum + e.bNext.sum => _.bubble))
+		=> LPF.ar(_,[ 3500, 2000 ])
+		=> Out.ar([2,3],_)
+	}.play
+});
 [" you misunderstand.","3 2 3 4 3".dm(\a)].addLine; 
-P.tune();
+P.synthV(\genbu, filter: (midinote: _ - 12),  params: {|p b| [
+	lyrics: "yu mis an da stand",
+	phonemes: ["","m i s","","","s t a n dy"]
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.tune( _ <> [instrument: \wash, amp:0.02].p );
+P(\answer, music: { |p b e|
+	[
+		freq:[\r,3,2,3,4,3].df(\a).q,
+		dur:b.parse(0.25 * [16,1,1,1,1,1]) => _.q,
+		legato: 3,
+		out: Effect.bus( PitchShift.ar( _, 
+			windowSize:0.2, 
+			pitchRatio:2, 
+			pitchDispersion:0.02, 
+			timeDispersion:0.0, 
+		))
+	].pp
+});
 ["We mean only that you should","1 2 1 2 1 2 3".dm(\d,6)].addLine;
 P.tune();
 [" (boom) lend us your bodies for a short time. ","-11 3 2 1 -7 -6 -5.5 -6 -5.5 -3".dm(\g,6)].addLine;

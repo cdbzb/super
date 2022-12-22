@@ -7,6 +7,10 @@
 			//			~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
 		} ]);
 		"~/tank/super/More-Organized-Trek/Songs/boilerplate.scd".standardizePath.load;
+		Song.synthVTracks = EventWithDefault(\default, {
+			FreeVerb.ar(_,0.3,0.9)
+			/5
+		});
 		['Kirk briefly convulses with pain', "c" ].addLine;
 		P(\pains,  music: { 
 			Song.painSynth={
@@ -88,8 +92,15 @@ P(\tune,music:Song.currentSong.pbind[6]
 		)
 	);
 	['Sargon borrowed my body. ',[7,6,5,6,7,4,3].dm('b',scale:\dorian)].addLine; 
-	P(\tune,music:Song.currentSong.pbind[7]
-);
+	P.synthV(\kevin , filter: (midinote: _ - 12),  params: {|p b| [
+		lyrics: "Sargon + borrowed + my body +",
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
+	// P(\tune,music:Song.currentSong.pbind[7]);
 P(\bass,music:[
 	freq: [7,6,5,6,7,11].df('b',scale:\dorian,octave:2).q ,
 	legato:2,
@@ -98,18 +109,41 @@ P(\bass,music:[
 ].p
 		);
 		['I was floating (boom) in time and space. ',[3,4,13,11,4.5,13].dm('a')++ [13,11,6].dm('a-')++ [16,15,13,7].dm('d') ].addLine; 
-		Song.synthVTracks = EventWithDefault(\default, {
-			FreeVerb.ar(_,0.3,0.9)
-			/5
+		P.synthV(\aiko, 
+			pbind: {|p b| [midinote: [13, 4.5].dm('a') ++ [11,6].dm('a-') =>_.q, dur:b.parse([4, 3, 1, 2]).q].p },
+			filter: (midinote: _ - 12), 
+			params: {|p b| [
+			lyrics: "r u - -",
+		] }, music:{|p b e|
+			{
+				e.playbuf
+				=> p.synthVTracks.at(e.key).()
+				/2
+			}.play
+		});
+		P.synthV(\aiko, take:\double,
+			pbind: {|p b| [midinote: [13, 4.5].dm('a') ++ [11,6].dm('a-') =>_.q, dur:b.parse([4, 3, 1, 2]).q].p },
+			filter: (midinote: _ - 12), 
+			params: {|p b| [
+				pitchDelta: Env( { 0.01.rrand(0.02) }!4 , [1,1,1] ),
+				lag: [0.02,0,0.05],
+				lyrics: "r u - -",
+		] }, music:{|p b e|
+			{
+				e.playbuf
+				=> p.synthVTracks.at(e.key).()
+				/2 * [0,1]
+				=> HPF.ar(_,300)
+			}.play
 		});
 		P.synthV(\kevin, filter: (midinote: _ - 12),  params: {|p b| [
-			lyrics: "I was floating + \r in time - r and space r r ",
-			legato: [1,1,1,1,1,1,1,1, 1, 1,2]
+			lyrics: "I was floating + \r in time r r and space r r ",
+			legato: [1,1,1,1,1,1,2,1, 1, 1,2]
 		] }, music:{|p b e|
 			{
 				e.playbuf
 				 => p.synthVTracks.at(e.key).()
-				 => {|i| i + PitchShift.ar(i,pitchRatio:0.5)}
+				 // => {|i| i + PitchShift.ar(i,pitchRatio:0.5)}
 			}.play
 		});
 		P.tune( Pbindf(_, \out,Effect.bus(FreeVerb.ar(_,1,1),inputChannels:2)));
@@ -194,8 +228,15 @@ P(\cello,music:(
 		)
 	);	
 	['as we passed each other, for an instant...',[5.5,6].dm('f#',octave:4)++[3,2,2,1].dm('c',octave:5)++[3,2,2,1].dm('c#',octave:5)].addLine; 
-	P(\tune,music:Song.currentSong.pbind[12]
-);
+	P.synthV(\kevin, params: {|p b| [
+		lyrics: "as we passed each other + for an instant + " ,
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
+	// P(\tune,music:Song.currentSong.pbind[12]);
 P(\bass,syl:1,music:(
 	instrument:\sawSynthSustain,
 	freq:[5,17,11].df('c',[3],\minor),
@@ -246,6 +287,14 @@ P(\bass,syl:1,music:(
 	].p=>{|i|Ppar([\stringyy,\default].collect{|k x|Pbindf(i,\instrument,k,\amp,{0.1-(x/20)},\out,x)})}
 );
 ['we were one. ',[4,4,5].dm('c')].addLine; 
+P.synthV(\kevin, params: {|p b| [
+	lyrics: "we were one",
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 
 P(\bend,music:{{
 	var line=Line.kr(1.degreescps('a-'),1.degreescps('g'),Song.parse(13,[3]),[0.5,1]);
@@ -435,6 +484,14 @@ P(\figure,music:[
 	//MUTED].p
 	//MUTED);
 	['and I don`t fear him. ',[4,5,6,7,11].dm(\c)].addLine; 
+	P.synthV(\kevin, filter: (midinote: _ - 12),  params: {|p b| [
+		lyrics:"and I don't fear him" ,
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 	P(\tune,music:Song.currentSong.pbind[16]=>Pbindf(_,\instrument,\stringyy,\amp,0.3)
 );		
 //MUTEDP(\bassNote,syl:0,music:
@@ -619,7 +676,9 @@ P(\arpeggio,music: [
 
 	});
 
-	P.rpp(\vocal,start:\understand,lag:-1,music:{|p b e|
+	P.rpp(\vocal,
+		rppStart: \understand,
+		lag:-1,music:{|p b e|
 
 		//p.vocodeTune(p,b,e,e.rpp)
 

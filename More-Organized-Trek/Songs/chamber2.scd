@@ -98,6 +98,20 @@ P(\bass,music:[
 ].p
 		);
 		['I was floating (boom) in time and space. ',[3,4,13,11,4.5,13].dm('a')++ [13,11,6].dm('a-')++ [16,15,13,7].dm('d') ].addLine; 
+		Song.synthVTracks = EventWithDefault(\default, {
+			FreeVerb.ar(_,0.3,0.9)
+			/5
+		});
+		P.synthV(\kevin, filter: (midinote: _ - 12),  params: {|p b| [
+			lyrics: "I was floating + \r in time - r and space r r ",
+			legato: [1,1,1,1,1,1,1,1, 1, 1,2]
+		] }, music:{|p b e|
+			{
+				e.playbuf
+				 => p.synthVTracks.at(e.key).()
+				 => {|i| i + PitchShift.ar(i,pitchRatio:0.5)}
+			}.play
+		});
 		P.tune( Pbindf(_, \out,Effect.bus(FreeVerb.ar(_,1,1),inputChannels:2)));
 		P(\bassb,syl:1,music:[
 			//		instrument:\stringyy,
@@ -296,6 +310,24 @@ P(\tune,music:Song.currentSong.pbind[13]
 	//MUTED}.value;
 	//MUTED});
 	['I know him now. ',[7,11,5,13].dm('a-')].addLine; 
+	P.synthV(\kevin, filter: (midinote: _ - 12),  params: {|p b| [
+		lyrics: "I know him now",
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
+	P.synthV(\kevin, take:2, filter: (midinote: _ - 24),  params: {|p b| [
+		lyrics: "I know him now",
+		lag: { 0.03.rand }!4
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+			* [0,1]
+		}.play
+	});
 	P(\figure,music:[
 		out:3,
 		dur: Song.parse(14,[1,2/3,[1/3,1],1/2,1/2]).q,
@@ -322,6 +354,16 @@ P(\bassKnow,  music:
 );
 P(\temp,music:Song.currentSong.pbind[14]=>Pbindf(_,\amp,0.3,\instrument,\stringyy));
 ['I know what he is and what he wants, ',[15,14,13,12,14,13,7,11,12.5].dm('a-')].addLine; 
+P.synthV(\kevin, filter: (midinote: _ - 24),  params: {|p b| [
+	lyrics: "I know what he is and what he wants, ",
+	lag: [0,0,0,0,-0.2,0,0,0,0],
+	legato:[1,1,1,1,1,1,1,1,3]
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 //P(\cymbal,music:[
 //	instrument:\cymbalsDS,
 //	dur: Song.parse(15,[1,4,1]).q ,

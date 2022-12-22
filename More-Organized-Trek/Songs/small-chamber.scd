@@ -783,8 +783,7 @@ P(\bass, music: { |p b e|
 		.lag([0,0.2].dq.demand(b.parse([1,2,2,4])) * [1,3]
 	);
 		Pulse.ar(freq, SinOsc.kr([ 4,5 ]).range(0.3,0.4))
-		/ 20
-		/ [3,4,6]
+		/ [3,4,6] / 20
 
 		=> {|i| 0.5 * CombC.ar(i) + i}
 		* Env.asr(0.1,1,2).kr(2,gate:[1,0].dq.demand(b.sum + e.bNext.sum => _.bubble))

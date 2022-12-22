@@ -5,7 +5,7 @@
 *.rpp-bak
 *.RPP-bak
 *.stversions*
-
+SynthV/**/project.svp
 
 .undodir
 

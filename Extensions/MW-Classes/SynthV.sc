@@ -41,11 +41,20 @@ SynthV{
 			aiko: ( 
 				'version': 100, 
 				'phonesetOverride': "", 
-				'name': "AiKO (Lite)", 
+				'name': "AiKO", 
 				'phoneset': "xsampa", 
 				'language': "mandarin", 
 				'languageOverride': "", 
 				'backendType': "SVR2Standard"
+			),
+			xuan: (
+				'name': "Xuan Yu",
+				'language': "mandarin",
+				'phoneset': "xsampa",
+				'languageOverride': "",
+				'phonesetOverride': "",
+				'backendType': "SVR2AI",
+				'version': "100"
 			),
 			kevin: ( 
 				'name':             "Kevin",
@@ -152,23 +161,26 @@ SynthV{
 	}
 	set { |event|
 		(event.lyric == "\r").not.if(
-		event.dur.size.postln;// => this.makeNotes(_+1);
-		//event.dur = event.dur.collect{|i| this.class.secondsToBlicks(i)};
+		event.dur.size.postln;
 		event.dur = [ 0 ] ++ event.dur.integrate + (event.lag ? 0) => _.differentiate => _.drop(1);
 		// trim the last duration to account for inital lag!!
 		//event.dur.put(event.dur[event.dur.size],event.dur.last - (event.lag[0] ? 0));
 		
 		event.dur = event.dur + firstNoteOffset * 2 * 70560  => _.asInteger;
-
-		event.vocalMode.notNil.if{ this.voice.put(\vocalModePreset, event.vocalMode) };
-		
 		event.onset = [0] ++ event.dur.integrate => _.dropLast() + ( ( event.lag[0] ? 0 ) * 70560 * 2  );
 		event.duration = event.dur * ( event.legato ? 1 ) => _.collect{|i| i.asInteger .asString ++ "0000"};
 		event.onset= event.onset.collect {|i| i.asInteger.asString ++ "0000"};
-		event.keys.reject({|i| [\dur,\legato,\vocalMode].includes(i) }).do{|key|
-			envelopes.includes(key).if{|i|
-				this.setEnv(key,event.at(key))
-			} { this.setNotes(key,event.at(key)) }
+
+		\KKEEYYSS.postln;
+		event.keys.do{|i|
+			i.postln;
+			case 
+                        { [\dur,\legato,\lag].includes(i) }{nil}
+			{ i == \vocalMode} {this.voice.put(\vocalModePreset, event.vocalMode)}
+                        { envelopes.includes(i)} { this.setEnv(i,event.at(i))}
+                        { i == \language }      {\LANGUAGE.postln; project.tracks[0].mainRef.database.put(\languageOverride,event.at(i)).postln }
+                        { i == \phoneset}      { project.tracks[0].mainRef.database.put(\phonesetOverride,event.at(i)) }
+                        { true }                 { this.setNotes(i,event.at(i)) }
 		};
 		//this should be done with an array flop and pairsDo instad but...
 		this.filterRests 
@@ -186,7 +198,12 @@ SynthV{
 	}
 	setDatabase { |key|
 		project.tracks[0].mainRef.put(\database, databaseLib.at(key) )
-
+	}
+	setLanguage { | array |
+		var where = project.tracks[0].mainRef.database;
+		[\languageOverride, \phonesetOverride].do{|i x| 
+			where.put(i, array[0][x])
+		}
 	}
 	makeNotes {|num track=0|
 		project.tracks[track].mainGroup.notes = notePrototype ! num
@@ -265,8 +282,8 @@ SynthV{
 		event.pitch=event.midinote.asInteger;
 		synthV.makeNotes(event.dur.size);
 
-		synthV.set(event); 
 		synthV.setDatabase(key);
+		synthV.set(event); 
 
 		prepend.notNil.if{ 
 			synthV.prependNotes;

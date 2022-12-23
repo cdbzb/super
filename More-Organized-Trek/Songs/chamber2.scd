@@ -69,10 +69,18 @@
 P(\tune,music:Song.currentSong.pbind[4]
 		);
 		['/*SPOCK:*/ Captain, do you know what happened? Do you remember any part of it? ',[13,11,7,11,12,13,14,13 ].dm('g',octave:4,scale:\mixolydian)++[7,11,12,14,13,12,11,13,11,5].dm('a',octave:4,scale:\mixolydian)].addLine; 
+		P.synthV(\xuan, filter: (midinote: _ - 12),  params: {|p b| [
+			lyrics: "captain +  do you know what happened +  do you remember + +  any + part of it",
+			legato: [1,   0.7,    1, 1,  1,   1,    1,      1,  1, 1, 1, 1, 1,      1, 1,  1,  1,  1]
+		] }, music:{|p b e|
+			{
+				e.playbuf
+				=> p.synthVTracks.at(e.key).()
+			}.play
+		});
 		P(\bassNote,music:(instrument:\stringyy,freq:[4].df('c',octave: [4,3]),amp:0.2,)
 	);
-	P(\tune,music:Song.currentSong.pbind[5]
-);
+	// P(\tune,music:Song.currentSong.pbind[5]);
 ['/*KIRK:*/ Yes. ',[1].dm('a-')].addLine; 
 P(\tune,music:Song.currentSong.pbind[6]
 		);
@@ -91,6 +99,14 @@ P(\tune,music:Song.currentSong.pbind[6]
 			amp:0.05
 		)
 	);
+	P.synthV(\kevin, params: {|p b| [
+		lyrics: "yes",
+	] }, music:{|p b e|
+			{
+				e.playbuf
+				=> p.synthVTracks.at(e.key).()
+			}.play
+	});
 	['Sargon borrowed my body. ',[7,6,5,6,7,4,3].dm('b',scale:\dorian)].addLine; 
 	P.synthV(\kevin , filter: (midinote: _ - 12),  params: {|p b| [
 		lyrics: "Sargon + borrowed + my body +",
@@ -119,6 +135,7 @@ P(\bass,music:[
 				e.playbuf
 				=> p.synthVTracks.at(e.key).()
 				/2
+				=> HPF.ar(_,600)
 			}.play
 		});
 		P.synthV(\aiko, take:\double,
@@ -132,8 +149,8 @@ P(\bass,music:[
 			{
 				e.playbuf
 				=> p.synthVTracks.at(e.key).()
-				/2 * [0,1]
-				=> HPF.ar(_,300)
+				/ 2 * [0.01,1]
+				=> HPF.ar(_,600)
 			}.play
 		});
 		P.synthV(\kevin, filter: (midinote: _ - 12),  params: {|p b| [
@@ -162,13 +179,22 @@ P(\bass,music:[
 	].pm(\stringyy)
 );
 ['/*MCCOY:*/ He doesnt appear to be harmed - -. Physically, anyway. ',[4,5,6,5,4,5,6, 7,11,7].dm('e' )++[13,11,7,5,4,3].dm('e-',scale:\mixolydian)].addLine; 
+P.synthV(\xuan, filter: (midinote: _ - 12),  params: {|p b| [
+	lyrics: "he does n't a ppere to be harmed - -  physicly + + anyway + +",
+	language: "english",
+	phoneset: "arpabet"
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 P(\bass,syl:9,music:Song.currentSong.pbind[9]
 =>Pbindf(_,\instrument,\sawSynth,\amp,0.03)
 =>Padd(\midinote,(-24),_)
 =>Pdrop(10,_)
 		);
-		P(\tune,music:Song.currentSong.pbind[9]
-	);
+	// P(\tune,music:Song.currentSong.pbind[9]);
 	P(\baseline,syl:0,music:[ 
 		freq:
 		[1,11].df('b',octave: 2).q
@@ -178,6 +204,14 @@ P(\bass,syl:9,music:Song.currentSong.pbind[9]
 
 );
 ['/*KIRK:*/ Spock, I remember. ',[13,13,13,13.5,5].dm('b-',octave:3,scale:\minor )].addLine; 
+P.synthV(\kevin, params: {|p b| [
+	lyrics: "Spock I remember + +",
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 P(\cello,music:(
 	instrument:\stringyy,
 	freq:[1].df('b-',octave: 3),
@@ -206,6 +240,14 @@ P(\cello,music:(
 		);
 
 		['When Sargon and I exchanged, ',[6,5,4,5,6,7,11].dm('e-',octave:4)].addLine; 
+		P.synthV(\kevin, params: {|p b| [
+			lyrics: "When Sargon + and I exchanged +",
+		] }, music:{|p b e|
+			{
+				e.playbuf
+				=> p.synthVTracks.at(e.key).()
+			}.play
+		});
 		P.tune();
 		P(\chord,syl:5,music:{|p b e|
 			( 
@@ -227,6 +269,7 @@ P(\cello,music:(
 			amp:0.01,
 		)
 	);	
+
 	['as we passed each other, for an instant...',[5.5,6].dm('f#',octave:4)++[3,2,2,1].dm('c',octave:5)++[3,2,2,1].dm('c#',octave:5)].addLine; 
 	P.synthV(\kevin, params: {|p b| [
 		lyrics: "as we passed each other + for an instant + " ,

@@ -65,6 +65,15 @@ SynthV{
 				'backendType':      "SVR2AI",
 				'version':          "107"
 			),
+			feng: (
+				'name': "Feng Yi",
+				'language': "mandarin",
+				'phoneset': "xsampa",
+				'languageOverride': "english",
+				'phonesetOverride': "arpabet",
+				'backendType': "SVR2AI",
+				'version': "104"
+			)
 
 		)
 		/*
@@ -297,7 +306,12 @@ SynthV{
 		^P(key,start,syl,lag, music,song,
 			resources:(
 				synthV: synthV,
-				playbuf: { PlayBuf.auto(1,synthV.buffer.(), startPos: ( synthV.offset ) * BufSampleRate.kr(synthV.buffer.()))},
+				playbuf: { PlayBuf.auto(
+					1,
+					synthV.buffer.(),
+					startPos: ( synthV.offset ) * BufSampleRate.kr(synthV.buffer.()),
+					doneAction:2
+				)},
 				take: take
 
 			) ,

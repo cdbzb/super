@@ -32,7 +32,7 @@ Stills {
 	}
 
 	init {|movie| 
-		file=movie; 
+		file=movie ? "/Users/michael/trek/BySection/media/return to tomorrow.mov"; 
 		markers=();
 		monitors = switch( Platform.machine,
 			// monitor size = 1440 x 900
@@ -171,7 +171,7 @@ Stills {
 }
 
 Still {
-  var <>stills,<>image;
+	var <>stills,<>image;
 	var <>markerName,<>wait,<>fade,<>fadeIn,<>monitor;
         var <>window,<>textUpper,<>textLower,timecode,<>text;
 

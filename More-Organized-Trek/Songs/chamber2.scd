@@ -71,7 +71,8 @@ P(\tune,music:Song.currentSong.pbind[4]
 		['/*SPOCK:*/ Captain, do you know what happened? Do you remember any part of it? ',[13,11,7,11,12,13,14,13 ].dm('g',octave:4,scale:\mixolydian)++[7,11,12,14,13,12,11,13,11,5].dm('a',octave:4,scale:\mixolydian)].addLine; 
 		P.synthV(\xuan, filter: (midinote: _ - 12),  params: {|p b| [
 			lyrics: "captain +  do you know what happened +  do you remember + +  any + part of it",
-			legato: [1,   0.7,    1, 1,  1,   1,    1,      1,  1, 1, 1, 1, 1,      1, 1,  1,  1,  1]
+			legato: [1,   0.7,    1, 1,  1,   1,    1,      1,  1, 1, 1, 1, 1,      1, 1,  1,  1,  1],
+			vocalMode: \Passionate
 		] }, music:{|p b e|
 			{
 				e.playbuf
@@ -82,8 +83,7 @@ P(\tune,music:Song.currentSong.pbind[4]
 	);
 	// P(\tune,music:Song.currentSong.pbind[5]);
 ['/*KIRK:*/ Yes. ',[1].dm('a-')].addLine; 
-P(\tune,music:Song.currentSong.pbind[6]
-		);
+// P(\tune,music:Song.currentSong.pbind[6]);
 		P(\chord,music:(
 			strum:0.02,
 			dur:4,
@@ -125,6 +125,29 @@ P(\bass,music:[
 ].p
 		);
 		['I was floating (boom) in time and space. ',[3,4,13,11,4.5,13].dm('a')++ [13,11,6].dm('a-')++ [16,15,13,7].dm('d') ].addLine; 
+
+		P.synthV(\kevin, filter: (midinote: _ - 12),  params: {|p b| [
+			lyrics: "I was floating + \r in time r r and space r r ",
+			legato: [1,1,1,1,1,1,2,1, 1, 1,2]
+		] }, music:{|p b e|
+			{
+				e.playbuf
+				 => p.synthVTracks.at(e.key).()
+				 // => {|i| i + PitchShift.ar(i,pitchRatio:0.5)}
+			}.play
+		});
+		P.tune( Pbindf(_, \out,Effect.bus(FreeVerb.ar(_,1,1),inputChannels:2)));
+		P.still(\clear,timecode:0,music:{|p b e|
+			e.still.value(
+				wait: b.sum,
+				text: ["I was floating", "in time"]
+			)
+			.sequenceText(
+				[
+					b.parse([9]).unbubble,["and","space"]
+				]
+			)
+	});
 		P.synthV(\aiko, 
 			pbind: {|p b| [midinote: [13, 4.5].dm('a') ++ [11,6].dm('a-') =>_.q, dur:b.parse([4, 3, 1, 2]).q].p },
 			filter: (midinote: _ - 12), 
@@ -138,32 +161,6 @@ P(\bass,music:[
 				=> HPF.ar(_,600)
 			}.play
 		});
-		P.synthV(\aiko, take:\double,
-			pbind: {|p b| [midinote: [13, 4.5].dm('a') ++ [11,6].dm('a-') =>_.q, dur:b.parse([4, 3, 1, 2]).q].p },
-			filter: (midinote: _ - 12), 
-			params: {|p b| [
-				pitchDelta: Env( { 0.01.rrand(0.02) }!4 , [1,1,1] ),
-				lag: [0.02,0,0.05],
-				lyrics: "r u - -",
-		] }, music:{|p b e|
-			{
-				e.playbuf
-				=> p.synthVTracks.at(e.key).()
-				/ 2 * [0.01,1]
-				=> HPF.ar(_,600)
-			}.play
-		});
-		P.synthV(\kevin, filter: (midinote: _ - 12),  params: {|p b| [
-			lyrics: "I was floating + \r in time r r and space r r ",
-			legato: [1,1,1,1,1,1,2,1, 1, 1,2]
-		] }, music:{|p b e|
-			{
-				e.playbuf
-				 => p.synthVTracks.at(e.key).()
-				 // => {|i| i + PitchShift.ar(i,pitchRatio:0.5)}
-			}.play
-		});
-		P.tune( Pbindf(_, \out,Effect.bus(FreeVerb.ar(_,1,1),inputChannels:2)));
 		P(\bassb,syl:1,music:[
 			//		instrument:\stringyy,
 			freqLag:[0,0,0].q,
@@ -208,8 +205,7 @@ P.synthV(\kevin, params: {|p b| [
 	lyrics: "Spock I remember + +",
 ] }, music:{|p b e|
 	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
+		e.playbuf => p.synthVTracks.at(e.key).()
 	}.play
 });
 P(\cello,music:(
@@ -217,7 +213,7 @@ P(\cello,music:(
 	freq:[1].df('b-',octave: 3),
 )
 		);
-		P.tune();
+		// P.tune();
 		P(\pedal, music: { |p b e|
 			(
 				instrument:\stringyy,
@@ -248,7 +244,7 @@ P(\cello,music:(
 				=> p.synthVTracks.at(e.key).()
 			}.play
 		});
-		P.tune();
+		// P.tune();
 		P(\chord,syl:5,music:{|p b e|
 			( 
 				strum:0.09,
@@ -381,8 +377,7 @@ P(\chord, music: { |p b e|
 
 	].pp
 });
-P(\tune,music:Song.currentSong.pbind[13]
-	);
+// P(\tune,music:Song.currentSong.pbind[13]);
 	//idea: maybe this convergence can be done with phase instead of frequency! 
 	//try this with a recording of say water or something 
 	//MUTEDP(\convergenceTest,music:{
@@ -564,6 +559,16 @@ P(\chord,syl:2,music:
 	].p.fin
 );
 ['/*MCCOY:*/ That`s the most ri (boom) ',"c#4 a3 d#4 b3 r "].addLine; 
+P.synthV(\xuan, params: {|p b| [
+	lyrics: "That's the most ri r",
+
+	vocalMode: \Passionate
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 P(\tune,music:Song.pbind[17] 
 	);
 	P(\boom,syl:3,syl:3,music: {|p b e|
@@ -582,6 +587,16 @@ P(\line,music:{
 P(\bassnote,syl:3,music:(degree:3,octave:[3,2],amp:0.4,dur:2,)
 		);
 		['diculous statement I`ve ever heard. An ',[5,2,1,4,3,1,2,3,4.5,].dm('b-')++[5].dm(\d)].addLine; 
+		P.synthV(\xuan, filter: (midinote: _ - 12),  params: {|p b| [
+			lyrics: "diculus + + statement + I've ever + heard An",
+			legato: [1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1],
+			vocalMode: \Passionate
+		] }, music:{|p b e|
+			{
+				e.playbuf
+				=> p.synthVTracks.at(e.key).()
+			}.play
+		});
 		P(\chord,music:[ 
 			strum:0.05,
 			out: Effect.bus(
@@ -609,12 +624,30 @@ P(\bassnote,syl:3,music:(degree:3,octave:[3,2],amp:0.4,dur:2,)
 P(\tune,music:Song.currentSong.pbind[18]
 	);
 	['alien practically hijacks your body and ', [11,7,5,6,7,11,14,12,13,14,13,11].dm('d')].addLine; 
+	P.synthV(\xuan, filter: (midinote: _ - 12),  params: {|p b| [
+		lyrics: "alien + + praclicly + + hijacks + your body + and",
+		vocalMode: \Passionate
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 	P(\bass,music: [ 
 		freq: [5,6,11].df('d',octave: 2).q,  
 		dur: Song.parse(19,[6,3,3]).q,
 	].p );
-	P.tune();
+	// P.tune();
 	['corks you into a bo -- ttle  and', [1,2,3,4,5,6,7,1,6].dm('c',octave:6)].addLine; 
+	P.synthV(\xuan, filter: (midinote: _ - 12),  params: {|p b| [
+		lyrics: "corks you into + a bo - ttle and",
+		vocalMode: \Passionate
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 	P.tune();
 	//	P(\tune,music:Song.currentSong.pbind[20]);
 	P('swell20',lag: -0.1,music:{|p b e|
@@ -622,7 +655,19 @@ P(\tune,music:Song.currentSong.pbind[18]
 			curve:'sin',instrument:\swell20,attack:2,release:5,amp:0.04,freq: [1,11].df('c',octave: 3)).play
 		});
 		//['/*MULHALL:*/ I`m afraid that I must agree with Doctor McCoy. You could be suffering from a form of false euphoria. ',"r"].addLine; 
-		['/*MULHALL:*/ I`m afraid I agree with Doctor McCoy. You could be suffering from a form of false euphoria.(ooh -- --) ', [ 3,4,2,3,1, 5,3,4,5,3,6, 4,5,6,11,7,2 ].dm('e',scale:\dorian) ++ [4,5,6,7].dm('c') ++ [13,14,13,12,11, 12,11,7].dm('f#',octave: 5) ].addLine; 
+['/*MULHALL:*/ I`m afraid I agree with Doctor McCoy. You could be suffering from a form of false euphoria.(ooh -- --) ', [ 3,4,2,3,1, 5,3,4,5,3,6, 4,5,6,11,7,2 ].dm('e',scale:\dorian) ++ [4,5,6,7].dm('c') ++ [13,14,13,12,11, 12,11,7].dm('f#',octave: 5) ].addLine; 
+P.synthV(\feng,
+	filter: (midinote: _ - 12),
+	params: {|p b| [
+		lyrics: "I`m afraid + I agree + with Doctor + McCoy + You could be suffering + + from a form of false euphoria + + + - - -",
+		loudness: [10, 10, 12, 6, 6, 6, 6, 4, 4, 4, 4, 4, 4, 4, 0, 4, 4, 8, 6, 6, 6, 0, 0, 0, 0, 0, 0, 0, 0] => Env(_,b)
+	]}, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	}
+);
 	P(\bassline,music:[
 		dur:Song.parse(21,[2,2,5,5],).q,
 		freq:[3,2,1,13].df('e',octave: 3,scale:\minor).q,
@@ -659,8 +704,7 @@ P(\arpeggio,syl:9,music:[
 	].p.play
 }
 	);
-	P(\tune,music:Song.currentSong.pbind[21]
-);
+	// P(\tune,music:Song.currentSong.pbind[21]);
 ['/*KIRK:*/ Sargon. ',[3,2].dm('a')].addLine; 
 P(\tune,music:Song.currentSong.pbind[22]
 	);
@@ -751,7 +795,8 @@ P(\arpeggio,music: [
 P.tune('must agree');
 P.rpp(\vocal,'must agree',lag:-1,music:{|p b e|
 	//	e.rpp.postln.key.postln
-	p.vocodeTune.(p,b,e).postln;//(p,b,e,amp:0.12,dur:b.sum+1,chord:[1,2,3])
+	// p.vocodeTune.(p,b,e).postln;
+	p.vocodeTune.(p,b,e,amp:0.10,dur:b.sum+1,chord:[1,2,3]);
 	p.postln;
 });
 P('tune24',music:{ |p| 

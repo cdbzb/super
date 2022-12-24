@@ -3,6 +3,7 @@
 (There are a group of boxes on the wall, containing spheres. Only two are alight.) */
 Song.songs.at(\smallChamber).isNil.not.if{try{  Song.smallChamber.resources.do(_.free)  }};
 Song(\smallChamber,[]).current;
+Stills().current;
 Song.currentSong.resources.infrastructure=FunctionList([ {
 	//~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
 } ]);
@@ -10,11 +11,6 @@ Song.chamber.isNil.if{"/Users/michael/tank/super/More-Organized-Trek/chamber_rew
 //Song.smallChamber.next_(\chamber);
 //Song.smallChamber.chain;
 //Song.smallChamber.current;
-
-///////how to use stills
-//	~stills.isNil.if{~stills=Stills("/Users/michael/tank/Trek/video for stills etc/media/return to tomorrow.mov")}; //{{{
-//	~stills.set('kirk-face',(38*60+2.81));
-//				SystemClock.sched(4,{{~stills.preview('kirk-face',wait:0.51,fade:2,monitor:0,text:['Sargon here','' ])}.defer});
 
 [ "/*KIRK:*/ Even for us, a half million years is almost too long to wait. (chord)", [ 5,6,4,7 ,5,11,12,6.5,13 ,12,11,12 ,14.5,15,14.5,14.5 ,11.5 ].dm('a') ].addLine;
 P.synthV(\genbu,\wait,
@@ -392,6 +388,12 @@ legato:3,
 
 );
 ["(boom) Thalassa, my Thalassa. I`m ",[1,  11,7,6,14,13,13,12,11,15,13,15,14,13,11].dm('c#')].addLine; //2
+P.still(\handOnGlobe, timecode:1649.0.seconds,music:{|p b e|
+	e.still.(
+		wait: b.sum,
+		text:["Thalassa","my Thalassa"]
+	)
+});
 P.tune();
 Song.setTempoMap('my Thalassa',"e e e e ex x e ee e q e e Q Q Q");
 P.synthV(\genbu, 'my Thalassa',syl:0, filter: (midinote: _-12),range:[1,15],
@@ -466,6 +468,17 @@ P(\baseline2,start:'I`m',syl:1,music:[
 [" When the struggle came which devastated your planet ","r"].addLine;/*SPOCK:*/
 
 [" Only the best minds were chosen to survive.","5 6 7 11 7 5 6 4 2 1 -7".dm(\e,6,\phrygian)].addLine;/*KIRK:*/
+
+P.still(\medium, timecode:1705.49.seconds,music:{|p b e|
+	e.still.(
+		wait: b.sum,
+		text:["only the best minds","were chosen to"],
+		fade:3
+	).sequenceText([
+		b.parse([9]).sum,[ "","survive" ],
+		b.sum(["","as you may"])
+	])
+});
 // P.tune(\Oly);
 P.synthV(\genbu, filter:(midinote:_-24), params: {|p b| [
 	lyrics: "on li ze best mainds wa cho zen tsu sa vaiv" ,
@@ -496,6 +509,14 @@ P('spaceBass',start:\Only,syl: 7,music: {|p b e|
 	].ppm
 });
 ["Thalassa,(boom boom boom) my wife, as you may have guessed. ","-5 3 2 -1, -17 -16 3 6  5 3 1.5 2 3".dm(\e,6)].addLine;
+P.still(\clear,timecode:0,music:{|p b e| 
+	e.still.(
+		wait: b.sum,
+		text: ["Thalassa",""]
+	).sequenceText([
+		b.parse([6]).sum, ["my wife","as you may have guessed"]
+	] )
+});
 P.synthV(\genbu,\wife,
 	take:\low,filter:(midinote:_-24),
 	// filter:(midinote:_-12),
@@ -520,13 +541,15 @@ P.tune('my wife',_ <> [amp:0.03,out:Effect.bus(DWGReverbC1C3.ar(_,len:3000)), re
 ["and Henoch, from the other side. ","4 3 1 -5 -6.5 -7 -5 -3.5".dm('f#',6,\minor)].addLine;
 P.synthV(\genbu, filter:(midinote: _-24), params: {|p b| [
 	lyrics: "and, he nok fran za a za said",
+	legato: [1, 1, 0.8, 1,   1, 1, 1, 1],
+	lag: [0,    -0.1, -0.1,   0.1, 0, 0, 0, 0]
 ] }, music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.tune('Henoch,');
+// P.tune('Henoch,');
 
 //["Realising our mistake, we attempted to perpetuate both sides. ","r"].addLine;
 //["We built this chamber here in order to preserve our essence in this fashion. ","r"].addLine;

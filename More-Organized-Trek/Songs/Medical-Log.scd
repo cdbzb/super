@@ -4,7 +4,29 @@
 Song(\medical,[]).current;
 ~stills ? ~stills = Stills.new("/Users/michael/tank/Trek/video for stills etc/media/return to tomorrow.mov");
 Stills.current=~stills;
+Song.synthVTracks = EventWithDefault(
+		\default, {
+			DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:0.1)
+		}
+);
 ["Medical Log. (boom) Stardate 4770.3. ",[4,3,2,1,-5, 1,-7,-4, -7,1,2,3, 1, -7,3].dm(\f)].addLine;
+P.synthV(\xuan, params: {|p b| [
+	lyrics: "medical + + - log star date four seven + seven + oh point three",
+	language: \english,
+	phoneset: \arpabet
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.synthV(\xuan,double:true,take:\double,filter:Song.xuan_0.filter,params:Song.xuan_0.params,music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+
 ~justTheTune.('Stardate');
 [ "Do I list one death or two? " , [1,2,1,5,5,6,4.5].dm(\g)].addLine;
 P.tune('one death',Pmul(\freq,0.5,_));

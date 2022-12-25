@@ -4,11 +4,18 @@ SynthV{
 	classvar <notePrototype, <databasePrototype, <databaseLib;
 	classvar <roles,<envelopes=#[ \toneShift, \pitchDelta, \voicing, \tension, \vibratoEnv, \loudness, \breathiness, \gender ];
 	classvar <vocalModes;
+	classvar <>registry;
 	var <name, <project, <file,<location,<buffer, <key, <song, <section;
 	var <>firstNoteOffset = 0;
 	var <> offset = 0;
-	*new {|key name take| ^super.new.init(key, name, take) }
+	var <>double;
+	*new {|key name take double| registry.at(key, name, take).isNil.if {
+		 ^super.new.init(key, name, take, double) 
+	 }{
+		 ^registry.at(key, name, (take ? \default)) } }
 	*initClass {
+		registry = MultiLevelIdentityDictionary.new();
+
 		roles = ();
 
 		notePrototype = (
@@ -102,16 +109,24 @@ SynthV{
 		}
 	}
 	render {
-		"~/scripts/renderSynthesizerV.sh".standardizePath + file =>_.unixCmd
+		double.post;" ".post;
+		double.isNil.if {
+			\renderSynthsizerV.postln;
+			"~/scripts/renderSynthesizerV.sh".standardizePath + file =>_.unixCmd
+		}{
+			\newTakeSynthV.postln;
+			"~/scripts/newTakeSynthV.sh".standardizePath + file =>_.unixCmd
+		}
 	}
 	*load { |path|
 		^String.readNew(path.standardizePath => File(_,"r")) => JSON.parse(_)
 	}
-	init{ |n k take|
+	init{ |n k take d|
+		name = n; double = d;
+		this.class.registry.put(n,k,(take ? \default),this);
 		key = k.asString.replace(Char.space,$_);
 		song.isNil.if{ song = Song.currentSong };
 		section = song.section(key.replace($_,Char.space)); //does this do anything?
-		name = n;
 		directory = directory.standardizePath;
 
 		location= directory +/+ song.key +/+ key +/+ name; //change storage scheme here
@@ -249,11 +264,11 @@ SynthV{
 }
 
 + P {
-	*synthV{ | key start params syl lag=0 take music song resources range filter pbind prepend|
+	*synthV{ | key start params syl lag=0 take double music song resources range filter pbind prepend|
 
 		var event;
 		var section = P.calcStart(start );
-		var synthV = SynthV(key,( start ? section ),take );
+		var synthV = SynthV(key,( start ? section ),take ,double );
 		song = song ? Song.currentSong;
 		pbind = pbind.notNil.if{  // pass in a pbind or get it from the song
 			pbind.value(song,song.durs[section].list)
@@ -312,7 +327,10 @@ SynthV{
 					startPos: ( synthV.offset ) * BufSampleRate.kr(synthV.buffer.()),
 					doneAction:2
 				)},
-				take: take
+				take: take,
+				params: params,
+				filter: filter
+
 
 			) ,
 			); // order of section and key are reversed!!

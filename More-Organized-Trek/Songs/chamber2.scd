@@ -68,17 +68,18 @@
 );
 P(\tune,music:Song.currentSong.pbind[4]
 		);
-		['/*SPOCK:*/ Captain, do you know what happened? Do you remember any part of it? ',[13,11,7,11,12,13,14,13 ].dm('g',octave:4,scale:\mixolydian)++[7,11,12,14,13,12,11,13,11,5].dm('a',octave:4,scale:\mixolydian)].addLine; 
-		P.synthV(\xuan, filter: (midinote: _ - 12),  params: {|p b| [
-			lyrics: "captain +  do you know what happened +  do you remember + +  any + part of it",
-			legato: [1,   0.7,    1, 1,  1,   1,    1,      1,  1, 1, 1, 1, 1,      1, 1,  1,  1,  1],
-			vocalMode: \Passionate
-		] }, music:{|p b e|
-			{
-				e.playbuf
-				=> p.synthVTracks.at(e.key).()
-			}.play
-		});
+	['/*SPOCK:*/ Captain, do you know what happened? Do you remember any part of it? ',[13,11,7,11,12,13,14,13 ].dm('g',octave:4,scale:\mixolydian)++[7,11,12,14,13,12,11,13,11,5].dm('a',octave:4,scale:\mixolydian)].addLine; 
+P.synthV(\xuan, 
+	filter: (midinote: _ - 12),  params: {|p b| [
+	lyrics: "captain +  do you know what happened +  do you remember + +  any + part of it",
+	legato: [1,   0.7,    1, 1,  1,   1,    1,      1,  1, 1, 1, 1, 1,      1, 1,  1,  1,  1],
+	vocalMode: \Passionate
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 		P(\bassNote,music:(instrument:\stringyy,freq:[4].df('c',octave: [4,3]),amp:0.2,)
 	);
 	// P(\tune,music:Song.currentSong.pbind[5]);
@@ -176,7 +177,8 @@ P(\bass,music:[
 	].pm(\stringyy)
 );
 ['/*MCCOY:*/ He doesnt appear to be harmed - -. Physically, anyway. ',[4,5,6,5,4,5,6, 7,11,7].dm('e' )++[13,11,7,5,4,3].dm('e-',scale:\mixolydian)].addLine; 
-P.synthV(\xuan, filter: (midinote: _ - 12),  params: {|p b| [
+P.synthV(\xuan, 
+	filter: (midinote: _ - 12),  params: {|p b| [
 	lyrics: "he does n't a ppere to be harmed - -  physicly + + anyway + +",
 	language: "english",
 	phoneset: "arpabet"
@@ -185,7 +187,21 @@ P.synthV(\xuan, filter: (midinote: _ - 12),  params: {|p b| [
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 	}.play
-});
+}
+);
+
+P.synthV(\xuan, take:\double, double:true,
+	filter: (midinote: _ - 12),  params: {|p b| [
+	lyrics: "he does n't a ppere to be harmed - -  physicly + + anyway + +",
+	language: "english",
+	phoneset: "arpabet"
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+}
+);
 P(\bass,syl:9,music:Song.currentSong.pbind[9]
 =>Pbindf(_,\instrument,\sawSynth,\amp,0.03)
 =>Padd(\midinote,(-24),_)
@@ -405,14 +421,24 @@ P(\chord, music: { |p b e|
 			=> p.synthVTracks.at(e.key).()
 		}.play
 	});
-	P.synthV(\kevin, take:2, filter: (midinote: _ - 24),  params: {|p b| [
+	P.synthV(\kevin, double:true, take:\double, filter: (midinote: _ - 12),  params: {|p b| [
+		lyrics: "I know him now",
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
+	P.synthV(\kevin, take:\high, filter: (midinote: _ - 24),  params: {|p b| [
 		lyrics: "I know him now",
 		lag: { 0.03.rand }!4
 	] }, music:{|p b e|
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
-			* [0,1]
+			// * [0,1]
+			=> Pan2.ar(_)
+			*0.4
 		}.play
 	});
 	P(\figure,music:[
@@ -522,12 +548,24 @@ P(\figure,music:[
 	//MUTED].p
 	//MUTED);
 	['and I don`t fear him. ',[4,5,6,7,11].dm(\c)].addLine; 
+
 	P.synthV(\kevin, filter: (midinote: _ - 12),  params: {|p b| [
 		lyrics:"and I don't fear him" ,
 	] }, music:{|p b e|
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
+			=> HPF.ar(_,500)
+		}.play
+	});
+	P.synthV(\kevin, double: true, take:\double, filter: (midinote: _ - 12),  params: {|p b| [
+		lyrics:"and I don't fear him" ,
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+			=> HPF.ar(_,500)
+			=> Pan2.ar(_,1)
 		}.play
 	});
 	P(\tune,music:Song.currentSong.pbind[16]=>Pbindf(_,\instrument,\stringyy,\amp,0.3)
@@ -569,8 +607,7 @@ P.synthV(\xuan, params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P(\tune,music:Song.pbind[17] 
-	);
+// P(\tune,music:Song.pbind[17] );
 	P(\boom,syl:3,syl:3,music: {|p b e|
 		(instrument:\membrane,out:2,amp:0.05).play 
 	}
@@ -621,8 +658,7 @@ P(\bassnote,syl:3,music:(degree:3,octave:[3,2],amp:0.4,dur:2,)
 		dur: Song.parse(18,[2],8).q,
 	].p.fin
 );		
-P(\tune,music:Song.currentSong.pbind[18]
-	);
+// P(\tune,music:Song.currentSong.pbind[18]);
 	['alien practically hijacks your body and ', [11,7,5,6,7,11,14,12,13,14,13,11].dm('d')].addLine; 
 	P.synthV(\xuan, filter: (midinote: _ - 12),  params: {|p b| [
 		lyrics: "alien + + praclicly + + hijacks + your body + and",
@@ -656,11 +692,47 @@ P(\tune,music:Song.currentSong.pbind[18]
 		});
 		//['/*MULHALL:*/ I`m afraid that I must agree with Doctor McCoy. You could be suffering from a form of false euphoria. ',"r"].addLine; 
 ['/*MULHALL:*/ I`m afraid I agree with Doctor McCoy. You could be suffering from a form of false euphoria.(ooh -- --) ', [ 3,4,2,3,1, 5,3,4,5,3,6, 4,5,6,11,7,2 ].dm('e',scale:\dorian) ++ [4,5,6,7].dm('c') ++ [13,14,13,12,11, 12,11,7].dm('f#',octave: 5) ].addLine; 
-P.synthV(\feng,
+Song.euphoriaTempoMap = TempoMap.new( Song.durs[\euphoria].list[(21..28)],"qe x xqe x xqe x xq q".asBeats );
+P(\shaker,syl:20, music: { |p b e|
+
+	[
+		dur: [10,11].dup(16).flat / 21 /2 
+		=> _.warpTo ( p.parse(e.start,[2/3,[1/3,1,1/7],4/7,[2/7,1,1/7],4/7,[2/7,1,1/5],4/5,1],21) 
+		// => _.push(7,-0.02)
+		// => _.push(6,-0.02)
+		=> TempoMap(1!8,_) =>_.quantize(0.8) ) => _.q,
+		instrument:\cymbalsDS,
+		instrument:\hat_808,
+		
+		amp:[4,2,3,2] -0.5 /40 =>_.q(inf),
+	].pp
+
+});
+P.synthV(\feng, 
+	 double: true,
+	take: \double,
 	filter: (midinote: _ - 12),
 	params: {|p b| [
 		lyrics: "I`m afraid + I agree + with Doctor + McCoy + You could be suffering + + from a form of false euphoria + + + - - -",
-		loudness: [10, 10, 12, 6, 6, 6, 6, 4, 4, 4, 4, 4, 4, 4, 0, 4, 4, 8, 6, 6, 6, 0, 0, 0, 0, 0, 0, 0, 0] => Env(_,b)
+		loudness: [10, 10, 12, 6, 6, 6, 6, 4, 4, 4, 4, 4, 4, 4, 0, 4, 4, 8, 6, 6, 6, 0, 0, 0, 0, 0, 0, 0, 0] => Env(_,b),
+		legato: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.6, 1,   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ],
+		lag: [0,    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0.1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+	]}, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+			* [0.01,1]
+		}.play
+	}
+);
+P.synthV(\feng, 
+	filter: (midinote: _ - 12),
+	params: {|p b| [
+		lyrics: "I`m afraid + I agree + with Doctor + McCoy + You could be suffering + + from a form of false euphoria + + + - - -",
+		loudness: [10, 10, 12, 6, 6, 6, 6, 4, 4, 4, 4, 4, 4, 4, 0, 4, 4, 8, 6, 6, 6, 0, 0, 0, 0, 0, 0, 0, 0] => Env(_,b),
+		legato: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.6, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ],
+		lag: [0,    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   0.1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 	]}, music:{|p b e|
 		{
 			e.playbuf
@@ -697,7 +769,7 @@ P(\arpeggio,syl:9,music:[
 			++ [[3,5,11]].df('e-',scale:\minor,octave: 4).q(2)
 			++ [[5,11]].df('c#',scale:\minor,octave: 4).q(2)
 			,
-			dur:p.parse(21,[2/3,[1/3,1,1/7],4/7,[2/7,1,1/7],4/7,[2/7,1,1/5],4/5
+			dur:p.parse(e.start,[2/3,[1/3,1,1/7],4/7,[2/7,1,1/7],4/7,[2/7,1,1/5],4/5
 			,1
 		],21).q,
 		out:Effect.bus(EchoCubic.ar(_,0.3,0.25,4)),

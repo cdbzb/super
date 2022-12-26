@@ -20,12 +20,22 @@ P.synthV(\xuan, params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.synthV(\xuan,double:true,take:\double,filter:Song.xuan_0.filter,params:Song.xuan_0.params,music:{|p b e|
+
+P.double(\xuan, music:{ |p b e|
 	{
 		e.playbuf
-		=> p.synthVTracks.at(e.key).()
+		/ 2
 	}.play
 });
+
+// ~doubleME = {|i| P.synthV{i, double:true, filter } };
+
+// // P.synthV(\xuan,double:true,take:\double,filter:Song.xuan_0.filter,params:Song.xuan_0.params,music:{|p b e|
+// 	{
+// 		e.playbuf
+// 		=> p.synthVTracks.at(e.key).()
+// 	}.play
+// });
 
 ~justTheTune.('Stardate');
 [ "Do I list one death or two? " , [1,2,1,5,5,6,4.5].dm(\g)].addLine;

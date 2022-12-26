@@ -264,6 +264,11 @@ SynthV{
 }
 
 + P {
+	*double{| key music |
+		var section = P.calcStart(nil); 
+		var original = Song.currentSong.at(section).select({|e| e.name.contains(key.asString) })[0];
+		^P.synthV(key,params:original.params,double:true,take:\double,music:music)
+	}
 	*synthV{ | key start params syl lag=0 take double music song resources range filter pbind prepend|
 
 		var event;

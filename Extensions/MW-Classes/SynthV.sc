@@ -12,7 +12,9 @@ SynthV{
 	*new {|key name take double| registry.at(key, name, take).isNil.if {
 		 ^super.new.init(key, name, take, double) 
 	 }{
-		 ^registry.at(key, name, (take ? \default)) } }
+		 registry.at(key, name, (take ? \defailt)).refreshBuffer;
+		 ^registry.at(key, name, (take ? \default)) } 
+	 }
 	*initClass {
 		registry = MultiLevelIdentityDictionary.new();
 
@@ -258,16 +260,25 @@ SynthV{
 	}
 	refreshBuffer{
 		File.exists(location+/+"synthV_MixDown.wav").if{
-		buffer = Buffer.doRead(Server.default,location+/+"synthV_MixDown.wav");
+			try{buffer.free};
+			buffer = Buffer.doRead(Server.default,location+/+"synthV_MixDown.wav");
 		}
 	}
 }
 
 + P {
-	*double{| key music |
+	*double{| key music filter pbind |
 		var section = P.calcStart(nil); 
 		var original = Song.currentSong.at(section).select({|e| e.name.contains(key.asString) })[0];
-		^P.synthV(key,params:original.params,double:true,take:\double,music:music)
+		^P.synthV(
+			key,
+			params:original.params,
+			double:true,
+			take:\double,
+			music:music,
+			filter:(filter ? original.filter),
+			pbind: (pbind ? original.pbind)
+		)
 	}
 	*synthV{ | key start params syl lag=0 take double music song resources range filter pbind prepend|
 

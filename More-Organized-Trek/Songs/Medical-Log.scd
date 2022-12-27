@@ -7,10 +7,11 @@ Stills.current=~stills;
 Song.synthVTracks = EventWithDefault(
 		\default, {
 			DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:0.1)
+			/ 5
 		}
 );
 ["Medical Log. (boom) Stardate 4770.3. ",[4,3,2,1,-5, 1,-7,-4, -7,1,2,3, 1, -7,3].dm(\f)].addLine;
-P.synthV(\xuan, params: {|p b| [
+P.synthV(\xuan, filter: (midinote: _ - 12),  params: {|p b| [
 	lyrics: "medical + + - log star date four seven + seven + oh point three",
 	language: \english,
 	phoneset: \arpabet
@@ -21,7 +22,7 @@ P.synthV(\xuan, params: {|p b| [
 	}.play
 });
 
-P.double(\xuan, music:{ |p b e|
+P.double(\xuan, filter: (midinote: _ - 12),  music:{ |p b e|
 	{
 		e.playbuf
 		/ 2
@@ -40,15 +41,55 @@ P.double(\xuan, music:{ |p b e|
 ~justTheTune.('Stardate');
 [ "Do I list one death or two? " , [1,2,1,5,5,6,4.5].dm(\g)].addLine;
 P.tune('one death',Pmul(\freq,0.5,_));
+
+P.synthV(\xuan, 
+	// take: \monotone, 
+	filter: (midinote: _ - 24),
+	params: {|p b| [
+		lyrics: "do I list one death or two",
+		legato: [1, 1, 1, 1, 0.8, 1, 1],
+		gender: Env([0.4,0.4],2)
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+});
+P.double(\xuan,
+	pbind:{|p b| [ dur:b.q, midinote:[ 1, 1, 1, 1, 1, -5, 2 ].dm(\g,4).q].p},  
+	filter: (midinote: _ - 12), 
+	music:{|p b e|
+		{
+			e.playbuf
+			/5
+		}.play
+
+	}
+);
 P(\bassUp,syl:2,start:'one death',music:{|p b e| 
 	[
 		freq: [1,1,-5,2].df(\g,octave:3).q,
-		dur:b.drop(1).parse([1,2/3,[1/3,1],1]).q
+		dur:b.drop(1).parse([1,2/3,[1/3,1],1]).q,
+		instrument: \stringyy,
+		amp:0.3
 	].pp
 });
+SynthDef(\convoDust, {
+	[ Dust.ar(100) => FreeVerb.ar(_, 0.6, 0.8), Saw.ar(\freq.kr(333)) ]
+	=> Convolution.ar( *_ )
+	=> MoogFF.ar(_,2400)
+	* Env.perc(0.05,5).kr(2,gate:1)
+	* \amp.kr(0.1)
+	=> Out.ar(\out.kr(0),_)
+}).add;
 P(\chord,start:'one death',syl:2,music:
 	{ |p b e|
-		(strum:0.05,midinote:[1,3,5,11].dm(\g,scale:\minor)).play
+		(
+			instrument: \convoDust,
+			strum:0.06,midinote:[1,3,5,11].dm(\g,scale:\minor),
+			out: {[0,1,[0,1]].choose}!4,
+			amp:0.2
+		).play
 	}
 );
 //[" When Kirk's body died, ","r"].addLine;
@@ -58,8 +99,28 @@ P(\chord,start:'one death',syl:2,music:
 P.tune(\Sargon,{|i| Pfin(10,i) => Pset(\legato,[1,1,1,1,1,1,3,3,3,2].q,_)});
 
 //bass patch
-Song.resources.bassUp = (\instrument:\sawTw,amp:0.2,out:0);
+Song.resources.bassUp = (instrument:\sawTw,amp:0.2,out:0);
+P.synthV(\xuan, params: {|p b| [
+	lyrics: "sargon, +, is, dead, but, is, captain, +, kirk, dead r",
+	lag: [0.1,    0.05, 0,  0,    0,   0,  0,       0, 0,    0,      ],
+	gender: Env([0.4,0.4],1),
+	vocalMode: \light,
+	tension: Env([-0.3,-0.3],1)
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(\xuan, filter: (midinote: _ - 12), music:{|p b e|
+	{
+		e.playbuf
+		/ 5
+	}.play
+}
+)
 
+ 
 P(\bassUp,start:\Sargon,syl:2,music:{|p b e| 
 	[
 		freq: [3,[ 2,6.5 ],[ 1.5,6.5 ]].df(\d,scale:\minor,octave:3).q,

@@ -82,6 +82,15 @@ SynthV{
 				'phonesetOverride': "arpabet",
 				'backendType': "SVR2AI",
 				'version': "104"
+			),
+			an: (
+				'name': "An Xiao",
+				'language': "mandarin",
+				'phoneset': "xsampa",
+				'languageOverride': "english",
+				'phonesetOverride': "arpabet",
+				'backendType': "SVR2AI",
+				'version': "104"
 			)
 
 		)
@@ -373,6 +382,7 @@ SynthV{
 			.select{ |i| i.synthV.needsRender};
 			dirty.do{ |i|
 				var wav = i.synthV.location +/+ "synthV_MixDown.wav";
+				"touch" + wav => _.unixCmd;
 				1.wait;
 				i.synthV.render;
 				Post <<< 'time: ' <<< wav.timeSinceModified;

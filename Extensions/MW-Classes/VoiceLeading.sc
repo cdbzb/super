@@ -106,17 +106,17 @@ VoiceLeading {
 	}
 	at {|i| var line=this.voice(i);^[dur:line.durs.q,freq:line.line.q]}
 	env {|i| ^Env(this.voice(i).line,this.voice(i).durs)}
-	df {|root='c' octave=5 scale='major'|
+	df {|root='c' octave=5 scale='major' transpose|
 		key = \freq;
-		valuesArray=valuesArray.collect{|i|i.df(root,octave,scale)};
-		demandValues=demandValues.collect{|i|i.df(root,octave,scale)};
-		lines=lines.collect(_.df(root,octave,scale))
+		valuesArray=valuesArray.collect{|i|i.df(root,octave,scale, transpose)};
+		demandValues=demandValues.collect{|i|i.df(root,octave,scale, transpose)};
+		lines=lines.collect(_.df(root,octave,scale, transpose))
 	}
-	dm {|root='c' octave=5 scale='major'|
+	dm {|root='c' octave=5 scale='major' transpose|
 		key = \midinote;
-		valuesArray=valuesArray.collect{|i|i.dm(root,octave,scale)};
-		demandValues=demandValues.collect{|i|i.dm(root,octave,scale)};
-		lines=lines.collect(_.dm(root,octave,scale))
+		valuesArray=valuesArray.collect{|i|i.dm(root,octave,scale,transpose)};
+		demandValues=demandValues.collect{|i|i.dm(root,octave,scale,transpose)};
+		lines=lines.collect(_.dm(root,octave,scale, transpose))
 	}
 	p {
 		^lines.collect{|i x|

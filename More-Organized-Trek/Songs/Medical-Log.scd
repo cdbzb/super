@@ -1,7 +1,38 @@
-
 (
 // line 380
+var guitar,guitar2,piano;
+
+//re-connect if vst exists
+try{ ( Song.currentSong == \medical).not.if{ 
+	guitar = Song.guitar;
+	// guitar2 = Song.guitar2;
+	// piano = Song.piano;
+} };
+
 Song(\medical,[]).current;
+Song.resources.condition=Condition.new;
+
+// initialize if none
+guitar.isNil.if{Song.guitar=AAS_Strum()}{Song.guitar=guitar}; 
+// guitar2.isNil.if{Song.guitar2=AAS_Strum()}{Song.guitar2=guitar2};
+// piano.isNil.if{Song.piano = PF()};
+
+Song.resources.vstis = [Song.guitar, Song.guitar2, Song.piano];
+
+Song.resources.infrastructure=FunctionList.new([
+	{
+		 fork {
+			Song.guitar.condition.wait{Song.guitar.controller.loaded};
+			// Song.guitar2.condition.wait{Song.guitar2.controller.loaded};
+			// Song.piano.condition.wait{Song.piano.controller.loaded};
+			Song.resources.condition.test_(true).signal;
+			Song.guitar.setPlayMode(\strum);
+			Song.allNotesOff;
+			0.05.wait;
+		}
+
+	}
+]);
 ~stills ? ~stills = Stills.new("/Users/michael/tank/Trek/video for stills etc/media/return to tomorrow.mov");
 Stills.current=~stills;
 Song.synthVTracks = EventWithDefault(
@@ -11,8 +42,15 @@ Song.synthVTracks = EventWithDefault(
 		}
 );
 ["Medical Log. (boom) Stardate 4770.3. ",[4,3,2,1,-5, 1,-7,-4, -7,1,2,3, 1, -7,3].dm(\f,transpose: 6)].addLine;
-P.synthV(\xuan, filter: (midinote: _ - 12),  params: {|p b| [
+P.still(\clear,timecode:0,music:{|p b e|
+	e.still.(
+		wait:b.sum,
+		text:[ "Medical Log","Stardate 4770.3" ]
+	)
+});
+P.synthV(\an, filter: (midinote: _ - 12),  params: {|p b| [
 	lyrics: "medical + + - log star date four seven + seven + oh point three",
+	// phonemes: [ "m E d","@" ,"k @ l","","","","","","","","","","" ,""],
 	language: \english,
 	phoneset: \arpabet
 ] }, music:{|p b e|
@@ -21,17 +59,14 @@ P.synthV(\xuan, filter: (midinote: _ - 12),  params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-
-P.double(\xuan, filter: (midinote: _ - 12),  music:{ |p b e|
+P.double(\an, filter: (midinote: _ - 12),  music:{ |p b e|
 	{
 		e.playbuf
-		/ 2
+		/ 5
 	}.play
 });
-
 // ~doubleME = {|i| P.synthV{i, double:true, filter } };
-
-// // P.synthV(\xuan,double:true,take:\double,filter:Song.xuan_0.filter,params:Song.xuan_0.params,music:{|p b e|
+// // P.synthV(\an,double:true,take:\double,filter:Song.an_0.filter,params:Song.an_0.params,music:{|p b e|
 // 	{
 // 		e.playbuf
 // 		=> p.synthVTracks.at(e.key).()
@@ -40,22 +75,42 @@ P.double(\xuan, filter: (midinote: _ - 12),  music:{ |p b e|
 
 ~justTheTune.('Stardate');
 [ "Do I list one death or two? " , [1,2,1,5,5,6,4.5].dm(\g,transpose: 6)].addLine;
-P.tune('one death',Pmul(\freq,0.5,_));
+P(\guitar, music: { |p b e|
+	\strum => Song.guitar.setPlayMode( _ ) ;
+	[
+		midinote: [ [1,3], [2, 4.5] ].dm(\g,4,\minor, transpose: 6).q ,
+		dur: b.parse([6,1]).q,
+		legato: 0.96,
+	].p
+	+=
+	[
+		dur: b.parse([1,1,1,[1,2/3],[1/3,1],1]).q,
+		switch: [\muffleD,\muffleU,\muffleD,\down,\up,\down].q(inf) ,
+		amp:[0.2,0.2,0.1,0.2].q(inf) / 2
+	].p 
+	<> (
+		\out: Effect.bus(FreeVerb.ar(_,0.4,1)),
+		type: \strum,
+		instance: p.guitar
+	) => _.play;
 
-P.synthV(\xuan, 
+});
+// P.tune('one death',Pmul(\freq,0.5,_));
+
+P.synthV(\an, 
 	// take: \monotone, 
 	filter: (midinote: _ - 24),
 	params: {|p b| [
 		lyrics: "do I list one death or two",
 		legato: [1, 1, 1, 1, 0.8, 1, 1],
-		gender: Env([0.4,0.4],2)
+		// gender: Env([0.4,0.4],2)
 	] }, music:{|p b e|
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
 		}.play
 });
-P.double(\xuan,
+P.double(\an,
 	pbind:{|p b| [ dur:b.q, midinote:[ 1, 1, 1, 1, 1, -5, 2 ].dm(\g,4,transpose: 6).q].p},  
 	filter: (midinote: _ - 12), 
 	music:{|p b e|
@@ -66,6 +121,26 @@ P.double(\xuan,
 
 	}
 );
+P(\chords, music: { |p b e|
+	MegaBind(
+		[
+			[\r,7,6],
+			[\r,5,4.5],
+			[\r,12.5, 12 ]
+		].df(\g, 4,\mixolydian, transpose: 6)
+		,
+		b.parse([4,2,1]).push(2,1.05),
+		[],
+		{|i|  
+			Pulse.ar(i.freqSeq.lag2([0,0.2].dq.demand(b.parse(4,3))),0.1,0.1)
+			* Env.asr(0.5,1,3).kr(2,gate:i.gateSeq)
+			=> Convolution.ar( _,Dust.ar(1000) => LPF.ar(_,1600) )
+			/4
+
+		},
+		{|i|Splay.ar(i)}
+	).play
+});
 P(\bassUp,syl:2,start:'one death',music:{|p b e| 
 	[
 		freq: [1,1,-5,2].df(\g,octave:3,transpose: 6).q,
@@ -74,6 +149,7 @@ P(\bassUp,syl:2,start:'one death',music:{|p b e|
 		amp:0.3
 	].pp
 });
+
 SynthDef(\convoDust, {
 	[ Dust.ar(100) => FreeVerb.ar(_, 0.6, 0.8), Saw.ar(\freq.kr(333)) ]
 	=> Convolution.ar( *_ )
@@ -96,14 +172,30 @@ P(\chord,start:'one death',syl:2,music:
 //["Sargon was too far /*distant*/ ","r"].addLine;
 //["from his receptacle to transfer back. ","r"].addLine;
 ["Sargon is dead. But is captain Kirk dead? (boom) ",[2,3,-5,1,-6,-7,1,-6,3.5,-7.5,-7.5].dm(\d,scale:\dorian,transpose: 6)].addLine;
+P(\guitar, music: { |p b e|
+p.guitar.setPlayMode(\pick);
+[
+	midinote: [2,3,-5,-3,-2,-1.5].dm(\d,4,\dorian,transpose: 6).q,
+	type: \strum,
+	legato:[0.9,0.9,1,1,1].q(inf),
+	instance: p.guitar,
+	dur:b.parse([1,1,1,5,2]) ++ 2 => _.q,
+	out: Effect.bus( 
+		{ |i| CrossoverDistortion.ar(i, amp:0.5, smooth:0.5, mul:0.1, add:0)
+		* Env([1,1,0],[b.sum,4]).kr(2,gate:1)
+		/2
+}
+	)
+].p.trace.play
+});
 P.tune(\Sargon,{|i| Pfin(10,i) => Pset(\legato,[1,1,1,1,1,1,3,3,3,2].q,_)});
 
 //bass patch
 Song.resources.bassUp = (instrument:\sawTw,amp:0.2,out:0);
-P.synthV(\xuan, params: {|p b| [
+P.synthV(\an, params: {|p b| [
 	lyrics: "sargon, +, is, dead, but, is, captain, +, kirk, dead r",
 	lag: [0.1,    0.05, 0,  0,    0,   0,  0,       0, 0,    0,      ],
-	gender: Env([0.4,0.4],1),
+	// gender: Env([0.4,0.4],1),
 	vocalMode: \light,
 	tension: Env([-0.3,-0.3],1)
 ] }, music:{|p b e|
@@ -112,7 +204,7 @@ P.synthV(\xuan, params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.double(\xuan, filter: (midinote: _ - 12), music:{|p b e|
+P.double(\an, filter: (midinote: _ - 12), music:{|p b e|
 	{
 		e.playbuf
 		/ 5
@@ -120,7 +212,6 @@ P.double(\xuan, filter: (midinote: _ - 12), music:{|p b e|
 }
 );
 
- 
 P(\bassUp,start:\Sargon,syl:2,music:{|p b e| 
 	[
 		freq: [3,[ 2,6.5 ],[ 1.5,6.5 ]].df(\d,scale:\minor,octave:3,transpose: 6).q,
@@ -129,15 +220,30 @@ P(\bassUp,start:\Sargon,syl:2,music:{|p b e|
 	].asEvent =>
 	{|e|
 		VoiceLeading([
-			[3,2  ,1.5],
-			[\r,6.5,\_ ]
+			// [3,2  ,1.5],
+			// [\r,6.5,\_ ]
+			[3,6.5,\_]
 		],
 			e.dur.list
-	).df(\d,scale:\minor,octave:3).p =>Pbindf(_,\legato,1,transpose: 6) 
+	).df('a-',scale:\minor,octave:3).p =>Pbindf(_,\legato,1) 
 	=> {|i| i<>p.bassUp }  => _.play
 	}
 });
 ["His body is, but his ",[2.5,3, 1,-5.5, -6.5,1].dm(\c,transpose: 6)].addLine;
+P.synthV(\an, params: {|p b| [
+	lyrics: "his body + is but his",
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(\an, filter: (midinote: _ - 12), music:{|p b e| 
+	{
+		e.playbuf
+		/5
+	}.play
+} );
 P.tune('His body');
 P(\bassUp,syl:0,start:'His body',music:{|p b e| 
 	[
@@ -150,7 +256,22 @@ P(\bassUp,syl:0,start:'His body',music:{|p b e|
 	
 });
 ["consciousness is still in the receptacle ",[2,1,-7,2,4,2,3,4,3,1,-5].dm(\c,scale:\mixolydian,transpose: 6)].addLine;
-P.tune(\consciousness);
+P.synthV(\an, params: {|p b| [
+	lyrics: "consciousness + + is still in the receptacle + + +",
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+
+P.double(\an, filter: (midinote: _ - 12), music:{|p b e| 
+	{
+		e.playbuf
+		/5
+	}.play
+} );
+// P.tune(\consciousness);
 P(\bassUp,start:\consciousness,music:{|p b e| 
 	[
 		freq: [[-1, 1 ],[-3, 3 ]].df(\f,octave:3,transpose: 6).q,
@@ -159,23 +280,58 @@ P(\bassUp,start:\consciousness,music:{|p b e|
 	<> p.bassUp => _.play
 });
 P(\lick,start:\consciousness,music:{|p b e| 
-	[
-		freq: [5,4,3,2,1].df(\g,scale:\minor,transpose: 6).q,
-		amp:0.01,
-		dur: b.q,
-		instrument:\sparkTriangle
-	].pp
+	[5,4,3,2,1].df(\g,scale:\minor,transpose: 6).q
+	=>
+	{|i|
+		[
+			freq:i,
+			amp:0.02,
+			dur: b.q,
+			instrument:\sparkTriangle
+		].pp;
+		[
+
+			freq: i/2,
+			dur: b.q,
+			instrument:\pulse,
+			out:1
+		].pp
+	}
 });
 ["// it had been transferred into earlier.",[2,3,4,5,3,4,2,4,3,2].dm(\g,octave:4,transpose: 6)].addLine;
+P.synthV(\an, params: {|p b| [
+	lyrics: "it had been transferred + into + earlier + +",
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(\an, filter: (midinote: _ - 12), music:{|p b e|
+	{
+		e.playbuf
+		/ 5
+	}.play
+} );
 P.tune(\earlier);
 P(\lick,start:\earlier,syl:4,music:{|p b e| 
-	[
-		freq: [7,5,3].df(\d,scale:\mixolydian,transpose: 6).q,
-		amp:0.02,
-		dur:b.drop(1).q,
-		instrument:\sparkTriangle
-	].pp
-	
+		[7,5,3].df(\d,scale:\mixolydian,transpose: 6).q
+	=>{|i|
+		[
+			freq:i,
+			amp:0.02,
+			dur: b.drop(1).q,
+			instrument:\sparkTriangle
+		].pp;
+		[
+
+			freq: i/2,
+			dur: b.drop(1).q,
+			instrument:\pulse,
+			out:1
+		].pp
+	}
+
 });
 P(\bassUp,syl:2,start:\earlier,music:{|p b e| 
 	(
@@ -204,6 +360,16 @@ P(\machines,start:\SickBay,music:{|p b e|
 	}.play
 });
 [ "NURSE: All his vital organs are now working, Doctor. ",[3,4,5,3,7,6,5,4,11,5,4,3].dm(\b,scale:\mixolydian,transpose: 6) ].addLine;
+P.synthV(\feng, double:true, filter: (midinote: _ - 24),  params: {|p b| [
+	lyrics: "all his vital + organs + are now working + doctor +",
+	vocalMode: \opera
+
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 P.tune(\vital);
 P(\tuneTest,start:\vital,music:{|p b e| 
 	{

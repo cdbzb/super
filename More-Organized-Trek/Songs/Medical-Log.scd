@@ -10,7 +10,7 @@ Song.synthVTracks = EventWithDefault(
 			/ 5
 		}
 );
-["Medical Log. (boom) Stardate 4770.3. ",[4,3,2,1,-5, 1,-7,-4, -7,1,2,3, 1, -7,3].dm(\f)].addLine;
+["Medical Log. (boom) Stardate 4770.3. ",[4,3,2,1,-5, 1,-7,-4, -7,1,2,3, 1, -7,3].dm(\f,transpose: 6)].addLine;
 P.synthV(\xuan, filter: (midinote: _ - 12),  params: {|p b| [
 	lyrics: "medical + + - log star date four seven + seven + oh point three",
 	language: \english,
@@ -39,7 +39,7 @@ P.double(\xuan, filter: (midinote: _ - 12),  music:{ |p b e|
 // });
 
 ~justTheTune.('Stardate');
-[ "Do I list one death or two? " , [1,2,1,5,5,6,4.5].dm(\g)].addLine;
+[ "Do I list one death or two? " , [1,2,1,5,5,6,4.5].dm(\g,transpose: 6)].addLine;
 P.tune('one death',Pmul(\freq,0.5,_));
 
 P.synthV(\xuan, 
@@ -56,7 +56,7 @@ P.synthV(\xuan,
 		}.play
 });
 P.double(\xuan,
-	pbind:{|p b| [ dur:b.q, midinote:[ 1, 1, 1, 1, 1, -5, 2 ].dm(\g,4).q].p},  
+	pbind:{|p b| [ dur:b.q, midinote:[ 1, 1, 1, 1, 1, -5, 2 ].dm(\g,4,transpose: 6).q].p},  
 	filter: (midinote: _ - 12), 
 	music:{|p b e|
 		{
@@ -68,7 +68,7 @@ P.double(\xuan,
 );
 P(\bassUp,syl:2,start:'one death',music:{|p b e| 
 	[
-		freq: [1,1,-5,2].df(\g,octave:3).q,
+		freq: [1,1,-5,2].df(\g,octave:3,transpose: 6).q,
 		dur:b.drop(1).parse([1,2/3,[1/3,1],1]).q,
 		instrument: \stringyy,
 		amp:0.3
@@ -86,7 +86,7 @@ P(\chord,start:'one death',syl:2,music:
 	{ |p b e|
 		(
 			instrument: \convoDust,
-			strum:0.06,midinote:[1,3,5,11].dm(\g,scale:\minor),
+			strum:0.06,midinote:[1,3,5,11].dm(\g,scale:\minor,transpose: 6),
 			out: {[0,1,[0,1]].choose}!4,
 			amp:0.2
 		).play
@@ -95,7 +95,7 @@ P(\chord,start:'one death',syl:2,music:
 //[" When Kirk's body died, ","r"].addLine;
 //["Sargon was too far /*distant*/ ","r"].addLine;
 //["from his receptacle to transfer back. ","r"].addLine;
-["Sargon is dead. But is captain Kirk dead? (boom) ",[2,3,-5,1,-6,-7,1,-6,3.5,-7.5,-7.5].dm(\d,scale:\dorian)].addLine;
+["Sargon is dead. But is captain Kirk dead? (boom) ",[2,3,-5,1,-6,-7,1,-6,3.5,-7.5,-7.5].dm(\d,scale:\dorian,transpose: 6)].addLine;
 P.tune(\Sargon,{|i| Pfin(10,i) => Pset(\legato,[1,1,1,1,1,1,3,3,3,2].q,_)});
 
 //bass patch
@@ -118,12 +118,12 @@ P.double(\xuan, filter: (midinote: _ - 12), music:{|p b e|
 		/ 5
 	}.play
 }
-)
+);
 
  
 P(\bassUp,start:\Sargon,syl:2,music:{|p b e| 
 	[
-		freq: [3,[ 2,6.5 ],[ 1.5,6.5 ]].df(\d,scale:\minor,octave:3).q,
+		freq: [3,[ 2,6.5 ],[ 1.5,6.5 ]].df(\d,scale:\minor,octave:3,transpose: 6).q,
 		dur: b.drop(1).parse([5,2,1])+[0,0,p.durs['His body'].list[0]]=>_.flat=>_.q,
 		legato: [1,1,1].q
 	].asEvent =>
@@ -133,44 +133,44 @@ P(\bassUp,start:\Sargon,syl:2,music:{|p b e|
 			[\r,6.5,\_ ]
 		],
 			e.dur.list
-	).df(\d,scale:\minor,octave:3).p =>Pbindf(_,\legato,1) 
+	).df(\d,scale:\minor,octave:3).p =>Pbindf(_,\legato,1,transpose: 6) 
 	=> {|i| i<>p.bassUp }  => _.play
 	}
 });
-["His body is, but his ",[2.5,3, 1,-5.5, -6.5,1].dm(\c)].addLine;
+["His body is, but his ",[2.5,3, 1,-5.5, -6.5,1].dm(\c,transpose: 6)].addLine;
 P.tune('His body');
 P(\bassUp,syl:0,start:'His body',music:{|p b e| 
 	[
-		//freq: [5.5,4.5].df(\c,octave:3).q,
-		freq: [[11, 1 ],\r].df(\c,octave:3).q,
+		//freq: [5.5,4.5].df(\c,octave:3,transpose: 6).q,
+		freq: [[11, 1 ],\r].df(\c,octave:3,transpose: 6).q,
 		//dur:b.drop(1).parse([[1,1,1/2],[1/2,1,1]]).q,
 		dur:b.sum;
 	].p
 	<> p.bassUp => _.play
 	
 });
-["consciousness is still in the receptacle ",[2,1,-7,2,4,2,3,4,3,1,-5].dm(\c,scale:\mixolydian)].addLine;
+["consciousness is still in the receptacle ",[2,1,-7,2,4,2,3,4,3,1,-5].dm(\c,scale:\mixolydian,transpose: 6)].addLine;
 P.tune(\consciousness);
 P(\bassUp,start:\consciousness,music:{|p b e| 
 	[
-		freq: [[-1, 1 ],[-3, 3 ]].df(\f,octave:3).q,
+		freq: [[-1, 1 ],[-3, 3 ]].df(\f,octave:3,transpose: 6).q,
 		dur:b.parse([8,3]) + [0,p.durs[\earlier].list[(0..3)].sum] =>_.q
 	].p
 	<> p.bassUp => _.play
 });
 P(\lick,start:\consciousness,music:{|p b e| 
 	[
-		freq: [5,4,3,2,1].df(\g,scale:\minor).q,
+		freq: [5,4,3,2,1].df(\g,scale:\minor,transpose: 6).q,
 		amp:0.01,
 		dur: b.q,
 		instrument:\sparkTriangle
 	].pp
 });
-["// it had been transferred into earlier.",[2,3,4,5,3,4,2,4,3,2].dm(\g,octave:4)].addLine;
+["// it had been transferred into earlier.",[2,3,4,5,3,4,2,4,3,2].dm(\g,octave:4,transpose: 6)].addLine;
 P.tune(\earlier);
 P(\lick,start:\earlier,syl:4,music:{|p b e| 
 	[
-		freq: [7,5,3].df(\d,scale:\mixolydian).q,
+		freq: [7,5,3].df(\d,scale:\mixolydian,transpose: 6).q,
 		amp:0.02,
 		dur:b.drop(1).q,
 		instrument:\sparkTriangle
@@ -179,17 +179,17 @@ P(\lick,start:\earlier,syl:4,music:{|p b e|
 });
 P(\bassUp,syl:2,start:\earlier,music:{|p b e| 
 	(
-		//(freq:[1].df(\e)).play
+		//(freq:[1].df(\e),transpose: 6).play
 		//instrument:\sawSynthSustain,
 		//amp:[0.05,0.004,0.003,0.002,0.001],
-		freq: [3,13].df(\c,octave:[3,4]),
+		freq: [3,13].df(\c,octave:[3,4],transpose: 6),
 		dur:b.sum
 	)
 	++ p.bassUp => _.play
 });
 [ "[SickBay] (The medical team hook Kirk's body up to a life support machine.) ","r",[6] ].addLine;
 P(\machines,start:\SickBay,music:{|p b e| 
-	var chord=[1,3,5,7].df(\b,scale:\locrian);
+	var chord=[1,3,5,7].df(\b,scale:\locrian,transpose: 6);
 	{
 		{
 			var pitchClasses = Dseq(chord,inf);
@@ -203,14 +203,14 @@ P(\machines,start:\SickBay,music:{|p b e|
 		*Env([0,1,1,0],[5,5,10],\sin).kr(1,2)
 	}.play
 });
-[ "NURSE: All his vital organs are now working, Doctor. ",[3,4,5,3,7,6,5,4,11,5,4,3].dm(\b,scale:\mixolydian) ].addLine;
+[ "NURSE: All his vital organs are now working, Doctor. ",[3,4,5,3,7,6,5,4,11,5,4,3].dm(\b,scale:\mixolydian,transpose: 6) ].addLine;
 P.tune(\vital);
 P(\tuneTest,start:\vital,music:{|p b e| 
 	{
 		Duty.kr(
 			b.dq,
 			0,
-			[3,4,5,3,7,6,5,4,11,5,4,3].df(\b,scale:\mixolydian).dq
+			[3,4,5,3,7,6,5,4,11,5,4,3].df(\b,scale:\mixolydian,transpose: 6).dq
 		) => 
 		Pulse.ar(_ ,0.2,0.1) => Phaser2.ar(_,rate:0.1)
 		* 
@@ -226,7 +226,7 @@ P(\tuneTest,start:\vital,music:{|p b e|
 P(\bass,start:\vital,music:{|p b e| 
 	{
 		var freq = [
-			[1,4,2].df(\b,scale:\mixolydian).dq ,
+			[1,4,2].df(\b,scale:\mixolydian,transpose: 6).dq ,
 			b.parse([4,4,4]).dq,
 			1
 		].duty / [4,8] * [1.01,1,1.0033];

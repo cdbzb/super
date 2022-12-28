@@ -15,19 +15,19 @@
           ^this + (alteration / 2)
         }
 
-	degreescps { |root=0 octave=5 scale=\major tuning|
+	degreescps { |root=0 octave=5 scale=\major tuning transpose|
 
 		octave.isKindOf(Symbol).if{scale=octave;octave=5};
 		^this.collect{|i|
-			i.degreescps(root,octave,scale,tuning)
+			i.degreescps(root,octave,scale,tuning,transpose)
 		}
 	}
 
-	degreesmidi {|root=0 octave=5 scale=\major tuning|
+	degreesmidi {|root=0 octave=5 scale=\major tuning transpose|
 
 		octave.isKindOf(Symbol).if{scale=octave;octave=5};
 		^this.collect{|i|
-			i.degreesmidi(root,octave,scale,tuning)
+			i.degreesmidi(root,octave,scale,tuning,transpose)
 		}
 	}
 

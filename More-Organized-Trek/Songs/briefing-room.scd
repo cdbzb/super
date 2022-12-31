@@ -16,10 +16,54 @@ s.waitForBoot {
 [ "They'll be inside us, and we'll be ...","r" ].addLine;
 [ "MCCOY: It all seems rather indecent to me. ","r" ].addLine;
 [ "MULHALL: I'm not so certain of that, Doctor. It is scientifically fascinating. ","r" ].addLine;
-[ "SPOCK: Once inside their mechanical bodies, engineer, they can leave this planet,","-1 -5 1 2 3 2 3 4 3 2 3 1 -5 -6 -5 5 4 3 2 4 3 ".dm('a-', octave:4)].addLine; 
+[ "SPOCK: (boom) Once inside their mechanical bodies, engineer, they can leave this planet,"," -1 1 2 3 2 3 4 3 2 3 1 -5 -6 -5 5 4 3 2 4 3 ".dm('a-', octave:4)].addLine; 
 P.tune();
+Song.setTempoMap(\mechanical,"q e e q e e q e e e e e e ee e e Q E Q E ");
+P(\click, music: { |p b e|
+	[
+		instrument: \hihat,
+		dur: 1!32 warpTo: e.tempoMap => _.q
+	]
+	//.pp
+});
+Song.mechanicalBass = {
+	|i|
+	Pulse.ar(i.freqSeq / [1,2] * SinOsc.ar(4).range(0.999,1.001),0.1,0.1) 
+	* [0.3,1]
+	=> Mix.ar(_)
+	* Env.asr().kr(2,gate: i.gateSeq)
+	+ Env.perc().kr(0,gate:i.gateSeq * i.trigSeq)
+	=> MoogVCF.ar(_, fco:i.freqSeq*15 * i.gateSeq=>_.lag2(0.5), res:0.2, mul:1, add:0)
+	=> {|i| [i,Silent.ar(numChannels:1),Silent.ar(numChannels:1),0.2 * DWGReverbC1C3.ar(i, len:2000, c1:1, c3:10, mix:1, coefs:nil, perm:nil, doprime:0)]}
+	/ 2
+};
+P(\bass, music: { |p b e|
+	MegaBind(
+		[
+			[1, 5, 1, 5, 1, 6, 1, 5, 1, -7, -6.5  ]
+		].df('a-',3)
+		,
+		"e eq e eq e eq e eq qq qE Q".asBeats.warpTo(e.tempoMap),
+		[ ],
+		p.mechanicalBass
+		,
+		{|i|  Mix.ar(i)}
+	).play
+});
 [" travel back with us.","3 4 4 5 3 2 1".dm(\c) ].addLine;
 P.tune();
+P(\bass, music: { |p b e|
+	MegaBind(
+		[
+			[6, 3]
+		].df('a-',2)
+		,
+		b.parse([ [ 3, 0.33 ],4 ]),
+		[ ],
+		p.mechanicalBass,
+		{|i|  Mix.ar(i)}
+	).play
+});
 [ "With their knowledge, mankind could leap ahead ten thousand years. ","r" ].addLine;
 [ "KIRK: Bones, they'll show us medical advances,","r" ].addLine;
 [ "miracles you never dreamed possible.","r" ].addLine;
@@ -47,7 +91,8 @@ P('test2',start:\engineering,music: {|p b e|
 [ "Vessels this size with engines the size of walnuts. ","r" ].addLine;
 [ "SCOTT: Ach! You're joking. ","r" ].addLine;
 [ "SPOCK: No, he's not. ","r" ].addLine;
-[ "MCCOY: They're giants, and we're insects beside them. ","r" ].addLine;
+[ "MCCOY: They're giants, and we're insects beside them. "," -5 3 2 1 3 4 3 1 3 2".dm(\d) ].addLine;
+P.tune();
 [ "They could destroy us without meaning to. ","r" ].addLine;
 [ "And all he wants is the body of our captain and our second in command, too. Coincidence? ","r" ].addLine;
 [ "KIRK: They selected us as the most compatible bodies. ","1 2 3 4 5 4 3 7 11 6 5 4 6 5".dm(\d,5,\mixolydian) ].addLine;
@@ -104,9 +149,40 @@ P.tune(\attitude,_ <> [rest:[\,\,\,\,1,1,1,1,1,1,1,1,1].q].p);
 // ["MULHALL: Well, if we all agree, I'm willing to host Thalassa's mind.","r"].addLine;
 //[" ( boom x 7 ) I'm a scientist.  ( boom x 7 ) and I'm","3 4 6 5 7 3 4 11 12 13 14 13 5 3 4 6 5 7 3 4 5 15  ".dm(\b)].addLine;g
 [" ( boom x 7 ) I'm a scientist.  ( boom x 7 ) and I'm","3 4 6 5 7 3 4 11 7 11 12 11 3 3 4 6 5 7 3 4 5 15  ".dm(\b)].addLine;
+
+Song.synthVTracks=EventWithDefault(
+	\default, {
+		{
+			|i|
+			var early = 0.5;
+			var dryAmount = 1;
+			EarlyRef.ar(i, source:[2,3,2], receiver:[0,0,0], roomsize:[4,5,6], hw:0.2, b:0.97, n:0, p:0, allp_lens:nil, allp_c:0.7)
+
+			=> DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:1-early,)
+			+ ( i * dryAmount )
+			/ 
+		}
+	}
+);
 Song.setQuarters(\scientist,"q q q q qqqq q q q e e ee e eqq q q q q qqqq q q q q".asBeats);
+P.synthV(\feng,  filter: (midinote: _ - 12),  params: {|p b| [
+	lyrics: "r r r r r r r I'm a sigh - entist + r r r r r r r and I'm",
+	vocalMode: \Opera
+] }, music:{|p b e|
+	{
+		e.playbuf
+		  => p.synthVTracks.at(e.key.postln).()
+	}.play
+});
+P.double(\feng, filter: (midinote: _ - 12), music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}
+	// .play
+});
 //P.click(\scientist);
-P.tune(\scientist, _ <> [rest:[\,\,\,\,\,\,\,1,1,1,1,1,1,\,\,\,\,\,\,\,1,1].q].p);
+// P.tune(\scientist, _ <> [rest:[\,\,\,\,\,\,\,1,1,1,1,1,1,\,\,\,\,\,\,\,1,1].q].p);
 P(\jank,start:\scientist,music:{|p b e| 
 	
 	[
@@ -160,6 +236,30 @@ MegaBind(
 	).play
 });
 [" willing I'm willin I'm willing I'm", "14 13 11 13 12 5 14 13 11".dm(\b)].addLine;
+P(\cymbal, music: { |p b e|
+	(
+		instrument: \cymbalsDS,
+		amp:0.06
+
+	).play
+});
+P.synthV(\feng, filter: (midinote: _ - 12),  params: {|p b| [
+	lyrics: "willing + I'm willing + I'm willing + I'm ",
+	vocalMode: "Opera"
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}//.play
+});
+P.double(\feng, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}
+	.play
+});
+
 
 //Song.durs['willin ']=Song.durs['willin '].list * 0.9 => _.q;
 Song.setQuarters('willin ', "qe eqe e qe eqe e qe eqe e ");
@@ -180,15 +280,17 @@ P('vocal',start:\willin,rpp:VocalRPP(\willin,\vocal1),lag:-1,music: {|p b e|
 			=> DWGReverbC1C3_16.ar(_, len:2000, c1:1, c3:10, mix:0.15, coefs:nil, perm:nil, doprime:0)
 			//=> Decimator.ar(_, rate:44100.0, bits:6, mul:1.0, add:0)
 			* [0.5,0.3]
-			/4
-		}.play
+			*[0.3,1] /1.4 //make room for feng!!
+			/4.5
+		}
+		.play
 	} 
 });
 P(\cymbal,start:'willin ',music:{|p b e| 
 (instrument:\cymbal,amp:1,length:4).play	
 });
 //P.click('willin ');
-P.tune('willin ');
+P.tune('willin ', _ <> [instrument:\stringyy,amp:0.7].p);
 
 ( Song.willingDrum={| length = 12 p b e out |
 	out.isNil.if{out = Song.willingBus};
@@ -240,6 +342,19 @@ P(\bass,start:'willin ',music:{|p b e|
 					dur: 0.5,
 					amp:0.05
 	].pm(\pluckD).fin(24).play(TempoClock.newFromQuarters(p.quarters[e.start]))
+});
+P(\bassDouble, music: { |p b e|
+	
+	[
+
+					root:-1,
+					// amp: 0.06,
+					dur: 0.5,
+					degree: 8.dup(8)++2.1.dup(4)++5.dup(4)=>_.flatten=>_.q(inf)-1,
+					octave:2,
+					out:[0,1],
+					instrument: \sawSynth
+	].p.fin(24).play(TempoClock.newFromQuarters(p.quarters[e.start]))
 });
 P(\oldArr,start:\willing,music:{|p b e| 
 	
@@ -295,6 +410,20 @@ P(\oldArr,start:\willing,music:{|p b e|
 });
 ["willing la laaa la", " 13 12 11 7 6".dm(\b,5)].addLine;
 Song.setQuarters('la laaa', "qe eqe e qe qq");
+P.synthV(\feng, filter: (midinote: _ - 12),  params: {|p b| [
+	lyrics: "willing + I'm willing +",
+	vocalMod: \Opera
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(\feng, filter:(midinote:_), music:{ |p b e| 
+	{
+		e.playbuf
+	}.play
+});
 P(\drums,start:'la laaa',music:{|p b e| 
 	fork{
 		{In.ar(p.willingBus)}.play.dur(b.sum);
@@ -321,7 +450,23 @@ P(\bass,start:'la laaa la',music:{|p b e|
 });
 Song.mindKey = 'e-';
 ["to host Thalassa's mind",[4,3,5,4,3,7, 2, 3, 4,5, 6].dm( Song.mindKey, 6, \mixolydian)].addLine;
-Song.durs['to host']= Song.durs['to host'].list.dropLast.q;
+P.synthV(\feng, params: {|p b| [
+	lyrics: "to host thalassas + + mind",
+	vocalMode: \Opera
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(\feng, filter: (midinote:_-12), music: {|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+}
+);
+// Song.durs['to host']= Song.durs['to host'].list.dropLast(1).q;
 Song.setQuarters('to host',"E Q E Q E Qqe e e x x ".asBeats);
 P.tune('to host', _.fin(6));
 P(\lick,start:'to host',syl:5,music:{|p b e| 
@@ -349,6 +494,15 @@ P(\chords,start:'to host',music:{|p b e|
 
 Song.opportunityKey='b';
 ["The opportunity is an extraordinary one ","-1 3.5 3.5 3.5 3.5 2 2 1 2 3 5 4.5 2 1 -7.5".dm(Song.opportunityKey,6,\minor)].addLine;//p14
+P.synthV(\feng, filter: (midinote: _ - 12),  params: {|p b| [
+	lyrics: "r the opportunity + + + + is an extrordinary + + + + one",
+	vocalMode: \Opera
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 P(\chords,start:\extraordinary,syl:0,music:{|p b e| 
 	MegaBind(
 			[
@@ -394,6 +548,15 @@ P(\bass,start:\extraordinary,music:{|p b e|
 	].pp
 });
 [" for experimentation, observation. ","2 3 4 5 -6 1 1 -7 5 5 4 3 3 2  1".dm('f#',6)].addLine;//p14ngyy
+P.synthV(\feng,filter: (midinote: _ - 12),  params: {|p b| [
+	lyrics: "for experimentation + + + + + - obser + - vation + - -",
+	vocalMode: \Opera
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 P(\bass,start:\experimentation,music:{|p b e| 
 	[
 		freq: [\r, 12, 15, 12].df(p.opportunityKey,2).q,
@@ -465,7 +628,7 @@ P(\hat,start:\involved,music:{|p b e|
 	[
 		dur: e.tempoMap.mapBeats("ee e x x q e e x x x x q q q e x x ee e".asBeats).q,
 		instrument: \hat_808,
-		out: Effect( EchoNone.ar(_,1, delaytime:0.5) / 27).bus.index
+		out: Effect.bus({|i|  EchoNone.ar(i,1, delaytime:0.5) + WhiteNoise.ar(0.00011)    })
 	].pp;
 });
 P(\bass,start:\involved,music:{|p b e|  // passing tone right before end please
@@ -497,17 +660,17 @@ P(\chords,start:\involved,music:{|p b e|
 });
 ["MCCOY: Then I'll still want one question answered to my satisfaction.", "1 2 -8 1 3 4 2 5 1".dm(\f, 5, \diminished) ++ "3 4 5 1 6.5 6".dm(\c, 5, \mixolydian) ].addLine;//p13
 P(\dimchords,start:\answered,music:{|p b e| 
-	[
-		freq: [ [1,3,5,7].df(\d,5,\diminished),[1,3,5,7].df('c#',5,\diminished) ].q,
-		dur: b.parse([9,5]).q,
-		legato:1,
-		instrument:\wash,
-		att:b[0..8].sum,
-		rel:b[9..14].sum * 4,
-		freqLag:1,
-		amp:0.05
+[
+	freq: [ [1,3,5,7].df(\d,5,\diminished),[1,3,5,7].df('c#',5,\diminished) ].q,
+	dur: b.parse([9,5]).q,
+	legato:1,
+	instrument:\wash,
+	att:b[0..8].sum,
+	rel:b[9..14].sum * 4,
+	freqLag:1,
+	amp:0.05
 
-	].pm(\wash).play
+].pm(\wash).play
 });
 P.tune(\answered);
 P.tune('answered to', {|i| Pbindf(i,\legato,0.9, \instrument,\stringyy,\wet,0.3,\release,2,\amp,0.2) => Pmul(\freq,1/[2,4],_)});

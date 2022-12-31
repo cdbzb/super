@@ -1,11 +1,11 @@
 EventWithDefault  {
 	var <>event;
-	*new{ |...args| ^super.new.init(args) }
-	init{|...args| 
+	*new { |...args| ^super.new.init(args) }
+	init {|...args| 
 		event = Event.newFrom(*args)
 	}
-	at{|key|
-		^event.at(key)
+	at {|key|
+		^( event.at(key) ? event.at(\default) )
 	}
 	doesNotUnderstand { |selector value|
 		( selector.asString.last == $_ ).if{

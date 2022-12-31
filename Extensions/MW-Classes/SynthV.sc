@@ -91,6 +91,15 @@ SynthV{
 				'phonesetOverride': "arpabet",
 				'backendType': "SVR2AI",
 				'version': "104"
+			),
+			mo: (
+				'name': "Mo Chen",
+				'language': "mandarin",
+				'phoneset': "xsampa",
+				'languageOverride': "english",
+				'phonesetOverride': "arpabet",
+				'backendType': "SVR2AI",
+				'version': "104"
 			)
 
 		)
@@ -110,7 +119,14 @@ SynthV{
 		^project => JSON.stringify(_) != try{ String.readNew(File( file ,"r") )}
 	}
 	needsRender {
-		^( File.mtime(file) > File.mtime(location +/+ "synthV_MixDown.wav") )
+		var mix = location +/+ "synthV_MixDown.wav";
+		^(
+			case 
+			{File.exists(mix).not} {true}
+			{ File.mtime( file ) > File.mtime( mix )}{true} //file is project file
+			{false}
+		)
+			
 	}
 	refresh {
 		this.checkDirty.if{
@@ -211,7 +227,11 @@ SynthV{
 			i.postln;
 			case 
                         { [\dur,\legato,\lag].includes(i) }{nil}
-			{ i == \vocalMode} {this.voice.put(\vocalModePreset, event.vocalMode)}
+			{ i == \vocalMode} {
+				this.voice.put(\vocalModePreset, event.vocalMode);
+				this.voice.put(\vocalModeParams, (( event.vocalMode ): 100))
+			}
+			{ i.asString.contains("param") }{this.voice.put(i, event.at(i))}
                         { envelopes.includes(i)} { this.setEnv(i,event.at(i))}
                         { i == \language }      {\LANGUAGE.postln; project.tracks[0].mainRef.database.put(\languageOverride,event.at(i)).postln }
                         { i == \phoneset}      { project.tracks[0].mainRef.database.put(\phonesetOverride,event.at(i)) }

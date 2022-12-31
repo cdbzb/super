@@ -98,7 +98,7 @@ Rec {  // a little media item that knows the durations of an associated Song sec
 RecEnv : Rec {
 	classvar directory = "/Users/michael/tank/super/Envelopes";
 	*initClass { File.exists(directory).not.if{File.mkdir(directory)}; }
-	*new {|name section tail| ^super.new(name,section,tail, directory, 1024)}
+	*new {|name section tail=0| ^super.new(name,section,tail, directory, 1024)}
 	writeFiles { buffer.write(path++".wav", "wav", "int16");} //epos sampleRate 
 	inputUgen { ^{SoundIn.ar(0) => Amplitude.ar(_)} }
 }

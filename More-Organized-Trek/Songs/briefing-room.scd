@@ -16,15 +16,18 @@ s.waitForBoot {
 [ "They'll be inside us, and we'll be ...","r" ].addLine;
 [ "MCCOY: It all seems rather indecent to me. ","r" ].addLine;
 [ "MULHALL: I'm not so certain of that, Doctor. It is scientifically fascinating. ","r" ].addLine;
-[ "SPOCK: Once inside their mechanical bodies, engineer, they can leave this planet, travel back with us.","r" ].addLine;
+[ "SPOCK: Once inside their mechanical bodies, engineer, they can leave this planet,","-1 -5 1 2 3 2 3 4 3 2 3 1 -5 -6 -5 5 4 3 2 4 3 ".dm('a-', octave:4)].addLine; 
+P.tune();
+[" travel back with us.","3 4 4 5 3 2 1".dm(\c) ].addLine;
+P.tune();
 [ "With their knowledge, mankind could leap ahead ten thousand years. ","r" ].addLine;
 [ "KIRK: Bones, they'll show us medical advances,","r" ].addLine;
 [ "miracles you never dreamed possible.","r" ].addLine;
-[ "Scotty, engineering advances.","1 2 3 4".dm,[1,1,1,1] ].addLine;
+[ "Scotty, engineering advances.","r" ].addLine;
 P.tune(\engineering);
 P('test2',start:\engineering,music: {|p b e|
 	{
-		a = RecEnv(\test2,\engineering,arm:true)
+		a = RecEnv(\test2,\engineering)//.arm
 		.playbuf.()
 		* Gendy1.arWidth(freq:445)
 	}.play

@@ -8,7 +8,7 @@ SynthV{
 	var <name, <project, <file,<location,<buffer, <key, <song, <section;
 	var <>firstNoteOffset = 0;
 	var <> offset = 0;
-	var <>double;
+	var <>double, <>take;
 	*new {|key name take double| registry.at(key, name, take).isNil.if {
 		 ^super.new.init(key, name, take, double) 
 	 }{
@@ -148,8 +148,8 @@ SynthV{
 	*load { |path|
 		^String.readNew(path.standardizePath => File(_,"r")) => JSON.parse(_)
 	}
-	init{ |n k take d|
-		name = n; double = d;
+	init{ |n k t d|
+		name = n; double = d; take = t;
 		this.class.registry.put(n,k,(take ? \default),this);
 		key = k.asString.replace(Char.space,$_);
 		song.isNil.if{ song = Song.currentSong };
@@ -271,6 +271,7 @@ SynthV{
 	findPartBefore{
 		^ Song.pts
 		.select{|i| i.name.contains(name.asString)}
+		.select{|i| take == i.synthV.take}
 		.select{|i| i.name.contains(key.asInteger - 1 => _.asString)}
 		.unbubble
 	}

@@ -160,7 +160,9 @@ Song.synthVTracks=EventWithDefault(
 
 			=> DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:1-early,)
 			+ ( i * dryAmount )
-			/ 
+			/ 6 
+			=> HPF.ar(_,100)
+			=> DCompressor.ar(_, sidechainIn:0, sidechain:0, ratio:4, threshold:-40, attack:0.1, release:100.1, makeup:0.5, automakeup:1)
 		}
 	}
 );
@@ -231,7 +233,8 @@ MegaBind(
 	)},
 		{|i|
 			Splay.ar(i).distort
-			=> Mix.ar(_) => Pan2.ar(_,0)
+			// => Mix.ar(_) 
+			=> Pan2.ar(_,0)
 		}
 	).play
 });
@@ -243,8 +246,10 @@ P(\cymbal, music: { |p b e|
 
 	).play
 });
-P.synthV(\feng, filter: (midinote: _ - 12),  params: {|p b| [
+P.synthV(\feng, prepend:true, filter: (midinote: _ - 12),  params: {|p b| [
 	lyrics: "willing + I'm willing + I'm willing + I'm ",
+	lag: [0.06,0,0,0,0,0,0,0,0],
+	legato:[1,0.9,1,1,0.9,1,1,0.9,1],
 	vocalMode: "Opera"
 ] }, music:{|p b e|
 	{
@@ -252,7 +257,7 @@ P.synthV(\feng, filter: (midinote: _ - 12),  params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}//.play
 });
-P.double(\feng, music:{|p b e|
+P.double(\feng, prepend:true, music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
@@ -293,18 +298,19 @@ P(\cymbal,start:'willin ',music:{|p b e|
 P.tune('willin ', _ <> [instrument:\stringyy,amp:0.7].p);
 
 ( Song.willingDrum={| length = 12 p b e out |
+	var subdivisions = (snare: 4, kick:2);
 	out.isNil.if{out = Song.willingBus};
 	Ppar( [
 		[
 			instrument:\kick,
-			amp:1,
-			dur:"x0x0|x0x0|xx0x|xxxx".asDrumPat(3,inf),
+			amp:0.5,
+			dur:"x0x0|x0x0|xx0x|xxxx".asDrumPat(subdivisions.kick,inf),
 		].p,
 		Pfxb(
 			Pbind(*[
 				instrument:\snare,
-				dur:"0000x000|0000x000|0000x00x|0000x00x".asDrumPat(4,inf),
-				amp:0.2
+				dur:"0000x000|0000x000|0000x00x|0000x00x".asDrumPat(subdivisions.snare,inf),
+				amp:0.40
 			]),
 			\dst
 		),
@@ -412,7 +418,7 @@ P(\oldArr,start:\willing,music:{|p b e|
 Song.setQuarters('la laaa', "qe eqe e qe qq");
 P.synthV(\feng, filter: (midinote: _ - 12),  params: {|p b| [
 	lyrics: "willing + I'm willing +",
-	vocalMod: \Opera
+	vocalMode: \Opera
 ] }, music:{|p b e|
 	{
 		e.playbuf

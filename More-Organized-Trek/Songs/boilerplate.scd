@@ -25,8 +25,14 @@ Song.encoders=~encoders;
 		|p b e att=3 sus=5 rel=6 chord=#[1,2,4,5,6,8] aTune mix=0.5| 
 		{  
 			var tune = aTune ? p.tune[e.start].list;
-			// account for preroll!!
-			var dursWithPreroll = b[0] + Song.preroll => _.bubble ++ b.drop(1);
+
+			//no preroll adjustment if synthV present
+			//var dursWithPreroll = e.synthV.isNil.if{
+			//	b[0] + Song.preroll => _.bubble ++ b.drop(1) 
+			//}{
+			//	b 
+			//}; 
+			var dursWithPreroll = b[0] + (-1 * e.lag) => _.bubble ++ b.drop(1);
 			var freqs = Demand.ar(
 				TDuty.ar(dursWithPreroll.dq,1,1),
 				1,

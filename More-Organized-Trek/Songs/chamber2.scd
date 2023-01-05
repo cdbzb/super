@@ -886,7 +886,6 @@ P('tune24',music:{ |p|
 });
 ['after all these centuries ', [7,11,16,15, 15,16,14].dm('e',scale:\harmonicMinor) ].addLine;
 // P.tune();
-Song.preroll_(0);
 P.synthV(\xuan,
 	filter: (midinote: 50!7),
 	// pbind: {|p b| [ dur:p.durs[Song.section(\centuries)],midinote: 50!7 ].p},
@@ -943,7 +942,7 @@ P(\wobble,music: [
 	P.synthV(\xuan, filter: (midinote: 50!6),  params: {|p b| [
 		lyrics: "we can wait a few more hours",
 	] }, music:{|p b e|
-	p.vocodeTune.(p,b,e,amp:0.20,dur:b.sum+1,chord:[1,2,3]);
+	p.vocodeTune.(p,b,e,amp:0.14,dur:b.sum+1,chord:[1,2,0.3,0.2]);
 	});
 	P(\resolution,syl:5,music:{ |parent durs|
 		[
@@ -971,12 +970,12 @@ P('tune27',music:Song.currentSong.pbind[27]
 	);
 	['/*SARGON [OC]:*/ (beat) Then you may',[1,5,5,4].dm('c#')].addLine;
 
-P.synthV(\xuan, filter: (midinotes: [50,50,57,64]), params: {|p b| [
+P.synthV(\xuan, filter: (midinotes: [67,67,67,67]), params: {|p b| [
 		// lyrics: "r zen yu mei",
 		lyrics: "r then you may"
 	] }, music:{|p b e|
 
-	p.vocodeTune.(p,b,e,amp:0.14,dur:b.sum+1,chord:[1,2,3]);
+	p.vocodeTune.(p,b,e,amp:0.14,dur:b.sum,chord:[2,1,0.5,0.2]);
 	}
 );
 	P('tune28',music:Song.currentSong.pbind[28]
@@ -989,12 +988,16 @@ P('extra-note28',music: (
 )
 	);
 	[' go as free -- ly as you came.',[13,12,13,14,13,12,7,11].dm('c#')].addLine;
+
 P.synthV(\xuan, filter: (midinote: 64!8), params: {|p b| [
 		// lyrics: "go,   az,    fri, -,  li, az,    yu, keim",
 		// phonemes: ["", "a z", "",  "", "", "a z", "", "k e i m", ]
-		lyrics: " go as free - lee as you came"
+		lyrics: " go as free - lee as you came",
+		lag: [0,0,0,0,0,0,0,0.08],
+		legato: [1,1,1,1,0.95,1,0.8,1],
+		defaultVibratoDepth:0.1
 	] }, music:{|p b e|
-		p.vocodeTune.(p,b, e, amp:0.14, dur:b.sum+2, chord:[2, 0.5]);
+		p.vocodeTune.(p,b, e,att:0,sus:b.sum+2,rel:1, amp:0.14, dur:b.sum+2, chord:[2, 0.5]);
 	}
 );
 P.tune();

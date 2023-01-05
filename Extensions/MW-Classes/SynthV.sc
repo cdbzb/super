@@ -372,7 +372,7 @@ SynthV{
 					1,
 					synthV.buffer.(),
 					startPos: ( synthV.offset ) * BufSampleRate.kr(synthV.buffer.()),
-					doneAction:2
+					doneAction:0
 				)},
 				take: take,
 				params: params,

@@ -43,14 +43,16 @@ Song.encoders=~encoders;
 			/10
 		}.play(s,Song.carrierBus.index)
 	};
-	Song.sargonModulator = {|rpp dur modGain=1 echo=1| { 
+	Song.sargonModulator = {|rpp dur modGain=1 echo=1 playbuf| { 
 			Line.kr(dur:dur,doneAction:2);
 			rpp = (rpp.class == VocalRPP).if{
 				rpp
 			} {
 				rpp=Song.resources.at(rpp)
 			};
-			PlayBuf.ar( 1,rpp.buffer.()) 
+			playbuf.notNil.if{playbuf}{
+				PlayBuf.ar( 1,rpp.buffer.()) 
+			}
 			=> {|i| echo* EchoNone.ar(i,1,0.4,2) +(i * (1-echo)) } * 2
 			//=> MoogFF.ar(_,8000,1)
 			=> LPF.ar(_,6000)
@@ -75,20 +77,28 @@ Song.encoders=~encoders;
 	Song.vocodeTune = { 
 		|p b e rppName amp=0.2 att=3 sus=1 rel=5 dur=10 chord=#[1,2,4,5,6,8] tune out=0 modGain=1 echo=1 mix=0.5|
 		var foa = Bus.audio(s,1);
-		v = Group.new(addAction:\addToTail);
+		var synthVbuffer;
+		( v.isNil or: { v.isRunning.not }.try )
+		.if{
+			v = Group.new(addAction:\addToTail).register 
+		};
 		e.rpp.notNil.if{rppName = e.rpp};
-		Synth(\soundInMorph,[
-			modulator: Song.modulatorBus.index,
-			carrier: Song.carrierBus.index,
-			amp:0.32,
-			amp:0.2, // WHEN buses are set to 1 channel otherwise comment out!
-			amp:amp, 
-			dur:dur,
-			out:foa.index, // out
+		e.synthV.notNil.if{synthVbuffer=e.playbuf};
+		 {Song.vocoderSynth.isPlaying}.try.notNil.if
+		 { Song.vocoderSynth = 
+			 Synth(\soundInMorph,[
+				 modulator: Song.modulatorBus.index,
+				 carrier: Song.carrierBus.index,
+				 amp:0.32,
+				 amp:0.2, // WHEN buses are set to 1 channel otherwise comment out!
+				 amp:amp, 
+				 dur:dur,
+				 out:foa.index, // out
 
-			target:v
-			//out:out
-		]);
+				 target:v
+				 //out:out
+			 ]).register;
+		 };
 		// restore line above to 'out' to get rid of ambisonics!!
 		{
 			In.ar(foa.index) 
@@ -101,7 +111,7 @@ Song.encoders=~encoders;
 			target:v,
 			addAction:\addToTail);
 		Song.sargonCarrier.(p,b,e,att, sus, rel, chord,tune,mix);
-		Song.sargonModulator.(rppName,dur,modGain,echo)
+		Song.sargonModulator.(rppName,dur,modGain,echo,synthVbuffer)
 	};
 	Song.laMer = Song.laMer ?  Buffer.read(s,"~/tank/super/samples/La_Mer_clean.aif".standardizePath);
 );

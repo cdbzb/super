@@ -231,11 +231,12 @@ SynthV{
 				this.voice.put(\vocalModePreset, event.vocalMode);
 				this.voice.put(\vocalModeParams, (( event.vocalMode ): 100))
 			}
-			{ i.asString.contains("param") }{this.voice.put(i, event.at(i))}
-                        { envelopes.includes(i)} { this.setEnv(i,event.at(i))}
-                        { i == \language }      {\LANGUAGE.postln; project.tracks[0].mainRef.database.put(\languageOverride,event.at(i)).postln }
-                        { i == \phoneset}      { project.tracks[0].mainRef.database.put(\phonesetOverride,event.at(i)) }
-                        { true }                 { this.setNotes(i,event.at(i)) }
+                        { i.asString.contains("param") } { this.voice.put(i, event.at(i))}
+                        { i == \defaultVibratoDepth}     { this.voice.put(\dF0Vbr,event.at(i))}
+                        { envelopes.includes(i)}         { this.setEnv(i,event.at(i))}
+                        { i == \language }               { \LANGUAGE.postln; project.tracks[0].mainRef.database.put(\languageOverride,event.at(i)).postln }
+                        { i == \phoneset}                { project.tracks[0].mainRef.database.put(\phonesetOverride,event.at(i)) }
+                        { true }                         { this.setNotes(i,event.at(i)) }
 		};
 		//this should be done with an array flop and pairsDo instad but...
 		this.filterRests 

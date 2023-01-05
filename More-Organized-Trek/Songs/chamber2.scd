@@ -185,7 +185,8 @@ P.synthV(\xuan,
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		=> p.synthVTracks.at(e.key).()
+		=> Vocoder.ar(Saw.ar([ 50,600.rand ]), _, num:12, low:100, high:5000, q:0.02, hpf:5000, hpfscal:0.05, outscal:25)
+		// => p.synthVTracks.at(e.key).()
 	}.play
 }
 );
@@ -577,8 +578,8 @@ P(\figure,music:[
 //MUTEDamp:0.2,
 //MUTED)
 //MUTED);
-P(\chord,syl:2,music:
-	[
+
+P(\chord,syl:2,music: {|p b e| [
 		instrument:\sawSynthSustain,
 		att:1.4,
 		rel:3,
@@ -587,15 +588,15 @@ P(\chord,syl:2,music:
 		out:Effect.bus(MoogFF.ar(_,5000,3),out:2,inputChannels:2),
 		addAction:\addToHead,
 		//			out:2,
-		freq:[5,15,24,27].df(octave:3),
+		freq:[5,15,24,27].df(\c,octave:3),
 		strum:0.02,
 		dur: 
 		(Song.parse(16,[2],3)+1.3).q
 		,
 		//			dur:2,
 		amp:0.06,
-	].p.fin
-);
+	].pp
+});
 ['/*MCCOY:*/ That`s the most ri (boom) ',"c#4 a3 d#4 b3 r "].addLine; 
 P.synthV(\xuan, params: {|p b| [
 	lyrics: "That's the most ri r",
@@ -884,6 +885,19 @@ P('tune24',music:{ |p|
 	=>_.play 
 });
 ['after all these centuries ', [7,11,16,15, 15,16,14].dm('e',scale:\harmonicMinor) ].addLine;
+// P.tune();
+Song.preroll_(0);
+P.synthV(\xuan,
+	filter: (midinote: 50!7),
+	// pbind: {|p b| [ dur:p.durs[Song.section(\centuries)],midinote: 50!7 ].p},
+	params: {|p b| [
+	lyrics: "after + all these centuries + +",
+	] }, music:{|p b e|
+		p.vocodeTune.(p,b,e,e.rpp,amp:0.32,dur:b.sum,att:1,sus:b.sum,rel:2,out:3)
+		// {In.ar( p.carrierBus.index )}.play
+
+});
+
 P(\chord,syl:3,music:(
 	amp:0.03,
 	strum:0.06,
@@ -924,9 +938,13 @@ P(\wobble,music: [
 	].pm(\sawSynth)
 
 );
-P('tune25',music:Song.currentSong.pbind[25]
-	);
+// P('tune25',music:Song.currentSong.pbind[25]);
 	['we can wait a few more hours',[1,2,3,4,5,6,5].dm('d')].addLine;
+	P.synthV(\xuan, filter: (midinote: 50!6),  params: {|p b| [
+		lyrics: "we can wait a few more hours",
+	] }, music:{|p b e|
+	p.vocodeTune.(p,b,e,amp:0.20,dur:b.sum+1,chord:[1,2,3]);
+	});
 	P(\resolution,syl:5,music:{ |parent durs|
 		[
 			freq:[2,1].df('g',octave: 4).q,
@@ -952,6 +970,15 @@ P('tune26',music:Song.currentSong.pbind[26]
 P('tune27',music:Song.currentSong.pbind[27]
 	);
 	['/*SARGON [OC]:*/ (beat) Then you may',[1,5,5,4].dm('c#')].addLine;
+
+P.synthV(\xuan, filter: (midinotes: [50,50,57,64]), params: {|p b| [
+		// lyrics: "r zen yu mei",
+		lyrics: "r then you may"
+	] }, music:{|p b e|
+
+	p.vocodeTune.(p,b,e,amp:0.14,dur:b.sum+1,chord:[1,2,3]);
+	}
+);
 	P('tune28',music:Song.currentSong.pbind[28]
 	=>Pbindf(_,\amp,[0].q++[0.1].q(inf))
 );
@@ -962,8 +989,15 @@ P('extra-note28',music: (
 )
 	);
 	[' go as free -- ly as you came.',[13,12,13,14,13,12,7,11].dm('c#')].addLine;
-	P('tune29',music:Song.currentSong.pbind[29]
+P.synthV(\xuan, filter: (midinote: 64!8), params: {|p b| [
+		// lyrics: "go,   az,    fri, -,  li, az,    yu, keim",
+		// phonemes: ["", "a z", "",  "", "", "a z", "", "k e i m", ]
+		lyrics: " go as free - lee as you came"
+	] }, music:{|p b e|
+		p.vocodeTune.(p,b, e, amp:0.14, dur:b.sum+2, chord:[2, 0.5]);
+	}
 );
+P.tune();
 SynthDef(\cleanPluck,{
 	DWGPlucked2.ar(
 		\freq.kr(300),

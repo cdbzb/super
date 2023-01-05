@@ -150,7 +150,7 @@ P.tune(\attitude,_ <> [rest:[\,\,\,\,1,1,1,1,1,1,1,1,1].q].p);
 //[" ( boom x 7 ) I'm a scientist.  ( boom x 7 ) and I'm","3 4 6 5 7 3 4 11 12 13 14 13 5 3 4 6 5 7 3 4 5 15  ".dm(\b)].addLine;g
 [" ( boom x 7 ) I'm a scientist.  ( boom x 7 ) and I'm","3 4 6 5 7 3 4 11 7 11 12 11 3 3 4 6 5 7 3 4 5 15  ".dm(\b)].addLine;
 
-Song.synthVTracks=EventWithDefault(
+( Song.synthVTracks=EventWithDefault(
 	\default, {
 		{
 			|i|
@@ -165,7 +165,7 @@ Song.synthVTracks=EventWithDefault(
 			=> DCompressor.ar(_, sidechainIn:0, sidechain:0, ratio:4, threshold:-40, attack:0.1, release:100.1, makeup:0.5, automakeup:1)
 		}
 	}
-);
+));
 Song.setQuarters(\scientist,"q q q q qqqq q q q e e ee e eqq q q q q qqqq q q q q".asBeats);
 P.synthV(\feng,  filter: (midinote: _ - 12),  params: {|p b| [
 	lyrics: "r r r r r r r I'm a sigh - entist + r r r r r r r and I'm",

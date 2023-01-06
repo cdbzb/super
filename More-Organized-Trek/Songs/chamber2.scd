@@ -598,10 +598,13 @@ P(\chord,syl:2,music: {|p b e| [
 	].pp
 });
 ['/*MCCOY:*/ That`s the most ri (boom) ',"c#4 a3 d#4 b3 r "].addLine; 
-P.synthV(\xuan, params: {|p b| [
+P.synthV(\mo, params: {|p b| [
 	lyrics: "That's the most ri r",
+	paramTension: 1,
+	loudness: Env([3, 0, 3, 0],b.parse([ 1,1,1,2 ])),
 
-	vocalMode: \Passionate
+	// vocalMode: \Passionate
+	vocalMode: \Clear
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -625,10 +628,14 @@ P(\line,music:{
 P(\bassnote,syl:3,music:(degree:3,octave:[3,2],amp:0.4,dur:2,)
 		);
 		['diculous statement I`ve ever heard. An ',[5,2,1,4,3,1,2,3,4.5,].dm('b-')++[5].dm(\d)].addLine; 
-		P.synthV(\xuan, filter: (midinote: _ - 12),  params: {|p b| [
+		P.synthV(\mo,double:true, filter: (midinote: _ - 12),  params: {|p b| [
 			lyrics: "diculus + + statement + I've ever + heard An",
-			legato: [1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1],
-			vocalMode: \Passionate
+			legato: [1, 1, 1, 1, 1, 1, 1, 1, 0.7, 1],
+			lag: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0.05],
+			// vocalMode: \Passionate
+			vocalMode:\Clear,
+			paramTension: 1,
+			loudness: Env([3, 0, 3, 0, 3],b.parse([ 1,2,1,4,1 ])),
 		] }, music:{|p b e|
 			{
 				e.playbuf
@@ -661,9 +668,12 @@ P(\bassnote,syl:3,music:(degree:3,octave:[3,2],amp:0.4,dur:2,)
 );		
 // P(\tune,music:Song.currentSong.pbind[18]);
 	['alien practically hijacks your body and ', [11,7,5,6,7,11,14,12,13,14,13,11].dm('d')].addLine; 
-	P.synthV(\xuan, filter: (midinote: _ - 12),  params: {|p b| [
+	P.synthV(\mo, filter: (midinote: _ - 12),  params: {|p b| [
 		lyrics: "alien + + praclicly + + hijacks + your body + and",
-		vocalMode: \Passionate
+		phonemes: ["","","","","t ih k","","","","","","",""],
+		// vocalMode: \Passionate
+		vocalMode:\Clear,
+		paramTension: 1,
 	] }, music:{|p b e|
 		{
 			e.playbuf
@@ -676,9 +686,18 @@ P(\bassnote,syl:3,music:(degree:3,octave:[3,2],amp:0.4,dur:2,)
 	].p );
 	// P.tune();
 	['corks you into a bo -- ttle  and', [1,2,3,4,5,6,7,1,6].dm('c',octave:6)].addLine; 
-	P.synthV(\xuan, filter: (midinote: _ - 12),  params: {|p b| [
+	P(\cymbal, syl:4, music: { |p b e|
+		(
+			instrument: \cymbalsDSStereo,
+			amp:0.0008
+		).play
+	});
+	P.synthV(\mo, filter: (midinote: _ - 12),  params: {|p b| [
 		lyrics: "corks you into + a bo - ttle and",
-		vocalMode: \Passionate
+		// vocalMode: \Passionate
+		vocalMode: \Open,
+		paramTension: 1,
+		loudness: Env([0,6,2],b.parse([5,2,2]))
 	] }, music:{|p b e|
 		{
 			e.playbuf

@@ -83,28 +83,33 @@ Song.encoders=~encoders;
 	Song.vocodeTune = { 
 		|p b e rppName amp=0.2 att=3 sus=1 rel=5 dur=10 chord=#[1,2,4,5,6,8] tune out=0 modGain=1 echo=1 mix=0.5|
 		var foa = Bus.audio(s,1);
-		var synthVbuffer;
+		var synthVbuffer, playSynth;
 		( v.isNil or: { v.isRunning.not }.try )
 		.if{
 			v = Group.new(addAction:\addToTail).register 
 		};
 		e.rpp.notNil.if{rppName = e.rpp};
 		e.synthV.notNil.if{synthVbuffer=e.playbuf};
-		 {Song.vocoderSynth.isPlaying}.try.notNil.if
-		 { Song.vocoderSynth = 
-			 Synth(\soundInMorph,[
-				 modulator: Song.modulatorBus.index,
-				 carrier: Song.carrierBus.index,
-				 amp:0.32,
-				 amp:0.2, // WHEN buses are set to 1 channel otherwise comment out!
-				 amp:amp, 
-				 dur:dur,
-				 out:foa.index, // out
+		playSynth = { 
+				Song.vocoderSynth = 
+				Synth(\soundInMorph,[
+					modulator: Song.modulatorBus.index,
+					carrier: Song.carrierBus.index,
+					amp:0.32,
+					amp:0.2, // WHEN buses are set to 1 channel otherwise comment out!
+					amp:amp, 
+					dur:dur,
+					out:foa.index, // out
 
-				 target:v
-				 //out:out
-			 ]).register;
-		 };
+					target:v
+					//out:out
+				]).register;
+		};
+		case
+		{Song.vocoderSynth.isNil}{ playSynth.() }
+		{Song.vocoderSynth.isPlaying.not}{ playSynth.() }
+		{ true }{ Song.vocoderSynth.set(\dur,dur,\gate,1)}
+		 ;
 		// restore line above to 'out' to get rid of ambisonics!!
 		{
 			In.ar(foa.index) 

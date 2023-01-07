@@ -669,7 +669,7 @@ P(\bassnote,syl:3,music:(degree:3,octave:[3,2],amp:0.4,dur:2,)
 // P(\tune,music:Song.currentSong.pbind[18]);
 	['alien practically hijacks your body and ', [11,7,5,6,7,11,14,12,13,14,13,11].dm('d')].addLine; 
 	P.synthV(\mo, filter: (midinote: _ - 12),  params: {|p b| [
-		lyrics: "alien + + praclicly + + hijacks + your body + and",
+		lyrics: "alien + + practicly + + hijacks + your body + and",
 		phonemes: ["","","","","t ih k","","","","","","",""],
 		// vocalMode: \Passionate
 		vocalMode:\Clear,
@@ -694,6 +694,7 @@ P(\bassnote,syl:3,music:(degree:3,octave:[3,2],amp:0.4,dur:2,)
 	});
 	P.synthV(\mo, filter: (midinote: _ - 12),  params: {|p b| [
 		lyrics: "corks you into + a bo - ttle and",
+		legato:[1,1,1,1,1,1,1,0.5,0.6],
 		// vocalMode: \Passionate
 		vocalMode: \Open,
 		paramTension: 1,
@@ -717,7 +718,7 @@ P(\shaker,syl:20, music: { |p b e|
 
 	[
 		dur: [10,11].dup(16).flat / 21 /2 
-		=> _.warpTo ( p.parse(e.start,[2/3,[1/3,1,1/7],4/7,[2/7,1,1/7],4/7,[2/7,1,1/5],4/5,1],21) 
+		warpTo: ( p.parse(e.start,[2/3,[1/3,1,1/7],4/7,[2/7,1,1/7],4/7,[2/7,1,1/5],4/5,1],21) 
 		// => _.push(7,-0.02)
 		// => _.push(6,-0.02)
 		=> TempoMap(1!8,_) =>_.quantize(0.8) ) => _.q,
@@ -782,6 +783,31 @@ P(\arpeggio,syl:9,music:[
 			//	octave:3,
 		].p
 	);
+	P(\euphoriaLine, syl:20, music: { |p b e|
+		[
+			[
+				freq: [5, 5.5, [ 3, 5, 6 ], [2,6]].df('f#').q,
+				dur: "qq qq qq q".asBeats.warpTo(
+					b.drop(1).parse([2/3,[1/3,1,1/7],4/7,[2/7,1,1/7],4/7,[2/7,1,1/5],4/5,1]) 
+				)
+				=> _.q
+			].p;
+			,
+			[
+				freq: [-7, -6].df('f#').q,
+				dur: "qqqq qq".asBeats.warpTo(
+					b.drop(1).parse([2/3,[1/3,1,1/7],4/7,[2/7,1,1/7],4/7,[2/7,1,1/5],4/5,1]) 
+				)
+				=> _.q
+			].p
+		]
+		=> Ppar(_)
+		<>
+		( instrument: \visual_pad,
+			amp: 0.3
+		)
+		=> _.play
+	});
 	P(\euphoriaChords,syl:20,music:{|p b e|
 		[
 			freq:[[ 1,3,5 ]].df('f#',octave: 4).q(2)
@@ -798,8 +824,15 @@ P(\arpeggio,syl:9,music:[
 	);
 	// P(\tune,music:Song.currentSong.pbind[21]);
 ['/*KIRK:*/ Sargon. ',[3,2].dm('a')].addLine; 
-P(\tune,music:Song.currentSong.pbind[22]
-	);
+// P(\tune,music:Song.currentSong.pbind[22]);
+P.synthV(\kevin, filter: (midinote: _ - 12),  params: {|p b| [
+	lyrics: "Sargone +",
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 	P(\bas,music:(
 		strum:0.04,
 		out:[0,2],
@@ -822,7 +855,8 @@ P(\arpeggio,music: [
 	['/*SARGON [OC]:*/ I understand, my son. Go to your vessel.', [11,11,11,11,7,7,7,11,12,14,13].dm('c')].addLine; 
 	P(\drone,music:{|parent| 
 		[ instrument:\sawSynthSustain,
-			amp:0.012,
+			amp:0.02,
+			att: 0.3,
 			freq: [ [2,12],[1,11] ] =>_.df('c',octave: 3)=>_.q ,
 			legato: 1,
 			dur: Song.parse(23,[9,2],).q
@@ -855,15 +889,32 @@ P(\arpeggio,music: [
 
 	});
 
-	P.rpp(\vocal,
-		rppStart: \understand,
-		lag:-1,music:{|p b e|
+P.synthV(\xuan, filter: (midinote: _ - 12),  params: {|p b| [
+	lyrics: "I, understand, +, +, my, sun, go, to, your, vessel, +, ",
+	legato: [1, 1,          1, 1, 1,  0.7,   1,  1,  1,    1,      1] ,
+		defaultVibratoDepth:0.3,
 
-		//p.vocodeTune(p,b,e,e.rpp)
-
-
-		p.vocodeTune.(p,b,e,e.rpp,amp:0.12,dur:b.sum+1,att:1,sus:b.sum-1,rel:2,chord:[1],out:3);
-	});
+] }, music:{|p b e|
+	{PlayBuf.ar(1,p.laMer,
+		rate: midiratio( [-2,0,5].dq.demand(b.parse([4,6,1])) )
+	) 
+	=> Out.ar(p.carrierBus,_) / 3
+	}.play;
+	p.vocodeTune.(p,b,e,e.rpp,amp:0.32,dur:b.sum+1,att:1,sus:b.sum,rel:2,out:3)
+});
+	// P.rpp(\vocal,
+	// 	rppStart: \understand,
+	// 	lag:-1,music:{|p b e|
+	// 	p.vocodeTune.(
+	// 		p,b,e,
+	// 		e.rpp,
+	// 		amp:0.12,
+	// 		dur:b.sum+1,
+	// 		att:1,
+	// 		sus:b.sum-1,
+	// 		rel:2,
+	// 		chord:[1],out:3);
+	// });
 	P(\bass,syl:8,music:
 		{ |p b e| 
 			[
@@ -884,25 +935,37 @@ P(\arpeggio,music: [
 		amp:0.01,
 	].pm(\sawSynthSustain)
 );
-P.tune('must agree');
-P.rpp(\vocal,'must agree',lag:-1,music:{|p b e|
-	//	e.rpp.postln.key.postln
-	// p.vocodeTune.(p,b,e).postln;
-	p.vocodeTune.(p,b,e,amp:0.10,dur:b.sum+1,chord:[1,2,3]);
-	p.postln;
+ P.tune('must agree', _ <> [instrument: \stringyy,depth: 0,
+	 out: Song.carrierBus
+ ].p
+ );
+P.synthV(\xuan, filter: (midinote: _ ),  params: {|p b| [
+	lyrics:"all that are involved + - -  must agree +",
+	defaultVibratoDepth:0.2,
+	legato:[1,1,1,1,1,1,1,0.7,1,1.02]
+] }, music:{|p b e|
+	p.vocodeTune.(p,b,e,e.rpp,amp:0.32,dur:b.sum+1,att:1,sus:b.sum-0.1,rel:0.2,out:3);
+	fork{b.sum.wait;e.synthV.buffer.().postln.free}
+	// e.buffer.().free
 });
-P('tune24',music:{ |p| 
-	p.pbind[24]=>Pbindf(_,
-		//		\instrument,\stringyy,
-		\instrument,\sawSynth,
-		//		\amp,2.8,
-		\out,p.carrierBus.index,
-		\addAction,\addBefore,\group,p.vocoderGroup
-	)
-	=>Pmul(\freq,0.5,_)
-	//		=>Pmul(\freq,[5/3,1,2.1, 1/2 ],_)
-	=>_.play 
-});
+// P.rpp(\vocal,'must agree',lag:-1,music:{|p b e|
+// 	//	e.rpp.postln.key.postln
+// 	// p.vocodeTune.(p,b,e).postln;
+// 	p.vocodeTune.(p,b,e,amp:0.10,dur:b.sum+1,chord:[1,2,3]);
+// 	p.postln;
+// });
+// P('tune24',music:{ |p| 
+// 	p.pbind[24]=>Pbindf(_,
+// 		//		\instrument,\stringyy,
+// 		\instrument,\sawSynth,
+// 		//		\amp,2.8,
+// 		\out,p.carrierBus.index,
+// 		\addAction,\addBefore,\group,p.vocoderGroup
+// 	)
+// 	=>Pmul(\freq,0.5,_)
+// 	//		=>Pmul(\freq,[5/3,1,2.1, 1/2 ],_)
+// 	=>_.play 
+// });
 ['after all these centuries ', [7,11,16,15, 15,16,14].dm('e',scale:\harmonicMinor) ].addLine;
 // P.tune();
 P.synthV(\xuan,
@@ -989,26 +1052,28 @@ P('tune27',music:Song.currentSong.pbind[27]
 	);
 	['/*SARGON [OC]:*/ (beat) Then you may',[1,5,5,4].dm('c#')].addLine;
 
-P.synthV(\xuan, filter: (midinotes: [67,67,67,67]), params: {|p b| [
+P.synthV(\xuan, filter: (midinotes: [64,64,64,64]), params: {|p b| [
 		// lyrics: "r zen yu mei",
-		lyrics: "r then you may"
+		lyrics: "r then you may",
+
+		defaultVibratoDepth:0.1
 	] }, music:{|p b e|
 
-	p.vocodeTune.(p,b,e,amp:0.14,dur:b.sum,chord:[2,1,0.5,0.2]);
-	}
-);
-	P('tune28',music:Song.currentSong.pbind[28]
+	p.vocodeTune.(p,b,e,amp:0.14,dur:b.sum+1,chord:[2,1,0.5,0.2]);
+});
+P('tune28',music:Song.currentSong.pbind[28]
 	=>Pbindf(_,\amp,[0].q++[0.1].q(inf))
 );
-P('extra-note28',music: (
-	amp:0.04,
-	freq:[1].df('a-',octave: [3, 4 ]),
-	instrument:\sawSynth,
-)
-	);
+P('extra-note28',music: {|p b e| 
+	(
+		amp:0.04,
+		freq:[1].df('a-',octave: [3, 4 ]),
+		instrument:\sawSynth,
+	).play 
+});
 	[' go as free -- ly as you came.',[13,12,13,14,13,12,7,11].dm('c#')].addLine;
 
-P.synthV(\xuan, filter: (midinote: 64!8), params: {|p b| [
+P.synthV(\xuan,prepend:true, filter: (midinote: 64!8), params: {|p b| [
 		// lyrics: "go,   az,    fri, -,  li, az,    yu, keim",
 		// phonemes: ["", "a z", "",  "", "", "a z", "", "k e i m", ]
 		lyrics: " go as free - lee as you came",
@@ -1016,7 +1081,7 @@ P.synthV(\xuan, filter: (midinote: 64!8), params: {|p b| [
 		legato: [1,1,1,1,0.95,1,0.8,1],
 		defaultVibratoDepth:0.1
 	] }, music:{|p b e|
-		p.vocodeTune.(p,b, e,att:0,sus:b.sum+2,rel:1, amp:0.14, dur:b.sum+2, chord:[2, 0.5]);
+		p.vocodeTune.(p,b, e,att:0.1,sus:b.sum+2,rel:1, amp:0.10, dur:b.sum+2, chord:[2,1, 0.5,0.2]);
 	}
 );
 P.tune();

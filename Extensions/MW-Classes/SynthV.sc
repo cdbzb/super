@@ -5,6 +5,7 @@ SynthV{
 	classvar <roles,<envelopes=#[ \toneShift, \pitchDelta, \voicing, \tension, \vibratoEnv, \loudness, \breathiness, \gender ];
 	classvar <vocalModes;
 	classvar <>registry;
+	classvar <>buffers;
 	var <name, <project, <file,<location,<buffer, <key, <song, <section;
 	var <>firstNoteOffset = 0;
 	var <> offset = 0;
@@ -12,11 +13,12 @@ SynthV{
 	*new {|key name take double| registry.at(key, name, take).isNil.if {
 		 ^super.new.init(key, name, take, double) 
 	 }{
-		 registry.at(key, name, (take ? \defailt)).refreshBuffer;
+		 registry.at(key, name, (take ? \default)).refreshBuffer;
 		 ^registry.at(key, name, (take ? \default)) } 
 	 }
 	*initClass {
 		registry = MultiLevelIdentityDictionary.new();
+		buffers = MultiLevelIdentityDictionary.new();
 
 		roles = ();
 
@@ -132,6 +134,7 @@ SynthV{
 		this.checkDirty.if{
 			this.writeProject;
 			this.render;
+			try{ buffer.free };
 			buffer = Buffer.doRead(Server.default,location+/+"synthV_MixDown.wav");
 		}
 	}
@@ -167,7 +170,7 @@ SynthV{
 		//strip erroneous points data - TODO clean this up in original file!
 		project.tracks[0].mainRef.systemPitchDelta.put(\points,[]);
 
-		this.refreshBuffer;
+		this.refreshBuffer(n,k,(take ? \default));
 	}
 	writeProject {
 		this.setRenderConfig;
@@ -176,6 +179,7 @@ SynthV{
 			JSON.stringify( project ).write(
 				file, overwrite: true, ask: false
 			);
+			// fork{0.05.wait;this.render}
 		}
 	}
 
@@ -289,11 +293,13 @@ SynthV{
 		project.tracks[track].mainGroup.notes =
 			this.notes.reject({|i| i.at(\lyrics)=="r"})
 	}
-	refreshBuffer{
+	refreshBuffer{ |n k t|
+		var old = buffers.at(n,k,t).();
 		File.exists(location+/+"synthV_MixDown.wav").if{
-			try{buffer.free};
+			try{old.free};
 			buffer = Buffer.doRead(Server.default,location+/+"synthV_MixDown.wav");
-		}
+		try{ buffers.put(n,k,(take ? \default),buffer) };
+		}{\NEEDS_RENDER.postln};
 	}
 }
 

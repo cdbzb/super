@@ -102,6 +102,7 @@ P.synthV(\xuan,
 	);
 	P.synthV(\kevin, params: {|p b| [
 		lyrics: "yes",
+		legato: [0.90]
 	] }, music:{|p b e|
 			{
 				e.playbuf
@@ -111,6 +112,7 @@ P.synthV(\xuan,
 	['Sargon borrowed my body. ',[7,6,5,6,7,4,3].dm('b',scale:\dorian)].addLine; 
 	P.synthV(\kevin , filter: (midinote: _ - 12),  params: {|p b| [
 		lyrics: "Sargon + borrowed + my body +",
+		lag: [0.1, 0.05, 0, 0, 0, 0, 0 ]
 	] }, music:{|p b e|
 		{
 			e.playbuf
@@ -853,38 +855,20 @@ P(\arpeggio,music: [
 ].p.fin
 	);
 	['/*SARGON [OC]:*/ I understand, my son. Go to your vessel.', [11,11,11,11,7,7,7,11,12,14,13].dm('c')].addLine; 
-	P(\drone,music:{|parent| 
+	P(\drone,music:{ |p b e| 
 		[ instrument:\sawSynthSustain,
-			amp:0.02,
+			amp:0.01,
 			att: 0.3,
-			freq: [ [2,12],[1,11] ] =>_.df('c',octave: 3)=>_.q ,
+			freq: [ [2,12,14,16],[2,12,14,15],[1,11] ] =>_.df('c',octave: 3)=>_.q ,
 			legato: 1,
-			dur: Song.parse(23,[9,2],).q
+			dur: b.parse([4,5,2]).q
 			,
 			//		out:parent.carrier.index,
 		].p.play }
 	);
-	P.tune(\understand, _ => Pbindf(_,\instrument,\stringyy,\amp,0.3, \out,Song.carrierBus)); 
 
 
 	P(\chordsSargon,lag:-0.0,music:{|parent durs| 
-		var effect = Effect( 
-			{|i|
-				Phaser2.ar(i) 
-				=> FreeVerb.ar(_,0.5,1)
-				=> Decimator.ar(_,8000,8)
-			} ,
-			out:Song.carrierBus,
-
-		);
-		[
-			freq: [2,4,6,11].dup(4) ++ [2,4,5,7].dup(2) => _.df('c',octave:5) =>_.q ,
-			instrument:\sawSynthSustain,
-			legato:0.95,
-			amp:1.4,
-			dur:durs.q,
-			out:effect.bus.index,
-		].pp;
 		//effect.synth.moveBefore()
 
 	});
@@ -894,13 +878,33 @@ P.synthV(\xuan, filter: (midinote: _ - 12),  params: {|p b| [
 	legato: [1, 1,          1, 1, 1,  0.7,   1,  1,  1,    1,      1] ,
 		defaultVibratoDepth:0.3,
 
-] }, music:{|p b e|
-	{PlayBuf.ar(1,p.laMer,
-		rate: midiratio( [-2,0,5].dq.demand(b.parse([4,6,1])) )
-	) 
-	=> Out.ar(p.carrierBus,_) / 3
-	}.play;
-	p.vocodeTune.(p,b,e,e.rpp,amp:0.32,dur:b.sum+1,att:1,sus:b.sum,rel:2,out:3)
+	] }, music:{|p b e|
+		{PlayBuf.ar(1,p.laMer,
+			rate: midiratio( [-2,0,-7].dq.demand(b.parse([4,5,2])) ),
+			trigger: Impulse.ar(1) - 0.1
+		) 
+		=> Out.ar(p.carrierBus,_) / 4
+		* Env([1,1,0],[b.sum-3,1]).kr(2,gate:1)
+	}.play
+
+	;
+	p.tune[ e.start ] => Pbindf(_,\instrument,\sawSynthSustain,\amp,0.3, \out,Song.carrierBus); 
+	[
+		freq: [2,4,6,11].dup(4) ++ [2,4,5,7].dup(2) => _.df('c',octave:4) =>_.q ,
+		instrument:\sawSynthSustain,
+		legato:0.95,
+		amp:1.4,
+		dur:b.q,
+		out: Effect.bus(
+			{|i|
+				Phaser2.ar(i) 
+				=> FreeVerb.ar(_,0.5,1)
+				=> Decimator.ar(_,8000,8)
+			} ,
+			out:Song.carrierBus,
+		)
+	].pp;
+	p.vocodeTune.(p,b,e,e.rpp,amp:0.32,dur:b.sum+1,att:1,sus:b.sum,rel:2,out:3);
 });
 	// P.rpp(\vocal,
 	// 	rppStart: \understand,
@@ -927,7 +931,7 @@ P.synthV(\xuan, filter: (midinote: _ - 12),  params: {|p b| [
 			].pp
 		}
 	);
-	['all that are invo -- -- lved must agree',[15,14,13,12, 11,12,11,7,11,11.5].dm('g',octave:3)].addLine; 
+	['all that are invo -- -- lved must agree',[15,14,13,12, 11,12,11,7,11,11.5].dm('g',octave:4)].addLine; 
 	P(\descant,music:[
 		freq:[[7, 12 ],[ 13,11 ],[ 11,5 ],[11,5.5]].df('g',octave: 5).q,
 		dur: Song.parse(24,[2,2,5,1]).q,
@@ -935,17 +939,13 @@ P.synthV(\xuan, filter: (midinote: _ - 12),  params: {|p b| [
 		amp:0.01,
 	].pm(\sawSynthSustain)
 );
- P.tune('must agree', _ <> [instrument: \stringyy,depth: 0,
-	 out: Song.carrierBus
- ].p
- );
-P.synthV(\xuan, filter: (midinote: _ ),  params: {|p b| [
+P.synthV(\xuan, filter: (midinote: _ -12 ),  params: {|p b| [
 	lyrics:"all that are involved + - -  must agree +",
 	defaultVibratoDepth:0.2,
 	legato:[1,1,1,1,1,1,1,0.7,1,1.02]
 ] }, music:{|p b e|
 	p.vocodeTune.(p,b,e,e.rpp,amp:0.32,dur:b.sum+1,att:1,sus:b.sum-0.1,rel:0.2,out:3);
-	fork{b.sum.wait;e.synthV.buffer.().postln.free}
+	p.tune[ e.start ]<> [instrument: \stringyy,depth: 0, out: Song.carrierBus ].p
 	// e.buffer.().free
 });
 // P.rpp(\vocal,'must agree',lag:-1,music:{|p b e|
@@ -966,7 +966,8 @@ P.synthV(\xuan, filter: (midinote: _ ),  params: {|p b| [
 // 	//		=>Pmul(\freq,[5/3,1,2.1, 1/2 ],_)
 // 	=>_.play 
 // });
-['after all these centuries ', [7,11,16,15, 15,16,14].dm('e',scale:\harmonicMinor) ].addLine;
+
+['after all these centuries ', [7,11,16,15, 15,16,14].dm('e',4,scale:\harmonicMinor) ].addLine;
 // P.tune();
 P.synthV(\xuan,
 	filter: (midinote: 50!7),
@@ -974,20 +975,26 @@ P.synthV(\xuan,
 	params: {|p b| [
 	lyrics: "after + all these centuries + +",
 	] }, music:{|p b e|
-		p.vocodeTune.(p,b,e,e.rpp,amp:0.32,dur:b.sum,att:1,sus:b.sum,rel:2,out:3)
-		// {In.ar( p.carrierBus.index )}.play
+		p.vocodeTune.(p,b,e,e.rpp,amp:0.14,dur:b.sum+1,att:1,sus:b.sum,rel:2);
+		{
+			PlayBuf.auto(1,p.laMer,rate:0.midiratio/2)
+			* Env([0,0,1,0],b.parse([3,1,3]),curve:[-3,3]).kr(2,gate:1)
+			*30
+			=> Out.ar(p.carrierBus,_)
+		}.play
 
 });
 
-P(\chord,syl:3,music:(
-	amp:0.03,
-	strum:0.06,
-	instrument:\sawSynthSustain,
-	freq:[1,3,5,7].df('c',octave: 4),
-	//			effect:{var bus=Bus.audio;Synth(\test,[\in,bus.index]);bus.index},
-	//			out:Pkey(\effect),
-)				
-	);
+P(\chord,syl:3,music:{ |p b e|
+	(
+		amp:0.03,
+		strum:0.06,
+		instrument:\sawSynthSustain,
+		freq:[1,3,5,7].df('c',octave: 4),
+		//			effect:{var bus=Bus.audio;Synth(\test,[\in,bus.index]);bus.index},
+		//			out:Pkey(\effect),
+	).play
+});
 	P(\bassnote,syl:3,music:[ 
 		dur: 
 		( Song.parse(25,[3],4)++Song.parse(26,[2,4,1]) ++ Song.secDur[27]) 

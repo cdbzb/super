@@ -873,8 +873,7 @@ P(\arpeggio,music: [
 
 	});
 
-P.synthV(\xuan, filter: (midinote: _ - 12),  params: {|p b| [
-	lyrics: "I, understand, +, +, my, sun, go, to, your, vessel, +, ",
+P.synthV(\xuan, filter: (midinote: _ - 12),  params: {|p b| [ lyrics: "I, understand, +, +, my, sun, go, to, your, vessel, +, ",
 	legato: [1, 1,          1, 1, 1,  0.7,   1,  1,  1,    1,      1] ,
 		defaultVibratoDepth:0.3,
 
@@ -883,17 +882,24 @@ P.synthV(\xuan, filter: (midinote: _ - 12),  params: {|p b| [
 			rate: midiratio( [-2,0,-7].dq.demand(b.parse([4,5,2])) ),
 			trigger: Impulse.ar(1) - 0.1
 		) 
-		=> Out.ar(p.carrierBus,_) / 4
+	  	=> Out.ar(p.carrierBus,_) / 4
 		* Env([1,1,0],[b.sum-3,1]).kr(2,gate:1)
 	}.play
 
 	;
-	p.tune[ e.start ] => Pbindf(_,\instrument,\sawSynthSustain,\amp,0.3, \out,Song.carrierBus); 
+	 p.pbind[e.start].patternpairs ++[
+		 freq: Pfunc({|e| e.midinote.midicps/[1, 2 ]}),
+		 instrument:\sawSynthSustain,
+		 att:4,
+		 amp:0.1 /2,
+		 freqLag:0.05,
+		 out:p.carrierBus 
+	 ] =>_.pm =>_.play; 
 	[
 		freq: [2,4,6,11].dup(4) ++ [2,4,5,7].dup(2) => _.df('c',octave:4) =>_.q ,
 		instrument:\sawSynthSustain,
 		legato:0.95,
-		amp:1.4,
+		amp:1,
 		dur:b.q,
 		out: Effect.bus(
 			{|i|
@@ -903,8 +909,9 @@ P.synthV(\xuan, filter: (midinote: _ - 12),  params: {|p b| [
 			} ,
 			out:Song.carrierBus,
 		)
-	].pp;
-	p.vocodeTune.(p,b,e,e.rpp,amp:0.32,dur:b.sum+1,att:1,sus:b.sum,rel:2,out:3);
+	].pp
+	;
+	p.vocodeTune.(p,b,e,e.rpp,mix:0.1,amp:0.32,dur:b.sum+1,att:1,sus:b.sum,rel:2,out:3);
 });
 	// P.rpp(\vocal,
 	// 	rppStart: \understand,
@@ -942,10 +949,19 @@ P.synthV(\xuan, filter: (midinote: _ - 12),  params: {|p b| [
 P.synthV(\xuan, filter: (midinote: _ -12 ),  params: {|p b| [
 	lyrics:"all that are involved + - -  must agree +",
 	defaultVibratoDepth:0.2,
-	legato:[1,1,1,1,1,1,1,0.7,1,1.02]
+	legato:[1,1,1,1,1,1,1,0.7,1,0.95]
 ] }, music:{|p b e|
-	p.vocodeTune.(p,b,e,e.rpp,amp:0.32,dur:b.sum+1,att:1,sus:b.sum-0.1,rel:0.2,out:3);
-	p.tune[ e.start ]<> [instrument: \stringyy,depth: 0, out: Song.carrierBus ].p
+	p.vocodeTune.(p,b,e,e.rpp,amp:0.22,dur:b.sum+1,att:1,sus:b.sum-0.1,rel:0.2,out:3);
+	// p.tune[ e.start ]<> [instrument: \stringyy,depth: 0, out: Song.carrierBus ].p
+	p.pbind[e.start].patternpairs ++[
+		 freq: Pfunc({|e| e.midinote.midicps/[1, 2 ]}),
+		 instrument:\sawSynthSustain,
+		 att:4,
+		 amp:0.1 /2,
+		 freqLag:0.05,
+		 out:p.carrierBus 
+	 ] =>_.pm =>_.play; 
+
 	// e.buffer.().free
 });
 // P.rpp(\vocal,'must agree',lag:-1,music:{|p b e|
@@ -970,16 +986,17 @@ P.synthV(\xuan, filter: (midinote: _ -12 ),  params: {|p b| [
 ['after all these centuries ', [7,11,16,15, 15,16,14].dm('e',4,scale:\harmonicMinor) ].addLine;
 // P.tune();
 P.synthV(\xuan,
-	filter: (midinote: 50!7),
+	// filter: (midinote: 50!7),
+	filter: (midinote: _ - 12), 
 	// pbind: {|p b| [ dur:p.durs[Song.section(\centuries)],midinote: 50!7 ].p},
 	params: {|p b| [
 	lyrics: "after + all these centuries + +",
 	] }, music:{|p b e|
-		p.vocodeTune.(p,b,e,e.rpp,amp:0.14,dur:b.sum+1,att:1,sus:b.sum,rel:2);
+		p.vocodeTune.(p,b,e,e.rpp,amp:0.14,dur:b.sum+1,att:1,sus:b.sum,rel:0,chord:[0.5,1,2]);
 		{
 			PlayBuf.auto(1,p.laMer,rate:0.midiratio/2)
-			* Env([0,0,1,0],b.parse([3,1,3]),curve:[-3,3]).kr(2,gate:1)
-			*30
+			* Env([0,0,1,0,0],b.parse([3,1,3]) ++ [2],curve:[-3,3,0]).kr(2,gate:1)
+			*15
 			=> Out.ar(p.carrierBus,_)
 		}.play
 
@@ -995,15 +1012,15 @@ P(\chord,syl:3,music:{ |p b e|
 		//			out:Pkey(\effect),
 	).play
 });
-	P(\bassnote,syl:3,music:[ 
-		dur: 
-		( Song.parse(25,[3],4)++Song.parse(26,[2,4,1]) ++ Song.secDur[27]) 
-		.clumps([ 2,1,1 ]).collect(_.sum).q
-		,
-		amp:0.25,
-		instrument:\stringyy,
-		freq:[11,12,5].df('c',octave: 2).q, 
-	].p
+P(\bassnote,syl:3,music:[ 
+	dur: 
+	( Song.parse(25,[3],4)++Song.parse(26,[2,4,1]) ++ Song.secDur[27]) 
+	.clumps([ 2,1,1 ]).collect(_.sum).q
+	,
+	amp:0.25,
+	instrument:\stringyy,
+	freq:[11,12,5].df('c',octave: 2).q, 
+].p
 );
 P(\wobble,music: [
 	//		instrument:\sawSynth,
@@ -1020,7 +1037,7 @@ P(\wobble,music: [
 		//		instrument:\sawSynth,
 		amp:0.05,
 		//		instrument:\tri,
-		freq:[1,2].df('d',octave:4 ).q(inf),
+		freq:[1.5,2].df('d',octave:4 ).q(inf),
 		out: Effect.bus(EchoNone.ar(_,1,0.3,decaytime:5),out:1),
 		dur: Song.parse(25,1!4).q,
 	].pm(\sawSynth)
@@ -1041,8 +1058,7 @@ P(\wobble,music: [
 		].pp
 	}
 );
-P('tune26',music:Song.currentSong.pbind[26]
-	);
+// P('tune26',music:Song.currentSong.pbind[26]);
 	//	// (see ../vocoder2.scd for voice of Sargon)	
 	//	['/*MCCOY:*/ And what if we should decide against you? '].addLine;
 	['/*MCCOY:*/ And what if we decide against you? ', [7,6,5,4,5,6,7,12,11.5].dm('e')].addLine;
@@ -1062,8 +1078,7 @@ P('tune27',music:Song.currentSong.pbind[27]
 P.synthV(\xuan, filter: (midinotes: [64,64,64,64]), params: {|p b| [
 		// lyrics: "r zen yu mei",
 		lyrics: "r then you may",
-
-		defaultVibratoDepth:0.1
+		defaultVibratoDepth:0.3
 	] }, music:{|p b e|
 
 	p.vocodeTune.(p,b,e,amp:0.14,dur:b.sum+1,chord:[2,1,0.5,0.2]);
@@ -1080,13 +1095,16 @@ P('extra-note28',music: {|p b e|
 });
 	[' go as free -- ly as you came.',[13,12,13,14,13,12,7,11].dm('c#')].addLine;
 
-P.synthV(\xuan,prepend:true, filter: (midinote: 64!8), params: {|p b| [
-		// lyrics: "go,   az,    fri, -,  li, az,    yu, keim",
-		// phonemes: ["", "a z", "",  "", "", "a z", "", "k e i m", ]
+P.synthV(\xuan,prepend:true, 
+	// filter: (midinote: 64!8), 
+	filter: (midinote: _ - 12), 
+	params: {|p b| [
+	// lyrics: "go,   az,    fri, -,  li, az,    yu, keim",
+	// phonemes: ["", "a z", "",  "", "", "a z", "", "k e i m", ]
 		lyrics: " go as free - lee as you came",
 		lag: [0,0,0,0,0,0,0,0.08],
 		legato: [1,1,1,1,0.95,1,0.8,1],
-		defaultVibratoDepth:0.1
+		defaultVibratoDepth:0.2
 	] }, music:{|p b e|
 		p.vocodeTune.(p,b, e,att:0.1,sus:b.sum+2,rel:1, amp:0.10, dur:b.sum+2, chord:[2,1, 0.5,0.2]);
 	}

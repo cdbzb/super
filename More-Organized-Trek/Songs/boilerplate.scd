@@ -83,7 +83,7 @@ Song.encoders=~encoders;
 	Song.vocodeTune = { 
 		|p b e rppName amp=0.2 att=3 sus=1 rel=5 dur=10 chord=#[1,2,4,5,6,8] tune out=0 modGain=1 echo=1 mix=0.5|
 		var foa = Bus.audio(s,1);
-		var synthVbuffer, playSynth;
+		var synthVbuffer, playSynth, playAmbiSynth;
 		( v.isNil or: { v.isRunning.not }.try )
 		.if{
 			v = Group.new(addAction:\addToTail).register 
@@ -103,24 +103,27 @@ Song.encoders=~encoders;
 
 					target:v
 					//out:out
-				]).register;
+				]).register.onFree(try{Song.ambiSynth.free});
+		};
+		playAmbiSynth = {
+			Song.ambiSynth = {
+				In.ar(foa.index) 
+				=> FoaEncode.ar(_,Song.encoders.omni)
+				=> FoaTransform.ar(_, 'press', LFBrownNoise2.ar(1)*pi/1,LFBrownNoise2.ar(1)*pi)
+				=> FoaTransform.ar(_,'pressZ',SinOsc.ar(1))
+				=> FoaDecode.ar(_,Monitors.decoder)
+				*3
+			}.play(
+				target:v,
+				addAction:\addToTail
+			).register
 		};
 		case
-		{Song.vocoderSynth.isNil}{ playSynth.() }
-		{Song.vocoderSynth.isPlaying.not}{ playSynth.() }
+		{Song.vocoderSynth.isNil}{ playSynth.();playAmbiSynth.() }
+		{Song.vocoderSynth.isPlaying.not}{ playSynth.(); playAmbiSynth.() }
 		{ true }{ Song.vocoderSynth.set(\dur,dur,\gate,1)}
 		 ;
 		// restore line above to 'out' to get rid of ambisonics!!
-		{
-			In.ar(foa.index) 
-			=> FoaEncode.ar(_,Song.encoders.omni)
-			=> FoaTransform.ar(_, 'press', LFBrownNoise2.ar(1)*pi/1,LFBrownNoise2.ar(1)*pi)
-			=> FoaTransform.ar(_,'pressZ',SinOsc.ar(1))
-			=> FoaDecode.ar(_,Monitors.decoder)
-			*3
-		}.play(
-			target:v,
-			addAction:\addToTail);
 		Song.sargonCarrier.(p,b,e,att, sus, rel, chord,tune,mix);
 		Song.sargonModulator.(rppName,dur,modGain,echo,synthVbuffer)
 	};

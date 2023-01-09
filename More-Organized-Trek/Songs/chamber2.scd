@@ -600,6 +600,18 @@ P(\chord,syl:2,music: {|p b e| [
 	].pp
 });
 ['/*MCCOY:*/ That`s the most ri (boom) ',"c#4 a3 d#4 b3 r "].addLine; 
+P(\swell, music: { |p b e|
+	{
+		Env([0,1],b.parse([4])).kr(2,gate:1)
+		*WhiteNoise.ar(0.1)
+		=> Allpass2.ar(_,400,0.2)
+	}.play;
+	(
+		instrument: \cymbalsDS,
+		amp:0.03,
+		lag: b.parse([5]).unbubble
+	).play
+});
 P.synthV(\mo, params: {|p b| [
 	lyrics: "That's the most ri r",
 	paramTension: 1,
@@ -859,7 +871,7 @@ P(\arpeggio,music: [
 		[ instrument:\sawSynthSustain,
 			amp:0.01,
 			att: 0.3,
-			freq: [ [2,12,14,16],[2,12,14,15],[1,11] ] =>_.df('c',octave: 3)=>_.q ,
+			freq: [ [2],[2],[1] ] =>_.df('c',octave: 3)=>_.q ,
 			legato: 1,
 			dur: b.parse([4,5,2]).q
 			,
@@ -879,19 +891,23 @@ P.synthV(\xuan, filter: (midinote: _ - 12),  params: {|p b| [ lyrics: "I, unders
 
 	] }, music:{|p b e|
 		{PlayBuf.ar(1,p.laMer,
-			rate: midiratio( [-2,0,-7].dq.demand(b.parse([4,5,2])) ),
+			rate: midiratio( 
+				(5) +
+				[-2,0,-5].dq.demand(b.parse([4,5,2])) ),
 			trigger: Impulse.ar(1) - 0.1
 		) 
-	  	=> Out.ar(p.carrierBus,_) / 4
 		* Env([1,1,0],[b.sum-3,1]).kr(2,gate:1)
+		/1
+	  	=> Out.ar(p.carrierBus,_)  
 	}.play
+
 
 	;
 	 p.pbind[e.start].patternpairs ++[
 		 freq: Pfunc({|e| e.midinote.midicps/[1, 2 ]}),
 		 instrument:\sawSynthSustain,
 		 att:4,
-		 amp:0.1 /2,
+		 amp:0.1 /4,
 		 freqLag:0.05,
 		 out:p.carrierBus 
 	 ] =>_.pm =>_.play; 
@@ -909,7 +925,7 @@ P.synthV(\xuan, filter: (midinote: _ - 12),  params: {|p b| [ lyrics: "I, unders
 			} ,
 			out:Song.carrierBus,
 		)
-	].pp
+	]//.pp
 	;
 	p.vocodeTune.(p,b,e,e.rpp,mix:0.1,amp:0.32,dur:b.sum+1,att:1,sus:b.sum,rel:2,out:3);
 });
@@ -949,67 +965,61 @@ P.synthV(\xuan, filter: (midinote: _ - 12),  params: {|p b| [ lyrics: "I, unders
 P.synthV(\xuan, filter: (midinote: _ -12 ),  params: {|p b| [
 	lyrics:"all that are involved + - -  must agree +",
 	defaultVibratoDepth:0.2,
-	legato:[1,1,1,1,1,1,1,0.7,1,0.95]
+	legato:[1,1,1,1,1,1,1,0.8,1,0.90]
 ] }, music:{|p b e|
 	p.vocodeTune.(p,b,e,e.rpp,amp:0.22,dur:b.sum+1,att:1,sus:b.sum-0.1,rel:0.2,out:3);
 	// p.tune[ e.start ]<> [instrument: \stringyy,depth: 0, out: Song.carrierBus ].p
-	p.pbind[e.start].patternpairs ++[
-		 freq: Pfunc({|e| e.midinote.midicps/[1, 2 ]}),
+	[
+		midinote: p.tune[e.start].list ++ p.tune[e.start + 1].list => _.flat => _.q
+		, dur: p.durs[e.start].list ++ p.durs[e.start + 1].list => _.flat =>  _.q
+	].postln
+	++[
+		 freq: Pfunc({|env| env.midinote.midicps / [2,4,8]}),
 		 instrument:\sawSynthSustain,
 		 att:4,
-		 amp:0.1 /2,
+		 amp:0.1 /2 ,
 		 freqLag:0.05,
 		 out:p.carrierBus 
-	 ] =>_.pm =>_.play; 
+	 ] =>_.pm 
+	 =>_.play; 
 
 	// e.buffer.().free
 });
-// P.rpp(\vocal,'must agree',lag:-1,music:{|p b e|
-// 	//	e.rpp.postln.key.postln
-// 	// p.vocodeTune.(p,b,e).postln;
-// 	p.vocodeTune.(p,b,e,amp:0.10,dur:b.sum+1,chord:[1,2,3]);
-// 	p.postln;
-// });
-// P('tune24',music:{ |p| 
-// 	p.pbind[24]=>Pbindf(_,
-// 		//		\instrument,\stringyy,
-// 		\instrument,\sawSynth,
-// 		//		\amp,2.8,
-// 		\out,p.carrierBus.index,
-// 		\addAction,\addBefore,\group,p.vocoderGroup
-// 	)
-// 	=>Pmul(\freq,0.5,_)
-// 	//		=>Pmul(\freq,[5/3,1,2.1, 1/2 ],_)
-// 	=>_.play 
-// });
-
+P.tune( { |i|  Pmul(\freq,0.25,i) => Pset(\out,Effect.bus(DWGReverbC1C3.ar(_) /4),_) } );
 ['after all these centuries ', [7,11,16,15, 15,16,14].dm('e',4,scale:\harmonicMinor) ].addLine;
-// P.tune();
 P.synthV(\xuan,
 	// filter: (midinote: 50!7),
 	filter: (midinote: _ - 12), 
 	// pbind: {|p b| [ dur:p.durs[Song.section(\centuries)],midinote: 50!7 ].p},
 	params: {|p b| [
 	lyrics: "after + all these centuries + +",
+	legato: [1,1,1,1,1,1,0.95]
 	] }, music:{|p b e|
-		p.vocodeTune.(p,b,e,e.rpp,amp:0.14,dur:b.sum+1,att:1,sus:b.sum,rel:0,chord:[0.5,1,2]);
+		p.vocodeTune.(p,b,e,e.rpp,amp:0.14,dur:b.sum+1,att:1,sus:b.sum-2,rel:2,chord:[0.5,1,2]);
 		{
-			PlayBuf.auto(1,p.laMer,rate:0.midiratio/2)
-			* Env([0,0,1,0,0],b.parse([3,1,3]) ++ [2],curve:[-3,3,0]).kr(2,gate:1)
-			*15
+			PlayBuf.auto(1,p.laMer,rate:0.midiratio)
+			* Env([0,0,1,0,0],b.parse([3,1,3]) ++ [2] -[0,0,0.3,0],curve:[-3,3,0]).kr(2,gate:1)
+			* 15
 			=> Out.ar(p.carrierBus,_)
 		}.play
 
 });
-
+P(\orch_hit, music: { |p b e|
+	
+		{
+			PlayBuf.auto(1,p.laMer,rate:0.midiratio)
+			* Env([0,0,1,0,0],b.parse([3,1,3]) ++ [2],curve:[-3,3,0]).kr(2,gate:1)
+			* 0.9
+			// *15
+			// => Out.ar(p.carrierBus,_)
+		}.play
+});
 P(\chord,syl:3,music:{ |p b e|
 	(
-		amp:0.03,
+		amp:0.02,
 		strum:0.06,
 		instrument:\sawSynthSustain,
 		freq:[1,3,5,7].df('c',octave: 4),
-		//			effect:{var bus=Bus.audio;Synth(\test,[\in,bus.index]);bus.index},
-		//			out:Pkey(\effect),
 	).play
 });
 P(\bassnote,syl:3,music:[ 
@@ -1047,32 +1057,49 @@ P(\wobble,music: [
 	['we can wait a few more hours',[1,2,3,4,5,6,5].dm('d')].addLine;
 	P.synthV(\xuan, filter: (midinote: 50!6),  params: {|p b| [
 		lyrics: "we can wait a few more hours",
+		lag: [0.1, 0, 0, 0, 0, 0, 0]
 	] }, music:{|p b e|
-	p.vocodeTune.(p,b,e,amp:0.14,dur:b.sum+1,chord:[1,2,0.3,0.2]);
+	p.vocodeTune.(p,b,e,mix:0.8,amp:0.14,dur:b.sum+1,chord:[1,2,0.3,0.2]);
 	});
 	P(\resolution,syl:5,music:{ |parent durs|
 		[
 			freq:[2,1].df('g',octave: 4).q,
 			//				dur:durs.q,
 			dur:parent.parse(26,[1],6).q++[2].q,
-		].pp
+			instrument: \sawSynthSustain,
+			amp: 0.05,
+			out: Effect.bus{|i| RLPF.ar(i, Env.perc(0.5,2).kr(gate:1) * 1400 + 800,0.3) }
+		].ppm
 	}
 );
 // P('tune26',music:Song.currentSong.pbind[26]);
 	//	// (see ../vocoder2.scd for voice of Sargon)	
 	//	['/*MCCOY:*/ And what if we should decide against you? '].addLine;
 	['/*MCCOY:*/ And what if we decide against you? ', [7,6,5,4,5,6,7,12,11.5].dm('e')].addLine;
-	P(\resolution,syl:6,music:{ |parent durs|
+	P.synthV(\mo, filter: (midinote: _ - 12),  params: {|p b| [
+		lyrics: "and what if we decide + against + you?",
+		vocalMode: \Open,
+		paramTension: 0.9
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
+	P(\resolution,syl:6,music:{ |p b e|
 		[
 			freq:[3,2].df('e-',octave: 5,scale:\minor).q,
 			//				dur:durs.q,
-			dur:parent.parse(27,[1,1],7).q,
+			dur:b.drop(1).parse([1,1]).q,
+			instrument: \sawSynth,
+			att:0.5,
+			rel: b.drop(1).sum + 2,
+
 			stretch:[1.1,1].q,
-		].pp
+			out: Effect.bus({|i| RLPF.ar(i, Env.perc(0.5,b.drop(1).sum + 1).kr(gate:1,doneAction:2) * 1400 + 800,0.3)},out:4 )
+		].ppm
 	}
 );
-P('tune27',music:Song.currentSong.pbind[27]
-	);
 	['/*SARGON [OC]:*/ (beat) Then you may',[1,5,5,4].dm('c#')].addLine;
 
 P.synthV(\xuan, filter: (midinotes: [64,64,64,64]), params: {|p b| [
@@ -1081,20 +1108,17 @@ P.synthV(\xuan, filter: (midinotes: [64,64,64,64]), params: {|p b| [
 		defaultVibratoDepth:0.3
 	] }, music:{|p b e|
 
-	p.vocodeTune.(p,b,e,amp:0.14,dur:b.sum+1,chord:[2,1,0.5,0.2]);
+	p.vocodeTune.(p,b,e,mix: 0.5,amp:0.20,dur:b.sum+1,chord:[2,1,0.5,0.2]);
 });
-P('tune28',music:Song.currentSong.pbind[28]
-	=>Pbindf(_,\amp,[0].q++[0.1].q(inf))
-);
+P('tune28',music:Song.currentSong.pbind[28] =>Pbindf(_,\amp,[0].q++[0.1].q(inf)));
 P('extra-note28',music: {|p b e| 
 	(
 		amp:0.04,
-		freq:[1].df('a-',octave: [3, 4 ]),
+		freq:[1,11].df('a-',octave: [3, 4 ]),
 		instrument:\sawSynth,
 	).play 
 });
 	[' go as free -- ly as you came.',[13,12,13,14,13,12,7,11].dm('c#')].addLine;
-
 P.synthV(\xuan,prepend:true, 
 	// filter: (midinote: 64!8), 
 	filter: (midinote: _ - 12), 
@@ -1106,11 +1130,35 @@ P.synthV(\xuan,prepend:true,
 		legato: [1,1,1,1,0.95,1,0.8,1],
 		defaultVibratoDepth:0.2
 	] }, music:{|p b e|
-		p.vocodeTune.(p,b, e,att:0.1,sus:b.sum+2,rel:1, amp:0.10, dur:b.sum+2, chord:[2,1, 0.5,0.2]);
-	}
+		p.vocodeTune.(p,b, e,att:0.1, mix:0.5,sus:b.sum+2,rel:1, amp:0.20, dur:b.sum+2, chord:[2,1, 0.5,0.2]);
+	p.pbind[e.start].patternpairs ++[
+		 freq: Pfunc({|env| env.midinote.midicps/[1, 2 ]}),
+		 instrument:\sawSynthSustain,
+		 att:4,
+		 amp:0.1 /5,
+		 freqLag:0.05,
+		 out:p.carrierBus 
+	 ] =>_.pm// =>_.play
+	 ; 
+	 {PlayBuf.auto(1,p.laMer,
+			rate: midiratio( 1 +  [0, 5, 0, 7, 0].dq.demand(	b.parse([1/7,1/7,1/7,1/7,1/7,1/7,1/7,
+			1,1,1,
+			1/4,1/4,1/4,1/4,
+			1,1,
+			1
+		]).clumps([ 4 ]).collect(_.sum)) ),
+			trigger: Impulse.ar(1) - 0.1
+		) 
+	  	=> Out.ar(p.carrierBus,_) 
+	  	=> Out.ar(1,_) 
+		// * Env([1,1,0],[b.sum-3,1]).kr(2,gate:1)
+	}.play
+	};
+
+	
 );
-P.tune();
-SynthDef(\cleanPluck,{
+// P.tune();
+( SynthDef(\cleanPluck,{
 	DWGPlucked2.ar(
 		\freq.kr(300),
 		\amp.kr(0.1),
@@ -1124,6 +1172,7 @@ SynthDef(\cleanPluck,{
 		=> Out.ar(\out.ir(0),_)
 	}
 ).add;
+);
 P(\accompaniment,music:
 	{|parent durs|
 		[

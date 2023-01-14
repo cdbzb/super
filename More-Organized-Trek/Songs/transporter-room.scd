@@ -37,7 +37,7 @@ s.waitForBoot{
 	P('wash',start:\Easy,music: {|p b e|
 		[
 			freq: [[5,7]].df(\c,[4,5],\mixolydian).q,
-			dur: b.sum
+			dur: b.sum,
 			att:b.sum,
 			amp:0.02,
 			instrument:\reedy,

@@ -11,10 +11,6 @@
 		}
 	}
 
-        alter { |alteration|
-          ^this + (alteration / 2)
-        }
-
 	degreescps { |root=0 octave=5 scale=\major tuning transpose|
 
 		octave.isKindOf(Symbol).if{scale=octave;octave=5};
@@ -76,7 +72,7 @@
 	}
 
 	warpToTempoMap { | tempoMap |
-				^tempoMap.mapBeats(this)
+		^tempoMap.mapBeats(this)
 	}
 	warpToArray{ |quarters|
 		quarters = quarters ++ quarters.last;
@@ -85,8 +81,8 @@
 		.select(_.isStrictlyPositive)
 	}
 
-        warpTo {
-                | quarters |
+	warpTo {
+		| quarters |
 		quarters.isNil.if{^this};
 		quarters = this.pr_getQuarters(quarters);
 		( quarters.class==TempoMap ).if{
@@ -94,7 +90,7 @@
 		}{
 			^this.warpToArray(quarters)
 		}
-        }
+	}
 
 
 	warpRecordedTo { | tempoMap | ///deprecate this method
@@ -113,9 +109,9 @@
 		}
 
 	}
-	 push { | i a |
-		 i.isKindOf(SequenceableCollection).if{ ^this.pushMany(i) }{^this.pushOne(i,a)}
-	 }
+	push { | i a |
+		i.isKindOf(SequenceableCollection).if{ ^this.pushMany(i) }{^this.pushOne(i,a)}
+	}
 
 	remap { |from to|
 		^TempoMap(from, this).mapBeats(to)
@@ -130,7 +126,7 @@
 		quarters = this.pr_getQuarters(quarters);
 		^ array.warpTo(quarters)
 	}
-	
+
 	//taken from Song-Part - should replace for modularity
 	//TODO error check if array is too long
 	parse {|array start=0| 
@@ -202,46 +198,51 @@
 
 			};
 			^this.parse(result,start)
-}
-	addDurs {
-//		Song.songs.at(Song.current).addLine(this);
-		Song.currentSong.addDurs(this);
-	}
-
-	addLine {
-//		Song.songs.at(Song.current).addLine(this);
-		^Song.currentSong.addLine(this);
-	}
-
-        duty { |...args|
-    ^Duty.kr( args[0],  args[1] ? 1 , this.dq)
-        }
-
-	octaveUp {
-		^ this.collect{ |i| 
-			case { i < -10 }{ i + 10 }
-			{ i < 0 }{ -1 * i }
-			{ i > 0 }{ i + 10 }
 		}
-	}
-	octaveDown {
-		^ this.collect{ |i| 
-			case { i > 10 }{ i - 10 }
-			{ i > 0 }{ -1 * i }
-			{ i < 0 }{ i - 10 }
+		addDurs {
+			//		Song.songs.at(Song.current).addLine(this);
+			Song.currentSong.addDurs(this);
 		}
-	}
-	shiftOctaves {|i|
-		var result = this;
-		i.abs.do{
-			i.isPositive.if{
-				result = result.octaveUp;
-			}{
-				result = result.octaveDown;
+
+		scaleEnv { | env | 
+			var startTimes = [0] ++ this => _.integrate;
+			env.duration_(this.sum +10);
+			^env[startTimes.tail] + env[startTimes.dropLast] / 2 * this
+		}
+		addLine {
+			//		Song.songs.at(Song.current).addLine(this);
+			^Song.currentSong.addLine(this);
+		}
+
+		duty { |...args|
+			^Duty.kr( args[0],  args[1] ? 1 , this.dq)
+		}
+
+		octaveUp {
+			^ this.collect{ |i| 
+				case { i < -10 }{ i + 10 }
+				{ i < 0 }{ -1 * i }
+				{ i > 0 }{ i + 10 }
 			}
-		};
-		^result
-	}
+		}
+		octaveDown {
+			^ this.collect{ |i| 
+				case { i > 10 }{ i - 10 }
+				{ i > 0 }{ -1 * i }
+				{ i < 0 }{ i - 10 }
+			}
+		}
+		shiftOctaves {|i|
+			var result = this;
+			i.abs.do{
+				i.isPositive.if{
+					result = result.octaveUp;
+				}{
+					result = result.octaveDown;
+				}
+			};
+			^result
+		}
 }
 
 +Pseq {
@@ -251,7 +252,6 @@
 		pseq.list_(list);
 		^pseq
 	}
-
 	quantizeWindow { |amount|
 		var pseq= this.copy;
 		var list =pseq.list.asArray.quantize(amount);

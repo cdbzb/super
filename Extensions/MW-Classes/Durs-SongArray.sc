@@ -24,7 +24,18 @@ Durs {
 		{i.class==Symbol}{Song.songs.at(song).lyricsToDurs.put(Song.songs.at(song).lyrics[Song.songs.at(song).section(i)],j)}
 	}
 	scale {|section amount|
-		this.put(section,this.at(section).list * amount => _.q)
+		section =  P.calcStart(section);
+		this.put(section, this.at(section).list * amount => _.q)
+	}
+	scaleEnv {|section env|
+		( section.class == Env ).if {env = section; section = nil};
+		section =  P.calcStart(section);
+		this.put(section, this.at(section).list.asArray.scaleEnv( env ) => _.q)
+	}
+	filter { | section function|
+		( section.class == Function ).if {function = section; section = nil};
+		section =  P.calcStart(section).postln;
+		this.put(section, function.( this.at( section ).list ) => _.q)
 	}
 }
 

@@ -149,9 +149,9 @@ P.tune(\attitude,_ <> [rest:[\,\,\,\,1,1,1,1,1,1,1,1,1].q].p);
 // ["MULHALL: Well, if we all agree, I'm willing to host Thalassa's mind.","r"].addLine;
 //[" ( boom x 7 ) I'm a scientist.  ( boom x 7 ) and I'm","3 4 6 5 7 3 4 11 12 13 14 13 5 3 4 6 5 7 3 4 5 15  ".dm(\b)].addLine;g
 [" ( boom x 7 ) I'm a scientist.  ( boom x 7 ) and I'm","3 4 6 5 7 3 4 11 7 11 12 11 3 3 4 6 5 7 3 4 5 15  ".dm(\b)].addLine;
-Song.durs.scaleEnv(
-	Env([1,0.75],1,curve: 2)//.plot
-);
+// Song.durs.scaleEnv(
+// 	Env([1,0.75],1,curve: 2)//.plot
+// );
 Song.setTempoMap(\scientist,"e e e e eeee e e e x x e x xee e e e e eeee e e e e".asBeats);
 P.tune();
 // Song.quarters[\scientist].list.sum;
@@ -171,6 +171,21 @@ P.tune();
 			=> DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:1-early,)
 			+ ( i * dryAmount )
 			/ 6 
+			=> HPF.ar(_,100)
+			=> DCompressor.ar(_, sidechainIn:0, sidechain:0, ratio:4, threshold:-40, attack:0.1, release:100.1, makeup:0.5, automakeup:1)
+		}
+	}, \feng, {
+
+		{
+			|i|
+			var early = 0.5;
+			var dryAmount = 1;
+			EarlyRef.ar(i, source:[2,3,2], receiver:[0,0,0], roomsize:[4,5,6], hw:0.2, b:0.97, n:0, p:0, allp_lens:nil, allp_c:0.7)
+
+			=> DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:1-early,)
+			+ ( i * dryAmount )
+			/ 6 
+			*0.7
 			=> HPF.ar(_,100)
 			=> DCompressor.ar(_, sidechainIn:0, sidechain:0, ratio:4, threshold:-40, attack:0.1, release:100.1, makeup:0.5, automakeup:1)
 		}
@@ -252,8 +267,9 @@ P(\lead,start:\scientist,music:{ |p b e|
 ).play
 });
 [" willing I'm willin I'm willing I'm", "14 13 11 13 12 5 14 13 11".dm(\b)].addLine;
-Song.setQuarters('willin ', "qe eqe e qe eqe e qe eqe e ".asBeats /0.75	);
-Song.durs.filter( _ * 0.75 );
+// Song.durs.filter( _ * 0.75 );
+Song.setQuarters('willin ', "qe eqe e qe eqe e qe eqe e ".asBeats 	);
+Song.setTempoMap('willin ', "qe eqe e qe eqe e qe eqe e " 	);
 P(\cymbal, music: { |p b e|
 	(
 		instrument: \cymbalsDS,
@@ -316,57 +332,33 @@ P(\cymbal,start:'willin ',music:{|p b e|
 });
 //P.click('willin ');
 P.tune('willin ', _ <> [instrument:\stringyy,amp:0.7].p);
-
-( Song.willingDrum={| length = 12 p b e out |
-	var subdivisions = (snare: 4, kick:2);
-	out.isNil.if{out = Song.willingBus};
-	Ppar( [
-		[
-			instrument:\kick,
-			amp:0.5,
-			dur:"x0x0|x0x0|xx0x|xxxx".asDrumPat(subdivisions.kick,inf),
-		].p,
-		Pfxb(
-			Pbind(*[
-				instrument:\snare,
-				dur:"0000x000|0000x000|0000x00x|0000x00x".asDrumPat(subdivisions.snare,inf),
-				amp:0.40
-			]),
-			\dst
-		),
-
-		[
-			instrument:\hihat,
-			amp:Pseq([0.1,0.2],inf)*Pwhite(1,1.2,inf),
-			dur:"xxxx".asDrumPat(4,inf)
-		].p
-	] ) => Pfindur(length,_) 
-	=> Pset(\out,out,_)
-	=>_.play(e.quarters.list  => _.asTempoClock)
+( Song.willingDrum = { |p b e length|
+	var dur = length ? b.sum;
+	[
+		"q q q q e ee e e e e e ".wrapExtend(100), \kick, \amp, 0.5,
+		"q qq qq ex xq qq qq q ".wrapExtend(100),\snare, \amp,0.4, \rest, [[Rest()].q,[1].q(inf)].q,
+		"x ".wrapExtend(2 * 50),\hihat, \amp,[0.1,0.2].q(inf)*Pwhite(1,1.2,inf) ,
+	].dmx2(2, e.tempoMap) => Ppar(_) =>_.findur(dur) 
 };
-Song.willingBus=Bus.audio;
 );
-P(\drums,start:'willin ',music:{|p b e| 
-	fork{
-		{In.ar(p.willingBus)}.play.dur(b.sum);
-		//0.01.wait;
-		Song.willingDrum.(12, p, b, e )
+P(\newDrums,music: { |p b e|
+	p.willingDrum.(p, b, e).play
 	}
-});
+);
 P(\bass,start:'willin ',music:{|p b e| 
 	[
 
-					root:-1,
-					degree: 8.dup(8)++2.1.dup(4)++5.dup(4)=>_.flatten=>_.q(inf)-1,
-					octave:2,
-					out:[0,1],
-					smooth:Pwhite(0.2,0.3,inf),
-					del:Pwhite(0.5,1,inf),
-					dur:0.25,
-					coef:Pbrown(0.1,0.9,0.03),
-					lag:Pwhite(-0.01,0.01),
-					dur: 0.5,
-					amp:0.05
+		root:-1,
+		degree: 8.dup(8)++2.1.dup(4)++5.dup(4)=>_.flatten=>_.q(inf)-1,
+		octave:2,
+		out:[0,1],
+		smooth:Pwhite(0.2,0.3,inf),
+		del:Pwhite(0.5,1,inf),
+		dur:0.25,
+		coef:Pbrown(0.1,0.9,0.03),
+		lag:Pwhite(-0.01,0.01),
+		dur: 0.5,
+		amp:0.05
 	].pm(\pluckD).fin(24).play(TempoClock.newFromQuarters(p.quarters[e.start]))
 });
 P(\bassDouble, music: { |p b e|
@@ -435,32 +427,34 @@ P(\oldArr,start:\willing,music:{|p b e|
 
 });
 ["willing la laaa la", " 13 12 11 7 6".dm(\b,5)].addLine;
-Song.durs.filter( { |i|  i * 0.75 
-	// * [1,1,1,0.5]
-} );
+// Song.durs.filter( { |i|  i * 0.75  // * [1,1,1,0.5] 
+// });
 // Song.durs.filter( _.dropLast );
 Song.setQuarters('la laaa', "qe eqe e qe qq".asBeats );
+P.tune( _ <> [instrument:\stringyy,amp:0.7].p);
+Song.setTempoMap('la laaa', "qe eqe e qe qq" );
 P.synthV(\feng, filter: (midinote: _ - 12),  params: {|p b| [
 	// lyrics: "willing + I'm willing +",
-	lyrics: " r r I'm willing +",
-	vocalMode: \Opera
+	lyrics: " willing + I'm willing +",
+	vocalMode: \Opera,
+	defaultVibratoDepth: 0.2
 ] }, music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.double(\feng, filter:(midinote:_), music:{ |p b e| 
+P.double(\feng, 
+	// filter:(midinote:_),
+	music:{ |p b e| 
 	{
 		e.playbuf
+		=> p.synthVTracks.at(e.key).()
 	}
-	// .play
+	.play
 });
 P(\drums,start:'la laaa',music:{|p b e| 
-	fork{
-		{In.ar(p.willingBus)}.play.dur(b.sum);
-		p.willingDrum.(8, p, b, e)
-	}
+		p.willingDrum.( p, b, e, length: b.sum + 0.2 ).play
 });
 P(\setClock,start:'la laaa',music:{|p b e| 
 });
@@ -482,6 +476,9 @@ P(\bass,start:'la laaa la',music:{|p b e|
 });
 Song.mindKey = 'e-';
 ["to host Thalassa's mind",[4,3,5,4,3,7, 2, 3, 4,5, 6].dm( Song.mindKey, 6, \mixolydian)].addLine;
+Song.durs.filter( {|i| var a = i.last; i.dropLast ++ (a/100) => _.flat } );
+Song.setQuarters('to host',"E Q E Q E Qqe e e x x ".asBeats);
+P.tune('to host', _.fin(6));
 P.synthV(\feng, params: {|p b| [
 	lyrics: "to host thalassas + + mind r r r r r",
 	vocalMode: \Opera
@@ -517,9 +514,6 @@ pbind: {|p b| [dur:p.durs[\host].list.dropLast.add(1).q,midinote:p.tune[ p.secti
 	}.play
 });
 // Song.durs['to host']= Song.durs['to host'].list.dropLast(1).q;
-Song.durs.filter( {|i| var a = i.last; i.dropLast ++ (a/100) => _.flat } );
-Song.setQuarters('to host',"E Q E Q E Qqe e e x x ".asBeats);
-P.tune('to host', _.fin(6));
 P(\lick,start:'to host',syl:5,music:{|p b e| 
 	[
 		freq: [2,3,4,5,6].df(p.mindKey, [5,6]).q,
@@ -528,9 +522,18 @@ P(\lick,start:'to host',syl:5,music:{|p b e|
 		instrument:\stringyy
 	].pp
 });
-P(\drumFade,start:'to host',music:{|p b e| 
-	{In.ar(p.willingBus) * XLine.kr(1,0.001,b.sum)}.play.dur(b.sum);
-	p.willingDrum.(3, p, b, e)
+P(\drumFade,start:'to host',lag:0.35,music:{|p b e| 
+	var clock;
+	p.willingDrum.( p, b, e, 4) => Pmul(\amp, Pgeom(0.8,0.9,32),_) 
+	 => Pset(\out,Effect.bus(FreeVerb.ar(_,XLine.kr(0.1,1,4),[1,0.81])),_)  
+	 => _.play(clock: clock = TempoClock.new(1.5)) ;
+	 fork{
+		 8.do{|i|
+			 clock.tempo_(1.5 * (8-( i /4 ) / 8).reciprocal);
+			 0.15.wait
+		 }
+	 }
+
 });
 P(\chords,start:'to host',music:{|p b e| 
 	[

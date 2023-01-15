@@ -149,11 +149,11 @@ P.tune(\attitude,_ <> [rest:[\,\,\,\,1,1,1,1,1,1,1,1,1].q].p);
 // ["MULHALL: Well, if we all agree, I'm willing to host Thalassa's mind.","r"].addLine;
 //[" ( boom x 7 ) I'm a scientist.  ( boom x 7 ) and I'm","3 4 6 5 7 3 4 11 12 13 14 13 5 3 4 6 5 7 3 4 5 15  ".dm(\b)].addLine;g
 [" ( boom x 7 ) I'm a scientist.  ( boom x 7 ) and I'm","3 4 6 5 7 3 4 11 7 11 12 11 3 3 4 6 5 7 3 4 5 15  ".dm(\b)].addLine;
-// Song.durs.scaleEnv(
-// 	Env([1,0.75],1,curve: 2)//.plot
-// );
+Song.durs.scaleEnv(
+	Env([1,0.75],1,curve: 2)//.plot
+);
 Song.setTempoMap(\scientist,"e e e e eeee e e e x x e x xee e e e e eeee e e e e".asBeats);
-P.tune();
+// P.tune();
 // Song.quarters[\scientist].list.sum;
 
 //Song.durs[\scientist] = Song.durs[\scientist].list 
@@ -191,6 +191,7 @@ P.tune();
 		}
 	}
 ));
+Song.preroll_(1);
 Song.setQuarters(\scientist,"q q q q qqqq q q q e e ee e eqq q q q q qqqq q q q q".asBeats);
 P.synthV(\feng,  filter: (midinote: _ - 12),  params: {|p b| [
 	lyrics: "r r r r r r r I'm a sigh - entist + r r r r r r r and I'm",
@@ -199,7 +200,7 @@ P.synthV(\feng,  filter: (midinote: _ - 12),  params: {|p b| [
 	{
 		e.playbuf
 		  => p.synthVTracks.at(e.key.postln).()
-		  /2
+		  // /2
 	}.play
 });
 P.double(\feng, filter: (midinote: _ - 12), music:{|p b e|
@@ -242,7 +243,7 @@ P(\lead,start:\scientist,music:{ |p b e|
 			[\r, \r, \r, \r, \r, 3,  4,  6,  5,  11].dup(2).flat
 		].df(\b,3),
 		// p.quarters[e.start].list.parse([1,1,1,1,4].dup(3).flat),
-		b.parse([1,1,1,1,1, 1,1,1, [2,0.75], [0.25,2], 1, 1, 1, 1, 1, 1, 1, 1, 1]),
+		b.parse([1,1,1,1,1, 1,1,1, 2, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1]),
 		[ 
 			// lag: { 0.5.dup(8) .put(0,0) .dq }
 			lag: {[0] ++ 0.5.dup(4) => _.flat => _.dq(inf)}
@@ -476,7 +477,7 @@ P(\bass,start:'la laaa la',music:{|p b e|
 });
 Song.mindKey = 'e-';
 ["to host Thalassa's mind",[4,3,5,4,3,7, 2, 3, 4,5, 6].dm( Song.mindKey, 6, \mixolydian)].addLine;
-Song.durs.filter( {|i| var a = i.last; i.dropLast ++ (a/100) => _.flat } );
+// Song.durs.filter( {|i| var a = i.last; i.dropLast ++ (a/100) => _.flat } );
 Song.setQuarters('to host',"E Q E Q E Qqe e e x x ".asBeats);
 P.tune('to host', _.fin(6));
 P.synthV(\feng, params: {|p b| [
@@ -548,6 +549,7 @@ P(\chords,start:'to host',music:{|p b e|
 
 Song.opportunityKey='b';
 ["The opportunity is an extraordinary one ","-1 3.5 3.5 3.5 3.5 2 2 1 2 3 5 4.5 2 1 -7.5".dm(Song.opportunityKey,6,\minor)].addLine;//p14
+Song.durs.filter( _ * [1,1,1,1,1,1,5/7, 1,1,1,1,1,1,1,1 ] );
 P.synthV(\feng, filter: (midinote: _ - 12),  params: {|p b| [
 	lyrics: "r the opportunity + + + + is an extrordinary + + + + one",
 	vocalMode: \Opera

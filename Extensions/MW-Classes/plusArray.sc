@@ -55,6 +55,10 @@
 
 			tempomap = ( Song.tempoMap[map] ? TempoMap.fromDurs(Song.durs[map]) );
 		};
+		map.isNumber.if{
+
+			tempomap = ( Song.tempoMap[map] ? TempoMap.fromDurs(Song.durs[map]) );
+		};
 		(map.class==Part).if{
 			tempomap = map.tempoMap;
 		};

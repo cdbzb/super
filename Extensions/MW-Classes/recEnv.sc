@@ -5,14 +5,15 @@ Rec {  // a little media item that knows the durations of an associated Song sec
 	var s, <tail;
 	var <ratios;
 	var directory,sampleRate; //set by subClasses
+	classvar <>masterArmed = false;
 
-	*new { |name, section tail = 2 directory sampleRate | ^super.new.init(name, section, tail, directory, sampleRate )}
+	*new { | part tail = 2 directory sampleRate | ^super.new.init(part, tail, directory, sampleRate )}
 
-	init { | name sec t directory aSampleRate |
+	init { | part t directory aSampleRate |
 
-		var d = Song.durs[sec].list;
-		name = sec ++ "-" ++ name;
-		section = sec;
+		var d = Song.durs[part.start].list;
+		var name = part.key ++ "_" ++ part.parent.lyrics[part.start].hash;
+		section = part.start;
 		s = Server.default;
 		directory +/+ Song.current => {|i| File.exists(i).not.if{ File.mkdir(i)}};
 		path = path ? ( directory +/+ Song.current +/+ name );
@@ -38,10 +39,12 @@ Rec {  // a little media item that knows the durations of an associated Song sec
 		this.writeArchive(path);
 	}
 	
-	arm { armed = true; this.updateDurs }
+	arm { armed = true;  }
+	*record {masterArmed = true}
 	
 	record {
 			fork{
+				this.updateDurs;
 				buffer = Buffer.doAlloc(s,size).wait;
 				buffer=buffer.();
 				"recording".postln;
@@ -71,8 +74,9 @@ Rec {  // a little media item that knows the durations of an associated Song sec
 	}
 
 	play {
-		armed.if{
+		( armed and: masterArmed ).if{
 			this.record;
+			masterArmed = false;
 			^this.inputUgen
 		}{
 			^this.playbuf
@@ -97,8 +101,9 @@ Rec {  // a little media item that knows the durations of an associated Song sec
 
 RecEnv : Rec {
 	classvar directory = "/Users/michael/tank/super/Envelopes";
+	classvar armed;
 	*initClass { File.exists(directory).not.if{File.mkdir(directory)}; }
-	*new {|name section tail=0| ^super.new(name,section,tail, directory, 1024)}
+	*new {|part tail=0| ^super.new(part ,tail, directory, 1024)}
 	writeFiles { buffer.write(path++".wav", "wav", "int16");} //epos sampleRate 
 	inputUgen { ^{SoundIn.ar(0) => Amplitude.ar(_)} }
 }
@@ -106,11 +111,15 @@ RecEnv : Rec {
 RecOnsets {
 	var <>armed=false, path, name, <section, tail, <saved, s, <list;
 	classvar directory = "/Users/michael/tank/super/Onsets";
+	classvar <>masterArmed;
 	*initClass { File.exists(directory).not.if{File.mkdir(directory)}; }
-	*new {|name section tail=0| ^super.new.init(name,section,tail)}
-	init { |n sec t|
-		name = sec ++ "-" ++ n;
-		section = sec;
+	*new {|part tail=0| ^super.new.init(part,tail)}
+	init { |part t|
+
+		var name = part.key ++ "_" ++ part.parent.lyrics[part.start].hash;
+		section = part.start;
+		// name = sec ++ "-" ++ n;
+		// section = sec;
 		s = Server.default;
 		directory +/+ Song.current => {|i| File.exists(i).not.if{ File.mkdir(i)}};
 		path = directory +/+ Song.current +/+ name;
@@ -122,6 +131,7 @@ RecOnsets {
 		};
 		try{ this.list.asArray.registerD }
 	}
+	*record {masterArmed = true}
 	recordIfArmed {
 		^armed.if{
 			this.record
@@ -131,12 +141,13 @@ RecOnsets {
 
 	}
 	play{
-		^armed.if{
+		^( armed and: masterArmed ).if{
 			'recording!'.postln;
 			this.record.play;
+			masterArmed = false;
 			[1]
 		}{
-			list
+			list warpTo: Song.durs[section]
 		}
 	}
 	arm {armed = true}
@@ -150,9 +161,10 @@ RecOnsets {
 			(Song.secDur[section]+ tail).wait; o.free; 
 			list = list.differentiate .drop(1).asArray 
 			++ ( Song.secDur[section]-list.differentiate.drop(1).sum ) ; //time remaining is section
-			list = list.asBeats(section).round(0.001).reject{|i|i.isStrictlyPositive.not};
+			// list = list.asBeats(section).round(0.001).reject{|i|i.isStrictlyPositive.not};
+			list = TempoMap.fromDurs(Song.durs[section]).dursToBeats(list).round(0.001).reject{|i| i.isStrictlyPositive.not};
 			this.writeArchive(path);
-			this.list.asArray.registerD
+			this.list.asArray.registerD // add warpTo here!!!
 		};
 		^{
 			var trig = 

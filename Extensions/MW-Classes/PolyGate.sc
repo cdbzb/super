@@ -10,7 +10,7 @@
   demand{ | dur |
 	  //(values.isKindOf(Array)).if{values = values.dq};
 	  //^Demand.kr(this.tduty,0,values)
-	^Demand.multiNewList(['control',dur.tduty,0] ++this)
+	^Demand.multiNewList(['control',dur.tduty,0] ++ this)
   }
 }
 + TDuty {

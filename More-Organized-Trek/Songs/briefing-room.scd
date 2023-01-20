@@ -64,17 +64,28 @@ P(\bass, music: { |p b e|
 		{|i|  Mix.ar(i)}
 	).play
 });
-[ "With their knowledge, mankind could leap ahead ten thousand years. ","r" ].addLine;
+[ "With their knowledge, mankind could leap ahead ten thousand years. ","1 5 4 3 r 5 5 4 ".dm(\f) ++ " 5 4 3 2 2 1 3".dm(\g) ].addLine;
+P.tune();
+P(\bass, music: { |p b e|
+	[
+		freq: [\r,  11, 7,  6,  12, 6, 6, 6, 12 ].df(\f, 3, \mixolydian) =>_.q,
+		dur: b.parse([1,[2, 0.5], [0.5,2,0.5 ],[0.5, 2 ],1, 1,1, 1,1, 1]).postln.q
+	].pp
+});
 [ "KIRK: Bones, they'll show us medical advances,","r" ].addLine;
 [ "miracles you never dreamed possible.","r" ].addLine;
-[ "Scotty, engineering advances.","r" ].addLine;
-P.tune(\engineering);
+[ "Scotty, engineering advances.","1 -7 1 2 3 2 1 1 -7".dm(\c) ].addLine;
+P.tune();
 P('test2',start:\engineering,music: {|p b e|
 	{
-		a = RecEnv(\test2,\engineering)//.arm
-		.playbuf.()
-		* Gendy1.arWidth(freq:445)
-	}.play
+		RecEnv(e)
+		// .arm
+		.play
+		=> LPF.ar(_,10)
+		=> { |i| Gendy1.arWidth(freq:i * 100 + 200) * i}
+		* EnvGen.cutoff(b.sum,1)
+	}
+	//.play
 });
 //P(\test,start:\engineering,music:{|p b e| 
 //	fork{

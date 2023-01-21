@@ -114,6 +114,7 @@ RecOnsets {
 	classvar <>masterArmed;
 	*initClass { File.exists(directory).not.if{File.mkdir(directory)}; }
 	*new {|part tail=0| ^super.new.init(part,tail)}
+	*record {masterArmed = true}
 	init { |part t|
 
 		var name = part.key ++ "_" ++ part.parent.lyrics[part.start].hash;
@@ -130,15 +131,6 @@ RecOnsets {
 			list = saved.list;
 		};
 		try{ this.list.asArray.registerD }
-	}
-	*record {masterArmed = true}
-	recordIfArmed {
-		^armed.if{
-			this.record
-		}{
-			{ Silent.ar }
-		}
-
 	}
 	play{
 		^( armed and: masterArmed ).if{
@@ -173,18 +165,48 @@ RecOnsets {
 			=> Coyote.kr(_,fastMul:0.65);
 			trig => SendReply.kr(_,string);
 		};
-
 	}
-	inputUgens {
-		^{
-			//Coyote.kr(SoundIn.ar(0),fastMul:0.65)
-			Silent.ar()
+}
+
+RecKey : RecOnsets {
+	// var <>armed=false, path, name, <section, tail, <saved, s, <list;
+	classvar directory = "/Users/michael/tank/super/Onsets";
+	// classvar <>masterArmed;
+	*initClass { File.exists(directory).not.if{File.mkdir(directory)}; masterArmed = false }
+	*new {|part tail=0| ^super.new(part,tail)}
+	*record {masterArmed = true}
+	play{
+		^( armed and: masterArmed ).if{
+			'recording!'.postln;
+			this.record.play;
+			masterArmed = false;
+			[1]
+		}{
+			list warpTo: Song.durs[section]
 		}
 	}
-	playback {
-		^
-		TDuty.ar(list.asArray.drop(1).dq,0,[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1].dq)
-
+	record {
+		var o;
+		var string = '/'++name;
+		\rreeccoorrd.postln;
+		list = List[];
+		o = OSCFunc({list.add(TempoClock.seconds).postln},string);
+		fork{ 
+			(Song.secDur[section]+ tail).wait; o.free; 
+			list = list.differentiate .drop(1).asArray 
+			++ ( Song.secDur[section]-list.differentiate.drop(1).sum ) ; //time remaining is section
+			// list = list.asBeats(section).round(0.001).reject{|i|i.isStrictlyPositive.not};
+			list = TempoMap.fromDurs(Song.durs[section]).dursToBeats(list).round(0.001).reject{|i| i.isStrictlyPositive.not};
+			this.writeArchive(path);
+			this.list.asArray.registerD // add warpTo here!!!
+		};
+		^{
+			var trig = 
+			Impulse.kr(0) +
+			KeyState.kr(56, -0.1,1, lag:0)
+			+KeyState.kr(60, -0.1,1, lag:0);
+			trig => SendReply.kr(_,string);
+		};
 	}
 }
 
@@ -215,7 +237,6 @@ RecIn : Rec {
 			fork{ fftBuffer = this.allocatePVBuffer.wait.() }
 		}
 	}
-
 	writeFiles {
 		buffer.write(path++".wav", "wav", "int16"); //epos sampleRate 
 		fftBuffer.write(path++"-fft.wav", "wav", "float32");
@@ -233,7 +254,6 @@ RecIn : Rec {
 	allocatePVBuffer {
 		^Buffer.doAlloc(s,( length + tail ).calcPVRecSize(fftSize,hop).asInteger, 1 );
 	}
-
 	record{ 
 		fork{
 			fftBuffer = this.allocatePVBuffer(hop,window).wait.();
@@ -241,7 +261,6 @@ RecIn : Rec {
 			super.record;
 		}
 	}
-
 	fftChain {
 		^{
 			var in, chain, bufnum;
@@ -258,7 +277,6 @@ RecIn : Rec {
 			=> function
 			=> IFFT(_, window);
 		}
-
 	}
 
 }

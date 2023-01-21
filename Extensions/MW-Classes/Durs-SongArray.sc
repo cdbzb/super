@@ -1,13 +1,21 @@
 Durs { 
 	//Song.durs returns a Durs
 	var <>song;
+	var filters;
 	*new { |song|  ^super.new.init(song)}
-	init { |i|  song={ i.key }.try ? Song.current }
+	init { |i|  song={ i.key }.try ? Song.current;
+	filters = Order.new;
+	
+}
 	at{|i|
 		song ? song=Song.current; 
 		i.isInteger.not.if{i=Song.songs.at(song).section(i.asSymbol)};
-		^ Song.songs.at(song).lyrics.collect{ |x| Song.songs.at(song).lyricsToDurs[x] }[i] 
+		^ 
+		// Song.songs.at(song).lyrics.collect{ |x| Song.songs.at(song).lyricsToDurs[x] }[i] //this is to get the order - should not do this for each access!! should just have an ordered version of lyricsToDurs hanging around in memory to refer to
+		Song.songs.at(song).lyricsToDurs.at(Song.songs.at(song).lyrics[i]) 
 			? [1].q
+
+		=> {|x| ( filters.at(i) ? {|j|j} ).(x.list) => _.q } //apply filter
 	}
 	copySeries {|i j k|
 		song ? song=Song.current; 
@@ -17,11 +25,15 @@ Durs {
 	}
 
 	put{|i j| 
+		var curSong;
 		//should make a method that picks by number OR symbol
-		song ? song=Song.current; 
+		song.isNil.if{ song=Song.current } ;
+		curSong= Song.songs.at(song);
+
+
 		case
-		{i.isInteger}{Song.songs.at(song).lyricsToDurs.put(Song.songs.at(song).lyrics[i],j)}
-		{i.class==Symbol}{Song.songs.at(song).lyricsToDurs.put(Song.songs.at(song).lyrics[Song.songs.at(song).section(i)],j)}
+		{i.isInteger}{curSong.lyricsToDurs.put(curSong.lyrics[i],j)}
+		{i.class==Symbol}{curSong.lyricsToDurs.put(curSong.lyrics[curSong.section(i)],j)}
 	}
 	scale {|section amount|
 		section =  P.calcStart(section);
@@ -30,12 +42,14 @@ Durs {
 	scaleEnv {|section env|
 		( section.class == Env ).if {env = section; section = nil};
 		section =  P.calcStart(section);
-		this.put(section, this.at(section).list.asArray.scaleEnv( env ) => _.q)
+		// this.put(section, this.at(section).list.asArray.scaleEnv( env ) => _.q)
+		filters.put(section, {|d| d.asArray.scaleEnv( env ) })
 	}
 	filter { | section function|
 		( section.class == Function ).if {function = section; section = nil};
 		section =  P.calcStart(section).postln;
-		this.put(section, function.( this.at( section ).list ) => _.q)
+		// this.put(section, function.( this.at( section ).list ) => _.q)
+		filters.put(section, function)
 	}
 }
 

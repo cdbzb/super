@@ -154,12 +154,15 @@ SynthV{
 	init{ |n k t d|
 		name = n; double = d; take = t;
 		this.class.registry.put(n,k,(take ? \default),this);
-		key = k.asString.replace(Char.space,$_);
+		// key = k.asString.replace(Char.space,$_);
+		key = k;
+		\KEY.post;key.postln;
 		song.isNil.if{ song = Song.currentSong };
-		section = song.section(key.replace($_,Char.space)); //does this do anything?
+		// section = song.section(key.replace($_,Char.space)); //does this do anything?
+		section = key;
 		directory = directory.standardizePath;
 
-		location= directory +/+ song.key +/+ key +/+ name; //change storage scheme here
+		location= directory +/+ song.key +/+ Song.lyrics[key].hash.abs +/+ name; //change storage scheme here
 		take.notNil.if{ location = location ++ "-" ++ take };
 
 		file = location +/+ "project.svp";

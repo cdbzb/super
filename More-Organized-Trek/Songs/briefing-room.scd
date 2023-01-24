@@ -76,36 +76,37 @@ P(\bass, music: { |p b e|
 [ "miracles you never dreamed possible.","r" ].addLine;
 [ "Scotty, engineering advances.","1 -7 1 2 3 2 1 1 -7".dm(\c) ].addLine;
 P.tune();
+P(\test33, music: { |p b e|
+	RecKey(e)
+	.arm
+	.play
+		// => LPF.ar(_,10)
+		// // => { |i| Gendy1.arWidth(freq:i * 100 + 200) * i}
+		// * EnvGen.cutoff(b.sum,1)
+		=> {|i| [dur: i.q].pp}
+});
 P('test2',start:\engineering,music: {|p b e|
-	{
+	{ 
 		RecEnv(e)
-		// .arm
+		.arm
 		.play
-		=> LPF.ar(_,10)
-		=> { |i| Gendy1.arWidth(freq:i * 100 + 200) * i}
+		=> LPF.ar(_,10) =>_.poll
+		=> { |i| Gendy1.arWidth(width: i + 1,freq: 100 + 200) * i}
 		* EnvGen.cutoff(b.sum,1)
 	}
-	//.play
+	.play
 });
-//P(\test,start:\engineering,music:{|p b e| 
-//	fork{
-//		20.do( { {
-//			RecEnv("20220515_092223", length:4, durs:[1,1,1,1]/0.5.rand)
-//			.playbuf.().lag(0.1)  * [Pulse, Saw ].choose.ar(400 * 12.rand.midiratio * [1,2.5,4.5,1.135,6,12])
-//			=> SoftKneeCompressor.ar(_,thresh:-50,ratio:1/10,makeUp:0)
-//			* Env([1,1,0],[ 4,8 ]).kr(2,gate:1)
-//		}.play;
-//		3.wait }
-//		)
-//	}
-//});
 [ "Vessels this size with engines the size of walnuts. ","r" ].addLine;
 [ "SCOTT: Ach! You're joking. ","r" ].addLine;
 [ "SPOCK: No, he's not. ","r" ].addLine;
-[ "MCCOY: They're giants, and we're insects beside them. "," -5 3 2 1 3 4 3 1 3 2".dm(\d) ].addLine;
+[ "MCCOY: They're giants, and we're insects beside them. "," -5 3 2 1 3 4 3 1 3 2".dm(\e) ].addLine;
 P.tune();
-[ "They could destroy us without meaning to. ","r" ].addLine;
-[ "And all he wants is the body of our captain and our second in command, too. Coincidence? ","r" ].addLine;
+[ "They could destroy us without meaning to. "," 1 -7 -6 -6 -5 -6 -7 2 1 -3".dm(\e) ].addLine;
+P.tune();
+[ "(boom) And all he wants is the body of our captain"," -5 5 6 4 5    6 7 5 6 7 11 13.5 7.5".dm(\c,\minor)].addLine; 
+P.tune();
+[" (boom) and our second in command, too. Coincidence? "," -6 7 11 6 7 11 12 13 15.5 13 16 14.5 15.5 ".dm(\c,\mixolydian) ].addLine;
+P.tune();
 [ "KIRK: They selected us as the most compatible bodies. ","1 2 3 4 5 4 3 7 11 6 5 4 6 5".dm(\d,5,\mixolydian) ].addLine;
 //// add a boom before "Most"
 P.tune(\selected);

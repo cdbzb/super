@@ -64,7 +64,7 @@ P(\bass, music: { |p b e|
 		{|i|  Mix.ar(i)}
 	).play
 });
-[ "With their knowledge, mankind could leap ahead ten thousand years. ","1 5 4 3 r 5 5 4 ".dm(\f) ++ " 5 4 3 2 2 1 3".dm(\g) ].addLine;
+[ "With their knowledge, mankind could leap ahead ten thousand years. ","1 5 4 3 r 5 5 4 ".dm(\f) ++ " 5 4 4 3 2 1 3".dm(\g) ].addLine;
 P.tune();
 P(\bass, music: { |p b e|
 	[
@@ -72,9 +72,11 @@ P(\bass, music: { |p b e|
 		dur: b.parse([1,[2, 0.5], [0.5,2,0.5 ],[0.5, 2 ],1, 1,1, 1,1, 1]).postln.q
 	].pp
 });
-[ "KIRK: Bones, they'll show us medical advances,","r" ].addLine;
-[ "miracles you never dreamed possible.","r" ].addLine;
-[ "Scotty, engineering advances.","1 -7 1 2 3 2 1 1 -7".dm(\c) ].addLine;
+[ "KIRK: Bones, they'll show us medical advances,","7 6 7 5 7 6 5 4 6 5".dm('f#',4,\mixolydian) ].addLine;
+P.tune();
+[ "miracles you never dreamed possible.","7.5 11 5  4 5 6 12 11 7 6".dm(\c,\mixolydian) ].addLine;
+P.tune();
+[ "Scotty, engineering advances.","1 -7 1 2 3 -7 -6 -6 -5".dm('a-',\mixolydian) ].addLine;
 P.tune();
 P(\test33, music: { |p b e|
 	RecKey(e)
@@ -96,11 +98,32 @@ P('test2',start:\engineering,music: {|p b e|
 	}
 	.play
 });
-[ "Vessels this size with engines the size of walnuts. ","r" ].addLine;
-[ "SCOTT: Ach! You're joking. ","r" ].addLine;
-[ "SPOCK: No, he's not. ","r" ].addLine;
+[ "Vessels this size with engines the size of walnuts. ","3 1 4 3 1".dm(\d) ++ "4 3 1 2 3".dm(\e) ++ "4 3".dm('f#') ].addLine;
+P.tune();
+[ "SCOTT: Ach! You're joking. ","1 1 4 1".dm('a-') ].addLine;
+P.tune();
+[ "SPOCK: No, he's not. ","-5 -5 1".dm('a-') ].addLine;
+P.tune();
 [ "MCCOY: They're giants, and we're insects beside them. "," -5 3 2 1 3 4 3 1 3 2".dm(\e) ].addLine;
 P.tune();
+P(\bass, music: { |p b e|
+	MegaBind(
+		[
+			[\r, 5,  \r, \r],
+			[\r, 3,  \r, \r],
+			[\r, -1, -4, -5]
+		].df(\e)
+		,
+		b.parse([1,4,3,1]),
+		[],
+		{|i|  
+			VarSaw.ar(
+				i.freqSeq * ( Gendy1.kr(minfreq:1,maxfreq:2) / 50 + 1),0,0.5)
+			* Env.asr().kr(0,gate:i.gateSeq)
+		},
+		{|i|Splay.ar(i) * 0.1}
+	).play
+});
 [ "They could destroy us without meaning to. "," 1 -7 -6 -6 -5 -6 -7 2 1 -3".dm(\e) ].addLine;
 P.tune();
 [ "(boom) And all he wants is the body of our captain"," -5 5 6 4 5    6 7 5 6 7 11 13.5 7.5".dm(\c,\minor)].addLine; 

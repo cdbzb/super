@@ -12,7 +12,7 @@ Rec {  // a little media item that knows the durations of an associated Song sec
 	init { | part t directory aSampleRate |
 
 		var d = Song.durs[part.start].list;
-		var name = part.key ++ "_" ++ part.parent.lyrics[part.start].hash;
+		var name = part.key ++ "_" ++ part.parent.lyrics[part.start].hash.abs;
 		section = part.start;
 		s = Server.default;
 		directory +/+ Song.current => {|i| File.exists(i).not.if{ File.mkdir(i)}};
@@ -117,7 +117,7 @@ RecOnsets {
 	*record {masterArmed = true}
 	init { |part t|
 
-		var name = part.key ++ "_" ++ part.parent.lyrics[part.start].hash;
+		var name = part.key ++ "_" ++ part.parent.lyrics[part.start].hash.abs;
 		section = part.start;
 		// name = sec ++ "-" ++ n;
 		// section = sec;

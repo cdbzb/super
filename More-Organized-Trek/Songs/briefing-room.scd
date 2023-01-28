@@ -65,17 +65,142 @@ P(\bass, music: { |p b e|
 	).play
 });
 [ "With their knowledge, mankind could leap ahead ten thousand years. ","1 5 4 3 r 5 5 4 ".dm(\f) ++ " 5 4 4 3 2 1 3".dm(\g) ].addLine;
+Song.setTempoMap(\leap,"e | ee e e|e e ex xe ee e ee e ee e q");
+
+P(\click, music: { |p b e|
+	e.tempoMap.postln;
+	[0.5] ++ ( 1!8 ) warpTo: e.tempoMap 
+	=> { |i| [
+		dur:i.q,
+		instrument:\hihat,
+	]
+	// .pp
+}
+});
 P.tune();
+P(\line, music: { |p b e|
+	[
+		freq: [\r, [1,3],2, 2 ].df(\f).q,
+		dur: b.parse([ 1, 3, 1, 2 ]).q,
+		amp: 0.1
+	].pp
+});
+P(\chord,syl:13,lag:-1, music: { |p b e|
+	(
+		instrument:\stringyy,
+		freq: [-7,1, 3, 5, 7].df(\g,\mixolydian),
+		att:2,
+		dur:3,
+		amp:0.2,
+		wet:0.2
+
+	).play
+});
+P(\chords,syl:6, music: { |p b e|
+	MegaBind(
+		[
+			[5,  4,  4,  3,  2,  1,  3],
+			[2,  2,  2,  -7, -7, \r, 1],
+			[-7, -7, -7, -3, -2, \r, -3],
+			[5,  4,  4,  3,  2,  1,  3].shiftOctaves(-1)
+                        ,
+		].df(\g),
+		b.drop(1),
+		[
+
+		],
+		{|i x|  
+			[Saw,LFTri,Pulse,SinOsc][x].ar
+			// SinOsc.ar
+			(i.freqSeq * LFBrownNoise2.ar().range(0.99,1.01),0.1,0.1)
+			* Env.asr().kr(0,gate:i.gateSeq)
+			+ Env.perc().kr(0,gate:(i.trigSeq * i.gateSeq))
+			 => 
+			 {|i|
+				 HPF.ar(i,490)
+				 * Env([0,1],0.1).kr(0,gate:1)
+				 => {|i| CombN.ar(i,delaytime:0.1.rrand(0.2),decaytime:2) }
+				 => {|i| CombN.ar(i,delaytime:0.1.rrand(0.2),decaytime:2) }
+				 + ( i => HPF.ar(_,90) )
+
+			 }
+			=> FoaEncode.ar(_,Song.encoders.omni)
+			=> FoaTransform.ar(_, 'press',pi/2, LFBrownNoise2.ar(5).range(-pi,pi),LFBrownNoise2.ar(1)*pi)
+			// => FoaTransform.ar(_,'pressZ',SinOsc.ar(1))
+			
+		},
+		{|i|  
+			Mix.ar(i)
+			/2.5
+			 => FoaDecode.ar(_,Monitors.decoder)
+		}
+	).play
+});
+"boilerplate.scd".load;
+P.synthV(\mo, params: {|p b| [
+	lyrics: "with their knowledge + mankind + could leap ahead + ten thousand + years",
+	vocalMode:\Open,
+	legato: [1, 1, 1, 0.9,  1, 1, 0.8, 1, 1, 1, 1, 1, 1, 1]
+] }, music:{|p b e|
+	{
+		e.playbuf
+		/2
+
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(\mo,
+	pbind:{|p b| [ midinote: "1 5 4  3 2 2 2 ".dm(\f) ++ "5 4 4 3 2 1 3".dm(\g) => _.q, dur:b.q ].p},
+	filter: (midinote: _ - 12) ,
+	music:{|p b e|
+		{
+		e.playbuf
+		/2
+
+		=> p.synthVTracks.at(e.key).()
+	}.play
+}
+);
 P(\bass, music: { |p b e|
 	[
-		freq: [\r,  11, 7,  6,  12, 6, 6, 6, 12 ].df(\f, 3, \mixolydian) =>_.q,
-		dur: b.parse([1,[2, 0.5], [0.5,2,0.5 ],[0.5, 2 ],1, 1,1, 1,1, 1]).postln.q
+		freq: [\r, 11, 7,  6,  6, 12, 6, 12 ].df(\f, [2,3], \mixolydian) =>_.q,
+		dur:  "e,  qq, qq, qe, e, qe,  qe,  q".asBeats warpTo: e.tempoMap 
+		=> _.q,
+
+		out: Effect.bus(DWGReverbC1C3.ar(_))
+		// dur: b.parse([1,[2, 0.5], [0.5,2,0.5 ],[0.5, 2 ],1, 1,1, 1,1, 1]).postln.q
 	].pp
 });
 [ "KIRK: Bones, they'll show us medical advances,","7 6 7 5 7 6 5 4 6 5".dm('f#',4,\mixolydian) ].addLine;
 P.tune();
 [ "miracles you never dreamed possible.","7.5 11 5  4 5 6 12 11 7 6".dm(\c,\mixolydian) ].addLine;
+P.synthV(\kevin, params: {|p b| [
+	lyrics: "miracles + + you never + dreamed possible + +",
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(\kevin,
+	// pbind:{|p b| [ midinote: "1 5 4  3 2 2 2 ".dm(\f) ++ "5 4 4 3 2 1 3".dm(\g) => _.q, dur:b.q ].p},
+	// filter: (midinote: _ - 12) ,
+	music:{|p b e|
+		{
+		e.playbuf
+		/2
+
+		=> p.synthVTracks.at(e.key).()
+	}.play
+}
+);
 P.tune();
+P(\bass, music: { |p b e|
+	[
+		freq: "1 4 7 11".df(\c,[2,3],\mixolydian).q,
+		dur: b.parse([ [2,0.5],[0.5,3],1,3 ]).q
+	].pp
+});
 [ "Scotty, engineering advances.","1 -7 1 2 3 -7 -6 -6 -5".dm('a-',\mixolydian) ].addLine;
 P.tune();
 P(\test33, music: { |p b e|

@@ -91,7 +91,7 @@ P(\chord,syl:13,lag:-1, music: { |p b e|
 		freq: [-7,1, 3, 5, 7].df(\g,\mixolydian),
 		att:2,
 		dur:3,
-		amp:0.2,
+		amp:[ 2, 1, 1, 1, 2 ]/10,
 		wet:0.2
 
 	).play
@@ -172,6 +172,27 @@ P(\bass, music: { |p b e|
 	].pp
 });
 [ "KIRK: Bones, they'll show us medical advances,","7 6 7 5 7 6 5 4 6 5".dm('f#',4,\mixolydian) ].addLine;
+Song.makeBassNote = { |root = 'f#' release = 2|
+	P(\bassnote, music: { |p b e|
+		{
+			[-11,-1].df(root)
+			=> { |i| Saw.ar( i + Gendy1.kr(minfreq:1,maxfreq:2) )}
+			=> { |i| Convolution.ar(i,Dust.ar(50) => FreeVerb.ar(i,1,1)) + i / 5}
+			/ 50
+			* EnvGen.cutoff(b.sum, release)
+		}.play
+	});
+};
+Song.makeBassNote.('f#', 1);
+P.synthV(\kevin, params: {|p b| [
+	lyrics: "  Bones, they'll show us medical + +  advances + + ,",
+	legato: [0.8, 1, 1, 1, 1, 1, 1, 1, 1, 0.5]
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 P.tune();
 [ "miracles you never dreamed possible.","7.5 11 5  4 5 6 12 11 7 6".dm(\c,\mixolydian) ].addLine;
 P.synthV(\kevin, params: {|p b| [
@@ -180,6 +201,11 @@ P.synthV(\kevin, params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		=> {|i| 
+			CombN.ar(i, b.parse([3]).unbubble, b.parse([2, 0.5]).sum)/2
+			* EnvGen.cutoff(b.sum - 0.25,0.2,0)
+			+ i 
+		}
 	}.play
 });
 P.double(\kevin,
@@ -201,7 +227,28 @@ P(\bass, music: { |p b e|
 		dur: b.parse([ [2,0.5],[0.5,3],1,3 ]).q
 	].pp
 });
+P(\bassPulse, music: { |p b e|
+	{
+		// var pulse = "e e e e e e q e e e".asBeats.warpTo(e.tempoMap);
+		var pulse = b.parse([1, 1, 0.5, 0.5, 1, 1, 1, 0.5, 0.5, 1, 1, 1]);
+		var freq = [1, 2, 3, 4, 7, 11].df(\c,[4,5],\mixolydian).dq 
+		.demand( b.parse([2, 0.5, 0.5, 3, 1, 3 ]) );
+
+		Saw.ar( freq ) * 0.1
+		* Env.perc(0.01,2).kr(0,gate: TDuty.kr(pulse.dropLast.dq,0,1))
+		
+	}.play
+});
 [ "Scotty, engineering advances.","1 -7 1 2 3 -7 -6 -6 -5".dm('a-',\mixolydian) ].addLine;
+Song.makeBassNote.('a-');
+P(\chord, music: { |p b e|
+	(
+		instrument: \sawSynthSustain,
+		freq: [-1,1,3,5,7].df('a-',4),
+		strum:0.05,
+		amp:0.06
+	).play
+});
 P.tune();
 P(\test33, music: { |p b e|
 	RecKey(e)
@@ -224,10 +271,29 @@ P('test2',start:\engineering,music: {|p b e|
 	.play
 });
 [ "Vessels this size with engines the size of walnuts. ","3 1 4 3 1".dm(\d) ++ "4 3 1 2 3".dm(\e) ++ "4 3".dm('f#') ].addLine;
+P(\lick, music: { |p b e|
+	[
+		freq: [ [-1,1,3], 1, [2, 4], [1, 3], \r, [-2,2],\r,  [-3,3] ].df(\d).q,
+		dur: b.parse([ 1, 1, 1, 1, 1, 2, 3, 2 ]).q,
+		legato: [ [4, 1, 1], 1, 1, 1, 1, 1, 1, 1 ].q
+	].pp
+});
 P.tune();
 [ "SCOTT: Ach! You're joking. ","1 1 4 1".dm('a-') ].addLine;
+P(\bassnote, music: { |p b e|
+	[
+		freq: [\r, [-4,4] ].df('a-',3).q,
+		dur: b.parse([2, 2]).q
+	].pp
+});
 P.tune();
 [ "SPOCK: No, he's not. ","-5 -5 1".dm('a-') ].addLine;
+P(\bassnote, music: { |p b e|
+	[
+		freq: [\r, [-5, 5], [1, 11]].df('a-',3).q,
+		dur: b.parse([  2/3,[1/3, 1],1 ]).q
+	].pp
+});
 P.tune();
 [ "MCCOY: They're giants, and we're insects beside them. "," -5 3 2 1 3 4 3 1 3 2".dm(\e) ].addLine;
 P.tune();

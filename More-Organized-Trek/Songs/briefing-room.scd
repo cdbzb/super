@@ -172,18 +172,23 @@ P(\bass, music: { |p b e|
 	].pp
 });
 [ "KIRK: Bones, they'll show us medical advances,","7 6 7 5 7 6 5 4 6 5".dm('f#',4,\mixolydian) ].addLine;
-Song.makeBassNote = { |root = 'f#' release = 2|
+Song.makeBassNote = { |root = 'f#' release = 2 shorten = 0 out=0|
 	P(\bassnote, music: { |p b e|
 		{
-			[-11,-1].df(root)
+			[-11,1].df(root,3)
 			=> { |i| Saw.ar( i + Gendy1.kr(minfreq:1,maxfreq:2) )}
-			=> { |i| Convolution.ar(i,Dust.ar(50) => FreeVerb.ar(i,1,1)) + i / 5}
-			/ 50
-			* EnvGen.cutoff(b.sum, release)
+			=> { |i| Convolution.ar(i,Dust.ar(1.df(root)) 
+		) + i }
+			// / 50
+			=>DWGReverb3Band.ar(_,rtlow:5)
+			=> LPF.ar(_,1200)
+			/ 22
+			* EnvGen.cutoff(b.sum - shorten, release)
+			=> Out.ar(out,_)
 		}.play
 	});
 };
-Song.makeBassNote.('f#', 1);
+Song.makeBassNote.('f#', 4, shorten:3);
 P.synthV(\kevin, params: {|p b| [
 	lyrics: "  Bones, they'll show us medical + +  advances + + ,",
 	legato: [0.8, 1, 1, 1, 1, 1, 1, 1, 1, 0.5]
@@ -193,8 +198,18 @@ P.synthV(\kevin, params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.tune();
+// P.tune();
+P(\line, music: { |p b e|
+	[
+		freq: "3  2 ".df('f#').q/2,
+		legato:1,
+		dur: b.parse([[3,1],5,1]).q,
+		instrument: \sparkTriangle,
+		depth:0.01
+	].pp
+});
 [ "miracles you never dreamed possible.","7.5 11 5  4 5 6 12 11 7 6".dm(\c,\mixolydian) ].addLine;
+Song.makeBassNote.('c',3,shorten:4);
 P.synthV(\kevin, params: {|p b| [
 	lyrics: "miracles + + you never + dreamed possible + +",
 ] }, music:{|p b e|
@@ -240,7 +255,7 @@ P(\bassPulse, music: { |p b e|
 	}.play
 });
 [ "Scotty, engineering advances.","1 -7 1 2 3 -7 -6 -6 -5".dm('a-',\mixolydian) ].addLine;
-Song.makeBassNote.('a-');
+Song.makeBassNote.('a-',release:3,shorten:2.5);
 P(\chord, music: { |p b e|
 	(
 		instrument: \sawSynthSustain,
@@ -250,26 +265,7 @@ P(\chord, music: { |p b e|
 	).play
 });
 P.tune();
-P(\test33, music: { |p b e|
-	RecKey(e)
-	.arm
-	.play
-		// => LPF.ar(_,10)
-		// // => { |i| Gendy1.arWidth(freq:i * 100 + 200) * i}
-		// * EnvGen.cutoff(b.sum,1)
-		=> {|i| [dur: i.q].pp}
-});
-P('test2',start:\engineering,music: {|p b e|
-	{ 
-		RecEnv(e)
-		.arm
-		.play
-		=> LPF.ar(_,10) =>_.poll
-		=> { |i| Gendy1.arWidth(width: i + 1,freq: 100 + 200) * i}
-		* EnvGen.cutoff(b.sum,1)
-	}
-	.play
-});
+
 [ "Vessels this size with engines the size of walnuts. ","3 1 4 3 1".dm(\d) ++ "4 3 1 2 3".dm(\e) ++ "4 3".dm('f#') ].addLine;
 P(\lick, music: { |p b e|
 	[
@@ -278,12 +274,31 @@ P(\lick, music: { |p b e|
 		legato: [ [4, 1, 1], 1, 1, 1, 1, 1, 1, 1 ].q
 	].pp
 });
+P(\bassline, music: { |p b e|
+		{
+			var dur = b.parse([5,5,2]) ++ e.bNext.parse([ 2/3, [1/3,1], 2]) =>_.flat ;
+			var sig = [1, 2, 3,3, 4.5, 7].df('d').dq.demand(dur) / [2,4]
+			=> { |i| Saw.ar( i + Gendy1.kr(minfreq:1,maxfreq:2) )}
+			=> { |i| Convolution.ar(i,Dust.ar(50) 
+		) + i }
+			// / 50
+			=>DWGReverb3Band.ar(_,rtlow:5)
+			=> LPF.ar(_,1200)
+			/ 22
+			* EnvGen.cutoff(b.sum / 2 ,b.sum / 2 + e.bNext.parse([3]) + 1);
+			// Monitors.az(sig,)
+			// sig.flat
+			FoaEncode.ar(sig.flat, FoaEncoderMatrix.newQuad)
+			=> FoaPush.ar(_,pi/4,[-pi,0,pi,3*pi/2].dq.demand(dur)/2)
+			=> Monitors.ambi(_)
+		}.play;
+});
 P.tune();
 [ "SCOTT: Ach! You're joking. ","1 1 4 1".dm('a-') ].addLine;
-P(\bassnote, music: { |p b e|
+P(\bass, music: { |p b e|
 	[
-		freq: [\r, [-4,4] ].df('a-',3).q,
-		dur: b.parse([2, 2]).q
+		freq: [\r,[21,11], [-4,4] ].df('a-',3).q,
+		dur: b.parse([ 2/3, [1/3,1], 2]).q
 	].pp
 });
 P.tune();
@@ -295,22 +310,26 @@ P(\bassnote, music: { |p b e|
 	].pp
 });
 P.tune();
+// idea big vibrato to indicate irony !!
 [ "MCCOY: They're giants, and we're insects beside them. "," -5 3 2 1 3 4 3 1 3 2".dm(\e) ].addLine;
 P.tune();
 P(\bass, music: { |p b e|
 	MegaBind(
 		[
-			[\r, 5,  \r, \r],
-			[\r, 3,  \r, \r],
-			[\r, -1, -4, -5]
+			[\r, 5,  6, 5, \_],
+			[\r, 3,  1, \_,-7],
+			[\r, -1, -4, -5, \_],
+			[\r, -1, -4, -5, \_],
+
 		].df(\e)
 		,
-		b.parse([1,4,3,1]),
-		[],
+		b.parse([1,4,3,1,1]),
+		[oct:[1,1,1,2]],
 		{|i|  
 			VarSaw.ar(
-				i.freqSeq * ( Gendy1.kr(minfreq:1,maxfreq:2) / 50 + 1),0,0.5)
+				i.freqSeq / i.oct /[1, 2 ] * ( Gendy1.kr(minfreq:[ 1.1,1 ],maxfreq:2) / 50 + 1),0,SinOsc.kr({ 0.2.rrand(1) }!2).range(0.4,0.6))
 			* Env.asr().kr(0,gate:i.gateSeq)
+			/ 4
 		},
 		{|i|Splay.ar(i) * 0.1}
 	).play
@@ -318,8 +337,24 @@ P(\bass, music: { |p b e|
 [ "They could destroy us without meaning to. "," 1 -7 -6 -6 -5 -6 -7 2 1 -3".dm(\e) ].addLine;
 P.tune();
 [ "(boom) And all he wants is the body of our captain"," -5 5 6 4 5    6 7 5 6 7 11 13.5 7.5".dm(\c,\minor)].addLine; 
+P(\bassPad, music: { |p b e|
+	[
+		instrument:\stringyy,
+		width: [0,3, 20,40 ],
+		freq: [1,\r,2].df(\g,3) * [0.5,1,1,2] => _.q,
+		dur: b.parse([5,8]) ++ e.bNext.parse([8]) => _.q,
+		amp: 0.2,
+		out: Effect.bus({|i| i},inputChannels:4,out:2)
+	].p.play
+});
 P.tune();
 [" (boom) and our second in command, too. Coincidence? "," -6 7 11 6 7 11 12 13 15.5 13 16 14.5 15.5 ".dm(\c,\mixolydian) ].addLine;
+P(\bassnote, music: { |p b e|
+	(
+		instrument:\sawSynthSustain,
+		freq:-6.df(\c,3)
+	)//.play
+});
 P.tune();
 [ "KIRK: They selected us as the most compatible bodies. ","1 2 3 4 5 4 3 7 11 6 5 4 6 5".dm(\d,5,\mixolydian) ].addLine;
 //// add a boom before "Most"

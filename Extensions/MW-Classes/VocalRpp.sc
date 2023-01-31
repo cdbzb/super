@@ -331,9 +331,9 @@ VocalRPP {
 
 + P {
     *rpp {
-        | key rppStart syl lag=0 music song resources tail |
-	var start = P.calcStart(start);
-	^P(key,start,syl,lag, music,song,resources, VocalRPP(rppStart ,key,tail:tail)); // order of section and key are reversed!!
+        | key start syl lag=0 music song resources tail |
+	var newStart = P.calcStart(start);
+	^P(key,newStart,syl,lag, music,song,resources, VocalRPP(start ,key,tail:tail)); // order of section and key are reversed!!
     }
 }
 

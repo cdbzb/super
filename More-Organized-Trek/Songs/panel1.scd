@@ -31,7 +31,9 @@ P('chord',start:\energy,music: {|p b e|
 	].pp
 });
 ["Sealed in this receptacle is the ",[5, 4,3,2,3,4,3,-5,-6,-7].dm(\c,6)].addLine;
-P.rpp('vox',start:\Sealed,lag:-1,music: {|p b e|
+P.rpp('vox',
+	start: \Sealed,
+	lag:-1,music: {|p b e|
 	{ Song.laMer => PlayBuf.ar(2,_,rate: [5,0].midiratio.dq.demand(b.parse([5,3])+[1,0]).poll)/2 * 0.1=> Out.ar(Song.carrierBus,_) }.play;
 	p.vocodeTune.(p,b,e,
 		modGain:9,
@@ -75,13 +77,50 @@ P('bass',start:\Sealed,music: {|p b e|
 });
 ["essence of my mind. ",[7,7,6,7,6,5,6, 5].dm(\g)].addLine; 
 Song.durs[\essence]=Song.durs[\essence].list.dup(2).flat[(0..15)].q(); //only 15
+Song.setTempoMap(\essence,"q qe ee e e e qqe e");
+P.synthV(\kevin,  
+	pbind: {|p b| [ dur:p.durs[\essence], midinote: "1 1 1 1 1 1 1 4 7 7 6 7 6 5 6 ".dm(\a) ].p },
+	params: {|p b| [
+	lyrics: "r r r r r r r the essence + of his mind - - r",
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+		/ 2
+		
+	}.play
+});
+P.double(\kevin,
+	pbind: {|p b| [ dur:p.durs[\essence], midinote: "1 1 1 1 1 1 1 4 7 7 6 7 6 5 6 ".dm(\a) ].p },
+	music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+		/ 2
+	}.play
+});
+( Song.synthVTracks=EventWithDefault(
+	\default, {
+		{
+			|i|
+			var early = 0.5;
+			var dryAmount = 1;
+			EarlyRef.ar(i, source:[2,3,2], receiver:[0,0,0], roomsize:[4,5,6], hw:0.2, b:0.97, n:0, p:0, allp_lens:nil, allp_c:0.7)
+
+			=> DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:1-early,)
+			+ ( i * dryAmount )
+			/ 6 
+			=> HPF.ar(_,100)
+			=> DCompressor.ar(_, sidechainIn:0, sidechain:0, ratio:4, threshold:-40, attack:0.1, release:100.1, makeup:0.5, automakeup:1)
+		}
+	}
+));
 P('cymbal',start:\essence,music: {|p b e|
 	(
 		instrument:\cymbalsDS,
 		amp:0.02
 	).play
 });
-Song.setTempoMap(\essence,"q qe ee e e e qqe e");
 P(\click,start:\essence,music: { |p b e|
 	[
 		dur:1.dup(8).warpTo(e.tempoMap
@@ -91,6 +130,32 @@ P(\click,start:\essence,music: { |p b e|
 	].pp
 });
 P.tune(\essence,_ => {|i| [i,Pmul(\freq,midiratio(2),i)].q});
+P.synthV(\an,
+	filter: (midinote: _ - 24), 
+	params: {|p b| [
+	lyrics: "essence + of my mind - - r r r r r",
+	lag: [0.05,0,0,0,0,0,0,0,0,0,0,0]
+] }, music:{|p b e|
+	{
+		// e.playbuf
+		// => p.synthVTracks.at(e.key).()
+
+
+	}.play;
+		p.vocodeTune.(p,b,e,e.rpp,
+
+		modGain:3,
+		chord:#[1,0.5,2,8],
+		echo:0.5,
+		mix:0.8,
+			// amp:0.22,
+			// dur:b.sum+1,
+			// att:1,
+			// sus:b.sum-0.1,
+			// rel:0.2,
+			// out:3
+		);
+});
 P(\chord,start:\essence,music: { |p b e|
 	[
 		freq:[ [1,3,5,7], [ 1,3,4,6 ] ].df(\g).q,
@@ -111,7 +176,7 @@ P(\bass,start:\essence,music: { |p b e|
 });
 ["my mind outtro",[1, 11,7,6,6,5,6,7,7,6,5,5 ].dm(\b,\mixolydian) ].addLine;
 Song.setTempoMap(\outtro, "q qe ee e qq q q q qe ee e q" );
-P.tune(\outtro);
+P.tune(\outtro, [ instrument:\sawSynthSustain, pulse:0.3, trigger:1 ].pm <> _); //need to make it pulse
 P('bass',start:\outtro,music: {|p b e|
 	
 [ [1, -7, -4, -3, -5, -4, -1],[2,3,2,2, 2,2, 1] ].flop.collect({ |i| i[0].dup(i[1]) }).flat .df(\b,\mixolydian)
@@ -157,8 +222,7 @@ P('click',start:\outtro,music: {|p b e|
 });
 /*SPOCK:*/[" Pure energy. Matter without form. ","r",].addLine; 
 P('arpeggio',start:\Pure,music: {|p b e|
-	[-1,-3,-5,-7,2,4,6,11, 13,15,17,22,17,15,13,11].dm	 
-		 => _.q(1)
+	[-1,-3,-5,-7,2,4,6,11, 13,15,17,22,17,15,13,11].dm(\c).q(1)
 		 => {|i| [midinote:i,ctranspose:[0,-2].stutter(32).q(2),dur:0.1,lagTime:0].pm(\sawSynthSustain) => Pn(_,3) => _.play}
 
 	

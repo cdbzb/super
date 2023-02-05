@@ -34,7 +34,7 @@ P('chord',start:\energy,music: {|p b e|
 P.rpp('vox',
 	start: \Sealed,
 	lag:-1,music: {|p b e|
-	{ Song.laMer => PlayBuf.ar(2,_,rate: [5,0].midiratio.dq.demand(b.parse([5,3])+[1,0]).poll)/2 * 0.1=> Out.ar(Song.carrierBus,_) }.play;
+	{ Song.laMer => PlayBuf.ar(2,_,rate: [5,0].midiratio.dq.demand(b.parse([5,3])+[1,0]))/2 * 0.1=> Out.ar(Song.carrierBus,_) }.play;
 	p.vocodeTune.(p,b,e,
 		modGain:9,
 		chord:#[1,0.5,2,8],
@@ -220,17 +220,144 @@ P('click',start:\outtro,music: {|p b e|
 		instrument: \kick_gentle
 	].pp
 });
-/*SPOCK:*/[" Pure energy. Matter without form. ","r",].addLine; 
-P('arpeggio',start:\Pure,music: {|p b e|
-	[-1,-3,-5,-7,2,4,6,11, 13,15,17,22,17,15,13,11].dm(\c).q(1)
-		 => {|i| [midinote:i,ctranspose:[0,-2].stutter(32).q(2),dur:0.1,lagTime:0].pm(\sawSynthSustain) => Pn(_,3) => _.play}
-
-	
+/*SPOCK:*/[" (boom) Pure energy. Matter without form. ","-4 11 7 6 5".dm(\c) ++ "7 6 5 4 11".dm(\e,\mixolydian)].addLine; 
+Song.energyDur=0.1;
+Song.durs[\Pure] = "qq qq Q Q Q QQ QQ Q Q qq    qq qq qq qq".asBeats * Song.energyDur * 4  => _.q;
+//Song.secDur[\Pure];
+P.synthV(\mo,lag:0.8, filter: (midinote: _ - 12), 
+		pbind:{ |p b| 
+				x = [
+						dur: "qq qq Q Q Q QQ QQ Q Q qq".asBeats * p.energyDur * 4 =>_.q,
+						midinote: "-4 11 7 6 5".dm(\c) ++ "7 6 5 4 11".dm(\e,\mixolydian) => _.q
+				].p
+		},
+		params: {|p b| [
+				lyrics: "r Pure energy + + matter + without + form  ",
+				legato: [1, 1, 1, 1, 0.6, 1, 1, 1, 1, 1]
+		] }, music:{|p b e|
+	{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+	}//.play
 });
-/*KIRK:*/[" Impossible. ","r",].addLine; 
-/*MCCOY:*/[" But you once had a body of some type? ","r",].addLine; 
+P.double(\mo,lag:0.8, take:\double, double:\true, filter: (midinote: _ - 12), 
+		pbind:{ |p b| 
+				x = [
+						dur: "qq qq Q Q Q QQ QQ Q Q qq".asBeats * p.energyDur * 4 =>_.q,
+						midinote: "-4 6 5 4 3".dm(\c) ++ "5 4 3 2 3".dm(\e,\mixolydian) => _.q
+				].p
+		},
+		params: {|p b| [
+				lyrics: "r Pure energy + + matter + without + form  ",
+				legato: [1, 1, 1, 1, 0.6, 1, 1, 1, 1, 1]
+		] }, music:{|p b e|
+	{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+	}//.play
+});
+P(\chords, music: { |p b e|
+		[
+			freq: [[-1, 1,3,5,7], [-2, 2,4,6,11],[ -1.5, 2.5, 5.5, 7 ]].df(\f).q /2,
+			dur: [8, 8, 8] * p.energyDur * 4 => _.q,
+			instrument: \wash,
+			amp: 0.05
+
+		].pp
+
+});
+P(\tricorderArp, music: { |p b e|
+		{
+				var release = e.bNext.sum + 3;
+				var dur = p.energyDur;
+				var clock = Impulse.ar( dur.reciprocal );
+				var sequence =  [-1,-3,-5,-7,2,4,6,11, 13,15,17,22,17,15,13,11].df(\f).dq(inf);
+				var sequence2 = [-1,-2,-5,-7,2,4,6,11, 12,15,17,22,17,15,12,11].df('f#',\mixolydian).dq(inf);
+				//arpeggia
+				Saw.ar(
+						Select.ar( Demand.ar( Impulse.ar( dur.reciprocal / 64 ), 0, [0,1].dq ),
+								[
+										Demand.ar(clock,0,sequence ) ,
+										Demand.ar(clock,0,sequence2 ) 
+								]
+						)
+						* ( Demand.ar(Impulse.ar( dur * 32 => _.reciprocal ),0,[1,2.midiratio].dq(inf)) => Lag.ar(_,1) )
+						/ 2
+				)
+				/2.5 /5
+				* Env.perc().kr(0,gate:clock)
+				=> {|i| [i, DelayN.ar(i,0.6,0.6)]}
+				=>DWGReverbC1C3.ar(_,mix:0.14)
+				=>Phaser2.ar(_,rate:0.12,fb:0.5)
+				// hihat
+				+ (
+						-2.dbamp *
+						WhiteNoise.ar(0.1) * Env.perc(0.01,0.1).kr(0,gate:clock)
+						=> RLPF.ar(_, Demand.ar(clock,0,Dwhite(300,8000).linexp(300,8000,300,8000)),0.3)
+						=> 
+						{ |i|
+							Select.ar(
+								SinOsc.ar(0.3).range(0,2),
+								array:[
+									i * 2,
+									CombC.ar(i, 0.2, Demand.ar(clock,0,Dwhite(0.01,0.02)))  
+								].flat
+							)
+						}
+						/7
+						//// Kick
+						+ (
+								-14.dbamp *
+								SinOsc.ar(Env([500 * \pitchBend.kr(1), 70, 50] / 50 * \freq.kr(50), [0.04, 0.05] * \bendTime.kr(0.5), \exp).ar)
+								+ (HPF.ar(Hasher.ar(Sweep.ar), 1200) * Env.linen(0.001, 0.01, 0.001).ar * -5.dbamp)
+								=> {|i| i + (i*2).tanh}
+								* Env.perc(0.001, \release.kr(0.3)).ar(0, gate:
+										[ "qqq".asBeats * dur * 8 => _.dq(1),
+										"qq qq qq qq qq qq qx e x ".asBeats * dur * 8
+										=> _.dq(inf) 
+								].dq
+								// (1).dq(inf) * dur
+								=> TDuty.kr(_ ,0, gapFirst:1)
+								// Impulse.ar(3.2.reciprocal)
+						)
+						* -5.dbamp
+				))
+				// Snare
+				+ { var gate = Impulse.ar(1);
+				LFTri.ar(Env([300, 230, 200] / 200 * \freqS.kr(220), [0.02, 0.03], \exp).ar) * Env.perc(0.001, 0.5).ar(gate:gate)
+				* 3 => _.tanh
+				+ (BPF.ar(Hasher.ar(Sweep.ar(gate-0.1)), \noiseFreq.kr(1200), 0.6) * Env.perc(0.1, 0.4).ar(gate:gate) * 5.dbamp)
+				* 0.5 * \drive.kr(0.5) => _.tanh * 5.dbamp
+				+ (SinOsc.ar( Env( [3000,100],0.02,\exp ).ar(0,gate)) * Env.perc(0.001, 0.02).ar( gate: gate ))
+				* Env.perc(0.001, \decayS.kr(0.4)).ar(0, gate)
+				/4
+		}
+		/2.5
+		* EnvGen.cutoff(b.sum, release )
+		}.play;
+});
+Song.setTempoMap(\Pure,"qq qq Q Q Q QQ QQ Q Q qq");
+// P.tune();
+// /*KIRK:*/[" Impossible. ","4 3 1 -5".dm('b-',\minor)].addLine; 
+/*KIRK:*/[" Impossible. ","-5 3 1 -4.5".dm('b-',\minor)].addLine; 
+P.tune(\Impossible, { |i| Pmul(\freq,1,i) => Pbindf(_,\legato,4)} );
+/*MCCOY:*/[" But you once had a body of some type? ","-5 3 2 1 -7 4.5 2 -6.5 5 4.5".dm(\d),].addLine; 
+P(\bassline, music: { |p b e|
+	[
+		freq: [\r, 1, [ 3,12,15, 17 ], 2.5].df(\a,[3,4]).q,
+		dur: b.parse([1, 4, 3, 2]).q,
+		legato:1
+	].pp
+});
+P.tune();
 /*SARGON:*/[" A body much as yours, my children, although our minds were infinitely greater. ","-5 1 2 2 1 3".dm(\g) ++ "4 3 2 -6 -7 1 ".dm('a-') ++ "11 7 12 11 7 6 6 5".dm(\e)].addLine; 
 P.tune(\much);
+P(\bassNote,syl:4, music: { |p b e|
+	(
+		freq:[1,-1].df(\g,3),
+		dur: b.drop(1)[0]
+	).play
+});
 P.tune('much ', { |i| Pmul(\freq,0.5,i) => Pbindf(_,\instrument, \sawSynthSustain,\amp,0.04)});
 
 P('dyad',start:\much,syl:17,music: {|p b e|

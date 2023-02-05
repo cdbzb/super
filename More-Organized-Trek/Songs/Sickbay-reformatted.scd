@@ -43,7 +43,7 @@ P(\mcCoy0,start:0,syl:1,music: { |p b e|
 }); 
 //TODO Sargon should sound sick!
 ["Sar- gon here, i'm in your deck six brief- ing room","b- g- c  e- f g- a- b- b g# d "].addLine; //1
-P.synthV(\genbu,'Sar- gon here', take:"low", params: 
+P.synthV(\genbu, take:"low", params: 
 	[
 		lyrics: "Sa gon hi aim in yur dek siks bri fin rum",
 	],
@@ -108,7 +108,7 @@ P(\gliss,start:5,syl:6,music:{
 }=>SynthDef(\glissChord,_)=>_.add; 
 );
 ["You sound ter- ri- ble wait there for me","c4 d e c g3 e-4 d b-3 f"].addLine;  //3
-//	P.synthV(\aiko,'ter- ri',
+//	P.synthV(\aiko,
 //	[
 //		lyrics: "yu sound te ri bu weit zer for mi",
 //	],music:{|p b e|
@@ -130,7 +130,7 @@ P(\static3,start:3,music:
 		(instrument:\crackle,dur:5,out:~sickBay.mcCoyBus,amp:0.3)
 );
 ["Sar- gon what's wrong?","b4 g b e5"].addLine;  //4
-	P.synthV(\aiko, 'wrong?',
+	P.synthV(\aiko,params:
 	[
 		lyrics: "sar gan wats rong?",
 	],music:{|p b e|
@@ -162,7 +162,7 @@ P(\whatsWrong4,start:4,music:
 ); 
 P(\verbFade4,start:4,music:{~sickBay.thalassaVerb.release(5)});
 ["no- thing of im- portance, Fa- tigue per- haps","f g- a- g- b- g- b- a- g- e-"].addLine;  //5
-	P.synthV(\genbu, 'Fa-', take: "low", params:
+	P.synthV(\genbu, take: "low", params:
 	[
 		lyrics: "neu zing af im po tans fa tig peu haps"
 	],
@@ -211,8 +211,7 @@ P(\doorOpen,start:2,music:
 ); 
 ["(beat) (formula) Sar- gon's for- mu- la...","d d5 e f# a f# c"].addLine;  //6
 P.tune('(formula)');
-	P.synthV(\aiko, 'la...',
-	[
+	P.synthV(\aiko, params: [
 		lyrics: "r r sar ganz for mu la",
 	],music:{|p b e|
 		{
@@ -222,7 +221,7 @@ P.tune('(formula)');
 	}
 );
 ["yes, I wan- ted to be cer- tain there was no","f4 c#4 c c# f c# c b-3 a- b- e-4"].addLine;  //7
-P.synthV(\genbu, 'cer- tain',
+P.synthV(\genbu, params:
 	[
 		lyrics: "yes ai won ted tu bi sur ten zer was no",
 		legato:[ 0.5,1,1,1,1,0.8,1,1,1,1,1 ],
@@ -259,7 +258,7 @@ P(\bass,start:'cer- tain',music:{|p b e|
 });
 ["er- ror. For- mu- la is co- ","d4 f3 g a b g b "].addLine; //8
 P.tune('For- mu- la');
-P.synthV(\genbu,'er- ror',
+P.synthV(\genbu, params:
 	[
 		lyrics: "er ror for mu la is ko",
 		phonemes: ["","","","","","i s",""]
@@ -288,7 +287,7 @@ P(\bass,syl:1,start:'For- mu- la',music:{|p b e|
 
 });
 ["rrect. Don't be concer -- ned, this is an","d4 c# e d f# g f# d e f# "].addLine;  //9
-P.synthV(\genbu, 'rrect',
+P.synthV(\genbu, params:
 [
 	lyrics: "rekt dont bi kan ser - nd this is an",
 	phonemes: ["","","","k o n","s a a","","","d i s","i s",""],
@@ -320,7 +319,7 @@ P(\lick,start:\rrect,music:{|p b e|
 });
 ["ex- cel- lent bo- dy. "," g#4 e d d c#"].addLine; //10
 //P.tune('ex- cel');
-P.synthV(\genbu,'ex- cel',
+P.synthV(\genbu, params:
 [
 	lyrics: "ek se lent ba di",
 	legato: [1, 1,   1, 1, 0.75]
@@ -370,7 +369,7 @@ P(\bassnotes, music: { |p b e|
 		dur: b.parse([ 3, 5, 2 ]).q
 	].pp
 });
-P.synthV(\genbu, 'be- tter',
+P.synthV(\genbu, params:
 [
 	lyrics: "zer ai fir be - - ta al re di",
 	legato: [9, 10, 10, 10, 10, 10, 10, 10, 10, 8]/10,
@@ -397,7 +396,7 @@ P(\ting,lag:0.07, music: { |p b e|
 });
 
 ["in Time a host  -- body will become...  ",[-1,1,-7,1,2,1,-7,-6,-7,1].dm(\b,scale:\minor)].addLine; //12
-P.synthV(\aiko, \Time, [
+P.synthV(\aiko, params: [
 	lyrics:"in taim a ho ost ba di will bi kum ",
 	phonemes:["","","","","","","","","","k @ m"]
 ], music:{ |p b e|
@@ -431,7 +430,7 @@ P(\bass,start:\Time,music:{|p b e|
 
 ["(cis d a fis) accustomed to us (fis)",[-7,1,2,3,7,12,11,7,11,3].dm(\d)].addLine;
 
-P.synthV(\aiko, \accustomed,[lyrics:"u ku stum too us"],range:[4,8],syl:3, music: { |p b e|
+P.synthV(\aiko,params:[lyrics:"u ku stum too us"],range:[4,8],syl:3, music: { |p b e|
 		{
 			e.playbuf  =>
 			p.synthVTracks.at(e.key).()   
@@ -481,7 +480,7 @@ P(\lick,start:\injections,syl:1,music:{|p b e|
 		legato:[1,1,1,1,0.5,0,1,1,1].q
 	].pma(\sawSynthSustain).play;
 });
-P.synthV(\aiko,\injections,
+P.synthV(\aiko, params:
 	[
 		lyrics:"in jek shuns will no lan gur bi ne se sse ri"
 	],
@@ -517,7 +516,7 @@ P.still(\clear,\months,music:{|p b e|
 		]
 	)
 });
-P.synthV(\genbu,\months,[
+P.synthV(\genbu, params: [
 	lyrics:"that will teik mons per haps yirs wi ha fent da at choisu tha la ssa"
 ],music:{|p b e|
 	{
@@ -544,7 +543,7 @@ P(\bass,start:\months,music:{|p b e|
 		].pma(\sawSynthSustain).play
 });
 ["/*MULHALL:*/ Husband. Feel the touch of my hand, husband. ", [3,2, 7,6,6,5,4,6, 5,4].dm('a-',scale:\minor)].addLine;
-P.synthV(\aiko,\Husband,
+P.synthV(\aiko, params:
 	[
 		lyrics:"Heus band feel the teuch of my hand heus band",
 		legato:[1,0.95,1,1,1,1,1,0.9,1,1] 
@@ -578,7 +577,7 @@ P(\click,start:\Feel,music:{|p b e|
 });
 
 ["/*KIRK:*/ No, beloved. (boom) If we torment ourselves ",[6,5,3,1,-1, 4,5,11,7,6,5].dm(\f,4)].addLine;
-P.synthV(\genbu,\torment,[
+P.synthV(\genbu, params: [
 	lyrics:"no bi la ved r if wi tar ment ar selvs"
 ],music: {|p b e|
 	{
@@ -605,7 +604,7 @@ P(\dyads,start:\torment,music:{|p b e|
 // Idea C min or Ab ala Waldstein?
 ["/*MULHALL:*/ Beloved. What will that word mean to a machine? ",[1,6,5].dm(\a)++[-7,1,5,3,-7,1,2,4,6].dm('c#',octave:6)].addLine;
 //P.tune('to a machine');
-P.synthV(\aiko,'to a machine',
+P.synthV(\aiko, params:
 	[
 		lyrics:" bi lu ved? wat will zat word min tu a ma xin"
 	],
@@ -657,7 +656,7 @@ P(\chord,start:\machine,syl:10,lag:-0.05,music:{|p b e|
 
 
 ["/*KIRK:*/ Our thoughts boom boom boom boom will intertwine. (boom boom boom boom) ",[1,7,-1,-2,-3,-4,6,7,11,3, 1,2,3,4].dm(\d,4,scale:\dorian)].addLine;
-P.synthV(\genbu,'will intertwine',[
+P.synthV(\genbu, params: [
 	lyrics:" ar tats r r r r wil in ter twan r r r r",
 	legato:[ 1,3, 1,1,1,1,1,  1,1,3 ]
 ],music:{|p b e|
@@ -723,7 +722,7 @@ Song.synthV1.writeProject;
 Song.synthV1.open;
 */
 
-P.synthV(\aiko, 'Will they',
+P.synthV(\aiko, params:
 	[
 		lyrics: "wil they huz band wil they in ter twa a an laik zis"
 	], music: { |p b e|
@@ -791,7 +790,7 @@ P(\xtraBassnote,start:'Will they',syl:7,music:{|p b e|
 	).play
 });
 [ "Can two minds press close like this?",[5,6,7,6.5,6.5,6,11.5].dm(\c)].addLine;
-P.synthV(\aiko,\press,
+P.synthV(\aiko, params:
 	[
 		lyrics:" kan tu maindz press klos laik zis"
 	],music: { |p b e|
@@ -825,7 +824,7 @@ P.still(\thalassa,start:'press close',timecode:3915.542.seconds,music:{|p b e|
 		)});
 ["Can robot lips do this?" , [3,5,4,3,2,11].dm(\e) ].addLine;
 //P.tune(\robot);
-P.synthV(\aiko,\robot,
+P.synthV(\aiko, params:
 	[ lyrics: "kan ro bot lips do zis" ],
 	music:{ |p b e|
 		{
@@ -849,7 +848,7 @@ P.still(\thalassa,start:'robot lips',timecode:3920.5.seconds,music:{|p b e|
 				text:["can robot lips","do this?"]
 		)});
 [ "(they kiss, then Kirk falls gently to the floor) (boooom boom boom boom boom boom boom boom) Sargon, /*what is it?*/ what's wrong? ",[11,7,6,5,4,3,2,1].dm('b-',scale:\minor)++[3,-7,1,4.5].dm(\f,scale:\mixolydian)].addLine;
-P.synthV(\aiko,\kiss, [lyrics:"Sar gon wats rong"],syl:7,range:[8,11],music: { |p b e|
+P.synthV(\aiko, params:[lyrics:"Sar gon wats rong"],syl:7,range:[8,11],music: { |p b e|
 		{
 			e.playbuf  =>
 			p.synthVTracks.at(e.key).()   
@@ -959,7 +958,7 @@ P.still(\hypo, start:\hypo,syl:2, timecode:3949.5.seconds, music:{ |p b e|
 
 
 ["/*MULHALL:*/ Doctor, help him! ",[1,-7,3,-7].dm(\e,scale:\mixolydian)].addLine;
-P.synthV(\aiko,\Doctor,[ lyrics:" dak tar help him" ], music:{|p b e |
+P.synthV(\aiko,params:[ lyrics:" dak tar help him" ], music:{|p b e |
 		{
 			e.playbuf  =>
 			p.synthVTracks.at(e.key).()   

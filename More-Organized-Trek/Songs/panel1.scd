@@ -3,6 +3,7 @@ s.waitForBoot{
 
 Song(\panel1,[]).current
 ;
+	Song.energyDur = 0.1;
 "~/tank/super/More-Organized-Trek/Songs/boilerplate.scd".standardizePath.load;
 //(A panel slides back to reveal a much larger area, with rock walls, and a glowing sphere elegantly poised on an angled support.) 
 /*SARGON: (the glowing sphere)*/[" Welcome. I am Sargon. ","r",].addLine; 
@@ -64,7 +65,7 @@ P.synthV(\xuan,
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
 	lyrics: "sealed in this receptacle + - + + is the",
-	lag: [0.05,0,0,0,0,0,0,0,0],
+	lag: [0.08,0,0,0,0,0,0,0,0],
 	defaultVibratoDepth:0.3
 ] }, music:{|p b e|
 		// e.playbuf
@@ -75,8 +76,8 @@ P.synthV(\xuan,
 			\instrument, \sawSynthSustain,
 			\out,p.carrierBus,
 			\freq,Pfunc({|i| i.midinote - [12 , 24, 36]=>_.midicps}),
-			\amp,0.05,
-			\lagTime, 0.005
+			\amp,0.00,
+			\lagTimg, 0.005
 		]
 			=> _.ppm;
 
@@ -322,50 +323,88 @@ P('click',start:\outtro,music: {|p b e|
 	].pp
 });
 /*SPOCK:*/[" (boom) Pure energy. Matter without form. ","-4 11 7 6 5".dm(\c) ++ "7 6 5 4 11".dm(\e,\mixolydian)].addLine; 
+Song.setTempoMap(\Pure,"qq qq Q Q Q QQ QQ Q Q qq");
+P.still(\tricorder,timecode:1035.seconds,music:{ |p b e|
+	e.still.(
+		wait: 3,
+		fade: 3
+	)
+});
+P.still(\energy,lag:Song.energyDur * 16,syl:1,timecode:1037.seconds, music: {|p b e|
+	e.still.(
+		wait:b.sum,
+		text: ["pure","energy"]
+	).sequenceText([
+		0.1 * 4 *4, ["matter","without form"]
+	])
+});
 Song.energyDur=0.1;
-Song.durs[\Pure] = "qq qq Q Q Q QQ QQ Q Q qq    qq qq qq qq".asBeats * Song.energyDur * 4  => _.q;
+// Song.durs[\Pure] = "qq qq Q Q Q QQ QQ Q Q qq    qq qq qq qq".asBeats * Song.energyDur * 4  => _.q;
+P.tune();
 //Song.secDur[\Pure];
 ( Song.energyPbinds = 
 	[
 	[
-		dur: "qq q E E Eqq Q Q E E qq".asBeats * Song.energyDur * 8 => _.q  ,
+		dur: "qq q E E Eqq Q Q E E qq".asBeats
+		// * Song.energyDur * 8 
+		warpTo: Song.tempoMap[\energy]
+		=> _.q  ,
 		midinote: "-4 11 7 6 5".dm(\c) ++ "7 6 5 4 11".dm(\e,\mixolydian) => _.q
 	].p
 	,
 	[
-		dur: "qq q E E Eqq Q Q E E qq".asBeats * Song.energyDur * 8 => _.q  ,
+		dur: "qq q E E Eqq Q Q E E qq".asBeats  
+		warpTo: Song.tempoMap[\energy]
+		// Song.energyDur * 8
+		=> _.q  ,
 		midinote: "-4 6 5 4 3".dm(\c) ++ "5 4 3 2 3".dm(\e,\mixolydian) => _.q 
 	].p
 ]
 );
 	
+P(\click, music: { |p b e|
+	[
+		dur:1/4 ! 16 warpTo: e.tempoMap  => _.q
+	]
+	//.pp
+});
 P.synthV(\mo,filter: (midinote: _ - 12), 
-		pbind:{ |p b| 
-			p.energyPbinds[0]
-		},
+		// pbind:{ |p b| 
+		// 	p.energyPbinds[0]
+		// },
 		params: {|p b| [
 				lyrics: "r Pure energy + + matter + without + form  ",
-				legato: [1, 1, 1, 1, 0.6, 1, 1, 1, 1, 1]
+				legato: [1, 1, 1, 1, 0.4, 1, 1, 1, 1, 1],
+				paramTension: 0.35,
+				paramBreathiness: 0.65,
+				paramGender: 0.22,
+				paramToneShift: 305,
+				tension: Env([1,1,1,1,1,1,1,1,1,0], b)
 		] }, music:{|p b e|
 	{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
-			/2
+			/3
 	}.play
 });
 P.double(\mo, take:\double, double:\true, filter: (midinote: _ - 12), 
-		pbind:{ |p b| 
-			p.energyPbinds[1]
-		},
+		// pbind:{ |p b| 
+		// 	p.energyPbinds[1]
+		// },
 		params: {|p b| [
 				lyrics: "r Pure energy + + matter + without + form  ",
-				legato: [1, 1, 1, 1, 0.6, 1, 1, 1, 1, 1]
+				legato: [1, 1, 1, 1, 0.4, 1, 1, 1, 1, 1]
+				paramTension: 0.35,
+				paramBreathiness: 0.65,
+				paramGender: 0.22,
+				paramToneShift: 305,
+				tension: Env([1,1,1,1,1,1,1,1,1,0],"qq q E E Eqq Q Q E E qq".asBeats * Song.energyDur * 8)
 		] }, music:{|p b e|
 	{
 			e.playbuf
 			//=> p.synthVTracks.at(e.key).()
 			=> TwoTube.ar(_,loss:0.8)
-			/2
+			/4.5
 	}.play
 });
 P(\chords, music: { |p b e|
@@ -373,7 +412,7 @@ P(\chords, music: { |p b e|
 			freq: [[-1, 1,3,5,7], [-2, 2,4.5,6,11],[ -11.5,-1.5, 1.5,2.5, 5.5, 7, 11.5 ]].df(\f).q /2,
 			dur: [8, 8, 8] * p.energyDur * 4 => _.q,
 			instrument: \visual_pad,
-			amp: 0.05,
+			amp: 0.07,
 			legato: [1,1,0.9].q
 
 		].pp
@@ -383,43 +422,49 @@ P(\tricorderArp, music: { |p b e|
 		{
 				var release = e.bNext.sum + 3;
 				var dur = p.energyDur;
-				var clock = Impulse.ar( dur.reciprocal );
+				// var clock = Impulse.ar( dur.reciprocal );
+				var clock = TDuty( ( 1/6) ! 48 warpTo: e.tempoMap.quantizeDft => _.dq (3),0,1 );
+				// var clock = Impulse.ar(10);
 				var sequence =  [-1,-3,-5,-7,2,4,6,11, 13,15,17,22,17,15,13,11].df(\f).dq(inf);
-				var sequence2 = [-1,-2,-5,-7,2,4,6,11, 12,15,17,22,17,15,12,11].df('f#',\mixolydian).dq(inf);
+				var sequence2 =  [-1,-3,-5,-7,2,4,6,11, 13,15,17,22,17,15,13,11].df(\g).dq(inf);
+				var sequence3 = [-1,-2,-5,-7,2,4,6,11, 12,15,17,22,17,15,12,11].df('f#',\mixolydian).dq(inf);
 				//arpeggia
 				Saw.ar(
-						Select.ar( Demand.ar( Impulse.ar( dur.reciprocal / 64 ), 0, [0,1].dq ),
-								[
-										Demand.ar(clock,0,sequence ) ,
-										Demand.ar(clock,0,sequence2 ) 
-								]
-						)
-						* ( Demand.ar(Impulse.ar( dur * 32 => _.reciprocal ),0,[1,2.midiratio].dq(inf)) => Lag.ar(_,1) )
-						/ 2
+						Dswitch1(
+								[sequence,sequence2,sequence3], 
+								[0,1,2].dq.demand(b.parse([5,4,1]))
+						) => Demand.ar(Impulse.ar(10),0,_ )
 				)
+
+
+				
 				/2.5 /5
-				* Env.perc().kr(0,gate:clock)
+				* ( clock => Decay2.ar(_,0.01,0.5) )
 				=> {|i| [i, DelayN.ar(i,0.6,0.6)]}
 				=>DWGReverbC1C3.ar(_,mix:0.14)
 				=>Phaser2.ar(_,rate:0.12,fb:0.5)
 				// hihat
-				+ (
+				// firstArg:
+				+
+				(
 						-2.dbamp *
-						WhiteNoise.ar(0.1) * Env.perc(0.01,0.1).kr(0,gate:clock)
+						WhiteNoise.ar(0.1) * ( clock => Decay.ar(_,0.3) )
 						=> RLPF.ar(_, Demand.ar(clock,0,Dwhite(300,8000).linexp(300,8000,300,8000)),0.3)
 						=> 
 						{ |i|
-							Select.ar(
-								SinOsc.ar(0.3).range(0,2),
-								array:[
-									i * 2,
-									CombC.ar(i, 0.2, Demand.ar(clock,0,Dwhite(0.01,0.02)))  
-								].flat
-							)
+								Select.ar(
+										SinOsc.ar(0.3).range(0,2),
+										array:[
+												i * 2,
+												CombC.ar(i, 0.2, Demand.ar(Impulse.ar(10),0,Dwhite(0.01,0.02)))  
+										].flat
+								)
 						}
 						/7
-						//// Kick
-						+ (
+						// Kick
+						// firstArg:
+				)
+				+ (
 								-14.dbamp *
 								SinOsc.ar(Env([500 * \pitchBend.kr(1), 70, 50] / 50 * \freq.kr(50), [0.04, 0.05] * \bendTime.kr(0.5), \exp).ar)
 								+ (HPF.ar(Hasher.ar(Sweep.ar), 1200) * Env.linen(0.001, 0.01, 0.001).ar * -5.dbamp)
@@ -434,26 +479,46 @@ P(\tricorderArp, music: { |p b e|
 								// Impulse.ar(3.2.reciprocal)
 						)
 						* -5.dbamp
-				))
+				)
 				// Snare
-				+ { var gate = Impulse.ar(1);
-				LFTri.ar(Env([300, 230, 200] / 200 * \freqS.kr(220), [0.02, 0.03], \exp).ar) * Env.perc(0.001, 0.5).ar(gate:gate)
-				* 3 => _.tanh
-				+ (BPF.ar(Hasher.ar(Sweep.ar(gate-0.1)), \noiseFreq.kr(1200), 0.6) * Env.perc(0.1, 0.4).ar(gate:gate) * 5.dbamp)
-				* 0.5 * \drive.kr(0.5) => _.tanh * 5.dbamp
-				+ (SinOsc.ar( Env( [3000,100],0.02,\exp ).ar(0,gate)) * Env.perc(0.001, 0.02).ar( gate: gate ))
-				* Env.perc(0.001, \decayS.kr(0.4)).ar(0, gate)
-				/4
-		}
+				+ (
+						{ var gate = Impulse.ar(1);
+						LFTri.ar(Env([300, 230, 200] / 200 * \freqS.kr(220), [0.02, 0.03], \exp).ar) * Env.perc(0.001, 0.5).ar(gate:gate)
+						* 3 => _.tanh
+						+ (BPF.ar(Hasher.ar(Sweep.ar(gate-0.1)), \noiseFreq.kr(1200), 0.6) * Env.perc(0.1, 0.4).ar(gate:gate) * 5.dbamp)
+						* 0.5 * \drive.kr(0.5) => _.tanh * 5.dbamp
+						+ (SinOsc.ar( Env( [3000,100],0.02,\exp ).ar(0,gate)) * Env.perc(0.001, 0.02).ar( gate: gate ))
+						* Env.perc(0.001, \decayS.kr(0.4)).ar(0, gate)
+						/4
+				})
 		/2.5
 		* EnvGen.cutoff(b.sum, release )
 		}.play;
 });
-Song.setTempoMap(\Pure,"qq qq Q Q Q QQ QQ Q Q qq");
 // P.tune();
 // /*KIRK:*/[" Impossible. ","4 3 1 -5".dm('b-',\minor)].addLine; 
 /*KIRK:*/[" Impossible. ","-5 3 1 -4.5".dm('b-',\minor)].addLine; 
+P.still(\kirk, timecode: 1040.5.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["Impossible",""],
+	)
+});
 P.tune(\Impossible, { |i| Pmul(\freq,1,i) => Pbindf(_,\legato,4)} );
+P.synthV(\an,
+	filter: (midinote: _ - 12), 
+	params: {|p b| [
+	vocalMode: "Power",
+	lyrics: "Impossible + + +",
+	lag:[0,0,0.1,0],
+	tension: Env([0,1,1,1,1],b,\step)
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+		/3
+	}.play
+});
 /*MCCOY:*/[" But you once had a body of some type? ","-5 3 2 1 -7 4.5 2 -6.5 5 4.5".dm(\d),].addLine; 
 P.synthV(\mo, params: {|p b| [
 	lyrics:" But you once had a body + of some type? " ,

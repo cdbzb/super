@@ -22,50 +22,56 @@ P('bassline',start:\substance,music: {|p b e|
 });
 P.synthV(\xuan, 
 	// filter: (midinote: 48!16) ,
+	pbind: {|p b| [midinote: "3 2 3  4 3 3 2".dm(\e,4).q,dur:b.parse([1,1,8,1,1,2,2]).q ].p},
 	params: [
-	lyrics: "energy + + - - - - - - - but no substance - + -   ",
+	lyrics: "energy + +  but no substance  + ",
+	legato: [1,1,1,1,1,1,0.7],
 	defaultVibratoDepth: 0.3,
 	language: "english",
 	phoneset: "arpabet"
 ],music:{|p b e|
 //
-		p.pbind[\energy] <> [amp:0.01 * [0.003,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1].q,instrument:\sawSynth,out:p.carrierBus].p => _.play ;
+		Song.pbind[\substance].patternpairs ++ [att:5,instrument:\sawSynthSustain,out:Song.carrierBus,amp:0.005] => _.pm =>_.play;
 		// { PlayBuf.ar(1,Song.laMer.bufnum,rate:-3.midiratio /2) }.play(s,p.carrierBus);
-		p.vocodeTune.(p,b,e,e.rpp,
+
+		p.vocodeTune.(p, b.parse([1,1,4,4,1,1,2,2]),e,e.rpp,
+		tune: [3, 2, 3, 3, 4, 3, 3, 2].dm(\e).asList,
 
 		modGain:4,
-		chord:#[0.5,0.25,2,4],
+		chord:#[1,2,4],
 		echo:0.1,
 		mix:0.9,
-			// amp:0.22,
+			amp:0.22,
 			// dur:b.sum+1,
 			// att:1,
 			// sus:b.sum-0.1,
 			// rel:0.2,
 			// out:3
 		);
-}
-);
-P('chord',start:\energy,music: {|p b e|
+});
+P('chords',start:\energy,music: {|p b e|
 	var one = [1,3,5], six = [-6,3,1],two = [2,4,6], four = [-4,-6,1], five = [-5,-7,2];
 	//progression = [one, six, four, five];
 	var progression = [one, five, two, four];
 	[
 		freq: progression.stutter(2).df(\e).q,
 		dur: "h h h h h h h h".asBeats.warpTo(b).q,
-		instrument:\sawSynth,amp:0.04
+		instrument:\sawSynth,amp:0.04,
+		out: [2,3].stutter.q(inf)
 
 	].pp
 });
 ["Sealed in this receptacle is the ",[5, 4,3,2,3,4,3,-5,-6,-7].dm(\c,6)].addLine;
 
 P.synthV(\xuan,
+		lag:-0.5,
 	// double:true,
 	// filter: (midinote: 48!10), 
 	filter: (midinote: _ - 12), 
+	prepend:true,
 	params: {|p b| [
 	lyrics: "sealed in this receptacle + - + + is the",
-	lag: [0.08,0,0,0,0,0,0,0,0],
+	lag: [0.0,0,0,0,0,0,0,0,0] + 0.5,
 	defaultVibratoDepth:0.3
 ] }, music:{|p b e|
 		// e.playbuf
@@ -75,20 +81,17 @@ P.synthV(\xuan,
 			\att,4,
 			\instrument, \sawSynthSustain,
 			\out,p.carrierBus,
-			\freq,Pfunc({|i| i.midinote - [12 , 24, 36]=>_.midicps}),
-			\amp,0.00,
+			\freq,Pfunc({|i| i.midinote - [0,12 ]=>_.midicps}),
+			\amp,0.006,
 			\lagTimg, 0.005
 		]
 			=> _.ppm;
-
-
 		p.vocodeTune.(p,b,e,e.rpp,
-
 		modGain:4,
 		// chord:#[1,0.5,2,8],
 		echo:0.3,
 		mix:0.5,
-			// amp:0.22,
+			amp:0.22,
 			// dur:b.sum+1,
 			// att:1,
 			// sus:b.sum-0.1,
@@ -240,7 +243,7 @@ P.synthV(\xuan,
 			\lagTime, 0.005
 		]
 			=> _.ppm;
-			( freq: [3,5].df(\g,4),instrument: \sawSynthSustain,
+			( freq: [3,5,7].df(\g,4),instrument: \sawSynthSustain,
 			out: p.carrierBus ,
 			amp:0.015,dur:2,rel:4,addAction:\addBefore).play;
 
@@ -262,7 +265,8 @@ P(\chord,start:\essence,music: { |p b e|
 	[
 		freq:[ [1,3,5,7], [ 1,3,4,6 ] ].df(\g).q,
 		instrument: \stringyy,
-		dur: "qqqq qqqq".asBeats.warpTo(e.tempoMap).q
+		dur: "qqqq qqqq".asBeats.warpTo(e.tempoMap).q,
+		out:(0..3)
 	].p
 	=> {|i| [i,Pmul(\freq,midiratio(2),i)].q}
 	=> _.play
@@ -326,60 +330,41 @@ P('click',start:\outtro,music: {|p b e|
 Song.setTempoMap(\Pure,"qq qq Q Q Q QQ QQ Q Q qq");
 P.still(\tricorder,timecode:1035.seconds,music:{ |p b e|
 	e.still.(
-		wait: 3,
-		fade: 3
+		wait: b.sum,
+		fade: 1.5
 	)
 });
-P.still(\energy,lag:Song.energyDur * 16,syl:1,timecode:1037.seconds, music: {|p b e|
+P.still(\energy,syl:0,timecode:1037.seconds, music: {|p b e|
 	e.still.(
-		wait:b.sum,
-		text: ["pure","energy"]
+		wait:b.sum - b.drop(1)[0]/2,
+		text: ["",""],
+		monitor:0,
+		fade:2,
+		fadeIn: b.drop(1)[0]/2
 	).sequenceText([
-		0.1 * 4 *4, ["matter","without form"]
-	])
+		b.drop(1)[0]/2,["pure","energy"],
+		b.drop(1)[1..4].sum, ["matter","without form"]
+	]
+	)
 });
 Song.energyDur=0.1;
 // Song.durs[\Pure] = "qq qq Q Q Q QQ QQ Q Q qq    qq qq qq qq".asBeats * Song.energyDur * 4  => _.q;
-P.tune();
+// P.tune();
 //Song.secDur[\Pure];
-( Song.energyPbinds = 
-	[
-	[
-		dur: "qq q E E Eqq Q Q E E qq".asBeats
-		// * Song.energyDur * 8 
-		warpTo: Song.tempoMap[\energy]
-		=> _.q  ,
-		midinote: "-4 11 7 6 5".dm(\c) ++ "7 6 5 4 11".dm(\e,\mixolydian) => _.q
-	].p
-	,
-	[
-		dur: "qq q E E Eqq Q Q E E qq".asBeats  
-		warpTo: Song.tempoMap[\energy]
-		// Song.energyDur * 8
-		=> _.q  ,
-		midinote: "-4 6 5 4 3".dm(\c) ++ "5 4 3 2 3".dm(\e,\mixolydian) => _.q 
-	].p
-]
-);
-	
-P(\click, music: { |p b e|
-	[
-		dur:1/4 ! 16 warpTo: e.tempoMap  => _.q
-	]
-	//.pp
-});
 P.synthV(\mo,filter: (midinote: _ - 12), 
 		// pbind:{ |p b| 
 		// 	p.energyPbinds[0]
 		// },
 		params: {|p b| [
 				lyrics: "r Pure energy + + matter + without + form  ",
+				lag:[0, b[1]/2,0,0,0,0,0,0,0,0],
 				legato: [1, 1, 1, 1, 0.4, 1, 1, 1, 1, 1],
 				paramTension: 0.35,
 				paramBreathiness: 0.65,
 				paramGender: 0.22,
 				paramToneShift: 305,
-				tension: Env([1,1,1,1,1,1,1,1,1,0], b)
+				tension: Env([0,0,1,1,1,1,1,1,1,0], b),
+				loudness: Env([0,0,1,0,0,1,0,1,0,1] * 4, b)
 		] }, music:{|p b e|
 	{
 			e.playbuf
@@ -387,24 +372,33 @@ P.synthV(\mo,filter: (midinote: _ - 12),
 			/3
 	}.play
 });
-P.double(\mo, take:\double, double:\true, filter: (midinote: _ - 12), 
+P.double(\mo, take:\double, double:\true,
+	filter: (midinote: "1 6 5 4 4 ".dm(\c) ++ "5 4 3 2 3".dm(\e,\mixolydian) - 12),
 		// pbind:{ |p b| 
 		// 	p.energyPbinds[1]
 		// },
 		params: {|p b| [
 				lyrics: "r Pure energy + + matter + without + form  ",
-				legato: [1, 1, 1, 1, 0.4, 1, 1, 1, 1, 1]
-				paramTension: 0.35,
-				paramBreathiness: 0.65,
-				paramGender: 0.22,
-				paramToneShift: 305,
-				tension: Env([1,1,1,1,1,1,1,1,1,0],"qq q E E Eqq Q Q E E qq".asBeats * Song.energyDur * 8)
+				// legato: [1, 1, 1, 1, 0.4, 1, 1, 1, 1, 1]
+				// paramTension: 0.35,
+				// paramBreathiness: 0.65,
+				// paramGender: 0.22,
+				// paramToneShift: 305,
+				// tension: Env([1,1,1,1,1,1,1,1,1,0],"qq q E E Eqq Q Q E E qq".asBeats * Song.energyDur * 8)
 		] }, music:{|p b e|
 	{
 			e.playbuf
 			//=> p.synthVTracks.at(e.key).()
 			=> TwoTube.ar(_,loss:0.8)
 			/4.5
+	}.play
+});
+P(\swell, music: { |p b e|
+	{
+		"-1 1 2 5 7".df('f#',[5],\mixolydian)
+		=> Pulse.ar(_,0.05)
+		* 0.1 /3
+		* Env([0,0,1,0],b.parse([6,3,1] + [0,0,6]),[0,3,-3]).kr(2,gate:1)
 	}.play
 });
 P(\chords, music: { |p b e|
@@ -434,6 +428,7 @@ P(\tricorderArp, music: { |p b e|
 								[sequence,sequence2,sequence3], 
 								[0,1,2].dq.demand(b.parse([5,4,1]))
 						) => Demand.ar(Impulse.ar(10),0,_ )
+						* Line.ar(0,1,0.5)
 				)
 
 
@@ -504,14 +499,30 @@ P.still(\kirk, timecode: 1040.5.seconds, music: { |p b e|
 		text: ["Impossible",""],
 	)
 });
-P.tune(\Impossible, { |i| Pmul(\freq,1,i) => Pbindf(_,\legato,4)} );
+P.tune(\Impossible, { |i| Pmul(\freq,1,i) => Pbindf(_,\legato,4,\coef,0.3,\decaytime,8, \instrument, \harp, \out, Effect.bus( 
+	{ |i| [Convolution.ar(i, Dust.ar(30) => FreeVerb.ar(_,1,1)) , PitchShift.ar(i,0.02,0.5) +i] * 0.7}, inputChannels:2
+))} );
+P(\dyad, music: { |p b e|
+	[
+		freq: 
+		"-5 1 3".df('b-',\minor).bubble ++ " -4.5".df('b-',\minor)
+		=>_.q,
+		mix:0,
+		amp:0.04,
+		legato: [ [3,4,4],1 ].q,
+		instrument: \wash
+	].p.play
+});
 P.synthV(\an,
+	double:true,
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
 	vocalMode: "Power",
 	lyrics: "Impossible + + +",
 	lag:[0,0,0.1,0],
-	tension: Env([0,1,1,1,1],b,\step)
+	tension: Env([0,1,1,1,1],b,\step),
+	paramTension:0.3 ,
+	defaultVibratoDepth:1
 ] }, music:{|p b e|
 	{
 		e.playbuf

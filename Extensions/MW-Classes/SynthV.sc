@@ -417,7 +417,10 @@ SynthV{
 				1.wait;
 				i.synthV.render;
 				Post <<< 'time: ' <<< wav.timeSinceModified;
-				while { wav.timeSinceModified > 10} {0.1.wait;Post << \waiting <<  wav.timeSinceModified << Char.nl}
+				while { wav.timeSinceModified > 10} {0.1.wait;Post << \waiting <<  wav.timeSinceModified << Char.nl};
+				2.wait;
+				// "osascript -e 'quit app \"Synthesizer V Studio Pro.app\"'".unixCmd;
+				// 2.wait;
 				// while {12>10} {0.01.wait;\waiting.postln}
 			};
 			// ^dirty

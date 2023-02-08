@@ -91,7 +91,13 @@ P.double(\mo, filter: (midinote: _ - 12),  music:{ |p b e|
 // 	}.play
 // });
 
-~justTheTune.('Stardate');
+// ~justTheTune.('Stardate');
+P.tune( _ <> [
+	instrument: \harp,
+	amp:0.02, decaytime:[ 10 ],
+	coef:0.15,
+	out: Effect.bus( Phaser2.ar(_,rate:0.21,fb:-0.5), inputChannels:2 )
+].p);
 [ "Do I list one death or two? " , [1,2,1,5,5,6,4.5].dm(\g,transpose: 6)].addLine;
 P(\guitar, music: { |p b e|
 	\strum => Song.guitar.setPlayMode( _ ) ;
@@ -267,7 +273,7 @@ P.double(\mo, filter: (midinote: _ - 12), music:{|p b e|
 	}.play
 } );
 // P.tune('His body');
-P(\bassUp,syl:0,start:'His body',music:{|p b e| 
+P(\bassUp,syl:0,start:'His body',music:{|p b e|
 	[
 		//freq: [5.5,4.5].df(\c,octave:3,transpose: 6).q,
 		freq: [[11, 1 ],\r].df(\c,octave:3,transpose: 6).q,
@@ -393,7 +399,7 @@ P.synthV(\feng, filter: (midinote: _ - 12),  params: {|p b| [
 		 => p.synthVTracks.at(\default).()
 	}.play
 });
-P.tune(\vital);
+// P.tune(\vital);
 P(\tuneTest,start:\vital,music:{|p b e| 
 	{
 		Duty.kr(

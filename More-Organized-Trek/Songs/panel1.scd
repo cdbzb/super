@@ -143,9 +143,59 @@ P('bass',start:\Sealed,music: {|p b e|
 
 
 });
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum + e.bNext.sum,
+		text: ["sealed in this","receptacle is the"],
+	)
+});
 ["essence of my mind. ",[7,7,6,7,6,5,6, 5].dm(\g)].addLine; 
 Song.durs[\essence]=Song.durs[\essence].list.dup(2).flat[(0..15)].q; //only 15
 Song.setTempoMap(\essence,"q qe ee e e e qqe e ".wrapExtend(37));
+P.synthV(\xuan,
+	lag: -0.2,
+	prepend: true,
+	// filter: (midinote: 48!12), 
+	filter: (midinote: _ - 12), 
+	params: {|p b| [
+	lyrics: "essence + of my mind - - r r r r r r r r r",
+	lag: [0.05,0,0,0,0,0,0,0,0,0,0,0] + 0.2
+] }, music:{|p b e|
+	p.pbind[e.start].patternpairs 
+		++ [
+			\att,4,
+			\instrument, \sawSynthSustain,
+			\out,p.carrierBus,
+			\freq,Pfunc({|i| i.midinote - [12,24 ]=>_.midicps}),
+			\amp,0.015,
+			\lag,0.1,
+			\lagTime, 0.005
+		]
+			=> _.ppm;
+			( freq: [3,5,7].df(\g,4),instrument: \sawSynthSustain,
+			out: p.carrierBus ,
+			amp:0.015,dur:2,rel:4,addAction:\addBefore).play;
+
+		p.vocodeTune.(p,b,e,e.rpp,
+
+		echo: 0.5,modGain:2.7,
+		// chord:#[1,0.5,2,8],
+		// echo:0.1,modGain:6,
+		mix:0.8,
+			amp:0.32,
+			// dur:b.sum+1,
+			// att:1,
+			 sus:b.sum / 2,
+			// rel:0.2,
+			// out:3
+		);
+});
+P.still(\lit, timecode: 1033.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["essence","of my mind"],
+	)
+});
 P.synthV(\kevin,  
 	pbind: {|p b| [ dur:p.durs[\essence], midinote: "1 1 1 1 1 1 1 4 7 7 6 7 6 5 6 ".dm(\a) ].p },
 	params: {|p b| [
@@ -186,7 +236,7 @@ P.double(\kevin,
 P('cymbal',start:\essence,music: {|p b e|
 	(
 		instrument:\cymbalsDS,
-		amp:0.02
+		amp:[0.01,0.01],out:[1,3]
 	).play
 });
 P(\click,start:\essence,music: { |p b e|
@@ -197,7 +247,7 @@ P(\click,start:\essence,music: { |p b e|
 		instrument:\hihat
 	].pp
 });
-P.tune(\essence,_ => {|i| [i,Pmul(\freq,midiratio(2),i)].q});
+// P.tune(\essence,_ => {|i| [i,Pmul(\freq,midiratio(2),i)].q});
 ( Song.lala =
 [
 	dur: "q qe ee e e e qqe e q qe ee e e e e e e e e e  " .asBeats
@@ -224,42 +274,6 @@ P.synthV(\xuan, take:\lala,
 		sus: b.sum,
 		rel: 4
 	)
-});
-P.synthV(\xuan,
-	prepend: true,
-	// filter: (midinote: 48!12), 
-	filter: (midinote: _ - 12), 
-	params: {|p b| [
-	lyrics: "essence + of my mind - - r r r r r r r r r",
-	lag: [0.05,0,0,0,0,0,0,0,0,0,0,0]
-] }, music:{|p b e|
-	p.pbind[e.start].patternpairs 
-		++ [
-			\att,4,
-			\instrument, \sawSynthSustain,
-			\out,p.carrierBus,
-			\freq,Pfunc({|i| i.midinote - [0,12 ]=>_.midicps}),
-			\amp,0.015,
-			\lagTime, 0.005
-		]
-			=> _.ppm;
-			( freq: [3,5,7].df(\g,4),instrument: \sawSynthSustain,
-			out: p.carrierBus ,
-			amp:0.015,dur:2,rel:4,addAction:\addBefore).play;
-
-		p.vocodeTune.(p,b,e,e.rpp,
-
-		echo: 0.5,modGain:2.7/2,
-		// chord:#[1,0.5,2,8],
-		// echo:0.1,modGain:6,
-		mix:0.8,
-			// amp:0.22,
-			// dur:b.sum+1,
-			// att:1,
-			 sus:b.sum / 2,
-			// rel:0.2,
-			// out:3
-		);
 });
 P(\chord,start:\essence,music: { |p b e|
 	[
@@ -369,11 +383,11 @@ P.synthV(\mo,filter: (midinote: _ - 12),
 	{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
-			/3
+			/4
 	}.play
 });
 P.double(\mo, take:\double, double:\true,
-	filter: (midinote: "1 6 5 4 4 ".dm(\c) ++ "5 4 3 2 3".dm(\e,\mixolydian) - 12),
+	filter: (midinote: "1 6 5 4 3 ".dm(\c) ++ "5 4 3 2 3".dm(\e,\mixolydian) - 12),
 		// pbind:{ |p b| 
 		// 	p.energyPbinds[1]
 		// },
@@ -397,7 +411,7 @@ P(\swell, music: { |p b e|
 	{
 		"-1 1 2 5 7".df('f#',[5],\mixolydian)
 		=> Pulse.ar(_,0.05)
-		* 0.1 /3
+		* 0.1 /4
 		* Env([0,0,1,0],b.parse([6,3,1] + [0,0,6]),[0,3,-3]).kr(2,gate:1)
 	}.play
 });
@@ -414,7 +428,7 @@ P(\chords, music: { |p b e|
 });
 P(\tricorderArp, music: { |p b e|
 		{
-				var release = e.bNext.sum + 3;
+				var release = e.bNext.sum + 3;// + 3;
 				var dur = p.energyDur;
 				// var clock = Impulse.ar( dur.reciprocal );
 				var clock = TDuty( ( 1/6) ! 48 warpTo: e.tempoMap.quantizeDft => _.dq (3),0,1 );
@@ -443,8 +457,8 @@ P(\tricorderArp, music: { |p b e|
 				+
 				(
 						-2.dbamp *
-						WhiteNoise.ar(0.1) * ( clock => Decay.ar(_,0.3) )
-						=> RLPF.ar(_, Demand.ar(clock,0,Dwhite(300,8000).linexp(300,8000,300,8000)),0.3)
+						WhiteNoise.ar(0.1) * ( Impulse.ar(10)=> Decay.ar(_,0.3) )
+						=> RLPF.ar(_, Demand.ar(Impulse.ar(10),0,Dwhite(300,8000).linexp(300,8000,300,8000)),0.3)
 						=> 
 						{ |i|
 								Select.ar(
@@ -486,8 +500,8 @@ P(\tricorderArp, music: { |p b e|
 						* Env.perc(0.001, \decayS.kr(0.4)).ar(0, gate)
 						/4
 				})
-		/2.5
-		* EnvGen.cutoff(b.sum, release )
+		/3
+		* EnvGen.cutoff(b.sum, release, -3 )
 		}.play;
 });
 // P.tune();
@@ -500,7 +514,7 @@ P.still(\kirk, timecode: 1040.5.seconds, music: { |p b e|
 	)
 });
 P.tune(\Impossible, { |i| Pmul(\freq,1,i) => Pbindf(_,\legato,4,\coef,0.3,\decaytime,8, \instrument, \harp, \out, Effect.bus( 
-	{ |i| [Convolution.ar(i, Dust.ar(30) => FreeVerb.ar(_,1,1)) , PitchShift.ar(i,0.02,0.5) +i] * 0.7}, inputChannels:2
+	{ |i| [Convolution.ar(i, Dust.ar(30) => FreeVerb.ar(_,1,1)) , PitchShift.ar(i,0.02,0.5) +i] * 0.2}, inputChannels:2
 ))} );
 P(\dyad, music: { |p b e|
 	[
@@ -510,7 +524,7 @@ P(\dyad, music: { |p b e|
 		mix:0,
 		amp:0.04,
 		legato: [ [3,4,4],1 ].q,
-		instrument: \wash
+		instrument: \pulse
 	].p.play
 });
 P.synthV(\an,
@@ -531,14 +545,23 @@ P.synthV(\an,
 	}.play
 });
 /*MCCOY:*/[" But you once had a body of some type? ","-5 3 2 1 -7 4.5 2 -6.5 5 4.5".dm(\d),].addLine; 
+P.still(\group_mccoy, timecode: 1042.79.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["but you once","had a body"],
+	).sequenceText([
+		b.parse([7]).unbubble, ["of some type!",""]
+	])
+});
 P.synthV(\mo, params: {|p b| [
 	lyrics:" But you once had a body + of some type? " ,
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		=> p.synthVTracks.at(e.key).()
+		// => p.synthVTracks.at(e.key).()
 		* 0.8
 		* [0.2,0.8]
+		/4
 	}.play
 });
 P(\bassline, music: { |p b e|
@@ -550,6 +573,23 @@ P(\bassline, music: { |p b e|
 });
 P.tune();
 /*SARGON:*/[" A body much as yours, my children, although our minds were infinitely greater. ","-5 1 2 2 1 3".dm(\g) ++ "4 3 2 -6 -7 1 ".dm('a-') ++ "11 7 12 11 7 6 6 5".dm(\e)].addLine; 
+P.still(\lit, timecode: 1045.5.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.parse([9]).unbubble,
+		text: ["a body much as yours","my children"],
+		fade: 4
+	).sequenceText([
+		b.parse([9]).unbubble, ["",""]
+	])
+});
+P.still(\clear, syl:8, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.drop(1).sum,
+		text: ["although our","minds were"],
+	).sequenceText([
+		b.drop(1)[0..4].sum, ["infintely","greater"]
+	])
+});
 P.synthV(\xuan,
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
@@ -564,7 +604,7 @@ P(\bassNote,syl:4, music: { |p b e|
 		dur: b.drop(1)[0]
 	).play
 });
-P.tune('much ', { |i| Pmul(\freq,0.5,i) => Pbindf(_,\instrument, \sawSynthSustain,\amp,0.04)});
+P.tune('much ', { |i| Pmul(\freq,0.5,i) => Pbindf(_,\instrument, \sawSynthSustain,\out,Song.carrierBus,\amp,0.04)});
 
 P('dyad',start:\much,syl:17,music: {|p b e|
 	(
@@ -576,7 +616,7 @@ P('dyad',start:\much,syl:17,music: {|p b e|
 	).play
 });
 P('chords',start:\much,syl:5,music: {|p b e|
-	v = VoiceLeading(
+	 VoiceLeading(
 		[
 			[ 4,  3,  \_, 2 ],
 			[ 1,  1,  -7, \_ ],
@@ -584,7 +624,9 @@ P('chords',start:\much,syl:5,music: {|p b e|
 		],
 		b.drop(1).parse([1, 0.66,0.34,1  ])
 	).df('a-').p
-	=> {|i| i<> (instrument: \visual_pad,amp:0.2) => _.play; i<>(instrument:\harp, amp:0.03) => _.play}
+	=> {|i| i<> (instrument: \visual_pad,amp:0.2,
+		// \out: p.carrierBus
+	) => _.play; i<>(instrument:\harp, amp:0.03) => _.play}
 	//=> _.play
 });
 P('bass',start:\much,syl:8,music: {|p b e|
@@ -598,12 +640,112 @@ P('bass',start:\much,syl:8,music: {|p b e|
 	].pma(\sparkTriangle).play
 });
 ["(infinitely)","4 3 2 1".dm(\e,\whole)].addLine;
-P.tune('(infinitely)', Pmul(\freq, [1,0.5],_));
+P.synthV(\kevin, params: {|p b| [
+	lyrics: "infinitely + + +",
+	legato:[1,1,1,2],
+	paramGender: -0.3,
+	paramTension: -0.5,
+	paramBreathiness: 0.5
+] }, music:{|p b e|
+	{
+		e.playbuf
+		* [1,0.1] 
+		/ 4
+		* EnvGen.cutoff(b[0..2].sum,1,doneAction:0).poll
+		=> FreeVerb.ar(_,0.45,1)
+		
+
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(\kevin, params: {|p b| [
+	paramTension: -0.5,
+	paramBreathiness: 0.5,
+	paramGender: -0.3,
+] }, music:{|p b e|
+	{
+		e.playbuf
+		* [0.1,1] 
+		/ 4
+		* EnvGen.cutoff(b[0..2].sum,1,doneAction:0).poll
+
+		=> FreeVerb.ar(_,0.45,1)
+		// => p.synthVTracks.at(e.key).()
+
+	}.play
+});
+P.tune('(infinitely)', { |i| Pmul(\freq, [1,0.5],i) => Pbindf(_,\instrument,\harp,\amp,0.012,\out,(0..3).q)});
+P(\vibes, music: { |p b e|
+	"4 3 2 1".df(\e,\whole).do{|i x|
+		fork{
+			(b.integrate)[x].wait;
+			{
+				SinOsc.ar(i)
+				* SinOsc.ar(3).range(0.1,1)
+				* EnvGen.cutoff(1,3)
+				* 0.1
+				* 0.1
+				/2
+				* {4.rand}.dup(4)
+			}.play
+		}
+	}
+});
 /*KIRK:*/[" That's twice you've referred to us as my children. ","1 6 2 3 2 3 7 6 6 7.5 2".dm(\f,\mixolydian) ].addLine; 
-P.tune(\That);
+// P.tune(\That);
+P.synthV(\an,
+	filter: (midinote: _ - 12), 
+	params: {|p b| [
+	lyrics: " That's twice you've referred + to us as my children  + ",
+	legato: [1, 0.9, 1,1,1,1,0.8, 0.8, 1, 1, 1]
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+		/ 2
+		
+	}.play
+});
 
 /*SARGON:*/[" Because it is possible you are our descendants, Captain Kirk. ","1 3 5 7 12 7 5 3 ".dm(\f,4) ++ "1 3 5 7 12 11 13 11 7 6".dm(\g,4)].addLine;
-P.tune(\Because,_ <> [instrument:\defaultPiano].p);
+P.tune(\Because, { |i| i <> [instrument:\harp,\coef,0.2,amp:0.01,delaytime:-10,out:(0..4).q(inf)].p => Pmul(\freq,0.5,_)});
+P(\bassnote, music: { |p b e|
+	[
+		freq: [1,2].df(\f,2).q,
+		amp: [0.1,0.02].q,
+		dur: b.parse([8,10]).q,
+		out: Effect.bus(DWGReverbC1C3.ar(_))
+	].p.play
+});
+P(\chord,lag:-0.1, music: { |p b e|
+	[ 
+		instrument: \sawSynth,
+		att:4,
+		freq: [[1,3,5,7,12].df(\f,4),[1,3,5,7,11].df(\g,4)].q,
+		amp:0.02,
+		dur: b.parse([8,12]) + [0.1,0] => _.q
+	].pm.play
+});
+P.tune(\Becaus,_ <> [instrument:\sparkTriangle,\depth:0,amp:0.01,out:(0..4)].pm);
+P.synthV(\xuan, 
+	filter: (midinote: 55!18), 
+	params: {|p b| [
+	lyrics:" Because + it is possible + + - you are our descendants + +, Captain + Kirk - " ,
+	defaultVibratoDepth:0.3,
+	vocalMode: \Soft
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}//.play
+	;
+	// {|i| PlayBuf.auto(2,Song.laMer.bufnum,[-2,0].midiratio.dq.demand(b.parse([8,8])))/ 10}.play(s,p.carrierBus);
+	p.vocodeTune.(p,b,e,e.rpp,
+		chord:#[2],
+		amp:0.3,
+		echo:0.5
+	)
+});
 ["(boom) Six thousand centuries ago, our vessels were ","-1 3 3 3 3 2 2 1 2 2 3 -4".dm('a-',\minor) ++ "11 5 6 3".dm(\c,5)].addLine;
 Song.setTempoMap(\Six,"e e e e e x e x e x x");
 P('dmx',start:\Six,music: {|p b e|

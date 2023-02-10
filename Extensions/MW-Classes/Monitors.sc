@@ -45,6 +45,12 @@ Monitors {
 		o.outDevice_("EPOS PC 8 USB");
 		Server.default.reboot
 	}
+	*blackHole {
+		var o =Server.default.options;
+		o.inDevice_("BlackHole 16ch");
+		o.outDevice_("BlackHole 16ch");
+		Server.default.reboot
+	}
 	*airpods {
 		var o =Server.default.options;
 		o.inDevice_("Pro Ag");

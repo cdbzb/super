@@ -536,7 +536,8 @@ Song {
 			Server.default.latency * 2 => _.wait; // double latency
 			s.record(
 				bus:bus,
-				duration:(start..end).collect(this.secDur[_]).sum + tail);
+				duration:(start..end).collect(this.secDur[_]).sum + tail
+			);
 			}
 	}
 	makeVid { |start end dir tail=2| // check Sync
@@ -560,6 +561,20 @@ Song {
 			"ffmpeg -i" + path++"screenCapture.mov" + "-filter:v fps=30" + path++"30fps.mov" => _.unixCmd
 
 			//"ffmpeg -i" + path ++ ".aif" + "-itsoffset 1 -i" + path ++ ".mov" + "-c copy -map 0:v:0 -map 1:a:0" + path ++ "together.mov" => _.unixCmd
+		}
+	}
+	recordOBS { |start end dir="/tmp" tail = 2|
+		var now = Date.getDate.stamp;
+		var path = dir +/+ now;
+		//preroll = 0.5;
+		start = Song.section(start);
+		end = Song.section(end);
+		Song.playRange(start,end);
+		"obs-cli --password Where4obs recording start".unixCmd;
+		fork{
+			(start..end).collect(Song.secDur[_]).sum.wait;
+			tail.wait;
+			"obs-cli --password Where4obs recording stop".unixCmd;
 		}
 	}
     // TRASHME

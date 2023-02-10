@@ -407,7 +407,7 @@ P.double(\mo, take:\double, double:\true,
 			/4.5
 	}.play
 });
-P(\swell, music: { |p b e|
+P(\swell, music: { |p b e
 	{
 		"-1 1 2 5 7".df('f#',[5],\mixolydian)
 		=> Pulse.ar(_,0.05)
@@ -651,7 +651,7 @@ P.synthV(\kevin, params: {|p b| [
 		e.playbuf
 		* [1,0.1] 
 		/ 4
-		* EnvGen.cutoff(b[0..2].sum,1,doneAction:0).poll
+		* EnvGen.cutoff(b[0..2].sum,1,doneAction:0)
 		=> FreeVerb.ar(_,0.45,1)
 		
 
@@ -748,6 +748,37 @@ P.synthV(\xuan,
 });
 ["(boom) Six thousand centuries ago, our vessels were ","-1 3 3 3 3 2 2 1 2 2 3 -4".dm('a-',\minor) ++ "11 5 6 3".dm(\c,5)].addLine;
 Song.setTempoMap(\Six,"e e e e e x e x e x x");
+P.synthV(\xuan, 
+	filter: (midinote: _ - 12), 
+	params: {|p b| [
+	lyrics: "r Six thousand + centuries + +  ago + - - r our vessels + were " ,
+	defaultVibratoDepth:0.3,
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+		/10
+	}//.play
+	;
+	p.vocodeTune.(p,b,e,e.rpp,
+		amp: 0.25
+	)
+});
+P.double(\xuan,
+	filter: (midinote: _ - 24), 
+	params:{ |p b| [
+		paramGender:0.4
+	] },
+	music:{|p b e|
+	
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+		/10
+	}.play(s,4)
+}
+)
+// P.tune();
 P('dmx',start:\Six,music: {|p b e|
 	[
 		"....x..x....x... .....x.",\snare,\amp,Pseg([0.05,0.05,0.02],b.parse([12,3]).q),
@@ -766,7 +797,7 @@ P('chords',start:\Six,music: {|p b e|
 		instrument:\sawSynthSustain
 	].pm(\sawSynthSustain).play
 });
-P.tune(\Six, Pset(\amp, Pfunc({ |e|(e.midinote < -5.dm('a-')).if{0}{0.1}}), _ ));
+// P.tune(\Six, Pset(\amp, Pfunc({ |e|(e.midinote < -5.dm('a-')).if{0}{0.1}}), _ ));
 P.tune('x th', { |i| Pbindf(i, \amp,[1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1].q/15, \instrument, \defaultPiano) => Pmul (\freq,0.5,_)});
 P('bass',start:\Six,music: {|p b e|
 	[
@@ -777,6 +808,22 @@ P('bass',start:\Six,music: {|p b e|
 
 //["colonising this galaxy . . . ",[1,2,4,5,2,5.5,5,-7,-5.5,-5,-17].dm('e-')].addLine;
 ["colonising this galaxy . . . ",[1,2,4,5,6,6,5,-7/*,-6,-5,-2*/].dm('e-')].addLine;
+P.synthV(\xuan,
+	// lag: -1,
+	filter: (midinote: _ - 12), 
+	prepend: true,
+	params: {|p b| [
+	lyrics: "colon + eye zing this galaxy + +",
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}//.play
+	;
+	p.vocodeTune.(p,b,e,e.rpp,
+		amp:0.25
+	)
+});
 P('drumsNextPart',start:\colonising,music: {|p b e|
 	[
 		"x..",\kick_gentle,\vol,\amp,0.02,

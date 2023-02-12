@@ -25,6 +25,7 @@ media/heartHi.wav filter=lfs diff=lfs merge=lfs -text
 recordTest.wav-bak/recordTest210402_160010.wav filter=lfs diff=lfs merge=lfs -text
 SynthV/**/*.wav filter=lfs diff=lfs merge=lfs -text
 SynthV/**.wav filter=lfs diff=lfs merge=lfs -text
+SynthV/*/*/*/*.wav
 SynthV/chamber/28/genbu/synthV_MixDown.wav filter=lfs diff=lfs merge=lfs -text
 SynthV/chamber/8/kevin/synthV_MixDown.wav filter=lfs diff=lfs merge=lfs -text
 SynthV/medical/0/xuan/synthV_MixDown.wav filter=lfs diff=lfs merge=lfs -text

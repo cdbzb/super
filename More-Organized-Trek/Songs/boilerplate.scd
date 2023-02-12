@@ -22,7 +22,7 @@ Song.encoders=~encoders;
 	Song.carrierBus = Bus.audio(s,5);
 	Song.modulatorBus = Bus.audio(s,2);
 	Song.sargonCarrier = {
-		|p b e att=3 sus=5 rel=6 chord=#[1,2,4,5,6,8] aTune mix=0.5| 
+		|p b e att=3 sus=5 rel=6 chord=#[1,2,4,5,6,8] aTune mix=0.5 verb=1| 
 		{  
 			var tune = aTune ? p.tune[e.start].list;
 
@@ -44,7 +44,7 @@ Song.encoders=~encoders;
 			=> SplayAz.ar(5,_)
 			=> RLPF.ar(_,100,2)
 			;//* Env.linen(3,5,6).kr(2,gate:1);
-			(1-mix * car min: 0.001  )=> FreeVerb.ar(_,1,0.8)
+			(1-mix * car min: 0.001  ) => FreeVerb.ar(_,verb,0.8)
 			+ (mix * saw )
 			/10
 		}.play(s,Song.carrierBus.index)

@@ -16,6 +16,7 @@ Song {
 	var <>clock;
 	var playInitiatedAt,<>preroll=0;
 	var <secLoc, <secDur, <pbind;
+	var <>loadedFrom;
 	classvar <>lastPlayOnly;
 	classvar <>muteTunes;
 
@@ -248,6 +249,7 @@ Song {
 		}
 	}
 	init {|symbol array dursInFile r|
+		loadedFrom = thisProcess.nowExecutingPath;
 		resources = r;
 		key=symbol;
 		songs.at(symbol.asSymbol).notNil.if {cursor=lastSectionPlayed};
@@ -275,6 +277,9 @@ Song {
 			Pbind(\dur,Song.currentSong.durs[i],\midinote,Song.currentSong.tune[i])
 		})
 
+	}
+	reload {
+		loadedFrom.load // loads last saved version
 	}
 		cursor_ {|i| cursor = i; lastSectionPlayed = i;}
 	hasDursButNotLyricsToDurs {
@@ -421,7 +426,7 @@ Song {
 			this.resources.at(\infrastructure) !? (_.value);
 	}
 	playParts { |...args|
-		this.getPartsList(args).sort({|i j| i.start<j.start}).do(_.p)
+		this.getPartsList(args).sort({|i j| try{ i.start<j.start }}).do(_.p)
 	}
 	chain {
 		songList=[key,next];
@@ -429,8 +434,8 @@ Song {
 	}
 	play { |...args|
 		var list = this.getPartsList(args);
-		var first = list.select{|part| part.start == cursor};
-		var wait = first.select{|part| part.lag < 0}.collect({ |part| part.lag }).sort[0];
+		var first = try{ list.select{|part| { part.start } == cursor} };
+		var wait = try{ first.select{|part| part.lag < 0}.collect({ |part| part.lag }).sort[0] };
 		wait.notNil.if {Song.preroll_(wait.abs + Server.default.latency + 0.1)};
 		playInitiatedAt = SystemClock.seconds;
 		fork{
@@ -567,15 +572,28 @@ Song {
 		var now = Date.getDate.stamp;
 		var path = dir +/+ now;
 		//preroll = 0.5;
-		start = Song.section(start);
-		end = Song.section(end);
-		Song.playRange(start,end);
-		"obs-cli --password Where4obs recording start".unixCmd;
-		fork{
-			(start..end).collect(Song.secDur[_]).sum.wait;
-			tail.wait;
-			"obs-cli --password Where4obs recording stop".unixCmd;
+		(Server.default.options.outDevice == "BlackHole 16ch").if
+		{
+			start = Song.section(start);
+			end = Song.section(end);
+			Song.playRange(start,end);
+			"obs-cli --password Where4obs recording start".unixCmd;
+			fork{
+				(start..end).collect(Song.secDur[_]).sum.wait;
+				tail.wait;
+				"obs-cli --password Where4obs recording stop".unixCmd;
+			}
+		}{
+			Monitors.blackHole;
+			Server.default.waitForBoot{
+				this.load;
+				{
+					3.wait;
+					this.recordOBS
+				}
+			}
 		}
+
 	}
     // TRASHME
     reaperSection {|sec range=1 tail=5| 
@@ -1169,4 +1187,8 @@ SectionAccessor {
 	}
 }
 
-
++ Nil {
+	p {
+		nil
+	}
+}

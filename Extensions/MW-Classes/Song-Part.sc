@@ -572,7 +572,7 @@ Song {
 		var now = Date.getDate.stamp;
 		var path = dir +/+ now;
 		//preroll = 0.5;
-		(Server.default.options.outDevice == "BlackHole 16ch").if
+		(Server.default.options.outDevice == "BlackHole 2ch").if
 		{
 			start = Song.section(start);
 			end = Song.section(end);

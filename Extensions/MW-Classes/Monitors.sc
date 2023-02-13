@@ -2,10 +2,16 @@ Monitors {
 	classvar <>decoder,k=0.5,<channels=5;
 	//classvar <>speakerOrder=#[0,2,4,3,1]; //for Trek
 	classvar <>speakerOrder=#[0,4,1,3,2]; //for Trek
+	classvar <>deviceChannels;
 	*initClass {
 		decoder = FoaDecoderMatrix.newPanto(5,'flat','dual');
+		deviceChannels = (
+			"MacBook Pro Speakers":2,
+			"Pro Ag":2,
+			"BlackHole 2ch":2
+		);
 		ServerTree.add ({ 
-			(Server.default.options.outDevice == "MacBook Pro Speakers").if{
+			(deviceChannels.at(Server.default.options.outDevice) == 2).if{
 					Monitors.stereo;
 					{
 						Monitor.new => _.play(0,5,0,2,target:RootNode(Server.default));
@@ -45,10 +51,16 @@ Monitors {
 		o.outDevice_("EPOS PC 8 USB");
 		Server.default.reboot
 	}
-	*blackHole {
+	*blackHole16 {
 		var o =Server.default.options;
 		o.inDevice_("BlackHole 16ch");
 		o.outDevice_("BlackHole 16ch");
+		Server.default.reboot
+	}
+	*blackHole {
+		var o =Server.default.options;
+		o.inDevice_("BlackHole 2ch");
+		o.outDevice_("BlackHole 2ch");
 		Server.default.reboot
 	}
 	*airpods {

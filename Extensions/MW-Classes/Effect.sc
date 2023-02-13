@@ -1,6 +1,5 @@
 	Effect { //|function out=0| // node proxy version 
 		var <>numChannels,<>bus,<>node, <>sidechain, <>synth;
-
 		
 		*newOld { |function out=0 inputChannels=1|
 			^super.new.init(function , out,inputChannels);
@@ -48,11 +47,11 @@ event.yield
 
 		init { |function out inputChannels=1 target |
 			var desc=SynthDef(\temp,{In.ar(1,inputChannels)=>function=>Out.ar(0,_)});
-			var numChannels=desc.asSynthDesc.outputData[0].at(\numChannels);
+			numChannels=desc.asSynthDesc.outputData[0].at(\numChannels);
 			target = target ? Server.default;
 			bus=Bus.audio(numChannels:numChannels);
 			synth={|gate| 
-				In.ar(bus.index,numChannels)
+				In.ar(bus.index,inputChannels)
 				=> function
 				=>.first DetectSilence.ar(_,doneAction:2)
 				=> Out.ar(out,_)

@@ -41,12 +41,14 @@ Song.encoders=~encoders;
 			var car = Gendy1.arWidth( freq: freqs , width:1.10) => Mix.ar(_)
 			* Env.linen(att,sus,rel).kr(2,gate:1);
 			var saw = Saw.ar(freqs) * 0.1
-			=> SplayAz.ar(5,_)
+			// => SplayAz.ar(5,_)
+			=> Splay.ar(_)
 			=> RLPF.ar(_,100,2)
 			;//* Env.linen(3,5,6).kr(2,gate:1);
 			(1-mix * car min: 0.001  ) => FreeVerb.ar(_,verb,0.8)
 			+ (mix * saw )
 			/10
+			=> _[0..4] //trying to prevent spillover!!
 		}.play(s,Song.carrierBus.index)
 	};
 	Song.sargonModulator = {|rpp dur modGain=1 echo=1 playbuf| { 
@@ -68,6 +70,7 @@ Song.encoders=~encoders;
 			 
 			
 			//+ ( In.ar(carrierBus.index,1) )
+			// => _[0,1]
 	}.play(s,Song.modulatorBus.index) };
 	Song.auditionVocoder = {
 		Synth(
@@ -81,8 +84,8 @@ Song.encoders=~encoders;
 		)
 	};
 	Song.vocodeTune = { 
-		|p b e rppName amp=0.2 att=3 sus=1 rel=5 dur=10 chord=#[1,2,4,5,6,8] tune out=0 modGain=1 echo=1 mix=0.5|
-		var foa = Bus.audio(s,1);
+		|p b e rppName amp=0.2 att=3 sus=1 rel=5 dur=10 chord=#[1,2,4,5,6,8] tune out=0 modGain=1 echo=1 mix=0.5 verb=1|
+		var foa = Bus.audio(s,5);
 		var synthVbuffer, playSynth, playAmbiSynth;
 		( v.isNil or: { v.isRunning.not }.try )
 		.if{
@@ -107,7 +110,8 @@ Song.encoders=~encoders;
 		};
 		playAmbiSynth = {
 			Song.ambiSynth = {
-				In.ar(foa.index) 
+				In.ar(foa.index,2) 
+				=> Mix.ar(_)
 				=> FoaEncode.ar(_,Song.encoders.omni)
 				=> FoaTransform.ar(_, 'press', LFBrownNoise2.ar(1)*pi/1,LFBrownNoise2.ar(1)*pi)
 				=> FoaTransform.ar(_,'pressZ',SinOsc.ar(1))
@@ -124,7 +128,7 @@ Song.encoders=~encoders;
 		{ true }{ Song.vocoderSynth.set(\dur,dur,\gate,1)}
 		 ;
 		// restore line above to 'out' to get rid of ambisonics!!
-		Song.sargonCarrier.(p,b,e,att, sus, rel, chord,tune,mix);
+		Song.sargonCarrier.(p,b,e,att, sus, rel, chord,tune,mix, verb);
 		Song.sargonModulator.(rppName,dur,modGain,echo,synthVbuffer)
 	};
 	Song.laMer = Song.laMer ?  Buffer.read(s,"~/tank/super/samples/La_Mer_clean.aif".standardizePath);

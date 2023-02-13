@@ -781,7 +781,7 @@ Song.setTempoMap(\Six,"e e e e e x e x e x x");
 
 P.tune('thousand', { |i| Pmul(\freq,0.5,i) => Pbindf(_,\instrument, \sawSynthSustain,\out,Song.carrierBus,\amp,0.04)});
 P.synthV(\xuan, 
-	filter: (midinote: _ - 12), 
+	filter: (midinote: _ - 24), 
 	params: {|p b| [
 	lyrics: "r Six thousand + centuries + +  ago + - - r our vessels + were " ,
 	defaultVibratoDepth:0.3,
@@ -851,7 +851,7 @@ P('bass',start:\Six,music: {|p b e|
 P.synthV(\xuan,
 	prepend:true,
 	// lag: -1,
-	filter: (midinote: _ - 12), 
+	filter: (midinote: _ - 24), 
 	prepend: true,
 	params: {|p b| [
 	lyrics: "Collin + eye zing this galaxy + +",
@@ -899,7 +899,7 @@ P('bassnote',start:\colonising,music: {|p b e|
 ["just as your own starships have ",[1,4,7,6,6,5].dm(\e,\mixolydian) ++ [1].dm('a-')].addLine;
 
 P.tune('starships', { |i| Pmul(\freq,0.5,i) => Pbindf(_,\instrument, \sawSynthSustain,\out,Song.carrierBus,\amp,0.04)});
-P.synthV(\xuan, filter: (midinote: _ - 12), params: {|p b| [
+P.synthV(\xuan, filter: (midinote: _ - 24), params: {|p b| [
 	lyrics: "just as your own starships + have ",
 ] }, music:{|p b e|
 	{
@@ -961,7 +961,9 @@ P.synthV(\xuan,
 	filter: (midinote: _ - 24), 
 	prepend: true,
 	params: {|p b| [
-	lyrics: "vastness +" ,
+	lyrics: "vastness +",
+	phonemes: ["","t n eh s"],
+	defaultVibratoDepth: 0.1
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -969,14 +971,14 @@ P.synthV(\xuan,
 	}//.play
 	;
 	p.vocodeTune.(p,b,e,e.rpp,
-		verb:0,
-		mix:0
+		// verb:0,
+		mix: 0.5
 
 	)
 });
 P.tune([instrument: \stringyy,amp:0.05,out:4 ].p <> _ );
 P('bassNote',start:\vastness,music: {|p b e|
-(freq:[-7].df(\b,3,\mixolydian) / [1,2],out:Effect.bus(DWGReverbC1C3.ar(_))).play;
+(freq:[-7].df(\b,3,\mixolydian) / [1,2],out:Effect.bus(DWGReverbC1C3.ar(_),inputChannels:2)).play;
 (freq:[11,5].df(\b,3),instrument:\defaultPiano,dur:b.sum).play
 });
 ["As you now leave your own seed on distant planets, ",[1,3,1,4,3,1,3,4,5,3,7,6].dm(\d,\dorian)].addLine;
@@ -994,11 +996,13 @@ P.synthV(\xuan,
 	;
 	{ PlayBuf.auto(2,Song.laMer, [0,-2].midiratio.dq.demand(Song.durs[\planets].list.parse([10,2]))) / 14 }.play(s,Song.carrierBus,addAction:\addToHead);
 	p.vocodeTune.(p,b,e,e.rpp,
-		verb:1,
+		verb:0,
+		echo:0,modGain: 4,
 		mix:0.5,
 		chord:#[1,2,4]/2
 
 	);
+	(instrument: \wash,freq: [1,3,5,7].df(\d,\dorian),dur:b.sum,out:p.carrierBus.index,amp:0.02,addAction:\addBefore).play;
 });
 P(\pad, music: { |p b e|
 	( 
@@ -1010,15 +1014,26 @@ P(\pad, music: { |p b e|
 });
 P(\guiro, music: { |p b e|
 	{
-		var env = DemandEnvGen.ar([1,0,4,0,2,0,4,0].dq(inf)*10,1/4!16 warpTo: e.tempoMap.quantizeDft(0.3) => _.dq(inf));
+		// var env = DemandEnvGen.ar([1,0,4,0,2,0,4,0].dq(inf)*10,1/4!16 warpTo: e.tempoMap.quantizeDft(0.3) => _.dq(inf));
+		var env = DemandEnvGen.ar([1,0,0,1,0,0,1,0,0,1,0,0].dq(inf)*10,1/4!16 warpTo: e.tempoMap.quantizeDft(0.3) *.x [0.1,0.8,0.1] => _.postln => _.flat => _.dq(inf));
 		Shakers.ar(2,energy:env,
 			resonantFreq:SinOsc.ar(0.2).unipolar,decay:SinOsc.ar(0.13).unipolar
 		)
-		=> DelayN.ar(_,delaytime:b[0]/( 6 ))
-		/ 20 
+		// => DelayN.ar(_,delaytime:b[0]/( 6 ))
+		// / 20 
+		/4
 		* EnvGen.cutoff(b.sum,0)
 
 	}.play(s,2)
+});
+P(\bass, music: { |p b e|
+	[
+		dur: "q q qq q q qq q q qq q q qq q".asBeats.warpTo(e.tempoMap).q,
+
+		// freq: [\r].q(1) ++ [1,1, -6.5, 1, 1, 4, 2.5, 2.5, -6.5].df(\d,3).q(inf)
+		 freq: [\r].q(1) ++ [1,1, -6.5,].df(\d,3).q(inf)
+		// freq: [\r].q(1) ++ [1,1, -3, -4, -4, -7].df(\d,3,\dorian).q(inf)
+	].pp
 });
 P('line',start:\As,syl:5,music: {|p b e|
 	[
@@ -1033,14 +1048,16 @@ P('montuno',start:\As,music: {|p b e|
 		freq:[1, [3,5], 1, [4,6], [3,5],1, 3,4, 5, 3].df(\d,4,\dorian).q,
 		dur:b.q,
 		//instrument:\defaultPiano
-		instrument:\harp,
+		instrument:\stab,
 		coef:0.8,
-		out: Effect.bus( {|i| CrossoverDistortion.ar(i,amp:0.01, smooth:0.8) /2} )
+		// out: Effect.bus( {|i| CrossoverDistortion.ar(i,amp:0.01, smooth:0.8) /2} )
 	].pp
 });
 P('bassNote',start:\seed,syl:9,music: {|p b e|
-(freq:[1].df(\g,3,\mixolydian) / [1,2],out:Effect.bus(DWGReverbC1C3.ar(_))).play;
-(freq:[11,6].df(\g,3),instrument:\defaultPiano,dur:b.sum).play
+(freq:[1].df(\g,3,\mixolydian) / [1,2],out:Effect.bus(DWGReverbC1C3.ar(_),inputChannels:2)).play;
+\666.postln;a.postln;Song.carrierBus.postln;
+(freq:[11,6].df(\g,3),instrument:\defaultPiano,dur:b.sum).play;
+defer{s.plotTree}
 });
 P.tune(\As, _ <> (instrument: \sawSynth, amp:0.04, out: 4));
 ["(boom) so we left our seed behind us.",[1,11,7,6,5,4,3,2,1,3,3,4].dm(\g,4,\mixolydian)].addLine; 

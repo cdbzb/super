@@ -69,7 +69,12 @@ SynthDef('cepstral-vocoder-buffer', {
 		ICepstrum(cepsch2, carrierEnvelope);
 		chain2 = PV_MagDiv(chain2,carrierEnvelope);
 		chain2 = PV_MagMul(chain2, modulatorEnvelope);
-		Out.ar( out, Pan2.ar(IFFT(chain2) *\amp.kr(0.5),\pan.kr(0)) );
+		Out.ar( out, 
+			// Pan2.ar(IFFT(chain2)
+			IFFT(chain2)
+			*\amp.kr(0.5)
+			// ,\pan.kr(0)) 
+		);
 		// Line.kr(0,1,dur,doneAction:2)
 		Env.perc(0,\dur.kr(10)).kr(gate:\gate.tr(1),doneAction:2)
 	}).add;

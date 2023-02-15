@@ -474,6 +474,7 @@ P(\tricorderArp, music: { |p b e|
 				=> {|i| [i, DelayN.ar(i,0.6,0.6)]}
 				=>DWGReverbC1C3.ar(_,mix:0.14)
 				=>Phaser2.ar(_,rate:0.12,fb:0.5)
+
 				// hihat
 				// firstArg:
 				+
@@ -524,6 +525,11 @@ P(\tricorderArp, music: { |p b e|
 				})
 		/3
 		* EnvGen.cutoff(b.sum, release, -3 )
+		=> Splay.ar(_)
+				=> FoaEncode.ar(_, FoaEncoderMatrix.newStereo(0))
+				=> FoaRotate.ar(_, SinOsc.ar(0.3))
+				=> FoaDecode.ar(_, Monitors.decoder)
+				* 3
 		}.play;
 });
 // P.tune();
@@ -564,9 +570,23 @@ P.synthV(\an,
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 		/3
+		// => Out.ar(1,_)
+		=> PanAz.ar(5,_,1)
 	}.play
 });
 /*MCCOY:*/[" But you once had a body of some type? ","-5 3 2 1 -7 4.5 2 -6.5 5 4.5".dm(\d),].addLine; 
+P(\strum, music: { |p b e|
+	[
+		freq: [\r,[-5,1,3,5,11,13],[-7,2,4.5,6,12,14.5],[-6.5, 2, 5, 6.5, 12, 14, 15]].df(\d).q,
+		strum:0.06,
+		amp: 0.05,
+		dur: b.parse([1, 4, 3, 2]).q,
+		legato:1.2,
+		instrument: \harp,
+		coef:0.3,
+		out: Effect.bus({|i| i * SinOsc.ar(2.9) => PanAz.ar(4,_, SinOsc.ar(2) * pi) => FreeVerb.ar(_,0.4,1)}, inputChannels:4, out:0)
+	].pp
+});
 P.still(\group_mccoy, timecode: 1042.79.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -575,7 +595,7 @@ P.still(\group_mccoy, timecode: 1042.79.seconds, music: { |p b e|
 		b.parse([7]).unbubble, ["of some type!",""]
 	])
 });
-P.synthV(\mo, params: {|p b| [
+P.synthV(\mo, filter: (midinote: _ - 12), params: {|p b| [
 	lyrics:" But you once had a body + of some type? " ,
 ] }, music:{|p b e|
 	{
@@ -587,13 +607,14 @@ P.synthV(\mo, params: {|p b| [
 	}.play
 });
 P(\bassline, music: { |p b e|
+	
 	[
 		freq: [\r, 1, [ 3,12,15, 17 ], 2.5].df(\a,[3,4]).q,
 		dur: b.parse([1, 4, 3, 2]).q,
 		legato:1
 	].pp
 });
-P.tune();
+// P.tune();
 /*SARGON:*/[" A body much as yours, my children, although our minds were infinitely greater. ","-5 1 2 2 1 3".dm(\g) ++ "4 3 2 -6 -7 1 ".dm('a-') ++ "11 7 12 11 7 6 6 5".dm(\e)].addLine; 
 P.still(\lit, timecode: 1045.5.seconds, music: { |p b e|
 	 e.still.( 
@@ -901,6 +922,7 @@ P('bassnote',start:\colonising,music: {|p b e|
 P.tune('starships', { |i| Pmul(\freq,0.5,i) => Pbindf(_,\instrument, \sawSynthSustain,\out,Song.carrierBus,\amp,0.04)});
 P.synthV(\xuan, filter: (midinote: _ - 24), params: {|p b| [
 	lyrics: "just as your own starships + have ",
+	legato: [1,1,1,1,1,1,0.9]
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -908,8 +930,10 @@ P.synthV(\xuan, filter: (midinote: _ - 24), params: {|p b| [
 	}//.play
 	;
 	p.vocodeTune.(p,b,e,e.rpp,
-		mix:0.5,
-		chord: #[1,2,3,4,5]/2
+		// mix:0.5,
+		chord: #[1,2,3,4,5]/2,
+		sus:b.sum-3,
+		rel:0.5
 
 	)
 
@@ -932,11 +956,15 @@ P('bass',start:\just,music: {|p b e|
 	].pp
 });
 ["now begun to explore that",[2,5,3,2,1,7,6].dm('a-',\mixolydian)].addLine;
+
 P.synthV(\xuan,
+	lag: -0.1,
 	filter: (midinote: _ - 24), 
 	prepend: true,
 	params: {|p b| [
 	lyrics: "now begun + to explore + that" ,
+	lag: [0.1,0.1,0.1,0.1,0.1,0.1,0.1],
+	legato: [1,1,1,1,1,1,0.9]
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -944,6 +972,11 @@ P.synthV(\xuan,
 	}//.play
 	;
 	p.vocodeTune.(p,b,e,e.rpp,
+		width:1.02,
+		echo:0.5,
+		verb:0.5,
+		sus:b.sum -3
+
 
 	)
 });
@@ -958,21 +991,29 @@ P('bass',start:\begun,music: {|p b e|
 [" vastness... ",[6,5].dm('a-')].addLine;// illustrate the dots
 
 P.synthV(\xuan,
+	lag: -0.1,
 	filter: (midinote: _ - 24), 
 	prepend: true,
 	params: {|p b| [
 	lyrics: "vastness +",
+	lag:[0.1,0.1],
+	legato: [1,0.85],
 	phonemes: ["","t n eh s"],
 	defaultVibratoDepth: 0.1
 ] }, music:{|p b e|
-	{
+{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 	}//.play
 	;
 	p.vocodeTune.(p,b,e,e.rpp,
 		// verb:0,
-		mix: 0.5
+		width:1.02,
+		echo:0.5,
+		verb:0.0,
+		att:0,
+		sus:b.sum ,
+		rel:1
 
 	)
 });
@@ -984,7 +1025,7 @@ P('bassNote',start:\vastness,music: {|p b e|
 ["As you now leave your own seed on distant planets, ",[1,3,1,4,3,1,3,4,5,3,7,6].dm(\d,\dorian)].addLine;
 Song.setTempoMap(\planets, "q q q qq qq q e e q q qq qq");
 P.synthV(\xuan,
-	filter: (midinote: _ - 24), 
+	filter: (midinote: _ - 12), 
 	prepend: true,
 	params: {|p b| [
 	lyrics: "As you now leave your own seed on distant + planets + " ,
@@ -994,17 +1035,19 @@ P.synthV(\xuan,
 		=> p.synthVTracks.at(e.key).()
 	}//.play
 	;
-	{ PlayBuf.auto(2,Song.laMer, [0,-2].midiratio.dq.demand(Song.durs[\planets].list.parse([10,2]))) / 14 }.play(s,Song.carrierBus,addAction:\addToHead);
+	{ PlayBuf.auto(2,Song.laMer, [-7,-5].midiratio.dq.demand(Song.durs[\planets].list.parse([10,2]))) / 14 }.play
+	(s,Song.carrierBus,addAction:\addToHead);
 	p.vocodeTune.(p,b,e,e.rpp,
-		verb:0,
-		echo:0,modGain: 4,
-		mix:0.5,
+		width:1.03,
+		verb:1,
+		// echo:0,modGain: 4,
+		// mix:0.5,
+		att:0.3,
 		chord:#[1,2,4]/2
-
 	);
-	(instrument: \wash,freq: [1,3,5,7].df(\d,\dorian),dur:b.sum,out:p.carrierBus.index,amp:0.02,addAction:\addBefore).play;
+	// (instrument: \wash,freq: [1,3,5,7].df(\d,\dorian),dur:b.sum,out:p.carrierBus.index,amp:0.02,addAction:\addBefore).play;
 });
-P(\pad, music: { |p b e|
+P(\pad,syl:0, music: { |p b e|
 	( 
 		instrument:\sparkTriangle,
 		freq: 21.df(\g),
@@ -1014,21 +1057,22 @@ P(\pad, music: { |p b e|
 });
 P(\guiro, music: { |p b e|
 	{
+		var tightness = 0.9;
 		// var env = DemandEnvGen.ar([1,0,4,0,2,0,4,0].dq(inf)*10,1/4!16 warpTo: e.tempoMap.quantizeDft(0.3) => _.dq(inf));
-		var env = DemandEnvGen.ar([1,0,0,1,0,0,1,0,0,1,0,0].dq(inf)*10,1/4!16 warpTo: e.tempoMap.quantizeDft(0.3) *.x [0.1,0.8,0.1] => _.postln => _.flat => _.dq(inf));
-		Shakers.ar(2,energy:env,
+		var env = DemandEnvGen.ar([1,0,0,1,0,0,1,0,0,1,0,0].dq(inf) + 0.01,1/4!16 warpTo: e.tempoMap.quantizeDft(0.3) *.x [1-tightness/2,tightness,1-tightness/2] => _.postln => _.flat => _.dq(inf));
+		Shakers.ar([2],energy:env.min(0.99).max(0.0),
 			resonantFreq:SinOsc.ar(0.2).unipolar,decay:SinOsc.ar(0.13).unipolar
 		)
 		// => DelayN.ar(_,delaytime:b[0]/( 6 ))
 		// / 20 
-		/4
+		/8
 		* EnvGen.cutoff(b.sum,0)
 
 	}.play(s,2)
 });
 P(\bass, music: { |p b e|
 	[
-		dur: "q q qq q q qq q q qq q q qq q".asBeats.warpTo(e.tempoMap).q,
+		dur: "q q qq q q qq q q qq ".asBeats.warpTo(e.tempoMap).q,
 
 		// freq: [\r].q(1) ++ [1,1, -6.5, 1, 1, 4, 2.5, 2.5, -6.5].df(\d,3).q(inf)
 		 freq: [\r].q(1) ++ [1,1, -6.5,].df(\d,3).q(inf)
@@ -1057,15 +1101,16 @@ P('bassNote',start:\seed,syl:9,music: {|p b e|
 (freq:[1].df(\g,3,\mixolydian) / [1,2],out:Effect.bus(DWGReverbC1C3.ar(_),inputChannels:2)).play;
 \666.postln;a.postln;Song.carrierBus.postln;
 (freq:[11,6].df(\g,3),instrument:\defaultPiano,dur:b.sum).play;
-defer{s.plotTree}
 });
 P.tune(\As, _ <> (instrument: \sawSynth, amp:0.04, out: 4));
 ["(boom) so we left our seed behind us.",[1,11,7,6,5,4,3,2,1,3,3,4].dm(\g,4,\mixolydian)].addLine; 
+// P.tune();
 P.synthV(\xuan,
-	filter: (midinote: _ - 24), 
+	filter: (midinote: _ - 12), 
+	pbind: {|p b| [ midinote: p.tune[p.section(\behind)].list[0,1,2,3,4,5, 9, 10,11].q,dur:b.parse([1,1,1,1,1,4,1,1,1]).q ].p},
 	prepend: true,
 	params: {|p b| [
-	lyrics: "r so we left our seed r r r behind + us " ,
+	lyrics: "r so we left our seed behind + us " ,
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -1075,9 +1120,16 @@ P.synthV(\xuan,
 	{ PlayBuf.auto(2,Song.laMer, [0,-2].midiratio.dq.demand(Song.durs[\planets].list.parse([10,2]))) / 14 }.play(s,Song.carrierBus,addAction:\addToHead);
 	p.vocodeTune.(p,b,e,e.rpp,
 		verb:1,
+		// amp:0.28,
 		mix:0.5,
-		chord:#[1,2,4]/2
+		chord:#[1,2,4],
 
+		width:1.03,
+		verb:1,
+		// echo:0,modGain: 4,
+		// mix:0.5,
+		att:0.3,
+		chord:#[1,2,4]/2
 	);
 });
 P(\lick,syl:4, music: { |p b e|
@@ -1124,8 +1176,16 @@ P('chords', start:\left, music: {|p b e|
 		].pm(\pluckD).play
 	}
 });
-P.tune(\left,_ <> [amp:[0,1,1,1,1,1,0,0,0,1,1,1].q/10, legato:[1,1,1,1,1,3,1,1,1,1,1,1].q*0.9].p);
+P.tune(\left,_ <> [amp:[0,1,1,1,1,1,0,0,0,1,1,1].q/10, legato:[1,1,1,1,1,3,1,1,1,1,1,1].q*0.9, instrument:\sawSynth, amp:0.05].p);
 
+// (1..500).do{|i| Bus.new(index:i).free}
+P(\chords, music: { |p b e|
+	[
+		freq: [\r,[2,4,5,7],[2,4,5,7],[1,3,5,11]].df(\c).q,
+		dur: b.parse([9,1,1,1]).q,
+		out: [0, p.carrierBus.index]
+	].pp
+});
 ///*MULHALL:*/[" Our studies indicate that life on our planet, Earth, evolved independently. ","r",].addLine; 
 /*SPOCK:*/[" That would tend, however, to explain certain elements of Vulcan prehistory. ","r",[5]].addLine; 
 

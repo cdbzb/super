@@ -280,7 +280,9 @@ SynthV{
 		^ Song.pts
 		.select{|i| i.name.contains(name.asString)}
 		.select{|i| take == i.synthV.take}
-		.select{|i| i.name.contains(key.asInteger - 1 => _.asString)}
+		// .select{|i| i.name.contains(key.asInteger - 1 => _.asString and: not( i.name.contains(  ) ) )}
+		.select{|i| "(?<![0-9])"++( key.asInteger - 1 ) =>_.matchRegexp(i.name.asString)} //match 5 but not 15
+
 		.unbubble
 	}
 	prependNotes {|section synthV track=0|

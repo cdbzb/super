@@ -21,6 +21,11 @@ Song.encoders=~encoders;
 ( //Vocoder resources
 	Song.carrierBus = Bus.audio(s,5);
 	Song.modulatorBus = Bus.audio(s,2);
+	Song.monitorCarrier = {
+		{
+			In.ar(Song.carrierBus,1)!5 => ReplaceOut.ar(0, _)
+		}.play(Group.after(s.defaultGroup))
+	};
 	Song.sargonCarrier = { // 5 channels out p.carrierBus
 		|p b e att sus rel chord=#[1,2,4,5,6,8] aTune mix=0.5 verb=1 width=1.1| 
 		{  
@@ -66,7 +71,7 @@ Song.encoders=~encoders;
 			=> LPF.ar(_,6000)
 			* modGain
 			//*5	 => SafetyLimiter.ar(_) /5
-			=> DCompressor.ar( _,  sidechainIn: 0,  sidechain: 0,  ratio: 4,  threshold: -47,  attack: 0.1,  release: 100.1,  makeup: 0.5,  automakeup: 1) /4.9
+			=> DCompressor.ar( _,  sidechainIn: 0,  sidechain: 0,  ratio: 2,  threshold: -47,  attack: 0.1,  release: 100.1,  makeup: 0.5,  automakeup: 1) /4.9
 			 
 			
 			//+ ( In.ar(carrierBus.index,1) )
@@ -83,9 +88,9 @@ Song.encoders=~encoders;
 			]
 		)
 	};
+	Song.vocoderFoa = Bus.audio(s,5);
 	Song.vocodeTune = { 
 		|p b e rppName amp=0.2 att=3 sus=1 rel=5 dur=10 chord=#[1,2,4,5,6,8] tune out=0 modGain=1 echo=1 mix=0.5 verb=1 width=1.1|
-		var foa = Bus.audio(s,5);
 		var synthVbuffer, playSynth, playAmbiSynth;
 		( v.isNil or: { v.isRunning.not }.try )
 		.if{
@@ -102,7 +107,8 @@ Song.encoders=~encoders;
 					amp:0.2, // WHEN buses are set to 1 channel otherwise comment out!
 					amp:amp, 
 					dur:dur,
-					out:foa.index, // out
+					out:Song.vocoderFoa.index, // out
+					// smoothCarrier: t,
 
 					target:v
 					//out:out
@@ -110,7 +116,7 @@ Song.encoders=~encoders;
 		};
 		playAmbiSynth = { // mono => ambi
 			Song.ambiSynth = {
-				In.ar(foa.index,2) 
+				In.ar(Song.vocoderFoa.index,2) 
 				=> Mix.ar(_)
 				// => FoaEncode.ar(_,Song.encoders.spread)
 				=> FoaEncode.ar(_,Song.encoders.omni)

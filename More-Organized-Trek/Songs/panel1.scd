@@ -5,6 +5,7 @@ Song(\panel1,[]).current
 ;
 	Song.energyDur = 0.1;
 "~/tank/super/More-Organized-Trek/Songs/boilerplate.scd".standardizePath.load;
+Song.vocoderRatio.set(1);
 //(A panel slides back to reveal a much larger area, with rock walls, and a glowing sphere elegantly poised on an angled support.) 
 /*SARGON: (the glowing sphere)*/[" Welcome. I am Sargon. ","r",].addLine; 
 /*SPOCK:*/[" Sargon, would it harm you if I ","4 5 7 11 12 6 5 4".dm(\d)].addLine; 
@@ -59,11 +60,15 @@ P.synthV(\xuan,
 		tune: [3, 2, 3, 3, 4, 3, 3, 2].dm(\e).asList,
 
 		modGain:4,
-		chord:#[1,2,4],
-		echo:0.1,
+		chord:#[1,2,4]/2,
+		// echo:0.1,
 		mix:0.9,
-			amp:0.22,
-			verb:0
+		width:1.05,
+		amp:0.04,
+		verb:0.5,
+		att: 0,
+		sus:b.sum,
+		rel:1
 			// dur:b.sum+1,
 			// att:1,
 			// sus:b.sum-0.1,
@@ -393,7 +398,7 @@ P.synthV(\mo,filter: (midinote: _ - 12),
 		// },
 		params: {|p b| [
 				lyrics: "r Pure energy + + matter + without + form  ",
-				lag:[0, b[1]/2,0,0,0,0,0,0,0,0],
+				// lag:[0, b[1]/2,0,0,0,0,0,0,0,0],
 				legato: [1, 1, 1, 1, 0.4, 1, 1, 1, 1, 1],
 				paramTension: 0.35,
 				paramBreathiness: 0.65,
@@ -425,7 +430,8 @@ P.double(\mo, take:\double, double:\true,
 	{
 			e.playbuf
 			//=> p.synthVTracks.at(e.key).()
-			=> TwoTube.ar(_,loss:0.8)
+			// => TwoTube.ar(_,loss:0.8)
+			*[0.2,0.8]
 			/4.5
 	}.play
 });
@@ -633,12 +639,20 @@ P.still(\clear, syl:8, timecode: 0.seconds, music: { |p b e|
 		b.drop(1)[0..4].sum, ["infintely","greater"]
 	])
 });
-P.synthV(\xuan,
+P.synthV(\aiko,
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
 	lyrics: " A body + much as yours my children + although + our minds were infinitely + + + greater + ",
 ] }, music:{|p b e|
 	p.vocodeTune.(p,b,e,e.rpp,dur:b.sum+2,sus:b.sum,rel:2)
+});
+P.synthV(\xuan,
+	filter: (midinote: _ - 12), 
+	params: {|p b| [
+	lyrics: " A body + much as yours my children + although + our minds were infinitely + + + greater + ",
+] }, music:{|p b e|
+	// p.vocodeTune.(p,b,e,e.rpp,dur:b.sum+2,sus:b.sum,rel:2)
+	{ e.playbuf   }.play(s,p.modulatorBus,addAction:\addToHead)
 });
 // P.tune(\much);
 P(\bassNote,syl:4, music: { |p b e|
@@ -702,6 +716,7 @@ P.synthV(\kevin, params: {|p b| [
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
+
 P.double(\kevin, params: {|p b| [
 	paramTension: -0.5,
 	paramBreathiness: 0.5,
@@ -933,7 +948,8 @@ P.synthV(\xuan, filter: (midinote: _ - 24), params: {|p b| [
 		// mix:0.5,
 		chord: #[1,2,3,4,5]/2,
 		sus:b.sum-3,
-		rel:0.5
+		rel:0.5,
+		// smooth: -0.9
 
 	)
 

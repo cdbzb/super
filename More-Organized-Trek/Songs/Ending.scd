@@ -133,7 +133,8 @@
 	[ "I know every thou-- ght of every mind around me." ,[3, 1, 4, 2, -7.5, -6, -5, 3,4,5,7,6,5,4].dm('e-',scale:\mixolydian)].addLine;
 	// P.tune();
 P.synthV(\asterian, params: {|p b| [
-	lyrics: "I know evree + thought _ of evree + mind around - - me.",
+	lyrics: "I know evree + thought - of evree + mind around - - me.",
+	vocalMode: \Theatrical
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -150,10 +151,13 @@ P.synthV(\asterian, params: {|p b| [
 		].pp
 	});
 	[ "See? (to Chapel) Take the hypo from him. And inject him with it. " ,[1,5,5,12,12,6,6].dm(\a,octave:4) ++ [5.5,6,7,5,3,1].dm(\c,scale:\mixolydian)].addLine;
-	P.synthV(\asterian, params: {|p b| [
+	P.synthV(\asterian,
+		take:\lower, filter: (midinote: _ - 12),
+		params: {|p b| [
 		lyrics: "See Take the hypo + from him. And inject + him with it. ",
 		legato: [0.7, 1,1,1,1,1,0.8, 1,1,1,1,1,0.9],
-		lag: [0.1, 0,0,0,0,0,0,0,0,0,0,0,0]
+		lag: [0.1, 0,0,0,0,0,0,0,0,0,0,0,0],
+		vocalMode: \Theatrical
 	] }, music:{|p b e|
 		{
 			e.playbuf
@@ -166,7 +170,8 @@ P.synthV(\asterian, params: {|p b| [
 	[ "(But she injects Spock/Henoch instead! He leaps from his seat.) /*SPOCK*/ Fools. I'll simply transfer to another place, another body. " ,[-6,11.5,3,4,11,7,11, 7, 6, 5, 11, 7, 2, 6,6.5,2,4,3].dm(\e,octave:4)].addLine;
 	P.tune(\leaps);
 	P.synthV(\asterian, params: {|p b| [
-		lyrics:" Fools. r r I'll simply + transfer + to another + + place, another + + body +" ,
+		lyrics:" r Fools. r I'll simply + transfer + to another + + place, another + + body +" ,
+		vocalMode: \Theatrical
 	] }, music:{|p b e|
 		{
 			e.playbuf
@@ -217,6 +222,21 @@ P.synthV(\asterian, params: {|p b| [
 	});
 //(He whirls around.) 
 	["SPOCK: Sargon! No, Sargon, please. Let me. Let me transfer. ",[11,1].dm('f')++[5,3,1].dm('b-',scale:\whole) ++ [5,5,4,3,2].dm(\d,octave:6) ++ [3,1].dm('f#',octave:6)].addLine;
+	P.synthV(\asterian,
+		filter: (midinote: _ - 12), 
+		params: {|p b| [
+		lyrics: "Sargon! + No Sargon + please! let me let me transfer +",
+		paramTension: 0.9,
+		legato: [1, 0.7, 0.7, 1, 1, 1, 1, 0.7, 1, 1, 1, 0.4],
+		vocalMode: \Theatrical
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> {|i|  PitchShift.ar(i,[0.03, 1 ],0.5,0.01,timeDispersion:0.7) + ( i * 0.8 )}
+			=> p.synthVTracks.at(e.key).()
+			/2
+		}.play
+	});
 	P.tune(\please,Pmul(\freq,0.5,_));
 P(\alarum,start:\please,music:{|p b e| 
 	MegaBind(
@@ -284,6 +304,18 @@ P(\trem,start:\please,syl:1,music:{|p b e|
 	});
 
 	["KIRK: Spock. My friend Spock. If there'd only been another way. ",[5,3,11,7, 5,6,7,5,13, 7,11,3,12].dm(\e)].addLine;
+	P.synthV(\an,
+		filter: (midinote: _ - 12), 
+		params: {|p b| [
+		lyrics: "spock my friend spock if there'd only + been another + + way",
+		legato: [0.9, 1,1,0.9, 1 ,1,1,1,1,1,1,1,1]
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+			/2
+		}.play
+	});
 	P.still( \friend, start: \friend, timecode:4926.seconds, music: { |p b e|
 		e.still.value(
 			wait: b.sum-1,
@@ -294,7 +326,7 @@ P(\trem,start:\please,syl:1,music:{|p b e|
 			e.still.setText(["If there'd only been","another way"])
 		}
 	});
-	P.tune(\friend);
+	// P.tune(\friend);
 	P(\chords,start:\friend,music:{|p b e| 
 		[
 			freq: [3,\r,[2,5]].df(\e).q,

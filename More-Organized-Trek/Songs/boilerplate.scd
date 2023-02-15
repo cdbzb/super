@@ -21,6 +21,7 @@ Song.encoders=~encoders;
 ( //Vocoder resources
 	Song.carrierBus = Bus.audio(s,5);
 	Song.modulatorBus = Bus.audio(s,2);
+	Song.vocoderRatio = Bus.control(s,1).set(2);
 	Song.monitorCarrier = {
 		{
 			In.ar(Song.carrierBus,1)!5 => ReplaceOut.ar(0, _)
@@ -71,7 +72,7 @@ Song.encoders=~encoders;
 			=> LPF.ar(_,6000)
 			* modGain
 			//*5	 => SafetyLimiter.ar(_) /5
-			=> DCompressor.ar( _,  sidechainIn: 0,  sidechain: 0,  ratio: 2,  threshold: -47,  attack: 0.1,  release: 100.1,  makeup: 0.5,  automakeup: 1) /4.9
+			=> DCompressor.ar( _,  sidechainIn: 0,  sidechain: 0,  ratio: In.kr(Song.vocoderRatio),  threshold: -47,  attack: 0.1,  release: 100.1,  makeup: 0.5,  automakeup: 1) /4.9
 			 
 			
 			//+ ( In.ar(carrierBus.index,1) )

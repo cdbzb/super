@@ -107,6 +107,22 @@
 		].p.play
 	});
 	[ "As Kirk and Mulhall double over, McCoy dashes to Spock's side, to inject him. /*SPOCK*/ Fortunately, Doctor," ,[-14.5,3,2,1,-7,-6.5,-7].dm(\f,scale:\minor)].addLine;
+( Song.synthVTracks=EventWithDefault(
+	\default, {
+		{
+			|i|
+			var early = 0.5;
+			var dryAmount = 1;
+			EarlyRef.ar(i, source:[2,3,2], receiver:[0,0,0], roomsize:[4,5,6], hw:0.2, b:0.97, n:0, p:0, allp_lens:nil, allp_c:0.7)
+
+			=> DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:1-early,)
+			+ ( i * dryAmount )
+			/ 6 
+			=> HPF.ar(_,100)
+			=> DCompressor.ar(_, sidechainIn:0, sidechain:0, ratio:4, threshold:-40, attack:0.1, release:100.1, makeup:0.5, automakeup:1)
+		}
+	}
+));
 	P.tune(\Fortunately,_.drop(1),syl:0);
 	P(\trem,start:\Fortunately,music:{|p b e| 
 		(freq:[-11,-21].df('b-'),instrument:\trem2,amp:0.2,out:1,scale:2,dur:b.sum,
@@ -115,7 +131,16 @@
 	});
 
 	[ "I know every thou-- ght of every mind around me." ,[3, 1, 4, 2, -7.5, -6, -5, 3,4,5,7,6,5,4].dm('e-',scale:\mixolydian)].addLine;
-	P.tune('every mind');
+	// P.tune();
+P.synthV(\asterian, params: {|p b| [
+	lyrics: "I know evree + thought _ of evree + mind around - - me.",
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+	// P.tune('every mind');
 	P(\bass,start:'every mind',music:{|p b e| 
 		[
 			freq: [1,-4,-5,1,7,1].df('e-',scale:\mixolydian,octave:3).q,
@@ -125,9 +150,31 @@
 		].pp
 	});
 	[ "See? (to Chapel) Take the hypo from him. And inject him with it. " ,[1,5,5,12,12,6,6].dm(\a,octave:4) ++ [5.5,6,7,5,3,1].dm(\c,scale:\mixolydian)].addLine;
-	P.tune('Take the hypo');
+	P.synthV(\asterian, params: {|p b| [
+		lyrics: "See Take the hypo + from him. And inject + him with it. ",
+		legato: [0.7, 1,1,1,1,1,0.8, 1,1,1,1,1,0.9],
+		lag: [0.1, 0,0,0,0,0,0,0,0,0,0,0,0]
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> {|i|  PitchShift.ar(i,[0.03, 1 ],0.5,0.01,timeDispersion:0.7) + ( i * 0.8 )}
+			=> p.synthVTracks.at(e.key).()
+			/3
+		}.play
+	});
+	// P.tune('Take the hypo');
 	[ "(But she injects Spock/Henoch instead! He leaps from his seat.) /*SPOCK*/ Fools. I'll simply transfer to another place, another body. " ,[-6,11.5,3,4,11,7,11, 7, 6, 5, 11, 7, 2, 6,6.5,2,4,3].dm(\e,octave:4)].addLine;
 	P.tune(\leaps);
+	P.synthV(\asterian, params: {|p b| [
+		lyrics:" Fools. r r I'll simply + transfer + to another + + place, another + + body +" ,
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> {|i|  PitchShift.ar(i,[0.03, 1 ],0.5,0.01,timeDispersion:0.7) + ( i * 0.8 )}
+			=> p.synthVTracks.at(e.key).()
+			/4
+		}.play
+	});
 	P(\line,start:\leaps,syl:11,music:{|p b e| 
 		MegaBind(
 				[

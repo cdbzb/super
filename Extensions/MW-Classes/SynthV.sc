@@ -95,13 +95,22 @@ SynthV{
 				'version': "104"
 			),
 			mo: (
-				'name': "Mo Chen",
+				'name': "mo chen",
 				'language': "mandarin",
 				'phoneset': "xsampa",
-				'languageOverride': "english",
-				'phonesetOverride': "arpabet",
-				'backendType': "SVR2AI",
+				'languageoverride': "english",
+				'phonesetoverride': "arpabet",
+				'backendtype': "svr2ai",
 				'version': "104"
+			),
+			asterian: (
+				'name': "ASTERIAN",
+				'language': "english",
+				'phoneset': "arpabet",
+				'languageoverride': "",
+				'phonesetoverride': "",
+				'backendtype': "svr2ai",
+				'version': "100"
 			)
 
 		)

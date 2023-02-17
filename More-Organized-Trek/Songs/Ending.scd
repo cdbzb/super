@@ -52,7 +52,46 @@
 	[ "(Uhura is screaming in terror before collapsing across her console. Chapel is standing rigid by the Captain's chair.) ","r" ].addLine;
 	["SPOCK: Must I make an example of you, too, Helm? ",[1, 2, 2, 3, 3, 3, 4.5, 4.5, 7, 5.5,7, 1].dm('f#',scale:\mixolydian)].addLine;
 	P.tune(\example);
+	//4806.66 nice red door....
+	P.still(\medium, timecode: 4806.25.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b.sum,
+			text: ["must I make","an example"],
+		).sequenceText([
+			b.parse([7]).unbubble,["of you too,","Helm?"]
+		])
+	});
+	P.synthV(\asterian,
+		filter: (midinote: _ - 12), 
+		params: {|p b| [
+		lyrics: "must I make an axample + + of you - too Helm",
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 	[ "/*SPOCK*/ Pain, Captain. (oooh) A-- nd you, my dear? " ,[12,11,7,6].dm(\g) ++ [7,11,5,3].dm('c#',octave:6)].addLine;
+	P.still(\henoch_close, timecode: 4809.9.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b.sum,
+			text: ["pain","captian"]
+		).sequenceText([
+			b.parse([4]).unbubble, ["and you","my dear"]
+		])
+	});
+	P.still(\kirk_pain,syl:2, timecode: 4813.3.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b.drop(1)[0],
+			fade:1
+		)
+	});
+	P.still(\nurse_pain, syl:7, timecode: 4816.2.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b.drop(1)[0],
+			text: ["",""],
+		)
+	});
 	P.tune(\Pain);
 	P(\chord,start:\Pain,music:{|p b e| 
 		MegaBind(
@@ -121,25 +160,57 @@
 			=> HPF.ar(_,100)
 			=> DCompressor.ar(_, sidechainIn:0, sidechain:0, ratio:4, threshold:-40, attack:0.1, release:100.1, makeup:0.5, automakeup:1)
 		}
+	},
+	\asterian, { 
+		{
+			|i|
+			var early = 0.5;
+			var dryAmount = 1;
+			var dirty = VALadder.ar(i,1000,0.5,overdrive:0.8);
+			dirty / 4
+			=> EarlyRef.ar(_, source:[2,3,2], receiver:[0,0,0], roomsize:[4,5,6], hw:0.2, b:0.97, n:0, p:0, allp_lens:nil, allp_c:0.7)
+			//
+			=> DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:1-early,)
+			+ ( dirty /8 )
+			// + ( i * dryAmount )
+			// / 6 
+		}
 	}
 ));
 	P.tune(\Fortunately,_.drop(1),syl:0);
+	// P.tune.();
+
 	P(\trem,start:\Fortunately,music:{|p b e| 
 		(freq:[-11,-21].df('b-'),instrument:\trem2,amp:0.2,out:1,scale:2,dur:b.sum,
 		//out:Effect(FreeVerb.ar(_,0.4,1),inputChannels:1).bus.index
-	)//.play
+	).play
 	});
 
 	[ "I know every thou-- ght of every mind around me." ,[3, 1, 4, 2, -7.5, -6, -5, 3,4,5,7,6,5,4].dm('e-',scale:\mixolydian)].addLine;
 	// P.tune();
-P.synthV(\asterian, params: {|p b| [
-	lyrics: "I know evree + thought - of evree + mind around - - me.",
+P.synthV(\asterian, 
+	filter: (midinote: _ - 12), 
+	params: {|p b| [
+	lyrics: "I know evree + thought - of evree + mind a round - me.",
+	legato: [1,1,1,1,1,1,1,1,1,1,1,1,1,0.8],
 	vocalMode: \Theatrical
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		=> p.synthVTracks.at(e.key).()
+		
+		 => p.synthVTracks.at(\asterian).()
+		 /6
 	}.play
+});
+P.double(\asterian,
+	filter: (midinote: _ - 12), 
+	music:{|p b e|
+{
+	e.playbuf
+	=> p.synthVTracks.at(e.key).()
+	/5
+	}.play
+
 });
 	// P.tune('every mind');
 	P(\bass,start:'every mind',music:{|p b e| 
@@ -152,30 +223,58 @@ P.synthV(\asterian, params: {|p b| [
 	});
 	[ "See? (to Chapel) Take the hypo from him. And inject him with it. " ,[1,5,5,12,12,6,6].dm(\a,octave:4) ++ [5.5,6,7,5,3,1].dm(\c,scale:\mixolydian)].addLine;
 	P.synthV(\asterian,
-		take:\lower, filter: (midinote: _ - 12),
+		filter: (midinote: _ - 12),
+		prepend: true,
 		params: {|p b| [
 		lyrics: "See Take the hypo + from him. And inject + him with it. ",
-		legato: [0.7, 1,1,1,1,1,0.8, 1,1,1,1,1,0.9],
+		legato: [0.7, 1,1,1,1,1,0.8, 1,1,1,1,1,0.7],
 		lag: [0.1, 0,0,0,0,0,0,0,0,0,0,0,0],
 		vocalMode: \Theatrical
 	] }, music:{|p b e|
 		{
 			e.playbuf
-			=> {|i|  PitchShift.ar(i,[0.03, 1 ],0.5,0.01,timeDispersion:0.7) + ( i * 0.8 )}
+			// => {|i|  PitchShift.ar(i,[0.03, 1 ],0.5,0.01,timeDispersion:0.7) + ( i * 0.8 )}
 			=> p.synthVTracks.at(e.key).()
-			/3
+			/6
+			// /3
 		}.play
 	});
 	// P.tune('Take the hypo');
+	["move move","e- e"].addLine;
+	P.still(\chapelMoves, timecode: 4835.04.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b[0],
+			text: ["",""],
+		)
+	});
+	P.still(\chapelMoves2,syl:0, timecode: 4840.05.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b[1],
+			text: ["",""],
+		)
+	});
+	P.tune( _ <> (instrument: \stringyy, amp:0.4 ) );
 	[ "(But she injects Spock/Henoch instead! He leaps from his seat.) /*SPOCK*/ Fools. I'll simply transfer to another place, another body. " ,[-6,11.5,3,4,11,7,11, 7, 6, 5, 11, 7, 2, 6,6.5,2,4,3].dm(\e,octave:4)].addLine;
-	P.tune(\leaps);
+	P.still(\stab, timecode: 4842.20.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b[0..1].sum, 
+			text: ["",""],
+		)
+	});
+	P.still(\spock,syl:0, timecode: 4849.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b.drop(1).sum,
+			text: ["Fools","I'll simply transfer"],
+		)
+	});
+	// P.tune(\leaps);
 	P.synthV(\asterian, params: {|p b| [
 		lyrics:" r Fools. r I'll simply + transfer + to another + + place, another + + body +" ,
 		vocalMode: \Theatrical
 	] }, music:{|p b e|
 		{
 			e.playbuf
-			=> {|i|  PitchShift.ar(i,[0.03, 1 ],0.5,0.01,timeDispersion:0.7) + ( i * 0.8 )}
+			// => {|i|  PitchShift.ar(i,[0.03, 1 ],0.5,0.01,timeDispersion:0.7) + ( i * 0.8 )}
 			=> p.synthVTracks.at(e.key).()
 			/4
 		}.play
@@ -213,7 +312,7 @@ P.synthV(\asterian, params: {|p b| [
 
 	P(\stab,start:\leaps,music:{|p b e| 
 		var amb = { |i| FoaEncode.ar(i,Song.encoders.spread)	=> FoaRTT.ar(_,SinOsc.ar(0.15).range(-pi,pi))=> Monitors.ambi(_) };
-		var g = Group.new;
+		var g = Group.before(s.defaultGroup);
 		Synth(\cymbalsDS,[out:Effect({|i| i=> PitchShift.ar(_,0.1)=> CrossoverDistortion.ar(_) *0.065 * Env.linen(0,3,5).kr(2,gate:1) => amb }).bus.index],target:g);
 		Synth(\default,[\freq,[1,-1].df('c#',octave:[3]),out:Effect({|i| i=> CrossoverDistortion.ar(_) *0.065 * Env.linen(0,3,5).kr(2,gate:1) => amb }).bus.index],target:g);
 
@@ -222,6 +321,12 @@ P.synthV(\asterian, params: {|p b| [
 	});
 //(He whirls around.) 
 	["SPOCK: Sargon! No, Sargon, please. Let me. Let me transfer. ",[11,1].dm('f')++[5,3,1].dm('b-',scale:\whole) ++ [5,5,4,3,2].dm(\d,octave:6) ++ [3,1].dm('f#',octave:6)].addLine;
+	P.still(\ohno, timecode: 4900.25.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b.sum,
+			text: ["Sargon!","No, Sargon, Please!"],
+		)
+	});
 	P.synthV(\asterian,
 		filter: (midinote: _ - 12), 
 		params: {|p b| [
@@ -232,7 +337,7 @@ P.synthV(\asterian, params: {|p b| [
 	] }, music:{|p b e|
 		{
 			e.playbuf
-			=> {|i|  PitchShift.ar(i,[0.03, 1 ],0.5,0.01,timeDispersion:0.7) + ( i * 0.8 )}
+			// => {|i|  PitchShift.ar(i,[0.03, 1 ],0.5,0.01,timeDispersion:0.7) + ( i * 0.8 )}
 			=> p.synthVTracks.at(e.key).()
 			/2
 		}.play

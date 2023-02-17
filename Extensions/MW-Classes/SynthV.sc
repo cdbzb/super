@@ -111,6 +111,27 @@ SynthV{
 				'phonesetoverride': "",
 				'backendtype': "svr2ai",
 				'version': "100"
+			),
+			cheng: (
+
+				'name': "Cheng Xiao",
+				'language': "mandarin",
+				'phoneset': "xsampa",
+				'languageoverride': "english",
+				'phonesetoverride': "arpabet",
+				'backendtype': "SVR2AI",
+				'version': "100"
+			),
+			ninezero: (
+
+
+				'name': "Ninezero",
+				'language': "english",
+				'phoneset': "arpabet",
+				'languageoverride': "",
+				'phonesetoverride': "",
+				'backendtype': "SVR2AI",
+				'version': "100"
 			)
 
 		)

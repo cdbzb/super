@@ -200,8 +200,11 @@ P(\trill,start:'Atmos',music:{|p b e|
 });
 
 ["A fraction richer in oxygen than usual for us, but otherwise normal. "," 3 4 5 7 11 6 13 12 5 6 12 11.5 6, 4.5 5.5 4 5 6 7 12 11".dm(\c)].addLine;
-P.tune(\oxygen,{|i| Pmul(\freq,[1,0.5],i) => Pset(\legato,1,_) });
-P.synthV(\cheng, params: {|p b| [
+// P.tune(\oxygen,{|i| Pmul(\freq,[1,0.5],i) => Pset(\legato,1,_) });
+P.synthV(\cheng,
+	prepend:true,
+	params: {|p b| [
+
 	lyrics:"A fraction + richer + in oxygen + + than usual + + for us, but otherwise + + normal + " 
 	// vocalMode: \Opera
 ] }, music:{|p b e|
@@ -210,7 +213,9 @@ P.synthV(\cheng, params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.double(\cheng, params: {|p b| [
+P.double(\cheng,
+	prepend: true,
+	params: {|p b| [
 	
 ] }, music:{|p b e|
 	{
@@ -224,8 +229,18 @@ Song.synthVTracks=EventWithDefault(
 		{
 			|i|
 			// i => FreeVerb.ar(_,1,[0.4,0.5])
-			i => DWGReverbC1C3.ar(i,mix:0.15)
+			i => DWGReverbC1C3.ar(i,mix:0.1)
 			/4
+		}
+	},
+	\asterian,{
+		{
+			|i|
+			// i => FreeVerb.ar(_,1,[0.4,0.5])
+			i => BLowShelf.ar(_,200,db: -9)
+			// /80
+			 => DWGReverbC1C3.ar(i,mix:0.1)
+			/8
 		}
 	}
 );
@@ -256,14 +271,31 @@ P('chord',start:\oxygen,music: {|p b e|
 	}
 });
 ["SPOCK: This vault was constructed about a half a million years ago.", "5 7 6 5 4 3 2 3 4 6 5 4 3 2 1".dm(\c,5,\mixolydian)].addLine;
-P.tune(\vault, { |i| Pmul(\freq,[1,0.5],i) <> [amp:
-	[4,5,4,4,5,4,4,4,4,5,4,4,5,4,4]
-	.q/45,legato:[1,2,2,1,2,2,2,2,2,2,2,2,2,2,2]+18/20=>_.q].p});
+P(\line,syl:0,lag:-0.2, music: { |p b e|
+	{
+		var width = 0.00;
+		[4, 3, 1, 2].df(\f, [4,5]).dq.demand(b.drop(1).parse([3,5,3,3]))
+		=> Lag2.kr(_)
+		=> { |i| 
+			Gendy2.ar(minfreq: i-width ,maxfreq: i + width)
+			+
+			( SinOsc.ar(i) => AnalogVintageDistortion.ar(_))
+		=> VALadder.ar(_,1.df(\f,[3, 4, 5]),2,0.4,0)
+		* [3,2,1]/3
+		=> CombC.ar(_,decaytime:5)
+		/200
+		}
+	}.play
+});
+// P.tune(\vault, { |i| Pmul(\freq,[1,0.5],i) <> [amp:
+// 	[4,5,4,4,5,4,4,4,4,5,4,4,5,4,4]
+// 	.q/45,legato:[1,2,2,1,2,2,2,2,2,2,2,2,2,2,2]+18/20=>_.q].p});
 P.synthV(role:\spock,
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
 	lyrics: "this vault was constructed + + about + a half million + years ago +",
-	vocalMode: \Closed
+	vocalMode: \Closed,
+	loudness: Env( [4,5,4,4,5,4,4,4,4,5,4,4,5,4,4] - 4 * 4 - 1, b )
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -278,10 +310,12 @@ P(\trill,start:\vault,music:{|p b e|
 // P.tune();
 P.synthV(Trek.cast.spock,
 	filter: (midinote: _ - 12), 
+	prepend: true,
 	params: {|p b| [
 	lyrics: "About + the same time the planet + surface + was destroyed + if our readings + are accurate + + " ,
 	vocalMode: \Closed,
-	legato:[1,1,1,1,1,1,1,1,1,1,1,1,0.8,1,1,1,1,1,1,1,1]
+	legato:[1,1,1,1,1,1,1,1,1,1,1,1,0.8,1,1,1,1,1,1,1,1],
+	loudness: Env([0,4,0,4,4,0,4,0, 4,0,0,0,4,4,0,4,0,0,4,0,0] - 2,b)
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -293,7 +327,7 @@ P(\bass,start:\surface,music:{|p b e|
 	[
 		freq: 
 		\r.bubble ++ [1,-7,3].df('a-',3,\mixolydian) => _.flat => _.q,
-		dur: b.parse([4,4,3,5]).q,
+		dur: b.parse([4,4,4,4]).q,
 		instrument:\sawSynthSustain,
 		att:2,
 		amp:0.07
@@ -311,7 +345,7 @@ P.synthV(role:\kirk,
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.tune(\Composition,Pdrop(1,_),syl:0);
+// P.tune(\Composition,Pdrop(1,_),syl:0);
 P('wall',start:'KIRK:(boom)',syl:5,music: {|p b e|
 	{
 		[3,3,5,7].df(\g,\mixolydian)
@@ -347,7 +381,10 @@ P.synthV(role:\spock,
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
 	lyrics: "They're an alloy + or substance + completely + + unknown + - to me.",
-	vocalMode: \Closed
+	vocalMode: \Closed,
+	loudness: Env([0, 1, 2 ,1, 0, 3, 1, 0, 4, 2, 1, 4, 2, 0], b),
+	legato: [1,1,1,0.7, 1, 1, 0.8, 1, 1, 1, 1, 1, 1, 1, 1],
+	lag: [0,0,0,0,0.1,0,0,0,0,0,0,0,0,0,0]
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -386,6 +423,9 @@ P.synthV(Trek.cast.spock,
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
 	lyrics: "much stronger + and - harder + than -",
+	lag: [0.1,0,0,0,0,0,0,0,0],
+	loudness: Env([0,4,2,2,1,4,2,2,1],b),
+	paramTension:0.5
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -505,6 +545,15 @@ P('guitar',start:\anything,music: {|p b e|
 	}
 	).play
 });
+P(\bass, music: { |p b e|
+	[
+		
+			freq: [1,3,4,4, -7, 1.5, 3].df('b-',2,\minor).q,
+			dur: [ 1.675, 0.838, ( 0.989 * [3,1]/4 ), 0.686,	0.345,	 1.388 ] => _.flat
+			+ [0,     0,     0, 0,     (0.25-0.188) + 0.05, -0.7 * (0.25-0.188), 0]
+			=> _.warpTo(e.tempoMap) => _.q,
+	].pp
+});
 ["MULHALL: All readings are off the scale, Captain. (ooh) "," 6 5 4 3 2 1 7 6 5 4.5".dm(\d,5,\mixolydian)].addLine;
 Song.setTempoMap(\scale,"q Q Q Qq Q E q e e q".asBeats);
 P.synthV(\cheng, 
@@ -515,10 +564,12 @@ P.synthV(\cheng,
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
-		/2
+		/1.5
 	}.play
 });
-P.double(\cheng, params: {|p b| [
+P.double(\cheng, 
+	pbind: {|p b| [ dur:p.tempoMap[\scale].quantize(1,0,7).durs.q, midinote:p.tune[p.section(\scale)]  ].p },
+	params: {|p b| [
 	
 ] }, music:{|p b e|
 	{
@@ -526,7 +577,7 @@ P.double(\cheng, params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 		=> Mix.ar(_)
 		=> Pan2.ar(_,1)
-		/2
+		/1.5
 	}.play
 });
 P('bass',start:\All,music: {|p b e|
@@ -549,10 +600,11 @@ P(\chords,start:\scale,music:{|p b e|
 		freq: [[1,3],[1,3], -7,1,1,1].df(\d,5,\mixolydian).q,
 		//dur:b.parse([1,3]).q
 		dur: "q qq x x x xq".asBeats.warpTo(e.tempoMap.quantize(1,0,7)).q,
-		amp:0.03
-	].pp
+		amp:0.03,
+		out: Effect.bus( _ * EnvGen.cutoff(b.sum,2), inputChannels:2 )
+	].ppm
 });
-P.tune(\scale, { |i| Pmul(\freq,[1,2],i).fin(9) => Pset(\dur, Song.tempoMap[\scale].quantize(1,0,7).durs.q ,_)  } );
+// P.tune(\scale, { |i| Pmul(\freq,[1,2],i).fin(9) => Pset(\dur, Song.tempoMap[\scale].quantize(1,0,7).durs.q ,_)  } );
 
 P(\triller,start:\scale,syl:8,music:{|p b e| 
 	p.changeTrill.(5.5,p,b,e,octave:4);
@@ -597,6 +649,7 @@ P('cymbal',start:\All,music: {|p b e|
 ["MCCOY: The air seems fresh. It must be re-circulated somehow. ","4 3 2 5 ".dm(\c) ++ "4 5 6 7 6 5 4 2 4 3.5".dm(\c,5,\minor)].addLine;
 P.synthV(Trek.cast.mccoy, params: {|p b| [
 	lyrics: "the air seems fresh it must be recirculated + + + + somehow + ",
+	legato: [1,  1,   1,     0.8, 1, 1, 1,   1,  1,  1,  1,  1,  1,  1]
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -626,6 +679,18 @@ P(\chord,start:\circulated,music:{|p b e|
 		dur:b.q,
 		out:2
 	].pp;
+});
+P.synthV("", 
+	filter: (midinote:  "16 15 14 13 12 11 5.5 4 5.5 11 12 14 16 21".dm(\c,3) ), 
+	params: {|p b| [
+	lyrics: "r r r r oo - - - - - - - - - ",
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> AnalogVintageDistortion.ar(_)
+		/ 8
+		=> p.synthVTracks.at(e.key).()
+	}.play
 });
 P.tune(\circulated);
 ["KIRK: Is that for us, or does it need fresh air? ","1 2 3 5 4 5 6 4 3 1.5 ".dm(\g,4,\whole)].addLine;

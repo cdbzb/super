@@ -95,21 +95,21 @@ SynthV{
 				'version': "104"
 			),
 			mo: (
-				'name': "mo chen",
+				'name': "Mo Chen",
 				'language': "mandarin",
 				'phoneset': "xsampa",
-				'languageoverride': "english",
-				'phonesetoverride': "arpabet",
-				'backendtype': "svr2ai",
+				'languageOverride': "english",
+				'phonesetOverride': "arpabet",
+				'backendType': "SVR2AI",
 				'version': "104"
 			),
 			asterian: (
 				'name': "ASTERIAN",
 				'language': "english",
 				'phoneset': "arpabet",
-				'languageoverride': "",
-				'phonesetoverride': "",
-				'backendtype': "svr2ai",
+				'languageOverride': "",
+				'phonesetOverride': "",
+				'backendType': "SVR2AI",
 				'version': "100"
 			),
 			cheng: (
@@ -117,9 +117,9 @@ SynthV{
 				'name': "Cheng Xiao",
 				'language': "mandarin",
 				'phoneset': "xsampa",
-				'languageoverride': "english",
-				'phonesetoverride': "arpabet",
-				'backendtype': "SVR2AI",
+				'languageOverride': "english",
+				'phonesetOverride': "arpabet",
+				'backendType': "SVR2AI",
 				'version': "100"
 			),
 			ninezero: (
@@ -352,12 +352,16 @@ SynthV{
 			pbind: (pbind ? original.pbind)
 		)
 	}
-	*synthV{ | key start params syl lag=0 take double music song resources range filter pbind prepend|
+	*synthV{ | key start params syl lag=0 take double music song resources range filter pbind prepend role|
 
 		var event;
 		var section = P.calcStart(start );
-		var synthV = SynthV(key,( start ? section ),take ,double );
+		var synthV;
 		song = song ? Song.currentSong;
+		role.notNil.if{
+			key = Trek.cast.at(role);
+		};
+		synthV = SynthV(key,( start ? section ),take ,double );
 		pbind = pbind.notNil.if{  // pass in a pbind or get it from the song
 			pbind.value(song,song.durs[section].list)
 		} {
@@ -369,7 +373,10 @@ SynthV{
 		++ params.value(
 			song,
 			song.durs[section].list, //drop range
+			key
 		) 
+		++ Trek.at(role, key).postln
+
 		=> Event.newFrom(_)
 		=> {|i| 
 			filter.notNil.if{

@@ -1,0 +1,40 @@
+var o, p;
+o = [
+	MultiLevelIdentityDictionary.prNew,  IdentityDictionary.prNew,  Array.prNew(32),  IdentityDictionary.prNew,  
+	Array.prNew(32),  Array.prNew(2),  Array.prNew(2)
+];
+p = [
+	// MultiLevelIdentityDictionary
+	0, [ dictionary: o[1] ],  
+	// IdentityDictionary
+	1, [ array: o[2],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	2, [ 'kirk',  o[3],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil ],  
+	// IdentityDictionary
+	3, [ array: o[4],  size: 2,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	4, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  'kevin',  o[5],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  'an',  o[6] ],  
+	// Array
+	5, [ 'paramGender',  0.3 ],  
+	// Array
+	6, [ 'paramGender',  0.3 ]
+];
+prUnarchive(o,p);

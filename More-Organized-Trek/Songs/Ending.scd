@@ -1,6 +1,3 @@
-
-
-
 /*
 [Bridge]
 
@@ -61,7 +58,7 @@
 			b.parse([7]).unbubble,["of you too,","Helm?"]
 		])
 	});
-	P.synthV(\asterian,
+	P.synthV(Trek.cast.henoch,
 		filter: (midinote: _ - 12), 
 		params: {|p b| [
 		lyrics: "must I make an axample + + of you - too Helm",
@@ -188,7 +185,7 @@
 
 	[ "I know every thou-- ght of every mind around me." ,[3, 1, 4, 2, -7.5, -6, -5, 3,4,5,7,6,5,4].dm('e-',scale:\mixolydian)].addLine;
 	// P.tune();
-P.synthV(\asterian, 
+P.synthV(Trek.cast.henoch, 
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
 	lyrics: "I know evree + thought - of evree + mind a round - me.",
@@ -198,11 +195,11 @@ P.synthV(\asterian,
 	{
 		e.playbuf
 		
-		 => p.synthVTracks.at(\asterian).()
+		 => p.synthVTracks.at(Trek.cast.henoch).()
 		 /6
 	}.play
 });
-P.double(\asterian,
+P.double(Trek.cast.henoch,
 	filter: (midinote: _ - 12), 
 	music:{|p b e|
 {
@@ -222,7 +219,7 @@ P.double(\asterian,
 		].pp
 	});
 	[ "See? (to Chapel) Take the hypo from him. And inject him with it. " ,[1,5,5,12,12,6,6].dm(\a,octave:4) ++ [5.5,6,7,5,3,1].dm(\c,scale:\mixolydian)].addLine;
-	P.synthV(\asterian,
+	P.synthV(Trek.cast.henoch,
 		filter: (midinote: _ - 12),
 		prepend: true,
 		params: {|p b| [
@@ -268,7 +265,7 @@ P.double(\asterian,
 		)
 	});
 	// P.tune(\leaps);
-	P.synthV(\asterian, params: {|p b| [
+	P.synthV(Trek.cast.henoch, params: {|p b| [
 		lyrics:" r Fools. r I'll simply + transfer + to another + + place, another + + body +" ,
 		vocalMode: \Theatrical
 	] }, music:{|p b e|
@@ -327,7 +324,7 @@ P.double(\asterian,
 			text: ["Sargon!","No, Sargon, Please!"],
 		)
 	});
-	P.synthV(\asterian,
+	P.synthV(Trek.cast.henoch,
 		filter: (midinote: _ - 12), 
 		params: {|p b| [
 		lyrics: "Sargon! + No Sargon + please! let me let me transfer +",
@@ -409,7 +406,7 @@ P(\trem,start:\please,syl:1,music:{|p b e|
 	});
 
 	["KIRK: Spock. My friend Spock. If there'd only been another way. ",[5,3,11,7, 5,6,7,5,13, 7,11,3,12].dm(\e)].addLine;
-	P.synthV(\an,
+	P.synthV(Trek.cast.kirk,
 		filter: (midinote: _ - 12), 
 		params: {|p b| [
 		lyrics: "spock my friend spock if there'd only + been another + + way",

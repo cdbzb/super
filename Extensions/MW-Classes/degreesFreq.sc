@@ -52,7 +52,7 @@ NoteName {
 				).at(i) + (transpose ? 0)
 			
 		} {
-			i (transpose ? 0)
+			i + (transpose ? 0)
 		}
 	};
 

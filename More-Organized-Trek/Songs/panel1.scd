@@ -64,7 +64,7 @@ P.synthV(\xuan,
 		// echo:0.1,
 		mix:0.9,
 		width:1.05,
-		amp:0.04,
+		// amp:0.04,
 		verb:0.5,
 		att: 0,
 		sus:b.sum,
@@ -392,18 +392,23 @@ Song.energyDur=0.1;
 // Song.durs[\Pure] = "qq qq Q Q Q QQ QQ Q Q qq    qq qq qq qq".asBeats * Song.energyDur * 4  => _.q;
 // P.tune();
 //Song.secDur[\Pure];
-P.synthV(\mo,filter: (midinote: _ - 12), 
+P.synthV(Trek.cast.spock,
+	filter: (midinote: _ - 12), 
 		// pbind:{ |p b| 
 		// 	p.energyPbinds[0]
 		// },
-		params: {|p b| [
+		params: {|p b key| [
 				lyrics: "r Pure energy + + matter + without + form  ",
 				// lag:[0, b[1]/2,0,0,0,0,0,0,0,0],
 				legato: [1, 1, 1, 1, 0.4, 1, 1, 1, 1, 1],
 				paramTension: 0.35,
 				paramBreathiness: 0.65,
-				paramGender: 0.22,
-				paramToneShift: 305,
+				paramGender: case{
+					key==\mo}{0.22}
+					{true}{0},
+				paramToneShift: case{
+					key == \mo }{305}
+					{true}{0},
 				tension: Env([0,0,1,1,1,1,1,1,1,0], b),
 				loudness: Env([0,0,1,0,0,1,0,1,0,1] * 4, b)
 		] }, music:{|p b e|
@@ -413,7 +418,7 @@ P.synthV(\mo,filter: (midinote: _ - 12),
 			/4
 	}.play
 });
-P.double(\mo, take:\double, double:\true,
+P.double(Trek.cast.spock, take:\double, double:\true,
 	filter: (midinote: "1 6 5 4 3 ".dm(\c) ++ "5 4 3 2 3".dm(\e,\mixolydian) - 12),
 		// pbind:{ |p b| 
 		// 	p.energyPbinds[1]
@@ -561,16 +566,22 @@ P(\dyad, music: { |p b e|
 		instrument: \pulse
 	].p.play
 });
-P.synthV(\an,
+P.synthV(\kevin,
 	double:true,
 	filter: (midinote: _ - 12), 
-	params: {|p b| [
-	vocalMode: "Power",
+	params: {|p b key| [
+	// vocalMode: "Power",
 	lyrics: "Impossible + + +",
+	vocalMode: case{
+		key == \kevin }{\Belt}
+	,
+	paramGender: case{
+		key == \kevin }{0.3}
+	,
 	lag:[0,0,0.1,0],
 	tension: Env([0,1,1,1,1],b,\step),
 	paramTension:0.3 ,
-	defaultVibratoDepth:1
+	defaultVibratoDepth:0
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -601,7 +612,7 @@ P.still(\group_mccoy, timecode: 1042.79.seconds, music: { |p b e|
 		b.parse([7]).unbubble, ["of some type!",""]
 	])
 });
-P.synthV(\mo, filter: (midinote: _ - 12), params: {|p b| [
+P.synthV(Trek.cast.mccoy, filter: (midinote: _ - 12), params: {|p b| [
 	lyrics:" But you once had a body + of some type? " ,
 ] }, music:{|p b e|
 	{
@@ -759,11 +770,14 @@ P(\bonk, syl:6, music: { |p b e|
 		=> DelayN.ar(_,delaytime:b.drop(1)[0]/2)
 	}.play
 });
-P.synthV(\an,
+P.synthV(Trek.cast.kirk,
 	filter: (midinote: _ - 12), 
-	params: {|p b| [
+	params: {|p b key| [
 	lyrics: " That's twice you've referred + to us as my children  + ",
-	legato: [1, 0.9, 1,1,1,1,0.8, 0.8, 1, 1, 1]
+	legato: [1, 0.9, 1,1,1,1,0.8, 0.8, 1, 1, 1],
+	paramGender: case{
+		key == \kevin }{ 0.3 }
+		{true}{0.0}
 ] }, music:{|p b e|
 	{
 		e.playbuf

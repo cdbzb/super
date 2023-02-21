@@ -1,5 +1,6 @@
 (
 s.waitForBoot{ Song(\chamber1,[]).current;
+"~/tank/super/More-Organized-Trek/Songs/boilerplate.scd".standardizePath.load;
 ["( transporter! )","r",[8]].addLine;
 P('transporter',start:'stand ready',music: {|p b e|
 	{
@@ -119,6 +120,12 @@ P.tune(\dematerialise);
 P.tune(\No);
 ["MULHALL: Atmosphere report, Captain. ",[11,7,5,4,3,2,3].dm(\b,5,\mixolydian)].addLine;
 P.tune(\Atmosphere, {|i| Pmul(\freq,[1,0.5],i) <> [out: Effect(FreeVerb.ar(_,0.8,0.8), inputChannels:2).bus.index, \legato:[6,2,5,2,4,2,3].q ].p });
+P.still(\kirk_and_mullhall, timecode: 921.21.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["atmosphere report,","captain"],
+	)
+});
 P.synthV(\cheng,
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
@@ -200,6 +207,16 @@ P(\trill,start:'Atmos',music:{|p b e|
 });
 
 ["A fraction richer in oxygen than usual for us, but otherwise normal. "," 3 4 5 7 11 6 13 12 5 6 12 11.5 6, 4.5 5.5 4 5 6 7 12 11".dm(\c)].addLine;
+P.still(\mulhall, timecode: 925.04.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["a fraction richer","in oxygen"],
+		fade: 1
+	).sequenceText([
+		b[0..7].sum, ["than usual","for us"],
+		b[8..13].sum, ["but otherwise","normal"]
+	])
+});
 // P.tune(\oxygen,{|i| Pmul(\freq,[1,0.5],i) => Pset(\legato,1,_) });
 P.synthV(\cheng,
 	prepend:true,
@@ -271,6 +288,13 @@ P('chord',start:\oxygen,music: {|p b e|
 	}
 });
 ["SPOCK: This vault was constructed about a half a million years ago.", "5 7 6 5 4 3 2 3 4 6 5 4 3 2 1".dm(\c,5,\mixolydian)].addLine;
+P.still(\spock, timecode: 932.02.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["this vault","was constructed"],
+	)
+
+});
 P(\line,syl:0,lag:-0.2, music: { |p b e|
 	{
 		var width = 0.00;
@@ -307,6 +331,7 @@ P(\trill,start:\vault,music:{|p b e|
 	p.changeTrill.(6.5)
 });
 ["About the same time the planet surface was destroyed, if our sensor readings are accurate. ","5 6 7 11 3".dm(\f,4,\minor) ++ "6 7 11 13 12 11 7 6".dm('f#',4) ++ [ 1,2,3,4,-5,4,3,2 ].dm(\d,5,\diminished)].addLine;
+
 // P.tune();
 P.synthV(Trek.cast.spock,
 	filter: (midinote: _ - 12), 
@@ -555,6 +580,12 @@ P(\bass, music: { |p b e|
 	].pp
 });
 ["MULHALL: All readings are off the scale, Captain. (ooh) "," 6 5 4 3 2 1 7 6 5 4.5".dm(\d,5,\mixolydian)].addLine;
+P.still(\mulhall_and_mccoy, timecode: 944.28.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["all readings are","off the scale, Captain"],
+	)
+});
 Song.setTempoMap(\scale,"q Q Q Qq Q E q e e q".asBeats);
 P.synthV(\cheng, 
 	pbind: {|p b| [ dur:p.tempoMap[\scale].quantize(1,0,7).durs.q, midinote:p.tune[p.section(\scale)]  ].p },
@@ -647,9 +678,17 @@ P('cymbal',start:\All,music: {|p b e|
 		rests: [\r,1].q].pp
 });
 ["MCCOY: The air seems fresh. It must be re-circulated somehow. ","4 3 2 5 ".dm(\c) ++ "4 5 6 7 6 5 4 2 4 3.5".dm(\c,5,\minor)].addLine;
+P.still(\mccoy_speaks, timecode: 949.01.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["the air","seems fresh"],
+	)
+});
 P.synthV(Trek.cast.mccoy, params: {|p b| [
 	lyrics: "the air seems fresh it must be recirculated + + + + somehow + ",
-	legato: [1,  1,   1,     0.8, 1, 1, 1,   1,  1,  1,  1,  1,  1,  1]
+	legato: [1,  1,   1,     0.8, 1, 1, 1,   1,  1,  1,  1,  1,  1,  1],
+	language: \chinese,
+	phoneset: \xsampa
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -735,6 +774,12 @@ P(\pad,start:'fresh air',music:{|p b e|
 	}
 });
 ["(door opens and...)","f#"].addLine;
+P.still(\door, timecode: 958.25.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P(\door,start:\opens,music:{|p b e| 
 
 	(instrument:\stringyy,dur:b.sum,amp:0.4,freq:[-1,-11].df('f#'),attack:5).play;
@@ -755,7 +800,12 @@ P(\crunch,start:\opens,music: { |p b e|
 	}.play
 });
 ["I am Sargon!","1 2 1 -7 -7".dm('b',5,\harmonicMinor)].addLine;
-"~/tank/super/More-Organized-Trek/Songs/boilerplate.scd".standardizePath.load;
+P.still(\globe, timecode: 1005.24.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["I am","am Sargon"],
+	)
+});
 P.synthV(\xuan, params: {|p b| [
 	filter: (midinote: 40), 
 	lyrics: "ai am sar - gone",

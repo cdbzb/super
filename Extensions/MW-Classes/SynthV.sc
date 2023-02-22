@@ -28,9 +28,15 @@ SynthV{
 			'pitch': 66,
 			'detune': 0,
 			'systemAttributes': (  ),
-			'pitchTakes': ( 'activeTakeId': 0, 'takes': [ ( 'liked': false, 'id': 0, 'expr': 1.0 ) ] ),
+			'pitchTakes': (
+				'activeTakeId': 0,
+				'takes': 4.collect{|i| (liked: false, id: i, expr: 1.0) },
+			),
 			'lyrics': "la",
-			'timbreTakes': ( 'activeTakeId': 0, 'takes': [ ( 'liked': false, 'id': 0, 'expr': 1.0 ) ] ),
+			'timbreTakes': (
+				'activeTakeId': 0,
+				'takes': 4.collect{|i| (liked: false, id: i, expr: 1.0) },
+			),
 			'phonemes': "" , 
 			'attributes': (  )
 		);
@@ -169,10 +175,9 @@ SynthV{
 		}
 	}
 	render {
-		double.post;" ".post;
 		double.isNil.if {
 			\renderSynthsizerV.postln;
-			"~/scripts/renderSynthesizerV.sh".standardizePath + file =>_.unixCmd
+			directory +/+ "SCRIPTS/renderSynthV-recompute.sh".standardizePath + file =>_.unixCmd
 		}{
 			\newTakeSynthV.postln;
 			"~/scripts/newTakeSynthV.sh".standardizePath + file =>_.unixCmd
@@ -273,6 +278,8 @@ SynthV{
                         { envelopes.includes(i)}         { this.setEnv(i,event.at(i))}
                         { i == \language }               { \LANGUAGE.postln; project.tracks[0].mainRef.database.put(\languageOverride,event.at(i)).postln }
                         { i == \phoneset}                { project.tracks[0].mainRef.database.put(\phonesetOverride,event.at(i)) }
+			{ i == \pitchTake}               { this.setPitchTakeId(event.at(i)) }
+			{ i == \pitchExpression }        { this.setPitchExpression(event.at(i)) }
                         { true }                         { this.setNotes(i,event.at(i)) }
 		};
 		//this should be done with an array flop and pairsDo instad but...
@@ -284,9 +291,22 @@ SynthV{
 		key.post;" ".post;value.postln;
 		this.notes[index].put(key,value);
 	}
-	setNotes { |key array|
-		array.do{|i x|
-			this.setNote(x, key, i)
+	setNotes { |key array| //can use an integer or shorter array
+		// array.do{|i x|
+		// 	this.setNote(x, key, i)
+		// }
+		( array.rank==0 ).if{array = array.bubble};
+		this.notes.do{|i x| this.setNote(x, key, array.clipAt(x))}
+	}
+	setPitchTakeId {|id|
+		this.notes.do{|i x| this.notes[x].pitchTakes.put(\activeTakeId,id)}
+	}
+	setPitchExpression { |array|   // puts the values in all the takes
+		( array.rank==0 ).if{array = array.bubble};
+		this.notes.do{ |i x|
+			this.notes[x].pitchTakes.takes.do{ |take takeNumber|
+				take.put( \expr, array.clipAt(x) )
+			}
 		}
 	}
 	setDatabase { |key|

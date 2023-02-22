@@ -16,9 +16,71 @@
 	
 	Song.resources=();
 		["they used to think if man could ","f3 f g g a a b "].addLine; //0
-		P.tune(\think);
+		P.synthV(role: \kirk, take:2, params: {|p b| [
+			lyrics: "they used to think if man could",
+			pitchTake: 1,
+			pitchExpression: 1.4,
+			legato: [1,1,1,0.6,1,1,0.9],
+			tension: Env([0,1],b.sum),
+			loudness: Env([0,6] -6,b.sum)
+		] }, music:{|p b e|
+			{
+				e.playbuf
+				// => p.synthVTracks.at(e.key).()
+			}.play
+		});
+		P(\pedalNote, music: { |p b e|
+			(
+				// instrument: \stringyy,
+				instrument: \sawSynthSustain,
+				freq: [-1,1].df(\f,[ 2, 3,4 ]),
+				amp: 0.1,
+				dur: b.sum,
+				att: 2
+			).play
+		});
+		P.synthV(role: \kirk, params: {|p b| [
+			lyrics: "they used to think if man could",
+			lag: { 0.02.rand }!7,
+			legato: [1,1,1,0.75,1,1,1],
+			pitchTake: 2
+		] }, music:{|p b e|
+			{
+				e.playbuf
+				=> Pan2.ar(_,1)
+				// => p.synthVTracks.at(e.key).()
+			}.play
+		});
+		// P.tune(\think);
 		["fly, he`d have wings, but he","b3 a g c#4 b3 c#4"].addLine; //1
-		P.tune(\wings);
+		P.synthV(role: \kirk, lag:-0.1, 
+			prepend: true,
+			params: {|p b| [
+			lyrics: "fly, heed have wings, but he",
+			lag: [ 0.1 ],
+			pitchExpression: 1.3,
+			pitchTake: 0
+		] }, music:{|p b e|
+			{
+				e.playbuf
+				// => p.synthVTracks.at(e.key).()
+			}.play
+		});
+		P.synthV(role: \kirk, take:2, lag: -0.1,
+			prepend: true,
+			params: {|p b| [
+			lyrics: "fly, heed have wings, but he",
+			lag:[0.1],
+			pitchExpression: 1.5,
+			pitchTake: 1
+		] }, music:{|p b e|
+			{
+				e.playbuf
+				=> Pan2.ar(_,1)
+				// => p.synthVTracks.at(e.key).()
+			}.play
+		});
+		// P.tune(\wings);
 		["did fly (boom boom)", "e4 d a3 f#"].addLine; //2
 
 
@@ -147,7 +209,7 @@ P(\guitar,start:'Mars',music: {|p b e|
 	).play
 });
 		["star (boom boom) ","b4"].addLine;//9
-		P.tune('star (boo');
+		P.tune();
 P(\highchord,start:'star',music:( 
 	instrument: \stringyy,
 	freq: [1,3].df(\a,6),

@@ -23,7 +23,7 @@ tell application "System Events"
 	keystroke "f" using {command down, control down}
 end tell
 
-delay 0.2
+delay 0.1
 
 tell application "System Events" to tell application process "Synthesizer V Studio Pro"
 	
@@ -32,19 +32,20 @@ tell application "System Events" to tell application process "Synthesizer V Stud
 			click menu item "Render Panel" of menu 1 of menu bar item "View" of menu bar 1
 		end if
 
+		repeat 40 times 
+			if target_button exists then exit repeat
+			click menu item "Render Panel" of menu 1 of menu bar item "View" of menu bar 1
+			delay 0.1
+		end repeat
+
 	click menu item "Select All" of menu 1 of menu item "Claires Scripts - Hotkey Scripts" of menu 1 of menu bar item "Scripts" of menu bar 1
 	delay 0.1
 
-	# click menu item "Generate a New Take" of menu 1 of menu bar item "Auto-Process" of menu bar 1
-	click menu item "Recompute Pitch For Selected Notes" of menu 1 of menu bar item "Auto-Process" of menu bar 1
+	# click menu item "Recompute Pitch For Selected Notes" of menu 1 of menu bar item "Auto-Process" of menu bar 1
+	keystroke "r" using {option down}
 	
-	
-	delay 1.5
+	delay 2.5
 
-		#repeat 40 times 
-		#	if target_button exists then exit repeat
-		#	delay 0.1
-		#end repeat
 		click UI element "Bounce to Files" of window 1
 
 	delay 0.5

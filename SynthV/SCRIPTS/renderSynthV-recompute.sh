@@ -19,8 +19,11 @@ tell application "System Events"
 	end repeat
 end tell
 
+	# delay 0.05
 tell application "System Events"
 	keystroke "f" using {command down, control down}
+	# delay 0.05
+	# keystroke "f" using {option down}
 end tell
 
 delay 0.1

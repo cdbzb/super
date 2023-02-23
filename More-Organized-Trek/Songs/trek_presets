@@ -1,7 +1,7 @@
 var o, p;
 o = [
 	MultiLevelIdentityDictionary.prNew,  IdentityDictionary.prNew,  Array.prNew(32),  IdentityDictionary.prNew,  
-	Array.prNew(32),  Array.prNew(2),  Array.prNew(2)
+	Array.prNew(32),  Array.prNew(4),  Array.prNew(2)
 ];
 p = [
 	// MultiLevelIdentityDictionary
@@ -33,7 +33,7 @@ p = [
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  'an',  o[6] ],  
 	// Array
-	5, [ 'paramGender',  0.3 ],  
+	5, [ 'paramGender',  0.2,  'paramTension',  0.3 ],  
 	// Array
 	6, [ 'paramGender',  0.3 ]
 ];

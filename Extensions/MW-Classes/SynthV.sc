@@ -1,4 +1,4 @@
-SynthV{
+SynthV {
 	// project.tracks[0].database = "AiKO Lite"
 	classvar <>directory = "~/tank/super/SynthV";
 	classvar <notePrototype, <databasePrototype, <databaseLib;
@@ -175,12 +175,10 @@ SynthV{
 		}
 	}
 	render {
-		double.isNil.if {
-			\renderSynthsizerV.postln;
+		take.notNil.if {
 			directory +/+ "SCRIPTS/renderSynthV-recompute.sh".standardizePath + file =>_.unixCmd
 		}{
-			\newTakeSynthV.postln;
-			"~/scripts/newTakeSynthV.sh".standardizePath + file =>_.unixCmd
+			directory +/+ "SCRIPTS/renderSynthesizerV.sh".standardizePath + file =>_.unixCmd
 		}
 	}
 	*load { |path|
@@ -327,16 +325,18 @@ SynthV{
 		}
 	}
 	findPartBefore{
+		Post  << "findPartBefore " << name << "\n";
+
 		^ Song.pts
 		.select{|i| i.name.contains(name.asString)}
 		.select{|i| take == i.synthV.take}
 		// .select{|i| i.name.contains(key.asInteger - 1 => _.asString and: not( i.name.contains(  ) ) )}
 		.select{|i| "(?<![0-9])"++( key.asInteger - 1 ) =>_.matchRegexp(i.name.asString)} //match 5 but not 15
-
 		.unbubble
 	}
+	
 	prependNotes {|section synthV track=0|
-		var last = this.findPartBefore.synthV.notes.last;
+		var last = { this.findPartBefore.synthV.notes.last }.try({ "couldnt find part before!!".postln; this.dump.postln}) ;
 		last = last.put(\onset,"0");
 		offset = last.duration.blicksToSeconds;
 		// offset = Song.secDur[ key.asInteger - 1 ];
@@ -359,21 +359,30 @@ SynthV{
 }
 
 + P {
-	*double{| key music filter pbind |
+	*double{| key music filter pbind role|
 		var section = P.calcStart(nil); 
-		var original = Song.currentSong.at(section).select({|e| e.name.contains(key.asString) })[0];
+		var original = Song.currentSong.at(section)
+		.select({|e|
+			e.name.contains (key.notNil.if{key.asString}{Trek.cast.at(role).asString} ) 
+		})
+		.reject{|e|
+			e.name.contains("dbl")
+		}[0];
+		// e.name.contains(key.asString ? Trek.cast.at(role).asString) })[0];
+		Post << "section " << section << "name " << name << " original " << original << "\n";
+
 		^P.synthV(
-			key,
+			key, 
+			role: role,
 			params:original.params,
-			double:true,
-			take:\double,
+			// double:true,
+			take:original.take ++ "-dbl" => _.asSymbol,
 			music:music,
 			filter:(filter ? original.filter),
 			pbind: (pbind ? original.pbind)
 		)
 	}
 	*synthV{ | key start params syl lag=0 take double music song resources range filter pbind prepend role|
-
 		var event;
 		var section = P.calcStart(start );
 		var synthV;
@@ -396,7 +405,7 @@ SynthV{
 			key
 		) 
 		++ Trek.at(role, key).postln
-
+		++ ( take.asString.contains("dbl")).if{ [pitchTake: 3] } // last of 4
 		=> Event.newFrom(_)
 		=> {|i| 
 			filter.notNil.if{

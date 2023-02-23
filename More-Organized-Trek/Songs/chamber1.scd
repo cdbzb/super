@@ -531,7 +531,7 @@ P.double(Trek.cast.spock, params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-Song.durs[\measured] =  Song.durs[\measured].list.dropLast ++ (Song.durs[\measured].list.last  * 0.66 ) => _.q;
+// Song.durs[\measured] =  Song.durs[\measured].list.dropLast ++ (Song.durs[\measured].list.last  * 0.66 ) => _.q;
 P.tune(\measured);
 Song.setTempoMap(\measured, 
 	"e e ee|q e | e x x x xeq".asBeats

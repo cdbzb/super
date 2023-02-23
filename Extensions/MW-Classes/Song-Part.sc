@@ -893,6 +893,12 @@ Part {
 	printOn {|stream| ^this.name.printOn(stream) }
 	play {
 		//Song.allNotesOff;
+		// var synthV = resources.at(\synthV);
+		// synthV.notNil.if{
+		// 	synthV.needsRender.if{
+		// 		^synthV.render
+		// 	} 
+		// };
 		switch (music.class,
 			Function,{Server.default.bind{
 				music.value(
@@ -914,7 +920,7 @@ Part {
 			},
 			VocoderPattern,{music.play;\vocoderPatternPlaying.postln},
 			{music.play}
-		) 
+		)  
 	}
 	test{^start}
 	awake { this.play }

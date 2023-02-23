@@ -16,6 +16,14 @@
 	
 	Song.resources=();
 		["they used to think if man could ","f3 f g g a a b "].addLine; //0
+		Song.synthVTracks = EventWithDefault(
+			\kevin, {
+				{|i|
+					DWGReverbC1C3.ar(i,mix:0.1)
+					/4
+				}
+			}
+		);
 		P.synthV(role: \kirk, take:2, params: {|p b| [
 			lyrics: "they used to think if man could",
 			pitchTake: 1,
@@ -26,7 +34,7 @@
 		] }, music:{|p b e|
 			{
 				e.playbuf
-				// => p.synthVTracks.at(e.key).()
+				=> p.synthVTracks.at(e.key).()
 			}.play
 		});
 		P(\pedalNote, music: { |p b e|
@@ -48,42 +56,74 @@
 			{
 				e.playbuf
 				=> Pan2.ar(_,1)
-				// => p.synthVTracks.at(e.key).()
+				=> p.synthVTracks.at(e.key).()
 			}.play
 		});
 		// P.tune(\think);
 		["fly, he`d have wings, but he","b3 a g c#4 b3 c#4"].addLine; //1
-		P.synthV(role: \kirk, lag:-0.1, 
+		P(\line, music: { |p b e|
+			[
+				instrument: \wash,
+				freq: [1,2].df(\b).q,
+				dur: b.parse([3, 3]).q,
+				out: [0,1].q
+			].pp
+		});
+		P.synthV(role: \kirk, lag:(-0.1),  
 			prepend: true,
 			params: {|p b| [
 			lyrics: "fly, heed have wings, but he",
-			lag: [ 0.1 ],
+			lag:[0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
 			pitchExpression: 1.3,
 			pitchTake: 0
 		] }, music:{|p b e|
 			{
 				e.playbuf
-				// => p.synthVTracks.at(e.key).()
+				=> p.synthVTracks.at(e.key).()
 			}.play
 		});
-		P.synthV(role: \kirk, take:2, lag: -0.1,
+		P.synthV(role: \kirk, take:2, lag:(-0.1), 
 			prepend: true,
 			params: {|p b| [
 			lyrics: "fly, heed have wings, but he",
-			lag:[0.1],
+			lag:[0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
 			pitchExpression: 1.5,
 			pitchTake: 1
 		] }, music:{|p b e|
 			{
 				e.playbuf
 				=> Pan2.ar(_,1)
-				// => p.synthVTracks.at(e.key).()
+				=> p.synthVTracks.at(e.key).()
 			}.play
 		});
 		// P.tune(\wings);
 		["did fly (boom boom)", "e4 d a3 f#"].addLine; //2
 
-
+P.synthV(role: \kirk, prepend:true, lag:-0.1, params: {|p b| [
+	lyrics: "did fly r r",
+	// lag: [0.04,0],
+	lag: [0.1,0.1],
+	pitchTake: 1,
+	pitchExpression: [1.5,0.8]
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.synthV(role: \kirk, take: 2, lag:-0.1, prepend: true, params: {|p b| [
+	lyrics: "did fly r r",
+	// lag: [0.03,0],
+	pitchTake: 2,
+	lag: [0.1,0.1],
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> Pan2.ar(_,1)
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.tune(_ <> (instrument: \harp))
 	P(\chord,start:'did fly',music: {|p b e|
 		[
 			//		dur:~tu.secDur[2..3].q,
@@ -91,7 +131,9 @@
 			freq:[[2,5,7],[1,4,6],[1,3,5]].df(\g,3).q,
 			amp:0.04,
 		].pp });
-P(\wowowow,start:'did fly',syl:1,lag:0.05,music:
+P(\wowowow,start:'did fly',syl:1,
+	// lag:0.05,
+	music:
  		{|p b e| 
 			{
 
@@ -103,8 +145,17 @@ P(\wowowow,start:'did fly',syl:1,lag:0.05,music:
  		}.play}
 	);
 
-		P.tune('did fly');
+		// P.tune('did fly');
 		["(boom) he discovered he ","c d4 c b3 a b"].addLine;//3
+		P.synthV(role: \kirk, params: {|p b| [
+			lyrics: "r he discovered + + he ",
+		] }, music:{|p b e|
+			{
+				e.playbuf
+				=> p.synthVTracks.at(e.key).()
+			}.play
+
+		P.tune(_ <>(instrument:\harp))
 		P(\boomBass,start:\discovered,music:(note:0,octave:3,amp:0.5,dur:Song.secDur[3]));
 		["had to.. do you wish that the first","c4 b3 g#3 e b g# a b"].addLine;//4
 	P(\wowowow,start:\first,syl:1,music: {|p b e|
@@ -130,6 +181,7 @@ P(\wowowow,start:'did fly',syl:1,lag:0.05,music:
 			dur: (p.parse(4,[[1,1,1,2/3],1/3],4) + ([0]++p.parse(5,[1,2]))).q ,
 		].pp 
 	});
+	synthv
 		["Apollo mission hadn`t reached the","c#4 f# c# e d# b-3 a- b- b"].addLine;//5
 		["moon... or that we hadnt  ","c#4 b3 a g a b  "].addLine;//6
 P(\baas,start:\moon,music:(
@@ -313,7 +365,7 @@ P(\bell,start:'grandfather',syl:2,music:(
 	dur:2,
 ));
 
-	Song.addGuides("xxx");
+	// Song.addGuides("xxx");
 
 		//~im2=Song(\ImInControl2,[])//.current; //{{{
 //			["I'm (boom) in (boom) con-","g4 a-3 g4 a-3  f4"].addLine;,//0

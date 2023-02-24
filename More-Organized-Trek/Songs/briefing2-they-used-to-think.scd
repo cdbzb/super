@@ -220,7 +220,7 @@ P(\bass,start:\first,syl:3,music:{|p b e|
 });
 ["Apollo mission hadn`t reached the","c#4 f# c# e d# b-3 a- b- b"].addLine;//5
 P.synthV(role: \kirk, take: \lead, prepend: true, params: {|p b| [
-	lyrics: "apollo + + mission + hadnt + reached the",
+	lyrics: "apollo + + mission + hadn't + reached the",
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
@@ -237,7 +237,15 @@ P.double(role: \kirk, take:\lead, params: {|p b| [
 });
 ["moon... or that we hadnt  ","c#4 b3 a g a b  "].addLine;//6
 P.synthV(role: \kirk, take:\lead, prepend: true, params: {|p b| [
-	lyrics: "moon or that we hadnt + ",
+	lyrics: "moon or that we hadn't + ",
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role: \kirk, params: {|p b| [
+	
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -270,8 +278,12 @@ P(\ooh, start:\moon,music: {
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	lyrics: "gone on to",
 	pitchTake: 1,
-	timbreExpression: 1.3,
-	pitchExpression: 1.4
+	timbreExpression: 1.5,
+	paramTension: 0.5,
+	pitchExpression: 1.4,
+	paramBreathiness: 0.5,
+	paramToneShift: 250
+
 
 ] }, music:{|p b e|
 	{
@@ -298,18 +310,26 @@ P(\bass,start:'gone on', music: {|p b e|
 ["Mars, and then to the nearest","a4 g4 g e f g e"].addLine;//8
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	lyrics: "mars and the to the nearest +" ,
+	pitchTake: 1,
+	timbreExpression: 1.5,
+	paramTension: 0.5,
+	pitchExpression: 1.4,
+	paramBreathiness: 0.5,
+	paramToneShift: 250,
+	paramLoudness: 3
 ] }, music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.double(role: \kirk, params: {|p b| [
+P.double(role: \kirk, take:\lead, params: {|p b| [
 	
 ] }, music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_,1)
 	}.play
 });
 Song.quarters8=Song.parse(\Mars,[2/3,[1/3,1],3,2]);
@@ -356,12 +376,27 @@ P(\guitar,start:'Mars',music: {|p b e|
 	).play
 });
 ["star (boom boom) ","b4"].addLine;//9
-P.synthV(role: \kirk, take: \lead, params: {|p b| [
+P.synthV(role: \kirk, take: \lead,
+	pbind: {|p b| [dur: b* 3 => _.q, midinote: 1.dm(\b,5)].p},
+	params: {|p b| [
 	lyrics: "star" ,
+	pitchTake: 1,
+
 ] }, music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role: \kirk, take:\lead, 
+	pbind: {|p b| [dur: b* 3 => _.q, midinote: 1.dm(\b,5)].p},
+	params: {|p b| [
+	
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_,1)
 	}.play
 });
 P.tune();

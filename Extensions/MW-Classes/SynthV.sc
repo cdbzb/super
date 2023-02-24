@@ -399,12 +399,12 @@ SynthV {
 		event = pbind.patternpairs.collect{|i|
 			( i.class==Pseq ).if{i.list}{i}
 		}
+		++ Trek.at(role, key)
 		++ params.value(
 			song,
 			song.durs[section].list, //drop range
 			key
 		) 
-		++ Trek.at(role, key).postln
 		++ ( take.asString.contains("dbl")).if{ [pitchTake: 3] } // last of 4
 		=> Event.newFrom(_)
 		=> {|i| 

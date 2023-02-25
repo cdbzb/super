@@ -1,6 +1,7 @@
 ( 
 	//~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
 	Song(\theyUsed,[]).current;
+
 	~moonChord="e- f a c#" => ~panNotes.(_);
 	~marsChords=[0,2].collect{|root| [ freq:	[ [1,4,6].dup++[1,3,5] .dup ].flatten.degreescps(root:root).q ].p }.q;
 
@@ -961,7 +962,7 @@ P(\bass4,start:'right',
 	P.double(role: \kirk, params: {|p b| [
 			
 		] }, music:{|p b e|
-			
+			{
 				e.playbuf
 				=> p.synthVTracks.at(e.key).()
 			}.play
@@ -1004,6 +1005,28 @@ P(\slide6,start:'con--',syl:2,lag:0.2,music:{ |p b e|
 P(\slide6echo,start:'con--',syl:2,lag:0.55,music:{ |p b e| [amp:0.005,root:4,degree:Pseries(30,-1,38),dur:Pwhite(0.01,0.012)*1.85,instrument:\mda,vel:60].pp });//}}}
 ///// 7 /////{{{
 ["life and intelligence so fan-","g4 d g f# e d e f#"].addLine;//7
+P.synthV(\ninezero, take:\harmony,
+	filter: (midinote: [3, 3, 3, 2, 2,2].dm(\g)), 
+	params: {|p b| [
+	lyrics: "life and intelligence + + + r r",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+		/2
+		=> Pan2.ar(_,0.8)
+	}.play
+});
+P.double(\ninezero, take: \harmony, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_,0.8)
+		}.play
+	});
 P.synthV(role: \kirk, take:\lead, params: {|p b| [
 	lyrics: "life and intelligence + + + so fan",
 	pitchTake: 1,
@@ -1040,6 +1063,23 @@ P(\bass7,start:\life,music: { |p b e|
 	].pp
 });
 ["(trill) --tas --tic --ly ad-- va -- --nced as","e3 g#4 f# e d b- c5 b-4 a "].addLine;//8
+P.synthV(role:\kirk, take:\lead, params: {|p b| [
+	lyrics: " r tasticly + + advanced + - - as",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role:\kirk, take:\lead, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 P(\klTrill,start:\trill,music:{{StkClarinet.ar(441/480*[1,3].degreescps(root:4,octave:5)*Pulse.kr(LFBrownNoise2.kr([0.5,0.51],mul:0.5,add:6)).range(1,2.midiratio),breathpressure:20,vibgain:10,vibfreq:64)*0.04}.play(s,2).dur(1) });
 //~im2.pbind[7].play;
 P(\bass8,start:'(trill)',music:{ |p b e| [note:[Rest(),8,6,4,2,0,-1].q,octave:3,dur: b.parse([1,1,1,1,1,[1,1,1,1]]).q++[2].q ].pp });
@@ -1056,6 +1096,23 @@ P(\lick8,start:'(trill)',syl:4,music: { |p b e|
 	].pp
 });
 ["this, but I must point out that the possi","b-4 a g# a b d f# g# a b"].addLine;//9
+P.synthV(role:\kirk, take:\lead, params: {|p b| [
+	lyrics: "this but I must point out that the posee +",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role:\kirk, take: \lead, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 P(\chord9,start:'this,',music:(strum:0.07,freq:[2,4,5,7].degreescps(root:4)));
 P(\chord9,start:'this,',music:(dur: 2,strum:0.05,freq:[5,12,14,17,23].degreescps(root:-1)));
 P(\chord9b,start:'this,',syl:0,music:(strum:0.07,freq:[3,5,6.5,10].degreescps(root:-1)));
@@ -1093,6 +1150,23 @@ P(\bend9,start:'this,',music: {| p b e|
 //}}}
 //// 10 ////{{{
 ["-bilities,the potential, for knowledge and ad-","c#5 a4 e a c#5 d b4 d5 d b4 e5 d"].addLine;//10/
+P.synthV(role:\kirk, take:\lead, prepend:true, params: {|p b| [
+	lyrics: "bilities + +  the potential + + for knowledge + and ad",
+	pitchExpression: 0.5
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role:\kirk, take:\lead, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 P(\bass10,start:'-bilities,the',music:{ |p b e|
 	(
 		note:-3,
@@ -1111,7 +1185,7 @@ P(\bass10b,start:'-bilities,the',syl:7,music: { |p b e|
 		dur: ( 
 			b.parse([1!3,1],8)++ p.parse(e.start+1, [1!6 ,1!5]) 
 		) .q 
-	].pp 
+].pp 
 });
 P(\pad10,start:'-bilities,the',music:(instrument:\stringyy,freq:[1,5,13].degreescps(root:-3,octave:3),dur:2));
 
@@ -1121,10 +1195,47 @@ P(\figure10,start:'-bilities,the',syl:4,music: { |p b e|
 	[instrument:\tri,pan:1,freq:[14,12,6,12,14].degreescps(root:-3).q,dur:p.parse('bilities',[1,0.33!3,1].flatten,5).q].pp
 });
 ["vancement is equally great... ","c#5 b4 g# a c#5 d e g f# e d "].addLine;//11
+P.synthV(role:\kirk,take: \lead, take:\lead, params: {|p b| [
+	lyrics: "vancement + is equally + + great - - - -",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role:\kirk,take: \lead, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
+
 P(\bass11,start:'vancement', syl:7, lag: Song.parse('vancement',[0.5],8)[0] + 0.05, music:{|p b e|
 	(dur:2,octave:4,out:1,note:4).play;(dur:2,octave:5,out:1,note:4,instrument:\stringyy).play
 });
 [" (rest) risk, risk is our business (ba -- by)","c3 c5 c c c c# g#4 f# e"].addLine; //12
+P.synthV(role:\kirk,take:\lead,
+	filter: (midinote: _ - 12), 
+	params: {|p b| [
+	lyrics: "r risk risk is our business  + baby +",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role:\kirk,take:\lead, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 
 //~im2.guide12=( start:\risk, syl:0, music:~im2.guide12.music=>Pdrop(1,_));
 // TODO make this 
@@ -1155,13 +1266,90 @@ P(\cymbal12,start:\risk,syl:0,music:(instrument:\cymbalsDS,att:0,amp:0.01));
 
 
 [" (boom) thats what a starship is all a-" , "g3 f4 g a d5 c b4 c5 d "].addLine;//13
+P.synthV(role: \kirk, take: \lead,
+	filter: (midinote: _ - 12), 
+	params: {|p b| [
+	lyrics: "r thats what a starship + is all a",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role: \kirk, take: \lead, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 P(\bass13, start:'starship', music:(degree:4, octave: [2, 3 ], instrument:\stringyy, dur: Song.secDur['starship']) );
 ["bout,that`s (boom) why we`re a- board her","f#4 g5 f4 f5 e d  c b4"].addLine; //14
+P.synthV(role: \kirk, take:\lead,
+	filter: (midinote: _ - 12), 
+	params: {|p b| [
+	lyrics: "bout that's r why we're aboard + her",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role: \kirk, take: \lead, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 P(\bass14, start:'bout,that`s', music:{ |p b e| [degree:[ Rest(),3,4 ].q, octave: [2, 3 ], instrument:\stringyy, dur: b.parse([ 1!2, 1!4, 1!2 ]).q].pp } );
 ["(boom) you can diss-- e-- -- --nt without","c3 b-3 c4 d e f e d e "].addLine; //15
+P.synthV(role: \kirk, take: \lead, params: {|p b| [
+	lyrics: "r you can dissent + - - without +",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role: \kirk, take: \lead, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 P(\bass15, start:'diss', music:(degree:0, octave: [4, 3 ], instrument:\stringyy, dur: Song.secDur['starship']) );
 
 ["prejudice (boom) do I","d4 c a3 a2 a3 b"].addLine; //16
+Song.preroll_(1);
+P.synthV(role:\kirk, take: \lead,
+	prepend: true,
+	params: {|p b| [
+	lyrics: "role: \kirkprejudice + + r do I",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role:\kirk, take: \lead,
+	prepend: true,
+	params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 P.tune(\prejudice);
 
 P(\bass16,start:'prejudice',syl:2,music:{ | p b e | 
@@ -1181,9 +1369,45 @@ SynthDef(\keychord,{
 }).add;
 
 ["hear a negative voice?","c#4 d b3 g e e4"].addLine; //17
+P.synthV(role: \kirk,
+	prepend: true,
+	take: \lead, params: {|p b| [
+	lyrics: "hear a negative + + voice",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role: \kirk,take: \lead, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 P.tune(\hear);
 
 ["engineer stand by to be aboard three receptacles","d4 c# d d5 c# g4 f# e g f# e c# d"].addLine; //18
+P.synthV(role: \kirk, take:\lead, params: {|p b| [
+	lyrics: "engineer + + stand by to beam up three receptacles + + +",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+// P.double(role: \kirk, params: {|p b| [
+// 		
+// 	] }, music:{|p b e|
+// 		{
+// 			e.playbuf
+// 			=> p.synthVTracks.at(e.key).()
+// 		}.play
+// 	});
 P(\cords18,start:'engineer',syl:9,music:{ |p b e| [
 	instrument: \keychord,
 	dur: ( p.parse(e.start,[[1,1],1],10) + [0,1]).q,
@@ -1199,8 +1423,6 @@ P(\bendybase18,start:'engineer',syl:9,music:{ |p b e|
 		dur: p.parse(e.start,[[1,1],1],10).q
 	).play
 });//}}}
-
-
 SynthDef(\bendbase,{ //{{{
 	var dur = Song.parse(\engineer,[[1,1],1],10);
 	var env = Env.new([1,1,2].degreescps(root:-3,octave:3),Song.parse(\engineer,[[1,1],1],10));
@@ -1211,7 +1433,7 @@ SynthDef(\bendbase,{ //{{{
 	=>Out.ar(\out.kr(0),_)
 	* Env.linen(dur[0],dur[1],3+13,curve:\sin) .kr(doneAction:2)
 }).add; //}}}
-P.tune(\engineer);
+// P.tune(\engineer);
 P(\baas18,start:'engineer',music:{ |p b e| 
 	var pat = [
 		octave: [2,3],
@@ -1240,6 +1462,6 @@ P(\run18,start:'engineer',music:{ |p b e|
 		pan: -1
 	].pp });
 
-
+	"vocals with Xuan as Kirk nice - there are also some with Kevin".postln
 
 )

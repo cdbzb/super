@@ -88,7 +88,6 @@ P(\bassnote, start:0, music:
 		).play
 	}
 );
-
 Song.synthVTracks = EventWithDefault(
 	\default, {
 		{|i|
@@ -163,21 +162,16 @@ P(\bassnote2, start:1, music:
 
 );
 ["r r r r heart action dan ger ous ly high- ", "r r r r  c6 a5 f b- a g f g ", ].addLine; //2
-P(\heartActionBass, start:2, music: 
-	{ |p b e|
-		Pbind(
-			\dur, ~xtreme.durs[2]++Pseq([1.0]),
-			\note, Pseq([-2,-2,-2,0,-7,\r,\r,-2,-2,-2, 0,\r,-10])-24,\amp,2,
-			\legato,Pseq([1 ,1, 1,1, 1.5,1,1, 1, 1, 1, 2, 1, 1]),
-			\out, Effect(
-				{|i|
-					Decimator.ar(i,rate:8000,bits:4)*(-6.dbamp)
-				}
-			).bus.index
-		).play
-	}
 
-);
+P(\heartActionBass, start:2, music: { |p b e|
+	[
+		\dur, ~xtreme.durs[2]++Pseq([1.0]),
+		\note, Pseq([-2,-2,-2,0,-7,\r,\r,-2,-2,-2, 0,\r,-10])-24,\amp,2,
+		\legato,Pseq([1 ,1, 1,1, 1.5,1,1, 1, 1, 1, 2, 1, 1]),
+		\out, Effect.bus( {|i| Decimator.ar(i,rate:8000,bits:4)*(-6.dbamp)})
+	].pp
+});
+
 P(\weeeeuw,start:2,music:
 	{{FreeVerb.ar(Ringz.ar(WhiteNoise.ar(0.01),XLine.kr(2500,240,6),1),room:8,mix:7)*EnvGen.kr(Env.perc(0,7),doneAction:2)}.play}
 );
@@ -211,16 +205,8 @@ P(\weeeeuw,start:2,music:
 		)
 	);
 }.value;
-P.lazyV(role: \mccoy , take: \lead, 
-	pbind:{|p b| 
-		[
-			dur: b ++ 
-			p.durs[p.section(\action)+1][0]
-			=> _.q,
-			midinote:p.tune[p.section(\action)].list 
-			++p.tune[p.section( \action )+1].list[0] => _.q 
-		].p
-	},
+P.synthV(role: \mccoy , start:P.calcStart(), take: \lead,
+
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
 	lyrics: "r r r r heart action + dangerously + + + high -",
@@ -233,18 +219,23 @@ P.lazyV(role: \mccoy , take: \lead,
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 	}.play
-}).play;
-P.lazyDouble(role: \mccoy , take: \lead,
+})
+// .play
+;
+P.calcStart;
+
+P.double(role: \mccoy , start:2,  take: \lead,
+	wait:1,
 	filter: (midinote: _ - 12), 
-	pbind:{|p b| 
-		[
-			dur: b ++ 
-			p.durs[p.section(\action)+1][0]
-			=> _.q,
-			midinote:p.tune[p.section(\action)].list 
-			++p.tune[p.section( \action )+1].list[0] => _.q 
-		].p
-	},
+	// pbind:{|p b| 
+	// 	[
+	// 		dur: b ++ 
+	// 		p.durs[p.section(\action)+1][0]
+	// 		=> _.q,
+	// 		midinote:p.tune[p.section(\action)].list 
+	// 		++p.tune[p.section( \action )+1].list[0] => _.q 
+	// 	].p
+	// },
 	params: {|p b| [
 		
 	] }, music:{|p b e|
@@ -252,9 +243,10 @@ P.lazyDouble(role: \mccoy , take: \lead,
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
 		}.play
-}).play;
+});
 [" - and the body functions will", "a5 c d a g a d a ", ].addLine; //3
-P.lazyV(role: \mccoy,take:\lead,
+P.synthV(role: \mccoy, start: P.calcStart,take:\lead,
+	wait:1,
 	filter: (midinote: _ - 12), 
 	pbind:{|p b| 
 		[
@@ -274,32 +266,32 @@ P.lazyV(role: \mccoy,take:\lead,
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 	}.play
-})
-.play;
-P.lazyDouble(role: \mccoy,take:\lead,
-	pbind:{|p b| 
-		[
-			dur: b ++ 
-			p.durs[p.section(\functions)+1][0]
-			=> _.q,
-			midinote:p.tune[p.section(\functions)].list 
-			++p.tune[p.section( \functions)+1].list[0] => _.q 
-		].p
-	},
-	params: {|p b| [
-	] }, music:{|p b e|
-		{
-			e.playbuf
-			=> p.synthVTracks.at(e.key).()
-		}.play
-	}).play;
-
-P(role: \mccoy ,start:3,
+}) ;
+// P.double(role: \mccoy,take:\lead,
+// 	// wait:1,
+// 	pbind:{|p b| 
+// 		[
+// 			dur: b ++ 
+// 			p.durs[p.section(\functions)+1][0]
+// 			=> _.q,
+// 			midinote:p.tune[p.section(\functions)].list 
+// 			++p.tune[p.section( \functions)+1].list[0] => _.q 
+// 		].p
+// 	},
+// 	params: {|p b| [
+// 	] }, music:{|p b e|
+// 		{
+// 			e.playbuf
+// 			=> p.synthVTracks.at(e.key).()
+// 		}.play
+// 	});
+//
+P( \keys,
 	music:Pbind(\dur,~xtreme.durs[3]++Pseq([1]), \instrument,\test,
 	\amp,1,
 	\lag,Pwhite(-0.01,0.01),
 	\midinote,Pseq([\r]++~xtreme.tune[3].list.copyRange(1,~xtreme.tune[3].list.size)++[79])-24)
-).play;
+);
 [" race r r many times their natural me-", "g5 r r  e5 g5 a4 g5 f e g ", ].addLine; //4
 P(\strum3,start:4,music:
 	(\note: [4,16,19]-12,\dur:3,\strum: 0.03);
@@ -771,7 +763,7 @@ P(\pf11,start:'Here, in this',music:
 	])
 );
 
-Song.addGuides("xxxxxxxxxxx");
+// Song.addGuides("xxxxxxxxxxx");
 
 ~quarters=SongArray.new();
 [ "trill","r",[5] ].addLine; //0

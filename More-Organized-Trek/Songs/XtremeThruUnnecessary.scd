@@ -3,31 +3,23 @@ s.waitForBoot{ Stills("/Users/michael/trek/BySection/media/return to tomorrow.mo
 //Line 239 The three volunteers are lying on beds, with the spheres on tables beside them. 
 ~xtreme=Song( \song,[]).current;
 ~xtreme.condition=Condition.new();
-( ~syn1.isNil or: try{ ~syn1.syn.isPlaying.not } ).if
-{
-	Song.currentSong.synful1 = ~syn1 = Synful();
-	Song.currentSong.synful2 = ~syn2 = Synful();
-}{
-
-	Song.currentSong.synful1 = ~syn1;
-	Song.currentSong.synful2 = ~syn2;
-};
+// Trek.synful;
 
 Song.resources.infrastructure_( {
 	FunctionList.new.array_([
-		{
-			( ~syn1.isNil or: try{ ~syn1.syn.isPlaying.not } ).if
-			{
-				Song.currentSong.synful1 = ~syn1 = Synful();
-				Song.currentSong.synful2 = ~syn2 = Synful();
-			} 
-		},
-		{ fork {
-			while( {
-				~syn2.controller.loaded.not;
-			},{0.05.wait});
-			Song.resources.condition.test_(true).signal
-		}},
+	// {
+	// 		( ~syn1.isNil or: try{ ~syn1.syn.isPlaying.not } ).if
+	// 		{
+	// 			Song.currentSong.synful1 = ~syn1 = Synful();
+	// 			Song.currentSong.synful2 = ~syn2 = Synful();
+	// 		} 
+	// 	},
+	// 	{ fork {
+	// 		while( {
+	// 			~syn2.controller.loaded.not;
+	// 		},{0.05.wait});
+	// 		Song.resources.condition.test_(true).signal
+	// 	}},
 
 		{
 			Song.unnecessaryBass=NodeProxy.audio(s,2).play; //	bass setup	
@@ -41,7 +33,7 @@ Song.resources.infrastructure_( {
 );
 
 Song.bassBuss=Bus.audio;
-SynthDef(\plateReplace,{|in gate=1 bus| 
+SynthDef(\plateReplacge,{|in gate=1 bus| 
 	//var sig=In.ar(Song.bassBuss.index,2);
 	var sig=In.ar(bus,2);
 	sig=sig* Env.asr(0,1,0.1).kr(2,gate:gate);
@@ -96,7 +88,61 @@ P(\bassnote, start:0, music:
 		).play
 	}
 );
+
+Song.synthVTracks = EventWithDefault(
+	\default, {
+		{|i|
+			i=> DWGReverbC1C3.ar(_,mix:0.1)
+			/3
+		}
+	}
+);
+P.synthV(role: \mccoy , take: \lead,
+	filter: (midinote: _ - 12), 
+	params: {|p b| [
+	lyrics: "the extreme + power + of the",
+	pitchTake: 1,
+	vocalMode: \Light ,// Chest and Power are available
+	paramBreathiness: 1.5,
+	pitchExpression:1.5
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role: \mccoy , take: \lead, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 ["alien mind will make the -","e5 d c f e f g f", ].addLine; //1
+P.synthV(role: \mccoy , take: \lead,
+	filter: (midinote: _ - 12), 
+	params: {|p b| [
+	lyrics: "alien + + mind will make the -",
+	pitchTake: 1,
+	vocalMode: \Open,
+	paramGender: 0.1,
+	paramToneShift: 100
+
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role: \mccoy , take: \lead, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 P(\strum2, start:1,syl:2, music: (lag:~xtreme.durs[1].list[3]/2,note:[-5,-2,0,4,7],strum:0.03,sustain:2));
 P(\bassnote2, start:1, music: 
 	{ |p b e|
@@ -165,13 +211,95 @@ P(\weeeeuw,start:2,music:
 		)
 	);
 }.value;
+P.lazyV(role: \mccoy , take: \lead, 
+	pbind:{|p b| 
+		[
+			dur: b ++ 
+			p.durs[p.section(\action)+1][0]
+			=> _.q,
+			midinote:p.tune[p.section(\action)].list 
+			++p.tune[p.section( \action )+1].list[0] => _.q 
+		].p
+	},
+	filter: (midinote: _ - 12), 
+	params: {|p b| [
+	lyrics: "r r r r heart action + dangerously + + + high -",
+	pitchTake: 1,
+	vocalMode: \Open,
+	paramGender: 0.1,
+	paramToneShift: 100
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+}).play;
+P.lazyDouble(role: \mccoy , take: \lead,
+	filter: (midinote: _ - 12), 
+	pbind:{|p b| 
+		[
+			dur: b ++ 
+			p.durs[p.section(\action)+1][0]
+			=> _.q,
+			midinote:p.tune[p.section(\action)].list 
+			++p.tune[p.section( \action )+1].list[0] => _.q 
+		].p
+	},
+	params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+}).play;
 [" - and the body functions will", "a5 c d a g a d a ", ].addLine; //3
-P(\andthe,start:3,
+P.lazyV(role: \mccoy,take:\lead,
+	filter: (midinote: _ - 12), 
+	pbind:{|p b| 
+		[
+			dur: b ++ 
+			p.durs[p.section(\functions)+1][0]
+			=> _.q,
+			midinote:p.tune[p.section(\functions)].list 
+			++p.tune[p.section( \functions)+1].list[0] => _.q 
+		].p
+	},
+
+	params: {|p b| [
+	lyrics: "r and the body + functions + will race",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+})
+.play;
+P.lazyDouble(role: \mccoy,take:\lead,
+	pbind:{|p b| 
+		[
+			dur: b ++ 
+			p.durs[p.section(\functions)+1][0]
+			=> _.q,
+			midinote:p.tune[p.section(\functions)].list 
+			++p.tune[p.section( \functions)+1].list[0] => _.q 
+		].p
+	},
+	params: {|p b| [
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	}).play;
+
+P(role: \mccoy ,start:3,
 	music:Pbind(\dur,~xtreme.durs[3]++Pseq([1]), \instrument,\test,
 	\amp,1,
 	\lag,Pwhite(-0.01,0.01),
 	\midinote,Pseq([\r]++~xtreme.tune[3].list.copyRange(1,~xtreme.tune[3].list.size)++[79])-24)
-);
+).play;
 [" race r r many times their natural me-", "g5 r r  e5 g5 a4 g5 f e g ", ].addLine; //4
 P(\strum3,start:4,music:
 	(\note: [4,16,19]-12,\dur:3,\strum: 0.03);
@@ -179,6 +307,7 @@ P(\strum3,start:4,music:
 P(\bass3,start:4,
 	music:Pbindf(Panola.new("r c#2 e a1\\pdur[2.2]").asPbind,\dur,~xtreme.durs[4],\tempo,1,\amp,0.8)
 );
+
 ["tabolism so we're going to have to", " f5 e d c r g#4 a b c5 d e ", ].addLine; //5
 P(\bass5,start:5, music:
 	Pbind(

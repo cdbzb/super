@@ -1,13 +1,14 @@
 var o, p;
 o = [
 	MultiLevelIdentityDictionary.prNew,  IdentityDictionary.prNew,  Array.prNew(32),  IdentityDictionary.prNew,  
-	Array.prNew(32),  Array.prNew(4),  Array.prNew(2)
+	Array.prNew(32),  Array.prNew(4),  Array.prNew(2),  IdentityDictionary.prNew,  
+	Array.prNew(32),  Array.prNew(4)
 ];
 p = [
 	// MultiLevelIdentityDictionary
 	0, [ dictionary: o[1] ],  
 	// IdentityDictionary
-	1, [ array: o[2],  size: 1,  
+	1, [ array: o[2],  size: 2,  
 		proto: nil,  parent: nil,  
 		know: false ],  
 	// Array
@@ -18,7 +19,7 @@ p = [
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil ],  
+		'mccoy',  o[7],  nil,  nil ],  
 	// IdentityDictionary
 	3, [ array: o[4],  size: 2,  
 		proto: nil,  parent: nil,  
@@ -35,6 +36,21 @@ p = [
 	// Array
 	5, [ 'paramGender',  0.2,  'paramTension',  0.3 ],  
 	// Array
-	6, [ 'paramGender',  0.3 ]
+	6, [ 'paramGender',  0.3 ],  
+	// IdentityDictionary
+	7, [ array: o[8],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	8, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'xuan',  o[9],  nil,  nil,  
+		nil,  nil,  nil,  nil ],  
+	// Array
+	9, [ 'language',  'english',  'phoneset',  'arpabet' ]
 ];
 prUnarchive(o,p);

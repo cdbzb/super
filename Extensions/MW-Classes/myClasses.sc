@@ -1,3 +1,18 @@
+Waiter {
+	*new {|what|
+		^Routine(
+			{
+				5.wait;
+				what.postln
+			}
+		).play
+	}
+}
++P {
+	*wait {
+		Waiter( P.tune() )
+	}
+}
 + SequenceableCollection {
 	q{ arg repeats=1;
 		^Pseq.new(this,repeats)

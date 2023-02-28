@@ -361,18 +361,17 @@ SynthV {
 + P {
 	*double{| key start take params music filter pbind role wait|
 		var section = P.calcStart(start); 
-		 var function = {
-			var original = Song.currentSong.at(section)
-			.select({|e|
-				e.name.contains (key.notNil.if{key.asString}{Trek.cast.at(role).asString} ) 
-			})
-			.select({|e|
-				take.isNil.if{true}{e.name.contains(take.asString)}
-			})
-			.reject{|e|
-				e.name.contains("dbl")
-			}[0];
-			// e.name.contains(key.asString ? Trek.cast.at(role).asString) })[0];
+		var original = Song.currentSong.at(section)
+		.select({|e|
+			e.name.contains (key.notNil.if{key.asString}{Trek.cast.at(role).asString} ) 
+		})
+		.select({|e|
+			take.isNil.if{true}{e.name.contains(take.asString)}
+		})
+		.reject{|e|
+			e.name.contains("dbl")
+		}[0];
+		// e.name.contains(key.asString ? Trek.cast.at(role).asString))[0];
 			Post << "section " << section << "name " << name << " original " << original << "\n";
 
 			^P.synthV(
@@ -387,114 +386,83 @@ SynthV {
 				filter:(filter ? original.filter),
 				pbind: (pbind ? original.pbind)
 			)
-		};
-		wait.notNil.if {
-			'wait is not nil'.postln;
-			Routine({
-				while { 
-			(
-				Song.currentSong.at(section)
-				.select({|e|
-					e.name.contains (key.notNil.if{key.asString}{Trek.cast.at(role).asString} ) 
-				})
-				.size == 0
-			).postln;
-				}{
-					0.01.wait 
-				};
-				P.double( key,section, take, params, music, filter,pbind: nil, role:role, wait:nil )
-			}).play;
-		}{
-			^function.()
-		}
-
 	}
 	*synthV{ | key start params syl lag=0 take double music song resources range filter pbind prepend role wait|
 		var event;
 		var section = P.calcStart(start );
 		var synthV;
-		var function = {
-			song = song ? Song.currentSong;
-			role.notNil.if{
-				key = Trek.cast.at(role);
-			};
-			synthV = SynthV(key,( start ? section ),take ,double );
-			pbind = pbind.notNil.if{  // pass in a pbind or get it from the song
-				pbind.value(song,song.durs[section].list)
-			} {
-				Song.currentSong.pbind[section] 
-			};
-			event = pbind.patternpairs.collect{|i|
-				( i.class==Pseq ).if{i.list}{i}
-			}
-			++ Trek.at(role, key)
-			++ params.value(
-				song,
-				song.durs[section].list, //drop range
-				key
-			) 
-			++ ( take.asString.contains("dbl")).if{ [pitchTake: 3] } // last of 4
-			=> Event.newFrom(_)
-			=> {|i| 
-				filter.notNil.if{
-					( filter.class == Function ).if {
-						filter.( i )
-					}{ //filter is an Event 
-						filter.keys.postln.do{|key|
-							\KEY_.post;key.postln;
-							\i_.post;i.postln;
-							i.put(key, filter.at( key ).( i.at( key ) ))
-						}
-
-					}
-				};
-				i
-			};
-			event.keys.do{|k| 
-				( event.at(k).isCollection && event.at(k).isString.not ).if{
-					event.put(k, event.at(k)[range[0]..range[1]])
-				}};
-				event.lyrics=event.lyrics.replace($, , "").split(Char.space).reject{|i| i.size==0};
-				event.pitch=event.midinote.asInteger;
-				synthV.makeNotes(event.dur.size);
-
-				synthV.setDatabase(key);
-				synthV.set(event); 
-
-				prepend.notNil.if{ 
-					synthV.prependNotes;
-				};
-				synthV.writeProject; 'synthV written!'.postln;
-				// write project only does so if dirty !!
-
-				// synthV.checkDirty.if{synthV.refresh};
-
-				take.notNil.if{key = key ++ "_" ++ take};
-				P(key,start,syl,lag, music,song,
-					resources:(
-						synthV: synthV,
-						playbuf: { PlayBuf.auto(
-							1,
-							synthV.buffer.(),
-							startPos: ( synthV.offset ) * BufSampleRate.kr(synthV.buffer.()),
-							doneAction:0
-						)},
-						take: take,
-						params: params,
-						filter: filter,
-						pbind: pbind
-					) ,
-				); // order of section and key are reversed!!
-			};
-		wait.notNil.if{
-			Routine({
-					while{Song.sections<=(section + wait)}{0.01.wait.postln};
-					function.()
-			}).play;
-			^nil
-		}{
-			^function.()
+		song = song ? Song.currentSong;
+		role.notNil.if{
+			key = Trek.cast.at(role);
+		};
+		synthV = SynthV(key,( start ? section ),take ,double );
+		pbind = pbind.notNil.if{  // pass in a pbind or get it from the song
+			{ pbind.value(song,song.durs[section].list) }.try{ Song.currentSong.pbind[section] }
+		} {
+			Song.currentSong.pbind[section] 
+		};
+		event = pbind.patternpairs.collect{|i|
+			( i.class==Pseq ).if{i.list}{i}
 		}
+		++ Trek.at(role, key)
+		++ params.value(
+			song,
+			song.durs[section].list, //drop range
+			key
+		) 
+		++ ( take.asString.contains("dbl")).if{ [pitchTake: 3] } // last of 4
+		=> Event.newFrom(_)
+		=> {|i| 
+			filter.notNil.if{
+				( filter.class == Function ).if {
+					filter.( i )
+				}{ //filter is an Event 
+					filter.keys.postln.do{|key|
+						\KEY_.post;key.postln;
+						\i_.post;i.postln;
+						i.put(key, filter.at( key ).( i.at( key ) ))
+					}
+
+				}
+			};
+			i
+		};
+		event.keys.do{|k| 
+			( event.at(k).isCollection && event.at(k).isString.not ).if{
+				event.put(k, event.at(k)[range[0]..range[1]])
+			}};
+			event.lyrics=event.lyrics.replace($, , "").split(Char.space).reject{|i| i.size==0};
+			event.pitch=event.midinote.asInteger;
+			synthV.makeNotes(event.dur.size);
+
+			synthV.setDatabase(key);
+			synthV.set(event); 
+
+			prepend.notNil.if{ 
+				synthV.prependNotes;
+			};
+			synthV.writeProject; 'synthV written!'.postln;
+			// write project only does so if dirty !!
+
+			// synthV.checkDirty.if{synthV.refresh};
+
+			take.notNil.if{key = key ++ "_" ++ take};
+			P(key,start,syl,lag, music,song,
+				resources:(
+					synthV: synthV,
+					playbuf: { PlayBuf.auto(
+						1,
+						synthV.buffer.(),
+						startPos: ( synthV.offset ) * BufSampleRate.kr(synthV.buffer.()),
+						doneAction:0
+					)},
+					take: take,
+					params: params,
+					filter: filter,
+					pbind: pbind
+				) ,
+			); // order of section and key are reversed!!
+			
 	}
 	*lazyDouble{| key start music filter pbind role|
 		var section = P.calcStart(start); 

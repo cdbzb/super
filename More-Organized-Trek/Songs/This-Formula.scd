@@ -16,8 +16,42 @@ s.waitForBoot{
 		clock
 	};
 	//This Formula (REAPER?) 
-	[" /*[Pharmacy] SPOCK:*/ Now.  ","r"].addLine;
 	Song.preroll_(1);
+( Trek.cast.formulaLead = (\ninezero);
+	Trek.presets.put(\formulaLead,\ninezero,
+		[
+			paramTension:-0.2,
+			paramBreathiness:0.2,
+			vocalMode: \Muted
+		]
+	);
+);
+	["Now...","3".dm(\a),[1.7]].addLine;
+	P.synthV(role: \formulaLead, take:\lead
+		filter: (midinote: _ - 12), 
+		params: {|p b| [
+		lyrics: "now",
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
+	P.double(\formulaLead, params: {|p b| [
+			
+		] }, music:{|p b e|
+			{
+				e.playbuf
+				=> p.synthVTracks.at(e.key).()
+			}.play
+		});
+		P(\chord, music: { |p b e|
+			(
+				freq: [1,3,5,7].df(\a,3,\mixolydian),
+				dur:2
+			).play
+		});
 	["(boom) this formula -- -- will reduce the ", [11,13,13,12,11,12,11, 7,11, 12, 13].dm('d',octave:4 )].addLine;
 	Song.formulaQuantAmount = 0.78;
 P.tune( 'formula --',Pset(\dur, Song.tempoMap[ 'this for' ] .beats.warpTo(Song.tempoMap[ 'this for' ].quantizeDft).q,_));
@@ -40,15 +74,6 @@ P(\drumz,'this formula',music:
 		] => Ppar(_)
 		=> _.play
 	}
-);
-( Trek.cast.formulaLead = (\ninezero);
-	Trek.presets.put(\formulaLead,\ninezero,
-		[
-			paramTension:-0.2,
-			paramBreathiness:0.2,
-			vocalMode: \Muted
-		]
-	);
 );
 P.synthV(role: \formulaLead,lag: -0.02, take: \lead, params: {|p b| [
 	lyrics: "r this formula + + - - will reduce + the ",
@@ -936,7 +961,17 @@ P(\harmonyWatched,start:'me prepare',music:
 }
 );
 ["/*CHAPEL:*/ Yes, that, that was it. ",[7, 7, 12,11,3].dm('f#')].addLine;
-P.tune('that was it');
+P.synthV(role: \chapel, take: \lead, params: {|p b| [
+	lyrics: "r yes!  that was it",
+	legato: [0.8,   0.7, 1, 0.6],
+	pitchTake: 1,
+	vocalMode: \Open
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).(mix: 0.1)
+	}.play
+});
 P(\tremoloYes,start:'that was it',music:{|p b e|
 [
 	freq:[[11,14,16],[11,14,15],[13,15,17]].df('f#',octave:3,scale:\mixolydian,).q,
@@ -959,12 +994,39 @@ P(\basedNotesYes,start:'that was it',music:{|p b e|
 }
 );
 ["I will inform Doctor McCoy that each is ",[1,-5,1,2 ,3,1,3,4, 5,4,3,].dm('f#')].addLine;
-P.tune('inform');
+P.synthV(role: \chapel, take: \lead,
+	pbind: Song.enlarge(8),
+	params: {|p b| [
+	lyrics: "I will inform + doctor + mccoy + that each is properly + + filled for each patient +",
+	pitchTake: 1,
+	pitchExpression: 1.25
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).(mix: 0.1)
+	}.play
+});
 ["properly filled for each patient. ",[5,4,3,2,-6,-7,2,1].dm('f#')].addLine;
 P.tune('properly');
 
 ["/*SPOCK:*/ Very good. ",[5,5,11].dm('b-',octave:4)].addLine;
-P.tune('Very');
+P.synthV(role: \formulaLead, take:\lead, params: {|p b| [
+	lyrics: "very + good",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role: \formulaLead, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 P(\chord,start:'Very',music:{|p, b, e|
 [
 	//		freq:[[2,4],[1,3]].df('b-',octave:3 ).q,
@@ -978,24 +1040,44 @@ P(\chord,start:'Very',music:{|p, b, e|
 ["You see, Sargon would not let me keep this body",[5,6,12,11,5,6,11,12, 13,14,14,13].dm('b-',octave:4 )].addLine;
 //P.tune('keep this');
 SynthDef(\whiteNoise,{WhiteNoise.ar(\amp.kr(0.1))=>LPF.ar(_,2000)* Env.cutoff(1).kr(2,gate:\gate.kr(1)) => Out.ar(\out.kr(0),_)}).add;
-P.tune('keep this');
+P.synthV(role: \formulaLead,
+	filter: (midinote: _ - 12), 
+	take: \lead, params: {|p b| [
+	lyrics: "You see, Sargon + would not let me keep this body +",
+	pitchTake: 1,
+	paramBreathiness:0
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role: \formulaLead, take: \lead, params: {|p b| [
+	
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_,1)
+	}.play
+});
 P(\vocoder,start:'keep this',music:{|p b e|
-\b++b =>_.postln;
-Song.pbind['keep this']
-=>Pbindf(_,\legato,1,
-	//		\instrument,\sawSynth,
-)
-=>Pmul(\freq,[0.25, 0.5 ],_)
-+= [amp:0.0002, instrument: \whiteNoise, dur:[ 2 ].q(inf) ].p
-//	=>{|i| VocoderPattern(i,'keep this body').play }
-=> VocoderPattern(_,'keep this body',
-	warp:0,
-	durs:Song.durs['keep this'].list.asArray,
-	dry:0.0,
-	//		inputEffect:(EchoNone.ar(_,0.4,0.3,1.5))
-	//		fftSize:4096,
-	out:1
-)
+	\b++b =>_.postln;
+	Song.pbind['keep this']
+	=>Pbindf(_,\legato,1,
+		//		\instrument,\sawSynth,
+	)
+	=>Pmul(\freq,[0.25, 0.5 ],_)
+	+= [amp:0.0002, instrument: \whiteNoise, dur:[ 2 ].q(inf) ].p
+	//	=>{|i| VocoderPattern(i,'keep this body').play }
+	=> VocoderPattern(_,'keep this body',
+		warp:0,
+		durs:Song.durs['keep this'].list.asArray,
+		dry:0.0,
+		//		inputEffect:(EchoNone.ar(_,0.4,0.3,1.5))
+		//		fftSize:4096,
+		out:1
+	)
 }.value
 );
 P(\keepThisOctaves,start:'keep this',music:{|p b e|
@@ -1019,6 +1101,26 @@ P(\keepThisOctaves,start:'keep this',music:{|p b e|
 );
 //["would not permit me to keep this body","r"].addLine;
 ["It is therefore necessary for", [-7,1,2,3,2,1,-7,1,-6].dm('b-',octave:5)].addLine;
+P.synthV(role: \formulaLead, take:\lead,
+	pbind: Song.enlarge2(8),
+	filter: (midinote: _ - 12), 
+	params: {|p b| [
+	lyrics: "It is therefore + necessary + + + for you to kill your captain + so that sar gone will die with him",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role: \formulaLead, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 //P.tune('necessary');
 P(\vocoder,start:'necessary',music:{|p b e|
 Song.pbind['necessary']

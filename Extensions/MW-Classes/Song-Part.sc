@@ -875,6 +875,40 @@ Song {
 		this.at(e.start+1).select({|i| i.name.contains(e.name.dropLast.dropLast.asString)}).postln.unbubble.span_(true);
 	}
 
+	enlarge { | numNotes start|  //number of notes to add from next pattern
+		// var b = Song.durs[key].list; p=Song;
+		var key= start ? P.calcStart();
+		numNotes = numNotes - 1;
+
+		Post << "numnotes " << numNotes << "\n";
+		^{|p b| 
+			[
+				dur: b ++ p.durs[p.section(key)+1 => _.postln].list[0..numNotes]
+				=> _.q => _.postln,
+				midinote:p.tune[p.section(key)].list 
+				++p.tune[p.section(key)+1].list[0..numNotes] => _.q 
+			].p
+		}
+	}
+
+	enlarge2 { | numNotes start|  //number of notes to add from next pattern
+		// var b = Song.durs[key].list; p=Song;
+		var key= start ? P.calcStart();
+		numNotes = numNotes - 1;
+
+		Post << "numnotes " << numNotes << "\n";
+		^{|p b| 
+			[
+				dur: b 
+				++ p.durs[p.section(key)+1].list 
+				++ p.durs[p.section(key)+2].list[0..numNotes]
+				=> _.flat => _.q, 
+				midinote:p.tune[p.section(key)].list 
+				++p.tune[p.section(key)+1].list
+				++p.tune[p.section(key)+2].list[0..numNotes] => _.flat => _.q 
+			].p
+		}
+	}
 }
 
 Part { 
@@ -930,7 +964,7 @@ Part {
 		//(music.class=Routine).if(music.play);
 
 		TempoClock.sched(when,this)
-//		parent.clock.sched(when,this)
+		//		parent.clock.sched(when,this)
 		//AppClock.sched(when,this)
 		//SystemClock.sched(when,this)
 	}
@@ -955,7 +989,7 @@ Part {
 			var when=this.calcTime;
 			this.sched(when+Server.default.latency);
 			{this.name.postln}.sched(when);
-//			when.postln
+			//			when.postln
 		}
 	}
 	ppost {

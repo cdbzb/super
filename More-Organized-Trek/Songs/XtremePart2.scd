@@ -483,7 +483,7 @@ P(\baseNoteWork,syl:1,start:'work, Sargon',music:{|p b|
 ["(boom) you have to get out before you","f4 f5 d- e- f a f g a"].addLine;//4
 P.synthV(role: \mccoy, take: \lead,
 	filter: (midinote: _ - (12 * [ 1, 1, 1, 1, 1, 1, 1, 1,1, 0, 0 ])), 
-	pbind: ~enlarge.(2),
+	pbind: Song.enlarge(2),
 	params: {|p b| [
 	lyrics: "r you have to get out before + you kill them!",
 	pitchTake: 1,
@@ -544,7 +544,7 @@ P(\outChord,syl:4,start:'get out',music:{|p d|
 ["kill them! /*SARGON*/  we will transfer at once un-",[11,7,5,6,7,5,7,7,7].dm('c')].addLine;//5
 P.synthV(role: \henoch, take: \lead,
 	filter: (midinote: _ - 24), 
-	pbind: ~enlarge.(8),
+	pbind: Song.enlarge(8),
 	params: {|p b| [
 	lyrics: "r r we will transfer + at once until + you can administer + + + the",
 	pitchTake: 1,
@@ -605,7 +605,7 @@ P.double(role: \henoch, take: \lead,
 		}.play
 });
 P.synthV(role: \mccoy, take: \lead,
-	pbind: ~enlarge.(1),
+	pbind: Song.enlarge(1),
 	params: {|p b| [
 	lyrics: "r r r r r r r r r r r a what? ",
 
@@ -784,7 +784,7 @@ P(\baseNoteWoman,start:'woman',music:{ |p b|
 ["(to Chapel) (boom) /*You will*/ take me to your",[1,11,7,6,5].dm('e-')].addLine;
 P.synthV(role: \henoch, take: \lead,
 	filter: (midinote: _ - 12), 
-	pbind: ~enlarge.(10),
+	pbind: Song.enlarge(10),
 	params: {|p b| [
 	lyrics: "r take me to your r pharmacology + + + + laboratory + + + ",
 	pitchTake: 1,
@@ -860,7 +860,7 @@ P.double(role: \kirk, params: {|p b| [
 		}.play
 	});
 P.synthV(role: \mccoy, take:\answer,
-	pbind: ~enlarge.(2),
+	pbind: Song.enlarge(2),
 	params: {|p b| [
 	lyrics: "r r r it was close Jim!",
 	pitchTake: 1
@@ -897,7 +897,7 @@ P(\frownFrown,start:'frown',music:{|p b|
 ["/*MCCOY*/ close, Jim. You both barely got back a -- ",[13,5,6,12,11,7,11,12,7].dm('c',octave:4,scale:\melodicMinor )].addLine;
 P.synthV(role: \mccoy, take: \lead,
 	filter: (midinote: _ - (12 * [0,0,0,0,0,0,0,0,0,1])), 
-	pbind: ~enlarge.(1),
+	pbind: Song.enlarge(1),
 	params: {|p b| [
 	lyrics: "r r you both barely + got back alive +",
 	pitchTake: 1

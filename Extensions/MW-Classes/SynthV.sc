@@ -195,7 +195,7 @@ SynthV {
 		section = key;
 		directory = directory.standardizePath;
 
-		location= directory +/+ song.key +/+ Song.lyrics[key].hash.abs +/+ name; //change storage scheme here
+		location= directory +/+ ( song.key.asString.replace(Char.space,$-) ) +/+ Song.lyrics[key].hash.abs +/+ name; //change storage scheme here
 		take.notNil.if{ location = location ++ "-" ++ take };
 
 		file = location +/+ "project.svp";

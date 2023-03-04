@@ -4,7 +4,7 @@ o = [
 ];
 p = [
 	// Event
-	0, [ array: o[1],  size: 6,  
+	0, [ array: o[1],  size: 7,  
 		proto: nil,  parent: nil,  
 		know: true ],  
 	// Array
@@ -12,7 +12,7 @@ p = [
 		'spock',  'asterian',  nil,  nil,  
 		'thalassa',  'aiko',  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
+		nil,  nil,  'chapel',  'feng',  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		'mccoy',  'xuan',  'sargon',  'genbu' ]

@@ -1,36 +1,6 @@
 (
 s.waitForBoot{ Stills("/Users/michael/trek/BySection/media/return to tomorrow.mov").current;
 
-~enlarge = { | numNotes start|  //number of notes to add from next pattern
-	// var b = Song.durs[key].list; p=Song;
-	var key= start ? P.calcStart();
-	numNotes = numNotes - 1;
-
-	Post << "numnotes " << numNotes << "\n";
-	{|p b| [
-		dur: b ++ p.durs[p.section(key)+1 => _.postln].list[0..numNotes]
-		=> _.q => _.postln,
-		midinote:p.tune[p.section(key)].list 
-		++p.tune[p.section(key)+1].list[0..numNotes] => _.q 
-	].p
-}};
-
-~enlarge2 = { | numNotes start|  //number of notes to add from next pattern
-	// var b = Song.durs[key].list; p=Song;
-	var key= start ? P.calcStart();
-	numNotes = numNotes - 1;
-
-	Post << "numnotes " << numNotes << "\n";
-	{|p b| [
-		dur: b 
-		++ p.durs[p.section(key)+1].list 
-		++ p.durs[p.section(key)+2].list[0..numNotes]
-		=> _.flat => _.q, 
-		midinote:p.tune[p.section(key)].list 
-		++p.tune[p.section(key)+1].list
-		++p.tune[p.section(key)+2].list[0..numNotes] => _.flat => _.q 
-	].p
-}};
 
 SynthDef(\plateReplace,{|in gate=1 bus| 
 	//var sig=In.ar(Song.bassBuss.index,2);
@@ -243,7 +213,7 @@ P(\weeeeuw,start:2,music:
 	);
 }.value;
 P.synthV(role: \mccoy , start:P.calcStart(), take: \lead,wait:1,
-pbind:~enlarge.(1),
+pbind:Song.enlarge(1),
 filter: (midinote: _ - 12), 
 params: {|p b| [
 	lyrics: "r r r r heart action + dangerously + + + high -",
@@ -263,7 +233,7 @@ params: {|p b| [
 P.double(role: \mccoy , start:2,  take: \lead,
 	wait:1,
 	filter: (midinote: _ - 12), 
-	// pbind: {|p b| ~enlarge.(p,b,\action,1) },
+	// pbind: {|p b| Song.enlarge(p,b,\action,1) },
 	params: {|p b| [
 		
 	] }, music:{|p b e|
@@ -700,7 +670,7 @@ P.synthV(\genbu, take: \lead,
 			}.play
 		});
 P.double(\ninezero, take: \lead,
-		pbind:  ~enlarge.(1),
+		pbind:  Song.enlarge(1),
 	params: {|p b| [
 			
 		] }, music:{|p b e|
@@ -859,7 +829,7 @@ P.double(\ninezero, take: \lead,
 		P.synthV(role: \henoch,
 			take: \next,
 			filter: (midinote: _ - 12), 
-			pbind: ~enlarge.(9),
+			pbind: Song.enlarge(9),
 			params: {|p b| [
 			lyrics: " r r r r r r r r a pleasant + sight to wake up to after +",
 			pitchTake: 1

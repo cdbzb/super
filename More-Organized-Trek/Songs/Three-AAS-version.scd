@@ -23,9 +23,9 @@ Song.resources.vstis = [Song.guitar, Song.guitar2, Song.piano];
 Song.resources.infrastructure=FunctionList.new([
 	{
 		 fork {
-			Song.guitar.condition.wait{Song.guitar.controller.loaded};
-			Song.guitar2.condition.wait{Song.guitar2.controller.loaded};
-			Song.piano.condition.wait{Song.piano.controller.loaded};
+			try{ Song.guitar.condition.wait{Song.guitar.controller.loaded} };
+			try{ Song.guitar2.condition.wait{Song.guitar2.controller.loaded} };
+			try{ Song.piano.condition.wait{Song.piano.controller.loaded} };
 			Song.resources.condition.test_(true).signal;
 
 			Song.guitar.setPlayMode(\strum);
@@ -35,12 +35,60 @@ Song.resources.infrastructure=FunctionList.new([
 
 	}
 ]);
+( Song.synthVTracks = EventWithDefault(
+	\default, {
+		{|i|
+			i
+			=> FreeVerb.ar(_,0.2,1)
+			/5
+		}
+	}
+)
+
+);
 
 //Song.guitar.node[1]=\filter->{|in|PlateReverb.ar(in,mix:0.5)};
 //Song.guitar.node[2]=\filter->{|in|Phaser2.ar(in,rate:0.1,mix:0.5).distort(0.95)};
-//Song.guitar.node.play(vol:1);
-["r three alien minds","d3 f5 f e e e"].addLine; //0
-~justTheTune.('minds');
+//Song.guitar.node.play(vol:1)
+["r three alien minds","d3 f5 f e e e"].addLine; //0Captain Kirk
+( Trek.presets.put(\mccoy,\an, [
+	vocalMode: \Power,
+	paramGender: 0.15,
+	paramToneShift: 150,
+	paramTension: -0.1
+]
+	);
+	Trek.cast.mccoy = \an;
+);
+P.synthV(
+	role: \mccoy , 
+	take:\lead,
+	filter: (midinote: _ - 12), 
+	pbind: Song.enlarge2(3),
+	params: {|p b| [
+	lyrics: "r three alien + + minds now inhabit + + the bodies + of Captain + Kirk",
+	pitchTake: 1,
+	paramToneShift: 300,
+	pitchExpression: 1.5,
+	// vocalMode: \Passionate
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(\an,
+
+	pbind: Song.enlarge2(3),
+	params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+			=> Pan2.ar(_,1)
+		}.play
+	});
 
 ~bass0quarters=Song.parse(0,[ [1,1],[1,1,1],1 ]);
 
@@ -75,7 +123,6 @@ P(\guit0,start:\minds,music: { |p b e|
 		<> (out: p.guitarFx.(b).bus.index, type:\strum, instance:p.guitar)
 		 => _.play
 });
-
 P(\lick,start:0,music:[ 
 	degree:Pseq([6,5,7]-1),
 	dur:Pseq(~bass0quarters),//Pseq([2,2,4]),
@@ -137,6 +184,27 @@ P(\connectorBass,start:1,music: //		{{{
 	}
 ); 
 ["Captain Kirk,science officer Spock and", "b c5 f4 c5 d c b4 a a g"].addLine;  //2
+P.synthV(role: \mccoy, take:\lead,
+	filter: (midinote: _ - 12), 
+	pbind: Song.enlarge(5),
+	params: {|p b| [
+	lyrics: "r r r science +  officer + + Spock and doctor + jane Mulhall +",
+	legato: [1, 1, 1,   1, 1, 1, 1, 1, 0.6,   1, 1, 1, 1, 1, 0.85],
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role: \mccoy, take: \lead, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 P(\chords,start:2,syl:2,music:{|p b e|
 	
 		Song.piano.controller.synth.set(\out,
@@ -157,6 +225,27 @@ P(\chords,start:2,syl:2,music:{|p b e|
 }
 );
 ["Doctor Jane Mulhall. As -- ","b c5 d d c c f"].addLine; //3
+P.synthV(role: \mccoy, take:\lead,
+	filter: (midinote: _ - 12), 
+	pbind: Song.enlarge2(6),
+	params: {|p b| [
+	lyrics: "r r r r r as - planned the construction + + of android + robots + is underway + + ",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role: \mccoy, take: \lead, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+			=> Pan2.ar(_,1)
+		}.play
+	});
 P(\playMode,start:3,syl:4,music:  //////////////FFFFFFFIIIIIIIIXXXXXXXX
 	{
 		(
@@ -246,6 +335,29 @@ P(\guit4,start:4,music: //		{{{
 ["All is pro- cee- ding as ex- pect- ed and as pro- mised (ba- by)","f g a c5 d b-4 c5 d e- b-4 d5 e- d b-4 c5 d"].addLine; //6
 ~quarters6= Song.parse(6,1!4!4);
 q=0.9; ~gr=0.2; 
+P.synthV(role: \mccoy, take:\lead,
+		filter: (midinote: _ - 12), 
+		params: {|p b| [
+	lyrics: "everything's + + proceeding + + as expected + + and as promised + baby +",
+	pitchTake: 1,
+	pitchExpression:1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role: \mccoy,
+		filter: (midinote: _ - 12), 
+		params: {|p b| [
+		pitchTake:2,
+		pitchExpression: 1.3
+	] }, music:{|p b e|
+			{ 	e.playbuf
+					=> p.synthVTracks.at(e.key).()
+					=> Pan2.ar(_,1)
+			}.play
+	});
 P(\guitar2h5,start:6,music: {|p b e|
 	var out;
 	p.guitar2.setPlayMode(\pick);
@@ -345,7 +457,42 @@ P(\pf6,start:6,syl:7,music:
 	}
 );
 ["I can see no rea- son for con-","e-5 d c b-4 g b- c5 d"].addLine; //7
+P.synthV(role: \mccoy, take:\lead,
+		filter: (midinote: _ - 12), 
+		pbind: Song.enlarge(1),
+		params: {|p b| [
+	lyrics: "I can see no reason +  for concern + ",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role: \mccoy, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 ["cern. And yet, I am filled with fore- bo- ding...", "d5 c b4 a b c5 e4 a g f#"].addLine; //8
+P.synthV(role: \mccoy, take: \lead,
+		filter: (midinote: _ - 12), 
+		params: {|p b| [
+	lyrics: "r and yet I am filled with foreboding + +",
+	vocalMode: \Soft,
+	paramTension: 0.3,
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_)
+		/3
+	}.play
+});
 SynthDef(\avsd, 
 	{
 		|freq=400 att=0.05 |
@@ -424,5 +571,5 @@ P(\forboding8,start:8,music:
 //????
 
 
-Song.addGuides("xxxxxxxxx");
+// Song.addGuides("xxxxxxxxx");
 )

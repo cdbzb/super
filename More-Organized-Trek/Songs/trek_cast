@@ -4,13 +4,13 @@ o = [
 ];
 p = [
 	// Event
-	0, [ array: o[1],  size: 7,  
+	0, [ array: o[1],  size: 9,  
 		proto: nil,  parent: nil,  
 		know: true ],  
 	// Array
 	1, [ 'kirk',  'xuan',  'henoch',  'ninezero',  
-		'spock',  'asterian',  nil,  nil,  
-		'thalassa',  'aiko',  nil,  nil,  
+		'spock',  'asterian',  'kirkLungs',  'mo',  
+		'thalassa',  'aiko',  'mulhall',  'feng',  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  'chapel',  'feng',  
 		nil,  nil,  nil,  nil,  

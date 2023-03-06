@@ -430,38 +430,38 @@ SynthV {
 		event.keys.do{|k| 
 			( event.at(k).isCollection && event.at(k).isString.not ).if{
 				event.put(k, event.at(k)[range[0]..range[1]])
-			}};
-			event.lyrics=event.lyrics.replace($, , "").split(Char.space).reject{|i| i.size==0};
-			event.pitch=event.midinote.asInteger;
-			synthV.makeNotes(event.dur.size);
+			}
+		};
+		event.lyrics=event.lyrics.replace($, , "").split(Char.space).reject{|i| i.size==0};
+		event.pitch=event.midinote.asInteger;
+		synthV.makeNotes(event.dur.size);
 
-			synthV.setDatabase(key);
-			synthV.set(event); 
+		synthV.setDatabase(key);
+		synthV.set(event); 
+		prepend.notNil.if{ 
+			synthV.prependNotes;
+		};
+		synthV.writeProject; 'synthV written!'.postln;
+		// write project only does so if dirty !!
 
-			prepend.notNil.if{ 
-				synthV.prependNotes;
-			};
-			synthV.writeProject; 'synthV written!'.postln;
-			// write project only does so if dirty !!
+		// synthV.checkDirty.if{synthV.refresh};
 
-			// synthV.checkDirty.if{synthV.refresh};
-
-			take.notNil.if{key = key ++ "_" ++ take};
-			P(key,start,syl,lag, music,song,
-				resources:(
-					synthV: synthV,
-					playbuf: { PlayBuf.auto(
-						1,
-						synthV.buffer.(),
-						startPos: ( synthV.offset ) * BufSampleRate.kr(synthV.buffer.()),
-						doneAction:0
-					)},
-					take: take,
-					params: params,
-					filter: filter,
-					pbind: pbind
-				) ,
-			); // order of section and key are reversed!!
+		take.notNil.if{key = key ++ "_" ++ take};
+		P(key,start,syl,lag, music,song,
+			resources:(
+				synthV: synthV,
+				playbuf: { PlayBuf.auto(
+					1,
+					synthV.buffer.(),
+					startPos: ( synthV.offset ) * BufSampleRate.kr(synthV.buffer.()),
+					doneAction:0
+				)},
+				take: take,
+				params: params,
+				filter: filter,
+				pbind: pbind
+			) ,
+		); // order of section and key are reversed!!
 			
 	}
 	*lazyDouble{| key start music filter pbind role|

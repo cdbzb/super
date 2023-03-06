@@ -20,12 +20,47 @@ s.waitForBoot{
 
 //P(\JustTune,start:\Just,music:Song.currentSong.pbind[\Just]
 //);
-~justTheTune.(\Just,{|i|i=>Pset(\legato,2,_)});
+// ~justTheTune.(\Just,{|i|i=>Pset(\legato,2,_)});
+P.synthV( \mo, take: \lead,
+	filter: (midinote: _ - 24), 
+	params: {|p b| [
+	lyrics: "just a moment + doctor +",
+	pitchTake: 1,
+	paramGender: 0.3,
+	paramToneShift: 181,
+	paramBreathiness: 0.28,
+	paramTension: 0.5,
+	vocalMode: \Soft
+
+] }, music:{|p b e|
+	{
+		e.playbuf
+		/2
+		=> EarlyRef.ar(_,[0,0,0],[1,2,3])
+		=> DWGReverbC1C3.ar(_, mix:0.05)
+	
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
 P.still(\spock,\moment,timecode:1238.seconds,music:{|p b e|
 	e.still.value
 });
 /*KIRK:*/[" (boom) I am Sargon. ",[6,6,5,11,1].dm('c#',scale:\minor)].addLine; 
 ~justTheTune.('I am Sargon',{|i|i=>_.drop(1)},syl:0);
+P.synthV(\genbu, take: \lead,
+	filter: (midinote: _ - 12), 
+	params: {|p b| [
+	lyrics: "r ai am sa gan",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+		=> EarlyRef.ar(_,[0,0,0],[1,2,3])
+		=> DWGReverbC1C3.ar(_, mix:0.05)
+		* -2.dbamp
+	}.play
+});
 P.still(\stillsGag,start:'I am Sargon',timecode:[633,633.04],music: { |p b e|
 	fork{
 		7.do{
@@ -60,6 +95,32 @@ P(\sargonBoom,start:'I am Sargon',music:{|p b|
 );
 /*MCCOY:*/[" (boom boom) Where's our captain? Where's Jim Kirk? ",[11,11,15,15,14,13, 11,7,13].dm('c'),].addLine; 
 ~justTheTune.('our captain');
+P.synthV(role: \mccoy, take:\lead,
+	filter: (midinote: _ - 12), 
+	params: {|p b| [
+	lyrics: "r r Where's our captain? + Where's Jim Kirk? ",
+	legato: [1, 1, 1, 0.7, 1, 0.8,0.8],
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+		=> EarlyRef.ar(_,[0,0,0],[1,2,3])
+		=> DWGReverbC1C3.ar(_, mix:0.05)
+		* -5.dbamp
+	}.play
+});
+P.double(role: \mccoy, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			// => p.synthVTracks.at(e.key).()
+		=> EarlyRef.ar(_,[0,0,0],[3,2,1])
+		=> DWGReverbC1C3.ar(_, mix:0.05)
+		* -5.dbamp
+		}.play
+	});
 P(\chordCaptain,start:'our captain',music:{ |p b|
 	[ 
 		freq:[[1,3,5],[1,3,5]].df('c',octave:4 ).q
@@ -88,11 +149,29 @@ P(\chordCaptainMore,syl:5,start:'our captain',music:{ |p b|
 	//	[midinote:a.voice(2).line.q,dur:a.voice(2).durs.q].pp;
 }
 );
-[/*KIRK:*/" He is unharmed. I have taken his body to demonstrate ", [7,11,12,13, 12,13,14,11,7,7,6, 5,15,14,12.5].dm('a',scale:\mixolydian),[ 0.398, 0.372, 0.436, 1.5, 0.39, 0.376, 0.406, 0.376, 0.38, 0.528, 0.624, 0.385, 0.368, 0.324, 0.416 ]
+["He is unharmed. I have taken his body to demonstrate ", [7,11,12,13, 12,13,14,11,7,7,6, 5,15,14,12.5].dm('a',scale:\mixolydian),[ 0.398, 0.372, 0.436, 1.5, 0.39, 0.376, 0.406, 0.376, 0.38, 0.528, 0.624, 0.385, 0.368, 0.324, 0.416 ]
 ].addLine; 
-P(\tune3,start:\unharmed,music:
-	Song.currentSong.pbind[\unharmed]
-);
+
+P.synthV(\genbu, take: \lead,
+	filter: (midinote: _ - 24), 
+	start: Song.section( \unharmed ), params: {|p b| [
+	lyrics: "Hi iz an hand  ai hav te ken  hiz bo di  tu deman + stret + + ",
+	phonemes: ["h i","i z", "@ a n", "h a r m d", "a i", "h a v", "t e i ","k e n","h i z","b a","d i ","t u","d e","m o n","ch t r e t"],
+	legato: [1, 1, 1, 0.8, 1, 1, 1, 1,1, 1, 0.8, 1, 1, 1, 1],
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> {|i| CombN.ar(i,0.3,0.3,4) /2 + i}
+		// => p.synthVTracks.at(e.key).()
+		=> EarlyRef.ar(_,[0,0,0],[3,2,1])
+		=> DWGReverbC1C3.ar(_, mix:0.05)
+		* -7.dbamp
+	}.play
+});
+// P(\tune3,start:\unharmed,music:
+// 	Song.currentSong.pbind[\unharmed]
+// );
 ~quarters3= Song.parseBeats(\unharmed,[2/3,2/3,2/3, 8/3,2/3,2/3, 2/3,2/3,2/3, ]);
 P(\bassLine3,start:\unharmed,syl:2,music:[
 	freq:[11,11,7,7,6,6,5].df('a',octave: 2,scale:\mixolydian).q,
@@ -148,6 +227,20 @@ P(\chord3,start:\unharmed,syl:2,music:
 	0.218, 0.225, 0.211, 0.308, 0.53, 
 	0.401, 0.24, 0.269, 0.271, 0.342, 0.354, 0.396, 0.558 ]
 ].addLine; 
+P.synthV(role: \mccoy, start:5, take: \lead,
+	filter: (midinote: _ - 12), 
+	params: {|p b| [
+	lyrics: "I won't go along + with this. Back to where you were, Sargon +, or whatever + + you are. ",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+		=> EarlyRef.ar(_,[0,0,0],[3,2,1])
+		=> DWGReverbC1C3.ar(_, mix:0.05)
+		* -7.dbamp
+	}.play
+});
 	P.tune(\drawing);
 	P('trem',start:\drawing,music: {|p b e|
 		[
@@ -196,6 +289,28 @@ P(\chord3,start:\unharmed,syl:2,music:
 	});
 
 /*SPOCK:*/[" And if he refuses, Doctor, (dum) what do you propose to do with your phaser?", [13,12,11,13,15,13,11,6, 6.5].dm('c',scale:\whole )++ [5,7,11, 5,6,7,11,7,11, 4,3,2].dm('e'),[ 0.216, 0.259, 0.221, 0.253, 0.436, 0.506, 0.514, 0.603, 1.097, 0.488, 0.326, 0.43, 0.266, 0.26, 0.304, 0.361, 0.398, 0.392, 0.592, 0.628, 0.62 ]].addLine; //5
+P.synthV(\mo, take: \lead,
+	pitchTake: 1,
+	start: Song.section(\propose),
+	filter: (midinote: _ - 12), 
+	params: {|p b| [
+	lyrics: " And if he refuses + + Doctor + r what do you propose + to do with your phay zer? +",
+	pitchTake: 1,
+	paramGender: 0.3,
+	paramToneShift: 181,
+	paramBreathiness: 0.28,
+	paramTension: 0.5,
+	vocalMode: \Soft
+
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+		=> EarlyRef.ar(_,[0,0,0],[3,2,1])
+		=> DWGReverbC1C3.ar(_, mix:0.05)
+		* -7.dbamp
+	}.play
+});
 P(\bassnote5,start:'if he refuses',music:
 	(note:0)
 );
@@ -267,6 +382,32 @@ P.still(\dumx4,start:'lungs intro',timecode:1257.5.seconds, music:{
 
 //(Kirk convulses briefly, and the sphere has dimmed a lot.) 
 /*KIRK:*/["(dum dum dum dum) Lungs filled with air again.(dum dum dum)",[1,1,1,1,3,3,3,3,2,2,2,2,2].dm('a-'),[ 0.482, 0.456, 0.47, 0.51, 0.867, 0.459, 0.515, 1.287, 0.518, 0.499, 0.489, 0.447, 0.496 ]].addLine;
+P.synthV(\xuan, take:\lead, start: Song.section(\filled),
+	filter: (midinote: _ - 12), 
+	params: {|p b| [
+	// lyrics: "r r r r lanz ful af er a gen r r r",
+	lyrics: "r r r r lungs full of air again + r r r",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+		=> EarlyRef.ar(_,[0,0,0],[3,2,1])
+		=> DWGReverbC1C3.ar(_, mix:0.05)
+		* -7.dbamp
+	}.play
+});
+P.double(\xuan, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			// => p.synthVTracks.at(e.key).()
+		=> EarlyRef.ar(_,[0,0,0],[1,2,3])
+		=> DWGReverbC1C3.ar(_, mix:0.05)
+		* -7.dbamp
+		}.play
+	});
 //Song.durs[7]=[ 0.499, 0.461, 0.461, 0.529, 0.919, 0.506, 0.503, 1.374, 0.536, 4.69, 0.46, 1.18, 0.488, 3.426,0.411,1.08 ].q;
 //~quarters7=Song.parse(7,[2,2,1,2,2/3,[1/3,1],2,2,2,
 //Song.durs[7]= Song.durs[7].list[0..3]!3=>_.flatten++Song.durs[7].list[4..]=>_.q;

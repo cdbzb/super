@@ -32,6 +32,13 @@ s.waitForBoot{
 				=> DWGReverbC1C3.ar(_, mix:mix)
 				* -9.dbamp
 			}
+		},
+\genbu, { |mix = 0.1|
+			{|i|
+				i
+				=> DWGReverbC1C3.ar(_, mix:mix)
+				* -13.dbamp
+			}
 		}
 
 
@@ -455,21 +462,23 @@ P.still(\kirk, timecode: 1333.15.seconds, music: { |p b e|
 		]
 	);
 );
+// Trek.cast.kirkLungs = \genbu;
 P.synthV(role: \kirkLungs, take:\lead, start: Song.section(\filled),
 	filter: (
 		midinote: _ - 12,
 		dur: Song.durs[\filled].list.parse([1,1,1,1,1,1,1,1,1,3])
 	), 
-	params: {|p b| [
+	params: {|p b key| [
 	// lyrics: "r r r r lanz ful af er a gen r r r",
 	lyrics: "r r r r lungs full of air again + r r r",
+	phonemes: ( key == \genbu ).if{ ["","","","","l a n z","f u l","a v","e r","a","g e n"] },
 	pitchTake: 1,
 	pitchExpression:1.3
 
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		=> p.synthVTracks.at(e.key).(1)
+		=> p.synthVTracks.at(\mo).(1)
 	}.play
 });
 P.double(role: \kirkLungs, params: {|p b| [
@@ -637,8 +646,9 @@ P.synthV(role: \kirkLungs,
 		midinote: _ -12,
 		dur: Song.durs[\see].list.parse([1,1,1,1,1,1,1,1,1,1,3, 7,1])
 	), 
-	take:\lead, params: {|p b| [
+	take:\lead, params: {|p b key| [
 	lyrics: "r r r r r r r to see again +  r  r",
+	phonemes: (key == \genbu).if{ ["","","","","","","","t u","s i","a","g e n"] },
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
@@ -812,9 +822,6 @@ P(\lungsB10,start:\million,music:
 	}
 
 );
-P(\tune10,start:\million,music:
-	Song.currentSong.pbind[\million]
-);
 //MUTEDP(\piano10 ,start:\million,music:
 //MUTED{
 //MUTED[
@@ -909,6 +916,25 @@ P(\tremReadings,start:'same reading',music:
 // ~justTheTune.('the same readings');
 //Song.durs[ 'Doctor?' ].list
 /*MCCOY:*/[" Are you aware of what's happening to his body? ",[7,11,5,13,12,11,7,11,5, 7,11,14,13].dm('f',scale:\mixolydian),[ 0.295, 0.347, 0.315, 0.566, 0.3, 0.322, 0.291, 0.313, 0.6065, 0.278, 0.361, 0.62, 0.633 ]].addLine; 
+P.synthV(role: \mccoy, 
+	take:\lead, params: {|p b| [
+	lyrics: " Are you aware + of what's happening + + to his body? + ",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.synthV(\default, take: \lead, params: {|p b| [
+		
+	lyrics: " Are you aware + of what's happening + + to his body? + ",
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 
 P(\tremAware,start:'aware',music:
 (instrument:\stringyy,
@@ -977,6 +1003,26 @@ P(\kick14,music:1111.postln;{
 
 ["Heart action (almost) doubled, ",[13,12,11,7,11,7,11,16,15].dm('e',scale:\mixolydian)].addLine; 
 //Song.durs.put(14,[ 0.545, 0.304, 0.31, 0.302, 0.327, 0.311, 0.332, 0.555, 0.429, 2.165 ].q);
+P.synthV(role: \mccoy, take:\lead,
+	filter: (midinote: _ - 12), 
+	params: {|p b| [
+	lyrics: "Heart action + almost + r r doubled, + ",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.synthV(\mccoy, params: {|p b| [
+		
+	lyrics: "Heart action + almost + + + doubled, + ",
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 P(\tune15,start:\doubled,music:
 	Song.currentSong.pbind[\doubled]
 );
@@ -999,6 +1045,25 @@ P(\kick15,music:{
 }
 );
 ["temperature a hundred and four degrees? ",[13,12,11,7,11,12,7,13,13,16].dm('f#',scale:\mixolydian)].addLine;
+P.synthV(role: \mccoy,
+	filter: (midinote: _ - 12), 
+	take:\lead, params: {|p b| [
+	lyrics: "temperature + + a hundred +  and four degrees? +  ",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.synthV(\default, params: {|p b| [
+	lyrics: "temperature + + a hundred + + and four degrees? +  ",
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 
 P(\tune16,start:\temperature,music:Song.currentSong.pbind[\temperature]
 
@@ -1034,15 +1099,17 @@ P(\dieChord,start:'die if',syl:0,music:
 }
 );
 // P(\tuneSoon,start:\Soon,music: Song.currentSong.pbind[\Soon]);
-P(\chordSoon,start:\Soon,syl:8,music:
-	(
-		freq:
-		[2,4.5,6.5,11.5].df('a-',octave:3,),
-		strum: 0.04,
-		instrument:\sawSynthSustain,
-		dur:0.6,
-		amp:0.05
-	)
+P(\chordSoon,start:\Soon,syl:8,music: { |p b e|
+		(
+			freq:
+			[2,4.5,6.5,11.5].df('a-',octave:3,),
+			strum: 0.04,
+			instrument:\sawSynthSustain,
+			dur:b.drop(1).sum,
+			amp:0.05,
+			// rel:9
+		).play
+	}
 );
 /*SPOCK:*/[" What is it you want of us? ",[11,11.5,7,11.5,11,5,3].dm('e-',scale:\mixolydian)].addLine; 
 P.synthV(\mo, take:\lead,
@@ -1075,6 +1142,12 @@ P.double(\mo, params: {|p b| [
 			=> p.synthVTracks.at(e.key).()
 		}.play
 	});
+	P.still(\mediumShot, timecode: 1448.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b.sum,
+			text: ["what is it you","want from us?"],
+		)
+	});
 P('want of us',start:'want of us',music:
 	{|o d| [ 
 		//		instrument:\stringyy,
@@ -1085,23 +1158,23 @@ P('want of us',start:'want of us',music:
 		dur:[ d[0..1].sum,d[2..3].sum,d[4..5].sum ].q,
 	].pm(\stringyy).play }
 );
-P(\tuneWhat,start:\What,music:
-	Song.currentSong.pbind[\What]
-);
 
-P(\stillWhat,start:\What,music:{
-
-	{
-		~stills.preview('what is it you want',text:["what is it you want","x"])
-	}.defer
-}
-);
 /*KIRK:*/[" In the ne-- xt room, there are /*other*/ two receptacles. ", [1,2, 3,2 ,2, 2,3, 4,3,3,2,1, ].dm(\a) ].addLine;
+P.still(\kirkAndOrb, timecode: 1451.20.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["in the","next room"],
+		fade: 3
+	).sequenceText([
+		b.parse([5]).unbubble, ["there are","two receptacles"],
+		b.parse([5,7])[1],["",""]
+	])
+});
 P.synthV(\genbu, take:\lead,
 	filter: (midinote: _ - 12), 
-	params: {|p b| [
+	params: {|p b key| [
 	lyrics: " In the next - room, there are two receptacles. + + + ",
-	phonemes: ["","z a","n e k s t","","r u m","z e r","a r","","r i","s e p","t a k", "r u z"],
+	phonemes: (key == \genbu).if{ ["","z a","n e k s t","","r u m","z e r","a r","","r i","s e p","t a k", "r u z"] },
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
@@ -1144,6 +1217,26 @@ P(\stillReceptacles,start:'two receptacles',music:
 );
 
 ["(boom) The other two of us that survived. ", [6,6,14,15,13,12,11,13,12.5,12].dm(\a,octave:4) ].addLine; 
+P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["the other two","of us that"],
+	).sequenceText([
+		b.drop(1).parse([7]).unbubble,["survive"]
+	])
+});
+P.synthV(\genbu, take: \lead,
+	filter: (midinote: _ - 12), 
+	params: {|p b key| [
+	lyrics: "r the other + two of us that survived +",
+	phonemes: (key == \genbu).if{ ["","z e", "a"," z a", "t u "," a v", "a s", "z a t", "s a", "v a i vy d" ] },
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 ~justTheTune.('that survived',{|i|Pbindf(i,\amp,0.25,\instrument,\stringyy).drop(1)},syl:0);
 ~thatSurvivedQuarters = Song.parseBeats('that survived',([3/4,1/4,3/4,1/4, 1/3,1/3,4/3, 2/3,1/3, 1]));
 P(\triadSurvived,start:'that survived',music:{ |p b|
@@ -1167,6 +1260,24 @@ P(\triadSurvived,start:'that survived',music:{ |p b|
 }
 );
 ["You, Doctor A-- nn Mulhall, and ",[21,15,14,13,12,11,5,21].dm(\c,scale:\minor,octave:4)].addLine; 
+P.still(\mulhall, timecode: 1503.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["you","Dr. Ann Mulhall"],
+	)
+});
+P.synthV(\genbu, take: \lead,
+	filter: (midinote: _ - 12), 
+	params: {|p b key| [
+	lyrics: "you doctor + ann - mulhall +",
+	phonemes: (key == \genbu).if{ ["y u","d o k k","t a","a n n","","m a l","h o l", "a n dd"] },
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 P(\stillMulhall,start:'nn Mulhall',music:
 	//Still(~stills,'Jane Mulhall',text:[ "You!","r" ],fade:2,wait:1).add(15*60+2.0)
 	{}
@@ -1190,6 +1301,24 @@ P(\chordYouAnn,start:'nn Mulhall',music:
 	);
 	~justTheTune.('A-- nn');
 	["you --, Mister Spock, ",[11,7,6,5,7].dm('c',octave: 5,scale:\minor)].addLine;
+	P.still(\spock, timecode: 1505.21.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b.sum,
+			text: ["you","Mister Spock"],
+		)
+	});
+	P.synthV(\genbu, take: \lead,
+		filter: (midinote: _ - 12), 
+		params: {|p b key| [
+		lyrics: "you - mister + spock",
+		phonemes: (key == \genbu).if{ ["y u","","m i sy ","t a","s p o kk"] },
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 	P(\stillYouSpark,start:'you --',music:
 		//defer{~stills.preview('Mister Spock',text:[ "You!","r" ])}}
 		//Still(~stills,'Mister Spock',5,0,text:["You!",""]).add(15*60+5)
@@ -1257,8 +1386,27 @@ P(\sparkBassNote,start:'you --',music:
 		}
 	);
 	["we /*require*/ need your bodies also. ",[5,6,4,6,5,4,3].dm('b-',octave: 4,scale:\minor)].addLine; 
+	P.still(\clear, timecode: 0.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b.sum,
+			text: ["we need","your bodies also"],
+		)
+	});
 	~justTheTune.('your bodies also',{|i|Ppar([i,i=>Pbindf(_,\amp,0.3,\instrument,\stringyy)=>Pmul(\freq,0.5,_)])});
+	P.synthV(\genbu, take: \lead,
+		filter: (midinote: _ - 12), 
+		params: {|p b key| [
+		lyrics: "we need your bodies + also +",
+		phonemes: (key == \genbu).if{ ["u i","n i d","y o r","b a","d i s", "o ry", "s o"] },
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 	P(\basesNoteBodies,syl:4,start:'your bodies also',music:
+
 		{ |p b| 
 			(
 				//instrument:\sawSynthSustain,
@@ -1274,7 +1422,27 @@ P(\sparkBassNote,start:'you --',music:
 ["We /*must have*/ need Captain Kirk and you so that we may live again.",[5,6,7,7,11].dm('b-',octave: 4,scale:\minor)
 	++[7,13,12,11,5.5,7,5,4,4].dm('a',octave: 4,scale:\mixolydian)
 ].addLine; 
-
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["we need","Captain Kirk"],
+	).sequenceText([
+		b.parse([5]).unbubble, ["and you"," so that we may live"],
+		b.parse([5,7])[1], ["again"]
+	])
+});
+P.synthV(\genbu, take: \lead,start:Song.section('live again'),
+filter: (midinote: _ - 12), 
+params: {|p b key| [
+	lyrics: "we need captain + kirk and you so that we may live again +",
+	phonemes: (key == \genbu).if{["u i","n i d", "ky a p","t e n", "k a r k", "a n d","y u","s o","z a t","u i","m e i","l i v","a","g e n"]},
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 ~justTheTune.('live again');
 
 P(\youChord,start:'live again',syl:5,music:

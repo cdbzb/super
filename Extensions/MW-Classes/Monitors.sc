@@ -5,10 +5,12 @@ Monitors {
 	classvar <>deviceChannels;
 	*initClass {
 		decoder = FoaDecoderMatrix.newPanto(5,'flat','dual');
-		deviceChannels = (
-			"MacBook Pro Speakers":2,
-			"Pro Ag":2,
-			"BlackHole 2ch":2
+		deviceChannels = Dictionary.newFrom(
+			[
+				"MacBook Pro Speakers",2,
+				"Pro Ag",2,
+				"BlackHole 2ch",2,
+			]
 		);
 		ServerTree.add ({ 
 			(deviceChannels.at(Server.default.options.outDevice) == 2).if{

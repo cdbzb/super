@@ -4,7 +4,7 @@
 		env = Env.asr(
 			attackTime: att,
 			sustainLevel: amp,
-			releassawSynthSustaineTime: rel,
+			releaseTime: rel,
 		).kr(gate:\gate.kr(1),doneAction: 2);
 		snd = Saw.ar(freq: freq * [0.99, 1, 1.001, 1.008]) * env;
 		snd = snd * ( (1 - pulse) + (pulse * Env.perc(att).kr(0,gate:t_trig)) );

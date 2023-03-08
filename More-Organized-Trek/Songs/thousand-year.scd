@@ -32,7 +32,27 @@ P(\reflection,start:\reflection,music:{|p b e|
 });
 //P(\door,start:\reflection,music:{Synth(\door)})
 ["/*MULHALL:*/ Thank you. ","r"].addLine;
+
 ["Have you prepared the negaton hydracoils for the drawing Sargon supplied?",[5,4,3,2,1,3,4,-7,3,2,-6,-7,1,2,-7,1,-6,-3,-1].dm(\g)].addLine;
+Trek.cast.thalassa = \cheng;
+P.synthV(role: \thalassa, take:\lead, params: {|p b| [
+	lyrics: "You'll need microgears and a pulley that work like a muscle does.how will something that looks like a drop of jelly make this thing work?/*SCOTT:*/ For all the good it'll do you. It's a fa -- -- ncy name, butHave you prepared + the negaton + + hydracoils + + for the drawing + Sargon + supplied? +",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role: \thalassa, take:\lead, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			// => p.synthVTracks.at(e.key).()
+		}.play
+	});
+
 P.tune(\prepared);
 P(\bass,start:\prepared,music:{|p b e| 
 	[
@@ -43,6 +63,26 @@ P(\bass,start:\prepared,music:{|p b e|
 	(amp:0.06,att:1,freq:[-11,-1].df(\g),dur:b.sum,instrument:\sawSynth,rel:b.sum).play
 });
 ["/*SCOTT:*/ For all the good it'll do you. It's a fa -- -- ncy name, but",[5,6,7,12,11,7,12,11].dm('b-',octave:4) ++ [-7,1,4,3,2,1,5,3].dm('g')].addLine;
+Trek.cast.scott = \kevin;
+P.synthV(role: \scott,start:Song.section(\name), take:\lead, params: {|p b| [
+	lyrics: " For all the good it'll + do you. It's a fan - - see name, but",
+	legato:[ 1, 1, 1, 1, 1, 1, 1, 1,     1, 1, 1, 1, 0.85, 1, 1, 1 ],
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role: \scott, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+
+		ole: \thalassa});
 P.tune(\name);
 P(\bass,start:\name,music:{|p b e| 
 	{
@@ -55,6 +95,17 @@ P(\bass,start:\name,music:{|p b e|
 	}.play
 });
 ["how will something that looks like a drop of jelly make this thing work?",[3,4, 3,4,5, 3, 3,4,5,3, 6,4, 7,7,4.5,2].dm('g',scale:\mixolydian,octave:5)].addLine;
+P.synthV(role: \scott,
+	filter: (midinote: _ - 12), 
+	take:\lead, params: {|p b| [
+	lyrics: "how will something + that looks like a drop of jelly + make this thing work?",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
 P.tune(\jelly);
 P(\accent,start:\jelly,music:{|p b e| 
 	[
@@ -75,6 +126,29 @@ P(\accent,start:\jelly,music:{|p b e|
 	].p.trace.play;
 });
 ["You'll need microgears and a pulley that work like a muscle does.",[2,2,4,3,1].dm('d',octave:6)++ [4,3,2,1,-6,-7,-6,-5,-4,-3,-17].dm(\e,scale:\mixolydian,octave:6)].addLine;
+P.synthV(role: \scott, take:\lead,
+	filter: (midinote: _ - 12), 
+	params: {|p b| [
+	lyrics: "You'll need microgears + + and a pulley  + that work like a muscle +  does.",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+		/2
+	}.play
+});
+P.double(role: \scott, take: \lead, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			// => p.synthVTracks.at(e.key).()
+			=>Pan2.ar(_,1)
+			/2
+		}.play
+
+});
 P.tune(\microgears);
 P(\chords,start:\microgears,music:{|p b e| 
 	[
@@ -118,8 +192,56 @@ P(\moreChords,start:\microgears,syl:4,music:{|p b e|
 	).play;
 });
 ["/*MULHALL:*/ That would be highly inefficient.",[7,5,2,11,7,5,2,6,4.5].dm(\d,scale:\mixolydian)].addLine;
+P.synthV(role: \thalassa, take:\lead, params: {|p b| [
+	lyrics: " That would be highly + inefficient + + +",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role: \thalassa, take: \lead, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			// => p.synthVTracks.at(e.key).()
+		}.play
+	});
+P.double(voice - start, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
+
 P.tune(\inefficient);
 ["/*SCOTT:*/ I tell you, lady, this thing won't work.",[7,13,11,7,5].dm('b',scale:\mixolydian) ++ [5,6,7,11].dm('d')].addLine;
+P.synthV(role: \scott, take:\lead,
+	filter: (midinote: _ - 12), 
+	params: {|p b| [
+	lyrics: " I tell you, lady + this thing won't work.",
+	legato: [1, 1, 1, 1, 0.6, 1, 1, 1, 1],
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+		/2
+	}.play
+});
+P.double(role: \scott, take: \lead, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			// => p.synthVTracks.at(e.key).()
+		/2
+		}.play
+	});
 P.tune('lady');
 P(\bass,start:\lady,syl:3, music:{|p b e| 
 	[
@@ -131,6 +253,25 @@ P(\bass,start:\lady,syl:3, music:{|p b e|
 	].pp;
 });
 ["/*SPOCK:*/ It will have twice the strength and agility of",[2,3,1].dm(\c)++[3,1].dm(\e)++[-7,1,2].dm(\f,scale:\mixolydian)++[3,5,4,3,4,2,1].dm(\g)].addLine;
+P.synthV(role: \henoch, take:\lead,
+	filter: (midinote: _ - 12), 
+	params: {|p b| [
+	lyrics: "It will have twice the strength and agility  + - - - + + of",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role: \henoch, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			// => p.synthVTracks.at(e.key).()
+		}.play
+	});
 P.tune(\twice);
 P.rpp(\test0,\agility,lag:-1, music: { |p b e|
 	{
@@ -187,6 +328,25 @@ P(\still,start:\twice,
 
 } );
 ["your body, engineer, and it will",[11,12,11,7,6,5,4,5,6, 3,4,5].dm('c#',scale:\mixolydian)].addLine;
+P.synthV(role: \henoch, take:\lead,
+	filter: (midinote: _ - 12), 
+	params: {|p b| [
+	lyrics: "your - -  body + engineer + + - and it will",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role: \henoch, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			// => p.synthVTracks.at(e.key).()
+		}.play
+	});
 Song.quarters[\engineer]=Song.parseBeats(\engineer,[3,1,2,4,2,2,1,1,2,2,2,2]/4)
 //	.quantizeWindow
 ;
@@ -215,6 +375,25 @@ P.rpp(\test0,\agility, music: { |p b e|
 
 });
 ["last a thousand years.",[2,1,2,3,1,2, 5.5].dm(\c,octave:6)].addLine;
+P.synthV(role: \henoch, take:\lead,
+	filter: (midinote: _ - 12), 
+	params: {|p b| [
+	lyrics: "last a thousand - - + years.",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role: \henoch, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			// => p.synthVTracks.at(e.key).()
+		}.play
+	});
 Song.quarters['last a thousand']=Song.parseBeats('last a thousand',[1.5,0.5,0.5,0.5,0.5,0.5,1]);
 P.tune(\last);
 P(\chord,start:'last a thousand',music:{
@@ -238,19 +417,67 @@ P(\bass,start:'last a thousand',music:{
 		dur:[1,1,2,1].q,
 	].p.play(Song.quarters['last a thousand'].asTempoClock)
 });
-["That is, assuming you'll stop wasting your time and allow us to complete it.", 
-	[6,5,4,2.5,4,2,5.5].dm(\a,)++[7,6,5, 4,5,4 ,3,4, 4,5].dm(\f,scale:\melodicMinor)++[6,7,7,11].dm(\c)
-].addLine;
+Song.synthVTracks = EventWithDefault(
+	\default, {| mix = 0.1|
+		{|i|
+			i
+			=> DWGReverbC1C3.ar(_,mix:mix)
+			* -10.dbamp
+		}
+	}
+);
+["That is, assuming you'll stop wasting your time and allow us to complete it.", [6,5,4,2.5,4,2,5.5].dm(\a,)++[7,6,5, 4,5,4 ,3,4, 4,5].dm(\f,scale:\melodicMinor)++[6,7,7,11].dm(\c) ].addLine;
 Song.quarters[\assuming]= Song.parseBeats(\assuming,[[1,1,1]/3,[1,1,1,1]/2,[2,1,1]/2,[1,1,1]/3,[1,1,1,1,1,1,3,1]/2].flat/1);
 //P.tune(\assuming);
 ~path="/tmp/media/subproject.rpp-PROX";
+P.synthV(role: \henoch, take:\lead,
+	filter: (midinote: _ - 24), 
+	params: {|p b| [
+	lyrics: "That is, assuming +  + you'll stop wasting + your time - - and allow + us to complete +  it.",
+	pitchTake: 1,
+	vocalMode:\Muted
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.synthV( \clear,
+	filter: (midinote: _ - 12), 
+	params: {|p b| [
+		
+	lyrics: "That is, assuming +  + you'll stop wasting + your time - - and allow + us to complete +  it.",
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> AnalogVintageDistortion.ar(_,0.8)
+			/7
+			=> FreeVerb.ar(_,0.5,0.9)
+			=>Pan2.ar(_,1)
+			// => p.synthVTracks.at(e.key).()
+		}//.play
+	});
+P.double(role: \henoch,
+	filter: (midinote: _ - 24), 
+	params: {|p b| [
+		
+	// lyrics: "That is, assuming +  + you'll stop wasting + your time - - and allow + us to complete +  it.",
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			// => AnalogVintageDistortion.ar(_,0.8)
+			// /7
+			// => FreeVerb.ar(_,0.5,0.9)
+			// =>Pan2.ar(_,1)
+			// => p.synthVTracks.at(e.key).()
+		}.play
+	});
 ~test=Buffer.read(s,~path);
 //~Song.reaperSection(\assuming) makes subproject initially...
 //"rpr /tmp/test3.RPP" opens this file
 //need to handle the naming etc
 P(\vox,start:\assuming,music:{|p b e| 
-//~test.play;
-{PlayBuf.ar(2,~test.bufnum)=>TwoTube.ar(_,0.01,0.9,500,666)*0.01}.play
+	{PlayBuf.ar(2,~test.bufnum)=>TwoTube.ar(_,0.01,0.9,500,666)*0.01}.play
 });
 P(\bass_next_next,start:'last a thousand',syl:5,music:{
 	[
@@ -303,17 +530,27 @@ P(\door,start:\laughs,syl:6,music:{|p b e|
 	Synth(\door,[\out,0,\amp,0.1])
 });
 
-	~stills.set(\door_close,36*60+32.5);
-P(\still,start:\laughs,syl:6,
-	music: {|p b e| 
-		defer{ 
-			
-			~stills.preview(\door_close,b.sum,3,0,) 
-		}
-
-} );
 ["/*SPOCK:*/ (boom) A thousand-year prison, Thalassa.",[1,2,3,1,6,3,1,-7,-6].dm(\c)].addLine;
-P.tune(\prison);
+P.synthV(role:\henoch, take:\lead,
+	filter: (midinote: _ - 12), 
+	params: {|p b| [
+	lyrics: "  A thousand + year prison + Thalassa + +",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role:\henoch, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
+// P.tune(\prison);
 P(\arpeggio,start:\prison,syl:3,lag:-0.15,music:{
 	(
 		instrument:\default,
@@ -335,6 +572,25 @@ P(\stab,start:\prison,syl:3,music:{
 	).play
 });
 ["And when it wears out we'll build another one, ",[5,4,3,2,3,4,-7,1,4,3,2,-5].dm(\c)].addLine;
+P.synthV(role: \henoch, take:\lead,
+	filter: (midinote: _ - 12), 
+	params: {|p b| [
+	lyrics: "And when it wears - out we'll build another + + one, ",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role: \henoch, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 P(\bass,start:\wears,music:{|p b e| 
 	
 	{
@@ -455,6 +711,25 @@ P(\threeNoteFigure2,start: 'And another',syl: 15,music:{|p b e|
 
 });
 ["Sargon has closed his mind to a better way.",[11,5,3,6,5,5,4,3,2,3].dm(\c,scale:\minor)++[3,4,2,3,3].dm(\g)].addLine;
+P.synthV(role: \henoch, take:\lead,
+	filter: (midinote: _ - 12), 
+	params: {|p b| [
+	lyrics: "Sargon + has closed his mind - - to  a better - - + way",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role: \henoch, params: {|p b| 
+		
+	 }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 P.still(\spock,start:\mind,timecode:3648.5.seconds,music:{ |p b e|
 	e.still.value(wait:b.sum,fade:1,text:["Sargon has closed his mind","to a better way"])
 });
@@ -485,6 +760,43 @@ P(\strum,start:\closed,music:{|p b e|
 	).play
 });
 ["(boom) With these bodies. (la la la la la la  with the-- ese bodies) )",[1,5,5.5,3,2,1,-7,1,2,1,-7,-6, ].dm(\d) ++ [7,11,5,5,4].dm(\c)].addLine;
+P.synthV(\feng, take:\lead, params: {|p b| [
+	lyrics: "r with these - bodies + la la la la la la  with these - bodies +",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+			/2
+	}.play
+});
+P.double(\mo, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> Pan2.ar(_,1)
+			=> p.synthVTracks.at(e.key).()
+			/2
+		}.play
+	});
+P.synthV(role: \henoch, take:\lead, params: {|p b| [
+	lyrics: "r With these - bodies + ",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role: \henoch, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 //Reaper.new;Reaper.saveas("/Users/michael/tank/super/More-Organized-Trek/Songs/with-these-bodies");
 P.tune('With these bodies',Pbindf(_,\instrument,\stringyy,\wet,0.0,\release,2,\amp,0.2));
 //P(\vox,start:'With these bodies', music:{
@@ -530,6 +842,24 @@ P(\chords,start:'With these bodies',music:{
 		(instrument:\cymbalsDS,amp:0.01).play
 });
 ["/*MULHALL:*/ They're not ours, Henoch.",[3,1,7,6,4.5].dm(\d,scale:\dorian)].addLine;
+P.synthV( \aiko, take:\lead, params: {|p b| [
+	lyrics: "they're not ours hen nok ",
+	
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role: \thalassa, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 P.tune(\Henoch);
 P(\chord,start:\Henoch,syl:1,music:{|p b e|
 	(

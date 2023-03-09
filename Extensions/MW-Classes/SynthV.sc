@@ -405,14 +405,18 @@ SynthV {
 			( i.class==Pseq ).if{i.list}{i}
 		}
 		++ Trek.at(role, key)
+		++ try{ Trek.at(role, key, take) }
 		++ params.value(
 			song,
 			song.durs[section].list, //drop range
 			key
 		) 
 		++ ( take.asString.contains("dbl")).if{ [pitchTake: 3] } // last of 4
-		=> Event.newFrom(_)
-		=> {|i| 
+		=> Event.newFrom(_);
+
+		filter = filter ? event.removeAt(\filter);
+		
+		event => {|i| 
 			filter.notNil.if{
 				( filter.class == Function ).if {
 					filter.( i )
@@ -464,35 +468,6 @@ SynthV {
 		); // order of section and key are reversed!!
 			
 	}
-	*lazyDouble{| key start music filter pbind role|
-		var section = P.calcStart(start); 
-		^Routine( {
-			var original;
-			\LAZYD.postln;
-			Post << "section " << section << "\n";
-			while{Song.sections<=( section+1 )}{0.01.wait};
-			0.25.wait;
-				original = Song.currentSong.at(section)
-				.select({|e|
-					e.name.contains (key.notNil.if{key.asString}{Trek.cast.at(role).asString} ) 
-				})
-				.reject{|e|
-					e.name.contains("dbl")
-				}[0];
-		Post << "section " << section << "key " << key << " original " << original << "\n";
-
-		P.synthV(
-			key, 
-			start:section,
-			role: role,
-			params:original.params,
-			// double:true,
-			take:original.take ++ "-dbl" => _.asSymbol,
-			music:music,
-			filter:(filter ? original.filter),
-			pbind: (pbind ? original.pbind)
-		).yield
-	} ).next}
 }
 
 +String{

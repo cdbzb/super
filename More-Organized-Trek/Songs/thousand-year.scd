@@ -36,7 +36,7 @@ P(\reflection,start:\reflection,music:{|p b e|
 ["Have you prepared the negaton hydracoils for the drawing Sargon supplied?",[5,4,3,2,1,3,4,-7,3,2,-6,-7,1,2,-7,1,-6,-3,-1].dm(\g)].addLine;
 Trek.cast.thalassa = \cheng;
 P.synthV(role: \thalassa, take:\lead, params: {|p b| [
-	lyrics: "You'll need microgears and a pulley that work like a muscle does.how will something that looks like a drop of jelly make this thing work?/*SCOTT:*/ For all the good it'll do you. It's a fa -- -- ncy name, butHave you prepared + the negaton + + hydracoils + + for the drawing + Sargon + supplied? +",
+	lyrics: "Have you prepared + the negaton + + hydracoils + + for the drawing + Sargon + supplied? +",
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
@@ -207,14 +207,6 @@ P.double(role: \thalassa, take: \lead, params: {|p b| [
 		{
 			e.playbuf
 			// => p.synthVTracks.at(e.key).()
-		}.play
-	});
-P.double(voice - start, params: {|p b| [
-		
-	] }, music:{|p b e|
-		{
-			e.playbuf
-			=> p.synthVTracks.at(e.key).()
 		}.play
 	});
 
@@ -711,10 +703,9 @@ P(\threeNoteFigure2,start: 'And another',syl: 15,music:{|p b e|
 
 });
 ["Sargon has closed his mind to a better way.",[11,5,3,6,5,5,4,3,2,3].dm(\c,scale:\minor)++[3,4,2,3,3].dm(\g)].addLine;
-P.synthV(role: \henoch, take:\lead,
+P.synthV(role: \henoch, take:\lead, params: {|p b| [
+	lyrics: "Sargon + has closed his mind - - to a better - - + way.",
 	filter: (midinote: _ - 12), 
-	params: {|p b| [
-	lyrics: "Sargon + has closed his mind - - to  a better - - + way",
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
@@ -722,9 +713,9 @@ P.synthV(role: \henoch, take:\lead,
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.double(role: \henoch, params: {|p b| 
+P.double(role: \henoch, params: {|p b| [
 		
-	 }, music:{|p b e|
+	] }, music:{|p b e|
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
@@ -759,7 +750,17 @@ P(\strum,start:\closed,music:{|p b e|
 		dur:b[0..9].sum
 	).play
 });
-["(boom) With these bodies. (la la la la la la  with the-- ese bodies) )",[1,5,5.5,3,2,1,-7,1,2,1,-7,-6, ].dm(\d) ++ [7,11,5,5,4].dm(\c)].addLine;
+
+["(boom) With these bodies. (la la la la la la  with the-- ese bodies)",[1,5,5.5,3,2,1,-7,1,2,1,-7,-6, ].dm(\d) ++ [7,11,5,5,4].dm(\c)].addLine;
+P.synthV(role: \henoch, take: \lead, params: {|p b| [
+	lyrics: "r with these - bodies + ",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 P.synthV(\feng, take:\lead, params: {|p b| [
 	lyrics: "r with these - bodies + la la la la la la  with these - bodies +",
 	pitchTake: 1
@@ -767,17 +768,17 @@ P.synthV(\feng, take:\lead, params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
-			/2
+			/3
 	}.play
 });
-P.double(\mo, params: {|p b| [
+P.double(\feng, params: {|p b| [
 		
 	] }, music:{|p b e|
 		{
 			e.playbuf
 			=> Pan2.ar(_,1)
 			=> p.synthVTracks.at(e.key).()
-			/2
+			/3
 		}.play
 	});
 P.synthV(role: \henoch, take:\lead, params: {|p b| [
@@ -811,6 +812,16 @@ P(\extraChords,start:'With these bodies',syl:11,music:{|p b e|
 		out:Effect({|i| i.distort=>MoogLadder.ar(_,1800,1.0)*4=>DWGReverbC1C3.ar(_,mix:0.2)=>AnalogPhaserMod.ar(_).tanh/2}).bus.index,
 	].pp
 });
+P(\bass, music: { |p b e|
+	  [
+		    dur:"qe e e eq e qe e e q e qq ".asBeats.warpTo(p.quarters[e.start]).q,
+		    // freq: 1.df(\d,3),
+		    freq: [11, 11, 7, 7, 6, 6, 5, 5, 5, 4  ].df(\d,2).q,
+		    amp:0.2,
+		    out: Effect.bus( { |i|  AnalogVintageDistortion.ar(i) => Pan2.ar(_) } )
+
+	  ].pp
+});
 P(\chords,start:'With these bodies',music:{
 	[
 		[
@@ -842,7 +853,7 @@ P(\chords,start:'With these bodies',music:{
 		(instrument:\cymbalsDS,amp:0.01).play
 });
 ["/*MULHALL:*/ They're not ours, Henoch.",[3,1,7,6,4.5].dm(\d,scale:\dorian)].addLine;
-P.synthV( \aiko, take:\lead, params: {|p b| [
+P.synthV( \aiko, take:\lead,start:Song.section('not ours'), params: {|p b| [
 	lyrics: "they're not ours hen nok ",
 	
 	pitchTake: 1
@@ -852,14 +863,6 @@ P.synthV( \aiko, take:\lead, params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.double(role: \thalassa, params: {|p b| [
-		
-	] }, music:{|p b e|
-		{
-			e.playbuf
-			=> p.synthVTracks.at(e.key).()
-		}.play
-	});
 P.tune(\Henoch);
 P(\chord,start:\Henoch,syl:1,music:{|p b e|
 	(
@@ -873,8 +876,33 @@ P.still(\thalassa,start:'not ours',timecode:3657.seconds,music:{|p b e|
 	e.still.value(wait:b.sum,text:["they`re not ours,","Henoch!"],fade:2)
 });
 ["/*SPOCK:*/ (boom) When you awoke in this body, Thalassa,",[-1,1,2,3,6].dm('f#')++[1,3,5].dm(\a)++[3,1,3,2].dm(\b)].addLine;
+Trek.presets.put(\henoch,\ninezero,
+	  [
+		    paramBreathiness: 0.7,
+		    paramTension: 0.5,
+	  ]
+);
+P.synthV(role: \henoch, take:\lead, params: {|p b| [
+	lyrics: " r When you awoke + in this body + Thalassa  + +",
+	filter: (midinote: _ - 12), 
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role: \henoch, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 P.tune(\awoke,range:[ 1 ],syl:0);
 P(\bass,start:'awoke',music: {|p b e|
+
 	[ instrument:\stringyy,
 		freq:[[-21,-11],[-22,-12]].df('f#').q,
 		dur:b.parse([7,3]).q
@@ -887,6 +915,24 @@ P.still(\embraceTitle,syl:1,start:\awoke,timecode:3702.5.seconds,music:{|p b e|
 	e.still.value(wait:b.sum,fadeIn:1,text:["when you awoke","in this body"])
 });
 ["you said how go--od it was _. to breathe again,",[1,2,3, 3,4, 3, 3,2, 1, 4, 3, 2].dm('c#',octave:6),].addLine;
+P.synthV(role: \henoch, take:\lead, params: {|p b| [
+	lyrics: "you said how good - it was - to breathe again +",
+	pitchTake: 1,
+	filter: (midinote: _ - 12), 
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role: \henoch, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 Song.quarters[\breathe]= Song.parseBeats(\breathe,[1,1,1/2,1/4,3/4,1/2,1/2,11/2,1/2,1,1/2, 5/2]);
 P.tune(\breathe);
 P(\bass,start:\breathe,music:{|p b e|
@@ -899,7 +945,27 @@ P(\bass,start:\breathe,music:{|p b e|
 //["to have eyes and to see* again*. To feel.","r"].addLine;
 //["To live and feel again,.","r"].addLine;
 
-[" Thalassa, (boom) just think how much (go--od) we can do for mankind.",[6,5,4].dm(\c,octave:6) ++ [-4,3,4,1,3,2,1,-7,2,-6,-5].dm('e-',octave:6)].addLine;
+[" Thalassa, (boom) just think how much (go--od) we can do for mankind.",[5,4,3].dm(\c,octave:6) ++ [-4,3,4,1,3,2,1,-7,2,-6,-5].dm('e-',octave:6)].addLine;
+P.tune();
+P.synthV(role: \henoch, take:\lead, params: {|p b| [
+	lyrics: " Thalassa + + r just think how much we can do for mankind +",
+	filter: (midinote: _ - 12), 
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role: \henoch, take: \lead, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+			=> Pan2.ar(_,1)
+		}.play
+	});
 P.tune(\mankind);
 P(\chords,start:\mankind,music:{|p b e|
 	[
@@ -917,8 +983,26 @@ P(\bass,start:\mankind,syl:2,music:{|p b e|
 		dur: b.parse([[1,1,1,1/3],[2/3,1,1,1]]).q
 	].pp
 });
-["Are these bodies too much to ask for in return? /*(or) Would you prefer this? )*/ ",[1,3,4,3,1,2,3,2,1,-7,-6,1.5].dm(\e) ++ [1,2,3,2,3,6.5].dm(\c) ].addLine;
-P.tune(\return);
+["Are these bodies too much to ask for in return? (or) Would you prefer this?",[1,3,4,3,1,2,3,2,1,-7,-6,1.5].dm(\e) ++ [1,2,3,2,3,6.5].dm(\c) ].addLine;
+P.synthV(role: \henoch, take:\lead, params: {|p b| [
+	lyrics: "Are these bodies + too much to ask for in return? + (or) Would you prefer + this?",
+	filter: (midinote: _ - 12), 
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role: \henoch, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
+P.tune( _ <> (instrument: \sparkTriangle, out: Effect.bus( _ *[1,1]/3 )) );
 P(\lick,start:\return,syl:3,music:{|p b e| 
 	[
 		freq:[1,2,3,[1.5, 11.5 ]].df(\c).q,

@@ -35,8 +35,9 @@ s.waitForBoot{
 		//5/2, 1, 5/2, 
 		1/2,1, 1/2, 1/4, 3/4, 1
 	]);
-	P.synthV(\aiko, params: {|p b| [
+	P.synthV(role: \thalassa, params: {|p b| [
 		lyrics: "ai wish on li tu ex i - ist in pis as a li ving wu man",
+		phonemes: [ "a :\\i", "w i\\ s`", "@U n"," l i", "th u", "e k ts"," i\\ ","i\\","i\\ s th", "i\\ n", "ph i s", "a ts", "@", "l i\\ ","i\\","w i\\ N g", "w U "," U ","m @ n" ]
 	] }, music:{|p b e|
 		{
 			e.playbuf
@@ -79,8 +80,9 @@ s.waitForBoot{
 	[ "MCCOY: If you're asking my approval ",[3, 4, 5, 4, 3, 5, 11, 7].dm(\f,4,\harmonicMinor) ].addLine;
 	P.tune(\approval);
 	[ "MULHALL: I require only your silence", [7,11,12,7,11,12,12.5,2.5].dm(\c) ].addLine; 
-	P.synthV(\aiko, params: {|p b| [
+	P.synthV(role: \thalassa, params: {|p b| [
 		lyrics: "ai ri kwair on li your sai lence" ,
+		legato: [1, 1, 1, 1, 1, 1, 1, 0.8]
 	] }, music: {|p b e|
 		{
 			e.playbuf
@@ -181,7 +183,7 @@ s.waitForBoot{
 			} ,inputChannels:2).bus.index
 		).play
 	});
-	P.synthV(\aiko, params: {|p b| [
+	P.synthV(role: \thalassa, params: {|p b| [
 		lyrics: 
 		"on li yu an ai will no that dak ter mul hall haz nat ri tu - - urned to her ba di"
 		,
@@ -197,15 +199,22 @@ s.waitForBoot{
 		}.play
 	});
 	[ "Isn't that worth your captain's life? ",[3,2,4,2,3,1,2,5].dm(\a,5,\minor) ].addLine;
-	P.synthV(\aiko, params: {|p b| [
+	// "jaw".xsampa
+	P.synthV(role: \thalassa, 
+		pbind: Song.enlarge(2),
+
+		filter: (midinote: _ - [12,12,12,12,12,12,12,12,0,0]), 
+		params: {|p b| [
 		lyrics:"iz nt that wurth yor kap tinz laif" ,
-		legato: [1,1,1,1,1,1,1,0.6]
-	] },filter:{|e|
-		e.midinote = e.midinote -12
-	},music:{|p b e|
+		phonemes: ["j s"," i :n th ", "t a th", "w a r\\` s", "j o ", "kh a ph"," th @ n ts", "l a :\\i f", "t A kh", "th a r\`" ],
+		legato: [1,1,0.9,1,1,1,1,0.8, 1, 0.8],
+		paramTension:0.2,
+		tension: Env([0,0.2],b.sum)
+	] },music:{|p b e|
 		{
 			e.playbuf
-			=> p.synthVTracks.at(e.key).(2)
+			=> p.synthVTracks.at(e.key).(Line.kr(2.5,2,b.sum))
+			// * 2
 		}.play
 	});
 	P.tune(\life);
@@ -218,15 +227,24 @@ s.waitForBoot{
 	//[ "Doctor, we can take what we wish. ",[11, 5, 3, 5, 12, 11, 7, 6].dm(\e,4) ].addLine; //?????
 	[ "Doctor, we can take what we wish--. ",[4.5, 3, 6, 6, 6, 5, 6, 6, 7].dm(\a,4) ].addLine; //?????
 	Song.wishVocalTwoSections = VocalRPP('wish--',\wish);
-	P.synthV(\aiko, params: {|p b| [
-		lyrics:"dak ter wi kan taik wat wi wi ish" ,
-		tension: Env([0.2],[ 1 ]),
+	P.synthV(role: \thalassa, params: {|p b| [
+		lyrics:"r r wi kan taik wat wi wi ish" ,
+		paramTension:0.2,
 		legato:[1,0.9,1,1,0.9,1,1,1,0.7]
 	] }, music:{|p b e|
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).(2)
-			=> Phaser2.ar(_,rate:0.2)
+			// => Phaser2.ar(_,rate:0.2)
+		}.play
+	});
+	P.synthV(\cheng, take: \lead, params: {|p b| [
+		lyrics: "r r we can take what we wish -",
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
 		}.play
 	});
 	P(\wish,start:'wish--',lag:-1,music:{|p b e| 
@@ -259,28 +277,50 @@ s.waitForBoot{
 //		].pma(\defaultPorto).play
 	//});
 	[ "Neither you, this ship, nor worlds have the power to stop us." ,[5, 5, 6, 5, 6, 5].dm('c#',5,\minor) ++ [7, 6, 11, 7, 6, 5, 4 ].dm(\c,5,\mixolydian) ++ [7, 11, 7, 7, 6].dm(\d,5,\mixolydian) ].addLine;
-P.synthV(\aiko, params: {|p b| [
+P.synthV(role: \thalassa, params: {|p b| [
 		lyrics: "ni ther you this ship nor wo orlds have the pa wer to sta a ap  us as" ,
-		phonemes: ["n i","t a r\\`","j u","t i\\ s","s` i\\ ph","n o r\\`","w a r\\`","l t ts","x a w","t @","ph AU"," a r\\`","th u","s th A","A","A ph","A",""],
-		tension: Env([1,1],[3])
+		phonemes: ["n i","t a r\\`","j u","t i s","s` i ph","n a r\\`","w a r\\`","l t ts","x a w","t @","ph AU"," a r\\`","th u","s th A","A","A ph","A",""],
+		legato: [1, 1, 0.9, 1, 0.9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+		// tens1ion: Env([1,1],[3])
+		paramTension: 0.1,
+		loudness: Env([-1,-1,3,0,3,-2,6,5,0,0,0,0,0,0,0,0,0]/3,b+0.1)
+
+	
 	] }, music:{|p b e|
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).(2)
 		}.play
 	});
-	P.tune(\worlds, { |i| Pmul(\freq,0.5,i) => Pbindf(_,\instrument,\sawSynthSustain,\amp,0.1,out:3) } );
-	Song.worldsVocal=VocalRPP(\worlds,\lead);
-	Song.encoders.spread=FoaEncoderKernel.newDiffuse;
-	P(\vocal,lag:-1.0,start:\worlds,music:{|p b e| 
+	P.synthV(\feng, take:\lead, params: {|p b| [
+		lyrics: "Neither + you, this ship, nor worlds - have the power + to stop - - us.",
+		pitchTake: 1
+	] }, music:{|p b e|
 		{
-		PlayBuf.ar(2, p.worldsVocal.buffer.bufnum )
-				* 0.8
-				=> Phaser2.ar(_,fb:0.9,rate:0.15)
-			=> FoaEncode.ar(_,Song.encoders.spread)
-			=> FoaDecode.ar(_,Monitors.decoder)
-		}//.play
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
 	});
+	P.double(\feng, take: \lead, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
+	P.tune(\worlds, { |i| Pmul(\freq,0.5,i) => Pbindf(_,\instrument,\sawSynthSustain,\amp,0.05,out:3) } );
+	// Song.worldsVocal=VocalRPP(\worlds,\lead);
+	// Song.encoders.spread=FoaEncoderKernel.newDiffuse;
+	// P(\vocal,lag:-1.0,start:\worlds,music:{|p b e| 
+	// 	{
+	// 	PlayBuf.ar(2, p.worldsVocal.buffer.bufnum )
+	// 			* 0.8
+	// 			=> Phaser2.ar(_,fb:0.9,rate:0.15)
+	// 		=> FoaEncode.ar(_,Song.encoders.spread)
+	// 		=> FoaDecode.ar(_,Monitors.decoder)
+	// 	}//.play
+	// });
 	P(\figure,start:\worlds,music:{|p b e| 
 		[
 			freq: [\r, 1, -5, \r, 1, -5].df('c#').q,
@@ -311,7 +351,7 @@ P.synthV(\aiko, params: {|p b| [
 		].pp;
 	});
 	P(\crash,start:\worlds,music:{|p b e| 
-		[ amp:[0.04,0.03],
+		[ amp:[0.04,0.03]/2,
 			instrument:\cymbalsDS,
 		out:Effect(Phaser2.ar(_,fb:0.95,rate:0.13)).bus.index,
 			dur:b.parse([2,2,2,1]).q,
@@ -327,6 +367,23 @@ P.synthV(\aiko, params: {|p b| [
 	});
 	// ????????
 	[ "MCCOY: Neither Jim nor I can trade a body we don't own",[1, 2, 3, 1, 4, 2, 3, 4, 5, 4, 3, 2, 6].dm(\g,4,scale:\lydian)].addLine;
+	P.synthV(role: \mccoy, take:\lead, params: {|p b| [
+		lyrics: " Neither + Jim nor I can trade a body + we don't own",
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
+	P.double(role: \mccoy, params: {|p b| [
+			
+		] }, music:{|p b e|
+			{
+				e.playbuf
+				=> p.synthVTracks.at(e.key).()
+			}.play
+		});
 	P.tune(\trade);
 	P(\bassline,start:\trade,music:{|p b e| 
 		[
@@ -338,6 +395,23 @@ P.synthV(\aiko, params: {|p b| [
 		].pp;
 	});
 	[ "It happens to belong to a young woman. ",[-5, 1, -7, 1, 2, 3, 1, -7, -6, 4, 3, 2].dm(\f) ].addLine;
+	P.synthV(role: \mccoy, take:\lead, params: {|p b| [
+		lyrics: "It happens + to belong + to a r young woman +",
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
+	P.double(role: \mccoy, params: {|p b| [
+			
+		] }, music:{|p b e|
+			{
+				e.playbuf
+				=> p.synthVTracks.at(e.key).()
+			}.play
+		});
 	P(\chords,start:\happens,music:{|p b e| 
 		[
 			freq: [\r, [1,5,1], [-4], [-5, 2, 4] ].df(\f).q / [1,2],
@@ -348,6 +422,17 @@ P.synthV(\aiko, params: {|p b| [
 	P.tune(\happens);
 
 	[ "MULHALL: Who you hardly know. Almost a stranger to you. (boom) ",[3, 1, 5, 4, 3.5].dm(\b,5,\whole) ++ [-7, 1, 2, 2.5, -7, -6, -4.5, -2.5].dm(\c,6) ].addLine;
+	P.synthV(role: \thalassa, take:\lead, params: {|p b| [
+		lyrics: "Who you hardly + know. Almost + a stranger + to you r  ",
+		legato: [1,        1,     1,           1,        0.5,    1,       1,          1,   1,                        1,         1,      1],
+		phonemes: [ "x u", "j u", "x A r\\` ", " t l i", "n @U", "o l m", " @U s th", "@", "s t r\\` e :\\i n ts` ", " a r\\`", "th u", "j u"  ],
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 // add a beat with e flat in the bass here
 	P.tune(\hardly);
 	P(\chord,start:\hardly,music:{|p b e| 

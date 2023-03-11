@@ -79,7 +79,26 @@ s.waitForBoot{
 	});
 	[ "MCCOY: If you're asking my approval ",[3, 4, 5, 4, 3, 5, 11, 7].dm(\f,4,\harmonicMinor) ].addLine;
 	P.tune(\approval);
+	P.synthV(role: \mccoy, take:\lead, params: {|p b| [
+		lyrics: "if your asking + my approval + +",
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
+	P.double(role: \mccoy, params: {|p b| [
+			
+		] }, music:{|p b e|
+			{
+				e.playbuf
+				=> p.synthVTracks.at(e.key).()
+			}.play
+		});
 	[ "MULHALL: I require only your silence", [7,11,12,7,11,12,12.5,2.5].dm(\c) ].addLine; 
+	// Song.durs[\silence] = Song.durs[\silence].list + [0,0,0,0,0,0,0,0.5] => _.q;
+	// Song.durs[\silence] = Song.durs[\silence].list - [0,0,0,0,0,0,0,0.1] => _.q;
 	P.synthV(role: \thalassa, params: {|p b| [
 		lyrics: "ai ri kwair on li your sai lence" ,
 		legato: [1, 1, 1, 1, 1, 1, 1, 0.8]
@@ -199,6 +218,7 @@ s.waitForBoot{
 		}.play
 	});
 	[ "Isn't that worth your captain's life? ",[3,2,4,2,3,1,2,5].dm(\a,5,\minor) ].addLine;
+	// Song.durs[\worth] = Song.durs[\worth].list + [0,0,0,0,0,0,0,0.2]  => _.q
 	// "jaw".xsampa
 	P.synthV(role: \thalassa, 
 		pbind: Song.enlarge(2),
@@ -226,7 +246,22 @@ s.waitForBoot{
 	});
 	//[ "Doctor, we can take what we wish. ",[11, 5, 3, 5, 12, 11, 7, 6].dm(\e,4) ].addLine; //?????
 	[ "Doctor, we can take what we wish--. ",[4.5, 3, 6, 6, 6, 5, 6, 6, 7].dm(\a,4) ].addLine; //?????
+// Song.durs['wish--']	= Song.durs['wish--'].list.dropLast ++ ( Song.durs['wish--'].list.last * 0.75 ) => _.q
 	Song.wishVocalTwoSections = VocalRPP('wish--',\wish);
+	P(\trem, music: { |p b e|
+	
+		{
+			Gendy2.ar(minfreq:[ 21 ].df('b-')- { 20.rrand(10) }!5 ,maxfreq:1.df('b-')+20)
+			/200
+			// * Line.kr(0,1,b.parse([4]).unbubble)
+			=> Splay.ar(_)
+			+
+			Impulse.ar(0)
+			=> FreeVerb.ar(_,1,1)
+			=> Splay.ar(_)
+		}.play
+		
+	});
 	P.synthV(role: \thalassa, params: {|p b| [
 		lyrics:"r r wi kan taik wat wi wi ish" ,
 		paramTension:0.2,
@@ -254,7 +289,7 @@ s.waitForBoot{
 	P(\bass,start:'we can take',music:{|p b e| 
 		[
 			//freq: [\r, 1, 1, -4].df(\b,3).q,
-			freq: [1, 1, 1, 1, -4].df(\b,3).q,
+			freq: [1, -7, -5, 1, -4].df(\b,[ 2,3 ],\mixolydian).q,
 			dur: b.parse([3,1,2, 1,2]).q
 		].pp
 		
@@ -494,6 +529,25 @@ P.synthV(role: \thalassa, params: {|p b| [
 			).play
 	});
 	[ "MCCOY: I will not peddle flesh. I'm a physician. ",[11, 11, 11, 7, 7, 6 ].dm(\g,scale:\mixolydian) ++ [5, 5.5, 7, 11, 1].dm('a-',scale:\mixolydian)].addLine;
+	P.synthV(role: \mccoy, take:\lead, params: {|p b| [
+		lyrics: " I will not peddle + flesh. I'm a physician. + + ",
+		filter: (midinote: _ - 12), 
+		legato: [1, 1, 0.7, 1, 1, 0.6, 1, 1, 1, 1, 1],
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
+	P.double(role: \mccoy, params: {|p b| [
+			
+		] }, music:{|p b e|
+			{
+				e.playbuf
+				=> p.synthVTracks.at(e.key).()
+			}.play
+		});
 	P.tune(\peddle);
 	P(\bass,start:\peddle,music:{|p b e| 
 		[
@@ -533,6 +587,36 @@ P.synthV(role: \thalassa, params: {|p b| [
 	
 	["prancing, savage, monkey ",[-1, -1, 3, 1, -4, -4, 4, 1, -7, -7, -7, -7, -7, -7, 2, 1 ].dm(\g, scale:\mixolydian)].addLine;
 	Song.quarters[\prancing] = Song.parseBeats(\prancing,[1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1.5,0.5]).quantize(0.5)  ;
+	P.synthV(\cheng, take:\lead, params: {|p b| [
+		lyrics: "r r stupid + r r  prancing + r r r r r r  monkey +",
+		filter: ( dur: { |i| "q q q q q q q q q q q q q q qe x".asBeats.warpTo(p.quarters[\prancing]) } ), 
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
+	P.double(\cheng, params: {|p b| [
+			
+		filter: ( dur: { |i| i.asArray.warpTo(p.quarters[\prancing]) * 2} ), 
+		] }, music:{|p b e|
+			{
+				e.playbuf
+				=> p.synthVTracks.at(e.key).()
+			}.play
+		});
+P.synthV(role: \thalassa, take:\lead, params: {|p b| [
+		lyrics: "r r stupid + r r  prancing + r r r r r r  monkey +",
+		pitchTake: 1,
+		phonemes: [ "","","s th u"," ph @ t", "","","ph r\\` a n s","i N",  "","","","","","","m A N"," kh i" ],
+		filter: ( dur: { |i| "q q q q q q q q q q q q q q qe x".asBeats.warpTo(p.quarters[\prancing]) } ), 
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 	P(\test,start:\prancing,music:{|p b e| 
 		[
 			instrument:\bd_808,
@@ -599,6 +683,17 @@ P.synthV(role: \thalassa, params: {|p b| [
 	});
 	
 	[ "(r) You dare defy one you should be on your knees wo -- rshipping? ",[-1,1, 1.5, 1, -6.5].dm(\c) ++ [1, 3, 4, 5, 3, 5, 6].dm(\d,scale: \whole) ++ [3,4,3,-5].dm(\b) ].addLine;
+	P.synthV(role: \thalassa, take: \lead, params: {|p b| [
+		lyrics: "r you dare defy + one you should be on your knees worshipping - + +",
+		filter: (midinote: _+ 12), 
+		legato: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.5, 1, 1, 1],
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 	P.tune(\defy, {|i| Pset(\out,Effect(CrossoverDistortion.ar(_,drive:0.9,smooth:0.1) * 0.04).bus.index,i) => Pmul(\freq,[1,1.33]!5 => _.q ++ [1].q(inf),_)});
 	P.tune(\knees,{|i| Pfin(6,i) => Pmul(\freq,[4/3,4/3,4/3,4/3,4/3,1].q/2,_) => Pset(\legato,[1,1,1,1,1,6].q,_) => Pset(\out, Effect(FreeVerb.ar(_,1,1).distort * 2,out:1).bus.index,_)});
 	P(\bassline,start:\defy,syl:7,music:{|p b e| 

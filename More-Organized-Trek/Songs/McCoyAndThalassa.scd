@@ -35,7 +35,7 @@ s.waitForBoot{
 		//5/2, 1, 5/2, 
 		1/2,1, 1/2, 1/4, 3/4, 1
 	]);
-	P.synthV(\aiko,\exist, params: {|p b| [
+	P.synthV(\aiko, params: {|p b| [
 		lyrics: "ai wish on li tu ex i - ist in pis as a li ving wu man",
 	] }, music:{|p b e|
 		{
@@ -79,7 +79,7 @@ s.waitForBoot{
 	[ "MCCOY: If you're asking my approval ",[3, 4, 5, 4, 3, 5, 11, 7].dm(\f,4,\harmonicMinor) ].addLine;
 	P.tune(\approval);
 	[ "MULHALL: I require only your silence", [7,11,12,7,11,12,12.5,2.5].dm(\c) ].addLine; 
-	P.synthV(\aiko,\require, params: {|p b| [
+	P.synthV(\aiko, params: {|p b| [
 		lyrics: "ai ri kwair on li your sai lence" ,
 	] }, music: {|p b e|
 		{
@@ -181,7 +181,7 @@ s.waitForBoot{
 			} ,inputChannels:2).bus.index
 		).play
 	});
-	P.synthV(\aiko,\returned, params: {|p b| [
+	P.synthV(\aiko, params: {|p b| [
 		lyrics: 
 		"on li yu an ai will no that dak ter mul hall haz nat ri tu - - urned to her ba di"
 		,
@@ -197,7 +197,7 @@ s.waitForBoot{
 		}.play
 	});
 	[ "Isn't that worth your captain's life? ",[3,2,4,2,3,1,2,5].dm(\a,5,\minor) ].addLine;
-	P.synthV(\aiko, \worth, params: {|p b| [
+	P.synthV(\aiko, params: {|p b| [
 		lyrics:"iz nt that wurth yor kap tinz laif" ,
 		legato: [1,1,1,1,1,1,1,0.6]
 	] },filter:{|e|
@@ -218,7 +218,7 @@ s.waitForBoot{
 	//[ "Doctor, we can take what we wish. ",[11, 5, 3, 5, 12, 11, 7, 6].dm(\e,4) ].addLine; //?????
 	[ "Doctor, we can take what we wish--. ",[4.5, 3, 6, 6, 6, 5, 6, 6, 7].dm(\a,4) ].addLine; //?????
 	Song.wishVocalTwoSections = VocalRPP('wish--',\wish);
-	P.synthV(\aiko,'wish--', params: {|p b| [
+	P.synthV(\aiko, params: {|p b| [
 		lyrics:"dak ter wi kan taik wat wi wi ish" ,
 		tension: Env([0.2],[ 1 ]),
 		legato:[1,0.9,1,1,0.9,1,1,1,0.7]
@@ -259,8 +259,9 @@ s.waitForBoot{
 //		].pma(\defaultPorto).play
 	//});
 	[ "Neither you, this ship, nor worlds have the power to stop us." ,[5, 5, 6, 5, 6, 5].dm('c#',5,\minor) ++ [7, 6, 11, 7, 6, 5, 4 ].dm(\c,5,\mixolydian) ++ [7, 11, 7, 7, 6].dm(\d,5,\mixolydian) ].addLine;
-P.synthV(\aiko,\worlds, params: {|p b| [
-		lyrics: "ni ther you this ship nor wo orlds have the pa wer to sta a ap  us -" ,
+P.synthV(\aiko, params: {|p b| [
+		lyrics: "ni ther you this ship nor wo orlds have the pa wer to sta a ap  us as" ,
+		phonemes: ["n i","t a r\\`","j u","t i\\ s","s` i\\ ph","n o r\\`","w a r\\`","l t ts","x a w","t @","ph AU"," a r\\`","th u","s th A","A","A ph","A",""],
 		tension: Env([1,1],[3])
 	] }, music:{|p b e|
 		{
@@ -858,18 +859,35 @@ P.synthV(\aiko,\worlds, params: {|p b| [
 	["KIRK: Yes, I'm fine, Bones. ","r"].addLine;
 	["MCCOY: Thalassa? ","r"].addLine;
 	["MULHALL: She is now with Sargon, Doctor. ","r"].addLine;
-	["I'm Ann Mulhall, back in my own body. ",[-5, 3, 3, 2, 3, 2, 3, 4, 3, 2].dm(\g)].addLine;
+	["I`m Ann Mulhall, back in my own body. ",[-5, 3, 3, 2, 3, 2, 3, 4, 3, 2].dm(\g), ].addLine; // a= Song.durs['back in my'].list
 	P.tune('own body');
-P.synthV(\aiko,'own body',params: {|p b| [
-		lyrics: "aim jain mul hal bak in mai on ba dy" ,
+P.synthV(\feng, take: \lead, 
+	pbind:{|p b|
+		[
+			dur: Song.durs['back in my'],
+			midinote: Song.tune[Song.section('back in my')]
+		].p
+	},
+params: {|p b| [
+	lyrics:"I'm Ann Mulhall + back in my own body +",
+		// lyrics: "aim jain mul hal bak in mai on ba dy" ,
 		//lag: [0,0,0,0,-0.06,0,0,0,-0.05,-0.05],
-		lag:[ 0, 0, 0, 0, 0, 0, 0, 0, 0, -0.15 ],
-		legato: [1,1,1,0.9, 1,1,1,1,1,1]
+		lag:[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+		legato: [1,1,1,0.9, 1,1,1,1,1,1],
+		pitchTake: 1
 	] }, music:{|p b e|
 		{
-			e.playbuf / 5
-			=> FreeVerb.ar(_,0.5,[0.8,0.9])
-			//=> p.synthVTracks.at(e.key).()
+			e.playbuf 
+			// => FreeVerb.ar(_,0.5,[0.8,0.9])
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
+	P.double(\feng, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
 		}.play
 	});
 	Song.quarters['own body']=Song.parseBeats('own body',[2,2,2,2,1,1, 1, 1, 2, 2]);

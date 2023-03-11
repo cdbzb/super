@@ -259,7 +259,6 @@ P.synthV(role: \scott, take:\lead,
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
-		/2
 	}.play
 });
 P.double(role: \scott, take: \lead, params: {|p b| [
@@ -268,7 +267,6 @@ P.double(role: \scott, take: \lead, params: {|p b| [
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
-		/2
 		}.play
 	});
 P.tune('lady');
@@ -286,7 +284,7 @@ P.synthV(role: \henoch, take:\lead,
 	// filter: (midinote: _ - 12), 
 	pbind: Song.enlarge(9),
 	params: {|p b| [
-	lyrics: "It will have twice the strength and agility  + - - - + + of your - - body - engineer + + -",
+	lyrics: "It will have twice the strength and agility  + - - - + + of your - - body + engineer + + -",
 	pitchTake: 1,
 	vocalMode: \Muted
 ] }, music:{|p b e|

@@ -304,13 +304,13 @@ s.waitForBoot{
 			amp:0.03
 		].pp;
 	});
-//	P(\bass,start:'we can take what we wish',music:{|p b e| 
-//		[
-//			freq: [11, 7, 6, 5, 4].df(\e).q /4 + 2,
-//			dur: b.parse([4,1,1,1,1]).q,
-//			width: [2,2,2,2,2]/2 
-//		].pma(\defaultPorto).play
-	//});
+P(\bass,start:'we can take what we wish',music:{|p b e| 
+	[
+		freq: [11, 7, 6, 5, 4].df(\e).q /4 + 2,
+		dur: b.parse([4,1,1,1,1]).q,
+		width: [2,2,2,2,2]/2 
+	].pma(\default).play
+	});
 	[ "Neither you, this ship, nor worlds have the power to stop us." ,[5, 5, 6, 5, 6, 5].dm('c#',5,\minor) ++ [7, 6, 11, 7, 6, 5, 4 ].dm(\c,5,\mixolydian) ++ [7, 11, 7, 7, 6].dm(\d,5,\mixolydian) ].addLine;
 P.synthV(role: \thalassa, params: {|p b| [
 		lyrics: "ni ther you this ship nor wo orlds have the pa wer to sta a ap  us as" ,
@@ -565,6 +565,16 @@ P.synthV(role: \thalassa, params: {|p b| [
 	Song.physicianKey = 'b-';
 	//Song.physicianKey = 'g';
 	[ "MULHALL: A physician? ",[1, 1, 11, 1].dm(Song.physicianKey) ].addLine;
+	P.synthV(role: \thalassa, take: \lead, params: {|p b| [
+		lyrics: "a physician + +",
+		phonemes: ["@","f @","ts i\\","s` @ n`"],
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 	P(\chord,start:'physician?',syl:1,music:{|p b e| 
 		(
 		freq: [1,3,5,7,11].df(p.physicianKey,4,\diminished)
@@ -572,6 +582,17 @@ P.synthV(role: \thalassa, params: {|p b| [
 	});
 	P.tune('physician?');
 	[ "In contrast to what we are, you are a ", [-7, 1, 2, 3, 4.5, 5, 2, 6, 7 ,4].dm(\g,scale:\mixolydian) ].addLine;
+	P.synthV(role: \thalassa, take: \lead, params: {|p b| [
+		lyrics: "In contrast to what we are, you are a ",
+		phonemes:["i \\n","kh A n","t r\\` a s th","th u", "w A th","w i", "A r\\`", "j u", "A r\\`", "@"],
+
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 	P.tune(                \contrast,
                 { |i| Pmul(\freq,[0.5,1,2.01],i) => Pbindf(
                 		_,
@@ -685,13 +706,29 @@ P.synthV(role: \thalassa, take:\lead, params: {|p b| [
 	[ "(r) You dare defy one you should be on your knees wo -- rshipping? ",[-1,1, 1.5, 1, -6.5].dm(\c) ++ [1, 3, 4, 5, 3, 5, 6].dm(\d,scale: \whole) ++ [3,4,3,-5].dm(\b) ].addLine;
 	P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 		lyrics: "r you dare defy + one you should be on your knees worshipping - + +",
-		filter: (midinote: _+ 12), 
-		legato: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.5, 1, 1, 1],
-		pitchTake: 1
+		// "you dare defy one you shouldd be on your knees worshipping".xsampa.cs
+		phonemes: [ "","j u", "t e r\\`", "t i"," f a :\\i", "w A n", "j u", "s` U t`", "p i", "A n", "j o r\\`", "n i ts", "w a ","a r\\`", "s` i\\ ph`","ph i N"],
+		// filter: (midinote: _+ 12), 
+		legato: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+		pitchTake: 1,
+		paramTension: 1,
+		pitchExpression: 1.5
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			* Env([2,2,1],b.parse([4,3])).kr(0)
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
+	P.double(role:\thalassa, take: \lead,
+
+		filter: (midinote: _ + 12), 
+		params: {|p b| [
 	] }, music:{|p b e|
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
+			*[0,1] /2
 		}.play
 	});
 	P.tune(\defy, {|i| Pset(\out,Effect(CrossoverDistortion.ar(_,drive:0.9,smooth:0.1) * 0.04).bus.index,i) => Pmul(\freq,[1,1.33]!5 => _.q ++ [1].q(inf),_)});
@@ -726,6 +763,17 @@ P.synthV(role: \thalassa, take:\lead, params: {|p b| [
 	).play
 	});
 	[ "I could destroy you with a single thought. ", [1, 2, 3, -8, -7, -8, 1, 2, -4].dm(\f, scale: \diminished) ++ [7].dm(\c,scale:\mixolydian) ].addLine;
+	P.synthV(role: \thalassa, take: \lead, params: {|p b| [
+		lyrics: "I could destroy + you with a single + thought. ",
+		phonemes: [ "a :\\i", "kh U t", "t i\\"," s t r\\` o :\\i", "j u", "w i\\ s", "@", "s i\\ N"," k @ l", "s o th th" ],
+		legato: [1, 1, 1, 1, 1, 1, 1, 1, 1, 0.9],
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 	P.tune(\single);
 	P(\bassnote,start:\single, syl:2, music:{|p b e| 
 		(
@@ -806,7 +854,21 @@ P.synthV(role: \thalassa, take:\lead, params: {|p b| [
 	});
 	P.tune(\Stop);
 	[ "The temptations (boom boom) in a living body are too great. ",[-6, -6, 3, 2, 1, -6, -7, -5, 5, 3, 2, 1, -7, -5, 4  ].dm(\c) ].addLine;
+"The temptations (boom boom) in a living body are too great. ".xsampa.cs
+"ocean".xsampa.cs
+"taste".xsampa.cs
+"tent".xsampa
 	P.tune(\temptations);
+t	P.synthV(role: \thalassa, take: \lead, params: {|p b| [
+		lyrics: "the temptations + + r r in a living + body + are too great",
+		phonemes:["t @","th e m","th e :\\i ","s` @ n ts","","","i \\n","@","l i\\","w i\\ N","p A"," t i" ,"A r\\`","th u","k r\\` e :\\i th"],
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).(2)
+		}.play
+	});
 	P(\pedalTone,start:\temptations,music:{|p b e| 
 		(
 			instrument:\stringyy,
@@ -822,6 +884,16 @@ P.synthV(role: \thalassa, take:\lead, params: {|p b| [
 		].pp
 	});
 	[ "Forgive me. ",[5,4,3].dm(\c,octave:6) ].addLine;
+	P.synthV(role: \thalassa, take: \lead, params: {|p b| [
+		lyrics: "forgive + mi" ,
+		filter: (midinote: _ - 12), 
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).(2)
+		}.play
+	});
 	P.tune(\Forgive);
 	P(\bassnote,start:\Forgive,syl:0,music:{|p b e| 
 		(

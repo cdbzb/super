@@ -1034,17 +1034,19 @@ Part {
 P { 
     *new {
         |key start syl lag=0 music song resources rpp synthV|
-        var part;
-	start = this.calcStart(start); //finds it if not provided!
-	( start.class==Function ).if{music = start; start = nil}; //syntactic sugar
-                start.postln;
-        key = (key ++ "_" ++ start).asSymbol;
-	resources = ( resources ++ (rpp: rpp) ? resources );
-	//resources = ( resources ++ (synthV: synthV) ? resources );
-        part = Part(start,syl,lag,music,resources);
-        Message(Song.currentSong, ( key ++ $_ => _.asSymbol )).value(part); //set Song.resources.key to part
-        key.postln;
-        ^part
+        var part,error;
+	{
+		start = this.calcStart(start); //finds it if not provided!
+		( start.class==Function ).if{music = start; start = nil}; //syntactic sugar
+		start.postln;
+		key = (key ++ "_" ++ start).asSymbol;
+		resources = ( resources ++ (rpp: rpp) ? resources );
+		//resources = ( resources ++ (synthV: synthV) ? resources );
+		part = Part(start,syl,lag,music,resources);
+		Message(Song.currentSong, ( key ++ $_ => _.asSymbol )).value(part); //set Song.resources.key to part
+		key.postln;
+	}.try{|e| error = e}
+        ^( error ? part )
     }
     *calcStart { |start|
 	    ^start.isNil.if{

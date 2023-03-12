@@ -5,7 +5,8 @@
 // [Laboratory]
 
 (
-s.waitForBoot{ Song(\silverLake,[]).current;
+s.waitForBoot{
+	Song(\silverLake,[]).current;
 //Song.currentSong.infrastructure={
 //FunctionList.new.array_([
 //	~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load},
@@ -53,11 +54,13 @@ Song.synthVTracks.aiko = { |preGain=1 ratio=2 amp = (1/8) len=2000 mix=0.1 |
 	}
 };
 Song.synthVTracks.default = Song.synthVTracks.aiko;
-P.synthV(\aiko, 'long a', params:{|p b| [
-	lyrics: "sar gon ai re mem ber a dai long a" ,
-	legato:[1,  0.5, 1, 1, 1,  1,  1,  1,  1, 1] ,
-	lag:[0.15,0,0,0,0,0,0,0,0],
-	phonemes: ["","","","","m e m","","","",""],
+P.synthV(\aiko, 
+	pbind: Song.enlarge(1),
+ 	params:{|p b| [
+	lyrics: "sar gon ai re mem ber a dai long a go" ,
+	legato:[1,  0.5, 1, 1, 1,  1,  1,  1,  1, 1, 2] ,
+	lag:[0.15,0,0,0,0,0,0,0,0,0,0],
+	phonemes: ["","","","","m e m","","","","","@","k o"],
 	tension: Env([-0.4,-0.4],[2])
 
 ] },music:{|p b e|
@@ -81,10 +84,12 @@ P(\bassnote,start:'long a',music: { |p b e|
 Song.stringyyTuneLow = {|start| P.tune(start,  Pbindf(_,\instrument,\stringyy,\freq,Pfunc({|e| e.midinote-12=>_.midicps})))};
 Song.stringyyTuneLow.('long a');
 ["go. (ta da da boom da) We ", [3, 5,5,5,-4,4].dm(\e)++[3].dm(\a)].addLine;
-P.synthV(\aiko, 'go.',
+P.synthV(\aiko,
+	pbind: Song.enlarge2(1),
 	params:[
-		lyrics: "go r r r r r wi" ,
-		legato: [2, 1, 1, 1, 1, 1, 1]
+		lyrics: "r r r r r r wi sat bi sa id  a si i il ver lek" ,
+		phonemes: ["", "", "", "", "", "", "", "", "", "s a ", "i t", "a ", "s i", "i", "j l", "v e \\r`", "l e i k"],
+		legato: [1,    1,  1,  1,  1,  1,  1,  1,  1,  1,      1,     1,    1,     1,   1,     1,                1.5]
 	],music:{|p b e|
 		{
 			e.playbuf
@@ -114,19 +119,19 @@ P(\chords,'go.',syl:0,music: {|p b e|
 	].pp
 });
 ["sat beside a si -- lve --r ",[1,-7,-6,-7,-5,3,4,1,3].dm(\d,octave:6)].addLine;
-P.synthV(\aiko,\sat,
-	params:{|p b| [
-		lyrics:"sat bi sa id  a si i il ver" ,
-		phonemes:["","","s a ","i t","a ","s i","i","j l","v e \r`"],
-
-		tension:Env([-0.4,-0.4,-0.4],[b.sum]),
-	] },music:{|p b e|
-		{
-			e.playbuf
-			=> p.synthVTracks.at(e.key).()
-		}.play
-	}
-);
+// P.synthV(\aiko,
+// 	params:{|p b| [
+// 		lyrics:"sat bi sa id  a si i il ver" ,
+// 		phonemes:["","","s a ","i t","a ","s i","i","j l","v e \r`"],
+//
+// 		tension:Env([-0.4,-0.4,-0.4],[b.sum]),
+// 	] },music:{|p b e|
+// 		{
+// 			e.playbuf
+// 			=> p.synthVTracks.at(e.key).()
+// 		}.play
+// 	}
+// );
 SynthDef(\foo,{ |freq|
 	var b = Song.durs[\sat].list;
 	[
@@ -150,8 +155,8 @@ P(\bass,start:'sat',lag:-0.05,music:{|p b e|
 });
 Song.stringyyTuneLow.(\sat);
 ["lake. (boom boom) The air (boom boom) was scented with the ",[11,-7,2,3,6].dm('f#',scale:\mixolydian)++[-7,2,3,5,4,3,4].dm(\g,scale:\mixolydian)].addLine;
-P.synthV(\aiko, \scented,params:{|p b| [
-	lyrics:"lek r r the eir r r was sen ted with the" ,
+P.synthV(\aiko,params:{|p b| [
+	lyrics:"r r r the eir r r was sen ted with the" ,
 	tension:Env([-0.4,-0.4,-0.4],[b.sum]),
 	phonemes:["l e i k","","","","e z`","",""],
 	legato:[1.5,1,1,1,2,1,1,1,1,1,1,1]
@@ -186,9 +191,9 @@ P('phrase',start:\lake,syl:0,music: {|p b e|
 });
 ["flowers of our planet. ",[1,-7,1].dm(\g,scale:\mixolydian)++[6,5,4,3,6,5,4,3].dm(\d)+12].addLine;
 Song.durs[\flowers].list.do(_.postln);
-P.synthV(\aiko,\flowers,params: {|p b| [
+P.synthV(\aiko,params: {|p b| [
 	lyrics: "fla werz af ar pla net r r r r r",
-	phonemes:["","","","a z`","ph l a","n e t","","","","",""],
+	phonemes:["","","","a z`","ph l a","n e th th","","","","",""],
 	legato: [20,18,19,20,20,20]/20,
 	//lag: [0,0,0.25,0.0,0,0],
 	tension: Env([-0.5,-0.5],b),
@@ -203,7 +208,7 @@ P.synthV(\aiko,\flowers,params: {|p b| [
 		}.play
 	}
 );
-P.synthV(\aiko,\flowers,take:2,params: {|p b| [
+P.synthV(\aiko,take:2,params: {|p b| [
 	lyrics: "fla werz af ar pla net r r r r r",
 	phonemes:["","","","a z`","ph l a","n e t","","","","",""],
 	legato: [19,18,19,20,20,20]/20,
@@ -298,7 +303,7 @@ P(\ride,\flowers, //syl:3,
 		'b '.post;b.postln
 	});
 	["/*KIRK:*/ I remember. You held my han-- -- -- -- -- -- -- -- -- -- -- -- -- d like ",[4,3,3,2].dm(\c)++[-4,-5,-6,-7,1,-7,-6,-7,1,2,3,2,1,2,3, 4,5].dm(\g)].addLine;
-		P.synthV(\genbu,\held,
+		P.synthV(\genbu,
 			params:{|p b| [
 				lyrics: "ai re mem ba yu held mai ha - - - - - - - - - - - and laik " ,
 				tension: Env([0.4,0.4],2),
@@ -356,7 +361,7 @@ P(\ride,\flowers, //syl:3,
 		].pp
 	});
 	["this.  (He kisses it, as Spock comes in.) ",[5,4,4,3,3 ].dm(\c,octave:6)].addLine;
-	P.synthV(\genbu, \this, params: {|p b| [
+	P.synthV(\genbu, params: {|p b| [
 		lyrics: "this r r r r" ,
 	] },
 	filter:{|e| e.midinote = e.midinote -12},
@@ -397,7 +402,7 @@ P(\chords,start:'kisses',music: {|p b e|
 });
 ["I think it is best not to remember so well. (boom) ",[3,2,3,1,-5,2,1,-7,-6,-7,-5,-2.5,-4.5].dm(\d)].addLine;
 P.tune('best',_ <> [amp: 0.1 * [1,1,1,1,1,1,1,1,1,1,1,1,0].q].p);
-P.synthV(\genbu, \think, params: {|p b| [
+P.synthV(\genbu, params: {|p b| [
 	lyrics: "ai think it is best not to re mem ba so well r" ,
 ] }, music:{|p b e|
 	{
@@ -437,8 +442,9 @@ P('bassNote',start:\think, syl:11, music: {|p b e|
 	[dur: b[0].q,freq:1.df('a-',4)].p <> p.bassSoundTwoDays => _.postln => _.play
 });
 ["/*SPOCK:*/ In two days, you'll have your own hands, Thalassa. ",[3,2,4,3,4,3,3,2,4,1,-7].dm('a-')].addLine;
-P.synthV(\kevin,\two, params: {|p b| [
+P.synthV(role: \henoch,take:nil ,params: {|p b| [
 	lyrics: "in two days youll have your own hands Tha la ssa" ,
+	pitchTake:1,
 	vocalMode: \Belt
 ]},filter:{|e| e.midinote = e.midinote -12}, music:{|p b e|
 	{
@@ -446,6 +452,15 @@ P.synthV(\kevin,\two, params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
+P.double(role: \henoch, take: \lead, params: {|p b| [
+	
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+
 //P.tune('two days');
 //~twoDaysQuarters= Song.durs['two days'].list.asArray.parseBeats([0.5,0.5,1,1/3,1/3,1/3,3/4,(1/4+(3/4)), 1/4,3/4,(1/4+1)]);
 //Song.durs['two days'].list.postcs
@@ -530,7 +545,7 @@ P(\lick,start:'intro',music: {|p b e|
 Song.setTempoMap(\efficient,"qq Q Q Q qe eqe e");
 
 Song.handsBassConstructor.('b-', \efficient);
-P.synthV(\kevin,\efficient, params: {|p b| [
+P.synthV(role: \henoch, params: {|p b| [
 	//lyrics: "r me ka ni kli i fi shent" ,
 	lyrics: "r mechanically + + + efficient + + ",
 	vocalMode: \Belt
@@ -545,6 +560,14 @@ music:{|p b e|
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 		* 2
+	}.play
+});
+P.double(role: \henoch, take: nil, params: {|p b| [
+	
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
 	}.play
 });
 P(\808,start:'efficient',music: {|p b e|
@@ -581,7 +604,7 @@ P(\keys,syl:0,start:\efficient,music: { |p b e|
 } );
 ["quite human-looking. ","\r 2 1 2 -6 -5 \r","qq Q Q Q qe eqe e".asBeats*60/104].addLine;
 Song.setTempoMap('quite',"qq Q Q Q qe eqe e");
-P.synthV(\kevin,'human-look', params: {|p b| [
+P.synthV(role: \henoch, params: {|p b| [
 	//lyrics: "r and qwait hu man lu king" ,
 	lyrics:" r and quite human + looking +"
 ] },pbind:{ |p b| [
@@ -595,6 +618,14 @@ music:{|p b e|
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 		*2
+	}.play
+});
+P.double(role: \henoch, take: nil, params: {|p b| [
+	
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
 	}.play
 });
 ["(boom boom) Android (boom boom) robot hands, of course. ","-1 -1 11 7 12 7 6 11 6 5 7 5 4".dm(Song.handsKeys.bridge,4,\mixolydian),"q q q q qq q q qq q q qqq e e".asBeats*60/104].addLine;
@@ -618,7 +649,7 @@ P(\808,start:'course',music: {|p b e|
 });
 P.tune(\course, _ <> [instrument:\sawSynth,amp:0.15].p);
 ["Hands without feeling. ",[\r, 5,4,5,7,6,\r,\r,5,4,5,2,1].dm(Song.handsKeys.reprise,\mixolydian),"qq Q Q Q qe eqe e".asBeats.dup.flat* 60/104].addLine;
-P.synthV(\kevin,\without, params: {|p b| [
+P.synthV(role: \henoch, params: {|p b| [
 	lyrics: "r hands without + feeling + r r hands without + feeling + r",
 	vocalMode:\Solid
 ] }, music:{|p b e|
@@ -626,7 +657,7 @@ P.synthV(\kevin,\without, params: {|p b| [
 		e.playbuf => p.synthVTracks.at(e.key).()
 	}.play
 });
-P.synthV(\kevin,\without,take:\low, params: {|p b| [
+P.synthV(role: \henoch,take:\low, params: {|p b| [
 	lyrics: "r hands without + feeling + r r hands without + feeling + r",
 ] }, filter:{|e| e.midinote = e.midinote -12}, music:{|p b e|
 	{

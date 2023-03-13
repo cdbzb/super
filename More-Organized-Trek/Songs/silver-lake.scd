@@ -721,6 +721,23 @@ P(\lick,start:'Hands',music: {|p b e|
 	//=>_.play (clock:Song.introClock)
 });
 ["Enjoy the taste of life while you can. ","1 11 7 6 5 4 13.5 14 13.5 12 13.5 16".dm(Song.handsKeys.outro,4,\dorian)].addLine;
+P.synthV(role: \henoch, take: nil, params: {|p b| [
+	lyrics: " r enjoy + the taste of life - - while you can",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role: \henoch, take: nil, params: {|p b| [
+	
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 P.tune(\Enjoy);
 Song.setTempoMap(\Enjoy,"QQ Q QQ Q Q Q q e e e e e");
 P('click',start:\Enjoy,music: {|p b e|
@@ -861,16 +878,17 @@ P(\moveChord,start:\move,syl:5,music:{ |p b e|
 	].p.play
 });
 ["tea -- ching them (ba da da da da), ",[3,4,3,1,-5,-4,-3,-4,-5].dm(\b)].addLine;
-P.synthV(role: \kirk, take: \lead, params: {|p b| [
-	lyrics: "teaching - + them ba da da da da",
+P.synthV(\feng, take: \lead, params: {|p b| [
+	lyrics: "teaching - + them bah da da da da",
 	pitchTake: 1,
+	vocalMode:\Opera
 ] }, music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.double(role: \kirk, take: \lead, params: {|p b| [
+P.double(\feng, take: \lead, params: {|p b| [
 	language: \English
 ] }, music:{|p b e|
 	{
@@ -1028,15 +1046,35 @@ P(\pain,start:'helping', syl:12,music: {| p, b, e|
 
 
 ["/*MULHALL:*/ What is it, Sargon? ",[1,5,4,1,-7].dm(\c)].addLine;
+P.synthV(role: \thalassa, take: \lead, params: {|p b| [
+	lyrics: "wat iz it sa gan?",
+	phonemes: ["what".xsampa.unbubble,"is".xsampa.unbubble,"it".xsampa.unbubble,"","gone".xsampa.unbubble] , // make .xsama work on arrays
+	lag: [0.1,0.05,0,0,0],
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 P.tune('What');
 ["/*KIRK:*/ Nothing. Our next injection will renovate me. (boom) ",[1,1].dm('e-')++[2,3,1,3,-7,1,2,1,-7,-5,-3].dm('d',scale:\mixolydian,)].addLine;
+P.synthV(role: \sargon, take: \lead, params: {|p b| [
+	lyrics: "Nothing. + our next injection + + will renovate + + me r",
+	phonemes: ["n a","s i N","a u a r","n e k s t", "i n","j e k t","sh a n","w i l","r e n","o","v e i t", "m i" ],
+	legato: [1,0.5,  1,1,1,1,1,1,1,1,1,1],
+	filter: (midinote: _ - 13), 
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).(3.dbamp)
+	}.play
+});
 Song.resources.renovateKey='e-';
 Song.resources.renovateKey='b-';
 Song.resources.renovateKey='d';
-~justTheTune.('renovate',({|i| 
-	i.fin(12)=>
-	Pmul(\freq,midiratio(-13),_) //'e- to b-'
-}));
+// ~justTheTune.('renovate',({|i| i.fin(12)=> Pmul(\freq,midiratio(-13),_) //'e- to b-' }));
 P(\dyad,start:'renovate',music:{|p b e|
 	[
 		freq:
@@ -1066,10 +1104,27 @@ P(\baseNote,start:'renovate',syl:11,music:{|p b e|
 		dur:4,
 		freq:[1,11].df(p.renovateKey,octave:2 ) * midiratio(5),
 		amp:0.25,
-	).play
+	).play;
+	[ instrument: \harp,
+		freq: [ 4,24 ].df(\d,2),
+		amp: 0.02,
+		out: Effect.bus(FreeVerb.ar(_,0.5,[ 1,0.8 ]), inputChannels:2,out:[0,1])
+	].p.fin(1).play
 }
 );
+P.tune( { |i|  i <> [ instrument: \sawSynthSustain, att:2, amp:0.02 ].pm => Pmul (\freq, (-1).midiratio,_) => Pfin(12,_)} )
 ["Do not be concerned.",[3,4,2,3,-7].dm('d',octave:5,scale:\minor )].addLine;
-P.tune('be concerned');
+P.synthV(role: \sargon, take: \lead, params: {|p b| [
+	lyrics: "du not bi kan sand",
+	filter: (midinote: _ - 12), 
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).(2.dbamp)
+	}.play
+});
+
+P.tune('be concerned', { |i| i <> [instrument:\wash,amp:[ 0.02, 0.01 ],out:[0,1].q(inf)].p => Pmul(\freq,[2, 0.5 ],_)});
 }
 ) 

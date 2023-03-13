@@ -1,5 +1,4 @@
-(
-s.waitForboot{
+( s.waitForboot{
 Song(\laboratory,[]).current;
 [ "/*[Laboratory]*/","r" ].addLine;
 [ "/*(There is a shiny plastic person on the table now.) */","r" ].addLine;

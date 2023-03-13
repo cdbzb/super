@@ -18,9 +18,48 @@ s.waitForBoot{
 	});
 	["MCCOY: Nurse, how are the last metabolic readings on our patients?","4 5 4 3 4 5.5 5 4 3 3 2 3 4.5 4.5 5.5".dm(\c)].addLine;
 	P.tune(\Nurse);
+	Song.synthVTracks = EventWithDefault(
+		\default, {
+			{|i|
+				i => DWGReverbC1C3.ar(_,mix:0.09)
+				* -10.dbamp
+			}
+		}
+	);
+	P.synthV(role: \mccoy, take: \lead, params: {|p b| [
+		lyrics: "Nurse how are the last metabolic + + + readings + on our patients +",
+		pitchTake: 1,
+		filter: (midinote: _ - 12), 
+		legato:[ 0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ]
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 	["CHAPEL: You'll find them excellent, Doctor. Well within normal.","3 4 5 7 5 4 4 3".dm(\a,\mixolydian)].addLine;
-	P.tune(\excellent);
+	P.synthV(role: \chapel, take: \lead, params: {|p b| [
+		lyrics: "you'll find them excellent + + Doctor + well within + normal +",
+		legato: [1, 1, 1, 1, 1, 1, 1, 0.5, 1, 1, 1, 1, 1],
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
+	P.tune(_ <> [out: Effect.bus({ |i|  i=> FreeVerb.ar(_,0.3,1) => SineShaper.ar(_,0.015,2) })].p);
 	["MCCOY: Is something wrong, Miss Chapel?","-7 1 2 3 1 -7 -5".dm(\g,\mixolydian)].addLine;
+	P.synthV(role: \mccoy, take: \lead, params: {|p b| [
+		lyrics: "is something + wrong miss chapel +",
+		filter: (midinote: _ - 12), 
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 	P.synthV(\kevin,\Miss, params: {|p b| [
 		lyrics: "is something + wrong miss chapel +",
 		
@@ -39,6 +78,16 @@ s.waitForBoot{
 		].pp
 	});
 	["CHAPEL: Er, yes. I, er, I had something to say. I can't seem to remember.","3 4 3 2 3 4 5 4 3 7 11 6 7 5 6 4 3".dm('a-',\mixolydian)].addLine;
+	P.synthV(role: \chapel, take: \lead, params: {|p b| [
+		lyrics: "er yes I er I had something + to say I can't seem to remember + +",
+		legato: [1, 1, 1, 1] / 2 ++ [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 	P(\bassnote, music: { |p b e|
 		[
 			freq: [1,\r, 6.5, 13].df(\c,[4,3]).q,
@@ -66,7 +115,28 @@ s.waitForBoot{
 	});
 	["MCCOY: Regarding our patients?","4 5 4 3 7 6".dm(\c,\mixolydian)].addLine;
 	P.tune(\Regarding);
+	P.synthV(role: \mccoy, take: \lead, params: {|p b| [
+		lyrics: "regarding + + our patients +",
+		legato: [1,1,0.6, 0.5, 1, 0.5],
+		filter: (midinote: _ - 12), 
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 	["CHAPEL: Yes. That must be it. ","7 11 5 3 1".dm(\f)].addLine;
+	P.synthV(role: \chapel, take: \lead, params: {|p b| [
+		lyrics: "yes, that must be it",
+		legato: [0.5, 1, 1, 1, 0.5],
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 	P(\bassnote, music: { |p b e|
 		[
 			freq: [\r,1].df(\f,[4,3]).q,
@@ -76,6 +146,15 @@ s.waitForBoot{
 	});
 	P.tune(\Yes);
 	["I am so plea -sed the way they are responding, Doctor.","5 4 3 5 6 5 4 3 2  5 4 3 1 -5".dm('b-') ].addLine;
+	P.synthV(role: \chapel, take: \lead, params: {|p b| [
+		lyrics: "I am so pleased - the way they are responding + + Doctor +",
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 
 	P(\bass, music: { |p b e|
 		[

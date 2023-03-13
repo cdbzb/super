@@ -13,8 +13,7 @@ s.waitForBoot{
 //]).value
 //}.inEnvir;
 
-[ "(Sargon and Thalassa are working...","r"].addLine;
-Song.durs['working']=[6].q;
+[ "Sargon and Thalassa are working...","r",[6]].addLine;
 [1,3,5,1,4,6,5,4].df(\g).q(2)=>[dur:0.5,freq:_,legato:1]=>_.p => _.fin(13) => {|i| P(\lick,start:\working,music:{|p b e| i.play})};
 [ "when their hands touch.","r",4 ].addLine; 
 P.tune(\touch);
@@ -442,7 +441,10 @@ P('bassNote',start:\think, syl:11, music: {|p b e|
 	[dur: b[0].q,freq:1.df('a-',4)].p <> p.bassSoundTwoDays => _.postln => _.play
 });
 ["/*SPOCK:*/ In two days, you'll have your own hands, Thalassa. ",[3,2,4,3,4,3,3,2,4,1,-7].dm('a-')].addLine;
-P.synthV(role: \henoch,take:nil ,params: {|p b| [
+Song.durs['two days'].list[10]=(1.33);
+P.synthV(role: \henoch,
+	// take:nil ,
+	params: {|p b| [
 	lyrics: "in two days youll have your own hands Tha la ssa" ,
 	pitchTake:1,
 	vocalMode: \Belt
@@ -452,7 +454,7 @@ P.synthV(role: \henoch,take:nil ,params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.double(role: \henoch, take: \lead, params: {|p b| [
+P.double(role: \henoch, params: {|p b| [
 	
 ] }, music:{|p b e|
 	{
@@ -464,7 +466,6 @@ P.double(role: \henoch, take: \lead, params: {|p b| [
 //P.tune('two days');
 //~twoDaysQuarters= Song.durs['two days'].list.asArray.parseBeats([0.5,0.5,1,1/3,1/3,1/3,3/4,(1/4+(3/4)), 1/4,3/4,(1/4+1)]);
 //Song.durs['two days'].list.postcs
-Song.durs['two days'].list[10]=(1.33);
 P(\bass,start:'two days',syl:1,music:{|p b e|
 	var quarters = b.drop(1).asArray.parseBeats([1,1/3,1/3,1/3,2/3,(1/3+(3/4)), 1/4,3/4,(1/4+1)]);
 
@@ -764,6 +765,17 @@ P('chord2',start:\Enjoy,music: {|p b e|
 });
 
 ["/*KIRK:*/ (boom But.. boom) our minds will have survived. ",[-2,2,-3,3,7,6,5,3,2.5].dm(\f)].addLine;
+P.synthV(role: \sargon, take: nil, params: {|p b| [
+	lyrics: "r but r out minds will have survived",
+	filter: (midinote: _ - 12), 
+	phonemes: ["","b a t", "","a u r", "m a e i n d z", "w i r" ,"h a v","s a r","v a e i v d"],
+	// pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 //Song.durs[\survived] = Song.durs[\survived].list.put(8,Song.durs[\survived].list[8]*1.5) => _.q;
 P.tune(\survived);
 P('bass',start:\But,music: {|p b e|
@@ -823,6 +835,17 @@ P(\extra,syl:7,start:\survived,music:{|p b e|
 }
 );
 ["And as androids, we can move among the people who do live ",[1,-5,1,-7,1,2].dm('b-')++[7,5,3,5,7,11,7,7,6].dm(\d)].addLine;
+P.synthV(role: \sargon, take: \lead, params: {|p b| [
+	lyrics: "And as androids +, we can move among + the people + who do live ",
+	filter: (midinote: _ - 12), 
+	phonemes: ["a n d", "a z", "a n d", "r o i d z","w i", "k a n", "m u v", "e m"," a N", "z e", "p i"," p e r", "h u", "d u", "r i v"],
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 P.tune(\people);
 P(\moveChord,start:\move,syl:5,music:{ |p b e|
 	b.postln;
@@ -838,6 +861,34 @@ P(\moveChord,start:\move,syl:5,music:{ |p b e|
 	].p.play
 });
 ["tea -- ching them (ba da da da da), ",[3,4,3,1,-5,-4,-3,-4,-5].dm(\b)].addLine;
+P.synthV(role: \kirk, take: \lead, params: {|p b| [
+	lyrics: "teaching - + them ba da da da da",
+	pitchTake: 1,
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role: \kirk, take: \lead, params: {|p b| [
+	language: \English
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.synthV(role: \sargon, take: \lead, params: {|p b| [
+	lyrics: "teaching - + them r r r r r",
+	phonemes: ["t i","i","ch i n g", "z e m" ],
+	filter: (midinote: _ - 12), 
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 P('pad',start:\tea,music: {|p b e|
 	[
 		[
@@ -887,6 +938,33 @@ P(\bassnote,start:'tea -- ching',syl:0,music:{|p b e|
 	=> _.play
 });
 ["helping them (boom) not to make the errors we -- did. (pain) ",[4,3,1,-7,1,2,3,1,4,5,5,6,5,-7.5].dm(\a,scale:\mixolydian)].addLine;
+P.synthV(role: \sargon, take: \lead, params: {|p b| [
+	lyrics: "helping + them r not to meik ze errors + we - did r",
+	filter: (midinote: _ - 12), 
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.synthV(role: \kirk, take: \backup, params: {|p b| [
+	lyrics: "helping + them r not to make the errors + we - did r",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role: \kirk, take: \backup, params: {|p b| [
+	
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 P('cymbal',start:\helping,music: {|p b e|
 	(
 		instrument: \cymbalsDS,

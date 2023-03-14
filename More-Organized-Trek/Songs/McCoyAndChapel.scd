@@ -114,7 +114,7 @@ s.waitForBoot{
 		].p.play
 	});
 	["MCCOY: Regarding our patients?","4 5 4 3 7 6".dm(\c,\mixolydian)].addLine;
-	P.tune(\Regarding);
+	// P.tune(\Regarding);
 	P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 		lyrics: "regarding + + our patients +",
 		legato: [1,1,0.6, 0.5, 1, 0.5],

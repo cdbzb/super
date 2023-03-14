@@ -3,14 +3,147 @@
 
 Song(\visual,[]).current;
 
-["/*SULU:*/ The reading's growing stronger, Captain.","r"].addLine;
-["Coming from a star system directly ahead.","r"].addLine;
+["The reading's growing stronger, Captain.","1 -6.5 1 3 5 11 5 4 3".dm('c#',\whole)].addLine;
+Trek.cast.sulu = \an;
+Trek.presets.put(\sulu,\an,[
+	paramGender: -0.35,
+	paramToneShift: 200,
+]);
+P.synthV(role: \sulu, take:\lead, params: {|p b| [
+	lyrics: "the readings + growing + stronger + captain +",
+	filter: (midinote: _ - 12), 
+	pitchTake: 1,
+	pitchExpression:1.2,
+	paramTension: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role: \sulu, params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			// => p.synthVTracks.at(e.key).()
+		}.play
+	});
+P.tune();
+P(\chord,syl:4, lag:-0.05, music: { |p b e|
+	[
+		["1 3 5".df('c#',\whole)," 11 13 15 21".df('c#',\whole) ],
+		["1 3 6".df('f#')," 11 13 16".df('f#')],
+		["1 3 5".df('a-',\whole)," 11 13 15 ".df('a-',\whole)]
+	].flop
+	.collect
+	{|i x|
+		[ 
+			freq: i .q,
+			out: Effect.bus( { |i|  i * SinOsc.ar(3.5).range(0.5,1) => FreeVerb.ar(_,0.02,1)}, out:1 ),
+			// lag: x * 0.11,
+			dur: [b.sum,0,0] + e.bNext.parse([5,7,1]) => _.q,
+			strum:0.05,
+			// amp: Pfunc({|e| e.freq.cpsmidi.linexp(60,70,0.08,0.03) })
+		].pp
+	}
+});
+P(\lowChord,syl:6, music: { |p b e|
+	MegaBind(
+		[
+			[11, \_, \_,   \_,   ],
+			[4,  \_, 5.5,  \_,   ],
+			[\r, 3,  \_,   3.5,  ],
+			[1,  \_, \_,   \r,   ],
+			[\r, \r, -5.5, \_,   ],
+			[-4, \_, -5.5, \_,   ],
+			[\r, -3, \_,   -3.5, ],
+
+		].df('c#',\whole)
+		,
+		b.drop(1) ++ e.bNext.parse([5,3]),
+		[],
+		{|i|  SinOsc.ar(i.freqSeq,0,0.1) 
+		* Env.asr().kr(2,gate:i.gateSeq)
+	},
+		{|i| Splay.ar(i)}
+	).play
+});
+
+["Coming from a star system directly ahead.","6 5 6 7 11 12 11 6 ".dm('c#') ++ "1 2 3 4 5".dm('e',\whole)].addLine;
+P.synthV(role: \sulu, take: \lead, params: {|p b| [
+	lyrics: "coming + from a star - system + directly + + ahead +",
+	filter: (midinote: _ - 12), 
+	legato: [1, 1,    1, 1, 1,  1,   1, 0.4, 1, 1, 1, 1, 0.9],
+	pitchTake: 1,
+	pitchExpression:1.4,
+	paramTension:1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+
+P.tune();
+P(\extraNote,syl:11, music: { |p b e|
+	(
+		freq: [1,11].df(\c,4),
+		dur:2
+	).play
+});
+P.double(role: \sulu, take: \lead, params: {|p b| [
+	
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+P(\lowChord,syl:7, music: { |p b e|
+	MegaBind(
+		[
+			[1,  \_, \_, \r, \r],
+			[\r, 2,  \_, \r, \r],
+			[\r, \r, 3,  \_, \r],
+			[\r, \r, \r, 4,  \r],
+			[-1, \r, -3, -4, \r]
+
+		].df('e',\whole)
+		,
+		b.drop(1),
+		[],
+		{|i|
+			SinOsc.ar(i.freqSeq,0,0.1)
+			* Env.asr().kr(2,gate:i.gateSeq)
+		},
+		{|i|  Mix.ar(i)}
+	).play
+});
 ["/*UHURA:*/ It's not a signal, sir.","r"].addLine;
 ["It does not seem to even exist, and yet",".r"].addLine;
 ["it's affecting all my channels.","r"].addLine;
 ["/*KIRK:*/ Well?","r"].addLine;
-["/*SPOCK:*/ Someone or something is attempting to attract our attention.","r"].addLine;
+["Someone or something is attempting to attract our attention.","1 -5 -6 -7 1 -5 -6 -7 1 -5 -6 -7 1 -7 1 2 -5".dm(\a), [2/3,((1/3)+(1/2)),1/4,1/4]!3 ++( [2,1,1,2,2]/4) * 60 / 85=>_.flat
+].addLine;
+P.synthV(\mo, start: Song.section(\attract), take: \lead, params: {|p b| [
+	lyrics: "someone + or - something + is attempting + + to attract + our attention + +",
+	legato: [1, 0.5,  1, 1, 1, 0.5, 1, 1, 1, 0.5, 1, 1, 1, 1, 1, 1, 1],
+	pitchTake: 1,
+	paramTension: 0.9,
+	paramGender: 0.35,
+	paramToneShift: 200,
+	filter: (midinote: _ - 12), 
+] }, music:{|p b e|
+	{
+		e.playbuf
+		* -5.dbamp
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
 P(\comp,start:\attempting,music: {
+	var clock = TempoClock.new.tempo_(85/60);
+
 	//Patterns
 	var tune= { | synth=\default, amp=1, pan=0 |
 		PmonoArtic(	 synth ,
@@ -21,15 +154,15 @@ P(\comp,start:\attempting,music: {
 			\amp,amp,
 			\pan,pan,
 
-			\tempo, 85/60,
-		).play
+			// \tempo, 85/60,
+		).play(clock:clock)
 	};
 	var descant={ |synth=\default, amp=0.3 |
 		Pbind(	\instrument, synth,
 			\degree, Pseq([\r, 5, 4, 3, 2, 4, 3, 2],1)-1+7, 
 			\root, -3,
 			\amp,amp
-		).play 
+		).play(clock:clock)
 	};
 	var offbeats={ |synth=\visual_twotube|
 		Pbind(	\instrument, synth,
@@ -38,7 +171,7 @@ P(\comp,start:\attempting,music: {
 			\root, -3,
 			\octave, 4,
 			\dummy, Pseq([\r, 1, 1, 1],1 )
-		).play
+		).play(clock:clock)
 	};
 
 	var off2={ |synth=\visual_caw, amp=0.1|
@@ -51,7 +184,7 @@ P(\comp,start:\attempting,music: {
 			\len,Pwhite(3.1,8.0),
 			\pan,Pwhite(-1,1.0),
 			\amp,amp,
-			\k,Pwhite(0,1.0) ).play};
+			\k,Pwhite(0,1.0) ).play(clock:clock)};
 
 			tune.(\visual_vowel, 0.18);
 			descant.(\visual_pad,0.2);
@@ -157,7 +290,7 @@ P(\sfx,start:\visual, music:{
 ["Does that frighten you, James Kirk?","r"].addLine;
 ["For if it does,","r"].addLine;
 ["if you let what is left of me perish,","r"].addLine;
-["then all of you, my children,","r"].addline;
+["then all of you, my children,","r"].addLine;
 ["all of mankind must perish, too.","r"].addLine;
 
 )

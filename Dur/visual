@@ -2,12 +2,16 @@ var o, p;
 o = [
 	Dictionary.prNew,  Array.prNew(512),  "The reading's growing stronger, Captain.",  Pseq.prNew,  
 	List.prNew,  Array.prNew(9),  "Coming from a star system directly ahead.",  Pseq.prNew,  
-	List.prNew,  Array.prNew(13),  "Someone or something is attempting to attract our attention.",  Pseq.prNew,  
-	Array.prNew(17)
+	List.prNew,  Array.prNew(13),  "/*KIRK:*/ Well?",  Pseq.prNew,  
+	List.prNew,  Array.prNew(1),  "Someone or something is attempting to attract our attention.",  Pseq.prNew,  
+	Array.prNew(17),  "It does not seem to even exist, and yet",  Pseq.prNew,  List.prNew,  
+	Array.prNew(11),  "/*UHURA:*/ It's not a signal, sir.",  Pseq.prNew,  List.prNew,  
+	Array.prNew(6),  "it's affecting all my channels.",  Pseq.prNew,  List.prNew,  
+	Array.prNew(8)
 ];
 p = [
 	// Dictionary
-	0, [ array: o[1],  size: 3 ],  
+	0, [ array: o[1],  size: 7 ],  
 	// Array
 	1, [ nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -76,16 +80,12 @@ p = [
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
 		o[10],  o[11],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
+		o[14],  o[15],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -114,9 +114,13 @@ p = [
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[17],  o[18],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[21],  o[22],  
+		o[25],  o[26],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -155,15 +159,47 @@ p = [
 	9, [ 0.17,  0.158,  0.175,  0.177,  
 		0.242,  0.446,  0.334,  0.453,  
 		0.297,  0.504,  0.388,  0.324,  
-		0.702 ],  
+		0.402 ],  
 	// Pseq
 	11, [ list: o[12],  repeats: 1,  
 		offset: 0 ],  
+	// List
+	12, [ array: o[13] ],  
 	// Array
-	12, [ 0.66666666666667,  0.83333333333333,  0.25,  0.25,  
-		0.66666666666667,  0.83333333333333,  0.25,  0.25,  
-		0.66666666666667,  0.83333333333333,  0.25,  0.25,  
-		0.5,  0.25,  0.25,  0.5,  
-		0.5 ]
+	13, [ 0.746 ],  
+	// Pseq
+	15, [ list: o[16],  repeats: 1,  
+		offset: 0 ],  
+	// Array
+	16, [ 0.47058823529412,  0.58823529411765,  0.17647058823529,  0.17647058823529,  
+		0.47058823529412,  0.58823529411765,  0.17647058823529,  0.17647058823529,  
+		0.47058823529412,  0.58823529411765,  0.17647058823529,  0.17647058823529,  
+		0.35294117647059,  0.17647058823529,  0.17647058823529,  0.35294117647059,  
+		0.35294117647059 ],  
+	// Pseq
+	18, [ list: o[19],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	19, [ array: o[20] ],  
+	// Array
+	20, [ 0.28,  0.276,  0.36,  0.528,  
+		0.305,  0.306,  0.266,  0.394,  
+		1.242,  0.521,  0.762 ],  
+	// Pseq
+	22, [ list: o[23],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	23, [ array: o[24] ],  
+	// Array
+	24, [ 0.348,  0.368,  0.376,  0.372,  
+		0.456,  0.55 ],  
+	// Pseq
+	26, [ list: o[27],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	27, [ array: o[28] ],  
+	// Array
+	28, [ 0.378,  0.372,  0.366,  0.384,  
+		0.352,  0.434,  0.638,  0.654 ]
 ];
 prUnarchive(o,p);

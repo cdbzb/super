@@ -1,8 +1,19 @@
+/*
+"open /Users/michael/trek/BySection/Master + 1semitone.m4v.RPP ".unixCmd
+*/
 (
 //[Bridge]
 
 Song(\visual,[]).current;
 
+Song.synthVTracks=EventWithDefault(
+	\default, {
+		{|i|
+			i
+			// /10
+		}
+	}
+);
 ["The reading's growing stronger, Captain.","1 -6.5 1 3 5 11 5 4 3".dm('c#',\whole)].addLine;
 Trek.cast.sulu = \an;
 Trek.presets.put(\sulu,\an,[
@@ -90,7 +101,25 @@ P(\extraNote,syl:11, music: { |p b e|
 	(
 		freq: [1,11].df(\c,4),
 		dur:2
-	).play
+	).play;
+	
+	[
+		dur: 
+		[ Song.durs[\system].list.last,0,0 ] + Song.durs[Song.section(\system)+1].list.parse([5,6,3])
+		=> _.q,
+		
+		freq: [[7, 12].df(\f,\mixolydian), [7, 12].df(\e,\mixolydian), [6, 11].df(\e)].q /2,
+		// amp:0
+	].p
+	+= [
+		dur: [ b.last,0,0,0,0,0 ] + Song.durs[Song.section(\system)+1].list.parse([5,3,3,[1,0.5],[0.5,1],1]) => _.q,
+		freq: 
+		[3].df(\f,\mixolydian) ++ [3,2.5].df(\e,\mixolydian) ++ [2,1.5,1].df(\e,\mixolydian) /2
+		=> _.q,
+		// amp:0
+	].p
+	<> (out:1,instrument:\wash)
+	=> _.play
 });
 P.double(role: \sulu, take: \lead, params: {|p b| [
 	
@@ -120,10 +149,100 @@ P(\lowChord,syl:7, music: { |p b e|
 		{|i|  Mix.ar(i)}
 	).play
 });
-["/*UHURA:*/ It's not a signal, sir.","r"].addLine;
-["It does not seem to even exist, and yet",".r"].addLine;
-["it's affecting all my channels.","r"].addLine;
-["/*KIRK:*/ Well?","r"].addLine;
+Trek.cast.uhuru = \cheng;
+P(\chords, music: { |p b e|
+	
+});
+["/*UHURA:*/ It's not a signal, sir."," 7 11 6 12 7 4".dm('d#')].addLine;
+P.synthV(role: \uhuru, take: \lead, params: {|p b| [
+	lyrics: "its not a signal + sir",
+	filter: (midinote: _ - 12), 
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+P.tune();
+["It does not seem to even exist, and yet","7 11 12 13 11 12 13 11 14.5 15 15.5".dm(\c,\mixolydian)].addLine;
+P.synthV(role: \uhuru, take: \lead, params: {|p b| [
+	lyrics: "it does not seem to even + exist + and yet",
+	legato: [1, 1, 1, 1, 1, 1, 1, 1, 0.6, 1, 0.5],
+	filter: (midinote: _ - 12), 
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.tune();
+["it's affecting all my channels.",[5, 5, 5, 5, 5, 6, 5, 4].dm('d#')].addLine;
+P.synthV(role: \uhuru, take: \nil, params: {|p b| [
+	lyrics: "its affecting + + all my channels +",
+	pitchTake: 1,
+
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.synthV(role: \uhuru, take: \harmony,
+	pbind: {|p b| [
+		midinote:  [3, 3, 3, 3, 3, 3, 4, 1].dm('d#'),
+		dur: b
+	].p },
+	params: {|p b| [
+	lyrics: "its affecting + + all my channels +",
+	pitchTake: nil
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P(\drums, music: { |p b e|
+	[
+		instrument: 
+		"skskskk".as(Array).collect{|i|( i==$s ).if{\snare}{\kick}}
+		.q,
+		dur: b.q
+	].pp;
+	(lag:b.parse([6]).unbubble.sum, instrument: \cymbalsDS,amp:0.02 ).play
+});
+P.double(role:\uhuru, take: \harmony, params: {|p b| [
+	
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+
+P.tune();
+P(\chord, music: { |p b e|
+	[
+		freq: [[3, 3, 3, 3, 3, 3, 4, 1],[-5,-5,-5,-5,-5,-6,-5,-4]].flop.df('d#').q,
+		dur:b.q
+	].pp
+
+});
+["/*KIRK:*/ Well?",[1].dm('f#')].addLine;
+P.synthV(role: \kirk, take: \lead, params: {|p b| [
+	lyrics: "well",
+	// filter: (midinote: _ - 12), 
+	pitchTake: 1,
+	paramTension:1,
+	paramToneShift:200
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+
 ["Someone or something is attempting to attract our attention.","1 -5 -6 -7 1 -5 -6 -7 1 -5 -6 -7 1 -7 1 2 -5".dm(\a), [2/3,((1/3)+(1/2)),1/4,1/4]!3 ++( [2,1,1,2,2]/4) * 60 / 85=>_.flat
 ].addLine;
 P.synthV(\mo, start: Song.section(\attract), take: \lead, params: {|p b| [

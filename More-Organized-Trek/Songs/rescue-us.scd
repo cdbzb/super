@@ -17,6 +17,27 @@ Song(\rescue,[]).current;
 ["/*SPOCK:*/ Captain.","r"].addLine;
 ["/*KIRK:*/ Got something?","r"].addLine;
 ["(boom boom) Sensors registering some form of energy deep inside the planet.","-1 -1 3 1 4 3 1 3 4 5 7 6 4  2 1 -7 -6 -6 -5".dm(\e,\mixolydian)].addLine; /*SPOCK:*/ 
+P.synthV(role: \spock, take: \lead, params: {|p b| [
+	lyrics: "r r sensors + regist + ring  some kind of energy + + deep inside +  the planet + ",
+	filter: (midinote: _ - 12), 
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		/ 10 
+		// => p.synthVTracks.at(e.key).()
+	}.play
+
+});
+P.double(role: \spock, take: \lead, params: {|p b| [
+	
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+		/10
+	}.play
+});
 Song.setTempoMap(\Sensors, "e e e e | E E E E E E | e x xq | Q E Q E e e");
 P.tune();
 P(\bass, music: { |p b e| //check last note
@@ -51,6 +72,28 @@ P(\bass, music: { |p b e|
 	].pp
 });
 ["/*SPOCK:*/ Reading energy only, Captain. No life forms.", "1 2 3 2 1 4 2 1 -6 4 5.5 2".dm('f#',\lydian)].addLine;
+P.synthV(role: \spock, take: \lead, params: {|p b| [
+	lyrics: "Reading + energy + + only + captain + no life forms",
+	filter: (midinote: _ - 12), 
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+		/10
+	}.play
+
+});
+P.double(role: \spock, take: \lead, params: {|p b| [
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+		/10
+	}.play
+
+});
 P.tune();
 [" I have locked your transporter device on my co-ordinates.","5 5 5 6 5 4 3 2 4 3 2 1 3 2 2".dm(\a,4)].addLine;/*SARGON [OC]*/
 P.synthV(role: \vocoder, take: \lead, params: {|p b| [
@@ -84,6 +127,19 @@ P(\chords, music: { |p b e|
 });
 // P.tune();
 ["Please come to us. Rescue us from oblivion."," 3 3 2 2 4 3 -6 1".dm('f#',\minor) ++ "4 4 3 1".dm(\f)].addLine;
+P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+	lyrics: "please come to us rescue + us from  oblivion + +",
+	filter: (midinote: _ - 12), 
+	pitchTake: 1
+] }, music:{|p b e|
+	p.vocodeTune.(p, b, e, e.rpp,
+		dur: b.sum,
+		att: 0.2,
+		sus: b.sum - 0.2,
+		rel: 1
+	)
+
+});
 P.tune();
 P(\laMerChords, music: { |p b e|
 	[\A, \c].collect{|i| [1,3,5,6].df(i)}
@@ -110,8 +166,55 @@ P(\answer, syl: 10, music: { |p b e|
 	].pp
 });
 ["/*SPOCK:*/ Coming from deep under the planet's surface, Captain. ","11 12 13 7 12 11 7 5 7 5 4 3 2".dm(\c,\mixolydian)].addLine;
+P.synthV(role: \spock, take: \lead, params: {|p b| [
+	lyrics: "Coming + from deep under + the planet's + surface + Captain + ",
+	filter: (midinote: _ - 12), 
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+		/10
+	}.play
+
+});
+P.double(role: \spock,
+	filter: (midinote: _ ), 
+	take: \lead, params: {|p b| [
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+		/10
+	}.play
+
+});
+
 P.tune();
 ["Under at least one hundred miles of "," 1 2 3 4 5 4".dm(\f,\lydian) ++ "1 2 3 4 5 4 3".dm(\g,\lydian)].addLine;
+P.synthV(role: \spock, take: \lead, params: {|p b| [
+	lyrics: "Under + at least - -  one hundred + miles - - of ",
+	filter: (midinote: _ - 12), 
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+		/ 10
+	}.play
+
+});
+P.double(role: \spock, take: \lead, params: {|p b| [
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+		/10
+	}.play
+
+});
 P.tune();
 ["(boom boom) solid rock.","-7 1 7 6 7 11  12 12 7".dm(\f)].addLine;
 Song.setTempoMap(\solid,"e e e x x qqq e x xq".asBeats);
@@ -137,6 +240,19 @@ P(\bass, music: { |p b e|
 	].ppm
 });
 ["I will make it possible for your transporter to beam you"," 5 5 5 6 5 4 3 2 3 4 4 3 3 1 2 3".dm(\d)].addLine;/*SARGON [OC]*/
+P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+	lyrics: "I will make it possible + + for your transporter + + beam to send you",
+	pitchTake: 1
+] }, music:{|p b e|
+	p.vocodeTune.(p, b, e, e.rpp,
+		dur:b.sum + 3 => _.postln,
+		att: 0.1,
+		rel: 5,
+		sus:b.sum
+	);
+	// { e.playbuf }.play
+
+});
 Song.setTempoMap(\possible,"q e eq e eq e eqqq e eq q q q qqq q q q");
 P(\chord, music: { |p b e|
 	[
@@ -158,6 +274,18 @@ P(\bass, music: { |p b e|
 });
 P.tune();
 ["(boom) that deep (that deep that deep) beneath the surface. Have no fear."," -5 3 2 3 2 3 2 1 2 3 2 1 -7 1".dm(\d)].addLine;
+P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+	lyrics: "r that deep that deep that deep beneath + the surface + baby +",
+	pitchTake: 1
+] }, music:{|p b e|
+	p.vocodeTune.(p, b, e, e.rpp,
+		dur: b.sum,
+		att: 0.2,
+		sus: b.sum - 0.2,
+		rel: 1
+	)
+
+});
 P.tune();
 P(\chords, music: { |p b e|
 	[

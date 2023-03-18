@@ -1,7 +1,7 @@
 (
 //[Bridge]
 Song(\rescue,[]).current;
-
+"~/tank/super/More-Organized-Trek/Songs/boilerplate.scd".standardizePath.load;
 // Captain's Log. Stardate 4768.3.
 // The Enterprise is in orbit above a planet whose 
 // surface, our sensors tell us, 
@@ -25,7 +25,17 @@ P(\bass, music: { |p b e| //check last note
 		dur: "e e q | e e q | e e q | e e e e | e".asBeats.warpTo(e.tempoMap).q
 	].pp
 });
-["/*SARGON [OC]*/(boom) Your probes have touched me, Mister Spock.",[\r, 4, 4, 4, 4, 3, 2, 1, 2, 3].dm(\c,\minor)].addLine;
+["/*SARGON [OC]*/(boom) Your probes have touched me, Mister Spock.",[-1, 4, 4, 4, 4, 3, 2, 1, 2, 3].dm(\c,\minor)].addLine;
+P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+	lyrics: "r your probes have touched me mister + spock -",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+	};
+	p.vocodeTune.(p, b, e, e.rpp)
+
+});
 P(\chord, music: { |p b e|
 	[
 		freq: [-1, 1, 3, 5].df(\f).bubble.q,
@@ -34,7 +44,6 @@ P(\chord, music: { |p b e|
 		out: Effect.bus( FreeVerb.ar(_, mix:1, room:1, damp:[ 0.5,0.6 ]) )
 	].pp
 });
-P.tune();
 P(\bass, music: { |p b e|
 	[
 		freq:[1, 7, 4].df(\f, [2,3],\mixolydian).q,
@@ -44,6 +53,13 @@ P(\bass, music: { |p b e|
 ["/*SPOCK:*/ Reading energy only, Captain. No life forms.", "1 2 3 2 1 4 2 1 -6 4 5.5 2".dm('f#',\lydian)].addLine;
 P.tune();
 [" I have locked your transporter device on my co-ordinates.","5 5 5 6 5 4 3 2 4 3 2 1 3 2 2".dm(\a,4)].addLine;/*SARGON [OC]*/
+P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+	lyrics: "I have locked your transporter + +  device + on my co-ordinates + + +",
+	pitchTake: 1
+] }, music:{|p b e|
+	p.vocodeTune.(p, b, e, e.rpp)
+
+});
 Song.setTempoMap('co-ordinates',"q e eq e eq e eq e eq e eq e eq e eq");
 P(\bass, music: { |p b e|
 	[
@@ -66,7 +82,7 @@ P(\chords, music: { |p b e|
 		)
 	].pp
 });
-P.tune();
+// P.tune();
 ["Please come to us. Rescue us from oblivion."," 3 3 2 2 4 3 -6 1".dm('f#',\minor) ++ "4 4 3 1".dm(\f)].addLine;
 P.tune();
 P(\laMerChords, music: { |p b e|

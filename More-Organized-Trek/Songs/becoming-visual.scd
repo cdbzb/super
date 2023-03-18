@@ -1,5 +1,5 @@
 /*
-"open /Users/michael/trek/BySection/Master + 1semitone.m4v.RPP ".unixCmd
+"open" + "/Users/michael/trek/BySection/Master + 1semitone.m4v.RPP".escapeChar(Char.space) => _.unixCmd
 */
 (
 //[Bridge]
@@ -12,7 +12,14 @@ Song.synthVTracks=EventWithDefault(
 			i
 			// /10
 		}
+	},
+	\cheng, {
+		{|i|
+			i
+			*2.5
+		}
 	}
+
 );
 ["The reading's growing stronger, Captain.","1 -6.5 1 3 5 11 5 4 3".dm('c#',\whole)].addLine;
 Trek.cast.sulu = \an;
@@ -80,7 +87,6 @@ P(\lowChord,syl:6, music: { |p b e|
 		{|i| Splay.ar(i)}
 	).play
 });
-
 ["Coming from a star system directly ahead.","6 5 6 7 11 12 11 6 ".dm('c#') ++ "1 2 3 4 5".dm('e',\whole)].addLine;
 P.synthV(role: \sulu, take: \lead, params: {|p b| [
 	lyrics: "coming + from a star - system + directly + + ahead +",
@@ -95,7 +101,6 @@ P.synthV(role: \sulu, take: \lead, params: {|p b| [
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
-
 P.tune();
 P(\extraNote,syl:11, music: { |p b e|
 	(
@@ -104,9 +109,7 @@ P(\extraNote,syl:11, music: { |p b e|
 	).play;
 	
 	[
-		dur: 
-		[ Song.durs[\system].list.last,0,0 ] + Song.durs[Song.section(\system)+1].list.parse([5,6,3])
-		=> _.q,
+		dur: [ Song.durs[\system].list.last,0,0 ] + Song.durs[Song.section(\system)+1].list.parse([5,6,2]) => _.q,
 		
 		freq: [[7, 12].df(\f,\mixolydian), [7, 12].df(\e,\mixolydian), [6, 11].df(\e)].q /2,
 		// amp:0
@@ -153,7 +156,32 @@ Trek.cast.uhuru = \cheng;
 P(\chords, music: { |p b e|
 	
 });
-["/*UHURA:*/ It's not a signal, sir."," 7 11 6 12 7 4".dm('d#')].addLine;
+[" It's not a signal, sir."," 7 11 6 12 7 4".dm('d#')].addLine;/*UHURA:*/
+Song.setTempoMap (\signal,"q q q q q q");
+P(\square, music: { |p b e|
+	[
+		freq: [\r,[2, 7],[-7, 4]].df('d#',6).q,
+		dur: b.parse([3, 2, 1]).q,
+		legato:0.2,
+		instrument: \visualToot,
+		amp: 0.03
+	].pp
+});
+( Song.signalBass = [
+	instrument: \harp,
+	decaytime: 2,
+	coef: 0.8
+
+];
+);
+P(\bass, music: { |p b e|
+	[
+		dur: "qqe e Q Q Q q".asBeats.warpTo(e.tempoMap).q,
+		freq: [\r, 6, 7, 5, 1.5, 1].df(\g,2,\mixolydian).q,
+	]
+	++ p.signalBass
+	=> _.pp
+});
 P.synthV(role: \uhuru, take: \lead, params: {|p b| [
 	lyrics: "its not a signal + sir",
 	filter: (midinote: _ - 12), 
@@ -161,11 +189,57 @@ P.synthV(role: \uhuru, take: \lead, params: {|p b| [
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		// => p.synthVTracks.at(e.key).()
+		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.tune();
+// P.tune();
+P(\pizz, music: { |p b e|
+	[
+		dur: "qqq q q q".asBeats.warpTo(e.tempoMap).q,
+		freq: [\r, 12, 7, 4].df('e-').q,
+		instrument: \twang,
+		out:2
+	].pp
+});
 ["It does not seem to even exist, and yet","7 11 12 13 11 12 13 11 14.5 15 15.5".dm(\c,\mixolydian)].addLine;
+Song.setTempoMap(P.calcStart()," E E E Q E E E E qe e q");
+SynthDef(\visualToot,{
+	var freq = \freq.kr(200);
+	Pulse.ar(freq )
+	+ SinOsc.ar(freq)
+
+	* Env.asr(0.01,1,0.1).kr(2,gate:\gate.kr(1))
+	* \amp.kr(0.1)
+	=> Out.ar(\out.kr(0),_)
+
+}).add;
+P(\square, music: { |p b e|
+	[
+		freq: [\r,[3, 11],[1, 5],  [-6.5, 6.5],[1, 11]].df('c',6).q,
+		dur: b.parse([3, 2, 3, 2, 1]).q,
+		legato:0.2,
+		instrument: \visualToot,
+		amp: 0.03
+	].pp
+});
+
+P(\pizz, music: { |p b e|
+	[
+		dur: "q e e q".asBeats.warpTo(e.tempoMap).q,
+		freq: [\r, 13, 11, 5].df('c').q,
+		instrument: \twang,
+		out:3
+	].pp
+});
+P(\bass, music: { |p b e|
+	[
+		dur:"q Q E e e q q q q".asBeats.warpTo(e.tempoMap).q,
+		// instrument:\snare,
+		freq: [\r, 3, 1, -5, -4.5, 4.5, 4, 3].df('c',3).q
+	]
+	++ p.signalBass
+	=> _.pp
+});
 P.synthV(role: \uhuru, take: \lead, params: {|p b| [
 	lyrics: "it does not seem to even + exist + and yet",
 	legato: [1, 1, 1, 1, 1, 1, 1, 1, 0.6, 1, 0.5],
@@ -177,7 +251,7 @@ P.synthV(role: \uhuru, take: \lead, params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.tune();
+// P.tune();
 ["it's affecting all my channels.",[5, 5, 5, 5, 5, 6, 5, 4].dm('d#')].addLine;
 P.synthV(role: \uhuru, take: \nil, params: {|p b| [
 	lyrics: "its affecting + + all my channels +",
@@ -220,7 +294,30 @@ P.double(role:\uhuru, take: \harmony, params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
+Song.setTempoMap(\affecting,"q q q q q q qq q");
+P(\bass, music: { |p b e|
+	[
+		freq: [5, 5,3, 4, 4, 4, 1].df('a-',2).q,
+		amp:[3, 3, 1, 3, 3, 3, 3, 4]/8=>_.q,
+		dur: "q Q E q qq q qq".asBeats.warpTo(e.tempoMap).q
+	].pp
+});
+P(\shaker, music: { |p b e|
 
+	[
+		dur: [12,10].dup(16).flat / 22  
+		// => _.push(7,-0.02)
+		// => _.push(6,-0.02)
+		=> _.warpTo(e.tempoMap)
+		=> _.q
+		,
+		// instrument:\cymbalsDS,
+		instrument:\hat_808,
+		
+		amp:[4,2,3,2] -0.5 /40 =>_.q(inf),
+	].pp
+
+});
 P.tune();
 P(\chord, music: { |p b e|
 	[
@@ -229,7 +326,7 @@ P(\chord, music: { |p b e|
 	].pp
 
 });
-["/*KIRK:*/ Well?",[1].dm('f#')].addLine;
+[" Well?",[1].dm('f#')].addLine;/*KIRK:*/
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	lyrics: "well",
 	// filter: (midinote: _ - 12), 
@@ -242,8 +339,7 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-
-["Someone or something is attempting to attract our attention.","1 -5 -6 -7 1 -5 -6 -7 1 -5 -6 -7 1 -7 1 2 -5".dm(\a), [2/3,((1/3)+(1/2)),1/4,1/4]!3 ++( [2,1,1,2,2]/4) * 60 / 85=>_.flat
+["Someone or something is attempting to attract our attention.","1 -5 -6 -7 1 -5 -6 -7 1 -5 -6 -7 1 -7 1 2 -5".dm(\a) + 1, [2/3,((1/3)+(1/2)),1/4,1/4]!3 ++( [2,1,1,2,2]/4) * 60 / 85=>_.flat
 ].addLine;
 P.synthV(\mo, start: Song.section(\attract), take: \lead, params: {|p b| [
 	lyrics: "someone + or - something + is attempting + + to attract + our attention + +",
@@ -268,7 +364,7 @@ P(\comp,start:\attempting,music: {
 		PmonoArtic(	 synth ,
 			\dur,	  Pseq([2/3,((1/3)+(1/2)),1/4,1/4],3) ++	(Pseq([2,1,1,2,2])/4),
 			\degree, Pseq([8, 5, 6, 7],3)-1 ++ (Pseq([8,7,8,9,5])-1),
-			\root, -3,
+			\root, -3 + 1,
 			\legato, Pseq([Pseq([1,0.5, 1,0.9],3),	 1,1,1,1,1]),
 			\amp,amp,
 			\pan,pan,
@@ -279,7 +375,7 @@ P(\comp,start:\attempting,music: {
 	var descant={ |synth=\default, amp=0.3 |
 		Pbind(	\instrument, synth,
 			\degree, Pseq([\r, 5, 4, 3, 2, 4, 3, 2],1)-1+7, 
-			\root, -3,
+			\root, -3 + 1,
 			\amp,amp
 		).play(clock:clock)
 	};
@@ -287,7 +383,7 @@ P(\comp,start:\attempting,music: {
 		Pbind(	\instrument, synth,
 			\dur, Pseq([1, 2, 2, 2], 1),
 			\degree, 4,
-			\root, -3,
+			\root, -3 + 1,
 			\octave, 4,
 			\dummy, Pseq([\r, 1, 1, 1],1 )
 		).play(clock:clock)
@@ -303,7 +399,8 @@ P(\comp,start:\attempting,music: {
 			\len,Pwhite(3.1,8.0),
 			\pan,Pwhite(-1,1.0),
 			\amp,amp,
-			\k,Pwhite(0,1.0) ).play(clock:clock)};
+			\k,Pwhite(0,1.0) 
+		).play(clock:clock)};
 
 			tune.(\visual_vowel, 0.18);
 			descant.(\visual_pad,0.2);
@@ -313,13 +410,85 @@ P(\comp,start:\attempting,music: {
 		} );
 
 
-["/*KIRK:*/ Someone or something has succeeded.","r"].addLine;
-["Our distress signal relays have been activated.","r"].addLine;
-["We've been given a direction to follow, but how? What's causing it?","r"].addLine;
-["/*SPOCK:*/ I do not know.","r"].addLine;
+[" Someone or something has succeeded. Our dis (boom)",[4, 1, 3, 4, 1, 3, 4].dm(\g) ++ [7, 1, 3, 2, -6.5].dm('f#',\diminished2) + 1 ].addLine;/*KIRK:*/
+Song.setTempoMap(\succ,"Q Q Q Q Q E E Q Q E E qq".asBeats);
+Song.setTempoMap(\succ,"ex e xe Q Q E E Q Q E E qq".asBeats);
+// P.tune();
+P(\bass, music: { |p b e|
+	[
+		dur: "q qq qq q q".asBeats warpTo: e.tempoMap =>_.q,
+		// instrument: \snare,
+		// rest: [1, 1, \r, 1, \r, 1, 1].q(inf)
+		freq: [1, -5, -5, -4.5 ].df('c#').q,
+		amp:1
+	].p.trace.play
+});
+P(\bassnote,syl:10, music: { |p b e|
+	( 
+		freq: [-6.5,-16.5].df(\g,4) * 1.midiratio ,
+	dur: b.drop(1),
+	amp: 0.4
+).play
+});
+P.synthV(role: \kirk, take: \lead, params: {|p b| [
+	lyrics: "someone + or something + has succeeded + + our di r ",
+	legato: [1, 1, 1, 1, 1, 1, 1, 1, 0.7, 1, 1],
+	pitchExpression: 1.0,
+	filter: (midinote: _ - 12), 
+	pitchTake: 1,
+	paramToneShift: 300,
+	paramTension: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role: \kirk, take: \lead, params: {|p b| [
+	
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+["-stress signals have been (ba da ba da ba da).",[4, 2, -7, 1, 2, 1, -6,-6,-6,-6,-6,-6 ].dm(\c) +1 ].addLine;
+P(\bass, syl: 5, music: { |p b e|
+	[
+		freq: [ 6, 6, 6, 6, 5, 5 ].df('c#', [3,4]).q,
+		dur: b.drop(1).q
+	].pp
+});
+P.synthV(role: \kirk, take:\lead, params: {|p b| [
+	lyrics: "stress signals + have been - r r r r r r",
+	lag: [0.1,0,0,0,0,0,0,0],
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role: \kirk, take:\lead, params: {|p b| [
+	
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P(\snare,syl:5, music: { |p b e|
+	[
+		dur: b.drop(1).q,
+		instrument: \snare
+	].pp
+});
+[" activated. We've been given a direction to","r"].addLine;
+[" follow, but how? What's causing it?","r"].addLine;
+[" I do not know.","r"].addLine;/*SPOCK:*/
 ["Not even a Vulcan can know the unknown, Captain.","r"].addLine;
 ["We are hundreds of light years past where any Earth ship has ever explored.","r"].addLine;
-["/*SULU:*/ Planet dead ahead, Captain. Becoming visual.","r"].addLine;
+[" Planet dead ahead, Captain. Becoming visual.","r"].addLine;/*SULU:*/
 P(\sfx,start:\visual, music:{
 	var sine,verb,verbBus=Bus.audio;
 	var wibble = {
@@ -384,28 +553,28 @@ P(\sfx,start:\visual, music:{
 		}).play;
 
 	});
-["/*SPOCK:*/ Class M planet, Captain.","r"].addLine;
-["/*KIRK:*/ Close to Earth conditions.","r"].addLine;
-["/*SPOCK:*/ With two very important exceptions.","r"].addLine;
+[" Class M planet, Captain.","r"].addLine;/*SPOCK:*/
+[" Close to Earth conditions.","r"].addLine;/*KIRK:*/
+[" With two very important exceptions.","r"].addLine;/*SPOCK:*/
 ["It's much older than Earth, and about a half million years ago, its atmosphere was","r"].addLine;
 ["totally ripped away by some sort of cataclysm.","r"].addLine;
 ["The planet has evidently been dead since then.","r"].addLine;
 ["Sensors detect no life of any kind.","r"].addLine;
-["/*SARGON [OC]:*/ All of your questions will be answered in time, Captain Kirk.","r"].addLine;
-["/*KIRK*/ Are your hailing frequencies open?","r"].addLine;
-["/*UHURA:*/ No, sir.","r"].addLine;
+[" All of your questions will be answered in time, Captain Kirk.","r"].addLine;/*SARGON [OC]:*/
+[" Are your hailing frequencies open?","r"].addLine;/*KIRK*/
+[" No, sir.","r"].addLine;/*UHURA:*/
 ["SARGON [OC]: I am Sargon.","r"].addLine;
 ["It is the energy of my thoughts which has touched your instruments and directed you here.","r"].addLine;
 ["Now with this closer distance I can speak to you at last.","r"].addLine;
-["/*KIRK:*/ Who are you, Sargon?","r"].addLine;
+[" Who are you, Sargon?","r"].addLine;/*KIRK:*/
 ["SARGON [OC]: Please assume a standard orbit about our planet, Captain.","r"].addLine;
-["/*KIRK:*/ Is that a request or demand?","r"].addLine;
+[" Is that a request or demand?","r"].addLine;/*KIRK:*/
 ["SARGON [OC]: The choice is yours.","r"].addLine;
 ["I read what is in your mind.","r"].addLine;
 ["Words are unnecessary.","r"].addLine;
-["/*KIRK:*/ The planet is dead.","r"].addLine;
+[" The planet is dead.","r"].addLine;/*KIRK:*/
 ["There's no possibility of life there as we understand life.","r"].addLine;
-["/*SARGON:*/ [OC]: And I am as dead as my planet.","r"].addLine;
+[" [OC]: And I am as dead as my planet.","r"].addLine;/*SARGON:*/
 ["Does that frighten you, James Kirk?","r"].addLine;
 ["For if it does,","r"].addLine;
 ["if you let what is left of me perish,","r"].addLine;

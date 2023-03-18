@@ -68,10 +68,10 @@ SynthV {
 				'name': "Xuan Yu",
 				'language': "mandarin",
 				'phoneset': "xsampa",
-				'languageOverride': "",
-				'phonesetOverride': "",
+				'languageOverride': "english",
+				'phonesetOverride': "arpabet",
 				'backendType': "SVR2AI",
-				'version': "100"
+				'version': "101"
 			),
 			kevin: ( 
 				'name':             "Kevin",
@@ -80,7 +80,7 @@ SynthV {
 				'languageOverride': "",
 				'phonesetOverride': "",
 				'backendType':      "SVR2AI",
-				'version':          "107"
+				'version':          "108"
 			),
 			feng: (
 				'name': "Feng Yi",
@@ -98,7 +98,7 @@ SynthV {
 				'languageOverride': "english",
 				'phonesetOverride': "arpabet",
 				'backendType': "SVR2AI",
-				'version': "104"
+				'version': "105"
 			),
 			mo: (
 				'name': "Mo Chen",
@@ -107,7 +107,7 @@ SynthV {
 				'languageOverride': "english",
 				'phonesetOverride': "arpabet",
 				'backendType': "SVR2AI",
-				'version': "104"
+				'version': "105"
 			),
 			asterian: (
 				'name': "ASTERIAN",
@@ -116,7 +116,7 @@ SynthV {
 				'languageOverride': "",
 				'phonesetOverride': "",
 				'backendType': "SVR2AI",
-				'version': "100"
+				'version': "101"
 			),
 			cheng: (
 

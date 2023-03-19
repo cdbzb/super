@@ -2,6 +2,15 @@
 //[Bridge]
 Song(\rescue,[]).current;
 "~/tank/super/More-Organized-Trek/Songs/boilerplate.scd".standardizePath.load;
+Song.synthVTracks = EventWithDefault(
+	\default, {
+		{
+			|i|
+			i 
+			/ 7
+		}
+	}
+);
 // Captain's Log. Stardate 4768.3.
 // The Enterprise is in orbit above a planet whose 
 // surface, our sensors tell us, 
@@ -94,7 +103,7 @@ P.double(role: \spock, take: \lead, params: {|p b| [
 	}.play
 
 });
-P.tune();
+// P.tune();
 [" I have locked your transporter device on my co-ordinates.","5 5 5 6 5 4 3 2 4 3 2 1 3 2 2".dm(\a,4)].addLine;/*SARGON [OC]*/
 P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	lyrics: "I have locked your transporter + +  device + on my co-ordinates + + +",
@@ -218,7 +227,56 @@ P.double(role: \spock, take: \lead, params: {|p b| [
 P.tune();
 ["(boom boom) solid rock.","-7 1 7 6 7 11  12 12 7".dm(\f)].addLine;
 Song.setTempoMap(\solid,"e e e x x qqq e x xq".asBeats);
+P.synthV(role: \spock, take: \lead, params: {|p b| [
+	lyrics: "r r solid + rock - r r r",
+	legato: [1, 1, 1, 1, 1, 0.5,  1, 1, ],
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
 
+});
+P.double(role: \spock, take: \lead, params: {|p b| [
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+//idea: NineZero here?
+P.synthV(role: \spock,
+	filter: (midinote:[1, 1, 5, 5, 3].dm('f')), 
+	take: \harmony, params: {|p b| [
+	lyrics: "r r solid + rock -",
+	legato: [1, 1, 1, 1, 1, 0.5, ],
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.synthV(\feng, take: \bg, params: {|p b| [
+	lyrics: "r r r r r r solid + rock",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(\feng, take: \bg, params: {|p b| [
+	
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 P.tune();
 P(\click, music: { |p b e|
 	[
@@ -300,10 +358,34 @@ P(\bass, music: { |p b e|
 	].pp
 });
 ["/*SPOCK:*/ Reading a chamber now. Oxygen-nitrogen atmosphere, suitable for human life support.","r"].addLine;
-["/*KIRK:*/ Lieutenant Uhura, have Doctor McCoy report to the transporter room in ten minutes with standard landing party equipment.","r"].addLine;
+["/*KIRK:*/ Lieutenant Uhura, have Doctor McCoy report to the transporter room in ten minutes",[1, 1, -5, 1, 2, -5, 2, 3, 1, 3, 4, 5, 4, 3,  5, 4, 3, 2, -6, -7, 2, 1].dm(\c)].addLine;
+P.synthV(role: \kirk, take: \lead, params: {|p b| [
+	lyrics: "Lieutenant + + Uhura + +, have Doctor + McCoy + report + to transporter + + room in ten minutes +",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+P.tune();
+["with standard landing party equipment.","r"].addLine;
 ["/*UHURA:*/ Yes, sir.","r"].addLine;
 ["/*KIRK:*/ Spock.","r"].addLine;
 ["/*SPOCK:*/ Captain, I do wish to inspect whatever this is that lived that long ago.","7 4 7 7.5 5 6.5 7.5 11 5 3 4 2 3 5 11 12 11 7.5 7.5".dm('e',\minor)].addLine;
+P.synthV(role: \spock, take: \lead, params: {|p b| [
+	lyrics: "Captain + I do wish to inspect + whatever + + it is that lived so long ago + ",
+	legato: [1, 0.6, 1, 1, 0.8, 1, 1, 1,  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ],
+	filter: (midinote: _ - 12), 
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
 P.tune();
 P(\bass, music: { |p b e|
 	[
@@ -314,6 +396,26 @@ P(\bass, music: { |p b e|
 
 });
 ["/*KIRK:*/ And I would like to have my--","-7 3 2 3 1 4 5 4".dm(\g)].addLine;
+P.synthV(role: \kirk, take: \lead, params: {|p b| [
+	lyrics: "And I would like to have my -",
+	legato: [1, 1, 1, 1, 1, 1, 1, 2],
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+P.double(role: \kirk, take: \lead, params: {|p b| [
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
 P.tune();
 P(\bass, music: { |p b e|
 	[
@@ -322,6 +424,25 @@ P(\bass, music: { |p b e|
 	].pp
 });
 ["(boom) science officer with me on something as unusual as this, but it i--s","-1 3 2 3 2 3 2 1 -7 1 -6  2 3 4 5 4 3 2 -7 1 2 1".dm(\c,6)].addLine;
+P.synthV(role: \kirk, take: \lead, params: {|p b| [
+	lyrics: "r science + officer + + with me on something + as un usual + + as this, but it is -",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+P.double(role: \kirk, take: \lead, params: {|p b| [
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
 Song.setTempoMap(\unusual,"q %x x x x x% e ee e e e e e e x xe x xe e e x xq".rhythm);
 P(\click, music: { |p b e|
 	[instrument: \hihat,dur:1.dup(10).warpTo(e.tempoMap).q]//.pp
@@ -334,6 +455,26 @@ P(\bass, music: { |p b e|
 });
 P.tune();
 ["(boom) full of unknowns","-1 3 2 2 2".dm('f#',6,\minor)].addLine;
+P.synthV(role: \kirk, take: \lead, params: {|p b| [
+	lyrics: "r full of unknowns +",
+	filter: (midinote: _ - 12), 
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+P.double(role: \kirk, take: \lead, params: {|p b| [
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
 Song.setTempoMap(\unknowns,"q qq Q E q ");
 P.tune();
 P(\click, music: { |p b e|
@@ -353,6 +494,25 @@ P(\dyad, music: { |p b e|
 	).play
 });
 ["and we can't risk both of us being off the ship.","5 6 5 4 3 2 1 -7 -6 -7 -5 1".dm(\e)].addLine;
+P.synthV(role: \kirk, take: \lead, params: {|p b| [
+	lyrics: "and we can't risk both of us being + off the ship",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+P.double(role: \kirk, take: \lead, params: {|p b| [
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
 P.tune();
 // (The lights go out.)
 ["SULU: All power gone, sir.","r"].addLine;
@@ -362,6 +522,26 @@ P.tune();
 ["SULU: All normal. No damage at all.","r"].addLine;
 ["KIRK: I see.","r"].addLine;
 [" Will you transport down with us, Mister Spo--ck?","1 -5 1 2 3 2 1 -5 -4 -4 -3".dm('f#')].addLine;
+P.synthV(role: \kirk, take: \lead, params: {|p b| [
+	lyrics: "Will you transport + down with us, Mister + Spock -",
+	legato: [1, 1, 1, 1, 1, 1, 0.7,   1, 1, 1],
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+P.double(role: \kirk, take: \lead, params: {|p b| [
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
 Song.setTempoMap(\Will," e e e e| e e q|q ex x | e e");
 P.tune();
 P(\horns, music: { |p b e|
@@ -386,6 +566,17 @@ P(\bass, music: { |p b e|
 	].pp
 });
 ["SPOCK: Evidently, Captain."," 4 3 2 1 -7 1".dm('f#')].addLine;
+P.synthV(role: \spock, take: \lead, params: {|p b| [
+	lyrics: "Evidently + + + Captain +",
+	filter: (midinote: _ - 12), 
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
 P.tune();
 Song.setTempoMap(\Evidently, "qe e qe e qe e");
 P(\line, music: { |p b e|

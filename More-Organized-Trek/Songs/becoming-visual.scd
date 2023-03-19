@@ -485,7 +485,91 @@ P(\snare,syl:5, music: { |p b e|
 });
 [" activated. We've been given a direction to","r"].addLine;
 [" follow, but how? What's causing it?","r"].addLine;
-[" I do not know.","r"].addLine;/*SPOCK:*/
+[" I do not know. not even a vulcan can know the unknown",[11, 11, 11, 11, 5, 6, 7, 11, 5, 4, 3, 3, 3, 2].dm('e')].addLine;/*SPOCK:*/
+Song.setTempoMap('not even',"q x xe qqe e e e q e e q x xe q");
+P.synthV(role: \spock, take: \lead, params: {|p b| [
+	lyrics: " I do not know. not even a Vulcan + can know the unknown +",
+	filter: (midinote: _ - 12), 
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+P.synthV(\kevin, take: \aah,
+	pbind:{|p b| 
+		[
+			dur: "qqe e e e q".asBeats.warpTo( Song.tempoMap['not even'] ),
+			midinote: [3, 4, 3, 2, 4].dm(\e),
+			
+		].p
+	},
+	params: {|p b| [
+	lyrics: "awe - - - -  ",
+	legato: [1, 1, 1, 1, 2, ],
+	pitchTake: 1,
+	pitchExpression: 1.5,
+	paramDefaultVibratoDepth: 1 //semitones
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P(\cymbals, music: { |p b e|
+	( instrument: \cymbalsDS, amp:0.03 ).play;
+	[
+		dur: 1.dup(11).warpTo( e.tempoMap ).q,
+		instrument: \cymbal_808,
+		amp:1
+	].pp
+});
+P.synthV(role: \spock, take: \bg, params: {|p b| [
+	lyrics: "r r r r r r r r r r know the unknown +",
+	filter: (midinote: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, -6].dm('e',4)), 
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(\kevin, take: \aah, params: {|p b| [
+	
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.tune();
+P(\bass, music: { |p b e|
+	{
+		var freq = [
+			// 7,
+			11, 1, 6, 6, 4, 4, 2, 2, 5, 5, 4].df('\e',2);
+		var durs = "
+		// e
+		q e qe e qe e qe e qe e //q
+		".asBeats.warpTo(e.tempoMap);
+		Saw.ar( freq.dq.demand(
+			durs
+		))
+		// *0.1
+		* ( Env.asr().kr(0,gate: TDuty( durs.dq,0, gapFirst:1 )) 
+		+ ( 0.5 * EnvGen.cutoff(b.sum,2) )
+	)	
+		=> LPF.ar(
+			_,
+			// 1 - Env.asr().kr(0,gate:TDuty( durs.dq,0 )
+			// * 1000
+			900
+		// )
+		)
+	}.play
+});
 ["Not even a Vulcan can know the unknown, Captain.","r"].addLine;
 ["We are hundreds of light years past where any Earth ship has ever explored.","r"].addLine;
 [" Planet dead ahead, Captain. Becoming visual.","r"].addLine;/*SULU:*/

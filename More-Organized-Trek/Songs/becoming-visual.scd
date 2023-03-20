@@ -498,6 +498,15 @@ P.synthV(role: \spock, take: \lead, params: {|p b| [
 	}.play
 
 });
+P.double(role: \spock, take: \lead, params: {|p b| [
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
 P.synthV(\kevin, take: \aah,
 	pbind:{|p b| 
 		[
@@ -558,7 +567,7 @@ P(\bass, music: { |p b e|
 			durs
 		))
 		// *0.1
-		* ( Env.asr().kr(0,gate: TDuty( durs.dq,0, gapFirst:1 )) 
+		* ( Env.asr().kr(0,gate: TDuty.kr( durs.dq,0, gapFirst:0 ) ) 
 		+ ( 0.5 * EnvGen.cutoff(b.sum,2) )
 	)	
 		=> LPF.ar(
@@ -570,10 +579,190 @@ P(\bass, music: { |p b e|
 		)
 	}.play
 });
-["Not even a Vulcan can know the unknown, Captain.","r"].addLine;
-["We are hundreds of light years past where any Earth ship has ever explored.","r"].addLine;
-[" Planet dead ahead, Captain. Becoming visual.","r"].addLine;/*SULU:*/
-P(\sfx,start:\visual, music:{
+["We are hundreds of light years past where any","1 2 3 2 1 5.5 3 2 1 1 2 ".dm('c#')].addLine;
+P.tune();
+Song.setTempoMap(\hundreds, "e ee e e e qe x xe e e e");
+P(\bass, music: { |p b e|
+	{
+		var freq = [-1, 1,  2, 3, 4.5, 4.5, 5.5, 6, -6 ].df('c#',3);
+		var durs = "q q ee e e e e q q
+		".asBeats.warpTo(e.tempoMap);
+		Saw.ar( freq.dq.demand(
+			durs
+		))
+		// *0.1
+		* ( Env.asr().kr(0,gate: TDuty.kr( durs.dq,0, gapFirst:1 )) 
+		+ ( 0.5 * EnvGen.cutoff(b.sum,2) )
+	)	
+		* Env([0,0,1],[[1].asBeats.warpTo( e.tempoMap ).unbubble,0]).kr(0,gate:1)
+		=> LPF.ar(
+			_,
+			// 1 - Env.asr().kr(0,gate:TDuty( durs.dq,0 )
+			// * 1000
+			900
+		// )
+		)
+	}.play
+});
+P.synthV(role: \spock, 
+	pbind: Song.enlarge(9),
+	take: \lead, params: {|p b| [
+	lyrics: "we are thousands + of light years past where any + star ship has ever + explored + before +",
+	legato: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, ],
+
+	pitchTake: 1,
+	pitchExpression: 0.8,
+	vocalMode: \Rough
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+		=> FreeVerb.ar(_,0.1,1)
+	}.play
+
+});
+P.double(role: \spock, take: \lead, params: {|p b| [
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+		=> BPF.ar(_,1200,2)
+	}.play
+});
+P(\fuzz, music: { |p b e|
+	[
+		instrument: \default,
+		freq: 
+		[
+			[\r, 1, -7, -6],
+			[\r,-5, -3, -3]
+		].flop
+		.df('c#').q,
+		legato: [
+			[1,1, 1, 1],
+			[1,1, 2, 1]
+		].flop.q,
+		rest: [\r, 1, 1, 1].q,
+		dur: "q qq qq q".asBeats.warpTo( e.tempoMap ).q,
+		out: Effect.bus({|i| AnalogVintageDistortion.ar(i,
+			oversample:4,
+			drivegain: 0.9,
+			highgain: 1,
+			// bias: 1
+			// bias:2.0
+		) => LeakDC.ar(_) /4})
+	].p.trace.play
+});
+[" Earth ship has ever explored.","3 3 2 4 3 2 1 -7 2".dm('e-')].addLine;
+P(\cymbal, music: { |p b e|
+	(
+		instrument: \cymbalsDS,
+		amp:0.05
+	).play
+});
+P.tune();
+Song.setTempoMap(\explored,"q e x xe x x q q q");
+P(\bass, music: { |p b e|
+
+	//need to do legato!!
+	{
+		var freq = [1, 1, -4, -3].df('e-',3);
+		var durs = "q q qqq q".asBeats.warpTo(e.tempoMap);
+		Saw.ar( freq.dq.demand(
+			durs
+		))
+		// *0.1
+		* ( Env.asr(0.01,1,1).kr(0,gate: TDuty.kr( durs.dropLast.dq,0, gapFirst:1 )) 
+		+ ( 0.5 * EnvGen.cutoff(b.sum,2) )
+	)	
+
+		=> LPF.ar(
+			_,
+			// 1 - Env.asr().kr(0,gate:TDuty( durs.dq,0 )
+			// * 1000
+			900
+		// )
+		)
+	}.play
+});
+P.synthV(\kevin, take: \bg,
+	filter: (midinote:[11, 11, 7 ,7 ,6 ,5 ,4, 4, 3].dm('e-',4,\mixolydian)), 
+	params: {|p b| [
+	lyrics: "star ship has ever + explored + before +",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_,0.9)
+		=> HPF.ar(_,200)
+		/3
+	}.play
+});
+P.double( \kevin, take: \bg, params: {|p b| [
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_,0.9)
+		=> HPF.ar(_,200)
+		/3
+	}.play
+
+});
+P(\fuzz, music: { |p b e|
+	[
+		dur: "q e e q".asBeats.warpTo( e.tempoMap ).q,
+		freq: "5 5 4 1".df('a-',3).q
+	].p
+	+=
+	[
+		dur: "q e x xq".asBeats.warpTo( e.tempoMap ).q,
+		freq: "3 3 2 4".df('e-',4).q
+	].p
+	+=
+	[
+		dur: "q q".asBeats.warpTo( e.tempoMap ).q,
+		freq: "2 2".df('a-',4)
+	].p
+	<> (out: Effect.bus( {|i|AnalogVintageDistortion.ar(i,
+			oversample:4,
+			drivegain: 0.9,
+			highgain: 1,
+		)
+		/4
+	}
+	))
+	=> _.play
+
+});
+[" Planet dead ahead, Captain. Becoming visual.","-7 1 3 5.5 11 5.5 5.5 5.5 5.5 11.5 5.5 1.5".dm('c#')].addLine;/*SULU:*/
+P.synthV(role: \sulu, take: \lead, params: {|p b| [
+	lyrics: "planet + getting + closer + becoming + + visual + +",
+	legato: [1, 1, 1, 1, 1, 0.6, 1, 1, 1, 1, 1, 1, ],
+	filter: (midinote: _ - 12), 
+	pitchTake: 1,
+	pitchExpression:1.4,
+	paramTension:1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+P.double(role: \sulu, take: \lead, params: {|p b| [
+	
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+["planet","r",[5]].addLine;
+
+P(\sfx, music:{
 	var sine,verb,verbBus=Bus.audio;
 	var wibble = {
 		Pan2.ar(

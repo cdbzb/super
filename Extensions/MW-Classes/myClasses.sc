@@ -112,3 +112,8 @@ Waiter {
 	}
 
 }
++ File {
+	*loadCurrent {
+		thisProcess.nowExecutingPath => _.load
+	}
+}

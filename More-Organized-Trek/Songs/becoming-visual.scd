@@ -1,5 +1,4 @@
 /*
-"open" + "/Users/michael/trek/BySection/Master + 1semitone.m4v.RPP".escapeChar(Char.space) => _.unixCmd
 */
 (
 //[Bridge]
@@ -483,9 +482,105 @@ P(\snare,syl:5, music: { |p b e|
 		instrument: \snare
 	].pp
 });
-[" activated. We've been given a direction to","r"].addLine;
-[" follow, but how? What's causing it?","r"].addLine;
-[" I do not know. not even a vulcan can know the unknown",[11, 11, 11, 11, 5, 6, 7, 11, 5, 4, 3, 3, 3, 2].dm('e')].addLine;/*SPOCK:*/
+[" activated. We've been given a direction to","11 7 5 2.5  4 5 4  6 5 4 6 7  6 5 7".dm('c#')].addLine;
+P(\line, music: { |p b e|
+	[
+		freq: [\r, 5, 4, 3, 2, 1].df('e-',[5,4],\minor).q,
+		dur:b.parse([ 7, 1, 1, 1, 1, 4 ]).q,
+		out:0
+	].p
+	+=
+	[
+		freq: [\r, 6.5, 5, 4, 3, 2].df('e-',[4,3],\minor).q,
+		dur:b.parse([ 11, 1, 1, 1, 1 ]) ++ e.bNext.sum => _.flat => _.q,
+		out: 1,
+	].p
+	<> (instrument:\stringyy,amp: 0.3,mix:1.0) => _.play
+});
+P(\bass, music: { |p b e|
+	[
+		freq: [\r,1, 4, ].df('e-',[ 2,3 ]).q,
+		amp:0.8,
+		dur: b.parse([7,  4,4 ]).q
+	].pp
+});
+P.synthV(role: \kirk, take: \lead,
+	pbind: Song.enlarge(2),
+	params: {|p b| [
+	lyrics: "activated + + + We've been - given + a direction + + r to follow +",
+	legato: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.7, ],
+	filter: (midinote: _ - 12), 
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+P.double(role: \kirk, take: \lead, params: {|p b| [
+	
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+[" follow, but how? What's causing it?"," 3 1 2 3 3 5 3 1".dm('a#')].addLine;
+Song.setTempoMap(\follow,"ex xe e qe e q e e");
+P(\trem, music: { |p b e|
+	[
+		freq: [5, 6, 7].df('b-', \mixolydian).q,
+		dur: b.parse([3,2,3]).q,
+		instrument: \stringyy
+		// instrument: \trem2
+	].pp
+});
+P.tune();
+P(\clav, music: { |p b e|
+	[
+		freq: [ [-7,3,5,  ], -7,[-7, 2, 5], 3, -7 ].df('b-',4,\mixolydian).q,
+		dur: "ex xe e ex xe e e".asBeats.warpTo( e.tempoMap ).q,
+		instrument: \harp
+	].pp
+});
+P(\bass, music: { |p b e|
+	[
+		freq: [5, 5, 4,  5, 5, 4, 5].df('e-',[ 2,3 ]).q,
+		legato: 0.7,
+		dur: "q e e q e e q".asBeats.warpTo( e.tempoMap ).q,
+		amp:0.8,
+	].pp
+});
+P.synthV(role: \kirk, take: \lead, params: {|p b| [
+	lyrics: "r r but how what's causing + it?",
+	legato: [1, 1, 1, 0.8, 1, 1, 1, 1,  ],
+	filter: (midinote: _ - 12), 
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+P.double(role: \kirk, take: \lead, params: {|p b| [
+	
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+[" I do not know. not even a vulcan can know the unknown",[11, 11, 11, 11, 5, 6, 7, 11, 5, 4, 3, 3, 3, 2].dm('d#')].addLine;/*SPOCK:*/
+P(\kick, music: { |p b e|
+	[
+		dur: " qe e qe e qe e qe e qe e ".asBeats.warpTo( e.tempoMap.quantizeDft ).q,
+		instrument: \kick3,
+		amp:0.2
+	].pp
+	
+});
 Song.setTempoMap('not even',"q x xe qqe e e e q e e q x xe q");
 P.synthV(role: \spock, take: \lead, params: {|p b| [
 	lyrics: " I do not know. not even a Vulcan + can know the unknown +",
@@ -511,7 +606,7 @@ P.synthV(\kevin, take: \aah,
 	pbind:{|p b| 
 		[
 			dur: "qqe e e e q".asBeats.warpTo( Song.tempoMap['not even'] ),
-			midinote: [3, 4, 3, 2, 4].dm(\e),
+			midinote: [3, 4, 3, 2, 4].dm('e-'),
 			
 		].p
 	},
@@ -530,14 +625,14 @@ P.synthV(\kevin, take: \aah,
 P(\cymbals, music: { |p b e|
 	( instrument: \cymbalsDS, amp:0.03 ).play;
 	[
-		dur: 1.dup(11).warpTo( e.tempoMap ).q,
+		dur: 1.dup(11).warpTo( e.tempoMap.quantizeDft ).q,
 		instrument: \cymbal_808,
 		amp:1
 	].pp
 });
 P.synthV(role: \spock, take: \bg, params: {|p b| [
 	lyrics: "r r r r r r r r r r know the unknown +",
-	filter: (midinote: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, -6].dm('e',4)), 
+	filter: (midinote: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, -6].dm('e-',4)), 
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
@@ -558,7 +653,7 @@ P(\bass, music: { |p b e|
 	{
 		var freq = [
 			// 7,
-			11, 1, 6, 6, 4, 4, 2, 2, 5, 5, 4].df('\e',2);
+			11, 1, 6, 6, 4, 4, 2, 2, 5, 5, 4].df('e-',2);
 		var durs = "
 		// e
 		q e qe e qe e qe e qe e //q
@@ -579,12 +674,12 @@ P(\bass, music: { |p b e|
 		)
 	}.play
 });
-["We are hundreds of light years past where any","1 2 3 2 1 5.5 3 2 1 1 2 ".dm('c#')].addLine;
+["We are hundreds of light years past where any","1 2 3 2 1 5.5 3 2 1 1 2 ".dm('c')].addLine;
 P.tune();
 Song.setTempoMap(\hundreds, "e ee e e e qe x xe e e e");
 P(\bass, music: { |p b e|
 	{
-		var freq = [-1, 1,  2, 3, 4.5, 4.5, 5.5, 6, -6 ].df('c#',3);
+		var freq = [-1, 1,  2, 3, 4.5, 4.5, 5.5, 6, -6 ].df('c',3);
 		var durs = "q q ee e e e e q q
 		".asBeats.warpTo(e.tempoMap);
 		Saw.ar( freq.dq.demand(
@@ -631,29 +726,68 @@ P.double(role: \spock, take: \lead, params: {|p b| [
 });
 P(\fuzz, music: { |p b e|
 	[
-		instrument: \default,
+		instrument: \NC_DistortedGuitar,
 		freq: 
 		[
 			[\r, 1, -7, -6],
 			[\r,-5, -3, -3]
 		].flop
-		.df('c#').q,
+		.df('c').q,
 		legato: [
 			[1,1, 1, 1],
 			[1,1, 2, 1]
 		].flop.q,
 		rest: [\r, 1, 1, 1].q,
 		dur: "q qq qq q".asBeats.warpTo( e.tempoMap ).q,
+		triq:1,
 		out: Effect.bus({|i| AnalogVintageDistortion.ar(i,
 			oversample:4,
-			drivegain: 0.9,
+			drivegain: 0.8,
 			highgain: 1,
 			// bias: 1
 			// bias:2.0
-		) => LeakDC.ar(_) /4})
-	].p.trace.play
+		) => LeakDC.ar(_) /6
+		=> Pan2.ar(_,1)}
+	)
+	].pp.play
 });
-[" Earth ship has ever explored.","3 3 2 4 3 2 1 -7 2".dm('e-')].addLine;
+[" Earth ship has ever explored.","3 3 2 4 3 2 1 -7 2".dm('d')].addLine;
+// Song.setTempoMap(\explored,"q e x xe x x e e e");
+Song.setTempoMap(\explored,"q e x xe x x e e q");
+P(\click, music: { |p b e|
+	[
+		dur: [1, 1, 1, 1, 1].warpTo( e.tempoMap ).q
+	].pp
+});
+P.tune();
+P(\tamb, music: { |p b e|
+	{
+	var levels = [5,1,2,1] /5 => _.dq(inf);
+	var durs =  
+	1/4 ! 16
+	+ ( [1, -1] /40 => _.dup(8) )
+	=> _.flat 
+	=> _.warpTo(e.tempoMap.quantizeDft(0.2))
+	=> _.dq();
+	var triggers = TDuty.kr( durs, 0,1,gapFirst:0 );
+	var energy = EnvGen.ar( Env.linen(0, 0.00, 0.015), triggers, doneAction:0   ) 
+		* Demand.kr(triggers,0,levels 
+			// * 40
+			// *8
+		);
+	Shakers.ar(3, energy:energy   , decay: 1).tanh
+	
+	// /5
+	* 2
+	=> Pan2.ar(_, 0.8)
+	* EnvGen.cutoff(b.parse([4]).unbubble,3)
+	// + SinOsc.ar(300,0,0.05)
+	// => DelayN.ar(_,0.2 -0.03 )
+
+}.play;
+
+});
+
 P(\cymbal, music: { |p b e|
 	(
 		instrument: \cymbalsDS,
@@ -661,13 +795,12 @@ P(\cymbal, music: { |p b e|
 	).play
 });
 P.tune();
-Song.setTempoMap(\explored,"q e x xe x x q q q");
 P(\bass, music: { |p b e|
 
 	//need to do legato!!
 	{
-		var freq = [1, 1, -4, -3].df('e-',3);
-		var durs = "q q qqq q".asBeats.warpTo(e.tempoMap);
+		var freq = [1, 1, -4, -3].df('d',3);
+		var durs = "q q qq q".asBeats.warpTo(e.tempoMap);
 		Saw.ar( freq.dq.demand(
 			durs
 		))
@@ -686,7 +819,7 @@ P(\bass, music: { |p b e|
 	}.play
 });
 P.synthV(\kevin, take: \bg,
-	filter: (midinote:[11, 11, 7 ,7 ,6 ,5 ,4, 4, 3].dm('e-',4,\mixolydian)), 
+	filter: (midinote:[11, 11, 7 ,7 ,6 ,5 ,4, 4, 3].dm('d',4,\mixolydian)), 
 	params: {|p b| [
 	lyrics: "star ship has ever + explored + before +",
 	pitchTake: 1
@@ -714,17 +847,17 @@ P.double( \kevin, take: \bg, params: {|p b| [
 P(\fuzz, music: { |p b e|
 	[
 		dur: "q e e q".asBeats.warpTo( e.tempoMap ).q,
-		freq: "5 5 4 1".df('a-',3).q
+		freq: "5 5 4 1".df('g',3).q
 	].p
 	+=
 	[
 		dur: "q e x xq".asBeats.warpTo( e.tempoMap ).q,
-		freq: "3 3 2 4".df('e-',4).q
+		freq: "3 3 2 4".df('d',4).q
 	].p
 	+=
 	[
 		dur: "q q".asBeats.warpTo( e.tempoMap ).q,
-		freq: "2 2".df('a-',4)
+		freq: "2 2".df('g',4)
 	].p
 	<> (out: Effect.bus( {|i|AnalogVintageDistortion.ar(i,
 			oversample:4,
@@ -732,12 +865,13 @@ P(\fuzz, music: { |p b e|
 			highgain: 1,
 		)
 		/4
+		=> BPF.ar(_,1200,1) * 3
 	}
 	))
 	=> _.play
 
 });
-[" Planet dead ahead, Captain. Becoming visual.","-7 1 3 5.5 11 5.5 5.5 5.5 5.5 11.5 5.5 1.5".dm('c#')].addLine;/*SULU:*/
+[" Planet dead ahead, Captain. Becoming visual.","-7 1 3 5.5 11 5.5 5.5 5.5 5.5 11.5 5.5 1.5".dm('c')].addLine;/*SULU:*/
 P.synthV(role: \sulu, take: \lead, params: {|p b| [
 	lyrics: "planet + getting + closer + becoming + + visual + +",
 	legato: [1, 1, 1, 1, 1, 0.6, 1, 1, 1, 1, 1, 1, ],

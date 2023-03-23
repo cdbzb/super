@@ -1,4 +1,5 @@
 /*
+"open" + "/Users/michael/trek/BySection/Master + 1semitone.m4v 4TRANSCRIBE.RPP".escapeChar(Char.space) => _.unixCmd
 */
 (
 //[Bridge]
@@ -487,15 +488,18 @@ P(\line, music: { |p b e|
 	[
 		freq: [\r, 5, 4, 3, 2, 1].df('e-',[5,4],\minor).q,
 		dur:b.parse([ 7, 1, 1, 1, 1, 4 ]).q,
-		out:0
-	].p
+		out:0,
+		instrument:\stringyy,
+	].pm
 	+=
+	// ;
 	[
 		freq: [\r, 6.5, 5, 4, 3, 2].df('e-',[4,3],\minor).q,
 		dur:b.parse([ 11, 1, 1, 1, 1 ]) ++ e.bNext.sum => _.flat => _.q,
 		out: 1,
-	].p
-	<> (instrument:\stringyy,amp: 0.3,mix:1.0) => _.play
+		instrument:\stringyy
+	].pm
+	<> (amp: 0.3,mix:0.0) => _.play
 });
 P(\bass, music: { |p b e|
 	[
@@ -528,6 +532,15 @@ P.double(role: \kirk, take: \lead, params: {|p b| [
 });
 [" follow, but how? What's causing it?"," 3 1 2 3 3 5 3 1".dm('a#')].addLine;
 Song.setTempoMap(\follow,"ex xe e qe e q e e");
+P(\pad, music: { |p b e|
+	(
+		instrument: \sawSynthSustain,
+		freq:[-5,-15].df('e-',4),
+		amp: 0.06,
+		att: 2,
+		dur: b.sum
+	).play
+});
 P(\trem, music: { |p b e|
 	[
 		freq: [5, 6, 7].df('b-', \mixolydian).q,
@@ -872,6 +885,25 @@ P(\fuzz, music: { |p b e|
 
 });
 [" Planet dead ahead, Captain. Becoming visual.","-7 1 3 5.5 11 5.5 5.5 5.5 5.5 11.5 5.5 1.5".dm('c')].addLine;/*SULU:*/
+
+P(\chord,syl:3, lag:-0.05, music: { |p b e|
+	[
+		["1 3 5".df('c#',\whole)," 11 13 15 21".df('c#',\whole) ],
+		// ["1 3 6".df('f#')," 11 13 16".df('f#')],
+		[" 1 3 5".df('d')," 11 13 15 ".df('d')]
+	].flop
+	.collect
+	{|i x|
+		[ 
+			freq: i .q,
+			out: Effect.bus( { |i|  i * SinOsc.ar(3.5).range(0.5,1) => FreeVerb.ar(_,0.02,1)}, out:1 ),
+			// lag: x * 0.11,
+			dur: b.parse([5,1]) => _.q,
+			strum:0.05,
+			// amp: Pfunc({|e| e.freq.cpsmidi.linexp(60,70,0.08,0.03) })
+		].pp
+	}
+});
 P.synthV(role: \sulu, take: \lead, params: {|p b| [
 	lyrics: "planet + getting + closer + becoming + + visual + +",
 	legato: [1, 1, 1, 1, 1, 0.6, 1, 1, 1, 1, 1, 1, ],
@@ -894,7 +926,7 @@ P.double(role: \sulu, take: \lead, params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-["planet","r",[5]].addLine;
+["planet","r",[10]].addLine;
 
 P(\sfx, music:{
 	var sine,verb,verbBus=Bus.audio;
@@ -919,6 +951,7 @@ P(\sfx, music:{
 		
 		Routine( { 
 			var r,b,c;
+			var f={|i| i/400 * 1.df('c#',6)};
 			SynthDef(\visual_sine,{   arg freq=400, gate=1, release=3 , pan = 0.5; var sig;
 				freq =	 Lag.kr(freq,3);		 // =>
 				sig =	 SinOsc.ar(freq,0,0.1);	 // =>
@@ -939,31 +972,144 @@ P(\sfx, music:{
 			wibble.play.dur(13);
 			//0.2.wait;
 			r=Synth(\visual_verb);
-			b=Synth(\visual_sine,[\freq, 400, \pan, -1]);
-			c=Synth(\visual_sine,[\freq, 300,\pan, 1]);
+			b=Synth(\visual_sine,[\freq, f.(400), \pan, -1]);
+			c=Synth(\visual_sine,[\freq, f.(300),\pan, 1]);
 			2.wait;
-			b.set(\freq,500); c.set(\freq,900);
+			b.set(\freq,f.(500)); c.set(\freq,f.(900));
 			3.wait;
 			{ 
-				var d=Synth(\visual_sine,[\freq,950,\pan,0]);
+				var d=Synth(\visual_sine,[\freq,f.(950),\pan,0]);
 				4.wait;
-				d.set(\freq, 150);
+				d.set(\freq, f.(150));
 				3.wait;
 				d.release;
 			}.fork;
-			b.set(\freq, 600); c.set(\freq, 400);
+			b.set(\freq, f.(600)); c.set(\freq, f.(400));
 			3.wait;
-			b.set(\freq, 400); c.set(\freq, 300);
+			b.set(\freq, f.(400)); c.set(\freq, f.(300));
 			3.wait;
 			b.release; c.release;
 			4.wait;
 		}).play;
 
 	});
-[" Class M planet, Captain.","r"].addLine;/*SPOCK:*/
-[" Close to Earth conditions.","r"].addLine;/*KIRK:*/
-[" With two very important exceptions.","r"].addLine;/*SPOCK:*/
-["It's much older than Earth, and about a half million years ago, its atmosphere was","r"].addLine;
+	P(\tremolo, music: { |p b e|
+		(
+
+		).play
+	});
+	P(\strings,lag:8, music: { |p b e|
+		[
+			freq: [1,2].df('f#').q(inf),
+			dur:Pwhite(0.05,0.06,inf),
+			amp: Pgeom(0.1,0.98,inf)
+		].pp;
+		(
+			freq: [1,2,4,5].df('c#'),
+			instrument: \stringyy,
+			wet:0,
+			amp:0.2,
+			rel:19
+		).play
+	});
+[" Class M planet, Captain.","5 2 11 5 2 -6".dm('b')].addLine;/*SPOCK:*/
+P.tune();
+P(\line, music: { |p b e|
+	[
+		freq: [\r,11, 5, 2, -6, -3].df('b',[ 4, 5 ]).q,
+		dur: b.parse([2, 1, 1, 1, 1]) ++ e.bNext.sum => _.q
+	].pp
+});
+P.synthV(role: \spock, take: \lead, params: {|p b| [
+	lyrics: "Class em planet + captain +",
+	filter: (midinote: _ - 12), 
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+[" Close to Earth conditions.","5 2 11 5 2 -6".dm('a-')].addLine;/*KIRK:*/
+P.synthV(role: \kirk, take: \lead, params: {|p b| [
+	lyrics: "Close to Earth conditions + +",
+	filter: (midinote: _ - 12), 
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+Song.setTempoMap(\Close,"Q E Q E Q E");
+	
+P(\line, music: { |p b e|
+	[
+		freq: [5, 2,11, 5, 2, -6, -3].df('a-',4).q,
+		dur: "e e e e e e".asBeats.warpTo( e.tempoMap ) ++ e.bNext => _.q
+	].pp
+});
+P.tune();
+["(boom) With two very important exceptions.","4 1 5 3 4 1 5 4 5 5.5 -5.5".dm('c')].addLine;/*SPOCK:*/
+P.synthV(role: \spock, take: \lead, params: {|p b| [
+	lyrics: " with r two very + important + + exceptions + +",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+P.double(role: \spock, take: \lead,
+	filter: (midinote: _ - 12), 
+	params: {|p b| [
+	pitchTake: 1,
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+P.tune();
+P(\bassnotes, syl:8, music: { |p b e|
+	[
+		freq:"5.5 -5.5 1.5 -1.5".df('c',[ 4,5 ]).q,
+		dur: b.drop(1) ++ e.bNext => _.q
+	].pp
+});
+["Its much older than Earth", "5 5 11 5 5 5 5".dm('f#',4)].addLine;
+P.synthV(role: \spock, take: \lead, params: {|p b| [
+	lyrics: "its much older + than the Earth",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+P.double(role: \spock, take: \lead, params: {|p b| [
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+P(\arpeggio,syl:1, music: { |p b e|
+	(
+		freq: [1,5,11,13,15,21,23,25].df('f#',3,\minor),
+		strum: 0.05
+	).play
+});
+P.tune();
+[" and about a half million years ago, its atmosphere was","r"].addLine;
+
 ["totally ripped away by some sort of cataclysm.","r"].addLine;
 ["The planet has evidently been dead since then.","r"].addLine;
 ["Sensors detect no life of any kind.","r"].addLine;

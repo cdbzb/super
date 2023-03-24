@@ -339,22 +339,28 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-["Someone or something is attempting to attract our attention.","1 -5 -6 -7 1 -5 -6 -7 1 -5 -6 -7 1 -7 1 2 -5".dm(\a) + 1, [2/3,((1/3)+(1/2)),1/4,1/4]!3 ++( [2,1,1,2,2]/4) * 60 / 85=>_.flat
-].addLine;
-P.synthV(\mo, start: Song.section(\attract), take: \lead, params: {|p b| [
+["Someone or something is attempting to attract our attention.","1 -5 -6 -7 1 -5 -6 -7 1 -5 -6 -7 1 -7 1 2 -5".dm(\a) + 1, [2/3,((1/3)+(1/2)),1/4,1/4]!3 ++( [2,1,1,2,2]/4) * 60 / 85=>_.flat ].addLine;
+P.synthV(role: \spock, take: \lead, params: {|p b| [
 	lyrics: "someone + or - something + is attempting + + to attract + our attention + +",
 	legato: [1, 0.5,  1, 1, 1, 0.5, 1, 1, 1, 0.5, 1, 1, 1, 1, 1, 1, 1],
 	pitchTake: 1,
-	paramTension: 0.9,
-	paramGender: 0.35,
-	paramToneShift: 200,
+	paramGender: 0,
 	filter: (midinote: _ - 12), 
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		* -5.dbamp
+		// * -5.dbamp
 		// => p.synthVTracks.at(e.key).()
 	}.play
+});
+P.double(role: \spock, take: \lead, params: {|p b| [
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+	}.play
+
 });
 P(\comp,start:\attempting,music: {
 	var clock = TempoClock.new.tempo_(85/60);
@@ -419,7 +425,7 @@ P(\bass, music: { |p b e|
 		dur: "q qq qq q q".asBeats warpTo: e.tempoMap =>_.q,
 		// instrument: \snare,
 		// rest: [1, 1, \r, 1, \r, 1, 1].q(inf)
-		freq: [1, -5, -5, -4.5 ].df('c#').q,
+		freq: [1, -5, -5, -4.5 ].df('c#',4).q,
 		amp:1
 	].p.trace.play
 });

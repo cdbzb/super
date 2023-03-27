@@ -1,13 +1,15 @@
 ( //line 159 
 /* [Small chamber]
 (There are a group of boxes on the wall, containing spheres. Only two are alight.) */
-Song.songs.at(\smallChamber).isNil.not.if{try{  Song.smallChamber.resources.do(_.free)  }};
-Song(\smallChamber,[]).current;
-Stills().current;
-Song.currentSong.resources.infrastructure=FunctionList([ {
-	//~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
-} ]);
-Song.chamber.isNil.if{"/Users/michael/tank/super/More-Organized-Trek/chamber_rewrite.scd".load};
+{
+	Song.songs.at(\smallChamber).isNil.not.if{try{  Song.smallChamber.resources.do(_.free)  }};
+	Song(\smallChamber,[]).current;
+	Stills().current;
+	Song.currentSong.resources.infrastructure=FunctionList([ {
+		//~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
+	} ]);
+	Song.chamber.isNil.if{"/Users/michael/tank/super/More-Organized-Trek/chamber_rewrite.scd".load};
+}.value;
 //Song.smallChamber.next_(\chamber);
 //Song.smallChamber.chain;
 //Song.smallChamber.current;
@@ -71,6 +73,7 @@ Song.synthVTracks = EventWithDefault.new(
 	\default, {|i|
 		DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:0.05, coefs:nil, perm:nil)
 		/5
+		/1.5
 	}
 );
 P.synthV(role:\sargon,range:[0,5],
@@ -412,11 +415,11 @@ P.synthV(role:\sargon, syl:0, filter: (midinote: _-12),range:[1,15],
 P(\snare, music: { |p b e|
 	[
 		"q|q qq qq qq q",\snare,\amp,[0].q(1) ++ [0.1].q(inf),
-		"q | e eq e eq e eq e eq ",\kick3,\amp,[0].q(1) ++ [0.1].q(inf),
+		"q | e eq e eq e eq e eq ",\kick1,\amp,[0].q(1) ++ [0.1].q(inf),
 		"q qqqq",\cymbalsDS,\amp,[\r,0.01].q,
 		//"q x x x x x x x x x x x x x x x x x x x ",\hat_808,\amp,[0].q++[0.1,0.05].q(inf),
 		
-	].dmx2(8,e.tempoMap).collect(_.play)
+	].dmx2(8,e.tempoMap.quantizeDft).collect(_.play)
 });
 P.synthV(role:\sargon, syl:0, take: \double, filter: (midinote: _-12),range:[1,15],
 	//filter: ( onset: _+10000.rand ),
@@ -904,7 +907,9 @@ P(\chord, syl:0, music: { |p b e|
 	}.play
 });
 ["No, no, my children,","13 13 12 12 11 ".dm(\d)].addLine;
-P.synthV(role:\sargon, filter: (midinote: _ - 12),  params: {|p b| [
+P.synthV(role:\sargon, 
+	filter: (midinote: _ - 12),  
+	params: {|p b| [
 	lyrics: "no no mai chil dren",
 	tension: Env([-0.2,-0.1,0],b.parse([1,1,3]))
 
@@ -939,9 +944,10 @@ P(\bass, music: { |p b e|
 		=> Out.ar([2,3],_)
 	}.play
 });
-[" you misunderstand.","3 2 3 4 3".dm(\a)].addLine; 
+[" you misunderstand.","3 2 3 4 3 -2 -3 -4 2.5 2 2.5 4".dm(\a)].addLine; 
 P.synthV(role:\sargon, filter: (midinote: _ - 12),  params: {|p b| [
-	lyrics: "yu mis an da stand",
+	lyrics: "yu mis an da stand r r r r",
+	legato: [1, 1, 1, 1, 2, ],
 	phonemes: ["","m i s","","","s t a n dy"]
 ] }, music:{|p b e|
 	{
@@ -949,26 +955,35 @@ P.synthV(role:\sargon, filter: (midinote: _ - 12),  params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.tune( _ <> [instrument: \wash, amp:0.02].p );
-P(\answer, music: { |p b e|
-	[
-		freq:[\r,3,2,3,4,3].df(\a).q,
-		dur:b.parse(0.25 * [16,1,1,1,1,1]) => _.q,
-		legato: 3,
-		out: Effect.bus( PitchShift.ar( _, 
-			windowSize:0.2, 
-			pitchRatio:2, 
-			pitchDispersion:0.02, 
-			timeDispersion:0.0, 
-		))
-	].pp
-});
-["We mean only that you should","1 2 1 2 1 2 3".dm(\d,6)].addLine;
-P.tune();
+	P(\answer2,syl:3, music: { |p b e|
+		[
+			freq: "3 2 3 4 5 4 5 4 5".df(\a,4).q,
+			instrument: \stringyy,
+			attack: 0.1,
+			dur: b.parse([1, 1, 1, 1, 4,1, 2, 1, 2]).q,
+			amp: 0.3,
+
+
+		].ppm
+	});
+	P(\lick, syl:7, music: { |p b e|
+		[
+			freq: "3 2 3 4 4 5 ".df(\a,[5], \minor).q,
+			dur: b.drop(1) ++ e.bNext.parse([1,1]) =>_.q,
+			pan: 1,
+			instrument:\stringyy,
+			attack: 0.1,
+			amp:0.3,
+			out: Effect.bus(_ * [0.1,0.9])
+		].pp
+	});
+	P.tune( _ <> [instrument: \wash, amp:0.02].p );
+["We mean r only r that you should","1 2 -7 1 2 -7 1 2 3".dm(\d,6,\mixolydian)].addLine;
 P.synthV(role: \sargon, take: \lead, params: {|p b| [
-	lyrics: "We men only that you should",
-	phonemes:["w i"," m i n" , "o w n","l i ", "z a t","y u","sh u d"],
-	filter: (midinote: _ - 24), 
+	lyrics: "We men r only + r that you should",
+	// legato: [1, 0.6, 1, 0.6, 1, 1, 0.6, ],
+	phonemes:["w i"," m i n" , "","o w n","l i ", "","z a t","y u","sh u d"],
+	filter: (midinote: _ - 12), 
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
@@ -977,11 +992,26 @@ P.synthV(role: \sargon, take: \lead, params: {|p b| [
 	}.play
 
 });
+P(\bassnotes, music: { |p b e|
+	[
+		dur: b.parse([2,1, 1, 1, 1, 1, 1, 1, 1 ]).q,
+		freq: [\r,1, 2, 3, 1, 2, 3, 4.5].df(\c,[5]).q,
+		legato: 1
+	].pp
+});
 [" (boom) lend us your bodies for a short time. ","-11 3 2 1 -7 -6 -5.5 -6 -5.5 -3".dm(\g,6)].addLine;
+P(\bassline, music: { |p b e|
+	[
+		freq: [1, -7, -4, -3, -6].df(\g,3).q,
+		instrument: \sawSynthSustain,
+		dur: b.parse([1, 3, 4, 1, 1]).q
+	].ppm
+});
 P.synthV(role: \sargon, take: \lead, params: {|p b| [
 	lyrics: "r lend us your bodies + for a short time",
 	phonemes: ["","l e n d","a s","y o r","b a","d i z","f o r","e","sh o r t","t a e m"],
-	filter: (midinote: _ - 24), 
+	filter: (midinote: _ - 12), 
+	paramTension: -0.2,
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
@@ -1221,7 +1251,8 @@ P.synthV(role:\sargon,lag: -1 * Song.durs[P.calcStart(nil)].list.last,take: \lon
  ].p.postln} ,
 params: {|p b| [
 	lyrics: "wi, nid, ya, ba, diz,     lang, i,  nef, tu,      hav,     ze,    us,      af,     ya",
-	phonemes:["","", "", "", "d i z", "",   "", "n a f f",  "t s u", "h a v", "z a", "y u z", "a v ", "y u r y"],
+	phonemes:["","", "", "", "d i z", "",   "", "n a f f",  "t u", "h a v", "z a", "y u s", "a v ", "y u r y"],
+	paramTension: -0.1,
 	legato:[1,1,    1,  1,  0.75,    1,    1,  1,   1,       1,       1,     1,       1,      1,          ]
 ] }, music:{|p b e|
 	{
@@ -1249,7 +1280,7 @@ P('click',start:\need,music: {|p b e|
 		amp:0.03
 	].pp
 });
-P.tune(\need);
+// P.tune(\need);
 P(\cymbal,start:\need,music:
 	(
 		instrument:\cymbalsDS,
@@ -1401,8 +1432,6 @@ P.double(role: \spock, take: \lead, params: {|p b| [
 	}.play
 
 });
-P(\tune,start:\intend,music:Song.currentSong.pbind[~intend]
-);
 P(\dyad,syl:5,music: { | p b e |
 		[
 			freq:[5,1,4,[3,5],2,1].df('a',octave: 4).q,
@@ -1453,8 +1482,6 @@ P(\intoThemBass,start:\move,syl:4,music:
 	=>Pmul(\freq,1/2,_)
 	=>Pbindf(_,\instrument,\pulseBase,\amp,0.02)
 );
-P(\tune,start:\move,music:Song.currentSong.pbind[~intend+1]
-);
 P(\bass,start:\move,music:
 	[
 		freq:[1,1,1,1,2,2,2,2].df('d',octave: 3).q++[3].df('a-',octave: 2).q,
@@ -1473,8 +1500,6 @@ P(\stringyBass,start:\move,syl:6,music:
 	].p
 );
 ["turn our bodies to us. ",[1,2,3,4,3,5].dm('g',octave: 5)].addLine;
-P(\tune,start:'to us',music:Song.currentSong.pbind[~intend+2]
-);
 P(\bassnote,start:'to us',music:
 	(
 		freq: [1].df('g',octave: 3),

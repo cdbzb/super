@@ -398,7 +398,11 @@ P.tune();
 Song.setTempoMap('my Thalassa',"e e e e ex x e ee e q e e Q Q Q");
 P.synthV(role:\sargon, syl:0, filter: (midinote: _-12),range:[1,15],
 	params: {|p b| [
-	lyrics: "za la sa mai za la sa aim prizd yu sa vaived uis mi",
+	lyrics: "za la sa mai za la sa aim prizd yu sa vaivt wis mi",
+	paramTension:-0.2,
+	paramLoudness: 5,
+	legato: [1, 1, 1, 1, 1, 1,1, 0.7, 1, 1, 1, 1, 1, 1, 1, ],
+
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -418,12 +422,16 @@ P.synthV(role:\sargon, syl:0, take: \double, filter: (midinote: _-12),range:[1,1
 	//filter: ( onset: _+10000.rand ),
 	params: {|p b| [
 	lag:  {0.1.rand}!14,
-	lyrics: "za la sa mai Tha la sa aim prizd yu sa vaived uis mi",
+	lyrics: "sa la sa mai Tha la sa aim prizd yu sa vaivd wis mi",
+	paramTension: -0.2,
+	legato: [1, 1, 1, 1, 1, 1,1, 0.7, 1, 1, 1, 1, 1, 1, 1, ],
+	// phonemes: ["s a","la","s a","m a e i","s a","l a","s a","a e i m","p l i z d","y u","s a r","v a e i v d","",""],
 ] }, music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 		*[0.5,1.2]
+		*5.dbamp
 	}.play
 });
 P(\chord2,start:'I`m',music:[
@@ -462,10 +470,49 @@ P(\baseline2,start:'I`m',syl:1,music:[
 		pulse:1,
 ].pm(\pulsar)
 );
-["pleased you survived with me.","r"].addLine; 
-["Forgive me. It has been so very long. ","r"];
+["(boom) Forgive me. (boom) It has been so very long. ","-7 7 6 5 -5 2 3 1 7 7 6 5".dm('a-',\mixolydian)].addLine; 
+P.synthV(role: \sargon, take: \lead, params: {|p b| [
+	filter: (midinote: _ - 12), 
+	lyrics: "r forgive + me r it has been so very + long",
+	phonemes: ["","f a r","g i v","m i",""," i t", "h a z","b i n","s o w","v e ","r i","r o N"],
+	paramTension:-0.2,
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
 
-[" When the struggle came which devastated your planet ","r"].addLine;/*SPOCK:*/
+});
+P(\pad, music: { |p b e|
+	(
+		instrument: \stringyy,
+		attack: 1,
+		freq: [1].df('f#'),
+		dur:b[0]
+	).play
+});
+// P.tune();
+P(\bass, music: { |p b e|
+	[
+		freq: [\r,[1, -1], [-6, -16], [2, -2]].df('f#',3).q,
+		dur: b.parse([2,2,3,5]).q
+	].pp
+});
+
+[" When the struggle came which devastated your planet ","5 6 7 6 5  4 3 2 3 5 4 1 -7".dm('e',\harmonicMinor)].addLine;/*SPOCK:*/
+P.synthV(role: \spock, take: \lead, params: {|p b| [
+	filter: (midinote: _ - 12), 
+	lyrics: " When the struggle + came which devastated + + + your planet +",
+	paramTension: -0.2,
+	pitchTake: 1,voccalMode: \Strained
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
 
 [" Only the best minds were chosen to survive.","5 6 7 11 7 5 6 4 2 1 -7".dm(\e,6,\phrygian)].addLine;/*KIRK:*/
 
@@ -479,7 +526,6 @@ P.still(\medium, timecode:1705.49.seconds,music:{|p b e|
 		b.sum(["","as you may"])
 	])
 });
-// P.tune(\Oly);
 P.synthV(role:\sargon, filter:(midinote:_-24), params: {|p b| [
 	lyrics: "on li ze best mainds wa cho zen tsu sa vaiv" ,
 	legato: [1, 1, 1,  1,    1,    1,  1,  1,  0.8,  1, 0.8]
@@ -554,7 +600,26 @@ P.synthV(role:\sargon, filter:(midinote: _-24), params: {|p b| [
 //["Realising our mistake, we attempted to perpetuate both sides. ","r"].addLine;
 //["We built this chamber here in order to preserve our essence in this fashion. ","r"].addLine;
 
-//[" Fascinating. ","r"].addLine;/*SPOCK:*/
+["Fascinating. (rest) ","11 5 3 5 1".dm(\b,4,\minor)].addLine;/*SPOCK:*/
+P.synthV(role: \spock, take: \lead, params: {|p b| [
+	lyrics: "fascinating + + +",
+	filter: (midinote: _ - 12), 
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+P(\bassnote,syl:3, music: { |p b e|
+		[
+				freq: [[1,-1],[-6.5,-16.5]].df(\b,3).q,
+				// out: Effect.bus( { |i| FreeVerb.ar(i,0.5,1)},inputChannels:2 ),
+				dur: b.drop(1)[0] + e.bNext.parse([[1, 1, 0.5],[0,5,1, 1, 1]]) => _.q,
+				legato:1
+		].pp
+});
 
 //[" We knew the seed that we had planted on other planets would take root,","r"].addLine;/*KIRK:*/
 //["that one day you would build vessels as we did, and one day you would come here. ","r"].addLine;
@@ -572,7 +637,15 @@ P.synthV(role: \spock, take: \lead, params: {|p b| [
 	}.play
 
 });
-P.tune(\These);
+P.double(role: \spock, take: \lead, params: {|p b| [
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
 ["but it was your task to remain in the receptacle out there ","6 7 5 11 3 7 11".dm('f#') ++ "3 5 6 7 11 5 4".dm('a-') ++ "15 16".dm(\c)].addLine;
 P.synthV(role: \spock, take: \lead, params: {|p b| [
 	lyrics: "but it was your task to remain + in the receptacle + + + out there",
@@ -586,8 +659,16 @@ P.synthV(role: \spock, take: \lead, params: {|p b| [
 	}.play
 
 });
-P.tune(\but);
 
+P.double(role: \spock, take: \lead, params: {|p b| [
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
 ["(boom) and search the heavens with my mind, ",[\r,5,5,5,5,5,5,5,5].dm(\b)].addLine;/*KIRK:*/
 P(\line, music: { |p b e|
 	{
@@ -600,11 +681,23 @@ P(\line, music: { |p b e|
 		
 	}.play
 });
-P.synthV(role:\sargon, filter:(midinote: _ -12), params: {|p b| [
+P.synthV(role:\sargon, filter:(midinote: _ -12),take:\lead, params: {|p b| [
 	lyrics: "r,    and, shiach, za, he, venz, wiz,     mai, maind",
-	phonemes: ["", "",  "",     "", "", "v e n z",   "w i z", "",  ""],
-	legato: [1,    1,   1,      1,  1,  0.95,    1,       1,   0.90]
+	phonemes: ["", "",  "s a r ch",     "", "", "v e n z",   "w i z", "",  ""],
+	legato: [1,    1,   1,      1,  1,  0.95,    1,       1,   0.90],
+	paramTension: -0.2
 
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+P.double(role:\sargon, take: \lead,
+	filter: (midinote: "5 5 4 3 4 3 2 3 4".dm(\b,4)), 
+	paramTension:-0.1,
+	params: {|p b| [
+	
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -615,7 +708,6 @@ P.synthV(role:\sargon, filter:(midinote: _ -12), params: {|p b| [
 
 Song.setTempoMap(\search,"e e e e e e e e q");
 //P.tune(\search,Pset(\dur, 0.5! 9 =>_.warpTo(Song.tempoMap[\search]) =>_.q ,_));
-P.tune('search ');
 P('tune',start:\search,music: {|p b e|
 	[
 		freq:[\r, 1,1,1,1,1,1,1,1].df('f#').q,
@@ -696,7 +788,6 @@ P('bass',start:\probing,music: {|p b e|
 		//out: Effect.bus({ |i| i => Amplitude.kr(_) * 50 *  CrossoverDistortion.ar(i,smooth:0.9) *0.1 + i => LPF.ar(_,4000) },inputChannels:6)
 	].pp
 });
-P.tune(\probing,);
 ["And then one day my mind","1 4 4 5 3 6".dm('f#')].addLine;
 P(\stringyy, music: { |p b e|
 	{
@@ -812,7 +903,6 @@ P(\chord, syl:0, music: { |p b e|
 
 	}.play
 });
-P.tune();
 ["No, no, my children,","13 13 12 12 11 ".dm(\d)].addLine;
 P.synthV(role:\sargon, filter: (midinote: _ - 12),  params: {|p b| [
 	lyrics: "no no mai chil dren",
@@ -875,11 +965,66 @@ P(\answer, music: { |p b e|
 });
 ["We mean only that you should","1 2 1 2 1 2 3".dm(\d,6)].addLine;
 P.tune();
+P.synthV(role: \sargon, take: \lead, params: {|p b| [
+	lyrics: "We men only that you should",
+	phonemes:["w i"," m i n" , "o w n","l i ", "z a t","y u","sh u d"],
+	filter: (midinote: _ - 24), 
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
 [" (boom) lend us your bodies for a short time. ","-11 3 2 1 -7 -6 -5.5 -6 -5.5 -3".dm(\g,6)].addLine;
+P.synthV(role: \sargon, take: \lead, params: {|p b| [
+	lyrics: "r lend us your bodies + for a short time",
+	phonemes: ["","l e n d","a s","y o r","b a","d i z","f o r","e","sh o r t","t a e m"],
+	filter: (midinote: _ - 24), 
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
 P.tune();
 [" And destroy them","-7,-5,3,-7".dm(\g,\mixolydian)].addLine;
 P.tune();
+P.synthV(role: \mccoy, take: \lead, params: {|p b| [
+	lyrics: "and destroy + them",
+	filter: (midinote: _ - 12), 
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
 [" just as you're burning that one up now.","1 -7 -6 -7 1 3 4 1 5 ".dm(\g,\mixolydian)].addLine;/*MCCOY:*/
+P.synthV(role: \mccoy, take: \lead, params: {|p b| [
+	lyrics: "just as your burning + that one up now",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+P.double(role: \mccoy,
+	filter: (midinote: _ - 12), 
+	take: \lead, params: {|p b| [
+	
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 Song.setTempoMap(\burning,"e e e x e e x e ee");
 P(\click, music: { |p b e|
 [
@@ -993,6 +1138,26 @@ P(\bass,start:\limit,music: {|p b e|
 //P(\tune,start:\limit,music:Song.currentSong.pbind[\limit]);
 // P.tune(_ <> [amp:p{\r.yield;loop{0.1.yield}}].p);
 ["/*SPOCK:*/ Our bodies, Sargon, for what purpose? ", [5,7,5,4,3,2,1,5,3].dm('d',scale:\diminished)].addLine;
+P.synthV(role: \spock, take: \lead, params: {|p b| [
+	lyrics: "our bodies + sargon + for what purpose +",
+	legato: [1, 1, 1, 1, 0.5, 1,1, 1, 0.5],
+	filter: (midinote: _ - 12), 
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+P.double(role: \spock, take: \lead, params: {|p b| [
+	
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 P(\tune,start:\purpose,music:Song.currentSong.pbind[\purpose]=>Pbindf(_,\instrument,\stringyy,\amp,0.3)
 );
 ["/*KIRK:*/ (boom) To build. To build humanoid robots. We ",[5,5,11,5,11,7,6,4,6,5,6].dm('e-',scale:\mixolydian)].addLine;
@@ -1389,7 +1554,7 @@ P(\tune,start:\why,music:Song.currentSong.pbind[~intend+4]
 		{Effect(FreeVerb.ar(_,0.9,0.9)).bus.index},
 		\out,Pkey(\effect))
 );
-.synthV(role: \mulhall, take: \lead, params: {|p b| [
+P.synthV(role: \mulhall, take: \lead, params: {|p b| [
 	lyrics: "why can't  they just build your robots + for you",
 	pitchTake: 1
 ] }, music:{|p b e|
@@ -1401,29 +1566,114 @@ P(\tune,start:\why,music:Song.currentSong.pbind[~intend+4]
 });
 
 ["/*KIRK:*/ No. Our methods, our skill --s are (boom) ",[12, 12,12,11,7,13,7,11 ,6, ].dm('c')].addLine;
+P.synthV(role: \sargon, take: \lead, params: {|p b| [
+	lyrics: "no our methods + our skills - are r",
+	filter: (midinote: _ - 12), 
+	phonemes:["n o w", "a u e r","m e ","s e d z","a u a r","s k i l z", "a r"] ,
+	legato: [0.5, 1, 1, 0.7, 1, 1, 1, 1, 1, ],
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
 P(\tune,start:\skill,music:Song.currentSong.pbind[~intend+5]
 );
-P(\chords,start:\skill,music:
+P(\chords,start:\skill,music: {|p b e|
 		[
-				freq:[
-						[5,6.5],
-						[5,6.5], [4,6],
-						[5,7],[5,11],
-						[6,11]
-				].df('c',octave:4).q,
-				dur:Song.parse(\skill,[1, 1,3, 2,1, 1],).q,
-				instrument:\sawSynthSustain,
-				amp:0.06
-		].p
+			freq:[
+				[5,6.5],
+				[5,6.5], [4,6],
+				[5,7],[5,11],
+				[6,11]
+			].df('c',octave:4).q,
+			dur:Song.parse(\skill,[1, 1,3, 2,1, 1],).q,
+			instrument:\sawSynthSustain,
+			amp:0.06
+		].pp
+	}
 );
 ["far , far beyond your abilities. It is. ",[14, 14,13,13,14,13,12,7,3, 5.5,5.5,5.5].dm('c')].addLine;
+P(\chords, music: { |p b e|
+	[
+		freq: [[6,11,14,16, 21], [6,12,14,16, 22], [5,12,14,17]].df('c',3).q,	
+		dur: b.parse([1,2,1]).q,
+		rel:[ 2, 2, 6].q,
+		instrument:\sawSynthSustain,
+		out: Effect.bus(HPF.ar(_,200))
+	].ppm;
+});
+P(\lick, music: { |p b e|
+	[
+		freq:[\r,7, 5, 1, -3].df(\e,[4,5],\mixolydian).q,
+		dur:b.parse([6, 1, 1, 1,1]).q,
+		instrument: \twang,
+		depth:0.01,
+		
+	].pp
+});
+P(\bassnote,syl: 8, music: { |p b e|
+	(
+		freq: [-1,1].df('a-',[3,4]),
+		att:0.1,
+		dur: 3,
+		instrument: \stringyy
+	).play;
+	(
+		instrument:\harp,
+		freq: [-1,1].df('a-',[2,3]),
+		out: Effect.bus(  { |i| FreeVerb.ar(i,0.8,[1,0.9]) /4} , inputChannels:2  )
+	).play
+});
+P.synthV(role: \sargon, take: \lead, params: {|p b| [
+	lyrics: "far far beyond + your abilities + + + r r",
+	filter: (midinote: _ - 12), 
+	phonemes: ["f a r","f a r", "b i","a n d","y o r", "e", "b i l ","l i ","t i z"],
+	legato: [0.6, 0.6, 1, 1, 1, 1, 1, 1, 1, ],
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+P.synthV(role: \sargon, take: \secondPart, 
+	pbind: Song.enlarge(1),
+	filter: (midinote: _ - 12,dur:_ + [0,0,0,0,0,0,0,0,0,0,0,0,0.5]), 
+	params: {|p b| [
+	lyrics: "r r r r r r r r r r it iz taim",
+	legato: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.9, ],
+	phonemes:["","","","","","","","","","","i t","i z","t a e i m"],
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+
 P(\tune,start:\far,music:Song.currentSong.pbind[~intend+6]
 );
 
-Song.lick=Array.series(4,0,2).collect(_+[11,12,7.5,11].dm('c#',octave:5,scale:\diminished )).flatten ;
-["time dum dum dum dum dum etc ",Song.lick].addLine;
-//(They help him back to Sargon's sphere.)
-P(\lick,music:Song.currentSong.pbind[\dum]
+{
+	Song.lick=Array.series(4,0,2).collect(_+[11,12,7.5,11].dm('c#',octave:5,scale:\diminished )).flatten ;
+
+	["time dum dum dum dum dum etc ",Song.lick].addLine;
+	P(\bassnote, music: { |p b e|
+		(
+			freq: [1,-1].df('c#',[ 3, 4 ]),
+			instrument: \wash
+		).play;
+		(
+			freq: [1,-1].df('c#'),
+			instrument:\harp
+		).play
+	});
+	//(They help him back to Sargon's sphere.)
+	P(\lick,music:Song.currentSong.pbind[\dum]
 	=>{
 		|i|
 		Ppar([i,
@@ -1434,6 +1684,7 @@ P(\lick,music:Song.currentSong.pbind[\dum]
 	}
 
 );
+}.value
 )
 
 

@@ -432,8 +432,48 @@ P(\bass,start:\vital,music:{|p b e|
 	}.play
 });
 	
-[ "MCCOY: Yes, we can keep them going for a few ","r" ].addLine;
-[ "weeks, or a month. For all the good it'll do.","r" ].addLine;
+[ "(boom) Yes, we can keep them going for a few weeks, or a month. For all the good it'll do ","-1 1 3 2 1 -7 2 1 -7 1 2 3.5 2 1 -7.5 ".dm(\g,\minor) ++ "1 -7 -5 -3 -4 -5 -4".dm(\a,\mixolydian) ].addLine;
+P.tune();
+P.synthV(role: \mccoy, take: \lead, params: {|p b| [
+	lyrics: "r Yes, we can keep them going + for a few weeks, or a month for all the good it'll + do",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+P(\chords, music: { |p b e|
+	[
+		freq: [\r, 
+			[1, 3, 5, 11],
+			[-7, 4, 7],
+			[-6.5, 4, 6.5],
+			[5.5, 1, 3.5], 
+			[5.5, 6.5, 12, 14.5],
+			[-5,-2,2,7]
+		].df(\g, \minor).q,
+		instrument: \stringyy,
+		dur: b.parse([1, 1, 4, 5, 3, 4,4]).q
+	].pp
+});
+P(\bassline, music: { |p b e|
+	[
+		freq: [1, -4, 5.5, 6.5].df(\g,[3,4],\minor).q,
+		dur: b.parse([2, 9, 3, 8]).q,
+		instrument: \sawSynthSustain
+	].ppm
+});
+P.double(role: \mccoy, take: \lead, params: {|p b| [
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
 
 P.still(\controls, start: 1, timecode:4105.05.seconds, music: { |p b e|
 	e.still.value(
@@ -442,11 +482,11 @@ P.still(\controls, start: 1, timecode:4105.05.seconds, music: { |p b e|
 		Song.durTill(4)
 	);
 });
-P.still( \plasticPerson, start: \weeks, timecode:4148.5.seconds, music: { |p b e|
-	e.still.value(
-		wait: b.sum ,
-	);
-});
+// P.still( \plasticPerson, start: \weeks, timecode:4148.5.seconds, music: { |p b e|
+// 	e.still.value(
+// 		wait: b.sum ,
+// 	);
+// });
 P.still( \receptacle, start: \consciousness, syl:4, timecode:4127.seconds, music: { |p b e|
 	e.still.value(
 		wait: b.sum + Song.durs[e.start+1].list[0..8].sum ,

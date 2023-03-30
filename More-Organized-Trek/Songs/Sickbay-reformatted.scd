@@ -164,7 +164,9 @@ P(\verbFade4,start:4,music:{~sickBay.thalassaVerb.release(5)});
 ["no- thing of im- portance, Fa- tigue per- haps","f g- a- g- b- g- b- a- g- e-"].addLine;  //5
 	P.synthV(\genbu, take: "low", params:
 	[
-		lyrics: "neu zing af im po tans fa tig peu haps"
+		lyrics: "neu zing af im po tans fa tig peu haps",
+		phonemes: [ "n a"," s i N"," a v"," i m ","p o r ","t e n s"," f e ","t i g", "p a r ","h a p s" ],
+		legato: [1, 1, 1, 1, 1, 0.8, 1, 1, 1, 1, ],
 	],
 	filter: {|e| e.midinote = e.midinote - 12},
 	music:{|p b e|
@@ -221,11 +223,11 @@ P.tune('(formula)');
 	}
 );
 ["yes, I wan- ted to be cer- tain there was no","f4 c#4 c c# f c# c b-3 a- b- e-4"].addLine;  //7
-P.synthV(\genbu, params:
+P.synthV(\genbu, pbind: Song.enlarge(2), params:
 	[
-		lyrics: "yes ai won ted tu bi sur ten zer was no",
-		legato:[ 0.5,1,1,1,1,0.8,1,1,1,1,1 ],
-		phonemes: ["y e s","","","","","","","","","w a s",""]
+		lyrics: "yes ai won ted tu bi sur ten zer was no error +",
+		phonemes: [" y e s", "","","","","","",""," z e r", "w a z"," n o w","e r"," o r" ],
+		legato:[ 0.5,1,1,1,1,0.8,1,1,1,1,1,1,1 ],
 	],music:{|p b e|
 		{
 			e.playbuf
@@ -258,10 +260,14 @@ P(\bass,start:'cer- tain',music:{|p b e|
 });
 ["er- ror. For- mu- la is co- ","d4 f3 g a b g b "].addLine; //8
 P.tune('For- mu- la');
-P.synthV(\genbu, params:
+P.synthV(\genbu,
+	pbind: Song.enlarge(7),
+	params:
 	[
-		lyrics: "er ror for mu la is ko",
-		phonemes: ["","","","","","i s",""]
+		lyrics: "r r for mu la is ko rekt dont bi kan ser - nd ",
+		phonemes: ["","","","m y u","","i z","","","","","k o n","s a a","",""],
+		lag:[0,0,0,0,0,0,0,  0,0,0.005,0,0,0],
+		legato:[1, 1, 1, 1, 1, 0.8, 1,   0.7, 0.85,1, 1, 1, 1, 0.85, ]
 	],music:{|p b e|
 		{
 			e.playbuf
@@ -287,12 +293,14 @@ P(\bass,syl:1,start:'For- mu- la',music:{|p b e|
 
 });
 ["rrect. Don't be concer -- ned, this is an","d4 c# e d f# g f# d e f# "].addLine;  //9
-P.synthV(\genbu, params:
+P.synthV(\genbu,
+	pbind: Song.enlarge(6),
+	params:
 [
-	lyrics: "rekt dont bi kan ser - nd this is an",
-	phonemes: ["","","","k o n","s a a","","","d i s","i s",""],
-	lag: [0,    0,    0.05, 0, 0, 0, 0,    0.05, 0, 0],
-	legato: [1, 0.85, 1,    1, 1, 1, 0.85, 1,    1, 1]
+	lyrics: "r r r r r r r  this is an excellent + + body+",
+	phonemes: ["","","","k o n","s a a","","","d i s","i s","a n","e k","s e r","r e n t","b a","d i"],
+	lag: [0,    0,    0.05, 0, 0, 0, 0,    0.05, 0, 0,0,0,0,0,0,0],
+	legato: [1, 0.85, 1,    1, 1, 1, 0.85, 1,    1, 1, 1,1,1,1,1]
 ],music:{|p b e|
 	{
 		e.playbuf
@@ -517,7 +525,9 @@ P.still(\clear,\months,music:{|p b e|
 	)
 });
 P.synthV(\genbu, params: [
-	lyrics:"that will teik mons per haps yirs wi ha fent da at choisu tha la ssa"
+	lyrics:"that will teik mons per haps yirs wi ha fent da at choisu tha la ssa",
+	phonemes:["","","","m a n s s","p a r","h a p z","y i r z","","","","","","","",""],
+	legato: [1, 1, 1, 0.9, 1, 1, 0.9, 1, 1, 1, 1, 1, 1, 1, 1, 1, ],
 ],music:{|p b e|
 	{
 		e.playbuf 
@@ -546,6 +556,7 @@ P(\bass,start:\months,music:{|p b e|
 P.synthV(\aiko, params:
 	[
 		lyrics:"Heus band feel the teuch of my hand heus band",
+		phonemes: ["x A ts","p @ n t","f i l","","","","","","x A ts","p @ n t",],
 		legato:[1,0.95,1,1,1,1,1,0.9,1,1] 
 	],
 	music:{|p b e|

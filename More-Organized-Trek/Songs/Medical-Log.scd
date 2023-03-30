@@ -40,13 +40,15 @@ Song.synthVTracks = EventWithDefault(
 			DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:0.1)
 			/ 5
 		},
-		\mo, {
+		\mo, { |dur|
 
 			{|i|
-				DWGReverbC1C3.ar(i, len:2000, c1:1, c3:10, mix:0.1)
+				DWGReverbC1C3.ar(i , len:2000, c1:1, c3:10, mix:0.1)
 				// => MoogFF.ar(_,1300,3)
 				// => MoogLadder.ar(_, ffreq:1100, res:0.0, mul:1.0, add:0.0)
+				// => {|i| DetectSilence.ar(i,doneAction:2); i}
 				=> CrossoverDistortion.ar(_, amp:1, smooth:0.99, mul:0.2, add:0)
+				* EnvGen.cutoff(dur,5)
 				/ 1
 			}
 			
@@ -74,7 +76,7 @@ P.synthV(\mo, filter: (midinote: _ - 12),  params: {|p b| [
 	p.synthVTracks.at(e.key.asString.split($_)[0].asSymbol).cs.postln;
 	{
 		e.playbuf
-		=> p.synthVTracks.at(e.key.asString.split($_)[0].asSymbol).()
+		=> p.synthVTracks.at(e.key).(b.sum)
 	}.play
 });
 P.double(\mo, filter: (midinote: _ - 12),  music:{ |p b e|
@@ -99,6 +101,19 @@ P.tune( _ <> [
 	out: Effect.bus( Phaser2.ar(_,rate:0.21,fb:-0.5), inputChannels:2 )
 ].p);
 [ "Do I list one death or two? " , [1,2,1,5,5,6,4.5].dm(\g,transpose: 6)].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["Do I list","one death or two?"],
+	)
+});
+P.still(\controls, timecode:4105.05.seconds, music: { |p b e|
+	e.still.value(
+		wait: b.sum,
+		fadeIn: b[0..1].sum,
+		fade: Song.durTill(4)
+	);
+});
 P(\guitar, music: { |p b e|
 	\strum => Song.guitar.setPlayMode( _ ) ;
 	[
@@ -132,7 +147,7 @@ P.synthV(\mo,
 	] }, music:{|p b e|
 		{
 			e.playbuf
-			=> p.synthVTracks.at(e.key.asString.split($_)[0].asSymbol).()
+			=> p.synthVTracks.at(e.key).(b.sum)
 			=> MoogFF.ar(_,2500) * 3
 		}.play
 });
@@ -198,6 +213,14 @@ P(\chord,start:'one death',syl:2,music:
 //["Sargon was too far /*distant*/ ","r"].addLine;
 //["from his receptacle to transfer back. ","r"].addLine;
 ["Sargon is dead. But is captain Kirk dead? (boom) ",[2,3,-5,1,-6,-7,1,-6,3.5,-7.5,-7.5].dm(\d,scale:\dorian,transpose: 6)].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["Sargon","is dead.."],
+	).sequenceText([
+		b.parse(4).sum, ["but is captain Kirk","dead?"]
+	])
+});
 P(\guitar, music: { |p b e|
 p.guitar.setPlayMode(\pick);
 [
@@ -222,6 +245,7 @@ P.synthV(\mo, params: {|p b| [
 	lyrics: "sargon, +,    is, dead, but, is, captain, +, kirk, dead r",
 	lag: [0.1,    0.05, 0, 0, 0, 0, 0, 0, 0, 0, ],
 	loudness: [0, 0,    0, 3, 3, 0, 0, 0, 0, 3, 0] => Env(_, b),
+	legato: [1, 1, 1, 0.7, 1, 1, 1, 1, 0.8, 1, ],
 
 	// gender: Env([0.4,0.4],1),
 	vocalMode: \Open,
@@ -229,7 +253,7 @@ P.synthV(\mo, params: {|p b| [
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		=> p.synthVTracks.at(e.key.asString.split($_)[0].asSymbol).()
+		=> p.synthVTracks.at(e.key).(b.sum)
 	}.play
 });
 P.double(\mo, filter: (midinote: _ - 12), music:{|p b e|
@@ -258,12 +282,23 @@ P(\bassUp,start:\Sargon,syl:2,music:{|p b e|
 	}
 });
 ["His body is, but his ",[2.5,3, 1,-5.5, -6.5,1].dm(\c,transpose: 6)].addLine;
+
+P.still( \kirk,  timecode:4122.seconds, music: { |p b e|
+	e.still.value(
+		wait: b.sum ,
+		text: ["his body is","but his"],
+		fade:5
+	).sequenceText([
+			b.sum, ["",""],
+	]) 	
+});
 P.synthV(\mo, params: {|p b| [
 	lyrics: "his body + is but his",
+	vocalMode: \Open,
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		=> p.synthVTracks.at(e.key.asString.split($_)[0].asSymbol).()
+		=> p.synthVTracks.at(e.key).(b.sum)
 	}.play
 });
 P.double(\mo, filter: (midinote: _ - 12), music:{|p b e| 
@@ -284,12 +319,27 @@ P(\bassUp,syl:0,start:'His body',music:{|p b e|
 	
 });
 ["consciousness is still in the receptacle ",[2,1,-7,2,4,2,3,4,3,1,-5].dm(\c,scale:\mixolydian,transpose: 6)].addLine;
+
+P.still( \receptacle, start: \consciousness, syl:4, timecode:4127.seconds, music: { |p b e|
+	e.still.value(
+		wait: b.sum + Song.durs[e.start+1].list.sum ,
+		fadeIn: b.parse([4])
+	);
+});
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["consciousness is still","in the receptacle"],
+	)
+});
 P.synthV(\mo, params: {|p b| [
 	lyrics: "consciousness + + is still in the receptacle + + +",
+	vocalMode: \Open,
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		=> p.synthVTracks.at(e.key.asString.split($_)[0].asSymbol).()
+		// => p.synthVTracks.at(e.key.asString.split($_)[0].asSymbol).()
+		=> p.synthVTracks.at(e.key).(b.sum)
 	}.play
 });
 
@@ -327,12 +377,19 @@ P(\lick,start:\consciousness,music:{|p b e|
 	}
 });
 ["// it had been transferred into earlier.",[2,3,4,5,3,4,2,4,3,2].dm(\g,octave:4,transpose: 6)].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["it had been","transferred into earlier"],
+	)
+});
 P.synthV(\mo, params: {|p b| [
 	lyrics: "it had been transferred + into + earlier + +",
+	vocalMode: \Open,
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		=> p.synthVTracks.at(e.key.asString.split($_)[0].asSymbol).()
+		=> p.synthVTracks.at(e.key).(b.sum)
 	}.play
 });
 P.double(\mo, filter: (midinote: _ - 12), music:{|p b e|
@@ -384,10 +441,17 @@ P(\machines,start:\SickBay,music:{|p b e|
 		}!4
 		//=> FreeVerb.ar(_,1,1)
 		=> DWGReverbC1C3.ar(_)
-		*Env([0,1,1,0],[5,5,10],\sin).kr(1,2)
+		* Env([0,1,1,0],[5,5,10],[ \sin, 0 ]).kr(2,1)
 	}.play
 });
 [ "NURSE: All his vital organs are now working, Doctor. ",[3,4,5,3,7,6,5,4,11,5,4,3].dm(\b,scale:\mixolydian,transpose: 6) ].addLine;
+
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["all his vital organs","are now working, Doctor"],
+	)
+});
 P.synthV(\feng, filter: (midinote: _ - 12),  params: {|p b| [
 	lyrics: "all his vital + organs + are now working + doctor +",
 	vocalMode: \Opera
@@ -418,6 +482,7 @@ P(\tuneTest,start:\vital,music:{|p b e|
 
 	}.play
 });
+
 P(\bass,start:\vital,music:{|p b e| 
 	{
 		var freq = [
@@ -433,14 +498,50 @@ P(\bass,start:\vital,music:{|p b e|
 });
 	
 [ "(boom) Yes, we can keep them going for a few weeks, or a month. For all the good it'll do ","-1 1 3 2 1 -7 2 1 -7 1 2 3.5 2 1 -7.5 ".dm(\g,\minor) ++ "1 -7 -5 -3 -4 -5 -4".dm(\a,\mixolydian) ].addLine;
-P.tune();
-P.synthV(role: \mccoy, take: \lead, params: {|p b| [
+// P.tune();
+P.still(\mccoy, timecode: 4112.03.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum/2,
+		fade:b.sum/2,
+		// text: ["yes, we can keep them","going"],
+	)
+	// .sequenceText([
+	// 		b.parse([7]).sum, ["for a few weeks","or a month"],
+	// 		b[7..13].sum, ["for all the good","it'll do.."]
+	// ])
+});
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["yes, we can keep them","going"],
+	)
+	.sequenceText([
+			b.parse([7]).sum, ["for a few weeks","or a month"],
+			b[7..13].sum, ["for all the good","it'll do.."]
+	])
+});
+P.synthV(\mo, take: \lead, params: {|p b| [
 	lyrics: "r Yes, we can keep them going + for a few weeks, or a month for all the good it'll + do",
-	pitchTake: 1
+	legato: [1, 1, 1, 1, 1, 1, 1, 0.8, 1, 1, 1, 0.8, 1, 1, 0.8, 1, 1, 1, 1, 1, 1, 1, ],
+	pitchTake: 1,
+	// vocalMode: \Open,
+	paramTension: -0.1
+
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		=> p.synthVTracks.at(e.key).()
+		=> p.synthVTracks.at(e.key).(b.sum+5)
+	}.play
+
+});
+P.double(\mo, take: \lead,
+	filter: (midinote: _ - 12), 
+	params: {|p b| [
+	pitchTake: 1,
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).(b.sum)
 	}.play
 
 });
@@ -462,45 +563,23 @@ P(\bassline, music: { |p b e|
 	[
 		freq: [1, -4, 5.5, 6.5].df(\g,[3,4],\minor).q,
 		dur: b.parse([2, 9, 3, 8]).q,
-		instrument: \sawSynthSustain
+		instrument: \sawSynthSustain,
+		att: 1,
+		out: Effect.bus(
+			{|i| i
+				=> HPF.ar(_,100)
+				=> {| i| CombN.ar(i, 0.4,0.4) /2 +i}
+				* -3.dbamp
+			}
+		)
 	].ppm
 });
-P.double(role: \mccoy, take: \lead, params: {|p b| [
-	pitchTake: 1
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
 
-});
-
-P.still(\controls, start: 1, timecode:4105.05.seconds, music: { |p b e|
-	e.still.value(
-		wait: b.sum,
-		fade: 
-		Song.durTill(4)
-	);
-});
 // P.still( \plasticPerson, start: \weeks, timecode:4148.5.seconds, music: { |p b e|
 // 	e.still.value(
 // 		wait: b.sum ,
 // 	);
 // });
-P.still( \receptacle, start: \consciousness, syl:4, timecode:4127.seconds, music: { |p b e|
-	e.still.value(
-		wait: b.sum + Song.durs[e.start+1].list[0..8].sum ,
-		text: [ "still in the","receptacle" ],
-		fadeIn: b.parse([4])
-	);
-});
-P.still( \kirk, start: 'His body', timecode:4122.seconds, music: { |p b e|
-	e.still.value(
-		wait: b.sum ,
-		text: ["his body is","but his consciousness"],
-		fade:5
-	);
-});
 P.still( \looking, start: \machine, timecode:4131.5.seconds, music: { |p b e|
 	e.still.value(
 		wait: 3 ,
@@ -512,17 +591,17 @@ P.still( \looking, start: \machine, timecode:4131.5.seconds, music: { |p b e|
 P.still( \console, start: \machine,lag:3, timecode:4138.seconds, music: { |p b e|
 	e.still.value(
 		wait: b.sum - 2 ,
-		fadeIn:2
-		//text: ["all his vital organs","are now working, Doctor"]
+		fadeIn:2,
+		// text: ["all his vital organs","are now working, Doctor"]
 
 	);
 });
-P.still( \nurse, start: \vital, timecode:4139.seconds, music: { |p b e|
-	e.still.value(
-		wait: b.sum ,
-		text: ["all his vital organs","are now working, Doctor"]
-
-	);
-});
+// P.still( \nurse, start: \vital, timecode:4139.seconds, music: { |p b e|
+// 	e.still.value(
+// 		wait: b.sum ,
+// 		text: ["all his vital organs","are now working, Doctor"]
+//
+// 	);
+// });
 )
 

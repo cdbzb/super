@@ -589,7 +589,7 @@ Song {
 				this.load;
 				{
 					3.wait;
-					this.recordOBS
+					this.recordOBS(start, end, dir, tail)
 				}
 			}
 		}

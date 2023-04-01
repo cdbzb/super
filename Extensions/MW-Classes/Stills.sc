@@ -222,8 +222,12 @@ Still {
               this.setText(textt)
             }            
           }
-
         }
+	sequenceText2 { | times texts |
+		var array = [times, texts].flop.flatten;
+		this.sequenceText( array )
+	}
+
 	plot{|markerName monitor=0|
 		var image=this.mark(markerName);
 		var w;

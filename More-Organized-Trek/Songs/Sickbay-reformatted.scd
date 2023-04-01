@@ -21,15 +21,52 @@ Song.synthVTracks.default = Song.synthVTracks.aiko;
 P(\filter,start:0,music:{|p b e| 
 		p.pts.select{|i| i.still.notNil}.select{|i| i.name.asString.contains("halass") }.do{|i|i.monitor.postln}
 });
-
 ["Sick Bay.. Sick Bay, Mc- Coy","e c f# d e g#"].addLine; //0
+P.synthV(\genbu, take: \lead, params: {|p b| [
+	lyrics: "Sick Bay r r r r",
+	phonemes:["s i k", "b e i"],
+	filter: (midinote: _ - 12), 
+	legato: [1,0.5,1,1,1,1, ],
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
 P(\guide0,start:0,music:~sickBay.pbind[0]=>Pfin(2,_));
-P.still( \kirk, start:0 , timecode:3802.81.seconds, music: { |p b e|
+P.still( \kirk, start:0 , timecode:3758.61.seconds, music: { |p b e|
 		e.still.value(
 
-				wait: b.sum,
+				wait: b.sum ,
+				// fade: e.bNext.parse([3]).flat,
+				fade: 1,
 				monitor: 0,
+				text:["Sickbay",""]
+		).sequenceText2(
+				b.parse([2,4]), [ 
+				["","Sickbay, McCoy"],
+				["",""]
+				],
 		);
+});
+P.synthV(role: \mccoy, take: nil, params: {|p b| [
+	lyrics: "r r Sick bay, mccoy +",
+	filter: (midinote: _ - 12), 
+	legato: [1, 1, 1, 0.6, 1, 0.5 ],
+	paramExpression: 0.3,
+	paramTension: 0.8
+
+	// pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+
+		=> PartConv.ar(_,2048,p.speaker)
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
 });
 P(\mcCoy0,start:0,syl:1,music: { |p b e|
 		[
@@ -43,6 +80,16 @@ P(\mcCoy0,start:0,syl:1,music: { |p b e|
 }); 
 //TODO Sargon should sound sick!
 ["Sar- gon here, i'm in your deck six brief- ing room","b- g- c  e- f g- a- b- b g# d "].addLine; //1
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["Sargon","here.."],
+	).sequenceText2(
+			b.parse([3]), [ 
+			["I'm in your","deck 6 briefing-room"],
+			],
+	)
+});
 P.synthV(\genbu, take:"low", params: 
 	[
 		lyrics: "Sa gon hi aim in yur dek siks bri fin rum",
@@ -59,6 +106,16 @@ P.synthV(\genbu, take:"low", params:
 P.tune('Sar- gon here');
 ["(enter Thalassa)","e5"].addLine; //f maj 7 //2
 P.tune('enter Thalassa');
+P.still(\thalassa2, timecode: 3803.75.seconds, music: { |p b e|
+	fork{
+		1.wait;
+		e.still.( 
+			fadeIn: 0.1,
+			wait: b[0],
+			// text: ["",""],
+		)
+	}
+});
 P(\plucks5,start:5,music:{ 
 		[ 
 				degree:[Rest(),3,1,5-7,[3,6]-7].q-1,
@@ -108,16 +165,18 @@ P(\gliss,start:5,syl:6,music:{
 }=>SynthDef(\glissChord,_)=>_.add; 
 );
 ["You sound ter- ri- ble wait there for me","c4 d e c g3 e-4 d b-3 f"].addLine;  //3
-//	P.synthV(\aiko,
-//	[
-//		lyrics: "yu sound te ri bu weit zer for mi",
-//	],music:{|p b e|
-//		{
-//			e.playbuf
-//			=> p.synthVTracks.at(e.key).()
-//		}.play
-//	}
-//);
+P.synthV(role: \mccoy, take: nil, params: {|p b| [
+	lyrics: "you sound terrible + + wait there for me",
+	legato: [1, 1, 1, 1, 0.5, 1, 1, 1, 1, ],
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> PartConv.ar(_,2048,p.speaker)
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
 P.tune('ter- ri');
 P(\mcCoy3,start:3,music: { |p b e|
 		Song.currentSong.pbind[3]<>(instrument:\mcCoy,
@@ -126,10 +185,17 @@ P(\mcCoy3,start:3,music: { |p b e|
 				amp:0.03
 		) => _.play  
 });
+
 P(\static3,start:3,music: 
 		(instrument:\crackle,dur:5,out:~sickBay.mcCoyBus,amp:0.3)
 );
 ["Sar- gon what's wrong?","b4 g b e5"].addLine;  //4
+P.still(\medium_shot, timecode: 3807.53.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["Sargon","what's wrong?"],
+	)
+});
 	P.synthV(\aiko,params:
 	[
 		lyrics: "sar gan wats rong?",
@@ -162,6 +228,12 @@ P(\whatsWrong4,start:4,music:
 ); 
 P(\verbFade4,start:4,music:{~sickBay.thalassaVerb.release(5)});
 ["no- thing of im- portance, Fa- tigue per- haps","f g- a- g- b- g- b- a- g- e-"].addLine;  //5
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["nothing of importance","fatigue, perhaps"],
+	)
+});
 	P.synthV(\genbu, take: "low", params:
 	[
 		lyrics: "neu zing af im po tans fa tig peu haps",
@@ -212,9 +284,36 @@ P(\doorOpen,start:2,music:
 
 ); 
 ["(beat) (formula) Sar- gon's for- mu- la...","d d5 e f# a f# c"].addLine;  //6
-P.tune('(formula)');
+P(\strings, music: { |p b e|
+	{
+		var swell = Env([0,1,1,0],[b[0],b[1]]).kr(2,gate:1)
+		  * WhiteNoise.ar(0.1);
+		Gendy1.arWidth(freq:1.df(\d))
+		* Env([0,0,1,0],[b[0]-0.01,0.01,3]).kr(2,gate:1)
+		+ swell
+		/10
+	}.play
+});
+P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		fade: b[0],
+		wait: 0.1,
+		text: ["ß∂çøß","çç≈√øπ"],
+		// fadeIn: b[0]
+	)
+});
+P.still(\formul, timecode: 3812.133.seconds, music: { |p b e|
+		e.still.( 
+			wait: 0.1,
+			// text: ["Henoch's","formula..."],
+			fade: b[0] 
+		)
+});
+// P.tune('(formula)');
 	P.synthV(\aiko, params: [
-		lyrics: "r r sar ganz for mu la",
+		lyrics: "r r hen ganz for mu la",
+		filter: (midinote: _ - 12), 
+		phonemes: ["","","x e n","n A kh s","f o r `","m j u","l @" ],
 	],music:{|p b e|
 		{
 			e.playbuf
@@ -223,6 +322,32 @@ P.tune('(formula)');
 	}
 );
 ["yes, I wan- ted to be cer- tain there was no","f4 c#4 c c# f c# c b-3 a- b- e-4"].addLine;  //7
+P(\chord, music: { |p b e|
+	[
+		freq: [ [5, 11, 13], [5,7,13], [5,6,13],[ 5,6,12 ],[11.5,6,13] ].df('c#').q,
+		instrument: \sawSynthSustain,
+		lofreq:5000,
+		hifreq:9000,
+		dur: p.quarters[e.start ] ++ Song.durs[\rrect].list[0..2] => _.parse([2, 3, 1, 1, 1]) => _.q,
+		amp:0.02,
+		att:1,
+		pan: 0.8,
+		rel:4
+	].ppm
+});
+P.still(\kirk, timecode: 3833.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+		fade: e.bNext[ 0..1 ].sum,
+		fadeIn: b[0]
+	).sequenceText2(
+			b.parse([1,7]), [ 
+			["I wanted","to be certain"],
+			["there was no","error"]
+			],
+	)
+});
 P.synthV(\genbu, pbind: Song.enlarge(2), params:
 	[
 		lyrics: "yes ai won ted tu bi sur ten zer was no error +",
@@ -236,7 +361,7 @@ P.synthV(\genbu, pbind: Song.enlarge(2), params:
 	}
 );
 
-P.tune('cer- tain');
+// P.tune('cer- tain');
 Song.quarters['cer- tain']=Song.parseBeats('cer- tain',[1.5,0.5,0.5,0.5,0.5,0.5,1,0.5,0.5,0.5,0.5,]);
 P(\chords,start:'cer- tain',music:{|p b e| 
 	[
@@ -259,6 +384,12 @@ P(\bass,start:'cer- tain',music:{|p b e|
 	].p.play(p.quarters[e.start].asTempoClock);
 });
 ["er- ror. For- mu- la is co- ","d4 f3 g a b g b "].addLine; //8
+P.still(\clear,syl:1, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.drop(1).sum + e.bNext[0],
+		text: ["formula is ","correct"],
+	)
+});
 P.tune('For- mu- la');
 P.synthV(\genbu,
 	pbind: Song.enlarge(7),
@@ -293,6 +424,16 @@ P(\bass,syl:1,start:'For- mu- la',music:{|p b e|
 
 });
 ["rrect. Don't be concer -- ned, this is an","d4 c# e d f# g f# d e f# "].addLine;  //9
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum + e.bNext.parse(5) => _.unbubble,
+		text: ["don't be","concerned"],
+	).sequenceText2(
+			b.parse([7]), [ 
+			["this is an","excellent body"],
+			],
+	)
+});
 P.synthV(\genbu,
 	pbind: Song.enlarge(6),
 	params:
@@ -348,6 +489,16 @@ P(\strum,start:'ex- cel',music:{|p b e|
 });
 P.tune('bo- dy');
 ["There I feel be- tter al- rea- dy","c4 g3 a b c4 b3 a b d4 c"].addLine; //11
+P.still(\twoShot, timecode: 3835.333.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["There",""],
+	).sequenceText2(
+			b.parse([1]), [ 
+			["I feel better","already"],
+			],
+	)
+});
 	SynthDef( \synth_simpleSine, {
 			arg freq=220, rate=0.1, pan=0.0, amp=1.0, dur=1.0, lfor1=0.08, lfor2=0.05, nl=0.5, filt=5000;
 			var sig, sub, lfo1, lfo2, env, noise;
@@ -404,6 +555,16 @@ P(\ting,lag:0.07, music: { |p b e|
 });
 
 ["in Time a host  -- body will become...  ",[-1,1,-7,1,2,1,-7,-6,-7,1].dm(\b,scale:\minor)].addLine; //12
+P.still(\reverse, timecode: 3838.333.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["in","time"],
+	).sequenceText2(
+			b.parse([2]), [ 
+			["a host body","will become"],
+			],
+	)
+});
 P.synthV(\aiko, params: [
 	lyrics:"in taim a ho ost ba di will bi kum ",
 	phonemes:["","","","","","","","","","k @ m"]
@@ -437,6 +598,16 @@ P(\bass,start:\Time,music:{|p b e|
 });
 
 ["(cis d a fis) accustomed to us (fis)",[-7,1,2,3,7,12,11,7,11,3].dm(\d)].addLine;
+P.still(\clear,syl:3, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.drop(1).sum,
+		text: ["accustomed","to us"],
+	).sequenceText2(
+			b.drop(1).parse([5]), [ 
+			["",""],
+			],
+	)
+});
 
 P.synthV(\aiko,params:[lyrics:"u ku stum too us"],range:[4,8],syl:3, music: { |p b e|
 		{
@@ -461,7 +632,16 @@ P(\extraNote,start:\accustomed,syl:4,music:{|p b e|
 //	].p.play(clock:p.quarters[e.start] ++ p.quarters[\accustomed] =>_.asTempoClock)
 //});
 ["injections will no longer be necessary",[6,5,4,3,4,5,6,2,5,3,2,1].dm(\d)].addLine;
-
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["injections will","no longer be"],
+	).sequenceText2(
+			b.parse([8]), [ 
+			["necessary",""],
+			],
+	)
+});
 
 //Song.injectVocaloid.writeProject
 //Song.injectVocaloid.open
@@ -512,6 +692,12 @@ P(\lick2,start:\injections,syl:0,music:{|p b e|
 	].pma(\sparkTriangle).play;
 });
 ["/*KIRK:*/ That will take months, perhaps years. We haven't that choice, Thalassa. ",[1,-7,1,3, 2,1,5,2,5,4.5,5,6,11,7,6,5].dm(\c,4)].addLine;
+P.still(\twoShot, timecode: 3848.666.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		fadeIn: b.sum
+	)
+});
 P.tune(\months);
 P.still(\clear,\months,music:{|p b e|
 	e.still.(
@@ -727,6 +913,12 @@ P(\lick2,start:\thoughts,syl:10,music:{|p b e|
 	].pp;
 });
 ["/*MULHALL:*/ Will they, husband?  Will they intertwine like this? ",[4,1,3,2].dm(\b,octave:5) ++ [-7,1,4,2,5,5.5,5,4,7].dm('c#')].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["will they,","husband?"],
+	)
+});
 //P.tune('Will they');
 /*
 Song.synthV1.writeProject;
@@ -779,10 +971,10 @@ P(\this,start:'Will they',syl:11,music:{|p b e|
 		).play
 });
 P.still(\thalassa,start:'Will they',syl:3,timecode:3914.542.seconds,music:{|p b e| 
-		{e.still.value(
+		e.still.(
 				wait:b.sum,
 				text:["will they intertwine","like this?"]
-		)}.defer
+		)
 });
 P(\bass,start:'Will they',syl:11,music:{|p b e| 
 		[
@@ -869,7 +1061,11 @@ P.synthV(\aiko, params:[lyrics:"Sar gon wats rong"],syl:7,range:[8,11],music: { 
 P.still(\kiss,start:'kiss',
 		timecode:3926.seconds
 		//timecode:3927.5.seconds
-		,music:{|p b e| e.still.value(wait:b[0..4].sum)}
+		,music:{|p b e| 
+			e.still.value(
+				wait:b[0..4].sum
+			)
+		}
 );
 P(\chord,start:\kiss,music:{|p b e| 
 	(

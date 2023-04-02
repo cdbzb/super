@@ -18,6 +18,13 @@ Song.synthVTracks.aiko = { |preGain=1 ratio=2 amp = (1/8) len=2000 mix=0.1 |
 	}
 };
 Song.synthVTracks.default = Song.synthVTracks.aiko;
+
+Song.synthVTracks.xuan= {
+	{|i|
+		PartConv.ar(i,2048,Song.speaker)
+		/8
+	}
+};
 P(\filter,start:0,music:{|p b e| 
 		p.pts.select{|i| i.still.notNil}.select{|i| i.name.asString.contains("halass") }.do{|i|i.monitor.postln}
 });
@@ -39,17 +46,18 @@ P(\guide0,start:0,music:~sickBay.pbind[0]=>Pfin(2,_));
 P.still( \kirk, start:0 , timecode:3758.61.seconds, music: { |p b e|
 		e.still.value(
 
-				wait: b.sum ,
+				wait: b.parse([2]).unbubble,
 				// fade: e.bNext.parse([3]).flat,
-				fade: 1,
+				fade: 0.1,
 				monitor: 0,
 				text:["Sickbay",""]
-		).sequenceText2(
-				b.parse([2,4]), [ 
-				["","Sickbay, McCoy"],
-				["",""]
-				],
-		);
+		)
+});
+P.still(\clear, timecode: 0.seconds,syl:1, music: { |p b e|
+	 e.still.( 
+		wait: b.drop(1).sum,
+		text: ["","SickBay, McCoy"],
+	)
 });
 P.synthV(role: \mccoy, take: nil, params: {|p b| [
 	lyrics: "r r Sick bay, mccoy +",
@@ -63,7 +71,7 @@ P.synthV(role: \mccoy, take: nil, params: {|p b| [
 	{
 		e.playbuf
 
-		=> PartConv.ar(_,2048,p.speaker)
+		// => PartConv.ar(_,2048,p.speaker)
 		=> p.synthVTracks.at(e.key).()
 	}.play
 
@@ -80,10 +88,16 @@ P(\mcCoy0,start:0,syl:1,music: { |p b e|
 }); 
 //TODO Sargon should sound sick!
 ["Sar- gon here, i'm in your deck six brief- ing room","b- g- c  e- f g- a- b- b g# d "].addLine; //1
+P.still(\kirk, timecode: 3759.61.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		// text: ["",""],
+	)
+});
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["Sargon","here.."],
+		text: ["Sargon","hee.."],
 	).sequenceText2(
 			b.parse([3]), [ 
 			["I'm in your","deck 6 briefing-room"],
@@ -102,7 +116,6 @@ P.synthV(\genbu, take:"low", params:
 		}.play
 	}
 );
-
 P.tune('Sar- gon here');
 ["(enter Thalassa)","e5"].addLine; //f maj 7 //2
 P.tune('enter Thalassa');
@@ -185,7 +198,6 @@ P(\mcCoy3,start:3,music: { |p b e|
 				amp:0.03
 		) => _.play  
 });
-
 P(\static3,start:3,music: 
 		(instrument:\crackle,dur:5,out:~sickBay.mcCoyBus,amp:0.3)
 );
@@ -196,7 +208,7 @@ P.still(\medium_shot, timecode: 3807.53.seconds, music: { |p b e|
 		text: ["Sargon","what's wrong?"],
 	)
 });
-	P.synthV(\aiko,params:
+P.synthV(\aiko,params:
 	[
 		lyrics: "sar gan wats rong?",
 	],music:{|p b e|
@@ -234,7 +246,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 		text: ["nothing of importance","fatigue, perhaps"],
 	)
 });
-	P.synthV(\genbu, take: "low", params:
+P.synthV(\genbu, take: "low", params:
 	[
 		lyrics: "neu zing af im po tans fa tig peu haps",
 		phonemes: [ "n a"," s i N"," a v"," i m ","p o r ","t e n s"," f e ","t i g", "p a r ","h a p s" ],
@@ -310,16 +322,16 @@ P.still(\formul, timecode: 3812.133.seconds, music: { |p b e|
 		)
 });
 // P.tune('(formula)');
-	P.synthV(\aiko, params: [
-		lyrics: "r r hen ganz for mu la",
-		filter: (midinote: _ - 12), 
-		phonemes: ["","","x e n","n A kh s","f o r `","m j u","l @" ],
-	],music:{|p b e|
-		{
-			e.playbuf
-			=> p.synthVTracks.at(e.key).()
-		}.play
-	}
+P.synthV(\aiko, params: [
+	lyrics: "r r hen ganz for mu la",
+	filter: (midinote: _ - 12), 
+	phonemes: ["","","x e n","n A kh s","f o r `","m j u","l @" ],
+],music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+}
 );
 ["yes, I wan- ted to be cer- tain there was no","f4 c#4 c c# f c# c b-3 a- b- e-4"].addLine;  //7
 P(\chord, music: { |p b e|
@@ -335,7 +347,7 @@ P(\chord, music: { |p b e|
 		rel:4
 	].ppm
 });
-P.still(\kirk, timecode: 3833.seconds, music: { |p b e|
+P.still(\kirk, timecode: 3826.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
@@ -360,8 +372,6 @@ P.synthV(\genbu, pbind: Song.enlarge(2), params:
 		}.play
 	}
 );
-
-// P.tune('cer- tain');
 Song.quarters['cer- tain']=Song.parseBeats('cer- tain',[1.5,0.5,0.5,0.5,0.5,0.5,1,0.5,0.5,0.5,0.5,]);
 P(\chords,start:'cer- tain',music:{|p b e| 
 	[
@@ -386,7 +396,9 @@ P(\bass,start:'cer- tain',music:{|p b e|
 ["er- ror. For- mu- la is co- ","d4 f3 g a b g b "].addLine; //8
 P.still(\clear,syl:1, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.drop(1).sum + e.bNext[0],
+		wait: b.drop(1).sum 
+		// + e.bNext[0]
+		,
 		text: ["formula is ","correct"],
 	)
 });
@@ -426,7 +438,7 @@ P(\bass,syl:1,start:'For- mu- la',music:{|p b e|
 ["rrect. Don't be concer -- ned, this is an","d4 c# e d f# g f# d e f# "].addLine;  //9
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum + e.bNext.parse(5) => _.unbubble,
+		wait: b.sum + e.bNext.sum => _.postln,
 		text: ["don't be","concerned"],
 	).sequenceText2(
 			b.parse([7]), [ 
@@ -491,7 +503,7 @@ P.tune('bo- dy');
 ["There I feel be- tter al- rea- dy","c4 g3 a b c4 b3 a b d4 c"].addLine; //11
 P.still(\twoShot, timecode: 3835.333.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
+		wait: b.parse([[1,1,1,1,1,1,1,1,1,0.5]]).unbubble,
 		text: ["There",""],
 	).sequenceText2(
 			b.parse([1]), [ 
@@ -553,7 +565,6 @@ P(\note, syl: 7, music: { |p b e|
 P(\ting,lag:0.07, music: { |p b e|
 		Synth(\synth_simpleSine, [\freq: 61.df(\c),\amp,0.1])
 });
-
 ["in Time a host  -- body will become...  ",[-1,1,-7,1,2,1,-7,-6,-7,1].dm(\b,scale:\minor)].addLine; //12
 P.still(\reverse, timecode: 3838.333.seconds, music: { |p b e|
 	 e.still.( 
@@ -596,7 +607,6 @@ P(\bass,start:\Time,music:{|p b e|
 		dur: [2,8,8,2,2,2,2,2,2,2, 2,2,2,2,2].q/2
 	].p.play(clock:p.quarters[e.start] ++ p.quarters[\accustomed] =>_.asTempoClock)
 });
-
 ["(cis d a fis) accustomed to us (fis)",[-7,1,2,3,7,12,11,7,11,3].dm(\d)].addLine;
 P.still(\clear,syl:3, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
@@ -609,7 +619,10 @@ P.still(\clear,syl:3, timecode: 0.seconds, music: { |p b e|
 	)
 });
 
-P.synthV(\aiko,params:[lyrics:"u ku stum too us"],range:[4,8],syl:3, music: { |p b e|
+P.synthV(\aiko,params:[
+	lyrics:"r r r r u ku stum too us r",
+	phonemes:[ "","","","","A","kh A s","th @ m t","","","","" ]
+], music: { |p b e|
 		{
 			e.playbuf  =>
 			p.synthVTracks.at(e.key).()   
@@ -642,12 +655,6 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 			],
 	)
 });
-
-//Song.injectVocaloid.writeProject
-//Song.injectVocaloid.open
-
-//"~/scripts/renderVocaloid.sh injections".unixCmd
-
 P(\bass,start:\injections,syl:0,music:{|p b e| 
 	[
 		instrument:\sawSynthSustain,
@@ -919,12 +926,6 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 		text: ["will they,","husband?"],
 	)
 });
-//P.tune('Will they');
-/*
-Song.synthV1.writeProject;
-Song.synthV1.open;
-*/
-
 P.synthV(\aiko, params:
 	[
 		lyrics: "wil they huz band wil they in ter twa a an laik zis"
@@ -944,7 +945,6 @@ P(\bass_stab,start:'Will they',music:{|p b e|
 
 		].p.play
 });
-
 P(\extra_notes,start:'Will they',syl:11,music:{|p b e| 
 		[
 				freq:[[1,3,7],[2,4,7],[3,5,7],[-7,2,4,7]].df(\d,scale:\mixolydian).q,
@@ -956,7 +956,6 @@ P(\extra_notes,start:'Will they',syl:11,music:{|p b e|
 
 		].pp;
 });
-
 //P.tune('Will they int', {|i| 
 //		Pbindf(i,\instrument,\stringyy,\amp,0.2)
 //		=>Pmul(\freq,0.5,_)},
@@ -1142,7 +1141,6 @@ P(\wibble,start:\hypo,music:{|p b e|
 		Synth(\door,[\amp,0.05,\out,Effect( BPF.ar(_,1000,7.5),out:1).bus.index ])
 	}
 });
-		
 P.still(\sensor, start:\hypo, timecode:3947.seconds, music:{ |p b e|
 		e.still.value(
 				wait:b[0..2].sum,
@@ -1162,8 +1160,6 @@ P.still(\hypo, start:\hypo,syl:2, timecode:3949.5.seconds, music:{ |p b e|
 		//		defer{ e.still.text = "hypo" }
 		//}
 });
-
-
 ["/*MULHALL:*/ Doctor, help him! ",[1,-7,3,-7].dm(\e,scale:\mixolydian)].addLine;
 P.synthV(\aiko,params:[ lyrics:" dak tar help him" ], music:{|p b e |
 		{
@@ -1172,7 +1168,6 @@ P.synthV(\aiko,params:[ lyrics:" dak tar help him" ], music:{|p b e |
 		}.play
 });
 //P.tune(\Doctor);
-		
 P.still(\mulhall, start:'help him', timecode:3953.0.seconds, music:{ |p b e|
 		e.still.value(
 				wait:b.sum,
@@ -1191,8 +1186,6 @@ P.still(\mcCoy,syl:0, start:\dead, timecode:4003.0.seconds, music:{ |p b e|
 )
 /*
 (
-
-
 //Stills   ! {{{
 ~stills.isNil.if{~stills=Stills("/Users/michael/tank/Trek/video for stills etc/media/return to tomorrow.mov")}; 
 ~stills.set('whatsWrong?',2288.6);

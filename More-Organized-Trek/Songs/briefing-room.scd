@@ -540,9 +540,7 @@ P(\chords,start:\selected,syl:6,music:{|p b e|
 	strum:0.054
 ].pp
 });
-
 [ "MCCOY:(boom boom boom boom) What's your attitude on that, Doctor? ", [ -1, -1, -17, -17, -5, 3, -7, 1, -7, -5, 3, 2, 1 ].dm(\a,5,\mixolydian) ].addLine;
-
 P(\bass,start:\attitude,music:{|p b e| 
 	MegaBind(
 			[
@@ -568,7 +566,6 @@ P(\bass,start:\attitude,music:{|p b e|
 			}
 		).play
 });
-
 P.tune(\attitude,_ <> [rest:[\,\,\,\,1,1,1,1,1,1,1,1,1].q].p);
 P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 	lyrics: "r r r r What's your attitude + + on that, Doctor +",
@@ -624,6 +621,13 @@ Song.setTempoMap(\scientist,"e e e e eeee e e e x x e x xee e e e e eeee e e e e
 			*0.7
 			=> HPF.ar(_,100)
 			=> DCompressor.ar(_, sidechainIn:0, sidechain:0, ratio:4, threshold:-40, attack:0.1, release:100.1, makeup:0.5, automakeup:1)
+		}
+	}, \an, {
+		{|i| 
+			i 
+			=> BPF.ar(_,1200,rq:0.3.reciprocal)
+			=> FreeVerb.ar(_,0.05,1)
+			* -6.dbamp
 		}
 	}
 ));
@@ -1099,7 +1103,7 @@ P(\bass,start:\impossible,music:{|p b e|
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	filter: (midinote: _ - 12), 
 	lyrics: " Bones? You could stop all this by saying + no. ",
-	legato: [0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, ],
+	legato: [0.8, 1, 1, 1, 1, 1, 1, 1, 1, 1, ],
 	vocalMode: \Soft,
 	paramTension: 0.6,
 	pitchTake: 1
@@ -1123,7 +1127,7 @@ P.double(role: \kirk, take: \lead, params: {|p b| [
 
 });
 P.tune('stop all this');
-P(\double,start:'stop all this',syl:0,music:{|p b e| 
+P(\tune,start:'stop all this',syl:0,music:{|p b e| 
 	p.tune[e.start].list[1..].dropLast
 	=> { |i| [
 		midinote: i.q - [ 12, 24 ],
@@ -1277,17 +1281,23 @@ P(\chords,start:\involved,music:{|p b e|
 	].pma(\defaultRetrig).play
 	
 });
-["MCCOY: Then I'll still want one question answered to my satisfaction.", "1 2 -8 1 3 4 2 5 1".dm(\f, 5, \diminished) ++ "3 4 5 1 6.5 6".dm(\c, 5, \mixolydian) ].addLine;//p13
+["MCCOY: (boom) Then I'll still want one question answered to my satisfaction.", "-1 1 2 -8 1 3 4 2 5 1".dm(\f, 5, \diminished) ++ "3 4 5 1 6.5 6".dm(\c, 5, \mixolydian) ].addLine;//p13
+Trek.cast.mccoy = \an;
+Trek.presets.put(\mccoy,\mo,[paramTension:0.8, paramGender:0.1]);
+Trek.presets.put(\mccoy,\an,[paramTension:0.4, paramGender:0.12]);
 P.synthV(role: \mccoy, take: \lead, params: {|p b| [
-	lyrics: " Then I'll still want one question + answered + to my satisfaction + + +",
+	lyrics: "r Then I'll still want one question + answered + to my satisfaction + + +",
 	legato: [1, 1, 1, 1, 1, 1, 1, 1,1, 1, 1, 1, 1, 1, 1, 0.8, ],
 	filter: (midinote: _ - 12), 
 	pitchTake: 1,
-	vocalMode: \Solid
+	vocalMode: \Open,
+	paramTension: -0.5,
+	paramExpression:1.5
 ] }, music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		* 4.dbamp
 	}.play
 
 });
@@ -1297,13 +1307,14 @@ P.double(role: \mccoy, take: \lead, params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		* 4.dbamp
 	}.play
 
 });
 P(\dimchords,start:\answered,music:{|p b e| 
 [
 	freq: [ [1,3,5,7].df(\d,5,\diminished),[1,3,5,7].df('c#',5,\diminished) ].q,
-	dur: b.parse([9,5]).q,
+	dur: b.parse([10,5]).q,
 	legato:1,
 	instrument:\wash,
 	att:b[0..8].sum,
@@ -1313,7 +1324,7 @@ P(\dimchords,start:\answered,music:{|p b e|
 
 ].pm(\wash).play
 });
-P.tune(\answered);
+// P.tune(\answered);
 P.tune('answered to', {|i| Pbindf(i,\legato,0.9, \instrument,\stringyy,\wet,0.3,\release,2,\amp,0.2) => Pmul(\freq,1/[2,4],_)});
 ["Why? Not a list of possible miracles, (boom) but a ","6 3 1 5 3".dm(\f) ++ "6.5 6 3 5 4 -7".dm('c#',5) ++ "-5 3 4".dm('e-')].addLine;
 P.synthV(role: \mccoy, take: \lead,

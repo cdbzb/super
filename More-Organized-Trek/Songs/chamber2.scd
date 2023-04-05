@@ -47,6 +47,17 @@
 			].p.fin.play
 		});
 		[ /*MCCOY*/ 'Is it you, Jim? (a nod)', [3,4,7,5, 5.5].dm('d')  ].addLine; 
+		P.synthV(role: \mccoy, take: \lead, params: {|p b| [
+			lyrics: "Is it you, Jim r",
+			filter: (midinote: _ - 12), 
+			pitchTake: 1
+		] }, music:{|p b e|
+			{
+				e.playbuf
+				=> p.synthVTracks.at(e.key).()
+			}.play
+
+		});
 		P(\nod,syl:3,music:{ | p b e |
 			[
 				strum:[ 0.06 ].q,
@@ -59,6 +70,17 @@
 		P(\tune,music:Song.currentSong.pbind[3]
 	);
 	['Good, his metabolic rate is back to normal.',[15,14,15,16.5,15,14,13,12,15,12,11,7].dm('a',scale:\harmonicMinor,octave:4)].addLine;
+	P.synthV(role: \mccoy, take: \lead, params: {|p b| [
+		lyrics: "Good, his metabolic + + + rate is back to normal +",
+		filter: (midinote: _ - 12), 
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+
+	});
 	P(\bassLine,music:[
 		dur:
 		Song.currentSong.parse(4,[3,1,2,1,3,2]).q

@@ -4,6 +4,7 @@
 (
 s.waitForBoot { 
 	Song(\briefing,[]).current;
+"boilerplate.scd".load;
 
 [ "SCOTT: You're going to what?","r" ].addLine;
 [ "Are they all right in the head, Doctor? ","r" ].addLine;
@@ -40,6 +41,7 @@ Song.mechanicalBass = {
 P.synthV(role: \spock, take: \nil, params: {|p b| [
 	lyrics: "r once inside + their mechanical + + + bodies + engineer + + they can leave this planet + ",
 	filter: (midinote: _ - 12), 
+	vocalMode: \Rough
 	// pitchTake: 1
 ] }, music:{|p b e|
 	{
@@ -99,7 +101,7 @@ P(\click, music: { |p b e|
 	// .pp
 }
 });
-P.tune();
+// P.tune();
 P(\line, music: { |p b e|
 	[
 		freq: [\r, [1,3],2, 2 ].df(\f).q,
@@ -158,31 +160,43 @@ P(\chords,syl:6, music: { |p b e|
 		}
 	).play
 });
-"boilerplate.scd".load;
-P.synthV(\mo, params: {|p b| [
+P.synthV(role: \spock, take:nil, params: {|p b| [
 	lyrics: "with their knowledge + mankind + could leap ahead + ten thousand + years",
-	vocalMode:\Open,
+	// vocalMode:\Open,
 	legato: [1, 1, 1, 0.9,  1, 1, 0.8, 1, 1, 1, 1, 1, 1, 1]
 ] }, music:{|p b e|
 	{
 		e.playbuf
+		=> LeakDC.ar(_)
 		/2
 
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.double(\mo,
+P.double(role: \spock, take: nil,
 	pbind:{|p b| [ midinote: "1 5 4  3 2 2 2 ".dm(\f) ++ "5 4 4 3 2 1 3".dm(\g) => _.q, dur:b.q ].p},
-	filter: (midinote: _ - 12) ,
-	music:{|p b e|
-		{
+	params: {|p b| [
+		pitchTake: 1,
+] }, music:{|p b e|
+	{
 		e.playbuf
-		/2
-
+		=> LeakDC.ar(_)
 		=> p.synthVTracks.at(e.key).()
+		// /4
 	}.play
-}
-);
+});
+// P.double( role: \spock, take: \lead,
+// 	pbind:{|p b| [ midinote: "1 5 4  3 2 2 2 ".dm(\f) ++ "5 4 4 3 2 1 3".dm(\g) => _.q, dur:b.q ].p},
+// 	filter: (midinote: _ - 12) ,
+// 	music:{|p b e|
+// 		{
+// 		e.playbuf
+// 		/2
+// .size
+// 		=> p.synthVTracks.at(e.key).()
+// 	}.play
+// }
+// );
 P(\bass, music: { |p b e|
 	[
 		freq: [\r, 11, 7,  6,  6, 12, 6, 12 ].df(\f, [2,3], \mixolydian) =>_.q,
@@ -424,7 +438,7 @@ P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 	}.play
 
 });
-P.tune();
+// P.tune();
 P(\bass, music: { |p b e|
 	MegaBind(
 		[
@@ -448,7 +462,7 @@ P(\bass, music: { |p b e|
 });
 [ "They could destroy us without meaning to. "," 1 -7 -6 -6 -5 -6 -7 2 1 -3".dm(\e) ].addLine;
 P.synthV(role: \mccoy, take: \lead, params: {|p b| [
-	lyrics: "they could destroy + is without + meaning + to ",
+	lyrics: "they could destroy + us without + meaning + to ",
 	pitchTake: 1,
 	paramPitchExpression: 1.5
 ] }, music:{|p b e|
@@ -597,13 +611,15 @@ Song.setTempoMap(\scientist,"e e e e eeee e e e x x e x xee e e e e eeee e e e e
 	\default, {
 		{
 			|i|
-			var early = 0.5;
+			var early = 0.5; //early/late mix
 			var dryAmount = 1;
+			// var wet = 1; //total verb vs dry
+			var wet = 0.3; //total verb vs dry
 			EarlyRef.ar(i, source:[2,3,2], receiver:[0,0,0], roomsize:[4,5,6], hw:0.2, b:0.97, n:0, p:0, allp_lens:nil, allp_c:0.7)
 
-			=> DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:1-early / 2,)
+			=> DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:1-early * wet,)
 			+ ( i * dryAmount )
-			/ 7 
+			 * -15.dbamp
 			=> HPF.ar(_,100)
 			=> DCompressor.ar(_, sidechainIn:0, sidechain:0, ratio:4, threshold:-40, attack:0.1, release:100.1, makeup:0.5, automakeup:1)
 		}

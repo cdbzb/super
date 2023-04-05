@@ -154,17 +154,16 @@ SynthV {
 		*/
 	}
 	checkDirty {
-		^project => JSON.stringify(_) != try{ String.readNew(File( file ,"r") )}
+		// ^project => JSON.stringify(_) != try{ String.readNew(File( file ,"r") )}
+		File.exists(file).not.if{ ^true };
+		File.exists( location +/+ "raw" ).not.if{
+			this.writeRawProject; ^false 
+		} {
+			^project != Object.readArchive( location +/+ "raw" ) 
+		}
 	}
-	needsRender {
-		var mix = location +/+ "synthV_MixDown.wav";
-		^(
-			case 
-			{File.exists(mix).not} {true}
-			{ File.mtime( file ) > File.mtime( mix )}{true} //file is project file
-			{false}
-		)
-			
+	writeRawProject {
+		project.writeArchive( location +/+ "raw" )
 	}
 	refresh {
 		this.checkDirty.if{
@@ -181,6 +180,7 @@ SynthV {
 			directory +/+ "SCRIPTS/renderSynthesizerV.sh".standardizePath + file =>_.unixCmd
 		}
 	}
+
 	*load { |path|
 		^String.readNew(path.standardizePath => File(_,"r")) => JSON.parse(_)
 	}
@@ -210,8 +210,10 @@ SynthV {
 	}
 	writeProject {
 		this.setRenderConfig;
+		File.exists(location).not.if{File.mkdir(location)};
 		this.checkDirty.if
 		{
+			project.writeArchive( location +/+ "raw" );
 			JSON.stringify( project ).write(
 				file, overwrite: true, ask: false
 			);
@@ -483,25 +485,20 @@ SynthV {
 }
 
 +Song {
-	refreshSynthV {
-		fork{
-			var dirty = Song.pts
-			.select{ |i| i.synthV != nil }
-			.select{ |i| i.synthV.needsRender};
-			dirty.do{ |i|
-				var wav = i.synthV.location +/+ "synthV_MixDown.wav";
-				"touch" + wav => _.unixCmd;
-				1.wait;
-				i.synthV.render;
-				Post <<< 'time: ' <<< wav.timeSinceModified;
-				while { wav.timeSinceModified > 10} {0.1.wait;Post << \waiting <<  wav.timeSinceModified << Char.nl};
-				2.wait;
-				// "osascript -e 'quit app \"Synthesizer V Studio Pro.app\"'".unixCmd;
-				// 2.wait;
-				// while {12>10} {0.01.wait;\waiting.postln}
-			};
-			// ^dirty
+	renderSynthV{ |pause|
+		var synthVs = Song.pts.select{|i| i.synthV.notNil }.collect(_.synthV);
+		fork {
+			synthVs.do{|i x|
+				i.render;
+				Post << x << " of " << synthVs.size << "\n";
+				pause.wait;
+			}
 		}
+	}
+	dirtySynthVs {
+		^ this.pts.select{|i| i.synthV.notNil }
+		.collect{|i| i.synthV}
+		.select{|i| i.checkDirty}
 	}
 }
 

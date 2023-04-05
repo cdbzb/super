@@ -50,6 +50,14 @@ P.synthV(role: \spock, take: \nil, params: {|p b| [
 	}.play
 
 });
+P.double(role:\spock, take: \nil, params: {|p b| [
+	pitchTake:2
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 P(\bass, music: { |p b e|
 	MegaBind(
 		[
@@ -67,6 +75,15 @@ P(\bass, music: { |p b e|
 P.synthV(role: \spock, take: \lead, params: {|p b| [
 	lyrics: "travel + back - with - us",
 	// filter: (midinote: _ - 12), 
+	// pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+P.double(role: \spock, take: \lead, params: {|p b| [
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
@@ -227,12 +244,21 @@ Song.makeBassNote = { |root = 'f#' release = 2 shorten = 0 out=0|
 Song.makeBassNote.('f#', 4, shorten:3);
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	lyrics: "  Bones, they'll show us medical + +  advances + + ,",
+	pitchTake: 1,
 	legato: [0.8, 1, 1, 1, 1, 1, 1, 1, 1, 0.5]
 ] }, music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 	}.play
+});
+P.double(role: \kirk, take: \lead, params: {|p b| [
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
 });
 // P.tune();
 P(\line, music: { |p b e|
@@ -248,6 +274,7 @@ P(\line, music: { |p b e|
 Song.makeBassNote.('c',3,shorten:4);
 P.synthV(role:\kirk,take:\lead, params: {|p b| [
 	lyrics: "miracles + + you never + dreamed possible + +",
+	pitchTake:1,
 ] }, music:{|p b e|
 	{
 		e.playbuf

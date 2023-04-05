@@ -155,11 +155,15 @@ SynthV {
 	}
 	checkDirty {
 		// ^project => JSON.stringify(_) != try{ String.readNew(File( file ,"r") )}
-		File.exists(file).not.if{ ^true };
+		File.exists(file).not.if{ 
+			"no projectFile".postln;
+			^true; };
 		File.exists( location +/+ "raw" ).not.if{
-			this.writeRawProject; ^false 
+			"no raw file".postln
+			^false; 		
 		} {
-			^project != Object.readArchive( location +/+ "raw" ) 
+			"project and raw not equal".postln;
+			^project != Object.readArchive( location +/+ "raw" );
 		}
 	}
 	writeRawProject {
@@ -178,7 +182,8 @@ SynthV {
 			directory +/+ "SCRIPTS/renderSynthV-recompute.sh".standardizePath + file =>_.unixCmd
 		}{
 			directory +/+ "SCRIPTS/renderSynthesizerV.sh".standardizePath + file =>_.unixCmd
-		}
+		};
+		this.writeRawProject
 	}
 
 	*load { |path|
@@ -213,7 +218,7 @@ SynthV {
 		File.exists(location).not.if{File.mkdir(location)};
 		this.checkDirty.if
 		{
-			project.writeArchive( location +/+ "raw" );
+			// project.writeArchive( location +/+ "raw" );
 			JSON.stringify( project ).write(
 				file, overwrite: true, ask: false
 			);

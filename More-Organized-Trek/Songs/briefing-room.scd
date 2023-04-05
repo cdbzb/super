@@ -761,7 +761,7 @@ P(\cymbal, music: { |p b e|
 
 	).play
 });
-P.synthV(\feng, prepend:true, filter: (midinote: _ - 12),  params: {|p b| [
+P.synthV(\feng, filter: (midinote: _ - 12),take:nil,  params: {|p b| [
 	lyrics: "willing + I'm willing + I'm willing + I'm ",
 	lag: [0.06,0,0,0,0,0,0,0,0],
 	legato:[1,0.9,1,1,0.9,1,1,0.9,1],
@@ -780,7 +780,7 @@ P.synthV(\feng, prepend:true, filter: (midinote: _ - 12),  params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.double(\feng, prepend:true, music:{|p b e|
+P.double(\feng, take:nil, music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
@@ -1035,6 +1035,7 @@ Song.opportunityKey='b';
 Song.durs.filter( _ * [1,1,1,1,1,1,5/7, 1,1,1,1,1,1,1,1 ] );
 P.synthV(\feng, filter: (midinote: _ - 12),  params: {|p b| [
 	lyrics: "r the opportunity + + + + is an extrordinary + + + + one",
+	legato: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.9, ],
 	vocalMode: \Opera
 ] }, music:{|p b e|
 	{
@@ -1108,7 +1109,7 @@ Song.impossibleCurve=TempoMap("e e e E E E e x x e e qe e E E E q".asBeats,Song.
 P.synthV(role: \scott, take: \lead, params: {|p b| [
 	filter: (midinote: _ - 12), 
 	lyrics: " A starship + engine + the size of a walnut? + Thats impossible! + + + ",
-	legato: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 0.6, 1, 1, 1, 1, ],
+	legato: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.7, 0.6, 1, 1, 1, 1, ],
 	pitchTake: 1
 ] }, music:{|p b e|
 	{

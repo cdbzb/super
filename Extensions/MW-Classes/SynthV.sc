@@ -10,12 +10,13 @@ SynthV {
 	var <>firstNoteOffset = 0;
 	var <> offset = 0;
 	var <>double, <>take;
-	*new {|key name take double| registry.at(key, name, ( take ? \default )).isNil.if {
-		 ^super.new.init(key, name, take, double) 
-	 }{
-		 registry.at(key, name, (take ? \default)).refreshBuffer;
-		 ^registry.at(key, name, (take ? \default)) } 
-	 }
+	*new {|key name take double| 
+		// registry.at(key, name, ( take ? \default )).isNil.if {
+			^super.new.init(key, name, take, double) 
+		// }{
+		// 	registry.at(key, name, (take ? \default)).refreshBuffer;
+		// 	^registry.at(key, name, (take ? \default)) } 
+		}
 	*initClass {
 		registry = MultiLevelIdentityDictionary.new();
 		buffers = MultiLevelIdentityDictionary.new();
@@ -358,7 +359,7 @@ SynthV {
 	refreshBuffer{ |n k t|
 		var old = buffers.at(n,k,t).();
 		File.exists(location+/+"synthV_MixDown.wav").if{
-			try{old.free};
+			try{old.().free};
 			buffer = Buffer.doRead(Server.default,location+/+"synthV_MixDown.wav");
 		try{ buffers.put(n,k,(take ? \default),buffer) };
 		}{\NEEDS_RENDER.postln};
@@ -504,6 +505,16 @@ SynthV {
 		^ this.pts.select{|i| i.synthV.notNil }
 		.collect{|i| i.synthV}
 		.select{|i| i.checkDirty}
+	}
+	refreshDirty {
+		fork{ | wait = 12|
+			this.dirtySynthVs.do{ 
+				|i|
+				i.render;
+				wait.wait
+			};
+			thisProcess.nowExecutingPath.load
+		}
 	}
 }
 

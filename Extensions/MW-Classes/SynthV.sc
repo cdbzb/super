@@ -4,21 +4,15 @@ SynthV {
 	classvar <notePrototype, <databasePrototype, <databaseLib;
 	classvar <roles,<envelopes=#[ \toneShift, \pitchDelta, \voicing, \tension, \vibratoEnv, \loudness, \breathiness, \gender ];
 	classvar <vocalModes;
-	classvar <>registry;
 	classvar <>buffers;
 	var <name, <project, <file,<location,<buffer, <key, <song, <section;
 	var <>firstNoteOffset = 0;
 	var <> offset = 0;
 	var <>double, <>take;
 	*new {|key name take double| 
-		// registry.at(key, name, ( take ? \default )).isNil.if {
 			^super.new.init(key, name, take, double) 
-		// }{
-		// 	registry.at(key, name, (take ? \default)).refreshBuffer;
-		// 	^registry.at(key, name, (take ? \default)) } 
 		}
 	*initClass {
-		registry = MultiLevelIdentityDictionary.new();
 		buffers = MultiLevelIdentityDictionary.new();
 
 		roles = ();
@@ -192,7 +186,7 @@ SynthV {
 	}
 	init{ |n k t d|
 		name = n; double = d; take = t;
-		this.class.registry.put(n,k,(take ? \default),this);
+		// this.class.registry.put(n,k,(take ? \default),this);
 		// key = k.asString.replace(Char.space,$_);
 		key = k;
 		\KEY.post;key.postln;
@@ -491,7 +485,7 @@ SynthV {
 }
 
 +Song {
-	renderSynthV{ |pause|
+	renderSynthV{ |pause = 12|
 		var synthVs = Song.pts.select{|i| i.synthV.notNil }.collect(_.synthV);
 		fork {
 			synthVs.do{|i x|
@@ -506,8 +500,8 @@ SynthV {
 		.collect{|i| i.synthV}
 		.select{|i| i.checkDirty}
 	}
-	refreshDirty {
-		fork{ | wait = 12|
+	refreshDirty { |wait = 12|
+		fork{ 
 			this.dirtySynthVs.do{ 
 				|i|
 				i.render;

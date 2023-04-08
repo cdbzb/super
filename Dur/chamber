@@ -8,6 +8,7 @@ o = [
 	Pseq.prNew,  List.prNew,  Array.prNew(10),  Pseq.prNew,  
 	List.prNew,  Array.prNew(10),  Pseq.prNew,  List.prNew,  
 	Array.prNew(29),  Pseq.prNew,  List.prNew,  Array.prNew(1),  
+	"Sargon. (boom) ",  Pseq.prNew,  List.prNew,  Array.prNew(3),  
 	Pseq.prNew,  List.prNew,  Array.prNew(5),  Pseq.prNew,  
 	Array.prNew(1),  Pseq.prNew,  List.prNew,  Array.prNew(7),  
 	Pseq.prNew,  Array.prNew(1),  Pseq.prNew,  List.prNew,  
@@ -26,7 +27,7 @@ o = [
 ];
 p = [
 	// Dictionary
-	0, [ array: o[1],  size: 32 ],  
+	0, [ array: o[1],  size: 36 ],  
 	// Array
 	1, [ nil,  nil,  nil,  nil,  
 		nil,  nil,  'When Sargon and I exchanged, ',  o[2],  
@@ -60,41 +61,42 @@ p = [
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[32],  o[33],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
+		'/*MCCOY:*/ That`s the most ri (boom) ',  o[36],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		'/*MCCOY:*/ That`s the most ri (boom) ',  o[32],  nil,  nil,  
+		nil,  nil,  'and he falls to his knees.',  o[39],  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  'and he falls to his knees.',  o[35],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
+		nil,  nil,  'Sargon borrowed my body. ',  o[41],  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  'Sargon borrowed my body. ',  o[37],  
 		nil,  nil,  nil,  nil,  
+		nil,  nil,  'Kirk briefly convulses with pain',  o[44],  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  'Kirk briefly convulses with pain',  o[40],  
+		nil,  nil,  'Is it you, Jim? (a nod)',  o[46],  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  'Is it you, Jim? (a nod)',  o[42],  
+		nil,  nil,  'alien practically hijacks your body and ',  o[49],  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  'alien practically hijacks your body and ',  o[45],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
+		nil,  nil,  'I know what he is and what he wants, ',  o[52],  
+		'after all these centuries ',  o[55],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  'I know what he is and what he wants, ',  o[48],  
-		'after all these centuries ',  o[51],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
+		'I was floating (boom) in time and space. ',  o[58],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		'I was floating (boom) in time and space. ',  o[54],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -108,18 +110,18 @@ p = [
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
+		nil,  nil,  '/*MCCOY:*/ He doesnt appear to be harmed - -. Physically, anyway. ',  o[61],  
+		nil,  nil,  nil,  o[64],  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  '/*MCCOY:*/ He doesnt appear to be harmed - -. Physically, anyway. ',  o[57],  
-		nil,  nil,  nil,  o[60],  
 		nil,  nil,  nil,  nil,  
+		nil,  nil,  '/*MCCOY:*/ And what if we decide against you? ',  o[66],  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  '/*MCCOY:*/ And what if we decide against you? ',  o[62],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
+		nil,  nil,  '/*SPOCK:*/ Captain, do you know what happened? Do you remember any part of it? ',  o[69],  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  '/*SPOCK:*/ Captain, do you know what happened? Do you remember any part of it? ',  o[65],  
+		' go as free -- ly as you came.',  o[72],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		' go as free -- ly as you came.',  o[68],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -130,10 +132,10 @@ p = [
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
+		'corks you into a bo -- ttle  and',  o[75],  nil,  nil,  
+		'and I don`t fear him. ',  o[78],  '/*SARGON [OC]:*/ (beat) Then you may',  o[81],  
+		'/*KIRK:*/ Spock, I remember. ',  o[84],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		'corks you into a bo -- ttle  and',  o[71],  nil,  nil,  
-		'and I don`t fear him. ',  o[74],  '/*SARGON [OC]:*/ (beat) Then you may',  o[77],  
-		'/*KIRK:*/ Spock, I remember. ',  o[80],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -146,16 +148,15 @@ p = [
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
+		nil,  nil,  'then the sphere glows bright again',  o[87],  
+		'we were one. ',  o[89],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  'then the sphere glows bright again',  o[83],  
-		'we were one. ',  o[85],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  'we can wait a few more hours',  o[88] ],  
+		nil,  nil,  'we can wait a few more hours',  o[92] ],  
 	// Pseq
 	2, [ list: o[3],  repeats: 1,  
 		offset: 0 ],  
@@ -179,9 +180,9 @@ p = [
 	// List
 	9, [ array: o[10] ],  
 	// Array
-	10, [ 0.436,  0.43,  0.444,  0.474,  
-		0.394,  0.352,  0.34,  0.402,  
-		0.728,  0.408 ],  
+	10, [ 0.418,  0.365,  0.398,  0.458,  
+		0.459,  0.36,  0.353,  0.443,  
+		0.583,  0.372 ],  
 	// Pseq
 	11, [ list: o[12],  repeats: 1,  
 		offset: 0 ],  
@@ -245,169 +246,176 @@ p = [
 	// Array
 	31, [ 1.254 ],  
 	// Pseq
-	32, [ list: o[33],  repeats: 1,  
+	33, [ list: o[34],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	33, [ array: o[34] ],  
+	34, [ array: o[35] ],  
 	// Array
-	34, [ 0.588,  0.358,  0.678,  0.432,  
+	35, [ 0.908,  0.534,  0.594 ],  
+	// Pseq
+	36, [ list: o[37],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	37, [ array: o[38] ],  
+	// Array
+	38, [ 0.588,  0.358,  0.678,  0.432,  
 		0.566 ],  
 	// Pseq
-	35, [ list: o[36],  repeats: 1,  
+	39, [ list: o[40],  repeats: 1,  
 		offset: 0 ],  
 	// Array
-	36, [ 1 ],  
+	40, [ 1 ],  
 	// Pseq
-	37, [ list: o[38],  repeats: 1,  
+	41, [ list: o[42],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	38, [ array: o[39] ],  
+	42, [ array: o[43] ],  
 	// Array
-	39, [ 0.39,  0.374,  0.362,  0.362,  
+	43, [ 0.39,  0.374,  0.362,  0.362,  
 		0.476,  0.628,  1.008 ],  
 	// Pseq
-	40, [ list: o[41],  repeats: 1,  
+	44, [ list: o[45],  repeats: 1,  
 		offset: 0 ],  
 	// Array
-	41, [ 3 ],  
+	45, [ 3 ],  
 	// Pseq
-	42, [ list: o[43],  repeats: 1,  
+	46, [ list: o[47],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	43, [ array: o[44] ],  
+	47, [ array: o[48] ],  
 	// Array
-	44, [ 0.294,  0.262,  0.476,  0.564,  
+	48, [ 0.294,  0.262,  0.476,  0.564,  
 		1.132 ],  
 	// Pseq
-	45, [ list: o[46],  repeats: 1,  
+	49, [ list: o[50],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	46, [ array: o[47] ],  
+	50, [ array: o[51] ],  
 	// Array
-	47, [ 0.504,  0.308,  0.336,  0.364,  
-		0.319,  0.381,  0.475,  0.27,  
-		0.346,  0.573,  0.283,  0.33 ],  
+	51, [ 0.415,  0.329,  0.341,  0.308,  
+		0.293,  0.358,  0.425,  0.297,  
+		0.351,  0.45,  0.286,  0.323 ],  
 	// Pseq
-	48, [ list: o[49],  repeats: 1,  
+	52, [ list: o[53],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	49, [ array: o[50] ],  
+	53, [ array: o[54] ],  
 	// Array
-	50, [ 0.54,  0.55,  0.542,  0.532,  
+	54, [ 0.54,  0.55,  0.542,  0.532,  
 		0.546,  0.576,  0.478,  0.626,  
 		0.604 ],  
 	// Pseq
-	51, [ list: o[52],  repeats: 1,  
+	55, [ list: o[56],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	52, [ array: o[53] ],  
+	56, [ array: o[57] ],  
 	// Array
-	53, [ 0.51,  0.543,  0.515,  0.602,  
+	57, [ 0.51,  0.543,  0.515,  0.602,  
 		0.456,  0.384,  0.43 ],  
 	// Pseq
-	54, [ list: o[55],  repeats: 1,  
+	58, [ list: o[59],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	55, [ array: o[56] ],  
+	59, [ array: o[60] ],  
 	// Array
-	56, [ 0.44,  0.484,  0.641,  0.687,  
+	60, [ 0.44,  0.484,  0.641,  0.687,  
 		0.633,  0.71,  0.688,  0.698,  
 		0.672,  0.755,  0.778,  0.786,  
 		0.821 ],  
 	// Pseq
-	57, [ list: o[58],  repeats: 1,  
+	61, [ list: o[62],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	58, [ array: o[59] ],  
+	62, [ array: o[63] ],  
 	// Array
-	59, [ 0.364,  0.336,  0.198,  0.164,  
+	63, [ 0.364,  0.336,  0.198,  0.164,  
 		0.288,  0.178,  0.242,  0.29,  
 		0.272,  0.375,  0.322,  0.288,  
 		0.324,  0.294,  0.362,  0.398 ],  
 	// Pseq
-	60, [ list: o[61],  repeats: 1,  
+	64, [ list: o[65],  repeats: 1,  
 		offset: 0 ],  
 	// Array
-	61, [ 7 ],  
+	65, [ 7 ],  
 	// Pseq
-	62, [ list: o[63],  repeats: 1,  
+	66, [ list: o[67],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	63, [ array: o[64] ],  
+	67, [ array: o[68] ],  
 	// Array
-	64, [ 0.412,  0.358,  0.358,  0.314,  
+	68, [ 0.412,  0.358,  0.358,  0.314,  
 		0.314,  0.31,  0.403,  0.798,  
 		0.621 ],  
 	// Pseq
-	65, [ list: o[66],  repeats: 1,  
+	69, [ list: o[70],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	66, [ array: o[67] ],  
+	70, [ array: o[71] ],  
 	// Array
-	67, [ 0.466,  0.904,  0.204,  0.262,  
+	71, [ 0.466,  0.904,  0.204,  0.262,  
 		0.206,  0.338,  0.452,  0.598,  
 		0.226,  0.226,  0.292,  0.266,  
 		0.283,  0.288,  0.328,  0.397,  
 		0.397,  0.448 ],  
 	// Pseq
-	68, [ list: o[69],  repeats: 1,  
+	72, [ list: o[73],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	69, [ array: o[70] ],  
+	73, [ array: o[74] ],  
 	// Array
-	70, [ 3.112,  0.48,  0.424,  0.5,  
+	74, [ 3.112,  0.48,  0.424,  0.5,  
 		1.864,  0.456,  0.514,  1.898 ],  
 	// Pseq
-	71, [ list: o[72],  repeats: 1,  
+	75, [ list: o[76],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	72, [ array: o[73] ],  
+	76, [ array: o[77] ],  
 	// Array
-	73, [ 0.244,  0.226,  0.24,  0.24,  
-		0.311,  0.401,  0.388,  0.416,  
-		0.446 ],  
+	77, [ 0.229,  0.19,  0.225,  0.206,  
+		0.26,  0.353,  0.327,  0.378,  
+		0.38 ],  
 	// Pseq
-	74, [ list: o[75],  repeats: 1,  
+	78, [ list: o[79],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	75, [ array: o[76] ],  
+	79, [ array: o[80] ],  
 	// Array
-	76, [ 0.526,  0.466,  0.51,  0.56,  
+	80, [ 0.526,  0.466,  0.51,  0.56,  
 		0.578 ],  
 	// Pseq
-	77, [ list: o[78],  repeats: 1,  
+	81, [ list: o[82],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	78, [ array: o[79] ],  
+	82, [ array: o[83] ],  
 	// Array
-	79, [ 0.452,  0.444,  0.394,  0.456 ],  
+	83, [ 0.452,  0.444,  0.394,  0.456 ],  
 	// Pseq
-	80, [ list: o[81],  repeats: 1,  
+	84, [ list: o[85],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	81, [ array: o[82] ],  
+	85, [ array: o[86] ],  
 	// Array
-	82, [ 0.914,  0.284,  0.306,  0.674,  
+	86, [ 0.914,  0.284,  0.306,  0.674,  
 		0.836 ],  
 	// Pseq
-	83, [ list: o[84],  repeats: 1,  
+	87, [ list: o[88],  repeats: 1,  
 		offset: 0 ],  
 	// Array
-	84, [ 8 ],  
+	88, [ 8 ],  
 	// Pseq
-	85, [ list: o[86],  repeats: 1,  
+	89, [ list: o[90],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	86, [ array: o[87] ],  
+	90, [ array: o[91] ],  
 	// Array
-	87, [ 0.464,  0.584,  1.742 ],  
+	91, [ 0.464,  0.584,  1.742 ],  
 	// Pseq
-	88, [ list: o[89],  repeats: 1,  
+	92, [ list: o[93],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	89, [ array: o[90] ],  
+	93, [ array: o[94] ],  
 	// Array
-	90, [ 0.568,  0.516,  0.532,  0.537,  
+	94, [ 0.568,  0.516,  0.532,  0.537,  
 		0.571,  0.712,  1.124 ]
 ];
 prUnarchive(o,p);

@@ -155,7 +155,7 @@ SynthV {
 			^true; };
 		File.exists( location +/+ "raw" ).not.if{
 			"no raw file".postln
-			^false; 		
+			^true; 		
 		} {
 			"project and raw not equal".postln;
 			^project != Object.readArchive( location +/+ "raw" );
@@ -373,7 +373,6 @@ SynthV {
 		.reject{|e|
 			e.name.contains("dbl")
 		}[0];
-		// e.name.contains(key.asString ? Trek.cast.at(role).asString))[0];
 			Post << "section " << section << "name " << name << " original " << original << "\n";
 
 			^P.synthV(
@@ -388,6 +387,10 @@ SynthV {
 				filter:(filter ? original.filter),
 				pbind: (pbind ? original.pbind)
 			)
+	}
+	*synthVs { | key start params syl lag=0 take double music song resources range filter pbind prepend role wait |
+		[  key, start, params.flop.collect{|i| {|p b| i}}, syl, lag=0, take, double, music, song, resources, range, filter, pbind, prepend, role, wait, ].flop.do{|i x| [ i[0]++x ] ++ i.drop(1) => P.synthV(*_)}
+
 	}
 	*synthV{ | key start params syl lag=0 take double music song resources range filter pbind prepend role wait|
 		var event;
@@ -500,18 +503,18 @@ SynthV {
 		.collect{|i| i.synthV}
 		.select{|i| i.checkDirty}
 	}
-	refreshDirty { |wait = 12|
+	renderDirty { |wait = 12|
 		fork{ 
 			this.dirtySynthVs.do{ 
 				|i|
 				i.render;
 				wait.wait
 			};
-			thisProcess.nowExecutingPath.load
+			// thisProcess.nowExecutingPath.load
+			Song.currentSong.loadedFrom.load
 		}
 	}
 }
-
 + SimpleNumber {
 	secondsToBlicks {
 		^this * 2 * 70560 => _.round() => _.asInteger => _.asString ++ "0000"

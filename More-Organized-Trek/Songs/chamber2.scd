@@ -24,7 +24,7 @@ P(\pains,  music: {
 });
 P.still(\pain, timecode: 1914.629.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
+		wait: b.sum +1,
 		text: ["",""],
 		fade:1
 	)
@@ -32,6 +32,7 @@ P.still(\pain, timecode: 1914.629.seconds, music: { |p b e|
 ['then the sphere glows bright again' , "c"].addLine;
 P.still(\glows, timecode: 1917.8.seconds, music: { |p b e|
 	 e.still.( 
+		 fadeIn:2,
 		wait: b.sum,
 		text: ["",""],
 	)
@@ -72,10 +73,19 @@ P(\knee,music:{ |p b e |
 		text: ["is it you","Jim?"],
 	)
 }); */
+
+Song.durs.filter(\nod, {|i| i + [0,0,0,0,0.25]});
 P.still(\mccoyCloseup, timecode: 1808.6.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
+		wait: b.parse([4]).sum,
 		text: ["is it you","Jim?"],
+	)
+});
+P.still(\sensor,syl:3, timecode: 1926.66.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+		fade: 1
 	)
 });
 P.synthV(role: \mccoy, take: \lead, params: {|p b| [
@@ -89,6 +99,7 @@ P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 	}.play
 
 });
+
 P(\nod,syl:3,music:{ | p b e |
 	[
 		strum:[ 0.06 ].q,
@@ -99,13 +110,23 @@ P(\nod,syl:3,music:{ | p b e |
 	].pp;
 		{
 			SinOsc.ar( LFSaw.ar({rrand(3.0,4)}!4,{rrand(0,1.0)}!5).range(400,1800),0,0.01 )=>Splay.ar(_)
-			* Env.linen(0.2, b[0..2].sum-0.2-0.5,  releaseTime: 1.0,  level: 1.0,  curve: \lin).kr(2)
+			* Env.linen(0.2, b.drop(1).sum,  releaseTime: 2.0,  level: 1.0,  curve: \lin).kr(2)
 		}.play;
 });
 // P(\nod, music: { |p b e|
 // 	
 // });
 ['Good, his metabolic rate is back to normal.',[15,14,15,16.5,15,14,13,12,15,12,11,7].dm('a',scale:\harmonicMinor,octave:4)].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["good",""],
+	).sequenceText2(
+			b.parse([1]), [ 
+			["his metabolic rate is","back to normal"],
+			],
+	)
+});
 P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 	lyrics: "Good, his metabolic + + + rate is back to normal +",
 	filter: (midinote: _ - 12), 
@@ -173,13 +194,18 @@ P.synthV(role: \kirk, params: {|p b| [
 			=> p.synthVTracks.at(e.key).()
 		}.play
 });
-P.still(\kirk, timecode: 1943.066.seconds, music: { |p b e|
+P.still(\kirk,
+	// timecode: 1943.066.seconds, //group
+	timecode: 1519.000.seconds, //close
+	music: { |p b e|
 	 e.still.( 
 		wait: b.sum + e.bNext.sum,
 		text: ["Yes",""],
+		fade: p.secDur[e.start+2]
 	).sequenceText2(
-			b.sum, [ 
+			[ b.sum, e.bNext.sum ], [ 
 			["Sargon borrowed","my body"],
+			["",""]
 			],
 	)
 });
@@ -252,24 +278,26 @@ P(\bass,syl:1,music:[
 ].pm(\stringyy)
 );
 ['/*MCCOY:*/ He doesnt appear to be harmed - -. Physically, anyway. ',[4,5,6,5,4,5,6, 7,11,7].dm('e' )++[13,11,7,5,4,3].dm('e-',scale:\mixolydian)].addLine; 
-P.synthV(\xuan, 
-filter: (midinote: _ - 12),  params: {|p b| [
-lyrics: "he does n't a ppere to be harmed - -  physicly + + anyway + +",
-language: "english",
-phoneset: "arpabet"
-] }, music:{|p b e|
-{
-	e.playbuf
-	=> Vocoder.ar(Saw.ar([ 50,600.rand ]), _, num:12, low:100, high:5000, q:0.02, hpf:5000, hpfscal:0.05, outscal:25)
-	// => p.synthVTracks.at(e.key).()
-}.play
-}
+P.synthV(role: \spock, 
+	filter: (midinote: _ - 12),  params: {|p b| [
+		lyrics: "he does n't a ppere to be harmed - -  physicly + + anyway + +",
+		// language: "english",
+		// phoneset: "arpabet"
+		vocalMode: \Rough
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> Vocoder.ar(Saw.ar([ 50,600.rand ]), _, num:12, low:100, high:5000, q:0.02, hpf:5000, hpfscal:0.05, outscal:25)
+			// => p.synthVTracks.at(e.key).()
+		}.play
+	}
 );
-P.synthV(\xuan, take:\double, double:true,
+P.synthV(role: \spock, take:\double, double:true,
 filter: (midinote: _ - 12),  params: {|p b| [
 lyrics: "he does n't a ppere to be harmed - -  physicly + + anyway + +",
-language: "english",
-phoneset: "arpabet"
+// language: "english",
+vocalMode: \Rough,
+// phoneset: "arpabet"
 ] }, music:{|p b e|
 {
 	e.playbuf
@@ -292,18 +320,21 @@ P(\baseline,syl:0,music:[
 
 );
 ['/*KIRK:*/ Spock, I remember. ',[13,13,13,13.5,5].dm('b-',octave:3,scale:\minor )].addLine; 
-P.still(\kirk1, timecode: 1950.333.seconds, music: { |p b e|
+P.still(\kirk1,
+	timecode: 1950.333.seconds, //group shot
+	// timecode: 1519.000.seconds, //close
+	music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["Spock","I remember!"],
 	)
 });
 P.synthV(role: \kirk, params: {|p b| [
-lyrics: "Spock I remember + +",
-] }, music:{|p b e|
-{
-	e.playbuf => p.synthVTracks.at(e.key).()
-}.play
+	lyrics: "Spock I remember + +",
+]}, music:{|p b e|
+	{
+		e.playbuf => p.synthVTracks.at(e.key).()
+	}.play
 });
 P(\cello,music:(
 instrument:\stringyy,
@@ -333,6 +364,12 @@ P(\chord,music:{ |p b e|
 	);
 
 	['When Sargon and I exchanged, ',[6,5,4,5,6,7,11].dm('e-',octave:4)].addLine; 
+	P.still(\clear, timecode: 0.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b.sum,
+			text: ["when Sargon and I","exchanged"],
+		)
+	});
 P.synthV(role: \kirk, params: {|p b| [
 		lyrics: "When Sargon + and I exchanged +",
 	] }, music:{|p b e|
@@ -363,6 +400,16 @@ P(\bass,syl:5,music:(
 	)
 );	
 ['as we passed each other, for an instant...',[5.5,6].dm('f#',octave:4)++[3,2,2,1].dm('c',octave:5)++[3,2,2,1].dm('c#',octave:5)].addLine; 
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["as we passed","each other"],
+	).sequenceText2(
+			b.parse([6]), [ 
+			["for ","an instant"],
+			],
+	)
+});
 P.synthV(role: \kirk, params: {|p b| [
 	lyrics: "as we passed each other + for an instant + " ,
 ] }, music:{|p b e|
@@ -422,6 +469,12 @@ P(\bassNote,music:[
 ].p=>{|i|Ppar([\stringyy,\default].collect{|k x|Pbindf(i,\instrument,k,\amp,{0.1-(x/20)},\out,x)})}
 );
 ['we were one. ',[4,4,5].dm('c')].addLine; 
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["we were","one"],
+	)
+});
 P.synthV(role: \kirk, params: {|p b| [
 lyrics: "we were one",
 ] }, music:{|p b e|
@@ -554,6 +607,12 @@ P(\bassKnow,  music:
 P(\temp,music:Song.currentSong.pbind[14]=>Pbindf(_,\amp,0.3,\instrument,\stringyy));
 ['I know what he is and what he wants, ',[15,14,13,12,14,13,7,11,12.5].dm('a-')].addLine; 
 Song.setTempoMap('what he is'," e e e e e e e e e");
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["I know what he is","and what he wants"],
+	)
+});
 P.synthV(role: \kirk, filter: (midinote: _ - 24),  params: {|p b| [
 lyrics: "I know what he is and what he wants, ",
 lag: [0,0,0,0,-0.2,0,0,0,0],
@@ -635,6 +694,12 @@ instrument:\sawSynth,
 amp:0.05, ].p
 ); */
 ['and I don`t fear him. ',[4,5,6,7,11].dm(\c)].addLine; 
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["and I don't","fear him"],
+	)
+});
 P.synthV(role: \kirk, filter: (midinote: _ - 12),  params: {|p b| [
 	lyrics:"and I don't fear him" ,
 ] }, music:{|p b e|
@@ -683,6 +748,12 @@ P(\chord,syl:2,music: {|p b e| [
 ].pp
 });
 ['/*MCCOY:*/ That`s the most ri (boom) ',"c#4 a3 d#4 b3 r "].addLine; 
+P.still(\mccoy, timecode: 1808.6.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["thats the","most ri-"],
+	)
+});
 P(\swell, music: { |p b e|
 {
 	Env([0,1],b.parse([4])).kr(2,gate:1)
@@ -728,6 +799,17 @@ P(\line,music:{
 P(\bassnote,syl:3,music:(degree:3,octave:[3,2],amp:0.4,dur:2,)
 	);
 	['diculous statement I`ve ever heard. An ',[5,2,1,4,3,1,2,3,4.5,].dm('b-')++[5].dm(\d)].addLine; 
+	P.still(\clear, timecode: 0.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b.sum + e.bNext.sum,
+			text: ["diculous","statement"],
+		).sequenceText2(
+				b.parse([5, 4]), [ 
+				["I've ever","heard"],
+				["an alien practically","hijacks your body and"],
+				],
+			)
+	});
 P.synthV(role: \mccoy,double:true, take:\double, filter: (midinote: _ - 12),  params: {|p b| [
 	lyrics: "diculus + + statement + I've ever + heard An",
 	legato: [1, 1, 1, 1, 1, 1, 1, 1, 0.7, 1],
@@ -786,6 +868,12 @@ P(\bass,music: [
 ].p );
 // P.tune();
 ['corks you into a bo -- ttle  and', [1,2,3,4,5,6,7,1,6].dm('c',octave:6)].addLine; 
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["corks you","into a bottle and"],
+	)
+});
 P(\cymbal, syl:4, music: { |p b e|
 	(
 		instrument: \cymbalsDSStereo,
@@ -814,6 +902,18 @@ P('swell20',lag: -0.1,music:{|p b e|
 	//['/*MULHALL:*/ I`m afraid that I must agree with Doctor McCoy. You could be suffering from a form of false euphoria. ',"r"].addLine; 
 ['/*MULHALL:*/ I`m afraid I agree with Doctor McCoy. You could be suffering from a form of false euphoria.(ooh -- --) ', [ 3,4,2,3,1, 5,3,4,5,3,6, 4,5,6,11,7,2 ].dm('e',scale:\dorian) ++ [4,5,6,7].dm('c') ++ [13,14,13,12,11, 12,11,7].dm('f#',octave: 5) ].addLine; 
 Song.euphoriaTempoMap = TempoMap.new( Song.durs[\euphoria].list[(21..28)],"qe x xqe x xqe x xq q".asBeats );
+P.still(\chappelClose, timecode: 1503.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["I'm afraid I agree","with doctor McCoy"],
+	).sequenceText2(
+			b.parse([11,6, 4, 8]), [ 
+			["you could be","suffering"],
+			["from","a form of"],
+			["false","euphoria"],
+			],
+	)
+});
 P(\shaker,syl:20, music: { |p b e|
 
 [
@@ -984,7 +1084,7 @@ scale:Scale.mixolydian,root:-3,
 ['/*SARGON [OC]:*/ I understand, my son. Go to your vessel.', [11,11,11,11,7,7,7,11,12,14,13].dm('c')].addLine; 
 P.still(\sargon1, timecode: 2028.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
+		wait: 0,
 		text: ["I understand","my son"],
 		fade: 3.collect({|x| Song.secDur[e.start + x]}).sum
 	).sequenceText2(
@@ -1196,10 +1296,16 @@ P(\resolution,syl:5,music:{ |parent durs|
 	].ppm
 }
 );
-// P('tune26',music:Song.currentSong.pbind[26]);
-//	// (see ../vocoder2.scd for voice of Sargon)	
-//	['/*MCCOY:*/ And what if we should decide against you? '].addLine;
+
 ['/*MCCOY:*/ And what if we decide against you? ', [7,6,5,4,5,6,7,12,11.5].dm('e')].addLine;
+P.still(\twoShot, timecode: 2040.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["and what if we decide","against you?"],
+		fade:2
+	)
+});
+
 P.synthV(role: \mccoy, filter: (midinote: _ - 12),  params: {|p b| [
 	lyrics: "and what if we decide + against + you?",
 	vocalMode: \Open,
@@ -1225,7 +1331,12 @@ P(\resolution,syl:6,music:{ |p b e|
 }
 );
 ['/*SARGON [OC]:*/ (beat) Then you may',[1,5,5,4].dm('c#')].addLine;
-
+P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.drop(1).sum + e.bNext.sum,
+		text: ["then you may go","as freely as you came"],
+	)
+});
 P.synthV(\xuan, filter: (midinotes: [64,64,64,64]), params: {|p b| [
 	// lyrics: "r zen yu mei",
 	lyrics: "r then you may",

@@ -333,18 +333,24 @@ P(\bass,start:'some sort',music:{|p b e|
 		
 	["(boom) You could materiali--se inside ","-1 4 3 2 4 3 2 1.5 2 ".dm(\b,4) ].addLine;
 P.synthV(role: \scott, take:\lead, params: {|p b| [
-		lyrics: "r You could muh tear ya lies inside + ",
+	filter: (
+		dur: _.parse([1,1,1,1,1,0.5,0.5,1,1,1]),
+		midinote: {|i| i[0..4] ++ i[5].dup ++ i[6..] => _.flat}
+	), 
+		lyrics: "r You could material + + + eyes inside + ",
+		legato: [1, 1, 1, 1, 1, 1, 1, 0.8, 1, 1, ],
 		pitchTake: 1,
 		vocalMode: \Power,
 		paramTension:1
-	] }, music:{|p b e|
+	]}, music:{|p b e|
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
 		}.play
 	});
 P.double(role: \scott, params: {|p b| [
-		] }, music:{|p b e|
+
+		]}, music:{|p b e|
 			{
 				e.playbuf
 				=> p.synthVTracks.at(e.key).()
@@ -417,15 +423,12 @@ P(\bass,start:'rock2.',music:{|p b e|
 P(\chord,start:\rock2,music:{|p b e| 
 		[
 			freq: [1,3,5,7].df(\f),
-
 			//dur: "qq qe eq q q qe".asBeats.warpTo(e.tempoMap).q,
-
 			dur:[ 0.536, 0.805, 0.767, 0.22, 0.301, 0.239, 0.302, 0.556, 0.5587 ]
 			=> _.remap("q qe eq e e e e  q q".asBeats,"qq qe e|qq qe e".asBeats) + [0,0,0,-0.07,0] => _.warpTo(e.tempomap) => _.q,
 			//dur:"e e e e e e e e e e e e e e e e e e ".asBeats.warpTo(e.tempoMap).q,
 			amp: [0.01] ++ (0.1!22) => _.flat =>_.q,
 			instrument:\pulse
-
 		].pp
 	});
 	
@@ -497,6 +500,27 @@ P.double(\kevin, take: \harm, params: {|p b| [
 	}.play
 });
 	[ "MCCOY: Inside solid rock? "," 1 1 7 5 13".dm(\g) ].addLine;
+P(\bass,music:{|p b e| 
+		[
+			freq: [[1, 11],[1,11]].df(\g,[2,3]).q,
+			dur: 
+			//[0, 0.03,-0.03,0,0,0,0,0,0] +
+			//"q qq q e e e e q q".asBeats.flat.warpTo(e.tempoMap.quantize(0.4)) => _.q,
+			
+			//recorded!!
+			// [ 0.536, 0.805,  ]
+			//=> _.remap("q qe eq e e e e e e q q".asBeats,"e e e e e e e e".asBeats)
+			// => _.warpRecordedTo(e.tempoMap)
+			// =>_.q,
+			b.parse([1, 4]).q,
+			// instrument:\sawSynth,
+			instrument: \pluckD,
+			amp:[1,1,0.7,1,1,0.9,1,0.9,1,1].q/12
+			/3
+
+			//.warpTo(e.tempoMap).q
+		].pm.play
+	});
 P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 		lyrics: "r r solid + rock",
 		vocalMode: \Open,
@@ -513,7 +537,7 @@ P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 P.synthV(role: \spock, take: \lead, params: {|p b| [
 		lyrics: "Unlikely + + These co-ordinates + + + correspond + + with the location + + of the",
 		filter: (midinote: _ - 12), 
-		legato: [1, 1, 0.5, 1, 1, 1, 1, 0.8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ],
+		legato: [1, 1, 0.5, 1, 1, 1, 1, 0.8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.7, ],
 		vocalMode: \Rough,
 		pitchTake: 1
 	] }, music:{|p b e|
@@ -523,6 +547,17 @@ P.synthV(role: \spock, take: \lead, params: {|p b| [
 		}.play
 });
 	Song.setTempoMap(\correspond,"e e e XX X X X XXX X X X X X X e e e e".asBeats * 2);
+	P.double(role:\spock,
+		take: \lead,
+		filter: (midinote: _ ), 
+		params: {|p b| [
+		
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 P(\bass,start:\correspond,syl:0,music:{|p b e| 
 		[
 			dur: [ 1.052, 2.037, 1.895, 2.101 ]
@@ -571,7 +606,18 @@ P(\bassnotes,start:\subterranean,music:{|p b e|
 		].pp	
 	});
 	[ "KIRK: I have a feeling that they or it could destroy us just standing here if they or it wanted to. ","3.5 4 5 7 6 5".dm(\c,5,\minor) ++ "3 1 2 -7 1 4 3 1 6 5 3 1 3 1 2 1 -7 -5".dm('a-') ].addLine;
-P.tune(\feeling);
+	P.synthV(role: \kirk, take: \lead, params: {|p b| [
+		lyrics: "I have a feeling + that they or it could destroy + us just standing + here if they or it wanted + to. ",
+		filter: (midinote: _ - 12), 
+		legato: [1, 1, 1, 1, 0.8, 0.8, 0.8, 1, 0.8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1, 0.8, 1, 1, 1, ],
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
+// P.tune(\feeling);
 P(\bass,start:\feeling,syl:5,music:{|p b e| 
 		[
 			freq: [11, 5, 6, 4, 5, -5].df('a-',[3,4]).q,
@@ -579,9 +625,30 @@ P(\bass,start:\feeling,syl:5,music:{|p b e|
 		].pp;
 	});
 	[ "MULHALL: They or it? "," 3 1 5.5".dm(\c) ].addLine;
+	P.synthV(role: \mulhall, take: \lead, params: {|p b| [
+		lyrics: "they or it",
+		legato: [0.8, 1, 0.5, ],
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 	Song.mulhallTune=Pset(\out,Effect(EchoNone.ar(_,0.3,0.3,4)*0.5).bus.index,_);
 P.tune('it?',Song.mulhallTune);
 	[ "KIRK: Who are you? (boom) ","3 1 7 -6".dm(\f,5,\mixolydian) ].addLine;
+	P.synthV(role: \kirk, take: \lead, params: {|p b| [
+		lyrics: "who are you r",
+		filter: (midinote: _ - 12), 
+		legato: [0.8, 1, 0.5, ],
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 P.tune('you?', Pfin(3,_));
 P(\chord,start:'you?',syl:2,music:{|p b e| 
 		[\stringyy,\sawSynthSustain].do
@@ -624,6 +691,18 @@ P(\chord,start:\biology,syl:4,music:{|p b e|
 P.tune(\biology,Song.mulhallTune );
 	[ "Well, I was ordered to report here for landing party duty. ", [3, 2, 3, 6, 5.5].dm('c#',6) ++ [4, 5, 6, 7, 5, 11, 5, 4, 3, 2, 1].dm(\c,6) ].addLine;
 P.tune(\landing,Song.mulhallTune);
+P.synthV(role: \mulhall, take: \lead, params: {|p b| [
+	lyrics: "Well, I was ordered + to report + here for landing + party + duty + ",
+	legato: [0.5, 1, 1, 1, 0.7, 1, 1, 1, 0.5, 1, 1, 1, 1, 1, 1, 1, ],
+	filter: (midinote: _ - 12), 
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+		=> DWGReverbC1C3.ar(_,mix:0.1)
+	}.play
+});
 P(\bassnotes,start:\landing,syl:9,music:{|p b e| 
 		[
 			freq: [11,4,5].df(\c,3).q,
@@ -639,6 +718,16 @@ P(\bass,start:\landing,music:{|p b e|
 		).play
 	});
 	[ "KIRK: By whom? ",[7, 13].dm(\c,4,\mixolydian) ].addLine;
+	P.synthV(role: \kirk, take: \lead, params: {|p b| [
+		lyrics: "by whom",
+		legato: [0.6, 0.6, ],
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 P.tune('whom?');
 P(\strum1,start:'whom?',syl:0,music:{|p b e| 
 		(
@@ -650,6 +739,20 @@ P(\strum1,start:'whom?',syl:0,music:{|p b e|
 
 
 	[ "MULHALL: Strange, I'm not sure. Well, I'm not a liar, Captain. i"," 2 1 2 4 2 3 4 5 6 4 3 2".dm('e-',6,\whole) ++ [5].dm(\d,6)].addLine; 
+	P.synthV(role: \mulhall, take: \lead,
+		pbind: Song.enlarge(13),
+		params: {|p b| [
+			filter: (midinote: _ - 12), 
+		lyrics: "Strange, I'm not sure. Well, I'm not a liar +, Captain + I did receive + an order + to report + here for duty +",
+		legato: [0.6, 1, 1, 0.5, 0.7, 1, 1, 1, 1, 1, 1, 0.6, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ],
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+			=> DWGReverbC1C3.ar(_,mix:0.1)
+		}.play
+	});
 P(\chord,start:'Strange',music:{|p b e| 
 		[ instrument:\wash,
 			freq:[[1,3,4.5].df(\b,3), [3,4.5,6.5].df(\b,3)].q,

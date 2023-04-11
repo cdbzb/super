@@ -1,4 +1,3 @@
-
 (
 s.waitForBoot{
 
@@ -9,6 +8,7 @@ Song.refreshSynthV
 .writeRawProject
 */
 
+"~/tank/super/More-Organized-Trek/Songs/boilerplate.scd".standardizePath.load;
 Trek.cast.mccoy=\mo;
 Trek.presets.put(\mccoy,\mo,[paramGender:0.25]);
 Song.synthVTracks = EventWithDefault(
@@ -71,11 +71,14 @@ P(\keys,start:'kno-o-ow',music:{|p b e|
 	[ "KIRK: Easy, Bones. ","7 5 3".dm(\c,5,\mixolydian)].addLine;
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 		lyrics: "Easy + Bones",
+		legato: [1, 1, 0.85, ],
 		pitchTake: 1
 	] }, music:{|p b e|
 		{
 			e.playbuf
+			=> {|i| DelayN.ar(i, 0.3,0.25) *0.3 +i}
 			=> p.synthVTracks.at(e.key).()
+			=> Pan2.ar(_,0)
 		}.play
 	});
 P('answer',start:\Easy,music: {|p b e|
@@ -100,6 +103,8 @@ P('wash',start:\Easy,music: {|p b e|
 	["As long as you know there's somethi--ng down there, you know as much as we do."," 1 2 3 3 2  -5 -6 -7 1 2 1 -4 4 3 2 1 -7 2 1".dm(\c) ].addLine;
 P.synthVs(role: \kirk, take: [ \lead, \double ], params:  [
 		lyrics: "As long as you know there's something + - down there, r you know as much as we do.",
+		legato: [ [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.6, ] ],
+
 		pitchTake: [ 1, 3 ]
 	] , music:[ {|p b e|
 		{
@@ -551,7 +556,6 @@ P.synthV(role: \spock, take: \lead, params: {|p b| [
 		take: \lead,
 		filter: (midinote: _ ), 
 		params: {|p b| [
-		
 	] }, music:{|p b e|
 		{
 			e.playbuf
@@ -693,7 +697,7 @@ P.tune(\biology,Song.mulhallTune );
 P.tune(\landing,Song.mulhallTune);
 P.synthV(role: \mulhall, take: \lead, params: {|p b| [
 	lyrics: "Well, I was ordered + to report + here for landing + party + duty + ",
-	legato: [0.5, 1, 1, 1, 0.7, 1, 1, 1, 0.5, 1, 1, 1, 1, 1, 1, 1, ],
+	legato: [0.5, 1, 1, 1, 0.5, 1, 1, 1, 0.4, 1, 1, 1, 1, 1, 1, 1, ],
 	filter: (midinote: _ - 12), 
 	pitchTake: 1
 ] }, music:{|p b e|
@@ -771,8 +775,26 @@ P(\bass,start:'did receive',music:{|p b e|
 	});
 P.tune(\receive,Song.mulhallTune);
 	[ "SPOCK:(boom) I'm sure she did, Captain, Just as you received an order to bring me along. ",[1,5, 5, 6, 5, 4, 3].dm('e-') ++ [5, 6, 5, 3, 4, 5].dm(\e) ++ [5, 4, 5, 6, 6, 7, 5, 2].dm(\f) ].addLine;
-P.tune(\along,Pdrop(1,_),syl:0);
 	Song.setQuarters(\along,"e e ex x q e ee  ex x e e e e  e e e e x e x q");
+	P.synthV(role: \spock, take:\lead, params: {|p b| [
+		lyrics: "r I'm sure she did captain + just as you received + an order + to bring me - along +",
+		legato: [1, 1, 1, 1, 0.7, 1, 0.7, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,],
+		filter: (midinote: _ - 12), 
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
+	P.double(role: \spock, params: {|p b| [
+			
+		] }, music:{|p b e|
+			{
+				e.playbuf
+				=> p.synthVTracks.at(e.key).()
+			}.play
+		});
 	//Song.quarters[\along]=Song.quarters[\along].list.reject{|i| i.isPositive.not}.q;
 P(\click,start:\along,music:{|p b e| 
 		e.quarters.postln;
@@ -800,6 +822,17 @@ P(\bass,start:\along,music:{|p b e|
 		).play
 	});
 	[ "KIRK: Oh, yes. ","5 11".dm(\g) ].addLine;
+	P.synthV(role: \kirk, take: \lead, params: {|p b| [
+		lyrics: "oh yes",
+		filter: (midinote: _ - 12), 
+		legato: 0.5,
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 P(\slide,start:'Oh, yes',music:{|p b e| 
 		{
 			Env([5,5,11].dm(\g),b[0]/2!2,curve:2.2).kr(0,gate:1)
@@ -811,6 +844,17 @@ P(\slide,start:'Oh, yes',music:{|p b e|
 		}.play
 	});
 	[ "MCCOY: Let's (boom boom) get back to this ","1 -7 -5 -7 3 2 1 ".dm(\c,5,\mixolydian) ].addLine;
+	P.synthV(role: \mccoy, take: \lead, params: {|p b| [
+		lyrics: "lets r r get back to this",
+		legato: [1.5, 1, 1, 1, 0.8, 1, 1, ],
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+
+	});
 P.tune('get back',Pset(\amp,[1,0,0,1,1,1,1]/10=>_.q,_));
 	Song.setQuarters('get back',"x e ex e | e x x");
 P(\bass,start:'get back',music:{|p b e| 
@@ -822,7 +866,19 @@ P(\bass,start:'get back',music:{|p b e|
 		
 	});
 	[ "( boom boom ) solid rock business...","1 1 7 6 7 11 7 6".dm('f#')].addLine;
-P.tune(\business);
+	P.synthV(role: \mccoy, take: \lead, params: {|p b| [
+		filter: (midinote: _ - 12), 
+		lyrics: "r r solid + rock - business +",
+		legato: [1, 1, 1, 1, 1, 0.9, 1, 1, ],
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+
+	});
+// P.tune(\business);
 P(\bass,start:\business,music:{|p b e| 
 		[
 			freq: [1, 1, 2].df('f#',[3,4]).q,
@@ -832,6 +888,31 @@ P(\bass,start:\business,music:{|p b e|
 		
 	//add pickup bassnote to line following?
 	[" (boom) Just how much rock are we going to go through? ","1 5 5 5 5 3 4 5 4 3 2 1 5 6 5".dm('b-') ].addLine;
+P.synthVs(role: \mccoy, take: [ \lead, \double ], params: [
+		lyrics: "r Just how much rock are we going +  to go - through - - ",
+		filter: [0,0].collect{|i| (midinote: _ - i)},
+	pitchTake: [ 1,3 ],
+		paramTension: 1,
+		legato: [ [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.5, ] ],
+		vocalMode: \Open,
+		paramToneShift: 300
+	], music:[ {|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+			=> FreeVerb.ar(_,0.2,1) * 2.dbamp
+			=> Pan2.ar(_,-1)
+		}.play
+	},
+	{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+			=> FreeVerb.ar(_,0.2,1) * 2.dbamp
+			=> Pan2.ar(_,1)
+		}.play
+	}
+]);
 	Song.setQuarters(\through,"q q q| q q e e| Q Q Q| Q Q E Eq q");
 	Song.quarters[\through] = Song.quarters[\through].list
 	.quantizeWindow
@@ -873,7 +954,24 @@ P(\bass,start:\through,music:{|p b e|
 		).play
 	});
 	[ "SPOCK: (boom) Approximately one hundred twelve point three five two se-- ven miles, Doctor. ","-2 6 5 4 3 4 5 3 1 6 4 ".dm(\d) ++  "5 3 1 6 4 2".dm(\a,4) ].addLine; // point three se-ven five two miles....
-P.tune(\Approximately,Pfin(7,_));
+	P.synthVs(role: \spock, take: [ \lead, \double ], params: {|p b k| [
+		lyrics: "r Approximately + + + + one hundred +  twelve point three five two seven + miles, Doctor + ",
+		filter: (midinote: _ - 12), 
+		vocalMode: \Passionate,
+		pitchTake: [ 1, 3 ]
+	] } , music:[ {|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	},{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+			=> Pan2.ar(_,1)
+		}.play
+	}
+]);
 P(\fifths,start:\Approximately,syl:5,music:{|p b e| 
 		MegaBind(
 			[
@@ -897,6 +995,21 @@ P(\fifths,start:\Approximately,syl:5,music:{|p b e|
 		).play
 	});
 	[ "MCCOY: Miles? Are you joking? ",[7,4.5,5,11,5].dm('a-') ].addLine;
+	P.synthV(role: \mccoy, take: \lead, params: {|p b| [
+		lyrics: "Miles are you joking +",
+		filter: (midinote: _ - 12), 
+		legato: [0.5, 1, 1, 1, 1, ],
+		lag: [0.1,0,0,0,0],
+		tension: Env( [1, 0, 0.2, 1, 0.5],b ),
+		pitchTake: 1,
+		vocalMode: \Open,
+		paramGender: 0.15
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 P('chord',start:'Miles?',music: {|p b e|
 		[
 			freq: 
@@ -906,8 +1019,19 @@ P('chord',start:'Miles?',music: {|p b e|
 			instrument:\stringyy
 		].pp
 	});
-P.tune('Miles?');
 	[ "KIRK: No, we're not. Let's go. ",[-5, -5, 1].dm(\f) ++ [ -5, 1].dm(\a) ].addLine;
+	P.synthVs(role: \kirk, take: [ \lead,\double ], params: {|p b| [
+		lyrics: "no we're not, lets go",
+		filter: (midinote: _ - 12), 
+		legato: [ [0.8, 1, 0.5, 0.8, 1, ] ],
+		lag: [ [0.05,0,0,0,0,] ],
+		pitchTake: [ 1,3 ]
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 P.tune('No,');
 P('chords',start:'No,',music: {|p b e|
 		[
@@ -917,6 +1041,19 @@ P('chords',start:'No,',music: {|p b e|
 		].pp
 	});
 	[ "SARGON [OC]: Please stand ready. I will operate your controls. ","12 11 7 6  11 7 6 5 4 3 2 11".dm('a-') ].addLine;
+	P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+		lyrics: "Please stand ready + I will operate + + your controls +",
+		filter: (midinote: _ - 24), 
+		pitchTake: 1,
+		defaultVibratoDepth: 0
+	] }, music:{|p b e|
+		// {
+			// e.playbuf
+			p.vocodeTune.(p,b,e,e.rpp)
+			// => p.synthVTracks.at(e.key).()
+		// }.play
+
+	});
 P('bass',start:\operate,music: {|p b e|
 		[
 			freq:
@@ -925,7 +1062,7 @@ P('bass',start:\operate,music: {|p b e|
 			dur: b.parse([2,[1,0.5],[0.5,1,1],[1,1,0.6],[0.4,1,1],1]).q
 		].pp
 	});
-P.tune('stand ready');
+P.tune('stand ready', _ <> (instrument: \stringyy));
 	["( transporter! )","r",[8]].addLine;
 P('transporter',start:'transporter!',music: {|p b e|
 	{

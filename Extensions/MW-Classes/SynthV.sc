@@ -157,8 +157,8 @@ SynthV {
 			"no raw file".postln
 			^true; 		
 		} {
-			"project and raw not equal".postln;
-			^project != Object.readArchive( location +/+ "raw" );
+			"project != raw ".post;
+			^project != Object.readArchive( location +/+ "raw" ) => _.postln;
 		}
 	}
 	writeRawProject {
@@ -389,7 +389,13 @@ SynthV {
 			)
 	}
 	*synthVs { | key start params syl lag=0 take double music song resources range filter pbind prepend role wait |
-		[  key, start, params.flop.collect{|i| {|p b| i}}, syl, lag=0, take, double, music, song, resources, range, filter, pbind, prepend, role, wait, ].flop.do{|i x| [ i[0]++x ] ++ i.drop(1) => P.synthV(*_)}
+		var section = P.calcStart(start );
+		song = song ? Song.currentSong;
+		[  key, start, params.(
+			song,
+			song.durs[section].list, //drop range
+			key
+		).flop.collect{|i| {i}}, syl, lag=0, take, double, music, song, resources, range, filter, pbind, prepend, role, wait, ].flop.do{|i x| [ i[0]++x ] ++ i.drop(1) => P.synthV(*_)}
 
 	}
 	*synthV{ | key start params syl lag=0 take double music song resources range filter pbind prepend role wait|
@@ -511,7 +517,7 @@ SynthV {
 				wait.wait
 			};
 			// thisProcess.nowExecutingPath.load
-			Song.currentSong.loadedFrom.load
+			// Song.currentSong.loadedFrom.load
 		}
 	}
 }

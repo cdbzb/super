@@ -5,47 +5,7 @@
 */
 ( s.waitForBoot( {
 	 //Setup Monitor for back channels
-	 Song.currentSong.notNil.if{Song.resources.do{|i| try{i.free}}};
-	(s.options.device != "Digiface USB (23953833)") .if{
-		m=Monitor.new;
-		m.play(3,3,0,2,target:RootNode(s));
-		CmdPeriod.add({ m.play(3, 3, 0, 2, target:RootNode(s))})
-	};
-// Song
-	Song(\ending,[]).current;
-	~encoders = ~encoders ?? { (
-		omni:FoaEncoderMatrix.newOmni,
-		spread:FoaEncoderKernel.newDiffuse
-	) };
-	Song.encoders=~encoders;
-	~stills.isNil.if{~stills=Stills("/Users/michael/trek/BySection/media/return to tomorrow.mov").current};
-	Song.sawWaves = "~/tank/super/waveforms/AKWF/AKWF-1024/AKWF_oboe/*".pathMatch.collect(SoundFile.openRead(_))[[1,3,12,12]];
-	( ~synful1.isNil or: try{ ~synful1.syn.isPlaying.not } ).if
-	{
-		Song.currentSong.synful1 = ~synful1 = Synful();
-		Song.currentSong.synful2 = ~synful2 = Synful();
-	}{
-
-		Song.currentSong.synful1 = ~synful1;
-		Song.currentSong.synful2 = ~synful2;
-	};
-	Song.resources.condition=Condition();
-	Song.resources.infrastructure=
-	{
-		FunctionList.new.array_([
-			( ~synful1.isNil or: try{ ~synful1.syn.isPlaying.not } ).if
-			{
-				Song.currentSong.synful1 = ~synful1 = Synful();
-				Song.currentSong.synful2 = ~synful2 = Synful();
-			},
-			{ fork {
-				while( {
-					~synful2.controller.loaded.not;
-				},{0.05.wait});
-				Song.resources.condition.test_(true).signal
-			}}
-		]).value
-	}.inEnvir;
+	 "~/tank/super/More-Organized-Trek/Songs/boilerplate.scd".standardizePath.load;
 [ "(Uhura is screaming in terror before collapsing across her console. Chapel is standing rigid by the Captain's chair.) ","r" ].addLine;
 ["SPOCK: Must I make an example of you, too, Helm? ",[1, 2, 2, 3, 3, 3, 4.5, 4.5, 7, 5.5,7, 1].dm('f#',scale:\mixolydian)].addLine;
 P.tune(\example);
@@ -58,8 +18,9 @@ P.still(\medium, timecode: 4806.25.seconds, music: { |p b e|
 			b.parse([7]).unbubble,["of you too,","Helm?"]
 		])
 	});
-P.synthV(role: \henoch,
+P.synthV(role: \henoch, take: \lead,
 		filter: (midinote: _ - 12), 
+		vocalMode: \Overdrive,
 		params: {|p b| [
 		lyrics: "must I make an axample + + of you - too Helm",
 	] }, music:{|p b e|
@@ -69,6 +30,19 @@ P.synthV(role: \henoch,
 		}.play
 	});
 [ "/*SPOCK*/ Pain, Captain. (oooh) A-- nd you, my dear? " ,[12,11,7,6].dm(\g) ++ [7,11,5,3].dm('c#',octave:6)].addLine;
+P.synthV(role: \henoch, take: \lead, params: {|p b| [
+	filter: (midinote: _ - 24), 
+	lyrics: "Pain captain + r and  you my dear",
+	legato: [0.7, 1, 0.7, 1, 1, 1, 1, ],
+	vocalMode: \overDrive,
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
 P.still(\henoch_close, timecode: 4809.9.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
@@ -185,8 +159,8 @@ P(\trem,start:\Fortunately,music:{|p b e|
 
 [ "I know every thou-- ght of every mind around me." ,[3, 1, 4, 2, -7.5, -6, -5, 3,4,5,7,6,5,4].dm('e-',scale:\mixolydian)].addLine;
 	// P.tune();
-P.synthV(role: \henoch, 
-	filter: (midinote: _ - 12), 
+P.synthV(role: \henoch, take: \lead,
+	// filter: (midinote: _ - 12), 
 	params: {|p b| [
 	lyrics: "I know evree + thought - of evree + mind a round - me.",
 	legato: [1,1,1,1,1,1,1,1,1,1,1,1,1,0.8],
@@ -196,7 +170,7 @@ P.synthV(role: \henoch,
 		e.playbuf
 		
 		 => p.synthVTracks.at(Trek.cast.henoch).()
-		 /6
+		 // /6
 	}.play
 });
 P.double(role: \henoch,
@@ -205,7 +179,7 @@ P.double(role: \henoch,
 {
 	e.playbuf
 	=> p.synthVTracks.at(e.key).()
-	/5
+	// /5
 	}.play
 
 });
@@ -219,9 +193,8 @@ P(\bass,start:'every mind',music:{|p b e|
 		].pp
 	});
 [ "See? (to Chapel) Take the hypo from him. And inject him with it. " ,[1,5,5,12,12,6,6].dm(\a,octave:4) ++ [5.5,6,7,5,3,1].dm(\c,scale:\mixolydian)].addLine;
-P.synthV(role: \henoch,
-		filter: (midinote: _ - 12),
-		prepend: true,
+P.synthV(role: \henoch, take: \lead,
+		// filter: (midinote: _ - 12),
 		params: {|p b| [
 		lyrics: "See Take the hypo + from him. And inject + him with it. ",
 		legato: [0.7, 1,1,1,1,1,0.8, 1,1,1,1,1,0.7],
@@ -232,7 +205,7 @@ P.synthV(role: \henoch,
 			e.playbuf
 			// => {|i|  PitchShift.ar(i,[0.03, 1 ],0.5,0.01,timeDispersion:0.7) + ( i * 0.8 )}
 			=> p.synthVTracks.at(e.key).()
-			/6
+			// /6
 			// /3
 		}.play
 	});
@@ -444,88 +417,6 @@ P(\bass,start:\friend,music:{|p b e|
 		].pp
 	});
 ["SARGON [OC]: (boom) I could not allow your sacrifice of one so close to you. ",[1,13,12,14,13,12,11,7,6,5,4,3,2,4,3,2].dm(\c)].addLine;
-( //Vocoder resources
-	Song.carrierBus = Bus.audio(s,5);
-	Song.modulatorBus = Bus.audio(s,2);
-	Song.sargonCarrier = {
-		|p b e att=3 sus=5 rel=6 chord=#[1,2,4,5,6,8] aTune| 
-		{  
-			var tune = aTune ? p.tune[e.start].list;
-			// account for preroll!!
-			var dursWithPreroll = b[0] + 1 => _.bubble ++ b.drop(1);
-			var freqs = Demand.ar(
-				TDuty.ar(dursWithPreroll.dq,1,1),
-				1,
-				tune.asArray.midicps /.t chord => _.dq
-			);
-			var car = Gendy1.arWidth( freq: freqs , width:1.10) => Mix.ar(_)
-			* Env.linen(att,sus,rel).kr(2,gate:1);
-			var saw = Saw.ar(freqs) * 0.1
-			=> SplayAz.ar(5,_)
-			=> RLPF.ar(_,100,2)
-			* Env.linen(3,5,6).kr(2,gate:1);
-			car => FreeVerb.ar(_,1,0.8)
-			+ saw
-			/10
-		}.play(s,Song.carrierBus.index)
-	};
-
-	Song.sargonModulator = {|rpp dur modGain=1| 
-		{ 
-			Line.kr(dur:dur,doneAction:2);
-			//rpp=Song.resources.at(rpp);
-PlayBuf.ar( 2,rpp.buffer.()) 
-			=> EchoNone.ar(_,1,0.4,2) * 2
-			//=> MoogFF.ar(_,8000,1)
-			=> LPF.ar(_,6000)
-			* modGain
-			//*5	 => SafetyLimiter.ar(_) /5
-			=> DCompressor.ar( _,  sidechainIn: 0,  sidechain: 0,  ratio: 4,  threshold: -47,  attack: 0.1,  release: 100.1,  makeup: 0.5,  automakeup: 1) /4.9
-			 
-			
-			//+ ( In.ar(carrierBus.index,1) )
-	}.play(s,Song.modulatorBus.index)
-	};
-
-	Song.auditionVocoder = {
-		Synth(
-			\soundInMorph, [
-				modulator: s.options.numOutputBusChannels + 9,
-				carrier:  s.options.numOutputBusChannels  + 8,
-				amp:0.32,
-				dur: 999,
-				amp:0.2, // WHEN buses are set to 1 channel otherwise comment out!
-			]
-		)
-	};
-
-	Song.vocodeTune = { 
-		|p b e rpp amp=0.2 att=3 sus=1 rel=5 dur=10 chord=#[1,2,4,5,6,8] tune out=0 modGain=1|
-		var foa = Bus.audio(s,1);
-		Synth(\soundInMorph,[
-			modulator: Song.modulatorBus.index,
-			carrier: Song.carrierBus.index,
-			amp:0.32,
-			amp:0.2, // WHEN buses are set to 1 channel otherwise comment out!
-			amp:amp, 
-			dur:dur,
-			out:foa.index, // out
-			//out:out
-		]);
-		// restore line above to 'out' to get rid of ambisonics!!
-		{
-			In.ar(foa.index) 
-			=> FoaEncode.ar(_,Song.encoders.omni)
-			=> FoaTransform.ar(_, 'press', LFBrownNoise2.ar(1)*pi/1,LFBrownNoise2.ar(1)*pi)
-			=> FoaTransform.ar(_,'pressZ',SinOsc.ar(1))
-			=> FoaDecode.ar(_,Monitors.decoder)
-			*3
-		}.play(addAction:\addToTail);
-		Song.sargonCarrier.(p,b,e,att, sus, rel, chord,tune);
-		Song.sargonModulator.(rpp,dur,modGain)
-	};
-	Song.laMer = Song.laMer ?  Buffer.read(s,"~/tank/super/samples/La_Mer_clean.aif".standardizePath);
-);
 	Song.voxSacrifice=VocalRPP(\sacrifice,\test);
 	//{ BufRd.ar(2,b,Phasor.ar(1,BufRateScale.kr(b.bufnum),0,BufFrames.kr(b.bufnum)*~len))*0.1 };
 P.still( \kirk, start: \sacrifice, timecode:4942.582.seconds, music: { |p b e|
@@ -1032,10 +923,25 @@ P.still( \clear, start: \believed, timecode:0, music: { |p b e|
 				b[(0..4)].sum.wait;
 				e.still.setText(["and fled","the body"])
 			}
-		});
+});
+/*
 P(\vox,start:\believed, rpp:VocalRPP(\believed,\tune),lag:-1,music:{|p b e| 
 		//|p b e rpp amp=0.2 att=3 sus=1 rel=5 dur=10 chord=#[1,2,4,5,6,8] tune out=0 modGain=1|
 			p.vocodeTune.(p,b,e,e.rpp,0.2,1,b.sum-2,2)
+}); */
+P.synthV(role: \vocoder, take:\lead, params: {|p b| [
+	lyrics: "but henoch + believed + and fled the body +",
+	filter: (midinote: _ - 12), 
+	defaultVibratoDepth: 0.1
+	// pitchTake: 1
+] }, music:{|p b e|
+	// {
+	// 	e.playbuf
+	// 	=> p.synthVTracks.at(e.key).()
+	// }.play
+	//
+			p.vocodeTune.(p,b,e,e.rpp,0.2,1,b.sum-2,2,modGain:10.dbamp)
+
 });
 P(\bass,start:\believed,music:{|p b e| 
 	MegaBind(
@@ -1063,32 +969,35 @@ P(\bass,start:\believed,music:{|p b e|
 	).play
 });
 ["(boom) He is (boom) destroyed. ",[-5,5,5,-5,5,5].dm(\g)].addLine;
-P.tune(\destroyed);
+P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+	lyrics: "r he is r destroyed +",
+	filter: (midinote: _ - 24), 
+	pitchTake: 1
+] }, music:{|p b e|
+	p.vocodeTune.(p,b,e,e.rpp,modGain:10.dbamp)
+});
 P(\chord,start:'He is (boom)',music:{|p b e| 
-			MegaBind(
-
-				[5,\_,\_,\r,\r,-1].bubble ++ 
-				[\r,\r,\r,5,\r,[1,3,5]].flop 
-				=> _.df(\c,scale:\minor)
-				,
-				b,
-				[],
-				{|i|
-					Saw.ar( 
-						Gendy1.krWidth(freq:5)*10+
-						i.freqSeq / [2,4] 
-						, 0.1
-					)
-					* Env.asr(release:4).kr(0,gate:i.gateSeq)
-				},
-				{|i v|
-					Env([0.5,1,1],b.parse([5,1])).kr(0,gate:1) *
-					Splay.ar(i)
-					=>FreeVerb.ar(_,0.7,1) * 1.3
-				}
-
-			).play
-		});
+	MegaBind(
+		[5,\_,\_,\r,\r,-1].bubble ++ 
+		[\r,\r,\r,5,\r,[1,3,5]].flop 
+		=> _.df(\c,scale:\minor)
+		,b ,
+		[],
+		{|i|
+			Saw.ar( 
+				Gendy1.krWidth(freq:5)*10+
+				i.freqSeq / [2,4] 
+				, 0.1
+			)
+			* Env.asr(release:4).kr(0,gate:i.gateSeq)
+		},
+		{|i v|
+			Env([0.5,1,1],b.parse([5,1])).kr(0,gate:1) *
+			Splay.ar(i)
+			=>FreeVerb.ar(_,0.7,1) * 1.3
+		}
+	).play
+});
 ["KIRK: But your vessel was destroyed, too. Where was your consciousness kept? ",[7,13,11,7,5,4,3,4,5,-7].dm(\g,scale:\mixolydian)++[7,11,14,13,11,7,5].dm(\d,scale:\mixolydian)].addLine;
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 			filter: (midinote: _ - 12), 
@@ -1218,18 +1127,30 @@ P(\bass,start:\placed,music:{|p b e|
 });
 ["(boom boom) We shared consciousness (we shared consciousness... ) to",[-5,-5,3,2,4,3,2,1].dm('e-')++[3,2,4,3,2,1].dm( 'a-' )++[3,2,4,3,2,1].dm('e-') ].addLine;
 P.synthVs(role:\chapel, take: [ \lead, \double ],
-	// pbind:Song.enlarge(2),
+	pbind:[ Song.enlarge(2), Song.enlarge(2) ],
 	params: {|p b| [
 		lyrics: "r r we shared consciousness + + - r r r r r r we shared consciousness + + together + + ",
-		pitchTake: 1
-]}, music:{|p b e|
-	{
-		e.playbuf
+		pitchTake: [ 1,3 ]
+	]}, music:[ 
+		{|p b e|
+		{
+			e.playbuf
 
-		=> Pan2.ar(_,0)
-		// => p.synthVTracks.at(e.key).()
-	}.play
-});
+			=> Pan2.ar(_,0)
+			* -3.dbamp
+			// => p.synthVTracks.at(e.key).()
+		}.play
+	},{|p b e|
+		{
+			e.playbuf
+
+			=> Pan2.ar(_,0)
+			*0 //MUTE
+			// => p.synthVTracks.at(e.key).()
+		}.play
+	}
+]
+);
 P.synthVs(role: \chapel, take: [ \answer,\answer2 ], params: {|p b| [
 	lyrics: "r r r r r r r r we shared consciousness + + - r r r r r r",
 	pitchTake: [ 2,3 ]
@@ -1237,6 +1158,7 @@ P.synthVs(role: \chapel, take: [ \answer,\answer2 ], params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		/2
 	}.play
 });
 Song.quarters[\shared]=Song.parseBeats(\shared,[1,1,1,1,1,1,1,3,1,1,1,1,1,3,1,1,1,1,1,1]/2);
@@ -1414,26 +1336,51 @@ P(\bass,start:\cannot,syl:12,music:{|p b e|
 
 			});
 P(\lines,start:\cannot,music:{|p b e| 
-				a=MegaBind(
-					p.weNowKnowLines,
-					b[ 0..9 ],
-					[amp:[1,1,1,1]],
-					{|i x| Pulse.ar(i.freqDq.demand(i.dur + Array.fill( i.size,{0.04.rand} ))
-					//*[rrand(0.995,1.005),1]
-					,width:0.1) 
-					* (
-						Env.asr(0.5,1,4).kr(0,gate:i.gateSeq)
-						+ {0.1*Env.perc(0.2,1).kr(0,gate:i.trigSeq)} 
-					)
-					* 0.1
-				},
-				{|i| 
-					Splay.ar(i)
-					=>FreeVerb.ar(_,0.5,1)}
+a=MegaBind(
+	p.weNowKnowLines,
+	b[ 0..9 ],
+	[amp:[1,1,1,1]],
+	{|i x| Pulse.ar(i.freqDq.demand(i.dur + Array.fill( i.size,{0.04.rand} ))
+	//*[rrand(0.995,1.005),1]
+	,width:0.1) 
+	* (
+		Env.asr(0.5,1,4).kr(0,gate:i.gateSeq)
+		+ {0.1*Env.perc(0.2,1).kr(0,gate:i.trigSeq)} 
+	)
+	* 0.1
+},
+{|i| 
+	Splay.ar(i)
+	=>FreeVerb.ar(_,0.5,1)}
+	=> Out.ar(p.carrierBus.index,_)
 
-				).play
-			});
-P.tune(\cannot);
+).play
+});
+P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+	lyrics: "We now know we cannot + permit + our - selves   to exist + in your world, my children. + ",
+	filter: (midinote: _ - 24), 
+	paramBreathiness: 0.8,
+	defaultVibratoDepth:0.2,
+	// legato: [1, 1, 0.8, 1, 1, 1, 1, 1, 1, 1.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ],
+	pitchTake: 1
+] }, music:{|p b e|
+	a = [
+		[6, 5, 4.5, 1,  5,  4.5, 3,  2,  1,  -6, \_],
+		[3, 3, 2,   \_, \_, \_,  \_, \r, \r, \r, -4.5],
+		[1, 1, -6,  \_, \_, \_,  \_, \r, \r, \r, -14.5],
+		[6, 5, 4.5, 1,  5,  4.5, 3,  2,  1,  16, \_]*(-1)
+	].df(\a)
+	=> VoiceLeading(_,b);
+	a.pbinds.collect (_ <> [instrument: \stringyy, out: p.carrierBus.index].pm) => Ppar(_) => _.findur(b.parse([11]).unbubble) _.play;
+	// {PinkNoise.ar(1)}.play(s,p.carrierBus.index);
+	// {
+	// 	e.playbuf
+	// 	=> p.synthVTracks.at(e.key).()
+	// }.play
+	p.vocodeTune.(p, b, e, e.rpp,chord:#[1,2], dur: b.sum +2,sus:b.sum, amp: 0.1,modGain:3,carrierGain:0.1);
+	// { e.playbuf }.play
+}
+);
 ["(boom) Thalassa and I must now (boom) also depart",[-1,1,2,3,1,4,2,5, 5,4.5, 4.5,7].dm(\d)].addLine;
 //Song.voxDepart= VocalRPP(\depart,\vox);
 //Song.voxDepart= VocalRPP(\depart,\newTest);
@@ -1536,6 +1483,17 @@ P(\echo,start:'echo',music:{|p b e|
 				].pp
 			});
 ["KIRK: Is there any way we can help you, Sargon? ",[12,11,13,11,7,6,5,11,7,7,6].dm(\c)].addLine;
+P.synthV(role: \kirk, take: \lead, params: {|p b| [
+	lyrics: "Is there any + way we can help you Sargon + ",
+	filter: (midinote: _ - 12), 
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
 P.tune(\help,Pbindf(_,\legato,1.5));
 ( Song.akSaws.isNil.if {
 	Song.akSaws = Song.sawWaves.size.collect({ FloatArray.newClear(Song.sawWaves[0].numFrames) }) ;
@@ -1804,6 +1762,23 @@ P.still( \purple, start: \nods,syl:1, timecode:5116.5.seconds, music: { |p b e|
 	);
 });
 ["MULHALL: Oblivion together does not",[2,1,2,1].dm(\c) ++ [4,4, 3, 1, -5,-3,-6,1,3,3,2,-7,-4.5,-2,-5,-7,2,2,1,-6,-3,-1,-4,-6,2,1,-7,2,1 ].dm(\a)].addLine;
+P.synthV(role: \thalassa, take: \lead, params: {|p b| [
+	lyrics: "Oblivion + + + together + - + r r r r r r r r r r r",
+	phonemes:[ "@","p l \i","w i"," A n", "th @","k e ","t a \r" ], 
+	/* "oblivion together".xsampa
+	"among".xsampa
+	"blood".xsampa
+	"give".xsampa
+	"beyond".xsampa
+	"be".xsampa */
+	legato: [1, 1, 1, 0.5, 1, 1,1,  3, ],
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 P(\tune,start:'Oblivion together',music:{|p b e| 
 	MegaBind(
 			[

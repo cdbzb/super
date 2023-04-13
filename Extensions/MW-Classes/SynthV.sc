@@ -395,10 +395,12 @@ SynthV {
 			song,
 			song.durs[section].list, //drop range
 			key
-		).flop.collect{|i| {i}}, syl, lag=0, take, double, music, song, resources, range, filter, pbind.(
-			song,
-			song.durs[section].list, //drop range
-		), prepend, role, wait, ].flop.do{|i x| [ i[0]++x ] ++ i.drop(1) => P.synthV(*_)}
+		).flop.collect{|i| {i}}, syl, lag=0, take, double, music, song, resources, range, filter, pbind
+		// .(
+		// 	song,
+		// 	song.durs[section].list, //drop range
+		// )
+		, prepend, role, wait, ].flop.do{|i x| [ i[0]++x ] ++ i.drop(1) => P.synthV(*_)}
 
 	}
 	*synthV{ | key start params syl lag=0 take double music song resources range filter pbind prepend role wait|

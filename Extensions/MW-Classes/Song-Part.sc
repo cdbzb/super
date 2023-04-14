@@ -17,6 +17,7 @@ Song {
 	var playInitiatedAt,<>preroll=0;
 	var <secLoc, <secDur, <pbind;
 	var <>loadedFrom;
+	var scrollOn = false;
 	classvar <>lastPlayOnly;
 	classvar <>muteTunes;
 
@@ -213,6 +214,13 @@ Song {
 			}
 		}
 	}
+	makeScroll {
+		Song.sections.do{ |x|
+			P(\scroll,start:x,music:{ |p b e|
+				Song.scroll(x)
+			})
+		}
+	}
 	showLyricWindow {
 		lyricWindow = Window.new(bounds:Rect(0,00,1040,200))
 			.background_(Color.clear)
@@ -282,6 +290,16 @@ Song {
 		loadedFrom.load // loads last saved version
 	}
 		cursor_ {|i| cursor = i; lastSectionPlayed = i;}
+	scroll { |section|
+		var lyric = this.lyrics[this.section(section)];
+		// Need to excape [ and ]  !!!
+		var luacode = "vim.fn.search(\"%\")"
+		// "print(match_pos)"
+		// "vim.api.nvim_win_set_cursor(0,{match_pos, 0 })"
+		.format(lyric);
+		Post << "lua code" <<luacode;
+		SCNvim.luaeval(luacode)
+	}
 	hasDursButNotLyricsToDurs {
 		// Is there a file in the Dur folder?
 		File.exists(dursFolder +/+ key).if{
@@ -574,6 +592,7 @@ Song {
 		//preroll = 0.5;
 		(Server.default.options.outDevice == "BlackHole 2ch").if
 		{
+			Song.makeScroll;
 			start = Song.section(start);
 			end = Song.section(end);
 			Song.playRange(start,end);
@@ -672,6 +691,7 @@ Song {
 		var a=this.lyrics.collect( { |i| i.asString.split($ ).collect(_.asSymbol)} );
 		var q={|array index| array.keep(index)++array.copyToEnd(index + 1)};
 		var start = a[x].difference(q.(a,x).flat);
+
 		var luacode = "local pos = vim.api.nvim_win_get_cursor(0)[2] ;"
 		" local line = vim.api.nvim_get_current_line() ;"
 		" local nline = line:sub(0, pos) .. \"%\"  .. line:sub(pos + 1) ;"

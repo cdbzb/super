@@ -5,6 +5,7 @@
 */
 ( s.waitForBoot( {
 	 //Setup Monitor for back channels
+	 Song(\ending,[]).current;
 	 "~/tank/super/More-Organized-Trek/Songs/boilerplate.scd".standardizePath.load;
 [ "(Uhura is screaming in terror before collapsing across her console. Chapel is standing rigid by the Captain's chair.) ","r" ].addLine;
 ["SPOCK: Must I make an example of you, too, Helm? ",[1, 2, 2, 3, 3, 3, 4.5, 4.5, 7, 5.5,7, 1].dm('f#',scale:\mixolydian)].addLine;
@@ -1319,14 +1320,13 @@ P(\bassPad,start:'gether.(1)',music:{|p b e|
 				).play
 			});
 ["SARGON [OC]: We now know we cannot permit ourselves (boom) to exist in your world, my children. ",[5,4,3,-7,4,3,2,1,-7,-5,-3,-7,1].dm(\b,scale:\mixolydian) ++ [2.5,2,6,5,1,4,3].dm(\g)].addLine;
-			(
-				Song.weNowKnowLines= [
-					[6, 5, 4.5, 1,  5,  4.5, 3,  2,  1,  -6, \_],
-					[3, 3, 2,   \_, \_, \_,  \_, \r, \r, \r, -4.5],
-					[1, 1, -6,  \_, \_, \_,  \_, \r, \r, \r, -14.5],
-					[6, 5, 4.5, 1,  5,  4.5, 3,  2,  1,  16, \_]*(-1)
-				].df(\a);
-			);
+( Song.weNowKnowLines= [
+		[6, 5, 4.5, 1,  5,  4.5, 3,  2,  1,  -6, \_],
+		[3, 3, 2,   \_, \_, \_,  \_, \r, \r, \r, -4.5],
+		[1, 1, -6,  \_, \_, \_,  \_, \r, \r, \r, -14.5],
+		[6, 5, 4.5, 1,  5,  4.5, 3,  2,  1,  16, \_]*(-1)
+	].df(\a);
+);
 P(\bass,start:\cannot,syl:12,music:{|p b e| 
 				[
 					freq: [2,1.5,-5,-4.5,-1,-13].df(\f,octave:[3,4]).q,
@@ -1356,6 +1356,13 @@ a=MegaBind(
 
 ).play
 });
+P(\bassFirstPart, music: { |p b e|
+	[
+		freq: [7, 11].df(\b, [1,2], \mixolydian).q,
+		dur: b.parse([2, 5]).q,
+		out: Effect.bus( DWGReverbC1C3.ar(_, mix:0.9) )
+	].pp
+});
 P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	lyrics: "We now know we cannot + permit + our - selves   to exist + in your world, my children. + ",
 	filter: (midinote: _ - 24), 
@@ -1370,14 +1377,24 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 		[1, 1, -6,  \_, \_, \_,  \_, \r, \r, \r, -14.5],
 		[6, 5, 4.5, 1,  5,  4.5, 3,  2,  1,  16, \_]*(-1)
 	].df(\a)
+	+++ [
+		[2,3,  2.5, 2,  6,  5,  1,  4, 3],
+		[\_, \r,  \r, \r, \r, \r, \r,\r ],
+		[\_, \r,  \r, \r, \r, \r, \r,\r ],
+		[2,3,  2.5, 2,  6,  5,  1,  4, 3] * -1,
+	].df(\g)
 	=> VoiceLeading(_,b);
-	a.pbinds.collect (_ <> [instrument: \stringyy, out: p.carrierBus.index].pm) => Ppar(_) => _.findur(b.parse([11]).unbubble) _.play;
+	a.pbinds.collect( { |i| i <> [instrument: \stringyy,
+		out: p.carrierBus.index
+	].pma} ) => Ppar(_) 
+	// => _.findur(b.parse([11]).unbubble) 
+	=> _.play;
 	// {PinkNoise.ar(1)}.play(s,p.carrierBus.index);
 	// {
 	// 	e.playbuf
 	// 	=> p.synthVTracks.at(e.key).()
 	// }.play
-	p.vocodeTune.(p, b, e, e.rpp,chord:#[1,2], dur: b.sum +2,sus:b.sum, amp: 0.1,modGain:3,carrierGain:0.1);
+	p.vocodeTune.(p, b, e, e.rpp,chord:#[1,2], dur: b.sum +2,sus:b.sum, amp: 0.1,modGain:3,carrierGain:0.0);
 	// { e.playbuf }.play
 }
 );
@@ -1451,6 +1468,15 @@ P(\bass,start:\depart,music:{|p b e|
 P.tune(\depart,Pset(\out,Song.carrierBus.index,_));
 ["(boom) into oblivion. ",[-2,-7,1,2,1,-5,-4].dm('c#',octave:6)].addLine;
 P.tune('into oblivion',Pbindf(_,\amp,0.06,\out,Effect( { |i| EchoNone.ar(i,2,[1.3, 2 ]*0.6,9)*0.6=> { |i| i+( 0.5*PitchShift.ar(i,pitchRatio:[1.5,2]) ) }  } ).bus.index,inputChannels:2));
+P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+	lyrics: "r into + oblivion + + +",
+	filter: (midinote: _ - 12), 
+	pitchTake: 1
+] }, music:{|p b e|
+
+	p.vocodeTune.(p,b,e,e.rpp,0.15,mix:0.2, modGain: 3.dbamp);
+
+});
 P(\counter,start:'into oblivion',music:{|p b e| 
 				[
 					freq: [5,4,3,2,1].df('a-',octave:4).q,
@@ -1495,6 +1521,7 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 
 });
 P.tune(\help,Pbindf(_,\legato,1.5));
+	Song.sawWaves = "~/tank/super/waveforms/AKWF/AKWF-1024/AKWF_oboe/*".pathMatch.collect(SoundFile.openRead(_))[[1,3,12,12]];
 ( Song.akSaws.isNil.if {
 	Song.akSaws = Song.sawWaves.size.collect({ FloatArray.newClear(Song.sawWaves[0].numFrames) }) ;
 	4.do({ |i| Song.sawWaves[i].readData( Song.akSaws[i])});
@@ -1505,43 +1532,43 @@ P.tune(\help,Pbindf(_,\legato,1.5));
 );
 
 P(\line,start:\help,music:{|p b e| 
-				var encoder = FoaEncoderMatrix.newOmni;
-				MegaBind(
-						[
-							p.tune[e.start].list.midicps,
-							p.tune[e.start].list.midicps/2
-						],
-						b,
-						[ 
-							pan: [35,-35].degrad,
-							delay: [0,0.1]
+	var encoder = FoaEncoderMatrix.newOmni;
+	MegaBind(
+		[
+			p.tune[e.start].list.midicps,
+			p.tune[e.start].list.midicps/2
+		],
+		b,
+		[ 
+			pan: [35,-35].degrad,
+			delay: [0,0.1]
 
-						],
-						{|i|
-							Osc.ar( p.sawBuffers.choose.bufnum, i.freqSeq => Vibrato.kr(
-								_,5,
-								depth:0.01,
-								delay:0.3,onset:0.3
-							), 0.1 )
-							//Saw.ar(  i.freqSeq, 0.1 )
-							* Env.asr().kr(0,gate:i.gateSeq)
-							=> DelayN.ar(_,0.2,i.delay)
-							=> FoaEncode.ar(_,encoder)
-							=> FoaTransform.ar(_, 'press',pi/2,i.pan)
-						},
-						{|i|
-							
-							Mix.ar(i) => FreeVerb.ar(_,0.7,0.5) 
-							* 0.2
-							=> Monitors.ambi(_)
-							//=> FoaDecode.ar(_,Monitors.decoder) //=> Out.ar(3,_)
-							//=> {|i|i[[0,1,3,4,2]]}
-							//* 0.2
-							//s.meter
-							//Monitors.ar(Dust.ar(100))
-						}
-					).play
-			});
+		],
+		{|i|
+			Osc.ar( p.sawBuffers.choose.bufnum, i.freqSeq => Vibrato.kr(
+				_,5,
+				depth:0.01,
+				delay:0.3,onset:0.3
+			), 0.1 )
+			//Saw.ar(  i.freqSeq, 0.1 )
+			* Env.asr().kr(0,gate:i.gateSeq)
+			=> DelayN.ar(_,0.2,i.delay)
+			=> FoaEncode.ar(_,encoder)
+			=> FoaTransform.ar(_, 'press',pi/2,i.pan)
+		},
+		{|i|
+
+			Mix.ar(i) => FreeVerb.ar(_,0.7,0.5) 
+			* 0.2
+			=> Monitors.ambi(_)
+			//=> FoaDecode.ar(_,Monitors.decoder) //=> Out.ar(3,_)
+			//=> {|i|i[[0,1,3,4,2]]}
+			//* 0.2
+			//s.meter
+			//Monitors.ar(Dust.ar(100))
+		}
+	).play
+});
 
 
 ["SARGON: Yes, my son. ",[1,-7,-5].dm('a-',scale:\mixolydian)].addLine;
@@ -1762,8 +1789,10 @@ P.still( \purple, start: \nods,syl:1, timecode:5116.5.seconds, music: { |p b e|
 	);
 });
 ["MULHALL: Oblivion together does not",[2,1,2,1].dm(\c) ++ [4,4, 3, 1, -5,-3,-6,1,3,3,2,-7,-4.5,-2,-5,-7,2,2,1,-6,-3,-1,-4,-6,2,1,-7,2,1 ].dm(\a)].addLine;
+P.tune( { |i|  i.drop(5) <> (instrument: \harp, decaytime:10,coef:0.1, out: Effect.bus( { |i| DWGReverbC1C3.ar(i) => Phaser2.ar(_,rate:0.11) /7} )) }, syl:4 );
 P.synthV(role: \thalassa, take: \lead, params: {|p b| [
-	lyrics: "Oblivion + + + together + - + r r r r r r r r r r r",
+	lyrics: "Oblivion + + + together + + r r r r r r r r r r r r",
+	filter: (midinote: _ + (12 * [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] )), 
 	phonemes:[ "@","p l \i","w i"," A n", "th @","k e ","t a \r" ], 
 	/* "oblivion together".xsampa
 	"among".xsampa
@@ -1771,7 +1800,7 @@ P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 	"give".xsampa
 	"beyond".xsampa
 	"be".xsampa */
-	legato: [1, 1, 1, 0.5, 1, 1,1,  3, ],
+	legato: [1, 1, 1, 0.5, 1, 1,  2, 1 ],
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
@@ -1811,12 +1840,52 @@ P.still( \oblivion, start: 'Oblivion together', timecode:5125.5.seconds, music: 
 		e.still.setText(["oblivion",""])
 	}
 });
+P.synthV(\kevin, take: \bg,
+	pbind: {|p b| 
+		[
+			dur: b.parse([4, 1, 2, 2, 3, 1, 2, 2, 3, 1, 2, 2, 3 ]).q,
+			midinote: [-1, 4, 4, 3, -1, 3, 3, 2, -1, 2, 2, 1].dm(\a)
+		].p
+	},
+	params: {|p b| [
+	lyrics: " r r r r r together + + r together + +",
+	pitchTake: 1,
+	paramTension: -0.5,
+	paramBreathiness: 0.5,
+	vocalMode: \Soft
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+		=>DWGReverbC1C3.ar(_,c1:20,c3:1)
+	}.play
+});
+P.synthV(\kevin, take: \bg2,
+	pbind: {|p b| 
+		[
+			dur: b.parse([4, 1, 2, 2, 3, 1, 2, 2, 3, 1, 2, 2, 3 ]).q,
+			midinote: [-1, 4, 4, 3, -1, 3, 3, 2, -1, 2, 2, 1].dm(\a)
+		].p
+	},
+	params: {|p b| [
+	lyrics: " r r r r r together + + r together + +",
+	pitchTake: 3,
+	paramTension: -0.5,
+	paramBreathiness: 0.5,
+	vocalMode: \Soft
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+		=>DWGReverbC1C3.ar(_,c1:20,c3:1)
+	}.play
+});
 P(\arp,start:'Oblivion together',syl:4,music:{|p b e| 
 	var score = VoiceLeading([
 		[4, 3,  1,  -5, -3, -6, 1,  3,  3,  2,  -7, -4.5, -2, -5, -7, 2,  2,  1,  -6, -3, -1, -4, -6, 1,  -5, \_, \_, \_, ],
 		[4, \_, 3,  \_, \r, \r, \r, \r, 3,  \_, 2,  \_,   \r, \r, \r, 2,  2,  \_, 1,  \_, \r, \r, \r, 2,  1,  -7, 2,  1,  ],
 		[1, \_, \_, \_, 6,  \_, \_, \_, -7, \_, \_, \_,   5,  \_, \_, \_, -6, \_, \_, \_, 4,  \_, \_, \_, -5, \_, \_, \_, ]
-	].df(\a),b.drop(1)!8=>_.flat);
+	].df(\a),b.drop(1)=>_.flat);
 	[	
 	//freq: 	[4,3,1,-5,-3,-5,1,3,  3,2,-7,-5,-4,-5,-7,2].df(\a).q,
 		//freq: 	[4,3,1,-5,-3,-6,1,3,  3,2,-7,-5,-2,-5,-7,2].df(\a).q,

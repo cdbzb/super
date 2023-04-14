@@ -892,7 +892,7 @@ Song {
 	}
 
 	enlarge2 { | numNotes start|  //number of notes to add from next pattern
-		// var b = Song.durs[key].list; p=Song;
+		// var b = Song.durs[key].list; p=Song;song-p
 		var key= start ? P.calcStart();
 		numNotes = numNotes - 1;
 

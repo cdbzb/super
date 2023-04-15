@@ -7,6 +7,32 @@
 	 //Setup Monitor for back channels
 	 Song(\ending,[]).current;
 	 "~/tank/super/More-Organized-Trek/Songs/boilerplate.scd".standardizePath.load;
+	( ~synful1.isNil or: try{ ~synful1.syn.isPlaying.not } ).if
+	{
+		Song.currentSong.synful1 = ~synful1 = Synful();
+		Song.currentSong.synful2 = ~synful2 = Synful();
+	}{
+
+		Song.currentSong.synful1 = ~synful1;
+		Song.currentSong.synful2 = ~synful2;
+	};
+	Song.resources.condition=Condition();
+	Song.resources.infrastructure=
+	{
+		FunctionList.new.array_([
+			( ~synful1.isNil or: try{ ~synful1.syn.isPlaying.not } ).if
+			{
+				Song.currentSong.synful1 = ~synful1 = Synful();
+				Song.currentSong.synful2 = ~synful2 = Synful();
+			},
+			{ fork {
+				while( {
+					~synful2.controller.loaded.not;
+				},{0.05.wait});
+				Song.resources.condition.test_(true).signal
+			}}
+		]).value
+	}.inEnvir;
 [ "(Uhura is screaming in terror before collapsing across her console. Chapel is standing rigid by the Captain's chair.) ","r" ].addLine;
 ["SPOCK: Must I make an example of you, too, Helm? ",[1, 2, 2, 3, 3, 3, 4.5, 4.5, 7, 5.5,7, 1].dm('f#',scale:\mixolydian)].addLine;
 // P.tune(\example);
@@ -20,7 +46,7 @@ P.still(\medium, timecode: 4806.25.seconds, music: { |p b e|
 		])
 	});
 P.synthV(role: \henoch, take: \lead,
-		filter: (midinote: _ - 12), 
+		filter: (midinote: _ - 24), 
 		vocalMode: \Overdrive,
 		params: {|p b| [
 		lyrics: "must I make an axample + + of you - too Helm",
@@ -185,9 +211,8 @@ P(\trem,start:\Fortunately,music:{|p b e|
 P.synthV(role: \henoch, take: \lead,
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
-	lyrics: "I know evree + thought - of evree + mind a round - me.",
+	lyrics: "I know evree + thought - of evree + mind a round - me  r",
 	legato: [1,1,1,1,1,1,1,1,1,1,1,1,1,0.8],
-	vocalMode: \Theatrical
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -216,6 +241,8 @@ P(\bass,start:'every mind',music:{|p b e|
 		].pp
 	});
 [ "See? (to Chapel) Take the hypo from him. And inject him with it. " ,[1,5,5,12,12,6,6].dm(\a,octave:4) ++ [5.5,6,7,5,3,1].dm(\c,scale:\mixolydian)].addLine;
+Song.durs.filter( _ * [1.5,1,1,1,1,1,1,1,1,1,1,1,1] );
+P.tune( _ <> (instrument: \sparkTriangle) );
 P.synthV(role: \henoch, take: \lead,
 		filter: (midinote: _ - 12),
 		params: {|p b| [
@@ -261,8 +288,9 @@ P.still(\spock,syl:0, timecode: 4849.seconds, music: { |p b e|
 		)
 	});
 	// P.tune(\leaps);
-P.synthV(role: \henoch, params: {|p b| [
-		lyrics:" r Fools. r I'll simply + transfer + to another + + place, another + + body +" ,
+P.synthV(role: \henoch, take: \lead, params: {|p b| [
+		lyrics:" r Fools. r I'll simply + ran fur to another + + place, another + + body +" ,
+		pitchTake:1,
 		vocalMode: \Theatrical
 	] }, music:{|p b e|
 		{
@@ -271,7 +299,20 @@ P.synthV(role: \henoch, params: {|p b| [
 			=> p.synthVTracks.at(e.key).()
 			/4
 		}.play
-	});
+});
+P.synthV(role: \henoch, take: \lead, params: {|p b| [
+	
+		lyrics:" r Fools. r I'll simply + trass fur  to another + + place, another + + body +" ,
+		pitchTake:3,
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_,1)
+		/4
+	}.play
+});
+
 P(\line,start:\leaps,syl:11,music:{|p b e| 
 		MegaBind(
 				[
@@ -478,7 +519,29 @@ P.still( \kirk, start: \sacrifice, timecode:4942.582.seconds, music: { |p b e|
 P(\boom,start:\sacrifice,music:{|p b e| 
 		(instrument:\cymbalsDS,amp:0.003,att:1).play
 	});
+/* 
 P(\vox,start:\sacrifice, rpp:VocalRPP(\sacrifice,\test),lag:-1,music:{|p b e| 
+		// TODO now make the relevant guide check to see if they should mute this!!
+		p.vocodeTune.(p,b,e,
+			e.rpp,
+			amp:0.1,
+			out:4,
+			dur:b.sum+5,
+		att:3,
+		sus:b.sum-5,
+			rel:4,
+			modGain:2
+		)
+}); */
+P.synthV( role: \vocoder, take: \lead, params: {|p b| [
+	lyrics: "r I could not allow + your sacrifice + + of one so close to you. ",
+	filter: (midinote: _ - 36), 
+	pitchTake:1,
+	defaultVibratoDepth: 0.1
+
+	]
+},
+	music: {|p b e|
 		// TODO now make the relevant guide check to see if they should mute this!!
 		p.vocodeTune.(p,b,e,
 			e.rpp,
@@ -488,9 +551,11 @@ P(\vox,start:\sacrifice, rpp:VocalRPP(\sacrifice,\test),lag:-1,music:{|p b e|
 			att:3,
 			sus:b.sum-5,
 			rel:4,
-			modGain:2
+			modGain:6
 		)
-	});
+});
+
+
 P(\lagTest,start:\sacrifice,lag:-1,music:{|p b e| 
 		(note:[1,2,3])//.play
 	});
@@ -571,7 +636,7 @@ P.still( \spock, start: \wobbles, lag:2, timecode:4948.seconds, music: { |p b e|
 			);
 		});
 P(\transform,start:\wobbles,music:{ |p b e| 
-			Synths(\transLinen,\sustain,b.sum,\freq,[1,3,11,13].df(\c),\amp,0.1,\out,1);
+		Synths(\transLinen,\sustain,b.sum,\freq,[1,3,11,13].df(\c),\amp,0.1,\out,1);
 			Synths(\transLinen,\sustain,b.sum,\freq,[1,3,11,13].df(\g,scale:\minor),\amp,0.1,\out,2);
 			Synths(\transLinen,\sustain,b.sum,\freq,[1,3,11,13].df('c#',scale:\minor),\amp,0.1,\out,3);
 			Synths(\transLinen,\sustain,b.sum,\freq,[1,3,11,13].df('f#'),\amp,0.1,\out,4);
@@ -612,8 +677,10 @@ P(\transform,start:\wobbles,music:{ |p b e|
 ["(Spock stands up.) KIRK: You're alive.  ",[-1,1,1,7].dm(\f,scale:\mixolydian)].addLine;
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 			lyrics: " r you're alive +",
+			filter: (midinote: _ - 12), 
 			legato: [1, 0.6, 1, 0.6, ],
 			pitchExpression: 1,
+			paramTension:1,
 			pitchTake: 1
 		] }, music:{|p b e|
 			{
@@ -674,18 +741,20 @@ P(\sparkle,start:'stands up',music:{|p b e|
 ["MCCOY: There was enough poison in that hypo to kill ten Vulcans. ", [4,3,4,2,1,-7,1,2].dm(\b,octave:4) ++ [3,2,3,4, 6.5,5,2].dm('e-') ].addLine;
 			//[3,2,1,-7].dm(\c,scale:\mixolydian) ++ [5,3,2,1,4,3,4,5,12,5,4].dm('e-')
 P.synthV(role: \mccoy, take: \lead, params: {|p b| [
-				lyrics: "there was enough + poison + in the hypo + to kill ten vulcans +",
-				paramGender: 0.2,
-				pitchTake: 1,
-				tension: Env([0,1,0.5],b.parse([12,2])),
-				legato: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.85, 0.85, 1, 1, ],
-			] }, music:{|p b e|
-				{
-					e.playbuf
-					=> p.synthVTracks.at(e.key).()
-				}.play
+		lyrics: "there was enough + poison + in that hypo + to kill ten vulcans +",
+		filter: (midinote: _ - 12), 
+		paramGender: 0.2,
+		pitchTake: 1,
+		vocalMode: \Open,
+		tension: Env([0,1,0.5],b.parse([12,2])),
+		legato: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.85, 0.85, 1, 1, ],
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
 
-			});
+});
 P(\bass,start:\poison,music:{|p b e| 
 			MegaBind(
 				[
@@ -924,12 +993,16 @@ P.synthV(role: \spock, take: \lead, params: {|p b| [
 	lyrics: "It seems, Doctor + the injection + + was r only + enough + to cause unconsciousness + + + ",
 	legato: [1, 0.8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.7, 1, 1, 1, 1,  ],
 	pitchTake: 1,
+
 	filter: (midinote: _ - 12), 
-	vocalMode: \Rough
+	vocalMode: \Warm
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		=> p.synthVTracks.at(e.key).()
+		// => p.synthVTracks.at(\default).()
+		=> HPF.ar(_,225)
+		/3
+		=> Pan2.ar(_,0)
 	}.play
 
 });
@@ -989,7 +1062,10 @@ P.synthV(role: \vocoder, take:\lead, params: {|p b| [
 	// 	=> p.synthVTracks.at(e.key).()
 	// }.play
 	//
-			p.vocodeTune.(p,b,e,e.rpp,0.2,1,b.sum-2,2,modGain:10.dbamp)
+			p.vocodeTune.(p,b,e,e.rpp,0.2,1,b.sum-2,2,
+				chord:#[1,2,3,4],
+				mix: 0.9,
+				modGain:8.dbamp)
 
 });
 P(\bass,start:\believed,music:{|p b e| 
@@ -1048,9 +1124,9 @@ P(\chord,start:'He is (boom)',music:{|p b e|
 	).play
 });
 ["KIRK: But your vessel was destroyed, too. Where was your consciousness kept? ",[7,13,11,7,5,4,3,4,5,-7].dm(\g,scale:\mixolydian)++[7,11,14,13,11,7,5].dm(\d,scale:\mixolydian)].addLine;
-P.synthV(role: \kirk, take: \lead, params: {|p b| [
+P.synthV(role: \kirk, take: nil, params: {|p b| [
 			filter: (midinote: _ - 12), 
-			lyrics: "But your vessel - - + was destroyed + too. Where was your consciousness + +  kept? ",
+			lyrics: "But your vessel - + - was destroyed + too. Where was your consciousness + +  kept? ",
 			// legato: [1, 1, 1, 1, 1, 1, 1, 0.8, 1, 1, 1, 1, 1, 1, 1, ],
 			pitchTake: 1
 		] }, music:{|p b e|
@@ -1065,11 +1141,16 @@ P.synthV(role: \spock, take: \lead, params: {|p b| [
 			filter: (midinote: _ - 12), 
 			lyrics: "The place Henoch + would least suspect +, Captain + ",
 			legato: [1, 0.8, 1, 1, 1, 1, 1, 0.8, 1, 1, ],
-			pitchTake: 1
+			pitchTake: 1,
+			vocalMode: \Closed,
+			defaultVibratoDepth: 0.1
 		] }, music:{|p b e|
 			{
 				e.playbuf
-				=> p.synthVTracks.at(e.key).()
+				// => p.synthVTracks.at(\default).()
+				=> HPF.ar(_,200)
+				/4
+				=> Pan2.ar(_,0)
 			}.play
 
 		});

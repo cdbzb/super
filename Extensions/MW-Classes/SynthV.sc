@@ -400,7 +400,10 @@ SynthV {
 		// 	song,
 		// 	song.durs[section].list, //drop range
 		// )
-		, prepend, role, wait, ].flop.do{|i x| [ i[0]++x ] ++ i.drop(1) => P.synthV(*_)}
+		, prepend, role, wait, ].flop.do{|i x|
+/* 			[ i[0]++x ] ++ i.drop(1) //makes keys \sargon0, \sargon1 */
+			i
+			=> P.synthV(*_)}
 
 	}
 	*synthV{ | key start params syl lag=0 take double music song resources range filter pbind prepend role wait|

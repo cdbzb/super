@@ -77,7 +77,7 @@ P.synthV(role: \henoch, take: \lead, params: {|p b| [
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		=> p.synthVTracks.at(e.key).()
+		// => p.synthVTracks.at(e.key).()
 	}.play
 
 });
@@ -95,7 +95,7 @@ P.still(\kirk_pain,syl:2, timecode: 4813.3.seconds, music: { |p b e|
 			fade:1
 		)
 	});
-P.still(\nurse_pain, syl:7, timecode: 4816.2.seconds, music: { |p b e|
+P.still(\nurse_pain, syl:7, timecode:4820.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.drop(1)[0],
 			text: ["",""],
@@ -163,7 +163,7 @@ P(\bassNote2,start:\Pain,music:{|p b e|
 			var dryAmount = 1;
 			EarlyRef.ar(i, source:[2,3,2], receiver:[0,0,0], roomsize:[4,5,6], hw:0.2, b:0.97, n:0, p:0, allp_lens:nil, allp_c:0.7)
 
-			=> DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:1-early,)
+			=> DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:1-early /2,)
 			+ ( i * dryAmount )
 			/ 6 
 			=> HPF.ar(_,100)
@@ -186,12 +186,18 @@ P(\bassNote2,start:\Pain,music:{|p b e|
 		}
 	}
 ));
-P.synthV(role: \henoch, take: \lead, params: {|p b| [
+P.still(\bridge, timecode: 4821.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["fortunately","doctor"],
+	)
+});
+P.synthVs(role: \henoch, take: [ \lead,\double ], params: {|p b| [
 	lyrics: "r fortunately + + + doctor +",
 	vocalMode: \Muted,
 	legato: [1, 1, 1, 1, 1, 1, 0.85, ],
 	filter: (midinote: _ - 12), 
-	pitchTake: 1
+	pitchTake: [ 1,3 ]
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -207,38 +213,67 @@ P(\trem,start:\Fortunately,music:{|p b e|
 	});
 
 [ "I know every thou-- ght of every mind around me." ,[3, 1, 4, 2, -7.5, -6, -5, 3,4,5,7,6,5,4].dm('e-',scale:\mixolydian)].addLine;
+Song.setTempoMap('every mind',"e e e x xe x x e e e x xx x e");
 	// P.tune();
-P.synthV(role: \henoch, take: \lead,
-	filter: (midinote: _ - 12), 
+P.synthVs(role: \henoch, take: [ \lead, \double ],
+	filter: [ (midinote: _ - 12), (midinote: _) ], 
+	pitchTake: [1,3],
 	params: {|p b| [
 	lyrics: "I know evree + thought - of evree + mind a round - me  r",
 	legato: [1,1,1,1,1,1,1,1,1,1,1,1,1,0.8],
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		
-		 => p.synthVTracks.at(Trek.cast.henoch).()
+		 => p.synthVTracks.at(e.role).()
 		 // /6
 	}.play
 });
-P.double(role: \henoch,
-	filter: (midinote: _ - 12), 
-	music:{|p b e|
-{
-	e.playbuf
-	=> p.synthVTracks.at(e.key).()
-	// /5
-	}.play
+P(\chords, music: { |p b e|
+	[
+		freq: [[5, 11, 13], [6, 11, 14], [5, 7.5, 12], [5, 11, 13], [4, 7, 12], [6, 11,14]].df('e-',\mixolydian).q,
+		dur:" q q qq q q x".asBeats.warpTo( e.tempoMap ).q,
+		instrument: \stringyy,
+		amp:0.25
+	].pp
+});
+P(\bass, music: { |p b e|
+	[
+		freq: [1, -4, -5, 1, -7, -4].df('e-',3,\mixolydian).q,
+		dur: "eee e q q q q".asBeats.warpTo( e.tempoMap ).q,
+		instrument: \sawSynth,
+		amp: 0.2
+	].pp
+});
+P(\tamb, music: { |p b e|
+	{
+	var levels = [5,1,2,1] /5 => _.dq(inf);
+	var durs =  
+	1/4 ! 21
+	+ ( [1, -1] /50 => _.dup(8) )
+	=> _.flat 
+	=> _.warpTo(e.tempoMap
+		.quantizeDft(0.5)
+	)
+	=> _.dq();
+	var triggers = TDuty.kr( durs, 0,1,gapFirst:0 );
+	var energy = EnvGen.ar( Env.linen(0, 0.00, 0.015), triggers, doneAction:0   ) 
+		* Demand.kr(triggers,0,levels 
+			// * 40
+			// *8
+		);
+	Shakers.ar(3, energy:energy   , decay: 1).tanh
+	=> Pan2.ar(_, 0.8)
+}.play;
 
 });
 	// P.tune('every mind');
-P(\bass,start:'every mind',music:{|p b e| 
+	P(\drums, music: { |p b e|
 		[
-			freq: [1,-4,-5,1,7,1].df('e-',scale:\mixolydian,octave:3).q,
-			instrument:\sawSynthSustain,
-			amp:0.06,
-			dur: b.parse([3,[1,1/3],[2/3,2]]).q
-		].pp
+			"eeee e e eeee e e", 'bd_808', \amp,1/4,
+			"ee ex xeeee ex xee",\sn_808,\amp,[0,1,0.5,1,0.5] /4 =>_.q
+		].dmx2(1, e.tempoMap.quantizeDft(0.5))
+		=> Ppar(_)
+		=> _.play
 	});
 [ "See? (to Chapel) Take the hypo from him. And inject him with it. " ,[1,5,5,12,12,6,6].dm(\a,octave:4) ++ [5.5,6,7,5,3,1].dm(\c,scale:\mixolydian)].addLine;
 Song.durs.filter( _ * [1.5,1,1,1,1,1,1,1,1,1,1,1,1] );

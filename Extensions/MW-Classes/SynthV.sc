@@ -5,6 +5,7 @@ SynthV {
 	classvar <roles,<envelopes=#[ \toneShift, \pitchDelta, \voicing, \tension, \vibratoEnv, \loudness, \breathiness, \gender ];
 	classvar <vocalModes;
 	classvar <>buffers;
+	classvar <>synthVsToRender;
 	var <name, <project, <file,<location,<buffer, <key, <song, <section;
 	var <>firstNoteOffset = 0;
 	var <> offset = 0;
@@ -12,6 +13,11 @@ SynthV {
 	*new {|key name take double| 
 			^super.new.init(key, name, take, double) 
 		}
+	*renderMultiple { |wait = 8.5 |
+		fork{
+			synthVsToRender.do{ |i| i.synthV.render; wait.wait }
+		}
+	}
 	*initClass {
 		buffers = MultiLevelIdentityDictionary.new();
 
@@ -135,18 +141,8 @@ SynthV {
 				'version': "100"
 			)
 
-		)
-		/*
-		(
-			'backendType': "SVR2AI",
-			'version': 101,
-			'name': "Tsurumaki Maki AI (ENG Lite)",
-			'phoneset': "arpabet", 
-			'language': "english",
-			'languageOverride': "",
-			'phonesetOverride': ""
-		)
-		*/
+		);
+		synthVsToRender = List.new;
 	}
 	checkDirty {
 		// ^project => JSON.stringify(_) != try{ String.readNew(File( file ,"r") )}
@@ -391,6 +387,7 @@ SynthV {
 	*synthVs { | key start params syl lag=0 take double music song resources range filter pbind prepend role wait |
 		var section = P.calcStart(start );
 		song = song ? Song.currentSong;
+		SynthV.synthVsToRender = List.new;
 		[  key, start, params.(
 			song,
 			song.durs[section].list, //drop range
@@ -403,8 +400,9 @@ SynthV {
 		, prepend, role, wait, ].flop.do{|i x|
 /* 			[ i[0]++x ] ++ i.drop(1) //makes keys \sargon0, \sargon1 */
 			i
-			=> P.synthV(*_)}
-
+			=> P.synthV(*_)
+			=> {|i| SynthV.synthVsToRender.add(i) }
+		};
 	}
 	*synthV{ | key start params syl lag=0 take double music song resources range filter pbind prepend role wait|
 		var event;
@@ -470,7 +468,7 @@ SynthV {
 		// synthV.checkDirty.if{synthV.refresh};
 
 		take.notNil.if{key = key ++ "_" ++ take};
-		P(key,start,syl,lag, music,song,
+		^P(key,start,syl,lag, music,song,
 			resources:(
 				synthV: synthV,
 				playbuf: { PlayBuf.auto(

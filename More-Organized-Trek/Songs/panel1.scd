@@ -334,7 +334,6 @@ P('bass',start:\outtro,music: {|p b e|
 	].pp
 }
 });
-
 P('chords',start:\outtro,music: {|p b e|
 	
 	[
@@ -727,7 +726,6 @@ P.synthV(\kevin, params: {|p b| [
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
-
 P.double(\kevin, params: {|p b| [
 	paramTension: -0.5,
 	paramBreathiness: 0.5,
@@ -933,7 +931,6 @@ P.tune(\colonising,Pbindf(_,
 )
 
 );
-
 P.tune('colonizing', { |i| Pmul(\freq,0.5,i) => Pbindf(_,\instrument, \sawSynthSustain,\out,Song.carrierBus,\amp,0.04)});
 P('bassnote',start:\colonising,music: {|p b e|
 	[
@@ -945,9 +942,7 @@ P('bassnote',start:\colonising,music: {|p b e|
 
 	].p.play;
 });
-
 ["just as your own starships have ",[1,4,7,6,6,5].dm(\e,\mixolydian) ++ [1].dm('a-')].addLine;
-
 P.tune('starships', { |i| Pmul(\freq,0.5,i) => Pbindf(_,\instrument, \sawSynthSustain,\out,Song.carrierBus,\amp,0.04)});
 P.synthV(\xuan, filter: (midinote: _ - 24), params: {|p b| [
 	lyrics: "just as your own starships + have ",
@@ -986,7 +981,6 @@ P('bass',start:\just,music: {|p b e|
 	].pp
 });
 ["now begun to explore that",[2,5,3,2,1,7,6].dm('a-',\mixolydian)].addLine;
-
 P.synthV(\xuan,
 	lag: -0.1,
 	filter: (midinote: _ - 24), 
@@ -1019,7 +1013,6 @@ P('bass',start:\begun,music: {|p b e|
 	].pp
 });
 [" vastness... ",[6,5].dm('a-')].addLine;// illustrate the dots
-
 P.synthV(\xuan,
 	lag: -0.1,
 	filter: (midinote: _ - 24), 
@@ -1054,6 +1047,13 @@ P('bassNote',start:\vastness,music: {|p b e|
 });
 ["As you now leave your own seed on distant planets, ",[1,3,1,4,3,1,3,4,5,3,7,6].dm(\d,\dorian)].addLine;
 Song.setTempoMap(\planets, "q q q qq qq q e e q q qq qq");
+P(\kick, music: { |p b e|
+	[
+		dur: "q qqqq qqqq qq qq".asBeats.warpTo( e.tempoMap ).q,
+		instrument: \bd_808,
+		amp:0.2
+	].pp
+});
 P.synthV(\xuan,
 	filter: (midinote: _ - 12), 
 	prepend: true,
@@ -1133,8 +1133,18 @@ P('bassNote',start:\seed,syl:9,music: {|p b e|
 (freq:[11,6].df(\g,3),instrument:\defaultPiano,dur:b.sum).play;
 });
 P.tune(\As, _ <> (instrument: \sawSynth, amp:0.04, out: 4));
-["(boom) so we left our seed behind us.",[1,11,7,6,5,4,3,2,1,3,3,4].dm(\g,4,\mixolydian)].addLine; 
+["(boom) so we left our seed behind us.",[1,11,7,6,5,4,3,2,1,3,3,4].dm(\g,4,\mixolydian)].addLine;
 // P.tune();
+P(\connecter,syl: 10, music: { |p b e| //add to next sec
+	[
+		freq: [ 7, 11, 12, 13 ].df('c#',[4,5]).q,
+		dur: [b.drop(1)[0],e.bNext.parse( [3,4] ),1].flat.q,
+		instrument: \wash,
+		amp:0.07,
+		freqLag: 1
+
+	].ppm
+});
 P.synthV(\xuan,
 	filter: (midinote: _ - 12), 
 	pbind: {|p b| [ midinote: p.tune[p.section(\behind)].list[0,1,2,3,4,5, 9, 10,11].q,dur:b.parse([1,1,1,1,1,4,1,1,1]).q ].p},
@@ -1180,8 +1190,6 @@ P(\lick,syl:4, music: { |p b e|
 		].p
 	] => Ppar(_)  => Pmul(\amp,0.5,_) => _.play
 });
-
-
 P('boom',start:\left,music: {|p b e|
 	(
 		freq:[1,-11,-21].df(\g,3),
@@ -1216,12 +1224,154 @@ P(\chords, music: { |p b e|
 		out: [0, p.carrierBus.index]
 	].pp
 });
-///*MULHALL:*/[" Our studies indicate that life on our planet, Earth, evolved independently. ","r",].addLine; 
-/*SPOCK:*/[" That would tend, however, to explain certain elements of Vulcan prehistory. ","r",[5]].addLine; 
+/*MULHALL:*/[" Our studies indicate that","1 -7 -6 2 -7 -5 -4".dm('c#')].addLine;
+P(\bassnote, music: { |p b e| //connect this
+	[ 
+		freq: [ 1, -7, -6, -5, -4 ].df('c#',[  5 ]).q,
+		instrument: \sparkTriangle,depth: 0 ,
+		dur: b.parse([1, 1, 1, 3]) ++ 1 => _.q
+	].pp;
+	[ 
+		freq: [ 1, -7, -6, -5, -4 ].df('c#',[  5 ]).q,
+		freq: [1, 2, 5].df('c#',[  4,5 ]).q,
+		instrument: \sparkTriangle,depth: 0 ,
+		dur: b.parse([3, 4]) ++ 1 => _.q
+	].pp;
+	( freq: 1.df('c#',4),coef: 0.15, instrument: \harp,depth: 0,amp:0.01, out: Effect.bus( Pan2.ar(_,0,0.8) ) ).play;
+});
+P.synthVs(role: \chapel, take: [ \lead, \double ],
+	pbind: Song.enlarge2(0),
+	params: {|p b| [
+	lyrics: "our studies + indicate + + that life on our planet + earth evolved + independantly + + + + r",
+	pitchTake: [ 1, 3 ]
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
 
+});
+P.tune();
+["life on our planet, Earth, evolved independently. ","3 2 4 3 1 -5 -6 2 1 -7 -6 1 -4".dm('c#'),].addLine; 
+P.synthVs(\ninezero, take: [ \lead, \double ],  params: {|p b| [
+	filter: (midinote: [5, 5, 6].dm('c#'), dur: b.parse([ 6, 1, 3 ])), 
+	lyrics: "Life evolved +",
+	pitchTake: [ 1, 3 ]
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+		/4
+	}.play
+});
+P.synthVs(role: \chapel, take: [ \lead, \double ], params: {|p b| [
+	lyrics: "life on our planet + Earth, evolved + independently + + + +  ",
+	pitchTake: [ 1, 3 ]
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+// P.tune();
+P(\bass, music: { |p b e|
+	[
+		midinote: [ 11, 7, 6, 5, 4, 2 ].dm('c#',2).stutter(2).q,
+		dur: b.parse([1, 2, 2, 2, 3, 2]).stutter(2).q /2 => _.drop(1),
+		ctranspose: [0, 12].q(inf),
+		instrument: \sawSynth
+	].pp;
+	(
+		lag: b.parse([10]).sum,
+		freq: [-11].df('e-'),
+		dur:b.parse([10,3]).last + e.bNext[0..1].sum,
+		instrument: \sparkTriangle,depth:0.01
+	).play
+});
+/*SPOCK:*/[" That would tend, however, to explain ","3 2 4 2 -7 1 2 4 6".dm(\e)].addLine;
+P(\chords, music: { |p b e|
+	[
+		freq: [
+			\r,
+			[ 2, 4, 6, 11].df(\e),
+			[-7, 2, 4, 5.5].df(\e),
+			[3, 5, 7, 11].df(\c,\mixolydian)
+		].q,
+		attack:3,
+		dur: [ b.parse([2,7]), 0, 0 ].flat + [0,e.bNext.parse([2,4,6])].flat => _.q,
+		instrument: \stringyy
+	].ppm
+});
+P.synthVs(role: \spock, take: [ nil, \bg ], params: {|p b| [
+	lyrics: "that would tend, however + + to explain +",
+	legato: [ [1, 1, 0.8, 1, 1, 0.6, 1, 1, 0.8, ] ],
+	lag: [ [0.05, 0,0,0,00,0,0,0 ] ],
+	filter: (midinote: _ - 12), 
+	pitchTake: 1 
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+		=> HPF.ar(_,200) * -2.dbamp
+	}.play
+
+});
+// P.tune();
+P(\pedalTone, music: { |p b e|
+	[
+		freq: [[-27,-17], [-11, -1], [-12,-2],
+		// [-12.5,-2.5]
+		-1
+	].df(\e).q,
+		dur: [ b.parse([2,7]),0 ].flat + [0 , e.bNext.parse([2, 4, 6])].flat => _.q,
+		instrument: \sparkTriangle,
+		depth:0.005,
+		out: Effect.bus( _ * Line.kr(0,1,2))
+	].pp;
+	[
+		freq: [-11].df(\e),
+		lag: b[0..1].sum,
+		dur: [ b.sum ].q,
+		coef:0.15,
+		instrument: \harp,
+		amp:0.02,
+		out: Effect.bus( Pan2.ar(_,0.9) ),
+		att:1
+	].pp
+});
+[" certain elements of Vulcan prehistory. ","3 2 4 2 -7 1 2.5 1 -6 -4 -5 -6".dm(\g)].addLine; 
+P(\bassnote, syl: 5, music: { |p b e|
+	(
+		freq: 1.df(\g,[2,3]),
+		amp:0.3,
+		instrument: \stringyy
+	).play
+});
+P.synthVs(role: \spock, take: [ nil,\lead ],params: {|p b| [
+	lyrics: "certain + elements + + of Vulcan + pre history  + +",
+	filter: (midinote: _ - 12), 
+	lag: [ [0.05,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ],
+	legato: [ [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.4, ] ],
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+		=> HPF.ar(_,200) * -2.dbamp
+	}.play
+
+});
+// P.tune();
 /*SARGON:*/[" In any case, I do not know. (baby) It was","5 11 5 3  7 6 5 5 6 5 4 3 4  ".dm(\d,\mixolydian)].addLine;
 Song.durs[\In].list.do(_.postln);
 Song.setTempoMap(\In,"e | e e qe e e e e eq e e e e ");
+P(\cymbals, syl:0, music: { |p b e|
+	(
+		instrument: \cymbalsDS,
+		amp:0.025
+	).play
+});
 P(\chordz, music: { |p b e|
 	[
 		instrument: \sawSynthSustain,
@@ -1264,6 +1414,7 @@ P.synthV(role: \vocoder, take: \lead,
 		// mix:0.5,
 		att:0.3,
 		sus:b.sum + e.bNext.sum,
+		modGain:2
 	);
 
 });
@@ -1314,7 +1465,6 @@ P('bass',start:\long,music: {|p b e|
 		dur: "h h h h ".asBeats.warpTo(e.tempoMap).q,
 	].pp
 });
-
 ["(boom) lost in the cataclysm which we unleashed upon ourselves. ","-7.5 5 6.5 7.5 11 5 3 1 -7 7 6.6 4 1 -7.5 6.5 6".dm('c#',\minor),].addLine; 
 P(\cataclysm, syl:3, music: { |p b e|
 	(
@@ -1355,10 +1505,10 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 		sus:b.sum + e.bNext.sum,
 	);
 });
-P.tune(\cataclysm);
 /*KIRK:*/[" A war? ","1 7".dm(\a,4,\mixolydian),].addLine; 
 P.synthVs(role: \kirk, take: [ \lead, \double ], params: {|p b| [
 	lyrics: "a war",
+	filter: (midinote: _ - 12), 
 	legato: [0.5, 0.7 ],
 	pitchTake: [ 1, 3 ]
 ] }, music:{|p b e|
@@ -1389,7 +1539,6 @@ P('bass',start:\struggle,music: {|p b e|
 });
 P.tune(\struggle);
 ["power that you could not comprehend. ","r",].addLine; 
-
 ///*KIRK:*/[" Then perhaps your intelligence wasn't so great, Sargon. We faced a similar crisis in our early nuclear age. We found the wisdom not to destroy ourselves. ","r",].addLine; 
 ///*SARGON:*/[" And we survived our primitive nuclear era, my son. But there comes to all races an ultimate crisis which you have yet to face.","r",].addLine; 
 ///*KIRK:*/[" I don't understand. ","r",].addLine; 

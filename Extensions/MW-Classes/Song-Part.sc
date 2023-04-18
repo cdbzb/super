@@ -289,7 +289,7 @@ Song {
 	reload {
 		loadedFrom.load // loads last saved version
 	}
-		cursor_ {|i| cursor = i; lastSectionPlayed = i;}
+		cursor_ {|i| cursor = i; lastSectionPlayed = i; ^i}
 	scroll { |section|
 		var lyric = this.lyrics[this.section(section)];
 		// Need to excape [ and ]  !!!
@@ -586,7 +586,7 @@ Song {
 			//"ffmpeg -i" + path ++ ".aif" + "-itsoffset 1 -i" + path ++ ".mov" + "-c copy -map 0:v:0 -map 1:a:0" + path ++ "together.mov" => _.unixCmd
 		}
 	}
-	recordOBS { |start end dir="/tmp" tail = 2|
+	recordOBS { |start end dir="/tmp" tail=2|
 		var now = Date.getDate.stamp;
 		var path = dir +/+ now;
 		//preroll = 0.5;
@@ -596,10 +596,12 @@ Song {
 			start = Song.section(start);
 			end = Song.section(end);
 			Song.playRange(start,end);
-			"obs-cli --password Where4obs recording start".unixCmd;
 			fork{
+				Server.default.latency.wait;
+				"obs-cli --password Where4obs recording start".unixCmd;
 				(start..end).collect(Song.secDur[_]).sum.wait;
 				tail.wait;
+				2.wait;
 				"obs-cli --password Where4obs recording stop".unixCmd;
 			}
 		}{

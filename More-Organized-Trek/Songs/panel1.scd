@@ -223,7 +223,7 @@ P.still(\lit, timecode: 1033.seconds, music: { |p b e|
 		text: ["essence","of my mind"],
 	)
 });
-P.synthV(\kevin,  
+P.synthV(\kevin, take: nil,  
 	pbind: {|p b| [ dur:p.durs[\essence], midinote: "1 1 1 1 1 1 1 4 7 7 6 7 6 5 6 ".dm(\a) ].p },
 	params: {|p b| [
 	lyrics: "r r r r r r r the essence + of his mind - - r",
@@ -235,7 +235,7 @@ P.synthV(\kevin,
 		
 	}.play
 });
-P.double(\kevin,
+P.double(\kevin, take: nil,
 	pbind: {|p b| [ dur:p.durs[\essence], midinote: "1 1 1 1 1 1 1 4 7 7 6 7 6 5 6 ".dm(\a) ].p },
 	music:{|p b e|
 	{
@@ -392,7 +392,7 @@ Song.energyDur=0.1;
 // Song.durs[\Pure] = "qq qq Q Q Q QQ QQ Q Q qq    qq qq qq qq".asBeats * Song.energyDur * 4  => _.q;
 // P.tune();
 //Song.secDur[\Pure];
-P.synthV(Trek.cast.spock,
+P.synthV(Trek.cast.spock, take: nil,
 	filter: (midinote: _ - 12), 
 		// pbind:{ |p b| 
 		// 	p.energyPbinds[0]
@@ -418,7 +418,7 @@ P.synthV(Trek.cast.spock,
 			/4
 	}.play
 });
-P.double(Trek.cast.spock, take:\double, double:\true,
+P.double(Trek.cast.spock, take: nil,
 	filter: (midinote: "1 6 5 4 3 ".dm(\c) ++ "5 4 3 2 3".dm(\e,\mixolydian) - 12),
 		// pbind:{ |p b| 
 		// 	p.energyPbinds[1]
@@ -567,10 +567,10 @@ P(\dyad, music: { |p b e|
 	].p.play
 });
 P.synthV(\kevin,
-	double:true,
 	filter: (midinote: _ - 12), 
 	params: {|p b key| [
 	// vocalMode: "Power",
+	pitchTake: [3],
 	lyrics: "Impossible + + +",
 	vocalMode: case{
 		key == \kevin }{\Belt}
@@ -1147,7 +1147,7 @@ P.synthV(\xuan,
 		=> p.synthVTracks.at(e.key).()
 	}//.play
 	;
-	{ PlayBuf.auto(2,Song.laMer, [0,-2].midiratio.dq.demand(Song.durs[\planets].list.parse([10,2]))) / 14 }.play(s,Song.carrierBus,addAction:\addToHead);
+	{ PlayBuf.auto(2,Song.laMer, [0,-2].midiratio.dq.demand(Song.durs[\planets].list.parse([10,2]))) / 14}.play(s,Song.carrierBus,addAction:\addToHead);
 	p.vocodeTune.(p,b,e,e.rpp,
 		verb:1,
 		// amp:0.28,
@@ -1222,7 +1222,61 @@ P(\chords, music: { |p b e|
 /*SARGON:*/[" In any case, I do not know. (baby) It was","5 11 5 3  7 6 5 5 6 5 4 3 4  ".dm(\d,\mixolydian)].addLine;
 Song.durs[\In].list.do(_.postln);
 Song.setTempoMap(\In,"e | e e qe e e e e eq e e e e ");
-P.tune(\In);
+P(\chordz, music: { |p b e|
+	[
+		instrument: \sawSynthSustain,
+		dur: b.q,
+		midinote: p.tune[e.start],
+		out: p.carrierBus.index
+	].ppm;
+	[
+		freq: [\r] ++ [[1, 3, 5].df(\d),[1,3,5].df(\c),[-3,-5,1].df(\g),[-3,-5,1].df(\a)].stutter(4) => _.q,
+		dur: "e e e e e e e e e e e e e e e e e  ".asBeats.warpTo( e.tempoMap ).q,
+		out: p.carrierBus.index
+		
+	].pp
+});
+P.synthV(role: \vocoder, take: \lead,
+	pbind: Song.enlarge2(0),
+	params: {|p b| [
+	lyrics: "In any + case, I do not know - baby + It was so long ago + and the records + of our travels + were ",
+	filter: (midinote: _ - 24), 
+	legato: [1, 1, 1, 0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.75 ,1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+	pitchTake: 1
+] }, music:{|p b e|
+	// {
+	// 	e.playbuf
+	// 	=> p.synthVTracks.at(e.key).()
+	// }.play
+
+	p.vocodeTune.(p,b,e,e.rpp,
+		verb:0.5,
+		tune: p.tune[e.start].list ++ p.tune[e.start + 1].list => _.postln ,
+		// enlarge: nil,
+		enlarge:12,
+		// amp:0.28,
+		mix:0.1,
+		dur:b.sum + e.bNext.sum,
+		chord:#[4]/2,
+
+		width:1.03,
+		// echo:0,modGain: 4,
+		// mix:0.5,
+		att:0.3,
+		sus:b.sum + e.bNext.sum,
+	);
+
+});
+P(\arpeggio, music: { |p b e|
+	[
+		freq: [\r] ++ [11, 5, 3, 1].df(\d) ++ [1, 5, 3, 1].df(\c) ++ [13, 11, 5, 3].df(\g,4) ++ [11, 5, 3, 1].df(\a,4) => _.q,
+		dur: "e e e e e e e e e e e e e e e e e".asBeats.warpTo( e.tempoMap ).q,
+		instrument: \harp,
+		coef: 0.15,
+		amp:0.01,
+		out: Effect.bus( Phaser2.ar(_,rate: 0.16),  )
+	].pp
+});
 P('bass',start:\In,music: {|p b e|
 	[
 		freq: 
@@ -1242,6 +1296,16 @@ P('click',start:\In,music: {|p b e|
 	].p//p
 });
 ["so long ago, and the records of our travels were","3 2 1 1 -7 1 3 1 -7 1 4 1 -7".dm(\d)].addLine;
+Song.setTempoMap(\records,"qq q e eee e e e e e e Q E E");
+P(\chors, music: { |p b e|
+	[
+		freq: [[ 5, 11 ],[5, 7],[6, 3]].df(\d).q,
+		dur: "qq qq qq".asBeats.warpTo( e.tempoMap ).q,
+		instrument: \sawSynthSustain,
+		out: p.carrierBus.index
+	].ppm
+
+});
 Song.setTempoMap(\long,"qq q e eqe x x x x x x x xe e ");
 P.tune(\long);
 P('bass',start:\long,music: {|p b e|
@@ -1250,9 +1314,60 @@ P('bass',start:\long,music: {|p b e|
 		dur: "h h h h ".asBeats.warpTo(e.tempoMap).q,
 	].pp
 });
+
 ["(boom) lost in the cataclysm which we unleashed upon ourselves. ","-7.5 5 6.5 7.5 11 5 3 1 -7 7 6.6 4 1 -7.5 6.5 6".dm('c#',\minor),].addLine; 
+P(\cataclysm, syl:3, music: { |p b e|
+	(
+		instrument: \cymbalsDS,
+		amp: 0.02
+	).play
+});
+P(\bassnote, music: { |p b e|
+	[		instrument:\stringyy,
+		freq: [-17.5,-11].df('c#',\minor).q,
+		rate:11,
+		dur: 5,
+		amp:0.3,
+		dur: b.parse([4, 1]).q
+
+	].ppm
+});
+P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+	lyrics: "r lost in the cataclysm + + + which we unleashed +  upon + our selves ",
+	filter: (midinote: _ - 12), 
+	pitchTake: 1
+] }, music:{|p b e|
+
+	p.vocodeTune.(p,b,e,e.rpp,
+		verb:0.5,
+		// tune: p.tune[e.start].list ++ p.tune[e.start + 1].list => _.postln ,
+		// enlarge: nil,
+		enlarge:12,
+		// amp:0.28,
+		mix:0.1,
+		dur:b.sum + e.bNext.sum,
+		// chord:#[4]/2,
+
+		width:1.03,
+		// echo:0,modGain: 4,
+		// mix:0.5,
+		att:0.3,
+		sus:b.sum + e.bNext.sum,
+	);
+});
 P.tune(\cataclysm);
 /*KIRK:*/[" A war? ","1 7".dm(\a,4,\mixolydian),].addLine; 
+P.synthVs(role: \kirk, take: [ \lead, \double ], params: {|p b| [
+	lyrics: "a war",
+	legato: [0.5, 0.7 ],
+	pitchTake: [ 1, 3 ]
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
 P('arpeggio',start:\war,syl:0,music: {|p b e|
 	(freq:[-1,-3,-5,-7,1,3,5,7].df(\a,4,\mixolydian),strum:0.03).play
 });

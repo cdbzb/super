@@ -53,10 +53,6 @@ s.waitForBoot{
 		e.still[0].value(wait:1,fade:1);
 	});
 /*SPOCK:*/[" Just a moment, Doctor. ", [12,11,13,11,5.5,5].dm('a-')].addLine; 
-
-//P(\JustTune,start:\Just,music:Song.currentSong.pbind[\Just]
-//);
-// ~justTheTune.(\Just,{|i|i=>Pset(\legato,2,_)});
 P.synthV( \mo, take: \lead,
 	filter: (midinote: _ - 24), 
 	params: {|p b| [

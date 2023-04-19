@@ -1492,17 +1492,17 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 		verb:0.5,
 		// tune: p.tune[e.start].list ++ p.tune[e.start + 1].list => _.postln ,
 		// enlarge: nil,
-		enlarge:12,
+		// enlarge:12,
 		// amp:0.28,
 		mix:0.1,
-		dur:b.sum + e.bNext.sum,
+		dur:b.sum + 1,
 		// chord:#[4]/2,
 
 		width:1.03,
 		// echo:0,modGain: 4,
 		// mix:0.5,
 		att:0.3,
-		sus:b.sum + e.bNext.sum,
+		sus:b.sum ,
 	);
 });
 /*KIRK:*/[" A war? ","1 7".dm(\a,4,\mixolydian),].addLine; 
@@ -1522,27 +1522,100 @@ P('arpeggio',start:\war,syl:0,music: {|p b e|
 	(freq:[-1,-3,-5,-7,1,3,5,7].df(\a,4,\mixolydian),strum:0.03).play
 });
 P.tune(\war);
-/*SARGON:*/["A struggle for such goals and the unleashing of such ","5 6 1 6 5 5 4".dm('a-',4,\minor)].addLine;
-P('chords',start:\struggle,music: {|p b e|
+/*SARGON:*/["A struggle for such goals and the unleashing of such ","5 6 1 6 7 4 3.5 4 5  ".dm('a-',4,\minor) ++ [11, 3.5, 11,7,].dm(\f,4,\minor)].addLine;
+P.synthV(role: \vocoder, take: \lead,
+	pbind: Song.enlarge(9),
+	params: {|p b| [
+	lyrics: "A struggle + for such goals and the unleashing + + of such power + that you could not comprehend + + ",
+	legato: [1, 1, 1, 1, 1, 0.9, 1, 1, 1, 1, 0.7, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ],
+	pitchTake: 1
+] }, music:{|p b e|
+	p.vocodeTune.(p,b,e,e.rpp,
+		enlarge:9,
+		// verb:0.5,
+		tune: p.tune[e.start].list ++ p.tune[e.start + 1].list => _.postln ,
+		// enlarge: nil,
+		// enlarge:12,
+		// amp:0.28,
+		mix:0.5,
+		chord:#[1,2,4],
+		dur:b.sum + e.bNext.sum +4,
+		// chord:#[4]/2,
+
+		// width:1.03,
+		// echo:0,modGain: 4,
+		// mix:0.5,
+		att:0.3,
+		sus:b.sum + e.bNext.sum ,
+		modGain:2,
+
+	);
+});
+// P.tune();
+P(\chord, music: { |p b e|
 	[
-		freq: [[1,3,5], [1,4,6],1,[1,4,6],[1,3,5],[-7,2,5],4].df('a-',[3,4],\minor).q,
+		freq: [\r, [5, 11, 13, 15], [5,7.5,13,15] ].df('b-',4,\minor).q,
+		dur: b.parse([9, 1, 1]).q,
+		instrument: \wash,
+		amp:0.05,
+		freqLag:0.1,
+		out: 
+		p.carrierBus.index
+	].ppm
+});
+P('chords2',start:\struggle,music: {|p b e|
+	[
+		freq: [[1,3,5], [1,4,6],1,[1,4,6],[3, 5, 7],[-7,2,4]].df('a-',[3,4],\minor).q,
 		dur:b.q,
-		out:Effect({ |i|  SineShaper.ar(i,0.2,5) => FreeVerb.ar(_,1,0.6) * [0.6,0.6]}).bus.index
+		out:Effect({ |i|  SineShaper.ar(i,0.2,5) => FreeVerb.ar(_,1,0.6) * [0.6,0.6]}, out: p.carrierBus.index).bus.index
 	].pp
 });
 P('bass',start:\struggle,music: {|p b e|
 	[
-		freq:[-5, 1,-5,-4].df('c#',3).q,
-		dur: b.parse([1,3,1,2]).q,
+		freq:[-5, 1,-6.5,-4,].df('c#',3) ++ [1].df(\f,2) =>_.q,
+		dur: b.parse([1,3,1,5, 1]).q,
 		instrument:\sawSynth
 	].pp
 });
-P.tune(\struggle);
-["power that you could not comprehend. ","r",].addLine; 
+P(\morebass,syl:8, music: { |p b e|
+	(
+		instrument: \stringyy,
+		freq: [-1,1].df(\f,3),
+		amp:0.5
+	).play
+});
+P.tune(\struggle, _ <> [instrument:\wash, amp:0.01].p);
+["power that you could not comprehend. ","13 12 7 6 12 11.5 6 5.5 4.5".dm(\e,4),].addLine; 
+P(\bass, music: { |p b e|
+	[
+		freq: [1, 3, ].df(\b,[2,3]) ++ [1].df(\c,[3,4]) =>_.q,
+		// dur: b.parse( [[1, 0.5],[0.5,1]] ).q,
+		dur: b.parse([4,4,1]).q
+
+	].pp
+});
+P.tune( _ <> [instrument:\wash, amp:0.01].p);
+P(\chords, music: { |p b e|
+	[
+		freq: [
+			[7, 11, 13, 16],
+			[7, 11, 13, 15]
+		].df(\b,\mixolydian).q,
+		dur: b.q,
+		instrument:\stringyy
+	].ppm
+});
+P(\chord,syl:7, music: { |p b e|
+	(
+		freq:[1,3,5,7].df(\c,\mixolydian)
+	).play
+});
+
 ///*KIRK:*/[" Then perhaps your intelligence wasn't so great, Sargon. We faced a similar crisis in our early nuclear age. We found the wisdom not to destroy ourselves. ","r",].addLine; 
 ///*SARGON:*/[" And we survived our primitive nuclear era, my son. But there comes to all races an ultimate crisis which you have yet to face.","r",].addLine; 
 ///*KIRK:*/[" I don't understand. ","r",].addLine; 
 
-/*SARGON:*/[" One day our minds became so powerful, we dared think of ourselves as gods. ","r",].addLine; 
-/*KIRK:*/[" You said you wanted our help. What is it you wish? ","r",].addLine; 
+// /*SARGON:*/[" One day our minds became so powerful, we dared think of ourselves as gods. ","r",].addLine; 
+/*KIRK:*/[" You said you wanted our help. What is it you wish? ","1,2,3,5,4,3,7".dm(\f,\mixolydian) ++ "1 2 3 5 7".dm(\g,\mixolydian),].addLine; 
+P.tune();
 })

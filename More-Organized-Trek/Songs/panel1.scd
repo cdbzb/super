@@ -10,6 +10,18 @@ Song.vocoderRatio.set(1);
 /*SARGON: (the glowing sphere)*/[" Welcome. I am Sargon. ","r",].addLine; 
 /*SPOCK:*/[" Sargon, would it harm you if I ","4 5 7 11 12 6 5 4".dm(\d)].addLine; 
 P.tune('harm');
+P.synthVs(role: \spock, take: [\dbl, \lead ], params: {|p b| [
+	lyrics: "Sargon +  would it harm you if I ",
+	filter: (midinote: _ - 12), 
+	legato: [ [1, 0.8, 1, 1, 1, 1, 1, 0.3, ] ],
+	lag: [[ 0.05, 0, 0, 0, 0, 0, 0, 0 ]],
+	pitchTake: [ 1, 3 ]
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 /*SARGON:*/[" You may use your tricorder, Mister Spock.","r"].addLine;
 ["Your readings will show","r"].addLine;
 ["energy but no substance. ","3 2 3 2 1 -7 1 -7 -6 -5 4 3 3 1 2 -7".dm(\e)].addLine;
@@ -245,14 +257,14 @@ P.double(\kevin, take: nil,
 	}.play
 });
 ( Song.synthVTracks=EventWithDefault(
-	\default, {
+	\default, {|mix = 1|
 		{
 			|i|
 			var early = 0.5;
 			var dryAmount = 1;
 			EarlyRef.ar(i, source:[2,3,2], receiver:[0,0,0], roomsize:[4,5,6], hw:0.2, b:0.97, n:0, p:0, allp_lens:nil, allp_c:0.7)
 
-			=> DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:1-early,)
+			=> DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:1-early * mix)
 			+ ( i * dryAmount )
 			/ 6 
 			=> HPF.ar(_,100)
@@ -1458,7 +1470,7 @@ P(\chors, music: { |p b e|
 
 });
 Song.setTempoMap(\long,"qq q e eqe x x x x x x x xe e ");
-P.tune(\long);
+// P.tune(\long);
 P('bass',start:\long,music: {|p b e|
 	[
 		freq: [1, -7, -6, -5, -4, -2].df(\d,4).q,
@@ -1489,7 +1501,7 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 ] }, music:{|p b e|
 
 	p.vocodeTune.(p,b,e,e.rpp,
-		verb:0.5,
+		// verb:0.5,
 		// tune: p.tune[e.start].list ++ p.tune[e.start + 1].list => _.postln ,
 		// enlarge: nil,
 		// enlarge:12,
@@ -1503,6 +1515,8 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 		// mix:0.5,
 		att:0.3,
 		sus:b.sum ,
+	modGain:2,
+		chord:#[8,2]/2,
 	);
 });
 /*KIRK:*/[" A war? ","1 7".dm(\a,4,\mixolydian),].addLine; 
@@ -1522,7 +1536,8 @@ P('arpeggio',start:\war,syl:0,music: {|p b e|
 	(freq:[-1,-3,-5,-7,1,3,5,7].df(\a,4,\mixolydian),strum:0.03).play
 });
 P.tune(\war);
-/*SARGON:*/["A struggle for such goals and the unleashing of such ","5 6 1 6 7 4 3.5 4 5  ".dm('a-',4,\minor) ++ [11, 3.5, 11,7,].dm(\f,4,\minor)].addLine;
+/*SARGON:*/["A struggle for such goals and the unleashing of such ","5 6 1 6 7 4 3.5 4 5  ".dm('a-',4,\minor) ++ [11, 3.5, 7, 6].dm(\f,4,\minor)].addLine;
+P.tune();
 P.synthV(role: \vocoder, take: \lead,
 	pbind: Song.enlarge(9),
 	params: {|p b| [
@@ -1585,7 +1600,8 @@ P(\morebass,syl:8, music: { |p b e|
 	).play
 });
 P.tune(\struggle, _ <> [instrument:\wash, amp:0.01].p);
-["power that you could not comprehend. ","13 12 7 6 12 11.5 6 5.5 4.5".dm(\e,4),].addLine; 
+["power that you could not comprehend. ","13 12 11.5 7 12 11.5 7 6 5.5 ".dm(\e,4),].addLine; 
+P.tune();
 P(\bass, music: { |p b e|
 	[
 		freq: [1, 3, ].df(\b,[2,3]) ++ [1].df(\c,[3,4]) =>_.q,
@@ -1607,7 +1623,14 @@ P(\chords, music: { |p b e|
 });
 P(\chord,syl:7, music: { |p b e|
 	(
-		freq:[1,3,5,7].df(\c,\mixolydian)
+		freq:[1,3,5,7].df(\c,4,\mixolydian),
+		strum: 0.05,
+		instrument: \sawSynth,
+		dur:0.1,
+		rel:4,
+		att:1,
+		coef: 0.3,
+		out: Effect.bus( {|i| CombN.ar(i,0.4,[ 0.33, 0.371 ],5)  + [i,i] /3} )
 	).play
 });
 
@@ -1618,4 +1641,26 @@ P(\chord,syl:7, music: { |p b e|
 // /*SARGON:*/[" One day our minds became so powerful, we dared think of ourselves as gods. ","r",].addLine; 
 /*KIRK:*/[" You said you wanted our help. What is it you wish? ","1,2,3,5,4,3,7".dm(\f,\mixolydian) ++ "1 2 3 5 7".dm(\g,\mixolydian),].addLine; 
 P.tune();
+P.synthV(role: \kirk, take: \lead, params: {|p b| [
+	lyrics: "You said you wanted + our help. What is it you wish? ",
+	legato: [1, 1, 1, 1, 1, 1, 0.6, 1, 1, 1, 1, 1, ],
+	filter: (midinote: _ - 12), 
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).(0.15)
+	}.play
+
+});
+P(\bassnotes, music: { |p b e|
+	[
+		freq: [ \r,[7, 17],[-2,2],[16,6] ].df(\f,3,\mixolydian).q,
+		dur: b.parse([6,1,3, 2]).q,
+		sustain: b.parse([7]) ++ b[6..9].sum ++ b[7..11].sum++ b[10..11].sum => _.flat => _.q ,
+		instrument: [\default,\stringyy].q(2)
+
+
+	].pp
+});
 })

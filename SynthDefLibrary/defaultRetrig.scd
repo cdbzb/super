@@ -25,7 +25,7 @@ SynthDef(\defaultRetrig,{ | out=0 freq=400 amp=0.1 gate=1 t_trig=1 pan=0 curve=(
 SynthDef(\defaultPiano,{ | out=0 freq=400 amp=0.1 gate=1 t_trig=1 pan=0 curve=( -8 ),fatness=0.3,pedal=1 | 
 			var z;
 			//var damper = Env.asr(0,1,0.3).kr(2,gate:gate);
-			var decay = Env.perc(0.005, freq/440 => _.reciprocal * 4, curve:curve).kr(0,gate:t_trig);
+			var decay = Env.perc(0.005, freq/440 => _.reciprocal * 4, curve:curve).kr(2,gate:t_trig);
 			var damper = Env.asr(0.01,  sustainLevel: 1.0,  releaseTime: 0.3,  curve: -4.0).kr(0,gate:pedal); 
 			var envelope = damper * decay;
 			z = LPF.ar(

@@ -1,5 +1,5 @@
 (
-SynthDef(\trem2,{| rate=12 freq=499 scale=1 gate=1 out=0| //		{{{3
+SynthDef(\trem2,{| rate=12 freq=499 scale=1 size=1 gate=1 out=0| //		{{{3
 	//var force =LFBrownNoise1.kr(1).range(-0.20,8.8);
 	var force=0.9;
 	//var scale=SinOsc.ar(0.01).range(0.2,1.2);
@@ -20,6 +20,7 @@ SynthDef(\trem2,{| rate=12 freq=499 scale=1 gate=1 out=0| //		{{{3
 		//impZ: 0.55*LFBrownNoise1.kr(0.5).range(0.02,1),  
 		fB: 2 //inharmonicity
 	); 
+	scale = size;
 	sig= DWGSoundBoard.ar(sig,  c1: 20,  c3: 100,  mix: 0.8,  d1: 199*scale,  d2: 211*scale,  d3: 223*scale,  d4: 227*scale,  d5: 229*scale,  d6: 233*scale,  d7: 239*scale,  d8: 241*scale);
 	sig=HPF.ar(sig,300)*0.05;
 	sig=sig*\amp.kr(0.1)*10;

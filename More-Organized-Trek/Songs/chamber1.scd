@@ -1,8 +1,81 @@
 (
 s.waitForBoot{ Song(\chamber1,[]).current;
 "~/tank/super/More-Organized-Trek/Songs/boilerplate.scd".standardizePath.load;
-["( transporter! )","r",[8]].addLine;
-P('transporter',start:'stand ready',music: {|p b e|
+( Song.synthVTracks=EventWithDefault(
+	\default, { |mix=0.1|
+		{
+			|i|
+			// i => FreeVerb.ar(_,1,[0.4,0.5])
+			i => DWGReverbC1C3.ar(i,mix:mix)
+			/4
+		}
+	},
+	\asterian,{ |mix= 0.1|
+		{
+			|i|
+			// i => FreeVerb.ar(_,1,[0.4,0.5])
+			i => BLowShelf.ar(_,200,db: -9)
+			// /80
+			=> DWGReverbC1C3.ar(i,mix:mix)
+			/8
+		}
+	}
+)
+);
+
+( Song.trillStart = { |lowerNoteDegree p b e octave=5 amp=0.03|
+	Song.trillFreq=lowerNoteDegree;
+	3.do{
+		[
+			freq:Pswitch1([ Pdefn(\lower),11.df],[0,1].q(inf)),
+			dur: Pwhite(0.05,0.16,inf),
+			legato:Prand([0.8,1.1],inf),
+			pan:(-1).rrand(1.0),
+			amp:amp*3,
+			out: 
+			Effect({|i| i =>FreeVerb.ar(_,0.8,0.8)}).bus.index
+
+		].pm(\default) //=> 
+		//Pfindur(b.sum,_) 
+		=> _.play
+	}
+};
+);
+( Song.trillFunc={|freq, time|
+Pdefn(\lower, Penv([Song.trillFreq,freq,freq],[ time, inf ]));
+	Song.trillFreq=freq;
+};
+);
+(
+Song.triller = { 
+	VarSaw.ar( LFPulse.ar(
+		LFBrownNoise1.kr([ 1, 1.01, 1.02 ]).range(5.5,7)  // for multi-chan
+	).range(\lower.kr(7.df,\portamentoRate.kr(1)),\higher.kr(11.df,6))
+	* [3, 2,1 ], //octaves
+	0,0.5.rand, 0.05 )
+	* 0.15 // amp
+	=> Pan2.ar(_,Rand(-1,1.0))
+	=> LPF.ar(_,4000)
+	//=> TwoTube.ar(_, k:0.01, loss:0.997, d1length:[333,456], d2length:[543,611], mul:1.0, add:0.0)
+	=> { |i| DWGReverbC1C3.ar(i, len:100, c1:1, c3:10, mix:0.1, coefs:nil, perm:nil, doprime:0) => Pan2.ar(_,0.9)+i}
+	=> Disintegrator.ar(_, probability:\noise.kr(0), multiplier:WhiteNoise.kr().range(0,-1))
+	* \amp.kr(0.1)
+	* Env.asr(4).kr(2,gate:1)
+}.asSynthDef.add.name;
+Song.trillSynthFunc = {|note| 
+	Song.trillBus = Song.trillBus ? Bus.control; 
+	Song.trillBus.set(0.1);
+	(1..3).collect{Synth(Song.triller,[\lower,note.df]).register.map(\amp,Song.trillBus)}
+	
+};
+Song.changeTrill = { |note|
+	( try{ Song.trillSynth[0].isRunning }==true ).if{
+		fork{ Song.trillSynth.do( { |i| i.set(\lower,note.df);0.4.rand.wait} )}
+	}{Song.trillSynth = Song.trillSynthFunc.(note)}
+};
+);
+["transporter","r",[8]].addLine;
+P('transporter',music: {|p b e|
 	{
 	var beam_envelope, phasor, beam, feedback, transporter, reverb, activateEnv, percEnv, activate, buffer;
 
@@ -56,19 +129,19 @@ beam = beam * (phasor - (Wrap.ar(phasor) - 0.5));
 		[1200, 1100, 930, 910, 880, 840, 800, 760, 720, 680, 640, 620].reciprocal).sum * 12;
 	reverb = GVerb.ar(transporter + (activate * 0.1), 100, 8, 0.1, 0.9);
 	reverb = reverb + (activate * 0.5)!2;
+	reverb / 12
 
 }.play
 });
 
 /*[ Chamber ] */ ["SPOCK: Captain, the security guards. ","5 3 5 7 12 7 5 3".dm(\c,\mixolydian)].addLine;
-
-	P('crash',start:\Captain,music: {|p b e|
+P('crash',start:\Captain,music: {|p b e|
 		(
 		instrument:\cymbalsDSStereo,
 			amp:0.005
 		).play
 	});
-	P.synthV(role: \spock, take: nil, params: {|p b| [
+P.synthV(role: \spock, take: nil, params: {|p b| [
 		lyrics: "Captain + the security + + + guards ",
 		filter: (midinote: _ - 12), 
 		legato: [1, 0.5,  1, 1, 1, 1, 1, 1, ],
@@ -83,8 +156,17 @@ beam = beam * (phasor - (Wrap.ar(phasor) - 0.5));
 	});
 
 ["KIRK: Kirk here. ",[11,3].dm('c#')].addLine;
-	P.tune('here.');
-	P.synthV(role: \kirk, take: \lead, params: {|p b| [
+Song.durs.filter( _ * 0.7 );
+P.tune(_ <> [ out: Effect.bus({|i| DWGReverbC1C3.ar(i) },) ].p);
+P(\tone, music: { |p b e|
+	{
+		SinOsc.ar( 11.df('c#')!20 => _.pareto() )
+		=> Splay.ar(_)
+		/20
+		* Env.perc(0.02,4).kr(2,gate:1)
+	}.play
+});
+P.synthV(role: \kirk, take: \lead, params: {|p b| [
 		filter: (midinote: _ - 12), 
 		lyrics: "kirk here",
 		pitchTake: 1
@@ -102,7 +184,7 @@ beam = beam * (phasor - (Wrap.ar(phasor) - 0.5));
 	Song.offCamFn = { |i|  PartConv.ar(i => SineShaper.ar(_,0.3),4096,Song.smallSpeaker) * 0.05};
 ["SCOTT [OC]: Can you read me, Captain? ","3 2 5 3 2 1".dm(\b,\whole)].addLine;
 	Trek.cast.scott = \mo;
-	P.synthV(role: \scott, take: \lead, params: {|p b| [
+P.synthV(role: \scott, take: \lead, params: {|p b| [
 		lyrics: "Can you reed me, Captain + ",
 		filter: (midinote: _ - 12), 
 		pitchTake: 1
@@ -117,7 +199,7 @@ beam = beam * (phasor - (Wrap.ar(phasor) - 0.5));
 
 ["KIRK: Yes, Scotty (boom), and I shouldn't be able to this deep inside the planet", [11, 7, 5, 2,  6, 7, 11, 7, 6, 7, 5, 1, 6, 6, 5, 4, 3,3,2].dm('a-')].addLine;
 	Song.setTempoMap('Yes',"q e e e x x E E E e e e e Q E Q E Q Eq");
-	P.synthV(role: \kirk, take: \lead, params: {|p b| [
+P.synthV(role: \kirk, take: \lead, params: {|p b| [
 		filter: (midinote: _ - 12), 
 		lyrics: "Yes, Scotty + r and I shouldn't +  be able + to this deep inside + the plan et",
 		// phonemes:["","","","","","","","","","","","","","","","","","","n ih t"]
@@ -129,33 +211,32 @@ beam = beam * (phasor - (Wrap.ar(phasor) - 0.5));
 		}.play
 
 	});
-	P.synthV(role: \kirk, take: \bg,
+P.synthV(role: \kirk, take: \bg,
 		pbind: {|p b|
 			[
-
-			midinote:[\r,4,4,3,2,1,-7].dm('a-',[3],\mixolydian).q,
-			//dur:b.parse([3, 8, 1, 1,1, 1,1 ,1 ,1]).q
-			dur: "qqqqqe e e e e e qe".asBeats.warpTo(e.tempoMap).q,
-			].p
+			midinote:[-1,4,4,3,2,1,-7, -7].dm('a-',4,\mixolydian),
+			dur: "qqqqqe e e e e e e e".asBeats.warpTo(Song.tempoMap[\deep])
+			 ].p
 		},
 		params: {|p b| [
 		lyrics: "r this deep inside + the plan et",
-		pitchTake: 1
+		pitchTake: 1,
+		paramGender: 0.2
 	] }, music:{|p b e|
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
 		}.play
 	});
-	P('click',start:\Yes,music: {|p b e|
+P('click',start:\Yes,music: {|p b e|
 		[
 			dur: 1!10 => _.warpTo(e.tempoMap)=> _.postln => _.q,
 			instrument:\hihat,
 		].p
 		//p
 	});
-	P.tune(\Yes);
-	P('bass',start:\Yes,music: {|p b e|
+P.tune(\Yes);
+P('bass',start:\Yes,music: {|p b e|
 		[
 			freq:[\r,2,1,4,4,3,2,1,-7].df('a-',[3],\mixolydian).q,
 			//dur:b.parse([3, 8, 1, 1,1, 1,1 ,1 ,1]).q
@@ -178,7 +259,7 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	}.play
 
 });
-	P('chord',start:\perhaps,syl:9,music: {|p b e|
+P('chord',start:\perhaps,syl:9,music: {|p b e|
 		(
 			freq: [ -7,1,3,5 ].df('e',\mixolydian),
 			instrument:\stringyy
@@ -221,6 +302,13 @@ P.synthV(role: \scott, take: \lead, params: {|p b| [
 });
 P.tune(\dematerialise);
 /*[ Chamber ]*/ ["SCOTT [OC]: I don't like it, sir. ","3 2 5 3 1".dm(\b,\whole)].addLine;
+P(\bassPad,syl:1, music: { |p b e|
+	[
+		instrument: \stringyy,
+		freq: "-1 5 3 ".df(\b,4,\whole),
+		dur:1.q
+	].pp
+});
 P.still(\kirkOnWalkie, timecode: 914.833.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -228,8 +316,7 @@ P.still(\kirkOnWalkie, timecode: 914.833.seconds, music: { |p b e|
 	)
 });
 
-	P.tune('like it', { |i| Pbindf(i,\out,Song.offCamEffect.())},lag:-1 *(4096/2-s.options.blockSize/s.sampleRate));
-	P.synthV(role: \scott,
+P.synthV(role: \scott,
 		lag:-1 *(4096/2-s.options.blockSize/s.sampleRate),
 		take: \lead, params: {|p b| [
 		lyrics: "I don't like it sir",
@@ -245,14 +332,51 @@ P.still(\kirkOnWalkie, timecode: 914.833.seconds, music: { |p b e|
 		}.play
 
 	});
-	P.tune('like it,', { |i| Pbindf(i,\legato,5,\instrument,\harp,\amp,0.02,\lag,Pwhite(-0.01,0.01),\instrument,\wash)=>Pmul(\freq,0.5,_)});
+P.tune('like it,', { |i| Pbindf(i,\legato,5,\instrument,\harp,\amp,0.02,\lag,Pwhite(-0.01,0.01),\instrument,\wash)=>Pmul(\freq,0.5,_)});
 ["KIRK: No problem yet. Maintain alert. Kirk out. ","1 5 3 4.5".dm('f#') ++ "3 4 5 1".dm(\e,\minor)++ "5 11".dm('c#')].addLine;
+P(\passNote, music: { |p b e|
+	// ( instrument: \stringyy,amp:0.3, freq: 1.df('f#', [ 4 ]),attack:3,dur: b.parse(3).unbubble ).play;
+	(
+		instrument: \harp,
+		freq: [-1].df(\c),
+		lag: b.parse([3]).unbubble,
+		out: Effect.bus({|i| DWGReverbC1C3.ar(i, len: 1000, mix:0.2) /4 })
+		// coef: 0.25
+	).play;
+	(
+		lag: b.parse([ 4 ]).unbubble,
+		freq: [1, 1, 5, 13].df(\e,\minor),
+		instrument: \sawSynthSustain,
+		dur:3,amp:0.01,
+		att:5,rel:5
+
+	).play;
+	[
+		freq: [\r, 3, 1].df(\e, 4, \minor).q,
+		dur: b.parse([4,3,1]).q,
+		amp:0.3,
+		instrument: \stringyy
+	].ppm
+
+});
+P(\outChord,  music: { |p b e|
+
+	[
+		freq: [\r, [4, -5, -7, 12],[-1,1,5,11]  ].df('c#').q ,
+		// lagTime: [0,0.1,0.1].q,
+		instrument: \sawSynthSustain,
+		dur: b.parse([8,1,1]).q,
+		// dur: b.drop(1)  => _.q,
+		att: 4, rel: 4, 
+		amp:0.05
+	].ppm
+});
 P.still(\kirkSpeaksWalkie, timecode: 917.333.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["no problem yet","maintain alert"],
 	).sequenceText2(
-			b.parse([7]), [ 
+			b.parse([8]), [ 
 			["Kirk","out"],
 			],
 	)
@@ -260,7 +384,7 @@ P.still(\kirkSpeaksWalkie, timecode: 917.333.seconds, music: { |p b e|
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	filter: (midinote: _ - 12), 
 	lyrics: "No problem + yet. Maintain + alert + Kirk out. ",
-	legato: [1, 1, 1, 0.5, 1, 1, 1, 0.5, 1, 0.5, ],
+	legato: [1, 1, 1, 0.5, 1, 1, 1, 0.5, 1, 0.75, ],
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
@@ -269,12 +393,24 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	}.play
 
 });
+P(\trill,syl:8,music:{|p b e| 
+	// fork{
+		// 1.wait;
+		Song.trillSynth = Song.trillSynthFunc.(7)
+	// }
+});
+["start trill","r",[0.75]].addLine;
 ["MULHALL: Atmosphere report, Captain. ",[11,7,5,4,3,2,3].dm(\b,5,\mixolydian)].addLine;
 P.tune(\Atmosphere, {|i| Pmul(\freq,[1,0.5],i) <> [out: Effect(FreeVerb.ar(_,0.8,0.8), inputChannels:2).bus.index, \legato:[6,2,5,2,4,2,3].q ].p });
-P.still(\kirk_and_mullhall, timecode: 921.21.seconds, music: { |p b e|
+P.still(\kirk_and_mullhall, timecode: 925.04.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["atmosphere report,","captain"],
+		fade:3
+	).sequenceText2(
+			b.sum, [ 
+			["",""],
+			],
 	)
 });
 P.synthV(\cheng,
@@ -302,70 +438,16 @@ P.double(\cheng,
 
 Pdefn(\lower,7.df.bubble.q(inf)); ///NOW WHAT?
 
-( Song.trillStart = { |lowerNoteDegree p b e octave=5 amp=0.03|
-	Song.trillFreq=lowerNoteDegree;
-	3.do{
-		[
-			freq:Pswitch1([ Pdefn(\lower),11.df],[0,1].q(inf)),
-			dur: Pwhite(0.05,0.16,inf),
-			legato:Prand([0.8,1.1],inf),
-			pan:(-1).rrand(1.0),
-			amp:amp*3,
-			out: 
-			Effect({|i| i =>FreeVerb.ar(_,0.8,0.8)}).bus.index
-
-		].pm(\default) //=> 
-		//Pfindur(b.sum,_) 
-		=> _.play
-	}
-};
-);
-( Song.trillFunc={|freq, time|
-	Pdefn(\lower, Penv([Song.trillFreq,freq,freq],[ time, inf ]));
-	Song.trillFreq=freq;
-};
-);
-(
-Song.triller = { 
-	VarSaw.ar( LFPulse.ar(
-		LFBrownNoise1.kr([ 1, 1.01, 1.02 ]).range(5.5,7)  // for multi-chan
-	).range(\lower.kr(7.df,\portamentoRate.kr(1)),\higher.kr(11.df,6))
-	* [3, 2,1 ], //octaves
-	0,0.5.rand, 0.05 )
-	* 0.15 // amp
-	=> Pan2.ar(_,Rand(-1,1.0))
-	=> LPF.ar(_,4000)
-	//=> TwoTube.ar(_, k:0.01, loss:0.997, d1length:[333,456], d2length:[543,611], mul:1.0, add:0.0)
-	=> { |i| DWGReverbC1C3.ar(i, len:100, c1:1, c3:10, mix:0.1, coefs:nil, perm:nil, doprime:0) => Pan2.ar(_,0.9)+i}
-	=> Disintegrator.ar(_, probability:\noise.kr(0), multiplier:WhiteNoise.kr().range(0,-1))
-	* \amp.kr(0.1)
-	* Env.asr(0.05).kr(2,gate:1)
-}.asSynthDef.add.name;
-Song.trillSynthFunc = {|note| 
-	Song.trillBus = Song.trillBus ? Bus.control; 
-	Song.trillBus.set(0.1);
-	(1..3).collect{Synth(Song.triller,[\lower,note.df]).register.map(\amp,Song.trillBus)}
-	
-};
-Song.changeTrill = { |note|
-	( try{ Song.trillSynth[0].isRunning }==true ).if{
-		fork{ Song.trillSynth.do( { |i| i.set(\lower,note.df);0.4.rand.wait} )}
-	}{Song.trillSynth = Song.trillSynthFunc.(note)}
-};
-);
-P(\trill,start:'Atmos',music:{|p b e| 
-	Song.trillSynth = Song.trillSynthFunc.(7)
-});
 
 ["A fraction richer in oxygen than usual for us, but otherwise normal. "," 3 4 5 7 11 6 13 12 5 6 12 11.5 6, 4.5 5.5 4 5 6 7 12 11".dm(\c)].addLine;
-P.still(\mulhall, timecode: 925.04.seconds, music: { |p b e|
+P.still(\clear, timecode: 925.04.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["a fraction richer","in oxygen"],
 		fade: 1
-	).sequenceText([
-		b[0..7].sum, ["than usual","for us"],
-		b[8..13].sum, ["but otherwise","normal"]
+	) .sequenceText2(b.parse([9,6]),[
+		 ["than usual","for us"],
+		 ["but otherwise","normal"]
 	])
 });
 // P.tune(\oxygen,{|i| Pmul(\freq,[1,0.5],i) => Pset(\legato,1,_) });
@@ -392,26 +474,6 @@ P.double(\cheng,
 		// => Pan2.ar(_,1)
 	}.play
 });
-Song.synthVTracks=EventWithDefault(
-	\default, { |mix=0.1|
-		{
-			|i|
-			// i => FreeVerb.ar(_,1,[0.4,0.5])
-			i => DWGReverbC1C3.ar(i,mix:mix)
-			/4
-		}
-	},
-	\asterian,{ |mix= 0.1|
-		{
-			|i|
-			// i => FreeVerb.ar(_,1,[0.4,0.5])
-			i => BLowShelf.ar(_,200,db: -9)
-			// /80
-			 => DWGReverbC1C3.ar(i,mix:mix)
-			/8
-		}
-	}
-);
 P('testrec',start:\oxygen,music: {|p b e|
 	RecOnsets(\test,\oxygen)
 	//.armed_(true)
@@ -482,8 +544,6 @@ P(\trill,start:\vault,music:{|p b e|
 	p.changeTrill.(6.5)
 });
 ["About the same time the planet surface was destroyed, if our sensor readings are accurate. ","5 6 7 11 3".dm(\f,4,\minor) ++ "6 7 11 13 12 11 7 6".dm('f#',4) ++ [ 1,2,3,4,-5,4,3,2 ].dm(\d,5,\diminished)].addLine;
-
-// P.tune();
 P.synthV(Trek.cast.spock,
 	filter: (midinote: _ - 12), 
 	prepend: true,
@@ -498,7 +558,6 @@ P.synthV(Trek.cast.spock,
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-// P.tune(\surface,Pmul(\freq,[0.5,1],_));
 P(\bass,start:\surface,music:{|p b e| 
 	[
 		freq: 
@@ -641,8 +700,6 @@ P('guitar',start:\Much, music: {|p b e|
 	}
 	).play
 });
-
-
 P(\bass,start:\harder,music:{|p b e| 
 	[
 		freq: "2 5 1 5".df('c#',[3]).q,
@@ -661,7 +718,6 @@ P('kerRecorde',start:\harder,music: {|p b e|
 		CombN.ar()
 	].pp
 });
-
 ["anything I've measured before. ","3 2 1 -7 -6 -5 -4 1 2 ".dm('b-',5,\mixolydian)].addLine;
 P.synthV(
 	Trek.cast.spock,
@@ -707,7 +763,7 @@ P('guitar',start:\anything,music: {|p b e|
 		[],
 		{|i|  
 			//SinOsc.ar(i.freqSeq,0,0.1)
-			Pluck.ar( PinkNoise.ar(0.1),i.trigSeq,1,   ( i.freqSeq + 0.0001 ).reciprocal* [4,8] ,decaytime:10)
+		Pluck.ar( PinkNoise.ar(0.1),i.trigSeq,1,   ( i.freqSeq + 0.0001 ).reciprocal* [4,8] ,decaytime:10)
 			=> CrossoverDistortion.ar(_,amp:0.20,smooth:0.9)
 			+ (i==0).if { VarSaw.ar(i.freqSeq + SinOsc.ar([5,6]).range(0,5),0,0,mul:0.01) }{0}
 			* ( Env.asr().kr(2,gate:(i.gateSeq))  

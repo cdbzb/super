@@ -102,10 +102,10 @@ P(\bassnote, start:0, music:
 		).play
 	}
 );
-Song.synthVTracks = EventWithDefault(
-	\default, {
+Song.synthVTracks = EventWithDefault( 
+	\default, { |mix = 0.1|
 		{|i|
-			i=> DWGReverbC1C3.ar(_,mix:0.1)
+			i=> DWGReverbC1C3.ar(_,mix:mix)
 			/3
 		}
 	}

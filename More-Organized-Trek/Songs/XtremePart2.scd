@@ -12,6 +12,7 @@ Routine {
 	//get this from reaper (HOOK) "/Users/michael/Trek/Vulcan's worship peace/Vulcan's worship peace.RPP" => {|i| ( "open "+i ).unixCmd }
 ["/*MCCOY*/ Vulcans worship peace above a-- ll, Henoch. ",[5,5,4,4,3, 2,1,2,3, -6,-5].dm('d')].addLine;
 	Song.setTempoMap(\worship,"e e e e qqq e e e eq q q");
+	Trek.initClass;
 P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 		lyrics: "vulcans + worship + peace above + all - Henock +",
 		pitchTake: 1,
@@ -138,7 +139,6 @@ P(\bonk, music: { |p b e|
 		// * Env.perc().kr(0,gate:trig)
 	}.play
 });
-
 P.synthV(role: \henoch, take:\lead,
 			filter: (midinote: _ - 12), 
 			params: {|p b| [
@@ -754,7 +754,7 @@ P(\baseNoteMetabolic,start:'injection',music:{|p b|
 }
 );
 ["what? I'll prepare the formula Sargon",[14, 13,14,15,13,14,13,12,11,3].dm('b',octave:4)].addLine;//8
-P.still(\twoShot, timecode: 2914.5.seconds, music: { |p b e|
+P.still(\twoShot, timecode: 2918.5.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
@@ -861,6 +861,14 @@ P(\baselineHours,start:'several hours',music:{|p b|
 }
 );
 ["fortunate (dum dum dum dum) we will vacate at once...",[14,12,7,5,6,7, 1,11,12,13,11,13,13].dm('g',octave:4,scale:\mixolydian,)].addLine;//11
+Song.durs.filter( _ * [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.5] );
+P(\oncePadd,syl:12, music: { |p b e|
+	(
+		instrument: \wash,
+		dur: b.drop(1) + e.bNext.sum,
+		freq: 7.df(\c)
+	).play
+});
 P.synthV(role: \sargon, take:\lead,
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
@@ -883,7 +891,7 @@ P(\lick, music: { |p b e|
 	].ppm
 });
 P.tune( _ <> [
-	instrument: \wash,
+	instrument: \harp,
 	rest: [\r, \r, \r, 1, 1, 1, 1].q,
 	out: Effect.bus({|i| i => Pan2.ar(_,-0.4, 0.8) => FreeVerb2.ar(*_)   },)
 ].p
@@ -897,9 +905,50 @@ P(\reedChordFortunate,lag:-0.15,start:'fortunate',music:{ |p b|
 	(freq:[1,3,5,7].df('d',scale:\minor),out:{4.rand}!4, instrument:\reedy,sustain:1,release:4,amp:0.08 ).play 
 }
 );
-["transform-k transform-c","1 11".dm(\c)].addLine;
-P.tune();
+["transform-k transform-c","7 5".dm(\c)].addLine;
+Song.durs.filter( _ *  1.5);
+P.still(\transformKirk, timecode: 2932.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b[0],
+		text: ["",""],
+	)
+});
+P.still(\transformChapel,syl:0, timecode: 2935.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b[1],
+		text: ["",""],
+	)
+});
+
+
+P(\transform, music: { |p b e|
+	var pan = [-1,1].q(inf).asStream;
+	var freqs = [7, -7].df(\c,7).q(inf).asStream;
+	var transform = { |pan freq |
+		{ 
+		var nyquist = s.sampleRate / 2;
+		SinOsc.ar(
+			XLine.kr(nyquist + freq, nyquist +(pan * 10000) + 7000 + (100,200..1000)
+			, b[0] * [2,3,4,5])
+			* Env.linen(0,b[0],3).kr(2,gate:1)
+			/2
+		)
+		* Env.linen(0,b[0]/2,3).kr(2,gate:1)
+		+(
+			 Gendy2.arWidth(freq: freq, mul: Env.perc(1,4).kr(2,gate:1)/5)
+			=> Pan2.ar(_,pan)
+		)
+		/10
+		=> Splay.ar(_,0.5 * (-1 * pan),0.5 * pan)
+	}	};
+	fork{
+		transform.(pan: pan.next, freq: freqs.next ).play;
+		b[0].wait;
+		transform.(pan: pan.next, freq: freqs.next).play;
+	}
+});
 ["/*SPOCK*/ This woman will assist me. (boom boom)",[11,5,6,7,5,11,5, 2,2].dm('c')].addLine;
+
 P.still(\chapelAndThalassa, timecode: 2945.666.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -928,18 +977,21 @@ P.double(role: \henoch, take: \lead, params: {|p b| [
 P(\baseNoteWoman,start:'woman',music:{ |p b|
 	[
 		instrument:\sawSynthSustain,
-		freq:[1,2,2,3].df('c',octave:2,scale:\minor).q,
+		freq:[1,2,2,3].df('c',octave:[ 2,4 ],scale:\minor).q,
+		amp:[0.1,0.01],
+		att:[0.9,0,0,0].q,
 		dur:p.parse('woman',[7,1,1]).q,
 	].pp
 }
 );
 ["(to Chapel) (boom) /*You will*/ take me to your",[1,11,7,6,5].dm('e-')].addLine;
-P.synthV(role: \henoch, take: \lead,
+P.synthVs(role: \henoch, take: [ \lead, \double ],
 	filter: (midinote: _ - 12), 
 	pbind: Song.enlarge(10),
 	params: {|p b| [
 	lyrics: "r take me to your r pharmacology + + + + laboratory + + + ",
-	pitchTake: 1,
+	pitchTake: [ 1, 3 ],
+	legato: [ [1, 0.6, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ] ],
 	vocalMode: \Muted
 ] }, music:{|p b e|
 	{
@@ -947,25 +999,16 @@ P.synthV(role: \henoch, take: \lead,
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.double(role: \henoch, take: \lead, params: {|p b| [
-		
-	] }, music:{|p b e|
-		{
-			e.playbuf
-			=> p.synthVTracks.at(e.key).()
-		}.play
-	});
-P.tune('take me');
 P(\baseNoteTake,start:'take me',music:{|p b|
 	[
 		instrument:\sawSynthSustain,
-		freq:[3,13].df('c',octave:2,scale:\minor).q,
-		dur:p.parse('take me',[[1,1,2/5],[3/5,1,1]]).q,
+		freq:[[ 3, 13 ],13].df('c',octave:2,scale:\minor).q,
+		dur:p.parse('take me',[[1,1,2/5 -0.1 ],[3/5 +0.1,1,1]]).q,
 	].pp
 }
 );
 ["(boom) pharmacology laboratory. ",[1,11,7,11,5,7,4,5,4,3].dm('f',scale:\mixolydian)].addLine;
-P.tune('pharmacology',{|i|i.drop(1)},syl:0);
+P.tune('pharmacology',{|i|i.drop(6) <> [instrument: \visual_pad, amp: 1].p => Pmul(\freq,[1,2],_)},syl:5);
 P(\soundEffectPharmacology,lag:0.26,start:'pharmacology',music:{|p b|
 	(type:\tuneUp,freq:1.df('c',octave:4),amp:0.01).play
 }
@@ -995,11 +1038,14 @@ P(\door,start:'They leave',music:{|p b|
 		freq:[7,11,7,6,5,4,3,2].df('b-',octave:4, ).q,
 		dur:b.sum/8,
 		legato:2,
-	].pp
+		instrument: \visual_pad,
+		amp:1
+	].p => Pmul(\freq,[1,2],_) => _.play
 }
 );
 // idea  do the doors with  additive synthesis
 ["/*KIRK*/ (frown) Bones, what?, it was", [7,17,14,15,15].dm('c',octave:3)].addLine;
+Song.durs.filter( _ + [0,1,0, 0, 0] );
 P(\frown, music: { |p b e|
 	(
 		instrument: \trem2,
@@ -1027,7 +1073,7 @@ P.still(\mccoyClose,syl:2, timecode: 2958.166.seconds, music: { |p b e|
 });
 P.synthV(role: \kirk, take:\lead, params: {|p b| [
 	lyrics: "r Bones, what r r",
-	legato: [1, 0.6,0.4],
+	legato: [1, 0.3,0.4],
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
@@ -1035,14 +1081,14 @@ P.synthV(role: \kirk, take:\lead, params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.double(role: \kirk, params: {|p b| [
+/* P.double(role: \kirk, params: {|p b| [
 		
 	] }, music:{|p b e|
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
 		}.play
-	});
+	}); */
 	Trek.cast.mccoy = \jun;
 	Trek.presets.put(\mccoy,\jun,[ paramGender: 0.1, paramTension: 0.75 ]);
 P.synthVs(role: \mccoy, take:[ \answer, \answerTwo ],

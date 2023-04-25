@@ -130,8 +130,6 @@ SynthV {
 				'version': "100"
 			),
 			ninezero: (
-
-
 				'name': "Ninezero",
 				'language': "english",
 				'phoneset': "arpabet",
@@ -139,6 +137,15 @@ SynthV {
 				'phonesetoverride': "",
 				'backendtype': "SVR2AI",
 				'version': "100"
+			),
+			jun: (
+				'name':             "JUN",
+				'language':         "english",
+				'phoneset':         "arpabet",
+				'languageOverride': "",
+				'phonesetOverride': "",
+				'backendType':      "SVR2AI",
+				'version':          "100"
 			)
 
 		);

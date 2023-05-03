@@ -5,10 +5,156 @@ Routine {
 	"/Users/michael/tank/super/More-Organized-Trek/Songs/XtremeThruUnnecessary.scd".load;
 	~loaded.wait;
 	\GOING.postln;
-["/*SPOCK*/ This is an excellent body, Doctor." ,"r"].addLine;
-["I seem to have received the best of the three. ","r"].addLine;
-["Strength, hearing, eyesight, all far above your human norms. ","r"].addLine;
-["I'm surprised the Vulcans never conquered your race. ","r"].addLine;
+["/*SPOCK*/ -boom- This is an excellent body, Doctor." ,"1 -7 1 2 6 7 6 5 5 6 4 1 -7".dm(\f,\mixolydian)].addLine;
+P.synthV(role: \henoch, take: \lead, params: {|p b| [
+	lyrics: " r This is an excellent - + + body - + Doctor +",
+	legato: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.6, ],
+	pitchTake: 1,
+	paramTension: -0.25,
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+Song.setTempoMap(\excellent,"e e e x x | ex x e x ex | ee ee ee ee");
+P(\click, music: { |p b e|
+	[
+		dur: "q q q q q q ".asBeats.warpTo( e.tempoMap ).q,
+		instrument: \hihat
+	].pp
+});
+P(\bassNote, music: { |p b e|
+	(
+		freq: 1.df(\f,[4,3]),
+		instrument: \sawSynth
+	).play
+});
+P(\clav, music: { |p b e|
+	[
+		freq: [7, 11, 5,  4,  2].df(\f,3,\mixolydian).q,
+		dur: "e e qqq qq qq".asBeats.warpTo( e.tempoMap ).q
+	].pp
+});
+["I seem to have received the best of the three. ","1 -5 -7 1 2 -6 1 4 3 2 1".dm(\e)].addLine;
+P.synthV(role: \henoch, take: \lead, params: {|p b| [
+	lyrics: "I seem to have received + the best of the three. ",
+	pitchTake: 1,
+	paramTension: -0.25,
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+P(\bassNote, music: { |p b e|
+	[
+		freq: [\r, -5, -6].df(\e,4).q,
+		dur: b.parse([1,4]) ++ 0.5 => _.flat => _.q,
+		instrument: \sawSynthSustain,
+		out: Effect.bus({|i| Pan2.ar(i,-1) },)
+
+	].ppm;
+	[
+		freq: [\r, 2, 1].df(\e).q,
+		dur: b.parse([4, 2,1]).q,
+		instrument: \sawSynthSustain,
+		out: Effect.bus({|i| Pan2.ar(i,1) },)
+	].ppm
+});
+["-boom- Strength, -boom- hearing, -boom eyesight + all","-1 4 2 4 3 -7 2 1 6".dm('e-',\mixolydian)].addLine;
+P(\bassline, music: { |p b e|
+	[
+		freq: [1, 2, -7, -7.5].df('e-',3,\mixolydian).q,
+		dur: b.parse([2, 3, 3, 1]).q,
+		// mask: [\r, 1, 1, 1].q,
+		amp: [2, 2, 2, 1]/20 => _.q,
+		instrument: [\default, \default, \default,  \sawSynthSustain].q,
+		legato: [1, 1, 1, 4, ].q,
+	].pp
+});
+P.synthVs(role: \henoch, take: [ \lead, \double ], params: {|p b| [
+	lyrics: "r strength r hearing + r eyesight + all",
+	paramTension: -0.25,
+	// legato: [ [1, 1, 1, 1, 1, 1, 1, 0.7, 0.7 ] ],
+	pitchTake: [ 1, 3 ]
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+		=> {|i| i + 
+			(
+
+				Env([1,1,0],b.parse([1, 2, 2])).kr(gate:1) * i
+				=> CombN.ar(_,0.5,0.4, 3)
+			)
+		}
+	}.play
+
+});
+[" far above your human norms. "," 7 6 3 6 7 11 4".dm(\d,\dorian)].addLine;
+Song.setTempoMap(\norms,"Q E Q E Q E q");
+P.synthVs(role: \henoch, take: [ \lead, \double ], params: {|p b| [
+	lyrics: "far above + your human + norms. ",
+	paramTension: -0.25,
+	pitchTake: [ 1, 3 ]
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+P(\bass, music: { |p b e|
+	[
+		dur:"e e e e e e e".asBeats.warpTo( e.tempoMap ).q,
+		freq: " 7 6 3 6 7 11 4".df(\d,3,\dorian).q,
+		instrument: \sawSynth
+	].pp
+});
+P.tune();
+["Im surprised the Vulcans never conquered your race. "," 4 5 -7 3 1 -7 1 2 5 4 6 2 ".dm(\f, \harmonicMinor)].addLine;
+P.synthVs(role: \henoch, take: [ \lead, \double ], params: {|p b| [
+	lyrics: "I'm surprised + the Vulcans + never + conquered + your race. ",
+	pitchTake: [ 1, 3 ],
+	vocalMode: \Muted,
+	paramTension: -0.3,
+	// filter: (midinote: _ - 12), 
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+P(\bass, music: { |p b e|
+	[
+		// freq: [3, 4, 3, 2.5].df(\c,3).q,
+		// freq: [3, 4, 2.5].df(\c,3).q,
+		freq: [3, 1, 4, 2.5].df(\c,3).q,
+		// dur:b.parse([4,1, 5, 2]).q,
+		dur:b.parse([2, 2, 4, 3]).q,
+		instrument:\default,
+		amp:0.1
+	].ppm;
+{
+		var durs = b.parse([2,2,4,2 ]);// .postln;
+		var trig = TDuty.ar(durs.dropLast().dq, gapFirst:0   ) => OnePole.ar(_);
+		var freqs = [3,1,  4, 12.5].df(\c,3);
+
+		Gendy4.ar(minfreq: freqs.dq.demand(durs), maxfreq: freqs.dq.demand(durs) + 0.05)
+		* (Decay.ar(trig => HPF.ar(_,1)))
+		=> FreeVerb.ar(_,0.1,1)
+		=> Pan2.ar(_)
+		=> LPF.ar(_,1000)
+		/5
+		// /3
+		// * Env.perc().kr(0,gate:trig)
+	}.play
+
+});
 	//get this from reaper (HOOK) "/Users/michael/Trek/Vulcan's worship peace/Vulcan's worship peace.RPP" => {|i| ( "open "+i ).unixCmd }
 ["/*MCCOY*/ Vulcans worship peace above a-- ll, Henoch. ",[5,5,4,4,3, 2,1,2,3, -6,-5].dm('d')].addLine;
 	Song.setTempoMap(\worship,"e e e e qqq e e e eq q q");
@@ -279,7 +425,6 @@ P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 	}.play
 
 });
-P.tune();
 P(\bass, music: { |p b e|
 	[
 		freq: [4.5, 5, 4.5, 3, 1, -6].df(\a,3).q,
@@ -294,8 +439,15 @@ P(\bassnote, music: { |p b e|
 		freq: [ 1, 6 ].df(\a,3).q,
 		amp:0.4,
 		dur: b.parse([9,1]).q,
-		instrument: \sawSynthSustain, amp:0.1
-	].ppm
+		instrument: \sawSynthSustain, amp:0.1,
+		att: 0.3
+	].ppm;
+	( 
+		lag: b[0..1].sum,
+		instrument: \harp,
+		freq: 5.df(\a,3),
+
+	).play
 });
 (		/// Unnecessary drums
 	Song.kpat=([1,1,0,1]!4).flatten;
@@ -549,6 +701,12 @@ P(\metabolism,start:'higher metabolism',music:
 	//Song.tk.at(\hat).play(u)
 );
 ["it won't work, Sargon!","d#5 b4 g5 d# b4"].addLine;//3
+P.still(\mccoyToKirk, timecode: 2900.8.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["it won't work,","Sargon"],
+	)
+});
 P.synthV(role: \mccoy, take:\lead,
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
@@ -669,13 +827,19 @@ P(\outChord,syl:4,start:'get out',music:{|p d|
 	}
 );
 ["kill them! /*SARGON*/  we will transfer at once un-",[11,7,5,6,7,5,7,7,7].dm('c')].addLine;//5
+P.still(\kirkCloseBed,syl:1, timecode: 2906.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \sargon,take: \lead,
 	filter: (midinote: _ -12), 
 	pbind: Song.enlarge(8),
 	params: {|p b| [
 		lyrics: "r r we will transfer + at once until + you can administer + + + the",
 		phonemes: ["","", "w i", "w i r", "ch w a n s"," f a r",  "a t", "w a n s", "e n"," t i r",  "y u", "k a n", "e d"," m i n"," i s"," t a r", "z e" ],
-		legato: [1, 1, 1, 1, 1, 0.7,  1, 1, 1, 1, 1, 1, 1, 1, 1, ],
+		legato: [1, 1, 1, 1, 1, 1,  1, 0.6, 1, 1, 1, 1, 1, 1, 1, ],
 		// pitchTake: [1, 3],
 		// vocalMode: \Muted
 ] }, music:{|p b e|
@@ -701,14 +865,7 @@ P('bass',start:\kill,music: {|p b e|
 	].pp
 });
 ["til you can administer the ",[7,6,5,4,7,11,6,5].dm('d')].addLine;//6
-P.tune('administer');
 ["(boom) metabolic reduction injection... a ",[11,15,14,15,12,14,12,11,14.5,11,7.5, 7].dm('a-',octave:4,scale:\mixolydian )].addLine;//7
-P.still(\kirkCloseBed, timecode: 2906.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
-	)
-});
 P.synthV(role: \sargon, take: \lead,
 	filter: (midinote: _ - 12), 
 	take:\lead, params: {|p b| [

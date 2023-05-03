@@ -129,6 +129,10 @@ TempoMap {
 	  .collect {|i|this.quantizeRange(amount,i)}
 	  .flat ++ durs[( args.last..( durs.size-1 ))]
   }
+
+  ++ {|that|
+	  ^TempoMap.new(this.beats ++ that.beats, this.durs ++ that.durs)
+  }
 }
 +Array{
 	goodBeats { |array|

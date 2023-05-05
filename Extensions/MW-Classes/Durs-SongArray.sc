@@ -10,9 +10,17 @@ Durs {
 	at{|i|
 		song ? song=Song.current; 
 		i.isInteger.not.if{i=Song.songs.at(song).section(i.asSymbol)};
-		^ 
-		// Song.songs.at(song).lyrics.collect{ |x| Song.songs.at(song).lyricsToDurs[x] }[i] //this is to get the order - should not do this for each access!! should just have an ordered version of lyricsToDurs hanging around in memory to refer to
-		Song.songs.at(song).lyricsToDurs.at(Song.songs.at(song).lyrics[i]) 
+		// ^Song.songs.at(song).lyricsToDurs.at(Song.songs.at(song).lyrics[i]) 
+		^Song.songs.at(song).lyricsToDurs.at(Song.songs.at(song).lyrics.clipAt(i)) 
+			? [1].q
+
+		=> {|x| ( filters.at(i) ? {|j|j} ).(x.list) => _.q } //apply filter
+	}
+	clipAt { |i|
+
+		song ? song=Song.current; 
+		i.isInteger.not.if{i=Song.songs.at(song).section(i.asSymbol)};
+		^Song.songs.at(song).lyricsToDurs.at(Song.songs.at(song).lyrics.clipAt(i)) 
 			? [1].q
 
 		=> {|x| ( filters.at(i) ? {|j|j} ).(x.list) => _.q } //apply filter

@@ -39,7 +39,7 @@ Song.resources.infrastructure=FunctionList.new([
 	\default, {
 		{|i|
 			i
-			=> FreeVerb.ar(_,0.2,1)
+			=> FreeVerb.ar(_,0.1,1)
 			/5
 		}
 	}
@@ -50,7 +50,15 @@ Song.resources.infrastructure=FunctionList.new([
 //Song.guitar.node[1]=\filter->{|in|PlateReverb.ar(in,mix:0.5)};
 //Song.guitar.node[2]=\filter->{|in|Phaser2.ar(in,rate:0.1,mix:0.5).distort(0.95)};
 //Song.guitar.node.play(vol:1)
+Stills.new("/Users/michael/tank/Trek/video for stills etc/media/return to tomorrow.mov").current;
 ["r three alien minds","d3 f5 f e e e"].addLine; //0Captain Kirk
+P.still(\space, timecode: 3244.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["three","alien minds"],
+		fade: e.bNext.sum
+	)
+});
 ( Trek.presets.put(\mccoy,\an, [
 	vocalMode: \Power,
 	paramGender: 0.15,
@@ -58,38 +66,37 @@ Song.resources.infrastructure=FunctionList.new([
 	paramTension: -0.1
 ]
 	);
+	Trek.presets.put(\mccoy,\jun,[
+
+	vocalMode: \Soul,
+	paramGender: 0.25,
+	paramToneShift: 150,
+	paramTension: 0.1
+	]);
 	Trek.cast.mccoy = \an;
+	// Trek.cast.mccoy = \jun;
 );
-P.synthV(
-	role: \mccoy , 
-	take:\lead,
-	filter: (midinote: _ - 12), 
-	pbind: Song.enlarge2(3),
+P.synthVs( role: \mccoy , take:[ \lead, \double ],
+	pbind:  Song.enlarge2(3),
 	params: {|p b| [
 	lyrics: "r three alien + + minds now inhabit + + the bodies + of Captain + Kirk",
-	pitchTake: 1,
+	pitchTake: [ 1, 3 ],
 	paramToneShift: 300,
 	pitchExpression: 1.5,
+	filter: (midinote: _ - 12), 
 	// vocalMode: \Passionate
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
-});
-P.double(\an,
-
-	pbind: Song.enlarge2(3),
-	params: {|p b| [
-		
-	] }, music:{|p b e|
+] }, music:{ 
+	var pan = [-1,1];
+	pan.collect{|pan| {|p b e|
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
-			=> Pan2.ar(_,1)
-		}.play
-	});
-
+			=> Pan2.ar(_,pan)
+		}.play 
+	}}
+}.()
+);
+//
 ~bass0quarters=Song.parse(0,[ [1,1],[1,1,1],1 ]);
 
 Song.guitarFx={ |b|
@@ -143,6 +150,12 @@ P(\bass0,start:0,music: {
 }
 ); 
 ["now inhabit the bodies of", "d5 c b4 a g f g a"].addLine;  //1
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["now inhabit","the bodies of"],
+	)
+});
 //Song.gfx1.synth.run(false);
 P(\guit1,start:1,music: { |p b e|
 	var out = Song.guitarFx.(Song.durs[1].list.sum+5);
@@ -184,27 +197,34 @@ P(\connectorBass,start:1,music: //		{{{
 	}
 ); 
 ["Captain Kirk,science officer Spock and", "b c5 f4 c5 d c b4 a a g"].addLine;  //2
-P.synthV(role: \mccoy, take:\lead,
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["captain","kirk"],
+	).sequenceText2(
+			b.parse([3, 7]), [ 
+			["science officer","Spock and"],
+			],
+	)
+});
+P.synthVs(role: \mccoy, take:[ \lead, \double ],
 	filter: (midinote: _ - 12), 
 	pbind: Song.enlarge(5),
 	params: {|p b| [
 	lyrics: "r r r science +  officer + + Spock and doctor + jane Mulhall +",
-	legato: [1, 1, 1,   1, 1, 1, 1, 1, 0.6,   1, 1, 1, 1, 1, 0.85],
-	pitchTake: 1
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
-});
-P.double(role: \mccoy, take: \lead, params: {|p b| [
-		
-	] }, music:{|p b e|
+	legato: [ [1, 1, 1,   1, 1, 1, 1, 1, 0.6,   1, 1, 1, 1, 1, 0.85] ],
+	pitchTake: [ 1, 3 ]
+] }, music:{ 
+	var pan = [-1,1];
+	pan.collect{|pan| {|p b e|
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
-		}.play
-	});
+			=> Pan2.ar(_,pan)
+		}.play 
+	}}
+}.()
+);
 P(\chords,start:2,syl:2,music:{|p b e|
 	
 		Song.piano.controller.synth.set(\out,
@@ -225,11 +245,53 @@ P(\chords,start:2,syl:2,music:{|p b e|
 }
 );
 ["Doctor Jane Mulhall. As -- ","b c5 d d c c f"].addLine; //3
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.drop(1).parse([5]).unbubble + e.bNext.sum,
+		text: ["doctor Jane","Mulhall"],
+	)});
+Song.preroll_(1);
+P.still(\mccoy, timecode: 3250.seconds,lag: -1, syl: 4, music: { |p b e|
+	 e.still.( 
+		 fadeIn: 1,
+		wait: b.drop(1).sum + e.bNext.sum,
+		text: ["",""],
+		fade: 2
+	)
+});
+P.still(\clear, timecode: 1.seconds, syl:4, music: { |p b e|
+	 e.still.( 
+		wait: b.drop(1).sum + e.bNext.sum + p.durs[e.start+2].list.sum => _.postln,
+		text: ["as planned","the construction"],
+	).sequenceText2(
+			b.drop(1).sum + e.bNext [0..4].sum 
+			// + p.durs[e.start + 2].list.sum 
+			=> _.bubble => _.postln,
+			// 2,
+			[ 
+			["of android robots","is underway"],
+			],
+	)
+});
+P.synthV(\ninezero, take: \bg,
+	pbind: Song.enlarge(1),
+	params: {|p b| [
+		filter: (midinote: 1.dm(\c)), 
+	lyrics: "r r r r r as - planned ",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 P.synthV(role: \mccoy, take:\lead,
 	filter: (midinote: _ - 12), 
 	pbind: Song.enlarge2(6),
 	params: {|p b| [
 	lyrics: "r r r r r as - planned the construction + + of android + robots + is underway + + ",
+	legato: [1,1,1,1,1, 1,1,0.75, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ],
+	lag: [0,0,0,0,0, 0,0,0, 0.3, 0,0,0,0,0,0,0,0,0,0 ],
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
@@ -333,6 +395,30 @@ P(\guit4,start:4,music: //		{{{
 );
 ["ro- bots is un- der- way","e5 d c d  e g4"].addLine; //5
 ["All is pro- cee- ding as ex- pect- ed and as pro- mised (ba- by)","f g a c5 d b-4 c5 d e- b-4 d5 e- d b-4 c5 d"].addLine; //6
+P.synthVs(\jun, take: [ \bg1, \bg2], params: {|p b| [
+	lyrics: "everything's + + proceeding + + as expected + + and as promised + r r  ",
+	//+ + as expected + + and as promised + baby +",
+	filter: 
+	[
+		[3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 3, 4, 4, 4],
+		[1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1, 1]
+	].dm('f',5).collect{|i| ( midinote: i) },
+	pitchTake: [ 1, 3 ],
+	vocalMode: \Soul
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+		=> BPF.ar(_,2000,0.4) /3
+		=> {|i| CombN.ar(i, 0.4,0.4) * [0.1,0.9] + i}
+	}.play
+});
+P.still(\closer, timecode: 3255.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["everything's","proceeding"],
+	)
+});
 ~quarters6= Song.parse(6,1!4!4);
 q=0.9; ~gr=0.2; 
 P.synthV(role: \mccoy, take:\lead,
@@ -345,6 +431,8 @@ P.synthV(role: \mccoy, take:\lead,
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_,-1)
+		* Env([4,2],[b.parse([8,4])]).kr(gate:1).dbamp
 	}.play
 });
 P.double(role: \mccoy,
@@ -356,6 +444,7 @@ P.double(role: \mccoy,
 			{ 	e.playbuf
 					=> p.synthVTracks.at(e.key).()
 					=> Pan2.ar(_,1)
+					* Env([4,2],[b.parse([8,4])]).kr(gate:1).dbamp
 			}.play
 	});
 P(\guitar2h5,start:6,music: {|p b e|
@@ -478,6 +567,17 @@ P.double(role: \mccoy, params: {|p b| [
 		}.play
 	});
 ["cern. And yet, I am filled with fore- bo- ding...", "d5 c b4 a b c5 e4 a g f#"].addLine; //8
+P.still(\wide, timecode: 3302.seconds, syl:0,  music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["and","yet"],
+		fade: e.bNext.sum
+	).sequenceText2(
+			b.drop(1).parse([2]), [ 
+			["I am filled","with foreboding"],
+			],
+	)
+});
 P.synthV(role: \mccoy, take: \lead,
 		filter: (midinote: _ - 12), 
 		params: {|p b| [

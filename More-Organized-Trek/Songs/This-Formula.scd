@@ -1,6 +1,7 @@
 (
 s.waitForBoot{ 
 	Song('this formnula',[]).current;
+	Stills("/Users/michael/trek/BySection/media/return to tomorrow.mov").current;
 	Song.currentSong.infrastructure=FunctionList.new.array_([
 		{ 
 			~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
@@ -26,7 +27,7 @@ s.waitForBoot{
 		]
 	);
 );
-["Now...","3".dm(\a),[1.7]].addLine;
+["Now...","3".dm(\a),[17]].addLine;
 P.synthVs(role: \formulaLead, take:[\lead, \double],
 		filter: (midinote: _ - 12), 
 		params: {|p b| [
@@ -41,12 +42,18 @@ P.synthVs(role: \formulaLead, take:[\lead, \double],
 P(\chord, music: { |p b e|
 		(
 			freq: [1,3,5,7].df(\a,3,\mixolydian),
-			dur:2
+			dur:b.sum-0.1
 		).play
 });
 ["(boom) this formula -- -- will reduce the ", [11,13,13,12,11,12,11, 7,11, 12, 13].dm('d',octave:4 )].addLine;
+P.still(\henoch, timecode: 3009.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["this formula","will reduce the"],
+	)
+});
 Song.formulaQuantAmount = 0.78;
-P.tune( 'formula --',Pset(\dur, Song.tempoMap[ 'this for' ] .beats.warpTo(Song.tempoMap[ 'this for' ].quantizeDft).q,_));
+// P.tune( 'formula --',Pset(\dur, Song.tempoMap[ 'this for' ] .beats.warpTo(Song.tempoMap[ 'this for' ].quantizeDft).q,_));
 P(\drumz,'this formula',music:
 	{|p b e|
 		//move this out to apply to whole section??
@@ -560,6 +567,12 @@ P(\hypoAnswer,start:'hypo you will',music:{|p b e|
 }
 );
 ["this one you will code mark for -- ",[4,3,2,1,3,3,4,3].dm('a')].addLine;
+P.still(\twoShot, timecode: 3026.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["this one you will codemark","for me"],
+	)
+});
 P.tune(  { |i| i
 	<>[
 		instrument: \sparkTriangle,
@@ -799,6 +812,18 @@ P.synthV(role: \chapel, take: \lead, params: {|p b| [
 });
 P.tune('Without');
 ["(He touches her fosehead.) /*SPOCK:*/ What were you saying? ",[3,  3,4,2,4,3].dm('c')].addLine;
+P.still(\henochTouches, timecode: 3100.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b[0],
+		text: ["",""],
+	)
+});
+P.still(\henochClose, timecode: 3108.seconds, syl:0, music: { |p b e|
+	 e.still.( 
+		wait: b.drop(1).sum,
+		text: ["what were you","saying?"],
+	)
+});
 // P.tune('touches her');
 P.synthV(role: \formulaLead, take: \lead, params: {|p b| [
 	lyrics: "r what were you saying +",
@@ -835,6 +860,12 @@ P(\touchBaseNote,start:'touches her',music:{|p b e|
 }
 );
 ["/*CHAPEL:*/ I (breath). I was. (breath) ",[7,1, 6,7,1].dm('b')].addLine;
+P.still(\chapel, timecode: 3106.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["I...","I was..."],
+	)
+});
 // P.tune('I was.',{|i| Pbindf(i,\amp,[1,0,1,1,0]/10=>_.q)});
 P.synthV(role: \chapel,
 	filter: (midinote: _ - 12), 

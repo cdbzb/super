@@ -905,7 +905,7 @@ Song {
 		Post << "numnotes " << numNotes << "\n";
 		^{|p b| 
 			[
-				dur: b ++ p.durs[p.section(key)+1 => _.postln].list[0..numNotes]
+				dur: b ++ p.durs[p.section(key)+1].list[0..numNotes]
 				=> _.q => _.postln,
 				midinote:p.tune[p.section(key)].list 
 				++p.tune[p.section(key)+1].list[0..numNotes] => _.q 

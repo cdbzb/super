@@ -406,7 +406,7 @@ SynthV {
 		// )
 		, prepend, role, wait, ].flop.do{|i x|
 /* 			[ i[0]++x ] ++ i.drop(1) //makes keys \sargon0, \sargon1 */
-			i
+			i.postln
 			=> P.synthV(*_)
 			=> {|i| SynthV.synthVsToRender.add(i) }
 		};

@@ -55,8 +55,13 @@ Stills.new("/Users/michael/tank/Trek/video for stills etc/media/return to tomorr
 P.still(\space, timecode: 3244.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["three","alien minds"],
+		text: ["",""],
 		fade: e.bNext.sum
+	).sequenceText2(
+			b.parse([1,5]), [ 
+			["three","alien minds"],
+			["",""],
+			],
 	)
 });
 ( Trek.presets.put(\mccoy,\an, [
@@ -80,6 +85,7 @@ P.synthVs( role: \mccoy , take:[ \lead, \double ],
 	pbind:  Song.enlarge2(3),
 	params: {|p b| [
 	lyrics: "r three alien + + minds now inhabit + + the bodies + of Captain + Kirk",
+	legato: [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.7, ]],
 	pitchTake: [ 1, 3 ],
 	paramToneShift: 300,
 	pitchExpression: 1.5,

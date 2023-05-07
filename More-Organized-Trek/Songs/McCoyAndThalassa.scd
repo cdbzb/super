@@ -5,7 +5,7 @@ s.waitForBoot{
 	"/Users/michael/tank/super/More-Organized-Trek/Songs/boilerplate.scd".load;
 
 	[ "MULHALL: Doctor. ",[3,1].dm(\c) ].addLine;
-	P.tune('MULHALL: D');
+P.tune('MULHALL: D');
 	[ "MCCOY: Yes? ","r" ].addLine;
 	[ "MULHALL: Would you like to save your Captain Kirk? ","r" ].addLine;
 	[ "MCCOY: But you said that was impossible. ","r" ].addLine;
@@ -35,7 +35,7 @@ s.waitForBoot{
 		//5/2, 1, 5/2, 
 		1/2,1, 1/2, 1/4, 3/4, 1
 	]);
-	P.synthV(role: \thalassa, params: {|p b| [
+P.synthV(role: \thalassa, params: {|p b| [
 		lyrics: "ai wish on li tu ex i - ist in pis as a li ving wu man",
 		phonemes: [ "a :\\i", "w i\\ s`", "@U n"," l i", "th u", "e k ts"," i\\ ","i\\","i\\ s th", "i\\ n", "ph i s", "a ts", "@", "l i\\ ","i\\","w i\\ N g", "w U "," U ","m @ n" ]
 	] }, music:{|p b e|
@@ -44,12 +44,12 @@ s.waitForBoot{
 			=> p.synthVTracks.at(e.key.postln).postln.(1).postln
 		}.play
 	});
-	P(\click,start:\exist,music:{|p b e| 
+P(\click,start:\exist,music:{|p b e| 
 		//[dur:1].p.play(TempoClock.newFromQuarters(p.quarters[e.start]))
 	});
 	//P.tune(\exist);
 	
-	P(\piano,start:\exist,syl:12,music:{|p b e| 
+P(\piano,start:\exist,syl:12,music:{|p b e| 
 		[
 			freq: 
 		[[2,5],3,2].df(_) => [\b,\e].collect(_) => _.flatten
@@ -59,14 +59,14 @@ s.waitForBoot{
 			instrument:\twang
 		].pp;
 	});
-	P(\test,start:\exist,syl:0,lag:-3/100,music:{|p b e| 
+P(\test,start:\exist,syl:0,lag:-3/100,music:{|p b e| 
 		(
 			freq: [-4,1,3, 5].df('e-', scale: \minor),
 			strum: 3/100,
 			dur: b.drop(1)[(0..4)].sum
 		).play	
 	});
-	P(\bass,start:\exist,music:{|p b e| 
+P(\bass,start:\exist,music:{|p b e| 
 		[
 			freq: [\r, 3, 13, 5, 3, 2, 12, 2, 5, 5, -5, 4, 4, 5, 1, -7 ].df('e', octave:3).q,
 			instrument:\sawSynth,
@@ -78,8 +78,8 @@ s.waitForBoot{
 		].p.play(clock:TempoClock.newFromQuarters(p.quarters[\exist]));
 	});
 	[ "MCCOY: If you're asking my approval ",[3, 4, 5, 4, 3, 5, 11, 7].dm(\f,4,\harmonicMinor) ].addLine;
-	P.tune(\approval);
-	P.synthV(role: \mccoy, take:\lead, params: {|p b| [
+P.tune(\approval);
+P.synthV(role: \mccoy, take:\lead, params: {|p b| [
 		lyrics: "if your asking + my approval + +",
 		pitchTake: 1
 	] }, music:{|p b e|
@@ -88,7 +88,7 @@ s.waitForBoot{
 			=> p.synthVTracks.at(e.key).()
 		}.play
 	});
-	P.double(role: \mccoy, params: {|p b| [
+P.double(role: \mccoy, params: {|p b| [
 			
 		] }, music:{|p b e|
 			{
@@ -99,7 +99,7 @@ s.waitForBoot{
 	[ "MULHALL: I require only your silence", [7,11,12,7,11,12,12.5,2.5].dm(\c) ].addLine; 
 	// Song.durs[\silence] = Song.durs[\silence].list + [0,0,0,0,0,0,0,0.5] => _.q;
 	// Song.durs[\silence] = Song.durs[\silence].list - [0,0,0,0,0,0,0,0.1] => _.q;
-	P.synthV(role: \thalassa, params: {|p b| [
+P.synthV(role: \thalassa, params: {|p b| [
 		lyrics: "ai ri kwair on li your sai lence" ,
 		legato: [1, 1, 1, 1, 1, 1, 1, 0.8]
 	] }, music: {|p b e|
@@ -110,7 +110,7 @@ s.waitForBoot{
 	});
 //P.tune(\require);
 		Song.pulse = {
-			Pulse.ar(\freq.kr(300),0.4)
+		Pulse.ar(\freq.kr(300),0.4)
 			* \amp.kr(0.1)
 			=> Out.ar(\out.kr(0),_)
 		}.asDefName;
@@ -124,7 +124,7 @@ s.waitForBoot{
 			* Env.linen([0,1,1,0],[0.05,dur,4]).kr(0,gate:\gate.kr(1))
 			=> Out.ar(\out.kr(0),_)
 		}.asDefName;
-		P(\bass,start:\require,music:{|p b e| 
+	P(\bass,start:\require,music:{|p b e| 
 		[
 			freq: [7,6,5,4.5,3,4.5].df(\c,[4]).q,
 			dur: b.q,
@@ -149,14 +149,14 @@ s.waitForBoot{
 		).play
 	});
 	[ "Only you and I will know that Doctor Mulhall has not returned to her body. ",[1,2,3,1,4.5,2,-6].dm('e-') ++ [2,3,1,4.5,2].dm(\c) ++ [1,2,3,4].dm(\e,scale: \whole) ++ [11,7,6,7,5,12,4.5].dm(\b,4) ].addLine;
-	P.tune(\returned,_<> [instrument:\wash,amp:0.03].p);
-	P(\bassnote,syl:20, music: { |p b e|
+P.tune(\returned,_<> [instrument:\wash,amp:0.03].p);
+P(\bassnote,syl:20, music: { |p b e|
 		[
 			freq:[2,-2 /*,14.5*/,-6].df(\b,3),
 			dur: [ 2 ].q
 		].pp
 	});
-	P(\bassDyad1,start:\returned,music:{|p b e| 
+P(\bassDyad1,start:\returned,music:{|p b e| 
 		MegaBind(
 			[
 				[\r, \r, 1,  \_, 2,  \_, \_, \r, \r, \r, \r, \r, \r].df('e-'),
@@ -174,7 +174,7 @@ s.waitForBoot{
 			}
 		).play
 	});
-	P(\strum,start:\returned,syl:3,music:{|p b e| 
+P(\strum,start:\returned,syl:3,music:{|p b e| 
 		(
 			freq:[5,7,11,13].df(\f,scale:\mixolydian)/2,strum:0.07,amp:0.16,out:
 			Effect( { 
@@ -188,7 +188,7 @@ s.waitForBoot{
 			} ,inputChannels:2).bus.index
 		).play
 	});
-	P(\strum2,start:\returned,syl:9,music:{|p b e| 
+P(\strum2,start:\returned,syl:9,music:{|p b e| 
 		(
 			freq:[5,7,11,13].df(\e,scale:\mixolydian)/2,strum:0.07,amp:0.16,out:
 			Effect( { 
@@ -202,7 +202,7 @@ s.waitForBoot{
 			} ,inputChannels:2).bus.index
 		).play
 	});
-	P.synthV(role: \thalassa, params: {|p b| [
+P.synthV(role: \thalassa, params: {|p b| [
 		lyrics: 
 		"on li yu an ai will no that dak ter mul hall haz nat ri tu - - urned to her ba di"
 		,
@@ -220,7 +220,7 @@ s.waitForBoot{
 	[ "Isn't that worth your captain's life? ",[3,2,4,2,3,1,2,5].dm(\a,5,\minor) ].addLine;
 	// Song.durs[\worth] = Song.durs[\worth].list + [0,0,0,0,0,0,0,0.2]  => _.q
 	// "jaw".xsampa
-	P.synthV(role: \thalassa, 
+P.synthV(role: \thalassa, 
 		pbind: Song.enlarge(2),
 
 		filter: (midinote: _ - [12,12,12,12,12,12,12,12,0,0]), 
@@ -237,8 +237,8 @@ s.waitForBoot{
 			// * 2
 		}.play
 	});
-	P.tune(\life);
-	P(\bass,start:\life,music:{|p b e| 
+P.tune(\life);
+P(\bass,start:\life,music:{|p b e| 
 		[
 			freq: "11 7 5 7 11 6 4 -6.5".df(\a, 3, \harmonicMinor).q,
 			dur: b.q
@@ -248,7 +248,7 @@ s.waitForBoot{
 	[ "Doctor, we can take what we wish--. ",[4.5, 3, 6, 6, 6, 5, 6, 6, 7].dm(\a,4) ].addLine; //?????
 // Song.durs['wish--']	= Song.durs['wish--'].list.dropLast ++ ( Song.durs['wish--'].list.last * 0.75 ) => _.q
 	Song.wishVocalTwoSections = VocalRPP('wish--',\wish);
-	P(\trem, music: { |p b e|
+P(\trem, music: { |p b e|
 	
 		{
 			Gendy2.ar(minfreq:[ 21 ].df('b-')- { 20.rrand(10) }!5 ,maxfreq:1.df('b-')+20)
@@ -262,7 +262,7 @@ s.waitForBoot{
 		}.play
 		
 	});
-	P.synthV(role: \thalassa, params: {|p b| [
+P.synthV(role: \thalassa, params: {|p b| [
 		lyrics:"r r wi kan taik wat wi wi ish" ,
 		paramTension:0.2,
 		legato:[1,0.9,1,1,0.9,1,1,1,0.7]
@@ -273,7 +273,7 @@ s.waitForBoot{
 			// => Phaser2.ar(_,rate:0.2)
 		}.play
 	});
-	P.synthV(\cheng, take: \lead, params: {|p b| [
+P.synthV(\cheng, take: \lead, params: {|p b| [
 		lyrics: "r r we can take what we wish -",
 		pitchTake: 1
 	] }, music:{|p b e|
@@ -282,11 +282,11 @@ s.waitForBoot{
 			=> p.synthVTracks.at(e.key).()
 		}.play
 	});
-	P(\wish,start:'wish--',lag:-1,music:{|p b e| 
+P(\wish,start:'wish--',lag:-1,music:{|p b e| 
 		//{Song.wishVocalTwoSections.buffer.bufnum => PlayBuf.ar(2,_ ) *0.1}.play
 	});
-	P.tune('we can take');
-	P(\bass,start:'we can take',music:{|p b e| 
+P.tune('we can take');
+P(\bass,start:'we can take',music:{|p b e| 
 		[
 			//freq: [\r, 1, 1, -4].df(\b,3).q,
 			freq: [1, -7, -5, 1, -4].df(\b,[ 2,3 ],\mixolydian).q,
@@ -294,7 +294,7 @@ s.waitForBoot{
 		].pp
 		
 	});
-	P(\chords,start:'we can take',music:{|p b e| 
+P(\chords,start:'we can take',music:{|p b e| 
 		var fs=[-6,1,3,6].df(\a);
 		var a = [-5,1,3,5].df(\a);
 		[
@@ -327,7 +327,7 @@ P.synthV(role: \thalassa, params: {|p b| [
 			=> p.synthVTracks.at(e.key).(2)
 		}.play
 	});
-	P.synthV(\feng, take:\lead, params: {|p b| [
+P.synthV(\feng, take:\lead, params: {|p b| [
 		lyrics: "Neither + you, this ship, nor worlds - have the power + to stop - - us.",
 		pitchTake: 1
 	] }, music:{|p b e|
@@ -336,7 +336,7 @@ P.synthV(role: \thalassa, params: {|p b| [
 			=> p.synthVTracks.at(e.key).()
 		}.play
 	});
-	P.double(\feng, take: \lead, params: {|p b| [
+P.double(\feng, take: \lead, params: {|p b| [
 		
 	] }, music:{|p b e|
 		{
@@ -344,19 +344,19 @@ P.synthV(role: \thalassa, params: {|p b| [
 			=> p.synthVTracks.at(e.key).()
 		}.play
 	});
-	P.tune(\worlds, { |i| Pmul(\freq,0.5,i) => Pbindf(_,\instrument,\sawSynthSustain,\amp,0.05,out:3) } );
+P.tune(\worlds, { |i| Pmul(\freq,0.5,i) => Pbindf(_,\instrument,\sawSynthSustain,\amp,0.05,out:3) } );
 	// Song.worldsVocal=VocalRPP(\worlds,\lead);
 	// Song.encoders.spread=FoaEncoderKernel.newDiffuse;
 	// P(\vocal,lag:-1.0,start:\worlds,music:{|p b e| 
 	// 	{
-	// 	PlayBuf.ar(2, p.worldsVocal.buffer.bufnum )
+	// PlayBuf.ar(2, p.worldsVocal.buffer.bufnum )
 	// 			* 0.8
 	// 			=> Phaser2.ar(_,fb:0.9,rate:0.15)
 	// 		=> FoaEncode.ar(_,Song.encoders.spread)
 	// 		=> FoaDecode.ar(_,Monitors.decoder)
 	// 	}//.play
 	// });
-	P(\figure,start:\worlds,music:{|p b e| 
+P(\figure,start:\worlds,music:{|p b e| 
 		[
 			freq: [\r, 1, -5, \r, 1, -5].df('c#').q,
 			dur: b.parse([2,0.5,0.5,1,0.5,0.5]).q,
@@ -365,7 +365,7 @@ P.synthV(role: \thalassa, params: {|p b| [
 		].pp
 		
 	});
-	P(\chords,start:\worlds,music:{|p b e| 
+P(\chords,start:\worlds,music:{|p b e| 
 		var you = [-11,-5,1,3].df('f#', scale: \minor),
 		ship = [1,3,5,7].df(\c,scale:\diminished),
 		worlds = [-1,1,3,5,7].df(\c,scale:\mixolydian)
@@ -378,14 +378,14 @@ P.synthV(role: \thalassa, params: {|p b| [
 			width:[\r, 7, \r, 10, \r, 12].q * 2,
 			out: [
 				\r,0,\r, 0,\r, Effect(
-				Phaser2.ar(_,rate:0.2,fb:(-0.9))
+			Phaser2.ar(_,rate:0.2,fb:(-0.9))
 				).bus.index
 			].q,
 			release:1,
 			legato:0.97
 		].pp;
 	});
-	P(\crash,start:\worlds,music:{|p b e| 
+P(\crash,start:\worlds,music:{|p b e| 
 		[ amp:[0.04,0.03]/2,
 			instrument:\cymbalsDS,
 		out:Effect(Phaser2.ar(_,fb:0.95,rate:0.13)).bus.index,
@@ -393,7 +393,7 @@ P.synthV(role: \thalassa, params: {|p b| [
 			freq:[\r,1,1,1,1].q
 		].pp
 	});
-	P(\bassNotes,start:\worlds,music:{|p b e| 
+P(\bassNotes,start:\worlds,music:{|p b e| 
 		[
 			//freq: [1, 1, 4, 1, 2, 1, -7, 2, 3,  1.5, 4.5].df('c#',[3,4]).q,
 			freq: [\r, 1, 2, -7, 2, 3,  1.5, 4.5].df('c#',[3,4]).q,
@@ -402,7 +402,7 @@ P.synthV(role: \thalassa, params: {|p b| [
 	});
 	// ????????
 	[ "MCCOY: Neither Jim nor I can trade a body we don't own",[1, 2, 3, 1, 4, 2, 3, 4, 5, 4, 3, 2, 6].dm(\g,4,scale:\lydian)].addLine;
-	P.synthV(role: \mccoy, take:\lead, params: {|p b| [
+P.synthV(role: \mccoy, take:\lead, params: {|p b| [
 		lyrics: " Neither + Jim nor I can trade a body + we don't own",
 		pitchTake: 1
 	] }, music:{|p b e|
@@ -411,7 +411,7 @@ P.synthV(role: \thalassa, params: {|p b| [
 			=> p.synthVTracks.at(e.key).()
 		}.play
 	});
-	P.double(role: \mccoy, params: {|p b| [
+P.double(role: \mccoy, params: {|p b| [
 			
 		] }, music:{|p b e|
 			{
@@ -419,8 +419,8 @@ P.synthV(role: \thalassa, params: {|p b| [
 				=> p.synthVTracks.at(e.key).()
 			}.play
 		});
-	P.tune(\trade);
-	P(\bassline,start:\trade,music:{|p b e| 
+P.tune(\trade);
+P(\bassline,start:\trade,music:{|p b e| 
 		[
 			freq: [\r, 1, 2, 1.5, -7, -6].df(\g).q / 4,
 			dur: b.parse([2, 2,2,  2, 4,1]).q,
@@ -430,7 +430,7 @@ P.synthV(role: \thalassa, params: {|p b| [
 		].pp;
 	});
 	[ "It happens to belong to a young woman. ",[-5, 1, -7, 1, 2, 3, 1, -7, -6, 4, 3, 2].dm(\f) ].addLine;
-	P.synthV(role: \mccoy, take:\lead, params: {|p b| [
+P.synthV(role: \mccoy, take:\lead, params: {|p b| [
 		lyrics: "It happens + to belong + to a r young woman +",
 		pitchTake: 1
 	] }, music:{|p b e|
@@ -439,7 +439,7 @@ P.synthV(role: \thalassa, params: {|p b| [
 			=> p.synthVTracks.at(e.key).()
 		}.play
 	});
-	P.double(role: \mccoy, params: {|p b| [
+P.double(role: \mccoy, params: {|p b| [
 			
 		] }, music:{|p b e|
 			{
@@ -447,17 +447,17 @@ P.synthV(role: \thalassa, params: {|p b| [
 				=> p.synthVTracks.at(e.key).()
 			}.play
 		});
-	P(\chords,start:\happens,music:{|p b e| 
+P(\chords,start:\happens,music:{|p b e| 
 		[
 			freq: [\r, [1,5,1], [-4], [-5, 2, 4] ].df(\f).q / [1,2],
 			dur: b.parse([1,7,2,2 ]).q,
 			instrument:\wash
 		].pp;
 	});
-	P.tune(\happens);
+P.tune(\happens);
 
 	[ "MULHALL: Who you hardly know. Almost a stranger to you. (boom) ",[3, 1, 5, 4, 3.5].dm(\b,5,\whole) ++ [-7, 1, 2, 2.5, -7, -6, -4.5, -2.5].dm(\c,6) ].addLine;
-	P.synthV(role: \thalassa, take:\lead, params: {|p b| [
+P.synthV(role: \thalassa, take:\lead, params: {|p b| [
 		lyrics: "Who you hardly + know. Almost + a stranger + to you r  ",
 		legato: [1,        1,     1,           1,        0.5,    1,       1,          1,   1,                        1,         1,      1],
 		phonemes: [ "x u", "j u", "x A r\\` ", " t l i", "n @U", "o l m", " @U s th", "@", "s t r\\` e :\\i n ts` ", " a r\\`", "th u", "j u"  ],
@@ -469,8 +469,8 @@ P.synthV(role: \thalassa, params: {|p b| [
 		}.play
 	});
 // add a beat with e flat in the bass here
-	P.tune(\hardly);
-	P(\chord,start:\hardly,music:{|p b e| 
+P.tune(\hardly);
+P(\chord,start:\hardly,music:{|p b e| 
 		[
 			freq: [[1,3,5].df(\b,4,\whole),[1,3,5].df('a-',4,\whole), \r, [-5].df(\g),[-17,-7,12,14].df(\e,3)].q,
 			dur:b.parse([4,1,3,2,2]).q,
@@ -479,7 +479,7 @@ P.synthV(role: \thalassa, params: {|p b| [
 			legato:1
 		].pp
 	});
-	P(\boom,start:\hardly,syl:11,music:{|p b e| 
+P(\boom,start:\hardly,syl:11,music:{|p b e| 
 		(
 			freq: 1.df('e-',[2,3]),
 			amp:0.4,
@@ -489,7 +489,7 @@ P.synthV(role: \thalassa, params: {|p b| [
 		).play
 	});
 	Song.encoders.put(\quad,FoaEncoderMatrix.newQuad);
-	P(\chords,start:\hardly,music:{|p b e| 
+P(\chords,start:\hardly,music:{|p b e| 
 		MegaBind(
 				[
 					[\r, 3, \_, \_, 4, 3, 4, 5, -7, \_, \_, \_, -5.5 ].df(\g)
@@ -529,7 +529,7 @@ P.synthV(role: \thalassa, params: {|p b| [
 			).play
 	});
 	[ "MCCOY: I will not peddle flesh. I'm a physician. ",[11, 11, 11, 7, 7, 6 ].dm(\g,scale:\mixolydian) ++ [5, 5.5, 7, 11, 1].dm('a-',scale:\mixolydian)].addLine;
-	P.synthV(role: \mccoy, take:\lead, params: {|p b| [
+P.synthV(role: \mccoy, take:\lead, params: {|p b| [
 		lyrics: " I will not peddle + flesh. I'm a physician. + + ",
 		filter: (midinote: _ - 12), 
 		legato: [1, 1, 0.7, 1, 1, 0.6, 1, 1, 1, 1, 1],
@@ -540,7 +540,7 @@ P.synthV(role: \thalassa, params: {|p b| [
 			=> p.synthVTracks.at(e.key).()
 		}.play
 	});
-	P.double(role: \mccoy, params: {|p b| [
+P.double(role: \mccoy, params: {|p b| [
 			
 		] }, music:{|p b e|
 			{
@@ -548,15 +548,15 @@ P.synthV(role: \thalassa, params: {|p b| [
 				=> p.synthVTracks.at(e.key).()
 			}.play
 		});
-	P.tune(\peddle);
-	P(\bass,start:\peddle,music:{|p b e| 
+P.tune(\peddle);
+P(\bass,start:\peddle,music:{|p b e| 
 		[
 			freq: [5,5,5,5,5,11,].df(\c,3).q ++ [5,1].df('a-',3).q,
 			dur: b.parse([1, 1, 1, 1, 1, 1, 3, 2]).q,
 			instrument: \sawSynth
 		].pp;
 	});
-	P(\chords,start:\peddle,music:{|p b e| 
+P(\chords,start:\peddle,music:{|p b e| 
 		[
 			freq: [5,7,12,15] ! 3 ++ [5,7,12,14].dup ++ [[5,11,13]] => _.df(\c,[3,4]) => _.q,
 			dur: b.q
@@ -565,7 +565,7 @@ P.synthV(role: \thalassa, params: {|p b| [
 	Song.physicianKey = 'b-';
 	//Song.physicianKey = 'g';
 	[ "MULHALL: A physician? ",[1, 1, 11, 1].dm(Song.physicianKey) ].addLine;
-	P.synthV(role: \thalassa, take: \lead, params: {|p b| [
+P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 		lyrics: "a physician + +",
 		phonemes: ["@","f @","ts i\\","s` @ n`"],
 		pitchTake: 1
@@ -575,14 +575,14 @@ P.synthV(role: \thalassa, params: {|p b| [
 			=> p.synthVTracks.at(e.key).()
 		}.play
 	});
-	P(\chord,start:'physician?',syl:1,music:{|p b e| 
+P(\chord,start:'physician?',syl:1,music:{|p b e| 
 		(
 		freq: [1,3,5,7,11].df(p.physicianKey,4,\diminished)
 		).play
 	});
-	P.tune('physician?');
+P.tune('physician?');
 	[ "In contrast to what we are, you are a ", [-7, 1, 2, 3, 4.5, 5, 2, 6, 7 ,4].dm(\g,scale:\mixolydian) ].addLine;
-	P.synthV(role: \thalassa, take: \lead, params: {|p b| [
+P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 		lyrics: "In contrast to what we are, you are a ",
 		phonemes:["i \\n","kh A n","t r\\` a s th","th u", "w A th","w i", "A r\\`", "j u", "A r\\`", "@"],
 
@@ -593,7 +593,7 @@ P.synthV(role: \thalassa, params: {|p b| [
 			=> p.synthVTracks.at(e.key).()
 		}.play
 	});
-	P.tune(                \contrast,
+P.tune(                \contrast,
                 { |i| Pmul(\freq,[0.5,1,2.01],i) => Pbindf(
                 		_,
 			*[
@@ -608,7 +608,7 @@ P.synthV(role: \thalassa, params: {|p b| [
 	
 	["prancing, savage, monkey ",[-1, -1, 3, 1, -4, -4, 4, 1, -7, -7, -7, -7, -7, -7, 2, 1 ].dm(\g, scale:\mixolydian)].addLine;
 	Song.quarters[\prancing] = Song.parseBeats(\prancing,[1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1.5,0.5]).quantize(0.5)  ;
-	P.synthV(\cheng, take:\lead, params: {|p b| [
+P.synthV(\cheng, take:\lead, params: {|p b| [
 		lyrics: "r r stupid + r r  prancing + r r r r r r  monkey +",
 		filter: ( dur: { |i| "q q q q q q q q q q q q q q qe x".asBeats.warpTo(p.quarters[\prancing]) } ), 
 		pitchTake: 1
@@ -618,7 +618,7 @@ P.synthV(role: \thalassa, params: {|p b| [
 			=> p.synthVTracks.at(e.key).()
 		}.play
 	});
-	P.double(\cheng, params: {|p b| [
+P.double(\cheng, params: {|p b| [
 			
 		filter: ( dur: { |i| i.asArray.warpTo(p.quarters[\prancing]) * 2} ), 
 		] }, music:{|p b e|
@@ -638,7 +638,7 @@ P.synthV(role: \thalassa, take:\lead, params: {|p b| [
 			=> p.synthVTracks.at(e.key).()
 		}.play
 	});
-	P(\test,start:\prancing,music:{|p b e| 
+P(\test,start:\prancing,music:{|p b e| 
 		[
 			instrument:\bd_808,
 			dur: 1!15 ++ [0.99] => _.warpTo(p.quarters[e.start]) => _.q,
@@ -646,7 +646,7 @@ P.synthV(role: \thalassa, take:\lead, params: {|p b| [
 		].pp
 	});
 	//P.tune(\prancing);
-	P(\bass,start:\prancing,music:{|p b e| 
+P(\bass,start:\prancing,music:{|p b e| 
 		b = b.asArray.quantizeWindow();
 		[
 			freq:[\r,\r,3,1,\r,\r,4,1,\r,\r,\r,\r,\r,\r,2,1].df(\g).q,
@@ -704,7 +704,7 @@ P.synthV(role: \thalassa, take:\lead, params: {|p b| [
 	});
 	
 	[ "(r) You dare defy one you should be on your knees wo -- rshipping? ",[-1,1, 1.5, 1, -6.5].dm(\c) ++ [1, 3, 4, 5, 3, 5, 6].dm(\d,scale: \whole) ++ [3,4,3,-5].dm(\b) ].addLine;
-	P.synthV(role: \thalassa, take: \lead, params: {|p b| [
+P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 		lyrics: "r you dare defy + one you should be on your knees worshipping - + +",
 		// "you dare defy one you shouldd be on your knees worshipping".xsampa.cs
 		phonemes: [ "","j u", "t e r\\`", "t i"," f a :\\i", "w A n", "j u", "s` U t`", "p i", "A n", "j o r\\`", "n i ts", "w a ","a r\\`", "s` i\\ ph`","ph i N"],
@@ -720,7 +720,7 @@ P.synthV(role: \thalassa, take:\lead, params: {|p b| [
 			=> p.synthVTracks.at(e.key).()
 		}.play
 	});
-	P.double(role:\thalassa, take: \lead,
+P.double(role:\thalassa, take: \lead,
 
 		filter: (midinote: _ + 12), 
 		params: {|p b| [
@@ -731,9 +731,9 @@ P.synthV(role: \thalassa, take:\lead, params: {|p b| [
 			*[0,1] /2
 		}.play
 	});
-	P.tune(\defy, {|i| Pset(\out,Effect(CrossoverDistortion.ar(_,drive:0.9,smooth:0.1) * 0.04).bus.index,i) => Pmul(\freq,[1,1.33]!5 => _.q ++ [1].q(inf),_)});
-	P.tune(\knees,{|i| Pfin(6,i) => Pmul(\freq,[4/3,4/3,4/3,4/3,4/3,1].q/2,_) => Pset(\legato,[1,1,1,1,1,6].q,_) => Pset(\out, Effect(FreeVerb.ar(_,1,1).distort * 2,out:1).bus.index,_)});
-	P(\bassline,start:\defy,syl:7,music:{|p b e| 
+P.tune(\defy, {|i| Pset(\out,Effect(CrossoverDistortion.ar(_,drive:0.9,smooth:0.1) * 0.04).bus.index,i) => Pmul(\freq,[1,1.33]!5 => _.q ++ [1].q(inf),_)});
+P.tune(\knees,{|i| Pfin(6,i) => Pmul(\freq,[4/3,4/3,4/3,4/3,4/3,1].q/2,_) => Pset(\legato,[1,1,1,1,1,6].q,_) => Pset(\out, Effect(FreeVerb.ar(_,1,1).distort * 2,out:1).bus.index,_)});
+P(\bassline,start:\defy,syl:7,music:{|p b e| 
 		var knees = 6.df(\d,scale:\whole);
 		var be = 5.df(\d,scale:\whole);
 		[
@@ -744,10 +744,10 @@ P.synthV(role: \thalassa, take:\lead, params: {|p b| [
 		].pp
 		
 	});
-	P(\bass,start:\defy, syl: 12, music:{|p b e| 
+P(\bass,start:\defy, syl: 12, music:{|p b e| 
 		(lag:b[0]/2,freq:[-21,-11].df(\b),out:Effect(PlateReverb.ar(_,mix:0.8)).bus.index).play
 	});
-	P(\crash,start:\defy, syl:12, music:{|p b e| 
+P(\crash,start:\defy, syl:12, music:{|p b e| 
 		(
 			instrument:\cymbalsDS,
 			out:Effect({|i|
@@ -763,7 +763,7 @@ P.synthV(role: \thalassa, take:\lead, params: {|p b| [
 	).play
 	});
 	[ "I could destroy you with a single thought. ", [1, 2, 3, -8, -7, -8, 1, 2, -4].dm(\f, scale: \diminished) ++ [7].dm(\c,scale:\mixolydian) ].addLine;
-	P.synthV(role: \thalassa, take: \lead, params: {|p b| [
+P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 		lyrics: "I could destroy + you with a single + thought. ",
 		phonemes: [ "a :\\i", "kh U t", "t i\\"," s t r\\` o :\\i", "j u", "w i\\ s", "@", "s i\\ N"," k @ l", "s o th th" ],
 		legato: [1, 1, 1, 1, 1, 1, 1, 1, 1, 0.9],
@@ -774,8 +774,8 @@ P.synthV(role: \thalassa, take:\lead, params: {|p b| [
 			=> p.synthVTracks.at(e.key).()
 		}.play
 	});
-	P.tune(\single);
-	P(\bassnote,start:\single, syl:2, music:{|p b e| 
+P.tune(\single);
+P(\bassnote,start:\single, syl:2, music:{|p b e| 
 		(
 			instrument:\sawSynthSustain,
 			att:4,
@@ -785,7 +785,7 @@ P.synthV(role: \thalassa, take:\lead, params: {|p b| [
 
 		).play
 	});
-	P(\strum,lag: -0.26, start:\single,syl:8,music:{|p b e| 
+P(\strum,lag: -0.26, start:\single,syl:8,music:{|p b e| 
 		(
 
 			freq: [-21,-11,1,3,5,7].df(\c,scale:\mixolydian),
@@ -802,7 +802,7 @@ P.synthV(role: \thalassa, take:\lead, params: {|p b| [
 	});
 
 	[ "(McCoy is suddenly writhing in pain as he is surrounded by flames.) ","r",[11] ].addLine;
-	P(\swoop,start:\writhing,music:{|p b e| 
+P(\swoop,start:\writhing,music:{|p b e| 
 		//change chord here
 		//var chord = [1, 3, 2, 7, 12].df(\e); 
 		var chord = Array.fill(5,{rrand(400,800)});
@@ -828,7 +828,7 @@ P.synthV(role: \thalassa, take:\lead, params: {|p b| [
 		( 
 			freq:[1,3,5,11].df(\f,scale:\minor,octave:3),
 			out:Effect({|i| 
-				PlateReverb.ar(i,mix:0.8)
+			PlateReverb.ar(i,mix:0.8)
 					//=> CrossoverDistortion.ar(_,smooth:0.98)
 				=> HPF.ar(_, Env([30,30,6000],[b.sum,6]).kr(2,gate:1))
 			}).bus.index,
@@ -836,7 +836,7 @@ P.synthV(role: \thalassa, take:\lead, params: {|p b| [
 		).play
 		
 	});
-	P(\fire2,start:\writhing,music:{|p b e| 
+P(\fire2,start:\writhing,music:{|p b e| 
 			    3.do { {
 		    Sieve1.ar(
 			    LocalBuf.newFrom([60] ++ {1-exprand(0.0001,0.9)}!10.rand ++ (0!19.rand)++( { rrand(0.01,0.99) }!12.rand ) ),  gap: [0,1,2,3,4,5],  alternate: [2, 5 ],  mul: 1.0,  add: 0.0)
@@ -849,17 +849,13 @@ P.synthV(role: \thalassa, take:\lead, params: {|p b| [
 	    }    
 	});
 	[ "MULHALL: Stop! (the flames are gone) ~Sargon was right.~ ",[1].dm(\e) ].addLine;
-	P(\muteFire,start:\Stop,music:{|p b e| 
+P(\muteFire,start:\Stop,music:{|p b e| 
 		p.fireGroup.release(0.1)
 	});
-	P.tune(\Stop);
+P.tune(\Stop);
 	[ "The temptations (boom boom) in a living body are too great. ",[-6, -6, 3, 2, 1, -6, -7, -5, 5, 3, 2, 1, -7, -5, 4  ].dm(\c) ].addLine;
-"The temptations (boom boom) in a living body are too great. ".xsampa.cs
-"ocean".xsampa.cs
-"taste".xsampa.cs
-"tent".xsampa
-	P.tune(\temptations);
-t	P.synthV(role: \thalassa, take: \lead, params: {|p b| [
+P.tune(\temptations);
+P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 		lyrics: "the temptations + + r r in a living + body + are too great",
 		phonemes:["t @","th e m","th e :\\i ","s` @ n ts","","","i \\n","@","l i\\","w i\\ N","p A"," t i" ,"A r\\`","th u","k r\\` e :\\i th"],
 		pitchTake: 1
@@ -869,14 +865,14 @@ t	P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 			=> p.synthVTracks.at(e.key).(2)
 		}.play
 	});
-	P(\pedalTone,start:\temptations,music:{|p b e| 
+P(\pedalTone,start:\temptations,music:{|p b e| 
 		(
 			instrument:\stringyy,
 			freq:[1].df(\e),
 			dur:b.sum
 		).play
 	});
-	P(\chord,start:\temptations,music:{|p b e| 
+P(\chord,start:\temptations,music:{|p b e| 
 		[
 			freq: [\r,[4,6,11,13].df(\c), [5,7,11,13].df(\c), [4.5,5,7,12].df(\c), [2,6,11,14].df(\c) ].q,
 			dur: b.parse([2,4,4,4,1]).q,
@@ -884,7 +880,7 @@ t	P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 		].pp
 	});
 	[ "Forgive me. ",[5,4,3].dm(\c,octave:6) ].addLine;
-	P.synthV(role: \thalassa, take: \lead, params: {|p b| [
+P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 		lyrics: "forgive + mi" ,
 		filter: (midinote: _ - 12), 
 		pitchTake: 1
@@ -894,13 +890,13 @@ t	P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 			=> p.synthVTracks.at(e.key).(2)
 		}.play
 	});
-	P.tune(\Forgive);
-	P(\bassnote,start:\Forgive,syl:0,music:{|p b e| 
+P.tune(\Forgive);
+P(\bassnote,start:\Forgive,syl:0,music:{|p b e| 
 		(
 			freq:[-1,-11].df(\c),
 			out:Effect(
 				{ |i| 
-					PlateReverb.ar(i,mix:0.8)
+				PlateReverb.ar(i,mix:0.8)
 					* Env.linen(0,1,6).kr(2) 
 				} 
 			).bus.index
@@ -908,7 +904,7 @@ t	P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 		
 	});
 	[ "SARGON [OC]: I am pleased, my beloved. It is good you have found the truth (yourself) ",[1, 1, 1, -7, -7, -7, -6, 1, 2, 3, 4, 3, 2, 1].dm('f#') ].addLine;
-	P(\chords,start:\truth,music:{|p b e| 
+P(\chords,start:\truth,music:{|p b e| 
 		MegaBind(
 				[
 					[1,  1,  1,  -7,  -7,  -7,  -6,  1,  2,  3,  4,  3,  2,  1],
@@ -940,13 +936,38 @@ t	P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 					* 0.5
 				}
 				
-			).play
+			).play(s, p.carrierBus)
 		
+});
+P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+		lyrics: "I am pleased, my be love ed   It is good you found the truth ",
+		filter: (midinote: _ - 12), 
+		pitchTake: 1
+	] }, music:{|p b e|
+		p.vocodeTune.(p,b,e,e.rpp)
 	});
 	[ "MULHALL: Sargon? Where are you? I thought you destroyed by Henoch. ",[3, 1, 5, 7, 4.5].dm('b-') ++ [7, 5, 6, 7, 13, 13, 15, 14.5].dm(\g, scale:\mixolydian ) ].addLine;
-	P.tune(\destroyed);
+P.synthV(role: \thalassa, take: \lead, params: {|p b| [
+		lyrics: "Sargon? + Where are you? I thought you destroyed + by Henoch. + ",
+		filter: (midinote: _ - 12), 
+		phonemes: ["S A r\\`","k o n","w e r\\`", "A r\\`","j u","a :\\i","s o th","j u ","t i\\ s","t r\\` o :\\i t","p a :\\i","S A r\\`","k o n"],
+/*
+"Sargon? + Where are you? I thought you destroyed + by Henoch. + ".xsampa
+-> [ nil, nil, w e r\`, A r\`, j u, a :\i, s o th, j u, t i\ s t r\` o :\i t, nil, p a :\i, nil, nil, nil ]
+*/
+
+
+		legato: [1, 0.9, 1,1,0.9,  1,1,1,1,1,1,1,1 ],
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+
+	});
 	[ "SARGON: I have power even Henoch does not suspect, beloved. ",[-7, 1, 5, 3, 1, 2, 4, 3, 4, 3, 2, 1 ].dm('e-') ].addLine;
-	P(\chords,start:\suspect,music:{|p b e| 
+P(\chords,start:\suspect,music:{|p b e| 
 		MegaBind(
 			[
 				[-7, 1,  5, 3,  1,  2,  4, 3,  4, 3, 2, 1 ],
@@ -1002,12 +1023,32 @@ t	P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 			},
 			release:5
 
-		).play
+		).play(p.carrierBus);
 
 	});
+P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+		lyrics: "I have power + even + Henoch + does not suspect + ",
+		filter: (midinote: _ - 12), 
+		pitchTake: 1
+	] }, music:{|p b e|
+			p.vocodeTune.(p,b,e,e.rpp)
+
+});
 	[ "MULHALL: Yec. Yes, I see. I understand. ",[4, 4, 3].dm(\f) ++ [4, 3, 6 ,4, 3].dm(\g) ].addLine;
-	P.tune(\understand);
-	P(\tune,start:\understand,music:{|p b e| 
+P.tune(\understand);
+P.synthV(role: \thalassa, take: \lead, params: {|p b| [
+		lyrics: "yes yes i see I understand" ,
+		phonemes: ["j e s","j e s","a :\\i","s i","a :\\i","A n","t a r\\`","s th a n t"],
+		legato: [0.8, 0.8, 1, 0.8, 1, 1, 1, 1, ],
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+
+});
+P(\tune,start:\understand,music:{|p b e| 
 		MegaBind(
 				[
 					[5,4,\r,5,\_,\r,\r,5.5],
@@ -1018,7 +1059,7 @@ t	P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 
 				],
 				{|i|
-					Pulse.ar( i.freqSeq, SinOsc.kr(1).range(0.1,0.5), 0.1)
+				Pulse.ar( i.freqSeq, SinOsc.kr(1).range(0.1,0.5), 0.1)
 					* Env.asr().kr(2,gate:i.gateSeq)
 					=> PlateReverb.ar(_, mix:0.5)
 					=> Pan2.ar(_,SinOsc.ar(LFBrownNoise2.kr(1).range(0.5,1.5)))
@@ -1036,15 +1077,26 @@ t	P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 	});
 	//[ "Just as we would have placed our consciousness within robots, ","r" ].addLine;
 	[ "Sargon has placed his (consciousness) into (your vessel) the Enterprise. ", [13,11,5,14,13,13,12,7,5,6,4,12,11].dm('c#') ].addLine;
-	P.tune(\Enterprise);
-	P(\chords,start:\Enterprise,music:{|p b e| 
+P.synthV(role: \thalassa, take: \lead, params: {|p b| [
+		lyrics: "Sargon + has placed his (consciousness) into (your vessel) the Enterprise. ",
+		phonemes: ["s A r\\`","k o n", "x a tx", "ph l e :\\i s th", "x i\\ ts","k A n","s` A th","n e s","i\\ n","th u","j o r\\`","w e s"," s @ l"],
+		pitchTake: 1
+
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+
+	});
+P(\chords,start:\Enterprise,music:{|p b e| 
 		[
 			freq: [[1,5,11],[4,6,11],[1,5,11],[-5,5,7]].df('c#',octave:3).q * [2],
 			dur: b.parse([3,1,1,3]).q
 		].pp
 		
 	});
-	P(\chords2,start:\Enterprise,syl: 8,music:{|p b e| 
+P(\chords2,start:\Enterprise,syl: 8,music:{|p b e| 
 		MegaBind(
 				[
 					[6, 4, \_, 3],
@@ -1064,8 +1116,17 @@ t	P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 			).play
 	});
 	[ "CHAPEL: Doctor. ",[11,1].dm(\e) ].addLine;
-	P.tune('CHAPEL: Doctor.');
-	P(\chord,start:'CHAPEL: Doctor.',music:{|p b e| 
+P.synthV(role: \chapel, take: \lead, params: {|p b| [
+		lyrics: "Doctor! +",
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+
+	});
+P(\chord,start:'CHAPEL: Doctor.',music:{|p b e| 
 
 		(
 			freq:[1,3,5,11].df(\e,scale:\whole),
@@ -1075,8 +1136,21 @@ t	P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 
 	});
 	[ "MULHALL: Doctor, leave us. Sargon has a pla--n. We have much work to do. (boom)",[-5, -5, 1, -1,  5, 4, 3, 2, 3,4, 2,3,4.5, 4.5, 5.5, 3,-7, -6 ].dm(\f) ].addLine;
-	P.tune('work');
-	P(\bassnote,syl:3,start:\work,music:{|p b e| 
+P.synthV(role: \thalassa, take: \lead, params: {|p b| [
+	lyrics: "Doctor + leave us. Sargon + has a plan -. We have much work - to do. r",
+	phonemes: ["t a kh", "th a r\\`", "l i w", "A s","S a r\\`","k o n","x a ts", "@", "ph l  ","a n","w i", "x a w", "m A ts h","w a r\\` kh","","th u","t u" ],
+	legato: [1, 1, 1, 0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ],
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+
+
+P(\bassnote,syl:3,start:\work,music:{|p b e| 
 		[
 			freq:[1,2].df(\f,octave:4).q,
 			dur:b.drop(1).parse([5,5]).q,
@@ -1084,13 +1158,13 @@ t	P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 			amp:0.04
 		].pm(\sawSynthSustain).play
 	});
-	P(\chords,start:\work,syl:3,music:{|p b e| 
+P(\chords,start:\work,syl:3,music:{|p b e| 
 		[
 			freq: [5,5,5,5,5].df('f').q,
 			dur:b.drop(1).parse([1,1,1,2,1]).q
 		].pp;
 	});
-	P(\endChord,syl:16,start:\work,music:{|p b e| 
+P(\endChord,syl:16,start:\work,music:{|p b e| 
 		(
 			freq: [-1,1,3,5].df(\d,octave:4),
 			dur:b[1]
@@ -1112,7 +1186,7 @@ t	P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 	["MCCOY: Thalassa? ","r"].addLine;
 	["MULHALL: She is now with Sargon, Doctor. ","r"].addLine;
 	["I`m Ann Mulhall, back in my own body. ",[-5, 3, 3, 2, 3, 2, 3, 4, 3, 2].dm(\g), ].addLine; // a= Song.durs['back in my'].list
-	P.tune('own body');
+P.tune('own body');
 P.synthV(\feng, take: \lead, 
 	pbind:{|p b|
 		[
@@ -1134,7 +1208,7 @@ params: {|p b| [
 			=> p.synthVTracks.at(e.key).()
 		}.play
 	});
-	P.double(\feng, params: {|p b| [
+P.double(\feng, params: {|p b| [
 		
 	] }, music:{|p b e|
 		{
@@ -1143,7 +1217,7 @@ params: {|p b| [
 		}.play
 	});
 	Song.quarters['own body']=Song.parseBeats('own body',[2,2,2,2,1,1, 1, 1, 2, 2]);
-	P(\bass,start:'own body',music:{|p b e| 
+P(\bass,start:'own body',music:{|p b e| 
 		Synth(\cymbalsDS,[out:Effect(_*Line.kr(1,0,5)).bus.index,amp:0.01]);
 		[instrument:\hihat,dur:1!15=>_.warpTo(Song.quarters['own body'].quantizeWindow)=>_.q].pp;
 		MegaBind(
@@ -1175,7 +1249,7 @@ params: {|p b| [
 		[dur:"x...x...x...x...".asDrumPat(1),instrument:\bd_808].p.play(TempoClock.newFromQuarters(p.quarters[e.start]))
 
 	});
-	P(\answer,start:'own body',syl:7,music:{|p b e| 
+P(\answer,start:'own body',syl:7,music:{|p b e| 
 		MegaBind(
 			[
 				[3, 2, 3, 4].df(\b)
@@ -1197,7 +1271,7 @@ params: {|p b| [
 		).play
 	});
 	["(Then we see the three blackened and broken spheres.) ",[1,2].dm(\f),[3,3]].addLine;
-	P(\clang,start:'broken',music:{|p b e| 
+P(\clang,start:'broken',music:{|p b e| 
 		(
 			[
 				freq: [\f,\g,\a].collect{|i| [-21,-11].df(i)} => _.q,
@@ -1208,12 +1282,12 @@ params: {|p b| [
 		)
 	});
 	["MCCOY: Jim, the receptacles. Spock's consciousness was in one of them. ",[3,2,1,5,4,3].dm(\g) ++ [2, 5, 4, 3, 1].dm('a-',scale:\whole) ++ [11, 6, 4, 2].dm(\f,scale:\minor)].addLine;
-	P.tune(\receptacles);
+P.tune(\receptacles);
 	["KIRK: (boom) It was necessary. ",[-2, 5, 5, 11, 5, 3, 1].dm(\c,scale:\minor)].addLine;
-	P.tune(\necessary);
+P.tune(\necessary);
 	["MCCOY: What are you talking about? There is no Spock to return to his body. (boom) You've ",[-7, -7, 1, 2, 3, 2, -6, -7,  2, 1, 5, 6, 5, 4, 3, 4, 5, 5, 4].dm(\d, scale:\mixolydian) ++ [-5, 5].dm('b-',octave:4)].addLine;
-	P.tune(\talking);
-	P(\dyad,start:\talking,music:{|p b e| 
+P.tune(\talking);
+P(\dyad,start:\talking,music:{|p b e| 
 		[
 			freq:[\r, [3,5],\r, [1,3, 6],\r, [2,6] ].df(\d, scale:\mixolydian).q,
 			instrument: \sparkTriangle,
@@ -1226,7 +1300,7 @@ params: {|p b| [
 			).bus.index
 		].pp
 	});
-	P(\bass,start:\talking,music:{|p b e| 
+P(\bass,start:\talking,music:{|p b e| 
 		[
 			freq: [-7, 3, 1, 2, 2.5].df(\d,scale:\mixolydian, octave:[3,4]).q,
 			dur: b.parse([4, 7, 6, 2]).q,
@@ -1239,7 +1313,7 @@ params: {|p b| [
 	
 	});
 	["killed a loyal officer,(boom) your (boom) best friend. ",[11,5,11,12,13,12,11,7].dm('b-',octave:4) ++ [-1,5,-4,6,7].dm(\a,scale:\mixolydian, octave:4)].addLine;
-	P(\bassMirror,start:\loyal,music:{|p b e| 
+P(\bassMirror,start:\loyal,music:{|p b e| 
 		[
 			freq: [1, -7, -6, -7, 1].df('b-', octave:[3,4]).q,
 			dur: b.parse([3, 1, 1, 1, 2]).q,
@@ -1249,8 +1323,8 @@ params: {|p b| [
 		].pm(\sawSynthSustain).play
 		
 	});
-	P.tune(\loyal);
-	P(\bass2,start:\loyal,syl:7,music:{|p b e| 
+P.tune(\loyal);
+P(\bass2,start:\loyal,syl:7,music:{|p b e| 
 		[
 			freq: [2,\r, 5,\r, 1].df(\g,octave:3).q ,
 			dur:b.drop(1) ++ [ p.durs[e.start+1].list[0] ] => _.q,
@@ -1258,22 +1332,22 @@ params: {|p b| [
 		].pp
 		
 	});
-	P(\chord,start:\loyal,syl:11,lag:-0.05, music:{|p b e| 
+P(\chord,start:\loyal,syl:11,lag:-0.05, music:{|p b e| 
 		(
 			strum:0.06,
 			freq: [1,3,5,11].df(\g,scale:\minor)
 		).play
 	});
 	["KIRK: (boom ba boom ba) Bones, prepare a hypo. The fastest, deadliest poison to Vulcans. ",[-5, -5, -5, -5, 5, 5, 5, 5, 11, 5, 12,  ].dm(\b,octave:4) ++ [12,13,12,5, 13,14,13,6, 14,15,14,5,11,7].dm(\c)].addLine;
-	P.tune(\prepare);
-	P(\lick,start:\fastest,syl:10,music:{|p b e| 
+P.tune(\prepare);
+P(\lick,start:\fastest,syl:10,music:{|p b e| 
 		[
 			freq: [\f,'f#',\g].collect( [2,4,7].df(_) ) => _.flat => _.q / 2,
 			dur: b.drop(1).q
 		].pp
 	});
 	["(boom boom) Spock's consciousness is-- gone. We must kill his body, the thing in it.",[-1, -3, 3, 4, 4, 4, 3, 2, 2].dm(\a) ++ [2, 3, 6, 7, 11, 5, 11, 12, 11, 5].dm(\e)].addLine;
-	P(\figure,start:'kill his body',music:{|p b e| 
+P(\figure,start:'kill his body',music:{|p b e| 
 		[
 			freq: [1, 3, 5, 1, 4, 6, 11, 3, -7].df(\a).q / [1,2],
 			dur: b.parse([1, 1, 0.5, 0.5, 1, 1, 1, 2, 1, 1]).q,
@@ -1281,21 +1355,21 @@ params: {|p b| [
 		].pp
 		
 	});
-	P(\bass,start:'kill his body',syl:12,music:{|p b e| 
+P(\bass,start:'kill his body',syl:12,music:{|p b e| 
 		[
 			freq: [1, 11, 1].df(\e).q /[ 4],
 			dur: b.drop(1).parse([ [1, 1/2],[1/2, 1], 1 ]).q,
 		].pma(\default).play;
 	});
-	P(\chords,start:'kill his body',syl:1,music:{|p b e| 
+P(\chords,start:'kill his body',syl:1,music:{|p b e| 
 		
 		[
 			freq:[[1, 5],[1, 5],[1, 5],[1, 5],[1, 5],[-7,4.5]].df(\a).q,
 			dur:b.drop(1).parse([1,1,1,1,2,1]).postln.q
 		].pp
 	});
-	P.tune('kill his body',_.drop(2),syl:1);
-	P(\guiro,start:'kill his body',syl:11,music:{|p b e| 
+P.tune('kill his body',_.drop(2),syl:1);
+P(\guiro,start:'kill his body',syl:11,music:{|p b e| 
 		//FIXME!!!!!
 		
 			{Shakers.ar(19, 1, 1, 1, 32, 60, Env([0,0.5],1,\sin).kr(0,1))}.play

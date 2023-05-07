@@ -20,7 +20,7 @@ Song.synthVTracks = EventWithDefault(
 			=> FreeVerb.ar(_,0.02,1)
 			=> Pan2.ar(_,e.key.asString.contains("dbl").if{1}{0})
 		}
-	},\ninezero,{|mix = 0.1|
+	},\ninezero,{|mix = 0.03|
 		{|i|
 			i
 			=> DWGReverbC1C3.ar(_,mix:mix)
@@ -58,6 +58,20 @@ P(\reflection,start:\reflection,music:{|p b e|
 //P(\door,start:\reflection,music:{Synth(\door)})
 ["/*MULHALL:*/ Thank you. ","r"].addLine;
 ["Have you prepared the negaton hydracoils for the drawing Sargon supplied?",[5,4,3,2,1,3,4,-7,3,2,-6,-7,1,2,-7,1,-6,-3,-1].dm(\g)].addLine;
+P.still(\twoShot, timecode:
+	// 3551.67.seconds
+	3555.seconds
+	, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["have you","prepared"],
+	).sequenceText2(
+			b.parse([4,7,8]), [ 
+			["the negaton","hydrocoils"],
+			["for the drawing","Sargon supplied?"]
+			],
+	)
+});
 // Trek.cast.thalassa = \aiko;
 
 P.synthV(role: \thalassa, take:\lead, params: {|p b| [
@@ -93,6 +107,16 @@ P(\bass,start:\prepared,music:{|p b e|
 	(amp:0.06,att:1,freq:[-11,-1].df(\g),dur:b.sum,instrument:\sawSynth,rel:b.sum).play
 });
 ["/*SCOTT:*/ For all the good it'll do you. It's a fa -- -- ncy name, but",[5,6,7,12,11,7,12,11].dm('b-',octave:4) ++ [-7,1,4,3,2,1,5,3].dm('g')].addLine;
+P.still(\scottSpeaks, timecode: 3556.66.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["for all the good ","it'll do you"],
+	).sequenceText2(
+			b.parse([8]), [ 
+			["",""],
+			],
+	)
+});
 Trek.cast.scott = \kevin;
 P.synthV(role: \scott,start:Song.section(\name), take:\lead, params: {|p b| [
 	lyrics: " For all the good it'll + do you. It's a fan - see -  name, but",
@@ -269,6 +293,12 @@ P.double(role: \scott, take: \lead, params: {|p b| [
 		}.play
 	});
 P.tune('lady');
+P(\door, syl: 7, music: { |p b e|
+	(
+		instrument: \door,
+		out: Effect.bus({|i| Pan2.ar(i, -1) },)
+	).play
+});
 P(\bass,start:\lady,syl:3, music:{|p b e| 
 	[
 		instrument:\stringyy,
@@ -522,14 +552,30 @@ P(\chords2,start:\assuming,syl:14,music:{ |p b e|
 //	].p.play(Song.quarters(\assuming).asTempoClock)
 //});
 ["(Scott leaves as 'Spock' laughs.)",[11,7,6,5,7,6,5,4,3,2,4,3,2,1,0].dm(\c)].addLine;
+P.still(\scottLeaves, timecode: 3632.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 //set pause between sections
-Song.durs[\laugh]=Song.durs[\laugh].list.put(Song.durs[\laugh].list.size - 1, 3).q;
-P.tune(\laughs,_.fin(14));
+Song.durs[\laugh]=Song.durs[\laugh].list.put(Song.durs[\laugh].list.size - 1, 0.5).q;
+P.tune( { |i| i.fin(14) => Pmul(\freq, [0.25,0.5,1,2],_) <> [ instrument: \stringyy, out:Effect.bus({|i| [0.1,0.4] * CombN.ar(i, 0.4,0.4) + i },) ].pm} );
 P(\door,start:\laughs,syl:6,music:{|p b e| 
 	Synth(\door,[\out,0,\amp,0.1])
 });
 
 ["/*SPOCK:*/ (boom) A thousand-year prison, Thalassa.",[1,2,3,1,6,3,1,-7,-6].dm(\c)].addLine;
+P.still(\spock, timecode: 3634.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	).sequenceText2(
+			b[0].bubble, [ 
+		["a thousand year","prison, Thalassa"],
+			],
+	)
+});
 P.synthV(role:\henoch, take:\lead,
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
@@ -549,7 +595,6 @@ P.double(role:\henoch, params: {|p b| [
 			=> p.synthVTracks.at(e.key).()
 		}.play
 	});
-// P.tune(\prison);
 P(\arpeggio,start:\prison,syl:3,lag:-0.15,music:{
 	(
 		instrument:\default,
@@ -571,25 +616,33 @@ P(\stab,start:\prison,syl:3,music:{
 	).play
 });
 ["And when it wears out we'll build another one, ",[5,4,3,2,3,4,-7,1,4,3,2,-5].dm(\c)].addLine;
-P.synthV(role: \henoch, take:\lead,
+
+// List[ 0.526, 0.533, 0.527, 0.254, 0.312, 0.728, 0.409, 0.429, 0.468, 0.552, 0.338, 0.513 ]
+P.synthVs(role: \henoch, take:[ \lead, \double ],
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
 	lyrics: "And when it wears - out we'll build another + + one, ",
-	pitchTake: 1
+	pitchTake: [ 1, 3 ]
 ] }, music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.double(role: \henoch, params: {|p b| [
-		
-	] }, music:{|p b e|
-		{
-			e.playbuf
-			=> p.synthVTracks.at(e.key).()
-		}.play
-	});
+P.synthVs(\an, take: [ \bg, \bg2 ], params: {|p b| [
+	lyrics: "And when it wears - out r r r r r r ",
+	filter: (midinote: [5, 5, 5, 5, 5, 5].dm(\c)), 
+	pitchTake: [ 1, 3 ],
+	legato: [ [1, 1, 1, 1, 1, 2, ] ],
+] }, music:[-1,1].collect{|pan| {|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+		=> BPF.ar(_, 1950, 0.5)
+		=> Pan2.ar(_,pan)
+		/6
+	}.play
+} });
 P(\bass,start:\wears,music:{|p b e| 
 	
 	{
@@ -605,32 +658,22 @@ P(\bass,start:\wears,music:{|p b e|
 		
 	}.play
 });
-P.tune(\wears);
 ["and we'll lock ourselves into it for another thousand years. And another, and another.", [1,2,3,4,2,3,2,1.5,2,3].dm(\a) ++ [1,-6, 2,3,1,2,4].dm('e-',scale:\whole,octave:6) ++[2,2,3,2,2,2,3,2].dm('a-',scale:\minor,octave: 6) ].addLine;
-P.synthV(role: \henoch, take:\lead, params: {|p b| [
+P.synthVs(role: \henoch, take:[ \lead, \double ], params: {|p b| [
 	lyrics: "and we'll lock ours elves  into  + it for another + +  thousand - - + years. And another + + and another + +",
-	pitchTake: 1
+	legato: [ [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1, 1, 1, 1, 1, 1, 1, 1, ] ],
+	filter: (midinote: _ - 12), 
+	pitchTake: [ 1, 3 ]
 ] }, music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.double(role: \henoch, 
-	filter: (midinote: _ - 12), 	
-	params: {|p b| [
-	] }, music:{|p b e|
-		{
-			e.playbuf
-			=> p.synthVTracks.at(e.key).()
-		}.play
-	});
-P.tune('And another',Pmul(\freq,0.5,_));
 P(\bass,start:'And another',syl:1,music:{|p b e| 
-	
-	var 
-	freq = [3,4,5].df(\a,octave:2),
-	dur = b.drop(1).parse([1,2,1]);
+	var
+	freq = [3,4,5, 4.5].df(\a,octave:2),
+	dur = b.drop(1).parse([1,2,5, 2]);
 	p.twangBass = { |freq dur out amp=0.1|
 		{
 			Pulse.ar(freq.dq.duty(dur.dq) * [1,2,3,14,21],0.3,0.1)
@@ -639,13 +682,22 @@ P(\bass,start:'And another',syl:1,music:{|p b e|
 			* Env([0,1,0],[0.03, [ 1.5,2.2 ] ]).kr(0,gate: TDuty.kr(dur.dropLast.dq,0))
 			* Dseries(1,-0.1).demand(dur)
 			* amp * 10
-			=> FreeVerb.ar(_,0.5,1)
+			=> FreeVerb.ar(_,0.4,1)
 			* 0.4
 		}.play(s,out)
 	};
 	p.twangBass.(
 		freq:freq,dur:dur
-	)
+	);
+});
+P(\innervoice, music: { |p b e|
+	[
+		freq: [\r, 11, 11, 7, 6.5].df(\a,4).q,
+		dur: b.parse([2, 1, 2, 1, 1 ]).q,
+		legato: [1, 0.9, 0.9, 1, 1, ].q,
+		instrument: \visual_pad,
+		amp: [1, 1, 1, 1, 0.5].q /10 * 3
+	].ppma
 });
 P(\chord,syl:15,start:'And another',music:{|p b e| 
 	var freq = [5,7,11,13].df('f',scale: \mixolydian),
@@ -675,7 +727,6 @@ P(\chords,start:'And another',syl:16,music:{|p b e|
 		=> Pset(\instrument,\sparkTriangle,_)
 		=> _.play
 });
-
 P(\pad,start:'And another',syl:9,music:{|p b e| 
 	(
 		freq:[1].df('e-',octave:3),
@@ -686,7 +737,7 @@ P(\pad,start:'And another',syl:9,music:{|p b e|
 		lofreq:5000,
 		hifreq:7000,
 		amp:0.03,
-	).pp
+	).play
 });
 P(\sizzle,syl:9,start:'And another',music:{|p b e| 
 	(
@@ -745,7 +796,6 @@ P.double(role: \henoch, params: {|p b| [
 P.still(\spock,start:\mind,timecode:3648.5.seconds,music:{ |p b e|
 	e.still.value(wait:b.sum,fade:1,text:["Sargon has closed his mind","to a better way"])
 });
-P.tune(\closed);
 
 P(\bass,start:\closed,music:{|p b e| 
 	[
@@ -768,7 +818,8 @@ P(\strum,start:\closed,music:{|p b e|
 	(
 		freq:[1,3,5,11].df(\c,scale:\minor,octave:4),
 		strum:0.05,
-		dur:b[0..9].sum
+		dur:b[0..9].sum,
+		out: Effect.bus({|i| RLPF.ar(i, Line.kr(4000,1000,b.sum /2),0.1) },)
 	).play
 });
 
@@ -815,7 +866,7 @@ P(\bass, music: { |p b e|
 		    // freq: 1.df(\d,3),
 		    freq: [11, 11, 7, 7, 6, 6, 5, 5, 5, 4  ].df(\d,2).q,
 		    amp:0.2,
-		    out: Effect.bus( { |i|  AnalogVintageDistortion.ar(i) => HPF.ar(_,185) => Pan2.ar(_)  } )
+		    out: Effect.bus( { |i|  AnalogVintageDistortion.ar(i) => HPF.ar(_,185) => Pan2.ar(_) /3  } )
 
 	  ].pp
 });
@@ -825,7 +876,7 @@ P(\chords,start:'With these bodies',music:{
 			freq:[
 				[1,3,5],[-7,3,5.5],[1,3,6],[1,3,6]
 			].stutter(2).df(\d).q,
-			out:Effect({|i| i.distort=>MoogLadder.ar(_,1800,1.0)*4=>DWGReverbC1C3.ar(_,mix:0.2)=>AnalogPhaserMod.ar(_).tanh/2}).bus.index,
+			out:Effect({|i| i.distort=>MoogLadder.ar(_,1800,1.0)*4=>DWGReverbC1C3.ar(_,mix:0.1)=>AnalogPhaserMod.ar(_).tanh}).bus.index,
 			lag:Ptuple([0,Pwhite(0.00,0.02)!2].flat,inf),
 		].p.trace,
 		[
@@ -895,14 +946,16 @@ P(\bass,start:'awoke',music: {|p b e|
 
 	[ instrument:\stringyy,
 		freq:[[-21,-11],[-22,-12]].df('f#').q,
-		dur:b.parse([7,3]).q
+		dur:b.parse([7,3]).q,
+		mix:0
 	].pp
 });
 P.still(\embrace,start:\awoke,timecode:3702.seconds,music:{|p b e|
 		e.still.value(
 			fadeIn:1,
-			wait:b.sum-1,
-			text: ["",""]
+			wait:b.sum,
+			text: ["",""],
+
 		).sequenceText2(
 				b.parse([1]), [ 
 				["when you awoke","in this body, Thalassa"],
@@ -910,10 +963,40 @@ P.still(\embrace,start:\awoke,timecode:3702.seconds,music:{|p b e|
 		)
 });
 ["you said how go--od it was _. to breathe again,",[1,2,3, 3,4, 3, 3,2, 1, 4, 3, 2].dm('c#',octave:6),].addLine;
-P.still(\embraceTitle,timecode:3702.5.seconds,music:{|p b e|
+Song.setTempoMap(\breathe,"q q e x xe e e eqqqqq e ee e q");
+P(\click, music: { |p b e|
+	[
+		dur: "q q q q q q q q q q q q q ".asBeats.warpTo( e.tempoMap ).q,
+		instrument: \hihat,
+		mask: [\r,\r,\r,1,1,1,1,1,1,1,1,1,1,1].q
+	].pp
+});
+Song.guitar = AAS_Strum();
+P(\guitar, music: { |p b e|
+	\strum => Song.guitar.setPlayMode( _ ) ;
+	[
+		midinote: [\r, 1, 4, 5, 4, 1 ].dm('c#',4).q ,
+		dur: "qqq qqq q qqq q qq".asBeats.warpTo( e.tempoMap ).q,
+		legato: 0.96,
+	].p
+	+=
+	[
+		dur: b.q,
+		switch: [\r,\up,\down, \up, \down,\up].q(inf) ,
+		dur: "qqq qqq q qqq q qq".asBeats.warpTo( e.tempoMap ).q,
+		amp:[0.2,0.2,0.1,0.2].q(inf) / 2
+	].p 
+	<> (
+		// \out: Effect.bus(FreeVerb.ar(_,0.4,1)),
+		type: \strum,
+		instance: p.guitar
+	) => _.play;
+
+});
+P.still(\embrace,timecode:3702.5.seconds,music:{|p b e|
 	e.still.value(
 		wait:b.sum,
-		fadeIn:1,
+		// fadeIn:1,
 		text:["you said","how good it was"]
 	).sequenceText2(
 			b.parse([8,4]), [ 
@@ -922,7 +1005,6 @@ P.still(\embraceTitle,timecode:3702.5.seconds,music:{|p b e|
 	)
 });
 Song.quarters[\breathe]= Song.parseBeats(\breathe,[1,1,1/2,1/4,3/4,1/2,1/2,11/2,1/2,1,1/2, 5/2]);
-Song.setTempoMap(\breathe,"q q e x xe e e eeeqqqq e q e eqq");
 
 P(\shaker, music: { |p b e|
 	
@@ -964,7 +1046,6 @@ P.double(role: \henoch, params: {|p b| [
 			=> p.synthVTracks.at(e.key).()
 		}.play
 	});
-P.tune(\breathe);
 P(\bass,start:\breathe,music:{|p b e|
 	[
 		freq:[\r,1,4,5,4,1,4,5].df('c#',octave:3).q,
@@ -977,7 +1058,16 @@ P(\bass,start:\breathe,music:{|p b e|
 
 [" Thalassa, (boom) just think how much (go--od) we can do for mankind.",[5,4,3].dm(\c,octave:6) ++ [-4,3,4,1,3,2,1,-7,2,-6,-5].dm('e-',octave:6)].addLine;
 Song.setTempoMap(\mankind,"q qe e   q q q e eq e e e e e e");
-Song.durs.filter( {|i| i.dropLast ++ 0.30} );
+P(\mankindLow, music: { |p b e|
+	[
+		freq: [\r,2, -6, -5].df('e-',[3, 4 ]).q,
+		dur: b.parse([11,1,1,1]).q,
+		instrument: \default,
+		lag: -0.1, instrument: \stringyy, width: [10, 20 ],amp:0.25,wet:0, attack:0.05
+
+	].ppm
+});
+Song.durs.filter( {|i| i.dropLast ++ 0.40} );
 P.synthVs(role: \henoch, take:[ \lead, \double ], params: {|p b| [
 	lyrics: " Thalassa + + r just think how much we can do for mankind +",
 	filter: (midinote: _ - 12), 
@@ -998,7 +1088,8 @@ P.synthVs(\feng, take: [\bg1, \bg2, \bg3], params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
-		=> FreeVerb.ar(_,0.7,0.8)
+		// => FreeVerb.ar(_,0.7,0.8)
+		* -4.dbamp
 
 	}.play
 });
@@ -1033,22 +1124,23 @@ P.tune( _ <> [instrument: \stringyy].p );
 P(\chords,start:\mankind,music:{|p b e|
 	[
 		instrument:\sawSynth,
-		freq:[ [3,5,11,13,15],[2,4,11,12,14],[1,3,5,11,13] ].df('c') ++ [[1,5,13,11].df('a-', 5)] =>_.q,
-		dur:b 
+		freq:[ [3,5,11,13,15],[2,4,11,12,14],[1,3,5,11,13] ].df('c') ++ [[1,5,13,11].df('a-', 5),[1,5,13,21].df('e-')] =>_.q,
+		dur:b.parse([1,1,1,4,3]) 
 		// + [0,0,2]
-		+ [0,0,0,2]
+		+ [0,0,0,0,2]
 		=> _.q,
 		legato:1,
 		amp:0.08,
-		rel:[ 3, 3, 2, 2 ].q,
-		att:[ 1.9,0.5,0.2, 0.2 ].q,
-		lagTime: [3,3,3,7]/10 => _.q,
+		// rel:[ 3, 3, 2, 2, 2 ].q,
+		rel: 6,
+		att:[ 1.9,0.5,0.2, 0.2, 0.2 ].q,
+		lagTime: [3,3,3,7, 3]/10 => _.q,
 
 
 	].ppm;
 
 	[
-		freq:[ [3,5,11,13,15],[2,4,11,12,14],[1,3,5,11,13], ].df('c') ++ [1,5].df('e-',3) =>_.q,
+		freq:[ [3,5,11,13,15],[2,4,11,12,14],[1,3,5,11,13], ].df('c') ++ [1,5].df('a-',3) =>_.q,
 		dur: b.q,
 		strum: Pwhite(0.02,0.04,4),
 		coef:0.3,
@@ -1059,9 +1151,15 @@ P(\chords,start:\mankind,music:{|p b e|
 	].pp
 });
 P(\bass,start:\mankind,syl:2,music:{|p b e|
-	[		instrument:\sawSynthSustain,
-		freq:[ [1,11], [-5,5] ].df('a-',octave:3).q,
-		dur: b.parse([[1,1,1,1/3],[2/3,1,1,1]]).q
+	[		instrument:\harp,
+		freq:[ [1,11], [-5,5] ].df('a-',octave:[ 2,3 ]).q,
+		dur: b.parse([[1,1,1,1/3],[2/3,1,1,1]]).q,
+		out: Effect.bus({|i|
+			 Splay.ar(i)
+			=> CrossoverDistortion.ar(_, smooth: 0.8 ) /3
+			=> LPF.ar(_,6000)
+			* EnvGen.cutoff(b.sum,0.3)
+		},inputChannels:2)
 	].pp
 });
 ["Are these bodies too much to ask for in return?",[1,3,4,3,1,2,3,2,1,-7,-6,1.5].dm(\e)].addLine;
@@ -1080,8 +1178,9 @@ Song.setTempoMap(\return,"q q q e ex ex e Q Q Q Q QQQ");
 P.tune();
 P(\drums, music: { |p b e|
 	[
-		dur: "q q q q q q q q q".asBeats.warpTo( e.tempoMap.quantizeDft(0.4) ).q,
-		instrument: \hihat
+		dur: "q q q q q q q q q q".asBeats.warpTo( e.tempoMap.quantizeDft(0.4) ).q,
+		instrument: \hihat,
+		amp: [ [1].q(4), Pgeom(1,0.65,inf) ].q /10
 	].pp
 });
 P(\bassline, music: { |p b e|
@@ -1156,7 +1255,7 @@ P(\chord,syl:4,music:{|p b e|
 		([1,2.5,4.5,6.5] +.t [0,10,20] => _.flop =>_.flat)
 		.dm(\c,octave:4),
 		instrument:\sawSynthSustain, amp:0.05,
-		out:Effect({|i| Phaser2.ar(i) => EchoNone.ar(_,1,0.8,9) /8}).bus.index
+		out:Effect({|i| Phaser2.ar(i) => EchoNone.ar(_,1,0.8,9) /3}).bus.index
 
 	).play
 });
@@ -1164,7 +1263,8 @@ P(\chord,syl:4,music:{|p b e|
  P(\bass,start:\hate,music:{|p b e|
 	 (
 		 instrument:\stringyy,
-		 freq:[1,11].df(b) / 4
+		 freq:[1,11].df(b) / 3,
+		 amp: 0.2
 	 ).play
  });
 ["(She rushes out, and 'Spock' smirks.)","r"].addLine;

@@ -69,6 +69,7 @@ XTouch : XMIDIController {
 			'buses',67,
 			'outputs',68,
 			'user',69,
+			'replace',88,
 			'f1',54,
 			'f2',55,
 			'f3',56,
@@ -119,6 +120,7 @@ XTouch : XMIDIController {
 			{Document.current.path.load}.addName('Load Document'),\rewind,
 			{ Song.playSection(Song.cursor)} ,\click,
 			{defer{ SynthDescLib.default.browse }},'inst',
+			{Server.default.reboot},\replace
 		]);
 
 

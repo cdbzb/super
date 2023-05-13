@@ -473,14 +473,14 @@ p = [
 		know: true ],  
 	// Array
 	148, [ 'vocalModeInherited',  true,  nil,  nil,  
-		nil,  nil,  'vocalModePreset',  'Opera',  
+		nil,  nil,  'vocalModePreset',  'Power',  
 		'vocalModeParams',  o[149],  nil,  nil ],  
 	// Event
 	149, [ array: o[150],  size: 1,  
 		proto: nil,  parent: nil,  
 		know: true ],  
 	// Array
-	150, [ 'Opera',  100,  nil,  nil ],  
+	150, [ nil,  nil,  'Power',  100 ],  
 	// Event
 	151, [ array: o[152],  size: 2,  
 		proto: nil,  parent: nil,  

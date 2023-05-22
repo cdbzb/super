@@ -247,6 +247,13 @@
 			};
 			^result
 		}
+		zip {|that|
+			^this.bubble ++ that.bubble => _.flop
+		}
+		injectEach { |initialValue function|
+			^this.collect({|i| i.inject(initialValue, function)})
+		}
+
 }
 
 +Pseq {

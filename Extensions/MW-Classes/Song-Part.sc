@@ -1036,6 +1036,10 @@ Part {
 	bNext { |offset=1|
 		^parent.durs[start+offset].list
 	}
+	bAll {
+		var length = parent.sections - start;
+		^length.collect{|x| parent.durs[start + x]}.sum
+	}
 
 	//add random stuff to resources
 	doesNotUnderstand { |selector   args|

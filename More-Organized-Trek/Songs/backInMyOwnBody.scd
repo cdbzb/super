@@ -442,22 +442,69 @@ P(\chord,start:\loyal,syl:11,lag:-0.05, music:{|p b e|
 			freq: [1,3,5,11].df(\g,scale:\minor)
 		).play
 	});
-	["KIRK: (boom ba boom ba) Bones, prepare a hypo. The fastest, deadliest poison to Vulcans. ",[-5, -5, -5, -5, 5, 5, 5, 5, 11, 5, 12,  ].dm(\b,octave:4) ++ [12,13,12,5, 13,14,13,6, 14,15,14,5,11,7].dm(\c)].addLine;
+["KIRK: (boom ba boom ba) Bones, prepare a hypo. The fastest, deadliest poison to Vulcans. ",[-5, -5, -5, -5, 5, 5, 5, 5, 11, 5, 12,  ].dm(\b,octave:4) ++ [12,13,12,5, 13,14,13,6, 14,15,14,5,11,7].dm(\c)].addLine;
+/*
+"fmpeg /Users/michael/Library/Mobile\ Documents/QNM6AGD8YW~com~atlantia~SimpleMic/Documents/1649971442.m4a /hypo.wav".unixCmd;
+~hypo = Buffer.read(s,"/tmp/hypo.wav");
+{PlayBuf.ar(1,~hypo) * 0.1}.play
+
+
+a = "zsxdcvgbhnjm,l.;".asArray
+a.indexOf($d)
+*/
+P.tune(_.fin(4));
+
+P(\bassline, music: { |p b e|
+	[
+		// freq: [\r, 7, 6, 5, 4, 3, 2, 5].df(\c,3).q,
+		// dur: b.parse([8,  [1, 0.5], [0.5, 1],]).q
+		freq: [ \r, 7,6, 5, 4, 3,2, 4, 5, 7 ].df(\c,3).q,
+		dur: b.parse([8, [1,2/3],[1/3,2] ,4, [1,1/3],[2/3,2],[1, 0.5],[0.5,1],2/3,[1/3,1] ]).q,
+		amp:0.2
+	].pp
+});
+P.synthVs(role: \kirk, take: [\lead, \double], params: {|p b| [
+	lyrics: "r r r r Bones, prepare + a hypo + The fastest - + - deadliest - + +  poison - + to Vulcans + ",
+	legato: [[1, 1, 1, 1, 0.7, 1, 1, 1, 1, 0.8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 , 0.7, 1, 1 ]],
+	filter: (midinote: _ - 12), 
+	pitchTake: [1, 3]
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
 P.tune(\prepare);
 P(\lick,start:\fastest,syl:10,music:{|p b e| 
 		[
 			freq: [\f,'f#',\g].collect( [2,4,7].df(_) ) => _.flat => _.q / 2,
-			dur: b.drop(1).q
-		].pp
+			dur: b.drop(1).q,
+			instrument: \sparkTriangle,
+			depth:0,
+			amp: 0.04
+		].ppm()
 	});
-	["(boom boom) Spock's consciousness is-- gone. We must kill his body, the thing in it.",[-1, -3, 3, 4, 4, 4, 3, 2, 2].dm(\a) ++ [2, 3, 6, 7, 11, 5, 11, 12, 11, 5].dm(\e)].addLine;
+["(boom boom) Spock's consciousness is-- gone. We must kill his body, the thing in it.",[-1, -3, 3, 4, 4, 4, 3, 2, 2].dm(\a) ++ [2, 3, 6, 7, 11, 5, 11, 12, 11, 5].dm(\e)].addLine;
+P.synthVs(role: \kirk, take: [\lead, \double], params: {|p b| [
+	lyrics: "r r Spock's consciousness + + is - gone. We must kill his body, + the thing in it.",
+	legato: [[1, 1, 1, 1, 1, 1, 1, 1, 0.7,  1, 1, 1, 1, 1, 0.7, 1, 1, 1, 1, ]],
+	filter: (midinote: _ - 12), 
+	pitchTake: [1, 3]
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
 P(\figure,start:'kill his body',music:{|p b e| 
 		[
-			freq: [1, 3, 5, 1, 4, 6, 11, 3, -7].df(\a).q / [1,2],
+			freq: [1, 3, 5, 1, 4, 6, 11, 3, -7].df(\a).q / [1,2,4],
 			dur: b.parse([1, 1, 0.5, 0.5, 1, 1, 1, 2, 1, 1]).q,
 			instrument:\sawSynth,
+			amp:  [2,2,1] * 0.03
 		].pp
-
 	});
 P(\bass,start:'kill his body',syl:12,music:{|p b e| 
 		[
@@ -466,16 +513,13 @@ P(\bass,start:'kill his body',syl:12,music:{|p b e|
 		].pma(\default).play;
 	});
 P(\chords,start:'kill his body',syl:1,music:{|p b e| 
-
 		[
 			freq:[[1, 5],[1, 5],[1, 5],[1, 5],[1, 5],[-7,4.5]].df(\a).q,
 			dur:b.drop(1).parse([1,1,1,1,2,1]).postln.q
 		].pp
 	});
-P.tune('kill his body',_.drop(2),syl:1);
 P(\guiro,start:'kill his body',syl:11,music:{|p b e| 
 		//FIXME!!!!!
-
 		{Shakers.ar(19, 1, 1, 1, 32, 60, Env([0,0.5],1,\sin).kr(0,1))}.play
 
 	});
@@ -490,7 +534,5 @@ P(\chords2,start:'kill his body',syl:12,music:{|p b e|
 			dur: b.drop(1).parse([2,1,1,2]).q,
 			strum: [5, 0.5, 2, 1]/100 => _.q
 		].pp
-
-
 	});
 )

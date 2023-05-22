@@ -43,7 +43,7 @@ P(\arpeggio,\touch,music: {
 
 ["/*MULHALL:*/ Sargon, I remember a day long a- ",[2,1, 3,2,-6,1,-7,-7,-6,-5].dm(\d,scale:\dorian,octave:6)].addLine;
 Song.synthVTracks=EventWithDefault();
-Song.synthVTracks.aiko = { |preGain=1 ratio=2 amp = (1/8) len=2000 mix=0.1 |
+Song.synthVTracks.aiko = { |preGain=1 ratio=2 amp = (1/8) len=2000 mix=( 0.1 /2 )  |
 	{ |i|
 		i.() * preGain
 		=> SoftKneeCompressor.rms(_,  thresh:-10, ratio: ratio, knee:6, attack:0, release:0.05, makeUp:0, rms:40) 
@@ -177,14 +177,14 @@ P('phrase',start:\lake,syl:0,music: {|p b e|
 		freq:[ -7,2,3,6 ].df('f#',\mixolydian).q,
 		instrument:\wash,
 		dur:b.drop(1).q,
-		out: Effect(_ * [0,1]).bus.index,
+		out: Effect(_ * [0.01,1]).bus.index,
 		amp: amp
 	].pp;
 	[
 		freq:[\r,\r,\r,\r, -7,2,3,5 ].df('g',\mixolydian).q,
 		instrument:\wash,
 		dur:b.drop(1).q,
-		out: Effect(_ * [1,0]).bus.index,
+		out: Effect(_ * [1,0.01]).bus.index,
 		amp: amp
 	].pp;
 });
@@ -207,7 +207,7 @@ P.synthV(\aiko,params: {|p b| [
 		}.play
 	}
 );
-P.synthV(\aiko,take:2,params: {|p b| [
+P.synthV(role: \thalassa,take:\lead,params: {|p b| [
 	lyrics: "fla werz af ar pla net r r r r r",
 	phonemes:["","","","a z`","ph l a","n e t","","","","",""],
 	legato: [19,18,19,20,20,20]/20,
@@ -221,7 +221,7 @@ P.synthV(\aiko,take:2,params: {|p b| [
 			//=> Pan2.ar(_,1)
 			* [0,1]
 			*0.2
-		}//.play
+		}.play
 
 	}
 );
@@ -400,7 +400,6 @@ P(\chords,start:'kisses',music: {|p b e|
 	].pm(\trem2) => _.play } 
 });
 ["I think it is best not to remember so well. (boom) ",[3,2,3,1,-5,2,1,-7,-6,-7,-5,-2.5,-4.5].dm(\d)].addLine;
-P.tune('best',_ <> [amp: 0.1 * [1,1,1,1,1,1,1,1,1,1,1,1,0].q].p);
 P.synthV(\genbu, params: {|p b| [
 	lyrics: "ai think it is best not to re mem ba so well r" ,
 ] }, music:{|p b e|
@@ -488,6 +487,9 @@ P(\bass,start:'two days',syl:1,music:{|p b e|
 	].p };
 	Song.handsKeys = (intro: 'b-', bridge: \d, reprise: \g, outro:\g);
 	Song.handsKeys = (intro: 'b-', bridge: \g, reprise: 'b-', outro:\g);
+	Song.handsKeys = (intro: 'b-', bridge: \g, reprise: 'f', outro:\g);
+	Song.handsKeys = (intro: 'b-', bridge: \g, reprise: 'c', outro:\a);
+	// Song.handsKeys = (intro: 'b-', bridge: \d, reprise: 'b-', outro:\g);
 	Song.introClock=TempoClock.new(104/60);
 	Song.handsBassArray = [
 		amp:0.2,
@@ -544,12 +546,12 @@ P(\lick,start:'intro',music: {|p b e|
 });
 ["Mechanically efficient and ",[\r,2, 1, 2,  4, 3,\r].dm('e-'),"qq Q Q Q qe eqe e".asBeats*60/104].addLine;
 Song.setTempoMap(\efficient,"qq Q Q Q qe eqe e");
-
 Song.handsBassConstructor.('b-', \efficient);
-P.synthV(role: \henoch, params: {|p b| [
+P.synthVs(role: \henoch, take: [\lead, \double], params: {|p b| [
 	//lyrics: "r me ka ni kli i fi shent" ,
 	lyrics: "r mechanically + + + efficient + + ",
-	vocalMode: \Belt
+	vocalMode: \Belt,
+	pitchTake: [3,1]
 ] },pbind:{ |p b| [
 	dur: "qe e e e e e qe e".asBeats
 	.warpTo(p.tempoMap[\efficient])
@@ -561,14 +563,6 @@ music:{|p b e|
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 		* 2
-	}.play
-});
-P.double(role: \henoch, take: nil, params: {|p b| [
-	
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
 	}.play
 });
 P(\808,start:'efficient',music: {|p b e|
@@ -605,7 +599,7 @@ P(\keys,syl:0,start:\efficient,music: { |p b e|
 } );
 ["quite human-looking. ","\r 2 1 2 -6 -5 \r","qq Q Q Q qe eqe e".asBeats*60/104].addLine;
 Song.setTempoMap('quite',"qq Q Q Q qe eqe e");
-P.synthV(role: \henoch, params: {|p b| [
+/* P.synthV(role: \henoch, params: {|p b| [
 	//lyrics: "r and qwait hu man lu king" ,
 	lyrics:" r and quite human + looking +"
 ] },pbind:{ |p b| [
@@ -628,9 +622,18 @@ P.double(role: \henoch, take: nil, params: {|p b| [
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 	}.play
-});
+}); */
 ["(boom boom) Android (boom boom) robot hands, of course. ","-1 -1 11 7 12 7 6 11 6 5 7 5 4".dm(Song.handsKeys.bridge,4,\mixolydian),"q q q q qq q q qq q q qqq e e".asBeats*60/104].addLine;
-P('bass',start:\Android,music: {|p b e|
+P.synthVs(\feng, take: [ \bg1, \bg2], params: {|p b| [
+	lyrics: "r r android + hands r r r r r r r r",
+	pitchTake: [ 1,2 ]
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P('bass',music: {|p b e|
 	[
 		freq: [1, 1, \r ].df(p.handsKeys.bridge,2).dup(4).flat.q,
 		dur: "q q h".asBeats.dup(4).flat .q,
@@ -658,18 +661,19 @@ P.synthV(role: \henoch, params: {|p b| [
 		e.playbuf => p.synthVTracks.at(e.key).()
 	}.play
 });
-P.synthV(role: \henoch,take:\low, params: {|p b| [
+P.synthV(\mo,take:\bg, take: nil, params: {|p b| [
 	lyrics: "r hands without + feeling + r r hands without + feeling + r",
 ] }, filter:{|e| e.midinote = e.midinote -12}, music:{|p b e|
 	{
-		e.playbuf => p.synthVTracks.at(e.key).()
+		e.playbuf 
+		// => p.synthVTracks.at(e.key).()
 	}.play
 });
 P('cymbal',start:\Hands,music: {|p b e|
 	(instrument:\cymbalsDS,amp:0.04).play;
 	(instrument:\cymbal_808,amp:5,pan:-1).play
 });
-P(\keys,syl:0,start:\Hands,music: { |p b e|
+P(\keys,syl:0,music: { |p b e|
 	var lick1=VoiceLeading(
 		[
 			[2, 1, 2,  4, 3, \r,\r],
@@ -677,7 +681,7 @@ P(\keys,syl:0,start:\Hands,music: { |p b e|
 			[-5,\_,\_,-4,-3, \r,-2]
 		] ,  
 		"Q Q Q qe eqe eqe e".asBeats
-	).df(p.handsKeys.reprise.asNum - 7 ,[5,6]).p//ma
+	).df(p.handsKeys.reprise.asNum - 7 ,[6]).p//ma
 
 	//tune3
 
@@ -687,7 +691,7 @@ P(\keys,syl:0,start:\Hands,music: { |p b e|
 			[-5,\_,\_, -4, -3, \r,-2]
 		],
 		"Q Q Q qe eqe eqe e".asBeats
-	).df(p.handsKeys.reprise.asNum - 7 ,[5,6]).p//ma
+	).df(p.handsKeys.reprise.asNum - 7 ,[6]).p//ma
 	=> Pn(_,1) => _.fin(26);
 	p.handsSynth.()<>lick1<> [ detune: [0, 0.1,0.201 ] ].p=>_.play(clock:Song.introClock) ;
 
@@ -730,12 +734,14 @@ P.synthV(role: \henoch, take: nil, params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.double(role: \henoch, take: nil, params: {|p b| [
-	
+P.synthV(\mo, take: nil, params: {|p b| [
+	lyrics: " r enjoy + the taste of life - - while you can",
+	pitchTake: 1
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		=> p.synthVTracks.at(e.key).()
+		/3
+		// => p.synthVTracks.at(e.key).()
 	}.play
 });
 P.tune(\Enjoy);
@@ -794,7 +800,6 @@ P.synthV(role: \sargon, take: nil, params: {|p b| [
 	}.play
 });
 //Song.durs[\survived] = Song.durs[\survived].list.put(8,Song.durs[\survived].list[8]*1.5) => _.q;
-P.tune(\survived);
 P('bass',start:\But,music: {|p b e|
 	[
 		freq: [2,3].df(\f,[2,3]).q,
@@ -834,6 +839,13 @@ P(\mindChords,syl:3,lag:-0.26, start:\survived, music: { |p b e|
 		}.play 
 	}
 });
+P(\cymbal, syl: 3, music: { |p b e|
+	(
+		instrument: \cymbalsDSStereo,
+		amp: 0.003 ,
+		// out:Effect.bus({|i| i * Env.perc(0.5,3).kr(2,gate:1) },inputChannels:2)
+	).play
+});
 P(\bassNote,start:\survived,syl:7,music:{
 	[
 		freq:[[1,11,-1]].df('a-',octave:2).q(1),
@@ -852,6 +864,24 @@ P(\extra,syl:7,start:\survived,music:{|p b e|
 }
 );
 ["And as androids, we can move among the people who do live ",[1,-5,1,-7,1,2].dm('b-')++[7,5,3,5,7,11,7,7,6].dm(\d)].addLine;
+P(\cymbal, syl: 5, music: { |p b e|
+	(
+		instrument: \cymbalsDSStereo,
+		amp: 0.002 ! 3,
+		// out:Effect.bus({|i| i * Env.perc(0.5,3).kr(2,gate:1) },inputChannels:2)
+	).play
+});
+P(\bassnotes, music: { |p b e|
+[
+	instrument: \harp,
+	freq: [\r,1,1,1].df('b-',3).q,
+	dur: b.parse([0.5,[0.5,1],2,1]).q,
+	coef: [ 0.8,0.7,0.75 ].q,
+	mask: [\r,1,1].q,
+	out: [0,1,0].q
+
+].pp
+});
 P.synthV(role: \sargon, take: \lead, params: {|p b| [
 	lyrics: "And as androids +, we can move among + the people + who do live ",
 	filter: (midinote: _ - 12), 
@@ -863,19 +893,20 @@ P.synthV(role: \sargon, take: \lead, params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.tune(\people);
 P(\moveChord,start:\move,syl:5,music:{ |p b e|
-	b.postln;
 	[
 		freq:[ [-1,1,3,5,7,13,17].df(\d),[-2,2,5,7,15].df(\d),[-2,2,4.5,7,14.5].df(\d) ].q,
 		instrument:\sawSynthSustain,
-		att:[ 4.5, 1.5,1.5 ].q,
+		att:[ 4.5, 1.3,1.5 ].q,
 		legato:[1.0,1.1,1.1].q,
 		amp:0.03,
+		// lagTime:0,
 		lag:[0,-0.04,-0.04].q, //make proportional
+		legato: [0.99,1,1].q,
+		
 		//dur:[b[0..2].sum,b[3..6].sum,b[7..8].sum].q
 		dur:b.parse([4,[1,1,1,1],[1,0.5]]).q
-	].p.play
+	].pma.play
 });
 ["tea -- ching them (ba da da da da), ",[3,4,3,1,-5,-4,-3,-4,-5].dm(\b)].addLine;
 P.synthV(\feng, take: \lead, params: {|p b| [
@@ -925,6 +956,14 @@ P('pad',start:\tea,music: {|p b e|
 	] => Ppar(_)
 	=> _.play
 });
+
+
+P(\cymbal,syl:0, music: { |p b e|
+	(
+		instrument: \cymbalsDS,
+		amp: 0.015
+	).play
+});
 Song.setTempoMap('tea', "x qex q q q q q q q ");
 P('click',start:\tea,music: {|p b e|
 	1!8 => _.push(1, 0.7)
@@ -958,6 +997,7 @@ P(\bassnote,start:'tea -- ching',syl:0,music:{|p b e|
 ["helping them (boom) not to make the errors we -- did. (pain) ",[4,3,1,-7,1,2,3,1,4,5,5,6,5,-7.5].dm(\a,scale:\mixolydian)].addLine;
 P.synthV(role: \sargon, take: \lead, params: {|p b| [
 	lyrics: "helping + them r not to meik ze errors + we - did r",
+	phonemes: ["","","","","","","","", "e r", "a r z","w i","","",""],
 	filter: (midinote: _ - 12), 
 	pitchTake: 1
 ] }, music:{|p b e|
@@ -968,6 +1008,7 @@ P.synthV(role: \sargon, take: \lead, params: {|p b| [
 });
 P.synthV(role: \kirk, take: \backup, params: {|p b| [
 	lyrics: "helping + them r not to make the errors + we - did r",
+	phonemes: ["","","","","","","","", "e r", "a r z","w i","","",""],
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
@@ -1055,20 +1096,23 @@ P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		* 2.dbamp
 	}.play
 });
-P.tune('What');
 ["/*KIRK:*/ Nothing. Our next injection will renovate me. (boom) ",[1,1].dm('e-')++[2,3,1,3,-7,1,2,1,-7,-5,-3].dm('d',scale:\mixolydian,)].addLine;
 P.synthV(role: \sargon, take: \lead, params: {|p b| [
 	lyrics: "Nothing. + our next injection + + will renovate + + me r",
 	phonemes: ["n a","s i N","a u a r","n e k s t", "i n","j e k t","sh a n","w i l","r e n","o","v e i t", "m i" ],
 	legato: [1,0.5,  1,1,1,1,1,1,1,1,1,1],
-	filter: (midinote: _ - 13), 
+	// filter: (midinote: _ - 13), 
+	filter: (midinote: _ - 1), 
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		=> p.synthVTracks.at(e.key).(3.dbamp)
+		=> Pan2.ar(_,0)
+		/3
+		// => p.synthVTracks.at(e.key).(3.dbamp)
 	}.play
 });
 Song.resources.renovateKey='e-';
@@ -1112,7 +1156,7 @@ P(\baseNote,start:'renovate',syl:11,music:{|p b e|
 	].p.fin(1).play
 }
 );
-P.tune( { |i|  i <> [ instrument: \sawSynthSustain, att:2, amp:0.02 ].pm => Pmul (\freq, (-1).midiratio,_) => Pfin(12,_)} )
+P.tune( { |i|  i <> [ instrument: \sawSynthSustain, att:2, amp:0.02 ].pm => Pmul (\freq, (-1).midiratio,_) => Pfin(12,_)} );
 ["Do not be concerned.",[3,4,2,3,-7].dm('d',octave:5,scale:\minor )].addLine;
 P.synthV(role: \sargon, take: \lead, params: {|p b| [
 	lyrics: "du not bi kan sand",
@@ -1121,7 +1165,10 @@ P.synthV(role: \sargon, take: \lead, params: {|p b| [
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		=> p.synthVTracks.at(e.key).(2.dbamp)
+		// => p.synthVTracks.at(e.key).(2.dbamp)
+		=> Pan2.ar(_,0)
+		=> {|i| CombN.ar(i, 0.3,0.26,6) /4 + i}
+		/2
 	}.play
 });
 

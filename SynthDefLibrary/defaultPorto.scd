@@ -10,6 +10,7 @@ SynthDef(\defaultPorto,{
 	* 0.1
 	=> BMoog.ar(_,1800,0.2,2.1)
 	=> (sig = FreeVerb.ar(_,0.4,1))
+	* \amp.kr(0.1) * 10
 	//=> DetectSilenceDry.ar(_,doneAction:2)
 	=> Out.ar(Rand(4),_);
 	DetectSilence.ar(_,doneAction:2)

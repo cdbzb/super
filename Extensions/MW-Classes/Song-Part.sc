@@ -1038,7 +1038,7 @@ Part {
 	}
 	bAll {
 		var length = parent.sections - start;
-		^length.collect{|x| parent.durs[start + x]}.sum
+		^length.collect{|x| parent.durs[start + x].list}.flat
 	}
 
 	//add random stuff to resources

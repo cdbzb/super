@@ -4,12 +4,13 @@ o = [
 	List.prNew,  Array.prNew(14),  " I'll add female features and some texturing. ",  Pseq.prNew,  
 	List.prNew,  Array.prNew(12),  "/*MULHALL:*/ Why pretend to work on that thing, Henoch? ",  Pseq.prNew,  
 	List.prNew,  Array.prNew(12),  "-boom- Once occupied",  Pseq.prNew,  
-	List.prNew,  Array.prNew(5),  "/*SPOCK:*/ This is your new home, Thalassa. ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(5),  "You no doubt want the mechanism to at least appear to be a woman. ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(21),  "/*SPOCK:*/ This is your new home, Thalassa. ",  Pseq.prNew,  
 	List.prNew,  Array.prNew(8)
 ];
 p = [
 	// Dictionary
-	0, [ array: o[1],  size: 5 ],  
+	0, [ array: o[1],  size: 6 ],  
 	// Array
 	1, [ nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -100,6 +101,7 @@ p = [
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[18],  o[19],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -109,8 +111,7 @@ p = [
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		o[18],  o[19],  nil,  nil,  
+		o[22],  o[23],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -181,7 +182,19 @@ p = [
 	// List
 	20, [ array: o[21] ],  
 	// Array
-	21, [ 0.674,  0.735,  0.711,  0.879,  
+	21, [ 0.576,  0.355,  0.32,  0.371,  
+		0.291,  0.292,  0.393,  0.375,  
+		0.35,  0.339,  0.413,  0.51,  
+		0.547,  0.545,  0.488,  0.474,  
+		0.437,  0.53,  0.674,  0.946,  
+		0.619 ],  
+	// Pseq
+	23, [ list: o[24],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	24, [ array: o[25] ],  
+	// Array
+	25, [ 0.674,  0.735,  0.711,  0.879,  
 		0.978,  0.577,  0.845,  0.746 ]
 ];
 prUnarchive(o,p);

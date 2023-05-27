@@ -75,6 +75,14 @@ P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 P.tune();
 [ "/*SPOCK:*/ This is your new home, Thalassa. "," 5 3 11 6.5 7 4 3 2".dm(\f,\minor) ].addLine;
 P.tune();
+P(\bassNote, music: { |p b e|
+	[
+		freq: [6, 4, 1].df('e-',3).q,
+		dur: b.parse([1, 5,2]).q,
+		instrument: "defaultPorto.clean"
+
+	].pp
+});
 P(\bassline, music: { |p b e|
 	[
 		freq: [\r, 3, [ -7, 11, 13, 15, 17 ]].df(\f,3,\minor).q,
@@ -90,11 +98,11 @@ P(\bassNotes,syl: 5, music: { |p b e|
 		dur: b.drop(1).sum.bubble ++ e.bNext.parse([2,3]) => _.flat => _.q
 	].p.trace.play
 });
-P.synthV(role: \henoch, take: \lead, params: {|p b| [
+P.synthVs(role: \henoch, take: [\lead, \double], params: {|p b| [
 	lyrics: "this is your new home, thalassa + +",
 	filter: (midinote: _ - 12), 
 		legato: [1, 1, 0.8 ,1, 0.9, 1, 1, 1 ],
-	pitchTake: 1
+	pitchTake: [1, 3]
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -112,12 +120,13 @@ P(\roll,syl:1, music: { |p b e|
 		instrument: \harp
 	).play
 });
-P.synthV(role: \henoch, take: \lead,
-	pbind: Song.enlarge(13),
+P.synthVs(role: \henoch, take: [\lead, \double],
+	pbind: Song.enlarge2(1),
 	params: {|p b| [
-	lyrics: "r once occupied + + I'll add female + features + and some texturing - + +",
+	lyrics: "r once occupied + + I'll add female + features + and some texturing - + + you",
+	legato: [[1, 1, 1, 1, 0.9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.7, 1  ]],
 	filter: (midinote: _ - 12), 
-	pitchTake: 1
+	pitchTake: [1, 3]
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -127,6 +136,7 @@ P.synthV(role: \henoch, take: \lead,
 
 });
 [" I'll add female features and some texturing. ","1 3 2 1 -7 1 -6 2 3 2 1 -5".dm(\e,6) ].addLine;
+Song.durs.filter({|i| i.dropLast ++ (0.489 * 1.5)});
 P(\bassline, music: { |p b e|
 	[
 		freq:[1,3,2,1,-7,-6,-5].df(\e,[3,4,5]).q,
@@ -134,7 +144,37 @@ P(\bassline, music: { |p b e|
 		instrument: \stringyy, amp: 0.25
 	].ppm
 });
-[ "You no doubt want the mechanism to at least appear to be a woman. ","r" ].addLine;
+[ "You no doubt want the mechanism to at least appear to be a woman. ","3 -17 4 2 -11 3".dm('a-')++"2 3 2 1 -7 1".dm(\b)++"1 4".dm(\c,6)++"-7 3 2 1 3 -7 -6".dm(\d,6) ].addLine;
+P(\bassnotes, music: { |p b e|
+	[
+		freq: [\r,1, -7].df('a-') ++ [-7,1, 4].df(\c) ++ [3,[ 1 ]].df('a',4) ++ [1].df(\d) => _.q /[ 2,4 ],
+		amp: 0.3,
+		dur: b.parse([1,3,3,5,1,1,1,4,3]).q,
+		// lag: [0, 0, 0,    0, -0.1, 0, -0.1, 0,0,0,0,0,0].q
+		lag: [0, 0, 0,    0, -0.1, 0, -0.05, 0,0,0,0,0,0].q
+	].pp
+});
+P(\womanChords,syl:18, music: { |p b e|
+	[
+		freq: [ [1,3,5,7],[ 1,3,5,6 ] ].df(\d).q,
+		attack: [1,0.1].q,
+		// dur: b.drop(1).q,
+		instrument: \stringyy, amp:0.2,
+	].ppm
+});
+P.synthVs(role: \henoch, take: [\lead, \double], params: {|p b| [
+	lyrics: "r r no doubt r want the mechanism + + + to at least appear + to be a woman +",
+	pitchTake: [1, 3],
+	filter: (midinote: _ - 12), 
+	lag: [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0, 0.05, 0]]
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+		/5
+	}.play
+
+});
 [ "(he tests its hand movement.) It is ready, Thalassa.  ","r" ].addLine;
 [ "/*MULHALL:*/ No! ",
 //next up: Plastic person

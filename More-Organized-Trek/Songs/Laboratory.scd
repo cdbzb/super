@@ -3,7 +3,7 @@ Song(\laboratory,[]).current;
 [ "/*[Laboratory]*/","r" ].addLine;
 Song.synthVTracks = EventWithDefault.new(
 	\default, {
-		{|i| Pan2.ar(i,0)}
+		{|i| Pan2.ar(i,0) /4}
 	}
 );
 [ "/*(There is a shiny plastic person on the table now.) */","r" ].addLine;
@@ -95,7 +95,8 @@ P(\bassline, music: { |p b e|
 P(\bassNotes,syl: 5, music: { |p b e|
 	[
 		freq: [ 1, -7, -6.5  ].df(\f,[3,4], \minor).q,
-		dur: b.drop(1).sum.bubble ++ e.bNext.parse([2,3]) => _.flat => _.q
+		dur: b.drop(1).sum.bubble ++ e.bNext.parse([2,5]) => _.flat => _.q,
+		out: [0,0, Effect.bus({|i| DWGReverbC1C3.ar(i,mix:0.4) },)].q
 	].p.trace.play
 });
 P.synthVs(role: \henoch, take: [\lead, \double], params: {|p b| [
@@ -107,23 +108,34 @@ P.synthVs(role: \henoch, take: [\lead, \double], params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
-		/5
 	}.play
 
 });
 [ "-boom- Once occupied","-1,5 11 5 3".dm(\d)].addLine;//boom=e-flat
 
+P(\xtraNote,syl:0, music: { |p b e|
+	(
+		instrument: "defaultPorto",
+		freq: [-5, 1].df(\d)
+	).play
+});
 P(\roll,syl:1, music: { |p b e|
 	(
 		freq: [1,3,5,11].df(\d,4),
-		strum: 0.05,
-		instrument: \harp
-	).play
+		strum: 0.08,
+		coef: 0.25,
+		instrument: \harp,
+		decayTime: 20,
+		dur: b.drop(1).sum,
+
+
+		out: Effect.bus({|i| CombC.ar(i, 0.7,[ 0.65, 0.41 ]+SinOsc.ar(0.13).range(0.01,-0.01), 5) /2 + i / 10 },)
+	).play;
 });
 P.synthVs(role: \henoch, take: [\lead, \double],
 	pbind: Song.enlarge2(1),
 	params: {|p b| [
-	lyrics: "r once occupied + + I'll add female + features + and some texturing - + + you",
+	lyrics: "r once occupied + + I'll add female + features + and some - texturing  + + you",
 	legato: [[1, 1, 1, 1, 0.9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.7, 1  ]],
 	filter: (midinote: _ - 12), 
 	pitchTake: [1, 3]
@@ -131,7 +143,6 @@ P.synthVs(role: \henoch, take: [\lead, \double],
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
-		/ 5
 	}.play
 
 });
@@ -139,7 +150,7 @@ P.synthVs(role: \henoch, take: [\lead, \double],
 Song.durs.filter({|i| i.dropLast ++ (0.489 * 1.5)});
 P(\bassline, music: { |p b e|
 	[
-		freq:[1,3,2,1,-7,-6,-5].df(\e,[3,4,5]).q,
+		freq:[1,3,2,1,-7,-6,-4].df(\e,[3,4,5]).q,
 		dur:b.parse([1,1,1,1,2,3,3]).q,
 		instrument: \stringyy, amp: 0.25
 	].ppm
@@ -147,12 +158,13 @@ P(\bassline, music: { |p b e|
 [ "You no doubt want the mechanism to at least appear to be a woman. ","3 -17 4 2 -11 3".dm('a-')++"2 3 2 1 -7 1".dm(\b)++"1 4".dm(\c,6)++"-7 3 2 1 3 -7 -6".dm(\d,6) ].addLine;
 P(\bassnotes, music: { |p b e|
 	[
-		freq: [\r,1, -7].df('a-') ++ [-7,1, 4].df(\c) ++ [3,[ 1 ]].df('a',4) ++ [1].df(\d) => _.q /[ 2,4 ],
+		freq: [\r,1, -7].df('a-',4) ++ [-7,1, 4].df(\c) ++ [3,[ 1 ]].df('a',4) ++ [1].df(\d) => _.q /[ 2,4 ],
 		amp: 0.3,
+		instrument: \sawSynthSustain, amp: 0.07,
 		dur: b.parse([1,3,3,5,1,1,1,4,3]).q,
 		// lag: [0, 0, 0,    0, -0.1, 0, -0.1, 0,0,0,0,0,0].q
 		lag: [0, 0, 0,    0, -0.1, 0, -0.05, 0,0,0,0,0,0].q
-	].pp
+	].ppma
 });
 P(\womanChords,syl:18, music: { |p b e|
 	[
@@ -171,7 +183,6 @@ P.synthVs(role: \henoch, take: [\lead, \double], params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
-		/5
 	}.play
 
 });

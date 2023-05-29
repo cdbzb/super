@@ -1,16 +1,23 @@
 var o, p;
 o = [
 	Dictionary.prNew,  Array.prNew(512),  "-boom- You know you never intended to leave Spock's body. ",  Pseq.prNew,  
-	List.prNew,  Array.prNew(14),  " I'll add female features and some texturing. ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(14),  "/*MULHALL:*/ No! ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(1),  "(he tests its hand movement.) It is ready, Thalassa.  ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(8),  "/*MULHALL:*/ I cannot live in that thing.",  Pseq.prNew,  
+	List.prNew,  Array.prNew(7),  "/*SPOCK:*/ You have no excuse to keep the real body any longer. ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(15),  "/*MULHALL:*/ -boom- I cannot live in that thing.",  Pseq.prNew,  
+	List.prNew,  Array.prNew(8),  " I'll add female features and some texturing. ",  Pseq.prNew,  
 	List.prNew,  Array.prNew(12),  "/*MULHALL:*/ Why pretend to work on that thing, Henoch? ",  Pseq.prNew,  
 	List.prNew,  Array.prNew(12),  "-boom- Once occupied",  Pseq.prNew,  
-	List.prNew,  Array.prNew(5),  "You no doubt want the mechanism to at least appear to be a woman. ",  Pseq.prNew,  
+	List.prNew,  Array.prNew(5),  "/*[Laboratory]*/",  Pseq.prNew,  
+	List.prNew,  Array.prNew(1),  "You no doubt want the mechanism to at least appear to be a woman. ",  Pseq.prNew,  
 	List.prNew,  Array.prNew(21),  "/*SPOCK:*/ This is your new home, Thalassa. ",  Pseq.prNew,  
-	List.prNew,  Array.prNew(8)
+	List.prNew,  Array.prNew(8),  "-boom-",  Pseq.prNew,  
+	List.prNew,  Array.prNew(1)
 ];
 p = [
 	// Dictionary
-	0, [ array: o[1],  size: 6 ],  
+	0, [ array: o[1],  size: 13 ],  
 	// Array
 	1, [ nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -35,34 +42,9 @@ p = [
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
 		nil,  nil,  o[6],  o[7],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
 		o[10],  o[11],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -72,9 +54,46 @@ p = [
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
 		o[14],  o[15],  nil,  nil,  
+		o[18],  o[19],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[22],  o[23],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[26],  o[27],  
+		o[30],  o[31],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		o[34],  o[35],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		o[38],  o[39],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -89,6 +108,7 @@ p = [
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[42],  o[43],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -98,22 +118,9 @@ p = [
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
+		o[46],  o[47],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  o[18],  o[19],  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		o[22],  o[23],  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
+		o[50],  o[51],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
@@ -156,45 +163,100 @@ p = [
 	// List
 	8, [ array: o[9] ],  
 	// Array
-	9, [ 0.417,  0.334,  0.329,  0.338,  
-		0.335,  0.389,  0.441,  0.272,  
-		0.269,  0.493,  0.387,  0.489 ],  
+	9, [ 0.959 ],  
 	// Pseq
 	11, [ list: o[12],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	12, [ array: o[13] ],  
 	// Array
-	13, [ 0.221,  0.258,  0.289,  0.333,  
-		0.608,  0.302,  0.301,  0.384,  
-		0.547,  0.319,  0.272,  0.37 ],  
+	13, [ 0.911,  0.396,  0.444,  0.493,  
+		0.318,  0.389,  0.556,  0.583 ],  
 	// Pseq
 	15, [ list: o[16],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	16, [ array: o[17] ],  
 	// Array
-	17, [ 0.509,  0.404,  0.396,  0.443,  
-		0.485 ],  
+	17, [ 0.443,  0.358,  0.368,  0.393,  
+		0.39,  0.463,  0.514 ],  
 	// Pseq
 	19, [ list: o[20],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	20, [ array: o[21] ],  
 	// Array
-	21, [ 0.576,  0.355,  0.32,  0.371,  
-		0.291,  0.292,  0.393,  0.375,  
-		0.35,  0.339,  0.413,  0.51,  
-		0.547,  0.545,  0.488,  0.474,  
-		0.437,  0.53,  0.674,  0.946,  
-		0.619 ],  
+	21, [ 0.295,  0.312,  0.331,  0.335,  
+		0.231,  0.258,  0.246,  0.365,  
+		0.549,  0.274,  0.244,  0.249,  
+		0.251,  0.328,  0.32 ],  
 	// Pseq
 	23, [ list: o[24],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	24, [ array: o[25] ],  
 	// Array
-	25, [ 0.674,  0.735,  0.711,  0.879,  
-		0.978,  0.577,  0.845,  0.746 ]
+	25, [ 0.308,  0.396,  0.351,  0.421,  
+		0.384,  0.432,  0.465,  0.556 ],  
+	// Pseq
+	27, [ list: o[28],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	28, [ array: o[29] ],  
+	// Array
+	29, [ 0.417,  0.334,  0.329,  0.338,  
+		0.335,  0.389,  0.441,  0.272,  
+		0.269,  0.493,  0.387,  0.489 ],  
+	// Pseq
+	31, [ list: o[32],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	32, [ array: o[33] ],  
+	// Array
+	33, [ 0.221,  0.258,  0.289,  0.333,  
+		0.608,  0.302,  0.301,  0.384,  
+		0.547,  0.319,  0.272,  0.37 ],  
+	// Pseq
+	35, [ list: o[36],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	36, [ array: o[37] ],  
+	// Array
+	37, [ 0.509,  0.404,  0.396,  0.443,  
+		0.485 ],  
+	// Pseq
+	39, [ list: o[40],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	40, [ array: o[41] ],  
+	// Array
+	41, [ 2.381 ],  
+	// Pseq
+	43, [ list: o[44],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	44, [ array: o[45] ],  
+	// Array
+	45, [ 0.576,  0.355,  0.32,  0.371,  
+		0.291,  0.292,  0.393,  0.375,  
+		0.35,  0.339,  0.413,  0.51,  
+		0.547,  0.545,  0.488,  0.474,  
+		0.437,  0.53,  0.674,  0.946,  
+		0.619 ],  
+	// Pseq
+	47, [ list: o[48],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	48, [ array: o[49] ],  
+	// Array
+	49, [ 0.674,  0.735,  0.711,  0.879,  
+		0.978,  0.577,  0.845,  0.746 ],  
+	// Pseq
+	51, [ list: o[52],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	52, [ array: o[53] ],  
+	// Array
+	53, [ 0.843 ]
 ];
 prUnarchive(o,p);

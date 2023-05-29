@@ -58,7 +58,8 @@ tell application "System Events" to tell application process "Synthesizer V Stud
 	keystroke "q" using {command down}
 	delay 0.1
 
-	tell application "Alacritty.app"
+	# tell application "Alacritty.app"
+	tell application "WezTerm.app"
 		activate
 	end tell
 end tell

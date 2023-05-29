@@ -1,4 +1,3 @@
-
 // Sickbay
 (
 s.waitForBoot{

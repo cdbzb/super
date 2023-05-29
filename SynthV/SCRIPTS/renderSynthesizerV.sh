@@ -31,7 +31,8 @@ tell application "System Events"
 		delay 0.1
 		click UI element "Bounce to Files" of window 1
 	end tell
-	tell application "Alacritty.app"
+	# tell application "Alacritty.app"
+	tell application "WezTerm.app"
 		activate
 	end tell
 end tell

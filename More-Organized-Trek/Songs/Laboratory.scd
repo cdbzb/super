@@ -1,13 +1,43 @@
 ( s.waitForBoot{
 Song(\laboratory,[]).current;
-[ "/*[Laboratory]*/","r" ].addLine;
+Require("boilerplate.scd");
 Song.synthVTracks = EventWithDefault.new(
 	\default, {
 		{|i| Pan2.ar(i,0) /4}
+	},
+	\aiko, {
+		{|i| Pan2.ar(i,0) /3}
 	}
 );
+[ "/*[Laboratory]*/","1".dm() ].addLine;
+P.still(\plasticPerson, timecode: 4150.seconds, music: { |p b e|
+	 e.still.( 
+		wait: 2.381 + 1,
+		text: ["",""],
+		fade:3
+	)
+});
+P(\noise, music: { |p b e|
+	{
+		WhiteNoise.ar(0.1)
+		// => BPF.ar(_, Gendy1.kr(minfreq:[ 1 , 1.55],maxFreq:2).range(400,800))
+		/10
+		=> Ringz.ar(_, 40 + Gendy1.kr(minfreq:[ 0.1, 10 ],maxfreq:40) * 10 ,0.1)
+		* Env([0,1],3.381).kr(2)
+		/19
+	}.play
+});
 [ "/*(There is a shiny plastic person on the table now.) */","r" ].addLine;
 [ "/*MULHALL:*/ Why pretend to work on that thing, Henoch? ","1 2 3 5 6 -5 5 3 7 -6 6 4".dm(\c,\mixolydian) ].addLine;
+P.still(\thalassaClose1, timecode:
+	// 4151.833.seconds, //close
+	4155.666.seconds, // twoShot
+	music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["why pretend to work","on that thing, Henoch?"],
+	)
+});
 P.tune( _ => Pset(\amp,Pfunc({|i| (i.midinote < 1.dm(\c)).if{0}{0.1} }),_) );
 P(\dyads, music: { |p b e|
 	[
@@ -16,9 +46,10 @@ P(\dyads, music: { |p b e|
 		instrument: \sawSynth
 	].pp
 });
-P.synthV(role: \thalassa, take: \lead, params: {|p b| [
+P.synthV(role: \thalassa,lag:0, take: \lead, params: {|p b| [
 	lyrics: "Why pretend + to work r on that thing, r Henock +",
 	pitchTake: 1,
+	lag: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, ],
 	phonemes: [ "w a :\\i"," ph r\\` i"," th e n t"," th u"," w a r\\` kh",""," A n"," t a th"," s i\\ N","","","n A kh" ] ,
 	// legato: [1, 1, 1, 1, 1, 1, 1,1, 1, 1, 1, ],
 ] }, music:{|p b e|
@@ -46,6 +77,16 @@ P(\horn, music: { |p b e|
 	].ppm
 });
 [ "-boom- You know you never intended to leave Spock's body. ","-5 5 12 11 7 6 5 4 5 6 2 5 4 3".dm(\c) ].addLine;
+P.still(\clear, timecode: 0.seconds, syl:0, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["you know","you never intended"],
+	).sequenceText2(
+			b.drop(1).parse([8,5]), [ 
+			["to leave Spock's","body"],
+			],
+	)
+});
 P(\lowBass, music: { |p b e|
 	[
 		instrument: \sawSynthSustain,
@@ -74,6 +115,16 @@ P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 });
 P.tune();
 [ "/*SPOCK:*/ This is your new home, Thalassa. "," 5 3 11 6.5 7 4 3 2".dm(\f,\minor) ].addLine;
+P.still(\henochClose, timecode: 4158.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["this is","your new home"],
+	).sequenceText2(
+			b.parse([5]), [ 
+			["Thalassa",""],
+			],
+	)
+});
 P.tune();
 P(\bassNote, music: { |p b e|
 	[
@@ -112,7 +163,20 @@ P.synthVs(role: \henoch, take: [\lead, \double], params: {|p b| [
 
 });
 [ "-boom- Once occupied","-1,5 11 5 3".dm(\d)].addLine;//boom=e-flat
-
+P.still(\twoShot, timecode: 4200.2.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum + e.bNext.sum,
+		text: ["",""],
+		fadeIn: b[0],
+		fade: e.bNext.sum
+	).sequenceText2(
+			e.bAll.parse([1,5,10]), [ 
+				["once occupied,","I'll add"],
+			["female features","and some texturing"],
+			["",""]
+			],
+	)
+});
 P(\xtraNote,syl:0, music: { |p b e|
 	(
 		instrument: "defaultPorto",
@@ -147,19 +211,30 @@ P.synthVs(role: \henoch, take: [\lead, \double],
 
 });
 [" I'll add female features and some texturing. ","1 3 2 1 -7 1 -6 2 3 2 1 -5".dm(\e,6) ].addLine;
-Song.durs.filter({|i| i.dropLast ++ (0.489 * 1.5)});
+// Song.durs.filter({|i| i.dropLast ++ (0.489 * 1.5)});
 P(\bassline, music: { |p b e|
 	[
-		freq:[1,3,2,1,-7,-6,-4].df(\e,[3,4,5]).q,
+		freq:[1,3,2,1,-7,-6,-5].df(\e,[3,4,5]).q,
 		dur:b.parse([1,1,1,1,2,3,3]).q,
 		instrument: \stringyy, amp: 0.25
 	].ppm
 });
 [ "You no doubt want the mechanism to at least appear to be a woman. ","3 -17 4 2 -11 3".dm('a-')++"2 3 2 1 -7 1".dm(\b)++"1 4".dm(\c,6)++"-7 3 2 1 3 -7 -6".dm(\d,6) ].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["you","no doubt"],
+	).sequenceText2(
+			b.parse([5,9,7 ]), [ 
+			["want the mechanism","to at least"],
+			["appear to be","a woman"]
+			],
+	)
+});
 P(\bassnotes, music: { |p b e|
 	[
 		freq: [\r,1, -7].df('a-',4) ++ [-7,1, 4].df(\c) ++ [3,[ 1 ]].df('a',4) ++ [1].df(\d) => _.q /[ 2,4 ],
-		amp: 0.3,
+		amp: 0.2,
 		instrument: \sawSynthSustain, amp: 0.07,
 		dur: b.parse([1,3,3,5,1,1,1,4,3]).q,
 		// lag: [0, 0, 0,    0, -0.1, 0, -0.1, 0,0,0,0,0,0].q
@@ -185,13 +260,180 @@ P.synthVs(role: \henoch, take: [\lead, \double], params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 
+}); 
+[ "(he tests its hand movement.) It is ready, Thalassa.  ","-5 5 5 11 5 3 2 1".dm('f#',\minor) ].addLine;
+P.still(\handRises, timecode: 4218.666.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["it is","ready, Thalassa"],
+	)
 });
-[ "(he tests its hand movement.) It is ready, Thalassa.  ","r" ].addLine;
-[ "/*MULHALL:*/ No! ",
-//next up: Plastic person
- ].addLine;
-[ "/*SPOCK:*/ You have no excuse to keep the real body any longer. ","r" ].addLine;
-[ "Sargon would've required that you enter the mechanism immediately. ","r" ].addLine;
-[ "/*MULHALL:*/ I cannot live in that thing.","r" ].addLine;
+P(\chord,syl:2, music: { |p b e|
+	{
+		var freq = [-1, 1, 11, 13, 15, 21].df('f#', \minor);
+		var offset = freq.collect{ 0.22.rand }.sort;
+		VarSaw.ar(freq,0,0.9)
+		/15
+		=> HPF.ar(_,300)
+		* Env([0,0,1,0],[offset,0.05,( freq + 1800 ).reciprocal * 4000]).kr(0,gate:1)
+	}.play
+});
+P(\test, music: { |p b e|
+	{
+		Saw.ar( 7.df('f#') * Pulse.ar(10 ).range(1, 1.midiratio) )
+		* Env.perc(0.1,3).kr(2,gate:1)
+		/10
+		=> Pan2.ar(_, SinOsc.ar(2))
+	}.play
+});
+P(\bassnote, music: { |p b e|
+	(
+		instrument: \wash,
+		freq: [-21,1].df('f#')
+	).play
+});
+P.synthVs(role: \henoch, take: [\lead, \double], params: {|p b| [
+	lyrics: "r It is ready + Thalassa + +  ",
+	filter: (midinote: _ - 12), 
+	pitchTake: [1, 3]
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+		=> {|i| CombN.ar(i, 0.4,0.37,5) / 3 + i * 1.5.dbamp}
+	}.play
+
+});
+[ "/*MULHALL:*/ No! ", "7".dm(\g,\diminished) ].addLine;
+Song.durs.filter(\No,_*1.25);
+P.still(\thalassaClose, timecode: 4224.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["NO",""],
+	)
+});
+P.synthV(role: \thalassa, take: \lead, params: {|p b| [
+	lyrics: "no",
+	pitchTake: 1,
+	legato:2,
+	filter: (midinote: _ - 12), 
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+		=> {|i| CombC.ar(i, 0.3,
+			// Line.kr(0.05,0.1,10),
+			10 ) /2.5 +
+
+			i}
+			* 3.dbamp
+	}.play
+
+});
+P(\chord, music: { |p b e|
+	{
+		var freq  = [1,-3,5,-7].df(\g,\diminished);
+		Gendy1.arWidth(freq:freq,width:Line.kr(1.01,1.2,5))
+		* Env([1,1,0],[1,4]).kr(2,gate:1)
+		/30
+
+	}.play
+});
+[ "/*SPOCK:*/ You have no excuse to keep the real body any longer. ","1 1 2 3 4 5 6 7".dm('a-') ++ "13 12 7 11 7 6 4".dm(\f) ].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["you have no excuse","to keep the real body"],
+	).sequenceText2(
+			b.parse([11,4]), [ 
+			["any","longer"],
+			],
+	)
+});
+P.synthVs(role: \henoch, take: [\lead, \double], params: {|p b| [
+	filter: (midinote: _ - 12), 
+	lyrics: "You have no excuse + to keep the real body + any + longer + ",
+	pitchTake: [1, 3]
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+P(\line, music: { |p b e|
+	[
+		freq: [11, 11, 7].df('a-',4,\mixolydian) ++ [ 4, 3, 1, 2, 1,-4.5].df(\c,6) =>  _.q /4,
+		dur: b.parse([1, 3, 4, 1, 1, 1,1, 1, 2]) ++ e.bNext[0] => _.flat => _.q,
+		legato:0.99,
+		out: Effect.bus({|i|  i => FreeVerb.ar(_,0.2,1) => SineShaper.ar(i,0.15, 2) },)
+	].pp;
+	[
+		freq: "1 1 2 3 4".df('a-',4).q,
+		dur: b.parse([1, 1, 1, 1, 4]).q,
+
+	].pp;
+	[
+		freq: [\r,5, 3, 1].df('b-',[3,5]).q,
+		dur: b.parse([11,2,1,1]).q,
+		instrument: \sawSynth,
+
+	].pp
+});
+
+// [ "Sargon would've required that you enter the mechanism immediately. ","r" ].addLine;
+[ "/*MULHALL:*/ -boom- I cannot live in that thing.","-1 1 3 5 7 5 3 4".dm(\g, \mixolydian) ].addLine;
+P.still(\closeThall,syl:0, timecode: 4234.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum ,
+		text: ["I cannot live","in that thing"],
+		fade:e.bNext.sum
+	)
+});
+P.synthV(role: \thalassa, take: \lead, params: {|p b| [
+	lyrics: "r I cannot + live in that thing." ,
+	phonemes: ["","a :\\i","kh a n ","n A th","l \\i w", "i\\ n","t a th","s i\\ N"],
+	legato: [1,1, 1, 0.9, 0.9, 1, 0.7, 1.3, ],
+	loudness: Env([0,0,0,0,0,0,0,5],b),
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+		=> {|i| CombN.ar(i,0.4,0.23,4) /6 + i }
+	}.play
+
+});
+P(\bassnote, music: { |p b e|
+	(
+		freq: 1.df(\g,[2,3]),
+		dur: b.parse([7]).unbubble,
+		instrument: \sawSynthSustain, amp: 0.05
+	).play
+});
+P(\doubling, music: { |p b e|
+	[
+		freq: [\r] ++ "1 3 5 7 5 3 4".df(\g,\mixolydian) => _.q,
+		instrument: \stringyy,
+		attack: 0,
+		amp: 0.3,
+		release: 0.1,
+		dur: b.q
+	].pp
+});
+P(\chord, syl: 6, music: { |p b e|
+	(
+		freq: [1,3,5].df(\a, 4,\minor),
+		out: Effect.bus({|i| CrossoverDistortion.ar(i)/10 + i => FreeVerb.ar(_,1,[ 1,0.8 ]) },)
+
+	).play
+});
+[ "-boom-","1".dm(\c) ].addLine;
+P(\boom, music: { |p b e|
+	(
+		freq: [-1,1,3].df(\c,3,\minor),
+		out: Effect.bus({|i| DWGReverbC1C3.ar(i) },)
+	).play
+});
 }
 )

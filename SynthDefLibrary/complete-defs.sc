@@ -43,6 +43,7 @@ SynthDef( \phase_verb2,{//{{{
 	var env=Env.asr(0.06,0.1,0.4).kr(gate:gate,doneAction:2);
 	var fenv=Env.linen(0.0,0.1,0.7).kr(gate:gate)*freq*5;
 	sig=RLPF.ar(sig,fenv,rq: 1);
+	sig = Pan2.ar(sig,\pan.kr(-1));
 	Out.ar(out, sig*env*amp);
 },  rates: nil,  prependArgs: nil,  variants: nil,  metadata: nil
 ).add.tag(\keys);

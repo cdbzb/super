@@ -15,8 +15,14 @@ SynthV {
 		}
 	*renderMultiple { |wait = 8.5 |
 		fork{
-			synthVsToRender.do{ |i| i.synthV.render; wait.wait }
+			synthVsToRender.do{ |i| i.synthV.render; wait.wait };
+			synthVsToRender = nil;
 		}
+	}
+	* renderSection { |wait = 8.5|
+		var section = Song.cursor;
+		synthVsToRender = Song.at(section).select{|i| i.synthV.notNil };
+		SynthV.renderMultiple(wait);
 	}
 	*initClass {
 		buffers = MultiLevelIdentityDictionary.new();

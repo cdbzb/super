@@ -81,10 +81,49 @@ P(\bass, music: { |p b e|
 	].pp
 });
 ["/*SPOCK:*/ Reading energy only, Captain. No life forms.", "1 2 3 2 1 4 2 1 -6 4 5.5 2".dm('f#',\lydian)].addLine;
-P.synthV(role: \spock, take: \lead, params: {|p b| [
+/*
+"open '/Users/michael/trek/BySection/media/11-Spock&Sargon-181021_1557.rpp'".unixCmd
+*/
+Song.setTempoMap(\Reading,"E E E E E e e e ee e e e");
+P(\click, music: { |p b e|
+	var dur = 0.125;
+	[
+		instrument: \sawSynthSustain,
+		degree: [0,8,15].q(inf),
+		root: [6!( dur.reciprocal*5/3 ),8!( dur.reciprocal *7/3),10!(dur.reciprocal*2)]=> _.flat => _.q,
+		// dur: "Q q q q q q".asBeats.warpTo( e.tempoMap ).q,
+		dur: (0.125).dup(48).asBeats.warpTo( e.tempoMap.quantizeDft(0.6) ).q,
+		octave:4,
+		lagTime:0,
+		amp:0.03
+	].ppm
+});
+
+P(\click2, music: { |p b e|
+	var dur = 0.25;
+	[
+		instrument: \stab,
+		degree: [0,8,15].q(inf),
+		root: [6!( dur.reciprocal*5/3 ),8!( dur.reciprocal *7/3),10!(dur.reciprocal*2)]=> _.flat => _.q,
+		// dur: "Q q q q q q".asBeats.warpTo( e.tempoMap ).q,
+		dur: (dur).dup(24).asBeats.warpTo( e.tempoMap.quantizeDft(0.6) ).q,
+		octave:3,
+		lagTime:0,
+		amp:Pseries(0.1,-0.005,inf),
+		pan:1
+	].pp
+});
+P(\bassline, music: { |p b e|
+	[
+		
+		freq: [1,2,3].df('f#',3).q,
+		dur: b.parse([5,3+2,2]).q
+	].pp
+});
+P.synthVs(role: \spock, take: [\lead, \double], params: {|p b| [
 	lyrics: "Reading + energy + + only + captain + no life forms",
 	filter: (midinote: _ - 12), 
-	pitchTake: 1
+	pitchTake: [1, 3]
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -93,20 +132,11 @@ P.synthV(role: \spock, take: \lead, params: {|p b| [
 	}.play
 
 });
-P.double(role: \spock, take: \lead, params: {|p b| [
-	pitchTake: 1
-] }, music:{|p b e|
-	{
-		e.playbuf
-		// => p.synthVTracks.at(e.key).()
-		/10
-	}.play
-
-});
-// P.tune();
 [" I have locked your transporter device on my co-ordinates.","5 5 5 6 5 4 3 2 4 3 2 1 3 2 2".dm(\a,4)].addLine;/*SARGON [OC]*/
+Song.durs.filter(_ * 1.15);
 P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	lyrics: "I have locked your transporter + +  device + on my co-ordinates + + +",
+	phonemes: ["","","","","","","","","","","","","","","n eh th s",],
 	pitchTake: 1
 ] }, music:{|p b e|
 	p.vocodeTune.(p, b, e, e.rpp)
@@ -175,6 +205,21 @@ P(\answer, syl: 10, music: { |p b e|
 	].pp
 });
 ["/*SPOCK:*/ Coming from deep under the planet's surface, Captain. ","11 12 13 7 12 11 7 5 7 5 4 3 2".dm(\c,\mixolydian)].addLine;
+Song.setTempoMap(\Coming,"Q Q Q qq Q Q Q q e eq q q q");
+P(\click, music: { |p b e|
+	[
+		dur: 1!8.warpTo(e.tempoMap)
+
+	].pp8ww
+});
+P(\chords, music: { |p b e|
+	[
+		freq: [[5, 7, 11, 13], [3, 5, 7, 11], [2,4,7], [-7,2,5]].df(\c,4,\mixolydian).q,
+		dur: "qqqq qqqq qq qq".asBeats.warpTo( e.tempoMap ).q,
+		strum: 0.05,
+		instrument: \stringyy, amp: 0.1
+	].ppm
+});
 P.synthV(role: \spock, take: \lead, params: {|p b| [
 	lyrics: "Coming + from deep under + the planet's + surface + Captain + ",
 	filter: (midinote: _ - 12), 
@@ -195,32 +240,37 @@ P.double(role: \spock,
 	{
 		e.playbuf
 		// => p.synthVTracks.at(e.key).()
-		/10
+		/ 5
 	}.play
 
 });
-
-P.tune();
 ["Under at least one hundred miles of "," 1 2 3 4 5 4".dm(\f,\lydian) ++ "1 2 3 4 5 4 3".dm(\g,\lydian)].addLine;
-P.synthV(role: \spock, take: \lead, params: {|p b| [
-	lyrics: "Under + at least - -  one hundred + miles - - of ",
-	filter: (midinote: _ - 12), 
-	pitchTake: 1
-] }, music:{|p b e|
-	{
-		e.playbuf
-		// => p.synthVTracks.at(e.key).()
-		/ 10
-	}.play
-
+P(\bassnotes, music: { |p b e|
+	[
+		freq: [[-1, 1],-7, -6, -5.5, -6, -5.5, -4.5].df(\f,4).q,
+		dur: b.parse([2, 1, 6, 1, 1, 1, 1]).q,
+		out: Effect.bus({|i| 
+			i * 3
+			=> FreeVerb.ar(_,0.5,1) => SineShaper.ar(_,0.05,mul:3)
+			++ CrossoverDistortion.ar(i,mul:0.05)
+			/5
+			* EnvGen.cutoff(b.sum,1)
+		},)
+	].pp
 });
-P.double(role: \spock, take: \lead, params: {|p b| [
-	pitchTake: 1
+
+
+
+P.synthVs(role: \spock, take: [\lead, \double], params: {|p b| [
+	lyrics: "Under + at least - -  one hundred + miles - - of ",
+	filter: [(midinote:_),(midinote: _ - 12)], 
+	pitchTake: [1, 3]
 ] }, music:{|p b e|
 	{
 		e.playbuf
 		// => p.synthVTracks.at(e.key).()
-		/10
+		/ 5 
+
 	}.play
 
 });
@@ -289,20 +339,76 @@ P(\harmony, music: { |p b e|
 		dur: 0.5 * "qq q e eqq q q".asBeats warpTo: e.tempoMap q: 1
 	].pp
 });
+P.synthVs(\kevin, take: [\lead, \double], 
+	pbind: {|p b|
+		[
+			midinote: "1 -4 1 -7 -5 2 3".dm(\c),
+			dur: "qq q q qq q q ".asBeats.warpTo( p.tempoMap[\solid] ) ++ 1
+		].p
+	},
+	params: {|p b| [
+	lyrics: "r solid + rock  solid + rock",
+	pitchTake: [1, 3]
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+		* EnvGen.cutoff(b.sum,0.5)
+	}.play
+
+});
+P.synthVs(\an, take: [\lead, \double],
+	pbind: {|p b|
+		[
+			midinote: "11 7 11 7".dm(\c),
+			dur: "qqqq qqqq".asBeats.warpTo( p.tempoMap[\solid] )
+		].p
+	},
+	params: {|p b| [
+		filter: (midinote: _ - 12), 
+	lyrics: "Solid + Solid +",
+	pitchTake: [1, 3]
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+		* EnvGen.cutoff(b.sum,0.5)
+		/5
+	}.play
+});
 P(\bass, music: { |p b e|
 	[
 		freq: "3 4 7 11 3 4 3 4 7 11 12 5 2 2".df(\c,[2,3]).q,
 		dur: "e e e e x x x x e x x ex x q".asBeats  =>_.warpTo(e.tempoMap) =>_.q,
-		instrument:\pluckDEnv,
-		amp:0.006
+		instrument:\pluckDEnv, //try also without the effect
+		amp:0.006,
+		out: Effect.bus({|i| 
+			i * 3
+			=> FreeVerb.ar(_,0.0,1) => SineShaper.ar(_,0.05,mul:3)
+			++ 
+			(
+				CrossoverDistortion.ar(i,mul:0.05)
+				// /6
+				*3
+			)
+			/3
+			* EnvGen.cutoff(b.sum-1,1)
+			
+		}, )
+
 	].ppm
 });
 ["I will make it possible for your transporter to beam you"," 5 5 5 6 5 4 3 2 3 4 4 3 3 1 2 3".dm(\d)].addLine;/*SARGON [OC]*/
+Song.durs.filter( _ * 1.05 );
+Song.setTempoMap(\possible,"q e eq e eq e eqqq q q q q q qqq q q q");
 P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	lyrics: "I will make it possible + + for your transporter + + beam to send you",
+	filter: (midinote: _ - 12), 
 	pitchTake: 1
 ] }, music:{|p b e|
+	{Song.laMer => PlayBuf.ar(1,_) / 2}.play(s,p.carrierBus);
 	p.vocodeTune.(p, b, e, e.rpp,
+		chord: #[1,2],
 		dur:b.sum + 3 => _.postln,
 		att: 0.1,
 		rel: 5,
@@ -310,6 +416,14 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	);
 	// { e.playbuf }.play
 
+});
+P(\tambo, music: { |p b e|
+	[
+		dur: "qq qqqq qqqq qqqq qqqq qqqq qqqq".asBeats.warpTo( e.tempoMap ).q,	
+		instrument: \hihat, amp: 0.3,
+		rest: [\r, 1, 1, 1, 1, 1, 1, 1, 1].q,
+		out: Effect.bus({|i| FreeVerb.ar(i,0.5,1) },)
+	].pp
 });
 Song.setTempoMap(\possible,"q e eq e eq e eqqq e eq q q q qqq q q q");
 P(\chord, music: { |p b e|

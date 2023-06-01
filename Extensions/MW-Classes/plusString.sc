@@ -53,4 +53,22 @@
 		.reject({|i| i == 0.0})
 		.dm(*args)
         }
+	dms { 
+		var float = ParserFactory.makeFloatParser;
+		var degrees= ParserFactory.makeSepBy(
+			Choice([
+				StrParser(","),
+				ParserFactory.makeWs
+			])
+		).(float);
+		var phrase = SequenceOf([
+			degrees, 
+			RegexParser("\/[a-z]+") => Many( _ ) =>_.map({|i| i.collect{|j| j.drop(1).asSymbol}})
+		]);
+		^ParserFactory.makeSepBy(ParserFactory.makeWs).(
+			phrase.map({|i| i[0].perform(*i[1])})
+		).map({|i| i.flat})
+		.run( this )
+		.result
+	}
 }

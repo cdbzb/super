@@ -8,7 +8,7 @@ SynthDef (\kick_gentle,
 		kick=(noiseosc+kick)*EnvGen.ar(Env([0,1,0],[att,dec],[0,-5]))!2;
 		kick=SineShaper.ar(kick*shamt)*vol;
 		kick=HPF.ar(kick,80);
-		Out.ar(0,kick);
+		Out.ar(\out.kr(0),kick);
 }).add
 .tag(\kick);
 

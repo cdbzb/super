@@ -277,6 +277,33 @@ P.synthVs(role: \spock, take: [\lead, \double], params: {|p b| [
 P.tune();
 ["(boom boom) solid rock.","-7 1 7 6 7 11  12 12 7".dm(\f)].addLine;
 Song.setTempoMap(\solid,"e e e x x qqq e x xq".asBeats);
+Song.durs.filter(\solid,{|i| var last = i.last; i.dropLast ++ (last - 0.1)});
+P(\kick, music: { |p b e|
+	var tm = e.tempoMap.quantizeDft(0.3);
+	[
+		[
+			dur: "x x x xq x x x xq x x x xq E E E ".asBeats.warpTo( tm ).q,
+			instrument: \kick_gentle,
+			vol: [1,1,1,1,1,1,1,1,1,1,1,1,0.7,0.4,0.2] * 0.3 => _.q
+
+
+		].p,
+		[
+			dur: "q ex xq ex x".asBeats.warpTo( tm ).q,
+			instrument: \snare,
+			rest: [\r,1,1,1,1,1,1].q
+		].p,
+		[
+			dur: "q qq qq qq".asBeats.warpTo( tm ).q,
+			instrument: \cymbalsDS,
+			amp: 0.03,
+			rest: [\r,1,1,1,1,1,1].q
+		].p
+	] => Ppar(_)
+	=> Pset(\out, Effect.bus({|i| SineShaper.ar(i,0.09) /3 }, out: 2),_)
+	=> _.play
+
+});
 P.synthV(role: \spock, take: \lead, params: {|p b| [
 	lyrics: "r r solid + rock - r r r",
 	legato: [1, 1, 1, 1, 1, 0.5,  1, 1, ],
@@ -298,10 +325,15 @@ P.double(role: \spock, take: \lead, params: {|p b| [
 
 });
 //idea: NineZero here?
-P.synthV(role: \spock,
-	filter: (midinote:[1, 1, 5, 5, 3].dm('f')), 
-	take: \harmony, params: {|p b| [
-	lyrics: "r r solid + rock -",
+P.synthV(role: \spock,take: \harmony,
+	pbind: {|p b|
+		[
+		midinote: "1 11 11 6 5 6".dm(\c),
+		dur: 0.5 * "qq q e eqq q q".asBeats warpTo: p.tempoMap[\solid] ,
+		].p
+	},
+	 params: {|p b| [
+	lyrics: "r solid + rock baby +",
 	legato: [1, 1, 1, 1, 1, 0.5, ],
 	pitchTake: 1
 ] }, music:{|p b e|
@@ -310,33 +342,20 @@ P.synthV(role: \spock,
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.synthV(\feng, take: \bg, params: {|p b| [
+P.synthVs(\feng, take: [\bg, \bg1], params: {|p b| [
 	lyrics: "r r r r r r solid + rock",
-	pitchTake: 1
+	pitchTake: [1,3]
 ] }, music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 	}.play
-});
-P.double(\feng, take: \bg, params: {|p b| [
-	
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
-});
-P.tune();
-P(\click, music: { |p b e|
-	[
-		dur:1!8 warpTo: e.tempoMap => _.postln => _.q,
-	]//.pp
 });
 P(\harmony, music: { |p b e|
 	[
 		freq:"r 11 11 6 5 6".df(\c).q,
-		dur: 0.5 * "qq q e eqq q q".asBeats warpTo: e.tempoMap q: 1
+		dur: 0.5 * "qq q e eqq q q".asBeats warpTo: e.tempoMap q: 1,
+		rest: [\r,1,1,1,1,1].q
 	].pp
 });
 P.synthVs(\kevin, take: [\lead, \double], 
@@ -347,34 +366,16 @@ P.synthVs(\kevin, take: [\lead, \double],
 		].p
 	},
 	params: {|p b| [
-	lyrics: "r solid + rock  solid + rock",
+	lyrics: "r solid + rock  r r r ",
 	pitchTake: [1, 3]
 ] }, music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 		* EnvGen.cutoff(b.sum,0.5)
+		=> BPF.ar(_,1000)
 	}.play
 
-});
-P.synthVs(\an, take: [\lead, \double],
-	pbind: {|p b|
-		[
-			midinote: "11 7 11 7".dm(\c),
-			dur: "qqqq qqqq".asBeats.warpTo( p.tempoMap[\solid] )
-		].p
-	},
-	params: {|p b| [
-		filter: (midinote: _ - 12), 
-	lyrics: "Solid + Solid +",
-	pitchTake: [1, 3]
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-		* EnvGen.cutoff(b.sum,0.5)
-		/5
-	}.play
 });
 P(\bass, music: { |p b e|
 	[
@@ -391,7 +392,7 @@ P(\bass, music: { |p b e|
 				// /6
 				*3
 			)
-			/3
+			/4.5
 			* EnvGen.cutoff(b.sum-1,1)
 			
 		}, )
@@ -399,6 +400,32 @@ P(\bass, music: { |p b e|
 	].ppm
 });
 ["I will make it possible for your transporter to beam you"," 5 5 5 6 5 4 3 2 3 4 4 3 3 1 2 3".dm(\d)].addLine;/*SARGON [OC]*/
+P.still(\lookingAway, timecode: 530.seconds, music: { |p b e|
+	 e.still.( 
+		wait: 0.1,
+		fade:b.sum + e.bNext.sum -0.1,
+		text: ["",""],
+	)
+});
+P.still(\clear,lag:0.01, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["I will make it ","possible"],
+	).sequenceText2(
+			b.parse([7,9]), [ 
+			["for your transporter beam","to beam you"],
+			],
+	)
+});
+P(\crash, music: { |p b e|
+	(
+		instrument: \cymbalsDS,
+		att:0.5,
+		amp: 0.01
+
+
+	).play
+});
 Song.durs.filter( _ * 1.05 );
 Song.setTempoMap(\possible,"q e eq e eq e eqqq q q q q q qqq q q q");
 P.synthV(role: \vocoder, take: \lead, params: {|p b| [
@@ -406,9 +433,17 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	filter: (midinote: _ - 12), 
 	pitchTake: 1
 ] }, music:{|p b e|
-	{Song.laMer => PlayBuf.ar(1,_) / 2}.play(s,p.carrierBus);
+	{
+		var chords = (five: -3, four: -5, one: -10);
+		var progression = [\five, \four, \one, \four, \five].collect{|i| chords.at(i).midiratio}.dq;
+		Song.laMer => PlayBuf.auto(1,_,rate: progression.demand( "qqqq qqqq qqqq qqqq qq".asBeats.warpTo( e.tempoMap ) ).lag(0.1))   
+		// *2
+	}.play(s,p.carrierBus);
 	p.vocodeTune.(p, b, e, e.rpp,
+
 		chord: #[1,2],
+		width: 1.03,
+		mix: 0.3,
 		dur:b.sum + 3 => _.postln,
 		att: 0.1,
 		rel: 5,
@@ -417,10 +452,15 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	// { e.playbuf }.play
 
 });
+SynthDef(\singleTamb,{
+	Shakers.ar(3,resonantFreq:\resonantFreq.kr(1),energy:\energy.kr(1))
+	* \amp.kr(0.1) * 10
+	=> Out.ar(\out.kr(0),_)
+}).add;
 P(\tambo, music: { |p b e|
 	[
 		dur: "qq qqqq qqqq qqqq qqqq qqqq qqqq".asBeats.warpTo( e.tempoMap ).q,	
-		instrument: \hihat, amp: 0.3,
+		instrument: \singleTamb, amp: 0.3,
 		rest: [\r, 1, 1, 1, 1, 1, 1, 1, 1].q,
 		out: Effect.bus({|i| FreeVerb.ar(i,0.5,1) },)
 	].pp
@@ -446,31 +486,91 @@ P(\bass, music: { |p b e|
 });
 P.tune();
 ["(boom) that deep (that deep that deep) beneath the surface. Have no fear."," -5 3 2 3 2 3 2 1 2 3 2 1 -7 1".dm(\d)].addLine;
+P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["that","deep"],
+	).sequenceText2(
+			b.drop(1).parse([4,9]), [ 
+			["that deep","beneath the surface"],
+			],
+	)
+});
+P(\tambo, music: { |p b e|
+	[
+		dur: "q qq qq qq qq qq qq".asBeats.warpTo( e.tempoMap ).q,	
+		instrument: \singleTamb, amp: 0.3,
+		rest: [\r, 1, 1, 1, 1, 1, 1, 1, 1].q,
+		out: Effect.bus({|i| FreeVerb.ar(i,0.5,1) },)
+	].pp
+});
+Song.setTempoMap(\fear,"q q qqq q qqq q e x xe x xe e e e");
+
 P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	lyrics: "r that deep that deep that deep beneath + the surface + baby +",
+	legato: [1, 1, 0.9, 1, 0.9, 1, 1, 1, 1, 1, 1, 1, 1, 1, ],
+	filter: (midinote: _ - 12), 
 	pitchTake: 1
 ] }, music:{|p b e|
+	{
+		var chords = (five: -3, four: -5, one: -10);
+		var progression = [\one, \four, \one, \four, \one,\four,\one, \four].collect{|i| chords.at(i).midiratio}.dq;
+
+		Song.laMer => PlayBuf.auto(1,_,rate: progression.demand( "qq qq qq qq qq qq qq".asBeats.warpTo( e.tempoMap ) ).lag(0.1))   
+		// *2
+	}.play(s,p.carrierBus);
+	[
+		freq: [\r, [ [ 5, 7, 13 ], [4, 6, 12] ].df(\d).q(inf)].q,
+		instrument: \sawSynthSustain,
+		out: p.carrierBus,
+		amp:0.1,
+		dur: "q q qqq q qqq q qq".asBeats.warpTo( e.tempoMap ).q
+	].ppm;
 	p.vocodeTune.(p, b, e, e.rpp,
-		dur: b.sum,
+		chord: #[1,2],
+		width: 1.03,
+		mix: 0.3,
+		dur: b.sum + 1,
 		att: 0.2,
 		sus: b.sum - 0.2,
 		rel: 1
 	)
 
 });
-P.tune();
-P(\chords, music: { |p b e|
-	[
-		freq: [\r, [ 5, 7, 13 ], [4, 6, 12]].df(\d).q,
-		dur: b.q
-	].pp
+// P.tune();
+// P(\chords, music: { |p b e|
+// 	[
+// 		freq: [\r, [ 5, 7, 13 ], [4, 6, 12]].df(\d).q,
+// 		dur: b.q
+// 	].pp
+// });
+P(\deep, music: { |p b e|
+	{
+		var durations = b.parse([2,2,2,2]);
+		Saw.ar(
+			freq: [4,6,12].df(\d,3)
+			+ Gendy1.arWidth(freq:[ 1/2, 0.51,0.52 ]).range(-3,3)
+			,
+			mul: 0.1
+		)
+		* Env([0,1,0],[ 0.5,2 ]).kr(0,gate: TDuty.kr(durations.dq,0,gapFirst:1))
+		// => LPF.ar(_,400)
+		/3
+		=> Phaser2.ar(_,rate:0.1)
+		=> DWGReverbC1C3.ar(_)
+		/ 2
+	}.play
 });
 P(\bass, music: { |p b e|
 	[
-		freq: [1, 4, 5,  1, 4, 5].df(\d,3).q,
-		dur: b.parse([2, 3/6,1/6,[2/6,1],3/6,1/6,[ 2/6,1 ]]).q
+		freq: [1, 4, 5,  1, 4, 5].df(\d,3).q(2),
+		dur: "qq qe e qq qe e qq qe e q".asBeats.warpTo( e.tempoMap ).q
+		// dur: b.parse([2, 3/6,1/6,[2/6,1],3/6,1/6,[ 2/6,1 ]]).q
 	].pp
 });
+["la la la la","5 7 11 12".dm(\d)].addLine;
+
+
 ["/*SPOCK:*/ Reading a chamber now. Oxygen-nitrogen atmosphere, suitable for human life support.","r"].addLine;
 ["/*KIRK:*/ Lieutenant Uhura, have Doctor McCoy report to the transporter room in ten minutes",[1, 1, -5, 1, 2, -5, 2, 3, 1, 3, 4, 5, 4, 3,  5, 4, 3, 2, -6, -7, 2, 1].dm(\c)].addLine;
 P.synthV(role: \kirk, take: \lead, params: {|p b| [

@@ -253,6 +253,18 @@
 		injectEach { |initialValue function|
 			^this.collect({|i| i.inject(initialValue, function)})
 		}
+		scale {|string|
+		/* 		[1,1,1].scale("3:4") */
+			var ratio = SequenceOf(
+				List[
+					ParserFactory.makeIntegerParser,
+					StrParser(":"),
+					ParserFactory.makeIntegerParser,
+				]
+			).run(string).result ;
+			^ this * ratio[2] / ratio[0]
+
+		}
 
 }
 

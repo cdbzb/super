@@ -1,4 +1,5 @@
 Sequence : List {
+
 	var condition;
 	var <>infrastucture;
 

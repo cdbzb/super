@@ -41,34 +41,59 @@
         }
         df { | ...args |
           ^this.split(Char.space)
-		.reject({|i| i.size == 0})
-		.collect(_.asFloat)
-		.df(*args)
+		  .reject({|i| i.size == 0})
+		  .collect(_.asFloat)
+		  .df(*args)
         }
         dm { | ...args |
           ^this.replace($, , Char.space)
-	  .split(Char.space)
-		.reject({|i| i.size == 0})
-		.collect(_.asFloat)
-		.reject({|i| i == 0.0})
-		.dm(*args)
+		  .split(Char.space)
+		  .reject({|i| i.size == 0})
+		  .collect(_.asFloat)
+		  .reject({|i| i == 0.0})
+		  .dm(*args)
         }
-	dms { 
-		var float = ParserFactory.makeFloatParser;
-		var degrees= ParserFactory.makeSepBy(
-			Choice([
-				StrParser(","),
-				ParserFactory.makeWs
-			])
-		).(float);
-		var phrase = SequenceOf([
-			degrees, 
-			RegexParser("\/[a-z]+") => Many( _ ) =>_.map({|i| i.collect{|j| j.drop(1).asSymbol}})
-		]);
-		^ParserFactory.makeSepBy(ParserFactory.makeWs).(
-			phrase.map({|i| i[0].perform(*i[1])})
-		).map({|i| i.flat})
-		.run( this )
-		.result
-	}
+		dm2 {
+			^Parsers.makeSepBy(Parsers.makeWs).(
+				SequenceOf([
+					Parsers.degrees,
+					Many( // /foo/3/a
+						SequenceOf([ // /foo
+							StrParser("/"),
+							Choice([
+								Parsers.numOrArray.map({ |i| \octave -> i }),
+								RegexParser("[a-zA-Z\#\-]+").map({ |i|
+									(i.size > 3).if{
+										\scale -> i.asSymbol
+									}{
+
+										\root -> i.asSymbol
+									}
+								}),
+							])
+						]).map{|i| i[1] } //strip '/'
+					)
+				]).map{|i| i[0].performWithEnvir( \dm, i[1].asEvent  )}
+			).map({|i| i.flatten})
+			.run( this )
+			.result;
+		}
+		beats {
+			var noteNameParser = RegexParser("[exq]") => Many(_) => _.map({|i| i.collect({|j| j.asString.asBeats}).flat.sum});
+			var multipleNote = SequenceOf([
+				noteNameParser,
+				StrParser("\*"),
+				Parsers.makeIntegerParser
+			]).map({|i| i[0].dup(i[2])});
+			var notesOrMultiples = Choice([
+				multipleNote,
+				noteNameParser,
+			]);
+			^Parsers.makeSepBy(
+				Parsers.makeWs
+			).( notesOrMultiples ).map{|i| i.flat}
+			.run(this)
+			.result
+		}
+
 }

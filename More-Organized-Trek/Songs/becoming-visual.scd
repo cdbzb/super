@@ -1114,26 +1114,125 @@ P(\arpeggio,syl:1, music: { |p b e|
 	).play
 });
 P.tune();
-[" and about a half million years ago, its atmosphere was","r"].addLine;
-
-["totally ripped away by some sort of cataclysm.","r"].addLine;
-["The planet has evidently been dead since then.","r"].addLine;
+[" and about a half million years ago, its","3 2 1 -7/b/harmonicMinor 5 5 6 5 6 5 4 1 4/a".dm2].addLine;
+Song.setTempoMap(\about,"e x xe e q e x g g xe x xe x ");
+P.tune();
+P(\click, music: { |p b e|
+	[
+		dur: "q*6".beats.warpTo( e.tempoMap.quantizeWindow(0.2) ).q,
+		instrument: \hihat
+	].pp
+});
+P(\keys, music: { |p b e|
+	[
+		freq: [\r,[-1,-3, -5, 1, 3, 5], [-5, 3, 5]].df('b-',3,\diminished) 
+		++ [ [-1,1], 1 ].df(\a,3)
+		// ++ [[-1,1], 11, 3].df(\d,3)
+		=> _.q,
+		dur: "qq q q q q ".asBeats.warpTo( e.tempoMap).q
+	].pp
+});
+[" atmosphere was"," 3 1 -6 3/a".dm2].addLine;
+Song.setTempoMap(\atmosphere,"ex x xe e");
+P(\click, music: { |p b e|
+	[
+		dur: "x q e".beats.warpTo( e.tempoMap).q,
+		rest: [\r,1,1,1,1,1,].q,
+		instrument: \hihat
+	].pp
+});
+P(\keys, music: { |p b e|
+	[
+		freq: [\r,[-1,1], 11, 3].df(\d,3)
+		=> _.q,
+		dur: "x q e e".asBeats.warpTo( e.tempoMap).q
+	].pp
+});
+P(\pad, music: { |p b e|
+	(
+		freq: [ 1,3,5,7 ].df(\d),
+		instrument: \stringyy,
+		dur: b.sum
+	).play
+});
+P(\flute, music: { |p b e|
+	[
+		freq: "1 3 4 3 ".df(\d,6).q,
+		dur: "x x x e e e".asBeats.warpTo( e.tempoMap ).q,
+		rest: [\r, 1, 1, 1, 1, 1].q,
+		// instrument: \reedy, amp:0.000
+		instrument: \wash, freqLag:0
+	].ppm
+});
+P(\bass, music: { |p b e|
+	[
+		freq: [\r, -1, 1, 1, -1].df(\d,4).q,
+		dur: "x e x xe e".asBeats.warpTo( e.tempoMap ).q,
+		lag: [0, 0, 0.07,0,0].q,
+		amp: [0,2,1,2,2]/20 => _.q
+		// dur: [0.25, 0.5,0.25,0.75,0.5]/2 => _.warpTo(e.tempoMap) => _.q
+	].pp
+});
+P.tune();
+["totally ripped away by ","5 6 5 5 5 11 12/c".dm2].addLine;
+Song.setTempoMap(\ripped,"e e q qe e qe q");
+P(\guitar, music: { |p b e|
+	[
+		freq: [2, 3, 2, 2, 1, -7, 1].df(\f,4,\mixolydian).q,
+		dur: "e e q q q qe e".asBeats.warpTo( e.tempoMap ).q,
+		instrument: \pluckD,
+		amp:0.05
+	].ppm
+	;
+	[
+		freq: [-2, 2, -2, 1, -7, 1].df(\f,4,\mixolydian).q,
+		dur: "q q q q qe e".asBeats.warpTo( e.tempoMap ).q,
+		amp:0.5
+	].pp
+});
+P.tune();
+["some sort of cataclysm.","4 4 4 4 3 2 1/f".dm2].addLine;
+P.tune();
+P(\bass, music: { |p b e|
+	[
+		freq: [3,3,3,-5, 1,4].df(\g,3,\minor).q,
+		dur: e.bAll.parse([1,1,1,[1,1,1,0.5],[0.5,1],2]).q,
+		amp:1,
+	].pp
+});
+P(\pf, music: { |p b e|
+	[
+		freq: [4,5].dup(3) ++ [5] => _.df(\f) => _.q,
+		dur: b.parse([1, 1, 1, 4]).q
+	].pp
+});
+["The planet has evidently been dead since then.","5 4 3 4 11 7 7 6/c 5 5 2 4/c#".dm2].addLine;
+P.tune();
 ["Sensors detect no life of any kind.","r"].addLine;
-[" All of your questions will be answered in time, Captain Kirk.","r"].addLine;/*SARGON [OC]:*/
+[" All of your questions will be answered in time, Captain Kirk.", "4 3 2 1 2 2 3 2 1 -7 -7/c".dm2 ].addLine;/*SARGON [OC]:*/
+P.tune();
 [" Are your hailing frequencies open?","r"].addLine;/*KIRK*/
 [" No, sir.","r"].addLine;/*UHURA:*/
 ["SARGON [OC]: I am Sargon.","r"].addLine;
-["It is the energy of my thoughts which has touched your instruments and directed you here.","r"].addLine;
-["Now with this closer distance I can speak to you at last.","r"].addLine;
+["It is the energy of my thoughts which has","r"].addLine
+[" touched your instruments and directed you here.","r"].addLine;
+["Now with this closer distance","r"].addLine;
+["I can speak to you at last.","r"].addLine;
+
 [" Who are you, Sargon?","r"].addLine;/*KIRK:*/
+
 ["SARGON [OC]: Please assume a standard orbit about our planet, Captain.","r"].addLine;
+
 [" Is that a request or demand?","r"].addLine;/*KIRK:*/
+
 ["SARGON [OC]: The choice is yours.","r"].addLine;
 ["I read what is in your mind.","r"].addLine;
 ["Words are unnecessary.","r"].addLine;
+
 [" The planet is dead.","r"].addLine;/*KIRK:*/
 ["There's no possibility of life there as we understand life.","r"].addLine;
 [" [OC]: And I am as dead as my planet.","r"].addLine;/*SARGON:*/
+/// end here???
 ["Does that frighten you, James Kirk?","r"].addLine;
 ["For if it does,","r"].addLine;
 ["if you let what is left of me perish,","r"].addLine;

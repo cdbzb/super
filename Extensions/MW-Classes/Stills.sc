@@ -22,7 +22,7 @@ Stills {
 	*new {|movie| ^super.new.init(movie)}
 
 	*reaper {
-		("open "++ "/Users/michael/trek/video for stills etc/video for stills etc.RPP".escapeChar(Char.space)).unixCmd
+		("open "++ "~/tank/super/Stills/video for stills etc.RPP".standardizePath.escapeChar(Char.space)).unixCmd
 	}
 	dual {
 		monitors= [
@@ -32,7 +32,7 @@ Stills {
 	}
 
 	init {|movie| 
-		file=movie ? "/Users/michael/trek/BySection/media/return to tomorrow.mov"; 
+		file=movie ? "~/tank/super/Stills/return to tomorrow.mov".standardizePath; 
 		markers=();
 		monitors = switch( Platform.machine,
 			// monitor size = 1440 x 900

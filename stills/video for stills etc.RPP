@@ -66,7 +66,11 @@
   VIDEO_CONFIG 0 0 256
   PANMODE 3
   CURSOR 2099
+<<<<<<< HEAD
   ZOOM 20.86949784734297 44361 0
+=======
+  ZOOM 0.08791735583588 0 0
+>>>>>>> tmp
   VZOOMEX 0 0
   USE_REC_CFG 0
   RECMODE 1
@@ -436,7 +440,11 @@
     ISBUS 0 0
     BUSCOMP 0 0 0 0 0
     SHOWINMIX 1 0.6667 0.5 1 0.5 0 0 0
+<<<<<<< HEAD
     SEL 1
+=======
+    SEL 0
+>>>>>>> tmp
     REC 0 0 1 0 0 0 0 0
     VU 2
     TRACKHEIGHT 218 0 0 0 -1 0
@@ -602,6 +610,7 @@
       >
     >
   >
+<<<<<<< HEAD
   <TRACK {0465B56A-9E7A-C843-B6A4-22FB7E9B6CA6}
     NAME ""
     PEAKCOL 16576
@@ -11950,4 +11959,6 @@
       >
     >
   >
+=======
+>>>>>>> tmp
 >

@@ -1,12 +1,6 @@
 Song {
 	classvar lastSectionPlayed=0;
-<<<<<<< HEAD:TrekClasses/MW-Classes/Song-Part.sc
-	classvar <reaperFolder ;
-	classvar <>dursFile;
-	classvar <>dursFolder;
-=======
 	classvar <reaperFolder, <>dursFile, <>dursFolder;
->>>>>>> tmp:MW-Classes/Song-Part.sc
 	classvar <songs;
 	classvar <>current;
 	classvar <>loading;
@@ -29,10 +23,7 @@ Song {
 		reaperFolder = "~/tank/super/RPP".standardizePath;
 		dursFile="~/tank/super/theExtreme3".standardizePath;
 		dursFolder="~/tank/super/Dur".standardizePath;
-<<<<<<< HEAD:TrekClasses/MW-Classes/Song-Part.sc
-=======
 		Archive.archiveDir = "~/tank/super".standardizePath;
->>>>>>> tmp:MW-Classes/Song-Part.sc
 		Class.initClassTree(Recorder);
 		songs= Dictionary.new;
 		loading = CondVar();

@@ -104,12 +104,9 @@ RecEnv : Rec {
 	classvar armed;
 	*initClass {
 		directory = "~/tank/super/Envelopes".standardizePath;
-<<<<<<< HEAD:TrekClasses/MW-Classes/recEnv.sc
-		File.exists(directory).not.if{File.mkdir(directory)}; }
-=======
 		File.exists(directory).not.if{File.mkdir(directory)}; 
 	}
->>>>>>> tmp:MW-Classes/recEnv.sc
+	
 	*new {|part tail=0| ^super.new(part ,tail, directory, 1024)}
 	writeFiles { buffer.write(path++".wav", "wav", "int16");} //epos sampleRate 
 	inputUgen { ^{SoundIn.ar(0) => Amplitude.ar(_)} }
@@ -183,12 +180,8 @@ RecKey : RecOnsets {
 	// classvar <>masterArmed;
 	*initClass {
 		directory = "~/tank/super/Onsets".standardizePath;
-<<<<<<< HEAD:TrekClasses/MW-Classes/recEnv.sc
-		File.exists(directory).not.if{File.mkdir(directory)}; masterArmed = false }
-=======
 		File.exists(directory).not.if{File.mkdir(directory)}; masterArmed = false 
 	}
->>>>>>> tmp:MW-Classes/recEnv.sc
 	*new {|part tail=0| ^super.new(part,tail)}
 	*record {masterArmed = true}
 	play{
@@ -228,11 +221,7 @@ RecKey : RecOnsets {
 
 RecIn : Rec {
 
-<<<<<<< HEAD:TrekClasses/MW-Classes/recEnv.sc
-	classvar directory; 
-=======
 	classvar directory;
->>>>>>> tmp:MW-Classes/recEnv.sc
 	var <>fftBuffer, <fftSize=2048, <hop=0.5, <window=1;
 	*initClass {
 		directory = "~/tank/super/samples2".standardizePath;

@@ -143,7 +143,7 @@ VocalRPP {
 
 			0.01.wait;
 
-			while {File.mtime(prox)<File.mtime(subproject)}{\waiting.postln;0.01.wait};
+		while {File.mtime(prox)<File.mtime(subproject)}{\waiting.postln;0.01.wait};
 
 			this.copyPROXtowav.wait;
 			this.refreshBuffer;
@@ -285,11 +285,7 @@ VocalRPP {
 		++ File.readAllString(
 			Song.reaperFolder +/+ "updateTempo.lua"
 		);
-<<<<<<< HEAD:TrekClasses/MW-Classes/VocalRpp.sc
-		var file = File("~/Library/Application Support/REAPER/Scripts/updateTempo.lua","w".standardizePath);
-=======
 		var file = File("~/Library/Application Support/REAPER/Scripts/updateTempo.lua","w").standardizePath;
->>>>>>> tmp:MW-Classes/VocalRpp.sc
 		//string = "reaper.Main_openProject(\"" ++ subproject ++ "\")\n" + string + "\n reaper.Main_OnCommand(40026,-1)";
 
 		//reaper.Main_SaveProject(-1); 

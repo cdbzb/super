@@ -107,11 +107,7 @@ Synful : VSTI {
 	var plugin;
 	var expr = #[0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5];
 	classvar <patches,<banks; 
-<<<<<<< HEAD:TrekClasses/MW-Classes/VSTI.sc
-	classvar <defaultProgram; 
-=======
 	classvar <defaultProgram;
->>>>>>> tmp:MW-Classes/VSTI.sc
 	*initClass{
 		defaultProgram = "~/tank/super/SynfulTest.FXP".standardizePath;
 		patches = ( flute:73, oboe:68, enghorn:69, clarinet:71, bassoon:70, horn:62, horn4:5, horn8:6, trumpet:56, trombone:57, violin:40, viola:41, cello:42, bass:43, violins:0, violins2:1, violas:2, cellos:3, basses:4);

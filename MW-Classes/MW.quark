@@ -1,0 +1,4 @@
+(
+name: "MW",
+dependencies:["https://github.com/shimpe/scparco"]
+)

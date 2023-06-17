@@ -97,7 +97,7 @@ P.still(\kirk, timecode: 3759.61.seconds, music: { |p b e|
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["Sargon","hee.."],
+		text: ["Sargon","here"],
 	).sequenceText2(
 			b.parse([3]), [ 
 			["I'm in your","deck 6 briefing-room"],
@@ -1175,7 +1175,19 @@ P.still(\mulhall, start:'help him', timecode:3953.0.seconds, music:{ |p b e|
 		)
 });
 ["/*MCCOY:*/ (boom) He's dead.",[-7,-5,1].dm(\d)].addLine;
-P.tune(\dead,range:[1,2],syl:0);
+P.synthV(role: \mccoy, take: \lead, params: {|p b| [
+	lyrics: "r he's dead",
+	legato: [1, 1, 0.55, ],
+	filter: (midinote: _ - 12), 
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+	}.play
+
+});
+// P.tune(\dead,range:[1,2],syl:0);
 
 P.still(\mcCoy,syl:0, start:\dead, timecode:4003.0.seconds, music:{ |p b e|
 		e.still.value(

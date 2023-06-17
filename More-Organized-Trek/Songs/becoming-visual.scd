@@ -1213,19 +1213,135 @@ P.tune();
 P.tune();
 [" Are your hailing frequencies open?","r"].addLine;/*KIRK*/
 [" No, sir.","r"].addLine;/*UHURA:*/
-["SARGON [OC]: I am Sargon.","r"].addLine;
-["It is the energy of my thoughts which has","r"].addLine
+["SARGON [OC]: I am Sargon.","1 -7 4 3/c#".dm2].addLine;
+P.tune();
+P(\bassnotes, music: { |p b e|
+	[
+		freq: [ [-1, 1].df('c#',3),[-1,1].df('f#',2) ].q,
+		dur: b.parse([2,2]).q,
+	].pp;
+	[
+		freq: [\r, [ 3, 5, 11 ],[3,5,7]].df('f#').q,
+		dur: b.parse([2,1,1]).q,
+		strum: [0,0.05,0].q,
+		instrument: \default
+	].ppm
+});
+P(\line, music: { |p b e|
+	[
+		midinote: "1 -7 -6 -5/c#".dm2.q,
+		dur: b.parse([ 1, 1, 1 ]).q,
+		legato: 1,
+		instrument: \stringyy,
+		
+	].ppm;
+	[
+		freq: 1.df('c#'),
+		dur: b.sum,
+		instrument: \sawSynthSustain,
+		att:[1].q,
+		amp: 0.02
+	].pp;
+	(
+		instrument: \cymbalsDS,
+		lag: b.parse([2]).unbubble,
+		amp: 0.02
+	).play
+});
+Require("boilerplate");
+P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+	lyrics: "I am sargon +",
+	pitchTake: 1,
+	filter: (midinote: _ - 12), 
+] }, music:{|p b e|
+	p.vocodeTune.(p,b,e,e.rpp)
+
+});
+["It is the energy of my thoughts which has","r"].addLine;
 [" touched your instruments and directed you here.","r"].addLine;
-["Now with this closer distance","r"].addLine;
-["I can speak to you at last.","r"].addLine;
+["Now at this closer distance","5 4 3 2 1 3 2 4 3 3 2 2 1 -7 -6 4.5/d".dm2].addLine;
+Song.durs.filter(_*1.3);
+P.tune( { |i| i  <> [legato: 3,amp:0.03].p => Pmul(\freq,[0.25,0.5,1],_) });
+P(\pad, music: { |p b e|
+	[
+		instrument: \visual_pad,
+		freq: 1.df(\a),
+		dur: b.q
+		// dur: b.sum
+	].pp
+});
+P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+	lyrics: "Now at this closer + distance + I can speak to you r r at last",
+	filter: (midinote: _ - 12), 
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		PlayBuf.auto(2,Song.laMer,trigger:TDuty.ar(4,0), rate: [2,3].dq.demand(b.parse([ 14,2 ])).midiratio) /20
+	}
+	// .play(s,p.carrierBus)
+	;
+	
+	{
+		Saw.ar(
+			[ 1, -7 ].df(\a).dq.demand(b.parse([ 14,2 ])) /[2,3,4,8]// + Gendy1.arWidth(freq:0.1).range(-10,10)
+			)
+			* Env.linen(2,b.sum-1,1).kr /200
+			=> Out.ar(p.carrierBus,_);
+			Silent.ar
+	}.play;
+	p.vocodeTune.(p,b,e,e.rpp,
+		dur:b.sum + 0.5,
+		att:1,
+		// sus: b.parse([9]).sum,
+		rel:0,
+		mix:0.9
 
-[" Who are you, Sargon?","r"].addLine;/*KIRK:*/
+	)
+});
 
-["SARGON [OC]: Please assume a standard orbit about our planet, Captain.","r"].addLine;
+[" Who are you, Sargon?","-7 3 1 -7 -5/c/mixolydian".dm2].addLine;/*KIRK:*/
+P.synthV(role: \kirk, take: \lead, params: {|p b| [
+	lyrics: "Who are you sargon +",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_,0)
+		/3
+	}.play
+
+});
+
+["SARGON [OC]: Please assume a standard orbit about our planet, Captain.","1 2 2 1 2 3 3 2 1 2 3 3 4/c#".dm2].addLine;
+P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+	lyrics: "Please assume + a standard + orbit + about + our planet + ",
+	pitchTake: 1
+] }, music:{|p b e|
+	p.vocodeTune.(p,b,e,e.rpp,
+		chord: #[1,2,1.5,4],
+		mix: 0.9,
+		width:1.02,
+		wet:0
+	)
+
+});
 
 [" Is that a request or demand?","r"].addLine;/*KIRK:*/
 
-["SARGON [OC]: The choice is yours.","r"].addLine;
+["SARGON [OC]: The choice is yours.","1 1 1 5/f#".dm2].addLine;
+P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+	lyrics: "the choice is yours",
+	filter: (midinote: _ - 12), 
+	pitchTake: 1
+] }, music:{|p b e|
+	p.vocodeTune.(p,b,e,e.rpp,
+		echo:0.2, modGain:2,
+		chord: #[2,4,6,8],
+		mix: 0.99
+	)
+
+});
 ["I read what is in your mind.","r"].addLine;
 ["Words are unnecessary.","r"].addLine;
 

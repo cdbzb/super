@@ -63,7 +63,7 @@ P.synthV(role: \spock, take: \harmony,
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		=> p.synthVTracks.at(e.key).()
+		// => p.synthVTracks.at(e.key).()
 	}.play
 });
 P(\bass, music: { |p b e| //check last note

@@ -1,0 +1,12 @@
+(
+StrParserTester.run;
+SequenceOfTester.run;
+RegexParserTester.run;
+ChoiceTester.run;
+ManyTester.run;
+CombinatorTester.run;
+LongestChoiceTester.run;
+LookAheadTester.run;
+OptionalTester.run;
+BinaryTests.run;
+)

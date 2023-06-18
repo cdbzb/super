@@ -103,7 +103,7 @@ RecEnv : Rec {
 	classvar directory;
 	classvar armed;
 	*initClass {
-		directory = "~/tank/super/Envelopes".standardizePath;
+		directory = this.filenameSymbol.asString.dirname.dirname +/+ "Envelopes".standardizePath;
 		File.exists(directory).not.if{File.mkdir(directory)}; 
 	}
 	
@@ -117,7 +117,7 @@ RecOnsets {
 	classvar directory;
 	classvar <>masterArmed;
 	*initClass {
-		directory = "~/tank/super/Onsets".standardizePath;
+		directory = this.filenameSymbol.asString.dirname.dirname +/+ "Onsets".standardizePath;
 		File.exists(directory).not.if{File.mkdir(directory)}; }
 	*new {|part tail=0| ^super.new.init(part,tail)}
 	*record {masterArmed = true}
@@ -179,7 +179,7 @@ RecKey : RecOnsets {
 	classvar directory;
 	// classvar <>masterArmed;
 	*initClass {
-		directory = "~/tank/super/Onsets".standardizePath;
+		directory = this.filenameSymbol.asString.dirname.dirname +/+ "Onsets".standardizePath;
 		File.exists(directory).not.if{File.mkdir(directory)}; masterArmed = false 
 	}
 	*new {|part tail=0| ^super.new(part,tail)}
@@ -224,7 +224,7 @@ RecIn : Rec {
 	classvar directory;
 	var <>fftBuffer, <fftSize=2048, <hop=0.5, <window=1;
 	*initClass {
-		directory = "~/tank/super/samples2".standardizePath;
+		directory = this.filenameSymbol.asString.dirname.dirname +/+ "samples2".standardizePath;
 		File.exists(directory).not.if{File.mkdir(directory)};
 		SynthDef("pvIn", { arg recBuf=1, length=4, hop=0.5, window=0;
 			var in, chain, bufnum;

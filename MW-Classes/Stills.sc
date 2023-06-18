@@ -22,11 +22,7 @@ Stills {
 	*new {|movie| ^super.new.init(movie)}
 
 	*reaper {
-<<<<<<< HEAD:TrekClasses/MW-Classes/Stills.sc
-		("open "++ "~tank/super/stills/video for stills etc.RPP".standardizePath.escapeChar(Char.space)).unixCmd
-=======
-		("open "++ "~/tank/super/Stills/video for stills etc.RPP".standardizePath.escapeChar(Char.space)).unixCmd
->>>>>>> tmp:MW-Classes/Stills.sc
+		("open "++ this.class.filenameSymbol.asString.dirname.dirname +/+ "Stills/video for stills etc.RPP".escapeChar(Char.space)).unixCmd
 	}
 	dual {
 		monitors= [
@@ -36,11 +32,7 @@ Stills {
 	}
 
 	init {|movie| 
-<<<<<<< HEAD:TrekClasses/MW-Classes/Stills.sc
-		file=movie ? "~/tank/super/stills/return to tomorrow.mov"; 
-=======
-		file=movie ? "~/tank/super/Stills/return to tomorrow.mov".standardizePath; 
->>>>>>> tmp:MW-Classes/Stills.sc
+		file=movie ? this.class.filenameSymbol.asString.dirname.dirname +/+ "Stills/return to tomorrow.mov"; 
 		markers=();
 		monitors = switch( Platform.machine,
 			// monitor size = 1440 x 900

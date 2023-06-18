@@ -1,7 +1,10 @@
 Vocaloid {
-	classvar <>directory = "~/tank/super/Vocaloid";
+	classvar <>directory;
 	classvar notePrototype;
 	var <name, <project, <path, file;
+	*initClass {
+		directory = this.filenameSymbol.asString.dirname.dirname +/+ "Vocaloid";
+	}
 	*new {|name| ^super.new.init(name) }
 	init{ |n|
 
@@ -11,7 +14,7 @@ Vocaloid {
 
 		file = directory +/+ name ++ ".json";
 
-		project = String.readNew(File( "~/tank/super/Vocaloid/Project-/sequence.json".standardizePath,"r" ))
+		project = String.readNew(File( this.class.filenameSymbol.asString.dirname.dirname +/+ "Vocaloid/Project-/sequence.json","r" ))
 		=> JSON.parse(_);
 
 		notePrototype = (

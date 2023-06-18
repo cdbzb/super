@@ -3,12 +3,12 @@ SynthDefLibrary {
     classvar <>listings,<>taglist,<>currentPack,<>files;
 
     *initClass {
-        Class.initClassTree(Phaser2);
+        // Class.initClassTree(Phaser2);
         listings=List.new;
         taglist = ();
         //Server.default.waitForBoot
         StartUp.add( {
-            var files=files++"~/tank/super/SynthDefLibrary/*".standardizePath.pathMatch;
+            var files=files++this.filenameSymbol.asString.dirname.dirname +/+ "SynthDefLibrary/*" => _.pathMatch;
             files.do{|file| try{ file.load }}
         } )
     }

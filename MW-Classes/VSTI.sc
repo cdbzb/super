@@ -109,7 +109,7 @@ Synful : VSTI {
 	classvar <patches,<banks; 
 	classvar <defaultProgram;
 	*initClass{
-		defaultProgram = "~/tank/super/SynfulTest.FXP".standardizePath;
+		defaultProgram = this.filenameSymbol.asString.dirname.dirname +/+ "SynfulTest.FXP";
 		patches = ( flute:73, oboe:68, enghorn:69, clarinet:71, bassoon:70, horn:62, horn4:5, horn8:6, trumpet:56, trombone:57, violin:40, viola:41, cello:42, bass:43, violins:0, violins2:1, violas:2, cellos:3, basses:4);
 		banks = ( none:1, mute1:2, mute2:3, stopped:4, arco:1, pizz:2, bartok:3, legno:4, trem:5, sulpont:6, tremsulpont:7, harmonics:8, mute:9);
 		Event.addEventType(\synful,{

@@ -174,7 +174,7 @@ VocalRPP {
 	makeRPPs { 
 		|durs=#[1,2,3] |
 		var guide=reaperProjectPath +/+ "media" +/+ key.asString ++ ".wav";
-		var examplesPath = "~/tank/super/RPP/".standardizePath;
+		var examplesPath = this.class.filenameSymbol.asString.dirname.dirname +/+ "RPP/";
 		// build subproject
 		var dummy = examplesPath ++ "example-sub"
 		=> File.readAllString(_,"r")

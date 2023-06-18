@@ -17,7 +17,7 @@ Item {
 
 	*initClass {
 		items=();
-		samplesDir="~/tank/super/samples/".standardizePath;
+		samplesDir=this.filenameSymbol.asString.dirname.dirname ++ "/samples/".standardizePath;
 		SynthDef("pvrec", { |recBuf=1 soundBufnum=2 fftSize=2048 hop= 0.5 window=1|
 			var in, chain, bufnum;
 			bufnum = LocalBuf.new(fftSize);

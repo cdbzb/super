@@ -1,6 +1,6 @@
 SynthV {
 	// project.tracks[0].database = "AiKO Lite"
-	classvar <>directory = "~/tank/super/SynthV";
+	classvar <>directory;
 	classvar <notePrototype, <databasePrototype, <databaseLib;
 	classvar <roles,<envelopes=#[ \toneShift, \pitchDelta, \voicing, \tension, \vibratoEnv, \loudness, \breathiness, \gender ];
 	classvar <vocalModes;
@@ -25,6 +25,8 @@ SynthV {
 		SynthV.renderMultiple(wait);
 	}
 	*initClass {
+
+	directory = this.filenameSymbol.asString.dirname.dirname ++ "/SynthV";
 		buffers = MultiLevelIdentityDictionary.new();
 
 		roles = ();

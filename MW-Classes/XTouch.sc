@@ -1,5 +1,6 @@
 XTouch : XMIDIController {
 	classvar <>id = 1879431245;// INT
+	classvar <>defs;
 	//classvar <>id =  -1378392801;// EXT
 	//classvar <>id = 1779843049;
 
@@ -19,7 +20,7 @@ XTouch : XMIDIController {
 		^this
 	}
 	*resetMappings {
-		
+		defs.do(_.free);
 	}
 	*applyMappings {
 			mappings.pairsDo{|function label| 
@@ -34,7 +35,7 @@ XTouch : XMIDIController {
 				};
 				function.cs.post;' '.post;midinote.postln;
 				//MIDIFunc.noteOn(function,midinote,srcID:1779843049).permanent_(true);
-				MIDIdef.noteOn(\X ++ label =>_.asSymbol, function,midinote,srcID:XTouch.id).permanent_(true);
+				defs.add(MIDIdef.noteOn(\X ++ label =>_.asSymbol, function, midinote,srcID:XTouch.id).permanent_(true));
 			};
 	}
 	*dump{
@@ -51,6 +52,7 @@ XTouch : XMIDIController {
 		}
 	}
 	*initClass {
+		defs = List.new;
 		functions=List.new();
 		functionKeyToggles=Bus.control(Server.default,8);
 		labels=Dictionary.newFrom([

@@ -20,10 +20,10 @@ Song {
 	classvar <>muteTunes;
 
 	*initClass {
-		reaperFolder = "~/tank/super/RPP".standardizePath;
-		dursFile="~/tank/super/theExtreme3".standardizePath;
-		dursFolder="~/tank/super/Dur".standardizePath;
-		Archive.archiveDir = "~/tank/super".standardizePath;
+		reaperFolder = this.filenameSymbol.asString.dirname.dirname +/+ "RPP";
+		dursFile=this.filenameSymbol.asString.dirname.dirname +/+ "theExtreme3";
+		dursFolder=this.filenameSymbol.asString.dirname.dirname +/+ "Dur";
+		Archive.archiveDir = this.filenameSymbol.asString.dirname.dirname;
 		Class.initClassTree(Recorder);
 		songs= Dictionary.new;
 		loading = CondVar();

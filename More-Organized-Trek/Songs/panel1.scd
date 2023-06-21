@@ -7,11 +7,11 @@ Song(\panel1,[]).current
 "~/tank/super/More-Organized-Trek/Songs/boilerplate.scd".standardizePath.load;
 Song.vocoderRatio.set(1);
 //(A panel slides back to reveal a much larger area, with rock walls, and a glowing sphere elegantly poised on an angled support.) 
-/*SARGON: (the glowing sphere)*/[" Welcome. I am Sargon. ","r",].addLine; 
+/*SARGON: (the glowing sphere)*/[" Welcome. I am Sargon. ","r",[5]].addLine; 
 P.still(\sargonSpeaks, timecode: 1013.361.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["welcome	","I am Sargon"],
 	)
 });
 /*SPOCK:*/[" Sargon, would it harm you if I ","4 5 7 11 12 6 5 4".dm(\d)].addLine; 
@@ -35,7 +35,13 @@ P.synthVs(role: \spock, take: [\dbl, \lead ], params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-/*SARGON:*/[" You may use your tricorder, Mister Spock.","r"].addLine;
+/*SARGON:*/[" You may use your tricorder, Mister Spock.","r",[5]].addLine;
+P.still(\illumjinated, timecode: 1031.2.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["you may use","your tricorder"],
+	)
+});
 ["Your readings will show","r"].addLine;
 ["energy but no substance. ","3 2 3 2 1 -7 1 -7 -6 -5 4 3 3 1 2 -7".dm(\e)].addLine;
 Song.setTempoMap(\substance,"e e e e e e e e e e e e e e e");
@@ -242,12 +248,6 @@ P.synthV(\xuan,
 			// out:3
 		);
 });
-P.still(\lit, timecode: 1033.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["essence","of my mind"],
-	)
-});
 P.synthV(\kevin, take: nil,  
 	pbind: {|p b| [ dur:p.durs[\essence], midinote: "1 1 1 1 1 1 1 4 7 7 6 7 6 5 6 ".dm(\a) ].p },
 	params: {|p b| [
@@ -392,12 +392,13 @@ P('click',start:\outtro,music: {|p b e|
 	].pp
 });
 /*SPOCK:*/[" (boom) Pure energy. Matter without form. ","-4 11 7 6 5".dm(\c) ++ "7 6 5 4 11".dm(\e,\mixolydian)].addLine; 
-P.still(\closeSpock, timecode: 1039.229.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
-	)
-});
+
+// P.still(\closeSpock, timecode: 1039.229.seconds, music: { |p b e|
+// 	 e.still.( 
+// 		wait: b.sum,
+// 		text: ["",""],
+// 	)
+// });
 Song.setTempoMap(\Pure,"qq qq Q Q Q QQ QQ Q Q qq");
 P.still(\tricorder,timecode:1035.seconds,music:{ |p b e|
 	e.still.(
@@ -405,7 +406,7 @@ P.still(\tricorder,timecode:1035.seconds,music:{ |p b e|
 		fade: 1.5
 	)
 });
-P.still(\energy,syl:0,timecode:1037.seconds, music: {|p b e|
+/* P.still(\energy,syl:0,timecode:1037.seconds, music: {|p b e|
 	e.still.(
 		wait:b.sum - b.drop(1)[0]/2,
 		text: ["",""],
@@ -417,7 +418,7 @@ P.still(\energy,syl:0,timecode:1037.seconds, music: {|p b e|
 		b.drop(1)[1..4].sum, ["matter","without form"]
 	]
 	)
-});
+}); */
 Song.energyDur=0.1;
 // Song.durs[\Pure] = "qq qq Q Q Q QQ QQ Q Q qq    qq qq qq qq".asBeats * Song.energyDur * 4  => _.q;
 // P.tune();
@@ -576,13 +577,13 @@ P(\tricorderArp, music: { |p b e|
 // P.tune();
 // /*KIRK:*/[" Impossible. ","4 3 1 -5".dm('b-',\minor)].addLine; 
 /*KIRK:*/[" Impossible. ","-5 3 1 -4.5".dm('b-',\minor)].addLine; 
-P.still(\closeImpossible, timecode: 1041.380.seconds, music: { |p b e|
+/* P.still(\closeImpossible, timecode: 1041.380.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
 	)
-});
-P.still(\kirk, timecode: 1040.5.seconds, music: { |p b e|
+}); */
+P.still(\kirk, timecode: 1039.8.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["Impossible",""],
@@ -640,7 +641,7 @@ P(\strum, music: { |p b e|
 		out: Effect.bus({|i| i * SinOsc.ar(2.9) => PanAz.ar(4,_, SinOsc.ar(2) * pi) => FreeVerb.ar(_,0.4,1)}, inputChannels:4, out:0)
 	].pp
 });
-P.still(\group_mccoy, timecode: 1042.79.seconds, music: { |p b e|
+P.still(\group_mccoy, timecode: 1042.39.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["but you once","had a body"],
@@ -823,6 +824,12 @@ P.synthV(Trek.cast.kirk,
 });
 
 /*SARGON:*/[" Because it is possible you are our descendants, Captain Kirk. ","1 3 5 7 12 7 5 3 ".dm(\f,4) ++ "1 3 5 7 12 11 13 11 7 6".dm(\g,4)].addLine;
+P.still(\litAgain, timecode: 1045.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.tune(\Because, { |i| i <> [instrument:\harp,\coef,0.2,amp:0.01,delaytime:-10,out:(0..4).q(inf)].p => Pmul(\freq,0.5,_)});
 P(\bassnote, music: { |p b e|
 	[
@@ -1333,7 +1340,7 @@ P(\bass, music: { |p b e|
 	).play
 });
 /*SPOCK:*/[" That would tend, however, to explain ","3 2 4 2 -7 1 2 4 6".dm(\e)].addLine;
-P.still(\wideButSpockSpeaks, timecode: 1127.175.seconds, music: { |p b e|
+P.still(\wideButSpockSpeaks, timecode: 1126.775.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
@@ -1557,7 +1564,7 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	);
 });
 /*KIRK:*/[" A war? ","1 7".dm(\a,4,\mixolydian),].addLine; 
-P.still(\kirkCloseWar, timecode: 1138.616.seconds, music: { |p b e|
+P.still(\kirkCloseWar, timecode: 1138.316.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
@@ -1581,6 +1588,12 @@ P('arpeggio',start:\war,syl:0,music: {|p b e|
 P.tune(\war);
 /*SARGON:*/["A struggle for such goals and the unleashing of such ","5 6 1 6 7 4 3.5 4 5  ".dm('a-',4,\minor) ++ [11, 3.5, 7, 6].dm(\f,4,\minor)].addLine;
 P.tune();
+P.still(\litStruggle, timecode: 1140.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \vocoder, take: \lead,
 	pbind: Song.enlarge(9),
 	params: {|p b| [

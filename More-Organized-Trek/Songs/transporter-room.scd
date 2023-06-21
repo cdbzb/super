@@ -557,7 +557,7 @@ P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 		}.play
 	});
 	[ "SPOCK: Unlikely. These co-ordinates correspond with the location of the","5 11 5  7 5 4 3 2 6 4 3 2 1 -7 4 2 -6 -5".dm('c#')].addLine;
-	P.still(\mediumSpock, timecode: 704.814.seconds, music: { |p b e|
+	P.still(\mediumSpock, timecode: 707.733.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["",""],
@@ -634,7 +634,7 @@ P(\bassnotes,start:\subterranean,music:{|p b e|
 		].pp	
 	});
 	[ "KIRK: I have a feeling that they or it could destroy us just standing here if they or it wanted to. ","3.5 4 5 7 6 5".dm(\c,5,\minor) ++ "3 1 2 -7 1 4 3 1 6 5 3 1 3 1 2 1 -7 -5".dm('a-') ].addLine;
-	P.still(\twoShotKirk, timecode: 709.645.seconds, music: { |p b e|
+	P.still(\twoShotKirk, timecode: 709.745.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["",""],
@@ -659,12 +659,18 @@ P(\bass,start:\feeling,syl:5,music:{|p b e|
 		].pp;
 	});
 	[ "MULHALL: They or it? "," 3 1 5.5".dm(\c) ].addLine;
-	P.still(\turnedHeads, timecode: 719.693.seconds, music: { |p b e|
+	P.still(\revealMul, timecode: 719.294.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["",""],
 		)
 	});
+	/* P.still(\turnedHeads, timecode: 719.693.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b.sum,
+			text: ["",""],
+		)
+	}); */
 	P.synthV(role: \mulhall, take: \lead, params: {|p b| [
 		lyrics: "they or it",
 		legato: [0.8, 1, 0.5, ],
@@ -677,19 +683,21 @@ P(\bass,start:\feeling,syl:5,music:{|p b e|
 	});
 	Song.mulhallTune=Pset(\out,Effect(EchoNone.ar(_,0.3,0.3,4)*0.5).bus.index,_);
 P.tune('it?',Song.mulhallTune);
-P.still(\mulhallFace, timecode: 720.086.seconds, music: { |p b e|
+	[ "KIRK: Who are you? (boom) ","3 1 7 -6".dm(\f,5,\mixolydian) ].addLine;
+P.still(\mulhallFace, timecode: 720.756.seconds, music: { |p b e|
 	 e.still.( 
+		wait: b.parse([3]).sum,
 		wait: b.sum,
+		// fade: b[3] + 1,
 		text: ["",""],
 	)
 });
-	[ "KIRK: Who are you? (boom) ","3 1 7 -6".dm(\f,5,\mixolydian) ].addLine;
-	P.still(\kirk, timecode: 726.208.seconds, music: { |p b e|
+	/* P.still(\kirk, timecode: 725.255.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["",""],
 		)
-	});
+	}); */
 	P.synthV(role: \kirk, take: \lead, params: {|p b| [
 		lyrics: "who are you r",
 		filter: (midinote: _ - 12), 
@@ -715,9 +723,14 @@ P(\chord,start:'you?',syl:2,music:{|p b e|
 			).play
 		) } 
 	});
-
+/* P.still(\walking,syl:2, timecode: 729.444.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+}); */
 	[ "MULHALL: Doctor Ann Mulhall, Astro-biology.",[7, 11, 3, 5, 4.5, 6, 6.5, 2, 4, 3, -5].dm(\d,6  , /* tuning:\sept1 */) ].addLine;
-	P.still(\overTheShoulder, timecode: 735.230.seconds, music: { |p b e|
+	P.still(\overTheShoulder, timecode: 734.830.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["",""],
@@ -882,6 +895,12 @@ P(\bass,start:\along,music:{|p b e|
 		).play
 	});
 	[ "KIRK: Oh, yes. ","5 11".dm(\g) ].addLine;
+	P.still(\kirkToSpock, timecode: 756.738.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b.sum,
+			text: ["",""],
+		)
+	});
 
 	P.synthV(role: \kirk, take: \lead, params: {|p b| [
 		lyrics: "oh yes",
@@ -905,7 +924,7 @@ P(\slide,start:'Oh, yes',music:{|p b e|
 		}.play
 	});
 	[ "MCCOY: Let's (boom boom) get back to this ","1 -7 -5 -7 3 2 1 ".dm(\c,5,\mixolydian) ].addLine;
-	P.still(\wideMcCoy, timecode: 806.372.seconds, music: { |p b e|
+	P.still(\wideMcCoy, timecode: 805.752.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["",""],
@@ -1105,7 +1124,7 @@ P('chord',start:'Miles?',music: {|p b e|
 		].pp
 	});
 	[ "KIRK: No, we're not. Let's go. ",[-5, -5, 1].dm(\f) ++ [ -5, 1].dm(\a) ].addLine;
-	P.still(\kirkReplyNo, timecode: 818.032.seconds, music: { |p b e|
+	P.still(\kirkReplyNo, timecode: 817.532.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["",""],
@@ -1136,6 +1155,7 @@ P('chords',start:'No,',music: {|p b e|
 	P.still(\sargonStandReady, timecode: 825.114.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
+			fadeIn: b.parse([4]).sum,
 			text: ["",""],
 		)
 	});
@@ -1162,7 +1182,7 @@ P('bass',start:\operate,music: {|p b e|
 	});
 P.tune('stand ready', _ <> (instrument: \stringyy));
 	["( transporter! )","r",[8]].addLine;
-	P.still(\transporting, timecode: 845.428.seconds, music: { |p b e|
+	P.still(\transporting, timecode: 845.028.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["",""],

@@ -368,8 +368,14 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 P.still(\spockClose, timecode: 15.633.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["someone","or something"],
+	).sequenceText2(
+			b.parse([6,5,8]), [ 
+			["is","attempting"],
+			["to attract","our attention"]
+			],
 	)
+
 });
 P.synthV(role: \spock, take: \lead, params: {|p b| [
 	lyrics: "someone + or - something + is attempting + + to attract + our attention + +",
@@ -381,6 +387,8 @@ P.synthV(role: \spock, take: \lead, params: {|p b| [
 	{
 		e.playbuf
 		// * -5.dbamp
+		// /2
+		* -2.dbamp
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
@@ -389,11 +397,14 @@ P.double(role: \spock, take: \lead, params: {|p b| [
 ] }, music:{|p b e|
 	{
 		e.playbuf
+		// => Pan2.ar(_,1)
+		* -2.dbamp
 		// => p.synthVTracks.at(e.key).()
 	}.play
 
 });
 P(\comp,start:\attempting,music: {
+	var busAmp = 4.dbamp;
 	var clock = TempoClock.new.tempo_(85/60);
 
 	//Patterns
@@ -416,7 +427,7 @@ P(\comp,start:\attempting,music: {
 			\amp,amp
 		).play(clock:clock)
 	};
-	var offbeats={ |synth=\visual_twotube|
+	var offbeats={ |synth=\visual_twotube amp=0.1|
 		Pbind(	\instrument, synth,
 			\dur, Pseq([1, 2, 2, 2], 1),
 			\degree, 4,
@@ -439,23 +450,24 @@ P(\comp,start:\attempting,music: {
 			\k,Pwhite(0,1.0) 
 		).play(clock:clock)};
 
-			tune.(\visual_vowel, 0.18);
-			descant.(\visual_pad,0.2);
-			offbeats.(\visual_twotube);
-			offbeats.(\default);
-			off2.(\visual_caw,[\amp,0.04]);
+			tune.(\visual_vowel, 0.18 * busAmp);
+			descant.(\visual_pad,0.2 * busAmp);
+			offbeats.(\visual_twotube, 0.1 * busAmp);
+			offbeats.(\default, 0.1 * busAmp);
+			off2.(\visual_caw,[\amp,0.04 * busAmp]);
 		} );
-
-
 [" Someone or something has succeeded. Our dis (boom)",[4, 1, 3, 4, 1, 3, 4].dm(\g) ++ [7, 1, 3, 2, -6.5].dm('f#',\diminished2) + 1 ].addLine;/*KIRK:*/
+Song.setTempoMap(\succ,"ex e xe Q Q E E Q Q E E qq".asBeats);
 P.still(\kirkAgain, timecode: 20.144.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["someone","or something"],
+	).sequenceText2(
+			e.bAll.parse([5,4,9]), [ 
+			["has","succeeded"],
+			],
 	)
 });
-Song.setTempoMap(\succ,"Q Q Q Q Q E E Q Q E E qq".asBeats);
-Song.setTempoMap(\succ,"ex e xe Q Q E E Q Q E E qq".asBeats);
 // P.tune();
 P(\bass, music: { |p b e|
 	[
@@ -487,12 +499,20 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
+P(\ride, music: { |p b e|
+	[
+		rest: [\r, 1, 1, 1, ].q,
+		instrument: \cymbalsDS, amp: 0.03,
+		dur: "q qq q".asBeats.warpTo( e.tempoMap ).q
+	].pp
+});
 P.double(role: \kirk, take: \lead, params: {|p b| [
 	
 ] }, music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		// => Pan2.ar(_,1)
 	}.play
 });
 ["-stress signals have been (ba da ba da ba da).",[4, 2, -7, 1, 2, 1, -6,-6,-6,-6,-6,-6 ].dm(\c) +1 ].addLine;

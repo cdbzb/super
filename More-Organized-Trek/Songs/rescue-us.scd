@@ -90,10 +90,12 @@ P.synthV(role: \spock, take: \harmony,
 	},
 	params: {|p b| [
 	lyrics: "r deep inside + the planet +",
+
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
 		e.playbuf
+		/10
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
@@ -776,6 +778,12 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 // ["with standard landing party equipment.","r"].addLine;
 ["/*UHURA:*/ Yes, sir.","-7,1".dm(\c)].addLine;
 Trek.cast.uhura = \cheng;
+P.still(\overTheShoulder, timecode: 536.335.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \uhura, take: \lead, params: {|p b| [
 	lyrics: "yes sir",
 	pitchTake: 1,

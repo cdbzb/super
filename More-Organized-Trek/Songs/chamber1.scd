@@ -75,7 +75,7 @@ Song.changeTrill = { |note|
 };
 );
 ["transporter","r",[8]].addLine;
-P.still(\transporting, timecode: 857.035.seconds, music: { |p b e|
+P.still(\transporting, timecode: 856.535.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
@@ -170,8 +170,9 @@ P.synthV(role: \spock, take: nil, params: {|p b| [
 ["KIRK: Kirk here. ",[11,3].dm('c#')].addLine;
 P.still(\communicator, timecode: 908.523.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
+		wait: b.sum + e.bNext.sum,
+		fade: 7,
+		text: ["",""]
 	)
 });
 Song.durs.filter( _ * 0.7 );
@@ -531,9 +532,9 @@ P('chord',start:\oxygen,music: {|p b e|
 	}
 });
 ["SPOCK: This vault was constructed about a half a million years ago.", "5 7 6 5 4 3 2 3 4 6 5 4 3 2 1".dm(\c,5,\mixolydian)].addLine;
-P.still(\spock, timecode: 932.02.seconds, music: { |p b e|
+P.still(\spock, timecode: 934.32.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
+		wait: b.sum + e.bNext.sum,
 		text: ["this vault","was constructed"],
 	)
 
@@ -599,6 +600,12 @@ P(\bass,start:\surface,music:{|p b e|
 	].pp;
 });
 ["KIRK:(boom) Composition of walls? ","-4 4 5 4 3 4 7".dm(\c)].addLine;
+P.still(\twoShot2, timecode: 935.559.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role:\kirk,
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
@@ -642,7 +649,7 @@ P(\triller,start:\Composition,music:{|p b e|
 	}
 });
 ["SPOCK: They're an alloy or substance completely unknown to me.","5 6 11 6 5 11.5 6 4 12 11.5 12 12 13 11.5 6".dm('e-',4)].addLine;
-P.still(\twoShotAlloy, timecode: 939.496.seconds, music: { |p b e|
+P.still(\twoShotAlloy, timecode: 937.116.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
@@ -823,7 +830,7 @@ P(\bass, music: { |p b e|
 	].pp
 });
 ["MULHALL: All readings are off the scale, Captain. (ooh) "," 6 5 4 3 2 1 7 6 5 4.5".dm(\d,5,\mixolydian)].addLine;
-P.still(\mulhall_and_mccoy, timecode: 944.28.seconds, music: { |p b e|
+P.still(\mulhall_and_mccoy, timecode: 944.87.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["all readings are","off the scale, Captain"],
@@ -977,6 +984,12 @@ P.synthV("",
 });
 P.tune(\circulated);
 ["KIRK: Is that for us, or does it need fresh air? ","1 2 3 5 4 5 6 4 3 1.5 ".dm(\g,4,\whole)].addLine;
+P.still(\twoShotKirkTalk, timecode: 949.6.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role:\kirk, params: {|p b| [
 	lyrics: "is that for us or does it need fresh air",
 	legato:[1,1,1,0.8, 1, 1, 0.9, 1, 1, 1],
@@ -1021,6 +1034,14 @@ P(\pad,start:'fresh air',music:{|p b e|
 P.still(\door, timecode: 958.25.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
+		text: ["",""],
+	)
+});
+P.still(\closedd, timecode: 957.29.seconds, music: { |p b e|
+	 e.still.( 
+		// wait: b.sum,
+		wait: 1,
+		fade: 3,
 		text: ["",""],
 	)
 });

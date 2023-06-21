@@ -75,6 +75,12 @@ Song.changeTrill = { |note|
 };
 );
 ["transporter","r",[8]].addLine;
+P.still(\transporting, timecode: 857.035.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P('transporter',music: {|p b e|
 	{
 	var beam_envelope, phasor, beam, feedback, transporter, reverb, activateEnv, percEnv, activate, buffer;
@@ -135,6 +141,12 @@ beam = beam * (phasor - (Wrap.ar(phasor) - 0.5));
 });
 
 /*[ Chamber ] */ ["SPOCK: Captain, the security guards. ","5 3 5 7 12 7 5 3".dm(\c,\mixolydian)].addLine;
+P.still(\wide, timecode: 859.396.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P('crash',start:\Captain,music: {|p b e|
 		(
 		instrument:\cymbalsDSStereo,
@@ -156,6 +168,12 @@ P.synthV(role: \spock, take: nil, params: {|p b| [
 	});
 
 ["KIRK: Kirk here. ",[11,3].dm('c#')].addLine;
+P.still(\communicator, timecode: 908.523.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 Song.durs.filter( _ * 0.7 );
 P.tune(_ <> [ out: Effect.bus({|i| DWGReverbC1C3.ar(i) },) ].p);
 P(\tone, music: { |p b e|
@@ -279,6 +297,12 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 });
 
 /*[ Transporter Room ]*/ ["SCOTT: They're fine. They Just didn't dematerialise.","6 12 6 7 4 5 6 7 11 5 4 3".dm('e-',4)].addLine;
+P.still(\backMedium, timecode: 911.670.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.still(\transporterRoom, timecode: 913.333.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -302,6 +326,12 @@ P.synthV(role: \scott, take: \lead, params: {|p b| [
 });
 P.tune(\dematerialise);
 /*[ Chamber ]*/ ["SCOTT [OC]: I don't like it, sir. ","3 2 5 3 1".dm(\b,\whole)].addLine;
+P.still(\backInTheChamberScottOC, timecode: 916.251.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P(\bassPad,syl:1, music: { |p b e|
 	[
 		instrument: \stringyy,
@@ -612,6 +642,12 @@ P(\triller,start:\Composition,music:{|p b e|
 	}
 });
 ["SPOCK: They're an alloy or substance completely unknown to me.","5 6 11 6 5 11.5 6 4 12 11.5 12 12 13 11.5 6".dm('e-',4)].addLine;
+P.still(\twoShotAlloy, timecode: 939.496.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role:\spock,
 	filter: (midinote: _ - 12), 
 	params: {|p b| [

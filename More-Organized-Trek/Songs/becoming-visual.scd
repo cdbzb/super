@@ -5,6 +5,8 @@
 //[Bridge]
 
 Song(\visual,[]).current;
+// Require('boilerplate.scd');
+Stills().current;
 
 Song.synthVTracks=EventWithDefault(
 	\default, {
@@ -27,6 +29,17 @@ Trek.presets.put(\sulu,\an,[
 	paramGender: -0.35,
 	paramToneShift: 200,
 ]);
+P.still(\suluClose, timecode: 1.385.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum+ e.bNext.sum,
+		text: ["the readings","growing stronger, captain"],
+	).sequenceText2(
+			[b.sum, e.bNext.parse([8,5])].flat , [ 
+			["coming from a","star system"],
+			["directly","ahead"]
+			],
+	)
+});
 P.synthV(role: \sulu, take:\lead, params: {|p b| [
 	lyrics: "the readings + growing + stronger + captain +",
 	filter: (midinote: _ - 12), 
@@ -157,6 +170,12 @@ P(\chords, music: { |p b e|
 	
 });
 [" It's not a signal, sir."," 7 11 6 12 7 4".dm('d#')].addLine;/*UHURA:*/
+P.still(\uhuru,start:\signal, timecode: 8.716.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum + e.bNext.sum,
+		text: ["its not a signal","sir"],
+	)
+});
 Song.setTempoMap (\signal,"q q q q q q");
 P(\square, music: { |p b e|
 	[
@@ -327,6 +346,12 @@ P(\chord, music: { |p b e|
 
 });
 [" Well?",[1].dm('f#')].addLine;/*KIRK:*/
+P.still(\kirk, timecode: 11.597.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["well...",""],
+	)
+});
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	lyrics: "well",
 	// filter: (midinote: _ - 12), 
@@ -340,6 +365,12 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	}.play
 });
 ["Someone or something is attempting to attract our attention.","1 -5 -6 -7 1 -5 -6 -7 1 -5 -6 -7 1 -7 1 2 -5".dm(\a) + 1, [2/3,((1/3)+(1/2)),1/4,1/4]!3 ++( [2,1,1,2,2]/4) * 60 / 85=>_.flat ].addLine;
+P.still(\spockClose, timecode: 15.633.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \spock, take: \lead, params: {|p b| [
 	lyrics: "someone + or - something + is attempting + + to attract + our attention + +",
 	legato: [1, 0.5,  1, 1, 1, 0.5, 1, 1, 1, 0.5, 1, 1, 1, 1, 1, 1, 1],
@@ -417,6 +448,12 @@ P(\comp,start:\attempting,music: {
 
 
 [" Someone or something has succeeded. Our dis (boom)",[4, 1, 3, 4, 1, 3, 4].dm(\g) ++ [7, 1, 3, 2, -6.5].dm('f#',\diminished2) + 1 ].addLine;/*KIRK:*/
+P.still(\kirkAgain, timecode: 20.144.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 Song.setTempoMap(\succ,"Q Q Q Q Q E E Q Q E E qq".asBeats);
 Song.setTempoMap(\succ,"ex e xe Q Q E E Q Q E E qq".asBeats);
 // P.tune();
@@ -592,6 +629,13 @@ P.double(role: \kirk, take: \lead, params: {|p b| [
 	}.play
 });
 [" I do not know. not even a vulcan can know the unknown",[11, 11, 11, 11, 5, 6, 7, 11, 5, 4, 3, 3, 3, 2].dm('d#')].addLine;/*SPOCK:*/
+// Stills.current.file
+P.still(\spockAgain, timecode: 29.254.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P(\kick, music: { |p b e|
 	[
 		dur: " qe e qe e qe e qe e qe e ".asBeats.warpTo( e.tempoMap.quantizeDft ).q,
@@ -891,6 +935,12 @@ P(\fuzz, music: { |p b e|
 
 });
 [" Planet dead ahead, Captain. Becoming visual.","-7 1 3 5.5 11 5.5 5.5 5.5 5.5 11.5 5.5 1.5".dm('c')].addLine;/*SULU:*/
+P.still(\suluAgain, timecode: 39.796.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 
 P(\chord,syl:3, lag:-0.05, music: { |p b e|
 	[
@@ -933,7 +983,12 @@ P.double(role: \sulu, take: \lead, params: {|p b| [
 	}.play
 });
 ["planet","r",[10]].addLine;
-
+P.still(\planet, timecode: 43.571.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P(\sfx, music:{
 	var sine,verb,verbBus=Bus.audio;
 	var wibble = {
@@ -1019,6 +1074,12 @@ P(\sfx, music:{
 		).play
 	});
 [" Class M planet, Captain.","5 2 11 5 2 -6".dm('b')].addLine;/*SPOCK:*/
+P.still(\spockClassM, timecode: 46.865.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.tune();
 P(\line, music: { |p b e|
 	[
@@ -1087,7 +1148,8 @@ P(\bassnotes, syl:8, music: { |p b e|
 		dur: b.drop(1) ++ e.bNext => _.q
 	].pp
 });
-["Its much older than Earth", "5 5 11 5 5 5 5".dm('f#',4)].addLine;
+ ["Its much older than Earth", "5 5 11 5 5 5 5".dm('f#',4)].addLine;
+
 P.synthV(role: \spock, take: \lead, params: {|p b| [
 	lyrics: "its much older + than the Earth",
 	pitchTake: 1
@@ -1114,6 +1176,7 @@ P(\arpeggio,syl:1, music: { |p b e|
 	).play
 });
 P.tune();
+/*
 [" and about a half million years ago, its","3 2 1 -7/b/harmonicMinor 5 5 6 5 6 5 4 1 4/a".dm2].addLine;
 Song.setTempoMap(\about,"e x xe e q e x g g xe x xe x ");
 P.tune();
@@ -1257,8 +1320,10 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	p.vocodeTune.(p,b,e,e.rpp)
 
 });
-["It is the energy of my thoughts which has","r"].addLine;
+["It is the energy of my thoughts which has","1 -7 3 4 3 1 1 4 3 4".dm(\e)].addLine;
+
 [" touched your instruments and directed you here.","r"].addLine;
+
 ["Now at this closer distance","5 4 3 2 1 3 2 4 3 3 2 2 1 -7 -6 4.5/d".dm2].addLine;
 Song.durs.filter(_*1.3);
 P.tune( { |i| i  <> [legato: 3,amp:0.03].p => Pmul(\freq,[0.25,0.5,1],_) });
@@ -1298,7 +1363,6 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 
 	)
 });
-
 [" Who are you, Sargon?","-7 3 1 -7 -5/c/mixolydian".dm2].addLine;/*KIRK:*/
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	lyrics: "Who are you sargon +",
@@ -1352,7 +1416,7 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 ["Does that frighten you, James Kirk?","r"].addLine;
 ["For if it does,","r"].addLine;
 ["if you let what is left of me perish,","r"].addLine;
-["then all of you, my children,","r"].addLine;
+["then all of you, my children,","r"].addLine; */
 ["all of mankind must perish, too.","r"].addLine;
 
 )

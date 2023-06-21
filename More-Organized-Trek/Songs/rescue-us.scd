@@ -2,6 +2,7 @@
 //[Bridge]
 Song(\rescue,[]).current;
 "~/tank/super/More-Organized-Trek/Songs/boilerplate.scd".standardizePath.load;
+
 Song.synthVTracks = EventWithDefault(
 	\default, {
 		{
@@ -22,10 +23,40 @@ Song.synthVTracks = EventWithDefault(
 // for those thousands of centuries.
 
 ["/*KIRK:*/ (dictating log) Since exploration and contact with alien intelligences is our primary mission, I've decided to risk the potential dangers and resume contact. Log entry out. How long before Starfleet receives that?","r"].addLine;
+P.still(\bridge, timecode: 425.401.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 ["/*UHURA:*/ Over three weeks at this distance, sir.","r"].addLine;
+P.still(\uhuruclose, timecode: 452.451.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 ["/*SPOCK:*/ Captain.","r"].addLine;
+P.still(\spockClose, timecode: 453.106.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 ["/*KIRK:*/ Got something?","r"].addLine;
+P.still(\kirkGot, timecode: 456.385.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 ["(boom boom) Sensors registering some form of energy deep inside the planet.","-1 -1 3 1 4 3 1 3 4 5 7 6 4  2 1 -7 -6 -6 -5".dm(\e,\mixolydian)].addLine; /*SPOCK:*/ 
+P.still(\spockSensors, timecode: 500.974.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 Song.setTempoMap(\Sensors, "e e e e | E E E E E E | e x xq | Q E Q E e e");
 P.synthV(role: \spock, take: \lead, params: {|p b| [
 	lyrics: "r r sensors + regist + ring  some kind of energy + + deep inside +  the planet + ",
@@ -87,6 +118,12 @@ P(\planetCrash,  music: { |p b e|
 	].p.play
 });
 ["/*SARGON [OC]*/(boom) Your probes have touched me, Mister Spock.",[-1, 4, 4, 4, 4, 3, 2, 1, 2, 3].dm(\c,\minor)].addLine;
+P.still(\sargonSpeaks, timecode: 503.269.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	lyrics: "r your probes have touched me mister + spock -",
 	pitchTake: 1
@@ -116,6 +153,12 @@ P(\bass, music: { |p b e|
 "open '/Users/michael/trek/BySection/media/11-Spock&Sargon-181021_1557.rpp'".unixCmd
 */
 Song.setTempoMap(\Reading,"E E E E E e e e ee e e e");
+P.still(\spockAnswers, timecode: 506.875.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P(\click, music: { |p b e|
 	var dur = 0.125;
 	[
@@ -165,6 +208,12 @@ P.synthVs(role: \spock, take: [\lead, \double], params: {|p b| [
 });
 [" I have locked your transporter device on my co-ordinates.","5 5 5 6 5 4 3 2 4 3 2 1 3 2 2".dm(\a,4)].addLine;/*SARGON [OC]*/
 Song.durs.filter(_ * 1.15);
+P.still(\sargonlocked, timecode: 511.464.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	lyrics: "I have locked your transporter + +  device + on my co-ordinates + + +",
 	phonemes: ["","","","","","","","","","","","","","","n eh th s",],
@@ -524,9 +573,11 @@ P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["that","deep"],
+		fade:1
 	).sequenceText2(
-			b.drop(1).parse([4,9]), [ 
-			["that deep","beneath the surface"],
+			b.drop(1).parse([10,5]), [ 
+			["beneath","the surface"],
+			["",""]
 			],
 	)
 });
@@ -640,6 +691,7 @@ P(\keys, music: { |p b e|
 
 
 ["/*SPOCK:*/ Reading a chamber now. Oxygen-nitrogen atmosphere, suitable for human life support.","3 4.5 5.5 7 5.5  2".dm(\g) ++ "1 2 3 4 5 3 11 7 2  4 3 2 3 5 3 -6.5".dm('b-')].addLine;
+
 P.synthVs(role: \spock, take: [\lead,\double], params: {|p b| [
 	lyrics: "Reading + a chamber + now. Nitrogen + + oxygen + + atmosphere + + suitable + + for life support. +",
 	filter: (midinote: _ - 24), 
@@ -679,6 +731,12 @@ P(\bass, music: { |p b e|
 	].pp
 });
 ["/*KIRK:*/ Lieutenant Uhura, have Doctor McCoy report to the transporter room in ten minutes",[1, 1, -5, 1, 2, -5, 2, 3, 1, 3, 4, 5,4, 3,4,   5, 4, 3, 2, -6, -7, 2, 1].dm(\c)].addLine;
+P.still(\kirkReport, timecode: 545.886.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 // Song.durs.filter({|i| i[0..13]++i[15..]});
 P(\line, music: { |p b e|
 	[
@@ -770,6 +828,12 @@ P.synthV(role: \spock, take: \lead, params: {|p b| [
 
 });
 P.tune();
+P.still(\spockIDoWish, timecode: 552.591.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P(\bass, music: { |p b e|
 	[
 		freq: [-1.5,-7,-7.5,-1.5,1,-3,-2,-3, [-4,-5]] .df(\e,[5],\minor).postln.q,
@@ -779,6 +843,12 @@ P(\bass, music: { |p b e|
 
 });
 ["/*KIRK:*/ And I would like to have my--","-7 3 2 3 1 4 5 4".dm(\g)].addLine;
+P.still(\kirkUnusual, timecode: 558.491.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	lyrics: "And I would like to have my -",
 	legato: [1, 1, 1, 1, 1, 1, 1, 2],
@@ -807,6 +877,7 @@ P(\bass, music: { |p b e|
 	].pp
 });
 ["(boom) science officer with me on something as unusual as this, but it i--s","-1 3 2 3 2 3 2 1 -7 1 -6  2 3 4 5 4 3 2 -7 1 2 1".dm(\c,6)].addLine;
+Song.setTempoMap(\unusual,"q %x x x x x% e ee e e e e e e x xe x xe e e x xq".rhythm);
 Song.guitar = AAS_Strum();
 P(\strum, music: { |p b e|
 	p.guitar.setPlayMode(\strum );
@@ -814,7 +885,7 @@ P(\strum, music: { |p b e|
 		type: \strum,
 		instance: p.guitar,
 		freq: [ [1,3], [-6,1],[-4, -6],[2,4],[5, 7] ].df(\c).q,
-		dur: b.parse([6,3,4,4,4,4]).q,
+		dur: b.parse([6,3,4,[ 1,1,1,1,1/3 ],[2/3,1,1,1,1],4]).q,
 		legato:1
 	].pp ;
 	[
@@ -824,7 +895,7 @@ P(\strum, music: { |p b e|
 		legato:1,
 		// dur: 10
 		lag:0.01,
-		dur: b.parse([6,3,4,4,4,4]).q,
+		dur: b.parse([6,3,4,[ 1,1,1,1,1/3 ],[2/3,1,1,1,1],4]).q,
 
 		// lag:0.05
 	].pp
@@ -849,7 +920,6 @@ P.double(role: \kirk, take: \lead, params: {|p b| [
 	}.play
 
 });
-Song.setTempoMap(\unusual,"q %x x x x x% e ee e e e e e e x xe x xe e e x xq".rhythm);
 P(\click, music: { |p b e|
 	[instrument: \hihat,dur:1.dup(10).warpTo(e.tempoMap).q]//.pp
 });
@@ -859,7 +929,6 @@ P(\bass, music: { |p b e|
 		dur: b.parse([6, [1,0.5],0.5,1, 2, 1,1, [2,0.34],0.66,[1,0.34],[ 0.66,1 ],1,2]).q
 	].pp
 });
-P.tune();
 ["(boom) full of unknowns","-1 3 2 2 2".dm('f#',6,\minor)].addLine;
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	lyrics: "r full of unknowns +",
@@ -922,12 +991,43 @@ P.double(role: \kirk, take: \lead, params: {|p b| [
 P.tune();
 // (The lights go out.)
 ["SULU: All power gone, sir.","r"].addLine;
+P.still(\darkness, timecode: 606.789.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
+P.still(\suluSpeaks, timecode: 609.739.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 ["KIRK: On the other hand, perhaps this Sargon would like you to come with us.","r"].addLine;
+P.still(\kirkPerhaps, timecode: 615.180.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 // (Power is restored.)
+P.still(\powerBask, timecode: 621.572.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 ["SPOCK: Fascinating.","r"].addLine;
+
 ["SULU: All normal. No damage at all.","r"].addLine;
 ["KIRK: I see.","r"].addLine;
 [" Will you transport down with us, Mister Spo--ck?","1 -5 1 2 3 2 1 -5 -4 -4 -3".dm('f#')].addLine;
+P.still(\kirkWillYou, timecode: 631.425.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	lyrics: "Will you transport + down with us, Mister + Spock -",
 	legato: [1, 1, 1, 1, 1, 1, 0.7,   1, 1, 1],
@@ -972,6 +1072,12 @@ P(\bass, music: { |p b e|
 	].pp
 });
 ["SPOCK: Evidently, Captain."," 4 3 2 1 -7 1".dm('f#')].addLine;
+P.still(\walkingOut, timecode: 636.479.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \spock, take: \lead, params: {|p b| [
 	lyrics: "Evidently + + + Captain +",
 	filter: (midinote: _ - 12), 

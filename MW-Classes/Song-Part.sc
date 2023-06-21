@@ -23,7 +23,7 @@ Song {
 		reaperFolder = this.filenameSymbol.asString.dirname.dirname +/+ "RPP";
 		dursFile=this.filenameSymbol.asString.dirname.dirname +/+ "theExtreme3";
 		dursFolder=this.filenameSymbol.asString.dirname.dirname +/+ "Dur";
-		Archive.archiveDir = this.filenameSymbol.asString.dirname.dirname;
+		// Archive.archiveDir = this.filenameSymbol.asString.dirname.dirname;
 		Class.initClassTree(Recorder);
 		songs= Dictionary.new;
 		loading = CondVar();

@@ -8,7 +8,20 @@ Song(\panel1,[]).current
 Song.vocoderRatio.set(1);
 //(A panel slides back to reveal a much larger area, with rock walls, and a glowing sphere elegantly poised on an angled support.) 
 /*SARGON: (the glowing sphere)*/[" Welcome. I am Sargon. ","r",].addLine; 
+P.still(\sargonSpeaks, timecode: 1013.361.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 /*SPOCK:*/[" Sargon, would it harm you if I ","4 5 7 11 12 6 5 4".dm(\d)].addLine; 
+
+P.still(\wideHarm, timecode: 1021.256.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.tune('harm');
 P.synthVs(role: \spock, take: [\dbl, \lead ], params: {|p b| [
 	lyrics: "Sargon +  would it harm you if I ",
@@ -379,6 +392,12 @@ P('click',start:\outtro,music: {|p b e|
 	].pp
 });
 /*SPOCK:*/[" (boom) Pure energy. Matter without form. ","-4 11 7 6 5".dm(\c) ++ "7 6 5 4 11".dm(\e,\mixolydian)].addLine; 
+P.still(\closeSpock, timecode: 1039.229.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 Song.setTempoMap(\Pure,"qq qq Q Q Q QQ QQ Q Q qq");
 P.still(\tricorder,timecode:1035.seconds,music:{ |p b e|
 	e.still.(
@@ -557,6 +576,12 @@ P(\tricorderArp, music: { |p b e|
 // P.tune();
 // /*KIRK:*/[" Impossible. ","4 3 1 -5".dm('b-',\minor)].addLine; 
 /*KIRK:*/[" Impossible. ","-5 3 1 -4.5".dm('b-',\minor)].addLine; 
+P.still(\closeImpossible, timecode: 1041.380.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.still(\kirk, timecode: 1040.5.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -1237,6 +1262,12 @@ P(\chords, music: { |p b e|
 	].pp
 });
 /*MULHALL:*/[" Our studies indicate that","1 -7 -6 2 -7 -5 -4".dm('c#')].addLine;
+P.still(\wideAgainMulhall, timecode: 1119.582.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P(\bassnote, music: { |p b e| //connect this
 	[ 
 		freq: [ 1, -7, -6, -5, -4 ].df('c#',[  5 ]).q,
@@ -1302,6 +1333,12 @@ P(\bass, music: { |p b e|
 	).play
 });
 /*SPOCK:*/[" That would tend, however, to explain ","3 2 4 2 -7 1 2 4 6".dm(\e)].addLine;
+P.still(\wideButSpockSpeaks, timecode: 1127.175.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P(\chords, music: { |p b e|
 	[
 		freq: [
@@ -1520,6 +1557,12 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	);
 });
 /*KIRK:*/[" A war? ","1 7".dm(\a,4,\mixolydian),].addLine; 
+P.still(\kirkCloseWar, timecode: 1138.616.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthVs(role: \kirk, take: [ \lead, \double ], params: {|p b| [
 	lyrics: "a war",
 	filter: (midinote: _ - 12), 
@@ -1640,6 +1683,12 @@ P(\chord,syl:7, music: { |p b e|
 
 // /*SARGON:*/[" One day our minds became so powerful, we dared think of ourselves as gods. ","r",].addLine; 
 /*KIRK:*/[" You said you wanted our help. What is it you wish? ","1,2,3,5,4,3,7".dm(\f,\mixolydian) ++ "1 2 3 5 7".dm(\g,\mixolydian),].addLine; 
+P.still(\kirkHelp, timecode: 1226.635.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.tune();
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	lyrics: "You said you wanted + our help. What is it you wish? ",

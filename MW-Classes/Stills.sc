@@ -32,7 +32,7 @@ Stills {
 	}
 
 	init {|movie| 
-		file=movie ? this.class.filenameSymbol.asString.dirname.dirname +/+ "Stills/return to tomorrow.mov"; 
+		file=movie ? ( this.class.filenameSymbol.asString.dirname.dirname +/+ "Stills/return-to-tomorrow.mov" ); 
 		markers=();
 		monitors = switch( Platform.machine,
 			// monitor size = 1440 x 900
@@ -77,7 +77,10 @@ Stills {
 	writeImage { |seconds |
 		File.exists(stillsLocation++seconds.asString++".png").not.if {
 			(
-				"ffmpeg -y -ss "++ seconds.asString++" -i "++"'"++file.asSymbol++"'"++ "  -vframes 1  -f image2 "++stillsLocation++seconds.asString++".png ").systemCmd;
+				//faster but less accurate
+				"ffmpeg -y -ss "++ seconds.asString ++" -i "++"'"++file.asSymbol++"'"++ "  -vframes 1  -f image2 "++stillsLocation++seconds.asString++".png ").systemCmd;
+				//slower but more accurate
+				// "ffmpeg -y " ++ " -i "++"'"++file.asSymbol++"'" + "-ss "++ seconds.asString++ "  -vframes 1  -f image2 "++stillsLocation++seconds.asString++".png ").systemCmd;
 			}
 			//("ffmpeg -ss "++ seconds.asString++" -i "++"'"++file.asSymbol++"'"++ "  -vframes 1  -f image2 "++stillsLocation++seconds.asString++".png ").postln
 	}
@@ -124,7 +127,7 @@ Stills {
 			}
 			^w
 		}
-		plot{|markerName monitor=0|
+		plot {|markerName monitor=0|
 			var image=this.mark(markerName);
 			var w;
 			image.setSize(monitors[monitor].width,monitors[monitor].height,\keepAspectRatio);

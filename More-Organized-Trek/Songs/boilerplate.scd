@@ -16,7 +16,7 @@ Song.currentSong.preroll_(1);
 	spread:FoaEncoderKernel.newDiffuse
 ) };
 Song.encoders=~encoders;
-~stills.isNil.if{~stills=Stills("/Users/michael/trek/BySection/media/return to tomorrow.mov").current};
+~stills.isNil.if{~stills=Stills().current};
 //	Song.resources.condition=Condition();
 ( //Vocoder resources
 	Song.carrierBus = Bus.audio(s,5);

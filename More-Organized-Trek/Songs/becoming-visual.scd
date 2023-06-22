@@ -480,14 +480,47 @@ P(\bass, music: { |p b e|
 });
 P(\bassnote,syl:10, music: { |p b e|
 	( 
-		freq: [-6.5,-16.5].df(\g,4) * 1.midiratio ,
+		freq: [-6.5,-16.5].df('a-',4) ,
 	dur: b.drop(1),
 	amp: 0.4
 ).play
 });
+SynthDef(\jankyPiano,{
+	|freq |
+	OteyPiano.ar(freq)
+	=> Out.ar( \out.kr(0), _ )
+}).add;
+P(\piano, music: { |p b e|
+	[
+		instrument: \help_oteypiano,
+		out: Effect.bus({|i| i => FreeVerb.ar(_,0.3,0.9) *2.5=>SineShaper.ar(_,0.2)  },inputChannels:2),
+		freq: [ [1,3],-5,-15,-7,[1,3],-5,-15,-7,1,[6,7,2.5],-4.5, ].df('c#') ++ [3,2].df('g',4,\diminished2)=>_.q,
+		strum: [0,0,0,0,0,0,0,0,0,0.01,0,0,0].q,
+		dur: b.parse([1,0.5,0.5,1,1,0.5,0.5,1,1,1,1,1, 1, 1]).q,
+		rho: 1.2,
+		amp:0.5,
+	].pp
+});
+P(\bassConnector, music: { |p b e|
+	MegaBind(
+		[
+			[\r,1.5, 1],
+			[\r,-1.5,-1]
+		].df('f#')
+		,
+		"qqqqq q q".asBeats.warpTo( e.tempoMap ),
+		[],
+		{|i| 
+			Saw.ar(i.freqSeq / [2,3,4],0.1) 
+			* Env.asr().kr(2,gate:i.gateSeq)
+	},
+		{|i|  Mix.ar(i)}
+	).play
+});
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	lyrics: "someone + or something + has succeeded + + our di r ",
-	legato: [1, 1, 1, 1, 1, 1, 1, 1, 0.7, 1, 1],
+	// legato: [1, 1, 1, 1, 1, 1, 1, 1, 0.7, 1, 1],
+	legato: [1, 0.8, 1, 1, 0.8, 1, 1, 1, 0.7, 1, 1, ],
 	pitchExpression: 1.0,
 	filter: (midinote: _ - 12), 
 	pitchTake: 1,
@@ -502,8 +535,9 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 P(\ride, music: { |p b e|
 	[
 		rest: [\r, 1, 1, 1, ].q,
-		instrument: \cymbalsDS, amp: 0.03,
-		dur: "q qq q".asBeats.warpTo( e.tempoMap ).q
+		instrument: \cymbalsDS, 
+		amp: [ 0.0, 0.03,0.03,0.05 ].q,
+		dur: "q qq q q".asBeats.warpTo( e.tempoMap ).q
 	].pp
 });
 P.double(role: \kirk, take: \lead, params: {|p b| [
@@ -512,10 +546,27 @@ P.double(role: \kirk, take: \lead, params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
-		// => Pan2.ar(_,1)
+		// => Pan2.ar(_,1)2
 	}.play
 });
-["-stress signals have been (ba da ba da ba da).",[4, 2, -7, 1, 2, 1, -6,-6,-6,-6,-6,-6 ].dm(\c) +1 ].addLine;
+SynthDef(\help_oteypiano, { |out=0, freq=440,gate=1, amp=0.5,rho=1|
+	var son = OteyPiano.ar(freq, amp, rho:rho)*EnvGen.ar(Env.asr(0,1,0.1),gate,doneAction:2);
+	Out.ar(out, Pan2.ar(son * 0.1, LinLin.kr(freq,36.midicps,90.midicps,-0.75,0.75)));
+}).add;
+["-stress signals have been (ba da ba da ba da).",[4, 2, -7, 1, 2, 1, -6,-6,-6,-6,-6,-6 ].dm('c#')  ].addLine;
+P(\piano, music: { |p b e|
+	[
+	freq: 	[ [-6, 1, 4], [2, 4], -7, [1, 4], [2, 4], 1 ].df('c#').q,
+	legato: [1, 1, 1, 1, [2,2,1], 1, ].q * 0.9,
+
+	dur: b.q,
+	amp:0.4,
+		instrument: \help_oteypiano,
+		out: Effect.bus({|i| i => FreeVerb.ar(_,0.3,0.9) *2.5=>SineShaper.ar(_,0.2)  },inputChannels:2),
+
+
+	].pp
+});
 P(\bass, syl: 5, music: { |p b e|
 	[
 		freq: [ 6, 6, 6, 6, 5, 5 ].df('c#', [3,4]).q,
@@ -569,6 +620,22 @@ P(\bass, music: { |p b e|
 		freq: [\r,1, 4, ].df('e-',[ 2,3 ]).q,
 		amp:0.8,
 		dur: b.parse([7,  4,4 ]).q
+	].pp
+});
+P(\note, music: { |p b e|
+	(
+		freq:1.df('c#'),
+		out: Effect.bus({|i|  FreeVerb.ar(i*5,0.1,1)=> SineShaper.ar(_,0.1) },)
+	).play
+});
+P(\pianodbl, music: { |p b e|
+	[
+		freq: [ [ 11, 13 ], 7, [11, 5 ], 2.5,  4, 5, 4,  6, 5, 4, 6, 7,  6, 5, 7 ].df('c#', [3,4]).q,
+		legato: [1, 1, 0.8, 0.5, 0.9, 1, 1, ].q,
+		lag: PLtuple( [ Pwhite(0,0.05) ,0] ),
+		instrument: \help_oteypiano,
+		out: Effect.bus({|i| i => FreeVerb.ar(_,0.2,0.9) *4.5=>SineShaper.ar(_,0.2)  },inputChannels:2),
+		dur:b.q
 	].pp
 });
 P.synthV(role: \kirk, take: \lead,

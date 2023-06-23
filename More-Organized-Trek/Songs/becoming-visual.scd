@@ -656,28 +656,26 @@ P(\pianodbl, music: { |p b e|
 		dur:b.q
 	].pp
 });
-P.synthV(role: \kirk, take: \lead,
+P.synthVs(role: \kirk, take: [\lead, \double],
 	pbind: Song.enlarge(2),
 	params: {|p b| [
 	lyrics: "activated + + + We've been - given + a direction + + r to follow +",
-	legato: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.7, ],
+	legato: [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.7, ]],
 	filter: (midinote: _ - 12), 
-	pitchTake: 1
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
-
-});
-P.double(role: \kirk, take: \lead, params: {|p b| [
-	
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
-});
+	pitchTake: [1, 3]
+] }, music:{
+	var pan = [-1, -1];
+	2.collect {|i|
+		{|p b e|
+			{
+				e.playbuf
+				// => p.synthVTracks.at(e.key).()
+				=> Pan2.ar(_,pan[i])
+				
+			}.play
+		}
+	}
+	}.());
 [" follow, but how? What's causing it?"," 3 1 2 3 3 5 3 1".dm('a#')].addLine;
 Song.setTempoMap(\follow,"ex xe e qe e q e e");
 P(\pad, music: { |p b e|
@@ -1087,6 +1085,7 @@ P.double(role: \sulu, take: \lead, params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
+
 ["planet","r",[10]].addLine;
 P.still(\planet, timecode: 43.571.seconds, music: { |p b e|
 	 e.still.( 
@@ -1204,6 +1203,12 @@ P.synthV(role: \spock, take: \lead, params: {|p b| [
 
 });
 [" Close to Earth conditions.","5 2 11 5 2 -6".dm('a-')].addLine;/*KIRK:*/
+P.still(\kirk, timecode: 48.072.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	lyrics: "Close to Earth conditions + +",
 	filter: (midinote: _ - 12), 
@@ -1225,6 +1230,12 @@ P(\line, music: { |p b e|
 });
 P.tune();
 ["(boom) With two very important exceptions.","4 1 5 3 4 1 5 4 5 5.5 -5.5".dm('c')].addLine;/*SPOCK:*/
+P.still(\spock, timecode: 50.62.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \spock, take: \lead, params: {|p b| [
 	lyrics: " with r two very + important + + exceptions + +",
 	pitchTake: 1
@@ -1254,7 +1265,6 @@ P(\bassnotes, syl:8, music: { |p b e|
 	].pp
 });
  ["Its much older than Earth", "5 5 11 5 5 5 5".dm('f#',4)].addLine;
-
 P.synthV(role: \spock, take: \lead, params: {|p b| [
 	lyrics: "its much older + than the Earth",
 	pitchTake: 1
@@ -1281,13 +1291,12 @@ P(\arpeggio,syl:1, music: { |p b e|
 	).play
 });
 P.tune();
-/*
-[" and about a half million years ago, its","3 2 1 -7/b/harmonicMinor 5 5 6 5 6 5 4 1 4/a".dm2].addLine;
+[" and about a half million years ago, its","3 2 1 -7".dm(\b,\harmonicMinor) ++ "5 5 6 5 6 5 4 1 4".dm(\a)].addLine;
 Song.setTempoMap(\about,"e x xe e q e x g g xe x xe x ");
 P.tune();
 P(\click, music: { |p b e|
 	[
-		dur: "q*6".beats.warpTo( e.tempoMap.quantizeWindow(0.2) ).q,
+		dur: "q q q q q".asBeats.warpTo( e.tempoMap.quantizeWindow(0.2) ).q,
 		instrument: \hihat
 	].pp
 });
@@ -1300,11 +1309,11 @@ P(\keys, music: { |p b e|
 		dur: "qq q q q q ".asBeats.warpTo( e.tempoMap).q
 	].pp
 });
-[" atmosphere was"," 3 1 -6 3/a".dm2].addLine;
+[" atmosphere was"," 3 1 -6 3".dm(\a)].addLine;
 Song.setTempoMap(\atmosphere,"ex x xe e");
 P(\click, music: { |p b e|
 	[
-		dur: "x q e".beats.warpTo( e.tempoMap).q,
+		dur: "x q e".asBeats.warpTo( e.tempoMap).q,
 		rest: [\r,1,1,1,1,1,].q,
 		instrument: \hihat
 	].pp
@@ -1342,7 +1351,7 @@ P(\bass, music: { |p b e|
 	].pp
 });
 P.tune();
-["totally ripped away by ","5 6 5 5 5 11 12/c".dm2].addLine;
+["totally ripped away by ","5 6 5 5 5 11 12".dm(\c)].addLine;
 Song.setTempoMap(\ripped,"e e q qe e qe q");
 P(\guitar, music: { |p b e|
 	[
@@ -1359,7 +1368,7 @@ P(\guitar, music: { |p b e|
 	].pp
 });
 P.tune();
-["some sort of cataclysm.","4 4 4 4 3 2 1/f".dm2].addLine;
+["some sort of cataclysm.","4 4 4 4 3 2 1".dm(\f)].addLine;
 P.tune();
 P(\bass, music: { |p b e|
 	[
@@ -1374,14 +1383,34 @@ P(\pf, music: { |p b e|
 		dur: b.parse([1, 1, 1, 4]).q
 	].pp
 });
-["The planet has evidently been dead since then.","5 4 3 4 11 7 7 6/c 5 5 2 4/c#".dm2].addLine;
+["The planet has evidently been dead since then.","5 4 3 4 11 7 7 6".dm(\c) ++"5 5 2 4".dm('c#')].addLine;
 P.tune();
-["Sensors detect no life of any kind.","r"].addLine;
-[" All of your questions will be answered in time, Captain Kirk.", "4 3 2 1 2 2 3 2 1 -7 -7/c".dm2 ].addLine;/*SARGON [OC]:*/
+["Sensors detect no life of any kind.","2 3 1 -6 1 4 1 2 3 4".dm(\e)].addLine;
 P.tune();
-[" Are your hailing frequencies open?","r"].addLine;/*KIRK*/
-[" No, sir.","r"].addLine;/*UHURA:*/
-["SARGON [OC]: I am Sargon.","1 -7 4 3/c#".dm2].addLine;
+P.tune(\detect, _ <> [freq: [1,4].df(\e,6), amp:0.05].p);
+[" All of your questions will be answered in time, Captain Kirk.", "4 3 2 1 2 2 3 2 1 -7 -7".dm(\c) ].addLine;/*SARGON [OC]:*/
+P.still(\sargon, timecode: 105.188.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
+P.tune();
+[" Are your hailing frequencies open?","r",[3]].addLine;/*KIRK*/
+P.still(\kirk, timecode: 112.48.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
+[" No, sir.","r",[1]].addLine;/*UHURA:*/
+["SARGON [OC]: I am Sargon.","1 -7 4 3".dm('c#')].addLine;
+P.still(\sargon, timecode: 114.7.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.tune();
 P(\bassnotes, music: { |p b e|
 	[
@@ -1397,7 +1426,7 @@ P(\bassnotes, music: { |p b e|
 });
 P(\line, music: { |p b e|
 	[
-		midinote: "1 -7 -6 -5/c#".dm2.q,
+		midinote: "1 -7 -6 -5".dm('c#').q,
 		dur: b.parse([ 1, 1, 1 ]).q,
 		legato: 1,
 		instrument: \stringyy,
@@ -1419,17 +1448,80 @@ P(\line, music: { |p b e|
 Require("boilerplate");
 P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	lyrics: "I am sargon +",
+	legato: [0.7, 1, 1, 0.7, ],
 	pitchTake: 1,
 	filter: (midinote: _ - 12), 
 ] }, music:{|p b e|
 	p.vocodeTune.(p,b,e,e.rpp)
 
 });
-["It is the energy of my thoughts which has","1 -7 3 4 3 1 1 4 3 4".dm(\e)].addLine;
+["It is the energy of my thoughts which has","1 -7 1 3 4 3 1".dm('e-') ++ "1 4 3 4".dm(\e)].addLine;
+P.tune();
+P.synthV(role: \vocoder, take: \lead,
+	filter: (midinote: _ - 12), 
+	params: {|p b| [
+	lyrics: "It is the energy + + of my thoughts which has",
+	pitchTake: 1
+]}, music:{|p b e|
+	p.vocodeTune.(p,b,e,e.rpp)
 
-[" touched your instruments and directed you here.","r"].addLine;
+});
+P(\chord,syl: 7, music: { |p b e|
+	(
+		instrument: \stringyy,
+		freq: [3, 5, 11].df('a',[3,4,5,6,7]).flat,
+		out: [2,3,4],
+		release: 12,
+		attack:2
+	).play
+});
+["(boom) touched your instruments and directed you here.","7 11 5 4 2 3".dm(\c) ++ "3 4 3 1 -5 11.5".dm('a',4)].addLine;
+P(\openStrings, music: { |p b e|
+	[
+		freq: [\r, [1,5,12].df(\g,4),[-5, 1, 4].df(\a,3), [-1,1].df('f#',3) ].q,
+		dur: b.parse([3, 5, 3, 1]).q,
+		strum: 0.05,
+		instrument: \stringyy, mix: 0 ,
+		instrument: \harp, mix: 0 , coef: 0.7, out: Effect.bus({|i| DWGReverbC1C3.ar(i) /2 },)
+	].pp
+});
+P(\chord,syl: 10, music: { |p b e|
+	(
+		instrument: \stringyy,
+		freq: [ 5, 11, 13].df('f#',[3,4,5,6,7]).flat,
+		out: [2,3,4],
+		release: 12,
+		attack:2
+	).play
+});
+P.tune(_ <> [rest: [\r, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1].q].p);
+P(\note, music: { |p b e|
+	P.calcStart().postln;
+	"e ".post; e.postln;
+	"p ".post; p.postln;
+	(
+		freq: p.tune[e.start].list[0].midicps,
+		instrument: \defaultPorto,
+	).play;
+	(
+		freq: p.tune[e.start].list[0].midicps,
+		instrument: \harp,
+	).play;
+	(
+		freq: p.tune[e.start].list[0].midicps / [2,4],
+		out: Effect.bus({|i| DWGReverbC1C3.ar(i) * 2 },)
+		// instrument: \harp,
+	).play
+});
+P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+	lyrics: "r touched your instruments + + and directed + + you here.",
+	filter: (midinote: _ - 12), 
+	pitchTake: 1
+] }, music:{|p b e|
+	p.vocodeTune.(p,b,e,e.rpp)
 
-["Now at this closer distance","5 4 3 2 1 3 2 4 3 3 2 2 1 -7 -6 4.5/d".dm2].addLine;
+});
+["Now at this closer distance","5 4 3 2 1 3 2 4 3 3 2 2 1 -7 -6 4.5".dm(\d)].addLine;
 Song.durs.filter(_*1.3);
 P.tune( { |i| i  <> [legato: 3,amp:0.03].p => Pmul(\freq,[0.25,0.5,1],_) });
 P(\pad, music: { |p b e|
@@ -1468,7 +1560,13 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 
 	)
 });
-[" Who are you, Sargon?","-7 3 1 -7 -5/c/mixolydian".dm2].addLine;/*KIRK:*/
+[" Who are you, Sargon?","-7 3 1 -7 -5".dm(\c,\mixolydian)].addLine;/*KIRK:*/
+P.still(\kirk, timecode: 125.75.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	lyrics: "Who are you sargon +",
 	pitchTake: 1
@@ -1482,7 +1580,13 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 
 });
 
-["SARGON [OC]: Please assume a standard orbit about our planet, Captain.","1 2 2 1 2 3 3 2 1 2 3 3 4/c#".dm2].addLine;
+["SARGON [OC]: Please assume a standard orbit about our planet, Captain.","1 2 2 1 2 3 3 2 1 2 3 3 4".dm('c#')].addLine;
+P.still(\kirk, timecode: 132.5.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	lyrics: "Please assume + a standard + orbit + about + our planet + ",
 	pitchTake: 1
@@ -1497,8 +1601,7 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 });
 
 [" Is that a request or demand?","r"].addLine;/*KIRK:*/
-
-["SARGON [OC]: The choice is yours.","1 1 1 5/f#".dm2].addLine;
+["SARGON [OC]: The choice is yours.","1 1 1 5".dm('f#')].addLine;
 P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	lyrics: "the choice is yours",
 	filter: (midinote: _ - 12), 
@@ -1511,17 +1614,18 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	)
 
 });
-["I read what is in your mind.","r"].addLine;
-["Words are unnecessary.","r"].addLine;
-
-[" The planet is dead.","r"].addLine;/*KIRK:*/
+["I read what is in your mind.","3 11 7 3 2 7 7".dm(\d)].addLine;
+P.tune();
+["Words are unnecessary.","3 4 5 4 3 2 1".dm('a-')].addLine;
+P.tune();
+[" The planet is dead.","1 1 1 1 4.5".dm(\c)].addLine;/*KIRK:*/
 ["There's no possibility of life there as we understand life.","r"].addLine;
-[" [OC]: And I am as dead as my planet.","r"].addLine;/*SARGON:*/
+[" [OC]: And I am as dead as my planet.","5 6 5 4 3 2 3 2 1".dm(\f,\minor)].addLine;/*SARGON:*/
 /// end here???
 ["Does that frighten you, James Kirk?","r"].addLine;
 ["For if it does,","r"].addLine;
 ["if you let what is left of me perish,","r"].addLine;
-["then all of you, my children,","r"].addLine; */
+["then all of you, my children,","r"].addLine; 
 ["all of mankind must perish, too.","r"].addLine;
 
 )

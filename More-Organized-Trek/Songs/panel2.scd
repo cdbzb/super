@@ -43,7 +43,7 @@ s.waitForBoot{
 
 
 	);
-	[ "(Kirk staggers back slightly, then there is a high-pitched sound as his head is flung back.)" ,"r",[6]].addLine; 
+	[ "(Kirk staggers back slightly, then there is a high-pitched sound as his head is flung back.)" ,"r",[6]].addLine;
 	P.still('high pitched noise',start:'staggers',timecode:[1235.seconds,1236.seconds],music: { |p b e|
 		{
 			Impulse.ar(Gendy1.kr(minfreq:2,maxfreq:10!4).range(1,[800,1700,3440,8000]))
@@ -126,6 +126,12 @@ P(\sargonBoom,start:'I am Sargon',music:{|p b|
 }
 );
 /*MCCOY:*/[" (boom boom) Where's our captain? Where's Jim Kirk? ",[11,11,15,15,14,13, 11,7,13].dm('c'),].addLine; 
+P.still(\mccoy, timecode: 1251.8.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 ~justTheTune.('our captain');
 P.synthV(role: \mccoy, take:\lead,
 	filter: (midinote: _ - 12), 
@@ -183,7 +189,12 @@ P(\chordCaptainMore,syl:5,start:'our captain',music:{ |p b|
 );
 ["He is unharmed. I have taken his body to demonstrate ", [7,11,12,13, 12,13,14,11,7,7,6, 5,15,14,12.5].dm('a',scale:\mixolydian),
 ].addLine; 
-
+P.still(\sargonKirk, timecode: 1255.48.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(\genbu, take: \lead,
 	filter: (midinote: _ - 24), 
 	start: Song.section( \unharmed ), params: {|p b| [
@@ -252,6 +263,12 @@ P(\chord3,start:\unharmed,syl:2,music:
 	].pm(\stringyy)
 );
 [/*MCCOY:*/" (drawing his phaser) I won't go along with this. Back to where you were, Sargon, or whatever you are. ", [4,3,2,1].dm('b-',scale:\whole) ++[13,11,5].dm('d-') ++[1,2,3,4,5].dm('g',scale:\whole) ++ [15,14,13,12,14,12,11,7].dm('d',octave: 4) ].addLine; 
+P.still(\mccoy, timecode: 1310.7.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \mccoy, start:5, take: \lead,
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
@@ -314,6 +331,12 @@ P.synthV(role: \mccoy, start:5, take: \lead,
 	});
 
 /*SPOCK:*/[" And if he refuses, Doctor, (dum) what do you propose to do with your phaser?", [13,12,11,13,15,13,11,6, 6.5].dm('c',scale:\whole )++ [5,7,11, 5,6,7,11,7,11, 4,3,2].dm('e')].addLine; //5
+P.still(\spock, timecode: 1318.3.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(\mo, take: \lead,
 	pitchTake: 1,
 	start: Song.section(\propose),
@@ -427,6 +450,12 @@ P.still(\dumx4,start:'lungs intro',timecode:1257.5.seconds, music:{
 
 //(Kirk convulses briefly, and the sphere has dimmed a lot.) 
 /*KIRK:*/["(dum dum dum dum) Lungs filled with air again.(dum dum dum)",[1,1,1,1,3,3,3,3,2,2,2,2,2].dm('a-'),[ 0.482, 0.456, 0.47, 0.51, 0.867, 0.459, 0.515, 1.287, 0.518, 0.499, 0.489, 0.447, 0.496 ]].addLine;
+P.still(\kirk, timecode: 1334.2.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum + e.bNext,
+		text: ["",""],
+	)
+});
 P.still(\kirk, timecode: 1333.15.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum, 
@@ -852,6 +881,12 @@ P(\base10,start:\million,
 	)
 );
 ["(boom boom boom boom )To be again.", [11,11,7,7,15,15,13,13].dm('c#',octave:4) ].addLine;
+P.still(\kirk, timecode: 1348.8.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \kirkLungs, take:\lead, params: {|p b| [
 	lyrics: "r r r r to be again +",
 	legato: [1,1,1,1,  1, 0.66, 1, 1],
@@ -878,6 +913,12 @@ P(\bass11,start:'To be',music:[
 ///*SPOCK:*/[" What are your plans for it? Can you exchange places again when you wish? ","r",].addLine; 
 ///*KIRK:*/[" Have no fear. Your captain is quite unharmed, although his mind generates insufficient energy for him to speak from there as I do.","r",].addLine; 
 /*SPOCK:*/[" Doctor? ","d4 a-3",].addLine; 
+P.still(\wide, timecode: 1441.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 ~justTheTune.('Doctor?');
 P(\tremDoctor,start:'Doctor?',music:
 	(instrument:\stringyy,
@@ -1156,6 +1197,12 @@ P('want of us',start:'want of us',music:
 );
 
 /*KIRK:*/[" In the ne-- xt room, there are /*other*/ two receptacles. ", [1,2, 3,2 ,2, 2,3, 4,3,3,2,1, ].dm(\a) ].addLine;
+P.still(\kirk, timecode: 1455.4.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.still(\kirkAndOrb, timecode: 1451.20.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -1256,9 +1303,10 @@ P(\triadSurvived,start:'that survived',music:{ |p b|
 }
 );
 ["You, Doctor A-- nn Mulhall, and ",[21,15,14,13,12,11,5,21].dm(\c,scale:\minor,octave:4)].addLine; 
-P.still(\mulhall, timecode: 1503.seconds, music: { |p b e|
+P.still(\mulhall, timecode: 1501.8.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
+		text: ["",""],
 		text: ["you","Dr. Ann Mulhall"],
 	)
 });
@@ -1274,10 +1322,6 @@ P.synthV(\genbu, take: \lead,
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P(\stillMulhall,start:'nn Mulhall',music:
-	//Still(~stills,'Jane Mulhall',text:[ "You!","r" ],fade:2,wait:1).add(15*60+2.0)
-	{}
-);
 P(\chordYouAnn,start:'nn Mulhall',music:
 	{ |p b|
 		var verb= Effect.new({|i | 

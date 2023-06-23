@@ -14,6 +14,13 @@
 //Song.smallChamber.chain;
 //Song.smallChamber.current;
 
+["walking in","r",[3]].addLine;
+P.still(\waliking, timecode: 1626.0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 [ "/*KIRK:*/ Even for us, a half million years is almost too long to wait. (chord)", [ 5,6,4,7 ,5,11,12,6.5,13 ,12,11,12 ,14.5,15,14.5,14.5 ,11.5 ].dm('a') ].addLine;
 P.synthV(role:\sargon,
 	range:[0,15], params: {|p b| [
@@ -391,7 +398,7 @@ legato:3,
 
 );
 ["(boom) Thalassa, my Thalassa. I`m ",[1,  11,7,6,14,13,13,12,11,15,13,15,14,13,11].dm('c#')].addLine; //2
-P.still(\handOnGlobe, timecode:1649.0.seconds,music:{|p b e|
+P.still(\handOnGlobe, timecode:1643.9.seconds,music:{|p b e|
 	e.still.(
 		wait: b.sum,
 		text:["Thalassa","my Thalassa"]
@@ -504,6 +511,12 @@ P(\bass, music: { |p b e|
 });
 
 [" When the struggle came which devastated your planet ","5 6 7 6 5  4 3 2 3 5 4 1 -7".dm('e',\harmonicMinor)].addLine;/*SPOCK:*/
+P.still(\wide, timecode: 1700.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \spock, take: \lead, params: {|p b| [
 	filter: (midinote: _ - 12), 
 	lyrics: " When the struggle + came which devastated + + + your planet +",
@@ -518,6 +531,7 @@ P.synthV(role: \spock, take: \lead, params: {|p b| [
 });
 
 [" Only the best minds were chosen to survive.","5 6 7 11 7 5 6 4 2 1 -7".dm(\e,6,\phrygian)].addLine;/*KIRK:*/
+
 
 P.still(\medium, timecode:1705.49.seconds,music:{|p b e|
 	e.still.(
@@ -558,6 +572,12 @@ P('spaceBass',start:\Only,syl: 7,music: {|p b e|
 	].ppm
 });
 ["Thalassa,(boom boom boom) my wife, as you may have guessed. ","-5 3 2 -1, -17 -16 3 6  5 3 1.5 2 3".dm(\e,6)].addLine;
+P.still(\kirk, timecode: 1704.37.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.still(\clear,timecode:0,music:{|p b e| 
 	e.still.(
 		wait: b.sum,
@@ -588,6 +608,12 @@ P.tune(\wife,_ <> [instrument:\wash,amp:0.03,out:Effect.bus(DWGReverbC1C3.ar(_,l
 P.tune('my wife',_ <> [amp:0.03,out:Effect.bus(DWGReverbC1C3.ar(_,len:3000)), rest:[\r,\r,\r,0,0,0].q ].p );
 
 ["and Henoch, from the other side. ","4 3 1 -5 -6.5 -7 -5 -3.5".dm('f#',6,\minor)].addLine;
+P.still(\turnedHead,syl:0, timecode: 1707.96.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role:\sargon, filter:(midinote: _-24), params: {|p b| [
 	lyrics: "and, he nok fran za a za said",
 	legato: [1, 1, 0.8, 1,   1, 1, 1, 1],
@@ -604,6 +630,7 @@ P.synthV(role:\sargon, filter:(midinote: _-24), params: {|p b| [
 //["We built this chamber here in order to preserve our essence in this fashion. ","r"].addLine;
 
 ["Fascinating. (rest) ","11 5 3 5 1".dm(\b,4,\minor)].addLine;/*SPOCK:*/
+
 P.synthV(role: \spock, take: \lead, params: {|p b| [
 	lyrics: "fascinating + + +",
 	filter: (midinote: _ - 12), 
@@ -628,6 +655,12 @@ P(\bassnote,syl:3, music: { |p b e|
 //["that one day you would build vessels as we did, and one day you would come here. ","r"].addLine;
 
 [" These others, they were stored differently than you,","1 3 -7 5 3 4 7 6 4 5 1".dm(\a,\mixolydian)].addLine;/*SPOCK:*/
+P.still(\twoShot, timecode: 1740.3.seconds, music: { |p b e| // TODO make sure there is pointing!!!
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \spock, take: \lead, params: {|p b| [
 	lyrics: "These others + they were stored differently + + than you",
 	filter: (midinote: _ - 12), 
@@ -673,6 +706,12 @@ P.double(role: \spock, take: \lead, params: {|p b| [
 
 });
 ["(boom) and search the heavens with my mind, ",[\r,5,5,5,5,5,5,5,5].dm(\b)].addLine;/*KIRK:*/
+P.still(\sargon, timecode: 1742.05.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P(\line, music: { |p b e|
 	{
 		var freq = "r 5 4 3 4 3 2 3 4".df(\b).dq.demand(b);
@@ -860,6 +899,12 @@ P(\bass,start:\touched,music: { |p b e|
 	].ppm
 });
 ["/*MULHALL:*/ So you could steal our bodies from us? ",[6,7,11,12,7,13.5,11,7,5].dm('c',scale:\minor)].addLine;
+P.still(\mullhall, timecode: 1753.9.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \mulhall, take: \lead, params: {|p b| [
 	lyrics: "so you can steal our bodies + from us",
 	pitchTake: 1,
@@ -884,10 +929,16 @@ P.tune(_ <> [
 	instrument:\pinn
 ].p);
 [" To steal? To take them from you?","1,7,3,11,8,7,6".dm(\e,\diminished)].addLine;/*KIRK:*/
+P.still(\kirk, timecode:1755.7.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role:\sargon, filter: (midinote: _ - 12),  params: {|p b| [
 	lyrics: "tu stil tu tek zem fram yu",
 	legato:[1,0.7,1,1,1,1,0.5],
-	phonemes: ["","s t i ly", "","","","",""]
+	phonemes: ["","s t i ly", "","","z e m","f r a m","",""]
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -1022,6 +1073,12 @@ P.synthV(role: \sargon, take: \lead, params: {|p b| [
 });
 P.tune();
 [" And destroy them","-7,-5,3,-7".dm(\g,\mixolydian)].addLine;
+P.still(\mccoy, timecode: 1809.4.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.tune();
 P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 	lyrics: "and destroy + them",
@@ -1168,6 +1225,12 @@ P(\bass,start:\limit,music: {|p b e|
 //P(\tune,start:\limit,music:Song.currentSong.pbind[\limit]);
 // P.tune(_ <> [amp:p{\r.yield;loop{0.1.yield}}].p);
 ["/*SPOCK:*/ Our bodies, Sargon, for what purpose? ", [5,7,5,4,3,2,1,5,3].dm('d',scale:\diminished)].addLine;
+P.still(\spock, timecode: 1822.7.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \spock, take: \lead, params: {|p b| [
 	lyrics: "our bodies + sargon + for what purpose +",
 	legato: [1, 1, 1, 1, 0.5, 1,1, 1, 0.5],
@@ -1191,6 +1254,12 @@ P.double(role: \spock, take: \lead, params: {|p b| [
 P(\tune,start:\purpose,music:Song.currentSong.pbind[\purpose]=>Pbindf(_,\instrument,\stringyy,\amp,0.3)
 );
 ["/*KIRK:*/ (boom) To build. To build humanoid robots. We ",[5,5,11,5,11,7,6,4,6,5,6].dm('e-',scale:\mixolydian)].addLine;
+P.still(\sargon, timecode: 1832.1.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role:\sargon,range:[0,9], filter: (midinote: _-12),params: {|p b| [
 	lyrics: "r,   tu,  bild,        tu, bild,      hyu, ma, noid, ro,   batz",
 	legato: [1,   0.9, 1,           1,  0.9,       1,   1,  1,    0.9, 0.5],
@@ -1410,6 +1479,12 @@ P(\harmony,start:\hands,music: {|p b e|
 P(\tune,start:\hands,music:Song.currentSong.pbind[\hands]);
 \intend.post;~intend= Song.sections.postln;
 ["/*SPOCK:*/ Then you intend to construct mechanical ",[3,4,2,3,4,5,6,7,6,5,4].dm('e',scale:\mixolydian)].addLine;
+P.still(\spock, timecode: 1843.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \spock, take: \lead,
 	pbind: Song.enlarge(2),
 	filter: (midinote: _ - 12), 
@@ -1519,6 +1594,12 @@ P(\chord,start:'to us',syl:3,music:
 	}
 );
 ["/*MULHALL*/We have engineers, technicians, ",[11,7,11,5,3,5,5,4].dm('f#',scale:\mixolydian)].addLine;
+P.still(\mulhall, timecode: 1845.4.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \mulhall, take: \lead, params: {|p b| [
 	lyrics: "We have engineers + + technicians + +",
 	legato: [1, 1, 1, 1, 0.6, 1, 1, 1, ],
@@ -1591,6 +1672,12 @@ P.synthV(role: \mulhall, take: \lead, params: {|p b| [
 });
 
 ["/*KIRK:*/ No. Our methods, our skill --s are (boom) ",[12, 12,12,11,7,13,7,11 ,6, ].dm('c')].addLine;
+P.still(\sargon, timecode: 1853.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \sargon, take: \lead, params: {|p b| [
 	lyrics: "no our methods + our skills - are r",
 	filter: (midinote: _ - 12), 

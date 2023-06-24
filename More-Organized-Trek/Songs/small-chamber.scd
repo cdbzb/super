@@ -9,23 +9,34 @@
 		//~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
 	} ]);
 	Song.chamber.isNil.if{"/Users/michael/tank/super/More-Organized-Trek/chamber_rewrite.scd".load};
-}.value;
 //Song.smallChamber.next_(\chamber);
 //Song.smallChamber.chain;
 //Song.smallChamber.current;
 
-["walking in","r",[3]].addLine;
+// ["walking in","r",[3]].addLine;
+[ "/*KIRK:*/ Even for us, a half million years is almost too long to wait. (chord)", [ 5,6,4,7 ,5,11,12,6.5,13 ,12,11,12 ,14.5,15,14.5,14.5 ,11.5 ].dm('a') ].addLine;
 P.still(\waliking, timecode: 1626.0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
 	)
 });
-[ "/*KIRK:*/ Even for us, a half million years is almost too long to wait. (chord)", [ 5,6,4,7 ,5,11,12,6.5,13 ,12,11,12 ,14.5,15,14.5,14.5 ,11.5 ].dm('a') ].addLine;
 P.synthV(role:\sargon,
 	range:[0,15], params: {|p b| [
 		// lyrics: "even +  for as a half million + years is alost  too long to wait",
 		lyrics: "i ven fo as a haf mi ryan yiryz iz or mosyt tsu lang tsu weit",
+P.still(\waliking, timecode: 1626.0.seconds, music: { |p b e|
+P.still(\waliking, timecode: 1626.0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 		phonemes:[ "i","v e n","f o","a s","","h a f","","","y i r y z","i z","","","","","","" ],
 		legato: [1, 1, 0.8, 0.9,1, 0.8, 1, 0.90, 0.8, 1, 1, 1, 1, 0.85, 1, 1, 1]
 	]}, filter: (
@@ -76,12 +87,13 @@ P(\experiment,music:{ |p b e|
 	}.play
 });
 ["Two others still survive. Henoch (boom) and Thalassa.", [6,5,4,3,2,4].dm('d',scale:\diminished) ++[5,5,5,5,5,4,3].dm('c#') ].addLine; 
-Song.synthVTracks = EventWithDefault.new(
+( Song.synthVTracks = EventWithDefault.new(
 	\default, {|i|
 		DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:0.05, coefs:nil, perm:nil)
 		/5
 		/1.5
 	}
+);
 );
 P.synthV(role:\sargon,range:[0,5],
 	filter: ( midinote: _ - 12 ),
@@ -510,6 +522,7 @@ P(\bass, music: { |p b e|
 	].pp
 });
 
+}.value;
 [" When the struggle came which devastated your planet ","5 6 7 6 5  4 3 2 3 5 4 1 -7".dm('e',\harmonicMinor)].addLine;/*SPOCK:*/
 P.still(\wide, timecode: 1700.seconds, music: { |p b e|
 	 e.still.( 

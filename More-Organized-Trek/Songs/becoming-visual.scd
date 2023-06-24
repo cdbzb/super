@@ -1389,6 +1389,16 @@ P.tune();
 P.tune();
 P.tune(\detect, _ <> [freq: [1,4].df(\e,6), amp:0.05].p);
 [" All of your questions will be answered in time, Captain Kirk.", "4 3 2 1 2 2 3 2 1 -7 -7".dm(\c) ].addLine;/*SARGON [OC]:*/
+P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+	filter: (midinote: 45!11), 
+	lyrics: "All of your questions + will be answered + in time",
+	pitchTake: 1
+] }, music:{|p b e|
+	p.vocodeTune.(p, b, e, e.rpp,
+		dur: b.sum + 3,
+		sus: b.sum + 3,
+	)
+});
 P.still(\sargon, timecode: 105.188.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -1580,7 +1590,7 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 
 });
 
-["SARGON [OC]: Please assume a standard orbit about our planet, Captain.","1 2 2 1 2 3 3 2 1 2 3 3 4".dm('c#')].addLine;
+["SARGON [OC]: Please assume a standard orbit about our planet, Captain.","1 2 2 1 2 3 3 2 1 2 3/c# 4 3 2 1/e-".dm2].addLine;
 P.still(\kirk, timecode: 132.5.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -1588,19 +1598,34 @@ P.still(\kirk, timecode: 132.5.seconds, music: { |p b e|
 	)
 });
 P.synthV(role: \vocoder, take: \lead, params: {|p b| [
-	lyrics: "Please assume + a standard + orbit + about + our planet + ",
+	lyrics: "Please assume + a standard + orbit + about + our planet + captain + ",
 	pitchTake: 1
 ] }, music:{|p b e|
 	p.vocodeTune.(p,b,e,e.rpp,
 		chord: #[1,2,1.5,4],
 		mix: 0.9,
 		width:1.02,
-		wet:0
+		modGain:2,
+		wet:0.1
 	)
 
 });
 
-[" Is that a request or demand?","r"].addLine;/*KIRK:*/
+[" Is that a request or demand?","3 5 7 11 13 11 7 5 15".dm(\e,\mixolydian)].addLine;/*KIRK:*/
+P.synthV(role: \kirk, take: \lead, params: {|p b| [
+	filter: (midinote: _ - 12), 
+	lyrics: "Is that a request + or a demand +",
+	loudness: Env([ 3,0,3,0,3,0,3,0,3 ] ,b + [0.1,0,0,0,0,0,0,0,0]),
+	legato: [1, 1, 1, 1, 0.9, 1, 0.7, 1, 1, ],
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+P.tune(_ <>[instrument:\harp].p);
 ["SARGON [OC]: The choice is yours.","1 1 1 5".dm('f#')].addLine;
 P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	lyrics: "the choice is yours",
@@ -1608,21 +1633,95 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	pitchTake: 1
 ] }, music:{|p b e|
 	p.vocodeTune.(p,b,e,e.rpp,
-		echo:0.2, modGain:2,
+		echo:0.2, modGain:4,
 		chord: #[2,4,6,8],
 		mix: 0.99
 	)
 
 });
-["I read what is in your mind.","3 11 7 3 2 7 7".dm(\d)].addLine;
+["I read what is in your mind.","3 11 7 3 2 7 3".dm(\d)].addLine;
+P(\chords, music: { |p b e|
+	[
+		freq: [ [2,2], [1,3], [-7, 6] ].df(\e,\mixolydian).q,
+		dur: b.parse([4, 2, 1]).q,
+		instrument: \stringyy, mix:0.1,amp:0.05,
+		out: p.carrierBus
+	].pp;
+
+});
+P.tune( _ <> [instrument: \sawSynth, out: Song.carrierBus, amp:0.02].p );
+P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+	filter: (midinote: 45!7), 
+	lyrics: "I read what is in your mind",
+	pitchTake: 1
+] }, music:{|p b e|
+	p.vocodeTune.(p,b,e,e.rpp,
+		modGain:3,mix:0.8,width:1.01
+	)
+
+});
 P.tune();
-["Words are unnecessary.","3 4 5 4 3 2 1".dm('a-')].addLine;
+["Words are unnecessary.","3 4 5  2 1 -7 -6".dm('a-', \mixolydian)].addLine;
 P.tune();
+P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+	lyrics: "words are unnecessary + + + +",
+	filter: (midinote: 48), 
+	pitchTake: 1
+] }, music:{|p b e|
+	p.vocodeTune.(p,b,e,e.rpp,
+		modGain:3,
+	)
+
+});
+P(\connector, music: { |p b e|
+	[
+		freq: [\r,2, 1, -7, -6, -5.5].df('a-',\mixolydian).q,
+		dur: e.bAll.parse([3, 1, 1, 1, 1, 3]).q
+	].pp
+});
 [" The planet is dead.","1 1 1 1 4.5".dm(\c)].addLine;/*KIRK:*/
-["There's no possibility of life there as we understand life.","r"].addLine;
-[" [OC]: And I am as dead as my planet.","5 6 5 4 3 2 3 2 1".dm(\f,\minor)].addLine;/*SARGON:*/
+P.tune(_ <>[instrument:\harp].p);
+P.synthV(role: \kirk, take: \lead, params: {|p b| [
+	lyrics: "the planet + is dead",
+	legato: [1, 1, 1, 1, 0.66, ],
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+["There's no possibility of life there as we understand life.","1 2 4 3 2 1 -6 2/d 4 3 1 2 2 3 3/e 3/b-/4".dm2].addLine;
+P.synthV(role: \kirk, take: \lead, params: {|p b| [
+	lyrics: "There's no possibility + + + + of life there as we understand + + life.",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+P.tune();
+[" [OC]: And I am as dead as my planet.","5 6 5 4 3 2 3 2 1".dm('e-',\minor)].addLine;/*SARGON:*/
+P.synthV(role: \vocoder, take: \lead,
+	pbind: Song.enlarge(7),
+	// filter: (midinote: _ - 12), 
+	filter: (midinote: 45!16), 
+	params: {|p b| [
+	lyrics: "And I am as dead as my planet + does that frighten + you James Kirk",
+	legato: [1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1, 1, 1, 1, 0.8, 1, 1, ],
+	pitchTake: 1
+] }, music:{|p b e|
+	p.vocodeTune.(p,b,e,e.rpp,
+
+		modGain:3,
+		enlarge: 7, tune: p.tune[e.start].list ++ p.tune[e.start+1].list, dur: b.sum + e.bNext.sum + 2, sus:b.sum+e.bNext.sum+2)
+});
 /// end here???
-["Does that frighten you, James Kirk?","r"].addLine;
+["Does that frighten you, James Kirk?","4 3 7 5 3 2 1/b-/mixolydian/4".dm2].addLine;
+P.tune();
 ["For if it does,","r"].addLine;
 ["if you let what is left of me perish,","r"].addLine;
 ["then all of you, my children,","r"].addLine; 

@@ -32,6 +32,7 @@ Stills {
 	}
 
 	init {|movie| 
+		// file=movie ? ( this.class.filenameSymbol.asString.dirname.dirname +/+ "Stills/return-to-tomorrow.cropped.mov" ); 
 		file=movie ? ( this.class.filenameSymbol.asString.dirname.dirname +/+ "Stills/return-to-tomorrow.mov" ); 
 		markers=();
 		monitors = switch( Platform.machine,
@@ -118,6 +119,7 @@ Stills {
 			var w;
 			try{
 				w = Window(bounds:Rect(1500*monitor,200,1400,800),border:false)
+				//1196 x 676
 				.background_( Color.clear)
 				.front;  
 			}{
@@ -130,17 +132,18 @@ Stills {
 		plot {|markerName monitor=0|
 			var image=this.mark(markerName);
 			var w;
-			image.setSize(monitors[monitor].width,monitors[monitor].height,\keepAspectRatio);
+			image.setSize(monitors[monitor].width-10,monitors[monitor].height-10,\keepAspectRatio);
 			try{
 				//w = Window(bounds:Rect(1500*monitor,200,size/12*14,size/12*8),border:false)
 				w = Window(bounds:monitors[monitor],border:false)
-				.background_( Color.black)
-				.drawFunc_({Pen.drawImage(Point(100,100),image,operation:'sourceOver',opacity:1)})
+				.background_( Color.clear)
+				// .drawFunc_({Pen.drawImage(Point(100,100),image,operation:'sourceOver',opacity:1)})
+				.drawFunc_({Pen.drawImage(Point(50,50),image,operation:'sourceOver',opacity:1)})
 				.front;  
 			}{
 				//w = Window(bounds:Rect(0,200,size/12*14,size/12*8),border:false)
 				w = Window(bounds:monitors[monitor],border:false)
-				.background_( Color.black)
+				.background_( Color.clear)
 				.drawFunc_({Pen.drawImage(Point(100,100),image,operation:'sourceOver',opacity:1)})
 				.front;  
 			}

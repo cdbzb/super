@@ -7,17 +7,59 @@ s.waitForBoot {
 "boilerplate.scd".load;
 
 [ "SCOTT: You're going to what?","r" ].addLine;
+P.still(\scott, timecode: 2044.2.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 [ "Are they all right in the head, Doctor? ","r" ].addLine;
 [ "MCCOY: No comment. ","r" ].addLine;
+P.still(\mccoy, timecode: 2048.45.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 [ "KIRK: A simple transference. Their minds and ours. ","r" ].addLine;
+P.still(\kirk, timecode: 2050.8.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 [ "MCCOY: Quite simple. Happens every day. ","r" ].addLine;
 [ "KIRK: Scotty, I need your approval, too. Since you'll","r" ].addLine;
+P.still(\kirk, timecode: 2054.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 [ "work with them, furnishing them all they need to make the android robots. ","r" ].addLine;
 [ "You won't be working with them, you'll be working with us, our bodies.","r" ].addLine;
 [ "They'll be inside us, and we'll be ...","r" ].addLine;
 [ "MCCOY: It all seems rather indecent to me. ","r" ].addLine;
+P.still(\mccoy, timecode: 2105.4.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 [ "MULHALL: I'm not so certain of that, Doctor. It is scientifically fascinating. ","r" ].addLine;
+P.still(\mulhall, timecode: 2110.1.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 [ "SPOCK: (boom) Once inside their mechanical bodies, engineer, they can leave this planet,"," -1 1 2 3 2 3 4 3 2 3 1 -5 -6 -5 5 4 3 2 4 3 ".dm('a-', octave:4)].addLine; 
+P.still(\spock2,syl:0, timecode: 2117.3.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.tune();
 Song.setTempoMap(\mechanical,"q e e q e e q e e e e e e ee e e Q E Q E ");
 P(\click, music: { |p b e|
@@ -225,6 +267,12 @@ P(\bass, music: { |p b e|
 	].pp
 });
 [ "KIRK: Bones, they'll show us medical advances,","7 6 7 5 7 6 5 4 6 5".dm('f#',4,\mixolydian) ].addLine;
+P.still(\kirkBonesShow, timecode: 2124.1.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 Song.makeBassNote = { |root = 'f#' release = 2 shorten = 0 out=0|
 	P(\bassnote, music: { |p b e|
 		{
@@ -320,6 +368,12 @@ P(\bassPulse, music: { |p b e|
 	}.play
 });
 [ "Scotty, engineering advances.","1 -7 1 2 3 -7 -6 -6 -5".dm('a-',\mixolydian) ].addLine;
+P.still(\kirkToScott, timecode: 2126.8.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	lyrics: "scotty + engineering + + + advances + +",
 	legato: [1, 0.7, 1, 1, 1, 1, 1, 1, 1, ],
@@ -401,6 +455,12 @@ P.double(role: \kirk, take: \lead, params: {|p b| [
 });
 Trek.cast.scott = \an;
 [ "SCOTT: Ach! You're joking. ","1 1 4 1".dm('a-') ].addLine;
+P.still(\scott, timecode: 2134.9.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \scott, take: \lead, params: {|p b| [
 	lyrics: "awchchch you're joking +",
 	legato: [0.8, 1, 1, 1, ],
@@ -428,6 +488,12 @@ P(\bass, music: { |p b e|
 });
 P.tune();
 [ "SPOCK: No, he's not. ","-5 -5 1".dm('a-') ].addLine;
+P.still(\spock, timecode: 2135.4.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \spock, take: \lead, params: {|p b| [
 	filter: (midinote: _ - 12), 
 	lyrics: "no he's not",
@@ -453,6 +519,12 @@ P(\bassnote, music: { |p b e|
 P.tune();
 // idea big vibrato to indicate irony !!
 [ "MCCOY: They're giants, and we're insects beside them. "," -5 3 2 1 3 4 3 1 3 2".dm(\e) ].addLine;
+P.still(\mccoy, timecode: 2137.6.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 	lyrics: "They're giants + and we're insects + beside + them.",
 	legato: [1, 1, 0.8, 1, 1, 1, 1, 1, 1, 1, 1, ],
@@ -542,6 +614,12 @@ P(\bassnote, music: { |p b e|
 	)//.play
 });
 [ "KIRK: They selected us as the most compatible bodies. ","1 2 3 4 5 4 3 7 11 6 5 4 6 5".dm(\d,5,\mixolydian) ].addLine;
+P.still(\kirk, timecode: 2149.95.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	lyrics: "They selected + +  us as the most compatible + + + bodies + ",
 	pitchTake: 1
@@ -582,6 +660,12 @@ P(\chords,start:\selected,syl:6,music:{|p b e|
 ].pp
 });
 [ "MCCOY:(boom boom boom boom) What's your attitude on that, Doctor? ", [ -1, -1, -17, -17, -5, 3, -7, 1, -7, -5, 3, 2, 1 ].dm(\a,5,\mixolydian) ].addLine;
+P.still(\mccoy, timecode: 2154.7.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P(\bass,start:\attitude,music:{|p b e| 
 	MegaBind(
 			[
@@ -623,6 +707,12 @@ P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 // ["MULHALL: Well, if we all agree, I'm willing to host Thalassa's mind.","r"].addLine;
 //[" ( boom x 7 ) I'm a scientist.  ( boom x 7 ) and I'm","3 4 6 5 7 3 4 11 12 13 14 13 5 3 4 6 5 7 3 4 5 15  ".dm(\b)].addLine;g
 [" ( boom x 7 ) I'm a scientist.  ( boom x 7 ) and I'm","3 4 6 5 7 3 4 11 7 11 12 11 3 3 4 6 5 7 3 4 5 15  ".dm(\b)].addLine;
+P.still(\mulhall, timecode: 2202.85.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 Song.durs.scaleEnv(
 	Env([1,0.75],1,curve: 2)//.plot
 );
@@ -1104,6 +1194,12 @@ P(\bass,start:\experimentation,music:{|p b e|
 });
 P.tune(\experimentation);
 ["SCOTT: A starship engine the size of a walnut? Thats impossible! "," 2 3 1 -7 -6 -5.5 4 3 4 5 -7".dm(\a) ++ "5 5 11 5 1".dm('a-',5)].addLine;
+P.still(\scott, timecode: 2220.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 Song.impossibleCurve=TempoMap("e e e E E E e x x e e qe e E E E q".asBeats,Song.durs[\impossible].list);
 // P.tune(\impossible);
 P.synthV(role: \scott, take: \lead, params: {|p b| [
@@ -1144,6 +1240,12 @@ P(\bass,start:\impossible,music:{|p b e|
 });
 //["But I don't suppose there'd be any harm in looking over diagrams on it. ","r"].addLine;
 ["KIRK: Bones? You could stop all this by saying no. ",[7].dm(\b,4,\mixolydian) ++ [3,4,7,4,3,2,3,4].dm(\c,5,\mixolydian) ++ [5].dm(\a,4)].addLine;
+P.still(\mccoy, timecode: 2230.9.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	filter: (midinote: _ - 12), 
 	lyrics: " Bones? You could stop all this by saying + no. ",
@@ -1326,6 +1428,12 @@ P(\chords,start:\involved,music:{|p b e|
 	
 });
 ["MCCOY: (boom) Then I'll still want one question answered to my satisfaction.", "-1 1 2 -8 1 3 4 2 5 1".dm(\f, 5, \diminished) ++ "3 4 5 1 6.5 6".dm(\c, 5, \mixolydian) ].addLine;//p13
+P.still(\mccoy, timecode: 2255.25.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 Trek.cast.mccoy = \an;
 Trek.presets.put(\mccoy,\mo,[paramTension:0.8, paramGender:0.1]);
 Trek.presets.put(\mccoy,\an,[paramTension:0.4, paramGender:0.12]);

@@ -17,6 +17,12 @@
 	Stills.new.current;
 	{
 		["they used to think if man could ","f3 f g g a a b "].addLine; //0
+		P.still(\kirkUsed, timecode: 2314.1.seconds, music: { |p b e|
+			 e.still.( 
+				wait: b.sum,
+				text: ["",""],
+			)
+		});
 		P.still(\kirk, timecode: 2314.seconds, music: { |p b e|
 			e.still.( 
 				wait: b.sum,
@@ -189,6 +195,12 @@ P(\bass,start:\first,syl:3,music:{|p b e|
 	].pp 
 });
 ["Apollo mission hadn`t reached the","c#4 f# c# e d# b-3 a- b- b"].addLine;//5
+P.still(\kirkPoint, timecode: 2317.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \kirk, take: \lead,
 	// prepend: true,
 	params: {|p b| [
@@ -209,6 +221,7 @@ P.double(role: \kirk, take:\lead, params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
+
 ["moon... or that we hadnt  ","c#4 b3 a g a b  "].addLine;//6
 P.synthV(role: \kirk, take:\lead, prepend: true, params: {|p b| [
 	lyrics: "moon or that we hadn't + ",
@@ -445,18 +458,13 @@ P(\highchord,start:'star',music:(
 	dur: 1
 ));
 [ "thats like saying you ",[3,1,4,3,4].dm(\b) ].addLine; //10
-
-P.still(\closer1, timecode: 2325.seconds, music: { |p b e|
+P.still(\kirkTwoHands, timecode: 2326.1.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum + e.bNext[0..3].sum,
-		text: ["thats like saying","you wish that you still"],
-		fade: 8
-	).sequenceText2(
-		b.sum, [
-			[ "",""],
-		],
+		wait: b.sum,
+		text: ["",""],
 	)
 });
+
 P.tune(\saying);
 P.synthV(role: \kirk, take:\lead, filter: (midinote: _ - 12),  params: {|p b| [
 	lyrics: "thats like saying + you",
@@ -674,6 +682,13 @@ P(\lickharmony,start:'cat-gut',syl:3,music: {|p b e| [
 	//~im2=Song(\ImInControl2,[])//.current; //{{{
 	//			["I'm (boom) in (boom) con-","g4 a-3 g4 a-3  f4"].addLine;,//0
 	['(boom) Im (boom) in (boom) con',"a-3 a-4 a-3 a-4 a-3 a-4"].addLine;//correction
+
+P.still(\kirkCommand,syl:0, timecode: 2348.25.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 	Song.setTempoMap(\Im,"q q q  E E E");
 	P(\hat, music: { |p b e|
 		[
@@ -1146,6 +1161,17 @@ P(\lick8,start:'(trill)',syl:4,music: { |p b e|
 	].pp
 });
 ["this, but I must point out that the possi","b-4 a g# a b d f# g# a b"].addLine;//9
+P.still(\kirkDocile, timecode: 
+	// 2400.seconds
+	//2417.seconds //james brown
+	2413.4.seconds// smiling
+
+	, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role:\kirk, take:\lead, params: {|p b| [
 	lyrics: "this but I must point out that the posee +",
 	pitchTake: 1
@@ -1267,6 +1293,12 @@ P(\bass11,start:'vancement', syl:7, lag: Song.parse('vancement',[0.5],8)[0] + 0.
 	(dur:2,octave:4,out:1,note:4).play;(dur:2,octave:5,out:1,note:4,instrument:\stringyy).play
 });
 [" (rest) risk, risk is our business (ba -- by)","c3 c5 c c c c# g#4 f# e"].addLine; //12
+P.still(\kirkRisk,syl:0, timecode: 2404.1.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role:\kirk,take:\lead,
 	filter: (midinote: _ - 12), 
 	params: {|p b| [

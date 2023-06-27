@@ -1,11 +1,14 @@
 Phonemes {
-	classvar <dicts;
+	classvar <dicts,files;
 	*initClass {
-		var files = #[ 
+		files = #[ 
 			"/Library/Application Support/Dreamtonics/Synthesizer V Studio/dicts/mandarin-xsampa/English.json",
 			"/Library/Application Support/Dreamtonics/Synthesizer V Studio/dicts/japanese-romaji/English.json"
 		];
 		dicts = ();
+	}
+	*parseDicts {
+		"loading dicts...".postln;
 		[\xsampaDict, \romajiDict].do{|i x|
 			dicts.put(
 				i,
@@ -18,8 +21,14 @@ Phonemes {
 			dict.data.collect({|i|  i.w.asSymbol -> i.p }).asEvent
 		}
 	}
-	*romajiDict {^dicts.romajiDict}
-	*xsampaDict {^dicts.xsampaDict}
+	*romajiDict {
+		( dicts.size==0 ).if{ this.parseDicts }; 
+		^dicts.romajiDict
+	}
+	*xsampaDict {
+		( dicts.size==0 ).if{ this.class.parseDicts }; 
+		^dicts.xsampaDict
+	}
 }
 + String {
 	romaji {

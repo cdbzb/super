@@ -278,7 +278,13 @@ P(\bass,syl:1,music:[
 ].pm(\stringyy)
 );
 ['/*MCCOY:*/ He doesnt appear to be harmed - -. Physically, anyway. ',[4,5,6,5,4,5,6, 7,11,7].dm('e' )++[13,11,7,5,4,3].dm('e-',scale:\mixolydian)].addLine; 
-P.synthV(role: \spock, 
+P.still(\mccoyWide, timecode: 1945.5.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
+P.synthV(role: \mccoy, 
 	filter: (midinote: _ - 12),  params: {|p b| [
 		lyrics: "he does n't a ppere to be harmed - -  physicly + + anyway + +",
 		// language: "english",
@@ -287,7 +293,8 @@ P.synthV(role: \spock,
 	] }, music:{|p b e|
 		{
 			e.playbuf
-			=> Vocoder.ar(Saw.ar([ 50,600.rand ]), _, num:12, low:100, high:5000, q:0.02, hpf:5000, hpfscal:0.05, outscal:25)
+			/3
+			// => Vocoder.ar(Saw.ar([ 50,600.rand ]), _, num:12, low:100, high:5000, q:0.02, hpf:5000, hpfscal:0.05, outscal:25)
 			// => p.synthVTracks.at(e.key).()
 		}.play
 	}
@@ -1038,6 +1045,12 @@ P(\euphoriaChords,syl:20,music:{|p b e|
 );
 // P(\tune,music:Song.currentSong.pbind[21]);
 ["Sargon. (boom) ",[3,2,-5].dm('a')].addLine; 
+P.still(\kirkClose, timecode: 2026.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 // P(\tune,music:Song.currentSong.pbind[22]);
 P.synthV(role: \kirk, take:\lead,
 	pbind: {|p b|

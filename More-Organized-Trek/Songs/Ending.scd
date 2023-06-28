@@ -38,7 +38,7 @@
 	["SPOCK: Must I make an example of you, too, Helm? ",[1, 2, 2, 3, 3, 3, 4.5, 4.5, 7, 5.5,7, 1].dm('f#',scale:\mixolydian)].addLine;
 	// P.tune(\example);
 	//4806.66 nice red door....
-	P.still(\medium, timecode: 4806.25.seconds, music: { |p b e|
+P.still(\medium, timecode: 4806.25.seconds, music: { |p b e|
 		e.still.( 
 			wait: b.sum,
 			text: ["must I make","an example"],
@@ -46,7 +46,7 @@
 			b.parse([7]).unbubble,["of you too,","Helm?"]
 		])
 	});
-	P.synthV(role: \henoch, take: \lead,
+P.synthV(role: \henoch, take: \lead,
 		filter: (midinote: _ - 24), 
 		vocalMode: \Overdrive,
 		params: {|p b| [
@@ -59,17 +59,17 @@
 			}.play
 		});
 		["they enter",[1]].addLine;
-		P(\door, music: { |p b e|
-			Synth(\door)
+P(\door, music: { |p b e|
+			Synth(\door,[\amp,0.2])
 		});
-		P.still(\enter, timecode: 4808.seconds, music: { |p b e|
+P.still(\enter, timecode: 4808.seconds, music: { |p b e|
 			e.still.( 
 				wait: b.sum,
 				text: ["",""],
 			)
 		});
 		[ "/*SPOCK*/ Pain, Captain. (oooh) A-- nd you, my dear? " ,[12,11,7,6].dm(\g) ++ [7,11,5,3].dm('c#',octave:6)].addLine;
-		P.synthV(role: \henoch, take: \lead, params: {|p b| [
+P.synthV(role: \henoch, take: \lead, params: {|p b| [
 			filter: (midinote: _ - 24), 
 			lyrics: "Pain captain + r and  you my dear",
 			legato: [0.7, 1, 0.7, 1, 1, 1, 1, ],
@@ -82,28 +82,29 @@
 			}.play
 
 		});
-		P.still(\henoch_close, timecode: 4809.9.seconds, music: { |p b e|
+P.still(\henoch_close, timecode: 4809.9.seconds, music: { |p b e|
 			e.still.( 
 				wait: b.sum,
-				text: ["pain","captian"]
+				text: ["pain","captain"]
 			).sequenceText([
 				b.parse([4]).unbubble, ["and you","my dear"]
 			])
 		});
-		P.still(\kirk_pain,syl:2, timecode: 4813.3.seconds, music: { |p b e|
+P.still(\kirk_pain,syl:2, timecode: 4813.3.seconds, music: { |p b e|
 			e.still.( 
 				wait: b.drop(1)[0],
 				fade:1
-			)
+			);
+			(freq:6.df(\g) + [0,5,11,23] , out: Effect.bus({|i| DWGReverbC1C3.ar(i) },)).play
 		});
-		P.still(\nurse_pain, syl:7, timecode:4820.seconds, music: { |p b e|
+/* P.still(\nurse_pain, syl:7, timecode:4820.seconds, music: { |p b e|
 			e.still.( 
 				wait: b.drop(1)[0],
 				text: ["",""],
 			)
-		});
-		P.tune(\Pain);
-		P(\chord,start:\Pain,music:{|p b e| 
+		}); */
+P.tune(\Pain);
+P(\chord,start:\Pain,music:{|p b e| 
 			MegaBind(
 				[
 					[1,\r,4.5],
@@ -127,25 +128,25 @@
 				}
 			).play
 		});
-		P(\bassnote,start:\Pain,syl:2,music:{|p b e| 
+P(\bassnote,start:\Pain,syl:2,music:{|p b e| 
 			(degree:1,instrument:\stringyy,octave:[5],amp:0.4).play
 		});
-		P(\bassline,start:\Pain,music:{|p b e| 
+P(\bassline,start:\Pain,music:{|p b e| 
 			[
 				freq:[ 1,3,4,-4.5 ].df(\g,octave:3).q,
 				dur:b.parse([2,1,2,3]).q
 			].pp
 		});
-		P(\cymbals,start:\Pain,music:{|p b e| 
+P(\cymbals,start:\Pain,music:{|p b e| 
 			Synth(\cymbalsDS,[out:Effect(_*Line.kr(0,1,5)).bus.index])
 		});
-		P(\cymbals,start:\Pain,music:{|p b e| 
+P(\cymbals,start:\Pain,music:{|p b e| 
 			Synth(\cymbalsDS,[out:Effect(_*Line.kr(0,1,5)).bus.index])
 		});
-		P(\cymbals2,start:\Pain,syl:5,music:{|p b e| 
+P(\cymbals2,start:\Pain,syl:5,music:{|p b e| 
 			Synth(\cymbalsDS,[out:Effect(_*Line.kr(0,1,6)).bus.index])
 		});
-		P(\bassNote2,start:\Pain,music:{|p b e| 
+P(\bassNote2,start:\Pain,music:{|p b e| 
 			[
 				dur:b.parse([3,2,2]).q,
 				freq:[1,\r].df(\g,octave:3).q,
@@ -304,7 +305,7 @@ P(\tamb, music: { |p b e|
 
 });
 	// P.tune('every mind');
-	P(\drums, music: { |p b e|
+P(\drums, music: { |p b e|
 		[
 			"eeee e e eeee e e", 'bd_808', \amp,1/4,
 			"ee ex xeeee ex xee",\sn_808,\amp,[0,1,0.5,1,0.5] /4 =>_.q
@@ -363,7 +364,7 @@ P.still(\stab, timecode: 4842.20.seconds, music: { |p b e|
 			text: ["",""],
 		)
 	});
-P.still(\spock,syl:0, timecode: 4849.seconds, music: { |p b e|
+P.still(\spockFools,syl:0, timecode: 4849.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.drop(1).sum,
 			text: ["Fools","I'll simply transfer"],
@@ -459,7 +460,7 @@ P.synthV(role: \henoch,
 			// /2
 		}.play
 	});
-	P(\rising, music: { |p b e|
+P(\rising, music: { |p b e|
 		{
 			SinOsc.ar( Line.kr(400 * ({Rand(1.0,2.0)}!4),900,30) )
 			+ SinOsc.ar(3000 + [7,11,13],0,0.1)
@@ -536,7 +537,7 @@ P(\trem,start:\please,syl:1,music:{|p b e|
 ["(He falls to the floor and his victims are freed from their pain.) " ,[1].dm(\c),[8]].addLine;
 P.still(\henochDown, timecode: 4914.seconds, music: { |p b e|
 	 e.still.( 
-		wait: 0.1,
+		wait: 0.2,
 		fade: b.sum,
 		text: ["",""],
 	)
@@ -544,10 +545,9 @@ P.still(\henochDown, timecode: 4914.seconds, music: { |p b e|
 P(\pinano,start:\freed,music:{|p b e| 
 		(amp:2,freq:[-21,-11].df(\b),out:Effect(FreeVerb.ar(_,1,1)).bus.index).play
 	});
-
-P.still( \friend, timecode:4926.seconds, music: { |p b e|
+P.still( \friend,lag:3, timecode:4926.seconds, music: { |p b e|
 		e.still.value(
-			fadeIn: 2, //same as section duration - lag
+			fadeIn: b.sum - 3, //same as section duration - lag
 			wait: 2 + e.bNext.sum,
 			// text:["Spock","my friend Spock"]
 		);
@@ -1053,7 +1053,7 @@ P(\vox,start:\read,lag:-1, rpp:VocalRPP(\read,\tune),music:{|p b e|
 		modGain:1
 	)
 });	//P.tune(\read); */
-		P.synthV(role: \vocoder, take: nil, params: {|p b| [
+P.synthV(role: \vocoder, take: nil, params: {|p b| [
 			filter: (midinote: _ - 12), 
 			lyrics: "r r r r reed your thoughts and believe + it also +",
 			legato: [1, 1, 1, 1,  1, 1, 1, 1, 1, 1, 1, 1, 1, ],
@@ -1436,6 +1436,7 @@ P(\bass,start:\placed,music:{|p b e|
 ["(boom boom) We shared consciousness (we shared consciousness... ) to",[-5,-5,3,2,4,3,2,1].dm('e-')++[3,2,4,3,2,1].dm( 'a-' )++[3,2,4,3,2,1].dm('e-') ].addLine;
 P.synthVs(role:\chapel, take: [ \lead, \double ],
 	// pbind:[ Song.enlarge(2), Song.enlarge(2) ],
+	pbind:Song.enlarge(2),
 	params: {|p b| [
 		lyrics: "r r we shared consciousness + + - r r r r r r we shared consciousness + + together + + ",
 		pitchTake: [ 1,3 ]

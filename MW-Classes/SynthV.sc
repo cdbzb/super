@@ -486,10 +486,12 @@ SynthV {
 		^P(key,start,syl,lag, music,song,
 			resources:(
 				synthV: synthV,
-				playbuf: { PlayBuf.auto(
+				playbuf: {
+					var buf = synthV.buffer.();
+					PlayBuf.auto(
 					1,
-					synthV.buffer.(),
-					startPos: ( synthV.offset ) * BufSampleRate.kr(synthV.buffer.()),
+					buf,
+					startPos: ( synthV.offset ) * BufSampleRate.kr( buf ),
 					doneAction:0
 				)},
 				take: take,

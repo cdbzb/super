@@ -901,7 +901,7 @@ Song {
 
 	enlarge { | numNotes start|  //number of notes to add from next pattern
 		// var b = Song.durs[key].list; p=Song;
-		var key= start ? Song.calcStart();
+		var key= start ? P.calcStart();
 		numNotes = numNotes - 1;
 
 		Post << "numnotes " << numNotes << "\n";
@@ -1092,7 +1092,8 @@ P {
     }
     *still {   // renders the still when compiled
               // and stores a function to preview it in resources.still (e.still)
-        |key start syl lag=0 timecode=60 music|
+        |key st syl lag=0 timecode=60 music|
+		var start = P.calcStart(st);
 		var aStill = timecode.isNumber.if{
 			Still(key ++ ( Song.calcStart( start ) )=> _.asSymbol, timecode:timecode);
 		}{

@@ -1,7 +1,6 @@
 (
 s.waitForBoot{ Stills("/Users/michael/trek/BySection/media/return to tomorrow.mov").current;
 
-
 SynthDef(\plateReplace,{|in gate=1 bus| 
 	//var sig=In.ar(Song.bassBuss.index,2);
 	var sig=In.ar(bus,2);
@@ -27,26 +26,25 @@ SynthDef(\plate_phaser_insert,{
 	var sig = In.ar(inBus,2);
 	sig=PlateReverb.ar(sig,mix:0.5,decayTime:0.55);
 }).add;
-
 //Line 239 The three volunteers are lying on beds, with the spheres on tables beside them. 
-~xtreme=Song( \song,[]).current;
+( ~xtreme=Song( \song,[]).current;
 ~xtreme.condition=Condition.new();
 Trek.synful;~syn1=~synful1;~syn2=~synful2;
 Song.resources.infrastructure_( {
 	FunctionList.new.array_([
-	// {
-	// 		( ~syn1.isNil or: try{ ~syn1.syn.isPlaying.not } ).if
-	// 		{
-	// 			Song.currentSong.synful1 = ~syn1 = Synful();
-	// 			Song.currentSong.synful2 = ~syn2 = Synful();
-	// 		} 
-	// 	},
-	// 	{ fork {
-	// 		while( {
-	// 			~syn2.controller.loaded.not;
-	// 		},{0.05.wait});
-	// 		Song.resources.condition.test_(true).signal
-	// 	}},
+		// {
+		//		 ( ~syn1.isNil or: try{ ~syn1.syn.isPlaying.not } ).if
+		//		 {
+		//			 Song.currentSong.synful1 = ~syn1 = Synful();
+		//			 Song.currentSong.synful2 = ~syn2 = Synful();
+		//		 } 
+		//	 },
+		//	 { fork {
+		//		 while( {
+		//			 ~syn2.controller.loaded.not;
+		//		 },{0.05.wait});
+		//		 Song.resources.condition.test_(true).signal
+		//	 }},
 
 		{
 			Song.unnecessaryBass=NodeProxy.audio(s,2).play; //	bass setup	
@@ -57,6 +55,7 @@ Song.resources.infrastructure_( {
 		{TempoClock.tempo_(1)  }
 	]).value
 }.inEnvir.value;
+	);
 );
 
 Song.bassBuss=Bus.audio;
@@ -73,14 +72,23 @@ Song.bassBuss=Bus.audio;
 		{ Song.condition.test_(true).signal },
 	]).value
 }.inEnvir;
-//	P(\bassT2,start:2,lag:0,music:{ 
-//
-//		//~bassVerb.set(\mix,0);
-//		~bassVerb.release(0.1);
-//		(type:\set,id:~bassDecimator.nodeID,args:#[\decimate],decimate:1,lag:0.05).play;
-//	});
-//P(\bassT3,start:4,music:p{~bassDecimator.set(\decimate,-1)});
+
+( Song.synthVTracks = EventWithDefault( 
+	\default, { |mix = 0.1|
+		{|i|
+			i=> DWGReverbC1C3.ar(_,mix:mix)
+			/3
+		}
+	}
+);
+);
 ["the extreme power of the","g a b- d5 b-4 a g", ].addLine; //0
+P.still(\wide, timecode: 2508.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum + e.bNext.sum,
+		text: ["",""],
+	)
+});
 P.wait(  );
 P(\strum1, start:0,syl:2, music:
 	(\note:[-5,-3,-2,2,5,7],\strum:0.03,\sustain:2)
@@ -102,14 +110,6 @@ P(\bassnote, start:0, music:
 		).play
 	}
 );
-Song.synthVTracks = EventWithDefault( 
-	\default, { |mix = 0.1|
-		{|i|
-			i=> DWGReverbC1C3.ar(_,mix:mix)
-			/3
-		}
-	}
-);
 P.synthV(role: \mccoy , take: \lead,
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
@@ -129,7 +129,7 @@ P.double(role: \mccoy , take: \lead, params: {|p b| [
 	] }, music:{|p b e|
 		{
 			e.playbuf
-			=> p.synthVTracks.at(e.key).()
+		=> p.synthVTracks.at(e.key).()
 		}.play
 	});
 ["alien mind will make the -","e5 d c f e f g f", ].addLine; //1
@@ -244,6 +244,12 @@ P.double(role: \mccoy , start:2,  take: \lead,
 });
 //
 [" - and the body functions will", "a5 c d a g a d a ", ].addLine; //3
+P.still(\turned, timecode: 2509.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \mccoy, start: P.calcStart,take:\lead,
 	wait:1,
 	filter: (midinote: _ - 12), 
@@ -509,6 +515,22 @@ P.synthV(role: \mccoy, start: P.calcStart,take:\lead,
 			(note:~panNotes.("e-2").flatten-60,dur:2,amp:0.3)
 		);
 		["be. Rea- dy Sar- gon","a d5 c a4 f#", ].addLine; //10
+		P.synthV(role:\kirk, take: \lead, params: {|p b| [
+			filter: (midinote: _ - 12), 
+			lyrics: "r ready + sar gone",
+			pitchTake: 1
+		] }, music:{|p b e|
+			{
+				e.playbuf
+				=> p.synthVTracks.at(e.key).()
+			}.play
+		});
+		P.still(\kirkOnBed,syl:0, timecode: 2519.8.seconds, music: { |p b e|
+			 e.still.( 
+				wait: b.drop(1).sum,
+				text: ["",""],
+			)
+		});
 		P(\tremoChord,start:10,music:
 			Pfxb(
 				Pfindur(~xtreme.durs[10].list[0],
@@ -542,6 +564,24 @@ P.synthV(role: \mccoy, start: P.calcStart,take:\lead,
 	);
 );
 ["(transformation!)","r",[ 15 ]].addLine;
+P.still(\transformation, timecode: 2530.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
+P.still(\mulhallTrans,lag:3, timecode: 2532.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
+P.still(\scpockTrans,lag:6, timecode: 2536.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P(\transform,start:'transformation!',music:{ |p b e| 
 	var dur = b.sum; 
 	var pitches=~panNotes.("f#3 b- c4 e")+[0,12];
@@ -611,6 +651,12 @@ P(\transform,start:'transformation!',music:{ |p b e|
 });
 ["the tran - fer is com-"," f5 c a-4 e c#"].addLine;  //0
 // P.tune('tran -');
+P.still(\sargonNow, timecode: 2556.1.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(\genbu, take: \lead,
 	filter: (midinote: _ - 12), 
 	pbind: {|p b| 
@@ -622,7 +668,8 @@ P.synthV(\genbu, take: \lead,
 	},
 	params: {|p b| [
 		lyrics: "the transfer + is complete +",
-		phonemes: ["z i","t r a n s","f a"," i z"," k o n","p l i t" ],
+		phonemes: ["z i","ch w a n s","f a r"," i z"," k o m","p l i t" ],
+		legato: [1, 1, 1, 0.6, 1, 1, ],
 		pitchTake: 1
 	] }, music:{|p b e|
 		{
@@ -649,8 +696,29 @@ P.synthV(\genbu, take: \lead,
 		Pbind(\midinote,Pseq(Song.tune[Song.section( 'tran -' )].list[0..3])-[0,12],\instrument,\sawSynth,\dur,Song.durs['tran -']);
 	);
 	["plete. metabolic rate is","c#4 c5 b-4 c5 a-4 d4 c5"].addLine; //1
+	P.still(\chapelMetabolic, timecode: 2608.8.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b.sum,
+			text: ["",""],
+		)
+	});
+	P.synthV(role: \chapel , take: \lead, params: {|p b| [
+		lyrics: "r metabolic + + + rate is",
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
 	P.tune('plete. m');
 	["double and rising, Doctor...r  Hel- ", "d5 b-4 c#5 g c# a-4 g r b"].addLine; //2
+	P.still(\henochRude,syl:7, timecode: 2613.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b.sum,
+			text: ["",""],
+		)
+	});
 	P.synthV(\ninezero, take: \lead,
 		pbind: {|p b| 
 			var here = Song.section(\rising);
@@ -945,6 +1013,12 @@ P.double(\ninezero, take: \lead,
 			(instrument:\yowbass,note:[-3,0,5],dur:3,amp:0.05)
 		);
 		["I've forgotten what it fee-","g#4 e b f# a# b c#5"].addLine;//8
+		P.still(\thalassaForgotten, timecode: 2647.9.seconds, music: { |p b e|
+			 e.still.( 
+				wait: b.sum,
+				text: ["",""],
+			)
+		});
 		P.synthV(role: \thalassa,
 			filter: (midinote: _ - 12), 
 			take: \lead, start: Song.section(\forgotten),
@@ -1010,6 +1084,12 @@ P.double(\ninezero, take: \lead,
 			])
 		);
 		["Here, in this body","f e g f c"].addLine;//11
+		P.still(\sargon, timecode: 2710.3.seconds, music: { |p b e|
+			 e.still.( 
+				wait: b.sum,
+				text: ["",""],
+			)
+		});
 		P.synthV(\genbu, take:\lead, params: {|p b| [
 			lyrics: "hie in zisu ba di",
 			phonemes: ["","","z i s @","","",""],
@@ -1095,6 +1175,12 @@ P.double(\ninezero, take: \lead,
 		); 
 		[ "I am not displeased my husband- ","d#5 c# c a#4 g# f# f d# c# " ].addLine; //1
 		//~justTheTune.('husband');
+P.still(\twoShot, timecode: 2743.5.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 		P.tune(\displeased);
 		P.synthV(role: \thalassa, take:\lead,
 			// filter: (midinote: _ - 12), 
@@ -1145,6 +1231,12 @@ P.double(\ninezero, take: \lead,
 		});
 		~justTheTune.('your own');
 		[ "and i too am pleased beloved", [3,2,4,3,3,2,1,-7].dm('d' ) ].addLine; //4 -or Bb!
+		P.still(\kirkAnswers, timecode: 2748.9.seconds, music: { |p b e|
+			 e.still.( 
+				wait: b.sum,
+				text: ["",""],
+			)
+		});
 		~justTheTune.('beloved');
 		P('pad',start:\beloved,music: {|p b e|
 			(
@@ -1160,6 +1252,12 @@ P.double(\ninezero, take: \lead,
 		P.tune('i too',{|i| Pmul(\freq,0.5,i) =>Pbindf(_,\amp,0.2,\instrument,\stringyy,\legato,1) });
 		//P.tune('too am', {|i| Pbindf(i,\amp,0.01,\freq,1.df(\d,[4,5]))});
 		[ " boom after so- long... (boom) so very long... Kiss ","d3 a b e4 d f g3 b c4 a3 e4 r" ].addLine; //5
+		P.still(\kirklooksDown, timecode:2805.5.seconds, music: { |p b e|
+			 e.still.( 
+				wait: b.sum,
+				text: ["",""],
+			)
+		});
 		~justTheTune.('very long');
 		P(\afterSoLongSketch,start:'very long',music: {|p b e|
 			var afterSoLong=[\r,4,5,8,7,9]++[\r,5,6,4,7] + [ 2,2,2,2,2,2,2,2,2,2,3 ].collect{|i| [0,i]};
@@ -1199,6 +1297,12 @@ P.double(\ninezero, take: \lead,
 	//[ "(boom)...so very long... Kiss","g3 b c4 a3 e4 r" ].addLine; //6
 	//~justTheTune.('so very long');
 	[ "(kissing) r r r r r r r r ..","g#5 f# d# b4 a# g# e5 d# " ].addLine; //7
+	P.still(\kiss, timecode: 2810.1.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b.sum,
+			text: ["",""],
+		)
+	});
 	P(\bowedKissing,start:'kissing',music:
 		{ |p b|
 			Pfx(

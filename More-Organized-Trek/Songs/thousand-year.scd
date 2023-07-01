@@ -107,7 +107,7 @@ P(\bass,start:\prepared,music:{|p b e|
 	(amp:0.06,att:1,freq:[-11,-1].df(\g),dur:b.sum,instrument:\sawSynth,rel:b.sum).play
 });
 ["/*SCOTT:*/ For all the good it'll do you. It's a fa -- -- ncy name, but",[5,6,7,12,11,7,12,11].dm('b-',octave:4) ++ [-7,1,4,3,2,1,5,3].dm('g')].addLine;
-P.still(\scottSpeaks, timecode: 3556.66.seconds, music: { |p b e|
+P.still(\scottSpeaks, timecode: 3555.5.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["for all the good ","it'll do you"],
@@ -152,6 +152,12 @@ P(\bass,start:\name,music:{|p b e|
 	}.play
 });
 ["how will something that looks like a drop of jelly make this thing work?",[3,4, 3,4,5, 3, 3,4,5,3, 6,4, 7,7,4.5,2].dm('g',scale:\mixolydian,octave:5)].addLine;
+P.still(\behindMachine, timecode: 3613.1.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \scott,
 	filter: (midinote: _ - 12), 
 	take:\lead, params: {|p b| [
@@ -250,6 +256,7 @@ P(\moreChords,start:\microgears,syl:4,music:{|p b e|
 	).play;
 });
 ["/*MULHALL:*/ That would be highly inefficient.",[7,5,2,11,7,5,2,6,4.5].dm(\d,scale:\mixolydian)].addLine;
+
 P.synthV(role: \thalassa, take:\lead, params: {|p b k| [
 	lyrics: " That would be highly + inefficient + + +",
 	phonemes: (k==\aiko).if{["t a th","w U t", "p i","x a :\\i","l i", "\\i n","i\\ ","f \\i s` "," e n th"]  },
@@ -363,15 +370,12 @@ P(\chord2,start:\twice,syl:7,music:{ |p b e|
 		rel:5
 	).play
 });
-	~stills.set(\twice,36*60+18);
-P(\still,start:\twice, 
-	music: {|p b e| 
-		defer{ 
-			
-			~stills.preview(\twice,b.sum,3,0,[ "It will have twice","the strength" ]) 
-		}
-
-} );
+P.still(\henochTwice, timecode: 3625.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 ["your body, engineer, and it will",[11,12,11,7,6,5,4,5,6, 3,4,5].dm('c#',scale:\mixolydian)].addLine;
 P.synthV(role: \henoch, take:\lead,
 	pbind: Song.enlarge(7),
@@ -552,7 +556,10 @@ P(\chords2,start:\assuming,syl:14,music:{ |p b e|
 //	].p.play(Song.quarters(\assuming).asTempoClock)
 //});
 ["(Scott leaves as 'Spock' laughs.)",[11,7,6,5,7,6,5,4,3,2,4,3,2,1,0].dm(\c)].addLine;
-P.still(\scottLeaves, timecode: 3632.seconds, music: { |p b e|
+P.still(\scottLeaves, timecode: 
+	// 3632.seconds //old
+	3630.seconds
+	, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
@@ -796,7 +803,6 @@ P.double(role: \henoch, params: {|p b| [
 P.still(\spock,start:\mind,timecode:3648.5.seconds,music:{ |p b e|
 	e.still.value(wait:b.sum,fade:1,text:["Sargon has closed his mind","to a better way"])
 });
-
 P(\bass,start:\closed,music:{|p b e| 
 	[
 		freq:[1,-5,-5,-5].df(\c,octave:4).q,
@@ -822,7 +828,6 @@ P(\strum,start:\closed,music:{|p b e|
 		out: Effect.bus({|i| RLPF.ar(i, Line.kr(4000,1000,b.sum /2),0.1) },)
 	).play
 });
-
 ["(boom) With these bodies. (la la la la la la  with the-- ese bodies)",[1,5,5.5,3,2,1,-7,1,2,1,-7,-6, ].dm(\d) ++ [7,11,5,5,4].dm(\c)].addLine;
 Song.quarters['With these bodies']=Song.parseBeats('With these bodies',[1, 1,1, 1/2, 1 , 1, 1/2, 1/2, 1/2, 1/2,1/2, 1,1,1,1/2,1,1/2  ]);
 P.synthVs(\feng, take:[ \lead, \double ], params: {|p b| [

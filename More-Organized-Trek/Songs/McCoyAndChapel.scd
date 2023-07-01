@@ -33,7 +33,7 @@ P.tune(\Nurse);
 			}
 		}
 	);
-P.still(\twoShot1, timecode: 3442.15.seconds, music: { |p b e|
+P.still(\twoShot1, timecode: 3443.15.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["Nurse",""],
@@ -56,7 +56,7 @@ P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 		}.play
 });
 	["CHAPEL: You'll find them excellent, Doctor. Well within normal.","3 4 5 7 5 4 4 3".dm(\a,\mixolydian)].addLine;
-P.still(\handing, timecode: 3445.29.seconds, music: { |p b e|
+P.still(\handing, timecode: 3446.1.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["you'll find them","excellent, Doctor"],
@@ -74,7 +74,7 @@ P.synthV(role: \chapel, take: \lead, params: {|p b| [
 });
 P.tune(_ <> [out: Effect.bus({ |i|  i=> FreeVerb.ar(_,0.3,1) => SineShaper.ar(_,0.015,2) })].p);
 	["MCCOY: Is something wrong, Miss Chapel?","-7 1 2 3 1 -7 -5".dm(\g,\mixolydian)].addLine;
-P.still(\asking, timecode: 3453.seconds, music: { |p b e|
+P.still(\asking, timecode: 3452.1.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["is something wrong","miss Chapel"],
@@ -108,7 +108,7 @@ P(\bassnote, music: { |p b e|
 		].pp
 });
 	["CHAPEL: Er, yes. I, er, I had something to say. I can't seem to remember.","3 4 3 2 3 4 5 4 3 7 11 6 7 5 6 4 3".dm('a-',\mixolydian)].addLine;
-P.still(\closer, timecode: 3457.15.seconds, music: { |p b e|
+P.still(\closer, timecode: 3454.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum + e.bNext.sum,
 			fade:8,
@@ -155,6 +155,12 @@ P(\chords, music: { |p b e|
 		].p.play
 });
 	["MCCOY: Regarding our patients?","4 5 4 3 7 6".dm(\c,\mixolydian)].addLine;
+P.still(\answer, timecode: 3502.85.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 	// P.tune(\Regarding);
 P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 		lyrics: "regarding + + our patients +",
@@ -168,6 +174,12 @@ P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 		}.play
 });
 	["CHAPEL: Yes. That must be it. ","7 11 5 3 1".dm(\f)].addLine;
+	P.still(\chapelYes, timecode: 3513.15.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b.sum,
+			text: ["",""],
+		)
+	});
 P.synthV(role: \chapel, take: \lead, params: {|p b| [
 	lyrics: "yes, that must be it",
 		legato: [0.5, 1, 1, 1, 0.5],
@@ -225,6 +237,12 @@ P(\bass, music: { |p b e|
 		].ppm
 });
 	["MCCOY: You look tired, Miss Chapel.","6 4 5 3 2 1".dm('c#')].addLine;
+	P.still(\mccoyTired, timecode: 3518.8.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b.sum,
+			text: ["",""],
+		)
+	});
 P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 		lyrics: "You look tired, Miss Chapel +",
 		legato: [1, 1, 1, 1, 1, 0.8, ],
@@ -275,6 +293,12 @@ P(\bassline, music: { |p b e|
 });
 P.tune(\Perhaps);
 	["CHAPEL: Tired? Well, not at all, Doctor. Thank you for asking.","5 1 2 3 4 2 1".dm('b-',\whole) ++ "5 6 7 12 11".dm(\c)].addLine;
+	P.still(\chapelTired, timecode: 3523.75.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b.sum,
+			text: ["",""],
+		)
+	});
 P.tune();
 P(\chords, music: { |p b e|
 		[
@@ -306,5 +330,11 @@ P(\pad,syl:6, music: { |p b e|
 		}.play
 });
 	["(Leaves a puzzled McCoy.)","r"].addLine;
+	P.still(\puledMccoy, timecode: 3533.2.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b.sum,
+			text: ["",""],
+		)
+	});
 }
 )

@@ -546,7 +546,7 @@ P.still(\henochEnters,syl:3, timecode: 3335.26.seconds, music: { |p b e|
 	)
 });
 ["I think it is best not to remember so well. (boom) ",[3,2,3,1,-5,2,1,-7,-6,-7,-5,-2.5,-4.5].dm(\d)].addLine;
-P.still(\disappointedSargon, timecode: 3341.86.seconds, music: { |p b e|
+P.still(\disappointedSargon, timecode: 3342.3.seconds, music: { |p b e|
 	 e.still.( 
 		 fadeIn:0.5,
 		wait: b.sum,
@@ -1212,6 +1212,12 @@ P(\bassnote,start:'tea -- ching',syl:0,music:{|p b e|
 	=> _.play
 });
 ["helping them (boom) not to make the errors we -- did. (pain) ",[4,3,1,-7,1,2,3,1,4,5,5,6,5,-7.5].dm(\a,scale:\mixolydian)].addLine;
+P.still(\sargonPain,syl:13, timecode: 3413.9.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -1315,6 +1321,12 @@ P.still(\pain,syl:12, timecode: 3417.seconds, music: { |p b e|
 	)
 });
 ["/*MULHALL:*/ What is it, Sargon? ",[1,5,4,1,-7].dm(\c)].addLine;
+P.still(\thalassaWhat, timecode: 3417.1.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 	lyrics: "wat iz it sa gan?",
 	phonemes: ["what".xsampa.unbubble,"is".xsampa.unbubble,"it".xsampa.unbubble,"","gone".xsampa.unbubble] , // make .xsama work on arrays
@@ -1328,16 +1340,22 @@ P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 	}.play
 });
 ["/*KIRK:*/ Nothing. Our next injection will renovate me. (boom) ",[1,1].dm('e-')++[2,3,1,3,-7,1,2,1,-7,-5,-3].dm('d',scale:\mixolydian,)].addLine;
-P.still(\twoAgain, timecode: 3422.5.seconds, music: { |p b e|
+P.still(\twoAgain, timecode: 3422.35.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["nothing",""],
-	).sequenceText2(
-			b.parse([2]), [ 
-			["our next injection","will renovate me"],
-			],
+		text: ["",""],
 	)
 });
+// P.still(\twoAgain, timecode: 3422.5.seconds, music: { |p b e|
+// 	 e.still.( 
+// 		wait: b.sum,
+// 		text: ["nothing",""],
+// 	).sequenceText2(
+// 			b.parse([2]), [ 
+// 			["our next injection","will renovate me"],
+// 			],
+// 	)
+// });
 P.synthV(role: \sargon, take: \lead, params: {|p b| [
 	lyrics: "Nothing. + our next injection + + will renovate + + me r",
 	phonemes: ["n a","s i N","a u a r","n e k s t", "i n","j e k t","sh a n","w i l","r e n","o","v e i t", "m i" ],

@@ -50,7 +50,8 @@ Song.resources.infrastructure=FunctionList.new([
 //Song.guitar.node[1]=\filter->{|in|PlateReverb.ar(in,mix:0.5)};
 //Song.guitar.node[2]=\filter->{|in|Phaser2.ar(in,rate:0.1,mix:0.5).distort(0.95)};
 //Song.guitar.node.play(vol:1)
-Stills.new("/Users/michael/tank/Trek/video for stills etc/media/return to tomorrow.mov").current;
+// Stills.new("/Users/michael/tank/Trek/video for stills etc/media/return to tomorrow.mov").current;
+~stills = Stills.new.current;
 ["r three alien minds","d3 f5 f e e e"].addLine; //0Captain Kirk
 P.still(\space, timecode: 3244.seconds, music: { |p b e|
 	 e.still.( 
@@ -116,7 +117,12 @@ Song.guitarFx={ |b|
 };
 
 Song.guitarFx0= Song.guitarFx.(Song.durs[0].list.sum + 5);
-
+P.still(\enterprise, timecode: 3246.9.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P(\guit0,start:\minds,music: { |p b e|
 	var out = Song.guitarFx0.synth.run(true);
 		[
@@ -160,6 +166,12 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["now inhabit","the bodies of"],
+	)
+});
+P.still(\wide, timecode: 3303.5.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
 	)
 });
 //Song.gfx1.synth.run(false);
@@ -257,7 +269,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 		text: ["doctor Jane","Mulhall"],
 	)});
 Song.preroll_(1);
-P.still(\mccoy, timecode: 3250.seconds,lag: -1, syl: 4, music: { |p b e|
+P.still(\mccoy, timecode: 3251.3.seconds,lag: -1, syl: 4, music: { |p b e|
 	 e.still.( 
 		 fadeIn: 1,
 		wait: b.drop(1).sum + e.bNext.sum,

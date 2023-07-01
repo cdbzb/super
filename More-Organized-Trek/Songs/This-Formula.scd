@@ -28,6 +28,12 @@ s.waitForBoot{
 	);
 );
 ["Now...","3".dm(\a),[17]].addLine;
+P.still(\henoch, timecode: 3005.4.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthVs(role: \formulaLead, take:[\lead, \double],
 		filter: (midinote: _ - 12), 
 		params: {|p b| [
@@ -385,6 +391,12 @@ p.hatPattern.(e.tempoMap.quantizeDft(p.formulaQuantAmount), 16)// => Pfin(8,_)
 //P.tune('to normal',);
 P.tune( 'to normal',Pset(\dur, Song.tempoMap[ 'to normal' ] .beats.warpTo(Song.tempoMap[ 'to normal' ].quantizeDft).q,_));
 ["(boom) While the bodies are occupied, ",[-15,-5,-6,-7,1,2,4,3,1].dm('c')].addLine;
+P.still(\withSyringe, timecode: 3013.8.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \formulaLead, take:\lead, params: {|p b| [
 	lyrics: "r while the bodies + are occupied + +",
 	pitchTake: 1
@@ -470,6 +482,12 @@ P(\chordsHour,start:'each hour',music:{|p b e|
 }
 );
 ["/*CHAPEL:*/ I understand. ",[5,6,7,11].dm('a-')].addLine;
+P.still(\chapelUnderstand, timecode: 3017.2.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \chapel, take: \lead,
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
@@ -503,6 +521,12 @@ P(\chordsUnderstand,start:\understand,music:{|p b e|
 }
 );
 ["/*SPOCK:*/ This hypo you will code mark for Tha lassa. And ",[5,4,3,2,1,3,2,3,4,3,2,2, 2].dm('d')].addLine;
+P.still(\spockAndHypo, timecode: 3020.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \formulaLead, take:\lead,
 	filter: (midinote: _ - (0.dup(13) ++ 12.dup(8) ++ -12 => _.flat )), 
 	pbind: Song.enlarge2(1),
@@ -567,6 +591,12 @@ P(\hypoAnswer,start:'hypo you will',music:{|p b e|
 }
 );
 ["this one you will code mark for -- ",[4,3,2,1,3,3,4,3].dm('a')].addLine;
+P.still(\twoShopHypos, timecode: 3024.1.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.still(\twoShot, timecode: 3026.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -598,6 +628,12 @@ P(\forBase,'for --', music:{|p b e|
 	.asTempoClock)
 });
 ["me.  /*CHAPEL:*/ Yes, sir. ",[-2,7,11].dm('c')].addLine;
+P.still(\chapelAnswer,syl:0, timecode: 3029.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.tune('Yes, sir');
 Song.synthVTracks = EventWithDefault(
 	\default, {{|i| 
@@ -633,6 +669,12 @@ P(\chordSir,start:'Yes, sir',syl:0,music:{|p b e|
 }
 );
 ["/*SPOCK:*/ This one you will administer to Captain Kirk while ",[3,2,-7,7,6,5,4,3,1.5,3,4,4.5,5].dm('f#',scale:\minor,)].addLine;
+P.still(\henochReKirk, timecode: 3036.3.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role:\formulaLead, take:\lead,
 	pbind: Song.enlarge2(0),
 	params: {|p b| [
@@ -675,6 +717,12 @@ P(\strumBody,start:'in his body',lag:-0.01,music:{|p b e|
 
 );
 ["/*CHAPEL:*/ This hypo does not contain the same formula. ",[5,4,3,1,2,3,5,4,5].dm('g',scale:\whole)++[7,5,1.5].dm('g',scale:\mixolydian)].addLine;
+P.still(\chapelObjects, timecode: 3041.8.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \chapel, take: \lead, params: {|p b| [
 	lyrics: "this hypo + does not contain + the same formula + +",
 	pitchTake: 1
@@ -696,6 +744,12 @@ P(\swellContain,start:'does not contain',music:{|p b e|
 P.tune('does not contain');
 // TODO
 ["/*SPOCK:*/ No, that's correct. But since I will arrange for ",[1, 1.5,1,1].dm('b-')++[4,2,4, 3,2,1,-7].dm('f#')].addLine;
+P.still(\spockClose, timecode: 3049.5.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 // P.tune('correct');
 P.synthV(role: \formulaLead, take:\lead,
 	filter: (midinote: _ - 12), 
@@ -799,6 +853,12 @@ P.double(role: \formulaLead, take: \lead, params: {|p b| [
 });
 // P.tune('notice');
 ["/*CHAPEL:*/ Without the same formula, Captain Kirk will die. ",[3,1,2,3,5,4,3,1,2,3,5,6].dm('g',scale:\whole,)].addLine;
+P.still(\chapelConcerned, timecode: 3053.4.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \chapel, take: \lead, params: {|p b| [
 	lyrics: "without + the same formula + + captain + kirk will die",
 	pitchTake: 1,
@@ -818,7 +878,10 @@ P.still(\henochTouches, timecode: 3100.seconds, music: { |p b e|
 		text: ["",""],
 	)
 });
-P.still(\henochClose, timecode: 3108.seconds, syl:0, music: { |p b e|
+P.still(\henochClose,
+	timecode: 3108.seconds,//close
+	timecode: 3058.2.seconds, //twoDhot
+	syl:0, music: { |p b e|
 	 e.still.( 
 		wait: b.drop(1).sum,
 		text: ["what were you","saying?"],
@@ -979,6 +1042,12 @@ P.double(role: \formulaLead,  params: {|p b| [
 		}.play
 	});
 ["you watched me prepare the formula and fill each of the hypos. ",[13,13,12,13,14,15,14,13,12,11,7,5,6,7,12,11].dm('d',octave:5 )].addLine;
+P.still(\henochYouWatched, timecode: 3115.9.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \formulaLead,
 	filter: (midinote: _ - 12), 
 	take:\lead, params: {|p b| [
@@ -1010,6 +1079,12 @@ P(\harmonyWatched,start:'me prepare',music:
 }
 );
 ["/*CHAPEL:*/ Yes, that, that was it. ",[7, 7, 12,11,3].dm('f#')].addLine;
+P.still(\ChapelYes, timecode: 3120.5.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["yes","that was it"],
+	)
+});
 P.synthV(role: \chapel, take: \lead, params: {|p b| [
 	lyrics: "r yes!  that was it",
 	legato: [0.8,   0.7, 1, 0.6],
@@ -1090,6 +1165,12 @@ Song.setTempoMap(\properly,"E E E E E E Q E");
 P.tune('properly');
 
 ["/*SPOCK:*/ Very good. ",[5,5,11].dm('b-',octave:4)].addLine;
+P.still(\henochClose, timecode: 3129.4.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthVs(role: \formulaLead, take:[ \lead, \double ], params: {|p b| [
 	lyrics: "very + good",
 	legato: [[1, 1, 0.7, ]],
@@ -1121,6 +1202,12 @@ P(\chord,start:'Very',music:{|p, b, e|
 
 );
 ["You see, Sargon would not let me keep this body",[5,6,12,11,5,6,11,12, 13,14,14,13].dm('b-',octave:4 )].addLine;
+P.still(\henochCloseAlt, timecode: 3136.45.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 //P.tune('keep this');
 SynthDef(\whiteNoise,{WhiteNoise.ar(\amp.kr(0.1))=>LPF.ar(_,2000)* Env.cutoff(1).kr(2,gate:\gate.kr(1)) => Out.ar(\out.kr(0),_)}).add;
 P.synthVs(role: \formulaLead,
@@ -1243,6 +1330,12 @@ P(\necessaryBaseNote,start:'necessary',music:{|p b e|
 }
 );
 ["you to kill your captain ", [4,3,5,4,3,2].dm('b-',octave:5)].addLine;
+P.still(\henochCloseThird, timecode: 3137.1.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.tune('kill');
 P(\vocoder,start:'kill',music:{|p b e|
 Song.pbind['kill']

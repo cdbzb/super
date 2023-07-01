@@ -10,7 +10,7 @@ Song.setTempoMap(\excellent,"e e e x x | ex x e x ex | ee ee ee ee");
 P.still(\henochExcellent, timecode: 2828.1.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["this is an excellent","body Doctor"],
 	)
 });
 P.synthV(role: \henoch, take: \lead,
@@ -46,6 +46,12 @@ P(\clav, music: { |p b e|
 	].pp
 });
 ["I seem to have received the best of the three. ","1 -5 -7 1 2 -6 1 4 3 2 1".dm(\e)].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["I seem to have received","the best of the three"],
+	)
+});
 Song.setTempoMap(P.calcStart(),"e Q E Q E e e q e e q");
 P.tune();
 P(\cymbal,syl:9, music: { |p b e|
@@ -78,6 +84,18 @@ P(\bassNote, music: { |p b e|
 	].ppm
 });
 ["-boom- Strength, -boom- hearing, -boom eyesight + all","-1 4 2 4 3 -7 2 1 6".dm('e-',\mixolydian)].addLine;
+P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.drop(1).sum + e.bNext.sum,
+		text: ["strength","hearing"],
+	).sequenceText2(
+			b.parse([4,1,2,1]) + [0,0,0,e.bNext.sum], [ 
+			["",""],
+			["eyesight", ""],
+			["all far above","your human norms"]
+			],
+	)
+});
 Song.setTempoMap(\Strength,"q q Q Q Q Q Q Q q ");
 P(\bassline, music: { |p b e|
 	[
@@ -132,6 +150,12 @@ P.synthVs(role: \henoch, take: [ \lead, \double ], params: {|p b| [
 
 });
 [" far above your human norms. "," 7 6 3 6 7 11 4".dm(\d,\dorian)].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 /* e.still.( 
+		wait: b.sum,
+		text: ["far above","your human norms"],
+	) */
+});
 Song.setTempoMap(\norms,"Q E Q E Q E q");
 P(\tamb, music: { |p b e|
 	{
@@ -195,6 +219,12 @@ P(\bass, music: { |p b e|
 });
 P.tune();
 ["Im surprised the Vulcans never conquered your race. "," 4 5 -7 3 1 -7 1 2 5 4 6 2 ".dm(\f, \harmonicMinor)].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["I'm surprised the vulcans","never conquered your race"]
+	)
+});
 P.synthVs(role: \henoch, take: [ \lead, \double ], params: {|p b| [
 	lyrics: "I'm surprised + the Vulcans + never + conquered + your race. ",
 	pitchTake: [ 1, 3 ],
@@ -239,7 +269,7 @@ P(\bass, music: { |p b e|
 P.still(\mccoyspx, timecode: 2834.5.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["Vulcan's worship peace","above all, Henoch"],
 	)
 });
 	Song.setTempoMap(\worship,"e e e e qqq e e e eq q q");
@@ -346,6 +376,16 @@ P(\pianoWorship,start:'worship',music:{|p b e|
 });
 		//["/*SPOCK*/ Yes, of course, Just as we do, Doctor. ",[7,5,4,5,7,12,11,5,3].dm('e',octave:5 )].addLine;
 ["/*SPOCK*/ (boom) Yes, (boom) of course, Just as we do, Doctor. ",[-7,7,-7,5,4,5,7,12,11,5,3].dm('e',octave:5 )].addLine;
+		P.still(\clear, timecode: 0.seconds, music: { |p b e|
+			 e.still.( 
+				wait: b.sum,
+				text: ["Yes","of course"],
+			).sequenceText2(
+					b.parse([3,6]), [ 
+					["just as we do","doctor"],
+					],
+			)
+		});
 P(\bonk, music: { |p b e|
 	{
 		var durs = b.parse([2,2, 3, 4 ]) ++ e.bnext[0] => _.flat;// .postln;
@@ -399,9 +439,29 @@ P.still(\collapseNurse, timecode: 2839.2.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
+	).sequenceText2(
+			b.parse([1]), [ 
+			["Nurse!",""],
+			],
 	)
 });
-P.still(\sargonWobbleDoctor,syl:1, timecode: 2845.7.seconds, music: { |p b e|
+P.still(\transition,syl:0, lag:0.5, timecode: 2842.2.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
+P.still(\sargonWobbleDoctor,syl:1,lag:0.5, timecode: 2845.7.seconds, music: { |p b e|
+	//  e.still.( 
+	// 	wait: b.sum,
+	// 	text: ["",""],
+	// ).sequenceText2(
+	// 		b.drop(1).parse([1]), [ 
+	// 		["","Doctor!"],
+	// 		],
+	// )
+});
+P.still(\kirkLieDown,syl:1, timecode: 2850.6.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
@@ -496,7 +556,7 @@ P.synthV(role: \chapel, take: \lead, params: {|p b| [
 P.still(\kirkInBed, timecode: 2852.6.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["Henoch, you'd better","get back to bed too"],
 	)
 });
 P.synthV(role: \mccoy, take: \lead, params: {|p b| [
@@ -603,6 +663,12 @@ P(\bassnote, music: { |p b e|
 );
 );
 ["that will be unnecessary Doctor"," d# e f# d# g# f# e d# d# c#"].addLine;//
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["that will be","unnecessary, Doctor"],
+	)
+});
 
 P.synthVs(role: \henoch, take: [ \lead, \double ], params: {|p b| [
 	lyrics: "that will be unnecessary + + + + Doctor +",
@@ -794,12 +860,6 @@ P(\metabolism,start:'higher metabolism',music:
 	//Song.tk.at(\hat).play(u)
 );
 ["it won't work, Sargon!","d#5 b4 g5 d# b4"].addLine;//3
-P.still(\mccoy, timecode: 2901.1.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
-	)
-});
 P.still(\mccoyToKirk, timecode: 2900.8.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -865,6 +925,12 @@ P(\baseNoteWork,syl:1,start:'work, Sargon',music:{|p b|
 }
 );
 ["(boom) you have to get out before you","f4 f5 d- e- f a f g a"].addLine;//4
+P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["you have to get out","before you kill them"],
+	)
+});
 P.synthV(role: \mccoy, take: \lead,
 	filter: (midinote: _ - (12 * [ 1, 1, 1, 1, 1, 1, 1, 1,1, 0, 0 ])), 
 	pbind: Song.enlarge(2),
@@ -928,9 +994,21 @@ P(\outChord,syl:4,start:'get out',music:{|p d|
 ["kill them! /*SARGON*/  we will transfer at once un-",[11,7,5,6,7,5,7,7,7].dm('c')].addLine;//5
 P.still(\kirkCloseBed,syl:1, timecode: 2906.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
+		wait: b.sum + e.bNext.sum,
+		// fade: e.bNext.sum,
 		text: ["",""],
 	)
+});
+P.still(\clear,syl:1,lag:0.01, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: e.bAll.parse([26]).unbubble,
+		text: ["we will transfer","at once"],
+	).sequenceText2(
+			b.drop(1).parse([6]) ++ (b.last + e.bNext.sum) , [
+			["until you can", "administer the"],
+			["metabolic reduction","injection"]
+			],
+	)		
 });
 P.synthV(role: \sargon,take: \lead,
 	filter: (midinote: _ -12), 
@@ -1013,13 +1091,13 @@ P(\baseNoteMetabolic,start:'injection',music:{|p b|
 P.still(\twoShot, timecode: 2911.3.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["a","what?"],
 	)
 });
 P.still(\spockSpeaking,syl:0, timecode: 2912.2.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["I'll prepare the formula","Sargon"],
 	)
 });
 P.synthVs(role:\henoch, take: [\lead, \double], params: {|p b| [
@@ -1046,7 +1124,7 @@ P(\whatChord,start:'prepare the formula',music:{|p b|
 P.still(\kirkClose, timecode: 2916.2.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["Henoch,","your condition?"],
 	)
 });
 // P.tune('your condition');
@@ -1085,7 +1163,11 @@ P(\baselineCondition,start:'your condition',music:{|p b|
 P.still(\spock, timecode: 2918.1.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["I can continue,","in this body"],
+	).sequenceText2(
+			b.parse([9]), [ 
+			["for several","hours"],
+			],
 	)
 });
 ~continueQuarters = Song.parseBeats('several hours',[1/4,1/4,1/4,1/4,1/4,1/4,1/4,1/4,1/2,1/2]);

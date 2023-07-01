@@ -27,8 +27,36 @@ P(\noise, music: { |p b e|
 		/19
 	}.play
 });
-[ "/*(There is a shiny plastic person on the table now.) */","r" ].addLine;
+// [ "/*(There is a shiny plastic person on the table now.) */","r" ].addLine;
 [ "/*MULHALL:*/ Why pretend to work on that thing, Henoch? ","1 2 3 5 6 -5 5 3 7 -6 6 4".dm(\c,\mixolydian) ].addLine;
+Song.setTempoMap(\pretend,"E E E E ee E E E  ee E E E ");
+P(\tamb, music: { |p b e|
+	{
+	var levels = [5,1,2,1] /5 => _.dq(inf);
+	var durs =  
+	1/3 !4 ++ (1/4 ! 8) 
+	+ ( [1, -1] /80 => _.dup(8) ) //swing amt
+	=> _.flat 
+	=> _.warpTo(e.tempoMap.quantizeDft(0.3))
+	=> _.dq();
+	var triggers = TDuty.kr( durs, 0,1,gapFirst:0 );
+	var energy = EnvGen.ar( Env.linen(0, 0.00, 0.015), triggers, doneAction:0   ) 
+		* Demand.kr(triggers,0,levels 
+			// * 40
+			// *8
+		);
+	Shakers.ar(3, energy:energy   , decay: 1).tanh
+	
+	// /5
+	* 2
+	=> Pan2.ar(_, 0.8)
+	* EnvGen.cutoff(b.parse([4]).unbubble,3)
+	=> DWGReverbC1C3.ar(_,mix:0.05)
+	/6
+	=> Pan2.ar(_,0.75)
+
+}.play;
+});
 P.still(\thalassaClose1, timecode:
 	// 4151.833.seconds, //close
 	4155.666.seconds, // twoShot
@@ -78,6 +106,9 @@ P(\horn, music: { |p b e|
 	].ppm
 });
 [ "-boom- You know you never intended to leave Spock's body. ","-5 5 12 11 7 6 5 4 5 6 2 5 4 3".dm(\c) ].addLine;
+P(\cymbal,syl:1, music: { |p b e|
+	(instrument: \cymbalsDS, amp:0.025).play
+});
 P.still(\clear, timecode: 0.seconds, syl:0, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -333,6 +364,11 @@ P.synthVs(role: \henoch, take: [\lead, \double], params: {|p b| [
 
 });
 [ "/*MULHALL:*/ No! ", "7".dm(\g,\diminished) ].addLine;
+P(\cymbal, music: { |p b e|
+	(
+		instrument: \cymbalsDS, att:0, amp:0.025
+	).play
+});
 Song.durs.filter(\No,_*1.25);
 P.still(\thalassaClose, timecode: 4224.seconds, music: { |p b e|
 	 e.still.( 
@@ -343,16 +379,16 @@ P.still(\thalassaClose, timecode: 4224.seconds, music: { |p b e|
 P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 	lyrics: "no",
 	pitchTake: 1,
-	legato:2,
-	filter: (midinote: _ - 12), 
+	legato:1,
+	pitchDelta: Env([0,-100],1)
+	// filter: (midinote: _ - 12), 
 ] }, music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 		=> {|i| CombC.ar(i, 0.3,
-			// Line.kr(0.05,0.1,10),
-			10 ) /2.5 +
-
+			Line.ar(0.05,0.07,2),
+			5 ) /5.5 +
 			i}
 			* 3.dbamp
 	}.play

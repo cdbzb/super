@@ -27,7 +27,7 @@
 			e.still.( 
 				wait: b.sum,
 				text: ["they used to think","if man could"],
-				fade:3
+				fade:9
 			).sequenceText2(
 				b.sum, [ 
 				["",""],
@@ -50,7 +50,7 @@ P.synthVs(role: \kirk, take: [ \lead, \doub ],
 
 		pitchTake: [ 1, 3 ],
 		pitchExpression: 1.4,
-		legato: [ [1,1,1,0.6,1,1,0.9] ],
+		legato: [ [1,1,1,0.6,1,1,1, 0.8, 1, 1, 0.8, 1, 1, 1, 1] ],
 		tension: Env([0,1],b.sum),
 		loudness: Env([0,6] -6,b.sum)
 	] }, music:{|p b e|
@@ -138,9 +138,12 @@ P.synthV(\ninezero, take:\lead,
 		(instrument: \cymbalsDS, amp:0.02).play
 	});
 	["(boom) he discovered he ","c d4 c b3 a b"].addLine;//3
-	P.synthV(role: \kirk, take: \lead, params: {|p b| [
-		lyrics: "r he discovered + + he ",
-		legato: [1, 1, 1, 1, 1]
+	P.synthVs(role: \kirk, take: [\lead, \double],
+	pbind: Song.enlarge(2),
+	params: {|p b| [
+		lyrics: "r he discovered + + he had to ",
+		legato: [ [1, 1, 1, 1, 1, 1, 0.8] ],
+		pitchTake: [1, 3]
 	] }, music:{|p b e|
 		{
 			e.playbuf
@@ -152,19 +155,11 @@ P.synthV(\ninezero, take:\lead,
 	P(\boomBass,start:\discovered,music:(note:0,octave:3,amp:0.5,dur:Song.secDur[3]));
 	["had to.. do you wish that the first","c4 b3 g#3 e b g# a b"].addLine;//4
 	P.tune();
-	P.synthV(role: \kirk, take: \lead, prepend: true, params: {|p b| [
-		lyrics: "had to do you wish that the first",
-		legato: [1, 0.8, 1, 1, 1, 1, 1, 1 ],
-		pitchTake: 2
+	P.synthVs(role: \kirk, take: [\lead, \double], params: {|p b| [
+		lyrics: "r r  do you wish that the first",
+		legato: [ [1, 1, 1, 1, 1, 1, 1, 1 ] ],
+		pitchTake: [ 2, 3 ],
 		// lag:[0.1,0.1]/2
-	] }, music:{|p b e|
-		{
-			e.playbuf
-			=> p.synthVTracks.at(e.key).()
-		}.play
-	});
-	P.double(role:\kirk, take: \lead, params: {|p b| [
-		
 	] }, music:{|p b e|
 		{
 			e.playbuf
@@ -201,20 +196,13 @@ P.still(\kirkPoint, timecode: 2317.seconds, music: { |p b e|
 		text: ["",""],
 	)
 });
-P.synthV(role: \kirk, take: \lead,
-	// prepend: true,
+P.synthVs(role: \kirk, take: [\lead, \double],
+	pbind: Song.enlarge(1),
 	params: {|p b| [
-	lyrics: "apollo + + mission + hadn't + reached the",
+	lyrics: "apollo + + mission + hadn't + reached the moon",
 	language:\english,
 	phoneset: \arpabet,
-	pitchTake: 1
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
-});
-P.double(role: \kirk, take:\lead, params: {|p b| [
+	pitchTake: [1,3]
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -223,23 +211,16 @@ P.double(role: \kirk, take:\lead, params: {|p b| [
 });
 
 ["moon... or that we hadnt  ","c#4 b3 a g a b  "].addLine;//6
-P.synthV(role: \kirk, take:\lead, prepend: true, params: {|p b| [
-	lyrics: "moon or that we hadn't + ",
+P.synthVs(role: \kirk, take:[\lead, \double], params: {|p b| [
+	lyrics: "r or that we hadn't + ",
+	pitchTake: [1,3]
 ] }, music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.double(role: \kirk, params: {|p b| [
-	
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
-});
-P(\baas,start:\moon,music:(
+P(\bass,music:(
 	freq:[1].dm('e-',3),
 	dur: Song.secDur[6],
 	amp:0.5,
@@ -262,9 +243,9 @@ P(\ooh, start:\moon,music: {
 	}.value
 });
 ["gone on to" , "d4 e- b3"].addLine; //7
-P.synthV(role: \kirk, take: \lead, params: {|p b| [
+P.synthVs(role: \kirk, take: [\lead, \double], params: {|p b| [
 	lyrics: "gone on to",
-	pitchTake: 1,
+	pitchTake: [1,3],
 	timbreExpression: 1.5,
 	paramTension: 0.5,
 	pitchExpression: 1.4,
@@ -272,14 +253,6 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	paramToneShift: 250
 
 
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
-});
-P.double(role: \kirk, take: \lead, params: {|p b| [
-	
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -687,6 +660,7 @@ P.still(\kirkCommand,syl:0, timecode: 2348.25.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
+		fade:10
 	)
 });
 	Song.setTempoMap(\Im,"q q q  E E E");
@@ -1163,12 +1137,14 @@ P(\lick8,start:'(trill)',syl:4,music: { |p b e|
 ["this, but I must point out that the possi","b-4 a g# a b d f# g# a b"].addLine;//9
 P.still(\kirkDocile, timecode: 
 	// 2400.seconds
-	//2417.seconds //james brown
-	2413.4.seconds// smiling
+	2417.seconds //james brown
+	// 2413.4.seconds// smiling
 
 	, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
+		fadeIn:5,
+		fade:9,
 		text: ["",""],
 	)
 });
@@ -1296,6 +1272,7 @@ P(\bass11,start:'vancement', syl:7, lag: Song.parse('vancement',[0.5],8)[0] + 0.
 P.still(\kirkRisk,syl:0, timecode: 2404.1.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
+		fadeIn:5,
 		text: ["",""],
 	)
 });

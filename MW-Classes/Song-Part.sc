@@ -1009,6 +1009,7 @@ Part {
 		}
 	}
 	p {
+		parent.cursor = parent.cursor ? 0;
 		(start>=parent.cursor).if{
 			var when=this.calcTime;
 			this.sched(when+Server.default.latency);

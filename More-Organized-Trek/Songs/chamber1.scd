@@ -1071,7 +1071,7 @@ P.still(\globe, timecode: 1005.24.seconds, music: { |p b e|
 		text: ["I am","am Sargon"],
 	)
 });
-P.synthV(\xuan, params: {|p b| [
+P.synthV(role: \vocoder, params: {|p b| [
 	filter: (midinote: 40), 
 	lyrics: "ai am sar - gone",
 	language: \english,

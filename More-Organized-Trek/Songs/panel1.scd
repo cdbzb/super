@@ -3,11 +3,28 @@ s.waitForBoot{
 
 Song(\panel1,[]).current
 ;
-	Song.energyDur = 0.1;
+Song.energyDur = 0.1;
 "~/tank/super/More-Organized-Trek/Songs/boilerplate.scd".standardizePath.load;
 Song.vocoderRatio.set(1);
 //(A panel slides back to reveal a much larger area, with rock walls, and a glowing sphere elegantly poised on an angled support.) 
-/*SARGON: (the glowing sphere)*/[" Welcome. I am Sargon. ","r",[5]].addLine; 
+
+// /*SARGON: (the glowing sphere)*/[" Welcome. I am Sargon. ","r",[5]].addLine; 
+["I am Sargon!","1 2 1 -7 -7".dm('b',5,\harmonicMinor)].addLine;
+P.tune();
+P.synthV(role: \vocoder, params: {|p b| [
+	filter: (midinote: 40), 
+	lyrics: "ai am sar - gone",
+	language: \english,
+	phoneset: \arpabet,
+	paramGender: 0.3
+] }, music:{|p b e|
+	p.vocodeTune.(p,b,e,e.rpp,
+		chord:#[1,2,4,5,6,7,8]*2,
+		width:1.03,
+		mix:0.5,
+		amp:0.8
+	)
+});
 P.still(\sargonSpeaks, timecode: 1013.361.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -15,6 +32,12 @@ P.still(\sargonSpeaks, timecode: 1013.361.seconds, music: { |p b e|
 	)
 });
 /*SPOCK:*/[" Sargon, would it harm you if I ","4 5 7 11 12 6 5 4".dm(\d)].addLine; 
+P(\bassnotes, music: { |p b e|
+	[
+		freq: [1, -6].df(\g,[3,4]).q,
+		instrument: \wash
+	].pp
+});
 
 P.still(\wideHarm, timecode: 1021.256.seconds, music: { |p b e|
 	 e.still.( 
@@ -26,7 +49,7 @@ P.tune('harm');
 P.synthVs(role: \spock, take: [\dbl, \lead ], params: {|p b| [
 	lyrics: "Sargon +  would it harm you if I ",
 	filter: (midinote: _ - 12), 
-	legato: [ [1, 0.8, 1, 1, 1, 1, 1, 0.3, ] ],
+	legato: [ [1, 0.8, 1, 1, 1, 1, 1, 1, ] ],
 	lag: [[ 0.05, 0, 0, 0, 0, 0, 0, 0 ]],
 	pitchTake: [ 1, 3 ]
 ] }, music:{|p b e|
@@ -35,14 +58,103 @@ P.synthVs(role: \spock, take: [\dbl, \lead ], params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-/*SARGON:*/[" You may use your tricorder, Mister Spock.","r",[5]].addLine;
+/*SARGON:*/[" You may use your tricorder, Mister Spock.","3 2 5 3 1 -7 -6 -6 -5 2".dm(\b,4)].addLine;
 P.still(\illumjinated, timecode: 1031.2.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["you may use","your tricorder"],
 	)
 });
-["Your readings will show","r"].addLine;
+P(\bassnotes, music: { |p b e|
+	[
+		freq: "5 -6 -4.5".df(\b,4).q,
+		dur: b.parse([4,5,1]).q,
+		instrument: \default,
+		amp: 0.1,
+		out: Effect.bus({|i| DWGReverbC1C3.ar(i) },out:1)
+	].pp;
+	[
+		freq: "5 -6 -4.5".df(\b,4).q,
+		dur: b.parse([4,5,1]).q,
+		instrument: \wash,
+		amp: 0.15,
+		out: Effect.bus({|i| DWGReverbC1C3.ar(i) },)
+	].pp
+});
+P.synthV(\xuan, 
+	// filter: (midinote: 48!16) ,
+	filter: (midinote: _ - 12),
+	params: [
+	lyrics: "You may use your try corder + Mister + Spock",
+	defaultVibratoDepth: 0.3,
+	legato: [1, 1, 1, 1, 1, 1, 0.7, 1, 1, 0.7, ],
+	language: "english",
+	phoneset: "arpabet"
+],music:{|p b e|
+//
+		// Song.pbind[\substance].patternpairs ++ [att:5,instrument:\sawSynthSustain,out:Song.carrierBus,amp:0.005] => _.pm =>_.play;
+		// { PlayBuf.ar(1,Song.laMer.bufnum,rate:-3.midiratio /2) }.play(s,p.carrierBus);
+
+		p.vocodeTune.(p, b,e,e.rpp,
+
+		modGain:2.7,
+		// chord:#[1,2,4]/2,
+		// echo:0.1,
+		mix:0.9,
+		width:1.05,
+		// amp:0.04,
+		verb:0.5,
+		att: 0,
+		sus:b.sum,
+		rel:1
+			// dur:b.sum+1,
+			// att:1,
+			// sus:b.sum-0.1,
+			// rel:0.2,
+			// out:3
+		);
+});
+["Your readings will show","-5 1 -7 1 2".dm(\e)].addLine;
+P(\bassline, music: { |p b e|
+	[
+		freq: "r 6 5 4 2".df(\e,3).q,
+		instrument: \sawSynth,
+		dur: b.q,
+		rest: [\r, 1, 1, 1, 1].q
+	].pp
+});
+P.synthV(\xuan, 
+	// filter: (midinote: 48!16) ,
+	filter: (midinote: _ - 12),
+	params: [
+	lyrics: "your readings + will show",
+	defaultVibratoDepth: 0.3,
+	language: "english",
+	phoneset: "arpabet"
+],music:{|p b e|
+//
+		// Song.pbind[\substance].patternpairs ++ [att:5,instrument:\sawSynthSustain,out:Song.carrierBus,amp:0.005] => _.pm =>_.play;
+		// { PlayBuf.ar(1,Song.laMer.bufnum,rate:-3.midiratio /2) }.play(s,p.carrierBus);
+
+		p.vocodeTune.(p, b,e,e.rpp,
+
+		modGain:2.5,
+		chord:#[1,2,4]/2,
+		// echo:0.1,
+		mix:0.9,
+		width:1.05,
+		// amp:0.04,
+		verb:0.5,
+		att: 0,
+		sus:b.sum,
+		rel:1
+			// dur:b.sum+1,
+			// att:1,
+			// sus:b.sum-0.1,
+			// rel:0.2,
+			// out:3
+		);
+});
 ["energy but no substance. ","3 2 3 2 1 -7 1 -7 -6 -5 4 3 3 1 2 -7".dm(\e)].addLine;
 Song.setTempoMap(\substance,"e e e e e e e e e e e e e e e");
 P(\licklet, syl: 11,music: { |p b e|
@@ -65,7 +177,6 @@ P(\claps, music: { |p b e|
 		).q
 	].pp
 });
-
 // P.tune(\substance);
 P('bassline',start:\substance,music: {|p b e|
 	[
@@ -90,7 +201,7 @@ P.synthV(\xuan,
 		p.vocodeTune.(p, b.parse([1,1,4,4,1,1,2,2]),e,e.rpp,
 		tune: [3, 2, 3, 3, 4, 3, 3, 2].dm(\e).asList,
 
-		modGain:4,
+		modGain:2.5,
 		chord:#[1,2,4]/2,
 		// echo:0.1,
 		mix:0.9,
@@ -146,6 +257,7 @@ P.synthV(\xuan,
 			=> _.ppm;
 		p.vocodeTune.(p,b,e,e.rpp,
 		modGain:4,
+		chord:#[1,2,4],
 		// chord:#[1,0.5,2,8],
 		echo:0.3,
 		mix:0.5,
@@ -236,7 +348,7 @@ P.synthV(\xuan,
 
 		p.vocodeTune.(p,b,e,e.rpp,
 
-		echo: 0.5,modGain:2.7,
+		echo: 0.5,modGain:3,
 		// chord:#[1,0.5,2,8],
 		// echo:0.1,modGain:6,
 		mix:0.8,
@@ -495,7 +607,7 @@ P(\tricorderArp, music: { |p b e|
 				var release = e.bNext.sum + 3;// + 3;
 				var dur = p.energyDur;
 				// var clock = Impulse.ar( dur.reciprocal );
-				var clock = TDuty( ( 1/6) ! 48 warpTo: e.tempoMap.quantizeDft => _.dq (3),0,1 );
+				var clock = TDuty.ar( ( 1/6) ! 48 warpTo: e.tempoMap.quantizeDft => _.dq (3),0,1 );
 				// var clock = Impulse.ar(10);
 				var sequence =  [-1,-3,-5,-7,2,4,6,11, 13,15,17,22,17,15,13,11].df(\f).dq(inf);
 				var sequence2 =  [-1,-3,-5,-7,2,4,6,11, 13,15,17,22,17,15,13,11].df(\g).dq(inf);

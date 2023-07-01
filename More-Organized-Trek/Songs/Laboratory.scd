@@ -43,7 +43,8 @@ P(\dyads, music: { |p b e|
 	[
 		freq: [\r, [4,6],[3,5],  [2,4,7],[1,4,6], [-5,5,-15] ].df(\c,\mixolydian).q,
 		dur: e.bAll.parse([4, 1, 3, 1, 3, 1]).q,
-		instrument: \sawSynth
+		instrument: \sawSynth,
+		out: Effect.bus({|i| i =>Pan2.ar(i,0.8) },)
 	].pp
 });
 P.synthV(role: \thalassa,lag:0, take: \lead, params: {|p b| [
@@ -125,7 +126,7 @@ P.still(\henochClose, timecode: 4158.seconds, music: { |p b e|
 			],
 	)
 });
-P.tune();
+// P.tune();
 P(\bassNote, music: { |p b e|
 	[
 		freq: [6, 4, 1].df('e-',3).q,
@@ -161,6 +162,20 @@ P.synthVs(role: \henoch, take: [\lead, \double], params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 
+});
+P(\cymbal, syl: 3, music: { |p b e|
+	( instrument: \cymbalsDS, amp: 0.01 , att: 0.3).play
+});
+P(\line, music: { |p b e|
+	[
+		freq:[1, 2, 3].df(\c, \minor).q,
+		dur: b.parse([2,2,2]).q,
+		// instrument: \visual_pad, amp: 0.2,
+		instrument: \harp, amp: 0.03,
+		out:[2,3,4].q, 
+
+
+	].pp
 });
 [ "-boom- Once occupied","-1,5 11 5 3".dm(\d)].addLine;//boom=e-flat
 P.still(\twoShot, timecode: 4200.2.seconds, music: { |p b e|
@@ -220,6 +235,18 @@ P(\bassline, music: { |p b e|
 	].ppm
 });
 [ "You no doubt want the mechanism to at least appear to be a woman. ","3 -17 4 2 -11 3".dm('a-')++"2 3 2 1 -7 1".dm(\b)++"1 4".dm(\c,6)++"-7 3 2 1 3 -7 -6".dm(\d,6) ].addLine;
+P(\accents, music: { |p b e|
+	[
+		freq: [4.5,\r,3,\r,1, 1, 2, 3, 4, 4.5].df('f#',[4,5]).q,
+		rel:[2, 2, 2, 2, 2, 2, 2, 2].q,
+		att:[2, 2, 2, 2, 2, 2, 2, 2].q/20,
+		dur: b.parse([1,2,1,3, 1, 1, 1, 1, 0.75, 1]).q,
+		instrument: \sawSynthSustain, pulse: 0.7, amp: 0.04,
+		out: [2,Effect.bus({|i|DelayN.ar(i,0.1,SinOsc.ar(0.2).range(0.01,0.02)) },)],
+		// lag: Ptuple([0, Pwhite(0,0.04, inf)])
+
+	].pp
+});
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -252,6 +279,7 @@ P(\womanChords,syl:18, music: { |p b e|
 P.synthVs(role: \henoch, take: [\lead, \double], params: {|p b| [
 	lyrics: "r r no doubt r want the mechanism + + + to at least appear + to be a woman +",
 	pitchTake: [1, 3],
+	legato: [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.7,   1, 1, 1, 1, 1,  0.8, 1, 1, 1, ]],
 	filter: (midinote: _ - 12), 
 	lag: [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0, 0.05, 0]]
 ] }, music:{|p b e|
@@ -286,7 +314,7 @@ P(\test, music: { |p b e|
 		=> Pan2.ar(_, SinOsc.ar(2))
 	}.play
 });
-P(\bassnote, music: { |p b e|
+P(\bassnote,syl:2, music: { |p b e|
 	(
 		instrument: \wash,
 		freq: [-21,1].df('f#')

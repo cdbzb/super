@@ -19,7 +19,7 @@ o = [
 	Event.prNew,  Array.prNew(40),  "1858530000",  "with",  
 	"290700000",  Event.prNew,  Array.prNew(40),  "2149230000",  
 	"-",  "444520000",  Event.prNew,  Array.prNew(40),  
-	"2593750000",  "us",  "762040000",  "main",  
+	"2593750000",  "us",  "533420000",  "main",  
 	Event.prNew,  Array.prNew(32),  Event.prNew,  Array.prNew(8),  
 	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
 	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  

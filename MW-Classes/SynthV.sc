@@ -19,7 +19,7 @@ SynthV {
 			synthVsToRender = nil;
 		}
 	}
-	* renderSection { |wait = 8.5|
+	*renderSection { |wait = 8.5|
 		var section = Song.cursor;
 		synthVsToRender = Song.at(section).select{|i| i.synthV.notNil };
 		SynthV.renderMultiple(wait);
@@ -447,7 +447,6 @@ SynthV {
 		=> Event.newFrom(_);
 
 		filter = filter ? event.removeAt(\filter);
-		
 		event => {|i| 
 			filter.notNil.if{
 				( filter.class == Function ).if {
@@ -527,7 +526,7 @@ SynthV {
 			}
 		}
 	}
-	dirtySynthVs {
+	dirtySynthVs{
 		^ this.pts.select{|i| i.synthV.notNil }
 		.collect{|i| i.synthV}
 		.select{|i| i.checkDirty}

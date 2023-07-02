@@ -22,7 +22,7 @@ o = [
 	"3135670000",  "advances",  "598340000",  Event.prNew,  
 	Array.prNew(40),  "3734010000",  "+",  "733820000",  
 	Event.prNew,  Array.prNew(40),  "4467830000",  "+",  
-	"788860000",  "main",  Event.prNew,  Array.prNew(32),  
+	"631080000",  "main",  Event.prNew,  Array.prNew(32),  
 	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
 	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
 	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  

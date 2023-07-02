@@ -688,7 +688,7 @@ P.still(\kirkCommand,syl:0, timecode: 2348.25.seconds, music: { |p b e|
 	P.synthVs(role: \kirk,
 		pbind: Song.enlarge(1),
 		take:[ \lead, \double ],  params: {|p b| [
-		lyrics: "r I'm r in r control +",
+		lyrics: "r I'm r in r command +",
 		pitchTake: [ 1, 3 ]
 	] }, music:{|p b e|
 		{
@@ -763,28 +763,19 @@ P.still(\kirkCommand,syl:0, timecode: 2348.25.seconds, music: { |p b e|
 
 	//}}}
 	["trol, I can order this (boom) but I'm","f4 e- f g- f d- f#3 c4 d- "].addLine;//1
-	P.synthV(role: \kirk, take:\lead,
-		prepend: true,
-		lag: [0.2,0],
+	P.synthVs(role: \kirk, take:[\lead, \double],
+	pbind: Song.enlarge(1),
+		// lag: [0.2,0],
 		params: {|p b| [
-		lyrics: "troll, I can order + this r but I'm ",
-		pitchTake: 1
+		lyrics: "r I can order + this r but I'm not ",
+		legato: [ [1, 1, 1, 1, 1, 1, 1, 1, 1, 0.9, ] ],
+		pitchTake: [1,3]
 	] }, music:{|p b e|
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
 		}.play
 	});
-	P.double(role: \kirk, take: \lead,
-		prepend: true,
-		params: {|p b| [
-			
-		] }, music:{|p b e|
-			{
-				e.playbuf
-				=> p.synthVTracks.at(e.key).()
-			}.play
-		});
 	P(\order1,start:'trol,',syl:2,music:{|p d| //{{{
 		[
 			amp:0.03,
@@ -820,22 +811,15 @@ P.still(\kirkCommand,syl:0, timecode: 2348.25.seconds, music: { |p b e|
 	);//}}}
 	//2
 	["not be- cause","e d c"].addLine; //2
-	P.synthV(role:\kirk,take:\lead,  params: {|p b| [
-		lyrics: "not because +",
-		pitchTake: 1
+	P.synthVs(role:\kirk,take:[\lead, \double],  params: {|p b| [
+		lyrics: "r because +",
+		pitchTake: [1,3]
 	] }, music:{|p b e|
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
 		}.play
 	});
-	P.double(role:\kirk,take:\lead, params: {|p b| [
-		] }, music:{|p b e|
-			{
-				e.playbuf
-				=> p.synthVTracks.at(e.key).()
-			}.play
-		});
 	P(\harpy2,'be-',music://{{{
 		{|p m| p.postln;
 			{
@@ -1102,23 +1086,18 @@ P(\bass7,start:\life,music: { |p b e|
 	].pp
 });
 ["(trill) --tas --tic --ly ad-- va -- --nced as","e3 g#4 f# e d b- c5 b-4 a "].addLine;//8
-P.synthV(role:\kirk, take:\lead, params: {|p b| [
-	lyrics: " r tasticly + + advanced + - - as",
-	pitchTake: 1
+P.synthVs(role:\kirk, take:[\lead, \double],
+	pbind:Song.enlarge(6),
+	params: {|p b| [
+		lyrics: " r tasticly + + advanced + - - as this but I must point out",
+		legato: [[1,  1, 1, 1, 1, 1, 1, 1, 1, 1,  1,  1, 1, 1, 0.8, ]],
+		pitchTake: [1,3]
 ] }, music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.double(role:\kirk, take:\lead, params: {|p b| [
-		
-	] }, music:{|p b e|
-		{
-			e.playbuf
-			=> p.synthVTracks.at(e.key).()
-		}.play
-	});
 P(\klTrill,start:\trill,music:{{StkClarinet.ar(441/480*[1,3].degreescps(root:4,octave:5)*Pulse.kr(LFBrownNoise2.kr([0.5,0.51],mul:0.5,add:6)).range(1,2.midiratio),breathpressure:20,vibgain:10,vibfreq:64)*0.04}.play(s,2).dur(1) });
 //~im2.pbind[7].play;
 P(\bass8,start:'(trill)',music:{ |p b e| [note:[Rest(),8,6,4,2,0,-1].q,octave:3,dur: b.parse([1,1,1,1,1,[1,1,1,1]]).q++[2].q ].pp });
@@ -1148,23 +1127,18 @@ P.still(\kirkDocile, timecode:
 		text: ["",""],
 	)
 });
-P.synthV(role:\kirk, take:\lead, params: {|p b| [
-	lyrics: "this but I must point out that the posee +",
-	pitchTake: 1
+P.synthVs(role: \kirk, take:[\lead, \double],
+pbind: Song.enlarge(3),
+params: {|p b| [
+	lyrics: "r r r r r r that the possibilities + + + + ",
+	legato: [ [1, 1, 1, 1, 1,1,    1, 1, 1, 1, 1, 1, 0.8, ] ],
+	pitchTake: [1,3]
 ] }, music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.double(role:\kirk, take: \lead, params: {|p b| [
-		
-	] }, music:{|p b e|
-		{
-			e.playbuf
-			=> p.synthVTracks.at(e.key).()
-		}.play
-	});
 P(\chord9,start:'this,',music:(strum:0.07,freq:[2,4,5,7].degreescps(root:4)));
 P(\chord9,start:'this,',music:(dur: 2,strum:0.05,freq:[5,12,14,17,23].degreescps(root:-1)));
 P(\chord9b,start:'this,',syl:0,music:(strum:0.07,freq:[3,5,6.5,10].degreescps(root:-1)));
@@ -1175,7 +1149,6 @@ P(\bass9c,start:'this,',syl:4,music:(note:4,octave:[3,2],amp:0.2,dur:4));
 P(\tritones9, start:'this,', music:{ |p b e|
 	[ instrument:\stringyy, note:( [-2,-3,-4]+.t[0,6] ).q , dur: b.parse([1,1!4,1]).q].pp 
 });
-
 P(\bend9,start:'this,',music: {| p b e| 
 	{
 		var env= Env.new([2.5,2.5,2,2,1.5,1.5].degreescps(octave:7),[1.5,1,5.5,2.5,3]).kr(gate:1);
@@ -1183,7 +1156,6 @@ P(\bend9,start:'this,',music: {| p b e|
 		* Env.linen(4,1,5).kr(2,gate:1)
 	}.play}
 );
-
 //P(\voiceleading9, start:'this,', music: (//{{{
 //		[
 //			[
@@ -1202,23 +1174,18 @@ P(\bend9,start:'this,',music: {| p b e|
 //}}}
 //// 10 ////{{{
 ["-bilities,the potential, for knowledge and ad-","c#5 a4 e a c#5 d b4 d5 d b4 e5 d"].addLine;//10/
-P.synthV(role:\kirk, take:\lead, prepend:true, params: {|p b| [
-	lyrics: "bilities + +  the potential + + for knowledge + and ad",
-	pitchExpression: 0.5
+P.synthVs(role: \kirk, take: [\lead, \double],
+	pbind: Song.enlarge(11),
+	params: {|p b| [
+	lyrics: "r r r the potential + + for knowledge + and advancement + + is equally + + great - - - - -",
+	legato: [[1, 1, 1,  1, 1, 1, 0.8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ]],
+	pitchTake: [1,3]
 ] }, music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.double(role:\kirk, take:\lead, params: {|p b| [
-		
-	] }, music:{|p b e|
-		{
-			e.playbuf
-			=> p.synthVTracks.at(e.key).()
-		}.play
-	});
 P(\bass10,start:'-bilities,the',music:{ |p b e|
 	(
 		note:-3,
@@ -1240,9 +1207,7 @@ P(\bass10b,start:'-bilities,the',syl:7,music: { |p b e|
 ].pp 
 });
 P(\pad10,start:'-bilities,the',music:(instrument:\stringyy,freq:[1,5,13].degreescps(root:-3,octave:3),dur:2));
-
 P(\pad10b,start:'-bilities,the',syl:4,music:( instrument:\stringyy,freq:[5,11,13].degreescps(scale:\minor,root:-1,octave:3),dur:2 ));
-
 P(\figure10,start:'-bilities,the',syl:4,music: { |p b e|
 	[instrument:\tri,pan:1,freq:[14,12,6,12,14].degreescps(root:-3).q,dur:p.parse('bilities',[1,0.33!3,1].flatten,5).q].pp
 });

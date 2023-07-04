@@ -20,7 +20,7 @@ o = [
 	"327390000",  Event.prNew,  Array.prNew(40),  "2883060000",  
 	"command",  "354210000",  Event.prNew,  Array.prNew(40),  
 	"3237270000",  "+",  "588470000",  Event.prNew,  
-	Array.prNew(40),  "3825740000",  "too.",  "1231970000",  
+	Array.prNew(40),  "3825740000",  "too.",  "985570000",  
 	Event.prNew,  Array.prNew(40),  "5057710000",  "Coincidence?",  
 	"745110000",  Event.prNew,  Array.prNew(40),  "5802820000",  
 	"+",  "911630000",  Event.prNew,  Array.prNew(40),  
@@ -139,7 +139,7 @@ p = [
 		proto: nil,  parent: nil,  
 		know: true ],  
 	// Array
-	23, [ nil,  nil,  'activeTakeId',  3,  
+	23, [ nil,  nil,  'activeTakeId',  2,  
 		nil,  nil,  'takes',  o[24] ],  
 	// Array
 	24, [ o[25],  o[27],  o[29],  o[31] ],  

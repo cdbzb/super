@@ -4,8 +4,9 @@
 (
 s.waitForBoot { 
 	Song(\briefing,[]).current;
-"boilerplate.scd".load;
 
+	// Require("boilerplate.sc");
+	"~/tank/super/More-Organized-Trek/Songs/boilerplate.scd".standardizePath.load;
 [ "SCOTT: You're going to what?","r" ].addLine;
 P.still(\scott, timecode: 2044.2.seconds, music: { |p b e|
 	 e.still.( 
@@ -126,7 +127,7 @@ P.synthVs(role: \spock, take: [\lead, \double], params: {|p b| [
 	lyrics: "travel + back - with - us",
 	// filter: (midinote: _ - 12), 
 	pitchTake: [nil, 3],
-	legato: [[1, 1, 1, 1, 1, 1, 0.7, ]],
+	legato: [[1, 1, 1, 1, 1, 1, 0.9, ]],
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -527,8 +528,40 @@ P(\bass, music: { |p b e|
 		instrument: \sawSynth
 	].pp
 });
+P(\chord, music: { |p b e|
+	[
+		freq: [-15,-15, [-5, 1,  5] ].df('c#').q,
+		dur: b.parse([1,1,2]).q,
+		decaytime: 5,
+		strum: -0.05,
+		out: Effect.bus({|i|
+			i => Pan2.ar(i,0)
+			=> SineShaper.ar(_,0.05,4) 
+			* SinOsc.ar(3).range(0.5,1)
+			/4
+	}, inputChannels:2, out:[0,1]),
+		instrument: \harp, coef: 0.2,
+	].pp
+});
 P.tune();
 [ "SPOCK: No, he's not. ","-5 -5 1".dm('a-') ].addLine;
+P(\chord, music: { |p b e|
+	[
+		freq: [-15,-15, [-1, 1,  5] ].df('a-').q,
+		dur: b.parse([1,1,2]).q,
+		decaytime: 5,
+		strum: -0.05,
+		out: Effect.bus({|i|
+			i => Pan2.ar(i,0)
+			=> DWGReverbC1C3.ar(_,mix:0.2)
+			=> SineShaper.ar(_,0.05,4) 
+			* SinOsc.ar(3).range(0.5,1)
+			/3
+			=> Phaser2.ar(_,rate:0.21,fb:0.2)
+	}, inputChannels:2, out:[0,1]),
+		instrument: \harp, coef: 0.7,
+	].pp
+});
 P.still(\spock, timecode: 2135.4.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -554,17 +587,31 @@ P.synthV(role: \spock, take: \lead, params: {|p b| [
 P(\bassnote, music: { |p b e|
 	[
 		freq: [\r, [-5, 5], [1, 11]].df('a-',3).q,
-		dur: b.parse([  2/3,[1/3, 1],1 ]).q
+		dur: b.parse([  2/3,[1/3, 1],1 ]).q,
+		instrument: \sparkTriangle,width:0
 	].pp
 });
 P.tune();
 // idea big vibrato to indicate irony !!
 [ "MCCOY: They're giants, and we're insects beside them. "," -5 3 2 1 3 4 3 1 3 2".dm(\e) ].addLine;
+P(\cymbalSwell,syl:0, music: { |p b e|
+	(
+		instrument: \cymbalsDS, att:0.2,amp: 0.02
+	).play
+});
 P.still(\mccoy, timecode: 2137.6.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
 	)
+});
+P(\pad, music: { |p b e| //or do this with klank on a cymbal
+	[
+		instrument: \visual_pad,amp:0.25,rel:9,
+		freq: [\r, [-5, 1, 3, 5, 11, 13, 15],[-5, 1, 2, 5, 11, 12, 15], [-6, 1, 4],[-6,1,3],[-5,1,3],[-5,-7,2]  ].df(\e).q,
+		dur: b.parse([1,1,3, 1, 2, 1, 1]).q
+
+	].pm.play
 });
 P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 	lyrics: "They're giants + and we're insects + beside + them.",
@@ -638,6 +685,7 @@ P(\bassPad, music: { |p b e|
 [" (boom) and our second in command, too. Coincidence? "," -6 7 11 6 7 11 12 13 15.5 13 16 14.5 15.5 ".dm(\c,\mixolydian) ].addLine;
 P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 	lyrics: "r and our second + in command +, too. Coincidence? + + + ",
+	legato: [1, 1, 1, 1, 1, 1, 1, 1, 0.8,  1, 1, 1, 1, ],
 	filter: (midinote: _ - 12), 
 	pitchTake: 2,
 	paramPitchExpression:1.5
@@ -748,10 +796,17 @@ P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 // ["MULHALL: Well, if we all agree, I'm willing to host Thalassa's mind.","r"].addLine;
 //[" ( boom x 7 ) I'm a scientist.  ( boom x 7 ) and I'm","3 4 6 5 7 3 4 11 12 13 14 13 5 3 4 6 5 7 3 4 5 15  ".dm(\b)].addLine;g
 [" ( boom x 7 ) I'm a scientist.  ( boom x 7 ) and I'm","3 4 6 5 7 3 4 11 7 11 12 11 3 3 4 6 5 7 3 4 5 15  ".dm(\b)].addLine;
-P.still(\mulhall, timecode: 2202.85.seconds, music: { |p b e|
+P.still(\mulhall, timecode: 2202.45.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
+		wait: b[..6].sum,
+		fadeIn: b.parse([7]),
 		text: ["",""],
+	)
+});
+P.still(\mulhall2,syl:6, timecode: 2202.65.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b[..6].sum,
+		text: ["I'm a scientist",""],
 	)
 });
 Song.durs.scaleEnv(
@@ -1164,6 +1219,7 @@ P(\chords,start:'to host',music:{|p b e|
 Song.opportunityKey='b';
 ["The opportunity is an extraordinary one ","-1 3.5 3.5 3.5 3.5 2 2 1 2 3 5 4.5 2 1 -7.5".dm(Song.opportunityKey,6,\minor)].addLine;//p14
 Song.durs.filter( _ * [1,1,1,1,1,1,5/7, 1,1,1,1,1,1,1,1 ] );
+Song.setTempoMap(\opportunity,"e x xe x xe x xeee x xe x xe x xe x xe");
 P.synthV(\feng, filter: (midinote: _ - 12),  params: {|p b| [
 	lyrics: "r the opportunity + + + + is an extrordinary + + + + one",
 	legato: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.9, ],
@@ -1174,19 +1230,19 @@ P.synthV(\feng, filter: (midinote: _ - 12),  params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P(\chords,start:\extraordinary,syl:0,music:{|p b e| 
+P(\chords,start:\extraordinary,music:{|p b e| 
 	MegaBind(
 			[
-				[1, 1, 1, 1, -7, -7],
-				[-5, -5, -5, -5, [-4.5,-5].choose.dup ].flat
+				[\r, 1,  1,  1,  1,  -7, -7, -6.5, -6.5, -6.5, 2,  2,  2,  2, 2],
+				[\r, -5, -5, -5, -5, -5, -5, -4,   -4,   -4,   -6, -6, -6, -6, -7].flat
 			].df(p.opportunityKey),
-			b.drop(1),
+			"e x xe x xe x xeee x xe x xe x xe x xe".asBeats.warpTo( e.tempoMap ),
 			[],
 			{|i|
 				Saw.ar( i.freqSeq  ) 
 				* 
 				(
-					Env.perc().kr(gate: i.trigSeq)
+					Env.perc().kr(gate: i.trigSeq * i.gateSeq)
 					+ Env.asr().kr(gate:i.gateSeq)
 				)
 			},
@@ -1205,7 +1261,6 @@ P(\chord,start:\extraordinary,syl:13,music:{|p b e|
 	).play
 });
 Song.setQuarters(\extraordinary, "e x xe x xe x xqe x xe x xe x xe x xe");
-//Song.setQuarters(\extraordinary,"e x xe x xe xqe xe xe xe xe".asBeats)	;
 P.click(\extraordinary);
 P(\bass,start:\extraordinary,music:{|p b e| 
 	[
@@ -1226,6 +1281,25 @@ P.synthV(\feng,filter: (midinote: _ - 12),  params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
+P.synthV(\kevin, take: \lead,
+	pbind: {|p b|
+		[
+			dur: b.parse([5, 1, 2, 1, 2, 1, [1, 0.5],[0.5,1]]),
+			midinote: [-5,-5,-5, 2, 2, 1, 1, -5].dm('f#')
+		].p
+	},
+	params: {|p b| [
+	lyrics: "r tay shun ob zer vay shun -",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+		=> FreeVerb.ar(_,0.1,0.85)
+		/3
+	}.play
+
+});
 P(\bass,start:\experimentation,music:{|p b e| 
 	[
 		freq: [\r, 12, 15, 12].df(p.opportunityKey,2).q,
@@ -1235,6 +1309,7 @@ P(\bass,start:\experimentation,music:{|p b e|
 });
 P.tune(\experimentation);
 ["SCOTT: A starship engine the size of a walnut? Thats impossible! "," 2 3 1 -7 -6 -5.5 4 3 4 5 -7".dm(\a) ++ "5 5 11 5 1".dm('a-',5)].addLine;
+Song.durs.filter( _ *0.9 );
 P.still(\scott, timecode: 2220.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -1242,21 +1317,13 @@ P.still(\scott, timecode: 2220.seconds, music: { |p b e|
 	)
 });
 Song.impossibleCurve=TempoMap("e e e E E E e x x e e qe e E E E q".asBeats,Song.durs[\impossible].list);
+P.tune();
 // P.tune(\impossible);
-P.synthV(role: \scott, take: \lead, params: {|p b| [
+P.synthVs(role: \scott, take: [\lead, \double], params: {|p b| [
 	filter: (midinote: _ - 12), 
 	lyrics: " A starship + engine + the size of a walnut? + Thats impossible! + + + ",
-	legato: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.7, 0.6, 1, 1, 1, 1, ],
-	pitchTake: 1
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
-
-});
-P.double(role: \scott, take: \lead, params: {|p b| [
-	pitchTake: 1
+	legato: [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.7, 0.6, 1, 1, 1, 1, ]],
+	pitchTake: [1,3]
 ] }, music:{|p b e|
 	{
 		e.playbuf

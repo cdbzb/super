@@ -1,7 +1,7 @@
 (
 	Song('MandT',[]).current;
 	Song.synthVTracks=EventWithDefault();
-	Song.synthVTracks.aiko = { |preGain=1 ratio=2 amp = (1/8) len=2000 mix=0.1 |
+	Song.synthVTracks.aiko = { |preGain=2 ratio=2 amp = (1/8) len=2000 mix=0.1 |
 	{ |i|
 		i.() * preGain
 		=> SoftKneeCompressor.rms(_,  thresh:-10, ratio: ratio, knee:6, attack:0, release:0.05, makeUp:0, rms:40) 
@@ -15,12 +15,106 @@
 
 	// Require("McCoyAndThalassa.scd");
 	// "./McCoyAndThalassa.scd".standardizePath.load;
-	["//[Sickbay]","r"].addLine;
-	["(He goes back into the ward.) MCCOY: Jim? Are you all right? ","r"].addLine;
-	["KIRK: Yes, I'm fine, Bones. ","r"].addLine;
-	["MCCOY: Thalassa? ","r"].addLine;
+["McCoy leaves the room, and the door shuts and locks behind him.","1 2".dm(\c)].addLine;
+P.still(\mccoyLeaves, timecode: 4606.7.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
+P(\arrange, music: { |p b e|
+	{
+		VarSaw.ar(
+			[1,3,5,7,12,14,16].df(\d),
+			width: SinOsc.ar( { 0.1.rrand( 0.2 ) }!7, {1.0.rand}!7 ).range(0,1)
+		)
+		/10
+	}.play;
+});
 
-	["MULHALL: (boom) She is now with Sargon, Doctor. ","-6 1 2 3 6 5 3".dm(\c)].addLine;
+[" --The ship shakes as he activates his desk monitor.-- MCCOY: This is Sickbay. Get me ","-1 -5 5 5 11 1 4.5 5.5".dm(\d)].addLine;
+P.still(\leavingReverse, timecode: 4612.1.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
+P.still(\lookBackDoor,syl:0, timecode: 4613.2.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
+P.still(\atDesk,syl:1, timecode: 4627.3.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
+
+[ "(The door opens, and Chapel walks out, staring blankly ahead.) ","r" ].addLine;
+P.still(\chapelZombie, timecode: 4630.0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
+[ "MCCOY: Nurse Chapel, what in the devil?","r" ].addLine;
+//Sickbay
+	["//[Sickbay]","r"].addLine;
+P.still(\surpriseLook, timecode: 4642.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
+	
+P.still(\aliveKirk, timecode: 4643.8.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
+["(He goes back into the ward.) MCCOY: Jim? Are you all right? ","r"].addLine;
+P.still(\toKirk, timecode: 4649.3.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
+["KIRK: Yes, I'm fine, Bones. ","r"].addLine;
+P.still(\kirkTalk, timecode: 4655.4.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
+["MCCOY: Thalassa? ","r"].addLine;
+P.still(\thallassa, timecode: 4659.5.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
+P.still(\toThal, timecode: 4702.6.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
+["MULHALL: (boom) She is now with Sargon, Doctor. ","-6 1 2 3 6 5 3".dm(\c)].addLine;
+P.still(\Mulhall, timecode: 4709.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+		fade: e.bNext.sum
+	).sequenceText2(
+			b.parse([1,6]).postln ++ [1], [ 
+				["she is with Sargon","now"],
+				["",""],
+			],
+	)
+});
 P(\bass, music: { |p b e|
 		[
 			freq: [-6, 2].df(\c,[3,4]).q,
@@ -37,7 +131,6 @@ P.synthV(role: \mulhall, take: \lead, params: {|p b| [
 		}.play
 
 	});
-
 P(\pad, music: { |p b e|
 		[
 			freq: [[1,3,5,7], [-4,3,5,7]].df(\a,\minor).q,
@@ -49,6 +142,12 @@ P(\pad, music: { |p b e|
 		].ppm
 });
 	["I`m Ann Mulhall, back in my own body. ",[-5, 3, 3, 2, 3, 2, 3, 4, 3, 2].dm(\g), ].addLine; // a= Song.durs['back in my'].list
+	P.still(\clear, timecode: 0.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b.sum,
+			text: ["I'm Ann Mulhall","back in my own body"],
+		)
+	});
 	Song.setTempoMap('back in my own',"q q q q e e e e q q");
 	Song.quarters['own body']=Song.parseBeats('own body',[2,2,2,2,1,1, 1, 1, 2, 2]);
 P.synthVs(role:\mulhall, take: [\lead, \double], 
@@ -236,15 +335,37 @@ P(\bass, music: { |p b e|
 
 	});
 	["(Then we see the three blackened and broken spheres.) ",[1,2,3].dm(\f),[3,1.5,3]].addLine;
-P(\clang,start:'broken',music:{|p b e| 
+	P(\cymbal, music: { |p b e|
 		(
+			instrument: \cymbalsDSStereo,
+			amp:0.001,
+		).play;
+		(
+			instrument: \cymbalsDS,
+			att:1,
+			amp:0.02
+		).play
+	});
+P(\clang,start:'broken',music:{|p b e| 
 			[
 				freq: [\f,\g,\A].collect{|i| [-21,-11].df(i)} => _.q,
 				out: Effect( { |i| PlateReverb.ar(i)  * Env.linen(0,b.sum,4).kr(gate:1) * 3}).bus.index,
 				dur: b ++ [1] => _.q
-			].pp
-
-		)
+			].pp;
+			{
+				
+				VarSaw.ar(
+					Gendy2.ar(
+						minfreq:Gendy2.ar(minfreq:0.2,maxfreq:0.3).range(3,4),
+						maxfreq:Gendy2.ar(minfreq:0.1,maxfreq:0.2).range(1,2) + { 1.0.rand }!5
+					).range(200,400 + Line.kr(0,300,5)),
+					
+				)
+				/100
+				=> CrossoverDistortion.ar(_)
+				/200
+				* Env([0,1,0],[ b.sum ] ++ 0.1 ).kr(2,gate:1)
+			}.play
 	});
 P(\sizzle,syl:1, music: { |p b e|
 		{
@@ -276,6 +397,12 @@ P.still(\three,syl:1, timecode: 4721.seconds, music: { |p b e|
 		)
 	});
 	["MCCOY: Jim, the receptacles. Spock's consciousness was in one of them. ",[3,2,1,5,4,3].dm(\g) ++ [2, 5, 4, 3, 1].dm('a-',scale:\whole) ++ [11, 6, 4, 2].dm(\f,scale:\minor)].addLine;
+	P.still(\MccoyHorrified, timecode: 4724.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b.sum,
+			text: ["",""],
+		)
+	});
 P(\bassNotesOne, music: { |p b e|
 		{
 			var freq = [3.df(\g),[2,1].df('a-',scale: \whole),2.df(\f)].flat.dq.demand(b.parse([6,4,4,1])) /4;
@@ -324,6 +451,12 @@ P(\noise, music: { |p b e|
 	}.play
 });
 ["KIRK: (boom) It was necessary. ",[-2, 5, 5, 11, 5, 3, 1].dm(\c,scale:\minor)].addLine;
+P.still(\kirkNecessary, timecode: 4728.35.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	lyrics: "r it was necessary + + +",
 	filter: (midinote: _ - 12), 
@@ -358,6 +491,12 @@ P(\chord, syl:2, music: { |p b e|
 	}.play
 });
 ["MCCOY: What are you talking about? There is no Spock to return to his body. (boom) You've ",[-7, -7, 1, 2, 3, 2, -6, -7,  2, 1, 5, 6, 5, 4, 3, 4, 5, 5, 4].dm(\d, scale:\mixolydian) ++ [-5, 5].dm('b-',octave:4)].addLine;
+P.still(\mccoyTalkingAbout, timecode: 4732.6.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \mccoy, take: \leadTest,
 	pbind: Song.enlarge(13),
 	params: {|p b| [
@@ -418,13 +557,24 @@ P(\bass,start:\talking,music:{|p b e|
 
 	});
 	["killed a loyal officer,(boom) your (boom) best friend. ",[11,5,11,12,13,12,11,7].dm('b-',octave:4) ++ [-1,5,-4,6,7].dm(\a,scale:\mixolydian, octave:4)].addLine;
+	P(\line, music: { |p b e|
+		[
+			freq: [ 11, 5, 11, 7, 11, 5, 3, 2].df('b-',[3,5]).q,
+			dur: b.q,
+			rel:[2, 2, 2, 2, 2, 2, 1.5, 1].q,
+			instrument: \sawSynth,
+			amp:0.03
+			// amp:0.3
+		].pp
+	});
 P(\bassMirror,start:\loyal,music:{|p b e| 
 		[
 			freq: [1, -7, -6, -7, 1].df('b-', octave:[3,4]).q,
 			dur: b.parse([3, 1, 1, 1, 2]).q,
 			instrument:\sawSynthSustain,
 			amp:0.07,
-			lagTime:0.1
+			lagTime:0.1,
+			rel:0.5
 		].pm(\sawSynthSustain).play
 
 	});
@@ -443,6 +593,12 @@ P(\chord,start:\loyal,syl:11,lag:-0.05, music:{|p b e|
 		).play
 	});
 ["KIRK: (boom ba boom ba) Bones, prepare a hypo. The fastest, deadliest poison to Vulcans. ",[-5, -5, -5, -5, 5, 5, 5, 5, 11, 5, 12,  ].dm(\b,octave:4) ++ [12,13,12,5, 13,14,13,6, 14,15,14,5,11,7].dm(\c)].addLine;
+P.still(\kirk, timecode: 4739.3.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 /*
 "fmpeg /Users/michael/Library/Mobile\ Documents/QNM6AGD8YW~com~atlantia~SimpleMic/Documents/1649971442.m4a /hypo.wav".unixCmd;
 ~hypo = Buffer.read(s,"/tmp/hypo.wav");

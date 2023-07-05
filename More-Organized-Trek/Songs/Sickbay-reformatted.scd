@@ -202,7 +202,7 @@ P(\static3,start:3,music:
 		(instrument:\crackle,dur:5,out:~sickBay.mcCoyBus,amp:0.3)
 );
 ["Sar- gon what's wrong?","b4 g b e5"].addLine;  //4
-P.still(\medium_shot, timecode: 3807.53.seconds, music: { |p b e|
+P.still(\medium_shot, timecode: 3807.9.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["Sargon","what's wrong?"],
@@ -218,9 +218,6 @@ P.synthV(\aiko,params:
 		}.play
 	}
 );
-P(\image,start:4,music:{{
-		~stills.preview('whatsWrong?')
-}.defer(0.01)});
 P(\whatsWrong4,start:4,music:
 		Ppar([
 				Song.currentSong.tune[4]<>(instrument:\sawTw,\amp:0.5)
@@ -296,6 +293,12 @@ P(\doorOpen,start:2,music:
 
 ); 
 ["(beat) (formula) Sar- gon's for- mu- la...","d d5 e f# a f# c"].addLine;  //6
+P.still(\looking, timecode: 3811.8.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P(\strings, music: { |p b e|
 	{
 		var swell = Env([0,1,1,0],[b[0],b[1]]).kr(2,gate:1)
@@ -347,7 +350,7 @@ P(\chord, music: { |p b e|
 		rel:4
 	].ppm
 });
-P.still(\kirk, timecode: 3826.seconds, music: { |p b e|
+P.still(\kirk, timecode: 3827.8.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],

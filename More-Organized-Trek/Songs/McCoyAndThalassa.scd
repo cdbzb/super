@@ -5,17 +5,53 @@ s.waitForBoot{
 	"/Users/michael/tank/super/More-Organized-Trek/Songs/boilerplate.scd".load;
 
 [ "MULHALL: Doctor. ",[3,1].dm(\c) ].addLine;
+P.still(\close, timecode: 4245.6.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.tune('MULHALL: D');
 [ "MCCOY: Yes? ","r" ].addLine;
+P.still(\mccoy, timecode: 4247.7.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 [ "MULHALL: Would you like to save your Captain Kirk? ","r" ].addLine;
+P.still(\twoShot, timecode: 4255.6.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 [ "MCCOY: But you said that was impossible. ","r" ].addLine;
 [ "MULHALL: We have many powers Sargon did not permit us to use. ","r" ].addLine;
+P.still(\closeup, timecode: 4310.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 [ "He thought them too tempting to us. ","r" ].addLine;
 [ "This body pleases me. ","r" ].addLine;
 [ "I intend to keep it. ","r" ].addLine;
 [ "MCCOY: I see. And Henoch intends to keep Spock's body, of course. ","r" ].addLine;
+P.still(\mccoyAgain, timecode: 4326.1.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 [ "MULHALL: Henoch's plans are his own affair. ","r" ].addLine;
 [ "I wish only to exist in peace as a living woman. ",[3, 6, 5, 6, 4.5, 5, 3, 7, 11, 7, 7, 4, 5, 5, 6, 5, 1, 2, 1].dm('f#') ].addLine;
+P.still(\thal, timecode: 4332.2.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 	Song.synthVTracks=EventWithDefault();
 	Song.synthVTracks.aiko = { |preGain=1 ratio=2 amp = (1/8) len=2000 mix=0.1 |
 	{ |i|
@@ -78,6 +114,12 @@ P(\bass,start:\exist,music:{|p b e|
 		].p.play(clock:TempoClock.newFromQuarters(p.quarters[\exist]));
 	});
 [ "MCCOY: If you're asking my approval ",[3, 4, 5, 4, 3, 5, 11, 7].dm(\f,4,\harmonicMinor) ].addLine;
+P.still(\mccoyIndignant, timecode: 4336.9.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.tune(\approval);
 P.synthV(role: \mccoy, take:\lead, params: {|p b| [
 		lyrics: "if your asking + my approval + +",
@@ -97,6 +139,12 @@ P.double(role: \mccoy, params: {|p b| [
 			}.play
 		});
 [ "MULHALL: I require only your silence", [7,11,12,7,11,12,12.5,2.5].dm(\c) ].addLine; 
+P.still(\thalSilence, timecode: 4339.9.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 	// Song.durs[\silence] = Song.durs[\silence].list + [0,0,0,0,0,0,0,0.5] => _.q;
 	// Song.durs[\silence] = Song.durs[\silence].list - [0,0,0,0,0,0,0,0.1] => _.q;
 P.synthV(role: \thalassa, params: {|p b| [
@@ -246,6 +294,12 @@ P(\bass,start:\life,music:{|p b e|
 	});
 //[ "Doctor, we can take what we wish. ",[11, 5, 3, 5, 12, 11, 7, 6].dm(\e,4) ].addLine; //?????
 [ "Doctor, we can take what we wish--. ",[4.5, 3, 6, 6, 6, 5, 6, 6, 7].dm(\a,4) ].addLine; //?????
+P.still(\closert, timecode: 4357.6.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 // Song.durs['wish--']	= Song.durs['wish--'].list.dropLast ++ ( Song.durs['wish--'].list.last * 0.75 ) => _.q
 	Song.wishVocalTwoSections = VocalRPP('wish--',\wish);
 P(\trem, music: { |p b e|
@@ -404,6 +458,12 @@ P(\bassNotes,start:\worlds,music:{|p b e|
 	});
 	// ????????
 [ "MCCOY: Neither Jim nor I can trade a body we don't own",[1, 2, 3, 1, 4, 2, 3, 4, 5, 4, 3, 2, 6].dm(\g,4,scale:\lydian)].addLine;
+P.still(\mccoyNeither, timecode: 4406.9.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthVs(role: \mccoy, take:[\lead, \double], params: {|p b| [
 		lyrics: " Neither + Jim nor I can trade a body + we don't own",
 		pitchTake: [1, 3]
@@ -440,6 +500,12 @@ P(\chords,start:\happens,music:{|p b e|
 		].pp;
 	});
 [ "MULHALL: Who you hardly know. Almost a stranger to you. (boom) ",[3, 1, 5, 4, 3.5].dm(\b,5,\whole) ++ [-7, 1, 2, 2.5, -7, -6, -4.5, -2.5].dm(\c,6) ].addLine;
+P.still(\thalHardly, timecode: 4413.2.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \thalassa, take:\lead, params: {|p b| [
 		lyrics: "Who you hardly + know. Almost + a stranger + to you r  ",
 		legato: [1,        1,     1,           1,        0.5,    1,       1,          1,   1,                        1,         1,      1],
@@ -512,6 +578,12 @@ P(\chords,start:\hardly,music:{|p b e|
 			).play
 	});
 [ "MCCOY: I will not peddle flesh. I'm a physician. ",[11, 11, 11, 7, 7, 6 ].dm(\g,scale:\mixolydian) ++ [5, 5.5, 7, 11, 1].dm('a-',scale:\mixolydian)].addLine;
+P.still(\mccoyPhys, timecode: 4416.7.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \mccoy, take:\lead, params: {|p b| [
 		lyrics: " I will not peddle + flesh. I'm a physician. + + ",
 		filter: (midinote: _ - 12), 
@@ -568,6 +640,12 @@ P(\chord,start:'physician?',syl:1,music:{|p b e|
 	});
 P.tune('physician?');
 [ "In contrast to what we are, you are a ", [-7, 1, 2, 3, 4.5, 5, 2, 6, 7 ,4].dm(\g,scale:\mixolydian) ].addLine;
+P.still(\thalMad, timecode: 4432.9.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 		lyrics: "In contrast to what we are, you are a ",
 		phonemes:["i \\n","kh A n","t r\\` a s th","th u", "w A th","w i", "A r\\`", "j u", "A r\\`", "@"],
@@ -850,6 +928,12 @@ P(\fire2,start:\writhing,music:{|p b e|
 	    }    
 	});
 [ "MULHALL: Stop! (the flames are gone) ~Sargon was right.~ ",[1].dm(\e) ].addLine;
+P.still(\thalStop, timecode: 4451.3.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P(\muteFire,start:\Stop,music:{|p b e| 
 		p.fireGroup.release(0.1)
 	});
@@ -868,7 +952,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 		text: ["the temptations in a","living body are too great"],
 	)
 });
-P.still(\close, timecode: 4505.33.seconds, music: { |p b e|
+P.still(\walking, timecode: 4502.1.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
@@ -913,6 +997,12 @@ P(\chord,start:\temptations,music:{|p b e|
 		].pp
 	});
 [ "Forgive me. ",[5,4,3].dm(\c,octave:6) ].addLine;
+P.still(\thalForgive, timecode: 4509.15.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -1031,6 +1121,12 @@ P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 
 	});
 [ "SARGON: I have power even Henoch does not suspect, beloved. ",[-7, 1, 5, 3, 1, 2, 4, 3, 4, 3, 2, 1 ].dm('e-') ].addLine;
+P.still(\lookingUp, timecode: 4527.5.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P(\chords,start:\suspect,music:{|p b e| 
 		MegaBind(
 			[
@@ -1099,6 +1195,12 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 
 });
 [ "MULHALL: Yec. Yes, I see. I understand. ",[4, 4, 3].dm(\f) ++ [4, 3, 6 ,4, 3].dm(\g) ].addLine;
+P.still(\ThalUnderstand, timecode: 4532.7.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.tune(\understand);
 P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 		lyrics: "yes yes i see I understand" ,
@@ -1180,7 +1282,7 @@ P(\chords2,start:\Enterprise,syl: 8,music:{|p b e|
 			).play
 	});
 [ "CHAPEL: Doctor. ",[11,1].dm(\e) ].addLine;
-P.still(\wide, timecode: 4556.seconds, music: { |p b e|
+P.still(\wide, timecode: 4552.85.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["Doctor...",""],
@@ -1206,6 +1308,12 @@ P(\chord,start:'CHAPEL: Doctor.',music:{|p b e|
 
 	});
 [ "MULHALL: Doctor, leave us. Sargon has a pla--n. We have much work to do. (boom)",[-5, -5, 1, -1,  5, 4, 3, 2, 3,4, 2,3,4.5, 4.5, 5.5, 3,-7, -6 ].dm(\f) ].addLine;
+P.still(\thalRetort, timecode: 4559.8.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 	lyrics: "Doctor + leave us. Sargon + has a plan -. We have much work - to do. r",
 	phonemes: ["t a kh", "th a r\\`", "l i w", "A s","S a r\\`","k o n","x a ts", "@", "ph l  ","a n","w i", "x a w", "m A ts h","w a r\\` kh","","th u","t u" ],
@@ -1246,9 +1354,5 @@ P(\endChord,syl:16,start:\work,music:{|p b e|
 	});
 
 	//[McCoy's office]
-["(McCoy leaves the room, and the door shuts and locks behind him. The ship shakes as he activates his desk monitor.) MCCOY: This is Sickbay. Get me ","r"].addLine;
-
-["(The door opens, and Chapel walks out, staring blankly ahead.) MCCOY: Nurse Chapel, what in the devil?","r"].addLine;
-["","r"].addLine;
 };
 )

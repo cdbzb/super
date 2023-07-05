@@ -1310,21 +1310,11 @@ P(\pain,start:'helping', syl:12,music: {| p, b, e|
 	* Env.linen(0,b.sum,3).kr(2,gate:1)
 }.play
 });
-P.still(\pain,syl:12, timecode: 3417.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.drop(1).sum + e.bNext.sum,
-		text: ["",""],
-	).sequenceText2(
-			b.drop(1).sum, [ 
-			["what is it","Sargon?"],
-			],
-	)
-});
 ["/*MULHALL:*/ What is it, Sargon? ",[1,5,4,1,-7].dm(\c)].addLine;
 P.still(\thalassaWhat, timecode: 3417.1.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["what is it","Sargon"],
 	)
 });
 P.synthV(role: \thalassa, take: \lead, params: {|p b| [

@@ -3,6 +3,7 @@
 Song(\thousand,[]).current;
 
 ~stills = Stills.new("/Users/michael/tank/Trek/video for stills etc/media/return to tomorrow.mov");
+// ~stills = Stills.new();
 Stills.current=~stills;
 
 Song.synthVTracks = EventWithDefault(
@@ -18,7 +19,7 @@ Song.synthVTracks = EventWithDefault(
 		{|i|
 			i
 			=> FreeVerb.ar(_,0.02,1)
-			=> Pan2.ar(_,e.key.asString.contains("dbl").if{1}{0})
+		=> Pan2.ar(_,e.key.asString.contains("dbl").if{1}{0})
 		}
 	},\ninezero,{|mix = 0.03|
 		{|i|
@@ -1168,6 +1169,12 @@ P(\bass,start:\mankind,syl:2,music:{|p b e|
 	].pp
 });
 ["Are these bodies too much to ask for in return?",[1,3,4,3,1,2,3,2,1,-7,-6,1.5].dm(\e)].addLine;
+P.still(\spockXYZ, timecode: 3732.2.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthVs(role: \henoch, take: [ \lead, \double ], params: {|p b| [
 	lyrics: "are these bodies + too much to ask for in return? +",
 	legato: [ [1, 1, 1, 0.85, 1, 1, 1, 1, 1, 1, 1, 1, ] ],
@@ -1236,6 +1243,7 @@ P(\lick,start:\return,syl:3,music:{|p b e|
 	).play
 });
 [" (or) Would you prefer this?", [1,2,3,2,3,6.5].dm(\c) ].addLine;
+
 P.synthVs(role: \henoch, take:[ \lead, \double ], params: {|p b| [
 	lyrics: "or Would you prefer + this?",
 	filter: (midinote: _ - 12), 
@@ -1245,12 +1253,6 @@ P.synthVs(role: \henoch, take:[ \lead, \double ], params: {|p b| [
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 	}.play
-});
-P.still(\henochGrabs, timecode: 3736.5.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["or would you prefer","this!"],
-	)
 });
 P.tune( _ <> (instrument: \sparkTriangle, out: Effect.bus( _ *[1,1]/3 )) );
 P(\chord,syl:4,music:{|p b e|
@@ -1265,6 +1267,12 @@ P(\chord,syl:4,music:{|p b e|
 	).play
 });
  ["/*MULHALL:*/ No. I'm beginning to hate it.",[1].dm(\b)].addLine;
+ P.still(\walkingOff, timecode: 3738.seconds, music: { |p b e|
+ 	 e.still.( 
+ 		wait: b.sum + 5,
+ 		text: ["",""],
+ 	)
+ });
  P(\bass,start:\hate,music:{|p b e|
 	 (
 		 instrument:\stringyy,
@@ -1273,6 +1281,12 @@ P(\chord,syl:4,music:{|p b e|
 	 ).play
  });
 ["(She rushes out, and 'Spock' smirks.)","r"].addLine;
+P.still(\smirk, timecode: 3746.4.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 )
 /*
 a=Buffer.read(s,"/Users/michael/reaper-subproject/media/01-210826_1331.rpp-PROX")

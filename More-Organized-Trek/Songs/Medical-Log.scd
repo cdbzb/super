@@ -141,7 +141,7 @@ P.synthV(\mo,
 	filter: (midinote: _ - 24),
 	params: {|p b| [
 		lyrics: "do I list one death or two",
-		legato: [1, 1, 1, 1, 0.8, 1, 1],
+		leegato: [1, 1, 1, 1, 0.8, 1, 1],
 		vocalMode: \Open,
 		// gender: Env([0.4,0.4],2)
 	] }, music:{|p b e|

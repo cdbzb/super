@@ -163,7 +163,7 @@ P(\click, music: { |p b e|
 // P.tune();
 P(\line, music: { |p b e|
 	[
-		freq: [\r, [1,3],2, 2 ].df(\f).q,
+		freq: [\r, [1,3],2, 2 ].df(\f,[4,5]).q,
 		dur: b.parse([ 1, 3, 1, 2 ]).q,
 		amp: 0.1
 	].pp
@@ -1233,7 +1233,7 @@ P.synthV(\feng, filter: (midinote: _ - 12),  params: {|p b| [
 P(\chords,start:\extraordinary,music:{|p b e| 
 	MegaBind(
 			[
-				[\r, 1,  1,  1,  1,  -7, -7, -6.5, -6.5, -6.5, 2,  2,  2,  2, 2],
+				[\r, 1,  1,  1,  1,  -7, -7, -6.5, -6.5, -6.5, -2,  -2,  -2,  -2, -2],
 				[\r, -5, -5, -5, -5, -5, -5, -4,   -4,   -4,   -6, -6, -6, -6, -7].flat
 			].df(p.opportunityKey),
 			"e x xe x xe x xeee x xe x xe x xe x xe".asBeats.warpTo( e.tempoMap ),
@@ -1313,7 +1313,12 @@ Song.durs.filter( _ *0.9 );
 P.still(\scott, timecode: 2220.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["a starship engine","the size of a walnut"],
+	).sequenceText2(
+			b.parse([11, 1, 4]), [ 
+			["thats",""],
+			["thats","impossible"]
+			],
 	)
 });
 Song.impossibleCurve=TempoMap("e e e E E E e x x e e qe e E E E q".asBeats,Song.durs[\impossible].list);
@@ -1348,7 +1353,7 @@ P(\bass,start:\impossible,music:{|p b e|
 });
 //["But I don't suppose there'd be any harm in looking over diagrams on it. ","r"].addLine;
 ["KIRK: Bones? You could stop all this by saying no. ",[7].dm(\b,4,\mixolydian) ++ [3,4,7,4,3,2,3,4].dm(\c,5,\mixolydian) ++ [5].dm(\a,4)].addLine;
-P.still(\mccoy, timecode: 2230.9.seconds, music: { |p b e|
+P.still(\mccoy, timecode: 2230.8.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],

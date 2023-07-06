@@ -1,7 +1,7 @@
 (
 	Song('MandT',[]).current;
 	Song.synthVTracks=EventWithDefault();
-	Song.synthVTracks.aiko = { |preGain=2 ratio=2 amp = (1/8) len=2000 mix=0.1 |
+	Song.synthVTracks.aiko = { |preGain=1 ratio=2 amp = (1/8) len=2000 mix=0.1 |
 	{ |i|
 		i.() * preGain
 		=> SoftKneeCompressor.rms(_,  thresh:-10, ratio: ratio, knee:6, attack:0, release:0.05, makeUp:0, rms:40) 
@@ -15,35 +15,60 @@
 
 	// Require("McCoyAndThalassa.scd");
 	// "./McCoyAndThalassa.scd".standardizePath.load;
-["McCoy leaves the room, and the door shuts and locks behind him.","1 2".dm(\c)].addLine;
-P.still(\mccoyLeaves, timecode: 4606.7.seconds, music: { |p b e|
+["McCoy leaves the room-1, and the door shuts-2 and locks-3 behind him.","1 2 3".dm(\c)].addLine;
+P.still(\leavingReverse, timecode: 4612.1.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	);
+});
+P(\doorcloseLock,syl:0, music: { |p b e|
+	
+	(
+		instrument: \door, amp:0.2, \len:1
+	).play
+	;
+	{
+		Impulse.ar(0) => Decay.ar(_,0.3) * WhiteNoise.ar(0.1)
+		=> DWGReverbC1C3.ar(_,mix:1,c1:0.3,len:500)
+		=> DelayN.ar(_,1,1)
+	}.play
+});
+P.still(\lookBackDoor,syl:1, timecode: 4613.2.seconds, music: { |p b e|
+	 e.still.( 
+		// wait: b.drop(1).sum,
+		wait:1,
+		text: ["",""],
+	)
+});
+//this one ends previous
+/* P.still(\mccoyLeaves, timecode: 4606.7.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
 	)
-});
+}); */
 P(\arrange, music: { |p b e|
 	{
 		VarSaw.ar(
 			[1,3,5,7,12,14,16].df(\d),
 			width: SinOsc.ar( { 0.1.rrand( 0.2 ) }!7, {1.0.rand}!7 ).range(0,1)
 		)
-		/10
+		=> Splay.ar(_)
+		/20
+		* EnvGen.cutoff(b.sum,1)
 	}.play;
 });
-
-[" --The ship shakes as he activates his desk monitor.-- MCCOY: This is Sickbay. Get me ","-1 -5 5 5 11 1 4.5 5.5".dm(\d)].addLine;
-P.still(\leavingReverse, timecode: 4612.1.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
-	)
-});
-P.still(\lookBackDoor,syl:0, timecode: 4613.2.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
-	)
+[" --The ship shakes as he activates his desk monitor.-- MCCOY: This is Sickbay. Get me ","-1 -5 5 5 11 4.5 7 11.5".dm(\g)].addLine;
+P(\shaking, music: { |p b e|
+	{
+		Gendy2.arWidth(freq: 050,width:{ 1.1.rrand(2) }!4)
+		/2
+		* SinOsc.kr({ 2.rrand(3.0)}!4,{pi.rand}!4 ).range(0.2,1)
+		=> Splay.ar(_)
+		=> DWGReverbC1C3.ar(_,c1:0,len:623,mix:0.2)
+		* EnvGen.cutoff(b[0],6,-5)
+	}.play
 });
 P.still(\atDesk,syl:1, timecode: 4627.3.seconds, music: { |p b e|
 	 e.still.( 
@@ -51,8 +76,35 @@ P.still(\atDesk,syl:1, timecode: 4627.3.seconds, music: { |p b e|
 		text: ["",""],
 	)
 });
+P.synthV(role: \mccoy, take:\lead, params: {|p b| [
+	lyrics: "r r  this is sick bay get me",
+	filter: (midinote: _ - 24), 
+	legato: [1, 1, 1, 1, 1, 0.7, 1, 0.6, ],
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P(\door, syl: 6, music: { |p b e|
+	(instrument:\door,amp:0.3).play;
+	(instrument:\stringyy,amp:0.2,rel:8,freq:1.df('a-')).play;
+});
+[ "(The door opens, and Chapel walks out, staring blankly ahead.) ","r",[5] ].addLine;
+P(\chord, music: { |p b e|
+	{
+		VarSaw.ar(
+			[1,3,5.5,7,11,13,15.5].df(\c),
+			width: SinOsc.ar( { 0.1.rrand( 0.2 ) }!7, {1.0.rand}!7 ).range(0,1)
+		)
+		=> Splay.ar(_)
+		=> Convolution.ar(_, Dust.ar(300!5) => Decay.ar(_,0.03) => FreeVerb.ar(_,mix: Line.kr(1,0.3,5)))
+		/200
+		* EnvGen.cutoff(b.sum,1)
+	}.play
+});
 
-[ "(The door opens, and Chapel walks out, staring blankly ahead.) ","r" ].addLine;
 P.still(\chapelZombie, timecode: 4630.0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -89,32 +141,51 @@ P.still(\kirkTalk, timecode: 4655.4.seconds, music: { |p b e|
 		text: ["",""],
 	)
 });
-["MCCOY: Thalassa? ","r"].addLine;
+["MCCOY: -boom- Thalassa? ","-1 7 15 13".dm(\e,\mixolydian)].addLine;
 P.still(\thallassa, timecode: 4659.5.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
 	)
 });
-P.still(\toThal, timecode: 4702.6.seconds, music: { |p b e|
+P.still(\toThal, syl:0, timecode: 4702.6.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
+		wait: b.drop(1).sum,
 		text: ["",""],
 	)
 });
+P(\thinPad, music: { |p b e|
+	(
+		// instrument: \wash,
+		freq: [ 1, 4 ].df(\b,[3,2]),
+		amp:0.1,
+		dur: b.drop(1).sum
+	).play
+});
+P.synthV(role: \mccoy, take: \lead, params: {|p b| [
+	filter: (midinote: _ - 12), 
+	lyrics: "r thalassa + +",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 ["MULHALL: (boom) She is now with Sargon, Doctor. ","-6 1 2 3 6 5 3".dm(\c)].addLine;
-P.still(\Mulhall, timecode: 4709.seconds, music: { |p b e|
+P.still(\Mulhall,syl:0, timecode: 4709.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
+		wait: b.drop(1).sum,
+		text: 
+				["she is with Sargon","now"],
 		fade: e.bNext.sum
 	).sequenceText2(
-			b.parse([1,6]).postln ++ [1], [ 
-				["she is with Sargon","now"],
-				["",""],
+			b.drop(1).parse([6]), [ 
+			["",""],
 			],
 	)
 });
+
 P(\bass, music: { |p b e|
 		[
 			freq: [-6, 2].df(\c,[3,4]).q,
@@ -400,8 +471,20 @@ P.still(\three,syl:1, timecode: 4721.seconds, music: { |p b e|
 	P.still(\MccoyHorrified, timecode: 4724.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
-			text: ["",""],
+			text: ["Jim","the receptacles"],
 		)
+	});
+	P(\dyads, music: { |p b e|
+		[
+			freq: [\r, 1, 5, 3, 6, 1.5, 7, 1].df(\g,3,\dorian).q,
+			dur: b.parse([2,1, 3, 1, 3, 1, 3,1]).q,
+			legato: [1, 4, 1, 4, 1, 4, 3, 2].q,
+			amp:0.1,
+			pan: [-1,1].q(inf),
+			out: Effect.bus({|i| i=> SineShaper.ar(i,0.04)=>FreeVerb.ar(_, 0.3,0.9) * 2 
+			=> HPF.ar(_,400,1.5)
+		},inputChannels:2)
+		].pp
 	});
 P(\bassNotesOne, music: { |p b e|
 		{
@@ -411,7 +494,7 @@ P(\bassNotesOne, music: { |p b e|
 			=> CrossoverDistortion.ar(_,amp: Line.kr(1,0,b.sum -1))
 			/20
 			* EnvGen.cutoff(b.sum-1,2)
-		}.play(s,3)
+		}//.play(s,3)
 		;
 		[
 			instrument: \harp,
@@ -538,7 +621,7 @@ P(\dyad,start:\talking,music:{|p b e|
 		Out.ar(out,sig);
 		// DetectSilence.ar(sig,doneAction:2);
 	}).add;
-P(\bass,start:\talking,music:{|p b e| 
+P(\bass,start:\talking,lag: -0.1,music:{|p b e| 
 		[
 			freq: [-7, 3, 1, 2, 2.5].df(\d,scale:\mixolydian, octave:[3,4]).q,
 			dur: b.parse([4, 7, 6, 2]).q,
@@ -692,3 +775,4 @@ P(\chords2,start:'kill his body',syl:12,music:{|p b e|
 		].pp
 	});
 )
+

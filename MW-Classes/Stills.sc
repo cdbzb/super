@@ -35,7 +35,7 @@ Stills {
 		// file=movie ? ( this.class.filenameSymbol.asString.dirname.dirname +/+ "Stills/return-to-tomorrow.cropped.mov" ); 
 		// file=movie ? ( this.class.filenameSymbol.asString.dirname.dirname +/+ "Stills/return-to-tomorrow.mov" ); 
 		// file=movie ? ( this.class.filenameSymbol.asString.dirname.dirname +/+ "Stills/new.mp4" ); 
-		file=movie ? ( this.class.filenameSymbol.asString.dirname.dirname +/+ "Stills/trimmed.mov" ); 
+		file=movie ? ( this.class.filenameSymbol.asString.dirname.dirname +/+ "Stills/trimmed433.mov" ); 
 		markers=();
 		monitors = switch( Platform.machine,
 			// monitor size = 1440 x 900

@@ -683,7 +683,7 @@ P.still(\kirk, timecode: 4739.3.seconds, music: { |p b e|
 	)
 });
 /*
-"fmpeg /Users/michael/Library/Mobile\ Documents/QNM6AGD8YW~com~atlantia~SimpleMic/Documents/1649971442.m4a /hypo.wav".unixCmd;
+"ffmpeg /Users/michael/Library/Mobile\\ Documents/QNM6AGD8YW~com~atlantia~SimpleMic/Documents/1649971442.m4a  /tmp/hypo.wav".unixCmd;
 ~hypo = Buffer.read(s,"/tmp/hypo.wav");
 {PlayBuf.ar(1,~hypo) * 0.1}.play
 
@@ -692,15 +692,18 @@ a = "zsxdcvgbhnjm,l.;".asArray
 a.indexOf($d)
 */
 P.tune(_.fin(4));
-
 P(\bassline, music: { |p b e|
 	[
 		// freq: [\r, 7, 6, 5, 4, 3, 2, 5].df(\c,3).q,
 		// dur: b.parse([8,  [1, 0.5], [0.5, 1],]).q
-		freq: [ \r, 7,6, 5, 4, 3,2, 4, 5, 7 ].df(\c,3).q,
-		dur: b.parse([8, [1,2/3],[1/3,2] ,4, [1,1/3],[2/3,2],[1, 0.5],[0.5,1],2/3,[1/3,1] ]).q,
-		amp:0.2
-	].pp
+		freq: [ \r, 7,6, 5, 4, 3,2, 4, 5, 7 ].df(\c,3) ++ 1.df(\a,3) *.t [0.5,1] => _.q,
+		dur: b.parse([8, [1,2/3],[1/3,2] ,4, [1,1/3],[2/3,2],[1, 0.5],[0.5,1],2/3,[1/3,1] ]) ++ e.bNext[0..3].sum => _.q,
+		amp:[0.05,0.1],
+		instrument: \sawSynthSustain,
+		pulse: 0.7,
+		pulseRel: 2,
+		lagTime: 0.1
+	].ppm
 });
 P.synthVs(role: \kirk, take: [\lead, \double], params: {|p b| [
 	lyrics: "r r r r Bones, prepare + a hypo + The fastest - + - deadliest - + +  poison - + to Vulcans + ",
@@ -713,6 +716,19 @@ P.synthVs(role: \kirk, take: [\lead, \double], params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 
+});
+P(\figure, music: { |p b e|
+	[
+		// midinote: p.tune[e.start]-12, 
+		freq: [ 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5,
+			7,6, 5, 4, 3,2, 4, 5, 7 ].df(\c,3) ++ 1.df(\a,3)  => _.q,
+		dur: b.parse([1, 1, 1, 1, 1, 1, 1, 1, [1,2/3],[1/3,2] ,4, [1,1/3],[2/3,2],[1, 0.5],[0.5,1],2/3,[1/3,1] ]) ++ e.bNext[0..3].sum => _.q,
+		instrument: \harp,
+		amp: 0.05,coef:0.8,
+		// out: Effect.bus({|i| CrossoverDistortion.ar(i,mul:0.1) * EnvGen.cutoff(b[0..7].sum,0) },)
+		out: Effect.bus({|i| CrossoverDistortion.ar(i,mul:0.1) * EnvGen.cutoff(b.sum,0) /2 => Pan2.ar(_,-0.7) },)
+
+	].pma => _.play
 });
 P.tune(\prepare);
 P(\lick,start:\fastest,syl:10,music:{|p b e| 
@@ -744,7 +760,52 @@ P(\figure,start:'kill his body',music:{|p b e|
 			instrument:\sawSynth,
 			amp:  [2,2,1] * 0.03
 		].pp
-	});
+});
+P(\bassline, music: { |p b e|
+	[ 
+		freq: [1, 1, 4, 6, 11, 3, -7].df(\a,2).q,
+		dur: b.parse([[1, 1, 0.5],0.5, 1, 1, 1,  2, 1]).q
+	].pp
+});
+P.synthV(\kevin, take: \lead, 
+	pbind: {|p b|
+		[
+			midinote: [0, 0, 0,  5, 5, 5, 5, 4.5].dm(\a,4),
+			dur: b
+		].p
+	},
+	params: {|p b| [
+	lyrics: "r r r consciousness + + is - gone r r r r r r r r r r",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		/6
+		// => p.synthVTracks.at(e.key).()
+		=> HPF.ar(_,200)
+		=> Pan2.ar(_,-0.7)
+	}.play
+});
+P.synthV(\kevin, take: \harmonyTwo, 
+	pbind: {|p b|
+		[
+			midinote: [0, 0, 0,  1, 1, 1, 1,1, -7].dm(\a,4),
+			dur: b
+		].p
+	},
+	params: {|p b| [
+	lyrics: "r r r consciousness + + is - gone r r r r r r r r r r",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		/6
+		=> HPF.ar(_,300)
+		=> Pan2.ar(_,0.7)
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+	
 P(\bass,start:'kill his body',syl:12,music:{|p b e| 
 		[
 			freq: [1, 11, 1].df(\e).q /[ 4],
@@ -753,7 +814,7 @@ P(\bass,start:'kill his body',syl:12,music:{|p b e|
 	});
 P(\chords,start:'kill his body',syl:1,music:{|p b e| 
 		[
-			freq:[[1, 5],[1, 5],[1, 5],[1, 5],[1, 5],[-7,4.5]].df(\a).q,
+			freq:[[1,3, 5],[1,4, 5],[1,4, 5],[1,4, 5],[1,3, 5],[-7,4.5]].df(\a,4).q,
 			dur:b.drop(1).parse([1,1,1,1,2,1]).postln.q
 		].pp
 	});
@@ -761,6 +822,13 @@ P(\guiro,start:'kill his body',syl:11,music:{|p b e|
 		//FIXME!!!!!
 		{Shakers.ar(19, 1, 1, 1, 32, 60, Env([0,0.5],1,\sin).kr(0,1))}.play
 
+	});
+	P(\cymbal,syl:7, music: { |p b e|
+		(
+			instrument: \cymbalsDS,
+			amp: 0.05,
+			out: Effect.bus({|i| PitchShift.ar(i,pitchRatio:0.5) },)
+		).play
 	});
 P(\chords2,start:'kill his body',syl:12,music:{|p b e| 
 		[
@@ -772,7 +840,29 @@ P(\chords2,start:'kill his body',syl:12,music:{|p b e|
 			].df(\e,scale:\minor).q,
 			dur: b.drop(1).parse([2,1,1,2]).q,
 			strum: [5, 0.5, 2, 1]/100 => _.q
-		].pp
+		]//.pp
+		;
+	MegaBind(
+		[
+				[1,3,5,11],
+				[1,3,5,11],
+				[2,4,6,12],
+				[1,3,5,11],
+		].df(\e,scale:\minor).flop
+		,
+		b.drop(1).parse([2,1,1,2]),
+		[],
+		{
+			|i|  
+			VarSaw.ar(i.freqSeq/2,0,0.08,0.07)
+			* Env.asr().kr(2,gate:i.gateSeq)
+			* Env.perc(0.01,2).kr(2,gate:i.trigSeq)
+			=> DelayN.ar(_,0.1,{0.1.rand}!4)
+			=> {|i| i + Convolution.ar(i=>FreeVerb.ar(_,0.3,1), Dust.ar(20) => Decay.ar(_,0.01),mul:0.1)}
+			/4
+		},
+		{|i|  Mix.ar(i)}
+	).play
 	});
 )
 

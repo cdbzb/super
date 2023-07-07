@@ -18,7 +18,7 @@ o = [
 	Array.prNew(40),  "2279070000",  "+",  "574350000",  
 	Event.prNew,  Array.prNew(40),  "2853420000",  "+",  
 	"347150000",  Event.prNew,  Array.prNew(40),  "3200570000",  
-	"+",  "562360000",  Event.prNew,  Array.prNew(40),  
+	"+",  "449880000",  Event.prNew,  Array.prNew(40),  
 	"4325290000",  "Spock's",  "623750000",  Event.prNew,  
 	Array.prNew(40),  "4949040000",  "consciousness",  "534840000",  
 	Event.prNew,  Array.prNew(40),  "5483880000",  "+",  
@@ -35,7 +35,7 @@ o = [
 	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
 	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
 	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
-	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
+	Array.prNew(6),  "cubic",  Event.prNew,  Array.prNew(8),  
 	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
 	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
 	Array.prNew,  "cubic",  "c55226b8-e035-4fc6-a857-aacf2bbe7548",  Event.prNew,  
@@ -154,7 +154,7 @@ p = [
 	// Array
 	26, [ 'liked',  false,  nil,  nil,  
 		nil,  nil,  'id',  0,  
-		'expr',  1.5,  nil,  nil ],  
+		'expr',  1.0,  nil,  nil ],  
 	// Event
 	27, [ array: o[28],  size: 3,  
 		proto: nil,  parent: nil,  
@@ -162,7 +162,7 @@ p = [
 	// Array
 	28, [ 'liked',  false,  nil,  nil,  
 		nil,  nil,  'id',  1,  
-		'expr',  1.5,  nil,  nil ],  
+		'expr',  1.0,  nil,  nil ],  
 	// Event
 	29, [ array: o[30],  size: 3,  
 		proto: nil,  parent: nil,  
@@ -170,7 +170,7 @@ p = [
 	// Array
 	30, [ 'liked',  false,  nil,  nil,  
 		nil,  nil,  'id',  2,  
-		'expr',  1.5,  nil,  nil ],  
+		'expr',  1.0,  nil,  nil ],  
 	// Event
 	31, [ array: o[32],  size: 3,  
 		proto: nil,  parent: nil,  
@@ -178,7 +178,7 @@ p = [
 	// Array
 	32, [ 'liked',  false,  nil,  nil,  
 		nil,  nil,  'id',  3,  
-		'expr',  1.5,  nil,  nil ],  
+		'expr',  1.0,  nil,  nil ],  
 	// Event
 	34, [ array: o[35],  size: 2,  
 		proto: nil,  parent: nil,  
@@ -484,6 +484,9 @@ p = [
 	// Array
 	139, [ 'points',  o[140],  nil,  nil,  
 		nil,  nil,  'mode',  o[141] ],  
+	// Array
+	140, [ 0.0,  1,  1395676800.0,  1,  
+		1799280000.0,  0 ],  
 	// Event
 	142, [ array: o[143],  size: 2,  
 		proto: nil,  parent: nil,  

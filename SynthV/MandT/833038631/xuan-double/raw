@@ -18,7 +18,7 @@ o = [
 	Array.prNew(40),  "2279070000",  "+",  "574350000",  
 	Event.prNew,  Array.prNew(40),  "2853420000",  "+",  
 	"347150000",  Event.prNew,  Array.prNew(40),  "3200570000",  
-	"+",  "449880000",  Event.prNew,  Array.prNew(40),  
+	"+",  "562360000",  Event.prNew,  Array.prNew(40),  
 	"4325290000",  "Spock's",  "623750000",  Event.prNew,  
 	Array.prNew(40),  "4949040000",  "consciousness",  "534840000",  
 	Event.prNew,  Array.prNew(40),  "5483880000",  "+",  
@@ -35,7 +35,7 @@ o = [
 	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
 	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
 	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
-	Array.prNew(6),  "cubic",  Event.prNew,  Array.prNew(8),  
+	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
 	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
 	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
 	Array.prNew,  "cubic",  "c55226b8-e035-4fc6-a857-aacf2bbe7548",  Event.prNew,  
@@ -484,9 +484,6 @@ p = [
 	// Array
 	139, [ 'points',  o[140],  nil,  nil,  
 		nil,  nil,  'mode',  o[141] ],  
-	// Array
-	140, [ 0.0,  1,  1395676800.0,  1,  
-		1799280000.0,  0 ],  
 	// Event
 	142, [ array: o[143],  size: 2,  
 		proto: nil,  parent: nil,  

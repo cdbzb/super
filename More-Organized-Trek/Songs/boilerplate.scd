@@ -145,8 +145,7 @@ Song.encoders=~encoders;
 		case
 		{Song.vocoderSynth.isNil}{ playSynth.();playAmbiSynth.() }
 		{Song.vocoderSynth.isPlaying.not}{ playSynth.(); playAmbiSynth.() }
-		{ true }{ Song.vocoderSynth.set(\dur,dur,\gate,1)}
-		 ;
+		{ true }{ Song.vocoderSynth.set(\dur,dur,\gate,1)} ;
 		// restore line above to 'out' to get rid of ambisonics!!
 		Song.sargonCarrier.(p,b,e,att, sus, rel, chord,tune,mix, verb, width,carrierGain,enlarge);
 		Song.sargonModulator.(rppName,dur,modGain,echo,synthVbuffer)

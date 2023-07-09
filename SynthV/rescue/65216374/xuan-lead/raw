@@ -4,7 +4,7 @@ o = [
 	Array.prNew(8),  Array.prNew(1),  Event.prNew,  Array.prNew(12),  
 	Array.prNew(1),  Event.prNew,  Array.prNew(8),  Array.prNew(1),  
 	Event.prNew,  Array.prNew(32),  Event.prNew,  Array.prNew(16),  
-	Array.prNew(1),  Event.prNew,  Array.prNew(40),  "00000",  
+	Array.prNew(1),  Event.prNew,  Array.prNew(40),  "282240000",  
 	Event.prNew,  Array.prNew(4),  Event.prNew,  Array.prNew(8),  
 	Array.prNew(4),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  Event.prNew,  Array.prNew(12),  Event.prNew,  
@@ -14,7 +14,7 @@ o = [
 	Array.prNew(12),  "1265140000",  "",  Event.prNew,  
 	Array.prNew(4),  "main",  Event.prNew,  Array.prNew(32),  
 	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
-	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
+	Event.prNew,  Array.prNew(8),  Array.prNew(4),  "cubic",  
 	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
 	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
 	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
@@ -233,6 +233,8 @@ p = [
 	// Array
 	57, [ 'points',  o[58],  nil,  nil,  
 		nil,  nil,  'mode',  o[59] ],  
+	// Array
+	58, [ 0.0,  0,  2530281600.0,  300 ],  
 	// Event
 	60, [ array: o[61],  size: 2,  
 		proto: nil,  parent: nil,  

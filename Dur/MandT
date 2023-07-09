@@ -1,6 +1,7 @@
 var o, p;
 o = [
-	Dictionary.prNew,  Array.prNew(512),  "MULHALL: Who you hardly know. Almost a stranger to you. ",  Pseq.prNew,  
+	Dictionary.prNew,  Array.prNew(512),  "MCCOY: Nurse Chapel, what in the devil?",  Pseq.prNew,  
+	List.prNew,  Array.prNew(8),  "MULHALL: Who you hardly know. Almost a stranger to you. ",  Pseq.prNew,  
 	List.prNew,  Array.prNew(12),  "Isn't that worth your captain's life? ",  Pseq.prNew,  
 	Array.prNew(8),  "KIRK: (boom ba boom ba) Bones, prepare a hypo. The fastest, deadliest poison to Vulcans. ",  Pseq.prNew,  List.prNew,  
 	Array.prNew(25),  "(r) You dare defy one you should be on your knees wo -- rshipping? ",  Pseq.prNew,  List.prNew,  
@@ -12,6 +13,7 @@ o = [
 	Array.prNew(2),  "MULHALL: Stop! (the flames are gone) ~Sargon was right.~ ",  Pseq.prNew,  List.prNew,  
 	Array.prNew(1),  "SARGON [OC]: I am pleased, my beloved. It is good you have found the truth (yourself) ",  Pseq.prNew,  List.prNew,  
 	Array.prNew(14),  "(The door opens, and Chapel walks out, staring blankly ahead.) ",  Pseq.prNew,  Array.prNew(1),  
+	"(He goes back into the ward.) MCCOY: Jim? Are you all right? ",  Pseq.prNew,  List.prNew,  Array.prNew(6),  
 	"I could destroy you with a single thought. ",  Pseq.prNew,  List.prNew,  Array.prNew(10),  
 	"MCCOY: -boom- Thalassa? ",  Pseq.prNew,  List.prNew,  Array.prNew(4),  
 	"MCCOY: What are you talking about? There is no Spock to return to his body. (boom) You've ",  Pseq.prNew,  List.prNew,  Array.prNew(21),  
@@ -23,6 +25,7 @@ o = [
 	"Neither you, this ship, nor worlds have the power to stop us.",  Pseq.prNew,  List.prNew,  Array.prNew(18),  
 	"Only you and I will know that Doctor Mulhall has not returned to her body. ",  Pseq.prNew,  List.prNew,  Array.prNew(23),  
 	"The temptations (boom boom) in a living body are too great. ",  Pseq.prNew,  List.prNew,  Array.prNew(15),  
+	"KIRK: Yes, I'm fine, Bones. ",  Pseq.prNew,  List.prNew,  Array.prNew(4),  
 	"MULHALL: Doctor. ",  Pseq.prNew,  List.prNew,  Array.prNew(2),  
 	"(boom boom) Spock's consciousness is gone. We must kill his body, the thing in it.",  Pseq.prNew,  List.prNew,  Array.prNew(19),  
 	"MULHALL: Sargon? Where are you? I thought you destroyed by Henoch. ",  Pseq.prNew,  List.prNew,  Array.prNew(13),  
@@ -42,7 +45,8 @@ o = [
 	Pseq.prNew,  List.prNew,  Array.prNew(13),  "MULHALL: Yec. Yes, I see. I understand. ",  
 	Pseq.prNew,  List.prNew,  Array.prNew(8),  "Spock's consciousness is gone. We must kill his body, the thing in it.",  
 	Pseq.prNew,  List.prNew,  Array.prNew(19),  "MULHALL: Doctor, leave us. Sargon has a pla--n. We have much work to do.",  
-	Pseq.prNew,  List.prNew,  Array.prNew(17),  "Doctor, we can take what we wish. ",  
+	Pseq.prNew,  List.prNew,  Array.prNew(17),  "McCoy leaves the room-1, and the door shuts-2 and locks-3 behind him.",  
+	Pseq.prNew,  List.prNew,  Array.prNew(3),  "Doctor, we can take what we wish. ",  
 	Pseq.prNew,  List.prNew,  Array.prNew(8),  "MULHALL: Who you hardly know. Almost a stranger to you. (boom) ",  
 	Pseq.prNew,  List.prNew,  Array.prNew(13),  "I wish only to exist in peace as a living woman. ",  
 	Pseq.prNew,  List.prNew,  Array.prNew(19),  "(r) You dare defy one you should be on your knees worshipping? ",  
@@ -53,135 +57,135 @@ o = [
 ];
 p = [
 	// Dictionary
-	0, [ array: o[1],  size: 51 ],  
+	0, [ array: o[1],  size: 55 ],  
 	// Array
 	1, [ nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
 		o[2],  o[3],  nil,  nil,  
-		nil,  nil,  o[6],  o[7],  
+		o[6],  o[7],  nil,  nil,  
+		nil,  nil,  o[10],  o[11],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		o[9],  o[10],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		o[13],  o[14],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
 		o[17],  o[18],  nil,  nil,  
-		o[21],  o[22],  o[25],  o[26],  
-		nil,  nil,  o[29],  o[30],  
-		o[33],  o[34],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		o[21],  o[22],  nil,  nil,  
+		o[25],  o[26],  o[29],  o[30],  
+		nil,  nil,  o[33],  o[34],  
+		o[37],  o[38],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  o[37],  o[38],  
-		o[41],  o[42],  o[45],  o[46],  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  o[48],  o[49],  
+		nil,  nil,  o[41],  o[42],  
+		o[45],  o[46],  o[49],  o[50],  
 		o[52],  o[53],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		o[56],  o[57],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[56],  o[57],  
 		o[60],  o[61],  nil,  nil,  
-		o[64],  o[65],  o[68],  o[69],  
+		nil,  nil,  nil,  nil,  
+		o[64],  o[65],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		o[68],  o[69],  nil,  nil,  
 		o[72],  o[73],  o[76],  o[77],  
+		o[80],  o[81],  o[84],  o[85],  
 		nil,  nil,  nil,  nil,  
-		o[80],  o[81],  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		o[84],  o[85],  o[88],  o[89],  
+		o[88],  o[89],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		o[92],  o[93],  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		o[96],  o[97],  o[100],  o[101],  
+		o[92],  o[93],  o[96],  o[97],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[100],  o[101],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		o[104],  o[105],  nil,  nil,  
-		nil,  nil,  o[108],  o[109],  
-		nil,  nil,  nil,  nil,  
-		o[112],  o[113],  o[116],  o[117],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  o[119],  o[120],  
-		nil,  nil,  nil,  nil,  
-		o[123],  o[124],  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  o[126],  o[127],  
-		nil,  nil,  o[130],  o[131],  
+		o[108],  o[109],  o[112],  o[113],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		o[133],  o[134],  o[137],  o[138],  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  o[141],  o[142],  
-		nil,  nil,  o[145],  o[146],  
-		o[149],  o[150],  nil,  nil,  
-		o[152],  o[153],  o[155],  o[156],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  o[159],  o[160],  
-		nil,  nil,  o[163],  o[164],  
-		o[167],  o[168],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
+		o[116],  o[117],  nil,  nil,  
+		nil,  nil,  o[120],  o[121],  
+		nil,  nil,  nil,  nil,  
+		o[124],  o[125],  o[128],  o[129],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[131],  o[132],  
+		nil,  nil,  nil,  nil,  
+		o[135],  o[136],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[138],  o[139],  
+		nil,  nil,  o[142],  o[143],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		o[145],  o[146],  o[149],  o[150],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[153],  o[154],  
+		nil,  nil,  o[157],  o[158],  
+		o[161],  o[162],  nil,  nil,  
+		o[164],  o[165],  o[167],  o[168],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  o[171],  o[172],  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
 		nil,  nil,  o[175],  o[176],  
+		o[179],  o[180],  nil,  nil,  
+		o[183],  o[184],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[187],  o[188],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  o[179],  o[180],  
-		o[183],  o[184],  o[187],  o[188],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		o[191],  o[192],  o[195],  o[196],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[191],  o[192],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[195],  o[196],  
+		o[199],  o[200],  o[203],  o[204],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		o[207],  o[208],  o[211],  o[212],  
 		nil,  nil,  nil,  nil ],  
 	// Pseq
 	3, [ list: o[4],  repeats: 1,  
@@ -189,22 +193,30 @@ p = [
 	// List
 	4, [ array: o[5] ],  
 	// Array
-	5, [ 0.442,  0.476,  0.472,  0.619,  
-		1.026,  0.362,  0.307,  0.355,  
-		0.332,  0.338,  0.367,  0.49 ],  
+	5, [ 0.429,  0.473,  0.667,  0.374,  
+		0.165,  0.222,  0.445,  0.5 ],  
 	// Pseq
 	7, [ list: o[8],  repeats: 1,  
 		offset: 0 ],  
+	// List
+	8, [ array: o[9] ],  
 	// Array
-	8, [ 0.415,  0.422,  0.724,  0.345,  
+	9, [ 0.442,  0.476,  0.472,  0.619,  
+		1.026,  0.362,  0.307,  0.355,  
+		0.332,  0.338,  0.367,  0.49 ],  
+	// Pseq
+	11, [ list: o[12],  repeats: 1,  
+		offset: 0 ],  
+	// Array
+	12, [ 0.415,  0.422,  0.724,  0.345,  
 		0.387,  0.375,  0.537,  1.433 ],  
 	// Pseq
-	10, [ list: o[11],  repeats: 1,  
+	14, [ list: o[15],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	11, [ array: o[12] ],  
+	15, [ array: o[16] ],  
 	// Array
-	12, [ 0.318,  0.191,  0.324,  0.177,  
+	16, [ 0.318,  0.191,  0.324,  0.177,  
 		0.307,  0.223,  0.286,  0.295,  
 		0.429,  0.391,  0.242,  0.197,  
 		0.421,  0.41,  0.25,  0.278,  
@@ -212,426 +224,448 @@ p = [
 		0.476,  0.593,  0.48,  1.249,  
 		0.487 ],  
 	// Pseq
-	14, [ list: o[15],  repeats: 1,  
-		offset: 0 ],  
-	// List
-	15, [ array: o[16] ],  
-	// Array
-	16, [ 0.546,  0.606,  0.568,  0.372,  
-		0.535,  0.391,  0.372,  0.414,  
-		0.477,  0.454,  0.516,  0.519,  
-		0.306,  0.57,  0.524,  0.672 ],  
-	// Pseq
 	18, [ list: o[19],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	19, [ array: o[20] ],  
 	// Array
-	20, [ 0.84,  0.41,  0.449,  0.331,  
-		0.342,  0.388,  0.46 ],  
+	20, [ 0.546,  0.606,  0.568,  0.372,  
+		0.535,  0.391,  0.372,  0.414,  
+		0.477,  0.454,  0.516,  0.519,  
+		0.306,  0.57,  0.524,  0.672 ],  
 	// Pseq
 	22, [ list: o[23],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	23, [ array: o[24] ],  
 	// Array
-	24, [ 0.117,  0.401,  0.472,  0.377,  
-		0.278,  0.347,  0.274,  0.351,  
-		0.278,  0.351,  0.292,  0.355,  
-		0.592,  0.329,  0.403 ],  
+	24, [ 0.84,  0.41,  0.449,  0.331,  
+		0.342,  0.388,  0.46 ],  
 	// Pseq
 	26, [ list: o[27],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	27, [ array: o[28] ],  
 	// Array
-	28, [ 0.329,  0.366,  0.385,  0.396,  
-		0.462,  0.433,  0.434,  0.337,  
-		0.343,  0.345 ],  
+	28, [ 0.117,  0.401,  0.472,  0.377,  
+		0.278,  0.347,  0.274,  0.351,  
+		0.278,  0.351,  0.292,  0.355,  
+		0.592,  0.329,  0.403 ],  
 	// Pseq
 	30, [ list: o[31],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	31, [ array: o[32] ],  
 	// Array
-	32, [ 0.989,  0.286,  0.34,  0.407,  
-		0.246,  0.797,  0.442,  0.379,  
-		0.433,  0.396,  0.488,  0.464,  
-		0.263,  0.279,  0.346 ],  
+	32, [ 0.329,  0.366,  0.385,  0.396,  
+		0.462,  0.433,  0.434,  0.337,  
+		0.343,  0.345 ],  
 	// Pseq
 	34, [ list: o[35],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	35, [ array: o[36] ],  
 	// Array
-	36, [ 1.68,  1.688 ],  
+	36, [ 1.243,  0.242,  0.23,  0.306,  
+		0.216,  0.825,  0.505,  0.379,  
+		0.385,  0.402,  0.469,  0.534,  
+		0.266,  0.313,  0.423 ],  
 	// Pseq
 	38, [ list: o[39],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	39, [ array: o[40] ],  
 	// Array
-	40, [ 1.03 ],  
+	40, [ 1.68,  1.688 ],  
 	// Pseq
 	42, [ list: o[43],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	43, [ array: o[44] ],  
 	// Array
-	44, [ 0.47,  0.535,  0.976,  0.485,  
+	44, [ 1.03 ],  
+	// Pseq
+	46, [ list: o[47],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	47, [ array: o[48] ],  
+	// Array
+	48, [ 0.47,  0.535,  0.976,  0.485,  
 		0.577,  1.206,  0.568,  0.512,  
 		0.624,  0.653,  0.58,  0.675,  
 		0.8,  1.72 ],  
 	// Pseq
-	46, [ list: o[47],  repeats: 1,  
+	50, [ list: o[51],  repeats: 1,  
 		offset: 0 ],  
 	// Array
-	47, [ 5 ],  
-	// Pseq
-	49, [ list: o[50],  repeats: 1,  
-		offset: 0 ],  
-	// List
-	50, [ array: o[51] ],  
-	// Array
-	51, [ 0.342,  0.361,  0.422,  0.563,  
-		0.407,  0.207,  0.358,  0.508,  
-		0.61,  1.028 ],  
+	51, [ 5 ],  
 	// Pseq
 	53, [ list: o[54],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	54, [ array: o[55] ],  
 	// Array
-	55, [ 0.861,  0.705,  0.87,  0.691 ],  
+	55, [ 1.921,  0.841,  0.297,  0.3,  
+		0.459,  0.907 ],  
 	// Pseq
 	57, [ list: o[58],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	58, [ array: o[59] ],  
 	// Array
-	59, [ 0.544,  0.301,  0.263,  0.25,  
-		0.378,  0.241,  0.271,  0.4,  
-		0.33,  0.318,  0.343,  0.36,  
-		0.204,  0.239,  0.376,  0.243,  
-		0.336,  0.539,  0.36,  0.429,  
-		0.455 ],  
+	59, [ 0.342,  0.361,  0.422,  0.563,  
+		0.407,  0.207,  0.358,  0.508,  
+		0.61,  1.028 ],  
 	// Pseq
 	61, [ list: o[62],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	62, [ array: o[63] ],  
 	// Array
-	63, [ 0.347,  0.376,  0.337,  0.295,  
-		0.309,  0.436,  0.702,  1.12 ],  
+	63, [ 0.861,  0.705,  0.87,  0.691 ],  
 	// Pseq
 	65, [ list: o[66],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	66, [ array: o[67] ],  
 	// Array
-	67, [ 0.461,  1.075,  1.378 ],  
+	67, [ 0.431,  0.279,  0.277,  0.314,  
+		0.338,  0.186,  0.281,  0.341,  
+		0.318,  0.255,  0.35,  0.407,  
+		0.196,  0.263,  0.376,  0.211,  
+		0.376,  0.52,  0.4,  0.392,  
+		0.371 ],  
 	// Pseq
 	69, [ list: o[70],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	70, [ array: o[71] ],  
 	// Array
-	71, [ 0.346,  0.342,  0.346,  0.343,  
-		0.41,  0.37,  0.356,  0.307,  
-		0.377,  0.382,  0.518,  1.05,  
-		0.593 ],  
+	71, [ 0.347,  0.376,  0.337,  0.295,  
+		0.309,  0.436,  0.702,  1.12 ],  
 	// Pseq
 	73, [ list: o[74],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	74, [ array: o[75] ],  
 	// Array
-	75, [ 0.389,  0.416,  0.78,  0.466,  
-		0.488,  0.498,  0.284,  0.404,  
-		0.777,  0.265,  0.276,  0.237,  
-		0.312,  0.538,  0.45,  0.45,  
-		0.697,  0.378,  0.428 ],  
+	75, [ 0.461,  1.075,  1.378 ],  
 	// Pseq
 	77, [ list: o[78],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	78, [ array: o[79] ],  
 	// Array
-	79, [ 0.3,  0.267,  0.299,  0.328,  
-		0.305,  0.296,  0.336,  0.398,  
-		0.518,  0.586,  0.568,  0.653,  
-		0.938 ],  
+	79, [ 0.346,  0.342,  0.346,  0.343,  
+		0.41,  0.37,  0.356,  0.307,  
+		0.377,  0.382,  0.518,  1.05,  
+		0.593 ],  
 	// Pseq
 	81, [ list: o[82],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	82, [ array: o[83] ],  
 	// Array
-	83, [ 0.362,  0.473,  0.889,  0.572,  
-		0.935,  0.561,  0.461,  0.417,  
-		0.392,  0.439,  0.527,  0.496,  
-		0.562,  0.281,  0.653,  1.175,  
-		0.889,  0.809 ],  
+	83, [ 0.389,  0.416,  0.78,  0.466,  
+		0.488,  0.498,  0.284,  0.404,  
+		0.777,  0.265,  0.276,  0.237,  
+		0.312,  0.538,  0.45,  0.45,  
+		0.697,  0.378,  0.428 ],  
 	// Pseq
 	85, [ list: o[86],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	86, [ array: o[87] ],  
 	// Array
-	87, [ 0.283,  0.344,  0.44,  0.491,  
-		0.486,  0.517,  0.417,  0.364,  
-		0.363,  0.466,  0.481,  0.513,  
-		0.363,  0.326,  0.441,  0.459,  
-		0.257,  0.33,  0.381,  0.339,  
-		0.527,  1.75,  0.697 ],  
+	87, [ 0.347,  0.319,  0.304,  0.334,  
+		0.331,  0.296,  0.327,  0.313,  
+		0.554,  0.552,  0.677,  0.705,  
+		0.867 ],  
 	// Pseq
 	89, [ list: o[90],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	90, [ array: o[91] ],  
 	// Array
-	91, [ 0.462,  0.496,  0.514,  0.533,  
-		0.568,  0.535,  0.601,  0.584,  
-		0.62,  0.612,  0.617,  0.73,  
-		0.759,  1.068,  3.897 ],  
+	91, [ 0.362,  0.473,  0.889,  0.572,  
+		0.935,  0.561,  0.461,  0.417,  
+		0.392,  0.439,  0.527,  0.496,  
+		0.562,  0.281,  0.653,  1.175,  
+		0.889,  0.809 ],  
 	// Pseq
 	93, [ list: o[94],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	94, [ array: o[95] ],  
 	// Array
-	95, [ 0.574,  0.718 ],  
+	95, [ 0.283,  0.344,  0.44,  0.491,  
+		0.486,  0.517,  0.417,  0.364,  
+		0.363,  0.466,  0.481,  0.513,  
+		0.363,  0.326,  0.441,  0.459,  
+		0.257,  0.33,  0.381,  0.339,  
+		0.527,  1.75,  0.697 ],  
 	// Pseq
 	97, [ list: o[98],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	98, [ array: o[99] ],  
 	// Array
-	99, [ 0.413,  0.439,  0.823,  0.421,  
-		0.45,  0.48,  0.326,  0.412,  
-		0.699,  0.297,  0.277,  0.256,  
-		0.396,  0.51,  0.438,  0.469,  
-		0.616,  0.355,  0.468 ],  
+	99, [ 0.462,  0.496,  0.514,  0.533,  
+		0.568,  0.535,  0.601,  0.584,  
+		0.62,  0.612,  0.617,  0.73,  
+		0.759,  1.068,  3.897 ],  
 	// Pseq
 	101, [ list: o[102],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	102, [ array: o[103] ],  
 	// Array
-	103, [ 0.473,  0.722,  0.411,  0.551,  
-		0.752,  0.348,  0.411,  0.241,  
-		0.406,  0.782,  0.494,  0.619,  
-		0.897 ],  
+	103, [ 0.56,  0.584,  0.787,  0.59 ],  
 	// Pseq
 	105, [ list: o[106],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	106, [ array: o[107] ],  
 	// Array
-	107, [ 0.208,  0.281,  0.226,  0.269,  
-		0.344,  0.212,  0.292,  0.33,  
-		0.332,  0.337,  0.448,  0.414,  
-		0.237,  0.241,  0.372,  0.198,  
-		0.289,  0.636,  0.669 ],  
+	107, [ 0.574,  0.718 ],  
 	// Pseq
 	109, [ list: o[110],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	110, [ array: o[111] ],  
 	// Array
-	111, [ 0.528,  0.665,  0.827,  0.905 ],  
+	111, [ 0.413,  0.439,  0.823,  0.421,  
+		0.45,  0.48,  0.326,  0.412,  
+		0.699,  0.297,  0.277,  0.256,  
+		0.396,  0.51,  0.438,  0.469,  
+		0.616,  0.355,  0.468 ],  
 	// Pseq
 	113, [ list: o[114],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	114, [ array: o[115] ],  
 	// Array
-	115, [ 1.089,  1.753,  0.292,  0.427,  
-		0.491,  0.606,  0.5,  0.419 ],  
+	115, [ 0.473,  0.722,  0.411,  0.551,  
+		0.752,  0.348,  0.411,  0.241,  
+		0.406,  0.782,  0.494,  0.619,  
+		0.897 ],  
 	// Pseq
 	117, [ list: o[118],  repeats: 1,  
 		offset: 0 ],  
+	// List
+	118, [ array: o[119] ],  
 	// Array
-	118, [ 0.43,  0.238,  0.315,  0.457,  
-		0.254,  0.419,  0.734,  1.735 ],  
+	119, [ 0.208,  0.281,  0.226,  0.269,  
+		0.344,  0.212,  0.292,  0.33,  
+		0.332,  0.337,  0.448,  0.414,  
+		0.237,  0.241,  0.372,  0.198,  
+		0.289,  0.636,  0.669 ],  
 	// Pseq
-	120, [ list: o[121],  repeats: 1,  
+	121, [ list: o[122],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	121, [ array: o[122] ],  
+	122, [ array: o[123] ],  
 	// Array
-	122, [ 0.286,  0.356,  0.693,  0.338,  
+	123, [ 0.528,  0.665,  0.827,  0.905 ],  
+	// Pseq
+	125, [ list: o[126],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	126, [ array: o[127] ],  
+	// Array
+	127, [ 1.089,  1.753,  0.292,  0.427,  
+		0.491,  0.606,  0.5,  0.419 ],  
+	// Pseq
+	129, [ list: o[130],  repeats: 1,  
+		offset: 0 ],  
+	// Array
+	130, [ 0.43,  0.238,  0.315,  0.457,  
+		0.254,  0.419,  0.734,  1.735 ],  
+	// Pseq
+	132, [ list: o[133],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	133, [ array: o[134] ],  
+	// Array
+	134, [ 0.286,  0.356,  0.693,  0.338,  
 		0.405,  0.712,  0.333,  0.202,  
 		0.334,  0.545,  0.706 ],  
 	// Pseq
-	124, [ list: o[125],  repeats: 1,  
+	136, [ list: o[137],  repeats: 1,  
 		offset: 0 ],  
 	// Array
-	125, [ 3,  1.5,  3 ],  
+	137, [ 3,  1.5,  3 ],  
 	// Pseq
-	127, [ list: o[128],  repeats: 1,  
+	139, [ list: o[140],  repeats: 1,  
 		offset: 0 ],  
 	// List
-	128, [ array: o[129] ],  
+	140, [ array: o[141] ],  
 	// Array
-	129, [ 0.458,  0.49,  0.474,  0.472,  
+	141, [ 0.458,  0.49,  0.474,  0.472,  
 		0.454,  0.48,  0.465,  0.478,  
 		0.449,  0.457,  0.442,  0.452,  
 		0.473,  0.523,  0.757,  0.663 ],  
 	// Pseq
-	131, [ list: o[132],  repeats: 1,  
+	143, [ list: o[144],  repeats: 1,  
 		offset: 0 ],  
 	// Array
-	132, [ 11 ],  
-	// Pseq
-	134, [ list: o[135],  repeats: 1,  
-		offset: 0 ],  
-	// List
-	135, [ array: o[136] ],  
-	// Array
-	136, [ 0.413,  0.372,  0.542,  0.549,  
-		0.436,  0.534 ],  
-	// Pseq
-	138, [ list: o[139],  repeats: 1,  
-		offset: 0 ],  
-	// List
-	139, [ array: o[140] ],  
-	// Array
-	140, [ 0.33,  0.282,  0.246,  0.29,  
-		0.344,  0.482,  0.299,  0.361,  
-		0.629,  0.697,  0.487,  0.573 ],  
-	// Pseq
-	142, [ list: o[143],  repeats: 1,  
-		offset: 0 ],  
-	// List
-	143, [ array: o[144] ],  
-	// Array
-	144, [ 0.512,  0.618,  0.509,  0.56,  
-		0.538,  0.635,  0.613,  0.621,  
-		0.451,  0.501,  0.309,  0.838 ],  
+	144, [ 11 ],  
 	// Pseq
 	146, [ list: o[147],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	147, [ array: o[148] ],  
 	// Array
-	148, [ 0.781,  1.218 ],  
+	148, [ 0.413,  0.372,  0.542,  0.549,  
+		0.436,  0.534 ],  
 	// Pseq
 	150, [ list: o[151],  repeats: 1,  
 		offset: 0 ],  
+	// List
+	151, [ array: o[152] ],  
 	// Array
-	151, [ 0.448,  0.433,  0.358,  0.464,  
+	152, [ 0.33,  0.282,  0.246,  0.29,  
+		0.344,  0.482,  0.299,  0.361,  
+		0.629,  0.697,  0.487,  0.573 ],  
+	// Pseq
+	154, [ list: o[155],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	155, [ array: o[156] ],  
+	// Array
+	156, [ 0.512,  0.618,  0.509,  0.56,  
+		0.538,  0.635,  0.613,  0.621,  
+		0.451,  0.501,  0.309,  0.838 ],  
+	// Pseq
+	158, [ list: o[159],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	159, [ array: o[160] ],  
+	// Array
+	160, [ 0.781,  1.218 ],  
+	// Pseq
+	162, [ list: o[163],  repeats: 1,  
+		offset: 0 ],  
+	// Array
+	163, [ 0.448,  0.433,  0.358,  0.464,  
 		0.686,  0.352,  0.497,  0.575,  
 		0.6435 ],  
 	// Pseq
-	153, [ list: o[154],  repeats: 1,  
+	165, [ list: o[166],  repeats: 1,  
 		offset: 0 ],  
 	// Array
-	154, [ 0.623,  0.588,  0.618,  0.66,  
+	166, [ 0.623,  0.588,  0.618,  0.66,  
 		0.312,  0.306,  0.305,  0.327,  
 		0.621,  0.649 ],  
-	// Pseq
-	156, [ list: o[157],  repeats: 1,  
-		offset: 0 ],  
-	// List
-	157, [ array: o[158] ],  
-	// Array
-	158, [ 0.248,  0.275,  0.377,  0.321,  
-		0.339,  0.312,  0.322,  0.323,  
-		0.312,  0.309,  0.334,  0.418,  
-		0.586 ],  
-	// Pseq
-	160, [ list: o[161],  repeats: 1,  
-		offset: 0 ],  
-	// List
-	161, [ array: o[162] ],  
-	// Array
-	162, [ 0.658,  0.829,  0.532,  0.73,  
-		0.368,  0.377,  0.48,  0.953 ],  
-	// Pseq
-	164, [ list: o[165],  repeats: 1,  
-		offset: 0 ],  
-	// List
-	165, [ array: o[166] ],  
-	// Array
-	166, [ 0.453,  0.456,  0.852,  0.465,  
-		0.528,  0.527,  0.286,  0.425,  
-		0.809,  0.334,  0.283,  0.314,  
-		0.393,  0.541,  0.444,  0.481,  
-		0.734,  0.39,  0.464 ],  
 	// Pseq
 	168, [ list: o[169],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	169, [ array: o[170] ],  
 	// Array
-	170, [ 0.335,  0.454,  0.72,  0.928,  
-		0.439,  0.42,  0.477,  0.218,  
-		0.237,  0.489,  0.486,  0.551,  
-		0.323,  0.351,  0.656,  0.524,  
-		1.123 ],  
+	170, [ 0.248,  0.275,  0.377,  0.321,  
+		0.339,  0.312,  0.322,  0.323,  
+		0.312,  0.309,  0.334,  0.418,  
+		0.586 ],  
 	// Pseq
 	172, [ list: o[173],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	173, [ array: o[174] ],  
 	// Array
-	174, [ 0.254,  0.297,  0.276,  0.362,  
-		0.504,  0.284,  0.36,  0.743 ],  
+	174, [ 0.658,  0.829,  0.532,  0.73,  
+		0.368,  0.377,  0.48,  0.953 ],  
 	// Pseq
 	176, [ list: o[177],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	177, [ array: o[178] ],  
 	// Array
-	178, [ 0.464,  0.433,  0.497,  0.61,  
-		1.122,  0.37,  0.308,  0.347,  
-		0.379,  0.367,  0.41,  0.588,  
-		0.644 ],  
+	178, [ 0.453,  0.456,  0.852,  0.465,  
+		0.528,  0.527,  0.286,  0.425,  
+		0.809,  0.334,  0.283,  0.314,  
+		0.393,  0.541,  0.444,  0.481,  
+		0.734,  0.39,  0.464 ],  
 	// Pseq
 	180, [ list: o[181],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	181, [ array: o[182] ],  
 	// Array
-	182, [ 0.558,  1.139,  0.296,  0.301,  
-		0.279,  0.333,  0.564,  0.314,  
-		0.9,  0.516,  1.487,  0.379,  
-		1.521,  0.304,  0.439,  0.37,  
-		0.161,  0.491,  1.11 ],  
+	182, [ 0.335,  0.454,  0.72,  0.928,  
+		0.439,  0.42,  0.477,  0.218,  
+		0.237,  0.489,  0.486,  0.551,  
+		0.323,  0.351,  0.656,  0.524,  
+		1.123 ],  
 	// Pseq
 	184, [ list: o[185],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	185, [ array: o[186] ],  
 	// Array
-	186, [ 0.541,  0.586,  0.6,  0.388,  
-		0.518,  0.389,  0.388,  0.387,  
-		0.425,  0.484,  0.472,  0.513 ],  
+	186, [ 1.671,  0.857,  1.234 ],  
 	// Pseq
 	188, [ list: o[189],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	189, [ array: o[190] ],  
 	// Array
-	190, [ 0.911,  0.374,  0.364,  0.444,  
-		0.553,  0.611,  1.069 ],  
+	190, [ 0.254,  0.297,  0.276,  0.362,  
+		0.504,  0.284,  0.36,  0.743 ],  
 	// Pseq
 	192, [ list: o[193],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	193, [ array: o[194] ],  
 	// Array
-	194, [ 0.623,  0.588,  0.618,  0.66,  
-		0.312,  0.306,  0.305,  0.327,  
-		0.621,  0.649 ],  
+	194, [ 0.464,  0.433,  0.497,  0.61,  
+		1.122,  0.37,  0.308,  0.347,  
+		0.379,  0.367,  0.41,  0.588,  
+		0.644 ],  
 	// Pseq
 	196, [ list: o[197],  repeats: 1,  
 		offset: 0 ],  
 	// List
 	197, [ array: o[198] ],  
 	// Array
-	198, [ 0.372,  0.472,  0.626,  1.124,  
+	198, [ 0.558,  1.139,  0.296,  0.301,  
+		0.279,  0.333,  0.564,  0.314,  
+		0.9,  0.516,  1.487,  0.379,  
+		1.521,  0.304,  0.439,  0.37,  
+		0.161,  0.491,  1.11 ],  
+	// Pseq
+	200, [ list: o[201],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	201, [ array: o[202] ],  
+	// Array
+	202, [ 0.541,  0.586,  0.6,  0.388,  
+		0.518,  0.389,  0.388,  0.387,  
+		0.425,  0.484,  0.472,  0.513 ],  
+	// Pseq
+	204, [ list: o[205],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	205, [ array: o[206] ],  
+	// Array
+	206, [ 0.911,  0.374,  0.364,  0.444,  
+		0.553,  0.611,  1.069 ],  
+	// Pseq
+	208, [ list: o[209],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	209, [ array: o[210] ],  
+	// Array
+	210, [ 0.623,  0.588,  0.618,  0.66,  
+		0.312,  0.306,  0.305,  0.327,  
+		0.621,  0.649 ],  
+	// Pseq
+	212, [ list: o[213],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	213, [ array: o[214] ],  
+	// Array
+	214, [ 0.372,  0.472,  0.626,  1.124,  
 		0.466,  0.409,  0.426,  0.217,  
 		0.381,  1.224,  0.428,  0.443,  
 		0.54,  0.246,  0.566,  0.398,  

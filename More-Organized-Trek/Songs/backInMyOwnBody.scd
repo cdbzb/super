@@ -1,12 +1,12 @@
 (
 	Song('MandT',[]).current;
 	Song.synthVTracks=EventWithDefault();
-	Song.synthVTracks.aiko = { |preGain=1 ratio=2 amp = (1/8) len=2000 mix=0.1 |
+	Song.synthVTracks.aiko = { |preGain=1 ratio=2 amp = (1/8) len=2000 mix=0.1 c1=2 | //c1=1
 	{ |i|
 		i.() * preGain
 		=> SoftKneeCompressor.rms(_,  thresh:-10, ratio: ratio, knee:6, attack:0, release:0.05, makeUp:0, rms:40) 
 		* amp
-		=> DWGReverbC1C3.ar(_,len:len,mix:mix)
+		=> DWGReverbC1C3.ar(_,c1:c1,len:len,mix:mix)
 		=>.first DetectSilence.ar(_,doneAction:2, time: 0.25)
 	}
 };
@@ -18,7 +18,7 @@
 ["McCoy leaves the room-1, and the door shuts-2 and locks-3 behind him.","1 2 3".dm(\c)].addLine;
 P.still(\leavingReverse, timecode: 4612.1.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
+		wait: b[0],
 		text: ["",""],
 	);
 });
@@ -36,8 +36,8 @@ P(\doorcloseLock,syl:0, music: { |p b e|
 });
 P.still(\lookBackDoor,syl:1, timecode: 4613.2.seconds, music: { |p b e|
 	 e.still.( 
-		// wait: b.drop(1).sum,
-		wait:1,
+		wait: b.drop(1).sum,
+		// wait:1,
 		text: ["",""],
 	)
 });
@@ -60,14 +60,27 @@ P(\arrange, music: { |p b e|
 	}.play;
 });
 [" --The ship shakes as he activates his desk monitor.-- MCCOY: This is Sickbay. Get me ","-1 -5 5 5 11 4.5 7 11.5".dm(\g)].addLine;
+P(\bassnote, music: { |p b e|
+	[
+		freq: [\r, 1].df(\g,3).q,
+		dur: b.parse([4, 4]).q,
+		instrument: \sawSynthSustain, amp: 0.08,att:0.5
+	].pp
+});
+P(\otherNote,syl:4, music: { |p b e|
+	(
+		freq: 1.df('c#',4),
+		out:Effect.bus({|i| DWGReverbC1C3.ar(i) }),
+	).play
+});
 P(\shaking, music: { |p b e|
 	{
 		Gendy2.arWidth(freq: 050,width:{ 1.1.rrand(2) }!4)
-		/2
 		* SinOsc.kr({ 2.rrand(3.0)}!4,{pi.rand}!4 ).range(0.2,1)
 		=> Splay.ar(_)
 		=> DWGReverbC1C3.ar(_,c1:0,len:623,mix:0.2)
 		* EnvGen.cutoff(b[0],6,-5)
+		/10
 	}.play
 });
 P.still(\atDesk,syl:1, timecode: 4627.3.seconds, music: { |p b e|
@@ -89,19 +102,20 @@ P.synthV(role: \mccoy, take:\lead, params: {|p b| [
 });
 P(\door, syl: 6, music: { |p b e|
 	(instrument:\door,amp:0.3).play;
-	(instrument:\stringyy,amp:0.2,rel:8,freq:1.df('a-')).play;
+	(instrument:\stringyy,amp:0.2,rel:8,freq:1.df('a-',[4,5])).play;
 });
 [ "(The door opens, and Chapel walks out, staring blankly ahead.) ","r",[5] ].addLine;
 P(\chord, music: { |p b e|
 	{
 		VarSaw.ar(
-			[1,3,5.5,7,11,13,15.5].df(\c),
+			[1,3,11,13,].df(\c),
 			width: SinOsc.ar( { 0.1.rrand( 0.2 ) }!7, {1.0.rand}!7 ).range(0,1)
 		)
 		=> Splay.ar(_)
 		=> Convolution.ar(_, Dust.ar(300!5) => Decay.ar(_,0.03) => FreeVerb.ar(_,mix: Line.kr(1,0.3,5)))
 		/200
 		* EnvGen.cutoff(b.sum,1)
+		=> Splay.ar(_)
 	}.play
 });
 
@@ -111,30 +125,74 @@ P.still(\chapelZombie, timecode: 4630.0.seconds, music: { |p b e|
 		text: ["",""],
 	)
 });
-[ "MCCOY: Nurse Chapel, what in the devil?","r" ].addLine;
+[ "MCCOY: Nurse Chapel, what in the devil?","11 13 6.5 6 6.5 7.5 11 3.5".dm(\g,4,\minor) ].addLine;
+P.tune();
+P.synthV(role: \mccoy, take: \lead, params: {|p b| [
+	lyrics: "Nurse Chapel + what in the devil +",
+	legato: [1, 1, 0.6, 1, 1, 1, 1, 0.8, ],
+	filter: (midinote: _ - 12), 
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 //Sickbay
-	["//[Sickbay]","r"].addLine;
+["//[Sickbay]","r"].addLine;
 P.still(\surpriseLook, timecode: 4642.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
 	)
 });
-	
 P.still(\aliveKirk, timecode: 4643.8.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
 	)
 });
-["(He goes back into the ward.) MCCOY: Jim? Are you all right? ","r"].addLine;
+["(He goes back into the ward.) MCCOY: Jim? Are you all right? ","2.5 5 4 3 4 11".dm(\d)].addLine;
+P(\bassnote, music: { |p b e|
+	[
+		freq: [ 1, -5 ].df(\f,3).q,
+		dur: b.parse([1, 4]).q,
+	].p.play
+});
+P.tune(_ <> [amp: [0,1,1,1,1, 1]/10=>_.q].p);
+P(\chords, music: { |p b e|
+	[
+		freq: [\r, [1, 3, 6].df(\c), [5,7,11,13].df('b-',4,\mixolydian) ].q,
+		dur: b.parse([1,4,1]) + [0,0,1] =>_.q,
+		instrument: \stringyy, amp:0.2
+	].pp
+});
 P.still(\toKirk, timecode: 4649.3.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
 	)
 });
-["KIRK: Yes, I'm fine, Bones. ","r"].addLine;
+["KIRK: Yes, I'm fine, Bones. ","5 4 3 -7".dm('f#',\mixolydian)].addLine;
+P.tune();
+P.synthV(role: \kirk, take: \lead, params: {|p b| [
+	filter: (midinote: _ - 12), 
+	lyrics: "yes I'm fine bones",
+	legato: [0.8, 0.8, 0.7, 1, ],
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+P(\bassnotes, music: { |p b e|
+	[
+		freq: [5, 1].df('f#',3).q,
+		dur: b.parse([2,2]).q
+	].pp
+});
 P.still(\kirkTalk, timecode: 4655.4.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -155,15 +213,23 @@ P.still(\toThal, syl:0, timecode: 4702.6.seconds, music: { |p b e|
 	)
 });
 P(\thinPad, music: { |p b e|
-	(
+	
+	[
 		// instrument: \wash,
-		freq: [ 1, 4 ].df(\b,[3,2]),
+		freq: [\r, 1].df(\e,3).q,
 		amp:0.1,
-		dur: b.drop(1).sum
-	).play
+		dur: b.drop(1).parse([2,2]).q
+	].p.play
+});
+P(\notes, music: { |p b e|
+	[
+		freq: [\r,7, [ 13, 15 ]].df(\e,\mixolydian).q,
+		dur: b.parse([1, 1, 2]).q,
+		instrument: \wash
+	].pp
 });
 P.synthV(role: \mccoy, take: \lead, params: {|p b| [
-	filter: (midinote: _ - 12), 
+	filter: (midinote: _ - 24), 
 	lyrics: "r thalassa + +",
 	pitchTake: 1
 ] }, music:{|p b e|
@@ -821,15 +887,16 @@ P(\chords,start:'kill his body',syl:1,music:{|p b e|
 P(\guiro,start:'kill his body',syl:11,music:{|p b e| 
 		//FIXME!!!!!
 		{Shakers.ar(19, 1, 1, 1, 32, 60, Env([0,0.5],1,\sin).kr(0,1))}.play
-
-	});
-	P(\cymbal,syl:7, music: { |p b e|
-		(
-			instrument: \cymbalsDS,
-			amp: 0.05,
-			out: Effect.bus({|i| PitchShift.ar(i,pitchRatio:0.5) },)
-		).play
-	});
+});
+P(\cymbal,syl:7, music: { |p b e|
+	{
+		{ 300.pareto } ! 40
+		// => _.linexp(200,1000,100,10000)
+		=> { |i| SinOsc.ar(i,0,10/i)}
+		* Env([0,1,0],[ 0.1,6 ]).kr(doneAction:2)
+		=> Splay.ar(_)
+	}.play
+});
 P(\chords2,start:'kill his body',syl:12,music:{|p b e| 
 		[
 			freq: [

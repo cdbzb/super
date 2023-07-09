@@ -65,6 +65,12 @@ Monitors {
 		o.outDevice_("BlackHole 2ch");
 		Server.default.reboot
 	}
+	*headphones{
+		var o =Server.default.options;
+		o.inDevice_("MacBook Pro Microphone");
+		o.outDevice_("External Headphones");
+		Server.default.reboot
+	}
 	*airpods {
 		var o =Server.default.options;
 		o.inDevice_("Pro Ag");

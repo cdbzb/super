@@ -984,6 +984,34 @@ P(\bass, music: { |p b e|
 	].pp
 });
 ["(boom) science officer with me on something as unusual as this, but it i--s","-1 3 2 3 2 3 2 1 -7 1 -6  2 3 4 5 4 3 2 -7 1 2 1".dm(\c,6)].addLine;
+P.synthVs( \jun, take: [\harm1, \harm2],
+pbind: ~t = [0,1].collect{|voice|
+	{|p b|
+		var vl=
+		VoiceLeading( 
+			[
+				[5, 6,  6, 4, 7],
+				[3, \_, 4, 2, 5]
+			], b.parse([6,3, 4, 4, 5])
+		).dm(\c);
+		[
+			dur: vl.voice(voice).durs,
+			midinote: vl.voice(voice).line
+		].p
+	}
+} => _.postln,
+params: {|p b| [
+	lyrics: "oooh - ooh - -",
+	legato: [[1, 0.9, 1, 1, 1, ]],
+	lag: [[0,0,0,0,0.2]],
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
 Song.setTempoMap(\unusual,"q %x x x x x% e ee e e e e e e x xe x xe e e x xq".rhythm);
 Song.guitar = AAS_Strum();
 P(\strum, music: { |p b e|
@@ -998,11 +1026,12 @@ P(\strum, music: { |p b e|
 	[
 		type: \strum,
 		instance: p.guitar,
-		switch: [ \down ].q(5),
+		switch: [ \down, \muffleD, \d, \d, \d, \d ].q,
+		lag: [0,0.1,0,0,0,0].q,
 		legato:1,
 		// dur: 10
 		lag:0.01,
-		dur: b.parse([6,3,4,[ 1,1,1,1,1/3 ],[2/3,1,1,1,1],4]).q,
+		dur: b.parse([1, 5,3,4,[ 1,1,1,1,1/3 ],[2/3,1,1,1,1],4]).q,
 
 		// lag:0.05
 	].pp
@@ -1032,15 +1061,24 @@ P(\click, music: { |p b e|
 });
 P(\bass, music: { |p b e|
 	[
-		freq: "11 6 13 11 4 14 6 2 12 2 5 15 5".df(\c,3).q,
-		dur: b.parse([6, [1,0.5],0.5,1, 2, 1,1, [2,0.34],0.66,[1,0.34],[ 0.66,1 ],1,2]).q
+		freq: "11 11 6 13 11 4 14 6 2 12 2 5 15 5".df(\c,3).q,
+		// dur: b.parse([6, [1,0.5],0.5,1, 2, 1,1, [2,0.34],0.66,[1,0.34],[ 0.66,1 ],1,2]).q
+		dur: "qe e q e e q e e q e e".beats.warpTo(e.tempoMap).q
 	].pp
 });
 ["(boom) full of unknowns","-1 3 2 2 2".dm('f#',6,\minor)].addLine;
-P.synthV(role: \kirk, take: \lead, params: {|p b| [
+Song.setTempoMap(\unknowns,"q qq Q E q ");
+P(\plink, music: { |p b e|
+	{
+		Pluck.ar( PinkNoise.ar(0.1), 1, 0.1, 1.df('f#',4) + Gendy1.kr(minfreq:0.2,maxfreq:[5,10]).range(-5,5) =>_.reciprocal, decaytime:4)
+		=> {|i| CrossoverDistortion.ar(i * EnvGen.cutoff(b.parse([3]).unbubble,0))/30 + i}
+		=> FreeVerb.ar(_,0.5,1)
+	}.play
+});
+P.synthVs(role: \kirk, take: [\lead, \double], params: {|p b| [
 	lyrics: "r full of unknowns +",
 	filter: (midinote: _ - 12), 
-	pitchTake: 1
+	pitchTake: [1, 3]
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -1048,17 +1086,6 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	}.play
 
 });
-P.double(role: \kirk, take: \lead, params: {|p b| [
-	pitchTake: 1
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
-
-});
-Song.setTempoMap(\unknowns,"q qq Q E q ");
-P.tune();
 P(\click, music: { |p b e|
 	[dur: 1.dup(4).warpTo(e.tempoMap).q,instrument:\hihat].pp
 });
@@ -1066,6 +1093,10 @@ P(\bass, music: { |p b e|
 	[
 		freq: "1 1 -7 -7 -6".df('f#',[3,4],\mixolydian).q,
 		dur: "qe e qe e ee".asBeats/1 warpTo: e.tempoMap q: 1
+	].pp;
+	[
+		freq: [\r, [1,3],[-7,3],[-7,3],[-6.5,3]].df('f#',\minor).q,
+		dur: b.q
 	].pp
 });
 P(\dyad, music: { |p b e|
@@ -1076,9 +1107,16 @@ P(\dyad, music: { |p b e|
 	).play
 });
 ["and we can't risk both of us being off the ship.","5 6 5 4 3 2 1 -7 -6 -7 -5 1".dm(\e)].addLine;
-P.synthV(role: \kirk, take: \lead, params: {|p b| [
+Song.durs.filter({|i| var last = i.dropLast; i.dropLast ++ (last * 4)});
+P(\line, music: { |p b e|
+	[
+		freq: "5 6 5 4 3 2 1 -5 -6 -5 -4 -3".df(\e,4).q,
+		dur: b.q
+	].pp
+});
+P.synthVs(role: \kirk, take: [\lead, \double], params: {|p b| [
 	lyrics: "and we can't risk both of us being + off the ship",
-	pitchTake: 1
+	pitchTake: [1, 3]
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -1086,16 +1124,14 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	}.play
 
 });
-P.double(role: \kirk, take: \lead, params: {|p b| [
-	pitchTake: 1
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
-
+P(\powerDown,syl: 10, music: { |p b e|
+	[
+		dur: b.drop(1)[0]/6,
+		note: (0,-1..-5).q,
+		instrument: \default
+	].ppm
+	
 });
-P.tune();
 // (The lights go out.)
 ["SULU: All power gone, sir.","r"].addLine;
 P.still(\darkness, timecode: 606.789.seconds, music: { |p b e|

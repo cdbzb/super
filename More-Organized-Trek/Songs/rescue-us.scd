@@ -831,6 +831,17 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 // ["with standard landing party equipment.","r"].addLine;
 ["/*UHURA:*/ Yes, sir.","-7,1".dm(\c)].addLine;
 Trek.cast.uhura = \cheng;
+P.synthV(role: \uhura, take: \lead, params: {|p b| [
+	lyrics: "yes sir",
+	legato: [0.8, 0.3, ],
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_,-0.4)
+	}.play
+});
 P.still(\overTheShoulder, timecode: 536.335.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -956,27 +967,18 @@ P.still(\kirkUnusual, timecode: 558.491.seconds, music: { |p b e|
 		text: ["",""],
 	)
 });
-P.synthV(role: \kirk, take: \lead, params: {|p b| [
+P.synthVs(role: \kirk, take: [\lead, \double], params: {|p b| [
 	lyrics: "And I would like to have my -",
-	legato: [1, 1, 1, 1, 1, 1, 1, 2],
-	pitchTake: 1
+	legato: [[1, 1, 1, 1, 1, 1, 1, 2]],
+	pitchTake: [1, 3]
 ] }, music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_,0)
 	}.play
 
 });
-P.double(role: \kirk, take: \lead, params: {|p b| [
-	pitchTake: 1
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
-
-});
-P.tune();
 P(\bass, music: { |p b e|
 	[
 		freq: [-7, 1].df(\g,[ 3,4 ]).q,
@@ -1005,12 +1007,16 @@ params: {|p b| [
 	legato: [[1, 0.9, 1, 1, 1, ]],
 	lag: [[0,0,0,0,0.2]],
 	pitchTake: 1
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
+] }, music: [-0.2,0.2].collect
+{|pan|
+	{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+			=> Pan2.ar(_,pan)
+		}.play
 
+	}
 });
 Song.setTempoMap(\unusual,"q %x x x x x% e ee e e e e e e x xe x xe e e x xq".rhythm);
 Song.guitar = AAS_Strum();
@@ -1037,22 +1043,14 @@ P(\strum, music: { |p b e|
 	].pp
 	// => _.play
 });
-P.synthV(role: \kirk, take: \lead, params: {|p b| [
+P.synthVs(role: \kirk, take: [\lead, \double], params: {|p b| [
 	lyrics: "r science + officer + + with me on something + as un usual + + as this, but it is -",
-	pitchTake: 1
+	pitchTake: [1, 3]
 ] }, music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
-	}.play
-
-});
-P.double(role: \kirk, take: \lead, params: {|p b| [
-	pitchTake: 1
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_,0)
 	}.play
 
 });
@@ -1061,9 +1059,9 @@ P(\click, music: { |p b e|
 });
 P(\bass, music: { |p b e|
 	[
-		freq: "11 11 6 13 11 4 14 6 2 12 2 5 15 5".df(\c,3).q,
-		// dur: b.parse([6, [1,0.5],0.5,1, 2, 1,1, [2,0.34],0.66,[1,0.34],[ 0.66,1 ],1,2]).q
-		dur: "qe e q e e q e e q e e".beats.warpTo(e.tempoMap).q
+		freq: "11  6 13 11 4 14 6 2 12 2 5 15 5".df(\c,3).q,
+		dur: b.parse([6, [1,0.5],0.5,1, 2, 1,1, [2,0.34],0.66,[1,0.34],[ 0.66,1 ],1,2]).q
+		// dur: "qe e q e e q e e q e e".beats.warpTo(e.tempoMap).q
 	].pp
 });
 ["(boom) full of unknowns","-1 3 2 2 2".dm('f#',6,\minor)].addLine;
@@ -1071,7 +1069,10 @@ Song.setTempoMap(\unknowns,"q qq Q E q ");
 P(\plink, music: { |p b e|
 	{
 		Pluck.ar( PinkNoise.ar(0.1), 1, 0.1, 1.df('f#',4) + Gendy1.kr(minfreq:0.2,maxfreq:[5,10]).range(-5,5) =>_.reciprocal, decaytime:4)
-		=> {|i| CrossoverDistortion.ar(i * EnvGen.cutoff(b.parse([3]).unbubble,0))/30 + i}
+		+ Pluck.ar( PinkNoise.ar(0.1), Impulse.ar(0) => DelayN.ar(_,"qq".beats.warpTo(e.tempoMap),"qq".beats.warpTo(e.tempoMap)), 0.1, -7.df('f#',4,\minor) + Gendy1.kr(minfreq:0.2,maxfreq:[5,10]).range(-5,5) =>_.reciprocal, decaytime:4)
+		+ Pluck.ar( PinkNoise.ar(0.1), Impulse.ar(0) => DelayN.ar(_,b[0..4].sum,b[0..3].sum), 0.1, -6.df('f#',4) + Gendy1.kr(minfreq:0.2,maxfreq:[5,10]).range(-5,5) =>_.reciprocal, decaytime:4)
+
+		=> {|i| CrossoverDistortion.ar(i * EnvGen.cutoff(b.parse([6]).unbubble,0))/30 + i}
 		=> FreeVerb.ar(_,0.5,1)
 	}.play
 });
@@ -1083,6 +1084,7 @@ P.synthVs(role: \kirk, take: [\lead, \double], params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_,0)
 	}.play
 
 });
@@ -1094,11 +1096,16 @@ P(\bass, music: { |p b e|
 		freq: "1 1 -7 -7 -6".df('f#',[3,4],\mixolydian).q,
 		dur: "qe e qe e ee".asBeats/1 warpTo: e.tempoMap q: 1
 	].pp;
+});
+P(\middle, music: { |p b e|
 	[
 		freq: [\r, [1,3],[-7,3],[-7,3],[-6.5,3]].df('f#',\minor).q,
-		dur: b.q
+		dur: b.q,
+		instrument: \pulse
 	].pp
 });
+
+
 P(\dyad, music: { |p b e|
 	(
 		instrument: \stringyy,
@@ -1107,13 +1114,32 @@ P(\dyad, music: { |p b e|
 	).play
 });
 ["and we can't risk both of us being off the ship.","5 6 5 4 3 2 1 -7 -6 -7 -5 1".dm(\e)].addLine;
-Song.durs.filter({|i| var last = i.dropLast; i.dropLast ++ (last * 4)});
+Song.durs.filter({|i| var last = i.last; i.dropLast ++ (last * 4 )});
 P(\line, music: { |p b e|
 	[
-		freq: "5 6 5 4 3 2 1 -5 -6 -5 -4 -3".df(\e,4).q,
+		freq: "5 6 5 4 3 2 1 -5 -6 -5 -4 -3".df(\e,[3, 4, 5 ]).q,
+		instrument: \stringyy,
 		dur: b.q
 	].pp
 });
+P(\bassnotes, music: { |p b e|
+	[
+		freq: [\r, 1, 5, 6, 5, 4, 3].df(\e,3).q,
+		instrument: \sparkTriangle,
+		amp: 0.05,
+		out: [ 0,1 ],
+		dur: b.parse([4,3, 1, 1, 1, 1, 1]).q
+	].ppm;
+	
+});
+SynthDef(\tapeStop,{
+	arg bus = 12;
+	var in = In.ar(12,1 );
+	var a =LocalBuf(s.sampleRate * 2,1);
+	BufWr.ar(in, a, Sweep.ar(1, 44100), 1.0 );
+	BufRd.ar(1,a,Sweep.ar(1, Env([44099,44099,10],[4,1],-1).kr(2)) - 0.1, loop:1.0,interpolation:4)
+	=> Out.ar(0,  _)
+}).add;
 P.synthVs(role: \kirk, take: [\lead, \double], params: {|p b| [
 	lyrics: "and we can't risk both of us being + off the ship",
 	pitchTake: [1, 3]
@@ -1121,24 +1147,44 @@ P.synthVs(role: \kirk, take: [\lead, \double], params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
-	}.play
+		// => Pan2.ar(_,0)
+		=> Out.ar(12,_)
+		}.play;
+		fork{
+			// b[0..10].sum.wait;
+			Synth(\tapeStop,12)
+		}
 
 });
 P(\powerDown,syl: 10, music: { |p b e|
 	[
 		dur: b.drop(1)[0]/6,
 		note: (0,-1..-5).q,
-		instrument: \default
-	].ppm
+		instrument: \stringyy
+	].pp;
+	[
+		dur: b.drop(1)[0]/6,
+		note: (0,-1..-5).q,
+		instrument: \sawSynthSustain,
+		pulse: 0.5, amp:0.01,
+		out: Effect.bus({|i| i => Pan2.ar(_,1) },)
+	].ppm;
 	
 });
-// (The lights go out.)
-["SULU: All power gone, sir.","r"].addLine;
+[ "(The lights go out.)","r" ].addLine;
 P.still(\darkness, timecode: 606.789.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
 	)
+});
+["SULU: All power gone, sir.","3 2 1 -7, -5".dm(\g,\minor)].addLine;
+P.tune();
+P(\chord,syl:2, music: { |p b e|
+	(
+		strum: 0.05,
+		freq: [-1,1,3,5,11].df(\d,\minor,4)
+	).play
 });
 P.still(\suluSpeaks, timecode: 609.739.seconds, music: { |p b e|
 	 e.still.( 
@@ -1146,24 +1192,46 @@ P.still(\suluSpeaks, timecode: 609.739.seconds, music: { |p b e|
 		text: ["",""],
 	)
 });
-["KIRK: On the other hand, perhaps this Sargon would like you to come with us.","r"].addLine;
+["KIRK: On the other hand, perhaps this Sargon would like you to come with us.","1 2 3 2 1 2 3 4.5".dm(\e) ++ "3 1".dm('a-',\minor) ++ "2 3 1 3 4.5 2".dm('a-')].addLine;
+P.tune();
 P.still(\kirkPerhaps, timecode: 615.180.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["on the","other hand"],
 	)
 });
-// (Power is restored.)
+[ "-Power is restored-","1 2 1.5 2 2.5 3 4 5".dm('a-') ].addLine;
+// P.tune();
+P(\connector, music: { |p b e|
+	[
+		freq: "1 2 1.5 2 2.5 3 4 5  4 ]".df('a-',4).q,
+		dur: b ++ e.bNext[0] => _.flat => _.q,
+		instrument: \stringyy, amp:0.2
+	].pp;
+	[
+		freq: "1 2 1.5 2 2.5 3 4 5 6".df('a-',3).q,
+		dur: b ++ e.bNext[0] => _.flat => _.q,
+		instrument: \harp, amp:0.02
+	].pp;
+});
 P.still(\powerBask, timecode: 621.572.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
 	)
 });
-["SPOCK: Fascinating.","r"].addLine;
-
-["SULU: All normal. No damage at all.","r"].addLine;
-["KIRK: I see.","r"].addLine;
+["SPOCK: Fascinating.","11 5 3 1".dm('c#')].addLine;
+P(\connector, music: { |p b e|
+	
+	[
+		freq: [11, 5, 3, 1, -4].df('c#',4).q,
+		dur: b ++ e.bNext[0] => _.q,
+		instrument: \sawSynthSustain, pulse: 0.5
+	].ppm
+});
+P.tune();
+// ["SULU: All normal. No damage at all.","r"].addLine;
+// ["KIRK: I see.","r"].addLine;
 [" Will you transport down with us, Mister Spo--ck?","1 -5 1 2 3 2 1 -5 -4 -4 -3".dm('f#')].addLine;
 P.still(\kirkWillYou, timecode: 631.425.seconds, music: { |p b e|
 	 e.still.( 

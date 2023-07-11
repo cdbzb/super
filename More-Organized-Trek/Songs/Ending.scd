@@ -84,11 +84,9 @@ P.synthV(role: \henoch, take: \lead, params: {|p b| [
 		});
 P.still(\henoch_close, timecode: 4809.9.seconds, music: { |p b e|
 			e.still.( 
-				wait: b.sum,
+				wait: b.parse([3]).unbubble,
 				text: ["pain","captain"]
-			).sequenceText([
-				b.parse([4]).unbubble, ["and you","my dear"]
-			])
+			)
 		});
 P.still(\kirk_pain,syl:2, timecode: 4813.3.seconds, music: { |p b e|
 			e.still.( 
@@ -97,13 +95,13 @@ P.still(\kirk_pain,syl:2, timecode: 4813.3.seconds, music: { |p b e|
 			);
 			(freq:6.df(\g) + [0,5,11,23] , out: Effect.bus({|i| DWGReverbC1C3.ar(i) },)).play
 		});
-/* P.still(\nurse_pain, syl:7, timecode:4820.seconds, music: { |p b e|
-			e.still.( 
-				wait: b.drop(1)[0],
-				text: ["",""],
-			)
-		}); */
 P.tune(\Pain);
+P.still(\turnedHead,syl:3, timecode: 4814.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["and you","my dear"],
+	)
+});
 P(\chord,start:\Pain,music:{|p b e| 
 			MegaBind(
 				[
@@ -157,7 +155,14 @@ P(\bassNote2,start:\Pain,music:{|p b e|
 			].p.play
 		});
 	}.value;
+//TIME Leave time
 [ "As Kirk and Mulhall double over, McCoy dashes to Spock's side, to inject him. /*SPOCK*/ Fortunately, Doctor," ,[-14.5,3,2,1,-7,-6.5,-7].dm(\f,scale:\minor)].addLine;
+P.still(\comboShot, timecode: 4819.5.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 ( Song.synthVTracks=EventWithDefault(
 	\default, {
 		{
@@ -189,7 +194,7 @@ P(\bassNote2,start:\Pain,music:{|p b e|
 		}
 	}
 ));
-P.still(\bridge, timecode: 4821.seconds, music: { |p b e|
+P.still(\bridge,syl:0, timecode: 4821.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["fortunately","doctor"],
@@ -316,21 +321,16 @@ P(\drums, music: { |p b e|
 [ "See? (to Chapel) Take the hypo from him. And inject him with it. " ,[1,5,5,12,12,6,6].dm(\a,octave:4) ++ [5.5,6,7,5,3,1].dm(\c,scale:\mixolydian)].addLine;
 P.still(\henochToChapel, timecode: 4829.566.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
+		wait: b[0..6].sum,
 		text: ["see?","take the hypo from him"],
-	).sequenceText2(
-			b.parse([7]), [ 
-			["and inject","him with it"],
-			],
-	)
-});
+	)});
 Song.durs.filter( _ * [1.5,1,1,1,1,1,1,1,1,1,1,1,1] );
 P.tune( _ <> (instrument: \sparkTriangle) );
 P.synthVs(role: \henoch, take: [ \lead, \double ],
 		filter: (midinote:  { |i| i - 12 + [12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}),
 		params: {|p b| [
 		lyrics: "See Take the hypo + from him. And inject + him with it. ",
-		legato: [ [0.6, 1,1,1,1,1,0.8, 1,1,1,1,1,0.7] ],
+		legato: [ [0.6, 1,1,1,1,1,0.4, 1,1,1,1,1,0.7] ],
 		lag: [ [0.1, 0,0,0,0,0,0,0,0,0,0,0,0] ],
 		pitchTake: [1,3]
 	] }, music:{|p b e|
@@ -343,22 +343,25 @@ P.synthVs(role: \henoch, take: [ \lead, \double ],
 		}.play
 	});
 	// P.tune('Take the hypo');
-["move move","e- e"].addLine;
-P.still(\chapelMoves, timecode: 4835.04.seconds, music: { |p b e|
+P.still(\chapelMoves,syl:6, timecode: 4835.04.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b[0],
 			text: ["",""],
 		)
 	});
-P.still(\chapelMoves2,syl:0, timecode: 4840.05.seconds, music: { |p b e|
+["move move","e- e"].addLine;
+Song.durs('move move',{|i| i/4});
+P.still(\chapelMoves2,timecode: 4840.05.seconds, music: { |p b e|
 		 e.still.( 
-			wait: b[1],
+			wait: b.sum,
 			text: ["",""],
 		)
 	});
-P.tune( _ <> (instrument: \stringyy, amp:0.4 ) );
+// P.tune( _ <> (instrument: \stringyy, amp:0.4 ) );
 [ "(But she injects Spock/Henoch instead! He leaps from his seat.) /*SPOCK*/ Fools. I'll simply transfer to another place, another body. " ,[-6,11.5,3,4,11,7,11, 7, 6, 5, 11, 7, 2, 6,6.5,2,4,3].dm(\e,octave:4)].addLine;
-P.still(\stab, timecode: 4842.20.seconds, music: { |p b e|
+P.still(\stab, timecode:
+	// 4842.20.seconds,
+	4842.45.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b[0..1].sum, 
 			text: ["",""],
@@ -805,7 +808,7 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 			}.play
 
 		});
-P.still( \wide, start: \stands, timecode:4956.5.seconds, music: { |p b e|
+P.still( \wideAlive, start: \stands, timecode:4957.2.seconds, music: { |p b e|
 			e.still.value(
 				wait: b.sum,
 				fade:4,
@@ -1136,6 +1139,12 @@ P(\chord,start:'MCCOY: S',music:{|p b e|
 
 		});
 ["SPOCK: It seems, Doctor, the injection was (boom) only enough to cause unconsciousness. ",[5,11,5,3,11,7,6,4,1,-3,4,3,2,5,6,5,6,5.5,6,5.5].dm('b-',octave:4)].addLine;
+P.still(\spockSargon, timecode: 5012.8.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P(\answer,syl:17, music: { |p b e|
 	[
 		freq: [6, 5.5, 6, 5.5].df('b-',[4]).q,
@@ -1279,6 +1288,12 @@ P(\chord,start:'He is (boom)',music:{|p b e|
 	).play
 });
 ["KIRK: But your vessel was destroyed, too. Where was your consciousness kept? ",[7,13,11,7,5,4,3,4,5,-7].dm(\g,scale:\mixolydian)++[7,11,14,13,11,7,5].dm(\d,scale:\mixolydian)].addLine;
+P.still(\kirkVessel, timecode: 5019.66.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \kirk, take: nil, params: {|p b| [
 			filter: (midinote: _ - 12), 
 			lyrics: "But your vessel - + - was destroyed + too. Where was your consciousness + +  kept? ",
@@ -1292,6 +1307,12 @@ P.synthV(role: \kirk, take: nil, params: {|p b| [
 
 		});
 ["SPOCK: The place Henoch would least suspect, Captain. ",[2,3,4,3,1,5,4,6, 4,3].dm(\e,scale:\whole)].addLine;
+P.still(\spockPlace, timecode: 5025.4.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \spock, take: \lead, params: {|p b| [
 			filter: (midinote: _ - 12), 
 			lyrics: "The place Henoch + would least suspect +, Captain + ",
@@ -1849,6 +1870,12 @@ P(\echo,start:'echo',music:{|p b e|
 				].pp
 			});
 ["KIRK: Is there any way we can help you, Sargon? ",[12,11,13,11,7,6,5,11,7,7,6].dm(\c)].addLine;
+P.still(\kirkHelp, timecode: 5051.6.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	lyrics: "Is there any + way we can help you Sargon + ",
 	filter: (midinote: _ - 12), 
@@ -2080,6 +2107,7 @@ P(\chord,start:\last,music:{|p b e|
 		).play
 });
 ["(Mulhall nods, and they go over to the science station for the light trick and voice change.) ","g r r" ].addLine;
+Song.durs.filter(\nods,_ + [1,0,0]);
 // P.tune(\nods);
 Song.durs.filter( _ + [0,0,5] );
 P(\nod,start:\nods,music:{|p b e| 
@@ -2101,13 +2129,21 @@ P(\nod,start:\nods,music:{|p b e|
 		amp:0.05
 	).play
 });
-P.still( \chapel, start: \nods, timecode:5105.58.seconds, music: { |p b e|
-	e.still.value(
-		wait: 1,
-		fade:1
-	);
+P.still(\kirkNod, timecode: 5105.8.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b[0]/2,
+		text: ["",""],
+	)
 });
-P.still( \walking, start: \nods, syl:0, timecode:5110.5.seconds, music: { |p b e|
+P.still( \chapel, start: \nods, timecode:5105.58.seconds, music: { |p b e|
+	{
+		e.still.value(
+			wait: 1,
+			fade:1
+		);
+	}.defer(b[0]/2)
+});
+P.still( \walking, start: \nods, syl:0, timecode:5108.7.seconds, music: { |p b e|
 	e.still.value(
 		wait: 1,
 		fade:2
@@ -2319,12 +2355,60 @@ P(\arp2,start:'frighten',music:{|p b e|
 [" Promise we'll be together. ",[6,5,3,5,6,11,7,6].dm('b-')].addLine;
 P.tune('Promise',Pset(\instrument,\stringyy,_));
 ["KIRK: I promise, beloved. ","r"].addLine;
+P.still(\kirkPromise, timecode: 5132.4.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 ["MULHALL: Together forever. ","r"].addLine;
+P.still(\herAgain, timecode: 5135.6.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 ["KIRK: Forever beloved. Forever. ","r"].addLine;
+P.still(\himAgain, timecode: 5137.7.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 ["(They embrace and kiss, and the light thing happens again during it.) ","r"].addLine;
+P.still(\kiss, timecode: 5150.25.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
+P.still(\kissBlue, timecode: 5156.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 ["KIRK: Well, I'm sure that Sargon appreciated your co-operation, Doctor Mulhall. ","r"].addLine;
+P.still(\kirkBack, timecode: 5211.5.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 ["MULHALL: Yes. I was happy to co-operate, Captain. ","r"].addLine;
+P.still(\mulhallBack, timecode: 5218.35.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 ["CHAPEL: It was beautiful.","r"].addLine;
+P.still(\chapelEnd, timecode: 5223.9.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 	})
 )
 

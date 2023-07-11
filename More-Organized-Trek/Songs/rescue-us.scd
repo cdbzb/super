@@ -907,8 +907,6 @@ P(\note, music: { |p b e|
 		freq: [ 1, -6.5,3 ].df(\a,4)
 	).play
 });
-
-
 ["/*SPOCK:*/ Captain, I do wish to inspect whatever this is that lived that long ago.","7 4 7 7.5 5 6.5 7.5 11 5 3 4 2 3 5 11 12 11 7.5 7.5".dm('e',\minor)].addLine;
 P.synthV(role: \spock, take: \lead, params: {|p b| [
 	lyrics: "Captain + I do wish to inspect + whatever + + it is that lived so long ago + ",
@@ -1132,7 +1130,7 @@ P(\bassnotes, music: { |p b e|
 	].ppm;
 	
 });
-SynthDef(\tapeStop,{
+( SynthDef(\tapeStop,{
 	arg bus = 12;
 	var in = In.ar(12,1 );
 	var a =LocalBuf(s.sampleRate * 2,1);
@@ -1140,6 +1138,7 @@ SynthDef(\tapeStop,{
 	BufRd.ar(1,a,Sweep.ar(1, Env([44099,44099,10],[4,1],-1).kr(2)) - 0.1, loop:1.0,interpolation:4)
 	=> Out.ar(0,  _)
 }).add;
+);
 P.synthVs(role: \kirk, take: [\lead, \double], params: {|p b| [
 	lyrics: "and we can't risk both of us being + off the ship",
 	pitchTake: [1, 3]
@@ -1192,7 +1191,14 @@ P.still(\suluSpeaks, timecode: 609.739.seconds, music: { |p b e|
 		text: ["",""],
 	)
 });
-["KIRK: On the other hand, perhaps this Sargon would like you to come with us.","1 2 3 2 1 2 3 4.5".dm(\e) ++ "3 1".dm('a-',\minor) ++ "2 3 1 3 4.5 2".dm('a-')].addLine;
+["KIRK: On the other hand, perhaps this Sargon would like you to come with us.","1 2 3 2 1 2 3 4.5".dm(\e) ++ "3 1".dm('a-',\minor) ++ "2 3 4 2 3 4.5 2".dm('a-')].addLine;
+P(\chords, music: { |p b e|
+	[
+		freq: [\r, [-3, 1, 3, 5].df(\e), [-1, -5, 1, 3].df('a-',\minor),[-3,-5,-7,3].df('b-',\mixolydian)] /2 => _.q,
+		strum: 0.06,
+		dur: b.parse([2, 6, 7,2]).q
+	].pp
+});
 P.tune();
 P.still(\kirkPerhaps, timecode: 615.180.seconds, music: { |p b e|
 	 e.still.( 
@@ -1220,11 +1226,11 @@ P.still(\powerBask, timecode: 621.572.seconds, music: { |p b e|
 		text: ["",""],
 	)
 });
-["SPOCK: Fascinating.","11 5 3 1".dm('c#')].addLine;
+["SPOCK: Fascinating.","11 5.5 3 1".dm('c#')].addLine;
 P(\connector, music: { |p b e|
 	
 	[
-		freq: [11, 5, 3, 1, -4].df('c#',4).q,
+		freq: [11, 5.5, 3, 1, -4].df('c#',4).q,
 		dur: b ++ e.bNext[0] => _.q,
 		instrument: \sawSynthSustain, pulse: 0.5
 	].ppm
@@ -1314,5 +1320,6 @@ P(\bass, music: { |p b e|
 		dur: b.parse([ 2, 4 ]).q
 	].pp
 });
-["KIRK: Mister Sulu, you have the conn.","r"].addLine;
+["KIRK: Mister Sulu, you have the conn.","3 2 1 -7 -6 -5 -5 -6 -7 1.5".dm('f#')].addLine;
+P.tune();
 )

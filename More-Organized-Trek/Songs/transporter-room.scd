@@ -25,11 +25,17 @@ Song.synthVTracks = EventWithDefault(
 		}
 	}
 );
-	[ "MCCOY: Jim, why no briefing on this? I'd at least like to kno-o-ow what we're getting into. ",[3,4,2,5,3,1, -7, -6, -7, 1, 2, 3, 4,5, 4, 3, 4, 5, 6, 6, -7].dm(\g) ].addLine;
-	P.still(\wideShot, timecode: 645.426.seconds, music: { |p b e|
+[ "MCCOY: Jim, why no briefing on this? I'd at least like to kno-o-ow what we're getting into. ",[3,4,2,5,3,1, -7, -6, -7, 1, 2, 3, 4,5, 4, 3, 4, 5, 6, 6, -7].dm(\g) ].addLine;
+P.still(\wideShot, timecode: 645.426.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
-			text: ["",""],
+			text: ["Jim, why no briefing","on this?"],
+		).sequenceText2(
+				b.parse([7,1,8,6]), [ 
+				["",""],
+				["I'd at least","like to know"],
+				["what we're getting","in to"]
+				],
 		)
 	});
 P.synthVs(role:\mccoy, take: [ \lead, \double ], params: [
@@ -74,17 +80,21 @@ P(\keys,start:'kno-o-ow',music:{|p b e|
 			hiFreq:9000
 		].pp;
 	});
-	[ "KIRK: Easy, Bones. ","7 5 3".dm(\c,5,\mixolydian)].addLine;
-	P.still(\wideTwo, timecode: 648.890.seconds, music: { |p b e|
+[ "KIRK: Easy, Bones. ","7 5 3".dm(\c,5,\mixolydian)].addLine;
+P.still(\wideTwo, timecode: 648.890.seconds, music: { |p b e|
 		 e.still.( 
-			wait: b.sum,
-			text: ["",""],
+			wait: b.sum + e.bNext.sum,
+			text: ["easy","bones"],
+		).sequenceText2(
+				b.parse([3]) ++ [1], [ 
+					["",""]
+				],
 		)
 	});
-P.synthV(role: \kirk, take: \lead, params: {|p b| [
+P.synthVs(role: \kirk, take: [\lead, \double], params: {|p b| [
 		lyrics: "Easy + Bones",
-		legato: [1, 1, 0.85, ],
-		pitchTake: 1
+		legato: [[1, 1, 0.85, ]],
+		pitchTake: [1, 3]
 	] }, music:{|p b e|
 		{
 			e.playbuf
@@ -112,7 +122,18 @@ P('wash',start:\Easy,music: {|p b e|
 			release:3
 		].pp
 	});
-	["As long as you know there's somethi--ng down there, you know as much as we do."," 1 2 3 3 2  -5 -6 -7 1 2 1 -4 4 3 2 1 -7 2 1".dm(\c) ].addLine;
+["As long as you know there's somethi--ng down there, you know as much as we do."," 1 2 3 3 2  -5 -6 -7 1 2 1 -4 4 3 2 1 -7 2 1".dm(\c) ].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["as long as","you know"],
+	).sequenceText2(
+			b.parse([5,6, 7]), [ 
+			["there's nothing","down there"],
+			["you know","as much as we do"]
+			],
+	)
+});
 P.synthVs(role: \kirk, take: [ \lead, \double ], params:  [
 		lyrics: "As long as you know there's something + - down there, r you know as much as we do.",
 		legato: [ [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.6, ] ],
@@ -167,7 +188,7 @@ P(\click,start:'down there',music:{|p b e|
 	});
 	// P.tune('down there', Pset(\dev, [1,1,1,1,1,1,1,1,1,1,1,\r].q(2),_));
 
-	["The rest is only guesses. ","5 11 5 3 5 7 11".dm('c#',4,\harmonicMinor) ].addLine;
+["The rest is only guesses. ","5 11 5 3 5 7 11".dm('c#',4,\harmonicMinor) ].addLine;
 P.synthVs(role: \kirk, take: [ \lead, \double ], params: [
 		lyrics: "the rest is only + guesses +",
 		pitchTake: [ 1, 3 ]
@@ -208,11 +229,11 @@ P(\bass,start:\guesses,music:{|p b e|
 		].pp;
 	});
 	Trek.cast.scott=\an;
-	[ "SCOTT: I don't like it, sir. The trans-- ","1 -7 3 1 -5".dm(\c,5,\mixolydian)++" 1 -7 ".dm(\d,5,\mixolydian) ].addLine;
-	P.still(\mediumScott, timecode: 651.470.seconds, music: { |p b e|
+[ "SCOTT: I don't like it, sir. The trans-- ","1 -7 3 1 -5".dm(\c,5,\mixolydian)++" 1 -7 ".dm(\d,5,\mixolydian) ].addLine;
+P.still(\mediumScott, timecode: 651.470.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
-			text: ["",""],
+			text: ["I don't like it sir",""],
 		)
 	});
 P.synthVs(role: \scott, take: [\lead, \double],
@@ -280,7 +301,7 @@ P(\spazzPad,start:'like it',music:{|p b e|
 		
 		
 	});
-	[ "porter co-ordinates preset by an","3 1 -6.5 -5 -5.5 -5 -7 4 3 4".dm(\d)].addLine;
+[ "porter co-ordinates preset by an","3 1 -6.5 -5 -5.5 -5 -7 4 3 4".dm(\d)].addLine;
 P.synthV(role: \scott, take:\lead, params: {|p b| [
 		lyrics: "r r r r r r preset + by an",
 		pitchTake: 1,
@@ -309,7 +330,7 @@ P(\bass,start:'ordinates',syl:6,music:{|p b e|
 			dur: b.drop(1).sum.bubble ++ p.durs[e.next].list.parse([1,1]) => _.flat => _.q
 		].pp
 	});
-	["(boom boom) alien of some sort. ","-1 -1 3 2 1".dm(\e) ++ "3 2 -5".dm(\c,5,\minor)].addLine;
+["(boom boom) alien of some sort. ","-1 -1 3 2 1".dm(\e) ++ "3 2 -5".dm(\c,5,\minor)].addLine;
 P.synthV(role: \scott, take:\lead, params: {|p b| [
 		lyrics: "r r alien + + of some sort",
 		pitchTake: 1,
@@ -354,7 +375,7 @@ P(\bass,start:'some sort',music:{|p b e|
 		).play
 	});
 		
-	["(boom) You could materiali--se inside ","-1 4 3 2 4 3 2 1.5 2 ".dm(\b,4) ].addLine;
+["(boom) You could materiali--se inside ","-1 4 3 2 4 3 2 1.5 2 ".dm(\b,4) ].addLine;
 P.synthV(role: \scott, take:\lead, params: {|p b| [
 	filter: (
 		dur: _.parse([1,1,1,1,1,0.5,0.5,1,1,1]),
@@ -412,7 +433,7 @@ P(\bass,start:'rock.',music:{|p b e|
 			//.warpTo(e.tempoMap).q
 		].pp
 	});
-	["(boom boom) solid rock2. ",[1,1, 7, 6, 7, 11 ].dm(\f) ].addLine;
+["(boom boom) solid rock2. ",[1,1, 7, 6, 7, 11 ].dm(\f) ].addLine;
 P.tune(\rock2);
 	Song.setTempoMap(\rock2,"q q q e e qqqq");
 P(\chord,start:\rock2,syl:1,music:{|p b e| 
@@ -441,8 +462,8 @@ P(\bass,start:'rock2.',music:{|p b e|
 			/3
 
 			//.warpTo(e.tempoMap).q
-		].pm.play
-	});
+	].pm.play
+});
 P(\chord,start:\rock2,music:{|p b e| 
 		[
 			freq: [1,3,5,7].df(\f),
@@ -453,8 +474,16 @@ P(\chord,start:\rock2,music:{|p b e|
 			amp: [0.01] ++ (0.1!22) => _.flat =>_.q,
 			instrument:\pulse
 		].pp
-	});
+});
 	
+P(\drums, music: { |p b e|
+	var k = \bd_808, sn = \sn_808;
+	[
+		instrument: [k,k,sn].q(4),
+		dur: "q q qq q q qq q q q q".asBeats.warpTo( e.tempoMap ).q,
+		amp:0.15
+	].pp
+});
 P(\crashing,start:'rock2',music:{|p b e| 
 		//(instrument:\cymbalsDS).play
 { //Dan Stowall Cymbals
@@ -522,7 +551,7 @@ P.double(\kevin, take: \harm, params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-	[ "MCCOY: Inside solid rock? "," 1 1 7 5 13".dm(\g) ].addLine;
+[ "MCCOY: Inside solid rock? "," 1 1 7 5 13".dm(\g) ].addLine;
 P(\bass,music:{|p b e| 
 		[
 			freq: [[1, 11],[1,11]].df(\g,[2,3]).q,
@@ -556,8 +585,8 @@ P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 			=> p.synthVTracks.at(e.key).()
 		}.play
 	});
-	[ "SPOCK: Unlikely. These co-ordinates correspond with the location of the","5 11 5  7 5 4 3 2 6 4 3 2 1 -7 4 2 -6 -5".dm('c#')].addLine;
-	P.still(\mediumSpock, timecode: 707.733.seconds, music: { |p b e|
+[ "SPOCK: Unlikely. These co-ordinates correspond with the location of the","5 11 5  7 5 4 3 2 6 4 3 2 1 -7 4 2 -6 -5".dm('c#')].addLine;
+P.still(\mediumSpock, timecode: 707.733.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["",""],
@@ -576,7 +605,7 @@ P.synthV(role: \spock, take: \lead, params: {|p b| [
 		}.play
 });
 	Song.setTempoMap(\correspond,"e e e XX X X X XXX X X X X X X e e e e".asBeats * 2);
-	P.double(role:\spock,
+P.double(role:\spock,
 		take: \lead,
 		filter: (midinote: _ ), 
 		params: {|p b| [
@@ -593,7 +622,7 @@ P(\bass,start:\correspond,syl:0,music:{|p b e|
 			.q,
 			freq: 1.df('c#',3) ,
 			amp:1,
-			out: Effect(SineShaper.ar(_,0.1)).bus.index
+			out: Effect( { |i| SineShaper.ar(i,0.1) => FreeVerb.ar(i,0.01,1)} ).bus.index
 		].pp
 	});
 P(\line,start:\correspond,music:{|p b e| 
@@ -605,7 +634,7 @@ P(\line,start:\correspond,music:{|p b e|
 			legato: [4,4,1,1,1].q
 		].pp;
 	});
-	[" (boom) subterranean chamber. ", "-1 1 2 3 4 3 2 1".dm(\d,5,\minor) ].addLine;
+[" (boom) subterranean chamber. ", "-1 1 2 3 4 3 2 1".dm(\d,5,\minor) ].addLine;
 P.synthV(role: \spock, take:\lead, params: {|p b| [
 		lyrics: "r subterranean + + + + chamber +",
 		pitchTake: 1,
@@ -633,14 +662,14 @@ P(\bassnotes,start:\subterranean,music:{|p b e|
 			dur: b.parse([6,2]).q
 		].pp	
 	});
-	[ "KIRK: I have a feeling that they or it could destroy us just standing here if they or it wanted to. ","3.5 4 5 7 6 5".dm(\c,5,\minor) ++ "3 1 2 -7 1 4 3 1 6 5 3 1 3 1 2 1 -7 -5".dm('a-') ].addLine;
-	P.still(\twoShotKirk, timecode: 709.745.seconds, music: { |p b e|
+[ "KIRK: I have a feeling that they or it could destroy us just standing here if they or it wanted to. ","3.5 4 5 7 6 5".dm(\c,5,\minor) ++ "3 1 2 -7 1 4 3 1 6 5 3 1 3 1 2 1 -7 -5".dm('a-') ].addLine;
+P.still(\twoShotKirk, timecode: 709.745.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["",""],
 		)
 	});
-	P.synthV(role: \kirk, take: \lead, params: {|p b| [
+P.synthV(role: \kirk, take: \lead, params: {|p b| [
 		lyrics: "I have a feeling + that they or it could destroy + us just standing + here if they or it wanted + to. ",
 		filter: (midinote: _ - 12), 
 		legato: [1, 1, 1, 1, 0.8, 0.8, 0.8, 1, 0.8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1, 0.8, 1, 1, 1, ],
@@ -658,8 +687,8 @@ P(\bass,start:\feeling,syl:5,music:{|p b e|
 			dur: b.drop(1).parse([2,3,3,4,3,3]).q
 		].pp;
 	});
-	[ "MULHALL: They or it? "," 3 1 5.5".dm(\c) ].addLine;
-	P.still(\revealMul, timecode: 719.294.seconds, music: { |p b e|
+[ "MULHALL: They or it? "," 3 1 5.5".dm(\c) ].addLine;
+P.still(\revealMul, timecode: 719.294.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["",""],
@@ -671,7 +700,7 @@ P(\bass,start:\feeling,syl:5,music:{|p b e|
 			text: ["",""],
 		)
 	}); */
-	P.synthV(role: \mulhall, take: \lead, params: {|p b| [
+P.synthV(role: \mulhall, take: \lead, params: {|p b| [
 		lyrics: "they or it",
 		legato: [0.8, 1, 0.5, ],
 		pitchTake: 1
@@ -683,7 +712,7 @@ P(\bass,start:\feeling,syl:5,music:{|p b e|
 	});
 	Song.mulhallTune=Pset(\out,Effect(EchoNone.ar(_,0.3,0.3,4)*0.5).bus.index,_);
 P.tune('it?',Song.mulhallTune);
-	[ "KIRK: Who are you? (boom) ","3 1 7 -6".dm(\f,5,\mixolydian) ].addLine;
+[ "KIRK: Who are you? (boom) ","3 1 7 -6".dm(\f,5,\mixolydian) ].addLine;
 P.still(\mulhallFace, timecode: 720.756.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.parse([3]).sum,
@@ -698,7 +727,7 @@ P.still(\mulhallFace, timecode: 720.756.seconds, music: { |p b e|
 			text: ["",""],
 		)
 	}); */
-	P.synthV(role: \kirk, take: \lead, params: {|p b| [
+P.synthV(role: \kirk, take: \lead, params: {|p b| [
 		lyrics: "who are you r",
 		filter: (midinote: _ - 12), 
 		legato: [0.8, 1, 0.5, ],
@@ -729,8 +758,8 @@ P(\chord,start:'you?',syl:2,music:{|p b e|
 		text: ["",""],
 	)
 }); */
-	[ "MULHALL: Doctor Ann Mulhall, Astro-biology.",[7, 11, 3, 5, 4.5, 6, 6.5, 2, 4, 3, -5].dm(\d,6  , /* tuning:\sept1 */) ].addLine;
-	P.still(\overTheShoulder, timecode: 734.830.seconds, music: { |p b e|
+[ "MULHALL: Doctor Ann Mulhall, Astro-biology.",[7, 11, 3, 5, 4.5, 6, 6.5, 2, 4, 3, -5].dm(\d,6  , /* tuning:\sept1 */) ].addLine;
+P.still(\overTheShoulder, timecode: 734.830.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["",""],
@@ -760,7 +789,7 @@ P(\chord,start:\biology,syl:4,music:{|p b e|
 		).play
 	});
 P.tune(\biology,Song.mulhallTune );
-	[ "Well, I was ordered to report here for landing party duty. ", [3, 2, 3, 6, 5.5].dm('c#',6) ++ [4, 5, 6, 7, 5, 11, 5, 4, 3, 2, 1].dm(\c,6) ].addLine;
+[ "Well, I was ordered to report here for landing party duty. ", [3, 2, 3, 6, 5.5].dm('c#',6) ++ [4, 5, 6, 7, 5, 11, 5, 4, 3, 2, 1].dm(\c,6) ].addLine;
 P.tune(\landing,Song.mulhallTune);
 P.synthV(role: \mulhall, take: \lead, params: {|p b| [
 	lyrics: "Well, I was ordered + to report + here for landing + party + duty + ",
@@ -788,8 +817,8 @@ P(\bass,start:\landing,music:{|p b e|
 			dur:b.parse([4]).sum
 		).play
 	});
-	[ "KIRK: By whom? ",[7, 13].dm(\c,4,\mixolydian) ].addLine;
-	P.synthV(role: \kirk, take: \lead, params: {|p b| [
+[ "KIRK: By whom? ",[7, 13].dm(\c,4,\mixolydian) ].addLine;
+P.synthV(role: \kirk, take: \lead, params: {|p b| [
 		lyrics: "by whom",
 		legato: [0.6, 0.6, ],
 		pitchTake: 1
@@ -809,8 +838,8 @@ P(\strum1,start:'whom?',syl:0,music:{|p b e|
 	});
 
 
-	[ "MULHALL: Strange, I'm not sure. Well, I'm not a liar, Captain. i"," 2 1 2 4 2 3 4 5 6 4 3 2".dm('e-',6,\whole) ++ [5].dm(\d,6)].addLine; 
-	P.synthV(role: \mulhall, take: \lead,
+[ "MULHALL: Strange, I'm not sure. Well, I'm not a liar, Captain. i"," 2 1 2 4 2 3 4 5 6 4 3 2".dm('e-',6,\whole) ++ [5].dm(\d,6)].addLine; 
+P.synthV(role: \mulhall, take: \lead,
 		pbind: Song.enlarge(13),
 		params: {|p b| [
 			filter: (midinote: _ - 12), 
@@ -832,7 +861,7 @@ P(\chord,start:'Strange',music:{|p b e|
 		].p.play
 	});
 P.tune('Strange',Song.mulhallTune);
-	["did receive an order to report here for duty. "," 11 5 4 3 7 6 4 2 6 5 4 3 1".dm(\d,6,\mixolydian) ].addLine;
+["did receive an order to report here for duty. "," 11 5 4 3 7 6 4 2 6 5 4 3 1".dm(\d,6,\mixolydian) ].addLine;
 P(\bass,start:'did receive',music:{|p b e| 
 		[
 			freq: [1,4,2,5].df(\d,[3,4]).q,
@@ -841,15 +870,15 @@ P(\bass,start:'did receive',music:{|p b e|
 		].pp;
 	});
 P.tune(\receive,Song.mulhallTune);
-	[ "SPOCK:(boom) I'm sure she did, Captain, Just as you received an order to bring me along. ",[1,5, 5, 6, 5, 4, 3].dm('e-') ++ [5, 6, 5, 3, 4, 5].dm(\e) ++ [5, 4, 5, 6, 6, 7, 5, 2].dm(\f) ].addLine;
-	P.still(\twoShotSpocksure, timecode: 754.077.seconds, music: { |p b e|
+[ "SPOCK:(boom) I'm sure she did, Captain, Just as you received an order to bring me along. ",[1,5, 5, 6, 5, 4, 3].dm('e-') ++ [5, 6, 5, 3, 4, 5].dm(\e) ++ [5, 4, 5, 6, 6, 7, 5, 2].dm(\f) ].addLine;
+P.still(\twoShotSpocksure, timecode: 754.077.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["",""],
 		)
 	});
 	Song.setQuarters(\along,"e e ex x q e ee  ex x e e e e  e e e e x e x q");
-	P.synthV(role: \spock, take:\lead, params: {|p b| [
+P.synthV(role: \spock, take:\lead, params: {|p b| [
 		lyrics: "r I'm sure she did captain + just as you received + an order + to bring me - along +",
 		legato: [1, 1, 1, 1, 0.7, 1, 0.7, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,],
 		filter: (midinote: _ - 12), 
@@ -860,7 +889,7 @@ P.tune(\receive,Song.mulhallTune);
 			=> p.synthVTracks.at(e.key).()
 		}.play
 	});
-	P.double(role: \spock, params: {|p b| [
+P.double(role: \spock, params: {|p b| [
 			
 		] }, music:{|p b e|
 			{
@@ -894,15 +923,15 @@ P(\bass,start:\along,music:{|p b e|
 			}
 		).play
 	});
-	[ "KIRK: Oh, yes. ","5 11".dm(\g) ].addLine;
-	P.still(\kirkToSpock, timecode: 756.738.seconds, music: { |p b e|
+[ "KIRK: Oh, yes. ","5 11".dm(\g) ].addLine;
+P.still(\kirkToSpock, timecode: 756.738.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["",""],
 		)
 	});
 
-	P.synthV(role: \kirk, take: \lead, params: {|p b| [
+P.synthV(role: \kirk, take: \lead, params: {|p b| [
 		lyrics: "oh yes",
 		filter: (midinote: _ - 12), 
 		legato: 0.5,
@@ -923,14 +952,14 @@ P(\slide,start:'Oh, yes',music:{|p b e|
 				
 		}.play
 	});
-	[ "MCCOY: Let's (boom boom) get back to this ","1 -7 -5 -7 3 2 1 ".dm(\c,5,\mixolydian) ].addLine;
-	P.still(\wideMcCoy, timecode: 805.752.seconds, music: { |p b e|
+[ "MCCOY: Let's (boom boom) get back to this ","1 -7 -5 -7 3 2 1 ".dm(\c,5,\mixolydian) ].addLine;
+P.still(\wideMcCoy, timecode: 805.752.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["",""],
 		)
 	});
-	P.synthV(role: \mccoy, take: \lead, params: {|p b| [
+P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 		lyrics: "lets r r get back to this",
 		legato: [1.5, 1, 1, 1, 0.8, 1, 1, ],
 		pitchTake: 1
@@ -951,8 +980,8 @@ P(\bass,start:'get back',music:{|p b e|
 		
 		
 	});
-	[ "( boom boom ) solid rock business...","1 1 7 6 7 11 7 6".dm('f#')].addLine;
-	P.synthV(role: \mccoy, take: \lead, params: {|p b| [
+[ "( boom boom ) solid rock business...","1 1 7 6 7 11 7 6".dm('f#')].addLine;
+P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 		filter: (midinote: _ - 12), 
 		lyrics: "r r solid + rock - business +",
 		legato: [1, 1, 1, 1, 1, 0.9, 1, 1, ],
@@ -973,8 +1002,8 @@ P(\bass,start:\business,music:{|p b e|
 	});
 		
 	//add pickup bassnote to line following?
-	[" (boom) Just how much rock are we going to go through? ","1 5 5 5 5 3 4 5 4 3 2 1 5 6 5".dm('b-') ].addLine;
-	P.still(\clear, timecode: 0.seconds, music: { |p b e|
+[" (boom) Just how much rock are we going to go through? ","1 5 5 5 5 3 4 5 4 3 2 1 5 6 5".dm('b-') ].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["just how much rock","are we going to go through"],
@@ -1037,7 +1066,7 @@ P(\bass,start:\through,music:{|p b e|
 			[3,1]/2=>_.dup(6)=>_.flat => _.warpTo(e.quarters.list ++ 1 ) ++ p.durs[e.next].list[0]	,
 			[],
 			{|i|
-			Pulse.ar( i.freqSeq/[1,2] )
+		Pulse.ar( i.freqSeq/[1,2] )
 				* (
 					Env([0,1,0.7,0],[0.02,0.7,0.3]).kr(0,gate:(i.gateSeq*i.trigSeq))
 					* 0.1
@@ -1045,14 +1074,14 @@ P(\bass,start:\through,music:{|p b e|
 			}
 		).play
 	});
-	[ "SPOCK: (boom) Approximately one hundred twelve point three five two se-- ven miles, Doctor. ","-2 6 5 4 3 4 5 3 1 6 4 ".dm(\d) ++  "5 3 1 6 4 2".dm(\a,4) ].addLine; // point three se-ven five two miles....
-	P.still(\spockTwoApprox, timecode: 808.354.seconds, music: { |p b e|
+[ "SPOCK: (boom) Approximately one hundred twelve point three five two se-- ven miles, Doctor. ","-2 6 5 4 3 4 5 3 1 6 4 ".dm(\d) ++  "5 3 1 6 4 2".dm(\a,4) ].addLine; // point three se-ven five two miles....
+P.still(\spockTwoApprox, timecode: 808.354.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["",""],
 		)
 	});
-	P.synthVs(role: \spock, take: [ \lead, \double ], params: {|p b k| [
+P.synthVs(role: \spock, take: [ \lead, \double ], params: {|p b k| [
 		lyrics: "r Approximately + + + + one hundred +  twelve point three five two seven + miles, Doctor + ",
 		filter: (midinote: _ - 12), 
 		vocalMode: \Passionate,
@@ -1092,14 +1121,14 @@ P(\fifths,start:\Approximately,syl:5,music:{|p b e|
 			}
 		).play
 	});
-	[ "MCCOY: Miles? Are you joking? ",[7,4.5,5,11,5].dm('a-') ].addLine;
-	P.still(\twoShot, timecode: 813.863.seconds, music: { |p b e|
+[ "MCCOY: Miles? Are you joking? ",[7,4.5,5,11,5].dm('a-') ].addLine;
+P.still(\twoShot, timecode: 813.863.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["",""],
 		)
 	});
-	P.synthV(role: \mccoy, take: \lead, params: {|p b| [
+P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 		lyrics: "Miles are you joking +",
 		filter: (midinote: _ - 12), 
 		legato: [0.5, 1, 1, 1, 1, ],
@@ -1123,15 +1152,15 @@ P('chord',start:'Miles?',music: {|p b e|
 			instrument:\stringyy
 		].pp
 	});
-	[ "KIRK: No, we're not. Let's go. ",[-5, -5, 1].dm(\f) ++ [ -5, 1].dm(\a) ].addLine;
-	P.still(\kirkReplyNo, timecode: 817.532.seconds, music: { |p b e|
+[ "KIRK: No, we're not. Let's go. ",[-5, -5, 1].dm(\f) ++ [ -5, 1].dm(\a) ].addLine;
+P.still(\kirkReplyNo, timecode: 817.532.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["",""],
 		)
 	});
 
-	P.synthVs(role: \kirk, take: [ \lead,\double ], params: {|p b| [
+P.synthVs(role: \kirk, take: [ \lead,\double ], params: {|p b| [
 		lyrics: "no we're not, lets go",
 		filter: (midinote: _ - 12), 
 		legato: [ [0.8, 1, 0.5, 0.8, 1, ] ],
@@ -1151,15 +1180,15 @@ P('chords',start:'No,',music: {|p b e|
 			strum:0.04,
 		].pp
 	});
-	[ "SARGON [OC]: Please stand ready. I will operate your controls. ","12 11 7 6  11 7 6 5 4 3 2 11".dm('a-') ].addLine;
-	P.still(\sargonStandReady, timecode: 825.114.seconds, music: { |p b e|
+[ "SARGON [OC]: Please stand ready. I will operate your controls. ","12 11 7 6  11 7 6 5 4 3 2 11".dm('a-') ].addLine;
+P.still(\sargonStandReady, timecode: 825.114.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			fadeIn: b.parse([4]).sum,
 			text: ["",""],
 		)
 	});
-	P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 		lyrics: "Please stand ready + I will operate + + your controls +",
 		filter: (midinote: _ - 24), 
 		pitchTake: 1,
@@ -1181,8 +1210,8 @@ P('bass',start:\operate,music: {|p b e|
 		].pp
 	});
 P.tune('stand ready', _ <> (instrument: \stringyy));
-	["( transporter! )","r",[8]].addLine;
-	P.still(\transporting, timecode: 845.028.seconds, music: { |p b e|
+["( transporter! )","r",[8]].addLine;
+P.still(\transporting, timecode: 845.028.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["",""],

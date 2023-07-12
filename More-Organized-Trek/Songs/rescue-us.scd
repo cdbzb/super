@@ -1135,17 +1135,18 @@ P(\bassnotes, music: { |p b e|
 		freq: [\r, 1, 5, 6, 5, 4, 3].df(\e,3).q,
 		instrument: \sparkTriangle,
 		amp: 0.05,
-		out: [ 0,1 ],
+		// out: [ 0,1 ],
+		out: [ 12,13 ],
 		dur: b.parse([4,3, 1, 1, 1, 1, 1]).q
 	].ppm;
 	
 });
 ( SynthDef(\tapeStop,{
 	arg bus = 12;
-	var in = In.ar(12,1 );
-	var a =LocalBuf(s.sampleRate * 2,1);
+	var in = In.ar(12,2 );
+	var a =LocalBuf(s.sampleRate * 2,2);
 	BufWr.ar(in, a, Sweep.ar(1, 44100), 1.0 );
-	BufRd.ar(1,a,Sweep.ar(1, Env([44099,44099,10],[4,1],-1).kr(2)) - 0.1, loop:1.0,interpolation:1)
+	BufRd.ar(2,a,Sweep.ar(2, Env([44099,44099,10],[4,1],-1).kr(2)) - 0.1, loop:1.0,interpolation:1)
 	=> Out.ar(0,  _)
 }).add;
 );
@@ -1165,6 +1166,13 @@ P.synthVs(role: \kirk, take: [\lead, \double], params: {|p b| [
 		}
 
 });
+P.still(\darkness,syl:10, timecode: 606.789.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum + e.bNext[0],
+		fadeIn:1,
+		text: ["",""],
+	)
+});
 P(\powerDown,syl: 10, music: { |p b e|
 	[
 		dur: b.drop(1)[0]/6,
@@ -1180,14 +1188,16 @@ P(\powerDown,syl: 10, music: { |p b e|
 	].ppm;
 	
 });
-[ "(The lights go out.)","r" ].addLine;
-P.still(\darkness, timecode: 606.789.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
-	)
-});
+[ "dark","r",[1] ].addLine;
 ["SULU: All power gone, sir.","3 2 1 -7, -5".dm(\g,\minor)].addLine;
+P(\gone,syl:2, music: { |p b e|
+	{
+		{ 1.df(\d,3).pareto(0.9)}!40 => SinOsc.ar(_,0,0.05)
+		=>Splay.ar(_).sin
+		* Env.perc(0.01,8).kr(2,gate:1)
+
+	}.play
+});
 Trek.cast.sulu = \an;
 Trek.presets.put(\sulu,\an,[
 	paramGender: -0.35,
@@ -1222,17 +1232,18 @@ P.still(\suluSpeaks, timecode: 609.739.seconds, music: { |p b e|
 	)
 });
 ["KIRK: On the other hand, perhaps this Sargon would like you to come with","1 2 3 2 1 2 3 4.5".dm(\e) ++ "3 1".dm('a-',\minor) ++ "2 3 4 2 3 4.5 ".dm('a-')].addLine;
-P.synthV(role: \kirk, take: \lead,
+P.synthVs(role: \kirk, take: [\lead, \double],
 	pbind: Song.enlarge(1),
 	 params: {|p b| [
 	filter: (midinote: _ - 12), 
 	lyrics: "On the other + hand, perhaps +  this Sargon +  would like you to come with us",
-	legato: [1,1,1,1,0.8, 1,1,0.8, 1,0.7, 1, 1, 1, 1, 1, 1,1.3 ],
-	pitchTake: 1
+	legato: [[1,1,1,1,0.8, 1,1,0.8, 1,0.7, 1, 1, 1, 1, 1, 1,1.3 ]],
+	pitchTake: [1, 3]
 ] }, music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_,0)
 	}.play
 
 });
@@ -1240,7 +1251,8 @@ P(\chords, music: { |p b e|
 	[
 		freq: [\r, [-3, 1, 3, 5].df(\e), [-11,-1, -5, 1, 3].df('a-',\minor), [-11,-1].df('a-'),[-1,1,3].df('a-'),[-3,-5,-7,3].df('b-',\mixolydian)] /2 => _.q,
 		strum: 0.06,
-		dur: b.parse([2, 6, 1, 2,4,2]).q
+		dur: b.parse([2, 6, 1, 2,4,2]).q,
+		out: Effect.bus({|i| i.sin => HPF.ar(_,[ 300,400 ]) => FreeVerb.ar(_,0.5,1) },)
 	].pp;
 	[
 		instrument: \help_oteypiano,
@@ -1275,7 +1287,8 @@ P(\connector, music: { |p b e|
 });
 P.still(\powerBask, timecode: 621.572.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
+		wait: b.sum + e.bNext.sum,
+		fadeIn:b.sum,
 		text: ["",""],
 	)
 });
@@ -1309,14 +1322,15 @@ P.still(\kirkWillYou, timecode: 631.425.seconds, music: { |p b e|
 		text: ["",""],
 	)
 });
-P.synthV(role: \kirk, take: \lead, params: {|p b| [
+P.synthVs(role: \kirk, take: [\lead, \double], params: {|p b| [
 	lyrics: "Will you transport + down with us, Mister + Spock -",
-	legato: [1, 1, 1, 1, 1, 1, 0.7,   1, 1, 1],
-	pitchTake: 1
+	legato: [[1, 1, 1, 1, 1, 1, 0.7,   1, 1, 1]],
+	pitchTake: [1, 3]
 ] }, music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_,0)
 	}.play
 
 });
@@ -1385,6 +1399,21 @@ P(\bass, music: { |p b e|
 	].pp
 });
 ["KIRK: Mister Sulu, you have the conn.","3 2 1 -7 -6 -5 -5 -6 -7 1.5".dm('f#')].addLine;
+// Song.setTempoMap(\Sulu,"qe e qe e qe ee e qe e q");
+
+Song.setTempoMap(\Sulu,"QQ Q QQ Q QQ Qq q QQ Q qq ");
+P.synthVs(role: \kirk, take: [\lead, \double], params: {|p b| [
+	lyrics: "Mister + Sulu - + - you have the conn.",
+	legato: [[1, 1, 1, 1, 1, 0.5, 1, 1, 1, 0.66, ]],
+	pitchTake: [1, 3]
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_,0)
+	}.play
+
+});
 P(\bassnote, music: { |p b e|
 	[
 		freq: [\r, -5, -15].df('f#',4).q,
@@ -1413,6 +1442,19 @@ P(\chord, music: { |p b e|
 			=> FreeVerb.ar(_,1,1)
 			* SinOsc.ar([3.3,4],[0,0.3]).range(0.6,1.2)
 		},)
+	].pp
+});
+P(\line, music: { |p b e|
+	[
+		freq: "3 2 1 -7 -6 -5".df('f#',4).q,
+		dur: "q q q q q q q".asBeats.warpTo(e.tempoMap).q 
+	].pp
+});
+P(\xtraBassnotes, music: { |p b e|
+	[
+		freq: [\r, -7,-7,  ].df('e-',3,\mixolydian).q,
+		amp:0.2,
+		dur: "qqqqqq qqq qq ".asBeats.warpTo( e.tempoMap ).q
 	].pp
 });
 P.tune();

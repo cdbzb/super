@@ -345,7 +345,7 @@ P.synthVs(role: \henoch, take: [ \lead, \double ],
 	// P.tune('Take the hypo');
 P.still(\chapelMoves,syl:6, timecode: 4835.04.seconds, music: { |p b e|
 		 e.still.( 
-			wait: b[0],
+			wait: b.drop(1).sum,
 			text: ["",""],
 		)
 	});
@@ -359,6 +359,7 @@ P.still(\chapelMoves2,timecode: 4840.05.seconds, music: { |p b e|
 	});
 // P.tune( _ <> (instrument: \stringyy, amp:0.4 ) );
 [ "(But she injects Spock/Henoch instead! He leaps from his seat.) /*SPOCK*/ Fools. I'll simply transfer to another place, another body. " ,[-6,11.5,3,4,11,7,11, 7, 6, 5, 11, 7, 2, 6,6.5,2,4,3].dm(\e,octave:4)].addLine;
+P.tune();
 P.still(\stab, timecode:
 	// 4842.20.seconds,
 	4842.45.seconds, music: { |p b e|
@@ -374,9 +375,10 @@ P.still(\spockFools,syl:0, timecode: 4849.seconds, music: { |p b e|
 		)
 	});
 	// P.tune(\leaps);
-P.synthV(role: \henoch, take: \lead, params: {|p b| [
-		lyrics:" r Fools. r I'll simply + ran fur to another + + place, another + + body +" ,
-		pitchTake:1,
+P.synthVs(role: \henoch, take: [\lead, \double], params: {|p b| [
+		lyrics:" r Fools. r I'll simply + trance fur to another + + place, another + + body +" ,
+		legato: [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1,1, 1, 0.6, 1, 1, 1, 1, 0.8 , ]],
+		pitchTake:[1, 3],
 		vocalMode: \Theatrical
 	] }, music:{|p b e|
 		{
@@ -386,19 +388,6 @@ P.synthV(role: \henoch, take: \lead, params: {|p b| [
 			/4
 		}.play
 });
-P.synthV(role: \henoch, take: \double, params: {|p b| [
-	
-		lyrics:" r Fools. r I'll simply + trass fur  to another + + place, another + + body +" ,
-		pitchTake:3,
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-		=> Pan2.ar(_,1)
-		/4
-	}.play
-});
-
 P(\line,start:\leaps,syl:11,music:{|p b e| 
 		MegaBind(
 				[
@@ -433,11 +422,10 @@ P(\line,start:\leaps,syl:11,music:{|p b e|
 P(\stab,start:\leaps,music:{|p b e| 
 		var amb = { |i| FoaEncode.ar(i,Song.encoders.spread)	=> FoaRTT.ar(_,SinOsc.ar(0.15).range(-pi,pi))=> Monitors.ambi(_) };
 		var g = Group.before(s.defaultGroup);
+		amb = {|i| i};
 		Synth(\cymbalsDS,[out:Effect({|i| i=> PitchShift.ar(_,0.1)=> CrossoverDistortion.ar(_) *0.065 * Env.linen(0,3,5).kr(2,gate:1) => amb }).bus.index],target:g);
 		Synth(\default,[\freq,[1,-1].df('c#',octave:[3]),out:Effect({|i| i=> CrossoverDistortion.ar(_) *0.065 * Env.linen(0,3,5).kr(2,gate:1) => amb }).bus.index],target:g);
-
 		fork{8.wait;g.free}
-		 
 	});
 //(He whirls around.) 
 ["SPOCK: Sargon! No, Sargon, please. Let me. Let me transfer. ",[11,1].dm('f')++[5,3,1].dm('b-',scale:\whole) ++ [5,5,4,3,2].dm(\d,octave:6) ++ [3,1].dm('f#',octave:6)].addLine;

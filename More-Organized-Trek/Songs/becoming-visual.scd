@@ -546,10 +546,6 @@ P.double(role: \kirk, take: \lead, params: {|p b| [
 		// => Pan2.ar(_,1)2
 	}.play
 });
-SynthDef(\help_oteypiano, { |out=0, freq=440,gate=1, amp=0.5,rho=1|
-	var son = OteyPiano.ar(freq, amp, rho:rho)*EnvGen.ar(Env.asr(0,1,0.1),gate,doneAction:2);
-	Out.ar(out, Pan2.ar(son * 0.1, LinLin.kr(freq,36.midicps,90.midicps,-0.75,0.75)));
-}).add;
 ["-stress signals have been (ba da ba da ba da).",[4, 2, -7, 1, 2, 1, -6,-6,-6,-6,-6,-6 ].dm('c#')  ].addLine;
 Song.setTempoMap(\stress,"q e e e x x  x e x e x x");
 P(\piano, music: { |p b e|

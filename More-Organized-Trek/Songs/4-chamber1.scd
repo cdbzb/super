@@ -141,7 +141,7 @@ beam = beam * (phasor - (Wrap.ar(phasor) - 0.5));
 });
 
 /*[ Chamber ] */ ["SPOCK: Captain, the security guards. ","5 3 5 7 12 7 5 3".dm(\c,\mixolydian)].addLine;
-P.still(\wide, timecode: 859.396.seconds, music: { |p b e|
+P.still(\wide, timecode: 857.6.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
@@ -168,7 +168,7 @@ P.synthV(role: \spock, take: nil, params: {|p b| [
 	});
 
 ["KIRK: Kirk here. ",[11,3].dm('c#')].addLine;
-P.still(\communicator, timecode: 908.523.seconds, music: { |p b e|
+P.still(\communicator, timecode: 902.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum + e.bNext.sum,
 		fade: 7,
@@ -217,6 +217,12 @@ P.synthV(role: \scott, take: \lead, params: {|p b| [
 	});
 
 ["KIRK: Yes, Scotty (boom), and I shouldn't be able to this deep inside the planet", [11, 7, 5, 2,  6, 7, 11, 7, 6, 7, 5, 1, 6, 6, 5, 4, 3,3,2].dm('a-')].addLine;
+P.still(\kirkClose, timecode: 916.9.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 	Song.setTempoMap('Yes',"q e e e x x E E E e e e e Q E Q E Q Eq");
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 		filter: (midinote: _ - 12), 
@@ -984,7 +990,7 @@ P.synthV("",
 });
 P.tune(\circulated);
 ["KIRK: Is that for us, or does it need fresh air? ","1 2 3 5 4 5 6 4 3 1.5 ".dm(\g,4,\whole)].addLine;
-P.still(\twoShotKirkTalk, timecode: 949.6.seconds, music: { |p b e|
+P.still(\twoShotKirkTalk, timecode: 952.7.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],

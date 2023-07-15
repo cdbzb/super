@@ -71,6 +71,13 @@ Monitors {
 		o.outDevice_("External Headphones");
 		Server.default.reboot
 	}
+	*bose{
+
+		var o =Server.default.options;
+		o.inDevice_("BoseAg");
+		o.outDevice_("BoseAg");
+		Server.default.reboot
+	}
 	*airpods {
 		var o =Server.default.options;
 		o.inDevice_("Pro Ag");

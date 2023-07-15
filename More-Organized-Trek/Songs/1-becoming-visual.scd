@@ -460,10 +460,10 @@ P(\comp,start:\attempting,music: {
 		} );
 [" Someone or something has succeeded. Our dis (boom)",[4, 1, 3, 4, 1, 3, 4].dm(\g) ++ [7, 1, 3, 2, -6.5].dm('f#',\diminished2) + 1 ].addLine;/*KIRK:*/
 Song.setTempoMap(\succ,"ex e xe Q Q E E Q Q E E qq".asBeats);
-P.still(\kirkAgain, timecode: 20.144.seconds, music: { |p b e|
+P.still(\kirkAgain, timecode: 24.6.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["someone","or something"],
+		text: ["someone","or something"]
 	).sequenceText2(
 			e.bAll.parse([5,4,9]), [ 
 			["has","succeeded"],
@@ -1199,7 +1199,7 @@ P.synthV(role: \spock, take: \lead, params: {|p b| [
 
 });
 [" Close to Earth conditions.","5 2 11 5 2 -6".dm('a-')].addLine;/*KIRK:*/
-P.still(\kirk, timecode: 48.072.seconds, music: { |p b e|
+P.still(\kirkClose, timecode: 48.072.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
@@ -1403,13 +1403,19 @@ P.still(\sargon, timecode: 105.188.seconds, music: { |p b e|
 });
 P.tune();
 [" Are your hailing frequencies open?","r",[3]].addLine;/*KIRK*/
-P.still(\kirk, timecode: 112.48.seconds, music: { |p b e|
+P.still(\kirkHailing, timecode: 110.6.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
 	)
 });
 [" No, sir.","r",[1]].addLine;/*UHURA:*/
+P.still(\UhuraSpeaking, timecode: 112.3.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 ["SARGON [OC]: I am Sargon.","1 -7 4 3".dm('c#')].addLine;
 P.still(\sargon, timecode: 114.7.seconds, music: { |p b e|
 	 e.still.( 
@@ -1585,8 +1591,13 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	}.play
 
 });
-
 ["SARGON [OC]: Please assume a standard orbit about our planet, Captain.","1 2 2 1 2 3 3 2 1 2 3/c# 4 3 2 1/e-".dm2].addLine;
+P.still(\listening, timecode: 127.7.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.still(\kirk, timecode: 132.5.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -1608,6 +1619,12 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 });
 
 [" Is that a request or demand?","3 5 7 11 13 11 7 5 15".dm(\e,\mixolydian)].addLine;/*KIRK:*/
+P.still(\kirkRequest, timecode: 131.6.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	filter: (midinote: _ - 12), 
 	lyrics: "Is that a request + or a demand +",
@@ -1634,6 +1651,13 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 		mix: 0.99
 	)
 
+});
+P.still(\sargonreads, timecode: 136.55.seconds, music: { |p b e|
+	 e.still.( 
+		 fadeIn:2,
+		wait: b.sum,
+		text: ["",""],
+	)
 });
 ["I read what is in your mind.","3 11 7 3 2 7 3".dm(\d)].addLine;
 P(\chords, music: { |p b e|
@@ -1676,6 +1700,12 @@ P(\connector, music: { |p b e|
 	].pp
 });
 [" The planet is dead.","1 1 1 1 4.5".dm(\c)].addLine;/*KIRK:*/
+P.still(\kirkDead, timecode: 143.1.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.tune(_ <>[instrument:\harp].p);
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	lyrics: "the planet + is dead",
@@ -1701,6 +1731,12 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 });
 P.tune();
 [" [OC]: And I am as dead as my planet.","5 6 5 4 3 2 3 2 1".dm('e-',\minor)].addLine;/*SARGON:*/
+P.still(\name:, timecode: .seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \vocoder, take: \lead,
 	pbind: Song.enlarge(7),
 	// filter: (midinote: _ - 12), 
@@ -1717,6 +1753,12 @@ P.synthV(role: \vocoder, take: \lead,
 });
 /// end here???
 ["Does that frighten you, James Kirk?","4 3 7 5 3 2 1/b-/mixolydian/4".dm2].addLine;
+P.still(\suluAndSomeone, timecode: 150.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.tune();
 ["For if it does,","r"].addLine;
 ["if you let what is left of me perish,","r"].addLine;

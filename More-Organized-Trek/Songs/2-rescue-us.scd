@@ -12,6 +12,12 @@ Song.synthVTracks = EventWithDefault(
 		}
 	}
 );
+P.still(\enterprise, timecode: 413.2.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 // Captain's Log. Stardate 4768.3.
 // The Enterprise is in orbit above a planet whose 
 // surface, our sensors tell us, 
@@ -155,7 +161,7 @@ P(\bass, music: { |p b e|
 "open '/Users/michael/trek/BySection/media/11-Spock&Sargon-181021_1557.rpp'".unixCmd
 */
 Song.setTempoMap(\Reading,"E E E E E e e e ee e e e");
-P.still(\spockAnswers, timecode: 506.875.seconds, music: { |p b e|
+P.still(\spockAnswers, timecode: 506.3.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
@@ -287,6 +293,12 @@ P(\answer, syl: 10, music: { |p b e|
 	].pp
 });
 ["/*SPOCK:*/ Coming from deep under the planet's surface, Captain. ","11 12 13 7 12 11 7 5 7 5 4 3 2".dm(\c,\mixolydian)].addLine;
+P.still(\spockDeep, timecode: 525.8.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 Song.setTempoMap(\Coming,"Q Q Q qq Q Q Q q e eq q q q");
 P(\arp, music: { |p b e|
 	var dur = 0.125;
@@ -733,6 +745,13 @@ P(\keys, music: { |p b e|
 
 
 ["/*SPOCK:*/ Reading a chamber now. Oxygen-nitrogen atmosphere, suitable for human life support.","3 4.5 5.5 7 5.5  2".dm(\g) ++ "1 2 3 4 5 3 11 7 2  4 3 2 3 5 3 -6.5".dm('b-')].addLine;
+P.still(\spockReading, timecode: 541.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
+
 Song.setTempoMap(\nitrogen,"e x x e x xe  E E E E E E E E Ee e e e e ex x q");
 
 P(\click, music: { |p b e|
@@ -784,7 +803,7 @@ P(\bass, music: { |p b e|
 	].pp
 });
 ["/*KIRK:*/ Lieutenant Uhura, have Doctor McCoy report to the transporter room in ten minutes",[1, 1, -5, 1, 2, -5, 2, 3, 1, 3, 4, 5,4, 3,4,   5, 4, 3, 2, -6, -7, 2, 1].dm(\c)].addLine;
-P.still(\kirkReport, timecode: 545.886.seconds, music: { |p b e|
+P.still(\kirkReport, timecode: 548.7.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
@@ -842,12 +861,12 @@ P.synthV(role: \uhura, take: \lead, params: {|p b| [
 		=> Pan2.ar(_,-0.4)
 	}.play
 });
-P.still(\overTheShoulder, timecode: 536.335.seconds, music: { |p b e|
+/* P.still(\overTheShoulder, timecode: 536.335.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
 	)
-});
+}); */
 P(\chords, music: { |p b e|
 	[
 		freq: [ [ 5,7,12 ],[5,11,13] ].df(\c,3).q,
@@ -871,6 +890,12 @@ P(\connector, music: { |p b e|
 	}
 });
 ["/*KIRK:*/ Spock.","1".dm('c#')].addLine;
+P.still(\captainLookingAtSpock, timecode: 551.9.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	lyrics: "spock?",
 	pitchDelta: Env([0,300],b),
@@ -923,7 +948,7 @@ P.synthV(role: \spock, take: \lead, params: {|p b| [
 	}.play
 
 });
-P.still(\spockIDoWish, timecode: 552.591.seconds, music: { |p b e|
+P.still(\spockIDoWish, timecode: 555.0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
@@ -1265,7 +1290,7 @@ P(\chords, music: { |p b e|
 		out: Effect.bus({|i| OteySoundBoard.ar(i).sin},inputChannels:2 ,)
 	]//.pp
 });
-P.still(\kirkPerhaps, timecode: 615.180.seconds, music: { |p b e|
+P.still(\kirkPerhaps, timecode: 614.55.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["on the","other hand"],
@@ -1285,7 +1310,13 @@ P(\connector, music: { |p b e|
 		instrument: \harp, amp:0.02
 	].pp;
 });
-P.still(\powerBask, timecode: 621.572.seconds, music: { |p b e|
+P.still(\dark, timecode: 619.5.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
+P.still(\powerBask, timecode: 620.5.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum + e.bNext.sum,
 		fadeIn:b.sum,
@@ -1293,6 +1324,12 @@ P.still(\powerBask, timecode: 621.572.seconds, music: { |p b e|
 	)
 });
 ["SPOCK: Fascinating.","11 5.5 3 1".dm('c#')].addLine;
+P.still(\spockFascinating, timecode: 622.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \spock, take: \lead, params: {|p b| [
 	filter: (midinote: _ - 12), 
 	lyrics: "fascinating + + +",
@@ -1367,7 +1404,7 @@ P(\bass, music: { |p b e|
 	].pp
 });
 ["SPOCK: Evidently, Captain."," 4 3 2 1 -7 1".dm('f#')].addLine;
-P.still(\walkingOut, timecode: 636.479.seconds, music: { |p b e|
+P.still(\walkingOut, timecode: 632.5.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
@@ -1400,6 +1437,12 @@ P(\bass, music: { |p b e|
 });
 ["KIRK: Mister Sulu, you have the conn.","3 2 1 -7 -6 -5 -5 -6 -7 1.5".dm('f#')].addLine;
 // Song.setTempoMap(\Sulu,"qe e qe e qe ee e qe e q");
+P.still(\kirkConn, timecode: 633.38.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 
 Song.setTempoMap(\Sulu,"QQ Q QQ Q QQ Qq q QQ Q qq ");
 P.synthVs(role: \kirk, take: [\lead, \double], params: {|p b| [
@@ -1460,6 +1503,12 @@ P(\xtraBassnotes, music: { |p b e|
 P.tune();
 
 ["final note","1".dm('a-'),[1]].addLine;
+P.still(\walkingOut, timecode: 636.85.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.tune(_  => Padd(\midinote,[-24, -12 ],_));
 P(\plink, music: { |p b e|
 	

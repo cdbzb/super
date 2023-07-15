@@ -26,7 +26,7 @@ Song.synthVTracks = EventWithDefault(
 	}
 );
 [ "MCCOY: Jim, why no briefing on this? I'd at least like to kno-o-ow what we're getting into. ",[3,4,2,5,3,1, -7, -6, -7, 1, 2, 3, 4,5, 4, 3, 4, 5, 6, 6, -7].dm(\g) ].addLine;
-P.still(\wideShot, timecode: 645.426.seconds, music: { |p b e|
+P.still(\wideShot, timecode: 642.8.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["Jim, why no briefing","on this?"],
@@ -81,7 +81,7 @@ P(\keys,start:'kno-o-ow',music:{|p b e|
 		].pp;
 	});
 [ "KIRK: Easy, Bones. ","7 5 3".dm(\c,5,\mixolydian)].addLine;
-P.still(\wideTwo, timecode: 648.890.seconds, music: { |p b e|
+P.still(\wideTwo, timecode: 647.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum + e.bNext.sum,
 			text: ["easy","bones"],
@@ -128,8 +128,9 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 		wait: b.sum,
 		text: ["as long as","you know"],
 	).sequenceText2(
-			b.parse([5,6, 7]), [ 
-			["there's nothing","down there"],
+			b.parse([5,6,1, 6]), [ 
+			["there's something","down there"],
+			["",""],
 			["you know","as much as we do"]
 			],
 	)
@@ -189,6 +190,12 @@ P(\click,start:'down there',music:{|p b e|
 	// P.tune('down there', Pset(\dev, [1,1,1,1,1,1,1,1,1,1,1,\r].q(2),_));
 
 ["The rest is only guesses. ","5 11 5 3 5 7 11".dm('c#',4,\harmonicMinor) ].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["the rest is","only guesses"],
+	)
+});
 P.synthVs(role: \kirk, take: [ \lead, \double ], params: [
 		lyrics: "the rest is only + guesses +",
 		pitchTake: [ 1, 3 ]
@@ -818,6 +825,7 @@ P(\bass,start:\landing,music:{|p b e|
 		).play
 	});
 [ "KIRK: By whom? ",[7, 13].dm(\c,4,\mixolydian) ].addLine;
+
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 		lyrics: "by whom",
 		legato: [0.6, 0.6, ],
@@ -871,7 +879,7 @@ P(\bass,start:'did receive',music:{|p b e|
 	});
 P.tune(\receive,Song.mulhallTune);
 [ "SPOCK:(boom) I'm sure she did, Captain, Just as you received an order to bring me along. ",[1,5, 5, 6, 5, 4, 3].dm('e-') ++ [5, 6, 5, 3, 4, 5].dm(\e) ++ [5, 4, 5, 6, 6, 7, 5, 2].dm(\f) ].addLine;
-P.still(\twoShotSpocksure, timecode: 754.077.seconds, music: { |p b e|
+P.still(\twoShotSpocksure, timecode: 755.7.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["",""],
@@ -924,7 +932,7 @@ P(\bass,start:\along,music:{|p b e|
 		).play
 	});
 [ "KIRK: Oh, yes. ","5 11".dm(\g) ].addLine;
-P.still(\kirkToSpock, timecode: 756.738.seconds, music: { |p b e|
+P.still(\kirkToSpock, timecode: 759.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["",""],
@@ -1154,6 +1162,12 @@ P('chord',start:'Miles?',music: {|p b e|
 	});
 [ "KIRK: No, we're not. Let's go. ",[-5, -5, 1].dm(\f) ++ [ -5, 1].dm(\a) ].addLine;
 P.still(\kirkReplyNo, timecode: 817.532.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b.sum,
+			text: ["",""],
+		)
+	});
+	P.still(\kirkWalks,syl:2, timecode: 820.2.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["",""],

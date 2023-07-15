@@ -217,13 +217,20 @@ P.synthV(role: \scott, take: \lead, params: {|p b| [
 	});
 
 ["KIRK: Yes, Scotty (boom), and I shouldn't be able to this deep inside the planet", [11, 7, 5, 2,  6, 7, 11, 7, 6, 7, 5, 1, 6, 6, 5, 4, 3,3,2].dm('a-')].addLine;
+	Song.setTempoMap('Yes',"q e e e x x E E E e e e e Q E Q E Q Eq");
+	P(\dyads, music: { |p b e|
+		[
+			freq: [ [5, 1],[5, 1], \r, [-4, 1],[-4,1] ].df('e-',4).q,
+			dur: b.parse([1,2, 6, 2, 1]).q,
+			out: Effect.bus({|i| i * 2 => _.sin => FreeVerb.ar(_,0.01,1) /2 },out:3)
+		].pp
+	});
 P.still(\kirkClose, timecode: 916.9.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
 	)
 });
-	Song.setTempoMap('Yes',"q e e e x x E E E e e e e Q E Q E Q Eq");
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 		filter: (midinote: _ - 12), 
 		lyrics: "Yes, Scotty + r and I shouldn't +  be able + to this deep inside + the plan et",
@@ -235,12 +242,18 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 			=> p.synthVTracks.at(e.key).()
 		}.play
 
-	});
+});
+P(\deepMiddleNote,syl: 12, music: { |p b e|
+	(
+		freq: 1.df('a-',4),
+		instrument: \wash
+	).play
+});
 P.synthV(role: \kirk, take: \bg,
 		pbind: {|p b|
 			[
 			midinote:[-1,4,4,3,2,1,-7, -7].dm('a-',4,\mixolydian),
-			dur: "qqqqqe e e e e e e e".asBeats.warpTo(Song.tempoMap[\deep])
+			dur: "qqqqqe e e e e e e eq".asBeats.warpTo(Song.tempoMap[\deep])
 			 ].p
 		},
 		params: {|p b| [
@@ -260,7 +273,6 @@ P('click',start:\Yes,music: {|p b e|
 		].p
 		//p
 	});
-P.tune(\Yes);
 P('bass',start:\Yes,music: {|p b e|
 		[
 			freq:[\r,2,1,4,4,3,2,1,-7].df('a-',[3],\mixolydian).q,
@@ -271,9 +283,21 @@ P('bass',start:\Yes,music: {|p b e|
 		].pp
 	});
 [ "but perhaps this has been arranged for us, too. ","5 6 1 3 4 5 6 7 7.5 4 12".dm(\a,\minor) ].addLine;
-	
+P(\basnote, music: { |p b e|
+	[
+		freq: [ [ 1,7 ], [1,6] ].df(\c,4,\mixolydian).q,
+		instrument: \default,
+		dur: b.parse([2,4]).q
+	].ppm
+});	
+P(\middleChord,syl:6, music: { |p b e|
+	(
+		freq: [-7, 1, 3, 5].df(\b,[3, 4 ],\minor),
+		strum: 0.05
+	).play
+});
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
-	filter: (midinote: _ - 12), 
+	filter: (midinote: _ - 24), 
 	lyrics: "but perhaps + this has been arranged + for us, too. ",
 	legato: [0.7, 1, 0.8, 1, 1, 1, 1, 1, 1, 1, 1, ],
 	pitchTake: 1
@@ -304,6 +328,23 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 });
 
 /*[ Transporter Room ]*/ ["SCOTT: They're fine. They Just didn't dematerialise.","6 12 6 7 4 5 6 7 11 5 4 3".dm('e-',4)].addLine;
+Song.durs.filter(\dematerialise,{|i| var last = i.last; i.dropLast ++ (last * 0.45)});
+P(\chord, music: { |p b e|
+	[
+		freq: [ \r,[-6,1, 4].df(\c), \r, [-6,2,4].df(\c),\r,[-7,1,3].df('b-',4,\mixolydian),[-6,1,4].df('b-',4) ].q,
+		dur: b.parse([ 1,1,1, 1,1,3, 4 ]).q,
+		legato: [0.9,0.8,0.9,0.8,1,1,1 ].q(),
+		instrument: \sawSynthSustain, amp:0.03
+	].ppma
+});
+P(\connector,syl:10, music: { |p b e|
+	[
+		instrument:\stringyy,wet:0,
+		freq: [11.5, 6, 5, 11.5, 6, 4,1].df('f#',4).q,
+		dur: b.drop(1) ++ e.bNext ++ 1 => _.q,
+		out: 2,amp:0.2
+	].ppm
+});
 P.still(\backMedium, timecode: 911.670.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -371,6 +412,7 @@ P.synthV(role: \scott,
 	});
 P.tune('like it,', { |i| Pbindf(i,\legato,5,\instrument,\harp,\amp,0.02,\lag,Pwhite(-0.01,0.01),\instrument,\wash)=>Pmul(\freq,0.5,_)});
 ["KIRK: No problem yet. Maintain alert. Kirk out. ","1 5 3 4.5".dm('f#') ++ "3 4 5 1".dm(\e,\minor)++ "5 11".dm('c#')].addLine;
+// Song.durs.filter(\problem,{|i| var last = i.last; i.dropLast ++ (last * 2)});
 P(\passNote, music: { |p b e|
 	// ( instrument: \stringyy,amp:0.3, freq: 1.df('f#', [ 4 ]),attack:3,dur: b.parse(3).unbubble ).play;
 	(
@@ -402,10 +444,10 @@ P(\outChord,  music: { |p b e|
 		freq: [\r, [4, -5, -7, 12],[-1,1,5,11]  ].df('c#').q ,
 		// lagTime: [0,0.1,0.1].q,
 		instrument: \sawSynthSustain,
-		dur: b.parse([8,1,1]).q,
+		dur: b.parse([8,1,1]) * [1, 1, 0.1] => _.q,
 		// dur: b.drop(1)  => _.q,
-		att: 4, rel: 4, 
-		amp:0.05
+		att: 4, rel: 3, 
+		amp:0.1
 	].ppm
 });
 P.still(\kirkSpeaksWalkie, timecode: 917.333.seconds, music: { |p b e|
@@ -421,7 +463,8 @@ P.still(\kirkSpeaksWalkie, timecode: 917.333.seconds, music: { |p b e|
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	filter: (midinote: _ - 12), 
 	lyrics: "No problem + yet. Maintain + alert + Kirk out. ",
-	legato: [1, 1, 1, 0.5, 1, 1, 1, 0.5, 1, 0.75, ],
+	legato: [1, 1, 1, 0.3, 1, 1, 1, 0.4, 1, 0.6, ],
+	lag: [0.05,0,0,0,0,0,0,0,0,0],
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
@@ -430,13 +473,20 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	}.play
 
 });
+P(\fiveOne,syl:7, music: { |p b e|
+	[
+		freq: [5, 1].df('c#',3).q,
+		dur: b.drop(1).q,
+		legato: [1, 0.5].q
+	].pp
+});
 P(\trill,syl:8,music:{|p b e| 
 	// fork{
 		// 1.wait;
 		Song.trillSynth = Song.trillSynthFunc.(7)
 	// }
 });
-["start trill","r",[0.75]].addLine;
+["start trill","r",[2.5]].addLine;
 ["MULHALL: Atmosphere report, Captain. ",[11,7,5,4,3,2,3].dm(\b,5,\mixolydian)].addLine;
 P.tune(\Atmosphere, {|i| Pmul(\freq,[1,0.5],i) <> [out: Effect(FreeVerb.ar(_,0.8,0.8), inputChannels:2).bus.index, \legato:[6,2,5,2,4,2,3].q ].p });
 P.still(\kirk_and_mullhall, timecode: 925.04.seconds, music: { |p b e|
@@ -667,7 +717,7 @@ P.synthV(role:\spock,
 	lyrics: "They're an alloy + or substance + completely + + unknown + - to me.",
 	vocalMode: \Closed,
 	loudness: Env([0, 1, 2 ,1, 0, 3, 1, 0, 4, 2, 1, 4, 2, 0], b),
-	legato: [1,1,1,0.7, 1, 1, 0.8, 1, 1, 1, 1, 1, 1, 1, 1],
+	legato: [1,1,1,0.7, 1, 1, 0.8, 1, 1, 1, 1, 1, 1, 1, 0.7],
 	lag: [0,0,0,0,0.1,0,0,0,0,0,0,0,0,0,0]
 ] }, music:{|p b e|
 	{
@@ -703,12 +753,15 @@ P(\triller,start:\alloy,music:{|p b e|
 	{ Env([0.1,0.1,0.0001],[1,9],\sin).kr(2) }.play(s,Song.trillBus)
 });
 ["Much stronger and harder than-- ","2 6 5 4 3 7 6 5 4".dm('c#',5)].addLine;
-P.synthV(Trek.cast.spock,
+P.synthVs(Trek.cast.spock, take:[nil, \dbl],
+	pbind: Song.enlarge(3),
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
-	lyrics: "much stronger + and - harder + than -",
-	lag: [0.1,0,0,0,0,0,0,0,0],
+	lyrics: "much stronger + and - harder + than - anything + +",
+	pitchTake:[1, 3],
+	lag: [[0.05,0,0,0,0,0,0,0,0]],
 	loudness: Env([0,4,2,2,1,4,2,2,1],b),
+	legato: [[1, 1, 0.85, 1, 1, 1, 1, 1, 1, 1, 1, 0.8 ]],
 	paramTension:0.5
 ] }, music:{|p b e|
 	{
@@ -716,20 +769,14 @@ P.synthV(Trek.cast.spock,
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.double(Trek.cast.spock, params: {|p b| [
-	
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
-});
-P.tune(\harder);
+P.tune(\harder, _ <> [instrument:\default, out: Effect.bus({|i| CombN.ar(i)/2+i },)].pm);
 P('guitar',start:\Much, music: {|p b e|
 	MegaBind(
 		[
 			[5,5,5,5,5],
-			[1,-5,1,-5,1]
+			[1,-5,1,-5,1],
+			[2,\_,3,\_],
+			[12,\_,13,\_],
 		].df('c#')
 		,
 		b.parse([1,2,2,2,2]),
@@ -768,30 +815,22 @@ P('kerRecorde',start:\harder,music: {|p b e|
 	].pp
 });
 ["anything I've measured before. ","3 2 1 -7 -6 -5 -4 1 2 ".dm('b-',5,\mixolydian)].addLine;
-P.synthV(
-	Trek.cast.spock,
+P.synthVs( Trek.cast.spock, take: [\lead, \dbl],
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
-	lyrics: "anything + + I've measured + before + -",
+	lyrics: "r r r  I've measured + before + -",
+	legato:[[1, 1, 1,  1, 1, 1, 1, 1, 1.5]],
+	pitchTake:[[1, 3]],
+	paramTension:0.5,
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
-});
-P.double(Trek.cast.spock, params: {|p b| [
-	
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
+		=> p.synthVTracks.a(e.key).()
 	}.play
 });
 // Song.durs[\measured] =  Song.durs[\measured].list.dropLast ++ (Song.durs[\measured].list.last  * 0.66 ) => _.q;
-P.tune(\measured);
-Song.setTempoMap(\measured, 
-	"e e ee|q e | e x x x xeq".asBeats
-);
+Song.durs.filter(\measured, {|i| var last = i.last; i.dropLast ++ (last * 2.5)});
+Song.setTempoMap(\measured, "e e ee|q e | e x x x xeq".asBeats);
 P(\crash,start:\measured,music:{|p b e| 
 	(
 		instrument:\cymbalsDS,
@@ -998,7 +1037,7 @@ P.still(\twoShotKirkTalk, timecode: 952.7.seconds, music: { |p b e|
 });
 P.synthV(role:\kirk, params: {|p b| [
 	lyrics: "is that for us or does it need fresh air",
-	legato:[1,1,1,0.8, 1, 1, 0.9, 1, 1, 1],
+	legato:[1,1,1,0.7, 1, 1, 0.7, 1, 1, 1],
 	// paramGender: 0.3
 	vocalMode:\Clear
 ]   

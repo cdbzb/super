@@ -1095,7 +1095,9 @@ P {
               // and stores a function to preview it in resources.still (e.still)
         |key st syl lag=0 timecode=60 music|
 		var start = P.calcStart(st);
-		var aStill = timecode.isNumber.if{
+		var aStill;
+		key = key ++ start;
+		aStill = timecode.isNumber.if{
 			Still(key ++ ( Song.calcStart( start ) )=> _.asSymbol, timecode:timecode);
 		}{
 			timecode.collect{|i x|

@@ -54,16 +54,16 @@ s.waitForBoot{
 		e.still[0].value(wait:1,fade:1);
 	});
 /*SPOCK:*/[" Just a moment, Doctor. ", [12,11,13,11,5.5,5].dm('a-')].addLine; 
-P.synthV( \mo, take: \lead,
+P.synthV( role: \spock, take: \lead,
 	filter: (midinote: _ - 24), 
 	params: {|p b| [
 	lyrics: "just a moment + doctor +",
 	pitchTake: 1,
-	paramGender: 0.3,
+	paramGender: 0.2,
 	paramToneShift: 181,
 	paramBreathiness: 0.28,
 	paramTension: 0.5,
-	vocalMode: \Soft
+	vocalMode: \Rough
 
 ] }, music:{|p b e|
 	{
@@ -94,6 +94,7 @@ P.synthV(\genbu, take: \lead,
 ] }, music:{|p b e|
 	{
 		e.playbuf
+		=> {|i| CombN.ar(i,0.3,0.3,4) /2 + i}
 		// => p.synthVTracks.at(e.key).()
 		=> EarlyRef.ar(_,[0,0,0],[1,2,3])
 		=> DWGReverbC1C3.ar(_, mix:0.05)
@@ -121,10 +122,10 @@ P(\sargonBoom,start:'I am Sargon',music:{|p b|
 }
 );
 /*MCCOY:*/[" (boom boom) Where's our captain? Where's Jim Kirk? ",[11,11,15,15,14,13, 11,7,13].dm('c'),].addLine; 
-P.still(\mccoy, timecode: 1251.8.seconds, music: { |p b e|
+P.still(\mccoy,syl:1, timecode: 1251.8.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
+		wait: b.drop(1).sum,
+		text: ["where's our captain","where's Jim Kirk?"],
 	)
 });
 ~justTheTune.('our captain');
@@ -332,18 +333,19 @@ P.still(\spock, timecode: 1318.3.seconds, music: { |p b e|
 		text: ["",""],
 	)
 });
-P.synthV(\mo, take: \lead,
+P.synthV(role:\spock, take: \lead,
 	pitchTake: 1,
 	start: Song.section(\propose),
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
-	lyrics: " And if he refuses + + Doctor + r what do you propose + to do with your phay zer? +",
+	lyrics: " And if he refuses + + Doctor + r what do you propose + to do with your fay zer? +",
 	pitchTake: 1,
-	paramGender: 0.3,
+	 paramGender: 0.2,
 	paramToneShift: 181,
 	paramBreathiness: 0.28,
 	paramTension: 0.5,
-	vocalMode: \Soft
+	// vocalMode: \Soft 
+	vocalMode: \Rough
 
 ] }, music:{|p b e|
 	{
@@ -389,7 +391,7 @@ P(\bassNote5,start:'if he refuses',music:
 	].p
 );
 ["That is still Jim's body. ", [2,3,4,6,4,1].dm('a',scale:\dorian,octave:5)].addLine; 
-P.synthV( \mo, take:\lead, 
+P.synthV( role: \spock, take:\lead, 
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
 	lyrics: "that is still Jim's body +",
@@ -398,7 +400,7 @@ P.synthV( \mo, take:\lead,
 	paramToneShift: 181,
 	paramBreathiness: 0.28,
 	paramTension: 0.5,
-	vocalMode: \Soft
+	vocalMode: \Rough
 
 ] }, music:{|p b e|
 	{
@@ -406,14 +408,6 @@ P.synthV( \mo, take:\lead,
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.double( \mo, params: {|p b| [
-		
-	] }, music:{|p b e|
-		{
-			e.playbuf
-			=> p.synthVTracks.at(e.key).()
-		}.play
-	});
 P(\bassNote6,start:'still Jim',syl:1,music:
 	(freq:[1].df('f#',octave:2),instrument:\sawSynth,att:2)
 );
@@ -455,18 +449,11 @@ P.still(\kirk, timecode: 1334.2.seconds, music: { |p b e|
 		text: ["",""],
 	)
 });
-P.still(\kirk, timecode: 1333.15.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum, 
-		text: ["",""],
-		fade: b.next.sum
-	).sequenceText([
-		b.parse([4]).unbubble, ["lungs full of air","again"]
-	])
-});
 ( 
 	// Trek.cast.kirkLungs = \kevin;
-	Trek.cast.kirkLungs = \mo;
+	// Trek.cast.kirkLungs = \mo;
+	Trek.cast.kirkLungs = \teto;
+	// Trek.cast.kirkLungs = \genbu;
 	Trek.presets.put(\kirkLungs,\mo,
 		[
 			pitchExpression: 0.5,
@@ -474,6 +461,14 @@ P.still(\kirk, timecode: 1333.15.seconds, music: { |p b e|
 			paramBreathiness:0.5,
 			paramToneShift: 300,
 			vocalMode:\Soft
+		]
+	);
+	Trek.presets.put(\kirkLungs,\teto,
+		[
+			paramGender: 0.625,
+			// paramBreathiness:0.5,
+			paramToneShift: 200,
+			vocalMode:\Power
 		]
 	);
 	Trek.presets.put(\kirkLungs,\kevin,
@@ -495,7 +490,7 @@ P.synthV(role: \kirkLungs, take:\lead, start: Song.section(\filled),
 	params: {|p b key| [
 	// lyrics: "r r r r lanz ful af er a gen r r r",
 	lyrics: "r r r r lungs full of air again + r r r",
-	phonemes: ( key == \genbu ).if{ ["","","","","l a n z","f u l","a v","e r","a","g e n"] },
+	phonemes: ( key == \genbu ).if{ ["","","","","l a N z","f u l","a v","e r","a","g e i n"] },
 	pitchTake: 1,
 	pitchExpression:1.3
 
@@ -686,8 +681,9 @@ P.synthV(role:\kirkLungs, take: \continuation,
 		midinote: _ - 12,
 		dur: Song.durs[\see].list ++ Song.durs[Song.section(\see)+1].list[0..1] => _.flat * [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0.3]
 	), 
-	params: {|p b| [
+	params: {|p b k| [
 	lyrics: "r r r r r r r r r r r r r r r r r r r r heart pumping +",
+	phonemes: (k == \genbu).if { ["","","","","","","","","","","","","","","","","","","","","h a r t","p a m ","p i N" ] } ,
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
@@ -731,10 +727,10 @@ P(\lungsB8,music:
 			pulse:1,
 			dur:~eighths8,
 		].pm(\pulser)
-	);
+);
 	//, 2/3,[1/3,1],1/5,1/5,1/5,1/5,1/5,1,1]).q;
 	//TempoClock.tempo=1
-	["pumping, arteries surging with blood again. A", [13,5].dm('c') //9
+["pumping, arteries surging with blood again. A", [13,5].dm('c') //9
 	++ [3,2,1].dm('f',scale:\minor ) ++[3,4,5].dm('g')
 	++ [13,12,5, 7].dm('e')
 	,[ 0.879, 4.798, 0.646, 0.62, 2.428, 0.686, 0.629, 0.657, 3.151, 0.498, 1.36, 0.499 ]

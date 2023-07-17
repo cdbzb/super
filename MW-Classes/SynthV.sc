@@ -118,6 +118,15 @@ SynthV {
 				'backendType': "SVR2AI",
 				'version': "105"
 			),
+			teto: (
+				'name': "Kasane Teto",
+				'language': "japanese",
+				'phoneset': "romaji",
+				'languageOverride': "english",
+				'phonesetOverride': "arpabet",
+				'backendType': "SVR2AI",
+				'version': "100"
+			),
 			asterian: (
 				'name': "ASTERIAN",
 				'language': "english",

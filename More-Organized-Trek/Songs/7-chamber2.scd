@@ -142,6 +142,26 @@ P(\bassLine,music:[
 ].p
 );
 ['/*SPOCK:*/ Captain, do you know what happened? Do you remember any part of it? ',[13,11,7,11,12,13,14,13 ].dm('g',octave:4,scale:\mixolydian)++[7,11,12,14,13,12,11,13,11,5].dm('a',octave:4,scale:\mixolydian)].addLine; 
+P(\basslinePhraseTwo, music: { |p b e|
+	fork{
+		var r = Barrier.collect({
+				VarSaw.ar(\freq.kr(300,0.3),0,0.5) / 10
+				* Env([0,1,1,0],[0.2,b.sum+4,4]).kr(1,gate:\gate.kr(1))
+				=> Pan2.ar(_,\pan.kr(0))
+				=> {|i| Convolution.ar(i, Dust.ar(50) => Decay.ar(_,0.0005) )
+				=>CombN.ar(_, 0.2,0.11,5)
+			/8 + i => {|i| CombN.ar(i,0.2,0.2,4) } }
+			=> HPF.ar(_,800)
+		}.asDefName );
+		[
+			// instrument: r.value[0].postln,
+			instrument: \default,
+			freq: [1, [1, -7 ], [2, -6 ]].df(\g,5,\mixolydian).q /[2],
+			dur: b.parse([6, 9, 3]).q,
+			pan: [-0.5,0.5]
+		] => _.ppm
+		}		
+});
 P.synthV( role: \spock, take: \lead,  
 filter: (midinote: _ - 12),  params: {|p b| [
 lyrics: "captain +  do you know what happened +  do you remember + +  any + part of it",
@@ -151,6 +171,7 @@ vocalMode: \Rough
 {
 	e.playbuf
 	=> p.synthVTracks.at(e.key).()
+	=> Pan2.ar(_,0.7)
 }.play
 });
 P.still(\spockClose, timecode: 1932.7.seconds, music: { |p b e|
@@ -274,12 +295,12 @@ P(\bass,syl:1,music:[
 ].pm(\stringyy)
 );
 ['/*MCCOY:*/ He doesnt appear to be harmed - -. Physically, anyway. ',[4,5,6,5,4,5,6, 7,11,7].dm('e' )++[13,11,7,5,4,3].dm('e-',scale:\mixolydian)].addLine; 
-P.still(\mccoyWide, timecode: 1945.5.seconds, music: { |p b e|
+/* P.still(\mccoyWide, timecode: 1945.5.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
 	)
-});
+}); */
 P.synthV(role: \mccoy, 
 	filter: (midinote: _ - 12),  params: {|p b| [
 		lyrics: "he does n't a ppere to be harmed - -  physicly + + anyway + +",
@@ -366,6 +387,7 @@ P(\chord,music:{ |p b e|
 	}
 	);
 
+
 	['When Sargon and I exchanged, ',[6,5,4,5,6,7,11].dm('e-',octave:4)].addLine; 
 	P.still(\clear, timecode: 0.seconds, music: { |p b e|
 		 e.still.( 
@@ -375,13 +397,14 @@ P(\chord,music:{ |p b e|
 	});
 P.synthV(role: \kirk, params: {|p b| [
 		lyrics: "When Sargon + and I exchanged +",
+		legato: [1, 1, 1, 1, 1, 1, 0.7, ],
 	] }, music:{|p b e|
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
 		}.play
 	});
-	// P.tune();
+	// P.tune()
 P(\chord,syl:5,music:{|p b e|
 		( 
 			strum:0.09,
@@ -415,6 +438,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 });
 P.synthV(role: \kirk, params: {|p b| [
 	lyrics: "as we passed each other + for an instant + " ,
+	legato: [1, 1, 1, 1, 1, 0.8, 1, 1, 1, 1, ],
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -896,7 +920,7 @@ P.synthV(role: \mccoy, filter: (midinote: _ - 12), take:\lead,  params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.tune();
+P.tune( _ <> [instrument:\stringyy, wet:0].pm );
 //	P(\tune,music:Song.currentSong.pbind[20]);
 P('swell20',lag: -0.1,music:{|p b e|
 	(
@@ -1457,3 +1481,4 @@ P(\bass,music:
 //MUTED);
 }
 )
+

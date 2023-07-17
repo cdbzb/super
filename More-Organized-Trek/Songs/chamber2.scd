@@ -22,7 +22,7 @@ P(\pains,  music: {
 		=>Out.ar(\out.kr(0),_)
 	}.play 
 });
-P.still(\pain, timecode: 1914.629.seconds, music: { |p b e|
+P.still(\pain, timecode: 1911.2.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum +1,
 		text: ["",""],
@@ -30,7 +30,13 @@ P.still(\pain, timecode: 1914.629.seconds, music: { |p b e|
 	)
 });
 ['then the sphere glows bright again' , "c"].addLine;
-P.still(\glows, timecode: 1917.8.seconds, music: { |p b e|
+P.still(\reax, timecode: 1912.6.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
+P.still(\glows,lag:2, timecode: 1917.8.seconds, music: { |p b e|
 	 e.still.( 
 		 fadeIn:2,
 		wait: b.sum,
@@ -49,12 +55,6 @@ P(\sphere,  music: { |p b e|
 	}.play.dur(p.secDur[e.start],5)
 });
 ['and he falls to his knees.' ,"r" ].addLine;
-P.still(\knees, timecode: 1918.5.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
-	)
-});
 P(\knee,music:{ |p b e |
 	[ 
 		strum:0.05,
@@ -67,24 +67,11 @@ P(\knee,music:{ |p b e |
 	].p.fin.play
 });
 [ /*MCCOY*/ 'Is it you, Jim? (a nod)', [3,4,7,5, 5.5].dm('d')  ].addLine; 
-/* P.still(\group, timecode: 1922.6.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["is it you","Jim?"],
-	)
-}); */
-
 Song.durs.filter(\nod, {|i| i + [0,0,0,0,0.25]});
-P.still(\mccoyCloseup, timecode: 1808.6.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.parse([4]).sum,
-		text: ["is it you","Jim?"],
-	)
-});
-P.still(\sensor,syl:3, timecode: 1926.66.seconds, music: { |p b e|
+P.still(\sensor, timecode: 1926.66.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["is it you,","Jim?"],
 		fade: 1
 	)
 });
@@ -113,10 +100,19 @@ P(\nod,syl:3,music:{ | p b e |
 			* Env.linen(0.2, b.drop(1).sum,  releaseTime: 2.0,  level: 1.0,  curve: \lin).kr(2)
 		}.play;
 });
-// P(\nod, music: { |p b e|
-// 	
-// });
+P.still(\senser, timecode: 1928.1.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 ['Good, his metabolic rate is back to normal.',[15,14,15,16.5,15,14,13,12,15,12,11,7].dm('a',scale:\harmonicMinor,octave:4)].addLine;
+P.still(\tricorder, timecode: 1929.2.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -157,7 +153,7 @@ vocalMode: \Rough
 	=> p.synthVTracks.at(e.key).()
 }.play
 });
-P.still(\spockClose, timecode: 1505.seconds, music: { |p b e|
+P.still(\spockClose, timecode: 1932.7.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["Captain, do you know","what happened"],
@@ -196,7 +192,7 @@ P.synthV(role: \kirk, params: {|p b| [
 });
 P.still(\kirk,
 	// timecode: 1943.066.seconds, //group
-	timecode: 1519.000.seconds, //close
+	timecode: 1941.05.seconds, //close
 	music: { |p b e|
 	 e.still.( 
 		wait: b.sum + e.bNext.sum,

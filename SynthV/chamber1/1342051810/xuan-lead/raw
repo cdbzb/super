@@ -29,7 +29,7 @@ o = [
 	"cubic",  Event.prNew,  Array.prNew(8),  Array.prNew,  
 	"cubic",  Event.prNew,  Array.prNew(8),  Array.prNew,  
 	"cubic",  Event.prNew,  Array.prNew(8),  Array.prNew,  
-	"cubic",  Event.prNew,  Array.prNew(8),  Array.prNew,  
+	"cubic",  Event.prNew,  Array.prNew(8),  Array.prNew(10),  
 	"cubic",  Event.prNew,  Array.prNew(8),  Array.prNew,  
 	"cubic",  Event.prNew,  Array.prNew(8),  Array.prNew,  
 	"cubic",  "c55226b8-e035-4fc6-a857-aacf2bbe7548",  Event.prNew,  Array.prNew(40),  
@@ -409,6 +409,10 @@ p = [
 	// Array
 	118, [ 'points',  o[119],  nil,  nil,  
 		nil,  nil,  'mode',  o[120] ],  
+	// Array
+	119, [ 0.0,  0,  1830326400.0,  4,  
+		3163910400.0,  0,  4124937600.0,  5,  
+		6888067200.0,  1 ],  
 	// Event
 	121, [ array: o[122],  size: 2,  
 		proto: nil,  parent: nil,  

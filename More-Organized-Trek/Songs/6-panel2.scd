@@ -1,7 +1,8 @@
 (
 s.waitForBoot{
 	Song.new(\panel2,[]).current;
-	Stills("/Users/michael/tank/Trek/video for stills etc/media/return to tomorrow.mov").current;
+	// Stills("/Users/michael/tank/Trek/video for stills etc/media/return to tomorrow.mov").current;
+	Stills.new().current;
 	Song.resources.infrastructure=FunctionList.new.array_([]);
 	~syn1=Synful();
 	Song.resources.infrastructure.addFunc({TempoClock.tempo_(1).postln});
@@ -79,6 +80,12 @@ P.still(\spock,\moment,timecode:1238.seconds,music:{|p b e|
 });
 /*KIRK:*/[" (boom) I am Sargon. ",[6,6,5,11,1].dm('c#',scale:\minor)].addLine; 
 ~justTheTune.('I am Sargon',{|i|i=>_.drop(1)},syl:0);
+P.still(\kirkNewVoice, timecode: 1247.8.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(\genbu, take: \lead,
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
@@ -93,18 +100,6 @@ P.synthV(\genbu, take: \lead,
 		* -2.dbamp
 	}.play
 });
-P.still(\stillsGag,start:'I am Sargon',timecode:[633,633.04],music: { |p b e|
-	fork{
-		7.do{
-			e.still[0].value;
-			0.5.rand.wait;
-			e.still[1].value;
-			0.5.rand.wait;
-		}
-	}
-
-}
-);
 P(\sargonBoom,start:'I am Sargon',music:{|p b|
 	(
 		instrument:\stringyy,
@@ -424,7 +419,6 @@ P(\bassNote6,start:'still Jim',syl:1,music:
 );
 
 [/* Insert */"(lungs intro - 4 eights)","r" ].addLine;
-
 //Song.durs[Song.section('lungs intro')].list.asArray.quantize(0.2)
 
 //MUTEDP(\tempo7,start:'lungs intro',music:{
@@ -444,7 +438,12 @@ P.still(\dumx4,start:'lungs intro',timecode:1257.5.seconds, music:{
 
 	].p.fin(6).play;
 	//{~stills.preview(\lungs1)}.defer
-	e.still.value
+});
+P.still(\kirkmore, timecode: 1325.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
 });
 
 
@@ -881,7 +880,7 @@ P(\base10,start:\million,
 	)
 );
 ["(boom boom boom boom )To be again.", [11,11,7,7,15,15,13,13].dm('c#',octave:4) ].addLine;
-P.still(\kirk, timecode: 1348.8.seconds, music: { |p b e|
+P.still(\kirk, timecode: 1350.9.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
@@ -911,12 +910,26 @@ P(\bass11,start:'To be',music:[
 //	["Your captain has an excellent body, Doctor McCoy. I ","r"].addLine; 
 //	["compliment you both on the condition in which you maintained it. ","r",].addLine;
 ///*SPOCK:*/[" What are your plans for it? Can you exchange places again when you wish? ","r",].addLine; 
-///*KIRK:*/[" Have no fear. Your captain is quite unharmed, although his mind generates insufficient energy for him to speak from there as I do.","r",].addLine; 
-/*SPOCK:*/[" Doctor? ","d4 a-3",].addLine; 
-P.still(\wide, timecode: 1441.seconds, music: { |p b e|
+/*SPOCK:*/[" Can you exchange places again when you wish? ","r",[2.4]].addLine; 
+P.still(\spock, timecode: 1421.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["can you exchange","again when you wish"],
+	)
+});
+// /*KIRK:*/[" Have no fear. Your captain is quite unharmed, although his mind generates insufficient energy for him to speak from there as I do.","r",].addLine; 
+/*KIRK:*/[" Have no fear. Your captain is quite unharmed,","r",[3]].addLine; 
+P.still(\sargonAnswer, timecode: 1426.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["have no fear",""],
+	)
+});
+/*SPOCK:*/[" Doctor? ","d4 a-3",].addLine; 
+P.still(\wide, timecode: 1435.8.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["Doctor?",""],
 	)
 });
 ~justTheTune.('Doctor?');
@@ -929,6 +942,12 @@ P(\tremDoctor,start:'Doctor?',music:
 	)
 );
 /*MULHALL:*/[" Yes, I have the same readings. ","e5 b-4 c5 d b-4 f#5 d"].addLine; 
+P.still(\mulhall, timecode: 1438.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["yes I have","the same readings"],
+	)
+});
 P.synthV(role: \mulhall, take: \lead,
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
@@ -953,6 +972,12 @@ P(\tremReadings,start:'same reading',music:
 // ~justTheTune.('the same readings');
 //Song.durs[ 'Doctor?' ].list
 /*MCCOY:*/[" Are you aware of what's happening to his body? ",[7,11,5,13,12,11,7,11,5, 7,11,14,13].dm('f',scale:\mixolydian),[ 0.295, 0.347, 0.315, 0.566, 0.3, 0.322, 0.291, 0.313, 0.6065, 0.278, 0.361, 0.62, 0.633 ]].addLine; 
+P.still(\mccoy, timecode: 1439.8.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["are you aware",""],
+	)
+});
 P.synthV(role: \mccoy, 
 	take:\lead, params: {|p b| [
 	lyrics: " Are you aware + of what's happening + + to his body? + ",
@@ -1197,13 +1222,7 @@ P('want of us',start:'want of us',music:
 );
 
 /*KIRK:*/[" In the ne-- xt room, there are /*other*/ two receptacles. ", [1,2, 3,2 ,2, 2,3, 4,3,3,2,1, ].dm(\a) ].addLine;
-P.still(\kirk, timecode: 1455.4.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
-	)
-});
-P.still(\kirkAndOrb, timecode: 1451.20.seconds, music: { |p b e|
+P.still(\kirkAndOrb, timecode: 1453.4.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["in the","next room"],

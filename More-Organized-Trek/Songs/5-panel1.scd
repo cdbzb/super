@@ -59,7 +59,7 @@ P.synthVs(role: \spock, take: [\dbl, \lead ], params: {|p b| [
 	}.play
 });
 /*SARGON:*/[" You may use your tricorder, Mister Spock.","3 2 5 3 1 -7 -6 -6 -5 2".dm(\b,4)].addLine;
-P.still(\illumjinated, timecode: 1031.2.seconds, music: { |p b e|
+P.still(\illumjinated, timecode: 1024.6.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["you may use","your tricorder"],
@@ -156,6 +156,12 @@ P.synthV(\xuan,
 		);
 });
 ["energy but no substance. ","3 2 3 2 1 -7 1 -7 -6 -5 4 3 3 1 2 -7".dm(\e)].addLine;
+P.still(\wideEnergy, timecode: 1030.85.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 Song.setTempoMap(\substance,"e e e e e e e e e e e e e e e");
 P(\licklet, syl: 11,music: { |p b e|
 	[
@@ -459,6 +465,12 @@ P(\bass,start:\essence,music: { |p b e|
 	=> _.play
 });
 ["my mind outtro",[1, 11,7,6,6,5,6,7,7,6,5,5 ].dm(\b,\mixolydian) ].addLine;
+P.still(\spockClose, timecode: 1034.5.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 Song.setTempoMap(\outtro, "q qe ee e qq q q q qe ee e q" );
 P.tune(\outtro, [ instrument:\sawSynthSustain, pulse:0.44, trigger:1,amp:0.15 ].pm <> _); //need to make it pulse
 P('bass',start:\outtro,music: {|p b e|
@@ -504,33 +516,14 @@ P('click',start:\outtro,music: {|p b e|
 	].pp
 });
 /*SPOCK:*/[" (boom) Pure energy. Matter without form. ","-4 11 7 6 5".dm(\c) ++ "7 6 5 4 11".dm(\e,\mixolydian)].addLine; 
-
-// P.still(\closeSpock, timecode: 1039.229.seconds, music: { |p b e|
-// 	 e.still.( 
-// 		wait: b.sum,
-// 		text: ["",""],
-// 	)
-// });
 Song.setTempoMap(\Pure,"qq qq Q Q Q QQ QQ Q Q qq");
-P.still(\tricorder,timecode:1035.seconds,music:{ |p b e|
+P.still(\tricorder,timecode: 1037.75.seconds,music:{ |p b e|
 	e.still.(
 		wait: b.sum,
-		fade: 1.5
+		fade: 1.5,
+		text: ["pure energy","matter without form"]
 	)
 });
-/* P.still(\energy,syl:0,timecode:1037.seconds, music: {|p b e|
-	e.still.(
-		wait:b.sum - b.drop(1)[0]/2,
-		text: ["",""],
-		monitor:0,
-		fade:2,
-		fadeIn: b.drop(1)[0]/2
-	).sequenceText([
-		b.drop(1)[0]/2,["pure","energy"],
-		b.drop(1)[1..4].sum, ["matter","without form"]
-	]
-	)
-}); */
 Song.energyDur=0.1;
 // Song.durs[\Pure] = "qq qq Q Q Q QQ QQ Q Q qq    qq qq qq qq".asBeats * Song.energyDur * 4  => _.q;
 // P.tune();
@@ -910,6 +903,12 @@ P(\vibes, music: { |p b e|
 	}
 });
 /*KIRK:*/[" That's twice you've referred to us as my children. ","1 6 2 3 2 3 7 6 6 7.5 2".dm(\f,\mixolydian) ].addLine; 
+P.still(\kirk, timecode: 1051.1.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["that's twice",""],
+	)
+});
 // P.tune(\That);
 P(\bonk, syl:6, music: { |p b e|
 	{
@@ -939,6 +938,7 @@ P.synthV(Trek.cast.kirk,
 P.still(\litAgain, timecode: 1045.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
+		fade: 8,
 		text: ["",""],
 	)
 });
@@ -1202,6 +1202,12 @@ P('bassNote',start:\vastness,music: {|p b e|
 (freq:[11,5].df(\b,3),instrument:\defaultPiano,dur:b.sum).play
 });
 ["As you now leave your own seed on distant planets, ",[1,3,1,4,3,1,3,4,5,3,7,6].dm(\d,\dorian)].addLine;
+P.still(\altWide, timecode: 1107.1.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 Song.setTempoMap(\planets, "q q q qq qq q e e q q qq qq");
 P(\kick, music: { |p b e|
 	[
@@ -1381,7 +1387,7 @@ P(\chords, music: { |p b e|
 	].pp
 });
 /*MULHALL:*/[" Our studies indicate that","1 -7 -6 2 -7 -5 -4".dm('c#')].addLine;
-P.still(\wideAgainMulhall, timecode: 1119.582.seconds, music: { |p b e|
+P.still(\wideAgainMulhall, timecode: 1121.35.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
@@ -1415,6 +1421,7 @@ P.synthVs(role: \chapel, take: [ \lead, \double ],
 });
 P.tune();
 ["life on our planet, Earth, evolved independently. ","3 2 4 3 1 -5 -6 2 1 -7 -6 1 -4".dm('c#'),].addLine; 
+
 P.synthVs(\ninezero, take: [ \lead, \double ],  params: {|p b| [
 	filter: (midinote: [5, 5, 6].dm('c#'), dur: b.parse([ 6, 1, 3 ])), 
 	lyrics: "Life evolved +",
@@ -1532,6 +1539,12 @@ P.synthVs(role: \spock, take: [ nil,\lead ],params: {|p b| [
 });
 // P.tune();
 /*SARGON:*/[" In any case, I do not know. (baby) It was","5 11 5 3  7 6 5 5 6 5 4 3 4  ".dm(\d,\mixolydian)].addLine;
+P.still(\sargonAny, timecode: 1139.9.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 Song.durs[\In].list.do(_.postln);
 Song.setTempoMap(\In,"e | e e qe e e e e eq e e e e ");
 P(\cymbals, syl:0, music: { |p b e|
@@ -1700,7 +1713,7 @@ P('arpeggio',start:\war,syl:0,music: {|p b e|
 P.tune(\war);
 /*SARGON:*/["A struggle for such goals and the unleashing of such ","5 6 1 6 7 4 3.5 4 5  ".dm('a-',4,\minor) ++ [11, 3.5, 7, 6].dm(\f,4,\minor)].addLine;
 P.tune();
-P.still(\litStruggle, timecode: 1140.seconds, music: { |p b e|
+P.still(\litStruggle, timecode: 1104.4.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
@@ -1808,7 +1821,7 @@ P(\chord,syl:7, music: { |p b e|
 
 // /*SARGON:*/[" One day our minds became so powerful, we dared think of ourselves as gods. ","r",].addLine; 
 /*KIRK:*/[" You said you wanted our help. What is it you wish? ","1,2,3,5,4,3,7".dm(\f,\mixolydian) ++ "1 2 3 5 7".dm(\g,\mixolydian),].addLine; 
-P.still(\kirkHelp, timecode: 1226.635.seconds, music: { |p b e|
+P.still(\kirkHelp, timecode: 1148.4.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],

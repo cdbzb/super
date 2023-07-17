@@ -22,7 +22,6 @@ s.waitForBoot{ Song(\chamber1,[]).current;
 	}
 )
 );
-
 ( Song.trillStart = { |lowerNoteDegree p b e octave=5 amp=0.03|
 	Song.trillFreq=lowerNoteDegree;
 	3.do{
@@ -225,14 +224,14 @@ P(\connector, music: { |p b e|
 	].pp
 });
 ["KIRK: Yes, Scotty (boom), and I shouldn't be able to this deep inside the planet", [11, 7, 5, 2,  6, 7, 11, 7, 6, 7, 5, 1, 6, 6, 5, 4, 3,3,2].dm('a-')].addLine;
-	Song.setTempoMap('Yes',"q e e e x x E E E e e e e Q E Q E Q Eq");
-	P(\dyads, music: { |p b e|
-		[
-			freq: [ [5, 1],[5, 1], \r, [-4, 1],[-4,1] ].df('e-',4).q,
-			dur: b.parse([1,2, 6, 2, 1]).q,
-			out: Effect.bus({|i| i * 2 => _.sin => FreeVerb.ar(_,0.01,1) /2 },out:3)
-		].pp
-	});
+Song.setTempoMap('Yes',"q e e e x x E E E e e e e Q E Q E Q Eq");
+P(\dyads, music: { |p b e|
+	[
+		freq: [ [5, 1],[5, 1], \r, [-4, 1],[-4,1] ].df('e-',4).q,
+		dur: b.parse([1,2, 6, 2, 1]).q,
+		out: Effect.bus({|i| i * 2 => _.sin => FreeVerb.ar(_,0.01,1) /2 },out:3)
+	].pp
+});
 P.still(\kirkClose, timecode: 916.9.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -337,7 +336,8 @@ P('chord',start:\perhaps,syl:9,music: {|p b e|
 		freq: 
 		[ -7,1,5 ].df('e',\mixolydian) *.t [1,-1.midiratio] => _.flop
 		=> _.q,
-		instrument:\stringyy, freqLag:1
+		instrument:\stringyy, freqLag:1,
+		dur: b.drop(1) ++ e.bNext[0] =>_.q
 	].ppm
 	});
 ["Is the security guard up there?","1 2 3 4 3 2 1 3 5".dm('e-',\lydian)].addLine;
@@ -369,6 +369,13 @@ P(\dyads, music: { |p b e|
 	].pp
 });
 /*[ Transporter Room ]*/ ["SCOTT: They're fine. They Just didn't dematerialise.","6 12 6 7 4 5 6 7 11 5 4 3".dm('e-',4)].addLine;
+P(\bassnote,syl:0, music: { |p b e|
+	(
+		instrument: \sawSynthSustain,
+		att: 1,
+		freq: 1.df(\f,4),amp:0.03
+	).play
+});
 Song.durs.filter(\dematerialise,{|i| var last = i.last; i.dropLast ++ (last * 0.45)});
 P(\chord, music: { |p b e|
 	[
@@ -381,7 +388,7 @@ P(\chord, music: { |p b e|
 P(\connector,syl:10, music: { |p b e|
 	[
 		instrument:\stringyy,wet:0,
-		freq: [11.5, 6, 5, 11.5, 6, 4,1].df('f#',4).q,
+		freq: [11.5, 6, 5, 11.5, 6, 4,4].df('f#',3).q,
 		dur: b.drop(1) ++ e.bNext ++ 1 => _.q,
 		out: 2,amp:0.2
 	].ppm
@@ -523,7 +530,7 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 });
 P(\bassnote, music: { |p b e|
 	(
-		freq: 1.df('f#',3)
+		freq: 1.df('f#',4)
 	).play
 });
 P(\fiveOne,syl:7, music: { |p b e|
@@ -1061,12 +1068,17 @@ P.tune(\circulated);
 P.still(\twoShotKirkTalk, timecode: 952.7.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["is that for","us"],
+	).sequenceText2(
+			b.parse([4]), [ 
+			["or does it","need fresh air"],
+			],
 	)
 });
 P.synthV(role:\kirk,take: \lead, params: {|p b| [
 	lyrics: "is that for us or does it need fresh air",
 	legato:[1,1,1,0.7, 1, 1, 0.7, 1, 1, 1],
+	loudness: Env([0,4,0,5,1],b.parse([3,1,2,3])),
 	// paramGender: 0.3
 	vocalMode:\Clear
 ]   
@@ -1121,14 +1133,23 @@ P(\pad,start:'fresh air',music:{|p b e|
 		).play
 	}
 });
+P(\itAccent, music: { |p b e|
+	[
+		freq: [\r,1.df('e-',4), 1.df(\f,[4])].q,
+		instrument: \harp,
+		out: Effect.bus({|i| FreeVerb.ar(i,0.5,1) => Pan2.ar(_, SinOsc.kr(2.5)) }/5,),
+		dur: b.parse([3,3, 4]).q
+	].pp
+});
 ["(door opens and...)","f#"].addLine;
 P.still(\door, timecode: 958.25.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
+		 fadeIn:1,
+		wait: b.sum + e.bNext.sum,
 		text: ["",""],
 	)
 });
-P.still(\closedd, timecode: 957.29.seconds, music: { |p b e|
+P.still(\closedd,lag:0.01, timecode: 957.29.seconds, music: { |p b e|
 	 e.still.( 
 		// wait: b.sum,
 		wait: 1,
@@ -1156,10 +1177,18 @@ P(\crunch,start:\opens,music: { |p b e|
 	}.play
 });
 ["I am Sargon!","1 2 1 -7 -7".dm('b',5,\harmonicMinor)].addLine;
-P.still(\globe, timecode: 1005.24.seconds, music: { |p b e|
+P.still(\globe,lag:0.5, timecode: 1005.24.seconds, music: { |p b e|
 	 e.still.( 
+		 fadeIn:2,
 		wait: b.sum,
-		text: ["I am","am Sargon"],
+		text: ["I","am Sargon"],
+		fade:2
+	)
+});
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum + 2,
+		text: ["I","am Sargon"],
 	)
 });
 P.synthV(role: \vocoder, params: {|p b| [

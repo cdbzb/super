@@ -25,18 +25,6 @@ P.synthV(role:\sargon,
 	range:[0,15], params: {|p b| [
 		// lyrics: "even +  for as a half million + years is alost  too long to wait",
 		lyrics: "i ven fo as a haf mi ryan yiryz iz or mosyt tsu lang tsu weit",
-P.still(\waliking, timecode: 1626.0.seconds, music: { |p b e|
-P.still(\waliking, timecode: 1626.0.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
-	)
-});
-	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
-	)
-});
 		phonemes:[ "i","v e n","f o","a s","","h a f","","","y i r y z","i z","","","","","","" ],
 		legato: [1, 1, 0.8, 0.9,1, 0.8, 1, 0.90, 0.8, 1, 1, 1, 1, 0.85, 1, 1, 1]
 	]}, filter: (
@@ -1148,6 +1136,12 @@ P.tune();
 );
 ~section= Song.sections.postln;
 ["/*KIRK:*/(boom) I will return your captain to you before the body limit has been reached. ",[-1,1,2,3,4,3,5,3,2,1,4,5,6,7,6,5,6,5,4,3].dm('c',scale:\mixolydian)].addLine;
+P.still(\sargonReturn, timecode: 1817.3.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role:\sargon, filter:(midinote: _-12), params: {|p b| [
 	lyrics: "r,   ai, wil, ri, taan, yur, kap, ten, tu, yu,   bi, fo, za, ba, di, li, mit, haz,     bin, richt, ",
 	phonemes:["", "", "",  "", "",   "",  "",  "",  "", "",   "", "", "", "", "", "", "",  "h a z", ""  ],
@@ -1607,7 +1601,7 @@ P(\chord,start:'to us',syl:3,music:
 	}
 );
 ["/*MULHALL*/We have engineers, technicians, ",[11,7,11,5,3,5,5,4].dm('f#',scale:\mixolydian)].addLine;
-P.still(\mulhall, timecode: 1845.4.seconds, music: { |p b e|
+P.still(\mulhall, timecode: 1846.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
@@ -1666,7 +1660,6 @@ P(\tune,start:\technicians,music:
 	    ) => _.play
 	}
 );
-
 ["why can't they (just) build your robots for you?", [7,6,7,4,2,4,4,3,2,1].dm('f#',scale:\mixolydian)].addLine;
 P(\tune,start:\why,music:Song.currentSong.pbind[~intend+4]
 	=>Pbindf(_,\effect,
@@ -1779,14 +1772,30 @@ P.synthV(role: \sargon, take: \secondPart,
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-
 P(\tune,start:\far,music:Song.currentSong.pbind[~intend+6]
 );
-
 {
 	Song.lick=Array.series(4,0,2).collect(_+[11,12,7.5,11].dm('c#',octave:5,scale:\diminished )).flatten ;
 
 	["time dum dum dum dum dum etc ",Song.lick].addLine;
+	P.still(\exit, timecode: 1901.2.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b.sum,
+			text: ["",""],
+		)
+	});
+	P.still(\entering,syl:5, timecode: 1903.8.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b.sum,
+			text: ["",""],
+		)
+	});
+	P.still(\onwar,syl:11, timecode: 1907.1.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b.sum,
+			text: ["",""],
+		)
+	});
 	P(\bassnote, music: { |p b e|
 		(
 			freq: [1,-1].df('c#',[ 3, 4 ]),

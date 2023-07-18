@@ -4,10 +4,9 @@
 		*newOld { |function out=0 inputChannels=1|
 			^super.new.init(function , out,inputChannels);
 		}
-		*new { |function out=0 inputChannels=1 target|
+		*new { |function out=0 inputChannels=1 target time|
 			^super.new.init(function , out,inputChannels, target);
 		}
-
 		*newSidechain {|function out=0 inputChannels=1| ^super.new.initSidechain(function,out,inputChannels) }
 
 		*new2 {|function out=0 inputChannels=1| ^super.new.init(function,out,inputChannels)}
@@ -45,7 +44,7 @@
 event.yield
 		}
 
-		init { |function out inputChannels=1 target |
+		init { |function out inputChannels=1 target time=1 |
 			var desc=SynthDef(\temp,{In.ar(1,inputChannels)=>function=>Out.ar(0,_)});
 			numChannels=desc.asSynthDesc.outputData[0].at(\numChannels);
 			target = target ? Server.default;
@@ -53,7 +52,7 @@ event.yield
 			synth={|gate| 
 				In.ar(bus.index,inputChannels)
 				=> function
-				=>.first DetectSilence.ar(_,doneAction:2)
+				=>.first DetectSilence.ar(_, time:1, doneAction:2)
 				=> Out.ar(out,_)
 			}.play(addAction:\addToTail, target:target);
 			NodeWatcher.register(synth, assumePlaying: true);

@@ -12,7 +12,7 @@ s.waitForBoot{
 	});
 	// Song.refreshDirty(12);
 	// Trek.cast.kirk = \kevin;
-	['Kirk briefly convulses with pain', "c" ].addLine;
+['Kirk briefly convulses with pain', "c" ].addLine;
 P(\pains,  music: { 
 	Song.painSynth={
 		Impulse.ar(
@@ -244,7 +244,7 @@ dur: Song.currentSong.parse(7,[1,1,1,1,1,2]).q ,
 
 ].p
 	);
-	['I was floating (boom) in time and space. ',[3,4,13,11,4.5,13].dm('a')++ [13,11,6].dm('a-')++ [16,15,13,7].dm('d') ].addLine; 
+['I was floating (boom) in time and space. ',[3,4,13,11,4.5,13].dm('a')++ [13,11,6].dm('a-')++ [16,15,13,7].dm('d') ].addLine; 
 P.synthV(role: \kirk, filter: (midinote: _ - 12),  params: {|p b| [
 		lyrics: "I was floating + \r in time r r and space r r ",
 		legato: [1,1,1,1,1,1,2,1, 1, 1,2]
@@ -295,12 +295,14 @@ P(\bass,syl:1,music:[
 ].pm(\stringyy)
 );
 ['/*MCCOY:*/ He doesnt appear to be harmed - -. Physically, anyway. ',[4,5,6,5,4,5,6, 7,11,7].dm('e' )++[13,11,7,5,4,3].dm('e-',scale:\mixolydian)].addLine; 
-/* P.still(\mccoyWide, timecode: 1945.5.seconds, music: { |p b e|
+/* 
+P.still(\mccoyWide, timecode: 1945.5.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
 	)
-}); */
+});
+*/
 P.synthV(role: \mccoy, 
 	filter: (midinote: _ - 12),  params: {|p b| [
 		lyrics: "he does n't a ppere to be harmed - -  physicly + + anyway + +",
@@ -388,13 +390,13 @@ P(\chord,music:{ |p b e|
 	);
 
 
-	['When Sargon and I exchanged, ',[6,5,4,5,6,7,11].dm('e-',octave:4)].addLine; 
-	P.still(\clear, timecode: 0.seconds, music: { |p b e|
-		 e.still.( 
-			wait: b.sum,
-			text: ["when Sargon and I","exchanged"],
-		)
-	});
+['When Sargon and I exchanged, ',[6,5,4,5,6,7,11].dm('e-',octave:4)].addLine; 
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["when Sargon and I","exchanged"],
+	)
+});
 P.synthV(role: \kirk, params: {|p b| [
 		lyrics: "When Sargon + and I exchanged +",
 		legato: [1, 1, 1, 1, 1, 1, 0.7, ],
@@ -825,18 +827,18 @@ P(\line,music:{
 }.value);
 P(\bassnote,syl:3,music:(degree:3,octave:[3,2],amp:0.4,dur:2,)
 	);
-	['diculous statement I`ve ever heard. An ',[5,2,1,4,3,1,2,3,4.5,].dm('b-')++[5].dm(\d)].addLine; 
-	P.still(\clear, timecode: 0.seconds, music: { |p b e|
-		 e.still.( 
-			wait: b.sum + e.bNext.sum,
-			text: ["diculous","statement"],
-		).sequenceText2(
-				b.parse([5, 4]), [ 
-				["I've ever","heard"],
-				["an alien practically","hijacks your body and"],
-				],
-			)
-	});
+['diculous statement I`ve ever heard. An ',[5,2,1,4,3,1,2,3,4.5,].dm('b-')++[5].dm(\d)].addLine; 
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum + e.bNext.sum,
+		text: ["diculous","statement"],
+	).sequenceText2(
+			b.parse([5, 4]), [ 
+			["I've ever","heard"],
+			["an alien practically","hijacks your body and"],
+			],
+		)
+});
 P.synthV(role: \mccoy,double:true, take:\double, filter: (midinote: _ - 12),  params: {|p b| [
 	lyrics: "diculus + + statement + I've ever + heard An",
 	legato: [1, 1, 1, 1, 1, 1, 1, 1, 0.7, 1],
@@ -926,10 +928,10 @@ P('swell20',lag: -0.1,music:{|p b e|
 	(
 		curve:'sin',instrument:\swell20,attack:2,release:5,amp:0.04,freq: [1,11].df('c',octave: 3)).play
 	});
-	//['/*MULHALL:*/ I`m afraid that I must agree with Doctor McCoy. You could be suffering from a form of false euphoria. ',"r"].addLine; 
+//['/*MULHALL:*/ I`m afraid that I must agree with Doctor McCoy. You could be suffering from a form of false euphoria. ',"r"].addLine; 
 ['/*MULHALL:*/ I`m afraid I agree with Doctor McCoy. You could be suffering from a form of false euphoria.(ooh -- --) ', [ 3,4,2,3,1, 5,3,4,5,3,6, 4,5,6,11,7,2 ].dm('e',scale:\dorian) ++ [4,5,6,7].dm('c') ++ [13,14,13,12,11, 12,11,7].dm('f#',octave: 5) ].addLine; 
 Song.euphoriaTempoMap = TempoMap.new( Song.durs[\euphoria].list[(21..28)],"qe x xqe x xqe x xq q".asBeats );
-P.still(\chappelClose, timecode: 1503.seconds, music: { |p b e|
+P.still(\mulhallClose, timecode: 1503.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["I'm afraid I agree","with doctor McCoy"],

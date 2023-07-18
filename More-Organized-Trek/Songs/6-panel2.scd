@@ -459,7 +459,8 @@ P.still(\kirkmore, timecode: 1325.seconds, music: { |p b e|
 
 
 //(Kirk convulses briefly, and the sphere has dimmed a lot.) 
-/*KIRK:*/["(dum dum dum dum) Lungs filled with air again.(dum dum dum)",[1,1,1,1,3,3,3,3,2,2,2,2,2].dm('a-'),[ 0.482, 0.456, 0.47, 0.51, 0.867, 0.459, 0.515, 1.287, 0.518, 0.499, 0.489, 0.447, 0.496 ]].addLine;
+/*KIRK:*/["(dum dum dum dum) Lungs filled with air again.(dum dum dum)",[1,1,1,1,3,3,3,3,2,2,2,2,2].dm('a-')].addLine;
+Song.setTempoMap('with air',"e e e e q e e qe e e e e e");
 P.still(\kirk, timecode: 1334.2.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum + e.bNext,
@@ -524,9 +525,6 @@ P.double(role: \kirkLungs, params: {|p b| [
 			=> p.synthVTracks.at(e.key).(pan:-1)
 		}//.play
 });
-//Song.durs[7]=[ 0.499, 0.461, 0.461, 0.529, 0.919, 0.506, 0.503, 1.374, 0.536, 4.69, 0.46, 1.18, 0.488, 3.426,0.411,1.08 ].q;
-//~quarters7=Song.parse(7,[2,2,1,2,2/3,[1/3,1],2,2,2,
-//Song.durs[7]= Song.durs[7].list[0..3]!3=>_.flatten++Song.durs[7].list[4..]=>_.q;
 ~eighths7 = Song.parse(\Lungs,[1,1,1,1, 
 	//	1,1,1,1,
 	//	1,1,1,1,
@@ -564,7 +562,8 @@ P(\bass,music:
 			decay:0.70,
 			pulse:1,
 			//		dur:Pkey(\durr),
-			dur:~eighths7.quantize(0.8),
+			// dur:~eighths7.quantizeWindow(0.5),
+			dur: "e*16".beats.warpTo( e.tempoMap.quantizeDft(0.3) ).q,
 			id:Pkey(\aid)
 		].p
 		//+= Song.pbind[7]
@@ -572,16 +571,16 @@ P(\bass,music:
 		,{}).play
 	}
 );
-P(\trapsLungs,start:\Lungs,music:
+P(\trapsLungs,start:\Lungs,music: {|p b e|
 		[
 			instrument:\bd_808,
 			//		instrument:\hihat,
-			dur: ~eighths7
+			dur: "e*16".beats.warpTo( e.tempoMap.quantizeDft(0.3) ).q,
 			//		.list.quantize.q
-			,
 			//		/2=>_.stutter(2),
 			amp:0.3
-		].p
+		].pp
+	}
 );
 P(\tremoloSwell,start:\Lungs,music:
 		{
@@ -657,7 +656,7 @@ P(\innerChordLungsSyn,start:\Lungs,syl:3,music:
 		=>_.drop(4)=>_.fin(6)=>_.trace=>_.play
 	}
 );
-P(\lungs,music:{
+P(\subBass,music:{ |p b e|
 	var roots = [1,4,2,5].dm('c#',octave: 2);
 	var bars = [2,2,2,1];
 	var notes = roots.collect({|i x| [i].q(bars[x]*4)}).q;
@@ -665,11 +664,11 @@ P(\lungs,music:{
 	[
 		dur: 0.42,
 		midinote:notes,
-		//transpose:12
 	].pp
 }
 );
-["(dum *7) To see again. Heart,",[2,2,2,2, 2,2,2,4, 4,3, 3,2,2,2, 2,2,2,2,  2,2,5].dm('a-'),[ 0.49, 0.484, 0.484, 0.484, 0.491, 0.482, 0.454, 0.509, 1.389, 0.492, 0.442, 0.469, 0.474, 0.479, 0.45, 0.468, 0.462, 0.468, 0.47, 0.485, 0.914 ]].addLine; //8
+["(dum *7) To see again. Heart,",[2,2,2,2, 2,2,2,4, 4,3, 3,2,2,2, 2,2,2,2,  2,2,5].dm('a-')].addLine; //8
+Song.setTempoMap('see again',"e e e e e e e e eee e e e e e e e e e e e ee");
 ~eighths8= Song.parse(\Heart,1!8++[1/3,1/3,1/3,1,1,1,1,1,1,1,1,1,1,1,1/2,1/2],) .q;
 P.still(\clear, timecode: 0.seconds, syl:6, music: { |p b e|
 	 e.still.( 
@@ -730,28 +729,24 @@ P(\innerChordHeart,start:\Heart,syl:6,music:
 	//=>Pset(\dur,Song.durs[\Heart]+[0,0,0,0,0,0,0,0,0,0].q,_)
 	=>_.drop(7)=>_.fin(4)
 );
-P(\lungsB8,music:
-	[
-		flag:[0.1,0.2],
-		out:[0,1],
-		freq:  [2].stutter(8)++[5!5,7,7,11].flatten
-		=>_.df('a-',scale:\mixolydian,octave:2)=>_.q
-		++ 
-		(
-			[1!8,3!4,6!8].df('a-',octave:2).flatten
-			=>_.q) ,
-			decay:0.70,
-			pulse:1,
-			dur:~eighths8,
-		].pm(\pulser)
+P(\bass,music: {|p b e|
+		[
+			flag:[0.1,0.2],
+			out:[0,1],
+			freq:  [2].stutter(8)++[5!5,7,7,11].flatten
+			=>_.df('a-',scale:\mixolydian,octave:2)=>_.q
+			++ 
+			(
+				[1!8,3!4,6!8].df('a-',octave:2).flatten
+				=>_.q) ,
+				decay:0.70,
+				pulse:1,
+				dur: "e*24".beats.warpTo( e.tempoMap.quantizeDft(0.3) ).q,
+			].pm(\pulser).play
+		}
 );
-	//, 2/3,[1/3,1],1/5,1/5,1/5,1/5,1/5,1,1]).q;
-	//TempoClock.tempo=1
-["pumping, arteries surging with blood again. A", [13,5].dm('c') //9
-	++ [3,2,1].dm('f',scale:\minor ) ++[3,4,5].dm('g')
-	++ [13,12,5, 7].dm('e')
-	,[ 0.879, 4.798, 0.646, 0.62, 2.428, 0.686, 0.629, 0.657, 3.151, 0.498, 1.36, 0.499 ]
-].addLine;  
+["pumping, arteries surging with blood again. A", [13,5].dm('c') ++ [3,2,1].dm('f',scale:\minor ) ++ [3,4,5].dm('g') ++ [13,12,5, 7].dm('e')].addLine;  
+Song.setTempoMap(\arteries,"ee qqqqq ex ex eqq ex ex e qqqe e qe e");
 P.synthV(role: \kirkLungs, start:Song.section(\arteries),
 	pbind: Song.enlarge(6, Song.section(\arteries)),
 	filter: (midinote: _ - 12), 
@@ -788,20 +783,21 @@ P(\fallingSwell,start:\pumping,syl:2,music:
 	{ Pdefn(\swellChord, [5,7,11,15].dm('c')-Pseg([0,25],10)) }
 );
 //~syn1.allNotesOff
-"/Users/michael/tank/super/808-mod.scd".load;
-P(\lungsB9pmono,music:
-	[
-		flag:[0.1,0.2],
-		out:[0,1],
-		freq:  {
-			var c=List.new;
-			[11,8,14,16,13,4,12,4,6,4,5,4].pairsDo({|a b|  c.add(a!b) });
-			c.flatten.asArray.df(octave:1).q
-		}.value ,
-		decay:0.70,
-		pulse:1,
-		dur: ~eighths9.q,
-	].pm(\pulser)
+// "/Users/michael/tank/super/808-mod.scd".load;
+P(\bass,music: {|p b e|
+		[
+			flag:[0.1,0.2],
+			out:[0,1],
+			freq:  {
+				var c=List.new;
+				[11,8,14,16,13,4,12,4,6,4,5,4].pairsDo({|a b|  c.add(a!b) });
+				c.flatten.asArray.df(octave:1).q
+			}.value ,
+			decay:0.70,
+			pulse:1,
+			dur: "e*36".beats.warpTo( e.tempoMap.quantizeDft(0.33,3) ).q,
+		].pm(\pulser).play
+	}
 );
 P(\piano9,syl:7,music:
 	{
@@ -819,10 +815,9 @@ P(\piano9,syl:7,music:
 			~quarters9[12..].q
 			++ Song.parse(\million,[[1,1],[1,1],2],).q
 			,
-			effect: Effect( {|i| 
+			out: Effect.bus( {|i| 
 				HPF.ar(i.tanh,1300)
-			} ).bus.index,
-			out: Pkey(\effect),
+			} ),
 			amp:0.3,
 		].p
 		//		<> ~parent.value
@@ -830,31 +825,32 @@ P(\piano9,syl:7,music:
 	}
 );
 ["half a million years -- ", [4,1,3,4,5,4.5].dm('b') ].addLine; 
-~quarters10=Song.parseBeats(\million,[0.5,0.5,0.5,0.5,3/2]);
-~eighths10=~quarters10.stutter(2).quantizeWindow(0.2,2)/2;
-P(\lungsB10,start:\million,music:
-	{
+~quarters10=Song.parseBeats(\million,[0.5,0.5,0.5,0.5,3/2, 1/2]);
+~eighths10=( ~quarters10.stutter(2).quantizeWindow(0.2,2)/2 ); 
+P(\bass,music: {|b p e|
 		[
 			flag:[0.1,0.2],
 			//effect:Effect({|i| i*Line.kr(1,0,3)},inputChannels:2).bus.index,
 			//	out:Pkey(\effect)+[0,1],
-			out:[0,1],
+			// out:[0,1],
 			freq:  {
 				var c=List.new;
 				[5,8].pairsDo({|a b|  c.add(a!b) });
-				c.flatten.asArray.df(octave:1).q
+				c.flatten.asArray.df(octave:1)
+				.q
 			}.value ,
+			freq: 5.df(\c,1),
 			decay:0.70,
 			out:[0,1],
+			// out: Effect.bus({|i| i * EnvGen.cutoff(0.02,8,curve:-4)   }, inputChannels:2, time: 2),
 			pulse:1,
-			fadeout:[1,0,0,0,0,0].q,
-			//			amp:Pseries(0.3,-0.08),
-			amp:0.20,
-			time:2,
+			// fadeout:[1,0,0,0,0,0].q,
+			amp:0.20 * -6.dbamp,
+			time:3,
 			//fade:9,
 			dur: ~eighths10.q,
-		].pm(\pulser)
-		=>_.fin(6)
+		].pm(\pulser).play
+		// =>_.fin(9)
 		=>_.play;
 	}
 
@@ -911,7 +907,8 @@ P.synthV(role: \kirkLungs, take:\lead, params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).(pan:1)
-		* Line.kr(0.7,0.1,b.sum+2)
+		// * Line.kr(0.7,0.1,b.sum+2)
+		* Line.kr(1.2,0.3,b.sum+2)
 
 	}.play
 });
@@ -942,7 +939,15 @@ P.still(\spock, timecode: 1421.seconds, music: { |p b e|
 	)
 });
 // /*KIRK:*/[" Have no fear. Your captain is quite unharmed, although his mind generates insufficient energy for him to speak from there as I do.","r",].addLine; 
-/*KIRK:*/[" Have no fear. Your captain is quite unharmed,","r",[3]].addLine; 
+/*KIRK:*/[" Have no fear. Your captain is (boom) quite unharmed,","11 5 6 4 3 2 1 -7 5 2 2.5".dm(\c)].addLine; 
+P.tune();
+P(\bassline, music: { |p b e|
+	[
+		freq: "1 3 4 5 -7 -6.5".df(\c,[3,4]).q,
+		dur: b.parse([1, 1, 2, 3, 3, 1]).q,
+		instrument: \stringyy,mix:0,amp:0.15
+	].ppm
+});
 P.still(\sargonAnswer, timecode: 1426.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -995,6 +1000,7 @@ P(\tremReadings,start:'same reading',music:
 );
 // ~justTheTune.('the same readings');
 //Song.durs[ 'Doctor?' ].list
+
 /*MCCOY:*/[" Are you aware of what's happening to his body? ",[7,11,5,13,12,11,7,11,5, 7,11,14,13].dm('f',scale:\mixolydian),[ 0.295, 0.347, 0.315, 0.566, 0.3, 0.322, 0.291, 0.313, 0.6065, 0.278, 0.361, 0.62, 0.633 ]].addLine; 
 P.still(\mccoy, timecode: 1439.8.seconds, music: { |p b e|
 	 e.still.( 
@@ -1009,7 +1015,7 @@ P.synthV(role: \mccoy,
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		=> p.synthVTracks.at(e.key).()
+		// => p.synthVTracks.at(e.key).()
 	}.play
 });
 P.synthV(\default, take: \lead, params: {|p b| [
@@ -1112,25 +1118,32 @@ P.synthV(\mccoy, params: {|p b| [
 P(\tune15,start:\doubled,music:
 	Song.currentSong.pbind[\doubled]
 );
-P(\bass15,start:\doubled,music:Song.currentSong.pbind[\doubled]
-=>Pbindf(_,
-	\amp,0.03,
-	\lag,Pwhite(-0.005,0.005)
-)
-=>Pmul(\freq,1/4,_);
+P(\bass15,start:\doubled,music:
+	Song.currentSong.pbind[\doubled]
+	<>
+	[
+		amp:0.3,
+		lag:Pwhite(-0.005,0.005),
+		instrument: \sawSynthSustain,
+		// legato: [9,10,9,9,9,9,9,10,9].q /10
+		rel: 0.3, pulse:0.8
+	].pm
+=>Pmul(\freq,1/8,_);
 );
 P(\kick15,music:{
 	[
 		instrument:\bd_808,
-		dur:
-		Song.parse(\doubled,[1,2,2,2,2/3,[1/3,1]]).q
+		dur: Song.parse(\doubled,[1,2,2,2,2/3,[1/3,1]]).q
 		,
 		//		note:[\].q++[1].q(inf),
 		out:3,
+		amp:0.15
 	].pp
 }
 );
 ["temperature a hundred and four degrees? ",[13,12,11,7,11,12,7,13,13,16].dm('f#',scale:\mixolydian)].addLine;
+P.tune();
+Song.setTempoMap(\hundred,"e e e e Q Q Q qe e qe");
 P.synthV(role: \mccoy,
 	filter: (midinote: _ - 12), 
 	take:\lead, params: {|p b| [
@@ -1150,7 +1163,19 @@ P.synthV(\default, params: {|p b| [
 			=> p.synthVTracks.at(e.key).()
 		}.play
 });
-
+P(\bassline, music: { |p b e|
+	[
+		freq: [1,11,7,11,7,11,5, 5, 3].df('f#',3,\mixolydian).q,
+		dur: "e e e e e e eqe q q".beats.warpTo(e.tempoMap).q ,
+		instrument: \sawSynth
+	].pp
+});
+P(\kick, music: { |p b e|
+	[
+		instrument: \kick_gentle,
+		dur: "q q q q q q q e".beats.warpTo(e.tempoMap).q
+	].pp
+});
 P(\tune16,start:\temperature,music:Song.currentSong.pbind[\temperature]
 
 );

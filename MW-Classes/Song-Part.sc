@@ -216,6 +216,10 @@ Song {
 			}
 		}
 	}
+	*backOne {
+		current.cursor_(current.cursor - 1);
+		this.play
+	}
 	makeScroll {
 		Song.sections.do{ |x|
 			P(\scroll,start:x,music:{ |p b e|

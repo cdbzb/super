@@ -269,7 +269,8 @@ P.synthV(role: \mccoy, start:5, take: \lead,
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
 	lyrics: "I won't go along + with this. Back to where you were, Sargon +, or whatever + + you are. ",
-	pitchTake: 1
+	legato: [1, 1, 1, 1, 1, 1, 0.9,  1, 1, 1, 1, 0.6, 1, 0.8, 1, 1, 1, 1, 1, 1, ],
+	pitchTake: 2
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -278,6 +279,12 @@ P.synthV(role: \mccoy, start:5, take: \lead,
 		=> DWGReverbC1C3.ar(_, mix:0.05)
 		* -7.dbamp
 	}.play
+});
+P(\note, music: { |p b e|
+	[
+		freq: [\r, [1, 5].df('b-',4)] => _.flat => _.q,
+		dur: b.parse([3, 1, 1]).q
+	].pp
 });
 P('trem',start:\drawing,music: {|p b e|
 		[
@@ -291,6 +298,19 @@ P('trem',start:\drawing,music: {|p b e|
 			scale:1,
 			freqLag:1
 		].pm(\trem2).play
+});
+P(\bongbong, music: { |p b e|
+	[
+			freq: [4,4.5,5.5].df('b-',[4,3],\whole).q,
+			dur: b.parse([4,7,1]).q,
+			instrument: \harp
+	].pp
+});
+P(\connector,syl:15, music: { |p b e|
+	[
+		freq: "14 12 11 7 6.5".df('d',4).q,
+		dur: b.drop(1) ++ e.bNext[..3].sum =>_.q
+	].pp
 });
 P('trem2',start:\drawing,music: {|p b e|
 		[
@@ -338,6 +358,7 @@ P.synthV(role:\spock, take: \lead,
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
 	lyrics: " And if he refuses + + Doctor + r what do you propose + to do with your fay zer? +",
+	legato: [1, 1, 1, 1, 1, 1, 1, 1, 1,  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ],
 	pitchTake: 1,
 	 paramGender: 0.2,
 	paramToneShift: 181,
@@ -355,9 +376,6 @@ P.synthV(role:\spock, take: \lead,
 		* -7.dbamp
 	}.play
 });
-P(\bassnote5,start:'if he refuses',music:
-	(note:0)
-);
 P(\strum5,syl:3,start:'if he refuses',music:
 	(midinote: 
 		[1,3,5,11,13,15,21].dm('c',scale:\whole,octave:4),
@@ -448,8 +466,7 @@ P.still(\kirk, timecode: 1334.2.seconds, music: { |p b e|
 		text: ["",""],
 	)
 });
-( 
-	// Trek.cast.kirkLungs = \kevin;
+( // Trek.cast.kirkLungs = \kevin;
 	// Trek.cast.kirkLungs = \mo;
 	Trek.cast.kirkLungs = \teto;
 	// Trek.cast.kirkLungs = \genbu;
@@ -531,9 +548,9 @@ P.double(role: \kirkLungs, params: {|p b| [
 	}).add;
 	//MUTEDP(\tempo7,start:\Lungs,music:{{TempoClock.tempo_(0.9)}.value}
 	//MUTED);
-P(\lungsB,start:\Lungs,music:
-
-	Pproto({
+P(\bass,music:
+	{|p b e|
+		Pproto({
 			~a=(type:\on,instrument:\pulser,out:[0,1]).yield;
 			~aid=~a[\id];
 			~durr=~quarters;
@@ -547,12 +564,13 @@ P(\lungsB,start:\Lungs,music:
 			decay:0.70,
 			pulse:1,
 			//		dur:Pkey(\durr),
-			dur:~eighths7.quantize(0.2),
+			dur:~eighths7.quantize(0.8),
 			id:Pkey(\aid)
 		].p
 		//+= Song.pbind[7]
 		//=>Pn(_,2)
-		,{})
+		,{}).play
+	}
 );
 P(\trapsLungs,start:\Lungs,music:
 		[
@@ -875,16 +893,20 @@ P(\base10,start:\million,
 	)
 );
 ["(boom boom boom boom )To be again.", [11,11,7,7,15,15,13,13].dm('c#',octave:4) ].addLine;
+Song.setTempoMap('To be',"q q q e e qqqe e q");
 P.still(\kirk, timecode: 1350.9.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
 	)
 });
+
 P.synthV(role: \kirkLungs, take:\lead, params: {|p b| [
 	lyrics: "r r r r to be again +",
 	legato: [1,1,1,1,  1, 0.66, 1, 1],
-	pitchTake: 1
+	pitchTake: 1,
+	vocalMode: \Mellow,
+	paramTension: -0.1
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -893,19 +915,26 @@ P.synthV(role: \kirkLungs, take:\lead, params: {|p b| [
 
 	}.play
 });
-~bassnotes11=[11,7,6,5,4,3,2];
-~eighths11=Song.parseBeats('To be',[1,1,1,0.5,0.5, 3.5,0.5, ]).q;
 
 // P(\tune11,start:'To be',music: Song.currentSong.pbind['To be']);
-P(\bass11,start:'To be',music:[
-	freq: ~bassnotes11.df('d-',octave:2).stutter(2).q,
-	dur:~eighths11
-].p
-);
+P(\bass11,start:'To be',music:{|p b e|
+	[
+		freq: [11,7,6,5,4,3,2].df('d-',octave:2).stutter(2).q,
+		dur: "q q q q q q q q e".asBeats.warpTo( e.tempoMap ).q
+	].pp 
+});
+P(\finalChord,syl:6, music: { |p b e|
+	(
+		instrument:\wash,
+		freq: [1,3, 5,7].df('f#',4),
+		amp: 0.02
+
+	).play
+});
 //	["Your captain has an excellent body, Doctor McCoy. I ","r"].addLine; 
 //	["compliment you both on the condition in which you maintained it. ","r",].addLine;
 ///*SPOCK:*/[" What are your plans for it? Can you exchange places again when you wish? ","r",].addLine; 
-/*SPOCK:*/[" Can you exchange places again when you wish? ","r",[2.4]].addLine; 
+/*SPOCK:*/["what are your plans for Kirks body? Can you exchange places again when you wish? ","r",[2.4]].addLine; 
 P.still(\spock, timecode: 1421.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,

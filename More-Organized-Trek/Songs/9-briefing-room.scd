@@ -803,7 +803,7 @@ P.still(\mulhall, timecode: 2202.45.seconds, music: { |p b e|
 		text: ["",""],
 	)
 });
-P.still(\mulhall2,syl:6, timecode: 2202.65.seconds, music: { |p b e|
+P.still(\mulhall2,syl:6, timecode: 2208.35.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b[..6].sum,
 		text: ["I'm a scientist",""],
@@ -1218,6 +1218,12 @@ P(\chords,start:'to host',music:{|p b e|
 
 Song.opportunityKey='b';
 ["The opportunity is an extraordinary one ","-1 3.5 3.5 3.5 3.5 2 2 1 2 3 5 4.5 2 1 -7.5".dm(Song.opportunityKey,6,\minor)].addLine;//p14
+P.still(\mulhall, timecode: 2214.35.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 Song.durs.filter( _ * [1,1,1,1,1,1,5/7, 1,1,1,1,1,1,1,1 ] );
 Song.setTempoMap(\opportunity,"e x xe x xe x xeee x xe x xe x xe x xe");
 P.synthV(\feng, filter: (midinote: _ - 12),  params: {|p b| [
@@ -1353,7 +1359,7 @@ P(\bass,start:\impossible,music:{|p b e|
 });
 //["But I don't suppose there'd be any harm in looking over diagrams on it. ","r"].addLine;
 ["KIRK: Bones? You could stop all this by saying no. ",[7].dm(\b,4,\mixolydian) ++ [3,4,7,4,3,2,3,4].dm(\c,5,\mixolydian) ++ [5].dm(\a,4)].addLine;
-P.still(\mccoy, timecode: 2230.8.seconds, music: { |p b e|
+P.still(\kirkStop, timecode: 2242.8.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
@@ -1680,6 +1686,12 @@ P(\bass,start:\understandable,music:{|p b e|
 	].pp
 });
 [" why that overrides all danger. And let's not ", "6 5 12 11 7.5 6.5  12 13 11 3 4 5".dm(\d,5,\minor)].addLine;
+P.still(\bonesClose, timecode: 2302.8.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \mccoy, take: \lead,
 	pbind: Song.enlarge(7),
 	filter: (midinote: _ - 12), 

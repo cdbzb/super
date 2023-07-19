@@ -33,8 +33,9 @@ Song.resources.infrastructure=FunctionList.new([
 
 	}
 ]);
-~stills ? ~stills = Stills.new("/Users/michael/tank/Trek/video for stills etc/media/return to tomorrow.mov");
-Stills.current=~stills;
+// ~stills ? ~stills = Stills.new("/Users/michael/tank/Trek/video for stills etc/media/return to tomorrow.mov");
+Stills().current;
+// Stills.current=~stills;
 Song.synthVTracks = EventWithDefault(
 		\default, {
 			DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:0.1)

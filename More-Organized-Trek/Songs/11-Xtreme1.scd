@@ -1,5 +1,7 @@
 (
-s.waitForBoot{ Stills("/Users/michael/trek/BySection/media/return to tomorrow.mov").current;
+s.waitForBoot{
+	// Stills("/Users/michael/trek/BySection/media/return to tomorrow.mov").current;
+	Stills().current;
 
 SynthDef(\plateReplace,{|in gate=1 bus| 
 	//var sig=In.ar(Song.bassBuss.index,2);
@@ -399,6 +401,12 @@ P.synthV(role: \mccoy, start: P.calcStart,take:\lead,
 		}
 	);
 	[" mo- ni- tor this very", "d5 c4 a4 f f5 e ", ].addLine; //6
+	P.still(\mccoy, timecode: 2509.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b.sum,
+			text: ["",""],
+		)
+	});
 	P.synthV(role: \mccoy,wait:1, take:\lead,start:P.calcStart('mo- ni'),  
 	filter: (midinote: _ - 12), 
 	pbind: {|p b| 
@@ -1077,6 +1085,12 @@ P.double(\ninezero, take: \lead,
 		);
 		["ls like even to brea-","d#5 a#4 c#5 d# e f# "].addLine;//9
 		["th again, Sargon?"," g#5 f# b4 g g"].addLine;//10
+		P.still(\looking, timecode: 2658.6.seconds, music: { |p b e|
+			 e.still.( 
+				wait: b.sum,
+				text: ["",""],
+			)
+		});
 		P(\sargon10,'th again, S',syl:2,music:
 			Pseq([
 				(note:[4,7,10],dur:Song.durs['th again, S'].list[3],\amp:0.3),
@@ -1252,7 +1266,7 @@ P.still(\twoShot, timecode: 2743.5.seconds, music: { |p b e|
 		P.tune('i too',{|i| Pmul(\freq,0.5,i) =>Pbindf(_,\amp,0.2,\instrument,\stringyy,\legato,1) });
 		//P.tune('too am', {|i| Pbindf(i,\amp,0.01,\freq,1.df(\d,[4,5]))});
 		[ " boom after so- long... (boom) so very long... Kiss ","d3 a b e4 d f g3 b c4 a3 e4 r" ].addLine; //5
-		P.still(\kirklooksDown, timecode:2805.5.seconds, music: { |p b e|
+		P.still(\kirklooksDown, timecode: 2756.45.seconds, music: { |p b e|
 			 e.still.( 
 				wait: b.sum,
 				text: ["",""],

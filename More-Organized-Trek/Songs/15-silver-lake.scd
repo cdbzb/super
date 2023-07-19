@@ -789,6 +789,12 @@ P.double(role: \henoch, take: nil, params: {|p b| [
 	}.play
 }); */
 ["(boom boom) Android (boom boom) robot hands, of course. ","-1 -1 11 7 12 7 6 11 6 5 7 5 4".dm(Song.handsKeys.bridge,4,\mixolydian),"q q q q qq q q qq q q qqq e e".asBeats*60/104].addLine;
+P.still(\sss, timecode: 3353.6.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthVs(\feng, take: [ \bg1, \bg2], params: {|p b| [
 	lyrics: "r r android + hands r r r r r r r r",
 	pitchTake: [ 1,2 ]
@@ -890,6 +896,12 @@ P(\lick,start:'Hands',music: {|p b e|
 	//=>_.play (clock:Song.introClock)
 });
 ["Enjoy the taste of life while you can. ","1 11 7 6 5 4 13.5 14 13.5 12 13.5 16".dm(Song.handsKeys.outro,4,\dorian)].addLine;
+P.still(\henoch, timecode: 3356.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \henoch, take: nil, params: {|p b| [
 	lyrics: " r enjoy + the taste of life - - while you can",
 	pitchTake: 1
@@ -1310,6 +1322,12 @@ P(\pain,start:'helping', syl:12,music: {| p, b, e|
 	* Env.linen(0,b.sum,3).kr(2,gate:1)
 }.play
 });
+P.still(\pain,syl:12, timecode: 3414.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 ["/*MULHALL:*/ What is it, Sargon? ",[1,5,4,1,-7].dm(\c)].addLine;
 P.still(\thalassaWhat, timecode: 3417.1.seconds, music: { |p b e|
 	 e.still.( 
@@ -1330,10 +1348,11 @@ P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 	}.play
 });
 ["/*KIRK:*/ Nothing. Our next injection will renovate me. (boom) ",[1,1].dm('e-')++[2,3,1,3,-7,1,2,1,-7,-5,-3].dm('d',scale:\mixolydian,)].addLine;
-P.still(\twoAgain, timecode: 3422.35.seconds, music: { |p b e|
+
+P.still(\nothing, timecode: 3421.4.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["nothing",""],
 	)
 });
 // P.still(\twoAgain, timecode: 3422.5.seconds, music: { |p b e|

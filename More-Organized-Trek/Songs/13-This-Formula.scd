@@ -1,7 +1,8 @@
 (
 s.waitForBoot{ 
 	Song('this formnula',[]).current;
-	Stills("/Users/michael/trek/BySection/media/return to tomorrow.mov").current;
+	// Stills("/Users/michael/trek/BySection/media/return to tomorrow.mov").current;
+	Stills().current;
 	Song.currentSong.infrastructure=FunctionList.new.array_([
 		{ 
 			~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
@@ -1202,7 +1203,7 @@ P(\chord,start:'Very',music:{|p, b, e|
 
 );
 ["You see, Sargon would not let me keep this body",[5,6,12,11,5,6,11,12, 13,14,14,13].dm('b-',octave:4 )].addLine;
-P.still(\henochCloseAlt, timecode: 3136.45.seconds, music: { |p b e|
+P.still(\henochCloseAlt, timecode: 3136.95.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
@@ -1458,5 +1459,4 @@ P(\sargonStrum,start:'with him',music:{|p b e|
 ].pp;
 }
 );
-
  })

@@ -2,12 +2,15 @@
 Routine { 
 	\WAIT.postln;
 	~loaded = CondVar.new();
-	"/Users/michael/tank/super/More-Organized-Trek/Songs/XtremeThruUnnecessary.scd".load;
+	"/Users/michael/tank/super/More-Organized-Trek/Songs/11-Xtreme1.scd".load;
 	~loaded.wait;
 	\GOING.postln;
 ["/*SPOCK*/ -boom- This is an excellent body, Doctor." ,"1 -7 1 2 6 7 6 5 5 6 4 1 -7".dm(\f,\mixolydian)].addLine;
 Song.setTempoMap(\excellent,"e e e x x | ex x e x ex | ee ee ee ee");
-P.still(\henochExcellent, timecode: 2828.1.seconds, music: { |p b e|
+P.still(\henochExcellent, timecode: 
+	// 2828.1
+	2821.1
+	.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["this is an excellent","body Doctor"],
@@ -219,6 +222,12 @@ P(\bass, music: { |p b e|
 });
 P.tune();
 ["Im surprised the Vulcans never conquered your race. "," 4 5 -7 3 1 -7 1 2 5 4 6 2 ".dm(\f, \harmonicMinor)].addLine;
+P.still(\wide, timecode: 2826.5.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -663,6 +672,12 @@ P(\bassnote, music: { |p b e|
 );
 );
 ["that will be unnecessary Doctor"," d# e f# d# g# f# e d# d# c#"].addLine;//
+P.still(\respond, timecode: 2854.1.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,

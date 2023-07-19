@@ -777,7 +777,11 @@ P(\chord,syl:2,music: {|p b e| [
 ].pp
 });
 ['/*MCCOY:*/ That`s the most ri (boom) ',"c#4 a3 d#4 b3 r "].addLine; 
-P.still(\mccoy, timecode: 1808.6.seconds, music: { |p b e|
+P.still(\mccoy, timecode: 
+	// 1808.6.seconds, //close but not speaking
+	1806.9.seconds,
+
+	music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["thats the","most ri-"],
@@ -931,7 +935,10 @@ P('swell20',lag: -0.1,music:{|p b e|
 //['/*MULHALL:*/ I`m afraid that I must agree with Doctor McCoy. You could be suffering from a form of false euphoria. ',"r"].addLine; 
 ['/*MULHALL:*/ I`m afraid I agree with Doctor McCoy. You could be suffering from a form of false euphoria.(ooh -- --) ', [ 3,4,2,3,1, 5,3,4,5,3,6, 4,5,6,11,7,2 ].dm('e',scale:\dorian) ++ [4,5,6,7].dm('c') ++ [13,14,13,12,11, 12,11,7].dm('f#',octave: 5) ].addLine; 
 Song.euphoriaTempoMap = TempoMap.new( Song.durs[\euphoria].list[(21..28)],"qe x xqe x xqe x xq q".asBeats );
-P.still(\mulhallClose, timecode: 1503.seconds, music: { |p b e|
+P.still(\mulhallClose, timecode: 
+	1503 //clgoseUp mouth closed
+
+	.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["I'm afraid I agree","with doctor McCoy"],

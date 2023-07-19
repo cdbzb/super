@@ -852,6 +852,12 @@ P.still(\kirkCommand,syl:0, timecode: 2348.25.seconds, music: { |p b e|
 	};
 );
 ["Doctor McCoy (boom) is ", "g#3 a f# g# f#2 g#3"].addLine; //3
+P.still(\oneMore, timecode: 2350.15.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 Song.setTempoMap(\Doctor,"e x x e x x");
 P.synthV(role: \kirk, take:\lead, params: {|p b| [
 	lyrics: "doctor + mcCoy + r is",
@@ -1335,6 +1341,12 @@ P.double(role: \kirk, take: \lead, params: {|p b| [
 	});
 P(\bass14, start:'bout,that`s', music:{ |p b e| [degree:[ Rest(),3,4 ].q, octave: [2, 3 ], instrument:\stringyy, dur: b.parse([ 1!2, 1!4, 1!2 ]).q].pp } );
 ["(boom) you can diss-- e-- -- --nt without","c3 b-3 c4 d e f e d e "].addLine; //15
+P.still(\youCanDissent, timecode: 2434.3.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	lyrics: "r you can dissent + - - without +",
 	pitchTake: 1
@@ -1402,6 +1414,7 @@ SynthDef(\keychord,{
 }).add;
 
 ["hear a negative voice?","c#4 d b3 g e e4"].addLine; //17
+//four stills at once???
 P.synthV(role: \kirk,
 	prepend: true,
 	take: \lead, params: {|p b| [

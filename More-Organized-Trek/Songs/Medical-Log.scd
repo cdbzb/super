@@ -430,6 +430,22 @@ P(\bassUp,syl:2,start:\earlier,music:{|p b e|
 	++ p.bassUp => _.play
 });
 [ "[SickBay] (The medical team hook Kirk's body up to a life support machine.) ","r",[6] ].addLine;
+P.still( \looking,  timecode:4131.5.seconds, music: { |p b e|
+	e.still.value(
+		wait: 3 ,
+		fade:2
+		//text: ["all his vital organs","are now working, Doctor"]
+
+	);
+});
+P.still( \console, lag:3, timecode:4138.seconds, music: { |p b e|
+	e.still.value(
+		wait: b.sum - 2 ,
+		fadeIn:2,
+		// text: ["all his vital organs","are now working, Doctor"]
+
+	);
+});
 P(\machines,start:\SickBay,music:{|p b e| 
 	var chord=[1,3,5,7].df(\b,scale:\locrian,transpose: 6);
 	{
@@ -483,7 +499,6 @@ P(\tuneTest,start:\vital,music:{|p b e|
 
 	}.play
 });
-
 P(\bass,start:\vital,music:{|p b e| 
 	{
 		var freq = [
@@ -497,7 +512,6 @@ P(\bass,start:\vital,music:{|p b e|
 	 * Env([1,1,0],[b.sum,3]).kr(2,gate:1)
 	}.play
 });
-	
 [ "(boom) Yes, we can keep them going for a few weeks, or a month. For all the good it'll do ","-1 1 3 2 1 -7 2 1 -7 1 2 3.5 2 1 -7.5 ".dm(\g,\minor) ++ "1 -7 -5 -3 -4 -5 -4".dm(\a,\mixolydian) ].addLine;
 // P.tune();
 P.still(\mccoy, timecode: 4112.03.seconds, music: { |p b e|
@@ -511,7 +525,7 @@ P.still(\mccoy, timecode: 4112.03.seconds, music: { |p b e|
 	// 		b[7..13].sum, ["for all the good","it'll do.."]
 	// ])
 });
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["yes, we can keep them","going"],
@@ -581,22 +595,6 @@ P(\bassline, music: { |p b e|
 // 		wait: b.sum ,
 // 	);
 // });
-P.still( \looking, start: \machine, timecode:4131.5.seconds, music: { |p b e|
-	e.still.value(
-		wait: 3 ,
-		fade:2
-		//text: ["all his vital organs","are now working, Doctor"]
-
-	);
-});
-P.still( \console, start: \machine,lag:3, timecode:4138.seconds, music: { |p b e|
-	e.still.value(
-		wait: b.sum - 2 ,
-		fadeIn:2,
-		// text: ["all his vital organs","are now working, Doctor"]
-
-	);
-});
 // P.still( \nurse, start: \vital, timecode:4139.seconds, music: { |p b e|
 // 	e.still.value(
 // 		wait: b.sum ,

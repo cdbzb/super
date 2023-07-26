@@ -2,6 +2,10 @@
 (
 s.waitForBoot{
 	Song(\chapelForgets,[]).current;
+
+	//effort to "through perform"
+	// Song(\chapelForgets2,[]).current; 
+
 	Require("./boilerplate.scd");
 	Trek.cast.mccoy = \jun;
 	Trek.presets.put(\mccoy,\jun,[ paramGender: 0.1, paramTension: 0.75 ]);
@@ -78,7 +82,8 @@ P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 		lyrics: "Nurse how are the last metabolic + + + readings + on our patients +",
 		pitchTake: 1,
 		filter: (midinote: _ - 12), 
-		legato:[ 0.5, 1, 1, 1, 0.7, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ]
+		legato:[ 0.7, 1, 1, 1, 0.7, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ],
+		lag: [0.05, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 	] }, music:{|p b e|
 		{
 			e.playbuf

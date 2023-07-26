@@ -25,8 +25,8 @@ SynthDef(\visual_aaa, { |out|
 }).add.tag(\vox);
 
 SynthDef(\visual_pad, {|freq=300 gate=1|
-	var sig = Splay.ar({ Saw.ar(freq+Rand(-8,8),0.1)}!8);  
-	var env = EnvGen.kr(Env.asr(0.05,\vel.kr(0.5),1,\rel.kr(4)),gate,doneAction:2);
+	var sig = Splay.ar({ Saw.ar(freq.lag(\freqLag.kr(0))+Rand(-8,8),0.1)}!8);  
+	var env = EnvGen.kr(Env.asr( \att.kr(0.05),\vel.kr(0.5),1,\rel.kr(4)),gate,doneAction:2);
 	Out.ar(\out.kr(0),sig*env*\amp.kr(0.5))
 }).add.tag(\pad);
 

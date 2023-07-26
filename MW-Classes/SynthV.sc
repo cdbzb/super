@@ -528,7 +528,7 @@ SynthV {
 	renderSynthV{ |pause = 12|
 		var synthVs = Song.pts.select{|i| i.synthV.notNil }.collect(_.synthV);
 		fork {
-			synthVs.do{|i x|
+		synthVs.do{|i x|
 				i.render;
 				Post << x << " of " << synthVs.size << "\n";
 				pause.wait;
@@ -549,6 +549,15 @@ SynthV {
 			};
 			// thisProcess.nowExecutingPath.load
 			// Song.currentSong.loadedFrom.load
+		}
+	}
+	renderAllSynthVs { |wait = 10|
+		fork{
+			this.pts.select{|i| i.synthV.notNil}.do{
+				|i|
+				i.synthV.render;
+				wait.wait
+			}
 		}
 	}
 }

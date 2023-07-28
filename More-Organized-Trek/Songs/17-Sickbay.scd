@@ -162,6 +162,27 @@ P.synthV(\genbu, take:"low", params: [
 // P.tune('Sar- gon here');
 ["(enter Thalassa)","e5"].addLine; //f maj 7 //2
 // P.tune('enter Thalassa');
+P(\doorOpen,start:2,music: 
+		//~stills.set('enter-Thalassa',(37*60+54.30));
+
+		Prout({
+				var vol=0.26;
+				var thalassaBus=Bus.audio(s,1).index;
+				~sickBay.thalassaVerb=Synth(\verbb,[\in,thalassaBus]);
+				s.bind{Synth(\door,[\amp,vol])};
+				1.05.wait;
+				{~stills.preview('enter-Thalassa')}.defer(0.01);
+				0.01.wait;
+				(
+						out:thalassaBus,
+						amp:vol,
+						instrument:\sawTw,
+						degree:[4-7,6-7,8-7,10-7,4,6,8,10]-1,
+						strum:0.1,octave:[5],sustain:4
+				).play;
+		})
+
+); 
 P.still(\thalassaEnters, timecode: 3803.75.seconds, music: { |p b e|
 	fork{
 		1.wait;
@@ -246,6 +267,7 @@ P.still(\medium_shot, timecode: 3807.9.seconds, music: { |p b e|
 P.synthV(\aiko,params:
 	[
 		lyrics: "sar gan wats rong?",
+		lag: [0.1,0,0,0],
 	],music:{|p b e|
 		{
 			e.playbuf
@@ -329,27 +351,6 @@ P(\padBass5,start:5,music: { |p b e|
 			(type:\set,id:b[\id],degree:[5.1-7,5.1,5.1+4,5.1+7]-1,amp: 0.2 * Song.fatiguePadAmp, root:6,octave:[2,3]).play//bend
 		}).play;
 	}
-); 
-P(\doorOpen,start:2,music: 
-		//~stills.set('enter-Thalassa',(37*60+54.30));
-
-		Prout({
-				var vol=0.2;
-				var thalassaBus=Bus.audio(s,1).index;
-				~sickBay.thalassaVerb=Synth(\verbb,[\in,thalassaBus]);
-				s.bind{Synth(\door,[\amp,vol])};
-				1.05.wait;
-				{~stills.preview('enter-Thalassa')}.defer(0.01);
-				0.01.wait;
-				(
-						out:thalassaBus,
-						amp:vol,
-						instrument:\sawTw,
-						degree:[4-7,6-7,8-7,10-7,4,6,8,10]-1,
-						strum:0.1,octave:[5],sustain:4
-				).play;
-		})
-
 ); 
 ["(beat) (formula) Sar- gon's for- mu- la...","d d5 e f# a f# c"].addLine;  //6
 P.still(\looking, timecode: 3811.8.seconds, music: { |p b e|
@@ -510,7 +511,7 @@ P.still(\clear,syl:1, timecode: 0.seconds, music: { |p b e|
 		text: ["formula is ","correct"],
 	)
 });
-P.tune('For- mu- la');
+// P.tune('For- mu- la');
 P.synthV(\genbu,
 	pbind: Song.enlarge(7),
 	params:
@@ -542,6 +543,34 @@ P(\bass,syl:1,start:'For- mu- la',music:{|p b e|
 			=> EchoNone.ar(_,0.444,0.444,2.5) * 0.5
 		}.play
 
+});
+// P.tune();
+P(\pedalTones, music: { |p b e|
+
+	
+	fork{
+		var inst = Barrier.collect(
+			{
+				var a = SinOsc.ar(\freq.kr(300), LocalIn.ar(2) * LFNoise1.ar(0.1,3), LFNoise1.ar(3,6)).tanh;
+				9.do{a= AllpassL.ar(a,0.3,0.1.rrand(0.3!2),5).tanh };
+				a.tanh
+				* Env.asr(0,1,2).kr(0,\gate.kr(1))
+				=> Pan2.ar(_,\pan.kr(-0.3))
+				=> { |i| 
+					Out.ar(\out.kr(0),i * \amp.kr(0.1));
+					LocalOut.ar(i)
+				}		 
+		}.asDefName
+	);
+		inst = inst.()[0];
+		[
+			freq: [11, 11,  [1,13]].df(\g,4).q,
+			dur: b.parse([2,3,0]) + [0, e.bNext[..3].sum,e.bNext[4..7].sum] => _.q,
+			amp:0.04, pan: -0.7,
+			// legato: [0.8,1,1].q,
+			instrument: inst
+		].pp
+	}
 });
 ["rrect. Don't be concer -- ned, this is an","d4 c# e d f# g f# d e f# "].addLine;  //9
 P.still(\clear, timecode: 0.seconds, music: { |p b e|

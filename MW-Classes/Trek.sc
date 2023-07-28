@@ -1,5 +1,5 @@
 Trek {
-	classvar <>cast, path, <>presets;
+	classvar <>cast, <path, <>presets;
 	*initClass {
 		path = this.filenameSymbol.asString.dirname.dirname +/+ "More-Organized-Trek/Songs";
 		cast = try{ Object.readArchive(path +/+ "trek_cast") } ? ();
@@ -12,8 +12,21 @@ Trek {
 	*put { |who voice preset|
 		^presets.put(who,voice,preset)
 	}
+	*open{|index|
+		
+		"vim.cmd('e " + this.allTheSongs[index] + "')" 
+		=> SCNvim.luaeval(_)
+	}
+	*load {|index|
+		this.allTheSongs[index].load
+	}
 	*at {|...args|
 		^presets.at(*args)
+	}
+	*allTheSongs {
+		^this.path +/+ "*.scd" 
+		=> _.pathMatch 
+		=>_.select{|i| "[0-9]+".matchRegexp(i) }
 	}
 	*synful {
 		( currentEnvironment.at(\synful1).isNil or: try{ currentEnvironment.at(\synful1).syn.isPlaying.not } ).if

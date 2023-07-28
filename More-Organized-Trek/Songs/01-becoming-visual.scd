@@ -172,7 +172,7 @@ P(\chords, music: { |p b e|
 });
 [" It's not a signal, sir."," 7 11 6 12 7 4".dm('d#')].addLine;/*UHURA:*/
 P.still(\uhuru,start:\signal, timecode: 8.716.seconds, music: { |p b e|
-	 e.still.( 
+	e.still.( 
 		wait: b.sum + e.bNext.sum,
 		text: ["its not a signal","sir"],
 	)
@@ -221,9 +221,7 @@ P(\pizz, music: { |p b e|
 		out:2
 	].pp
 });
-["It does not seem to even exist, and yet","7 11 12 13 11 12 13 11 14.5 15 15.5".dm(\c,\mixolydian)].addLine;
-Song.setTempoMap(P.calcStart()," E E E Q E E E E qe e q");
-SynthDef(\visualToot,{
+( SynthDef(\visualToot,{
 	var freq = \freq.kr(200);
 	Pulse.ar(freq )
 	+ SinOsc.ar(freq)
@@ -233,22 +231,49 @@ SynthDef(\visualToot,{
 	=> Out.ar(\out.kr(0),_)
 
 }).add;
+);
+["It does not seem to even exist, and yet","7 11 12 13 11 12 13 11 14.5 15 15.5".dm(\c,\mixolydian)].addLine;
+Song.setTempoMap(P.calcStart()," E E E Q E E E E qe e q");
+P(\doubling, music: { |p b e|
+	[
+		freq: [\r,4.5,5,5.5].q,
+		dur: b.parse([8, 1, 1, 1]).q,
+		amp:0.05,
+		instrument: \wash
+	].pp;
+	[
+		freq: [\r,4.5,5,5.5].df(\c) .q,
+		dur: b.parse([8, 1, 1, 1]).q,
+		freqLag: 0.4,
+		instrument: \wash,
+
+		amp:0.05,
+	].ppm
+});
 P(\square, music: { |p b e|
 	[
-		freq: [\r,[3, 11],[1, 5],  [-6.5, 6.5],[1, 11]].df('c',6).q,
+		freq: [\r,[3, 11],[1, 5],  [-6.5, 6.5],[3, 11,]].df('c',6).q,
 		dur: b.parse([3, 2, 3, 2, 1]).q,
 		legato:0.2,
 		instrument: \visualToot,
 		amp: 0.03
 	].pp
 });
-
 P(\pizz, music: { |p b e|
 	[
 		dur: "q e e q".asBeats.warpTo(e.tempoMap).q,
 		freq: [\r, 13, 11, 5].df('c').q,
 		instrument: \twang,
 		out:3
+	].pp
+});
+P(\twangThree, music: { |p b e|
+	[
+		freq: [\r, 14.5, 15, 15.5 ].df(\c).q,
+		dur: b.parse([8,1,1,1]).q,
+		instrument: \harp, coef:0.6, amp:0.08,
+		out: Effect.bus({|i| i => Pan2.ar(_,0)  },)
+
 	].pp
 });
 P(\bass, music: { |p b e|
@@ -260,6 +285,7 @@ P(\bass, music: { |p b e|
 	++ p.signalBass
 	=> _.pp
 });
+
 P.synthV(role: \uhuru, take: \lead, params: {|p b| [
 	lyrics: "it does not seem to even + exist + and yet",
 	legato: [1, 1, 1, 1, 1, 1, 1, 1, 0.6, 1, 0.5],
@@ -379,32 +405,22 @@ P.still(\spockClose, timecode: 15.633.seconds, music: { |p b e|
 	)
 
 });
-P.synthV(role: \spock, take: \lead, params: {|p b| [
+P.synthVs(role: \spock, take: [\lead,\double], params: {|p b| [
 	lyrics: "someone + or - something + is attempting + + to attract + our attention + +",
-	legato: [1, 0.5,  1, 1, 1, 0.5, 1, 1, 1, 0.5, 1, 1, 1, 1, 1, 1, 1],
-	pitchTake: 1,
+	legato: [[1, 0.5,  1, 1, 1, 0.5, 1, 1, 1, 0.5, 1, 1, 1, 1, 1, 1, 1]],
+	pitchTake: [1,3],
 	paramGender: 0,
 	filter: (midinote: _ - 12), 
-] }, music:{|p b e|
+] }, music:[-1,1].collect{|pan| {|p b e|
 	{
 		e.playbuf
 		// * -5.dbamp
 		// /2
 		* -2.dbamp
+		=> Pan2.ar(_,pan)
 		// => p.synthVTracks.at(e.key).()
 	}.play
-});
-P.double(role: \spock, take: \lead, params: {|p b| [
-	pitchTake: 1
-] }, music:{|p b e|
-	{
-		e.playbuf
-		// => Pan2.ar(_,1)
-		* -2.dbamp
-		// => p.synthVTracks.at(e.key).()
-	}.play
-
-});
+} });
 P(\comp,start:\attempting,music: {
 	var busAmp = 4.dbamp;
 	var clock = TempoClock.new.tempo_(85/60);
@@ -514,20 +530,23 @@ P(\bassConnector, music: { |p b e|
 		{|i|  Mix.ar(i)}
 	).play
 });
-P.synthV(role: \kirk, take: \lead, params: {|p b| [
-	lyrics: "someone + or something + has succeeded + + our di r ",
-	// legato: [1, 1, 1, 1, 1, 1, 1, 1, 0.7, 1, 1],
-	legato: [1, 0.8, 1, 1, 0.8, 1, 1, 1, 0.7, 1, 1, ],
-	pitchExpression: 1.0,
-	filter: (midinote: _ - 12), 
-	pitchTake: 1,
-	paramToneShift: 300,
-	paramTension: 1
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
+P.synthVs(role: \kirk, take: [\lead,\double],
+	pbind: Song.enlarge(7),
+	params: {|p b| [
+		lyrics: "someone + or something + has succeeded + + our dih r stress signals + have been - ",
+		// legato: [1, 1, 1, 1, 1, 1, 1, 1, 0.7, 1, 1],
+		legato: [[1, 0.8, 1, 1, 0.8, 1, 1, 1, 0.7, 1, 1, 1,1,1,1,1,1,1, ]],
+		pitchExpression: 1.0,
+		filter: (midinote: _ - ( 12 ! 12 ++ ( 0!7 ) => _.flat )), 
+		pitchTake: [1,3],
+		paramToneShift: 300,
+		paramTension: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+			=> Pan2.ar(_,0)
+		}.play
 });
 P(\ride, music: { |p b e|
 	[
@@ -536,15 +555,6 @@ P(\ride, music: { |p b e|
 		amp: [ 0.0, 0.03,0.03,0.05 ].q,
 		dur: "q qq q q".asBeats.warpTo( e.tempoMap ).q
 	].pp
-});
-P.double(role: \kirk, take: \lead, params: {|p b| [
-	
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-		// => Pan2.ar(_,1)2
-	}.play
 });
 ["-stress signals have been (ba da ba da ba da).",[4, 2, -7, 1, 2, 1, -6,-6,-6,-6,-6,-6 ].dm('c#')  ].addLine;
 Song.setTempoMap(\stress,"q e e e x x  x e x e x x");
@@ -659,19 +669,18 @@ P.synthVs(role: \kirk, take: [\lead, \double],
 	legato: [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.7, ]],
 	filter: (midinote: _ - 12), 
 	pitchTake: [1, 3]
-] }, music:{
-	var pan = [-1, -1];
-	2.collect {|i|
+] }, music:
+	[0, 0].collect{|pan|
 		{|p b e|
 			{
 				e.playbuf
 				// => p.synthVTracks.at(e.key).()
-				=> Pan2.ar(_,pan[i])
+				=> Pan2.ar(_,pan)
 				
 			}.play
 		}
 	}
-	}.());
+	);
 [" follow, but how? What's causing it?"," 3 1 2 3 3 5 3 1".dm('a#')].addLine;
 Song.setTempoMap(\follow,"ex xe e qe e q e e");
 P(\pad, music: { |p b e|
@@ -716,6 +725,7 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_,0)
 	}.play
 
 });
@@ -725,6 +735,7 @@ P.double(role: \kirk, take: \lead, params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_,0)
 	}.play
 });
 [" I do not know. not even a vulcan can know the unknown",[11, 11, 11, 11, 5, 6, 7, 11, 5, 4, 3, 3, 3, 2].dm('d#')].addLine;/*SPOCK:*/
@@ -752,6 +763,7 @@ P.synthV(role: \spock, take: \lead, params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_,0)
 	}.play
 
 });
@@ -761,6 +773,7 @@ P.double(role: \spock, take: \lead, params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_,0)
 	}.play
 
 });
@@ -800,6 +813,7 @@ P.synthV(role: \spock, take: \bg, params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_,0)
 	}.play
 });
 P.double(\kevin, take: \aah, params: {|p b| [
@@ -875,6 +889,7 @@ P.synthV(role: \spock,
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 		=> FreeVerb.ar(_,0.1,1)
+		=> Pan2.ar(_,0)
 	}.play
 
 });
@@ -884,6 +899,7 @@ P.double(role: \spock, take: \lead, params: {|p b| [
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 		=> BPF.ar(_,1200,2)
+		=> Pan2.ar(_,0)
 	}.play
 });
 P(\fuzz, music: { |p b e|
@@ -1033,7 +1049,7 @@ P(\fuzz, music: { |p b e|
 	=> _.play
 
 });
-[" Planet dead ahead, Captain. Becoming visual.","-7 1 3 5.5 11 5.5 5.5 5.5 5.5 11.5 5.5 1.5".dm('c')].addLine;/*SULU:*/
+[" Planet dead ahead, Captain. Becoming visual.","-7 1 3 5.5 11 5.5 5.5 5.5 5.5 11.5 5.5 1.5".dm('c#')].addLine;/*SULU:*/
 P.still(\suluAgain, timecode: 39.796.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -1059,27 +1075,28 @@ P(\chord,syl:3, lag:-0.05, music: { |p b e|
 		].pp
 	}
 });
-P.synthV(role: \sulu, take: \lead, params: {|p b| [
+P.tune();
+P.synthVs(role: \sulu, take: [\lead,\double], params: {|p b| [
 	lyrics: "planet + getting + closer + becoming + + visual + +",
-	legato: [1, 1, 1, 1, 1, 0.6, 1, 1, 1, 1, 1, 1, ],
+	legato: [[1, 1, 1, 1, 1, 0.6, 1, 1, 1, 1, 1, 1, ]],
+	lag: [[0.05, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,]],
 	filter: (midinote: _ - 12), 
-	pitchTake: 1,
+	pitchTake: [ 2, 3 ],
 	pitchExpression:1.4,
 	paramTension:1
 ] }, music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_,1)
 	}.play
 
 });
-P.double(role: \sulu, take: \lead, params: {|p b| [
-	
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
+P(\doubling,syl:8, music: { |p b e|
+	[
+		freq: [11.5,5.5,1.5].df('c#').q,
+		dur: b.drop(1).q
+	].pp
 });
 
 ["planet","r",[10]].addLine;
@@ -1731,12 +1748,6 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 });
 P.tune();
 [" [OC]: And I am as dead as my planet.","5 6 5 4 3 2 3 2 1".dm('e-',\minor)].addLine;/*SARGON:*/
-P.still(\name:, timecode: .seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
-	)
-});
 P.synthV(role: \vocoder, take: \lead,
 	pbind: Song.enlarge(7),
 	// filter: (midinote: _ - 12), 
@@ -1766,3 +1777,4 @@ P.tune();
 ["all of mankind must perish, too.","r"].addLine;
 
 )
+

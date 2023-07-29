@@ -12,8 +12,10 @@
 SynthDef(\bl,{|gate=1 out=0 freq=400 t_trig=0  | //{{{
 	var sig= SawDPW.ar(freq*[1,2],0,0.04 );  // add these octaves better
 	//var env=Decay.kr(t_trig,0.4) ;
-	var env= Env.perc(0.00,0.3,curve:\sin).kr(0,gate:t_trig) ;
+	var env= Env.perc(0.00,\rel.kr(0.3),curve:\sin).kr(0,gate:t_trig) ;
+
 	sig= sig+CombN.ar(sig, 1, 0.35,  decaytime: 3,  mul: 0.5,  add: 0);
+	sig = sig * \amp.kr(1);
 	sig=DFM1.ar(sig,1800,0,5.9);//.distort;
 	Out.ar(out,sig*env!2);
 }).add.tag(\monoSynth,\bass);

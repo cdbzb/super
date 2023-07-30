@@ -676,6 +676,14 @@ P.still(\twoShotKirk, timecode: 709.745.seconds, music: { |p b e|
 			text: ["",""],
 		)
 	});
+P(\theyChords, music: { |p b e|
+		[
+			freq: [/*[-6,-6,4]*/ \r,[-5, 1, 3], [-5, -7, 2], [-6, 1, 4],3,[1,3,6],[1,3, 5 ],[-5, 1, 3], 2, [1,2,5],-7].df('a-').q,
+			legato: [1, 1, [2,2,1],1,[2,2,1],1,[2,2,1],1,[2,2,1],1, ].q,
+			dur: b.parse([6,2, 3, 1, 2, 1, 3, 2, 1, 1, 2]).q,
+			instrument: \defaultPiano
+		].ppm
+	});
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 		lyrics: "I have a feeling + that they or it could destroy + us just standing + here if they or it wanted + to. ",
 		filter: (midinote: _ - 12), 

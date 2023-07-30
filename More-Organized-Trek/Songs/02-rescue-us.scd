@@ -97,14 +97,17 @@ P.synthVs(role: \spock, take: [\harmony, \harnmony2],
 	},
 	params: {|p b| [
 	lyrics: "r deep inside + the planet +",
-	pitchTake: [1,3]
+	pitchTake: [1,3],
+	paramTension: -0.03,
+	// vocalMode: \Theatrical
+
 ] }, music:[-1,1].collect{|pan|{|p b e|
 	{
 		e.playbuf
 		// /10
 		=> HPF.ar(_,200)
 		=> Pan2.ar(_,pan)
-		/10
+		/12
 		// => p.synthVTracks.at(e.key).()
 	}.play
 }});
@@ -152,6 +155,14 @@ P(\planetCrash,  music: { |p b e|
 	].p.play
 });
 ["/*SARGON [OC]*/(boom) Your probes have touched me, Mister Spock.",[-1, 4, 4, 4, 4, 3, 2, 1, 2, 3].dm(\c,\minor)].addLine;
+P(\alert, music: { |p b e|
+	{
+		SinOsc.ar((1111,1112..1115) * 2,0,0.02)
+		* -5.dbamp
+		* Env.perc(0,8).kr(2,gate:1)
+	}.play
+
+});
 P.still(\sargonSpeaks, timecode: 503.269.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -183,10 +194,21 @@ P(\bass, music: { |p b e|
 	].pp
 });
 ["/*SPOCK:*/ Reading energy only, Captain. No life forms.", "1 2 3 2 1 4 2 1 -6 4 5.5 2".dm('f#',\lydian)].addLine;
+Song.setTempoMap(\Reading,"E E E E E e e e ee e e e");
 /*
 "open '/Users/michael/trek/BySection/media/11-Spock&Sargon-181021_1557.rpp'".unixCmd
 */
-Song.setTempoMap(\Reading,"E E E E E e e e ee e e e");
+P(\bassOffbeats, music: { |p b e|
+	[
+		dur: "Q e e e e e e e e e e e e".asBeats.warpTo( e.tempoMap.quantizeDft(0.6) ).q,
+		rest: [\r,1, 1, 1, 1, 1, 1, 1, 1, 1, 1].q(inf),
+		rest: [\r,1].q(inf),
+		instrument: \bl,amp:0.05,
+		freq: [1,2 ,3].df('f#',3) =>Pstep(_,b.parse([5,5,2]))
+	].pp
+});
+P(\kick, music: { |p b e|
+});
 P.still(\spockAnswers, timecode: 506.3.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -206,7 +228,6 @@ P(\arp, music: { |p b e|
 		amp:0.03
 	].ppm
 });
-
 P(\click2, music: { |p b e|
 	var dur = 0.25;
 	[
@@ -221,12 +242,47 @@ P(\click2, music: { |p b e|
 		pan:1
 	].pp
 });
+P(\traps, music: { |p b e|
+	[
+		dur: 32.collect{ [4,[ 8, 8 ],[ 16, 8, 16 ]].choose.reciprocal * 2  }.flat.warpTo( e.tempoMap.quantizeDft(0.6) ).q(1)// => _.findur(b[..10].sum)
+		,
+		instrument: \hat_808,
+		pan:-1,
+		out: Effect.bus({|i| CombN.ar(i,0.05,0.005,0.31)+i /4
+		* Line.kr(1,0,b.sum+1)
+		=> FreeVerb.ar(_,0.5,1) 
+	},)
+	].pp;
+	[
+		dur: 32.collect{ [4,[ 8, 8 ],[ 16, 8, 16 ]].choose.reciprocal * 2  }.flat.warpTo( e.tempoMap.quantizeDft(0.6) ).q(1)// => _.findur(b[..10].sum)
+		,
+		instrument: \hihat,
+		pan:1,
+		out: Effect.bus({|i| 
+			i =>
+			 CombN.ar(_,0.05,0.004,0.3) + i 
+		=> DWGReverbC1C3.ar(_,mix:0.2)
+		* Line.kr(1,0,b.sum+1)
+		=> FreeVerb.ar(_,0.2,1)
+		/10
+	},inputChannels:2)
+	].pp;
+	[
+		dur: "Q e e e e e e e e e e e e".asBeats.warpTo( e.tempoMap.quantizeDft(0.6) ).q,
+		rest: [1,1, 1, 1, 1, 1, 1, 1, 1, 1, 1].q(inf),
+		instrument: \kick,amp:0.05,
+		freq: [1,2 ,3].df('f#',3) =>Pstep(_,b.parse([5,5,2])),
+		out: Effect.bus({|i| i => DWGReverbC1C3.ar(i,mix:0.1)  },)
+	].pp
+});
 P(\bassline, music: { |p b e|
 	[
 		
 		freq: [1,2,3].df('f#',3).q,
-		dur: b.parse([5,3+2,2]).q
-	].pp
+		dur: "EEEEE qqq q".asBeats.warpTo( e.tempoMap.quantizeDft(0.6) ).q,
+		instrument: \sawSynthSustain,pulse:0.9,amp:0.05
+		// dur: b.parse([5,3+2,2]).q
+	].ppm
 });
 P.synthVs(role: \spock, take: [\lead, \double], params: {|p b| [
 	lyrics: "Reading + energy + + only + captain + no life forms",
@@ -241,6 +297,14 @@ P.synthVs(role: \spock, take: [\lead, \double], params: {|p b| [
 
 });
 [" I have locked your transporter device on my co-ordinates.","5 5 5 6 5 4 3 2 4 3 2 1 3 2 2".dm(\a,4)].addLine;/*SARGON [OC]*/
+P(\alert, music: { |p b e|
+	{
+		SinOsc.ar((1111,1112..1115) * 2.5,0,0.02)
+		* -17.dbamp
+		* Env.perc(0,8).kr(2,gate:1)
+	}.play
+
+});
 Song.durs.filter(_ * 1.15);
 P.still(\sargonlocked, timecode: 511.464.seconds, music: { |p b e|
 	 e.still.( 
@@ -911,6 +975,7 @@ P(\connector, music: { |p b e|
 			=> Limiter.ar(_,0.3)
 			* EnvGen.cutoff(b[1],0.4) 
 			* -10.dbamp
+			* -10.dbamp
 		}.play(s,2);
 
 	}
@@ -951,6 +1016,7 @@ P(\connector, music: { |p b e|
 
 			* EnvGen.cutoff(b[0],2) 
 			* -12.dbamp
+			* -10.dbamp
 		}.play(s,3);
 
 	}
@@ -961,9 +1027,11 @@ P(\note, music: { |p b e|
 	).play
 });
 ["/*SPOCK:*/ Captain, I do wish to inspect whatever this is that lived that long ago.","7 4 7 7.5 5 6.5 7.5 11 5 3 4 2 3 5 11 12 11 7.5 7.5".dm('e',\minor)].addLine;
+Song.durs.filter(\inspect, _ + [0,0,0,0, 0.1 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0]);
 P.synthV(role: \spock, take: \lead, params: {|p b| [
 	lyrics: "Captain + I do wish to inspect + whatever + + it is that lived so long ago + ",
-	legato: [1, 0.6, 1, 0.8, 1, 1, 1, 1,  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ],
+	// legato: [1, 0.6, 1, 0.8, 1, 1, 1, 1,  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ],
+	legato: [1, 0.5, 1, 1, 0.6, 1, 1, 1,  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ],
 	filter: (midinote: _ - 12), 
 	pitchTake: 1
 ] }, music:{|p b e|
@@ -1314,9 +1382,9 @@ P(\bassnote,syl:2, music: { |p b e|
 ["KIRK: On the other hand, perhaps this Sargon would like you to come with","1 2 3 2 1 2 3 4.5".dm(\e) ++ "3 1".dm('a-',\minor) ++ "2 3 4 2 3 4.5 ".dm('a-')].addLine;
 P(\bassnote,syl:7, music: { |p b e|
 	[
-		midinote: [1].dm('a-') ++ p.tune[e.start].list[10..] -.t [12, 24] => _.q,
+		midinote: [1].dm('a-') ++ p.tune[e.start].list[10..] -.t [24,36] => _.q,
 		dur: b.drop(1).parse([2,1,1,1,1,1,1]).q,
-		instrument: \washSus, freqLag:0.1,amp: 0.02
+		instrument: \washSus, freqLag:0.1,amp: 0.04
 	].ppm
 });
 // P.tune( { |i|  i <> [instrument: \sawSynthSustain, amp: 0.06, out: Effect.bus({|i| FreeVerb.ar(i,0.1,1) },)].pm => Pmul(\freq, 0.25, _) => Pfin(8,_) } );
@@ -1429,6 +1497,45 @@ P.tune();
 // ["SULU: All normal. No damage at all.","r"].addLine;
 // ["KIRK: I see.","r"].addLine;
 [" Will you transport down with us, Mister Spo--ck?","1 -5 1 2 3 2 1 -5 -4 -4 -3".dm('f#')].addLine;
+Song.setTempoMap(\Will," e e e e| e e q|q ex x | e e");
+P(\tremolo, music: { |p b e|
+	e.bNext.postln;
+	{
+		var freq = [3,4,5, 3].df('f#',6).dq.
+		demand(
+			"qqqq qq q".asBeats.warpTo(e.tempoMap) 
+			+ [0,0,e.bNext[..1].sum]
+			++ e.bNext[2] 
+			 => _.postln
+		);
+		var upper = [5, 6, 7, 11].df('f#',6).dq.
+		demand("qqqq qq q".asBeats.warpTo(e.tempoMap) + [0,0,e.bNext[..1].sum] ++ e.bNext[2]);
+		var modulated = [freq,upper].dq(inf) ;
+		SinOsc.ar(
+			Demand.ar( Impulse.ar(14),1, modulated )
+		)
+		/30 => Monitors.az(_, SinOsc.ar(0.1))
+		* EnvGen.cutoff(b.sum,1)
+	}.play
+});
+P(\strum, music: { |p b e|
+	[ 
+		freq: "1 5 11 13 15 21".df('f#',3).dup ++ "1 4 11 14 16".df('f#',3).bubble ++ "2 5 12 15 17".df('f#',3).bubble => _.q,
+		strum: [0.05, 0.01, 0.03, 0.025].q,
+		dur: "qqq q qq q".asBeats.warpTo( e.tempoMap ).q,
+		instrument: \harp,coef:0.3,amp:0.03
+	].p.play
+});
+P(\line, music: { |p b e|
+	[
+		freq: "3 5 3 5 3 5 3 5 5 4 3  2 1 ".df('f#').q,
+		dur: 0.5.dup(15).warpTo( e.tempoMap ).q
+	].pp;
+	[
+		freq: "1 -7 1 -7 1 -7 1- -7 -6 -6 -6 -6 -5".df('f#').q,
+		dur: 0.5.dup(15).warpTo( e.tempoMap ).q
+	].pp
+});
 P.still(\kirkWillYou, timecode: 631.425.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -1456,7 +1563,6 @@ P.double(role: \kirk, take: \lead, params: {|p b| [
 	}.play
 
 });
-Song.setTempoMap(\Will," e e e e| e e q|q ex x | e e");
 P.tune();
 P(\horns, music: { |p b e|
 	[
@@ -1511,7 +1617,35 @@ P(\bass, music: { |p b e|
 		dur: b.parse([ 2, 4 ]).q
 	].pp
 });
+P(\line, music: { |p b e|
+	fork{
+		var inst = Barrier.collect(
+			{
+				Pulse.ar(\freq.kr(400) * [0.99,1,1.011],0.2)
+				* Env.perc(0.005,2).kr(2,gate:1)
+				* \amp.kr(0.1)
+				=> Phaser2.ar(_,rate: 0.1)
+			}.asDefName
+		);
+		inst.()[0] => 
+
+		[
+			instrument: _,
+			amp:0.02,
+		freq: "4 3 2 1 -7 1".df('f#',4).q,
+			dur: "q q q q q q q".asBeats.warpTo(e.tempoMap).q ,
+		] => _.pp;
+		[
+			instrument: \harp, coef: 0.3,
+			// midinote: p.tune[e.start],
+		freq: "4 3 2 1 -7 1".df('f#',4).q,
+			dur: b.q,
+			amp:0.03
+		].p.fin(6).play
+	}
+});
 ["KIRK: Mister Sulu, you have the conn.","3 2 1 -7 -6 -5 -5 -6 -7 1.5".dm('f#')].addLine;
+Song.setTempoMap(\Sulu,"QQ Q QQ Q QQ Qq q QQ Q qq ");
 // Song.setTempoMap(\Sulu,"qe e qe e qe ee e qe e q");
 P.still(\kirkConn, timecode: 633.38.seconds, music: { |p b e|
 	 e.still.( 
@@ -1519,8 +1653,6 @@ P.still(\kirkConn, timecode: 633.38.seconds, music: { |p b e|
 		text: ["",""],
 	)
 });
-
-Song.setTempoMap(\Sulu,"QQ Q QQ Q QQ Qq q QQ Q qq ");
 P.synthVs(role: \kirk, take: [\alt, \altDouble], params: {|p b| [
 	lyrics: "r r Mister + Sulu + you have the conn.",
 	legato: [[1, 1, 1, 1, 1, 0.5, 1, 1, 1, 0.66, ]],
@@ -1533,7 +1665,10 @@ P.synthVs(role: \kirk, take: [\alt, \altDouble], params: {|p b| [
 	}.play
 
 });
-P.synthVs(\kevin, take: [\lead, \double], params: {|p b| [
+P.synthVs(
+	\kevin,
+	 // nil,
+	take: [\lead, \double], params: {|p b| [
 	lyrics: "Mister + Sulu - + - r r r r",
 	legato: [[1, 1, 1, 1, 1, 0.5, 1, 1, 1, 0.66, ]],
 	vocalMode: \Soft,
@@ -1543,11 +1678,31 @@ P.synthVs(\kevin, take: [\lead, \double], params: {|p b| [
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 		=> FreeVerb.ar(_,0.1,1)
+		=> DCompressor.ar(_,ratio:20)
 		/2
 		=> Pan2.ar(_,1)
 	}.play
 
 });
+P(\boom, music: { |p b e|
+	fork{
+		var inst = Barrier.collect({
+			Saw.ar( \freq.kr(300) * [0.995,1,1.0031], 0.1 )
+			=> RLPF.ar(_, Env([0,1,1,0],[\att.kr(5),\len.kr(1) ,\rel.kr(3)]).kr(0,gate:1)* \hi.kr(1500) + \low.kr(200),0.3)
+			* Env.asr(0,1,2).kr(2,gate:\gate.kr(1))
+			/3
+		}.asDefName);
+		inst.()[0]=>
+		[
+			instrument:_,
+			freq: [\r, [-5,5,11], [-5,5]].df('f#',3).q,
+			att: 40,len: 0,rel:5, length: 5,
+			dur: "qqqqqq qqqq".asBeats.warpTo( e.tempoMap ).q,
+			// instrument: \wash,att:0.1
+		] => _.pp
+	}
+});
+
 P(\bassnote, music: { |p b e|
 	[
 		freq: [\r, -5, -15].df('f#',4).q,
@@ -1579,10 +1734,30 @@ P(\chord, music: { |p b e|
 	].pp
 });
 P(\line, music: { |p b e|
-	[
-		freq: "3 2 1 -7 -6 -5".df('f#',4).q,
-		dur: "q q q q q q q".asBeats.warpTo(e.tempoMap).q 
-	].pp
+	fork{
+		var inst = Barrier.collect(
+			{
+				Pulse.ar(\freq.kr(400) * [0.99,1,1.011],0.2)
+				* Env.perc(0.005,2).kr(2,gate:1)
+				* \amp.kr(0.1)
+				=> Phaser2.ar(_,rate: 0.1)
+			}.asDefName
+		);
+		inst.()[0] => 
+
+		[
+			instrument: _,
+			amp:0.02,
+			freq: "3 2 1 -7 -6 -5".df('f#',5).q,
+			dur: "q q q q q q q".asBeats.warpTo(e.tempoMap).q ,
+		] => _.pp;
+		[
+			instrument: \harp, coef: 0.3,
+			midinote: p.tune[e.start],
+			dur: b.q,
+			amp:0.03
+		].p.fin(6).play
+	}
 });
 P(\xtraBassnotes, music: { |p b e|
 	[
@@ -1591,8 +1766,7 @@ P(\xtraBassnotes, music: { |p b e|
 		dur: "qqqqqq qqq qq ".asBeats.warpTo( e.tempoMap ).q
 	].pp
 });
-P.tune();
-
+// P.tune();
 ["final note","1".dm('a-'),[1]].addLine;
 P.still(\walkingOut, timecode: 636.85.seconds, music: { |p b e|
 	 e.still.( 
@@ -1600,15 +1774,21 @@ P.still(\walkingOut, timecode: 636.85.seconds, music: { |p b e|
 		text: ["",""],
 	)
 });
-P.tune(_  => Padd(\midinote,[-24, -12 ],_));
+P(\lastBassnote, music: { |p b e|
+	(
+		midinote: p.tune[e.start].list[0] - [12,24],
+		dur: 10,
+		out: Effect.bus({ |i|  i * Env.linen(0,b.sum,4).kr(2,gate:1) => Pan2.ar(_,0)})
+	).play
+});
 P(\plink, music: { |p b e|
 	
 	{
 		Pluck.ar( PinkNoise.ar(0.1), 1, 0.1, 1.df('a-',[2, 3 ]) + Gendy1.kr(minfreq:0.2,maxfreq:[5,10]).range(-5,5) =>_.reciprocal, decaytime:4)
 		=> {|i| CrossoverDistortion.ar(i) /50 + i }		
-		* [0.5,1]
-		* EnvGen.cutoff(b[0],3)
+		* [0.5,1] * 3.dbamp
 		=> DWGReverbC1C3.ar(_,mix:0.4)
+		* EnvGen.cutoff(b[0],9,-1)
 		}.play
 });
 )

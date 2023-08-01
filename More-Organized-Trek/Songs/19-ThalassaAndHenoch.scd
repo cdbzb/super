@@ -9,7 +9,7 @@ Song.synthVTracks = EventWithDefault.new(
 		{|i| Pan2.ar(i,0) /3}
 	}
 );
-[ "/*[Laboratory]*/","1".dm() ].addLine;
+[ "/*[Laboratory]*/","1".dm(),[1] ].addLine;
 P.still(\plasticPerson, timecode: 4150.seconds, music: { |p b e|
 	 e.still.( 
 		wait: 2.381 + 1,
@@ -421,6 +421,12 @@ P.still(\handRises, timecode: 4218.666.seconds, music: { |p b e|
 			],
 	)
 });
+P.still(\speaks, syl:0,timecode: 4221.7.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P(\chord,syl:2, music: { |p b e|
 	{
 		var freq = [-1, 1, 11, 13, 15, 21].df('f#', \minor);
@@ -498,6 +504,12 @@ P(\chord, music: { |p b e|
 	}.play
 });
 [ "/*SPOCK:*/ You have no excuse to keep the real body any longer. ","1 1 2 3 4 5 6 7".dm('a-') ++ "13 12 7 11 7 6 4".dm(\f) ].addLine;
+P.still(\henochAgain, timecode: 4227.25.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,

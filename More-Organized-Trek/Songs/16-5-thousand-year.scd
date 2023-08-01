@@ -2,8 +2,8 @@
 (
 Song(\thousand,[]).current;
 
-~stills = Stills.new("/Users/michael/tank/Trek/video for stills etc/media/return to tomorrow.mov");
-// ~stills = Stills.new();
+// ~stills = Stills.new("/Users/michael/tank/Trek/video for stills etc/media/return to tomorrow.mov");
+~stills = Stills.new();
 Stills.current=~stills;
 
 Song.synthVTracks = EventWithDefault(
@@ -153,7 +153,7 @@ P(\bass,start:\name,music:{|p b e|
 	}.play
 });
 ["how will something that looks like a drop of jelly make this thing work?",[3,4, 3,4,5, 3, 3,4,5,3, 6,4, 7,7,4.5,2].dm('g',scale:\mixolydian,octave:5)].addLine;
-P.still(\behindMachine, timecode: 3613.1.seconds, music: { |p b e|
+P.still(\transition, timecode: 3559.5.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
@@ -190,6 +190,12 @@ P(\accent,start:\jelly,music:{|p b e|
 	].p.trace.play;
 });
 ["You'll need microgears and a pulley that work like a muscle does.",[2,2,4,3,1].dm('d',octave:6)++ [4,3,2,1,-6,-7,-6,-5,-4,-3,-17].dm(\e,scale:\mixolydian,octave:6)].addLine;
+P.still(\behindMachine, timecode: 3613.1.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \scott, take:\lead,
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
@@ -557,6 +563,7 @@ P(\chords2,start:\assuming,syl:14,music:{ |p b e|
 //	].p.play(Song.quarters(\assuming).asTempoClock)
 //});
 ["(Scott leaves as 'Spock' laughs.)",[11,7,6,5,7,6,5,4,3,2,4,3,2,1,0].dm(\c)].addLine;
+
 P.still(\scottLeaves, timecode: 
 	// 3632.seconds //old
 	3630.seconds
@@ -569,6 +576,12 @@ P.still(\scottLeaves, timecode:
 //set pause between sections
 Song.durs[\laugh]=Song.durs[\laugh].list.put(Song.durs[\laugh].list.size - 1, 0.5).q;
 P.tune( { |i| i.fin(14) => Pmul(\freq, [0.25,0.5,1,2],_) <> [ instrument: \stringyy, out:Effect.bus({|i| [0.1,0.4] * CombN.ar(i, 0.4,0.4) + i },) ].pm} );
+P.still(\leaving,syl:6, timecode: 3632.1.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P(\door,start:\laughs,syl:6,music:{|p b e| 
 	Synth(\door,[\out,0,\amp,0.1])
 });
@@ -999,7 +1012,7 @@ P(\guitar, music: { |p b e|
 	) => _.play;
 
 });
-P.still(\embrace,timecode:3702.5.seconds,music:{|p b e|
+P.still(\embrace,timecode:3702.6.seconds,music:{|p b e|
 	e.still.value(
 		wait:b.sum,
 		// fadeIn:1,
@@ -1169,7 +1182,11 @@ P(\bass,start:\mankind,syl:2,music:{|p b e|
 	].pp
 });
 ["Are these bodies too much to ask for in return?",[1,3,4,3,1,2,3,2,1,-7,-6,1.5].dm(\e)].addLine;
-P.still(\spockXYZ, timecode: 3732.2.seconds, music: { |p b e|
+
+P.still(\spockXYZ, timecode: 
+	// 3732.2 //hot (charlie not like)
+	3717.3
+	.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
@@ -1266,7 +1283,7 @@ P(\chord,syl:4,music:{|p b e|
 
 	).play
 });
- ["/*MULHALL:*/ No. I'm beginning to hate it.",[1].dm(\b)].addLine;
+ ["/*MULHALL:*/ No. I'm beginning to hate it.",[1].dm(\b),[3]].addLine;
  P.still(\walkingOff, timecode: 3738.seconds, music: { |p b e|
  	 e.still.( 
  		wait: b.sum + 5,
@@ -1280,8 +1297,14 @@ P(\chord,syl:4,music:{|p b e|
 		 amp: 0.2
 	 ).play
  });
-["(She rushes out, and 'Spock' smirks.)","r"].addLine;
-P.still(\smirk, timecode: 3746.4.seconds, music: { |p b e|
+["(She rushes out, and 'Spock' smirks.)","r",[2]].addLine;
+P.still(\departs, timecode: 3740.35.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
+P.still(\smirk,lag:1, timecode: 3746.4.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],

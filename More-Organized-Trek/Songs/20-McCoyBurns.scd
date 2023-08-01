@@ -19,34 +19,34 @@ P.still(\mccoy, timecode: 4247.7.seconds, music: { |p b e|
 		text: ["",""],
 	)
 });
-[ "MULHALL: Would you like to save your Captain Kirk? ","r" ].addLine;
+[ "MULHALL: Would you like to save your Captain Kirk? ","r" ,[2]].addLine;
 P.still(\twoShot, timecode: 4255.6.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
+		wait: b.sum + e.bNext.sum,
+		text: ["would you like","to save your Captain Kirk"],
 	)
 });
-[ "MCCOY: But you said that was impossible. ","r" ].addLine;
-[ "MULHALL: We have many powers Sargon did not permit us to use. ","r" ].addLine;
+[ "MCCOY: But you said that was impossible. ","r",[2] ].addLine;
+[ "MULHALL: We have many powers Sargon did not permit us to use. ","r" ,[2]].addLine;
 P.still(\closeup, timecode: 4310.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["We have many powers",""],
 	)
 });
 [ "He thought them too tempting to us. ","r" ].addLine;
 [ "This body pleases me. ","r" ].addLine;
 [ "I intend to keep it. ","r" ].addLine;
-[ "MCCOY: I see. And Henoch intends to keep Spock's body, of course. ","r" ].addLine;
+[ "MCCOY: I see. And Henoch intends to keep Spock's body, of course. ","r",[2] ].addLine;
 P.still(\mccoyAgain, timecode: 4326.1.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["I see",""],
 	)
 });
 [ "MULHALL: Henoch's plans are his own affair. ","r" ].addLine;
 [ "I wish only to exist in peace as a living woman. ",[3, 6, 5, 6, 4.5, 5, 3, 7, 11, 7, 7, 4, 5, 5, 6, 5, 1, 2, 1].dm('f#') ].addLine;
-P.still(\thal, timecode: 4332.2.seconds, music: { |p b e|
+P.still(\thal, timecode: 4333.3.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],

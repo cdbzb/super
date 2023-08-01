@@ -118,7 +118,6 @@ P(\chord, music: { |p b e|
 		=> Splay.ar(_)
 	}.play
 });
-
 P.still(\chapelZombie, timecode: 4630.0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -139,14 +138,20 @@ P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 	}.play
 });
 //Sickbay
-["//[Sickbay]","r"].addLine;
-P.still(\surpriseLook, timecode: 4642.seconds, music: { |p b e|
+["//[Sickbay]","r",[6]].addLine;
+P.still(\walkingTransition, timecode: 4637.7.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
 	)
 });
-P.still(\aliveKirk, timecode: 4643.8.seconds, music: { |p b e|
+P.still(\surpriseLook2,lag:2, timecode: 4642.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
+P.still(\aliveKirk,lag:4, timecode: 4643.8.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],

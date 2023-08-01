@@ -475,6 +475,12 @@ P(\chords,start:'cer- tain',music:{|p b e|
 		[
 			freq: [
 				[1,3,5],
+P.still(\thalassaWhat, timecode: 3412.2.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["what is it","Sargon"],
+	)
+});
 				[1,3,5],
 				[-7,3,5],
 				[-7,3,5],
@@ -639,7 +645,7 @@ P(\strum,start:'ex- cel',music:{|p b e|
 });
 P.tune('bo- dy', _ <> [instrument: \sawSynthSustain,pulse:0.5,amp:0.02].pm);
 ["There I feel be- tter al- rea- dy","c4 g3 a b c4 b3 a b d4 c"].addLine; //11
-P.still(\twoShot, timecode: 3835.333.seconds, music: { |p b e|
+P.still(\twoShot, timecode: 3834.1.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.parse([[1,1,1,1,1,1,1,1,1,0.5]]).unbubble,
 		text: ["There",""],
@@ -888,10 +894,10 @@ P(\lick2,start:\injections,syl:0,music:{|p b e|
 	].pma(\sparkTriangle).play;
 });
 ["/*KIRK:*/ That will take months, perhaps years. We haven't that choice, Thalassa. ",[1,-7,1,3, 2,1,5,2,5,4.5,5,6,11,7,6,5].dm(\c,4)].addLine;
-P.still(\twoShot, timecode: 3848.666.seconds, music: { |p b e|
+P.still(\twoShot, timecode: 3847.9.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		fadeIn: b.sum
+		// fadeIn: b.sum
 	)
 });
 P.tune(\months, _ <> [ instrument: \sawSynthSustain, amp: 0.02 ].pm);
@@ -982,7 +988,7 @@ P.synthV(\genbu, params: [
 );
 P.tune(\torment);
 
-P.still( \kirk, start: \torment, timecode:3859.seconds, music: { |p b e|
+P.still( \kirk, start: \torment, timecode: 3859.7.seconds, music: { |p b e|
 		e.still.value(
 				wait: b.sum ,
 				text:["No, beloved","if we torment ourselves"]
@@ -1159,7 +1165,10 @@ P(\this,start:'Will they',syl:11,music:{|p b e|
 				dur:2
 		).play
 });
-P.still(\thalassa,start:'Will they',syl:3,timecode:3914.542.seconds,music:{|p b e| 
+P.still(\thalassa,start:'Will they',syl:3,timecode:
+	// 3914.542// original
+	3915.5
+	.seconds,music:{|p b e| 
 		e.still.(
 				wait:b.sum,
 				text:["will they intertwine","like this?"]

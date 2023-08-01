@@ -1322,7 +1322,7 @@ P(\pain,start:'helping', syl:12,music: {| p, b, e|
 	* Env.linen(0,b.sum,3).kr(2,gate:1)
 }.play
 });
-P.still(\pain,syl:12, timecode: 3414.seconds, music: { |p b e|
+P.still(\pain,syl:12, timecode: 3412.2.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],

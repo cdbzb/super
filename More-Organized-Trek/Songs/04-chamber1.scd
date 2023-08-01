@@ -318,7 +318,7 @@ P(\basnote, music: { |p b e|
 		strum: 0.05
 	).play
 }); */
-P.tune();
+// P.tune(_ <> [rest:[1, 1, 1, \r,\r,\r,\r,1,1,1,\r].q, instrument: \harp,coef:0.05].p);
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	filter: (midinote: _ - 24), 
 	lyrics: "but perhaps + this has been arranged + for us, too. ",

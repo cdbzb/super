@@ -514,16 +514,25 @@ P(\bass,start:\vital,music:{|p b e|
 });
 [ "(boom) Yes, we can keep them going for a few weeks, or a month. For all the good it'll do ","-1 1 3 2 1 -7 2 1 -7 1 2 3.5 2 1 -7.5 ".dm(\g,\minor) ++ "1 -7 -5 -3 -4 -5 -4".dm(\a,\mixolydian) ].addLine;
 // P.tune();
-P.still(\mccoy, timecode: 4112.03.seconds, music: { |p b e|
+P.still(\mccoy, timecode: 
+	 4142.5
+	.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum/2,
 		fade:b.sum/2,
-		// text: ["yes, we can keep them","going"],
+		text: ["yes, we can keep them","going"],
 	)
 	// .sequenceText([
 	// 		b.parse([7]).sum, ["for a few weeks","or a month"],
 	// 		b[7..13].sum, ["for all the good","it'll do.."]
 	// ])
+});
+P.still(\fromBack,syl:10, timecode: 4112.03.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		fadeIn:3,
+		text: ["",""],
+	)
 });
 P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 

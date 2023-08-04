@@ -1259,7 +1259,8 @@ P(\lick,start:\return,syl:3,music:{|p b e|
 
 	).play
 });
-[" (or) Would you prefer this?", [1,2,3,2,3,6.5].dm(\c) ].addLine;
+["Would you prefer this?", "3 2 1 5 4".dm('e-',\lydian) ].addLine;
+P.tune();
 
 P.synthVs(role: \henoch, take:[ \lead, \double ], params: {|p b| [
 	lyrics: "or Would you prefer + this?",
@@ -1283,21 +1284,50 @@ P(\chord,syl:4,music:{|p b e|
 
 	).play
 });
- ["/*MULHALL:*/ No. I'm beginning to hate it.",[1].dm(\b),[3]].addLine;
+ ["/*MULHALL:*/ No. I'm beginning to hate it.",[ 1.dm(\b) ] ++ "3 3 3 3 3 4 -4.5".dm('b-')].addLine;
+ P(\lingeringNo, music: { |p b e|
+	 (
+		 freq: -11.df(\b),
+		 dur: b[0],
+		 instrument: \stringyy, amp:0.2
+	 ).play
+ });
  P.still(\walkingOff, timecode: 3738.seconds, music: { |p b e|
  	 e.still.( 
  		wait: b.sum + 5,
  		text: ["",""],
  	)
  });
- P(\bass,start:\hate,music:{|p b e|
-	 (
-		 instrument:\stringyy,
-		 freq:[1,11].df(b) / 3,
-		 amp: 0.2
-	 ).play
+ P(\hateIt, syl:5, music: { |p b e|
+	 [
+		 freq: [[4,5,11].df('e-'),[ -1.5,4,5 ].df('e-')].q,
+		 legato:1.2,
+		 instrument: \sawSynthSustain,
+		 dur: b.drop(1).q
+	 ].pp
  });
-["(She rushes out, and 'Spock' smirks.)","r",[2]].addLine;
+ P.tune();
+ P(\bass,start:\hate,music:{|p b e|
+	 [
+	 	freq: [\r, 11, 7, 5, 4, 3, 2.5].df('b-',3,\mixolydian).q,
+		dur: b.parse([1, 1, 1, 1, 1, 1, 2]).q
+	 ].pp;
+	 //chords
+	 [
+	 	freq: [\r]++ ([-5, 1, 3]!5) ++ [7,11] => _.df('b-',3,\mixolydian) =>_.q,
+		dur: b.parse([1, 1, 1, 1, 1, 1, 2]).q
+	 ].pp;
+
+ });
+["(She rushes out, and 'Spock' smirks.)",( -11 ).dm(\b),[2]].addLine;
+
+P(\bassnote, music: { |p b e|
+	(
+		freq:[-11,1].df(\b,3),
+		dur: 2,
+		out: Effect.bus({|i| i => DWGReverbC1C3.ar(_) },)
+	).play
+});
 P.still(\departs, timecode: 3740.35.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,

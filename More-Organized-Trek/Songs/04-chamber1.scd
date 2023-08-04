@@ -6,7 +6,7 @@ s.waitForBoot{ Song(\chamber1,[]).current;
 		{
 			|i|
 			// i => FreeVerb.ar(_,1,[0.4,0.5])
-			i => DWGReverbC1C3.ar(i,mix:mix)
+			i => DWGReverbC1C3.ar(i,c1:3,c3:10,mix:mix)
 			/4
 		}
 	},
@@ -16,7 +16,7 @@ s.waitForBoot{ Song(\chamber1,[]).current;
 			// i => FreeVerb.ar(_,1,[0.4,0.5])
 			i => BLowShelf.ar(_,200,db: -9)
 			// /80
-			=> DWGReverbC1C3.ar(i,mix:mix)
+			=> DWGReverbC1C3.ar(i,mix:mix,c1:3)
 			/8
 		}
 	}
@@ -163,13 +163,15 @@ P.synthV(role: \spock, take: nil, params: {|p b| [
 	] }, music:{|p b e|
 		{
 			e.playbuf
-			=> p.synthVTracks.at(e.key).()
+			=> EarlyRef.ar(_, [1,0,0],[0,0,0],[3,4,5.1])
+			=> p.synthVTracks.at(e.key).(mix:0.05)
 		}.play
 
 	});
 
 
 ["KIRK: Kirk here. ",[11,3].dm('c#')].addLine;
+Song.early={|sig az| EarlyRef.ar(sig, [az * pi / 2 => _.sin, 0, cos(az * pi / 2)],[0,0,0],[3,4,5.1])};
 Song.durs.filter( _ * 0.7 );
 P.still(\communicator, timecode: 902.seconds, music: { |p b e|
 	 e.still.( 
@@ -189,12 +191,15 @@ P(\tone, music: { |p b e|
 });
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 		filter: (midinote: _ - 12), 
+		lag: [0.1,0.1],
 		lyrics: "kirk here",
+		legato: [1,0.8, ],
 		pitchTake: 1
 	] }, music:{|p b e|
 		{
 			e.playbuf
-			=> p.synthVTracks.at(e.key).()
+			=> p.early.(_,-1)
+			=> p.synthVTracks.at(e.key).(mix:0.05)
 		}.play
 
 	});
@@ -207,12 +212,14 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	Trek.cast.scott = \mo;
 P.synthV(role: \scott, take: \lead, params: {|p b| [
 		lyrics: "Can you reed me, Captain + ",
+		lag: [0.07,0,0,0,0,0],
 		filter: (midinote: _ - 12), 
 		pitchTake: 1
 	] }, music:{|p b e|
 		{
 			e.playbuf
 			// => p.synthVTracks.at(e.key).()
+			=> p.early.(_,-0.5)
 			=> p.offCamFn.(_)
 		}.play
 
@@ -246,7 +253,8 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	] }, music:{|p b e|
 		{
 			e.playbuf
-			=> p.synthVTracks.at(e.key).()
+			=> p.early.(_,0) * -3.dbamp
+			=> p.synthVTracks.at(e.key).(mix: 0.1)
 		}.play
 
 });
@@ -291,22 +299,22 @@ P('bass',start:\Yes,music: {|p b e|
 	});
 [ "but perhaps this has been arranged for us, too. ","5 6 1 3 4 5 6 7 7.5 4 12".dm(\a,\minor) ].addLine;
 P(\basnote, music: { |p b e|
-	var channel = Channel();
 	fork{
-		{ {|freq|
-			Pulse.ar(freq, 0.24,0.1)
-			/5
-			// /10
-			=> FreeVerb.ar(_,0.4,1) * 2
-			=> Out.ar(\out.kr(0),_ )
-		}.asDefName } => channel.insertResultOf(_)
-	};
-	fork{
-		0.1.wait;
+		var inst = Barrier.collect(
+			{ {|freq|
+				Pulse.ar(freq, 0.24,0.1)
+				/5
+				// /10
+				=> FreeVerb.ar(_,0.4,1) * 2
+				=> Out.ar(\out.kr(0),_ )
+			}.asDefName } 
+		);
+		inst.()[0] =>
 		[
 			// freq: [ [ 4.5,7 ], [1,6] ].df(\c,4,\mixolydian).q,
 			freq: [-5,1, 4, ].df(\a,3).q,
 			// instrument: channel.extract.postln,
+			instrument: _,
 			instrument: \stringyy, wet:0,amp:0.3,
 			dur: b.parse([2,5, 3, 1]).q
 		] =>_.ppm
@@ -320,7 +328,7 @@ P(\basnote, music: { |p b e|
 }); */
 // P.tune(_ <> [rest:[1, 1, 1, \r,\r,\r,\r,1,1,1,\r].q, instrument: \harp,coef:0.05].p);
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
-	filter: (midinote: _ - 24), 
+	filter: (midinote: _ - 12), 
 	lyrics: "but perhaps + this has been arranged + for us, too. ",
 	legato: [0.7, 1, 0.8, 1, 1, 1, 1, 1, 1, 1, 1, ],
 	pitchTake: 1
@@ -416,11 +424,12 @@ P.synthV(role: \scott, take: \lead, params: {|p b| [
 ] }, music:{|p b e|
 	{
 		e.playbuf
+		=> p.early.(_,0) / 2.5
 		=> p.synthVTracks.at(e.key).(0.04)
 	}.play
 
 });
-P.tune(\dematerialise);
+P.tune(\dematerialise, _ <> [instrument: \sawSynthSustain,amp:0.015].pm);
 /*[ Chamber ]*/ ["SCOTT [OC]: I don't like it, sir. ","3 2 5 3 1".dm(\b,\whole)].addLine;
 P(\sirNote,syl:3, music: { |p b e|
 	(

@@ -1202,10 +1202,10 @@ P('bassNote',start:\vastness,music: {|p b e|
 (freq:[11,5].df(\b,3),instrument:\defaultPiano,dur:b.sum).play
 });
 ["As you now leave your own seed on distant planets, ",[1,3,1,4,3,1,3,4,5,3,7,6].dm(\d,\dorian)].addLine;
-P.still(\altWide, timecode: 1107.1.seconds, music: { |p b e|
+P.still(\altWide, timecode: 1110.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["",""]
 	)
 });
 Song.setTempoMap(\planets, "q q q qq qq q e e q q qq qq");

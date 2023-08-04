@@ -33,7 +33,19 @@
 			 ]).value
 		 }.inEnvir;
 	 }.value;
-[ "(Uhura is screaming in terror before collapsing across her console. Chapel is standing rigid by the Captain's chair.) ","r" ].addLine;
+[ "(Uhura is screaming in terror before collapsing across her console. Chapel is standing rigid by the Captain's chair.) ","r",[4] ].addLine;
+P.still(\uhura, timecode: 4751.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
+P.still(\collapse,lag:2, timecode: 4754.1.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 {
 	["SPOCK: Must I make an example of you, too, Helm? ",[1, 2, 2, 3, 3, 3, 4.5, 4.5, 7, 5.5,7, 1].dm('f#',scale:\mixolydian)].addLine;
 	// P.tune(\example);
@@ -1376,6 +1388,12 @@ P(\bass,start:\summoned,music:{|p b e|
 			).play
 
 		});
+P.still( \chapel1, start: \placed, timecode:5030.5.seconds, music: { |p b e|
+	e.still.value(
+		wait: b.sum,
+		text: ["that is why I was summoned", "into sickbay, Doctor"]
+	);
+});
 ["Mister Spock's consciousness was placed in me. ",[1,2,3,4,3,2,1,6,6,5].dm(\g,octave:4)].addLine;
 Song.setTempoMap(\placed,"e e ee e e e e ee e eeeee");
 // P.tune(\placed);
@@ -1387,12 +1405,6 @@ P.synthVs(role: \chapel, take: [ \lead, \double ], params: {|p b| [
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 	}.play
-});
-P.still( \chapel1, start: \placed, timecode:5030.5.seconds, music: { |p b e|
-	e.still.value(
-		wait: b.sum,
-		text: ["Mister Spock's consciousness","was placed in me!"]
-	);
 });
 P(\bassTwo, music: { |p b e|
 	
@@ -1637,6 +1649,12 @@ P(\bassPad,start:'gether.(1)',music:{|p b e|
 				).play
 			});
 ["SARGON [OC]: We now know we cannot permit ourselves (boom) to exist in your world, my children. ",[5,4,3,-7,4,3,2,1,-7,-5,-3,-7,1].dm(\b,scale:\mixolydian) ++ [2.5,2,6,5,1,4,3].dm(\g)].addLine;
+P.still(\listeningAgain, timecode: 5043.5.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 ( Song.weNowKnowLines= [
 		[6, 5, 4.5, 1,  5,  4.5, 3,  2,  1,  -6, \_],
 		[3, 3, 2,   \_, \_, \_,  \_, \r, \r, \r, -4.5],

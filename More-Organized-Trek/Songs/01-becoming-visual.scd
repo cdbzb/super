@@ -1602,7 +1602,6 @@ P.still(\sargon, timecode: 105.188.seconds, music: { |p b e|
 		text: ["",""],
 	)
 });
-P.tune();
 [" Are your hailing frequencies open?","3 1 5 4 3 4 5 ".dm('e-',\lydian) ++ "3 1".dm(\d)].addLine;/*KIRK*/
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	filter: (midinote: _ - 12), 
@@ -1617,7 +1616,7 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 
 });
 P.tune();
-P.still(\kirkHailing, timecode: 110.6.seconds, music: { |p b e|
+P.still(\kirkHailing, timecode: 111.8.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
@@ -1636,7 +1635,7 @@ P.synthV(role: \uhuru, take: \lead, params: {|p b| [
 
 });
 P.tune();
-P.still(\UhuraSpeaking, timecode: 112.3.seconds, music: { |p b e|
+P.still(\UhuraSpeaking, timecode: 113.15.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
@@ -1881,7 +1880,7 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	)
 
 });
-P.still(\sargonreads, timecode: 136.55.seconds, music: { |p b e|
+P.still(\sargonreads, timecode: 140.seconds, music: { |p b e|
 	 e.still.( 
 		 fadeIn:2,
 		wait: b.sum,

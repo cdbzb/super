@@ -46,10 +46,6 @@ Song.encoders=~encoders;
 				++ e.bNext[0..enlarge]
 			};
 
-
-			
-
-
 			var freqs = Demand.ar(
 				TDuty.ar(dursWithPreroll.dq,1,1),
 				1,
@@ -57,12 +53,15 @@ Song.encoders=~encoders;
 			);
 			var car = Gendy1.arWidth( freq: freqs , width:width) => Mix.ar(_)
 			* Env.linen(att,sus,rel).kr(2,gate:1);
-			var saw = Saw.ar(freqs) * 0.1
+			var saw = Saw.ar(freqs*2) * 0.1
 			=> SplayAz.ar(5,_)
 			// => Splay.ar(_)
 			=> RLPF.ar(_,100,2)
+			// => RHPF.ar(_ ,100,2)
+			// => HPF.ar(_ ,100,2)
 			;//* Env.linen(3,5,6).kr(2,gate:1);
-			(1-mix * car min: 0.001  ) => FreeVerb.ar(_,verb,0.8)
+			(1-mix * car /* min: 0.001  */ ) => FreeVerb.ar(_,verb,0.8)
+			// (1-mix * car => _.abs     ).poll => FreeVerb.ar(_,verb,0.8)
 			+ (mix * saw )
 			/10
 			* carrierGain
@@ -102,6 +101,7 @@ Song.encoders=~encoders;
 		)
 	};
 	Song.vocoderFoa = Bus.audio(s,5);
+	
 	Song.vocodeTune = { 
 		|p b e rppName amp=0.2 att=3 sus=1 rel=5 dur=10 chord=#[1,2,4,5,6,8] tune out=0 modGain=1 echo=1 mix=0.5 verb=1 width=1.1 carrierGain=1 enlarge|
 		var synthVbuffer, playSynth, playAmbiSynth;
@@ -110,6 +110,10 @@ Song.encoders=~encoders;
 			v = Group.new(addAction:\addToTail).register 
 		};
 		e.rpp.notNil.if{rppName = e.rpp};
+		( (b.sum + 0.5) > dur ).if {
+			b.sum.asString + dur.asString +"section shorter than default vocoder dur - setting dur to" + ( b.sum + 0.5 ) => _.warn;
+			dur = b.sum + 0.5
+		} ;
 		e.synthV.notNil.if{synthVbuffer=e.playbuf};
 		playSynth = {  // mono => mono
 				Song.vocoderSynth = 

@@ -8,6 +8,11 @@ Waiter {
 		).play
 	}
 }
++ Pbind {
+	asPpar {
+		 ^Ppar(patternpairs.flop.collect({|i| Pseed(0,Pbind(*i)) }))
+	}
+}
 +P {
 	*wait {
 		Waiter( P.tune() )
@@ -117,3 +122,4 @@ Waiter {
 		thisProcess.nowExecutingPath => _.load
 	}
 }
+

@@ -140,11 +140,11 @@ beam = beam * (phasor - (Wrap.ar(phasor) - 0.5));
 });
 
 /*[ Chamber ] */ ["SPOCK: Captain, the security guards. ","5 3 5 7 12 7 5 3".dm(\c,\mixolydian)].addLine;
-Song.durs.filter(\guards,{|i| var last = i.last; i.dropLast ++ (last+1)});
+Song.durs.filter(\guards,{|i| var last = i.last; i.dropLast ++ (last+0.25)});
 P.still(\wide, timecode: 857.6.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["Captain","the security guards "],
 	)
 });
 P('crash',start:\Captain,music: {|p b e|
@@ -172,12 +172,26 @@ P.synthV(role: \spock, take: nil, params: {|p b| [
 
 ["KIRK: Kirk here. ",[11,3].dm('c#')].addLine;
 Song.early={|sig az| EarlyRef.ar(sig, [az * pi / 2 => _.sin, 0, cos(az * pi / 2)],[0,0,0],[3,4,5.1])};
+Song.durs.filter('Kirk here', _ + [0.15,0]);
+P(\bloop, music: { |p b e|
+	{
+		SinOsc.ar( Line.kr(1000,2300,0.15) * [1,1.01],0,0.1 ).tanh.tanh
+		* EnvGen.cutoff(0.1,0.1,\lin,0)
+
+		=> {|i| i + CombN.ar(i,0.2,0.05,0.5)}
+
+		* [0.5, ClipNoise.ar(0.5) ]
+		=> Mix.ar(_)
+		* -15.dbamp
+		=> p.early.(_,-0.5)
+	}.play
+});
 Song.durs.filter( _ * 0.7 );
 P.still(\communicator, timecode: 902.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum + e.bNext.sum,
 		fade: 7,
-		text: ["",""]
+		text: ["Kirk","here"]
 	)
 });
 P.tune(_ <> [ out: Effect.bus({|i| DWGReverbC1C3.ar(i) },) ].p);
@@ -189,7 +203,7 @@ P(\tone, music: { |p b e|
 		* Env([0,1,0],[2,3]).kr(2,gate:1)
 	}.play
 });
-P.synthV(role: \kirk, take: \lead, params: {|p b| [
+P.synthV(role: \kirk,lag:0.15, take: \lead, params: {|p b| [
 		filter: (midinote: _ - 12), 
 		lag: [0.1,0.1],
 		lyrics: "kirk here",
@@ -219,16 +233,22 @@ P.synthV(role: \scott, take: \lead, params: {|p b| [
 		{
 			e.playbuf
 			// => p.synthVTracks.at(e.key).()
-			=> p.early.(_,-0.5)
 			=> p.offCamFn.(_)
+			=> HPF.ar(_,300)
+			=> BRF.ar(_,1200,4)
+			=> p.early.(_,-0.5)
 		}.play
 
 	});
 P(\connector, music: { |p b e|
 	[
-		freq: "3 2 2 1".df(\b,\whole) ++ "1 -5".df('e-',6) => _.q /2,
-		dur:b.parse([1, 3, 1, 1]) + [0,0,0,e.bNext[0..1].sum] ++ e.bNext[2..3] => _.q
-	].pp
+		freq: "3 2 2 1".df(\b,\whole) ++ "1 -5".df('e-',6) ++ [\r,\r,5,1, \r, 6, 5, 4, 3, 3, 2].df('a-') => _.q /2,
+		dur:b.parse([1, 3, 1, 1]) + [0,0,0,e.bNext[0..1].sum] ++ e.bNext[2..3] ++ e.bNext[4..8].sum.bubble ++ e.bNext[9..] => _.q,
+		dur: e.bAll.parse([1, 3, 1, 3, 1, 5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]).q,
+		instrument: \sawSynthSustain, amp:0.06,
+		legato: [1,0.8].q(inf),
+		out: Effect.bus({|i| BPF.ar(i, SinOsc.ar(0.16).range(400,2000),0.2) *4 }, inputChannels:2)
+	].ppma
 });
 ["KIRK: Yes, Scotty (boom), and I shouldn't be able to this deep inside the planet", [11, 7, 5, 2,  6, 7, 11, 7, 6, 7, 5, 1, 6, 6, 5, 4, 3,3,2].dm('a-')].addLine;
 Song.setTempoMap('Yes',"q e e e x x E E E e e e e Q E Q E Q Eq");
@@ -330,7 +350,7 @@ P(\basnote, music: { |p b e|
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	filter: (midinote: _ - 12), 
 	lyrics: "but perhaps + this has been arranged + for us, too. ",
-	legato: [0.7, 1, 0.8, 1, 1, 1, 1, 1, 1, 1, 1, ],
+	legato: [0.7, 1, 0.8, 1, 1, 1, 1, 1, 1, 1, 0.7, ],
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
@@ -349,9 +369,17 @@ P('chord',start:\perhaps,syl:9,music: {|p b e|
 	].ppm
 	});
 ["Is the security guard up there?","1 2 3 4 3 2 1 3 5".dm('e-',\lydian)].addLine;
-P.synthV(role: \kirk, take: \lead, params: {|p b| [
+P(\accent, music: { |p b e|
+	(
+		instrument: \harp,amp:0.05,
+		freq:1.df('e-',4),coef:0.8,
+		out: Effect.bus({|i| FreeVerb.ar(i,0.5,1) => Pan2.ar(_,0.8) },)
+	).play
+});
+P.synthV(role: \kirk, take: \high, params: {|p b| [
 	lyrics: "Is the security + + + guard up there?",
-	filter: (midinote: _ - 12), 
+	// filter: (midinote: _ - 12), 
+	filter: (midinote: _ ), 
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
@@ -363,7 +391,7 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 P(\bassnote, music: { |p b e|
 	(
 		instrument: \sawSynthSustain,
-		att: 3,
+		att: 1,
 		freq: 1.df(\g,3),amp:0.03
 	).play
 });
@@ -377,6 +405,7 @@ P(\dyads, music: { |p b e|
 	].pp
 });
 /*[ Transporter Room ]*/ ["SCOTT: They're fine. They Just didn't dematerialise.","6 12 6 7 4 5 6 7 11 5 4 3".dm('e-',4)].addLine;
+Song.durs.filter(\dematerialise,{|i| var last = i.last; i.dropLast ++ (last * 0.5)});
 P(\bassnote,syl:0, music: { |p b e|
 	(
 		instrument: \sawSynthSustain,
@@ -384,7 +413,6 @@ P(\bassnote,syl:0, music: { |p b e|
 		freq: 1.df(\f,4),amp:0.03
 	).play
 });
-Song.durs.filter(\dematerialise,{|i| var last = i.last; i.dropLast ++ (last * 0.45)});
 P(\chord, music: { |p b e|
 	[
 		freq: [ \r,[-6,1, 4].df(\c), \r, [-6,2,4].df(\c),\r,[-7,1,3].df('b-',4,\mixolydian),[-6,1,4].df('b-',4) ].q,
@@ -401,6 +429,17 @@ P(\connector,syl:10, music: { |p b e|
 		out: 2,amp:0.2
 	].ppm
 });
+P(\connectorTwo, music: { |p b e|
+	[
+		freq: [\r, 11, 5, 4, 3, ].df('e-',4) ++ [3,2,].df('b',3,\whole) =>_.q,
+		legato:1,
+		dur: b.parse([8, 1, 1, 1, 1]) ++ e.bNext => _.q,
+		instrument: \sparkTriangle, depth:0.01,
+		out: Effect.bus({|i| i=>HPF.ar(_,5.df('b',4)) * Env.linen(2,b.sum+e.bNext[0..2].sum-4, 2).kr() },)
+
+	].ppm
+});
+// P.tune();
 P.still(\backMedium, timecode: 911.670.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -431,6 +470,7 @@ P.synthV(role: \scott, take: \lead, params: {|p b| [
 });
 P.tune(\dematerialise, _ <> [instrument: \sawSynthSustain,amp:0.015].pm);
 /*[ Chamber ]*/ ["SCOTT [OC]: I don't like it, sir. ","3 2 5 3 1".dm(\b,\whole)].addLine;
+// P.tune(_=> Pmul(\freq,0.25,_));
 P(\sirNote,syl:3, music: { |p b e|
 	(
 		instrument: \harp,
@@ -459,7 +499,7 @@ P.still(\kirkOnWalkie, timecode: 914.833.seconds, music: { |p b e|
 });
 
 P.synthV(role: \scott,
-		lag:-1 *(4096/2-s.options.blockSize/s.sampleRate),
+		// lag:-1 *(4096/2-s.options.blockSize/s.sampleRate),
 		take: \lead, params: {|p b| [
 		lyrics: "I don't like it sir",
 		filter: (midinote: _ - 24), 

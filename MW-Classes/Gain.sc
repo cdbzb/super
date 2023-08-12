@@ -3,3 +3,7 @@ Gain{
     ^MulAdd(channelArray, gain)
   }
 }
+
+W {
+	* { ^true }
+}

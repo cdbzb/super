@@ -28,7 +28,7 @@ Song.encoders=~encoders;
 		}.play(Group.after(s.defaultGroup))
 	};
 	Song.sargonCarrier = { // 5 channels out p.carrierBus
-		|p b e att sus rel chord=#[1,2,4,5,6,8] aTune mix=0.5 verb=1 width=1.1 carrierGain=1 enlarge| 
+		|p b e att sus rel chord=#[1,2,4,5,6,8] aTune mix=0.5 verb=1 width=1.1 carrierGain=1 enlarge sawFreqRatio| 
 		{  
 			var tune = aTune ? p.tune[e.start].list;
 
@@ -53,7 +53,7 @@ Song.encoders=~encoders;
 			);
 			var car = Gendy1.arWidth( freq: freqs , width:width) => Mix.ar(_)
 			* Env.linen(att,sus,rel).kr(2,gate:1);
-			var saw = Saw.ar(freqs*2) * 0.1
+			var saw = Saw.ar(freqs*sawFreqRatio) * 0.1
 			=> SplayAz.ar(5,_)
 			// => Splay.ar(_)
 			=> RLPF.ar(_,100,2)
@@ -103,7 +103,7 @@ Song.encoders=~encoders;
 	Song.vocoderFoa = Bus.audio(s,5);
 	
 	Song.vocodeTune = { 
-		|p b e rppName amp=0.2 att=3 sus=1 rel=5 dur=10 chord=#[1,2,4,5,6,8] tune out=0 modGain=1 echo=1 mix=0.5 verb=1 width=1.1 carrierGain=1 enlarge|
+		|p b e rppName amp=0.2 att=3 sus=1 rel=5 dur=10 chord=#[1,2,4,5,6,8] tune out=0 modGain=1 echo=1 mix=0.5 verb=1 width=1.1 carrierGain=1 enlarge sawFreqRatio=2|
 		var synthVbuffer, playSynth, playAmbiSynth;
 		( v.isNil or: { v.isRunning.not }.try )
 		.if{
@@ -151,7 +151,7 @@ Song.encoders=~encoders;
 		{Song.vocoderSynth.isPlaying.not}{ playSynth.(); playAmbiSynth.() }
 		{ true }{ Song.vocoderSynth.set(\dur,dur,\gate,1)} ;
 		// restore line above to 'out' to get rid of ambisonics!!
-		Song.sargonCarrier.(p,b,e,att, sus, rel, chord,tune,mix, verb, width,carrierGain,enlarge);
+		Song.sargonCarrier.(p,b,e,att, sus, rel, chord,tune,mix, verb, width,carrierGain,enlarge,sawFreqRatio);
 		Song.sargonModulator.(rppName,dur,modGain,echo,synthVbuffer)
 	};
 	Song.laMer = Song.laMer ?  Buffer.read(s,"~/tank/super/samples/La_Mer_clean.aif".standardizePath);

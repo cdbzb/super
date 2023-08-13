@@ -1040,15 +1040,45 @@ P(\finalChord,syl:6, music: { |p b e|
 //	["Your captain has an excellent body, Doctor McCoy. I ","r"].addLine; 
 //	["compliment you both on the condition in which you maintained it. ","r",].addLine;
 ///*SPOCK:*/[" What are your plans for it? Can you exchange places again when you wish? ","r",].addLine; 
-/*SPOCK:*/["what are your plans for Kirks body? Can you exchange places again when you wish? ","r",[2.4]].addLine; 
+["what are your plans for Kirks body? ","4 5 6 11 7 6 13 12 7.5 4".dm(\d,\minor)].addLine;
+P.tune();
+P(\chords, music: { |p b e|
+	[
+		freq: [\r, [3, 7, 12].df(\c,\mixolydian), [4, 7,1.5, 14, 16].df('a-',4),[4, 7, 1.5, 14, 15.5].df('a-',4)].q,
+		dur: b.parse([3,3, 1, 4]).q
+	].pp
+});
+[" Can you exchange places again when you wish? ","1 2 3 5 4".dm(\f,\whole) ++ "1 2 5 4 3  4.5 ".dm('a-',\minor)].addLine; 
+P.tune();
 P.still(\spock, timecode: 1421.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["can you exchange","again when you wish"],
 	)
 });
+P(\bass, music: { |p b e|
+	[
+		freq: [2.5, 1, -7, -5, -6, 2, 5].df(\d,[3,4]).q,
+		dur: b.parse([3, 1, 1, 1, 1, 3, 1]).q
+	].pp
+});
 // /*KIRK:*/[" Have no fear. Your captain is quite unharmed, although his mind generates insufficient energy for him to speak from there as I do.","r",].addLine; 
 /*KIRK:*/[" Have no fear. Your captain is (boom) quite unharmed,","11 5 6 4 3 2 1 -7 5 2 2.5".dm(\c)].addLine; 
+P.synthV(role: \sargon, take: \lead, params: {|p b| [
+	filter: (midinote: _ - 12), 
+	lyrics: "have no fear, your captain + is r quite unharmed +",
+/*
+"have no fear your captain is quite unharmed ".romaji; 
+*/
+phonemes: [ "h a v", "n o w", "f i r", "y o r", "k a p"," t e n", "i z", "","k w a e i t","" , "" ],
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
 P.tune();
 P(\bassline, music: { |p b e|
 	[
@@ -1117,14 +1147,36 @@ P.still(\mccoy, timecode: 1439.8.seconds, music: { |p b e|
 		text: ["are you aware",""],
 	)
 });
-P.synthV(role: \mccoy, 
-	take:\lead, params: {|p b| [
+( Trek.presets.put(\mccoy,\an, [
+	vocalMode: \Power,
+	paramGender: 0.15,
+	paramToneShift: 150,
+	paramTension: -0.1
+]
+	);
+	Trek.presets.put(\mccoy,\jun,[
+
+	vocalMode: \Soul,
+	paramGender: 0.25,
+	paramToneShift: 150,
+	paramTension: 0.1
+	]);
+	// Trek.cast.mccoy = \an;
+	Trek.cast.mccoy = \jun;
+);
+P.synthVs(role: \mccoy, take:[\lead, \dbl], params: {|p b| [
 	lyrics: " Are you aware + of what's happening + + to his body? + ",
-	pitchTake: 1
-] }, music:{|p b e|
+	filter: (midinote: _ - 12), 
+	pitchTake: [ 1,3 ]
+] }, music:
+{|p b e|
 	{
 		e.playbuf
 		// => p.synthVTracks.at(e.key).()
+		=> HPF.ar(_,120)
+		=> BPF.ar(_,1900,2)
+		* -3.dbamp
+		=> Pan2.ar(_,0)
 	}.play
 });
 P.synthV(\default, take: \lead, params: {|p b| [
@@ -1136,7 +1188,6 @@ P.synthV(\default, take: \lead, params: {|p b| [
 			=> p.synthVTracks.at(e.key).()
 		}.play
 });
-
 P(\tremAware,start:'aware',music:
 (instrument:\stringyy,
 freq:[1,11,1,11].df('d',octave:3),
@@ -1204,25 +1255,20 @@ P(\kick14,music:1111.postln;{
 
 ["Heart action (almost) doubled, ",[13,12,11,7,11,7,11,16,15].dm('e',scale:\mixolydian)].addLine; 
 //Song.durs.put(14,[ 0.545, 0.304, 0.31, 0.302, 0.327, 0.311, 0.332, 0.555, 0.429, 2.165 ].q);
-P.synthV(role: \mccoy, take:\lead,
-	filter: (midinote: _ - 12), 
+P.synthVs(role: \mccoy, take:[\lead, \double],
+	filter: [(midinote: _ ),(midinote: _ - 12)], 
 	params: {|p b| [
 	lyrics: "Heart action + almost + r r doubled, + ",
-	pitchTake: 1
+	pitchTake: [1, 3]
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		=> p.synthVTracks.at(e.key).()
+		=> HPF.ar(_,120)
+		=> BPF.ar(_,1900,2)
+		* -3.dbamp
+		=> Pan2.ar(_,0)
+		// => p.synthVTracks.at(e.key).()
 	}.play
-});
-P.synthV(\mccoy, params: {|p b| [
-		
-	lyrics: "Heart action + almost + + + doubled, + ",
-	] }, music:{|p b e|
-		{
-			e.playbuf
-			=> p.synthVTracks.at(e.key).()
-		}.play
 });
 P(\tune15,start:\doubled,music:
 	Song.currentSong.pbind[\doubled]
@@ -1253,15 +1299,19 @@ P(\kick15,music:{
 ["temperature a hundred and four degrees? ",[13,12,11,7,11,12,7,13,13,16].dm('f#',scale:\mixolydian)].addLine;
 P.tune();
 Song.setTempoMap(\hundred,"e e e e Q Q Q qe e qe");
-P.synthV(role: \mccoy,
+P.synthVs(role: \mccoy, take: [\lead, \dbl],
 	filter: (midinote: _ - 12), 
-	take:\lead, params: {|p b| [
+	params: {|p b| [
 	lyrics: "temperature + + a hundred +  and four degrees? +  ",
-	pitchTake: 1
+	pitchTake: [1,3]
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		=> p.synthVTracks.at(e.key).()
+		// => p.synthVTracks.at(e.key).()
+		=> HPF.ar(_,120)
+		=> BPF.ar(_,1900,2)
+		* -3.dbamp
+		=> Pan2.ar(_,0)
 	}.play
 });
 P.synthV(\default, params: {|p b| [
@@ -1337,7 +1387,6 @@ P.synthV(role: \spock, take:\lead,
 		midinote: _ - 12,
 		dur: _ * [1, 1, 1, 1, 1, 1, 0.3]
 	), 
-
 	params: {|p b| [
 	lyrics: " What is it you want of us? ",
 	pitchTake: 1,
@@ -1354,14 +1403,6 @@ P.synthV(role: \spock, take:\lead,
 		=> Pan2.ar(_,0.3)
 		// => p.synthVTracks.at(e.key).()
 	}.play
-});
-P.double(\mo, params: {|p b| [
-		
-	] }, music:{|p b e|
-		{
-			e.playbuf
-			=> p.synthVTracks.at(e.key).()
-		}.play
 });
 P.still(\mediumShot, timecode: 1448.seconds, music: { |p b e|
 		 e.still.( 
@@ -1536,11 +1577,6 @@ P.synthV(\genbu, take: \lead,
 			=> p.synthVTracks.at(e.key).()
 		}.play
 });
-P(\stillYouSpark,start:'you --',music:
-		//defer{~stills.preview('Mister Spock',text:[ "You!","r" ])}}
-		//Still(~stills,'Mister Spock',5,0,text:["You!",""]).add(15*60+5)
-		{}
-);
 	~justTheTune.('Mister Spock');
 P(\continuedLineMisSpock,start:'you --',music:{|p b|
 		~zz=LambdaEnvir( 
@@ -1732,4 +1768,5 @@ P(\againFinalChord,syl:12,start:'live again',music:
 P(\finalBassNote,start:'live again',syl:12,music:
 		(note:2,octave:[3,4,3,2],amp:0.3,attack:0,instrument:\stringyy)
 );
+
 })

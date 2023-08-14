@@ -1053,7 +1053,7 @@ P.tune();
 P.still(\spock, timecode: 1421.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["can you exchange","again when you wish"],
+		text: ["can you exchange places","again when you wish"],
 	)
 });
 P(\bass, music: { |p b e|
@@ -1067,11 +1067,9 @@ P(\bass, music: { |p b e|
 P.synthV(role: \sargon, take: \lead, params: {|p b| [
 	filter: (midinote: _ - 12), 
 	lyrics: "have no fear, your captain + is r quite unharmed +",
-/*
-"have no fear your captain is quite unharmed ".romaji; 
-*/
-phonemes: [ "h a v", "n o w", "f i r", "y o r", "k a p"," t e n", "i z", "","k w a e i t","" , "" ],
-	pitchTake: 1
+phonemes: [ "h a v", "n o w", "f i r", "y o r", "k a p"," t e n", "i z", "","k w a e i t","a n" , "h a r m d" ],
+	pitchTake: 1,
+	legato: [1, 1, 0.7, 1, 1, 1, 1, 1, 1, 1, 0.7  ],
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -1079,7 +1077,21 @@ phonemes: [ "h a v", "n o w", "f i r", "y o r", "k a p"," t e n", "i z", "","k w
 	}.play
 
 });
-P.tune();
+P(\readings, syl:10, music: { |p b e|
+	{
+		Gendy4.ar(initCPs:[5,2,8])
+		/10
+		* Env.triangle(b.drop(1).sum + e.bNext.sum).kr(2,gate:1)
+	}.play
+});
+P(\bassBend, syl:7, music: { |p b e|
+	[
+		freq: [7, 6.5].df(\c).q,
+		instrument: \wash,
+		dur: b.drop(1).parse([1, 3]).q,
+		freqLag: b.drop(1).sum  
+	].ppm
+});
 P(\bassline, music: { |p b e|
 	[
 		freq: "1 3 4 5 -7 -6.5".df(\c,[3,4]).q,
@@ -1094,21 +1106,41 @@ P.still(\sargonAnswer, timecode: 1426.seconds, music: { |p b e|
 	)
 });
 /*SPOCK:*/[" Doctor? ","d4 a-3",].addLine; 
-P.still(\wide, timecode: 1435.8.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["Doctor?",""],
-	)
-});
-~justTheTune.('Doctor?');
-P(\tremDoctor,start:'Doctor?',music:
-	(instrument:\stringyy,
-		freq:[1,11,1,11].df('d',octave:3),
-		width:[6,20,5,100],
-		out:(0..3),
-		attack:0
-	)
-);
+{
+	P(\connector, music: { |p b e|
+		[
+			instrument: \harp,
+			freq: [1,2,3, 5 ].df(\d,[5,3,1]).q,
+			dur: [b.sum] ++ e.bNext.parse([5, 2]) + ([0,0,  p.durs[e.start+2].list[0..2].sum  ]) ++ 1  => _.postln=>_.q,
+			out: Pwhite(0,1,inf),amp:0.03
+		].pp
+	});
+	P.synthV(role: \spock, take: \lead, params: {|p b| [
+		lyrics: "Doctor",
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+
+	});
+	P.still(\wide, timecode: 1435.8.seconds, music: { |p b e|
+		e.still.( 
+			wait: b.sum,
+			text: ["Doctor?",""],
+		)
+	});
+	~justTheTune.('Doctor?');
+	P(\tremDoctor,start:'Doctor?',music:
+		(instrument:\stringyy,
+			freq:[1,11,1,11].df('d',octave:3),
+			width:[6,20,5,100],
+			out:(0..3),
+			attack:0
+		)
+	);
+}.();
 /*MULHALL:*/[" Yes, I have the same readings. ","e5 b-4 c5 d b-4 f#5 d"].addLine; 
 P.still(\mulhall, timecode: 1438.seconds, music: { |p b e|
 	 e.still.( 
@@ -1127,20 +1159,44 @@ P.synthV(role: \mulhall, take: \lead,
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P(\tremReadings,start:'same reading',music:
-	[
-		instrument:\stringyy,
-		freq: ([0,1] +.t [1,11,1,11] ) => _.df('e',octave:3) => _.q,
-		width:[6,20,5,100],
-		out:(0..3).scramble,
-		attack:0.1,
-		dur:Song.parse('same readings',[5,2]).q
-	].p
+P( \foo , music:{|p b e|
+		[
+			instrument:\stringyy,
+			freq: ([0,1] +.t [1,11,1,11] ) => _.df('e',octave:3) *  midiratio(0) => _.postln => _.q,
+			width:[6,20,5,100],
+			out:(0..3).scramble,
+			attack:0.1,
+			dur: b.parse([5,2]).q
+		].pp;
+		// [
+		// 	instrument:\harp,
+		// 	freq: [ 1,2 ].df(\e,4).q,
+		// 	dur: b.parse([5,2]).q,
+		// 	out: Pwhite(0,1,inf)
+		// ].pp
+	}
 );
 // ~justTheTune.('the same readings');
 //Song.durs[ 'Doctor?' ].list
 
 /*MCCOY:*/[" Are you aware of what's happening to his body? ",[7,11,5,13,12,11,7,11,5, 7,11,14,13].dm('f',scale:\mixolydian),[ 0.295, 0.347, 0.315, 0.566, 0.3, 0.322, 0.291, 0.313, 0.6065, 0.278, 0.361, 0.62, 0.633 ]].addLine; 
+Song.setTempoMap(\aware,"e e e q e e e e q e e q q");
+P(\tremReadings,syl:2,music: {|p b e|
+		[
+			instrument:\stringyy,
+			freq: ([1] +.t [1,13,1,11] ) => _.df('e-',octave:4) * midiratio( -2 ) => _.q,
+			width:[6,20,5,100],
+			out:(0..3).scramble,
+			attack:0.1,
+			dur:Song.parse('same readings',[5,2]).q,
+			mix:0
+		].pp;
+		// (
+		// 	instrument:\harp,
+		// 	freq: 1.df(\a,4)
+		// ).play
+	}
+);
 P.still(\mccoy, timecode: 1439.8.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -1175,35 +1231,43 @@ P.synthVs(role: \mccoy, take:[\lead, \dbl], params: {|p b| [
 		// => p.synthVTracks.at(e.key).()
 		=> HPF.ar(_,120)
 		=> BPF.ar(_,1900,2)
-		* -3.dbamp
+		* -5.dbamp
 		=> Pan2.ar(_,0)
 	}.play
 });
 P.synthV(\default, take: \lead, params: {|p b| [
 		
+	legato: [1, 1, 1, 0.8, 1, 1, 1, 1, 0.8, 1, 1, 1, 1, ],
 	lyrics: " Are you aware + of what's happening + + to his body? + ",
 	] }, music:{|p b e|
 		{
 			e.playbuf
-			=> p.synthVTracks.at(e.key).()
+			// => Pan2.ar(_,0.5)
+			* -15.dbamp
+			=> FreeVerb.ar(_,0.1,0.9)
+			=> SineShaper.ar(_,0.03)
+			=> DelayN.ar(_, 0.05, [0,0.02])
+			* [0.2,0.8]
+			=> _.tanh
+
+			// => p.synthVTracks.at(e.key).()
 		}.play
 });
-P(\tremAware,start:'aware',music:
-(instrument:\stringyy,
-freq:[1,11,1,11].df('d',octave:3),
-width:[6,20,5,100],
-out:(0..3).rotate,
-attack:0
-)
+P(\tremAware,start:'aware',music: {|p b e|
+		(instrument:\stringyy,
+			freq:[1,11,1,11].df('d',octave:3),
+			width:[6,20,5,100],
+			out:(0..3).rotate,
+			attack:0
+		)
+	}
 );
 //	Song.durs[14]=[ 0.295, 0.347, 0.315, 0.566, 0.3, 0.322, 0.291, 0.313, 1.213/2, 0.278, 0.361, 0.62, 0.633, /*3.236*/ ].q;
-P(\tune14,start:\aware,music:Song.currentSong.pbind[\happening]
-);
 P(\accent14,start:\aware,syl:2,music:
 	{
 		(
 			instrument:\cymbal_808,
-			amp:0.25,
+			amp:0.35,
 			tone:0.01,
 			out:Effect({|i|
 				TwoTube.ar(i,0.5,0.2,1300,1455)=>Decimator.ar(_,[9000,10000],8)*
@@ -1233,26 +1297,26 @@ P(\baseAware,start:\aware,music:
 
 	}
 );
-
-P(\kick14,music:1111.postln;{
-	[
-		instrument:\bd_808,
-		dur:
-		Song.parse(\aware,[3,1,2,2,1/2,1/2,2,1,1],).q
-		,
-		note:[\].q++[1].q(inf),
-	].pp;
-	[
-		instrument:\hat_808,
-		dur:Song.parse(\aware,[1,1,1,1/2,1/2,1,1,1,1,1/2,1/2,1,1,1/2,1/2,1/2,1/2]).q.quantize(0.8),
-		amp:[0.05,0.1].q(inf),
-		effect:Effect(Phaser2.ar(_)).bus.index,
-		out:Pkey(\effect),
-		note:[\].q(3)++[1].q(inf),
-	].pp
+P(\kick14,music: {|p b e|
+		[
+			instrument:\bd_808, decay: 20,
+			dur: Song.parse(\aware,[3,1,2,2,1/2,1/2,2,1,1],).q ,
+			dur: "qe q q q e e q q q q".asBeats.warpTo( e.tempoMap.quantizeDft(0.3) ).q,
+			amp:0.15,
+			note:[\].q++[1].q(inf),
+		].pp;
+		[
+			instrument:\hat_808,
+			dur:Song.parse(\aware,[1,1,1,1/2,1/2,1,1,1,1,1/2,1/2,1,1,1/2,1/2,1/2,1/2]).q.quantize(0.8),
+			dur: "e e e e e e e e e e e e e e e e ".asBeats.warpTo( e.tempoMap.quantizeDft(0.3) ).q,
+			amp:[0.05,0.1].q(inf),
+			effect:Effect(Phaser2.ar(_)).bus.index,
+			out:Pkey(\effect),
+			note:[\].q(3)++[1].q(inf),
+		].pp
+	
 }
 );
-
 ["Heart action (almost) doubled, ",[13,12,11,7,11,7,11,16,15].dm('e',scale:\mixolydian)].addLine; 
 //Song.durs.put(14,[ 0.545, 0.304, 0.31, 0.302, 0.327, 0.311, 0.332, 0.555, 0.429, 2.165 ].q);
 P.synthVs(role: \mccoy, take:[\lead, \double],
@@ -1265,14 +1329,12 @@ P.synthVs(role: \mccoy, take:[\lead, \double],
 		e.playbuf
 		=> HPF.ar(_,120)
 		=> BPF.ar(_,1900,2)
-		* -3.dbamp
+		* -5.dbamp
 		=> Pan2.ar(_,0)
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
-P(\tune15,start:\doubled,music:
-	Song.currentSong.pbind[\doubled]
-);
+// P(\tune15,start:\doubled,music: Song.currentSong.pbind[\doubled]);
 P(\bass15,start:\doubled,music:
 	Song.currentSong.pbind[\doubled]
 	<>
@@ -1297,7 +1359,7 @@ P(\kick15,music:{
 }
 );
 ["temperature a hundred and four degrees? ",[13,12,11,7,11,12,7,13,13,16].dm('f#',scale:\mixolydian)].addLine;
-P.tune();
+// P.tune();
 Song.setTempoMap(\hundred,"e e e e Q Q Q qe e qe");
 P.synthVs(role: \mccoy, take: [\lead, \dbl],
 	filter: (midinote: _ - 12), 
@@ -1310,7 +1372,7 @@ P.synthVs(role: \mccoy, take: [\lead, \dbl],
 		// => p.synthVTracks.at(e.key).()
 		=> HPF.ar(_,120)
 		=> BPF.ar(_,1900,2)
-		* -3.dbamp
+		* -5.dbamp
 		=> Pan2.ar(_,0)
 	}.play
 });

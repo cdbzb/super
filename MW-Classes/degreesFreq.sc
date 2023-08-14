@@ -1,4 +1,4 @@
-NoteName {
+NoteNames {
 	classvar <names;
 	*initClass{ 
 		names = (
@@ -13,7 +13,7 @@ NoteName {
 }
 +Symbol {
 	asNum {
-		^NoteName.names.at(this)
+		^NoteNames.names.at(this)
 	}
 }
 

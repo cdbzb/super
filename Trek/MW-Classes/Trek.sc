@@ -1,7 +1,7 @@
 Trek {
 	classvar <>cast, <path, <>presets;
 	*initClass {
-		path = this.filenameSymbol.asString.dirname.dirname +/+ "More-Organized-Trek/Songs";
+		path = this.filenameSymbol.asString.dirname.dirname +/+ "/Songs";
 		cast = try{ Object.readArchive(path +/+ "trek_cast") } ? ();
 		presets = try{ Object.readArchive(path +/+ "trek_presets") } ? MultiLevelIdentityDictionary.new();
 	}

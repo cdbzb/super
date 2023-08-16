@@ -1,4 +1,4 @@
 (
-name: "MW",
-dependencies:["https://github.com/shimpe/scparco"]
+name: "MW-classes",
+// dependencies:["scparco"]
 )

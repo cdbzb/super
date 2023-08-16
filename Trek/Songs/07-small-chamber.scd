@@ -15,10 +15,40 @@
 
 // ["walking in","r",[3]].addLine;
 [ "/*KIRK:*/ Even for us, a half million years is almost too long to wait. (chord)", [ 5,6,4,7 ,5,11,12,6.5,13 ,12,11,12 ,14.5,15,14.5,14.5 ,11.5 ].dm('a') ].addLine;
+P(\chordsFirstHalp, music: { |p b e|
+	[
+		freq: [
+			[1,1,1,1],-6.5, [ 1, 3,3], [-5.5, 1, 4,4], [-5, 1, 3, 6]
+		].df(\e, ).q,
+		dur: b.parse([2,1, 2,3,4]).q,
+		instrument: \defaultPiano,
+		out: Effect.bus({|i| 
+			i => BPF.ar(_, 1200, 0.5)
+		},inputChannels:4, out: 2)
+	].pp
+});
+
 P.still(\waliking, timecode: 1626.0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		fadeIn: 2,
+		text: ["even","for us"],
+	) .sequenceText2(
+			b.parse([4,5]), [ 
+			["a half-million","years"],
+			["is almost","too long to wait"]
+			],
+	)
+});
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["even","for us"],
+	) .sequenceText2(
+			b.parse([4,5]), [ 
+			["a half-million","years"],
+			["is almost","too long to wait"]
+			],
 	)
 });
 P.synthV(role:\sargon,
@@ -39,7 +69,7 @@ P(\lineB,music:{
 	var effect=Effect(FreeVerb.ar(_,0.8,1),out:2);
 	[
 		legato:[1.1,0.8,1,0.9,1].q,
-		amp:0.05,
+		amp:0.06,
 		//				instrument:\sawSynthSustain,
 		lagTime:2,
 		out:effect.bus.index,
@@ -59,19 +89,38 @@ P(\lineA,start:\almost,music:{ |p b e|
 	].ppma
 });
 // P(\tuneWas00gt,start:\almost,music:Song.currentSong.pbind[0]=>Pmul(\freq,1/2, _)=>_.fin(16));
-P(\chords,music:{|p b e|
+P(\chords,syl:11,music:{|p b e|
 	[
 		amp:0.06,
 		freq:[[5,11,13],[5,11,13],[5,7,13]].df('b',octave: 4).q,
-		dur:
-		Song.parse(0,[2,2,1],11)+[0,0,2]
-		=>_.q,
-	].p 
+		dur: b.drop(1).parse([2,2,1])+[0,0,2] =>_.q,
+		instrument: \defaultPiano
+	].pp
+});
+P(\bassline, music: { |p b e|
+	[
+		freq: [1, -6.5, -5.5, -5, -2, -12,-2].df(\e,[5,1]).q,
+		dur: b.parse([3,2, 3, 4, 2, 2]) ++ 1 =>_.q,
+		instrument: \harp, coef: 0.8,amp: [0.05,0.005]
+	].pp;
+	[
+		freq: [1, -6.5, 1, 2.5].df(\e,[5,1]).q,
+		dur: b.parse([2,2, 3, 2]).q,
+		instrument: \harp, coef: 0.1,amp: [0.05,0.005]/9,
+		out: 3
+	].pp;
+	[
+		freq: [\r,-3, 4, 6].df(\e,[5,1]).q,
+		dur: b.parse([3,2, 3, 2]).q,
+		instrument: \harp, coef: 0.2,amp: [0.05,0.005] /3,
+		out: 4
+	].pp
 });
 P(\experiment,music:{ |p b e|
 	{
 		SinOsc.ar([300,500],0,0.002)
 		* Env.perc(( Song.parse(0,[4],12)!2 ).flatten+3,1).kr(2,gate:1)
+		*4
 	}.play
 });
 ["Two others still survive. Henoch (boom) and Thalassa.", [6,5,4,3,2,4].dm('d',scale:\diminished) ++[5,5,5,5,5,4,3].dm('c#') ].addLine; 
@@ -141,13 +190,54 @@ P(\baseFirstHalf1,start:\Two,music:Song.currentSong.pbind[1].fin(6)
 				_
 		)
 );
-P(\tune,start:\Two,music:Song.currentSong.pbind[1]
-		=>Pbindf(_,\amp,
-				( 1!8++[ 0 ]++( 1!5 ) )
-				.flatten
-				.q*0.1
-		)
+P.tune( _ <>
+	[
+		instrument: \reedy, freqLag: 0.2,
+		out: Effect.bus({|i| [
+			i,
+			DelayN.ar(i)
+		] },out:1)
+	].pm.fin(6)
 );
+Song.guitar = AAS_Strum();
+P(\strums, music: { |p b e|
+	Song.guitar.setPlayMode(\pick);
+	[
+		type: \strum,
+		instance:p.guitar, 
+		switch: \down,
+		legato: 1,
+		dur: b.sum
+	].p;///p;
+	[
+		type: \strum,
+		instance:p.guitar,
+		freq:[1,[1,11]].df('a-',3).q,
+		legato:1,
+		rest: MuteFirst(),
+		dur: b.parse([8,4]).q,
+		amp: 0.2,
+		out: Effect.bus({|i| FreeVerb.ar(i,1,1) },out:4)
+
+	].pp
+});
+P(\henoch,syl:5, music: { |p b e|
+	[
+		freq: [5, 5].df('c#',[4,5]).q,
+		instrument: \defaultPiano,
+		dur: b.drop(1).q,
+		out: Effect.bus({|i| SineShaper.ar(i) => TwoTube.ar(_,loss:0.94,d1length:666,d2length:771) /2 + i * -3.dbamp },)
+	].pp
+});
+P(\andThalassa,syl:8, music: { |p b e|
+	[
+		freq: [5, 5, [5,4], 3].df('c#',5).q,
+	
+		out: Effect.bus({|i| SineShaper.ar(i) => TwoTube.ar(_,loss:0.96,d1length:766,d2length:654) },),
+		instrument: \defaultPiano,
+		dur: b.drop(1).q
+	].pp
+});
 P(\graphics,start:\Two,music:
 		{
 				{
@@ -385,25 +475,30 @@ P(\graphics,start:\Two, music:
 		//MUTEDout:Pkey(\effect),
 //MUTED].p
 //MUTED);
-P(\hannoBoom,start:\Two,music:[
-		freq:[Rest()].q++[5,6].df('c#',octave: 2).q,
-		dur:
-		Song.parse(1,[8,5])
-		++
-		Song.parse(2,[2])
-		=>_.q,
-//		legato:0.5/Pkey(\dur),
-legato:3,
-].p
-
-);
+P(\hannoBoom,music:{|p b e|
+	[
+		freq:[\r,5,6].df('c#',octave: 2).q,
+		dur:e.bAll.parse([8,5,2]).q ,
+		legato:3,
+	].pp
+});
 ["(boom) Thalassa, my Thalassa. I`m ",[1,  11,7,6,14,13,13,12,11,15,13,15,14,13,11].dm('c#')].addLine; //2
 P.still(\handOnGlobe, timecode:1643.9.seconds,music:{|p b e|
 	e.still.(
 		wait: b.sum,
 		fadeIn: b.sum,
 		fade: 3,
-		text:["Thalassa","my Thalassa"]
+		// text:["Thalassa","my Thalassa"]
+	)
+});
+P.still(\clear, timecode: 0.seconds,syl:0, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["Thalassa","my Thalassa"]
+	).sequenceText2(
+			b.drop(1).parse([7]), [ 
+			["I'm pleased","you survived with me"],
+			],
 	)
 });
 P.tune();
@@ -504,6 +599,22 @@ P(\pad, music: { |p b e|
 		dur:b[0]
 	).play
 });
+P(\chords, music: { |p b e|
+	MegaBind(
+		[
+			[\r, 5, \r, 5, 5, 4.5],
+			[\r, 3, \r, 2, 2, \_]
+		].df('f#'),
+		b.parse([2, 2, 4, 2, 1]),
+		[
+
+		],
+		{|i|  SinOsc.ar(i.freqSeq,0,0.05)
+		* Env.asr().kr(0,gate:i.gateSeq)
+	},
+		{|i|  Mix.ar(i)}
+	).play
+});
 // P.tune();
 P(\bass, music: { |p b e|
 	[
@@ -533,6 +644,59 @@ P.synthV(role: \spock, take: \lead, params: {|p b| [
 
 });
 
+P(\chords, music: { |p b e|
+	fork{
+		var r = Barrier.collect({
+			var freq = [1, 4.5].df('a');
+			SinOsc.ar(freq + Gendy1.ar(minfreq:2,maxfreq:5).range(-5,5) /2)
+			=> {|i| CrossoverDistortion.ar(i)/5 + i}
+			/10
+			* Env.perc(0.005,4).kr(2,gate:1)
+		}.asDefName,
+		{
+			Dust.ar(30) => Decay.ar(_,0.0004)
+			=> FreeVerb.ar( _,0.7,0.2 ) 
+			=> {|i|
+				Convolution.ar(
+					i,
+					Saw.ar(
+						\freq.kr(300) * [0.5,1,2],
+						\amp.kr(0.1),
+					)
+				)
+				=> HPF.ar(_,200)
+				=> LPF.ar( _,2000)
+				=> FreeVerb.ar(_,0.2,1)
+				* Env([0,1,1,0],[0.05,0.5,5]).kr(2,gate:\gate.kr(1))
+			}
+	}.asDefName
+	);
+		r = r.(); 
+		(instrument:r[0], lag:b[..1].sum).play;
+		[
+			instrument: r[1],
+			lag:b[..5].sum, 
+			freq: [[-21, -11, 1, 3, 5], [-37.5,-27.5,-7.5,2, 4]].df(\e,4,\minor).q,
+			amp: 0.05,
+			dur: b[6..10].sum.bubble ++ b[11..12].sum => _.q
+		].pp
+	};
+});
+P(\line, music: { |p b e|
+	[
+		freq: [5, 6, 5,6, 4, 6,1].df(\e,4,\minor).q,
+		dur: b.q,
+		instrument: \wash, freqLag: 0.5,
+		amp: 0.03
+	].ppm
+});
+P(\bassline, music: { |p b e|
+	[
+		freq: [\r, 4, 1, 2].df(\e,[3,2], \minor).q,
+		dur: b.parse([2, 4, 5, 2]).q,
+		legato: [2, 1, 1, 1, ].q
+	].pp
+});
 [" Only the best minds were chosen to survive.","5 6 7 11 7 5 6 4 2 1 -7".dm(\e,6,\phrygian)].addLine;/*KIRK:*/
 
 
@@ -568,7 +732,7 @@ P('chords',start:\Only,music: {|p b e|
 P('spaceBass',start:\Only,syl: 7,music: {|p b e|
 	[
 		freq: [\r,[-17,-7],[-1,1]].df(\d,4,\harmonicMinor).q,
-		instrument:\stringyy,
+		instrument:\stringyy, amp: 0.17,
 		dur:b.drop(1).parse([0.5,[0.5,1],1]).q,
 		attack:1.5,
 
@@ -611,6 +775,12 @@ P.tune(\wife,_ <> [instrument:\wash,amp:0.03,out:Effect.bus(DWGReverbC1C3.ar(_,l
 P.tune('my wife',_ <> [amp:0.03,out:Effect.bus(DWGReverbC1C3.ar(_,len:3000)), rest:[\r,\r,\r,0,0,0].q ].p );
 
 ["and Henoch, from the other side. ","4 3 1 -5 -6.5 -7 -5 -3.5".dm('f#',6,\minor)].addLine;
+P(\chords, music: { |p b e|
+	[
+		freq: [\r, [-5, 1, 3],[-5,-7,3.5]].df('f#',\minor).q,
+		dur: b.parse([1, 4, 3]).q
+	].pp
+});
 P.still(\turnedHead,syl:0, timecode: 1707.96.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -647,7 +817,7 @@ P.synthV(role: \spock, take: \lead, params: {|p b| [
 });
 P(\bassnote,syl:3, music: { |p b e|
 		[
-				freq: [[1,-1],[-6.5,-16.5]].df(\b,3).q,
+				freq: [[-6.5],\r].df(\b,3).q,
 				// out: Effect.bus( { |i| FreeVerb.ar(i,0.5,1)},inputChannels:2 ),
 				dur: b.drop(1)[0] + e.bNext.parse([[1, 1, 0.5],[0,5,1, 1, 1]]) => _.q,
 				legato:1
@@ -658,6 +828,14 @@ P(\bassnote,syl:3, music: { |p b e|
 //["that one day you would build vessels as we did, and one day you would come here. ","r"].addLine;
 
 [" These others, they were stored differently than you,","1 3 -7 5 3 4 7 6 4 5 1".dm(\a,\mixolydian)].addLine;/*SPOCK:*/
+P(\bassline, music: { |p b e|
+	[
+		freq: [\r, 7, 5].df(\a,2,\mixolydian) ++ [2, [4], 5].df('c#',3) => _.q,
+		dur: e.bAll.parse([[1, 1, 0.5], [0.5, 1, 1, 1], 5 + 1, 2, 4, 7]).q,
+		amp: 0.2,
+		out: Effect.bus({|i| FreeVerb.ar(i,0.1,1) => SineShaper.ar(_,0.05)  },)
+	].pp
+});
 P.still(\twoShot, timecode: 1740.3.seconds, music: { |p b e| // TODO make sure there is pointing!!!
 	 e.still.( 
 		wait: b.sum,
@@ -1185,6 +1363,14 @@ P(\click, music: { |p b e|
 ].pp
 });
 P.tune();
+P(\chords, music: { |p b e|
+	[
+		freq: [
+			1, [-6.5, 1, 3], [-5.5, 1, 4], [-5, 1, 4, 3]
+		].df(\e, ).q,
+		dur: b.parse([3, 2,3,4]).q
+	].pp
+});
 //[ "Heartbeat's two hundred and sixty two, Spock.","r" ].addLine;
 //["Entire metabolic rate correspondingly high. ","r"].addLine;
 ( SynthDef(\pulsar,{

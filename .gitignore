@@ -6,6 +6,7 @@
 *.RPP-bak
 *.stversions*
 SynthV/**/project.svp
+Trek/SynthV/**/project.svp
 
 .undodir
 
@@ -19,4 +20,5 @@ Triangle/TriangleTuned.wav
 Extensions/.DS_Store
 More-Organized-Trek/Songs/Song-Part.sc
 Dur/Old
+Trek/Dur/Old
 Vocaloid

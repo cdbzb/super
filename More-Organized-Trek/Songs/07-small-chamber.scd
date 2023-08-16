@@ -401,6 +401,8 @@ legato:3,
 P.still(\handOnGlobe, timecode:1643.9.seconds,music:{|p b e|
 	e.still.(
 		wait: b.sum,
+		fadeIn: b.sum,
+		fade: 3,
 		text:["Thalassa","my Thalassa"]
 	)
 });
@@ -659,7 +661,11 @@ P(\bassnote,syl:3, music: { |p b e|
 P.still(\twoShot, timecode: 1740.3.seconds, music: { |p b e| // TODO make sure there is pointing!!!
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["these","others"],
+	).sequenceText2(
+			b.parse([3]), [ 
+			["they were stored","differently than you"],
+			],
 	)
 });
 P.synthV(role: \spock, take: \lead, params: {|p b| [
@@ -684,6 +690,16 @@ P.double(role: \spock, take: \lead, params: {|p b| [
 
 });
 ["but it was your task to remain in the receptacle out there ","6 7 5 11 3 7 11".dm('f#') ++ "3 5 6 7 11 5 4".dm('a-') ++ "15 16".dm(\c)].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["but it was","your task"],
+	).sequenceText2(
+			b.parse([5, 9]), [ 
+			["to remain","in the receptacle"],
+			["out","there"]
+			],
+	)});
 P.synthV(role: \spock, take: \lead, params: {|p b| [
 	lyrics: "but it was your task to remain + in the receptacle + + + out there",
 	filter: (midinote: _ - 12), 
@@ -711,6 +727,10 @@ P.still(\sargon, timecode: 1742.05.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
+	).sequenceText2(
+			b.parse([1]), [ 
+			["and search the heavens"," with my mind"],
+			],
 	)
 });
 P(\line, music: { |p b e|
@@ -726,32 +746,36 @@ P(\line, music: { |p b e|
 });
 P.synthV(role:\sargon, filter:(midinote: _ -12),take:\lead, params: {|p b| [
 	lyrics: "r,    and, shiach, za, he, venz, wiz,     mai, maind",
-	phonemes: ["", "",  "s a r ch",     "", "", "v e n z",   "w i z", "",  ""],
+	phonemes: ["", "a n d",  "s a r ch",     "", "", "v e n z",   "w i z", "",  "m a e i n d"],
+
 	legato: [1,    1,   1,      1,  1,  0.95,    1,       1,   0.90],
 	paramTension: -0.2
-
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> Pan2.ar(_,0)
+		* -4.dbamp
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+P.synthV(role:\sargon, take: \double,
+	paramTension:-0.1,
+	params: {|p b| [
+	paramGender: -0.2,
+	lyrics: "r,    and, shiach, za, he, venz, wiz,     mai, maind",
+	phonemes: ["", "a n d",  "s a r ch",     "", "", "v e n z",   "w i z", "",  "m a e i n d"],
+	filter: (midinote: "5 5 4 3 4 3 2 3 4".dm(\b,4)), 
 ] }, music:{|p b e|
 	{
 		e.playbuf
 		// => p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_,-0.5)
+		* -10.dbamp
 	}.play
 });
-P.double(role:\sargon, take: \lead,
-	filter: (midinote: "5 5 4 3 4 3 2 3 4".dm(\b,4)), 
-	paramTension:-0.1,
-	params: {|p b| [
-	
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
-});
-//P.tune(\search);
-
 Song.setTempoMap(\search,"e e e e e e e e q");
 //P.tune(\search,Pset(\dur, 0.5! 9 =>_.warpTo(Song.tempoMap[\search]) =>_.q ,_));
-P('tune',start:\search,music: {|p b e|
+P('tune',music: {|p b e|
 	[
 		freq:[\r, 1,1,1,1,1,1,1,1].df('f#').q,
 		dur: 0.5 !8 => _.warpTo(e.tempoMap
@@ -760,7 +784,7 @@ P('tune',start:\search,music: {|p b e|
 	].pp
 });
 
-P('crash',start:\search,music: {|p b e|
+P('crash',music: {|p b e|
 	(instrument:\cymbalsDS, amp:0.01).play
 });
 P( 'chords',
@@ -841,9 +865,10 @@ P(\stringyy, music: { |p b e|
 		* [1,1/2,1/4,1/8]
 	}.play
 });
-P.synthV(role:\sargon,prepend: true, filter: (midinote: _ - 12),  params: {|p b| [
+P.synthV(role:\sargon, filter: (midinote: _ - 12),  params: {|p b| [
 	lyrics: "and zen won dei mai maind",
 	legato:[1,1,1,1,1,0.9]
+	lag: [0.06,0,0,0,0,0,0,0,],
 ] }, music:{|p b e|
 	{
 		e.playbuf.(0)
@@ -903,7 +928,7 @@ P(\bass,start:\touched,music: { |p b e|
 P.still(\mullhall, timecode: 1753.9.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["so you can steal","our bodies from us"],
 	)
 });
 P.synthV(role: \mulhall, take: \lead, params: {|p b| [
@@ -933,7 +958,7 @@ P.tune(_ <> [
 P.still(\kirk, timecode:1755.7.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["to steal?","to take them from you?"],
 	)
 });
 P.synthV(role:\sargon, filter: (midinote: _ - 12),  params: {|p b| [
@@ -959,6 +984,12 @@ P(\chord, syl:0, music: { |p b e|
 	}.play
 });
 ["No, no, my children,","13 13 12 12 11 ".dm(\d)].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["no no","my children"],
+	)
+});
 P.synthV(role:\sargon, 
 	filter: (midinote: _ - 12),  
 	params: {|p b| [
@@ -996,7 +1027,14 @@ P(\bass, music: { |p b e|
 		=> Out.ar([2,3],_)
 	}.play
 });
+
 [" you misunderstand.","3 2 3 4 3 -2 -3 -4 2.5 2 2.5 4".dm(\a)].addLine; 
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["you","misunderstand"],
+	)
+});
 P.synthV(role:\sargon, filter: (midinote: _ - 12),  params: {|p b| [
 	lyrics: "yu mis an da stand r r r r",
 	legato: [1, 1, 1, 1, 2, ],
@@ -1031,6 +1069,18 @@ P.synthV(role:\sargon, filter: (midinote: _ - 12),  params: {|p b| [
 	});
 	P.tune( _ <> [instrument: \wash, amp:0.02].p );
 ["We mean r only r that you should","1 2 -7 1 2 -7 1 2 3".dm(\d,6,\mixolydian)].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["we","mean"],
+	).sequenceText2(
+			b.parse([2,1,2,1]), [ 
+			["",""],
+			["only",""],
+			["that you","should"]
+			],
+	)
+});
 P.synthV(role: \sargon, take: \lead, params: {|p b| [
 	lyrics: "We men r only + r that you should",
 	// legato: [1, 0.6, 1, 0.6, 1, 1, 0.6, ],
@@ -1051,6 +1101,7 @@ P(\bassnotes, music: { |p b e|
 		legato: 1
 	].pp
 });
+
 [" (boom) lend us your bodies for a short time. ","-11 3 2 1 -7 -6 -5.5 -6 -5.5 -3".dm(\g,6)].addLine;
 P(\bassline, music: { |p b e|
 	[
@@ -1068,7 +1119,10 @@ P.synthV(role: \sargon, take: \lead, params: {|p b| [
 ] }, music:{|p b e|
 	{
 		e.playbuf
+		// * -10.dbamp
+		// => Pan2.ar(_,0)
 		=> p.synthVTracks.at(e.key).()
+		* 3.dbamp
 	}.play
 
 });
@@ -1077,7 +1131,7 @@ P.tune();
 P.still(\mccoy, timecode: 1809.4.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["and","destroy them"],
 	)
 });
 P.tune();
@@ -1093,6 +1147,16 @@ P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 
 });
 [" just as you're burning that one up now.","1 -7 -6 -7 1 3 4 1 5 ".dm(\g,\mixolydian)].addLine;/*MCCOY:*/
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["just as","you're"],
+	).sequenceText2(
+			b.parse([3]), [ 
+			["burning that one up","now"],
+			],
+	)
+});
 P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 	lyrics: "just as your burning + that one up now",
 	pitchTake: 1
@@ -1139,7 +1203,14 @@ P.tune();
 P.still(\sargonReturn, timecode: 1817.3.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
+		fadeIn: 3,
 		text: ["",""],
+	)
+});
+P.still(\clear, timecode: 0.seconds,lag:0.01, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["I will return","your captain to you"],
 	)
 });
 P.synthV(role:\sargon, filter:(midinote: _-12), params: {|p b| [
@@ -1235,14 +1306,18 @@ P(\bass,start:\limit,music: {|p b e|
 P.still(\spock, timecode: 1822.7.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["our bodies","Sargon"],
+	).sequenceText2(
+			b.parse([5]), [ 
+			["for what","purpose?"],
+			],
 	)
 });
-P.synthV(role: \spock, take: \lead, params: {|p b| [
+P.synthVs(role: \spock, take: [\lead, \double], params: {|p b| [
 	lyrics: "our bodies + sargon + for what purpose +",
-	legato: [1, 1, 1, 1, 0.5, 1,1, 1, 0.5],
+	legato: [[1, 1, 1, 1, 0.5, 1,1, 1, 0.5]],
 	filter: (midinote: _ - 12), 
-	pitchTake: 1
+	pitchTake: [1,3]
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -1250,21 +1325,24 @@ P.synthV(role: \spock, take: \lead, params: {|p b| [
 	}.play
 
 });
-P.double(role: \spock, take: \lead, params: {|p b| [
-	
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
-});
 P(\tune,start:\purpose,music:Song.currentSong.pbind[\purpose]=>Pbindf(_,\instrument,\stringyy,\amp,0.3)
 );
 ["/*KIRK:*/ (boom) To build. To build humanoid robots. We ",[5,5,11,5,11,7,6,4,6,5,6].dm('e-',scale:\mixolydian)].addLine;
-P.still(\sargon, timecode: 1832.1.seconds, music: { |p b e|
+P.still(\sargon, timecode: 1832.1.seconds,syl:0, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
+		// wait: b.drop(1)[0..8].sum,
+		wait: b.drop(1).parse( [[1,1,1,1,1,1,1,1,1/2]] ).unbubble,
+		text: ["to","build"],
+	).sequenceText2(
+			b.drop(1).parse([2]), [ 
+			["to build","humanoid robots"],
+			],
+	)
+});
+P.still(\clear, timecode: 0.seconds,syl:9, music: { |p b e|
+	 e.still.( 
+		wait: b.drop(1).sum + e.bNext[..3].sum,
+		text: ["we need","your bodies"],
 	)
 });
 P.synthV(role:\sargon,range:[0,9], filter: (midinote: _-12),params: {|p b| [
@@ -1489,7 +1567,14 @@ P(\tune,start:\hands,music:Song.currentSong.pbind[\hands]);
 P.still(\spock, timecode: 1843.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
+		fade: e.bNext.sum,
 		text: ["",""],
+	)
+});
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["then you intend","to construct"],
 	)
 });
 P.synthV(role: \spock, take: \lead,

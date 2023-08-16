@@ -10,6 +10,7 @@ Monitors {
 				"MacBook Pro Speakers",2,
 				"Pro Ag",2,
 				"BlackHole 2ch",2,
+				"External Headphones",2,
 			]
 		);
 		ServerTree.add ({ 

@@ -1,0 +1,9 @@
+(
+	name: "Return to tomorrow",
+	summary: "Music from a Star Trek episode",
+	version: "0.0.9",
+	dependencies: [
+		"https://github.com/cdbzb/scparco"
+	],
+	copyright: "Michael Webster 2020-2024"
+)

@@ -1092,7 +1092,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	)
 });
 P.tune('thousand', { |i| Pmul(\freq,0.5,i) => Pbindf(_,\instrument, \sawSynthSustain,\out,Song.carrierBus,\amp,0.04)});
-P.synthV(\xuan, 
+P.synthV(role: \vocoder, 
 	filter: (midinote: _ - 24), 
 	params: {|p b| [
 	lyrics: "r Six thousand + centuries + +  ago + - - r our vessels + were " ,
@@ -1105,13 +1105,20 @@ P.synthV(\xuan,
 	}//.play
 	;
 	p.vocodeTune.(p,b,e,e.rpp,
-		amp: 0.25
+		amp: 0.25,
+		tune: "3 3 3 3 3 2 2 1 2 2 3 3".dm('a-',\minor) ++ "11 5 6 3".dm(\c,5),
+		dur: b.sum,
+		// dur:1,
+		sus: b.sum-0.5,
+		rel:0.1
+
 	)
 });
-P.double(\xuan,
+P.synthV(\xuan, take: \double,
 	filter: (midinote: _ - 24), 
 	params:{ |p b| [
-		paramGender:0.4
+		paramGender:0.4,
+	lyrics: "r Six thousand + centuries + +  ago + - - r our vessels + were " ,
 	] },
 	music:{|p b e|
 	
@@ -1159,7 +1166,7 @@ P('bass',start:\Six,music: {|p b e|
 });
 //["colonising this galaxy . . . ",[1,2,4,5,2,5.5,5,-7,-5.5,-5,-17].dm('e-')].addLine;
 ["colonising this galaxy . . . ",[1,2,4,5,6,6,5,-7/*,-6,-5,-2*/].dm('e-')].addLine;
-P.synthV(\xuan,
+P.synthV(role: \vocoder,
 	prepend:true,
 	// lag: -1,
 	filter: (midinote: _ - 24), 
@@ -1175,7 +1182,10 @@ P.synthV(\xuan,
 	;
 	p.vocodeTune.(p,b,e,e.rpp,
 		amp:0.25,
-		echo:0.1,modGain:2.8
+		echo:0.1,modGain:2.8,
+		att:0,
+		sus:b.sum-1,
+		rel:2
 	)
 });
 P('drumsNextPart',start:\colonising,music: {|p b e|
@@ -1217,7 +1227,8 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	)
 });
 P.tune('starships', { |i| Pmul(\freq,0.5,i) => Pbindf(_,\instrument, \sawSynthSustain,\out,Song.carrierBus,\amp,0.04)});
-P.synthV(\xuan, filter: (midinote: _ - 24), params: {|p b| [
+P.synthV(role: \vocoder,
+	filter: (midinote: _ - 24), params: {|p b| [
 	lyrics: "just as your own starships + have ",
 	legato: [1,1,1,1,1,1,0.9]
 ] }, music:{|p b e|
@@ -1229,8 +1240,9 @@ P.synthV(\xuan, filter: (midinote: _ - 24), params: {|p b| [
 	p.vocodeTune.(p,b,e,e.rpp,
 		// mix:0.5,
 		chord: #[1,2,3,4,5]/2,
-		sus:b.sum-3,
-		rel:0.5,
+		sus:b.sum-2,
+		rel:2.2,
+		att:0.5
 		// smooth: -0.9
 
 	)
@@ -1260,7 +1272,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 		text: ["now begun","to explore that"],
 	)
 });
-P.synthV(\xuan,
+P.synthV(role: \vocoder,
 	lag: -0.1,
 	filter: (midinote: _ - 24), 
 	prepend: true,
@@ -1278,7 +1290,8 @@ P.synthV(\xuan,
 		width:1.02,
 		echo:0.5,
 		verb:0.5,
-		sus:b.sum -3
+		sus:b.sum -3,
+		att: 0.2
 
 
 	)
@@ -1298,7 +1311,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 		text: ["vastness",""],
 	)
 });
-P.synthV(\xuan,
+P.synthV(role: \vocoder,
 	lag: -0.1,
 	filter: (midinote: _ - 24), 
 	prepend: true,
@@ -1320,8 +1333,8 @@ P.synthV(\xuan,
 		echo:0.5,
 		verb:0.0,
 		att:0,
-		sus:b.sum ,
-		rel:1
+		sus:b.sum -1 ,
+		rel:1.2
 
 	)
 });
@@ -1355,7 +1368,7 @@ P(\kick, music: { |p b e|
 		amp:0.2
 	].pp
 });
-P.synthV(\xuan,
+P.synthV(role: \vocoder,
 	filter: (midinote: _ - 12), 
 	prepend: true,
 	params: {|p b| [
@@ -1373,7 +1386,9 @@ P.synthV(\xuan,
 		verb:1,
 		// echo:0,modGain: 4,
 		// mix:0.5,
-		att:0.3,
+		att:0.1,
+		sus:b.sum,
+		rel: 1,
 		chord:#[1,2,4]/2
 	);
 	// (instrument: \wash,freq: [1,3,5,7].df(\d,\dorian),dur:b.sum,out:p.carrierBus.index,amp:0.02,addAction:\addBefore).play;

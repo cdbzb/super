@@ -110,7 +110,7 @@ Song.encoders=~encoders;
 			v = Group.new(addAction:\addToTail).register 
 		};
 		e.rpp.notNil.if{rppName = e.rpp};
-		( (b.sum + 0.5) > dur ).if {
+		( ( (b.sum + 0.5) < dur ) and: enlarge.isNil ).if {
 			b.sum.asString + dur.asString +"section shorter than default vocoder dur - setting dur to" + ( b.sum + 0.5 ) => _.warn;
 			dur = b.sum + 0.5
 		} ;

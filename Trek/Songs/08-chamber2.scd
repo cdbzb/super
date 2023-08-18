@@ -5,7 +5,7 @@ s.waitForBoot{
 	Song.currentSong.resources.infrastructure=FunctionList([ {
 		//			~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
 	} ]);
-	"~/tank/super/More-Organized-Trek/Songs/boilerplate.scd".standardizePath.load;
+	"~/tank/super/Trek/Songs/boilerplate.scd".standardizePath.load;
 	Song.synthVTracks = EventWithDefault(\default, {
 		FreeVerb.ar(_,0.3,0.9)
 		/5
@@ -60,6 +60,7 @@ P(\knee,music:{ |p b e |
 		strum:0.05,
 		note:Arpeggio([0,3,7,11],20),
 		dur:3,
+		instrument: \harpS,amp:0.03,coef:Pwhite(0.1,0.2,inf).asStream.nextN(20),pan:Pwhite(-1,1,inf).asStream.nextN(20),
 		effect:{ Effect( { |i|  FreeVerb.ar(i,0.6,1) * Env.linen(0, b.sum + 0, 3).kr(2,gate:1)} ,inputChannels:2).bus.index},
 
 		//		out:[0,1,2,3],
@@ -113,6 +114,10 @@ P.still(\tricorder, timecode: 1929.2.seconds, music: { |p b e|
 		text: ["",""],
 	)
 });
+P(\chord, music:{|p b e|
+	(freq: [-1,1, 3, 5, 7].df(\e,\mixolydian )).play
+}
+);
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -187,20 +192,25 @@ P.still(\spockClose, timecode: 1932.7.seconds, music: { |p b e|
 P(\bassNote,music:(instrument:\stringyy,freq:[4].df('c',octave: [4,3]),amp:0.2,)
 );
 ['/*KIRK:*/ Yes. ',[1].dm('a-')].addLine; 
-P(\chord,music:(
+P(\chord,music:{|p b e| [ 
 	strum:0.02,
-	dur:4,
+	dur: e.bAll.parse([6,4, 4, 4,3]).q,
 	out:
 	( 4!4 ).rand
 	,
 	//out:2,
 	instrument:
 	//			\cleanPluck,
-	\default,
+	// \default,
+	\harpS,coef: 0.3,amp:0.015,
 	freq:
-	[1,5,3,11]+.x[0,10] =>_.df('a-',octave: 3),
-	amp:0.05
-)
+	[ [1,5,3,11] +.x [0,10] =>_.df('a-',octave: 3),  ( [ 1, 4, 11, 15] +.x [0,10] =>_.df(\b,3,\dorian)  ) ] ++ [11,7,4].df(\a,2)
+	=> _.q
+	,
+	// amp:0.05,
+	pan: {1.rrand(-1)}!8,
+	out: Effect.bus({|i| i/3 + Phaser1.ar(i,rate:0.21) },inputChannels:2)
+].p.play }
 );
 P.synthV(role: \kirk, params: {|p b| [
 	lyrics: "yes",
@@ -226,6 +236,7 @@ P.still(\kirk,
 			],
 	)
 });
+
 ['Sargon borrowed my body. ',[7,6,5,6,7,4,3].dm('b',scale:\dorian)].addLine; 
 P.synthV(role: \kirk , filter: (midinote: _ - 12),  params: {|p b| [
 	lyrics: "Sargon + borrowed + my body +",
@@ -239,7 +250,7 @@ P.synthV(role: \kirk , filter: (midinote: _ - 12),  params: {|p b| [
 // P(\tune,music:Song.currentSong.pbind[7]);
 P(\bass,music:[
 freq: [7,6,5,6,7,11].df('b',scale:\dorian,octave:2).q ,
-legato:2,
+legato:1.1,
 dur: Song.currentSong.parse(7,[1,1,1,1,1,2]).q ,
 
 ].p
@@ -389,6 +400,21 @@ P(\chord,music:{ |p b e|
 	}
 	);
 
+P(\chord,music:{|p b e| [ 
+	strum:0.02,
+	dur: e.bAll.parse([3, 8,3, 4]).q,
+	//out:2,
+	instrument:
+	//			\cleanPluck,
+	// \default,
+	\harpS,coef: 0.3,amp:0.015,
+	freq: [1, 11].df('b-',3) ++ [ -6.5, -7 ].df('a-',4) => _.q,
+	// amp:0.05,
+	pan: {1.rrand(-1)}!8,
+	out: Effect.bus({|i| i/3 + Phaser1.ar(i,rate:0.21) },inputChannels:2)
+].p.play }
+);
+
 
 ['When Sargon and I exchanged, ',[6,5,4,5,6,7,11].dm('e-',octave:4)].addLine; 
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
@@ -424,7 +450,7 @@ P(\bass,syl:5,music:(
 		instrument:\sawSynth,
 		freq:[1].df('a-',octave: 4),
 		//		freq:[1].df('c',octave: 4),
-		amp:0.01,
+		amp:0.02, out:2
 	)
 );	
 ['as we passed each other, for an instant...',[5.5,6].dm('f#',octave:4)++[3,2,2,1].dm('c',octave:5)++[3,2,2,1].dm('c#',octave:5)].addLine; 
@@ -1490,4 +1516,5 @@ P(\bass,music:
 //MUTED);
 }
 )
+
 

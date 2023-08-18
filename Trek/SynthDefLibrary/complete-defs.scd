@@ -21,6 +21,18 @@ SynthDef( \phase_verb2,{//{{{
 	}
 ).add.tag(\effect);
 
+ SynthDef(\harpS, { |gate=1 out=0 freq = 400|
+	var in=PinkNoise.ar(1);
+	var sig=Pluck.ar(in: in,  gate: gate,  maxdelaytime: 0.02,  delaytime: 1/freq,  decaytime: \decaytime.kr(10),  coef: \coef.kr(0.5),  mul: 0.7,  add: 0);
+	sig = sig * \amp.kr(0.1) * 10;
+	sig = LeakDC.ar(sig);
+	sig => Pan2.ar(_,\pan.kr(0,\panLag.kr(0)))
+
+	=> Out.ar(out,_);
+	DetectSilence.ar(sig,doneAction:2);
+},  rates: nil,  prependArgs: nil,  variants: nil,  metadata: nil
+).add.tag(\pluck);
+
  SynthDef(\harp, { |gate=1 out=0 freq = 400|
 	var in=PinkNoise.ar(1);
 	var sig=Pluck.ar(in: in,  gate: gate,  maxdelaytime: 0.02,  delaytime: 1/freq,  decaytime: \decaytime.kr(10),  coef: \coef.kr(0.5),  mul: 0.7,  add: 0);

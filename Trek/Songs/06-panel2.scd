@@ -563,7 +563,7 @@ P.still(\kirk, timecode: 1334.2.seconds, music: { |p b e|
 	 e.still.( 
 		 fadeIn: b.sum,
 		// wait: b.sum + e.bNext,
-		wait: 0.1,
+		// wait: 0.1,
 		fade: e.bNext,
 		text: ["",""],
 	)
@@ -786,6 +786,12 @@ P.still(\clear, timecode: 0.seconds, syl:6, music: { |p b e|
 		text: ["to see","again"],
 	)
 });
+P.still(\moreKirk, timecode: 1341.0.seconds,syl:11, music: { |p b e|
+	 e.still.( 
+		wait: b.drop(1).sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \kirkLungs,
 	filter: (
 		midinote: _ -12,
@@ -830,7 +836,6 @@ P.double(role: \kirkLungs, params: {|p b| [
 // 	Song.currentSong.pbind[ \Heart ].collect({|e|(e.midinote==([2].dm('a-')[0])).if{e.midinote=\};e})
 // 	=> Pset(\legato,[1!10,5,1!12].flatten=>_.q,_)=>_.trace
 // );
-
 P(\innerChordHeart,start:\Heart,syl:6,music:
 	Song.currentSong.pbind[ \Heart ]
 	=>Pset(\freq, [1,3].df('f',octave:4,scale:\minor), _)
@@ -856,6 +861,12 @@ P(\bass,music: {|p b e|
 		}
 );
 ["pumping, arteries surging with blood again. A", [13,5].dm('c') ++ [3,2,1].dm('f',scale:\minor ) ++ [3,4,5].dm('g') ++ [13,12,5, 7].dm('e')].addLine;  
+P.still(\yetMoreKirk,syl:7, timecode: 1343.3.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["blood","again"],
+	)
+});
 Song.setTempoMap(\arteries,"ee qqqqq ex ex eqq ex ex e qqqe e qe e");
 P.synthV(role: \kirkLungs, start:Song.section(\arteries),
 	pbind: Song.enlarge(6, Song.section(\arteries)),
@@ -1401,35 +1412,44 @@ P(\tune16,start:\temperature,music:Song.currentSong.pbind[\temperature]
 
 );
 /*MULHALL:*/[" He'll die if you don't leave his body. Soon! ", [15,21,15,13,12,11, 7.5,12,11, 11.5].dm('a-',scale:\minor) ].addLine; 
-P.synthV(role: \mulhall, start:Song.section(\Soon),
+
+{
+	P.still(\mulhallWide, timecode: 1446.0.seconds, music: { |p b e|
+		e.still.( 
+			wait: b.sum,
+			text: ["",""],
+		)
+	});
+	P.synthV(role: \mulhall, start:Song.section(\Soon),
 	filter: (midinote: _ - 24), 
 	take: \lead, params: {|p b| [
-	lyrics: " He'll die if you don't leave his body + Soon! ",
-	pitchTake: 1
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
-});
-P(\dieChord,start:'die if',syl:0,music:
-	{|o d| (
-		instrument:\stringyy,
-		freq:[1,11].df('a-',octave:2),
-		attack:0.001,
-		amp:0.6,
-		dur:d[0..6].sum,
-	).play ;
+		lyrics: " He'll die if you don't leave his body + Soon! ",
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+	});
+	P(\dieChord,start:'die if',syl:0,music:
+		{|o d| (
+			instrument:\stringyy,
+			freq:[1,11].df('a-',octave:2),
+			attack:0.001,
+			amp:0.6,
+			dur:d[0..6].sum,
+		).play ;
 
-	[ 
-		freq:Prand([1,3,5,11,13,15,21].df('a-',scale:\minor),inf)*2,
-		dur:Pwhite(0.01,0.04,40),
-		effect: Effect(EchoCubic.ar(_,0.4,SinOsc.kr(1/20).range(0.21,0.22),5)).bus.index,
-		amp:0.02,
-		out:Pkey(\effect),
-	].pp
-}
+		[ 
+			freq:Prand([1,3,5,11,13,15,21].df('a-',scale:\minor),inf)*2,
+			dur:Pwhite(0.01,0.04,40),
+			effect: Effect(EchoCubic.ar(_,0.4,SinOsc.kr(1/20).range(0.21,0.22),5)).bus.index,
+			amp:0.02,
+			out:Pkey(\effect),
+		].pp
+	}
 );
+}.();
 // P(\tuneSoon,start:\Soon,music: Song.currentSong.pbind[\Soon]);
 P(\chordSoon,start:\Soon,syl:8,music: { |p b e|
 		(

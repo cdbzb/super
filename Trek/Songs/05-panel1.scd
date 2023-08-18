@@ -3,7 +3,7 @@ s.waitForBoot{
 
 Song(\panel1,[]).current ;
 Song.energyDur = 0.1;
-"~/tank/super/More-Organized-Trek/Songs/boilerplate.scd".standardizePath.load;
+"~/tank/super/Trek/Songs/boilerplate.scd".standardizePath.load;
 Song.vocoderRatio.set(1);
 //(A panel slides back to reveal a much larger area, with rock walls, and a glowing sphere elegantly poised on an angled support.) 
 
@@ -292,7 +292,6 @@ P('chords',start:\energy,music: {|p b e|
 	].pp
 });
 ["Sealed in this receptacle is the ",[5, 4,3,2,3,4,3,-5,-6,-7].dm(\c,6)].addLine;
-
 P.synthV(\xuan,
 		lag:-0.5,
 	// double:true,
@@ -374,9 +373,15 @@ P('bass',start:\Sealed,music: {|p b e|
 
 
 });
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\receptacle, timecode: 1013.361.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum + e.bNext.sum,
+		wait: b.sum,
+		text: ["",""],
+	)
+});
+P.still(\clear, timecode: 0.seconds,lag:0.01, music: { |p b e|
+	 e.still.( 
+		wait: b.sum ,
 		text: ["sealed in this","receptacle is the"],
 	)
 });
@@ -1009,10 +1014,10 @@ P.synthV(Trek.cast.kirk,
 });
 
 /*SARGON:*/[" Because it is possible you are our descendants, Captain Kirk. ","1 3 5 7 12 7 5 3 ".dm(\f,4) ++ "1 3 5 7 12 11 13 11 7 6".dm(\g,4)].addLine;
-P.still(\litAgain, timecode: 1045.seconds, music: { |p b e|
+P.still(\kirkSilent, timecode: 1053.7.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		fade: 8,
+		// fade: 8,
 		text: ["becuse it is","possible"],
 	).sequenceText2(
 			b.parse([8,6,4]), [ 
@@ -1022,6 +1027,19 @@ P.still(\litAgain, timecode: 1045.seconds, music: { |p b e|
 			],
 	)
 });
+// P.still(\litAgain, timecode: 1045.seconds, music: { |p b e|
+// 	 e.still.( 
+// 		wait: b.sum,
+// 		fade: 8,
+// 		text: ["becuse it is","possible"],
+// 	).sequenceText2(
+// 			b.parse([8,6,4]), [ 
+// 			["you are our","descendants"],
+// 			["Captain","Kirk"],
+// 			["",""]
+// 			],
+// 	)
+// });
 P.tune(\Because, { |i| i <> [instrument:\harp,\coef,0.2,amp:0.01,delaytime:-10,out:(0..4).q(inf)].p => Pmul(\freq,0.5,_)});
 P(\bassnote, music: { |p b e|
 	[
@@ -1601,8 +1619,8 @@ P(\bass, music: { |p b e|
 /*SPOCK:*/[" That would tend, however, to explain ","3 2 4 2 -7 1 2 4 6".dm(\e)].addLine;
 P.still(\wideButSpockSpeaks, timecode: 1126.775.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
-		text: ["tht would tend","however"],
+		wait: b.sum + e.bNext.sum + p.durs[e.start+2].list.sum,
+		text: ["that would tend","however"],
 	).sequenceText2(
 			b.parse([6]), [ 
 			["to","explain"],
@@ -1693,7 +1711,7 @@ P.synthVs(role: \spock, take: [ nil,\lead ],params: {|p b| [
 });
 // P.tune();
 /*SARGON:*/[" In any case, I do not know. (baby) It was","5 11 5 3  7 6 5 5 6 5 4 3 4  ".dm(\d,\mixolydian)].addLine;
-P.still(\sargonAny, timecode: 1139.9.seconds, music: { |p b e|
+P.still(\wide, timecode: 1139.9.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		fade: e.bNext.sum,
@@ -1787,6 +1805,12 @@ P('click',start:\In,music: {|p b e|
 	].p//p
 });
 ["so long ago, and the records of our travels were","3 2 1 1 -7 1 3 1 -7 1 4 1 -7".dm(\d)].addLine;
+P.still(\spockSilent, timecode: 1143.7.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,

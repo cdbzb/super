@@ -181,7 +181,8 @@ P(\baseFirstHalf1,start:\Two,music:Song.currentSong.pbind[1].fin(6)
 		=>Pbindf(_,
 				\instrument,
 				\stringyy,\amp,0.1,
-				\out,2
+				\out, Effect.bus({|i| i * EnvGen.cutoff(Song.durs['still survive'].list.sum -3,3) })
+
 		)
 		=>Pmul(\freq,1/2,_)
 		=>Pmul(
@@ -190,14 +191,22 @@ P(\baseFirstHalf1,start:\Two,music:Song.currentSong.pbind[1].fin(6)
 				_
 		)
 );
-P.tune( _ <>
+P.tune( {|i|i <>
 	[
 		instrument: \reedy, freqLag: 0.2,
 		out: Effect.bus({|i| [
 			i,
 			DelayN.ar(i)
 		] },out:1)
-	].pm.fin(6)
+	].pm
+
+		=>Pmul(
+				\freq,
+				1!5++(-4).midiratio => _.q,
+				_
+		)
+	=> _.fin(6)
+}
 );
 Song.guitar = AAS_Strum();
 P(\strums, music: { |p b e|

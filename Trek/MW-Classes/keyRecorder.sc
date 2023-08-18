@@ -6,12 +6,14 @@ KeyRecorder {
   var <>cue, clickSynth;
   *new {|section cue playMethod| ^super.new.init(section,cue,playMethod); }
   *initClass {
-	  Class.initClassTree(SynthDescLib);
-	  SynthDef(\fourClicks, { | dur = 1|
-		  TDuty.ar(dur.dup(4).dq) => Decay.ar(_,0.2)
-		  * WhiteNoise.ar(0.1) 
-		  => Out.ar(\out.kr(0),_)
+	  Class.initClassTree(SynthDefLibrary);
+	  StartUp.add {
+		  SynthDef(\fourClicks, { | dur = 1|
+			  TDuty.ar(dur.dup(4).dq) => Decay.ar(_,0.2)
+			  * WhiteNoise.ar(0.1) 
+			  => Out.ar(\out.kr(0),_)
 		  }).add.tag(\click);
+	  } 
 		    }
   init {
 	  |s c p |

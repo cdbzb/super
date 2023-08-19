@@ -33,15 +33,15 @@ o = [
 	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
 	"c55226b8-e035-4fc6-a857-aacf2bbe7548",  Event.prNew,  Array.prNew(40),  "c55226b8-e035-4fc6-a857-aacf2bbe7548",  
 	Event.prNew,  Array.prNew(28),  "SVR2AI",  "101",  
-	"Xuan Yu",  "xsampa",  "mandarin",  "english",  
-	"arpabet",  Event.prNew,  Array.prNew(8),  Array.prNew(1),  
-	Event.prNew,  Array.prNew(12),  Event.prNew,  Array.prNew(12),  
-	"",  Event.prNew,  Array.prNew(4),  Event.prNew,  
-	Array.prNew(8),  Array.prNew,  "cubic",  Event.prNew,  
+	"Xuan Yu",  "xsampa",  "mandarin",  Event.prNew,  
 	Array.prNew(8),  Array.prNew(1),  Event.prNew,  Array.prNew(12),  
-	"",  "Unnamed Track",  Array.prNew,  Event.prNew,  
-	Array.prNew(20),  "ff7db235",  Event.prNew,  Array.prNew(28),  
-	"synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/SynthV/chamber/535061639/xuan"
+	Event.prNew,  Array.prNew(12),  "",  Event.prNew,  
+	Array.prNew(4),  Event.prNew,  Array.prNew(8),  Array.prNew,  
+	"cubic",  Event.prNew,  Array.prNew(8),  Array.prNew(1),  
+	Event.prNew,  Array.prNew(12),  "",  "Unnamed Track",  
+	Array.prNew,  Event.prNew,  Array.prNew(20),  "ff7db235",  
+	Event.prNew,  Array.prNew(28),  "synthV.wav",  "NoAspiration",  
+	"/Users/michael/tank/super/Trek/SynthV/chamber/535061639/xuan"
 ];
 p = [
 	// Event
@@ -54,7 +54,7 @@ p = [
 		'time',  o[3],  'tracks',  o[11],  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		'renderConfig',  o[162],  nil,  nil ],  
+		'renderConfig',  o[160],  nil,  nil ],  
 	// Event
 	3, [ array: o[4],  size: 2,  
 		proto: nil,  parent: nil,  
@@ -90,12 +90,12 @@ p = [
 	// Array
 	13, [ 'mainGroup',  o[14],  'mainRef',  o[125],  
 		nil,  nil,  nil,  nil,  
-		'name',  o[157],  nil,  nil,  
-		'groups',  o[158],  'dispOrder',  0,  
+		'name',  o[155],  nil,  nil,  
+		'groups',  o[156],  'dispOrder',  0,  
 		nil,  nil,  nil,  nil,  
-		'renderEnabled',  false,  'mixer',  o[159],  
+		'renderEnabled',  false,  'mixer',  o[157],  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  'dispColor',  o[161] ],  
+		nil,  nil,  'dispColor',  o[159] ],  
 	// Event
 	14, [ array: o[15],  size: 4,  
 		proto: nil,  parent: nil,  
@@ -415,13 +415,13 @@ p = [
 	126, [ nil,  nil,  nil,  nil,  
 		nil,  nil,  'groupID',  o[127],  
 		'database',  o[128],  nil,  nil,  
-		'blickOffset',  0,  'pitchTakes',  o[137],  
-		'voice',  o[142],  nil,  nil,  
-		nil,  nil,  'systemPitchDelta',  o[147],  
-		'timbreTakes',  o[151],  'pitchOffset',  0,  
+		'blickOffset',  0,  'pitchTakes',  o[135],  
+		'voice',  o[140],  nil,  nil,  
+		nil,  nil,  'systemPitchDelta',  o[145],  
+		'timbreTakes',  o[149],  'pitchOffset',  0,  
 		nil,  nil,  nil,  nil,  
 		'isInstrumental',  false,  nil,  nil,  
-		nil,  nil,  'dictionary',  o[156] ],  
+		nil,  nil,  'dictionary',  o[154] ],  
 	// Event
 	128, [ array: o[129],  size: 7,  
 		proto: nil,  parent: nil,  
@@ -433,82 +433,82 @@ p = [
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  'language',  o[134],  
-		'languageOverride',  o[135],  'phonesetOverride',  o[136] ],  
+		'languageOverride',  'english',  'phonesetOverride',  'arpabet' ],  
 	// Event
-	137, [ array: o[138],  size: 2,  
+	135, [ array: o[136],  size: 2,  
 		proto: nil,  parent: nil,  
 		know: true ],  
 	// Array
-	138, [ nil,  nil,  'activeTakeId',  0,  
-		nil,  nil,  'takes',  o[139] ],  
+	136, [ nil,  nil,  'activeTakeId',  0,  
+		nil,  nil,  'takes',  o[137] ],  
 	// Array
-	139, [ o[140] ],  
+	137, [ o[138] ],  
+	// Event
+	138, [ array: o[139],  size: 3,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	139, [ 'liked',  false,  nil,  nil,  
+		nil,  nil,  'id',  0,  
+		'expr',  1.1,  nil,  nil ],  
 	// Event
 	140, [ array: o[141],  size: 3,  
 		proto: nil,  parent: nil,  
 		know: true ],  
 	// Array
-	141, [ 'liked',  false,  nil,  nil,  
-		nil,  nil,  'id',  0,  
-		'expr',  1.1,  nil,  nil ],  
+	141, [ 'vocalModeInherited',  true,  nil,  nil,  
+		nil,  nil,  'vocalModePreset',  o[142],  
+		'vocalModeParams',  o[143],  nil,  nil ],  
 	// Event
-	142, [ array: o[143],  size: 3,  
+	143, [ array: o[144],  size: 0,  
 		proto: nil,  parent: nil,  
 		know: true ],  
 	// Array
-	143, [ 'vocalModeInherited',  true,  nil,  nil,  
-		nil,  nil,  'vocalModePreset',  o[144],  
-		'vocalModeParams',  o[145],  nil,  nil ],  
+	144, [ nil,  nil,  nil,  nil ],  
 	// Event
-	145, [ array: o[146],  size: 0,  
+	145, [ array: o[146],  size: 2,  
 		proto: nil,  parent: nil,  
 		know: true ],  
 	// Array
-	146, [ nil,  nil,  nil,  nil ],  
+	146, [ 'points',  o[147],  nil,  nil,  
+		nil,  nil,  'mode',  o[148] ],  
 	// Event
-	147, [ array: o[148],  size: 2,  
+	149, [ array: o[150],  size: 2,  
 		proto: nil,  parent: nil,  
 		know: true ],  
 	// Array
-	148, [ 'points',  o[149],  nil,  nil,  
-		nil,  nil,  'mode',  o[150] ],  
+	150, [ nil,  nil,  'activeTakeId',  0,  
+		nil,  nil,  'takes',  o[151] ],  
+	// Array
+	151, [ o[152] ],  
 	// Event
-	151, [ array: o[152],  size: 2,  
+	152, [ array: o[153],  size: 3,  
 		proto: nil,  parent: nil,  
 		know: true ],  
 	// Array
-	152, [ nil,  nil,  'activeTakeId',  0,  
-		nil,  nil,  'takes',  o[153] ],  
-	// Array
-	153, [ o[154] ],  
-	// Event
-	154, [ array: o[155],  size: 3,  
-		proto: nil,  parent: nil,  
-		know: true ],  
-	// Array
-	155, [ 'liked',  false,  nil,  nil,  
+	153, [ 'liked',  false,  nil,  nil,  
 		nil,  nil,  'id',  0,  
 		'expr',  1.0,  nil,  nil ],  
 	// Event
-	159, [ array: o[160],  size: 5,  
+	157, [ array: o[158],  size: 5,  
 		proto: nil,  parent: nil,  
 		know: true ],  
 	// Array
-	160, [ 'display',  true,  nil,  nil,  
+	158, [ 'display',  true,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		'pan',  0.0,  nil,  nil,  
 		nil,  nil,  'gainDecibel',  0.0,  
 		'mute',  false,  'solo',  false ],  
 	// Event
-	162, [ array: o[163],  size: 7,  
+	160, [ array: o[161],  size: 7,  
 		proto: nil,  parent: nil,  
 		know: true ],  
 	// Array
-	163, [ 'sampleRate',  48000,  'filename',  o[164],  
-		'aspirationFormat',  o[165],  nil,  nil,  
+	161, [ 'sampleRate',  48000,  'filename',  o[162],  
+		'aspirationFormat',  o[163],  nil,  nil,  
 		'exportMixDown',  true,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		'numChannels',  1,  'destination',  o[166],  
+		'numChannels',  1,  'destination',  o[164],  
 		'bitDepth',  24,  nil,  nil,  
 		nil,  nil,  nil,  nil ]
 ];

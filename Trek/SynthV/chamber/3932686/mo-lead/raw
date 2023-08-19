@@ -11,7 +11,7 @@ o = [
 	Array.prNew(12),  "Good",  Event.prNew,  Array.prNew(8),  
 	Array.prNew(4),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  Event.prNew,  Array.prNew(12),  Event.prNew,  
-	Array.prNew(12),  "1258790000",  "",  Event.prNew,  
+	Array.prNew(12),  "629390000",  "",  Event.prNew,  
 	Array.prNew(4),  Event.prNew,  Array.prNew(40),  "1258790000",  
 	"his",  "468510000",  Event.prNew,  Array.prNew(40),  
 	"1727300000",  "metabolic",  "392310000",  Event.prNew,  
@@ -45,7 +45,7 @@ o = [
 	Array.prNew(1),  Event.prNew,  Array.prNew(12),  "",  
 	"Unnamed Track",  Array.prNew,  Event.prNew,  Array.prNew(20),  
 	"ff7db235",  Event.prNew,  Array.prNew(28),  "synthV.wav",  
-	"NoAspiration",  "/Users/michael/tank/super/SynthV/chamber/3932686/mo-lead"
+	"NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/chamber/3932686/mo-lead"
 ];
 p = [
 	// Event

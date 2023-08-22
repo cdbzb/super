@@ -81,6 +81,24 @@ AAS_Strum : VSTI  {
 		}
 
 	}
+	setVoicingMode { |mode|
+		case
+		{ mode == \MovableLow} {
+			(
+				type:\vst_set,
+				vst:controller,
+				params:['Voicing: Chord Type'],
+				'Voicing: Chord Type':0.3
+			).play
+		}{ mode == \default}{
+			(
+				type:\vst_set,
+				vst:controller,
+				params:['Voicing: Chord Type'],
+				'Voicing: Chord Type':0.0
+			).play
+		}
+	}
 	setOut{|out|
 		controller.synth.set(\out,out)
 	}

@@ -1,9 +1,44 @@
 (
-
 Song.new(\mauraTropical,[]).current;
+Song.resources.infrastructure= {Song.setupGuitPart.(Song.currentSong)} ;
 Song.root= \c;
 ["arpeggios1","11 7 6 5 4 3 2 1".dm(Song.root)].addLine;
 Song.setTempoMap(\arpeggios,"qe e qe e qe e q q");
+P(\claves, music: { |p b e|
+	[
+		instrument: \claves_808,
+		dur: "ex ex q e ee ex ex q e ex ".asBeats.warpTo( e.tempoMap ).q
+	].pp
+});
+P(\shaker, music: { |p b e|
+	
+	{
+	var levels = [5,1,2,1] /5 => _.dq(inf);
+	var durs =  
+	1/4 ! 32
+	+ ( [1, -1] /40 => _.dup(8) )
+	=> _.flat 
+	=> _.warpTo(e.tempoMap.quantizeDft(0.2) ++ p.tempoMap[e.start + 1].quantizeDft(0.2))
+	=> _.dq();
+	var triggers = TDuty.kr( durs, 0,1,gapFirst:0 );
+	var energy = EnvGen.ar( Env.linen(0, 0.00, 0.015), triggers, doneAction:0   ) 
+		* Demand.kr(triggers,0,levels 
+			// * 40
+			// *8
+		);
+	Shakers.ar(6, energy:energy/2   , decay: 1).tanh
+	
+	// /5
+	* 2
+	=> Pan2.ar(_, 0.8)
+	* EnvGen.cutoff(b.sum + e.bNext.sum - 2,3)
+	/ 10
+	// + SinOsc.ar(300,0,0.05)
+	// => DelayN.ar(_,0.2 -0.03 )
+
+}.play;
+
+});
 P(\counterMelody, music: { |p b e|
 	[
 		freq: [1, 2, -6].df(\c,7).q,
@@ -31,15 +66,15 @@ P(\arr, music:{|p b e|
 	ob = arpeggios[[1, 2, 5, 6, 9, 10, 13, 14 ]];
 	ob => {|i| [ freq: [\r] ++ i => _.df(\c,[3,4])=> _.q, dur: "e e qe e qe e qe e q".asBeats.warpTo( e.tempoMap ).q ].pp};
 });
-
-
-Song.steelDef = {
-		SinOsc.ar(\freq.kr(400).lag2(2) * [1,2]) * \amp.kr(0.1) =>_.tanh / 4
-		* Env.linen(0.05,\sus.kr(2),3).kr(2,gate:1)
-		=> {|i| CombN.ar(i) + i}
-		=> Out.ar(\out.kr(0),_)
+( Song.steelDef = {
+	SinOsc.ar(\freq.kr(400).lag2(2) +
+	(SinOsc.ar(3.5).range(-3,3) * Env([0,1,1,0],[ 0.5,2,2 ]).kr(0,gate:1))
+	* [1,2]) * \amp.kr(0.1) =>_.tanh / 4
+	* Env.linen(0.05,\sus.kr(2),3).kr(2,gate:1)
+	// => {|i| CombN.ar(i)/2 + i}
+	=> Out.ar(\out.kr(0),_)
 }.asDefName ;
-
+);
 P(\steel, music: { |p b e|
 		[ 
 			freq: [[3, 5],[4, 6]].df(\c).q,dur: "qe eqe".asBeats.warpTo( e.tempoMap ) + [0,8] =>_.q,
@@ -49,10 +84,17 @@ P(\steel, music: { |p b e|
 		[ 
 			freq: [\r,[14, 6],[15, 7]].df(\c).q,dur: "qeeqq qe e".asBeats.warpTo( e.tempoMap ).q,
 			lagTime:0.35 * 15, 
-			instrument:\wash
+			instrument:\washVarLag
 		].ppm;
 });
 ["arpeggiosTwo","11 7 6 5 4 3 2 1".dm(Song.root)].addLine;
+Song.durs.filter(\arpeggiosTwo, {Song.durs[\arpeggios1].list});
+P(\claves, music: { |p b e|
+	[
+		instrument: \claves_808,
+		dur: "ex ex q e ee ex ex q e ex ".asBeats.warpTo( e.tempoMap ).q
+	].pp
+});
 Song.setTempoMap(\arpeggiosTwo,"qe e qe e qe e q q");
 P(\fiveOne, music: { |p b e|
 	[
@@ -83,7 +125,7 @@ P(\steel, music: { |p b e|
 	[ 
 		freq: [\r,[3,5],[4,6]].df(\c).q,dur: "qeeqq qe e".asBeats.warpTo( e.tempoMap ).q,
 		lagTime:0.35 * 15, 
-		instrument:\wash
+		instrument:\washVarLag
 	].ppm;
 });
 ["Verse","-1 1 2 3 4 3 2 1 3 2 1 -7 1 2 -7 2 1 -5 5 5".dm(\c)].addLine;
@@ -98,7 +140,6 @@ P(\offbeat, music: { |p b e|
 		
 	].pp
 });
-Song.guitar = AAS_Strum();
 P(\bassline, music: { |p b e|
 	[ 
 		freq: [1, 5, 1, 4, 6, 4, 5, 2, 5, 4, -7, 4, 1, 3, 5].df(\c,3).q,
@@ -106,16 +147,30 @@ P(\bassline, music: { |p b e|
 		legato: [0.5, 0.8, 0.9, ].q(inf),
 		amp: [1, 1.2, 0.8].q(inf) /10,
 		instrument: \default,
-		out: Effect.bus({|i| i.tanh.tanh },inputChannels:2)
+		out: Effect.bus({|i| i * 2.5 => _.tanh.tanh /2 },inputChannels:2)
 	].ppma
 });
-	Song.guitarFx = {Effect.bus({|i| i/2.5 => BPF.ar(_,900,8) },out:3)};
-	Song.guitarFx = {Effect.bus({|i| i },out:3)};
-	Song.guitar.setPlayMode(\strum );
-	Song.guitar.setVoicingMode(\moveableLow);
-	P(\guitar, music: { |p b e|
-	Song.guitar.setPlayMode(\strum );
-	Song.guitar.setVoicingMode(\moveableLow);
+	// Song.guitarFx = {Effect.bus({|i| i/2.5 => BPF.ar(_,900,8) },out:3)};
+Song.guitar = ( ~guitar = ~guitar.isNil.if{ AAS_Strum() }{~guitar} );
+( Song.guitarFx = Bus.audio(s,1);
+	Song.guitarFXSynthFunc = { In.ar(Song.guitarFx,1) / 2 => Out.ar(1,_)};
+);
+	Song.setupGuitPart = { 
+		~guitarFXSynth.free;
+		Song.guitarFXSynth.isPlaying.not.if{
+			fork{
+				Song.guitarFXSynth = Song.guitarFXSynthFunc.play;
+				~guitarFXSynth = Song.guitarFXSynth;
+
+				// 0.005.wait;
+				Song.guitarFXSynth.register
+			}
+		};
+		Song.guitar.setPlayMode(\strum );
+		Song.guitar.setVoicingMode(\moveableLow);
+	};
+P(\guitar, music: { |p b e|
+	p.setupGuitPart.(p);
 	[
 		[
 			type: \strum,
@@ -124,11 +179,9 @@ P(\bassline, music: { |p b e|
 			dur: "qq qq qq qq qq qq qq ".asBeats.warpTo( e.tempoMap.quantizeWindow(0.5)).q,
 			// dur: 10,
 			legato:1,
-			out: p.guitarFx.(),
 		].p ,
 		[
 			type: \strum,
-			out: p.guitarFx.(),
 			instance: p.guitar,
 			switch: [ \down, \muffleU, \d, \u, ].q(inf),
 			amp: [0.01,0.5].q(inf)  ,
@@ -137,23 +190,28 @@ P(\bassline, music: { |p b e|
 			// dur: 10
 			// lag:Pwhite( 0.01,0.02,inf ) + [-0.005,0.005].q(inf),
 
-			dur: "x*48".beats.warpTo( e.tempoMap.quantizeWindow(0.5) ).q
-
+			dur: "x*48".beats.warpTo( e.tempoMap.quantizeWindow(0.5) ).q,
+			out: p.guitarFx
 			// lag:0.05
 		].p
-	] => Ppar(_) => _.play
+	] => Ppar(_) 
+	// => Pset(\out,fx,_) 
+	=> _.play
 });
-P.tune(_<>[instrument:\defaultPiano].p);
+P.tune(_<>[instrument:\defaultLinen,rel:0, rests:MuteFirst(), amp:0.13,t_trig:1,len:0.5, fatness:0.35].p.trace);
 P(\thirds, music: { |p b e|
 	[
 		freq: [\r, 3, 4, 5, 6, 5, 4, 3, 5 ].df(\c,4).q,
 		dur: b.q, amp:0.03, pan: -0.25
 	].pp
 });
-P(\click, music: { |p b e|
+P(\hat, music: { |p b e|
 	[
 		dur: "q*12".beats.warpTo( e.tempoMap ).q,
-		instrument:\hihat
+		instrument:\hihat,
+		pan: -0.5,
+		out: Effect.bus({|i| i=> Pan2.ar(_,-0.6) * -3.dbamp },)
+		// out: Effect.bus({|i| CombN.ar( i, 0.5,"E".asBeats.warpTo( e.tempoMap ) + 0.05, 2 ) /4 + i * [0.7,0.3] },inputChannels:2)
 	].pp
 });
 ["VerseTwo","5 6 5 4 3 3 2 1 2 ".dm(\c)].addLine;
@@ -171,26 +229,29 @@ Song.setTempoMap(\VerseTwo,"g Q Q E E Q Ee x x");
 P(\click, music: { |p b e|
 	[
 		dur: "q*4".beats.warpTo( e.tempoMap ).q,
-		instrument:\hihat
+		instrument:\hihat,
+		pan: -0.5,
+		out: Effect.bus({|i| CombN.ar( i, 0.5,"x".asBeats.warpTo( e.tempoMap ), 2 ) /4 + i * [0.7,0.3] },inputChannels:2)
 	].pp
 });
 // P.tune(_ <> [instrument:\defaultPiano].p);
 P(\TUNEAndConnector, music: { |p b e|
 	[
 		midinote: p.tune[e.start].list ++ ( [p.tune[e.start + 1] - [24,12] ]) => _.q,
-		dur: e.bAll.q,
-		instrument: \defaultPiano
+		dur: e.bAll[..11].q,
+		instrument: \defaultPiano,
+		amp:0.13
+
 	].pp
 });
 P(\thirds, music: { |p b e|
 	[
-		freq: "3 4 3 2 1 -7".df(\c).q,
+		freq: [ 3, 4, 3, 2, 1, -7  ].df(\c).q,
 		dur: b.parse([1, 1, 1, 1, 1, 2]).q
 	].pp
 });
 P(\guitar, music: { |p b e|
-	Song.guitar.setPlayMode(\strum );
-	Song.guitar.setVoicingMode(\moveableLow);
+	p.setupGuitPart.(p);
 	[
 		[
 			type: \strum,
@@ -199,11 +260,9 @@ P(\guitar, music: { |p b e|
 			dur: "qq qq qq qq qq qq qq ".asBeats.warpTo( e.tempoMap ).q,
 			// dur: 10,
 			legato:1,
-			out: p.guitarFx.(),
 		].p ,
 		[
 			type: \strum,
-			out: p.guitarFx.(),
 			instance: p.guitar,
 			switch: [ \down, \muffleU, \d, \u, ].q(inf),
 			amp: [0.01,0.5, 0.01, 0.2].q(inf),
@@ -212,16 +271,54 @@ P(\guitar, music: { |p b e|
 			// dur: 10
 			lag:Pwhite( 0.01,0.02,inf ) + [-0.005,0.005].q(inf),
 
-			dur: "x*36".beats.warpTo( e.tempoMap.quantizeDft(0.5) ).q
+			dur: "x*36".beats.warpTo( e.tempoMap.quantizeDft(0.5) ).q,
+			out: p.guitarFx
 
 			// lag:0.05
 		].p
 	] => Ppar(_) => _.play
 });
 ["Bridge","11 7 6 ".dm(\e) ++ "5 2 4 3 -5 5 2 4 3 2 3 4".dm('f#') ++ "11 12 7 6 12 11 7 11".dm(\d,\mixolydian) ].addLine;
+P(\lastchord, music: { |p b e|
+	[
+		instrument: \visual_vowel,
+		instrument: \ooh,amp:0.015,
+		freq: [\r,[1,3,5,7].df('c#'),\r, [1,3,5,7] .df(\f,4)].q ,
+		dur: "qqqqqqqq qq qqqq qq ".asBeats.warpTo( e.tempoMap ).q
+	].pp
+});
+P(\shaker, music: { |p b e|
+	
+	{
+		var levels = [5,1,2,1] /5 => _.dq(inf);
+		var durs =  1/4 ! 32 + ( [1, -1] /40 => _.dup(8) ) => _.flat 
+		=> _.warpTo(e.tempoMap.quantizeDft(0.2) ++ p.tempoMap[e.start + 1].quantizeDft(0.2))
+		=> _.dq();
+		var triggers = TDuty.kr( durs, 0,1,gapFirst:0 );
+		var energy = EnvGen.ar( Env.linen(0, 0.00, 0.015), triggers, doneAction:0   ) 
+		* Demand.kr(triggers,0,levels 
+		);
+		Shakers.ar(6, energy:energy/2   , decay: 1).tanh
+
+		// /5
+		* 2
+		=> Pan2.ar(_, 0.8)
+		* EnvGen.cutoff(b[..1].sum ,0.1)
+		/ 10
+		// + SinOsc.ar(300,0,0.05)
+		// => DelayN.ar(_,0.2 -0.03 )
+
+}.play;
+
+});
+P(\claves, music: { |p b e|
+	[
+		instrument: \claves_808,
+		dur: "ex ex q ".asBeats.warpTo( e.tempoMap ).q
+	].pp
+});
 P(\guitar, music: { |p b e|
-	Song.guitar.setPlayMode(\strum );
-	Song.guitar.setVoicingMode(\moveableLow);
+	p.setupGuitPart.(p);
 	[
 		[
 			type: \strum,
@@ -230,7 +327,6 @@ P(\guitar, music: { |p b e|
 			dur: "qq ".asBeats.warpTo( e.tempoMap ).q,
 			// dur: 10,
 			legato:1,
-			out: p.guitarFx.(),
 		].p ,
 		[
 			type: \strum,
@@ -244,13 +340,17 @@ P(\guitar, music: { |p b e|
 			// lag:Pwhite( 0.01,0.02,inf ) + [-0.005,0.005].q(inf),
 
 			dur: "qq ".asBeats.warpTo( e.tempoMap ).q,
-
+			out: p.guitarFx
 			// lag:0.05
 		].p
 	] => Ppar(_) => _.play
 });
-
-
+P(\chordsTwo, music: { |p b e|
+	[
+		freq: [\r,[1, 3],[1, 4], [1, 3], [1, 4]].df('c#') ++ [[1, 3], [1,4]].df(\d) =>_.q => _.dupEach(2),
+		dur: "q q q q q q q q q q q q q q".asBeats.warpTo( e.tempoMap ).q,
+	].pp
+});
 Song.setTempoMap(\Bridge,"qe e q   e e q q q e e e e e e q e e qe e e e e e");
 P.tune();
 P.synthVs(\feng, take: [ \lead, \double ], params: {|p b| [
@@ -296,22 +396,31 @@ P(\arr, music:{|p b e|
 	ob => {|i| [ freq: [\r] ++ i => _.df(\e,[3,4])=> _.q, dur: "e e qe ".asBeats.warpTo( e.tempoMap ).q ].pp};
 }
 );
-P.tune(_ <> [instrument: \wash, rest: [\r,\r,\r,1,1,1,1].q].p);
-P.tune(\two, start:P.calcStart(),function: _ <> [instrument: \wash, rest: \r.dup(15) ++ [1, 1, 1, 1] =>_.q].p);
+P.tune(_ <> [instrument: \washVarLag, rest: [\r,\r,\r,1,1,1,1].q].p);
+P.tune(\two, start:P.calcStart(),function: _ <> [instrument: \washVarLag, rest: \r.dup(15) ++ [1, 1, 1, 1] =>_.q].p);
+Song.bridgeTempoMap = Song.tempoMap[ \Bridge ].quantizeDft(0.5);
 P(\beat, music: { |p b e|
 	var s = \sn_808, k = \bd_808;
 	[
 		instrument: [\r] ++ [ k, s, k, k, s, k].dup(3).flat  => _.q,
-		dur: "qq q q e e e e q q e e e e q q e e e e".asBeats.warpTo( e.tempoMap.quantizeDft(0.99) ).q
-	].pp;
-	(instrument: \cymbalsDS,amp:0.02, lag: "qq".asBeats.warpTo( e.tempoMap )).play
+		dur: "qq q q e e e e q q e e e e q q e e e e".asBeats.warpTo(Song.bridgeTempoMap).q,
+		decay: 20,
+		tone: 20, amp: Pfunc({|e| ( e.instrument == \bd_808 ).if{0.2}{0.1}})
+	].pp;	
+	(instrument: \cymbalsDS,amp:0.02, lag: "qq".asBeats.warpTo(Song.bridgeTempoMap)).play;
+	[
+		instrument:\hat_808,
+		dur: "qq x*48".beats.warpTo(Song.bridgeTempoMap).q,
+		amp: [0.03,0.1].q(inf),
+		rests: MuteFirst()
+	].pp
 });
-P(\wash, music: { |p b e|
+P(\washVarLag, music: { |p b e|
 	[
 		midinote: p.tune[e.start],
 		dur: b.q,
 		rest: [\r,\r,\r,1,1,1,1, \r ,\r,\r,\r,\r,\r,\r,\r, 1, 1, 1, 1].q,
-		instrument: \wash
+		instrument: \washVarLag
 	].pp
 });
 P(\bassPartTwo, music: { |p b e|
@@ -319,7 +428,10 @@ P(\bassPartTwo, music: { |p b e|
 		freq: [2.5, 2,[-1, 1 ], -4, -5, -1, -4, -5 ].df('c#', 4) ++ "1 5 4 2.5".df(\d, 3) =>_.q,
 
 		// dur: b.parse([1,1, 3, 2, 3, 4, 3, 2]).q,
-		dur:  "qe e   qq qe e qq qe e  qq qe e qq".asBeats.warpTo( e.tempoMap ).q,
+		dur:  "qe e   qq qe e qq qe e  qq qe e qq".asBeats.warpTo( 
+			// e.tempoMap
+			p.bridgeTempoMap
+		).q,
 		instrument: \sawSynth
 	].pp
 });
@@ -330,6 +442,78 @@ P(\steel, music: { |p b e|
 		instrument:\sawSynthSustain
 	].ppm;
 });
+["EndinAlt", "2 1 5 4 3 2 1 5 4 ".dm(Song.root),].addLine;
+Song.durs.filter(\EndinAlt,{ List[ 0.426, 0.413, 0.39, 0.406, 1.536, 0.39, 0.4, 0.407, 0.435,  ]
+});
+Song.setTempoMap(\EndinAlt,"e e e e eeee e e e e ");
+P(\bass, music: { |p b e|
+	[
+		freq: [-5, 1, -6, -5, 1].df(\c,4).q,
+		dur: "qq qq qe e q".asBeats.warpTo( e.tempoMap ).q,
+		instrument: \sawSynthSustain,
+		pulse:0.6
+
+	].ppm
+});
+P.synthVs(\mo, take: [\lead, \doubleAlt],
+	pbind: Song.enlarge(1),
+	params: {|p b| [
+		filter: [
+			(midinote: "2 1 5 4 3 2 1 5 4 3".dm(\c,4)),
+			(midinote: "2 1 5 4 3 2 1 5 4 3".dm(\c,4)),
+		], 
+		lyrics: "r da - da da r da - da da",
+		pitchTake: [1, 2],
+		legato: [[1, 1, 1, 1, 0.4, 1, 1, 1, 1, ]],
+		vocalMode: \Soft
+	] }, music:{|p b e|
+	{
+		e.playbuf
+		=> HPF.ar(_,300)
+		=> BPF.ar(_,1900)
+		=> Pan2.ar(_,0.7)
+		*0.8
+		=> PlateReverb.ar(_,mix:0.3)
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+P.synthVs(\kevin, take: [\lead, \doubleAlt],
+	pbind: Song.enlarge(1),
+	params: {|p b| [
+		filter: [
+			(midinote: "2 1 5 4 3 2 1 5 4 3".dm(\c)),
+			(midinote: "2 1 5 4 3 2 1 5 4 3".dm(\c)),
+		], 
+		lyrics: "bah - dah dah dah  bah - dah dah ",
+		pitchTake: [1, 2],
+		legato: [[1, 1, 1, 1, 0.4, 1, 1, 1, 1, ]],
+		vocalMode: \Soft
+	] }, music:{|p b e|
+	{
+		e.playbuf
+		=> HPF.ar(_,300)
+		=> BPF.ar(_,3400,1.5) /3
+		=> Pan2.ar(_,-7)
+		=> PlateReverb.ar(_,mix:0.3, damping:0.9)
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+P(\bassline, music: { |p b e|
+	[
+		freq: "2 1 5 4 3 -5".df(\c,4).q(2),
+		dur: "e e e e q q e e e e".asBeats.warpTo( e.tempoMap ).q,
+		instrument: \sparkTriangle, depth:0
+	].ppm
+});
+P(\trip, music: { |p b e|
+	[
+		freq: [\r, 1, 2, 3].df(p.root).q,
+		dur: "qqq E E E qq ".asBeats.warpTo( e.tempoMap ).q,
+		legato: [1, 1, 1, 3, 1,  1, 1, 3, ].q,
+		instrument: \harp, coef:0.3, amp: 0.03,
+		out: 1
+	].pp
+});
 ["VerseB","-1 1 2 3 4 3 2 1 3 2 1 -7 1 2 -7 2 1 -5 5 5".dm(\c)].addLine;
 Song.durs[\VerseB] = Song.durs[\Verse];
 Song.setTempoMap(\VerseB,"q E E E e x e e xeee x x e x e e e e xE E E");
@@ -338,13 +522,11 @@ P(\offbeat, music: { |p b e|
 		freq: [\r, [1, 5, 11, 13] ].df(\c).q(inf),
 		dur: "e*16".beats.warpTo(e.tempoMap).q,
 		instrument:  \harp, 
-		out: Effect.bus({|i|  },)
+		out: Effect.bus({|i| i },)
 		// amp: [ 0.03,0.1 ]
 		
-	].pp
+	]//.pp
 });
-Song.guitar = AAS_Strum();
-
 P(\bassline, music: { |p b e|
 	[ 
 		freq: [1, 5, 1, 4, 6, 4, 5, 2, 5, 4, -7, 4, 1, 3, 5].df(\c,3).q,
@@ -355,11 +537,8 @@ P(\bassline, music: { |p b e|
 		out: Effect.bus({|i| i.tanh.tanh },inputChannels:2)
 	].ppma
 });
-	Song.guitarFx = {Effect.bus({|i| i/2.5 => BPF.ar(_,900,8) },out:3)};
-	Song.guitarFx = {Effect.bus({|i| i },out:3)};
 P(\guitar, music: { |p b e|
-	Song.guitar.setPlayMode(\strum );
-	Song.guitar.setVoicingMode(\moveableLow);
+	p.setupGuitPart.(p);
 	[
 		[
 			type: \strum,
@@ -368,7 +547,6 @@ P(\guitar, music: { |p b e|
 			dur: "qq qq qq qq qq qq qq ".asBeats.warpTo( e.tempoMap.quantizeWindow(0.5)).q,
 			// dur: 10,
 			legato:1,
-			out: p.guitarFx.(),
 		].p ,
 		[
 			type: \strum,
@@ -381,38 +559,118 @@ P(\guitar, music: { |p b e|
 			// dur: 10
 			// lag:Pwhite( 0.01,0.02,inf ) + [-0.005,0.005].q(inf),
 
-			dur: "x*48".beats.warpTo( e.tempoMap.quantizeWindow(0.5) ).q
-
+			dur: "x*48".beats.warpTo( e.tempoMap.quantizeWindow(0.5) ).q,
+			out: p.guitarFx
 			// lag:0.05
 		].p
 	] => Ppar(_) => _.play
 });
-P.tune(_<>[instrument:\defaultPiano].p);
+P.tune(_<>[instrument:\defaultLinen,
+		fatness:0.8, amp:0.1,
+	rests:MuteFirst(), ].p);
 P(\thirds, music: { |p b e|
 	[
-		freq: [\r, 3, 4, 5, 6, 5, 4, 3, 5 ].df(\c,4).q,
-		dur: b.q, amp:0.03, pan: -0.25
+		freq: [\r, 3, 4, 5, 6, 5, 4, 3, 5, 4, 3, 2, 3, 4, 2, 4, 3, 1 ].df(\c,4).q,
+		dur: b.q, amp:0.05, pan: 0.5
 	].pp
 });
 P(\click, music: { |p b e|
 	[
 		dur: "q*12".beats.warpTo( e.tempoMap ).q,
-		instrument:\hihat
+		instrument:\hihat,
+		pan:-0.5
 	].pp
 });
+["VersBTwo","5 6 5 4 3 3 2 1 2 ".dm(\c)].addLine;
+Song.durs[\VersBTwo] = Song.durs[\VerseTwo];
+Song.setTempoMap(\VersBTwo,"g Q Q E E Q Ee x x");
+P(\bassline, music: { |p b e|
+	[ 
+		freq: [ 4, 6, 4, 5, 2, 5, 4, -7, 4, 1, 3, 5].df(\c,3).q,
+		dur: "ex xe e ex xe e ex xe e ex xe e ex xe e ".asBeats.warpTo( e.tempoMap ).q,
+		legato: [0.5, 0.8, 0.9, ].q(inf),
+		amp: [1, 1.2, 0.8].q(inf) /10,
+		instrument: \default,
+		out: Effect.bus({|i| i.tanh.tanh },inputChannels:2)
+	].ppma
+});
+Song.setTempoMap(\VerseTwo,"g Q Q E E Q Ee x x");
+P(\click, music: { |p b e|
+	[
+		dur: "q*4".beats.warpTo( e.tempoMap ).q,
+		instrument:\hihat,
+
+		pan: -0.5,
+	].pp
+});
+// P.tune(_ <> [instrument:\defaultPiano].p);
+P(\TUNEAndConnector, music: { |p b e|
+	[
+		midinote: p.tune[e.start].list ++ ( [p.tune[e.start + 1]  ]) => _.q,
+		dur: e.bAll[..13].q,
+		fatness:0.85, amp:0.1,
+		instrument: \defaultLinen
+	].pp
+});
+P(\thirds, music: { |p b e|
+	[
+		freq: [ 3, 4, 3, 2, 1,  -7 ].df(\c).q,
+		dur: b.parse([1, 1, 1, 1, 1, 2]).q
+	].pp
+});
+P(\guitar, music: { |p b e|
+	p.setupGuitPart.(p);
+	[
+		[
+			type: \strum,
+			instance: p.guitar,
+			freq: [ [11, 14, 16], [15,22], [14,15,17]].df(\c,4).q(2),
+			dur: "qq qq qq qq qq qq qq ".asBeats.warpTo( e.tempoMap ).q,
+			// dur: 10,
+			legato:1,
+		].p ,
+		[
+			type: \strum,
+			out: p.guitarFx.(),
+			instance: p.guitar,
+			switch: [ \down, \muffleU, \d, \u, ].q(inf),
+			amp: [0.01,0.5, 0.01, 0.2].q(inf),
+			// lag: [0,0.1,0,0,0,0].q,
+			legato:1,
+			// dur: 10
+			lag:Pwhite( 0.01,0.02,inf ) + [-0.005,0.005].q(inf),
+			out: p.guitarFx,
+			dur: "x*36".beats.warpTo( e.tempoMap.quantizeDft(0.5) ).q
+
+			// lag:0.05
+		].p
+	] => Ppar(_)  => _.play
+});
 ["Ending", "2 1 5 4 3 2 1 5 4 3".dm(Song.root)].addLine;
+P(\cymbal, music: { |p b e|
+	(instrument: \cymbalsDS, amp:0.01).play
+});
+P(\bass, music: { |p b e|
+	[
+		freq: [-5, 1, -6, -5, 1].df(\c,4).q,
+		dur: "qq qq qe e q".asBeats.warpTo( e.tempoMap ).q,
+		instrument: \sawSynthSustain,
+		pulse:0.6,
+		out:Effect.bus({|i| i=> Pan2.ar(_,0) },)
+	].ppm
+});
 Song.setTempoMap(\Ending,"e e e e eeee e e e e eeee");
 P(\bassline, music: { |p b e|
 	[
 		freq: "2 1 5 4 3 -5".df(p.root,4).q(2),
-		dur: "e e e e q q e e e e q q".asBeats.warpTo( e.tempoMap ).q,
+		dur: "e e e e q q e e e e q ".asBeats.warpTo( e.tempoMap ).q,
 		instrument: \sparkTriangle, depth:0
-	].pp
+	].ppm
 });
 P(\trip, music: { |p b e|
 	[
 		freq: [\r, 1, 2, 3].df(p.root).q(2),
-		dur: "qqq E E E qqq E E E ".asBeats.warpTo( e.tempoMap ).q,
+		dur: "qqq E E E qqq ".asBeats.warpTo( e.tempoMap ).q,
 		legato: [1, 1, 1, 3, 1,  1, 1, 3, ].q,
 		instrument: \harp, coef:0.3, amp: 0.03,
 		out: 1

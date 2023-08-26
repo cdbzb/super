@@ -315,6 +315,7 @@ P(\bass,syl:1,music:[
 ].pm(\stringyy)
 );
 ['/*MCCOY:*/ He doesnt appear to be harmed - -. Physically, anyway. ',[4,5,6,5,4,5,6, 7,11,7].dm('e' )++[13,11,7,5,4,3].dm('e-',scale:\mixolydian)].addLine; 
+// speed up "physically anyway" !!
 P(\basslinePhraseTwo,syl:0, music: { |p b e|
 	fork{
 		var r = Barrier.collect({
@@ -336,10 +337,14 @@ P(\basslinePhraseTwo,syl:0, music: { |p b e|
 		] => _.ppm 
 		}		
 });
-P.still(\mccoyWide, timecode: 1945.5.seconds, music: { |p b e|
+P.still(\mccoyWide, timecode: 1946.28.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["he doesn't appear","to be harmed"],
+	).sequenceText2(
+			b.parse([10]), [ 
+			["physically","anyway"],
+			],
 	)
 });
 P.synthV(role: \mccoy, 
@@ -996,7 +1001,9 @@ P('swell20',lag: -0.1,music:{|p b e|
 ['/*MULHALL:*/ I`m afraid I agree with Doctor McCoy. You could be suffering from a form of false euphoria.(ooh -- --) ', [ 3,4,2,3,1, 5,3,4,5,3,6, 4,5,6,11,7,2 ].dm('e',scale:\dorian) ++ [4,5,6,7].dm('c') ++ [13,14,13,12,11, 12,11,7].dm('f#',octave: 5) ].addLine; 
 Song.euphoriaTempoMap = TempoMap.new( Song.durs[\euphoria].list[(21..28)],"qe x xqe x xqe x xq q".asBeats );
 P.still(\mulhallClose, timecode: 
-	1503 //clgoseUp mouth closed
+	// 1503 //closeUp mouth closed
+	2020.9
+
 
 	.seconds, music: { |p b e|
 	 e.still.( 
@@ -1316,7 +1323,6 @@ legato: [1,1,1,1,1,1,0.95]
 
 });
 P(\orch_hit, music: { |p b e|
-
 	{
 		PlayBuf.auto(1,p.laMer,rate:0.midiratio)
 		* Env([0,0,1,0,0],b.parse([3,1,3]) ++ [2],curve:[-3,3,0]).kr(2,gate:1)
@@ -1390,7 +1396,7 @@ P(\resolution,syl:5,music:{ |parent durs|
 );
 
 ['/*MCCOY:*/ And what if we decide against you? ', [7,6,5,4,5,6,7,12,11.5].dm('e')].addLine;
-P.still(\twoShot, timecode: 2040.seconds, music: { |p b e|
+P.still(\twoShot, timecode: 2039.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["and what if we decide","against you?"],

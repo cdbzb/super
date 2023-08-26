@@ -1065,6 +1065,12 @@ P.synthV(role:\sargon, filter: (midinote: _ - 12),  params: {|p b| [
 P.tune('day my', {|i| i<>[instrument:\stringyy].p => Pmul(\freq,[0.5,1],_) });
 P.tune('day my ', { |i| Pmul(\freq,0.5,i) =>Pbindf(_,\instrument,\sawSynthSustain,\out,Effect.bus( { |i| DWGReverbC1C3.ar(i,mix:0.3) => Phaser2.ar(_,rate:0.2)} /2 ))});
 ["touched your vessel and brought you here. ","11 5 4 3 2 1 -7 -6.5".dm(\e)].addLine;
+P.still(\sargonTouched, timecode: 1748.5.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role:\sargon, prepend:true, filter: (midinote: _ - 12),  params: {|p b| [
 	lyrics: "tatsed yor ve sser and brat yu hir",
 	phonemes: ["t a u ch t", "y u r", "", "s e r", "", "b r a ty", "", "h i e r"],

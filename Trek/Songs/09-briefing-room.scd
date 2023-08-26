@@ -7,53 +7,55 @@ s.waitForBoot {
 
 	// Require("boilerplate.sc");
 	"~/tank/super/More-Organized-Trek/Songs/boilerplate.scd".standardizePath.load;
-[ "SCOTT: You're going to what?","r" ].addLine;
-P.still(\scott, timecode: 2044.2.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
-	)
-});
-[ "Are they all right in the head, Doctor? ","r" ].addLine;
-[ "MCCOY: No comment. ","r" ].addLine;
-P.still(\mccoy, timecode: 2048.45.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
-	)
-});
-[ "KIRK: A simple transference. Their minds and ours. ","r" ].addLine;
-P.still(\kirk, timecode: 2050.8.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
-	)
-});
-[ "MCCOY: Quite simple. Happens every day. ","r" ].addLine;
-[ "KIRK: Scotty, I need your approval, too. Since you'll","r" ].addLine;
-P.still(\kirk, timecode: 2054.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
-	)
-});
-[ "work with them, furnishing them all they need to make the android robots. ","r" ].addLine;
-[ "You won't be working with them, you'll be working with us, our bodies.","r" ].addLine;
-[ "They'll be inside us, and we'll be ...","r" ].addLine;
-[ "MCCOY: It all seems rather indecent to me. ","r" ].addLine;
-P.still(\mccoy, timecode: 2105.4.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
-	)
-});
-[ "MULHALL: I'm not so certain of that, Doctor. It is scientifically fascinating. ","r" ].addLine;
-P.still(\mulhall, timecode: 2110.1.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
-	)
-});
+	{
+		[ "SCOTT: You're going to what?","r" ].addLine;
+		P.still(\scott, timecode: 2044.2.seconds, music: { |p b e|
+			e.still.( 
+				wait: b.sum,
+				text: ["",""],
+			)
+		});
+		[ "Are they all right in the head, Doctor? ","r" ].addLine;
+		[ "MCCOY: No comment. ","r" ].addLine;
+		P.still(\mccoy, timecode: 2048.45.seconds, music: { |p b e|
+			e.still.( 
+				wait: b.sum,
+				text: ["",""],
+			)
+		});
+		[ "KIRK: A simple transference. Their minds and ours. ","r" ].addLine;
+		P.still(\kirk, timecode: 2050.8.seconds, music: { |p b e|
+			e.still.( 
+				wait: b.sum,
+				text: ["",""],
+			)
+		});
+		[ "MCCOY: Quite simple. Happens every day. ","r" ].addLine;
+		[ "KIRK: Scotty, I need your approval, too. Since you'll","r" ].addLine;
+		P.still(\kirk, timecode: 2054.seconds, music: { |p b e|
+			e.still.( 
+				wait: b.sum,
+				text: ["",""],
+			)
+		});
+		[ "work with them, furnishing them all they need to make the android robots. ","r" ].addLine;
+		[ "You won't be working with them, you'll be working with us, our bodies.","r" ].addLine;
+		[ "They'll be inside us, and we'll be ...","r" ].addLine;
+		[ "MCCOY: It all seems rather indecent to me. ","r" ].addLine;
+		P.still(\mccoy, timecode: 2105.4.seconds, music: { |p b e|
+			e.still.( 
+				wait: b.sum,
+				text: ["",""],
+			)
+		});
+		[ "MULHALL: I'm not so certain of that, Doctor. It is scientifically fascinating. ","r" ].addLine;
+		P.still(\mulhall, timecode: 2110.1.seconds, music: { |p b e|
+			e.still.( 
+				wait: b.sum,
+				text: ["",""],
+			)
+		});
+	}.();
 [ "SPOCK: (boom) Once inside their mechanical bodies, engineer, they can leave this planet,"," -1 1 2 3 2 3 4 3 2 3 1 -5 -6 -5 5 4 3 2 4 3 ".dm('a-', octave:4)].addLine; 
 P.still(\spock2,syl:0, timecode: 2117.3.seconds, music: { |p b e|
 	 e.still.( 
@@ -562,7 +564,7 @@ P(\chord, music: { |p b e|
 		instrument: \harp, coef: 0.7,
 	].pp
 });
-P.still(\spock, timecode: 2135.4.seconds, music: { |p b e|
+P.still(\spock, timecode: 2114.5.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
@@ -1218,7 +1220,7 @@ P(\chords,start:'to host',music:{|p b e|
 
 Song.opportunityKey='b';
 ["The opportunity is an extraordinary one ","-1 3.5 3.5 3.5 3.5 2 2 1 2 3 5 4.5 2 1 -7.5".dm(Song.opportunityKey,6,\minor)].addLine;//p14
-P.still(\mulhall, timecode: 2214.35.seconds, music: { |p b e|
+P.still(\mulhall, timecode: 2212.15.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],

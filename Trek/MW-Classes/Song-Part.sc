@@ -17,6 +17,7 @@ Song {
 	var <>loadedFrom;
 	var scrollOn = false;
 	classvar <>lastPlayOnly;
+	// TODO deprecate muteTunes !! 
 	classvar <>muteTunes;
 
 	*initClass {
@@ -488,8 +489,8 @@ Song {
 	getPartsList { |args|
 		var a =
 		case
-		{(args==[])}{this.pts}	
-		{true}{args.flatten};
+		{(args==[]) }{this.pts     }
+		{true       }{args.flatten };
 		^this.getParts(a)
 	}
 	getParts { |list|

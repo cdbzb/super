@@ -1414,6 +1414,31 @@ SynthDef(\keychord,{
 }).add;
 
 ["hear a negative voice?","c#4 d b3 g e e4"].addLine; //17
+P.still(\mccoy, timecode: 2444.seconds,syl:6, music: { |p b e|
+	 e.still.( 
+		wait: 1,
+		text: ["",""],
+	)
+});
+P.still(\scotty, timecode: 2446.seconds,lag:0.1,syl:6, music: { |p b e|
+	 e.still.( 
+		wait: 1,
+		text: ["",""],
+	)
+});
+P.still(\mulhall, timecode: 2448.seconds,lag:0.2,syl:6, music: { |p b e|
+	 e.still.( 
+		wait: 1,
+		text: ["",""],
+	)
+});
+P.still(\spock, timecode: 2449.seconds,lag:0.3,syl:6, music: { |p b e|
+	 e.still.( 
+		wait: 1,
+		text: ["",""],
+	)
+});
+
 //four stills at once???
 P.synthV(role: \kirk,
 	prepend: true,

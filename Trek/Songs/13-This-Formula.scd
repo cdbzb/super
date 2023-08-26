@@ -1080,7 +1080,10 @@ P(\harmonyWatched,start:'me prepare',music:
 }
 );
 ["/*CHAPEL:*/ Yes, that, that was it. ",[7, 7, 12,11,3].dm('f#')].addLine;
-P.still(\ChapelYes, timecode: 3120.5.seconds, music: { |p b e|
+P.still(\ChapelYes, timecode: 
+// 3120.5 //mouth closed
+3119.2
+.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["yes","that was it"],
@@ -1119,6 +1122,12 @@ P(\basedNotesYes,start:'that was it',music:{|p b e|
 }
 );
 ["I will inform Doctor McCoy that each is ",[1,-5,1,2 ,3,1,3,4, 5,4,3,].dm('f#')].addLine;
+P.still(\moreChappel, timecode: 3125.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 Song.durs.filter( _ / 0.95 );
 Song.setTempoMap(\inform,"q Q E q   q Q E Q E Q E ");
 // Song.setTempoMap(\inform,"eee ee e eee eee ee e ee e ee e e e e e e e ee e e");
@@ -1331,12 +1340,6 @@ P(\necessaryBaseNote,start:'necessary',music:{|p b e|
 }
 );
 ["you to kill your captain ", [4,3,5,4,3,2].dm('b-',octave:5)].addLine;
-P.still(\henochCloseThird, timecode: 3137.1.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
-	)
-});
 P.tune('kill');
 P(\vocoder,start:'kill',music:{|p b e|
 Song.pbind['kill']

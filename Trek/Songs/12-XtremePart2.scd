@@ -2,7 +2,7 @@
 Routine { 
 	\WAIT.postln;
 	~loaded = CondVar.new();
-	"/Users/michael/tank/super/More-Organized-Trek/Songs/11-Xtreme1.scd".load;
+	"/Users/michael/tank/super/Trek/Songs/11-Xtreme1.scd".load;
 	~loaded.wait;
 	\GOING.postln;
 ["/*SPOCK*/ -boom- This is an excellent body, Doctor." ,"1 -7 1 2 6 7 6 5 5 6 4 1 -7".dm(\f,\mixolydian)].addLine;
@@ -771,7 +771,10 @@ P.still( \clear, start: 'adapted to', timecode:0 ,syl:0, music: { |p b e|
 	}
 
 });
-P.still(\spockClose, timecode: 3055.seconds, music: { |p b e|
+P.still(\spockClose, timecode: 
+// 3055.seconds //mouth closed
+3047.2.seconds
+, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
@@ -792,6 +795,7 @@ P(\bass1,start:'adapted to',music: {
 		degree:Pseq(notes,4)-1,
 		dur:0.5/Song.vulcanBodyTempo,
 		root:4,
+		amp: 0.5,
 		octave:2,
 		trig:Pseq(1!16),
 		out: Effect(

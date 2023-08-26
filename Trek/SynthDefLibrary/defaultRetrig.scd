@@ -48,7 +48,7 @@ SynthDef(\defaultLinen,{ | out=0 freq=400 amp=0.1 gate=1 t_trig=1 pan=0 curve=( 
 			//) * Linen.kr(gate, 0.01, 0.7, 0.3, 0);
 			) * envelope;
 			OffsetOut.ar(out, Pan2.ar(z, pan, amp));
-		}).add.tag(\keys);
+}).add.tag(\keys);
 		/*
 		a=Synth(\defaultPiano,[\pedal,1])
 		a.set(\t_trig,1)

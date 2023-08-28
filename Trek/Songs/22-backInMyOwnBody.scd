@@ -11,7 +11,7 @@
 	}
 };
 	Song.synthVTracks.default = Song.synthVTracks.aiko;
-	"/Users/michael/tank/super/More-Organized-Trek/Songs/boilerplate.scd" => Require(_);
+	"/Users/michael/tank/super/Trek/Songs/boilerplate.scd" => Require(_);
 
 	// Require("McCoyAndThalassa.scd");
 	// "./McCoyAndThalassa.scd".standardizePath.load;
@@ -125,6 +125,12 @@ P.still(\chapelZombie, timecode: 4630.0.seconds, music: { |p b e|
 	)
 });
 [ "MCCOY: Nurse Chapel, what in the devil?","11 13 6.5 6 6.5 7.5 11 3.5".dm(\g,4,\minor) ].addLine;
+P.still(\mccoySpeaks, timecode: 4632.15.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.tune();
 P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 	lyrics: "Nurse Chapel + what in the devil +",
@@ -138,20 +144,26 @@ P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 	}.play
 });
 //Sickbay
-["//[Sickbay]","r",[6]].addLine;
-P.still(\walkingTransition, timecode: 4637.7.seconds, music: { |p b e|
+["//[Sickbay]","r",[8]].addLine;
+P.still(\turning, timecode: 4635.8.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
 	)
 });
-P.still(\surpriseLook2,lag:2, timecode: 4642.seconds, music: { |p b e|
+P.still(\walkingTransition,lag:2, timecode: 4637.7.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
 	)
 });
-P.still(\aliveKirk,lag:4, timecode: 4643.8.seconds, music: { |p b e|
+P.still(\surpriseLook2,lag:4, timecode: 4642.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
+P.still(\aliveKirk,lag:6, timecode: 4643.8.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
@@ -211,7 +223,7 @@ P.still(\thallassa, timecode: 4659.5.seconds, music: { |p b e|
 		text: ["",""],
 	)
 });
-P.still(\toThal, syl:0, timecode: 4702.6.seconds, music: { |p b e|
+P.still(\toThal, syl:0, timecode: 4702.3.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.drop(1).sum,
 		text: ["",""],
@@ -645,7 +657,10 @@ P(\chord, syl:2, music: { |p b e|
 	}.play
 });
 ["MCCOY: What are you talking about? There is no Spock to return to his body. (boom) You've ",[-7, -7, 1, 2, 3, 2, -6, -7,  2, 1, 5, 6, 5, 4, 3, 4, 5, 5, 4].dm(\d, scale:\mixolydian) ++ [-5, 5].dm('b-',octave:4)].addLine;
-P.still(\mccoyTalkingAbout, timecode: 4732.6.seconds, music: { |p b e|
+P.still(\mccoyTalkingAbout, timecode: 
+// 4732.6 //closed
+4725.9
+.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
@@ -709,6 +724,12 @@ P(\bass,start:\talking,lag: -0.1,music:{|p b e|
 			amp: 0.05
 		].pp
 
+	});
+	P.still(\moreMccoy,syl:18, timecode: 4730.5.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b.drop(1).sum + e.bNext.sum,
+			text: ["",""],
+		)
 	});
 	["killed a loyal officer,(boom) your (boom) best friend. ",[11,5,11,12,13,12,11,7].dm('b-',octave:4) ++ [-1,5,-4,6,7].dm(\a,scale:\mixolydian, octave:4)].addLine;
 	P(\line, music: { |p b e|

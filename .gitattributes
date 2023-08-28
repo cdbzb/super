@@ -283,3 +283,4 @@ Stills/media/08-Sargon-180726_1407.wav filter=lfs diff=lfs merge=lfs -text
 Stills/media/089_hardhitta.aif filter=lfs diff=lfs merge=lfs -text
 Stills/video[[:space:]]for[[:space:]]stills[[:space:]]etc.RPP filter=lfs diff=lfs merge=lfs -text
 Stills/return-to-tomorrow.mov filter=lfs diff=lfs merge=lfs -text
+Trek/SynthV/**.wav filter=lfs diff=lfs merge=lfs -text

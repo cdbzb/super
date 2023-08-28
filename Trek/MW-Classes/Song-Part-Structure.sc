@@ -27,4 +27,8 @@
 		var section = P.calcStart();
 		Song.durs[section] = Song.durs[original];
 	}
+	getMusicFunction{ |section key|
+		^Song.resources.at( key ++ "_" ++Song.section(section) => _.asSymbol ).music.cs
+
+	}
 }

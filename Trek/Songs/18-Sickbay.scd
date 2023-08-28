@@ -1,7 +1,8 @@
 (
 /// line 326
 Monitor.new().play(2,2,0,2);
-~stills.isNil.if{~stills=Stills("/Users/michael/trek/BySection/media/return to tomorrow.mov").current};
+// ~stills.isNil.if{~stills=Stills("/Users/michael/trek/BySection/media/return to tomorrow.mov").current};
+~stills = Stills().current;
 //Song.dursFile_("/Users/michael/tank/super/theExtreme_Sep18");
 ~sickBay=Song(\sickBay,[]).current;
 Song.speaker =Library.at(\functions,\prep).("/Users/michael/tank/IR/Saane/Speakers_&_Telephones/Very_small_speaker_mono.wav");
@@ -314,7 +315,6 @@ P(\plucks,music:{
 				instrument: \harp, coef:0.8
 		].pp 
 });
-
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -359,6 +359,12 @@ P.still(\looking, timecode: 3811.8.seconds, music: { |p b e|
 		text: ["",""],
 	)
 });
+P.still(\ThalassaSpeaks,syl:1, timecode: 3812.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P(\strings, music: { |p b e|
 	{
 		var swell = Env([0,1,1,0],[b[0],b[1]]).kr(2,gate:1)
@@ -382,7 +388,7 @@ P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
 P.still(\clear, timecode: 0.seconds,syl:1, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["Sargon's","formula"],
+		text: ["Henoch's","formula"],
 	)
 });
 P.still(\formul, timecode: 3812.133.seconds, music: { |p b e|
@@ -394,9 +400,9 @@ P.still(\formul, timecode: 3812.133.seconds, music: { |p b e|
 });
 // P.tune('(formula)');
 P.synthV(\aiko, params: [
-	lyrics: "r r sar ganz for mu la",
+	lyrics: "r r hen nocks for mu la",
 	filter: (midinote: _ - 12), 
-	phonemes: ["","","s A r\\`","k o n ts","f o r `","m j u","l @" ],
+	// phonemes: ["","","s A r\\`","k o n ts","f o r `","m j u","l @" ],
 ],music:{|p b e|
 	{
 		e.playbuf
@@ -418,12 +424,12 @@ P(\chord, music: { |p b e|
 		rel:4
 	].ppm
 });
-P.still(\kirk, timecode: 3827.8.seconds, music: { |p b e|
+P.still(\kirk, timecode: 3819.5.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["yes",""],
 		fade: e.bNext[ 0..1 ].sum,
-		fadeIn: b[0]
+		// fadeIn: b[0]
 	).sequenceText2(
 			b.parse([1,7]), [ 
 			["I wanted","to be certain"],
@@ -509,6 +515,12 @@ P(\bass,start:'cer- tain',music:{|p b e|
 	].p.play(p.quarters[e.start].asTempoClock);
 });
 ["er- ror. For- mu- la is co- ","d4 f3 g a b g b "].addLine; //8
+P.still(\standingUp,syl:1, timecode: 3827.8.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["formula is","correct"],
+	)
+});
 P.still(\clear,syl:1, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.drop(1).sum 

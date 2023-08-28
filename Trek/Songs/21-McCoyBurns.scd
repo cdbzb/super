@@ -537,7 +537,7 @@ P(\boom,start:\hardly,syl:11,music:{|p b e|
 			out: Effect( FreeVerb.ar(_,1,1),out:3 ).bus.index
 		).play
 	});
-	Song.encoders.put(\quad,FoaEncoderMatrix.newQuad);
+	// Song.encoders.put(\quad,FoaEncoderMatrix.newQuad);
 P(\chords,start:\hardly,music:{|p b e| 
 		MegaBind(
 				[
@@ -927,8 +927,8 @@ P(\fire2,start:\writhing,music:{|p b e|
 		    }.play(p.fireGroup)
 	    }    
 	});
-[ "MULHALL: Stop! (the flames are gone) ~Sargon was right.~ ",[1].dm(\e) ].addLine;
-P.still(\thalStop, timecode: 4451.3.seconds, music: { |p b e|
+[ "MULHALL: Stop! (the flames are gone) ~Sargon was right.~ ",[2].dm(\e) ].addLine;
+P.still(\thalStop, timecode: 4457.3.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
@@ -937,9 +937,10 @@ P.still(\thalStop, timecode: 4451.3.seconds, music: { |p b e|
 P(\muteFire,start:\Stop,music:{|p b e| 
 		p.fireGroup.release(0.1)
 	});
-P.still(\better, timecode: 4457.33.seconds, music: { |p b e|
+P.still(\better, timecode: 4459.8.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
+			fade: e.bNext.sum,
 			text: ["",""],
 		)
 	});
@@ -952,12 +953,12 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 		text: ["the temptations in a","living body are too great"],
 	)
 });
-P.still(\walking, timecode: 4502.1.seconds, music: { |p b e|
+/* P.still(\walking, timecode: 4502.1.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
 	)
-});
+}); */
 P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 		lyrics: "the temptations + + r r in a living + body + are too great",
 		phonemes:["t @","th e m","th e :\\i ","s` @ n ts","","","i \\n","@","l i\\ w","w i\\ N","p A"," t i" ,"A r\\`","th u","k r\\` e :\\i th"],

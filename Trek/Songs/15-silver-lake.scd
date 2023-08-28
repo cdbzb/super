@@ -61,7 +61,10 @@ P(\arpeggio,\touch,music: {
 });
 //~chordIdea = [ [-1,3,4.5,7], [-3.5,2,5,7] ].df(\d,scale:\minor).q => {|i| [freq:i,legato:1,dur:2.5].p};
 ["/*MULHALL:*/ Sargon, I remember a day long a- ",[2,1, 3,2,-6,1,-7,-7,-6,-5].dm(\d,scale:\dorian,octave:6)].addLine;
-P.still(\twoShot, timecode: 3319.seconds, music: { |p b e|
+P.still(\twoShot, timecode: 
+	// 3319 //looks like smiling
+	3320.2
+	.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["Sargon",""],
@@ -154,6 +157,13 @@ P(\chords,'go.',syl:0,music: {|p b e|
 	].pp
 });
 ["sat beside a si -- lve --r ",[1,-7,-6,-7,-5,3,4,1,3].dm(\d,octave:6)].addLine;
+P.still(\lookingOut,syl:1, timecode: 3322.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		fadeIn:b[..5].sum,
+		text: ["",""],
+	)
+});
 // P.synthV(\aiko,
 // 	params:{|p b| [
 // 		lyrics:"sat bi sa id  a si i il ver" ,
@@ -965,7 +975,7 @@ P('chord2',start:\Enjoy,music: {|p b e|
 });
 
 ["/*KIRK:*/ (boom But.. boom) our minds will have survived. ",[-2,2,-3,3,7,6,5,3,2.5].dm(\f)].addLine;
-P.still(\sargonClose, timecode: 3359.6.seconds, music: { |p b e|
+P.still(\sargonClose, timecode: 3401.7.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["but our minds","will have survived"],
@@ -1224,12 +1234,6 @@ P(\bassnote,start:'tea -- ching',syl:0,music:{|p b e|
 	=> _.play
 });
 ["helping them (boom) not to make the errors we -- did. (pain) ",[4,3,1,-7,1,2,3,1,4,5,5,6,5,-7.5].dm(\a,scale:\mixolydian)].addLine;
-P.still(\sargonPain,syl:13, timecode: 3413.9.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
-	)
-});
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -1278,6 +1282,11 @@ P('bass',start:\helping,music: {|p b e|
 	=> _.play
 });
 Song.durs[\pain].list.put(13,4); //'pain' length
+P.still(\thalassaWhat,syl:12, timecode: 3417.1.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+	)
+});
 P.tune('helping', _ <> [rests:[1,1,1,\r,1,1,1,1,1,1,1,1,1].q].p);
 P('bass',start:\helping,music: {|p b e|
 	[
@@ -1322,17 +1331,18 @@ P(\pain,start:'helping', syl:12,music: {| p, b, e|
 	* Env.linen(0,b.sum,3).kr(2,gate:1)
 }.play
 });
-P.still(\pain,syl:12, timecode: 3412.2.seconds, music: { |p b e|
+/* P.still(\pain,syl:12, timecode: 3412.2.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
 	)
-});
+}); */
 ["/*MULHALL:*/ What is it, Sargon? ",[1,5,4,1,-7].dm(\c)].addLine;
-P.still(\thalassaWhat, timecode: 3417.1.seconds, music: { |p b e|
+//fixme
+P.still(\withMouthOpenT, timecode: 3417.8.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["what is it","Sargon"],
+		text: ["",""],
 	)
 });
 P.synthV(role: \thalassa, take: \lead, params: {|p b| [

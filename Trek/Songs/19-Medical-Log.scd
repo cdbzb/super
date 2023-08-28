@@ -515,7 +515,7 @@ P(\bass,start:\vital,music:{|p b e|
 [ "(boom) Yes, we can keep them going for a few weeks, or a month. For all the good it'll do ","-1 1 3 2 1 -7 2 1 -7 1 2 3.5 2 1 -7.5 ".dm(\g,\minor) ++ "1 -7 -5 -3 -4 -5 -4".dm(\a,\mixolydian) ].addLine;
 // P.tune();
 P.still(\mccoy, timecode: 
-	 4142.5
+	 4142.55
 	.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum/2,

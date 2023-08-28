@@ -190,7 +190,7 @@ P(\accent,start:\jelly,music:{|p b e|
 	].p.trace.play;
 });
 ["You'll need microgears and a pulley that work like a muscle does.",[2,2,4,3,1].dm('d',octave:6)++ [4,3,2,1,-6,-7,-6,-5,-4,-3,-17].dm(\e,scale:\mixolydian,octave:6)].addLine;
-P.still(\behindMachine, timecode: 3613.1.seconds, music: { |p b e|
+P.still(\himTalking,timecode:3606.1.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
@@ -264,6 +264,12 @@ P(\moreChords,start:\microgears,syl:4,music:{|p b e|
 });
 ["/*MULHALL:*/ That would be highly inefficient.",[7,5,2,11,7,5,2,6,4.5].dm(\d,scale:\mixolydian)].addLine;
 
+P.still(\behindMachine, timecode: 3613.1.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum + e.bNext.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \thalassa, take:\lead, params: {|p b k| [
 	lyrics: " That would be highly + inefficient + + +",
 	phonemes: (k==\aiko).if{["t a th","w U t", "p i","x a :\\i","l i", "\\i n","i\\ ","f \\i s` "," e n th"]  },
@@ -312,6 +318,12 @@ P(\door, syl: 7, music: { |p b e|
 		instrument: \door,
 		out: Effect.bus({|i| Pan2.ar(i, -1) },)
 	).play
+});
+P.still(\lookingAtSpock,syl:7, timecode: 3617.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
 });
 P(\bass,start:\lady,syl:3, music:{|p b e| 
 	[
@@ -969,7 +981,7 @@ P(\bass,start:'awoke',music: {|p b e|
 		mix:0
 	].pp
 });
-P.still(\embrace,start:\awoke,timecode:3702.seconds,music:{|p b e|
+P.still(\embrace,start:\awoke,timecode:3701.9.seconds,music:{|p b e|
 		e.still.value(
 			fadeIn:1,
 			wait:b.sum,
@@ -1012,7 +1024,7 @@ P(\guitar, music: { |p b e|
 	) => _.play;
 
 });
-P.still(\embrace,timecode:3702.6.seconds,music:{|p b e|
+P.still(\embrace,timecode:3704.8.seconds,music:{|p b e|
 	e.still.value(
 		wait:b.sum,
 		// fadeIn:1,
@@ -1351,5 +1363,6 @@ P(\test,start:\rushes,resources:(impulse:{Impulse.ar(5)}.asDefName),music:{|p b 
  ).play
 });
 */
+
 
 

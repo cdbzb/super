@@ -380,6 +380,12 @@ P.still(\stab, timecode:
 			text: ["",""],
 		)
 	});
+P.still(\smiles,lag:Song.durs['instead!'].list[0]/2, timecode: 4845.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b.sum,
+			text: ["",""],
+		)
+	});
 P.still(\spockFools,syl:0, timecode: 4849.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.drop(1).sum,

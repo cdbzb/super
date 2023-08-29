@@ -7,8 +7,8 @@ VSTI {
 		syn = Synth(\vsti2,target:RootNode(Server.default));
 		controller = VSTPluginController(syn);
 
-				~vstregistry = ~vstregistry ? List.new();
-				~vstregistry.add(controller);
+				~vstRegistry = ~vstRegistry ? List.new();
+				~vstRegistry.add(controller);
 		{
 			Server.default.sync;
 			controller.open("/Library/Audio/Plug-Ins/VST/" ++ plugin,
@@ -24,8 +24,8 @@ VSTI {
 				0.1.wait;
 				syn = Synth(\vsti2,target:RootNode(Server.default));
 				controller = VSTPluginController(syn);
-				~vstregistry = ~vstregistry ? List.new();
-				~vstregistry.add(controller);
+				~vstRegistry = ~vstRegistry ? List.new();
+				~vstRegistry.add(controller);
 				Server.default.sync;
 				controller.open("/Library/Audio/Plug-Ins/VST/"++plugin,
 					action:{

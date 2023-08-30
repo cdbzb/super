@@ -1,4 +1,4 @@
-Monitors {
+Monitors {  //setup monitoring for Trek piece
 	classvar <>decoder,k=0.5,<channels=5;
 	//classvar <>speakerOrder=#[0,2,4,3,1]; //for Trek
 	classvar <>speakerOrder=#[0,4,1,3,2]; //for Trek
@@ -13,6 +13,9 @@ Monitors {
 				"External Headphones",2,
 			]
 		);
+		StartUp.add{ 
+			 Server.local.options.numOutputBusChannels = 8
+		};
 		ServerTree.add ({ 
 			(deviceChannels.at(Server.default.options.outDevice) == 2).if{
 					Monitors.stereo;

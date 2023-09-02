@@ -333,7 +333,7 @@ P(\bass3,start:4,
 			music:Pbindf(Panola.new("r c#2 e a1\\pdur[2.2]").asPbind,\dur,~xtreme.durs[4],\tempo,1,\amp,0.8)
 		);
 
-	["tabolism so we're going to have to", " f5 e d c r g#4 a b c5 d e ", ].addLine; //5
+["tabolism so we're going to have to", " f5 e d c r g#4 a b c5 d e ", ].addLine; //5
 P.synthV(role:\kirk,wait:1,start:P.calcStart(),take:\lead,
 		filter: (midinote: _ - 12), 
 		pbind: {|p b| 
@@ -370,7 +370,7 @@ P.double(role:\kirk,start:P.calcStart,wait:1,take:\lead,
 				}.play
 			});
 P(\bass5,start:5, music:
-	Pbind(
+Pbind(
 				\midinote,(Pser(~xtreme.tune[5].list,4)++Pseq([71,71-7]))-36,
 				\dur,Pseq(~xtreme.durs[5].list[0..3]++~xtreme.durs[5].list[4..6].sum++1),
 				\amp,0.8,
@@ -378,7 +378,7 @@ P(\bass5,start:5, music:
 			)
 		);
 P(\drums5,start:5,music:
-	Pbind( \instrument, Pseq([\kick2, \kick2, \snare, \kick2, \kick2,] ),
+Pbind( \instrument, Pseq([\kick2, \kick2, \snare, \kick2, \kick2,] ),
 			\dur,Pseq(~xtreme.durs[5].list[0..3]++~xtreme.durs[5].list[4..6].sum++1),
 			//\lag,Pseq([0,0,-0.01,0,0,0,0,0],inf),
 			//\amp,0.5
@@ -397,7 +397,7 @@ Pbind(
 	);
 P(\bassnote6,start:6,music:
 		{
-	Pbindf(Panola(" a1 g f").asPbind,\dur,Pseq([~xtreme.durs[6].list[1..2].sum]++~xtreme.durs[6].list[3..4]),\tempo,1,\amp,0.8).play
+Pbindf(Panola(" a1 g f").asPbind,\dur,Pseq([~xtreme.durs[6].list[1..2].sum]++~xtreme.durs[6].list[3..4]),\tempo,1,\amp,0.8).play
 		}
 	);
 [" mo- ni- tor this very", "d5 c4 a4 f f5 e ", ].addLine; //6
@@ -488,15 +488,15 @@ P.double(role:\mccoy, take:\lead, take: \lead, params: {|p b| [
 			}.play
 		});
 P(\bass8,start:8,music: 
-	Pbind(\note,Pseq([5,4,2,1]-24),\dur,~xtreme.durs[8],\amp,0.5)
+Pbind(\note,Pseq([5,4,2,1]-24),\dur,~xtreme.durs[8],\amp,0.5)
 		);
 P(\bass8Alt,start:8,music:
-	Pbind(\instrument,\test,\note,Pseq([5,4])-[0+rand(0.02),12],\lag,Pseq([0,0]),\amp,0.5)
+Pbind(\instrument,\test,\note,Pseq([5,4])-[0+rand(0.02),12],\lag,Pseq([0,0]),\amp,0.5)
 		);
 P(\strum8,start:8,syl:1,music:
 			(note:[1,4,9]-12++[1,4],strum:0.04,sustain:2,lag:0.52,amp:0.05)
 		);
-	["guess that's as read- y as I'm gon- na ","g e- f g e- d- e- f g ", ].addLine; //9
+["guess that's as read- y as I'm gon- na ","g e- f g e- d- e- f g ", ].addLine; //9
 P.synthV(role: \mccoy, wait:1, start:Song.section(\guess),
 		pbind: {|p b| 
 			var here = Song.section(\guess);
@@ -522,7 +522,7 @@ P(\strum9,start:'read- y',music:
 P(\bass9,start:'read- y',music: 
 			(note:~panNotes.("e-2").flatten-60,dur:2,amp:0.3)
 		);
-	["be. Rea- dy Sar- gon","a d5 c a4 f#", ].addLine; //10
+["be. Rea- dy Sar- gon","a d5 c a4 f#", ].addLine; //10
 P.synthV(role:\kirk, take: \lead, params: {|p b| [
 			filter: (midinote: _ - 12), 
 			lyrics: "r ready + sar gone",
@@ -540,11 +540,11 @@ P.still(\kirkOnBed,syl:0, timecode: 2519.8.seconds, music: { |p b e|
 			)
 		});
 P(\tremoChord,start:10,music:
-	Pfxb(
-		Pfindur(~xtreme.durs[10].list[0],
-		Ppar(
+Pfxb(
+	Pfindur(~xtreme.durs[10].list[0],
+	Ppar(
 					[-3,0,3,5].collect{|i|
-				Pbind(
+			Pbind(
 							\note,i,
 							\dur,Pwhite(0.05,0.08),
 							\amp,Pseg([0.02,0.13,0.15,0],[0.3,0.3,1.9]),
@@ -557,10 +557,10 @@ P(\tremoChord,start:10,music:
 	);
 P(\tremoChord2,start:10,syl:0,music:
 Pfxb(
-	Pfindur(~xtreme.durs[10].list[1..4].sum-0.1,
-	Ppar(
+Pfindur(~xtreme.durs[10].list[1..4].sum-0.1,
+Ppar(
 				[-3,0,2,6].collect{|i|
-			Pbind(
+		Pbind(
 						\note,i,
 						\dur,Pwhite(0.05,0.08),
 						\amp,Pseg([0.02,0.17,0.15,0],[0.4,0.6,1.9]),
@@ -662,7 +662,7 @@ P(\transform,start:'transformation!',music:{ |p b e|
 P.still(\sargonNow, timecode: 2556.1.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["the transfer is","complete"],
 	)
 });
 P.synthV(\genbu, take: \lead,
@@ -693,7 +693,7 @@ Pseq([
 	);
 P(\chord0,start:'tran - fer',syl:3,music:
 Pfx(
-	Pseq([
+Pseq([
 				(note:[1,8,13]-24,instrument:\sawSynth,release:4,strum:0.03,dur:Song.durs['tran - fer'].list[4]),
 				(note:[1,8,13]-24,instrument:\sawSynth,release:5,strum:0.03,dur:11),
 				(note:\r,dur:12),
@@ -704,10 +704,10 @@ P(\pad0,start:'tran - fer',music:
 Pbind(\midinote,Pseq(Song.tune[Song.section( 'tran -' )].list[0..3])-[0,12],\instrument,\sawSynth,\dur,Song.durs['tran -']);
 	);
 ["plete. metabolic rate is","c#4 c5 b-4 c5 a-4 d4 c5"].addLine; //1
-P.still(\chapelMetabolic, timecode: 2608.8.seconds, music: { |p b e|
+P.still(\chapelMetabolic, timecode: 2608.8.seconds,syl:0, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
-			text: ["",""],
+			text: ["metabolic rate is","double and rising"],
 		)
 });
 P.synthV(role: \chapel , take: \lead,
@@ -725,37 +725,19 @@ P.synthV(role: \chapel , take: \lead,
 });
 P.tune('plete. m');
 ["double and rising, Doctor...r  Hel- ", "d5 b-4 c#5 g c# a-4 g r b"].addLine; //2
-P.still(\henochRude,syl:7, timecode: 
-	// 2613
-	2620.3
-	.seconds, music: { |p b e|
-		 e.still.( 
-			wait: b.sum + e.bNext,
-			text: ["",""],
-		)
+P.still(\clear,syl:7, timecode: 0.seconds,lag: 0.01, music: { |p b e|
+	 e.still.( 
+		wait: e.drop(1) ++ e.bNext.sum,
+		text: ["Hello",""],
+	)
 });
-P.synthV(\ninezero, take: \lead,
-		pbind: {|p b| 
-			var here = Song.section(\rising);
-			[
-				dur: b ++ p.durs[here + 1].list[0] => _.flat =>_.q,
-				midinote: p.tune[here].list ++ p.tune[here + 1].list[0].postln => _.flat => _.q,
-			].p
-		},
+P.synthVs(\ninezero, take: [\lead, \double],
+		pbind: Song.enlarge(1),
 		filter: (midinote: _ - 12), 
 		params: {|p b| [
-			lyrics: "r r r r r r r r Hello +",
-			pitchTake: 1
-		] }, music:{|p b e|
-			{
-				e.playbuf
-				=> p.synthVTracks.at(e.key).()
-			}.play
-		});
-P.double(\ninezero, take: \lead,
-		pbind:  Song.enlarge(1),
-	params: {|p b| [
-			
+			lyrics: "r r r r r r r r Hell oh",
+			phonemes: ["","","","","","","","hh eh l","l ow"],
+			pitchTake: [1, 3]
 		] }, music:{|p b e|
 			{
 				e.playbuf
@@ -768,101 +750,121 @@ P(\bassnotes3,start:'Hel-',music:
 P(\bassnotes4,start:'Hel-',syl:2,music:
 			(note:[7,-5],amp:0.1,sustain:2)
 		);
-	["lo. r r r"," c#5 d2 d d"].addLine; //3
+["lo. r r r"," c#5 d2 d d"].addLine; //3
+P.still(\henochRude,syl:nil, timecode: 
+	// 2613
+	2620.3
+	.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b.sum + e.bNext.sum,
+			text: ["Hello",""],
+		)
+});
 P(\helloChord,start:'lo. ',music:
 			(instrument:\test,midinote:~panNotes.("<d4 f# a c#>").flatten,strum:0.03,amp:0.4)
 		);
 		~helloTempo={1/Song.durs['lo. r'].list.mean};
 		~helloTemp2={1/(Song.durs['lovely female'].list[0..6].sum/5*2)};
 P(\helloSequence,start:'lo. ',music: {
-			{
-				var bus,clock,monitor,
-				kickPatterns,kickBar,snarePatterns,snareBar,synth,helloBass2,helloBass1,helloBeat;
-				bus=Bus.audio;clock=TempoClock.new;
+	{
+		var bus,clock,monitor,
+		kickPatterns,kickBar,snarePatterns,snareBar,synth,helloBass2,helloBass1,helloBeat;
+		bus=Bus.audio;clock=TempoClock.new;
 
-				kickPatterns=[[3/4,1/4],1];
-				p=[0,0,0,0,1,1,1,0]++[1,0,1];   ///XTENDED
-				kickBar=Pseq(p.collect{|i|kickPatterns[i]}.flatten);
+		kickPatterns=[[3/4,1/4],1];
+		p=[0,0,0,0,1,1,1,0]++[1,0,1];   ///XTENDED
+		kickBar=Pseq(p.collect{|i|kickPatterns[i]}.flatten);
 
-				snarePatterns=[[Rest(3/4),1/4],[Rest(1)],[Rest(1/2),1/2],[Rest(1/2),1/4,1/4],[Rest(1/4),1/4,1/2]];
-				p=[0,1,2,0, 0,3,0,4]++[0,4,4];   ///XTENDED
-				snareBar=Pseq(p.collect{|i|snarePatterns[i]}.flatten);
+		snarePatterns=[[Rest(3/4),1/4],[Rest(1)],[Rest(1/2),1/2],[Rest(1/2),1/4,1/4],[Rest(1/4),1/4,1/2]];
+		p=[0,1,2,0, 0,3,0,4]++[0,4,4];   ///XTENDED
+		snareBar=Pseq(p.collect{|i|snarePatterns[i]}.flatten);
 
-				synth= Pbind( 
-					\note,Pseq([2-24,2-12,-1-12,9-12])-12,
-					\instrument,\sawSynth,
-					\dur,2,\rel,5,
-					\amp,0.2) ;
+		synth= Pbind( 
+			\note,Pseq([2-24,2-12,-1-12,9-12])-12,
+			\instrument,\sawSynth,
+			\dur,2,\rel,5,
+			\amp,0.2) ;
 
-					helloBass1=Pbind(
-						\note, Pseq([2,4],4)-24,
-						\legato,Pseq([1,Pwhite(0.25,0.55,1)],4),
-						\amp,0.5
-					) ;
+			helloBass1=Pbind(
+				\note, Pseq([2,4],4)-24,
+				\legato,Pseq([1,Pwhite(0.25,0.55,1)],4),
+				\amp,0.5
+			) ;
 
-					helloBass2=Pbind(
-						\note,Pseq([\r,2,0],8),
-						\dur,Pseq([1/2,1/4,1/4],inf),
-						\amp,0.04
-					) ;
+			helloBass2=Pbind(
+				\note,Pseq([\r,2,0],8),
+				\dur,Pseq([1/2,1/4,1/4],inf),
+				\amp,0.04
+			) ;
 
-					helloBeat= {
-						|synthamp=0.3 drumsamp=1 tempo1=(52/60) tempo2=(50/60)|
-				Ppar([
-					Pbind(
-								\tempo,Pseq([tempo1,tempo2]),\dur,4,\note,\r
-							),
-					Pbind(
-								\instrument,\kick1,
-								\dur,kickBar,
-								\amp,drumsamp*0.1
-							),
-					Pfin(
-								42, Pn( ///XTENDED
-							Pbind(
-										\instrument,\hihat, //ffreq rel
-										//\dur,Pseq([0.245,0.255],32),
-										\dur,Pseq([0.245,0.255],32),
-										\amp,Pseq([Pwhite(0.3,0.4,1),Pwhite(0.2,0.3,1)],32)*0.4*drumsamp,
-										\lag, Pseq( (1!16++(-1!16)).scramble*0.003),
-										\ffreq, Pwhite(6000,6500),
-										\rel,0.15
-									) ,2
-								)
-							),
-					Pbind(
-								\instrument,\snare,
-								\dur,snareBar,
-								\amp,drumsamp*0.1
-							),
-					Pfx(
-						Pbind( \instrument,\sawSynth,
-									\note,Pser(~panNotes.("d f# a c#5 e5").flatten-60,16),
-									\dur,1/2,
-									\att,0.5,
-									\octave,Pser(4!5++(5!5)++(6!5)++(7!5),42),
-									\amp, Pseq(( 0.1!5 )++(0.09!5)++(0.08!5)++Pseries(0.07,-0.005))
-								).pad,
-								\phase_verb2
-							),
-							//~helloBass1,
-							//~helloBass2,
-					Pset(\amp,synthamp,synth),
-							//Pseq([(\type:\rest,dur:4),~complete.pbind[4]]);//remove
-							//Ptpar([
-							//		0.15,~helloGtr1,
-							//		0.15,~helloGtr2
-							//	])
-						],1   /// repeats!!
-					)<>(out:bus)
-				};
-				'self bus '.post;bus.postln;
-				Song.helloSequenceBus = bus;
-				Song.helloSequenceMonitor = Monitor.new.play(bus.index,2,0);
-				{ s.bind {helloBeat.(synthamp:0.1,drumsamp:0.7,tempo1:~helloTempo.(),tempo2:~helloTemp2.()).play(clock)} };
+			helloBeat= {
+				|synthamp=0.3 drumsamp=1 tempo1=(52/60) tempo2=(50/60)|
+			Ppar([
+				Pbind(
+						\tempo,Pseq([tempo1,tempo2]),\dur,4,\note,\r
+					),
+				Pbind(
+						\instrument,\kick1,
+						\dur,kickBar,
+						\amp,drumsamp*0.1
+					),
+				Pfin(
+						42, Pn( ///XTENDED
+						Pbind(
+								\instrument,\hihat, //ffreq rel
+								//\dur,Pseq([0.245,0.255],32),
+								\dur,Pseq([0.245,0.255],32),
+								\amp,Pseq([Pwhite(0.3,0.4,1),Pwhite(0.2,0.3,1)],32)*0.4*drumsamp,
+								\lag, Pseq( (1!16++(-1!16)).scramble*0.003),
+								\ffreq, Pwhite(6000,6500),
+								\rel,0.15
+							) ,2
+						)
+					),
+				Pbind(
+						\instrument,\snare,
+						\dur,snareBar,
+						\amp,drumsamp*0.1
+					),
+				Pfx(
+					Pbind( \instrument,\sawSynth,
+							\note,Pser(~panNotes.("d f# a c#5 e5").flatten-60,16),
+							\dur,1/2,
+							\att,0.5,
+							\octave,Pser(4!5++(5!5)++(6!5)++(7!5),42),
+							\amp, Pseq(( 0.1!5 )++(0.09!5)++(0.08!5)++Pseries(0.07,-0.005))
+						).pad,
+						\phase_verb2
+					),
+					//~helloBass1,
+					//~helloBass2,
+				Pset(\amp,synthamp,synth),
+					//Pseq([(\type:\rest,dur:4),~complete.pbind[4]]);//remove
+					//Ptpar([
+					//		0.15,~helloGtr1,
+					//		0.15,~helloGtr2
+					//	])
+				],1   /// repeats!!
+			)<>(out:bus)
+		};
+		'self bus '.post;bus.postln;
+		Song.helloSequenceBus = bus;
+		Song.helloSequenceMonitor = Monitor.new.play(bus.index,2,0);
+		{ s.bind {helloBeat.(synthamp:0.1,drumsamp:0.7,tempo1:~helloTempo.(),tempo2:~helloTemp2.()).play(clock)} };
 			}.play
 		});
-	["you are a lovely female, r a","e5 d c# b4 a f# e e2 c#4"].addLine;//4
+["you are a lovely female, r a","e5 d c# b4 a f# e e2 c#4"].addLine;//4
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b.sum + e.bNext.sum ,
+			text: ["you are a","lovely female"],
+		).sequenceText2(
+				b.parse([7, 1]), [ 
+					[ "","" ],
+				["a pleasant sight","to wake up to after"],
+				],
+		)
+});
 P.synthV(\ninezero, take: \lead,
 			filter: (midinote: _ - 12), 
 			params: {|p b| [
@@ -917,12 +919,18 @@ P.double(role: \henoch, take: \next, params: {|p b| [
 					=> p.synthVTracks.at(e.key).()
 				}.play
 			});
-	["pleasant sight to wake up to after","e4 d c# d e b a f# a "].addLine; //5
+["pleasant sight to wake up to after","e4 d c# d e b a f# a "].addLine; //5
 P.tune( [instrument: \stringyy, amp:0.2].pm <> _ );
 P(\bass5,start:\pleasant,syl:4,music:
 			(instrument:\sawSynth,note:[7,-5]-13,amp:0.2,sustain:2,att:1.0,rel:3)
 		);
-	["half a million years- r r ","f5 g f e  e d c# c#"].addLine;//6
+["half a million years- r r ","f5 g f e  e d c# c#"].addLine;//6
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b.sum,
+			text: ["half a million","years"],
+		)
+});
 P.tune('half a million');
 P.synthV(role: \henoch, take:\lead,
 			filter: (midinote: _ - 12), 
@@ -947,7 +955,7 @@ P.double(role: \henoch,
 			});
 		~phrase6quarter=Song.durs['half a million years-'].list.[0..6].sum/6;
 P(\bass6,start:'half a million',music:
-	Pseq([
+Pseq([
 				(note:5-24,dur:~phrase6quarter*3,amp:0.5),
 				(note:4-24,dur:~phrase6quarter,amp:0.5),
 				(note:7-24,dur:~phrase6quarter*4,amp:0.5),
@@ -955,14 +963,14 @@ P(\bass6,start:'half a million',music:
 		);
 		~durs6=Song.durs['half a million'].list;
 P(\yow6,start:'half a million',music:
-	Pbind(\instrument,\yowbass,
+Pbind(\instrument,\yowbass,
 				\note,Pseq([[-3,0],[-3,0],[-5,-1]]),
 				\dur,Pseq( [~durs6[0..2].sum,~durs6[3],~durs6[4..8].sum]),
 				\amp,0.03,
 			),
 		);
 P(\keys6,start:'half a million',music:
-	Pbind(
+Pbind(
 				\instrument,\harp,
 				\midinote,Pseq(~panNotes.("f5 a4 c5")-[0,12]),
 				\dur,//Pseq(
@@ -973,7 +981,7 @@ P(\keys6,start:'half a million',music:
 			)
 		);
 P(\keys62,start:'half a million',syl:5,music:
-	Pbind(
+Pbind(
 				\instrument,\stab,
 				\note,Pseq([ [7,9,13],[7,9,13],[5,9,14] ]),
 				\dur, Pseq(Song.durs['half a million'].list.[6..7]++[1]) ,
@@ -995,16 +1003,16 @@ P.synthV(role: \chapel, take: \lead,
 P.still(\mouthClosed,syl:6, timecode: 2624.5.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.drop(1).sum + e.bNext[0].sum,
-		text: ["",""],
+		text: ["thank","you"],
 	)
 });
-	["r r you're welcome","d5 f4  g5 f "].addLine;//7
-	P.still(\HenochWelcome,syl:0, timecode: 2626.65.seconds, music: { |p b e|
+["r r you're welcome","d5 f4  g5 f "].addLine;//7
+P.still(\HenochWelcome,syl:0, timecode: 2626.65.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.drop(1).sum,
-			text: ["",""],
+			text: ["you're","welcome"],
 		)
-	});
+});
 P.tune('r r you');
 P.synthV(role: \spock, take: \lead,
 			filter: (midinote: _ - 24), 
@@ -1019,14 +1027,14 @@ P.synthV(role: \spock, take: \lead,
 			}.play
 });
 P(\bass7,start:'r r you',syl:0,music:
-	Pseq([
+Pseq([
 				(note:5-24,dur:~phrase6quarter*3,amp:0.5),
 				//(note:4-24,dur:~phrase6quarter,amp:0.5),
 				//(note:7-24,dur:~phrase6quarter*2,amp:0.5),
 			])
 		);
 P(\keys7,start:'r r you',syl:0,music:
-	Pbind(
+Pbind(
 				\instrument,\harp,
 				\midinote,Pseq(~panNotes.("f5 a4 c5")-[0,12]),
 				\dur,//Pseq(
@@ -1038,11 +1046,15 @@ P(\keys7,start:'r r you',syl:0,music:
 P(\yow7,start:'r r you',syl:0,music:
 			(instrument:\yowbass,note:[-3,0,5],dur:3,amp:0.05)
 		);
-	["I've forgotten what it fee-","g#4 e b f# a# b c#5"].addLine;//8
+["I've forgotten what it fee-","g#4 e b f# a# b c#5"].addLine;//8
 P.still(\thalassaForgotten, timecode: 2647.9.seconds, music: { |p b e|
 			 e.still.( 
-				wait: b.sum,
-				text: ["",""],
+				wait: b.sum + e.bNext.sum,
+				text: ["I've forgotten","what it feels like"],
+			).sequenceText2(
+					b++p.durs[e.start + 1].list =>_.parse([9]), [ 
+					["even to breathe","again"],
+					],
 			)
 		});
 P.synthV(role: \thalassa,
@@ -1052,7 +1064,8 @@ P.synthV(role: \thalassa,
 			params: {|p b| [
 
 			lyrics: "aiv fo ga ten wat it filz - laik iven + tu briz - a gen, so gon? ",
-			phonemes: ["","","","","","","f i z","", "", "", "", "", "b r i z", "","a","k e n", "s a","g o n"],
+			phonemes: ["","","","","","","f i l ts","", "", "", "", "", " p r` i t ", "","a","k e n", "s a","g o n"],
+			legato: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.66, 1, 1, ],
 			pitchTake: 1
 		] }, music:{|p b e|
 			{
@@ -1067,7 +1080,7 @@ P(\pad8,start:'what it fee',music:
 				var du=Song.durs['what it fee'].list;
 				var dv=Song.durs['even to br'].list;
 				var a=(instrument:\sawSynth,out:[[0,2],[2,0],1],midinote:[4,8,11]+60,att:4.5,rel:5,amp:0.05,lagTime:0.3).play;
-		Pbind.new(*[
+	Pbind.new(*[
 					type:\set,
 					id:a[\id],
 					freq: Pseq([ [4,8,11],[3,6,11],[3,6,10],[1,6,10],[1,4,10],[-1,4,8] ]+72).midicps ,
@@ -1085,7 +1098,7 @@ P(\trombone,start:'what it fee',music:
 				// ~syn1.syn.set(\out,Effect( { |i| DWGReverbC1C3.ar(i,mix:0.2,c1:2) * 0.4 } ,out:2).bus.index);
 				//~syn1.syn.set(\out,Effect( { |i| FreeVerb.ar(i,0.8,0.7) * 3 => Out.ar([0,2],_) }  ).bus.index);
 				// ~syn1.expression(84,3);
-		Pbind(*[
+	Pbind(*[
 					type:\synful,
 					instance:~syn1,
 					chan:3,
@@ -1101,31 +1114,31 @@ P(\trombone,start:'what it fee',music:
 
 			}
 		);
-	["ls like even to brea-","d#5 a#4 c#5 d# e f# "].addLine;//9
-	["th again, Sargon?"," g#5 f# b4 g g"].addLine;//10
-P.still(\looking, timecode: 2658.6.seconds, music: { |p b e|
+["ls like even to brea-","d#5 a#4 c#5 d# e f# "].addLine;//9
+["th again, Sargon?"," g#5 f# b4 g5 g"].addLine;//10
+P.still(\looking, timecode: 2658.6.seconds,syl:2, music: { |p b e|
 			 e.still.( 
 				wait: b.sum,
-				text: ["",""],
+				text: ["Sargon?",""],
 			)
 		});
 P(\sargon10,'th again, S',syl:2,music:
-	Pseq([
+Pseq([
 				(note:[4,7,10],dur:Song.durs['th again, S'].list[3],\amp:0.3),
 				(note:[4,7,10],dur:Song.durs['th again, S'].list[4],\amp:0.3)
 			])
 		);
-	["Here, in this body","f e g f c"].addLine;//11
+["Here, in this body","f e g f c"].addLine;//11
 P.still(\sargon, timecode: 2710.3.seconds, music: { |p b e|
 			 e.still.( 
 				wait: b.sum,
-				text: ["",""],
+				text: ["Here","in this body"],
 			)
 		});
 P.synthV(\genbu, take:\lead, params: {|p b| [
 			lyrics: "hie in zisu ba di",
-			phonemes: ["","","z i s @","","",""],
-			legato: [0.6,1,1,1,1],
+			phonemes: ["","","z i t s ","","",""],
+			legato: [0.6,1,0.8,1,1],
 			pitchTake: 1
 		] }, music:{|p b e|
 			{
@@ -1145,15 +1158,15 @@ P.double(\genbu, params: {|p b| [
 		~panList={|string| Panola.new(string).midinotePattern.list.flatten};
 		~noteList={|list| list.collect({|x|~panNotes.(x)}).flatten };
 P(\pf11,start:'Here, in this',music:
-	Ppar([
+Ppar([
 				//(instrument:\cymbal,dur:13)
 				//,
-		Pbind(*[
+	Pbind(*[
 					midinote:Pseq( ~noteList.(["<a c5 f>","<g c5 e>","<b- d5 g>","<a c5 f>"])-12),
 					dur:Song.durs['Here, in this'],
 					strum:Pseq([0.01,0.01,0.02,0.01])
 				]),
-		Pbind(*[
+	Pbind(*[
 					instrument:\test,
 					amp:0.5,
 					midinote:Pseq( ~panList.("c g3 f c4"))-[ 12,24 ]-7,
@@ -1165,13 +1178,13 @@ P(\pf11,start:'Here, in this',music:
 		// Song.addGuides("xxxxxxxxxxx");
 
 		~quarters=SongArray.new();
-	[ "trill","r",[5] ].addLine; //0
+[ "trill","r",[4] ].addLine; //0
 		(
 			~synTrill={ 
 				|chan=1 amp=0.3 transpose=0 len=6|
-		Pfindur(
+	Pfindur(
 					len,
-			Pbind(*[
+		Pbind(*[
 						type:\synful,
 						instance:~syn1,
 						note:Pseq([6,8],inf)+transpose,
@@ -1205,12 +1218,12 @@ P(\trill,start:'trill',lag:0.1,music:
 				} 
 			}
 		); 
-	[ "I am not displeased my husband- ","d#5 c# c a#4 g# f# f d# c# " ].addLine; //1
+[ "I am not displeased my husband- ","d#5 c# c a#4 g# f# f d# c# " ].addLine; //1
 		//~justTheTune.('husband');
 P.still(\twoShot, timecode: 2743.5.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["I am not displeased","my husband"],
 	)
 });
 P.tune(\displeased);
@@ -1235,10 +1248,19 @@ P.double(role: \thalassa, params: {|p b| [
 					/2
 				}.play
 			});
-	[ "r your body is r r  not unlike ","c#3 f4 d# c# g#3 f#2 f# f#4 f d#" ].addLine; //2
-	P.synthV(role: \thalassa, take: \lead, params: {|p b| [
-		lyrics: "r your body + is r r not unlike + ",
-		phonemes: ["", "","p A" , "t i", "","","",""," @ n ","l a :\i kh"],
+[ "r your body is r r  not unlike ","c#3 f4 d# c# g#3 f#2 f# f#4 f d#" ].addLine; //2
+P.still(\clear, timecode: 0.seconds,syl:0, music: { |p b e|
+		 e.still.( 
+			wait: b.sum,
+			text: ["your body is","not unlike"],
+		)
+});
+P.synthV(role: \thalassa, take: \lead,
+		pbind: Song.enlarge(5),
+		filter: (midinote: _ + [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9]), 
+		params: {|p b| [
+		lyrics: "r your body + is r r not unlike + that which was your own ",
+		phonemes: ["", "","p A" , "t i", "","","",""," @ n ","l a :\i kh","t a th","w i\ ts`h","","j o r\`","@U n"],
 		pitchTake: 1
 	] }, music:{|p b e|
 		{
@@ -1246,8 +1268,7 @@ P.double(role: \thalassa, params: {|p b| [
 			=> p.synthVTracks.at(e.key).()
 		}.play
 
-	});
-		~justTheTune.('unlike');
+});
 P.tune(\unlike, Pset(\amp,Pfunc({|e| ( e.midinote<56 ).if{0}{0.1}}),_));
 P('bass',start:\unlike,music: {|p b e|
 			[
@@ -1261,7 +1282,20 @@ P('bass',start:\unlike,music: {|p b e|
 				})
 			].pp
 		});
-	[ "that which was your own (dum dum dum)","d-4 c d- b-3  g-3 f g- a-" ].addLine; //3
+[ "that which was your own (dum dum dum)","d-4 c d- b-3  g-3 f g- a-" ].addLine; //3
+P(\line, music: { |p b e|
+	[
+		freq: [\r,1, -7, 1, 2, 2.5].df('f#',4).q,
+		dur: e.bAll.parse([4, 1, 1, 1, 1, 1]).q,
+		instrument: \wash, freqLag: 0.1
+	].ppm
+});
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b.sum,
+			text: ["that which was","your own"],
+		)
+});
 
 P('pad',start:\which,music: {|p b e|
 			(
@@ -1272,35 +1306,81 @@ P('pad',start:\which,music: {|p b e|
 				amp:0.02
 			).play
 		});
-		~justTheTune.('your own');
-	[ "and i too am pleased beloved", [3,2,4,3,3,2,1,-7].dm('d' ) ].addLine; //4 -or Bb!
+~justTheTune.('your own');
+[ "and i too am pleased beloved", [3,2,4,3,3,2,1,-7].dm('d' ) ].addLine; //4 -or Bb!
+P.synthV(role: \sargon, take: \lead, params: {|p b| [
+		lyrics: "and I too am pleased, beloved + +",
+		filter: (midinote: _ - 12), 
+		phonemes: ["a n d","a i","","","p r i z d", "b i","r a v","e d"],
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+
+});
 P.still(\kirkAnswers, timecode: 2748.9.seconds, music: { |p b e|
 			 e.still.( 
 				wait: b.sum,
-				text: ["",""],
+				text: ["and I too am pleased","beloved"],
 			)
 		});
-		~justTheTune.('beloved');
 P('pad',start:\beloved,music: {|p b e|
-			(
-				instrument: \wash,
-				freq: [-7,1,5].df(\d),
-				dur: b.sum,
-				att: b.parse([3]),
-				rel: b.sum - b.parse([3]),
-				amp:0.02
+	(
+		instrument: \wash,
+		freq: [-7,1,5].df(\d),
+		dur: b.sum,
+		att: b.parse([3]),
+		rel: b.sum - b.parse([3]),
+		amp:0.02
 
-			).play
-		});
+	).play
+});
 P.tune('i too',{|i| Pmul(\freq,0.5,i) =>Pbindf(_,\amp,0.2,\instrument,\stringyy,\legato,1) });
 		//P.tune('too am', {|i| Pbindf(i,\amp,0.01,\freq,1.df(\d,[4,5]))});
-	[ " boom after so- long... (boom) so very long... Kiss ","d3 a b e4 d f g3 b c4 a3 e4 r" ].addLine; //5
-P.still(\kirklooksDown, timecode: 2756.45.seconds, music: { |p b e|
+[ " boom after so- long... (boom) so very long... Kiss ","d3 a b e4 d f g3 b c4 a3 e4 r" ].addLine; //5
+P.tune();
+P.synthV(role: \sargon, take: 
+		// \lead
+		\lower
+		, params: {|p b| [
+			filter: (midinote: [1, 4, 5, 11, 7, 12, 1, 5, 6, 4, 7].dm(\c,4)), 
+		lyrics: "r after + so - long r so very + long r",
+		pitchTake: 1,
+		paramTension: -0.1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+
+});
+P.synthV(role: \thalassa, take: \lead, params: {|p b| [
+		filter: (midinote: _ + 12), 
+		lyrics: "r after + so - long r so very + long r",
+		phonemes: ["","a f ","th a r\`", "","","l o N", "",  "","w e","r\` i",""],
+		pitchTake: 2,
+		paramTension: -0.1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+
+});
+P.still(\kirklooksDown,syl:0, timecode: 2756.45.seconds, music: { |p b e|
 			 e.still.( 
-				wait: b.sum,
-				text: ["",""],
+				wait: b.drop(1).sum,
+				text: ["after","so long"],
+			).sequenceText2(
+					b.parse([5,1,4]), [ 
+						["",""],
+					["so very","long"],
+					["",""]
+					],
 			)
-		});
+});
 		~justTheTune.('very long');
 P(\afterSoLongSketch,start:'very long',music: {|p b e|
 			var afterSoLong=[\r,4,5,8,7,9]++[\r,5,6,4,7] + [ 2,2,2,2,2,2,2,2,2,2,3 ].collect{|i| [0,i]};
@@ -1337,18 +1417,17 @@ P(\bassNotes54,start:'very long',music:
 		}
 	);
 	//TempoClock.tempo=1.5.reciprocal;
-	//[ "(boom)...so very long... Kiss","g3 b c4 a3 e4 r" ].addLine; //6
+//[ "(boom)...so very long... Kiss","g3 b c4 a3 e4 r" ].addLine; //6
 	//~justTheTune.('so very long');
 [ "(kissing) r r r r r r r r ..","g#5 f# d# b4 a# g# e5 d# " ].addLine; //7
 P.still(\kiss, timecode: 2810.1.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["",""],
+			fade:3
 		)
 });
-P(\bowedKissing,start:'kissing',music:
-		{ |p b|
-	Pfx(
+P(\bowedKissing,music: { |p b e|
 				[ 
 					//				tempo:0.8,
 					instrument:\trem2,
@@ -1356,27 +1435,28 @@ P(\bowedKissing,start:'kissing',music:
 					degree:Pseq([6,5,3,1,7-7,6-7,4,3,5-7]-1),
 					root:-1,
 					octave:[6,4],
-					scale:Scale.major,
+					// scale:Scale.major,
 					//				dur:Song.currentSong.durs[7]++Pseq([2.5]),
 					dur:b++[2.5] => _.q,
 					legato:1,
+					out: Effect.bus({|i| PlateReverb.ar(i,mix:0.5)  * EnvGen.cutoff(b.sum,8) * 2 },inputChannels:2),
 					mtranspose:Pseq([ [0,2,4,7],[0,3,5,7],[0,2,5,7],[0,2,4,7],[0,3,5,7],[0,4,6,7],[0,2,4,7],[0,3,5,7],[0,7] ].collect(_-7)),
-				].p.pad,
-				\verb,\wet,0.3
-			).play  
+				].pp
+				// \verb,\wet,0.25,\amp,8
 		}
 	);
 P(\bassKissing,start:'kissing',music:
 		(instrument:\sawSynth,rel:15,att:1,octave:2,amp:0.17,degree:4,root:-1,mtranspose:[0,4,7],dur:10)
 	);	
-	SynthDef(\verb,{|out wet=1 | 
+	SynthDef(\verb,{|out wet=1 amp=2 | 
 		var in=In.ar(out);
-		var sig =PlateReverb.ar(in);
-		XOut.ar(out, wet, sig*2)}
+		var sig =PlateReverb.ar(in, wet:wet);
+		sig = sig * amp;
+		ReplaceOut.ar(out, sig)}
 	).add; 
 [ " r","f#4" ].addLine; //8
 	//}.fork
 
-~loaded.signalOne;
+try{~loaded.signalOne};
  })
 

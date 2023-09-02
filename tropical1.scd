@@ -656,21 +656,42 @@ P(\arr, music: { |p b e|
 	
 });
 ["LoopA",copyTuneFrom("arpeggios1")].addLine;
+Song.harpsiPan = [-1,1,1].q(inf).asStream;
 P(\longNote, music: { |p b e|
-	(
-		instrument:\stringyy,
-		freq: 1.df(\c,6),
-		dur: b.sum
-	).play
+	var ob, main;
+	var arpeggios = [11, 5, 3, 7, 6, 4, 1, 5, 4, 2, -6, 3, 2, -7, -5, 1];
+	arpeggios => {|i| [
+		freq:i.df(\c) =>_.q, 
+		dur: "e*16".beats.warpTo( e.tempoMap ).q,
+		instrument: \harp, coef:0.1,amp:0.02,
+		out: Effect.bus({|i| i=> Pan2.ar(_, -1) },)
+	] => _.pp
+};
+	main = [1, 4, 5, 8, 9, 12, 13, 16] -1 
+	=> {|i| arpeggios[i].df(\c) => {|i| [freq: i.q, dur: "qqqqqqqqqe e qe e qe e qe e".asBeats.warpTo( e.tempoMap ++ p.tempoMap[e.start + 1] ).q, instrument:\stringyy].ppm}};
 });
 Song.cloneDursAndTempoMap(\arpeggios1);
 P.clone(\arpeggios1,[
 	\claves, \shaker, 
 	// \arr,
-	\steel, 
+	// \steel, 
 	\counterMelody  
 
 ]);
+P(\steel, music: { |p b e|
+		[ 
+			freq: [[3, 5],[4, 6]].df(\c).q,dur: "qe eqe".asBeats.warpTo( e.tempoMap ) + [0,8] =>_.q,
+			instrument:p.steelDef,
+			sus: b[..1].sum,
+			amp: 0.02,
+		].ppm;
+		[ 
+			freq: [\r,[14, 6],[15, 7]].df(\c).q,dur: "qeeqq qe e".asBeats.warpTo( e.tempoMap ).q,
+			lagTime:0.35 * 15, 
+			instrument:\washVarLag,
+			amp: 0.02
+		].ppm;
+});
 /* P(\newChords, music: { |p b e|
 	[
 		freq: [5, 6, 6, 7, [5,13]].df(\c).q,
@@ -682,10 +703,23 @@ Song.cloneDursAndTempoMap(\arpeggios1);
 P.clone(\arpeggios1,[
 	\claves, \shaker, 
 	// \thruTune,
-	\arr,
-	\steel, 
+	// \arr,
+	// \steel, 
 	\counterMelody  
 ]);
+P(\longNote, music: { |p b e|
+	var ob, main;
+	var arpeggios = [11, 5, 3, 7, 6, 4, 1, 5, 4, 2, -6, 3, 2, -7, -5, 1];
+	arpeggios => {|i| [
+		freq:i.df(\c) =>_.q, 
+		dur: "e*16".beats.warpTo( e.tempoMap ).q,
+		instrument: \harp, coef:0.1,amp:0.02,
+		out: Effect.bus({|i| i=> Pan2.ar(_, 1) },)
+	] => _.pp
+};
+	main = [1, 4, 5, 8, 9, 12, 13, 16] -1 
+	=> {|i| arpeggios[i].df(\c) => {|i| [freq: i.q, dur: "qqqqqqqqqe e qe e qe e qe e".asBeats.warpTo( e.tempoMap ++ p.tempoMap[e.start + 1] ).q, instrument:\stringyy].ppm}};
+});
 /*
 Song.getMusicFunction(\arpeggios1, \thruTune,)
 */
@@ -714,5 +748,227 @@ P.clone(\arpeggios1,[ \claves, \shaker,
 ["LoopB2",copyTuneFrom("arpeggiosTwo")].addLine;
 Song.cloneDursAndTempoMap(\arpeggiosTwo);
 P.clone(\arpeggios1,[ \claves, \shaker, \thru, \arr, \steel  ]);
+["VerseLoop","-1 1 2 3 4 3 2 1 3 2 1 -7 1 2 -7 2 1 -5 5 5".dm(\c)].addLine;
+Song.cloneDursAndTempoMap(\Verse1);
+Song.setTempoMap(\Verse1,"q E E E e x e e xeee x x e x e e e e xE E E");
+P(\offbeat, music: { |p b e|
+	[
+		freq: [\r, [1, 5, 11, 13] ].df(\c).q(inf),
+		dur: "e*16".beats.warpTo(e.tempoMap).q,
+		instrument:  \harp, 
+		out: Effect.bus({|i|  },)
+		// amp: [ 0.03,0.1 ]
+		
+	].pp
+});
+P(\bassline, music: { |p b e|
+	[ 
+		freq: [1, 5, 1, 4, 6, 4, 5, 2, 5, 4, -7, 4, 1, 3, 5].df(\c,3).q,
+		dur: "ex xe e ex xe e ex xe e ex xe e ex xe e ".asBeats.warpTo( e.tempoMap ).q,
+		legato: [0.5, 0.8, 0.9, ].q(inf),
+		amp: [1, 1.2, 0.8].q(inf) /10,
+		instrument: \default,
+		out: Effect.bus({|i| i * 2.5 => _.tanh.tanh /2 },inputChannels:2)
+	].ppma
+});
+	// Song.guitarFx = {Effect.bus({|i| i/2.5 => BPF.ar(_,900,8) },out:3)};
+P(\guitar, music: { |p b e|
+	var tm = e.tempoMap ++ p.tempoMap[e.start + 1];
+	p.setupGuitPart.(p);
+	[
+		[
+			type: \strum,
+			instance: p.guitar,
+			freq: [
+				[3,1,5], [1, 14, 16], [5,21], [4,15,17],
+				[3,1,5], [1, 14, 16], [15,17, 22],
+				// [13, 15.5 ]
+
+			].df(\c,4).q(),
+			dur: "qq qq qq qq qq qq qq qq ".asBeats.warpTo( tm.quantizeWindow(0.5) ).q(inf),
+			// dur: 10,
+			legato:1,
+		].p ,
+		[
+			type: \strum,
+			instance: p.guitar,
+			switch: [ \down, \muffleU, \d, \u, ].q(inf),
+			amp: [0.01,0.5].q(inf)  ,
+			// lag: [0,0.1,0,0,0,0].q,
+			legato:1,
+			// dur: 10
+			// lag:Pwhite( 0.01,0.02,inf ) + [-0.005,0.005].q(inf),
+
+			dur: "x*65  ".beats.warpTo( tm.quantizeWindow(0.5) ).q,
+			out: p.guitarFx
+			// lag:0.05
+		].p
+	] => Ppar(_) 
+	// => Pset(\out,fx,_) 
+	=> _.play
+});
+P.tune(_<>[instrument:\defaultPiano,rel:0, rests:MuteFirst(), amp:0.1,t_trig:1,len:0.5, fatness:0.35, 
+out: Effect.bus({|i| i * SinOsc.ar(4.3) + (i/3) },)
+].p);
+P(\thirds, music: { |p b e|
+	[
+		freq: [\r, 3, 4, 5, 6, 5, 4, 3, 5 ].df(\c,4).q,
+		dur: b.q, amp:0.03, pan: -0.25
+	].pp
+});
+P(\hat, music: { |p b e|
+	[
+		dur: "q*12".beats.warpTo( e.tempoMap ).q,
+		instrument:\hihat,
+		pan: -0.5,
+		out: Effect.bus({|i| i=> Pan2.ar(_,-0.6) * -3.dbamp },)
+		// out: Effect.bus({|i| CombN.ar( i, 0.5,"E".asBeats.warpTo( e.tempoMap ) + 0.05, 2 ) /4 + i * [0.7,0.3] },inputChannels:2)
+	].pp
+});
+["VersTwoLoop","5 6 5 4 3 3 2 1 2 ".dm(\c)].addLine;
+Song.cloneDursAndTempoMap(\VerseTwo);
+P(\bassline, music: { |p b e|
+	[ 
+		freq: [ 4, 6, 4, 5, 2, 5, 4, -7, 4, 1, 3, 5].df(\c,3).q,
+		dur: "ex xe e ex xe e ex xe e ex xe e ex xe e ".asBeats.warpTo( e.tempoMap ).q,
+		legato: [0.5, 0.8, 0.9, ].q(inf),
+		amp: [1, 1.2, 0.8].q(inf) /10,
+		instrument: \default,
+		out: Effect.bus({|i| i.tanh.tanh },inputChannels:2)
+	].ppma
+});
+Song.setTempoMap(\VerseTwo,"g Q Q E E Q Ee x x");
+P(\click, music: { |p b e|
+	[
+		dur: "q*4".beats.warpTo( e.tempoMap ).q,
+		instrument:\hihat,
+		pan: -0.5,
+		out: Effect.bus({|i| CombN.ar( i, 0.5,"x".asBeats.warpTo( e.tempoMap ), 2 ) /4 + i * [0.7,0.3] },inputChannels:2)
+	].pp
+});
+// P.tune(_ <> [instrument:\defaultPiano].p);
+P(\TUNEAndConnector, music: { |p b e|
+	[
+		midinote: p.tune[e.start].list ++ ( [p.tune[e.start + 1] - [24,12] ]) => _.q,
+		dur: e.bAll[..11].q,
+		instrument: \defaultPiano,
+		amp:0.1,
+		out: Effect.bus({|i| i * SinOsc.ar(4.3) + (i/3) },)
+
+	].pp
+});
+P(\thirds, music: { |p b e|
+	[
+		freq: [ 3, 4, 3, 2, 1, -7  ].df(\c).q,
+		dur: b.parse([1, 1, 1, 1, 1, 2]).q
+	].pp
+});
+["VersLoopConnecter","r"].addLine;
+Song.cloneDursAndTempoMap(\VerseLoop);
+P.clone(\VerseLoop,[\guitar, \bassline,\click, ]);
+P(\bassline, music: { |p b e|
+	[ 
+		freq: [1, 5, 1, 4, 6, 4, 5, 2, 5, 4, -7, 4, 1, 3, 5].df(\c,3).q,
+		dur: "ex xe e ex xe e ex xe e ex xe e ".asBeats.warpTo( e.tempoMap ).q,
+		legato: [0.5, 0.8, 0.9, ].q(inf),
+		amp: [1, 1.2, 0.8].q(inf) /10,
+		instrument: \default,
+		out: Effect.bus({|i| i * 2.5 => _.tanh.tanh /2 },inputChannels:2)
+	].ppma
+});
+P(\guitar, music: { |p b e|
+	var tm = e.tempoMap ++ p.tempoMap[e.start + 1];
+	p.setupGuitPart.(p);
+	[
+		[
+			type: \strum,
+			instance: p.guitar,
+			freq: [
+				[3,1,5], [1, 14, 16], [5,21], [4,15,17],
+				// [3,1,5], [1, 14, 16], [15,17, 22],
+				// [13, 15.5 ]
+
+			].df(\c,4).q(),
+			dur: "qq qq qq qq qq qq qq qq ".asBeats.warpTo( tm.quantizeWindow(0.5) ).q(inf),
+			// dur: 10,
+			legato:1,
+		].p ,
+		[
+			type: \strum,
+			instance: p.guitar,
+			switch: [ \down, \muffleU, \d, \u, ].q(inf),
+			amp: [0.01,0.5].q(inf)  ,
+			// lag: [0,0.1,0,0,0,0].q,
+			legato:1,
+			// dur: 10
+			// lag:Pwhite( 0.01,0.02,inf ) + [-0.005,0.005].q(inf),
+
+			dur: "x*32  ".beats.warpTo( tm.quantizeWindow(0.5) ).q,
+			out: p.guitarFx
+			// lag:0.05
+		].p
+	] => Ppar(_) 
+	// => Pset(\out,fx,_) 
+	=> _.play
+});
+P(\TUNEAndConnector, music: { |p b e|
+	var tm = e.tempoMap ++ p.tempoMap[e.start + 1];
+	[
+		freq: [\r, 1,2, 3, 4, 3, 2, 1, 3, [-7,2], [-3,-5], ].df(\c).q,
+		dur: "q E E E e x xx xx xqq qq q".asBeats.warpTo(tm).q,
+		instrument: \stringyy,
+		amp:0.25, wet: 0.1,release:3,out: Effect.bus({|i| i=> Pan2.ar(_,0.5) },)
+
+	].p.play
+});
+["VersTwoLoopConnect","r"].addLine;
+Song.cloneDursAndTempoMap(\VerseTwo);
 )
 Song.pts.select{|i| i.key == \steel}.select{|i| i.start == Song.section(\arpeggios1)}
+
+(
+var sections = [13,12].q(inf).asStream;
+	var r = Recorder.new(s);
+    r.recHeaderFormat = "wav";
+    r.recSampleFormat = "int24";
+    r.filePrefix = "ArpeggiosLoop_";
+fork{
+	0.1.wait;
+	r.record;
+	6.do{
+		var thisSec = sections.next;
+		Song.playSection(thisSec);
+		Song.secDur[thisSec].wait;
+	};
+	Song.secDur[12] + 3 => _.wait; 
+	r.stopRecording
+}
+
+)
+(
+var durs = [Song.secDur[\VerseLoop],Song.secDur['VersTwoLoop'],"qqqqqqqq".asBeats.warpTo(Song.tempoMap[\VersLoopConnecter]).unbubble];
+	var r = Recorder.new(s);
+    r.recHeaderFormat = "wav";
+    r.recSampleFormat = "int24";
+    r.filePrefix = "CalypsoLoop_";
+	Song.guitarFXSynthFunc = {
+		In.ar(Song.guitarFx,1) / 4 
+		=> HPF.ar(_,150)
+=> Out.ar(1,_)
+	};
+fork{
+	r.record;0.1.wait;
+	6.do{
+		[\VerseLoop,\VersTwoLoop,\VersLoopConnecter].do { |x i|
+			x.postln;
+			Song.playSection(x);
+			// Song.secDur[x].wait
+			durs[i].wait
+
+		};
+	};
+		3.wait;
+		r.stopRecording
+
+}
+)

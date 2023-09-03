@@ -285,3 +285,8 @@ Stills/video[[:space:]]for[[:space:]]stills[[:space:]]etc.RPP filter=lfs diff=lf
 Stills/return-to-tomorrow.mov filter=lfs diff=lfs merge=lfs -text
 Trek/SynthV/**.wav filter=lfs diff=lfs merge=lfs -text
 Trek/SynthV filter=lfs diff=lfs merge=lfs -text
+Trek/Stills/ filter=lfs diff=lfs merge=lfs -text
+Trek/Stills/trimmed433.mov filter=lfs diff=lfs merge=lfs -text
+Trek/Stills/rerendered.mov filter=lfs diff=lfs merge=lfs -text
+Trek/Stills/return-to-tomorrow.cropped.mov filter=lfs diff=lfs merge=lfs -text
+Trek/Stills/return-to-tomorrow.mov filter=lfs diff=lfs merge=lfs -text

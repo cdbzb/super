@@ -1076,7 +1076,7 @@ P {
 		key = (key ++ "_" ++ start).asSymbol;
 		resources = ( resources ++ (rpp: rpp) ? resources );
 		//resources = ( resources ++ (synthV: synthV) ? resources );
-		part = Part(start,syl,lag,music,resources);
+		part = { Part(start,syl,lag,music,resources) }.try({"part couldn't load".warn});
 		Message(Song.currentSong, ( key ++ $_ => _.asSymbol )).value(part); //set Song.resources.key to part
 		key.postln;
 	}.try{|e| error = e}

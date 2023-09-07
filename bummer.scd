@@ -23,9 +23,9 @@ P(\bassNote, music: { |p b e|
 	[
 		instrument: \stringyy, 
 		freq: [3, 1, -5, 4].df(\c,[3,5]).q(2),
-		amp:[ 0.3, 0.1 ],
+		amp:[ 0.3, 0.1 ] * 0.8,
 		dur: "qq qq qq qq".asBeats.warpTo( e.tempoMap ).q(2),
-		freqLag:2,
+		freqLag:2, wet:0.1,
 		legato: [1, 0.9, ].q(inf),
 	].pma.play
 });

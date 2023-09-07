@@ -55,7 +55,7 @@ PitchM {
 }
 PtInterval {
 	classvar rawIntervals = #[0, 1.5, 3.5, 5, 7, 8.5, 10.5, 12];
-	classvar perfectIntervalQualities, imperfectIntervalQualities;
+	classvar <perfectIntervalQualities, <imperfectIntervalQualities;
 	var <degree, <quality;
 	*initClass {
 		perfectIntervalQualities = (diminished:-1,perfect:0,augmented:1);
@@ -73,18 +73,19 @@ PtInterval {
 			}
 		)
 	}
-	printOn {
-		( degree.asString + quality ).postln
-	}
 	+ {|that|
 		var outSemitones, outDegree, outQuality, rawInterval;
 		outSemitones = this.semitones + that.semitones;
-		outDegree = that.degree + degree;
+		outDegree = that.degree + degree - 1;
 		rawInterval = rawIntervals[ outDegree - 1 ];
+		outDegree.postln;
+		rawInterval.postln;
+		
+
 		outQuality = rawInterval.isInteger.if{
-				perfectIntervalQualities.findKeyForValue(rawInterval - outSemitones )
+				perfectIntervalQualities.findKeyForValue(( outSemitones - rawInterval ).asInteger )
 		}{
-				imperfectIntervalQualities.findKeyForValue(rawInterval - outSemitones )
+				imperfectIntervalQualities.findKeyForValue(( outSemitones - rawInterval ).asInteger)
 		};
 		^PtInterval(outDegree,outQuality)
 	}

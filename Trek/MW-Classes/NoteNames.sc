@@ -1,22 +1,22 @@
 PtName {
 	classvar noteNames = #[\A,\B,\C,\D,\E,\F,\G] ;
 	classvar <intervals;
-	var <name;
+	classvar accidentals;
+	var <name, <accidental;
+
 	*initClass {
 		var intervalQualities = [\perfect, \major, \minor, \perfect,\perfect, \minor, \minor];
-		intervals = intervalQualities.collect{|x i| 
-			PtInterval(i, x)
-		}
+		intervals = intervalQualities.collect{|x i| PtInterval(i + 1, x ) };
+
 	}
-	*new {| name| 
-		^super.newCopyArgs(name)
+	*new {| name accidental| 
+		^super.newCopyArgs(name, accidental)
 	}
-	semitonesFromA {
-		var names = [\A,\B,\C,\D,\E,\F,\G];
-		// ^semitones[names.indexOf(name)]
+	intervalFromA { 
+		^intervals.at(this.scaleDegree) + accidental.asInterval
 	}
-	scaleDegree { |notename|
-		^noteNames.indexOf(notename)
+	scaleDegree {
+		^noteNames.indexOf(name)
 	}
 	- {|that|
 		^IntervalM(
@@ -24,19 +24,20 @@ PtName {
 		)
 	}
 }
-AccidentalM {
-	var <accidental;
-	classvar semitones;
-	initClass {
-		semitones = Dictionary(
-			\sharp -> 1,
-			\flat -> -1,
-			\doubleSharp -> 2,
-			\doubleFlat -> -2
-		)
+PtAccidental {
+	var <accidental;  
+	classvar unisonQualities;
+
+	*initClass {
+		unisonQualities = ('double-flat':'doubly-diminished', flat:'diminished',natural:\perfect,sharp:\augmented,'double-sharp':'doubly-augmented');
 	}
+
 	*new { |accidental|
 		^super.newCopyArgs(accidental)
+	}
+
+	asInterval {
+		^PtInterval(1, unisonQualities.at(accidental))
 	}
 }
 PitchM {

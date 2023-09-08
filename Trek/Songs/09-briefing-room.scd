@@ -120,15 +120,80 @@ P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 	}.play
 
 });
-[ "KIRK: Scotty, I need your approval, too. Since you'll","r" ].addLine;
+[ "KIRK: Scotty, I need your approval, too. Since you'll","3 1 4 3 3 2 1 -7 2 4.5 5".dm(\c) ].addLine;
+P.synthV(role: \kirk, take: \lead, params: {|p b| [
+	lyrics: "Scotty + I need your approval + + too. Since you'll",
+	legato: [1, 1, 1, 1, 1, 1, 1, 1, 0.7, 1, 1, ],
+	lag: [0.05, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ],
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+P.tune();
+P(\bassnotes, music: { |p b e|
+	[
+		freq: [6, 5, 4, 4s, 5].df(\c,3).q,
+		dur: b.parse([4,4,1, ]).q
+	].pp
+});
+P(\doubling, music: { |p b e|
+	[
+		freq: [\r, [1, 3, 11], [2, 4, 12] ].df(\d,[4,5]).q,
+		dur: b.parse([9, 1, 1]).q
+	].pp;
+	[
+		freq: [\r, 5, 5].df(\d).q,
+		dur: b.parse([9, 1, 1]).q
+	].pp
+});
 P.still(\kirk, timecode: 2054.seconds, music: { |p b e|
 			e.still.( 
 				wait: b.sum,
 				text: ["",""],
 			)
 });
-[ "work with them, furnishing them all they need to make the android robots. ","r" ].addLine;
-[ "You won't be working with them, you'll be working with us, our bodies.","r" ].addLine;
+[ "work with them,(boom) furnishing them all they need to make the android robots. ","4 3 1 -5 4 3 1 -6 5 4.5 4.5 3 2 3 -2.5 -2.5 2.5 2 1 2 1".dm(\d) ].addLine;
+P.synthV(role: \kirk, take: \lead, params: {|p b| [
+	// filter: (midinote:  _ - 12), 
+	lyrics: "work with them, r furnishing + + them all they need  to make the r r android + robots - +",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+P.tune();
+P(\androidBass, music: { |p b e|
+	[
+		freq: [\r,11, 11, 7, 7, 4 ].df(\f,3).q,
+		dur: b.parse([14, 1, 1, 1, 2, 1]).q
+	].pp
+});
+[ "You won't be working with them, you'll be working with us, /*our bodies.*/","1 2 3 4 3 2 5 2 3 4 5 3 6".dm(\g,\whole) /*++ "4 3 2".dm(\c,6)*/ ].addLine;
+P(\ourBodiesBassnote,syl:12, music: { |p b e|
+	(
+		freq: [5, 6.5].df(\c,2)
+	).play
+});
+P.synthV(role: \kirk, take: \lead, params: {|p b| [
+	filter: (midinote: _ - 12), 
+	lyrics: "You won't be working + with them, you'll be working + with us, our bodies +",
+	legato: [1, 1, 1, 1, 1, 1, 0.8, 1, 1, 1, 1, 1, 0.8, 1, 1, 0.8, ],
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+P.tune();
 [ "They'll be (boom) inside us, and we'll be ...","11 7 1.5 6 6 5.5 4.5 7 6".dm(\g) ].addLine;
 P.synthV(role: \kirk, take: \lead,
 	params: {|p b| [
@@ -182,6 +247,13 @@ P(\chords, music: { |p b e|
 		dur: b.q
 	].pp
 });
+P(\bassnotes, music: { |p b e|
+	[
+		freq: [\r, 3,].df(\e, [ 3, 4],\minor).q,
+		dur: b.parse([9,1]).q,
+		instrument: \defaultPiano
+	].pp
+});
 P.tune();
 P.synthV(role: \mulhall, take: \lead, params: {|p b| [
 	filter: (midinote: _ - 12), 
@@ -194,15 +266,15 @@ P.synthV(role: \mulhall, take: \lead, params: {|p b| [
 	}.play
 
 });
-[" It is scientifically fascinating. ","1 2 3 4 3 2 1 7 6 5 4".dm(\b,\mixolydian) ].addLine;
+["(boom) It is scientifically fascinating. ","-5.5 1 2 3 4 3 2 1 7 6 5 4".dm(\b,\mixolydian) ].addLine;
 P(\bassnotes, music: { |p b e|
 	[
-		freq: [\r, 5, 4].df(\b,[2, 3 ]).q,
-		dur: b.parse([2, 5, 4]).q,
+		freq: [5.5, 5, 4].df(\b,[2, 3 ]).q,
+		dur: b.parse([3, 5, 4]).q,
 		instrument: \defaultPiano
 	].pp
 });
-P(\connectorChord,syl:6, music: { |p b e|
+P(\connectorChord,syl:7, music: { |p b e|
 	(
 		freq: [5, 1, 11].df(\e,6),
 		instrument: \stringyy
@@ -216,7 +288,7 @@ P(\connectorChord,syl:6, music: { |p b e|
 });
 P.synthV(role: \mulhall, take: \lead, params: {|p b| [
 	filter: (midinote: _ - 12), 
-	lyrics: "it is scientific + + + lee fascinating + + +",
+	lyrics: "r it is scientific + + + lee fascinating + + +",
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
@@ -1492,6 +1564,8 @@ P(\bass,start:\experimentation,music:{|p b e|
 	].pp;	
 });
 P.tune(\experimentation);
+
+////Split it  here instead !!!
 ["SCOTT: A starship engine the size of a walnut? Thats impossible! "," 2 3 1 -7 -6 -5.5 4 3 4 5 -7".dm(\a) ++ "5 5 11 5 1".dm('a-',5)].addLine;
 Song.durs.filter( _ *0.9 );
 P.still(\scott, timecode: 2220.seconds, music: { |p b e|
@@ -1931,3 +2005,8 @@ P(\bass,start:\kid,music:{|p b e|
 P.tune(\kid);
 }
 )
+Song.secDur
+Song.sections.collect(Song.secDur[ _ ]).sum 
+Song.sections
+Song.secDur[0]
+

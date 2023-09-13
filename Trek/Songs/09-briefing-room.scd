@@ -124,7 +124,7 @@ P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	lyrics: "Scotty + I need your approval + + too. Since you'll",
 	legato: [1, 1, 1, 1, 1, 1, 1, 1, 0.7, 1, 1, ],
-	lag: [0.05, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ],
+	lag: (0.2,0.18..0.02) ++ [0,0,0],
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
@@ -169,22 +169,17 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 
 });
 P.tune();
-P(\androidBass, music: { |p b e|
+P(\androidBass,syl:13, music: { |p b e|
 	[
-		freq: [\r,11, 11, 7, 7, 4 ].df(\f,3).q,
-		dur: b.parse([14, 1, 1, 1, 2, 1]).q
+		freq: [11, 11, 7, 7, 4 ].df(\f,2).q,
+		dur: b.drop(1).parse([ 1, 1, 1, 2, 1]).q
 	].pp
 });
 [ "You won't be working with them, you'll be working with us, /*our bodies.*/","1 2 3 4 3 2 5 2 3 4 5 3 6".dm(\g,\whole) /*++ "4 3 2".dm(\c,6)*/ ].addLine;
-P(\ourBodiesBassnote,syl:12, music: { |p b e|
-	(
-		freq: [5, 6.5].df(\c,2)
-	).play
-});
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	filter: (midinote: _ - 12), 
 	lyrics: "You won't be working + with them, you'll be working + with us, our bodies +",
-	legato: [1, 1, 1, 1, 1, 1, 0.8, 1, 1, 1, 1, 1, 0.8, 1, 1, 0.8, ],
+	legato: [1, 1, 1, 1, 1, 1, 0.8, 1, 1, 1, 1, 1, 0.8, 1, 1, 0.65, ],
 	pitchTake: 1
 ] }, music:{|p b e|
 	{

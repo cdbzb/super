@@ -3,6 +3,8 @@ s.waitForBoot {
 	Song(\briefing,[]).current;
 	// Require("boilerplate.sc");
 	"~/tank/super/Trek/Songs/boilerplate.scd".standardizePath.load;
+Song.guitar= ~guitar ? AAS_Strum();
+~guitar = Song.guitar;
 	{
 [ "You`re going to what?","1 2 -7.5 1 6".dm(\a, \minor) ].addLine;
 P.synthV(role: \scott, take: \lead, params: {|p b| [
@@ -613,7 +615,6 @@ P.synthVs(role: \spock, take:[ nil, 3 ], params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-Song.guitar=AAS_Strum();
 P(\moreChords, music: { |p b e|
 	Song.guitar.setPlayMode(\strum);
 	fork{ "eqqqq".asBeats.warpTo( e.tempoMap ).unbubble.wait;
@@ -1231,6 +1232,12 @@ P.still(\mulhall2,syl:6, timecode: 2208.35.seconds, music: { |p b e|
 		text: ["I'm a scientist",""],
 	)
 });
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum + e.bNext,
+		text: ["and I'm","willing"],
+	)
+});
 Song.durs.scaleEnv(
 	Env([1,0.75],1,curve: 2)//.plot
 );
@@ -1568,6 +1575,12 @@ P(\bass,start:'la laaa la',music:{|p b e|
 });
 Song.mindKey = 'e-';
 ["to host Thalassa's mind",[4,3,5,4,3,7, 2, 3, 4,5, 6].dm( Song.mindKey, 6, \mixolydian)].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["to host","Thalassa's mind"],
+	)
+});
 // Song.durs.filter( {|i| var a = i.last; i.dropLast ++ (a/100) => _.flat } );
 Song.setQuarters('to host',"E Q E Q E Qqe e e x x ".asBeats);
 P.tune('to host', _.fin(6));
@@ -1644,6 +1657,10 @@ P.still(\mulhall, timecode: 2212.15.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
+	).sequenceText2(
+			b.parse([1]), [ 
+			["the opportunity","is an extraordinary one"]
+			],
 	)
 });
 Song.durs.filter( _ * [1,1,1,1,1,1,5/7, 1,1,1,1,1,1,1,1 ] );
@@ -1700,6 +1717,12 @@ P(\bass,start:\extraordinary,music:{|p b e|
 	].pp
 });
 [" for experimentation, observation. ","2 3 4 5 -6 1 1 -7 5 5 4 3 3 2  1".dm('f#',6)].addLine;//p14ngyy
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["for experimentation","...observation"],
+	)
+});
 P.synthV(\feng,filter: (midinote: _ - 12),  params: {|p b| [
 	lyrics: "for experimentation + + + + + - obser + - vation + - -",
 	vocalMode: \Opera
@@ -1782,11 +1805,17 @@ P(\bass,start:\impossible,music:{|p b e|
 	//.play
 });
 //["But I don't suppose there'd be any harm in looking over diagrams on it. ","r"].addLine;
+{
 ["KIRK: Bones? You could stop all this by saying no. ",[7].dm(\b,4,\mixolydian) ++ [3,4,7,4,3,2,3,4].dm(\c,5,\mixolydian) ++ [5].dm(\a,4)].addLine;
+
 P.still(\kirkStop, timecode: 2242.8.seconds, music: { |p b e|
-	 e.still.( 
+	e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["Bones?","you could stop all this"],
+	).sequenceText2(
+			b.parse([6]), [ 
+			["by saying","''no'"],
+			],
 	)
 });
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
@@ -1800,7 +1829,7 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
-		
+
 	}.play
 
 });
@@ -1839,8 +1868,19 @@ P(\chord,start:'stop all this',music:{|p b e|
 		strum: [ 0.055, 0, 0.04 ].q
 	].pp
 });
-["Thats why-- I called you all here together. ","2  2 3  -6  3 4  4 5 2 5  5 6 6 7 6".dm('e-',5,\lydian)].addLine;
+["Thats why-- I called you all here together. ","5  2 3  -6  3 4  4 5 2 5  5 6 6 7 6".dm('e-',5,\lydian)].addLine;
 P.tune('here together');
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["that's why ","I"],
+	).sequenceText2(
+			b.parse([6,4]), [ 
+			["called you","all"],
+			["here","together"]
+			],
+	)
+});
 P.synthV(role: \kirk,start: 'here together', take: \lead, params: {|p b| [
 	filter: (midinote: _ - 12), 
 	lyrics: "That's why - r I - called -  you all here together. + - + ",
@@ -1870,52 +1910,62 @@ P(\bass,start:'here together',music:{
 }
 );	
 ["(boom) We'll all be deeply involved. It must be unanimous. ","-1 12 13 12 12 11 7 6".dm(\c) ++ "2 6 5 4 3 4 1 -6".dm('f#')].addLine; //p11
+P.still(\clear, syl:0, timecode:0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["we'll all be","deeply involved"],
+	).sequenceText2(
+			b.drop(1).parse([8]), [ 
+			["it must be","unanimous"],
+			],
+	)
+});
 Song.quarters[\involved] = Song.parseBeats(\involved,[1, 1/2, 1, 1/2, 2/3, 2/3, 1/3, 1/3, 3/2, 1/2, 2/3, 2/3, 2/3, 1/2,1/2,1]);
 Song.setTempoMap(\involved,[1, 1/2, 1, 1/2, 2/3, 2/3, 1/3, 1/3, 3/2, 1/2, 2/3, 2/3, 2/3, 1/2,1/2,1] );
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
-	filter: (midinote: _ - 12), 
-	lyrics: " r We'll all be deeply + involved - +  It must be unanimous + + + ",
-	legato: [1, 1, 1, 1, 1, 1, 1, 1, 0.6,  1, 1, 1, 1, 1, 1, 1, ],
-	pitchTake: 1,
-	vocalMode: \Soft
+filter: (midinote: _ - 12), 
+lyrics: " r We'll all be deeply + involved - +  It must be unanimous + + + ",
+legato: [1, 1, 1, 1, 1, 1, 1, 1, 0.6,  1, 1, 1, 1, 1, 1, 1, ],
+pitchTake: 1,
+vocalMode: \Soft
 ] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
+{
+	e.playbuf
+	=> p.synthVTracks.at(e.key).()
+}.play
 
 });
 P.double(role: \kirk, take: \lead, params: {|p b| [
 ] }, music:{|p b e|
-	{
-		e.playbuf
-		// => p.synthVTracks.at(e.key).()
-		=> Pan2.ar(_,1)
-		/4
-	}.play
+{
+	e.playbuf
+	// => p.synthVTracks.at(e.key).()
+	=> Pan2.ar(_,1)
+	/4
+}.play
 
 });
 // P.tune(\involved, Pmul(\freq,[1,2],_));
 //P.click(\involved);
 P(\hat,start:\involved,music:{|p b e| 
-	[
-		dur: e.tempoMap.mapBeats("ee e x x q e e x x x x q q q e x x ee e".asBeats).q,
-		instrument: \hat_808,
-		out: Effect.bus({|i|  EchoNone.ar(i,1, delaytime:0.5) + WhiteNoise.ar(0.00011)    })
-	].pp;
+[
+	dur: e.tempoMap.mapBeats("ee e x x q e e x x x x q q q e x x ee e".asBeats).q,
+	instrument: \hat_808,
+	out: Effect.bus({|i|  EchoNone.ar(i,1, delaytime:0.5) + WhiteNoise.ar(0.00011)	})
+].pp;
 });
 P(\bass,start:\involved,music:{|p b e|  // passing tone right before end please
-	b.postln;
-	[
-		freq: [1, 1,1, 1.5, 2.5, 4.5].df(\c,3).q,
-		dur: b.parse([ [1, 1, 0.5],[0.5, 1],[ 1,1,1,1],  [1,1,1, 1/3],[2/3,1], 3 ]).postln.q,
-		out: Effect({ |i| SineShaper.ar(i, 0.2) * 5 => FreeVerb.ar(_,0.05,1) * Env.linen(0.001,b.sum,1).kr(2,gate:1) }, out:[0,1]).bus.index ,
-	].pp; 
-	
+b.postln;
+[
+	freq: [1, 1,1, 1.5, 2.5, 4.5].df(\c,3).q,
+	dur: b.parse([ [1, 1, 0.5],[0.5, 1],[ 1,1,1,1],  [1,1,1, 1/3],[2/3,1], 3 ]).postln.q,
+	out: Effect({ |i| SineShaper.ar(i, 0.2) * 5 => FreeVerb.ar(_,0.05,1) * Env.linen(0.001,b.sum,1).kr(2,gate:1) }, out:[0,1]).bus.index ,
+].pp; 
+
 });
 ( Song.involvedHarmpnies = [
-	[0, 7, 7, 5, 6, 6, 4, 4, 4].dm(\c),
-	[0, 5, 5, 3, 4, 4, 1, 1, -7].dm(\c)
+[0, 7, 7, 5, 6, 6, 4, 4, 4].dm(\c),
+[0, 5, 5, 3, 4, 4, 1, 1, -7].dm(\c)
 ];
 );
 P.synthV(role: \kirk, take: \harmony1,
@@ -1927,14 +1977,14 @@ P.synthV(role: \kirk, take: \harmony1,
 		].p
 	},
 	params: {|p b| [
-	lyrics: "r we'll all be deeply + involved - + r r r r r r r",
-	pitchTake: 1
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-		/2
-	}.play
+		lyrics: "r we'll all be deeply + involved - + r r r r r r r",
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+			/2
+		}.play
 });
 
 P.synthV(role: \kirk, take: \harmony2,
@@ -1945,208 +1995,238 @@ P.synthV(role: \kirk, take: \harmony2,
 		].p
 	},
 	params: {|p b| [
-	lyrics: "r we'll all be deeply + involved - + r r r r r r r",
-	pitchTake: 1
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-		/2
-	}.play
+		lyrics: "r we'll all be deeply + involved - + r r r r r r r",
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+			/2
+		}.play
 });
 P(\chords,start:\involved,music:{|p b e| 
-	var oneM7 = [3,5,7];
-	var four6 = [-6, 1, 4];
-	var six = [-6, 1, 3];
-	[
-		freq: [\r, oneM7, oneM7, oneM7, \r, oneM7, four6, six].df(\c) ++ 
-		[ [1,3,5,-7], [ -7,2,4,7 ]].df('c#',5,\mixolydian) => _.q,
-		curve:-9,
-		t_trig:1,
-		legato: [1,1,1,1,0,1,1,0.9,1].q(inf),
-		//dur: b.parse([1, [1, 1/2], [1/2, 1], 4, 5,3]).q,
-		dur: p.quarters[e.start].parse([1,1,1,1, 1,1, 2, 2, 8, 3]/2).q,
-		out: Effect(PlateReverb.ar(_,mix:0.5,decayTime: 0.3,damping:0.7)).bus.index
-	].pma(\defaultRetrig).play
-	
+		var oneM7 = [3,5,7];
+		var four6 = [-6, 1, 4];
+		var six = [-6, 1, 3];
+		[
+			freq: [\r, oneM7, oneM7, oneM7, \r, oneM7, four6, six].df(\c) ++ 
+			[ [1,3,5,-7], [ -7,2,4,7 ]].df('c#',5,\mixolydian) => _.q,
+			curve:-9,
+			t_trig:1,
+			legato: [1,1,1,1,0,1,1,0.9,1].q(inf),
+			//dur: b.parse([1, [1, 1/2], [1/2, 1], 4, 5,3]).q,
+			dur: p.quarters[e.start].parse([1,1,1,1, 1,1, 2, 2, 8, 3]/2).q,
+			out: Effect(PlateReverb.ar(_,mix:0.5,decayTime: 0.3,damping:0.7)).bus.index
+		].pma(\defaultRetrig).play
+
 });
 ["MCCOY: (boom) Then I'll still want one question answered to my satisfaction.", "-1 1 2 -8 1 3 4 2 5 1".dm(\f, 5, \diminished) ++ "3 4 5 1 6.5 6".dm(\c, 5, \mixolydian) ].addLine;//p13
 P.still(\mccoy, timecode: 2255.25.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
-	)
+		e.still.( 
+			wait: b.sum + e.bNext.sum + p.durs[e.start+2].list.sum,
+			fade:2,
+			text: ["",""],
+		).sequenceText2(
+				b.parse([1,9,6]), [ 
+					["then I'll still want","one question answered"],
+					["to my","satisfaction"],
+					["",""]
+				],
+		)
 });
 Trek.cast.mccoy = \an;
 Trek.presets.put(\mccoy,\mo,[paramTension:0.8, paramGender:0.1]);
 Trek.presets.put(\mccoy,\an,[paramTension:0.4, paramGender:0.12]);
 P.synthV(role: \mccoy, take: \lead, params: {|p b| [
-	lyrics: "r Then I'll still want one question + answered + to my satisfaction + + +",
-	legato: [1, 1, 1, 1, 1, 1, 1, 1,1, 1, 1, 1, 1, 1, 1, 0.8, ],
-	filter: (midinote: _ - 12), 
-	pitchTake: 1,
-	vocalMode: \Open,
-	paramTension: -0.5,
-	paramExpression:1.5
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-		* 4.dbamp
-	}.play
+		lyrics: "r Then I'll still want one question + answered + to my satisfaction + + +",
+		legato: [1, 1, 1, 1, 1, 1, 1, 1,1, 1, 1, 1, 1, 1, 1, 0.8, ],
+		filter: (midinote: _ - 12), 
+		pitchTake: 1,
+		vocalMode: \Open,
+		paramTension: -0.5,
+		paramExpression:1.5
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+			* 4.dbamp
+		}.play
 
 });
 P.double(role: \mccoy, take: \lead, params: {|p b| [
-	pitchTake: 1
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-		* 4.dbamp
-	}.play
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+			* 4.dbamp
+		}.play
 
 });
 P(\dimchords,start:\answered,music:{|p b e| 
-[
-	freq: [ [1,3,5,7].df(\d,5,\diminished),[1,3,5,7].df('c#',5,\diminished) ].q,
-	dur: b.parse([10,5]).q,
-	legato:1,
-	instrument:\wash,
-	att:b[0..8].sum,
-	rel:b[9..14].sum * 4,
-	freqLag:1,
-	amp:0.05
+		[
+			freq: [ [1,3,5,7].df(\d,5,\diminished),[1,3,5,7].df('c#',5,\diminished) ].q,
+			dur: b.parse([10,5]).q,
+			legato:1,
+			instrument:\wash,
+			att:b[0..8].sum,
+			rel:b[9..14].sum * 4,
+			freqLag:1,
+			amp:0.05
 
-].pm(\wash).play
+		].pm(\wash).play
 });
-// P.tune(\answered);
+	// P.tune(\answered);
 P.tune('answered to', {|i| Pbindf(i,\legato,0.9, \instrument,\stringyy,\wet,0.3,\release,2,\amp,0.2) => Pmul(\freq,1/[2,4],_)});
 ["Why? Not a list of possible miracles, (boom) but a ","6 3 1 5 3".dm(\f) ++ "6.5 6 3 5 4 -7".dm('c#',5) ++ "-5 3 4".dm('e-')].addLine;
-P.synthV(role: \mccoy, take: \lead,
-	pbind: Song.enlarge2(0),
-	filter: (midinote: _ - 12), 
-	params: {|p b| [
-	lyrics: "Why? Not a list of possible + + miracles + + r but a simple + basic + understandable + + + + ",
-legato: [0.6, 1, 1, 1, 0.7, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1, 0.8, 1, 1, 1,1, 1 ],
-	pitchTake: 1,
-	vocalMode: \Solid
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
-
-});
-P.double(role: \mccoy, take: \lead, params: {|p b| [
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
-
-});
-P(\bass,start:'possible miracles',music:{|p b e| 
-	[
-		//freq: [1, 2, 1.5, 4, 1, -5].df('e-',3,\mixolydian).q,
-		freq: [1, 2, 1.5, 2.5, 1, -5].df('e-',3,\mixolydian).q,
-		dur: b.parse([1,2,2,3,3,3]).q,
-		//instrument:\sawSynthSustain
-		out: Effect( { |i|  SineShaper.ar(i*10,limit:0.1) => FreeVerb.ar(_,0.5,0.9) }  ).bus.index
-	].pp
-});
-P(\strum,start:'possible miracles',music:{|p b e| 
-	(
-		freq: "-1 1 3 5 7".df('e-'),
-		strum: 0.06
-	).play
-});
-["simple basic understandable","5 5 6 6 7 11 7 6 4".dm('e-',5,\mixolydian)].addLine;
-Song.setQuarters(\understandable,"q q q q q e q e e ".asBeats);
-//Song.quarters[\understandable].list
-P(\chords,start:\understandable,music:{|p b e| 
-		var one, four, seven;
-		# one, four, seven = [[1,3,5],[1,4,6],[2,4,7]].df('e-',scale:\mixolydian);
-		\one.post;one.postln;
-		MegaBind(
-			[one, one, four, four, seven, seven, four, four ].flop,
-			p.quarters[e.start].list.gaussian(dev:0.005),
-			//1,
-			[
-				pan:[ -1,0,1 ],
-				limit:[ 0.5,0.1,0.005 ],
-				lag: { 0.01 dup: 8 => _.put(0,0) => _.dq => _.demand(p.quarters[e.start].list) }
-			],
-			{|i|
-				SinOsc.ar( i.freqSeq.lag(i.lag), 0, 0.1 )
-				* 
-				(
-					Env.asr(0.01,1,0.001).kr(gate:i.gateSeq)
-					+
-					Env.perc(0.05,1).kr(0,gate: i.trigSeq)
-				)
-				=> SineShaper.ar(_, i.limit)
-				=> Pan2.ar(_,i.pan).fold2(0.01)
-				=> AnalogPhaser.ar(_, SinOsc.ar(rrand(0.2,0.3)), feedback: 0.8)
-				=> LPF.ar(_,6000)
-			},
-			{|i|
-				Mix.ar(i)
-				=>HPF.ar(_,200)
-				/2
-				=> PlateReverb.ar(_,decayTime:0.2, mix:0.25)
-				/2
-
-			}
-		).play
-
-});
-P(\bass,start:\understandable,music:{|p b e| 
-	[
-		freq: "1 1 4 4 7 7 4 4".df('e-',3,\mixolydian).q,
-		dur: p.quarters[\understandable],
-		//instrument:\sawSynth
-
-		out: Effect( { |i|  SineShaper.ar(i*10,limit:0.1) => FreeVerb.ar(_,0.5,0.9) }  ).bus.index
-	].pp
-});
-[" why that overrides all danger. And let's not ", "6 5 12 11 7.5 6.5  12 13 11 3 4 5".dm(\d,5,\minor)].addLine;
-P.still(\bonesClose, timecode: 2302.8.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
+		wait: b.sum + e.bNext[..8].sum,
+		text: ["Why?",""],
+	).sequenceText2(
+			e.bAll.parse([1, 10, 1]), [ 
+			["not a list of","possible miracles"],
+			["",""],
+			["but a simple basic", "understandable"]
+			],
 	)
 });
 P.synthV(role: \mccoy, take: \lead,
-	pbind: Song.enlarge(7),
-	filter: (midinote: _ - 12), 
-	params: {|p b| [
-	lyrics: " why that overrides + + all danger - + And let's not kid our selves that there is no ",
-	legato: [0.8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1  ],
-	lag: [0,0.05, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0],
-	pitchTake: 1
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
+		pbind: Song.enlarge2(0),
+		filter: (midinote: _ - 12), 
+		params: {|p b| [
+			lyrics: "Why? Not a list of possible + + miracles + + r but a simple + basic + understandable + + + + ",
+			legato: [0.6, 1, 1, 1, 0.7, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1, 0.8, 1, 1, 1,1, 1 ],
+			pitchTake: 1,
+			vocalMode: \Solid
+		] }, music:{|p b e|
+			{
+				e.playbuf
+				=> p.synthVTracks.at(e.key).()
+			}.play
 
 });
 P.double(role: \mccoy, take: \lead, params: {|p b| [
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
+		] }, music:{|p b e|
+			{
+				e.playbuf
+				=> p.synthVTracks.at(e.key).()
+			}.play
+
+});
+P(\bass,start:'possible miracles',music:{|p b e| 
+			[
+				//freq: [1, 2, 1.5, 4, 1, -5].df('e-',3,\mixolydian).q,
+				freq: [1, 2, 1.5, 2.5, 1, -5].df('e-',3,\mixolydian).q,
+				dur: b.parse([1,2,2,3,3,3]).q,
+				//instrument:\sawSynthSustain
+				out: Effect( { |i|  SineShaper.ar(i*10,limit:0.1) => FreeVerb.ar(_,0.5,0.9) }  ).bus.index
+			].pp
+});
+P(\strum,start:'possible miracles',music:{|p b e| 
+			(
+				freq: "-1 1 3 5 7".df('e-'),
+				strum: 0.06
+			).play
+});
+["simple basic understandable","5 5 6 6 7 11 7 6 4".dm('e-',5,\mixolydian)].addLine;
+		Song.setQuarters(\understandable,"q q q q q e q e e ".asBeats);
+		//Song.quarters[\understandable].list
+P(\chords,start:\understandable,music:{|p b e| 
+			var one, four, seven;
+			# one, four, seven = [[1,3,5],[1,4,6],[2,4,7]].df('e-',scale:\mixolydian);
+			\one.post;one.postln;
+			MegaBind(
+				[one, one, four, four, seven, seven, four, four ].flop,
+				p.quarters[e.start].list.gaussian(dev:0.005),
+				//1,
+				[
+					pan:[ -1,0,1 ],
+					limit:[ 0.5,0.1,0.005 ],
+					lag: { 0.01 dup: 8 => _.put(0,0) => _.dq => _.demand(p.quarters[e.start].list) }
+				],
+				{|i|
+					SinOsc.ar( i.freqSeq.lag(i.lag), 0, 0.1 )
+					* 
+					(
+						Env.asr(0.01,1,0.001).kr(gate:i.gateSeq)
+						+
+						Env.perc(0.05,1).kr(0,gate: i.trigSeq)
+					)
+					=> SineShaper.ar(_, i.limit)
+					=> Pan2.ar(_,i.pan).fold2(0.01)
+					=> AnalogPhaser.ar(_, SinOsc.ar(rrand(0.2,0.3)), feedback: 0.8)
+					=> LPF.ar(_,6000)
+				},
+				{|i|
+					Mix.ar(i)
+					=>HPF.ar(_,200)
+					/2
+					=> PlateReverb.ar(_,decayTime:0.2, mix:0.25)
+					/2
+
+				}
+			).play
+
+});
+P(\bass,start:\understandable,music:{|p b e| 
+			[
+				freq: "1 1 4 4 7 7 4 4".df('e-',3,\mixolydian).q,
+				dur: p.quarters[\understandable],
+				//instrument:\sawSynth
+
+				out: Effect( { |i|  SineShaper.ar(i*10,limit:0.1) => FreeVerb.ar(_,0.5,0.9) }  ).bus.index
+			].pp
+});
+[" why that overrides all danger. And let's not ", "6 5 12 11 7.5 6.5  12 13 11 3 4 5".dm(\d,5,\minor)].addLine;
+P.still(\bonesClose, timecode: 2302.8.seconds, music: { |p b e|
+			e.still.( 
+				wait: b.sum + e.bNext[..5].sum,
+				text: ["'Why' that","overrides all danger"],
+			).sequenceText2(
+					e.bAll.parse([9]), [ 
+					["and let's not kid ","ourselves that there is no"],
+					],
+			)
+});
+P.synthV(role: \mccoy, take: \lead,
+			pbind: Song.enlarge(7),
+			filter: (midinote: _ - 12), 
+			params: {|p b| [
+				lyrics: " why that overrides + + all danger - + And let's not kid our selves that there is no ",
+				legato: [0.8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1  ],
+				lag: [0,0.05, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0],
+				pitchTake: 1
+			] }, music:{|p b e|
+				{
+					e.playbuf
+					=> p.synthVTracks.at(e.key).()
+				}.play
+
+});
+P.double(role: \mccoy, take: \lead, params: {|p b| [
+			] }, music:{|p b e|
+				{
+					e.playbuf
+					=> p.synthVTracks.at(e.key).()
+				}.play
 
 });
 P(\bass,start:\override,music:{|p b e| 
-	[
-		freq: [1, 1.5, 2, -5, -4].df(\g,3,\minor).q,
-		dur: b.parse([3,1,3,4, 1]).q,
-		instrument: \sawSynthSustain
-	].pp
+				[
+					freq: [1, 1.5, 2, -5, -4].df(\g,3,\minor).q,
+					dur: b.parse([3,1,3,4, 1]).q,
+					instrument: \sawSynthSustain
+				].pp
 });
+		}.();
 ["kid ourselves that there is no potential danger in this. ", "5 4 2 -6 -7 1 1.5 1.5 2 3 4 2 -7 -5".dm(\f)].addLine;
+P.still(\clear, timecode: 0.seconds,syl:6, music: { |p b e|
+	 e.still.( 
+		wait: b.drop(1).sum,
+		text: ["potential danger","in this"],
+	)
+});
 P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 	lyrics: "r r r r r r r potential + +  danger + in this. ",
 	filter: (midinote: _ - 12), 

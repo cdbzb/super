@@ -52,6 +52,19 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	)
 });
 [ "MCCOY: No comment. ","1 4 1".dm('a-') ].addLine;
+P(\wash, music: { |p b e|
+	[
+		freq: [1, 4].df('a-').q,
+		// dur: e.bAll.parse([1, 2]).q,
+		dur: b.sum,
+		instrument: \wash,
+		out: Effect.bus({|i| 
+			Convolution.ar(i, Dust.ar(150)!2 ) 
+			* -3.dbamp
+			* EnvGen.cutoff(b.sum, 1)
+		},)
+	].pp
+});
 Trek.presets.put(\mccoy,\an,[paramGender: 0.33]);
 P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 	filter: (midinote: _ - 12), 
@@ -116,8 +129,10 @@ P(\bassnote, syl:8, music: { |p b e|
 P(\picked, music: { |p b e|
 	[
 		instrument: \harp,
-		freq: [2, 3, 1, -6, -5.5, [5.5,-4]].df('c#', [4,5]).q,
-		dur: b.parse([1, 1, 1, 1, 5, 1]).q
+		freq: [2, 3, 1, -6, [5.5,], [5.5,-4]].df('c#', [4,5]).q,
+		dur: b.parse([1, 1, 1, 1, 5, 1]).q,
+		amp: 0.02,
+		out: [0,1]
 	].pp
 });
 P(\middleVoice, music: { |p b e|
@@ -169,6 +184,16 @@ P.still(\kirk, timecode: 2050.8.seconds, music: { |p b e|
 			)
 });
 [ "MCCOY: Quite simple. Happens every day. ","1 4 1 1 2 5 3 4".dm('a-') ].addLine;
+Song.durs.filter(\Quite,{|i| var last = i.last; i.dropLast ++ (last * 0.5)});
+P(\bassline, music: { |p b e|
+	[
+		freq: [ 5, 4, 3, ].df('c#',4,\minor).q,
+		dur: e.bAll.parse([1+2, 4, 5]).q,
+		instrument: \sparkTriangle
+		// legato: [1, 1, 3, ].q,
+		// lag: [0,0,0,0.2].q
+	].pp
+});
 P.still(\mccoy, timecode: 2048.5.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -187,6 +212,25 @@ P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 	}.play
 
 });
+P(\wash, music: { |p b e|
+	[
+		freq: [1, 2, 3].df('a-').q,
+		dur: e.bAll.parse([3, 5, 1]).q,
+		instrument: \wash,
+		lag: [0,0,0.2].q,
+		out: Effect.bus({|i| 
+			Convolution.ar(i, Dust.ar(150)!2 )
+			* EnvGen.cutoff(b.sum -1, 3)
+		},out:2)
+	].pp
+});
+// P(\accent,syl:6, music: { |p b e|
+// 	(
+// 		instrument: \cymbalsDS,
+// 		amp: 0.03,
+// 		out: Effect.bus({|i| i * EnvGen.cutoff(0.5, 0.1) },)
+// 	).play
+// });
 [ "KIRK: Scotty, I need your approval, too. Since you'll","3 1 4 3 3 2 1 -7 2 4.5 5".dm(\c) ].addLine;
 Song.setTempoMap(\appro,"e e e e ex x e e q e e");
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
@@ -205,21 +249,24 @@ P(\chords, music: { |p b e|
 	[
 	lag: (0.2,0.16..0.02) => _.q,
 		instrument: \defaultPiano,
-		freq: [[-6, 1, 3],[-5, -7, 2],[-4,-6,2]].df(\c).stutter.q,
+		freq: [[-6, 1, 3],[-5, -7, 2],[-4.5,-6,2]].df(\c).stutter.q,
 		// dur: b.parse([4, 4, 3]).q
 		dur: "q q q q q q".asBeats.warpTo( e.tempoMap ).q,
+		rest: MuteFirst(),
 
-		out: Effect.bus({|i| SineShaper.ar(i,0.1,2) => BPF.ar(_,1100, 0.1) * 9=> FreeVerb.ar(_,0.1,1) },inputChannels:2)
+		out: Effect.bus({|i| SineShaper.ar(i,0.1,2) => BPF.ar(_,1100, 0.1) * 9=> FreeVerb.ar(_,0.1,1) },inputChannels:1)
 	].pp
 });
 P(\bassnotes, music: { |p b e|
 	[
 	lag: (0.2,0.12..0.02) ++ [0,0, 0] => _.q,
-		freq: [6, 5, 4.5, 4.5, 5, 2].df(\c,3).q,
+		freq: [[6, 16, 21, 23], 5, 4.5, 4.5, 5, 2].df(\c,3).q,
 		dur: b.parse([4,4,1,1, 1, 3 ]).q,
 		legato: [0.9,0.9, 1, 1, 0.9,1 ].q,
+		amp: [[2, 1, 1, 1], 2, 2, 2, 2, 2]/30 => _.q,
 		instrument: \sawSynthSustain,
-		pulse: 0.5
+		pulse: 0.5,
+		att: [2, 0.1, 0.1,0.1, 0.1, 0.1].q
 	].ppma
 });
 P(\doubling, music: { |p b e|
@@ -237,12 +284,31 @@ P.still(\kirk, timecode: 2054.seconds, music: { |p b e|
 				wait: b.sum,
 				text: ["scotty","I need"],
 			).sequenceText2(
-					b.parse([4]), [ 
+					b.parse([4,5]), [ 
 					["your approval","too"],
+					["",""]
 					],
 			)
 });
+P.still(\clear, timecode: 0.seconds,syl:8, music: { |p b e|
+	 e.still.( 
+		wait: b.drop(1).sum + e.bNext[..2].sum,
+		text: ["since you'll","work with them"],
+	)
+});
 [ "work with them,(boom) furnishing them all they need to make the android robots. ","4 3 1 -5 4 3 1 -6 5 4.5 4.5 3 2 3 -2.5 -2.5 2.5 2 1 2 1".dm(\d) ].addLine;
+P.still(\clear, timecode: 0.seconds,syl: 3, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["furnishing","them"],
+	).sequenceText2(
+			b.drop(1).parse([4,6, 2]), [ 
+			["all they need","to make the"],
+			["",""],
+			["android", "robots"]
+			],
+	)
+});
 Song.durs.filter(\furnish, {|i| var last = i.last; i.dropLast ++ (last * 2)});
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	// filter: (midinote:  _ - 12), 
@@ -257,6 +323,34 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 
 });
 P.tune();
+P.synthV(\kevin, take: \lead,
+	pbind: {|p b| [dur: b.parse([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.25,0.75, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ])].p},
+	params: {|p b| [
+	lyrics: "work with them r furnishing + + r all they need -  r r r r r android + robots - +",
+	filter: (midinote: {|i| [2, 1, -5, -1, 2, 1, -5, -1, 2, 2, 1.5, 2, -1,-1,-1,-1,-1,2.5, 2, 1, 2, 1].dm(\d)}), 
+
+	legato: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,1, 0.6 ],
+	// legato: [1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1,  1  ],
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+		* -3.dbamp
+
+	}.play
+});
+P(\bassnotes, music: { |p b e|
+	(
+		freq: [-1, 1].df(\d)
+	).play;
+	[
+		freq: [\r, [-5, 5], [-6,6] ].df(\d,3).q,
+		dur: b.parse([3, 4, 2]).q,
+		instrument: [\stringyy, \sawSynthSustain]
+	].pp
+});
+
 P(\androidBass,syl:13, music: { |p b e|
 	[
 		freq: [11, 11, 7, 7, 4 ].df(\f,2).q,
@@ -264,6 +358,16 @@ P(\androidBass,syl:13, music: { |p b e|
 	].pp
 });
 [ "You won't be working with them, you'll be working with us, /*our bodies.*/","1 2 3 4 3 2 5 2 3 4 5 3 6".dm(\g,\whole) /*++ "4 3 2".dm(\c,6)*/ ].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["You won't be","working with them"],
+	).sequenceText2(
+			b.parse([7]), [ 
+			["you'll be","working with us"],
+			],
+	)
+});
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	filter: (midinote: _ - 12), 
 	lyrics: "You won't be working + with them, you'll be working + with us, our bodies +",
@@ -277,6 +381,18 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 
 });
 P.tune();
+P(\bassLineLessSimple, music: { |p b e|
+	[
+		freq: [11, 7, 6, 5.5, 4.5].df(\g,3).q,
+		dur: b.parse([2, 1, 3, 6, 1]).q
+	].pp
+});
+P(\basslineSimple, music: { |p b e|
+	[
+		freq: [11, 7, 4.5].df(\g,[3]).q,
+		dur: b.parse([6,6,1]).q
+	].pp
+});
 [ "They'll be (boom) inside us, and we'll be ...","11 7 1.5 6 6 5.5 4.5 7 6".dm(\g) ].addLine;
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
@@ -1818,32 +1934,22 @@ P.still(\kirkStop, timecode: 2242.8.seconds, music: { |p b e|
 			],
 	)
 });
-P.synthV(role: \kirk, take: \lead, params: {|p b| [
+P.synthVs(role: \kirk, take: [\lead, \double], params: {|p b| [
 	filter: (midinote: _ - 12), 
 	lyrics: " Bones? You could stop all this by saying + no. ",
-	legato: [0.8, 1, 1, 1, 1, 1, 1, 1, 1, 1, ],
+	legato: [[0.8, 1, 1, 1, 1, 1, 1, 1, 0.8, 0.8, ]],
 	vocalMode: \Soft,
 	paramTension: 0.6,
-	pitchTake: 1
-] }, music:{|p b e|
+	pitchTake: [1, 3]
+] }, music:[1,-1].collect{|pan| {|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_, pan)
 
 	}.play
 
-});
-P.double(role: \kirk, take: \lead, params: {|p b| [
-	pitchTake: 1
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-		// /2
-		* [0.1,0.8]
-	}.play
-
-});
+} });
 P.tune('stop all this');
 P(\tune,start:'stop all this',syl:0,music:{|p b e| 
 	p.tune[e.start].list[1..].dropLast
@@ -1868,7 +1974,7 @@ P(\chord,start:'stop all this',music:{|p b e|
 		strum: [ 0.055, 0, 0.04 ].q
 	].pp
 });
-["Thats why-- I called you all here together. ","5  2 3  -6  3 4  4 5 2 5  5 6 6 7 6".dm('e-',5,\lydian)].addLine;
+["Thats why-- I called you all here together. ","2  2 3  -6  3 4  4 5 2 5  5 6 6 7 6".dm('e-',5,\lydian)].addLine;
 P.tune('here together');
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
@@ -1881,19 +1987,12 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 			],
 	)
 });
-P.synthV(role: \kirk,start: 'here together', take: \lead, params: {|p b| [
+P.synthVs(role: \kirk,start: 'here together', take: [\lead, \double], params: {|p b| [
 	filter: (midinote: _ - 12), 
 	lyrics: "That's why - r I - called -  you all here together. + - + ",
-	pitchTake: 1,
+	lag: [[0.05,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
+	pitchTake: [1, 3],
 	vocalMode: \Passionate
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
-
-});
-P.double(role: \kirk, take: \lead, params: {|p b| [
 ] }, music:{|p b e|
 	{
 		e.playbuf

@@ -4,7 +4,9 @@ SynthDef(\ooh, {| out=0 gate=1|
 		Vowel(\u,\soprano).blend(Vowel(\a,\soprano),VarLag.kr(\blend.kr(0),\lag.kr(0.5)))
 	)
 	=>Splay.ar(_)
-	* Env.cutoff(3).kr(2,gate:gate)
+	// * Env.cutoff(3).kr(2,gate:gate)
 	* \amp.kr(0.1)
+	* Env.asr(\att.kr(0),1,3).kr(2,gate:gate)
+	// => PanAz.ar(4,_,\pan.kr(0))
 	=>Out.ar(out,_)
 } ).add.tag(\vox); 

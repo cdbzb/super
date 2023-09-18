@@ -524,11 +524,13 @@ Song {
 		array.do({|i|i.name.postln})
 		^array
 	}
+
 	playSection {|sec| //uses play method which prepares infrastructure
 		sec=this.section(sec);
 		cursor=sec;
 		this.play(this.at(sec))
 	}
+
 	playRange { |start end |
 		var from,to;
 		# from, to = [start, end].collect{
@@ -539,6 +541,17 @@ Song {
 			|sec| this.play(this.at(sec))
 		}
 	}
+	playRanges{ |args|
+		fork{
+			this.playRange(args[0], args[1]);
+			( args[0] ..args[1] ).collect{|i| secDur[i]}.sum.wait;
+			args[2..].pairsDo{|i  j|
+				this.playSectionParts(i, j);
+				( i ..j ).collect{|i| secDur[i]}.sum.wait;
+			}
+		}
+	}
+
 	screengrab { |start end path tail=2|
 		//var player = P(start:) -- this would make it start with the music
 		var length = (start..( end ? start )).collect(this.secDur[_]).sum;

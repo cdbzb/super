@@ -3,6 +3,7 @@ SynthDefLibrary {
     classvar <>listings,<>taglist,<>currentPack,<>files;
 
     *initClass {
+        // Class.initClassTree(UGen);
         // Class.initClassTree(Phaser2);
         listings=List.new;
         taglist = ();

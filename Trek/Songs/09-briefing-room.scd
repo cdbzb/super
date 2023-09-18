@@ -1,3 +1,4 @@
+
 (
 s.waitForBoot { 
 	Song(\briefing,[]).current;
@@ -6,6 +7,60 @@ s.waitForBoot {
 Song.guitar= ~guitar ? AAS_Strum();
 ~guitar = Song.guitar;
 	{
+( Song.synthVGlobalVol = -3.dbamp;
+	Song.synthVReverbLen = 1500;
+
+Song.synthVTracks=EventWithDefault( // kirk is a little hot! -> adding additional -3db to make the same as Song 10
+	\default, {|e|
+		{
+			|i|
+			var early = 0.5; //early/late mix
+			var dryAmount = 1;
+			// var wet = 1; //total verb vs dry
+			var wet = 0.3; //total verb vs dry
+			EarlyRef.ar(i, source:[2,3,2], receiver:[0,0,0], roomsize:[4,5,6], hw:0.2, b:0.97, n:0, p:0, allp_lens:nil, allp_c:0.7)
+
+			=> DWGReverbC1C3.ar(_, len:Song.synthVReverbLen, c1:2, c3:20, mix:1-early * wet,)
+			+ ( i * dryAmount )
+			 * -15.dbamp
+			 * Song.synthVGlobalVol
+			=> HPF.ar(_,100)
+			// => DCompressor.ar(_, sidechainIn:0, sidechain:0, ratio:4, threshold:-40, attack:0.1, release:100.1, makeup:0.5, automakeup:1)
+		}
+	}, \feng, {
+
+		{
+			|i|
+			var early = 0.5;
+			var dryAmount = 1;
+			EarlyRef.ar(i, source:[2,3,2], receiver:[0,0,0], roomsize:[4,5,6], hw:0.2, b:0.97, n:0, p:0, allp_lens:nil, allp_c:0.7)
+
+			=> DWGReverbC1C3.ar(_, len:Song.synthVReverbLen, c1:2, c3:20, mix:1-early,)
+			+ ( i * dryAmount )
+			/ 6 
+			// *0.7
+			 * Song.synthVGlobalVol
+			=> HPF.ar(_,100)
+			=> DCompressor.ar(_, sidechainIn:0, sidechain:0, ratio:4, threshold:-40, attack:0.1, release:100.1, makeup:0.5, automakeup:1)
+		}
+	}, \an, {
+		{|i| 
+			var early = 0.5;
+			var dryAmount = 1;
+			i 
+			=> BPF.ar(_,1200,rq:0.3.reciprocal)
+			=> EarlyRef.ar(i, source:[2,3,2], receiver:[0,0,0], roomsize:[4,5,6], hw:0.2, b:0.97, n:0, p:0, allp_lens:nil, allp_c:0.7)
+
+
+			=> DWGReverbC1C3.ar(_, len:Song.synthVReverbLen, c1:2, c3:20, mix:1-early,)
+			+ ( i * dryAmount )
+			* -15.dbamp
+			* Song.synthVGlobalVol
+		}
+	}
+));
+Song.preroll_(1);
+Song.setQuarters(\scientist,"q q q q qqqq q q q e e ee e eqq q q q q qqqq q q q q".asBeats);
 [ "You`re going to what?","1 2 -7.5 1 6".dm(\a, \minor) ].addLine;
 P.synthV(role: \scott, take: \lead, params: {|p b| [
 	lyrics: "you're going + to what?",
@@ -24,6 +79,10 @@ P(\chord, syl:3, music: { |p b e|
 			(
 				freq: [1, 3, 4.5,6 ].df(\a, \minor),
 				dur:0.2
+			).play;
+			(
+				instrument: \cymbalsDS,
+				amp:0.025
 			).play
 });
 P.still(\scott, timecode: 2044.2.seconds, music: { |p b e|
@@ -45,12 +104,25 @@ P.synthV(role: \scott, take: \lead, params: {|p b| [
 	}.play
 
 });
+P(\strum,syl:4, music: { |p b e|
+	(
+		freq: [2,4,5, -2,-4,-5].sort.df('a-',\whole),
+		strum: 0.05,
+		pan: {1.rrand(-1)}!6,
+		out: Effect.bus({|i| i * SinOsc.ar(2) => FreeVerb.ar(_,0.2,1) },inputChannels:2)
+	).play
+});
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["are they alright","in the head, Doctor?"],
 	)
 });
+
+/* P(\boom,syl:7, music: { |p b e|
+	(lag: b.drop(1)[0]/2,amp:0.4,freq:1.df('b-',3)).play
+}); */
+Song.durs.filter(\head,{|i| var last = i.last; i.dropLast ++ (last * 0.6)});
 [ "MCCOY: No comment. ","1 4 1".dm('a-') ].addLine;
 P(\wash, music: { |p b e|
 	[
@@ -63,6 +135,12 @@ P(\wash, music: { |p b e|
 			* -3.dbamp
 			* EnvGen.cutoff(b.sum, 1)
 		},)
+	].pp
+});
+P(\note, music: { |p b e|
+	[
+		freq: [\r, 1].df('c#',3).q,
+		dur: b.q
 	].pp
 });
 Trek.presets.put(\mccoy,\an,[paramGender: 0.33]);
@@ -184,7 +262,7 @@ P.still(\kirk, timecode: 2050.8.seconds, music: { |p b e|
 			)
 });
 [ "MCCOY: Quite simple. Happens every day. ","1 4 1 1 2 5 3 4".dm('a-') ].addLine;
-Song.durs.filter(\Quite,{|i| var last = i.last; i.dropLast ++ (last * 0.5)});
+Song.durs.filter(\Quite,{|i| var last = i.last; i.dropLast ++ (last * 0.8)});
 P(\bassline, music: { |p b e|
 	[
 		freq: [ 5, 4, 3, ].df('c#',4,\minor).q,
@@ -386,6 +464,21 @@ P(\bassLineLessSimple, music: { |p b e|
 		freq: [11, 7, 6, 5.5, 4.5].df(\g,3).q,
 		dur: b.parse([2, 1, 3, 6, 1]).q
 	].pp
+});
+
+P(\bassNote2,syl:10, music: { |p b e|
+	(
+
+		freq: 1.df(\b,4),
+		out: Effect.bus({|i| DWGReverbC1C3.ar(i) },)
+	).play
+});
+P(\bassNote,syl:11, music: { |p b e|
+	(
+
+		freq: 1.df(\f,4),
+		out: Effect.bus({|i| DWGReverbC1C3.ar(i) },)
+	).play
 });
 P(\basslineSimple, music: { |p b e|
 	[
@@ -646,7 +739,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 			b.parse([4, 3, 3]), [ 
 			// ["",""],
 			["mankind", "could"],
-			["lead ahead","ten thousand years"]
+			["leap ahead","ten thousand years"]
 			],
 	)
 });
@@ -1365,48 +1458,7 @@ Song.setTempoMap(\scientist,"e e e e eeee e e e x x e x xee e e e e eeee e e e e
 //* ( 1!13 ++ Array.series(13,1,( 0.25 / 13 * -1)) => _.flat )
 //// * 0.75
 //=> _.q;
-( Song.synthVTracks=EventWithDefault(
-	\default, {
-		{
-			|i|
-			var early = 0.5; //early/late mix
-			var dryAmount = 1;
-			// var wet = 1; //total verb vs dry
-			var wet = 0.3; //total verb vs dry
-			EarlyRef.ar(i, source:[2,3,2], receiver:[0,0,0], roomsize:[4,5,6], hw:0.2, b:0.97, n:0, p:0, allp_lens:nil, allp_c:0.7)
 
-			=> DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:1-early * wet,)
-			+ ( i * dryAmount )
-			 * -15.dbamp
-			=> HPF.ar(_,100)
-			=> DCompressor.ar(_, sidechainIn:0, sidechain:0, ratio:4, threshold:-40, attack:0.1, release:100.1, makeup:0.5, automakeup:1)
-		}
-	}, \feng, {
-
-		{
-			|i|
-			var early = 0.5;
-			var dryAmount = 1;
-			EarlyRef.ar(i, source:[2,3,2], receiver:[0,0,0], roomsize:[4,5,6], hw:0.2, b:0.97, n:0, p:0, allp_lens:nil, allp_c:0.7)
-
-			=> DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:1-early,)
-			+ ( i * dryAmount )
-			/ 6 
-			*0.7
-			=> HPF.ar(_,100)
-			=> DCompressor.ar(_, sidechainIn:0, sidechain:0, ratio:4, threshold:-40, attack:0.1, release:100.1, makeup:0.5, automakeup:1)
-		}
-	}, \an, {
-		{|i| 
-			i 
-			=> BPF.ar(_,1200,rq:0.3.reciprocal)
-			=> FreeVerb.ar(_,0.05,1)
-			* -6.dbamp
-		}
-	}
-));
-Song.preroll_(1);
-Song.setQuarters(\scientist,"q q q q qqqq q q q e e ee e eqq q q q q qqqq q q q q".asBeats);
 P.synthV(\feng,  filter: (midinote: _ - 12),  params: {|p b| [
 	lyrics: "r r r r r r r I'm a sigh - entist + r r r r r r r and I'm",
 	vocalMode: \Opera
@@ -2356,8 +2408,4 @@ P(\bass,start:\kid,music:{|p b e|
 P.tune(\kid);
 }
 )
-Song.secDur
-Song.sections.collect(Song.secDur[ _ ]).sum 
-Song.sections
-Song.secDur[0]
 

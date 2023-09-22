@@ -4,10 +4,6 @@ s.waitForBoot{
 	// Stills("/Users/michael/trek/BySection/media/return to tomorrow.mov").current;
 	Stills().current;
 	Song.currentSong.infrastructure=FunctionList.new.array_([
-		{ 
-			~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
-			"/Users/michael/tank/super/808-mod.scd".load 
-		}
 	]);
 	~clocks=SongArray.new(size:64);
 	~clock={|tempi| 
@@ -28,7 +24,7 @@ s.waitForBoot{
 		]
 	);
 );
-["Now...","3".dm(\a),[17]].addLine;
+["Now...","3".dm(\a)].addLine;
 P.still(\henoch, timecode: 3005.4.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -53,10 +49,15 @@ P(\chord, music: { |p b e|
 		).play
 });
 ["(boom) this formula -- -- will reduce the ", [11,13,13,12,11,12,11, 7,11, 12, 13].dm('d',octave:4 )].addLine;
+Song.setTempoMap(\reduce,"q q e x xqqe x x e x xe e");
 P.still(\henoch, timecode: 3009.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["this formula","will reduce the"],
+		text: ["",""],
+	).sequenceText2(
+			b.parse([1]), [ 
+				["this formula","will reduce the"],
+			],
 	)
 });
 Song.formulaQuantAmount = 0.78;
@@ -92,32 +93,26 @@ P.synthV(role: \formulaLead,lag: -0.02, take: \lead, params: {|p b| [
 		=> Pan2.ar(_)
 	}.play
 });
-P.synthV(\mo, take:\lead, lag: -0.03, params: {|p b| [
+P.synthVs(\mo, take:[\lead, \double], lag: -0.03, params: {|p b| [
 	lyrics: "r this formula + + - - will reduce + the ",
-	lag:[0,0,0,0,0,0,0,0.1,0,0],
-	pitchTake: 1,
+	lag:[[0,0,0,0,0,0,0,0.1,0,0]],
+	pitchTake: [1, 3],
 	paramTension:-0.2,
 	paramBreathiness:0.2,
 	vocalMode: \Muted
-] }, music:{|p b e|
-	{
-		e.playbuf
-		// => p.synthVTracks.at(e.key).()
-		/4
-		}.play
-});
-P.double(\mo, params: {|p b| [
-		
-	] }, music:{|p b e|
+] }, music:
+[-1,1].collect{|pan|
+	{|p b e|
 		{
 			e.playbuf
-			=>Pan2.ar(_,1)
 			// => p.synthVTracks.at(e.key).()
 			/4
+			=> HPF.ar(_,170)
+			* -2.dbamp
+			=> Pan2.ar(_)
 		}.play
-	});
-Song.quarters['this formula']= Song.parseBeats('this formula', [1,1,1/2,1/4,11/4,1/4,1/4,1/2,1/4,3/4,1/2]);
-Song.setTempoMap('this formula', [1,1,1/2,1/4,11/4,1/4,1/4,1/2,1/4,3/4,1/2]);
+	}
+});
 P.synthV(\kevin, take:\harmony,
 	filter: (midinote: [-1, 1, 1, -7, -6].dm(\d)), 
 	params: {|p b| [
@@ -181,12 +176,48 @@ P.double(\an, take: \ooh, params: {|p b| [
 	amp: 0.08
 ];
 );
+Song.chankSwitch = \u;
+P(\chank, music: { |p b e|
+	var out = Effect.bus({|i|AnalogVintageDistortion.ar(i,drivegain: 1.8,bias:0.18,shelvingfreq:600,lowgain:0.00,highgain:0.8) / 15  },);
+	[
+		freq: [[5, 11, 13],[5, 7, 13],[6, 11, 13],[5, 7, 12, 13]].df(\d,4).q,
+		instrument: \defaultPiano,
+		dur: "qq qq qq qq".asBeats.warpTo( e.tempoMap ).q,
+		// type: \strum,
+		// instance: p.guitar,
+
+		out:  out
+	].pp;
+	[
+		freq: [[5, 11, 13],[5, 7, 13],[6, 11, 13],[5, 7, 12, 13]].df(\d,4).q,
+		instrument: \defaultPiano,
+		dur: "qq qq qq qq".asBeats.warpTo( e.tempoMap ).q,
+		type: \strum,
+		instance: p.guitar,
+
+		out:  out
+	].pp;
+	[
+		type: \strum,
+		rest: [\r,1].q(inf),
+		instance: p.guitar,
+		dur: "q q q q q q q q".asBeats.warpTo( e.tempoMap ).q,
+		lag: 0.01,
+		// switch:\muted,
+		// switch:\alt,
+		switch: p.chankSwitch,
+		out:  out
+	].pp
+
+});
+Song.guitar = ~guitar ? AAS_Strum(); ~guitar = Song.guitar;
+Song.guitar.setPlayMode(\strum);
 P(\bass,'this formula',music: {|p b e|
 		[ 
 			freq: [1,-7,-6,-5].collect{|i x| i.dup([2,3,2,2][x])}.flat
 			.df('d',tuning:\sept1,octave:[3,4]).q ,
 			dur: [3,1, 1,2,1, 3,1, 3,1]/2=>_.warpTo(e.tempoMap.quantizeDft) =>_.q,
-		] ++ Song.formulaBass => _.pp
+		] ++ Song.formulaBass => _.ppma
 	});
 
 ( Song.hatPattern={ | map num=64 | 
@@ -210,6 +241,12 @@ p.hatPattern.(
 //=>_.play( Song.quarters[e.start].quantizeWindow.asTempoClock)
 });
 ["(boom )heart action and the bodily " , [6, 14,13,11, 7,11,12,13,11].dm('d',octave:4 )].addLine ;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.drop(1).sum,
+		text: ["heart action","and the bodily"],
+	)
+});
 P.synthV(role: \formulaLead, take:\lead,
 	pbind: Song.enlarge(5,2) ,
 	params: {|p b| [
@@ -323,7 +360,42 @@ P(\bass,'bodily',music: {|p b e|
 			dur: 0.5!4 ++ ( "ex x".asBeats *2 !3 ).flatten
 			=> _.warpTo(e.tempoMap.quantizeDft(p.formulaQuantAmount))
 			=>_.q
-		] ++ p.formulaBass => _.pp
+		] ++ p.formulaBass => _.ppma
+});
+P(\chank, music: { |p b e|
+	var out = Effect.bus({|i|AnalogVintageDistortion.ar(i,drivegain: 1.8,bias:0.18,shelvingfreq:600,lowgain:0.00,highgain:0.8) / 15  },);
+	[
+		freq: [[6, 11, 4], [6, 11, 14],[15, 11, 14],[ 13], [14, 5, 11], [4, 5, 11],[3, 5, 12], [3, 5, 13]].df(\d,4).q,
+		instrument: \defaultPiano,
+		dur: "q q q q q q q q ".asBeats.warpTo( e.tempoMap ).q,
+		rest: [1,\r, ].q(inf),
+		instance: p.guitar,
+
+		out:  out
+	].pp;
+	[
+		type: \strum,
+		freq: [[6, 11, 4], [6, 11, 14],[15, 11, 14],[ 15, 11, 14], [14, 5, 11], [4, 5, 11],[3, 5, 12], [3, 5, 13]].df(\d,4).q,
+		// rest: [\r,1].q(inf),
+		instance: p.guitar,
+		dur: "q q q q  q q q q".asBeats.warpTo( e.tempoMap ).q,
+		// rest: [\r, 1].q,
+		lag: [0, 0,0,-0.06,0,0,0,0].q,
+		// switch:\down,
+		out:  out
+	].pp;
+
+	[
+		type: \strum,
+		rest: [\r,1].q(inf),
+		instance: p.guitar,
+		dur: "q q q q  q q q q".asBeats.warpTo( e.tempoMap ).q,
+		lag: [0, 0,0,-0.06,0,0,0,0].q + 0.01,
+		rest: [\r, 1].q(inf),
+		// lag: 0.01,
+		switch: p.chankSwitch,
+		out:  out
+	].pp
 });
 ["functions to normal. ",[7,6, 12,11,7 ].dm('d',octave:4 )].addLine;
 P.synthV(\mo, take: \harmony, 
@@ -390,7 +462,41 @@ p.hatPattern.(e.tempoMap.quantizeDft(p.formulaQuantAmount), 16)// => Pfin(8,_)
 //=>_.play(Song.quarters[e.start].quantize.asTempoClock);
 });
 //P.tune('to normal',);
-P.tune( 'to normal',Pset(\dur, Song.tempoMap[ 'to normal' ] .beats.warpTo(Song.tempoMap[ 'to normal' ].quantizeDft).q,_));
+// P.tune( 'to normal',Pset(\dur, Song.tempoMap[ 'to normal' ] .beats.warpTo(Song.tempoMap[ 'to normal' ].quantizeDft).q,_));
+P.tune('to normal',  _ <> [instrument: \harp].p.fin(3)  ); 
+P(\chank, music: { |p b e|
+	var out = Effect.bus({|i|AnalogVintageDistortion.ar(i,drivegain: 1.8,bias:0.18,shelvingfreq:600,lowgain:0.00,highgain:0.8) / 15  },);
+	[
+		freq: [[-6,3,7],[-6,3,6],[2,5,11],[2,5,7]].df(\d,4).q,
+		instrument: \defaultPiano,
+		dur: "q q q q q q q q ".asBeats.warpTo( e.tempoMap ).q,
+		rest: [1,\r, 1, 1 ].q(inf),
+		instance: p.guitar,
+
+		out:  out
+	].pp;
+	[
+		type: \strum,
+		rest: [\r,1].q(inf),
+		instance: p.guitar,
+		dur: "q q q q  q q q q".asBeats.warpTo( e.tempoMap ).q,
+		rest: [\r, 1].q,
+		lag: [0, 0,0,-0.06,0,0,0,0].q,
+		// switch:\down,
+		out:  out
+	].pp;
+
+	[
+		type: \strum,
+		rest: [\r,1].q(inf),
+		instance: p.guitar,
+		dur: "q q q q  q q q q".asBeats.warpTo( e.tempoMap ).q,
+		rest: [\r, 1].q,
+		lag: 0.01,
+		switch:p.chankSwitch,
+		out:  out
+	].pp
+});
 ["(boom) While the bodies are occupied, ",[-15,-5,-6,-7,1,2,4,3,1].dm('c')].addLine;
 P.still(\withSyringe, timecode: 3013.8.seconds, music: { |p b e|
 	 e.still.( 
@@ -561,23 +667,40 @@ P.tune('hypo you will',  { |i| i
 });
 Song.quarters['hypo you will'] = Song.parseBeats('hypo you will',[1, 1,1,1,1, 1,1,3/2,1/2, 1,1,5, 1]);
 P(\hypoBase,'hypo you will', music:{|p b e|
-[
-	//	instrument:\pluckD,
-	freq: [ \r ] ++ [ 1 ].stutter(8) ++ [ -5 ].stutter(8) 
-	=> _.df('d',octave:3) =>_.q,
-	amp:0.03,
-	smooth:0.1,
-	coef: 0.9,
-	drive: 0.94,
-	// out: Effect.bus({|i| AnalogTape.ar(i,drive:[ 0.5,0.5 ]) },)
-].pm(\pluckD)
-.play
-(
-	Song.quarters['hypo you will']
-	//	.quantizeWindow
-	.asTempoClock
-)
+	[
+		//	instrument:\pluckD,
+		freq: [ \r ] ++ [ 1 ].stutter(8) ++ [ -5 ].stutter(8) 
+		=> _.df('d',octave:3) =>_.q,
+		amp:0.03,
+		smooth:0.1,
+		coef: 0.9,
+		drive: 0.94,
+		// out: Effect.bus({|i| AnalogTape.ar(i,drive:[ 0.5,0.5 ]) },)
+	].pm(\pluckD)
+	.play
+	(
+		Song.quarters['hypo you will']
+		//	.quantizeWindow
+		.asTempoClock
+	)
 });
+P(\drumz, music: { |p b e|
+	[
+		dur: "q q qqq q qq q q qq q q qq q".asBeats.warpTo( Song.quarters['hypo you will'] ).q,
+		instrument: \kick_gentle,
+		decay: 20,
+		tone: 44,
+		rest: MuteFirst(),
+		vol: 0.2
+	].pp;
+	(
+		instrument: \cymbalsDS,
+		amp: 0.03,
+		lag: b[0]
+	).play
+	
+});
+
 P(\hypoAnswer,start:'hypo you will',music:{|p b e|
 [
 	freq:\r!12 ++ [5,4,3,2,1] =>_.df('a',octave:5 ) =>_.q,

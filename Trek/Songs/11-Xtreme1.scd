@@ -112,11 +112,11 @@ P(\bassnote, start:0, music:
 		).play
 	}
 );
-P.synthV(role: \mccoy , take: \lead,
+P.synthVs(role: \mccoy , take: [\lead, \double],
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
 	lyrics: "the extreme + power + of the",
-	pitchTake: 1,
+	pitchTake: [1, 3],
 	vocalMode: \Light ,// Chest and Power are available
 	paramBreathiness: 1.5,
 	pitchExpression:1.5
@@ -125,14 +125,6 @@ P.synthV(role: \mccoy , take: \lead,
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 	}.play
-});
-P.double(role: \mccoy , take: \lead, params: {|p b| [
-		
-	] }, music:{|p b e|
-		{
-			e.playbuf
-		=> p.synthVTracks.at(e.key).()
-		}.play
 });
 ["alien mind will make the -","e5 d c f e f g f", ].addLine; //1
 P.synthV(role: \mccoy , take: \lead,
@@ -252,53 +244,64 @@ P.still(\turned, timecode: 2509.seconds, music: { |p b e|
 		text: ["",""],
 	)
 });
-P.synthV(role: \mccoy, start: P.calcStart,take:\lead,
+P.synthVs(role: \mccoy,start: P.calcStart(\functions), take:[\lead, \double],
 	wait:1,
 	filter: (midinote: _ - 12), 
-	pbind:{|p b| 
-		[
-			dur: b ++ 
-			p.durs[p.section(\functions)+1][0]
-			=> _.q,
-			midinote:p.tune[p.section(\functions)].list 
-			++p.tune[p.section( \functions)+1].list[0] => _.q 
-		].p
-	},
-
+	pbind: Song.enlarge(1),
 	params: {|p b| [
 		lyrics: "r and the body + functions + will race",
-		pitchTake: 1
+		pitchTake: [1, 3]
 	] }, music:{|p b e|
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
 		}.play
-	}) ;
-P.double(role: \mccoy,take:\lead,
-		wait:1,
-		pbind:{|p b| 
-			[
-				dur: b ++ 
-				p.durs[p.section(\functions)+1][0]
-				=> _.q,
-				midinote:p.tune[p.section(\functions)].list 
-				++p.tune[p.section( \functions)+1].list[0] => _.q 
-			].p
-		},
-		params: {|p b| [
-		] }, music:{|p b e|
-			{
-				e.playbuf
-				=> p.synthVTracks.at(e.key).()
-			}.play
-		});
-// 	// //
+	}
+);
+P(\racing, music: { |p b e|
+	// var bus = Bus.audio(2);
+	{
+		WhiteNoise.ar(0.1)
+		// => LPF.ar(_, Impulse(10) => Decay.ar(_,0.1) => _.range(60, 3000) )
+		* (
+			Impulse.ar(10) => Decay.ar(_,0.1)
+			=> HPF.ar(_,200)
+			=> Pan2.ar(_,SinOsc.ar(0.3))
+			*4
+		)
+		+ (
+			PinkNoise.ar(0.8)
+			* (Impulse.ar(2.5) => Decay.ar(_,0.1) )
+			=> LPF.ar(_,Impulse.kr(2.5).range(60,100) => Decay.kr(_,0.1) )
+			=> Ringz.ar(_,30,0.05)
+			=> Pan2.ar(_,-0.5)
+		)
+		+ ( 
+			BrownNoise.ar(0.1)
+			* (Impulse.ar(2.5) => Decay.ar(_,0.1) )
+			=> LPF.ar(_,Impulse.kr(2.5).range(60,100) => Decay.kr(_,0.1) )
+			=> DelayN.ar(_,1/5,1/5)
+			=> HPF.ar(_,200)
+			=> Ringz.ar(_,120,0.1)
+			=> Pan2.ar(_,0.5)
+	).clip(0.1)
+	=> HPF.ar(_,500)
+	* Env([0,0,1,0],e.bAll.parse([2, 5,4])).kr(2,gate:1)
+	/4
+		
+	}.play
+});
 P( \keys,
-		music:Pbind(\dur,~xtreme.durs[3]++Pseq([1]), \instrument,\test,
-		\amp,1,
-		\lag,Pwhite(-0.01,0.01),
-		\midinote,Pseq([\r]++~xtreme.tune[3].list.copyRange(1,~xtreme.tune[3].list.size)++[79])-24)
-	);
+	music:{|p b e|
+		[
+			\dur, b.q ++ [1].q,
+			\instrument,\test,
+			\amp,1,
+			\lag,Pwhite(-0.01,0.01),
+			\midinote,Pseq([\r]++~xtreme.tune[3].list.copyRange(1,~xtreme.tune[3].list.size)++[79])-24,
+			\lagTime: 0.2
+		].ppma
+});
 [" race r r many times their natural me-", "g5 r r  e5 g5 a4 g5 f e g ", ].addLine; //4
 P.synthV(role: \mccoy,start:4, wait:1, take:\lead,
 		filter: (midinote: _ - 12), 
@@ -706,15 +709,15 @@ Pbind(\midinote,Pseq(Song.tune[Song.section( 'tran -' )].list[0..3])-[0,12],\ins
 ["plete. metabolic rate is","c#4 c5 b-4 c5 a-4 d4 c5"].addLine; //1
 P.still(\chapelMetabolic, timecode: 2608.8.seconds,syl:0, music: { |p b e|
 		 e.still.( 
-			wait: b.sum,
+			wait: b.drop(1).sum + e.bNext[..6].sum,
 			text: ["metabolic rate is","double and rising"],
 		)
 });
 P.synthV(role: \chapel , take: \lead,
-		pbind: Song.enlarge(5),
+		pbind: Song.enlarge(7),
 		params: {|p b| [
-		lyrics: "r metabolic + + + rate is double + and rising +",
-		legato: [1, 1, 1, 1, 1, 1, 1, 1, 0.7, 1, 1, 1, ],
+		lyrics: "r metabolic + + + rate is double + and rising + doctor +",
+		legato: [1, 1, 1, 1, 1, 1, 1, 1, 0.7, 1, 1, 0.7, 1, 1, ],
 		pitchTake: 1,
 		// vocalMode: \Power
 	] }, music:{|p b e|
@@ -728,7 +731,7 @@ P.tune('plete. m');
 P.still(\clear,syl:7, timecode: 0.seconds,lag: 0.01, music: { |p b e|
 	 e.still.( 
 		wait: e.drop(1) ++ e.bNext.sum,
-		text: ["Hello",""],
+		text: ["",""],
 	)
 });
 P.synthVs(\ninezero, take: [\lead, \double],
@@ -758,6 +761,10 @@ P.still(\henochRude,syl:nil, timecode:
 		 e.still.( 
 			wait: b.sum + e.bNext.sum,
 			text: ["Hello",""],
+		).sequenceText2(
+				b.sum, [ 
+				["",""],
+				],
 		)
 });
 P(\helloChord,start:'lo. ',music:
@@ -932,54 +939,44 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 		)
 });
 P.tune('half a million');
-P.synthV(role: \henoch, take:\lead,
+P.synthVs(role: \henoch, take:[\lead, \double],
 			filter: (midinote: _ - 12), 
 			params: {|p b| [
 			lyrics: "half a million + years - ",
-			pitchTake: 1
+			pitchTake: [1, 3]
 		] }, music:{|p b e|
 			{
 				e.playbuf
 				=> p.synthVTracks.at(e.key).()
 			}.play
 		});
-P.double(role: \henoch,
-			filter: (midinote: _ - 12), 
-			params: {|p b| [
-				
-			] }, music:{|p b e|
-				{
-					e.playbuf
-					=> p.synthVTracks.at(e.key).()
-				}.play
-			});
-		~phrase6quarter=Song.durs['half a million years-'].list.[0..6].sum/6;
-P(\bass6,start:'half a million',music:
-Pseq([
-				(note:5-24,dur:~phrase6quarter*3,amp:0.5),
-				(note:4-24,dur:~phrase6quarter,amp:0.5),
-				(note:7-24,dur:~phrase6quarter*4,amp:0.5),
-			])
-		);
-		~durs6=Song.durs['half a million'].list;
-P(\yow6,start:'half a million',music:
-Pbind(\instrument,\yowbass,
-				\note,Pseq([[-3,0],[-3,0],[-5,-1]]),
-				\dur,Pseq( [~durs6[0..2].sum,~durs6[3],~durs6[4..8].sum]),
-				\amp,0.03,
-			),
-		);
-P(\keys6,start:'half a million',music:
-Pbind(
-				\instrument,\harp,
-				\midinote,Pseq(~panNotes.("f5 a4 c5")-[0,12]),
-				\dur,//Pseq(
-
-				Song.durs['half a million'].list.[0..1]
-				.sum/4
-				//) //make a function for this
-			)
-		);
+~phrase6quarter=Song.durs['half a million years-'].list.[0..6].sum/6;
+P(\bass6,start:'half a million',music: {|p b e|
+		Pseq([
+			(note:5-24,dur:~phrase6quarter*3,amp:0.5),
+			(note:4-24,dur:~phrase6quarter,amp:0.5),
+			(note:7-24,dur:~phrase6quarter*4,amp:0.5),
+		]).play
+});
+~durs6=Song.durs['half a million'].list;
+P(\yow6,start:'half a million',music: {|p b e|
+		[\instrument,\yowbass,
+			\note,Pseq([[-3,0],[-3,0],[-5,-1]]),
+			\dur,Pseq( [~durs6[0..2].sum,~durs6[3],~durs6[4..8].sum]),
+			\amp,0.03,
+		].pp
+});
+P(\keys6,start:'half a million',music: {|p b e|
+		[
+			\instrument,\harp,
+			\midinote, [11, 3, 5].dm(\f).q,
+			\dur,//Pseq(
+			Song.durs['half a million'].list.[0..1]
+			.sum/4
+			//) //make a function for this
+		].pp
+	}
+);
 P(\keys62,start:'half a million',syl:5,music:
 Pbind(
 				\instrument,\stab,
@@ -1014,12 +1011,13 @@ P.still(\HenochWelcome,syl:0, timecode: 2626.65.seconds, music: { |p b e|
 		)
 });
 P.tune('r r you');
-P.synthV(role: \spock, take: \lead,
-			filter: (midinote: _ - 24), 
+P.synthVs(role: \henoch, take: [\lead, \double],
+			filter: [(midinote: _ - 12),(midinote: _ - 24)], 
 			params: {|p b| [
 			// lyrics: " r yoh uel kam r",
 			lyrics: " r you're welcome +",
-			pitchTake: 1
+			// lag: [[0, Song.durs[\elcome].list[1]/2,0,0]],
+			pitchTake: [1, 3]
 		] }, music:{|p b e|
 			{
 				e.playbuf
@@ -1057,7 +1055,7 @@ P.still(\thalassaForgotten, timecode: 2647.9.seconds, music: { |p b e|
 					],
 			)
 		});
-P.synthV(role: \thalassa,
+P.synthV(role: \thalassa, start: \forgotten,
 			filter: (midinote: _ - 12), 
 			take: \lead, start: Song.section(\forgotten),
 			pbind: Song.enlarge2(5,Song.section(\forgotten)),
@@ -1079,13 +1077,13 @@ P(\pad8,start:'what it fee',music:
 			p{
 				var du=Song.durs['what it fee'].list;
 				var dv=Song.durs['even to br'].list;
-				var a=(instrument:\sawSynth,out:[[0,2],[2,0],1],midinote:[4,8,11]+60,att:4.5,rel:5,amp:0.05,lagTime:0.3).play;
-	Pbind.new(*[
+				var a=(instrument:\sawSynth,out:[[0,2],[2,0],1],midinote:[4,8,11]+60,att:4.5,rel:5,amp:0.05,lagTime:0.3, pan: [-0.6, -0.3, 0.6], out: 2).play;
+				[
 					type:\set,
 					id:a[\id],
 					freq: Pseq([ [4,8,11],[3,6,11],[3,6,10],[1,6,10],[1,4,10],[-1,4,8] ]+72).midicps ,
 					dur:Pseq([du[0..1].sum,du[2..3].sum,du[4..6].sum,dv[0..1].sum,dv[2..5].sum,1 ])
-				]).play;
+				].pp;
 			}
 		);
 P(\trombone,start:'what it fee',music: 
@@ -1104,7 +1102,7 @@ P(\trombone,start:'what it fee',music:
 					chan:3,
 					patch: \trombone,
 					midinote: [5,1,-7].dm('c#',[2,4],\mixolydian).q,
-					out: Effect.bus( { |i| DWGReverbC1C3.ar(i,mix:0.2,c1:2) * 0.4 } ),
+					out: Effect.bus( { |i| DWGReverbC1C3.ar(i,mix:0.2,c1:2) * 0.4 * 2 } ),
 					// - [12,36]
 					// Pseq(~noteList.(["g#","c#","b3"]))-[12,36] ,
 					dur:[Song.secDur['what it fee'],Song.secDur['even to br'],3].q,
@@ -1115,7 +1113,7 @@ P(\trombone,start:'what it fee',music:
 			}
 		);
 ["ls like even to brea-","d#5 a#4 c#5 d# e f# "].addLine;//9
-["th again, Sargon?"," g#5 f# b4 g5 g"].addLine;//10
+["th again, Sargon?"," g#5 f# b4 g4 g"].addLine;//10
 P.still(\looking, timecode: 2658.6.seconds,syl:2, music: { |p b e|
 			 e.still.( 
 				wait: b.sum,
@@ -1157,28 +1155,27 @@ P.double(\genbu, params: {|p b| [
 			});
 		~panList={|string| Panola.new(string).midinotePattern.list.flatten};
 		~noteList={|list| list.collect({|x|~panNotes.(x)}).flatten };
-P(\pf11,start:'Here, in this',music:
-Ppar([
-				//(instrument:\cymbal,dur:13)
-				//,
-	Pbind(*[
-					midinote:Pseq( ~noteList.(["<a c5 f>","<g c5 e>","<b- d5 g>","<a c5 f>"])-12),
-					dur:Song.durs['Here, in this'],
-					strum:Pseq([0.01,0.01,0.02,0.01])
-				]),
-	Pbind(*[
-					instrument:\test,
-					amp:0.5,
-					midinote:Pseq( ~panList.("c g3 f c4"))-[ 12,24 ]-7,
-					dur:Song.durs['Here, in this'],
-				])
-			])
+P(\pf11,music: {|p b e|
+					[
+						midinote:Pseq( ~noteList.(["<a c5 f>","<g c5 e>","<b- d5 g>","<a c5 f>"])-12),
+						dur:Song.durs['Here, in this'],
+						strum:Pseq([0.01,0.01,0.02,0.01]),
+						pan: -0.3
+					].pp;
+					[
+						instrument:\testSustain,
+						amp:0.5,
+						midinote:Pseq( ~panList.("c g3 f c4"))-[ 12,24 ]-7,
+						dur:Song.durs['Here, in this'],
+						legato: [0.9, 1, 0.9,1, ].q,
+					].ppma
+				}
 		);
 
 		// Song.addGuides("xxxxxxxxxxx");
 
-		~quarters=SongArray.new();
-[ "trill","r",[4] ].addLine; //0
+~quarters=SongArray.new();
+[ "trill","r",[2] ].addLine; //0
 		(
 			~synTrill={ 
 				|chan=1 amp=0.3 transpose=0 len=6|
@@ -1251,7 +1248,7 @@ P.double(role: \thalassa, params: {|p b| [
 [ "r your body is r r  not unlike ","c#3 f4 d# c# g#3 f#2 f# f#4 f d#" ].addLine; //2
 P.still(\clear, timecode: 0.seconds,syl:0, music: { |p b e|
 		 e.still.( 
-			wait: b.sum,
+			wait: b.drop(1).sum,
 			text: ["your body is","not unlike"],
 		)
 });
@@ -1374,7 +1371,7 @@ P.still(\kirklooksDown,syl:0, timecode: 2756.45.seconds, music: { |p b e|
 				wait: b.drop(1).sum,
 				text: ["after","so long"],
 			).sequenceText2(
-					b.parse([5,1,4]), [ 
+					b.drop(1).parse([5,1,4]), [ 
 						["",""],
 					["so very","long"],
 					["",""]

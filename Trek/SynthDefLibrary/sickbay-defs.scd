@@ -24,7 +24,7 @@ fork{
 }).add.tag(\keys);
 
 SynthDef(\door,{
-	var len=1;
+	var len=\len.kr(1);
 	var sig=WhiteNoise.ar();
 	var env= Env.linen(0.01,len-0.02,0.01).kr(2,gate:1);
 	var fenv= Env.linen(len-0.21,0.18,0.03).kr(2,gate:1);

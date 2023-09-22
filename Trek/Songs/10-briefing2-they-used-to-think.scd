@@ -26,16 +26,10 @@
 		);
 	);
 ["they used to think if man could ","f3 f g g a a b "].addLine; //0
-P.still(\kirkUsed, timecode: 2314.1.seconds, music: { |p b e|
-			 e.still.( 
-				wait: b.sum,
-				text: ["",""],
-			)
-});
-P.still(\kirk, timecode: 2314.seconds, music: { |p b e|
+P.still(\kirk, timecode: 2314.1.seconds, music: { |p b e|
 			e.still.( 
-				wait: b.sum,
-				text: ["they used to think","if man could"],
+				wait: b.sum + e.bNext[0],
+				text: ["they used to think","if man could fly"],
 				fade:9
 			).sequenceText2(
 				b.sum, [ 
@@ -76,10 +70,10 @@ P(\pedalNote,  music: { |p b e|
 }.();
 // P.tune(\think);
 ["fly, he`d have wings, but he","b3 a g c#4 b3 c#4"].addLine; //1
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
-		text: ["fly, he'd have wings","but he" ],
+		wait: b.drop(1).sum,
+		text: [" he'd have wings","but he" ],
 	)
 });
 P(\line, music: { |p b e|
@@ -139,6 +133,12 @@ P(\cymbal, music: { |p b e|
 		(instrument: \cymbalsDS, amp:0.02).play
 });
 ["(boom) he discovered he ","c d4 c b3 a b"].addLine;//3
+P.still(\clear, timecode: 0.seconds,syl:0, music: { |p b e|
+	 e.still.( 
+		wait: b.drop(1).sum + e.bNext[..1].sum,
+		text: ["he discovered he","had to"],
+	)
+});
 P.synthVs(role: \kirk, take: [\lead, \double],
 	pbind: Song.enlarge(2),
 	params: {|p b| [
@@ -155,6 +155,18 @@ P.synthVs(role: \kirk, take: [\lead, \double],
 P.tune(_ <>(instrument:\harp, amp:0.02));
 P(\boomBass,start:\discovered,music:(note:0,octave:3,amp:0.5,dur:Song.secDur[3]));
 ["had to.. do you wish that the first","c4 b3 g#3 e b g# a b"].addLine;//4
+P.still(\kirkPoint,syl: 1, timecode: 2317.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
+P.still(\clear, syl: 1, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.drop(1).sum,
+		text: ["do you wish","that the first"],
+	)
+});
 P.tune();
 P.synthVs(role: \kirk, take: [\lead, \double], params: {|p b| [
 		lyrics: "r r  do you wish that the first",
@@ -191,10 +203,10 @@ P(\bass,start:\first,syl:3,music:{|p b e|
 	].pp 
 });
 ["Apollo mission hadn`t reached the","c#4 f# c# e d# b-3 a- b- b"].addLine;//5
-P.still(\kirkPoint, timecode: 2317.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["Apollo mission","hadn`t reached the"],
 	)
 });
 P.synthVs(role: \kirk, take: [\lead, \double],
@@ -212,6 +224,12 @@ P.synthVs(role: \kirk, take: [\lead, \double],
 });
 
 ["moon... or that we hadnt  ","c#4 b3 a g a b  "].addLine;//6
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["Moon","or that we hadn't"],
+	)
+});
 P.synthVs(role: \kirk, take:[\lead, \double], params: {|p b| [
 	lyrics: "r or that we hadn't + ",
 	pitchTake: [1,3]
@@ -246,6 +264,12 @@ P(\ooh, start:\moon,music: {
 	}.value
 });
 ["gone on to" , "d4 e- b3"].addLine; //7
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["gone on","to"],
+	)
+});
 P.synthVs(role: \kirk, take: [\lead, \double], params: {|p b| [
 	lyrics: "gone on to",
 	pitchTake: [1,3],
@@ -271,6 +295,12 @@ P(\bass,start:'gone on', music: {|p b e|
 });
 //~recorder.(Song,7,2)
 ["Mars, and then to the nearest","a4 g4 g e f g e"].addLine;//8
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["Mars, and then","to the nearest"],
+	)
+});
 Song.setTempoMap(\nearest,"qe e e x x e e");
 P(\tamb, music: { |p b e|
 	{
@@ -385,6 +415,12 @@ Pmono(\pluckDVerb,
 	).play
 });
 ["star (boom boom) ","b4"].addLine;//9
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["star",""],
+	)
+});
 P(\cymbal, music: { |p b e|
 	(
 		instrument: \cymbalsDS,
@@ -661,9 +697,18 @@ P(\bell,start:'grandfather',syl:2,music:(
 
 P.still(\kirkCommand,syl:0, timecode: 2348.25.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
+		wait: b.drop(1).sum,
+			text: ["I'm",""],
 		fade:10
+	).sequenceText2(
+			e.bAll.drop(1).parse([ 1, 1, 1,1,  2]), [ 
+			["",""],
+			["in",""],
+			["",""],
+			["command", ""],
+			["",""]
+
+			],
 	)
 });
 	Song.setTempoMap(\Im,"q q q  E E E");
@@ -766,6 +811,17 @@ Pulse.ar(\freq.kr(400,0.3),0.3)=>Mix.ar(_)//=>MoogLadder.ar(_,800,1)//=>MoogFF.a
 
 	//}}}
 ["trol, I can order this (boom) but I'm","f4 e- f g- f d- f#3 c4 d- "].addLine;//1
+P.still(\clear, timecode: 0.seconds, syl:0, music: { |p b e|
+	 e.still.( 
+		wait: b.drop(1).sum + e.bNext.sum,
+		text: ["I can","order this"],
+	).sequenceText2(
+			b.drop(1).parse([5,1]), [ 
+			["",""],
+			["but I'm not", "because"]
+			],
+	)
+});
 P.synthVs(role: \kirk, take:[\lead, \double],
 	pbind: Song.enlarge(1),
 		// lag: [0.2,0],
@@ -857,8 +913,8 @@ P(\waaah2,start:'not', lag:(-0.30), music:{//{{{
 ["Doctor McCoy (boom) is ", "g#3 a f# g# f#2 g#3"].addLine; //3
 P.still(\oneMore, timecode: 2350.15.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
+		wait: b.sum + e.bNext.sum,
+		text: ["Doctor McCoy","is"],
 	)
 });
 Song.setTempoMap(\Doctor,"e x x e x x");
@@ -923,6 +979,18 @@ P(\drMcoyBass3,start:'Doctor',music:{|p b e| fork{
 }});//}}}
 //P(\keys3,start:'right',syl:1,music:{Synths(\sawzz2,\att,1.5,\freq,[1,3,5,8].degreescps(root:1,scale:\minor)).dur(3) });
 ["(boom) right in pointing out (boom) the e-nor--","c#3 c#4 d# c# c b-3 d#2 c4 a3 a-"].addLine; //4
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum + e.bNext.sum,
+		text: ["",""],
+	).sequenceText2(
+			e.bAll.parse([1,5,1]), [ 
+			["right in","pointing out"],
+			["",""],
+			["the enormous danger","potential in any"]
+			],
+	)
+});
 P.synthVs(role: \kirk, take:[ \lead, \double ],
 	pbind: Song.enlarge(11),
 	params: {|p b| [
@@ -981,6 +1049,12 @@ P(\passing5b ,start:'-mous',music:{ |p b e|
 P(\chord5II ,start:'-mous',syl:5,music:{|p b e| (out:0,instrument:\tri,note:[6,11,13],dur:1) });
 P(\chord5III ,start:'-mous',syl:2,music:(out:1,instrument:\tri,note:[3,6,9],dur:1));//}}}
 ["(boom) (boom) con-- tact with ","c2 c2 c4 c4 d"].addLine;//6
+P.still(\clear,syl:1, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.drop(1).sum,
+		text: ["contact","with"],
+	)
+});
 P.synthV(role: \kirk, take:\lead, params: {|p b| [
 		lyrics: "r r contact + with",
 		pitchTake: 2,
@@ -1037,6 +1111,12 @@ P(\slide6,start:'con--',syl:2,lag:0.2,music:{ |p b e|
 P(\slide6echo,start:'con--',syl:2,lag:0.55,music:{ |p b e| [amp:0.005,root:4,degree:Pseries(30,-1,38),dur:Pwhite(0.01,0.012)*1.85,instrument:\mda,vel:60].pp });//}}}
 ///// 7 /////{{{
 ["life and intelligence so fan-","g4 d g f# e d e f#"].addLine;//7
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum ,
+		text: ["life and","intelligence so fan.."],
+	)
+});
 P.synthV(\ninezero, take:\harmony,
 	filter: (midinote: [3, 3, 3, 2, 2,2].dm(\g)), 
 	params: {|p b| [
@@ -1095,6 +1175,16 @@ P(\bass7,start:\life,music: { |p b e|
 	].pp
 });
 ["(trill) --tas --tic --ly ad-- va -- --nced as","e3 g#4 f# e d b- c5 b-4 a "].addLine;//8
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	).sequenceText2(
+			b.parse([1]), [ 
+			["...tastically advanced","as"],
+			],
+	)
+});
 P.synthVs(role:\kirk, take:[\lead, \double],
 	pbind:Song.enlarge(6),
 	params: {|p b| [
@@ -1123,19 +1213,33 @@ P(\lick8,start:'(trill)',syl:4,music: { |p b e|
 	].pp
 });
 ["this, but I must point out that the possi","b-4 a g# a b d f# g# a b"].addLine;//9
-P.still(\kirkDocile, timecode: 
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum + e.bNext[..2].sum,
+		text: ["this","but"],
+	).sequenceText2(
+			b.parse([2]), [ 
+			["I must point out","that the possibilities"],
+			],
+	) 
+});
+/* P.still(\kirkDocile, timecode: 
 	// 2400.seconds
 	2417.seconds //james brown
 	// 2413.4.seconds// smiling
-
 	, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		fadeIn:5,
-		fade:9,
+		// fadeIn:5,
+		// fade:9,
 		text: ["",""],
+	).sequenceText2(
+			e.bAll.parse([2, 11]), [ 
+			["I must point out","that the possibilities"],
+			["",""]
+			],
 	)
-});
+}); */
 P.synthVs(role: \kirk, take:[\lead, \double],
 pbind: Song.enlarge(3),
 params: {|p b| [
@@ -1183,6 +1287,16 @@ P(\bend9,start:'this,',music: {| p b e|
 //}}}
 //// 10 ////{{{
 ["-bilities,the potential, for knowledge and ad-","c#5 a4 e a c#5 d b4 d5 d b4 e5 d"].addLine;//10/
+P.still(\clear, syl:2, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.drop(1).sum + e.bNext.sum,
+		text: ["the potential","for knowledge and"],
+	).sequenceText2(
+			b.drop(1).parse([8]), [ 
+			["advancement is","equally great"],
+			],
+	)
+});
 P.synthVs(role: \kirk, take: [\lead, \double],
 	pbind: Song.enlarge(11),
 	params: {|p b| [

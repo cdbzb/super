@@ -385,12 +385,12 @@ P(\pianoWorship,start:'worship',music:{|p b e|
 });
 		//["/*SPOCK*/ Yes, of course, Just as we do, Doctor. ",[7,5,4,5,7,12,11,5,3].dm('e',octave:5 )].addLine;
 ["/*SPOCK*/ (boom) Yes, (boom) of course, Just as we do, Doctor. ",[-7,7,-7,5,4,5,7,12,11,5,3].dm('e',octave:5 )].addLine;
-		P.still(\clear, timecode: 0.seconds, music: { |p b e|
+		P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
 			 e.still.( 
-				wait: b.sum,
+				wait: b.drop(1).sum,
 				text: ["Yes","of course"],
 			).sequenceText2(
-					b.parse([3,6]), [ 
+					b.drop(1).parse([4]), [ 
 					["just as we do","doctor"],
 					],
 			)
@@ -678,13 +678,12 @@ P.still(\respond, timecode: 2854.1.seconds, music: { |p b e|
 		text: ["",""],
 	)
 });
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds,lag:0.01, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["that will be","unnecessary, Doctor"],
 	)
 });
-
 P.synthVs(role: \henoch, take: [ \lead, \double ], params: {|p b| [
 	lyrics: "that will be unnecessary + + + + Doctor +",
 	pitchTake: [ 1, 3 ]
@@ -758,7 +757,7 @@ P.double(\ninezero, take: \lead, params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.still( \clear, start: 'adapted to', timecode:0 ,syl:0, music: { |p b e|
+P.still( \clear, start: 'adapted to', timecode:0 ,syl:0,lag:0.01, music: { |p b e|
 	e.still.value(
 		wait: b.drop(1).sum,
 		text: ["this Vulcan body",""]
@@ -771,12 +770,12 @@ P.still( \clear, start: 'adapted to', timecode:0 ,syl:0, music: { |p b e|
 	}
 
 });
-P.still(\spockClose, timecode: 
+P.still(\spockClose,syl:0, timecode: 
 // 3055.seconds //mouth closed
 3047.2.seconds
 , music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
+		wait: b.drop(1).sum,
 		text: ["",""],
 	)
 });
@@ -1023,8 +1022,10 @@ P.still(\clear,syl:1,lag:0.01, timecode: 0.seconds, music: { |p b e|
 		wait: e.bAll.parse([26]).unbubble,
 		text: ["we will transfer","at once"],
 	).sequenceText2(
-			b.drop(1).parse([6]) ++ (b.last + e.bNext.sum) , [
+			// b.drop(1).parse([6]) ++ (b.last + e.bNext.sum) , [
+				e.bAll.drop(1).parse([6, 9, 1]),[
 			["until you can", "administer the"],
+			["",""],
 			["metabolic reduction","injection"]
 			],
 	)		
@@ -1290,13 +1291,16 @@ P(\reedChordFortunate,lag:-0.15,start:'fortunate',music:{ |p b|
 Song.durs.filter( _ *  1.5);
 P.still(\transformKirk, timecode: 2932.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b[0],
+		wait: b[0] -0.5,
 		text: ["",""],
+		fade:1.5
 	)
 });
-P.still(\transformThal,syl:0, timecode: 2935.seconds, music: { |p b e|
+P.still(\transformThal, timecode: 2935.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b[1],
+		fadeIn:b[1],
+		fade:2,
 		text: ["",""],
 	)
 });
@@ -1336,12 +1340,17 @@ P(\transform, music: { |p b e|
 });
 // ["/*SPOCK*/ This woman will assist me. (boom boom)",[11,5,6,7,5,11,5, 2,2].dm('c')].addLine;
 ["/*SPOCK*/(boom) This woman will assist me. (boom boom)",[1,11,5,6,7,5,11,5, 2,2].dm('c')].addLine;
-P.still(\chapelAndThalassa, syl:0, 
+P.still(\henochAndMccoy,  
 	timecode: 2943.seconds ,
 	music: { |p b e|
 	 e.still.( 
-		wait: b.drop(1).sum,
-		text: ["this woman","will assist me"],
+		 fadeIn: b[0],
+		wait: b.sum,
+		text: ["",""],
+	).sequenceText2(
+			b.parse([1]), [ 
+				["this woman","will assist me"]
+			],
 	)
 });
 P.synthV(role: \henoch,
@@ -1370,25 +1379,76 @@ P(\bass,start:'woman',music:{ |p b|
 		amp:[0.1,0.01],
 		att:[0.9,0,0,0].q,
 		dur:b.parse([8,1,1]).q
-	].pp
+	].pp;
 }
 );
+P(\strings, music: { |p b e|
+	(
+		instrument: \stringyy,
+		freq: [2, 4.5] df: \f
+	).play
+});
+P(\bells, music: { |p b e|
+	[
+		instrument: \harp,
+		freq: [[-1, 5, -11  ], [-7, 7 ], [1, 11 ]].df(\c,\minor).q,
+		dur: [b.sum, e.bNext.sum, 1].q,
+		out: Effect.bus({|i|  FreeVerb.ar(i,0.5,[ 1, 0.9 ]) },inputChannels:2),
+		coef:0.4,
+		amp: 0.02
+	].pp
+});
+P(\descant, music: { |p b e|
+	[
+		freq: [11, 7, 11, 6.5, 5].df(\c,6).q,
+		dur: e.bAll.parse([4, 2, 3, 1, 1]).q,
+		att:5,
+		amp:0.01,
+		instrument: \sparkTriangle,
+		depth:0.005,
+		out: Effect.bus({|i| i=> Pan2.ar(_,0.8) => {|i| i + CombN.ar(i, 0.35, 0.3) /3} },)
+	].ppm
+});
 ["(to Chapel) (boom) /*You will*/ take me to your",[1,11,7,6,5].dm('e-')].addLine;
-P.still(\toChapel,syl:0, timecode: 2944.6.seconds, music: { |p b e|
+P.still(\toChapel, timecode: 2944.6.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.drop(1).sum,
+		wait: b.sum,
 		text: ["",""],
 	)
 });
-P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
+P.still(\clear,syl:0, timecode: 0.seconds,lag:0.01, music: { |p b e|
 	 e.still.( 
 		wait: b.drop(1).sum + e.bNext.sum,
 		text: ["take me","to your"],
 	).sequenceText2(
-			b.drop(1).parse([6]), [ 
+				e.bAll.drop(1).parse([4, 1]), [
+				["",""],
 			["pharmacology","laboratory"],
 			],
 	)
+});
+P(\pad, music: { |p b e|
+	(
+		instrument: \stringyy,
+		freq: [3,5] df: 'e-',
+		dur: b.sum
+	).play;
+	[
+		freq: [\r, 11, 7, 6, 5].df('e-',[4,6] ).q,
+		dur: b.q,
+		amp: 0.05,
+		out: Effect.bus({|i| FreeVerb.ar(i) },),
+	].pp
+});
+P(\chord,syl:0, music: { |p b e|
+	[
+		freq: [3, 5]  df: 'e-',
+		dur: b.drop(1).parse([1, 1, 1, 1]).q,
+		instrument: \defaultPiano,
+		legato
+
+		<)
+	].pp
 });
 P.synthVs(role: \henoch, take: [ \lead, \double ],
 	filter: (midinote: _ - 12), 
@@ -1396,7 +1456,7 @@ P.synthVs(role: \henoch, take: [ \lead, \double ],
 	params: {|p b| [
 	lyrics: "r take me to your r pharmacology + + + + laboratory + + + ",
 	pitchTake: [ 1, 3 ],
-	legato: [ [1, 0.6, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ] ],
+	legato: [ [1, 0.6, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,1.25 ] ],
 	vocalMode: \Muted
 ] }, music:{|p b e|
 	{
@@ -1413,7 +1473,26 @@ P(\baseNoteTake,start:'take me',music:{|p b|
 }
 );
 ["(boom) pharmacology laboratory. ",[1,11,7,11,5,7,4,5,4,3].dm('f',scale:\mixolydian)].addLine;
-P.tune('pharmacology',{|i|i.drop(6) <> [instrument: \visual_pad, amp: 1].p => Pmul(\freq,[1,2],_)},syl:5);
+P(\chord,music: { |p b e|
+	[
+		freq: [-22,2]  df: 'e-',
+		strum: 0.03,
+		dur: b.drop(1)[0].q,
+		instrument: \defaultPiano,
+		out: Effect.bus({|i| i => BPF.ar(i, 900) => SineShaper.ar(_, 0.03, 1) },)
+	].pp;
+	( instrument: \cymbalsDS, amp: 0.01 ).play
+}, syl:nil);
+P(\middlevoice, music: { |p b e|
+	[
+		freq: [\r,5, 5, 5, 5, 5, 1, 1, 1, 1, -4] df:.4 \f perform: \q,
+		instrument: \sawSynth, amp:0.03,
+		dur: b ++ 1 => _.q
+	].pp
+});
+P.tune('logy lab',{|i| i.drop(1) => Pmul(\freq,0.501,_) <> [instrument:\wash, freqLag:0.01].pm }, syl:0);
+P.tune('logy labo',{|i| i.drop(1) => Pmul(\freq,0.501,_) <> [instrument:\harp, freqLag:0.01, out:Effect.bus({|i| CrossoverDistortion.ar(i ,smooth:0.9) / 10 => {|i| i+ CombN.ar(i,0.3,0.3)} * EnvGen.cutoff(Song.durs['phar'].list.sum,1) },)].pm }, syl:0);
+P.tune('pharmacology',{|i|i.drop(6) <> [instrument: \visual_pad, amp: [1, 1.3, 1.3, 1.3].q, rel:2, legato:[1, 1, 1, 1,1].q].pma => Pmul(\freq,[1,2],_)},syl:5);
 P(\soundEffectPharmacology,lag:0.26,start:'pharmacology',music:{|p b|
 	(type:\tuneUp,freq:1.df('c',octave:4),amp:0.01).play
 }
@@ -1433,7 +1512,8 @@ P.still(\leaving, timecode: 2949.1.seconds, music: { |p b e|
 P(\door,start:'They leave',music:{|p b|
 	var line= Line.kr(0,1,b.sum);
 	var panBus=Bus.audio(s,1);
-	{WhiteNoise.ar(0.03)}.play.dur(b.sum);
+	// {WhiteNoise.ar(0.03)}.play.dur(b.sum);
+	Synth(\door, [\len:2,\amp,0.03]);
 	(instrument:\stringyy,freq:[1,11].df('b-',octave:2 ),
 	out:panBus.index,
 	amp:0.4,
@@ -1444,21 +1524,24 @@ P(\door,start:'They leave',music:{|p b|
 		dur:b.sum/8,
 		legato:2,
 		instrument: \visual_pad,
-		amp:1
-	].p => Pmul(\freq,[1,2],_) => _.play
+		amp:1,
+		rel: [1, 4, 2, 2, 2, 2, 2, 2].q,
+		legato:[1, 0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9].q
+	].pma => Pmul(\freq,[1,2],_) => _.play
 }
 );
 // idea  do the doors with  additive synthesis
 ["/*KIRK*/ (frown) Bones, what?, it was", [7,17,14,15,15].dm('c',octave:3)].addLine;
-P.tune();
 // Song.durs.filter( _ + [0,1,0, 0, 0] );
 P(\frown, music: { |p b e|
 	(
 		instrument: \trem2,
 		size:0.8,
+		rel: 5,
+		amp: 0.03,
 		freq: [1,2,3].df(\e),
 		out: Effect.bus({|i| i * Env.triangle(3).kr(2,gate:1) },)
-	).play
+	).play;
 });
 P.still(\kirkAndBones, timecode: 2954.666.seconds, music: { |p b e|
 	 e.still.( 
@@ -1517,16 +1600,39 @@ P(\frownFrown,start:'frown',music:{|p b|
 		Array.fill(30,{freq.pareto(3)})
 		=>{|j| var i = \freq.kr(j,8);
 		FSinOsc.ar(i,0,24*i.reciprocal**2
-			*Env.linen(2.5,10, 14.rand).kr(2)
+			*Env.linen(1.5,10, 4.rand).kr(2)
+			// *10
 		)
 	}
-	=>Mix.ar(_)}.play(s,out) };
+	=>Mix.ar(_)
+	* EnvGen.cutoff(b.sum,0.5)
+	}.play(s,out) };
 	function.(300,0);
 	function.(900,3);
 	function.(1900,1);
+	function.(1800,2);
+	function.(5800,4);
 }
 );
 ["/*MCCOY*/ close, Jim. You both barely got back a -- ",[13,5,6,12,11,7,11,12,7].dm('c',octave:4,scale:\melodicMinor )].addLine;
+P(\closeSizzle, music: { |p b e|
+	{
+
+	var function={|freq out| {
+		Array.fill(30,{freq.pareto(3)})
+		=>{|j| var i = \freq.kr(j,8);
+		FSinOsc.ar(i,0,24*i.reciprocal**2
+			*Env.linen(0,0.5, b[..2].sum).kr(2)
+			* 9
+		)
+	}
+	=>Mix.ar(_)
+	* EnvGen.cutoff(b.sum,0.5)
+	}.play(s,out) };
+	function.(3000,0);
+	function.(3000,1);
+	}.()
+});
 P.still(\clear,syl:1, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.drop(1).sum + e.bNext.sum,
@@ -1555,10 +1661,11 @@ P(\barelyRead8,start:'barely',lag:0.1,syl:2,music:{|p b|
 		instrument:\reedy,
 		freq:[1,3,11,13].df('f',octave:4),
 		//lag:0.1,
-		sustain:1,
+		sustain:b.drop(1)[..5] - 0.5,
 		out:{4.rand}!4,
-		release:4,
-		amp:0.05
+		release:2,
+		amp:0.04,
+		// out:Effect.bus({|i| i * EnvGen.cutoff(b.drop(1)[..5].sum, 0.3) },inputChannels:4,)
 	).play 
 });
 P(\firstChord,start:'barely',music:{|p b|

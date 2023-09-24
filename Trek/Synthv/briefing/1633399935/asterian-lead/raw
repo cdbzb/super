@@ -1,0 +1,597 @@
+var o, p;
+o = [
+	Event.prNew,  Array.prNew(24),  Array.prNew,  Event.prNew,  
+	Array.prNew(8),  Array.prNew(1),  Event.prNew,  Array.prNew(12),  
+	Array.prNew(1),  Event.prNew,  Array.prNew(8),  Array.prNew(1),  
+	Event.prNew,  Array.prNew(32),  Event.prNew,  Array.prNew(16),  
+	Array.prNew(14),  Event.prNew,  Array.prNew(40),  "00000",  
+	Event.prNew,  Array.prNew(4),  Event.prNew,  Array.prNew(8),  
+	Array.prNew(4),  Event.prNew,  Array.prNew(12),  Event.prNew,  
+	Array.prNew(12),  Event.prNew,  Array.prNew(12),  Event.prNew,  
+	Array.prNew(12),  "with",  Event.prNew,  Array.prNew(8),  
+	Array.prNew(4),  Event.prNew,  Array.prNew(12),  Event.prNew,  
+	Array.prNew(12),  Event.prNew,  Array.prNew(12),  Event.prNew,  
+	Array.prNew(12),  "707010000",  "",  Event.prNew,  
+	Array.prNew(4),  Event.prNew,  Array.prNew(40),  "707010000",  
+	"their",  "1004770000",  Event.prNew,  Array.prNew(40),  
+	"1711780000",  "knowledge",  "661850000",  Event.prNew,  
+	Array.prNew(40),  "2373630000",  "+",  "894130000",  
+	Event.prNew,  Array.prNew(40),  "3367110000",  "mankind",  
+	"794500000",  Event.prNew,  Array.prNew(40),  "4161610000",  
+	"+",  "834010000",  Event.prNew,  Array.prNew(40),  
+	"4995620000",  "could",  "856880000",  Event.prNew,  
+	Array.prNew(40),  "6066720000",  "leap",  "800150000",  
+	Event.prNew,  Array.prNew(40),  "6866870000",  "ahead",  
+	"581410000",  Event.prNew,  Array.prNew(40),  "7448280000",  
+	"+",  "866470000",  Event.prNew,  Array.prNew(40),  
+	"8314750000",  "ten",  "594110000",  Event.prNew,  
+	Array.prNew(40),  "8908860000",  "thousand",  "856590000",  
+	Event.prNew,  Array.prNew(40),  "9765450000",  "+",  
+	"558830000",  Event.prNew,  Array.prNew(40),  "10324280000",  
+	"years",  "935620000",  "main",  Event.prNew,  
+	Array.prNew(32),  Event.prNew,  Array.prNew(8),  Array.prNew,  
+	"cubic",  Event.prNew,  Array.prNew(8),  Array.prNew,  
+	"cubic",  Event.prNew,  Array.prNew(8),  Array.prNew,  
+	"cubic",  Event.prNew,  Array.prNew(8),  Array.prNew,  
+	"cubic",  Event.prNew,  Array.prNew(8),  Array.prNew,  
+	"cubic",  Event.prNew,  Array.prNew(8),  Array.prNew,  
+	"cubic",  Event.prNew,  Array.prNew(8),  Array.prNew,  
+	"cubic",  Event.prNew,  Array.prNew(8),  Array.prNew,  
+	"cubic",  "c55226b8-e035-4fc6-a857-aacf2bbe7548",  Event.prNew,  Array.prNew(40),  
+	"c55226b8-e035-4fc6-a857-aacf2bbe7548",  Event.prNew,  Array.prNew(28),  "SVR2AI",  
+	"101",  "ASTERIAN",  "arpabet",  "english",  
+	"",  "",  Event.prNew,  Array.prNew(8),  
+	Array.prNew(1),  Event.prNew,  Array.prNew(12),  Event.prNew,  
+	Array.prNew(12),  "",  Event.prNew,  Array.prNew(4),  
+	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
+	Event.prNew,  Array.prNew(8),  Array.prNew(1),  Event.prNew,  
+	Array.prNew(12),  "",  "Unnamed Track",  Array.prNew,  
+	Event.prNew,  Array.prNew(20),  "ff7db235",  Event.prNew,  
+	Array.prNew(28),  "synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/SynthV/briefing/1633399935/asterian-lead"
+];
+p = [
+	// Event
+	0, [ array: o[1],  size: 6,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	1, [ nil,  nil,  'library',  o[2],  
+		'instantModeEnabled',  true,  'version',  128,  
+		'time',  o[3],  'tracks',  o[11],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'renderConfig',  o[187],  nil,  nil ],  
+	// Event
+	3, [ array: o[4],  size: 2,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	4, [ 'meter',  o[5],  nil,  nil,  
+		nil,  nil,  'tempo',  o[8] ],  
+	// Array
+	5, [ o[6] ],  
+	// Event
+	6, [ array: o[7],  size: 3,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	7, [ nil,  nil,  nil,  nil,  
+		'numerator',  4,  'denominator',  4,  
+		nil,  nil,  'index',  0 ],  
+	// Array
+	8, [ o[9] ],  
+	// Event
+	9, [ array: o[10],  size: 2,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	10, [ nil,  nil,  nil,  nil,  
+		'position',  0,  'bpm',  120.0 ],  
+	// Array
+	11, [ o[12] ],  
+	// Event
+	12, [ array: o[13],  size: 8,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	13, [ 'mainGroup',  o[14],  'mainRef',  o[150],  
+		nil,  nil,  nil,  nil,  
+		'name',  o[182],  nil,  nil,  
+		'groups',  o[183],  'dispOrder',  0,  
+		nil,  nil,  nil,  nil,  
+		'renderEnabled',  false,  'mixer',  o[184],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  'dispColor',  o[186] ],  
+	// Event
+	14, [ array: o[15],  size: 4,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	15, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  'notes',  o[16],  
+		'name',  o[114],  'parameters',  o[115],  
+		'uuid',  o[149],  nil,  nil ],  
+	// Array
+	16, [ o[17],  o[49],  o[54],  o[59],  
+		o[64],  o[69],  o[74],  o[79],  
+		o[84],  o[89],  o[94],  o[99],  
+		o[104],  o[109] ],  
+	// Event
+	17, [ array: o[18],  size: 11,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	18, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'onset',  o[19],  nil,  nil,  
+		nil,  nil,  'detune',  0,  
+		'systemAttributes',  o[20],  'pitchTakes',  o[22],  
+		'midinote',  65.0,  'lyrics',  o[33],  
+		'timbreTakes',  o[34],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'pitch',  65,  'duration',  o[45],  
+		'phonemes',  o[46],  'attributes',  o[47] ],  
+	// Event
+	20, [ array: o[21],  size: 0,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	21, [ nil,  nil,  nil,  nil ],  
+	// Event
+	22, [ array: o[23],  size: 2,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	23, [ nil,  nil,  'activeTakeId',  1,  
+		nil,  nil,  'takes',  o[24] ],  
+	// Array
+	24, [ o[25],  o[27],  o[29],  o[31] ],  
+	// Event
+	25, [ array: o[26],  size: 3,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	26, [ 'liked',  false,  nil,  nil,  
+		nil,  nil,  'id',  0,  
+		'expr',  1.0,  nil,  nil ],  
+	// Event
+	27, [ array: o[28],  size: 3,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	28, [ 'liked',  false,  nil,  nil,  
+		nil,  nil,  'id',  1,  
+		'expr',  1.0,  nil,  nil ],  
+	// Event
+	29, [ array: o[30],  size: 3,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	30, [ 'liked',  false,  nil,  nil,  
+		nil,  nil,  'id',  2,  
+		'expr',  1.0,  nil,  nil ],  
+	// Event
+	31, [ array: o[32],  size: 3,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	32, [ 'liked',  false,  nil,  nil,  
+		nil,  nil,  'id',  3,  
+		'expr',  1.0,  nil,  nil ],  
+	// Event
+	34, [ array: o[35],  size: 2,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	35, [ nil,  nil,  'activeTakeId',  0,  
+		nil,  nil,  'takes',  o[36] ],  
+	// Array
+	36, [ o[37],  o[39],  o[41],  o[43] ],  
+	// Event
+	37, [ array: o[38],  size: 3,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	38, [ 'liked',  false,  nil,  nil,  
+		nil,  nil,  'id',  0,  
+		'expr',  1.0,  nil,  nil ],  
+	// Event
+	39, [ array: o[40],  size: 3,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	40, [ 'liked',  false,  nil,  nil,  
+		nil,  nil,  'id',  1,  
+		'expr',  1.0,  nil,  nil ],  
+	// Event
+	41, [ array: o[42],  size: 3,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	42, [ 'liked',  false,  nil,  nil,  
+		nil,  nil,  'id',  2,  
+		'expr',  1.0,  nil,  nil ],  
+	// Event
+	43, [ array: o[44],  size: 3,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	44, [ 'liked',  false,  nil,  nil,  
+		nil,  nil,  'id',  3,  
+		'expr',  1.0,  nil,  nil ],  
+	// Event
+	47, [ array: o[48],  size: 0,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	48, [ nil,  nil,  nil,  nil ],  
+	// Event
+	49, [ array: o[50],  size: 11,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	50, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'onset',  o[51],  nil,  nil,  
+		nil,  nil,  'detune',  0,  
+		'systemAttributes',  o[20],  'pitchTakes',  o[22],  
+		'midinote',  72.0,  'lyrics',  o[52],  
+		'timbreTakes',  o[34],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'pitch',  72,  'duration',  o[53],  
+		'phonemes',  o[46],  'attributes',  o[47] ],  
+	// Event
+	54, [ array: o[55],  size: 11,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	55, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'onset',  o[56],  nil,  nil,  
+		nil,  nil,  'detune',  0,  
+		'systemAttributes',  o[20],  'pitchTakes',  o[22],  
+		'midinote',  70.0,  'lyrics',  o[57],  
+		'timbreTakes',  o[34],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'pitch',  70,  'duration',  o[58],  
+		'phonemes',  o[46],  'attributes',  o[47] ],  
+	// Event
+	59, [ array: o[60],  size: 11,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	60, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'onset',  o[61],  nil,  nil,  
+		nil,  nil,  'detune',  0,  
+		'systemAttributes',  o[20],  'pitchTakes',  o[22],  
+		'midinote',  69.0,  'lyrics',  o[62],  
+		'timbreTakes',  o[34],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'pitch',  69,  'duration',  o[63],  
+		'phonemes',  o[46],  'attributes',  o[47] ],  
+	// Event
+	64, [ array: o[65],  size: 11,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	65, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'onset',  o[66],  nil,  nil,  
+		nil,  nil,  'detune',  0,  
+		'systemAttributes',  o[20],  'pitchTakes',  o[22],  
+		'midinote',  72.0,  'lyrics',  o[67],  
+		'timbreTakes',  o[34],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'pitch',  72,  'duration',  o[68],  
+		'phonemes',  o[46],  'attributes',  o[47] ],  
+	// Event
+	69, [ array: o[70],  size: 11,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	70, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'onset',  o[71],  nil,  nil,  
+		nil,  nil,  'detune',  0,  
+		'systemAttributes',  o[20],  'pitchTakes',  o[22],  
+		'midinote',  72.0,  'lyrics',  o[72],  
+		'timbreTakes',  o[34],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'pitch',  72,  'duration',  o[73],  
+		'phonemes',  o[46],  'attributes',  o[47] ],  
+	// Event
+	74, [ array: o[75],  size: 11,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	75, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'onset',  o[76],  nil,  nil,  
+		nil,  nil,  'detune',  0,  
+		'systemAttributes',  o[20],  'pitchTakes',  o[22],  
+		'midinote',  70.0,  'lyrics',  o[77],  
+		'timbreTakes',  o[34],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'pitch',  70,  'duration',  o[78],  
+		'phonemes',  o[46],  'attributes',  o[47] ],  
+	// Event
+	79, [ array: o[80],  size: 11,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	80, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'onset',  o[81],  nil,  nil,  
+		nil,  nil,  'detune',  0,  
+		'systemAttributes',  o[20],  'pitchTakes',  o[22],  
+		'midinote',  74.0,  'lyrics',  o[82],  
+		'timbreTakes',  o[34],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'pitch',  74,  'duration',  o[83],  
+		'phonemes',  o[46],  'attributes',  o[47] ],  
+	// Event
+	84, [ array: o[85],  size: 11,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	85, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'onset',  o[86],  nil,  nil,  
+		nil,  nil,  'detune',  0,  
+		'systemAttributes',  o[20],  'pitchTakes',  o[22],  
+		'midinote',  72.0,  'lyrics',  o[87],  
+		'timbreTakes',  o[34],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'pitch',  72,  'duration',  o[88],  
+		'phonemes',  o[46],  'attributes',  o[47] ],  
+	// Event
+	89, [ array: o[90],  size: 11,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	90, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'onset',  o[91],  nil,  nil,  
+		nil,  nil,  'detune',  0,  
+		'systemAttributes',  o[20],  'pitchTakes',  o[22],  
+		'midinote',  72.0,  'lyrics',  o[92],  
+		'timbreTakes',  o[34],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'pitch',  72,  'duration',  o[93],  
+		'phonemes',  o[46],  'attributes',  o[47] ],  
+	// Event
+	94, [ array: o[95],  size: 11,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	95, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'onset',  o[96],  nil,  nil,  
+		nil,  nil,  'detune',  0,  
+		'systemAttributes',  o[20],  'pitchTakes',  o[22],  
+		'midinote',  71.0,  'lyrics',  o[97],  
+		'timbreTakes',  o[34],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'pitch',  71,  'duration',  o[98],  
+		'phonemes',  o[46],  'attributes',  o[47] ],  
+	// Event
+	99, [ array: o[100],  size: 11,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	100, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'onset',  o[101],  nil,  nil,  
+		nil,  nil,  'detune',  0,  
+		'systemAttributes',  o[20],  'pitchTakes',  o[22],  
+		'midinote',  69.0,  'lyrics',  o[102],  
+		'timbreTakes',  o[34],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'pitch',  69,  'duration',  o[103],  
+		'phonemes',  o[46],  'attributes',  o[47] ],  
+	// Event
+	104, [ array: o[105],  size: 11,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	105, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'onset',  o[106],  nil,  nil,  
+		nil,  nil,  'detune',  0,  
+		'systemAttributes',  o[20],  'pitchTakes',  o[22],  
+		'midinote',  67.0,  'lyrics',  o[107],  
+		'timbreTakes',  o[34],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'pitch',  67,  'duration',  o[108],  
+		'phonemes',  o[46],  'attributes',  o[47] ],  
+	// Event
+	109, [ array: o[110],  size: 11,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	110, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'onset',  o[111],  nil,  nil,  
+		nil,  nil,  'detune',  0,  
+		'systemAttributes',  o[20],  'pitchTakes',  o[22],  
+		'midinote',  71.0,  'lyrics',  o[112],  
+		'timbreTakes',  o[34],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'pitch',  71,  'duration',  o[113],  
+		'phonemes',  o[46],  'attributes',  o[47] ],  
+	// Event
+	115, [ array: o[116],  size: 8,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	116, [ nil,  nil,  'toneShift',  o[117],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  'pitchDelta',  o[121],  
+		'voicing',  o[125],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'tension',  o[129],  'vibratoEnv',  o[133],  
+		'loudness',  o[137],  nil,  nil,  
+		'breathiness',  o[141],  'gender',  o[145] ],  
+	// Event
+	117, [ array: o[118],  size: 2,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	118, [ 'points',  o[119],  nil,  nil,  
+		nil,  nil,  'mode',  o[120] ],  
+	// Event
+	121, [ array: o[122],  size: 2,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	122, [ 'points',  o[123],  nil,  nil,  
+		nil,  nil,  'mode',  o[124] ],  
+	// Event
+	125, [ array: o[126],  size: 2,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	126, [ 'points',  o[127],  nil,  nil,  
+		nil,  nil,  'mode',  o[128] ],  
+	// Event
+	129, [ array: o[130],  size: 2,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	130, [ 'points',  o[131],  nil,  nil,  
+		nil,  nil,  'mode',  o[132] ],  
+	// Event
+	133, [ array: o[134],  size: 2,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	134, [ 'points',  o[135],  nil,  nil,  
+		nil,  nil,  'mode',  o[136] ],  
+	// Event
+	137, [ array: o[138],  size: 2,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	138, [ 'points',  o[139],  nil,  nil,  
+		nil,  nil,  'mode',  o[140] ],  
+	// Event
+	141, [ array: o[142],  size: 2,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	142, [ 'points',  o[143],  nil,  nil,  
+		nil,  nil,  'mode',  o[144] ],  
+	// Event
+	145, [ array: o[146],  size: 2,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	146, [ 'points',  o[147],  nil,  nil,  
+		nil,  nil,  'mode',  o[148] ],  
+	// Event
+	150, [ array: o[151],  size: 10,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	151, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  'groupID',  o[152],  
+		'database',  o[153],  nil,  nil,  
+		'blickOffset',  0,  'pitchTakes',  o[162],  
+		'voice',  o[167],  nil,  nil,  
+		nil,  nil,  'systemPitchDelta',  o[172],  
+		'timbreTakes',  o[176],  'pitchOffset',  0,  
+		nil,  nil,  nil,  nil,  
+		'isInstrumental',  false,  nil,  nil,  
+		nil,  nil,  'dictionary',  o[181] ],  
+	// Event
+	153, [ array: o[154],  size: 7,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	154, [ 'backendType',  o[155],  'version',  o[156],  
+		'name',  o[157],  nil,  nil,  
+		'phoneset',  o[158],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  'language',  o[159],  
+		'languageOverride',  o[160],  'phonesetOverride',  o[161] ],  
+	// Event
+	162, [ array: o[163],  size: 2,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	163, [ nil,  nil,  'activeTakeId',  0,  
+		nil,  nil,  'takes',  o[164] ],  
+	// Array
+	164, [ o[165] ],  
+	// Event
+	165, [ array: o[166],  size: 3,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	166, [ 'liked',  false,  nil,  nil,  
+		nil,  nil,  'id',  0,  
+		'expr',  1.1,  nil,  nil ],  
+	// Event
+	167, [ array: o[168],  size: 3,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	168, [ 'vocalModeInherited',  true,  nil,  nil,  
+		nil,  nil,  'vocalModePreset',  o[169],  
+		'vocalModeParams',  o[170],  nil,  nil ],  
+	// Event
+	170, [ array: o[171],  size: 0,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	171, [ nil,  nil,  nil,  nil ],  
+	// Event
+	172, [ array: o[173],  size: 2,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	173, [ 'points',  o[174],  nil,  nil,  
+		nil,  nil,  'mode',  o[175] ],  
+	// Event
+	176, [ array: o[177],  size: 2,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	177, [ nil,  nil,  'activeTakeId',  0,  
+		nil,  nil,  'takes',  o[178] ],  
+	// Array
+	178, [ o[179] ],  
+	// Event
+	179, [ array: o[180],  size: 3,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	180, [ 'liked',  false,  nil,  nil,  
+		nil,  nil,  'id',  0,  
+		'expr',  1.0,  nil,  nil ],  
+	// Event
+	184, [ array: o[185],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	185, [ 'display',  true,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'pan',  0.0,  nil,  nil,  
+		nil,  nil,  'gainDecibel',  0.0,  
+		'mute',  false,  'solo',  false ],  
+	// Event
+	187, [ array: o[188],  size: 7,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	188, [ 'sampleRate',  48000,  'filename',  o[189],  
+		'aspirationFormat',  o[190],  nil,  nil,  
+		'exportMixDown',  true,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'numChannels',  1,  'destination',  o[191],  
+		'bitDepth',  24,  nil,  nil,  
+		nil,  nil,  nil,  nil ]
+];
+prUnarchive(o,p);

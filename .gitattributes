@@ -290,3 +290,4 @@ Trek/Stills/trimmed433.mov filter=lfs diff=lfs merge=lfs -text
 Trek/Stills/rerendered.mov filter=lfs diff=lfs merge=lfs -text
 Trek/Stills/return-to-tomorrow.cropped.mov filter=lfs diff=lfs merge=lfs -text
 Trek/Stills/return-to-tomorrow.mov filter=lfs diff=lfs merge=lfs -text
+Trek/*ynth*/**.wav filter=lfs diff=lfs merge=lfs -text

@@ -1,4 +1,8 @@
 + String {
+	+++ { |that|
+		^this.bubble ++ 
+			that.isString.if{ that.bubble }{that}
+	}
 	pbcopy { 
 		Pipe.new("echo " ++ this ++ "pbcopy","w")
 	}

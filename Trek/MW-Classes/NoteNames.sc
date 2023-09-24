@@ -1,13 +1,19 @@
 N{
-	var <degree, <accidental; 
-	classvar <intervalsFromA, <semitonesFromA, <qualitiesFromA, accidentals;
+	var <name, <accidental, <degree; 
+	classvar <intervalsFromA, <semitonesFromA, <qualitiesFromA, accidentals, <>names;
 	*initClass {
 		qualitiesFromA = [\perfect, \major, \minor, \perfect, \perfect, \minor, \minor];
 		intervalsFromA = qualitiesFromA.collect{|i x| V(x+1, i)};
 		semitonesFromA = intervalsFromA.collect(_.semitones);
+		names = [\a,\b,\c,\d,\e,\f,\g].collect{|i x|
+			i -> x
+		}.asDict
 	}
-	*new { | degree accidental |
-		^super.newCopyArgs(degree -1, accidental)
+	*new { | name accidental |
+		^super.newCopyArgs(name, accidental).init
+	}
+	init {
+		degree = names.at(name)
 	}
 	- {|note|
 		^
@@ -20,7 +26,7 @@ N{
 	}
 }
 V{
-	classvar <perfectIntervalQualities,<imperfectIntervalQualities,<defaultIntervals;
+	classvar <perfectIntervalQualities,<imperfectIntervalQualities,<defaultIntervals, names;
 	var <oneIndexedDegree, <quality, <direction, <defaultInterval,<degree ;
 	*initClass{
 		perfectIntervalQualities = (
@@ -36,21 +42,25 @@ V{
 			\major: 1,
 			\augmented:3
 		);
-		// default interval is twice the number of quartertones
+		// default interval is in terms of quartertones
 		// imperfect intervals have odd defaults perfect have even
 		// seconds can be major or minor, so the default will be midway between
 		defaultIntervals = [0, 3, 7, 10, 14, 17, 21, 24];
+		names = [\unison, \second, \third, \fourth, \fifth, \sixth, \seventh, \octave].collect{|i x|
+			x->i
+		}.asDict
 	}
 	*new {|oneIndexedDegree quality|
 		^super.newCopyArgs(oneIndexedDegree,quality).init
 	}
 	*fromAccidental {|accidental|
-		var quality = case
-		{accidental == \sharp}{\augmented}
-		{accidental == \doubleSharp}{'doubly-augmented'}
-		{accidental == \doubleFlat}{'doubly-diminished'}
-		{accidental == \flat}{'diminished'}
-		{accidental == \natural}{'perfect'};
+		var quality = switch( accidental,
+			\sharp,       {\augmented} ,
+			\doubleSharp, {'doubly-augmented'},
+			\doubleFlat,  {'doubly,-diminished'},
+			\flat,        {'diminished'},
+			\natural,     {'perfect'}
+		);
 		^V(1, quality)
 	}
 	init{

@@ -1,5 +1,4 @@
-(
-Song.new(\mauraTropical,[]).current;
+( Song.new(\mauraTropical,[]).current;
 Song.resources.infrastructure= {Song.setupGuitPart.(Song.currentSong)} ;
 Song.root= \c;
 // ["record","r",[0.1]].addLine;
@@ -923,10 +922,12 @@ P(\TUNEAndConnector, music: { |p b e|
 });
 ["VersTwoLoopConnect","r"].addLine;
 Song.cloneDursAndTempoMap(\VerseTwo);
-)
+);
+/*
 Song.pts.select{|i| i.key == \steel}.select{|i| i.start == Song.section(\arpeggios1)}
+*/
 
-(
+(// loop with pad on top
 var sections = [13,12].q(inf).asStream;
 	var r = Recorder.new(s);
     r.recHeaderFormat = "wav";
@@ -934,7 +935,7 @@ var sections = [13,12].q(inf).asStream;
     r.filePrefix = "ArpeggiosLoop_";
 fork{
 	0.1.wait;
-	r.record;
+	// r.record;
 	6.do{
 		var thisSec = sections.next;
 		Song.playSection(thisSec);
@@ -944,8 +945,8 @@ fork{
 	r.stopRecording
 }
 
-)
-(
+);
+( //calypsoTheme loop with tremolo
 var durs = [Song.secDur[\VerseLoop],Song.secDur['VersTwoLoop'],"qqqqqqqq".asBeats.warpTo(Song.tempoMap[\VersLoopConnecter]).unbubble];
 	var r = Recorder.new(s);
     r.recHeaderFormat = "wav";
@@ -957,7 +958,7 @@ var durs = [Song.secDur[\VerseLoop],Song.secDur['VersTwoLoop'],"qqqqqqqq".asBeat
 => Out.ar(1,_)
 	};
 fork{
-	r.record;0.1.wait;
+	// r.record;0.1.wait;
 	6.do{
 		[\VerseLoop,\VersTwoLoop,\VersLoopConnecter].do { |x i|
 			x.postln;

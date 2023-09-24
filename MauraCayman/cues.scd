@@ -1,4 +1,5 @@
-( 
+( //setup
+	Reaper.open;
 	//SETUP
 
 ~duration = {|from to| to.asFloat.asSeconds - from.asFloat.asSeconds};
@@ -99,14 +100,82 @@ Reaper.play(705);
 Reaper.sched(705f:22,~numberOne);
 Reaper.sched(706, ~moneymoney)
 )
+( //number3
+
+Reaper.play(2450);
+Reaper.sched(2450f:17,~numberOne);
+)
 ( // one two three
 	Reaper.play(920);
 	[920f:19, 923f:22,925f:22].collect{
-		|i x|
+	https://scsynth.org/t/dev-meetings-schedule/250/111	|i x|
 		Reaper.sched(i,
 			{ 
 				(freq:x + 1 df: \f, amp:0.3).play
 			}
 		)
 	}
+)
+( // musical cue effort
+// "~/tank/super/MauraCayman/tropical1.scd".standardizePath.load;
+var durs = [Song.secDur[\VerseLoop],Song.secDur['VersTwoLoop'],"qqqqqqqq".asBeats.warpTo(Song.tempoMap[\VersLoopConnecter]).unbubble];
+var moneyStack = 1852f:06;
+var cameraBlurry = 1922f:23;
+	Song.guitarFXSynthFunc = {
+		In.ar(Song.guitarFx,1) / 4 
+		=> HPF.ar(_,150)
+=> Out.ar(1,_)
+	};
+	~calypsoLoop = {|tempo|
+		{ 
+			TempoClock.tempo_(tempo);
+			fork{
+				// r.record;0.1.wait;
+				6.do{
+					[\VerseLoop,\VersTwoLoop,\VersLoopConnecter].do { |x i|
+						x.postln;
+						Song.playSection(x);
+						// Song.secDur[x].wait
+						durs[i].wait
+
+					};
+				};
+				3.wait;
+				r.stopRecording;
+				TempoClock.tempo_(1)
+			}
+	} };
+// Reaper.play(1836, 1837);
+// "~/tank/Maura\ Offshore/RPP/SC/calypsoMoneyBed.wav".version.record(1, 2, Reaper.lastPlayLength);
+// "~/tank/Maura\ Offshore/RPP/SC/calypsoMoneyBed.wav".record(1, 2, Reaper.lastPlayLength);
+Reaper.sched(1836f:20,~calypsoLoop.(tempo:0.7));
+// Reaper.play(1840);
+Reaper.sched(1851f:20,~calypsoLoop.(tempo:0.7));
+Reaper.sched( moneyStack,
+	{
+		(instrument: \cymbalsDS).play
+	}
+);
+Reaper.play(1920);
+Reaper.sched(1920f:20,~calypsoLoop.(tempo:0.7));
+Reaper.sched( cameraBlurry,
+	// ~calypsoLoop.(tempo:1).play;
+	// TempoClock.isRunning;
+	// TempoClock.clear;
+	// TempoClock.play;
+	// AppClock.clear;
+	// SystemClock.clear;
+	// TempoClock.clear();
+	// TempoClock.tempo_(1);
+	{
+		(dur:8, instrument:\wash, freq: [3,5,7,12].df(\f)).play
+	}
+)
+
+
+)
+(
+Song(\hongKong,[]).current;
+["intro",[-7, 1, 1, 3, 4, 4, 6, 7, 7, 2, 2.5, 2.5].dm('c',\mixolydian)].addLine;
+P.tune( { |i| i => Pmul(\freq,0.25,_)  <> [instrument: \sawSynth].pma ;} )
 )

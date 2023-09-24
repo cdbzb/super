@@ -262,6 +262,7 @@ SynthDef(\recc,{|buf bus=0|DiskOut.ar(buf,In.ar(bus))}).add;
 		//s.latency.wait;
 		TempoClock.all.do(_.clear);
 		SystemClock.do(_.clear);
+		Reaper.stop;
 	};
 	// Alga.parGroups[s] = AlgaParGroup(s.defaultGroup);
 	~vstRegistry.do{|i| 16.do{|x| i.midi.allNotesOff(x)}}

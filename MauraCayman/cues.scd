@@ -1,7 +1,7 @@
 ( //setup
 	Reaper.open;
 	//SETUP
-
+~recPath = "~/tank/Maura Offshore/RPP/SC/".standardizePath;
 ~duration = {|from to| to.asFloat.asSeconds - from.asFloat.asSeconds};
 
 ~dotted = 	{ | dur, pan=0, amp=0.7|
@@ -65,6 +65,10 @@
 			)
 		}
 )
+(//opening cue
+	//go ahead and break this out!!!
+	"/Users/michael/tank/super/MauraCayman/tropical1.scd".load; //calypsoTheme loop with tremolo
+)
 ( //hands moving up and down
 Reaper.play(123);
 ~upDown = {
@@ -80,6 +84,14 @@ Reaper.play(123);
 };
 Reaper.sched(124,~upDown);
 Reaper.sched(143f:10, { (instrument: \harp,freq: [300,400,560]).play })
+)
+(
+//67.8 Billion
+var title = 203f:12;
+Reaper.play(202,206);
+Reaper.sched(title - 0.2,{
+	(freq:[3,6,12].df(\c,6),instrument: \defaultPiano, dur:3).play
+})
 )
 ( //number titles
 	~numberOne = {
@@ -145,37 +157,54 @@ var cameraBlurry = 1922f:23;
 				TempoClock.tempo_(1)
 			}
 	} };
-// Reaper.play(1836, 1837);
-// "~/tank/Maura\ Offshore/RPP/SC/calypsoMoneyBed.wav".version.record(1, 2, Reaper.lastPlayLength);
-// "~/tank/Maura\ Offshore/RPP/SC/calypsoMoneyBed.wav".record(1, 2, Reaper.lastPlayLength);
-Reaper.sched(1836f:20,~calypsoLoop.(tempo:0.7));
-// Reaper.play(1840);
-Reaper.sched(1851f:20,~calypsoLoop.(tempo:0.7));
-Reaper.sched( moneyStack,
-	{
-		(instrument: \cymbalsDS).play
-	}
-);
-Reaper.play(1920);
-Reaper.sched(1920f:20,~calypsoLoop.(tempo:0.7));
-Reaper.sched( cameraBlurry,
-	// ~calypsoLoop.(tempo:1).play;
-	// TempoClock.isRunning;
-	// TempoClock.clear;
-	// TempoClock.play;
-	// AppClock.clear;
-	// SystemClock.clear;
-	// TempoClock.clear();
-	// TempoClock.tempo_(1);
-	{
-		(dur:8, instrument:\wash, freq: [3,5,7,12].df(\f)).play
-	}
+	// Reaper.play(1836, 1837);
+	// "~/tank/Maura\ Offshore/RPP/SC/calypsoMoneyBed.wav".version.record(1, 2, Reaper.lastPlayLength);
+	// "~/tank/Maura\ Offshore/RPP/SC/calypsoMoneyBed.wav".record(1, 2, Reaper.lastPlayLength);
+	Reaper.sched(1836f:20,~calypsoLoop.(tempo:0.7));
+	// Reaper.play(1840);
+	Reaper.sched(1851f:20,~calypsoLoop.(tempo:0.7));
+	Reaper.sched( moneyStack,
+		{
+			(instrument: \cymbalsDS).play
+		}
+	);
+	Reaper.play(1920);
+	Reaper.sched(1920f:20,~calypsoLoop.(tempo:0.7));
+	Reaper.sched( cameraBlurry,
+		// ~calypsoLoop.(tempo:1).play;
+		// TempoClock.isRunning;
+		// TempoClock.clear;
+		// TempoClock.play;
+		// AppClock.clear;
+		// SystemClock.clear;
+		// TempoClock.clear();
+		// TempoClock.tempo_(1);
+		{
+			(dur:8, instrument:\wash, freq: [3,5,7,12].df(\f)).play
+		}
+	)
 )
-
-
+( Song(\hongKong,[]).current;
+	["intro",[-7, 1, 1, 3, 4, 4, 6, 7, 7, 2, 2.5, 2.5].dm('c',\mixolydian)].addLine;
+	P.tune( { |i| i => Pmul(\freq,0.25,_)  <> [instrument: \sawSynth].pma ;} )
 )
-(
-Song(\hongKong,[]).current;
-["intro",[-7, 1, 1, 3, 4, 4, 6, 7, 7, 2, 2.5, 2.5].dm('c',\mixolydian)].addLine;
-P.tune( { |i| i => Pmul(\freq,0.25,_)  <> [instrument: \sawSynth].pma ;} )
+(//freeport title
+var title = 1532f:18;
+Reaper.play(1531,1548);
+Reaper.sched(title - s.latency, {
+	(freq: [1, 3, 5.5].df(\c,[5,6]),strum: 0.00, instrument: \reedy,amp:0.002, dur:
+1630.seconds - title.seconds ).play;
+[
+	degree: Pwhite(1,24,inf),
+	octave: 6,
+	dur: Pwhite(0.01,0.1,inf),
+	amp: 0.02,
+	coef: 0.1,
+	instrument: \harp,
+	out: Pwhite(0,1,inf)
+].pp
+});
+~recPath +/+ "freeport-title.wav" 
+=> _.version 
+=> _.record(1, 2, Reaper.lastPlayLength)
 )

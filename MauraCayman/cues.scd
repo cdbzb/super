@@ -2,6 +2,9 @@
 	Reaper.open;
 	//SETUP
 ~recPath = "~/tank/Maura Offshore/RPP/SC/".standardizePath;
+~rec2 = {|name|
+	( ~recPath +/+ name ).version.record(0,2,Reaper.lastPlayLength)
+};
 ~duration = {|from to| to.asFloat.asSeconds - from.asFloat.asSeconds};
 
 ~dotted = 	{ | dur, pan=0, amp=0.7|
@@ -14,20 +17,6 @@
 	}.play(s,0) .dur(dur)
 };
 ~drawLine = {| start end pan=0 amp=0.7 | Reaper.sched(start, {~dotted.value(~duration.(start, end),pan,amp )})};
-~record = { | name, length |
-	g = Group.after(1);
-	b = Buffer.alloc(s, 65536, 2);
-	b.write("~/tank/Maura-PCS/SC".standardizePath +/+ name.asString, "wav", "int24", 0, 0, true);
-	// create the diskout node; making sure it comes after the source
-	d = Synth.tail(g, "diskout2", [\bufnum, b]);
-	fork{ 
-		length.wait ;
-		d.free; 
-	b.close;
-	b.free;
-	};
-};
-
 ~circle = { | length, panL, panR | 
 	{
 		var index = Line.kr(0, 2*pi,length,doneAction:2);
@@ -85,6 +74,49 @@ Reaper.play(123);
 Reaper.sched(124,~upDown);
 Reaper.sched(143f:10, { (instrument: \harp,freq: [300,400,560]).play })
 )
+(//grand cayman animation
+				\PATH ++ path => _.postln;
+	Reaper.play( 322, 332 );
+	~recPath +/+ "GrandCaymanAnimation.wav"
+	=> _.version
+	=> _.record(0,2,Reaper.lastPlayLength)
+	;
+	{
+		var start = 323f:12;
+		var end = 328f:20;
+		~drawLine.(start, end, pan: 0.3)
+	} => Reaper.sched(323f:12, _);
+	Reaper.sched( 326 f: 06, { 
+			{
+				Saw.ar( [3, 5].df(\a), 0.1 )
+				* Env.perc(0.005,2).kr(0,gate:1)
+				* SinOsc.ar(3)
+				// => Pan2.ar( _, [0.1,0.8] )
+				=> Splay.ar(_, center:0.9)
+			}.play;
+} )
+)
+( //classical tax havens
+Reaper.play(352, 356);
+// ~rec2.("classical-tax-haven.wav");
+Reaper.sched(353 f: 02 - s.latency , {
+	\NOW.postln;
+	(
+		instrument: \wash,
+		freq: [-6, 1, 3, 5].df(\c)
+	).play
+})
+)
+(//fourth largest
+	Reaper.play(357,412);
+	~rec2.("fourth-largest.wav");
+	Reaper.sched(400 f: 05 - s.latency, {
+		(
+			freq: [1, 5.1].df(\g),
+			out: Effect.bus({|i| DWGReverbC1C3.ar(i,mix:1) },)
+		).play
+	})
+)
 (
 //67.8 Billion
 var title = 203f:12;
@@ -94,22 +126,23 @@ Reaper.sched(title - 0.2,{
 })
 )
 ( //number titles
-	~numberOne = {
+	~numberOne = {|root = \c| { 
 		(
-			freq: [1, 5].df(\c,[6,5]),
-			amp: 0.5,
+			freq: [1, 5].df(root,[6,5]),
+			amp: 0.1,
 			dur: 10,
 			instrument: \defaultPiano,
 			out: Effect.bus({|i| DWGReverbC1C3.ar(i) /2 },)
 		).play
-	};
+	} };
 	Reaper.play(412);
-	Reaper.sched(412f:4,~numberOne)
+	Reaper.sched(412f:4,~numberOne.())
 
 )
 ( //number2
 Reaper.play(705);
-Reaper.sched(705f:22,~numberOne);
+Reaper.sched(705f:21 - s.latency,~numberOne.('b-'));
+~rec2.("2-Layering.wav");
 Reaper.sched(706, ~moneymoney)
 )
 ( //number3
@@ -207,4 +240,30 @@ Reaper.sched(title - s.latency, {
 ~recPath +/+ "freeport-title.wav" 
 => _.version 
 => _.record(1, 2, Reaper.lastPlayLength)
+)
+(//picasso
+	// var len = 1218 f: 11 - (1117 f: 20);
+	var len = 1148 f: 06 - (1117 f: 20);
+	\666.post; len.postln;
+	Reaper.play(1117, 1218 f: 11);
+	Reaper.sched( 1117 f: 20,{
+		{
+			Gendy1.arWidth(
+				freq: 
+				[
+					[1,3,5,7,12].df(\g),
+					[1,3,4,6,12].df(\g),
+					[1,3,5,7,12].df(\g),
+					[2,3, 5, 7, 13].df(\g)
+				].flop.collect{|i| 
+					i.dq(3)
+				}.demand(
+					( len / 6 ) ! 6 
+				)
+				=> Lag.kr(_,1)
+				* EnvGen.cutoff( len, 3 )
+			) / 30
+			=> Splay.ar(_)
+		}.play
+	} )
 )

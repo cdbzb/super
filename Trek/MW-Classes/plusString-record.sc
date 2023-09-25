@@ -3,12 +3,19 @@
 		// make -bak directory if needed and put time-stamped copy of file in
 		var path=this.standardizePath;
 		var backupDir = path ++ "-bak";
-		File.exists(backupDir).not.if{File.mkdir(backupDir)};
-		path ++"-bak"
-		+/+ path.basename.splitext[0]
-		++ Date.getDate.stamp ++ "." ++ path.extension 
-		=> File.copy(path,_)
-		=> _.postln
+		File.exists(backupDir).not.if{
+			\EXISTS.postln;
+			File.mkdir(backupDir)
+		} {
+			File.exists(path).if {
+				\PATH ++ path => _.postln;
+				path ++"-bak"
+				+/+ path.basename.splitext[0]
+				++ Date.getDate.stamp ++ "." ++ path.extension 
+				=> File.copy(path,_)
+				=> _.postln
+			}
+		}
 	}
 	unversion {
 		// version current file and replace with previous version

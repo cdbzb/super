@@ -1,6 +1,7 @@
 ( //setup
 	Reaper.open;
 	//SETUP
+"./moneymoney2.scd".standardizePath.load	;
 ~recPath = "~/tank/Maura Offshore/RPP/SC/".standardizePath;
 ~rec2 = {|name|
 	( ~recPath +/+ name ).version.record(0,2,Reaper.lastPlayLength)
@@ -56,7 +57,9 @@
 )
 (//opening cue
 	//go ahead and break this out!!!
+	/*
 	"/Users/michael/tank/super/MauraCayman/tropical1.scd".load; //calypsoTheme loop with tremolo
+	*/
 )
 ( //hands moving up and down
 Reaper.play(123);
@@ -136,19 +139,26 @@ Reaper.sched(title - 0.2,{
 		).play
 	} };
 	Reaper.play(412);
+	// ~rec2.("2-Layering.wav");
 	Reaper.sched(412f:4,~numberOne.())
 
 )
 ( //number2
-Reaper.play(705);
+Reaper.play(705, 710);
 Reaper.sched(705f:21 - s.latency,~numberOne.('b-'));
 ~rec2.("2-Layering.wav");
-Reaper.sched(706, ~moneymoney)
+)
+( //moneymoney
+
+Reaper.play(705, 746);
+~rec2.("moneymoney1.wav");
+Reaper.sched(706f:5, ~moneymoney)
 )
 ( //number3
 
-Reaper.play(2450);
-Reaper.sched(2450f:17,~numberOne);
+Reaper.play(2450, 2455);
+// ~rec2.("3-Integration.wav");
+Reaper.sched(2450f:17,~numberOne.(\e));
 )
 ( // one two three
 	Reaper.play(920);
@@ -162,7 +172,9 @@ Reaper.sched(2450f:17,~numberOne);
 	}
 )
 ( // musical cue effort
-// "~/tank/super/MauraCayman/tropical1.scd".standardizePath.load;
+/*
+ "~/tank/super/MauraCayman/tropical1.scd".standardizePath.load;
+ */
 var durs = [Song.secDur[\VerseLoop],Song.secDur['VersTwoLoop'],"qqqqqqqq".asBeats.warpTo(Song.tempoMap[\VersLoopConnecter]).unbubble];
 var moneyStack = 1852f:06;
 var cameraBlurry = 1922f:23;
@@ -243,10 +255,12 @@ Reaper.sched(title - s.latency, {
 )
 (//picasso
 	// var len = 1218 f: 11 - (1117 f: 20);
-	var len = 1148 f: 06 - (1117 f: 20);
+	var pablo = 1118f:16;
+	var len = 1148 f: 06 - pablo;
 	\666.post; len.postln;
 	Reaper.play(1117, 1218 f: 11);
-	Reaper.sched( 1117 f: 20,{
+	~rec2.("picasso.wav", Reaper.lastPlayLength);
+	Reaper.sched( pablo - 0,{
 		{
 			Gendy1.arWidth(
 				freq: 
@@ -266,4 +280,16 @@ Reaper.sched(title - s.latency, {
 			=> Splay.ar(_)
 		}.play
 	} )
+)
+(//salt en banc note
+
+	Reaper.play( 1156, 1202 f: 2);
+	~rec2.("picasoo-note.wav");
+	Reaper.sched( 1156 f: 16 - s.latency ,{
+			( freq: [1,3,4,6,12].df(\g),
+			dur: 5,
+			out: Effect.bus({|i| FreeVerb.ar(i) },)
+		).play
+		}
+	)
 )

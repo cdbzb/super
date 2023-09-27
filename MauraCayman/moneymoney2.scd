@@ -1,8 +1,4 @@
 (
-Song(\mauraMoney,[]).new;
-)
-TempoClock.tempo_(1)
-(
 ~moneymoney = {|tempo=1|
 	fork{ 
 	var chord = Bus(s,3);

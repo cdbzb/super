@@ -6,6 +6,15 @@
 ~rec2 = {|name|
 	( ~recPath +/+ name ).version.record(0,2,Reaper.lastPlayLength)
 };
+~playSections = {|...args| 
+	var sections = args;
+	fork{
+		sections.do{|sec|
+			Song.playSection(sec);
+			Song.secDur[sec].wait;
+		}
+	}
+};
 ~duration = {|from to| to.asFloat.asSeconds - from.asFloat.asSeconds};
 
 ~dotted = 	{ | dur, pan=0, amp=0.7|
@@ -41,19 +50,19 @@
 	
 };
 
-		~blueJayWay = { |time=0, fadeIn=0,sustain=1, release=8, amp=0.1|
-			Reaper.sched( time,
-				{
-					{
-						SinOsc.ar([1,3,4,6].df(\a)+(LFBrownNoise2.kr(1)!4)/2,0,0.003)
-						+ PinkNoise.ar(0.02)
-						=> MoogFF.ar(_,LFBrownNoise2.kr(0.5).range(600,2000))
-						* Env.linen(fadeIn,sustain,release).kr(2,gate:1)
-						* amp * 10
-					}.play
-				}
-			)
+~blueJayWay = { |time=0, fadeIn=0,sustain=1, release=8, amp=0.1|
+	Reaper.sched( time,
+		{
+			{
+				SinOsc.ar([1,3,4,6].df(\a)+(LFBrownNoise2.kr(1)!4)/2,0,0.003)
+				+ PinkNoise.ar(0.02)
+				=> MoogFF.ar(_,LFBrownNoise2.kr(0.5).range(600,2000))
+				* Env.linen(fadeIn,sustain,release).kr(2,gate:1)
+				* amp * 10
+			}.play
 		}
+	)
+}
 )
 (//opening cue
 	//go ahead and break this out!!!
@@ -77,7 +86,14 @@ Reaper.play(123);
 Reaper.sched(124,~upDown);
 Reaper.sched(143f:10, { (instrument: \harp,freq: [300,400,560]).play })
 )
-(//grand cayman animation
+( //67.8 Billion
+var title = 203f:12;
+Reaper.play(202,206);
+Reaper.sched(title - 0.2,{
+	(freq:[3,6,12].df(\c,6),instrument: \defaultPiano, dur:3).play
+})
+)
+(// 3:22 grand cayman animation
 				\PATH ++ path => _.postln;
 	Reaper.play( 322, 332 );
 	~recPath +/+ "GrandCaymanAnimation.wav"
@@ -120,14 +136,6 @@ Reaper.sched(353 f: 02 - s.latency , {
 		).play
 	})
 )
-(
-//67.8 Billion
-var title = 203f:12;
-Reaper.play(202,206);
-Reaper.sched(title - 0.2,{
-	(freq:[3,6,12].df(\c,6),instrument: \defaultPiano, dur:3).play
-})
-)
 ( //number titles
 	~numberOne = {|root = \c| { 
 		(
@@ -148,11 +156,31 @@ Reaper.play(705, 710);
 Reaper.sched(705f:21 - s.latency,~numberOne.('b-'));
 ~rec2.("2-Layering.wav");
 )
-( //moneymoney
+( // 705 moneymoney
 
 Reaper.play(705, 746);
 ~rec2.("moneymoney1.wav");
 Reaper.sched(706f:5, ~moneymoney)
+)
+( //830 Caymans 1
+/*
+ "~/tank/super/MauraCayman/tropical830.scd".standardizePath.load;
+ */
+Reaper.play(830, 1000);
+~rec2.("tropical830.wav");
+Reaper.sched(
+	// 832f:11
+	833f:16 - s.latency
+	,{
+	// ~playSections.(0,1,0,1, 2, 3, 4, 2, 3, 4, 5);
+	~playSections.(0,1, 2, 3, 4,5, 2, 3, 4, 5, 6, 7);
+})
+)
+( //number3
+
+Reaper.play(2450, 2455);
+// ~rec2.("3-Integration.wav");
+Reaper.sched(2450f:17,~numberOne.(\e));
 )
 ( //number3
 
@@ -183,7 +211,7 @@ var cameraBlurry = 1922f:23;
 		=> HPF.ar(_,150)
 => Out.ar(1,_)
 	};
-	~calypsoLoop = {|tempo|
+	~calypsoLoop = {|tempo = 1|
 		{ 
 			TempoClock.tempo_(tempo);
 			fork{
@@ -281,13 +309,26 @@ Reaper.sched(title - s.latency, {
 		}.play
 	} )
 )
-(//salt en banc note
+(//saltimbanque note
 
 	Reaper.play( 1156, 1202 f: 2);
 	~rec2.("picasoo-note.wav");
 	Reaper.sched( 1156 f: 16 - s.latency ,{
 			( freq: [1,3,4,6,12].df(\g),
 			dur: 5,
+			out: Effect.bus({|i| FreeVerb.ar(i) },)
+		).play
+		}
+	)
+)
+(//saltimbanque note 2
+
+	Reaper.play( 1208, 1213f:16);
+	~rec2.("picasoo-note2.wav");
+	Reaper.sched( 1209f: 04 - s.latency ,{
+			( freq:
+					[2,3, 5, 7, 13].df(\g),
+			dur: 1213 f: 16 - (1209 f: 04),
 			out: Effect.bus({|i| FreeVerb.ar(i) },)
 		).play
 		}

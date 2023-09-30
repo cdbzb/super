@@ -62,7 +62,16 @@
 			}.play
 		}
 	)
-}
+};
+~numberTitles = {|root = \c| { 
+	(
+		freq: [1, 5].df(root,[6,5]),
+		amp: 0.1,
+		dur: 10,
+		instrument: \defaultPiano,
+		out: Effect.bus({|i| DWGReverbC1C3.ar(i) /2 },)
+	).play
+} };
 )
 (//opening cue
 	//go ahead and break this out!!!
@@ -137,23 +146,14 @@ Reaper.sched(353 f: 02 - s.latency , {
 	})
 )
 ( //number titles
-	~numberOne = {|root = \c| { 
-		(
-			freq: [1, 5].df(root,[6,5]),
-			amp: 0.1,
-			dur: 10,
-			instrument: \defaultPiano,
-			out: Effect.bus({|i| DWGReverbC1C3.ar(i) /2 },)
-		).play
-	} };
 	Reaper.play(412);
 	// ~rec2.("2-Layering.wav");
-	Reaper.sched(412f:4,~numberOne.())
+	Reaper.sched(412f:4,~numberTitles.())
 
 )
 ( //number2
 Reaper.play(705, 710);
-Reaper.sched(705f:21 - s.latency,~numberOne.('b-'));
+Reaper.sched(705f:21 - s.latency,~numberTitles.('b-'));
 ~rec2.("2-Layering.wav");
 )
 ( // 705 moneymoney
@@ -179,14 +179,14 @@ Reaper.sched(
 ( //number3
 
 Reaper.play(2450, 2455);
-// ~rec2.("3-Integration.wav");
-Reaper.sched(2450f:17,~numberOne.(\e));
+~rec2.("3-Integration.wav");
+Reaper.sched(2450f:17,~numberTitles.(\e));
 )
 ( //number3
 
 Reaper.play(2450, 2455);
-// ~rec2.("3-Integration.wav");
-Reaper.sched(2450f:17,~numberOne.(\e));
+~rec2.("3-Integration.wav");
+Reaper.sched(2450f:17,~numberTitles.(\e));
 )
 ( // one two three
 	Reaper.play(920);

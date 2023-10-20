@@ -1,3 +1,14 @@
+S{
+	classvar steps, modes, <modeSteps;
+	*initClass {
+		steps = [\major,\major,\minor,\major,\major,\major,\minor]
+		.collect{|i| V(2,i) };
+		modes = [\major, \dorian, \phrygian, \lydian, \mixolydian, \minor, \locrian];
+		modeSteps = modes.collect{|m x|
+			m-> steps.collect{|i y| steps@@( x+y )}
+		}.asEvent
+	}
+}
 N{
 	var <name, <accidental, <degree; 
 	classvar <intervalsFromA, <semitonesFromA, <qualitiesFromA, accidentals, <>names;

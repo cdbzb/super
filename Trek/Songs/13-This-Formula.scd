@@ -40,6 +40,7 @@ P.synthVs(role: \formulaLead, take:[\lead, \double],
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
+			=> Pan2.ar(_,0)
 		}.play
 });
 P(\chord, music: { |p b e|
@@ -137,7 +138,7 @@ P.double(\kevin, take: \harmony, params: {|p b| [
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
-P.synthV(\an, take: \ooh,
+P.synthVs(\an, take: [\ooh, \ooh2],
 	pbind: {|p b|
 		[
 			midinote: [5, 6, 4].dm(\d).q,
@@ -148,37 +149,37 @@ P.synthV(\an, take: \ooh,
 	},
 	params: {|p b| [
 	lyrics: "ooh - -",
-	pitchTake: 1,
+	pitchTake: [1, 3],
 	 // vocalMode: \Open,
 	// pitchExpression: 1.5
 	paramBreathiness: 0.25
-] }, music:{|p b e|
+] }, music:[-1, 0.6].collect{|pan| {|p b e|
 	{
 		e.playbuf
 		=> FreeVerb.ar(_,0.2,1)
 		/3
+		// * -2.dbamp
+		=> Pan2.ar(_,pan)
 		// => p.synthVTracks.at(e.key).()
 	}.play
-});
-P.double(\an, take: \ooh, params: {|p b| [
-	
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> FreeVerb.ar(_,0.2,1)
-		/3
-		// => p.synthVTracks.at(e.key).()
-	}.play
-});
+} });
 ( Song.formulaBass = [
 
 	instrument:\sawSynth,
+	// instrument: \bl, amp:0.13,
+	// instrument: \pulse, amp:0.03
+
+
 	amp: 0.08
 ];
 );
 Song.chankSwitch = \u;
 P(\chank, music: { |p b e|
-	var out = Effect.bus({|i|AnalogVintageDistortion.ar(i,drivegain: 1.8,bias:0.18,shelvingfreq:600,lowgain:0.00,highgain:0.8) / 15  },);
+	var out = Effect.bus({|i|
+		AnalogVintageDistortion.ar(i,drivegain: 1.8,bias:0.18,shelvingfreq:600,lowgain:0.00,highgain:0.8) / 15 
+		* -6.dbamp
+		// => Pan2.ar(_, Env([1, -1, 1, -1, 1, -1, 1, -1],"q q q q q q q q".asBeats.warpTo( e.tempoMap )).kr(2, gate:1))
+	});
 	[
 		freq: [[5, 11, 13],[5, 7, 13],[6, 11, 13],[5, 7, 12, 13]].df(\d,4).q,
 		instrument: \defaultPiano,
@@ -191,7 +192,7 @@ P(\chank, music: { |p b e|
 	[
 		freq: [[5, 11, 13],[5, 7, 13],[6, 11, 13],[5, 7, 12, 13]].df(\d,4).q,
 		instrument: \defaultPiano,
-		dur: "qq qq qq qq".asBeats.warpTo( e.tempoMap ).q,
+		dur: "qq qq qq qq".asBeats.warpTo( e.tempoMap.quantizeDft ).q,
 		type: \strum,
 		instance: p.guitar,
 
@@ -201,7 +202,7 @@ P(\chank, music: { |p b e|
 		type: \strum,
 		rest: [\r,1].q(inf),
 		instance: p.guitar,
-		dur: "q q q q q q q q".asBeats.warpTo( e.tempoMap ).q,
+		dur: "q q q q q q q q".asBeats.warpTo( e.tempoMap.quantizeDft ).q,
 		lag: 0.01,
 		// switch:\muted,
 		// switch:\alt,
@@ -241,7 +242,7 @@ p.hatPattern.(
 //=>_.play( Song.quarters[e.start].quantizeWindow.asTempoClock)
 });
 ["(boom )heart action and the bodily " , [6, 14,13,11, 7,11,12,13,11].dm('d',octave:4 )].addLine ;
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.drop(1).sum,
 		text: ["heart action","and the bodily"],
@@ -363,11 +364,16 @@ P(\bass,'bodily',music: {|p b e|
 		] ++ p.formulaBass => _.ppma
 });
 P(\chank, music: { |p b e|
-	var out = Effect.bus({|i|AnalogVintageDistortion.ar(i,drivegain: 1.8,bias:0.18,shelvingfreq:600,lowgain:0.00,highgain:0.8) / 15  },);
+	var out = Effect.bus({|i|
+		AnalogVintageDistortion.ar(i,drivegain: 1.8,bias:0.18,shelvingfreq:600,lowgain:0.00,highgain:0.8) / 15 
+		* -6.dbamp
+		// => Pan2.ar(_, Env([1, -1, 1, -1, 1, -1, 1, -1],"q q q q q q q q".asBeats.warpTo( e.tempoMap )).kr(2, gate:1))
+	});
+	var tempoMap = e.tempoMap.quantizeDft;
 	[
 		freq: [[6, 11, 4], [6, 11, 14],[15, 11, 14],[ 13], [14, 5, 11], [4, 5, 11],[3, 5, 12], [3, 5, 13]].df(\d,4).q,
 		instrument: \defaultPiano,
-		dur: "q q q q q q q q ".asBeats.warpTo( e.tempoMap ).q,
+		dur: "q q q q q q q q ".asBeats.warpTo( tempoMap ).q,
 		rest: [1,\r, ].q(inf),
 		instance: p.guitar,
 
@@ -378,7 +384,7 @@ P(\chank, music: { |p b e|
 		freq: [[6, 11, 4], [6, 11, 14],[15, 11, 14],[ 15, 11, 14], [14, 5, 11], [4, 5, 11],[3, 5, 12], [3, 5, 13]].df(\d,4).q,
 		// rest: [\r,1].q(inf),
 		instance: p.guitar,
-		dur: "q q q q  q q q q".asBeats.warpTo( e.tempoMap ).q,
+		dur: "q q q q  q q q q".asBeats.warpTo( tempoMap ).q,
 		// rest: [\r, 1].q,
 		lag: [0, 0,0,-0.06,0,0,0,0].q,
 		// switch:\down,
@@ -389,7 +395,7 @@ P(\chank, music: { |p b e|
 		type: \strum,
 		rest: [\r,1].q(inf),
 		instance: p.guitar,
-		dur: "q q q q  q q q q".asBeats.warpTo( e.tempoMap ).q,
+		dur: "q q q q  q q q q".asBeats.warpTo( tempoMap ).q,
 		lag: [0, 0,0,-0.06,0,0,0,0].q + 0.01,
 		rest: [\r, 1].q(inf),
 		// lag: 0.01,
@@ -465,11 +471,16 @@ p.hatPattern.(e.tempoMap.quantizeDft(p.formulaQuantAmount), 16)// => Pfin(8,_)
 // P.tune( 'to normal',Pset(\dur, Song.tempoMap[ 'to normal' ] .beats.warpTo(Song.tempoMap[ 'to normal' ].quantizeDft).q,_));
 P.tune('to normal',  _ <> [instrument: \harp].p.fin(3)  ); 
 P(\chank, music: { |p b e|
-	var out = Effect.bus({|i|AnalogVintageDistortion.ar(i,drivegain: 1.8,bias:0.18,shelvingfreq:600,lowgain:0.00,highgain:0.8) / 15  },);
+	var out = Effect.bus({|i|
+		AnalogVintageDistortion.ar(i,drivegain: 1.8,bias:0.18,shelvingfreq:600,lowgain:0.00,highgain:0.8) / 15 
+		* -6.dbamp
+		// => Pan2.ar(_, Env([1, -1, 1, -1, 1, -1, 1, -1],"q q q q q q q q".asBeats.warpTo( e.tempoMap )).kr(2, gate:1))
+	});
+	var tempoMap = e.quantizeDft();
 	[
 		freq: [[-6,3,7],[-6,3,6],[2,5,11],[2,5,7]].df(\d,4).q,
 		instrument: \defaultPiano,
-		dur: "q q q q q q q q ".asBeats.warpTo( e.tempoMap ).q,
+		dur: " q q q q ".asBeats.warpTo( e.tempoMap ).q,
 		rest: [1,\r, 1, 1 ].q(inf),
 		instance: p.guitar,
 
@@ -477,10 +488,11 @@ P(\chank, music: { |p b e|
 	].pp;
 	[
 		type: \strum,
+		freq: [[-6,3,7],[-6,3,6],[2,5,11],[2,5,7]].df(\d,4).q,
 		rest: [\r,1].q(inf),
 		instance: p.guitar,
-		dur: "q q q q  q q q q".asBeats.warpTo( e.tempoMap ).q,
-		rest: [\r, 1].q,
+		dur: "q q q q  ".asBeats.warpTo( e.tempoMap ).q,
+		rest: [\r, 1].q(2),
 		lag: [0, 0,0,-0.06,0,0,0,0].q,
 		// switch:\down,
 		out:  out
@@ -490,8 +502,8 @@ P(\chank, music: { |p b e|
 		type: \strum,
 		rest: [\r,1].q(inf),
 		instance: p.guitar,
-		dur: "q q q q  q q q q".asBeats.warpTo( e.tempoMap ).q,
-		rest: [\r, 1].q,
+		dur: "q q q q ".asBeats.warpTo( e.tempoMap ).q,
+		rest: [\r, 1].q(2),
 		lag: 0.01,
 		switch:p.chankSwitch,
 		out:  out
@@ -504,23 +516,18 @@ P.still(\withSyringe, timecode: 3013.8.seconds, music: { |p b e|
 		text: ["",""],
 	)
 });
-P.synthV(role: \formulaLead, take:\lead, params: {|p b| [
+P.synthVs(role: \formulaLead, take:[\lead, \double], params: {|p b| [
 	lyrics: "r while the bodies + are occupied + +",
-	pitchTake: 1
-] }, music:{|p b e|
-	{
-		e.playbuf
-		// => p.synthVTracks.at(e.key).()
-	}.play
-});
-P.double(role: \formulaLead, params: {|p b| [
-		
-	] }, music:{|p b e|
+	pitchTake: [1, 3]
+] }, music:[0,0].collect{|pan|
+	{|p b e|
 		{
 			e.playbuf
 			// => p.synthVTracks.at(e.key).()
+			=> Pan2.ar(_,pan)
 		}.play
-	});
+	}
+});
 P('cymbal',start:\While,music: {|p b e|
 (instrument:\cymbalsDS,amp:0.01).play
 });
@@ -529,70 +536,114 @@ Song.quarters[\occupied]=Song.parseBeats('occupied',(1/3)!6 ++ ( (2/3)!3 ));
 //Song.quarters[\occupied]
 
 P(\chordsOccupied,start:\occupied,music:{|p b e|
-[
-	freq:[[1,3,5],[1,4,6]].df('g',octave:4 ).stutter(2).q*[1,1.01],
-	//		out:1,
-	pan:0,
-	out:Effect({|i| MoogLadder.ar(i,1200,1) => EchoNone.ar(_, 0.2,  delaytime: 0.1,  decaytime: 2.0)},out:1).bus.index,
-	amp:0.2,
-	//		out:Effect(FreeVerb.ar(_,0.51,0.5),out:1).bus.index,
-	dur:"e e e e".asBeats.q*2,
-].p.trace.play(Song.quarters[e.start].asTempoClock)
+	[
+		freq:[[1,3,5],[1,4,6]].df('g',octave:4 ).stutter(2).q*[1,1.01],
+		//		out:1,
+		pan:0,
+		out:Effect({|i| MoogLadder.ar(i,1200,1) => EchoNone.ar(_, 0.2,  delaytime: 0.1,  decaytime: 2.0)},out:1).bus.index,
+		amp:0.2,
+		//		out:Effect(FreeVerb.ar(_,0.51,0.5),out:1).bus.index,
+		dur:"e e e e".asBeats.q*2,
+	].p.trace.play(Song.quarters[e.start].asTempoClock)
 }
 );
+
 ["you will administer one injection of  ",[3,4,1,3,2,1, -7,1,2,-7,-5].dm('a',scale:\harmonicMinor)].addLine;
-P.synthV(role: \formulaLead, take:\lead,
-	filter: (midinote: _ - (12.dup(11) ++ 0.dup(5) => _.flat)), 
-	pbind: Song.enlarge(5),
-	params: {|p b| [
-	lyrics: "you will administer + + + one injection + + of ten see sees each hour ",
-	pitchTake: 1
-] }, music:{|p b e|
-	{
-		e.playbuf
-		// => p.synthVTracks.at(e.key).()
-	}.play
-});
-P.double(role: \formulaLead, params: {|p b| [
-		
-	] }, music:{|p b e|
+P.synthVs(role: \formulaLead, take:[\lead, \double],
+filter: (midinote: _ - (12.dup(11) ++ 0.dup(5) => _.flat)), 
+pbind: Song.enlarge(5),
+params: {|p b| [
+lyrics: "you will administer + + + one injection + + of ten see sees each hour ",
+pitchTake: [1, 3]
+] }, music:[0,0].collect{|pan|
+	{|p b e|
 		{
 			e.playbuf
 			// => p.synthVTracks.at(e.key).()
+			=> Pan2.ar(_,pan)
 		}.play
-	});
+	}
+});
 P.tune('administer one',Pmul(\freq,0.5,_));
 Song.setTempoMap('administer one',"E E E E E E EE E E E E");
 P(\chords,start:\administer,music:{|p b e|
 [
-	freq:[[1,3,5],[-7,2,5]].df('a',4,\harmonicMinor ).stutter(2).q*[1,1.01],
-	//		out:1,
-	pan:0,
-	out:Effect({|i| MoogLadder.ar(i,1200,1) => EchoNone.ar(_, 0.2,  delaytime: 0.1,  decaytime: 2.0)},out:1).bus.index,
-	amp:0.2,
-	//		out:Effect(FreeVerb.ar(_,0.51,0.5),out:1).bus.index,
-	//dur:"e e e e".asBeats.q*2,
-	dur:"q q qq ".asBeats.warpTo(e.tempoMap).q
+freq:[[1,3,5],[-7,2,5]].df('a',4,\harmonicMinor ).stutter(2).q*[1,1.01],
+//		out:1,
+pan:0,
+out:Effect({|i| MoogLadder.ar(i,1200,1) => EchoNone.ar(_, 0.2,  delaytime: 0.1,  decaytime: 2.0)},out:1).bus.index,
+amp:0.2,
+//		out:Effect(FreeVerb.ar(_,0.51,0.5),out:1).bus.index,
+//dur:"e e e e".asBeats.q*2,
+dur:"q q qq ".asBeats.warpTo(e.tempoMap).q
 ].pp//.p.trace.play(Song.quarters[e.start].asTempoClock)
 }
 );
 ["ten cc's each hour.",[-7,1,-7,1,-6].dm('g',octave:4 )].addLine;
+P.synthVs(\kevin, take: [\lead, \double],
+filter: (midinote: _ - 12), 
+	pbind: {|p b|
+		[
+			midinote: [3, 3, 3, 3, 4].dm(\g).q	,
+			dur: b.q
+		].p
+	},
+	params: {|p b| [
+	lyrics: "ten see sees each hour",
+	pitchTake: [1, 3]
+] }, music:{|p b e|
+	{
+		e.playbuf
+		* -20.dbamp
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.synthV(\mo, take: \lead, params: {|p b| [
+	// filter: (midinote: _ + 12), 
+	lyrics: "ten see sees each hour",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		/4
+		// => p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_,0.3)
+	}.play
+});
+P.synthVs(\an, take: [\lead, \double],
+filter: (midinote: _ - 12), 
+	pbind: {|p b|
+		[
+			midinote: [5, 5, 5, 5, 6].dm(\g).q	,
+			dur: b.q
+		].p
+	},
+	params: {|p b| [
+	lyrics: "ten see sees each hour",
+	pitchTake: [1, 3]
+] }, music:{|p b e|
+	{
+		e.playbuf
+		* -20.dbamp
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 P.tune('each hour');
 Song.quarters['each hour']= Song.parse('each hour',[2,2,1]);
 P(\chordsHour,start:'each hour',music:{|p b e|
-[
-	midinote: [0,-2]+.t[1,3,5,7].dm('d',octave:4 ) =>_.q,
-	dur:"qq q".asBeats.q,
-	instrument:\sawSynthSustain,
-	att:1
-].p.trace.play(Song.quarters[e.start].asTempoClock)
+	[
+		midinote: [0,-2]+.t[1,3,5,7].dm('d',octave:4 ) =>_.q,
+		dur:"qq q".asBeats.q,
+		instrument:\sawSynthSustain,
+		att:1
+	].p.trace.play(Song.quarters[e.start].asTempoClock)
 }
 );
 ["/*CHAPEL:*/ I understand. ",[5,6,7,11].dm('a-')].addLine;
 P.still(\chapelUnderstand, timecode: 3017.2.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["I","understand"],
 	)
 });
 P.synthV(role: \chapel, take: \lead,
@@ -608,10 +659,23 @@ P.synthV(role: \chapel, take: \lead,
 		// => Pan2.ar(_,0.5)
 		// => {|i|  CombN.ar(i,0.5,0.3,4) / 2 + i}
 		* -3.dbamp
+		// => PitchShift.ar(_,pitchRatio: 441/480)
 	}.play
 });
+P(\line, music: { |p b e|
+	[
+		freq: [[ 2,4,5,7 ],[ 1,3,5, 11 ]].df('a-',4, tuning:\just).q,
 
-P.tune('understand', { |i| Pmul(\freq,0.5,i) => Pbindf(_,\instrument,\stringyy,\amp,0.2)});
+		dur: b.parse([3,1]).q,
+		instrument: \stringyy
+	].ppm;
+	[
+		midinote: p.tune[e.start],
+		dur: b.q,
+		instrument: \bl
+	].pp
+});
+// P.tune('understand', { |i| Pmul(\freq,0.5,i) => Pbindf(_,\instrument,\stringyy,\amp,0.2)});
 Song.quarters[\understand]=Song.parseBeats('understand',"e x x q".asBeats);
 P(\chordsUnderstand,start:\understand,music:{|p b e|
 [
@@ -661,8 +725,9 @@ P.tune('hypo you will',  { |i| i
 	<>[
 		instrument: \sparkTriangle,
 		depth:0.01,
+		out: Effect.bus({|i| i=>Pan2.ar(_,1) })
 
-	].p
+	].pm
 	=> Pmul(\freq,0.5,_)
 });
 Song.quarters['hypo you will'] = Song.parseBeats('hypo you will',[1, 1,1,1,1, 1,1,3/2,1/2, 1,1,5, 1]);
@@ -715,6 +780,22 @@ P(\hypoAnswer,start:'hypo you will',music:{|p b e|
 }
 );
 ["this one you will code mark for -- ",[4,3,2,1,3,3,4,3].dm('a')].addLine;
+Song.setTempoMap('this one you',"q q q q qe eq e e ");
+P(\drumz, music: { |p b e|
+	[
+		dur: "q qqq q qq q q ".asBeats.warpTo(e.tempoMap ++ p.tempoMap[e.start + 1]).q,
+		instrument: \kick_gentle,
+		decay: 20,
+		tone: 44,
+		vol: 0.2
+	].pp;
+	(
+		instrument: \cymbalsDS,
+		amp: 0.03,
+		// lag: b[0]
+	).play
+	
+});
 P.still(\twoShopHypos, timecode: 3024.1.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -752,6 +833,7 @@ P(\forBase,'for --', music:{|p b e|
 	.asTempoClock)
 });
 ["me.  /*CHAPEL:*/ Yes, sir. ",[-2,7,11].dm('c')].addLine;
+Song.setTempoMap('me. ',"qq q q");
 P.still(\chapelAnswer,syl:0, timecode: 3029.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -793,40 +875,41 @@ P(\chordSir,start:'Yes, sir',syl:0,music:{|p b e|
 }
 );
 ["/*SPOCK:*/ This one you will administer to Captain Kirk while ",[3,2,-7,7,6,5,4,3,1.5,3,4,4.5,5].dm('f#',scale:\minor,)].addLine;
+Song.setTempoMap(\while,"q qe e e e e e e e e e e e");
 P.still(\henochReKirk, timecode: 3036.3.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
 	)
 });
-P.synthV(role:\formulaLead, take:\lead,
+P(\chords, music: { |p b e|
+	[
+		freq: [ [1, 5], [2, 5],[3, 5] ].df('f#',\minor).q,
+		dur: "qq qq qq".asBeats.warpTo( e.tempoMap ).q,
+		instrument: \washSus, freqLag: 0.1
+	].ppm
+});
+P.synthVs(role:\formulaLead, take:[\lead, \double],
 	pbind: Song.enlarge2(0),
 	params: {|p b| [
 	lyrics: "this one you will administer + + + to captain + kirk while Sargon + is in his body +",
-	pitchTake: 1
+	// legato: [1, 0.8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1, 1, 1, 1 , ],
+	pitchTake: [1, 3],
+	filter: [(midinote: _), (midinote: _ - 12) ], 
 ] }, music:{|p b e|
 	{
 		e.playbuf
 		// => p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_,0)
 	}.play
 });
-P.double(role: \formulaLead,
-	filter: (midinote: _ - 12), 
-	params: {|p b| [
-		
-	] }, music:{|p b e|
-		{
-			e.playbuf
-			// => p.synthVTracks.at(e.key).()
-		}.play
-	});
-Song.quarters['This one']=Song.parseBeats('This one',"q qe e e e e e e e e e e e".asBeats);
-P.tune('This one');
+// P.tune('This one');
 P(\baseThisOne,start:'This one',music:{|p b e|
-[
-	freq:[1,2,3, 1.5,3,4,4.5,5].df('f#',scale:\minor,octave:3 ).q,
-	dur:"qq qq qe e e e e e".asBeats.q,
-].p.play(Song.quarters[e.start].asTempoClock)
+	[
+		freq:[1,2,3, 1.5,3,4,4.5,5].df('f#',scale:\minor,octave:3 ).q,
+		dur:"qq qq qe e e e e e".asBeats.warpTo( e.tempoMap ).q
+		// .asBeats.q,
+	].p.play;
 }
 );
 ["Sargon is in his body. ",[11,5,3,2,-7,2,1].dm('d',octave:5,scale:\harmonicMinor, )].addLine;
@@ -844,11 +927,16 @@ P(\strumBody,start:'in his body',lag:-0.01,music:{|p b e|
 P.still(\chapelObjects, timecode: 3041.8.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["this","hypo"],
+	).sequenceText2(
+			b.parse([3]), [ 
+			["does not contain","the same formula"],
+			],
 	)
 });
 P.synthV(role: \chapel, take: \lead, params: {|p b| [
 	lyrics: "this hypo + does not contain + the same formula + +",
+	legato: [0.8, 1, 0.8, 1, 1, 1, 1, 1, 1, 1, 1, 1, ],
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
@@ -871,17 +959,28 @@ P.tune('does not contain');
 P.still(\spockClose, timecode: 3049.5.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["no","that's correct"],
+		fade:1
+	).sequenceText2(
+			b.parse([4]), [ 
+			["",""],
+			],
+	)
+});
+P.still(\clear,syl:3, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.drop(1).sum,
+		text: ["but since","I will arrange for"],
 	)
 });
 // P.tune('correct');
-P.synthV(role: \formulaLead, take:\lead,
+P.synthVs(role: \formulaLead, take:[ \lead, \double ],
 	filter: (midinote: _ - 12), 
 	pbind: Song.enlarge(12),
 	params: {|p b| [
 	lyrics: "No, that's correct + but since I will arrange + for you to administer + + + each of the injections + +",
-	legato: [0.25, 1,1,0.3, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-	pitchTake: 1,
+	legato: [ [0.25, 1,1,0.3, 1,1,1,1,1,1,0.8 ,0.8,1,1,1,1,0.8,1,1,1,1,1,1] ],
+	pitchTake: [ 1, 3 ],
 	pitchExpression: 1
 ] }, music:{|p b e|
 	{
@@ -889,15 +988,6 @@ P.synthV(role: \formulaLead, take:\lead,
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.double(role: \formulaLead, params: {|p b| [
-		
-	] }, music:{|p b e|
-		{
-			e.playbuf
-			=> p.synthVTracks.at(e.key).()
-			=> Pan2.ar(_,1)
-		}.play
-	});
 P(\correctBase,start:'correct',music:{|p b e|
 ( freq:1.df('b-',octave:2), ).play
 }
@@ -928,6 +1018,16 @@ b=b.drop(1);
 }
 );
 ["you to administer each of the injections, ",[5, 4,3,2,3,1, 5.5, 4.5, 1,2,3,2].dm('f#')].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["you","to administer"],
+	).sequenceText2(
+			b.parse([6]), [ 
+			["each of the","injections"],
+			],
+	)
+});
 P(\administerBaseNotes,start:'administer each',music:{|p b e|
 [
 	freq: [4,3,2.5,2].df('b',octave:2 ).q,
@@ -1050,7 +1150,22 @@ P(\touchBaseNote,start:'touches her',music:{|p b e|
 P.still(\chapel, timecode: 3106.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["I...","I was..."],
+		text: ["",""],
+	)
+});
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: 0,
+		lag:0.01,
+		text: ["I",""],
+		fade: b[0..1].sum
+	)
+});
+P.still(\clear2,syl:2, timecode: 1.seconds, music: { |p b e|
+	 e.still.( 
+		wait: 0,
+		text: ["I","was"],
+		fade: b.drop(1)[0..2].sum
 	)
 });
 // P.tune('I was.',{|i| Pbindf(i,\amp,[1,0,1,1,0]/10=>_.q)});
@@ -1119,6 +1234,17 @@ clock.clear;group.release;
 
 });
 ["I wanted to say-- something. I've for",[7,11,7,6, 6,12,7,5, 3,4].dm('b')].addLine;
+P.still(\clear,lag:0.1, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: e.bAll[0..14].sum,
+		fade:0.5,
+		text: ["I wanted to","say something"],
+	).sequenceText2(
+			b.parse([8]), [ 
+			["I've forgotten","what it was"],
+			],
+	)
+});
 P.synthV(role: \chapel, take: \lead,
 	filter: (midinote: _ - 12), 
 	pbind: Song.enlarge2(0),
@@ -1209,7 +1335,11 @@ P.still(\ChapelYes, timecode:
 .seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["yes","that was it"],
+		text: ["",""]
+	).sequenceText2(
+			b.parse([1]), [ 
+				["yes","that was it"],
+			],
 	)
 });
 P.synthV(role: \chapel, take: \lead, params: {|p b| [

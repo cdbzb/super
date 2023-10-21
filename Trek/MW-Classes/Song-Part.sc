@@ -541,7 +541,7 @@ Song {
 			|sec| this.play(this.at(sec))
 		}
 	}
-	playRanges{ |args|
+	playRanges{ |...args|
 		fork{
 			this.playRange(args[0], args[1]);
 			( args[0] ..args[1] ).collect{|i| secDur[i]}.sum.wait;

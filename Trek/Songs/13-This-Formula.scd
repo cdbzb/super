@@ -986,6 +986,7 @@ P.synthVs(role: \formulaLead, take:[ \lead, \double ],
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_,0)
 	}.play
 });
 P(\correctBase,start:'correct',music:{|p b e|
@@ -1083,6 +1084,13 @@ P.still(\chapelConcerned, timecode: 3053.4.seconds, music: { |p b e|
 		text: ["",""],
 	)
 });
+P(\notes, music: { |p b e|
+	[
+		freq: [\r, 1, 5, \r, 6].df(\g,4, \whole).q,
+		dur: b.parse([1, 3, 3, 4, 1]).q,
+		instrument: \harp, coef: 0.05, amp: 0.03
+	].pp
+});
 P.synthV(role: \chapel, take: \lead, params: {|p b| [
 	lyrics: "without + the same formula + + captain + kirk will die",
 	pitchTake: 1,
@@ -1094,7 +1102,7 @@ P.synthV(role: \chapel, take: \lead, params: {|p b| [
 		/2
 	}.play
 });
-P.tune('Without');
+P.tune('Without', _ <> [instrument: \wash, amp: 0.02, rel:1].p);
 ["(He touches her fosehead.) /*SPOCK:*/ What were you saying? ",[3,  3,4,2,4,3].dm('c')].addLine;
 P.still(\henochTouches, timecode: 3100.seconds, music: { |p b e|
 	 e.still.( 
@@ -1315,20 +1323,35 @@ P.double(role: \formulaLead, params: {|p b| [
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
-			=> DWGReverbC1C3.ar(_, mix:0.1)
+			=> {|i|
+				 DWGReverbC1C3.ar(i, mix:0.1)
+				* -2.dbamp
+			}
 		}.play
 	});
 P(\harmonyWatched,start:'me prepare',music:
 {|p b e|
 	[
 		instrument:\sawSynth,
-		freq:[11,11,7,11,12,13,12,11,7,6,5,3,4,5,6,6].df('d',octave:[4,5],).q,
+		freq:[11,11,7,11,12,13,12,11,7,6,5,3,4,5,6,6].df('d',octave:[3,4,5],).q,
+		amp: [0.5,1,2]/20,
 		out: 1,
 		dur:b.q,
 	].pp
 }
 );
+P(\extraNotes, music: { |p b e|
+	[
+		freq: [\r, 1, -5, -2].df(\d).q,
+		dur: b.parse([1, 9, 4, 2]).q,
+		legato: [0.7, 1, 1, 1, ].q,
+		// instrument: \visual_pad,
+		amp: 0.3,
+		instrument: \sparkTriangle, width: 0.001, amp: 0.05, out: 1
+	].pp
+});
 ["/*CHAPEL:*/ Yes, that, that was it. ",[7, 7, 12,11,3].dm('f#')].addLine;
+Song.setTempoMap('that was it',"qq qq Q E q");
 P.still(\ChapelYes, timecode: 
 // 3120.5 //mouth closed
 3119.2
@@ -1353,16 +1376,25 @@ P.synthV(role: \chapel, take: \lead, params: {|p b| [
 		=> p.synthVTracks.at(e.key).(mix: 0.1)
 	}.play
 });
+P(\line, music: { |p b e|
+	[
+		midinote: [\r] ++ ( 1.dm(\b)  + (0..7) ) => _.q,
+		dur: "e e e e e e e e e" .asBeats.warpTo( e.tempoMap ).q,
+		legato: 3,
+		instrument: \harp, coef: 0.1, amp: 0.02,
+		out: Effect.bus({|i| Phaser2.ar(i,rate:0.2) }, out: 2)
+	].pp
+});
 P(\tremoloYes,start:'that was it',music:{|p b e|
-[
-	freq:[[11,14,16],[11,14,15],[13,15,17]].df('f#',octave:3,scale:\mixolydian,).q,
-	instrument:\stringyy,
-	width:20,
-	mix:0.3,
-	release:3,
-	out:(0..3),
-	dur:b.asArray.parse([1,1,3]).q,
-].pp
+	[
+		freq:[[11,14,16],[11,14,15],[13,15,17]].df('f#',octave:3,scale:\mixolydian,).q,
+		instrument:\stringyy,
+		width:20,
+		mix:0.3,
+		release:3,
+		out:(0..3),
+		dur:b.asArray.parse([1,1,3]).q,
+	].pp
 }
 );
 P(\basedNotesYes,start:'that was it',music:{|p b e|
@@ -1411,10 +1443,21 @@ P(\bassline, music: { |p b e|
 		,
 	].pp
 });
+P(\dyads, music: { |p b e|
+	[
+		freq: [\r,[5, 11], [5, 7], [5, 6], [4, 6], [4, 5], [3, 5], ].df('f#', 4) ++ [[ 3, 6.5]].df(\f, 4)  => _.q,
+		dur: e.bAll.parse([9, 5, 1, 1, 1, 1, 1, 1]) + [0, 0, 0, 0, 0, 0, 0, 3] => _.q,
+		instrument: \sawSynth,
+		att: 3, 
+		rel: 4
+	].ppm
+});
 P.synthV(role: \chapel, take: \lead,
 	pbind: Song.enlarge(8),
 	params: {|p b| [
 	lyrics: "I will inform + doctor + mccoy + that each is properly + + filled for each patient +",
+	legato: [1, 1, 1, 0.8, 1, 1, 1, 0.8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ],
+
 	pitchTake: 1,
 	pitchExpression: 1.25
 ] }, music:{|p b e|
@@ -1442,6 +1485,8 @@ P.synthVs(role: \formulaLead, take:[ \lead, \double ], params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+			=> {|i| DWGReverbC1C3.ar(i, mix:0.0) * -2.5.dbamp}
+		=> Pan2.ar(_,0)
 	}.play
 });
 P(\chordTwo, music: { |p b e|
@@ -1451,7 +1496,7 @@ P(\chordTwo, music: { |p b e|
 		instrument: \stringyy,
 		attack: [1,0.5].q,
 		mix:0,
-		amp:[ 0.06, 0.04 ]
+		amp:[ 0.06, 0.04 ] * 1.3
 	].ppm
 });
 P(\chord,start:'Very',music:{|p, b, e|
@@ -1473,6 +1518,28 @@ P.still(\henochCloseAlt, timecode: 3136.95.seconds, music: { |p b e|
 });
 //P.tune('keep this');
 SynthDef(\whiteNoise,{WhiteNoise.ar(\amp.kr(0.1))=>LPF.ar(_,2000)* Env.cutoff(1).kr(2,gate:\gate.kr(1)) => Out.ar(\out.kr(0),_)}).add;
+P(\pad,syl: 1, music: { |p b e|
+	(
+		freq: 1.df(\f),
+		instrument: \stringyy,
+		dur: b.sum
+	).play
+});
+
+P(\dyads, syl: 7,  music: { |p b e|
+	[
+		freq: [[1, 3], [1, 4],[1, 4],[1, 3]].df('b-').q,
+		dur: b.drop(1).q
+	].pp
+});
+P(\chords, music: { |p b e|
+	[
+		freq: [\r, [1, 3, 5],[-6, 1, 3],[-5, 1, 3]].df('b-',4, tuning: \just, ).q,
+		dur: b.parse([2, 4, 2, 4]).q, 
+		strum: 0.03, 
+		instrument: \harp, amp: 0.1, coef: 0.9
+	].pp
+});
 P.synthVs(role: \formulaLead,
 	filter: (midinote: _ - 12), 
 	take: [ \lead, \double ], params: {|p b| [
@@ -1493,25 +1560,25 @@ P.synthVs(role: \formulaLead,
 	}
 }.()
 );
-P(\vocoder,start:'keep this',music:{|p b e|
-	\b++b =>_.postln;
-	Song.pbind['keep this']
-	=>Pbindf(_,\legato,1,
-		//		\instrument,\sawSynth,
-	)
-	=>Pmul(\freq,[0.25, 0.5 ],_)
-	+= [amp:0.0002, instrument: \whiteNoise, dur:[ 2 ].q(inf) ].p
-	//	=>{|i| VocoderPattern(i,'keep this body').play }
-	=> VocoderPattern(_,'keep this body',
-		warp:0,
-		durs:Song.durs['keep this'].list.asArray,
-		dry:0.0,
-		//		inputEffect:(EchoNone.ar(_,0.4,0.3,1.5))
-		//		fftSize:4096,
-		out:1
-	)
-}.value
-);
+// P(\vocoder,start:'keep this',music:{|p b e|
+// 	\b++b =>_.postln;
+// 	Song.pbind['keep this']
+// 	=>Pbindf(_,\legato,1,
+// 		//		\instrument,\sawSynth,
+// 	)
+// 	=>Pmul(\freq,[0.25, 0.5 ],_)
+// 	+= [amp:0.0002, instrument: \whiteNoise, dur:[ 2 ].q(inf) ].p
+// 	//	=>{|i| VocoderPattern(i,'keep this body').play }
+// 	=> VocoderPattern(_,'keep this body',
+// 		warp:0,
+// 		durs:Song.durs['keep this'].list.asArray,
+// 		dry:0.0,
+// 		//		inputEffect:(EchoNone.ar(_,0.4,0.3,1.5))
+// 		//		fftSize:4096,
+// 		out:1
+// 	)
+// }.value
+// );
 P(\keepThisOctaves,start:'keep this',music:{|p b e|
 [
 	freq: [\r,1,-6,-5].df('b-',octave:[2,3,1] ).q,
@@ -1533,42 +1600,37 @@ P(\keepThisOctaves,start:'keep this',music:{|p b e|
 );
 //["would not permit me to keep this body","r"].addLine;
 ["It is therefore necessary for", [-7,1,2,3,2,1,-7,1,-6].dm('b-',octave:5)].addLine;
-P.synthV(role: \formulaLead, take:\lead,
+P.synthVs(role: \formulaLead, take:[\lead, \double],
 	pbind: Song.enlarge2(8),
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
 	lyrics: "It is therefore + necessary + + + for you to kill your captain + so that sar gone will die with him",
-	pitchTake: 1
+	legato: [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1, 1, 1, 1, 1, 1, 1, 1, ]],
+	pitchTake: [1, 3]
 ] }, music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_,0)
 	}.play
 });
-P.double(role: \formulaLead, params: {|p b| [
-		
-	] }, music:{|p b e|
-		{
-			e.playbuf
-			=> p.synthVTracks.at(e.key).()
-		}.play
-	});
+
 //P.tune('necessary');
-P(\vocoder,start:'necessary',music:{|p b e|
-Song.pbind['necessary']
-=>Pbindf(_,\legato,1,
-	//		\instrument,\sawSynth,
-)
-=>Pmul(\freq,[0.25, 0.5 ],_)
-+= [amp:0.0002, instrument: \whiteNoise, dur:[ 2 ].q(inf) ].p
-=>VocoderPattern(_, 'necessary',
-	out:1,
-	warp:1,
-	ry:0.0,
-	//		inputEffect:(EchoNone.ar(_,0.4,0.3,1.5))
-)
-}// .value
-);
+// P(\vocoder,start:'necessary',music:{|p b e|
+// Song.pbind['necessary']
+// =>Pbindf(_,\legato,1,
+// 	//		\instrument,\sawSynth,
+// )
+// =>Pmul(\freq,[0.25, 0.5 ],_)
+// += [amp:0.0002, instrument: \whiteNoise, dur:[ 2 ].q(inf) ].p
+// =>VocoderPattern(_, 'necessary',
+// 	out:1,
+// 	warp:1,
+// 	// ry:0.0,
+// 	//		inputEffect:(EchoNone.ar(_,0.4,0.3,1.5))
+// )
+// }.value
+// );
 P.tune('therefore',{|i| i.fin(4)=> Pmul(\freq,[ 0.5 , 0.25 ],_)=>Pbindf(_,\instrument,\sparkTriangle,\amp,0.06)});
 P(\necessaryBaseNote,start:'necessary',music:{|p b e|
 [out:
@@ -1593,7 +1655,7 @@ P(\necessaryBaseNote,start:'necessary',music:{|p b e|
 }
 );
 ["you to kill your captain ", [4,3,5,4,3,2].dm('b-',octave:5)].addLine;
-P.tune('kill');
+P.tune('kill', _ <> [instrument: \stringyy].pm);
 P(\vocoder,start:'kill',music:{|p b e|
 Song.pbind['kill']
 =>Pbindf(_,\legato,1,

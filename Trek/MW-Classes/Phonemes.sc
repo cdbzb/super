@@ -26,7 +26,7 @@ Phonemes {
 		^dicts.romajiDict
 	}
 	*xsampaDict {
-		( dicts.size==0 ).if{ this.class.parseDicts }; 
+		( dicts.size==0 ).if{ this.parseDicts }; 
 		^dicts.xsampaDict
 	}
 }

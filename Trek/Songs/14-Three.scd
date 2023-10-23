@@ -435,6 +435,11 @@ P.still(\closer, timecode: 3255.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["everything's","proceeding"],
+	).sequenceText2(
+			b.parse([6]), [ 
+			["as expected","and as promised"],
+
+			],
 	)
 });
 ~quarters6= Song.parse(6,1!4!4);
@@ -564,6 +569,16 @@ P(\pf6,start:6,syl:7,music:
 	}
 );
 ["I can see no rea- son for con-","e-5 d c b-4 g b- c5 d"].addLine; //7
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum + e.bNext[0],
+		text: ["I can see no","reason for"],
+	).sequenceText2(
+			b.parse([7]), [ 
+			["concern...",""],
+			],
+	)
+});
 P.synthV(role: \mccoy, take:\lead,
 		filter: (midinote: _ - 12), 
 		pbind: Song.enlarge(1),

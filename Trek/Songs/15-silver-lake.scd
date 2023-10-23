@@ -547,13 +547,26 @@ P(\chords,start:'kisses',music: {|p b e|
 
 	].pm(\trem2) => _.play } 
 });
+P(\door,syl:2, music: { |p b e|
+	
+	Synth(\door, [\amp, 0.1]);
+});
+
 P.still(\henochEnters,syl:3, timecode: 3335.26.seconds, music: { |p b e|
 	 e.still.( 
+
 		 fadeIn:b.drop(1)[0],
 		 wait: b.drop(1).sum,
 		 text: ["",""],
 		 fade: 1
-	)
+	);
+	{
+		Dust.ar(40)
+		=> FreeVerb.ar(_,0.8,1)
+		=> Convolution.ar( Gendy1.arWidth(freq: (100..105)), _ )
+		* Env([0, 1, 0],[1,b.drop(1)] ).kr()
+		/15
+	}.play
 });
 ["I think it is best not to remember so well. (boom) ",[3,2,3,1,-5,2,1,-7,-6,-7,-5,-2.5,-4.5].dm(\d)].addLine;
 P.still(\disappointedSargon, timecode: 3342.3.seconds, music: { |p b e|
@@ -565,7 +578,9 @@ P.still(\disappointedSargon, timecode: 3342.3.seconds, music: { |p b e|
 			b.parse([5]), [ 
 			["not to remember","so well"],
 			],
-	)
+	);
+	// static
+
 });
 P.synthV(\genbu, params: {|p b| [
 	lyrics: "ai think it is best not to re mem ba so well r" ,
@@ -676,19 +691,20 @@ P(\bass,start:'two days',syl:1,music:{|p b e|
 	];
 	Song.handsBassLick1 = [1,1,7,1] ++ 1.dup(4) ++ 4.dup(7) ++ 3;
 	p = Song;
-	Song.handsBassConstructor = { | key=( Song.handsKeys.intro ), start = 'intro'|
-P(\bass,start:start,music: {|p b e|
-		p.handsBassLick1
-		=>_.df(key,2,\mixolydian)
-		=>{|i| 
-			[
+	Song.handsBassConstructor = { |key=( Song.handsKeys.intro ), start = 'intro'|
+		P(\bass,start:start,music: {|p b e|
+			p.handsBassLick1
+			=>_.df(key,2,\mixolydian)
+			=>{|i| 
+				[
 
-				freq:i.q(2),
-			].pma(
-				//		\sawSynthTrigger
-				\sawSynthSustain
-			) <> p.handsBassArray.p =>_.play(clock:p.introClock) };
-		} );
+					freq:i.q(2),
+				].pma(
+					//		\sawSynthTrigger
+					\sawSynthSustain
+				) <> p.handsBassArray.p =>_.play(clock:p.introClock) };
+			}
+		);
 	};
 );
 Song.handsBassConstructor.('b-', 'intro');
@@ -727,13 +743,12 @@ P.synthVs(role: \henoch, take: [\lead, \double], params: {|p b| [
 	lyrics: "r mechanically + + + efficient + + ",
 	vocalMode: \Belt,
 	pitchTake: [3,1]
-] },pbind:{ |p b| [
-	dur: "qe e e e e e qe e".asBeats
-	.warpTo(p.tempoMap[\efficient])
-	.q,
-	midinote: "2,  2, 2, 2, 1, 2, 4, 3".dm('e-')
-].p },
-music:{|p b e|
+]}, pbind:{ |p b| 
+	[
+		dur: "qe e e e e e qe e".asBeats .warpTo(p.tempoMap[\efficient]).q,
+		midinote: "2,  2, 2, 2, 1, 2, 4, 3".dm('e-')
+	].p 
+}, music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
@@ -774,13 +789,12 @@ P(\keys,syl:0,start:\efficient,music: { |p b e|
 } );
 ["quite human-looking. ","\r 2 1 2 -6 -5 \r","qq Q Q Q qe eqe e".asBeats*60/104].addLine;
 Song.setTempoMap('quite',"qq Q Q Q qe eqe e");
-/* P.synthV(role: \henoch, params: {|p b| [
+P.synthVs(role: \henoch, take:[\lead, \double], params: {|p b| [
 	//lyrics: "r and qwait hu man lu king" ,
-	lyrics:" r and quite human + looking +"
+	lyrics:" r and quite human + looking +",
+	legato: [[1, 1, 1, 1, 0.8, 1, 1, ]],
 ] },pbind:{ |p b| [
-	dur: "qe e Q Q Q qe e".asBeats
-	.warpTo(p.tempoMap[\quite])
-	.q,
+	dur: "qe e Q Q Q qe e".asBeats.warpTo(p.tempoMap[\quite]).q,
 	midinote: "2,  2, 2, 1, 2, -6, -5".dm('e-')
 ].p },
 music:{|p b e|
@@ -790,14 +804,6 @@ music:{|p b e|
 		*2
 	}.play
 });
-P.double(role: \henoch, take: nil, params: {|p b| [
-	
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
-}); */
 ["(boom boom) Android (boom boom) robot hands, of course. ","-1 -1 11 7 12 7 6 11 6 5 7 5 4".dm(Song.handsKeys.bridge,4,\mixolydian),"q q q q qq q q qq q q qqq e e".asBeats*60/104].addLine;
 P.still(\sss, timecode: 3353.6.seconds, music: { |p b e|
 	 e.still.( 
@@ -807,6 +813,7 @@ P.still(\sss, timecode: 3353.6.seconds, music: { |p b e|
 });
 P.synthVs(\feng, take: [ \bg1, \bg2], params: {|p b| [
 	lyrics: "r r android + hands r r r r r r r r",
+	legato: [[1, 1, 1, 1, 4, 1, 1, 1, 1, 1, 1, 1, 1, ]],
 	pitchTake: [ 1,2 ]
 ] }, music:{|p b e|
 	{
@@ -814,14 +821,60 @@ P.synthVs(\feng, take: [ \bg1, \bg2], params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
+P.synthVs(\feng, take: [ \bg3, \bg4], params: {|p b| [
+	lyrics: "r r r r r android + hands  r r r r r",
+	pitchTake: [ 1,2 ],
+	paramGender: 0.2,
+	legato: [[1, 1, 1, 1, 1, 1, 1, 4, 1, 1, 1, 1, 1, ]],
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.synthVs(\feng, take: [ \bg4, \bg5], params: {|p b| [
+	lyrics: "r r r r r r r r android + hands   r r",
+	pitchTake: [ 1,2 ],
+	paramGender: 0.4,
+	legato: [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 1, 1, ]],
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.synthVs(role: \henoch, take: [\lead, \double], params: {|p b| [
+	lyrics: "r r r r r r r r robot + hands of course",
+	legato: [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1, 2  ]],
+	pitchTake: [1, 3]
+] },pbind: {|p b|
+	[
+		midinote: [0,0,0,0,0,0,0,0, 4, 3, 1, -5, -4].dm(\g).q,
+		dur: b
+	].p
+}, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
 P('bass',music: {|p b e|
 	[
 		freq: [1, 1, \r ].df(p.handsKeys.bridge,2).dup(4).flat.q,
 		dur: "q q h".asBeats.dup(4).flat .q,
 		instrument: \bl,
-		out: Effect(EchoNone.ar(_,0.3,"e".asBeats*60/104,4) /5).bus.index
+		out: Effect(EchoNone.ar(_,0.3,"e".asBeats*60/104,4) /5, out: [0,1]).bus.index,
+		amp: 0.4
 
-	].p.play(clock:p.introClock)
+	].p.play(clock:p.introClock);
+
+	[
+		freq: [1, 1, \r ].df(p.handsKeys.bridge,2).dup(4).flat.q,
+		dur: "q q h".asBeats.dup(4).flat .q,
+		instrument: \sawSynth,
+	].p.play(clock:p.introClock);
+
 });
 
 P(\808,start:'course',music: {|p b e|
@@ -832,8 +885,9 @@ P(\808,start:'course',music: {|p b e|
 	] => Ppar(_) => _.play(clock:Song.introClock)
 
 });
-P.tune(\course, _ <> [instrument:\sawSynth,amp:0.15].p);
+// P.tune(\course, _ <> [instrument:\sawSynth,amp:0.15].p);
 ["Hands without feeling. ",[\r, 5,4,5,7,6,\r,\r,5,4,5,2,1].dm(Song.handsKeys.reprise,\mixolydian),"qq Q Q Q qe eqe e".asBeats.dup.flat* 60/104].addLine;
+// Song.durs.filter(\without, _ * [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.5]);
 P.synthV(role: \henoch, params: {|p b| [
 	lyrics: "r hands without + feeling + r r hands without + feeling + r",
 	vocalMode:\Solid
@@ -848,10 +902,11 @@ P.synthV(\mo,take:\bg, take: nil, params: {|p b| [
 	{
 		e.playbuf 
 		// => p.synthVTracks.at(e.key).()
+		/2.5
 	}.play
 });
 P('cymbal',start:\Hands,music: {|p b e|
-	(instrument:\cymbalsDS,amp:0.04).play;
+	(instrument:\cymbalsDSStereo,amp:0.004).play;
 	(instrument:\cymbal_808,amp:5,pan:-1).play
 });
 P(\keys,syl:0,music: { |p b e|
@@ -912,25 +967,26 @@ P.still(\henoch, timecode: 3356.seconds, music: { |p b e|
 		text: ["",""],
 	)
 });
-P.synthV(role: \henoch, take: nil, params: {|p b| [
+P.synthVs(role: \henoch, take: [nil, \lead], params: {|p b| [
 	lyrics: " r enjoy + the taste of life - - while you can",
-	pitchTake: 1
+	pitchTake: [1, 3],
+	filter: [(midinote: _ - 12), (midinote: _ )], 
 ] }, music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.synthV(\mo, take: nil, params: {|p b| [
-	lyrics: " r enjoy + the taste of life - - while you can",
-	pitchTake: 1
-] }, music:{|p b e|
-	{
-		e.playbuf
-		/3
-		// => p.synthVTracks.at(e.key).()
-	}.play
-});
+// P.synthV(\mo, take: nil, params: {|p b| [
+// 	lyrics: " r enjoy + the taste of life - - while you can",
+// 	pitchTake: 1
+// ] }, music:{|p b e|
+// 	{
+// 		e.playbuf
+// 		/3
+// 		// => p.synthVTracks.at(e.key).()
+// 	}.play
+// });
 P.tune(\Enjoy);
 Song.setTempoMap(\Enjoy,"QQ Q QQ Q Q Q q e e e e e");
 P('click',start:\Enjoy,music: {|p b e|

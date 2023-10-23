@@ -14,7 +14,7 @@ o = [
 	Array.prNew(12),  "814150000",  "",  Event.prNew,  
 	Array.prNew(4),  Event.prNew,  Array.prNew(40),  "2442450000",  
 	"+",  "814150000",  Event.prNew,  Array.prNew(40),  
-	"3256600000",  "hands",  "1628300000",  "main",  
+	"3256600000",  "hands",  "6513200000",  "main",  
 	Event.prNew,  Array.prNew(32),  Event.prNew,  Array.prNew(8),  
 	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
 	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
@@ -34,7 +34,7 @@ o = [
 	Event.prNew,  Array.prNew(12),  "",  "Unnamed Track",  
 	Array.prNew,  Event.prNew,  Array.prNew(20),  "ff7db235",  
 	Event.prNew,  Array.prNew(28),  "synthV.wav",  "NoAspiration",  
-	"/Users/michael/tank/super/SynthV/silverLake/2080108042/feng-bg2"
+	"/Users/michael/tank/super/Trek/SynthV/silverLake/2080108042/feng-bg2"
 ];
 p = [
 	// Event
@@ -126,7 +126,7 @@ p = [
 		proto: nil,  parent: nil,  
 		know: true ],  
 	// Array
-	23, [ nil,  nil,  'activeTakeId',  2,  
+	23, [ nil,  nil,  'activeTakeId',  1,  
 		nil,  nil,  'takes',  o[24] ],  
 	// Array
 	24, [ o[25],  o[27],  o[29],  o[31] ],  

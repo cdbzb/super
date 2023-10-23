@@ -15,12 +15,12 @@ o = [
 	Array.prNew(4),  Event.prNew,  Array.prNew(40),  "809580000",  
 	"will",  "426330000",  Event.prNew,  Array.prNew(40),  
 	"1235910000",  "inform",  "322340000",  Event.prNew,  
-	Array.prNew(40),  "1558250000",  "+",  "674400000",  
+	Array.prNew(40),  "1558250000",  "+",  "539520000",  
 	Event.prNew,  Array.prNew(40),  "2232650000",  "doctor",  
 	"754620000",  Event.prNew,  Array.prNew(40),  "2987270000",  
 	"+",  "485740000",  Event.prNew,  Array.prNew(40),  
 	"3473010000",  "mccoy",  "306000000",  Event.prNew,  
-	Array.prNew(40),  "3779010000",  "+",  "597160000",  
+	Array.prNew(40),  "3779010000",  "+",  "477720000",  
 	Event.prNew,  Array.prNew(40),  "4376170000",  "that",  
 	"368390000",  Event.prNew,  Array.prNew(40),  "4744560000",  
 	"each",  "531790000",  Event.prNew,  Array.prNew(40),  
@@ -54,7 +54,7 @@ o = [
 	Event.prNew,  Array.prNew(12),  "",  "Unnamed Track",  
 	Array.prNew,  Event.prNew,  Array.prNew(20),  "ff7db235",  
 	Event.prNew,  Array.prNew(28),  "synthV.wav",  "NoAspiration",  
-	"/Users/michael/tank/super/SynthV/this-formnula/1203013976/feng-lead"
+	"/Users/michael/tank/super/Trek/SynthV/this-formnula/1203013976/feng-lead"
 ];
 p = [
 	// Event

@@ -4,7 +4,7 @@ o = [
 	Array.prNew(8),  Array.prNew(1),  Event.prNew,  Array.prNew(12),  
 	Array.prNew(1),  Event.prNew,  Array.prNew(8),  Array.prNew(1),  
 	Event.prNew,  Array.prNew(32),  Event.prNew,  Array.prNew(16),  
-	Array.prNew(3),  Event.prNew,  Array.prNew(40),  "1628300000",  
+	Array.prNew(3),  Event.prNew,  Array.prNew(40),  "8141500000",  
 	Event.prNew,  Array.prNew(4),  Event.prNew,  Array.prNew(8),  
 	Array.prNew(4),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  Event.prNew,  Array.prNew(12),  Event.prNew,  
@@ -12,9 +12,9 @@ o = [
 	Array.prNew(4),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  "814150000",  "",  Event.prNew,  
-	Array.prNew(4),  Event.prNew,  Array.prNew(40),  "2442450000",  
+	Array.prNew(4),  Event.prNew,  Array.prNew(40),  "8955650000",  
 	"+",  "814150000",  Event.prNew,  Array.prNew(40),  
-	"3256600000",  "hands",  "6513200000",  "main",  
+	"9769800000",  "hands",  "2442460000",  "main",  
 	Event.prNew,  Array.prNew(32),  Event.prNew,  Array.prNew(8),  
 	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
 	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
@@ -34,7 +34,7 @@ o = [
 	Event.prNew,  Array.prNew(12),  "",  "Unnamed Track",  
 	Array.prNew,  Event.prNew,  Array.prNew(20),  "ff7db235",  
 	Event.prNew,  Array.prNew(28),  "synthV.wav",  "NoAspiration",  
-	"/Users/michael/tank/super/Trek/SynthV/silverLake/2080108042/feng-bg1"
+	"/Users/michael/tank/super/Trek/SynthV/silverLake/2080108042/feng-bg5"
 ];
 p = [
 	// Event
@@ -110,10 +110,10 @@ p = [
 		'onset',  o[19],  nil,  nil,  
 		nil,  nil,  'detune',  0,  
 		'systemAttributes',  o[20],  'pitchTakes',  o[22],  
-		'midinote',  67.0,  'lyrics',  o[33],  
+		'midinote',  64.0,  'lyrics',  o[33],  
 		'timbreTakes',  o[34],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		'pitch',  67,  'duration',  o[45],  
+		'pitch',  64,  'duration',  o[45],  
 		'phonemes',  o[46],  'attributes',  o[47] ],  
 	// Event
 	20, [ array: o[21],  size: 0,  
@@ -219,10 +219,10 @@ p = [
 		'onset',  o[51],  nil,  nil,  
 		nil,  nil,  'detune',  0,  
 		'systemAttributes',  o[20],  'pitchTakes',  o[22],  
-		'midinote',  65.0,  'lyrics',  o[52],  
+		'midinote',  62.0,  'lyrics',  o[52],  
 		'timbreTakes',  o[34],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		'pitch',  65,  'duration',  o[53],  
+		'pitch',  62,  'duration',  o[53],  
 		'phonemes',  o[46],  'attributes',  o[47] ],  
 	// Event
 	54, [ array: o[55],  size: 11,  
@@ -234,10 +234,10 @@ p = [
 		'onset',  o[56],  nil,  nil,  
 		nil,  nil,  'detune',  0,  
 		'systemAttributes',  o[20],  'pitchTakes',  o[22],  
-		'midinote',  69.0,  'lyrics',  o[57],  
+		'midinote',  65.0,  'lyrics',  o[57],  
 		'timbreTakes',  o[34],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		'pitch',  69,  'duration',  o[58],  
+		'pitch',  65,  'duration',  o[58],  
 		'phonemes',  o[46],  'attributes',  o[47] ],  
 	// Event
 	60, [ array: o[61],  size: 8,  
@@ -353,11 +353,11 @@ p = [
 		nil,  nil,  'id',  0,  
 		'expr',  1.1,  nil,  nil ],  
 	// Event
-	112, [ array: o[113],  size: 3,  
+	112, [ array: o[113],  size: 4,  
 		proto: nil,  parent: nil,  
 		know: true ],  
 	// Array
-	113, [ 'vocalModeInherited',  true,  nil,  nil,  
+	113, [ 'vocalModeInherited',  true,  'paramGender',  0.4,  
 		nil,  nil,  'vocalModePreset',  o[114],  
 		'vocalModeParams',  o[115],  nil,  nil ],  
 	// Event

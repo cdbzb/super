@@ -118,10 +118,21 @@ Song.stringyyTuneLow.('long a');
 P.still(\clear,syl:5, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.drop(1).sum + e.bNext.sum + p.durs[e.start+2].list[0],
-		text: ["we sat beside","a silver lake"],
+		text: ["",""],
 		fade: p.durs[e.start + 2].list[1..2].sum
 	)
 });
+P.still(\clear,syl:5,lag:0.1, timecode: 0.seconds, music: { |p b e|
+	 e.still.(
+		wait: b.sum + e.bNext.sum + p.durs[e.start + 2][0],
+		text: ["we sat","beside a"]
+	).sequenceText2(
+			b.drop(1).parse([7]), [ 
+			["silver","lake"],
+			],
+	)
+}
+);
 P.synthV(\aiko, 
 	pbind: Song.enlarge2(1),
 	params:[ lyrics: "r r r r r r wi sat bi sa id  a si i il ver lek" ,
@@ -157,13 +168,13 @@ P(\chords,'go.',syl:0,music: {|p b e|
 	].pp
 });
 ["sat beside a si -- lve --r ",[1,-7,-6,-7,-5,3,4,1,3].dm(\d,octave:6)].addLine;
-P.still(\lookingOut,syl:1, timecode: 3322.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		fadeIn:b[..5].sum,
-		text: ["",""],
-	)
-});
+// P.still(\lookingOut,syl:1, timecode: 3322.seconds, music: { |p b e|
+// 	 e.still.( 
+// 		wait: b.sum,
+// 		fadeIn:b[..5].sum,
+// 		text: ["",""],
+// 	)
+// });
 // P.synthV(\aiko,
 // 	params:{|p b| [
 // 		lyrics:"sat bi sa id  a si i il ver" ,
@@ -403,10 +414,10 @@ P(\chord,start:\flowers,music:{|p b e|
 P.still(\close, timecode: 3327.5.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.parse([5]).unbubble,
-			fade: b[5..12].sum,
+			fade: b[5..21].sum +1,
 			text: ["I","remember"],
 		).sequenceText2(
-				b.parse([4,12]), [ 
+				b.parse([5,12]), [ 
 				["you held","my hand"],
 				["",""]
 				],
@@ -687,7 +698,6 @@ P(\bass,start:'two days',syl:1,music:{|p b e|
 		dur:0.5,
 		rel:0.2,
 		trigger:1,
-		instrument:\sawSynth
 	];
 	Song.handsBassLick1 = [1,1,7,1] ++ 1.dup(4) ++ 4.dup(7) ++ 3;
 	p = Song;
@@ -792,6 +802,7 @@ Song.setTempoMap('quite',"qq Q Q Q qe eqe e");
 P.synthVs(role: \henoch, take:[\lead, \double], params: {|p b| [
 	//lyrics: "r and qwait hu man lu king" ,
 	lyrics:" r and quite human + looking +",
+	pitchTake:[1, 3],
 	legato: [[1, 1, 1, 1, 0.8, 1, 1, ]],
 ] },pbind:{ |p b| [
 	dur: "qe e Q Q Q qe e".asBeats.warpTo(p.tempoMap[\quite]).q,
@@ -964,7 +975,12 @@ P(\lick,start:'Hands',music: {|p b e|
 P.still(\henoch, timecode: 3356.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text:["",""],
+	).sequenceText2(
+			b.parse([1,8]), [ 
+				["enjoy the taste","of life"],
+				["while you","can"]
+			],
 	)
 });
 P.synthVs(role: \henoch, take: [nil, \lead], params: {|p b| [
@@ -1034,7 +1050,11 @@ P('chord2',start:\Enjoy,music: {|p b e|
 P.still(\sargonClose, timecode: 3401.7.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["but our minds","will have survived"],
+		text: ["",""]
+	).sequenceText2(
+			b.parse([1]), [ 
+				["but our minds","will have survived"],
+			],
 	)
 });
 P.synthV(role: \sargon, take: nil, params: {|p b| [
@@ -1398,7 +1418,7 @@ P(\pain,start:'helping', syl:12,music: {| p, b, e|
 P.still(\withMouthOpenT, timecode: 3417.8.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["what is it","Sargon?"],
 	)
 });
 P.synthV(role: \thalassa, take: \lead, params: {|p b| [
@@ -1419,6 +1439,13 @@ P.still(\nothing, timecode: 3421.4.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["nothing",""],
+
+	).sequenceText2(
+			b.parse([2,6,4]), [ 
+			["our next","injection will"],
+			["renovate","me"],
+			["",""]
+			],
 	)
 });
 // P.still(\twoAgain, timecode: 3422.5.seconds, music: { |p b e|

@@ -21,20 +21,41 @@ P.still(\hands, timecode: 3309.seconds, music: { |p b e|
 		text: ["",""],
 	)
 });
-[1,3,5,1,4,6,5,4].df(\g).q(2)=>[dur:0.5,freq:_,legato:1]=>_.p => _.fin(13) => {|i| P(\lick,start:\working,music:{|p b e| i.play})};
+[1,3,5,1,4,6,5,4].df(\g).q(2)=>[dur:0.5,freq:_,legato:1, instrument: \harp, coef: 0.1, amp:0.03]=>_.p => _.fin(13) => {|i| P(\lick,start:\working,music:{|p b e| i.play})};
 P(\bass, music: { |p b e|
 	var verb = Effect.bus({|i| FreeVerb.ar(i,1,1)  },inputChannels:2);
-	var clean = Effect.bus({|i| SineShaper.ar(i,0.2) },);
+	var clean = Effect.bus({|i| SineShaper.ar(i,0.2) * -6.dbamp },inputChannels:2);
 	[
 		freq: [1, 1, 4, 5].df(\g,[3,4]).q(2),
 		dur:  [3,1] / 2 => _.dup(3) ++ 1.5 => _.flat =>_.q ,
 		out: [ clean,clean,clean,clean,clean,clean,verb ].q
 	].pp
 });
+P(\tamb, music: { |p b e|
+	fork{
+		var tamb = Barrier.collect( {
+			Shakers.ar(3,number: 32,decay:1,resonantFreq: 0.2,energy:0.3 )
+			=> Pan2.ar(_,0.4)
+			* 2
+			=> {|i| CombN.ar(i,0.33, 0.125 + 0.02) /2 + i}
+			// * 10
+			// => DWGReverbC1C3.ar(_)
+		}.asDefName
+	)	;
+	tamb.()[0] =>
+	[
+		instrument: _,
+		dur: 1,
+		rest: [\r, 1].q(3)
+	] => _.pp
+}
+});
+
 [ "when their hands touch.","r",4 ].addLine; 
 P.still(\touch, timecode: 3310.13.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
+		// wait: b.sum,
+		wait: 0, fade: b.sum,
 		text: ["",""],
 	)
 });
@@ -61,6 +82,14 @@ P(\arpeggio,\touch,music: {
 });
 //~chordIdea = [ [-1,3,4.5,7], [-3.5,2,5,7] ].df(\d,scale:\minor).q => {|i| [freq:i,legato:1,dur:2.5].p};
 ["/*MULHALL:*/ Sargon, I remember a day long a- ",[2,1, 3,2,-6,1,-7,-7,-6,-5].dm(\d,scale:\dorian,octave:6)].addLine;
+// Song.durs.filter(\long, _ + [0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+P(\bell, music: { |p b e|
+	(
+		freq: 2.df(\d, 6),
+		instrument: \stringyy,
+		amp: 0.05
+	).play
+});
 P.still(\twoShot, timecode: 
 	// 3319 //looks like smiling
 	3320.2
@@ -90,10 +119,11 @@ P.synthV(\aiko,
 	pbind: Song.enlarge(1),
  	params:{|p b| [
 	lyrics: "sar gon ai re mem ber a dai long a go" ,
-	legato:[1,  0.5, 1, 1, 1,  1,  1,  1,  1, 1, 2] ,
-	lag:[0.15,0,0,0,0,0,0,0,0,0,0],
-	phonemes: ["","","","","m e m","","","","","@","k o"],
-	tension: Env([-0.4,-0.4],[2])
+	legato:[1,  0.8, 1, 1, 1,  1,  1,  1,  1, 1, 2] ,
+	lag:[0.15,0.07,0,0,0,0,0,0,0,0,0],
+	phonemes: ["","","","","m e m","","","","l o N","@","k o"],
+	// tension: Env([-0.4,-0.4],[2])
+	paramTension: -0.4
 
 ] },music:{|p b e|
 	{
@@ -461,7 +491,8 @@ P('tune',start:\held,music: {|p b e|
 			=> _.q,
 			dur: b ++ b.last => _.q ,
 			instrument: \harp,
-			amp: 0.015
+			amp: 0.015,
+			out:3
 
 		].pp
 	});
@@ -480,11 +511,22 @@ P(\bass,'I remember.',music: {|p b e|
 P(\chords,'I remember.',music: {|p b e|
 		[
 			freq:[ [6,11], [5,11], [5,7]].df(\c).q,
+			depth: 0.01,
 			instrument:\sparkTriangle,
 			dur: b.parse([1,1,2]).q,
 			amp:0.05
 		].pp
-	});
+});
+P(\chordsTwo, music: { |p b e|
+	[
+		freq: [[-6, 1, 4], [-5, 1, 3], [-5, -7, 3]].df(\c, 5).q,
+		instrument: \harp,
+		amp: 0.02,
+		dur: b.q,
+		out: Effect.bus({|i| CrossoverDistortion.ar(i, smooth: Env([0.9,0.9,0.9,0.99],b + [0, 0, 2]).kr)/5 },out:2)
+	].ppm
+});
+
 P(\doubling,'I remember.',syl:12,music: {|p b e|
 		[
 			freq:[7,11,7,6,7,11,12,13].df(\g,octave:4).q,
@@ -548,13 +590,16 @@ P(\chords,start:'kisses',music: {|p b e|
 		//[1,\_,-7,\_,\_,]
 		[1,\_,-7.5,\_,-7,]
 	],b.asArray
-	).df('b-',scale:\mixolydian,octave:5)
+	).df('b-',scale:\mixolydian,octave:[5])
 	.pbinds.do {|i| i <> [
 		instrument:\trem2,
 		scale:1,
 		legato:1,
 		rel:3,
-		amp:0.05
+		amp:0.05,
+		out: {
+			|i| i * Env([0, 1],1).kr
+		} => Effect.bus(_, inputChannels:2)
 
 	].pm(\trem2) => _.play } 
 });
@@ -567,7 +612,8 @@ P.still(\henochEnters,syl:3, timecode: 3335.26.seconds, music: { |p b e|
 	 e.still.( 
 
 		 fadeIn:b.drop(1)[0],
-		 wait: b.drop(1).sum,
+		 // wait: b.drop(1).sum,
+		 wait: b.drop(1).sum + e.bNext.sum,
 		 text: ["",""],
 		 fade: 1
 	);
@@ -634,13 +680,18 @@ Song.bassSoundTwoDays = (instrument:\stringyy,amp:0.35,attack:0.1);
 P('bassNote',start:\think, syl:11, music: {|p b e|
 	[dur: b[0].q,freq:1.df('a-',4)].p <> p.bassSoundTwoDays => _.postln => _.play
 });
-["/*SPOCK:*/ In two days, you'll have your own hands, Thalassa. ",[3,2,4,3,4,3,3,2,4,1,-7].dm('a-')].addLine;
-P.still(\closeHenoch, timecode: 3345.seconds, music: { |p b e|
+P.still(\closeHenoch,syl:11, timecode: 3345.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
+		wait: b.drop(1).sum + e.bNext.sum,
 		text: ["",""],
+	).sequenceText2(
+			b.drop(1)[0].bubble ++ e.bNext.parse([1,3]), [ 
+				["in", "two days"],
+				["you'll have your", "own hands, Thalassa"]
+			],
 	)
 });
+["/*SPOCK:*/ In two days, you'll have your own hands, Thalassa. ",[3,2,4,3,4,3,3,2,4,1,-7].dm('a-')].addLine;
 Song.durs['two days'].list[10]=(1.33);
 P.synthV(role: \henoch,
 	// take:nil ,
@@ -662,7 +713,6 @@ P.double(role: \henoch, params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-
 //P.tune('two days');
 //~twoDaysQuarters= Song.durs['two days'].list.asArray.parseBeats([0.5,0.5,1,1/3,1/3,1/3,3/4,(1/4+(3/4)), 1/4,3/4,(1/4+1)]);
 //Song.durs['two days'].list.postcs
@@ -748,6 +798,12 @@ P(\lick,start:'intro',music: {|p b e|
 ["Mechanically efficient and ",[\r,2, 1, 2,  4, 3,\r].dm('e-'),"qq Q Q Q qe eqe e".asBeats*60/104].addLine;
 Song.setTempoMap(\efficient,"qq Q Q Q qe eqe e");
 Song.handsBassConstructor.('b-', \efficient);
+P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.drop(1).sum,
+		text: ["mechanically","efficient"],
+	)
+});
 P.synthVs(role: \henoch, take: [\lead, \double], params: {|p b| [
 	//lyrics: "r me ka ni kli i fi shent" ,
 	lyrics: "r mechanically + + + efficient + + ",
@@ -798,6 +854,12 @@ P(\keys,syl:0,start:\efficient,music: { |p b e|
 
 } );
 ["quite human-looking. ","\r 2 1 2 -6 -5 \r","qq Q Q Q qe eqe e".asBeats*60/104].addLine;
+P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.drop(1).sum ,
+		text: ["and quite","human-looking"],
+	)
+});
 Song.setTempoMap('quite',"qq Q Q Q qe eqe e");
 P.synthVs(role: \henoch, take:[\lead, \double], params: {|p b| [
 	//lyrics: "r and qwait hu man lu king" ,
@@ -816,10 +878,11 @@ music:{|p b e|
 	}.play
 });
 ["(boom boom) Android (boom boom) robot hands, of course. ","-1 -1 11 7 12 7 6 11 6 5 7 5 4".dm(Song.handsKeys.bridge,4,\mixolydian),"q q q q qq q q qq q q qqq e e".asBeats*60/104].addLine;
-P.still(\sss, timecode: 3353.6.seconds, music: { |p b e|
+// make henoch actually say "android robot hands of course" rather than "robot hands of course"
+P.still(\sss,syl:7, timecode: 3353.6.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["robot hands","of course"],
 	)
 });
 P.synthVs(\feng, take: [ \bg1, \bg2], params: {|p b| [
@@ -898,6 +961,12 @@ P(\808,start:'course',music: {|p b e|
 });
 // P.tune(\course, _ <> [instrument:\sawSynth,amp:0.15].p);
 ["Hands without feeling. ",[\r, 5,4,5,7,6,\r,\r,5,4,5,2,1].dm(Song.handsKeys.reprise,\mixolydian),"qq Q Q Q qe eqe e".asBeats.dup.flat* 60/104].addLine;
+P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.drop(1).sum,
+		text: ["hands without","feeling"],
+	)
+});
 // Song.durs.filter(\without, _ * [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.5]);
 P.synthV(role: \henoch, params: {|p b| [
 	lyrics: "r hands without + feeling + r r hands without + feeling + r",
@@ -905,6 +974,7 @@ P.synthV(role: \henoch, params: {|p b| [
 ] }, music:{|p b e|
 	{
 		e.playbuf => p.synthVTracks.at(e.key).()
+		* 2.dbamp
 	}.play
 });
 P.synthV(\mo,take:\bg, take: nil, params: {|p b| [
@@ -913,7 +983,7 @@ P.synthV(\mo,take:\bg, take: nil, params: {|p b| [
 	{
 		e.playbuf 
 		// => p.synthVTracks.at(e.key).()
-		/2.5
+		/2
 	}.play
 });
 P('cymbal',start:\Hands,music: {|p b e|

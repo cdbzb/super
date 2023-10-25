@@ -97,6 +97,23 @@ P.still(\handing, timecode: 3446.1.seconds, music: { |p b e|
 			text: ["you'll find them","excellent, Doctor"],
 		)
 });
+P(\tablas, music: { |p b e|
+	// var dropLast = b.drop(1);
+	var dropLast = b;
+	var denominators = dropLast.collect(3.rand + 2);
+	var durs = dropLast.collect{|i x| i / denominators[x] dup: denominators[x]}.flat;
+	var pitch = durs.collect{ 
+		// [500,200]
+		[-5, 1].df('f#', \mixolydian)
+		.choose };
+	[
+		dur: durs.q,
+		instrument: \harp,
+		freq: pitch.q,
+		amp: 0.02,
+		out: 2
+	].pp
+});
 P.synthV(role: \chapel, take: \lead, params: {|p b| [
 		lyrics: "you'll find them excellent + + Doctor + well within + normal +",
 		legato: [1, 1, 1, 1, 1, 1, 1, 0.5, 1, 1, 1, 1, 1],
@@ -203,6 +220,23 @@ P(\chords, music: { |p b e|
 
 		].p.play
 });
+P(\tablas, music: { |p b e|
+	// var dropLast = b.drop(1);
+	var dropLast = b;
+	var denominators = dropLast.collect(3.rand + 2);
+	var durs = dropLast.collect{|i x| i / denominators[x] dup: denominators[x]}.flat;
+	var pitch = durs.collect{ 
+		// [500,200]
+		[-5, 1].df('f#', \mixolydian)
+		.choose };
+	[
+		dur: durs.q,
+		instrument: \harp,
+		freq: pitch.q,
+		amp: 0.02,
+		out: 3
+	].pp
+});
 ["MCCOY: Regarding our patients?","4 5 4 3 7 6".dm(\c,\mixolydian)].addLine;
 P(\doubling, music: { |p b e|
 	[
@@ -244,6 +278,8 @@ P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 		[
 			freq: [\r] ++ ( "3 2 1 -5 -4" =>_.df(\f,4) ) =>_.q,
 			instrument: \harp,
+			release: [1, 1, 1, 1, 1, 10].q,
+			out: 2,
 			coef:0.8,
 			dur: b ++ e. bNext =>_.q
 		].pp
@@ -267,13 +303,14 @@ P(\bassnote, music: { |p b e|
 });
 P.tune(\Yes);
 	["I am so plea -sed the way they are responding, Doctor.","5 4 3 5 6 5 4 3 2  5 4 3 1 -5".dm('b-') ].addLine;
+	Song.setTempoMap(\plea,"Q Q Q Q Eex x e x e x q q q q");
 	P(\pluck,syl:8, music: { |p b e|
 		[
 			freq:[\r,11,5,3,1,-3].df('b-',4).q,
 			dur: b.drop(1) ++ e.bNext =>_.q,
-			instrument: \harp,coef:0.6, amp:0.08,
-			out: Effect.bus({|i| i=> Pan2.ar(_,) => FreeVerb.ar(_) },)
-
+			release: [1, 1, 1, 1, 1, 10].q,
+			out: 3,
+			instrument: \harpRelease,coef:0.6, amp:0.08
 		].pp
 	});
 P.still(\chapelYes, timecode: 
@@ -284,6 +321,17 @@ P.still(\chapelYes, timecode:
 		wait: b.sum,
 		text: ["I am so pleased","the way they are responding"],
 	)
+});
+P(\chords, music: { |p b e|
+	[
+		freq: [[-5, 1, -3],[-5, 1, -3],[-5, 1, -3],[-5, 1, -3],[-6, 1, -4], [-5, -7],[-6, 1]].df('b-').q, 
+		dur: "Q Q Q Q QQ qq qqqq".asBeats.warpTo( e.tempoMap.quantize ).q,
+		instrument: \default,
+		// instrument: \harp,
+		out: Effect.bus({|i|AnalogVintageDistortion.ar(i,drivegain:1,lowgain:0,highgain:1,smooth: 0.95) / 13 + i /5 },out: 2),
+		legato: [0.9,0.9,0.9,1, 1,0.9, 0.9 ].q,
+
+	].ppma
 });
 P.synthV(role: \chapel, take: \lead, params: {|p b| [
 		lyrics: "I am so pleased - the way they are responding + + Doctor +",
@@ -298,17 +346,17 @@ P(\bass, music: { |p b e|
 		[
 			freq:[1,2,3,4,-5,-6].df('b-',[4,3]).q,
 			dur:b.parse([1,1,1,3,4,5,4]).q,
-			out: Effect.bus(DWGReverbC1C3.ar(_))
+			out: Effect.bus(DWGReverbC1C3.ar(_, mix: Line.kr(1,0.2,b.sum)))
 		].pp
 });
 P.tune(\am);
 	["-boom boom- The formula's working perfectly.","3 2".dm(\b,4,\minor) ++ "1 5 4 3 ".dm(\e) ++ "7 11 13 14 13 5".dm(\d)].addLine;
-	P.still(\clear,syl:1, timecode: 0.seconds, music: { |p b e|
-		 e.still.( 
-			wait: b.drop(1).sum,
-			text: ["the formula's","working perfectly"],
-		)
-	});
+P.still(\clear,syl:1, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.drop(1).sum,
+		text: ["the formula's","working perfectly"],
+	)
+});
 P.tune();
 P.synthV(role: \chapel, take: \lead, params: {|p b| [
 		lyrics: "r r The formula's + + working + perfectly. - + +",
@@ -325,6 +373,8 @@ P(\bass, music: { |p b e|
 		[
 			freq: [11, 7, 6, 2, 4, 1].df(\d,[2,3]).q,
 			instrument: \sawSynthSustain,
+			hifreq: 5000,
+			amp: 0.09,
 			dur: b.parse([1, 1, 1, [1, 1, 0.5],[0.5, 1, 1, 1],[1, 1, 1]]).q
 		].ppm
 });
@@ -342,13 +392,18 @@ P.synthV(role: \mccoy, take: \lead,
 	params: {|p b| [
 		lyrics: "You look tired, Miss Chapel + perhaps + you'd care for me to administer + + + ",
 		lag:[ 0.1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
-		legato: [1, 1, 1, 1, 1, 0.8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ],
+		legato: [1, 1, 0.8, 1, 1, 0.8, 1, 1, 1, 1, 1, 0.8, 1, 1, 1, 1, 1 ],
+		loudness: Env([ 0, 0, 0, 0, 0, 2, 1, 1, 2, 4, 1, 1, 1, 1, 2],b),
+		tension: Env([ 0, 0, 0, 0, 0, 1, 1, 1, 0, 4, 1, 1, 1, 1, 2] / 10,b),
 		filter: (midinote: _ - 12), 
 		vocalMode: \Soft,
 		pitchTake: 1
 	] }, music:{|p b e|
 		{
 			e.playbuf
+			=>DCompressor.ar(_, ratio:10)
+			/2
+			=> {|i| Fverb.ar(i,i)/8 + i}
 			=> p.synthVTracks.at(e.key).(mix:0)
 			// /2
 		}.play
@@ -469,12 +524,16 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 	lyrics: "r r r r r r r r r r r r the last few injections + - +",
 	lag: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0,0,0,0,0.07 ],
+	loudness: Env([5, 0],b.sum),
 	filter: (midinote: _ - 12), 
 	vocalMode: \Soft,
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
 		e.playbuf
+			=>DCompressor.ar(_, ratio:10)
+			=> {|i| Fverb.ar(i,i)/8 + i}
+			/2
 		=> p.synthVTracks.at(e.key).()
 	}.play
 

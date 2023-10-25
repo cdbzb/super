@@ -290,3 +290,4 @@ Trek/Synthv/**.wav filter=lfs diff=lfs merge=lfs -text
 Trek/SynthV/this-formnula/**.wav filter=lfs diff=lfs merge=lfs -text
 Trek/*ynth*/this*/**.wav filter=lfs diff=lfs merge=lfs -text
 Trek/synthV/this-formnula/**.wav filter=lfs diff=lfs merge=lfs -text
+Trek/*ynth*/**.wav filter=lfs diff=lfs merge=lfs -text

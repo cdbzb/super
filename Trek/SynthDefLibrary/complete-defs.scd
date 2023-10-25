@@ -43,6 +43,22 @@ SynthDef( \phase_verb2,{//{{{
 },  rates: nil,  prependArgs: nil,  variants: nil,  metadata: nil
 ).add.tag(\pluck);
 
+ SynthDef(\harpRelease, { |gate=1 out=0 freq = 200|
+	var in=PinkNoise.ar(1);
+	var sig;
+	var decaytime = \decaytime.kr(10);
+	// decaytime = Select.kr( gatepoll,[0, decaytime ]).poll;
+	gate.poll;
+	// decaytime = ( gate + 0.001 ) * decaytime;
+	decaytime = ( gate > 0.1 ).poll => Select.kr(_, [\release.kr(1), decaytime]);
+	sig = Pluck.ar(in: in, trig: gate,  maxdelaytime: 0.02,  delaytime: 1/freq,  decaytime: decaytime,  coef: \coef.kr(0.5),  mul: 0.7,  add: 0);
+	sig = sig * \amp.kr(0.1) * 10;
+	sig = LeakDC.ar(sig);
+	Out.ar(out,sig);
+	DetectSilence.ar(sig,doneAction:2);
+},  rates: nil,  prependArgs: nil,  variants: nil,  metadata: nil
+).add.tag(\pluck);
+
  SynthDef(\yowbass, {|freq=400 amp gate=1 dur=1|
 	var sig=Formant.ar(freq,  formfreq: Line.kr(3060,00,dur),  bwfreq: 880,  mul: 1,  add: 0).distort;
 	var env=Env.asr(0,1,1,1.5).kr(gate:gate,doneAction:2);

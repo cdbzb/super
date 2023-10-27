@@ -48,9 +48,8 @@ SynthDef( \phase_verb2,{//{{{
 	var sig;
 	var decaytime = \decaytime.kr(10);
 	// decaytime = Select.kr( gatepoll,[0, decaytime ]).poll;
-	gate.poll;
 	// decaytime = ( gate + 0.001 ) * decaytime;
-	decaytime = ( gate > 0.1 ).poll => Select.kr(_, [\release.kr(1), decaytime]);
+	decaytime = ( gate > 0.1 ) => Select.kr(_, [\release.kr(1), decaytime]);
 	sig = Pluck.ar(in: in, trig: gate,  maxdelaytime: 0.02,  delaytime: 1/freq,  decaytime: decaytime,  coef: \coef.kr(0.5),  mul: 0.7,  add: 0);
 	sig = sig * \amp.kr(0.1) * 10;
 	sig = LeakDC.ar(sig);

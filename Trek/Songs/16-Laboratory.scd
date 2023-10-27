@@ -273,17 +273,24 @@ P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 			=> p.synthVTracks.at(e.key).()
 		}.play
 });
-	["CHAPEL: Yes. That must be it. ","7 11 5 3 1".dm(\f)].addLine;
-	P(\pluck, music: { |p b e|
-		[
-			freq: [\r] ++ ( "3 2 1 -5 -4" =>_.df(\f,4) ) =>_.q,
-			instrument: \harp,
-			release: [1, 1, 1, 1, 1, 10].q,
-			out: 2,
-			coef:0.8,
-			dur: b ++ e. bNext =>_.q
-		].pp
-	});
+["CHAPEL: Yes. That must be it. ","7 11 5 3 1".dm(\f)].addLine;
+P(\pluck, music: { |p b e|
+	[
+		freq: [\r] ++ ( "3 2 1 -5 -4" =>_.df(\f,4) ) =>_.q,
+		instrument: \harpRelease,
+		legato: 1,
+		release: [1, 1, 1, 1, 1, 10].q,
+		out: 2,
+		coef:0.8,
+		dur: b ++ e. bNext =>_.q
+	].pp
+});
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["yes","that must be it"],
+	)
+});
 P.synthV(role: \chapel, take: \lead, params: {|p b| [
 	lyrics: "yes, that must be it",
 		legato: [0.5, 1, 1, 1, 0.5],
@@ -302,17 +309,18 @@ P(\bassnote, music: { |p b e|
 		].pp
 });
 P.tune(\Yes);
-	["I am so plea -sed the way they are responding, Doctor.","5 4 3 5 6 5 4 3 2  5 4 3 1 -5".dm('b-') ].addLine;
-	Song.setTempoMap(\plea,"Q Q Q Q Eex x e x e x q q q q");
-	P(\pluck,syl:8, music: { |p b e|
-		[
-			freq:[\r,11,5,3,1,-3].df('b-',4).q,
-			dur: b.drop(1) ++ e.bNext =>_.q,
-			release: [1, 1, 1, 1, 1, 10].q,
-			out: 3,
-			instrument: \harpRelease,coef:0.6, amp:0.08
-		].pp
-	});
+["I am so plea -sed the way they are responding, Doctor.","5 4 3 5 6 5 4 3 2  5 4 3 1 -5".dm('b-') ].addLine;
+Song.setTempoMap(\plea,"Q Q Q Q Eex x e x e x q q q q");
+P(\pluck,syl:8, music: { |p b e|
+	[
+		freq:[\r,11,5,3,1,-3].df('b-',4).q,
+		dur: b.drop(1) ++ e.bNext =>_.q,
+		legato: 1,
+		release: [1, 1, 1, 1, 1, 10].q,
+		out: 3,
+		instrument: \harpRelease,coef:0.6, amp:0.08
+	].pp
+});
 P.still(\chapelYes, timecode: 
 	// 3513.15 //Yes
 	3524.3
@@ -378,9 +386,24 @@ P(\bass, music: { |p b e|
 			dur: b.parse([1, 1, 1, [1, 1, 0.5],[0.5, 1, 1, 1],[1, 1, 1]]).q
 		].ppm
 });
-	["MCCOY: You look tired, Miss Chapel.","6 4 5 3 2 1".dm('c#')].addLine;
-	P.tune();
-	Song.setTempoMap('look tired',"e e ex x e ex");
+P(\xtraNote, music: { |p b e|
+	[
+		freq: [\r, 5, 4].df(\e).q,
+		instrument: \stringyy,
+		dur: b.parse([1, 1, 1, [1, 1, 0.5],[0.5, 1, 1, 1],[1, 1, 1]]).parse([3,2,1 ]).q
+	].ppm
+});
+P(\chords, music: { |p b e|
+	[
+		freq: [\r, [1, 3, 5].df(\e),[-5, 1, 3].df(\g),[1, 3, 5].df(\d)].q,
+		dur: b.parse([1, 1, 1, [1, 1, 0.5],[0.5, 1, 1, 1],[1, 1, 1]]).parse([3,1,1, 1 ]).q,
+		instrument: \defaultPiano,
+		out: Effect.bus({|i| BPF.ar(i,1100) => SineShaper.ar(_, 0.05, 1.5.dbamp)  },inputChannels:2,out: 3)
+	].pp
+});
+["MCCOY: You look tired, Miss Chapel.","6 4 5 3 2 1".dm('c#')].addLine;
+P.tune();
+Song.setTempoMap('look tired',"e e ex x e ex");
 P.still(\mccoyTired, timecode: 3518.8.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -393,7 +416,7 @@ P.synthV(role: \mccoy, take: \lead,
 		lyrics: "You look tired, Miss Chapel + perhaps + you'd care for me to administer + + + ",
 		lag:[ 0.1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
 		legato: [1, 1, 0.8, 1, 1, 0.8, 1, 1, 1, 1, 1, 0.8, 1, 1, 1, 1, 1 ],
-		loudness: Env([ 0, 0, 0, 0, 0, 2, 1, 1, 2, 4, 1, 1, 1, 1, 2],b),
+		loudness: Env([ 0, 0, 3, 0, 0, 2, 1, 1, 2, 4, 1, 3, 1, 1, 2],b),
 		tension: Env([ 0, 0, 0, 0, 0, 1, 1, 1, 0, 4, 1, 1, 1, 1, 2] / 10,b),
 		filter: (midinote: _ - 12), 
 		vocalMode: \Soft,
@@ -407,8 +430,6 @@ P.synthV(role: \mccoy, take: \lead,
 			=> p.synthVTracks.at(e.key).(mix:0)
 			// /2
 		}.play
-
-
 });
 // P.tune();
 P(\bendy, music: { |p b e|
@@ -416,7 +437,7 @@ P(\bendy, music: { |p b e|
 		[5, 3, 2].df('f#',\whole).dq.demand("e e q".asBeats.warpTo( e.tempoMap )).lag2([0,0.5].dq.demand(b.parse([1,3])))
 		=> {
 			|i|
-			SinOsc.ar(i * [1, 3.midiratio /2],0,0.1)
+			SinOsc.ar(i * [1, 3.midiratio /2],0,0.1 * -6.dbamp)
 			// i * [1, 3.midiratio /2] => VarSaw.ar(_,0,0.5,0.1)
 		}
 		
@@ -428,13 +449,13 @@ P(\bendy, music: { |p b e|
 		=> VarSaw.ar(_,0,0.3,0.1)
 		=> DelayN.ar(_,b[..1].sum,b[..1].sum)
 		* Env([0,0,1,1,0],b.parse([2,1,2,1])).kr(0,1)
-		* 1.dbamp
+		* -5.dbamp
 		=> Pan2.ar(_,0.2)
 	}.play
 });
 P(\connector, music: { |p b e|
 	[
-		freq: [ \r, 2, 1, -6 ] =>_.df('c#',[6 ]) =>_.q,
+		freq: [ \r, 2, 1, -6 ] =>_.df('c#',[5 ]) =>_.q,
 		rest: [\r,1,1,1].q,
 		// amp: [10,10,5]/10=>_.q,
 		dur: "eeee e e e".asBeats.warpTo( e.tempoMap ).q,
@@ -442,14 +463,16 @@ P(\connector, music: { |p b e|
 		instrument:\wash,freqLag:0,amp:0.061,
 		// out: Effect.bus({|i| i * Env.linen(0,b.sum-1,2).kr(2,gate:1) }, inputChannels:2)
 		legato: [1,1, 0.9, 1, ].q,
-	].ppma
+	].ppm
 });
 P(\chords, music: { |p b e|
 		[
 			freq: [[3,5],[2,4],[1,3]].df('f#',3,\whole).q,
 			dur: b.parse([2, 2, 2]).q,
 			instrument: \stringyy,wet:0,
-			amp: 0.25
+			legato: [1, 1, 0.1, ].q,
+			release: 2.5,
+			amp: 0.5
 		].ppm
 });
 	[" Perhaps you'd care for me to administer (boom) the last few injections.",[ 2,4,2.5,2,1,-7,-6,2,-7,-6,-5 ].dm(\c) ++ [ -4, 5,6,7,11,12,13,11].dm('e-',4) ].addLine;
@@ -521,10 +544,15 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 		}.play
 
 	} }); */
-P.synthV(role: \mccoy, take: \lead, params: {|p b| [
+P.synthV(role: \mccoy, take: \lead, params: {|p b| 
+	b.postln;
+	[
 	lyrics: "r r r r r r r r r r r r the last few injections + - +",
 	lag: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0,0,0,0,0.07 ],
-	loudness: Env([5, 0],b.sum),
+	// loudness: Env([5, 0],b.sum),
+	loudness: Env( 
+		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2,4,2,2,4,2,2 ]
+		,b ),
 	filter: (midinote: _ - 12), 
 	vocalMode: \Soft,
 	pitchTake: 1
@@ -604,3 +632,4 @@ P(\pad,syl:6, music: { |p b e|
 	});
 }
 )
+

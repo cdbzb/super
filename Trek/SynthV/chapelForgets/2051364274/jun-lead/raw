@@ -26,7 +26,7 @@ o = [
 	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
 	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
 	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
-	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
+	Array.prNew(38),  "cubic",  Event.prNew,  Array.prNew(8),  
 	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
 	Array.prNew,  "cubic",  "c55226b8-e035-4fc6-a857-aacf2bbe7548",  Event.prNew,  
 	Array.prNew(40),  "c55226b8-e035-4fc6-a857-aacf2bbe7548",  Event.prNew,  Array.prNew(28),  
@@ -38,7 +38,7 @@ o = [
 	Event.prNew,  Array.prNew(8),  Array.prNew(1),  Event.prNew,  
 	Array.prNew(12),  "",  "Unnamed Track",  Array.prNew,  
 	Event.prNew,  Array.prNew(20),  "ff7db235",  Event.prNew,  
-	Array.prNew(28),  "synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/SynthV/chapelForgets/2051364274/jun-lead"
+	Array.prNew(28),  "synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/chapelForgets/2051364274/jun-lead"
 ];
 p = [
 	// Event
@@ -359,6 +359,17 @@ p = [
 	// Array
 	103, [ 'points',  o[104],  nil,  nil,  
 		nil,  nil,  'mode',  o[105] ],  
+	// Array
+	104, [ 0.0,  0,  492508800.0,  0,  
+		934214400.0,  0,  1384387200.0,  0,  
+		1782345600.0,  0,  2380694400.0,  0,  
+		3073593600.0,  0,  3461673600.0,  0,  
+		3951360000.0,  0,  4545475200.0,  0,  
+		5083142400.0,  0,  5726649600.0,  0,  
+		6545145600.0,  2,  7070112000.0,  4,  
+		7654348800.0,  2,  8177904000.0,  2,  
+		8774841600.0,  4,  9431049600.0,  2,  
+		10116892800.0,  2 ],  
 	// Event
 	106, [ array: o[107],  size: 2,  
 		proto: nil,  parent: nil,  

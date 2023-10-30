@@ -85,7 +85,7 @@ P.synthV(role: \thalassa, take:\lead, params: {|p b| [
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		// /5
+		// /517
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
@@ -114,7 +114,7 @@ P.still(\scottSpeaks, timecode: 3555.5.seconds, music: { |p b e|
 		text: ["for all the good ","it'll do you"],
 	).sequenceText2(
 			b.parse([8]), [ 
-			["",""],
+			["its a","fancy name but"],
 			],
 	)
 });
@@ -292,6 +292,16 @@ P.double(role: \thalassa, take: \lead, params: {|p b| [
 
 P.tune(_ <> (instrument:\wash));
 ["/*SCOTT:*/ I tell you, lady, this thing won't work.",[7,13,11,7,5].dm('b',scale:\mixolydian) ++ [5,6,7,11].dm('d')].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["I tell you","lady"],
+	).sequenceText2(
+			b.parse([5]), [ 
+				["this thing won't","work"]
+			],
+	)
+});
 P.synthV(role: \scott, take:\lead,
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
@@ -312,7 +322,7 @@ P.double(role: \scott, take: \lead, params: {|p b| [
 			=> p.synthVTracks.at(e.key).()
 		}.play
 	});
-P.tune('lady');
+P.tune('lady', _ <> [ instrument: \stringyy ].pm); //cut this??
 P(\door, syl: 7, music: { |p b e|
 	(
 		instrument: \door,
@@ -392,10 +402,24 @@ P(\chord2,start:\twice,syl:7,music:{ |p b e|
 P.still(\henochTwice, timecode: 3625.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["it will have","twice the strength"],
+	).sequenceText2(
+			b.parse([6]), [ 
+			["and agility","of"],
+			],
 	)
 });
 ["your body, engineer, and it will",[11,12,11,7,6,5,4,5,6, 3,4,5].dm('c#',scale:\mixolydian)].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum ,
+		text: ["your body","engineer"],
+	).sequenceText2(
+			b.parse([9]), [ 
+			["and","it will"],
+			],
+	)
+});
 P.synthV(role: \henoch, take:\lead,
 	pbind: Song.enlarge(7),
 	filter: (
@@ -433,8 +457,18 @@ P(\bass,start:\engineer,music:{
 	].p.play(Song.quarters[\engineer].asTempoClock)
 });
 P.tune(\engineer);
-
 ["last a thousand years.",[2,1,2,3,1,2, 5.5].dm(\c,octave:6)].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["last","a thousand"],
+		fade:1
+	).sequenceText2(
+			b.parse([6]), [ 
+			["years",""],
+			],
+	)
+});
 P.synthV(role: \henoch, take:\lead,
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
@@ -479,6 +513,17 @@ P(\bass,start:'last a thousand',music:{
 });
 ["That is, assuming you'll stop wasting your time and allow us to complete it.", [6,5,4,2.5,4,2,5.5].dm(\a,)++[7,6,5, 4,5,4 ,3,4, 4,5].dm(\f,scale:\melodicMinor)++[6,7,7,11].dm(\c) ].addLine;
 Song.quarters[\assuming]= Song.parseBeats(\assuming,[[1,1,1]/3,[1,1,1,1]/2,[2,1,1]/2,[1,1,1]/3,[1,1,1,1,1,1,3,1]/2].flat/1);
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["","that is assuming"],
+	).sequenceText2(
+			b.parse([5, 8]), [ 
+			["you'll stop","wasting your time"],
+			["and allow us to","complete it"]
+			],
+	)
+});
 //P.tune(\assuming);
 ~path="/tmp/media/subproject.rpp-PROX";
 P.synthV(role: \henoch, take:\lead,
@@ -581,7 +626,8 @@ P.still(\scottLeaves, timecode:
 	3630.seconds
 	, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
+		// wait: b.sum,
+		wait:0, fade:b.sum,
 		text: ["",""],
 	)
 });
@@ -590,18 +636,18 @@ Song.durs[\laugh]=Song.durs[\laugh].list.put(Song.durs[\laugh].list.size - 1, 0.
 P.tune( { |i| i.fin(14) => Pmul(\freq, [0.25,0.5,1,2],_) <> [ instrument: \stringyy, out:Effect.bus({|i| [0.1,0.4] * CombN.ar(i, 0.4,0.4) + i },) ].pm} );
 P.still(\leaving,syl:6, timecode: 3632.1.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
+		// wait: b.sum,
+		wait:b.sum, fadeIn: b.sum,fade: e.bNext.sum,
 		text: ["",""],
 	)
 });
 P(\door,start:\laughs,syl:6,music:{|p b e| 
 	Synth(\door,[\out,0,\amp,0.1])
 });
-
 ["/*SPOCK:*/ (boom) A thousand-year prison, Thalassa.",[1,2,3,1,6,3,1,-7,-6].dm(\c)].addLine;
 P.still(\spock, timecode: 3634.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
+		wait: b.sum + e.bNext.sum, fadeIn:b.sum,
 		text: ["",""],
 	).sequenceText2(
 			b[0].bubble, [ 
@@ -649,7 +695,34 @@ P(\stab,start:\prison,syl:3,music:{
 	).play
 });
 ["And when it wears out we'll build another one, ",[5,4,3,2,3,4,-7,1,4,3,2,-5].dm(\c)].addLine;
+Song.setTempoMap(\wears,"e e e x x e e e x xe x x e");
+P(\chords, music: { |p b e|
+	[
+		freq: [1, 3, 5].bubble ++ [1, 4, 6].bubble ++ [-7, 2, 5].bubble => _.df(\c) 
+		// => _.dupEach 
+		=> _.q ,
 
+
+		dur: "qq qq ex  ".asBeats.warpTo( e.tempoMap ).q
+
+	].pp;
+	[
+		freq: [1, 1, 2, 3, 4].df(\c, 3).q,
+		dur: "e e e e q".asBeats.warpTo( e.tempoMap ).q,
+		legato: [0.5, 0.9, 0.9, 0.9, 1, ].q,
+
+	].pp
+});
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["and when it","wears out"],
+	).sequenceText2(
+			b.parse([6]), [ 
+			["we'll build","another one"]
+			],
+	)
+});
 // List[ 0.526, 0.533, 0.527, 0.254, 0.312, 0.728, 0.409, 0.429, 0.468, 0.552, 0.338, 0.513 ]
 P.synthVs(role: \henoch, take:[ \lead, \double ],
 	filter: (midinote: _ - 12), 
@@ -677,7 +750,6 @@ P.synthVs(\an, take: [ \bg, \bg2 ], params: {|p b| [
 	}.play
 } });
 P(\bass,start:\wears,music:{|p b e| 
-	
 	{
 		{
 			var dur = b.parse([5,4,3]),
@@ -692,6 +764,17 @@ P(\bass,start:\wears,music:{|p b e|
 	}.play
 });
 ["and we'll lock ourselves into it for another thousand years. And another, and another.", [1,2,3,4,2,3,2,1.5,2,3].dm(\a) ++ [1,-6, 2,3,1,2,4].dm('e-',scale:\whole,octave:6) ++[2,2,3,2,2,2,3,2].dm('a-',scale:\minor,octave: 6) ].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["and we'll lock ourselves","into it"],
+	).sequenceText2(
+			b.parse([8, 9]), [ 
+			["for another","thousand years"],
+			["and another", "and another"]
+			],
+	)
+});
 P.synthVs(role: \henoch, take:[ \lead, \double ], params: {|p b| [
 	lyrics: "and we'll lock ours elves  into  + it for another + +  thousand - - + years. And another + + and another + +",
 	legato: [ [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1, 1, 1, 1, 1, 1, 1, 1, ] ],
@@ -855,6 +938,12 @@ P(\strum,start:\closed,music:{|p b e|
 	).play
 });
 ["(boom) With these bodies. (la la la la la la  with the-- ese bodies)",[1,5,5.5,3,2,1,-7,1,2,1,-7,-6, ].dm(\d) ++ [7,11,5,5,4].dm(\c)].addLine;
+P.still(\clear, syl:0, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.drop(1).sum,
+		text: ["with these","bodies"],
+	)
+});
 Song.quarters['With these bodies']=Song.parseBeats('With these bodies',[1, 1,1, 1/2, 1 , 1, 1/2, 1/2, 1/2, 1/2,1/2, 1,1,1,1/2,1,1/2  ]);
 P.synthVs(\feng, take:[ \lead, \double ], params: {|p b| [
 	lyrics: "r with these - bodies + la la la la la la  with these - bodies +",
@@ -1088,6 +1177,17 @@ P(\bass,start:\breathe,music:{|p b e|
 //["To live and feel again,.","r"].addLine;
 
 [" Thalassa, (boom) just think how much (go--od) we can do for mankind.",[5,4,3].dm(\c,octave:6) ++ [-4,3,4,1,3,2,1,-7,2,-6,-5].dm('e-',octave:6)].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["Thalassa",""],
+	).sequenceText2(
+			b.parse([3,1]), [ 
+				["",""],
+				["just think how much","we can do for mankind"],
+			],
+	)
+});
 Song.setTempoMap(\mankind,"q qe e   q q q e eq e e e e e e");
 P(\mankindLow, music: { |p b e|
 	[
@@ -1201,7 +1301,11 @@ P.still(\spockXYZ, timecode:
 	.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["are these bodies","too much to ask for"],
+	).sequenceText2(
+			b.parse([9]), [ 
+			["in","return?"],
+			],
 	)
 });
 P.synthVs(role: \henoch, take: [ \lead, \double ], params: {|p b| [
@@ -1271,8 +1375,7 @@ P(\lick,start:\return,syl:3,music:{|p b e|
 
 	).play
 });
-["Would you prefer this?", "3 2 1 5 4".dm('e-',\lydian) ].addLine;
-P.tune();
+[" (or) Would you prefer this?", [1,2,3,2,3,6.5].dm(\c) ].addLine;
 
 P.synthVs(role: \henoch, take:[ \lead, \double ], params: {|p b| [
 	lyrics: "or Would you prefer + this?",
@@ -1296,14 +1399,35 @@ P(\chord,syl:4,music:{|p b e|
 
 	).play
 });
- ["/*MULHALL:*/ No. I'm beginning to hate it.",[ 1.dm(\b) ] ++ "3 3 3 3 3 4 -4.5".dm('b-')].addLine;
- P(\lingeringNo, music: { |p b e|
-	 (
-		 freq: -11.df(\b),
-		 dur: b[0],
-		 instrument: \stringyy, amp:0.2
-	 ).play
- });
+["/*MULHALL:*/ No. I'm beginning to hate it.",[ 1.dm(\b) ] ++ "3 3 3 3 3 4 -4.5".dm('b-')].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["no I'm beginning","to hate it"],
+	)
+});
+P.synthV(role: \thalassa, take: \lead, params: {|p b| [
+	 lyrics: "no I'm beginning + + to hate it",
+	 /*
+	 "no".romaji
+	 */
+	 phonemes:["n o w","a i m", "b i","g i","n i N","t u", "h e i t","i t"],
+	 legato: [0.6, 1, 1, 1, 1, 0.8, 1, 1, ],
+	 tension: Env([0, 0.3, 1],b.parse([6, 2])),
+	 pitchTake: 1
+ ]}, music:{|p b e|
+	 {
+		 e.playbuf
+		 => p.synthVTracks.at(e.key).()
+	 }.play
+});
+P(\lingeringNo, music: { |p b e|
+ (
+	 freq: -11.df(\b),
+	 dur: b[0],
+	 instrument: \stringyy, amp:0.2
+ ).play
+});
  P.still(\walkingOff, timecode: 3738.seconds, music: { |p b e|
  	 e.still.( 
  		wait: b.sum + 5,

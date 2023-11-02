@@ -24,7 +24,7 @@ o = [
 	Event.prNew,  Array.prNew(40),  "4179930000",  "energy",  
 	"510850000",  Event.prNew,  Array.prNew(40),  "4690780000",  
 	"+",  "313280000",  Event.prNew,  Array.prNew(40),  
-	"5004060000",  "+",  "1137420000",  Event.prNew,  
+	"5004060000",  "+",  "796190000",  Event.prNew,  
 	Array.prNew(40),  "6141480000",  "deep",  "791680000",  
 	Event.prNew,  Array.prNew(40),  "6933160000",  "inside",  
 	"345740000",  Event.prNew,  Array.prNew(40),  "7278900000",  
@@ -51,7 +51,7 @@ o = [
 	Array.prNew(8),  Array.prNew(1),  Event.prNew,  Array.prNew(12),  
 	"",  "Unnamed Track",  Array.prNew,  Event.prNew,  
 	Array.prNew(20),  "ff7db235",  Event.prNew,  Array.prNew(28),  
-	"synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/SynthV/rescue/2043770339/asterian-lead"
+	"synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/rescue/2043770339/asterian-lead"
 ];
 p = [
 	// Event

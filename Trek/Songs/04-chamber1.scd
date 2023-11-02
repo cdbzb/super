@@ -1,6 +1,7 @@
 (
 s.waitForBoot{ Song(\chamber1,[]).current;
-"~/tank/super/More-Organized-Trek/Songs/boilerplate.scd".standardizePath.load;
+"~/tank/super/Trek/Songs/boilerplate.scd".standardizePath.load;
+
 ( Song.synthVTracks=EventWithDefault(
 	\default, { |mix=0.1|
 		{

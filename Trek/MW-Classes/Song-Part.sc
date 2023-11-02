@@ -224,7 +224,9 @@ Song {
 	makeScroll {
 		Song.sections.do{ |x|
 			P(\scroll,start:x,music:{ |p b e|
-				Song.scroll(x)
+				defer{
+					Song.scroll(x)
+				}
 			})
 		}
 	}
@@ -613,7 +615,7 @@ Song {
 		(Server.default.options.outDevice == "BlackHole 2ch").if
 		{
 			Song.makeScroll;
-			start = Song.section(start);
+			start = Song.section(start ? 0);
 			end = Song.section(end);
 			Song.playRange(start,end);
 			fork{

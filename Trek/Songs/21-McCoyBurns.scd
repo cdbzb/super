@@ -2,7 +2,7 @@
 s.waitForBoot{
 	Song('MandT',[]).current;
 
-	"/Users/michael/tank/super/More-Organized-Trek/Songs/boilerplate.scd".load;
+	"/Users/michael/tank/super/Trek/Songs/boilerplate.scd".load;
 
 [ "MULHALL: Doctor. ",[3,1].dm(\c) ].addLine;
 P.still(\close, timecode: 4245.6.seconds, music: { |p b e|
@@ -1357,3 +1357,4 @@ P(\endChord,syl:16,start:\work,music:{|p b e|
 	//[McCoy's office]
 };
 )
+

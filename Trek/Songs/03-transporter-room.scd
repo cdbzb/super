@@ -8,7 +8,7 @@ Song.refreshSynthV
 .writeRawProject
 */
 
-"~/tank/super/More-Organized-Trek/Songs/boilerplate.scd".standardizePath.load;
+"~/tank/super/Trek/Songs/boilerplate.scd".standardizePath.load;
 Trek.cast.mccoy=\mo;
 Trek.presets.put(\mccoy,\mo,[paramGender:0.25]);
 Song.synthVTracks = EventWithDefault(

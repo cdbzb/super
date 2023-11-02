@@ -207,6 +207,7 @@ Still {
 						Window.closeAll;
 						TempoClock.all.do(_.clear);
 						Server.default.freeMyDefaultGroup;
+						"open -a WezTerm.app".unixCmd
 					});
 					this.title(["",""]);
 					this.setText(text) 

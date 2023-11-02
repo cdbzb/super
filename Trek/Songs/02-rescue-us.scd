@@ -1,7 +1,9 @@
+
+Song.recordOBS(0,9)
 (
 //[Bridge]
 Song(\rescue,[]).current;
-"~/tank/super/More-Organized-Trek/Songs/boilerplate.scd".standardizePath.load;
+"~/tank/super/Trek/Songs/boilerplate.scd".standardizePath.load;
 
 Song.synthVTracks = EventWithDefault(
 	\default, {
@@ -61,6 +63,12 @@ P.still(\spockSensors, timecode: 500.974.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
+	).sequenceText2(
+		b.parse([2,5, 6]), [ 
+			["sensors","registering" ],
+			["some kind of","energy"],
+			["deep inside","the planet"]
+			],
 	)
 });
 Song.setTempoMap(\Sensors, "e e e e | E E E E E E | e x xq | Q E Q E e e");
@@ -75,6 +83,7 @@ P(\chords, music: { |p b e|
 });
 P.synthVs(role: \spock, take: [\lead,\double], params: {|p b| [
 	lyrics: "r r sensors + regist + ring  some kind of energy + + deep inside +  the planet + ",
+	legato: [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.7, 1, 1, 1, 1, 1, 1, ]],
 	filter: (midinote: _ - 12), 
 	pitchTake: [1,3]
 ] }, music:[-0.2,0.2].collect{|pan|{|p b e|
@@ -167,6 +176,11 @@ P.still(\sargonSpeaks, timecode: 503.269.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
+	).sequenceText2(
+			b.parse([1,5]), [ 
+			["your probes have","touched me"],
+			["Mister","Spock"]
+			],
 	)
 });
 P.synthV(role: \vocoder, take: \lead, params: {|p b| [
@@ -213,6 +227,16 @@ P.still(\spockAnswers, timecode: 506.3.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
+	)
+});
+P.still(\clear, timecode: 0.seconds, lag:0.01, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["reading energy only","captain"],
+	).sequenceText2(
+			b.parse([9]), [ 
+			["no","life forms"],
+			],
 	)
 });
 P(\arp, music: { |p b e|
@@ -309,6 +333,7 @@ Song.durs.filter(_ * 1.15);
 P.still(\sargonlocked, timecode: 511.464.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
+		// fade: b.sum,
 		text: ["",""],
 	)
 });
@@ -386,7 +411,18 @@ P(\answer, syl: 10, music: { |p b e|
 P.still(\spockDeep, timecode: 525.8.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
+		fade: b.sum,
 		text: ["",""],
+	)
+});
+P.still(\clear, timecode: 0.seconds, lag:0.1, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["coming from","deep"],
+	).sequenceText2(
+			b.parse([4]), [ 
+			["under the planets","surface, Captain"],
+			],
 	)
 });
 Song.setTempoMap(\Coming,"Q Q Q qq Q Q Q q e eq q q q");
@@ -447,6 +483,12 @@ P.double(role: \spock,
 });
 ["Under at least one hundred miles of "," 1 2 3 4 5 4".dm(\f,\lydian) ++ "1 2 3 4 5 4 3".dm(\g,\lydian)].addLine;
 Song.setTempoMap(\hundred,"Q Q Q Q Q Q Q Q Q e e e e");
+P.still(\clear,lag:0.01, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["under at least","one hundred miles of"],
+	)
+);
 P(\arp, music: { |p b e|
 	var dur = 0.125;
 	[
@@ -498,6 +540,12 @@ P.synthVs(role: \spock, take: [\lead, \double], params: {|p b| [
 });
 P.tune( _ <> [instrument: \reedy, freqLag:0.05, rel:8, out: Effect.bus( {|i| i +CombN.ar(i, 0.3, 0.3, 3)},) ].pm );
 ["(boom boom) solid rock.","-7 1 7 6 7 11  12 12 7".dm(\f)].addLine;
+P.still(\clear,syl:1, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["solid","rock"],
+	)
+});
 Song.setTempoMap(\solid,"e e e x x qqq e x xq".asBeats);
 Song.durs.filter(\solid,{|i| var last = i.last; i.dropLast ++ (last - 0.1)});
 P(\kick, music: { |p b e|
@@ -838,7 +886,12 @@ P(\keys, music: { |p b e|
 P.still(\spockReading, timecode: 541.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["reading a","chamber now"],
+	).sequenceText2(
+			b.parse([6]), [ 
+			["nitrogen-oxygen","atmosphere"],
+			["suitable for","life support"]
+			],
 	)
 });
 

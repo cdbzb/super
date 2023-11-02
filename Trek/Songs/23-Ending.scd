@@ -4,7 +4,7 @@
 ( s.waitForBoot( {
 	 //Setup Monitor for back channels
 	 Song(\ending,[]).current;
-	 "~/tank/super/More-Organized-Trek/Songs/boilerplate.scd".standardizePath.load;
+	 "~/tank/super/Trek/Songs/boilerplate.scd".standardizePath.load;
 	 {
 		 ( ~synful1.isNil or: try{ ~synful1.syn.isPlaying.not } ).if
 		 {

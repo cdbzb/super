@@ -88,7 +88,7 @@ Song.bassBuss=Bus.audio;
 P.still(\wide, timecode: 2508.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum + e.bNext.sum,
-		text: ["",""],
+		text: ["the extreme power","of the"],
 	)
 });
 P.wait(  );
@@ -127,6 +127,12 @@ P.synthVs(role: \mccoy , take: [\lead, \double],
 	}.play
 });
 ["alien mind will make the -","e5 d c f e f g f", ].addLine; //1
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["alien mind","will make the"],
+	)
+});
 P.synthV(role: \mccoy , take: \lead,
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
@@ -170,6 +176,12 @@ P(\bassnote2, start:1, music:
 
 );
 ["r r r r heart action dan ger ous ly high- ", "r r r r  c6 a5 f b- a g f g ", ].addLine; //2
+P.still(\clear, syl:3, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["heart action","dangerously high"],
+	)
+});
 P(\heartActionBass, start:2, music: { |p b e|
 	[
 		\dur, ~xtreme.durs[2]++Pseq([1.0]),
@@ -242,6 +254,10 @@ P.still(\turned, timecode: 2509.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
+	).sequenceText2(
+			b.parse([1]), [ 
+			["and the","body action will"],
+			],
 	)
 });
 P.synthVs(role: \mccoy,start: P.calcStart(\functions), take:[\lead, \double],
@@ -465,8 +481,20 @@ Pbind(
 	);
 ["carefully","e5 d b4 r r r", ].addLine; //7
 ["r r r well... I ", "r r r a g#", ].addLine; //8
-P.synthV(role: \mccoy,
-		start:Song.section(\well), take: \lead,
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum+e.bNext.sum+p.durs[e.start+2].list[0],
+		text: ["",""],
+	).sequenceText2(
+			e.bAll.parse([3, 2, 5]), [ 
+			["Well","I"],
+			["guess","that's as ready"],
+			["as we're going to","be"]
+			],
+	)
+});
+P.synthVs(role: \mccoy, take: [\lead, \double],
+		start:Song.section(\well), 
 		pbind: {|p b| 
 			var here = Song.section(\well);
 			[
@@ -475,15 +503,8 @@ P.synthV(role: \mccoy,
 			].p
 		},	params: {|p b| [
 			lyrics: "r r r well I guess",
-			pitchTake: 1
-		] }, music:{|p b e|
-			{
-				e.playbuf
-				=> p.synthVTracks.at(e.key).()
-			}.play
-		});
-P.double(role:\mccoy, take:\lead, take: \lead, params: {|p b| [
-			
+			legato: [[0.7, 1, 0.9, ]],
+			pitchTake: [1, 3]
 		] }, music:{|p b e|
 			{
 				e.playbuf
@@ -511,20 +532,20 @@ P.synthV(role: \mccoy, wait:1, start:Song.section(\guess),
 		take: \lead,
 		// filter: (midinote: _ - 12), 
 		params: {|p b| [
-			lyrics: "r that's as ready + as I'm going to be",
+			lyrics: "r that's as ready + as we're going to be",
 			pitchTake: 1
 		] }, music:{|p b e|
 			{
 				e.playbuf
 				=> p.synthVTracks.at(e.key).()
 			}.play
-		});
+});
 P(\strum9,start:'read- y',music:
 			(midinote:~panNotes.(" <g b- e-5 g5>").flatten-12,strum:0.042)
-		);
+);
 P(\bass9,start:'read- y',music: 
 			(note:~panNotes.("e-2").flatten-60,dur:2,amp:0.3)
-		);
+);
 ["be. Rea- dy Sar- gon","a d5 c a4 f#", ].addLine; //10
 P.synthV(role:\kirk, take: \lead, params: {|p b| [
 			filter: (midinote: _ - 12), 
@@ -533,13 +554,15 @@ P.synthV(role:\kirk, take: \lead, params: {|p b| [
 		] }, music:{|p b e|
 			{
 				e.playbuf
-				=> p.synthVTracks.at(e.key).()
+				// => p.synthVTracks.at(e.key).()
+				/4
+				=> {|i| Fverb.ar(i,i)/3+i}
 			}.play
 		});
 P.still(\kirkOnBed,syl:0, timecode: 2519.8.seconds, music: { |p b e|
 			 e.still.( 
 				wait: b.drop(1).sum,
-				text: ["",""],
+				text: ["Ready","Sargon"],
 			)
 		});
 P(\tremoChord,start:10,music:
@@ -589,7 +612,7 @@ P.still(\mulhallTrans,lag:3, timecode: 2532.seconds, music: { |p b e|
 });
 P.still(\scpockTrans,lag:6, timecode: 2536.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
+		wait: b.sum - 6,
 		text: ["",""],
 	)
 });
@@ -710,7 +733,7 @@ Pbind(\midinote,Pseq(Song.tune[Song.section( 'tran -' )].list[0..3])-[0,12],\ins
 P.still(\chapelMetabolic, timecode: 2608.8.seconds,syl:0, music: { |p b e|
 		 e.still.( 
 			wait: b.drop(1).sum + e.bNext[..6].sum,
-			text: ["metabolic rate is","double and rising"],
+			text: ["metabolic rate is","double and rising, Doctor"],
 		)
 });
 P.synthV(role: \chapel , take: \lead,
@@ -1095,11 +1118,12 @@ P(\trombone,start:'what it fee',music:
 				//~syn1.syn.set(\out,Effect( { |i| FreeVerb.ar(i,0.8,0.7) * 3 },out:2  ).bus.index);
 				// ~syn1.syn.set(\out,Effect( { |i| DWGReverbC1C3.ar(i,mix:0.2,c1:2) * 0.4 } ,out:2).bus.index);
 				//~syn1.syn.set(\out,Effect( { |i| FreeVerb.ar(i,0.8,0.7) * 3 => Out.ar([0,2],_) }  ).bus.index);
-				// ~syn1.expression(84,3);
+				~syn1.expression(84,3);
 	Pbind(*[
 					type:\synful,
+					expression: 84,
 					instance:~syn1,
-					chan:3,
+					chan:1,
 					patch: \trombone,
 					midinote: [5,1,-7].dm('c#',[2,4],\mixolydian).q,
 					out: Effect.bus( { |i| DWGReverbC1C3.ar(i,mix:0.2,c1:2) * 0.4 * 2 } ),

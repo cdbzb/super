@@ -815,8 +815,8 @@ P.still(\mulhallFace,syl:2, timecode: 720.756.seconds, music: { |p b e|
 	 e.still.( 
 		// wait: b.parse([3]).sum,
 		// wait: b.sum,
-		wait: b.drop(1) + e.bNext.sum,
-		fade: b.drop(1) ,
+		wait: b.drop(1)[0] + e.bNext.sum,
+		fade: b.drop(1)[0] ,
 		text: ["",""],
 	)
 });

@@ -11,11 +11,11 @@ o = [
 	Array.prNew(12),  "I",  Event.prNew,  Array.prNew(8),  
 	Array.prNew(4),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  Event.prNew,  Array.prNew(12),  Event.prNew,  
-	Array.prNew(12),  "1596060000",  "",  Event.prNew,  
-	Array.prNew(4),  Event.prNew,  Array.prNew(40),  "1596060000",  
-	"am",  "753580000",  Event.prNew,  Array.prNew(40),  
-	"2349640000",  "sargon",  "932800000",  Event.prNew,  
-	Array.prNew(40),  "3282440000",  "+",  "922920000",  
+	Array.prNew(12),  "1193300000",  "",  Event.prNew,  
+	Array.prNew(4),  Event.prNew,  Array.prNew(40),  "1704720000",  
+	"am",  "956790000",  Event.prNew,  Array.prNew(40),  
+	"2661510000",  "sargon",  "914450000",  Event.prNew,  
+	Array.prNew(40),  "3575960000",  "+",  "885100000",  
 	"main",  Event.prNew,  Array.prNew(32),  Event.prNew,  
 	Array.prNew(8),  Array.prNew,  "cubic",  Event.prNew,  
 	Array.prNew(8),  Array.prNew,  "cubic",  Event.prNew,  
@@ -35,7 +35,7 @@ o = [
 	Array.prNew(1),  Event.prNew,  Array.prNew(12),  "",  
 	"Unnamed Track",  Array.prNew,  Event.prNew,  Array.prNew(20),  
 	"ff7db235",  Event.prNew,  Array.prNew(28),  "synthV.wav",  
-	"NoAspiration",  "/Users/michael/tank/super/SynthV/visual/429521153/xuan-lead"
+	"NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/visual/429521153/xuan-lead"
 ];
 p = [
 	// Event

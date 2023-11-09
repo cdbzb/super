@@ -216,7 +216,11 @@ P(\accent,start:\jelly,music:{|p b e|
 P.still(\himTalking,timecode:3606.1.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["you'll need","microgears"],
+	).sequenceText2(
+			b.parse([5]), [ 
+			["and a pulley that","do like a muscle does"],
+			],
 	)
 });
 P.synthV(role: \scott, take:\lead,
@@ -1145,15 +1149,16 @@ P.still(\embrace,timecode:3704.8.seconds,music:{|p b e|
 	)
 });
 Song.quarters[\breathe]= Song.parseBeats(\breathe,[1,1,1/2,1/4,3/4,1/2,1/2,11/2,1/2,1,1/2, 5/2]);
-
 P(\shaker, music: { |p b e|
-	
 	{
 		var tightness = 0.9;
 		// var env = DemandEnvGen.ar([1,0,4,0,2,0,4,0].dq(inf)*10,1/4!16 warpTo: e.tempoMap.quantizeDft(0.3) => _.dq(inf));
-		var env = DemandEnvGen.ar([1,0,0,1,0,0,1,0,0,1,0,0].dq(inf) + 0.01,1/4!16 
-		warpTo: e.tempoMap.quantizeDft
-		*.x [1-tightness/2,tightness,1-tightness/2] => _.postln => _.flat => _.dq(inf));
+		var env = DemandEnvGen.ar(
+			[1,0,0,1,0,0,1,0,0,1,0,0].dq(inf) + 0.01,1/4!16 
+			warpTo: e.tempoMap.quantizeDft
+			*.x [1-tightness/2,tightness,1-tightness/2] 
+			=> _.postln => _.flat => _.dq(inf)
+		);
 		Shakers.ar([3],energy:env.min(0.99).max(0.0),
 			resonantFreq:SinOsc.ar(0.2).range(0.3,0.5),decay:SinOsc.ar(0.13).range(0.2,0.8)
 		)
@@ -1433,7 +1438,7 @@ P(\chord,syl:4,music:{|p b e|
 });
 P.still(\this,syl:4, timecode: 3733.85.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
+		wait: b.drop(1).sum,
 		text: ["this!",""],
 	)
 });
@@ -1466,10 +1471,11 @@ P(\lingeringNo, music: { |p b e|
 	 instrument: \stringyy, amp:0.2
  ).play
 });
- P.still(\walkingOff, timecode: 3738.seconds, music: { |p b e|
+ P.still(\No, timecode: 3738.seconds, music: { |p b e|
  	 e.still.( 
- 		wait: b.sum + 5,
+ 		wait: b.sum ,
  		text: ["",""],
+
  	)
  });
  P(\hateIt, syl:5, music: { |p b e|
@@ -1505,15 +1511,16 @@ P(\bassnote, music: { |p b e|
 P.still(\departs, timecode: 3740.35.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
+		fade:2,
 		text: ["",""],
 	)
 });
-P.still(\smirk,lag:1, timecode: 3746.4.seconds, music: { |p b e|
+/* P.still(\smirk,lag:1, timecode: 3746.4.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
 	)
-});
+}); */
 )
 /*
 a=Buffer.read(s,"/Users/michael/reaper-subproject/media/01-210826_1331.rpp-PROX")

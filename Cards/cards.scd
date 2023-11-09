@@ -31,7 +31,7 @@ t=r.value(speed: 0.1,pause:8.75); t.play;
 ~newDeck.value;
 ~whitenotes = Array.new(52);
 ~scale=[1,3,5,6,8,10,12];
-~cards = "/Volumes/tank/Cards/PNG/*.png".pathMatch;
+~cards = "~/tank/super/PNG/*.png".standardizePath.pathMatch;
 ~window = Window.new.front;
 
 8.do({ arg i;

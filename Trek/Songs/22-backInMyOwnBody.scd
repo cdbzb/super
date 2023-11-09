@@ -23,7 +23,6 @@ P.still(\leavingReverse, timecode: 4612.1.seconds, music: { |p b e|
 	);
 });
 P(\doorcloseLock,syl:0, music: { |p b e|
-	
 	(
 		instrument: \door, amp:0.2, \len:1
 	).play

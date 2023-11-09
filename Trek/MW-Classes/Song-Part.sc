@@ -616,7 +616,7 @@ Song {
 		{
 			Song.makeScroll;
 			start = Song.section(start ? 0);
-			end = Song.section(end);
+			end = Song.section(end ? Song.sections - 1);
 			Song.playRange(start,end);
 			fork{
 				Server.default.latency.wait;

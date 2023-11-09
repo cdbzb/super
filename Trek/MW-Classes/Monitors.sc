@@ -11,6 +11,8 @@ Monitors {  //setup monitoring for Trek piece
 				"Pro Ag",2,
 				"BlackHole 2ch",2,
 				"External Headphones",2,
+				"ZoomAudioD",2,
+				"BoseAg",2
 			]
 		);
 		StartUp.add{ 
@@ -69,6 +71,12 @@ Monitors {  //setup monitoring for Trek piece
 		o.outDevice_("BlackHole 2ch");
 		Server.default.reboot
 	}
+	*macbook{
+		var o =Server.default.options;
+		o.inDevice_("MacBook Pro Microphone");
+		o.outDevice_("MacBook Pro Speakers");
+		Server.default.reboot
+	}
 	*headphones{
 		var o =Server.default.options;
 		o.inDevice_("MacBook Pro Microphone");
@@ -86,6 +94,12 @@ Monitors {  //setup monitoring for Trek piece
 		var o =Server.default.options;
 		o.inDevice_("Pro Ag");
 		o.outDevice_("Pro Ag");
+		Server.default.reboot
+	}
+	*zoom {
+		var o =Server.default.options;
+		o.inDevice_("ZoomAudioD");
+		o.outDevice_("ZoomAudioD");
 		Server.default.reboot
 	}
 

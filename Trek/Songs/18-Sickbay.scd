@@ -1341,6 +1341,19 @@ P.still(\mcCoyEnters, start:\Chapel,timecode: 3940.5.seconds, music:{|p b e|
 });
 ["(wibble) hypo (hypo)",[33,3,-6.5,-16.5].dm(\c)].addLine;
 P.tune(\hypo,range:[1,2],syl:0);
+P.synthV(role: \mccoy, take: \lead, params: {|p b| [
+	lyrics: "r hypo + r",
+	legato: [1, 1, 0.5, 1, ],
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		/4
+		=> Pan2.ar(_,0)
+		// => p.synthVTracks.at(e.key).()
+	}.play
+
+});
 P(\wibble,start:\hypo,music:{|p b e| 
 		
 	fork{
@@ -1394,7 +1407,9 @@ P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 ] }, music:{|p b e|
 	{
 		e.playbuf
+		/4
 		// => p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_,0)
 	}.play
 
 });

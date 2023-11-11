@@ -23,7 +23,7 @@ o = [
 	Array.prNew(40),  "3849730000",  "exceptions",  "402190000",  
 	Event.prNew,  Array.prNew(40),  "4251920000",  "+",  
 	"571530000",  Event.prNew,  Array.prNew(40),  "4823450000",  
-	"+",  "740870000",  "main",  Event.prNew,  
+	"+",  "518600000",  "main",  Event.prNew,  
 	Array.prNew(32),  Event.prNew,  Array.prNew(8),  Array.prNew,  
 	"cubic",  Event.prNew,  Array.prNew(8),  Array.prNew,  
 	"cubic",  Event.prNew,  Array.prNew(8),  Array.prNew,  
@@ -42,7 +42,7 @@ o = [
 	Event.prNew,  Array.prNew(8),  Array.prNew(1),  Event.prNew,  
 	Array.prNew(12),  "",  "Unnamed Track",  Array.prNew,  
 	Event.prNew,  Array.prNew(20),  "ff7db235",  Event.prNew,  
-	Array.prNew(28),  "synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/SynthV/visual/1075637210/asterian-double"
+	Array.prNew(28),  "synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/visual/1075637210/asterian-double"
 ];
 p = [
 	// Event

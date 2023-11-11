@@ -103,15 +103,15 @@ Song.encoders=~encoders;
 	Song.vocoderFoa = Bus.audio(s,5);
 	
 	Song.vocodeTune = { 
-		|p b e rppName amp=0.2 att=3 sus=1 rel=5 dur=10 chord=#[1,2,4,5,6,8] tune out=0 modGain=1 echo=1 mix=0.5 verb=1 width=1.1 carrierGain=1 enlarge sawFreqRatio=2|
+		|p b e rppName amp=0.2 att=3 sus=1 rel=5 dur=10 chord=#[1,2,4,5,6,8] tune out=0 modGain=1 echo=1 mix=0.5 verb=1 width=1.1 carrierGain=1 enlarge sawFreqRatio=2 durRel=0|
 		var synthVbuffer, playSynth, playAmbiSynth;
 		( v.isNil or: { v.isRunning.not }.try ).if{
 			v = Group.new(addAction:\addToTail).register 
 		};
 		e.rpp.notNil.if{rppName = e.rpp};
 		( ( (b.sum /*+ 0.5*/) < dur ) and: enlarge.isNil ).if {
-			b.sum.asString + dur.asString +"section shorter than default vocoder dur - setting dur to" + ( b.sum /*+ 0.5 */) => _.warn;
-			dur = b.sum /*+ 0.5*/
+			b.sum.asString + dur.asString +"section shorter than default vocoder dur - setting dur to" + ( b.sum + durRel /*+ 0.5 */) => _.warn;
+			dur = b.sum + durRel /*+ 0.5*/
 		} ;
 		e.synthV.notNil.if{synthVbuffer=e.playbuf};
 		playSynth = {  // mono => mono

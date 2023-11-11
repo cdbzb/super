@@ -1233,18 +1233,42 @@ P(\wibble, music:{
 	}});
 }.();
 [" Class M planet, Captain.","5 2 11 5 2 -6".dm('b')].addLine;/*SPOCK:*/
+P(\chords, music: { |p b e|
+	[
+		freq: [-5, 1, 2, 4].bubble ++ [-2, -4, -5, 2].bubble ++ [-7, -3, -4.5].bubble => _.df('c#') => _.q ,
+		dur: b.parse([6,6]) ++ e.bNext[..4] =>_.q,
+		instrument: \stringyy,
+		freqLag: 0.8,
+		wet: 0.1,
+		out: (0..3)
+	].ppm;
+	[
+		freq: [\r] ++ ['f#', 'd#', 'c'].collect{|i| [ 4, 1, -5, -2, -16].df(i,5) } => _.flat => _.q,
+		dur: b.parse([2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2]).q,
+		instrument: \sparkTriangle, width: 0.1
+	].pp
+});
+P(\bass, music: { |p b e|
+	[
+		instrument: \sawSynth,
+		freq: ['f#','d#','f'].collect([1, -5].df(_,5)).flat.q,
+		dur: b.parse([1, 5, 1,5, 1, 5]) ++ e.bNext[..4] =>_.q,
+		out: [2,3],
+		amp: 0.05
+	].pp;
+});
 P.still(\spockClassM, timecode: 46.865.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["class M planet","Captain"],
 	)
 });
-P.tune();
+// P.tune();
 P(\line, music: { |p b e|
 	[
 		freq: [\r,11, 5, 2, -6, -3].df('b',[ 4, 5 ]).q,
 		dur: b.parse([2, 1, 1, 1, 1]) ++ e.bNext.sum => _.q
-	].pp
+	]//.pp
 });
 P.synthV(role: \spock, take: \lead, params: {|p b| [
 	lyrics: "Class em planet + captain +",
@@ -1277,7 +1301,6 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 
 });
 Song.setTempoMap(\Close,"Q E Q E Q E");
-	
 P(\line, music: { |p b e|
 	[
 		freq: [5, 2,11, 5, 2, -6, -3].df('a-',4).q,
@@ -1292,15 +1315,31 @@ P.still(\spock, timecode: 50.62.seconds, music: { |p b e|
 		text: ["with two very important","exceptions"],
 	)
 });
+P(\accents, music: { |p b e|
+	// [
+	// 	freq: [\r, 1, 1,].df(\c, 4).q,
+	// 	dur: b.parse([1, 4,3 ]).q
+	// ].pp;
+	[
+		freq: [4, 1, -5].df(\c).q,
+		dur: b[0..2].q,
+		instrument: \harp,coef:0.1, amp:0.02,
+		out: Effect.bus({|i| CombN.ar(i,b[0]*1.33,b[0]*1.33, b.sum/2) /2 * [0,1] + i },)
+	].pp
+});
 P.synthVs(role: \spock, take: [\lead,\double], params: {|p b| [
 	lyrics: " with r two very + important + + exceptions + +",
+	// lyrics: " r with  two very + important + + exceptions + +",
 	filter: [(midinote: _ - 12),(midinote: _)],
+	legato: [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.7]],
+
 	pitchTake: [1,3]
 ] }, music:[-0.1,0.1].collect{|pan|{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 		=> Pan2.ar(_,pan)
+		/2
 	}.play
 
 }});
@@ -1308,7 +1347,8 @@ P.tune();
 P(\bassnotes, syl:8, music: { |p b e|
 	[
 		freq:"5.5 -5.5 1.5 -1.5".df('c',[ 4,5 ]).q,
-		dur: b.drop(1) ++ e.bNext => _.q
+		dur: b.drop(1) ++ e.bNext => _.q,
+		instrument: \sawSynth
 	].pp
 });
  ["Its much older than Earth", "5 5 11 5 5 5 5".dm('f#',4)].addLine;
@@ -1326,6 +1366,7 @@ P.synthVs(role: \spock, take: [\lead,\double], params: {|p b| [
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 		=> Pan2.ar(_,pan)
+		* -3.dbamp
 	}.play
 
 }});
@@ -1349,14 +1390,15 @@ P.synthVs(role: \spock, take: [\lead,\double],
 	params: {|p b| [
 	filter: (midinote: _ - 12), 
 	lyrics: "and about + a half million + years - - ago + its atmosphere + + was",
+	legato: [[0.8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1, 1, 1, 1, 1, ]],
 	pitchTake: [1,3]
 ] }, music:[-0.1,0.1].collect{|pan|{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 		=> Pan2.ar(_,pan)
+		* -3.dbamp
 	}.play
-
 }});
 Song.setTempoMap(\about,"e x xe e q e x g g xe x xe x ");
 P.tune();
@@ -1883,7 +1925,7 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	)
 
 });
-["ow at this closer distance","5 4 3 2 1 3 2 4 3 3 2 2 1 -7 -6 4.5".dm(\d)].addLine;
+["Now at this closer distance","5 4 3 2 1 3 2 4 3 3 2 2 1 -7 -6 4.5".dm(\d)].addLine;
 Song.durs.filter(_*1.3);
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
@@ -1975,7 +2017,8 @@ P(\bass, music: { |p b e|
 		freq: [-21, -22].df('c#').q,
 		att: 3,
 		dur: b.parse([1, b.size-1]).q,
-		legato: [2, 1].q
+		legato: [2, 1].q,
+		out: Effect.bus({|i| i * Line.kr(1,0,b.sum+1) },inputChannels:2)
 	].p.play
 });
 /* P.still(\listening, timecode: 127.7.seconds, music: { |p b e|
@@ -2037,12 +2080,17 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 });
 P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	lyrics: "the choice is yours",
-	filter: (midinote: _ - 12), 
+	// filter: (midinote: _ - 12), 
+	filter: (midinote: 50!4), 
 	pitchTake: 1
 ] }, music:{|p b e|
 	p.vocodeTune.(p,b,e,e.rpp,
 		echo:0.2, modGain:4,
 		chord: #[2,4,6,8],
+		att:0,
+		// sus:10,
+		// rel:5,
+		dur:b.sum,
 		mix: 0.99
 	)
 
@@ -2104,7 +2152,9 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 ] }, music:{|p b e|
 	p.vocodeTune.(p,b,e,e.rpp,
 		modGain:3,
-		chord:#[1,4]
+		chord:#[1,4],
+		durRel:2,
+
 	)
 
 });
@@ -2120,7 +2170,7 @@ P(\growl, music: { |p b e|
 	(
 		instrument: \stringyy,
 		freq: [-21,-11].df(\c,[4,5]),
-		mix:0, amp:0.05, out: Effect.bus({|i| i=>HPF.ar(_,200) },inputChannels:2)
+		mix:0, amp:0.06, out: Effect.bus({|i| i=>HPF.ar(_,200) },inputChannels:2)
 	).play
 });
 P.still(\kirkDead, timecode: 143.1.seconds, music: { |p b e|
@@ -2130,16 +2180,17 @@ P.still(\kirkDead, timecode: 143.1.seconds, music: { |p b e|
 	)
 });
 P.tune(_ <>[instrument:\harp].p);
-P(\accent, music: { |p b e|
-	(
-		lag: b[..3].sum,
-		instrument: \defaultPiano,
-		freq: [4.5, 11, 14.5,21, 24.5 ].df(\c), 
-		strum: 0.05,
-		out: Effect.bus({|i| 
-			i => {|i| Fverb.ar(i,i)/2+i /4 }
-		},)
-	).play
+P(\accent,syl:3, music: { |p b e|
+	{
+		SawBL.ar(
+			// freq: Gendy1.arWidth(freq: [1, 4, 11, 14].df(\c,3)),
+			freq:[1,4.5,3, 11, 14.5].df(\c,3)
+			+ Gendy1.arWidth(freq:{ 0.5.rrand(1) }!4,width:1.01).range(-10,10)
+		)
+		+ Gendy1.arWidth(freq:[1, 4.5, 11, 14.5].df(\c))
+		* Env([1,0],b.drop(1).sum + 5).kr(2,gate:1)
+		/60
+	}.play
 });
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	lyrics: "the planet + is dead",
@@ -2149,6 +2200,9 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_,0)
+		=> {|i| Fverb.ar(i[0], i[1],decay:5) /4 +i *0.6}
+		/3
 	}.play
 
 });
@@ -2169,8 +2223,8 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-		=> Pan2.ar(_,0)
+	=> p.synthVTracks.at(e.key).()
+	=> Pan2.ar(_,0)
 		=> {|i| Fverb.ar(i[0], i[1],decay:5) /4 +i *0.6}
 		/3
 	}.play
@@ -2178,6 +2232,15 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 });
 P.tune();
 [" [OC]: And I am as dead as my planet.","5 6 5 4 3 2 3 2 1".dm('e-',\minor)].addLine;/*SARGON:*/
+P(\bassline, music: { |p b e|
+	[
+		freq: [5, 6, 5, 4, 3, 2, -7.5, 1].df('e-',[ 3,3 ], \minor).q,
+		dur: b.q + [0,0,0,0,0,0,0,5].q,
+		// legato: [1, 1, 1, 1, 1, 1, 1, 5, ].q,
+		instrument:\reedy,
+		out:[0,1]
+	].ppm
+});
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,

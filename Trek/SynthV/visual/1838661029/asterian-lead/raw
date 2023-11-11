@@ -11,7 +11,7 @@ o = [
 	Array.prNew(12),  "and",  Event.prNew,  Array.prNew(8),  
 	Array.prNew(4),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  Event.prNew,  Array.prNew(12),  Event.prNew,  
-	Array.prNew(12),  "567510000",  "",  Event.prNew,  
+	Array.prNew(12),  "454000000",  "",  Event.prNew,  
 	Array.prNew(4),  Event.prNew,  Array.prNew(40),  "567510000",  
 	"about",  "352650000",  Event.prNew,  Array.prNew(40),  
 	"920160000",  "+",  "866820000",  Event.prNew,  
@@ -25,7 +25,7 @@ o = [
 	"125940000",  Event.prNew,  Array.prNew(40),  "4584500000",  
 	"-",  "740870000",  Event.prNew,  Array.prNew(40),  
 	"5325370000",  "ago",  "368950000",  Event.prNew,  
-	Array.prNew(40),  "5694320000",  "+",  "929060000",  
+	Array.prNew(40),  "5694320000",  "+",  "743240000",  
 	Event.prNew,  Array.prNew(40),  "6623380000",  "its",  
 	"320060000",  Event.prNew,  Array.prNew(40),  "6943440000",  
 	"atmosphere",  "867880000",  Event.prNew,  Array.prNew(40),  
@@ -51,7 +51,7 @@ o = [
 	Array.prNew(8),  Array.prNew(1),  Event.prNew,  Array.prNew(12),  
 	"",  "Unnamed Track",  Array.prNew,  Event.prNew,  
 	Array.prNew(20),  "ff7db235",  Event.prNew,  Array.prNew(28),  
-	"synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/SynthV/visual/1838661029/asterian-lead"
+	"synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/visual/1838661029/asterian-lead"
 ];
 p = [
 	// Event

@@ -35,7 +35,7 @@ o = [
 	Array.prNew(1),  Event.prNew,  Array.prNew(12),  "",  
 	"Unnamed Track",  Array.prNew,  Event.prNew,  Array.prNew(20),  
 	"ff7db235",  Event.prNew,  Array.prNew(28),  "synthV.wav",  
-	"NoAspiration",  "/Users/michael/tank/super/SynthV/visual/727015891/xuan-lead"
+	"NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/visual/727015891/xuan-lead"
 ];
 p = [
 	// Event
@@ -111,10 +111,10 @@ p = [
 		'onset',  o[19],  nil,  nil,  
 		nil,  nil,  'detune',  0,  
 		'systemAttributes',  o[20],  'pitchTakes',  o[22],  
-		'midinote',  54.0,  'lyrics',  o[33],  
+		'midinote',  50,  'lyrics',  o[33],  
 		'timbreTakes',  o[34],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		'pitch',  54,  'duration',  o[45],  
+		'pitch',  50,  'duration',  o[45],  
 		'phonemes',  o[46],  'attributes',  o[47] ],  
 	// Event
 	20, [ array: o[21],  size: 0,  
@@ -220,10 +220,10 @@ p = [
 		'onset',  o[51],  nil,  nil,  
 		nil,  nil,  'detune',  0,  
 		'systemAttributes',  o[20],  'pitchTakes',  o[22],  
-		'midinote',  54.0,  'lyrics',  o[52],  
+		'midinote',  50,  'lyrics',  o[52],  
 		'timbreTakes',  o[34],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		'pitch',  54,  'duration',  o[53],  
+		'pitch',  50,  'duration',  o[53],  
 		'phonemes',  o[46],  'attributes',  o[47] ],  
 	// Event
 	54, [ array: o[55],  size: 11,  
@@ -235,10 +235,10 @@ p = [
 		'onset',  o[56],  nil,  nil,  
 		nil,  nil,  'detune',  0,  
 		'systemAttributes',  o[20],  'pitchTakes',  o[22],  
-		'midinote',  54.0,  'lyrics',  o[57],  
+		'midinote',  50,  'lyrics',  o[57],  
 		'timbreTakes',  o[34],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		'pitch',  54,  'duration',  o[58],  
+		'pitch',  50,  'duration',  o[58],  
 		'phonemes',  o[46],  'attributes',  o[47] ],  
 	// Event
 	59, [ array: o[60],  size: 11,  
@@ -250,10 +250,10 @@ p = [
 		'onset',  o[61],  nil,  nil,  
 		nil,  nil,  'detune',  0,  
 		'systemAttributes',  o[20],  'pitchTakes',  o[22],  
-		'midinote',  61.0,  'lyrics',  o[62],  
+		'midinote',  50,  'lyrics',  o[62],  
 		'timbreTakes',  o[34],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		'pitch',  61,  'duration',  o[63],  
+		'pitch',  50,  'duration',  o[63],  
 		'phonemes',  o[46],  'attributes',  o[47] ],  
 	// Event
 	65, [ array: o[66],  size: 8,  

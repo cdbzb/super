@@ -25,7 +25,7 @@ o = [
 	"678780000",  Event.prNew,  Array.prNew(40),  "6228980000",  
 	"dead",  "843890000",  Event.prNew,  Array.prNew(40),  
 	"7072870000",  "since",  "498150000",  Event.prNew,  
-	Array.prNew(40),  "7571020000",  "then.",  "704460000",  
+	Array.prNew(40),  "7571020000",  "then.",  "939280000",  
 	"main",  Event.prNew,  Array.prNew(32),  Event.prNew,  
 	Array.prNew(8),  Array.prNew,  "cubic",  Event.prNew,  
 	Array.prNew(8),  Array.prNew,  "cubic",  Event.prNew,  
@@ -45,7 +45,7 @@ o = [
 	Event.prNew,  Array.prNew(12),  "",  "Unnamed Track",  
 	Array.prNew,  Event.prNew,  Array.prNew(20),  "ff7db235",  
 	Event.prNew,  Array.prNew(28),  "synthV.wav",  "NoAspiration",  
-	"/Users/michael/tank/super/SynthV/visual/241749595/asterian-lead"
+	"/Users/michael/tank/super/Trek/SynthV/visual/241749595/asterian-lead"
 ];
 p = [
 	// Event
@@ -139,7 +139,7 @@ p = [
 		proto: nil,  parent: nil,  
 		know: true ],  
 	// Array
-	23, [ nil,  nil,  'activeTakeId',  3,  
+	23, [ nil,  nil,  'activeTakeId',  1,  
 		nil,  nil,  'takes',  o[24] ],  
 	// Array
 	24, [ o[25],  o[27],  o[29],  o[31] ],  

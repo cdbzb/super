@@ -23,6 +23,7 @@ P.synthV(role: \vocoder, params: {|p b| [
 			width:1.03,
 			mix:0.5,
 			amp:0.8,
+			durRel:1,
 			att:0, sus:b.sum, rel:e.bNext.sum-0.5,
 			dur: b.sum+e.bNext.sum-0.5
 		);
@@ -59,6 +60,7 @@ P.synthVs(role: \spock, take: [\dbl, \lead ], params: {|p b| [
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
+			/2
 		}.play
 });
 	/*SARGON:*/[" You may use your tricorder, Mister Spock.","3 2 5 3 1 -7 -6 -6 -5 2".dm(\b,4)].addLine;
@@ -292,7 +294,7 @@ P('chords',start:\energy,music: {|p b e|
 	].pp
 });
 ["Sealed in this receptacle is the ",[5, 4,3,2,3,4,3,-5,-6,-7].dm(\c,6)].addLine;
-P.synthV(\xuan,
+P.synthV( role: \vocoder,
 		lag:-0.5,
 	// double:true,
 	// filter: (midinote: 48!10), 
@@ -317,6 +319,9 @@ P.synthV(\xuan,
 			=> _.ppm;
 		p.vocodeTune.(p,b,e,e.rpp,
 		modGain:4,
+		dur: b.sum + 0.5,
+		sus: b.sum + 0.5,
+		durRel: 0.5,
 		chord:#[1,2,4],
 		// chord:#[1,0.5,2,8],
 		echo:0.3,

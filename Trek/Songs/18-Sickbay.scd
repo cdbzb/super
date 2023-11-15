@@ -377,6 +377,26 @@ P(\strings, music: { |p b e|
 		/10
 	}.play
 });
+P(\moreChords, music: { |p b e|
+	{
+		var freq = [ [1, 3, 5, 7],[1, 3, 4, 6] ].df(\a, \dorian);
+		Gendy1.arWidth(
+			ampdist:2,
+			durdist:5,
+			adparam:0.0001,
+			ddparam:1.0,
+			freq:freq.dq.demand(b.parse([4,3])),
+			width:1.01,
+			ampscale:0.02,
+			durscale:0.5,
+			initCPs:2,
+			knum:nil,
+		)
+		/20
+		* Env([0,1,1,0],b.parse([1, 6, ] ++ [0.2])).kr(2,gate:1)
+		=> Out.ar(\out.kr(0),_)
+	}.play
+});
 P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		fade: b[0],
@@ -403,6 +423,7 @@ P.synthV(\aiko, params: [
 	lyrics: "r r hen nocks for mu la",
 	filter: (midinote: _ - 12), 
 	// phonemes: ["","","s A r\\`","k o n ts","f o r `","m j u","l @" ],
+
 ],music:{|p b e|
 	{
 		e.playbuf
@@ -411,6 +432,7 @@ P.synthV(\aiko, params: [
 }
 );
 ["yes, I wan- ted to be cer- tain there was no","3 1 -7 1 3 1 -7 -6".dm('c#') ++ "4 5 11 7 5".dm('e-',4)].addLine;  //7
+Song.setTempoMap('wan- ted',"qe e e e e e q e e e e");
 P(\chord, music: { |p b e|
 	[
 		freq: [ [5, 11, 13], [5,7,13], [5,6,13],[ 5,6,12 ],[11.5,6,13] ].df('c#').q,
@@ -454,7 +476,6 @@ P(\chords,start:'cer- tain',music:{|p b e|
 	fork{
 		var inst = Barrier.collect(
 			// {OteyPiano.ar(\freq.kr(400),rho:0.2)}.asDefName;
-
 			{ 
 				// arg trig=0;
 				var freq = \freq.kr(220, 0.1) / 2;
@@ -479,23 +500,11 @@ P(\chords,start:'cer- tain',music:{|p b e|
 		);
 		inst = inst.value[0];
 		[
-			freq: [
-				[1,3,5],
-P.still(\thalassaWhat, timecode: 3412.2.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["what is it","Sargon"],
-	)
-});
-				[1,3,5],
-				[-7,3,5],
-				[-7,3,5],
-				[-7,3,5],
-				[-6,3,5],
-				[-6,2,5]
-			] .df('c#') ++ [[1,3,5]].df('b-',octave:4) => _.q,
-			dur: p.quarters[e.start] ++ Song.durs[\rrect].list[0..2] => _.q,
-			instrument:  inst,
+			freq: [[1,3,5], [1,3,5], [-7,3,5], [-7,3,5], [-7,3,5], [-6,3,5], [-6,2,5]] .df('c#') ++ [[1,3,5]].df('b-',octave:4) => _.q,
+			// dur: p.quarters[e.start] ++ Song.durs[\rrect].list[0..2] => _.q,
+			dur: "q q q q q q q" .asBeats.warpTo( e.tempoMap.quantizeDft(0.3) ) ++ e.bNext[..2].sum =>_.q,
+			// instrument:  inst,
+			instrument: \defaultPiano,
 			trig: 1,
 			out: Effect(
 				{|i|
@@ -507,6 +516,12 @@ P.still(\thalassaWhat, timecode: 3412.2.seconds, music: { |p b e|
 			).bus.index
 		].pp
 	}
+});
+P.still(\thalassaWhat, timecode: 3412.2.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["what is it","Sargon"],
+	)
 });
 P(\bass,start:'cer- tain',music:{|p b e| 
 	[

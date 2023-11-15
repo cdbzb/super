@@ -439,10 +439,13 @@ P(\chord, music: { |p b e|
 		instrument: \sawSynthSustain,
 		lofreq:5000,
 		hifreq:9000,
-		dur: p.quarters[e.start ] ++ Song.durs[\rrect].list[0..2] => _.parse([2, 3, 1, 1, 1]) => _.q,
+		// dur: p.quarters[e.start ] ++ Song.durs[\rrect].list[0..2] => _.parse([2, 3, 1, 1, 1]) => _.q,
+			dur: "qq qqq q q  " .asBeats.warpTo( e.tempoMap.quantizeDft(0.3) ) ++ e.bNext[0].sum =>_.q,
+
 		amp:0.02,
 		att:1,
-		pan: 0.8,
+		// pan: 0.89,
+		spread: 0.5, center: 0.5,
 		rel:4
 	].ppm
 });
@@ -505,6 +508,7 @@ P(\chords,start:'cer- tain',music:{|p b e|
 			dur: "q q q q q q q" .asBeats.warpTo( e.tempoMap.quantizeDft(0.3) ) ++ e.bNext[..2].sum =>_.q,
 			// instrument:  inst,
 			instrument: \defaultPiano,
+			pan: -0.5,
 			trig: 1,
 			out: Effect(
 				{|i|
@@ -525,24 +529,26 @@ P.still(\thalassaWhat, timecode: 3412.2.seconds, music: { |p b e|
 });
 P(\bass,start:'cer- tain',music:{|p b e| 
 	[
-		freq: [1,1,-7,-7,-4].df('c#',octave:3).q,
-		dur: [3,1,3,1,4].q/2
-	].p.play(p.quarters[e.start].asTempoClock);
+		freq: [1,1,-7,-7,-4,  -5,-6].df('c#',octave:3).q,
+	// 	dur: [3,1,3,1,4].q/2
+	// ].p.play(p.quarters[e.start].asTempoClock);
+	dur: "qe e qe e qee q q".asBeats.warpTo( e.tempoMap.quantizeDft(0.3) ++ p.tempoMap[e.start + 1]).q
+].pp
 });
-["er- ror. For- mu- la is co- ","d4 f3 g a b g b "].addLine; //8
+["er- ror. For- mu- la is co- ",[5, -7, 1, 2, 3, 1, 3].dm(\g,\mixolydian)].addLine; //8
+Song.setTempoMap('er- ror.',"e e e x x ex x");
 P.still(\standingUp,syl:1, timecode: 3827.8.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
+		wait: b.drop(1).sum,
 		text: ["formula is","correct"],
-	)
+	);
 });
-P.still(\clear,syl:1, timecode: 0.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.drop(1).sum 
-		// + e.bNext[0]
-		,
-		text: ["formula is ","correct"],
-	)
+P(\chord,syl:1, music: { |p b e|
+	{
+		Gendy2.arWidth(ampdist:4, durdist:4, adparam:1.0, ddparam:1.0, freq: [1, 2, 3, 1, 2, 3, -5].df(\g).dq.demand("e x x e x x".asBeats.warpTo(e.tempoMap) ++ 1), width:1.015, ampscale:0.05, durscale:0.005, initCPs:12, knum:nil, a:1.17, c:0.31, mul:1.0, add:0.0)
+		/10
+		* EnvGen.cutoff(wait:b.drop(1).sum+e.bNext[0], release:1, curve:nil, doneAction:2)
+	}.play
 });
 // P.tune('For- mu- la');
 P.synthV(\genbu,
@@ -579,8 +585,6 @@ P(\bass,syl:1,start:'For- mu- la',music:{|p b e|
 });
 // P.tune();
 P(\pedalTones, music: { |p b e|
-
-	
 	fork{
 		var inst = Barrier.collect(
 			{
@@ -597,7 +601,7 @@ P(\pedalTones, music: { |p b e|
 	);
 		inst = inst.()[0];
 		[
-			freq: [11, 11,  [1,13]].df(\g,4).q,
+			freq: [15, 11,  [1,13]].df(\g,4).q,
 			dur: b.parse([2,3,0]) + [0, e.bNext[..3].sum,e.bNext[4..7].sum] => _.q,
 			amp:0.04, pan: -0.7,
 			// legato: [0.8,1,1].q,
@@ -637,7 +641,7 @@ P(\lick,start:\rrect,music:{|p b e|
 				
 				[5,4,3,2,1].df(\e,scale:\minor).dq.demand(b.parse([1,1,1,1,3]))
 				=> {|freq|
-						Pulse.ar( freq / [2,4], 0.2 ,0.1)
+						Pulse.ar( freq / [2,4,8], 0.2 ,0.1)
 						// AAAARh
 						* Env.perc( 0.3, [ [3,3,3,3,6].dq.demand(b),b[0..4].dq.demand(b),1 ]).kr(0,gate:b.parse([1,1,1,1,3]).dropLast.tduty)
                              //.kr( 0, gate:TDuty.kr(b[0..4].dq))
@@ -662,16 +666,23 @@ P.synthV(\genbu, params:
 }
 );
 P(\strum,start:'ex- cel',music:{|p b e| 
-		(
-				strum:0.055,
-				freq:[-5,-7,1,3,5,7,11,13].df(\e,scale:\mixolydian),
-				dur:{rrand(2,4)}.dup(4),
-				out:Effect(MoogFF.ar(_,SinOsc.ar({ 2.0.rand }.dup(4)).range(580,2000)*0.5),inputChannels:2).bus.index,
-				instrument: \harp,coef:0.1
-		).play
+		[ [5,-5,-7,1,3,5,7,11,13],[5,-5,-6,1,3,5,6,11,13],[5,-5.5, -5.5,1,3,5.5,5.5,11,13] ].df(\e,scale:\mixolydian).flop.do({|freq x| [ freq: freq.q, instrument: \harp, coef: 0.1,
+			dur: b.parse([5,1]) ++ e.bNext[0] => _.q,
+			out:Effect.bus(MoogFF.ar(_,SinOsc.ar({ 2.0.rand }.dup(4)).range(580,2000)*0.5
+		=> DelayN.ar(_,0.065,0.065.rand)
+	), out: x % 4),
+		].ppm})
 });
+
 P.tune('bo- dy', _ <> [instrument: \sawSynthSustain,pulse:0.5,amp:0.02].pm);
 ["There I feel be- tter al- rea- dy","c4 g3 a b c4 b3 a b d4 c"].addLine; //11
+P(\note, music: { |p b e|
+	(
+		freq: 1.df(\c),
+		lag: 0.1,
+		instrument: \defaultPiano
+	).play
+});
 P.still(\twoShot, timecode: 3834.1.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.parse([[1,1,1,1,1,1,1,1,1,0.5]]).unbubble,
@@ -992,7 +1003,7 @@ P.still( \thalassa, start: \Feel, timecode:3854.seconds, music: { |p b e|
 				e.still.setText(["husband"])
 		}
 });
-P.tune(\Feel);
+P.tune(\Feel, _ <> [instrument: \stringyy, ].pm);
 Song.setQuarters(\Feel,[3/8,7/8,1/8,1/8,1/4,1/8,1/8,1,1/4,1/4]);
 P(\click,start:\Feel,music:{|p b e| 
 		[
@@ -1000,12 +1011,20 @@ P(\click,start:\Feel,music:{|p b e|
 				amp:0.34,
 				freq:[1,-7,-4].df('a-',scale:\minor,octave:[3,4]).q,
 				dur:Song.quarters[\Feel],
-				amp:1
+				amp:1,
+				// release: [8, 6, 4].q,
+				out: Effect.bus({|i| i * EnvGen.cutoff(
+					wait:b.sum -1.5,
+					release:5,
+					curve:nil,
+					doneAction:2
+				) },inputChannels:2)
 		].pp;
 });
 ["/*KIRK:*/ No, beloved. (boom) If we torment ourselves ",[6,5,3,1,-1, 4,5,11,7,6,5].dm(\f,4)].addLine;
 P.synthV(\genbu, params: [
-	lyrics:"no bi la ved r if wi tar ment ar selvs"
+	lyrics:"no bilaved + + r if wi tarment +  ar selvs",
+	phonemes:["","b i","l a","v e d","","","","t o r","m e n t","a u a r","s e l v z"]
 ],music: {|p b e|
 	{
 		e.playbuf.() 
@@ -1013,7 +1032,7 @@ P.synthV(\genbu, params: [
 	}.play
 }
 );
-P.tune(\torment);
+P.tune(\torment, _ <> [instrument: \reedy].pm);
 
 P.still( \kirk, start: \torment, timecode: 3859.7.seconds, music: { |p b e|
 		e.still.value(
@@ -1021,16 +1040,66 @@ P.still( \kirk, start: \torment, timecode: 3859.7.seconds, music: { |p b e|
 				text:["No, beloved","if we torment ourselves"]
 		);
 });
-
 P(\dyads,start:\torment,music:{|p b e| 
 		VoiceLeading([
 				[2,3, -6,-7],
 				[7,\_, -4,-5]
-		],b.parse([0.5,[0.5,1],2,4])).df(\c,scale:\mixolydian).pp
+		],b.parse([0.5,[0.5,1],2,4])).df(\c,scale:\mixolydian).pbinds.collect{|i x|
+			i
+			<> [
+				instrument: \sparkTriangle, depth:0.01,
+				freqLag:0.2,
+				legato: [ [1, 0.9, 1,1],[0.9, 1, 1] ][x]=>_.q,
+				out: Effect.bus({|i| i => Pan2.ar(_, i * 2 - 1) },)
+			].pma
+			=>_.play
+		}
 });
 // Idea C min or Ab ala Waldstein?
 ["/*MULHALL:*/ Beloved. What will that word mean to a machine? ",[1,6,5].dm(\a)++[-7,1,5,3,-7,1,2,4,6].dm('c#',octave:6)].addLine;
 //P.tune('to a machine');
+P(\note, music: { |p b e|
+
+
+	{
+		Gendy1.arWidth(
+			ampdist:4,
+			durdist:4,
+			adparam:1.0,
+			ddparam:1.0,
+			freq: 6.df(\a,[5,5]),
+			width:1.015,
+			ampscale:0.05,
+			durscale:0.05,
+			initCPs:12,
+			knum:nil,
+			mul:1.0,
+			add:0.0
+		) /75
+		=> Pan2.ar(_,0)
+		* Env([0,0,1,0],b.parse([0.8,0.2, 3]) + [0,0,3], [1, 2]).kr(2,gate:1)
+	}.play;
+
+	{
+		Gendy1.arWidth(
+			ampdist:4,
+			durdist:5,
+			adparam:1.0,
+			ddparam:1.0,
+			freq: 11.55.df(\a,[5,5]),
+			width:1.015,
+			ampscale:0.05,
+			durscale:0.05,
+			initCPs:12,
+			knum:nil,
+			mul:1.0,
+			add:0.0
+		) /75
+		=> Pan2.ar(_,0)
+		* Env([0,0,1,0],b.parse([[ 10, 0.8 ],[0.2,1], 1]) , [1, 2]).kr(2,gate:1)
+	}.play;
+
+});
 P.synthV(\aiko, params:
 	[
 		lyrics:" bi lu ved? wat will zat word min tu a ma xin"
@@ -1053,16 +1122,17 @@ P.still( \thalassa, start: 'to a machine', timecode: 3903.5.seconds, music: { |p
 		}
 });
 P(\bass,start:'to a machine',syl:2,music:{|p b e| 
-	[ instrument:\sawSynthSustain,
+	[ 
+		instrument:\sawSynthSustain,
 		freq: [-7,1,5,3,-6,-2].df('c#',octave:[3,4]).q,
 		legato:1,
 		att:0.7!5++3 =>_.q,
-		lag:(-0.03)!5++0,
+		lag:(-0.03)!5++0 => _.q,
 		out:[1,3],
 		rel:2!5++4 =>_.q,
 		amp:0.05,
 		dur:b.drop(1).parse([1,1,1,1,4,1]).q
-	].p.play
+	].p.trace.play
 });
 P.tune(\mean,{|i|Pbindf(i,\out,Effect(EchoNone.ar(_,0.4,0.3,4)).bus.index)},range:[0,2]);
 P(\chord,start:\machine,syl:10,lag:-0.05,music:{|p b e| 
@@ -1080,11 +1150,10 @@ P(\chord,start:\machine,syl:10,lag:-0.05,music:{|p b e|
 
 	).play
 });
-
-
 ["/*KIRK:*/ Our thoughts boom boom boom boom will intertwine. (boom boom boom boom) ",[1,7,-1,-2,-3,-4,6,7,11,3, 1,2,3,4].dm(\d,4,scale:\dorian)].addLine;
 P.synthV(\genbu, params: [
 	lyrics:" ar tats r r r r wil in ter twan r r r r",
+	phonemes:["","s o ts","","","","","","","","t w a e i n"],
 	legato:[ 1,3, 1,1,1,1,1,  1,1,3 ]
 ],music:{|p b e|
 
@@ -1112,7 +1181,15 @@ P(\chord,syl:0,start:\thoughts,music:{|p b e|
 		amp:0.05
 	].pp;
 });
-P.tune(\thoughts,Pbindf(_,\amp,[1,1,0,0,0,0,1,1,1,1,0,0,0,0].q/10,\legato,[1,3,0,0,0,0,1,1,1,3,0,0,0,0].q));
+P.tune(\thoughts, _ <>
+	[
+		// \amp, [1,1,0,0,0,0,1,1,1,1,0,0,0,0].q/10,
+		rest: [1, 1, \r, \r, \r, \r, 1, 1, 1, 1, \r, \r, \r, \r].q,
+		\legato, [1,3,0.5,0.5,0.5,0.5,1,1,1,3,0.5,0.5,0.5,0.5].q,
+		\instrument, \wash, \amp, 0.02
+
+	].p
+);
 //idea - Will they - Will they
 P.tune('thoughts boom',{|i| Pmul(\freq,0.5,i) =>Pbindf(
 	_,
@@ -1214,7 +1291,8 @@ P(\bass,start:'Will they',syl:11,music:{|p b e|
 });
 P(\xtraBassnote,start:'Will they',syl:7,music:{|p b e| 
 	(
-		freq: [1].df('a-',octave:[2,3])
+		freq: [1].df('a-',octave:[ 2, 3 ]),
+		dur: b.drop(1)[0..2].sum 
 	).play
 });
 [ "Can two minds press close like this?",[5,6,7,6.5,6.5,6,11.5].dm(\c)].addLine;

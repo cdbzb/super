@@ -293,22 +293,42 @@ P.still( \kirk,  timecode:4122.seconds, music: { |p b e|
 			b.sum, ["",""],
 	]) 	
 });
-P.synthV(\mo, params: {|p b| [
-	lyrics: "his body + is but his",
+P.synthVs(\mo, take: [\lead, \dbl], params: {|p b| [
+	lyrics: "his body + is r r",
+	filter: [(midinote: _),(midinote: _ - 12)], 
+	legato: [[1, 1, 1, 0.7,1, 1 ]],
+	pitchTake: [1, 3],
 	vocalMode: \Open,
-] }, music:{|p b e|
+] }, music:[{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).(b.sum)
 	}.play
-});
-P.double(\mo, filter: (midinote: _ - 12), music:{|p b e| 
+},{|p b e|
 	{
 		e.playbuf
 		/5
 	}.play
-} );
-// P.tune('His body');
+}]);
+P.synthVs(\mo, take: [\lead2, \dbl2],
+pbind: Song.enlarge2(10),
+params: {|p b| [
+	lyrics: "r r r r but his consciousness + + is still in the receptacle + + + it had been transferred + into + earlier + +",
+	
+	filter: [(midinote: _),(midinote: _ - 12)], 
+	pitchTake: [1, 3],
+	vocalMode: \Open,
+] }, music:[{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).( b.sum+ e.bNext.sum + p.durs[e.start + 3].list.sum)
+	}.play
+},{|p b e|
+	{
+		e.playbuf
+		/5
+	}.play
+}]);
 P(\bassUp,syl:0,start:'His body',music:{|p b e|
 	[
 		//freq: [5.5,4.5].df(\c,octave:3,transpose: 6).q,
@@ -333,24 +353,6 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 		text: ["consciousness is still","in the receptacle"],
 	)
 });
-P.synthV(\mo, params: {|p b| [
-	lyrics: "consciousness + + is still in the receptacle + + +",
-	vocalMode: \Open,
-] }, music:{|p b e|
-	{
-		e.playbuf
-		// => p.synthVTracks.at(e.key.asString.split($_)[0].asSymbol).()
-		=> p.synthVTracks.at(e.key).(b.sum)
-	}.play
-});
-
-P.double(\mo, filter: (midinote: _ - 12), music:{|p b e| 
-	{
-		e.playbuf
-		/5
-	}.play
-} );
-// P.tune(\consciousness);
 P(\bassUp,start:\consciousness,music:{|p b e| 
 	[
 		freq: [[-1, 1 ],[-3, 3 ]].df(\f,octave:3,transpose: 6).q,
@@ -384,22 +386,6 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 		text: ["it had been","transferred into earlier"],
 	)
 });
-P.synthV(\mo, params: {|p b| [
-	lyrics: "it had been transferred + into + earlier + +",
-	vocalMode: \Open,
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).(b.sum)
-	}.play
-});
-P.double(\mo, filter: (midinote: _ - 12), music:{|p b e|
-	{
-		e.playbuf
-		/ 5
-	}.play
-} );
-// P.tune(\earlier);
 P(\lick,start:\earlier,syl:4,music:{|p b e| 
 		[7,5,3].df(\d,scale:\mixolydian,transpose: 6).q
 	=>{|i|
@@ -520,7 +506,7 @@ P.still(\mccoy, timecode:
 	 e.still.( 
 		wait: b.sum/2,
 		fade:b.sum/2,
-		text: ["yes, we can keep them","going"],
+		// text: ["yes, we can keep them","going"],
 	)
 	// .sequenceText([
 	// 		b.parse([7]).sum, ["for a few weeks","or a month"],
@@ -531,7 +517,11 @@ P.still(\fromBack,syl:10, timecode: 4112.03.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		fadeIn:3,
-		text: ["",""],
+		text: ["",""]
+	).sequenceText2(
+			b.drop(1).parse([4]), [ 
+				["for all the good","it'll do..."],
+			],
 	)
 });
 P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
@@ -539,9 +529,11 @@ P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
 		wait: b.sum,
 		text: ["yes, we can keep them","going"],
 	)
-	.sequenceText([
-			b.parse([7]).sum, ["for a few weeks","or a month"],
-			b[7..13].sum, ["for all the good","it'll do.."]
+	.sequenceText2(
+			b.drop(1).parse([7, 7]), [["for a few weeks","or a month"],
+			["",""]
+			// b[7..13].sum, ["for all the good","it'll do.."]
+			
 	])
 });
 P.synthV(\mo, take: \lead, params: {|p b| [

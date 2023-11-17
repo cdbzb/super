@@ -91,7 +91,8 @@ P.still(\atDesk,syl:1, timecode: 4627.3.seconds, music: { |p b e|
 P.synthV(role: \mccoy, take:\lead, params: {|p b| [
 	lyrics: "r r  this is sick bay get me",
 	filter: (midinote: _ - 24), 
-	legato: [1, 1, 1, 1, 1, 0.7, 1, 0.6, ],
+	legato: [1, 1, 1, 1, 1, 0.5, 1, 0.5, ],
+	// lag: [0,0,0,0,b[4]/2,0,0],
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
@@ -127,7 +128,7 @@ P.still(\chapelZombie, timecode: 4630.0.seconds, music: { |p b e|
 P.still(\mccoySpeaks, timecode: 4632.15.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["nurse Chapel!","what in the devil..."],
 	)
 });
 P.tune();
@@ -554,6 +555,10 @@ P.still(\three,syl:1, timecode: 4721.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["Jim","the receptacles"],
+		).sequenceText2(
+				b.parse([6]), [ 
+				["Spock's consciousness was","in one them"],
+				],
 		)
 	});
 	P(\dyads, music: { |p b e|
@@ -619,12 +624,13 @@ P(\noise, music: { |p b e|
 P.still(\kirkNecessary, timecode: 4728.35.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["It was","necessary"],
 	)
 });
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	lyrics: "r it was necessary + + +",
 	filter: (midinote: _ - 12), 
+	vocalMode: \Soft,
 	pitchTake: 1
 ]}, music:{|p b e|
 	{

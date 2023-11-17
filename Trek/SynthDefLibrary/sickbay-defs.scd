@@ -1,4 +1,3 @@
-fork{
 	SynthDef(\wash,{| att=2 rel=3 curve=( -4 )| 
 	Saw.ar(\freq.kr(400,\freqLag.kr(2.5))*Rand(0.99!4,1.01),\amp.kr(0.1,1))*
 	Env.perc(att,rel,curve:curve).kr(2,gate:\gate.kr(1))
@@ -60,7 +59,6 @@ SynthDef(\mcCoy,{|freq out=0 amp=0.1|
 SynthDef(\crackle,{ Env.cutoff(0.1).kr(2,gate:\gate.kr(1)) * Dust.ar(5,\amp.kr(0.5))=> 
 Decay.ar(_,0.003)=>
 Out.ar(\out.ir(0),_)}).add.tag(\sfx);
-}
 
 
 

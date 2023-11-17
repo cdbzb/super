@@ -45,7 +45,7 @@ P.synthV(\genbu, take: \lead, params: {|p b| [
 	lyrics: "Sick Bay r r r r",
 	phonemes:["s i k", "b e i"],
 	filter: (midinote: _ - 12), 
-	legato: [1,0.5,1,1,1,1, ],
+	legato: [1,0.3,1,1,1,1, ],
 	lag: [0.1, 0, 0, 0, 0, 0],
 	pitchTake: 1
 ] }, music:{|p b e|
@@ -189,7 +189,8 @@ P.still(\thalassaEnters, timecode: 3803.75.seconds, music: { |p b e|
 		1.wait;
 		e.still.( 
 			fadeIn: 0.1,
-			wait: b[0],
+			wait: b[0] - 1,
+			wait: 0, fade:b[0]
 			// text: ["",""],
 		)
 	}
@@ -206,18 +207,6 @@ P(\padBass5,start:5,music:
 				dur:~sickBay.parse(5,[[1,1,1,1],[1,1,1],[1,1]]).q
 		].p
 );
-P(\gliss,start:5,syl:6,music:{
-		fork{
-				var a= (
-						octave:4,q:2,cutoff:1900,
-						degree:[6-7,3,6,8,9]-1,freqLag:10,root:6,
-						instrument:\glissChord,
-						out:2,dur:7,\rel:5,\att:9
-				) .play;
-				Song.durs[5].list[6..9].sum.wait;
-				(type:\set,id:a[\id],degree:[1,5,8,11,12]-1,octave:4,root:2).play
-		}
-});
 ( /*glissChord*/ {Saw.ar(
 	(\freq.kr(400,\freqLag.kr(2))
 	+(LFBrownNoise1.ar(2!5))*rrand(0.99,1.01!5)
@@ -234,6 +223,34 @@ P(\gliss,start:5,syl:6,music:{
 }=>SynthDef(\glissChord,_)=>_.add; 
 );
 ["You sound ter- ri- ble wait there for me","c4 d e c g3 e-4 d b-3 f"].addLine;  //3
+P(\chords, music: { |p b e|
+	MegaBind(
+		[
+			[\r, 3, 2.5, 2],
+			[\r, 1, -6.5, \_],
+			[\r, -5, -4, \_]
+		].df(\c)
+		,
+		b.parse([2, 3, 2, 2]),
+		[ ],
+		{|i|  
+			SinOsc.ar(i.freqSeq,0,0.1).tanh.tanh
+			* 
+			(
+				Env.asr().kr(2,gate:i.gateSeq)
+				+ Env.perc(0.1,0.1).kr(0,gate:( i.trigSeq * i.gateSeq ))
+			)
+			* -5.dbamp
+		},
+		{|i| Splay.ar(i)}
+	).play
+});
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["you sound terrible","wait there for me"],
+	)
+});
 P.synthV(role: \mccoy, take: nil, params: {|p b| [
 	lyrics: "you sound terrible + + wait there for me",
 	legato: [1, 1, 1, 1, 0.5, 1, 1, 1, 1, ],
@@ -352,6 +369,23 @@ P(\padBass5,start:5,music: { |p b e|
 		}).play;
 	}
 ); 
+P(\gliss,syl:6,music:{ |p b e|
+				var a= (
+						octave:4,q:2,cutoff:1900,
+						degree:[6-7,3,6,8,9]-1,freqLag:10,root:6,
+						instrument:\glissChord,
+						out:2,dur:7,\rel:5,\att:9,
+						amp: 0.03
+				).play;
+				// Song.durs[5].list[6..9].sum.wait;
+				(
+					type:\set, lag: b.drop(1).sum,
+					id:a[\id],
+					degree:[1,5,8,11,12]-1,
+					octave:4,
+					root:2
+				).play
+	});
 ["(beat) (formula) Sar- gon's for- mu- la...","d d5 e f# a f# c"].addLine;  //6
 P.still(\looking, timecode: 3811.8.seconds, music: { |p b e|
 	 e.still.( 
@@ -392,7 +426,7 @@ P(\moreChords, music: { |p b e|
 			initCPs:2,
 			knum:nil,
 		)
-		/20
+		/25
 		* Env([0,1,1,0],b.parse([1, 6, ] ++ [0.2])).kr(2,gate:1)
 		=> Out.ar(\out.kr(0),_)
 	}.play
@@ -433,6 +467,17 @@ P.synthV(\aiko, params: [
 );
 ["yes, I wan- ted to be cer- tain there was no","3 1 -7 1 3 1 -7 -6".dm('c#') ++ "4 5 11 7 5".dm('e-',4)].addLine;  //7
 Song.setTempoMap('wan- ted',"qe e e e e e q e e e e");
+P(\cymbal, music: { |p b e|
+	(
+		instrument: \cymbalsDS,
+		amp: 0.02
+	).play
+});
+P(\Drums, music: { |p b e|
+	["qe e qe e qqq q", \bd_808, \out, 2 ].dmx2(8, e.tempoMap)
+	=> Ppar(_)
+	=> _.play
+});
 P(\chord, music: { |p b e|
 	[
 		freq: [ [5, 11, 13], [5,7,13], [5,6,13],[ 5,6,12 ],[11.5,6,13] ].df('c#').q,
@@ -935,7 +980,13 @@ P(\lick2,start:\injections,syl:0,music:{|p b e|
 P.still(\twoShot, timecode: 3847.9.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
+		text: ["that will take", "months"]
 		// fadeIn: b.sum
+	).sequenceText2(
+			b.parse([4, 3]), [ 
+			["perhaps","years"],
+			["we haven't that","choice, Thalassa" ]
+			],
 	)
 });
 P.tune(\months, _ <> [ instrument: \sawSynthSustain, amp: 0.02 ].pm);
@@ -951,11 +1002,12 @@ P.still(\clear,\months,music:{|p b e|
 	)
 });
 P.synthV(\genbu, params: [
-	lyrics:"that will teik mons per haps yirs wi ha fent da at choisu tha la ssa",
+	lyrics:"that will teik mons perhaps + yirs wi hafent + da at choisu tha la ssa",
 	phonemes:["","","","m a n s s","p a r","h a p s","y i r z","","","","","","","",""],
-	lag: [0.06, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
+	lag: [0.09, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
 	legato: [1, 1, 1, 0.9, 1, 1, 0.8, 1, 1, 1, 1, 1, 1, 1, 1, 1, ],
-	loudness: Env([-2, 0,0,0,1,2,0,0,1,1,1,1,4,3,2,1],Song.durs[\months].list)
+	loudness: Env([-2, 0,0,1.5,1,2,1.5,0,1,1,1,1,4,3,2,1],Song.durs[\months].list)
+
 ],music:{|p b e|
 	{
 		e.playbuf 
@@ -1005,7 +1057,7 @@ P.still( \thalassa, start: \Feel, timecode:3854.seconds, music: { |p b e|
 });
 P.tune(\Feel, _ <> [instrument: \stringyy, ].pm);
 Song.setQuarters(\Feel,[3/8,7/8,1/8,1/8,1/4,1/8,1/8,1,1/4,1/4]);
-P(\click,start:\Feel,music:{|p b e| 
+P(\bass,start:\Feel,music:{|p b e| 
 		[
 				instrument:\stringyy,
 				amp:0.34,
@@ -1048,6 +1100,7 @@ P(\dyads,start:\torment,music:{|p b e|
 			i
 			<> [
 				instrument: \sparkTriangle, depth:0.01,
+				amp: 0.05,
 				freqLag:0.2,
 				legato: [ [1, 0.9, 1,1],[0.9, 1, 1] ][x]=>_.q,
 				out: Effect.bus({|i| i => Pan2.ar(_, i * 2 - 1) },)
@@ -1122,7 +1175,7 @@ P.still( \thalassa, start: 'to a machine', timecode: 3903.5.seconds, music: { |p
 		}
 });
 P(\bass,start:'to a machine',syl:2,music:{|p b e| 
-	[ 
+[ 
 		instrument:\sawSynthSustain,
 		freq: [-7,1,5,3,-6,-2].df('c#',octave:[3,4]).q,
 		legato:1,
@@ -1130,7 +1183,8 @@ P(\bass,start:'to a machine',syl:2,music:{|p b e|
 		lag:(-0.03)!5++0 => _.q,
 		out:[1,3],
 		rel:2!5++4 =>_.q,
-		amp:0.05,
+		// amp:0.05,
+		amp: 0.12,
 		dur:b.drop(1).parse([1,1,1,1,4,1]).q
 	].p.trace.play
 });
@@ -1151,7 +1205,7 @@ P(\chord,start:\machine,syl:10,lag:-0.05,music:{|p b e|
 	).play
 });
 ["/*KIRK:*/ Our thoughts boom boom boom boom will intertwine. (boom boom boom boom) ",[1,7,-1,-2,-3,-4,6,7,11,3, 1,2,3,4].dm(\d,4,scale:\dorian)].addLine;
-P.synthV(\genbu, params: [
+P.synthV(\genbu, params: 
 	lyrics:" ar tats r r r r wil in ter twan r r r r",
 	phonemes:["","s o ts","","","","","","","","t w a e i n"],
 	legato:[ 1,3, 1,1,1,1,1,  1,1,3 ]
@@ -1181,14 +1235,14 @@ P(\chord,syl:0,start:\thoughts,music:{|p b e|
 		amp:0.05
 	].pp;
 });
-P.tune(\thoughts, _ <>
+.tune(\thoughts, _ <>
 	[
 		// \amp, [1,1,0,0,0,0,1,1,1,1,0,0,0,0].q/10,
 		rest: [1, 1, \r, \r, \r, \r, 1, 1, 1, 1, \r, \r, \r, \r].q,
 		\legato, [1,3,0.5,0.5,0.5,0.5,1,1,1,3,0.5,0.5,0.5,0.5].q,
-		\instrument, \wash, \amp, 0.02
-
-	].p
+		\instrument, \wash, \amp, 0.02,
+		freqLag:0
+	].pma
 );
 //idea - Will they - Will they
 P.tune('thoughts boom',{|i| Pmul(\freq,0.5,i) =>Pbindf(
@@ -1206,8 +1260,17 @@ P(\lick1,start:\thoughts,syl:8,music:{|p b e|
 		freq: [4,2,3,4,5].df(\c).q,
 		dur:b.drop(1).q,
 		instrument:\cleanPluck,
+		decay: 5,
+		damping: 100,
 		legato:4
-	].pp
+	].pp;
+
+	[
+		freq: [4,2,3,4,5].df(\c).q,
+		dur:b.drop(1).q,
+		amp: 0.02,
+		pan: -1
+	].ppm(\default)
 	
 });
 P(\lick2,start:\thoughts,syl:10,music:{|p b e| 
@@ -1216,8 +1279,13 @@ P(\lick2,start:\thoughts,syl:10,music:{|p b e|
 		dur:b.drop(1).q,
 		amp:0.01,
 		out:1,
-		instrument:\harp,
+		instrument:\harp, coef:0.25
 	].pp;
+	[
+		freq: [1,-6,-7].df(\c).q,
+		dur:b.drop(1).q,
+		pan: 1, amp:0.02
+	].pm(\default)
 });
 ["/*MULHALL:*/ Will they, husband?  Will they intertwine like this? ",[4,1,3,2].dm(\b,octave:5) ++ [-7,1,4,2,5,5.5,5,4,7].dm('c#')].addLine;
 P.still(\clear, timecode: 0.seconds, music: { |p b e|

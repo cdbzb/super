@@ -34,7 +34,7 @@ P.still(\closeup, timecode: 4310.seconds, music: { |p b e|
 		text: ["We have many powers",""],
 	)
 });
-[ "He thought them too tempting to us. ","r" ].addLine;
+// [ "He thought them too tempting to us. ","r" ].addLine;
 [ "This body pleases me. ","r" ].addLine;
 [ "I intend to keep it. ","r" ].addLine;
 [ "MCCOY: I see. And Henoch intends to keep Spock's body, of course. ","r",[2] ].addLine;
@@ -117,32 +117,25 @@ P(\bass,start:\exist,music:{|p b e|
 P.still(\mccoyIndignant, timecode: 4336.9.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["if you're asking","my approval"],
 	)
 });
-P.tune(\approval);
-P.synthV(role: \mccoy, take:\lead, params: {|p b| [
+// P.tune(\approval);
+P.synthVs(role: \mccoy, take:[\lead, \dbl], params: {|p b| [
 		lyrics: "if your asking + my approval + +",
-		pitchTake: 1
+		pitchTake: [1, 3]
 	] }, music:{|p b e|
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
 		}.play
 	});
-P.double(role: \mccoy, params: {|p b| [
-			
-		] }, music:{|p b e|
-			{
-				e.playbuf
-				=> p.synthVTracks.at(e.key).()
-			}.play
-		});
 [ "MULHALL: I require only your silence", [7,11,12,7,11,12,12.5,2.5].dm(\c) ].addLine; 
+
 P.still(\thalSilence, timecode: 4339.9.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["I require","only your silence"],
 	)
 });
 	// Song.durs[\silence] = Song.durs[\silence].list + [0,0,0,0,0,0,0,0.5] => _.q;
@@ -197,6 +190,17 @@ P(\bass,start:\require,music:{|p b e|
 		).play
 	});
 [ "Only you and I will know that Doctor Mulhall has not returned to her body. ",[1,2,3,1,4.5,2,-6].dm('e-') ++ [2,3,1,4.5,2].dm(\c) ++ [1,2,3,4].dm(\e,scale: \whole) ++ [11,7,6,7,5,12,4.5].dm(\b,4) ].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["only you and I","will know"],
+	).sequenceText2(
+			b.parse([7, 5]), [ 
+			["that Doctor","Mulhall"],
+			["has not returned", "to her body"]
+			],
+	)
+});
 P.tune(\returned,_<> [instrument:\wash,amp:0.03].p);
 P(\bassnote,syl:20, music: { |p b e|
 		[
@@ -252,7 +256,7 @@ P(\strum2,start:\returned,syl:9,music:{|p b e|
 	});
 P.synthV(role: \thalassa, params: {|p b| [
 		lyrics: 
-		"on li yu an ai will no that dak ter mul hall haz nat ri tu - - urned to her ba di"
+		"on li yu an ai will no that dak ter mul hall haz nat ri tu - - urned tu her ba di"
 		,
 		legato: 
 		[ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,1,1, 0.5 ]
@@ -266,6 +270,16 @@ P.synthV(role: \thalassa, params: {|p b| [
 		}.play
 	});
 [ "Isn't that worth your captain's life? ",[3,2,4,2,3,1,2,5].dm(\a,5,\minor) ].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["isn't","that"],
+	).sequenceText2(
+			b.parse([3]), [ 
+			["worth your captain's","life?"],
+			],
+	)
+});
 	// Song.durs[\worth] = Song.durs[\worth].list + [0,0,0,0,0,0,0,0.2]  => _.q
 	// "jaw".xsampa
 P.synthV(role: \thalassa, 
@@ -297,7 +311,7 @@ P(\bass,start:\life,music:{|p b e|
 P.still(\closert, timecode: 4357.6.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["Doctor, we can take","what we wish"],
 	)
 });
 // Song.durs['wish--']	= Song.durs['wish--'].list.dropLast ++ ( Song.durs['wish--'].list.last * 0.75 ) => _.q
@@ -461,7 +475,12 @@ P(\bassNotes,start:\worlds,music:{|p b e|
 P.still(\mccoyNeither, timecode: 4406.9.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["neither Jim","nor I"],
+
+	).sequenceText2(
+			b.parse([5]), [ 
+			["can trade a body","we don't own"],
+			],
 	)
 });
 P.synthVs(role: \mccoy, take:[\lead, \double], params: {|p b| [
@@ -483,6 +502,17 @@ P(\bassline,start:\trade,music:{|p b e|
 		].pp;
 	});
 [ "It happens to belong to a young woman. ",[-5, 1, -7, 1, 2, 3, 1, -7, -6, 4, 3, 2].dm(\f) ].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["it happens to belong","to a"],
+	).sequenceText2(
+			b.parse([8,1]), [ 
+			["",""],
+			["young","woman"]
+			],
+	)
+});
 P.synthVs(role: \mccoy, take:[\lead, \double], params: {|p b| [
 		lyrics: "It happens + to belong + to a r young woman +",
 		pitchTake: [1, 3]
@@ -502,8 +532,13 @@ P(\chords,start:\happens,music:{|p b e|
 [ "MULHALL: Who you hardly know. Almost a stranger to you. (boom) ",[3, 1, 5, 4, 3.5].dm(\b,5,\whole) ++ [-7, 1, 2, 2.5, -7, -6, -4.5, -2.5].dm(\c,6) ].addLine;
 P.still(\thalHardly, timecode: 4413.2.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
+		wait: b[..(b.size - 1)].sum,
+		text: ["who you","hardly know"],
+		
+	).sequenceText2(
+			b.parse([5]), [ 
+			["almost a stranger","to you"],
+			],
 	)
 });
 P.synthV(role: \thalassa, take:\lead, params: {|p b| [
@@ -604,6 +639,16 @@ P.double(role: \mccoy, params: {|p b| [
 			}.play
 		});
 P.tune(\peddle);
+P(\drone, music: { |p b e|
+	{
+		var freq = [1, 4].df(\g,3).dq.demand(b.parse([5,1])).lag(0.4);
+		SawBL.ar(freq:freq + Gendy1.ar(ampdist:1, durdist:1, adparam:1.0, ddparam:1.0, minfreq:0.2, maxfreq:[1, 1.1, 1.2], ampscale:0.5, durscale:0.5, initCPs:12, knum:nil, mul:[10, 11, 9]/4, add:0.0), iphase:0 )
+		=> RLPF.ar(_, freq:Gendy1.ar(ampdist:1, durdist:1, adparam:1.0, ddparam:1.0, minfreq:1, maxfreq:30, ampscale:0.5, durscale:0.5, initCPs:12, knum:nil, mul:1000.0, add:1500.0).abs, rq:1.0, mul:1.0, add:0.0)
+		/50
+		* EnvGen.cutoff(wait:b.parse([6]).sum, release:1, curve:nil, doneAction:2)
+		=> Out.ar(2,_)
+	}.play
+});
 P(\bass,start:\peddle,music:{|p b e| 
 		[
 			freq: [5,5,5,5,5,11,].df(\c,3).q ++ [5,1].df('a-',3).q,
@@ -619,6 +664,7 @@ P(\chords,start:\peddle,music:{|p b e|
 	});
 	Song.physicianKey = 'b-';
 	//Song.physicianKey = 'g';
+	
 [ "MULHALL: A physician? ",[1, 1, 11, 1].dm(Song.physicianKey) ].addLine;
 P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 		lyrics: "a physician + +",
@@ -643,7 +689,11 @@ P.tune('physician?');
 P.still(\thalMad, timecode: 4432.9.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["in contrast","to what we are "],
+	).sequenceText2(
+			b.parse([7]), [ 
+			["you are","a"],
+			],
 	)
 });
 P.synthV(role: \thalassa, take: \lead, params: {|p b| [
@@ -1357,4 +1407,6 @@ P(\endChord,syl:16,start:\work,music:{|p b e|
 	//[McCoy's office]
 };
 )
+
+
 

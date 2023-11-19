@@ -11,16 +11,16 @@ o = [
 	Array.prNew(12),  "this",  Event.prNew,  Array.prNew(8),  
 	Array.prNew(4),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  Event.prNew,  Array.prNew(12),  Event.prNew,  
-	Array.prNew(12),  "856590000",  "",  Event.prNew,  
+	Array.prNew(12),  "685270000",  "",  Event.prNew,  
 	Array.prNew(4),  Event.prNew,  Array.prNew(40),  "856590000",  
-	"is",  "934210000",  Event.prNew,  Array.prNew(40),  
-	"1790800000",  "your",  "945500000",  Event.prNew,  
-	Array.prNew(40),  "2736300000",  "new",  "1089440000",  
+	"is",  "747360000",  Event.prNew,  Array.prNew(40),  
+	"1790800000",  "your",  "756400000",  Event.prNew,  
+	Array.prNew(40),  "2736300000",  "new",  "871550000",  
 	Event.prNew,  Array.prNew(40),  "3825740000",  "home",  
-	"1363210000",  Event.prNew,  Array.prNew(40),  "5188950000",  
-	"thalassa",  "581410000",  Event.prNew,  Array.prNew(40),  
-	"5770360000",  "+",  "1027350000",  Event.prNew,  
-	Array.prNew(40),  "6797710000",  "+",  "591290000",  
+	"1090560000",  Event.prNew,  Array.prNew(40),  "5188950000",  
+	"thalassa",  "465120000",  Event.prNew,  Array.prNew(40),  
+	"5770360000",  "+",  "821880000",  Event.prNew,  
+	Array.prNew(40),  "6797710000",  "+",  "473030000",  
 	"main",  Event.prNew,  Array.prNew(32),  Event.prNew,  
 	Array.prNew(8),  Array.prNew,  "cubic",  Event.prNew,  
 	Array.prNew(8),  Array.prNew,  "cubic",  Event.prNew,  
@@ -40,7 +40,7 @@ o = [
 	Array.prNew(1),  Event.prNew,  Array.prNew(12),  "",  
 	"Unnamed Track",  Array.prNew,  Event.prNew,  Array.prNew(20),  
 	"ff7db235",  Event.prNew,  Array.prNew(28),  "synthV.wav",  
-	"NoAspiration",  "/Users/michael/tank/super/SynthV/laboratory/2075426874/ninezero-double"
+	"NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/laboratory/2075426874/ninezero-double"
 ];
 p = [
 	// Event

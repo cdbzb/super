@@ -210,7 +210,7 @@ P(\bassNotes,syl: 5, music: { |p b e|
 P.synthVs(role: \henoch, take: [\lead, \double], params: {|p b| [
 	lyrics: "this is your new home, thalassa + +",
 	filter: (midinote: _ - 12), 
-		legato: [1, 1, 0.8 ,1, 0.9, 1, 1, 1 ],
+		legato: [1, 0.8, 1 ,1, 0.9, 1, 1, 1 ],
 	pitchTake: [1, 3]
 ] }, music:{|p b e|
 	{
@@ -368,17 +368,20 @@ fork{
 		].pp;
 	}
 });
+P.tune(\doubt);
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	b.postln;
 	 e.still.( 
 		wait: b.sum,
 		text: ["you","no doubt"],
 	).sequenceText2(
-			b.parse([5,9,7 ]), [ 
-			["want the mechanism","to at least"],
-			["appear to be","a woman"]
+			b.parse([5,7, 6 ]), [ 
+				["want the mechanism","to"],
+				["at least appear","to be"],
+				["a","woman"]
 			],
 	)
-});
+;
 P(\bassnotes, music: { |p b e|
 	[
 		freq: [\r,1, -7].df('a-',4) ++ [-7,1, 4].df(\c) ++ [3,[ 1 ]].df('a',4) ++ [1].df(\d) => _.q /[ 2,4 ],
@@ -415,16 +418,12 @@ P.still(\handRises, timecode: 4218.666.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
-	).sequenceText2(
-			b.parse([1]), [ 
-				["it is","ready, Thalassa"],
-			],
 	)
 });
 P.still(\speaks, syl:0,timecode: 4221.7.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["it is ready","Thalassa"],
 	)
 });
 P(\chord,syl:2, music: { |p b e|

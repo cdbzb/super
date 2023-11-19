@@ -4,16 +4,16 @@ o = [
 	Array.prNew(8),  Array.prNew(1),  Event.prNew,  Array.prNew(12),  
 	Array.prNew(1),  Event.prNew,  Array.prNew(8),  Array.prNew(1),  
 	Event.prNew,  Array.prNew(32),  Event.prNew,  Array.prNew(16),  
-	Array.prNew(13),  Event.prNew,  Array.prNew(40),  "00000",  
+	Array.prNew(13),  Event.prNew,  Array.prNew(40),  "141120000",  
 	Event.prNew,  Array.prNew(4),  Event.prNew,  Array.prNew(8),  
 	Array.prNew(4),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  "Sargon?",  Event.prNew,  Array.prNew(8),  
 	Array.prNew(4),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  Event.prNew,  Array.prNew(12),  Event.prNew,  
-	Array.prNew(12),  "667490000",  "S A r\\`",  Event.prNew,  
-	Array.prNew(4),  Event.prNew,  Array.prNew(40),  "667490000",  
-	"+",  "916990000",  "k o n",  Event.prNew,  
+	Array.prNew(12),  "667490000",  "s A r\\`",  Event.prNew,  
+	Array.prNew(4),  Event.prNew,  Array.prNew(40),  "808610000",  
+	"+",  "789980000",  "k o n",  Event.prNew,  
 	Array.prNew(40),  "1686370000",  "Where",  "580000000",  
 	"w e r\\`",  Event.prNew,  Array.prNew(40),  "2266370000",  
 	"are",  "777570000",  "A r\\`",  Event.prNew,  
@@ -28,9 +28,9 @@ o = [
 	"+",  "1103550000",  "t r\\` o :\\i t",  Event.prNew,  
 	Array.prNew(40),  "7192830000",  "by",  "697130000",  
 	"p a :\\i",  Event.prNew,  Array.prNew(40),  "7889960000",  
-	"Henoch.",  "873530000",  "S A r\\`",  Event.prNew,  
-	Array.prNew(40),  "8763490000",  "+",  "1265840000",  
-	"k o n",  "main",  Event.prNew,  Array.prNew(32),  
+	"Henoch.",  "873530000",  "x e n",  Event.prNew,  
+	Array.prNew(40),  "8763490000",  "+",  "1406960000",  
+	"a kh",  "main",  Event.prNew,  Array.prNew(32),  
 	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
 	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
 	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
@@ -49,7 +49,7 @@ o = [
 	Array.prNew(1),  Event.prNew,  Array.prNew(12),  "",  
 	"Unnamed Track",  Array.prNew,  Event.prNew,  Array.prNew(20),  
 	"ff7db235",  Event.prNew,  Array.prNew(28),  "synthV.wav",  
-	"NoAspiration",  "/Users/michael/tank/super/SynthV/MandT/1606870667/aiko-lead"
+	"NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/MandT/1606870667/aiko-lead"
 ];
 p = [
 	// Event

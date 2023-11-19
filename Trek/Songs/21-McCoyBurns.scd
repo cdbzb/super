@@ -691,7 +691,7 @@ P.still(\thalMad, timecode: 4432.9.seconds, music: { |p b e|
 		wait: b.sum,
 		text: ["in contrast","to what we are "],
 	).sequenceText2(
-			b.parse([7]), [ 
+			b.parse([7]), [
 			["you are","a"],
 			],
 	)
@@ -819,7 +819,18 @@ P(\bass,start:\prancing,music:{|p b e|
 		].p;
 	});
 	
+
 [ "(r) You dare defy one you should be on your knees wo -- rshipping? ",[-1,1, 1.5, 1, -6.5].dm(\c) ++ [1, 3, 4, 5, 3, 5, 6].dm(\d,scale: \whole) ++ [3,4,3,-5].dm(\b) ].addLine;
+P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.drop(1).sum,
+		text: ["you dare","defy"],
+	).sequenceText2(
+			b.drop(1).parse([4]), [ 
+			["one you should be","on your knees worshipping"],
+			],
+	)
+});
 P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 		lyrics: "r you dare defy + one you should be on your knees worshipping - + +",
 		// "you dare defy one you shouldd be on your knees worshipping".xsampa.cs
@@ -896,7 +907,7 @@ P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 			=> p.synthVTracks.at(e.key).()
 		}.play
 	});
-P.tune(\single);
+P.tune(\single, _ <> [instrument: \stringyy,\wet:0].pm);
 P(\bassnote,start:\single, syl:2, music:{|p b e| 
 		(
 			instrument:\sawSynthSustain,
@@ -910,8 +921,9 @@ P(\bassnote,start:\single, syl:2, music:{|p b e|
 P(\strum,lag: -0.26, start:\single,syl:8,music:{|p b e| 
 		(
 
-			freq: [-21,-11,1,3,5,7].df(\c,scale:\mixolydian),
+			freq: [-21,-11,1,3,5,7].df(\c,[7 ],scale:\mixolydian),
 			strum: 0.06,
+			instrument: [\harp, \reedy ],
 			out: Effect(
 				{|i|
 					EchoNone.ar(i,0.2,0.2) 
@@ -929,6 +941,13 @@ P.still(\fire, timecode: 4453.seconds, music: { |p b e|
 		wait: b.sum,
 		text: ["",""],
 		fade: e.bNext.sum
+	);
+});
+P.still(\fire2, timecode:4453.1.seconds,lag:0.1, music: { |p b e|
+	 e.still.( 
+		 fadeIn: b.sum,
+		wait: b.sum,
+		text: ["",""],
 	)
 });
 P(\swoop,start:\writhing,music:{|p b e| 
@@ -977,7 +996,19 @@ P(\fire2,start:\writhing,music:{|p b e|
 		    }.play(p.fireGroup)
 	    }    
 	});
-[ "MULHALL: Stop! (the flames are gone) ~Sargon was right.~ ",[2].dm(\e) ].addLine;
+[ "MULHALL: Stop! (the flames are gone) ~Sargon was right.~ ",[2, 1, -7, -6, 2.5].dm(\e) ].addLine;
+P.synthV(role: \thalassa, take: \lead, params: {|p b| [
+	lyrics: "Stop, sar gone waz rait",
+	lag: [ b[0]/3 ],
+	legato: [0.6],
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
 P.still(\thalStop, timecode: 4457.3.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -1051,7 +1082,7 @@ P(\chord,start:\temptations,music:{|p b e|
 P.still(\thalForgive, timecode: 4509.15.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["forgive","me"],
 	)
 });
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
@@ -1143,25 +1174,28 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 				}
 				
 			).play;
-		p.vocodeTune.(p,b,e,e.rpp,dur:b.sum + 1,amp:1)
+		p.vocodeTune.( p, b, e, e.rpp,
+			dur:b.sum + 1,
+			sus:b.sum + 1,
+			amp:1
+		)
 	});
 [ "MULHALL: Sargon? Where are you? I thought you destroyed by Henoch. ",[3, 1, 5, 7, 4.5].dm('b-') ++ [7, 5, 6, 7, 13, 13, 15, 14.5].dm(\g, scale:\mixolydian ) ].addLine;
 P.still(\looking, timecode: 4521.66.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["Sargon?","Where are you?"],
+		).sequenceText2(
+				b.parse([5]), [ 
+				["I thought you","destroyed by Henoch"],
+				],
 		)
 	});
 P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 		lyrics: "Sargon? + Where are you? I thought you destroyed + by Henoch. + ",
+		lag: [0.1,0.1,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 		filter: (midinote: _ - 12), 
-		phonemes: ["S A r\\`","k o n","w e r\\`", "A r\\`","j u","a :\\i","s o th","j u ","t i\\ s","t r\\` o :\\i t","p a :\\i","S A r\\`","k o n"],
-/*
-"Sargon? + Where are you? I thought you destroyed + by Henoch. + ".xsampa
--> [ nil, nil, w e r\`, A r\`, j u, a :\i, s o th, j u, t i\ s t r\` o :\i t, nil, p a :\i, nil, nil, nil ]
-*/
-
-
+		phonemes: ["s A r\\`","k o n","w e r\\`", "A r\\`","j u","a :\\i","s o th","j u ","t i\\ s","t r\\` o :\\i t","p a :\\i","x e n","a kh"],
 		legato: [1, 0.9, 1,1,0.9,  1,1,1,1,1,1,1,1 ],
 		pitchTake: 1
 	] }, music:{|p b e|
@@ -1175,7 +1209,11 @@ P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 P.still(\lookingUp, timecode: 4527.5.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["I have power","even Henoch"],
+	).sequenceText2(
+			b.parse([8]), [ 
+			["does not","suspect"],
+			],
 	)
 });
 P(\chords,start:\suspect,music:{|p b e| 
@@ -1249,7 +1287,11 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 P.still(\ThalUnderstand, timecode: 4532.7.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["yes yes","I see"],
+	).sequenceText2(
+			b.parse([4]), [ 
+			["I","understand"],
+			],
 	)
 });
 P.tune(\understand);
@@ -1294,10 +1336,21 @@ P(\tune,start:\understand,music:{|p b e|
 	});
 //[ "Just as we would have placed our consciousness within robots, ","r" ].addLine;
 [ "Sargon has placed his (consciousness) into (your vessel) the Enterprise. ", [13,11,5,14,13,13,12,7,5,6,4,12,11].dm('c#') ].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["Sargon has","placed his consciousness"],
+	).sequenceText2(
+			b.parse([8]), [ 
+			["into your","vessel"],
+			],
+	)
+});
 P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 		lyrics: "Sargon + has placed his (consciousness) into (your vessel) the Enterprise. ",
 		phonemes: ["s A r\\`","k o n", "x a tx", "ph l e :\\i s th", "x i\\ ts","k A n","s` A th","n e s","i\\ n","th u","j o r\\`","w e s"," s @ l"],
-		pitchTake: 1
+		lag: [0.05, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		pitchTake: 1,
 
 	] }, music:{|p b e|
 		{
@@ -1361,14 +1414,19 @@ P(\chord,start:'CHAPEL: Doctor.',music:{|p b e|
 [ "MULHALL: Doctor, leave us. Sargon has a pla--n. We have much work to do. (boom)",[-5, -5, 1, -1,  5, 4, 3, 2, 3,4, 2,3,4.5, 4.5, 5.5, 3,-7, -6 ].dm(\f) ].addLine;
 P.still(\thalRetort, timecode: 4559.8.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
+		wait: b.dropLast.sum,
+		text: ["Doctor","leave us"],
+	).sequenceText2(
+			b.parse([4, 6]), [ 
+			["Sargon has","a plan"],
+			["we have much","work to do"]
+			],
 	)
 });
 P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 	lyrics: "Doctor + leave us. Sargon + has a plan -. We have much work - to do. r",
-	phonemes: ["t a kh", "th a r\\`", "l i w", "A s","S a r\\`","k o n","x a ts", "@", "ph l  ","a n","w i", "x a w", "m A ts h","w a r\\` kh","","th u","t u" ],
-	legato: [1, 1, 1, 0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ],
+	phonemes: ["t a kh", "th a r\\`", "l i w", "A s","s a r\\`","k o n","x a ts", "@", "ph l  ","a n","w i", "x a w", "m A ts h","w a r\\` kh","","th u","t u" ],
+	legato: [1, 1, 1, 0.5, 1, 1, 1, 1, 1, 0.8, 1, 1, 1, 1, 1, 1, 1, ],
 	pitchTake: 1
 ] }, music:{|p b e|
 	{

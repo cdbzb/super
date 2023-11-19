@@ -18,14 +18,14 @@ o = [
 	"l i w",  Event.prNew,  Array.prNew(40),  "2074450000",  
 	"us.",  "793090000",  "A s",  Event.prNew,  
 	Array.prNew(40),  "3660630000",  "Sargon",  "657610000",  
-	"S a r\\`",  Event.prNew,  Array.prNew(40),  "4318240000",  
+	"s a r\\`",  Event.prNew,  Array.prNew(40),  "4318240000",  
 	"+",  "577180000",  "k o n",  Event.prNew,  
 	Array.prNew(40),  "4895420000",  "has",  "601170000",  
 	"x a ts",  Event.prNew,  Array.prNew(40),  "5496590000",  
 	"a",  "306230000",  "@",  Event.prNew,  
 	Array.prNew(40),  "5802820000",  "plan",  "537660000",  
 	"ph l  ",  Event.prNew,  Array.prNew(40),  "6340480000",  
-	"-.",  "1727300000",  "a n",  Event.prNew,  
+	"-.",  "1381840000",  "a n",  Event.prNew,  
 	Array.prNew(40),  "8067780000",  "We",  "603990000",  
 	"w i",  Event.prNew,  Array.prNew(40),  "8671770000",  
 	"have",  "625160000",  "x a w",  Event.prNew,  
@@ -55,7 +55,7 @@ o = [
 	Array.prNew(1),  Event.prNew,  Array.prNew(12),  "",  
 	"Unnamed Track",  Array.prNew,  Event.prNew,  Array.prNew(20),  
 	"ff7db235",  Event.prNew,  Array.prNew(28),  "synthV.wav",  
-	"NoAspiration",  "/Users/michael/tank/super/SynthV/MandT/275387389/aiko-lead"
+	"NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/MandT/275387389/aiko-lead"
 ];
 p = [
 	// Event

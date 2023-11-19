@@ -4,14 +4,14 @@ o = [
 	Array.prNew(8),  Array.prNew(1),  Event.prNew,  Array.prNew(12),  
 	Array.prNew(1),  Event.prNew,  Array.prNew(8),  Array.prNew(1),  
 	Event.prNew,  Array.prNew(32),  Event.prNew,  Array.prNew(16),  
-	Array.prNew(13),  Event.prNew,  Array.prNew(40),  "00000",  
+	Array.prNew(13),  Event.prNew,  Array.prNew(40),  "70560000",  
 	Event.prNew,  Array.prNew(4),  Event.prNew,  Array.prNew(8),  
 	Array.prNew(4),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  "Sargon",  Event.prNew,  Array.prNew(8),  
 	Array.prNew(4),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  Event.prNew,  Array.prNew(12),  Event.prNew,  
-	Array.prNew(12),  "488270000",  "s A r\\`",  Event.prNew,  
+	Array.prNew(12),  "417710000",  "s A r\\`",  Event.prNew,  
 	Array.prNew(4),  Event.prNew,  Array.prNew(40),  "488270000",  
 	"+",  "482630000",  "k o n",  Event.prNew,  
 	Array.prNew(40),  "970900000",  "has",  "488270000",  
@@ -29,7 +29,7 @@ o = [
 	Array.prNew(40),  "5050640000",  "Enterprise.",  "731000000",  
 	"j o r\\`",  Event.prNew,  Array.prNew(40),  "5781640000",  
 	"1481750000",  "w e s",  Event.prNew,  Array.prNew(40),  
-	"7263390000",  "836840000",  " s @ l",  "main",  
+	"7263390000",  "907400000",  " s @ l",  "main",  
 	Event.prNew,  Array.prNew(32),  Event.prNew,  Array.prNew(8),  
 	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
 	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
@@ -48,7 +48,7 @@ o = [
 	Event.prNew,  Array.prNew(8),  Array.prNew(1),  Event.prNew,  
 	Array.prNew(12),  "",  "Unnamed Track",  Array.prNew,  
 	Event.prNew,  Array.prNew(20),  "ff7db235",  Event.prNew,  
-	Array.prNew(28),  "synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/SynthV/MandT/469911731/aiko-lead"
+	Array.prNew(28),  "synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/MandT/469911731/aiko-lead"
 ];
 p = [
 	// Event

@@ -98,17 +98,28 @@ P.still(\closeup, timecode: 4310.seconds, music: { |p b e|
 	)
 });
 // [ "He thought them too tempting to us. ","r" ].addLine;
-[ "This body pleases me. ","5 5 5 4 3 3/f#".dm2 ].addLine;
-Song.setTempoMap(\pleases,"e e e ex x qq");
+[ "This body pleases me (--dy pleases) ","5 5 5 4 3 3  1 -7 -6/f#/mixolydian ".dm2 ].addLine;
+P.tune(_).fin(6);
+// P.tune();
+Song.setTempoMap(\pleases,"e e e ex x e e ex x");
 P(\bassnote, music: { |p b e|
 	[
-		freq: [\r, 1, 1, -7].df('f#',3,\mixolydian).q,
-		dur: "qe qe e q".asBeats.warpTo( e.tempoMap ).q
+		freq: 
+		[\r, 1, 1, -7, -6, -6, -6].df('f#',3,\mixolydian).q
+		,
+		dur: "qe qe e ex xe q e ".asBeats.warpTo( e.tempoMap ++ p.tempoMap[e.start + 1] ).q,
+		out: Effect.bus({|i| 
+			i 
+			* 2 
+			// => _.tanh 
+			=> {|i| CrossoverDistortion.ar(in:i, amp:0.1, smooth:0.9)}
+			=> Pan2.ar(_,0) 
+		},)
 	].pp
 });
 P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 	// filter: (midinote: _ - 12), 
-	lyrics: "This body + pleases + me",
+	lyrics: "This body + pleases + me r r r",
 	phonemes: ["t i\\ s","p A","t i","ph l i ","ts e ts","m i"],
 	pitchTake: 1
 ] }, music:{|p b e|
@@ -118,7 +129,26 @@ P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 		Fverb.ar(in0:i, in1:i, predelay:0, input_amount:100, input_lowpass_cutoff:10000, input_highpass_cutoff:100, input_diffusion_1:75, input_diffusion_2:62.5, tail_density:70, decay:50, damping:5500, modulator_frequency:1, modulator_depth:0.5)/3 + i / 6
 	}.play
 });
+P.synthVs(\kevin, take: [\response,\response_dbl],
+	pbind: {|p b| [
+		midinote: [-1, 1, 1, 1, -7, -6, -6, -6].dm('f#',4,\mixolydian),
+		dur: "eeee e e e ex xe ee e".asBeats.warpTo( p.tempoMap[\pleases] ++ p.tempoMap[p.section(\pleases) + 1] )
+		// + [0,  0, 0, 0, 0, 0.5] 
+	].p },
+	params: {|p b| [
+		lyrics: "r this body + pleases + me ee ",
+		legato: [ [1, 1, 1, 1, 1, 1, 0.8, 1, ] ],
+		pitchTake: [1, 3],
+	]},
+	music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+		}.play
+});
 [ "I intend to keep it. ","1.5 1.5 1.5 1.5 3 1 /a-/minor ".dm2 ].addLine;
+Song.setTempoMap('keep it',"Q E Q E q q");
+
 P.tune(_ <> [instrument: \stringyy].pm);
 P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 	lyrics: "I intend + to keep it",
@@ -130,6 +160,17 @@ P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
+P(\cords, music: { |p b e|
+	[
+		dur: "q q q".asBeats.warpTo( e.tempoMap ).q,
+		freq: [[ -5, 1.5 ], [-5, 1.5], [-1,3]].df('a-',\minor).q,
+		instrument: \sawSynthSustain,
+		lofreq:3000,hifreq:10000,amp:0.04,
+		pulse:0.2,
+		lagTime:1.5
+	].ppm
+
+});
 P(\crashChord, syl:3, music: { |p b e|
 	(
 		// freq: [-11,-1,-5,1,3].df('a-',\minor)
@@ -139,20 +180,26 @@ P(\crashChord, syl:3, music: { |p b e|
 			Convolution.ar(
 				i ,
 				Saw.ar(
-					[-11,-1,-5,1,3].df('a-',\minor),
+					[-11,-1,-5,1,3].df('a-',[3, 6],\minor),
 					0.1
-				),
+				) 
+				=> LPF.ar(_,2000)
+				,
 				framesize:512,
-				mul:1.0,
 				add:0.0
 			)
 			 
-			/10
+			/20
 
 			=> Splay.ar(_)
 		
 		},)
 	).play;
+	(
+		instrument: \harp,
+		freq: [-1,-5,1,3,-11].df('a-',\minor),
+		amp:0.03
+	).play
 });
 
 [ "MCCOY: I see. And Henoch intends to keep Spock's body, of course. ","3 3 2/c/mixolydian 3 2 1 2 3 4/c# 6 4 3 1 -6/c/whole ".dm2 ].addLine;

@@ -1,9 +1,18 @@
 (
 s.waitForBoot{
 	Song('MandT',[]).current;
-
 	"/Users/michael/tank/super/Trek/Songs/boilerplate.scd".load;
-
+	Song.synthVTracks=EventWithDefault();
+	Song.synthVTracks.aiko = { |preGain=1 ratio=2 amp = (1/8) len=2000 mix=0.1 |
+	{ |i|
+		i.() * preGain
+		=> SoftKneeCompressor.rms(_,  thresh:-10, ratio: ratio, knee:6, attack:0, release:0.05, makeUp:0, rms:40) 
+		* amp
+		=> DWGReverbC1C3.ar(_,len:len,mix:mix)
+		=>.first DetectSilence.ar(_,doneAction:2, time: 0.25)
+	}
+};
+	Song.synthVTracks.default = Song.synthVTracks.aiko;
 [ "MULHALL: Doctor. ",[3,1].dm(\d) ].addLine;
 P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 	lyrics: "Doctor +",
@@ -48,11 +57,34 @@ P.still(\mccoy, timecode: 4247.7.seconds, music: { |p b e|
 	)
 });
 [ "MULHALL: Would you like to save your Captain Kirk? ","3 2 3 1 4 2 3 4 5/e-".dm2 ].addLine;
-P.tune();
+P.tune(_  => Pmul(\freq, [0.25,1], _));
+P.synthV(role: \thalassa, take: \lead, params: {|p b| [
+	lag: [0.05,0,0,0,0,0,0,0,0],
+	lyrics: "would you like to save your captain + kirk",
+	phonemes: ["w U t","j u","l a :\\i kh","","","","kh a p","th @ n","",],
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+P(\line, music: { |p b e|
+	[
+		freq: [5, 4, 3].df('a-',[3,4]).q,
+		dur: b.parse([4, 4, 1]).q,
+		instrument: \reedy
+	].ppm
+});
 P.still(\twoShot, timecode: 4255.6.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum + e.bNext.sum,
 		text: ["would you like","to save your Captain Kirk"],
+	).sequenceText2(
+			b.sum, [ 
+			["",""],
+			],
 	)
 });
 [ "MCCOY: But you said that was impossible. "," 5 4 3 2 3 6 5 3 -7".dm(\d,\mixolydian) ].addLine;
@@ -72,7 +104,31 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 		text: ["but you said","that was impossible"],
 	)
 });
+P(\connector, music: { |p b e|
+	[
+		freq: [ 5, -7, -4 ].df(\d,4, \mixolydian).q,
+		dur: e.bAll.parse([6, 3, 1]).q,
+		instrument: \stringyy, mix:0
+	].pp
+});
 [ "MULHALL: We have many powers Sargon did not permit us to use. ","11 7 6.5 5/g/minor 13 12 12 11 12/f/minor 13 11 14 12 13/f 11/b/minor".dm2 ].addLine;
+// or should it be "11 7 7 6.5/g/minor 13 12 12 7 11/f " ??
+Song.setTempoMap(\permit,"e e e e e e E E E e e E E E e");
+P(\moreChord, music: { |p b e|
+	[
+		freq:   
+			[[11, 7, 6.5, 5], 13, 15].flop.df(\g,3, \minor)
+			++ [[13, 12, 12, 11, 12], 15, 17].flop.df(\f,3, \minor)
+			++ [[11, 3].df(\f,[ 4 ])]  // these 3 chords dyads meh
+			++ [[13, 5 ].df('c',[ 4 ])]
+			// ++ [[ 13, 5].df(\b,[ 3 ])]
+			++ [[5, 7]].df(\g,4, \mixolydian)
+			=>_.q, 
+		instrument: \defaultPiano, amp:0.05,
+		// dur:b.parse([1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 1]).q
+		dur: "e e e e e e E E E q q e".asBeats.warpTo( e.tempoMap.quantizeWindow(0.2) ).q
+	].pp
+});
 P(\chords, music: { |p b e|
 	[
 		freq: [[3, 5, 1], [-7, 1.5,4, 7], 4, 3.5].df(\g,3,\minor).q,
@@ -82,6 +138,7 @@ P(\chords, music: { |p b e|
 P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 	filter: (midinote: _ - 12), 
 	lyrics: "We have many  + powers + Sargon + did not permit + us to use",
+	phonemes: ["w i","x a w", "", "", "ph AU ", "a r\\` ts", "s a r","k o n","t i\\ t","","ph a r\\` ","m i\\ th","","","j u ts"],
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
@@ -90,7 +147,7 @@ P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 	}.play
 
 });
-P.tune();
+P.tune(_ <> [instrument: \stringyy].pm);
 P.still(\closeup, timecode: 4310.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -99,6 +156,12 @@ P.still(\closeup, timecode: 4310.seconds, music: { |p b e|
 });
 // [ "He thought them too tempting to us. ","r" ].addLine;
 [ "This body pleases me (--dy pleases) ","5 5 5 4 3 3  1 -7 -6/f#/mixolydian ".dm2 ].addLine;
+P(\crash, syl: 2,  music: { |p b e|
+	(
+		instrument: \cymbalsDS,
+		amp: 0.02
+	).play
+});
 P.tune(_).fin(6);
 // P.tune();
 Song.setTempoMap(\pleases,"e e e ex x e e ex x");
@@ -198,16 +261,21 @@ P(\crashChord, syl:3, music: { |p b e|
 	(
 		instrument: \harp,
 		freq: [-1,-5,1,3,-11].df('a-',\minor),
-		amp:0.03
+		amp:0.03,
+		out: 2
 	).play
 });
 
 [ "MCCOY: I see. And Henoch intends to keep Spock's body, of course. ","3 3 2/c/mixolydian 3 2 1 2 3 4/c# 6 4 3 1 -6/c/whole ".dm2 ].addLine;
 P(\chords, music: { |p b e|
 	[
-		freq: [-7,1,3].dup.df(\c,\mixolydian).q,
-		dur: b.q
-	].pp
+		freq: [-7,1,3].dup.df(\c,\mixolydian) ++ [-7,1,3].df('c#',\mixolydian).bubble ++ [1, 3, 6].df(\c, \whole).bubble => _.q,
+		dur: b.parse([1, 2, 6, 5]).q,
+		instrument: \reedy, amp: 0.05,
+		instrument: \sparkTriangle,amp: 0.04, depth: 0.004, att:0.03,rel: 1.5,
+		legato: [0.8, 0.5, 1, 1 ].q,
+		out: (0..1)
+	].ppma
 });
 P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 	lyrics: "I see and Henock + intends + to keep Spock's body + of course",
@@ -237,7 +305,7 @@ P(\chords, music: { |p b e|
 });
 P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 	lyrics: "Henoch's + plans are his own affair +",
-	legato: [1, 1, 1, 1, 1, 0.8, 1,1 ],
+	legato: [1, 1, 1, 1, 1, 0.8, 1,0.8 ],
 	phonemes: ["x e n", "a kh s", "", "", "", "", "@ f", "e r\\`"],
 	pitchTake: 1
 ] }, music:{|p b e|
@@ -247,25 +315,16 @@ P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 	}.play
 
 });
-P.tune();
-[ "I wish only to exist in peace as a living woman. ",[3, 6, 5, 6, 4.5, 5, 3, 7, 11, 7, 7, 4, 5, 5, 6, 5, 1, 2, 1].dm('f#') ].addLine;
-P.still(\thal, timecode: 4333.3.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
-	)
+P.tune( _ <> [instrument: \stringyy].pm );
+P(\bass, music: { |p b e|
+	[
+		freq: [5, 1].df(\a,3).q,
+		dur: b.parse([5, 3]).q,
+		instrument: \sawSynth
+	].pp
 });
-	Song.synthVTracks=EventWithDefault();
-	Song.synthVTracks.aiko = { |preGain=1 ratio=2 amp = (1/8) len=2000 mix=0.1 |
-	{ |i|
-		i.() * preGain
-		=> SoftKneeCompressor.rms(_,  thresh:-10, ratio: ratio, knee:6, attack:0, release:0.05, makeUp:0, rms:40) 
-		* amp
-		=> DWGReverbC1C3.ar(_,len:len,mix:mix)
-		=>.first DetectSilence.ar(_,doneAction:2, time: 0.25)
-	}
-};
-	Song.synthVTracks.default = Song.synthVTracks.aiko;
+[ "I wish only to exist in peace as a living woman. ",[3, 6, 5, 6, 4.5, 5, 3, 7, 11, 7, 7, 4, 5, 5, 6, 5, 1, 2, 1].dm('f#') ].addLine;
+Song.setTempoMap(\exist,"e q x x x x e x xe e eeE E Eq x e x e e");
 	Song.quarters[\exist] = Song.parseBeats(\exist,[
 		1,
 		2,1/2, 1/2, 1/2,1/2,
@@ -274,6 +333,29 @@ P.still(\thal, timecode: 4333.3.seconds, music: { |p b e|
 		//5/2, 1, 5/2, 
 		1/2,1, 1/2, 1/4, 3/4, 1
 	]);
+P.tune();
+P(\chords, music: { |p b e|
+	[
+		instrument: \stringyy,
+		freq: [
+			\r,
+			[1, 5, 5],
+			[1, 4, 5],
+			[-7, 2, 4],
+			[7, 2, 4],
+			[6, 2, 4],
+			[6, 2, 4],
+			 
+		].df('a-',\mixolydian).q,
+		dur: "e  eee e e e e e".asBeats.warpTo( e.tempoMap ).q
+	].pp
+});
+P.still(\thal, timecode: 4333.3.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 P.synthV(role: \thalassa, params: {|p b| [
 		lyrics: "ai wish on li tu ex i - ist in pis as a li ving wu man",
 		phonemes: [ "a :\\i", "w i\\ s`", "@U n"," l i", "th u", "e k ts"," i\\ ","i\\","i\\ s th", "i\\ n", "ph i s", "a ts", "@", "l i\\ ","i\\","w i\\ N g", "w U "," U ","m @ n" ]
@@ -298,7 +380,7 @@ P(\piano,start:\exist,syl:12,music:{|p b e|
 			instrument:\twang
 		].pp;
 	});
-P(\test,start:\exist,syl:0,lag:-3/100,music:{|p b e| 
+P(\chordStrum,start:\exist,syl:0,lag:-3/100,music:{|p b e| 
 		(
 			freq: [-4,1,3, 5].df('e-', scale: \minor),
 			strum: 3/100,
@@ -313,10 +395,14 @@ P(\bass,start:\exist,music:{|p b e|
 			dur: [1/2,
 				0.75, 0.75, 0.25, 0.25,
 				1, 0.5, 0.5,
-				0.75, 0.25, 1, 1/2, 1/2, 1, 1, 1].q*2
-		].p.play(clock:TempoClock.newFromQuarters(p.quarters[\exist]));
+				0.75, 0.25, 1, 1/2, 1/2, 1, 1, 1].q*2,
+
+			dur: "e ex ex x x  q e e  ex x q e e q qq q ".asBeats.warpTo( e.tempoMap.quantizeWindow(0.2) ++ p.tempoMap[e.start + 1] ).q
+		].p.play
+		// (clock:TempoClock.newFromQuarters(p.quarters[\exist]));
 	});
 [ "MCCOY: If you're asking my approval ",[3, 4, 5, 4, 3, 5, 11, 7].dm(\f,4,\harmonicMinor) ].addLine;
+Song.setTempoMap(\asking,"e e e e e e q q");
 P.still(\mccoyIndignant, timecode: 4336.9.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,

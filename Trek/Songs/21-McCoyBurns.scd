@@ -119,10 +119,10 @@ P(\moreChord, music: { |p b e|
 		freq:   
 			[[11, 7, 6.5, 5], 13, 15].flop.df(\g,3, \minor)
 			++ [[13, 12, 12, 11, 12], 15, 17].flop.df(\f,3, \minor)
-			++ [[11, 3].df(\f,[ 4 ])]  // these 3 chords dyads meh
-			++ [[13, 5 ].df('c',[ 4 ])]
+			++ [[7, 3, 5].df(\f,[ 4 ])]  // these 3 chords dyads meh
+			++ [[13, 5, 6.5 ].df('c',[ 4 ])]
 			// ++ [[ 13, 5].df(\b,[ 3 ])]
-			++ [[5, 7]].df(\g,4, \mixolydian)
+			++ [[3, 5, 7]].df(\g,4, \mixolydian)
 			=>_.q, 
 		instrument: \defaultPiano, amp:0.05,
 		// dur:b.parse([1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 1]).q
@@ -323,16 +323,14 @@ P(\bass, music: { |p b e|
 		instrument: \sawSynth
 	].pp
 });
+P.still(\thal, timecode: 4333.3.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	)
+});
 [ "I wish only to exist in peace as a living woman. ",[3, 6, 5, 6, 4.5, 5, 3, 7, 11, 7, 7, 4, 5, 5, 6, 5, 1, 2, 1].dm('f#') ].addLine;
 Song.setTempoMap(\exist,"e q x x x x e x xe e eeE E Eq x e x e e");
-	Song.quarters[\exist] = Song.parseBeats(\exist,[
-		1,
-		2,1/2, 1/2, 1/2,1/2,
-		1, 1/2, 3/2, 1, 
-		4+4/3,2/3,2/3+2,	
-		//5/2, 1, 5/2, 
-		1/2,1, 1/2, 1/4, 3/4, 1
-	]);
 P.tune();
 P(\chords, music: { |p b e|
 	[
@@ -350,12 +348,6 @@ P(\chords, music: { |p b e|
 		dur: "e  eee e e e e e".asBeats.warpTo( e.tempoMap ).q
 	].pp
 });
-P.still(\thal, timecode: 4333.3.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
-	)
-});
 P.synthV(role: \thalassa, params: {|p b| [
 		lyrics: "ai wish on li tu ex i - ist in pis as a li ving wu man",
 		phonemes: [ "a :\\i", "w i\\ s`", "@U n"," l i", "th u", "e k ts"," i\\ ","i\\","i\\ s th", "i\\ n", "ph i s", "a ts", "@", "l i\\ ","i\\","w i\\ N g", "w U "," U ","m @ n" ]
@@ -366,10 +358,19 @@ P.synthV(role: \thalassa, params: {|p b| [
 		}.play
 	});
 P(\click,start:\exist,music:{|p b e| 
-		//[dur:1].p.play(TempoClock.newFromQuarters(p.quarters[e.start]))
-	});
-	//P.tune(\exist);
-	
+	[
+		dur: "e q q q q q q q q q q q".asBeats.warpTo( e.tempoMap ).q,
+		rest: MuteFirst.new(),
+		instrument: \hihat, amp:0.3, out: Effect.bus({|i| 
+			i
+			=> Pan2.ar(_,SinOsc.ar(0.1)/2)
+			=> {|i| CombC.ar(i, b[0],b[0]/2,3) / 2 
+			+ i
+			/2
+		}
+		},)
+	].pp
+});
 P(\piano,start:\exist,syl:12,music:{|p b e| 
 		[
 			freq: 
@@ -400,8 +401,16 @@ P(\bass,start:\exist,music:{|p b e|
 			dur: "e ex ex x x  q e e  ex x q e e q qq q ".asBeats.warpTo( e.tempoMap.quantizeWindow(0.2) ++ p.tempoMap[e.start + 1] ).q
 		].p.play
 		// (clock:TempoClock.newFromQuarters(p.quarters[\exist]));
-	});
+});
+P(\clap, music: { |p b e|
+	[
+		instrument: \cowbell_808,
+		dur: "eexexxxqeeexxq e e".asBeats.warpTo( e.tempoMap ).q,
+		rest: MuteFirst.new
+	].pp
+});
 [ "MCCOY: If you're asking my approval ",[3, 4, 5, 4, 3, 5, 11, 7].dm(\f,4,\harmonicMinor) ].addLine;
+P.tune();
 Song.setTempoMap(\asking,"e e e e e e q q");
 P.still(\mccoyIndignant, timecode: 4336.9.seconds, music: { |p b e|
 	 e.still.( 
@@ -410,6 +419,21 @@ P.still(\mccoyIndignant, timecode: 4336.9.seconds, music: { |p b e|
 	)
 });
 // P.tune(\approval);
+P(\bassAndChords, music: { |p b e|
+	[
+		freq: [ \r, -5 ].df(\f,4,\minor).q,
+		dur: b.parse([6, 2]).q
+	].pp;
+	(
+		freq:  [  3, 5 ].df(\f,5,\minor),
+		dur: b[..6].sum,
+		lag: b[..1].sum,
+		instrument: \sparkTriangle, \depth: 0.009,amp:0.02, 
+		out: Effect.bus({|i| i=>Pan2.ar(_,0) },)
+		// out: (0..2)
+	).play;
+
+});
 P.synthVs(role: \mccoy, take:[\lead, \dbl], params: {|p b| [
 		lyrics: "if your asking + my approval + +",
 		pitchTake: [1, 3]
@@ -420,15 +444,38 @@ P.synthVs(role: \mccoy, take:[\lead, \dbl], params: {|p b| [
 		}.play
 	});
 [ "MULHALL: I require only your silence", [7,11,12,7,11,12,12.5,2.5].dm(\c) ].addLine; 
+P(\silence,syl:5, music: { |p b e|
+	{
+		Dust.ar(Line.kr([ 100, 101,102 ]*4 ,10,b.drop(1) +2))
+		=> Decay.ar(_,0.01)
+		=> Convolution.ar(_, kernel:
+			Gendy1.arWidth(
+				ampdist:1,
+				durdist:1,
+				adparam:1.0,
+				ddparam:1.0,
+				freq:1.df('e-',[2,3,4]),
+				width:1.015 + 0.1,
+				ampscale:0.5,
+				durscale:0.5,
+				initCPs:12,
+				knum:nil,
+			),
+		framesize:2048)
+		/500
+		=> HPF.ar(_,90)
+		
+		=> Splay.ar(_)
+		* EnvGen.cutoff(wait:0, release:b.drop(1).sum + 2, curve:nil, doneAction:2)
 
+	}.play
+});
 P.still(\thalSilence, timecode: 4339.9.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["I require","only your silence"],
 	)
 });
-	// Song.durs[\silence] = Song.durs[\silence].list + [0,0,0,0,0,0,0,0.5] => _.q;
-	// Song.durs[\silence] = Song.durs[\silence].list - [0,0,0,0,0,0,0,0.1] => _.q;
 P.synthV(role: \thalassa, params: {|p b| [
 		lyrics: "ai ri kwair on li your sai lence" ,
 		legato: [1, 1, 1, 1, 1, 1, 1, 0.8]
@@ -587,7 +634,7 @@ P.synthV(role: \thalassa,
 			=> p.synthVTracks.at(e.key).(Line.kr(2.5,2,b.sum))
 			// * 2
 		}.play
-	});
+});
 P.tune(\life);
 P(\bass,start:\life,music:{|p b e| 
 		[
@@ -1013,7 +1060,10 @@ P.tune(                \contrast,
                         ]
                 	)} );
 	
-["prancing, savage, monkey ",[-1, -1, 3, 1, -4, -4, 4, 1, -7, -7, -7, -7, -7, -7, 2, 1 ].dm(\g, scale:\mixolydian)].addLine;
+// ["prancing, savage, monkey ",[-1, -1, 3, 1, -4, -4, 4, 1, -7, -7, -7, -7, -7, -7, 2, 1 ].dm(\g, scale:\mixolydian)].addLine;
+["prancing, savage, medecine man ","1 1 3 1 -4 -4 4 1/g 7 5 3 1/b/mixolydian".dm2].addLine;
+Song.setTempoMap(\prancing,"q q q q q q q q Q Q Q Q");
+P.tune();
 	Song.quarters[\prancing] = Song.parseBeats(\prancing,[1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1.5,0.5]).quantize(0.5)  ;
 P.synthV(\cheng, take:\lead, params: {|p b| [
 		lyrics: "r r stupid + r r  prancing + r r r r r r  monkey +",
@@ -1035,10 +1085,11 @@ P.double(\cheng, params: {|p b| [
 			}.play
 		});
 P.synthV(role: \thalassa, take:\lead, params: {|p b| [
-		lyrics: "r r stupid + r r  prancing + r r r r r r  monkey +",
+		// lyrics: "r r stupid + r r  prancing + r r r r r r  monkey +",
+		lyrics: "r r  prancing + r r savage +  medecine + + man",
 		pitchTake: 1,
-		phonemes: [ "","","s th u"," ph @ t", "","","ph r\\` a n s","i N",  "","","","","","","m A N"," kh i" ],
-		filter: ( dur: { |i| "q q q q q q q q q q q q q q qe x".asBeats.warpTo(p.quarters[\prancing]) } ), 
+		phonemes: [ "","","ph r\\` a n s","i N",  "","","s a","w @ ts`","","","",""],
+		// filter: ( dur: { |i| "q q q q q q q q q q q q q q qe x".asBeats.warpTo(p.quarters[\prancing]) } ), 
 	] }, music:{|p b e|
 		{
 			e.playbuf
@@ -1048,7 +1099,7 @@ P.synthV(role: \thalassa, take:\lead, params: {|p b| [
 P(\test,start:\prancing,music:{|p b e| 
 		[
 			instrument:\bd_808,
-			dur: 1!15 ++ [0.99] => _.warpTo(p.quarters[e.start]) => _.q,
+			dur: 1!15 ++ [0.99] => _.warpTo(e.tempoMap.quantizeDft()) => _.q,
 			//Song.quarters[\prancing].size
 		].pp
 	});
@@ -1057,7 +1108,7 @@ P(\bass,start:\prancing,music:{|p b e|
 		b = b.asArray.quantizeWindow();
 		[
 			freq:[\r,\r,3,1,\r,\r,4,1,\r,\r,\r,\r,\r,\r,2,1].df(\g).q,
-			dur:1!14 ++ 1.5 ++ 0.49  => _.warpTo(p.quarters[e.start]) => _.q,
+			dur:1!14 ++ 1.5 ++ 0.49  => _.warpTo(e.tempoMap.quantizeDft()) => _.q,
 			instrument:\wash,
 			att:0.5
 
@@ -1067,7 +1118,7 @@ P(\bass,start:\prancing,music:{|p b e|
 			freq: [1,1,1,1,4,4,4,4,7,7,7,7,7,7,7,7].df(\g, scale:\mixolydian ).q/8,
 			instrument:\yowbass,
 			legato: 0.1,
-			dur:1!15 ++ [0.99] => _.warpTo(p.quarters[e.start]) => _.q,
+			dur:1!15 ++ [0.99] => _.warpTo(e.tempoMap.quantizeDft()) => _.q,
 			legato: [1,1,1,0.5].q(inf),
 			release: [0, 1.5, 1.5, 0].q(inf),
 			//out:Effect(CombC.ar(_,b[0]/2),out:[2,3]).bus.index 
@@ -1076,11 +1127,11 @@ P(\bass,start:\prancing,music:{|p b e|
 		[
 			freq: [1,1,1,1,4,4,4,4,7,7,7,7,7,7,7,7].df(\g, scale:\mixolydian ).q/8,
 			instrument:\sawSynth,
-			dur:1!15 ++ [0.99] => _.warpTo(p.quarters[e.start]) => _.q,
+			dur:1!15 ++ [0.99] => _.warpTo(e.tempoMap.quantizeDft()) => _.q,
 			out: Effect(CrossoverDistortion.ar(_,smooth:0.98) ).bus.index
 		].pp	;
 		[
-			dur: 1/4 ! (4*16-1) ++ [0.24] => _.warpTo(p.quarters[e.start]) => _.q,
+			dur: 1/4 ! (4*16-1) ++ [0.24] => _.warpTo(e.tempoMap.quantizeDft()) => _.q,
 			instrument:\hihat,
 			ffreq: Pwhite(2000,6000,inf),
 			amp: Pwhite(0.1,0.03,inf) * 3,
@@ -1112,6 +1163,11 @@ P(\bass,start:\prancing,music:{|p b e|
 	
 
 [ "(r) You dare defy one you should be on your knees wo -- rshipping? ",[-1,1, 1.5, 1, -6.5].dm(\c) ++ [1, 3, 4, 5, 3, 5, 6].dm(\d,scale: \whole) ++ [3,4,3,-5].dm(\b) ].addLine;
+P(\crash, music: { |p b e|
+	(
+		instrument: \cymbalsDS
+	).play
+});
 P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.drop(1).sum,
@@ -1290,13 +1346,13 @@ P(\fire2,start:\writhing,music:{|p b e|
 [ "MULHALL: Stop! (the flames are gone) ~Sargon was right.~ ",[2, 1, -7, -6, 2.5].dm(\e) ].addLine;
 P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 	lyrics: "Stop, sar gone waz rait",
-	lag: [ b[0]/3 ],
-	legato: [0.6],
+	lag: [ b[0]/3, 0,0,0,0 ],
+	legato: [0.6, 1, 1, 1, 0.8],
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		=> p.synthVTracks.at(e.key).()
+		=> p.synthVTracks.at(e.key).(preGain: 2, mix:0.08)
 	}.play
 
 });
@@ -1414,7 +1470,10 @@ P(\bassnote,start:\Forgive,syl:0,music:{|p b e|
 		
 	});
 [ "SARGON [OC]: I am pleased, my beloved. It is good you have found the truth (yourself) ",[1, 1, 1, -7, -7, -7, -6, 1, 2, 3, 4, 3, 2, 1].dm('f#') ].addLine;
-P.still(\twoShot, timecode: 4513.666.seconds, music: { |p b e|
+P.still(
+	// \twoShot
+	\clear
+	, timecode: 4513.666.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["I am please","my beloved"],

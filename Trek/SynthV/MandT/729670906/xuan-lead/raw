@@ -39,7 +39,7 @@ o = [
 	Event.prNew,  Array.prNew(8),  Array.prNew(1),  Event.prNew,  
 	Array.prNew(12),  "",  "Unnamed Track",  Array.prNew,  
 	Event.prNew,  Array.prNew(20),  "ff7db235",  Event.prNew,  
-	Array.prNew(28),  "synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/SynthV/MandT/729670906/xuan-lead"
+	Array.prNew(28),  "synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/MandT/729670906/xuan-lead"
 ];
 p = [
 	// Event
@@ -315,10 +315,10 @@ p = [
 		'onset',  o[81],  nil,  nil,  
 		nil,  nil,  'detune',  0,  
 		'systemAttributes',  o[20],  'pitchTakes',  o[22],  
-		'midinote',  47.0,  'lyrics',  o[82],  
+		'midinote',  49.0,  'lyrics',  o[82],  
 		'timbreTakes',  o[34],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		'pitch',  47,  'duration',  o[83],  
+		'pitch',  49,  'duration',  o[83],  
 		'phonemes',  o[46],  'attributes',  o[47] ],  
 	// Event
 	85, [ array: o[86],  size: 8,  

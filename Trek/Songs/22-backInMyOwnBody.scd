@@ -124,7 +124,7 @@ P.still(\chapelZombie, timecode: 4630.0.seconds, music: { |p b e|
 		text: ["",""],
 	)
 });
-[ "MCCOY: Nurse Chapel, what in the devil?","11 13 6.5 6 6.5 7.5 11 3.5".dm(\g,4,\minor) ].addLine;
+[ "MCCOY: Nurse Chapel, what in the devil?","11 13 6.5 6 6.5 7.5 11 4.5".dm(\g,4,\minor) ].addLine;
 P.still(\mccoySpeaks, timecode: 4632.15.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -144,43 +144,96 @@ P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 	}.play
 });
 //Sickbay
-["//[Sickbay]","r",[8]].addLine;
+// ["//[Sickbay] turn walk surprise kirk", "1 1.5 2 2.5".dm(\d)].addLine;
+["//[Sickbay] turn walk surprise kirk", "1 1.5 1.5 2.5 2.5 3 3 -6.5 1.5 -5 -4.5 -5 -5 -6 -1".dm(\c)].addLine;
+
+P(\bassline, music: { |p b e|
+	[
+		freq: [1, 1.5, -4.5].df(\c,[4,3]).q,
+		dur: b.parse([6,4,4]).q,
+		instrument: \stringyy, amp:0.4
+	].pp
+});
+P(\surprise,syl:9, music: { |p b e|
+	// var chord = [1, 3, 5].df(\e, \whole);
+	var chord = [1, 2, 3].df('f#', \minor);
+
+	{
+		Gendy4.ar(
+			ampdist:1,
+			durdist:1,
+			adparam:1.0,
+			ddparam:1.0,
+			minfreq: chord,
+			maxfreq: chord + 4,
+			ampscale:0.5,
+			durscale:0.5,
+			initCPs:12,
+			knum:nil,
+			mul:1.0,
+			add:0.0
+		)
+		/10
+		* Env.perc(0.05,10).kr(2,gate:1)
+	}.play
+});
+P(\kirkfaceChord, syl: 13, music: { |p b e|
+	(
+		freq: [1, 3, 11, 13].df(\c),
+		dur: b.drop(1),
+		instrument: \stringyy, amp: 0.3
+	).play
+});
+P.tune( { |i| i  <> [instrument: \default, amp:0.3].p => Pmul(\freq, 1/2, _)} );
 P.still(\turning, timecode: 4635.8.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
 	)
 });
-P.still(\walkingTransition,lag:2, timecode: 4637.7.seconds, music: { |p b e|
+P.still(\walkingTransition,syl:5, timecode: 4637.7.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
 	)
 });
-P.still(\surpriseLook2,lag:4, timecode: 4642.seconds, music: { |p b e|
+P.still(\surpriseLook2,syl: 9, timecode: 4642.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
 	)
 });
-P.still(\aliveKirk,lag:6, timecode: 4643.8.seconds, music: { |p b e|
+P.still(\aliveKirk, syl:13, timecode: 4643.8.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
 	)
 });
-["(He goes back into the ward.) MCCOY: Jim? Are you all right? ","2.5 5 4 3 4 11".dm(\d)].addLine;
+["(He goes back into the ward.) MCCOY: Jim? Are you all right? ","5 4 3 4 11".dm(\d)].addLine;
+// P.tune();
+P.synthV(role: \mccoy, take: \lead, params: {|p b| [
+	lyrics: "jim, are you alright? +",
+	filter: (midinote: _ - 12), 
+	legato: [ 0.6,  1, 1, 1, 1, ],
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
 P(\bassnote, music: { |p b e|
 	[
-		freq: [ 1, -5 ].df(\f,3).q,
-		dur: b.parse([1, 4]).q,
+		freq: [  -5 ].df(\f,3).q,
+		dur: b.sum.q
 	].p.play
 });
-P.tune(_ <> [amp: [0,1,1,1,1, 1]/10=>_.q].p);
+P.tune(_ <> [amp: [1,1,1,1, 1]/10=>_.q].p);
 P(\chords, music: { |p b e|
 	[
-		freq: [\r, [1, 3, 6].df(\c), [5,7,11,13].df('b-',4,\mixolydian) ].q,
-		dur: b.parse([1,4,1]) + [0,0,1] =>_.q,
+		freq: [ [1, 3, 6].df(\c), [5,7,11,13].df('b-',4,\mixolydian) ].q,
+		dur: b.parse([4,1]) + [0,0,1] =>_.q,
 		instrument: \stringyy, amp:0.2
 	].pp
 });
@@ -190,8 +243,15 @@ P.still(\toKirk, timecode: 4649.3.seconds, music: { |p b e|
 		text: ["",""],
 	)
 });
-["KIRK: Yes, I'm fine, Bones. ","5 4 3 -7".dm('f#',\mixolydian)].addLine;
+["KIRK: Yes, I'm fine, Bones. ","5 4 3 -7".dm('e-',\mixolydian)].addLine;
 P.tune();
+P(\chords, music: { |p b e|
+	[
+		freq: [[5, 4, 2],[3, 5, 11]].df('e-').q,
+		dur: b.parse([2, 2]).q,
+		instrument: \wash
+	].pp
+});
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	filter: (midinote: _ - 12), 
 	lyrics: "yes I'm fine bones",
@@ -206,10 +266,11 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 });
 P(\bassnotes, music: { |p b e|
 	[
-		freq: [5, 1].df('f#',3).q,
+		freq: [5, 1].df('e-',3).q,
 		dur: b.parse([2,2]).q
 	].pp
 });
+
 P.still(\kirkTalk, timecode: 4655.4.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -217,6 +278,7 @@ P.still(\kirkTalk, timecode: 4655.4.seconds, music: { |p b e|
 	)
 });
 ["MCCOY: -boom- Thalassa? ","-1 7 15 13".dm(\e,\mixolydian)].addLine;
+
 P.still(\thallassa, timecode: 4659.5.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -237,6 +299,15 @@ P(\thinPad, music: { |p b e|
 		amp:0.1,
 		dur: b.drop(1).parse([2,2]).q
 	].p.play
+});
+P(\thalassaChord, music: { |p b e|
+	(
+		instrument: \sawSynthSustain,amp: 0.02,
+		freq: [1, 3, 5, 11].df('e-',6,'minor'),
+		att:b[0],
+		rel:8, 
+		dur: b[0]
+	).play
 });
 P(\notes, music: { |p b e|
 	[

@@ -84,8 +84,12 @@ P(\shaking, music: { |p b e|
 });
 P.still(\atDesk,syl:1, timecode: 4627.3.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
+		wait: b.drop(1).sum,
+		text: ["this is","Sickbay"],
+	).sequenceText2(
+			b.drop(1).parse([4]), [ 
+			["get","me..."],
+			],
 	)
 });
 P.synthV(role: \mccoy, take:\lead, params: {|p b| [
@@ -240,17 +244,17 @@ P(\chords, music: { |p b e|
 P.still(\toKirk, timecode: 4649.3.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["Jim","are you alright?"],
 	)
 });
 ["KIRK: Yes, I'm fine, Bones. ","5 4 3 -7".dm('e-',\mixolydian)].addLine;
 P.tune();
 P(\chords, music: { |p b e|
 	[
-		freq: [[5, 4, 2],[3, 5, 11]].df('e-').q,
-		dur: b.parse([2, 2]).q,
-		instrument: \wash
-	].pp
+		freq: [[5, 4, 2],[3, 5, 11], [2.5, 5, 11]].df('e-').q,
+		dur: b.parse([2, 2]) ++ e.bNext.parse([1]) => _.q,
+		instrument: \wash, freqLag: 0.3
+	].ppm
 });
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	filter: (midinote: _ - 12), 
@@ -274,7 +278,7 @@ P(\bassnotes, music: { |p b e|
 P.still(\kirkTalk, timecode: 4655.4.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["yes, I'm fine","Bones"],
 	)
 });
 ["MCCOY: -boom- Thalassa? ","-1 7 15 13".dm(\e,\mixolydian)].addLine;
@@ -288,7 +292,7 @@ P.still(\thallassa, timecode: 4659.5.seconds, music: { |p b e|
 P.still(\toThal, syl:0, timecode: 4702.3.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.drop(1).sum,
-		text: ["",""],
+		text: ["Thalassa",""],
 	)
 });
 P(\thinPad, music: { |p b e|
@@ -297,7 +301,7 @@ P(\thinPad, music: { |p b e|
 		// instrument: \wash,
 		freq: [\r, 1].df(\e,3).q,
 		amp:0.1,
-		dur: b.drop(1).parse([2,2]).q
+		dur: b.parse([2,2]).q
 	].p.play
 });
 P(\thalassaChord, music: { |p b e|
@@ -695,7 +699,11 @@ P(\noise, music: { |p b e|
 P.still(\kirkNecessary, timecode: 4728.35.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["It was","necessary"],
+		text: ["",""],
+	).sequenceText2(
+			b.parse([1]), [ 
+				["It was","necessary"],
+			],
 	)
 });
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
@@ -734,12 +742,31 @@ P(\chord, syl:2, music: { |p b e|
 });
 ["MCCOY: What are you talking about? There is no Spock to return to his body. (boom) You've ",[-7, -7, 1, 2, 3, 2, -6, -7,  2, 1, 5, 6, 5, 4, 3, 4, 5, 5, 4].dm(\d, scale:\mixolydian) ++ [-5, 5].dm('b-',octave:4)].addLine;
 P.still(\mccoyTalkingAbout, timecode: 
-// 4732.6 //closed
-4725.9
-.seconds, music: { |p b e|
+	// 4732.6 //closed
+	4725.9
+	.seconds, music: { |p b e|
+		 e.still.( 
+			wait: b[..(b.size - 1)].sum,
+			text: ["",""],
+		).sequenceText2(
+				e.bAll.parse([1, 7, 11, 9]), [ 
+				["what are you","talking about"],
+				["there is no Spock","to return to his body"],
+				["",""]
+				],
+		)
+});
+P.still(\moreMccoy,syl:19, timecode: 4730.5.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
+		wait: b.drop(1).sum + e.bNext.sum,
+		text: ["you've killed","a loyal officer"],
+	).sequenceText2(
+			b.drop(1).parse([9,1,1,1]), [ 
+				["",""],
+				["your", ""],
+				["",""],
+				["best","friend"]
+			],
 	)
 });
 P.synthV(role: \mccoy, take: \leadTest,
@@ -800,24 +827,18 @@ P(\bass,start:\talking,lag: -0.1,music:{|p b e|
 			amp: 0.05
 		].pp
 
-	});
-	P.still(\moreMccoy,syl:18, timecode: 4730.5.seconds, music: { |p b e|
-		 e.still.( 
-			wait: b.drop(1).sum + e.bNext.sum,
-			text: ["",""],
-		)
-	});
-	["killed a loyal officer,(boom) your (boom) best friend. ",[11,5,11,12,13,12,11,7].dm('b-',octave:4) ++ [-1,5,-4,6,7].dm(\a,scale:\mixolydian, octave:4)].addLine;
-	P(\line, music: { |p b e|
-		[
-			freq: [ 11, 5, 11, 7, 11, 5, 3, 2].df('b-',[3,5]).q,
-			dur: b.q,
-			rel:[2, 2, 2, 2, 2, 2, 1.5, 1].q,
-			instrument: \sawSynth,
-			amp:0.03
-			// amp:0.3
-		].pp
-	});
+});
+["killed a loyal officer,(boom) your (boom) best friend. ",[11,5,11,12,13,12,11,7].dm('b-',octave:4) ++ [-1,5,-4,6,7].dm(\a,scale:\mixolydian, octave:4)].addLine;
+P(\line, music: { |p b e|
+	[
+		freq: [ 11, 5, 11, 7, 11, 5, 3, 2].df('b-',[3,5]).q,
+		dur: b.q,
+		rel:[2, 2, 2, 2, 2, 2, 1.5, 1].q,
+		instrument: \sawSynth,
+		amp:0.03
+		// amp:0.3
+	].pp
+});
 P(\bassMirror,start:\loyal,music:{|p b e| 
 		[
 			freq: [1, -7, -6, -7, 1].df('b-', octave:[3,4]).q,
@@ -848,6 +869,12 @@ P.still(\kirk, timecode: 4739.3.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
+	).sequenceText2(
+			b.parse([4,6, 9]), [ 
+			["bones, prepare","a hypo"],
+			["the fastest","deadliest"],
+			["poison","to Vulcans"]
+			],
 	)
 });
 /*
@@ -909,6 +936,19 @@ P(\lick,start:\fastest,syl:10,music:{|p b e|
 		].ppm()
 	});
 ["(boom boom) Spock's consciousness is-- gone. We must kill his body, the thing in it.",[-1, -3, 3, 4, 4, 4, 3, 2, 2].dm(\a) ++ [2, 3, 6, 7, 11, 5, 11, 12, 11, 5].dm(\e)].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	).sequenceText2(
+			b.parse([2, 4, 3, 6]), [ 
+			["Spock's","consciousness"],
+			["is","gone"],
+			["we must kill his","body"],
+			["the thing", "in it"]
+			],
+	)
+});
 P.synthVs(role: \kirk, take: [\lead, \double], params: {|p b| [
 	lyrics: "r r Spock's consciousness + + is - gone. We must kill his body, + the thing in it.",
 	legato: [[1, 1, 1, 1, 1, 1, 1, 1, 0.7,  1, 1, 1, 1, 1, 0.7, 1, 1, 1, 1, ]],

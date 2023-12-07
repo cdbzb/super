@@ -5,7 +5,7 @@
 			^super.new.init(function , out,inputChannels);
 		}
 		*new { |function out=0 inputChannels=1 target time|
-			^super.new.init(function , out,inputChannels, target);
+			^super.new.init(function , out,inputChannels, target, time);
 		}
 		*newSidechain {|function out=0 inputChannels=1| ^super.new.initSidechain(function,out,inputChannels) }
 
@@ -44,10 +44,11 @@
 event.yield
 		}
 
-		init { |function out inputChannels=1 target time=1 |
+		init { |function out inputChannels=1 target time |
 			var desc=SynthDef(\temp,{In.ar(1,inputChannels)=>function=>Out.ar(0,_)});
 			numChannels=desc.asSynthDesc.outputData[0].at(\numChannels);
 			target = target ? Server.default;
+			time = time ? 1; \time.post; time.postln;
 			bus=Bus.audio(numChannels:numChannels);
 			synth={|gate| 
 				In.ar(bus.index,inputChannels)

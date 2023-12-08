@@ -49,7 +49,7 @@ o = [
 	Event.prNew,  Array.prNew(8),  Array.prNew(1),  Event.prNew,  
 	Array.prNew(12),  "",  "Unnamed Track",  Array.prNew,  
 	Event.prNew,  Array.prNew(20),  "ff7db235",  Event.prNew,  
-	Array.prNew(28),  "synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/SynthV/ending/2112175789/xuan-lead"
+	Array.prNew(28),  "synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/ending/2112175789/xuan-lead"
 ];
 p = [
 	// Event
@@ -417,10 +417,10 @@ p = [
 		'onset',  o[111],  nil,  nil,  
 		nil,  nil,  'detune',  0,  
 		'systemAttributes',  o[20],  'pitchTakes',  o[22],  
-		'midinote',  36.0,  'lyrics',  o[112],  
+		'midinote',  48.0,  'lyrics',  o[112],  
 		'timbreTakes',  o[34],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		'pitch',  36,  'duration',  o[113],  
+		'pitch',  48,  'duration',  o[113],  
 		'phonemes',  o[46],  'attributes',  o[47] ],  
 	// Event
 	114, [ array: o[115],  size: 11,  
@@ -432,10 +432,10 @@ p = [
 		'onset',  o[116],  nil,  nil,  
 		nil,  nil,  'detune',  0,  
 		'systemAttributes',  o[20],  'pitchTakes',  o[22],  
-		'midinote',  35.0,  'lyrics',  o[117],  
+		'midinote',  47.0,  'lyrics',  o[117],  
 		'timbreTakes',  o[34],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		'pitch',  35,  'duration',  o[118],  
+		'pitch',  47,  'duration',  o[118],  
 		'phonemes',  o[46],  'attributes',  o[47] ],  
 	// Event
 	119, [ array: o[120],  size: 11,  
@@ -447,10 +447,10 @@ p = [
 		'onset',  o[121],  nil,  nil,  
 		nil,  nil,  'detune',  0,  
 		'systemAttributes',  o[20],  'pitchTakes',  o[22],  
-		'midinote',  31.0,  'lyrics',  o[122],  
+		'midinote',  43.0,  'lyrics',  o[122],  
 		'timbreTakes',  o[34],  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		'pitch',  31,  'duration',  o[123],  
+		'pitch',  43,  'duration',  o[123],  
 		'phonemes',  o[46],  'attributes',  o[47] ],  
 	// Event
 	125, [ array: o[126],  size: 8,  

@@ -95,10 +95,13 @@ P.still(\walking, timecode: 4800.73.seconds, music: { |p b e|
 ["SPOCK: (beat) Must I make an example of you, too, Helm? ",[4.5, 1, 2, 2, 3, 3, 3, 4.5, 4.5, 7, 5.5,7, 1].dm('f#',scale:\mixolydian)].addLine;
 // Song.durs[\example].list.registerD
 P(\chord, music: { |p b e|
-	(
-		freq: [1, 3, 4, 6].df('f#',2,\whole),
-		instrument: \stringyy,mix: 0,amp:0.4
-	).play
+	[
+		freq: [1, [ 13, 14, 6]].df('f#',2,\whole).q,
+		instrument: \stringyy,
+		mix: 0,
+		amp:0.4,
+		dur: b.q
+	].p.play
 });
 	// P.tune(\example);
 	//4806.66 nice red door....
@@ -115,8 +118,8 @@ P.still(\medium, timecode: 4806.25.seconds, music: { |p b e|
 });
 P.synthV(role: \henoch, take: \lead,
 		filter: (midinote: _ - 12), 
-		vocalMode: \Overdrive,
 		params: {|p b| [
+			vocalMode: \Overdrive,
 			lyrics: "r must I make an axample + + of you - too Helm",
 			legato: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.6, 0.8, ],
 		] }, music:{|p b e|
@@ -140,13 +143,14 @@ P.synthV(role: \henoch, take: \lead, params: {|p b| [
 			filter: (midinote: _ - 24), 
 			lyrics: "Pain captain + r and  you my dear",
 			legato: [0.7, 1, 0.7, 1, 1, 1, 1, ],
-			vocalMode: \overDrive,
+			vocalMode: \Overdrive,
 			pitchTake: 1
 		] }, music:{|p b e|
 			{
 				e.playbuf
 				// => p.synthVTracks.at(e.key).()
 				=> Pan2.ar(_,0)
+				/2
 			}.play
 
 });
@@ -482,13 +486,14 @@ P.synthVs(role: \henoch, take: [\lead, \double], params: {|p b| [
 		lyrics:" r r Fools. r I'll simply + trance fur to another + + place, another + + body +" ,
 		legato: [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,1, 1, 0.6, 1, 1, 1, 1, 0.8 , ]],
 		pitchTake:[1, 3],
+		loudness: Env([3, 3, 0, 0], b.parse([3, 1,15])),
 		vocalMode: \Theatrical
 	] }, music:{|p b e|
 		{
 			e.playbuf
 			// => {|i|  PitchShift.ar(i,[0.03, 1 ],0.5,0.01,timeDispersion:0.7) + ( i * 0.8 )}
 			=> p.synthVTracks.at(e.key).()
-			/4
+			/2
 		}.play
 });
 P(\line,start:\leaps,syl:12,music:{|p b e| 
@@ -665,7 +670,8 @@ P(\pinano,start:\freed,music:{|p b e|
 P.still( \friend,lag:Song.secDur[\victim] - 5, timecode:4926.seconds, music: { |p b e|
 		e.still.value(
 			fadeIn: 5 , //same as section duration - lag
-			wait: 2 + e.bNext.sum,
+			wait: 2 + e.bNext.sum -1,
+			fade: 1
 			// text:["Spock","my friend Spock"]
 		);
 });
@@ -673,20 +679,20 @@ P.still( \friend,lag:Song.secDur[\victim] - 5, timecode:4926.seconds, music: { |
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-			text:["Spock","my friend Spock"]
+		text:["Spock","my friend Spock"]
 	).sequenceText2(
 			b.parse([4]), [ 
 			["if there'd only been","another way"],
 			],
 	)
 });
-P.synthV(role: \kirk,
+P.synthV(role: \kirk, lag: -0.3,
 		filter: (midinote: _ - 12), 
 		params: {|p b| [
 		lyrics: "spock my friend spock if there'd only + been another + + way",
-		legato: [0.9, 1,1,0.9, 1 ,1,1,1,1,1,1,1,1],
+		legato: [0.9, 1,1,0.75, 1 ,1,1,1,1,1,1,1,1],
 		lag: 
-		[ 0.3 ] ++ 0.dup(12)
+		[ 0.3 ] ++ 0.3.dup(12)
 		
 	] }, music:{|p b e|
 		{
@@ -742,25 +748,11 @@ P.synthV( role: \vocoder, take: \lead, params: {|p b| [
 	filter: (midinote: _ - 24), 
 	pitchTake:1,
 	defaultVibratoDepth: 0.1
-
 	]
 },
 	music: {|p b e|
 		// TODO now make the relevant guide check to see if they should mute this!!
-		p.vocodeTune.(p,b,e,
-			e.rpp,
-			amp:0.1,
-			out:4,
-			dur:b.sum+5,
-			att:3,
-			sus:b.sum-5,
-			rel:4,
-			// modGain:3,
-			modGain:6,
-			mix:0.51,
-			chord:#[0.5,1,2,2.5,4,6,8],
-			durRel: 2
-		);
+		p.vocodeTune.(p,b,e,e.rpp, amp:0.1, out:4, dur:b.sum+5, att:3, sus:b.sum-5, rel:4, modGain:3, modGain:6, mix:0.51, chord:#[0.5,1,2,4,6,8], durRel: 2);
 		MegaBind(
 			[
 				p.tune[e.start].list.midicps /1,
@@ -787,9 +779,27 @@ P.synthV( role: \vocoder, take: \lead, params: {|p b| [
 				// => Out.ar(_);
 			}
 		).play;
+		{
+			p.laMer.bufnum
+			=> PlayBuf.auto(2, _, rate:
+				[0, -5, -5].midiratio.dq.demand(b.parse([6,4,5])) 
+				// * 4 / 3
+				, trigger:1.0, startPos:0.0, loop:0.0, doneAction:0)
+				* Env([1, 1, 0],b.parse([6,9])).kr(2,gate:1)
+			=> Out.ar(p.carrierBus.index,_)
+		}.play
 });
-
-
+P(\bassline,syl:0, music: { |p b e|
+	{
+		var freq = [1, 2, 5, 12, 15].df(\c, 3).dq.demand(b.drop(1).parse([2, 2, 2, 4, 5]));
+		// Hasher.ar( Sweep.ar( Impulse.ar(freq) ) ) / 10
+		Gendy1.arWidth(freq: freq.lag(0.01))
+		/ 20
+		=> LPF.ar(_)
+		* Env([0,1,1,0],[0.1,b.sum-0.1,1]).kr(2,gate:1)
+		=> {|i| [i, DelayN.ar(i,0.1,Line.kr(0.1,0,b.sum))]}
+	}.play
+});
 /* P(\lagTest,start:\sacrifice,lag:-1,music:{|p b e| 
 		(note:[1,2,3])//.play
 }); */
@@ -846,7 +856,7 @@ P(\addlVox,start:\sacrifice,lag:-1,music:{|p b e|
 				carrier:carrier.index,
 				modulator:modulator.index,
 				amp:0.3
-			 ],
+			 ]P,
 			addAction:\addToTail,
 		)//.dur(b.sum+2);
 });
@@ -921,6 +931,7 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 			{
 				e.playbuf
 				=> p.synthVTracks.at(e.key).()
+
 			}.play
 
 });
@@ -935,8 +946,6 @@ P.still( \wideAlive, start: \stands, timecode:4957.2.seconds, music: { |p b e|
 				e.still.setText( ["you're","alive!"])
 			}
 });
-		
-
 P(\bassPad,start:'stands up',music:{|p b e| 
 			[
 				dur:[b.sum, p.durs[e.start+1].list.parse([8,3])].flat.q,
@@ -987,6 +996,7 @@ P.synthVs(role: \mccoy, take: [ \lead, \double ], params: {|p b| [
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
+			/2
 		}.play
 
 });
@@ -1047,18 +1057,26 @@ P(\chord,start:\poison,music:{|p b e|
 			//.play
 });
 ["SARGON [OC]: No, Doctor. (Boom)",[1,-5,-3, -17].dm(\a,scale:\minor,octave:4)].addLine;
-		//Song.voxNo=VocalRPP('Doctor.',\test);
-P(\vox,start:'Doctor.', rpp:VocalRPP('Doctor.',\test),lag:-1,music:{|p b e|
-			p.vocodeTune.(p,b,e,e.rpp,amp:0.12,dur:b.sum+1,att:1,sus:b.sum-1,rel:2,chord:[1],out:3);
-			p.vocodeTune.(p,b,e,e.rpp,amp:0.12,dur:b.sum+1,att:1,sus:b.sum-1,rel:2,chord:[2])
-});
-P(\test,start:'No, Doc',music:{|p b e| 
-			{
-PlayBuf.ar(1,p.voxNo.buffer)
-				=> DelayN.ar(_,0.05,0.5)
-				=> PitchShift.ar(_,pitchRatio:[1,0.5],pitchDispersion: 0.0)
-				*0.4
-			}
+P.tune('No, Doc');
+P.synthV(role: \vocoder, take: \lead,
+	filter: (midinote: [50,50,50,50]), 
+	params: {|p b| [
+	lag: [0.1, 0.00,0],
+	lyrics: "No Doctor + r",
+	legato: [0.8, 1, 1 ],
+	pitchTake: 1
+] }, music:{|p b e|
+	p.vocodeTune.( p, b, e, e.rpp,
+		verb:0,
+		// mix:0.1,
+		amp:0.12,
+		modGain:3,
+		dur:b.sum+1,
+		att:1,
+		sus:b.sum-1,
+		rel:2,
+		chord:#[1, 2, 4],
+	);
 });
 P(\bass,start:'No, Doc',music:{|p b e| 
 			MegaBind(
@@ -1099,13 +1117,9 @@ P.still( \wide, start: 'No, Doctor', timecode:5006.seconds, music: { |p b e|
 
 [" I allowed you to believe that to be true so that ",[3,2,4,3,1,-5,-7,-6,-4,-1,2,-6,-5].dm(\c,scale:\mixolydian,octave:6)].addLine;
 		//Song.voxAllow=VocalRPP(\allowed,\tune);
-/*
-P(\vox,start:\allowed,lag:-1,rpp:VocalRPP(\allowed,\tune),music:{|p b e|
-			p.vocodeTune.(p,b,e,e.rpp,amp:0.15,att:1,sus:b.sum-1,rel:1.2,dur:b.sum+1.1)
-}); */
 P.synthV(role: \vocoder, take: \lead,
 	pbind:Song.enlarge(3),
-	filter: (midinote: _ - 24), 
+	filter: (midinote: _ - (24!13 ++ 12.dup(3))), 
 	paramBreathiness: 1,
 	params: {|p b| [
 	lyrics: "I allowed + you to believe + that to be true so that Henoch + would ",
@@ -1113,8 +1127,28 @@ P.synthV(role: \vocoder, take: \lead,
 	pitchTake: 1,
 	defaultVibratoDepth: 0.1
 ] }, music:{|p b e|
+	p.vocodeTune.( p, b, e, e.rpp,
+		tune: p.tune[e.start].list ++ p.tune[e.start + 1].list[..3],
+		chord: #[0.5,0.66,1,2],
+		enlarge:3,
+		verb:0.1,
+		amp:0.15,
+		att:2,
+		sus:b.sum + e.bNext[..2].sum -1,
+		rel:1.2,
+		dur:b.sum+1 * e.bNext[..2].sum,
+		// durRel:3,
+		modGain:3
+	);
+	{
+		p.laMer =>
+		PlayBuf.auto(2, _, rate:
 
-	p.vocodeTune.(p,b,e,e.rpp,amp:0.15,att:2,sus:b.sum-1,rel:1.2,dur:b.sum+1.1,modGain:3)
+				 ([1,4,2,5].dm(\c) - 1.dm(\c)).midiratio.dq.demand(e.bAll.parse([6,4,3,3])) * 2,
+			trigger: TDuty.kr( e.bAll.parse([6,4,3,3]).dq, reset:0.0, level:1.0, doneAction:0, gapFirst:0), startPos:0.0, loop:1.0, doneAction:0
+		)
+			=> {|i| Out.ar(p.carrierBus,i / 1)}
+	}.play
 });
 P.still( \clear, start: \allowed, timecode:0, music: { |p b e|
 			e.still.value(
@@ -1180,13 +1214,26 @@ P.synthV(role: \vocoder, take: nil, params: {|p b| [
 		] }, music:{|p b e|
 			p.vocodeTune.(p,b,e,e.rpp,
 				amp:0.18,
+		verb:0.1,
+		// amp:0.15,
 				att:1,
 				sus:b.sum,
 				rel:2,
 				dur:b.sum+2,
 				chord:#[1,2,4,6,8],
+		chord: #[0.5,0.66,1,2],
 				modGain:3
-			)
+			);
+			
+	{
+		p.laMer =>
+		PlayBuf.auto(2, _, rate:
+
+				 ([4, 3, 6, 5].dm(\c) - 1.dm(\c)).midiratio.dq.demand(e.bAll.parse([6, 3, 2, 2])) * 2,
+			trigger: TDuty.kr( e.bAll.parse([6,4,3,3]).dq, reset:0.0, level:1.0, doneAction:0, gapFirst:0), startPos:0.0, loop:1.0, doneAction:0
+		)
+			=> {|i| Out.ar(p.carrierBus,i / 1)}
+	}.play
 
 });
 P.still( \clear, start: \read, timecode:0, music: { |p b e|
@@ -1255,10 +1302,31 @@ P(\chord,start:'MCCOY: S',music:{|p b e|
 
 });
 ["SPOCK: It seems, Doctor, the injection was (boom) only enough to cause unconsciousness. ",[5,11,5,3,11,7,6,4,1,-3,4,3,2,5,6,5,6,5.5,6,5.5].dm('b-',octave:4)].addLine;
+P(\chords, music: { |p b e|
+	[
+		freq: [
+			\r,
+			[3, 5, 11],
+			[4, 6, 11],
+			\r,
+			// [4, 6, 11],
+			[2, 5, 7],
+			[3, 5.5, 7]
+	].df('b-',4).q,
+	dur:b.parse([1, 5, 3, 4, 4, 3]).q,
+	instrument: \reedy,amp:0.01,out: [2,3],
+	legato: [1, 1, 0.99, 1, 1, 1, 1, ].q,
+	].ppma
+});
 P.still(\spockSargon, timecode: 5012.8.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["it seems","Doctor"],
+	).sequenceText2(
+			b.parse([4, 12]), [ 
+			["the injection was","only enough to cause"],
+			["unconsciousness",""]
+			],
 	)
 });
 P(\answer,syl:17, music: { |p b e|
@@ -1281,7 +1349,7 @@ P.synthVs(role: \spock, take: [ \lead, \double ], params: {|p b| [
 		e.playbuf
 		// => p.synthVTracks.at(\default).()
 		=> HPF.ar(_,225)
-		/3
+		/4
 		=> Pan2.ar(_,0)
 	}.play
 
@@ -1374,6 +1442,17 @@ P(\bass,start:\believed,music:{|p b e|
 	).play
 });
 ["(boom) He is (boom) destroyed. ",[-5,5,5,-5,5,5].dm(\g)].addLine;
+P.still(\clear,syl: 0, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.drop(1).sum,
+		text: ["he","is"],
+	).sequenceText2(
+			b.drop(1).parse([2,1]), [ 
+			["",""],
+			["destroyed",""]
+			],
+	)
+});
 P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	lyrics: "r he is r destroyed +",
 	filter: (midinote: _ - 24), 
@@ -1404,6 +1483,37 @@ P(\chord,start:'He is (boom)',music:{|p b e|
 	).play
 });
 ["KIRK: But your vessel was destroyed, too. Where was your consciousness kept? ",[7,13,11,7,5,4,3,4,5,-7].dm(\g,scale:\mixolydian)++[7,11,14,13,11,7,5].dm(\d,scale:\mixolydian)].addLine;
+P(\tamboura, music: { |p b e|
+	{
+		Gendy1.arWidth(
+			ampdist:1,
+			durdist:1,
+			adparam:1.0,
+			ddparam:1.0,
+			freq:[[-1,1, 5],[-2, 2, 5]].df(\g,\mixolydian).dq.demand(b.parse([10, 7])),
+			width:1.021,
+			ampscale:0.5,
+			durscale:0.5,
+			initCPs:12,
+			knum:12,
+		)
+		/40
+		* Env.linen(*(b.parse([1, 16]) ++ 2)).kr(2,gate:1)
+		// => Klang.ar(specificationsArrayRef:, freqscale:1.0, freqoffset:0.0)
+	}.play
+
+});
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["but your","vessel"],
+	).sequenceText2(
+			b.parse([6, 4]), [ 
+			["was destroyed","too"],
+			["where was your", "consciousness kept?"]
+			],
+	)
+});
 P.still(\kirkVessel, timecode: 5019.66.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,

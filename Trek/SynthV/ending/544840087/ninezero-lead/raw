@@ -24,7 +24,7 @@ o = [
 	"cubic",  Event.prNew,  Array.prNew(8),  Array.prNew,  
 	"cubic",  Event.prNew,  Array.prNew(8),  Array.prNew,  
 	"cubic",  Event.prNew,  Array.prNew(8),  Array.prNew,  
-	"cubic",  Event.prNew,  Array.prNew(8),  Array.prNew,  
+	"cubic",  Event.prNew,  Array.prNew(8),  Array.prNew(12),  
 	"cubic",  Event.prNew,  Array.prNew(8),  Array.prNew,  
 	"cubic",  Event.prNew,  Array.prNew(8),  Array.prNew,  
 	"cubic",  "c55226b8-e035-4fc6-a857-aacf2bbe7548",  Event.prNew,  Array.prNew(40),  
@@ -37,7 +37,7 @@ o = [
 	Array.prNew(8),  Array.prNew(1),  Event.prNew,  Array.prNew(12),  
 	"",  "Unnamed Track",  Array.prNew,  Event.prNew,  
 	Array.prNew(20),  "ff7db235",  Event.prNew,  Array.prNew(28),  
-	"synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/SynthV/ending/544840087/ninezero-lead"
+	"synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/ending/544840087/ninezero-lead"
 ];
 p = [
 	// Event
@@ -343,6 +343,10 @@ p = [
 	// Array
 	98, [ 'points',  o[99],  nil,  nil,  
 		nil,  nil,  'mode',  o[100] ],  
+	// Array
+	99, [ 0.0,  3,  1199520000.0,  3,  
+		1538208000.0,  0,  1927699200.0,  0,  
+		2284732800.0,  4,  2696803200.0,  2 ],  
 	// Event
 	101, [ array: o[102],  size: 2,  
 		proto: nil,  parent: nil,  
@@ -407,14 +411,14 @@ p = [
 		know: true ],  
 	// Array
 	128, [ 'vocalModeInherited',  true,  nil,  nil,  
-		nil,  nil,  'vocalModePreset',  'Muted',  
+		nil,  nil,  'vocalModePreset',  'Overdrive',  
 		'vocalModeParams',  o[129],  nil,  nil ],  
 	// Event
 	129, [ array: o[130],  size: 1,  
 		proto: nil,  parent: nil,  
 		know: true ],  
 	// Array
-	130, [ 'Muted',  100,  nil,  nil ],  
+	130, [ 'Overdrive',  100,  nil,  nil ],  
 	// Event
 	131, [ array: o[132],  size: 2,  
 		proto: nil,  parent: nil,  

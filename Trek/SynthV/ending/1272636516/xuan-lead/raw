@@ -17,12 +17,12 @@ o = [
 	"1353330000",  "any",  "539070000",  Event.prNew,  
 	Array.prNew(40),  "1892400000",  "+",  "644910000",  
 	Event.prNew,  Array.prNew(40),  "2537310000",  "way",  
-	"1428130000",  Event.prNew,  Array.prNew(40),  "3965440000",  
+	"1285310000",  Event.prNew,  Array.prNew(40),  "3965440000",  
 	"we",  "575760000",  Event.prNew,  Array.prNew(40),  
 	"4541200000",  "can",  "788860000",  Event.prNew,  
 	Array.prNew(40),  "5330060000",  "help",  "826960000",  
 	Event.prNew,  Array.prNew(40),  "6157020000",  "you",  
-	"889050000",  Event.prNew,  Array.prNew(40),  "7046070000",  
+	"800140000",  Event.prNew,  Array.prNew(40),  "7046070000",  
 	"Sargon",  "1006180000",  Event.prNew,  Array.prNew(40),  
 	"8052250000",  "+",  "1522680000",  "main",  
 	Event.prNew,  Array.prNew(32),  Event.prNew,  Array.prNew(8),  
@@ -43,7 +43,7 @@ o = [
 	Array.prNew(8),  Array.prNew(1),  Event.prNew,  Array.prNew(12),  
 	"",  "Unnamed Track",  Array.prNew,  Event.prNew,  
 	Array.prNew(20),  "ff7db235",  Event.prNew,  Array.prNew(28),  
-	"synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/SynthV/ending/1272636516/xuan-lead"
+	"synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/ending/1272636516/xuan-lead"
 ];
 p = [
 	// Event
@@ -137,7 +137,7 @@ p = [
 		proto: nil,  parent: nil,  
 		know: true ],  
 	// Array
-	23, [ nil,  nil,  'activeTakeId',  3,  
+	23, [ nil,  nil,  'activeTakeId',  1,  
 		nil,  nil,  'takes',  o[24] ],  
 	// Array
 	24, [ o[25],  o[27],  o[29],  o[31] ],  

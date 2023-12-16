@@ -2544,7 +2544,7 @@ P.still( \purple, start: \nods,syl:1, timecode:5116.5.seconds, music: { |p b e|
 P.tune( { |i|  i.drop(5) <> (instrument: \harp, decaytime:10,coef:0.1, out: Effect.bus( { |i| DWGReverbC1C3.ar(i) => Phaser2.ar(_,rate:0.11) /7} )) }, syl:4 );
 P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 	lyrics: "Oblivion + + + together + + r r r r r r r r r r r r",
-	filter: (midinote: _ + (12 * [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] )), 
+	filter: (midinote: _ + (12 * [1.dup(4) ++ 0.dup(17)])), 
 	phonemes:[ "@","p l \i","w i"," A n", "th @","k e ","t a \r" ], 
 	/* "oblivion together".xsampa
 	"among".xsampa
@@ -2572,8 +2572,9 @@ P.synthV(role: \thalassa,syl: 27, take: \continuation,
 		].p
 	},
 	params: {|p b| [
-	lyrics: "together + + does not frighten - + me r r beloved + + r r",
-	phonemes: ["th @","k e ","t a \r", "t A ts","n A th", "f r\\` a"," :\\i", "th A n", "m i", "","","b i", "l A w","e d"],
+	// lyrics: "together + + does not frighten - + me r r beloved + + r r",
+	lyrics: "r r r does not frighten  + me - r r beloved + + r r",
+	phonemes: ["th @","k e ","t a \r", "t A ts","n A th", "f r\\` a :\\i", "th A n", "m i","","","","b i", "l A w","e t"],
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
@@ -2614,36 +2615,16 @@ P.still( \oblivion, start: 'Oblivion together', timecode:5125.5.seconds, music: 
 		e.still.setText(["oblivion",""])
 	}
 });
-P.synthV(\kevin, take: \bg,
+P.synthVs(\kevin, take: [ \bg, \bg2 ],
 	pbind: {|p b| 
 		[
-			dur: b.parse([4, 1, 2, 2, 3, 1, 2, 2, 3, 1, 2, 2, 3 ]).q,
-			midinote: [-1, 4, 4, 3, -1, 3, 3, 2, -1, 2, 2, 1].dm(\a)
+			dur: b.parse([4, 1, 2, 2, 3,  1, 2, 2, 3,  1, 2, 2, 3, 1,  1, 3 ]).q,
+			midinote:   [-1, 4, 4, 3, -1, 3, 3, 2, -1, 2, 2, 1, -1, 2, 1, -7].dm(\a)
 		].p
 	},
 	params: {|p b| [
-	lyrics: " r r r r r together + + r together + +",
-	pitchTake: 1,
-	paramTension: -0.5,
-	paramBreathiness: 0.5,
-	vocalMode: \Soft
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-		=>DWGReverbC1C3.ar(_,c1:20,c3:1)
-	}.play
-});
-P.synthV(\kevin, take: \bg2,
-	pbind: {|p b| 
-		[
-			dur: b.parse([4, 1, 2, 2, 3, 1, 2, 2, 3, 1, 2, 2, 3 ]).q,
-			midinote: [-1, 4, 4, 3, -1, 3, 3, 2, -1, 2, 2, 1].dm(\a)
-		].p
-	},
-	params: {|p b| [
-	lyrics: " r r r r r together + + r together + +",
-	pitchTake: 3,
+	lyrics: "  r together + + r together + + r together + + r together + +",
+	pitchTake: [1, 3],
 	paramTension: -0.5,
 	paramBreathiness: 0.5,
 	vocalMode: \Soft
@@ -2692,12 +2673,14 @@ P(\arp,start:'Oblivion together',syl:4,music:{|p b e|
 	
 });
 {
-[" frighten me (b b ), beloved(b b b).",[-7,-6,-3,-4, -17, -2, -7, -6, -5, -17, -2, -1].dm(\a)].addLine;
+[" frighten me (b b ), beloved(b b).",[-7,-6,-3,-4, -17, -2, -7, -6, -5, -17, -1].dm(\a)].addLine;
+P.tune();
 P(\arp2,start:'frighten',music:{|p b e| 
 	var score = VoiceLeading([
-		[-7, -6, -3, -4, -17, -2, -7, -6, -5, -17, -2, -1],
-		[-7, -6, -3, \_, \_,  \r, -7, -6, -5, \_,  \_, \_],
-		[1,  \_, \_, \_, \_, \_, \_, -7, \_, \_, \_, \_ ]//  5, \_, \_, \_, -6, \_, \_, \_, 4, \_, \_, \_, -5, \_, \_, \_, -4, \_, \_]
+		[-7, -6, -3, -4, -17, -2, -7, -6, -5, -17, -1, -1.5],
+		[-7, -6, -3, \_, \_,  \r, -7, -6, -5, \_,  \_, \_ ],
+		[1,  \_, \_, \_, \_,  \_, \_, -7, \_, \_,  \_, -6.5], //  5, \_, \_, \_, -6, \_, \_, \_, 4, \_, \_, \_, -5, \_, \_, \_, -4, \_, \_]
+		[]
 	].df(\a),b.drop(1)!4=>_.flat);
 	[
 	//freq: 	[4,3,1,-5,-3,-5,1,3,  3,2,-7,-5,-4,-5,-7,2].df(\a).q,
@@ -2762,8 +2745,12 @@ P(\chords, music: { |p b e|
 		out: [0,1]
 	].pp
 });
-P.synthV(role: \kirk, take: \lead, params: {|p b| [
+P.synthV(role: \sargon, take: \lead, params: {|p b| [
 	lyrics: "I promise + belove + ed",
+	filter: (midinote: _ - 12), 
+	phonemes: ["a e i","p r a","m e s","b i","l a v","e d" ],
+	legato: [1, 1, 0.9, 1, 1, 1, ],
+	paramTension: -0.0, paramLoudness: 3,
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
@@ -2798,11 +2785,40 @@ P.still(\herAgain, timecode: 5135.6.seconds, music: { |p b e|
 		text: ["together","forever?"],
 	)
 });
-["KIRK: Forever beloved. Forever. ","r", [3]].addLine;
-P(\chord, music: { |p b e|
-	(
-		freq: [-1, 1, 5, 13].df('a-',4)
-	).play
+["KIRK: Forever beloved. Forever. ","5 4 3 4 3 2/c# 5 4 3/c".dm2].addLine;
+P.tune(_ <> [instrument: \stringyy, amp: 0.5].pm);
+P.synthV(role: \sargon, take: \lead, params: {|p b| [
+	lyrics: "Forever + + beloved + + forever + +",
+	legato: [1, 1, 1, 1, 1, 0.7, 1, 1, 1],
+	paramTension:0,
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+
+});
+P(\lick,syl:5, music: { |p b e|
+	[
+		freq: [3, 2, 1].df(\c).q,
+		dur: b.drop(1).q,
+		instrument: \sparkTriangle, depth:0.01
+	].ppm;
+	[
+		freq: [5, 7, 3].df(\c,\mixolydian).q,
+		dur: b.drop(1).q,
+		instrument: \sawSynthSustain
+
+	].ppm
+});
+P(\bassline, music: { |p b e|
+	[
+		freq: [[ 1, 16,14,21 ], [ 5, 12, 15, 17 ], 6, 7, 12, 11, 1.5, 1.5, 7].df('a-',3,\mixolydian).q,
+		dur: b.q,
+		amp:0.4, instrument: \sawSynthSustain,
+		pulse: 0.6
+	].pp
 });
 P.still(\himAgain, timecode: 5137.7.seconds, music: { |p b e|
 	 e.still.( 
@@ -2810,49 +2826,141 @@ P.still(\himAgain, timecode: 5137.7.seconds, music: { |p b e|
 		text: ["forever beloved","forever"],
 	)
 });
-["(They embrace and kiss, and the light thing happens again during it.) ","7 11".dm(\c),[3,9]].addLine;
+["(They embrace and kiss, and the light thing happens again during it.) ",[11, 7, 5, 3, 2, 1, 6, 5, 5].dm(\b, \minor),].addLine;
+Song.durs.filter(\kiss, {|i| var last = i.last; i.dropLast ++ (last * 4)});
+P(\transform, syl: 7, music:{ |p b e| 
+	// Synths(\transLinen,\sustain,b.sum,\freq,[1,3,11,13].df(\c),\amp,0.1,\out,1);
+	// Synths(\transLinen,\sustain,b.sum,\freq,[1,3,11,13].df(\g,scale:\minor),\amp,0.1,\out,2);
+	// Synths(\transLinen,\sustain,b.sum,\freq,[1,3,11,13].df('c#',scale:\minor),\amp,0.1,\out,3);
+	// Synths(\transLinen,\sustain,b.sum,\freq,[1,3,11,13].df('f#'),\amp,0.1,\out,4);
+	//////////strings
+	p.synful1.patch(\violas,\tremsulpont,0);
+	p.synful2.patch(\violins2,\tremsulpont,0);
+	(
+		expression:100,
+		freq:[3,5,6.5,11,13].df(\c),
+		type:\synful,
+		instance:p.synful1,
+		dur:b.sum,
+		legato:1,
+		amp:1
+	).play;
+	[ 
+		expression:100,
+		freq:[1,1].df(\c).q,
+		type:\synful,
+		instance:p.synful1,
+		// dur:[ b.sum, p.durs[e.start+1].list.sum ].q,
+		dur: b.sum.q(1),
+		legato:1,amp:1 
+	].pp;
+	(
+		expression:200,
+		note:[3,5,6.5,11,13].df('f#'),
+		type:\synful,
+		instance:p.synful2,
+		dur:b.sum,
+		// dur: b.sum.q,
+		legato:1,
+		amp:2
+	).play;
+	[
+		expression:100,
+		freq:[[ 1 ],[ -7,-17 ]].df('f#').q,
+		type:\synful,
+		instance:p.synful1,
+		// dur:[ b.sum, p.durs[e.start+1].list.sum ].q,
+		dur: b.sum.q(1),
+		legato:1,
+		amp:1
+	].pp;
+	p.synful1.syn.set(\out,Effect(FreeVerb.ar(_,0.75,0.55)).bus.index);
+	p.synful2.syn.set(\out,Effect(PlateReverb.ar(_,mix:0.55),out:0).bus.index);
+	////////timpani
+	{ |pitchScale=1.15 loss=0.99998 |
+		var env=Env.linen(0,b.sum-5,8).kr(2,gate:1)*0.175;
+		var numChannels=4;
+		var exc = Dust.ar(2!numChannels)+Impulse.ar(0);
+		var sig;
+		exc = Decay.ar(exc,0.02);
+		exc=Integrator.ar(exc,0.8,0.1);
+		exc=PinkNoise.ar(exc);
+		sig=MembraneCircle.ar(exc,[0.007,0.0073]*pitchScale,loss)*env;
+		sig
+	}.play;
+
+});
 P(\chords, music: { |p b e|
 	[
 		freq:[
 			[3, 5, 11].df(\b,\minor),
 			[1, 3, 6, ].df(\d,6,\whole)
 		].q,
-		dur: b.q,
-		instrument: \stringyy,
+		dur: b.parse([8,1]).q,
+		instrument: \stringyy, amp:0.4,
 		freqLag:3
 
 	].ppm
 });
-Song.kissXfade = 3;
+P(\bassnote, music: { |p b e|
+	(
+		freq: [1, 4, 6, 12].df(\a,2),
+		out: Effect.bus({|i|i/2 + Fverb.ar(i[0], i[1], predelay:0, input_amount:100, input_lowpass_cutoff:10000, input_highpass_cutoff:100, input_diffusion_1:75, input_diffusion_2:62.5, tail_density:70, decay:70, damping:5500, modulator_frequency:1, modulator_depth:0.5) }, inputChannels: 2),
+		dur: b.dropLast.sum
+	).play
+});
+P(\line, music: { |p b e|
+	[
+		freq: [11, 7, 5, 3, 2, 1, 6, 5, ].df(\b, \minor).q,
+
+		dur: b.q
+	].pp
+});
+Song.kissXfade = 1;
 P.still(\kiss, timecode: 5150.25.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b[0].sum + p.kissXfade,
+		wait: b[..7].sum + b[8] - p.kissXfade ,
 		text: ["",""],
 	)
 });
-P.still(\kissBlue, syl: 0, timecode: 5156.seconds, music: { |p b e|
+P.still(\kissBlue, syl: 7, timecode: 5156.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.drop(1).sum - p.kissXfade,
-		fadeIn: 3,
+		wait: b.drop(1).sum + 1,
+		fadeIn: b.drop(1) / 2,
 		text: ["",""],
-		fade: 3
+		// fade: 1
 	)
 });
-["KIRK: Well, I'm sure that Sargon appreciated your co-operation, Doctor Mulhall. ","r",[2]].addLine;
-P.still(\kirkBack, timecode: 5211.5.seconds, music: { |p b e|
+["KIRK: Well, I'm sure that Sargon appreciated your co-operation, Doctor Mulhall. ","r",[4]].addLine;
+
+
+P(\cut,lag:1, music: { |p b e|
+	{
+		ReplaceOut.ar((0..4), {
+			PinkNoise.ar(0.005)
+			+ (
+				Saw.ar(1.df('c#',3), 0.1)
+				* Env.perc(0.05, 8).kr()
+			)
+		})
+
+	}.play(addAction:\addToTail);
+	(freq: 1.df('c#',[2,3]), lag:0.01).play
+});
+P.still(\kirkBack, lag:1, timecode: 5211.5.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["well I'm sure","that Sargon"],
 	)
 });
-["MULHALL: Yes. I was happy to co-operate, Captain. ","r",[2]].addLine;
+["MULHALL: Yes. I was happy to co-operate, Captain. ","r",[4]].addLine;
 P.still(\mulhallBack, timecode: 5218.35.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
 	)
 });
-["CHAPEL: It was beautiful.","r",[2]].addLine;
+["CHAPEL: It was beautiful.","r",[4]].addLine;
 P.still(\chapelEnd, timecode: 5223.9.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,

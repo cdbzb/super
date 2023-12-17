@@ -2635,6 +2635,27 @@ P.synthVs(\kevin, take: [ \bg, \bg2 ],
 		=>DWGReverbC1C3.ar(_,c1:20,c3:1)
 	}.play
 });
+P.synthVs(\kevin, take: [ \longerBg, \longerBg2 ],
+	pbind: {|p b| 
+		[
+			dur: b.parse([8, 1, 1, 1, 2, 3, 1, 1, 1, 1, 2, 3]).q,
+			midinote:   [-1, 5, 3, 6, 11, -1, 7, 4, 5, 12, -1].dm(\a)
+		].p
+	},
+	params: {|p b| [
+	lyrics: "r oblivion + + + r oblivion + + +",
+	filter: (midinote: _ - 12), 
+	pitchTake: [1, 3],
+	paramTension: -0.5,
+	paramBreathiness: 0.5,
+	vocalMode: \Soft
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+		=>DWGReverbC1C3.ar(_,c1:20,c3:1)
+	}.play
+});
 P(\arp,start:'Oblivion together',syl:4,music:{|p b e| 
 	var score = VoiceLeading([
 		[4, 3,  1,  -5, -3, -6, 1,  3,  3,  2,  -7, -4.5, -2, -5, -7, 2,  2,  1,  -6, -3, -1, -4, -6, 1,  -5, \_, \_, \_, ],
@@ -2711,6 +2732,13 @@ P(\arp2,start:'frighten',music:{|p b e|
 	
 });
 [" Promise we'll be together. ",[6,5,3,5,6,11,7,6].dm('b-')].addLine;
+P(\line, music: { |p b e|
+	[
+		freq: [6, 5, 3, 2, 1].df('b-').q,
+		dur: b.q,
+		instrument: \wash, freqLag:0.2
+	].pp//m
+});
 P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 	filter: (midinote: _ - 12), 
 	lyrics: "Promise + r we'll be together + +",
@@ -2814,11 +2842,36 @@ P(\lick,syl:5, music: { |p b e|
 });
 P(\bassline, music: { |p b e|
 	[
+		// freq: [[ 1, 16,14,21 ], [ 5, 12, 15, 17 ], 6, 7, 12, 11, 1.5, 1.5, 7].df('a-',3,\mixolydian).q,
 		freq: [[ 1, 16,14,21 ], [ 5, 12, 15, 17 ], 6, 7, 12, 11, 1.5, 1.5, 7].df('a-',3,\mixolydian).q,
 		dur: b.q,
 		amp:0.4, instrument: \sawSynthSustain,
 		pulse: 0.6
-	].pp
+	]//.pp
+});
+P(\voices, music: { |p b e|
+	MegaBind(
+		[
+			[11, 7,  6,  7,  6,  5, \r].df('a-',6,\mixolydian) ++ [5, 4, 3].df(\c,7) ,
+			[-1, -5, -6, -7, 2,  1, \r  ].df('a-',\mixolydian) ++ [1, 5, \_].df(\c,3),
+			[14, 12, 11, 12, 13, 14, \r ].df('a-', \mixolydian) ++ [13, 12, 11].df(\c),
+			[16, 14, 14, 14, 11, \r, \r].df('a-', \mixolydian) ++ [7, 17, 16].df(\c,\mixolydian)
+		]
+		,
+		b.parse([1, 1, 1, 1, 1, 0.9,0.1,1,1,1]),
+		[],
+		{ |i| 
+			Saw.ar(i.freqSeq /2,0.05)
+			* Env.asr(attackTime:0.01, sustainLevel:1.0, releaseTime:1.0, curve:-4.0).kr(0,gate:i.gateSeq)
+		},
+		{|i|  Mix.ar(i)}
+	).play
+});
+P(\chords,syl: 5, music: { |p b e|
+	[
+		freq: [[7,11, 13, 15], [7, 11, 14],[7, 11, 13] ].df(\c,\mixolydian).q,
+		instrument: \stringyy, amp:0.3
+	].ppm
 });
 P.still(\himAgain, timecode: 5137.7.seconds, music: { |p b e|
 	 e.still.( 
@@ -2901,13 +2954,20 @@ P(\chords, music: { |p b e|
 		freqLag:3
 
 	].ppm
+	;
+	[
+		freq:[ -3, -16.5 ].df(\b,\minor).q,
+		dur: b.parse([8,1]).q,
+		instrument: \stringyy, amp:0.2,
+		freqLag:0.3
+	].ppm
 });
 P(\bassnote, music: { |p b e|
 	(
 		freq: [1, 4, 6, 12].df(\a,2),
 		out: Effect.bus({|i|i/2 + Fverb.ar(i[0], i[1], predelay:0, input_amount:100, input_lowpass_cutoff:10000, input_highpass_cutoff:100, input_diffusion_1:75, input_diffusion_2:62.5, tail_density:70, decay:70, damping:5500, modulator_frequency:1, modulator_depth:0.5) }, inputChannels: 2),
 		dur: b.dropLast.sum
-	).play
+	)//.play
 });
 P(\line, music: { |p b e|
 	[

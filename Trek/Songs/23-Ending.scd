@@ -2638,12 +2638,12 @@ P.synthVs(\kevin, take: [ \bg, \bg2 ],
 P.synthVs(\kevin, take: [ \longerBg, \longerBg2 ],
 	pbind: {|p b| 
 		[
-			dur: b.parse([8, 1, 1, 1, 2, 3, 1, 1, 1, 1, 2, 3]).q,
-			midinote:   [-1, 5, 3, 6, 11, -1, 7, 4, 5, 12, -1].dm(\a)
+			dur: b.parse([8, 1, 1, 1, 2,  3,  1,   1, 1, 2, 3,  1, 1, 1, 2, 3]).q,
+			midinote:   [-1, 5, 3, 6, 11, -1, 4.5, 2, 5, 7, -1, 3, 1, 4, 6].dm(\a)
 		].p
 	},
 	params: {|p b| [
-	lyrics: "r oblivion + + + r oblivion + + +",
+	lyrics: "r oblivion + + + r oblivion + + + r oblivion + + + r",
 	filter: (midinote: _ - 12), 
 	pitchTake: [1, 3],
 	paramTension: -0.5,
@@ -2754,7 +2754,17 @@ P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 
 });
 P.tune('Promise',Pset(\instrument,\stringyy,_));
-P.tune();
+P.tune('se we',{ |i| i  => i.fin(5)<> [instrument: \harp, coef:0.1, amp:0.03].p});
+P(\harpTwo, music: { |p b e|
+	[
+		freq: [\r, 3, 2, 1].df('b-').q,
+		dur: b.parse([2,1,1,1]).q,
+		out: Effect.bus({|i| Pan2.ar(i, 0.8) },),
+		coef:0.2,amp:0.02,
+		instrument:\harp
+
+	].pp
+});	
 P(\chords, music: { |p b e|
 	[
 		freq: [
@@ -2762,15 +2772,69 @@ P(\chords, music: { |p b e|
 			\r,
 			[ 3, 5, 7, 11].df(\a,\minor)
 		].q, 
-		dur: b.parse([3, 3, 2]).q
+		dur: b.parse([3, 3, 2]).q,
+		out: Effect.bus({|i| 
+			i
+			=> {|i| CombN.ar(i, maxdelaytime:0.2, delaytime:0.2, decaytime:3, mul:1.0, add:0.0) * 0.9 + i}
+			=> Phaser2.ar(_, depth:0.5, rate:0.1, fb:-0.69, cfb:0.1, rot:1.5707963267949, rq:0.3)
+		},)
+
 	].pp
 });
-["KIRK: I promise, beloved. ","3 11 7/d/mixolydian 5 11 7/c".dm2].addLine;
+["KIRK: I promise, beloved. ","3 11 7/d/mixolydian 6 11 7/c".dm2].addLine;
 P(\chords, music: { |p b e|
 	[
 		freq: [ \r, [1, 3, 5, 11], [2, 4, 7] ].df(\d, [4,5],\mixolydian).q,
 		dur: b.parse([1,3,2]).q,
-		out: [0,1]
+		out: [0,1],
+		instrument:\default
+	].ppm
+});
+P(\lines, music: { |p b e|
+	MegaBind(
+		[
+			[\r, 1, 2],
+			[\r, 3, 4]
+		].df(\d)
+		,
+		b.parse([1, 3, 2]),
+		[pan: [0.5,0.8]],
+		{|i|  
+			Gendy3.ar(
+				ampdist:1,
+				durdist:1,
+				adparam:1.0,
+				ddparam:1.0,
+				freq:i.freqSeq.lag(0.4) * [0.5,1],
+				ampscale:0.1,
+				durscale:0.1,
+				initCPs:12,
+				knum:3,
+				mul:1.0,
+				add:0.0
+			)//(i.freqSeq,0,0.1)
+			* Env.asr(0.3,1,3).kr(0,gate:i.gateSeq)
+			=> LPF.ar(_,950) / 10
+			=> Pan2.ar(_, i.pan)
+		},
+		{|i|  Mix.ar(i)}
+	).play
+});
+P(\line, music: { |p b e|
+	[
+		freq: [\r, 11, 7, 5, 4].df(\d, \mixolydian).q,
+		dur: b.q,
+		amp: 0.04,
+		instrument:  \sparkTriangle , depth: 0.01,
+		out: Effect.bus({|i| Pan2.ar(i,-0.3) => DWGReverbC1C3.ar(_,mix:0.2) },)
+	].ppm;
+	[
+		freq: [\r, 11, 7, 5, 4].df(\d,[ 4, 5 ], \mixolydian).q,
+		lag: Ptuple( [0, Pwhite(0.01,0.03,inf)] ),
+		dur: b.q,
+		instrument:  \harp, depth: 0.01,coef:0.1,amp:0.02,
+
+		out: Effect.bus({|i| Pan2.ar(i,0.3) },)
 	].pp
 });
 P.synthV(role: \sargon, take: \lead, params: {|p b| [
@@ -2814,6 +2878,7 @@ P.still(\herAgain, timecode: 5135.6.seconds, music: { |p b e|
 	)
 });
 ["KIRK: Forever beloved. Forever. ","5 4 3 4 3 2/c# 5 4 3/c".dm2].addLine;
+// Song.durs.filter('ver be',{|i| var last = i.last; i.dropLast ++ (i.last * 1.5)});
 P.tune(_ <> [instrument: \stringyy, amp: 0.5].pm);
 P.synthV(role: \sargon, take: \lead, params: {|p b| [
 	lyrics: "Forever + + beloved + + forever + +",
@@ -2880,7 +2945,9 @@ P.still(\himAgain, timecode: 5137.7.seconds, music: { |p b e|
 	)
 });
 ["(They embrace and kiss, and the light thing happens again during it.) ",[11, 7, 5, 3, 2, 1, 6, 5, 5].dm(\b, \minor),].addLine;
-Song.durs.filter(\kiss, {|i| var last = i.last; i.dropLast ++ (last * 4)});
+P.tune();
+// P.tune();
+// Song.durs.filter(\kiss, {|i| var last = i.last; i.dropLast ++ (last * 4)});
 P(\transform, syl: 7, music:{ |p b e| 
 	// Synths(\transLinen,\sustain,b.sum,\freq,[1,3,11,13].df(\c),\amp,0.1,\out,1);
 	// Synths(\transLinen,\sustain,b.sum,\freq,[1,3,11,13].df(\g,scale:\minor),\amp,0.1,\out,2);
@@ -2991,10 +3058,8 @@ P.still(\kissBlue, syl: 7, timecode: 5156.seconds, music: { |p b e|
 		// fade: 1
 	)
 });
-["KIRK: Well, I'm sure that Sargon appreciated your co-operation, Doctor Mulhall. ","r",[4]].addLine;
-
-
-P(\cut,lag:1, music: { |p b e|
+["(beat) Well, I'm sure that Sargon appreciated your co-operation, Doctor Mulhall. ","-1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1/f#".dm2].addLine;
+P(\cut,  music: { |p b e|
 	{
 		ReplaceOut.ar((0..4), {
 			PinkNoise.ar(0.005)
@@ -3002,29 +3067,44 @@ P(\cut,lag:1, music: { |p b e|
 				Saw.ar(1.df('c#',3), 0.1)
 				* Env.perc(0.05, 8).kr()
 			)
+			* EnvGen.cutoff(wait:e.bAll.drop(1).sum, release:1, curve:nil, doneAction:2)
 		})
 
 	}.play(addAction:\addToTail);
 	(freq: 1.df('c#',[2,3]), lag:0.01).play
 });
-P.still(\kirkBack, lag:1, timecode: 5211.5.seconds, music: { |p b e|
+P.still(\kirkBack, timecode: 5211.5.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["well I'm sure","that Sargon"],
+		text: ["",""],
+	).sequenceText2(
+			b.parse([1,5, 6]), [ 
+				["well I'm sure","that Sargon"],
+				["appreciated","your"],
+				["cooperation","Doctor Mulhall"]
+			],
 	)
 });
-["MULHALL: Yes. I was happy to co-operate, Captain. ","r",[4]].addLine;
+["MULHALL: Yes. I was happy to co-operate, Captain. ","1 1 1 1 1 1 1 1 1 1 1 1/e".dm2].addLine;
 P.still(\mulhallBack, timecode: 5218.35.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["Yes","I was happy to"],
+	).sequenceText2(
+			b.parse([6]), [ 
+			["cooperate","Captain"],
+			],
 	)
 });
-["CHAPEL: It was beautiful.","r",[4]].addLine;
+["CHAPEL: It was beautiful.","1 1 1 1 1/g".dm2].addLine;
 P.still(\chapelEnd, timecode: 5223.9.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["it","was"],
+	).sequenceText2(
+			b.parse([2]), [ 
+			["beautiful",""],
+			],
 	)
 });
 }.()

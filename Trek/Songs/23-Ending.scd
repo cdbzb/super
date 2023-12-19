@@ -2878,7 +2878,7 @@ P.still(\herAgain, timecode: 5135.6.seconds, music: { |p b e|
 	)
 });
 ["KIRK: Forever beloved. Forever. ","5 4 3 4 3 2/c# 5 4 3/c".dm2].addLine;
-Song.durs.filter('ver be',{|i| var last = i.last; i.dropLast ++ (i.last * 1.5)});
+// Song.durs.filter('ver be',{|i| var last = i.last; i.dropLast ++ (i.last * 1.5)});
 P.tune(_ <> [instrument: \stringyy, amp: 0.5].pm);
 P.synthV(role: \sargon, take: \lead, params: {|p b| [
 	lyrics: "Forever + + beloved + + forever + +",
@@ -2896,13 +2896,11 @@ P(\lick,syl:5, music: { |p b e|
 	[
 		freq: [3, 2, 1].df(\c).q,
 		dur: b.drop(1).q,
-		amp: [1, 0.7,0.5]/12 => _.q,
 		instrument: \sparkTriangle, depth:0.01
 	].ppm;
 	[
 		freq: [5, 7, 3].df(\c,\mixolydian).q,
 		dur: b.drop(1).q,
-		amp: 0.05,
 		instrument: \sawSynthSustain
 
 	].ppm
@@ -2936,9 +2934,8 @@ P(\voices, music: { |p b e|
 });
 P(\chords,syl: 5, music: { |p b e|
 	[
-		freq: [[7,11, 13, 15], [7, 11, 14, 14],[7, 11, 13] ].df(\c,\mixolydian).q,
-		instrument: \stringyy, amp:0.3,
-		instrument: \sawSynthSustain, amp: 0.06
+		freq: [[7,11, 13, 15], [7, 11, 14],[7, 11, 13] ].df(\c,\mixolydian).q,
+		instrument: \stringyy, amp:0.3
 	].ppm
 });
 P.still(\himAgain, timecode: 5137.7.seconds, music: { |p b e|
@@ -2948,8 +2945,9 @@ P.still(\himAgain, timecode: 5137.7.seconds, music: { |p b e|
 	)
 });
 ["(They embrace and kiss, and the light thing happens again during it.) ",[11, 7, 5, 3, 2, 1, 6, 5, 5].dm(\b, \minor),].addLine;
+P.tune();
 // P.tune();
-Song.durs.filter(\kiss, {|i| var last = i.last; i.dropLast ++ (last * 4)});
+// Song.durs.filter(\kiss, {|i| var last = i.last; i.dropLast ++ (last * 4)});
 P(\transform, syl: 7, music:{ |p b e| 
 	// Synths(\transLinen,\sustain,b.sum,\freq,[1,3,11,13].df(\c),\amp,0.1,\out,1);
 	// Synths(\transLinen,\sustain,b.sum,\freq,[1,3,11,13].df(\g,scale:\minor),\amp,0.1,\out,2);
@@ -3019,7 +3017,7 @@ P(\chords, music: { |p b e|
 			[1, 3, 6, ].df(\d,6,\whole)
 		].q,
 		dur: b.parse([8,1]).q,
-		instrument: \stringyy, amp:0.4 + 0.3,
+		instrument: \stringyy, amp:0.4,
 		freqLag:3
 
 	].ppm
@@ -3027,41 +3025,23 @@ P(\chords, music: { |p b e|
 	[
 		freq:[ -3, -16.5 ].df(\b,\minor).q,
 		dur: b.parse([8,1]).q,
-		instrument: \stringyy, amp:0.2 + 0.2,
+		instrument: \stringyy, amp:0.2,
 		freqLag:0.3
 	].ppm
 });
-P(\xtraHighNote, music: { |p b e|
-	(
-		instrument: \wash,
-		freq: 21.df(\b)
-	).play
-});
 P(\bassnote, music: { |p b e|
-(
-		freq: [6, 13, 16 ].df(\d,3),
+	(
+		freq: [1, 4, 6, 12].df(\a,2),
 		out: Effect.bus({|i|i/2 + Fverb.ar(i[0], i[1], predelay:0, input_amount:100, input_lowpass_cutoff:10000, input_highpass_cutoff:100, input_diffusion_1:75, input_diffusion_2:62.5, tail_density:70, decay:70, damping:5500, modulator_frequency:1, modulator_depth:0.5) }, inputChannels: 2),
-		dur: b.dropLast.sum,
-		// amp: 0.01
-	).play
+		dur: b.dropLast.sum
+	)//.play
 });
 P(\line, music: { |p b e|
-	//check the harmonisation from the Xtreme
 	[
-		freq: [
-			// [11, 7, 5, 3, 2, 1, 6, 5, ],
-			// [5,  5, 3, -7,-7,-5, 3, 3],
-			// [3, 3, -7,  -5, -5,1, 1],
-			[1, -7, -5, -3, -2, -1, -6, -5,-16.5 ],
-		].flop.df(\b,6, \minor).q,
-		dur: b.q,
-		instrument: \trem2,
-		// instrument: \stringyy, amp: 0.3,
-		// rate:[2.1, 1.3, 0.5 ],
-		rate: [1, pi],
-		out: Effect.bus({|i| FreeVerb.ar(i, 0.1, [ 0.9, 1 ]) },)
-		
-	].ppm
+		freq: [11, 7, 5, 3, 2, 1, 6, 5, ].df(\b, \minor).q,
+
+		dur: b.q
+	].pp
 });
 Song.kissXfade = 1;
 P.still(\kiss, timecode: 5150.25.seconds, music: { |p b e|

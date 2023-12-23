@@ -113,9 +113,9 @@ P(\walking, music: { |p b e|
 	[
 		freq: [1, 2, 3, 4].df(\e,\whole)=> Prand(_,inf),
 		dur: 0.01,
-		amp: Penv([0.01,0.1,0.1,0],b.sum/2),
+		amp: Penv([0.01,0.1,0.1,0],[b.sum/2, b.sum/2, e.bNext.sum/2]),
 		out: Pwhite(0,4)
-	].p.findur(b.sum).play
+	].p.findur(b.sum + e.bNext.sum).play
 });
 P.still(\walking, timecode: 4800.73.seconds, music: { |p b e|
 	 e.still.( 
@@ -207,9 +207,12 @@ P.still(\kirk_pain,syl:2, timecode: 4813.3.seconds, music: { |p b e|
 				wait: b.drop(1)[0],
 				fade:1
 			);
-			(freq:6.df(\g) + [0,5,11,23] , out: Effect.bus({|i| DWGReverbC1C3.ar(i) },)).play
+			(freq:6.df(\g) + [0,5,11,23] , out: Effect.bus({|i| 
+				DWGReverbC1C3.ar(i)
+				* Env([1, 1, 0.4, 0],[b.drop(1)[0] -0.05, 0.2, b.drop(1)[1..].sum-0.25]).kr()
+			},)).play
 });
-P.tune(\Pain);
+P.tune(\Pain, _ <> [instrument: \stringyy,mix: 0.1, amp: 0.07].pm);
 P.still(\turnedHead,syl:3, timecode: 4814.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -256,7 +259,12 @@ P(\cymbals,start:\Pain,music:{|p b e|
 			Synth(\cymbalsDS,[out:Effect(_*Line.kr(0,1,5)).bus.index])
 });
 P(\cymbals2,start:\Pain,syl:5,music:{|p b e| 
-			Synth(\cymbalsDS,[out:Effect(_*Line.kr(0,1,6)).bus.index])
+			Synth(\cymbalsDS,[out:Effect(
+				_
+				* Line.kr(0, 1, 6)
+				* Env([1,1,0.5,0],[b.drop(1).sum + e.bNext[0] - 0.1, 0.1, e.bNext[1..].sum]).kr()
+
+			).bus.index])
 });
 P(\bassNote2,start:\Pain,music:{|p b e| 
 			[
@@ -290,13 +298,15 @@ P.still(\bridge,syl:0, timecode: 4821.seconds, music: { |p b e|
 });
 P(\chords, music: { |p b e|
 	[
-		freq: [\r,[7,11,13],[6,11,14]].df('b-',3,\mixolydian).q,
+		freq: [\r,[7,21,13, 23],[6,21,14, 24]].df('b-',3,\mixolydian).q,
 		dur: b.parse([5, 1, 1]).q,
 		instrument: \pulse ,
-		amp:0.12
+		out: [1,2],
+		amp:0.15
 	].pp
 });
 P(\line, music: { |p b e|
+	Effect.bus({|i|i});//dummy
 	[
 		freq: [\r,4, 3, 2, 1, -5].df('e-',[ 6, 7 ]).q,
 		dur: b.parse([1, 1, 1, 1, 1, 2]).q,
@@ -331,24 +341,25 @@ P.synthVs(role: \henoch, take: [ \lead,\double ], params: {|p b| [
 	}.play
 
 });
-P(\trem,start:\Fortunately,music:{|p b e| 
-		(freq:[-11,-21].df('b-'),instrument:\trem2,amp:0.2,out:1,scale:2,dur:b.sum,
+P(\trem,music:{|p b e| 
+		(freq:[-11,-21].df('b-'),instrument:\trem2,amp:0.2,out:Effect.bus({|i| i * Env([1, 1, 0.5, 0.5, 0.2], [b[0]-0.05,0.1,b[1..4].sum-0.05, 0.2]).kr(2,gate:1) },out:1),scale:2,dur:b.sum,
 		//out:Effect(FreeVerb.ar(_,0.4,1),inputChannels:1).bus.index
 	).play
 });
 	}.value;
 [ "I know every thou-- ght of every mind around me." ,[3, 1, 4, 2, -7.5, -6, -5, 3,4,5,7,6,5,4].dm('e-',scale:\mixolydian)].addLine;
 P(\cymbal, music: { |p b e|
-	(instrument: \cymbalsDS,amp:0.02).play
+	(instrument: \cymbalsDS,amp:0.03).play
 });
 Song.setTempoMap('every mind',"e e e x xe x x e e e x xx x e");
 	// P.tune();
 P.synthVs(role: \henoch, take: [ \lead, \double ],
 	filter: (midinote: _ - 12), 
-	pitchTake: [1,3],
 	params: {|p b| [
+	pitchTake: [1,3],
 	lyrics: "I know evree + thought - of evree + mind a round - me  r",
 	legato: [ [1,1,1,1,1,1,1,1,1,1,1,1,1,0.8] ],
+	loudness: Env([3, 2, 3, 2, 3, 5, 7, 4, 2, 1, 0, 2] -2, b.parse([1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1]))
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -805,7 +816,7 @@ P.synthV( role: \vocoder, take: \lead, params: {|p b| [
 					rate: BufRateScale.kr(p.laMer.bufnum),
 					start: 0,
 					end: BufFrames.kr(p.laMer.bufnum)*0.185)
-				) * 0.7 / 8  
+				) * 0.7 / 8 
 				// => LPF.ar(_,200) 
 				=> Out.ar(Song.carrierBus.index,_);
 				// => Out.ar(_);
@@ -814,7 +825,8 @@ P.synthV( role: \vocoder, take: \lead, params: {|p b| [
 		{
 			p.laMer.bufnum
 			=> PlayBuf.auto(2, _, rate:
-				[0, -5, -5].midiratio.dq.demand(b.parse([6,4,5])) 
+				// [0, -5, -5].midiratio.dq.demand(b.parse([6,4,5])) 
+				[0, 5, 7,  -5, -5].midiratio.dq.demand(b.parse([2, 2, 2,4,5])).lag(0.05) 
 				// * 4 / 3
 				, trigger:1.0, startPos:0.0, loop:0.0, doneAction:0)
 				* Env([1, 1, 0],b.parse([6,9])).kr(2,gate:1)
@@ -1101,7 +1113,7 @@ P.synthV(role: \vocoder, take: \lead,
 	p.vocodeTune.( p, b, e, e.rpp,
 		verb:0,
 		// mix:0.1,
-		amp:0.12,
+		// amp:0.12,
 		modGain:3,
 		dur:b.sum+1,
 		att:1,
@@ -1164,7 +1176,7 @@ P.synthV(role: \vocoder, take: \lead,
 		chord: #[0.5,0.66,1,2],
 		enlarge:3,
 		verb:0.1,
-		amp:0.15,
+		// amp:0.15,
 		att:2,
 		sus:b.sum + e.bNext[..2].sum -1,
 		rel:1.2,
@@ -1245,7 +1257,7 @@ P.synthV(role: \vocoder, take: nil, params: {|p b| [
 			// pitchTake: 1
 		] }, music:{|p b e|
 			p.vocodeTune.(p,b,e,e.rpp,
-				amp:0.18,
+				// amp:0.18,
 		verb:0.1,
 		// amp:0.15,
 				att:1,
@@ -1445,7 +1457,7 @@ P.synthV(role: \vocoder, take:\lead, params: {|p b| [
 			p.vocodeTune.(p,b,e,e.rpp,0.2,1,b.sum-2,2,
 				chord:#[1,2,3,4],
 				mix: 0.9,
-				modGain:8.dbamp)
+				modGain:3)
 
 });
 P(\bass,start:\believed,music:{|p b e| 
@@ -1473,7 +1485,7 @@ P(\bass,start:\believed,music:{|p b e|
 
 	).play
 });
-["(boom) He is (boom) destroyed. ",[-5,5,5,-5,5,5].dm(\g)].addLine;
+["(boom) He is (boom) destroyed. ",[-5,5,5,-5,5,5].dm(\c)].addLine;
 P.still(\clear,syl: 0, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.drop(1).sum,
@@ -1490,7 +1502,19 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	filter: (midinote: _ - 24), 
 	pitchTake: 1
 ] }, music:{|p b e|
-	p.vocodeTune.(p,b,e,e.rpp,modGain:10.dbamp)
+	p.vocodeTune.( p, b, e, e.rpp,
+		modGain:3,
+		chord: #[1, 2,  4],
+		sawFreqRatio: 0.5,
+		durRel:1
+	);
+
+	{
+		p.laMer =>
+		PlayBuf.auto(2, _, rate: 0.midiratio / 2, startPos:0.0, loop:1.0, doneAction:0)
+		* Env([0,0,1, 1], b.parse([3,1, 2])).kr(2,gate:1)
+			=> {|i| Out.ar(p.carrierBus,i / 1)}
+	}.play
 });
 P(\chord,start:'He is (boom)',music:{|p b e| 
 	MegaBind(
@@ -1522,14 +1546,14 @@ P(\tamboura, music: { |p b e|
 			durdist:1,
 			adparam:1.0,
 			ddparam:1.0,
-			freq:[[-1,1, 5],[-2, 2, 5]].df(\g,\mixolydian).dq.demand(b.parse([10, 7])),
-			width:1.021,
+			freq:[[-1,1, 5],[-2, 2, 5]].df(\g,[4, 5],\mixolydian).dq.demand(b.parse([10, 7])),
+			width:[1.021, 1.03,1.04],
 			ampscale:0.5,
 			durscale:0.5,
 			initCPs:12,
 			knum:12,
 		)
-		/40
+		* -40.dbamp
 		* Env.linen(*(b.parse([1, 16]) ++ 2)).kr(2,gate:1)
 		// => Klang.ar(specificationsArrayRef:, freqscale:1.0, freqoffset:0.0)
 	}.play
@@ -1568,7 +1592,11 @@ P.synthV(role: \kirk, take: nil, params: {|p b| [
 P.still(\spockPlace, timecode: 5025.4.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["the","place"],
+	).sequenceText2(
+			b.parse([2]), [ 
+			["Henoch would","least suspect, Captain"],
+			],
 	)
 });
 P.synthV(role: \spock, take: \lead, params: {|p b| [
@@ -1725,6 +1753,17 @@ P(\bass,start:\placed,music:{|p b e|
 	).play
 });
 ["(boom boom) We shared consciousness (we shared consciousness... ) to",[-5,-5,3,2,4,3,2,1].dm('e-')++[3,2,4,3,2,1].dm( 'a-' )++[3,2,4,3,2,1].dm('e-') ].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum + e.bNext[..1].sum,
+		text: ["",""],
+	).sequenceText2(
+			b.parse([2,17]), [ 
+			["we shared","consciousness"],
+			["together!",""]
+			],
+	)
+});
 P.synthVs(role:\chapel, take: [ \lead, \double ],
 	// pbind:[ Song.enlarge(2), Song.enlarge(2) ],
 	pbind:Song.enlarge(2),
@@ -2018,7 +2057,7 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 		chord:#[1,2],
 		dur: b.sum +2,
 		sus:b.sum,
-		amp: 0.1,
+		// amp: 0.1,
 		modGain:3.5,
 		carrierGain:0.0,
 		durRel: 2
@@ -2186,7 +2225,7 @@ P.still(\kirkHelp, timecode: 5051.6.seconds, music: { |p b e|
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	lyrics: "Is there any + way we can help you Sargon + ",
 	filter: (midinote: _ - 12), 
-	legato: [1, 1, 1, 1, 0.9, 1, 1, 1, 0.9, 1, 1, ],
+	legato: [1, 1, 1, 1, 0.9, 1, 1, 1, 0.6, 1, 0.8, ],
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
@@ -2255,16 +2294,17 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	lyrics: "yes my son",
 	legato: [0.9,1,0.9, ],
+	lag: [0.1, 0, 0],
 	pitchTake: 1,
 	filter: (midinote: _ - 12), 
 ] }, music:{|p b e|
 	p.vocodeTune.( p, b, e, e.rpp,
 		verb:0.1,
-		att: 2,
+		att: 4,
 		rel:1,
 		sus: b.sum - 3,
 		dur: b.sum  ,
-		modGain:3
+		modGain:2
 	)
 });
 P(\bass,start:'my son',music:{|p b e| 
@@ -2358,7 +2398,8 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 		modGain:3,
 		rel: 2,
 		verb: 0,
-		dur:b.sum - 2
+		durRel: 0.2
+		// dur:b.sum - 2
 	)
 });
 Song.setQuarters(\bodies,[1,1,1,1/4,1/4,1,1/2,1/2,1/2]);

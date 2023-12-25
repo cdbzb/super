@@ -25,7 +25,7 @@ o = [
 	"388080000",  Event.prNew,  Array.prNew(40),  "7039030000",  
 	"-",  "533430000",  Event.prNew,  Array.prNew(40),  
 	"7572460000",  "selves",  "856590000",  Event.prNew,  
-	Array.prNew(40),  "8429050000",  "to",  "795910000",  
+	Array.prNew(40),  "8429050000",  "to",  "477540000",  
 	Event.prNew,  Array.prNew(40),  "9224960000",  "exist",  
 	"612460000",  Event.prNew,  Array.prNew(40),  "9837420000",  
 	"+",  "1580540000",  Event.prNew,  Array.prNew(40),  
@@ -54,7 +54,7 @@ o = [
 	Event.prNew,  Array.prNew(8),  Array.prNew(1),  Event.prNew,  
 	Array.prNew(12),  "",  "Unnamed Track",  Array.prNew,  
 	Event.prNew,  Array.prNew(20),  "ff7db235",  Event.prNew,  
-	Array.prNew(28),  "synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/SynthV/ending/1755329142/xuan-lead"
+	Array.prNew(28),  "synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/ending/1755329142/xuan-lead"
 ];
 p = [
 	// Event
@@ -150,7 +150,7 @@ p = [
 		proto: nil,  parent: nil,  
 		know: true ],  
 	// Array
-	23, [ nil,  nil,  'activeTakeId',  3,  
+	23, [ nil,  nil,  'activeTakeId',  1,  
 		nil,  nil,  'takes',  o[24] ],  
 	// Array
 	24, [ o[25],  o[27],  o[29],  o[31] ],  

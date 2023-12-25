@@ -346,7 +346,6 @@ P(\trem,music:{|p b e|
 		//out:Effect(FreeVerb.ar(_,0.4,1),inputChannels:1).bus.index
 	).play
 });
-	}.value;
 [ "I know every thou-- ght of every mind around me." ,[3, 1, 4, 2, -7.5, -6, -5, 3,4,5,7,6,5,4].dm('e-',scale:\mixolydian)].addLine;
 P(\cymbal, music: { |p b e|
 	(instrument: \cymbalsDS,amp:0.03).play
@@ -414,6 +413,7 @@ P(\drums, music: { |p b e|
 		=> Ppar(_)
 		=> _.play
 });
+	}.value;
 [ "See? (to Chapel) Take the hypo from him. And inject him with it. " ,[1,5,5,12,12,6,6].dm(\a,octave:4) ++ [5.5,6,7,5,3,1].dm(\c,scale:\mixolydian)].addLine;
 P.still(\henochToChapel, timecode: 4829.566.seconds, music: { |p b e|
 	 e.still.( 
@@ -1542,16 +1542,10 @@ P(\chord,start:'He is (boom)',music:{|p b e|
 P(\tamboura, music: { |p b e|
 	{
 		Gendy1.arWidth(
-			ampdist:1,
-			durdist:1,
-			adparam:1.0,
-			ddparam:1.0,
+			ampdist:1, durdist:1, adparam:1.0, ddparam:1.0,
 			freq:[[-1,1, 5],[-2, 2, 5]].df(\g,[4, 5],\mixolydian).dq.demand(b.parse([10, 7])),
 			width:[1.021, 1.03,1.04],
-			ampscale:0.5,
-			durscale:0.5,
-			initCPs:12,
-			knum:12,
+			ampscale:0.5, durscale:0.5, initCPs:12, knum:12,
 		)
 		* -40.dbamp
 		* Env.linen(*(b.parse([1, 16]) ++ 2)).kr(2,gate:1)
@@ -1803,6 +1797,84 @@ P.synthVs(role: \chapel, take: [ \answer,\answer2 ], params: {|p b| [
 Song.quarters[\shared]=Song.parseBeats(\shared,[1,1,1,1,1,1,1,3,1,1,1,1,1,3,1,1,1,1,1,1]/2);
 P.tune(\shared,Pset(\dur,Song.quarters[\shared].mean/2 * [1,1,1,1,1,1,1,3,1,1,1,1,1,3,1,1,1,1,1,1].q,_));
 Song.sharedClock=TempoClock.new().permanent_(true);
+P(\extraBass, music: { |p b e|
+	[
+		freq: [1, 1, 2, 3, 4, 4, 5, 6 , 7, 7, 11, 12, 2.5, 2.5, 4, 5].df('b-',3,\mixolydian).q,
+		dur: 0.5.dup(16).warpTo( e.quarters).q,
+		instrument: \sawSynthSustain,
+		pulse:1,
+		lagTime: 0.00
+	].ppm
+});
+P(\line, music: { |p b e|
+	[
+		freq: [-7, 5, 1, 2].df('e-').q,
+		dur: 2.dup(4).warpTo(e.quarters).q,
+		instrument: \visual_pad, amp: 0.6
+	].pp
+});
+P(\lick, music: { |p b e|
+	[
+		amp:0.05,
+		freq:[\r,5,13,12,\r].df('b-').q(inf),
+		dur:([15,1,3,6,7]/2).warpTo(e.quarters).q,
+		instrument:\sawSynthSustain,
+		legato:1.1
+	]//.pp;
+});
+P.synthVs(\kevin,start: \shared, take: [\bg4, \bg5], 
+	pbind: {|p b|
+		[
+			midinote:[5,5,13,12,\r].dm('b-',4),
+			dur:([15,1,3,6,7]/2).warpTo(Song.quarters[\shared]).q,
+		].p
+	},
+	params: {|p b| [
+		lyrics: "r together + +",
+		pitchTake: [1, 3]
+	]}, music:{|p b e|
+	{
+		e.playbuf
+		=> HPF.ar(_,300)
+		=> DCompressor.ar( _,
+			ratio:8,
+			threshold:-40,
+			attack:0.1,
+			release:100.1,
+			makeup:0.5,
+			automakeup:1
+		)
+		/2
+		=> AnalogTape.ar(_, bias:0.5, saturation:0.5, drive:0.5, oversample:1, mode:0)
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+SynthDef(\consciousnessSnare,{
+	AnalogSnareDrum.ar(
+		trig:\gate.tr(1),
+		infsustain:0,
+		accent:\accent.kr(0.1),
+		freq:\freq.kr(200),
+		tone:\tone.kr(0.5),
+		decay:\decay.kr(0.5),
+		snappy:\snappy.kr(0.5)
+	)
+	* \amp.kr(0.1)
+	* Env.perc(0,1).kr(2,gate:1)
+	=> Out.ar(\out.kr(0),_ )
+}).add;
+P(\snare, music: { |p b e|
+	[
+		dur: "q e eq qq e eq qq e eq".asBeats.warpTo(e.quarters).q,
+		instrument: \consciousnessSnare,
+		rest: MuteFirst(),
+		out: [1,0],
+		snappy: 0.8,
+		tone: 0.2,
+		freq: 180,
+		amp: 0.15
+	].pp
+});
 P(\newVersion,start:\shared,music:{|p b e| 
 	var tracks;
 	var group = p.sharedGroup=Group.new;
@@ -1820,7 +1892,6 @@ P(\newVersion,start:\shared,music:{|p b e|
 	].p;
 	var yow = [instrument:\yowbass,freq:[1,4,6.5,12.5].df(\c,octave:[3,2]).q(inf).stutter(4),dur:0.25,legato:0.3,amp:0.015,out:2].p;
 	var stringyy1 = [freq:[\r,3,2,4,3,2,1].df([\c,\f])++[3,2,4,3,2,1].df([\f,'b-'],octave:6)=>_.q(inf),dur:[2,1,1,1,1,1,3,1,1,1,1,1,1].q(inf)/4,instrument:\stringyy,out:[0,2]].p;
-	var saw1 = [amp:0.05,freq:[\r,5,13,12,\r].df(\c).q(inf),dur:[15,1,3,6,7].q(inf)/4,instrument:\sawSynthSustain,legato:1.1].p;
 	//there's a better way to write these echoing lines!
 	//var saw2 = [freq:[\r,12,11,\r].df(\c).q(inf),out:3,amp:0.07,dur:[24,3,6,7].q(inf)/4,instrument:\sawSynthSustain,legato:1.1].p;
 	//var saw3 = [freq:[\r,11,6.5,\r].df(\c).q(inf),out:2,amp:0.06,dur:[32,3,6,7].q(inf)/4,instrument:\sawSynthSustain,legato:1.1].p;
@@ -1828,7 +1899,6 @@ P(\newVersion,start:\shared,music:{|p b e|
 	var sn = [dur:"..xx..x.".asDrumPat(4,inf),amp:0.1,instrument:\sn_808].p;
 
 	[shaker,bd,hat,yow,bass].par.findur(6)
-	+= saw1.fin(4) 
 	=> Pmul(\freq,midiratio(-2),_) 
 	+= [6,[ shaker,bd,hat,yow=>Pmul(\freq,(midiratio(9)),_) ].par.findur(4)]
 	=> _.postln
@@ -2028,6 +2098,7 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	paramBreathiness: 0.8,
 	defaultVibratoDepth:0.2,
 	// legato: [1, 1, 0.8, 1, 1, 1, 1, 1, 1, 1.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ],
+	legato: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.6, 1, 1, 1, 1, 1, 1, 1, 1, ],
 	pitchTake: 1
 ] }, music:{|p b e|
 	a = [
@@ -2054,15 +2125,24 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	// 	=> p.synthVTracks.at(e.key).()
 	// }.play
 	p.vocodeTune.( p, b, e, e.rpp,
-		chord:#[1,2],
+		chord:#[1,2,4],
 		dur: b.sum +2,
 		sus:b.sum,
+		verb: 0.15,
+		mix: 0.9,
+		sawFreqRatio: 1,
 		// amp: 0.1,
 		modGain:3.5,
 		carrierGain:0.0,
 		durRel: 2
 	);
 	// { e.playbuf }.play
+	{
+		p.laMer => PlayBuf.auto(2,_, [-3,-1].midiratio.dq.demand(b.parse([2, 1])))
+		/1
+		* Env([1, 1, 0], b.parse([2, 2])).kr(2,gate:1)
+		=> Out.ar(p.carrierBus,_)
+	}.play
 }
 );
 ["(boom) Thalassa and I must now (boom) also depart",[-1,1,2,3,1,4,2,5, 5,4.5, 4.5,7].dm(\d)].addLine;
@@ -2080,7 +2160,7 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	pitchTake: 1
 ] }, music:{|p b e|
 	p.vocodeTune.( p, b, e, e.rpp,
-		0.1,
+		// 0.1,
 		durRel:1,
 		verb:0.5,
 		modGain:3
@@ -2300,11 +2380,14 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 ] }, music:{|p b e|
 	p.vocodeTune.( p, b, e, e.rpp,
 		verb:0.1,
-		att: 4,
-		rel:1,
-		sus: b.sum - 3,
-		dur: b.sum  ,
-		modGain:2
+		att: b.sum,
+		rel:0,
+		// sus: b.sum - 5.5,
+		sus: 0,
+		// dur: 1,
+		dur: b.sum,
+		modGain:2,
+		durRel: 0.1
 	)
 });
 P(\bass,start:'my son',music:{|p b e| 
@@ -2391,15 +2474,18 @@ Song.shareVox=VocalRPP(\bodies,\share);
 P.tune(\bodies);
 P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	lyrics: "r r share your bodies - + again +",
+	legato: [1, 1, 1, 1, 1, 1, 1, 1, 0.8],
 	filter: (midinote: _ - 12), 
 	pitchTake: 1
 ] }, music:{|p b e|
 	p.vocodeTune.( p, b, e, e.rpp,
 		modGain:3,
-		rel: 2,
+		sus: b.sum-3,
+		// dur: b.sum-1,
+		rel: 0,
 		verb: 0,
-		durRel: 0.2
-		// dur:b.sum - 2
+		durRel: 0.1,
+		dur:b.sum  
 	)
 });
 Song.setQuarters(\bodies,[1,1,1,1/4,1/4,1,1/2,1/2,1/2]);
@@ -2466,19 +2552,19 @@ P.still( \clear, start: \last, timecode:0, music: { |p b e|
 		text: ["a last moment","together"]
 	);
 });
-//Song.lastMoment=VocalRPP(\last,\tune);
 P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	lyrics: "a last moment + together + +",
 	filter: (midinote: _ - 12), 
+	legato: [1, 1, 1, 1, 1, 1, 0.7],
 	pitchTake: 1
 ] }, music:{|p b e|
 	p.vocodeTune.( p, b, e, e.rpp,
-		modGain: 3,
+		modGain: 2.5,
 		dur:b.sum+2,
 		sus: b.sum+2,
 		rel: 3, 
 		durRel: 2,
-		chord:#[1,2,0.33, 4]
+		chord:#[1,2,0.33, ]
 	);
 
 	{
@@ -2553,19 +2639,20 @@ P.still(\kirkNod, timecode: 5105.8.seconds, music: { |p b e|
 		text: ["",""],
 	)
 });
-P.still( \chapel, start: \nods, timecode:5105.58.seconds, music: { |p b e|
+P.still( \chapel, timecode:5105.58.seconds, music: { |p b e|
 	{
 		e.still.value(
 			wait: 1,
 			fade:1
 		);
-	}.defer(b[0]/2)
+	}.defer(b[0] -0.2)
 });
-P.still( \walking, start: \nods, syl:0, timecode:5108.7.seconds, music: { |p b e|
+P.still( \walking, syl:0,lag:1, timecode:5108.7.seconds, music: { |p b e|
 	e.still.value(
-		wait: 1,
-		fade:2
-	);
+			wait: 1,
+			fade:2,
+			fadeIn: 1
+		);
 });
 P(\transform,start:\nods,syl:1,music:{|p b e| 
 	//(
@@ -2606,6 +2693,7 @@ P.still( \purple, start: \nods,syl:1, timecode:5116.5.seconds, music: { |p b e|
 		fade:3
 	);
 });
+{
 ["MULHALL: Oblivion together does not",[2,1,2,1].dm(\c) ++ [4,4, 3, 1, -5,-3,-6,1,3,3,2,-7,-4.5,-2,-5,-7,2,2,1,-6,-3,-1,-4,-6,2,1,-7,2,1 ].dm(\a)].addLine;
 P.tune( { |i|  i.drop(5) <> (instrument: \harp, decaytime:10,coef:0.1, out: Effect.bus( { |i| DWGReverbC1C3.ar(i) => Phaser2.ar(_,rate:0.11) /7} )) }, syl:4 );
 P.synthV(role: \thalassa, take: \lead, params: {|p b| [
@@ -2624,7 +2712,7 @@ P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
-		* -3.dbamp
+		* -3.5.dbamp
 	}.play
 });
 P.synthV(role: \thalassa,syl: 27, take: \continuation,
@@ -2647,7 +2735,7 @@ P.synthV(role: \thalassa,syl: 27, take: \continuation,
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
-		* -3.dbamp
+		* -3.5.dbamp
 	}.play
 
 });
@@ -2766,7 +2854,6 @@ P(\arp,start:'Oblivion together',syl:4,music:{|p b e|
 	].pp
 	
 });
-{
 [" frighten me (b b ), beloved(b b).",[-7,-6,-3,-4, -17, -2, -7, -6, -5, -17, -1].dm(\a)].addLine;
 P.tune();
 P.still(\clear, syl:5, timecode: 0.seconds, music: { |p b e|

@@ -918,10 +918,11 @@ P(\bass,start:\sacrifice,music:{|p b e|
 P(\release,start:\wobbles,music:{|p b e| 
 	p.oldskool.free;
 });
-P.still( \spock, start: \wobbles, lag:2, timecode:4948.seconds, music: { |p b e|
+P.still( \spock, start: \wobbles,  timecode:4948.seconds, music: { |p b e|
 			e.still.value(
-				wait: b.sum-e.lag,
-				fadeIn:0.5
+				wait: b.sum-( e.lag ? 0 ) - 0.5 -2,
+				fadeIn:0.5,
+				fade: 1
 			);
 });
 P(\transform,start:\wobbles,music:{ |p b e| 
@@ -1101,7 +1102,7 @@ P(\chord,start:\poison,music:{|p b e|
 			//.play
 });
 ["SARGON [OC]: No, Doctor. (Boom)",[1,-5,-3, -17].dm(\a,scale:\minor,octave:4)].addLine;
-P.tune('No, Doc');
+P.tune('No, Doc', _ <> [instrument: \harp, amp: 0.025, coef: [0.15, 0.15, 0.15, 0.8].q, out: Pwhite(0,4,inf), lag: [0.1, 0,0,0].q].p);
 P.synthV(role: \vocoder, take: \lead,
 	filter: (midinote: [50,50,50,50]), 
 	params: {|p b| [
@@ -1258,15 +1259,16 @@ P.synthV(role: \vocoder, take: nil, params: {|p b| [
 		] }, music:{|p b e|
 			p.vocodeTune.(p,b,e,e.rpp,
 				// amp:0.18,
-		verb:0.1,
+				verb:0.1,
 		// amp:0.15,
 				att:1,
 				sus:b.sum,
 				rel:2,
 				dur:b.sum+2,
 				chord:#[1,2,4,6,8],
-		chord: #[0.5,0.66,1,2],
-				modGain:3
+				chord: #[0.5,0.66,1,2],
+				modGain:3,
+				durRel: 0.5
 			);
 			
 	{
@@ -1313,6 +1315,12 @@ P(\line,start:\read,music:{|p b e|
 
 		Trek.cast.mccoy=\mo;
 [ "MCCOY: Sargon. ",[5.5, 1].dm(\g)].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["Sargon!",""],
+	)
+});
 P.tune('MCCOY: Sargon',Pbindf(_,\instrument,\sawSynthSustain));
 P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 	lyrics: "sargone +",
@@ -1438,6 +1446,22 @@ P.still( \clear, start: \believed, timecode:0, music: { |p b e|
 				e.still.setText(["and fled","the body"])
 			}
 });
+P(\chords, music: { |p b e|
+	[
+		freq: [
+			\r,
+			[3, 5, 11],
+			[3, 5, 7],
+			[2, 5, 6.5],
+			[2, 4.5, 6.5]
+		].df('c#',\minor).q,
+		instrument: \sawSynthSustain,
+		dur: b.parse([1, 3, 2, 3, 1]).q,
+		out: [2, 3, 4],
+		out: p.carrierBus,
+		amp: 0.06
+	].ppm
+});
 /*
 P(\vox,start:\believed, rpp:VocalRPP(\believed,\tune),lag:-1,music:{|p b e| 
 		//|p b e rpp amp=0.2 att=3 sus=1 rel=5 dur=10 chord=#[1,2,4,5,6,8] tune out=0 modGain=1|
@@ -1445,8 +1469,9 @@ P(\vox,start:\believed, rpp:VocalRPP(\believed,\tune),lag:-1,music:{|p b e|
 }); */
 P.synthV(role: \vocoder, take:\lead, params: {|p b| [
 	lyrics: "but henoch + believed + and fled the body +",
-	filter: (midinote: _ - 12), 
-	defaultVibratoDepth: 0.1
+	filter: (midinote: _ - 24), 
+	defaultVibratoDepth: 0.1,
+	legato: [1, 1, 1, 1, 0.8, 1, 1, 1, 1, 0.9]
 	// pitchTake: 1
 ] }, music:{|p b e|
 	// {
@@ -1454,10 +1479,16 @@ P.synthV(role: \vocoder, take:\lead, params: {|p b| [
 	// 	=> p.synthVTracks.at(e.key).()
 	// }.play
 	//
-			p.vocodeTune.(p,b,e,e.rpp,0.2,1,b.sum-2,2,
-				chord:#[1,2,3,4],
-				mix: 0.9,
-				modGain:3)
+			p.vocodeTune.( p, b, e, e.rpp,
+				0.2,
+				1,
+				b.sum-2,
+				2,
+				chord:#[2,4, ] ,
+				mix: 0.5,
+				verb:0,
+				modGain:3
+			)
 
 });
 P(\bass,start:\believed,music:{|p b e| 
@@ -1474,7 +1505,7 @@ P(\bass,start:\believed,music:{|p b e|
 				i.freqSeq.lag2( i.lag ) / 2 
 				* [1,0.5]
 				* LFBrownNoise2.kr([2,2.2,2.3,2.4]).range(0.99,1.01),
-				0.03
+				0.07
 			)
 			* Env.asr(0.1,1,4).kr(2,gate:i.gateSeq)
 		},
@@ -1486,6 +1517,7 @@ P(\bass,start:\believed,music:{|p b e|
 	).play
 });
 ["(boom) He is (boom) destroyed. ",[-5,5,5,-5,5,5].dm(\c)].addLine;
+Song.durs.filter(\destroyed, {|i| var last = i.last; i.dropLast ++ (last + 0.3)});
 P.still(\clear,syl: 0, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.drop(1).sum,
@@ -1503,7 +1535,7 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	pitchTake: 1
 ] }, music:{|p b e|
 	p.vocodeTune.( p, b, e, e.rpp,
-		modGain:3,
+		modGain:{ Env([3,3.1,4],b.parse([2,2])).kr(0,gate:1) },
 		chord: #[1, 2,  4],
 		sawFreqRatio: 0.5,
 		durRel:1
@@ -1511,7 +1543,7 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 
 	{
 		p.laMer =>
-		PlayBuf.auto(2, _, rate: 0.midiratio / 2, startPos:0.0, loop:1.0, doneAction:0)
+		PlayBuf.auto(2, _, rate: 3.midiratio / 2, startPos:0.0, loop:1.0, doneAction:0)
 		* Env([0,0,1, 1], b.parse([3,1, 2])).kr(2,gate:1)
 			=> {|i| Out.ar(p.carrierBus,i / 1)}
 	}.play
@@ -1527,12 +1559,12 @@ P(\chord,start:'He is (boom)',music:{|p b e|
 			Saw.ar( 
 				Gendy1.krWidth(freq:5)*10+
 				i.freqSeq / [2,4] 
-				, 0.1
+				, 0.12
 			)
 			* Env.asr(release:4).kr(0,gate:i.gateSeq)
 		},
 		{|i v|
-			Env([0.5,1,1],b.parse([5,1])).kr(0,gate:1) *
+			Env([0.7,1,1],b.parse([5,1])).kr(0,gate:1) *
 			Splay.ar(i)
 			=>FreeVerb.ar(_,0.7,1) * 1.3
 		}
@@ -1583,6 +1615,13 @@ P.synthV(role: \kirk, take: nil, params: {|p b| [
 
 });
 ["SPOCK: The place Henoch would least suspect, Captain. ",[2,3,4,3,1,5,4,6, 4,3].dm(\e,scale:\whole)].addLine;
+P(\chords, music: { |p b e|
+	[
+		freq: [\r, [1, 3], [1, 3, 4],[1, 3, 5],[1, 3, 6]].df(\e,\whole).q,
+		dur: b.parse([1, 1, 3, 2, 3]).q,
+		instrument: \defaultPiano
+	].pp
+});
 P.still(\spockPlace, timecode: 5025.4.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -2134,7 +2173,7 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 		// amp: 0.1,
 		modGain:3.5,
 		carrierGain:0.0,
-		durRel: 2
+		durRel: 1
 	);
 	// { e.playbuf }.play
 	{
@@ -2156,14 +2195,21 @@ P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
 //Song.voxDepart= VocalRPP(\depart,\newTest);
 P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	lyrics: "r thalassa + + and I must now also + depart +",
+	legato: [1, 1, 1, 1, 1, 1, 1, 0.9, 1, 0.9, 1, 1],
 	filter: (midinote: _ - 12), 
 	pitchTake: 1
 ] }, music:{|p b e|
 	p.vocodeTune.( p, b, e, e.rpp,
 		// 0.1,
-		durRel:1,
+		att:2,
+		sawFreqRatio: 1,
+		dur: b.sum ,
+		sus: b.sum - 3 ,
+		rel:1,
 		verb:0.5,
-		modGain:3
+		modGain:3,
+		mix:0.8,
+		durRel:1
 	);
 	fork{
 		1.wait;
@@ -2179,10 +2225,17 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 				//* 0.2
 			},
 			{|i|
-				Mix.ar(i)=>Out.ar(p.carrierBus.index,_)
+				Mix.ar(i*10)=>Out.ar(p.carrierBus.index,_)
 			}
-		).play
-	}
+		)//.play
+	};
+	{
+		p.laMer => PlayBuf.auto(2,_, [2].midiratio.dq.demand(b.parse([4])))
+		/18
+		* Env([1, 1, 0], b.parse([2, 2])).kr(0,gate:1)
+		=> Out.ar(p.carrierBus,_)
+	}.play
+
 
 });
 P(\bass,start:\depart,music:{|p b e| 
@@ -2250,16 +2303,18 @@ fork{
 	};
 
 	p.vocodeTune.( p, b, e, e.rpp,
-		0.15,
+		// 0.15,
+		att: b[1],
 		durRel:3,
 		chord:#[1,2,0.5,4],
-		mix:0.2,
+		mix:0.8,
 		sus: b.sum,
 		rel:1,
 		modGain: 4.dbamp
 	);
 
 });
+
 P(\counter,start:'into oblivion',music:{|p b e| 
 				[
 					freq: [5,4,3,2,1].df('a-',octave:4).q,
@@ -2584,7 +2639,7 @@ P(\chord,start:\last,music:{|p b e|
 				[\r,  3,  \_, \_,\r],
 				[\r,  5,  \_, \_,\r],
 				[1, \_, -7, -6,\_],
-				[\r,-11,-14,\_,\_,-11,\_],
+				[\r,-11,-14,\_,\_,-12,\_],
 				[\r,-11,-24,\_,\_,-22,\_],
 			].df('f#')
 			,
@@ -2613,7 +2668,7 @@ P(\chord,start:\last,music:{|p b e|
 ["(Mulhall nods, and they go over to the science station for the light trick and voice change.) ","g r r" ].addLine;
 Song.durs.filter(\nods,_ + [1,0,0]);
 // P.tune(\nods);
-Song.durs.filter( _ + [0,0,5] );
+Song.durs.filter( _ + [0,0,9] );
 P(\nod,start:\nods,music:{|p b e| 
 	[
 		freq:[ [1,3,5].df(\g),\r ].q,
@@ -2655,36 +2710,36 @@ P.still( \walking, syl:0,lag:1, timecode:5108.7.seconds, music: { |p b e|
 		);
 });
 P(\transform,start:\nods,syl:1,music:{|p b e| 
-	//(
-	//	dur:b.sum,
-	//	freq:[1,3,4,6].df(\e,scale:\whole),
-	//	instrument:\stringyy,
-	//	width:13,
-	//	wet:0.2
-	//).play;
-	var synths,bus;
+	var overlap = 2, synths,bus;
+	(
+		dur:b.drop(1).sum - 2,
+		freq:[1,3,4,6].df(\e,scale:\whole),
+		instrument:\stringyy,
+		// release: 3,
+		width:13,
+		wet:0.2, amp:0.1
+	).play;
 	Synths(\transLinen,\sustain,b.sum,\freq,[1,3,4,6].df(\e,scale:\whole),\amp,0.1,\out,1);
 	Synths(\transLinen,\sustain,b.sum,\freq,[1,3,4,6].df(\e,scale:\whole),\amp,0.1,\out,2);
-
 	synths= 
 	Synths(\trem2 ,\amp,0.05,\scale,2,\freq,[1,3,4,6,11,13,14,16,21,23].df(\e,scale:\whole),\out,[0,1,2,3,0,1,2,3,0,1])
 	;
 	bus = Bus.control;
-	{Env.linen(0,b.sum-9,9).kr(2,gate:1)*0.05}.play(s,bus.index);
+	{Env.linen(0,b.drop(1).sum-9,9 + overlap).kr(2,gate:1)*0.05}.play(s,bus.index);
 	synths.map(\amp,bus);
 
 	s.bind{{ |pitchScale=1.15 loss=0.99998 |
-		var env=Env.linen(0,b.sum-8,8).kr(2,gate:1)*0.175;
-		var numChannels=4;
+		var env = Env.linen(0,b.drop(1).sum-8,8 + overlap).kr(2,gate:1)*0.175;
+		var numChannels = 4;
 		var exc = Dust.ar(2!numChannels)+Impulse.ar(0);
 		var sig;
 		exc = Decay.ar(exc,0.02);
-		exc=Integrator.ar(exc,0.8,0.1);
-		exc=PinkNoise.ar(exc);
-		sig=MembraneCircle.ar(exc,[0.007,0.0073]*pitchScale,loss)*env;
+		exc = Integrator.ar(exc,0.8,0.1);
+		exc = PinkNoise.ar(exc);
+		sig = MembraneCircle.ar(exc,[0.007,0.0073]*pitchScale,loss)*env;
 		sig * 0.5
 	}.play};
-	fork{b.sum+5=>_.wait;synths.free}
+	fork{b.drop(1).sum+5=>_.wait;synths.free}
 });
 P.still( \purple, start: \nods,syl:1, timecode:5116.5.seconds, music: { |p b e|
 	e.still.value(
@@ -2695,18 +2750,13 @@ P.still( \purple, start: \nods,syl:1, timecode:5116.5.seconds, music: { |p b e|
 });
 {
 ["MULHALL: Oblivion together does not",[2,1,2,1].dm(\c) ++ [4,4, 3, 1, -5,-3,-6,1,3,3,2,-7,-4.5,-2,-5,-7,2,2,1,-6,-3,-1,-4,-6,2,1,-7,2,1 ].dm(\a)].addLine;
+Song.durs.filter('does not', {|i| i[0..3] + [0,0,0,0.65] ++ i[4..] => _.flat});
 P.tune( { |i|  i.drop(5) <> (instrument: \harp, decaytime:10,coef:0.1, out: Effect.bus( { |i| DWGReverbC1C3.ar(i) => Phaser2.ar(_,rate:0.11) /7} )) }, syl:4 );
 P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 	lyrics: "Oblivion + + + together + + r r r r r r r r r r r r",
-	filter: (midinote: _ + (12 * [1.dup(4) ++ 0.dup(17)])), 
+	filter: (midinote: _ + (12.dup(4) ++ 0.dup(17))), 
 	phonemes:[ "@","p l \i","w i"," A n", "th @","k e ","t a \r" ], 
-	/* "oblivion together".xsampa
-	"among".xsampa
-	"blood".xsampa
-	"give".xsampa
-	"beyond".xsampa
-	"be".xsampa */
-	legato: [1, 1, 1, 0.5, 1, 1,  2, 1 ],
+	legato: [1, 1, 1, 0.4, 1, 1,  2, 1 ],
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
@@ -2742,9 +2792,9 @@ P.synthV(role: \thalassa,syl: 27, take: \continuation,
 P(\tune,start:'Oblivion together',music:{|p b e| 
 	MegaBind(
 			[
-				[2,1,2,1].df(\c) ++ [4,4,3].df(\a,octave:4)
+				[2,1,2,1, \r].df(\c) ++ [4,4,3].df(\a,octave:4)
 			],
-			b,
+			b.parse([1, 1, 1, 0.4, 0.6, 1, 1, 1]),
 			[],
 			{|i|
 				Blip.ar(i.freqSeq * [1,1.01],20)
@@ -2856,6 +2906,16 @@ P(\arp,start:'Oblivion together',syl:4,music:{|p b e|
 });
 [" frighten me (b b ), beloved(b b).",[-7,-6,-3,-4, -17, -2, -7, -6, -5, -17, -1].dm(\a)].addLine;
 P.tune();
+P.synthVs(\kevin, take: [\answer1, \answer2], params: {|p b| [
+	lyrics: "r r frighten - + me r r belove + ed",
+	pitchTake: [1, 3]
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+		=>DWGReverbC1C3.ar(_,c1:20,c3:1)
+	}.play
+});
 P.still(\clear, syl:5, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.drop(1).sum,
@@ -3025,6 +3085,7 @@ P.synthV(role: \sargon, take: \lead, params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		* -3.dbamp
 	}.play
 
 });
@@ -3059,6 +3120,7 @@ P.still(\herAgain, timecode: 5135.6.seconds, music: { |p b e|
 P.tune(_ <> [instrument: \stringyy, amp: 0.5].pm);
 P.synthV(role: \sargon, take: \lead, params: {|p b| [
 	lyrics: "Forever + + beloved + + forever + +",
+	phonemes: ["","","","b i", "l a v", "e d", "","",""],
 	legato: [1, 1, 1, 1, 1, 0.7, 1, 1, 1],
 	paramTension:0,
 	pitchTake: 1
@@ -3171,8 +3233,25 @@ P(\transform, syl: 7, music:{ |p b e|
 		legato:1,
 		amp:1
 	].pp;
-	p.synful1.syn.set(\out,Effect(FreeVerb.ar(_,0.75,0.55) * 6.dbamp).bus.index);
-	p.synful2.syn.set(\out,Effect(PlateReverb.ar(_,mix:0.55) * 6.dbamp, out:0).bus.index);
+	p.synful1.syn.set(\out,Effect(
+		{|i|
+			i =>
+			FreeVerb.ar(_,0.75,0.55) 
+			* 6.dbamp
+			=> Convolution.ar(_,
+				Dust.ar(Line.kr(100, 1, b.drop(1).sum))
+			)
+		}
+	).bus.index);
+	p.synful2.syn.set(\out,Effect(
+		{|i|
+			i =>
+			PlateReverb.ar(_,mix:0.55) * 6.dbamp
+			=> Convolution.ar(_,
+				Dust.ar(Line.kr(100, 1, b.drop(1).sum))
+			)
+		}
+		, out:0).bus.index);
 	////////timpani
 	{ |pitchScale=1.15 loss=0.99998 |
 		var env=Env.linen(0,b.sum-5,8).kr(2,gate:1)*0.175;
@@ -3193,11 +3272,20 @@ P(\chords, music: { |p b e|
 	[
 		freq:[
 			[3, 5, 11].df(\b,\minor),
-			[1, 3, 6, ].df(\d,6,\whole)
+			[1, 3, 6 ].df(\d,6,\whole)
 		].q,
 		dur: b.parse([8,1]).q,
 		instrument: \stringyy, amp:0.4 * extraGain,
-		freqLag:3
+		freqLag:3,
+		out: Effect.bus({|i| 
+			 var line= Env([1, 1, 0],  b.parse([8, 1]) ).kr();
+			 i * line.poll +
+			 (
+				 Convolution.ar(i * (1-line),
+				 Dust.ar(Line.kr(100, 1, b.drop(1).sum)) 
+			 ) * (1-line)
+		 )
+				},inputChannels:2)
 
 	].ppm
 	;

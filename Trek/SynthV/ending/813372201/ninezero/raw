@@ -4,14 +4,14 @@ o = [
 	Array.prNew(8),  Array.prNew(1),  Event.prNew,  Array.prNew(12),  
 	Array.prNew(1),  Event.prNew,  Array.prNew(8),  Array.prNew(1),  
 	Event.prNew,  Array.prNew(32),  Event.prNew,  Array.prNew(16),  
-	Array.prNew(13),  Event.prNew,  Array.prNew(40),  "00000",  
+	Array.prNew(13),  Event.prNew,  Array.prNew(40),  "141120000",  
 	Event.prNew,  Array.prNew(4),  Event.prNew,  Array.prNew(8),  
 	Array.prNew(4),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  "Sargon!",  Event.prNew,  Array.prNew(8),  
 	Array.prNew(4),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  Event.prNew,  Array.prNew(12),  Event.prNew,  
-	Array.prNew(12),  "994890000",  "",  Event.prNew,  
+	Array.prNew(12),  "853770000",  "",  Event.prNew,  
 	Array.prNew(4),  Event.prNew,  Array.prNew(40),  "994890000",  
 	"+",  "1730690000",  Event.prNew,  Array.prNew(40),  
 	"3467310000",  "No",  "642080000",  Event.prNew,  
@@ -25,8 +25,8 @@ o = [
 	"420530000",  Event.prNew,  Array.prNew(40),  "9251780000",  
 	"me",  "580000000",  Event.prNew,  Array.prNew(40),  
 	"9831780000",  "transfer",  "855180000",  Event.prNew,  
-	Array.prNew(40),  "10686960000",  "+",  "820180000",  
-	Event.prNew,  Array.prNew(40),  "12737430000",  "994890000",  
+	Array.prNew(40),  "10686960000",  "+",  "876630000",  
+	Event.prNew,  Array.prNew(40),  "12878550000",  "853770000",  
 	"main",  Event.prNew,  Array.prNew(32),  Event.prNew,  
 	Array.prNew(8),  Array.prNew,  "cubic",  Event.prNew,  
 	Array.prNew(8),  Array.prNew,  "cubic",  Event.prNew,  
@@ -46,7 +46,7 @@ o = [
 	Event.prNew,  Array.prNew(12),  "",  "Unnamed Track",  
 	Array.prNew,  Event.prNew,  Array.prNew(20),  "ff7db235",  
 	Event.prNew,  Array.prNew(28),  "synthV.wav",  "NoAspiration",  
-	"/Users/michael/tank/super/SynthV/ending/813372201/ninezero"
+	"/Users/michael/tank/super/Trek/SynthV/ending/813372201/ninezero"
 ];
 p = [
 	// Event
@@ -141,7 +141,7 @@ p = [
 		proto: nil,  parent: nil,  
 		know: true ],  
 	// Array
-	23, [ nil,  nil,  'activeTakeId',  3,  
+	23, [ nil,  nil,  'activeTakeId',  1,  
 		nil,  nil,  'takes',  o[24] ],  
 	// Array
 	24, [ o[25],  o[27],  o[29],  o[31] ],  

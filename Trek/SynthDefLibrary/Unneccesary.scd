@@ -1,7 +1,7 @@
 
 	SynthDef(\pulse,{|gate=1 freq=400 amp=1 ffreq=4500 rel=2 out=0 t_trig wiggle=500| 
 		var sig=Pulse.ar(freq,SinOsc.kr(8.55,0,0.6,0.4));
-		var env= Env.perc(0,rel).kr(0,gate:t_trig)*amp;
+		var env= Env.perc(0,rel).kr(2,gate:t_trig)*amp;
 		//var env=0.1;
 		sig= MoogFF.ar(sig,SinOsc.kr(0.3,0,wiggle,1150));
 		sig=HPF.ar(sig,500);

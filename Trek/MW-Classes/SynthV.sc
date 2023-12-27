@@ -500,7 +500,7 @@ SynthV {
 					1,
 					buf,
 					startPos: ( synthV.offset ) * BufSampleRate.kr( buf ),
-					doneAction:0
+					doneAction: Line.kr(0,0, BufDur.kr(buf) + 3, doneAction:2)
 				)},
 				take: take,
 				params: params,

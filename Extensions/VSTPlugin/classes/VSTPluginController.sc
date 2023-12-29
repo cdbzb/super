@@ -226,6 +226,10 @@ VSTPluginController {
 			latencyChanged.value(latency);
 			this.changed(\latency, latency);
 		}, '/vst_latency'));
+		// update display:
+		oscFuncs.add(this.prMakeOscFunc({ arg msg;
+			this.prQueryParams;
+		}, '/vst_update'));
 		// plugin crashed
 		oscFuncs.add(this.prMakeOscFunc({ arg msg;
 			"plugin '%' crashed".format(this.info.name).warn;
@@ -862,7 +866,6 @@ VSTPluginController {
 			// wait for cmd to finish and update buffer info
 			synth.server.sync;
 			buf.updateInfo({
-				buf.postln;
 				// now read data from Buffer
 				buf.getToFloatArray(wait: wait, timeout: timeout, action: { arg array;
 					var data;

@@ -125,7 +125,7 @@ P(\tremolo, music: { |p b e|
 P.still(\walking, timecode: 4800 + 0.0 =>_.seconds, music: { |p b e|
 	 e.still.( 
 		 fadeIn:1,
-		wait: b.sum-1,
+		wait: b.sum,
 		fade: 1,
 		text: ["",""],
 	)
@@ -157,6 +157,7 @@ P(\chord, music: { |p b e|
 P.still(\medium, timecode: 4806.25.seconds, music: { |p b e|
 		e.still.( 
 			wait: b.sum,
+			fadeIn: 1,
 			text: ["",""],
 		).sequenceText2(
 			b.parse([1,7]), [
@@ -191,7 +192,7 @@ P.still(\enter, timecode: 4808.seconds, music: { |p b e|
 P.synthV(role: \henoch, take: \lead, params: {|p b| [
 			filter: (midinote: _ - 24), 
 			lyrics: "Pain captain + r and  you my dear",
-			legato: [0.7, 1, 0.7, 1, 1, 1, 1, ],
+			legato: [0.7, 1, 0.7, 1, 1, 0.8, 1, ],
 			vocalMode: \Overdrive,
 			lag: [ 0.1,0,0,0,0,0,0,0 ],
 			pitchTake: 1
@@ -252,17 +253,14 @@ P(\chord,music:{|p b e|
 				}
 			).play
 });
-P(\bassnote,syl:2,music:{|p b e| 
+P(\bassnote, syl: 2, music:{|p b e| 
 			(degree:1,instrument:\stringyy,octave:[5],amp:0.4).play
 });
 P(\bassline,music:{|p b e| 
 			[
-				freq:[ 1,3,4,-4.5 ].df(\g,octave:3).q,
-				dur:b.parse([2,1,2,3]).q
+				freq: [1, 3, 4, -4.5].df(\g, octave:3).q,
+				dur: b.parse([2, 1, 2, 3]).q
 			].pp
-});
-P(\cymbals,music:{|p b e| 
-			Synth(\cymbalsDS,[out:Effect(_*Line.kr(0,1,5)).bus.index])
 });
 P(\cymbals,music:{|p b e| 
 			Synth(\cymbalsDS,[out:Effect(_*Line.kr(0,1,5)).bus.index])
@@ -271,10 +269,11 @@ P(\cymbals2,syl:5,music:{|p b e|
 			Synth(\cymbalsDS,[out:Effect.bus(
 				{|i|
 					i
-					* Line.kr(0, 1, 6)
-					* Env([1,1,0.5,0],[b.drop(1).sum + e.bNext[0] - 0.1, 0.1, e.bNext[1..].sum]).kr()
+					// * Line.kr(0, 1, 6)
+					* Env([0,1,0.6,0],[b.drop(1).sum + e.bNext[0] - 0.2, 0.2, e.bNext[1..].sum], [-3, \lin, -3, \lin]).kr()
+					/3
 				}
-			)])
+			)]);
 });
 P(\bassNote2,music:{|p b e| 
 			[
@@ -436,6 +435,14 @@ P.still(\henochToChapel, timecode: 4829.566.seconds, music: { |p b e|
 	)
 });
 Song.durs.filter( _ * [1.5,1,1,1,1,1,1,1,1,1,1,1,1] );
+P(\cymbal, music: { |p b e|
+	(
+		instrument:\cymbalsDS,amp:0.03
+	).play;
+	(
+		instrument: \bd_808
+	).play
+});
 P.tune( _ <> (instrument: \sparkTriangle) );
 P.synthVs(role: \henoch, take: [ \lead, \double ],
 		filter: (midinote:  { |i| i - 12 + [12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}),
@@ -518,11 +525,11 @@ P.still(\spockFools,syl:1, timecode: 4849.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.drop(1).[..12].sum,
 			fade:2,
-			fadeIn:b.drop(1)[0],
+			fadeIn:b.drop(1)[..1].sum,
 			text:["",""]
 			// fadeIn:1,
 		).sequenceText2(
-				b.drop(1).parse([1, 6, 5]), [ 
+				b.drop(1).parse([2, 5, 5]), [ 
 					["I'll simply","transfer"],
 					["to another","place"],
 					["",""]
@@ -583,12 +590,8 @@ P(\line,start:\leaps,syl:11,music:{|p b e|
 });
 
 P(\stab,start:\leaps,music:{|p b e| 
-		var amb = { |i| FoaEncode.ar(i,Song.encoders.spread)	=> FoaRTT.ar(_,SinOsc.ar(0.15).range(-pi,pi))=> Monitors.ambi(_) };
-		var g = Group.before(s.defaultGroup);
-		amb = {|i| i};
-		Synth(\cymbalsDS,[out:Effect({|i| i=> PitchShift.ar(_,0.1)=> CrossoverDistortion.ar(_) *0.065 * Env.linen(0,3,5).kr(2,gate:1) => amb }).bus.index],target:g);
-		Synth(\default,[\freq,[1,-1].df('c#',octave:[3]),out:Effect({|i| i=> CrossoverDistortion.ar(_) *0.065 * Env.linen(0,3,5).kr(2,gate:1) => amb }).bus.index],target:g);
-		fork{8.wait;g.free}
+		Synth(\cymbalsDS,[out:Effect.bus({|i| i => PitchShift.ar(_,0.1) => CrossoverDistortion.ar(_) *0.065 * Env.linen(0,3,5).kr(2,gate:1)  }, inputChannels:2)]).dur(8);
+		Synth(\default,[\freq,[1,-1].df('c#',octave:[3]),out:Effect.bus({|i| i => CrossoverDistortion.ar(_) *0.065 * Env.linen(0,3,5).kr(2,gate:1) }, inputChannels:2)]).dur(8);
 });
 //(He whirls around.) 
 ["SPOCK: Sargon! No, Sargon, please. Let me. Let me transfer. ",[11,1].dm('f')++[5,3,1].dm('b-',scale:\whole) ++ [5,5,4,3,2].dm(\d,octave:6) ++ [3,1].dm('f#',octave:6)].addLine;
@@ -1127,7 +1130,7 @@ P(\chord,start:\poison,music:{|p b e|
 ["SARGON [OC]: No, Doctor. (Boom)",[1,-5,-3, -17].dm(\a,scale:\minor,octave:4)].addLine;
 P.tune('No, Doc', _ <> [instrument: \harp, amp: 0.025, coef: [0.15, 0.15, 0.15, 0.8].q, out: Pwhite(0,4,inf), lag: [0.1, 0,0,0].q].p);
 P.synthV(role: \vocoder, take: \lead,
-	filter: (midinote: [50,50,50,50]), 
+	// filter: (midinote: [50,50,50,50]), 
 	params: {|p b| [
 	lag: [0.1, 0.00,0],
 	lyrics: "No Doctor + r",
@@ -1145,6 +1148,16 @@ P.synthV(role: \vocoder, take: \lead,
 		rel:2,
 		chord:#[1, 2, 4],
 	);
+	{
+		p.laMer =>
+		PlayBuf.auto( 2, _,
+			rate:1,
+			trigger: TDuty.kr( e.bAll.parse([6,4,3,3]).dq, reset:0.0, level:1.0, doneAction:0, gapFirst:0),
+			loop:1.0,
+			doneAction:0
+		)
+			=> {|i| Out.ar(p.carrierBus,i / 1)}
+	}.play
 });
 P(\bass,start:'No, Doc',music:{|p b e| 
 			MegaBind(
@@ -1558,7 +1571,7 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	pitchTake: 1
 ] }, music:{|p b e|
 	p.vocodeTune.( p, b, e, e.rpp,
-		modGain:{ Env([3,3.1,4],b.parse([2,2])).kr(0,gate:1) },
+		modGain:{ Env([3,3.1,5],b.parse([2,2])).kr(0,gate:1) },
 		chord: #[1, 2,  4],
 		sawFreqRatio: 0.5,
 		durRel:1
@@ -1569,6 +1582,11 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 		PlayBuf.auto(2, _, rate: 3.midiratio / 2, startPos:0.0, loop:1.0, doneAction:0)
 		* Env([0,0,1, 1], b.parse([3,1, 2])).kr(2,gate:1)
 			=> {|i| Out.ar(p.carrierBus,i / 1)}
+	}.play;
+	{
+		Saw.ar(-15.df(\c))
+		* Env([0,0,1], b.parse([4, 2])).kr(0,gate:1)
+		=> Out.ar( p.carrierBus, _ )
 	}.play
 });
 P(\chord,start:'He is (boom)',music:{|p b e| 

@@ -2,7 +2,7 @@ VSTPlugin : MultiOutUGen {
 	// class members
 	classvar <versionMajor=0;
 	classvar <versionMinor=5;
-	classvar <versionBugfix=3;
+	classvar <versionBugfix=4;
 	classvar pluginDict;
 	classvar <platformExtension;
 	// instance members
@@ -111,10 +111,8 @@ VSTPlugin : MultiOutUGen {
 		exclude.isString.if { exclude = [exclude] };
 		(exclude.isNil or: exclude.isArray).not.if { MethodError("bad type % for 'exclude' argument!".format(exclude.class), this).throw };
 		exclude = exclude.collect({ arg p; p.asString.standardizePath });
-		// make flags
-		[verbose, save, parallel].do { arg value, bit;
-			flags = flags | (value.asBoolean.asInteger << bit);
-		};
+		// make flag from options
+		flags = [verbose, save, parallel].sum { arg x, i; x.asInteger << i };
 		dest = this.prMakeDest(dest); // nil -> -1 = don't write results
 		^['/cmd', '/vst_search', flags, dest, timeout ?? 0.0, dir.size] ++ dir ++ exclude.size ++ exclude;
 	}
@@ -308,25 +306,31 @@ VSTPlugin : MultiOutUGen {
 	*prParseIni { arg stream;
 		var line, n, indices, last = 0;
 		var major = 0, minor = 0, bugfix = 0;
-		// get version
-		line = this.prGetLine(stream, true);
-		(line == "[version]").if {
-			#major, minor, bugfix = this.prGetLine(stream).split($.).collect(_.asInteger);
-			// there was a breaking change between 0.4 and 0.5
-			// (introduction of audio input/output busses)
-			((major == 0) && (minor < 5)).if {
-			    Error("The plugin cache file is incompatible with this version. Please perform a new search!").throw;
-			};
+		loop {
 			line = this.prGetLine(stream, true);
-		};
-		(line != "[plugins]").if { Error("missing [plugins] header").throw };
-		// get number of plugins
-		line = this.prGetLine(stream, true);
-		n = this.prParseCount(line);
-		// now deserialize plugins
-		^n.collect {
-			VSTPluginDesc.prParse(stream, major, minor, bugfix).scanPresets;
-		};
+			line.isNil.if {
+				Error("missing [plugins] header").throw; // reached EOF!
+			};
+			// check version (optional)
+			(line == "[version]").if {
+				#major, minor, bugfix = this.prGetLine(stream).split($.).collect(_.asInteger);
+				// there was a breaking change between 0.4 and 0.5
+				// (introduction of audio input/output busses)
+				((major == 0) && (minor < 5)).if {
+					Error("The plugin cache file is incompatible with this version. Please perform a new search!").throw;
+				};
+			};
+			// collect plugins
+			(line == "[plugins]").if {
+				// get number of plugins
+				line = this.prGetLine(stream, true);
+				n = this.prParseCount(line);
+				// deserialize plugins and return!
+				^n.collect {
+					VSTPluginDesc.prParse(stream, major, minor, bugfix).scanPresets;
+				};
+			};
+		}
 	}
 	*prMakeTmpPath {
 		^PathName.tmp +/+ "vst_" ++ UniqueID.next;

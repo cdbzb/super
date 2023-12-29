@@ -1,4 +1,4 @@
-vstplugin v0.5.3
+vstplugin v0.5.4
 ================
 
 This project allows you to use VST plugins in Pd and SuperCollider on Windows, MacOS and Linux.
@@ -21,7 +21,9 @@ It includes a Pd external called "vstplugin~" and a SuperCollider UGen called "V
 * (optional) multithreaded plugin processing
 
 
-See the help files (vstplugin~-help.pd and VSTPlugin.schelp) for detailed instructions.
+See the help files (`vstplugin~-help.pd` and `VSTPlugin.schelp`) for detailed instructions.
+
+Binaries are available here: https://git.iem.at/pd/vstplugin/-/releases. The Pd external can also be installed with Deken (search for `vstplugin~`).
 
 Please report any issues or feature requests to https://git.iem.at/pd/vstplugin/issues.
 
@@ -38,14 +40,14 @@ Please report any issues or feature requests to https://git.iem.at/pd/vstplugin/
   Otherwise you get a warning if you try to open a plugin with "editor: true".
 
 * macOS/Pd: because of technical limitations the GUI must run on the main thread - which happens to be the audio thread in Pd (at the time of writing)...
- This might get fixed in future Pd versions, but for now, macOS users are adviced to keep native GUI windows closed whenever possible to avoid audio drop-outs.
+  This might get fixed in future Pd versions, but for now, macOS users are adviced to keep native GUI windows closed whenever possible to avoid audio drop-outs.
 
- There are two options work around this issue:
+  There are two options work around this issue:
 
- a) run the plugin in a subprocess (see "-b" and "-p" options)
+  a) run the plugin in a subprocess (see "-b" and "-p" options)
 
- b) use my Pd "eventloop" fork (source: https://github.com/Spacechild1/pure-data/tree/eventloop, binaries: https://github.com/Spacechild1/pure-data/releases, e.g. "Pd 0.51-1 event loop").
-    NOTE: You have tick "Enable event loop" in the "Start up" settings.
+  b) use my Pd "eventloop" fork (source: https://github.com/Spacechild1/pure-data/tree/eventloop, binaries: https://github.com/Spacechild1/pure-data/releases, e.g. "Pd 0.51-1 event loop").
+     NOTE: You have tick "Enable event loop" in the "Start up" settings.
 
 * VST3 preset files created with vstplugin v0.3.0 or below couldn't be opened in other VST hosts and vice versa.
   This has been fixed in vstplugin v0.3.1. You can still open old "wrong" preset files, but this might go away in future versions; you're advised to open and save your old VST3 presets to "convert" them to the new format.
@@ -69,7 +71,7 @@ By default, vstplugin searches for plugins in both `%PROGRAMFILES%` and `%PROGRA
 #### macOS
 
 On macOS, running 32-bit (Intel) plugins is only possible up to macOS 10.14, because macOS 10.15 eventually dropped 32-bit support.
-However, in the future bit bridging might become necessary again when audio software is ported to ARM for the new M1 MacBooks.
+However, bit-bridging is still useful for Apple M1 MacBooks because it allows to run existing 64-bit Intel VST plugins in a native (= arm64) Pd or SC app.
 
 #### Linux
 
@@ -165,13 +167,21 @@ If you don't want to build the SuperCollider extension, set `SC` to `OFF`.
 #### Windows
 
 If you want to enable bit bridging (running 32-bit plugins on a 64-bit host and vice versa), you have to perform the following steps:
+
 1) compile the project with a 64-bit compiler (e.g. in a 'build64' folder)
+
 2) compile the project with a 32-bit compiler (e.g. in a 'build32' folder)
+
 3) copy the 32-bit 'host.exe' to the 64-bit installation folder and rename it to 'host_i386.exe'
+
 4) copy the 64-bit 'host.exe' to the 32-bit installation folder and rename it to 'host_amd64.exe'
 
 If you get compilation errors concerning the SRWLock functions, it means that the Windows SDK version (`_WIN32_WINNT`) is set too low.
 The minimum supported version is `0x0600` (= Windows 7); you can easily override it with the `WINVER` CMake variable.
+
+If you compile with MinGW, make sure to choose the appropriate generator with `cmake .. -G "Unix Makefiles"`.
+Alternatively, you can pick a generator in cmake-gui when you first click "Configure". In this case you should also select the correct toolchain.
+
 
 ##### Warning about 32-bit MinGW
 
@@ -185,8 +195,14 @@ Yes, it's ridiculous!
 
 #### macOS
 
+Intel:
+
 You can build a 32-bit host application (for running old 32-bit plugins) by setting `BUILD_HOST32` to `ON`.
 Note that the macOS 10.14 SDK dropped support for compiling 32-bit applications; you must use Xcode 9.4 or earlier.
+
+Apple M1 (ARM):
+
+You can build a 64-bit Intel host application (for running existing Intel plugins) by setting `BUILD_HOST_AMD64` to `ON`.
 
 
 #### Linux
@@ -205,15 +221,14 @@ sudo apt-get install libx11-dev:i386 gcc-multilib g++-multilib
 #### Build project:
 
 1)	create a build directory, e.g. "build", next to the topmost "CMakeLists.txt"
+
 2)	cd into the build directory and run `cmake ..` + the necessary variables
-    *or* set the variables in the cmake-gui and click "Configure" + "Generate"
+
+    *or* set the variables in cmake-gui and click "Configure" + "Generate"
+
 3)	build with `cmake --build . -j -v`
 
-    Visual Studio: open `vstplugin.sln` and build the solution.
-
 4)	install with `cmake --build . -v -t install`
-
-    Visual Studio: build the project `INSTALL`
 
 
 #### Build Wine host:
@@ -221,11 +236,15 @@ sudo apt-get install libx11-dev:i386 gcc-multilib g++-multilib
 To enable Wine support on Linux, you need to follow these steps:
 
 1)  For 64-bit Wine, install `wine64-tools` or `wine-[branch]-dev` (depending on the Wine distro);
+
     for 32-bit Wine, follow the steps for building the 32-bit host on Linux and then install `wine32-tools` or `wine-[branch]-dev`.
+
 2)  Create another build directory, e.g. 'build_wine', and `cd` into it.
+
 3)  Set `BUILD_WINE` to `ON`.
    `PD_INSTALLDIR` and `SC_INSTALLDIR` should be the same as for the regular build.
     If you don't need the Pd external or SuperCollider extension, set `PD` resp. `SC` to `OFF`.
+
 4)  Build + install the project with `cmake --build . -j -v -t install`;
     this will install `host_pe_amd64` (and optionally `host_pe_i386`) in the specified directories.
 
@@ -234,28 +253,28 @@ To enable Wine support on Linux, you need to follow these steps:
 
 How to workaround macOS GateKeeper (many thanks to Joseph Anderson):
 
-1) un-quarantine VSTPlugin/vstplugin~ executables
+1)  un-quarantine VSTPlugin/vstplugin~ executables:
 
-Using the terminal, navigate to the folder containing the .scx/.pd_darwin file and then run:
+    Using the terminal, navigate to the folder containing the .scx/.pd_darwin file and then run:
 
-SC: `xattr -rd com.apple.quarantine *.scx host*`
+    SC: `xattr -rd com.apple.quarantine *.scx host*`
 
-Pd: `xattr -rd com.apple.quarantine *.pd_darwin host*`
+    Pd: `xattr -rd com.apple.quarantine *.pd_darwin host*`
 
-2) add unsigned VSTs to Gatekeeper's enabled list
+2)  add unsigned VSTs to Gatekeeper's enabled list:
 
-Using the terminal, navigate to the folder(s) containing VSTs to enable. The following will create a label, ApprovedVSTs, and then add all VSTs in the directory:
+    Using the terminal, navigate to the folder(s) containing VSTs to enable. The following will create a label, ApprovedVSTs, and then add all VSTs in the directory:
 
-`spctl --add --label "ApprovedVSTs" *.vst`
+    `spctl --add --label "ApprovedVSTs" *.vst`
 
-Once this is done, the following informs Gatekeeper these are approved:
+    Once this is done, the following informs Gatekeeper these are approved:
 
-`spctl --enable --label "ApprovedVSTs"`
+    `spctl --enable --label "ApprovedVSTs"`
 
-3) clear the plugin cache
+3)  clear the plugin cache
 
-It is a good idea to go ahead and clear the plugin cache, in case some quarantined plugins have been black-listed already.
+    It is a good idea to go ahead and clear the plugin cache, in case some quarantined plugins have been black-listed already.
 
-SC: boot the SuperCollider Server, then evaluate: `VSTPlugin.clear`
+    SC: boot the SuperCollider Server, then evaluate: `VSTPlugin.clear`
 
-PD: open `vstplugin~-help.pd`, visit `[pd search]` and click the `[clear 1(` message.
+    PD: open `vstplugin~-help.pd`, visit `[pd search]` and click the `[clear 1(` message.

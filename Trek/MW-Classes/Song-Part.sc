@@ -372,7 +372,7 @@ Song {
 		} {
             "checking durs file".postln;
             Archive.read(dursFile);
-            Archive.at((key++\lyricsToDurs).asSymbol).isNil.not.if {
+            Archive.at((key++\lyricsToDurs).asSymbol).notNil.if {
                 "loading from archive".postln;
                 lyricsToDurs = Archive.at((key++\lyricsToDurs).asSymbol)
             } {

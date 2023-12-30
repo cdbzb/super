@@ -103,7 +103,7 @@ Song.encoders=~encoders;
 	Song.vocoderFoa = Bus.audio(s,5);
 	
 	Song.vocodeTune = { 
-		|p b e rppName amp=0.2 att=3 sus=1 rel=5 dur=10 chord=#[1,2,4,5,6,8] tune out=0 modGain=1 echo=1 mix=0.5 verb=1 width=1.1 carrierGain=1 enlarge sawFreqRatio=2 durRel=0|
+		|p b e rppName amp=0.2 att=3 sus=1 rel=5 dur=10 chord=#[1,2,4,5,6,8] tune out=0 modGain=1 echo=1 mix=0.5 verb=1 width=1.1 carrierGain=1 enlarge sawFreqRatio=2 durRel=0 gain=1|
 		var synthVbuffer, playSynth, playAmbiSynth;
 		( v.isNil or: { v.isRunning.not }.try ).if{
 			v = Group.new(addAction:\addToTail).register 
@@ -139,7 +139,7 @@ Song.encoders=~encoders;
 				=> FoaTransform.ar(_, 'press', LFBrownNoise2.ar(1)*pi/1,LFBrownNoise2.ar(1)*pi)
 				=> FoaTransform.ar(_,'pressZ',SinOsc.ar(1))
 				=> FoaDecode.ar(_,Monitors.decoder)
-				* 3 * \gain.kr(0,0.1).dbamp
+				* 3 * \gain.kr(gain,0.1)
 			}.play(
 				target:v,
 				addAction:\addToTail

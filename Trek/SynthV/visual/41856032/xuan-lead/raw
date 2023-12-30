@@ -23,7 +23,7 @@ o = [
 	Array.prNew(40),  "3048170000",  "of",  "591290000",  
 	Event.prNew,  Array.prNew(40),  "3639460000",  "life",  
 	"753580000",  Event.prNew,  Array.prNew(40),  "4393040000",  
-	"there",  "728170000",  Event.prNew,  Array.prNew(40),  
+	"there",  "509710000",  Event.prNew,  Array.prNew(40),  
 	"5121210000",  "as",  "338680000",  Event.prNew,  
 	Array.prNew(40),  "5459890000",  "we",  "358440000",  
 	Event.prNew,  Array.prNew(40),  "5818330000",  "understand",  
@@ -50,7 +50,7 @@ o = [
 	Array.prNew(1),  Event.prNew,  Array.prNew(12),  "",  
 	"Unnamed Track",  Array.prNew,  Event.prNew,  Array.prNew(20),  
 	"ff7db235",  Event.prNew,  Array.prNew(28),  "synthV.wav",  
-	"NoAspiration",  "/Users/michael/tank/super/SynthV/visual/41856032/xuan-lead"
+	"NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/visual/41856032/xuan-lead"
 ];
 p = [
 	// Event

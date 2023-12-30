@@ -4,14 +4,14 @@ o = [
 	Array.prNew(8),  Array.prNew(1),  Event.prNew,  Array.prNew(12),  
 	Array.prNew(1),  Event.prNew,  Array.prNew(8),  Array.prNew(1),  
 	Event.prNew,  Array.prNew(32),  Event.prNew,  Array.prNew(16),  
-	Array.prNew(17),  Event.prNew,  Array.prNew(40),  "00000",  
+	Array.prNew(17),  Event.prNew,  Array.prNew(40),  "70560000",  
 	Event.prNew,  Array.prNew(4),  Event.prNew,  Array.prNew(8),  
 	Array.prNew(4),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  "someone",  Event.prNew,  Array.prNew(8),  
 	Array.prNew(4),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  Event.prNew,  Array.prNew(12),  Event.prNew,  
-	Array.prNew(12),  "664090000",  "",  Event.prNew,  
+	Array.prNew(12),  "593530000",  "",  Event.prNew,  
 	Array.prNew(4),  Event.prNew,  Array.prNew(40),  "664090000",  
 	"+",  "415050000",  Event.prNew,  Array.prNew(40),  
 	"1494200000",  "or",  "249030000",  Event.prNew,  
@@ -32,7 +32,7 @@ o = [
 	"6723880000",  "attention",  "249030000",  Event.prNew,  
 	Array.prNew(40),  "6972910000",  "+",  "498070000",  
 	Event.prNew,  Array.prNew(40),  "7470980000",  "+",  
-	"498070000",  "main",  Event.prNew,  Array.prNew(32),  
+	"427510000",  "main",  Event.prNew,  Array.prNew(32),  
 	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
 	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
 	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
@@ -51,7 +51,7 @@ o = [
 	Array.prNew(8),  Array.prNew(1),  Event.prNew,  Array.prNew(12),  
 	"",  "Unnamed Track",  Array.prNew,  Event.prNew,  
 	Array.prNew(20),  "ff7db235",  Event.prNew,  Array.prNew(28),  
-	"synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/SynthV/visual/2005628016/asterian-lead"
+	"synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/visual/2005628016/asterian-lead"
 ];
 p = [
 	// Event
@@ -147,7 +147,7 @@ p = [
 		proto: nil,  parent: nil,  
 		know: true ],  
 	// Array
-	23, [ nil,  nil,  'activeTakeId',  1,  
+	23, [ nil,  nil,  'activeTakeId',  3,  
 		nil,  nil,  'takes',  o[24] ],  
 	// Array
 	24, [ o[25],  o[27],  o[29],  o[31] ],  
@@ -158,7 +158,7 @@ p = [
 	// Array
 	26, [ 'liked',  false,  nil,  nil,  
 		nil,  nil,  'id',  0,  
-		'expr',  1.0,  nil,  nil ],  
+		'expr',  1.4,  nil,  nil ],  
 	// Event
 	27, [ array: o[28],  size: 3,  
 		proto: nil,  parent: nil,  
@@ -166,7 +166,7 @@ p = [
 	// Array
 	28, [ 'liked',  false,  nil,  nil,  
 		nil,  nil,  'id',  1,  
-		'expr',  1.0,  nil,  nil ],  
+		'expr',  1.4,  nil,  nil ],  
 	// Event
 	29, [ array: o[30],  size: 3,  
 		proto: nil,  parent: nil,  
@@ -174,7 +174,7 @@ p = [
 	// Array
 	30, [ 'liked',  false,  nil,  nil,  
 		nil,  nil,  'id',  2,  
-		'expr',  1.0,  nil,  nil ],  
+		'expr',  1.4,  nil,  nil ],  
 	// Event
 	31, [ array: o[32],  size: 3,  
 		proto: nil,  parent: nil,  
@@ -182,7 +182,7 @@ p = [
 	// Array
 	32, [ 'liked',  false,  nil,  nil,  
 		nil,  nil,  'id',  3,  
-		'expr',  1.0,  nil,  nil ],  
+		'expr',  1.4,  nil,  nil ],  
 	// Event
 	34, [ array: o[35],  size: 2,  
 		proto: nil,  parent: nil,  

@@ -15,7 +15,7 @@ o = [
 	Array.prNew(4),  Event.prNew,  Array.prNew(40),  "961020000",  
 	"choice",  "1356160000",  Event.prNew,  Array.prNew(40),  
 	"2317180000",  "is",  "1014650000",  Event.prNew,  
-	Array.prNew(40),  "3331830000",  "yours",  "1474700000",  
+	Array.prNew(40),  "3331830000",  "yours",  "1179760000",  
 	"main",  Event.prNew,  Array.prNew(32),  Event.prNew,  
 	Array.prNew(8),  Array.prNew,  "cubic",  Event.prNew,  
 	Array.prNew(8),  Array.prNew,  "cubic",  Event.prNew,  

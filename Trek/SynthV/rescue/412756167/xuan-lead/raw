@@ -17,7 +17,7 @@ o = [
 	"1099320000",  "other",  "592700000",  Event.prNew,  
 	Array.prNew(40),  "1692020000",  "+",  "553190000",  
 	Event.prNew,  Array.prNew(40),  "2245210000",  "hand",  
-	"440280000",  Event.prNew,  Array.prNew(40),  "2795570000",  
+	"330210000",  Event.prNew,  Array.prNew(40),  "2795570000",  
 	"perhaps",  "520730000",  Event.prNew,  Array.prNew(40),  
 	"3316300000",  "+",  "500970000",  Event.prNew,  
 	Array.prNew(40),  "3817270000",  "this",  "600600000",  
@@ -51,7 +51,7 @@ o = [
 	Array.prNew(8),  Array.prNew(1),  Event.prNew,  Array.prNew(12),  
 	"",  "Unnamed Track",  Array.prNew,  Event.prNew,  
 	Array.prNew(20),  "ff7db235",  Event.prNew,  Array.prNew(28),  
-	"synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/SynthV/rescue/412756167/xuan-lead"
+	"synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/rescue/412756167/xuan-lead"
 ];
 p = [
 	// Event

@@ -687,7 +687,7 @@ Song {
 		part.name=key;
 		part.parent=this;^resources}
 	durTillEnd {
-		^this.secDur[cursor..(sections-1)].sum
+		^this.secDur[cursor..(this.sections-1)].sum
 	}
 	durFromTo { | from to|
 		from = Song.section(from);
@@ -1061,7 +1061,7 @@ Part {
 	}
 	bAll {
 		var length = parent.sections - start;
-		^length.collect{|x| parent.durs[start + x].list}.flat.drop(syl.notNil.if{syl - 1} )
+		^length.collect{|x| parent.durs[start + x].list}.flat.drop(syl.notNil.if{syl}{0})
 	}
 
 	//add random stuff to resources

@@ -35,7 +35,7 @@ o = [
 	Array.prNew(1),  Event.prNew,  Array.prNew(12),  "",  
 	"Unnamed Track",  Array.prNew,  Event.prNew,  Array.prNew(20),  
 	"ff7db235",  Event.prNew,  Array.prNew(28),  "synthV.wav",  
-	"NoAspiration",  "/Users/michael/tank/super/SynthV/rescue/1934399951/asterian-lead"
+	"NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/rescue/1934399951/asterian-lead"
 ];
 p = [
 	// Event

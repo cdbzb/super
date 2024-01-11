@@ -518,6 +518,36 @@ P.still(\kirkGot, timecode: 456.385.seconds, music: { |p b e|
 	)
 });
 ["(boom boom) Sensors registering some form of energy deep inside the planet.","-1 -1 3 1 4 3 1 3 4 5 7 6 4  2 1 -7 -6 -6 -5".dm(\e,\mixolydian)].addLine; /*SPOCK:*/ 
+P(\arp, music: { |p b e|
+	var busses = 3.collect{ Bus.audio(s, 1) };
+	var dur = 0.125;
+		[
+			instrument: \visual_pad,
+		freq: [
+			\r,
+			[-5, 1, 3],
+			[-5, 1, 4],
+			[-5, 1, 3],
+			[1,4,7],
+			6,
+			4
+		].df(\e,\mixolydian).q,
+		legato: [1, 1, 1, 1, [2,2,1],1,1 ].q * 0.3,
+		dur: b.parse([2, 2, 3, 3, 1, 1,1]).q,
+			out: busses.collect(_.index).postln,
+			pan: -1
+		].ppm;
+	{
+		busses.collect(In.ar(_, 1))
+		=> Select.ar( LFSaw.ar(3).range(0,3), _ )
+		=> Pan2.ar( _, LFSaw.ar(3) )
+		*4
+		* EnvGen.cutoff(b.sum,0.1)
+	}.play(addAction: \addAfter).onFree(busses.do(_.free))
+	
+
+});
+
 P(\cymbal, music: { |p b e|
 	(
 		instrument: \cymbalsDS,
@@ -1147,7 +1177,7 @@ P(\harmony, music: { |p b e|
 		dur: 0.5 * "qq q e eqq q q".asBeats warpTo: e.tempoMap q: 1,
 		rest: [\r,1,1,1,1,1].q,
 
-instrument: \reedy, freqLag:0.05, rel:8, out: Effect.bus( {|i| i +CombN.ar(i, 0.3, 0.3, 3)},) ;
+instrument: \reedy, freqLag:0.05, rel:8, out: Effect.bus( {|i| i +CombN.ar(i, 0.3, 0.3, 3)}, out:3) ;
 	].ppm
 });
 P.synthVs(\kevin, take: [\lead, \double], 
@@ -1173,7 +1203,7 @@ P.synthVs(\kevin, take: [\lead, \double],
 P(\bass, music: { |p b e|
 	[
 		freq: "3 4 7 11 3 4 3 4 7 11 12 5 2 2".df(\c,[2,3]).q,
-		dur: "e e e e x x x x e x x ex x q".asBeats  =>_.warpTo(e.tempoMap) =>_.q,
+		dur: "e e e e x x x x e x x ex x q".asBeats  =>_.warpTo(e.tempoMap.quantizeDft) =>_.q,
 		instrument:\pluckDEnv, //try also without the effect
 		amp:0.006,
 		out: Effect.bus({|i| 
@@ -1186,7 +1216,7 @@ P(\bass, music: { |p b e|
 				*3
 			)
 			/4.5
-			* EnvGen.cutoff(b.sum,0.3)
+			* EnvGen.cutoff(b.drop(-1).sum,0.0)
 			
 		}, )
 
@@ -1195,7 +1225,7 @@ P(\bass, music: { |p b e|
 // Song.durs.filter(\olid,{|i| i.drop(-1)++( i.last + 1 )});
 P(\connector,syl: 7, music: { |p b e|
 	[
-		freq: [\r, 1, 2].df(\g).q,
+		freq: [\r, 1, 2, 6].df(\g).q,
 		instrument: \stringyy,
 		dur: e.bAll.drop(1).parse([0.2,0.8,1]).q,
 		amp:0.5,attack:2
@@ -1203,6 +1233,7 @@ P(\connector,syl: 7, music: { |p b e|
 });
 ["I will make it possible for your transporter to beam you"," 5 5 5 6 5 4 3 2 3 4 4 3 3 1 2 3".dm(\d)].addLine;/*SARGON [OC]*/
 Song.durs.filter( _ * 1.05 );
+Song.setTempoMap(\possible,"q e eq e eq e eqqq q q q q q qqq q q q");
 P.still(\lookingAway, timecode: 530.seconds, music: { |p b e| //muted
 	 e.still.( 
 		wait: 0.1,
@@ -1225,11 +1256,8 @@ P(\crash, music: { |p b e|
 		instrument: \cymbalsDS,
 		att:0.5,
 		amp: 0.01
-
-
 	).play
 });
-Song.setTempoMap(\possible,"q e eq e eq e eqqq q q q q q qqq q q q");
 ( Song.vocoderPreset = (
 	width: 0.93,
 	mix: 0.3,
@@ -1415,6 +1443,32 @@ P(\keys, music: { |p b e|
 	].pp
 });
 ["/*SPOCK:*/ Reading a chamber now. Oxygen-nitrogen atmosphere, suitable for human life support.","3 4.5 5.5 7 5.5  2".dm(\g) ++ "1 2 3 4 5 3 11 7 2  4 3 2 3 5 3 -6.5".dm('b-')].addLine;
+Song.setTempoMap(\nitrogen,"e x x e x xe  E E E E E E E E Ee e e e e ex x q");
+P(\arp, music: { |p b e|
+	var busses = 4.collect{ Bus.audio(s, 1) };
+	var dur = 0.125;
+		[
+			instrument: \default,
+			freq:[
+				[1,3,5.5, 7].df(\g,4),
+				[-7,1,3,5].df('b-',4,\mixolydian),
+				[1, 4, 5, 11].df(\f,4),
+				[1,3,5,11].df('a-',4),
+				[1,4.5,6.5, 11].df('a-',4)
+			].q,
+			dur: b.parse([6, 6,3,4, 3]).q,
+			out: busses.collect(_.index).postln,
+			pan: -1
+		].ppm;
+	{
+		busses.collect(In.ar(_, 1))
+		=> Select.ar( LFSaw.ar(3).range(0,4), _ )
+		=> Pan2.ar( _, LFSaw.ar(3) )
+		* EnvGen.cutoff(b.sum,0.1)
+	}.play(addAction: \addAfter).onFree(busses.do(_.free))
+	
+
+});
 P.still(\spockReading, timecode: 541.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -1426,7 +1480,6 @@ P.still(\spockReading, timecode: 541.seconds, music: { |p b e|
 			],
 	)
 });
-Song.setTempoMap(\nitrogen,"e x x e x xe  E E E E E E E E Ee e e e e ex x q");
 P(\click, music: { |p b e|
 	[
 		instrument: \harp, coef: 0.9,

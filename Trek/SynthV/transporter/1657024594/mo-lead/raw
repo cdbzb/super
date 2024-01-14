@@ -11,7 +11,7 @@ o = [
 	Array.prNew(12),  "Jim",  Event.prNew,  Array.prNew(8),  
 	Array.prNew(4),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  Event.prNew,  Array.prNew(12),  Event.prNew,  
-	Array.prNew(12),  "604550000",  "",  Event.prNew,  
+	Array.prNew(12),  "431820000",  "",  Event.prNew,  
 	Array.prNew(4),  Event.prNew,  Array.prNew(40),  "934210000",  
 	"why",  "385250000",  Event.prNew,  Array.prNew(40),  
 	"1319460000",  "no",  "482630000",  Event.prNew,  
@@ -50,13 +50,13 @@ o = [
 	Event.prNew,  Array.prNew(28),  "SVR2AI",  "105",  
 	"Mo Chen",  "xsampa",  "mandarin",  "english",  
 	"arpabet",  Event.prNew,  Array.prNew(8),  Array.prNew(1),  
-	Event.prNew,  Array.prNew(12),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(12),  Event.prNew,  Array.prNew(12),  
 	Event.prNew,  Array.prNew(4),  Event.prNew,  Array.prNew(8),  
 	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
 	Array.prNew(1),  Event.prNew,  Array.prNew(12),  "",  
 	"Unnamed Track",  Array.prNew,  Event.prNew,  Array.prNew(20),  
 	"ff7db235",  Event.prNew,  Array.prNew(28),  "synthV.wav",  
-	"NoAspiration",  "/Users/michael/tank/super/SynthV/transporter/1657024594/mo-lead"
+	"NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/transporter/1657024594/mo-lead"
 ];
 p = [
 	// Event
@@ -153,7 +153,7 @@ p = [
 		proto: nil,  parent: nil,  
 		know: true ],  
 	// Array
-	23, [ nil,  nil,  'activeTakeId',  1,  
+	23, [ nil,  nil,  'activeTakeId',  3,  
 		nil,  nil,  'takes',  o[24] ],  
 	// Array
 	24, [ o[25],  o[27],  o[29],  o[31] ],  
@@ -650,14 +650,13 @@ p = [
 		nil,  nil,  'id',  0,  
 		'expr',  1.1,  nil,  nil ],  
 	// Event
-	202, [ array: o[203],  size: 5,  
+	202, [ array: o[203],  size: 4,  
 		proto: nil,  parent: nil,  
 		know: true ],  
 	// Array
-	203, [ 'paramGender',  0.25,  'vocalModeParams',  o[204],  
-		'vocalModeInherited',  true,  nil,  nil,  
+	203, [ 'vocalModeInherited',  true,  nil,  nil,  
 		nil,  nil,  'vocalModePreset',  'Open',  
-		nil,  nil,  'paramTension',  0.9 ],  
+		'vocalModeParams',  o[204],  'paramTension',  0.9 ],  
 	// Event
 	204, [ array: o[205],  size: 1,  
 		proto: nil,  parent: nil,  

@@ -27,7 +27,7 @@ o = [
 	"5073220000",  "+",  "368320000",  Event.prNew,  
 	Array.prNew(40),  "5441540000",  "+",  "349970000",  
 	Event.prNew,  Array.prNew(40),  "5791510000",  "+",  
-	"838250000",  "main",  Event.prNew,  Array.prNew(32),  
+	"670600000",  "main",  Event.prNew,  Array.prNew(32),  
 	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
 	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
 	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
@@ -46,7 +46,7 @@ o = [
 	Array.prNew(8),  Array.prNew(1),  Event.prNew,  Array.prNew(12),  
 	"",  "Unnamed Track",  Array.prNew,  Event.prNew,  
 	Array.prNew(20),  "ff7db235",  Event.prNew,  Array.prNew(28),  
-	"synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/SynthV/transporter/777793891/an-lead"
+	"synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/transporter/777793891/an-lead"
 ];
 p = [
 	// Event
@@ -152,7 +152,7 @@ p = [
 	// Array
 	26, [ 'liked',  false,  nil,  nil,  
 		nil,  nil,  'id',  0,  
-		'expr',  1.4,  nil,  nil ],  
+		'expr',  1.0,  nil,  nil ],  
 	// Event
 	27, [ array: o[28],  size: 3,  
 		proto: nil,  parent: nil,  
@@ -160,7 +160,7 @@ p = [
 	// Array
 	28, [ 'liked',  false,  nil,  nil,  
 		nil,  nil,  'id',  1,  
-		'expr',  1.4,  nil,  nil ],  
+		'expr',  1.0,  nil,  nil ],  
 	// Event
 	29, [ array: o[30],  size: 3,  
 		proto: nil,  parent: nil,  
@@ -168,7 +168,7 @@ p = [
 	// Array
 	30, [ 'liked',  false,  nil,  nil,  
 		nil,  nil,  'id',  2,  
-		'expr',  1.4,  nil,  nil ],  
+		'expr',  1.0,  nil,  nil ],  
 	// Event
 	31, [ array: o[32],  size: 3,  
 		proto: nil,  parent: nil,  
@@ -176,7 +176,7 @@ p = [
 	// Array
 	32, [ 'liked',  false,  nil,  nil,  
 		nil,  nil,  'id',  3,  
-		'expr',  1.4,  nil,  nil ],  
+		'expr',  1.0,  nil,  nil ],  
 	// Event
 	34, [ array: o[35],  size: 2,  
 		proto: nil,  parent: nil,  

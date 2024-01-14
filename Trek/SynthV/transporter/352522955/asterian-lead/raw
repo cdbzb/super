@@ -52,7 +52,7 @@ o = [
 	Array.prNew(8),  Array.prNew(1),  Event.prNew,  Array.prNew(12),  
 	"",  "Unnamed Track",  Array.prNew,  Event.prNew,  
 	Array.prNew(20),  "ff7db235",  Event.prNew,  Array.prNew(28),  
-	"synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/SynthV/transporter/352522955/asterian-lead"
+	"synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/transporter/352522955/asterian-lead"
 ];
 p = [
 	// Event
@@ -148,7 +148,7 @@ p = [
 		proto: nil,  parent: nil,  
 		know: true ],  
 	// Array
-	23, [ nil,  nil,  'activeTakeId',  1,  
+	23, [ nil,  nil,  'activeTakeId',  3,  
 		nil,  nil,  'takes',  o[24] ],  
 	// Array
 	24, [ o[25],  o[27],  o[29],  o[31] ],  

@@ -4,18 +4,18 @@ o = [
 	Array.prNew(8),  Array.prNew(1),  Event.prNew,  Array.prNew(12),  
 	Array.prNew(1),  Event.prNew,  Array.prNew(8),  Array.prNew(1),  
 	Event.prNew,  Array.prNew(32),  Event.prNew,  Array.prNew(16),  
-	Array.prNew(12),  Event.prNew,  Array.prNew(40),  "00000",  
+	Array.prNew(12),  Event.prNew,  Array.prNew(40),  "70560000",  
 	Event.prNew,  Array.prNew(4),  Event.prNew,  Array.prNew(8),  
 	Array.prNew(4),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  "Please",  Event.prNew,  Array.prNew(8),  
 	Array.prNew(4),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  Event.prNew,  Array.prNew(12),  Event.prNew,  
-	Array.prNew(12),  "752160000",  "",  Event.prNew,  
+	Array.prNew(12),  "681600000",  "",  Event.prNew,  
 	Array.prNew(4),  Event.prNew,  Array.prNew(40),  "752160000",  
 	"stand",  "795910000",  Event.prNew,  Array.prNew(40),  
 	"1548070000",  "ready",  "1144480000",  Event.prNew,  
-	Array.prNew(40),  "2692550000",  "+",  "982190000",  
+	Array.prNew(40),  "2692550000",  "+",  "785750000",  
 	Event.prNew,  Array.prNew(40),  "3674740000",  "I",  
 	"530610000",  Event.prNew,  Array.prNew(40),  "4205350000",  
 	"will",  "544720000",  Event.prNew,  Array.prNew(40),  
@@ -25,7 +25,7 @@ o = [
 	"1411200000",  Event.prNew,  Array.prNew(40),  "7287400000",  
 	"your",  "824140000",  Event.prNew,  Array.prNew(40),  
 	"8111540000",  "controls",  "670310000",  Event.prNew,  
-	Array.prNew(40),  "8781850000",  "+",  "1721660000",  
+	Array.prNew(40),  "8781850000",  "+",  "1792220000",  
 	"main",  Event.prNew,  Array.prNew(32),  Event.prNew,  
 	Array.prNew(8),  Array.prNew,  "cubic",  Event.prNew,  
 	Array.prNew(8),  Array.prNew,  "cubic",  Event.prNew,  
@@ -45,7 +45,7 @@ o = [
 	Array.prNew(1),  Event.prNew,  Array.prNew(12),  "",  
 	"Unnamed Track",  Array.prNew,  Event.prNew,  Array.prNew(20),  
 	"ff7db235",  Event.prNew,  Array.prNew(28),  "synthV.wav",  
-	"NoAspiration",  "/Users/michael/tank/super/SynthV/transporter/1860414693/xuan-lead"
+	"NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/transporter/1860414693/xuan-lead"
 ];
 p = [
 	// Event

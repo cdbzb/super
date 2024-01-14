@@ -11,13 +11,13 @@ o = [
 	Array.prNew(12),  "Miles",  Event.prNew,  Array.prNew(8),  
 	Array.prNew(4),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  Event.prNew,  Array.prNew(12),  Event.prNew,  
-	Array.prNew(12),  "541190000",  "",  Event.prNew,  
+	Array.prNew(12),  "703550000",  "",  Event.prNew,  
 	Array.prNew(4),  Event.prNew,  Array.prNew(40),  "1223510000",  
 	"are",  "413480000",  Event.prNew,  Array.prNew(40),  
-	"1636990000",  "you",  "596930000",  Event.prNew,  
-	Array.prNew(40),  "2233920000",  "joking",  "838250000",  
-	Event.prNew,  Array.prNew(40),  "3072170000",  "+",  
-	"1167060000",  "main",  Event.prNew,  Array.prNew(32),  
+	"1636990000",  "you",  "455810000",  Event.prNew,  
+	Array.prNew(40),  "2092800000",  "joking",  "838250000",  
+	Event.prNew,  Array.prNew(40),  "2931050000",  "+",  
+	"933640000",  "main",  Event.prNew,  Array.prNew(32),  
 	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
 	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
 	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
@@ -36,7 +36,7 @@ o = [
 	Array.prNew(1),  Event.prNew,  Array.prNew(12),  "",  
 	"Unnamed Track",  Array.prNew,  Event.prNew,  Array.prNew(20),  
 	"ff7db235",  Event.prNew,  Array.prNew(28),  "synthV.wav",  
-	"NoAspiration",  "/Users/michael/tank/super/SynthV/transporter/1543696826/mo-lead"
+	"NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/transporter/1543696826/mo-lead"
 ];
 p = [
 	// Event

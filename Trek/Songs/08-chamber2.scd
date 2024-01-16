@@ -289,7 +289,7 @@ P(\bass,music:{|p b e|
 		freq: [7,6,5,6,7,11].df('b',scale:\dorian,octave:[ 2 ]).q ,
 		legato:1,
 		dur: Song.currentSong.parse(7,[1,1,1,1,1,2]).q ,
-	] }.pp
+	].pp }
 	);
 ['I was floating (boom) in time and space. ',[3,4,13,11,4.5,13].dm('a')++ [13,11,6].dm('a-')++ [16,15,13,7].dm('d') ].addLine; 
 P.synthV(role: \kirk, filter: (midinote: _ - 12),  params: {|p b| [

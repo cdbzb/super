@@ -3,6 +3,22 @@ s.waitForBoot{
 
 Song(\panel1,[]).current ;
 Song.energyDur = 0.1;
+( Song.synthVTracks=EventWithDefault(
+	\default, {|mix = 1|
+		{
+			|i|
+			var early = 0.5;
+			var dryAmount = 1;
+			EarlyRef.ar(i, source:[2,3,2], receiver:[0,0,0], roomsize:[4,5,6], hw:0.2, b:0.97, n:0, p:0, allp_lens:nil, allp_c:0.7)
+
+			=> DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:1-early * mix)
+			+ ( i * dryAmount )
+			/ 6 
+			=> HPF.ar(_,100)
+			=> DCompressor.ar(_, sidechainIn:0, sidechain:0, ratio:4, threshold:-40, attack:0.1, release:100.1, makeup:0.5, automakeup:1)
+		}
+	}
+));
 "~/tank/super/Trek/Songs/boilerplate.scd".standardizePath.load;
 Song.vocoderRatio.set(1);
 //(A panel slides back to reveal a much larger area, with rock walls, and a glowing sphere elegantly poised on an angled support.) 
@@ -42,7 +58,6 @@ P(\bassnotes, music: { |p b e|
 			instrument: \wash
 		].pp
 });
-
 P.still(\wideHarm, timecode: 1021.256.seconds, music: { |p b e|
 		e.still.( 
 			wait: b.sum,
@@ -96,7 +111,8 @@ P.synthV(\xuan,
 		params: [
 			lyrics: "You may use your try corder + Mister + Spock",
 			defaultVibratoDepth: 0.3,
-			legato: [1, 1, 1, 1, 1, 1, 0.7, 1, 1, 0.7, ],
+			legato: [1, 1, 1, 1, 1, 1, 0.6, 1, 1, 0.7, ],
+			lag: [0.1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 			language: "english",
 			phoneset: "arpabet"
 		],music:{|p b e|
@@ -105,9 +121,8 @@ P.synthV(\xuan,
 			// { PlayBuf.ar(1,Song.laMer.bufnum,rate:-3.midiratio /2) }.play(s,p.carrierBus);
 
 			p.vocodeTune.(p, b,e,e.rpp,
-
 				modGain:2.7,
-				// chord:#[1,2,4]/2,
+				chord:#[1,2,4]/2,
 				// echo:0.1,
 				mix:0.5,
 				width:1.05,
@@ -115,8 +130,8 @@ P.synthV(\xuan,
 				verb:0.5,
 				att: 0,
 				sus:b.sum,
-				rel:1
-				// dur:b.sum+1,
+				rel:0,
+				dur:b.sum,
 				// att:1,
 				// sus:b.sum-0.1,
 				// rel:0.2,
@@ -314,14 +329,19 @@ P.synthV( role: \vocoder,
 			\out,p.carrierBus,
 			\freq,Pfunc({|i| i.midinote - [0,12 ]=>_.midicps}),
 			\amp,0.006,
-			\lagTimg, 0.005
+			\lagTimg, 0.005,
+			\rel,0
 		]
-			=> _.ppm;
+			=> _.pm
+			=> _.findur(b.sum)
+			// => _.play
+			;
 		p.vocodeTune.(p,b,e,e.rpp,
 		modGain:4,
 		dur: b.sum + 0.5,
-		sus: b.sum + 0.5,
-		durRel: 0.5,
+		// sus: b.sum - 0.5 ,
+		durRel: 0.7,
+		rel:1.0,
 		chord:#[1,2,4],
 		// chord:#[1,0.5,2,8],
 		echo:0.3,
@@ -334,17 +354,6 @@ P.synthV( role: \vocoder,
 			// out:3
 		);
 });
-// P.rpp('vox',
-// 	start: \Sealed,
-// 	lag:-1,music: {|p b e|
-// 	{ Song.laMer => PlayBuf.ar(2,_,rate: [5,0].midiratio.dq.demand(b.parse([5,3])+[1,0]))/2 * 0.1=> Out.ar(Song.carrierBus,_) }.play;
-// 	p.vocodeTune.(p,b,e,
-// 		modGain:9,
-// 		chord:#[1,0.5,2,8],
-// 		echo:0.5,
-// 		mix:0.8
-// 	)
-// });
 P('cymbal',start:\Sealed,music: {|p b e|
 	[ instrument:\cymbal_808,amp:0.5,decay:4,dur:2.dup(5).warpTo(e.tempoMap.quantizeDft).q ].p.play
 });
@@ -393,6 +402,15 @@ P.still(\clear, timecode: 0.seconds,lag:0.01, music: { |p b e|
 ["essence of my mind. ",[7,7,6,7,6,5,6, 5].dm(\g)].addLine; 
 Song.durs[\essence]=Song.durs[\essence].list.dup(2).flat[(0..15)].q; //only 15
 Song.setTempoMap(\essence,"q qe ee e e e qqe e ".wrapExtend(37));
+P(\ep, music: { |p b e|
+	[
+		freq: [[-1, 3, 5, 7, 12], [-1, 3, 4, 6, 11]].df(\g).q,
+		strum: 0.05,
+		dur: b.parse([4, 3]).q,
+		out: Effect.bus({|i| i * SinOsc.ar([3, 4]) },out: 2),
+		amp: 0.07
+	].pp
+});
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.parse([7]).unbubble,
@@ -422,10 +440,9 @@ P.synthV(\xuan,
 			( freq: [3,5,7].df(\g,4),instrument: \sawSynthSustain,
 			out: p.carrierBus ,
 			amp:0.015,dur:2,rel:4,addAction:\addBefore).play;
-
 		p.vocodeTune.(p,b,e,e.rpp,
-
-		echo: 0.5,modGain:3,
+			echo: 0.5,
+			modGain:4,
 		// chord:#[1,0.5,2,8],
 		// echo:0.1,modGain:6,
 		mix:0.8,
@@ -433,7 +450,7 @@ P.synthV(\xuan,
 			// dur:b.sum+1,
 			// att:1,
 			 sus:b.sum / 2,
-			// rel:0.2,
+			rel:0.2,
 			// out:3
 		);
 });
@@ -446,7 +463,7 @@ P.synthV(\kevin, take: nil,
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 		/ 2
-		
+		* 4/3
 	}.play
 });
 P.double(\kevin, take: nil,
@@ -456,24 +473,10 @@ P.double(\kevin, take: nil,
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 		/ 2
+
+		* 4/3
 	}.play
 });
-( Song.synthVTracks=EventWithDefault(
-	\default, {|mix = 1|
-		{
-			|i|
-			var early = 0.5;
-			var dryAmount = 1;
-			EarlyRef.ar(i, source:[2,3,2], receiver:[0,0,0], roomsize:[4,5,6], hw:0.2, b:0.97, n:0, p:0, allp_lens:nil, allp_c:0.7)
-
-			=> DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:1-early * mix)
-			+ ( i * dryAmount )
-			/ 6 
-			=> HPF.ar(_,100)
-			=> DCompressor.ar(_, sidechainIn:0, sidechain:0, ratio:4, threshold:-40, attack:0.1, release:100.1, makeup:0.5, automakeup:1)
-		}
-	}
-));
 P('cymbal',start:\essence,music: {|p b e|
 	(
 		instrument:\cymbalsDS,
@@ -521,7 +524,8 @@ P(\chord,start:\essence,music: { |p b e|
 		freq:[ [1,3,5,7], [ 1,3,4,6 ] ].df(\g).q,
 		instrument: \stringyy,
 		dur: "qqqq qqqq".asBeats.warpTo(e.tempoMap).q,
-		out:(0..3)
+		out:(0..3),
+		amp: 4/3/10
 	].p
 	=> {|i| [i,Pmul(\freq,midiratio(2),i)].q}
 	=> _.play
@@ -529,8 +533,8 @@ P(\chord,start:\essence,music: { |p b e|
 P(\bass,start:\essence,music: { |p b e|
 	[
 		freq:[1,-7,-4,-3].df(\g,[3,4]).q,
-		dur: "qq qq qq qq".asBeats.warpTo(e.tempoMap).q
-
+		dur: "qq qq qq qq".asBeats.warpTo(e.tempoMap).q,
+		amp: 4/3/10
 	].p
 	=> {|i| [i,Pmul(\freq,midiratio(-10),i)].q}
 	=> _.play
@@ -544,14 +548,15 @@ P.still(\spockClose, timecode: 1034.5.seconds, music: { |p b e|
 	)
 });
 Song.setTempoMap(\outtro, "q qe ee e qq q q q qe ee e q" );
-P.tune(\outtro, [ instrument:\sawSynthSustain, pulse:0.44, trigger:1,amp:0.15 ].pm <> _); //need to make it pulse
+P.tune(\outtro, [ instrument:\sawSynthSustain, pulse:0.44, trigger:1,amp:0.15* 4/3 ].pm <> _); //need to make it pulse
 P('bass',start:\outtro,music: {|p b e|
 	
 [ [1, -7, -4, -3, -5, -4, -1],[2,3,2,2, 2,2, 1] ].flop.collect({ |i| i[0].dup(i[1]) }).flat .df(\b,\mixolydian)
 => {|i| 
 	[
 		freq: i.q/[8,4],
-		dur: "qe e| e ee e| qe e| q q| qe e| qe e| q".asBeats.warpTo(1!16=>_.warpTo(e .tempoMap.quantizeDft)).q
+		dur: "qe e| e ee e| qe e| q q| qe e| qe e| q".asBeats.warpTo(1!16=>_.warpTo(e .tempoMap.quantizeDft)).q,
+		amp: 4/3/10
 	].pp
 }
 });
@@ -560,7 +565,8 @@ P('chords',start:\outtro,music: {|p b e|
 	[
 		freq:[ [1,3,5,11], [ -7,3,5,7 ], [-6,1, 4,6],[-5,5],[-6,6],[2,5,7],[1,4,6],5,[1,3,5] ].df(\b,\mixolydian).q,
 		instrument: \stringyy,
-		dur: "qq qq qq q q qqe ee e q".asBeats.warpTo(e.tempoMap).q
+		dur: "qq qq qq q q qqe ee e q".asBeats.warpTo(e.tempoMap).q,
+		amp: 4/3/10
 	].pp
 });
 P('click',start:\outtro,music: {|p b e|
@@ -576,15 +582,16 @@ P('click',start:\outtro,music: {|p b e|
 		//amp:0.05,
 		//lag:0.005,
 		instrument: \sn_808,
-		rest:[\r,0,0,0,0,0,0].q
+		rest:[\r,0,0,0,0,0,0].q,
+		amp: 4/3/10
 	].pp;
 	[
 		dur: "e eqe ee e qq e ee e e eqe ee e qq ".asBeats-[0.01,0,0,0,0,0,0,0,0,0] =>_.warpTo(e.tempoMap
 			.quantizeDft
 		//.quantizeWindow
 		)=>_.q,
-		vol:0.08,
-		instrument: \kick_gentle
+		vol:0.08 * 4/3,
+		instrument: \kick_gentle,
 	].pp
 });
 }.();
@@ -629,6 +636,7 @@ P.synthV(Trek.cast.spock, take: nil,
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
 			/4
+			* 2
 	}.play
 });
 P.double(Trek.cast.spock, take: nil,
@@ -651,6 +659,7 @@ P.double(Trek.cast.spock, take: nil,
 			// => TwoTube.ar(_,loss:0.8)
 			*[0.2,0.8]
 			/4.5
+			*2
 	}.play
 });
 P(\swell, music: { |p b e|
@@ -788,27 +797,21 @@ P(\dyad, music: { |p b e|
 P.synthV(role: \kirk,
 	filter: (midinote: _ - 12), 
 	params: {|p b key| [
-	// vocalMode: "Power",
-	pitchTake: [3],
-	lyrics: "Impossible + + +",
-	vocalMode: case{
-		key == \kevin }{\Belt}
-	,
-	paramGender: case{
-		key == \kevin }{0.3}
-	,
-	lag:[0,0,0.1,0],
-	tension: Env([0,1,1,1,1],b,\step),
-	paramTension:0.3 ,
-	defaultVibratoDepth:0
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-		/3
-		// => Out.ar(1,_)
-		=> PanAz.ar(5,_,1)
-	}.play
+		// vocalMode: "Power",
+		pitchTake: [3],
+		lyrics: "Impossible + + +",
+		lag:[0,0,0.1,0],
+		tension: Env([0,1,1,1,1],b,\step),
+		paramTension:0.3 ,
+		defaultVibratoDepth:0
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+			/2
+			// => Out.ar(1,_)
+			=> PanAz.ar(5,_,1)
+		}.play
 });
 /*MCCOY:*/[" But you once had a body of some type? ","-5 3 2 1 -7 4.5 2 -6.5 5 4.5".dm(\d),].addLine; 
 P(\strum, music: { |p b e|
@@ -840,6 +843,7 @@ P.synthV(role: \mccoy, filter: (midinote: _ - 12), params: {|p b| [
 		* 0.8
 		* [0.2,0.8]
 		/4
+		* 2
 	}.play
 });
 P(\bassline, music: { |p b e|

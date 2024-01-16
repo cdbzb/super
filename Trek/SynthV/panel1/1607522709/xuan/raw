@@ -4,14 +4,14 @@ o = [
 	Array.prNew(8),  Array.prNew(1),  Event.prNew,  Array.prNew(12),  
 	Array.prNew(1),  Event.prNew,  Array.prNew(8),  Array.prNew(1),  
 	Event.prNew,  Array.prNew(32),  Event.prNew,  Array.prNew(16),  
-	Array.prNew(10),  Event.prNew,  Array.prNew(40),  "00000",  
+	Array.prNew(10),  Event.prNew,  Array.prNew(40),  "141120000",  
 	Event.prNew,  Array.prNew(4),  Event.prNew,  Array.prNew(8),  
 	Array.prNew(4),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  "You",  Event.prNew,  Array.prNew(8),  
 	Array.prNew(4),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  Event.prNew,  Array.prNew(12),  Event.prNew,  
-	Array.prNew(12),  "565890000",  "",  Event.prNew,  
+	Array.prNew(12),  "424770000",  "",  Event.prNew,  
 	Array.prNew(4),  Event.prNew,  Array.prNew(40),  "565890000",  
 	"may",  "598340000",  Event.prNew,  Array.prNew(40),  
 	"1164230000",  "use",  "643500000",  Event.prNew,  
@@ -19,11 +19,11 @@ o = [
 	Event.prNew,  Array.prNew(40),  "2417360000",  "try",  
 	"688660000",  Event.prNew,  Array.prNew(40),  "3106020000",  
 	"corder",  "520730000",  Event.prNew,  Array.prNew(40),  
-	"3626750000",  "+",  "502810000",  Event.prNew,  
+	"3626750000",  "+",  "430980000",  Event.prNew,  
 	Array.prNew(40),  "4345050000",  "Mister",  "762040000",  
 	Event.prNew,  Array.prNew(40),  "5107090000",  "+",  
 	"677370000",  Event.prNew,  Array.prNew(40),  "5784460000",  
-	"Spock",  "899920000",  "main",  Event.prNew,  
+	"Spock",  "998700000",  "main",  Event.prNew,  
 	Array.prNew(32),  Event.prNew,  Array.prNew(8),  Array.prNew,  
 	"cubic",  Event.prNew,  Array.prNew(8),  Array.prNew,  
 	"cubic",  Event.prNew,  Array.prNew(8),  Array.prNew,  
@@ -42,7 +42,7 @@ o = [
 	Event.prNew,  Array.prNew(8),  Array.prNew(1),  Event.prNew,  
 	Array.prNew(12),  "",  "Unnamed Track",  Array.prNew,  
 	Event.prNew,  Array.prNew(20),  "ff7db235",  Event.prNew,  
-	Array.prNew(28),  "synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/SynthV/panel1/1607522709/xuan"
+	Array.prNew(28),  "synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/panel1/1607522709/xuan"
 ];
 p = [
 	// Event

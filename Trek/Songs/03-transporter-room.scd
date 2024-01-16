@@ -1651,7 +1651,7 @@ P(\bass,start:\through,music:{|p b e|
 P(\crash, music: { |p b e|
 	(
 		instrument: \cymbalsDS,
-		out: Effect.bus({|i| FreqShift.ar(i, -599 + Gendy1.arWidth(freq:1).range(0, 20)) => {|i| CrossoverDistortion.ar(i)/20 + i /3} },inputChannels:2, out:2)
+		out: Effect.bus({|i| FreqShift.ar(i, -599 + Gendy1.arWidth(freq:1).range(0, 20)) => {|i| CrossoverDistortion.ar(i)/20 + i /3} * EnvGen.cutoff(b.sum, 1) },inputChannels:2, out:2)
 	).play
 });
 P.still(\spockTwoApprox, timecode: 808.354.seconds, music: { |p b e|

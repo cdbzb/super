@@ -150,8 +150,8 @@ Song.encoders=~encoders;
             { Song.vocoderSynth.isPlaying.not } { playSynth.(); playAmbiSynth.() }
             { true }                            { Song.vocoderSynth.set(\dur,dur,\gate,1)} ;
 		// restore line above to 'out' to get rid of ambisonics!!
-		Song.sargonCarrier.(p,b,e,att, sus, rel, chord,tune,mix, verb, width,carrierGain,enlarge,sawFreqRatio);
-		Song.sargonModulator.(rppName,dur,modGain,echo,synthVbuffer)
+		Song.carrierSynth = Song.sargonCarrier.(p,b,e,att, sus, rel, chord,tune,mix, verb, width,carrierGain,enlarge,sawFreqRatio);
+		Song.modulatorSynth = Song.sargonModulator.(rppName,dur,modGain,echo,synthVbuffer)
 	};
 	Song.laMer = Song.laMer ?  Buffer.read(s,"~/tank/super/samples/La_Mer_clean.aif".standardizePath);
 );

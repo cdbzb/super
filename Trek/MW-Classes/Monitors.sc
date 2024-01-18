@@ -71,6 +71,13 @@ Monitors {  //setup monitoring for Trek piece
 		o.outDevice_("BlackHole 2ch");
 		Server.default.reboot
 	}
+
+	*rme{
+		var o =Server.default.options;
+		o.inDevice_("Digiface USB (23953833)");
+		o.outDevice_("Digiface USB (23953833)");
+		Server.default.reboot
+	}
 	*macbook{
 		var o =Server.default.options;
 		o.inDevice_("MacBook Pro Microphone");

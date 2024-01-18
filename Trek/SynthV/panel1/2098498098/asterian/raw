@@ -35,13 +35,13 @@ o = [
 	Event.prNew,  Array.prNew(28),  "SVR2AI",  "101",  
 	"ASTERIAN",  "arpabet",  "english",  "",  
 	"",  Event.prNew,  Array.prNew(8),  Array.prNew(1),  
-	Event.prNew,  Array.prNew(12),  Event.prNew,  Array.prNew(32),  
-	"",  Event.prNew,  Array.prNew(4),  Event.prNew,  
+	Event.prNew,  Array.prNew(12),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(4),  "",  Event.prNew,  
 	Array.prNew(8),  Array.prNew,  "cubic",  Event.prNew,  
 	Array.prNew(8),  Array.prNew(1),  Event.prNew,  Array.prNew(12),  
 	"",  "Unnamed Track",  Array.prNew,  Event.prNew,  
 	Array.prNew(20),  "ff7db235",  Event.prNew,  Array.prNew(28),  
-	"synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/SynthV/panel1/2098498098/asterian"
+	"synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/panel1/2098498098/asterian"
 ];
 p = [
 	// Event
@@ -135,7 +135,7 @@ p = [
 		proto: nil,  parent: nil,  
 		know: true ],  
 	// Array
-	23, [ nil,  nil,  'activeTakeId',  3,  
+	23, [ nil,  nil,  'activeTakeId',  1,  
 		nil,  nil,  'takes',  o[24] ],  
 	// Array
 	24, [ o[25],  o[27],  o[29],  o[31] ],  
@@ -464,24 +464,20 @@ p = [
 		nil,  nil,  'id',  0,  
 		'expr',  1.1,  nil,  nil ],  
 	// Event
-	142, [ array: o[143],  size: 7,  
+	142, [ array: o[143],  size: 5,  
 		proto: nil,  parent: nil,  
 		know: true ],  
 	// Array
-	143, [ 'paramGender',  0,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  'vocalModePreset',  o[144],  
-		nil,  nil,  'paramTension',  0.35,  
-		nil,  nil,  'vocalModeParams',  o[145],  
-		'vocalModeInherited',  true,  'paramBreathiness',  0.65,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  'paramToneShift',  0 ],  
+	143, [ nil,  nil,  'paramBreathiness',  0.65,  
+		'vocalModeInherited',  true,  'vocalModeParams',  o[144],  
+		nil,  nil,  'vocalModePreset',  o[146],  
+		nil,  nil,  'paramTension',  0.35 ],  
 	// Event
-	145, [ array: o[146],  size: 0,  
+	144, [ array: o[145],  size: 0,  
 		proto: nil,  parent: nil,  
 		know: true ],  
 	// Array
-	146, [ nil,  nil,  nil,  nil ],  
+	145, [ nil,  nil,  nil,  nil ],  
 	// Event
 	147, [ array: o[148],  size: 2,  
 		proto: nil,  parent: nil,  

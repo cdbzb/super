@@ -189,6 +189,7 @@ Song {
 				});
 				array.do({|i|
 					{ songs.at(i).current }.try;
+					// Trek.initClass; //reset any changes from previously Songs
 					{ songs.at(i).playParts }.try;
 					{ songs.at(i).durTillEnd.wait }.try;
 				})

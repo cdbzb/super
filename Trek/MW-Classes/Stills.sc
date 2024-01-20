@@ -245,7 +245,7 @@ Still {
 		this.sequenceText( array )
 	}
 
-	plot{|markerName monitor=0|
+	plot {|markerName monitor=0|
 		var image=this.mark(markerName);
 		var w;
 		try{

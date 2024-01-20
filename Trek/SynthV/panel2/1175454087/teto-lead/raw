@@ -35,7 +35,7 @@ o = [
 	Event.prNew,  Array.prNew(12),  "",  "Unnamed Track",  
 	Array.prNew,  Event.prNew,  Array.prNew(20),  "ff7db235",  
 	Event.prNew,  Array.prNew(28),  "synthV.wav",  "NoAspiration",  
-	"/Users/michael/tank/super/SynthV/panel2/1175454087/teto-lead"
+	"/Users/michael/tank/super/Trek/SynthV/panel2/1175454087/teto-lead"
 ];
 p = [
 	// Event

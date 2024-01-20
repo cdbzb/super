@@ -1406,7 +1406,7 @@ P.synthV(role: \vocoder, take: \lead,
 	p.vocodeTune.(p,b,e,e.rpp,
 		width:1.03,
 		verb:1,
-		modGain:2,
+		modGain:1.7,
 		// echo:0,modGain: 4,
 		// mix:0.5,
 		att:0.1,
@@ -1414,7 +1414,7 @@ P.synthV(role: \vocoder, take: \lead,
 		rel: 1,
 		chord:#[1,2,4]/2
 	);
-	{ PlayBuf.auto(2,Song.laMer, [-7,-7].midiratio.dq.demand(Song.durs[\planets].list.parse([10,2]))) / 2 * EnvGen.cutoff(b.sum-2, 2)}.play(s,
+	{ PlayBuf.auto(2,Song.laMer, [-7,-7].midiratio.dq.demand(Song.durs[\planets].list.parse([10,2]))) / 2.3 * EnvGen.cutoff(b.sum-2, 2)}.play(s,
 		Song.carrierBus
 	);
 	// (instrument: \wash,freq: [1,3,5,7].df(\d,\dorian),dur:b.sum,out:p.carrierBus.index,amp:0.02,addAction:\addBefore).play;
@@ -1590,7 +1590,7 @@ P(\chords, music: { |p b e|
 P.still(\wideAgainMulhall, timecode: 1121.35.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["our studies","indicte that"],
+		text: ["our studies","indicate that"],
 	)
 });
 P(\bassnote, music: { |p b e| //connect this
@@ -1696,8 +1696,9 @@ P(\chords, music: { |p b e|
 });
 P.synthVs(role: \spock, take: [ nil, \bg ], params: {|p b| [
 	lyrics: "that would tend, however + + to explain +",
-	legato: [ [1, 1, 0.8, 1, 1, 0.6, 1, 1, 0.8, ] ],
-	lag: [ [0.05, 0,0,0,00,0,0,0 ] ],
+	legato: [ [0.66, 1, 0.8, 1, 1, 0.6, 1, 1, 0.8, ] ],
+	lag: [ [0.08, 0,0,0,00,0,0,0 ] ],
+	loudness: Env([-2,4,0,0],b.parse([1, 1, 2])),
 	filter: (midinote: _ - 12), 
 	pitchTake: 1 
 ] }, music:{|p b e|
@@ -1721,9 +1722,10 @@ P(\pedalTone, music: { |p b e|
 		out: Effect.bus( _ * Line.kr(0,1,2))
 	].pp;
 	[
-		freq: [-11].df(\e),
-		lag: b[0..1].sum,
-		dur: [ b.sum ].q,
+		freq: [-27].df(\e).q,
+		lag: b[0].sum,
+		// dur: [ b.sum ].q,
+		dur: b.q,
 		coef:0.15,
 		instrument: \harp,
 		amp:0.02,
@@ -1732,7 +1734,7 @@ P(\pedalTone, music: { |p b e|
 	].pp
 });
 [" certain elements of Vulcan prehistory. ","3 2 4 2 -7 1 2.5 1 -6 -4 -5 -6".dm(\g)].addLine; 
-Song.durs.filter(\Vulcan,{|i| i.drop(-1) ++ (i.last + 0.5)});
+Song.durs.filter(\Vulcan,{|i| i.drop(-1) ++ (i.last + 0.25)});
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -1968,8 +1970,9 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 		// mix:0.5,
 		att:0.3,
 		sus:b.sum ,
-	modGain:2,
+		modGain:2,
 		chord:#[8,2]/2,
+		durRel: 1.5
 	);
 });
 /*KIRK:*/[" A war? ","1 7".dm(\a,4,\mixolydian),].addLine; 
@@ -2018,8 +2021,10 @@ P.still(\clear, timecode: 0.seconds,lag: 0.01, music: { |p b e|
 P.synthV(role: \vocoder, take: \lead,
 	pbind: Song.enlarge(9),
 	params: {|p b| [
+		filter: (midinote: _ - 12), 
 	lyrics: "A struggle + for such goals and the unleashing + + of such power + that you could not comprehend + + ",
-	legato: [1, 1, 1, 1, 1, 0.9, 1, 1, 1, 1, 0.7, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ],
+	legato: [1, 1, 0.8, 1,      1, 0.9, 1, 1, 1, 1, 0.7, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ],
+	lag: [0,    0, 0,   b[3] /3, 0, 0,   0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ],
 	pitchTake: 1
 ] }, music:{|p b e|
 	p.vocodeTune.(p,b,e,e.rpp,
@@ -2051,15 +2056,14 @@ P(\chord, music: { |p b e|
 		instrument: \wash,
 		amp:0.05,
 		freqLag:0.1,
-		out: 
-		p.carrierBus.index
-	].ppm
+		out: [ p.carrierBus.index, 0
+		]	].ppm
 });
 P('chords2',start:\struggle,music: {|p b e|
 	[
 		freq: [[1,3,5], [1,4,6],1,[1,4,6],[3, 5, 7],[-7,2,4]].df('a-',[3,4],\minor).q,
 		dur:b.q,
-		out:Effect({ |i|  SineShaper.ar(i,0.2,5) => FreeVerb.ar(_,1,0.6) * [0.6,0.6]}, out: p.carrierBus.index).bus.index
+		out:Effect({ |i|  SineShaper.ar(i,0.2,5) => FreeVerb.ar(_,1,0.6) * [0.6,0.6]}, out: [0, p.carrierBus.index ]).bus.index
 	].pp
 });
 P('bass',start:\struggle,music: {|p b e|

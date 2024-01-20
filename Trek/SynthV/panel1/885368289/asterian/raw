@@ -4,14 +4,14 @@ o = [
 	Array.prNew(8),  Array.prNew(1),  Event.prNew,  Array.prNew(12),  
 	Array.prNew(1),  Event.prNew,  Array.prNew(8),  Array.prNew(1),  
 	Event.prNew,  Array.prNew(32),  Event.prNew,  Array.prNew(16),  
-	Array.prNew(9),  Event.prNew,  Array.prNew(40),  "70560000",  
+	Array.prNew(9),  Event.prNew,  Array.prNew(40),  "112890000",  
 	Event.prNew,  Array.prNew(4),  Event.prNew,  Array.prNew(8),  
 	Array.prNew(4),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  "that",  Event.prNew,  Array.prNew(8),  
 	Array.prNew(4),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  Event.prNew,  Array.prNew(12),  Event.prNew,  
-	Array.prNew(12),  "457220000",  "",  Event.prNew,  
+	Array.prNew(12),  "273820000",  "",  Event.prNew,  
 	Array.prNew(4),  Event.prNew,  Array.prNew(40),  "527780000",  
 	"would",  "587050000",  Event.prNew,  Array.prNew(40),  
 	"1114830000",  "tend",  "736080000",  Event.prNew,  
@@ -20,15 +20,15 @@ o = [
 	"366910000",  Event.prNew,  Array.prNew(40),  "2876000000",  
 	"+",  "255700000",  Event.prNew,  Array.prNew(40),  
 	"3302180000",  "to",  "366910000",  Event.prNew,  
-	Array.prNew(40),  "3669090000",  "explain",  "577180000",  
-	Event.prNew,  Array.prNew(40),  "4246270000",  "+",  
-	"514800000",  "main",  Event.prNew,  Array.prNew(32),  
+	Array.prNew(40),  "3669090000",  "explain",  "619510000",  
+	Event.prNew,  Array.prNew(40),  "4288600000",  "+",  
+	"480930000",  "main",  Event.prNew,  Array.prNew(32),  
 	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
 	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
 	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
 	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
 	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
-	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
+	Event.prNew,  Array.prNew(8),  Array.prNew(8),  "cubic",  
 	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
 	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
 	"c55226b8-e035-4fc6-a857-aacf2bbe7548",  Event.prNew,  Array.prNew(40),  "c55226b8-e035-4fc6-a857-aacf2bbe7548",  
@@ -41,7 +41,7 @@ o = [
 	Array.prNew(8),  Array.prNew(1),  Event.prNew,  Array.prNew(12),  
 	"",  "Unnamed Track",  Array.prNew,  Event.prNew,  
 	Array.prNew(20),  "ff7db235",  Event.prNew,  Array.prNew(28),  
-	"synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/SynthV/panel1/885368289/asterian"
+	"synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/panel1/885368289/asterian"
 ];
 p = [
 	// Event
@@ -393,6 +393,9 @@ p = [
 	// Array
 	113, [ 'points',  o[114],  nil,  nil,  
 		nil,  nil,  'mode',  o[115] ],  
+	// Array
+	114, [ 0.0,  -2,  527788800.0,  4,  
+		1114848000.0,  0,  2509113600.0,  0 ],  
 	// Event
 	116, [ array: o[117],  size: 2,  
 		proto: nil,  parent: nil,  

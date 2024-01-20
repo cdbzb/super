@@ -4,7 +4,7 @@ o = [
 	Array.prNew(8),  Array.prNew(1),  Event.prNew,  Array.prNew(12),  
 	Array.prNew(1),  Event.prNew,  Array.prNew(8),  Array.prNew(1),  
 	Event.prNew,  Array.prNew(32),  Event.prNew,  Array.prNew(16),  
-	Array.prNew(7),  Event.prNew,  Array.prNew(40),  "00000",  
+	Array.prNew(7),  Event.prNew,  Array.prNew(40),  "70560000",  
 	Event.prNew,  Array.prNew(4),  Event.prNew,  Array.prNew(8),  
 	Array.prNew(4),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  Event.prNew,  Array.prNew(12),  Event.prNew,  
@@ -12,14 +12,14 @@ o = [
 	Array.prNew(4),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  "409240000",  "",  Event.prNew,  
-	Array.prNew(4),  Event.prNew,  Array.prNew(40),  "409240000",  
+	Array.prNew(4),  Event.prNew,  Array.prNew(40),  "479800000",  
 	"is",  "462870000",  Event.prNew,  Array.prNew(40),  
-	"872110000",  "it",  "462870000",  Event.prNew,  
-	Array.prNew(40),  "1334980000",  "you",  "556010000",  
-	Event.prNew,  Array.prNew(40),  "1890990000",  "want",  
-	"745110000",  Event.prNew,  Array.prNew(40),  "2636100000",  
+	"942670000",  "it",  "462870000",  Event.prNew,  
+	Array.prNew(40),  "1405540000",  "you",  "556010000",  
+	Event.prNew,  Array.prNew(40),  "1961550000",  "want",  
+	"745110000",  Event.prNew,  Array.prNew(40),  "2706660000",  
 	"of",  "650560000",  Event.prNew,  Array.prNew(40),  
-	"3286660000",  "us?",  "1192180000",  "main",  
+	"3357220000",  "us?",  "1192180000",  "main",  
 	Event.prNew,  Array.prNew(32),  Event.prNew,  Array.prNew(8),  
 	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
 	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
@@ -38,7 +38,7 @@ o = [
 	Event.prNew,  Array.prNew(8),  Array.prNew(1),  Event.prNew,  
 	Array.prNew(12),  "",  "Unnamed Track",  Array.prNew,  
 	Event.prNew,  Array.prNew(20),  "ff7db235",  Event.prNew,  
-	Array.prNew(28),  "synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/SynthV/panel2/405845093/asterian-lead"
+	Array.prNew(28),  "synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/panel2/405845093/asterian-lead"
 ];
 p = [
 	// Event

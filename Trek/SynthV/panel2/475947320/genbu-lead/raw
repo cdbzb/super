@@ -11,15 +11,15 @@ o = [
 	Array.prNew(12),  "lungs",  Event.prNew,  Array.prNew(8),  
 	Array.prNew(4),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  Event.prNew,  Array.prNew(12),  Event.prNew,  
-	Array.prNew(12),  "1223510000",  "l a N z",  Event.prNew,  
+	Array.prNew(12),  "1223510000",  "r a N z",  Event.prNew,  
 	Array.prNew(4),  Event.prNew,  Array.prNew(40),  "3930170000",  
 	"full",  "647740000",  "f u l",  Event.prNew,  
 	Array.prNew(40),  "4577910000",  "of",  "726760000",  
 	"a v",  Event.prNew,  Array.prNew(40),  "5304670000",  
 	"air",  "1816210000",  "e r",  Event.prNew,  
 	Array.prNew(40),  "7120880000",  "again",  "731000000",  
-	"a",  Event.prNew,  Array.prNew(40),  "7851880000",  
-	"+",  "2025070000",  "g e i n",  "main",  
+	"e",  Event.prNew,  Array.prNew(40),  "7851880000",  
+	"+",  "2025070000",  "g e n",  "main",  
 	Event.prNew,  Array.prNew(32),  Event.prNew,  Array.prNew(8),  
 	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
 	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
@@ -33,12 +33,12 @@ o = [
 	"",  "GENBU",  "romaji",  "japanese",  
 	"",  "SVR2Standard",  Event.prNew,  Array.prNew(8),  
 	Array.prNew(1),  Event.prNew,  Array.prNew(12),  Event.prNew,  
-	Array.prNew(12),  "",  Event.prNew,  Array.prNew(4),  
+	Array.prNew(16),  Event.prNew,  Array.prNew(4),  "",  
 	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
 	Event.prNew,  Array.prNew(8),  Array.prNew(1),  Event.prNew,  
 	Array.prNew(12),  "",  "Unnamed Track",  Array.prNew,  
 	Event.prNew,  Array.prNew(20),  "ff7db235",  Event.prNew,  
-	Array.prNew(28),  "synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/SynthV/panel2/475947320/genbu-lead"
+	Array.prNew(28),  "synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/panel2/475947320/genbu-lead"
 ];
 p = [
 	// Event
@@ -403,19 +403,20 @@ p = [
 		nil,  nil,  'id',  0,  
 		'expr',  1.1,  nil,  nil ],  
 	// Event
-	131, [ array: o[132],  size: 3,  
+	131, [ array: o[132],  size: 5,  
 		proto: nil,  parent: nil,  
 		know: true ],  
 	// Array
-	132, [ 'vocalModeInherited',  true,  nil,  nil,  
-		nil,  nil,  'vocalModePreset',  o[133],  
-		'vocalModeParams',  o[134],  nil,  nil ],  
+	132, [ 'paramLoudness',  2,  'paramBreathiness',  0.3,  
+		'vocalModeInherited',  true,  'vocalModeParams',  o[133],  
+		nil,  nil,  'vocalModePreset',  o[135],  
+		nil,  nil,  nil,  nil ],  
 	// Event
-	134, [ array: o[135],  size: 0,  
+	133, [ array: o[134],  size: 0,  
 		proto: nil,  parent: nil,  
 		know: true ],  
 	// Array
-	135, [ nil,  nil,  nil,  nil ],  
+	134, [ nil,  nil,  nil,  nil ],  
 	// Event
 	136, [ array: o[137],  size: 2,  
 		proto: nil,  parent: nil,  

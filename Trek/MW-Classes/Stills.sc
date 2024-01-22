@@ -10,6 +10,7 @@ Stills {
 	classvar <>stillsLocation = "/tmp/";
 	classvar <>current;
 	classvar <>muted=false;
+	classvar <>scale=1;
 	var <>file;
 	var <>markers;
 	var <>fade;
@@ -19,7 +20,9 @@ Stills {
 	var <>size=1200;
 	var <>monitors;
 
+
 	*new {|movie| ^super.new.init(movie)}
+
 
 	*reaper {
 		("open "++ this.class.filenameSymbol.asString.dirname.dirname +/+ "Stills/video for stills etc.RPP".escapeChar(Char.space)).unixCmd
@@ -127,12 +130,12 @@ Stills {
 			var image=this.mark(markerName);
 			var w;
 			try{
-				w = Window(bounds:Rect(1500*monitor,200,1400,800),border:false)
+				w = Window(bounds:Rect(1500*monitor,200,1400,800).scale(scale),border:false)
 				//1196 x 676
 				.background_( Color.clear)
 				.front;  
 			}{
-				w = Window(bounds:Rect(0,200,1400,800),border:false)
+				w = Window(bounds:Rect(0,200,1400 * scale,800 * scale).scale(scale),border:false)
 				.background_( Color.clear)
 				.front;  
 			}
@@ -141,10 +144,12 @@ Stills {
 		plot {|markerName monitor=0|
 			var image=this.mark(markerName);
 			var w;
-			image.setSize(monitors[monitor].width-10,monitors[monitor].height-10,\keepAspectRatio);
+			// image.setSize(monitors[monitor].width-10 * scale => _.asInteger,monitors[monitor].height-10 => _.asInteger * scale, \keepAspectRatio);
+			image.setSize(monitors[monitor].width-10 * scale => _.asInteger,monitors[monitor].height-10  * scale => _.asInteger, \keepAspectRatio);
 			try{
 				//w = Window(bounds:Rect(1500*monitor,200,size/12*14,size/12*8),border:false)
-				w = Window(bounds:monitors[monitor],border:false)
+				w = Window(bounds:monitors[monitor].scale(scale),border:false)
+				// w = Window(bounds:Rect(1500*monitor,200,1400 * scale,800 * scale),border:false)
 				.background_( Color.clear)
 				// .drawFunc_({Pen.drawImage(Point(100,100),image,operation:'sourceOver',opacity:1)})
 				.drawFunc_({Pen.drawImage(Point(50,50),image,operation:'sourceOver',opacity:1)})
@@ -271,41 +276,40 @@ Still {
         //
 	}
 	
-
-        title { |text|
+	title { |text|
 		var size=stills.size;
-		var bounds = stills.monitors[monitor];
+		var bounds = stills.monitors[monitor].scale(Stills.scale);
 		var textHeight = bounds.height/4;
 		//  top in Rects below really should ALSO depend on textHeight also!
 		var top = Rect(bounds.left,bounds.height/8,bounds.width,textHeight);
 		var bottom = Rect(bounds.left,bounds.height*3/4,bounds.width,textHeight);
-          ( text.size == 1 ).if
-          {
-            textUpper = StaticText(window,top)
-            .string_("")
-            .stringColor_(Color.rand)
-            .align_(\center)
-            .font_(Font(\helvetica,90,bold:true))
-            ;
-            textLower = StaticText(window,bottom)
-            .string_(text[0])
-            .stringColor_(Color.rand)
-            .align_(\center)
-            .font_(Font(\helvetica,90,bold:true))
-            ;
-          }{
-            textUpper = StaticText(window,top)
-            .string_(text[0])
-            .stringColor_(Color.rand)
-            .align_(\center)
-            .font_(Font(\helvetica,90,bold:true))
-            ;
-            textLower = StaticText(window,bottom)
-            .string_(text[1])
-            .stringColor_(Color.rand)
-            .align_(\center)
-            .font_(Font(\helvetica,90,bold:true))
-          }
+		( text.size == 1 ).if
+		{
+			textUpper = StaticText(window,top)
+			.string_("")
+			.stringColor_(Color.rand)
+			.align_(\center)
+			.font_(Font(\helvetica,90 * Stills.scale => _.asInteger, bold:true))
+			;
+			textLower = StaticText(window,bottom)
+			.string_(text[0])
+			.stringColor_(Color.rand)
+			.align_(\center)
+			.font_(Font(\helvetica,90 * Stills.scale => _.asInteger, bold:true))
+			;
+		}{
+			textUpper = StaticText(window,top)
+			.string_(text[0])
+			.stringColor_(Color.rand)
+			.align_(\center)
+			.font_(Font(\helvetica,90 * Stills.scale => _.asInteger, bold:true))
+			;
+			textLower = StaticText(window,bottom)
+			.string_(text[1])
+			.stringColor_(Color.rand)
+			.align_(\center)
+			.font_(Font(\helvetica,90 * Stills.scale => _.asInteger, bold:true))
+		}
 	}
 	value { //for backward comp
 		|monitor=0 wait fade fadeIn text|

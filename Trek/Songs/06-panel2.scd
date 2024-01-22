@@ -443,7 +443,7 @@ P.synthV(role:\spock, take: \lead,
 		e.playbuf
 		// => p.synthVTracks.at(e.key).()
 		=> p.verb.(_,pan:-0.3,mix:0.1)
-		* -8.dbamp
+		* -10.dbamp
 	}.play
 });
 P(\strum5,syl:3,start:'if he refuses',music: {|p b e|
@@ -528,7 +528,7 @@ P.synthV( role: \spock, take:\lead,
 	{
 		e.playbuf
 		=> p.verb.(_,pan:-0.3,mix:0.1)
-		* -8.dbamp
+		* -10.dbamp
 	}.play
 });
 P(\bassNote6,start:'still Jim',syl:1,music:
@@ -662,7 +662,7 @@ P.synthV(role: \kirkLungs, take:\lead, start: Song.section(\filled),
 		=> {|i| i + FreqShift.ar(i,LFNoise2.ar(1) * 10) * -3.dbamp}
 		=> {|i| CombN.ar(i,0.3,0.3,4) /5.5 + i}
 		=> p.early.(_,pan:0.0)
-		* -6.dbamp
+		* -4.dbamp
 	}.play
 });
 ( ~eighths7 = Song.parse(\Lungs,[1,1,1,1, 
@@ -778,7 +778,7 @@ P(\tremoloSwell,start:\Lungs,music:
 			//		\midinote: Prand([1,3,5,11].dm('f',scale:\minor,octave: 4),inf)+Prand([12,0,2,4,0,0,0],inf),
 			dur:0.1,
 			legato:Pwhite(3,9,inf),
-			amp:0.3,
+			amp:0.2,
 			panning:Pfunc({~syn1.syn.set(\out,(4.rand+~verbchannels))})
 
 		].p=>Pfin(290,_)
@@ -865,7 +865,7 @@ P.synthV(role: \kirkLungs, take: \lead,
 		=> {|i| i + FreqShift.ar(i,LFNoise2.ar(1) * 10) * -3.dbamp}
 		=> {|i| CombN.ar(i,0.3,0.3,4) /5.5 + i}
 		=> p.early.(_,pan:0.0)
-		* -6.dbamp
+		* -4.dbamp
 	}.play
 });
 P.synthV(role:\kirkLungs, take: \continuation,
@@ -886,7 +886,7 @@ P.synthV(role:\kirkLungs, take: \continuation,
 		=> {|i| i + FreqShift.ar(i,LFNoise2.ar(1) * 10) * -3.dbamp}
 		=> {|i| CombN.ar(i,0.3,0.3,4) /5.5 + i}
 		=> p.early.(_,pan:0.0)
-		* -6.dbamp
+		* -4.dbamp
 	}.play
 });
 P.double(role: \kirkLungs, params: {|p b| [
@@ -961,12 +961,16 @@ P.synthV(role: \kirkLungs, start:Song.section(\arteries),
 "million".romaji
 */
 		legato: [1, 1, 1, 1, 0.5, 1, 1, 1, 1, 1, 0.9,  1,1,1, 1, 1, 1, 1 ],
-		pitchTake: 1
+		pitchTake: 1,
+		loudness: Env([4, 2, 7, 2],b.parse([5, 3, 2, 8]))
 	] }, music:{|p b e |
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
-			=> {|i| i + FreqShift.ar(i,LFNoise2.ar(1) * 10) * -3.dbamp}
+			=> {|i| i + FreqShift.ar(i,LFNoise2.ar(0.1) * 10) * -3.dbamp}
+			=> {|i| CombN.ar(i,0.3,0.3,4) /5.5 + i}
+			=> p.early.(_,pan:0.0)
+			* -4.dbamp
 
 		}.play
 });
@@ -1820,6 +1824,7 @@ P.synthV(\genbu, take:\lead,
 	filter: (midinote: _ - 12), 
 	params: {|p b key| [
 	lyrics: " In the next - room, there are two receptacles. + + + ",
+	legato: [1, 1, 1, 1, 0.8, 1, 1, 1, 1, 1, 1, 1, ],
 	phonemes: (key == \genbu).if{ ["","z a","n e k s t","","r u m","z e r","a r","","r i","s e p","t a k", "r u z"] },
 	pitchTake: 1
 ] }, music:{|p b e|
@@ -1856,8 +1861,8 @@ P(\triadReceptacles,start:'two receptacles',music: { |p b|
 		++ [ 1,5,13 ].df(\a,octave:3).q
 		,
 		legato:[\].q++[3,2,1].q(inf),
-		out:[1,2,3].q(5),
-		instrument:\harpGendy, amp:0.02, modWidth:0.01,gendyfreq:5,coef:0.2
+		out:[1, 2, 3].q(5),
+		instrument:\harpGendy, amp:0.02, modWidth:0.01,gendyfreq:5,coef:0.5
 	].pp;
 }
 );
@@ -1873,14 +1878,15 @@ P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
 		wait: b.sum,
 		text: ["the other two","of us that"],
 	).sequenceText([
-		b.drop(1).parse([7]).unbubble,["survive"]
+		b.drop(1).parse([7]).unbubble,["survived", ""]
 	])
 });
 P.synthV(\genbu, take: \lead,
 	filter: (midinote: _ - 12), 
 	params: {|p b key| [
 	lyrics: "r the other + two of us that survived +",
-	phonemes: (key == \genbu).if{ ["","z e", "a"," z a", "t u "," a v", "a s", "z a t", "s a", "v a i vy d" ] },
+	phonemes: (key == \genbu).if{ ["","z i", "a"," z a", "t u "," a v", "a s", "z a t", "s a", "v a i vy d" ] },
+	legato: [1, 1, 1, 1, 1, 1, 0.9, 1, 1, 0.8 ],
 	pitchTake: 1
 ] }, music:{|p b e|
 	{

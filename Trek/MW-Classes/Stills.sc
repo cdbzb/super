@@ -81,7 +81,14 @@ Stills {
 		File.exists(stillsLocation++seconds.asString++".png").not.if {
 			(
 				//faster but less accurate
-				"ffmpeg -y -ss "++ seconds.asString ++" -i "++"'"++file.asSymbol++"'"++ "  -vframes 1  -f image2 "++stillsLocation++seconds.asString++".png ").systemCmd;
+				"ffmpeg -y -ss"
+				+ seconds.asString 
+				+ "-i"
+				+ "'"++file.asSymbol++"'"
+				+ "-vframes 1  -f image2 "
+				++stillsLocation
+				++seconds.asString
+				++ ".png ").systemCmd;
 				//slower but more accurate
 				// "ffmpeg -y " ++ " -i "++"'"++file.asSymbol++"'" + "-ss "++ seconds.asString++ "  -vframes 1  -f image2 "++stillsLocation++seconds.asString++".png ").systemCmd;
 			}

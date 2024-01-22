@@ -124,6 +124,17 @@ P(\experiment,music:{ |p b e|
 	}.play
 });
 ["Two others still survive. Henoch (boom) and Thalassa.", [6,5,4,3,2,4].dm('d',scale:\diminished) ++[5,5,5,5,5,4,3].dm('c#') ].addLine; 
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["two others","still survive"],
+	).sequenceText2(
+			b.parse([6, 3]), [ 
+			["Henoch",""],
+			["","and Thalassa"]
+			],
+	)
+});
 ( Song.synthVTracks = EventWithDefault.new(
 	\default, {|i|
 		DWGReverbC1C3.ar(_, len:2000, c1:1, c3:10, mix:0.05, coefs:nil, perm:nil)
@@ -587,6 +598,18 @@ P(\baseline2,start:'I`m',syl:1,music:[
 ].pm(\pulsar)
 );
 ["(boom) Forgive me. (boom) It has been so very long. ","-7 7 6 5 -5 2 3 1 7 7 6 5".dm('a-',\mixolydian)].addLine; 
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	).sequenceText2(
+			b.parse([1, 3, 1]), [ 
+			["forgive","me"],
+			["",""],
+			["it has been", "so very long"]
+			],
+	)
+});
 P.synthV(role: \sargon, take: \lead, params: {|p b| [
 	filter: (midinote: _ - 12), 
 	lyrics: "r forgive + me r it has been so very + long",
@@ -637,7 +660,11 @@ P(\bass, music: { |p b e|
 P.still(\wide, timecode: 1700.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["when the struggle","came"],
+	).sequenceText2(
+			b.parse([5]), [ 
+			["which devastated","your planet"],
+			],
 	)
 });
 P.synthV(role: \spock, take: \lead, params: {|p b| [
@@ -652,7 +679,6 @@ P.synthV(role: \spock, take: \lead, params: {|p b| [
 	}.play
 
 });
-
 P(\chords, music: { |p b e|
 	fork{
 		var r = Barrier.collect({
@@ -707,17 +733,18 @@ P(\bassline, music: { |p b e|
 	].pp
 });
 [" Only the best minds were chosen to survive.","5 6 7 11 7 5 6 4 2 1 -7".dm(\e,6,\phrygian)].addLine;/*KIRK:*/
-
-
 P.still(\medium, timecode:1705.49.seconds,music:{|p b e|
 	e.still.(
 		wait: b.sum,
 		text:["only the best minds","were chosen to"],
 		fade:3
-	).sequenceText([
-		b.parse([9]).sum,[ "","survive" ],
-		b.sum(["","as you may"])
-	])
+	).sequenceText2(
+		b.parse([[1, 1, 1, 1, 1, 1, 1, 1, 0.8],0.2,2]),
+		[
+			["",""],
+			["", "survive" ],
+		]
+	)
 });
 P.synthV(role:\sargon, filter:(midinote:_-24), params: {|p b| [
 	lyrics: "on li ze best mainds wa cho zen tsu sa vaiv" ,
@@ -754,7 +781,7 @@ P.still(\kirk, timecode: 1704.37.seconds, music: { |p b e|
 		text: ["",""],
 	)
 });
-P.still(\clear,timecode:0,music:{|p b e| 
+P.still(\clear,timecode:0,lag: 0.01,music:{|p b e| 
 	e.still.(
 		wait: b.sum,
 		text: ["Thalassa",""]
@@ -790,10 +817,10 @@ P(\chords, music: { |p b e|
 		dur: b.parse([1, 4, 3]).q
 	].pp
 });
-P.still(\turnedHead,syl:0, timecode: 1707.96.seconds, music: { |p b e|
+P.still(\turnedHead, timecode: 1707.96.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["and Henoch","from the other side"],
 	)
 });
 P.synthV(role:\sargon, filter:(midinote: _-24), params: {|p b| [
@@ -807,12 +834,40 @@ P.synthV(role:\sargon, filter:(midinote: _-24), params: {|p b| [
 	}.play
 });
 // P.tune('Henoch,');
-
 //["Realising our mistake, we attempted to perpetuate both sides. ","r"].addLine;
 //["We built this chamber here in order to preserve our essence in this fashion. ","r"].addLine;
 
 ["Fascinating. (rest) ","11 5 3 5 1".dm(\b,4,\minor)].addLine;/*SPOCK:*/
+P.still(\twoShot, timecode: 1740.3.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum + e.bNext.sum,
+		fade: 3,
+		text: ["fascinating",""],
+	).sequenceText2(
+			[b[..3].sum, b[4]] ++ e.bNext.parse([[1, 1, 0.6],0.4,8]) => _.postln, [ 
+				["",""],
+				["these","others"],
+				["",""],
+				["they were stored","differently than you"],
+				["",""]
+			],
+	)
+});
+P(\chord, music: { |p b e|
+	{
+		var freq = [3, 5, 11].df(\b,\minor);
 
+		VarSaw.ar(freq * [
+			Gendy2.arWidth(ampdist:1, durdist:1, adparam:1.0, ddparam:1.0, freq:400, width:1.015, ampscale:0.5, durscale:0.5, initCPs:12, knum:nil, a:1.17, c:0.31, mul:1.0, add:0.0) , 
+			1
+		]
+		.linlin(0,1,0.98,1.02)
+		, width: 0.4)
+		/40
+		* Env.perc(0.05,5).kr(0,gate:1)
+		=> DelayN.ar(_, 0.3, [0.01,0.062,0.19])
+	}.play
+});
 P.synthV(role: \spock, take: \lead, params: {|p b| [
 	lyrics: "fascinating + + +",
 	filter: (midinote: _ - 12), 
@@ -829,7 +884,10 @@ P(\bassnote,syl:3, music: { |p b e|
 				freq: [[-6.5],\r].df(\b,3).q,
 				// out: Effect.bus( { |i| FreeVerb.ar(i,0.5,1)},inputChannels:2 ),
 				dur: b.drop(1)[0] + e.bNext.parse([[1, 1, 0.5],[0,5,1, 1, 1]]) => _.q,
-				legato:1
+				legato:1,
+				amp: 0.2,
+				pan: -1,
+				out: Effect.bus({|i| FreeVerb.ar(i,0.1,1) => SineShaper.ar(_,0.05)  },inputChannels:1)
 		].pp
 });
 
@@ -837,23 +895,30 @@ P(\bassnote,syl:3, music: { |p b e|
 //["that one day you would build vessels as we did, and one day you would come here. ","r"].addLine;
 
 [" These others, they were stored differently than you,","1 3 -7 5 3 4 7 6 4 5 1".dm(\a,\mixolydian)].addLine;/*SPOCK:*/
+P(\chords, music: { |p b e|
+	[
+		freq: [
+			// [1, 3, 5],
+			\r,
+			[-7, 3, 5],
+			[-7, 4, 5],
+			[1, 4, 7],
+			[1, 4, 6]
+		].df(\a,\mixolydian).q,
+		dur: b.parse([1, 4, 1, 3]).q,
+		instrument: \sparkTriangle,
+		amp: 0.02,
+		out:[1, 2],
+		width: 1.002
+	].ppm
+});
 P(\bassline, music: { |p b e|
 	[
 		freq: [\r, 7, 5].df(\a,2,\mixolydian) ++ [2, [4], 5].df('c#',3) => _.q,
 		dur: e.bAll.parse([[1, 1, 0.5], [0.5, 1, 1, 1], 5 + 1, 2, 4, 7]).q,
 		amp: 0.2,
-		out: Effect.bus({|i| FreeVerb.ar(i,0.1,1) => SineShaper.ar(_,0.05)  },)
+		out: Effect.bus({|i| FreeVerb.ar(i,0.1,1) => SineShaper.ar(_,0.05)  },inputChannels:1, out:2)
 	].pp
-});
-P.still(\twoShot, timecode: 1740.3.seconds, music: { |p b e| // TODO make sure there is pointing!!!
-	 e.still.( 
-		wait: b.sum,
-		text: ["these","others"],
-	).sequenceText2(
-			b.parse([3]), [ 
-			["they were stored","differently than you"],
-			],
-	)
 });
 P.synthV(role: \spock, take: \lead, params: {|p b| [
 	lyrics: "These others + they were stored differently + + than you",
@@ -877,6 +942,26 @@ P.double(role: \spock, take: \lead, params: {|p b| [
 
 });
 ["but it was your task to remain in the receptacle out there ","6 7 5 11 3 7 11".dm('f#') ++ "3 5 6 7 11 5 4".dm('a-') ++ "15 16".dm(\c)].addLine;
+P(\chords, music: { |p b e|
+	[
+		freq: [
+			// [1, 3, 5],
+			[2, 6, 7],
+			[2, 5, 7],
+			[3, 5, 11],
+			[4.5, 6, 11],
+			[4.5, 6, 11.5],
+			[4.5, 6, 12],
+			[5, 7, 11.5 ]
+		].df('f#',4).q,
+		dur: b.parse([2, 1, 4,3, 1, 3, 2  ]).q,
+		att:2.5,
+		instrument: \sparkTriangle,
+		amp: 0.01,
+		width: 1.002,
+		out: [3, 4, 1]
+	].ppm
+});
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -996,7 +1081,7 @@ P( 'chords',
 
 
 		].pp
-	});
+});
 P('bass',start:\search,music: {|p b e|
 	[
 		freq:[5,4,1].dupEach(3).df(\e,[ 2 ]).q * [1,2, 3,6,7,14] => _.poll,
@@ -1010,6 +1095,19 @@ P('bass',start:\search,music: {|p b e|
 });
 //["probing, waiting, probing. ","5 4 3 2 6 5.5".dm(\c,6)].addLine;
 ["probing, (boom boom) waiting, (boom) probing. ","5 4 -1 -2 3 2 -4 6 5.5".dm(\c,6)].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["probing",""],
+	).sequenceText2(
+			b.parse([2, 2, 2, 1, 2]), [ 
+			["",""],
+			["waiting", ""],
+			["",""],
+			["probing", ""]
+			],
+	)
+});
 P.synthV(role:\sargon, filter:(midinote: _-12), params: {|p b| [
 	lyrics: "pro, bing, r, r, we, ting, r, pro, bing",
 	lag: [0.1,      0,    0, 0, 0,  0,    0, 0,   0],
@@ -1043,6 +1141,12 @@ P('bass',start:\probing,music: {|p b e|
 	].pp
 });
 ["And then one day my mind","1 4 4 5 3 6".dm('f#')].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["and then one day","my mind"],
+	)
+});
 P(\stringyy, music: { |p b e|
 	{
 		Gendy1.arWidth(ampdist:1, durdist:1, adparam:1.0, ddparam:0.1,
@@ -1068,7 +1172,11 @@ P.tune('day my ', { |i| Pmul(\freq,0.5,i) =>Pbindf(_,\instrument,\sawSynthSustai
 P.still(\sargonTouched, timecode: 1748.5.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["touched","your vessel"],
+	).sequenceText2(
+			b.parse([4]), [ 
+			["and brought you","here"],
+			],
 	)
 });
 P.synthV(role:\sargon, prepend:true, filter: (midinote: _ - 12),  params: {|p b| [
@@ -1220,12 +1328,15 @@ P(\bass, music: { |p b e|
 		=> Out.ar([2,3],_)
 	}.play
 });
-
 [" you misunderstand.","3 2 3 4 3 -2 -3 -4 2.5 2 2.5 4".dm(\a)].addLine; 
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["you","misunderstand"],
+	).sequenceText2(
+			b.parse([8]), [ 
+			["",""],
+			],
 	)
 });
 P.synthV(role:\sargon, filter: (midinote: _ - 12),  params: {|p b| [
@@ -1238,18 +1349,18 @@ P.synthV(role:\sargon, filter: (midinote: _ - 12),  params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-	P(\answer2,syl:3, music: { |p b e|
-		[
-			freq: "3 2 3 4 5 4 5 4 5".df(\a,4).q,
-			instrument: \stringyy,
-			attack: 0.1,
-			dur: b.parse([1, 1, 1, 1, 4,1, 2, 1, 2]).q,
-			amp: 0.3,
+P(\answer2,syl:3, music: { |p b e|
+	[
+		freq: "3 2 3 4 5 4 5 4 5".df(\a,4).q,
+		instrument: \stringyy,
+		attack: 0.1,
+		dur: b.parse([1, 1, 1, 1, 4,1, 2, 1, 2]).q,
+		amp: 0.3,
 
 
-		].ppm
-	});
-	P(\lick, syl:7, music: { |p b e|
+	].ppm
+});
+P(\lick, syl:7, music: { |p b e|
 		[
 			freq: "3 2 3 4 4 5 ".df(\a,[5], \minor).q,
 			dur: b.drop(1) ++ e.bNext.parse([1,1]) =>_.q,
@@ -1259,7 +1370,7 @@ P.synthV(role:\sargon, filter: (midinote: _ - 12),  params: {|p b| [
 			amp:0.3,
 			out: Effect.bus(_ * [0.1,0.9])
 		].pp
-	});
+});
 	P.tune( _ <> [instrument: \wash, amp:0.02].p );
 ["We mean r only r that you should","1 2 -7 1 2 -7 1 2 3".dm(\d,6,\mixolydian)].addLine;
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
@@ -1270,6 +1381,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 			b.parse([2,1,2,1]), [ 
 			["",""],
 			["only",""],
+			["",""],
 			["that you","should"]
 			],
 	)
@@ -1294,8 +1406,18 @@ P(\bassnotes, music: { |p b e|
 		legato: 1
 	].pp
 });
-
 [" (boom) lend us your bodies for a short time. ","-11 3 2 1 -7 -6 -5.5 -6 -5.5 -3".dm(\g,6)].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+	).sequenceText2(
+			b.parse([1, 5]), [ 
+			["lend us your","bodies"],
+			["for a short","time"]
+			],
+	)
+});
 P(\bassline, music: { |p b e|
 	[
 		freq: [1, -7, -4, -3, -6].df(\g,3).q,
@@ -1306,6 +1428,7 @@ P(\bassline, music: { |p b e|
 P.synthV(role: \sargon, take: \lead, params: {|p b| [
 	lyrics: "r lend us your bodies + for a short time",
 	phonemes: ["","l e n d","a s","y o r","b a","d i z","f o r","e","sh o r t","t a e m"],
+	legato: [1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1, ],
 	filter: (midinote: _ - 12), 
 	paramTension: -0.2,
 	pitchTake: 1
@@ -1319,7 +1442,7 @@ P.synthV(role: \sargon, take: \lead, params: {|p b| [
 	}.play
 
 });
-P.tune();
+P.tune( _ <> [instrument: \stringyy, amp: 0.05, wet:0, out:2].pm );
 [" And destroy them","-7,-5,3,-7".dm(\g,\mixolydian)].addLine;
 P.still(\mccoy, timecode: 1809.4.seconds, music: { |p b e|
 	 e.still.( 
@@ -1327,7 +1450,15 @@ P.still(\mccoy, timecode: 1809.4.seconds, music: { |p b e|
 		text: ["and","destroy them"],
 	)
 });
-P.tune();
+P.tune( _ <> [instrument: \harp,depth: 0.001, amp: 0.02, wet:0, out:3, rest: [1, 1, 1, \r].q].p );
+P(\chords,syl:1, music: { |p b e|
+	{
+		var freq = [1, 3, 6].df(\d, \lydian);
+		SinOsc.ar( freq * Gendy2.arWidth(ampdist:1, durdist:1, adparam:1.0, ddparam:1.0, freq:400, width:1.015, ampscale:0.5, durscale:0.5, initCPs:12, knum:nil, a:1.17, c:0.31, mul:0.2, add:0.0) )
+		* Env.perc(0.05,5).kr(2,gate:1)
+		/30
+	}.play
+});
 P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 	lyrics: "and destroy + them",
 	filter: (midinote: _ - 12), 
@@ -1377,14 +1508,22 @@ P(\click, music: { |p b e|
 	instrument: \bd_808
 ].pp
 });
-P.tune();
+P.tune( { |i|  i <> [freqLag: 0.1,instrument: \wash, amp: 0.05, out: 2, rest: [\r,\r,\r,1, 1, 1, 1, 1, 1].q ].pm => Pmul(\freq, [0.5,1],_) } );
 P(\chords, music: { |p b e|
 	[
 		freq: [
-			1, [-6.5, 1, 3], [-5.5, 1, 4], [-5, 1, 4, 3]
-		].df(\e, ).q,
-		dur: b.parse([3, 2,3,4]).q
-	].pp
+			[1, 1, 3],
+			[-7, 1, 3],
+			[-6, 1, 3],
+			[-5, 1, 3],
+			// [-7, 1, 5],
+			\r, \r
+		].df(\g,\mixolydian ).q,
+		dur: b.parse([1, 1, 1, 1]).q,
+		amp:0.03 * [1, 1, 1, 0.5, 0.3].q,
+		out: 3,
+		instrument: \sawSynthSustain
+	].ppm
 });
 //[ "Heartbeat's two hundred and sixty two, Spock.","r" ].addLine;
 //["Entire metabolic rate correspondingly high. ","r"].addLine;
@@ -1399,7 +1538,6 @@ P(\chords, music: { |p b e|
 				=> Out.ar(\out.kr(0),_)
 		}).add;
 );
-~section= Song.sections.postln;
 ["/*KIRK:*/(boom) I will return your captain to you before the body limit has been reached. ",[-1,1,2,3,4,3,5,3,2,1,4,5,6,7,6,5,6,5,4,3].dm('c',scale:\mixolydian)].addLine;
 P.still(\sargonReturn, timecode: 1817.3.seconds, music: { |p b e|
 	 e.still.( 
@@ -1412,6 +1550,11 @@ P.still(\clear, timecode: 0.seconds,lag:0.01, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["I will return","your captain to you"],
+	).sequenceText2(
+			b.parse([9, 7]), [ 
+			["before","the body limit"],
+			["has been","reached"]
+			],
 	)
 });
 P.synthV(role:\sargon, filter:(midinote: _-12), params: {|p b| [
@@ -1542,8 +1685,13 @@ P.still(\sargon, timecode: 1832.1.seconds,syl:0, music: { |p b e|
 });
 P.still(\clear, timecode: 0.seconds,syl:9, music: { |p b e|
 	 e.still.( 
-		wait: b.drop(1).sum + e.bNext[..3].sum,
+		wait: b.drop(1).sum + e.bNext.sum,
 		text: ["we need","your bodies"],
+	).sequenceText2(
+			e.bAll.drop(1).parse([5, 3]), [ 
+			["long","enough"],
+			["to have the use","of your"]
+			],
 	)
 });
 P.synthV(role:\sargon,range:[0,9], filter: (midinote: _-12),params: {|p b| [
@@ -1725,6 +1873,12 @@ P(\chords,start:\need,music: {|p b e|
 } ).add;
 );
 ["hands, your fingers. ",[6,5,4,3].dm('g')].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["hands,","your fingers..."],
+	)
+});
 P.synthV(role:\sargon,filter:(midinote: _-12), params: {|p b| [
 	lyrics: "hanz yu fin gaz",
 	phonemes: ["h a n z ","y u r y","","g a z"],
@@ -2061,28 +2215,27 @@ P.synthV(role: \sargon, take: \secondPart,
 P(\tune,start:\far,music:Song.currentSong.pbind[~intend+6]
 );
 {
-	Song.lick=Array.series(4,0,2).collect(_+[11,12,7.5,11].dm('c#',octave:5,scale:\diminished )).flatten ;
-
-	["time dum dum dum dum dum etc ",Song.lick].addLine;
-	P.still(\exit, timecode: 1901.2.seconds, music: { |p b e|
+Song.lick=Array.series(4,0,2).collect(_+[11,12,7.5,11].dm('c#',octave:5,scale:\diminished )).flatten ;
+["time dum dum dum dum dum etc ",Song.lick].addLine;
+P.still(\exit, timecode: 1901.2.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["",""],
 		)
-	});
-	P.still(\entering,syl:5, timecode: 1903.8.seconds, music: { |p b e|
+});
+P.still(\entering,syl:5, timecode: 1903.8.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["",""],
 		)
-	});
-	P.still(\onwar,syl:11, timecode: 1907.1.seconds, music: { |p b e|
+});
+P.still(\onwar,syl:11, timecode: 1907.1.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["",""],
 		)
-	});
-	P(\bassnote, music: { |p b e|
+});
+P(\bassnote, music: { |p b e|
 		(
 			freq: [1,-1].df('c#',[ 3, 4 ]),
 			instrument: \wash
@@ -2091,9 +2244,9 @@ P(\tune,start:\far,music:Song.currentSong.pbind[~intend+6]
 			freq: [1,-1].df('c#'),
 			instrument:\harp
 		).play
-	});
+});
 	//(They help him back to Sargon's sphere.)
-	P(\lick,music:Song.currentSong.pbind[\dum]
+P(\lick,music:Song.currentSong.pbind[\dum]
 	=>{
 		|i|
 		Ppar([i,

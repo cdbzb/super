@@ -322,6 +322,30 @@ Still {
 	}
 
 }
+Display {
+	classvar <>connected;
+	classvar <>array;
+	*initClass {
+		var p, l, r, ll, rr;
+		connected = Dictionary.new;
+		array = List.new;
+		p=Pipe("displayplacer list | grep -e Type -e Resolution:","r");
+		l = p.getLine;
+		while({l.notNil},{
+			var e = ();
+			var r = p.getLine;
+			ll = l.split(Char.space)[0].drop(-1); rr = r.split(Char.space)[0].drop(-1);
+			e.put(ll, l.drop(ll.size));
+			e.put(rr, r.drop(rr.size));
+			array = array.add(e);
+			l = p.getLine;
+		});
+	}
+	*resolutions {
+		"displayplacer list | grep -e Type -e Resolution:".systemCmd
+	}
+
+}
 
 + Window {
 	fade { |fadeTime=1 alpha=1|

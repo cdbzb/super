@@ -25,7 +25,7 @@ o = [
 	"maind",  "1526910000",  "m a e i n d",  "main",  
 	Event.prNew,  Array.prNew(32),  Event.prNew,  Array.prNew(8),  
 	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
-	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
+	Array.prNew(4),  "cubic",  Event.prNew,  Array.prNew(8),  
 	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
 	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
 	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
@@ -41,7 +41,7 @@ o = [
 	Event.prNew,  Array.prNew(8),  Array.prNew(1),  Event.prNew,  
 	Array.prNew(12),  "",  "Unnamed Track",  Array.prNew,  
 	Event.prNew,  Array.prNew(20),  "ff7db235",  Event.prNew,  
-	Array.prNew(28),  "synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/SynthV/smallChamber/1449867223/genbu-double"
+	Array.prNew(28),  "synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/smallChamber/1449867223/genbu-double"
 ];
 p = [
 	// Event
@@ -349,6 +349,8 @@ p = [
 	// Array
 	99, [ 'points',  o[100],  nil,  nil,  
 		nil,  nil,  'mode',  o[101] ],  
+	// Array
+	100, [ 0.0,  30,  1223510400.0,  0 ],  
 	// Event
 	102, [ array: o[103],  size: 2,  
 		proto: nil,  parent: nil,  

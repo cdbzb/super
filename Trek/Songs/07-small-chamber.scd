@@ -629,8 +629,11 @@ P(\chords, music: { |p b e|
 		[
 
 		],
-		{|i|  SinOsc.ar(i.freqSeq,0,0.05)
+		{|i|  SinOsc.ar(
+			i.freqSeq * [1, Gendy1.arWidth(ampdist:1, durdist:1, adparam:1.0, ddparam:1.0, freq:4, width:1.015, ampscale:0.5, durscale:0.5, initCPs:12, knum:nil, mul:1.0, add:0.0).linlin(0,1,0.99,1.01)]
+			,0,0.04)
 		* Env.asr().kr(0,gate:i.gateSeq)
+		* -4.dbamp
 	},
 		{|i|  Mix.ar(i)}
 	).play
@@ -759,6 +762,7 @@ P('spaceBass',start:\Only,syl: 7,music: {|p b e|
 		instrument:\stringyy, amp: 0.17,
 		dur:b.drop(1).parse([0.5,[0.5,1],1]).q,
 		attack:1.5,
+		out:  2
 
 	].ppm
 });
@@ -897,6 +901,9 @@ P(\bassnote,syl:3, music: { |p b e|
 //[" We knew the seed that we had planted on other planets would take root,","r"].addLine;/*KIRK:*/
 //["that one day you would build vessels as we did, and one day you would come here. ","r"].addLine;
 [" These others, they were stored differently than you,","1 3 -7 5 3 4 7 6 4 5 1".dm(\a,\mixolydian)].addLine;/*SPOCK:*/
+P.tune(_ <> [instrument: \stringyy, wet:0.1,amp:0.08, legato: [1, 1, 0.9, 1, 1, 1, 1, 1, 1, 1, 0.8, ].q, 
+	out: Effect.bus({|i| i => Monitors.az(_, -pi/2) },)
+].pma);
 P(\chords, music: { |p b e|
 	[
 		freq: [
@@ -911,7 +918,7 @@ P(\chords, music: { |p b e|
 		instrument: \sparkTriangle,
 		amp: 0.02,
 		out:[1, 2],
-		width: 1.002
+		width: [1, 1.001,1.002]
 	].ppm
 });
 P(\bassline, music: { |p b e|
@@ -944,7 +951,9 @@ P.double(role: \spock, take: \lead, params: {|p b| [
 
 });
 ["but it was your task to remain in the receptacle out there ","6 7 5 11 3 7 11".dm('f#') ++ "3 5 6 7 11 5 4".dm('a-') ++ "15 16".dm(\c)].addLine;
-P.tune(_ <> [instrument: \stringyy, wet:0.1,amp:0.06].pm);
+P.tune(_ <> [instrument: \stringyy, wet:0.1,amp:0.08,
+	out: Effect.bus({|i| i => Monitors.az(_, -pi/2) },)
+].pm);
 P(\chords, music: { |p b e|
 	[
 		freq: [
@@ -1012,6 +1021,7 @@ P(\line, music: { |p b e|
 		var freq = "r 5 4 3 4 3 2 3 4".df(\b).dq.demand(b);
 		Pulse.ar( freq.lag2, 0.4 ) ++ VarSaw.ar(freq,0.4)
 		* 0.03
+		* -2.dbamp
 		=> {|i|  CombC.ar(i,0.3,0.3,5) + i }
 		* Env([1,1,0],[b.sum - b.last,b.last+1]).kr(2,gate:1)
 		//=>Mix.ar(_)
@@ -1028,7 +1038,7 @@ P.synthV(role:\sargon, filter:(midinote: _ -12),take:\lead, params: {|p b| [
 	{
 		e.playbuf
 		=> Pan2.ar(_,0)
-		* -6.dbamp
+		* -7.dbamp
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
@@ -1039,12 +1049,13 @@ P.synthV(role:\sargon, take: \double,
 	lyrics: "r,    and, shiach, za, he, venz, wiz,     mai, maind",
 	phonemes: ["", "a n d",  "s a r ch",     "", "", "v e n z",   "w i z", "",  "m a e i n d"],
 	filter: (midinote: "5 5 4 3 4 3 2 3 4".dm(\b,4)), 
+	pitchDelta: Env([30,0],b[..1].sum)
 ] }, music:{|p b e|
 	{
 		e.playbuf
 		// => p.synthVTracks.at(e.key).()
 		=> Pan2.ar(_,-0.5)
-		* -12.dbam
+		* -17.dbamp
 	}.play
 });
 Song.setTempoMap(\search,"e e e e e e e e q");
@@ -1066,6 +1077,8 @@ P( 'chords',
 			SinOsc.ar(\freq.kr(400,0))
 			* Env.perc(attackTime:0.01, releaseTime:8.0, level:1.0, curve:-4.0).kr(2)
 			*0.05
+
+			* -2.dbamp
 			* SinOsc.kr(2.2)
 			=> _.tanh
 			=> Pan2.ar(_,\pan.kr(0))
@@ -1129,7 +1142,6 @@ P('chords',start:\probing,music: {|p b e|
 		lag: {~strum * (-1)},
 		amp:0.04,
 		out: Effect.bus({|i| SineShaper.ar(i*2,[ 0.2,0.1 ]) => DWGReverbC1C3.ar(_,mix:0.2) /3},inputChannels:4,out:(0..3))
-
 	].ppm(\default)
 });
 P('bass',start:\probing,music: {|p b e|
@@ -1167,7 +1179,7 @@ P.synthV(role:\sargon, filter: (midinote: _ - 12),  params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.tune('day my', {|i| i<>[instrument:\stringyy].p => Pmul(\freq,[0.5,1],_) });
+P.tune('day my', {|i| i<>[instrument:\stringyy].p => Pmul(\freq,[0.5,1,2],_) });
 P.tune('day my ', { |i| Pmul(\freq,0.5,i) =>Pbindf(_,\instrument,\sawSynthSustain,\out,Effect.bus( { |i| DWGReverbC1C3.ar(i,mix:0.3) => Phaser2.ar(_,rate:0.2)} /2 ))});
 ["touched your vessel and brought you here. ","11 5 4 3 2 1 -7 -6.5".dm(\e)].addLine;
 P.still(\sargonTouched, timecode: 1748.5.seconds, music: { |p b e|
@@ -1313,7 +1325,7 @@ P(\chord, music: { |p b e|
 		freq:[ [ 5,5 ], [3, 6], [2,5]].df(\d,4).q,
 		dur: b.parse([3,2]) ++ e.bNext.parse([5]) => _.postln =>_.q,
 		freqLag: [0,0,1].q,
-		amp:0.01 * 2.dbamp
+		amp:0.01 * 3.dbamp
 	].ppm
 });
 P(\bass, music: { |p b e|
@@ -1326,7 +1338,7 @@ P(\bass, music: { |p b e|
 		=> {|i| 0.5 * CombC.ar(i) + i}
 		* Env.asr(0.1,1,2).kr(2,gate:[1,0].dq.demand(b.sum + e.bNext.sum => _.bubble))
 		=> LPF.ar(_,[ 3500, 2000 ])
-		* 2.dbamp
+		* 1.dbamp
 		=> Out.ar([2,3],_)
 	}.play
 });
@@ -1354,12 +1366,13 @@ P.synthV(role:\sargon, filter: (midinote: _ - 12),  params: {|p b| [
 P(\answer2,syl:3, music: { |p b e|
 	[
 		freq: "3 2 3 4 5 4 5 4 5".df(\a,4).q,
+		out: Effect.bus({|i| i => Pan2.ar(_,-1) },),
 		instrument: \stringyy,
 		attack: 0.1,
-		dur: b.parse([1, 1, 1, 1, 4,1, 2, 1, 2]).q,
+		dur: e.bAll.drop(1).parse([1, 1, 1, 1, 4,1, 2, 1, 2]).q,
 		amp: 0.3,
-
-
+		amp: [1, 1, 1, 1, 1, 0.9,0.8, 0.7,0.6].q * 0.25
+		// legato: [1, 1, 1, 1, 0.9, 1, 0.9, 1, 0.9, ].q,
 	].ppm
 });
 P(\lick, syl:7, music: { |p b e|
@@ -1371,9 +1384,9 @@ P(\lick, syl:7, music: { |p b e|
 			attack: 0.1,
 			amp:0.3,
 			out: Effect.bus(_ * [0.1,0.9])
-		].pp
+		].ppm
 });
-	P.tune( _ <> [instrument: \wash, amp:0.02].p );
+P.tune( _ <> [instrument: \wash, amp:0.02, ].p );
 ["We mean r only r that you should","1 2 -7 1 2 -7 1 2 3".dm(\d,6,\mixolydian)].addLine;
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
@@ -1409,14 +1422,15 @@ P(\bassnotes, music: { |p b e|
 		instrument: \default
 	].ppma;
 	[
-		instrument: \sawSynth, coef: 0.9, amp:[0,0.04,0.065].q,
+		instrument: \harp, coef: 0.9, amp:[0,0.04,0.065].q,
 		out:[0,0,1].q,
 		pan:-1,
-		freq: [\r, 1, 1].df(\c,3).q,
+		freq: [\r, 1, 1].df(\c,4).q,
 		dur:b.parse([2, 3, 4]).q
 	].pp
 });
 [" (boom) lend us your bodies for a short time. ","-11 3 2 1 -7 -6 -5.5 -6 -5.5 -3".dm(\g,6)].addLine;
+
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -1439,7 +1453,7 @@ P(\chords, music: { |p b e|
 	[
 		instrument: \stringyy, wet:0,
 		freq: [
-			[5,5,5],
+			[1,5,3],
 			[5, 7, 13],
 			[6, 11, 14],
 			[7, 1, 5.5],
@@ -1575,6 +1589,13 @@ P(\chords, music: { |p b e|
 		}).add;
 );
 ["/*KIRK:*/(boom) I will return your captain to you before the body limit has been reached. ",[-1,1,2,3,4,3,5,3,2,1,4,5,6,7,6,5,6,5,4,3].dm('c',scale:\mixolydian)].addLine;
+Song.setTempoMap(\return,"e e e e eee e e e e ee e e e eee e e e e e q");
+P(\hat, music: { |p b e|
+	[
+		dur: "q q q q q q q q q q q q q".asBeats.warpTo( e.tempoMap ).q,
+		instrument: \claves_808, amp: 0.03
+	].pp
+});
 P.still(\sargonReturn, timecode: 1817.3.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -1683,6 +1704,20 @@ P(\bass,start:\limit,music: {|p b e|
 //P(\tune,start:\limit,music:Song.currentSong.pbind[\limit]);
 // P.tune(_ <> [amp:p{\r.yield;loop{0.1.yield}}].p);
 ["/*SPOCK:*/ Our bodies, Sargon, for what purpose? ", [5,7,5,4,3,2,1,5,3].dm('d',scale:\diminished)].addLine;
+P(\accent,syl: 0, music: { |p b e|
+
+	(
+		freq: [1, 5, 7, 11, 15, 17].df(\d, \diminished),
+		strum: 0.05,
+		out: Effect.bus({|i| i 
+			=> BPF.ar(_,2000)
+			=> TwoTube.ar(_, k:0.01, loss:0.9, d1length:1200, d2length:1013, mul:1.0, add:0.0)
+			=> Phaser2.ar(_)
+			/5
+		},)
+
+	).play
+});
 P.still(\spock, timecode: 1822.7.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -1748,8 +1783,9 @@ P(\shaker,syl:1,start:\humanoid,music: {|p b e|
 		//						* Env.linen(0,2,8,curve:\exp).kr(2,gate:1)
 		* Env.perc(0,10).kr(2)
 		=> Phaser1.ar(_,0.5,1/6)
-		* 0.1
+		* 0.08
 		=> FreeVerb.ar(_, Env([0,0,1],[2,8]).kr(0),0.9)
+		=> Out.ar(2,_)
 	}.play
 }
 );
@@ -1812,9 +1848,11 @@ P.synthV(role:\sargon, filter:(midinote: _-12), params: {|p b| [
 Song.setTempoMap(\need,"qqq e q q q e e e e e Q Q Q ");
 P('click',start:\need,music: {|p b e|
 	[
-		dur:1!8 => _.warpTo(e.tempoMap.quantizeDft) => _.q,
+		// dur:1!8 => _.warpTo(e.tempoMap.quantizeDft) => _.q,
+		dur: "e e e e e e e e e e e e e e e e e e e e e".asBeats.warpTo( e.tempoMap.quantizeDft ).q,
 		instrument: \hihat,
-		amp:0.03
+		amp:0.03,
+		amp: [0.03,0.01].q(inf)
 	].pp
 });
 // P.tune(\need);
@@ -1966,7 +2004,7 @@ P.still(\spock, timecode: 1843.seconds, music: { |p b e|
 });
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum + e.bNext[..1].sum,
+		wait: b.sum + e.bNext[..0].sum,
 		text: ["then you intend","to construct"],
 	).sequenceText2(
 			b.parse([7]), [ 
@@ -2066,6 +2104,7 @@ P(\bass,start:\move,music:
 				(1/3)!6++((1/2)!2) => _.flatten ++ 2
 				,)
 		.q,
+		amp: 0.13
 	].p
 );
 P(\stringyBass,start:\move,syl:6,music:
@@ -2101,7 +2140,7 @@ P.still(\mulhall, timecode: 1846.seconds, music: { |p b e|
 		fade:2,
 		text: ["We have engineers,","technicians"],
 	).sequenceText2(
-			b.sup, [ 
+			b.sum, [ 
 			["",""],
 			],
 	)
@@ -2186,6 +2225,13 @@ P.synthV(role: \mulhall, take: \lead, params: {|p b| [
 
 });
 ["/*KIRK:*/ No. Our methods, our skill --s are (boom) ",[12, 12,12,11,7,13,7,11 ,6, ].dm('c')].addLine;
+P(\cymbals, music: { |p b e|
+	(
+		instrument: \cymbalsDS,
+		att: 0.05,
+		amp: 0.007, out:1
+	).play
+});
 P.still(\sargon, timecode: 1853.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum + e.bNext.sum,
@@ -2223,7 +2269,8 @@ P(\chords,start:\skill,music: {|p b e|
 			].df('c',octave:4).q,
 			dur:Song.parse(\skill,[1, 1,3, 2,1, 1],).q,
 			instrument:\sawSynthSustain,
-			amp:0.06
+			amp:0.04,
+			out: 3
 		].pp
 	}
 );
@@ -2247,8 +2294,9 @@ P(\chords, music: { |p b e|
 		freq: [[6,11,14,16, 21], [6,12,14,16, 22], [5,12,14,17]].df('c',3).q,	
 		dur: b.parse([1,2,1]).q,
 		rel:[ 2, 2, 6].q,
+		amp: 0.07,
 		instrument:\sawSynthSustain,
-		out: Effect.bus(HPF.ar(_,200))
+		out: Effect.bus(HPF.ar(_,200), out: 2)
 	].ppm;
 });
 P(\lick, music: { |p b e|
@@ -2256,6 +2304,7 @@ P(\lick, music: { |p b e|
 		freq:[\r,7, 5, 1, -3].df(\e,[4,5],\mixolydian).q,
 		dur:b.parse([6, 1, 1, 1,1]).q,
 		instrument: \twang,
+		amp: 0.03,
 		depth:0.01,
 		
 	].pp
@@ -2330,7 +2379,8 @@ P(\bassnote, music: { |p b e|
 		).play;
 		(
 			freq: [1,-1].df('c#'),
-			instrument:\harp
+			instrument:\harp,
+			amp: 0.02
 		).play
 });
 	//(They help him back to Sargon's sphere.)

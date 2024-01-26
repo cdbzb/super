@@ -66,7 +66,10 @@ P.synthV(role: \scott, take: \lead, params: {|p b| [
 	lyrics: "you're going + to what?",
 	filter: (midinote: _ - 12), 
 	legato: [1, 1, 1, 1, 0.9, ],
-	pitchTake: 1
+	pitchTake: 1,
+	vocalMode: \Power,
+	paramTension: 0.9,
+	pitchExpression: 1.5
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -96,7 +99,11 @@ P.synthV(role: \scott, take: \lead, params: {|p b| [
 	legato: [1, 0.7, 1, 1, 1, 1, 1, 1, 0.7, ],
 	filter: (midinote: _ - 12), 
 	lyrics: "Are they all right in the head, Doctor? + ",
-	pitchTake: 1
+	legato: [1, 1, 1, 1, 1, 1, 0.8, 1, 0.8, ],
+	pitchTake: 1,
+	vocalMode: \Power,
+	paramTension: 0.9,
+	pitchExpression: 1.5
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -126,14 +133,15 @@ Song.durs.filter(\head,{|i| var last = i.last; i.dropLast ++ (last * 0.6)});
 [ "MCCOY: No comment. ","1 4 1".dm('a-') ].addLine;
 P(\wash, music: { |p b e|
 	[
-		freq: [1, 4].df('a-').q,
+		freq: [1, 4].df('a-',4),
+		att:0,
 		// dur: e.bAll.parse([1, 2]).q,
 		dur: b.sum,
 		instrument: \wash,
 		out: Effect.bus({|i| 
 			Convolution.ar(i, Dust.ar(150)!2 ) 
 			* -3.dbamp
-			* EnvGen.cutoff(b.sum, 1)
+			* EnvGen.cutoff(b.sum - 1, 1)
 		},)
 	].pp
 });
@@ -144,11 +152,21 @@ P(\note, music: { |p b e|
 	].pp
 });
 Trek.presets.put(\mccoy,\an,[paramGender: 0.33]);
+P(\chord, music: { |p b e|
+	(
+		freq: [1, 4].df('a-',4),
+		instrument: \stringyy,
+		wet:0, 
+	).play
+});
 P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 	filter: (midinote: _ - 12), 
 	lyrics: "no comment +",
 	pitchTake: 1,
-	paramToneShift: 0.4
+	paramTension: 1,
+	paramToneShift: 0.4,
+	legato: [1, 1, 0.7, ],
+
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -162,6 +180,16 @@ P.still(\mccoy, timecode: 2048.45.seconds, music: { |p b e|
 				text: ["no","comment"],
 			)
 });
+P(\connector,syl:0, music: { |p b e|
+	[
+		freq: [
+			[1, 4],
+			[1.5, 4]
+		].df('a-',4).q,
+		dur: e.bAll.drop(1).parse([2,1]).q,
+		instrument: \stringyy, freqLag:2
+	].ppm
+});
 [ "KIRK: A simple transference. Their minds and ours. ","2 3 1".dm('c#')++ "3 2.5 1".dm('e-') ++ "3 2 1 -7".dm(\f) ].addLine;
 P.synthV(role: \kirk, take: 
 	// \lead
@@ -169,7 +197,7 @@ P.synthV(role: \kirk, take:
 	, params: {|p b| [
 	// filter: (midinote: _ - 12), 
 	lyrics: "A simple + transference + + Their minds and ours. ",
-	legato: [1, 1, 1, 1, 1, 0.5, 1, 0.7, 1, 0.9, ],
+	legato: [1, 1, 1, 1, 1, 0.5, 1, 0.7, 1, 1.3, ],
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
@@ -262,7 +290,7 @@ P.still(\kirk, timecode: 2050.8.seconds, music: { |p b e|
 			)
 });
 [ "MCCOY: Quite simple. Happens every day. ","1 4 1 1 2 5 3 4".dm('a-') ].addLine;
-Song.durs.filter(\Quite,{|i| var last = i.last; i.dropLast ++ (last * 0.8)});
+Song.durs.filter(\Quite,{|i| var last = i.last; i.dropLast ++ (last * 1)});
 P(\bassline, music: { |p b e|
 	[
 		freq: [ 5, 4, 3, ].df('c#',4,\minor).q,
@@ -281,8 +309,10 @@ P.still(\mccoy, timecode: 2048.5.seconds, music: { |p b e|
 P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 	lyrics: "Quite simple. + Happens + evry + day. ",
 	filter: (midinote: _ - 12), 
+	lag:[0.025,0,0,0,0,0,0,0,0],
 	legato: [1, 1, 0.6, 1, 1, 1, 1, 0.9, ],
-	pitchTake: 1
+	pitchTake: 1,
+	paramTension: 0.7
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -311,10 +341,11 @@ P(\wash, music: { |p b e|
 // });
 [ "KIRK: Scotty, I need your approval, too. Since you'll","3 1 4 3 3 2 1 -7 2 4.5 5".dm(\c) ].addLine;
 Song.setTempoMap(\appro,"e e e e ex x e e q e e");
-P.synthV(role: \kirk, take: \lead, params: {|p b| [
+P.synthV(role: \kirk,lag: -0.2, take: \lead, params: {|p b| [
 	lyrics: "Scotty + I need your approval + + too. Since you'll",
 	legato: [1, 1, 1, 1, 1, 1, 1, 1, 0.7, 1, 1, ],
-	lag: (0.2,0.18..0.02) ++ [0,0],
+	lag: 0.2!9,
+	// lag: (0.2,0.18..0.02) ++ [0,0],
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
@@ -325,14 +356,14 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 });
 P(\chords, music: { |p b e|
 	[
-	lag: (0.2,0.16..0.02) => _.q,
+	// lag: (0.2,0.16..0.02) => _.q,
 		instrument: \defaultPiano,
-		freq: [[-6, 1, 3],[-5, -7, 2],[-4.5,-6,2]].df(\c).stutter.q,
+		freq: [[-6, 1, 3],[-5, -7, 2],[-4.5,-6,2]].df(\c).dupEach(2).q,
 		// dur: b.parse([4, 4, 3]).q
-		dur: "q q q q q q".asBeats.warpTo( e.tempoMap ).q,
+		dur: "q q q q q q".asBeats.warpTo( e.tempoMap.quantizeDft() ).q,
 		rest: MuteFirst(),
 
-		out: Effect.bus({|i| SineShaper.ar(i,0.1,2) => BPF.ar(_,1100, 0.1) * 9=> FreeVerb.ar(_,0.1,1) },inputChannels:1)
+		out: Effect.bus({|i| SineShaper.ar(i,0.1,2) => BPF.ar(_,1100, 0.1) * 9 => FreeVerb.ar(_,0.1,0.9) },inputChannels:2).postln
 	].pp
 });
 P(\bassnotes, music: { |p b e|
@@ -387,14 +418,33 @@ P.still(\clear, timecode: 0.seconds,syl: 3, music: { |p b e|
 			],
 	)
 });
-Song.durs.filter(\furnish, {|i| var last = i.last; i.dropLast ++ (last * 2)});
+// Song.durs.filter(\furnish, {|i| var last = i.last; i.dropLast ++ (last * 2)});
+P(\chords, music: { |p b e|
+	[
+		freq: [
+			[1, 5, 11, 14],
+			[1, 5, 11, 13],
+			[-5, 5, 11, 13],
+			[-5, 5, 11, 14],
+			[-5, 5, 11, 13],
+			[-6, 6, 11, 13],
+			[-6, 6, 11, 15],
+			[-6, 6, 12, 14.5]
+		].df(\d,4).q,
+		dur: b.parse([1, 2, 1, 1, 2, 1, 1, 1, 4]).q,
+		instrument: \sparkTriangle, depth: 0.005, mix: 0, width: 20, amp: 0.02,
+		out: (0..3)
+
+	].ppm
+});
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
+
 	// filter: (midinote:  _ - 12), 
 	lyrics: "work with them, r furnishing + + them all they need  to make the r r android + robots - +",
 	legato: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.6 ],
 	pitchTake: 1
 ] }, music:{|p b e|
-	{
+	  {
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 	}.play
@@ -428,12 +478,34 @@ P(\bassnotes, music: { |p b e|
 		instrument: [\stringyy, \sawSynthSustain]
 	].pp
 });
-
 P(\androidBass,syl:13, music: { |p b e|
 	[
 		freq: [11, 11, 7, 7, 4 ].df(\f,2).q,
-		dur: b.drop(1).parse([ 1, 1, 1, 2, 1]).q
-	].pp
+		dur: b.drop(1).parse([ 1, 1, 1, 2, 1]).q,
+		out: Effect.bus({|i| i ++ (CrossoverDistortion.ar(i) /30) },)
+	].pp;
+});
+P(\chordsPartTwo,syl: 13, music: { |p b e|
+	[
+		freq: [
+			[3, 5],
+			[3, 5],
+			[2, 3, ],
+			[2, 3, ],
+			[1, 4, ]
+		].df(\f,4).q,
+		dur: b.drop(1).parse([1, 1, 1, 2, 2]).q,
+		instrument: \defaultPiano,
+	].ppm
+});
+P(\connector,syl:18, music: { |p b e|
+	[
+		instrument: \wash,
+		freq: [1, 4].df(\f, 4).bubble ++ [1, 3].df(\g, 4).bubble => _.q,
+		dur: e.bAll.parse([2, 2]).q,
+		freqLag: e.bAll.parse([3]).sum + 1.5,
+		out: Effect.bus({|i| CombN.ar(i, 0.3, 0.25, 5)/4 ++ i },)
+	].ppm
 });
 [ "You won't be working with them, you'll be working with us, /*our bodies.*/","1 2 3 4 3 2 5 2 3 4 5 3 6".dm(\g,\whole) /*++ "4 3 2".dm(\c,6)*/ ].addLine;
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
@@ -526,6 +598,23 @@ P(\chords, music: { |p b e|
 		dur: b.q,
 		instrument: \stringyy,
 		amp: 0.15 * p.insideGain,
+		out: (0..3)
+	].pp
+});
+P(\bassline, music: { |p b e|
+	
+	[
+		freq: [
+			[3, 5, 11],
+			[2, 4.5, 7],
+			-1.5,
+			[1, 3, 6],
+			[1, 3, 6],
+			[-7, 2.5, 5.5]
+		].flop[0].df(\g,[4,3]).q,
+		dur: b.q,
+		instrument: \harp,
+		amp: 0.005 * p.insideGain,
 		out: (0..3)
 	].pp
 });
@@ -628,10 +717,10 @@ P.still(\mulhall, timecode: 2110.1.seconds, music: { |p b e|
 [ "SPOCK: (boom) Once inside their mechanical bodies, engineer, they can leave this planet,"," -1 1 2 3 2 3 4 3 2 3 1 -5 -6 -5 5 4 3 2 4 3 ".dm('a-', octave:4)].addLine; 
 P.still(\spock2,syl:0, timecode: 2117.3.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
+		wait: b.drop(1).sum,
 		text: ["once inside their","mechanical bodies, engineer"],
 	).sequenceText2(
-			b.parse([13,6]), [ 
+			b.drop(1).parse([13,6]), [ 
 			["they can leave","this planet"],
 			],
 	)
@@ -736,7 +825,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 		wait: b.sum,
 		text: ["with their","knowledge"],
 	).sequenceText2(
-			b.parse([4, 3, 3]), [ 
+			b.parse([4,  3, ]), [ 
 			// ["",""],
 			["mankind", "could"],
 			["leap ahead","ten thousand years"]
@@ -1277,10 +1366,11 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 			],
 	)
 });
-P.synthV(role: \mccoy, take: \lead, params: {|p b| [
+P.synthV(role: \mccoy, take: \lead, params: {|p b k| [
 	lyrics: "r and all he wants is the body + of our captain +",
 	filter: (midinote: _ - 12), 
 	pitchTake: 1,
+	vocalMode: (k == \mo).if{\Open},
 	paramPitchExpression: 1.5
 ] }, music:{|p b e|
 	{
@@ -1316,6 +1406,7 @@ P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 	legato: [1, 1, 1, 1, 1, 1, 1, 1, 0.8,  1, 1, 1, 1, ],
 	filter: (midinote: _ - 12), 
 	pitchTake: 2,
+	vocalMode: (k == \mo).if{\Open},
 	paramPitchExpression:1.5
 ] }, music:{|p b e|
 	{
@@ -1441,10 +1532,11 @@ P.still(\mulhall2,syl:6, timecode: 2208.35.seconds, music: { |p b e|
 		text: ["I'm a scientist",""],
 	)
 });
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear,syl:19, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum + e.bNext,
+		wait: b.drop(1).sum + e.bNext.sum,
 		text: ["and I'm","willing"],
+		fade: p.secDur[e.start + 2]
 	)
 });
 Song.durs.scaleEnv(
@@ -1825,9 +1917,11 @@ P.still(\mulhall, timecode: 2212.15.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
+		fade: e.bNext.sum
 	).sequenceText2(
-			b.parse([1]), [ 
-			["the opportunity","is an extraordinary one"]
+			b.parse([1, 14]), [ 
+				["the opportunity","is an extraordinary one"],
+				["",""]
 			],
 	)
 });
@@ -2185,27 +2279,18 @@ P.still(\mccoy, timecode: 2255.25.seconds, music: { |p b e|
 				],
 		)
 });
-Trek.cast.mccoy = \an;
+// Trek.cast.mccoy = \an;
+Trek.cast.mccoy = \mo;
 Trek.presets.put(\mccoy,\mo,[paramTension:0.8, paramGender:0.1]);
 Trek.presets.put(\mccoy,\an,[paramTension:0.4, paramGender:0.12]);
-P.synthV(role: \mccoy, take: \lead, params: {|p b| [
+P.synthVs(role: \mccoy, take: [\lead, \double], params: {|p b| [
 		lyrics: "r Then I'll still want one question + answered + to my satisfaction + + +",
-		legato: [1, 1, 1, 1, 1, 1, 1, 1,1, 1, 1, 1, 1, 1, 1, 0.8, ],
+		legato: [[1, 1, 1, 1, 1, 1, 1, 1,1, 1, 1, 1, 1, 1, 1, 0.8, ]],
 		filter: (midinote: _ - 12), 
-		pitchTake: 1,
+		pitchTake: [1, 3],
 		vocalMode: \Open,
 		paramTension: -0.5,
 		paramExpression:1.5
-	] }, music:{|p b e|
-		{
-			e.playbuf
-			=> p.synthVTracks.at(e.key).()
-			* 4.dbamp
-		}.play
-
-});
-P.double(role: \mccoy, take: \lead, params: {|p b| [
-		pitchTake: 1
 	] }, music:{|p b e|
 		{
 			e.playbuf
@@ -2242,22 +2327,14 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 			],
 	)
 });
-P.synthV(role: \mccoy, take: \lead,
+P.synthVs(role: \mccoy, take: [\lead, \double],
 		pbind: Song.enlarge2(0),
 		filter: (midinote: _ - 12), 
-		params: {|p b| [
+		params: {|p b k| [
 			lyrics: "Why? Not a list of possible + + miracles + + r but a simple + basic + understandable + + + + ",
 			legato: [0.6, 1, 1, 1, 0.7, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1, 0.8, 1, 1, 1,1, 1 ],
-			pitchTake: 1,
-			vocalMode: \Solid
-		] }, music:{|p b e|
-			{
-				e.playbuf
-				=> p.synthVTracks.at(e.key).()
-			}.play
-
-});
-P.double(role: \mccoy, take: \lead, params: {|p b| [
+			pitchTake: [1, 3],
+			vocalMode: ( k==\an ).if{\Solid}{\Open}
 		] }, music:{|p b e|
 			{
 				e.playbuf

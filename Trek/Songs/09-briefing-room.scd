@@ -2346,7 +2346,34 @@ P(\chord,start:'stop all this',music:{|p b e|
 	].pp
 });
 ["Thats why-- I called you all here together. ","2  2 3  -6  3 4  4 5 2 5  5 6 6 7 6".dm('e-',5,\lydian)].addLine;
-P.tune('here together');
+P.tune( _ <> [instrument: \sparkTriangle, legato: [\r, 1, 0.5, \r, 1, 0.3, 1, 1, 1, 0.3, 1, 0.5, 1, 1, 1, ].q,amp:0.05, rel:1].pma );
+( SynthDef(\sqareNSaw,{
+	var freq = \freq.kr(300);
+	Pulse.ar(freq , \width.kr(0.4))
+	* Env.asr(releaseTime: \rel.kr(1)).kr(2,gate:\gate.kr(1))
+	* \amp.kr(0.1)
+	=> Out.ar(\out.kr(0),_)
+}).add
+);
+P(\middleNote, music: { |p b e|
+	[
+		freq: [\r,5, 6, 7, 13].df('e-',3).q,
+		dur: b.parse([1, 2, 3, 3, 3]).q,
+		instrument: \sqareNSaw,
+		amp: 0.02,
+		legato: 0.3,
+		out: 2,
+		rel: 3
+	].pp;
+	(
+		freq: [1, 3, 5, 7].df('e-'),
+		lag: b[..9].sum,
+		att: b[10..15].sum,
+		instrument: \sawSynthSustain,
+		rel: 3,
+		amp: 0.04
+	).play
+});
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -2421,7 +2448,7 @@ P(\hat,start:\involved,music:{|p b e|
 [
 	dur: e.tempoMap.mapBeats("ee e x x q e e x x x x q q q e x x ee e".asBeats).q,
 	instrument: \hat_808,
-	out: Effect.bus({|i|  EchoNone.ar(i,1, delaytime:0.5) + WhiteNoise.ar(0.00011)	})
+	out: Effect.bus({|i|  EchoNone.ar(i,1, delaytime:0.5) /3 + WhiteNoise.ar(0.00011)	})
 ].pp;
 });
 P(\bass,start:\involved,music:{|p b e|  // passing tone right before end please
@@ -2486,7 +2513,8 @@ P(\chords,start:\involved,music:{|p b e|
 			legato: [1,1,1,1,0,1,1,0.9,1].q(inf),
 			//dur: b.parse([1, [1, 1/2], [1/2, 1], 4, 5,3]).q,
 			dur: p.quarters[e.start].parse([1,1,1,1, 1,1, 2, 2, 8, 3]/2).q,
-			out: Effect(PlateReverb.ar(_,mix:0.5,decayTime: 0.3,damping:0.7)).bus.index
+			amp: 0.125,
+			out: Effect(PlateReverb.ar(_,mix:0.5,decayTime: 0.3,damping:0.7), out: 3).bus.index
 		].pma(\defaultRetrig).play
 
 });
@@ -2554,7 +2582,7 @@ P.synthVs(role: \mccoy, take: [\lead, \double],
 		filter: (midinote: _ - 12), 
 		params: {|p b k| [
 			lyrics: "Why? Not a list of possible + + miracles + + r but a simple + basic + understandable + + + + ",
-			legato: [0.6, 1, 1, 1, 0.7, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1, 0.8, 1, 1, 1,1, 1 ],
+			legato: [[0.6, 1, 1, 1, 0.7, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1, 0.8, 1, 1, 1,1, 1 ]],
 			pitchTake: [1, 3],
 			vocalMode: ( k==\an ).if{\Solid}{\Open}
 		] }, music:{|p b e|
@@ -2563,6 +2591,25 @@ P.synthVs(role: \mccoy, take: [\lead, \double],
 				=> p.synthVTracks.at(e.key).()
 			}.play
 
+});
+P(\chords, music: { |p b e|
+	[
+		freq: [
+			\r!4,
+			[ 1,    5,   11, 13 ],
+			[ -7,   5,   11, 13 ],
+			[ 1.5,  5.5, 11, 14.5 ],
+			[ 1.5,  5.5, 11, 14 ],
+			[ -6.5, 4,   5,  2.5 ],
+			[ -6.5, 4,   5,  1.5 ],
+		].df(\f).q,
+		dur: b.parse([1,2, 2, 1, 2, 1, 2]).q,
+		instrument: \defaultRetrig,
+		instrument: \reedy,
+		out: [ 2,3,4 ],
+		amp: 0.03,
+		rest: MuteFirst()
+	].ppm
 });
 P(\bass,start:'possible miracles',music:{|p b e| 
 			[
@@ -2600,7 +2647,7 @@ P(\chords,start:\understandable,music:{|p b e|
 					* 
 					(
 						Env.asr(0.01,1,0.001).kr(gate:i.gateSeq)
-						+
+						*
 						Env.perc(0.05,1).kr(0,gate: i.trigSeq)
 					)
 					=> SineShaper.ar(_, i.limit)
@@ -2612,7 +2659,7 @@ P(\chords,start:\understandable,music:{|p b e|
 					Mix.ar(i)
 					=>HPF.ar(_,200)
 					/2
-					=> PlateReverb.ar(_,decayTime:0.2, mix:0.25)
+					=> PlateReverb.ar(_,decayTime:0.2, mix:0.2)
 					/2
 
 				}
@@ -2639,22 +2686,15 @@ P.still(\bonesClose, timecode: 2302.8.seconds, music: { |p b e|
 					],
 			)
 });
-P.synthV(role: \mccoy, take: \lead,
+P.synthVs(role: \mccoy, take: [\lead, \dbl],
 			pbind: Song.enlarge(7),
 			filter: (midinote: _ - 12), 
 			params: {|p b| [
 				lyrics: " why that overrides + + all danger - + And let's not kid our selves that there is no ",
-				legato: [0.8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1  ],
-				lag: [0,0.05, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0],
-				pitchTake: 1
-			] }, music:{|p b e|
-				{
-					e.playbuf
-					=> p.synthVTracks.at(e.key).()
-				}.play
-
-});
-P.double(role: \mccoy, take: \lead, params: {|p b| [
+				legato: [[0.8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1  ]],
+				lag: [[0,0.05, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0]],
+				pitchTake: [1, 3],
+				vocalMode: \Open
 			] }, music:{|p b e|
 				{
 					e.playbuf
@@ -2677,19 +2717,30 @@ P.still(\clear, timecode: 0.seconds,syl:6, music: { |p b e|
 		text: ["potential danger","in this"],
 	)
 });
-P.synthV(role: \mccoy, take: \lead, params: {|p b| [
+P(\lineDouble, music: { |p b e|
+	[
+		freq: [11, 7, 5, 2].df(\c,\mixolydian).q,
+		legato: [4, 3, 2, 1, ].q,
+		dur: b.q,
+		out: Effect.bus({|i| i * SinOsc.ar(2) },out: 2),
+		instrument: \sawSynthSustain
+	].pp;
+	fork{
+		b[..9].sum.wait;
+		[
+			freq: [ 7, 5, 3, 1].df(\c,\mixolydian).q,
+			legato: [ 4, 3, 2, 1, ].q,
+			dur: b.parse([10,1, 1, 1, 1]).drop(1).q,
+			out: Effect.bus({|i| i * SinOsc.ar(2) },out: 3),
+			instrument: \sawSynthSustain
+		].pp
+	}
+});
+P.synthVs(role: \mccoy, take: [\lead, \dbl], params: {|p b| [
 	lyrics: "r r r r r r r potential + +  danger + in this. ",
 	filter: (midinote: _ - 12), 
-	legato: [1, 1, 1, 1, 1, 1,   0.7, 1, 1, 1, 1, 1, 1, 1, ],
-	pitchTake: 1
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
-
-});
-P.double(role: \mccoy, take: \lead, params: {|p b| [
+	legato: [[1, 1, 1, 1, 1, 1,   0.7, 1, 1, 1, 1, 1, 1, 1, ]],
+	pitchTake: [[1, 3]]
 ] }, music:{|p b e|
 	{
 		e.playbuf

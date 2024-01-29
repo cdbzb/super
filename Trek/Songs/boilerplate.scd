@@ -154,5 +154,14 @@ Song.encoders=~encoders;
 		Song.modulatorSynth = Song.sargonModulator.(rppName,dur,modGain,echo,synthVbuffer)
 	};
 	Song.laMer = Song.laMer ?  Buffer.read(s,"~/tank/super/samples/La_Mer_clean.aif".standardizePath);
+
+Song.early={|in pan distance= 1.5 rearWall = 1| 
+	var room = #[6, 5.11, 4.37] ;
+	var mic = #[3, 1, 1.6]; // centered horizontally 1.6 m high and 1.5 away
+	var panToRad = {|i| i * pi / 2 };
+	var earlyRefFunc = {|i| i = panToRad.(i);[3 + (i.sin * distance), rearWall + (i.cos * distance) , 1.6]};
+	EarlyRef.ar(in,earlyRefFunc.(pan), mic, room)
+};	
+Song.verb= {|in pan=0 distance=1.5	 rearWall=1.1 mix=0.5 c1=1 c3=10|var early = Song.early.(in, pan, distance, rearWall); DWGReverbC1C3.ar(early, c1:c1,c3:c3) * mix+ early};
 );
 )

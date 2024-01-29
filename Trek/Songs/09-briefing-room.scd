@@ -486,7 +486,7 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	}.play
 
 });
-P.tune();
+// P.tune();
 P.synthV(\kevin, take: \lead,
 	pbind: {|p b| [dur: b.parse([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.25,0.75, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ])].p},
 	params: {|p b| [
@@ -535,9 +535,11 @@ P(\chordsPartTwo,syl: 13, music: { |p b e|
 			[2, 3, ],
 			[1, 4, ]
 		].df(\f,4).q,
-		dur: b.drop(1).parse([1, 1, 1, [2, 2/3], [1/3,1]]).q,
+		dur: b.drop(1).parse([1, 1, 1, [2, 1/3], [2/3,1]]).q,
 		instrument: \defaultPiano,
-	].ppm
+		instrument: \sqareNSaw,
+		amp:0.03
+	].pp
 });
 P(\connector,syl:18, music: { |p b e|
 	[
@@ -602,7 +604,7 @@ P(\basslineSimple, music: { |p b e|
 		amp: [0.1, 0.01]
 	].pp
 });
-P(\chords, music: { |p b e|
+P(\crunchyChords, music: { |p b e|
 	[
 		freq: [
 			\r,
@@ -616,10 +618,25 @@ P(\chords, music: { |p b e|
 		instrument: \sawSynthSustain,
 		out: Effect.bus({|i| 
 			i * Gendy2.ar(minfreq:2, maxfreq:[4, 5, 7, 11])
+			* XLine.kr(1,2,b.sum)
+			* -2.dbamp
 		},inputChannels:4)
 	].ppm
 });
+P(\risingNote, syl:11, music: { |p b e|
+	[
+		instrument: \stringyy,
+		attack:19,
+		amp:1,
+		freqLag:[ 4, 5, 6 ] + 3,
+		freq: [ 6, 11 ].df(\g,\whole).q,
+		dur: [ b[0],0.01 ].q,
+	].ppm
+});
 [ "They'll be (boom) inside us, and we'll be ...","11 7 1.5 6 6 5.5 4.5 7 6".dm(\g) ].addLine;
+P(\cymbal, music: { |p b e|
+	(instrument:\cymbalsDS, amp:0.02,att:0.1).play
+});
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -686,7 +703,7 @@ P(\bassline, music: { |p b e|
 P.tune(_ <> [legato: 3].p);
 P(\line, syl:0,music: { |p b e|
 	[
-		freq: [ 2.5, 2, 1].df('c#').q,
+		freq: [ 2.5, 2, -6].df('c#').q,
 		dur: b.drop(1).parse([2, 6, 1]).q,
 		freqLag: 0.2,
 		instrument: \sawSynthSustain,
@@ -944,7 +961,7 @@ P.synthVs(\kevin, take: [\lead, \bg1],
 });
 [" travel back with us.","3 4 4 5 3 2 1".dm(\c) ].addLine;
 Song.setTempoMap(\travel,"q e x xq e e q");
-Song.durs.filter(\travel, {|i| i.drop(-1) ++ (i.last * 0.8)});
+Song.durs.filter(\travel, {|i| i.drop(-1) ++ (i.last * 0.7)});
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -2277,10 +2294,13 @@ P.synthVs(role: \scott, take: [\lead, \double], params: {|p b| [
 
 });
 P(\chord,start:\impossible,syl:0,music:{|p b e| 
-	(
-		freq:[1,3,5.5,7].df(\f),
-		instrument:\stringyy
-	).play
+	[
+		freq:[ [1,3,5.5,7].df(\f), [-5, -7, 3, 11].df(\e),\r, [-5, 2.5, 5, 11].df('a-') ].q,
+		instrument:\stringyy,
+		amp:0.2,
+		dur: b.drop(1).parse([8,2, 2,1 ]).q,
+		legato: [1/6,1, 1, 1].q
+	].p.play
 });
 P(\bass,start:\impossible,music:{|p b e| 
 	[
@@ -2535,17 +2555,18 @@ P.still(\mccoy, timecode: 2255.25.seconds, music: { |p b e|
 // Trek.cast.mccoy = \an;
 P.synthVs(role: \mccoy, take: [\lead, \double], params: {|p b| [
 		lyrics: "r Then I'll still want one question + answered + to my satisfaction + + +",
-		legato: [[1, 1, 1, 1, 1, 1, 1, 1,1, 1, 1, 1, 1, 1, 1, 0.8, ]],
+		legato: [[1, 1, 1, 1, 1, 1, 1, 1,1, 1, 1, 1, 1, 1, 1, 0.7, ]],
 		filter: (midinote: _ - 12), 
 		pitchTake: [1, 3],
 		vocalMode: \Open,
 		paramTension: -0.5,
+		tension: Env([-0.5,0],b.sum),
 		paramExpression:1.5
 	] }, music:{|p b e|
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
-			* 4.dbamp
+			* 7.dbamp
 		}.play
 
 });
@@ -2558,7 +2579,7 @@ P(\dimchords,start:\answered,music:{|p b e|
 			att:b[0..8].sum,
 			rel:b[9..14].sum * 4,
 			freqLag:1,
-			amp:0.05
+			amp:0.06
 
 		].pm(\wash).play
 });
@@ -2578,11 +2599,17 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	)
 });
 P.synthVs(role: \mccoy, take: [\lead, \double],
-		pbind: Song.enlarge2(0),
+		pbind: Song.enlarge2(9),
 		filter: (midinote: _ - 12), 
 		params: {|p b k| [
-			lyrics: "Why? Not a list of possible + + miracles + + r but a simple + basic + understandable + + + + ",
-			legato: [[0.6, 1, 1, 1, 0.7, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1, 0.8, 1, 1, 1,1, 1 ]],
+			lyrics: "Why? Not a list of possible + + miracles + + r but a simple + basic + understandable + + + + why that overrides + + all danger - +",
+			legato: [[
+				0.6, 1, 1, 1, 0.7, 1, 1, 1, 1, 1, 1, 1,
+				1, 1, 1, 0.8, 1, 0.8, 1, 1, 1,1, 1, 1,
+				1, 1, 1, 1, 1, 1, 1, 1 
+			]],
+			tension: Env([0.9, 0.6, 0.2, 0, 1, 1, 0], b ++ p.durs[\basic].list ++ p.durs[\overr].list => _.parse([1, 13, 1, 11, 9])),
+			lag: [ [0.07] ++ Array.fill(b.size-3,{0}) ],
 			pitchTake: [1, 3],
 			vocalMode: ( k==\an ).if{\Solid}{\Open}
 		] }, music:{|p b e|
@@ -2617,7 +2644,7 @@ P(\bass,start:'possible miracles',music:{|p b e|
 				freq: [1, 2, 1.5, 2.5, 1, -5].df('e-',3,\mixolydian).q,
 				dur: b.parse([1,2,2,3,3,3]).q,
 				//instrument:\sawSynthSustain
-				out: Effect( { |i|  SineShaper.ar(i*10,limit:0.1) => FreeVerb.ar(_,0.5,0.9) }  ).bus.index
+				out: Effect( { |i|  SineShaper.ar(i*10,limit:0.1) => FreeVerb.ar(_,0.5,0.9) =>Mix.ar(_) => Pan2.ar(-0.6) }, inputChannels:2  ).bus.index
 			].pp
 });
 P(\strum,start:'possible miracles',music:{|p b e| 
@@ -2627,8 +2654,44 @@ P(\strum,start:'possible miracles',music:{|p b e|
 			).play
 });
 ["simple basic understandable","5 5 6 6 7 11 7 6 4".dm('e-',5,\mixolydian)].addLine;
-		Song.setQuarters(\understandable,"q q q q q e q e e ".asBeats);
-		//Song.quarters[\understandable].list
+Song.setQuarters(\understandable,"q q q q q e q e e ".asBeats);
+Song.setTempoMap(\understandable,"q q q q q e q e e ");
+P(\tamb, music: { |p b e|
+	{
+		var levels = [5,1,2,1] /5 => _.dq(inf);
+		var durs =  
+		1/4 ! 21
+		+ ( [1, -1] /50 => _.dup(8) )
+		=> _.flat 
+		=> _.warpTo(e.tempoMap
+			.quantizeDft(0.5)
+		)
+		=> _.dq();
+		var triggers = TDuty.kr( durs, 0,1,gapFirst:0 );
+		var energy = EnvGen.ar( Env.linen(0, 0.00, 0.015), triggers, doneAction:0   ) 
+		* Demand.kr(triggers,0,levels 
+			// * 40
+			// *8
+		);
+		Shakers.ar(3, energy:energy   , decay: 1).tanh
+		=> PlateReverb.ar(_, mix:0.3)
+		=> {|i| Pan2.ar(i[0], 0.8)
+	}}.play;
+});
+//Song.quarters[\understandable].list
+P(\chordsDouble, music: { |p b e|
+var one, four, seven;
+# one, four, seven = [[1,3,5],[1,4,6],[2,4,7]].df('e-',scale:\mixolydian);
+[
+	freq: [one, one, four, four, seven, seven, four, four ].q,
+	dur: "e e e e e e e e e e".asBeats.warpTo( e.tempoMap ).q,
+	instrument:\defaultRetrig,
+	dur: p.quarters[e.start].list.gaussian(dev:0.004).quantizeWindow() ++ 0.2 =>_.q,
+	legato: [1, 1, 1, 1, 1, 1, 1, 6,] * 0.7 =>_.q,
+	out: Effect.bus({|i| SineShaper.ar(i, 0.1) => BPF.ar(_,1100) => Phaser2.ar(_,rate:0.016) * [0.1,0.9] })
+	// lag:0.1
+].pp
+});
 P(\chords,start:\understandable,music:{|p b e| 
 			var one, four, seven;
 			# one, four, seven = [[1,3,5],[1,4,6],[2,4,7]].df('e-',scale:\mixolydian);
@@ -2679,20 +2742,30 @@ P(\bass,start:\understandable,music:{|p b e|
 P.still(\bonesClose, timecode: 2302.8.seconds, music: { |p b e|
 			e.still.( 
 				wait: b.sum + e.bNext[..5].sum,
-				text: ["'Why' that","overrides all danger"],
-			).sequenceText2(
-					e.bAll.parse([9]), [ 
-					["and let's not kid ","ourselves that there is no"],
-					],
+				fadeIn: 3,
+				fade:3,
+				text: ["",""]
 			)
 });
-P.synthVs(role: \mccoy, take: [\lead, \dbl],
-			pbind: Song.enlarge(7),
+P.still(\clear, timecode: 0.seconds,lag:0.01, music: { |p b e|
+	e.still.( 
+		wait: b.sum + e.bNext[..6].sum,
+		text: ["'Why' that","overrides all danger"],
+	).sequenceText2(
+		e.bAll.parse([9, 6]), [ 
+			["and let's not","kid ourselves"],
+			["that there","is no"]
+		]
+	)
+});
+P.synthVs(role: \mccoy, take: [\lead, \dbl],lag: -0.1,
+			pbind: Song.enlarge(14),
 			filter: (midinote: _ - 12), 
 			params: {|p b| [
-				lyrics: " why that overrides + + all danger - + And let's not kid our selves that there is no ",
-				legato: [[0.8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1  ]],
-				lag: [[0,0.05, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0]],
+				lyrics: " r r r r r r r r r And let's not kid our selves that there is no potential + + danger + in this ",
+				legato: [[0.8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.75, 1, 1, 1, 1, 1, 1, 1  ]],
+				// lag: [0.1 + [0,0.05, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0]],
+				tension: Env([1, 1, 0, 0],b.parse([1,1,17])),
 				pitchTake: [1, 3],
 				vocalMode: \Open
 			] }, music:{|p b e|
@@ -2736,18 +2809,6 @@ P(\lineDouble, music: { |p b e|
 		].pp
 	}
 });
-P.synthVs(role: \mccoy, take: [\lead, \dbl], params: {|p b| [
-	lyrics: "r r r r r r r potential + +  danger + in this. ",
-	filter: (midinote: _ - 12), 
-	legato: [[1, 1, 1, 1, 1, 1,   0.7, 1, 1, 1, 1, 1, 1, 1, ]],
-	pitchTake: [[1, 3]]
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
-
-});
 P(\bass,start:\kid,music:{|p b e| 
 	[
 		freq: [1, 6, -6].df('b-',2).q,
@@ -2755,7 +2816,7 @@ P(\bass,start:\kid,music:{|p b e|
 		instrument:\sawSynthSustain
 	].pp
 });
-P.tune(\kid);
+P.tune(\kid,  { |i| i <> [instrument: \reedy].pm => Pmul(\freq, 1/2, _)});
 }
 )
 

@@ -1113,7 +1113,7 @@ P {
 
     }
     *still {   // renders the still when compiled
-              // and stores a function to preview it in resources.still (e.still)
+               // and stores it in resources.still (e.still)
         |key st syl lag=0 timecode=60 music|
 		var start = P.calcStart(st);
 		var aStill;

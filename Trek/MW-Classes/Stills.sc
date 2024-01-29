@@ -116,8 +116,8 @@ Stills {
 			var image;
 			seconds.isNil.if{image=this.image(markerName);^image}{this.set(markerName,seconds)}
 		}
-		still { | key wait=5 fade=0 monitor text|
-			^Still.new(this,key,wait,fade,monitor,text)
+		still { | key wait=5 fade=0 monitor text onTop=false|
+			^Still.new(this,key,wait,fade,monitor,text, onTop)
 		}
 
 		at {|seconds|
@@ -193,11 +193,14 @@ Stills {
 Still {
 	var <>stills,<>image;
 	var <>markerName,<>wait,<>fade,<>fadeIn,<>monitor;
-        var <>window,<>textUpper,<>textLower,timecode,<>text;
+	var <>window,<>textUpper,<>textLower,timecode,<>text;
+	var <>onTop;
 
-	*new{|markerName timecode wait=5 fade=0 monitor text fadeIn stills  | ^super.new.init(markerName,timecode,wait,fade,monitor,text,fadeIn,stills)}
+	*new{|markerName timecode wait=5 fade=0 monitor text fadeIn stills onTop=false  |
+		^super.new.init(markerName,timecode,wait,fade,monitor,text,fadeIn,stills, onTop)
+	}
 
-        init{| n c w f m x i t |
+        init{| n c w f m x i t o |
           //DO WE EVEN NEED A MARKER NAME???????
           markerName = n;
           x.isNil.if{text=["",""]}{text=x};
@@ -205,7 +208,7 @@ Still {
           timecode = c;
           stills.set(markerName,timecode);
           image = stills.image(markerName);
-          wait = w;fade=f;monitor=m;fadeIn=i;
+          wait = w;fade=f;monitor=m;fadeIn=i;onTop=o;
         }
 
         play { 
@@ -213,13 +216,15 @@ Still {
 			Stills.muted.not.if{
 				{ 
 					window = stills.preview(markerName, wait,fade, monitor,fadeIn:fadeIn);
+					window.alwaysOnTop_(onTop);
 					view = window.view;
 					// view.keyDownAction_({ this.window.close; CmdPeriod.run});
-					view.keyDownAction_({
+					view.keyDownAction_({|view key|
 						Window.closeAll;
 						TempoClock.all.do(_.clear);
 						Server.default.freeMyDefaultGroup;
-						"open -a WezTerm.app".unixCmd
+						SCNvim.luaeval( "vim.api.nvim_input('%')".format(key) );
+						"open -a WezTerm.app".unixCmd;
 					});
 					this.title(["",""]);
 					this.setText(text) 
@@ -312,12 +317,13 @@ Still {
 		}
 	}
 	value { //for backward comp
-		|monitor=0 wait fade fadeIn text|
+		|monitor=0 wait fade fadeIn text onTop = false|
 		monitor.notNil.if{ this.monitor = monitor};
 		wait.notNil.if{ this.wait = wait};
 		fade.notNil.if{ this.fade = fade};
 		fadeIn.notNil.if{ this.fadeIn = fadeIn};
 		text.notNil.if{ this.text = text};
+		onTop.notNil.if{ this.onTop = onTop};
 		this.play
 	}
 

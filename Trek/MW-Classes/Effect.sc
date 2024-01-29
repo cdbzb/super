@@ -54,14 +54,18 @@ event.yield
 				In.ar(bus.index,inputChannels)
 				=> function
 				=>.first DetectSilence.ar(_, time:1, doneAction:2)
-				=> Out.ar(out,_)
+				=> Out.ar(out, _)
 			}.play(addAction:\addToTail, target:target);
 			NodeWatcher.register(synth, assumePlaying: true);
-			fork{
-				while ( {synth.isPlaying},{0.2.wait} );
+			synth.onFree({ 
 				\freeing_Bus.postln;
 				bus.free
-			};
+			})
+			// fork{
+			// 	while ( {synth.isPlaying},{0.2.wait} );
+			// 	\freeing_Bus.postln;
+			// 	bus.free
+			// };
 			^this;
 		}
 

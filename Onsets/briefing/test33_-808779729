@@ -1,0 +1,15 @@
+var o, p;
+o = [
+	RecKey.prNew,  "/Users/michael/tank/super/Onsets/briefing/test33_-808779729",  s,  Array.prNew(7)
+];
+p = [
+	// RecKey
+	0, [ armed: true,  path: o[1],  
+		name: nil,  section: 16,  
+		tail: 0,  saved: nil,  
+		s: o[2],  list: o[3] ],  
+	// Array
+	3, [ 0.913,  0.309,  0.13,  0.308,  
+		0.327,  0.703,  6.31 ]
+];
+prUnarchive(o,p);

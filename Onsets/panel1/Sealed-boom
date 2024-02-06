@@ -1,0 +1,15 @@
+var o, p;
+o = [
+	RecOnsets.prNew,  "/Users/michael/tank/super/Onsets/panel1/Sealed-boom",  "Sealed-boom",  s,  
+	Array.prNew(3)
+];
+p = [
+	// RecOnsets
+	0, [ armed: true,  path: o[1],  
+		name: o[2],  section: 'Sealed',  
+		tail: 0,  saved: nil,  
+		s: o[3],  list: o[4] ],  
+	// Array
+	4, [ 2.273,  3.543,  1.517 ]
+];
+prUnarchive(o,p);

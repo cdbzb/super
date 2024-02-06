@@ -1,0 +1,30 @@
+var o, p;
+o = [
+	RecIn.prNew,  "/Users/michael/tank/super/samples2/briefing/engineering-test672",  Buffer.prNew,  s,  
+	Array.prNew(4),  Buffer.prNew
+];
+p = [
+	// RecIn
+	0, [ length: 4,  armed: false,  
+		section: 'engineering',  size: 192000,  
+		path: o[1],  buffer: o[2],  
+		saved: nil,  durs: o[4],  
+		newDurs: nil,  array: nil,  
+		s: o[3],  tail: 0,  
+		ratios: nil,  directory: nil,  
+		sampleRate: 48000,  fftBuffer: o[5],  
+		fftSize: 4096 ],  
+	// Buffer
+	2, [ server: o[3],  bufnum: 103,  
+		numFrames: 192000,  numChannels: 1,  
+		sampleRate: 48000.0,  path: nil,  
+		startFrame: nil,  doOnInfo: nil ],  
+	// Array
+	4, [ 1,  1,  1,  1 ],  
+	// Buffer
+	5, [ server: o[3],  bufnum: 102,  
+		numFrames: 50,  numChannels: 1,  
+		sampleRate: 48000.0,  path: nil,  
+		startFrame: nil,  doOnInfo: nil ]
+];
+prUnarchive(o,p);

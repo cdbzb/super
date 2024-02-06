@@ -81,21 +81,25 @@ Stills {
 	}
 
 	writeImage { |seconds |
-		File.exists(stillsLocation++seconds.asString++".png").not.if {
+		File.exists(stillsLocation++seconds.asString++".png").not.if{
 			(
 				//faster but less accurate
 				"ffmpeg -y -ss"
 				+ seconds.asString 
 				+ "-i"
 				+ "'"++file.asSymbol++"'"
-				+ "-vframes 1  -f image2 "
-				++stillsLocation
-				++seconds.asString
-				++ ".png ").systemCmd;
-				//slower but more accurate
-				// "ffmpeg -y " ++ " -i "++"'"++file.asSymbol++"'" + "-ss "++ seconds.asString++ "  -vframes 1  -f image2 "++stillsLocation++seconds.asString++".png ").systemCmd;
-			}
+				+ "-vframes 1  -f image2"
+				+ "-nostdin"
+				+ "-hide_banner -loglevel error" //make silent
+				+ stillsLocation
+				++ seconds.asString
+				++ ".png "
+				+ "> /dev/null"
+			).systemCmd;
+			//slower but more accurate
+			// "ffmpeg -y " ++ " -i "++"'"++file.asSymbol++"'" + "-ss "++ seconds.asString++ "  -vframes 1  -f image2 "++stillsLocation++seconds.asString++".png ").systemCmd;
 			//("ffmpeg -ss "++ seconds.asString++" -i "++"'"++file.asSymbol++"'"++ "  -vframes 1  -f image2 "++stillsLocation++seconds.asString++".png ").postln
+		}
 	}
 
 	viewer {
@@ -103,91 +107,91 @@ Stills {
 	}
 
 
-		image {|symbol| 
-			var img;
-			var seconds = markers.at(symbol);
-			var fileName = stillsLocation++seconds.asString++".png";
-			try{ img = Image.open(fileName) }
-			^img
-		}
+	image {|symbol| 
+		var img;
+		var seconds = markers.at(symbol);
+		var fileName = stillsLocation++seconds.asString++".png";
+		try{ img = Image.open(fileName) }
+		^img
+	}
 
-		//set marker or retrieve image
-		mark { |markerName seconds |
-			var image;
-			seconds.isNil.if{image=this.image(markerName);^image}{this.set(markerName,seconds)}
-		}
-		still { | key wait=5 fade=0 monitor text onTop=false|
-			^Still.new(this,key,wait,fade,monitor,text, onTop)
-		}
+	//set marker or retrieve image
+	mark { |markerName seconds |
+		var image;
+		seconds.isNil.if{image=this.image(markerName);^image}{this.set(markerName,seconds)}
+	}
+	still { | key wait=5 fade=0 monitor text onTop=false|
+		^Still.new(this,key,wait,fade,monitor,text, onTop)
+	}
 
-		at {|seconds|
-			var fileName = stillsLocation++seconds.asString++".png";
-			^Image.open(fileName)
-		}
+	at {|seconds|
+		var fileName = stillsLocation++seconds.asString++".png";
+		^Image.open(fileName)
+	}
 
-		plotClear{
-			|markerName monitor=(-1)|
-			var image=this.mark(markerName);
-			var w;
-			try{
-				w = Window(bounds:Rect(1500*monitor,200,1400,800).scale(scale),border:false)
-				//1196 x 676
-				.background_( Color.clear)
-				.front;  
-			}{
-				w = Window(bounds:Rect(0,200,1400 * scale,800 * scale).scale(scale),border:false)
-				.background_( Color.clear)
-				.front;  
-			}
-			^w
+	plotClear{
+		|markerName monitor=(-1)|
+		var image=this.mark(markerName);
+		var w;
+		try{
+			w = Window(bounds:Rect(1500*monitor,200,1400,800).scale(scale),border:false)
+			//1196 x 676
+			.background_( Color.clear)
+			.front;  
+		}{
+			w = Window(bounds:Rect(0,200,1400 * scale,800 * scale).scale(scale),border:false)
+			.background_( Color.clear)
+			.front;  
 		}
-		plot {|markerName monitor=0|
-			var image=this.mark(markerName);
-			var w;
-			// image.setSize(monitors[monitor].width-10 * scale => _.asInteger,monitors[monitor].height-10 => _.asInteger * scale, \keepAspectRatio);
-			image.setSize(monitors[monitor].width-10 * scale => _.asInteger,monitors[monitor].height-10  * scale => _.asInteger, \keepAspectRatio);
-			try{
-				//w = Window(bounds:Rect(1500*monitor,200,size/12*14,size/12*8),border:false)
-				w = Window(bounds:monitors[monitor].scale(scale),border:false)
-				// w = Window(bounds:Rect(1500*monitor,200,1400 * scale,800 * scale),border:false)
-				.background_( Color.clear)
-				// .drawFunc_({Pen.drawImage(Point(100,100),image,operation:'sourceOver',opacity:1)})
-				.drawFunc_({Pen.drawImage(Point(50,50),image,operation:'sourceOver',opacity:1)})
-				.front;  
-			}{
-				//w = Window(bounds:Rect(0,200,size/12*14,size/12*8),border:false)
-				w = Window(bounds:monitors[monitor],border:false)
-				.background_( Color.clear)
-				.drawFunc_({Pen.drawImage(Point(100,100),image,operation:'sourceOver',opacity:1)})
-				.front;  
-			}
-			^w
+		^w
+	}
+	plot {|markerName monitor=0|
+		var image=this.mark(markerName);
+		var w;
+		// image.setSize(monitors[monitor].width-10 * scale => _.asInteger,monitors[monitor].height-10 => _.asInteger * scale, \keepAspectRatio);
+		image.setSize(monitors[monitor].width-10 * scale => _.asInteger,monitors[monitor].height-10  * scale => _.asInteger, \keepAspectRatio);
+		try{
+			//w = Window(bounds:Rect(1500*monitor,200,size/12*14,size/12*8),border:false)
+			w = Window(bounds:monitors[monitor].scale(scale),border:false)
+			// w = Window(bounds:Rect(1500*monitor,200,1400 * scale,800 * scale),border:false)
+			.background_( Color.clear)
+			// .drawFunc_({Pen.drawImage(Point(100,100),image,operation:'sourceOver',opacity:1)})
+			.drawFunc_({Pen.drawImage(Point(50,50),image,operation:'sourceOver',opacity:1)})
+			.front;  
+		}{
+			//w = Window(bounds:Rect(0,200,size/12*14,size/12*8),border:false)
+			w = Window(bounds:monitors[monitor],border:false)
+			.background_( Color.clear)
+			.drawFunc_({Pen.drawImage(Point(100,100),image,operation:'sourceOver',opacity:1)})
+			.front;  
 		}
-		//wiggle - get frames +- 10 
+		^w
+	}
+	//wiggle - get frames +- 10 
 
-		//for backwards compat  
-		title { |window text |
-			( text.size == 1 ).if
-			{
-				StaticText(window,Rect (0,size/1200*600,size/12*14,200))
-				.string_(text[0])
-				.stringColor_(Color.rand)
-				.align_(\center)
-				.font_(Font(\helvetica,size/1200*90,bold:true))
-			}{
-				StaticText(window,Rect (0,size/1200*100,size/12*14,200))
-				.string_(text[0])
-				.stringColor_(Color.rand)
-				.align_(\center)
-				.font_(Font(\helvetica,size/1200*90,bold:true))
-				;
-				StaticText(window,Rect (0,size/1200*600,size/12*14,200))
-				.string_(text[1])
-				.stringColor_(Color.rand)
-				.align_(\center)
-				.font_(Font(\helvetica,size/1200*90,bold:true))
-			}
+	//for backwards compat  
+	title { |window text |
+		( text.size == 1 ).if
+		{
+			StaticText(window,Rect (0,size/1200*600,size/12*14,200))
+			.string_(text[0])
+			.stringColor_(Color.rand)
+			.align_(\center)
+			.font_(Font(\helvetica,size/1200*90,bold:true))
+		}{
+			StaticText(window,Rect (0,size/1200*100,size/12*14,200))
+			.string_(text[0])
+			.stringColor_(Color.rand)
+			.align_(\center)
+			.font_(Font(\helvetica,size/1200*90,bold:true))
+			;
+			StaticText(window,Rect (0,size/1200*600,size/12*14,200))
+			.string_(text[1])
+			.stringColor_(Color.rand)
+			.align_(\center)
+			.font_(Font(\helvetica,size/1200*90,bold:true))
 		}
+	}
 }
 
 Still {

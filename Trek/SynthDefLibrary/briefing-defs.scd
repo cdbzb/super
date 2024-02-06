@@ -16,7 +16,7 @@ SynthDef(\portBass,{ //{{{
 SynthDef(\tri,{ //{{{
 	DPW3Tri.ar(\freq.kr(300,\port.kr(0))) * \amp.kr(0.1).distort
 	* Env.asr(\attack.kr( 0.05 ),1,2).kr(2,gate:\gate.kr(1))
-	=> FreeVerb.ar(_,0.7,1)
+	=> FreeVerb.ar(_,\mix.kr(0.7),1)
 	=>Out.ar (\out.kr(1),_)
 }).add; //}}}
 

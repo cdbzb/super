@@ -1,0 +1,18 @@
+var o, p;
+o = [
+	RecKey.prNew,  "/Users/michael/tank/super/Onsets/visual/tamborine_1958595584",  s,  Array.prNew(18)
+];
+p = [
+	// RecKey
+	0, [ armed: true,  path: o[1],  
+		name: nil,  section: 13,  
+		tail: 0,  saved: nil,  
+		s: o[2],  list: o[3] ],  
+	// Array
+	3, [ 0.063,  0.239,  0.328,  0.19,  
+		0.339,  0.474,  0.67,  0.73,  
+		0.463,  0.406,  0.798,  0.672,  
+		0.651,  0.47,  0.45,  0.409,  
+		0.671,  0.975 ]
+];
+prUnarchive(o,p);

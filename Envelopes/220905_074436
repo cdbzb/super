@@ -1,0 +1,24 @@
+var o, p;
+o = [
+	RecEnv.prNew,  "/Users/michael/tank/super/Envelopes/220905_074436",  Buffer.prNew,  s,  
+	Array.prNew(4),  Array.prNew(4)
+];
+p = [
+	// RecEnv
+	0, [ name: nil,  length: 4,  
+		arm: nil,  size: 4096,  
+		path: o[1],  buffer: o[2],  
+		durs: o[4],  newDurs: o[4],  
+		array: nil,  s: o[3],  
+		ratios: o[5] ],  
+	// Buffer
+	2, [ server: o[3],  bufnum: 100,  
+		numFrames: 4096,  numChannels: 1,  
+		sampleRate: 48000.0,  path: nil,  
+		startFrame: nil,  doOnInfo: nil ],  
+	// Array
+	4, [ 1,  1,  1,  1 ],  
+	// Array
+	5, [ 0.022857142857143,  0.022857142857143,  0.022857142857143,  0.022857142857143 ]
+];
+prUnarchive(o,p);

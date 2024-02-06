@@ -1,0 +1,34 @@
+var o, p;
+o = [
+	RecIn.prNew,  "/Users/michael/tank/super/samples2/briefing/engineering-test666",  Buffer.prNew,  s,  
+	"/Users/michael/tank/super/samples2/briefing/engineering-test666.wav",  Array.prNew(4),  Array.prNew(4),  Array.prNew(4),  
+	Buffer.prNew
+];
+p = [
+	// RecIn
+	0, [ length: 4,  armed: false,  
+		section: 'engineering',  size: 192000,  
+		path: o[1],  buffer: o[2],  
+		durs: o[5],  newDurs: o[6],  
+		array: nil,  s: o[3],  
+		tail: 0,  ratios: o[7],  
+		directory: nil,  sampleRate: 48000,  
+		fftBuffer: o[8] ],  
+	// Buffer
+	2, [ server: o[3],  bufnum: 101,  
+		numFrames: 192000,  numChannels: 1,  
+		sampleRate: 48000.0,  path: o[4],  
+		startFrame: 0,  doOnInfo: nil ],  
+	// Array
+	5, [ 1,  1,  1,  1 ],  
+	// Array
+	6, [ 2,  2,  2,  2 ],  
+	// Array
+	7, [ 1.0,  1.0,  1.0,  1.0 ],  
+	// Buffer
+	8, [ server: o[3],  bufnum: 102,  
+		numFrames: 385027.0,  numChannels: 1,  
+		sampleRate: 48000.0,  path: nil,  
+		startFrame: nil,  doOnInfo: nil ]
+];
+prUnarchive(o,p);

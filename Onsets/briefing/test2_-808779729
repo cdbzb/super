@@ -1,0 +1,16 @@
+var o, p;
+o = [
+	RecOnsets.prNew,  "/Users/michael/tank/super/Onsets/briefing/test2_-808779729",  s,  Array.prNew(10)
+];
+p = [
+	// RecOnsets
+	0, [ armed: true,  path: o[1],  
+		name: nil,  section: 16,  
+		tail: 0,  saved: nil,  
+		s: o[2],  list: o[3] ],  
+	// Array
+	3, [ 0.805,  0.52,  0.451,  2.252,  
+		0.569,  0.945,  0.462,  0.786,  
+		0.343,  1.867 ]
+];
+prUnarchive(o,p);

@@ -1,0 +1,38 @@
+var o, p;
+o = [
+	RecEnv.prNew,  "/Users/michael/tank/super/Envelopes/briefing/test2_-1515870811",  Buffer.prNew,  s,  
+	"/Users/michael/tank/super/Envelopes/briefing/test2_-1515870811.wav",  RecEnv.prNew,  "/Users/michael/tank/super/Envelopes/briefing/test2_-1515870811",  Array.prNew(1),  
+	Array.prNew(1),  Array.prNew(1)
+];
+p = [
+	// RecEnv
+	0, [ length: 1,  armed: true,  
+		section: -1,  size: 1024,  
+		path: o[1],  buffer: o[2],  
+		saved: o[5],  durs: o[8],  
+		newDurs: o[9],  array: nil,  
+		s: o[3],  tail: 0,  
+		ratios: nil,  directory: nil,  
+		sampleRate: 1024 ],  
+	// Buffer
+	2, [ server: o[3],  bufnum: 226,  
+		numFrames: nil,  numChannels: nil,  
+		sampleRate: nil,  path: o[4],  
+		startFrame: 0,  doOnInfo: nil ],  
+	// RecEnv
+	5, [ length: 1,  armed: true,  
+		section: -1,  size: 1024,  
+		path: o[6],  buffer: nil,  
+		saved: nil,  durs: o[7],  
+		newDurs: nil,  array: nil,  
+		s: o[3],  tail: 0,  
+		ratios: nil,  directory: nil,  
+		sampleRate: 1024 ],  
+	// Array
+	7, [ 1 ],  
+	// Array
+	8, [ 1 ],  
+	// Array
+	9, [ 1 ]
+];
+prUnarchive(o,p);

@@ -6,6 +6,7 @@
 *.RPP-bak
 *.stversions*
 SynthV/**/project.svp
+Trek/SynthV/**/*raw
 Trek/SynthV/**/project.svp
 
 .undodir
@@ -45,3 +46,4 @@ Extensions/VSTPlugin/README.md
 Extensions/VSTPlugin
 Extensions/VSTPlugin
 Extensions/VSTPlugin/README.md
+Alik_Tutorials

@@ -1,0 +1,16 @@
+var o, p;
+o = [
+	RecOnsets.prNew,  "/Users/michael/tank/super/Onsets/chamber1/oxygen-test",  "oxygen-test",  s,  
+	Array.prNew(7)
+];
+p = [
+	// RecOnsets
+	0, [ armed: true,  path: o[1],  
+		name: o[2],  section: 'oxygen',  
+		tail: 0,  saved: nil,  
+		s: o[3],  list: o[4] ],  
+	// Array
+	4, [ 6.228,  0.001,  4.131,  0.001,  
+		8.777,  0.001,  1.863 ]
+];
+prUnarchive(o,p);

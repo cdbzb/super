@@ -1,0 +1,14 @@
+var o, p;
+o = [
+	RecOnsets.prNew,  "/Users/michael/tank/super/Onsets/panel1/test3_-1515870811",  s,  Array.prNew(1)
+];
+p = [
+	// RecOnsets
+	0, [ armed: true,  path: o[1],  
+		name: nil,  section: -1,  
+		tail: 0,  saved: nil,  
+		s: o[2],  list: o[3] ],  
+	// Array
+	3, [ 1.0 ]
+];
+prUnarchive(o,p);

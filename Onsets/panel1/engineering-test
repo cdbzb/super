@@ -1,0 +1,13 @@
+var o, p;
+o = [
+	RecOnsets.prNew,  "/Users/michael/tank/super/Onsets/panel1/engineering-test",  "engineering-test",  s,  
+	Array.prNew
+];
+p = [
+	// RecOnsets
+	0, [ armed: true,  path: o[1],  
+		name: o[2],  section: 'engineering',  
+		tail: 0,  saved: nil,  
+		s: o[3],  list: o[4] ]
+];
+prUnarchive(o,p);

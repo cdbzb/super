@@ -1,0 +1,15 @@
+var o, p;
+o = [
+	RecOnsets.prNew,  "/Users/michael/tank/super/Onsets/ending/injection-test",  "injection-test",  s,  
+	Array.prNew(3)
+];
+p = [
+	// RecOnsets
+	0, [ armed: false,  path: o[1],  
+		name: o[2],  section: 'injection',  
+		tail: 1,  saved: nil,  
+		s: o[3],  list: o[4] ],  
+	// Array
+	4, [ 1.275,  4.978,  6.957 ]
+];
+prUnarchive(o,p);

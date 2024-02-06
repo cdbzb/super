@@ -1,0 +1,22 @@
+var o, p;
+o = [
+	Item2.prNew,  "/Users/michael/tank/super/samples2/briefing/-nil",  Buffer.prNew,  s,  
+	Array.prNew(4)
+];
+p = [
+	// Item2
+	0, [ length: 4,  armed: false,  
+		section: 'engineering',  size: 192000.0,  
+		path: o[1],  buffer: o[2],  
+		durs: o[4],  newDurs: nil,  
+		array: nil,  s: o[3],  
+		tail: 0,  ratios: nil ],  
+	// Buffer
+	2, [ server: o[3],  bufnum: 101,  
+		numFrames: 192000.0,  numChannels: 1,  
+		sampleRate: 48000.0,  path: nil,  
+		startFrame: nil,  doOnInfo: nil ],  
+	// Array
+	4, [ 1,  1,  1,  1 ]
+];
+prUnarchive(o,p);

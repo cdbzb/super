@@ -1,0 +1,175 @@
+var o, p;
+o = [
+	RecIn.prNew,  "/Users/michael/tank/super/samples2/briefing/engineering-test670",  Buffer.prNew,  s,  
+	RecIn.prNew,  "/Users/michael/tank/super/samples2/briefing/engineering-test670",  Buffer.prNew,  RecIn.prNew,  
+	"/Users/michael/tank/super/samples2/briefing/engineering-test670",  Buffer.prNew,  RecIn.prNew,  "/Users/michael/tank/super/samples2/briefing/engineering-test670",  
+	Buffer.prNew,  RecIn.prNew,  "/Users/michael/tank/super/samples2/briefing/engineering-test670",  Buffer.prNew,  
+	RecIn.prNew,  "/Users/michael/tank/super/samples2/briefing/engineering-test670",  Buffer.prNew,  RecIn.prNew,  
+	"/Users/michael/tank/super/samples2/briefing/engineering-test670",  Buffer.prNew,  Array.prNew(4),  Buffer.prNew,  
+	Array.prNew(4),  Array.prNew(4),  Buffer.prNew,  Array.prNew(4),  
+	Array.prNew(4),  Array.prNew(4),  Buffer.prNew,  Array.prNew(4),  
+	Array.prNew(4),  Array.prNew(4),  Buffer.prNew,  Array.prNew(4),  
+	Array.prNew(4),  Buffer.prNew,  Array.prNew(4),  Buffer.prNew
+];
+p = [
+	// RecIn
+	0, [ length: 4,  armed: false,  
+		section: 'engineering',  size: 192000,  
+		path: o[1],  buffer: o[2],  
+		saved: o[4],  durs: o[38],  
+		newDurs: o[38],  array: nil,  
+		s: o[3],  tail: 0,  
+		ratios: nil,  directory: nil,  
+		sampleRate: 48000,  fftBuffer: o[39],  
+		test: nil ],  
+	// Buffer
+	2, [ server: o[3],  bufnum: 103,  
+		numFrames: 192000,  numChannels: 1,  
+		sampleRate: 48000.0,  path: nil,  
+		startFrame: nil,  doOnInfo: nil ],  
+	// RecIn
+	4, [ length: 4,  armed: false,  
+		section: 'engineering',  size: 192000,  
+		path: o[5],  buffer: o[6],  
+		saved: o[7],  durs: o[35],  
+		newDurs: o[35],  array: nil,  
+		s: o[3],  tail: 0,  
+		ratios: o[36],  directory: nil,  
+		sampleRate: 48000,  fftBuffer: o[37],  
+		test: nil ],  
+	// Buffer
+	6, [ server: o[3],  bufnum: 105,  
+		numFrames: 192000,  numChannels: 1,  
+		sampleRate: 48000.0,  path: nil,  
+		startFrame: nil,  doOnInfo: nil ],  
+	// RecIn
+	7, [ length: 4,  armed: false,  
+		section: 'engineering',  size: 192000,  
+		path: o[8],  buffer: o[9],  
+		saved: o[10],  durs: o[31],  
+		newDurs: o[32],  array: nil,  
+		s: o[3],  tail: 0,  
+		ratios: o[33],  directory: nil,  
+		sampleRate: 48000,  fftBuffer: o[34],  
+		test: nil ],  
+	// Buffer
+	9, [ server: o[3],  bufnum: 103,  
+		numFrames: 192000,  numChannels: 1,  
+		sampleRate: 48000.0,  path: nil,  
+		startFrame: nil,  doOnInfo: nil ],  
+	// RecIn
+	10, [ length: 4,  armed: false,  
+		section: 'engineering',  size: 192000,  
+		path: o[11],  buffer: o[12],  
+		saved: o[13],  durs: o[27],  
+		newDurs: o[28],  array: nil,  
+		s: o[3],  tail: 0,  
+		ratios: o[29],  directory: nil,  
+		sampleRate: 48000,  fftBuffer: o[30],  
+		test: nil ],  
+	// Buffer
+	12, [ server: o[3],  bufnum: 103,  
+		numFrames: 192000,  numChannels: 1,  
+		sampleRate: 48000.0,  path: nil,  
+		startFrame: nil,  doOnInfo: nil ],  
+	// RecIn
+	13, [ length: 4,  armed: false,  
+		section: 'engineering',  size: 192000,  
+		path: o[14],  buffer: o[15],  
+		saved: o[16],  durs: o[25],  
+		newDurs: o[25],  array: nil,  
+		s: o[3],  tail: 0,  
+		ratios: nil,  directory: nil,  
+		sampleRate: 48000,  fftBuffer: o[26],  
+		test: nil ],  
+	// Buffer
+	15, [ server: o[3],  bufnum: 103,  
+		numFrames: 192000,  numChannels: 1,  
+		sampleRate: 48000.0,  path: nil,  
+		startFrame: nil,  doOnInfo: nil ],  
+	// RecIn
+	16, [ length: 4,  armed: false,  
+		section: 'engineering',  size: 192000,  
+		path: o[17],  buffer: o[18],  
+		saved: o[19],  durs: o[24],  
+		newDurs: o[24],  array: nil,  
+		s: o[3],  tail: 0,  
+		ratios: nil,  directory: nil,  
+		sampleRate: 48000,  fftBuffer: o[23],  
+		test: nil ],  
+	// Buffer
+	18, [ server: o[3],  bufnum: 102,  
+		numFrames: 192000,  numChannels: 1,  
+		sampleRate: 48000.0,  path: nil,  
+		startFrame: nil,  doOnInfo: nil ],  
+	// RecIn
+	19, [ length: 4,  armed: false,  
+		section: 'engineering',  size: 192000,  
+		path: o[20],  buffer: o[21],  
+		saved: nil,  durs: o[22],  
+		newDurs: nil,  array: nil,  
+		s: o[3],  tail: 0,  
+		ratios: nil,  directory: nil,  
+		sampleRate: 48000,  fftBuffer: o[23],  
+		test: nil ],  
+	// Buffer
+	21, [ server: o[3],  bufnum: 105,  
+		numFrames: 192000,  numChannels: 1,  
+		sampleRate: 48000.0,  path: nil,  
+		startFrame: nil,  doOnInfo: nil ],  
+	// Array
+	22, [ 1,  1,  1,  1 ],  
+	// Buffer
+	23, [ server: o[3],  bufnum: 104,  
+		numFrames: 385027,  numChannels: 1,  
+		sampleRate: 48000.0,  path: nil,  
+		startFrame: nil,  doOnInfo: nil ],  
+	// Array
+	24, [ 1,  1,  1,  1 ],  
+	// Array
+	25, [ 1,  1,  1,  1 ],  
+	// Buffer
+	26, [ server: o[3],  bufnum: 102,  
+		numFrames: 385027,  numChannels: 1,  
+		sampleRate: 48000.0,  path: nil,  
+		startFrame: nil,  doOnInfo: nil ],  
+	// Array
+	27, [ 1,  1,  1,  1 ],  
+	// Array
+	28, [ 1,  1,  1,  1 ],  
+	// Array
+	29, [ 1.0,  0.5,  2.0,  1.0 ],  
+	// Buffer
+	30, [ server: o[3],  bufnum: 102,  
+		numFrames: 385027,  numChannels: 1,  
+		sampleRate: 48000.0,  path: nil,  
+		startFrame: nil,  doOnInfo: nil ],  
+	// Array
+	31, [ 1,  1,  1,  1 ],  
+	// Array
+	32, [ 0.5,  0.5,  0.5,  0.5 ],  
+	// Array
+	33, [ 1.0,  1.0,  1.0,  1.0 ],  
+	// Buffer
+	34, [ server: o[3],  bufnum: 102,  
+		numFrames: 385027,  numChannels: 1,  
+		sampleRate: 48000.0,  path: nil,  
+		startFrame: nil,  doOnInfo: nil ],  
+	// Array
+	35, [ 1,  1,  1,  1 ],  
+	// Array
+	36, [ 1.0,  1.0,  1.0,  1.0 ],  
+	// Buffer
+	37, [ server: o[3],  bufnum: 104,  
+		numFrames: 385027,  numChannels: 1,  
+		sampleRate: 48000.0,  path: nil,  
+		startFrame: nil,  doOnInfo: nil ],  
+	// Array
+	38, [ 1,  1,  1,  1 ],  
+	// Buffer
+	39, [ server: o[3],  bufnum: 102,  
+		numFrames: 385027,  numChannels: 1,  
+		sampleRate: 48000.0,  path: nil,  
+		startFrame: nil,  doOnInfo: nil ]
+];
+prUnarchive(o,p);

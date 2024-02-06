@@ -1,0 +1,3 @@
+s.waitForBoot{
+	().play
+}

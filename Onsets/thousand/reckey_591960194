@@ -1,0 +1,14 @@
+var o, p;
+o = [
+	RecKey.prNew,  "/Users/michael/tank/super/Onsets/thousand/reckey_591960194",  s,  Array.prNew(1)
+];
+p = [
+	// RecKey
+	0, [ armed: false,  path: o[1],  
+		name: nil,  section: 21,  
+		tail: 0,  saved: nil,  
+		s: o[2],  list: o[3] ],  
+	// Array
+	3, [ 14.0 ]
+];
+prUnarchive(o,p);

@@ -1,0 +1,417 @@
+var o, p;
+o = [
+	Archive.prNew,  IdentityDictionary.prNew,  Array.prNew(32),  Event.prNew,  
+	Array.prNew(12),  "/Users/michael/tank/super/theExtreme3",  Array.prNew(31),  Pseq.prNew,  
+	List.prNew,  Array.prNew(7),  Pseq.prNew,  List.prNew,  
+	Array.prNew(8),  Pseq.prNew,  List.prNew,  Array.prNew(12),  
+	Pseq.prNew,  List.prNew,  Array.prNew(8),  Pseq.prNew,  
+	List.prNew,  Array.prNew(10),  Pseq.prNew,  List.prNew,  
+	Array.prNew(11),  Pseq.prNew,  List.prNew,  Array.prNew(6),  
+	Pseq.prNew,  List.prNew,  Array.prNew(3),  Pseq.prNew,  
+	List.prNew,  Array.prNew(5),  Pseq.prNew,  List.prNew,  
+	Array.prNew(9),  Pseq.prNew,  List.prNew,  Array.prNew(5),  
+	Pbinop.prNew,  Pseq.prNew,  Array.prNew(1),  Pbinop.prNew,  
+	Pseq.prNew,  Array.prNew(1),  Pbinop.prNew,  Pseq.prNew,  
+	Array.prNew(1),  Pbinop.prNew,  Pseq.prNew,  Array.prNew(1),  
+	Pbinop.prNew,  Pseq.prNew,  Array.prNew(1),  Pbinop.prNew,  
+	Pseq.prNew,  Array.prNew(1),  Pbinop.prNew,  Pseq.prNew,  
+	Array.prNew(1),  Pbinop.prNew,  Pseq.prNew,  Array.prNew(1),  
+	Pbinop.prNew,  Pseq.prNew,  Array.prNew(1),  Pbinop.prNew,  
+	Pseq.prNew,  Array.prNew(1),  Pbinop.prNew,  Pseq.prNew,  
+	Array.prNew(1),  Pbinop.prNew,  Pseq.prNew,  Array.prNew(1),  
+	Pbinop.prNew,  Pseq.prNew,  Array.prNew(1),  Pbinop.prNew,  
+	Pseq.prNew,  Array.prNew(1),  Pbinop.prNew,  Pseq.prNew,  
+	Array.prNew(1),  Pbinop.prNew,  Pseq.prNew,  Array.prNew(1),  
+	Pbinop.prNew,  Pseq.prNew,  Array.prNew(1),  Pbinop.prNew,  
+	Pseq.prNew,  Array.prNew(1),  Pbinop.prNew,  Pseq.prNew,  
+	Array.prNew(1),  Pbinop.prNew,  Pseq.prNew,  Array.prNew(1),  
+	Array.prNew(22),  "the extreme power of the",  "g a b- d5 b-4 a g",  "alien mind will make the -",  
+	"e5 d c f e f g f",  "r r r r heart action dan ger ous ly high- ",  "r r r r  c6 a5 f b- a g f g ",  " - and the body functions will",  
+	"a5 c d a g a d a ",  " race r r many times their natural me-",  "g5 r r  e5 g5 a4 g5 f e g ",  "tabolism so we're going to have to",  
+	" f5 e d c r g#4 a b c5 d e ",  " mo- ni- tor this very",  "d5 c4 a4 f f5 e ",  "carefully",  
+	"e5 d b4 r r r",  "r r r well... I ",  "r r r a g#",  "guess that's as read- y as I'm gon- na ",  
+	"g e- f g e- d- e- f g ",  "be. Rea- dy Sar- gon",  "g d5 c a4 f#",  Event.prNew,  
+	Array.prNew(48),  {|self| self.secDur[self.start]},  {|self|(self.start<self.cursor).not.if{ var offset;
+			self.syl.isNil.if({offset=0;"offset 0".postln},{offset=self.durTill(self.start,self.syl)});
+			TempoClock.sched(
+				(self.secLoc[self.start]-self.secLoc[self.cursor])+offset,
+				{self.music.play})};self},  {|self|self.song.size/2},  
+	{|self| var array = self.song.copySeries(1,3,self.song.size);
+				array.collect({|string| Panola.new(string).midinotePattern})},  {|self|self.dursFile.isNil.if(
+				{Pseq([1])!self.sections},
+				{var a; Archive.read(self.dursFile);a=Archive.at(\song);
+					self.durs=a.durs++(Pseq([1])!(self.sections-a.durs.size)); //copy and pad
+			})},  {|self | (0..self.sections-1).collect{|i| Pbind(\dur,self.durs[i],\midinote,self.tune[i])}},  {|self| self.song.copySeries(0,2,self.song.size)},  
+	{|self from=3| var list=self.pbind[from.asInt..(self.sections-1).asInt].postln;Pseq(list).postln},  {|self| [0]++self.sections.asInt.collect({|i| self.secDur[0..i].sum}) },  {|self | (0..self.sections-1).collect{|i| self.durs[i].list.sum} },  {|self sec till | self.durs[sec].list[0..till].sum},  
+	Event.prNew,  Array.prNew(12),  "/Users/michael/tank/super/complete",  Array.prNew(31),  
+	Pseq.prNew,  List.prNew,  Array.prNew(7),  Array.prNew(4),  
+	"the transformation is com-",  "f#5 d b4 a# a# g a-",  "plete. tep- per- a ture is high and rising",  "a",  
+	Event.prNew,  Array.prNew(52),  {|self|self.dursFile.isNil.if(
+				{Pseq([1])!self.sections},
+				{var a; Archive.read(self.dursFile);a=Archive.at(\song);
+					self.durs=a.durs++(Pseq([1])!(self.sections-a.durs.size)); //copy and pad
+			})},  {|self sec till | self.durs[sec].list[0..till].sum},  
+	{|self| self.secDur[self.start]},  {|self from=3| var list=self.pbind[from.asInt..(self.sections-1).asInt].postln;Pseq(list).postln},  {|self | (0..self.sections-1).collect{|i| Pbind(\dur,self.durs[i],\midinote,self.tune[i])}},  {|self | (0..self.sections-1).collect{|i| self.durs[i].list.sum} },  
+	{|self|(self.start<self.cursor).not.if{ var offset;
+			self.syl.isNil.if({offset=0;"offset 0".postln},{offset=self.durTill(self.start,self.syl)});
+			TempoClock.sched(
+				(self.secLoc[self.start]-self.secLoc[self.cursor])+offset,
+				{self.music.play})};self},  {|self| var x=0; (self.cursor..(self.sections-1)).do{|i| x=x+self.secDur[i] };x},  {|self| [0]++self.sections.asInt.collect({|i| self.secDur[0..i].sum}) },  {|self|self.song.size/2},  
+	{|self| self.song.copySeries(0,2,self.song.size)},  {|self| var array = self.song.copySeries(1,3,self.song.size);
+				array.collect({|string| Panola.new(string).midinotePattern})}
+];
+p = [
+	// Archive
+	0, [ dictionary: o[1] ],  
+	// IdentityDictionary
+	1, [ array: o[2],  size: 2,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	2, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  'song',  o[3],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'song2',  o[136],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil ],  
+	// Event
+	3, [ array: o[4],  size: 3,  
+		proto: o[123],  parent: nil,  
+		know: true ],  
+	// Array
+	4, [ 'dursFile',  o[5],  nil,  nil,  
+		'durs',  o[6],  'song',  o[100],  
+		nil,  nil,  nil,  nil ],  
+	// Array
+	6, [ o[7],  o[10],  o[13],  o[16],  
+		o[19],  o[22],  o[25],  o[28],  
+		o[31],  o[34],  o[37],  o[40],  
+		o[43],  o[46],  o[49],  o[52],  
+		o[55],  o[58],  o[61],  o[64],  
+		o[67],  o[70],  o[73],  o[76],  
+		o[79],  o[82],  o[85],  o[88],  
+		o[91],  o[94],  o[97] ],  
+	// Pseq
+	7, [ list: o[8],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	8, [ array: o[9] ],  
+	// Array
+	9, [ 0.388,  0.407,  0.401,  0.428,  
+		0.401,  0.415,  0.459 ],  
+	// Pseq
+	10, [ list: o[11],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	11, [ array: o[12] ],  
+	// Array
+	12, [ 0.612,  0.223,  0.403,  0.846,  
+		0.477,  0.452,  0.226,  0.269 ],  
+	// Pseq
+	13, [ list: o[14],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	14, [ array: o[15] ],  
+	// Array
+	15, [ 0.431,  0.453,  0.431,  0.467,  
+		0.863,  0.419,  0.408,  0.439,  
+		0.433,  0.407,  0.236,  0.241 ],  
+	// Pseq
+	16, [ list: o[17],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	17, [ array: o[18] ],  
+	// Array
+	18, [ 0.91,  0.428,  0.471,  0.275,  
+		0.337,  0.324,  0.296,  0.35 ],  
+	// Pseq
+	19, [ list: o[20],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	20, [ array: o[21] ],  
+	// Array
+	21, [ 0.846,  0.47,  0.472,  0.448,  
+		0.48,  0.639,  0.271,  0.325,  
+		0.281,  0.312 ],  
+	// Pseq
+	22, [ list: o[23],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	23, [ array: o[24] ],  
+	// Array
+	24, [ 0.5,  0.499,  0.538,  0.519,  
+		0.577,  0.26,  0.229,  0.261,  
+		0.258,  0.261,  0.304 ],  
+	// Pseq
+	25, [ list: o[26],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	26, [ array: o[27] ],  
+	// Array
+	27, [ 0.39,  0.37,  0.366,  0.385,  
+		0.355,  0.371 ],  
+	// Pseq
+	28, [ list: o[29],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	29, [ array: o[30] ],  
+	// Array
+	30, [ 0.56,  0.241,  0.368 ],  
+	// Pseq
+	31, [ list: o[32],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	32, [ array: o[33] ],  
+	// Array
+	33, [ 0.681,  0.841,  0.715,  1.742,  
+		0.603 ],  
+	// Pseq
+	34, [ list: o[35],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	35, [ array: o[36] ],  
+	// Array
+	36, [ 0.596,  0.288,  0.336,  0.265,  
+		0.27,  0.251,  0.265,  0.273,  
+		0.354 ],  
+	// Pseq
+	37, [ list: o[38],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	38, [ array: o[39] ],  
+	// Array
+	39, [ 1.094,  0.479,  0.48,  0.502,  
+		0.541 ],  
+	// Pbinop
+	40, [ operator: '-',  a: o[41],  
+		b: 5,  adverb: nil ],  
+	// Pseq
+	41, [ list: o[42],  repeats: 1,  
+		offset: 0 ],  
+	// Array
+	42, [ 1 ],  
+	// Pbinop
+	43, [ operator: '-',  a: o[44],  
+		b: 5,  adverb: nil ],  
+	// Pseq
+	44, [ list: o[45],  repeats: 1,  
+		offset: 0 ],  
+	// Array
+	45, [ 1 ],  
+	// Pbinop
+	46, [ operator: '-',  a: o[47],  
+		b: 13,  adverb: nil ],  
+	// Pseq
+	47, [ list: o[48],  repeats: 1,  
+		offset: 0 ],  
+	// Array
+	48, [ 1 ],  
+	// Pbinop
+	49, [ operator: '-',  a: o[50],  
+		b: 13,  adverb: nil ],  
+	// Pseq
+	50, [ list: o[51],  repeats: 1,  
+		offset: 0 ],  
+	// Array
+	51, [ 1 ],  
+	// Pbinop
+	52, [ operator: '-',  a: o[53],  
+		b: 13,  adverb: nil ],  
+	// Pseq
+	53, [ list: o[54],  repeats: 1,  
+		offset: 0 ],  
+	// Array
+	54, [ 1 ],  
+	// Pbinop
+	55, [ operator: '-',  a: o[56],  
+		b: 13,  adverb: nil ],  
+	// Pseq
+	56, [ list: o[57],  repeats: 1,  
+		offset: 0 ],  
+	// Array
+	57, [ 1 ],  
+	// Pbinop
+	58, [ operator: '-',  a: o[59],  
+		b: 13,  adverb: nil ],  
+	// Pseq
+	59, [ list: o[60],  repeats: 1,  
+		offset: 0 ],  
+	// Array
+	60, [ 1 ],  
+	// Pbinop
+	61, [ operator: '-',  a: o[62],  
+		b: 13,  adverb: nil ],  
+	// Pseq
+	62, [ list: o[63],  repeats: 1,  
+		offset: 0 ],  
+	// Array
+	63, [ 1 ],  
+	// Pbinop
+	64, [ operator: '-',  a: o[65],  
+		b: 13,  adverb: nil ],  
+	// Pseq
+	65, [ list: o[66],  repeats: 1,  
+		offset: 0 ],  
+	// Array
+	66, [ 1 ],  
+	// Pbinop
+	67, [ operator: '-',  a: o[68],  
+		b: 13,  adverb: nil ],  
+	// Pseq
+	68, [ list: o[69],  repeats: 1,  
+		offset: 0 ],  
+	// Array
+	69, [ 1 ],  
+	// Pbinop
+	70, [ operator: '-',  a: o[71],  
+		b: 13,  adverb: nil ],  
+	// Pseq
+	71, [ list: o[72],  repeats: 1,  
+		offset: 0 ],  
+	// Array
+	72, [ 1 ],  
+	// Pbinop
+	73, [ operator: '-',  a: o[74],  
+		b: 22,  adverb: nil ],  
+	// Pseq
+	74, [ list: o[75],  repeats: 1,  
+		offset: 0 ],  
+	// Array
+	75, [ 1 ],  
+	// Pbinop
+	76, [ operator: '-',  a: o[77],  
+		b: 22,  adverb: nil ],  
+	// Pseq
+	77, [ list: o[78],  repeats: 1,  
+		offset: 0 ],  
+	// Array
+	78, [ 1 ],  
+	// Pbinop
+	79, [ operator: '-',  a: o[80],  
+		b: 22,  adverb: nil ],  
+	// Pseq
+	80, [ list: o[81],  repeats: 1,  
+		offset: 0 ],  
+	// Array
+	81, [ 1 ],  
+	// Pbinop
+	82, [ operator: '-',  a: o[83],  
+		b: 22,  adverb: nil ],  
+	// Pseq
+	83, [ list: o[84],  repeats: 1,  
+		offset: 0 ],  
+	// Array
+	84, [ 1 ],  
+	// Pbinop
+	85, [ operator: '-',  a: o[86],  
+		b: 22,  adverb: nil ],  
+	// Pseq
+	86, [ list: o[87],  repeats: 1,  
+		offset: 0 ],  
+	// Array
+	87, [ 1 ],  
+	// Pbinop
+	88, [ operator: '-',  a: o[89],  
+		b: 22,  adverb: nil ],  
+	// Pseq
+	89, [ list: o[90],  repeats: 1,  
+		offset: 0 ],  
+	// Array
+	90, [ 1 ],  
+	// Pbinop
+	91, [ operator: '-',  a: o[92],  
+		b: 22,  adverb: nil ],  
+	// Pseq
+	92, [ list: o[93],  repeats: 1,  
+		offset: 0 ],  
+	// Array
+	93, [ 1 ],  
+	// Pbinop
+	94, [ operator: '-',  a: o[95],  
+		b: 22,  adverb: nil ],  
+	// Pseq
+	95, [ list: o[96],  repeats: 1,  
+		offset: 0 ],  
+	// Array
+	96, [ 1 ],  
+	// Pbinop
+	97, [ operator: '-',  a: o[98],  
+		b: 22,  adverb: nil ],  
+	// Pseq
+	98, [ list: o[99],  repeats: 1,  
+		offset: 0 ],  
+	// Array
+	99, [ 1 ],  
+	// Array
+	100, [ o[101],  o[102],  o[103],  o[104],  
+		o[105],  o[106],  o[107],  o[108],  
+		o[109],  o[110],  o[111],  o[112],  
+		o[113],  o[114],  o[115],  o[116],  
+		o[117],  o[118],  o[119],  o[120],  
+		o[121],  o[122] ],  
+	// Event
+	123, [ array: o[124],  size: 12,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	124, [ 'when',  o[125],  'p',  o[126],  
+		nil,  nil,  'sections',  o[127],  
+		nil,  nil,  'tune',  o[128],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'setupDurs',  o[129],  'pbind',  o[130],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  'lyrics',  o[131],  
+		'cursor',  0,  'pbindFrom',  o[132],  
+		nil,  nil,  nil,  nil,  
+		'secLoc',  o[133],  'secDur',  o[134],  
+		'durTill',  o[135],  nil,  nil ],  
+	// Event
+	136, [ array: o[137],  size: 3,  
+		proto: nil,  parent: o[148],  
+		know: true ],  
+	// Array
+	137, [ 'dursFile',  o[138],  nil,  nil,  
+		'durs',  o[139],  'song',  o[143],  
+		nil,  nil,  nil,  nil ],  
+	// Array
+	139, [ o[140],  o[10],  o[13],  o[16],  
+		o[19],  o[22],  o[25],  o[28],  
+		o[31],  o[34],  o[37],  o[40],  
+		o[43],  o[46],  o[49],  o[52],  
+		o[55],  o[58],  o[61],  o[64],  
+		o[67],  o[70],  o[73],  o[76],  
+		o[79],  o[82],  o[85],  o[88],  
+		o[91],  o[94],  o[97] ],  
+	// Pseq
+	140, [ list: o[141],  repeats: 1,  
+		offset: 0 ],  
+	// List
+	141, [ array: o[142] ],  
+	// Array
+	142, [ 0.458,  0.489,  0.534,  0.586,  
+		0.778,  1.34,  0.423 ],  
+	// Array
+	143, [ o[144],  o[145],  o[146],  o[147] ],  
+	// Event
+	148, [ array: o[149],  size: 13,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	149, [ 'setupDurs',  o[150],  'durTill',  o[151],  
+		'when',  o[152],  'pbindFrom',  o[153],  
+		'pbind',  o[154],  'secDur',  o[155],  
+		'p',  o[156],  'durTillEnd',  o[157],  
+		'secLoc',  o[158],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  'sections',  o[159],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  'lyrics',  o[160],  
+		'cursor',  0,  'tune',  o[161],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil ]
+];
+prUnarchive(o,p);

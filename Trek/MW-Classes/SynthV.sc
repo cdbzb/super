@@ -215,7 +215,7 @@ SynthV {
 		section = key;
 		directory = directory.standardizePath;
 
-		location= directory +/+ ( song.key.asString.replace(Char.space,$-) ) +/+ Song.lyrics[Song.section(key)].hash.abs +/+ name; //change storage scheme here
+		location = directory +/+ ( song.key.asString.replace(Char.space,$-) ) +/+ Song.lyrics[Song.section(key)].hash.abs +/+ name; //change storage scheme here
 		take.notNil.if{ location = location ++ "-" ++ take };
 
 		file = location +/+ "project.svp";
@@ -366,12 +366,14 @@ SynthV {
 		// project.tracks[track].mainGroup.put(\notes, this.findPartBefore.synthV.notes ++ this.notes )
 		project.tracks[track].mainGroup.put(\notes, last.bubble ++ this.notes )
 	}
+
 	filterRests { |track=0|
 		project.tracks[track].mainGroup.notes =
 			this.notes.reject({|i| i.at(\lyrics)=="r"})
 	}
+
 	refreshBuffer{ |n k t|
-		var old = buffers.at(n,k,t).();
+		var old = try{buffers.at(n,k,t).()};
 		File.exists(location+/+"synthV_MixDown.wav").if{
 			try{old.().free};
 			buffer = Buffer.doRead(Server.default,location+/+"synthV_MixDown.wav");

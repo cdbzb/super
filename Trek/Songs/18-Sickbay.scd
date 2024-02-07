@@ -1205,11 +1205,11 @@ P(\chord,start:\machine,syl:10,lag:-0.05,music:{|p b e|
 	).play
 });
 ["/*KIRK:*/ Our thoughts boom boom boom boom will intertwine. (boom boom boom boom) ",[1,7,-1,-2,-3,-4,6,7,11,3, 1,2,3,4].dm(\d,4,scale:\dorian)].addLine;
-P.synthV(\genbu, params: 
+P.synthV(\genbu, params: {|p b| [
 	lyrics:" ar tats r r r r wil in ter twan r r r r",
 	phonemes:["","s o ts","","","","","","","","t w a e i n"],
 	legato:[ 1,3, 1,1,1,1,1,  1,1,3 ]
-],music:{|p b e|
+]},music:{|p b e|
 
 	{
 		e.playbuf =>
@@ -1235,7 +1235,7 @@ P(\chord,syl:0,start:\thoughts,music:{|p b e|
 		amp:0.05
 	].pp;
 });
-.tune(\thoughts, _ <>
+P.tune(\thoughts, _ <>
 	[
 		// \amp, [1,1,0,0,0,0,1,1,1,1,0,0,0,0].q/10,
 		rest: [1, 1, \r, \r, \r, \r, 1, 1, 1, 1, \r, \r, \r, \r].q,

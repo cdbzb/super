@@ -1445,9 +1445,6 @@ P(\chord,syl:0, music: { |p b e|
 		freq: [3, 5]  df: 'e-',
 		dur: b.drop(1).parse([1, 1, 1, 1]).q,
 		instrument: \defaultPiano,
-		legato
-
-		<)
 	].pp
 });
 P.synthVs(role: \henoch, take: [ \lead, \double ],

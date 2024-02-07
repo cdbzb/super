@@ -1655,37 +1655,22 @@ P(\necessaryBaseNote,start:'necessary',music:{|p b e|
 );
 ["you to kill your captain ", [4,3,5,4,3,2].dm('b-',octave:5)].addLine;
 P.tune('kill', _ <> [instrument: \stringyy].pm);
-P(\vocoder,start:'kill',music:{|p b e|
-Song.pbind['kill']
-=>Pbindf(_,\legato,1,
-	//		\instrument,\sawSynth,
-)
-=>Pmul(\freq,[0.25, 0.5 ],_)
-+= [amp:0.0002, instrument: \whiteNoise, dur:[ 2 ].q(inf) ].p
-=>VocoderPattern(_, 'kill',
-	out:1,
-	warp:0,
-	dry:0.0,
-	//		inputEffect:(EchoNone.ar(_,0.4,0.3,1.5))
-)
-}.value
-);
 P(\killBaseNote,start:'kill',music:{|p b e|
-[out:[ 0 ]++Effect(
-	{|i|
+	[out:[ 0 ]++Effect(
+		{|i|
 
-		var chain = FFT({ LocalBuf(2048) }!2,i);
-		chain = PV_MagSmear.new(chain,  bins: 10.0);
-		chain = PV_MagSmooth.new(chain,  factor: 0.9);
-		IFFT(chain)
-	},
-	out:0,inputChannels:2
-).bus.index,
-freq:[5.5,5].df('b-',octave:[2,3] ).q,
-amp:0.25,
-legato:1,
-[ \instrument,\amp,\mix,\release ]:[ \stringyy,0.15 ,0,4 ],
-dur:b.parse([4,2]).q,
+			var chain = FFT({ LocalBuf(2048) }!2,i);
+			chain = PV_MagSmear.new(chain,  bins: 10.0);
+			chain = PV_MagSmooth.new(chain,  factor: 0.9);
+			IFFT(chain)
+		},
+		out:0,inputChannels:2
+	).bus.index,
+	freq:[5.5,5].df('b-',octave:[2,3] ).q,
+	amp:0.25,
+	legato:1,
+	[ \instrument,\amp,\mix,\release ]:[ \stringyy,0.15 ,0,4 ],
+	dur:b.parse([4,2]).q,
 ].pp
 }
 );

@@ -2296,35 +2296,35 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	}.play
 });
 P(\bass,start:\depart,music:{|p b e| 
-				MegaBind(
-					[
-						[1,2,\r],
-						[\r,12,11.5]
-					].df(\d),
-					b.parse([8,4])++1,
-					[
-						amp:[0.5,0.3],
-						attack:[1,2.5]
-					],
-					{|i|
-						var freq=i.freqSeq/[2,4];	
-						var width=6;
-						//var gate=\gate.kr(0);
-						Gendy2.ar(minfreq:freq-width,maxfreq:freq+width)
-						=>Mix.ar(_) *0.5
-						+Gendy1.ar(minfreq:freq-width,maxfreq:freq+width)
-						* 0.1 * i.amp
-						=> PlateReverb.ar(_,10,mix:0.5) 
-						* Env.asr(i.attack,1,8).kr(0,gate:i.gateSeq)
-						//=>Out.ar(\out.kr(0),_)
-				},
-				{|i| 
-					Mix.ar(i)
-					 /
-					 2
-					},
-					release:b.sum+3
-				).play
+	MegaBind(
+		[
+			[1,2,\r],
+			[\r,12,11.5]
+		].df(\d),
+		b.parse([8,4])++1,
+		[
+			amp:[0.5,0.3],
+			attack:[1,2.5]
+		],
+		{|i|
+			var freq=i.freqSeq/[2,4];	
+			var width=6;
+			//var gate=\gate.kr(0);
+			Gendy2.ar(minfreq:freq-width,maxfreq:freq+width)
+			=>Mix.ar(_) *0.5
+			+Gendy1.ar(minfreq:freq-width,maxfreq:freq+width)
+			* 0.1 * i.amp
+			=> PlateReverb.ar(_,10,mix:0.5) 
+			* Env.asr(i.attack,1,8).kr(0,gate:i.gateSeq)
+			//=>Out.ar(\out.kr(0),_)
+		},
+		{|i| 
+			Mix.ar(i)
+			/
+			2
+		},
+		release:b.sum+3
+	).play
 	});
 // P.tune(\depart,Pset(\out,Song.carrierBus.index,_));
 ["(boom) into oblivion. ",[-2,-7,1,2,1,-5,-4].dm('c#',octave:6)].addLine;

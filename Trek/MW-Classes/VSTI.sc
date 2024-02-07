@@ -4,12 +4,11 @@ VSTI {
 	init { | plugin action | 
 		\SuperInit.postln;
 		condition = CondVar.new();
-		syn = Synth(\vsti2,target:RootNode(Server.default));
-		controller = VSTPluginController(syn);
-
-				~vstRegistry = ~vstRegistry ? List.new();
-				~vstRegistry.add(controller);
 		{
+			syn = Synth(\vsti2,target:RootNode(Server.default));
+			controller = VSTPluginController(syn);
+			~vstRegistry = ~vstRegistry ? List.new();
+			~vstRegistry.add(controller);
 			Server.default.sync;
 			controller.open("/Library/Audio/Plug-Ins/VST/" ++ plugin,
 				action:{
@@ -44,7 +43,6 @@ AAS_Strum : VSTI  {
 	classvar strums,stru,struShort;
 	classvar <plugin = 'Strum GS-2.vst';
 
-
 	*initClass{
 		stru= [ 'down', 'muted', 'up', 'alt', 'one', 'two', 'muffleD', 'three', 'muffleU', 'four', 'mute', 'five', 'six' ];
 		struShort=['d','m','u','a','1','2','f','3','fu','4','x','5','6'];
@@ -61,9 +59,10 @@ AAS_Strum : VSTI  {
 			~chan=~channel;
 			currentEnvironment.play
 		})
-			}
+	}
 
 	*new { ^super.new(plugin) }
+
 	*dump { stru.cs.postln;struShort.cs.postln }
 	
 	setPlayMode { | mode |
@@ -85,6 +84,7 @@ AAS_Strum : VSTI  {
 		}
 
 	}
+
 	setVoicingMode { |mode|
 		case
 		{ mode == \MovableLow} {
@@ -103,6 +103,7 @@ AAS_Strum : VSTI  {
 			).play
 		}
 	}
+
 	setOut{|out|
 		controller.synth.set(\out,out)
 	}
@@ -149,6 +150,7 @@ Synful : VSTI {
 	*new {^super.new('SynfulOrchestra.vst', 
 		{|syn controller| controller.readProgram(defaultProgram)}
 	)}
+
 	patch {| patch bank=\none channel=0 |
 		this.setprog( 
 			patches.at(patch),
@@ -162,20 +164,18 @@ Synful : VSTI {
 		controller.sendMidi("C0".asHexIfPossible+channel,program); //set program
 	}
 
-
 	expression {|expression, channel=0, lag | 
 		lag.isNil.if{
 			controller.sendMidi("B0".asHexIfPossible+channel,11,expression);
 		}{
 			this.line(expr[channel],expression,lag,channel:channel)
 		}	
-		
-		
-
 	}
+
 	setOut {|out|
 		syn.set(\out,out)
 	}
+
 	env {|envelope, interval=0.025, channel=0| 
 		var env=envelope.asStream;
 		var duration = envelope.times.sum;
@@ -186,6 +186,7 @@ Synful : VSTI {
 			}
 		}
 	}
+
 	line {| from, to, time, interval=0.025, channel=0| 
 		var env=Env([from,to],time).asStream;
 		var duration = time;
@@ -200,7 +201,7 @@ Synful : VSTI {
 
 PF : VSTI {
 	classvar plugin = 'Pianoteq 5.vst';  //++self.plugin
-	*new{ ^super.new(plugin).attachMIDI.init }
+	*new{ ^super.new(plugin).attachMIDI }
 	attachMIDI {
 		MIDIClient.init;
 		MIDIIn.connectAll;

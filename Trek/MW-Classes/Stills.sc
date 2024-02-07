@@ -7,7 +7,7 @@
 
 //)
 Stills {
-	classvar <>stillsLocation = "/tmp/";
+	classvar <>stillsLocation;
 	classvar <>current;
 	classvar <>muted=false;
 	classvar <>scale=1;
@@ -23,10 +23,22 @@ Stills {
 
 	*new {|movie| ^super.new.init(movie)}
 
+	*rootDir {
+		^this.class.filenameSymbol.asString.dirname.dirname +/+ "Stills"
+	}
+
+	*initClass {
+		stillsLocation = this.rootDir +/+ "cache/"
+	}
+
+	*emptyCache {
+		"rm" + this.rootDir +/+ "cache/*" => _.unixCmd
+	}
 
 	*reaper {
-		("open "++ this.class.filenameSymbol.asString.dirname.dirname +/+ "Stills/video for stills etc.RPP".escapeChar(Char.space)).unixCmd
+		("open" + this.rootDir +/+ "video for stills etc.RPP".escapeChar(Char.space)).unixCmd
 	}
+
 	dual {
 		monitors= [
 			Rect(left:0,top:200,width:1400,height:800),
@@ -35,10 +47,10 @@ Stills {
 	}
 
 	init {|movie| 
-		// file=movie ? ( this.class.filenameSymbol.asString.dirname.dirname +/+ "Stills/return-to-tomorrow.cropped.mov" ); 
-		// file=movie ? ( this.class.filenameSymbol.asString.dirname.dirname +/+ "Stills/return-to-tomorrow.mov" ); 
-		// file=movie ? ( this.class.filenameSymbol.asString.dirname.dirname +/+ "Stills/new.mp4" ); 
-		file=movie ? ( this.class.filenameSymbol.asString.dirname.dirname +/+ "Stills/trimmed433.mov" ); 
+		// file=movie ? ( this.class.filenameSymbol.asString.dirname.dirname +/+ "return-to-tomorrow.cropped.mov" ); 
+		// file=movie ? ( this.class.filenameSymbol.asString.dirname.dirname +/+ "return-to-tomorrow.mov" ); 
+		// file=movie ? ( this.class.filenameSymbol.asString.dirname.dirname +/+ "new.mp4" ); 
+		file=movie ? ( this.class.rootDir +/+ "trimmed433.mov" ); 
 		markers=();
 		monitors = switch( Platform.machine,
 			// monitor size = 1440 x 900

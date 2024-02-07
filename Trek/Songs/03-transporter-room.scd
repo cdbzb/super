@@ -1,6 +1,4 @@
 (
-s.waitForBoot{
-
 Song(\transporter,[]).current;
 /* 	
 Song.renderDirty; 
@@ -1902,7 +1900,6 @@ P('transporter',start:'transporter!',music: {|p b e|
 
 }.play
 });
-}
 )
 /* [ "KIRK: Doctor, if you prefer to stay behind? ","r" ].addLine;
 [ "MCCOY: No. No, if I'd be useful, as long as you're going down, I might as well take a medical look at whatever this is. ","r" ].addLine;

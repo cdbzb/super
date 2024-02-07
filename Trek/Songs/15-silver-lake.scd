@@ -5,7 +5,6 @@
 // [Laboratory]
 
 (
-s.waitForBoot{
 	Song(\silverLake,[]).current;
 //Song.currentSong.infrastructure={
 //FunctionList.new.array_([
@@ -1615,5 +1614,5 @@ P.synthV(role: \sargon, take: \lead, params: {|p b| [
 });
 
 P.tune('be concerned', { |i| i <> [instrument:\wash,amp:[ 0.02, 0.01 ],out:[0,1].q(inf)].p => Pmul(\freq,[2, 0.5 ],_)});
-}
+
 ) 

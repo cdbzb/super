@@ -1,7 +1,5 @@
 (
-s.waitForBoot{ 
-
-Song(\panel1,[]).current ;
+Song(\panel1,[]).current;
 Song.energyDur = 0.1;
 ( Song.synthVTracks=EventWithDefault(
 	\default, {|mix = 1 c1=1 c3=10|
@@ -2228,4 +2226,4 @@ P(\bassnotes, music: { |p b e|
 		amp:[0.1,0.2].q(2)
 	].pp
 });
-})
+)

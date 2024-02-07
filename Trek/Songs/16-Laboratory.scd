@@ -1,6 +1,5 @@
 // Sickbay
 (
-s.waitForBoot{
 	Song(\chapelForgets,[]).current;
 
 	//effort to "through perform"
@@ -630,6 +629,6 @@ P(\pad,syl:6, music: { |p b e|
 			fade: 3
 		)
 	});
-}
+
 )
 

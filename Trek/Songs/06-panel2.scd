@@ -1,5 +1,4 @@
 (
-s.waitForBoot{
 	{
 		Song.new(\panel2,[]).current;
 		// Stills("/Users/michael/tank/Trek/video for stills etc/media/return to tomorrow.mov").current;
@@ -2155,4 +2154,4 @@ P(\finalBassNote,start:'live again',syl:12,music:
 		(note:2,octave:[3,4,3,2],amp:0.3,attack:0,instrument:\stringyy)
 );
 
-})
+)

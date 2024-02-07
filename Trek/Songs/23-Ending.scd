@@ -1,4 +1,4 @@
-( s.waitForBoot( {
+( 
 	 //Setup Monitor for back channels
 	 Song(\ending,[]).current;
 	 "~/tank/super/Trek/Songs/boilerplate.scd".standardizePath.load;
@@ -3701,6 +3701,5 @@ P.still(\chapelEnd, timecode: 5223.9.seconds, music: { |p b e|
 	)
 });
 }.()
-	})
 )
 

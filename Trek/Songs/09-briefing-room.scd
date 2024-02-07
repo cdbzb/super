@@ -1,7 +1,5 @@
 (
-s.waitForBoot { 
 	Song(\briefing,[]).current;
-
 	Trek.cast.scott = \an;
 	Trek.cast.mccoy = \mo;
 	Trek.presets.put(\mccoy,\mo,[paramTension:0.8, paramGender:0.1]);
@@ -2817,6 +2815,4 @@ P(\bass,start:\kid,music:{|p b e|
 	].pp
 });
 P.tune(\kid,  { |i| i <> [instrument: \reedy].pm => Pmul(\freq, 1/2, _)});
-}
 )
-

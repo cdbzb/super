@@ -1,5 +1,4 @@
 (
-s.waitForBoot{
 	// Stills("/Users/michael/trek/BySection/media/return to tomorrow.mov").current;
 	Stills().current;
 
@@ -1477,7 +1476,6 @@ P(\bassKissing,start:'kissing',music:
 	).add; 
 [ " r","f#4" ].addLine; //8
 	//}.fork
-
 try{~loaded.signalOne};
- })
+)
 

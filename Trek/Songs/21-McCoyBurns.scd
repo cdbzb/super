@@ -1,5 +1,4 @@
 (
-s.waitForBoot{
 	Song('MandT',[]).current;
 	"/Users/michael/tank/super/Trek/Songs/boilerplate.scd".load;
 	Song.synthVTracks=EventWithDefault();
@@ -1813,7 +1812,6 @@ P(\endChord,syl:16,start:\work,music:{|p b e|
 	});
 
 	//[McCoy's office]
-};
 )
 
 

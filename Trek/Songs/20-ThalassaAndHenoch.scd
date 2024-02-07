@@ -1,4 +1,4 @@
-( s.waitForBoot{
+(
 Song(\laboratory,[]).current;
 Require("boilerplate.scd");
 Song.synthVTracks = EventWithDefault.new(
@@ -381,7 +381,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 				["a","woman"]
 			],
 	)
-;
+});
 P(\bassnotes, music: { |p b e|
 	[
 		freq: [\r,1, -7].df('a-',4) ++ [-7,1, 4].df(\c) ++ [3,[ 1 ]].df('a',4) ++ [1].df(\d) => _.q /[ 2,4 ],
@@ -613,5 +613,4 @@ P(\boom, music: { |p b e|
 		out: Effect.bus({|i| DWGReverbC1C3.ar(i) },)
 	).play
 });
-}
 )

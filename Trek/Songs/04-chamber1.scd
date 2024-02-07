@@ -1,5 +1,5 @@
 (
-s.waitForBoot{ Song(\chamber1,[]).current;
+Song(\chamber1,[]).current;
 "~/tank/super/Trek/Songs/boilerplate.scd".standardizePath.load;
 ( Song.synthVTracks=EventWithDefault(
 	\default, { |mix=0.1 az=0|
@@ -1394,5 +1394,4 @@ P(\chords,start:\Sargon,music: { |p b e|
 		out: Effect( TwoTube.ar(_, k:0.01, loss:0.98, d1length:666, d2length:[ 412, 513 ], mul:1.0, add:0.0), inputChannels:4, out: [0, p.carrierBus.ar ] ).bus.index
 	].pp
 });
-}
 )

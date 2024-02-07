@@ -1,5 +1,4 @@
 (
-s.waitForBoot{ 
 	Song('this formnula',[]).current;
 	// Stills("/Users/michael/trek/BySection/media/return to tomorrow.mov").current;
 	Stills().current;
@@ -1777,4 +1776,4 @@ P(\sargonStrum,start:'with him',music:{|p b e|
 ].pp;
 }
 );
- })
+)

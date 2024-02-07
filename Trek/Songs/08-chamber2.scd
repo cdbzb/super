@@ -1,5 +1,4 @@
 ( //line 178 ~/tank/Trek/return-to-tomorrow.txt
-s.waitForBoot{
 	Song.currentSong.isNil.not.if{ Song.resources.do(_.free) };	//this should be a method
 	Song(\chamber,[]).current;
 	Song.currentSong.resources.infrastructure=FunctionList([ {
@@ -1678,7 +1677,6 @@ P(\bass,music:
 //MUTED* 0.04
 //MUTED}.play(s)} }
 //MUTED);
-}
 )
 
 

@@ -272,6 +272,12 @@ SynthV {
 		var points = [env.timeLine.collect({|i| this.class.secondsToBlicks(i)}),env.levels].flop.flat;
 		project.tracks[0].mainGroup.parameters.at(param).put(\points,points)
 	}
+	setVocalModeEnv{ |vocalMode env|
+		var points = [env.timeLine.collect({|i| this.class.secondsToBlicks(i)}),env.levels].flop.flat;
+		project.tracks[0].mainGroup.put( \vocalModes, project.tracks[0].mainGroup.vocalModes ? () );
+		project.tracks[0].mainGroup.vocalModes.put(  vocalMode, () ) ;
+		project.tracks[0].mainGroup.vocalModes.at(vocalMode).put(\points,points) ;
+	}
 	set { |event|
 		(event.lyric == "\r").not.if(
 		event.dur.size.postln;
@@ -288,19 +294,27 @@ SynthV {
 		event.keys.do{|i|
 			i.postln;
 			case 
-                        { [\dur,\legato,\lag].includes(i) }{nil}
+			{ [\dur,\legato,\lag].includes(i) }{nil}
 			{ i == \vocalMode} {
-				this.voice.put(\vocalModePreset, event.vocalMode);
-				this.voice.put(\vocalModeParams, (( event.vocalMode ): 100))
+				(event.vocalMode.class == Array).not.if{
+					this.voice.put(\vocalModePreset, event.vocalMode);
+					this.voice.put(\vocalModeParams, ((event.vocalMode): 100))
+				}{
+					var modes = ();
+					event.vocalMode.do{|i| modes.put(i, 100)};
+					this.voice.put(\vocalModePreset, \Customized);
+					this.voice.put(\vocalModeParams, modes)
+				}
 			}
-                        { i.asString.contains("param") } { this.voice.put(i, event.at(i))}
-                        { i == \defaultVibratoDepth}     { this.voice.put(\dF0Vbr,event.at(i))}
-                        { envelopes.includes(i)}         { this.setEnv(i,event.at(i))}
-                        { i == \language }               { \LANGUAGE.postln; project.tracks[0].mainRef.database.put(\languageOverride,event.at(i)).postln }
-                        { i == \phoneset}                { project.tracks[0].mainRef.database.put(\phonesetOverride,event.at(i)) }
+			{ i.asString.contains("param") } { this.voice.put(i, event.at(i))}
+			{ i == \defaultVibratoDepth}     { this.voice.put(\dF0Vbr,event.at(i))}
+			{ envelopes.includes(i)}         { this.setEnv(i,event.at(i))}
+			{ i.asString.contains("vm") }    { this.setVocalModeEnv(i.asString.drop(2).asSymbol, event.at(i))}
+			{ i == \language }               { \LANGUAGE.postln; project.tracks[0].mainRef.database.put(\languageOverride,event.at(i)).postln }
+			{ i == \phoneset}                { project.tracks[0].mainRef.database.put(\phonesetOverride,event.at(i)) }
 			{ i == \pitchTake}               { this.setPitchTakeId(event.at(i)) }
 			{ i == \pitchExpression }        { this.setPitchExpression(event.at(i)) }
-                        { true }                         { this.setNotes(i,event.at(i)) }
+			{ true }                         { this.setNotes(i,event.at(i)) }
 		};
 		//this should be done with an array flop and pairsDo instad but...
 		this.filterRests 

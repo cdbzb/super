@@ -1,21 +1,6 @@
-Waiter {
-	*new {|what|
-		^Routine(
-			{
-				5.wait;
-				what.postln
-			}
-		).play
-	}
-}
 + Pbind {
 	asPpar {
 		 ^Ppar(patternpairs.flop.collect({|i| Pseed(0,Pbind(*i)) }))
-	}
-}
-+P {
-	*wait {
-		Waiter( P.tune() )
 	}
 }
 + SequenceableCollection {

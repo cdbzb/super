@@ -237,6 +237,7 @@ SynthV {
 			JSON.stringify( project ).write(
 				file, overwrite: true, ask: false
 			);
+			'synthV written!'.postln;
 			// fork{0.05.wait;this.render}
 		}
 	}
@@ -501,7 +502,7 @@ SynthV {
 		prepend.notNil.if{ 
 			synthV.prependNotes;
 		};
-		synthV.writeProject; 'synthV written!'.postln;
+		synthV.writeProject; 
 		// write project only does so if dirty !!
 
 		// synthV.checkDirty.if{synthV.refresh};

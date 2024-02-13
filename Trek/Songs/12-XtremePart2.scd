@@ -1,10 +1,5 @@
 (
-Routine { 
-	\WAIT.postln;
-	~loaded = CondVar.new();
 	"/Users/michael/tank/super/Trek/Songs/11-Xtreme1.scd".load;
-	~loaded.wait;
-	\GOING.postln;
 ["/*SPOCK*/ -boom- This is an excellent body, Doctor." ,"1 -7 1 2 6 7 6 5 5 6 4 1 -7".dm(\f,\mixolydian)].addLine;
 Song.setTempoMap(\excellent,"e e e x x | ex x e x ex | ee ee ee ee");
 P.still(\henochExcellent, timecode: 
@@ -16,6 +11,7 @@ P.still(\henochExcellent, timecode:
 		text: ["this is an excellent","body Doctor"],
 	)
 });
+Song.synthVTracks.ninezero = {|mix = 0.1| {|i| DWGReverbC1C3.ar(i, mix: mix) / 2.5}};
 P.synthV(role: \henoch, take: \lead,
 	pbind: Song.enlarge(11),
 	params: {|p b| [
@@ -30,22 +26,24 @@ P.synthV(role: \henoch, take: \lead,
 	}.play
 
 });
-P(\click, msic: { |p b e|
+P(\click, music: { |p b e|
 	[
 		dur: "q q q q q q q q".asBeats.warpTo( e.tempoMap.quantizeDft(0.2) ).q,
-		instrument: \hihat
+		instrument: \hihat, pan: 0.5
 	].pp
 });
 P(\bassNote, music: { |p b e|
 	(
 		freq: 1.df(\f,[4,3]),
-		instrument: \sawSynth
+		instrument: \sawSynth,
+		out: [0,2]
 	).play
 });
 P(\clav, music: { |p b e|
 	[
 		freq: [7, 11, 5,  4,  2].df(\f,3,\mixolydian).q,
-		dur: "e e qqq qq qq".asBeats.warpTo( e.tempoMap ).q
+		dur: "e e qqq qq qq".asBeats.warpTo( e.tempoMap ).q,
+		out: Effect.bus({|i| SineShaper.ar(i, 0.2) * 1.35 },)
 	].pp
 });
 ["I seem to have received the best of the three. ","1 -5 -7 1 2 -6 1 4 3 2 1".dm(\e)].addLine;
@@ -1508,14 +1506,15 @@ P.still(\leaving, timecode: 2949.1.seconds, music: { |p b e|
 });
 P(\door,start:'They leave',music:{|p b|
 	var line= Line.kr(0,1,b.sum);
-	var panBus=Bus.audio(s,1);
+
 	// {WhiteNoise.ar(0.03)}.play.dur(b.sum);
 	Synth(\door, [\len:2,\amp,0.03]);
-	(instrument:\stringyy,freq:[1,11].df('b-',octave:2 ),
-	out:panBus.index,
-	amp:0.4,
-	dur:b.sum).play;
-	{In.ar(panBus.index,1)=>Pan2.ar(_,Line.kr(-1,1,b.sum))}.play(addAction:\addToTail);
+	(
+		instrument:\stringyy,freq:[1,11].df('b-',octave:2 ),
+		amp:0.4,
+		dur:b.sum,
+		out: Effect.bus({|i| i => Pan2.ar(_, Line.kr(-1, 0.9, b.sum, doneAction:0)) },)
+	).play;
 	[
 		freq:[7,11,7,6,5,4,3,2].df('b-',octave:4, ).q,
 		dur:b.sum/8,
@@ -1712,5 +1711,4 @@ P(\highChords,start:'risk it',music:{|p b|
 });
 
 
- }.play
  )

@@ -1,9 +1,34 @@
 Trek {
-	classvar <>cast, <path, <>presets;
+	classvar <>cast, <path, <>presets, <keys;
 	*initClass {
 		path = this.filenameSymbol.asString.dirname.dirname +/+ "/Songs";
 		cast = try{ Object.readArchive(path +/+ "trek_cast") } ? ();
 		presets = try{ Object.readArchive(path +/+ "trek_presets") } ? MultiLevelIdentityDictionary.new();
+		keys = [
+			\visual,
+			\rescue,
+			\transporter,
+			\chamber1,
+			\panel1,
+			\panel2,
+			\smallChamber,
+			\chamber,
+			\briefing,
+			\theyUsed,
+			\song,
+			\song,
+			'this formnula',
+			\three,
+			\silverLake,
+			\chapelForgets,
+			\thousand,
+			\sickBay,
+			\medical,
+			\laboratory,
+			\MandT,
+			\MandT,
+			\ending
+		]
 	}
 	*save {
 		cast.writeArchive(path +/+ "trek_cast");
@@ -27,6 +52,13 @@ Trek {
 		^this.path +/+ "*.scd" 
 		=> _.pathMatch 
 		=>_.select{|i| "[0-9]+".matchRegexp(i) }
+	}
+	*song{|i|
+		i.isInteger.if{
+			^this.allTheSongs[i]
+		}{
+			^keys.indexOf(i) => this.allTheSongs[_]
+		}
 	}
 	*synful {
 		( currentEnvironment.at(\synful1).isNil or: try{ currentEnvironment.at(\synful1).syn.isPlaying.not } ).if

@@ -27,7 +27,7 @@
 P.still(\henoch, timecode: 3005.4.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["now...",""],
 	)
 });
 P.synthVs(role: \formulaLead, take:[\lead, \double],
@@ -403,6 +403,12 @@ P(\chank, music: { |p b e|
 	].pp
 });
 ["functions to normal. ",[7,6, 12,11,7 ].dm('d',octave:4 )].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["functions to", "normal"],
+	)
+});
 P.synthV(\mo, take: \harmony, 
 filter: (midinote: [1, 1, 1, 5, 5].dm(\d)), 
 params: {|p b| [
@@ -513,6 +519,10 @@ P.still(\withSyringe, timecode: 3013.8.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
+	).sequenceText2(
+			b.parse([1, ]), [ 
+			["while the bodies","are occupied"],
+			],
 	)
 });
 P.synthVs(role: \formulaLead, take:[\lead, \double], params: {|p b| [
@@ -548,6 +558,12 @@ P(\chordsOccupied,start:\occupied,music:{|p b e|
 );
 
 ["you will administer one injection of  ",[3,4,1,3,2,1, -7,1,2,-7,-5].dm('a',scale:\harmonicMinor)].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["you will administer","one injection of"],
+	)
+});
 P.synthVs(role: \formulaLead, take:[\lead, \double],
 filter: (midinote: _ - (12.dup(11) ++ 0.dup(5) => _.flat)), 
 pbind: Song.enlarge(5),
@@ -579,6 +595,12 @@ dur:"q q qq ".asBeats.warpTo(e.tempoMap).q
 }
 );
 ["ten cc's each hour.",[-7,1,-7,1,-6].dm('g',octave:4 )].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text:[ "10cc's each","hour" ]
+	)
+});
 P.synthVs(\kevin, take: [\lead, \double],
 filter: (midinote: _ - 12), 
 	pbind: {|p b|
@@ -694,7 +716,11 @@ P(\chordsUnderstand,start:\understand,music:{|p b e|
 P.still(\spockAndHypo, timecode: 3020.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["this hypo you will","code mark for"],
+	).sequenceText2(
+			b.parse([8]), [ 
+			["Thalassa","and"],
+			],
 	)
 });
 P.synthV(role: \formulaLead, take:\lead,
@@ -764,7 +790,6 @@ P(\drumz, music: { |p b e|
 	).play
 	
 });
-
 P(\hypoAnswer,start:'hypo you will',music:{|p b e|
 [
 	freq:\r!12 ++ [5,4,3,2,1] =>_.df('a',octave:5 ) =>_.q,
@@ -795,16 +820,14 @@ P(\drumz, music: { |p b e|
 	).play
 	
 });
-P.still(\twoShopHypos, timecode: 3024.1.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
-	)
-});
 P.still(\twoShot, timecode: 3026.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
-		text: ["this one you will codemark","for me"],
+		wait: b.sum + e.bNext[0],
+		text: ["this one you will","code mark"],
+	).sequenceText2(
+			b.drop(-1).sum, [ 
+			["for","me"],
+			],
 	)
 });
 P.tune(  { |i| i
@@ -836,7 +859,7 @@ Song.setTempoMap('me. ',"qq q q");
 P.still(\chapelAnswer,syl:0, timecode: 3029.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["yes","sir"],
 	)
 });
 P.tune('Yes, sir');
@@ -877,8 +900,14 @@ P(\chordSir,start:'Yes, sir',syl:0,music:{|p b e|
 Song.setTempoMap(\while,"q qe e e e e e e e e e e e");
 P.still(\henochReKirk, timecode: 3036.3.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
+		wait: b.sum + e.bNext.sum,
+		text: ["this","one"],
+	).sequenceText2(
+			b.parse([2, 6, 5]), [ 
+			["you will","administer"],
+			["to Captain Kirk", "while"],
+			["Sargon is","in his body"]
+			],
 	)
 });
 P(\chords, music: { |p b e|
@@ -1054,6 +1083,12 @@ P(\administerMiddleVoice,syl:9,start:'administer each',music:{|p b e|
 }
 );
 ["no one else will notice. ",[1,2,3.5,-7,-7,-6].dm('b-',scale:\minor)].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["no one else will", "notice"],
+	)
+});
 P.synthV(role: \formulaLead, take: \lead,
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
@@ -1080,7 +1115,11 @@ P.double(role: \formulaLead, take: \lead, params: {|p b| [
 P.still(\chapelConcerned, timecode: 3053.4.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["without the same","formula"],
+	).sequenceText2(
+			b.parse([7]), [ 
+			["Captain Kirk","will die"],
+			],
 	)
 });
 P(\notes, music: { |p b e|
@@ -1270,6 +1309,16 @@ P.synthV(role: \chapel, take: \lead,
 // P.tune('something');
 ["gotten what it was. ",[3,4,5,6,7].dm('b')].addLine;
 ["/*SPOCK:*/ Yes. Well, you were about to say that ",[5,12, 5,6,7,11,6, 12, 11,].dm('d',scale:\major)].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["yes,","well,"],
+	).sequenceText2(
+			b.parse([2]), [ 
+			["you were about","to say that"],
+			],
+	)
+});
 P.synthV(role: \formulaLead, take:\lead, 
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
@@ -1302,7 +1351,11 @@ P.double(role: \formulaLead,  params: {|p b| [
 P.still(\henochYouWatched, timecode: 3115.9.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["you watched me","prepare the formula"],
+	).sequenceText2(
+			b.parse([9]), [ 
+			["and fill all of","the hypos"],
+			],
 	)
 });
 P.synthV(role: \formulaLead,
@@ -1357,7 +1410,7 @@ P.still(\ChapelYes, timecode:
 .seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""]
+		text: ["yes","that was it"]
 	).sequenceText2(
 			b.parse([1]), [ 
 				["yes","that was it"],
@@ -1406,6 +1459,19 @@ P(\basedNotesYes,start:'that was it',music:{|p b e|
 }
 );
 ["I will inform Doctor McCoy that each is ",[1,-5,1,2 ,3,1,3,4, 5,4,3,].dm('f#')].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum + e.bNext.sum,
+		text: ["I will","inform"],
+		onTop: true
+	).sequenceText2(
+			e.bAll.parse([4, 5, 6,]), [ 
+			["Doctor Mccoy","that"],
+			["each is","properly filled" ],
+			["for each", "patient"]
+			],
+	)
+});
 P.still(\moreChappel, timecode: 3125.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -1473,7 +1539,7 @@ P.tune('properly');
 P.still(\henochClose, timecode: 3129.4.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["very","good"],
 	)
 });
 P.synthVs(role: \formulaLead, take:[ \lead, \double ], params: {|p b| [
@@ -1512,7 +1578,11 @@ P(\chord,start:'Very',music:{|p, b, e|
 P.still(\henochCloseAlt, timecode: 3136.95.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["you see","Sargon would not let me"],
+	).sequenceText2(
+			b.parse([8]), [ 
+			["keep this","body"],
+			],
 	)
 });
 //P.tune('keep this');
@@ -1599,6 +1669,12 @@ P(\keepThisOctaves,start:'keep this',music:{|p b e|
 );
 //["would not permit me to keep this body","r"].addLine;
 ["It is therefore necessary for", [-7,1,2,3,2,1,-7,1,-6].dm('b-',octave:5)].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["it is therefore","necessary for"],
+	)
+});
 P.synthVs(role: \formulaLead, take:[\lead, \double],
 	pbind: Song.enlarge2(8),
 	filter: (midinote: _ - 12), 
@@ -1654,6 +1730,12 @@ P(\necessaryBaseNote,start:'necessary',music:{|p b e|
 }
 );
 ["you to kill your captain ", [4,3,5,4,3,2].dm('b-',octave:5)].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["you to","kill your Captain"],
+	)
+});
 P.tune('kill', _ <> [instrument: \stringyy].pm);
 P(\killBaseNote,start:'kill',music:{|p b e|
 	[out:[ 0 ]++Effect(
@@ -1675,6 +1757,12 @@ P(\killBaseNote,start:'kill',music:{|p b e|
 }
 );
 ["so that Sargon will die with him.",[-7,1,3,2.5,-6,-7,2,1].dm('b-')].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["so that Sargon","will die with him"],
+	)
+});
 P.tune('with him');
 P(\sargonLowerBase,start:'with him',music:{|p b e|
 [

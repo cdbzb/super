@@ -1569,12 +1569,27 @@ P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
 		text: ["then you may go","as freely as you came"],
 	)
 });
-P.synthV(\xuan, filter: (midinotes: [64,64,64,64]), params: {|p b| [
-	// lyrics: "r zen yu mei",
-	lyrics: "r then you may",
-	defaultVibratoDepth:0.3
-] }, music:{|p b e|
-p.vocodeTune.(p,b,e,mix: 0.5,amp:0.20,dur:b.sum+1,chord:[2,1,0.5,0.2], modGain: 1.25)
+P.synthV(\xuan,take:\lead, 	pbind: Song.enlarge(8),
+	params: {|p b| [
+		filter: ( midinote: _ - [0, 0, 0, 0, 12, 12, 12, 12, 12, 12, 12, 12, 12] ),
+		lag: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.08],
+		// filter: (midinote: 64!12),
+		lyrics: "r then you may go as freely - + as you came",
+		legato: [1, 1, 1, 1, 1, 1, 1, 1, 0.95, 1, 0.8, 1],
+		defaultVibratoDepth:0.2
+	] }, music:{|p b e|
+	p.vocodeTune.( p, b, e,
+		mix: 0.5,
+		tune:  p.tune[e.start].list ++ p.tune[e.start+1].list ,
+		amp:0.20,
+		dur:b.sum + e.bNext.sum+1,
+		sus:b.sum + e.bNext.sum+1,
+		chord:[2,1,0.5,0.2],
+		modGain: 1.25,
+		enlarge:7,
+		durRel:3,
+
+	)
 });
 P('tune28',music:Song.currentSong.pbind[28] =>Pbindf(_,\amp,[0].q++[0.1].q(inf)));
 P('extra-note28',music: {|p b e| 
@@ -1585,44 +1600,6 @@ P('extra-note28',music: {|p b e|
 ).play 
 });
 [' go as free -- ly as you came.',[13,12,13,14,13,12,7,11].dm('c#')].addLine;
-P.synthV(\xuan,prepend:true, 
-// filter: (midinote: 64!8), 
-filter: (midinote: _ - 12), 
-params: {|p b| [
-// lyrics: "go,   az,    fri, -,  li, az,    yu, keim",
-// phonemes: ["", "a z", "",  "", "", "a z", "", "k e i m", ]
-	lyrics: " go as free - lee as you came",
-	lag: [0,0,0,0,0,0,0,0.08],
-	legato: [1,1,1,1,0.95,1,0.8,1],
-	defaultVibratoDepth:0.2
-] }, music:{|p b e|
-	p.vocodeTune.(p,b, e,att:0.1, mix:0.5,sus:b.sum+2,rel:1, amp:0.20, dur:b.sum+2, chord:[2,1, 0.5,0.2],modGain: 1.25,durRel:3);
-p.pbind[e.start].patternpairs ++[
-	 freq: Pfunc({|env| env.midinote.midicps/[1, 2 ]}),
-	 instrument:\sawSynthSustain,
-	 att:4,
-	 amp:0.1 /5,
-	 freqLag:0.05,
-	 out:p.carrierBus 
- ] =>_.pm// =>_.play
- ; 
- {PlayBuf.auto(1,p.laMer,
-		rate: midiratio( 1 +  [0, 5, 0, 7, 0].dq.demand(	b.parse([1/7,1/7,1/7,1/7,1/7,1/7,1/7,
-		1,1,1,
-		1/4,1/4,1/4,1/4,
-		1,1,
-		1
-	]).clumps([ 4 ]).collect(_.sum)) ),
-		trigger: Impulse.ar(1) - 0.1
-	) 
-	=> Out.ar(p.carrierBus,_) 
-	=> Out.ar(1,_) 
-	// * Env([1,1,0],[b.sum-3,1]).kr(2,gate:1)
-}.play
-};
-
-
-);
 // P.tune();
 ( SynthDef(\cleanPluck,{
 DWGPlucked2.ar(

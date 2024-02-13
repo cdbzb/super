@@ -19,7 +19,7 @@ P(\chordsFirstHalp, music: { |p b e|
 	[
 		freq: [
 			[1,1,1,1],-6.5, [ 1, 3,3], [-5.5, 1, 4,4], [-5, 1, 3, 6]
-		].df(\e, ).q,
+		].df(\e).q,
 		dur: b.parse([2,1, 2,3,4]).q,
 		instrument: \defaultPiano,
 		out: Effect.bus({|i| 
@@ -27,7 +27,6 @@ P(\chordsFirstHalp, music: { |p b e|
 		},inputChannels:4, out: 2)
 	].pp
 });
-
 P.still(\waliking, timecode: 1626.0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,

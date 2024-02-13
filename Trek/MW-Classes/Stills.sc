@@ -140,10 +140,22 @@ Stills {
 		var fileName = stillsLocation++seconds.asString++".png";
 		^Image.open(fileName)
 	}
-
+	*plotTitleCard{ |text monitor=0 dur=2 top=0 fade=1|
+		var w;
+		w = Window(bounds:Rect(1500*monitor,200,1400,800).scale(scale),border:false)
+		.background_( Color.rand)
+		.front;
+		{ w.fade(fade, 1) }.defer(dur);
+			 StaticText(w, Rect(1500*monitor,top, 1400, 800 ))
+			.string_(text)
+			.stringColor_(Color.rand)
+			.align_(\center)
+			.font_(Font(\helvetica,90 * Stills.scale => _.asInteger, bold:true))
+		^w
+	}
 	plotClear{
 		|markerName monitor=(-1)|
-		var image=this.mark(markerName);
+
 		var w;
 		try{
 			w = Window(bounds:Rect(1500*monitor,200,1400,800).scale(scale),border:false)
@@ -392,4 +404,36 @@ Display {
             }
           }
         }
+}
++P {
+	*still {   // renders the still when compiled
+		// and stores it in resources.still (e.still)
+		|key st syl lag=0 timecode=60 music|
+		var start = P.calcStart(st);
+		var aStill;
+		key = key ++ start;
+		aStill = timecode.isNumber.if{
+			Still(key ++ ( Song.calcStart( start ) )=> _.asSymbol, timecode:timecode);
+		}{
+			timecode.collect{|i x|
+				Still(key ++ ( Song.calcStart( start ) ) ++ x => _.asSymbol, timecode: i);
+			}
+		};
+		// nope - make a Still instead
+		// like define Still here and in the music:{
+		// e.still.wait_(4).fadeIn_(2).text_   etc etc
+		//}
+		^P(
+			key: ( key ++ start ).asSymbol, 
+			resources: (
+				still: aStill
+			),
+			start: start,
+			syl: syl,
+			lag: lag,
+			music: music
+		)
+
+
+	}
 }

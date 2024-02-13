@@ -1112,36 +1112,6 @@ P {
 	    };
 
     }
-    *still {   // renders the still when compiled
-               // and stores it in resources.still (e.still)
-        |key st syl lag=0 timecode=60 music|
-		var start = P.calcStart(st);
-		var aStill;
-		key = key ++ start;
-		aStill = timecode.isNumber.if{
-			Still(key ++ ( Song.calcStart( start ) )=> _.asSymbol, timecode:timecode);
-		}{
-			timecode.collect{|i x|
-				Still(key ++ ( Song.calcStart( start ) ) ++ x => _.asSymbol, timecode: i);
-			}
-		};
-        // nope - make a Still instead
-        // like define Still here and in the music:{
-        // e.still.wait_(4).fadeIn_(2).text_   etc etc
-        //}
-        ^P(
-            key: ( key ++ start ).asSymbol, 
-            resources: (
-				still: aStill
-            ),
-            start: start,
-            syl: syl,
-            lag: lag,
-            music: music
-        )
-
-
-    }
     *tune {
         |key function range lag=0 syl lyrics music| 
         // range is [start,end] or just [start]

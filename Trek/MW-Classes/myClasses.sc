@@ -101,10 +101,25 @@
 		});
 	}
 
+
+	pkill {
+		var res;
+		var a = Pipe("lsof -i :57120","r");
+		var n = a.getLine;
+		while { n=a.getLine; n.notNil }{ res = res.add(n) };
+		res.collect{|i| i.split(Char.space)[0]}.do{ |i|
+			"pkill" + i => _.unixCmd
+		};
+		fork{
+			0.1.wait;this.reboot
+		}
+	}
+
 }
 + File {
 	*loadCurrent {
 		thisProcess.nowExecutingPath => _.load
 	}
 }
+
 

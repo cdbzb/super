@@ -89,7 +89,6 @@ TempoMap {
 	  ^TempoMap(this.beats,this.beats.warpTo(real))
 
   }
-
   quantizeRangeInPlace { |amount start end|
 	  var quantized = this.quantizeRange(amount,[start,end]);
 	  var dursCopy = durs.copy;
@@ -129,7 +128,6 @@ TempoMap {
 	  .collect {|i|this.quantizeRange(amount,i)}
 	  .flat ++ durs[( args.last..( durs.size-1 ))]
   }
-
   ++ {|that|
 	  ^TempoMap.new(this.beats ++ that.beats, this.durs ++ that.durs)
   }

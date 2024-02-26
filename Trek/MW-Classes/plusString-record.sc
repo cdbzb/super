@@ -4,11 +4,13 @@
 		var path=this.standardizePath;
 		var backupDir = path ++ "-bak";
 		File.exists(backupDir).not.if{File.mkdir(backupDir)};
-		path ++"-bak"
-		+/+ path.basename.splitext[0]
-		++ Date.getDate.stamp ++ "." ++ path.extension 
-		=> File.copy(path,_)
-		=> _.postln
+		File.exists(path).if {
+			path ++"-bak"
+			+/+ path.basename.splitext[0]
+			++ Date.getDate.stamp ++ "." ++ path.extension 
+			=> File.copy(path,_)
+			=> _.postln
+		}{ "no file to version".warn }
 	}
 	unversion {
 		// version current file and replace with previous version

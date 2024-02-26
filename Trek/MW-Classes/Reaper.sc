@@ -27,8 +27,8 @@ Reaper {
 			lastPlayLength=stopAt-seconds
 		}
 	}
-	*action{ |actionID|
-		this.address.sendMsg('action', actionID )
+	*action{ |actionID ...args|
+		this.address.sendMsg('action', actionID, args )
 	}
 	*updateTempo {
 		this.address.sendMsg('action','_RSdbf0557c9d37b721397192124cb1b286f3c3bab4')
@@ -49,6 +49,7 @@ Reaper {
 		clock.schedAbs(time.asFloat.asSeconds,function
 		)} 
 	}
+	*now {|time, function| function.()}
 	*new	{Pipe.new(executable ++ " -new" , "w");
 }
 	*saveas	{|filename| 

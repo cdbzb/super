@@ -1,4 +1,7 @@
 +Pattern {
+	mul { | name value |
+		^Pmul(name, value, this)
+	}
 	+= { |that|
 			(that.class==Ppar).if{
 				(that.class == Array).if {

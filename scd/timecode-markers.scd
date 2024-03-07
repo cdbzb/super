@@ -1,0 +1,48 @@
+/*
+Trek.allTheSongs[1].load
+*/
+Song.lyrics.do({|i x| "//" + x + i + Song.tune[x].list.collect(_.asInteger)  => _.postln })
+/*
+Stills.reaper
+*/
+
+// 0 Captain's Log. Stardate 4768.3. [74, 73, 71, 77, 73, 68, 77, 78, 75, 80, 71, 70]
+// 1 The Enterprise is in orbit above a planet whose  [73, 71, 73, 69, 71, 73, 73, 71, 70, 71, 73, 70, 72, 74]
+// 2 surface is devoid of all life,  [75, 70, 66, 68, 65, 63, 62, 65]
+// 3 a world destroyed and dead for at least a half million years.  [67, 67, 69, 69, 71, 71, 69, 67, 66, 69, 74, 74, 73, 72, 71]
+// 4 Yet from it comes a voice,  [75, 77, 79, 75, 79, 81]
+// 5 telling us something has survived here  [79, 78, 74, 72, 71, 72, 74, 72, 71]
+// 6 (dictating log) Since exploration and contact /* with alien intelligences */ is our primary mission, [66, 78, 77, 78, 77, 75, 73, 77, 75, 71, 73, 71, 70, 71, 70, 68]
+// 7 I've decided to risk the potential dangers and  [69, 71, 73, 74, 76, 77, 76, 74, 73, 76, 73, 71, 70]
+// 8 (boom) resume contact Log entry out [54, 71, 73, 78, 66, 63, 64, 66, 71]
+// 9 /*SPOCK:*/ Captain. [74, 66]
+// 10 /*KIRK:*/ Got something? [72, 74, 69]
+// 11 (boom boom) Sensors registering some form of energy deep inside the planet. [52, 52, 68, 64, 69, 68, 64, 68, 69, 71, 74, 73, 69, 66, 64, 62, 61, 61, 59]
+// 12 /*SARGON [OC]*/(boom) Your probes have touched me, Mister Spock. [48, 65, 65, 65, 65, 63, 62, 60, 62, 63]
+// 13 /*SPOCK:*/ Reading energy only, Captain. No life forms. [66, 68, 70, 68, 66, 72, 68, 66, 63, 72, 74, 68]
+// 14  I have locked your transporter device on my co-ordinates. [64, 64, 64, 66, 64, 62, 61, 59, 62, 61, 59, 57, 61, 59, 59]
+// 15 Please come to us. Rescue us from oblivion. [69, 69, 68, 68, 71, 69, 62, 66, 70, 70, 69, 65]
+// 16 /*SPOCK:*/ Coming from deep under the planet's surface, Captain.  [72, 74, 76, 70, 74, 72, 70, 67, 70, 67, 65, 64, 62]
+// 17 Under at least one hundred miles of  [65, 67, 69, 71, 72, 71, 67, 69, 71, 73, 74, 73, 71]
+// 18 (boom boom) solid rock. [64, 65, 76, 74, 76, 77, 79, 79, 76]
+// 19 I will make it possible for your transporter to beam you [69, 69, 69, 71, 69, 67, 66, 64, 66, 67, 67, 66, 66, 62, 64, 66]
+// 20 (boom) that deep (that deep that deep) beneath the surface. Have no fear. [57, 66, 64, 64, 66, 64, 64, 66, 64, 64, 62, 64, 66, 64, 62, 61, 62]
+// 21 la la la la [55, 67, 79, 76, 78, 69, 78, 76]
+// 22 /*SPOCK:*/ Reading a chamber now. Oxygen-nitrogen atmosphere, suitable for human life support. [71, 73, 75, 78, 75, 69, 70, 72, 74, 75, 77, 74, 82, 81, 72, 75, 74, 72, 74, 77, 74, 68]
+// 23 /*KIRK:*/ Lieutenant Uhura, have Doctor McCoy report to the transporter room in ten minutes [60, 60, 55, 60, 62, 55, 62, 64, 60, 64, 65, 67, 65, 64, 65, 67, 65, 64, 62, 57, 59, 62, 60]
+// 24 /*UHURA:*/ Yes, sir. [59, 60]
+// 25 /*KIRK:*/ Spock. [61]
+// 26 /*SPOCK:*/ Captain, I do wish to inspect whatever this is that lived that long ago. [74, 69, 74, 75, 71, 73, 75, 76, 71, 67, 69, 66, 67, 71, 76, 78, 76, 75, 75]
+// 27 /*KIRK:*/ And I would like to have my-- [66, 71, 69, 71, 67, 72, 74, 72]
+// 28 (boom) science officer with me on something as unusual as this, but it i--s [60, 76, 74, 76, 74, 76, 74, 72, 71, 72, 69, 74, 76, 77, 79, 77, 76, 74, 71, 72, 74, 72]
+// 29 (boom) full of unknowns [66, 81, 80, 80, 80]
+// 30 and we can't risk both of us being off the ship. [71, 73, 71, 69, 68, 66, 64, 63, 61, 63, 59, 64]
+// 31 dark [0]
+// 32 SULU: All power gone, sir. [70, 69, 67, 65, 62]
+// 33 KIRK: On the other hand, perhaps this Sargon would like you to come with [64, 66, 68, 66, 64, 66, 68, 70, 71, 68, 70, 72, 73, 70, 72, 74]
+// 34 us -Power is restored- [68, 69, 70, 71, 72, 73, 75]
+// 35 SPOCK: Fascinating. [73, 69, 65, 61]
+// 36  Will you transport down with us, Mister Spo--ck? [66, 61, 66, 68, 70, 68, 66, 61, 59, 59, 58]
+// 37 SPOCK: Evidently, Captain. [71, 70, 68, 66, 65, 66]
+// 38 KIRK: Mister Sulu, you have the conn. [70, 68, 66, 65, 63, 61, 61, 63, 65, 67]
+// 39 final note [68]

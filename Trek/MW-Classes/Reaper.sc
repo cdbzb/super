@@ -3,6 +3,7 @@ Reaper {
 	//classvar <>ip="192.168.1.213",<>port=8000;
 	classvar <>ip="127.0.0.1",<>port=8000;
 	classvar <clock,<cursor=0,<>lastPlayLength;
+	classvar <>isPlaying=false;
 	*initClass {
 		clock=TempoClock.new().permanent_(true);
 		CmdPeriod.add({Reaper.stop})
@@ -39,9 +40,12 @@ Reaper {
 			this.go(seconds);
 		};
 		this.address.sendMsg('/play'); 
+		isPlaying = true;
 		clock.beats_(cursor);
 		stopAt.notNil.if {
-			this.sched(stopAt,{this.stop});
+			this.sched(stopAt,{
+				this.stop;
+			});
 			lastPlayLength=stopAt-seconds
 		}
 	}
@@ -55,7 +59,10 @@ Reaper {
 	*saveas	{|filename| 
 		Pipe.new(executable++ " -saveas " ++File.getcwd.asString++"/"++filename, "w")
 	}
-	*stop	{this.address.sendMsg('/stop')}
+	*stop	{
+		this.address.sendMsg('/stop');
+		isPlaying = false;
+	}
 	*save { this.address.sendMsg('action',40026) }
 	*saveAndRenderPROX { this.address.sendMsg('action',42332 ) }
 	*render{ this.address.sendMsg('action',41824) }
@@ -67,6 +74,14 @@ Reaper {
 +Float {
 	asSeconds{ |float|
 		^ this / 100 => _.floor * 60 + (this % 100)
+	}
+}
++ SimpleNumber {
+
+	secondsToMinutes{ 
+		var frac = this.frac;
+		var num = this.floor;
+		^ (num/60).floor * 100 + (num % 60) + frac
 	}
 }
 +SequenceableCollection{

@@ -426,7 +426,8 @@ Display {
 		^P(
 			key: ( key ++ start ).asSymbol, 
 			resources: (
-				still: aStill
+				still: aStill,
+				timecode: timecode.isStrictlyPositive.if{timecode}{nil}
 			),
 			start: start,
 			syl: syl,

@@ -1,3 +1,8 @@
+Trek.allTheSongs[0].load
+Song.lyrics[0]
+Stills.current.file
+
+
 (
 "ffmpeg -i input.mp4 "
 "-filter_complex "

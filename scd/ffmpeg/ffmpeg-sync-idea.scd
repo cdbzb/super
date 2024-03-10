@@ -58,8 +58,7 @@ Trek.allTheSongs[0].load;
 	}
 }
 ;
-~words = ~csv.slice(nil, 0).drop(1).collect
-( _.replace($\",""))
+~words = ~csv.slice(nil, 0).drop(1).collect( _.replace($\",""))
 ;
 ~indexOfMatch = {| lineNumber |
 	var line = Song.lyrics[lineNumber].split(Char.space)
@@ -80,9 +79,9 @@ Trek.allTheSongs[0].load;
 )
 ( // calculate rates
 ~durs = ~timecode[~lineIndices]
-	.collect({|i| i.split($:)
-	.collect(_.asInteger)})
-	.collect{|i| SMPTE.array(i, 60).asSeconds}
+	.collect({ |i| 
+		i.split($:).collect(_.asInteger)
+	}).collect{|i| SMPTE.array(i, 60).asSeconds}
 	.differentiate.drop(1);
 ~rates = Song.lyrics.collect{|i x| try{ Song.secDur[x]/~durs[x] }}
 )
@@ -93,7 +92,10 @@ fork{
 	Song.currentSong.recordSection(0, 15, path:"/tmp/recording.wav"); // add this to ~segments ?
 	Song.secDur[..15].sum + 1 => _.wait;
 	//calculate segment boundaries
-	t=~timecode[~lineIndices].collect( { |i| i.split($:).collect(_.asInteger)} ).collect( { |i| SMPTE.array(i).asSeconds} );
+	t=~timecode[~lineIndices]
+	.collect({ |i|
+		i.split($:).collect(_.asInteger)
+	}).collect({ |i| SMPTE.array(i, 60).asSeconds });
 	//ffmpeg command
 	~segments.(t[..15], ~rates[..15].round(0.01)) .unixCmd
 }

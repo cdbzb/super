@@ -1,5 +1,5 @@
 Trek {
-	classvar <>cast, <path, <>presets, <keys;
+	classvar <>cast, <path, <>presets, <keys, <>synful1, <>synful2;
 	*initClass {
 		path = this.filenameSymbol.asString.dirname.dirname +/+ "/Songs";
 		cast = try{ Object.readArchive(path +/+ "trek_cast") } ? ();
@@ -61,26 +61,26 @@ Trek {
 		}
 	}
 	*synful {
-		( currentEnvironment.at(\synful1).isNil or: try{ currentEnvironment.at(\synful1).syn.isPlaying.not } ).if
-		{
-			Song.currentSong.synful1 = currentEnvironment.put(\synful1, Synful());
-			Song.currentSong.synful2 = currentEnvironment.put(\synful2, Synful());
+		( Song.synful1.isNil or: try{ Song.synful1.syn.isPlaying.not } ).if {
+			synful1 = Synful();
+			synful2 = Synful();
+			Song.currentSong.synful1 = synful1;
+			Song.currentSong.synful2 = synful2;
 		}{
-			Song.currentSong.synful1 = currentEnvironment.at(\synful1);
-			Song.currentSong.synful2 = currentEnvironment.at(\synful2);
+			Song.currentSong.synful1 = synful1;
+			Song.currentSong.synful2 = synful2;
 		};
 		Song.resources.condition=Condition();
-		Song.resources.infrastructure=
-		{
+		Song.resources.infrastructure = {
 			FunctionList.new.array_([
 				( currentEnvironment.at(\synful1).isNil or: try{ currentEnvironment.at(\synful1).syn.isPlaying.not } ).if
-				{
-					Song.currentSong.synful1 = currentEnvironment.put(\synful1,Synful()).synful1;
-					Song.currentSong.synful2 = currentEnvironment.put(\synful2,Synful()).synful2;
+				(Trek.synful1.isNil or: try{ Trek.synful1.syn.isPlaying.not }).if {
+					Song.currentSong.synful1 = Trek.synful1 = Synful();
+					Song.currentSong.synful2 = Trek.synful2 = Synful();
 				},
 				{ fork {
 					while( {
-						currentEnvironment.at(\synful2).controller.loaded.not;
+						Trek.synful2.controller.loaded.not;
 					},{0.05.wait});
 					Song.resources.condition.test_(true).signal
 				}}

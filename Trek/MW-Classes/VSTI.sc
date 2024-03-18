@@ -1,14 +1,20 @@
 VSTI {
-	var <condition, <syn, <controller ;// <plugin;
+	var <condition, <syn, <controller, <id ;// <plugin;
+	classvar <vstis;
+
+	*initClass{
+		vstis =Order.new
+	}
+
 	*new { |plugin action| ^super.new.init( plugin, action ) }
+
 	init { | plugin action | 
-		\SuperInit.postln;
 		condition = CondVar.new();
 		{
+			id = UniqueID.next;
 			syn = Synth(\vsti2,target:RootNode(Server.default));
 			controller = VSTPluginController(syn);
-			~vstRegistry = ~vstRegistry ? List.new();
-			~vstRegistry.add(controller);
+			vstis.put(id, this);
 			Server.default.sync;
 			controller.open("/Library/Audio/Plug-Ins/VST/" ++ plugin,
 				action:{
@@ -23,8 +29,7 @@ VSTI {
 				0.1.wait;
 				syn = Synth(\vsti2,target:RootNode(Server.default));
 				controller = VSTPluginController(syn);
-				~vstRegistry = ~vstRegistry ? List.new();
-				~vstRegistry.add(controller);
+				vstis.put(id, this);
 				Server.default.sync;
 				controller.open("/Library/Audio/Plug-Ins/VST/"++plugin,
 					action:{

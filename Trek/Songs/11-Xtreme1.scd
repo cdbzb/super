@@ -29,7 +29,7 @@ SynthDef(\plate_phaser_insert,{
 }).add;
 //Line 239 The three volunteers are lying on beds, with the spheres on tables beside them. 
 ~xtreme=Song( \song,[]).current;
-Trek.synful;
+Trek.synful; // puts a Synful in Song.synful1 and Song.synful2 and makes them persist using ~synful1 ~synful2 -- these should ACTUALLY be in Synful instead! is this what I am doing in AAS Strum?
 ( Song.synthVTracks = EventWithDefault( 
 	\default, { |mix = 0.1|
 		{|i|
@@ -118,8 +118,8 @@ P.double(role: \mccoy , take: \lead, params: {|p b| [
 		}//.play
 });
 P(\strum2, syl:2, music: (lag:~xtreme.durs[P.calcStart()].list[3]/2,note:[-5,-2,0,4,7],strum:0.03,sustain:2));
-P(\bassnote2,  music: 
-	{ |p b e|
+
+P(\bassnote2,  music: { |p b e|
 		(
 			note: -12-5,
 			amp:3,
@@ -136,7 +136,20 @@ P(\bassnote2,  music:
 	}
 
 );
-["r r r r heart action dan ger ous ly high- ", "r r r r  c6 a5 f b- a g f g ", ].addLine; 
+["r r r r heart action dan ger ous ly high- ", [ \r, \r, \r, \r, 5, 3, 1, 4, 3, 2, 1, 2 ].dm(\f) , ].addLine; 
+P.synthVs(\kevin, take: [ \bg, \bg2],
+	pbind: Song.enlarge(1),
+	params: {|p b| [
+		filter: (midinote: [-1,-1,-1,-1, 1, 5, 5, 6, 6, 6, 6, 4, 5].dm(\f)),
+	lyrics: "r r r r heart action + dangerously + + + high - ",
+	pitchTake: [1, 3]
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+		/2
+	}.play
+});
 P.still(\clear, syl:3, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -275,7 +288,7 @@ P(\keys, music:{|p b e|
 		].ppma
 });
 [" race r r many times their natural me-", "g5 r r  e5 g5 a4 g5 f e g ", ].addLine; 
-P(\chord, music: { |p b e|
+P(\chord, music: { |p b e| //TODO check these pitches!!
 	[
 		freq: [
 			\r,
@@ -285,8 +298,8 @@ P(\chord, music: { |p b e|
 			[6, 11, 12]
 		].df(\c,4).q,
 		dur: e.bAll.parse([5,  5, 4, 7, 4]).q,
-		instrument: \stringyy, mix: 0,
-		amp: 0.07, out: (1..3), freqLag: 0.5
+		instrument: \stringyy, mix: 0.0,
+		amp: 0.07 * 6.dbamp, out: (1..3), freqLag: 0.5
 	].ppm
 });
 P.still(\clear,syl:2,  timecode: 0.seconds, music: { |p b e|
@@ -1053,7 +1066,7 @@ P.synthV(role: \thalassa, start: Song.section(\forgotten), take: \lead,
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
 			* Env([3, 2, 1, 0, -2], b.parse([2,5,11,  1,])).kr(0,gate:1).dbamp
-			// /2
+			/2
 		}.play
 });
 		// P.tune('what it fee');

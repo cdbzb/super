@@ -28,7 +28,7 @@ P.synthV(role: \henoch, take: \lead,
 });
 P(\click, music: { |p b e|
 	[
-		dur: "q q q q q q q q".asBeats.warpTo( e.tempoMap.quantizeDft(0.2) ).q,
+		dur: "q q q q q q q q".asBeats.warpTo(e.tempoMap.quantizeDft(0.2)).q,
 		instrument: \hihat, pan: 0.5
 	].pp
 });

@@ -2,33 +2,21 @@
 	// Stills("/Users/michael/trek/BySection/media/return to tomorrow.mov").current;
 	Stills().current;
 
-SynthDef(\plateReplace,{|in gate=1 bus| 
-	//var sig=In.ar(Song.bassBuss.index,2);
-	var sig=In.ar(bus,2);
-	sig=sig* Env.asr(0,1,0.1).kr(2,gate:gate);
-	ReplaceOut.ar(bus,PlateReverb.ar(sig,mix:0.9));
-}).add;
-SynthDef(\xtremeBass,{|amp=1 decimate=0 out=0 dur=1 bus| 
-	var sig = In.ar(bus)!2;
-	//Env.perc(~xtreme.durTillEnd+1).kr(2,gate:1);
-	Env.perc(dur+1).kr(2,gate:1);
-	sig= XFade2.ar(sig,Decimator.ar(sig,rate:8000,bits:4)*(-6.dbamp),Lag.kr(decimate,1));
-	Out.ar(out,sig*amp)
-}).add;
-SynthDef (\cymbal, {|amp=1 length=2| 
-	var sig=PinkNoise.ar(EnvGen.kr(Env.perc(0,length)))!2;
-	sig=TwoTube.ar(RHPF.ar(sig,500,9),d1length:502,d2length:777,loss:0.99)*0.5;
-	DetectSilence.ar(sig,doneAction:2);
-	Out.ar(0,sig*amp)}
-).add; 
-SynthDef(\plate_phaser_insert,{
-	|inBus=0 gate=1|      
-	var env= Env.cutoff(15,curve:\cub).kr(2,gate:gate);
-	var sig = In.ar(inBus,2);
-	sig=PlateReverb.ar(sig,mix:0.5,decayTime:0.55);
-}).add;
 //Line 239 The three volunteers are lying on beds, with the spheres on tables beside them. 
 ~xtreme=Song( \song,[]).current;
+Song.xtremeBassFX = (s.options.outDevice == "MacBook Pro Speakers").if{
+	{
+		Effect.bus( {|i| Decimator.ar(i,rate:8000,bits:4)*(-6.dbamp) => Pan2.ar(_,-0.4)})
+	}
+}{
+	{
+
+		Effect.bus( {|i| Decimator.ar(i,rate:8000,bits:4)*(-6.dbamp) 
+		=> HPF.ar(_, 100)
+		=> Pan2.ar(_,-0.4)})
+	}
+
+};
 Trek.synful; // puts a Synful in Song.synful1 and Song.synful2 and makes them persist using ~synful1 ~synful2 -- these should ACTUALLY be in Synful instead! is this what I am doing in AAS Strum?
 ( Song.synthVTracks = EventWithDefault( 
 	\default, { |mix = 0.1|
@@ -39,6 +27,7 @@ Trek.synful; // puts a Synful in Song.synful1 and Song.synful2 and makes them pe
 	}
 );
 );
+{
 ["space","r",[0.2]].addLine;
 P(\bassnote,   music: 
 	{ |p b e|
@@ -64,8 +53,25 @@ P.still(\wide, timecode: 2508.seconds, music: { |p b e|
 		text: ["the extreme power","of the"],
 	)
 });
-P(\strum1, syl:2, music:
-	(\note:[-5,-3,-2,2,5,7],\strum:0.03,\sustain:2)
+Song.strum= {
+		 Formant.ar(fundfreq:\freq.kr + Gendy1.arWidth(freq: 1).range(-2,2), formfreq:\formfreq.ir(2016), bwfreq:880.0, mul:1.0, add:0.0) 
+		 * Env.adsr(attackTime:0.01, decayTime:1.9, sustainLevel:0.5, releaseTime:1.0, peakLevel:1.0, curve:-4.0, bias:0.0).kr(2,gate:\gate.kr(1))
+		 * \amp.kr(0.1)
+		 => Out.ar(\out.kr(), _)
+	}.asDefName;
+P(\strum1, syl:2, music: {|p b e|
+
+		(
+			note:[-5,-3,-2,2,5,7],
+			strum:0.03,
+			instrument: [\harpS, Song.strum],
+			formfreq: 7502,
+
+			amp: [0.02, 0.02], coef: 0.1,
+			sustain:2,
+		out: Effect.bus({|i| i => Phaser2.ar(i, depth:0.5, rate:0.177, fb:0.3, cfb:0.1, rot:1.5707963267949, rq:1) * SinOsc.ar(3.6).range(0.7,1.1) }, inputChannels: 2)
+		).play
+	}
 );
 P.synthVs(role: \mccoy , take: [\lead, \double],
 	pbind: [ Song.enlarge(8), Song.enlarge(8) ],
@@ -117,7 +123,18 @@ P.double(role: \mccoy , take: \lead, params: {|p b| [
 			=> p.synthVTracks.at(e.key).()
 		}//.play
 });
-P(\strum2, syl:2, music: (lag:~xtreme.durs[P.calcStart()].list[3]/2,note:[-5,-2,0,4,7],strum:0.03,sustain:2));
+P(\strumTwo, syl:2, music: {|p b e |
+	(
+		lag:b[3]/2,
+		note:[-5,-2,0,4,7],
+		strum:0.03,
+		sustain:2,
+		instrument: [\harpS, Song.strum],
+		formfreq: 7502,
+		amp: [0.02, 0.02], coef: 0.1,
+		out: Effect.bus({|i| i => Phaser2.ar(i, depth:0.5, rate:0.177, fb:0.3, cfb:0.1, rot:1.5707963267949, rq:1) * SinOsc.ar(3.6).range(0.7,1.1) }, inputChannels: 2)
+	).play
+});
 
 P(\bassnote2,  music: { |p b e|
 		(
@@ -156,13 +173,39 @@ P.still(\clear, syl:3, timecode: 0.seconds, music: { |p b e|
 		text: ["heart action","dangerously high"],
 	)
 });
+P(\chord, music: { |p b e|
+	[
+		freq: 
+		[[\r, \r, \r]] ++ [ 1, [5, 3, 1, 4, 3, 2, 1, 3], 5].flop => _ .df(\f) =>_.q
+		,
+		// legato: [8,1, 8],
+		wet: 0, 
+		amp: 0.3,
+		// out: [2, 5, 3],
+		out: 2,
+		attack: 0,
+		// dur: b.parse([4, 3]).q,
+		dur: b.parse([4, 1, 1, 1, 1, 1, 1, 2, 1]).q,
+		rests: MuteFirst(),
+
+		instrument: \stringyy
+	].ppm
+});
 P(\heartActionBass,  music: { |p b e|
 	[
 		\dur, b.q ++ [1.0].q,
 		\note, Pseq([-2,-2,-2,0,-7,\r,\r,-2,-2,-2, 0,\r,-10])-24,\amp,2,
 		\legato,Pseq([1 ,1, 1,1, 1.5,1,1, 1, 1, 1, 2, 1, 1]),
-		\out, Effect.bus( {|i| Decimator.ar(i,rate:8000,bits:4)*(-6.dbamp) => Pan2.ar(_,-0.4)})
+		\out, p.xtremeBassFX.()
 	].pp
+});
+P(\guit, music: { |p b e|
+	[
+		freq: [4, 4, 4, 5, 1, 4, 4, 4, 5, -6].df([\F, \c], 4).q,
+		instrument: \pluckD,
+		dur: e.bAll.parse([1, 1, 1, 1, 3, 1, 1, 1, 2, 3]).q,
+		amp: 0.02
+	].ppm
 });
 P(\weeeeuw,music: {|p b e| 
 		{
@@ -171,18 +214,19 @@ P(\weeeeuw,music: {|p b e|
 		}.play
 	}
 );
-{   ///tempo map for drums{{{
-	var d= Song.durs[\action].list[0..3] ++ ((Song.durs[\action].list[4]/2)!2).asList ++ Song.durs[\action].list[5..8];
 P(\drums,music: {|p b e|
-		Pbind( \instrument, Pseq([\kick2, \rest, \snare, \rest, \kick2, \kick2, \snare,\rest]++
-		[\kick2, \rest, \snare, \rest, \kick2,  \kick2, \snare,\rest]),
-		\dur,Pseq(d,inf),
-		\lag,Pseq([0,0,-0.01,0,0,0,0,0],inf),
+	var d= Song.durs[\action].list[0..3] ++ ((Song.durs[\action].list[4]/2)!2).asList ++ Song.durs[\action].list[5..8];
+	var k = \kick2;
+	k = \bd_808;
+		Pbind( \instrument, Pseq([k, \rest, \snare, \rest, k, k, \snare,\rest]++
+		[k, \rest, \snare, \rest, k,  k, \snare,\rest]),
+		\dur, Pseq(d,inf),
+		\lag, Pseq([0,0,-0.01,0,0,0,0,0],inf),
 		//\amp,0.5
-		\amp,Pseg([0.5,0.5,0.3]*0.5,[d[0..4].sum,d.sum-d[0..4].sum+1])
+		\env, Pseg([0.5,0.5,0.3] * 0.5,[d[0..4].sum,d.sum-d[0..4].sum+1]),
+		\amp, Pfunc({|e| (e.instrument == k).if{2}{1} * e.env})
 	).play
-}
-);
+});
 P(\cymbal,music: {|p b e|
 		Pbind(
 			\instrument, Pseq([\rest, \rest, \rest, \rest, \rest, \rest, \rest,\rest]++ [\rest, \rest, \rest, \rest, \cymbal, \rest, \rest,\rest]),
@@ -288,7 +332,25 @@ P(\keys, music:{|p b e|
 		].ppma
 });
 [" race r r many times their natural me-", "g5 r r  e5 g5 a4 g5 f e g ", ].addLine; 
-P(\chord, music: { |p b e| //TODO check these pitches!!
+Song.setTempoMap(\natural,"q e e e e ex x E E E ");
+P(\guit, music: { |p b e|
+	[
+		freq: [\r, 3, 5, 1].df(\a,3, ).q,
+		dur: b.parse([1, 1, 1, 5]).q,
+		instrument: \pluckD,
+		out: Effect.bus({|i| Phaser1.ar(i,rate: 0.17) => Splay.ar(_, 0.5, 1,0.5 ) },),
+		amp: 0.01
+	].ppm
+});
+P(\skank, music: { |p b e|
+	[
+		freq: [1, 3, 5].df(\e, \minor),
+		dur: "qe ee ee ee ee".asBeats.warpTo( e.tempoMap ).q,
+		rests: MuteFirst(),
+		instrument: \harp, amp: 0.03
+	].pp
+});
+P(\chord, music: { |p b e|
 	[
 		freq: [
 			\r,
@@ -299,7 +361,7 @@ P(\chord, music: { |p b e| //TODO check these pitches!!
 		].df(\c,4).q,
 		dur: e.bAll.parse([5,  5, 4, 7, 4]).q,
 		instrument: \stringyy, mix: 0.0,
-		amp: 0.07 * 6.dbamp, out: (1..3), freqLag: 0.5
+		amp: 0.07 * 3.dbamp, out: (1..3), freqLag: 0.5
 	].ppm
 });
 P.still(\clear,syl:2,  timecode: 0.seconds, music: { |p b e|
@@ -324,9 +386,16 @@ P(\strum3,music:
 			(\note: [4,16,19]-12,\dur:3,\strum: 0.03);
 		);
 P(\bass3, music: {|p b e|
-		Pbindf(Panola.new("r c#2 e a1\\pdur[2.2]").asPbind,\dur,b.q,\tempo,1,\amp,0.8).play
+		[
+			freq: "r 3 5 1".df(\a, 2).q,
+			dur: b.q,
+			amp: 0.8,
+			rest: MuteFirst(),
+			out: Effect.bus({|i| HPF.ar(i, 100) },inputChannels: 2)
+		].pp
 });
 ["tabolism so we're going to have to", " f5 e d c r g#4 a b c5 d e ", ].addLine; 
+Song.setTempoMap(\tabolism,"e e e ee x x x x x x");
 P.still(\clear, syl:4, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.drop(1).sum,
@@ -373,7 +442,8 @@ P(\bass5, music: {|p b e|
 			\midinote,(Pser(p.tune[e.start].list,4)++Pseq([71,71-7]))-36,
 			\dur,Pseq(b[0..3]++b[4..6].sum++1),
 			\amp,0.8,
-			\lag,Pwhite(-0.02,0.02)
+			\lag,Pwhite(-0.02,0.02),
+			\out, Effect.bus({|i| HPF.ar(i, 120) },inputChannels: 2)
 		).play
 });
 P(\drums5,music: {|p b e|
@@ -397,7 +467,12 @@ P(\hat5,music: {|p b e|
 });
 [" mo- ni- tor this very", "d5 c4 a4 f f5 e ", ].addLine; 
 P(\bassnote6,music: {|p b e|
-			Pbindf(Panola(" a1 g f").asPbind,\dur,Pseq([b[1..2].sum]++b[3..4]),\tempo,1,\amp,0.8).play
+			[
+				freq: "3 2 1".df(\f, 2).q,
+				dur: b.parse([2, 1, 1]).q,
+				amp:0.8,
+				out: Effect.bus({|i| HPF.ar(i, 100) },inputChannels: 2)
+			].pp
 });
 P.still(\mccoy, timecode: 2509.seconds, music: { |p b e|
 		 e.still.( 
@@ -436,6 +511,8 @@ P(\pad6,music:
 			{
 				var a = (
 					instrument:\sawSynth,
+					hifreq: 8000, lofreq: 2000,
+
 					//midinote:[69,72,75]
 					degree:[5,8,9]
 					,att:2,rel:3,amp:0.05,lagTime:0.2
@@ -487,7 +564,12 @@ P.synthVs(role: \mccoy, take: [\lead, \double],
 			}.play
 		});
 P(\bass8,music: {|p b e|
-		Pbind(\note,Pseq([5,4,2,1]-24),\dur,b.q,\amp,0.5).play
+		Pbind(
+			\note, Pseq([5,4,2,1]-24),
+			\dur, b.q,
+			\amp, 0.5,
+			\out, Effect.bus({|i| HPF.ar(i, 100) },inputChannels: 2)
+		).play
 	}
 		);
 P(\bass8Alt,music:
@@ -591,10 +673,12 @@ P.still(\sargonNow,lag:9, timecode: 2556.1.seconds, music: { |p b e|
 });
 P(\transform,start:'transformation!',music:{ |p b e| 
 	var dur = b.sum; 
-	var pitches=~panNotes.("f#3 b- c4 e")+[0,12];
+	var gain = 2;  //TODO try an envelope here!!
+	var transGain = 0.8;
+	var pitches=~panNotes.("f#3 b- c4 e")+[0,12]; //TODO remove this function
 	s.bind{
-		var chord=pitches.collect({|item index|  Synth(\trans,[\freq,item.midicps,\amp,0.1])});
-		var chord2=pitches.collect({|item index|  Synth(\trans,[\freq,item.midicps,\amp,0.1])});
+		var chord=pitches.collect({|item index|  Synth(\trans,[\freq,item.midicps,\amp,0.1 * gain * transGain])});
+		var chord2=pitches.collect({|item index|  Synth(\trans,[\freq,item.midicps,\amp,0.1 * gain * transGain])});
 		//~xtreme.init;
 		try{~fadeO.stop};
 		//try{Song.synful1.controller.loaded.not.if{Song.synful1.init}}{Song.synful1=~synful.()};
@@ -603,12 +687,12 @@ P(\transform,start:'transformation!',music:{ |p b e|
 		{dur.wait;chord2.do{|i|i.release}}.fork;
 	};
 	////cymbal
-	(instrument:\cymbal,length:8).play;
+	(instrument:\cymbal,length:8, amp: 0.1 * gain).play;
 	////strings
 	//try{Song.synful1.monitor.free;};Song.synful1.monitor=Monitor.new;Song.synful1.monitor.play(Song.synful1.bus.index,2,0,2,fadeTime:0.05);
 	//try{Song.synful2.monitor.free;};Song.synful2.monitor=Monitor.new;Song.synful2.monitor.play(Song.synful2.bus.index,2,2,2,fadeTime:0.05);
-	Song.synful1.syn.set(\out,Effect(FreeVerb.ar(_,0.75,0.55)*3).bus.index);
-	Song.synful2.syn.set(\out,Effect( { |i| PlateReverb.ar(i,mix:0.55)*2 * Env.linen(0,b.sum,5).kr(doneAction:2,gate:1) } ,out:2).bus.index);
+	Song.synful1.syn.set(\out,Effect(FreeVerb.ar(_,0.75,0.55)*3* gain).bus.index);
+	Song.synful2.syn.set(\out,Effect( { |i| PlateReverb.ar(i,mix:0.55)*2 * gain * Env.linen(0,b.sum,5).kr(doneAction:2,gate:1) } ,out:2).bus.index);
 	//TODO these need to turn themselves off with DoneActions rather than routines
 
 	Song.synful1.setprog(3,5,0); Song.synful1.setprog(4,5,1);
@@ -749,13 +833,13 @@ P.synthVs(role: \henoch, take: [\lead, \double],
 		] }, music:{|p b e|
 			{
 				e.playbuf
-				=> p.synthVTracks.at(e.key).(mix:0.05)
+				=> p.synthVTracks.at(e.key).(mix:0.02)
 			}.play
 		});
-P(\bassnotes3,start:'Hel-',music:
+P(\bassnotes3,start:'Hel-',music: //TODO change this instrument??
 			(note:-2-12,amp:0.1)
 		);
-P(\bassnotes4,start:'Hel-',syl:2,music:
+P(\bassnotes4,start:'Hel-',syl:2,music:  //TODO change this instrument??
 			(note:[7,-5],amp:0.1,sustain:2)
 		);
 ["lo. r r r"," c#5 d2 d d"].addLine; 
@@ -774,7 +858,7 @@ P.still(\henochRude,syl:nil, timecode:
 		)
 });
 P(\helloChord,start:'lo. ',music: {|p b e|
-		(instrument:\test,midinote:~panNotes.("<d4 f# a c#>").flatten,strum:0.03,amp:0.4 * p.helloGain)
+		(instrument:\test,midinote:~panNotes.("<d4 f# a c#>").flatten,strum:0.03,amp:0.4 * p.helloGain).play
 });
 ~helloTempo={1/Song.durs['lo. r'].list.mean};
 ~helloTemp2={1/(Song.durs['lovely female'].list[0..6].sum/5*2)};
@@ -790,7 +874,7 @@ P(\helloSequence,start:'lo. ',music: {|pp bb ee|
 
 		snarePatterns=[[Rest(3/4),1/4],[Rest(1)],[Rest(1/2),1/2],[Rest(1/2),1/4,1/4],[Rest(1/4),1/4,1/2]];
 		p=[0,1,2,0, 0,3,0,4]++[0,4,4];   ///XTENDED
-		snareBar=Pseq(p.collect{|i|snarePatterns[i]}.flatten);
+		snareBar=Pseq(p.collect{|i|snarePatterns[i]}.flatten.drop(-1));
 
 		synth= Pbind( 
 			\note,Pseq([2-24,2-12,-1-12,9-12])-12,
@@ -810,7 +894,7 @@ P(\helloSequence,start:'lo. ',music: {|pp bb ee|
 				\amp,0.04
 			) ;
 
-			helloBeat= {
+			helloBeat = {
 				|synthamp=0.3 drumsamp=1 lineAmp=1 tempo1=(52/60) tempo2=(50/60)|
 			Ppar([
 				Pbind(
@@ -836,6 +920,7 @@ P(\helloSequence,start:'lo. ',music: {|pp bb ee|
 					),
 				Pbind(
 						\instrument,\snare,
+						\instrument,\sn_808,
 						\dur,snareBar,
 						\amp,drumsamp*0.1
 					),
@@ -870,7 +955,7 @@ P(\helloSequence,start:'lo. ',music: {|pp bb ee|
 				fadeTime:Song.secDur[4..5].sum,
 				volume:0.2
 			);
-			Song.secDur[4..5].sum.wait;
+			Song.secDur[4..5].sum + 0.1 => _.wait;
 			Song.helloSequenceMonitor.clear;
 			Song.helloSequenceBus.free;
 		};
@@ -899,7 +984,7 @@ P.synthVs(role: \henoch, take: [ \lead, \double ],
 		] }, music:{|p b e|
 			{
 				e.playbuf
-				=> p.synthVTracks.at(e.key).()
+				=> p.synthVTracks.at(e.key).(mix: 0.05)
 			}.play
 		});
 P(\bass4,start:'lovely female',syl:6,music:
@@ -929,10 +1014,11 @@ P(\xtraChord, music: { |p b e|
 		].q /2,
 		dur: b.parse([5, 4]).q,
 		freqLag:2,
+		detune: 4,
 		instrument: \visual_pad, amp: 0.7, mix: 0, out: 2
 	].ppm
 });
-P.tune( [instrument: \stringyy, amp:0.2].pm <> _ );
+P.tune( [mix:0.2,instrument: \stringyy, amp:0.1, out: 4].pm <> _ );
 P(\bass5,start:\pleasant,syl:4,music:
 			(instrument:\sawSynth,note:[7,-5]-13,amp:0.2,sustain:2,att:1.0,rel:3)
 		);
@@ -1045,6 +1131,7 @@ P.tune(_<>  [instrument: \harp,coef:0.8,out:1].p.fin(1));
 P.still(\thalassaForgotten, timecode: 2647.9.seconds, music: { |p b e|
 			 e.still.( 
 				wait: b.sum + e.bNext.sum,
+				fade: p.durs[e.start + 2].list[..2].sum,
 				text: ["I've forgotten","what it feels like"],
 			).sequenceText2(
 					b++p.durs[e.start + 1].list =>_.parse([9]), [ 

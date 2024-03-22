@@ -115,8 +115,8 @@ P(\tamb, music: { |p b e|
 		1/4 ! 21
 		+ ( [1, -1] /50 => _.dup(8) )
 		=> _.flat 
-		=> _.warpTo(e.tempoMap
-			.quantizeDft(0.5)
+		=> _.warpTo(
+			e.tempoMap.quantizeDft(0.5)
 		)
 		=> _.dq();
 		var triggers = TDuty.kr( durs, 0,1,gapFirst:0 );

@@ -61,7 +61,7 @@ Trek {
 		}
 	}
 	*synful {
-		( Song.synful1.isNil or: try{ Song.synful1.syn.isPlaying.not } ).if {
+		( synful1.isNil or: try{ synful1.syn.isPlaying.not } ).if {
 			synful1 = Synful();
 			synful2 = Synful();
 			Song.currentSong.synful1 = synful1;

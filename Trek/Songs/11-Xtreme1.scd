@@ -1,7 +1,6 @@
 (
 	// Stills("/Users/michael/trek/BySection/media/return to tomorrow.mov").current;
 	Stills().current;
-
 //Line 239 The three volunteers are lying on beds, with the spheres on tables beside them. 
 ~xtreme=Song( \song,[]).current;
 Song.xtremeBassFX = (s.options.outDevice == "MacBook Pro Speakers").if{
@@ -17,6 +16,7 @@ Song.xtremeBassFX = (s.options.outDevice == "MacBook Pro Speakers").if{
 	}
 
 };
+// s.volume=(-13); P(\volume, start: 33, music: {Server.default.volume = 10});
 Trek.synful; // puts a Synful in Song.synful1 and Song.synful2 and makes them persist using ~synful1 ~synful2 -- these should ACTUALLY be in Synful instead! is this what I am doing in AAS Strum?
 ( Song.synthVTracks = EventWithDefault( 
 	\default, { |mix = 0.1|
@@ -345,7 +345,7 @@ P(\guit, music: { |p b e|
 P(\skank, music: { |p b e|
 	[
 		freq: [1, 3, 5].df(\e, \minor),
-		dur: "qe ee ee ee ee".asBeats.warpTo( e.tempoMap ).q,
+		dur: "qe ee ee ee ee".asBeats.warpTo( e.tempoMapAll ).q,
 		rests: MuteFirst(),
 		instrument: \harp, amp: 0.03
 	].pp
@@ -1570,6 +1570,24 @@ P(\bassNotes54,start:'very long',music:
 //[ "(boom)...so very long... Kiss","g3 b c4 a3 e4 r" ].addLine; 
 	//~justTheTune.('so very long');
 [ "(kissing) r r r r r r r r ..","g#5 f# d# b4 a# g# e5 d# " ].addLine; 
+	Song.transitionGroup = Group.before(s.defaultGroup );
+	Song.transitionItems = Group.head(Song.transitionGroup);
+	Song.transitionFX = Group.tail(Song.transitionGroup);
+	Song.gainGroup = Group.tail(Song.transitionGroup);
+P(\gain, music: { |p b e|
+	{
+		In.ar(0, Monitors.channels)
+		* -14.dbamp
+		=> ReplaceOut.ar(0, _)
+	}.play(p.gainGroup);
+	fork{
+		p.secDur[e.start..(e.start + 1)].sum + 2 => _.wait ;
+		Song.transitionGroup.free
+	}
+});
+P(\plotTree, music: { |p b e|
+	defer{ s.plotTree }
+});
 P.still(\kiss, timecode: 2810.1.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
@@ -1589,9 +1607,11 @@ P(\bowedKissing,music: { |p b e|
 					//				dur:Song.currentSong.durs[7]++Pseq([2.5]),
 					dur:b++[2.5] => _.q,
 					legato:1,
-					out: Effect.bus({|i| PlateReverb.ar(i,mix:0.5)  * EnvGen.cutoff(b.sum,10, curve: -2) * 2 * 2.dbamp },inputChannels:2),
+					group: p.transitionItems,
+					out: Effect.bus({|i| PlateReverb.ar(i,mix:0.5)  * EnvGen.cutoff(b.sum,10, curve: -2) * 2 * 2.dbamp },inputChannels:2, target: p.transitionFX),
 					mtranspose:Pseq([ [0,2,4,7],[0,3,5,7],[0,2,5,7],[0,2,4,7],[0,3,5,7],[0,4,6,7],[0,2,4,7],[0,3,5,7],[0,7] ].collect(_-7)),
-				].pp
+				].pp;
+				defer{s.plotTree}
 		}
 	);
 P(\bassKissing,start:'kissing',music:
@@ -1605,11 +1625,13 @@ P(\bassKissing,start:'kissing',music:
 			root:-1,
 			mtranspose:[0,4,7],
 			dur:10,
+			group: Song.transitionItems
 			// out: Effect.bus({|i| PlateReverb.ar(i, mix:1) * 2 },)
 
 		)
 	);	
-[ " r","f#4" ].addLine; 
+[ "final rest","f#4",[5] ].addLine; 
+
 	//}.fork
 )
 

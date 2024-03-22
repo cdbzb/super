@@ -1051,12 +1051,14 @@ Part {
 	quarters {
 		^parent.quarters[start]
 	}
-	tempoMap {
+	tempoMapAll {
 		var sectionsLeft = parent.sections - start;
 		var section = start, result = parent.tempoMap[start];
 		while{ parent.tempoMap[section].notNil  }{result = result ++ parent.tempoMap[section]; section = section + 1}
-		// ^parent.tempoMap[start]
 		^result
+	}
+	tempoMap{
+		^parent.tempoMap[start]
 	}
 	next {
 		^start + 1

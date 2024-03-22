@@ -1,224 +1,276 @@
 (
-	"/Users/michael/tank/super/Trek/Songs/11-Xtreme1.scd".load;
-["/*SPOCK*/ -boom- This is an excellent body, Doctor." ,"1 -7 1 2 6 7 6 5 5 6 4 1 -7".dm(\f,\mixolydian)].addLine;
-Song.setTempoMap(\excellent,"e e e x x | ex x e x ex | ee ee ee ee");
-P.still(\henochExcellent, timecode: 
-	// 2828.1
-	2821.1
-	.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["this is an excellent","body Doctor"],
-	)
-});
-Song.synthVTracks.ninezero = {|mix = 0.1| {|i| DWGReverbC1C3.ar(i, mix: mix) / 2.5}};
-P.synthV(role: \henoch, take: \lead,
-	pbind: Song.enlarge(11),
-	params: {|p b| [
-	lyrics: " r This is an excellent - + + body - + Doctor + I seem to have received + the best of the three",
-	legato: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.6, 1, 0.6, 1, 1, 1,1, 1, 1, 1, 1 ],
-	pitchTake: 1,
-	paramTension: -0.25,
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
-
-});
-P(\click, music: { |p b e|
-	[
-		dur: "q q q q q q q q".asBeats.warpTo(e.tempoMap.quantizeDft(0.2)).q,
-		instrument: \hihat, pan: 0.5
-	].pp
-});
-P(\bassNote, music: { |p b e|
-	(
-		freq: 1.df(\f,[4,3]),
-		instrument: \sawSynth,
-		out: [0,2]
-	).play
-});
-P(\clav, music: { |p b e|
-	[
-		freq: [7, 11, 5,  4,  2].df(\f,3,\mixolydian).q,
-		dur: "e e qqq qq qq".asBeats.warpTo( e.tempoMap ).q,
-		out: Effect.bus({|i| SineShaper.ar(i, 0.2) * 1.35 },)
-	].pp
-});
-["I seem to have received the best of the three. ","1 -5 -7 1 2 -6 1 4 3 2 1".dm(\e)].addLine;
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["I seem to have received","the best of the three"],
-	)
-});
-Song.setTempoMap(P.calcStart(),"e Q E Q E e e q e e q");
-P.tune();
-P(\cymbal,syl:9, music: { |p b e|
-	(
-		instrument: \cymbalsDS, 
-		att:0.2, 
-		amp:0.02
-	).play
-});
-P(\click, music: { |p b e|
-	[
-		dur: "e q q e q q q q".asBeats.warpTo( e.tempoMap ).q,
-		rest: [\r, 1, 1, 1, 1, 1, 1].q,
-		instrument: \hihat
-	].pp
-});
-P(\bassNote, music: { |p b e|
-	[
-		freq: [\r, -5, -6].df(\e,4).q,
-		dur: b.parse([1,4]) ++ 0.5 => _.flat => _.q,
-		instrument: \sawSynthSustain,
-		out: Effect.bus({|i| Pan2.ar(i,-1) },)
-
-	].ppm;
-	[
-		freq: [\r, 2, 1].df(\e).q,
-		dur: b.parse([4, 2,1]).q,
-		instrument: \sawSynthSustain,
-		out: Effect.bus({|i| Pan2.ar(i,1) },)
-	].ppm
-});
-["-boom- Strength, -boom- hearing, -boom eyesight + all","-1 4 2 4 3 -7 2 1 6".dm('e-',\mixolydian)].addLine;
-P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.drop(1).sum + e.bNext.sum,
-		text: ["strength","hearing"],
-	).sequenceText2(
-			b.parse([4,1,2,1]) + [0,0,0,e.bNext.sum], [ 
-			["",""],
-			["eyesight", ""],
-			["all far above","your human norms"]
-			],
-	)
-});
-Song.setTempoMap(\Strength,"q q Q Q Q Q Q Q q ");
-P(\bassline, music: { |p b e|
-	[
-		freq: [1, 2, -7, -7.5].df('e-',3,\mixolydian).q,
-		dur: b.parse([2, 3, 3, 1]).q,
-		// mask: [\r, 1, 1, 1].q,
-		amp: [2, 2, 2, 1]/20 => _.q,
-		instrument: [\default, \default, \default,  \sawSynthSustain].q,
-		legato: [1, 1, 1, 4, ].q,
-	].pp
-});
-P(\tamb, music: { |p b e|
-	{
-		var levels = [5,1,2,1] /5 => _.dq(inf);
-		var durs =  
-		1/4 ! 21
-		+ ( [1, -1] /50 => _.dup(8) )
-		=> _.flat 
-		=> _.warpTo(
-			e.tempoMap.quantizeDft(0.5)
-		)
-		=> _.dq();
-		var triggers = TDuty.kr( durs, 0,1,gapFirst:0 );
-		var energy = EnvGen.ar( Env.linen(0, 0.00, 0.015), triggers, doneAction:0   ) 
-		* Demand.kr(triggers,0,levels 
-			// * 40
-			// *8
-		);
-		Shakers.ar(3, energy:energy   , decay: 1).tanh
-		=> Pan2.ar(_, 0.8)
-		* Env([0,0,1],b.parse([7])).kr(0,gate:1)
-}.play;
-
-});
-P.synthVs(role: \henoch, take: [ \lead, \double ], params: {|p b| [
-	lyrics: "r strength r hearing + r eyesight + all",
-	paramTension: -0.25,
-	// legato: [ [1, 1, 1, 1, 1, 1, 1, 0.7, 0.7 ] ],
-	pitchTake: [ 1, 3 ]
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-		=> {|i| i + 
-			(
-
-				Env([1,1,0],b.parse([1, 2, 2])).kr(gate:1) * i
-				=> CombN.ar(_,0.5,0.4, 3)
+"/Users/michael/tank/super/Trek/Songs/11-Xtreme1.scd".load;
+{
+	["/*SPOCK*/ -boom- This is an excellent body, Doctor." ,"1 -7 1 2 6 7 6 5 5 6 4 1 -7".dm(\f,\mixolydian)].addLine;
+	P(\gain,lag:-0.1, music: { |p b e|
+		Song.fader.free
+	});
+	Song.setTempoMap(\excellent,"e e e x x | ex x e x ex | ee ee ee ee");
+	P.still(\henochExcellent, timecode: 
+		// 2828.1
+		2821.1
+		.seconds, music: { |p b e|
+			e.still.( 
+				wait: b.sum,
+				text: ["this is an excellent","body Doctor"],
 			)
-		}
-	}.play
+		});
+		Song.synthVTracks.ninezero = {|mix = 0.1| {|i| DWGReverbC1C3.ar(i, mix: mix) / 2.5}};
+		P.synthV(role: \henoch, take: \lead,
+			pbind: Song.enlarge(11),
+			params: {|p b| [
+				lyrics: " r This is an excellent - + + body - + Doctor + I seem to have received + the best of the three",
+				legato: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.6, 1, 0.6, 1, 1, 1,1, 1, 1, 1, 1 ],
+				pitchTake: 1,
+				paramTension: -0.25,
+			] }, music:{|p b e|
+				{
+					e.playbuf
+					=> p.synthVTracks.at(e.key).(mix: 0.05)
+					* 2
 
-});
-[" far above your human norms. "," 7 6 3 6 7 11 4".dm(\d,\dorian)].addLine;
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
-	 /* e.still.( 
-		wait: b.sum,
-		text: ["far above","your human norms"],
-	) */
-});
-Song.setTempoMap(\norms,"Q E Q E Q E q");
-P(\tamb, music: { |p b e|
-	{
-		var levels = [5,1,2,1] /5 => _.dq(inf);
-		var durs =  
-		1/4 ! 21
-		+ ( [1, -1] /50 => _.dup(8) )
-		=> _.flat 
-		=> _.warpTo(e.tempoMap
-			.quantizeDft(0.5)
-		)
-		=> _.dq();
-		var triggers = TDuty.kr( durs, 0,1,gapFirst:0 );
-		var energy = EnvGen.ar( Env.linen(0, 0.00, 0.015), triggers, doneAction:0   ) 
-		* Demand.kr(triggers,0,levels 
-			// * 40
-			// *8
-		);
-		Shakers.ar(3, energy:energy   , decay: 1).tanh
-		=> Pan2.ar(_, 0.8)
-}//.play;
-});
-P(\hat, music: { |p b e|
-	var tm = e.tempoMap.quantizeDft(0.3);
-	[
-		dur: "x*16".beats.warpTo( tm ).q,
-		instrument: \hihat,
-		amp: [3,1].q(inf)/30,
-		out: Effect.bus({|i| Phaser2.ar(i,rate:0.2) },)
-	].pp;
-	[
-		dur: "e eq e eq".asBeats.warpTo( tm ).q,
-		// instrument: \bd_808,
-		instrument: \kick_gentle, pitch: 1.df(\d,3),
-		tone: 45,
-		vol:0.05
-	].pp;
-	[
-		dur: "q qq q".asBeats.warpTo( tm ).q,
-		rests: [\r, 1, 1, 1].q,
-		instrument: \sn_808, amp:0.05
-	].pp
-});
-P.synthVs(role: \henoch, take: [ \lead, \double ], params: {|p b| [
-	lyrics: "far above + your human + norms. ",
-	paramTension: -0.25,
-	pitchTake: [ 1, 3 ]
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
+				}.play
 
-});
-P(\bass, music: { |p b e|
-	[
-		dur:"e e e e e e e".asBeats.warpTo( e.tempoMap ).q,
-		freq: " 7 6 3 6 7 11 4".df(\d,3,\dorian).q,
-		instrument: \sawSynth
-	].pp
-});
-P.tune();
+			});
+			P(\hat, music: { |p b e|
+				[
+					dur: "q q q q q q q q".asBeats.warpTo(e.tempoMap.quantizeDft(0.8)).q,
+					dur: "q q q q q q q q".asBeats.warpTo(e.tempoMap.quantizeWindow(0.8,6)).q,
+					instrument: \hat_808,
+					instrument: \hihat, rel: 0.05,
+					pan: 0.5
+				].pp
+			});
+			P(\bassNote, music: { |p b e|
+				(
+					freq: 1.df(\f,[4,3]),
+					instrument: \sawSynth,
+					out: [0,2]
+				).play
+			});
+			P(\clav, music: { |p b e|
+				[
+					freq: [7, 11, 5,  4,  2].df(\f,3,\mixolydian).q,
+					dur: "e e qqq qq qq".asBeats.warpTo( e.tempoMap.quantizeWindow(0.4,6) ).q,
+					out: Effect.bus({|i| SineShaper.ar(i, 0.2) * 1.35 },)
+				].pp
+			});
+			["I seem to have received the best of the three. ","1 -5 -7 1 2 -6 1 4 3 2 1".dm(\e)].addLine;
+			P.still(\clear, timecode: 0.seconds, music: { |p b e|
+				e.still.( 
+					wait: b.sum,
+					text: ["I seem to have received","the best of the three"],
+				)
+			});
+			Song.setTempoMap(P.calcStart(),"e Q E Q E e e q e e q");
+			P.tune(_ <> [instrument: \stringyy].pm);
+			P(\cymbal,syl:9, music: { |p b e|
+				(
+					instrument: \cymbalsDS, 
+					att:0.2, 
+					amp:0.02
+				).play
+			});
+			P(\click, music: { |p b e|
+				[
+					dur: "e q q e q q q q".asBeats.warpTo( e.tempoMap ).q,
+					rest: [\r, 1, 1, 1, 1, 1, 1].q,
+					instrument: \hihat, rel: 0.05,
+				].pp
+			});
+			P(\fifths, music: { |p b e|
+				[
+					freq: [
+						\r,
+						[1, 5],
+						[2, 6]
+					].df(\b,3).q,
+					dur: "e qq q".asBeats.warpTo( e.tempoMap ).q,
+					instrument: \wash, amp: 0.03,freqLag:0.05
+				].ppm
+			});
+			P(\fourFiveOne, music: { |p b e|
+				[
+					freq: [\r, 4, 5, 1].df(\e,3).q,
+					dur: b.parse([7, 1, 2, 1]).q
+				].pp
+			});
+			P(\bassNote, music: { |p b e|
+				[
+					freq: [\r, -5, -6].df(\e,4).q,
+					dur: b.parse([1,4]) ++ 0.5 => _.flat => _.q,
+					instrument: \sawSynthSustain,
+					out: Effect.bus({|i| Pan2.ar(i,-1) },)
+
+				].ppm;
+				[
+					freq: [\r, 2, 1].df(\e).q,
+					dur: b.parse([4, 2,1]).q,
+					instrument: \sawSynthSustain,
+					out: Effect.bus({|i| Pan2.ar(i,1) },)
+				].ppm
+			});
+			["-boom- Strength, -boom- hearing, -boom eyesight + all","-1 4 2 4 3 -7 2 1 6".dm('e-',\mixolydian)].addLine;
+			P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
+				e.still.( 
+					wait: b.drop(1).sum + e.bNext.sum,
+					text: ["strength","hearing"],
+				).sequenceText2(
+					b.parse([4,1,2,1]) + [0,0,0,e.bNext.sum], [ 
+						["",""],
+						["eyesight", ""],
+						["all far above","your human norms"]
+					],
+				)
+			});
+			Song.setTempoMap(\Strength,"q q Q Q Q Q Q Q q ");
+			P(\bassline, music: { |p b e|
+				[
+					freq: [[1, 5], [2, 6], [-7, 4], -7.5].df('e-',3,\mixolydian).q,
+					dur: b.parse([2, 3, 3, 1]).q,
+					// mask: [\r, 1, 1, 1].q,
+					amp: [2, 2, 2, 1]/20 => _.q,
+					instrument: [\default, \default, \default,  \sawSynthSustain].q,
+					legato: [1, 1, 1, 4, ].q,
+				].pp
+			});
+			P(\tamb, music: { |p b e|
+				{
+					var levels = [5,1,2,1] /5 => _.dq(inf);
+					var durs =  
+					1/4 ! 21
+					+ ( [1, -1] /50 => _.dup(8) )
+					=> _.flat 
+					=> _.warpTo(
+						e.tempoMap.quantizeDft(0.5)
+					)
+					=> _.dq();
+					var triggers = TDuty.kr( durs, 0,1,gapFirst:0 );
+					var energy = EnvGen.ar( Env.linen(0, 0.00, 0.015), triggers, doneAction:0   ) 
+					* Demand.kr(triggers,0,levels 
+						// * 40
+						// *8
+					);
+					Shakers.ar(3, energy:energy   , decay: 1).tanh
+					=> Pan2.ar(_, 0.8)
+					* Env([0,0,1],b.parse([7])).kr(0,gate:1)
+				}.play;
+
+			});
+			P.synthVs(role: \henoch, take: [ \lead, \double ], params: {|p b| [
+				lyrics: "r strength r hearing + r eyesight + all",
+				paramTension: -0.25,
+				// legato: [ [1, 1, 1, 1, 1, 1, 1, 0.7, 0.7 ] ],
+				pitchTake: [ 1, 3 ]
+			] }, music:{|p b e|
+				{
+					e.playbuf
+					=> p.synthVTracks.at(e.key).()
+					=> {|i| i + 
+						(
+
+							Env([1,1,0],b.parse([1, 2, 2])).kr(gate:1) * i
+							=> CombN.ar(_,0.5,0.4, 3)
+						)
+					}
+				}.play
+
+			});
+			P(\drums, music: { |p b e|
+				var tm = e.tempoMap.quantizeDft(0.3);
+				[
+					dur: "e e".beats.warpTo( tm ).q,
+					instrument: \hihat,
+					amp: [3,1].q(inf)/30,
+					out: Effect.bus({|i| Phaser2.ar(i,rate:0.2) },),
+					lag: "qqqqqq".asBeats.warpTo( e.tempoMap ).sum
+				].pp;
+				[
+					dur: "e eq e eq".asBeats.warpTo( tm ).q,
+					lag: "qqqqqq".asBeats.warpTo( e.tempoMap ).sum,
+					dur: "qqqqq q".asBeats.warpTo( tm ).q,
+					// instrument: \bd_808,
+					instrument: \kick_gentle, pitch: 1.df(\d,3),
+					tone: 45,
+					vol:0.05
+				]//.pp
+				;
+				[
+					dur: "q qq q".asBeats.warpTo( tm ).q,
+					rests: [\r, 1, 1, 1].q,
+					instrument: \sn_808, amp:0.05
+				].pp
+			});
+			[" far above your human norms. "," 7 6 3 6 7 11 4".dm(\d,\dorian)].addLine;
+			P.still(\clear, timecode: 0.seconds, music: { |p b e|
+				/* e.still.( 
+					wait: b.sum,
+					text: ["far above","your human norms"],
+				) */
+			});
+			Song.setTempoMap(\norms,"Q E Q E Q E q");
+			P(\tamb, music: { |p b e|
+				{
+					var levels = [5,1,2,1] /5 => _.dq(inf);
+					var durs =  
+					1/4 ! 21
+					+ ( [1, -1] /50 => _.dup(8) )
+					=> _.flat 
+					=> _.warpTo(e.tempoMap
+						.quantizeDft(0.5)
+					)
+					=> _.dq();
+					var triggers = TDuty.kr( durs, 0,1,gapFirst:0 );
+					var energy = EnvGen.ar( Env.linen(0, 0.00, 0.015), triggers, doneAction:0   ) 
+					* Demand.kr(triggers,0,levels 
+						// * 40
+						// *8
+					);
+					Shakers.ar(3, energy:energy   , decay: 1).tanh
+					=> Pan2.ar(_, 0.8)
+				}//.play;
+			});
+			P(\drums, music: { |p b e|
+				var tm = e.tempoMap.quantizeDft(0.3);
+				[
+					dur: "x*16".beats.warpTo( tm ).q,
+					instrument: \hihat,
+					amp: [3,1].q(inf)/30,
+					out: Effect.bus({|i| Phaser2.ar(i,rate:0.2) },)
+				].pp;
+				[
+					dur: "e eq e eq".asBeats.warpTo( tm ).q,
+					// instrument: \bd_808,
+					instrument: \kick_gentle, pitch: 1.df(\d,3),
+					tone: 45,
+					vol:0.05
+				].pp;
+				[
+					dur: "q qq q".asBeats.warpTo( tm ).q,
+					rests: [\r, 1, 1, 1].q,
+					instrument: \sn_808, amp:0.05
+				].pp
+			});
+			P.synthVs(role: \henoch, take: [ \lead, \double ], params: {|p b| [
+				lyrics: "far above + your human + norms. ",
+				paramTension: -0.25,
+				pitchTake: [ 1, 3 ]
+			] }, music:{|p b e|
+				{
+					e.playbuf
+					=> p.synthVTracks.at(e.key).()
+				}.play
+
+			});
+			P(\bass, music: { |p b e|
+				[
+					dur:"e e e e e e e".asBeats.warpTo( e.tempoMap ).q,
+					freq: " 7 6 3 6 7 11 4".df(\d,3,\dorian).q,
+					instrument: \sawSynth
+				].pp
+			});
+			P.tune(_ <> [instrument: \stringyy].pm);
+		}.();
 ["Im surprised the Vulcans never conquered your race. "," 4 5 -7 3 1 -7 1 2 5 4 6 2 ".dm(\f, \harmonicMinor)].addLine;
 P.still(\wide, timecode: 2826.5.seconds, music: { |p b e|
 	 e.still.( 
@@ -242,8 +294,21 @@ P.synthVs(role: \henoch, take: [ \lead, \double ], params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		* 2
 	}.play
 
+});
+P(\chords, music: { |p b e|
+	[
+		freq: [
+			[3.5, 5, 7],
+			[3.5, \r, 11],
+			[4, 6, 11]
+		].df(\c, \minor).q,
+		dur: b.parse([2, 2, 4]).q,
+		instrument: \default,
+		instrument: \sawSynthSustain, lofreq: 8000, amp: 0.02
+	].ppm
 });
 P(\bass, music: { |p b e|
 	[
@@ -851,11 +916,13 @@ P(\bass3,start:'higher metabolism',music:
 			root:4,
 			octave:2,
 			out: Effect.bus({|i| 
-				i + CombN.ar( i, 1, 0.25/Song.vulcanBodyTempo,2,mul:( 0.8*0.8 ) )/2
+				i + CombN.ar( i, 1, 0.25/Song.vulcanBodyTempo,2,mul:( 0.8*0.8 ) / 2 )
 				=> Phaser1.ar(_,  depth: 0.5,  rate: 0.2,  fb: 0.3,  cfb: 0.1,  rot: 1.5707963267949)
 			}),
-			trig:1
-		].pm(\bl).play
+			trig:1,
+			amp: 0.5,
+			instrument: \bl
+		].p.play
 }); 
 P.tune('higher metabolism',{|i| Pbindf(i,\instrument,\stringyy,\amp,0.3,\mix,1.0,\release,2)=>_.drop(2) },syl:1);
 

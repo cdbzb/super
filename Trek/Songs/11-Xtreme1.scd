@@ -16,7 +16,12 @@ Song.xtremeBassFX = (s.options.outDevice == "MacBook Pro Speakers").if{
 	}
 
 };
-// s.volume=(-13); P(\volume, start: 33, music: {Server.default.volume = 10});
+
+
+		// Song.gain = -14.dbamp;
+		// Song.fader = Song.fader ? { In.ar(0, Monitors.channels) * Song.gain => ReplaceOut.ar(0, _) }.play(RootNode(s),addAction:\addToTail );
+
+	// Song.resources.at(\infrastucture).()
 Trek.synful; // puts a Synful in Song.synful1 and Song.synful2 and makes them persist using ~synful1 ~synful2 -- these should ACTUALLY be in Synful instead! is this what I am doing in AAS Strum?
 ( Song.synthVTracks = EventWithDefault( 
 	\default, { |mix = 0.1|
@@ -1575,11 +1580,12 @@ P(\bassNotes54,start:'very long',music:
 	Song.transitionFX = Group.tail(Song.transitionGroup);
 	Song.gainGroup = Group.tail(Song.transitionGroup);
 P(\gain, music: { |p b e|
-	{
-		In.ar(0, Monitors.channels)
-		* -14.dbamp
-		=> ReplaceOut.ar(0, _)
-	}.play(p.gainGroup);
+	// {
+	// 	In.ar(0, Monitors.channels)
+	// 	* -14.dbamp
+	// 	=> ReplaceOut.ar(0, _)
+	// }.play(p.gainGroup);
+	s.reorder([Song.fader], Song.gainGroup);
 	fork{
 		p.secDur[e.start..(e.start + 1)].sum + 2 => _.wait ;
 		Song.transitionGroup.free
@@ -1631,7 +1637,25 @@ P(\bassKissing,start:'kissing',music:
 		)
 	);	
 [ "final rest","f#4",[5] ].addLine; 
-
+Song.gain = -21.dbamp;
+Song.faderFunc = {
+	Song.fader = {
+		// Song.fader.isPlaying
+		In.ar(0, 5) * Song.gain => ReplaceOut.ar(0, _) 
+	}.play(RootNode(s),addAction: \addToTail).register
+};
+CmdPeriod.add{
+	Song.faderFunc.()
+};
+Song.sections.do{|sec| P(\gain, start: sec, music:{|p b e| 
+	Song.fader.isPlaying.not.if{
+		Song.fader.free;
+		Song.faderFunc.()
+	};
+	CmdPeriod.add{
+		Song.faderFunc
+	};
+})}
 	//}.fork
 )
 

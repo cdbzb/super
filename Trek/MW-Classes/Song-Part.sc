@@ -268,12 +268,11 @@ Song {
 	}
 	init {|symbol array dursInFile r|
 		loadedFrom = thisProcess.nowExecutingPath;
-		resources = r;
 		key=symbol;
 		songs.at(symbol.asSymbol).notNil.if {cursor=lastSectionPlayed};
 		songs.put(symbol.asSymbol,this);
 		song=array;
-		resources=();
+		resources = r ? ();
 		//sections=(song.size/2).asInteger;
 		lyrics=song.copySeries(0,2,song.size);
 		tune=song[1,3..song.size].collect({|i|
@@ -449,10 +448,12 @@ Song {
 			.select(_.contains(trackName))
 			.sort
 	}
+
 	valueInfrastructure {
-			  resources.condition !? (_.test_(false));
-			this.resources.at(\infrastructure) !? (_.value);
+		resources.condition !? (_.test_(false));
+		^resources.at(\infrastructure).value;
 	}
+
 	playParts { |...args|
 		this.getPartsList(args).sort({|i j| try{ i.start<j.start }}).do(_.p)
 	}

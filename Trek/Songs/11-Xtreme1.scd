@@ -2,7 +2,9 @@
 	// Stills("/Users/michael/trek/BySection/media/return to tomorrow.mov").current;
 	Stills().current;
 //Line 239 The three volunteers are lying on beds, with the spheres on tables beside them. 
-~xtreme=Song( \song,[]).current;
+try{ Song.fader.free };
+Song( \song,[]).current;
+
 Song.xtremeBassFX = (s.options.outDevice == "MacBook Pro Speakers").if{
 	{
 		Effect.bus( {|i| Decimator.ar(i,rate:8000,bits:4)*(-6.dbamp) => Pan2.ar(_,-0.4)})
@@ -529,7 +531,7 @@ P(\pad6,music:
 		}
 	);
 P(\cymbal5,music: 
-		(\instrument:\cymbal,\lag:~xtreme.durs[5].list[1..4].sum)
+		(\instrument:\cymbal,\lag:Song.durs[5].list[1..4].sum)
 	); 
 P(\tremolo6,syl:5,music: {|p b e|
 		Pbind(
@@ -628,7 +630,7 @@ P(\tremoChord,music: {|p b e|
 	
 P(\tremoChord2,syl:0,music:
 Pfxb(
-Pfindur(~xtreme.durs[P.calcStart()].list[1..4].sum-0.1,
+Pfindur(Song.durs[P.calcStart()].list[1..4].sum-0.1,
 Ppar(
 				[-3,0,2,6].collect{|i|
 		Pbind(
@@ -684,7 +686,7 @@ P(\transform,start:'transformation!',music:{ |p b e|
 	s.bind{
 		var chord=pitches.collect({|item index|  Synth(\trans,[\freq,item.midicps,\amp,0.1 * gain * transGain])});
 		var chord2=pitches.collect({|item index|  Synth(\trans,[\freq,item.midicps,\amp,0.1 * gain * transGain])});
-		//~xtreme.init;
+		//Song.init;
 		try{~fadeO.stop};
 		//try{Song.synful1.controller.loaded.not.if{Song.synful1.init}}{Song.synful1=~synful.()};
 		//try{Song.synful1.controller.loaded.not.if{Song.synful1.init}}{Song.synful1=~synful2.()};
@@ -1579,21 +1581,6 @@ P(\bassNotes54,start:'very long',music:
 	Song.transitionItems = Group.head(Song.transitionGroup);
 	Song.transitionFX = Group.tail(Song.transitionGroup);
 	Song.gainGroup = Group.tail(Song.transitionGroup);
-P(\gain, music: { |p b e|
-	// {
-	// 	In.ar(0, Monitors.channels)
-	// 	* -14.dbamp
-	// 	=> ReplaceOut.ar(0, _)
-	// }.play(p.gainGroup);
-	s.reorder([Song.fader], Song.gainGroup);
-	fork{
-		p.secDur[e.start..(e.start + 1)].sum + 2 => _.wait ;
-		Song.transitionGroup.free
-	}
-});
-P(\plotTree, music: { |p b e|
-	defer{ s.plotTree }
-});
 P.still(\kiss, timecode: 2810.1.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
@@ -1637,25 +1624,35 @@ P(\bassKissing,start:'kissing',music:
 		)
 	);	
 [ "final rest","f#4",[5] ].addLine; 
-Song.gain = -21.dbamp;
-Song.faderFunc = {
+
+Song.gain = -14.dbamp;
+
+Song.faderFunc = { |target|
+	target = target ? RootNode(s);
 	Song.fader = {
 		// Song.fader.isPlaying
 		In.ar(0, 5) * Song.gain => ReplaceOut.ar(0, _) 
-	}.play(RootNode(s),addAction: \addToTail).register
+	}.play(target, addAction: \addToTail).register
 };
+
 CmdPeriod.add{
 	Song.faderFunc.()
 };
-Song.sections.do{|sec| P(\gain, start: sec, music:{|p b e| 
+
+30.do{|sec| P(\gain, start: sec, music:{|p b e| 
 	Song.fader.isPlaying.not.if{
 		Song.fader.free;
 		Song.faderFunc.()
 	};
-	CmdPeriod.add{
-		Song.faderFunc
+})};
+
+P(\kissingGain,start: 'kissing', music: { |p b e|
+	Song.fader.isPlaying.not.if{
+		Song.fader.free;
+		Song.faderFunc.(Song.gainGroup)
 	};
-})}
-	//}.fork
+	s.reorder( [Song.fader], p.gainGroup );
+});
+
 )
 

@@ -1,12 +1,9 @@
 (
 "/Users/michael/tank/super/Trek/Songs/11-Xtreme1.scd".load;
 {
-	["/*SPOCK*/ -boom- This is an excellent body, Doctor." ,"1 -7 1 2 6 7 6 5 5 6 4 1 -7".dm(\f,\mixolydian)].addLine;
-	P(\gain,lag:-0.1, music: { |p b e|
-		Song.fader.free
-	});
-	Song.setTempoMap(\excellent,"e e e x x | ex x e x ex | ee ee ee ee");
-	P.still(\henochExcellent, timecode: 
+["/*SPOCK*/ -boom- This is an excellent body, Doctor." ,"1 -7 1 2 6 7 6 5 5 6 4 1 -7".dm(\f,\mixolydian)].addLine;
+Song.setTempoMap(\excellent,"e e e x x | ex x e x ex | ee ee ee ee");
+P.still(\henochExcellent, timecode: 
 		// 2828.1
 		2821.1
 		.seconds, music: { |p b e|
@@ -14,9 +11,9 @@
 				wait: b.sum,
 				text: ["this is an excellent","body Doctor"],
 			)
-		});
-		Song.synthVTracks.ninezero = {|mix = 0.1| {|i| DWGReverbC1C3.ar(i, mix: mix) / 2.5}};
-		P.synthV(role: \henoch, take: \lead,
+});
+Song.synthVTracks.ninezero = {|mix = 0.1| {|i| DWGReverbC1C3.ar(i, mix: mix) / 2.5}};
+P.synthV(role: \henoch, take: \lead,
 			pbind: Song.enlarge(11),
 			params: {|p b| [
 				lyrics: " r This is an excellent - + + body - + Doctor + I seem to have received + the best of the three",
@@ -31,8 +28,8 @@
 
 				}.play
 
-			});
-			P(\hat, music: { |p b e|
+});
+P(\hat, music: { |p b e|
 				[
 					dur: "q q q q q q q q".asBeats.warpTo(e.tempoMap.quantizeDft(0.8)).q,
 					dur: "q q q q q q q q".asBeats.warpTo(e.tempoMap.quantizeWindow(0.8,6)).q,
@@ -40,45 +37,45 @@
 					instrument: \hihat, rel: 0.05,
 					pan: 0.5
 				].pp
-			});
-			P(\bassNote, music: { |p b e|
+});
+P(\bassNote, music: { |p b e|
 				(
 					freq: 1.df(\f,[4,3]),
 					instrument: \sawSynth,
 					out: [0,2]
 				).play
-			});
-			P(\clav, music: { |p b e|
+});
+P(\clav, music: { |p b e|
 				[
 					freq: [7, 11, 5,  4,  2].df(\f,3,\mixolydian).q,
 					dur: "e e qqq qq qq".asBeats.warpTo( e.tempoMap.quantizeWindow(0.4,6) ).q,
 					out: Effect.bus({|i| SineShaper.ar(i, 0.2) * 1.35 },)
 				].pp
-			});
-			["I seem to have received the best of the three. ","1 -5 -7 1 2 -6 1 4 3 2 1".dm(\e)].addLine;
-			P.still(\clear, timecode: 0.seconds, music: { |p b e|
+});
+["I seem to have received the best of the three. ","1 -5 -7 1 2 -6 1 4 3 2 1".dm(\e)].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
 				e.still.( 
 					wait: b.sum,
 					text: ["I seem to have received","the best of the three"],
 				)
-			});
-			Song.setTempoMap(P.calcStart(),"e Q E Q E e e q e e q");
-			P.tune(_ <> [instrument: \stringyy].pm);
-			P(\cymbal,syl:9, music: { |p b e|
+});
+Song.setTempoMap(P.calcStart(),"e Q E Q E e e q e e q");
+P.tune(_ <> [instrument: \stringyy].pm);
+P(\cymbal,syl:9, music: { |p b e|
 				(
 					instrument: \cymbalsDS, 
 					att:0.2, 
 					amp:0.02
 				).play
-			});
-			P(\click, music: { |p b e|
+});
+P(\click, music: { |p b e|
 				[
 					dur: "e q q e q q q q".asBeats.warpTo( e.tempoMap ).q,
 					rest: [\r, 1, 1, 1, 1, 1, 1].q,
 					instrument: \hihat, rel: 0.05,
 				].pp
-			});
-			P(\fifths, music: { |p b e|
+});
+P(\fifths, music: { |p b e|
 				[
 					freq: [
 						\r,
@@ -88,14 +85,14 @@
 					dur: "e qq q".asBeats.warpTo( e.tempoMap ).q,
 					instrument: \wash, amp: 0.03,freqLag:0.05
 				].ppm
-			});
-			P(\fourFiveOne, music: { |p b e|
+});
+P(\fourFiveOne, music: { |p b e|
 				[
 					freq: [\r, 4, 5, 1].df(\e,3).q,
 					dur: b.parse([7, 1, 2, 1]).q
 				].pp
-			});
-			P(\bassNote, music: { |p b e|
+});
+P(\bassNote, music: { |p b e|
 				[
 					freq: [\r, -5, -6].df(\e,4).q,
 					dur: b.parse([1,4]) ++ 0.5 => _.flat => _.q,
@@ -109,9 +106,9 @@
 					instrument: \sawSynthSustain,
 					out: Effect.bus({|i| Pan2.ar(i,1) },)
 				].ppm
-			});
-			["-boom- Strength, -boom- hearing, -boom eyesight + all","-1 4 2 4 3 -7 2 1 6".dm('e-',\mixolydian)].addLine;
-			P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
+});
+["-boom- Strength, -boom- hearing, -boom eyesight + all","-1 4 2 4 3 -7 2 1 6".dm('e-',\mixolydian)].addLine;
+P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
 				e.still.( 
 					wait: b.drop(1).sum + e.bNext.sum,
 					text: ["strength","hearing"],
@@ -122,9 +119,9 @@
 						["all far above","your human norms"]
 					],
 				)
-			});
-			Song.setTempoMap(\Strength,"q q Q Q Q Q Q Q q ");
-			P(\bassline, music: { |p b e|
+});
+Song.setTempoMap(\Strength,"q q Q Q Q Q Q Q q ");
+P(\bassline, music: { |p b e|
 				[
 					freq: [[1, 5], [2, 6], [-7, 4], -7.5].df('e-',3,\mixolydian).q,
 					dur: b.parse([2, 3, 3, 1]).q,
@@ -133,8 +130,8 @@
 					instrument: [\default, \default, \default,  \sawSynthSustain].q,
 					legato: [1, 1, 1, 4, ].q,
 				].pp
-			});
-			P(\tamb, music: { |p b e|
+});
+P(\tamb, music: { |p b e|
 				{
 					var levels = [5,1,2,1] /5 => _.dq(inf);
 					var durs =  
@@ -156,8 +153,8 @@
 					* Env([0,0,1],b.parse([7])).kr(0,gate:1)
 				}.play;
 
-			});
-			P.synthVs(role: \henoch, take: [ \lead, \double ], params: {|p b| [
+});
+P.synthVs(role: \henoch, take: [ \lead, \double ], params: {|p b| [
 				lyrics: "r strength r hearing + r eyesight + all",
 				paramTension: -0.25,
 				// legato: [ [1, 1, 1, 1, 1, 1, 1, 0.7, 0.7 ] ],
@@ -175,8 +172,8 @@
 					}
 				}.play
 
-			});
-			P(\drums, music: { |p b e|
+});
+P(\drums, music: { |p b e|
 				var tm = e.tempoMap.quantizeDft(0.3);
 				[
 					dur: "e e".beats.warpTo( tm ).q,
@@ -200,16 +197,16 @@
 					rests: [\r, 1, 1, 1].q,
 					instrument: \sn_808, amp:0.05
 				].pp
-			});
-			[" far above your human norms. "," 7 6 3 6 7 11 4".dm(\d,\dorian)].addLine;
-			P.still(\clear, timecode: 0.seconds, music: { |p b e|
+});
+[" far above your human norms. "," 7 6 3 6 7 11 4".dm(\d,\dorian)].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
 				/* e.still.( 
 					wait: b.sum,
 					text: ["far above","your human norms"],
 				) */
-			});
-			Song.setTempoMap(\norms,"Q E Q E Q E q");
-			P(\tamb, music: { |p b e|
+});
+Song.setTempoMap(\norms,"Q E Q E Q E q");
+P(\tamb, music: { |p b e|
 				{
 					var levels = [5,1,2,1] /5 => _.dq(inf);
 					var durs =  
@@ -229,8 +226,8 @@
 					Shakers.ar(3, energy:energy   , decay: 1).tanh
 					=> Pan2.ar(_, 0.8)
 				}//.play;
-			});
-			P(\drums, music: { |p b e|
+});
+P(\drums, music: { |p b e|
 				var tm = e.tempoMap.quantizeDft(0.3);
 				[
 					dur: "x*16".beats.warpTo( tm ).q,
@@ -250,8 +247,8 @@
 					rests: [\r, 1, 1, 1].q,
 					instrument: \sn_808, amp:0.05
 				].pp
-			});
-			P.synthVs(role: \henoch, take: [ \lead, \double ], params: {|p b| [
+});
+P.synthVs(role: \henoch, take: [ \lead, \double ], params: {|p b| [
 				lyrics: "far above + your human + norms. ",
 				paramTension: -0.25,
 				pitchTake: [ 1, 3 ]
@@ -261,15 +258,15 @@
 					=> p.synthVTracks.at(e.key).()
 				}.play
 
-			});
-			P(\bass, music: { |p b e|
+});
+P(\bass, music: { |p b e|
 				[
 					dur:"e e e e e e e".asBeats.warpTo( e.tempoMap ).q,
 					freq: " 7 6 3 6 7 11 4".df(\d,3,\dorian).q,
 					instrument: \sawSynth
 				].pp
-			});
-			P.tune(_ <> [instrument: \stringyy].pm);
+});
+P.tune(_ <> [instrument: \stringyy].pm);
 		}.();
 ["Im surprised the Vulcans never conquered your race. "," 4 5 -7 3 1 -7 1 2 5 4 6 2 ".dm(\f, \harmonicMinor)].addLine;
 P.still(\wide, timecode: 2826.5.seconds, music: { |p b e|
@@ -412,7 +409,7 @@ P(\bass,start:'worship',music:{|p b e|
 				instrument: \sawSynth
 			].p => _.fin(15) => _.play
 });
-		P('drum',start:\worship,music: {|p b e|
+P('drum',start:\worship,music: {|p b e|
 			var volScale = 0.7;
 			[
 				dur:0.5.dup(20).warpTo(e.tempoMap).q ,
@@ -448,7 +445,7 @@ P(\pianoWorship,start:'worship',music:{|p b e|
 });
 		//["/*SPOCK*/ Yes, of course, Just as we do, Doctor. ",[7,5,4,5,7,12,11,5,3].dm('e',octave:5 )].addLine;
 ["/*SPOCK*/ (boom) Yes, (boom) of course, Just as we do, Doctor. ",[-7,7,-7,5,4,5,7,12,11,5,3].dm('e',octave:5 )].addLine;
-		P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
+P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
 			 e.still.( 
 				wait: b.drop(1).sum,
 				text: ["Yes","of course"],
@@ -457,7 +454,7 @@ P(\pianoWorship,start:'worship',music:{|p b e|
 					["just as we do","doctor"],
 					],
 			)
-		});
+});
 P(\bonk, music: { |p b e|
 	{
 		var durs = b.parse([2,2, 3, 4 ]) ++ e.bnext[0] => _.flat;// .postln;
@@ -493,7 +490,7 @@ P.double(role: \henoch, params: {|p b| [
 					e.playbuf
 					=> p.synthVTracks.at(e.key).()
 				}.play
-	});
+});
 P(\ofCourseBass,start:'of course',music:{|p b e|
 			[
 				freq:[\r,4,3,2].df('e',octave:[2, 3 ]).q,

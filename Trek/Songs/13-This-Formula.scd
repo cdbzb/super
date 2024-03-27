@@ -756,6 +756,7 @@ P.tune('hypo you will',  { |i| i
 	=> Pmul(\freq,0.5,_)
 });
 Song.quarters['hypo you will'] = Song.parseBeats('hypo you will',[1, 1,1,1,1, 1,1,3/2,1/2, 1,1,5, 1]);
+Song.setTempoMap('This hypo',"q q q q q q q qe e q q qqqqq q");
 P(\hypoBase,'hypo you will', music:{|p b e|
 	[
 		//	instrument:\pluckD,
@@ -776,7 +777,10 @@ P(\hypoBase,'hypo you will', music:{|p b e|
 });
 P(\drumz, music: { |p b e|
 	[
-		dur: "q q qqq q qq q q qq q q qq q".asBeats.warpTo( Song.quarters['hypo you will'] ).q,
+		dur: "q q qqq q qq q q qq q q qq q".asBeats.warpTo(
+			// Song.quarters['hypo you will']
+			e.tempoMap.quantizeDft(0.5)++ p.tempoMap[e.start + 1]
+		).q,
 		instrument: \kick_gentle,
 		decay: 20,
 		tone: 44,
@@ -787,7 +791,15 @@ P(\drumz, music: { |p b e|
 		instrument: \cymbalsDS,
 		amp: 0.03,
 		lag: b[0]
-	).play
+	).play;
+	[
+		dur: "qqq w w w w w w w  ".asBeats.warpTo( e.tempoMap.quantizeDft(0.5) ++ p.tempoMap[e.start + 1] ).q,
+		instrument: \sn_808,
+		tone: 5.df(\d,3),
+		snappy: 0.9,
+		rests: MuteFirst(),
+		amp: 0.1
+	].pp
 	
 });
 P(\hypoAnswer,start:'hypo you will',music:{|p b e|
@@ -1047,6 +1059,23 @@ b=b.drop(1);
 }
 );
 ["you to administer each of the injections, ",[5, 4,3,2,3,1, 5.5, 4.5, 1,2,3,2].dm('f#')].addLine;
+P(\accents, music: { |p b e|
+[
+		instrument: \harp,
+		amp: 0.01,
+		freq: [5, 5.5].df('f#').q,
+		dur: b.parse([6, 6]).q,
+		coef: 0.12,
+		out: 
+		[2, 3].collect{|p| Effect.bus({|i|i => Pan2.ar(_, 4 - p * 2 - 1) => DWGReverbC1C3.ar(_, mix: 1)  },out:p, inputChannels: 1) }
+	] .pp;
+	{
+		Gendy3.arWidth(freq: Env([5, 5, 5.5].df('f#'), b.parse([4, 2])).kr(0,gate:1))
+		* 0.02
+		* EnvGen.cutoff(b[..6].sum, 4)
+		=> Out.ar(4,_)
+	}.play
+});
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -1126,7 +1155,9 @@ P(\notes, music: { |p b e|
 	[
 		freq: [\r, 1, 5, \r, 6].df(\g,4, \whole).q,
 		dur: b.parse([1, 3, 3, 4, 1]).q,
-		instrument: \harp, coef: 0.05, amp: 0.03
+		instrument: \harp, coef: 0.05, amp: 0.02,
+		out: [0, 0, 2, 0, 4].q
+
 	].pp
 });
 P.synthV(role: \chapel, take: \lead, params: {|p b| [
@@ -1227,6 +1258,7 @@ P.synthV(role: \chapel,
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).(mix:0.1)
+		* -2.dbamp
 	}.play
 });
 P(\forgettingPad ,start:'I was.',music:{|p b e|

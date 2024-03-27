@@ -16,7 +16,7 @@ o = [
 	"+",  "460050000",  "",  Event.prNew,  
 	Array.prNew(40),  "1572070000",  "+",  "503790000",  
 	"",  Event.prNew,  Array.prNew(40),  "2075860000",  
-	"+",  "526370000",  "",  Event.prNew,  
+	"+",  "526370000",  "l i k",  Event.prNew,  
 	Array.prNew(40),  "2602230000",  "reduction",  "513670000",  
 	"r i",  Event.prNew,  Array.prNew(40),  "3115900000",  
 	"+",  "589880000",  "d a k",  Event.prNew,  
@@ -44,7 +44,7 @@ o = [
 	Array.prNew(8),  Array.prNew(1),  Event.prNew,  Array.prNew(12),  
 	"",  "Unnamed Track",  Array.prNew,  Event.prNew,  
 	Array.prNew(20),  "ff7db235",  Event.prNew,  Array.prNew(28),  
-	"synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/SynthV/song/1322106603/genbu-lead"
+	"synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/song/1322106603/genbu-lead"
 ];
 p = [
 	// Event

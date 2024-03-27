@@ -2,8 +2,41 @@
 	// Stills("/Users/michael/trek/BySection/media/return to tomorrow.mov").current;
 	Stills().current;
 //Line 239 The three volunteers are lying on beds, with the spheres on tables beside them. 
+try{ Song.transitionGroup.free };
 try{ Song.fader.free };
-Song( \song,[]).current;
+Song(\song,[]).current;
+
+Song.gain = -14.dbamp;
+
+Song.faderFunc = { |target|
+	target = target ? RootNode(s);
+	Song.fader.isPlaying.not.if { Song.fader = {
+		In.ar(0, 5) *
+		Env([Song.gain, 1], 0.5).kr(0, gate: \gate.kr(0))
+		=> ReplaceOut.ar(0, _);
+	}.play(target, addAction: \addToTail).register }
+};
+
+//so that fader is on even when for example listening to items
+// CmdPeriod.add{
+// 	Song.faderFunc.()
+// };
+Song.fader.isPlaying.not.if{ Song.faderFunc.() };
+
+Song.preroll = 0.5;
+
+Song.addLineFunc = { |sec|
+	( sec <= 30 ).if {
+		P(\gain, start:sec, lag: -0.21, music:{ |p b e| 
+			Song.fader.isPlaying.not.if{
+				Song.fader.free;
+				Song.faderFunc.()
+			}{
+				try{ s.reorder([Song.fader], RootNode(s), \addToTail) };
+			};
+		})
+	}
+};
 
 Song.xtremeBassFX = (s.options.outDevice == "MacBook Pro Speakers").if{
 	{
@@ -743,7 +776,7 @@ P(\transform,start:'transformation!',music:{ |p b e|
 		exc=Integrator.ar(exc,0.8,0.1);
 		exc=PinkNoise.ar(exc);
 		sig=MembraneCircle.ar(exc,[0.007,0.0073]*pitchScale,loss)*env;
-		sig
+		sig * gain
 	}.play;}
 
 });
@@ -1495,7 +1528,11 @@ P(\innerTwo,syl:5, music: { |p b e|
 P.tune( { |i| i <>[instrument: \stringyy].pm => Pmul(\freq, 0.5, _)} );
 		//P.tune('too am', {|i| Pbindf(i,\amp,0.01,\freq,1.df(\d,[4,5]))});
 [ " boom after so- long... (boom) so very long... Kiss ","d3 a b e4 d f g3 b c4 a3 e4 r" ].addLine; 
-P.tune( _ <> [instrument: \sparkTriangle, depth: 0.004, amp: 0.05, rest: [\r, 1, 1, 1, 1, 1, \r, 1, 1, 1, 1].q].pm );
+Song.transitionGroup = Group.before(s.defaultGroup );
+Song.transitionItems = Group.head(Song.transitionGroup);
+Song.transitionFX = Group.tail(Song.transitionGroup);
+Song.gainGroup = Group.tail(Song.transitionGroup);
+P.tune( _ <> [group: Song.transitionItems, instrument: \sparkTriangle, depth: 0.004, amp: 0.05, rest: [\r, 1, 1, 1, 1, 1, \r, 1, 1, 1, 1].q].pm );
 P.synthV(role: \sargon, take: 
 		// \lead
 		\lower
@@ -1509,7 +1546,7 @@ P.synthV(role: \sargon, take:
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
 			* 2.dbamp
-		}.play
+		}.play(s,target: p.transitionItems)
 
 });
 P.synthV(role: \thalassa, take: \lead, params: {|p b| [
@@ -1523,7 +1560,7 @@ P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
 			* 2.dbamp
-		}.play
+		}.play(s, target: p.transitionItems)
 
 });
 P.still(\kirklooksDown,syl:0, timecode: 2806.26.seconds, music: { |p b e|
@@ -1541,14 +1578,15 @@ P.still(\kirklooksDown,syl:0, timecode: 2806.26.seconds, music: { |p b e|
 ~justTheTune.('very long');
 P(\afterSoLongSketch,start:'very long',music: {|p b e|
 			var afterSoLong=[\r,4,5,8,7,9]++[\r,5,6,4,7] + [ 2,2,2,2,2,2,2,2,2,2,3 ].collect{|i| [0,i]};
-			(degree:1,octave:4,dur:6).play;
+			(degree:1,octave:4,dur:6, group: p.transitionItems).play;
 			[
 				legato:1.05,
 				instrument:\sawSynthSustain,
 				degree:Pseq(afterSoLong)-1,
 				dur:b.q,
 				out: Effect(PlateReverb.ar(_,mix:0.1),out:3).bus.index,
-				amp: 0.08
+				amp: 0.08,
+				group: p.transitionItems
 			] => {|i| i.p => Pset(\amp,0.04,_)=>_.play; i .ppm}
 			//m
 			;
@@ -1557,7 +1595,8 @@ P(\afterSoLongSketch,start:'very long',music: {|p b e|
 				instrument:\reedy,
 				dur:b.parse([6,5]).q,
 				out: Effect(PlateReverb.ar(_,mix:0.2),out:1).bus.index,
-				amp: 0.08
+				amp: 0.08,
+				group: p.transitionItems
 			].pp
 		}
 	);
@@ -1577,10 +1616,34 @@ P(\bassNotes54,start:'very long',music:
 //[ "(boom)...so very long... Kiss","g3 b c4 a3 e4 r" ].addLine; 
 	//~justTheTune.('so very long');
 [ "(kissing) r r r r r r r r ..","g#5 f# d# b4 a# g# e5 d# " ].addLine; 
-	Song.transitionGroup = Group.before(s.defaultGroup );
-	Song.transitionItems = Group.head(Song.transitionGroup);
-	Song.transitionFX = Group.tail(Song.transitionGroup);
-	Song.gainGroup = Group.tail(Song.transitionGroup);
+
+
+Song.innerFunc = {
+	Song.innerFader = {
+		In.ar(0,5)
+		* Env([1, Song.gain], 0.5).kr(0, gate: \gate.kr(0))
+		=> ReplaceOut.ar(0,_)
+	}.play(s, target: Song.gainGroup).register
+};
+P(\setup, start: 'very long', music: {|p b e|
+	Song.innerFunc.()
+});
+P(\kissingGain,start: 'kissing', music: { |p b e|
+	p.innerFader.isPlaying.if {
+		Song.innerFader.set(\gate, 1);
+	}{
+		p.innerFunc.();
+		p.fader.set(\gate, 1);
+	};
+	p.fader.set(\gate, 1);
+	// s.defaultGroup.release;
+	// s.bind{
+	// 	Song.fader.free;
+	// 	Song.faderFunc.(Song.gainGroup) 
+	// }
+	// s.reorder( [Song.fader], p.gainGroup );
+
+});
 P.still(\kiss, timecode: 2810.1.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
@@ -1588,26 +1651,22 @@ P.still(\kiss, timecode: 2810.1.seconds, music: { |p b e|
 			fade:3
 		)
 });
-P(\bowedKissing,music: { |p b e|
+P(\bowedKissing, lag: 0.1,music: { |p b e|
 				[ 
-					//				tempo:0.8,
 					instrument:\trem2,
 					rate:Pbrown(2,0,0.3),
 					degree:Pseq([6,5,3,1,7-7,6-7,4,3,5-7]-1),
 					root:-1,
 					octave:[6,4],
-					// scale:Scale.major,
-					//				dur:Song.currentSong.durs[7]++Pseq([2.5]),
 					dur:b++[2.5] => _.q,
 					legato:1,
 					group: p.transitionItems,
 					out: Effect.bus({|i| PlateReverb.ar(i,mix:0.5)  * EnvGen.cutoff(b.sum,10, curve: -2) * 2 * 2.dbamp },inputChannels:2, target: p.transitionFX),
 					mtranspose:Pseq([ [0,2,4,7],[0,3,5,7],[0,2,5,7],[0,2,4,7],[0,3,5,7],[0,4,6,7],[0,2,4,7],[0,3,5,7],[0,7] ].collect(_-7)),
 				].pp;
-				defer{s.plotTree}
 		}
 	);
-P(\bassKissing,start:'kissing',music:
+P(\bassKissing, lag:0.1,start:'kissing',music:
 		(
 			instrument:\sawSynth,
 			rel:15,
@@ -1624,35 +1683,6 @@ P(\bassKissing,start:'kissing',music:
 		)
 	);	
 [ "final rest","f#4",[5] ].addLine; 
-
-Song.gain = -14.dbamp;
-
-Song.faderFunc = { |target|
-	target = target ? RootNode(s);
-	Song.fader = {
-		// Song.fader.isPlaying
-		In.ar(0, 5) * Song.gain => ReplaceOut.ar(0, _) 
-	}.play(target, addAction: \addToTail).register
-};
-
-CmdPeriod.add{
-	Song.faderFunc.()
-};
-
-30.do{|sec| P(\gain, start: sec, music:{|p b e| 
-	Song.fader.isPlaying.not.if{
-		Song.fader.free;
-		Song.faderFunc.()
-	};
-})};
-
-P(\kissingGain,start: 'kissing', music: { |p b e|
-	Song.fader.isPlaying.not.if{
-		Song.fader.free;
-		Song.faderFunc.(Song.gainGroup)
-	};
-	s.reorder( [Song.fader], p.gainGroup );
-});
 
 )
 

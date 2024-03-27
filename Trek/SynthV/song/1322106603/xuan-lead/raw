@@ -11,9 +11,9 @@ o = [
 	Array.prNew(12),  "a",  Event.prNew,  Array.prNew(8),  
 	Array.prNew(4),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  Event.prNew,  Array.prNew(12),  Event.prNew,  
-	Array.prNew(12),  "776150000",  "",  Event.prNew,  
+	Array.prNew(12),  "388070000",  "",  Event.prNew,  
 	Array.prNew(4),  Event.prNew,  Array.prNew(40),  "7260560000",  
-	"what?",  "1597470000",  "main",  Event.prNew,  
+	"what?",  "798730000",  "main",  Event.prNew,  
 	Array.prNew(32),  Event.prNew,  Array.prNew(8),  Array.prNew,  
 	"cubic",  Event.prNew,  Array.prNew(8),  Array.prNew,  
 	"cubic",  Event.prNew,  Array.prNew(8),  Array.prNew,  
@@ -32,7 +32,7 @@ o = [
 	Array.prNew(1),  Event.prNew,  Array.prNew(12),  "",  
 	"Unnamed Track",  Array.prNew,  Event.prNew,  Array.prNew(20),  
 	"ff7db235",  Event.prNew,  Array.prNew(28),  "synthV.wav",  
-	"NoAspiration",  "/Users/michael/tank/super/SynthV/song/1322106603/xuan-lead"
+	"NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/song/1322106603/xuan-lead"
 ];
 p = [
 	// Event

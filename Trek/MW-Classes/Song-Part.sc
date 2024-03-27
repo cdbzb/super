@@ -16,6 +16,7 @@ Song {
 	var <secLoc, <secDur, <pbind;
 	var <>loadedFrom;
 	var scrollOn = false;
+	var addLineFunc;
 	classvar <>lastPlayOnly;
 	// TODO deprecate muteTunes !! 
 	classvar <>muteTunes;
@@ -328,13 +329,14 @@ Song {
 			)
 		}
 	}
+
 	writeDurs {|section|
 		File("/tmp/durs","w").write(Song.durs[section].list.asString.replace("List","")++".addDurs;").close
 	}
 	sections { ^( song.size / 2 ).asInteger }
+
 	addLine { |line| //array
 		line[1].isNil.if{line=line++["r"]};
-
 
 		//TODO merge lyricsToDurs with Archive when saving!!
 		this.hasDursButNotLyricsToDurs.if{
@@ -344,14 +346,17 @@ Song {
 		lyrics = lyrics.add(line[0]);
 		tune = tune.add(
 			case 
-			{line[1]=="r"} {[\r].q}
 			{line[1].class==Array } {line[1].q}
+			{line[1]=="r"} {[\r].q}
 			{line[1].class==String} { Panola.new(line[1]).midinotePattern}
-		).postln;
+		);
 		
 		line[2].notNil.if{
 			durs.put(line[0].asSymbol,(line[2]).q);
 		};
+
+		Song.addLineFunc.value( Song.sections );
+
 		^Song.sections-1;
 	}
 	addDurs {|array|

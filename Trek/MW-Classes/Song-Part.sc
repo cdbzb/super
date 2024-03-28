@@ -580,16 +580,19 @@ Song {
 	}
 	recordSection { |start end bus path channels=2 tail=3|
 		var s = Server.default;
-		fork{
-			s.recSampleFormat = \int16;
-			s.prepareForRecord(path);
-			s.sync;
-			this.playSectionParts (start, end); // latency is added here due to use of p
-			Server.default.latency * 2 => _.wait; // double latency
+		P(\recordSection, start: start, music: {|p b e|
+
 			s.record(
 				bus:bus,
-				duration:(start..end).collect(this.secDur[_]).sum + tail
+				duration:(start..end).collect(this.secDur[_]).sum + tail,
+				path: "/tmp/recording.wav"
 			);
+		});
+		fork{
+			s.recSampleFormat = \int16;
+			s.prepareForRecord(path: path);
+			s.sync;
+			this.playSectionParts (start, end); // latency is added here due to use of p
 			}
 	}
 	makeVid { |start end dir tail=2| // check Sync

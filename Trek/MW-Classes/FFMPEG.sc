@@ -1,13 +1,16 @@
 FFMPEG {
 	classvar defaultFile= "~/tank/super/Trek/Stills/2023-07-03_01-37-42.mp4",
 	csvFile = "~/tank/super/Trek/Stills/Warping/2023-07-03 01-37-42.mp4.csv",
-	<>csv, <words, lineIndices, timecode
+	<>csv, <words, lineIndices, <timecode
 	;
 
 	*initClass {
 		csv = CSVFileReader.read("~/tank/super/Trek/Stills/Warping/2023-07-03 01-37-42.mp4.csv".standardizePath);
+		// csv = csv.deepCollect(2, (_.replace(Char.comma, "")));
+		csv = csv.collect{|i| i.reject{|x| x.size==1 and: x[0]==$" }};
 		words = csv.slice(nil, 0).drop(1).collect( _.replace($\",""));
 		timecode = csv.slice(nil, 1).drop(1);
+		lineIndices = ()
 	}
 
 	*warpLinesCmd { |sections|
@@ -24,6 +27,12 @@ FFMPEG {
 		.collect(_.asInteger)})
 		.collect{|i| SMPTE.array(i, 60).asSeconds} //note framerate=60!!
 	}
+	*boundariesW{ //in seconds for each word
+		^timecode
+		.collect({|i| i.split($:)
+		.collect(_.asInteger)})
+		.collect{|i| SMPTE.array(i, 60).asSeconds} //note framerate=60!!
+	}
 
 	*rates{ ///rates for each line
 		^Song.lyrics.collect{|i x| try{ Song.secDur[x] / this.durs[x] }}
@@ -35,22 +44,22 @@ FFMPEG {
 			var line = Song.lyrics[lineNumber].split(Char.space)
 			.reject({|i| i.size == 0});
 			// if line is super short append next to get better match
-			(( line.size < 2 ) and: (lineNumber + 2 <Song.lyrics.size)).if{
+			(( line.size < 2 ) and: (lineNumber + 2 < Song.lyrics.size)).if{
 				line = line ++ Song.lyrics[lineNumber + 1].split(Char.space)
 			};
-			words.collect{|i x| words[x..(x + line.size)].editDistance(line, {|a b| a.contains(b)}) }.minIndex + 1
+			words.collect{|i x| words[x..(x + line.size - 1)].editDistance(line, {|a b| a.contains(b)}) }.minIndex + 1
 		};
-		lineIndices.isNil.if{
+		lineIndices.at(Song.current).isNil.if{
 			'calculating line indices...'.postln;
-			lineIndices = Song.lyrics.size.collect(indexOfMatch.(_))
+			lineIndices.put(Song.current, Song.lyrics.size.collect(indexOfMatch.(_)))
 		};
-		^lineIndices
+		^lineIndices.at(Song.current)
 	}
 
-	*warpSegments {  |boundaries = #[3, 3, 3] rates=#[1, 2, 3] videoFile audioFile|
 	//// this generates an ffmpeg command that will warp 
 	//// based on supplied boundaries in seconds and rates
 	//// audioFile is added in
+	*warpSegments {  |boundaries = #[3, 3, 3] rates=#[1, 2, 3] videoFile audioFile|
 	var num;
 	var seg = { |segment=#[20,40] rate=0.5 number=0 |
 	

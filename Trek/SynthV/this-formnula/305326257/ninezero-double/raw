@@ -21,7 +21,7 @@ o = [
 	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
 	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
 	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
-	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
+	Array.prNew(6),  "cubic",  Event.prNew,  Array.prNew(8),  
 	Array.prNew,  "cubic",  Event.prNew,  Array.prNew(8),  
 	Array.prNew,  "cubic",  "c55226b8-e035-4fc6-a857-aacf2bbe7548",  Event.prNew,  
 	Array.prNew(40),  "c55226b8-e035-4fc6-a857-aacf2bbe7548",  Event.prNew,  Array.prNew(28),  
@@ -33,7 +33,7 @@ o = [
 	Event.prNew,  Array.prNew(8),  Array.prNew(1),  Event.prNew,  
 	Array.prNew(12),  "",  "Unnamed Track",  Array.prNew,  
 	Event.prNew,  Array.prNew(20),  "ff7db235",  Event.prNew,  
-	Array.prNew(28),  "synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/SynthV/this-formnula/305326257/ninezero-double"
+	Array.prNew(28),  "synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/this-formnula/305326257/ninezero-double"
 ];
 p = [
 	// Event
@@ -293,6 +293,9 @@ p = [
 	// Array
 	83, [ 'points',  o[84],  nil,  nil,  
 		nil,  nil,  'mode',  o[85] ],  
+	// Array
+	84, [ 0.0,  0,  962438400.0,  0,  
+		1281369600.0,  -6 ],  
 	// Event
 	86, [ array: o[87],  size: 2,  
 		proto: nil,  parent: nil,  

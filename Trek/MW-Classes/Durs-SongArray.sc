@@ -77,6 +77,12 @@ SongArray { //array which can be indexed by current song lyric
 		i.isInteger.not.if{i=Song.songs.at(song).section(i.asSymbol)};
 		array.put(i,x)
 	}
+	size{
+		^array.size
+	}
+	collect { |func|
+		^array.collect(func)
+	}
 }
 /*
 a=SongArray()

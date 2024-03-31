@@ -1492,7 +1492,7 @@ P.still(\withMouthOpenT, timecode: 3417.8.seconds, music: { |p b e|
 });
 P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 	lyrics: "wat iz it sa gan?",
-	phonemes: ["what".xsampa.unbubble,"is".xsampa.unbubble,"it".xsampa.unbubble,"","gone".xsampa.unbubble] , // make .xsama work on arrays
+	phonemes: ["w A th", "i\\ ts", "i\\ th" ,  "", "k o n",] , // make .xsama work on arrays
 	lag: [0.1,0.05,0,0,0],
 	pitchTake: 1
 ] }, music:{|p b e|

@@ -87,9 +87,9 @@ P(\drumz,'this formula',music:
 		=> _.play
 	}
 );
-P.synthV(role: \formulaLead,lag: -0.02, take: \lead, params: {|p b| [
+P.synthV(role: \formulaLead, lag: -0.02, take: \lead, params: {|p b| [
 	lyrics: "r this formula + + - - will reduce + the ",
-	lag:[0,0,0,0,0,0,0,0.1,0,0],
+	lag:[0,0,0,0,0,0,0,0.1,0,0],13
 	pitchTake: 1,
 ] }, music:{|p b e|
 	{
@@ -118,22 +118,12 @@ P.synthVs(\mo, take:[\lead, \double], lag: -0.03, params: {|p b| [
 		}.play
 	}
 });
-P.synthV(\kevin, take:\harmony,
+P.synthVs(\kevin, take:[\harmony, \harmony2],
 	filter: (midinote: [-1, 1, 1, -7, -6].dm(\d)), 
 	params: {|p b| [
 	lyrics: "r this formula + + r r r r r r",
-	pitchTake: 1,
+	pitchTake: [1, 3],
 	vocalMode: \Soft
-] }, music:{|p b e|
-	{
-		e.playbuf
-		/8
-		=> Pan2.ar(_,1)
-		// => p.synthVTracks.at(e.key).()
-	}.play
-});
-P.double(\kevin, take: \harmony, params: {|p b| [
-	
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -247,6 +237,30 @@ p.hatPattern.(
 //=>_.play( Song.quarters[e.start].quantizeWindow.asTempoClock)
 });
 ["(boom )heart action and the bodily " , [6, 14,13,11, 7,11,12,13,11].dm('d',octave:4 )].addLine ;
+Song.setTempoMap('and the bodily', [1,7/4,2/4,7/4, 1/2,1/2, 2/3,2/3,2/3 ]);
+P(\chords, music: { |p b e|
+	[
+		freq: [
+			[4, 6],
+			[4, 6],
+			[5, 11],
+			[5, 11],
+			[5, 7],
+			[5, 7],
+			[5, 11],
+			[5, 11],
+			[12, 6],
+			[12, 6],
+			[14, 5],
+			[13, 5],
+		].df(\d).q,
+		dur: "q q q q q q q q q q q q".asBeats.warpTo( e.tempoMap.quantizeDft(0.5) ++ p.tempoMap[e.start + 1].quantizeDft(0.5) ).q,
+		amp: 0.8,
+		instrument: \stringyy,
+		out: 4
+
+	].ppm
+});
 P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.drop(1).sum,
@@ -254,7 +268,7 @@ P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
 	)
 });
 P.synthV(role: \formulaLead, take:\lead,
-	pbind: Song.enlarge(5,2) ,
+	pbind: Song.enlarge(5,2),
 	params: {|p b| [
 		lyrics: "r heart action +  and the bodily + + functions + to normal +",
 		pitchTake: 1,
@@ -266,14 +280,17 @@ P.synthV(role: \formulaLead, take:\lead,
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
-P.synthV(\mo, take:\lead,
+P.synthVs(\mo, take:[\lead, \double],
 	pbind: 
 	Song.enlarge(5,2)
 	,
 	params: {|p b| [
 	lyrics: "r heart action +  and the bodily + + functions + to normal +",
-	legato: [ 1,  1, 1, 0.6, 1, 1, 1 ],
-	pitchTake: 1
+	legato: [[ 1,  1, 1, 0.6, 1, 1, 1 ]],
+	pitchTake: [1, 3],
+	paramTension:-0.2,
+	paramBreathiness:0.2,
+	vocalMode: \Muted
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -281,44 +298,33 @@ P.synthV(\mo, take:\lead,
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
-P.double(\mo, params: {|p b| [
-		
-	] }, music:{|p b e|
-		{
-			e.playbuf
-			// => p.synthVTracks.at(e.key).()
-			/4
-		}.play
-	});
-	P.synthV(\kevin, take: \harmony,
-		pbind: {|p b|
-			[
-				midinote: [-1, 6, 5, 5, 5].dm(\d).q,
-				dur: b.parse( [1, 0.66,  0.33, 1 , 1 ] ).q
-			].p
-		},
-		legato: [ 1, 1, 0.6, 0.7 , 0.6 ],
-		params: {|p b| [
-		lyrics: "r heart - action +",
-		pitchTake: 1,
-		vocalMode: \Soft
-	] }, music:{|p b e|
-		{
-			e.playbuf
-			// => p.synthVTracks.at(e.key).()
-			/8
-		}.play
-	});
-	P.double(\mo, take: \harmony, params: {|p b| [
-		
-	] }, music:{|p b e|
-		{
-			e.playbuf
-			// => p.synthVTracks.at(e.key).()
-			/8
-		}.play
-	});
-Song.setTempoMap('and the bodily', [1,7/4,2/4,7/4, 1/2,1/2, 2/3,2/3,2/3 ]);
+P.synthV(\kevin, take: \harmony,
+	pbind: {|p b|
+		[
+			midinote: [-1, 6, 5, 5, 5].dm(\d).q,
+			dur: b.parse( [1, 0.66,  0.33, 1 , 1 ] ).q
+		].p
+	},
+	legato: [ 1, 1, 0.6, 0.7 , 0.6 ],
+	params: {|p b| [
+	lyrics: "r heart - action +",
+	pitchTake: 1,
+	vocalMode: \Soft
+]}, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+		/8
+	}.play
+});
+// P.double(\mo, take: \harmony, params: {|p b| [
+// ] }, music:{|p b e|
+// 	{
+// 		e.playbuf
+// 		// => p.synthVTracks.at(e.key).()
+// 		/8
+// 	}.play
+// });
 //P.tune('and the bodily');
 
 P.tune( 'the bodily',Pset(\dur, Song.tempoMap[ 'the bodily' ] .beats.warpTo(Song.tempoMap[ 'the bodily' ].quantizeDft).q,_));
@@ -575,7 +581,7 @@ P(\chank, music: { |p b e|
 	}, out:2);
 	var tempoMap = e.tempoMapAll.quantizeDft;
 	[
-		freq: [ [-1, 1],[-4, 4],[-2, 2],[-6, 6]  ].df(\g,4).q,
+		freq: [ [-1, 1],[-4, 4],[-2, 2],[-6, 2]  ].df(\g,4).q,
 		instrument: \defaultPiano,
 		dur: "h h h h ".asBeats.warpTo( tempoMap  ).q,
 		// dur: 0.3,
@@ -636,19 +642,19 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	)
 });
 P.synthVs(role: \formulaLead, take:[\lead, \double],
-filter: (midinote: _ - (12.dup(11) ++ 0.dup(5) => _.flat)), 
-pbind: Song.enlarge(5),
-params: {|p b| [
-lyrics: "you will administer + + + one injection + + of ten see sees each hour ",
-pitchTake: [1, 3]
-] }, music:[0,0].collect{|pan|
-	{|p b e|
-		{
-			e.playbuf
-			// => p.synthVTracks.at(e.key).()
-			=> Pan2.ar(_,pan)
-		}.play
-	}
+	filter: (midinote: _ - (12.dup(11) ++ 0.dup(5) => _.flat)), 
+	pbind: Song.enlarge(5),
+	params: {|p b| [
+	lyrics: "you will administer + + + one injection + + of ten see sees each hour ",
+	pitchTake: [1, 3]
+	] }, music:[0,0].collect{|pan|
+		{|p b e|
+			{
+				e.playbuf
+				// => p.synthVTracks.at(e.key).()
+				=> Pan2.ar(_,pan)
+			}.play
+		}
 });
 P.tune('administer one',Pmul(\freq,0.5,_));
 Song.setTempoMap('administer one',"E E E E E E EE E E E E");
@@ -1025,8 +1031,9 @@ P.synthVs(role:\formulaLead, take:[\lead, \double],
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		// => p.synthVTracks.at(e.key).()
+		=> p.synthVTracks.at(e.key).()
 		=> Pan2.ar(_,0)
+		/2
 	}.play
 });
 // P.tune('This one');
@@ -1090,9 +1097,9 @@ P.tune('does not contain');
 ["/*SPOCK:*/ No, that's correct. But since I will arrange for ",[1, 1.5,1,1].dm('b-')++[4,2,4, 3,2,1,-7].dm('f#')].addLine;
 P.still(\spockClose, timecode: 3049.5.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
+		wait: b[..4].sum,
 		text: ["no","that's correct"],
-		fade:1
+		fade:3
 	).sequenceText2(
 			b.parse([4]), [ 
 			["",""],
@@ -1260,11 +1267,13 @@ P.synthV(role: \chapel, take: \lead, params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).(mix:0.1)
-		/2
+		// /2
+		* -4.dbamp
 	}.play
 });
 P.tune('Without', _ <> [instrument: \wash, amp: 0.02, rel:1].p);
 ["(He touches her fosehead.) /*SPOCK:*/ What were you saying? ",[3,  3,4,2,4,3].dm('c')].addLine;
+Song.durs.filter(\touches, {|i| i.drop(-1) ++ (i.last + 0.5)});
 P.still(\henochTouches, timecode: 3100.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b[0],
@@ -1283,7 +1292,8 @@ P.still(\henochClose,
 // P.tune('touches her');
 P.synthVs(role: \formulaLead, take: [\lead, \dbl], params: {|p b| [
 	lyrics: "r what were you saying +",
-	pitchTake: [1, 3]
+	pitchTake: [1, 3],
+	legato: [[1,  1, 1, 1, 1, 0.5, ]],
 ] }, music:[-1,1].collect{|pan|
 	{|p b e|
 		{
@@ -1347,7 +1357,7 @@ P.synthV(role: \chapel,
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).(mix:0.1)
-		* -2.dbamp
+		* -4.dbamp
 	}.play
 });
 P(\forgettingPad ,start:'I was.',music:{|p b e|
@@ -1446,12 +1456,23 @@ P.synthVs(role: \formulaLead, take:[\lead, \dbl],
 	lyrics: "yes well you were about + to say that",
 	legato: [[0.7,0.7, 1, 1, 1, 1, 1, 0.7]],
 	pitchTake: [1, 3]
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
-});
+]}, music: [
+	{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+			=> Pan2.ar(_, 0)
+		}.play
+	}, {|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+			=> DWGReverbC1C3.ar(_, mix: 0.1)
+			* -2.dbamp
+			=> Pan2.ar(_, 0.5)
+		}.play
+	}
+]);
 P(\keys, music: { |p b e|
 	[
 		freq: [1, 5, [1, 11], [5, 15]].df(\a,4).q,
@@ -1608,11 +1629,11 @@ P(\bassline, music: { |p b e|
 		=> _.q
 		,
 		out: Effect.bus({|i| FreeVerb.ar(i,0.1,1) => SineShaper.ar(i,0.2)  }),
-		amp:0.6
+		amp:0.6 * -3.dbamp
 	].pp;
 	[
 		freq: [\I,\V,\I,\IV,\I].collect( chords.at(_) ) => _.df('f#') => _.q, 
-		amp:0.2 ,
+		amp:0.2 * -3.dbamp ,
 		dur: 
 		"qq q qq q q ".asBeats.warpTo( e.tempoMap ) 
 		++ "qqq".asBeats.warpTo( Song.tempoMap[e.start + 1] )

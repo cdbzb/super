@@ -9,7 +9,7 @@ SynthV {
 	var <name, <project, <file,<location,<buffer, <key, <song, <section;
 	var <>firstNoteOffset = 0;
 	var <> offset = 0;
-	var <>double, <>take;
+	var <>double, <>take, <>buildFunc;
 	*new {|key name take double| 
 			^super.new.init(key, name, take, double) 
 		}
@@ -177,12 +177,14 @@ SynthV {
 			"no raw file".postln
 			^true; 		
 		} {
-			"project != raw ".post;
-			^project != Object.readArchive( location +/+ "raw" ) => _.postln;
+			"project != raw? ".post;
+			^project != Object.readArchive( location +/+ "raw" ) => _.debug;
 		}
 	}
 	writeRawProject {
-		project.writeArchive( location +/+ "raw" )
+		project.writeArchive( location +/+ "raw" );
+		\rawProjectWritten.debug;
+		nil
 	}
 	refresh {
 		this.checkDirty.if{
@@ -193,6 +195,8 @@ SynthV {
 		}
 	}
 	render {
+		this.buildFunc.value;
+		this.writeProject; 
 		take.notNil.if {
 			directory +/+ "SCRIPTS/renderSynthV-recompute.sh".standardizePath + file =>_.unixCmd
 		}{
@@ -220,8 +224,7 @@ SynthV {
 
 		file = location +/+ "project.svp";
 
-		project = String.readNew(File( directory +/+ "test.svp"=>_.standardizePath,"r" ))
-		=> JSON.parse(_);
+		project = Object.readArchive(directory +/+ "test.svp.event-archive");
 
 		//strip erroneous points data - TODO clean this up in original file!
 		project.tracks[0].mainRef.systemPitchDelta.put(\points,[]);
@@ -398,6 +401,88 @@ SynthV {
 }
 
 + P {
+	*synthV{ | key start params syl lag=0 take double music song resources range filter pbind prepend role wait|
+		var event;
+		var section = P.calcStart(start );
+		var synthV, preset;
+		song = song ? Song.currentSong;
+		role.notNil.if{
+			key = Trek.cast.at(role);
+		};
+		synthV = SynthV(key,( start ? section ),take ,double );
+		synthV.setDatabase(key);
+		preset = Trek.at(role, key);
+		synthV.buildFunc = {
+			pbind = pbind.notNil.if{  // pass in a pbind or get it from the song
+				{ pbind.value(song,song.durs[section].list) }.try{ Song.currentSong.pbind[section] }
+			} {
+				Song.currentSong.pbind[section] 
+			};
+			event = pbind.patternpairs.collect{|i|
+				( i.class==Pseq ).if{i.list}{i}
+			}
+			// ++ Trek.at(role, key)
+			++ preset
+			++ try{ Trek.at(role, key, take) }
+			++ params.value(
+				song,
+				song.durs[section].list, //drop range
+				key
+			) 
+			++ ( take.asString.contains("dbl")).if{ [pitchTake: 3] } // last of 4
+			=> Event.newFrom(_);
+
+			filter = filter ? event.removeAt(\filter);
+			event => {|i| 
+				filter.notNil.if{
+					( filter.class == Function ).if {
+						filter.( i )
+					}{ //filter is an Event 
+						filter.keys.postln.do{|key|
+							\KEY_.post;key.postln;
+							\i_.post;i.postln;
+							i.put(key, filter.at( key ).( i.at( key ) ))
+						}
+
+					}
+				};
+				i
+			};
+			event.keys.do{|k| 
+				( event.at(k).isCollection && event.at(k).isString.not ).if{
+					event.put(k, event.at(k)[range[0]..range[1]])
+				}
+			};
+			event.lyrics=event.lyrics.replace($, , "").split(Char.space).reject{|i| i.size==0};
+			event.pitch=event.midinote.asInteger;
+			synthV.makeNotes(event.dur.size);
+
+			synthV.set(event); 
+			prepend.notNil.if{ 
+				synthV.prependNotes;
+			};
+			// write project only does so if dirty !!
+
+			// synthV.checkDirty.if{synthV.refresh};
+
+		};
+			take.notNil.if{key = key ++ "_" ++ take};
+		^P(key,start,syl,lag, music,song,
+			resources:(
+				synthV: synthV,
+				playbuf: {
+					var buf = synthV.buffer.();
+					PlayBuf.auto( 1, buf,
+						startPos: ( synthV.offset ) * BufSampleRate.kr( buf ),
+						doneAction: Line.kr(0,0, BufDur.kr(buf) + 3, doneAction:2)
+					)},
+					take: take,
+					params: params,
+					filter: filter,
+					pbind: pbind
+				) ,
+			); // order of section and key are reversed!!
+	}
 	*double{| key start take params music filter pbind role wait|
 		var section = P.calcStart(start); 
 		var original = Song.currentSong.at(section)
@@ -445,90 +530,7 @@ SynthV {
 			=> {|i| SynthV.synthVsToRender.add(i) }
 		};
 	}
-	*synthV{ | key start params syl lag=0 take double music song resources range filter pbind prepend role wait|
-		var event;
-		var section = P.calcStart(start );
-		var synthV;
-		song = song ? Song.currentSong;
-		role.notNil.if{
-			key = Trek.cast.at(role);
-		};
-		synthV = SynthV(key,( start ? section ),take ,double );
-		pbind = pbind.notNil.if{  // pass in a pbind or get it from the song
-			{ pbind.value(song,song.durs[section].list) }.try{ Song.currentSong.pbind[section] }
-		} {
-			Song.currentSong.pbind[section] 
-		};
-		event = pbind.patternpairs.collect{|i|
-			( i.class==Pseq ).if{i.list}{i}
-		}
-		++ Trek.at(role, key)
-		++ try{ Trek.at(role, key, take) }
-		++ params.value(
-			song,
-			song.durs[section].list, //drop range
-			key
-		) 
-		++ ( take.asString.contains("dbl")).if{ [pitchTake: 3] } // last of 4
-		=> Event.newFrom(_);
-
-		filter = filter ? event.removeAt(\filter);
-		event => {|i| 
-			filter.notNil.if{
-				( filter.class == Function ).if {
-					filter.( i )
-				}{ //filter is an Event 
-					filter.keys.postln.do{|key|
-						\KEY_.post;key.postln;
-						\i_.post;i.postln;
-						i.put(key, filter.at( key ).( i.at( key ) ))
-					}
-
-				}
-			};
-			i
-		};
-		event.keys.do{|k| 
-			( event.at(k).isCollection && event.at(k).isString.not ).if{
-				event.put(k, event.at(k)[range[0]..range[1]])
-			}
-		};
-		event.lyrics=event.lyrics.replace($, , "").split(Char.space).reject{|i| i.size==0};
-		event.pitch=event.midinote.asInteger;
-		synthV.makeNotes(event.dur.size);
-
-		synthV.setDatabase(key);
-		synthV.set(event); 
-		prepend.notNil.if{ 
-			synthV.prependNotes;
-		};
-		synthV.writeProject; 
-		// write project only does so if dirty !!
-
-		// synthV.checkDirty.if{synthV.refresh};
-
-		take.notNil.if{key = key ++ "_" ++ take};
-		^P(key,start,syl,lag, music,song,
-			resources:(
-				synthV: synthV,
-				playbuf: {
-					var buf = synthV.buffer.();
-					PlayBuf.auto(
-					1,
-					buf,
-					startPos: ( synthV.offset ) * BufSampleRate.kr( buf ),
-					doneAction: Line.kr(0,0, BufDur.kr(buf) + 3, doneAction:2)
-				)},
-				take: take,
-				params: params,
-				filter: filter,
-				pbind: pbind
-			) ,
-		); // order of section and key are reversed!!
-			
-	}
 }
-
 +String{
 	timeSinceModified {
 		var a = Pipe.new("echo $(($(date +%s) - $(date -r" + this + "+%s)))","r");

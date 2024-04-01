@@ -152,7 +152,7 @@ P.synthVs(\an, take: [\ooh, \ooh2],
 		e.playbuf
 		=> FreeVerb.ar(_,0.2,1)
 		/3
-		// * -2.dbamp
+		* -3.dbamp
 		=> Pan2.ar(_,pan)
 		// => p.synthVTracks.at(e.key).()
 	}.play
@@ -238,6 +238,32 @@ p.hatPattern.(
 });
 ["(boom )heart action and the bodily " , [6, 14,13,11, 7,11,12,13,11].dm('d',octave:4 )].addLine ;
 Song.setTempoMap('and the bodily', [1,7/4,2/4,7/4, 1/2,1/2, 2/3,2/3,2/3 ]);
+Song.quarters['bodily']=Song.parseBeats('bodily', [1,7/4,2/4,7/4, 1/2,1/2, 2/3,2/3,2/3 ]);
+P.synthVs(\an, take: [\ooh, \ooh2],
+	pbind: {|p b|
+		[
+			midinote: [1, 5, 6, ].dm(\d).q,
+			dur: "qqqq qqqq q ".asBeats.warpTo( Song.tempoMap[ \reduce ].quantizeDft ++ p.tempoMap[Song.section(\reduce) + 1].quantizeDft ) 
+			++ [1] => _.q
+			// dur: b.parse( [4,6, 3] ).q
+		].p
+	},
+	params: {|p b| [
+	lyrics: "r ooh - -",
+	pitchTake: [1, 3],
+	 // vocalMode: \Open,
+	// pitchExpression: 1.5
+	paramBreathiness: 0.25
+] }, music:[-1, 0.6].collect{|pan| {|p b e|
+	{
+		e.playbuf
+		=> FreeVerb.ar(_,0.2,1)
+		/3
+		// * -2.dbamp
+		=> Pan2.ar(_,pan * (-1))
+		// => p.synthVTracks.at(e.key).()
+	}.play
+} });
 P(\chords, music: { |p b e|
 	[
 		freq: [
@@ -298,13 +324,18 @@ P.synthVs(\mo, take:[\lead, \double],
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
-P.synthV(\kevin, take: \harmony,
-	pbind: {|p b|
+P.synthVs(\kevin, take: [\hi, \harmony],
+	pbind: [{|p b|
+		[
+			midinote: [-1, 11, 11, 11, 11].dm(\d).q,
+			dur: b.parse( [1, 0.66,  0.33, 1 , 1 ] ).q
+		].p
+	},{|p b|
 		[
 			midinote: [-1, 6, 5, 5, 5].dm(\d).q,
 			dur: b.parse( [1, 0.66,  0.33, 1 , 1 ] ).q
 		].p
-	},
+	}],
 	legato: [ 1, 1, 0.6, 0.7 , 0.6 ],
 	params: {|p b| [
 	lyrics: "r heart - action +",
@@ -314,19 +345,9 @@ P.synthV(\kevin, take: \harmony,
 	{
 		e.playbuf
 		// => p.synthVTracks.at(e.key).()
-		/8
+		/4
 	}.play
 });
-// P.double(\mo, take: \harmony, params: {|p b| [
-// ] }, music:{|p b e|
-// 	{
-// 		e.playbuf
-// 		// => p.synthVTracks.at(e.key).()
-// 		/8
-// 	}.play
-// });
-//P.tune('and the bodily');
-
 P.tune( 'the bodily',Pset(\dur, Song.tempoMap[ 'the bodily' ] .beats.warpTo(Song.tempoMap[ 'the bodily' ].quantizeDft).q,_));
 P(\highHat,start:'and the bodil',music:{|p b e|
 	p.hatPattern.(
@@ -365,7 +386,6 @@ P(\drumz,'and the bodily',music:
 		//=>_.play(Song.quarters['this formula'].quantizeWindow.asTempoClock)
 	}
 );
-Song.quarters['bodily']=Song.parseBeats('bodily', [1,7/4,2/4,7/4, 1/2,1/2, 2/3,2/3,2/3 ]);
 P(\bass,'bodily',music: {|p b e|
 		[
 			freq: [-4,-5,-6,-7,1,1,4,4,3,3].df('d',tuning:\sept1,octave:[3,4]).q,
@@ -467,8 +487,8 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 		text: ["functions to", "normal"],
 	)
 });
-P.synthV(\mo, take: \harmony, 
-filter: (midinote: [1, 1, 1, 5, 5].dm(\d)), 
+P.synthVs(\mo, take: [\harmony, \lo], 
+filter: (midinote: [1, 1, 1, 2, 2].dm(\d)), 
 params: {|p b| [
 lyrics: "r r r normal +",
 pitchTake: 1
@@ -477,15 +497,6 @@ pitchTake: 1
 	e.playbuf
 	// => p.synthVTracks.at(e.key).()
 	/8
-}.play
-});
-P.double(\mo, take: \harmony, params: {|p b| [
-
-] }, music:{|p b e|
-{
-	e.playbuf
-	/8
-	// => p.synthVTracks.at(e.key).()
 }.play
 });
 P(\drumz,'functions to normal',music:
@@ -1014,6 +1025,23 @@ P.still(\henochReKirk, timecode: 3036.3.seconds, music: { |p b e|
 			],
 	)
 });
+P(\chordsTwo, music: { |p b e|
+	[
+		freq: [
+			[1, 3, 5],
+			[1, 2, 5],
+			[-7, 2, 5],
+			[-7, 2, 5],
+			[-7, 3, 5],
+			[-7, 3, 5],
+		].df('f#',\minor).q,
+		dur: "q*6".beats.warpTo(e.tempoMap.quantizeDft(0.5)).q,
+		out: Effect.bus({|i| 
+			Phaser1.ar(input:i, depth:0.5, rate:0.19, fb:-0.7, cfb:0.1, rot:1.5707963267949)
+			=> MoogFF.ar(_, freq:2000, gain:2, reset:0)
+		},out: 2)
+	].pp
+});
 P(\chords, music: { |p b e|
 	[
 		freq: [ [1, 5], [2, 5],[3, 5] ].df('f#',\minor).q,
@@ -1033,7 +1061,7 @@ P.synthVs(role:\formulaLead, take:[\lead, \double],
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 		=> Pan2.ar(_,0)
-		/2
+		// /2
 	}.play
 });
 // P.tune('This one');
@@ -1095,6 +1123,17 @@ P(\swellContain,start:'does not contain',music:{|p b e|
 P.tune('does not contain');
 // TODO
 ["/*SPOCK:*/ No, that's correct. But since I will arrange for ",[1, 1.5,1,1].dm('b-')++[4,2,4, 3,2,1,-7].dm('f#')].addLine;
+Song.setTempoMap(\since,"qq Q E q e e e e e e e");
+Song.quarters['correct'] = Song.parseBeats('correct',"qq Q E qe e e e e Q E".asBeats);
+P(\pad, music: { |p b e|
+	[
+		freq: [11, 5, 5,  3].df('b-').q,
+		legato: 3,
+		dur: "q qq q q".asBeats.warpTo( e.tempoMap ).q,
+		instrument: \stringyy,
+		amp: 0.06
+	].pp
+});
 P.still(\spockClose, timecode: 3049.5.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b[..4].sum,
@@ -1129,15 +1168,14 @@ P.synthVs(role: \formulaLead, take:[ \lead, \double ],
 	}.play
 });
 P(\correctBase,start:'correct',music:{|p b e|
-( freq:1.df('b-',octave:2), ).play
-}
-);
-Song.quarters['correct'] = Song.parseBeats('correct',"qq Q E qe e e e e Q E".asBeats);
+	( freq:1.df('b-',octave:2), ).play
+});
 
 P(\correctBaseLine,start:'correct',music:{|p b e|
 [
 	freq:[1,-5, -5,-3].df('b-',octave:3 ).q,
-	dur:[1,2,1,1] + [-1/10,1/10,0,0] =>_.q,
+	// dur:[1,2,1,1] + [-1/10,1/10,0,0] =>_.q,
+	dur: "q qq q qq".asBeats.warpTo( e.tempoMap ).q,
 	instrument:\sawSynthSustain,
 	att:0.6,
 	amp:0.1,

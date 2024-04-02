@@ -22,7 +22,9 @@ Monitors {  //setup monitoring for Trek piece
 			(deviceChannels.at(Server.default.options.outDevice) == 2).if{
 					Monitors.stereo;
 					{
-						Monitor.new => _.play(0,5,0,2,target:RootNode(Server.default));
+						Monitor.new => _.play(2,2,0,2,target:RootNode(Server.default));
+						Monitor.new => _.play(4,1,0,1,target:RootNode(Server.default), volume: -6.dbamp);
+						Monitor.new => _.play(4,1,1,1,target:RootNode(Server.default), volume: -6.dbamp);
 					}.defer(0.1)
 			}
 		});

@@ -50,6 +50,12 @@ P(\chord, music: { |p b e|
 		).play
 });
 ["(boom) this formula -- -- will reduce the ", [11,13,13,12,11,12,11, 7,11, 12, 13].dm('d',octave:4 )].addLine;
+P(\cymbals, music: { |p b e|
+	(
+		instrument: \cymbalsDS,
+		amp:0.02
+	).play
+});
 Song.setTempoMap(\reduce,"q q e x xqqe x x e x xe e");
 P.still(\henoch, timecode: 3009.seconds, music: { |p b e|
 	 e.still.( 
@@ -72,7 +78,10 @@ P(\drumz,'this formula',music:
 			.dup.flat
 			.warpTo(map)
 			.q
-			=> [dur:_, instrument:\sn_808 ]=>_ .p
+			=> [dur:_, 
+				instrument:\sn_808,
+				instrument:\snare, sinfreq: 1.df(\c,4),
+			]=>_ .p
 			,
 			"q qe ee e".asBeats
 			.dup.flat
@@ -81,7 +90,9 @@ P(\drumz,'this formula',music:
 			=> [
 				dur:_,
 				instrument:\kick2,
-				amp: 0.2
+				instrument:\kick_gentle,
+				amp: 0.2,
+				vol:0.2
 			] =>_ .p
 		] => Ppar(_)
 		=> _.play
@@ -257,8 +268,8 @@ P.synthVs(\an, take: [\ooh, \ooh2],
 ] }, music:[-1, 0.6].collect{|pan| {|p b e|
 	{
 		e.playbuf
-		=> FreeVerb.ar(_,0.2,1)
-		/3
+		=> FreeVerb.ar(_,0.15,1)
+		/4
 		// * -2.dbamp
 		=> Pan2.ar(_,pan * (-1))
 		// => p.synthVTracks.at(e.key).()
@@ -284,8 +295,10 @@ P(\chords, music: { |p b e|
 		amp: 0.8,
 		instrument: \stringyy,
 		out: 4
+		// out: Effect.bus({|i| i },out:4) 
 
-	].ppm
+	].ppm;
+	
 });
 P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
@@ -346,6 +359,7 @@ P.synthVs(\kevin, take: [\hi, \harmony],
 		e.playbuf
 		// => p.synthVTracks.at(e.key).()
 		/4
+		=> Pan2.ar(_, -0.5)
 	}.play
 });
 P.tune( 'the bodily',Pset(\dur, Song.tempoMap[ 'the bodily' ] .beats.warpTo(Song.tempoMap[ 'the bodily' ].quantizeDft).q,_));
@@ -367,8 +381,13 @@ P(\drumz,'and the bodily',music:
 			.warpTo(map)
 			.q
 			=> [dur:_,
-				//instrument:\snare
-				instrument:\sn_808
+				instrument:\sn_808,
+				instrument:\snare, sinfreq: 1.df(\c,4),
+				amp:0.15,
+				amp2:0.3,
+				tone: 240,//340 default
+				tone2: 89,//189 default
+				snappy:0.3
 			]=>_ .p
 			,
 			//"x.x..x.x".asDrumPat(2,2) 
@@ -380,6 +399,7 @@ P(\drumz,'and the bodily',music:
 				//instrument:\bd_808,
 				//lag:-0.04,
 				instrument:\kick2,
+				instrument:\kick_gentle,
 			] =>_ .p
 		] => Ppar(_)
 		=> _.play
@@ -509,7 +529,8 @@ P(\drumz,'functions to normal',music:
 			.q
 			=> [dur:_,
 				//instrument:\snare
-				instrument:\sn_808
+				instrument:\sn_808,
+				instrument:\snare, sinfreq: 1.df(\c,4),
 			]=>_ .p
 			,
 			//"x.x..x.x".asDrumPat(2,2) 
@@ -520,6 +541,7 @@ P(\drumz,'functions to normal',music:
 				//instrument:\bd_808,
 				//lag:-0.04,
 				instrument:\kick2,
+				instrument:\kick_gentle,
 			] =>_ .p
 		] => Ppar(_)
 		=> _.play
@@ -543,7 +565,7 @@ p.hatPattern.(e.tempoMap.quantizeDft(p.formulaQuantAmount), 16)// => Pfin(8,_)
 });
 //P.tune('to normal',);
 // P.tune( 'to normal',Pset(\dur, Song.tempoMap[ 'to normal' ] .beats.warpTo(Song.tempoMap[ 'to normal' ].quantizeDft).q,_));
-P.tune('to normal',  _ <> [instrument: \harp].p.fin(3)  ); 
+P.tune('to normal',  _ <> [instrument: [ \sawSynth, \harp ], coef:0.15, amp:[0.09,0.03]].p.fin(3)  ); 
 P(\chank, music: { |p b e|
 	var out = Effect.bus({|i|
 		AnalogVintageDistortion.ar(i,drivegain: 1.8,bias:0.18,shelvingfreq:600,lowgain:0.00,highgain:0.8) / 15 
@@ -1039,6 +1061,7 @@ P(\chordsTwo, music: { |p b e|
 		out: Effect.bus({|i| 
 			Phaser1.ar(input:i, depth:0.5, rate:0.19, fb:-0.7, cfb:0.1, rot:1.5707963267949)
 			=> MoogFF.ar(_, freq:2000, gain:2, reset:0)
+			* 5.dbamp
 		},out: 2)
 	].pp
 });
@@ -1073,7 +1096,42 @@ P(\baseThisOne,start:'This one',music:{|p b e|
 	].p.play;
 }
 );
+P(\line, music: { |p b e|
+	[
+		freq: [1, -7].df('f#',5,\minor) ++ [ 1, -7, -4].df(\a, 4, \minor) =>_.q,
+		amp: [1, 1, 2, 2, 2]/20 => _.q,
+		legato: [1, 0.9, 1, 1, 1, ].q,
+		dur: "qq qq qq qq q".asBeats.warpTo( e.tempoMapAll ).q,
+		instrument: \sparkTrianglePan,
+		pan: [1, 1, -1, -1, -1].q
+
+	].ppma
+});
 ["Sargon is in his body. ",[11,5,3,2,-7,2,1].dm('d',octave:5,scale:\harmonicMinor, )].addLine;
+P(\extraNotes, music: { |p b e|
+	[
+		freq: [
+			[-5, 1, 3],
+			[-5, -7, 2],
+			[-5, -7, 3],
+			[-5, 1, 3]
+		].df(\d,[4,5], \harmonicMinor).q,
+		dur: "eee ee e e".asBeats.warpTo( e.tempoMap ).q,
+		instrument: \wash,freqLag:0.2,amp:[0.04,0.06,0.08]
+	].ppm
+});
+Song.setTempoMap('in his body',"ex x e e e e e");
+P(\line, music: { |p b e|
+	[
+		freq: [\r, 2, -7, 1, 11.5].df(\d, \harmonicMinor).q,
+		amp: [1, 1, 2, 2, 2]/20 => _.q,
+		legato: [1, 0.9, 1, 1, 1, ].q,
+		dur: "eee e ee e e".asBeats.warpTo( e.tempoMapAll ).q,
+		instrument: \sparkTrianglePan,
+		pan: 0
+
+	].ppma
+});
 P.tune('in his body');
 P(\strumBody,start:'in his body',lag:-0.01,music:{|p b e|
 	(
@@ -1109,6 +1167,7 @@ P.synthV(role: \chapel, take: \lead, params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).(mix: 0.1)
+		// * -2.dbamp
 	}.play
 });
 P(\swellContain,start:'does not contain',music:{|p b e|
@@ -1175,7 +1234,7 @@ P(\correctBaseLine,start:'correct',music:{|p b e|
 [
 	freq:[1,-5, -5,-3].df('b-',octave:3 ).q,
 	// dur:[1,2,1,1] + [-1/10,1/10,0,0] =>_.q,
-	dur: "q qq q qq".asBeats.warpTo( e.tempoMap ).q,
+	dur: "q qq q qq".asBeats + [0,0.2,0.05,0.05] =>_.warpTo( e.tempoMap.quantizeDft(0.4) )+ [0,0.05,0.00,0.00]=>_.q,
 	instrument:\sawSynthSustain,
 	att:0.6,
 	amp:0.1,
@@ -1190,6 +1249,7 @@ b=b.drop(1);
 [
 	freq:[4,2,4, 3,2,1,-7, -6.5].df('f#',octave:3).q,
 	instrument:\sparkTriangle,
+	rel:2,
 	//		dur:b * [1,1,1,1,1,2/3,4/3] ++ 1 =>_.q,
 	dur: b.asArray.parse([ 1,1,1,1,1,2/3,[1/3,1] ]) ++ 1 =>_.q,
 ].pp
@@ -1207,11 +1267,12 @@ P(\accents, music: { |p b e|
 		[2, 3].collect{|p| Effect.bus({|i|i => Pan2.ar(_, 4 - p * 2 - 1) => DWGReverbC1C3.ar(_, mix: 1)  },out:p, inputChannels: 1) }
 	] .pp;
 	{
-		Gendy3.arWidth(freq: Env([5, 5, 5.5].df('f#'), b.parse([4, 2])).kr(0,gate:1))
+		Gendy3.arWidth(freq: Env([5, 5, 5.5].df('f#'), b.parse([5, 1]) + 0.05, curve: \exp).kr(0,gate:1))
 		* 0.02
 		* EnvGen.cutoff(b[..6].sum, 4)
 		=> Out.ar(4,_)
-	}.play
+	}.play;
+	
 });
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
@@ -1316,9 +1377,10 @@ P.still(\henochTouches, timecode: 3100.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b[0],
 		text: ["",""],
+		fade: b[1..].sum
 	)
 });
-P.still(\henochClose,
+P.still(\clear,
 	timecode: 3108.seconds,//close
 	timecode: 3058.2.seconds, //twoDhot
 	syl:0, music: { |p b e|
@@ -1361,12 +1423,14 @@ P(\touchBaseNote,start:'touches her',music:{|p b e|
 }
 );
 ["/*CHAPEL:*/ I (breath). I was. (breath) ",[7,1, 6,7,1].dm('b')].addLine;
-P.still(\chapel, timecode: 3106.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
-	)
-});
+// P.still(\chapel, timecode: 3106.seconds, music: { |p b e|
+// 	 e.still.( 
+// 		wait: b.sum,
+// 		text: ["",""],
+// 		fadeIn:2,
+// 		fade:3
+// 	)
+// });
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: 0,
@@ -1375,7 +1439,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 		fade: b[0..1].sum
 	)
 });
-P.still(\clear2,syl:2, timecode: 1.seconds, music: { |p b e|
+P.still(\clear2,syl:1, timecode: 1.seconds, music: { |p b e|
 	 e.still.( 
 		wait: 0,
 		text: ["I","was"],

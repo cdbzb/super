@@ -61,14 +61,17 @@ P(\drums, music: { |p b e|
 		instrument: \bd_808,
 		instrument: \kick_gentle, vol:0.15,
 		// dur:b.parse([2, 3, 1]).q,
-		dur:" qq e eq e".asBeats.warpTo( e.tempoMapAll ).q,
-		amp:0.2
+		dur:" e eq e eq e e".asBeats.warpTo( e.tempoMap.quantizeDft ++ p.tempoMap[e.start + 1].quantizeDft ).q,
+		// dur:" e q e e q e e ".asBeats.warpTo( e.tempoMap.quantizeDft ++ p.tempoMap[e.start + 1].quantizeDft ++ p.tempoMap[e.start + 2]].quantizeDft ).q,
+		amp: 0.2, vol: 0.15
 	].pp;
 	[
 		instrument: \snare,
-		dur: "q qq qq".asBeats.warpTo( e.tempoMapAll.quantizeWindow(0.2) ).q,
-		rests: MuteFirst()
-	]//.pp
+		instrument: \hihat,
+		dur: "q qq qq q".asBeats.warpTo( e.tempoMap.quantizeDft ++ p.tempoMap[e.start + 1].quantizeDft ).q,
+		rests: MuteFirst(),
+
+	].pp
 });
 P.still(\space, timecode: 3244.seconds, music: { |p b e|
 	 e.still.( 
@@ -123,7 +126,6 @@ P.synthVs( role: \mccoy , take:[ \lead, \double ],
 );
 //
 ~bass0quarters=Song.parse(0,[ [1,1],[1,1,1],1 ]);
-
 Song.guitarFx={ |b|
 	var e = Effect( { |i|  
 		PlateReverb.ar(i,mix:0.5,decayTime:0.5)  
@@ -180,6 +182,17 @@ P(\bass0,start:0,music: {
 }
 ); 
 ["now inhabit the bodies of", "d5 c b4 a g f g a"].addLine;  //1
+Song.setTempoMap(\inhabit,"e x e x e e e e");
+Song.tomFx = {Effect.bus({|i| DWGReverbC1C3.ar(i, mix: 0.15) / 2.5 }, out: 2)};
+P(\drums, music: { |p b e|
+	[
+		instrument: [\r, \MT_808, \LT_808].q,
+		freq: [0, 120, 80].q,
+		dur: "exexe ee e".asBeats.warpTo( e.tempoMap ).q,
+		out: p.tomFx.()
+
+	].pp
+});
 Song.setTempoMap(\inhab,"e x e x e e e e");
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
@@ -234,6 +247,14 @@ P(\connectorBass,start:1,music: //		{{{
 	}
 ); 
 ["Captain Kirk,science officer Spock and", "b c5 f4 c5 d c b4 a a g"].addLine;  //2
+Song.setTempoMap(\science,"e e ee e e E E E ex x e e ee e e");
+P(\drums, music: { |p b e|
+	[
+		instrument: \kick_gentle,
+		dur: "qq qq q".asBeats.warpTo( e.tempoMap ).q,
+		amp: 0.2, vol: 0.15
+	].pp
+});
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -385,6 +406,23 @@ P(\guitar24,start:3,syl:4,
 	).play; }
 );
 ["Planned the con- struc- tion of an- droid","f5 c d c a4 c5 g f"].addLine; //4
+Song.setTempoMap('con-',"q ex x E E E e e ");
+P(\drum, music: { |p b e|
+[
+		dur: "e ee e qe e qe e qe e ".asBeats.warpTo( e.tempoMap ++ p.tempoMap[e.start + 1] ++ p.tempoMap[e.start + 2] ).q,
+		instrument: \kick_gentle,
+		amp: 0.2, vol: 0.15
+	].pp;
+	[
+		instrument: \sn_808,
+		dur: "q qq qq qq q".asBeats.warpTo( e.tempoMap ++ p.tempoMap[e.start + 1] ++ p.tempoMap[e.start + 2] ).q,
+		rest: MuteFirst()
+	].pp;
+	[
+		instrument: \hihat,
+		dur: "q*8".beats.warpTo( e.tempoMap ++ p.tempoMap[e.start + 1] ++ p.tempoMap[e.start + 2] ).q
+	].pp
+});
 ~quarters4=Song.parse(4,[1,2,3,2]);
 P(\bass4,start:4,music: {|p b e|
 		[
@@ -426,7 +464,35 @@ P(\guit4,start:4,music: //		{{{
 
 );
 ["ro- bots is un- der- way","e5 d c d  e g4"].addLine; //5
+Song.setTempoMap('un- der',"e ee e x x eee");
 ["All is pro- cee- ding as ex- pect- ed and as pro- mised (ba- by)","f g a c5 d b-4 c5 d e- b-4 d5 e- d b-4 c5 d"].addLine; //6
+Song.setTempoMap(\mised,"e e e e e e e e e e e e e e e e");
+P(\drums, music: { |p b e|
+	[
+		instrument: \LT_808,
+		freq: [120, 120, 80, 80].q,
+		dur: b.q,
+		out: p.tomFx.()
+	].pp;
+	[
+		instrument: \kick_gentle,
+		dur: "qq e eq e eq e eq".asBeats.warpTo( e.tempoMap ).q,
+		amp: 0.2, vol: 0.15
+	].pp;
+	[
+		instrument: \sn_808,
+		dur: "qqq qq qq qq".asBeats.warpTo( e.tempoMap ).q,
+		rest: MuteFirst()
+
+	].pp;
+	[
+		instrument: \cymbalsDS,
+		amp: 0.03,
+		att: 0.05,
+		dur: "qq q".asBeats.warpTo( e.tempoMap ).q,
+		rest: MuteFirst()
+	].pp
+});
 P.synthVs(\jun, take: [ \bg1, \bg2], params: {|p b| [
 	lyrics: "everything's + + proceeding + + as expected + + and as promised + r r  ",
 	//+ + as expected + + and as promised + baby +",
@@ -622,7 +688,7 @@ P.synthV(role: \mccoy, take: \lead,
 		e.playbuf
 		// => p.synthVTracks.at(e.key).()
 		=> Pan2.ar(_)
-		/3
+		/3.2
 	}.play
 });
 SynthDef(\avsd, 
@@ -632,8 +698,8 @@ SynthDef(\avsd,
 		var env= Env.perc(att*2.2,8.5).kr(gate:1);
 		var tail= Env.perc(att*2.2,11).kr(2,gate:1);
 		var freqs= freq*rrand(0.99,1.01!2);//
-		var sig= SawDPW.ar(freqs,mul:\amp.kr(0.05));
-		sig=Formants.ar(freqs/2,Vowel())*0.1+sig;
+		var sig= SawDPW.ar(freqs) * \sawAmt.kr(0.05);
+		sig=Formants.ar(freqs/2,Vowel())+sig*\amp.kr(0.05);
 		sig=MoogVCF.ar(sig,fenv*1500+(freq),0.9);
 		sig=PlateReverb.ar(sig,mix:0.2);
 		Out.ar(\out.ir(0),sig*env);
@@ -646,44 +712,51 @@ SynthDef(\tritri,{
 	Out.ar(\out.ir(0),sig*env);
 
 }).add; 
-P(\forboding8,start:8,music:
-	Ppar([
-		[
-			degree:Pseq([\r,[0,2,5],[-1,1.1]]-1),
-			root:2,
-			scale:Scale.mixolydian,
-			octave:[4,5],
-			instrument:\tritri,
-			att:0.2,
-			rel:3,
-			amp:0.06,
-			dur:Pseq(Song.parse(8,[1!3,1!5,1!2])),
-		].p,
-		Pmono(
-			*[
-				\avsd,
-				degree:Pseq([ [1,3],[0,2],[6-7,1.1]]-1),//thicken chord?
-				//degree:Pseq([ [1,3],[0,2],[5-7,1]]-1),
-				att:2,
-				scale:Scale.mixolydian,
-				dur:Pseq(Song.parse(8,[1!3,1!5,1!2])),
+P(\forboding8,start:8,music: {|p b e|
+		var keyAmp = 0.dbamp;
+		Ppar([
+			[
+				degree:Pseq([\r,[0,2,5],[-1,1.1]]-1),
 				root:2,
-			]
-		),
-		Song.pbind[8],
-		[
-			degree:Pseq([[1,1-7],6-7,7-7,[6-7,1.1],5-7-7]-1),
-			//degree:Pseq([1,6-7,7-7,[5-7,1]]-1),
-			root:2,
-			octave:4,
-			dur:Pseq(Song.parse(8,[[1,1],1,1!5,1!2]))++Pseq([8]),
-			scale:Scale.mixolydian
-		].p,
+				scale:Scale.mixolydian,
+				octave:[4,5],
+				instrument:\tritri,
+				att:0.2,
+				rel:3,
+				amp:0.07 * keyAmp,
+				out:2,
+				dur:Pseq(Song.parse(8,[1!3,1!5,1!2])),
+			].p,
+			Pmono(
+				*[
+					\avsd,
+					degree:Pseq([ [1,3],[0,2],[6-7,1.1]]-1),//thicken chord?
+					//degree:Pseq([ [1,3],[0,2],[5-7,1]]-1),
+					att:2,
+					scale:Scale.mixolydian,
+					dur:Pseq(Song.parse(8,[1!3,1!5,1!2])),
+					root:2,
+					out: 1,
+					amp:0.05 * keyAmp * -5.dbamp,
+				]
+			).trace,
+			Song.pbind[8],
+			[ //bass
+				degree:Pseq([[1,1-7],6-7,7-7,[6-7,1.1],5-7-7]-1),
+				//degree:Pseq([1,6-7,7-7,[5-7,1]]-1),
+				root:2,
+				octave:4,
+				dur:Pseq(Song.parse(8,[[1,1],1,1!5,1!2]))++Pseq([8]),
+				scale:Scale.mixolydian,
+				out: 3
+			].p,
 
-		[ //final chord
-			instrument:\avsd,att:8,amp:0.018,degree:Pseq([\r,[5,7,9,11.1]-1]),dur:Pseq([8,12]),octave:4,root:2,
-		].p
-	])
+			[ //final chord
+
+				instrument:\avsd,att:8,amp:0.018 * 2,degree:Pseq([\r,[5,7,9,11.1]-1]),dur:Pseq([8,12]),octave:4,root:2
+			].p
+		]).play
+	}
 );
 
 

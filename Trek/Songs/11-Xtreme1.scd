@@ -8,34 +8,56 @@ Song(\song,[]).current;
 
 Song.gain = -14.dbamp;
 
+Song.gainControl = Bus.control(server:s, numChannels:2).set(Song.gain, 1);
+
+// Song.gainControl.scope;
+
+Song.transitionGroup = Group.before(s.defaultGroup );
+Song.transitionItems = Group.head(Song.transitionGroup);
+Song.transitionFX = Group.tail(Song.transitionGroup);
+Song.gainGroup = Group.tail(Song.transitionGroup);
+
 Song.faderFunc = { |target|
 	target = target ? RootNode(s);
-	Song.fader.isPlaying.not.if { Song.fader = {
-		In.ar(0, 5) *
-		Env([Song.gain, 1], 0.5).kr(0, gate: \gate.kr(0))
-		=> ReplaceOut.ar(0, _);
-	}.play(target, addAction: \addToTail).register }
+	Song.fader.isPlaying.not.if { 
+		Song.fader = {
+			In.ar(0, Monitors.channels) *
+			In.kr(Song.gainControl.index, 1).lag(1)
+			// Env([Song.gain, 1], 0.5).kr(0, gate: \gate.kr(0))
+			=> ReplaceOut.ar(0, _);
+		}.play(target, addAction: \addToTail).register 
+	};
+	Song.innerFader.isPlaying.not.if {
+		Song.innerFader = {
+			In.ar(0,5)
+			* In.kr(Song.gainControl.index + 1, 1).lag(1)
+			// * Env([1, Song.gain], 0.5).kr(0, gate: \gate.kr(0))
+			=> ReplaceOut.ar(0,_)
+		}.play(s, target: Song.gainGroup).register
+	}
 };
 
-//so that fader is on even when for example listening to items
-// CmdPeriod.add{
-// 	Song.faderFunc.()
-// };
 Song.fader.isPlaying.not.if{ Song.faderFunc.() };
 
 Song.preroll = 0.5;
 
 Song.addLineFunc = { |sec|
-	( sec <= 30 ).if {
+	case {sec <= 30}{
 		P(\gain, start:sec, lag: -0.21, music:{ |p b e| 
 			Song.fader.isPlaying.not.if{
-				Song.fader.free;
+				Song.fader.free; Song.innerFader.free;
 				Song.faderFunc.()
-			}{
-				try{ s.reorder([Song.fader], RootNode(s), \addToTail) };
 			};
 		})
-	}
+	} {sec == 31}{
+		P(\gain, start:sec, lag: 0, music:{ |p b e| 
+			Song.gainControl.set(1, Song.gain);
+			Song.fader.isPlaying.not.if{
+				Song.fader.free; Song.innerFader.free;
+				Song.faderFunc.()
+			};
+		})
+		}
 };
 
 Song.xtremeBassFX = (s.options.outDevice == "MacBook Pro Speakers").if{
@@ -44,14 +66,12 @@ Song.xtremeBassFX = (s.options.outDevice == "MacBook Pro Speakers").if{
 	}
 }{
 	{
-
 		Effect.bus( {|i| Decimator.ar(i,rate:8000,bits:4)*(-6.dbamp) 
 		=> HPF.ar(_, 100)
 		=> Pan2.ar(_,-0.4)})
 	}
 
 };
-
 
 		// Song.gain = -14.dbamp;
 		// Song.fader = Song.fader ? { In.ar(0, Monitors.channels) * Song.gain => ReplaceOut.ar(0, _) }.play(RootNode(s),addAction:\addToTail );
@@ -1528,10 +1548,6 @@ P(\innerTwo,syl:5, music: { |p b e|
 P.tune( { |i| i <>[instrument: \stringyy].pm => Pmul(\freq, 0.5, _)} );
 		//P.tune('too am', {|i| Pbindf(i,\amp,0.01,\freq,1.df(\d,[4,5]))});
 [ " boom after so- long... (boom) so very long... Kiss ","d3 a b e4 d f g3 b c4 a3 e4 r" ].addLine; 
-Song.transitionGroup = Group.before(s.defaultGroup );
-Song.transitionItems = Group.head(Song.transitionGroup);
-Song.transitionFX = Group.tail(Song.transitionGroup);
-Song.gainGroup = Group.tail(Song.transitionGroup);
 P.tune( _ <> [group: Song.transitionItems, instrument: \sparkTriangle, depth: 0.004, amp: 0.05, rest: [\r, 1, 1, 1, 1, 1, \r, 1, 1, 1, 1].q].pm );
 P.synthV(role: \sargon, take: 
 		// \lead
@@ -1601,6 +1617,7 @@ P(\afterSoLongSketch,start:'very long',music: {|p b e|
 		}
 	);
 P(\bassNotes54,start:'very long',music: 
+
 		{ |p b| 
 			[
 				dur: b.parse([6,5]).q,
@@ -1608,7 +1625,8 @@ P(\bassNotes54,start:'very long',music:
 				legato:[1.1,0.9].q,
 				octave:3,
 				amp:0.5,
-				out: Effect( { |i|  SineShaper.ar(i,0.2) * Env([0,1,1],[0.05]).kr }).bus.index
+				group: p.transitionItems,
+				out: Effect( { |i|  SineShaper.ar(i,0.2) * Env([0,1,1],[0.05]).kr }, target: p.transitionItems ).bus.index
 			].pp
 		}
 	);
@@ -1617,33 +1635,6 @@ P(\bassNotes54,start:'very long',music:
 	//~justTheTune.('so very long');
 [ "(kissing) r r r r r r r r ..","g#5 f# d# b4 a# g# e5 d# " ].addLine; 
 
-
-Song.innerFunc = {
-	Song.innerFader = {
-		In.ar(0,5)
-		* Env([1, Song.gain], 0.5).kr(0, gate: \gate.kr(0))
-		=> ReplaceOut.ar(0,_)
-	}.play(s, target: Song.gainGroup).register
-};
-P(\setup, start: 'very long', music: {|p b e|
-	Song.innerFunc.()
-});
-P(\kissingGain,start: 'kissing', music: { |p b e|
-	p.innerFader.isPlaying.if {
-		Song.innerFader.set(\gate, 1);
-	}{
-		p.innerFunc.();
-		p.fader.set(\gate, 1);
-	};
-	p.fader.set(\gate, 1);
-	// s.defaultGroup.release;
-	// s.bind{
-	// 	Song.fader.free;
-	// 	Song.faderFunc.(Song.gainGroup) 
-	// }
-	// s.reorder( [Song.fader], p.gainGroup );
-
-});
 P.still(\kiss, timecode: 2810.1.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
@@ -1651,7 +1642,7 @@ P.still(\kiss, timecode: 2810.1.seconds, music: { |p b e|
 			fade:3
 		)
 });
-P(\bowedKissing, lag: 0.1,music: { |p b e|
+P(\bowedKissing, lag: 0.0,music: { |p b e|
 				[ 
 					instrument:\trem2,
 					rate:Pbrown(2,0,0.3),
@@ -1666,7 +1657,7 @@ P(\bowedKissing, lag: 0.1,music: { |p b e|
 				].pp;
 		}
 	);
-P(\bassKissing, lag:0.1,start:'kissing',music:
+P(\bassKissing, lag:0.0,start:'kissing',music:
 		(
 			instrument:\sawSynth,
 			rel:15,

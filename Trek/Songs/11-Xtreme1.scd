@@ -1,12 +1,13 @@
 (
 	// Stills("/Users/michael/trek/BySection/media/return to tomorrow.mov").current;
 	Stills().current;
+	Trek.cast.mccoy = \xuan;
 //Line 239 The three volunteers are lying on beds, with the spheres on tables beside them. 
 try{ Song.transitionGroup.free };
 try{ Song.fader.free };
 Song(\song,[]).current;
 
-Song.gain = -14.dbamp;
+Song.gain = -12.dbamp;
 
 Song.gainControl = Bus.control(server:s, numChannels:2).set(Song.gain, 1);
 
@@ -34,7 +35,11 @@ Song.faderFunc = { |target|
 			// * Env([1, Song.gain], 0.5).kr(0, gate: \gate.kr(0))
 			=> ReplaceOut.ar(0,_)
 		}.play(s, target: Song.gainGroup).register
-	}
+	};
+	// Song.transitionGroup =  Group.before(s.defaultGroup );
+	// Song.transitionItems =  Group.head(Song.transitionGroup);
+	// Song.transitionFX    =  Group.tail(Song.transitionGroup);
+	// Song.gainGroup       =  Group.tail(Song.transitionGroup);
 };
 
 Song.fader.isPlaying.not.if{ Song.faderFunc.() };
@@ -44,6 +49,7 @@ Song.preroll = 0.5;
 Song.addLineFunc = { |sec|
 	case {sec <= 30}{
 		P(\gain, start:sec, lag: -0.21, music:{ |p b e| 
+			Song.gainControl.set(Song.gain, 1);
 			Song.fader.isPlaying.not.if{
 				Song.fader.free; Song.innerFader.free;
 				Song.faderFunc.()

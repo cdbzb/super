@@ -13,9 +13,9 @@ o = [
 	Array.prNew(12),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  "715470000",  "w i",  Event.prNew,  
 	Array.prNew(4),  Event.prNew,  Array.prNew(40),  "6251580000",  
-	"sat",  "1381560000",  "s a th",  Event.prNew,  
+	"sat",  "1243400000",  "s a th",  Event.prNew,  
 	Array.prNew(40),  "7633140000",  "bi",  "574350000",  
-	"p i\\",  Event.prNew,  Array.prNew(40),  "8207490000",  
+	"p i",  Event.prNew,  Array.prNew(40),  "8207490000",  
 	"sa",  "616690000",  "s a ",  Event.prNew,  
 	Array.prNew(40),  "8824180000",  "id",  "551770000",  
 	":\\i t",  Event.prNew,  Array.prNew(40),  "9375950000",  
@@ -25,7 +25,7 @@ o = [
 	"i",  "807200000",  "i\\",  Event.prNew,  
 	Array.prNew(40),  "11743930000",  "il",  "883410000",  
 	"l",  Event.prNew,  Array.prNew(40),  "12627340000",  
-	"ver",  "1011830000",  "w a \\r`",  Event.prNew,  
+	"ver",  "910640000",  "w a \\r`",  Event.prNew,  
 	Array.prNew(40),  "13639170000",  "lek",  "1930520000",  
 	"l e :\\i kh",  "main",  Event.prNew,  Array.prNew(32),  
 	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
@@ -46,7 +46,7 @@ o = [
 	Array.prNew(1),  Event.prNew,  Array.prNew(12),  "",  
 	"Unnamed Track",  Array.prNew,  Event.prNew,  Array.prNew(20),  
 	"ff7db235",  Event.prNew,  Array.prNew(28),  "synthV.wav",  
-	"NoAspiration",  "/Users/michael/tank/super/SynthV/silverLake/1474388663/aiko"
+	"NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/silverLake/1474388663/aiko"
 ];
 p = [
 	// Event
@@ -140,7 +140,7 @@ p = [
 		proto: nil,  parent: nil,  
 		know: true ],  
 	// Array
-	23, [ nil,  nil,  'activeTakeId',  1,  
+	23, [ nil,  nil,  'activeTakeId',  0,  
 		nil,  nil,  'takes',  o[24] ],  
 	// Array
 	24, [ o[25],  o[27],  o[29],  o[31] ],  

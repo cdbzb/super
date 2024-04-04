@@ -1,6 +1,6 @@
 (
 "/Users/michael/tank/super/Trek/Songs/11-Xtreme1.scd".load;
-
+Song.cursor_(33);
 {
 ["/*SPOCK*/ -boom- This is an excellent body, Doctor." ,"1 -7 1 2 6 7 6 5 5 6 4 1 -7".dm(\f,\mixolydian)].addLine;
 P(\gain, music: { |p b e|

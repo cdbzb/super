@@ -19,7 +19,7 @@ o = [
 	"is",  "667490000",  "i z",  Event.prNew,  
 	Array.prNew(40),  "2703830000",  "best",  "646880000",  
 	"b e s t",  Event.prNew,  Array.prNew(40),  "3512440000",  
-	"not",  "740870000",  "n a t",  Event.prNew,  
+	"not",  "592690000",  "n a t",  Event.prNew,  
 	Array.prNew(40),  "4253310000",  "to",  "268120000",  
 	"t u",  Event.prNew,  Array.prNew(40),  "4521430000",  
 	"re",  "375370000",  "r i",  Event.prNew,  
@@ -47,7 +47,7 @@ o = [
 	Event.prNew,  Array.prNew(8),  Array.prNew(1),  Event.prNew,  
 	Array.prNew(12),  "",  "Unnamed Track",  Array.prNew,  
 	Event.prNew,  Array.prNew(20),  "ff7db235",  Event.prNew,  
-	Array.prNew(28),  "synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/SynthV/silverLake/1786557279/genbu"
+	Array.prNew(28),  "synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/silverLake/1786557279/genbu"
 ];
 p = [
 	// Event
@@ -141,7 +141,7 @@ p = [
 		proto: nil,  parent: nil,  
 		know: true ],  
 	// Array
-	23, [ nil,  nil,  'activeTakeId',  1,  
+	23, [ nil,  nil,  'activeTakeId',  0,  
 		nil,  nil,  'takes',  o[24] ],  
 	// Array
 	24, [ o[25],  o[27],  o[29],  o[31] ],  
@@ -503,13 +503,13 @@ p = [
 		nil,  nil,  'id',  0,  
 		'expr',  1.1,  nil,  nil ],  
 	// Event
-	167, [ array: o[168],  size: 3,  
+	167, [ array: o[168],  size: 4,  
 		proto: nil,  parent: nil,  
 		know: true ],  
 	// Array
 	168, [ 'vocalModeInherited',  true,  nil,  nil,  
 		nil,  nil,  'vocalModePreset',  o[169],  
-		'vocalModeParams',  o[170],  nil,  nil ],  
+		'vocalModeParams',  o[170],  'paramTension',  0.1 ],  
 	// Event
 	170, [ array: o[171],  size: 0,  
 		proto: nil,  parent: nil,  

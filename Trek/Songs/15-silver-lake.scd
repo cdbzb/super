@@ -317,7 +317,6 @@ P('phrase',start:\lake,syl:0,music: {|p b e|
 });
 ["flowers of our planet. ",[1,-7,1].dm(\g,scale:\mixolydian)++[6,5,4,3,6,5,4,3].dm(\d)+12].addLine;
 Song.setTempoMap(\flowers,"qe eq e e qe e qe e qe e qe");
-
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -330,42 +329,70 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	)
 });
 Song.durs[\flowers].list.do(_.postln);
-
-P(\planet,start:\flowers,syl:2,music: { |p b e |
-	~quarters = b.drop(1).asArray++[1,1];~quarters=~quarters.parseBeats([1,3,1,3,1,3,1,1,2]/2);
-	~vars = (); ~pbinds = ();
-	~vars.bass = [6,5,4,11].dup.flat;
-	~vars.inner = [6,5,-6,1, 4,3,-5,-7, 6,5,-6,3, 4, 3,-5,1/*3*/].reject({|i x| x % 4 == 0 or: (x % 4 == 1)}).clump(2);
-	~vars.arp = [\r] 
-	++ [ ~vars.bass.df(\d,octave:3) , ~vars.inner.df(\d,octave:5)].flop.flat; 
-	~pbinds.arpLow=[
-		freq:~vars.arp.q,
-		dur: [1].q ++ [1,1,2].q(4) / 2,
+P(\ep, music: { |p b e|
+	
+	[
+		freq: [\r, 6,5,-6,1, 4,3,-5,-7, 6,5,-6,3, 4, 3,-5,1/*3*/].df(\d).q,
+		dur:0.5,
+		dur: "qqqe e*16".beats.warpTo(e.tempoMap.quantizeWindow(0.3)).q,
+		instrument: \defaultPiano,
+		rest: [\r].q ++ [ 1, 1, \r, \r].q(4),
+		out: Effect.bus({|i| i * SinOsc.ar(3.7) }, out: 2)
+	].pp
+});
+P(\lowArp, music: { |p b e|
+	[
+		freq: [\r, 123.47082531403, 246.94165062806, 293.66476791741, 110.0, 220.0, 277.18263097687, 97.998858995437, 246.94165062806, 369.99442271163, 146.8323839587, 220.0, 293.66476791741, 123.47082531403, 246.94165062806, 293.66476791741, 110.0, 220.0, 277.18263097687, 97.998858995437, 246.94165062806, 369.99442271163, 146.8323839587, 220.0, 293.66476791741].q,
+		dur: [\r].q ++ [1].q ++ [1,1,2].q(4) / 2,
+		dur: "qqqq e e q e e q e e q e e q".asBeats.warpTo( e.tempoMap.quantizeWindow(0.3) ).q,
 		//amp: [\r].q++[\r,1,2].q(4) /10,
 		//amp:0.2,
-		out:1,
+		out:3,
 		instrument:\sparkTriangle,
 		//amp:0.01
-	].p;
-	~pbinds.tune=[6,5, 4,3].dup.flat=>_.df(\d)=>{|i| 
+		legato: [1].q ++ [0.9,1, 0.9].q(3) ,
+	].pp//ma
+	;
+	[
+
+		freq: [\r, 123.47082531403, 246.94165062806, 293.66476791741, 110.0, 220.0, 277.18263097687, 97.998858995437, 246.94165062806, 369.99442271163, 146.8323839587, 220.0, 293.66476791741, 123.47082531403, 246.94165062806, 293.66476791741, 110.0, 220.0, 277.18263097687, 97.998858995437, 246.94165062806, 369.99442271163, 146.8323839587, 220.0, 293.66476791741].q,
+		dur: "qqqq e e q e e q e e q q q h".asBeats.warpTo( e.tempoMap.quantizeWindow(0.3) ++ p.tempoMap[e.start + 1] ).q,
+		//amp: [\r].q++[\r,1,2].q(4) /10,
+		//amp:0.2,
+		out:4,
+		amp: 0.01,
+		instrument:\harp, coef: 0.15,
+		rest: [\r].q ++ [\r, 1, 1].q(4)
+		//amp:0.01
+	].pp;
+});
+P(\saw, music: { |p b e|
 		[
-			dur:[1,3].q(4)/2,
-			freq:i.q,
-			instrument:\sawSynthSustain
-		].p
-	};
-	~pbinds.rh = [6,5,-6,1, 4,3,-5,-7, 6,5,-6,3, 4, 3,-5,1/*3*/].df(\d)
-	=>{|i| [dur:0.5,freq:i.q].p};
-	~pbinds.bass = [
+			freq: "r 6 5 4 3 6 5 4 3".df(\d).q,
+			// dur:[1,3].q(4)/2,
+			dur: "qqqe e qe e qe e qe e qq".asBeats.warpTo( e.tempoMap.quantizeWindow(0.2) ++ p.tempoMap[e.start + 1]).q,
+			rel: 1,
+			rests: MuteFirst(),
+			instrument:\sawSynthSustain,
+			hifreq: 4000,
+			lofreq: 2000,
+			amp: 0.085,
+			center: -0.5, spread: 1,
+			// rel: [2, 2, 2, 2, 2, 2, 2,2, 4].q,
+			pulse: 0.5,
+			freqLag: 0.00,
+			legato: [ 0.9,1 ].q(5),
+		].pp
+});
+P(\bass, music: { |p b e|
+	[
 		dur:[1].q++[4].q(inf) / 2,
+		dur: "qqqq h h h h".asBeats.warpTo( e.tempoMap.quantizeWindow(0.3) ).q,
 		freq:[\r,6,5,4,11].df(\d,octave:[2,3]).q,
-		instrument:\stringyy,amp:0.5
-	].p;
-	//TODO PUT in a Ppar and clock to durs
-	~pbinds.asKeyValuePairs.select{|i x| x.odd} 
-	=> Ppar(_) 
-	=> _.play(~quarters.asTempoClock);
-	'b '.post;b.postln
+		instrument:\stringyy,amp:0.25,mix: 0.1,
+		release: [4, 4, 4,4, 2].q
+		// instrument:\stringyy,amp:0.5//mix: 0
+	].pp;
 });
 P.synthV( role: \desc,
 	pbind: {|p b|
@@ -413,8 +440,6 @@ P.synthV(role: \thalassa,take:\lead,params: {|p b| [
 P.tune(\flowers,Pbindf(_,\instrument,\stringyy,\release, 5,\amp,0.2,\freq,Pfunc({|e| e.midinote.midicps/2})));
 // P.tune(\flower,Pbindf(_,\instrument,\harp, \coef, 0.15,\release, 5,\amp,0.01,\freq,Pfunc({|e| e.midinote.midicps})));
 Song.quarters[\planet]= Song.parseBeats(\planet,[1.5,1.5,0.5,0.5,1.5,0.5,1.5,0.5,1.5,0.5,1.5]);
-//Song.quarters[\planet]
-
 P(\arpeggio,start: \flowers,music:{|p b e|
 	var lick = [1,2,3,5,7,11,7].dm('a-');
 	lick => {|i| [
@@ -432,7 +457,7 @@ P(\arpeggio,start: \flowers,music:{|p b e|
 	lick => {|i| [
 		// instrument:[\sparkTriangle, \defaultPiano],
 		instrument: \defaultPiano,
-		amp:0.014,
+		amp:0.04,
 		midinote:i.q,
 		ctranspose:[0,-12],
 		dur:1/2,
@@ -440,19 +465,18 @@ P(\arpeggio,start: \flowers,music:{|p b e|
 		legato:2.1
 	].p.play(clock:Song.quarters[\planet].asTempoClock);
 }});
-//Song.quarters[\planet]
 P(\ride,\flowers, //syl:3, 
 	music:{|p b e|
 		[
 			//instrument:\claves_808,
 			instrument:\openhihat_808,
 			// dur: Rest(1)!4++{  1!7  }.value => _.q,
-			dur: "qqqq q*7".beats.warpTo(e.tempoMap).q,
+			dur: "qqqq q*7".beats.warpTo(e.tempoMap.quantizeWindow(0.3)).q,
 			rest: MuteFirst(),
 			out:Effect(EchoNone.ar(_,0.2,0.1,6),out:3).bus.index
 		].pp;//.play(clock: Song.quarters[\planet] .asTempoClock);
 		(
-			lag: "w".asBeats.warpTo( e.tempoMap ),
+			lag: "w".asBeats.warpTo( e.tempoMap.quantizeWindow(0.3) ),
 			instrument: \cymbalsDS,
 			att: 0.05,
 			amp: 0.01,
@@ -473,6 +497,7 @@ P(\chord,start:\flowers,music:{|p b e|
 	});
 
 	["/*KIRK:*/ I remember. You held my han-- -- -- -- -- -- -- -- -- -- -- -- -- d like ",[4,3,3,2].dm(\c)++[-4,-5,-6,-7,1,-7,-6,-7,1,2,3,2,1,2,3, 4,5].dm(\g)].addLine;
+	Song.setTempoMap(\held,"Q E q e e e e e e e e e e e e e e e e e e e e");
 P.still(\close, timecode: 3327.5.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.parse([5]).unbubble,
@@ -773,6 +798,7 @@ P.synthVs(role: \henoch, take: [\lead, \double],
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		* 4.dbamp
 	}.play
 });
 //P.tune('two days');
@@ -1204,6 +1230,7 @@ P.synthV(role: \sargon, take: nil, params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		* 3.dbamp
 	}.play
 });
 //Song.durs[\survived] = Song.durs[\survived].list.put(8,Song.durs[\survived].list[8]*1.5) => _.q;
@@ -1308,6 +1335,7 @@ P.synthV(role: \sargon, take: \lead, params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		* 3.dbamp
 	}.play
 });
 P(\bass, music: { |p b e|
@@ -1398,6 +1426,7 @@ P.synthV(role: \sargon, take: \lead, params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		* 3.dbamp
 	}.play
 });
 P('pad',start:\tea,music: {|p b e|
@@ -1418,8 +1447,6 @@ P('pad',start:\tea,music: {|p b e|
 	] => Ppar(_)
 	=> _.play
 });
-
-
 P(\cymbal,syl:0, music: { |p b e|
 	(
 		instrument: \cymbalsDS,
@@ -1444,8 +1471,8 @@ Song.teachingBass = [
 	dur:3,
 	release:4
 ].p;
-
-P.tune('tea -- ching');
+P.tune('tea -- chin', _ <> [instrument: \sparkTriangle, depth: 0.005, out: 2, amp: 0.05].pm);
+// P.tune('tea -- ching', _ <> [instrument: \defaultPiano, coef: 0.2, depth: 0.002, out: 2, amp: 0.05, legato: [1, 0.9, 0.9, 0.9, 0.9, 0.9,0.9,0.9,0.9,0.9 ].q,].pma);
 P(\bassnote,start:'tea -- ching',syl:0,music:{|p b e|
 	//b[0].postln;
 	Song.teachingBass 
@@ -1457,6 +1484,7 @@ P(\bassnote,start:'tea -- ching',syl:0,music:{|p b e|
 	=> _.play
 });
 ["helping them (boom) not to make the errors we -- did. (pain) ",[4,3,1,-7,1,2,3,1,4,5,5,6,5,-7.5].dm(\a,scale:\mixolydian)].addLine;
+P.tune(\helping, _ <> [instrument: \sparkTriangle, depth: 0.005, out: 3, amp: 0.05, rests: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1].q].pm);
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -1476,6 +1504,7 @@ P.synthV(role: \sargon, take: \lead, params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		* 3.dbamp
 	}.play
 });
 P.synthVs( \feng, take: [\backup, \bg2], params: {|p b| [
@@ -1611,12 +1640,14 @@ P.synthV(role: \sargon, take: \lead, params: {|p b| [
 	legato: [1,0.5,  1,1,1,1,1,1,1,1,1,1],
 	// filter: (midinote: _ - 13), 
 	filter: (midinote: _ - 1), 
-	pitchTake: 1
+	pitchTake: 1,
+	paramTension: -0.1
 ] }, music:{|p b e|
 	{
 		e.playbuf
 		=> Pan2.ar(_,0)
 		/4
+		* 5.dbamp
 		// => p.synthVTracks.at(e.key).(3.dbamp)
 	}.play
 });
@@ -1680,7 +1711,8 @@ P.still(\ThalassaClose, syl:2, timecode: 3427.5.seconds, music: { |p b e|
 P.synthV(role: \sargon, take: \lead, params: {|p b| [
 	lyrics: "du not bi kan sand",
 	filter: (midinote: _ - 12), 
-	pitchTake: 1
+	pitchTake: 1,
+	paramTension: -0.1
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -1688,6 +1720,7 @@ P.synthV(role: \sargon, take: \lead, params: {|p b| [
 		=> Pan2.ar(_,0)
 		=> {|i| CombN.ar(i, 0.3,0.26,6) /4 + i}
 		/3
+		* 4.dbamp
 	}.play
 });
 

@@ -36,10 +36,6 @@ Song.faderFunc = { |target|
 			=> ReplaceOut.ar(0,_)
 		}.play(s, target: Song.gainGroup).register
 	};
-	// Song.transitionGroup =  Group.before(s.defaultGroup );
-	// Song.transitionItems =  Group.head(Song.transitionGroup);
-	// Song.transitionFX    =  Group.tail(Song.transitionGroup);
-	// Song.gainGroup       =  Group.tail(Song.transitionGroup);
 };
 
 Song.fader.isPlaying.not.if{ Song.faderFunc.() };
@@ -55,7 +51,7 @@ Song.addLineFunc = { |sec|
 				Song.faderFunc.()
 			};
 		})
-	} {sec == 31}{
+	}{sec == 31}{
 		P(\gain, start:sec, lag: 0, music:{ |p b e| 
 			Song.gainControl.set(1, Song.gain);
 			Song.fader.isPlaying.not.if{
@@ -63,7 +59,7 @@ Song.addLineFunc = { |sec|
 				Song.faderFunc.()
 			};
 		})
-		}
+	
 };
 
 Song.xtremeBassFX = (s.options.outDevice == "MacBook Pro Speakers").if{

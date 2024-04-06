@@ -18,7 +18,7 @@
 		}) => Dictionary.newFrom(_);
 		^this.split(Char.space)
 		.reject{|i| i==""}
-		.select{|i| "xeqhXEQH wWg".contains(i[0])}
+		.select{|i| "xeqhtXEQH wWg".contains(i[0])}
 		.ascii
 		.deepCollect(2, {|i| dict.at(i) ? 0})
 		.collect(_.sum)

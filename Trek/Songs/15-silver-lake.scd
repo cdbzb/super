@@ -317,7 +317,7 @@ P('phrase',start:\lake,syl:0,music: {|p b e|
 });
 ["flowers of our planet. ",[1,-7,1].dm(\g,scale:\mixolydian)++[6,5,4,3,6,5,4,3].dm(\d)+12].addLine;
 // Song.durs.filter({|t|  var beats = "qe eq e e qe e qe e qe e et".beats; beats = beats/beats.sum * t.sum; t[..3] ++ beats.drop(4)  });
-Song.durs.filter(\planet, {|t| t[..3] ++ (t.drop(4) * 1.06)});
+Song.durs.filter(\planet, {|t| t[..3] ++ (t.drop(4) * 1.04)});
 Song.durs[\planet].list.round(0.01).do(_.postln);
 Song.setTempoMap(\flowers,"qe eq e e qe e qe e qe e et");
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
@@ -839,7 +839,7 @@ P(\bass,start:'two days',syl:1,music:{|p b e|
 		instrument:\sawSynthEnv,
 		lofreq: 1270,
 		hifreq:2500,
-		out: Effect(HPF.ar(_,250),inputChannels:2, out: 2).bus.index
+		out: Effect(HPF.ar(_,350),inputChannels:2, out: 2).bus.index
 	].p };
 	Song.handsKeys = (intro: 'b-', bridge: \d, reprise: \g, outro:\g);
 	Song.handsKeys = (intro: 'b-', bridge: \g, reprise: 'b-', outro:\g);
@@ -997,8 +997,8 @@ P.synthVs(\feng, take: [ \bg1, \bg2], params: {|p b| [
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		// => p.synthVTracks.at(e.key).()
-		/8
+		=> p.synthVTracks.at(e.key).()
+		// /8
 		=> Out.ar(2, _)
 	}.play
 });
@@ -1010,8 +1010,8 @@ P.synthVs(\feng, take: [ \bg3, \bg4], params: {|p b| [
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		// => p.synthVTracks.at(e.key).()
-		/8
+		=> p.synthVTracks.at(e.key).()
+		// /8
 		=> Out.ar(3,_)
 	}.play
 });
@@ -1023,9 +1023,9 @@ P.synthVs(\feng, take: [ \bg4, \bg5], params: {|p b| [
 ] }, music:[0,1].collect{|o| {|p b e|
 	{
 		e.playbuf
-		// => p.synthVTracks.at(e.key).()
-		/8
-		=> Out.ar(o, _)
+		=> p.synthVTracks.at(e.key).()
+		// /8
+		=> Out.ar(4, _)
 	}.play
 } });
 P.synthVs(role: \henoch, take: [\lead, \double], params: {|p b| [
@@ -1100,6 +1100,15 @@ P.synthV(\mo,take:\bg, take: nil, params: {|p b| [
 P('cymbal',start:\Hands,music: {|p b e|
 	(instrument:\cymbalsDSStereo,amp:0.004).play;
 	(instrument:\cymbal_808,amp:5,pan:-1).play
+});
+P(\pad, music: { |p b e|
+	[
+		instrument: \stringyy,
+		freq: 12.df(p.handsKeys.reprise.asNum - 7),
+		amp: 0.2,
+		dur: "qqqqqq qq qqqqqq qq" .asBeats.q,
+		rest: [1, \r].q(2)
+	].p.play(clock: p.introClock)
 });
 P(\keys,syl:0,music: { |p b e|
 	var lick1=VoiceLeading(
@@ -1229,6 +1238,7 @@ P('chord2',start:\Enjoy,music: {|p b e|
 });
 
 ["/*KIRK:*/ (boom But.. boom) our minds will have survived. ",[-2,2,-3,3,7,6,5,3,2.5].dm(\f)].addLine;
+Song.mindGain = 5.dbamp;
 P.still(\sargonClose, timecode: 3401.7.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -1248,7 +1258,8 @@ P.synthV(role: \sargon, take: nil, params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
-		* 3.dbamp
+		// * 3.dbamp
+		* p.mindGain
 	}.play
 });
 //Song.durs[\survived] = Song.durs[\survived].list.put(8,Song.durs[\survived].list[8]*1.5) => _.q;
@@ -1256,7 +1267,8 @@ P('bass',start:\But,music: {|p b e|
 	[
 		freq: [2,3].df(\f,[2,3]).q,
 		dur:b.parse([2,1]).q,
-		instrument:\sawSynth, amp:0.05
+		instrument:\sawSynth, 
+		amp:0.05 * p.mindGain
 	].pp
 });
 P(\mindChords,syl:3,lag:-0.26, start:\survived, music: { |p b e|
@@ -1264,7 +1276,7 @@ P(\mindChords,syl:3,lag:-0.26, start:\survived, music: { |p b e|
 	var chord = [-21,-11,-15,-1,1,3,5,7].df(\f,tuning:\sept7);
 	chord => {|i| 
 		(
-			amp:0.02,
+			amp:0.02 * p.mindGain,
 			freq:i,
 			strum:0.06,
 			lag:-0.06,
@@ -1273,11 +1285,12 @@ P(\mindChords,syl:3,lag:-0.26, start:\survived, music: { |p b e|
 			out:[0,1,2,3,4]
 			//out:Effect(Phaser2.ar(_,rate:0.2,fb:-0.9),inputChannels:4,out:[0,1,2,3]).bus.index
 		).play
+
 	};
 	chord => { |i|
 		{ 
 			i.postln;
-			Saw.ar(i,0.07) 
+			Saw.ar(i,0.07 * p.mindGain) 
 			=> RLPF.ar(_,i*5)
 			* XFade2.kr(
 				1, 
@@ -1294,7 +1307,7 @@ P(\mindChords,syl:3,lag:-0.26, start:\survived, music: { |p b e|
 P(\cymbal, syl: 3, music: { |p b e|
 	(
 		instrument: \cymbalsDSStereo,
-		amp: 0.003 ,
+		amp: 0.003 * p.mindGain ,
 		// out:Effect.bus({|i| i * Env.perc(0.5,3).kr(2,gate:1) },inputChannels:2)
 	).play
 });
@@ -1303,13 +1316,14 @@ P(\bassNote,start:\survived,syl:7,music:{
 		freq:[[1,11,-1]].df('a-',octave:2).q(1),
 		dur:3,
 		out:Effect(FreeVerb.ar(_,0.8,1),out:[0,1]).bus.index,
-		release:4
+		release:4,
+		amp:0.1*p.mindGain
 	].pp
 });
 P(\extra,syl:7,start:\survived,music:{|p b e|
 	[
 		freq: [-1,[-4,-5]].df('a-').q,
-		amp:0.025,
+		amp:0.025 * p.mindGain,
 		dur:[b[1]/2,b[1]/2].q,
 		legato:[3,2].q
 	].pp
@@ -1329,7 +1343,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 P(\cymbal, syl: 5, music: { |p b e|
 	(
 		instrument: \cymbalsDSStereo,
-		amp: 0.002 ! 3,
+		amp: 0.002 ! 3 * p.mindGain,
 		// out:Effect.bus({|i| i * Env.perc(0.5,3).kr(2,gate:1) },inputChannels:2)
 	).play
 });
@@ -1340,7 +1354,8 @@ P(\bassnotes, music: { |p b e|
 	dur: b.parse([0.5,[0.5,1],2,1]).q,
 	coef: [ 0.8,0.7,0.75 ].q,
 	mask: [\r,1,1].q,
-	out: [0,1,0].q
+	out: [0,1,0].q + 2,
+	amp: 0.08 * p.mindGain
 
 ].pp
 });
@@ -1353,7 +1368,8 @@ P.synthV(role: \sargon, take: \lead, params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
-		* 3.dbamp
+		// * 3.dbamp
+		* p.mindGain
 	}.play
 });
 P(\bass, music: { |p b e|
@@ -1362,7 +1378,7 @@ P(\bass, music: { |p b e|
 		dur: b.parse([6,4, 4, 1.5]).q,
 		instrument: \sawSynthSustain,
 		lofreq: 6000, hifreq: 4000,
-		amp: 0.05
+		amp: 0.05 * p.mindGain
 	].ppm
 });
 P(\moveChord,start:\move,syl:5,music:{ |p b e|
@@ -1371,7 +1387,7 @@ P(\moveChord,start:\move,syl:5,music:{ |p b e|
 		instrument:\sawSynthSustain,
 		att:[ 4.5, 1.3,1.5 ].q,
 		legato:[1.0,1.1,1.1].q,
-		amp:0.03,
+		amp:0.03 * p.mindGain,
 		// lagTime:0,
 		lag:[0,-0.04,-0.04].q, //make proportional
 		legato: [0.99,1,1].q,
@@ -1401,6 +1417,7 @@ P.synthVs(\an, take: [\bg1, \bg2], params: {|p b| [
 		=> HighShelf.ar(_,5000,1,8)
 		/20
 		=>DWGReverbC1C3.ar(_,mix:0.2)
+		* p.mindGain
 		=> Out.ar(2,_)
 		// => p.synthVTracks.at(e.key).()
 
@@ -1419,6 +1436,7 @@ P.synthVs(\kevin, take: [\bg1, \bg2], params: {|p b| [
 		// => p.synthVTracks.at(e.key).()
 		/20 
 		=>DWGReverbC1C3.ar(_,mix:0.2)
+		* p.mindGain
 		=> Out.ar(2,_)
 		// /4
 	}.play
@@ -1432,6 +1450,7 @@ P.synthVs(\feng, take: [\lead, \double], params: {|p b| [
 ] }, music:{|p b e|
 	{
 		e.playbuf
+		* p.mindGain
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
@@ -1444,7 +1463,8 @@ P.synthV(role: \sargon, take: \lead, params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
-		* 3.dbamp
+		// * 3.dbamp
+		* p.mindGain
 	}.play
 });
 P('pad',start:\tea,music: {|p b e|
@@ -1453,12 +1473,13 @@ P('pad',start:\tea,music: {|p b e|
 			freq: [\r,4, 3, 1, -5].df(\b,[4,5]).q ++ [4,3].df(\a).q,
 			instrument: \stringyy,
 			dur: "q h h h h q q q".asBeats.warpTo(e.tempoMap).q ++ e.bNext.parse([3,2]).q,
-			amp: Pseg([0.1,0.1,0],[b.sum-0.5,e.bNext[0..5].sum])
+			amp: Pseg([0.1,0.1,0],[b.sum-0.5,e.bNext[0..5].sum]) * p.mindGain 
 		].pm(\stringyy) ,
 		[
 			instrument:\stringyy, 
 			freq:[ \r,[4,5] ].df(\b,[4]).q ++ [ [4,5] ].df(\a,[4]).q,
 			legato:[3,1],
+			amp: 0.1 * p.mindGain,
 			dur: "q hhhh".asBeats.warpTo(e.tempoMap).q ++ e.bNext.parse([2]).q
 		].p,
 
@@ -1468,7 +1489,7 @@ P('pad',start:\tea,music: {|p b e|
 P(\cymbal,syl:0, music: { |p b e|
 	(
 		instrument: \cymbalsDS,
-		amp: 0.015
+		amp: 0.015 * p.mindGain
 	).play
 });
 Song.setTempoMap('tea', "x qex q q q q q q q ");
@@ -1478,18 +1499,18 @@ P('click',start:\tea,music: {|p b e|
 	++ e.bNext[0..2]
 	=> _.flat
 	=> _.q => [
-		amp: [0,0.1].q(8) * 0.6,
+		amp: [0,0.1].q(8) * 0.6 * p.mindGain,
 		instrument: \hihat,
 		dur: _,
 		out: Effect(DWGReverbC1C3.ar(_)).bus.index
 	] => _.pp
 });
 Song.teachingBass = [
-	amp: 0.3,
+	amp: 0.3 * p.mindGain,
 	dur:3,
 	release:4
 ].p;
-P.tune('tea -- chin', _ <> [instrument: \sparkTriangle, depth: 0.005, out: 2, amp: 0.05].pm);
+P.tune('tea -- chin', _ <> [instrument: \sparkTriangle, depth: 0.005, out: 2, amp: 0.05 * p.mindGain].pm);
 // P.tune('tea -- ching', _ <> [instrument: \defaultPiano, coef: 0.2, depth: 0.002, out: 2, amp: 0.05, legato: [1, 0.9, 0.9, 0.9, 0.9, 0.9,0.9,0.9,0.9,0.9 ].q,].pma);
 P(\bassnote,start:'tea -- ching',syl:0,music:{|p b e|
 	//b[0].postln;
@@ -1502,7 +1523,7 @@ P(\bassnote,start:'tea -- ching',syl:0,music:{|p b e|
 	=> _.play
 });
 ["helping them (boom) not to make the errors we -- did. (pain) ",[4,3,1,-7,1,2,3,1,4,5,5,6,5,-7.5].dm(\a,scale:\mixolydian)].addLine;
-P.tune(\helping, _ <> [instrument: \sparkTriangle, depth: 0.005, out: 3, amp: 0.05, rests: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1].q].pm);
+P.tune(\helping, _ <> [instrument: \sparkTriangle, depth: 0.005, out: 3, amp: 0.05 * p.mindGain, rests: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1].q].pm);
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -1522,7 +1543,8 @@ P.synthV(role: \sargon, take: \lead, params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
-		* 3.dbamp
+		// * 3.dbamp
+		* p.mindGain
 	}.play
 });
 P.synthVs( \feng, take: [\backup, \bg2], params: {|p b| [
@@ -1533,13 +1555,16 @@ P.synthVs( \feng, take: [\backup, \bg2], params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).(mix:0.05)
-		* -3.dbamp
+		// * -3.dbamp
+
+		* p.mindGain
 	}.play
 });
 P('cymbal',start:\helping,music: {|p b e|
 	(
 		instrument: \cymbalsDS,
-		out: Effect (PitchShift.ar(_,pitchRatio:[ 0.5,0.4 ] / 8)).bus.index
+		out: Effect (PitchShift.ar(_,pitchRatio:[ 0.5,0.4 ] / 8)).bus.index,
+		amp: 0.1 * p.mindGain
 	).play
 });
 P('bass',start:\helping,music: {|p b e|
@@ -1557,19 +1582,19 @@ P.still(\thalassaWhat,syl:12, timecode: 3417.1.seconds, music: { |p b e|
 		wait: b.sum,
 	)
 });
-P.tune('helping', _ <> [rests:[1,1,1,\r,1,1,1,1,1,1,1,1,1].q].p);
+P.tune('helping', _ <> [rests:[1,1,1,\r,1,1,1,1,1,1,1,1,1,].q, amp: 0.1 * p.mindGain].p);
 P('bass',start:\helping,music: {|p b e|
 	[
 		freq: [\r,\r,\r, -7,\r,[1, 11 ] ].df(\a, [ 3 ],\mixolydian).q,
-		dur:b.parse([1,1,1,4,[ 4,0.5 ],2]).q
-
+		dur:b.parse([1,1,1,4,[ 4,0.5 ],2]).q,
+		amp: 0.1 * p.mindGain
 	].p.play
 });
 //Song.durs[\helping].list.postln
 P(\answer,start:'helping',syl:2,music:{|p b e|
 	[
 		instrument:\stringyy,
-		amp:0.2,
+		amp:0.2 * p.mindGain,
 		freq:[-7,1,2,-5].df(\a,scale:\mixolydian).q / 1 ,
 		dur:b.drop(1).parse([1,1,1,7]).q,
 
@@ -1582,6 +1607,7 @@ P(\doubling,start:'helping',syl:2,music: {|p b e|
 		ctranspose: 0!9++3 => _.flat => _.q,
 		dur:b.drop(1).q,
 		instrument:\sparkTriangle,
+		amp: 0.1 * p.mindGain,
 		out:[0,1]
 
 	].pp
@@ -1593,13 +1619,15 @@ P(\pain,start:'helping', syl:12,music: {| p, b, e|
 		mix:0.3,
 		width: [6,6,6,20,1],
 		freq: [-11,1,-1,21,21.3].df('a-',octave:3),
-		amp:0.2,
+		amp:0.2 * p.mindGain,
 		dur:3
 
 	).play;
-	{[ Dust.ar(30) , Crackle.ar(2,mul:0.09) ] 
-	* Env.linen(0,b.sum,3).kr(2,gate:1)
-}.play
+	{
+		[ Dust.ar(30) , Crackle.ar(2,mul:0.09) ] 
+		* Env.linen(0,b.sum,3).kr(2,gate:1)
+		* p.mindGain
+	}.play
 });
 /* P.still(\pain,syl:12, timecode: 3412.2.seconds, music: { |p b e|
 	 e.still.( 
@@ -1618,13 +1646,13 @@ P.still(\withMouthOpenT, timecode: 3417.8.seconds, music: { |p b e|
 P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 	lyrics: "wat iz it sa gan?",
 	phonemes: ["w A th", "i\\ ts", "i\\ th" ,  "", "k o n",] , // make .xsama work on arrays
-	lag: [0.1,0.05,0,0,0],
+	lag: [0.1,0.05,0,0,0] + 0.15,
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
-		* 2.dbamp
+		* 4.dbamp
 	}.play
 });
 ["/*KIRK:*/ Nothing. Our next injection will renovate me. (boom) ",[1,1].dm('e-')++[2,3,1,3,-7,1,2,1,-7,-5,-3].dm('d',scale:\mixolydian,)].addLine;
@@ -1665,7 +1693,7 @@ P.synthV(role: \sargon, take: \lead, params: {|p b| [
 		e.playbuf
 		=> Pan2.ar(_,0)
 		/4
-		* 5.dbamp
+		* 8.dbamp
 		// => p.synthVTracks.at(e.key).(3.dbamp)
 	}.play
 });

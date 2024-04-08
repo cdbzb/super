@@ -59,7 +59,7 @@ Song.addLineFunc = { |sec|
 				Song.faderFunc.()
 			};
 		})
-	
+	}
 };
 
 Song.xtremeBassFX = (s.options.outDevice == "MacBook Pro Speakers").if{
@@ -1636,7 +1636,6 @@ P(\bassNotes54,start:'very long',music:
 //[ "(boom)...so very long... Kiss","g3 b c4 a3 e4 r" ].addLine; 
 	//~justTheTune.('so very long');
 [ "(kissing) r r r r r r r r ..","g#5 f# d# b4 a# g# e5 d# " ].addLine; 
-
 P.still(\kiss, timecode: 2810.1.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
@@ -1645,36 +1644,34 @@ P.still(\kiss, timecode: 2810.1.seconds, music: { |p b e|
 		)
 });
 P(\bowedKissing, lag: 0.0,music: { |p b e|
-				[ 
-					instrument:\trem2,
-					rate:Pbrown(2,0,0.3),
-					degree:Pseq([6,5,3,1,7-7,6-7,4,3,5-7]-1),
-					root:-1,
-					octave:[6,4],
-					dur:b++[2.5] => _.q,
-					legato:1,
-					group: p.transitionItems,
-					out: Effect.bus({|i| PlateReverb.ar(i,mix:0.5)  * EnvGen.cutoff(b.sum,10, curve: -2) * 2 * 2.dbamp },inputChannels:2, target: p.transitionFX),
-					mtranspose:Pseq([ [0,2,4,7],[0,3,5,7],[0,2,5,7],[0,2,4,7],[0,3,5,7],[0,4,6,7],[0,2,4,7],[0,3,5,7],[0,7] ].collect(_-7)),
-				].pp;
-		}
-	);
-P(\bassKissing, lag:0.0,start:'kissing',music:
-		(
-			instrument:\sawSynth,
-			rel:15,
-			att:1,
-			octave:2,
-			amp:0.17 * 2.dbamp,
-			degree:4,
-			root:-1,
-			mtranspose:[0,4,7],
-			dur:10,
-			group: Song.transitionItems
-			// out: Effect.bus({|i| PlateReverb.ar(i, mix:1) * 2 },)
-
-		)
-	);	
+	[ 
+		instrument:\trem2,
+		rate:Pbrown(2,0,0.3),
+		degree:Pseq([6,5,3,1,7-7,6-7,4,3,5-7]-1),
+		root:-1,
+		octave:[6,4],
+		dur:b++[2.5] => _.q,
+		legato:1,
+		group: p.transitionItems,
+		out: Effect.bus({|i| PlateReverb.ar(i,mix:0.5)  * EnvGen.cutoff(b.sum,10, curve: -2) * 2 * 2.dbamp },inputChannels:2, target: p.transitionFX),
+		mtranspose:Pseq([ [0,2,4,7],[0,3,5,7],[0,2,5,7],[0,2,4,7],[0,3,5,7],[0,4,6,7],[0,2,4,7],[0,3,5,7],[0,7] ].collect(_-7)),
+	].pp;
+});
+P(\bassKissing, lag:0.0,start:'kissing',music: {|p b e|
+	(
+		instrument:\sawSynth,
+		rel:15,
+		att:1,
+		octave:2,
+		amp:0.17 * 2.dbamp,
+		degree:4,
+		root:-1,
+		mtranspose:[0,4,7],
+		dur:10,
+		group: Song.transitionItems,
+		out: Effect.bus({|i| PlateReverb.ar(i, mix:1) * 2 },target: p.transitionFX),
+	).play
+});	
 [ "final rest","f#4",[5] ].addLine; 
 
 )

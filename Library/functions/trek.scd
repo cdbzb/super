@@ -264,7 +264,9 @@ SynthDef(\recc,{|buf bus=0|DiskOut.ar(buf,In.ar(bus))}).add;
 		SystemClock.do(_.clear);
 	};
 	// Alga.parGroups[s] = AlgaParGroup(s.defaultGroup);
-	~vstRegistry.do{|i| 16.do{|x| i.midi.allNotesOff(x)}}
+	~vstRegistry.do{|i| 16.do{|x| i.midi.allNotesOff(x)}};
+	try{ Song.resources.select{|i| i.isKindOf(Node)}.do(_.release)};
+	g=Group.new
 }; 
 
 ~justTheTune={ |key function syl range| 

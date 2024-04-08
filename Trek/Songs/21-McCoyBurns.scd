@@ -62,7 +62,8 @@ P.tune(_  => Pmul(\freq, [0.25,1], _));
 P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 	lag: [0.05,0,0,0,0,0,0,0,0],
 	lyrics: "would you like to save your captain + kirk",
-	phonemes: ["w U t","j u","l a :\\i kh","","","","kh a p","th @ n","",],
+	// "clerk".xsampa
+	phonemes: ["w U t","j u","l a :\\i kh","","","","kh a p","th @ n","kh a r\\` kh",],
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
@@ -110,7 +111,16 @@ P(\connector, music: { |p b e|
 		freq: [ 5, -7, -4 ].df(\d,4, \mixolydian).q,
 		dur: e.bAll.parse([6, 3, 1]).q,
 		instrument: \stringyy, mix:0
-	].pp
+	].pp;
+	[
+		freq: [
+			[1, 3, 5].df(\d),
+			[-7, 3, 6].df(\d, \mixolydian)
+			// [3, 5, 11].df(\a,4, \minor)
+		].q,
+		dur:b.parse([3, 3]).q
+
+	].p.play
 });
 [ "MULHALL: We have many powers Sargon did not permit us to use. ","11 7 6.5 5/g/minor 13 12 12 11 12/f/minor 13 11 14 12 13/f 11/b/minor".dm2 ].addLine;
 // or should it be "11 7 7 6.5/g/minor 13 12 12 7 11/f " ??
@@ -132,8 +142,9 @@ P(\moreChord, music: { |p b e|
 });
 P(\chords, music: { |p b e|
 	[
-		freq: [[3, 5, 1], [-7, 1.5,4, 7], 4, 3.5].df(\g,3,\minor).q,
-		dur: b.parse([4, 5, 5, 1]).q
+		freq: [[3, 5, 1], [-7, 1.5,4, 7], 4, 3.5].df(\g,[ 3, 5 ],\minor).q,
+		dur: b.parse([4, 5, 5, 1]).q,
+		instrument: \harp, coef: 0.9
 	].pp
 });
 P.synthV(role: \thalassa, take: \lead, params: {|p b| [
@@ -189,7 +200,7 @@ Song.setTempoMap(\pleases,"e e e ex x e e ex x");
 P(\bassnote, music: { |p b e|
 	[
 		freq: 
-		[\r, 1, 1, -7, -6, -6, -6].df('f#',3,\mixolydian).q
+		[\r, 1, 1, -7, -6, -6, -6].df([ 'f#', 'c#' ],[ 3, 4 ],\mixolydian).q
 		,
 		dur: "qe qe e ex xe q e ".asBeats.warpTo( e.tempoMap ++ p.tempoMap[e.start + 1] ).q,
 		out: Effect.bus({|i| 
@@ -200,6 +211,33 @@ P(\bassnote, music: { |p b e|
 			=> Pan2.ar(_,0) 
 		},)
 	].pp
+});
+P(\tamb, music: { |p b e|
+	{
+	var levels = [5,1,2,1] /5 => _.dq(inf);
+	var durs =  
+	1/4 ! 24
+	+ ( [1, -1] /80 => _.dup(8) ) //swing amt
+	=> _.flat 
+	=> _.warpTo(e.tempoMap.quantizeDft(0.3) ++ p.tempoMap[e.start + 1])
+	// =>_.drop(8)
+	=> _.dq();
+	var triggers = TDuty.kr( durs, 0,1,gapFirst:0 );
+	var energy = EnvGen.ar( Env.linen(0, 0.00, 0.015), triggers, doneAction:0   ) 
+		* Demand.kr(triggers,0,levels 
+			// * 40
+			// *8
+		);
+	Shakers.ar(3, energy:energy   , decay: 1).tanh
+	
+	// /5
+	* 2
+	=> Pan2.ar(_, 0.8)
+	* EnvGen.cutoff(b.parse([4]).unbubble,3)
+	=> DWGReverbC1C3.ar(_,mix:0.05)
+	/6
+	=> Pan2.ar(_,0.75)
+}.play;
 });
 P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 	// filter: (midinote: _ - 12), 
@@ -231,6 +269,26 @@ P.synthVs(\kevin, take: [\response,\response_dbl],
 		}.play
 });
 [ "I intend to keep it. ","1.5 1.5 1.5 1.5 3 1 /a-/minor ".dm2 ].addLine;
+P(\fill, music: { |p b e|
+	var gain = -4.dbamp;
+	[
+		instrument: \LT_808, 
+		freq: [120, 65, 65, 65].q,
+		out: Effect.bus({|i| DWGReverbC1C3.ar(i, mix:0.5) },),
+		dur: b.q,
+		amp: 0.1 * gain
+	].pp;
+	(
+		instrument: \kick_gentle,
+		lag: b[..3].sum,
+		amp: 0.1 * gain, vol: 0.2 * gain
+	).play;
+	(
+		instrument: \cymbalsDS,
+		amp:0.015 * gain,
+		lag: b[..3].sum
+	).play
+});
 Song.setTempoMap('keep it',"Q E Q E q q");
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
@@ -300,7 +358,14 @@ P(\chords, music: { |p b e|
 		instrument: \sparkTriangle,amp: 0.04, depth: 0.004, att:0.03,rel: 1.5,
 		legato: [0.8, 0.5, 1, 1 ].q,
 		out: (0..1)
-	].ppma
+	].ppma;
+	[
+		freq: [-7,1,3].dup.df(\c,\mixolydian) ++ [-7,1,3].df('c#',\mixolydian).bubble ++ [1, 3, 6].df(\c, \whole).bubble => _.q ,
+		dur: b.parse([1, 2, 6, 5]).q,
+		instrument: \reedy, amp: 0.05,
+		legato: [0.8, 0.5, 1, 1 ].q,
+		out: (2..3)
+	].ppm
 });
 P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 	lyrics: "I see and Henock + intends + to keep Spock's body + of course",
@@ -330,8 +395,20 @@ P(\chords, music: { |p b e|
 		freq: [ [5, 11, 13, 15].df(\e,\minor),[1, 3, 5, 11].df(\a), [-1,1, 5].df('a-') ].q,
 		// dur:b.parse([5, 3]) ++ e.bNext[..2].sum =>_.q,
 		dur: e.bAll.parse([5, 4, 1]).q,
-		instrument: \stringyy, amp:0.06
-	].ppm
+		instrument: \stringyy, amp:0.06, mix:0.2
+	].pp;
+	[
+		instrument:\harp,
+		// strum: 0.05,
+		freq: [
+			\r,
+			[1, 3, 5, 11].df(\e, \minor),
+			[-5, 1, 3, 5].df(\a),
+			[1, 5].df('a-')
+		].q,
+		dur: e.bAll.parse([2, 5, 2, 1]).q,
+		coef:0.3,out: Effect.bus({|i| CrossoverDistortion.ar(in:i, amp:0.5, smooth:0.95) /2 + (i/2) => Pan2.ar(_,0.5) * EnvGen.cutoff(wait:b.sum, release:1, curve:nil, doneAction:2) },)
+	].pp
 });
 P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 	lyrics: "Henoch's + plans are his own affair +",
@@ -380,7 +457,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 			b.parse([2, 7, [1, 1,  0.5], [0.5, 1, 1]]), [ 
 			["only","to exist"],
 			["in peace","as a"],
-			["",""],
+			["",""]
 			["living","woman"]
 			],
 	)
@@ -413,7 +490,7 @@ P.synthV(role: \thalassa, params: {|p b| [
 	});
 P(\click,start:\exist,music:{|p b e| 
 	[
-		dur: "e q q q q q q q q q q q".asBeats.warpTo( e.tempoMap ).q,
+		dur: "e q q q q q q q q q q q".asBeats.warpTo( e.tempoMap.quantizeWindow(0.5)).q,
 		rest: MuteFirst.new(),
 		instrument: \hihat, amp:0.3, out: Effect.bus({|i| 
 			i
@@ -423,7 +500,19 @@ P(\click,start:\exist,music:{|p b e|
 			/2
 		}
 		},)
-	].pp
+	].pp;
+	[
+		instrument:\kick_gentle, vol:0.05,
+		amp:0.05,
+		dur: "e qex x qe xx qq ".asBeats.warpTo( e.tempoMap.quantizeWindow(0.5) ).q,
+		rests: MuteFirst()
+	].pp;
+	(
+		instrument: \cymbalsDS,
+		att: 0.1,
+		amp:0.015,
+		lag: b[0]
+	).play
 });
 P(\piano,start:\exist,syl:12,music:{|p b e| 
 		[
@@ -1463,6 +1552,18 @@ P.still(\thalStop, timecode: 4457.3.seconds, music: { |p b e|
 		text: ["",""],
 	)
 });
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["stop!",""],
+		onTop: true
+	).sequenceText2(
+			b.parse([1, 4]), [ 
+				["",""],
+			["Sargon was","right!"],
+			],
+	)
+});
 P.still(\better, timecode: 4459.8.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
@@ -1589,6 +1690,7 @@ P(\bassnote,start:\Forgive,syl:0,music:{|p b e|
 		
 	});
 [ "SARGON [OC]: I am pleased, my beloved. It is good you have found the truth (yourself) ",[1, 1, 1, -7, -7, -7, -6, 1, 2, 3, 4, 3, 2, 1].dm('f#',4) ].addLine;
+
 P.still(
 	// \twoShot
 	\clear
@@ -1604,28 +1706,28 @@ P.still(
 	});
 P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 		lyrics: "I am pleased, my be love ed   It is good you found the truth ",
-		filter: (midinote: _ - 12), 
+		filter: (midinote: 50), 
+		legato: [1, 1, 1, 1, 1, 1, 0.6, 1, 1, 1, 1, 1, 1, 1, ],
 		pitchTake: 1
 	] }, music:{|p b e|
 		MegaBind(
 				[
 					[1,  1,  1,  -7,  -7,  -7,  -6,  1,  2,  3,  4,  3,  2,  1],
 					[-1, -1, -1, -17, -17, -17, -16, -1, -2, -3, -4, -3, -2, -1],
-					[-4, -4, -4, -4, -4, -2,    -2, -2,  -2, -5, -5, -5, -5, -11 ] -10		
-
+					[-4, -4, -4, -4, -4, -2,    -2, -2,  -2, -5, -5, -5, -5, -11 ],
 				].df('f#',4),
 				b,
 				[
 					percScale:[0.15,0.2,0]
 				],
 				{|i x|
-					Gendy1.arWidth(freq:i.freqSeq.lag(1) * [1, 2])
+					Gendy1.arWidth(freq:i.freqSeq) 
 					+ Gendy2.arWidth(freq:i.freqSeq)
 					* (
 						Env.asr().kr(2,gate:i.gateSeq)
 						+ ( Env.perc(0.1).kr(gate:(i.gateSeq * i.trigSeq)) * i.percScale )
 					)
-				*0.1
+				* 0.1
 					=> Mix.ar(_)
 					=> FoaEncode.ar(_,Song.encoders.omni)
 					=> FoaPress.ar(_,pi/2,-pi/2*x,0)
@@ -1638,17 +1740,27 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 					// * 0.5
 					=> SplayAz.ar(5,_)
 					* 2;
-					Out.ar(p.carrierBus,mix * 2 => PitchShift.ar(_,pitchRatio:0.5));
+					// Out.ar(p.carrierBus,mix * 2 => PitchShift.ar(_,pitchRatio:0.5));
 					Out.ar(0,0.3 * mix)
 				}
 				
 			).play
 			;
+			[
+				freq: [-4, -4, -4, -4, -4, -2,	-2, -2,  -2, -5, -5, -5, -5, -11 ].octaveDown.df('f#').q,
+				instrument: \sawSynthSustain,
+				dur: b.q,
+				legato: [1, 1, 0.8, 1, 1, 1, 0.5, 1, 1, 1, 1, 1, 1, 0.8, ].q,
+				amp: 0.05
+				// amp: 3
+			].ppma;
 		p.vocodeTune.( p, b, e, e.rpp,
-			// modGain: 2,
+			modGain: 3,
 			dur:b.sum + 1,
+			durRel: 2,
 			sus:b.sum + 1,
-			amp:1
+			amp: 0.25
+			// amp:1
 		)
 	});
 P.still(\looking, timecode: 4521.66.seconds, music: { |p b e|

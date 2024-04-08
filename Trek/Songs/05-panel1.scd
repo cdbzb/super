@@ -312,7 +312,6 @@ P.synthV( role: \vocoder,
 	// double:true,
 	// filter: (midinote: 48!10), 
 	filter: (midinote: _ - 12), 
-	prepend:true,
 	params: {|p b| [
 	lyrics: "sealed in this receptacle + - + + is the",
 	lag: [0.0,0,0,0,0,0,0,0,0] + 0.5,
@@ -410,7 +409,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 });
 P.synthV(\xuan,
 	lag: -0.2,
-	prepend: true,
+	// prepend: true,
 	// filter: (midinote: 48!12), 
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
@@ -639,10 +638,12 @@ P(\swell, music: { |p b e|
 		* Env([0,0,1,0],b.parse([6,3,1] + [0,0,6]),[0,3,-3]).kr(2,gate:1)
 	}.play
 });
+P.tune(\Pure);
 P(\chords, music: { |p b e|
 		[
 			freq: [[-1, 1,3,5,7], [-2, 2,4.5,6,11],[ -11.5,-1.5, 1.5,2.5, 5.5, 7, 11.5 ]].df(\f).q /2,
-			dur: [8, 8, 8] * 2 * 4 => _.q,
+			// dur: [8, 8, 8].reciprocal * 2 * 4 => _.q,
+			dur: "qqqqqq qqqq qq".asBeats.warpTo( e.tempoMap ).q,
 			instrument: \visual_pad,
 			amp: 0.07 * p.pureGain,
 			legato: [1,1,0.9].q
@@ -870,6 +871,7 @@ P(\bassNote,syl:4, music: { |p b e|
 	(
 		freq:[1,-1, 5].df(\g,3),
 		dur: b.drop(1)[0],
+		lag:0.005,
 		out: Effect.bus({|i| SineShaper.ar(i,0.2,2).bubble ++ FreeVerb.ar(i, 0.8, [0.9, 0.5, 0.7]) /2 },),
 		amp: 0.1 * 1.5
 	).play
@@ -1287,7 +1289,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 P.synthV(role: \vocoder,
 	lag: -0.1,
 	filter: (midinote: _ - 24), 
-	prepend: true,
+	// prepend: true,
 	params: {|p b| [
 	lyrics: "now begun + to explore + that" ,
 	lag: [0.1,0.1,0.1,0.1,0.1,0.1,0.1],
@@ -1332,7 +1334,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 P.synthV(role: \vocoder,
 	lag: -0.1,
 	filter: (midinote: _ - 24), 
-	prepend: true,
+	// prepend: true,
 	params: {|p b| [
 	lyrics: "vastness +",
 	lag:[0.1,0.1],
@@ -1565,7 +1567,11 @@ P('chords', start:\left, music: {|p b e|
 			dur: b.q,
 			instrument:\pluckD,
 			amp:0.06 * 2,
-			out: Effect.bus({|i| FreeVerb.ar(i,0.5,0.9) * [x, (1-x)] /3 })
+			out: Effect.bus({|i| FreeVerb.ar(i,0.5,0.9)  
+			=> Pan2.ar(_, x.linlin(0,1,-0.9,0.9) )
+			* EnvGen.cutoff(b.sum,1)
+			// [x min:0.1, (1-x): min: 0.1]
+			/3 })
 		].pm(\pluckD).play
 	}
 });
@@ -1707,7 +1713,6 @@ P.synthVs(role: \spock, take: [ nil, \bg ], params: {|p b| [
 	}.play
 
 });
-// P.tune();
 P(\pedalTone, music: { |p b e|
 	[
 		freq: [[-27,-17], [-11, -1], [-12,-2],

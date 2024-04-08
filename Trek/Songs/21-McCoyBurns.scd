@@ -455,14 +455,22 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 		text: ["I","wish"],
 	).sequenceText2( 
 			b.parse([2, 7, [1, 1,  0.5], [0.5, 1, 1]]), [ 
-			["only","to exist"],
-			["in peace","as a"],
-			["",""]
-			["living","woman"]
+				["only","to exist"],
+				["in peace","as a"],
+				["",""],
+				["living","woman"]
 			],
 	)
 });
 P.tune();
+P(\snare, music: { |p b e|
+	[
+		instrument: \sn_808,
+		dur: "ee q q qq qq q".beats.warpTo( e.tempoMap.quantizeWindow(0.2) ).q,
+		rests: MuteFirst(),
+		amp: 0.05
+	].pp
+});
 P(\chords, music: { |p b e|
 	[
 		instrument: \stringyy,
@@ -488,10 +496,10 @@ P.synthV(role: \thalassa, params: {|p b| [
 			=> p.synthVTracks.at(e.key.postln).postln.(1).postln
 		}.play
 	});
-P(\click,start:\exist,music:{|p b e| 
+P(\hat,start:\exist,music:{|p b e| 
 	[
-		dur: "e q q q q q q q q q q q".asBeats.warpTo( e.tempoMap.quantizeWindow(0.5)).q,
-		rest: MuteFirst.new(),
+		dur: "e q q q q q q q".asBeats.warpTo( e.tempoMap.quantizeWindow(0.5)).q,
+		rest: MuteFirst(),
 		instrument: \hihat, amp:0.3, out: Effect.bus({|i| 
 			i
 			=> Pan2.ar(_,SinOsc.ar(0.1)/2)
@@ -541,7 +549,7 @@ P(\bass,start:\exist,music:{|p b e|
 				1, 0.5, 0.5,
 				0.75, 0.25, 1, 1/2, 1/2, 1, 1, 1].q*2,
 
-			dur: "e ex ex x x  q e e  ex x q e e q qq q ".asBeats.warpTo( e.tempoMap.quantizeWindow(0.2) ++ p.tempoMap[e.start + 1] ).q
+			dur: "e ex ex x x  q e e  ex x q e e qx xeq q ".asBeats.warpTo( e.tempoMap.quantizeWindow(0.2) ++ p.tempoMap[e.start + 1] ).q
 		].p.play
 		// (clock:TempoClock.newFromQuarters(p.quarters[\exist]));
 });

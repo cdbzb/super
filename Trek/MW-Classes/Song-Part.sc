@@ -210,6 +210,7 @@ Song {
 			fork{
 				args.do({|i|
 					songs.at(i).valueInfrastructure;
+					//if there is a condition, wait for it
 					{ songs.at(i).condition.wait }.try;
 				});
 				args.do({|i|
@@ -471,6 +472,7 @@ Song {
 		var first = try{ list.select{|part| { part.start } == cursor} };
 		var wait = try{ first.select{|part| part.lag < 0}.collect({ |part| part.lag }).sort[0] };
 		wait.notNil.if {Song.preroll_(wait.abs + Server.default.latency + 0.1)};
+		this.current;
 		playInitiatedAt = SystemClock.seconds;
 		fork{
 			//resources.condition ? resources.condition.test_(false);

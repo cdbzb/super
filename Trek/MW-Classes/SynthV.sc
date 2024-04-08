@@ -229,7 +229,7 @@ SynthV {
 		//strip erroneous points data - TODO clean this up in original file!
 		project.tracks[0].mainRef.systemPitchDelta.put(\points,[]);
 
-		this.refreshBuffer(n,k,(take ? \default));
+		this.refreshBuffer(song, n, k, (take ? \default));
 	}
 	writeProject {
 		this.setRenderConfig;
@@ -390,12 +390,12 @@ SynthV {
 			this.notes.reject({|i| i.at(\lyrics)=="r"})
 	}
 
-	refreshBuffer{ |n k t|
-		var old = try{buffers.at(n,k,t).()};
+	refreshBuffer{ |song n k t|
+		var old = try{buffers.at(song, n, k, t).()};
 		File.exists(location+/+"synthV_MixDown.wav").if{
 			try{old.().free};
 			buffer = Buffer.doRead(Server.default,location+/+"synthV_MixDown.wav");
-		try{ buffers.put(n,k,(take ? \default),buffer) };
+		try{ buffers.put(song, n, k, (take ? \default),buffer) };
 		}{\NEEDS_RENDER.postln};
 	}
 }

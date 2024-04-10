@@ -19,13 +19,13 @@ o = [
 	"what",  "558830000",  "th u",  Event.prNew,  
 	Array.prNew(40),  "2082910000",  "we",  "651970000",  
 	"w A th",  Event.prNew,  Array.prNew(40),  "2734880000",  
-	"are",  "488830000",  "w i",  Event.prNew,  
-	Array.prNew(40),  "3345920000",  "you",  "612460000",  
+	"are",  "611040000",  "w i",  Event.prNew,  
+	Array.prNew(40),  "3345920000",  "you",  "428720000",  
 	"A r\\`",  Event.prNew,  Array.prNew(40),  "3958380000",  
 	"are",  "475570000",  "j u",  Event.prNew,  
 	Array.prNew(40),  "4433950000",  "a",  "484040000",  
 	"A r\\`",  Event.prNew,  Array.prNew(40),  "4917990000",  
-	"486860000",  "@",  "main",  Event.prNew,  
+	"584230000",  "@",  "main",  Event.prNew,  
 	Array.prNew(32),  Event.prNew,  Array.prNew(8),  Array.prNew,  
 	"cubic",  Event.prNew,  Array.prNew(8),  Array.prNew,  
 	"cubic",  Event.prNew,  Array.prNew(8),  Array.prNew,  
@@ -44,7 +44,7 @@ o = [
 	Array.prNew(8),  Array.prNew(1),  Event.prNew,  Array.prNew(12),  
 	"",  "Unnamed Track",  Array.prNew,  Event.prNew,  
 	Array.prNew(20),  "ff7db235",  Event.prNew,  Array.prNew(28),  
-	"synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/SynthV/MandT/967362341/aiko-lead"
+	"synthV.wav",  "NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/MandT/967362341/aiko-lead"
 ];
 p = [
 	// Event
@@ -149,7 +149,7 @@ p = [
 	// Array
 	26, [ 'liked',  false,  nil,  nil,  
 		nil,  nil,  'id',  0,  
-		'expr',  1.5,  nil,  nil ],  
+		'expr',  1.0,  nil,  nil ],  
 	// Event
 	27, [ array: o[28],  size: 3,  
 		proto: nil,  parent: nil,  
@@ -157,7 +157,7 @@ p = [
 	// Array
 	28, [ 'liked',  false,  nil,  nil,  
 		nil,  nil,  'id',  1,  
-		'expr',  1.5,  nil,  nil ],  
+		'expr',  1.0,  nil,  nil ],  
 	// Event
 	29, [ array: o[30],  size: 3,  
 		proto: nil,  parent: nil,  
@@ -165,7 +165,7 @@ p = [
 	// Array
 	30, [ 'liked',  false,  nil,  nil,  
 		nil,  nil,  'id',  2,  
-		'expr',  1.5,  nil,  nil ],  
+		'expr',  1.0,  nil,  nil ],  
 	// Event
 	31, [ array: o[32],  size: 3,  
 		proto: nil,  parent: nil,  
@@ -173,7 +173,7 @@ p = [
 	// Array
 	32, [ 'liked',  false,  nil,  nil,  
 		nil,  nil,  'id',  3,  
-		'expr',  1.5,  nil,  nil ],  
+		'expr',  1.0,  nil,  nil ],  
 	// Event
 	34, [ array: o[35],  size: 2,  
 		proto: nil,  parent: nil,  

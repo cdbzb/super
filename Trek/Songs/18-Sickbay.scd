@@ -1,8 +1,9 @@
 (
 /// line 326
 Monitor.new().play(2,2,0,2);
+Stills().current;
 // ~stills.isNil.if{~stills=Stills("/Users/michael/trek/BySection/media/return to tomorrow.mov").current};
-~stills = Stills().current;
+// ~stills = Stills().current;
 //Song.dursFile_("/Users/michael/tank/super/theExtreme_Sep18");
 ~sickBay=Song(\sickBay,[]).current;
 Song.speaker =Library.at(\functions,\prep).("/Users/michael/tank/IR/Saane/Speakers_&_Telephones/Very_small_speaker_mono.wav");
@@ -57,11 +58,33 @@ P.synthV(\genbu, take: \lead, params: {|p b| [
 });
 // P(\guide0,start:0,music:~sickBay.pbind[0]=>Pfin(2,_));
 P(\pad, music: { |p b e|
-	(
+	[
+		instrument: \visual_pad, rel: 3,
+		freq: [
+			[1, 3].df(\c),
+			[1, 3].df(\d),
+			[1, 3].df(\e),
+			[1, 3].df('f#')
+		].q,
+		amp:0.2 * -4.dbamp,
+		// instrument: \stringyy, mix: 0, amp: 0.1,
+		lag: [0.1, 0, 0, 0].q,
+		out: 4,
+		dur: e.bAll.parse([2, 3, 1, 2]).q
+	].pm.play;
+	[
 		instrument: \visual_pad,
-		freq: [1,3].df(\c),
-		amp:0.3
-	).play
+		freq: [
+			[1, 3].df(\c),
+			[1, 3].df(\d),
+			[1, 3].df(\e),
+			[1, 3].df('f#')
+		].q,
+		amp:0.3,
+		instrument: \stringyy, mix: 0, amp: 0.1 * -4.dbamp,
+		lag: [0.1, 0, 0, 0].q,
+		dur: e.bAll.parse([2, 3, 1, 2]).q
+	].pm.play
 });
 P.still( \kirk, start:0 , timecode:3758.61.seconds, music: { |p b e|
 		e.still.value(
@@ -93,20 +116,21 @@ P.synthV(role: \mccoy, take: nil, params: {|p b| [
 
 		=> PartConv.ar(_,2048,p.speaker)
 		=> p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_,0.3)
 	}.play
 
 });
 P(\mcCoy3,music: { |p b e|
 		Song.currentSong.pbind[e.start]<>[instrument:\mcCoy,
 				//out:~sickBay.mcCoyBus,
-				out:Effect({|i| PartConv.ar(i,2048,p.speaker)},out:0).bus.index,
+				out:Effect({|i| PartConv.ar(i,2048,p.speaker) / 2},out:[ 0, 1 ]).bus.index,
 				rest: [\r,\r,1,1,1,1].q,
 				amp:0.015,
 			].p => _.play  
 });
 P(\static,music: 
 	{ |p b e|
-		(lag: b[..1].sum, instrument:\crackle,dur:b[2..],out:~sickBay.mcCoyBus,amp:0.3).play
+		(lag: b[..1].sum, instrument:\crackle,dur:b[2..],out:p.mcCoyBus,amp:0.3).play
 	}
 );
 P(\bendy,start:0,syl:1,music: { |p b e|
@@ -126,8 +150,15 @@ P(\pad, music: { |p b e|
 	[
 		freq: [ [1,3,4.5,7,17].df(\c,\minor), [-5,-7, 3, 5,7].df(\e,\mixolydian) ].q,
 		dur: b.parse([8,3]).q,
-		instrument: \visual_pad,amp:0.25,freqLag:0.5,
-		att:0.3
+		instrument: \visual_pad,amp:0.1 * -4.dbamp,freqLag:0.5,
+		att:0.25
+	].ppm;
+	[
+		freq: [ [1,3,4.5,7,17].df(\c,\minor), [-5,-7, 3, 5,7].df(\e,\mixolydian) ].q,
+		dur: b.parse([8,3]).q,
+		instrument: \stringyy,amp:0.08 * -4.dbamp,mix: 0,freqLag:0.5, release: 3,
+		att:0.25,
+		out: 3
 	].ppm
 });
 P.still(\kirk, timecode: 3759.61.seconds, music: { |p b e|
@@ -166,22 +197,23 @@ P.synthV(\genbu, take:"low", params: [
 P(\doorOpen,start:2,music: 
 		//~stills.set('enter-Thalassa',(37*60+54.30));
 
-		Prout({
+		{|p b e|
+			Prout({
 				var vol=0.26;
 				var thalassaBus=Bus.audio(s,1).index;
-				~sickBay.thalassaVerb=Synth(\verbb,[\in,thalassaBus]);
+				p.thalassaVerb=Synth(\verbb,[\in,thalassaBus]);
 				s.bind{Synth(\door,[\amp,vol])};
 				1.05.wait;
-				{~stills.preview('enter-Thalassa')}.defer(0.01);
 				0.01.wait;
 				(
-						out:thalassaBus,
-						amp:vol,
-						instrument:\sawTw,
-						degree:[4-7,6-7,8-7,10-7,4,6,8,10]-1,
-						strum:0.1,octave:[5],sustain:4
+					out:thalassaBus,
+					amp:vol,
+					instrument:\sawTw,
+					degree:[4-7,6-7,8-7,10-7,4,6,8,10]-1,
+					strum:0.1,octave:[5],sustain:4
 				).play;
-		})
+			}).play
+		}
 
 ); 
 P.still(\thalassaEnters, timecode: 3803.75.seconds, music: { |p b e|
@@ -195,17 +227,18 @@ P.still(\thalassaEnters, timecode: 3803.75.seconds, music: { |p b e|
 		)
 	}
 });
-P(\padBass5,start:5,music: 
+P(\padBass5,start:5,music: {|p b e|
 		[
-				degree:[\r,[1,5+7,3+14],[6-7,6,6+4,6+7]].q-1, //idea write 1 5' 3''
-				root:6,
-				octave:[2,3],
-				instrument:\wash,
-				out:[1,1,2].q,
-				amp:0.2,
-				att:2,
-				dur:~sickBay.parse(5,[[1,1,1,1],[1,1,1],[1,1]]).q
-		].p
+			degree:[\r,[1,5+7,3+14],[6-7,6,6+4,6+7]].q-1, //idea write 1 5' 3''
+			root:6,
+			octave:[2,3],
+			instrument:\wash,
+			out:[1,1,2].q,
+			amp:0.2,
+			att:2,
+			dur: b.parse([[1,1,1,1],[1,1,1],[1,1]]).q
+		].pp
+	}
 );
 ( /*glissChord*/ {Saw.ar(
 	(\freq.kr(400,\freqLag.kr(2))
@@ -261,19 +294,21 @@ P.synthV(role: \mccoy, take: nil, params: {|p b| [
 		=> PartConv.ar(_,2048,p.speaker)
 		=> p.synthVTracks.at(e.key).()
 		/2
+		=> Pan2.ar(_,0.3)
 	}.play
 
 });
 P.tune('ter- ri', _ <> [instrument: \sawSynthSustain, lagTime: 0.1, amp: 0.03].pm);
 P(\mcCoy3,start:3,music: { |p b e|
 		Song.currentSong.pbind[3]<>(instrument:\mcCoy,
-				//out:~sickBay.mcCoyBus,
+				//out:p.mcCoyBus,
 				out:Effect({|i| PartConv.ar(i,2048,p.speaker)},out:0).bus.index,
 				amp:0.015
 		) => _.play  
 });
-P(\static3,start:3,music: 
-		(instrument:\crackle,dur:5,out:~sickBay.mcCoyBus,amp:0.3/2)
+P(\static3,start:3,music: {|p b e|
+		(instrument:\crackle,dur:5,out:p.mcCoyBus,amp:0.3/2).play
+	}
 );
 ["Sar- gon what's wrong?","b4 g b e5"].addLine;  //4
 P.still(\medium_shot, timecode: 3807.9.seconds, music: { |p b e|
@@ -322,13 +357,13 @@ P(\whatsWrong4,music: {|p b e|
 ); 
 P(\verbFade4,start:4,music:{~sickBay.thalassaVerb.release(5)});
 ["no- thing of im- portance, Fa- tigue per- haps","f g- a- g- b- g- b- a- g- e-"].addLine;  //5
-P(\plucks,music:{ 
+P(\plucks,music:{ |p b e|
 		[ 
 				degree:[Rest(),3,1,5-7,[3,6]-7].q-1,
 				root:6,
-				dur: ~sickBay.parse(5,[[1,1,1,1],1,0.66,[0.34,1],[1,1]]).q,
+				dur: b.parse([[1,1,1,1],1,0.66,[0.34,1],[1,1]]).q,
 				octave:4,
-				amp:0.05 * Song.fatiguePadAmp,
+				amp:0.07 * Song.fatiguePadAmp,
 				instrument: \harp, coef:0.8
 		].pp 
 });
@@ -348,7 +383,7 @@ P.synthV(\genbu, take: "low", params:
 	music:{|p b e|
 		{
 			e.playbuf
-			=> p.synthVTracks.at(e.key).(pregain:3.dbamp)
+			=> p.synthVTracks.at(e.key).(preGain:3.dbamp)
 		}.play
 	}
 );
@@ -395,7 +430,8 @@ P.still(\looking, timecode: 3811.8.seconds, music: { |p b e|
 });
 P.still(\ThalassaSpeaks,syl:1, timecode: 3812.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
+		wait: b.drop(1).sum,
+		fade:1,
 		text: ["",""],
 	)
 });
@@ -432,17 +468,23 @@ P(\moreChords, music: { |p b e|
 	}.play
 });
 P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
+	var mon = 
+	Stills.current.monitors[0];
 	 e.still.( 
 		fade: b[0],
 		wait: 0.1,
 		text: ["ß∂çøß","çç≈√øπ"],
+		shrink: 0.5, 
+		onTop: true,
+		bounds: Rect(mon.left, mon.top, mon.width / 2, mon.height / 2).scale(Stills.scale)
 		// fadeIn: b[0]
 	)
 });
-P.still(\clear, timecode: 0.seconds,syl:1, music: { |p b e|
+P.still(\clearTwo, timecode: 0.seconds,syl:1, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
+		wait: b.drop(1).sum,
 		text: ["Henoch's","formula"],
+		// onTop:true
 	)
 });
 P.still(\formul, timecode: 3812.133.seconds, music: { |p b e|
@@ -470,7 +512,8 @@ Song.setTempoMap('wan- ted',"qe e e e e e q e e e e");
 P(\cymbal, music: { |p b e|
 	(
 		instrument: \cymbalsDS,
-		amp: 0.02
+		amp: 0.02,
+		att:0.1
 	).play
 });
 P(\Drums, music: { |p b e|
@@ -494,11 +537,19 @@ P(\chord, music: { |p b e|
 		rel:4
 	].ppm
 });
-P.still(\kirk, timecode: 3819.5.seconds, music: { |p b e|
+// P.still(\kirk, timecode: 3819.5.seconds, music: { |p b e|
+// 	 e.still.( 
+// 		wait: b.sum,
+// 		text:["",""]
+// 	)
+// });
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["yes",""],
 		fade: e.bNext[ 0..1 ].sum,
+		onTop:true
+
 		// fadeIn: b[0]
 	).sequenceText2(
 			b.parse([1,7]), [ 
@@ -566,10 +617,13 @@ P(\chords,start:'cer- tain',music:{|p b e|
 		].pp
 	}
 });
-P.still(\thalassaWhat, timecode: 3412.2.seconds, music: { |p b e|
+P.still(\kirkClose, timecode: 3412.2.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["what is it","Sargon"],
+		text:["",""],
+		fadeIn:1.5,
+		fade:2
+		// text: ["what is it","Sargon"],
 	)
 });
 P(\bass,start:'cer- tain',music:{|p b e| 
@@ -586,6 +640,11 @@ P.still(\standingUp,syl:1, timecode: 3827.8.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.drop(1).sum,
 		text: ["formula is","correct"],
+		fade:1
+	).sequenceText2(
+			b.drop(1).sum.bubble, [ 
+			["",""]
+			],
 	);
 });
 P(\chord,syl:1, music: { |p b e|
@@ -812,6 +871,7 @@ P(\ting,lag:0.07, music: { |p b e|
 		Synth(\synth_simpleSine, [\freq: 61.df(\c),\amp,0.1])
 });
 ["in Time a host  -- body will become...  ",[-1,1,-7,1,2,1,-7,-6,-7,1].dm(\b,scale:\minor)].addLine; //12
+Song.quarters[ \Time ]=Song.parseBeats(\Time,[1,3,3/4,1/4,2,1,1,1.5,0.5,1]);
 P.still(\reverse, timecode: 3838.333.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -831,7 +891,6 @@ P.synthV(\aiko, params: [
 			p.synthVTracks.at(e.key).()   
 		}.play
 });
-Song.quarters[ \Time ]=Song.parseBeats(\Time,[1,3,3/4,1/4,2,1,1,1.5,0.5,1]);
 P(\chords,start:\Time,music:{|p b e| 
 	fork{
 		var bar = Barrier.collect({
@@ -896,7 +955,6 @@ P.still(\clear,syl:3, timecode: 0.seconds, music: { |p b e|
 			],
 	)
 });
-
 P.synthV(\aiko,params:[
 	lyrics:"r r r r u ku stum too us r",
 	phonemes:[ "","","","","A","kh A s","th @ m t","","","","" ]
@@ -1084,7 +1142,7 @@ P.synthV(\genbu, params: [
 	}.play
 }
 );
-P.tune(\torment, _ <> [instrument: \reedy].pm);
+P.tune(\torment, _ <> [instrument: \reedyAmp, amp:0.6].pm);
 
 P.still( \kirk, start: \torment, timecode: 3859.7.seconds, music: { |p b e|
 		e.still.value(
@@ -1149,7 +1207,7 @@ P(\note, music: { |p b e|
 			add:0.0
 		) /75
 		=> Pan2.ar(_,0)
-		* Env([0,0,1,0],b.parse([[ 10, 0.8 ],[0.2,1], 1]) , [1, 2]).kr(2,gate:1)
+		* Env([0,0,1,0],b.parse([[ 10, 0.8 ],[0.2,1], 1]) , [1, -3]).kr(2,gate:1)
 	}.play;
 
 });
@@ -1175,7 +1233,7 @@ P.still( \thalassa, start: 'to a machine', timecode: 3903.5.seconds, music: { |p
 		}
 });
 P(\bass,start:'to a machine',syl:2,music:{|p b e| 
-[ 
+	[ 
 		instrument:\sawSynthSustain,
 		freq: [-7,1,5,3,-6,-2].df('c#',octave:[3,4]).q,
 		legato:1,
@@ -1188,7 +1246,7 @@ P(\bass,start:'to a machine',syl:2,music:{|p b e|
 		dur:b.drop(1).parse([1,1,1,1,4,1]).q
 	].p.trace.play
 });
-P.tune(\mean,{|i|Pbindf(i,\out,Effect(EchoNone.ar(_,0.4,0.3,4)).bus.index)},range:[0,2]);
+P.tune(\mean,{|i|Pbindf(i,\lag, 0.02,\out,Effect( { |i| i => EchoNone.ar(_,0.4,0.3,4) * -3.dbamp} ).bus.index)},range:[0,2]);
 P(\chord,start:\machine,syl:10,lag:-0.05,music:{|p b e| 
 	(
 		freq:[1,3,4.5,7].df(\c,scale:\minor),
@@ -1207,13 +1265,13 @@ P(\chord,start:\machine,syl:10,lag:-0.05,music:{|p b e|
 ["/*KIRK:*/ Our thoughts boom boom boom boom will intertwine. (boom boom boom boom) ",[1,7,-1,-2,-3,-4,6,7,11,3, 1,2,3,4].dm(\d,4,scale:\dorian)].addLine;
 P.synthV(\genbu, params: {|p b| [
 	lyrics:" ar tats r r r r wil in ter twan r r r r",
-	phonemes:["","s o ts","","","","","","","","t w a e i n"],
-	legato:[ 1,3, 1,1,1,1,1,  1,1,3 ]
+	phonemes:["","s o ts","w i l","","","","","","","t w a e i n"],
+	legato:[ 1,2.9, 1,1,1,1,1,  1,1,3 ]
 ]},music:{|p b e|
 
 	{
 		e.playbuf =>
-		p.synthVTracks.at(e.key).()
+		p.synthVTracks.at(e.key).(preGain: 1.1)
 	}.play
 });
 P.still(\clear,timecode:0,music: {|p b e|
@@ -1377,10 +1435,17 @@ P.synthV(\aiko, params:
 );
 P(\chord,start:\press,syl:2,music:{|p b e| 
 	[
-		freq: [[1,3,4,7],[1,3,4,7],[1,3,4,6.5]].df(\c,scale:\minor).q,
-		dur:b.drop(1).q,
+		freq: [[1,3,4,7],[1,3,4,7],[1,3,4,6.5], ].df(\c,scale:\minor) 
+		++ [[-5, 1, 5, 3]].df(\a) 
+		++ [[1, 3, 5, 7]].df(\f) 
+		++ [[-11,1,11,13,16,26]].df('c#')
+		=> _.q,
+		dur:e.bAll.drop(1).parse([1, 1, 1, 6, 1, 1]).q,
+		amp: [3, 3, 3, 2, 2, 2]/30 => _.q,
 		//instrument:\visual_pad, amp:0.2,
-		out:3
+		// out:3,
+		out: Effect.bus({|i| i=> DelayN.ar(_,0.03,0.03)=>  Phaser1.ar(_, 0.5, 0.134) }, out: 3),
+		instrument: [\default, \default, \default, \defaultPiano, \defaultPiano, \defaultPiano].q
 	].pp
 });
 //P.tune(\press);
@@ -1434,13 +1499,15 @@ P.still(\kiss,start:'kiss',
 		//timecode:3927.5.seconds
 		,music:{|p b e| 
 			e.still.value(
-				wait:b[0..4].sum
+				wait:b[0..4].sum,
+				fade:1
 			)
 		}
 );
 P(\chord,start:\kiss,music:{|p b e| 
 	(
 		freq: [-11,1,11,13,16,26].df('c#'),
+		out: [1, 3],
 		instrument:\wash,
 		amp:0.15,
 		rel: 8
@@ -1448,44 +1515,47 @@ P(\chord,start:\kiss,music:{|p b e|
 });
 P.tune(\kiss,range:[8,12],syl:7);
 P(\trem,start:\kiss,music:{|p b e| 
-		var verb=Effect(FreeVerb.ar(_,1,Line.kr(0.7,1,5)),inputChannels:2).bus.index;
-		var a=Synth(\trem2,[\out,verb]);
-		Synths(\trem2,\freq, [-11,1,11,13,16,26].df('c#'),\amp,0.04,\out,0).dur(3,8);
+		var verb=Effect(FreeVerb.ar(_,1,Line.kr(0.7,1,5)),inputChannels:2, out:(0..4)).bus.index;
+		var a=Synth(\trem2,[\out,verb]);//.dur(b[..17].sum);
+		fork{b.sum + e.bNext.sum => _.wait; a.free};
+		Synths(\trem2,\freq, [-11,1,11,13,16,26].df('c#'),\amp,0.05,\out,[0, 1, 2, 3, 4, 0]).dur(3,8);
 		[
 				type:\set,
 				freq:[16,15,14,13,12,11,7,6,5.5,5,4.5,4,3,2.5,2,1.5,1].df('c#',octave:[4,5]).q,
 				rate:11,
 				id:a.nodeID,
-				amp:Pseries(1,(-1/16), 16)/10,
+				amp:Pseries(1,(-1/17), 17)/10,
 				//dur: [3] ++ (1!19) /2 => _.q
 				//dur: b.parse([1,1,1,1,1,1,1,1, 1,2/3,[ 1/3,1 ],1]).q
-				dur: b[0..7] ++ (b[8..10].mean ! 8) => _.q
-		].pp
+				dur: b[0..7] ++ (b[8..10].mean ! 10) => _.q
+		].p.trace.play
 });
+// Song.durTillEnd(23)
 P.still(\falling, start:\kiss, syl:4,  timecode: 3937.5.seconds,  music: {|p b e|
 		e.still.value(
 				//b.sum.wait
 				wait:b[1..3].sum,
+				fadeIn:1,
+				fade:1
 		)
 });
-P.still( \thalassa, start: \kiss,syl:7, timecode:3939.46.seconds, music: { |p b e|
+P.still(\thalassa, start: \kiss,syl:7, timecode:3939.46.seconds, music: { |p b e|
 		e.still.value(
-				wait: b[0..3].sum ,
+				wait: b.drop(1).[0..3].sum ,
 				text:["Sargon!","What's wrong?!"]
 		);
 });
-
 ["(McCoy and Chapel enter.) ","r",[1,3]].addLine;
 P(\trill,start:\Chapel,music:{|p b e| 
 	
-	var strings = Synths(\stringyy,\freq,[7,11,7,11].df(\d),\out,(0..3));
+	var strings = Synths(\stringyy,\freq,[7,11,7,11].df(\d),\out,(0..3), \amp,0);
 	var bus = Bus.control(s,3);
 	var time = 10;
 	
 	{SinOsc.kr(time.reciprocal/4)}.play(s,bus.index);
 	{LFNoise0.kr(0.4).unipolar*30}.play(s,bus.index+1);
 	//{Line.kr(0,0.3,10,doneAction:2)}.play(s,bus.index+2);
-	{Env([0,1,0]/10,[10,0.1]).kr(doneAction:1)}.play(s,bus.index+2);
+	{Env([0,1,0]/8,[b.sum + e.bNext.sum ,p.secDur[e.start + 2] + p.secDur[e.start + 3] + 0.2]).kr(doneAction:1)}.play(s,bus.index+2);
 	fork{
 		0.2.wait;
 		bus.postln;
@@ -1497,11 +1567,11 @@ P(\trill,start:\Chapel,music:{|p b e|
 	//d=Synths(\wash,\freq,[7,1,-7].df(\d),\out,[(0..3)])
 });
 P.still(\mcCoyEnters, start:\Chapel,timecode: 3940.5.seconds, music:{|p b e|
-		e.still.value(wait:b.sum);
-		Synth(\door,[\amp,0.3])
+		e.still.value(wait:b.sum - 2, fade:1);
+		Synth(\door,[\amp,0.2])
 });
 ["(wibble) hypo (hypo)",[33,3,-6.5,-16.5].dm(\c)].addLine;
-P.tune(\hypo,range:[1,2],syl:0);
+P.tune(\hypo,_<>[instrument: \sparkTriangle, amp: 0.02].pm,range:[1,2],syl:0, );
 P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 	lyrics: "r hypo + r",
 	legato: [1, 1, 0.5, 1, ],
@@ -1523,7 +1593,7 @@ P(\wibble,start:\hypo,music:{|p b e|
 			* Env.linen(0.2, b[0..2].sum-0.2-0.5,  releaseTime: 1.0,  level: 1.0,  curve: \lin).kr(2)
 		}.play;
 		b[0..2].sum.wait;
-		Synth(\door,[\amp,0.05,\out,Effect( BPF.ar(_,1000,7.5),out:1).bus.index ])
+		Synth(\hypo,[\amp,0.1,\out,Effect.bus( { |i| BPF.ar(i,1000,7.5) => Pan2.ar(_, -0.2) },out:0, inputChannels: 1) ])
 	}
 });
 P.still(\sensor, start:\hypo, timecode:3947.seconds, music:{ |p b e|
@@ -1549,7 +1619,7 @@ P.still(\hypo, start:\hypo,syl:2, timecode:3949.5.seconds, music:{ |p b e|
 P.synthV(\aiko,params:[ lyrics:" dak tar help him" ], music:{|p b e |
 		{
 			e.playbuf  =>
-			p.synthVTracks.at(e.key).()   
+			p.synthVTracks.at(e.key).(preGain: 1.5)   
 		}.play
 });
 //P.tune(\Doctor);
@@ -1558,6 +1628,27 @@ P.still(\mulhall, start:'help him', timecode:3953.0.seconds, music:{ |p b e|
 				wait:b.sum,
 				text:["Doctor","help him!"]
 		)
+});
+P(\noise,syl: 1,  music: { |p b e|
+	{
+		Gendy3.ar(
+			ampdist:1,
+			durdist:1,
+			adparam:1.0,
+			ddparam:1.0,
+			freq:[7].df(\d,6),
+			ampscale:Line.kr(0,1,b.drop(1).sum),
+			durscale:0.5,
+			initCPs:[12, 11, 10, 2],
+			knum:nil,
+			mul:1.0,
+			add:0.0
+		)
+		/180
+		=> LPF.ar(_,1000)
+		=> HPF.ar(_, 300)
+		* Env([0, 1, 0],b.parse([2, 1]) + [0,3], [0, -6]).kr(2,gate:1)
+	}.play
 });
 ["/*MCCOY:*/ (boom) He's dead.",[-7,-5,1].dm(\d)].addLine;
 P.synthV(role: \mccoy, take: \lead, params: {|p b| [
@@ -1574,8 +1665,24 @@ P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 	}.play
 
 });
+P(\dead, music: { |p b e|
+	(
+		freq: [1, 21].df(\d,4),
+		instrument: \harp,
+		out: 1,
+		lag: b[..1].sum,
+		out: Effect.bus({|i| FreeVerb.ar(i, 1, 1)/10 },)
+	)//.play
+});
+P.tune(\dead, _ <> [freq: [\r, -5, 1].df(\d).q,instrument: \wash, att: 1, freqLag: 0.2, amp: 0.02].pm);
 // P.tune(\dead,range:[1,2],syl:0);
-
+P(\boom, music: { |p b e|
+	(
+		freq: -7.df(\d, 4),
+		out: Effect.bus({|i| DWGReverbC1C3.ar(i) },),
+		amp: 0.05
+	)//.play
+});
 P.still(\mcCoy,syl:0, start:\dead, timecode:4003.0.seconds, music:{ |p b e|
 		e.still.value(
 				wait:b.sum,
@@ -1584,14 +1691,10 @@ P.still(\mcCoy,syl:0, start:\dead, timecode:4003.0.seconds, music:{ |p b e|
 });
 )
 /*
-(
-//Stills   ! {{{
-~stills.isNil.if{~stills=Stills("/Users/michael/tank/Trek/video for stills etc/media/return to tomorrow.mov")}; 
-~stills.set('whatsWrong?',2288.6);
-~stills.set('kirk-face',(38*60+2.81));
-~stills.set('enter-Thalassa',(37*60+54.30));     
-~stills.set('sargonsFormula',2291.43); 
-	//sections
-	//P(\guide1,start:1,music:~sickBay.pbind[1]);
-	//should this be done as an event?	
 
+//Stills   ! {{{
+// ~stills.isNil.if{~stills=Stills("/Users/michael/tank/Trek/video for stills etc/media/return to tomorrow.mov")}; 
+// ~stills.set('whatsWrong?',2288.6);
+// ~stills.set('kirk-face',(38*60+2.81));
+// ~stills.set('enter-Thalassa',(37*60+54.30));     
+// ~stills.set('sargonsFormula',2291.43); 

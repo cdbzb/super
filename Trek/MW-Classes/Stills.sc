@@ -222,15 +222,16 @@ Still {
 	var <>stills,<>image;
 	var <>markerName,<>wait,<>fade,<>fadeIn,<>monitor;
 	var <>window,<>textUpper,<>textLower,timecode,<>text;
-	var <>onTop;
+	var <>onTop, <>bounds, <>shrink;
 
-	*new{|markerName timecode wait=5 fade=0 monitor text fadeIn stills onTop=false  |
-		^super.new.init(markerName,timecode,wait,fade,monitor,text,fadeIn,stills, onTop)
+	*new{|markerName timecode wait=5 fade=0 monitor text fadeIn stills onTop=false bounds shrink |
+		^super.new.init(markerName,timecode,wait,fade,monitor,text,fadeIn,stills, onTop, bounds, shrink)
 	}
 
-        init{| n c w f m x i t o |
+        init{| n c w f m x i t o b, k |
           //DO WE EVEN NEED A MARKER NAME???????
           markerName = n;
+		  bounds = b; shrink = k;
           x.isNil.if{text=["",""]}{text=x};
           t.isNil.if{ stills = Stills.current }{ stills = t };
           timecode = c;
@@ -254,7 +255,7 @@ Still {
 						SCNvim.luaeval( "vim.api.nvim_input('%')".format(key) );
 						"open -a WezTerm.app".unixCmd;
 					});
-					this.title(["",""]);
+					this.title(["",""], bounds, shrink);
 					this.setText(text) 
 				}.defer(Server.default.latency - 0.1); // timing fudge factor!! why does this work(or does it?) 
 			}
@@ -309,49 +310,52 @@ Still {
         //
 	}
 	
-	title { |text|
+	title { |text b shrink|
 		var size=stills.size;
-		var bounds = stills.monitors[monitor].scale(Stills.scale);
+		var bounds =  b ? stills.monitors[monitor].scale(Stills.scale);
 		var textHeight = bounds.height/4;
 		//  top in Rects below really should ALSO depend on textHeight also!
-		var top = Rect(bounds.left,bounds.height/8,bounds.width,textHeight);
-		var bottom = Rect(bounds.left,bounds.height*3/4,bounds.width,textHeight);
+		var top = Rect(bounds.left, bounds.height/8, bounds.width, textHeight);
+		var bottom = Rect(bounds.left,bounds.height*3/4,bounds.width, textHeight);
+		shrink = shrink ? 0;
 		( text.size == 1 ).if
 		{
 			textUpper = StaticText(window,top)
 			.string_("")
 			.stringColor_(Color.rand)
 			.align_(\center)
-			.font_(Font(\helvetica,90 * Stills.scale => _.asInteger, bold:true))
+			.font_(Font(\helvetica,90 * Stills.scale * (1-shrink) => _.asInteger, bold:true))
 			;
 			textLower = StaticText(window,bottom)
 			.string_(text[0])
 			.stringColor_(Color.rand)
 			.align_(\center)
-			.font_(Font(\helvetica,90 * Stills.scale => _.asInteger, bold:true))
+			.font_(Font(\helvetica,90 * Stills.scale * (1-shrink) => _.asInteger, bold:true))
 			;
 		}{
 			textUpper = StaticText(window,top)
 			.string_(text[0])
 			.stringColor_(Color.rand)
 			.align_(\center)
-			.font_(Font(\helvetica,90 * Stills.scale => _.asInteger, bold:true))
+			.font_(Font(\helvetica,90 * Stills.scale * (1-shrink) => _.asInteger, bold:true))
 			;
 			textLower = StaticText(window,bottom)
 			.string_(text[1])
 			.stringColor_(Color.rand)
 			.align_(\center)
-			.font_(Font(\helvetica,90 * Stills.scale => _.asInteger, bold:true))
+			.font_(Font(\helvetica,90 * Stills.scale * (1-shrink) => _.asInteger, bold:true))
 		}
 	}
 	value { //for backward comp
-		|monitor=0 wait fade fadeIn text onTop = false|
+		|monitor=0 wait fade fadeIn text onTop = false bounds shrink|
 		monitor.notNil.if{ this.monitor = monitor};
 		wait.notNil.if{ this.wait = wait};
 		fade.notNil.if{ this.fade = fade};
 		fadeIn.notNil.if{ this.fadeIn = fadeIn};
 		text.notNil.if{ this.text = text};
 		onTop.notNil.if{ this.onTop = onTop};
+		bounds.notNil.if{ this.bounds=bounds};
+		shrink.notNil.if{ this.shrink=shrink};
 		this.play
 	}
 

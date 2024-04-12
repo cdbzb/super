@@ -547,6 +547,7 @@ P.synthV(\mo, take: \lead, params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).(b.sum+5)
+		* 3.dbamp
 	}.play
 
 });
@@ -585,7 +586,7 @@ P(\bassline, music: { |p b e|
 			{|i| i
 				=> HPF.ar(_,100)
 				=> {| i| CombN.ar(i, 0.4,0.4) /2 +i}
-				* -3.dbamp
+				// * -3.dbamp
 			}
 		)
 	].ppm

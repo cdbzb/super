@@ -32,6 +32,15 @@ SynthDef(\door,{
 	=>Out.ar(\out.kr,_)
 }).add.tag(\sfx);
 
+SynthDef(\hypo,{ //door with no pan
+	var len=\len.kr(1);
+	var sig=WhiteNoise.ar();
+	var env= Env.linen(0.01,len-0.02,0.01).kr(2,gate:1);
+	var fenv= Env.linen(len-0.21,0.18,0.03).kr(2,gate:1);
+	sig=RHPF.ar(sig,fenv.range(200,2000),rq:5);
+	sig*env*\amp.kr(1)
+	=>Out.ar(\out.kr,_)
+}).add.tag(\sfx);
 SynthDef(\sawTw,{ |freq=400 amp=1 spread=5 | 
 	var env= Env.perc(0.2,6!4.rand).kr(2,gate:1);
 	var sig=Splay.ar ( Saw.ar( rrand(spread,(-1*spread))+freq,0.2) )

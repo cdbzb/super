@@ -13,7 +13,7 @@ o = [
 	Array.prNew(12),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  "694310000",  "",  Event.prNew,  
 	Array.prNew(4),  Event.prNew,  Array.prNew(40),  "694310000",  
-	"tats",  "1955910000",  "s o ts",  Event.prNew,  
+	"tats",  "1890710000",  "s o ts",  Event.prNew,  
 	Array.prNew(40),  "3790460000",  "wil",  "587050000",  
 	"",  Event.prNew,  Array.prNew(40),  "4377510000",  
 	"in",  "595520000",  "",  Event.prNew,  
@@ -131,7 +131,7 @@ p = [
 		proto: nil,  parent: nil,  
 		know: true ],  
 	// Array
-	23, [ nil,  nil,  'activeTakeId',  1,  
+	23, [ nil,  nil,  'activeTakeId',  0,  
 		nil,  nil,  'takes',  o[24] ],  
 	// Array
 	24, [ o[25],  o[27],  o[29],  o[31] ],  

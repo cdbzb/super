@@ -1,5 +1,6 @@
 Trek {
 	classvar <>cast, <path, <>presets, <keys, <>synful1, <>synful2;
+	classvar <condVar;
 	*initClass {
 		path = this.filenameSymbol.asString.dirname.dirname +/+ "/Songs";
 		cast = try{ Object.readArchive(path +/+ "trek_cast") } ? ();
@@ -60,6 +61,17 @@ Trek {
 			^keys.indexOf(i) => this.allTheSongs[_]
 		}
 	}
+	*loadSongs{|array|
+		fork{
+			array.do{|i x|
+				condVar = CondVar();
+				defer{ File.readAllString(this.allTheSongs[ i ]) ++ "; Trek.condVar.signalOne" => _.interpret };
+				condVar.wait;
+				x.debug("loaded!");
+			}
+		}
+	}
+
 	*synful {
 		( synful1.isNil or: try{ synful1.syn.isPlaying.not } ).if {
 			synful1 = Synful();

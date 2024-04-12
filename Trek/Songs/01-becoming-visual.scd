@@ -4,7 +4,7 @@
 */
 {
 Song(\visual,[]).current;
-Require('boilerplate.scd');
+Require('/Users/michael/tank/super/Trek/Songs/boilerplate.scd');
 Stills().current;
 ( Song.synthVTracks=EventWithDefault(
 	\default, {
@@ -1440,7 +1440,6 @@ P(\trill, music: { |p b e|
 			},out:x,inputChannels:4)
 		).play
 	}});
-}.();
 [" Class M planet, Captain.","5 2 11 5 2 -6".dm('b')].addLine;/*SPOCK:*/
 P(\chords, music: { |p b e|
 	[
@@ -1564,6 +1563,8 @@ P(\bassnotes, syl:8, music: { |p b e|
 		instrument: \sawSynth
 	].pp
 });
+}.();
+{
  ["Its much older than Earth", "5 5 11 5 5 5 5".dm('f#',4)].addLine;
  P.still(\clear, timecode: 0.seconds, music: { |p b e|
  	 e.still.( 
@@ -1806,6 +1807,7 @@ P(\cymbal,syl:2, music: { |p b e|
 		instrument: \cymbalsDS, amp: 0.05
 	).play
 });
+}.();
 ["The planet has evidently been dead since then.","5 4 3 4 11 7 7 6".dm(\c) ++"5 5 2 4".dm('c#')].addLine;
 Song.setTempoMap('dead since',"e Q Q QE E E e ee e Q E q");
 P(\ride, music: { |p b e|
@@ -2618,5 +2620,6 @@ P.tune(_ <> [instrument: \visual_pad,amp:0.15].pm);
 // ["all of mankind must perish, too.","r"].addLine;
 
 )
+
 
 

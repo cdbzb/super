@@ -2,7 +2,8 @@
 //[Bridge]
 Song(\rescue,[]).current;
 {
-	"~/tank/super/Trek/Songs/boilerplate.scd".standardizePath.load;
+	// "~/tank/super/Trek/Songs/boilerplate.scd".standardizePath.load;
+	Require('/Users/michael/tank/super/Trek/Songs/boilerplate.scd');
 	( Song.synthVTracks = EventWithDefault(
 		\default, {
 			{
@@ -13,13 +14,25 @@ Song(\rescue,[]).current;
 		}
 	);
 );
+["Captain's Log. Stardate 4768.3.","4 3 2/a 5 3 /b-/minor 2 7 11 6 12 4 3/f#".dm2].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["captain's","log"],
+		onTop: true
+	).sequenceText2(
+			b.parse([3]), [ 
+			["stardate","4768.3"],
+			],
+	)
+});
 P.still(\enterprise, timecode: 413.2.seconds, music: { |p b e|
 	e.still.( 
 		wait: b.sum,
 		text: ["",""],
+		fade: e.bNext.sum + p.secDur[e.start+2]
 	)
 });
-["Captain's Log. Stardate 4768.3.","4 3 2/a 5 3 /b-/minor 2 7 11 6 12 4 3/f#".dm2].addLine;
 P.synthVs(role: \kirk, take: [\lead, \dbl], params: {|p b| [
 	lyrics: "Captain's +  Log. Stardate + four seven + six eight point three",
 	filter: (midinote: _ - 12), 
@@ -72,6 +85,18 @@ P(\line, music: { |p b e|
 	]//.pp
 });
 ["The Enterprise is in orbit above a planet whose ","3 2 3 1 2 3 3 2 1.5 2 3/a 5 6 7/e- ".dm2].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["the","Enterprise"],
+		onTop: true
+	).sequenceText2(
+			b.parse([4, 4]), [ 
+			["is","in orbit"],
+			["above a planet","whose"]
+			],
+	)
+});
 Song.setTempoMap(\Enterprise,"e | e e ee e e ee e e e e ee e e");
 // P.tune();
 P.synthVs(role: \kirk, take: [\lead, \dbl], pbind: Song.enlarge(8),
@@ -137,6 +162,16 @@ P(\connector, syl: 10, music: { |p b e|
 	].pp
 });
 ["surface is devoid of all life, ","11 5 3 4 2 1 -7 2/e-/harmonicMinor".dm2].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["surface","is"],
+	).sequenceText2(
+			b.parse([3]), [ 
+			["devoid","of all life"],
+			],
+	)
+});
 P(\bass, music: { |p b e|
 	[
 		freq: [11, 5, 3, 4, 2, 1, -7.5, -7].df('e-', 3, \minor).q,
@@ -145,6 +180,26 @@ P(\bass, music: { |p b e|
 });
 P.tune( _ <> [instrument:\stringyy].pm );
 ["a world destroyed and dead for at least a half million years. ","1 1 2 2 3 3 2 1 -7 2 5 5 4.5 4 3/g".dm2].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["a world destroyed","and dead"],
+		ontTop:true
+	).sequenceText2(
+			b.parse([6, 3]), [ 
+			["for","at least"],
+			["a half million", "years"]
+			],
+	)
+});
+P.still(\bridge, timecode: 425.401.seconds, music: { |p b e|
+	e.still.( 
+		wait: b.sum + e.bNext.sum,
+		fadeIn: b.sum,
+		text:["",""]
+		// text: ["yet from it comes","a voice"],
+	)
+});
 P(\bassnotes, music: { |p b e|
 	{
 		Gendy2.arWidth(
@@ -203,6 +258,18 @@ P(\connector, syl: 12, music: { |p b e|
 });
 P.tune( _ <> [amp: 0.05,instrument: \sparkTriangle, depth: 0.005].p );
 ["Yet from it comes a voice, ","1 2 3 1 3 4.5/e-/6".dm2].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum + e.bNext[..2],
+		text: ["yet from it","comes a"],
+		fade:1
+	).sequenceText2(
+			e.bAll.parse([5, 3]), [ 
+				["voice","telling us"],
+				["",""]
+			],
+	)
+});
 P.synthVs(role: \kirk, take: [\lead, \dbl], params: {|p b| [
 	filter: (midinote: _ - 12), 
 	lyrics: "Yet from it comes a voice ",
@@ -241,14 +308,14 @@ P(\voiceChord,syl:4, music: { |p b e|
 	}.play
 });
 P.tune(_ => Pmul(\freq, 0.5, _));
-P.still(\bridge, timecode: 425.401.seconds, music: { |p b e|
-	e.still.( 
-		wait: b.sum,
-		text: ["yet from it comes","a voice"],
-	)
-});
 // ["the energy of pure thought, ","r"].addLine;
 ["telling us something has survived here ","11 7 5 4 3 4 5 4 3/g".dm2].addLine;
+P.still(\clear, syl:2, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["something has","survived here"],
+	)
+});
 P.tune( _ <> [instrument: \stringyy].pm );
 P.synthVs(role: \kirk, take: [\lead, \dbl], params: {|p b| [
 	lyrics: "telling + us something + has survived + here ",
@@ -325,8 +392,17 @@ P(\bassline, music: { |p b e|
 	a ++ [ instrument: \sawSynthSustain, out: Effect.bus({|i| i=> Pan2.ar(_,-0.8) },) ] => _.ppm;
 	a ++ [ instrument: \default, pan:-1, out: Effect.bus({|i| i => Pan2.ar(_,-0.2) },) ] => _.pp
 });
-}.();
 ["I've decided to risk the potential dangers and ","5 6.5 7.5 11 12 13 12 11 7.5 12 7.5 6.5 6/d/minor".dm2].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["I've decided","to"],
+	).sequenceText2(
+			b.parse([5]), [ 
+			["risk","the potential dangers and"],
+			],
+	)
+});
 P(\pad, music: { |p b e|
 	(
 		instrument: \sawSynthSustain,
@@ -383,7 +459,18 @@ P.still(\kirkLog, timecode: 446.8.seconds, music: { |p b e|
 		// text: ["log Entry","out"],
 	)
 });
+}.();
 ["(boom) resume contact Log entry out","-1 4 5 11 1/f# 3 4 5 11/b/4".dm2].addLine;
+P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.drop(1).sum,
+		text: ["resume","contact"],
+	).sequenceText2(
+			b.drop(1).parse([4]), [ 
+			["log entry", "out"],
+			],
+	)
+});
 Song.setTempoMap(\resume,"eeeee e ee ee ee ee e e e");
 P(\bassnotesOne, music: { |p b e|
 	[
@@ -442,7 +529,13 @@ P.still(\uhuruclose, timecode: 452.451.seconds, music: { |p b e|
 	)
 }); */
 ["/*SPOCK:*/ Captain.","3 -5".dm(\b,\minor)].addLine;
-
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["Captain!",""],
+		onTop: true
+	)
+});
 P.synthV(role: \spock, take: \lead, params: {|p b| [
 	lyrics: "Captain + ",
 	filter: (midinote: _ - 12), 
@@ -487,6 +580,14 @@ P(\trem, music: { |p b e|
 	}.play
 });
 ["/*KIRK:*/ Got something?","7 11 5/d/mixolydian".dm2].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum/2,
+		fade: b.sum/2 -0.1,
+		text: ["got","something?"],
+		onTop: true
+	)
+});
 P(\chord, music: { |p b e|
 	(
 		freq: [-11,-1,-5, -7, 11, 13].df(\d, \mixolydian),

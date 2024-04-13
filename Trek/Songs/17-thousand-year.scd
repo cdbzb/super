@@ -1447,6 +1447,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["no I'm beginning","to hate it"],
+		onTop:true
 	)
 });
 P.synthV(role: \thalassa, take: \lead, params: {|p b| [

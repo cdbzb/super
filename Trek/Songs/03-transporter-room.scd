@@ -1898,7 +1898,7 @@ P('transporter',start:'transporter!',music: {|p b e|
 	+ (activate * 0.5)!2
 	/4
 
-}.play
+}.play(s,target: Trek.transitionGroup)
 });
 )
 /* [ "KIRK: Doctor, if you prefer to stay behind? ","r" ].addLine;

@@ -1,10 +1,11 @@
 Trek {
 	classvar <>cast, <path, <>presets, <keys, <>synful1, <>synful2;
-	classvar <condVar;
+	classvar <condVar, <>transitions, transitionGroup;
 	*initClass {
 		path = this.filenameSymbol.asString.dirname.dirname +/+ "/Songs";
 		cast = try{ Object.readArchive(path +/+ "trek_cast") } ? ();
 		presets = try{ Object.readArchive(path +/+ "trek_presets") } ? MultiLevelIdentityDictionary.new();
+		transitions = Order();
 		keys = [
 			\visual,
 			\rescue,
@@ -29,7 +30,9 @@ Trek {
 			\MandT,
 			\MandT,
 			\ending
-		]
+		];
+		ServerTree.add({transitionGroup = Group.after(Server.default.defaultGroup).register})
+		// CmdPeriod.add({transitionGroup = Group.after(Server.default.defaultGroup).register});
 	}
 	*save {
 		cast.writeArchive(path +/+ "trek_cast");
@@ -70,6 +73,23 @@ Trek {
 				x.debug("loaded!");
 			}
 		}
+	}
+	*playSong{|num cursor=0 scroll=false| //use cursor -2 to play last two sections
+		cursor = cursor ? 0;
+		Song.songs.at(keys[num]).current;
+		scroll.if{Song.makeScroll};
+		(cursor < 0).if{ cursor = Song.sections + cursor };
+		Song.cursor_(cursor);
+		Song.play;
+		^Server.default.latency + 0.1 + Song.preroll + Song.durTillEnd //return time till end
+	}
+	*editFile{|num|
+		var cmd = "vim.cmd('edit" + this.allTheSongs[num] + "')";
+		SCNvim.luaeval(cmd)
+	}
+	*transitionGroup {
+		( transitionGroup.notNil and: try{transitionGroup.isRunning} ).not.if{ transitionGroup = Group.after(Server.default.defaultGroup).register };
+		^transitionGroup
 	}
 
 	*synful {

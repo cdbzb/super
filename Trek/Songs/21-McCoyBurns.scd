@@ -111,7 +111,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 		text: ["but you said","that was impossible"],
 	)
 });
-(\connector, music: { |p b e|
+P(\connector, music: { |p b e|
 	[
 		freq: [ 5, -7, -4 ].df(\d,4, \mixolydian).q,
 		dur: e.bAll.parse([6, 3, 1]).q,

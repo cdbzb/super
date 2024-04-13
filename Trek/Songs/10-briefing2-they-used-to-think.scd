@@ -22,17 +22,29 @@
 			}
 		);
 	);
-["they used to think if man could ","f3 f g g a a b "].addLine; //0
+
+["fadeIn", "r", 3].addLine;
+P(\chord, music: { |p b e|
+	
+		(instrument: \stringyy, freq: [1, 3, 5, 7].df(\f)).play;
+});
 P.still(\kirk, timecode: 2314.1.seconds, music: { |p b e|
 			e.still.( 
 				wait: b.sum + e.bNext[0],
-				text: ["they used to think","if man could fly"],
-				fade:9
+				fade:9,
+				fadeIn: b.sum;
 			).sequenceText2(
 				b.sum, [ 
 				["",""],
 				],
 			)
+});
+["they used to think if man could ","f3 f g g a a b "].addLine; //0
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+				text: ["they used to think","if man could fly"],
+	)
 });
 P.synthVs(role: \kirk, take: [ \lead, \doub ],
 		pbind: Song.enlarge2(2),
@@ -50,7 +62,7 @@ P.synthVs(role: \kirk, take: [ \lead, \doub ],
 			=> p.synthVTracks.at(e.key).()
 		}.play
 });
-P(\pedalNote,  music: { |p b e|
+P(\pedalNote,lag: (-0.0),  music: { |p b e|
 		(
 			// instrument: \stringyy,
 			instrument: \sawSynthSustain,
@@ -193,7 +205,8 @@ P(\bass,start:\first,syl:3,music:{|p b e|
 	[ 
 		freq:[5,6,2].df(\e,2,\mixolydian).q,
 		amp:0.5,
-		dur: (p.parse(4,[[1,1,1,2/3],1/3],4) + ([0]++p.parse(5,[1,2]))).q ,
+		// dur: (p.parse(4,[[1,1,1,2/3],1/3],4) + ([0]++p.parse(5,[1,2]))).q ,
+		dur: e.bAll.drop(1).parse([[1, 1, 1, 2/3], [1/3, 1], 2]).q
 	].pp 
 });
 ["Apollo mission hadn`t reached the","c#4 f# c# e d# b-3 a- b- b"].addLine;//5

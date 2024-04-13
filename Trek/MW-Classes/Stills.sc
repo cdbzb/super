@@ -252,6 +252,7 @@ Still {
 						Window.closeAll;
 						TempoClock.all.do(_.clear);
 						Server.default.freeMyDefaultGroup;
+						Trek.transitionGroup.release;
 						SCNvim.luaeval( "vim.api.nvim_input('%')".format(key) );
 						"open -a WezTerm.app".unixCmd;
 					});
@@ -412,9 +413,9 @@ Display {
 +P {
 	*still {   // renders the still when compiled
 		// and stores it in resources.still (e.still)
-		|key st syl lag=0 timecode=60 music|
-		var start = P.calcStart(st);
+		|key start syl lag=0 timecode=60 music|
 		var aStill;
+		start = P.calcStart(start);
 		key = key ++ start;
 		aStill = timecode.isNumber.if{
 			Still(key ++ ( Song.calcStart( start ) )=> _.asSymbol, timecode:timecode);
@@ -431,7 +432,7 @@ Display {
 			key: ( key ++ start ).asSymbol, 
 			resources: (
 				still: aStill,
-				timecode: timecode.isStrictlyPositive.if{timecode}{nil}
+				timecode: ( timecode.isNumber and: timecode.isStrictlyPositive ).if{timecode}{nil}
 			),
 			start: start,
 			syl: syl,

@@ -9,7 +9,7 @@ Song.synthVTracks = EventWithDefault.new(
 		{|i| Pan2.ar(i,0) /3}
 	}
 );
-[ "/*[Laboratory]*/","1".dm(),[1] ].addLine;
+[ "/*[Laboratory]*/","1".dm(),[6] ].addLine;
 P.still(\plasticPerson, timecode: 4150.seconds, music: { |p b e|
 	 e.still.( 
 		wait: 2.381 + 1,
@@ -23,7 +23,8 @@ P(\noise, music: { |p b e|
 		// => BPF.ar(_, Gendy1.kr(minfreq:[ 1 , 1.55],maxFreq:2).range(400,800))
 		/10
 		=> Ringz.ar(_, 40 + Gendy1.kr(minfreq:[ 0.1, 10 ],maxfreq:40) * 10 ,0.1)
-		* Env([0,1],3.381).kr(2)
+		// * Env([0,1],3.381).kr(2)
+		* Env([0,1],b.sum).kr(2)
 		/19
 	}.play
 });

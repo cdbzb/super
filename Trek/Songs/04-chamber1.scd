@@ -268,6 +268,7 @@ P(\dyads, music: { |p b e|
 	[
 		freq: [ [5, 1],[5, 1], \r, [-4, 1],[-4,1] ].df('e-',4).q,
 		dur: b.parse([1,2, 6, 2, 1]).q,
+		lag: 0.02,
 		out: Effect.bus({|i| i * 2 => SineShaper.ar(_,0.15,2) => FreeVerb.ar(_,0.01,1) * -8.dbamp },out:3)
 	].pp
 });

@@ -31,7 +31,8 @@ Trek {
 			\MandT,
 			\ending
 		];
-		ServerTree.add({transitionGroup = Group.after(Server.default.defaultGroup).register})
+		ServerTree.add({transitionGroup = Group.after(Server.default.defaultGroup).register});
+		transitions = keys.collect{ () };
 		// CmdPeriod.add({transitionGroup = Group.after(Server.default.defaultGroup).register});
 	}
 	*save {
@@ -74,22 +75,49 @@ Trek {
 			}
 		}
 	}
-	*playSong{|num cursor=0 scroll=false| //use cursor -2 to play last two sections
+
+	*playSong{|num cursor=0 scroll=false trimEnd=0| //use cursor -2 to play last two sections
 		cursor = cursor ? 0;
 		Song.songs.at(keys[num]).current;
 		scroll.if{Song.makeScroll};
 		(cursor < 0).if{ cursor = Song.sections + cursor };
 		Song.cursor_(cursor);
-		Song.play;
-		^Server.default.latency + 0.1 + Song.preroll + Song.durTillEnd //return time till end
+		Song.playRange(cursor, Song.sections - 1 - trimEnd);
+		^Server.default.latency + 0.1 + Song.preroll + (cursor .. (Song.sections - 1 - trimEnd)).collect{|i| Song.secDur[i]}.sum ;
+		// Song.durTillEnd //return time till end
 	}
+
 	*editFile{|num|
 		var cmd = "vim.cmd('edit" + this.allTheSongs[num] + "')";
 		SCNvim.luaeval(cmd)
 	}
+
 	*transitionGroup {
 		( transitionGroup.notNil and: try{transitionGroup.isRunning} ).not.if{ transitionGroup = Group.after(Server.default.defaultGroup).register };
 		^transitionGroup
+	}
+
+	*playTransition { |num cursor func trimStart=0 trimEnd=0 lag=0| // lag is before transition
+		func.notNil.if{ transitions[num].put(\func, func) };
+		trimStart.notNil.if{ transitions[num + 1].put(\start, trimStart) };
+		trimEnd.notNil.if{ transitions[num].put(\trimEnd, trimEnd) };
+		lag.notNil.if{ transitions[num + 1].put(\lag, lag) };
+		fork{
+			this.playSong(num, cursor, trimEnd: trimEnd ) + lag => _.wait;
+			transitions[num].func ? 0 => _.wait;
+			this.playSong(num + 1, trimStart ? 0); //needToCall "makeScroll" on the song!!
+		}
+	}
+
+	*playRange { |num cursor numSections| 
+		fork{
+			numSections.do{|i| 
+				var section = num + i;
+				var start = (i == 0).if{ cursor }{ transitions[section].start};
+				this.playSong(section, start, trimEnd: transitions[section].trimEnd ? 0) + (transitions[section+1].lag ? 0) => _.wait;
+				transitions[section].func.() ? 0 => _.wait
+			}
+		}
 	}
 
 	*synful {
@@ -122,3 +150,4 @@ Trek {
 
 
 }
+

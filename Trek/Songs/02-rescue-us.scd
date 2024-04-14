@@ -30,7 +30,8 @@ P.still(\enterprise, timecode: 413.2.seconds, music: { |p b e|
 	e.still.( 
 		wait: b.sum,
 		text: ["",""],
-		fade: e.bNext.sum + p.secDur[e.start+2]
+		fadeIn: b.sum,
+		// fade: e.bNext.sum + p.secDur[e.start+2]
 	)
 });
 P.synthVs(role: \kirk, take: [\lead, \dbl], params: {|p b| [
@@ -53,7 +54,7 @@ P(\eightPointThree, syl:8, music: { |p b e|
 	[
 		instrument: \visual_pad,
 		freq: [12, 4, 3].df('f#', [4,5]).q,
-		amp:0.3,
+		amp:0.3,out:4,rel:3,
 		dur: b.drop(1).q
 
 	].pp
@@ -126,13 +127,13 @@ P(\keys, music: { |p b e|
 		freq: [[3, 5], [2, 5], 3, 1, [2, 5], 3	 ].df(\a).q,
 		legato: [1, [1, 3], 2, 1, [1, 2],1].q,
 		dur: "e e e ee e e ee".asBeats.warpTo( e.tempoMap ).q,
-		instrument: \defaultPiano, amp: 0.06
+		instrument: \defaultPiano, amp: 0.05, fatness: 0.45, out: 2
 	].pp
 });
 P.tune();
 P(\guitar, music: { |p b e|
 	p.guitar.setPlayMode(\strum );
-	p.guitar.controller.set('Global: Volume',0.3);
+	p.guitar.controller.set('Global: Volume',0.4);
 	[
 		type: \strum,
 		instance: p.guitar,
@@ -297,13 +298,15 @@ P(\bass, music: { |p b e|
 P(\voiceChord,syl:4, music: { |p b e|
 	{
 		var freqs = [-3, -5, 1, 3, 5, 11].df(\a);
-		var onsets = (0..5) + {0.rrand(0.01)}.dup(6) /10;
+		var onsets = 
+		(0..5) + {0.rrand(0.01)}.dup(6) /10;
 
-		VarSaw.ar(freqs) 
+		VarSaw.ar(freqs *.t [2, 1]) 
 		* Env.perc(0.01,6).kr(0,1)
 		* SinOsc.ar( Rand(1,5!6) )
-		=> DelayN.ar(_,0.1, onsets)
-		/20
+		=> DelayN.ar(_,0.6, onsets)
+		/35
+		=> Out.ar((0..4),_)
 
 	}.play
 });
@@ -358,6 +361,7 @@ P.synthVs(role: \kirk, take: [\lead, \dbl], params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_, 0)
 	}.play
 
 });
@@ -422,6 +426,7 @@ P.synthVs(role: \kirk, take: [\lead, \dbl], params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_, 0)
 	}.play
 });
 P(\strum,syl: 4, music: { |p b e|
@@ -487,7 +492,11 @@ P(\chords, music: { |p b e|
 			[1, 4],
 			[-6.5, 3.5]
 		].df('c#', \mixolydian).q,
-		dur: "qqqq qqqq e".asBeats.warpTo( e.tempoMap ).q
+		dur: "qqqq qqqq e".asBeats.warpTo( e.tempoMap ).q,
+		pan: [-1, 1], 
+		out: Effect.bus({|i| 
+			CrossoverDistortion.ar(i, amp:0.1, smooth:0.95)
+		}, inputChannels: 2)
 	].pp
 });
 P.synthVs(role: \kirk, take: [\lead, \dbl], params: {|p b| [
@@ -500,6 +509,7 @@ P.synthVs(role: \kirk, take: [\lead, \dbl], params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_, 0)
 	}.play
 
 });
@@ -642,7 +652,7 @@ P(\arp, music: { |p b e|
 		busses.collect(In.ar(_, 1))
 		=> Select.ar( LFSaw.ar(3).range(0,3), _ )
 		=> Pan2.ar( _, LFSaw.ar(3) )
-		*4
+		*3
 		* EnvGen.cutoff(b.sum,0.1)
 	}.play(addAction: \addAfter).onFree(busses.do(_.free))
 	
@@ -655,7 +665,10 @@ P(\cymbal, music: { |p b e|
 		amp: 0.01
 	).play
 });
-P.still(\spockSensors, timecode: 500.974.seconds, music: { |p b e|
+P.still(
+	// \spockSensors
+	\clear
+	, timecode: 500.974.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],

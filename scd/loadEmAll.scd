@@ -31,12 +31,28 @@ fork{
 	Song.play
 }
 )
+Trek.loadSongs([0,1])
+(
+Trek.transitions[0].func = {
+	1.wait;
+	(instrument: \cymbalsDS, att:0.5, amp: 0.02).play;
+	// { Stills.plotTitleCard("Return\nTo\nTomorrow", dur: 4); }.defer;
+	{ Stills.plotTitleCard("2", dur: 4); }.defer;
+	// (instrument: \cymbalsDS, att:0.5, amp: 0.02).play;
+	// { Stills.plotTitleCard("by Michael Webster\nlibretto by John T Dugan", dur: 4); }.defer;
+	// 8
+	{
+		In.ar(0,Monitors.channels)
+		* Env.asr(0, 4, 1).kr(2, gate: \gate.kr(1)).dbamp
+		=> ReplaceOut.ar(0, _);
+	}.play(s, target: Trek.transitionGroup);
+	4
+};
+Trek.playTransition(0, -2)
+)
 
 ( // 1 to 2
-var gain;
-fork{
-	Trek.keys[1] => Song.songs.at(_) => _.current;
-	Song.cursor_(Song.sections - 2);
+	var gain;
 	g = Group.after(s.defaultGroup);
 	gain = {
 		In.ar(0,2)
@@ -44,46 +60,37 @@ fork{
 		* Env( [ 4.dbamp, 4.dbamp, 1 ], [ Song.durTillEnd + Song.preroll + s.latency, 0.5 ] ).kr(0,gate:\gate.kr(1))
 		=> ReplaceOut.ar(0, _)
 	}.play(s, target:g);
-	Song.play;
-	Song.durTillEnd + Song.preroll + s.latency => _.wait;
-	// gain.release(1);
+
+	Trek.playTransition(1, -2, {
 	2.wait;
 	(instrument:\cymbalsDS, att:2.5).play;
-	1.wait;
-
-	Trek.keys[2] => Song.songs.at(_) => _.current;
-	Song.cursor_(0);
-	Song.play
-}
-)
-( // 2 to 3
-var gain;
-fork{
-	// Trek.loadSongs([3]);
-	// Trek.loadSongs( [2, 3] );
-	Trek.playSong(2, -1).wait;
-	Trek.editFile(3);
-	a = Trek.playSong(3, 1, true); //needToCall "makeScroll" on the song!!
-	g = Group.after(s.defaultGroup);
-	gain = {
-		In.ar(0,2)
-		* Env( [ 4.dbamp, 4.dbamp, 1 ], [ Song.durTillEnd + Song.preroll + s.latency, 0.5 ] ).kr(0)
-		=> ReplaceOut.ar(0, _)
-	}.play(s, target:g);
-	a.wait;
-}
-)
-( //3 to 4
-	fork{
-		// Trek.loadSongs([4])
-		Trek.playSong(3, -1).wait;
-		// Trek.editFile(4);
-	// 1.wait;
-	(instrument:\cymbalsDS, att:2.5).play;
-	1.wait;
-		Trek.playSong(4, 1); //needToCall "makeScroll" on the song!!
+	defer{ Stills.plotTitleCard("3") };
+	3
 	}
 )
+)
+( // 2 to 3
+	Trek.playTransition(2, -2, 
+		func: {
+			var gain = {
+				In.ar(0,2)
+				* Env( [ 0, 6, 6, 0 ].dbamp, [ 2, Song.songs.at(Trek.keys[3]).durTillEnd + Song.preroll + s.latency - 2, 0.5 ] ).kr(0)
+				=> ReplaceOut.ar(0, _)
+			}.play(s, target:Trek.transitionGroup);
+			0
+		}, 
+		trimEnd: 1, 
+		lag: -1.3
+	)
+)
+( //3 to 4
+	Trek.playTransition(3, -1, func: {
+	(instrument:\cymbalsDS, att:2.5).play;
+	1;
+	}, trimStart: 1, trimEnd:0)
+)
+Trek.loadSongs([2, 3, 4])
+Trek.playRange(2, -2, 3)
 (
  //4to5
 	fork{
@@ -182,16 +189,6 @@ Trek.transitionGroup.release;
 		1.wait;
 		Trek.playSong(13); //needToCall "makeScroll" on the song!!
 	}
-)
-(
-~transition = {|num sections func skip|
-	Trek.transitions.put(num, func);
-	fork{
-		Trek.playSong(num, sections) - 0.0 => _.wait;
-		func.value ? 0 => _.debug("waiting")=>_.wait;
-		Trek.playSong(num + 1, skip? 0); //needToCall "makeScroll" on the song!!
-	}
-}
 )
 ~transition.(12, -1, { 2 })
 ~transition.(13, -1, { 20 })

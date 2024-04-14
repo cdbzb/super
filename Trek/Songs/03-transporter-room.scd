@@ -1793,10 +1793,11 @@ P.still(\sargonStandReady, timecode: 825.114.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			fadeIn: b.parse([4]).sum,
-			text: ["Please stand ready","I will operate"],
+			text: ["Please stand", "ready"],
 		).sequenceText2(
-				b.parse([9]), [ 
-				["your","controls"],
+				b.parse([4, 5]), [ 
+					["I will", "operate"],
+					["your","controls"],
 				],
 		)
 });

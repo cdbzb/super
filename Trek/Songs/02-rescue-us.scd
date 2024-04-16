@@ -121,7 +121,7 @@ P(\bassline, music: { |p b e|
 		out: Effect.bus({|i| i.tanh.tanh => Pan2.ar(_,0) })
 	].pp
 });
-Song.guitar = AAS_Strum();
+Trek.strum;
 P(\keys, music: { |p b e|
 	[
 		freq: [[3, 5], [2, 5], 3, 1, [2, 5], 3	 ].df(\a).q,
@@ -131,19 +131,19 @@ P(\keys, music: { |p b e|
 	].pp
 });
 P.tune();
-P(\guitar, music: { |p b e|
-	p.guitar.setPlayMode(\strum );
-	p.guitar.controller.set('Global: Volume',0.4);
+P(\strum1, music: { |p b e|
+	p.strum1.setPlayMode(\strum );
+	p.strum1.controller.set('Global: Volume',0.4);
 	[
 		type: \strum,
-		instance: p.guitar,
+		instance: p.strum1,
 		freq: [\r] ++ [ 1, 5 ].bubble ++ [2, 4, 6].bubble => _.df(\a) => _.q, 
 		dur: "e qqq qqq".asBeats.warpTo( e.tempoMap ).q,
 		legato:1,
 	].pp ;
 	[
 		type: \strum,
-		instance: p.guitar,
+		instance: p.strum1,
 		switch: [\d, \down, \d].q,
 		legato:1,
 		// dur: 10
@@ -1931,19 +1931,19 @@ params: {|p b| [
 	}
 });
 Song.setTempoMap(\unusual,"q %x x x x x% e ee e e e e e e x xe x xe e e x xq".rhythm);
-// Song.guitar = AAS_Strum();
+// Song.strum1 = AAS_Strum();
 P(\strum, music: { |p b e|
-	p.guitar.setPlayMode(\strum );
+	p.strum1.setPlayMode(\strum );
 	[
 		type: \strum,
-		instance: p.guitar,
+		instance: p.strum1,
 		freq: [ [1,3], [-6,1],[-4, -6],[2,4],[5, 7] ].df(\c).q,
 		dur: b.parse([6,3,4,[ 1,1,1,1,1/3 ],[2/3,1,1,1,1],4]).q,
 		legato:1
 	].pp ;
 	[
 		type: \strum,
-		instance: p.guitar,
+		instance: p.strum1,
 		switch: [ \down, \muffleD, \d, \d, \d, \d ].q,
 		lag: [0,0.1,0,0,0,0].q,
 		legato:1,

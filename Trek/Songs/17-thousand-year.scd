@@ -1115,9 +1115,9 @@ P(\click, music: { |p b e|
 		mask: [\r,\r,\r,1,1,1,1,1,1,1,1,1,1,1].q
 	].pp
 });
-Song.guitar = AAS_Strum();
-P(\guitar, music: { |p b e|
-	\strum => Song.guitar.setPlayMode( _ ) ;
+Trek.strum;
+P(\strum1, music: { |p b e|
+	\strum => Song.strum1.setPlayMode( _ ) ;
 	[
 		midinote: [\r, 1, 4, 5, 4, 1 ].dm('c#',4).q ,
 		dur: "qqq qqq q qqq q qq".asBeats.warpTo( e.tempoMap ).q,
@@ -1133,9 +1133,8 @@ P(\guitar, music: { |p b e|
 	<> (
 		// \out: Effect.bus(FreeVerb.ar(_,0.4,1)),
 		type: \strum,
-		instance: p.guitar
+		instance: p.strum1
 	) => _.play;
-
 });
 P.still(\embrace,timecode:3704.8.seconds,music:{|p b e|
 	e.still.value(

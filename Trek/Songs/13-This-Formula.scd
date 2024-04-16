@@ -191,7 +191,7 @@ P(\chank, music: { |p b e|
 		instrument: \defaultPiano,
 		dur: "qq qq qq qq".asBeats.warpTo( e.tempoMap ).q,
 		// type: \strum,
-		// instance: p.guitar,
+		// instance: p.strum1,
 
 		out:  out
 	].pp;
@@ -200,14 +200,14 @@ P(\chank, music: { |p b e|
 		instrument: \defaultPiano,
 		dur: "qq qq qq qq".asBeats.warpTo( e.tempoMap.quantizeDft ).q,
 		type: \strum,
-		instance: p.guitar,
+		instance: p.strum1,
 
 		out:  out
 	].pp;
 	[
 		type: \strum,
 		rest: [\r,1].q(inf),
-		instance: p.guitar,
+		instance: p.strum1,
 		dur: "q q q q q q q q".asBeats.warpTo( e.tempoMap.quantizeDft ).q,
 		lag: 0.01,
 		// switch:\muted,
@@ -217,8 +217,8 @@ P(\chank, music: { |p b e|
 	].pp
 
 });
-Song.guitar = ~guitar ? AAS_Strum(); ~guitar = Song.guitar;
-Song.guitar.setPlayMode(\strum);
+Trek.strum;
+Song.strum1.setPlayMode(\strum);
 P(\bass,'this formula',music: {|p b e|
 		[ 
 			freq: [1,-7,-6,-5].collect{|i x| i.dup([2,3,2,2][x])}.flat
@@ -427,7 +427,7 @@ P(\chank, music: { |p b e|
 		dur: "q q q q q q q q q q ".asBeats.warpTo( tempoMap ++ p.tempoMap[e.start + 1] ).q,
 		// dur: 0.3,
 		rest: [1,\r, ].q(inf),
-		// instance: p.guitar,
+		// instance: p.strum1,
 
 		out:  out
 	].p.trace.play;
@@ -435,7 +435,7 @@ P(\chank, music: { |p b e|
 		type: \strum,
 		freq: [[6, 11, 4], [6, 11, 14],[15, 11, 14],[ 15, 11, 14], [14, 5, 11], [4, 5, 11],[3, 5, 12], [3, 5, 13]].df(\d,4).q,
 		// rest: [\r,1].q(inf),
-		instance: p.guitar,
+		instance: p.strum1,
 		dur: "q q q q  q q q q".asBeats.warpTo( tempoMap ).q,
 		// rest: [\r, 1].q,
 		lag: [0, 0,0,-0.06,0,0,0,0].q,
@@ -447,7 +447,7 @@ P(\chank, music: { |p b e|
 	[
 		type: \strum,
 		rest: [\r,1].q(inf),
-		instance: p.guitar,
+		instance: p.strum1,
 		dur: "q q q q  q q q q".asBeats.warpTo( tempoMap ).q,
 		lag: [0, 0,0,-0.06,0,0,0,0].q + 0.01,
 		rest: [\r, 1].q(inf),
@@ -472,7 +472,7 @@ P(\chank, music: { |p b e|
 		dur: "q q q q q q q q q q ".asBeats.warpTo( tempoMap  ).q(2),
 		// dur: 0.3,
 		rest: [1,\r, 1, 1, 1 ].q(inf),
-		// instance: p.guitar,
+		// instance: p.strum1,
 
 		out:  out
 	].p.trace.play;
@@ -480,7 +480,7 @@ P(\chank, music: { |p b e|
 		type: \strum,
 		freq: [[1, 3, 7],[1, 3, 6],[2, 5, 11],[2, 5, 7], ].df(\d,4).q,
 		// rest: [\r,1].q(inf),
-		instance: p.guitar,
+		instance: p.strum1,
 		dur: "q q q q  q q q q".asBeats.warpTo( tempoMap ).q,
 		// rest: [\r, 1].q,
 		lag: [0, 0,0,-0.06,0,0,0,0].q,
@@ -492,7 +492,7 @@ P(\chank, music: { |p b e|
 	[
 		type: \strum,
 		rest: [\r,1].q(inf),
-		instance: p.guitar,
+		instance: p.strum1,
 		dur: "q q q q  q q q q".asBeats.warpTo( tempoMap ++ p.tempoMap[e.start+1] ).q,
 		lag: [0, 0,0,-0.06,0,0,0,0].q + 0.01,
 		rest: [\r, 1].q(inf),
@@ -578,7 +578,7 @@ P(\chank, music: { |p b e|
 		instrument: \defaultPiano,
 		dur: " q q q q ".asBeats.warpTo( e.tempoMap ).q,
 		rest: [1,\r, 1, 1 ].q(inf),
-		instance: p.guitar,
+		instance: p.strum1,
 
 		out:  out
 	].pp;
@@ -586,7 +586,7 @@ P(\chank, music: { |p b e|
 		type: \strum,
 		freq: [[-6,3,7],[-6,3,6],[2,5,11],[2,5,7]].df(\d,4).q,
 		rest: [\r,1].q(inf),
-		instance: p.guitar,
+		instance: p.strum1,
 		dur: "q q q q  ".asBeats.warpTo( e.tempoMap ).q,
 		rest: [\r, 1].q(2),
 		lag: [0, 0,0,-0.06,0,0,0,0].q,
@@ -597,7 +597,7 @@ P(\chank, music: { |p b e|
 	[
 		type: \strum,
 		rest: [\r,1].q(inf),
-		instance: p.guitar,
+		instance: p.strum1,
 		dur: "q q q q ".asBeats.warpTo( e.tempoMap ).q,
 		rest: [\r, 1].q(2),
 		lag: 0.01,
@@ -619,7 +619,7 @@ P(\chank, music: { |p b e|
 		dur: "h h h h ".asBeats.warpTo( tempoMap  ).q,
 		// dur: 0.3,
 		// rest: [1,\r, 1, 1, 1 ].q(inf),
-		// instance: p.guitar,
+		// instance: p.strum1,
 
 		out:  out
 	].p.trace.play;

@@ -30,9 +30,9 @@ P(\chord, music: { |p b e|
 });
 P.still(\kirk, timecode: 2314.1.seconds, music: { |p b e|
 			e.still.( 
-				wait: b.sum + e.bNext[0],
-				fade:9,
-				fadeIn: b.sum;
+				wait: b.sum + e.bNext.sum + 2,
+				fade:11,
+				fadeIn: b.sum + e.bNext.sum;
 			).sequenceText2(
 				b.sum, [ 
 				["",""],
@@ -160,12 +160,12 @@ P.synthVs(role: \kirk, take: [\lead, \double],
 P.tune(_ <>(instrument:\harp, amp:0.02));
 P(\boomBass,start:\discovered,music:(note:0,octave:3,amp:0.5,dur:Song.secDur[3]));
 ["had to.. do you wish that the first","c4 b3 g#3 e b g# a b"].addLine;//4
-P.still(\kirkPoint,syl: 1, timecode: 2317.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
-	)
-});
+// P.still(\kirkPoint,syl: 1, timecode: 2317.seconds, music: { |p b e|
+// 	 e.still.( 
+// 		wait: b.sum,
+// 		text: ["",""],
+// 	)
+// });
 P.still(\clear, syl: 1, timecode: 0.seconds, music: { |p b e|
 	 var i = e.still.( 
 		wait: b.drop(1).sum,
@@ -412,8 +412,8 @@ Pmono(\pluckDVerb,
 ["star (boom boom) ","b4"].addLine;//9
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
-		text: ["star",""],
+		wait: b.sum + e.bNext[..1].sum,
+		text: ["star?","that's like"],
 	)
 });
 P(\cymbal, music: { |p b e|
@@ -468,6 +468,7 @@ P(\highchord,start:'star',music:(
 P.still(\kirkTwoHands, timecode: 2326.1.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
+		fadeIn: 3,
 		text: ["",""],
 		fade:5
 	)
@@ -475,23 +476,19 @@ P.still(\kirkTwoHands, timecode: 2326.1.seconds, music: { |p b e|
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["that's like","saying you"],
-		onTop: true
+		// onTop: true,  
+		text:[""]
+	).sequenceText2(
+			b.parse([2]), [ 
+		["saying","you"],
+			],
 	)
 });
 P.tune(\saying);
-P.synthV(role: \kirk, take:\lead, filter: (midinote: _ - 12),  params: {|p b| [
-	lyrics: "thats like saying + you",
+P.synthVs(role: \kirk, take:[ \lead, \double ], pbind: Song.enlarge2(7), filter: (midinote: _ - (12.dup(5) ++ 0.dup(11)).flat ),  params: {|p b| [
+	lyrics: "thats like saying + you wish that you still operated + + + with scalpels +",
 	pitchExpression: 1,
-	pitchTake:1
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
-});
-P.double(role:\kirk, take: \lead, params: {|p b| [
-	
+	pitchTake:[ 1, 3 ]
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -523,23 +520,6 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 			],
 	)
 });
-P.synthV(role: \kirk, take:\lead, prepend:true, params: {|p b| [
-	lyrics: "wish that you still operated + + + with",
-	pitchTake: 1,
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
-});
-P.double(role: \kirk, take: \lead, params: {|p b| [
-	
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
-});
 [ "scalpels and sewed your patients up with",[3,2,1,2,3,4.5,2].dm(\e)++[11,6].dm(root:0) ].addLine;//12
 P.still(\clear,timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
@@ -547,17 +527,10 @@ P.still(\clear,timecode: 0.seconds, music: { |p b e|
 		text: ["scalpels and sewed your","patients up with"],
 	)
 });
-P.synthV(role: \kirk, take: \lead, params: {|p b| [
-	lyrics: "scalpels + and sowed your patients + up with",
-	pitchTake: 1
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
-});
-P.double(role: \kirk,take: \lead, params: {|p b| [
-	
+P.synthVs(role: \kirk, take: [ \lead, \double ], params: {|p b| [
+	lyrics: "r r and sowed your patients + up with",
+	legato: [ [1, 1, 1, 1, 1, 1, 1, 1, 0.9, ] ],
+	pitchTake: [ 1, 3 ]
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -701,6 +674,7 @@ P(\bell,start:'grandfather',syl:2,music:(
 P.still(\kirkCommand,syl:0, timecode: 2348.25.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.drop(1).sum,
+		fadeIn:0.5,
 			text: ["I'm",""],
 		fade:10
 	).sequenceText2(

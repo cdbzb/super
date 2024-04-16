@@ -1,6 +1,6 @@
 Trek {
-	classvar <>cast, <path, <>presets, <keys, <>synful1, <>synful2;
-	classvar <condVar, <>transitions, transitionGroup;
+	classvar <>cast, <path, <>presets, <keys, <>synful1, <>synful2, <>strum1, <>strum2, <>piano;
+	classvar <condVar, <>transitions, transitionGroup, <>faders;
 	*initClass {
 		path = this.filenameSymbol.asString.dirname.dirname +/+ "/Songs";
 		cast = try{ Object.readArchive(path +/+ "trek_cast") } ? ();
@@ -33,6 +33,7 @@ Trek {
 		];
 		ServerTree.add({transitionGroup = Group.after(Server.default.defaultGroup).register});
 		transitions = keys.collect{ () };
+		faders = nil ! keys.size
 		// CmdPeriod.add({transitionGroup = Group.after(Server.default.defaultGroup).register});
 	}
 	*save {
@@ -56,7 +57,7 @@ Trek {
 	*allTheSongs {
 		^this.path +/+ "*.scd" 
 		=> _.pathMatch 
-		=>_.select{|i| "[0-9]+".matchRegexp(i) }
+		=> _.select{|i| "[0-9]+".matchRegexp(i) }
 	}
 	*song{|i|
 		i.isInteger.if{
@@ -109,17 +110,90 @@ Trek {
 		}
 	}
 
-	*playRange { |num cursor numSections| 
+	*setTransition { |num cursor func trimStart=0 trimEnd=0 lag=0 play=false| // lag is before transition
+		func.notNil.if{ transitions[num].put(\func, func) };
+		trimStart.notNil.if{ transitions[num + 1].put(\start, trimStart) };
+		trimEnd.notNil.if{ transitions[num].put(\trimEnd, trimEnd) };
+		lag.notNil.if{ transitions[num + 1].put(\lag, lag) };
+		^Message(Trek,\playRange,[num, cursor, 2])
+		// ^[num, cursor] // => Trek.playRange(*_)
+	}
+
+	*play {|array|
+		this.playRange(*array)
+	}
+
+	*playRange { |num cursor numSections=1| 
+		var needLoad;
+			needLoad = (num..(num + numSections)).select{|i| Song.songs[Trek.keys[i]].isNil};
+			needLoad = needLoad.collect{|i| (i==10).if{11}{i}}.removeDuplicates;
+			( needLoad.size!=0 ).if{ ^this.loadSongs(needLoad) };
 		fork{
+			transitionGroup.release;Server.default.sync;
+			faders[num].();
 			numSections.do{|i| 
 				var section = num + i;
 				var start = (i == 0).if{ cursor }{ transitions[section].start};
-				this.playSong(section, start, trimEnd: transitions[section].trimEnd ? 0) + (transitions[section+1].lag ? 0) => _.wait;
-				transitions[section].func.() ? 0 => _.wait
+				(section != 11).if{
+					this.playSong(section, start, trimEnd: transitions[section].trimEnd ? 0) + (transitions[section+1].lag ? 0) => _.wait;
+					transitions[section].func.() ? 0 => _.wait
+				}
 			}
 		}
 	}
 
+	*pf {
+		( piano.isNil or: try{ piano.syn.isPlaying.not } ).if {
+			piano = PF();
+			Song.currentSong.piano = piano;
+		}{
+			Song.currentSong.piano = piano;
+		};
+		Song.resources.condition=Condition();
+		Song.resources.infrastructure = {
+			FunctionList.new.array_([
+				( currentEnvironment.at(\piano).isNil or: try{ currentEnvironment.at(\piano).syn.isPlaying.not } ).if
+				(Trek.piano.isNil or: try{ Trek.piano.syn.isPlaying.not }).if {
+					Song.currentSong.piano = Trek.piano = PF();
+				},
+				{ fork {
+					while( {
+						Trek.piano.controller.loaded.not;
+					},{0.05.wait});
+					Song.resources.condition.test_(true).signal
+				}}
+			]).value
+		}.inEnvir;
+
+	}
+	*strum {
+		( strum1.isNil or: try{ strum1.syn.isPlaying.not } ).if {
+			strum1 = AAS_Strum();
+			strum2 = AAS_Strum();
+			Song.currentSong.strum1 = strum1;
+			Song.currentSong.strum2 = strum2;
+		}{
+			Song.currentSong.strum1 = strum1;
+			Song.currentSong.strum2 = strum2;
+		};
+		Song.resources.condition=Condition();
+		Song.resources.infrastructure = {
+			FunctionList.new.array_([
+				( currentEnvironment.at(\strum1).isNil or: try{ currentEnvironment.at(\strum1).syn.isPlaying.not } ).if
+				(Trek.strum1.isNil or: try{ Trek.strum1.syn.isPlaying.not }).if {
+					Song.currentSong.strum1 = Trek.strum1 = AAS_Strum();
+					Song.currentSong.strum2 = Trek.strum2 = AAS_Strum();
+				},
+				{ fork {
+					while( {
+						Trek.strum2.controller.loaded.not;
+					},{0.05.wait});
+					Song.resources.condition.test_(true).signal
+				}}
+			]).value
+		}.inEnvir;
+
+	}
 	*synful {
 		( synful1.isNil or: try{ synful1.syn.isPlaying.not } ).if {
 			synful1 = Synful();

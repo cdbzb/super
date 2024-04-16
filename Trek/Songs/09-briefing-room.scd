@@ -7,8 +7,7 @@
 
 	"~/tank/super/Trek/Songs/boilerplate.scd".standardizePath.load;
 
-	Song.guitar= ~guitar ? AAS_Strum();
-	~guitar = Song.guitar;
+	Trek.strum;
 	{
 ( Song.synthVGlobalVol = -3.dbamp;
 	Song.synthVReverbLen = 1500;
@@ -1101,9 +1100,9 @@ P.synthVs(role: \spock, take:[ nil, 3 ], params: {|p b| [
 	}.play
 });
 P(\moreChords, music: { |p b e|
-	Song.guitar.setPlayMode(\strum);
+	Song.strum1.setPlayMode(\strum);
 	fork{ "eqqqq".asBeats.warpTo( e.tempoMap ).unbubble.wait;
-	Song.guitar.setPlayMode(\pick);
+	Song.strum1.setPlayMode(\pick);
 };
 
 	[
@@ -1122,7 +1121,7 @@ P(\moreChords, music: { |p b e|
 			* 2.dbamp
 		}, inputChannels:2),
 		type: \strum,
-		instance: p.guitar
+		instance: p.strum1
 	) => _.play
 });
 P(\bass, music: { |p b e|
@@ -1977,7 +1976,7 @@ P(\oldArr,start:\willing,music:{|p b e|
 	//b=Pdef(\m,Pfxb(a,\phaserr,\fb,-0.99));
 	c=Pseq([a,b],inf);
 
-				// 'guitar-ish' //		
+				// 'strum1-ish' //		
 
 				//~synthsLoaded ?? {"~/tank/super/song-Synthdefs.scd".standardizePath.load};
 
@@ -2017,7 +2016,7 @@ Ptpar([ //
 					0,Pdef(\q),
 					0,c,
 					0,Pdef(\f),
-					0,Pwrand([Pdef(\a),(note:Rest,dur:8)],[0.7,0.3],inf), //guitar
+					0,Pwrand([Pdef(\a),(note:Rest,dur:8)],[0.7,0.3],inf), //strum1
 					//Pseq([(note:Rest,dur:7+16),Pdef(\boodoo)]),
 				]
 			)

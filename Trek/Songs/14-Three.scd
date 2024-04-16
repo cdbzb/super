@@ -1,35 +1,37 @@
 (
 {
 	//Song.dursFile_("/Users/michael/tank/super/theExtreme_Sep18");
-	var guitar,guitar2,piano;
+	var strum1,strum2,piano;
 
 	//re-connect if vst exists
-	try{ ( Song.currentSong == \three ).not.if{ 
-		guitar = Song.guitar;
-		guitar2 = Song.guitar2;
-		piano = Song.piano;
-	} };
+	// try{ ( Song.currentSong == \three ).not.if{ 
+	// 	strum1 = Song.strum1;
+	// 	strum2 = Song.strum2;
+	// 	piano = Song.piano;
+	// } };
 
 	Song( \three, [] ).current;
 
 	Song.resources.condition=Condition.new;
 
 	// initialize if none
-	guitar.isNil.if{Song.guitar=AAS_Strum()}{Song.guitar=guitar}; 
-	guitar2.isNil.if{Song.guitar2=AAS_Strum()}{Song.guitar2=guitar2};
-	piano.isNil.if{Song.piano = PF()};
+	// strum1.isNil.if{Song.strum1=AAS_Strum()}{Song.strum1=strum1}; 
+	// strum2.isNil.if{Song.strum2=AAS_Strum()}{Song.strum2=strum2};
+	Trek.strum;
+	Trek.pf;
+	// piano.isNil.if{Song.piano = PF()};
 
-	Song.resources.vstis = [Song.guitar, Song.guitar2, Song.piano];
+	Song.resources.vstis = [Song.strum1, Song.strum2, Song.piano];
 
 	Song.resources.infrastructure=FunctionList.new([
 		{
 			fork {
-				try{ Song.guitar.condition.wait{Song.guitar.controller.loaded} };
-				try{ Song.guitar2.condition.wait{Song.guitar2.controller.loaded} };
-				try{ Song.piano.condition.wait{Song.piano.controller.loaded} };
+				// try{ Song.strum1.condition.wait{Song.strum1.controller.loaded} };
+				// try{ Song.strum2.condition.wait{Song.strum2.controller.loaded} };
+				// try{ Song.piano.condition.wait{Song.piano.controller.loaded} };
 				Song.resources.condition.test_(true).signal;
 
-				Song.guitar.setPlayMode(\strum);
+				Song.strum1.setPlayMode(\strum);
 				Song.allNotesOff;
 				0.05.wait;
 			}
@@ -50,9 +52,9 @@
 
 );
 
-//Song.guitar.node[1]=\filter->{|in|PlateReverb.ar(in,mix:0.5)};
-//Song.guitar.node[2]=\filter->{|in|Phaser2.ar(in,rate:0.1,mix:0.5).distort(0.95)};
-//Song.guitar.node.play(vol:1)
+//Song.strum1.node[1]=\filter->{|in|PlateReverb.ar(in,mix:0.5)};
+//Song.strum1.node[2]=\filter->{|in|Phaser2.ar(in,rate:0.1,mix:0.5).distort(0.95)};
+//Song.strum1.node.play(vol:1)
 // Stills.new("/Users/michael/tank/Trek/video for stills etc/media/return to tomorrow.mov").current;
 ~stills = Stills.new.current;
 ["r three alien minds","d3 f5 f e e e"].addLine; //0Captain Kirk
@@ -127,7 +129,7 @@ P.still(\space, timecode: 3244.seconds, music: { |p b e|
 );
 //
 ~bass0quarters=Song.parse(0,[ [1,1],[1,1,1],1 ]);
-Song.guitarFx={ |b|
+Song.strum1Fx={ |b|
 	var e = Effect( { |i|  
 		PlateReverb.ar(i,mix:0.5,decayTime:0.5)  
 		=> Phaser2.ar(_,rate:0.1).distort(0.95) *0.3 
@@ -137,7 +139,7 @@ Song.guitarFx={ |b|
 	e
 };
 
-Song.guitarFx0= Song.guitarFx.(Song.durs[0].list.sum + 5);
+Song.strum1Fx0= Song.strum1Fx.(Song.durs[0].list.sum + 5);
 P.still(\enterprise, timecode: 3246.9.seconds, music: { |p b e|
 	e.still.( 
 		wait: b.sum,
@@ -145,7 +147,7 @@ P.still(\enterprise, timecode: 3246.9.seconds, music: { |p b e|
 	)
 });
 P(\guit0,start:\minds,music: { |p b e|
-	var out = Song.guitarFx0.synth.run(true);
+	var out = Song.strum1Fx0.synth.run(true);
 	[
 		legato:0.95,
 		midinote: [ [2,4],1,-5 ].dm().q,
@@ -160,7 +162,7 @@ P(\guit0,start:\minds,music: { |p b e|
 		),
 		amp:Pseq([4,3,3]/10,3),
 	].p 
-	<> (out: p.guitarFx.(b).bus.index, type:\strum, instance:p.guitar)
+	<> (out: p.strum1Fx.(b).bus.index, type:\strum, instance:p.strum1)
 	=> _.play
 });
 P(\lick,start:0,music:[ 
@@ -209,8 +211,8 @@ P(\bass0,start:0,music: {
 	});
 	//Song.gfx1.synth.run(false);
 	P(\guit1,start:1,music: { |p b e|
-		var out = Song.guitarFx.(Song.durs[1].list.sum+5);
-		Song.guitar.setPlayMode(\strum);
+		var out = Song.strum1Fx.(Song.durs[1].list.sum+5);
+		Song.strum1.setPlayMode(\strum);
 		[
 			degree: [5,[4,6,8],[3,5,8],[2,4],[2.1,4.1,6,8],[3,6,7],[3,5,7]].q - 1,
 			octave: 4,
@@ -233,8 +235,8 @@ P(\bass0,start:0,music: {
 		].p 
 		<> (\out:
 			out.bus.index
-			//p.guitarFx.(b ++ [5])
-			, type:\strum, instance:p.guitar) 
+			//p.strum1Fx.(b ++ [5])
+			, type:\strum, instance:p.strum1) 
 			=> _.play
 		});
 		P(\connectorBass,start:1,music: //		
@@ -366,14 +368,14 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 			{
 				(
 					type:\vst_set,
-					instance:Song.guitar2,
+					instance:Song.strum2,
 					params:['Play Mode: Play Mode','Effect 1: On'],
 					'Play Mode: Play Mode':0,'Effect 1: On':0
 				)//.play
 			}
 		);
 		P(\slide,start:3,syl:4,music: { |p b e|
-			Song.guitar.setPlayMode(\pick);
+			Song.strum1.setPlayMode(\pick);
 			[
 				type:\strum,
 				note:Pseries(0,1,6)+[0,4],
@@ -381,7 +383,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 				dur:Pseq([(1.1*0.882),0.1,0.1,0.1,0.1,1]*0.68),
 				//dur:[b[0..1].sum]++((b[2]/7)!4)++2=>_.flat=>_.q,
 				legato:Pseq([1.5,1.5,1.5,1.5,0.9,2]),
-				instance:Song.guitar,
+				instance:Song.strum1,
 				out:Effect( { |i| 
 					var env = Env.linen(0.5,b.drop(1).sum+3,1).kr(2,gate:1);
 					SmoothClipQ.ar(i*(env*5+1),lo:-1+( env*0.9 ),hi:1-( env*0.9 )) 
@@ -389,7 +391,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 				} ).bus.index
 			].pp;
 		}) ;  
-		P(\guitar24,start:3,syl:4,
+		P(\strum24,start:3,syl:4,
 			music: { Pmono(
 				//\degree,Pseq([5,5,5,5,4,4,4,4,8,8,8,8,6,6,6,6],inf)+[0,5]-21,
 				\pluckD,
@@ -447,19 +449,19 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 				//lag:0.19,
 				note:[-7,[2,5],-5].q,
 				type:\strum,
-				instance:Song.guitar2,
+				instance:Song.strum2,
 				dur:Pseq([2,2,4]*~quarters4.sum/4),
 				legato:0.94
 			].p;
 			var strums=[
 
 				type:\strum, switch:Pseq([Rest(),\down,\up])++Pseq([\down,\down,[Rest(),\up].choose],3),
-				instance:Song.guitar2,
+				instance:Song.strum2,
 				dur:[2,1,1]/2 => _.q(4) * ~quarters4.sum/4,
 				amp:0.05
 			].p;
 
-			Song.guitar2.setPlayMode(\strum);
+			Song.strum2.setPlayMode(\strum);
 			Ppar([roots,strums]).play;
 		}
 
@@ -541,10 +543,10 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 			* Env([4,2],[b.parse([8,4])]).kr(gate:1).dbamp
 		}.play
 	} });
-	P(\guitar2h5,start:6,music: {|p b e|
+	P(\strum2h5,start:6,music: {|p b e|
 		var out;
-		p.guitar2.setPlayMode(\pick);
-		p.guitar2.controller.synth.set(\out,
+		p.strum2.setPlayMode(\pick);
+		p.strum2.controller.synth.set(\out,
 			out = Effect( { |i| 
 				SmoothClipQ.ar(i*8,lo:-0.1,hi:0.1) 
 				*0.5
@@ -556,7 +558,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 				legato:0.95,
 				root:5,
 				octave:3,
-				type:\strum,instance:p.guitar2,
+				type:\strum,instance:p.strum2,
 
 			].p += 
 
@@ -568,27 +570,27 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 				root:5,
 				octave:3,
 				type:\strum,
-				instance:Song.guitar2,
+				instance:Song.strum2,
 			].p
 			<> (out:out) =>_.play; 
 		}); 
-		P(\guitar2h6II,start:6,syl:7,music: {|p b e|
+		P(\strum2h6II,start:6,syl:7,music: {|p b e|
 			[ 
 				degree:Pseq([[4, 6.1, 2 ],4]-1),
 				dur: Pseq(~quarters6[2..3]) ,
 				legato:0.96,
 				root:5,
 				octave:3,
-				type:\strum,instance:Song.guitar2,
+				type:\strum,instance:Song.strum2,
 
 			].pp; }
 		); 
-		P(\guitar2h5Strum,start:6,syl:5,music:{|p b e|
-			p.guitar2.setPlayMode(\strum);
+		P(\strum2h5Strum,start:6,syl:5,music:{|p b e|
+			p.strum2.setPlayMode(\strum);
 			[ //		
 				//var b2s=[
 				type:\strum,
-				instance:Song.guitar2,
+				instance:Song.strum2,
 				switch:Pseq([\down, \up, \down,],3),
 				//dur:Pseq([1,1,2]/2,3),
 				dur:Pseq(Song.durs[6].list[6..7]++Song.durs[6].list[8..9].sum,3),

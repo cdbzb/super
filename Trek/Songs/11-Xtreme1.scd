@@ -1605,12 +1605,15 @@ P(\afterSoLongSketch,start:'very long',music: {|p b e|
 				out: Effect(PlateReverb.ar(_,mix:0.1),out:3).bus.index,
 				amp: 0.08,
 				group: p.transitionItems
-			] => {|i| i.p => Pset(\amp,0.04,_)=>_.play; i .ppm}
+			] => {|i| i.p => Pset(\amp,0.04,_)=>_.play; 
+			i.ppm
+		}
 			//m
 			;
 			[
 				degree:Pseq([1,-3]),
 				instrument:\reedy,
+				release:3,
 				dur:b.parse([6,5]).q,
 				out: Effect(PlateReverb.ar(_,mix:0.2),out:1).bus.index,
 				amp: 0.08,

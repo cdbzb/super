@@ -27,7 +27,7 @@ P(\chordsFirstHalp, music: { |p b e|
 		},inputChannels:4, out: 2)
 	].pp
 });
-P.still(\waliking, timecode: 1626.0.seconds, music: { |p b e|
+P.still(\clear, timecode: 1626.0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		fadeIn: 2,
@@ -218,19 +218,19 @@ P.tune( {|i|i <>
 	=> _.fin(6)
 }
 );
-Song.guitar = AAS_Strum();
+Trek.strum;
 P(\strums, music: { |p b e|
-	Song.guitar.setPlayMode(\pick);
+	Song.strum1.setPlayMode(\pick);
 	[
 		type: \strum,
-		instance:p.guitar, 
+		instance:p.strum1, 
 		switch: \down,
 		legato: 1,
 		dur: b.sum
 	].p;///p;
 	[
 		type: \strum,
-		instance:p.guitar,
+		instance:p.strum1,
 		freq:[1,[1,11]].df('a-',3).q,
 		legato:1,
 		rest: MuteFirst(),
@@ -2367,7 +2367,7 @@ P.still(\entering,syl:5, timecode: 1903.8.seconds, music: { |p b e|
 });
 P.still(\onwar,syl:11, timecode: 1907.1.seconds, music: { |p b e|
 		 e.still.( 
-			wait: b.sum,
+			wait: b.sum + 3,
 			text: ["",""],
 		)
 });

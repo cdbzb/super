@@ -13,7 +13,7 @@
 //}.inEnvir;
 
 [ "Sargon and Thalassa are working...","r",[6]].addLine;
-Require("./boilerplate.scd");
+Require("/Users/michael/tank/super/Trek/Songs/boilerplate.scd");
 P.still(\hands, timecode: 3309.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,

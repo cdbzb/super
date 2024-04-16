@@ -1,32 +1,18 @@
 (
 { // line 380
-	var guitar,guitar2,piano;
-
-	//re-connect if vst exists
-	try{ ( Song.currentSong == \medical).not.if{ 
-		guitar = Song.guitar;
-		// guitar2 = Song.guitar2;
-		// piano = Song.piano;
-	} };
-
 	Song(\medical,[]).current;
 	Song.resources.condition=Condition.new;
 
-	// initialize if none
-	guitar.isNil.if{Song.guitar=AAS_Strum()}{Song.guitar=guitar}; 
-	// guitar2.isNil.if{Song.guitar2=AAS_Strum()}{Song.guitar2=guitar2};
-	// piano.isNil.if{Song.piano = PF()};
-
-	Song.resources.vstis = [Song.guitar, Song.guitar2, Song.piano];
+	Trek.strum;
 
 	Song.resources.infrastructure=FunctionList.new([
 		{
 			fork {
-				Song.guitar.condition.wait{Song.guitar.controller.loaded};
-				// Song.guitar2.condition.wait{Song.guitar2.controller.loaded};
+				Song.strum1.condition.wait{Song.strum1.controller.loaded};
+				// Song.strum2.condition.wait{Song.strum2.controller.loaded};
 				// Song.piano.condition.wait{Song.piano.controller.loaded};
 				Song.resources.condition.test_(true).signal;
-				Song.guitar.setPlayMode(\strum);
+				Song.strum1.setPlayMode(\strum);
 				Song.allNotesOff;
 				0.05.wait;
 			}
@@ -115,8 +101,8 @@
 			fade: Song.durTill(4)
 		);
 	});
-	P(\guitar, music: { |p b e|
-		\strum => Song.guitar.setPlayMode( _ ) ;
+	P(\strum1, music: { |p b e|
+		\strum => Song.strum1.setPlayMode( _ ) ;
 		[
 			midinote: [ [1,3], [2, 4.5] ].dm(\g,4,\minor, transpose: 6).q ,
 			dur: b.parse([6,1]).q,
@@ -131,7 +117,7 @@
 		<> (
 			\out: Effect.bus(FreeVerb.ar(_,0.4,1)),
 			type: \strum,
-			instance: p.guitar
+			instance: p.strum1
 		) => _.play;
 
 	});
@@ -222,13 +208,13 @@
 				b.parse(4).sum, ["but is captain Kirk","dead?"]
 			])
 		});
-		P(\guitar, music: { |p b e|
-			p.guitar.setPlayMode(\pick);
+		P(\strum1, music: { |p b e|
+			p.strum1.setPlayMode(\pick);
 			[
 				midinote: [2,3,-5,-3,-2,-1.5].dm(\d,4,\dorian,transpose: 6).q,
 				type: \strum,
 				legato:[0.9,0.9,1,1,1].q(inf),
-				instance: p.guitar,
+				instance: p.strum1,
 				dur:b.parse([1,1,1,5,2]) ++ 2 => _.q,
 				out: Effect.bus( 
 					{ |i| CrossoverDistortion.ar(i, amp:0.5, smooth:0.5, mul:0.1, add:0)

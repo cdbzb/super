@@ -4,7 +4,8 @@
 		// Stills("/Users/michael/tank/Trek/video for stills etc/media/return to tomorrow.mov").current;
 		Stills.new().current;
 		Song.resources.infrastructure=FunctionList.new.array_([]);
-		~syn1=Synful();
+		// Song.synful1=Synful();
+		Trek.synful;
 		Song.resources.infrastructure.addFunc({TempoClock.tempo_(1).postln});
 		Song.resources.condition=Condition.new;
 		Song.resources.infrastructure.addFunc({Song.resources.condition.test_(true)});
@@ -740,10 +741,10 @@ P(\trapsLungs,start:\Lungs,music: {|p b e|
 P(\tremoloSwell,start:\Lungs,music:
 		{
 
-			(type:\vst_midi,vst:~syn1.controller,midicmd:\allNotesOff).play;
-			~syn1.patch(\violas,\trem,0);
-			~syn1.syn.set(\out,~verbchannels=Effect(FreeVerb.ar(_,1,1),out:0,inputChannels:4).bus.index) ;
-			~syn1.expression(100,0);
+			(type:\vst_midi,vst:Song.synful1.controller,midicmd:\allNotesOff).play;
+			Song.synful1.patch(\violas,\trem,0);
+			Song.synful1.syn.set(\out,~verbchannels=Effect(FreeVerb.ar(_,1,1),out:0,inputChannels:4).bus.index) ;
+			Song.synful1.expression(100,0);
 			~stringChords=[12,10,2,14,20,20,10];
 			~stringChords=[12,0,2,4,0,0,0]-1;
 			//Pdefn(\swellChord,nil);
@@ -766,8 +767,8 @@ P(\tremoloSwell,start:\Lungs,music:
 			)
 		);
 		[
-			type:\vst_midi,vst:~syn1.controller,
-			//verb:{ ~syn1.setOut( ~verbchannels=Effect(FreeVerb.ar(_,1,1),out:0,inputChannels:4).bus.index) } ;
+			type:\vst_midi,vst:Song.synful1.controller,
+			//verb:{ Song.synful1.setOut( ~verbchannels=Effect(FreeVerb.ar(_,1,1),out:0,inputChannels:4).bus.index) } ;
 			//chords: [[5,7,11,15],[4,11,13,14]].stutter(8).q(16) ,
 			//chords: Pstep([[5,7,11,15],[4,11,13,14]],4)=>Pn(_,3),
 			chords: Pdefn(\swellChord),
@@ -778,7 +779,7 @@ P(\tremoloSwell,start:\Lungs,music:
 			dur:0.1,
 			legato:Pwhite(3,9,inf),
 			amp:0.2,
-			panning:Pfunc({~syn1.syn.set(\out,(4.rand+~verbchannels))})
+			panning:Pfunc({Song.synful1.syn.set(\out,(4.rand+~verbchannels))})
 
 		].p=>Pfin(290,_)
 		=>_.play;
@@ -800,15 +801,15 @@ P(\innerChord7,start:\Lungs,syl:3,music:
 );
 P(\innerChordLungsSyn,start:\Lungs,syl:3,music:
 	{
-		//		~syn1.setOut(0);
-		~syn1.patch(\horn,\none,8);
-		~syn1.expression(64,8);
+		//		Song.synful1.setOut(0);
+		Song.synful1.patch(\horn,\none,8);
+		Song.synful1.expression(64,8);
 
 		Song.currentSong.pbind[ \Lungs ]
 		//=>Pset(\freq, [1,3].df('f',octave:4,scale:\minor), _)
 		//	=>Pset(\dur,Song.durs[\Lungs]+[0,0,0,0,0,0,0,0,0,2].q,_)
 		=>Pset(\out,Pwhite(0,3),_)
-		=>Pbindf(_,\channel,8,\midinote,[1,3].dm('f',octave:4,scale:\minor ),\type,\vst_midi,\vst,~syn1.controller,\amp,0.1,\legato,3,\rel,5)
+		=>Pbindf(_,\channel,8,\midinote,[1,3].dm('f',octave:4,scale:\minor ),\type,\vst_midi,\vst,Song.synful1.controller,\amp,0.1,\legato,3,\rel,5)
 		=>_.drop(4)=>_.fin(6)=>_.trace=>_.play
 	}
 );
@@ -995,7 +996,7 @@ P(\blood,start:\pumping,syl:7,lag:-0.15,music:
 P(\fallingSwell,start:\pumping,syl:2,music:
 	{ Pdefn(\swellChord, [5,7,11,15].dm('c')-Pseg([0,25],10)) }
 );
-//~syn1.allNotesOff
+//Song.synful1.allNotesOff
 // "/Users/michael/tank/super/808-mod.scd".load;
 P(\bass,music: {|p b e|
 		[
@@ -1947,10 +1948,10 @@ P(\chordYouAnn,start:'nn Mulhall',music:
 				1/5)
 				//				* 4
 			}).bus.index;
-			~syn1.expression(127,0);
-			~syn1.setOut(verb);
+			Song.synful1.expression(127,0);
+			Song.synful1.setOut(verb);
 			(freq:[1,11].df('c',scale:\minor,octave:3),amp:[0.7,0.32],width:[5,10],instrument:\stringyy,dur:b.sum).play;
-			(dur:b.sum,type:\vst_midi,vst:~syn1.controller,strum:0.04,instrument:\tremoloSwell,midinote:[1,3,5,11].dm(\c,scale:\minor,octave:4)).play;
+			(dur:b.sum,type:\vst_midi,vst:Song.synful1.controller,strum:0.04,instrument:\tremoloSwell,midinote:[1,3,5,11].dm(\c,scale:\minor,octave:4)).play;
 			b.sum.postln;
 		}
 );
@@ -2006,7 +2007,7 @@ P(\sparkBassNote,start:'you --',music:
 			verb:{ ~effect.bus.index },
 			bass: { (freq:[1.5,11].df('c',scale:\minor,octave:3),amp:[0.7,0.32],width:[5,10],instrument:\stringyy,dur:b.sum).play.id } ,
 			tremolo:{ 
-				var synful=topEnvironment.use{~syn1};
+				var synful=topEnvironment.use{Song.synful1};
 				synful.setOut(~verb);
 				synful.expression(127,0);
 				(
@@ -2153,5 +2154,22 @@ P(\againFinalChord,syl:12,start:'live again',music:
 P(\finalBassNote,start:'live again',syl:12,music:
 		(note:2,octave:[3,4,3,2],amp:0.3,attack:0,instrument:\stringyy)
 );
+["transition","r r",[1, 3]].addLine;
 
+P.still(\walking,syl:0, timecode: 1626.0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum + 3,
+		fade: 4,
+		fadeIn: 2,
+		text: [""],
+	) 
+});
+P(\chord, syl:0, music: { |p b e|
+	(
+		instrument: [\stringyy, \wash ],
+		att: 3, rel:4,
+		freq: [1, 4, 5, 11, 13, 15].df(\g, \whole),
+		amp:0.07, out:(0..4)
+	).play
+});
 )

@@ -3,20 +3,20 @@
 	Stills().current;
 	Trek.cast.mccoy = \xuan;
 //Line 239 The three volunteers are lying on beds, with the spheres on tables beside them. 
-try{ Song.transitionGroup.free };
-try{ Song.fader.free };
+// try{ Song.transitionGroup.free };
+// try{ Song.fader.free };
 Song(\song,[]).current;
 
-Song.gain = -12.dbamp;
+// Song.gain = -12.dbamp;
 
-Song.gainControl = Bus.control(server:s, numChannels:2).set(Song.gain, 1);
+// Song.gainControl = Bus.control(server:s, numChannels:2).set(Song.gain, 1);
 
 // Song.gainControl.scope;
 
-Song.transitionGroup = Group.before(s.defaultGroup );
-Song.transitionItems = Group.head(Song.transitionGroup);
-Song.transitionFX = Group.tail(Song.transitionGroup);
-Song.gainGroup = Group.tail(Song.transitionGroup);
+// Song.transitionGroup = Group.before(s.defaultGroup );
+// Song.transitionItems = Group.head(Song.transitionGroup);
+// Song.transitionFX = Group.tail(Song.transitionGroup);
+// Song.gainGroup = Group.tail(Song.transitionGroup);
 
 Song.faderFunc = { |target|
 	target = target ? RootNode(s);
@@ -38,29 +38,29 @@ Song.faderFunc = { |target|
 	};
 };
 
-Song.fader.isPlaying.not.if{ Song.faderFunc.() };
+// Song.fader.isPlaying.not.if{ Song.faderFunc.() };
 
 Song.preroll = 0.5;
 
-Song.addLineFunc = { |sec|
-	case {sec <= 30}{
-		P(\gain, start:sec, lag: -0.21, music:{ |p b e| 
-			Song.gainControl.set(Song.gain, 1);
-			Song.fader.isPlaying.not.if{
-				Song.fader.free; Song.innerFader.free;
-				Song.faderFunc.()
-			};
-		})
-	}{sec == 31}{
-		P(\gain, start:sec, lag: 0, music:{ |p b e| 
-			Song.gainControl.set(1, Song.gain);
-			Song.fader.isPlaying.not.if{
-				Song.fader.free; Song.innerFader.free;
-				Song.faderFunc.()
-			};
-		})
-	}
-};
+// Song.addLineFunc = { |sec|
+// 	case {sec <= 30}{
+// 		P(\gain, start:sec, lag: -0.21, music:{ |p b e| 
+// 			Song.gainControl.set(Song.gain, 1);
+// 			Song.fader.isPlaying.not.if{
+// 				Song.fader.free; Song.innerFader.free;
+// 				Song.faderFunc.()
+// 			};
+// 		})
+// 	}{sec == 31}{
+// 		P(\gain, start:sec, lag: 0, music:{ |p b e| 
+// 			Song.gainControl.set(1, Song.gain);
+// 			Song.fader.isPlaying.not.if{
+// 				Song.fader.free; Song.innerFader.free;
+// 				Song.faderFunc.()
+// 			};
+// 		})
+// 	}
+// };
 
 Song.xtremeBassFX = (s.options.outDevice == "MacBook Pro Speakers").if{
 	{
@@ -112,7 +112,12 @@ P(\bassnote,   music:
 P.still(\wide, timecode: 2508.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
+		fade:3,
 		text: ["the extreme power","of the"],
+	).sequenceText2(
+			b.parse([7]), [ 
+			["",""],
+			],
 	)
 });
 Song.strum= {
@@ -1655,8 +1660,9 @@ P(\bowedKissing, lag: 0.0,music: { |p b e|
 		octave:[6,4],
 		dur:b++[2.5] => _.q,
 		legato:1,
-		group: p.transitionItems,
-		out: Effect.bus({|i| PlateReverb.ar(i,mix:0.5)  * EnvGen.cutoff(b.sum,10, curve: -2) * 2 * 2.dbamp },inputChannels:2, target: p.transitionFX),
+		// group: p.transitionItems,
+		group: Trek.transitionGroup,
+		out: Effect.bus({|i| PlateReverb.ar(i,mix:0.5)  * EnvGen.cutoff(b.sum,10, curve: -2) * 2 * 2.dbamp },inputChannels:2, target: Trek.transitionGroup),
 		mtranspose:Pseq([ [0,2,4,7],[0,3,5,7],[0,2,5,7],[0,2,4,7],[0,3,5,7],[0,4,6,7],[0,2,4,7],[0,3,5,7],[0,7] ].collect(_-7)),
 	].pp;
 });
@@ -1671,8 +1677,8 @@ P(\bassKissing, lag:0.0,start:'kissing',music: {|p b e|
 		root:-1,
 		mtranspose:[0,4,7],
 		dur:10,
-		group: Song.transitionItems,
-		out: Effect.bus({|i| PlateReverb.ar(i, mix:1) * 2 },target: p.transitionFX),
+		group:Trek.transitionGroup,
+		out: Effect.bus({|i| PlateReverb.ar(i, mix:1) * 2 },target: Trek.transitionGroup),
 	).play
 });	
 [ "final rest","f#4",[5] ].addLine; 

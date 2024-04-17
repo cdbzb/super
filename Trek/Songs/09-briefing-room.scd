@@ -1100,7 +1100,11 @@ P.synthVs(role: \spock, take:[ nil, 3 ], params: {|p b| [
 	}.play
 });
 P(\moreChords, music: { |p b e|
+	p.strum1.syn.run(true);
 	Song.strum1.setPlayMode(\strum);
+	fork{ b.sum + 2 => _.wait; 
+		p.strum1.syn.run(false)
+	};
 	fork{ "eqqqq".asBeats.warpTo( e.tempoMap ).unbubble.wait;
 	Song.strum1.setPlayMode(\pick);
 };

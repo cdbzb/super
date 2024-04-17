@@ -49,8 +49,10 @@ P.still(\wideShot, timecode: 642.8.seconds, music: { |p b e|
 		)
 });
 ( SynthDef(\pluckGendy, {
-	Pluck.ar( PinkNoise.ar(\amp.kr(0.1)), 1, 0.1, \freq.kr(400) * Gendy1.kr(minfreq:0.2,maxfreq:[5,10]).range(0.992,1.008) =>_.reciprocal, decaytime:\decay.kr(4))
-	=> Out.ar(\out.kr(0),_)
+	var decay;
+	Pluck.ar( PinkNoise.ar(\amp.kr(0.1)), 1, 0.1, \freq.kr(400) * Gendy1.kr(minfreq:0.2,maxfreq:[5,10]).range(0.992,1.008) =>_.reciprocal, decaytime:decay = \decay.kr(4))
+	=> Out.ar(\out.kr(0),_);
+	Line.kr(1,0,decay + 2,doneAction:2)
 }).add;
 );
 P(\chords, music: { |p b e|

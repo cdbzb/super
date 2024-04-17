@@ -220,7 +220,11 @@ P.tune( {|i|i <>
 );
 Trek.strum;
 P(\strums, music: { |p b e|
+	p.strum1.syn.run(true);
 	Song.strum1.setPlayMode(\pick);
+	fork{ b.sum + 1 => _.wait; 
+		p.strum1.syn.run(false)
+	};
 	[
 		type: \strum,
 		instance:p.strum1, 

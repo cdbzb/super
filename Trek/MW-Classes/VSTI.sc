@@ -1,5 +1,5 @@
 VSTI {
-	var <condition, <syn, <controller, <id ;// <plugin;
+	var <condition, <syn, <controller, <id, <cmdPeriodAction;// <plugin;
 	classvar <vstis;
 
 	*initClass{
@@ -24,7 +24,7 @@ VSTI {
 			);
 		}.fork;
 
-		CmdPeriod.add( {
+		cmdPeriodAction = {
 			fork{
 				0.1.wait;
 				syn = Synth(\vsti2,target:RootNode(Server.default));
@@ -39,9 +39,19 @@ VSTI {
 				);
 			}
 			
-		} )
+		};
+
+		CmdPeriod.add( cmdPeriodAction )
+	}
+	*clearAll {
+		vstis.do{|i x| 
+			CmdPeriod.remove(i.cmdPeriodAction);
+			i.controller.free; i.syn.free; i.free;
+			vstis.removeAt(x)
+		}
 	}
 }
+
 
 AAS_Strum : VSTI  { 
 	//var <syn,<>controller,<condition ;

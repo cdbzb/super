@@ -1,5 +1,13 @@
 // Trek.loadSongs([0,1])
-Trek.transitions.size
+Trek.prepare;
+Trek.strum
+VSTI.vstis.
+Trek.strum2.syn.isRunning
+.run(\false)
+s.plotTree
+s.latency_(0.2);s.plotTree;s.makeWindow;Stills.muted_(true);Trek.playRange(3, -1, 16)
+s.makeWindow
+
 ( // - 0-1
 Trek.faders[0] = { Trek.transitionGroup.release };
 Trek.transitions[0].func = {
@@ -25,6 +33,7 @@ Trek.setTransition(1, -2, {
 	Trek.transitionGroup.release;
 	(instrument:\cymbalsDS, att:2.5).play(target:Trek.transitionGroup,addAction:\addToTail);
 
+	s.freeMyDefaultGroup;
 	defer{ Stills.plotTitleCard("3") };
 	3
 });
@@ -47,11 +56,13 @@ Trek.faders[3] = {
 
 Trek.setTransition(3, -1, 
 	 func: {
-		 (instrument:\cymbalsDS, att:2.5).play;
+		 (instrument:\cymbalsDS, att:2.5, group: Trek.transitionGroup).play;
+		 // fork{0.9.wait; Server.default.freeMyDefaultGroup};
+		 s.defaultGroup.release(1);
 		 Trek.faders[4].();
 		 1;
 	 }, trimStart: 1, trimEnd:0
-);
+).();
 
 Trek.faders[4] = {
 	{
@@ -74,7 +85,8 @@ Trek.setTransition(6, -2);
 Trek.setTransition(7, -2, func:{
 	1.wait;
 	defer{ Stills.plotTitleCard("3", dur:3, fade:1)}; 
-		(amp:0.03, instrument:\cymbalsDS, att:2.5).play;
+	fork{1.wait; Server.default.freeMyDefaultGroup};
+		(amp:0.03, instrument:\cymbalsDS, att:2.5, group: Trek.transitionGroup).play;
 	4.5
 });
 Trek.setTransition(8, -2, {
@@ -101,19 +113,48 @@ Trek.faders[9] = {
 };
 Trek.setTransition(9, -1, 
 	func: {
-		Trek.transitionGroup.release;
-		2.wait;
+		2.5.wait;
+		Trek.transitionGroup.release(4);
 		defer{ Stills.plotTitleCard("4", dur: 3.5); };
-		(instrument:\cymbalsDS, att:2.5, amp:0.03).play;
-		5
+		fork{1.wait; Server.default.freeMyDefaultGroup};
+		(instrument:\cymbalsDS, att:2.5, amp:0.03, group: Trek.transitionGroup, addAction:\addToTail).play;
+		1.wait;
+		Trek.faders[10].();
+		4
 });
 
+Trek.faders[10] = { 
+	{
+		In.ar(0, Monitors.channels)
+		* -6.dbamp
+		=> ReplaceOut.ar(0, _);
+		Env.asr(releaseTime:1).kr(2, gate: \gate.kr(1));
+	}.play(s, target: Trek.transitionGroup, addAction: \addToHead ) 
+};
 // 10 and 11 are the same!!
-Trek.setTransition(11, -1, lag:1);
+Trek.setTransition(10, -2,
+	func: {
+		Trek.transitionGroup.release(3);
+		Trek.faders[11].();
+		1
+	}
+);
+Trek.faders[11] = {
+	{
+		In.ar(0, Monitors.channels)
+		* 2.dbamp
+		=> ReplaceOut.ar(0, _);
+		Env.asr(releaseTime:1).kr(2, gate: \gate.kr(1));
+	}.play(s, target: Trek.transitionGroup, addAction: \addToHead ) 
+};
+Trek.setTransition(11, -1,func:{
+	try{ Trek.transitionGroup.release };
+	1
+}, );
 Trek.setTransition(12, -1,func:{
 	1.5.wait;
-	defer{ Stills.plotTitleCard("4", dur: 3); };
-	3
+	defer{ Stills.plotTitleCard("5", dur: 3.5); };
+	3.5
 });
 Trek.setTransition(13, -1, { 20 });
 Trek.setTransition(14, -1, func: { 

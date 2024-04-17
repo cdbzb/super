@@ -1,33 +1,9 @@
 ( 
 	 //Setup Monitor for back channels
 	 Song(\ending,[]).current;
-	 "~/tank/super/Trek/Songs/boilerplate.scd".standardizePath.load;
-	 {
-		 ( ~synful1.isNil or: try{ ~synful1.syn.isPlaying.not } ).if
-		 {
-			 Song.currentSong.synful1 = ~synful1 = Synful();
-			 Song.currentSong.synful2 = ~synful2 = Synful();
-		 }{
-			 Song.currentSong.synful1 = ~synful1;
-			 Song.currentSong.synful2 = ~synful2;
-		 };
-		 Song.resources.condition=Condition();
-		 Song.resources.infrastructure=
-		 {
-			 FunctionList.new.array_([
-				 ( ~synful1.isNil or: try{ ~synful1.syn.isPlaying.not } ).if
-				 {
-					 Song.currentSong.synful1 = ~synful1 = Synful();
-					 Song.currentSong.synful2 = ~synful2 = Synful();
-				 },
-				 { fork {
-					 while( {
-						 ~synful2.controller.loaded.not;
-					 },{0.05.wait});
-					 Song.resources.condition.test_(true).signal
-				 }}
-			 ]).value
-		 }.inEnvir;
+	 Require( "/Users/michael/tank/super/Trek/Songs/boilerplate.scd" );
+	 Trek.synful;
+	  {
 ( Song.synthVTracks=EventWithDefault(
 	\default, {
 		{
@@ -2596,7 +2572,7 @@ Song.durs.filter(\bodies, {|i| i.dropLast ++ ( 0.996 +0.2 ) });
 // Song.durs[\bodies].list.last;
 // 1.996 (+ 0.2)
 //P.tune(\bodies,_.drop(2),syl:1);
-Song.shareVox=VocalRPP(\bodies,\share);
+// Song.shareVox=VocalRPP(\bodies,\share);
 P.tune(\bodies);
 P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	lyrics: "r r share your bodies - + again +",
@@ -2701,9 +2677,9 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 		Line.kr(0,1, b.sum,doneAction:2)
 	}.play
 });
-P(\vox,start:\last, rpp:VocalRPP(\last,\tune),lag:-1+0.2,music:{|p b e|
-	p.vocodeTune.(p,b,e,e.rpp,0.1,1,b.sum+5,2,dur:b.sum+2,chord:#[1,2,0.33])
-});
+// P(\vox,start:\last, rpp:VocalRPP(\last,\tune),lag:-1+0.2,music:{|p b e|
+// 	p.vocodeTune.(p,b,e,e.rpp,0.1,1,b.sum+5,2,dur:b.sum+2,chord:#[1,2,0.33])
+// });
 P(\chord,start:\last,music:{|p b e| 
 	MegaBind(
 			[

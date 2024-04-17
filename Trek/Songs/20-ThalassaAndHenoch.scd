@@ -1,6 +1,6 @@
 (
 Song(\laboratory,[]).current;
-Require("boilerplate.scd");
+Require("/Users/michael/tank/super/Trek/Songs/boilerplate.scd");
 Song.synthVTracks = EventWithDefault.new(
 	\default, {
 		{|i| Pan2.ar(i,0) /4}

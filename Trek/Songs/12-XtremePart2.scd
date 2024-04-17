@@ -1,6 +1,9 @@
 (
-"/Users/michael/tank/super/Trek/Songs/11-Xtreme1.scd".load;
-Song.cursor_(33);
+// "/Users/michael/tank/super/Trek/Songs/11-Xtreme1.scd".load;
+// Song.cursor_(33);
+Trek.cast.mccoy = \xuan;
+Stills().current;
+Song(\song2,[]).current;
 {
 ["/*SPOCK*/ -boom- This is an excellent body, Doctor." ,"1 -7 1 2 6 7 6 5 5 6 4 1 -7".dm(\f,\mixolydian)].addLine;
 P(\gain, music: { |p b e|
@@ -16,6 +19,15 @@ P.still(\henochExcellent, timecode:
 				text: ["this is an excellent","body Doctor"],
 			)
 });
+( Song.synthVTracks = EventWithDefault(
+			\default, {
+				{|i|
+					DWGReverbC1C3.ar(i,mix:0.1)
+					/8
+				}
+			}
+		);
+	);
 Song.synthVTracks.ninezero = {|mix = 0.1| {|i| DWGReverbC1C3.ar(i, mix: mix) / 2.5}};
 P.synthV(role: \henoch, take: \lead,
 			pbind: Song.enlarge(11),
@@ -341,14 +353,14 @@ P(\bass, music: { |p b e|
 });
 	//get this from reaper (HOOK) "/Users/michael/Trek/Vulcan's worship peace/Vulcan's worship peace.RPP" => {|i| ( "open "+i ).unixCmd }
 ["/*MCCOY*/ Vulcans worship peace above a-- ll, Henoch. ",[5,5,4,4,3, 2,1,2,3, -6,-5].dm('d')].addLine;
+Song.setTempoMap(\worship,"e e e e qqq e e e eq q q");
 P.still(\mccoyspx, timecode: 2834.5.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["Vulcan's worship peace","above all, Henoch"],
 	)
 });
-	Song.setTempoMap(\worship,"e e e e qqq e e e eq q q");
-	Trek.initClass;
+	// Trek.initClass;
 P.synthVs(role: \mccoy, take: [\lead, \double], params: {|p b| [
 		lyrics: "vulcans + worship + peace above + all - Henock +",
 		pitchTake: [1,3],
@@ -392,6 +404,7 @@ P.double(\feng, take: \harmony, params: {|p b| [
 			}.play
 });
 		// ~justTheTune.('worship');
+~quarters=SongArray.new();
 ~quarters[\worship] = Song.parseBeats('worship',"e e e e qqq e e e eq q q".asBeats);
 //Song.tempoMap[\worship]=Song.tempoMap[\worship].quantize;
 P(\harmonyPart,start:'worship',music:{|p b e|

@@ -808,15 +808,14 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	// filter: (midinote: _ - 12), 
 	pitchTake: 1
 ] }, music:{|p b e|
-	p.vocoderPreset.push;
-	p.vocodeTune.valueEnvir( p, b, e, e.rpp,
+	p.vocodeTune.( p, b, e, e.rpp,
 		durRel: 1,
 		mix:0.01,
 		chord: #[1, 2, 4, 8],
 		verb:0.2,
 		// modGain:2
+		mix: p.vocoderMix, width: p.vocoderWidth,
 	);
-	Environment.pop;
 	{
 		p.laMer => PlayBuf.auto(2, _, rate: ( [1,-7,4].dm('f',\mixolydian)-1.dm(\c) ).midiratio.dq.demand(b.parse([4, 4, 2]))) 
 	}.play(s, p.carrierBus)
@@ -981,12 +980,14 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	phonemes: ["","","","","","","","","","","","","","","n eh th s",],
 	pitchTake: 1
 ] }, music:{|p b e|
-	p.vocodeTune.valueEnvir(p, b, e, e.rpp,
+	p.vocodeTune.(p, b, e, e.rpp,
 		mix:0.5,
 		chord: #[1, 2, 3, 4, 8],
 		verb:0.7,
 		// modGain:2,
+		mix: p.vocoderMix, width: p.vocoderWidth,
 	);
+	// Environment.pop;
 	{
 		p.laMer => PlayBuf.auto(
 			2, _,
@@ -1036,11 +1037,12 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	filter: (midinote: _ - 12), 
 	pitchTake: 1
 ] }, music:{|p b e|
-	p.vocodeTune.valueEnvir(p, b, e, e.rpp,
+	p.vocodeTune.(p, b, e, e.rpp,
 		dur: b.sum,
 		att: 0.2,
 		sus: b.sum - 0.2,
-		rel: 1
+		rel: 1,
+		mix: p.vocoderMix, width: p.vocoderWidth,
 	);
 	[\A, \c].collect{|i| [1,3,5,6].df(i)}
 	=> {|i| 
@@ -1050,7 +1052,8 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 			instrument:\sawSynth,
 			out: p.carrierBus
 		].pp
-	}
+	};
+	// Environment.pop;
 
 });
 P.tune( _ <> [instrument: \sparkTriangle, depth: 0.01, amp:0.05].p );
@@ -1351,6 +1354,7 @@ Song.setTempoMap(\possible,"q e eq e eq e eqqq q q q q q qqq q q q");
 P.still(\lookingAway, timecode: 530.seconds, music: { |p b e| //muted
 	 e.still.( 
 		wait: 0.1,
+		fadeIn:2,
 		fade:b.sum + e.bNext.sum -0.1,
 		text: ["",""],
 	)
@@ -1372,6 +1376,8 @@ P(\crash, music: { |p b e|
 		amp: 0.01
 	).play
 });
+Song.vocoderWidth=0.93;
+Song.vocoderMix=0.3;
 ( Song.vocoderPreset = (
 	width: 0.93,
 	mix: 0.3,
@@ -1389,21 +1395,21 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 		Song.laMer => PlayBuf.auto(1,_,rate: progression.demand( "qqqq qqqq qqqq qqqq qq".asBeats.warpTo( e.tempoMap ) ).lag(0.1))   
 		// *2
 	}.play(s,p.carrierBus);
-	Song.vocoderPreset.push;
-	p.vocodeTune.valueEnvir(p, b, e, e.rpp,
+	p.vocodeTune.(p, b, e, e.rpp,
 		chord: #[1,2],
 		dur:b.sum + 3 => _.postln,
 		att: 0.1,
 		rel: 5,
 		sus:b.sum,
-		durRel: 1
+		durRel: 1,
+		mix: p.vocoderMix, width: p.vocoderWidth,
 	);
-	Environment.pop
 });
 ( SynthDef(\rescueTamb,{
 	Shakers.ar(3,resonantFreq:\resonantFreq.kr(1),energy:\energy.kr(1))
 	* \amp.kr(0.1) * 10
-	=> Out.ar(\out.kr(0),_)
+	=> Out.ar(\out.kr(0),_);
+	Env.asr().kr(2,gate:\gate.kr(1))
 }).add;
 );
 P(\tambo, music: { |p b e|
@@ -1478,16 +1484,16 @@ P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 		amp:0.1,
 		dur: "q e e qe eq e e qe eq  e e qq".asBeats.warpTo( e.tempoMap ).q
 	].ppm;
-	p.vocodeTune.valueEnvir(p, b, e, e.rpp,
+	p.vocodeTune.(p, b, e, e.rpp,
 		chord: #[1,2]/2,
-		width: 1.03,
-		mix: 0.3,
 		dur: b.sum + 1,
 		att: 0.2,
 		sus: b.sum - 0.2,
 		rel: 1,
-		durRel:3
-	)
+		durRel:3,
+		mix: p.vocoderMix, width: p.vocoderWidth,
+	);
+	// Environment.pop;
 
 });
 P(\deep, music: { |p b e|
@@ -1933,14 +1939,18 @@ params: {|p b| [
 Song.setTempoMap(\unusual,"q %x x x x x% e ee e e e e e e x xe x xe e e x xq".rhythm);
 // Song.strum1 = AAS_Strum();
 P(\strum, music: { |p b e|
+	p.strum1.syn.run(true);
 	p.strum1.setPlayMode(\strum );
+	fork{ b.sum + 1 => _.wait; 
+		p.strum1.syn.run(false)
+	};
 	[
 		type: \strum,
 		instance: p.strum1,
 		freq: [ [1,3], [-6,1],[-4, -6],[2,4],[5, 7] ].df(\c).q,
 		dur: b.parse([6,3,4,[ 1,1,1,1,1/3 ],[2/3,1,1,1,1],4]).q,
 		legato:1
-	].pp ;
+	].pp;
 	[
 		type: \strum,
 		instance: p.strum1,
@@ -2302,7 +2312,7 @@ P.tune();
 // ["SULU: All normal. No damage at all.","r"].addLine;
 // ["KIRK: I see.","r"].addLine;
 [" Will you transport down with us, Mister Spo--ck?","1 -5 1 2 3 2 1 -5 -4 -4 -3".dm('f#')].addLine;
-Song.setTempoMap(\Will," e e e e| e e q|q ex x | e e");
+Song.setTempoMap(\Will,"e e e e| e e qq ex x | e e");
 P(\tremolo, music: { |p b e|
 	e.bNext.postln;
 	{

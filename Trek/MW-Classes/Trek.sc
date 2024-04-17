@@ -18,7 +18,7 @@ Trek {
 			\briefing,
 			\theyUsed,
 			\song,
-			\song,
+			\song2,
 			'this formnula',
 			\three,
 			\silverLake,
@@ -65,6 +65,16 @@ Trek {
 		}{
 			^keys.indexOf(i) => this.allTheSongs[_]
 		}
+	}
+	*prepare{
+		{
+			Song(\trashme,[]).current;
+			this.synful;
+			this.strum;
+			this.pf;
+			30.wait;
+			this.allTheSongs.do({ |i| defer{ i.load }; 1.wait})
+		}.fork
 	}
 	*loadSongs{|array|
 		fork{
@@ -126,7 +136,6 @@ Trek {
 	*playRange { |num cursor numSections=1| 
 		var needLoad;
 			needLoad = (num..(num + numSections)).select{|i| Song.songs[Trek.keys[i]].isNil};
-			needLoad = needLoad.collect{|i| (i==10).if{11}{i}}.removeDuplicates;
 			( needLoad.size!=0 ).if{ ^this.loadSongs(needLoad) };
 		fork{
 			transitionGroup.release;Server.default.sync;
@@ -134,10 +143,8 @@ Trek {
 			numSections.do{|i| 
 				var section = num + i;
 				var start = (i == 0).if{ cursor }{ transitions[section].start};
-				(section != 11).if{
 					this.playSong(section, start, trimEnd: transitions[section].trimEnd ? 0) + (transitions[section+1].lag ? 0) => _.wait;
 					transitions[section].func.() ? 0 => _.wait
-				}
 			}
 		}
 	}
@@ -176,22 +183,22 @@ Trek {
 			Song.currentSong.strum1 = strum1;
 			Song.currentSong.strum2 = strum2;
 		};
-		Song.resources.condition=Condition();
-		Song.resources.infrastructure = {
-			FunctionList.new.array_([
-				( currentEnvironment.at(\strum1).isNil or: try{ currentEnvironment.at(\strum1).syn.isPlaying.not } ).if
-				(Trek.strum1.isNil or: try{ Trek.strum1.syn.isPlaying.not }).if {
-					Song.currentSong.strum1 = Trek.strum1 = AAS_Strum();
-					Song.currentSong.strum2 = Trek.strum2 = AAS_Strum();
-				},
-				{ fork {
-					while( {
-						Trek.strum2.controller.loaded.not;
-					},{0.05.wait});
-					Song.resources.condition.test_(true).signal
-				}}
-			]).value
-		}.inEnvir;
+		// Song.resources.condition=Condition();
+		// Song.resources.infrastructure = {
+		// 	FunctionList.new.array_([
+		// 		( currentEnvironment.at(\strum1).isNil or: try{ currentEnvironment.at(\strum1).syn.isPlaying.not } ).if
+		// 		(Trek.strum1.isNil or: try{ Trek.strum1.syn.isPlaying.not }).if {
+		// 			Song.currentSong.strum1 = Trek.strum1 = AAS_Strum();
+		// 			Song.currentSong.strum2 = Trek.strum2 = AAS_Strum();
+		// 		},
+		// 		{ fork {
+		// 			while( {
+		// 				Trek.strum2.controller.loaded.not;
+		// 			},{0.05.wait});
+		// 			Song.resources.condition.test_(true).signal
+		// 		}}
+		// 	]).value
+		// }.inEnvir;
 
 	}
 	*synful {

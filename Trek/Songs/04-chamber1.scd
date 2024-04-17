@@ -833,14 +833,13 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 			],
 	)
 });
-P.synthV(Trek.cast.spock,
+P.synthV(role: \spock, take: nil,
 	filter: (midinote: _ - 12), 
-	prepend: true,
 	params: {|p b| [
-	lyrics: "About + the same time the planet + surface + was destroyed + if our readings + are accurate + + " ,
-	vocalMode: \Closed,
-	legato:[1,1,1,1,1,1,1,1,1,1,1,1,0.8,1,1,1,1,1,1,1,1],
-	loudness: Env([0,4,0,4,4,0,4,0, 4,0,0,0,4,4,0,4,0,0,4,0,0] - 2,b)
+		lyrics: "About + the same time the planet + surface + was destroyed + if our readings + are accurate + + " ,
+		vocalMode: \Closed,
+		legato:[1,1,1,1,1,1,1,1,1,1,1,1,0.8,1,1,1,1,1,1,1,1],
+		loudness: Env([0,4,0,4,4,0,4,0, 4,0,0,0,4,4,0,4,0,0,4,0,0] - 2,b)
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -964,6 +963,16 @@ P(\triller,start:\alloy,music:{|p b e|
 	{ Env([0.1,0.1,0.0001],[1,9],\sin).kr(2) }.play(s,Song.trillBus)
 });
 ["Much stronger and harder than-- ","2 6 5 4 3 7 6 5 4".dm('c#',5)].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["much","stronger"],
+	).sequenceText2(
+			b.parse([3]), [ 
+			["and harder","than"],
+			],
+	)
+});
 P.synthVs(role:\spock, take:[\lead, \dbl],
 	pbind:  Song.enlarge(3),
 	filter: (midinote: _ - 12), 
@@ -1026,6 +1035,16 @@ P('kerRecorde',start:\harder,music: {|p b e|
 	].pp
 });
 ["anything I've measured before. ","3 2 1 -7 -6 -5 -4 1 2 ".dm('b-',5,\mixolydian)].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["anything","I've"],
+	).sequenceText2(
+			b.parse([4]), [ 
+			["measured","before"],
+			],
+	)
+});
 P.synthVs( role: \spock, take: [\lead, \dbl],
 	filter: (midinote: _ - 12), 
 	params: {|p b| [

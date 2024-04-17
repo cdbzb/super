@@ -9,6 +9,8 @@
 		{
 			fork {
 				Song.strum1.condition.wait{Song.strum1.controller.loaded};
+				Song.strum1.syn.run(true);
+				Song.strum2.syn.run(true);
 				// Song.strum2.condition.wait{Song.strum2.controller.loaded};
 				// Song.piano.condition.wait{Song.piano.controller.loaded};
 				Song.resources.condition.test_(true).signal;
@@ -577,7 +579,10 @@ P.still(\mccoy, timecode:
 				)
 			].ppm
 		});
-
+		P(\pauseAAS, music: { |p b e|
+			p.strum1.syn.run(false);
+			p.strum2.syn.run(false);
+		});
 		// P.still( \plasticPerson, start: \weeks, timecode:4148.5.seconds, music: { |p b e|
 		// 	e.still.value(
 		// 		wait: b.sum ,

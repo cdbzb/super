@@ -31,6 +31,8 @@
 				// try{ Song.piano.condition.wait{Song.piano.controller.loaded} };
 				Song.resources.condition.test_(true).signal;
 
+				Song.strum1.syn.run(true);
+				Song.strum2.syn.run(true);
 				Song.strum1.setPlayMode(\strum);
 				Song.allNotesOff;
 				0.05.wait;
@@ -148,6 +150,7 @@ P.still(\enterprise, timecode: 3246.9.seconds, music: { |p b e|
 });
 P(\guit0,start:\minds,music: { |p b e|
 	var out = Song.strum1Fx0.synth.run(true);
+	p.strum1.syn.run(true);p.strum2.syn.run(true);
 	[
 		legato:0.95,
 		midinote: [ [2,4],1,-5 ].dm().q,
@@ -306,20 +309,27 @@ P(\bass0,start:0,music: {
 	}
 );
 ["Doctor Jane Mulhall. As -- ","b c5 d d c c f"].addLine; //3
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear1, timecode: 0.seconds, music: { |p b e|
 	e.still.( 
-		wait: b.drop(1).parse([5]).unbubble + e.bNext.sum,
+		wait: b.parse([5]).unbubble + e.bNext.sum,
 		text: ["doctor Jane","Mulhall"],
-	)});
-	Song.preroll_(1);
-	P.still(\mccoy, timecode: 3251.3.seconds,lag: -1, syl: 4, music: { |p b e|
-		e.still.( 
-			fadeIn: 1,
-			wait: b.drop(1).sum + e.bNext.sum,
-			text: ["",""],
-			fade: 2
+		// onTop: true
+	).sequenceText2(
+			b.parse([5]), [ 
+			["",""],
+			],
+			
 		)
-	});
+});
+Song.preroll_(1);
+P.still(\mccoy, timecode: 3251.3.seconds,lag: -1, syl: 4, music: { |p b e|
+	e.still.( 
+		fadeIn: 1,
+		wait: b.drop(1).sum + e.bNext.sum,
+		text: ["",""],
+		fade: 2
+	)
+});
 	P.still(\clear, timecode: 1.seconds, syl:4, music: { |p b e|
 		e.still.( 
 			wait: b.drop(1).sum + e.bNext.sum + p.durs[e.start+2].list.sum => _.postln,
@@ -715,6 +725,10 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 			Out.ar(\out.ir(0),sig*env);
 
 		}).add; 
+		P(\pauseAAS, music: { |p b e|
+			p.strum1.syn.run(false);
+			p.strum2.syn.run(false);
+		});
 		P(\forboding8,start:8,music: {|p b e|
 			var keyAmp = 0.dbamp;
 			Ppar([

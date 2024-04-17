@@ -288,7 +288,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 		],
 	)
 });
-Song.setTempoMap(P.calcStart()," E E E Q E E E E qe e q");
+Song.setTempoMap(\exist,"E E E Q E E E E qe e q");
 P(\doubling, music: { |p b e|
 	[
 		freq: [\r,4.5,5,5.5].q,
@@ -305,6 +305,7 @@ P(\doubling, music: { |p b e|
 		amp:0.05,
 	].ppm
 });
+P.tune(\does);
 P(\square, music: { |p b e|
 	[
 		freq: [\r,[3, 11],[1, 5],  [-6.5, 6.5],[3, 11,]].df('c',6).q,
@@ -316,7 +317,7 @@ P(\square, music: { |p b e|
 });
 P(\pizz, music: { |p b e|
 	[
-		dur: "q e e q".asBeats.warpTo(e.tempoMap).q,
+		dur: "q e e q".asBeats.warpTo(e.tempoMap).postln.q,
 		freq: [\r, 13, 11, 5].df('c').q,
 		instrument: \twang,
 		out:3
@@ -2081,7 +2082,6 @@ P(\line, music: { |p b e|
 		amp: 0.01 * p.g2
 	).play
 });
-// Require("boilerplate.sc");
 P.synthV(role: \vocoder, take: \lead, params: {|p b| [
 	lyrics: "I am sargon +",
 	legato: [0.7, 1, 1, 0.7, ],

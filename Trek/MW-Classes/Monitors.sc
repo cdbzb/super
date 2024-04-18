@@ -3,7 +3,9 @@ Monitors {  //setup monitoring for Trek piece
 	//classvar <>speakerOrder=#[0,2,4,3,1]; //for Trek
 	classvar <>speakerOrder=#[0,4,1,3,2]; //for Trek
 	classvar <>deviceChannels;
+	classvar <>foldDown;
 	*initClass {
+		foldDown=[nil,nil,nil];
 		decoder = FoaDecoderMatrix.newPanto(5,'flat','dual');
 		deviceChannels = Dictionary.newFrom(
 			[
@@ -22,12 +24,18 @@ Monitors {  //setup monitoring for Trek piece
 			(deviceChannels.at(Server.default.options.outDevice) == 2).if{
 					Monitors.stereo;
 					{
-						Monitor.new => _.play(2,2,0,2,target:RootNode(Server.default));
-						Monitor.new => _.play(4,1,0,1,target:RootNode(Server.default), volume: -6.dbamp);
-						Monitor.new => _.play(4,1,1,1,target:RootNode(Server.default), volume: -6.dbamp);
+						foldDown[0]=Monitor.new => _.play(2,2,0,2,target:RootNode(Server.default));
+						foldDown[1]=Monitor.new => _.play(4,1,0,1,target:RootNode(Server.default), volume: -6.dbamp);
+						foldDown[2]=Monitor.new => _.play(4,1,1,1,target:RootNode(Server.default), volume: -6.dbamp);
 					}.defer(0.1)
 			}
 		});
+	}
+	*stopFoldDown{
+		foldDown.do(_.stop)
+	}
+	*startFoldDown{
+		foldDown.do(_.play)
 	}
 	*pentagon {
 		decoder = FoaDecoderMatrix.newPanto(5,'flat','dual');

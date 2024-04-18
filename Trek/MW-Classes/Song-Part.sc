@@ -1,6 +1,6 @@
 Song {
 	classvar lastSectionPlayed=0;
-	classvar <reaperFolder, <>dursFile, <>dursFolder;
+	classvar <reaperFolder, <>dursFile, <>dursFolder, <>frozenFolder;
 	classvar <songs;
 	classvar <>current;
 	classvar <>loading;
@@ -25,6 +25,7 @@ Song {
 		reaperFolder = this.filenameSymbol.asString.dirname.dirname +/+ "RPP";
 		dursFile=this.filenameSymbol.asString.dirname.dirname +/+ "theExtreme3";
 		dursFolder=this.filenameSymbol.asString.dirname.dirname +/+ "Dur";
+		frozenFolder=this.filenameSymbol.asString.dirname.dirname +/+ "Frozen";
 		// Archive.archiveDir = this.filenameSymbol.asString.dirname.dirname;
 		Class.initClassTree(Recorder);
 		songs= Dictionary.new;
@@ -969,18 +970,19 @@ Song {
 
 Part { 
 	classvar <>current;
-	var <>start,<>syl,<>lag,<>music,<>resources,<>parent,<>name;
+	var <>start,<>syl,<>lag,<>music,<>resources,<>parent,<>name, <>record, <>frozen;
 
 	*play{fork{Server.default.sync;current.play};^current}
-	*new {|start=0,syl,lag=0,music,resources|
-		^super.new.init(start,syl,lag,music,resources)
+	*new {|start=0,syl,lag=0,music,resources, record, frozen|
+		^super.new.init(start,syl,lag,music,resources, record, frozen)
 	}
 	key {^name.split($_)[0].asSymbol}
-	init { |s,y,l,m, r|
+	init { |s,y,l,m, r, c, z|
 		start=s;syl=y;music=m;lag=l;resources = r.isNil.if{()}{r};
+		record = c; frozen=z;
 	}
-	//play immediately
 	printOn {|stream| ^this.name.printOn(stream) }
+	//play immediately
 	play {
 		//Song.allNotesOff;
 		// var synthV = resources.at(\synthV);
@@ -989,8 +991,30 @@ Part {
 		// 		^synthV.render
 		// 	} 
 		// };
-		switch (music.class,
+		try{
+			frozen.if{
+				^Server.default.bind{
+					// SoundFile.new(pathName:Song.frozenFolder +/+ this.key ++ ".wav").cue(playNow:true)
+					// resources[\freeze].play
+					{
+						// DiskIn.ar(5, resources[\frozen])
+						PlayBuf.ar(5, resources[\freeze].bufnum)
+					}.play
+				}
+			}
+		};
+		^switch (music.class,
 			Function,{Server.default.bind{
+				try{
+					record.if{
+						Server.default.record( 
+							bus: 0,
+							duration: parent.durs[start].list.drop(syl ? 0).sum + 3 + (resources[\tail] ? 0), //this is why you gotta use .drop(1) aaarg
+							path: Song.frozenFolder +/+ this.name ++ ".wav",
+							numChannels: 5
+						)
+					}
+				};
 				music.value(
 					parent,
 					//durs from event start
@@ -1100,7 +1124,7 @@ Part {
 // Constructor for Parts
 P { 
     *new {
-        |key start syl lag=0 music song resources rpp synthV|
+        |key start syl lag=0 music song resources rpp synthV record frozen|
         var part,error;
 	{
 		start = this.calcStart(start); //finds it if not provided!
@@ -1108,13 +1132,26 @@ P {
 		start.postln;
 		key = (key ++ "_" ++ start).asSymbol;
 		resources = ( resources ++ (rpp: rpp) ? resources );
+		try{
+			\tryingFrozen.postln; 
+			frozen.postln;
+			frozen.if{
+				resources = resources ++ (freeze: 
+					// SoundFile.new(pathName:Song.frozenFolder +/+ key ++ ".wav").cue 
+					Song.frozenFolder +/+ key ++ ".wav"
+					=> Buffer.read(Server.default, _ )
+				);
+				Song.frozenFolder +/+ key ++ ".wav" => _.postln
+			};
+		};
 		//resources = ( resources ++ (synthV: synthV) ? resources );
-		part = { Part(start,syl,lag,music,resources) }.try({"part couldn't load".warn});
+		part = { Part(start,syl,lag,music,resources, record, frozen) }.try({"part couldn't load".warn});
 		Message(Song.currentSong, ( key ++ $_ => _.asSymbol )).value(part); //set Song.resources.key to part
 		key.postln;
 	}.try{|e| error = e}
         ^( error ? part )
     }
+
     *calcStart { |start|
 	    ^start.isNil.if{
 		    Song.partCursor.notNil.if{

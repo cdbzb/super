@@ -1,11 +1,7 @@
 // Trek.loadSongs([0,1])
 Trek.prepare;
-Trek.strum
-VSTI.vstis.
-Trek.strum2.syn.isRunning
-.run(\false)
-s.plotTree
-s.latency_(0.2);s.plotTree;s.makeWindow;Stills.muted_(true);Trek.playRange(3, -1, 16)
+Trek.strum1.syn.run(false);Trek.strum2.syn.run(false);s.latency_(0.4);s.plotTree;s.makeWindow;Stills.muted_(true);Trek.playRange(0, 0, 22)
+Trek.strum2.syn.run(false)
 s.makeWindow
 
 ( // - 0-1

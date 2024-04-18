@@ -401,7 +401,7 @@ SynthV {
 }
 
 + P {
-	*synthV{ | key start params syl lag=0 take double music song resources range filter pbind prepend role wait|
+	*synthV{ | key start params syl lag=0 take double music song resources range filter pbind prepend role wait frozen record|
 		var event;
 		var section = P.calcStart(start );
 		var synthV, preset;
@@ -468,7 +468,7 @@ SynthV {
 		};
 			take.notNil.if{key = key ++ "_" ++ take};
 		^P(key,start,syl,lag, music,song,
-			resources:(
+			resources:resources ++ (
 				synthV: synthV,
 				playbuf: {
 					var buf = synthV.buffer.();
@@ -480,7 +480,9 @@ SynthV {
 					params: params,
 					filter: filter,
 					pbind: pbind
-				) ,
+				),
+				frozen: frozen,
+				record: record
 			); // order of section and key are reversed!!
 	}
 	*double{| key start take params music filter pbind role wait|

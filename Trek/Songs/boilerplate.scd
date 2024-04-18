@@ -1,14 +1,4 @@
 (
-(s.options.device != "Digiface USB (23953833)") .if{
-	g = g ? Group.new(target:RootNode(s));
-	m = m ? Monitor.new;
-	m.play(2,3,0,2,g);
-	ServerTree.add({
-		g = Group.new(target:RootNode(s));
-		m = m ? Monitor.new;
-		m.isPlaying.not.if({m.play(2,3,0,2,g)});
-		})
-};
 v = Group(addAction:\addToTail);
 Song.currentSong.preroll_(1);
 ~encoders = ~encoders ?? { (
@@ -17,6 +7,7 @@ Song.currentSong.preroll_(1);
 ) };
 Song.encoders=~encoders;
 ~stills.isNil.if{~stills=Stills().current};
+
 //	Song.resources.condition=Condition();
 ( //Vocoder resources
 	Song.carrierBus = Bus.audio(s,5);
@@ -126,13 +117,13 @@ Song.encoders=~encoders;
 					out:Song.vocoderFoa.index, // out
 					// smoothCarrier: t,
 
-					target:v
-					//out:out
+					target:v,
+					// out:out
 				]).register.onFree(try{Song.ambiSynth.free});
 		};
 		playAmbiSynth = { // mono => ambi
 			Song.ambiSynth = {
-				In.ar(Song.vocoderFoa.index,2) 
+				In.ar(Song.vocoderFoa.index, 2) 
 				=> Mix.ar(_)
 				// => FoaEncode.ar(_,Song.encoders.spread)
 				=> FoaEncode.ar(_,Song.encoders.omni)
@@ -147,7 +138,7 @@ Song.encoders=~encoders;
 		};
 		case
             { Song.vocoderSynth.isNil }         { playSynth.();playAmbiSynth.() }
-            { Song.vocoderSynth.isPlaying.not } { playSynth.(); playAmbiSynth.() }
+            { Song.vocoderSynth.isPlaying.not } {Song.vocoderSynth.free; playSynth.(); playAmbiSynth.() }
             { true }                            { Song.vocoderSynth.set(\dur,dur,\gate,1)} ;
 		// restore line above to 'out' to get rid of ambisonics!!
 		Song.carrierSynth = Song.sargonCarrier.(p,b,e,att, sus, rel, chord,tune,mix, verb, width,carrierGain,enlarge,sawFreqRatio);

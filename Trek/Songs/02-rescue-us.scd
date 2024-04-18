@@ -803,7 +803,7 @@ P.still(\sargonSpeaks, timecode: 503.269.seconds, music: { |p b e|
 			],
 	)
 });
-P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+P.synthV(role: \vocoder, frozen: true, take: \lead, params: {|p b| [
 	lyrics: "r your probes have touched me mister + spock -",
 	// filter: (midinote: _ - 12), 
 	pitchTake: 1
@@ -975,7 +975,7 @@ P.still(\sargonlocked, timecode: 511.464.seconds, music: { |p b e|
 		text: ["",""],
 	)
 });
-P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+P.synthV(role: \vocoder, frozen: true, take: \lead, params: {|p b| [
 	lyrics: "I have locked your transporter + +  device + on my co-ordinates + + +",
 	phonemes: ["","","","","","","","","","","","","","","n eh th s",],
 	pitchTake: 1
@@ -1031,7 +1031,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 			],
 	)
 });
-P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+P.synthV(role: \vocoder, frozen:true, resources:(tail: 3), take: \lead, params: {|p b| [
 	lyrics: "please come to us rescue + us from  oblivion + +",
 	legato: [1, 1, 1, 0.8, 1, 1, 0.8, 0.8, 1, 1, 1, 1, ],
 	filter: (midinote: _ - 12), 
@@ -1384,7 +1384,7 @@ Song.vocoderMix=0.3;
 	// modGain:1.5
 );
 );
-P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+P.synthV(role: \vocoder, frozen:true, take: \lead, params: {|p b| [
 	lyrics: "I will make it possible + + for your transporter + + beam to send you",
 	filter: (midinote: _ - 12), 
 	pitchTake: 1
@@ -1462,7 +1462,7 @@ P(\tambo, music: { |p b e|
 		out: Effect.bus({|i| FreeVerb.ar(i,0.5,1) },)
 	].pp
 });
-P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+P.synthV(role: \vocoder, frozen:true, take: \lead, params: {|p b| [
 	lyrics: "r that - deep that - deep that - deep beneath + the surface + baby +",
 	legato: [1, 1, 1, 0.9, 1,1, 0.9, 1,1, 1, 1, 1, 1, 1, 1, 1, 1, ],
 	filter: (midinote: _ - 12), 
@@ -1568,6 +1568,7 @@ P(\arp, music: { |p b e|
 	var busses = 4.collect{ Bus.audio(s, 1) };
 	var dur = 0.125;
 		[
+			amp:0.07,
 			instrument: \default,
 			freq:[
 				[1,3,5.5, 7].df(\g,4),
@@ -1623,6 +1624,7 @@ P.synthVs(role: \spock, take: [\lead,\double], params: {|p b| [
 });
 P(\chords, music: { |p b e|
 	[
+		amp:0.07,
 		freq: [
 			[1,3,5.5, 7].df(\g,4),
 			[-7,1,3,5].df('b-',4,\mixolydian),

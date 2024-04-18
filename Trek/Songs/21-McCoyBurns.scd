@@ -1971,7 +1971,7 @@ P.still(
 				],
 		)
 	});
-P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+P.synthV(role: \vocoder, frozen: true, take: \lead, params: {|p b| [
 		lyrics: "r I am pleased, my be love ed   It is good you found the truth ",
 		filter: (midinote: 50), 
 		legato: [1, 1, 1, 1, 1, 1, 1, 0.6, 1, 1, 1, 1, 1, 1, 1, ],
@@ -2144,7 +2144,7 @@ P(\chords,start:\suspect,music:{|p b e|
 		).play(p.carrierBus);
 
 	});
-P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+P.synthV(role: \vocoder, frozen: true, take: \lead, params: {|p b| [
 		lyrics: "I have power + even + Henoch + does not suspect + ",
 		filter: (midinote: _ - 12), 
 		pitchTake: 1

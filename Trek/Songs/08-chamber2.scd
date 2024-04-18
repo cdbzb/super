@@ -1329,7 +1329,8 @@ P(\drone,music:{ |p b e|
 		Out.ar(out, snd);
 	}).add;
 );
-P.synthV(\xuan, filter: (midinote: _ - 12),  params: {|p b| [ lyrics: "I, understand, +, +, my, sun, go, to, your, vessel, +, ",
+P.synthV(role: \vocoder, frozen: true,
+	filter: (midinote: _ - 12),  params: {|p b| [ lyrics: "I, understand, +, +, my, sun, go, to, your, vessel, +, ",
 legato: [1, 1,          1, 1, 1,  0.7,   1,  1,  1,    1,      0.8] ,
 	defaultVibratoDepth:0.3,
 
@@ -1405,7 +1406,7 @@ P(\descant,music:[
 	amp:0.01,
 ].pm(\sawSynthSustain)
 );
-P.synthV(\xuan, filter: (midinote: _ -12 ),  params: {|p b| [
+P.synthV(role: \vocoder, frozen: true, filter: (midinote: _ -12 ),  params: {|p b| [
 lyrics:"all that are involved + - -  must agree +",
 defaultVibratoDepth:0.2,
 legato:[1,1,1,1,1,1,1,0.8,1,0.90]
@@ -1436,7 +1437,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 		text: ["after all these","centuries"],
 	)
 });
-P.synthV(\xuan,
+P.synthV(role: \vocoder, frozen: true,
 // filter: (midinote: 50!7),
 filter: (midinote: _ - 12), 
 // pbind: {|p b| [ dur:p.durs[Song.section(\centuries)],midinote: 50!7 ].p},
@@ -1508,7 +1509,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 		text: ["we can wait","a few more hours"],
 	)
 });
-P.synthV(\xuan, filter: (midinote: 50!6),  params: {|p b| [
+P.synthV(role: \vocoder, frozen: true, filter: (midinote: 50!6),  params: {|p b| [
 	lyrics: "we can wait a few more hours",
 	lag: [0.1, 0, 0, 0, 0, 0, 0]
 ] }, music:{|p b e|
@@ -1569,7 +1570,7 @@ P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
 		text: ["then you may go","as freely as you came"],
 	)
 });
-P.synthV(\xuan,take:\lead, 	pbind: Song.enlarge(8),
+P.synthV(\xuan,take:\lead, frozen: true,resources:(tail:9), 	pbind: Song.enlarge(8),
 	params: {|p b| [
 		filter: ( midinote: _ - [0, 0, 0, 0, 12, 12, 12, 12, 12, 12, 12, 12, 12] ),
 		lag: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.08],

@@ -25,7 +25,7 @@ Song.vocoderRatio.set(1);
 {
 	["I am Sargon!","1 2 1 -7 -7".dm('b',5,\harmonicMinor)].addLine;
 // P.tune();
-P.synthV(role: \vocoder, params: {|p b| [
+P.synthV(role: \vocoder, frozen: true, params: {|p b| [
 		filter: (midinote: 40), 
 		lyrics: "ai am sar - gone",
 		language: \english,
@@ -103,7 +103,7 @@ P(\bassnotes, music: { |p b e|
 			out: Effect.bus({|i| DWGReverbC1C3.ar(i) },)
 		].pp
 });
-P.synthV(\xuan, 
+P.synthV(role: \vocoder, frozen: true, 
 		// filter: (midinote: 48!16) ,
 		filter: (midinote: _ - 12),
 		params: [
@@ -153,7 +153,7 @@ P(\bassline, music: { |p b e|
 		rest: [\r, 1, 1, 1, 1].q
 	].pp
 });
-P.synthV(\xuan, 
+P.synthV(role: \vocoder, frozen: true, 
 	// filter: (midinote: 48!16) ,
 	filter: (midinote: _ - 12),
 	params: [
@@ -257,7 +257,7 @@ P('bassline',start:\substance,music: {|p b e|
 		dur:[3,1] => _.dup(4) => _.flat=> _.warpTo(b) => _.q
 	].pp
 });
-P.synthV(\xuan, 
+P.synthV(role: \vocoder, frozen: true, 
 	// filter: (midinote: 48!16) ,
 	pbind: {|p b| [midinote: "3 2 3  4 3 3 2".dm(\e,4).q,dur:b.parse([1,1,8,1,1,2,2]).q ].p},
 	params: [
@@ -307,7 +307,7 @@ P('chords',start:\energy,music: {|p b e|
 	].pp
 });
 ["Sealed in this receptacle is the ",[5, 4,3,2,3,4,3,-5,-6,-7].dm(\c,6)].addLine;
-P.synthV( role: \vocoder,
+P.synthV( role: \vocoder, frozen: true,
 		lag:-0.5,
 	// double:true,
 	// filter: (midinote: 48!10), 
@@ -407,7 +407,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 		text: ["essence","of my mind"],
 	)
 });
-P.synthV(\xuan,
+P.synthV(role: \vocoder, frozen: true,
 	lag: -0.2,
 	// prepend: true,
 	// filter: (midinote: 48!12), 
@@ -844,7 +844,7 @@ P.still(\clear, syl:8, timecode: 0.seconds, music: { |p b e|
 		b.drop(1)[0..4].sum, ["infintely","greater"]
 	])
 });
-P.synthV(\xuan,
+P.synthV(role: \vocoder, frozen: true,
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
 	lyrics: " A body + much as yours my children + although + our minds were infinitely + + + greater + ",
@@ -1081,7 +1081,7 @@ P(\chord,lag:-0.1, music: { |p b e|
 	].pm.play
 });
 P.tune(\Becaus,_ <> [instrument:\sparkTriangle,\depth:0,amp:0.01 * 4/2,out:(0..4)].pm);
-P.synthV(role: \vocoder, 
+P.synthV(role: \vocoder, frozen: true,
 	filter: (midinote: 55!18), 
 	params: {|p b| [
 	lyrics:" Because + it is possible + + - you are our descendants + +, Captain + Kirk - " ,
@@ -1120,7 +1120,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	)
 });
 P.tune('thousand', { |i| Pmul(\freq,0.5,i) => Pbindf(_,\instrument, \sawSynthSustain,\out,Song.carrierBus,\amp,0.04 * 2)});
-P.synthV(role: \vocoder, enlarge: true, 
+P.synthV(role: \vocoder, frozen: true, enlarge: true, resources:(tail: 4), 
 	filter: (midinote: _ - 24), 
 	pbind: Song.enlarge(8),
 	params: {|p b| [
@@ -1233,7 +1233,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	)
 });
 P.tune('starships', { |i| Pmul(\freq,0.5,i) => Pbindf(_,\instrument, \sawSynthSustain,\out,Song.carrierBus,\amp,0.04)});
-P.synthV(role: \vocoder,
+P.synthV(role: \vocoder, frozen: true,
 	filter: (midinote: _ - 24), params: {|p b| [
 	lyrics: "just as your own starships + have ",
 	legato: [1,1,1,1,1,1,0.9]
@@ -1286,7 +1286,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 		text: ["now begun","to explore that"],
 	)
 });
-P.synthV(role: \vocoder,
+P.synthV(role: \vocoder, frozen: true,
 	lag: -0.1,
 	filter: (midinote: _ - 24), 
 	// prepend: true,
@@ -1331,7 +1331,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 		text: ["vastness",""],
 	)
 });
-P.synthV(role: \vocoder,
+P.synthV(role: \vocoder, frozen: true,
 	lag: -0.1,
 	filter: (midinote: _ - 24), 
 	// prepend: true,
@@ -1392,7 +1392,7 @@ P(\kick, music: { |p b e|
 		amp:0.2 * 2
 	].pp
 });
-P.synthV(role: \vocoder, take: \lead,
+P.synthV(role: \vocoder, take: \lead, frozen: true,
 	filter: (midinote: _ - 12), 
 	// prepend: true,
 	params: {|p b| [
@@ -1502,7 +1502,7 @@ P(\connecter,syl: 10, music: { |p b e| //add to next sec
 
 	].ppm
 });
-P.synthV(\xuan,
+P.synthV(role: \vocoder, frozen: true,
 	filter: (midinote: _ - 12), 
 	pbind: {|p b| [ midinote: p.tune[p.section(\behind)].list[0,1,2,3,4,5, 9, 10,11].q,dur:b.parse([1,1,1,1,1,4,1,1,1]).q ].p},
 	// prepend: true,
@@ -1806,7 +1806,7 @@ P(\chordz, music: { |p b e|
 		
 	].pp
 });
-P.synthV(role: \vocoder, take: \lead,
+P.synthV(role: \vocoder, take: \lead, frozen: true, resources:(tail: 7),
 	pbind: Song.enlarge2(0),
 	params: {|p b| [
 	lyrics: "In any + case, I do not know - baby + It was so long ago + and the records + of our travels + were ",
@@ -1952,7 +1952,7 @@ P(\bassnote, music: { |p b e|
 
 	].ppm
 });
-P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+P.synthV(role: \vocoder, take: \lead, frozen: true, params: {|p b| [
 	lyrics: "r lost in the cataclysm + + + which we unleashed +  upon + our selves ",
 	filter: (midinote: _ - 12), 
 	pitchTake: 1
@@ -2021,7 +2021,7 @@ P.still(\clear, timecode: 0.seconds,lag: 0.01, music: { |p b e|
 			],
 	)
 });
-P.synthV(role: \vocoder, take: \lead,
+P.synthV(role: \vocoder, take: \lead, frozen: true,
 	pbind: Song.enlarge(9),
 	params: {|p b| [
 		filter: (midinote: _ - 12), 

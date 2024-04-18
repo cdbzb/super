@@ -1385,7 +1385,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 		text: ["I","am Sargon"],
 	)
 });
-P.synthV(role: \vocoder, params: {|p b| [
+P.synthV(role: \vocoder, frozen:true, params: {|p b| [
 	// filter: (midinote: 40), 
 	filter: (midinote: _ - 12), 
 	lyrics: "ai am sar - gone",

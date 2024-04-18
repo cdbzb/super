@@ -786,7 +786,7 @@ P(\vox,start:\sacrifice, rpp:VocalRPP(\sacrifice,\test),lag:-1,music:{|p b e|
 			modGain:2
 		)
 }); */
-P.synthV( role: \vocoder, take: \lead, params: {|p b| [
+P.synthV( role: \vocoder, frozen: true, take: \lead, params: {|p b| [
 	lyrics: "r I could not allow + your sacrifice + + of one so close to you. ",
 	filter: (midinote: _ - 24), 
 	pitchTake:1,
@@ -1105,7 +1105,7 @@ P(\chord,start:\poison,music:{|p b e|
 });
 ["SARGON [OC]: No, Doctor. (Boom)",[1,-5,-3, -17].dm(\a,scale:\minor,octave:4)].addLine;
 P.tune('No, Doc', _ <> [instrument: \harp, amp: 0.025, coef: [0.15, 0.15, 0.15, 0.8].q, out: Pwhite(0,4,inf), lag: [0.1, 0,0,0].q].p);
-P.synthV(role: \vocoder, take: \lead,
+P.synthV(role: \vocoder, frozen: true, take: \lead,
 	// filter: (midinote: [50,50,50,50]), 
 	params: {|p b| [
 	lag: [0.1, 0.00,0],
@@ -1174,7 +1174,7 @@ P.still( \wide, start: 'No, Doctor', timecode:5006.seconds, music: { |p b e|
 
 [" I allowed you to believe that to be true so that ",[3,2,4,3,1,-5,-7,-6,-4,-1,2,-6,-5].dm(\c,scale:\mixolydian,octave:6)].addLine;
 		//Song.voxAllow=VocalRPP(\allowed,\tune);
-P.synthV(role: \vocoder, take: \lead,
+P.synthV(role: \vocoder, frozen: true, take: \lead,
 	pbind:Song.enlarge(3),
 	filter: (midinote: _ - (24!13 ++ 12.dup(3))), 
 	paramBreathiness: 1,
@@ -1264,7 +1264,7 @@ P(\vox,start:\read,lag:-1, rpp:VocalRPP(\read,\tune),music:{|p b e|
 		modGain:1
 	)
 });	//P.tune(\read); */
-P.synthV(role: \vocoder, take: nil, params: {|p b| [
+P.synthV(role: \vocoder, frozen: true, take: nil, params: {|p b| [
 			filter: (midinote: _ - 12), 
 			lyrics: "r r r r reed your thoughts and believe + it also +",
 			legato: [1, 1, 1, 1,  1, 1, 1, 1, 1, 1, 1, 1, 1, ],
@@ -1479,7 +1479,7 @@ P(\vox,start:\believed, rpp:VocalRPP(\believed,\tune),lag:-1,music:{|p b e|
 		//|p b e rpp amp=0.2 att=3 sus=1 rel=5 dur=10 chord=#[1,2,4,5,6,8] tune out=0 modGain=1|
 			p.vocodeTune.(p,b,e,e.rpp,0.2,1,b.sum-2,2)
 }); */
-P.synthV(role: \vocoder, take:\lead, params: {|p b| [
+P.synthV(role: \vocoder, frozen: true, take:\lead, params: {|p b| [
 	lyrics: "but henoch + believed + and fled the body +",
 	filter: (midinote: _ - 24), 
 	defaultVibratoDepth: 0.1,
@@ -1541,7 +1541,7 @@ P.still(\clear,syl: 0, timecode: 0.seconds, music: { |p b e|
 			],
 	)
 });
-P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+P.synthV(role: \vocoder, frozen: true, take: \lead, params: {|p b| [
 	lyrics: "r he is r destroyed +",
 	filter: (midinote: _ - 24), 
 	pitchTake: 1
@@ -2165,7 +2165,7 @@ P(\bassFirstPart, music: { |p b e|
 		out: Effect.bus( DWGReverbC1C3.ar(_, mix:0.9) )
 	].pp
 });
-P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+P.synthV(role: \vocoder, frozen: true, take: \lead, params: {|p b| [
 	lyrics: "We now know we cannot + permit + our - selves   to exist + in your world, my children. + ",
 	filter: (midinote: _ - 24), 
 	paramBreathiness: 0.8,
@@ -2227,7 +2227,7 @@ P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
 });
 //Song.voxDepart= VocalRPP(\depart,\vox);
 //Song.voxDepart= VocalRPP(\depart,\newTest);
-P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+P.synthV(role: \vocoder, frozen: true, take: \lead, params: {|p b| [
 	lyrics: "r thalassa + + and I must now also + depart +",
 	legato: [1, 1, 1, 1, 1, 1, 1, 0.9, 1, 0.9, 1, 1],
 	filter: (midinote: _ - 12), 
@@ -2311,7 +2311,7 @@ P.still(\clear,syl: 0, timecode: 0.seconds, music: { |p b e|
 	)
 });
 P.tune('into oblivion',Pbindf(_,\amp,0.06,\out,Effect.bus( { |i| EchoNone.ar(i,2,[1.3, 2 ]*0.6,9)*0.6=> { |i| i+( 0.5*PitchShift.ar(i,pitchRatio:[1.5,2]) ) }  } , inputChannels:2, out:2)));
-P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+P.synthV(role: \vocoder, frozen: true, take: \lead, params: {|p b| [
 	lyrics: "r into + oblivion + + +",
 	filter: (midinote: _ - 12), 
 	pitchTake: 1
@@ -2473,7 +2473,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 		text: ["yes","my son"],
 	)
 });
-P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+P.synthV(role: \vocoder, frozen: true, take: \lead, params: {|p b| [
 	lyrics: "yes my son",
 	legato: [0.9,1,0.9, ],
 	lag: [0.1, 0, 0],
@@ -2507,7 +2507,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 		text: ["you can allow","Thalassa and me to"],
 	)
 });
-P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+P.synthV(role: \vocoder, frozen: true, take: \lead, params: {|p b| [
 	lyrics: "You can allow + Thalassa + + and me to ",
 	pitchTake: 1,
 	// filter: (midinote: _ - 12), 
@@ -2574,7 +2574,7 @@ Song.durs.filter(\bodies, {|i| i.dropLast ++ ( 0.996 +0.2 ) });
 //P.tune(\bodies,_.drop(2),syl:1);
 // Song.shareVox=VocalRPP(\bodies,\share);
 P.tune(\bodies);
-P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+P.synthV(role: \vocoder, frozen: true, take: \lead, params: {|p b| [
 	lyrics: "r r share your bodies - + again +",
 	legato: [1, 1, 1, 1, 1, 1, 1, 1, 0.8],
 	filter: (midinote: _ - 12), 
@@ -2654,7 +2654,7 @@ P.still( \clear, start: \last, timecode:0, music: { |p b e|
 		text: ["a last moment","together"]
 	);
 });
-P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+P.synthV(role: \vocoder, frozen: true, take: \lead, params: {|p b| [
 	lyrics: "a last moment + together + +",
 	filter: (midinote: _ - 12), 
 	legato: [1, 1, 1, 1, 1, 1, 0.7],

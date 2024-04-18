@@ -984,23 +984,12 @@ Part {
 	printOn {|stream| ^this.name.printOn(stream) }
 	//play immediately
 	play {
-		//Song.allNotesOff;
-		// var synthV = resources.at(\synthV);
-		// synthV.notNil.if{
-		// 	synthV.needsRender.if{
-		// 		^synthV.render
-		// 	} 
-		// };
 		try{
 			frozen.if{
-				^Server.default.bind{
-					// SoundFile.new(pathName:Song.frozenFolder +/+ this.key ++ ".wav").cue(playNow:true)
-					// resources[\freeze].play
 					{
-						// DiskIn.ar(5, resources[\frozen])
 						PlayBuf.ar(5, resources[\freeze].bufnum)
-					}.play
-				}
+					}.play;
+					^resources[\freeze]
 			}
 		};
 		^switch (music.class,
@@ -1010,7 +999,7 @@ Part {
 						Server.default.record( 
 							bus: 0,
 							duration: parent.durs[start].list.drop(syl ? 0).sum + 3 + (resources[\tail] ? 0), //this is why you gotta use .drop(1) aaarg
-							path: Song.frozenFolder +/+ this.name ++ ".wav",
+							path: Song.frozenFolder +/+ this.parent.key ++ "_" ++ this.name ++ ".wav",
 							numChannels: 5
 						)
 					}
@@ -1138,7 +1127,7 @@ P {
 			frozen.if{
 				resources = resources ++ (freeze: 
 					// SoundFile.new(pathName:Song.frozenFolder +/+ key ++ ".wav").cue 
-					Song.frozenFolder +/+ key ++ ".wav"
+					Song.frozenFolder +/+ Song.current ++"_"++ key ++ ".wav"
 					=> Buffer.read(Server.default, _ )
 				);
 				Song.frozenFolder +/+ key ++ ".wav" => _.postln

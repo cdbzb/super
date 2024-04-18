@@ -323,3 +323,4 @@ Trek/SynthV/this-formnula filter=lfs diff=lfs merge=lfs -text
 Trek/SynthV/chamber filter=lfs diff=lfs merge=lfs -text
 Trek/SynthV/ending filter=lfs diff=lfs merge=lfs -text
 Trek/SynthV/song/**.wav filter=lfs diff=lfs merge=lfs -text
+Trek/Frozen/ filter=lfs diff=lfs merge=lfs -text

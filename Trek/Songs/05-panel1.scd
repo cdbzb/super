@@ -490,7 +490,7 @@ P(\click,start:\essence,music: { |p b e|
 	midinote: 1.dm('f#')!20// or is it e ??
 ].p
 );
-P.synthV(\xuan, take:\lala,
+P.synthV(\xuan, frozen:true, take:\lala,
 	pbind: {|p b| p.lala},
 	filter: (midinote: _ + 0), 
 	params: {|p b| [
@@ -514,6 +514,7 @@ P(\chord,start:\essence,music: { |p b e|
 		instrument: \stringyy,
 		dur: "qqqq qqqq".asBeats.warpTo(e.tempoMap).q,
 		out:(0..3),
+		release: 5,
 		amp: p.essenceGain/10
 	].p
 	=> {|i| [i,Pmul(\freq,midiratio(2),i)].q}
@@ -557,7 +558,8 @@ P('chords',start:\outtro,music: {|p b e|
 		instrument: \stringyy,
 		dur: "qq qq qq q q qqe ee e q".asBeats.warpTo(e.tempoMap).q,
 		amp: p.essenceGain/10,
-		out: 2
+		out: 2,
+		release: [3,3, 4, 2, 2, 3, 3, 4 ].q,
 	].pp
 });
 P('click',start:\outtro,music: {|p b e|
@@ -638,7 +640,7 @@ P(\swell, music: { |p b e|
 		* Env([0,0,1,0],b.parse([6,3,1] + [0,0,6]),[0,3,-3]).kr(2,gate:1)
 	}.play
 });
-P.tune(\Pure);
+P.tune(\Pure, _ <> [rests:MuteFirst(), instrument: \stringyy].pm);
 P(\chords, music: { |p b e|
 		[
 			freq: [[-1, 1,3,5,7], [-2, 2,4.5,6,11],[ -11.5,-1.5, 1.5,2.5, 5.5, 7, 11.5 ]].df(\f).q /2,
@@ -977,7 +979,7 @@ P(\bass, music: { |p b e|
 		dur: b.parse([2,5]).q
 	]//.p.play
 });
-P(\twice,syl:0, music: { |p b e|
+P(\twice,syl:0, frozen:true, resources:(tail: 3), music: { |p b e|
 	{
 		var freq = [1, 4.5, 6.5].df(\f,[5, 6, 7]).flat;
 		VarSaw.ar(freq,0, width: SinOsc.ar(0.5))
@@ -1009,11 +1011,13 @@ P(\twice,syl:0, music: { |p b e|
 		=> Out.ar(3,_)
 	}.play
 });
-P(\bonk, syl:6, music: { |p b e|
+P(\bonk, syl:6, frozen:true, music: { |p b e|
 	{
 
 		MembraneHexagonV.ar(Impulse.ar(0)=>Decay.ar(_)*PinkNoise.ar(0.01),size:12, loss: 0.99995)
 		=> DelayN.ar(_,delaytime:b.drop(1)[0]/2)
+		=> Sanitize.ar(_)
+		=> LeakDC.ar(_)
 		// /2 
 		=> Out.ar([1,2,4],_)
 	}.play
@@ -2021,7 +2025,7 @@ P.still(\clear, timecode: 0.seconds,lag: 0.01, music: { |p b e|
 			],
 	)
 });
-P.synthV(role: \vocoder, take: \lead, frozen: true,
+P.synthV(role: \vocoder, take: \lead,resources:(tail: 4), frozen: true,
 	pbind: Song.enlarge(9),
 	params: {|p b| [
 		filter: (midinote: _ - 12), 

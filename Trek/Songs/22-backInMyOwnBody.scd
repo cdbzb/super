@@ -16,6 +16,15 @@
 	// Require("McCoyAndThalassa.scd");
 	// "./McCoyAndThalassa.scd".standardizePath.load;
 ["McCoy leaves the room-1, and the door shuts-2 and locks-3 behind him.","1 2 3".dm(\c)].addLine;
+P(\setupMccoy, music: { |p b e|
+	 Trek.presets.put(\mccoy, \xuan, [
+		\paramTension,1,
+		\paramGender, 0.1,
+		\paramToneShift, 200
+
+	] );
+	Trek.cast.mccoy_(\xuan)
+});
 P.still(\leavingReverse, timecode: 4612.1.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b[0],
@@ -31,6 +40,9 @@ P(\doorcloseLock,syl:0, music: { |p b e|
 		Impulse.ar(0) => Decay.ar(_,0.3) * WhiteNoise.ar(0.1)
 		=> DWGReverbC1C3.ar(_,mix:1,c1:0.3,len:500)
 		=> DelayN.ar(_,1,1)
+		=> LeakDC.ar(_)
+		* EnvGen.cutoff(6, 3)
+		// * 100
 	}.play
 });
 P.still(\lookBackDoor,syl:1, timecode: 4613.2.seconds, music: { |p b e|
@@ -349,7 +361,7 @@ P(\bass, music: { |p b e|
 			freq: [-6, 2].df(\c,[3,4]).q,
 			dur: b.parse([4,3]).q
 		].pp
-	});
+});
 P.synthV(role: \mulhall, take: \lead, params: {|p b| [
 		lyrics: "r she is with sargon + now",
 		pitchTake: 1
@@ -359,7 +371,7 @@ P.synthV(role: \mulhall, take: \lead, params: {|p b| [
 			=> p.synthVTracks.at(e.key).()
 		}.play
 
-	});
+});
 P(\pad, music: { |p b e|
 		[
 			freq: [[1,3,5,7], [-4,3,5,7]].df(\a,\minor).q,
@@ -371,12 +383,12 @@ P(\pad, music: { |p b e|
 		].ppm
 });
 	["I`m Ann Mulhall, back in my own body. ",[-5, 3, 3, 2, 3, 2, 3, 4, 3, 2].dm(\g), ].addLine; // a= Song.durs['back in my'].list
-	P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["I'm Ann Mulhall","back in my own body"],
 		)
-	});
+});
 	Song.setTempoMap('back in my own',"q q q q e e e e q q");
 	Song.quarters['own body']=Song.parseBeats('own body',[2,2,2,2,1,1, 1, 1, 2, 2]);
 P.synthVs(role:\mulhall, take: [\lead, \double], 
@@ -402,7 +414,7 @@ P.synthVs(role:\mulhall, take: [\lead, \double],
 			// => FreeVerb.ar(_,0.5,[0.8,0.9])
 			=> p.synthVTracks.at(e.key).(mix:0)
 		}.play
-	});
+});
 P(\bass,start:'own body',music:{|p b e| 
 		Synth(\cymbalsDS,[out:Effect(_*Line.kr(1,0,5)).bus.index,amp:0.01]);
 		[instrument:\hihat,dur:1!15=>_.warpTo(Song.quarters['own body'].quantizeWindow)=>_.q].pp;
@@ -434,7 +446,7 @@ P(\bass,start:'own body',music:{|p b e|
 		[dur:"..x...xx..x...xx".asDrumPat(1),instrument:\sn_808].p.play(TempoClock.newFromQuarters(p.quarters[e.start]));
 		[dur:"x...x...x...x...".asDrumPat(1),instrument:\bd_808].p.play(TempoClock.newFromQuarters(p.quarters[e.start]))
 
-	});
+});
 P.synthVs(\feng, take: [\descant, \descant2],
 	pbind: [{|p e|
 		[
@@ -467,7 +479,7 @@ P(\chord, music: { |p b e|
 			dur: b.parse([2, 2, 4]).q,
 			out: Effect.bus({|i| BPF.ar(i,[ 1100, 1000 ],0.15) * 4  },)
 		].pp
-	});
+});
 P(\answer,start:'own body',syl:7,music:{|p b e| 
 		MegaBind(
 			[
@@ -488,7 +500,7 @@ P(\answer,start:'own body',syl:7,music:{|p b e|
 				* Env.linen(0,2,3).kr(2,gate:1)
 			}
 		).play
-	});
+});
 	["body back-in-my-own body","12 13 11 5 3 2 3 4".dm(\e) ++ "7 6 7 11 7 6 5".dm(\f)].addLine;
 	Song.setTempoMap('back-in',"g Q Q Q e e e e e e e e q e e");
 P.synthVs(\kevin, take: [\lead, \double], params: {|p b k| [
@@ -519,7 +531,7 @@ P.synthV(\mo, take: \lower, params: {|p b| [
 			e.playbuf
 			=> p.synthVTracks.at(e.key).(mix: 0.1/2)
 		}.play
-	});
+});
 P.synthV(\mo, take: \lead, params: {|p b| [
 		lyrics: "r r r r r r r r back in my own body + -",
 		filter: (midinote: _ - 12), 
@@ -529,7 +541,7 @@ P.synthV(\mo, take: \lead, params: {|p b| [
 			e.playbuf
 			=> p.synthVTracks.at(e.key).(mix: 0.1/2)
 		}.play
-	});
+});
 P(\bass, music: { |p b e|
 		Synth(\cymbalsDS,[out:Effect(_*Line.kr(1,0,5)).bus.index,amp:0.015]);
 		[instrument:\hihat,dur:0.5!15=>_.warpTo(e.tempoMap.quantizeDft(0.99))=>_.q].pp;
@@ -562,9 +574,9 @@ P(\bass, music: { |p b e|
 		[dur: "q q q q".asBeats.warpTo( e.tempoMap.quantizeDft(0.99)) * 2 => _.q,instrument:\bd_808 ].pp;
 		// [dur:"x...x...x...x...".asDrumPat(1),instrument:\bd_808].p.play(TempoClock.newFromQuarters(p.quarters[e.start]))
 
-	});
+});
 	["(Then we see the three blackened and broken spheres.) ",[1,2,3].dm(\f),[3,1.5,3]].addLine;
-	P(\cymbal, music: { |p b e|
+P(\cymbal, music: { |p b e|
 		(
 			instrument: \cymbalsDSStereo,
 			amp:0.001,
@@ -574,7 +586,7 @@ P(\bass, music: { |p b e|
 			att:1,
 			amp:0.02
 		).play
-	});
+});
 P(\clang,start:'broken',music:{|p b e| 
 			[
 				freq: [\f,\g,\A].collect{|i| [-21,-11].df(i)} => _.q,
@@ -595,10 +607,10 @@ P(\clang,start:'broken',music:{|p b e|
 				/200
 				* Env([0,1,0],[ b.sum ] ++ 0.1 ).kr(2,gate:1)
 			}.play
-	});
+});
 P(\sizzle,syl:1, music: { |p b e|
 		{
-		PinkNoise.ar(
+	PinkNoise.ar(
 				Line.kr(0,0.1!4,b.drop(1)[0])
 			)
 			* EnvGen.cutoff(b.drop(1)[0],0)
@@ -606,27 +618,27 @@ P(\sizzle,syl:1, music: { |p b e|
 			* -3.dbamp
 
 		}.play
-	});
+});
 P.still(\one, timecode: 4713.66.seconds, music: { |p b e|
 		e.still.( 
 			wait: b[0],
 			text: ["",""],
 		)
-	});
+});
 P.still(\two,syl:0, timecode: 4717.seconds, music: { |p b e|
 		e.still.( 
 			wait: b.drop(1)[0],
 			text: ["",""],
 		)
-	});
+});
 P.still(\three,syl:1, timecode: 4721.seconds, music: { |p b e|
 		e.still.( 
 			wait: b.drop(1)[0],
 			text: ["",""],
 		)
-	});
+});
 	["MCCOY: Jim, the receptacles. Spock's consciousness was in one of them. ",[3,2,1,5,4,3].dm(\g) ++ [2, 5, 4, 3, 1].dm('a-',scale:\whole) ++ [11, 6, 4, 2].dm(\f,scale:\minor)].addLine;
-	P.still(\MccoyHorrified, timecode: 4724.seconds, music: { |p b e|
+P.still(\MccoyHorrified, timecode: 4724.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
 			text: ["Jim","the receptacles"],
@@ -635,8 +647,8 @@ P.still(\three,syl:1, timecode: 4721.seconds, music: { |p b e|
 				["Spock's consciousness was","in one them"],
 				],
 		)
-	});
-	P(\dyads, music: { |p b e|
+});
+P(\dyads, music: { |p b e|
 		[
 			freq: [\r, 1, 5, 3, 6, 1.5, 7, 1].df(\g,3,\dorian).q,
 			dur: b.parse([2,1, 3, 1, 3, 1, 3,1]).q,
@@ -647,7 +659,7 @@ P.still(\three,syl:1, timecode: 4721.seconds, music: { |p b e|
 			=> HPF.ar(_,400,1.5)
 		},inputChannels:2)
 		].pp
-	});
+});
 P(\bassNotesOne, music: { |p b e|
 		{
 			var freq = [3.df(\g),[2,1].df('a-',scale: \whole),2.df(\f)].flat.dq.demand(b.parse([6,4,4,1])) /4;
@@ -664,16 +676,9 @@ P(\bassNotesOne, music: { |p b e|
 			dur: b.parse([6,4,4,1]).q,
 			decaytime: b.sum,
 			legato: 1,
-			out: Effect.bus({|i| CrossoverDistortion.ar(i, gain: 0.2) / 15 => FreeVerb.ar(_,1,1)  },)
+			out: Effect.bus({|i| CrossoverDistortion.ar(i, gain: 0.2) / 15 => FreeVerb.ar(_,1,1) => LeakDC.ar(_) },)
 		].pp
-	});
-	( Trek.presets.put(\mccoy, \xuan, [
-		\paramTension,1,
-		\paramGender, 0.1,
-		\paramToneShift, 200
-
-	] );
-);
+});
 P.synthVs(role: \mccoy, take: [\lead, \double], params: {|p b| [
 	lyrics: "Jim, the receptacles + + + Spock's consciousness + + was in one of them. ",
 	filter: (midinote: _ - 12), 
@@ -736,8 +741,8 @@ P(\chord, syl:2, music: { |p b e|
 		);
 		// sig =AnalogVintageDistortion.ar(sig, 0.2,0.91) ;
 		sig = LeakDC.ar(sig);
+		sig = sig * EnvGen.cutoff(b.drop(1).sum,2);
 		Out.ar(out,sig);
-		// DetectSilence.ar(sig,doneAction:2);
 	}.play
 });
 ["MCCOY: What are you talking about? There is no Spock to return to his body. (boom) You've ",[-7, -7, 1, 2, 3, 2, -6, -7,  2, 1, 5, 6, 5, 4, 3, 4, 5, 5, 4].dm(\d, scale:\mixolydian) ++ [-5, 5].dm('b-',octave:4)].addLine;
@@ -769,6 +774,7 @@ P.still(\moreMccoy,syl:19, timecode: 4730.5.seconds, music: { |p b e|
 			],
 	)
 });
+
 P.synthV(role: \mccoy, take: \leadTest,
 	pbind: Song.enlarge(13),
 	params: {|p b| [
@@ -782,7 +788,7 @@ P.synthV(role: \mccoy, take: \leadTest,
 			=> p.synthVTracks.at(e.key).(mix: 0.1)
 		}.play
 
-	});
+});
 	// P.tune(\talking);
 P(\dyad,start:\talking,music:{|p b e| 
 		[
@@ -797,10 +803,11 @@ P(\dyad,start:\talking,music:{|p b e|
 				=> FoaDecode.ar(_,Monitors.decoder)}
 			).bus.index
 		].pp
-	});
-	SynthDef( \gendyPluck, { |gate=1 out=0 freq= 400 |
+});
+	SynthDef( \gendyPluck, { |out=0 freq= 400 |
 		var in=PinkNoise.ar(1);
-		var sig=Pluck.ar(in: in,  gate: gate,  maxdelaytime: 0.02,  delaytime: 1/ freq + Gendy1.arWidth(\rate.kr(2)).range(-0.0002, 0.0002),  decaytime: \decaytime.kr(10),  coef: \coef.kr(0.2),  mul: 0.7,  add: 0);
+		var decay = \decaytime.kr(10);
+		var sig=Pluck.ar(in: in,   maxdelaytime: 0.02,  delaytime: 1/ freq + Gendy1.arWidth(\rate.kr(2)).range(-0.0002, 0.0002),  decaytime: \decaytime.kr(10),  coef: \coef.kr(0.2),  mul: 0.7,  add: 0);
 		sig = sig * \amp.kr(0.1) ;
 		sig = DelayN.ar(sig,0.5, 
 			Array.fill(5,{0.2.rand}).sort
@@ -808,6 +815,7 @@ P(\dyad,start:\talking,music:{|p b e|
 		// sig =AnalogVintageDistortion.ar(sig, 0.2,0.91) ;
 		sig = LeakDC.ar(sig);
 		Out.ar(out,sig);
+		Env.asr().kr(2,gate:\gate.kr(1))
 		// DetectSilence.ar(sig,doneAction:2);
 	}).add;
 P(\bass,start:\talking,lag: -0.1,music:{|p b e| 
@@ -849,7 +857,7 @@ P(\bassMirror,start:\loyal,music:{|p b e|
 			rel:0.5
 		].pm(\sawSynthSustain).play
 
-	});
+});
 P(\bass2,start:\loyal,syl:7,music:{|p b e| 
 		[
 			freq: [2,\r, 5,\r, 1].df(\g,octave:3).q ,
@@ -857,13 +865,13 @@ P(\bass2,start:\loyal,syl:7,music:{|p b e|
 			instrument:\sawSynth
 		].pp
 
-	});
+});
 P(\chord,start:\loyal,syl:11,lag:-0.05, music:{|p b e| 
 		(
 			strum:0.06,
 			freq: [1,3,5,11].df(\g,scale:\minor)
 		).play
-	});
+});
 ["KIRK: (boom ba boom ba) Bones, prepare a hypo. The fastest, deadliest poison to Vulcans. ",[-5, -5, -5, -5, 5, 5, 5, 5, 11, 5, 12,  ].dm(\b,octave:4) ++ [12,13,12,5, 13,14,13,6, 14,15,14,5,11,7].dm(\c)].addLine;
 P.still(\kirk, timecode: 4739.3.seconds, music: { |p b e|
 	 e.still.( 
@@ -934,7 +942,7 @@ P(\lick,start:\fastest,syl:10,music:{|p b e|
 			depth:0,
 			amp: 0.04
 		].ppm()
-	});
+});
 ["(boom boom) Spock's consciousness is-- gone. We must kill his body, the thing in it.",[-1, -3, 3, 4, 4, 4, 3, 2, 2].dm(\a) ++ [2, 3, 6, 7, 11, 5, 11, 12, 11, 5].dm(\e)].addLine;
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
@@ -1019,16 +1027,20 @@ P(\bass,start:'kill his body',syl:12,music:{|p b e|
 			freq: [1, 11, 1].df(\e).q /[ 4],
 			dur: b.drop(1).parse([ [1, 1/2],[1/2, 1], 1 ]).q,
 		].pma(\default).play;
-	});
+});
+
 P(\chords,start:'kill his body',syl:1,music:{|p b e| 
 		[
 			freq:[[1,3, 5],[1,4, 5],[1,4, 5],[1,4, 5],[1,3, 5],[-7,4.5]].df(\a,4).q,
 			dur:b.drop(1).parse([1,1,1,1,2,1]).postln.q
 		].pp
-	});
+});
 P(\guiro,start:'kill his body',syl:11,music:{|p b e| 
 		//FIXME!!!!!
-		{Shakers.ar(19, 1, 1, 1, 32, 60, Env([0,0.5],1,\sin).kr(0,1))}.play
+		{
+			Shakers.ar(19, 1, 1, 1, 32, 60, Env([0,0.5],1,\sin).kr(0,1))
+			* EnvGen.cutoff(1, 1)
+		}.play
 });
 P(\cymbal,syl:7, music: { |p b e|
 	{
@@ -1072,6 +1084,6 @@ P(\chords2,start:'kill his body',syl:12,music:{|p b e|
 		},
 		{|i|  Mix.ar(i)}
 	).play
-	});
+});
 )
 

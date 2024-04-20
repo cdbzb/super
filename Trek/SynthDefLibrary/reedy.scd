@@ -26,7 +26,7 @@ SynthDef( \reedyAsr , { |freq = 400 amp = 0.1 attack=0.5 sustain=1 release=9| //
 		=> {|i| i*(i.mean/2+0.0004/(i.mean))}
 	)
 	=>Mix.ar(_) =>_.tanh
-	* Env.asr(attack,sustain,release).kr(0,gate:\gate.kr(1))
+	* Env.asr(attack,sustain,release).kr(2,gate:\gate.kr(1))
 	=> Out.ar(\out.kr(0),_)
 }
 	).add.tag(\key,\pad);

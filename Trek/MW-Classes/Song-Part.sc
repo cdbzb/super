@@ -987,7 +987,7 @@ Part {
 		try{
 			frozen.if{
 					{
-						PlayBuf.ar(5, resources[\freeze].bufnum)
+						PlayBuf.ar(5, resources[\freeze].bufnum, doneAction:2)
 					}.play;
 					^resources[\freeze]
 			}

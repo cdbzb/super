@@ -14,6 +14,7 @@ SynthDef.new(\bd_808, {
 	sig = (sig + sub + punch) * 2.5;
 	sig = Limiter.ar(sig, 0.5) * amp;
 	sig = Pan2.ar(sig, 0);
+	sig = sig * EnvGen.cutoff(1,1);
 	Out.ar(\out.kr(0), sig);
 }).add.tag(\kick).startPack(\808);
 

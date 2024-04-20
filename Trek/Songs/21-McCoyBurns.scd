@@ -708,7 +708,8 @@ P.synthV(role: \thalassa, params: {|p b| [
 			+ VarSaw.ar(freq,0,0.9,0.2)
 			* \amp.kr(0.1)
 			* Env.linen([0,1,1,0],[0.05,dur,4]).kr(0,gate:\gate.kr(1))
-			=> Out.ar(\out.kr(0),_)
+			=> Out.ar(\out.kr(0),_);
+			Env.asr(releaseTime:5).kr(2, gate: \gate.kr(1))
 		}.asDefName;
 P(\bass,start:\require,music:{|p b e| 
 		[
@@ -1508,9 +1509,6 @@ P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 			=> p.synthVTracks.at(e.key).()
 		}.play
 });
-P(\chords, music: { |p b e|
-	
-});
 P.double(role:\thalassa, take: \lead,
 
 		filter: (midinote: _ + 12), 
@@ -1522,7 +1520,7 @@ P.double(role:\thalassa, take: \lead,
 			*[0,1] /2
 		}.play
 	});
-P.tune(\defy, {|i| Pset(\out,Effect(CrossoverDistortion.ar(_,drive:0.9,smooth:0.1) * 0.02).bus.index,i) => Pmul(\freq,[1,0.75]!5 => _.q ++ [1].q(inf),_)});
+P.tune(\defy, {|i| Pset(\out,Effect( { |i| CrossoverDistortion.ar(i,drive:0.9,smooth:0.1) * 0.02 => LeakDC.ar(_)} ).bus.index,i) => Pmul(\freq,[1,0.75]!5 => _.q ++ [1].q(inf),_)});
 P(\dist, music: { |p b e|
 	[
 		midinote: p.tune[e.start].postln.fin(6),
@@ -1817,18 +1815,19 @@ P(\percussion, music: { |p b e|
 		rests: MuteFirst(),
 		amp: 0.03, out: 3
 	].pp;
-	[
-		instrument: \shakeEnv,
-		inst: 0,
-		up: 0.5, down: 0.2,
-		dur: "x*24".beats.warpTo(e.tempoMap).q,
-		amp: 0.02,
-		out: Effect.bus({|i| i/4  },out: 2),
-		rests: [\r, \r, \r, \r].q ++ [1].q(inf)
-		// legato: 0.1,
-	]//.pp
-	;
-	[		instrument: \cymbal_808, 
+	// [
+	// 	instrument: \shakeEnv,
+	// 	inst: 0,
+	// 	up: 0.5, down: 0.2,
+	// 	dur: "x*24".beats.warpTo(e.tempoMap).q,
+	// 	amp: 0.02,
+	// 	out: Effect.bus({|i| i/4  },out: 2),
+	// 	rests: [\r, \r, \r, \r].q ++ [1].q(inf)
+	// 	// legato: 0.1,
+	// ].pp
+	// ;
+	[		
+		instrument: \cymbal_808, 
 		dur: "q*6".beats.warpTo(e.tempoMap).q,
 		rests: MuteFirst()
 	].p.play

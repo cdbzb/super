@@ -9,11 +9,13 @@ SynthDef(\defaultPorto,{
 	* Env.asr(\attack.kr(2),1,release).kr(0,gate:gate)
 	* 0.1
 	=> BMoog.ar(_,1800,0.2,2.1)
-	=> (sig = FreeVerb.ar(_,0.4,1))
+	=> FreeVerb.ar(_,0.4,1)
+	=> LeakDC.ar(_)
 	* \amp.kr(0.1) * 10
+	=> .first
+	DetectSilence.ar(_,doneAction:2)
 	//=> DetectSilenceDry.ar(_,doneAction:2)
 	=> Out.ar(Rand(4),_);
-	DetectSilence.ar(_,doneAction:2)
 //	Env.cutoff(release+3).kr(2,gate:gate)
 },variants:(
 	noisy1: [\ampScale,1.0,\durScale,1.5],

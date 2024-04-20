@@ -1,13 +1,15 @@
 (
-  { 
+
+  SynthDef(\membrane,{ 
     Impulse.ar(0)
     =>Decay.ar(_,0.05)
     * ClipNoise.ar(0.1)
     =>MembraneHexagon.ar(_,\tension.kr( 0.008, 0.01 ),\loss.kr ( 0.99996 ) ) 
     * \amp.kr(0.1) * 10
-    =>Out.ar(\out.kr(0),_)
-  }
-  =>SynthDef(\membrane,_)=>_.add=>_.tag(\perc); 
+	=> LeakDC.ar(_) 
+	=>.first DetectSilence.ar(_, doneAction:2)
+    =>Out.ar(\out.kr(0),_);
+   }).add.tag(\perc); 
 
 
 
@@ -34,7 +36,9 @@ SynthDef(\cleanPluck,{
 				\damping.kr(30),
 				Impulse.ar(0)*\volume.kr(0.1),
 				\detune.kr(1.08),
-				\coupling.kr(0.01))
+				\coupling.kr(0.01)
+			)
 => Out.ar(\out.ir(0),_)
 }).add.tag(\pluck);
 )
+

@@ -1,8 +1,30 @@
 // Trek.loadSongs([0,1])
 Trek.prepare;
-Trek.strum1.syn.run(false);Trek.strum2.syn.run(false);s.latency_(0.4);s.plotTree;s.makeWindow;Stills.muted_(true);Trek.playRange(0, 0, 22)
-Trek.strum2.syn.run(false)
-s.makeWindow
+//load Transitions below!!
+Trek.strum1.syn.run(false);Trek.strum2.syn.run(false);s.latency_(0.2);s.plotTree;s.makeWindow;Stills.muted_(true);Trek.playRange(0, 0, 22)//sum-22
+
+
+//finding hung synths
+~queryParts = {
+	Song.sections.do({|i| P(\query,start:i, music: {|p b e|
+		"QUERY_" ++ e.start => _.postln;
+		{s.defaultGroup.queryTree}.defer;
+		// s.defaultGroup.queryTree;
+	}) });
+}
+~verbosePlay = {|num|
+	fork{
+		Trek.load(num);
+		4.wait;
+		~queryParts.();
+		Song.play
+	}
+}
+
+~verbosePlay.(20)
+s.queryAllNodes
+Trek.editFile(20)
+
 
 ( // - 0-1
 Trek.faders[0] = { Trek.transitionGroup.release };
@@ -26,8 +48,8 @@ Trek.faders[1] = {
 
 Trek.setTransition(1, -2, {
 	2.wait;
-	Trek.transitionGroup.release;
-	(instrument:\cymbalsDS, att:2.5).play(target:Trek.transitionGroup,addAction:\addToTail);
+	// Trek.transitionGroup.release;
+	(instrument:\cymbalsDS,amp:0.03, att:2.5).play(target:Trek.transitionGroup,addAction:\addToTail);
 
 	s.freeMyDefaultGroup;
 	defer{ Stills.plotTitleCard("3") };
@@ -36,7 +58,7 @@ Trek.setTransition(1, -2, {
 
 Trek.setTransition(2, -2, 
 	func: {
-		Trek.faders[3].();
+		Trek.faders[3];
 		0
 	}, 
 	trimEnd: 1, 
@@ -58,7 +80,7 @@ Trek.setTransition(3, -1,
 		 Trek.faders[4].();
 		 1;
 	 }, trimStart: 1, trimEnd:0
-).();
+);
 
 Trek.faders[4] = {
 	{
@@ -80,7 +102,7 @@ Trek.setTransition(5, -1, func:{
 Trek.setTransition(6, -2);
 Trek.setTransition(7, -2, func:{
 	1.wait;
-	defer{ Stills.plotTitleCard("3", dur:3, fade:1)}; 
+	defer{ Stills.plotTitleCard("4", dur:3, fade:1)}; 
 	fork{1.wait; Server.default.freeMyDefaultGroup};
 		(amp:0.03, instrument:\cymbalsDS, att:2.5, group: Trek.transitionGroup).play;
 	4.5
@@ -111,7 +133,7 @@ Trek.setTransition(9, -1,
 	func: {
 		2.5.wait;
 		Trek.transitionGroup.release(4);
-		defer{ Stills.plotTitleCard("4", dur: 3.5); };
+		defer{ Stills.plotTitleCard("5", dur: 3.5); };
 		fork{1.wait; Server.default.freeMyDefaultGroup};
 		(instrument:\cymbalsDS, att:2.5, amp:0.03, group: Trek.transitionGroup, addAction:\addToTail).play;
 		1.wait;
@@ -149,7 +171,7 @@ Trek.setTransition(11, -1,func:{
 }, );
 Trek.setTransition(12, -1,func:{
 	1.5.wait;
-	defer{ Stills.plotTitleCard("5", dur: 3.5); };
+	defer{ Stills.plotTitleCard("6", dur: 3.5); };
 	3.5
 });
 Trek.setTransition(13, -1, { 20 });

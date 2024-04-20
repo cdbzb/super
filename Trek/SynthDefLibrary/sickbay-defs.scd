@@ -1,11 +1,29 @@
 SynthDef(\wash,{| att=2 rel=3 curve=( -4 )| 
 	Saw.ar(\freq.kr(400,\freqLag.kr(2.5))*Rand(0.99!4,1.01),\amp.kr(0.1,1))*
 	Env.perc(att,rel,curve:curve).kr(2,gate:\gate.kr(1))
-	=>MoogLadder.ar(_,800*Rand(0.5,8.3!4)*SinOsc.kr(Rand(2.5,3.1)).range(Rand(0.95!4,0.98),1.03),res:0.8)
+	* -7.dbamp
+	=>MoogVCF.ar(_,800*Rand(0.5,8.3!4)*SinOsc.kr(Rand(2.5,3.1))
+	.range(Rand(0.95
+		// !4
+		,0.98) ,1.03)
+	,res:0.8)
+
 	=>Pan2.ar(_,Rand(-1,1!4))
-	=>Out.ar(\out.ir(0),_)
+	=>Out.ar(\out.kr(0),_)
 }).add.tag(\keys);
 
+SynthDef(\washOld,{| att=2 rel=3 curve=( -4 )| 
+	Saw.ar(\freq.kr(400,\freqLag.kr(2.5))*Rand(0.99!4,1.01),\amp.kr(0.1,1))*
+	Env.perc(att,rel,curve:curve).kr(2,gate:\gate.kr(1))
+	=> MoogLadder.ar(_,800*Rand(0.5,8.3!4)*SinOsc.kr(Rand(2.5,3.1))
+	.range(Rand(0.95
+		// !4
+		,0.98) ,1.03)
+	,res:0.8)
+
+	=>Pan2.ar(_,Rand(-1,1!4))
+	=>Out.ar(\out.kr(0),_)
+}).add.tag(\keys);
 SynthDef(\washVarLag,{| att=2 rel=3 curve=( -4 )| 
 	Saw.ar(\freq.kr(400).lag2(\freqLag.kr(2.5))*Rand(0.99!4,1.01),\amp.kr(0.1,1))*
 	Env.perc(att,rel,curve:curve).kr(2,gate:\gate.kr(1))

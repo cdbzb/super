@@ -2512,6 +2512,7 @@ P(\boom, music: { |p b e|
 			freq: [\r, [-5,5,11], [-5,5]].df('f#',3).q,
 			att: 40,len: 0,rel:5, length: 5,
 			dur: "qqqqqq qqqq".asBeats.warpTo( e.tempoMap ).q,
+			group: Trek.transitionGroup
 			// instrument: \wash,att:0.1
 		] => _.pp
 	}
@@ -2576,7 +2577,8 @@ P(\xtraBassnotes, music: { |p b e|
 	[
 		freq: [\r, -7,-7,  ].df('e-',3,\mixolydian).q,
 		amp:0.2,
-		dur: "qqqqqq qqq qq ".asBeats.warpTo( e.tempoMap ).q
+		dur: "qqqqqq qqq qq ".asBeats.warpTo( e.tempoMap ).q,
+		group: Trek.transitionGroup
 	].pp
 });
 // P.tune();
@@ -2592,7 +2594,8 @@ P(\lastBassnote, music: { |p b e|
 	(
 		midinote: p.tune[e.start].list[0] - [12,24],
 		dur: 10,
-		out: Effect.bus({ |i|  i * Env.linen(0,b.sum,4).kr(2,gate:1) => Pan2.ar(_,0)})
+		out: Effect.bus({ |i|  i * Env.linen(0,b.sum,4).kr(2,gate:1) => Pan2.ar(_,0)}),
+		group: Trek.transitionGroup
 	).play
 });
 P(\plink, music: { |p b e|
@@ -2602,6 +2605,6 @@ P(\plink, music: { |p b e|
 		* [0.5,1] * 3.dbamp
 		=> DWGReverbC1C3.ar(_,mix:0.4)
 		* EnvGen.cutoff(b[0],9,-1)
-	}.play
+	}.play(Trek.transitionGroup)
 });
 )

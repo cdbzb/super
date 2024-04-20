@@ -875,7 +875,7 @@ P(\chord, music: { |p b e|
 		.linlin(0,1,0.98,1.02)
 		, width: 0.4)
 		/40
-		* Env.perc(0.05,5).kr(0,gate:1)
+		* Env.perc(0.05,5).kr(2,gate:1)
 		=> DelayN.ar(_, 0.3, [0.01,0.062,0.19])
 	}.play
 });
@@ -1517,12 +1517,14 @@ P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 	filter: (midinote: _ - 12), 
 	pitchTake: 1
 ] }, music:{|p b e|
+	Trek.cast.mccoy=\xuan;
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 	}.play
 
 });
+
 [" just as you're burning that one up now.","1 -7 -6 -7 1 3 4 1 5 ".dm(\g,\mixolydian)].addLine;/*MCCOY:*/
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
@@ -1633,33 +1635,6 @@ P.synthV(role:\sargon, filter:(midinote: _-12), params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-a = Item(\eyeWillReturn);
-P(\IWillReturnVocal,music: { |p b e|
-	{0.2 * PlayBuf.ar(1,a.buffer.bufnum, rate:[0.99,1.012]) => FreeVerb.ar(_, mix:0.33, room:0.5, damp:0.5, mul:1.0, add:0.0)
-	=> DelayN.ar(_,0.2)
-}
-// .play
-;
-	Item(\eyeWillReturn).refresh.play(
-		rate: [1,1.01],
-		//amp: 0.1,
-		amp:0,
-		out: Effect.bus( {|i|
-				[
-					FreeVerb.ar(i,1,1)
-					=> HPF.ar(_,300)
-					=>.first DetectSilence.ar(_,doneAction:2)
-					,
-					i
-					=> HPF.ar(_,300)
-					* 0.9
-				]
-			}
-			//out:1,
-			//,inputChannels:2
-		)
-	)
-});
 P(\figure,start:\limit,syl:0,music:
 	{|p b e|
 		[
@@ -1674,19 +1649,6 @@ P(\figure,start:\limit,syl:0,music:
 			out: Effect.bus({|i| Phaser1.ar(i,rate:3,fb:0.6) }),
 		].pp
 	}
-);
-P(\double,start:\limit,music:{
-		Item(\eyeWillReturnDouble).play(
-				//amp: 0.1,
-				amp:0.0,
-				out: Effect(
-						{|i|
-								HPF.ar(i,200)
-						}
-				).bus.index
-
-		)
-}
 );
 P(\bass,start:\limit,music: {|p b e|
 	[

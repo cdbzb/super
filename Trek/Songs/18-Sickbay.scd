@@ -42,6 +42,7 @@ P(\filter,start:0,music:{|p b e|
 		p.pts.select{|i| i.still.notNil}.select{|i| i.name.asString.contains("halass") }.do{|i|i.monitor.postln}
 });
 ["Sick Bay.. Sick Bay, Mc- Coy","e c f# d e g#"].addLine; //0
+
 P.synthV(\genbu, take: \lead, params: {|p b| [
 	lyrics: "Sick Bay r r r r",
 	phonemes:["s i k", "b e i"],
@@ -111,6 +112,7 @@ P.synthV(role: \mccoy, take: nil, params: {|p b| [
 
 	// pitchTake: 1
 ] }, music:{|p b e|
+	Trek.cast.mccoy=\xuan;
 	{
 		e.playbuf
 

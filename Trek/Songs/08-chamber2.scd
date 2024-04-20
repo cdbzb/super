@@ -656,7 +656,7 @@ P(\triangle,syl:1, music: { |p b e|
 				Array.series(num,0.1,-0.02),
 				{8.0.rand}!num
 			],
-			Env.perc().kr(0,gate:1) + Impulse.ar(0) * WhiteNoise.ar(0.1)
+			Env.perc().kr(2,gate:1) + Impulse.ar(0) * WhiteNoise.ar(0.1)
 			/ 60
 		)
 	}.play

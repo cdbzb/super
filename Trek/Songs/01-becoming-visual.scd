@@ -668,6 +668,7 @@ P(\bass, music: { |p b e|
 SynthDef(\singleTamb,{
 	Shakers.ar(3,resonantFreq:\resonantFreq.kr(1),energy:\energy.kr(1))
 	* \amp.kr(0.1) * 10
+	* EnvGen.cutoff(0.3,0.1)
 	=> Out.ar(\out.kr(0),_)
 }).add;
 P(\pianoAndBass, syl: 5, music: { |p b e|
@@ -1414,6 +1415,7 @@ P(\wibble, music:{
 			3.wait;
 			b.release; c.release;
 			4.wait;
+			r.release
 }).play;
 
 });
@@ -2083,7 +2085,7 @@ P(\line, music: { |p b e|
 		amp: 0.01 * p.g2
 	).play
 });
-P.synthV(role: \vocoder, frozen:true, take: \lead, params: {|p b| [
+P.synthV(role: \vocoder,frozen:true, take: \lead, params: {|p b| [
 	lyrics: "I am sargon +",
 	legato: [0.7, 1, 1, 0.7, ],
 	pitchTake: 1,

@@ -147,6 +147,7 @@ beam = beam * (phasor - (Wrap.ar(phasor) - 0.5));
 	reverb = GVerb.ar(transporter + (activate * 0.1), 100, 8, 0.1, 0.9);
 	reverb = reverb + (activate * 0.5)!2;
 	reverb / 12
+	* EnvGen.cutoff(b.sum+2,1)
 
 }.play
 });
@@ -195,6 +196,7 @@ P(\bloop, music: { |p b e|
 		=> Mix.ar(_)
 		* -15.dbamp
 		=> p.early.(_,-0.5)
+		* EnvGen.cutoff(0.1,0.5,\lin,2)
 	}.play
 });
 P.still(\communicator, timecode: 902.seconds, music: { |p b e|
@@ -470,9 +472,9 @@ P(\bassnote,syl:0, music: { |p b e|
 });
 P(\chord, music: { |p b e|
 	[
-		freq: [ \r,[-6,1, 4].df(\c), \r, [-6,2,4].df(\c),\r,[-7,1,3].df('b-',4,\mixolydian),[-6,1,4].df('b-',4) ].q,
-		dur: b.parse([ 1,1,1, 1,1,3, 4 ]).q,
-		legato: [0.9,0.8,0.9,0.8,1,1,1 ].q(),
+		freq: [ \r,[-6,1, 4].df(\c), \r, [-6,2,4].df(\c),\r,[-7,1,3].df('b-',4,\mixolydian),[-6,1,4].df('b-',4), \r ].q,
+		dur: b.parse([ 1,1,1, 1,1,3,  1]).q,
+		legato: [0.9,0.8,0.9,0.8,1,1, 0.9].q(),
 		instrument: \sawSynthSustain, amp:0.03, out: Effect.bus({|i| i[0]=> Out.ar(3, _); i[1]=> Out.ar(4, _); WhiteNoise.ar(0.0001) * EnvGen.cutoff(b.sum, 0) },inputChannels:2) 
 	].ppma
 });
@@ -884,7 +886,7 @@ P('wall',start:'KIRK:(boom)',syl:5,music: {|p b e|
 		[3,3,5,7].df(\g,\mixolydian)
 		=> Saw.ar(_,0.1)
 		=>MoogFF.ar(_, 
-			freq: Env.triangle(b[0] + 6, 9000).kr(0,gate:1) +100 ,
+			freq: Env.triangle(b[0] + 6, 9000).kr(2,gate:1) +100 ,
 			rq:3.0
 		)
 	}.play
@@ -1170,7 +1172,7 @@ P('click',start:\All,music: {|p b e|
 	].p//p
 	//=>  { |i| Ptpar( [ [1].warpTo(e.tempoMap.quantize(1,0,7)).unbubble, i ] ).play} 
 });
-P('cymbal',start:\All,music: {|p b e| 
+P('drumz',start:\All,music: {|p b e| 
 	var dur,pat = "k k s ks ks kk s k k k s " ; 
 	dur = pat.split(Char.space).collect{  // function to make "words" into subarrays
 		|i| 
@@ -1353,7 +1355,13 @@ P.still(\closedd,lag:0.01, timecode: 957.29.seconds, music: { |p b e|
 });
 P(\door,start:\opens,music:{|p b e| 
 
-	(instrument:\stringyy,dur:b.sum,amp:0.4,freq:[-1,-11].df('f#'),attack:5).play;
+	(
+		instrument:\stringyy,
+		dur:b.sum,
+		amp:0.4,
+		freq:[-1,-11].df('f#'),
+		attack:5
+	).play;
 
 });
 P(\crunch,start:\opens,music: { |p b e|
@@ -1404,7 +1412,8 @@ P.synthV(role: \vocoder, frozen:true, params: {|p b| [
 // P.tune(\Sargon);
 P('tril',start:\Sargon,music: { |p b e|
 	Song.changeTrill.(4.5);
-	{Env([0.1,0],3).kr(2,gate:1)}.play(s,p.trillBus)
+	{Env([0.1,0],3).kr(2,gate:1)}.play(s,p.trillBus);
+	fork{3.wait; p.trillSynth.do(_.free)}
 });
 P(\chords,start:\Sargon,music: { |p b e|
 	[

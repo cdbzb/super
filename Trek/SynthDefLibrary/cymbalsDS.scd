@@ -11,6 +11,7 @@
 		res	= Ringz.ar(lodriver + hidriver + thwack, freqs).mean;
 		((res * 1) + (lodriver * 2) + thwack).dup * \amp.kr(0.1)
 		* Env([0,1],\att.kr(0.001)).kr()
+		=> LeakDC.ar(_)
 		=>.first DetectSilence.ar(_,doneAction:2)
 		=>  Out.ar(\out.ir,_) 
 	}).add.tag(\cymbal);

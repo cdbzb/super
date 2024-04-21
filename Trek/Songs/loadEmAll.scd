@@ -3,15 +3,17 @@ Trek.prepare;
 //load Transitions below!!
 Trek.strum1.syn.run(false);Trek.strum2.syn.run(false);s.latency_(0.2);s.plotTree;s.makeWindow;Stills.muted_(true);Trek.playRange(0, 0, 22)//sum-22
 
-
+a = Bus.audio
+a.free
 //finding hung synths
+(
 ~queryParts = {
 	Song.sections.do({|i| P(\query,start:i, music: {|p b e|
 		"QUERY_" ++ e.start => _.postln;
 		{s.defaultGroup.queryTree}.defer;
 		// s.defaultGroup.queryTree;
 	}) });
-}
+};
 ~verbosePlay = {|num|
 	fork{
 		Trek.load(num);
@@ -20,11 +22,14 @@ Trek.strum1.syn.run(false);Trek.strum2.syn.run(false);s.latency_(0.2);s.plotTree
 		Song.play
 	}
 }
+)
 
-~verbosePlay.(20)
+
+~verbosePlay.(17)
 s.queryAllNodes
-Trek.editFile(20)
+Trek.editFile(17)
 
+//QUERY 11, 10, and 8
 
 ( // - 0-1
 Trek.faders[0] = { Trek.transitionGroup.release };

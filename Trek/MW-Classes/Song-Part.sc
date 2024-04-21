@@ -1113,7 +1113,7 @@ Part {
 // Constructor for Parts
 P { 
     *new {
-        |key start syl lag=0 music song resources rpp synthV record frozen|
+        |key start syl lag=0 music song resources rpp synthV record frozen=false|
         var part,error;
 	{
 		start = this.calcStart(start); //finds it if not provided!
@@ -1122,8 +1122,6 @@ P {
 		key = (key ++ "_" ++ start).asSymbol;
 		resources = ( resources ++ (rpp: rpp) ? resources );
 		try{
-			\tryingFrozen.postln; 
-			frozen.postln;
 			frozen.if{
 				resources = resources ++ (freeze: 
 					// SoundFile.new(pathName:Song.frozenFolder +/+ key ++ ".wav").cue 

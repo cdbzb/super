@@ -34,6 +34,9 @@ P.still(\close, timecode: 4245.6.seconds, music: { |p b e|
 	)
 });
 P.tune();
+P(\setupMccoy, music: { |p b e|
+	Trek.cast.mccoy=\xuan
+});
 [ "MCCOY: Yes? ", [1].dm('e-') ].addLine;
 P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 	lyrics: "yes?",
@@ -217,7 +220,7 @@ P(\bassnote, music: { |p b e|
 			i 
 			* 2 
 			// => _.tanh 
-			=> {|i| CrossoverDistortion.ar(in:i, amp:0.1, smooth:0.9)}
+			=> {|i| CrossoverDistortion.ar(in:i, amp:0.1, smooth:0.9) => LeakDC.ar(_)}
 			=> Pan2.ar(_,0) 
 		},)
 	].pp;
@@ -884,7 +887,8 @@ P(\trem, music: { |p b e|
 			=> Splay.ar(_)
 			+
 			Impulse.ar(0)
-			=> FreeVerb.ar(_,1,1)
+			=> FreeVerb.ar(_,b.sum,1)
+			* Env.linen(0, 2, 3).kr(2,gate:1)
 			=> Splay.ar(_)
 		}.play
 		
@@ -938,7 +942,6 @@ P(\bass,start:'we can take what we wish',music:{|p b e|
 		dur: b.parse([4,1,1,1,2]).q,
 		width: [2,2,2,2,2]/2 ,
 		pan: -0.5,
-
 	].pma(\default).play
 	});
 [ "Neither you, this ship, nor worlds have the power to stop us." ,[5, 5, 6, 5, 6, 5].dm('c#',5,\minor) ++ [7, 6, 11, 7, 6, 5, 4 ].dm(\c,5,\mixolydian) ++ [7, 11, 7, 7, 6].dm(\d,5,\mixolydian) ].addLine;
@@ -1434,7 +1437,10 @@ P(\bass,start:\prancing,music:{|p b e|
 			instrument:\sawSynthSustain,
 			// dur:1!15 ++ [0.99] => _.warpTo(e.tempoMap.quantizeDft()) => _.q,
 			dur: "qqq q qqq q exexexex".asBeats.warpTo( e.tempoMap.quantizeDft ).q,
-			out: Effect(CrossoverDistortion.ar(_,smooth:0.98), inputChannels:2 ).bus.index
+			out: Effect({ |i| CrossoverDistortion.ar(i,smooth:0.98) 
+			=> LeakDC.ar(_)
+			// * EnvGen.cutoff(Song.durs[\prance].list.sum, 1)
+		} , inputChannels:2 ).bus.index
 		].pp	
 		;
 		[
@@ -1469,12 +1475,8 @@ P(\bass,start:\prancing,music:{|p b e|
 			lag:b.q/2,
 			amp:2
 		].p;
-	});
-	
+});
 
-
-	Song.durs[\mede].list;
-	Song.durs[\defy].list;
 [ "(r) You dare defy one you should be on your knees wo -- rshipping? ",[-1,1, 1.5, 1, -6.5].dm(\f) ++ [1, 3, 4, 5, 3, 5, 6].dm(\d,scale: \whole) ++ [3,4,3,-5].dm(\b) ].addLine;
 // Song.durs.filter({|i| i[0] * 0.5 =>_.bubble ++ i.drop(1)});
 P(\crash, music: { |p b e|
@@ -1931,12 +1933,12 @@ P(\bassnote,start:\Forgive,syl:0,music:{|p b e|
 		(
 			freq:[-1,-11].df(\c),
 			amp: 0.07,
-			out:Effect(
+			out:Effect.bus(
 				{ |i| 
 			PlateReverb.ar(i,mix:0.8)
 					* Env.linen(0,1,6).kr(2) 
 				} 
-			).bus.index
+			)
 		).play
 		
 	});

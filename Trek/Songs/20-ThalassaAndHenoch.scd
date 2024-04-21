@@ -434,7 +434,7 @@ P(\chord,syl:2, music: { |p b e|
 		VarSaw.ar(freq,0,0.9)
 		/15
 		=> HPF.ar(_,300)
-		* Env([0,0,1,0],[offset,0.05,( freq + 1800 ).reciprocal * 4000]).kr(0,gate:1)
+		* Env([0,0,1,0],[offset,0.05,( freq + 1800 ).reciprocal * 4000]).kr(2,gate:1)
 	}.play
 });
 P(\test, music: { |p b e|
@@ -536,7 +536,7 @@ P(\line, music: { |p b e|
 		freq: [11, 11, 7].df('a-',4,\mixolydian) ++ [ 4, 3, 1, 2, 1,-4.5,5].df(\c,6) =>  _.q /[8,4],
 		dur: b.parse([1, 3, 4, 1, 1, 1,1, 1, 2]) ++ e.bNext[..4].sum => _.flat => _.q,
 		legato:0.99, instrument: \help_oteypiano,amp:0.2,
-		out: Effect.bus({|i|  i => FreeVerb.ar(_,0.2,1) =>CrossoverDistortion.ar(i,0.1,0.95 ) },out:3)
+		out: Effect.bus({|i|  =>CrossoverDistortion.ar(i,0.1,0.95 ) => LeakDC.ar(_) },out:3)
 	].pp;
 	[
 		freq: [11, 11, 7].df('a-',4,\mixolydian) ++ [ 4, 3, 1, 2, 1,-4.5,5].df(\c,6) =>  _.q /[2,4],
@@ -544,20 +544,22 @@ P(\line, music: { |p b e|
 		legato:0.99,
 		// instrument: \help_oteypiano,amp:0.2,
 		out: Effect.bus({|i|  i => FreeVerb.ar(_,0.2,1) =>SineShaper.ar(i,0.1,0.95 ) },out:2)
-	].pp;
+	]//.pp
+	;
 	[
 		freq: "1 1 2 3 4".df('a-',4).q,
 		instrument: \harp,coef:0.4,amp: 0.05,
 		dur: b.parse([1, 1, 1, 1, 4]).q,
 
-	].pp;
+	]//.pp
+	;
 	[
 		freq: [\r,5, 3, 1].df('b-',[3,5]).q,
 		dur: b.parse([11,2,1,1]).q,
 		rel: 5,
 		instrument: \sawSynth,
 
-	].pp
+	]//.pp
 });
 
 // [ "Sargon would've required that you enter the mechanism immediately. ","r" ].addLine;
@@ -603,7 +605,7 @@ P(\doubling, music: { |p b e|
 P(\chord, syl: 6, music: { |p b e|
 	(
 		freq: [1,3,5].df(\a, 4,\minor),
-		out: Effect.bus({|i| CrossoverDistortion.ar(i)/10 + i => FreeVerb.ar(_,1,[ 1,0.8 ]) },)
+		out: Effect.bus({|i| CrossoverDistortion.ar(i) => LeakDC.ar(_) / 10 + i => FreeVerb.ar(_,1,[ 1,0.8 ]) },)
 
 	).play
 });

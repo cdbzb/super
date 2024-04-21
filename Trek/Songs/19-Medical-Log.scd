@@ -416,8 +416,6 @@ P.still( \console, lag:3, timecode:4138.seconds, music: { |p b e|
 	e.still.value(
 		wait: b.sum - 2 ,
 		fadeIn:2,
-		// text: ["all his vital organs","are now working, Doctor"]
-
 	);
 });
 P(\machines,start:\SickBay,music:{|p b e| 
@@ -436,7 +434,6 @@ P(\machines,start:\SickBay,music:{|p b e|
 	}.play
 });
 [ "NURSE: All his vital organs are now working, Doctor. ",[3,4,5,3,7,6,5,4,11,5,4,3].dm(\b,scale:\mixolydian,transpose: 6) ].addLine;
-
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	e.still.( 
 		wait: b.sum,
@@ -470,6 +467,7 @@ P(\tuneTest,start:\vital,music:{|p b e|
 			Env.perc().kr(0,gate: TDuty.kr(b.dropLast.dq))
 		)
 		=> FreeVerb.ar(_,0.8,0.8)
+		* EnvGen.cutoff( b.sum + 1, 0.5 )
 
 	}.play
 });

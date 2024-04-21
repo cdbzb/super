@@ -38,9 +38,9 @@ Song.synthVTracks.xuan= {
 		/4
 	}
 };
-P(\filter,start:0,music:{|p b e| 
-		p.pts.select{|i| i.still.notNil}.select{|i| i.name.asString.contains("halass") }.do{|i|i.monitor.postln}
-});
+// P(\filter,start:0,music:{|p b e| 
+// 		p.pts.select{|i| i.still.notNil}.select{|i| i.name.asString.contains("halass") }.do{|i|i.monitor.postln}
+// });
 ["Sick Bay.. Sick Bay, Mc- Coy","e c f# d e g#"].addLine; //0
 
 P.synthV(\genbu, take: \lead, params: {|p b| [
@@ -489,13 +489,6 @@ P.still(\clearTwo, timecode: 0.seconds,syl:1, music: { |p b e|
 		// onTop:true
 	)
 });
-P.still(\formul, timecode: 3812.133.seconds, music: { |p b e|
-		/* e.still.( 
-			wait: 0.1,
-			// text: ["Henoch's","formula..."],
-			fade: b[0] 
-		) */
-});
 // P.tune('(formula)');
 P.synthV(\aiko, params: [
 	lyrics: "r r hen nocks for mu la",
@@ -612,6 +605,7 @@ P(\chords,start:'cer- tain',music:{|p b e|
 				{|i|
 
 					CrossoverDistortion.ar(i,0.01,0.9,0.4) 
+					=> LeakDC.ar(_)
 					=> DelayC.ar(_,0.2,SinOsc.ar(5).range(0,0.001)) 
 					=> MoogVCF.ar(_,SinOsc.ar([0.11,0.1,0.13]).range(900,2000),0.8) * 2
 				},inputChannels:3
@@ -684,7 +678,7 @@ P(\bass,syl:1,start:'For- mu- la',music:{|p b e|
 			} 
 			=> MoogFF.ar(_,3000,1)
 			=> Phaser2.ar(_,rate:0.09)
-			* Env.perc(Line.kr(0.01,0.05,1),Line.kr(3,5,1)).kr(0,gate:TDuty.kr(b.parse([ [1,1,1,1/2],[1/2,1] ].dropLast).dq))
+			* Env.perc(Line.kr(0.01,0.05,1),Line.kr(3,5,1)).kr(2,gate:TDuty.kr(b.parse([ [1,1,1,1/2],[1/2,1] ].dropLast).dq))
 			=> EchoNone.ar(_,0.444,0.444,2.5) * 0.5
 		}.play
 
@@ -697,11 +691,11 @@ P(\pedalTones, music: { |p b e|
 				var a = SinOsc.ar(\freq.kr(300), LocalIn.ar(2) * LFNoise1.ar(0.1,3), LFNoise1.ar(3,6)).tanh;
 				9.do{a= AllpassL.ar(a,0.3,0.1.rrand(0.3!2),5).tanh };
 				a.tanh
-				* Env.asr(0,1,2).kr(0,\gate.kr(1))
+				* Env.asr(0,1,2).kr(2,\gate.kr(1))
 				=> Pan2.ar(_,\pan.kr(-0.3))
 				=> { |i| 
 					Out.ar(\out.kr(0),i * \amp.kr(0.1));
-					LocalOut.ar(i)
+					// LocalOut.ar(i)
 				}		 
 		}.asDefName
 	);
@@ -753,6 +747,7 @@ P(\lick,start:\rrect,music:{|p b e|
                              //.kr( 0, gate:TDuty.kr(b[0..4].dq))
 						*0.2
 						=> FreeVerb.ar(_,0.2,1)
+						=>.first DetectSilence.ar(_, amp:0.0001, time:0.1, doneAction:2)
 
 				}
 		}.play
@@ -806,7 +801,7 @@ P.still(\twoShot, timecode: 3834.1.seconds, music: { |p b e|
 			lfo2  = SinOsc.kr(lfor2, 0, 1, 0);
 			sig   = SinOscFB.ar(freq, lfo1, 1, 0);
 			sub   = SinOscFB.ar(freq*0.25, lfo2, 1, 0);
-			env   = Line.kr(1, 0, dur*4.0, doneAction: Done.freeSelf);
+			env   = Line.kr(1, 0, dur*4.0, doneAction: 2);
 			noise = PinkNoise.ar(nl, 0);
 			sig   = (sig + sub + noise) * env;
 		  //sig   = BLowPass4.ar(sig, filt);
@@ -837,6 +832,8 @@ P(\bassnotes, music: { |p b e|
 			=> MoogFF.ar(_,3000,1.5)
 			=> _.tanh
 			/10
+			// => LeakDC.ar(_)
+			=>.first DetectSilence.ar(_, amp:0.0001, time:0.1, doneAction:2)
 		}.asDefName);
 		inst = inst.()[0];
 		[
@@ -972,7 +969,7 @@ P.tune(\accustomed);
 P(\extraNote,start:\accustomed,syl:4,music:{|p b e| 
 	(
 		freq: [-12,-5,1].df(\a),
-		dur:b[0..( b.size-2 )].sum
+		dur:b.drop(-2).sum
 	).play
 });
 //P(\bass,start:\accustomed,music:{|p b e| 
@@ -1040,24 +1037,21 @@ P(\lick2,start:\injections,syl:0,music:{|p b e|
 P.still(\twoShot, timecode: 3847.9.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["that will take", "months"]
+		// text: ["that will take", "months"]
+		text: ["",""]
 		// fadeIn: b.sum
-	).sequenceText2(
-			b.parse([4, 3]), [ 
-			["perhaps","years"],
-			["we haven't that","choice, Thalassa" ]
-			],
 	)
 });
 P.tune(\months, _ <> [ instrument: \sawSynthSustain, amp: 0.02 ].pm);
 P.still(\clear,\months,music:{|p b e|
 	e.still.(
 		text:["that will take months","perhaps years"],
-		wait:b.sum
+		wait:b.sum,
+		onTop:true
 	);
 	e.still.sequenceText(
 		[
-			b.parse([7]).sum,["we havn't that choice", "Thalassa"]
+			b.parse([7]).sum,["we haven't that choice", "Thalassa"]
 		]
 	)
 });
@@ -1246,7 +1240,7 @@ P(\bass,start:'to a machine',syl:2,music:{|p b e|
 		// amp:0.05,
 		amp: 0.12,
 		dur:b.drop(1).parse([1,1,1,1,4,1]).q
-	].p.trace.play
+	].p.play
 });
 P.tune(\mean,{|i|Pbindf(i,\lag, 0.02,\out,Effect( { |i| i => EchoNone.ar(_,0.4,0.3,4) * -3.dbamp} ).bus.index)},range:[0,2]);
 P(\chord,start:\machine,syl:10,lag:-0.05,music:{|p b e| 
@@ -1259,7 +1253,7 @@ P(\chord,start:\machine,syl:10,lag:-0.05,music:{|p b e|
 		dur:b.last-0.3,
 		out:Effect.bus( { |i| TwoTube.ar(i,0.1,0.95,345,930)
 	//	* Env([1,1,0],[b.sum,0.5]).kr(2,gate:1)
-	} ).post;\BUS.postln
+	} )
 
 
 	).play
@@ -1549,15 +1543,16 @@ P.still(\thalassa, start: \kiss,syl:7, timecode:3939.46.seconds, music: { |p b e
 });
 ["(McCoy and Chapel enter.) ","r",[1,3]].addLine;
 P(\trill,start:\Chapel,music:{|p b e| 
-	
 	var strings = Synths(\stringyy,\freq,[7,11,7,11].df(\d),\out,(0..3), \amp,0);
 	var bus = Bus.control(s,3);
 	var time = 10;
+	var len = b.sum + e.bNext.sum +p.secDur[e.start + 2] + p.secDur[e.start + 3] + 0.2;
 	
-	{SinOsc.kr(time.reciprocal/4)}.play(s,bus.index);
-	{LFNoise0.kr(0.4).unipolar*30}.play(s,bus.index+1);
+	{SinOsc.kr(time.reciprocal/4) * EnvGen.cutoff(len, 0.1)}.play(s,bus.index);
+	{LFNoise0.kr(0.4).unipolar*30 * EnvGen.cutoff(len, 0.1)}.play(s,bus.index+1);
 	//{Line.kr(0,0.3,10,doneAction:2)}.play(s,bus.index+2);
-	{Env([0,1,0]/8,[b.sum + e.bNext.sum ,p.secDur[e.start + 2] + p.secDur[e.start + 3] + 0.2]).kr(doneAction:1)}.play(s,bus.index+2);
+	{Env([0,1,0]/8,[b.sum + e.bNext.sum ,p.secDur[e.start + 2] + p.secDur[e.start + 3] + 0.2]).kr(doneAction:2)}.play(s,bus.index+2);
+	fork{ len - 3 => _.wait; strings.do(_.release) };
 	fork{
 		0.2.wait;
 		bus.postln;
@@ -1668,22 +1663,22 @@ P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 
 });
 P(\dead, music: { |p b e|
-	(
-		freq: [1, 21].df(\d,4),
-		instrument: \harp,
-		out: 1,
-		lag: b[..1].sum,
-		out: Effect.bus({|i| FreeVerb.ar(i, 1, 1)/10 },)
-	)//.play
+	// (
+	// 	freq: [1, 21].df(\d,4),
+	// 	instrument: \harp,
+	// 	out: 1,
+	// 	lag: b[..1].sum,
+	// 	out: Effect.bus({|i| FreeVerb.ar(i, 1, 1)/10 },)
+	// ).play
 });
-P.tune(\dead, _ <> [freq: [\r, -5, 1].df(\d).q,instrument: \wash, att: 1, freqLag: 0.2, amp: 0.02].pm);
+P.tune(\dead, _ <> [freq: [\r, -5, 1].df(\d).q,instrument: \wash, rel:1, att: 1, freqLag: 0.2, amp: 0.02].pm);
 // P.tune(\dead,range:[1,2],syl:0);
 P(\boom, music: { |p b e|
-	(
-		freq: -7.df(\d, 4),
-		out: Effect.bus({|i| DWGReverbC1C3.ar(i) },),
-		amp: 0.05
-	)//.play
+	// (
+	// 	freq: -7.df(\d, 4),
+	// 	out: Effect.bus({|i| DWGReverbC1C3.ar(i) },),
+	// 	amp: 0.05
+	// ).play
 });
 P.still(\mcCoy,syl:0, start:\dead, timecode:4003.0.seconds, music:{ |p b e|
 		e.still.value(

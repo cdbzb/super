@@ -24,12 +24,11 @@ a.free
 }
 )
 
-
-~verbosePlay.(17)
+~verbosePlay.(15)
 s.queryAllNodes
-Trek.editFile(17)
-
-//QUERY 11, 10, and 8
+Trek.editFile(15)
+Song.lyrics[23]
+//QUERY 23, 14, 16,
 
 ( // - 0-1
 Trek.faders[0] = { Trek.transitionGroup.release };

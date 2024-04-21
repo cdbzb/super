@@ -406,7 +406,7 @@ Song.setTempoMap('look tired',"e e ex x e ex");
 P.still(\mccoyTired, timecode: 3518.8.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["you look tired","miss chapel"],
+		text: ["you look tired","Miss Chapel"],
 	)
 });
 P.synthV(role: \mccoy, take: \lead,

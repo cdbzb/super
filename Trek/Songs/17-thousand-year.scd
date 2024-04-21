@@ -489,7 +489,7 @@ P(\powerchords, music: { |p b e|
 		freq: [ [1, 5].df('c#'), [1,5].df('b',4), [1, 5].df('f#',4) ].dupEach.q /2,
 		dur: "qe e qe e qq".asBeats.warpTo( e.tempoMap ).q,
 		legato: [ 1, 1, 1, 1, 2 ]/2=>_.q,
-		out: Effect.bus({|i| i=> CrossoverDistortion.ar(_) /15 => Pan2.ar(_,-0.4) },inputChannels:1),
+		out: Effect.bus({|i| i=> CrossoverDistortion.ar(_) /15 => LeakDC.ar(_) => Pan2.ar(_,-0.4) },inputChannels:1),
 	].pp
 });
 P(\bass,start:\engineer,music:{|p b e|
@@ -705,18 +705,21 @@ P(\arpeggio,start:\prison,syl:3,lag:-0.15,music:{
 		degree: Arpeggio([1,3,5]-1,8),
 		scale:Scale.minor,
 		root:-3,
-		strum:0.04
+		strum:0.04,
+		out: Effect.bus({|i| CombN.ar(i, 0.15, 0.15, 3)/2 ++ i },),
+		instrument: \defaultPiano, amp: 0.03
 	).play;
 });
 P(\stab,start:\prison,syl:3,music:{
-	(instrument:\cymbalsDS,amp:0.03,
-		out:Effect({|i| CrossoverDistortion.ar(i)*0.01})
+	(
+		instrument:\cymbalsDS,amp:0.04,
+		out:Effect.bus({|i| CrossoverDistortion.ar(i)*0.01 => LeakDC.ar(_)}, )
 	).play;
 	(
 		instrument:\stringyy,
 		freq: [1].df('a')/[8, 4,16 ],
-		amp:0.2
-
+		amp:0.25,
+		out: 4
 	).play
 });
 ["And when it wears out we'll build another one, ",[5,4,3,2,3,4,-7,1,4,3,2,-5].dm(\c)].addLine;
@@ -758,6 +761,7 @@ P.synthVs(role: \henoch, take:[ \lead, \double ],
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		* 3.dbamp
 	}.play
 });
 P.synthVs(\an, take: [ \bg, \bg2 ], params: {|p b| [
@@ -809,6 +813,7 @@ P.synthVs(role: \henoch, take:[ \lead, \double ], params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		* -2.dbamp
 	}.play
 });
 P(\bass,start:'And another',syl:1,music:{|p b e| 
@@ -825,6 +830,7 @@ P(\bass,start:'And another',syl:1,music:{|p b e|
 			* amp * 10
 			=> FreeVerb.ar(_,0.4,1)
 			* 0.4
+			* EnvGen.cutoff(b.drop(1).sum,0)
 		}.play(s,out)
 	};
 	p.twangBass.(
@@ -946,13 +952,16 @@ P(\bass,start:\closed,music:{|p b e|
 });
 P(\figure,start:\closed,syl:2,music:{|p b e|
 [
-	freq: [[4,6],[3,5],[3,5],\r,[2,5]].df(\c,scale:\minor).q,
+	freq: [[4,6],[3,5],[3,5],\r,
+	// [2,5]
+		].df(\c,scale:\minor).q,
 	dur: b.parse([1,1,1,4,5]).q,
 	lag: [0,0,0,0,-0.1].q,
-	legato: [0.95,0.85,1.5,2,0,1].q,
+	legato: [0.95,0.85,1.5,2,1,].q,
 	instrument: \sawSynthSustain,
-	rel:[1,0.8,1,1,1].q,att:[0.5,0.5,0.3,0.5,0.5].q,hifreq:2000
-].pp
+	rel:[1,0.8,1,1,1].q, att:[0.5,0.5,0.3,0.5,0.5].q,hifreq:2000,
+	out: 4
+].p.trace.play
 });
 P(\strum,start:\closed,music:{|p b e|
 	(
@@ -992,7 +1001,7 @@ P.synthVs(role: \henoch, take:[ \lead, \double ], params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.tune('With these bodies',Pbindf(_,\instrument,\stringyy,\wet,0.0,\release,2,\amp,0.2));
+P.tune('With these bodies',Pbindf(_,\instrument,\stringyy,\wet,0.0,\release,2,\out, 3,\amp,0.2));
 //P(\vox,start:'With these bodies', music:{
 //	Reaper.go(0);
 	//Reaper.play
@@ -1010,7 +1019,8 @@ P(\bass, music: { |p b e|
 		    // freq: 1.df(\d,3),
 		    freq: [11, 11, 7, 7, 6, 6, 5, 5, 5, 4  ].df(\d,2).q,
 		    amp:0.2,
-		    out: Effect.bus( { |i|  AnalogVintageDistortion.ar(i) => HPF.ar(_,185) => Pan2.ar(_) /3  } )
+			lag: [0.02, 0,0,0,0,0,0,0,0,0,0,0,0].q,
+		    out: Effect.bus( { |i|  AnalogVintageDistortion.ar(i) => HPF.ar(_,185) * EnvGen.cutoff(Song.durs['With these'].list.sum, 0.1) => Pan2.ar(_) /3  } )
 
 	  ].pp
 });
@@ -1020,14 +1030,14 @@ P(\chords,start:'With these bodies',music:{
 			freq:[
 				[1,3,5],[-7,3,5.5],[1,3,6],[1,3,6]
 			].stutter(2).df(\d).q,
-			out:Effect({|i| i.distort=>MoogLadder.ar(_,1800,1.0)*4=>DWGReverbC1C3.ar(_,mix:0.1)=>AnalogPhaserMod.ar(_).tanh}).bus.index,
+			out:Effect({|i| i.distort=>MoogLadder.ar(_,1800,1.0)*4=>DWGReverbC1C3.ar(_,mix:0.1)=>AnalogPhaserMod.ar(_).tanh}, out:2).bus.index,
 			lag:Ptuple([0,Pwhite(0.00,0.02)!2].flat,inf),
 		].p.trace,
 		[
 			freq:[ 1,-7,-6,-5 ].stutter(2).df(\d,octave:3).q,
 			dur:[3,1]/2=>_.q(4),
 			//instrument:\sawSynth,amp:0.06
-			out:Effect(CrossoverDistortion.ar(_,amp:0.01,smooth:0.1)/4).bus.index,
+			out:Effect({ |i| CrossoverDistortion.ar(i,amp:0.01,smooth:0.1)/4 => LeakDC.ar(_)}).bus.index,
 		].p,
 
 		"x.x.x.x.".asDrumPat(2,3)=>[dur:_,instrument:\sn_808]=>_.p,
@@ -1318,7 +1328,6 @@ P(\bass,start:\mankind,syl:2,music:{|p b e|
 	].pp
 });
 ["Are these bodies too much to ask for in return?",[1,3,4,3,1,2,3,2,1,-7,-6,1.5].dm(\e)].addLine;
-
 P.still(\spockXYZ, timecode: 
 	// 3732.2 //hot (charlie not like)
 	3717.3
@@ -1355,8 +1364,9 @@ P(\drums, music: { |p b e|
 P(\bassline, music: { |p b e|
 	[
 		freq: [1, 3, 1, 4, 3].df(\e,3).q,
+		lag: [0.02, 0,0,0,0].q,
 		dur: "q e e q q".asBeats.warpTo( e.tempoMap ).q,
-		out: Effect.bus({|i| AnalogVintageDistortion.ar(i, gain:0.4) => LeakDC.ar(_) },)
+		out: Effect.bus({|i| AnalogVintageDistortion.ar(i, gain:0.4) * EnvGen.cutoff(Song.durs[\return].list.sum, 0.1) },)
 	].ppm(\default)
 });
 P(\bass,start:\return,music:{|p b e| 

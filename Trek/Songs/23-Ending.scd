@@ -3672,7 +3672,7 @@ P.still(\chapelEnd, timecode: 5223.9.seconds, music: { |p b e|
 	).sequenceText2(
 			b.parse([1, 4]), [ 
 				["it","was"],
-				["beautiful",""],
+				["","beautiful"],
 			],
 	)
 });

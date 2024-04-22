@@ -166,6 +166,7 @@ P(\tamb, music: { |p b e|
 					);
 					Shakers.ar(3, energy:energy   , decay: 1).tanh
 					=> Pan2.ar(_, 0.8)
+					* EnvGen.cutoff(b.sum , 0.2)
 					* Env([0,0,1],b.parse([7])).kr(0,gate:1)
 					/ 2
 				}.play;
@@ -241,6 +242,7 @@ P(\tamb, music: { |p b e|
 						// *8
 					);
 					Shakers.ar(3, energy:energy   , decay: 1).tanh
+					* EnvGen.cutoff(b.sum , 0.2)
 					=> Pan2.ar(_, 0.8)
 				}//.play;
 });
@@ -339,6 +341,7 @@ P(\bass, music: { |p b e|
 		var durs = b.parse([2,2,4,2 ]);// .postln;
 		var trig = TDuty.ar(durs.dropLast().dq, gapFirst:0   ) => OnePole.ar(_);
 		var freqs = [3,1,  4, 12.5].df(\c,3);
+		EnvGen.cutoff(b.sum, 0.2);
 
 		Gendy4.ar(minfreq: freqs.dq.demand(durs), maxfreq: freqs.dq.demand(durs) + 0.05)
 		* (Decay.ar(trig => HPF.ar(_,1)))
@@ -479,6 +482,8 @@ P(\bonk, music: { |p b e|
 		var durs = b.parse([2,2, 3, 4 ]) ++ e.bnext[0] => _.flat;// .postln;
 		var trig = TDuty.ar(durs.dropLast().dq, gapFirst:0   ) => OnePole.ar(_);
 		var freqs = [7, 7, 4, 3, 2  ].df(\e,2);
+
+		EnvGen.cutoff(b.sum, 0.1);
 
 		Gendy4.ar(minfreq: freqs.dq.demand(durs), maxfreq: freqs.dq.demand(durs) + 0.05)
 		* (Decay.ar(trig => HPF.ar(_,1)))
@@ -1339,6 +1344,7 @@ P(\tamb, music: { |p b e|
 	* EnvGen.cutoff(b.sum - 3, 3)
 	=> DWGReverbC1C3.ar(_,mix:0.05)
 	/3
+	* EnvGen.cutoff(b.sum , 0.2)
 	=> Pan2.ar(_,0.75)
 
 }.play(s, 2);
@@ -1645,14 +1651,21 @@ P(\baseNoteTake,start:'take me',music:{|p b|
 );
 ["(boom) pharmacology laboratory. ",[1,11,7,11,5,7,4,5,4,3].dm('f',scale:\mixolydian)].addLine;
 P(\chord,music: { |p b e|
-	[
+	var a=(
+
 		freq: [-22,2]  df: 'e-',
-		strum: 0.03,
-		dur: b.drop(1)[0].q,
+		strum: 0.05,
+		dur: b.drop(1)[0],
 		instrument: \defaultPiano,
-		out: Effect.bus({|i| i => BPF.ar(i, 900) => SineShaper.ar(_, 0.03, 1) },)
-	].pp;
-	( instrument: \cymbalsDS, amp: 0.01 ).play
+		// out: Effect.bus({|i| i => BPF.ar(i, 900) => SineShaper.ar(_, 0.03, 1) },)
+	).play.id;
+	fork{
+		10.wait;
+		a.do{|i|
+			Node.basicNew(nodeID: i).set(\pedal, 0)
+		};
+		};
+	( instrument: \cymbalsDS, amp: 0.01 )//.play
 }, syl:nil);
 P(\middlevoice, music: { |p b e|
 	[

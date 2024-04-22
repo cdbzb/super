@@ -1,5 +1,5 @@
 (
-	Song('MandT',[]).current;
+	Song('MandT2',[]).current;
 	Song.synthVTracks=EventWithDefault();
 	Song.synthVTracks.aiko = { |preGain=1 ratio=2 amp = (1/8) len=2000 mix=0.1 c1=2 | //c1=1
 	{ |i|

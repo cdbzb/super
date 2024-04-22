@@ -64,12 +64,18 @@ Song.preroll = 0.5;
 
 Song.xtremeBassFX = (s.options.outDevice == "MacBook Pro Speakers").if{
 	{
-		Effect.bus( {|i| Decimator.ar(i,rate:8000,bits:4)*(-6.dbamp) => Pan2.ar(_,-0.4)})
+		Effect.bus( {|i| 
+			Decimator.ar(i,rate:8000,bits:4)*(-6.dbamp)
+			=> LeakDC.ar(_)
+			=>.first DetectSilence.ar(_, time:1, doneAction:2)
+			=> Pan2.ar(_,-0.4)})
 	}
 }{
 	{
 		Effect.bus( {|i| Decimator.ar(i,rate:8000,bits:4)*(-6.dbamp) 
 		=> HPF.ar(_, 100)
+		=> LeakDC.ar(_)
+		=>.first DetectSilence.ar(_, time:1, doneAction:2)
 		=> Pan2.ar(_,-0.4)})
 	}
 
@@ -930,8 +936,7 @@ P(\helloChord,start:'lo. ',music: {|p b e|
 ~helloTempo={1/Song.durs['lo. r'].list.mean};
 ~helloTemp2={1/(Song.durs['lovely female'].list[0..6].sum/5*2)};
 P(\helloSequence,start:'lo. ',music: {|pp bb ee|
-	{
-		var bus,clock,monitor,
+		var bus, clock, p,
 		length = bb.sum + ee.bNext.sum + pp.secDur[ee.start + 2].sum,
 		kickPatterns,kickBar,snarePatterns,snareBar,synth,helloBass2,helloBass1,helloBeat;
 		bus=Bus.audio;clock=TempoClock.new;
@@ -947,72 +952,71 @@ P(\helloSequence,start:'lo. ',music: {|pp bb ee|
 			\note,Pseq([2-24,2-12,-1-12,9-12])-12,
 			\instrument,\sawSynth,
 			\dur,2,\rel,5,
-			\amp,0.2) ;
+			\amp,0.2
+		) ;
 
-			helloBass1=Pbind(
-				\note, Pseq([2,4],4)-24,
-				\legato,Pseq([1,Pwhite(0.25,0.55,1)],4),
-				\amp,0.5
-			) ;
+		helloBass1=Pbind(
+			\note, Pseq([2,4],4)-24,
+			\legato,Pseq([1,Pwhite(0.25,0.55,1)],4),
+			\amp,0.5
+		) ;
 
-			helloBass2=Pbind(
-				\note,Pseq([\r,2,0],8),
-				\dur,Pseq([1/2,1/4,1/4],inf),
-				\amp,0.04
-			) ;
+		helloBass2=Pbind(
+			\note,Pseq([\r,2,0],8),
+			\dur,Pseq([1/2,1/4,1/4],inf),
+			\amp,0.04
+		) ;
 
-			helloBeat = {
-				|synthamp=0.3 drumsamp=1 lineAmp=1 tempo1=(52/60) tempo2=(50/60)|
+		helloBeat = {
+			|synthamp=0.3 drumsamp=1 lineAmp=1 tempo1=(52/60) tempo2=(50/60)|
 			Ppar([
 				Pbind(
-						\tempo,Pseq([tempo1,tempo2]),\dur,4,\note,\r
-					),
+					\tempo,Pseq([tempo1,tempo2]),\dur,4,\note,\r
+				),
 				Pbind(
-						\instrument,\kick1,
-						\dur,kickBar,
-						\amp,drumsamp*0.1
-					),
+					\instrument,\kick1,
+					\dur,kickBar,
+					\amp,drumsamp*0.1
+				),
 				Pfin(
-						42, Pn( ///XTENDED
+					42, Pn( ///XTENDED
 						Pbind(
-								\instrument,\hihat, //ffreq rel
-								//\dur,Pseq([0.245,0.255],32),
-								\dur,Pseq([0.245,0.255],32),
-								\amp,Pseq([Pwhite(0.3,0.4,1),Pwhite(0.2,0.3,1)],32)*0.4*drumsamp,
-								\lag, Pseq( (1!16++(-1!16)).scramble*0.003),
-								\ffreq, Pwhite(6000,6500),
-								\rel,0.15
-							) ,2
-						)
-					),
+							\instrument,\hihat, //ffreq rel
+							//\dur,Pseq([0.245,0.255],32),
+							\dur,Pseq([0.245,0.255],32),
+							\amp,Pseq([Pwhite(0.3,0.4,1),Pwhite(0.2,0.3,1)],32)*0.4*drumsamp,
+							\lag, Pseq( (1!16++(-1!16)).scramble*0.003),
+							\ffreq, Pwhite(6000,6500),
+							\rel,0.15
+						) ,2
+					)
+				),
 				Pbind(
-						\instrument,\snare,
-						\instrument,\sn_808,
-						\dur,snareBar,
-						\amp,drumsamp*0.1
-					),
+					\instrument,\snare,
+					\instrument,\sn_808,
+					\dur,snareBar,
+					\amp,drumsamp*0.1
+				),
 				Pfx(
 					Pbind( \instrument,\sawSynth,
-							\note,Pser(~panNotes.("d f# a c#5 e5").flatten-60,16),
-							\dur,1/2,
-							\att,0.5,
-							\octave,Pser(4!5++(5!5)++(6!5)++(7!5),42),
-							\amp, Pseq(( 0.1!5 )++(0.09!5)++(0.08!5)++Pseries(0.07,-0.005)) * lineAmp
-						).pad,
-						\phase_verb2
-					),
-					//~helloBass1,
-					//~helloBass2,
+						\note,Pser(~panNotes.("d f# a c#5 e5").flatten-60,16),
+						\dur,1/2,
+						\att,0.5,
+						\octave,Pser(4!5++(5!5)++(6!5)++(7!5),42),
+						\amp, Pseq(( 0.1!5 )++(0.09!5)++(0.08!5)++Pseries(0.07,-0.005)) * lineAmp
+					).pad,
+					\phase_verb2
+				),
+				//~helloBass1,
+				//~helloBass2,
 				Pset(\amp,synthamp,synth),
-					//Pseq([(\type:\rest,dur:4),~complete.pbind[4]]);//remove
-					//Ptpar([
-					//		0.15,~helloGtr1,
-					//		0.15,~helloGtr2
-					//	])
-				],1   /// repeats!!
-			)<>(out:bus)
-		};
-		'self bus '.post;bus.postln;
+				//Pseq([(\type:\rest,dur:4),~complete.pbind[4]]);//remove
+				//Ptpar([
+				//		0.15,~helloGtr1,
+				//		0.15,~helloGtr2
+				//	])
+			],1   /// repeats!!
+		)<>(out: bus)};
 		Song.helloSequenceBus = bus;
 		Song.helloSequenceMonitor = Monitor.new.play(bus.index,2,0);
 		fork{
@@ -1025,10 +1029,18 @@ P(\helloSequence,start:'lo. ',music: {|pp bb ee|
 			Song.secDur[4..5].sum + 0.1 => _.wait;
 			Song.helloSequenceMonitor.clear;
 			Song.helloSequenceBus.free;
+			// clock.free
 		};
-		{ s.bind {helloBeat.(synthamp:0.1 * Song.helloGain,drumsamp:0.7 * Song.helloGain, lineAmp:1 * Song.helloGain,tempo1:~helloTempo.(),tempo2:~helloTemp2.()).play(clock)} };
-			}.play;
-		});
+		s.bind{
+			helloBeat.(
+				synthamp:0.1 * Song.helloGain,
+				drumsamp:0.7 * Song.helloGain,
+				lineAmp:1 * Song.helloGain,
+				tempo1:~helloTempo.(),
+				tempo2:~helloTemp2.()
+			).play(clock)
+		};
+});
 ["you are a lovely female, r a","e5 d c# b4 a f# e e2 c#4"].addLine;
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 		 e.still.( 
@@ -1598,45 +1610,42 @@ P.still(\kirklooksDown,syl:0, timecode: 2806.26.seconds, music: { |p b e|
 					],
 			)
 });
-~justTheTune.('very long');
+P.tune();
 P(\afterSoLongSketch,start:'very long',music: {|p b e|
 			var afterSoLong=[\r,4,5,8,7,9]++[\r,5,6,4,7] + [ 2,2,2,2,2,2,2,2,2,2,3 ].collect{|i| [0,i]};
-			(degree:1,octave:4,dur:6, group: p.transitionItems).play;
+			(degree:1,octave:4,dur:6, group: Trek.transitionGroup).play;
 			[
 				legato:1.05,
 				instrument:\sawSynthSustain,
 				degree:Pseq(afterSoLong)-1,
 				dur:b.q,
-				out: Effect(PlateReverb.ar(_,mix:0.1),out:3).bus.index,
+				out: Effect.bus(PlateReverb.ar(_,mix:0.1),out:3, target:Trek.transitionGroup),
 				amp: 0.08,
-				group: p.transitionItems
-			] => {|i| i.p => Pset(\amp,0.04,_)=>_.play; 
+				group: Trek.transitionGroup
+			] => {|i| i.p => Pset(\amp,0.04,_);//=>_.play; 
 			i.ppm
 		}
-			//m
 			;
 			[
 				degree:Pseq([1,-3]),
 				instrument:\reedy,
 				release:3,
 				dur:b.parse([6,5]).q,
-				out: Effect(PlateReverb.ar(_,mix:0.2),out:1).bus.index,
+				out: Effect.bus(PlateReverb.ar(_,mix:0.2),out:1, target: Trek.transitionGroup),
 				amp: 0.08,
-				group: p.transitionItems
+				group: Trek.transitionGroup
 			].pp
 		}
 	);
-P(\bassNotes54,start:'very long',music: 
-
-		{ |p b| 
+P(\bassNotes54,start:'very long',music: { |p b| 
 			[
 				dur: b.parse([6,5]).q,
 				degree: Pseq([1,4],2) ,
 				legato:[1.1,0.9].q,
 				octave:3,
 				amp:0.5,
-				group: p.transitionItems,
-				out: Effect( { |i|  SineShaper.ar(i,0.2) * Env([0,1,1],[0.05]).kr }, target: p.transitionItems ).bus.index
+				group: Trek.transitionGroup,
+				out: Effect.bus( {|i| SineShaper.ar(i,0.2) * Env([0,1,1],[0.05]).kr}, target: Trek.transitionGroup)
 			].pp
 		}
 	);

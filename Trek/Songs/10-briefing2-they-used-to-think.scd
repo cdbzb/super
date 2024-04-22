@@ -127,12 +127,10 @@ P(\chord,start:'did fly',music: {|p b e|
 		].pp 
 });
 P(\wowowow,start:'did fly',syl:1, lag:0.15, music: {|p b e| 
-		{
 			var notes = [11,6,3].degreescps;
 			var durs = [0]++(p.durs[e.start].list[2..3]).integrate;// + ~tu.durs[2].list[2] ;
 			{a=Synth(\sawzz,[\freq,notes[0],\amp,0.1]).dur(4)}.sched(durs[0]);
 			[1,2].do{|i| {a.set(\freq,notes[i])}.sched(durs[i])}
-		}.play
 });
 	// P.tune('did fly');
 P(\cymbal, music: { |p b e|
@@ -777,7 +775,7 @@ P(\chords0,start:'Im',syl:0,music:[amp:0.05,legato:[1,1,1,2].q,degree:[1,3,5,7]-
 	//}}}
 	//// 3 ////  
 	SynthDef(\pulseBass,{ //{{{
-Pulse.ar(\freq.kr(400,0.3),0.3)=>Mix.ar(_)//=>MoogLadder.ar(_,800,1)//=>MoogFF.ar(_,1900,0.5) 
+		Pulse.ar(\freq.kr(400,0.3),0.3)=>Mix.ar(_)//=>MoogLadder.ar(_,800,1)//=>MoogFF.ar(_,1900,0.5) 
 		//=>CombN.ar(_)//++Gain.ar(_)
 		//=>FreeVerb.ar(_,1,1)
 		* Env.adsr(0.01,0.05,0.6,\rel.kr(0.5)).kr(0,gate:\gate.kr(0)) 
@@ -856,22 +854,18 @@ P.synthVs(role:\kirk,take:[\lead, \double],  params: {|p b| [
 			=> p.synthVTracks.at(e.key).()
 		}.play
 });
-P(\harpy2,'be-',music://{{{
-		{|p m| p.postln;
-			{
-				var b={var c = Bus.audio(s,1); {In.ar(c,1)+CombL.ar(In.ar(c,1),1,\del.kr(0.5)+SinOsc.kr(0.1,pi,0.02),6)}.play(s,1);c}.value;
+P(\harpy2,'be-',music: {|p m| 
 				[
 					degree:Prand(Arpeggio([1,3,5,7],9),23)-1,
 					amp:0.03,
 					root:5,
-					out:b.index,
+					// out:b.index,
 					octave:5,
 					dur:Pwhite(0.02,0.03)*3,
-					legato:5
+					legato:5,
+					out: Effect.bus({|i| CombL.ar(i, 1, 0.5+SinOsc.kr(0.1,pi,0.02), 6) },)
 				].pp
-			}.value
-		}
-	);
+});
 
 	//}}}
 	//~im.addGuides("xxx");
@@ -951,7 +945,8 @@ P(\drMcoyBass3,start:'Doctor',music:{|p b e| fork{
 	a.set(*[freq:[1].degreescps(root:6,octave:2),gate:1]); b.next.wait;
 	a.set(*[freq:[2].degreescps(root:6,octave:2)]).dur(0.3); b.next.wait;
 	a.set(*[freq:[1].degreescps(root:6,octave:2),gate:1]).dur(0.2); (b.nextN(2).sum-0.1).wait;
-	a.set(*[freq:[5].degreescps(root:6,octave:1),gate:1]).dur(2);
+	a.set(*[freq:[5].degreescps(root:6,octave:1),gate:1]).dur(2);3.wait;
+	a.free
 	//a.set(*[freq:[9].degreescps(root:6,octave:2)]).dur(0.3);
 }});//}}}
 //P(\keys3,start:'right',syl:1,music:{Synths(\sawzz2,\att,1.5,\freq,[1,3,5,8].degreescps(root:1,scale:\minor)).dur(3) });
@@ -1086,13 +1081,22 @@ P(\slide6,start:'con--',syl:2,lag:0.2,music:{ |p b e|
 	[
 		amp:0.02,
 		root:4,
-		degree:Pseries(30,-1,38),
+		degree:Pseries(30,-1,37),
 		dur:Pwhite(0.01,0.012)*1.85,
+		legato:2,
 		instrument:\mda,
-		vel:60
+		vel:60,
 	].pp
 });
-P(\slide6echo,start:'con--',syl:2,lag:0.55,music:{ |p b e| [amp:0.005,root:4,degree:Pseries(30,-1,38),dur:Pwhite(0.01,0.012)*1.85,instrument:\mda,vel:60].pp });//}}}
+P(\slide6echo,start:'con--',syl:2,lag:0.55,music:{ |p b e| [
+	amp:0.005,
+	root:4,
+	degree:Pseries(30,-1,37),
+	legato: 2,
+	dur:Pwhite(0.01,0.012)*1.85,
+	instrument:\mda,
+	vel:60
+].pp });//}}}
 ///// 7 /////{{{
 ["life and intelligence so fan-","g4 d g f# e d e f#"].addLine;//7
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
@@ -1666,7 +1670,7 @@ P(\bendybase18,start:'engineer',syl:9,music:{ |p b e|
 		instrument:\bendbase,
 		octave: 3,
 		note:  -3 ,
-		dur: p.parse(e.start,[[1,1],1],10).q
+		dur: p.parse(e.start,[[1,1],1],10)
 	).play
 });
 ( SynthDef(\bendbase,{ 

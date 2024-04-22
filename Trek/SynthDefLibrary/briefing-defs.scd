@@ -1,7 +1,7 @@
 SynthDef(\mda,{ //{{{
 	var sig=MdaPiano.ar(\freq.kr(400),\gate.kr(1)) * \amp.kr(0.1);
 	Out.ar(\out.kr(0),sig);
-	DetectSilence.ar(sig,0.01)
+	DetectSilence.ar(sig,0.00001, doneAction:2)
 }).add; //}}}
 
 SynthDef(\portBass,{ //{{{

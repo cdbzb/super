@@ -447,7 +447,7 @@ P(\bendy, music: { |p b e|
 		[4, 2, 1].df('f#',\whole).dq.demand("e e q".asBeats.warpTo( e.tempoMap )).lag2([0,0.5].dq.demand(b.parse([1,3])))
 		=> VarSaw.ar(_,0,0.3,0.1)
 		=> DelayN.ar(_,b[..1].sum,b[..1].sum)
-		* Env([0,0,1,1,0],b.parse([2,1,2,1])).kr(0,1)
+		* Env([0,0,1,1,0],b.parse([2,1,2,1])).kr(2,1)
 		* -5.dbamp
 		=> Pan2.ar(_,0.2)
 	}.play

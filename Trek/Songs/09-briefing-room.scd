@@ -1248,8 +1248,11 @@ P(\bassPulse, music: { |p b e|
 		var freq = [1, 2, 3, 4, 7, 11].df(\c,[4,5],\mixolydian).dq 
 		.demand( b.parse([2, 0.5, 0.5, 3, 1, 3 ]) );
 
+		EnvGen.cutoff(b.sum,1.2);
+
 		Saw.ar( freq ) * 0.1
 		* Env.perc(0.01,2).kr(0,gate: TDuty.kr(pulse.dropLast.dq,0,1))
+
 		
 	}.play
 });
@@ -2469,7 +2472,7 @@ P(\hat,start:\involved,music:{|p b e|
 [
 	dur: e.tempoMap.mapBeats("ee e x x q e e x x x x q q q e x x ee e".asBeats).q,
 	instrument: \hat_808,
-	out: Effect.bus({|i|  EchoNone.ar(i,1, delaytime:0.5) /3 + WhiteNoise.ar(0.00011)	})
+	out: Effect.bus({|i|  EchoNone.ar(i,1, delaytime:0.5) /3 })
 ].pp;
 });
 P(\bass,start:\involved,music:{|p b e|  // passing tone right before end please
@@ -2676,6 +2679,7 @@ P(\tamb, music: { |p b e|
 		);
 		Shakers.ar(3, energy:energy   , decay: 1).tanh
 		=> PlateReverb.ar(_, mix:0.3)
+		=>.first DetectSilence.ar(_,doneAction:2)
 		=> {|i| Pan2.ar(i[0], 0.8)
 	}}.play;
 });

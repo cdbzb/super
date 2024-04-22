@@ -1,8 +1,10 @@
 // Trek.loadSongs([0,1])
 Trek.prepare;
+s.plotTree
 //load Transitions below!!
-Trek.strum1.syn.run(false);Trek.strum2.syn.run(false);s.latency_(0.2);s.plotTree;s.makeWindow;Stills.muted_(true);Trek.playRange(0, 0, 22)//sum-22
-
+Trek.strum1.syn.run(false);Trek.strum2.syn.run(false);s.latency_(0.2);s.plotTree;s.makeWindow;Stills.muted_(true);
+Trek.playRange(22, 0)//sum-22
+Song.songs[\visual].current
 a = Bus.audio
 a.free
 //finding hung synths
@@ -23,12 +25,13 @@ a.free
 	}
 }
 )
-
-~verbosePlay.(15)
+Trek.playTransition(8,-2)
+Trek.loadSongs([9])
+CmdPeriod.doOnce; Song.cursor_(0);~verbosePlay.(6)
 s.queryAllNodes
-Trek.editFile(15)
-Song.lyrics[23]
-//QUERY 23, 14, 16,
+Trek.editFile(6)
+Song.lyrics[11]
+//QUERY 37 17 40
 
 ( // - 0-1
 Trek.faders[0] = { Trek.transitionGroup.release };

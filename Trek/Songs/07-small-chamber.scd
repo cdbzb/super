@@ -1107,7 +1107,7 @@ P('bass',start:\search,music: {|p b e|
 		dur: (0.5 * [1,2,1,1,2,1,1] ).warpTo(e.tempoMap
 		//quantizeDft
 		).q,
-		out: Effect.bus({ |i| i => Amplitude.kr(_) * 50 *  CrossoverDistortion.ar(i) *0.1 + i => LPF.ar(_,4000) },inputChannels:6)
+		out: Effect.bus({ |i| i => Amplitude.kr(_) * 50 *  CrossoverDistortion.ar(i) => LeakDC.ar(_) *0.1 + i => LPF.ar(_,4000) },inputChannels:6)
 	].pp
 });
 //["probing, waiting, probing. ","5 4 3 2 6 5.5".dm(\c,6)].addLine;

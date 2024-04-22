@@ -39,6 +39,7 @@ P(\tamb, music: { |p b e|
 			=> {|i| CombN.ar(i,0.33, 0.125 + 0.02) /2 + i}
 			// * 10
 			// => DWGReverbC1C3.ar(_)
+			* EnvGen.cutoff(2, 0.1)
 		}.asDefName
 	)	;
 	tamb.()[0] =>
@@ -628,7 +629,7 @@ P(\chordsTwo, music: { |p b e|
 		instrument: \harp,
 		amp: 0.02,
 		dur: b.q,
-		out: Effect.bus({|i| CrossoverDistortion.ar(i, smooth: Env([0.9,0.9,0.9,0.99],b + [0, 0, 2]).kr)/5 },out:2)
+		out: Effect.bus({|i| CrossoverDistortion.ar(i, smooth: Env([0.9,0.9,0.9,0.99],b + [0, 0, 2]).kr)/5 => LeakDC.ar(_) },out:2)
 	].ppm
 });
 P(\doubling,'I remember.',syl:12,music: {|p b e|
@@ -727,7 +728,7 @@ P.still(\henochEnters,syl:3, timecode: 3335.26.seconds, music: { |p b e|
 		Dust.ar(40)
 		=> FreeVerb.ar(_,0.8,1)
 		=> Convolution.ar( Gendy1.arWidth(freq: (100..105)), _ )
-		* Env([0, 1, 0],[1,b.drop(1)] ).kr()
+		* Env([0, 1, 0],[1,b.drop(1)] ).kr(2)
 		/15
 	}.play
 });
@@ -1296,7 +1297,7 @@ P(\mindChords,syl:3,lag:-0.26, start:\survived, music: { |p b e|
 				1, 
 				Gendy1.kr(minfreq:{0.1.rrand(0.5)}!i.size,maxfreq:7,mul:1),
 				Line.kr(-0.9,1,b.sum),
-				XLine.ar(1,0.001,b.sum+4)
+				XLine.ar(1,0.001,b.sum+4, doneAction:2)
 			)
 			=> DelayN.ar(_,strumTime,i.collect{|j x| x*strumTime/(i.size)})
 			=> SplayAz.ar(5,_)

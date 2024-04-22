@@ -2024,7 +2024,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	)
 });
 P.tune('with him', _ <> [instrument: \stringyy, out: 2, mix: 0.2, amp: 0.08].pm);
-P(\sargonLowerBase,start:'with him',music:{|p b e|
+P(\sargonLowerBass,start:'with him',music:{|p b e|
 [
 freq: [\r,5.5,6,7,11].df('b-',octave:[ 1,2 ] ).q,
 amp:0.2,
@@ -2037,7 +2037,7 @@ dur:b.parse([2,2,2,1,1]).q,
 }
 );
 // This item is the version from reaper which is probably better 
-P(\sargonBaseline,start:'with him',music:{|p b e|
+P(\sargonBassline,start:'with him',music:{|p b e|
 [
 	freq: [\r,4.5,12,4].df('f',octave:[2,3] ).q,
 	legato:1.1,
@@ -2090,12 +2090,13 @@ P(\sargonMiddleVoice,start:'with him',music:{|p b e|
 }
 );
 P(\sargonTuningGong,start:'with him',syl:1,music:{|p b e|
-	(type:\tuningGong,
-		amp:0.005,
+	(
+		dur:1,
+		type:\tuningGong,
+		amp:0.004,
 		sustain:0,
-		release:6,
-		freq:
-		[1].df('f#',octave:5).unbubble
+		release:3,
+		freq: [1].df('f#',octave:5).unbubble
 ).play
 }
 );

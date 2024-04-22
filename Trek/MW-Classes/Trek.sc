@@ -8,7 +8,7 @@ Trek {
 		cast = try{ Object.readArchive(path +/+ "trek_cast") } ? ();
 		presets = try{ Object.readArchive(path +/+ "trek_presets") } ? MultiLevelIdentityDictionary.new();
 		transitions = Order();
-		keys = [\visual, \rescue, \transporter, \chamber1, \panel1, \panel2, \smallChamber, \chamber, \briefing, \theyUsed, \song, \song2, 'this formnula', \three, \silverLake, \chapelForgets, \thousand, \sickBay, \medical, \laboratory, \MandT, \MandT, \ending];
+		keys = [\visual, \rescue, \transporter, \chamber1, \panel1, \panel2, \smallChamber, \chamber, \briefing, \theyUsed, \song, \song2, 'this formnula', \three, \silverLake, \chapelForgets, \thousand, \sickBay, \medical, \laboratory, \MandT, \MandT2, \ending];
 		ServerTree.add({transitionGroup = Group.after(Server.default.defaultGroup).register});
 		transitions = keys.collect{ () };
 		faders = nil ! keys.size;
@@ -124,6 +124,20 @@ Trek {
 				var section = num + i;
 				var start = (i == 0).if{ cursor }{ transitions[section].start};
 					this.playSong(section, start, trimEnd: transitions[section].trimEnd ? 0) + (transitions[section+1].lag ? 0) => _.wait;
+					transitions[section].func.() ? 0 => _.wait
+			}
+		}
+	}
+	*playAll {
+		var needLoad;
+			needLoad = (0..( keys.size - 1 )).select{|i| Song.songs[Trek.keys[i]].isNil};
+			( needLoad.size!=0 ).if{ ^this.loadSongs(needLoad) };
+		fork{
+			transitionGroup.release;Server.default.sync;
+			faders[0].();
+			keys.size.do{|key section| 
+				var start = transitions[section].start ? 0;
+					this.playSong(section, start, trimEnd: transitions[section].trimEnd ? 0) + (transitions[section+1].notNil.if{transitions[section + 1].lag ? 0}) => _.wait;
 					transitions[section].func.() ? 0 => _.wait
 			}
 		}

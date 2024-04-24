@@ -27,6 +27,9 @@ a.free
 )
 Trek.playTransition(8,-2)
 Trek.loadSongs([9])
+Trek.prepare
+Trek.playAll
+Song.songs.size
 CmdPeriod.doOnce; Song.cursor_(0);~verbosePlay.(6)
 s.queryAllNodes
 Trek.editFile(6)
@@ -34,6 +37,7 @@ Song.lyrics[11]
 //QUERY 37 17 40
 
 ( // - 0-1
+Stills.scale = (256/144);
 Trek.faders[0] = { Trek.transitionGroup.release };
 Trek.transitions[0].func = {
 	1.wait;
@@ -99,7 +103,7 @@ Trek.faders[4] = {
 
 Trek.setTransition(4, -1,lag:-0.1 );
 //5 to 6   this one needs a musical transition fix
-Trek.setTransition(5, -1, func:{
+Trek.setTransition(5, -10, func:{
 		// 1.wait;
 		// defer{ Stills.plotTitleCard("in the inner chamber", dur: 3.5); };
 		// (instrument:\cymbalsDS, att:2.5).play;

@@ -146,7 +146,7 @@ Stills {
 		.background_( Color.rand)
 		.front;
 		{ w.fade(fade, 1) }.defer(dur);
-			 StaticText(w, Rect(1500*monitor,top, 1400, 800 ))
+			 StaticText(w, Rect(1500*monitor,top, 1400, 800 ).scale(scale))
 			.string_(text)
 			.stringColor_(Color.rand)
 			.align_(\center)

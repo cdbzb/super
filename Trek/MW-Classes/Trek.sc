@@ -46,15 +46,16 @@ Trek {
 		}
 	}
 	*prepare{
-		{
+		fork{
 			Song(\trashme,[]).current;
-			this.synful;
-			this.strum;
-			this.pf;
-			30.wait;
+			(Trek.piano).isNil.if{this.pf};
+			(Trek.strum1).isNil.if{this.strum};
+			(Trek.synful1).isNil.if{this.synful};
+			25.wait;
+			\VSTIS_loaded.postln;
 			[strum1, strum2].do{|i| i.syn.run(false)};
-			this.allTheSongs.do({ |i| defer{ i.load }; 0.25.wait})
-		}.fork
+			// this.allTheSongs.do({ |i| defer{ i.load }; 1.wait})
+		}
 	}
 	*loadSongs{|array|
 		fork{
@@ -62,12 +63,24 @@ Trek {
 				condVar = CondVar();
 				defer{ File.readAllString(this.allTheSongs[ i ]) ++ "; Trek.condVar.signalOne" => _.interpret };
 				condVar.wait;
+				0.25.wait;
 				x.debug("loaded!");
 			}
 		}
 	}
+	*loadAll{
+		fork{
+			this.allTheSongs.do{|i x|
+				condVar = CondVar();
+				defer{ File.readAllString( i ) ++ "; Trek.condVar.signalOne" => _.interpret };
+				condVar.wait;
+				x.debug("loaded!");
+				0.25.wait;
+			}
+		}
+	}
 
-	*playSong{|num cursor=0 scroll=false trimEnd=0| //use cursor -2 to play last two sections
+	*playSong{|num cursor=0 scroll=true trimEnd=0| //use cursor -2 to play last two sections
 		cursor = cursor ? 0;
 		Song.songs.at(keys[num]).current;
 		scroll.if{Song.makeScroll};
@@ -130,15 +143,27 @@ Trek {
 	}
 	*playAll {
 		var needLoad;
-			needLoad = (0..( keys.size - 1 )).select{|i| Song.songs[Trek.keys[i]].isNil};
-			( needLoad.size!=0 ).if{ ^this.loadSongs(needLoad) };
+		needLoad = (0..( keys.size - 1 )).select{|i| Song.songs[Trek.keys[i]].isNil};
+		( needLoad.size!=0 ).if{ ^this.loadSongs(needLoad) };
+		Song.scrollOn = true;
 		fork{
 			transitionGroup.release;Server.default.sync;
 			faders[0].();
 			keys.size.do{|key section| 
 				var start = transitions[section].start ? 0;
-					this.playSong(section, start, trimEnd: transitions[section].trimEnd ? 0) + (transitions[section+1].notNil.if{transitions[section + 1].lag ? 0}) => _.wait;
-					transitions[section].func.() ? 0 => _.wait
+				Trek.editFile(section);
+				this.playSong(
+					section,
+					start,
+					trimEnd: transitions[section].trimEnd ? 0
+				).wait; 
+				(
+					transitions[section+1].notNil.if{
+					transitions[section + 1].lag ? 0
+				}).wait;
+				(
+					transitions[section].func.() ? 0 
+				).wait
 			}
 		}
 	}

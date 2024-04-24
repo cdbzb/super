@@ -15,7 +15,7 @@ Song {
 	var playInitiatedAt,<>preroll=0;
 	var <secLoc, <secDur, <pbind;
 	var <>loadedFrom;
-	var scrollOn = false;
+	classvar <>scrollOn = false;
 	var addLineFunc;
 	classvar <>lastPlayOnly;
 	// TODO deprecate muteTunes !! 

@@ -2450,7 +2450,8 @@ P.synthV(role: \vocoder, frozen:true, take: \lead, params: {|p b| [
 	p.vocodeTune.(p,b,e,e.rpp,
 		modGain:2,mix:0.8,width:1.01,
 		gain: p.g2,
-		rel:0.1,sus:b.sum, att:0
+		rel:0.1,sus:b.sum, att:0,
+		durRel:2
 	)
 
 });

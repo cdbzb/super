@@ -1,13 +1,12 @@
 (
-/// line 326
-Monitor.new().play(2,2,0,2);
+// Monitor.new().play(2,2,0,2); ///AAAAAAAAK
+
 Stills().current;
 // ~stills.isNil.if{~stills=Stills("/Users/michael/trek/BySection/media/return to tomorrow.mov").current};
 // ~stills = Stills().current;
 //Song.dursFile_("/Users/michael/tank/super/theExtreme_Sep18");
 ~sickBay=Song(\sickBay,[]).current;
 Song.speaker =Library.at(\functions,\prep).("/Users/michael/tank/IR/Saane/Speakers_&_Telephones/Very_small_speaker_mono.wav");
-
 Song.synthVTracks=EventWithDefault();
 Song.synthVTracks.aiko = { |preGain=1 ratio=2 amp = (1/8) len=2000 mix=0.1 |
 	{ |i|
@@ -1687,8 +1686,6 @@ P.still(\mcCoy,syl:0, start:\dead, timecode:4003.0.seconds, music:{ |p b e|
 		)
 });
 )
-/*
-
 //Stills   ! {{{
 // ~stills.isNil.if{~stills=Stills("/Users/michael/tank/Trek/video for stills etc/media/return to tomorrow.mov")}; 
 // ~stills.set('whatsWrong?',2288.6);

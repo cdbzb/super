@@ -1803,7 +1803,7 @@ P.still(\sargonStandReady, timecode: 825.114.seconds, music: { |p b e|
 				],
 		)
 });
-P.synthV(role: \vocoder, take: \lead, params: {|p b| [
+P.synthV(role: \vocoder, take: \lead, frozen: true, params: {|p b| [
 		lyrics: "Please stand ready + I will operate + + your controls +",
 		lag: [0.05,0,0,0,0,0,0,0,0,0,0,0],
 		legato: [1, 1, 1, 0.8, 1, 1, 1, 1, 1, 1, 1, 1, ],

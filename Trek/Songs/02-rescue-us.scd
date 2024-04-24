@@ -1038,11 +1038,12 @@ P.synthV(role: \vocoder, frozen:true, resources:(tail: 3), take: \lead, params: 
 	pitchTake: 1
 ] }, music:{|p b e|
 	p.vocodeTune.(p, b, e, e.rpp,
-		dur: b.sum,
+		dur: b.sum +0.5,
 		att: 0.2,
 		sus: b.sum - 0.2,
 		rel: 1,
 		mix: p.vocoderMix, width: p.vocoderWidth,
+		durRel:1
 	);
 	[\A, \c].collect{|i| [1,3,5,6].df(i)}
 	=> {|i| 

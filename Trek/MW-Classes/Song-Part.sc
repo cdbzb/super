@@ -442,6 +442,7 @@ Song {
 		^this.pts.select({|i| i.name contains: key })[0].unbubble
 	}
 	partsWith {|key| ^all{:x,x<-this.pts,x.name.asString.contains(key.asString)}}
+	partsWithAtCursor {|array| ^array.collect{|i| this.partsWith(i)}.flat.select{|i| i.start == cursor}}
 	playOnly {|...args|
 		var strings;
 		(args.size == 0).if{ strings  = lastPlayOnly }{strings = args};
@@ -998,7 +999,7 @@ Part {
 					record.if{
 						Server.default.record( 
 							bus: 0,
-							duration: parent.durs[start].list.drop(syl ? 0).sum + 3 + (resources[\tail] ? 0), //this is why you gotta use .drop(1) aaarg
+							duration: parent.durs[start].list.drop(syl ? 0).sum + 3 + (resources[\tail] ? 0),
 							path: Song.frozenFolder +/+ this.parent.key ++ "_" ++ this.name ++ ".wav",
 							numChannels: 5
 						)

@@ -1420,7 +1420,10 @@ P(\chords,start:\Sargon,music: { |p b e|
 		freq: [[1, 2, 1, -7, -7],[11, 12, 11, 7, 7], 3, 5].flop.df(\b,\harmonicMinor) *.t [0.5,1] /[4,2] => _.q,
 		dur: b.q,
 		amp:0.05,
-		out: Effect( TwoTube.ar(_, k:0.01, loss:0.98, d1length:666, d2length:[ 412, 513 ], mul:1.0, add:0.0), inputChannels:4, out: [0, p.carrierBus.ar ] ).bus.index
+		out: Effect( TwoTube.ar(_, k:0.01, loss:0.98, d1length:666, d2length:[ 412, 513 ], mul:1.0, add:0.0), inputChannels:4, out: [
+			0,
+			p.carrierBus.ar
+		] ).bus.index
 	].pp
 });
 )

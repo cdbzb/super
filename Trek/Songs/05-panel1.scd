@@ -856,7 +856,8 @@ P.synthV(role: \vocoder, frozen: true,
 		sus:b.sum,
 		mix:0.8,
 		modGain:1.5,
-		rel:2
+		rel:2,
+		durRel:2
 	);
 		fork{
 			b[..5].sum.wait;
@@ -899,7 +900,6 @@ P('chords',start:\much,syl:5,music: {|p b e|
 		b.drop(1).parse([1, 0.66,0.34,1  ])
 	).df('a-').p
 	=> {|i| i<> (instrument: \visual_pad,amp:0.2 * 1.5,
-		// \out: p.carrierBus
 	) => _.play; i<>(instrument:\harp, amp:0.03 * 1.5) => _.play}
 	//=> _.play
 });
@@ -1396,7 +1396,7 @@ P(\kick, music: { |p b e|
 		amp:0.2 * 2
 	].pp
 });
-P.synthV(role: \vocoder, take: \lead, frozen: true,
+P.synthV(role: \vocoder, take: \lead,frozen: true,
 	filter: (midinote: _ - 12), 
 	// prepend: true,
 	params: {|p b| [
@@ -1416,7 +1416,8 @@ P.synthV(role: \vocoder, take: \lead, frozen: true,
 		att:0.1,
 		sus:b.sum,
 		rel: 1,
-		chord:#[1,2,4]/2
+		chord:#[1,2,4]/2,
+		durRel:e.bNext[0]
 	);
 	{ PlayBuf.auto(2,Song.laMer, [-7,-7].midiratio.dq.demand(Song.durs[\planets].list.parse([10,2]))) / 2.3 * EnvGen.cutoff(b.sum-2, 2)}.play(s,
 		Song.carrierBus
@@ -1479,7 +1480,6 @@ P('montuno',start:\As,music: {|p b e|
 });
 P('bassNote',start:\seed,syl:9,music: {|p b e|
 (freq:[1].df(\g,3,\mixolydian) / [1,2],out:Effect.bus(DWGReverbC1C3.ar(_),inputChannels:2)).play;
-\666.postln;a.postln;Song.carrierBus.postln;
 (freq:[11,6].df(\g,3),instrument:\defaultPiano,dur:b.sum).play;
 });
 P.tune(\As, _ <> (instrument: \sawSynth, amp:0.04, out: 4));
@@ -1741,7 +1741,7 @@ P(\pedalTone, music: { |p b e|
 	].pp
 });
 [" certain elements of Vulcan prehistory. ","3 2 4 2 -7 1 2.5 1 -6 -4 -5 -6".dm(\g)].addLine; 
-Song.durs.filter(\Vulcan,{|i| i.drop(-1) ++ (i.last + 0.25)});
+Song.durs.filter(\Vulcan,{|i| i.drop(-1) ++ (i.last + 0.05)});
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -1838,7 +1838,8 @@ P.synthV(role: \vocoder, take: \lead, frozen: true, resources:(tail: 7),
 		// mix:0.5,
 		att:0.3,
 		sus:b.sum + e.bNext.sum,
-		modGain:2
+		modGain:2,
+		// durRel:1.5
 	);
 
 });

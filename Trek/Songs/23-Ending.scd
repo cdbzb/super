@@ -844,9 +844,6 @@ P(\bassline,syl:0, music: { |p b e|
 		=> {|i| [i, DelayN.ar(i,0.1,Line.kr(0.1,0,b.sum))]}
 	}.play
 });
-/* P(\lagTest,start:\sacrifice,lag:-1,music:{|p b e| 
-		(note:[1,2,3])//.play
-}); */
 P(\addlVox,start:\sacrifice,lag:-1,music:{|p b e| 
 		MegaBind(
 			[
@@ -865,46 +862,6 @@ P(\addlVox,start:\sacrifice,lag:-1,music:{|p b e|
 			}
 		).play
 });
-	
-
-/* P(\oldSkool,start:\sacrifice,rpp:VocalRPP(\sacrifice,\test),lag:-1,music:{ |p b e|
-		var carrier = Bus.audio;
-		var modulator = Bus.audio;
-		{e.rpp.buffer.().bufnum => PlayBuf.ar(1,_)}.play(s,modulator.index);
-		MegaBind(
-			[
-				p.tune[e.start].list.midicps /1,
-				p.tune[e.start].list.midicps /2,
-
-			],
-			b[0]+1 =>_.bubble ++ b.drop(1),
-			[],
-			{|i|
-				Saw.ar(i.freqSeq,0.1)
-				* Env.asr().kr(0,gate:i.gateSeq)
-			},
-			{|i|
-				Mix.ar(i)
-				+ BufRd.ar( 1, p.laMer, Phasor.ar(
-					trig: 1,
-					rate: BufRateScale.kr(p.laMer.bufnum),
-					start: 0,
-					end: BufFrames.kr(p.laMer.bufnum)*0.185)
-				) * 0.7 
-				=> LPF.ar(_,200) 
-				// => Out.ar(carrier.index,_);
-			}
-		).play.onFree({[carrier,modulator].do(_.free)});
-		Song.oldSkool = Synth( 'vocoder16bands-bus',
-			[
-				carrier:carrier.index,
-				modulator:modulator.index,
-				amp:0.3
-			 ]P,
-			addAction:\addToTail,
-		)//.dur(b.sum+2);
-});
-	 */
 P(\bass,start:\sacrifice,music:{|p b e| 
 		[
 			instrument:\stringyy,
@@ -915,9 +872,6 @@ P(\bass,start:\sacrifice,music:{|p b e|
 
 });
 ["(Lights dim and glow, then Chapel wobbles., MCCOY: Jim. ) ","r",[8]].addLine;
-P(\release,start:\wobbles,music:{|p b e| 
-	p.oldskool.free;
-});
 P.still( \spock, start: \wobbles,  timecode:4948.seconds, music: { |p b e|
 			e.still.value(
 				wait: b.sum-( e.lag ? 0 ) - 0.5 -2,

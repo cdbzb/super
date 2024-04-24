@@ -51,11 +51,16 @@ Trek {
 			(Trek.piano).isNil.if{this.pf};
 			(Trek.strum1).isNil.if{this.strum};
 			(Trek.synful1).isNil.if{this.synful};
-			25.wait;
+			Trek.synful2.condition.wait;
 			\VSTIS_loaded.postln;
 			[strum1, strum2].do{|i| i.syn.run(false)};
+			this.loadAll;
+			this.loadTransitions
 			// this.allTheSongs.do({ |i| defer{ i.load }; 1.wait})
 		}
+	}
+	*loadTransitions{
+		path +/+ "transitions.scd" => _.load
 	}
 	*loadSongs{|array|
 		fork{

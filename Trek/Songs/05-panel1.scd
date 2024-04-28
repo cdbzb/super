@@ -341,6 +341,7 @@ P.synthV( role: \vocoder, frozen: true,
 			// sus:b.sum-0.1,
 			// rel:0.2,
 			// out:3
+		durRel: 0.5
 		);
 });
 P('cymbal',start:\Sealed,music: {|p b e|
@@ -1136,11 +1137,13 @@ P.synthV(role: \vocoder, frozen: true, enlarge: true, resources:(tail: 4),
 		tune: "3 3 3 3 3 2 2 1 2 2 3 3".dm('a-',\minor) ++ "11 5 6 3".dm(\c,5) ++ [1,2,4,5,6,6,5,-7/*,-6,-5,-2*/].dm('e-'),
 		dur: b.sum + e.bNext.sum,
 		modGain: 2,
+		amp: 0.285,
 		verb:0.6,
 		att:1,
 		// dur:1,
-		sus: b.sum + e.bNext.sum -0.5,
+		sus: b.sum + e.bNext.sum -0.25,
 		rel:0.1,
+		durRel: 0.5,
 		enlarge: 8
 
 	)
@@ -1355,13 +1358,14 @@ P.synthV(role: \vocoder, frozen: true,
 		// verb:0,
 		width:1.02,
 		modGain:2,
+		amp: 0.3,
 		echo:0.5,
 		verb:0.0,
 		att:0,
 		sus:b.sum  ,
 		dur: b.sum + 0.1,
 		rel:0.2,
-		durRel:0.3
+		durRel:0.5
 		// rel:1.2
 
 	)
@@ -1524,12 +1528,14 @@ P.synthV(role: \vocoder, frozen: true,
 		// amp:0.28,
 		mix:0.5,
 		chord:#[1,2,4],
+		amp: 0.25,
 		modGain: 2.5,
 		width:1.03,
 		verb:1,
 		// echo:0,modGain: 4,
 		// mix:0.5,
 		att:0.3,
+		durRel:1,
 		chord:#[1,2,4]/2
 	);
 });
@@ -1562,7 +1568,7 @@ P('boom',start:\left,music: {|p b e|
 		out: Effect.bus(_ * Env([0,1,1],[0.1,1]).kr(0,gate:1)),
 	).play
 });
-P('chords', start:\left, music: {|p b e|
+P('pluck', start:\left, music: {|p b e|
 	[\r,11,[11,7],[11,6],[11,5],[11,6,4],3,2,1,[7,11,11],[7,11,11],[6,11]].df(\g,5,\mixolydian)
 	=> _.flop => _.do
 	{|i x|
@@ -1591,7 +1597,9 @@ P(\chords, music: { |p b e|
 	[
 		freq: [\r,[2,4,5,7],[2,4,5,7],[1,3,5,11]].df(\c).q,
 		dur: b.parse([9,1,1,1]).q,
-		out: [0, p.carrierBus.index],
+		out: [
+			// 0,
+			p.carrierBus.index],
 	].pp
 });
 /*MULHALL:*/[" Our studies indicate that","1 -7 -6 2 -7 -5 -4".dm('c#')].addLine;

@@ -2151,7 +2151,8 @@ P.synthV(role: \vocoder, frozen: true, take: \lead, params: {|p b| [
 		pitchTake: 1
 	] }, music:{|p b e|
 			p.vocodeTune.( p, b, e, e.rpp,
-				modGain: 3
+				modGain: 3,
+				durRel: 2
 			)
 
 });

@@ -27,7 +27,7 @@ o = [
 	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
 	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
 	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
-	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
+	Event.prNew,  Array.prNew(8),  Array.prNew(14),  "cubic",  
 	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
 	Event.prNew,  Array.prNew(8),  Array.prNew,  "cubic",  
 	"c55226b8-e035-4fc6-a857-aacf2bbe7548",  Event.prNew,  Array.prNew(40),  "c55226b8-e035-4fc6-a857-aacf2bbe7548",  
@@ -40,7 +40,7 @@ o = [
 	Array.prNew(1),  Event.prNew,  Array.prNew(12),  "",  
 	"Unnamed Track",  Array.prNew,  Event.prNew,  Array.prNew(20),  
 	"ff7db235",  Event.prNew,  Array.prNew(28),  "synthV.wav",  
-	"NoAspiration",  "/Users/michael/tank/super/SynthV/smallChamber/116277953/genbu"
+	"NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/smallChamber/116277953/genbu"
 ];
 p = [
 	// Event
@@ -133,7 +133,7 @@ p = [
 		proto: nil,  parent: nil,  
 		know: true ],  
 	// Array
-	23, [ nil,  nil,  'activeTakeId',  1,  
+	23, [ nil,  nil,  'activeTakeId',  3,  
 		nil,  nil,  'takes',  o[24] ],  
 	// Array
 	24, [ o[25],  o[27],  o[29],  o[31] ],  
@@ -144,7 +144,7 @@ p = [
 	// Array
 	26, [ 'liked',  false,  nil,  nil,  
 		nil,  nil,  'id',  0,  
-		'expr',  1.1,  nil,  nil ],  
+		'expr',  1.0,  nil,  nil ],  
 	// Event
 	27, [ array: o[28],  size: 3,  
 		proto: nil,  parent: nil,  
@@ -152,7 +152,7 @@ p = [
 	// Array
 	28, [ 'liked',  false,  nil,  nil,  
 		nil,  nil,  'id',  1,  
-		'expr',  1.1,  nil,  nil ],  
+		'expr',  1.0,  nil,  nil ],  
 	// Event
 	29, [ array: o[30],  size: 3,  
 		proto: nil,  parent: nil,  
@@ -160,7 +160,7 @@ p = [
 	// Array
 	30, [ 'liked',  false,  nil,  nil,  
 		nil,  nil,  'id',  2,  
-		'expr',  1.1,  nil,  nil ],  
+		'expr',  1.0,  nil,  nil ],  
 	// Event
 	31, [ array: o[32],  size: 3,  
 		proto: nil,  parent: nil,  
@@ -168,7 +168,7 @@ p = [
 	// Array
 	32, [ 'liked',  false,  nil,  nil,  
 		nil,  nil,  'id',  3,  
-		'expr',  1.1,  nil,  nil ],  
+		'expr',  1.0,  nil,  nil ],  
 	// Event
 	34, [ array: o[35],  size: 2,  
 		proto: nil,  parent: nil,  
@@ -361,6 +361,11 @@ p = [
 	// Array
 	109, [ 'points',  o[110],  nil,  nil,  
 		nil,  nil,  'mode',  o[111] ],  
+	// Array
+	110, [ 0.0,  0,  666086400.0,  3,  
+		2075875200.0,  0,  2602252800.0,  2,  
+		3113107200.0,  2,  3570336000.0,  1,  
+		4085424000.0,  0 ],  
 	// Event
 	112, [ array: o[113],  size: 2,  
 		proto: nil,  parent: nil,  

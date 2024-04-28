@@ -18,7 +18,7 @@ Monitors {  //setup monitoring for Trek piece
 			]
 		);
 		StartUp.add{ 
-			 Server.local.options.numOutputBusChannels = 8
+			 Server.local.options.numOutputBusChannels = 5
 		};
 		ServerTree.add ({ 
 			(deviceChannels.at(Server.default.options.outDevice) == 2).if{

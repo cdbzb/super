@@ -986,6 +986,7 @@ P.synthV(role: \vocoder, frozen: true, take: \lead, params: {|p b| [
 		verb:0.7,
 		// modGain:2,
 		mix: p.vocoderMix, width: p.vocoderWidth,
+		durRel:0.5
 	);
 	// Environment.pop;
 	{
@@ -1425,10 +1426,7 @@ Song.setTempoMap(\possible,"q e eq e eq e eqqq e eq q q q qqq q q q");
 P(\chord, music: { |p b e|
 	[
 		instrument: \sawSynth,
-		freq: [-1,1,3,5].df(\a)
-		.bubble
-		.q
-		,
+		freq: [-1,1,3,5].df(\a).bubble.q,
 		strum:0.05,
 		out: Effect.bus( FreeVerb.ar(_, mix:1, room:1, damp:0.5), out:0, inputChannels:1, target:nil)
 	].pp
@@ -1437,7 +1435,7 @@ P(\bass, music: { |p b e|
 	[
 		freq: "1 1 -7 -7 1 -4 -6 -7 -17 -1 -1".df(\a,[3,4],\mixolydian).q,
 		dur: "qe e q e e qe e qe e qe e".asBeats *2 =>_.warpTo(e.tempoMap)=>_.q,
-		out: Song.carrierBus
+		out: p.carrierBus
 	].pp
 
 });

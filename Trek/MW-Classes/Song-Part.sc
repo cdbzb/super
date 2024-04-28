@@ -32,6 +32,9 @@ Song {
 		loading = CondVar();
 		muteList = List[];
 		muted = List[];
+		StartUp.add(
+			{ SynthDef(\freeze,{ DiskOut.ar(bufnum:\bufnum.kr(0), channelsArray:In.ar(0,5)) }).add; }
+		)
 	}
 	*new { 
 		|key array dursInFile resources|
@@ -984,25 +987,43 @@ Part {
 	}
 	printOn {|stream| ^this.name.printOn(stream) }
 	//play immediately
+	freeze {|path|
+		var synth;
+		var buffer = Buffer.alloc(Server.default, 65536, 5);
+		buffer.write(path, headerFormat: "wav", sampleFormat: "int24", numFrames: 0, startFrame: 0, leaveOpen:true);
+		buffer.bufnum.debug("bufnum: ");
+		path.debug("path: ");
+		fork{
+			Server.default.bind{ synth = Synth(\freeze, [\bufnum, buffer.bufnum], target: Server.default.defaultGroup, addAction:\addAfter).debug("synth: "); };
+			parent.durs[start].list.drop(syl ? 0).sum + 3 + (resources[\tail] ? 0) => _.debug("waitTime: ") => _.wait;
+			\freeing.postln;
+			synth.free; buffer.free
+		};
+	}
 	play {
 		try{
 			frozen.if{
+				Server.default.bind{
 					{
 						PlayBuf.ar(5, resources[\freeze].bufnum, doneAction:2)
 					}.play;
-					^resources[\freeze]
+				};
+				^resources[\freeze]
 			}
 		};
 		^switch (music.class,
-			Function,{Server.default.bind{
+			Function,{
+				Server.default.bind{
 				try{
 					record.if{
-						Server.default.record( 
-							bus: 0,
-							duration: parent.durs[start].list.drop(syl ? 0).sum + 3 + (resources[\tail] ? 0),
-							path: Song.frozenFolder +/+ this.parent.key ++ "_" ++ this.name ++ ".wav",
-							numChannels: 5
-						)
+						\callFreeze.postln;
+						this.freeze(Song.frozenFolder +/+ this.parent.key ++ "_" ++ this.name ++ ".wav")
+						// Server.default.record( 
+						// 	bus: 0,
+						// 	duration: parent.durs[start].list.drop(syl ? 0).sum + 3 + (resources[\tail] ? 0),
+						// 	path: Song.frozenFolder +/+ this.parent.key ++ "_" ++ this.name ++ ".wav",
+						// 	numChannels: 5
+						// )
 					}
 				};
 				music.value(

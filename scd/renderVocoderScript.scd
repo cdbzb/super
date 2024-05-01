@@ -24,3 +24,9 @@ s.meter;~vocoders[~counter].play;
 ~counter = 14
 ~vocoders[~counter].play
 Song.cursor_(0);Song.play;s.meter;Stills.muted_(true)
+(
+Part.current.record_(true);
+Part.current.frozen_(false);
+s.meter; Part.current.play;
+)
+

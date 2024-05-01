@@ -313,7 +313,7 @@ Song {
 		// "vim.api.nvim_win_set_cursor(0,{match_pos, 0 })"
 		.format(lyric);
 		Post << "lua code" <<luacode;
-		SCNvim.luaeval(luacode)
+		try{ SCNvim.luaeval(luacode) }
 	}
 	hasDursButNotLyricsToDurs {
 		// Is there a file in the Dur folder?

@@ -8,7 +8,7 @@
 	Song.currentSong.resources.infrastructure=FunctionList([ {
 		//~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
 	} ]);
-	Song.chamber.isNil.if{"/Users/michael/tank/super/Trek/chamber_rewrite.scd".load};
+	// Song.chamber.isNil.if{"/Users/michael/tank/super/Trek/chamber_rewrite.scd".load};
 //Song.smallChamber.next_(\chamber);
 //Song.smallChamber.chain;
 //Song.smallChamber.current;
@@ -689,7 +689,6 @@ P(\bass, music: { |p b e|
 	].pp
 });
 
-}.value;
 [" When the struggle came which devastated your planet ","5 6 7 6 5  4 3 2 3 5 4 1 -7".dm('e',\harmonicMinor)].addLine;/*SPOCK:*/
 P.still(\wide, timecode: 1700.seconds, music: { |p b e|
 	 e.still.( 
@@ -809,10 +808,13 @@ P('spaceBass',start:\Only,syl: 7,music: {|p b e|
 
 	].ppm
 });
+}.value;
 ["Thalassa,(boom boom boom) my wife, as you may have guessed. ","-5 3 2 -1, -17 -16 3 6  5 3 1.5 2 3".dm(\e,6)].addLine;
 P.still(\kirk, timecode: 1704.37.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
+		wait: b[..2].sum,
+		fade: b[3..].sum,
 		text: ["",""],
 	)
 });

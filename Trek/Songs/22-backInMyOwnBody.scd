@@ -16,6 +16,7 @@
 	// Require("McCoyAndThalassa.scd");
 	// "./McCoyAndThalassa.scd".standardizePath.load;
 ["McCoy leaves the room-1, and the door shuts-2 and locks-3 behind him.","1 2 3".dm(\c)].addLine;
+Trek.cast.mccoy_(\xuan);
 P(\setupMccoy, music: { |p b e|
 	 Trek.presets.put(\mccoy, \xuan, [
 		\paramTension,1,

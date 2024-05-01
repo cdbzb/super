@@ -34,6 +34,7 @@ P.still(\close, timecode: 4245.6.seconds, music: { |p b e|
 	)
 });
 P.tune();
+Trek.cast.mccoy=\xuan;
 P(\setupMccoy, music: { |p b e|
 	Trek.cast.mccoy=\xuan
 });

@@ -491,7 +491,7 @@ P(\click,start:\essence,music: { |p b e|
 	midinote: 1.dm('f#')!20// or is it e ??
 ].p
 );
-P.synthV(\xuan, frozen:true, take:\lala,
+P.synthV(role: \vocoder, frozen:true, take:\lala,
 	pbind: {|p b| p.lala},
 	filter: (midinote: _ + 0), 
 	params: {|p b| [

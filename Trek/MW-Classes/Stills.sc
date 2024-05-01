@@ -142,11 +142,11 @@ Stills {
 	}
 	*plotTitleCard{ |text monitor=0 dur=2 top=0 fade=1|
 		var w;
-		w = Window(bounds:Rect(1500*monitor,200,1400,800).scale(scale),border:false)
-		.background_( Color.rand)
+		w = Window(bounds:Rect(1500*monitor, top,1440,900).postln.scale(scale ? 1).postln,border:false)
+		.background_(Color.rand)
 		.front;
 		{ w.fade(fade, 1) }.defer(dur);
-			 StaticText(w, Rect(1500*monitor,top, 1400, 800 ).scale(scale))
+			 StaticText(w, Rect(1500*monitor,top, 1440, 900 ).scale(scale))
 			.string_(text)
 			.stringColor_(Color.rand)
 			.align_(\center)

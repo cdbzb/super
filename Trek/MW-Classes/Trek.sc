@@ -1,5 +1,5 @@
 Trek {
-	classvar <>cast, <path, <>presets, <keys, <>synful1, <>synful2, <>strum1, <>strum2, <>piano;
+	classvar <>cast, <path, <>presets, <keys, <synful1, <synful2, <strum1, <strum2, <piano;
 	classvar <condVar, <>transitions, transitionGroup, <>faders;
 	classvar carrierBus, modulatorBus, vocoderRatio ,monitorCarrier, sargonCarrier, auditionVocoder, vocoderFoa, vocodeTune, laMer, vocoderGroup, sargonModulator;
 
@@ -45,7 +45,7 @@ Trek {
 			^keys.indexOf(i) => this.allTheSongs[_]
 		}
 	}
-	*prepare{
+	*prepare{ |pause=0.25|
 		fork{
 			Song(\trashme,[]).current;
 			(Trek.piano).isNil.if{this.pf};
@@ -54,13 +54,41 @@ Trek {
 			Trek.synful2.condition.wait;
 			\VSTIS_loaded.postln;
 			[strum1, strum2].do{|i| i.syn.run(false)};
-			this.loadAll;
+			this.loadAll(pause);
 			this.loadTransitions
 			// this.allTheSongs.do({ |i| defer{ i.load }; 1.wait})
 		}
 	}
 	*loadTransitions{
 		path +/+ "transitions.scd" => _.load
+	}
+	*recordOBS { |dir="/tmp" tail=2|
+		var now = Date.getDate.stamp;
+		var path = dir +/+ now;
+		//preroll = 0.5;
+		(Server.default.options.outDevice == "BlackHole 2ch").if
+		{
+			this.playAll;
+			fork{
+				Server.default.latency.wait;
+				"obs-cli --password Where4obs recording start".unixCmd;
+				Song.songs.values.collect(_.durTillEnd).sum.wait;
+				Trek.transitions.collect{|i| i.at(\dur) ? 0}.sum;
+				tail.wait;
+				2.wait;
+				"obs-cli --password Where4obs recording stop".unixCmd;
+			}
+		}{
+			Monitors.blackHole;
+			Server.default.waitForBoot{
+				{
+					Trek.prepare;
+					45.wait;
+					this.recordOBS( dir, tail)
+				}
+			}
+		}
+
 	}
 	*loadSongs{|array|
 		fork{
@@ -73,14 +101,14 @@ Trek {
 			}
 		}
 	}
-	*loadAll{
+	*loadAll{ |pause=0.25|
 		fork{
 			this.allTheSongs.do{|i x|
 				condVar = CondVar();
 				defer{ File.readAllString( i ) ++ "; Trek.condVar.signalOne" => _.interpret };
 				condVar.wait;
 				x.debug("loaded!");
-				0.25.wait;
+				pause.wait;
 			}
 		}
 	}
@@ -113,18 +141,20 @@ Trek {
 		lag.notNil.if{ transitions[num + 1].put(\lag, lag) };
 		fork{
 			this.playSong(num, cursor, trimEnd: trimEnd ) + lag => _.wait;
-			transitions[num].func ? 0 => _.wait;
+			transitions[num].func.value;
+			transitions[num].dur.wait;
 			this.playSong(num + 1, trimStart ? 0); //needToCall "makeScroll" on the song!!
 		}
 	}
 
-	*setTransition { |num cursor func trimStart=0 trimEnd=0 lag=0 play=false| // lag is before transition
+	*setTransition { |num cursor func trimStart=0 trimEnd=0 lag=0 play=false dur=0| // lag is before transition
 		func.notNil.if{ transitions[num].put(\func, func) };
+		dur.notNil.if{ transitions[num].put(\dur, dur) };
 		trimStart.notNil.if{ transitions[num + 1].put(\start, trimStart) };
 		trimEnd.notNil.if{ transitions[num].put(\trimEnd, trimEnd) };
 		lag.notNil.if{ transitions[num + 1].put(\lag, lag) };
-		^Message(Trek,\playRange,[num, cursor, 2])
-		// ^[num, cursor] // => Trek.playRange(*_)
+		// ^Message(Trek,\playRange,[num, cursor, 2]) //call value to play
+		^Message(Trek,\playTransition,[num, cursor, func, trimStart, trimEnd, lag]) //call value to play
 	}
 
 	*play {|array|
@@ -142,7 +172,8 @@ Trek {
 				var section = num + i;
 				var start = (i == 0).if{ cursor }{ transitions[section].start};
 					this.playSong(section, start, trimEnd: transitions[section].trimEnd ? 0) + (transitions[section+1].lag ? 0) => _.wait;
-					transitions[section].func.() ? 0 => _.wait
+					transitions[section].func.();
+					transitions[section].dur.wait
 			}
 		}
 	}
@@ -166,9 +197,8 @@ Trek {
 					transitions[section+1].notNil.if{
 					transitions[section + 1].lag ? 0
 				}).wait;
-				(
-					transitions[section].func.() ? 0 
-				).wait
+				transitions[section].func.value;
+				transitions[section].dur.wait
 			}
 		}
 	}
@@ -229,11 +259,15 @@ Trek {
 		( synful1.isNil or: try{ synful1.syn.isPlaying.not } ).if {
 			synful1 = Synful();
 			synful2 = Synful();
-			Song.currentSong.synful1 = synful1;
-			Song.currentSong.synful2 = synful2;
+			if( Song.currentSong.notNil ) {
+				Song.currentSong.synful1 = synful1;
+				Song.currentSong.synful2 = synful2;
+			}
 		}{
-			Song.currentSong.synful1 = synful1;
-			Song.currentSong.synful2 = synful2;
+			if( Song.currentSong.notNil ) {
+				Song.currentSong.synful1 = synful1;
+				Song.currentSong.synful2 = synful2;
+			}
 		};
 		// Song.resources.condition=Condition();
 		// Song.resources.infrastructure = {

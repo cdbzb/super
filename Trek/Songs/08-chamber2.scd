@@ -1570,7 +1570,7 @@ P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
 		text: ["then you may go","as freely as you came"],
 	)
 });
-P.synthV(\xuan,take:\lead, frozen: true,resources:(tail:9), 	pbind: Song.enlarge(8),
+P.synthV( role:\vocoder, take:\lead, frozen: true,resources:(tail:9), 	pbind: Song.enlarge(8),
 	params: {|p b| [
 		filter: ( midinote: _ - [0, 0, 0, 0, 12, 12, 12, 12, 12, 12, 12, 12, 12] ),
 		lag: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.08],

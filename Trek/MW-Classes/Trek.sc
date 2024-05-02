@@ -72,11 +72,11 @@ Trek {
 			fork{
 				Server.default.latency.wait;
 				"obs-cli --password Where4obs recording start".unixCmd;
-				Song.songs.values.collect(_.durTillEnd).sum.wait;
-				Trek.transitions.collect{|i| i.at(\dur) ? 0}.sum;
+				Song.songs.values.collect(_.durTillEnd).sum.wait; //includes /trashMe
+				Trek.transitions.collect{|i| i.at(\dur) ? 0}.sum.wait;
 				tail.wait;
 				2.wait;
-				"obs-cli --password Where4obs recording stop".unixCmd;
+				// "obs-cli --password Where4obs recording stop".unixCmd;
 			}
 		}{
 			Monitors.blackHole;

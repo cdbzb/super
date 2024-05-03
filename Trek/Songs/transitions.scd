@@ -112,7 +112,8 @@ Trek.setTransition(9, -1, dur: 5,
 Trek.faders[10] = { 
 	{
 		In.ar(0, Monitors.channels)
-		* -5.dbamp
+		* ( -5 + 5).dbamp
+
 		=> ReplaceOut.ar(0, _);
 		Env.asr(releaseTime:1).kr(2, gate: \gate.kr(1));
 	}.play(s, target: Trek.transitionGroup, addAction: \addToHead ) 
@@ -127,7 +128,7 @@ Trek.setTransition(10, -2, dur: 1,
 Trek.faders[11] = {
 	{
 		In.ar(0, Monitors.channels)
-		* 2.dbamp
+		* (2 + 6).dbamp
 		=> ReplaceOut.ar(0, _);
 		Env.asr(releaseTime:1).kr(2, gate: \gate.kr(1));
 	}.play(s, target: Trek.transitionGroup, addAction: \addToHead ) 
@@ -135,6 +136,14 @@ Trek.faders[11] = {
 Trek.setTransition(11, -1, dur:1, func:{
 	try{ Trek.transitionGroup.release };
 }, );
+Trek.faders[12] = {
+	{
+		In.ar(0, Monitors.channels)
+		* (6).dbamp
+		=> ReplaceOut.ar(0, _);
+		Env.asr(releaseTime:1).kr(2, gate: \gate.kr(1));
+	}.play(s, target: Trek.transitionGroup, addAction: \addToHead ) 
+};
 Trek.setTransition(12, -1,dur: 5.5, func:{
 	1.5.wait;
 	defer{ a=Stills.plotTitleCard("With these bodies", dur: 5.5); };

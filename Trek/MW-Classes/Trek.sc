@@ -62,20 +62,16 @@ Trek {
 	*loadTransitions{
 		path +/+ "transitions.scd" => _.load
 	}
-	*recordOBS { |dir="/tmp" tail=2|
+	*recordOBS { |dir="/tmp" tail=2 wait=2|
 		var now = Date.getDate.stamp;
 		var path = dir +/+ now;
 		//preroll = 0.5;
 		(Server.default.options.outDevice == "BlackHole 2ch").if
 		{
-			this.playAll;
 			fork{
-				Server.default.latency.wait;
 				"obs-cli --password Where4obs recording start".unixCmd;
-				Song.songs.values.collect(_.durTillEnd).sum.wait; //includes /trashMe
-				Trek.transitions.collect{|i| i.at(\dur) ? 0}.sum.wait;
-				tail.wait;
-				2.wait;
+				wait.wait;
+				this.playAll;
 				// "obs-cli --password Where4obs recording stop".unixCmd;
 			}
 		}{
@@ -113,7 +109,7 @@ Trek {
 		}
 	}
 
-	*playSong{|num cursor=0 scroll=true trimEnd=0| //use cursor -2 to play last two sections
+	*playSong{ |num cursor=0 scroll=true trimEnd=0| //use cursor -2 to play last two sections
 		cursor = cursor ? 0;
 		Song.songs.at(keys[num]).current;
 		scroll.if{Song.makeScroll};

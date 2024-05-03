@@ -5,6 +5,7 @@ Monitors {  //setup monitoring for Trek piece
 	classvar <>deviceChannels;
 	classvar <>foldDown;
 	*initClass {
+		Class.initClassTree(StageLimiter);
 		foldDown=[nil,nil,nil];
 		decoder = FoaDecoderMatrix.newPanto(5,'flat','dual');
 		deviceChannels = Dictionary.newFrom(
@@ -23,11 +24,14 @@ Monitors {  //setup monitoring for Trek piece
 		ServerTree.add ({ 
 			(deviceChannels.at(Server.default.options.outDevice) == 2).if{
 					Monitors.stereo;
+					Server.default.sync;
 					{
-						foldDown[0]=Monitor.new => _.play(2,2,0,2,target:RootNode(Server.default));
-						foldDown[1]=Monitor.new => _.play(4,1,0,1,target:RootNode(Server.default), volume: -6.dbamp);
-						foldDown[2]=Monitor.new => _.play(4,1,1,1,target:RootNode(Server.default), volume: -6.dbamp);
-					}.defer(0.1)
+						// foldDown[0]=Monitor.new => _.play(2,2,0,2,target:RootNode(Server.default));
+						foldDown[0]=Monitor.new => _.play(2,2,0,2,target:StageLimiter.activeSynth.nodeID, addAction:\addBefore);
+						foldDown[1]=Monitor.new => _.play(4,1,0,1,target:StageLimiter.activeSynth.nodeID, addAction:\addBefore, volume: -6.dbamp);
+						foldDown[2]=Monitor.new => _.play(4,1,1,1,target:StageLimiter.activeSynth.nodeID, addAction:\addBefore, volume: -6.dbamp);
+						{In.ar(0,2) * -4.8.dbamp => ReplaceOut.ar(0,_)}.play(target:StageLimiter.activeSynth.nodeID, addAction:\addBefore)
+					}.defer(0.2)
 			}
 		});
 	}

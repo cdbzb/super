@@ -1,5 +1,5 @@
 (
-s.waitForBoot { StageLimiter.activate };
+s.waitForBoot { StageLimiter.activate(numChannels: Monitors.channels) };
 
 ~funs=(		//	A Pseudo Class for Song with elastic rhythm			
 	// written for trek project

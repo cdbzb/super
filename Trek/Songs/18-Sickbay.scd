@@ -1646,13 +1646,19 @@ P(\noise,syl: 1,  music: { |p b e|
 		* Env([0, 1, 0],b.parse([2, 1]) + [0,3], [0, -6]).kr(2,gate:1)
 	}.play
 });
+P(\setMccoy, music: { |p b e|
+	Trek.cast.mccoy=\xuan;
+});
 ["/*MCCOY:*/ (boom) He's dead.",[-7,-5,1].dm(\d)].addLine;
+Trek.cast.mccoy = \xuan;
+
 P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 	lyrics: "r he's dead",
 	legato: [1, 1, 0.55, ],
 	filter: (midinote: _ - 12), 
 	pitchTake: 1
 ] }, music:{|p b e|
+	Trek.cast.mccoy = \xuan;
 	{
 		e.playbuf
 		/4

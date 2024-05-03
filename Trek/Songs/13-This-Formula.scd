@@ -2,8 +2,8 @@
 	Song('this formnula',[]).current;
 	// Stills("/Users/michael/trek/BySection/media/return to tomorrow.mov").current;
 	Stills().current;
-	Song.currentSong.infrastructure=FunctionList.new.array_([
-	]);
+	// Song.currentSong.infrastructure=FunctionList.new.array_([
+	// ]);
 	~clocks=SongArray.new(size:64);
 	~clock={|tempi| 
 		var clock;
@@ -14,6 +14,8 @@
 	};
 	//This Formula (REAPER?) 
 	Song.preroll_(1);
+	Song.strum1=Trek.strum1;
+	Song.strum1.syn.run(true);
 ( Trek.cast.formulaLead = (\ninezero);
 	Trek.presets.put(\formulaLead,\ninezero,
 		[
@@ -182,10 +184,10 @@ Song.chankSwitch = \u;
 Song.chankOut = 2;
 P(\chank, music: { |p b e|
 	var out = Effect.bus({|i|
-		AnalogVintageDistortion.ar(i,drivegain: 1.8,bias:0.18,shelvingfreq:600,lowgain:0.00,highgain:0.8) / 15 
+		AnalogVintageDistortion.ar(i,drivegain: 1.8,bias:0.18,shelvingfreq:600,lowgain:0.00,highgain:0.8) / 25 
 		* -6.dbamp
 		// => Pan2.ar(_, Env([1, -1, 1, -1, 1, -1, 1, -1],"q q q q q q q q".asBeats.warpTo( e.tempoMap )).kr(2, gate:1))
-	}, out: Song.chankOut);
+	}, out: Song.chankOut, inputChannels:1);
 	[
 		freq: [[5, 11, 13],[5, 7, 13],[6, 11, 13],[5, 7, 12, 13]].df(\d,4).q,
 		instrument: \defaultPiano,
@@ -209,6 +211,7 @@ P(\chank, music: { |p b e|
 		rest: [\r,1].q(inf),
 		instance: p.strum1,
 		dur: "q q q q q q q q".asBeats.warpTo( e.tempoMap.quantizeDft ).q,
+		amp:0.05,
 		lag: 0.01,
 		// switch:\muted,
 		// switch:\alt,
@@ -292,7 +295,7 @@ P(\chords, music: { |p b e|
 			[13, 5],
 		].df(\d).q,
 		dur: "q q q q q q q q q q q q".asBeats.warpTo( e.tempoMap.quantizeDft(0.5) ++ p.tempoMap[e.start + 1].quantizeDft(0.5) ).q,
-		amp: 0.8,
+		amp: 0.6,
 		instrument: \stringyy,
 		out: 4
 		// out: Effect.bus({|i| i },out:4) 
@@ -659,13 +662,16 @@ P(\chordsOccupied,start:\occupied,music:{|p b e|
 		freq:[[1,3,5],[1,4,6]].df('g',octave:4 ).stutter(2).q*[1,1.01],
 		//		out:1,
 		pan:0,
-		out:Effect({|i| MoogLadder.ar(i,1200,1) => EchoNone.ar(_, 0.2,  delaytime: 0.1,  decaytime: 2.0)},out:1).bus.index,
+		out:Effect({|i| MoogLadder.ar(i,1200,1) => EchoNone.ar(_, 0.2,  delaytime: 0.1,  decaytime: 2.0)},out:1, inputChannels:2).bus.index,
 		amp:0.2,
 		//		out:Effect(FreeVerb.ar(_,0.51,0.5),out:1).bus.index,
 		dur:"e e e e".asBeats.q*2,
 	].p.trace.play(Song.quarters[e.start].asTempoClock)
 }
 );
+P(\strumOff, music: { |p b e|
+	Song.strum1.syn.run(false)
+});
 ["you will administer one injection of  ",[3,4,1,3,2,1, -7,1,2,-7,-5].dm('a',scale:\harmonicMinor)].addLine;
 Song.setTempoMap('one inj',"E E E E E E Q E E E E");
 P.still(\clear, timecode: 0.seconds, music: { |p b e|

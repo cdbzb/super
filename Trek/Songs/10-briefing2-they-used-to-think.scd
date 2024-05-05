@@ -17,7 +17,7 @@
 			\default, {
 				{|i|
 					DWGReverbC1C3.ar(i,mix:0.1)
-					/8
+					/7
 				}
 			}
 		);

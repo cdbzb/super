@@ -544,14 +544,14 @@ P(\line, music: { |p b e|
 		legato:0.99,
 		// instrument: \help_oteypiano,amp:0.2,
 		out: Effect.bus({|i|  i => FreeVerb.ar(_,0.2,1) =>SineShaper.ar(i,0.1,0.95 ) },out:2)
-	]//.pp
+	].pp
 	;
 	[
 		freq: "1 1 2 3 4".df('a-',4).q,
 		instrument: \harp,coef:0.4,amp: 0.05,
 		dur: b.parse([1, 1, 1, 1, 4]).q,
 
-	]//.pp
+	].pp
 	;
 	[
 		freq: [\r,5, 3, 1].df('b-',[3,5]).q,
@@ -559,7 +559,7 @@ P(\line, music: { |p b e|
 		rel: 5,
 		instrument: \sawSynth,
 
-	]//.pp
+	].pp
 });
 
 // [ "Sargon would've required that you enter the mechanism immediately. ","r" ].addLine;

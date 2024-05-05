@@ -54,7 +54,7 @@ P(\eightPointThree, syl:8, music: { |p b e|
 	[
 		instrument: \visual_pad,
 		freq: [12, 4, 3].df('f#', [4,5]).q,
-		amp:0.3,out:4,rel:3,
+		amp:0.2,out:4,rel:3,
 		dur: b.drop(1).q
 
 	].pp
@@ -1874,10 +1874,14 @@ P.synthVs(role: \kirk, take: [\lead, \double], params: {|p b| [
 });
 P(\chords, music: { |p b e|
 	[
-		freq: [[-3, 1], [-2, -7]].df(\d,\mixolydian).q,
-		dur: b.parse([3, 6]).q,
+		freq: [
+			[-3, 1],
+			[-2, 1],
+			[-2, -7]
+		].df(\d,\mixolydian).q,
+		dur: b.parse([3, 1, 5]).q,
 		instrument: \visual_pad
-	].pp
+	].ppm
 });
 P(\bass, music: { |p b e|
 	[

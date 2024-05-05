@@ -1,6 +1,6 @@
 Trek {
 	classvar <>cast, <path, <>presets, <keys, <synful1, <synful2, <strum1, <strum2, <piano;
-	classvar <condVar, <>transitions, transitionGroup, <>faders;
+	classvar <condVar, <>transitions, transitionGroup, <>faders, <>faderSynths;
 	classvar carrierBus, modulatorBus, vocoderRatio ,monitorCarrier, sargonCarrier, auditionVocoder, vocoderFoa, vocodeTune, laMer, vocoderGroup, sargonModulator;
 
 	*initClass {
@@ -12,6 +12,7 @@ Trek {
 		ServerTree.add({transitionGroup = Group.after(Server.default.defaultGroup).register});
 		transitions = keys.collect{ () };
 		faders = nil ! keys.size;
+		faderSynths = nil ! keys.size;
 		// CmdPeriod.add({transitionGroup = Group.after(Server.default.defaultGroup).register});
 		// vocoder 
 	}
@@ -109,7 +110,7 @@ Trek {
 		}
 	}
 
-	*playSong{ |num cursor=0 scroll=true trimEnd=0| //use cursor -2 to play last two sections
+	*playSong{ |num cursor=0 scroll=true trimEnd=0| //does NOT set fader first
 		cursor = cursor ? 0;
 		Song.songs.at(keys[num]).current;
 		scroll.if{Song.makeScroll};
@@ -136,6 +137,7 @@ Trek {
 		trimEnd.notNil.if{ transitions[num].put(\trimEnd, trimEnd) };
 		lag.notNil.if{ transitions[num + 1].put(\lag, lag) };
 		fork{
+			faderSynths[num] = faders[num].();
 			this.playSong(num, cursor, trimEnd: trimEnd ) + lag => _.wait;
 			transitions[num].func.value;
 			transitions[num].dur.wait;
@@ -157,13 +159,13 @@ Trek {
 		this.playRange(*array)
 	}
 
-	*playRange { |num cursor numSections=1| 
+	*playRange { |num cursor numSections=1|  // sets first fader then plays range
 		var needLoad;
 			needLoad = (num..(num + numSections)).select{|i| Song.songs[Trek.keys[i]].isNil};
 			( needLoad.size!=0 ).if{ ^this.loadSongs(needLoad) };
 		fork{
 			transitionGroup.release;Server.default.sync;
-			faders[num].();
+			faderSynths[num] = faders[num].();
 			numSections.do{|i| 
 				var section = num + i;
 				var start = (i == 0).if{ cursor }{ transitions[section].start};
@@ -180,7 +182,7 @@ Trek {
 		Song.scrollOn = true;
 		fork{
 			transitionGroup.release;Server.default.sync;
-			faders[0].();
+			faderSynths[0] = faders[0].();
 			keys.size.do{|key section| 
 				var start = transitions[section].start ? 0;
 				Trek.editFile(section);

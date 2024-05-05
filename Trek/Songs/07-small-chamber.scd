@@ -1561,6 +1561,7 @@ P(\chords,syl:1, music: { |p b e|
 		/20
 	}.play
 });
+Trek.cast.mccoy=\xuan;
 P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 	lyrics: "and destroy + them",
 	filter: (midinote: _ - 12), 

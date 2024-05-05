@@ -410,24 +410,11 @@ P.synthV(role: \mccoy,
 	] }, music:{|p b e|
 		{
 			e.playbuf
-			/3
+			/5
 			// => Vocoder.ar(Saw.ar([ 50,600.rand ]), _, num:12, low:100, high:5000, q:0.02, hpf:5000, hpfscal:0.05, outscal:25)
 			// => p.synthVTracks.at(e.key).()
 		}.play
 	}
-);
-P.synthV(role: \spock, take:\double, double:true,
-filter: (midinote: _ - 12),  params: {|p b| [
-lyrics: "he does n't a ppere to be harmed - -  physicly + + anyway + +",
-// language: "english",
-vocalMode: \Rough,
-// phoneset: "arpabet"
-] }, music:{|p b e|
-{
-	e.playbuf
-	=> p.synthVTracks.at(e.key).()
-}.play
-}
 );
 P(\bass,syl:9,music:Song.currentSong.pbind[9]
 =>Pbindf(_,\instrument,\sawSynth,\amp,0.03)

@@ -824,9 +824,9 @@ P(\line,start:\correspond,music:{|p b e|
 		].pp;
 });
 [" (boom) subterranean chamber. ", "-1 1 2 3 4 3 2 1".dm(\d,5,\minor) ].addLine;
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, syl:0, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
+		wait: b.drop(1).sum,
 		text: ["subterranean","chamber"],
 	)									
 });
@@ -1824,9 +1824,7 @@ P.synthV(role: \vocoder, take: \lead, frozen: true, params: {|p b| [
 			p.laMer => PlayBuf.auto(2, _, rate: ([-4,4, 5, 4, 5, 4].dm('a-') - 1.dm('c')).midiratio.dq.demand(b.parse([2,[1,0.5],[0.5,1,1],[1,1,0.6],[0.4,1,1],1])))
 			/7
 			=> Out.ar(p.carrierBus,_)
-			
 		}
-
 });
 P('bass',start:\operate,music: {|p b e|
 		[

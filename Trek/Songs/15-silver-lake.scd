@@ -1519,7 +1519,7 @@ P(\bassnote,start:'tea -- ching',syl:0,music:{|p b e|
 	<> [
 		freq:[[1,11,-1]].df('b',octave:2).q,
 		lag: b[0]/2 + 0.025,
-		out:Effect( { |i|  HPF.ar(i,85) => FreeVerb.ar(_,0.8,1,mul: Env.linen(0,b.sum-(b[0]/2)).kr(2,gate:1))},out:[0,1]).bus.index,
+		out:Effect( { |i|  HPF.ar(i,85) => FreeVerb.ar(_,0.8,1,mul: Env.linen(0,b.sum-(b[0]/2)).kr(2,gate:1))},out:[0,1], inputChannels: 2).bus.index,
 	].p
 	=> _.play
 });

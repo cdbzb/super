@@ -30,7 +30,7 @@ Monitors {  //setup monitoring for Trek piece
 						foldDown[0]=Monitor.new => _.play(2,2,0,2,target:StageLimiter.activeSynth.nodeID, addAction:\addBefore);
 						foldDown[1]=Monitor.new => _.play(4,1,0,1,target:StageLimiter.activeSynth.nodeID, addAction:\addBefore, volume: -6.dbamp);
 						foldDown[2]=Monitor.new => _.play(4,1,1,1,target:StageLimiter.activeSynth.nodeID, addAction:\addBefore, volume: -6.dbamp);
-						{In.ar(0,2) * -4.8.dbamp => ReplaceOut.ar(0,_)}.play(target:StageLimiter.activeSynth.nodeID, addAction:\addBefore)
+						// {In.ar(0,2) * -4.8.dbamp => ReplaceOut.ar(0,_)}.play(target:StageLimiter.activeSynth.nodeID, addAction:\addBefore)
 					}.defer(0.2)
 			}
 		});

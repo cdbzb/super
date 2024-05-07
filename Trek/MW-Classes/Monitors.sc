@@ -19,11 +19,19 @@ Monitors {  //setup monitoring for Trek piece
 			]
 		);
 		StartUp.add{ 
-			 Server.local.options.numOutputBusChannels = 5
+			 Server.local.options.numOutputBusChannels = 5;
+			 Server.default.boot;
+			 Server.default.waitForBoot{
+			 }
 		};
 		ServerTree.add ({ 
-			(deviceChannels.at(Server.default.options.outDevice) == 2).if{
+			var channels = deviceChannels.at(Server.default.options.outDevice);
+			(channels == 2).if{
+				fork{
+					{ StageLimiter.activeSynth.isRunning }.try.notNil.if{ StageLimiter.deactivate; };
+					StageLimiter.activate;
 					Monitors.stereo;
+					// ServerTree.remove(StageLimiter.lmFunc); StageLimiter.activate;
 					Server.default.sync;
 					{
 						// foldDown[0]=Monitor.new => _.play(2,2,0,2,target:RootNode(Server.default));
@@ -32,6 +40,10 @@ Monitors {  //setup monitoring for Trek piece
 						foldDown[2]=Monitor.new => _.play(4,1,1,1,target:StageLimiter.activeSynth.nodeID, addAction:\addBefore, volume: -6.dbamp);
 						// {In.ar(0,2) * -4.8.dbamp => ReplaceOut.ar(0,_)}.play(target:StageLimiter.activeSynth.nodeID, addAction:\addBefore)
 					}.defer(0.2)
+				}
+			}{
+				{ StageLimiter.activeSynth.isRunning }.try.notNil.if{ StageLimiter.deactivate; };
+				StageLimiter.activate
 			}
 		});
 	}

@@ -1107,6 +1107,7 @@ P(\bass, music: { |p b e|
 	].pp
 });
 ["MULHALL: All readings are off the scale, Captain. (ooh) "," 6 5 4 3 2 1 7 6 5 4.5".dm(\d,5,\mixolydian)].addLine;
+Song.mix[\scale] = (bass: 1, chords: 1.0, vocal: 1, drums: 1.5);
 P.still(\mulhall_and_mccoy, timecode: 944.87.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.drop(-1).sum,
@@ -1122,10 +1123,12 @@ P.synthVs(role: \mulhall, take: [\lead, \dbl],
 	vocalMode: \Opera,
 	pitchTake:[1,3]
 ] }, music:{|p b e|
+		e.resources.values.do(_.postln);
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 		/2
+		* e.vocal
 	}.play
 });
 P('bass',start:\All,music: {|p b e|
@@ -1138,17 +1141,17 @@ P('bass',start:\All,music: {|p b e|
 		dec:1,
 		dur:0.25! 26 => _.warpTo(e.tempoMap.quantize(1,0,7)) => _.q(2) => _.fin(28),
 		rest: \r!4 ++ (1!32) => _.flat => _.q,
-		amp:0.15
+		amp:0.15 * e.bass
 		//vol:0.08
 	].p.play
 });
-P(\chords,start:\scale,music:{|p b e| 
+P(\chords,start:\scale,music:{|p b e v| 
 	[
 		instrument:\pluckDVerb,
 		freq: [[1,3],[1,3], -7,1,1,1].df(\d,5,\mixolydian).q,
 		//dur:b.parse([1,3]).q
 		dur: "q qq x x x xq".asBeats.warpTo(e.tempoMap.quantize(1,0,7)).q,
-		amp:0.03,
+		amp:0.03 * v.chords,
 		out: Effect.bus( _ * EnvGen.cutoff(b.sum,2), inputChannels:2 )
 	].ppm
 });
@@ -1173,6 +1176,7 @@ P('click',start:\All,music: {|p b e|
 	//=>  { |i| Ptpar( [ [1].warpTo(e.tempoMap.quantize(1,0,7)).unbubble, i ] ).play} 
 });
 P('drumz',start:\All,music: {|p b e| 
+	var amp = e.drums;
 	var dur,pat = "k k s ks ks kk s k k k s " ; 
 	dur = pat.split(Char.space).collect{  // function to make "words" into subarrays
 		|i| 
@@ -1185,12 +1189,12 @@ P('drumz',start:\All,music: {|p b e|
 	[ 
 		inst: [1] ++ pat.replace(Char.space).asArray => _.q,
 		instrument: [\r, Pfunc({|e| ( e.inst == $k ).if{\kick_gentle}{\sn_808}})].q(2),
-		vol:0.1,
+		vol:0.1 * amp,
 		dur:  [2] ++ dur /2 => _.warpTo(e.tempoMap.quantize(1,0,7)) => _.q(2) ,
 	].p.play;
 	[
 		instrument:\cymbal,
-		amp:0.7,
+		amp:0.7 * amp,
 		dur: [1,1].warpTo(e.tempoMap.quantize(1,0,7)).q,
 		rests: [\r,1].q].pp
 });
@@ -1370,12 +1374,12 @@ P(\crunch,start:\opens,music: { |p b e|
 		SinOsc.ar(
 			0,
 			LFBrownNoise2.ar(
-				Env([100,2000,2000,100],[4,b-8,6],\sin).kr(2,gate:1)
+				Env([100,2000,2000,100],[4,b-8,6],\sin).kr(0,gate:1)
 			), 
 			0.1
 		) 
 		=> {|i| i + BPF.ar(i, freq:[-1,-11].df('f#'), rq:0.15)}
-
+		* EnvGen.cutoff(b.sum,2)
 	}.play
 });
 ["I am Sargon!","1 2 1 -7 -7".dm('b',5,\harmonicMinor)].addLine;
@@ -1393,7 +1397,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 		text: ["I","am Sargon"],
 	)
 });
-P.synthV(role: \vocoder, frozen:true, params: {|p b| [
+P.synthV(role: \vocoder,resources:(tail: 6), frozen:true, params: {|p b| [
 	// filter: (midinote: 40), 
 	filter: (midinote: _ - 12), 
 	lyrics: "ai am sar - gone",
@@ -1421,7 +1425,7 @@ P(\chords,start:\Sargon,music: { |p b e|
 		dur: b.q,
 		amp:0.05,
 		out: Effect( TwoTube.ar(_, k:0.01, loss:0.98, d1length:666, d2length:[ 412, 513 ], mul:1.0, add:0.0), inputChannels:4, out: [
-			0,
+			// 0,
 			p.carrierBus.ar
 		] ).bus.index
 	].pp

@@ -25,7 +25,7 @@ Phaser1 {
 
 }
 
-Phaser2 : UGen {
+Phaser2 {
 
 	*ar { arg input, depth = 0.5, rate = 1, fb = 0.3, cfb = 0.1, rot = 0.5pi, rq = 1;
 		var output, lfo, feedback, ac;

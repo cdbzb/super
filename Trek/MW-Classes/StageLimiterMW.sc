@@ -8,6 +8,7 @@ StageLimiter {
 			{ 
 				{ 
 					if( activeSynth.isNil or: try{ activeSynth.isRunning.not } ) {   
+					activeSynth.free;
 					activeSynth = 
 						Synth(\stageLimiter,
 							target: RootNode(Server.default), 

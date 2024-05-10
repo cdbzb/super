@@ -1695,17 +1695,18 @@ P(\bass,start:\summoned,music:{|p b e|
 			).play
 
 });
+["Mister Spock's consciousness was placed in me. ",[1,2,3,4,3,2,1,6,6,5].dm(\g,octave:4)].addLine;
 P.still( \chapel1, start: \placed, timecode:5030.5.seconds, music: { |p b e|
 	e.still.value(
 		wait: b.sum,
-		text: ["that is why I was summoned", "into sickbay, Doctor"]
+		// text: ["that is why I was summoned", "into sickbay, Doctor"]
 	);
 });
-["Mister Spock's consciousness was placed in me. ",[1,2,3,4,3,2,1,6,6,5].dm(\g,octave:4)].addLine;
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["Mister Spock's","consciousness was"],
+		onTop: true
 	).sequenceText2(
 			b.parse([7]), [ 
 			["placed in","me"],
@@ -2265,7 +2266,7 @@ P.still(\clear,syl: 0, timecode: 0.seconds, music: { |p b e|
 	)
 });
 P.tune('into oblivion',Pbindf(_,\amp,0.06,\out,Effect.bus( { |i| EchoNone.ar(i,2,[1.3, 2 ]*0.6,9)*0.6=> { |i| i+( 0.5*PitchShift.ar(i,pitchRatio:[1.5,2]) ) }  } , inputChannels:2, out:2)));
-P.synthV(role: \vocoder, frozen: true, take: \lead, params: {|p b| [
+P.synthV(role: \vocoder, frozen: true, resources:(tail: 3), take: \lead, params: {|p b| [
 	lyrics: "r into + oblivion + + +",
 	filter: (midinote: _ - 12), 
 	pitchTake: 1
@@ -2540,7 +2541,7 @@ P.synthV(role: \vocoder, frozen: true, take: \lead, params: {|p b| [
 		// dur: b.sum-1,
 		rel: 0,
 		verb: 0,
-		durRel: 0.1,
+		durRel: 0.5,
 		dur:b.sum  
 	)
 });
@@ -2589,9 +2590,16 @@ P(\boomboom,start:\bodies,music:{|p b e|
 				[
 					instrument:\harp,
 					amp:0.03,
-					freq: [-7,1,-5,-2.5,-4,-1].df(\f,octave:[3,4],scale:\mixolydian).q,
-					dur:b.parse([1/2,1/2,[2, 2, 1/2 ], 1/2,1 ,1]).q,
+					freq: [-7,1,-5].df(\f,octave:[3,4],scale:\mixolydian).q,
+					dur:b.parse([1/2,1/2,[2, 2, 1/2 ]] ).q,
 					out: Effect({|i| MoogVCF.ar(i,2000,0.5)*2 },out:2).bus.index
+				].pp;
+				[
+					instrument:\harp,
+					amp:0.03,
+					freq: [\r,-2.5,-4,-1].df(\f,octave:[3,4],scale:\mixolydian).q,
+					dur:b.parse([[3, 2, 1/2 ], 1/2,1 ,1]).q,
+					out: Effect({|i| MoogVCF.ar(i,2000,0.5)*2 },out:3).bus.index
 				].pp;
 				[
 					instrument:\sawSynth,
@@ -3544,7 +3552,7 @@ P(\beautifulSparkle,syl:4, music: { |p b e|
 			mul:1.0,
 			add:0.0
 		) /50
-		* Env.linen(attackTime:1, sustainLevel:1.0, releaseTime:6, curve:-4.0).kr(2,gate:1)
+		* Env.linen(attackTime:1, sustainTime:1.0, releaseTime:6, curve:-4.0).kr(2,gate:1)
 	}.play
 });
 P(\line,syl:6, music: { |p b e|

@@ -540,7 +540,8 @@ P.synthV(\mo, take: \lead, params: {|p b| [
 	] }, music:{|p b e|
 		{
 			e.playbuf
-			=> p.synthVTracks.at(e.key).(mix: 0.1/2)
+			=> p.synthVTracks.at(e.key).(mix: 0.1)//.(mix: 0.1/2)
+			// => p.synthVTracks.at(\default).(mix: 0.1/2)
 		}.play
 });
 P(\bass, music: { |p b e|

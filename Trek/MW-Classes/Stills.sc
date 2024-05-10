@@ -11,6 +11,8 @@ Stills {
 	classvar <>current;
 	classvar <>muted=false;
 	classvar <>scale=1;
+	classvar <>trimWidth=1; //0.87 for no border
+	classvar <>trimLeft=0; // 180 for no border
 	var <>file;
 	var <>markers;
 	var <>fade;
@@ -158,7 +160,7 @@ Stills {
 
 		var w;
 		try{
-			w = Window(bounds:Rect(1500*monitor,200,1400,800).scale(scale),border:false)
+			w = Window(bounds:Rect(1500*monitor,200,1400,800) + Rect( trimLeft) => _.scale(scale),border:false)
 			//1196 x 676
 			.background_( Color.clear)
 			.front;  
@@ -174,13 +176,16 @@ Stills {
 		var w;
 		// image.setSize(monitors[monitor].width-10 * scale => _.asInteger,monitors[monitor].height-10 => _.asInteger * scale, \keepAspectRatio);
 		image.setSize(monitors[monitor].width-10 * scale => _.asInteger,monitors[monitor].height-10  * scale => _.asInteger, \keepAspectRatio);
+		image.scalesWhenResized_(false);
+		image.setSize(monitors[monitor].width-10 * scale * trimWidth  => _.asInteger, monitors[monitor].height-10 * scale =>_.asInteger);
 		try{
 			//w = Window(bounds:Rect(1500*monitor,200,size/12*14,size/12*8),border:false)
-			w = Window(bounds:monitors[monitor].scale(scale),border:false)
+			w = Window(bounds:monitors[monitor] + Rect(trimLeft,0,-1 * trimLeft,0) => _.scale(scale),border:false)
+			
 			// w = Window(bounds:Rect(1500*monitor,200,1400 * scale,800 * scale),border:false)
 			.background_( Color.clear)
 			// .drawFunc_({Pen.drawImage(Point(100,100),image,operation:'sourceOver',opacity:1)})
-			.drawFunc_({Pen.drawImage(Point(50,50),image,operation:'sourceOver',opacity:1)})
+			.drawFunc_({Pen.drawImage(Point(( -1 * trimLeft + 50 * scale ).asInteger,50),image,operation:'sourceOver',opacity:1)})
 			.front;  
 		}{
 			//w = Window(bounds:Rect(0,200,size/12*14,size/12*8),border:false)
@@ -197,19 +202,19 @@ Stills {
 	title { |window text |
 		( text.size == 1 ).if
 		{
-			StaticText(window,Rect (0,size/1200*600,size/12*14,200))
+			StaticText(window,Rect (0,size/1200*600,size/12*14,200) + Rect(trimLeft,0,0, 0, 0))
 			.string_(text[0])
 			.stringColor_(Color.rand)
 			.align_(\center)
 			.font_(Font(\helvetica,size/1200*90,bold:true))
 		}{
-			StaticText(window,Rect (0,size/1200*100,size/12*14,200))
+			StaticText(window,Rect (0,size/1200*100,size/12*14,200)+ Rect(trimLeft,0,-0, 0, 0))
 			.string_(text[0])
 			.stringColor_(Color.rand)
 			.align_(\center)
 			.font_(Font(\helvetica,size/1200*90,bold:true))
 			;
-			StaticText(window,Rect (0,size/1200*600,size/12*14,200))
+			StaticText(window,Rect (0,size/1200*600,size/12*14,200)+ Rect(trimLeft,0,-0, 0, 0))
 			.string_(text[1])
 			.stringColor_(Color.rand)
 			.align_(\center)
@@ -313,7 +318,7 @@ Still {
 	
 	title { |text b shrink|
 		var size=stills.size;
-		var bounds =  b ? stills.monitors[monitor].scale(Stills.scale);
+		var bounds =  b ? stills.monitors[monitor] + Rect(-1 * Stills.trimLeft) =>_.scale(Stills.scale);
 		var textHeight = bounds.height/4;
 		//  top in Rects below really should ALSO depend on textHeight also!
 		var top = Rect(bounds.left, bounds.height/8, bounds.width, textHeight);
@@ -418,7 +423,7 @@ Display {
 		start = P.calcStart(start);
 		key = key ++ start;
 		aStill = timecode.isNumber.if{
-			Still(key ++ ( Song.calcStart( start ) )=> _.asSymbol, timecode:timecode);
+			Still(Song.key ++ key ++ ( Song.calcStart( start ) ) => _.asSymbol, timecode:timecode);
 		}{
 			timecode.collect{|i x|
 				Still(key ++ ( Song.calcStart( start ) ) ++ x => _.asSymbol, timecode: i);

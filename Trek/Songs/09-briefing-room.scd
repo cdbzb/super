@@ -1001,7 +1001,7 @@ P(\bass, music: { |p b e|
 	).play
 });
 [ "With their knowledge, mankind could leap ahead ten thousand years. ","1 5 4 3 r 5 5 4 ".dm(\f) ++ " 5 4 4 3 2 1 3".dm(\g) ].addLine;
-Song.setTempoMap(\leap,"e | ee e e|e e ex xe ee e ee e ee e q");
+Song.setTempoMap(\leap,"e  ee e ee e ex xe ee e ee e ee e q");
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -1037,15 +1037,15 @@ P(\line, music: { |p b e|
 	].pp
 });
 P(\chord,syl:13,lag:-1, music: { |p b e|
-	(
+	[
 		instrument:\stringyy,
-		freq: [-7,1, 3, 5, 7].df(\g,\mixolydian),
-		att:2,
-		dur:3,
+		freq: [\g, 'f#'].collect{|i| [-7,1, 3, 5, 7].df(i,\mixolydian) }.q,
+		attack:2,
+		dur: e.bAll.drop(1).parse(1, 1) + [1, 0] => _.q,
 		amp:[ 2, 1, 1, 1, 2 ]/10,
 		wet:0.2
 
-	).play
+	].pm.play
 });
 P(\chords,syl:6, music: { |p b e|
 	MegaBind(
@@ -1131,9 +1131,9 @@ P(\moreChords, music: { |p b e|
 P(\bass, music: { |p b e|
 	[
 		freq: [\r, 11, 7,  6,  6, 12, 6, 12 ].df(\f, [2,3], \mixolydian) =>_.q,
-		dur:  "e,  qq, qq, qe, e, qe,  qe,  q".asBeats warpTo: e.tempoMap 
+		dur:  "e qq qq qe e qe  qe  q".asBeats warpTo: e.tempoMap 
 		=> _.q,
-		amp:0.05,
+		amp:0.35,
 
 		out: Effect.bus(DWGReverbC1C3.ar(_, mix: 0.25))
 		// dur: b.parse([1,[2, 0.5], [0.5,2,0.5 ],[0.5, 2 ],1, 1,1, 1,1, 1]).postln.q
@@ -1569,14 +1569,15 @@ Song.durs.filter(\meaning, _ * 0.95);
 P(\chords, music: { |p b e|
 	[
 		freq: [
-			\r,
-			[ 1, 5, \r ],
-			[ 1, 4, \r ],
-			[ -7, \r, \r ]
+			[ \r, \r, ],
+			[ 1, 5, ],
+			[ 1, 4, ],
+			[ -7, \r, ]
 		].df('a-', 3).q,
+		rests: MuteFirst(), 
 		dur: e.bAll.parse([3, 4, 3, 0.1]).q,
 		lofreq: 5000, hifreq: 9000,
-		instrument: \sawSynthSustain, out: 3, amp: 0.02, rel: 8
+		instrument: \sawSynthSustain, out: 3, amp: 0.04, rel: 8
 	].ppm
 });
 P.still(\clear, timecode: 0.seconds, music: { |p b e|

@@ -58,7 +58,7 @@ Parsers : ParserFactory{
 		var noteNameParser = RegexParser("[exqEXQhHwWtTg]") => Many(_) => _.map({|i| i.collect({|j| j.asString.asBeats}).flat.sum});
 		var multipleNote = SequenceOf([ noteNameParser, StrParser("\*"), Parsers.makeIntegerParser ]).map({|i| i[0].dup( i[2] )});
 		var notesOrMultiples = Choice([ multipleNote, noteNameParser, ]);
-		var string = this.replace($|," ");
+		var string = this.replace($|,"");
 
 		^Parsers.makeSepBy(
 			Parsers.makeWsOne

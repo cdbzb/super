@@ -17,9 +17,11 @@ Song {
 	var <>loadedFrom;
 	classvar <>scrollOn = false;
 	var addLineFunc;
+	var <>mix;
 	classvar <>lastPlayOnly;
 	// TODO deprecate muteTunes !! 
 	classvar <>muteTunes;
+
 
 	*initClass {
 		reaperFolder = this.filenameSymbol.asString.dirname.dirname +/+ "RPP";
@@ -290,6 +292,7 @@ Song {
 		clock=TempoClock.new(queueSize:512);
 		quarters=SongArray(key:key);
 		tempoMap=SongArray(key:key);
+		mix = SongArray(key:key);
 		secLoc = SectionAccessor({ |i| 
 			Song.currentSong.secDur[..(i-1)].sum
 		});
@@ -1030,7 +1033,8 @@ Part {
 					parent,
 					//durs from event start
 					parent.durs[start].list.drop(syl ? 0), //this is why you gotta use .drop(1) aaarg
-					this
+					this,
+					// parent.mix[start]
 				)
 			}},
 			// Event,{ music.play},
@@ -1142,7 +1146,7 @@ P {
 		( start.class==Function ).if{music = start; start = nil}; //syntactic sugar
 		start.postln;
 		key = (key ++ "_" ++ start).asSymbol;
-		resources = ( resources ++ (rpp: rpp) ? resources );
+		resources = ( resources ++ (rpp: rpp) ? resources ++ Song.mix[start] );
 		try{
 			frozen.if{
 				resources = resources ++ (freeze: 

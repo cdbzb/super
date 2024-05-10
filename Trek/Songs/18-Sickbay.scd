@@ -1687,7 +1687,7 @@ P(\dead, music: { |p b e|
 	// 	out: Effect.bus({|i| FreeVerb.ar(i, 1, 1)/10 },)
 	// ).play
 });
-P.tune(\dead, _ <> [freq: [\r, -5, 1].df(\d).q,instrument: \wash, rel:1, att: 1, freqLag: 0.2, amp: 0.02].pm);
+P.tune(\dead, _ <> [freq: [\r, -5, 1].df(\d).q,instrument: \wash, rel:3, att: 1, freqLag: 0.2, amp: 0.02].pm);
 // P.tune(\dead,range:[1,2],syl:0);
 P(\boom, music: { |p b e|
 	// (

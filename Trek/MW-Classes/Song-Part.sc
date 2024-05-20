@@ -1142,11 +1142,12 @@ P {
         |key start syl lag=0 music song resources rpp synthV record frozen=false|
         var part,error;
 	{
-		start = this.calcStart(start); //finds it if not provided!
-		( start.class==Function ).if{music = start; start = nil}; //syntactic sugar
+		start = this.calcStart(start).debug("start"); //finds it if not provided!
+		// ( start.class==Function ).if{music = start; start = nil}; //syntactic sugar
 		start.postln;
 		key = (key ++ "_" ++ start).asSymbol;
-		resources = ( resources ++ (rpp: rpp) ? resources ++ Song.mix[start] );
+		// resources = ( resources ++ Song.mix[start] ++ (rpp: rpp) ); //this will be () if rpp and Son.mix are nil
+		resources = ( resources ++ (rpp: rpp) ++ ( Song.mix[start] ? () )); //this will be () if rpp and Son.mix are nil
 		try{
 			frozen.if{
 				resources = resources ++ (freeze: 

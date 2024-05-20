@@ -4,14 +4,14 @@
 		*newOld { |function out=0 inputChannels=1|
 			^super.new.init(function , out,inputChannels);
 		}
-		*new { |function out=0 inputChannels=1 target time|
+		*new { |function out=0 inputChannels=1 target time=1|
 			^super.new.init(function , out,inputChannels, target, time);
 		}
 		*newSidechain {|function out=0 inputChannels=1| ^super.new.initSidechain(function,out,inputChannels) }
 
 		*new2 {|function out=0 inputChannels=1| ^super.new.init(function,out,inputChannels)}
 		*lfo {|function inputChannels=1 dur| ^super.new.initLfo(function,inputChannels,dur)}
-		*bus {|function out=0 inputChannels=1 target time| ^Effect.new(function , out,inputChannels, target, time).bus.index}
+		*bus {|function out=0 inputChannels=1 target time=1| ^Effect.new(function , out,inputChannels, target, time).bus.index}
 		*kbus {|function inputChannels=1 dur| ^super.new.initLfo(function,inputChannels,dur).bus.index}
 
 		initLfo { |function inputChannels=1 dur |
@@ -38,24 +38,26 @@
 			var event = inevent.copy;
 			cleanup.addFunction(event,{|flag| flag.if{this.synth.free}});
 			loop {
-				event =inevent ?? { ^cleanup.exit(inevent) };
+				event = inevent ?? { ^cleanup.exit(inevent) };
 				inevent = event.yield;
 		};
 event.yield
 		}
 
-		init { |function out inputChannels=1 target time |
-			var desc=SynthDef(\temp,{In.ar(1,inputChannels)=>function=>Out.ar(0,_)});
+		init { |function out inputChannels=1 target time=1 |
+			var desc = SynthDef(\temp,{ In.ar(0, inputChannels) => function => Out.ar(0,_) });
 			numChannels=desc.asSynthDesc.outputData[0].at(\numChannels);
 			target = target ? Server.default;
-			time = time ? 1; \time.post; time.postln;
-			bus=Bus.audio(numChannels:numChannels);
+			// bus=Bus.audio(numChannels:numChannels);
+			bus=Bus.audio(numChannels: inputChannels);
+			// bus.debug("bus: ");
+			// defer{bus.scope};
 			synth={|gate| 
-				In.ar(bus.index,inputChannels)
+				In.ar(bus.index, inputChannels)
 				=> function
-				=>.first DetectSilence.ar(_, time:1, doneAction:2)
+				=>.first DetectSilence.ar(_, time: time, doneAction: 2)
 				=> Out.ar(out, _)
-			}.play(addAction:\addToTail, target:target);
+			}.play(addAction:\addToTail, target: target);
 			NodeWatcher.register(synth, assumePlaying: true);
 			synth.onFree({ 
 				\freeing_Bus.postln;

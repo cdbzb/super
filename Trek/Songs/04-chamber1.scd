@@ -1151,7 +1151,7 @@ P(\chords,start:\scale,music:{|p b e v|
 		freq: [[1,3],[1,3], -7,1,1,1].df(\d,5,\mixolydian).q,
 		//dur:b.parse([1,3]).q
 		dur: "q qq x x x xq".asBeats.warpTo(e.tempoMap.quantize(1,0,7)).q,
-		amp:0.03 * v.chords,
+		amp:0.03 * p.mix[e.start].chords.postln,
 		out: Effect.bus( _ * EnvGen.cutoff(b.sum,2), inputChannels:2 )
 	].ppm
 });

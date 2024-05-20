@@ -1,4 +1,4 @@
-vstplugin v0.5.4
+vstplugin v0.6.0
 ================
 
 This project allows you to use VST plugins in Pd and SuperCollider on Windows, MacOS and Linux.
@@ -20,6 +20,11 @@ It includes a Pd external called "vstplugin~" and a SuperCollider UGen called "V
 * use Windows plugins on Linux (with Wine)
 * (optional) multithreaded plugin processing
 
+### Supported platforms:
+* Windows (i386 and amd64)
+* macOS (i386, amd64 and arm64)
+* Linux (i386, amd64, arm and arm64)
+
 
 See the help files (`vstplugin~-help.pd` and `VSTPlugin.schelp`) for detailed instructions.
 
@@ -31,8 +36,8 @@ Please report any issues or feature requests to https://git.iem.at/pd/vstplugin/
 
 ### Known issues:
 
-* The macOS binaries are not signed/notarized, so you will have problems on macOS 10.15 (Catalina) and above.
-  See the section 'macOS 10.15+' for workarounds!
+* **ATTENTION macOS users**: the binaries are not signed/notarized, so you might have problems on macOS 10.15 (Catalina) and above.
+  If you get security popups and the plugin refuses to load, please follow the steps in the section *macOS 10.15+* at the bottom!
 
 * The Supernova version of VSTPlugin only works on SuperCollider 3.11 and above!
 
@@ -42,7 +47,7 @@ Please report any issues or feature requests to https://git.iem.at/pd/vstplugin/
 * macOS/Pd: because of technical limitations the GUI must run on the main thread - which happens to be the audio thread in Pd (at the time of writing)...
   This might get fixed in future Pd versions, but for now, macOS users are adviced to keep native GUI windows closed whenever possible to avoid audio drop-outs.
 
-  There are two options work around this issue:
+  There are two workarounds:
 
   a) run the plugin in a subprocess (see "-b" and "-p" options)
 
@@ -70,8 +75,8 @@ By default, vstplugin searches for plugins in both `%PROGRAMFILES%` and `%PROGRA
 
 #### macOS
 
-On macOS, running 32-bit (Intel) plugins is only possible up to macOS 10.14, because macOS 10.15 eventually dropped 32-bit support.
-However, bit-bridging is still useful for Apple M1 MacBooks because it allows to run existing 64-bit Intel VST plugins in a native (= arm64) Pd or SC app.
+On macOS, running 32-bit (Intel) plugins is only possible up to macOS 10.14 because macOS 10.15 eventually dropped 32-bit support.
+However, bit-bridging is still useful for Apple M1 MacBooks because it allows to run existing 64-bit Intel VST plugins in a native ARM Pd or SC app.
 
 #### Linux
 
@@ -82,8 +87,8 @@ Unfortunately, there are several different Wine versions (stable, development, s
 The binaries available at https://git.iem.at/pd/vstplugin/-/releases are built against the standard Wine version shipped with Debian.
 If you want to use a newer Wine version, you might have to build *vstplugin* from source.
 
-*vstplugin* searches for plugins in the standard Windows VST directories inside the 'drive_c' directory of your Wine folder.
-The default Wine folder is '~/.wine' and the default Wine loader is the `wine` command; both can be overriden with the `WINEPREFIX` resp. `WINELOADER` environment variables.
+*vstplugin* searches for plugins in the standard Windows VST directories inside the `drive_c` directory of your Wine folder.
+The default Wine folder is `~/.wine` and the default Wine loader is the `wine` command; both can be overriden with the `WINEPREFIX` resp. `WINELOADER` environment variables.
 
 NOTE: plugins "converted" by LinVst or Yabridge will be automatically preferred over the built-in Wine bridge. Later we might provide an option to change this.
 
@@ -117,18 +122,18 @@ Dynamic linking, on the other hand, is preferred for destributing via system pac
 
 #### Prerequisites:
 
-##### VST SDK:
+#### VST SDK:
 
 For VST2 support, get the Steinberg VST2 SDK and copy it into /vst.
 
-You should have a folder 'vst/VST_SDK/VST2_SDK/pluginterfaces/vst2.x' with the header files 'aeffect.h' and 'affectx.h'.
+You should have a folder `vst/VST_SDK/VST2_SDK/pluginterfaces/vst2.x` with the header files `aeffect.h` and `affectx.h`.
 
-The VST2 SDK has been officially discontinued by Steinberg. If you have a VST2 license but lost the files, you can get them with '.git-ci/get_vst2.sh'.
-Otherwise you can try free alternatives like 'FST' (https://git.iem.at/zmoelnig/FST.git).
+The VST2 SDK has been officially discontinued by Steinberg. If you have a VST2 license but lost the files, you can get them with `.git-ci/get_vst2.sh`.
+Otherwise you can try free alternatives like *FST* (https://git.iem.at/zmoelnig/FST.git).
 
 For VST3 support, get the Steinberg VST3 SDK and copy it into /vst.
-You should have a folder 'vst/VST_SDK/VST3_SDK/pluginterfaces'; you don't need the rest of the SDK.
-(If you have git installed, you can easily install it with ./.git-ci/get_vst3.sh)
+You should have a folder `vst/VST_SDK/VST3_SDK/pluginterfaces`; you don't need the rest of the SDK.
+(If you have git installed, you can easily install it with `./.git-ci/get_vst3.sh`)
 
 The default setting is to build with both VST2 and VST3 support.
 If you only want to support a specific version, you can set the `VST2` and `VST3` CMake variables.
@@ -138,9 +143,9 @@ In case you already have the VST SDK(s) installed somewhere else on your system,
 you can provide the path to CMake by setting the `VST2DIR` and `VST3DIR` variables.
 
 Because earlier versions of the VST3 SDK also included the VST2 SDK headers,
-the project will also look for the VST2 headers in 'vst/VST_SDK/VST3_SDK/pluginterfaces/vst2.x'.
+the project will also look for the VST2 headers in `vst/VST_SDK/VST3_SDK/pluginterfaces/vst2.x`.
 
-##### Pd:
+#### Pd:
 
 Make sure you have Pd installed somewhere. If Pd is not found automatically, you have to do the following:
 
@@ -152,7 +157,7 @@ By default, *vstplugin~* is installed to the standard externals directory, but y
 
 If you don't want to build the Pd external, set `PD` to `OFF`.
 
-##### SuperCollider:
+#### SuperCollider:
 
 Get the SuperCollider source code (e.g. https://github.com/supercollider/supercollider).
 `SC_INCLUDEDIR` must point to the folder containing the SuperCollider source code (with the subfolders *common/* and *include/*).
@@ -168,20 +173,18 @@ If you don't want to build the SuperCollider extension, set `SC` to `OFF`.
 
 If you want to enable bit bridging (running 32-bit plugins on a 64-bit host and vice versa), you have to perform the following steps:
 
-1) compile the project with a 64-bit compiler (e.g. in a 'build64' folder)
+1) build and install the project with a 64-bit compiler (e.g. in a `build64` folder)
 
-2) compile the project with a 32-bit compiler (e.g. in a 'build32' folder)
+2) build and install the project with a 32-bit compiler (e.g. in a `build32` folder)
 
-3) copy the 32-bit 'host.exe' to the 64-bit installation folder and rename it to 'host_i386.exe'
+3) 64-bit: set the `HOST32_PATH` variable to the path of the 32-bit(!) host.exe and reinstall the project.
 
-4) copy the 64-bit 'host.exe' to the 32-bit installation folder and rename it to 'host_amd64.exe'
+4) 32-bit: set the `HOST_AMD64_PATH` variable to the path of the 64-bit(!) host.exe and reinstall the project.
 
-If you get compilation errors concerning the SRWLock functions, it means that the Windows SDK version (`_WIN32_WINNT`) is set too low.
-The minimum supported version is `0x0600` (= Windows 7); you can easily override it with the `WINVER` CMake variable.
+By default, the minimum Windows deployment target is Windows 7. You may choose a *higher* version by setting the `WINVER` CMake variable.
 
 If you compile with MinGW, make sure to choose the appropriate generator with `cmake .. -G "Unix Makefiles"`.
 Alternatively, you can pick a generator in cmake-gui when you first click "Configure". In this case you should also select the correct toolchain.
-
 
 ##### Warning about 32-bit MinGW
 
@@ -190,19 +193,25 @@ This only seems to happen if either the plugin or the host (but not both!) link 
 This generally works fine (because Pd is statically linked and Supercollider is nowadays built with MSVC), but it might cause troubles if you build a *dynamically* linked 32-bit Supercollider/Pd with MinGW.
 In this special case you should set `STATIC_LIBS` to `OFF` so that `VSTPlugin` resp. `vstplugin~` are also linked dynamically.
 To sum it up: MinGW <-> Visual Studio should always work, but MinGW (32-bit, dynamically linked) <-> MinGW (32-bit, statically linked) causes big troubles.
-Yes, it's ridiculous!
+I know, it's ridiculous!
 
 
 #### macOS
 
-Intel:
+You can build a universal binary with `-DCMAKE_OSX_ARCHITECTURES=<archs>`.
+As a side effect, this will also enable bit-bridging between the specified architectures.
 
-You can build a 32-bit host application (for running old 32-bit plugins) by setting `BUILD_HOST32` to `ON`.
-Note that the macOS 10.14 SDK dropped support for compiling 32-bit applications; you must use Xcode 9.4 or earlier.
+For example, `-DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"` will build for Intel and ARM.
+On ARM machines in particular, this would allow you to use existing Intel plugins in ARM versions of Pd/SC.
 
-Apple M1 (ARM):
+Alternatively, you can build individual host apps:
 
-You can build a 64-bit Intel host application (for running existing Intel plugins) by setting `BUILD_HOST_AMD64` to `ON`.
+* Intel: You can build a 32-bit host application (for running old 32-bit plugins) by setting `BUILD_HOST32` to `ON`.
+  Note that the macOS 10.14 SDK dropped support for compiling 32-bit applications; you must use Xcode 9.4 or earlier.
+
+* ARM: You can build a 64-bit Intel host application (for running existing Intel plugins) by setting `BUILD_HOST_AMD64` to `ON`.
+
+By default, the minimum macOS deployment target is OSX 10.9. You may choose a *higher* version by setting the `CMAKE_OSX_DEPLOYMENT_TARGET` CMake variable.
 
 
 #### Linux
@@ -239,7 +248,7 @@ To enable Wine support on Linux, you need to follow these steps:
 
     for 32-bit Wine, follow the steps for building the 32-bit host on Linux and then install `wine32-tools` or `wine-[branch]-dev`.
 
-2)  Create another build directory, e.g. 'build_wine', and `cd` into it.
+2)  Create another build directory, e.g. `build_wine`, and `cd` into it.
 
 3)  Set `BUILD_WINE` to `ON`.
    `PD_INSTALLDIR` and `SC_INSTALLDIR` should be the same as for the regular build.
@@ -251,21 +260,22 @@ To enable Wine support on Linux, you need to follow these steps:
 
 ### macOS 10.15+
 
-How to workaround macOS GateKeeper (many thanks to Joseph Anderson):
+Please follow these steps (many thanks to Joseph Anderson) after downloading and installing:
 
 1)  un-quarantine VSTPlugin/vstplugin~ executables:
 
-    Using the terminal, navigate to the folder containing the .scx/.pd_darwin file and then run:
+    Using the terminal, navigate to your Pd external resp. SC extension folder and then run:
 
-    SC: `xattr -rd com.apple.quarantine *.scx host*`
+    SC: `xattr -rd com.apple.quarantine ./VSTPlugin`
 
-    Pd: `xattr -rd com.apple.quarantine *.pd_darwin host*`
+    Pd: `xattr -rd com.apple.quarantine ./vstplugin~`
 
-2)  add unsigned VSTs to Gatekeeper's enabled list:
+2)  add unsigned VST plugins to Gatekeeper's enabled list:
 
-    Using the terminal, navigate to the folder(s) containing VSTs to enable. The following will create a label, ApprovedVSTs, and then add all VSTs in the directory:
+    Using the terminal, navigate to the folder(s) containing VSTs to enable.
+    The following will create a label, ApprovedVSTs, and then add all VSTs in the directory:
 
-    `spctl --add --label "ApprovedVSTs" *.vst`
+    `spctl --add --label "ApprovedVSTs" *.vst *.vst3`
 
     Once this is done, the following informs Gatekeeper these are approved:
 

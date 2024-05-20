@@ -21,7 +21,7 @@ Monitors {  //setup monitoring for Trek piece
 		StartUp.add{ 
 			// this belongs in startup.scd
 			// Server.local.options.numOutputBusChannels = 5;
-			Server.default.boot;
+			// Server.default.boot;
 			// Server.default.waitForBoot{
 			// }
 		};

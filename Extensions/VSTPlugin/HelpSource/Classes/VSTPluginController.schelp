@@ -242,7 +242,7 @@ s.bind {
 
 subsection:: Sequencing
 
-VSTPlugin defines two custom Event types which can be used in link::Classes/Pbind::, for example.
+VSTPlugin defines two custom link::Classes/Event:: types which are typically used with link::Classes/Pbind::.
 Like with (most) other Event types, commands are scheduled as OSC bundles with Server latency.
 
 definitionlist::
@@ -250,40 +250,81 @@ definitionlist::
 || sets one or more plugin parameters to the specified values; the interface is similar to code::\set::.
 table::
 ## code::\vst:: || the VSTPluginController instance
-## code::\params:: || an Array of parameter names and/or indices which will be looked up in the Event
+## code::\params:: || an (optional) Array of parameter names or indices that should be looked up in the Event
 ::
+
+a) Explicit look up (names or indices):
 code::
-Pbind(
+~p2 = Pbind(
+	\type, \vst_set,
+	\vst, ~fx,
+	\params, [\Mix, \Depth, 1], // use parameters 'Mix', 'Depth' and 1
+	\Mix, Pseq([0.1, 0.2, 0.5, 0.9], inf), // value for parameter 'Mix'
+	\Depth, Prand([0.3, 0.5, 0.7], inf), // value for parameter 'Depth'
+	1, Pwhite(), // value for parameter 1
+	\dur, Prand([0.25, 0.5, 1], inf)
+);
+::
+
+b) Automatic lookup (indices only)
+code::
+~p1 = Pbind(
+	\type, \vst_set,
+	\vst, ~fx,
+	1, Pwhite(0.1, 0.9), // automate parameter 1
+	3, Pwhite(0.2, 0.8), // automate parameter 3
+	\dur, Prand([0.25, 0.5, 1], inf)
+);
+::
+This is slightly less efficient than explicit lookup.
+
+warning::Before VSTPlugin v0.6, parameter emphasis::names:: have been looked up automatically if you omitted the code::\params:: key. This feature has been removed!::
+
+Pattern composition with automatic lookup is straight forward:
+code::
+// add another parameter
+~p3 = Pbind(
+	2, Prand([0.2, 0.5, 0.7], inf)
+) <> ~p1;
+::
+
+Pattern composition with explicit lookup also possible, but less flexible:
+
+code::
+// 'template' Pattern
+~a = Pbind(
     \type, \vst_set,
     \vst, ~fx,
-	\params, [1, \Mix], // look up parameter 1 and 'Mix'
-    1, Pwhite(0.1, 0.9), // value for parameter 1
-    \Mix, Pseq([0.1, 0.2, 0.5, 0.9], inf), // value for parameter 'Mix'
+	\params, [\Depth, \Mix],
+	\Mix, Pseq([0.1, 0.2, 0.5, 0.9], inf),
+	// \Depth will be provided later
+);
+
+// make two different Patterns based on ~a
+~b = Pbind(
+	\Depth, Pwhite(0.1, 0.9),
 	\dur, Prand([0.25, 0.5, 1], inf)
-)
-::
-If you omit the code::\params:: argument, the play method will automatically try to look up parameters by name:
-code::
-Pbind(
-    \type, \vst_set,
-    \vst, ~fx,
-    \Mix, Pseq([0.1, 0.2, 0.5, 0.9], inf), // value for parameter 'Mix'
-	\dur, Prand([0.25, 0.5, 1], inf)
-)
-::
-warning::
-This can be very inefficient for plugins with a large number of parameters! It is always better to explicitly specify the parameters you need with the code::\params:: argument
+) <> ~a;
+
+~c = Pbindf(
+    \Depth, Pwhite(0.5, 0.7),
+	\dur, Prand([0.3, 0.66, 1], inf)
+) <> ~a;
 ::
 
 See link::#Automation:: for more examples.
 
 ## code::\vst_midi::
-|| send MIDI messages; the interface is very similar to code::\midi::.
+|| send MIDI messages; the interface is very similar to the code::\midi:: Event type.
+
+Event keys:
 table::
 ## code::\vst:: || the VSTPluginController instance
 ## code::\midicmd:: || the MIDI method (see below)
 ## code::\chan:: || the MIDI channel; the default is 0
-## code::\midinote:: || MIDI pitch for code::\noteOn::, code::\noteOff:: and code::\polyTouch::
+## code::\midinote:: || MIDI pitch for code::\noteOn::, code::\noteOff:: and code::\polyTouch::;
+
+	may be a fractional value (= microtonal), see link::Classes/VSTPluginMIDIProxy#-noteOn::.
 ## code::\amp:: || amplitude (0.0 - 1.0) for code::\noteOn:: and code::\noteOff::
 ## code::\ctlNum:: || CC number for code::\control::
 ## code::\control:: || CC value for code::\control::
@@ -292,11 +333,31 @@ table::
 ## code::\progNum:: || program number for code::\program::
 ## code::\array:: || UInt8Array for code::\sysex::
 ::
-The default value for code::\midicmd:: is code::\noteOn::, with code::\noteOff:: commands being scheduled automatically. Other possible values are code::\noteOff::, code::\control::, code::\bend::, code::\touch::, code::\polyTouch::, code::\program::, code::\allNotesOff:: and code::\sysex::. The commands correspond to the methods listed in link::Classes/VSTPluginMIDIProxy::.
 
-note::Always prefer code::\vst_midi:: over code::\midi:: because the latter doesn't schedule OSC bundles!::
+Possible values for code::\midicmd:::
+table::
+## code::\noteOn:: || note-on message (= default);
+
+automatically schedules code::\noteOff:: messages based on the note duration.
+
+(This can be disabled by setting code::\hasGate:: to code::false::.)
+
+## code::\noteOff:: || note-off message
+## code::\control:: || CC message
+## code::\bend:: || pitch bend
+## code::\touch:: || channel after-touch
+## code::\touch:: || polyphonic after-touch
+## code::\program:: || program change
+## code::\allNotesOff:: || turn all notes off
+## code::\sysex:: || SysEx message
+::
+Each code::\midicmd:: has a corresponding method in link::Classes/VSTPluginMIDIProxy::.
+
+See link::Tutorials/A-Practical-Guide/PG_08_Event_Types_and_Parameters#MIDI output:: for more details on MIDI commands.
 
 See link::#VST Instruments:: for examples.
+
+note::Always prefer code::\vst_midi:: over code::\midi:: because the latter doesn't schedule OSC bundles!::
 ::
 
 strong::Tip:::
@@ -411,8 +472,8 @@ code::
 VSTPlugin.search;
 (
 SynthDef(\chorus, { arg bus=0;
-    var plugin = VSTPlugin.plugins[\GChorus];
-    ReplaceOut.ar(bus, VSTPlugin.ar(In.ar(bus, 2), 2, info: plugin));
+	var plugin = VSTPlugin.plugins['GChorus'];
+	ReplaceOut.ar(bus, VSTPlugin.ar(In.ar(bus, 2), 2, info: plugin));
 }).add;
 )
 ~fx = VSTPluginController(Synth(\chorus)).open; // will open 'GChorus'
@@ -429,12 +490,24 @@ ARGUMENT:: verbose
 post the plugin info to the console if loaded successfully.
 
 ARGUMENT:: action
-an action to be called with code::this:: and a Boolean (success/fail).
+a function that will be called with the object itself and a Boolean (success/fail) when the operation has completed.
+
+code::
+// open preset 'foo' after the plugin has been opened successfully:
+~fx.open('GChorus', action: { |x, ok|
+	ok.if { x.loadPreset('foo') }
+});
+::
+
+note::You must emphasis::not:: use link::Classes/Server#-sync:: to wait for completion! If you prefer to write sequential code instead of callbacks, you may use a link::Classes/Condition:: resp. link::Classes/CondVar:: and signal it from the action function.::
 
 ARGUMENT:: multiThreading
-process the plugin in a seperate worker thread to utilize more CPU cores.
+process the plugin in a seperate worker thread to utilize more CPU cores. See also link::Classes/VSTPlugin#*initDSPThreads::.
+
 note::This option is ignored for Supernova, which already offers multithreading with ParGroup.::
+
 note::Multithreading introduces a delay of 1 block!::
+
 
 ARGUMENT:: mode
 select a run mode.
@@ -448,6 +521,7 @@ See also link::Classes/VSTPlugin#Bridging and Sandboxing::.
 
 DISCUSSION::
 This method is realtime-safe because the VST plugin is opened asynchronously (in the NRT thread).
+
 
 METHOD:: openMsg
 
@@ -466,6 +540,9 @@ ARGUMENT:: mode
 select a run mode.
 
 RETURNS:: the message for an emphasis::open:: command (see link::#-open::).
+
+METHOD:: isOpen
+returns:: whether a plugin is currently open.
 
 METHOD:: close
 METHOD:: closeMsg
@@ -523,9 +600,6 @@ RETURNS:: a new link::Classes/VSTPluginGui:: instance.
 METHOD:: info
 returns:: the (static) plugin description (see link::Classes/VSTPluginDesc::).
 
-METHOD:: loaded
-returns:: whether a plugin is currently loaded.
-
 METHOD:: latency
 returns:: the current processing latency in samples.
 
@@ -543,20 +617,6 @@ see link::#Realtime Safety::.
 
 DISCUSSION::
 Depending on the plugin, emphasis::reset:: can involve expensive operations, like clearing a large delay line, and might not be realtime-safe, so be careful with setting code::async:: to code::false::.
-
-METHOD:: setOffline
-METHOD:: setOfflineMsg
-
-enable/disable offline processing.
-
-DISCUSSION::
-
-In non-realtime (NRT) synthesis, some VST plugins don't render correctly unless you explicitly put them into offline processing mode. Some plugins also render at a higher quality in offline mode than in realtime mode.
-
-On the other hand, with a few buggy plugins, certain plugin methods only work correctly in realtime mode, so you have to switch modes accordingly.
-
-For an example, see link::Classes/VSTPluginController#Non-Realtime Synthesis::.
-
 
 METHOD:: synth
 returns:: the link::Classes/Synth:: containing the currently controlled link::Classes/VSTPlugin:: instance.
@@ -681,7 +741,7 @@ ARGUMENT:: index
 the index/name of the parameter.
 
 ARGUMENT:: action
-an action to be evaluated with the value passed as an argument.
+a function that will receive the requested value.
 
 discussion::
 code::
@@ -701,7 +761,7 @@ ARGUMENT:: count
 the number of sequential parameter values. -1 will return all parameters starting from emphasis::index::.
 
 ARGUMENT:: action
-an action be evaluated with the values passed as an Array.
+a function that will receive the requested values as an Array.
 
 discussion::
 code::
@@ -766,7 +826,7 @@ You can create a new preset by passing a non-existing preset name to code::saveP
 
 ARGUMENT:: action
 
-an action which is called with code::this:: and a Boolean (success/fail).
+a function that will be called with the object itself and a Boolean (success/fail) when the operation has completed.
 
 ARGUMENT:: async
 
@@ -829,7 +889,7 @@ The file extension is arbitrary but it is good practice to use emphasis::.fxp:: 
 
 ARGUMENT:: action
 
-an action to be called with code::this:: and a Boolean (success/fail).
+a function that will be called with the object itself and a Boolean (success/fail) when the operation has completed.
 
 ARGUMENT:: async
 
@@ -886,7 +946,7 @@ ARGUMENT:: data
 the raw plugin data.
 
 ARGUMENT:: action
-an action to be called with code::this:: and a Boolean (success/fail).
+a function that will be called with the object itself and a Boolean (success/fail) when the operation has completed.
 
 ARGUMENT:: async
 where to perform the plugin method, see link::#Realtime Safety::.
@@ -897,7 +957,7 @@ METHOD:: getBankData
 get the current program/bank state as an link::Classes/Int8Array::.
 
 ARGUMENT:: action
-an action to pass the data - or code::nil:: if the method failed.
+a function that will receive the data - or code::nil:: if the method failed.
 
 ARGUMENT:: async
 see above.
@@ -918,7 +978,7 @@ ARGUMENT:: wait
 temporarily overwrites link::#-wait:: if not code::nil::.
 
 ARGUMENT:: action
-an action to be called with code::this:: and a Boolean (success/fail).
+a function that will be called with the object itself and a Boolean (success/fail) when the operation has completed.
 
 ARGUMENT:: async
 where to perform the plugin method, see link::#Realtime Safety::.
@@ -935,7 +995,7 @@ ARGUMENT:: timeout
 the number of seconds to wait before giving up.
 
 ARGUMENT:: action
-an action to pass the data.
+a function that will receive the data.
 
 ARGUMENT:: async
 see above.
@@ -1001,7 +1061,7 @@ METHOD:: getTransportPos
 get the current transport position (in quarter notes).
 
 ARGUMENT:: action
-will be called with current transport position.
+a function that will receive current transport position.
 
 subsection:: VST2 only
 
@@ -1013,7 +1073,7 @@ ARGUMENT:: what
 a string describing the capability. Some of these are documented in the VST SDK, but others are not.
 
 ARGUMENT:: action
-will be called with an Integer result.
+a function that will be called with an Integer result.
 table::
 ## 1 || yes
 ## -1 || no
@@ -1034,7 +1094,7 @@ ARGUMENT:: opt
 a Float.
 
 ARGUMENT:: action
-will be called with an Integer result. The meaning depends on the VST plugin.
+a function that will be called with an Integer result. The meaning depends on the VST plugin.
 
 ARGUMENT:: async
 see link::#Realtime Safety::.
@@ -1198,19 +1258,49 @@ code::
 // open plugin (the example uses 'GChorus' from GVST plugins)
 ~fx.open("GChorus");
 
+// 1) automate parameters in parallel
 (
-p = Pbind(
+~p = Pbind(
 	\type, \vst_set,
-	\vst, ~fx, // the VSTPluginController instance
-	\params, [1, 3, \Mix], // parameter indices/names (looked up below)
-	1, Pwhite(0.1, 0.9), // value for parameter 1
-	3, Pwhite(0.3, 0.7), // value for parameter 3
-	\Mix, Pseq([0.1, 0.2, 0.5, 0.9], inf), // value for parameter 'Mix'
+	\vst, ~fx,
+	\params, [ 0, 1, 3 ],
+	0, Pwhite(0.1, 0.9),
+	1, Prand(0.3, 0.7),
+	3, Pseq([0.1, 0.2, 0.5, 0.9], inf),
 	\dur, Prand([0.25, 0.5, 1], inf)
 ).play;
 )
+~p.stop;
 
-p.stop;
+// 2) automate parameters alternatingly
+(
+~lfo = (cos(Pn(Pseries(0, 0.1, 10)) * 2pi) + 1) * 0.5;
+
+~p = (
+	Pbind(
+		\type, \vst_set,
+		\vst, ~vst,
+		\dur, 0.1
+	) <> Pswitch1([
+		Pbind(0, ~lfo),
+		Pbind(1, ~lfo),
+		Pbind(3, ~lfo)
+	], Pwhite(0, 2))
+).play
+)
+~p.stop;
+
+// 3) choose random parameter and set it to a random value
+(
+~p = (
+	Pbind(
+		\type, \vst_set,
+		\vst, ~vst,
+		\dur, 0.25
+	) <> Pfunc({ ( (4.rand): 1.0.rand ) })
+).play
+)
+~p.stop;
 ::
 
 Subsection:: VST Instruments
@@ -1232,7 +1322,7 @@ SynthDef.new(\vsti, { arg out = 0;
 
 // play the instrument with a \vst_midi Pbind
 (
-p = Pbind(
+~p = Pbind(
     \type, \vst_midi,
     \vst, ~vsti, // the VSTPluginController instance
 	\midicmd, \noteOn, // the default, can be omitted
@@ -1247,7 +1337,7 @@ p = Pbind(
 // change programs
 ~vsti.program_(1);
 
-p.stop;
+~p.stop;
 
 // play the instrument with your MIDI keyboard:
 (
@@ -1317,12 +1407,6 @@ SynthDef.new(\my_instrument, { arg out;
 ~score.add([0.0, ~vst[0].fx.setMsg(0, 0.2)]); // delay time
 ~score.add([0.0, ~vst[0].fx.setMsg(1, 0.5)]); // delay feedback
 ~score.add([0.0, ~vst[1].fx.setMsg(0, 0.9)]); // chorus depth
-
-// (optionally) put plugins into offline processing mode (might yield better results)
-~score.add([0.0, ~vst[0].vsti.setOfflineMsg(true)]);
-~score.add([0.0, ~vst[0].fx.setOfflineMsg(true)]);
-~score.add([0.0, ~vst[1].vsti.setOfflineMsg(true)]);
-~score.add([0.0, ~vst[1].fx.setOfflineMsg(true)]);
 
 // make a random melody
 ~melody = Pbind(

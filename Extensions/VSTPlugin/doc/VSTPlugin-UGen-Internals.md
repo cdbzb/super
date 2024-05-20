@@ -1,4 +1,4 @@
-# VSTPlugin - UGen documentation
+# VSTPlugin v0.6.0 - UGen documentation
 
 This document is meant for developers who want to interface with the VSTPlugin UGen from other programs or build their own client abstractions.
 
@@ -99,6 +99,7 @@ Arguments:
 | string...  | (optional) list of user supplied search paths
 | int        | the number of exclude paths; 0 means none
 | string...  | (optional) list of user supplied exclude paths
+| string     | (optional) custom cache file directory
 
 This will search the given paths recursively for VST plugins, probe them, and write the results to a file or buffer. Valid plugins are stored in a server-side plugin dictionary. If no plugin could be found, the buffer or file will be empty.
 
@@ -164,6 +165,15 @@ The probe process can return one of the following results:
 - crashed -> the plugin crashed on initialization
 - error -> internal failure
 
+##### /vst_cache_read
+
+Read the cache file from a custom location.
+
+Arguments:
+| type   ||
+| ------ |-|
+| string | the cache file directory |
+
 ##### /vst_clear
 
 Clear the server-side plugin dictionary.
@@ -172,6 +182,19 @@ Arguments:
 | type ||
 | ---- |-|
 | int  | remove cache file; 1 = yes, 0 = no |
+
+
+##### /dsp_threads
+
+Set the number of DSP threads for multi-threaded plugin processing.
+(By default, this is the number of logical CPUs.)
+
+**NOTE**: This command only takes effect if it is sent before any (multi-threaded) plugins have been opened.
+
+Arguments:
+| type   ||
+| ------ |-|
+| int    | number of threads; 0 = default |
 
 
 ### Plugin key
@@ -256,20 +279,6 @@ Arguments:
 | int  | asynchronous; 1 = true, 0 = false
 
 **NOTE**: If the plugin is opened with the VST GUI editor, the command is always performed asynchronously and the `async` argument is ignored.
-
-##### /mode
-
-Set the processing mode.
-
-Arguments:
-| type ||
-| ---- |-|
-| int  | mode; 0 = realtime, 1 = offline |
-
-In non-realtime (NRT) synthesis, some VST plugins don't render correctly unless you explicitly put them into offline processing mode.
-Some plugins also render at a higher quality in offline mode than in realtime mode.
-
-On the other hand, with a few buggy plugins, certain plugin methods only work correctly in realtime mode, so you have to switch modes accordingly.
 
 ### Parameters
 
@@ -399,8 +408,6 @@ Arguments:
 | type ||
 | ---- |-|
 | int  | program index |
-
-Replies with `/vst_program_index`, see "Events" section.
 
 ##### /program_name
 
@@ -778,10 +785,10 @@ n=<output bus count>
 <channel count #N-1>, <type #N-1>, <name #N-1>
 [parameters]
 n=<parameter count>
-<name #0>, <label #0>, <ID #0>
-<name #1>, <label #1>, <ID #1>
+<name #0>, <label #0>, <ID #0>, <flags #0>
+<name #1>, <label #1>, <ID #1> <flags #1>
 ...
-<name #N-1>, <label #N-1>, <ID #N-1>
+<name #N-1>, <label #N-1>, <ID #N-1>, <flags #N-1>
 [programs]
 n=<program count>
 <name #0>
@@ -801,6 +808,7 @@ String values, like plugin/parameter/program names, can contain any characters e
 ##### flags
 
 `flags` is a bitset of boolean properties, written as a hexidecimal number. The following flags can be combined with a bitwise OR operation:
+
 | value ||
 | ----- |-|
 | 0x001 | supports the GUI editor
@@ -821,11 +829,17 @@ Each bus entry takes up a single line and consists of three fields, separated by
 
 ##### parameters
 
-Each parameter entry takes up a single line and consists of three fields, separated by a comma: `<name>, <label>, <ID>`.
+Each parameter entry takes up a single line and consists of three fields, separated by a comma: `<name>, <label>, <ID> <flags>`.
 
 `<label>` is the unit of measurement (e.g. "dB", "ms", "%"); it can be an empty string!
 
 The parameter ID is a hexidecimal number. For VST 2.x plugins it is the same as the parameter index, but for VST 3.x plugins it can be an arbitrary 32 bit integer.
+
+`flags` is a bitset of boolean properties, written as a hexidecimal number. The following flags can be combined with a bitwise OR operation:
+
+| value ||
+| ----- |-|
+| 0x01  | is automatable |
 
 ##### programs
 
@@ -894,8 +908,9 @@ Each `<plugin info>` entry has the same structure as in "Plugin info".
 ### Plugin cache file
 
 Probing lots of (large) VST plugins can be a slow process.
-To speed up subsequent searches, the search results can be written to a cache file (see `/vst_search`), which is located in a hidden folder named *.VSTPlugin* in the user's home directory.
-The cache file itself is named *cache.ini* for 64-bit servers and *cache32.ini* for 32-bit servers.
+To speed up subsequent searches, the search results can be written to a cache file (see `/vst_search`), which is located in a platform specific directory:
+`%LOCALAPPDATA%\vstplugin\sc` on Windows, `~/Library/Application Support/vstplugin/sc` on macOS and `$XDG_DATA_HOME/vstplugin/sc` resp. `~/.local/share/vstplugin/sc` on Linux.
+The cache file itself is named `cache_<arch>.ini`, so that cache files for different CPU architectures can co-exist.
 
 The cache file structure is very similar to that in "Search results".
 The only difference is that it also contains a version header (`[version]`) and a plugin black-list (`[ignore]`).

@@ -15,6 +15,7 @@ VSTPluginDesc {
 	var <>presets;
 	// flags
 	var <>editor;
+	var <>editorResizable;
 	var <>synth;
 	var <>singlePrecision;
 	var <>doublePrecision;
@@ -80,9 +81,9 @@ VSTPluginDesc {
 	}
 	printParameters {
 		this.parameters.do { arg param, i;
-			var label;
-			label = (param.label.size > 0).if { "(%)".format(param.label) };
-			"[%] % %".format(i, param.name, label ?? "").postln;
+			var label = (param.label.size > 0).if { " (" ++ param.label ++ ")" } { "" };
+			var auto = param.automatable.not.if { " [not automatable]" } { "" };
+			"[%] %%%".format(i, param.name, label, auto).postln;
 		}
 	}
 	printPrograms {
@@ -319,13 +320,17 @@ VSTPluginDesc {
 					line = VSTPlugin.prGetLine(stream);
 					n = VSTPlugin.prParseCount(line);
 					info.parameters = n.collect {
-						var name, label;
+						var name, label, id, flags;
 						line = VSTPlugin.prGetLine(stream);
-						#name, label = line.split($,);
+						#name, label, id, flags = line.split($,);
+						// Parameter flags have been added inVSTPlugin v0.6.
+						// Currently, there is only one flag (1 = automatable).
+						flags = flags !? { hex2int.(flags) } ?? { 1 };
 						(
 							name: name.stripWhiteSpace,
-							label: label.stripWhiteSpace
-							// id (ignore)
+							label: label.stripWhiteSpace,
+							// ignore id
+							automatable: (flags & 1).asBoolean
 							// more info later...
 						)
 					};
@@ -376,7 +381,7 @@ VSTPluginDesc {
 						\flags,
 						{
 							flags = hex2int.(value);
-							#[\editor, \synth, \singlePrecision, \doublePrecision, \midiInput, \midiOutput, \sysexInput, \sysexOutput, \bridged].do { arg item, i;
+							#[\editor, \synth, \singlePrecision, \doublePrecision, \midiInput, \midiOutput, \sysexInput, \sysexOutput, \bridged, \editorResizable].do { arg item, i;
 								info.slotPut(item, (flags & (1 << i)).asBoolean)
 							}
 						},
@@ -419,6 +424,7 @@ VSTPluginDesc {
 		++ "programs: %".format(this.numPrograms) ++ sep
 		++ "presets: %".format(this.numPresets) ++ sep
 		++ "editor: %".format(this.editor) ++ sep
+		++ "resizable: %".format(this.editorResizable) ++ sep
 		// ++ "single precision: %".format(this.singlePrecision) ++ sep
 		// ++ "double precision: %".format(this.doublePrecision) ++ sep
 		++ "MIDI input: %".format(this.midiInput) ++ sep

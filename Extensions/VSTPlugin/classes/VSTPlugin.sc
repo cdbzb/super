@@ -1,8 +1,8 @@
 VSTPlugin : MultiOutUGen {
 	// class members
 	classvar <versionMajor=0;
-	classvar <versionMinor=5;
-	classvar <versionBugfix=4;
+	classvar <versionMinor=6;
+	classvar <versionBugfix=0;
 	classvar pluginDict;
 	classvar <platformExtension;
 	// instance members
@@ -58,6 +58,10 @@ VSTPlugin : MultiOutUGen {
 	}
 	*clear { arg server, remove=true;
 		server = server ?? Server.default;
+		server.serverRunning.not.if {
+			"VSTPlugin.clear requires the Server to be running!".warn;
+			^this;
+		};
 		// clear local plugin dictionary
 		pluginDict[server] = IdentityDictionary.new;
 		// clear server plugin dictionary
@@ -70,6 +74,17 @@ VSTPlugin : MultiOutUGen {
 	*reset { arg server;
 		this.deprecated(thisMethod, this.class.findMethod(\clear));
 		this.clear(server);
+	}
+	*readCache { arg server, dir;
+		server = server ?? Server.default;
+		server.serverRunning.not.if {
+			"VSTPlugin.readCache requires the Server to be running!".warn;
+			^this;
+		};
+		server.listSendMsg(this.readCacheMsg(dir));
+	}
+	*readCacheMsg { arg dir;
+		^['/cmd', '/vst_cache_read', dir]
 	}
 	*search { arg server, dir, options, verbose=true, wait = -1, action;
 		server = server ?? Server.default;
@@ -84,7 +99,7 @@ VSTPlugin : MultiOutUGen {
 		{ this.prSearchRemote(server, dir, options, verbose, wait, action) };
 	}
 	*searchMsg { arg dir, options, verbose=false, dest=nil;
-		var flags = 0, timeout, save = true, parallel = true, exclude;
+		var flags = 0, timeout, save = true, parallel = true, exclude, cacheFileDir;
 		// search directories
 		dir.isString.if { dir = [dir] };
 		(dir.isNil or: dir.isArray).not.if { MethodError("bad type % for 'dir' argument!".format(dir.class), this).throw };
@@ -103,6 +118,7 @@ VSTPlugin : MultiOutUGen {
 					\parallel, { parallel = value.asBoolean },
 					\timeout, { timeout = value !? { value.asFloat } },
 					\exclude, { exclude = value },
+					\cacheFileDir, { cacheFileDir = value },
 					{ MethodError("unknown option '%'".format(key), this).throw; }
 				)
 			}
@@ -111,10 +127,11 @@ VSTPlugin : MultiOutUGen {
 		exclude.isString.if { exclude = [exclude] };
 		(exclude.isNil or: exclude.isArray).not.if { MethodError("bad type % for 'exclude' argument!".format(exclude.class), this).throw };
 		exclude = exclude.collect({ arg p; p.asString.standardizePath });
+		cacheFileDir = cacheFileDir !? [cacheFileDir];
 		// make flag from options
 		flags = [verbose, save, parallel].sum { arg x, i; x.asInteger << i };
 		dest = this.prMakeDest(dest); // nil -> -1 = don't write results
-		^['/cmd', '/vst_search', flags, dest, timeout ?? 0.0, dir.size] ++ dir ++ exclude.size ++ exclude;
+		^['/cmd', '/vst_search', flags, dest, timeout ?? 0.0, dir.size] ++ dir ++ exclude.size ++ exclude ++ cacheFileDir
 	}
 	*prSearchLocal { arg server, dir, options, verbose, action;
 		{
@@ -241,15 +258,30 @@ VSTPlugin : MultiOutUGen {
 			});
 		}
 	}
-	*readPlugins {
-		var path, stream, dict = IdentityDictionary.new;
-		// handle 32-bit SuperCollider on Windows (should we care about 32-bit builds on macOS and Linux?)
-		path = ((thisProcess.platform.name == \windows) && Platform.resourceDir.find("(x86").notNil).if
-		{ "cache32.ini" } { "cache.ini" };
-		path = ("~/.VSTPlugin/" ++ path).standardizePath;
-		// read plugins.ini file
+	*readPlugins { arg dir=nil;
+		var arch, cachefile, appdata, path, stream, dict = IdentityDictionary.new;
+		arch = switch(Platform.architecture,
+			\i386, \i386,
+			\x86_64, \amd64,
+			\AArch32, \arm,
+			\AArch64, \aarch64,
+			{ "unknown CPU architecture: %".format(Platform.architecture).throw }
+		);
+		cachefile = "cache_%.ini".format(arch);
+		dir.notNil.if {
+			path = dir +/+ cachefile;
+		} {
+			// <appdata>/vstplugin/sc/cache_<version_<arch>.ini
+			appdata = "XDG_DATA_HOME".getenv ?? { Platform.userAppSupportDir.dirname };
+			path = appdata +/+ "vstplugin" +/+ "sc" +/+ cachefile;
+		};
+		// read cache file
 		File.exists(path).not.if {
-			"Couldn't find plugin cache file! Make sure to call VSTPlugin.search at least once.".warn;
+			dir.notNil.if {
+				"Couldn't find plugin cache file in %!".format(dir).error;
+			} {
+				"Couldn't find plugin cache file! Make sure to call VSTPlugin.search at least once.".warn;
+			}
 			^dict;
 		};
 		try {
@@ -346,6 +378,18 @@ VSTPlugin : MultiOutUGen {
 			Error("bad type '%' for 'dest' argument!".format(dest.class)).throw;
 		}
 		^-1; // invalid bufnum: don't write results
+	}
+
+	*initDSPThreads { arg server, numThreads;
+		server = server ?? Server.default;
+		server.serverRunning.not.if {
+			"VSTPlugin.initDSPThreads requires the Server to be running!".warn;
+			^this;
+		};
+		server.listSendMsg(this.initDSPThreadsMsg(numThreads));
+	}
+	*initDSPThreadsMsg { arg numThreads;
+		^['/cmd', '/vst_dsp_threads', numThreads ?? 0 ];
 	}
 
 	// instance methods

@@ -5,7 +5,7 @@
 }
 + SequenceableCollection {
 	q{ arg repeats=1;
-		^Pseq.new(this,repeats)
+		^Pseq.new(this.asList,repeats)
 	}
 }
 

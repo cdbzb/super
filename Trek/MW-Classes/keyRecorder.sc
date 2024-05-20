@@ -74,10 +74,14 @@ KeyRecorder {
 	  fork{
 		  //Song.playSection(Song.section(section)-1); Song.secDur[ Song.section(section)-1 ].wait;
 
+		  // Server.default.prepareForRecord("/tmp/test.wav");
+		  // Server.default.sync;
 		  cue.();
 		  Song.secDur[Song.section(section)-1].wait;
 		  list.add(SystemClock.seconds + Server.default.latency).postln;
-		  guide.()
+		  guide.();
+		  // Server.default.record(bus: 8);
+		  // Server
 	  }
   }
   playTune{
@@ -97,8 +101,13 @@ KeyRecorder {
   }
   return { 
 	  var out = list.differentiate.drop(1).asArray;
-	  var suffix = Song.tempoMap[section].isNil.if{".warpTo( b )"}{".warpTo( e.tempoMap )"};
+	  var suffix = Song.tempoMap[section].isNil.if{
+		  ".warpTo(b).q"
+	  }{
+		  ".warpTo(e.tempoMap).q"
+	  };
 	  out = section.notNil.if{ out.asBeats(section).round(0.001).reject{|i|i.isStrictlyPositive.not}}{out.round(0.001)};
+	  // out.put(0, out[0] + Server.default.latency);
 	  "vim.fn.setreg('d',{\"%\"})".format(out.asString ++ suffix) // register 'd' for Durs
 	  => SCNvim.luaeval(_);
 	  "paste register d to insert".postln

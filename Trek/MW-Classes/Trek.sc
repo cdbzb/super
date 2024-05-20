@@ -217,7 +217,7 @@ Trek {
 		// 		},
 		// 		{ fork {
 		// 			while( {
-		// 				Trek.piano.controller.loaded.not;
+		// 				Trek.piano.controller.isOpen.not;
 		// 			},{0.05.wait});
 		// 			Song.resources.condition.test_(true).signal
 		// 		}}
@@ -245,7 +245,7 @@ Trek {
 		// 		},
 		// 		{ fork {
 		// 			while( {
-		// 				Trek.strum2.controller.loaded.not;
+		// 				Trek.strum2.controller.isOpen.not;
 		// 			},{0.05.wait});
 		// 			Song.resources.condition.test_(true).signal
 		// 		}}
@@ -277,7 +277,7 @@ Trek {
 		// 		},
 		// 		{ fork {
 		// 			while( {
-		// 				Trek.synful2.controller.loaded.not;
+		// 				Trek.synful2.controller.isOpen.not;
 		// 			},{0.05.wait});
 		// 			Song.resources.condition.test_(true).signal
 		// 		}}

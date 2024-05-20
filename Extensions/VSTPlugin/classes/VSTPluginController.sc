@@ -26,13 +26,14 @@ VSTPluginController {
 	var browser; // handle to currently opened browser
 	var needQueryParams;
 	var needQueryPrograms;
+	var deferred; // deferred processing?
 
 	*initClass {
 		Class.initClassTree(Event);
 		// custom event type for playing VSTis:
 		Event.addEventType(\vst_midi, #{ arg server;
 			var freqs, lag, offset, strumOffset, dur, sustain, strum;
-			var bndl, noteoffs, vst, hasGate, midicmd;
+			var bndl, noteoffs, vst, hasGate, midicmd, sel;
 
 			freqs = ~freq = ~detunedFreq.value;
 
@@ -45,9 +46,12 @@ VSTPluginController {
 			vst = ~vst.value.midi;
 			hasGate = ~hasGate ? true;
 			midicmd = ~midicmd;
-			bndl = ~midiEventFunctions[midicmd].valueEnvir.asCollection.flop;
+			sel = (midicmd ++ "Msg").asSymbol;
+			// NB: asControlInput resolves unwanted Rests in arrays, otherwise sendMidiMsg()
+			// would throw an error when trying to build the Int8Array.
+			bndl = ~midiEventFunctions[midicmd].valueEnvir.asCollection.asControlInput.flop;
 			bndl = bndl.collect({ arg args;
-				vst.performList((midicmd ++ "Msg").asSymbol, args);
+				vst.performList(sel, args);
 			});
 
 			if (strum == 0) {
@@ -59,7 +63,7 @@ VSTPluginController {
 			};
 
 			if (hasGate and: { midicmd === \noteOn }) {
-				noteoffs = ~midiEventFunctions[\noteOff].valueEnvir.asCollection.flop;
+				noteoffs = ~midiEventFunctions[\noteOff].valueEnvir.asCollection.asControlInput.flop;
 				noteoffs = noteoffs.collect({ arg args;
 					vst.noteOffMsg(*args);
 				});
@@ -80,27 +84,46 @@ VSTPluginController {
 		});
 		// custom event type for setting VST parameters:
 		Event.addEventType(\vst_set, #{ arg server;
-			var bndl, msgFunc, getParams, params, vst;
-			// custom version of envirPairs/envirGet which also supports integer keys (for parameter indices)
-			getParams = #{ arg array;
-				var result = [];
-				array.do { arg name;
-					var value = currentEnvironment.at(name);
-					value !? { result = result.add(name).add(value); };
-				};
-				result;
-			};
-			// ~params is an Array of parameter names and/or indices which are looked up in the current environment (= the Event).
-			// if ~params is omitted, we try to look up *every* parameter by name (not very efficient for large plugins!)
-			vst = ~vst.value;
+			var bndl, array, params, scan, keys, vst = ~vst.value;
 			params = ~params.value;
-			if (params.isNil) {
-				params = vst.info.parameters.collect { arg p; p.name.asSymbol };
+			params.notNil.if {
+				// look up parameter names/indices in the current environment
+				params.do { arg key;
+					var value = currentEnvironment[key];
+					value.isNil.if {
+						Error("Could not find parameter '%' in Event".format(key)).throw;
+					};
+					array = array.add(key).add(value);
+				}
+			} {
+				// recursively collect all integer keys in a Set (to prevent duplicates),
+				// then look up parameters in in the current environment.
+				scan = #{ |env, keys, scan|
+					env.keysDo { arg key;
+						if (key.isNumber) {
+							keys.add(key);
+						};
+					};
+					// continue in proto Event
+					env.proto.notNil.if {
+						scan.(env.proto, keys, scan);
+					};
+					keys;
+				};
+				keys = scan.(currentEnvironment, Set(), scan);
+				keys.do { arg key;
+					var value = currentEnvironment[key];
+					array = array.add(key).add(value);
+				}
 			};
-			bndl = getParams.(params).flop.collect { arg params;
-				vst.value.setMsg(*params);
-			};
-			~schedBundleArray.value(~lag, ~timingOffset, server, bndl, ~latency);
+			array.notNil.if {
+				bndl = array.flop.collect { arg params;
+					// NB: asOSCArgArray helps to resolve unwanted Rests
+					// (it calls asControlInput on all the arguments)
+					vst.setMsg(*params).asOSCArgArray;
+				};
+				~schedBundleArray.value(~lag, ~timingOffset, server, bndl, ~latency);
+			}
 		});
 	}
 	*guiClass {
@@ -139,7 +162,7 @@ VSTPluginController {
 		synthDef.notNil.if {
 			metadata = synthDef.metadata;
 		} {
-			desc = SynthDescLib.global.at(synth.defName);
+			desc = SynthDescLib.global.at(synth.defName.asSymbol); // for SC 3.6 compat
 			desc.isNil.if { MethodError("couldn't find SynthDef '%' in global SynthDescLib!".format(synth.defName), this).throw };
 			metadata = desc.metadata; // take metadata from SynthDesc, not SynthDef (SC bug)!
 		};
@@ -178,6 +201,7 @@ VSTPluginController {
 		window = false;
 		needQueryParams = true;
 		needQueryPrograms = true;
+		deferred = false;
 		midi = VSTPluginMIDIProxy(this);
 		oscFuncs = List.new;
 		// parameter changed:
@@ -260,15 +284,12 @@ VSTPluginController {
 		this.changed(\free);
 	}
 	prCheckPlugin { arg method;
-		this.loaded.not.if { MethodError("%: no plugin!".format(method.name), this).throw }
+		this.isOpen.not.if { MethodError("%: no plugin!".format(method.name), this).throw }
 	}
 	prCheckLocal { arg method;
 		synth.server.isLocal.not.if {
 			MethodError("'%' only works with a local Server".format(method.name), this).throw;
 		}
-	}
-	loaded {
-		^this.info.notNil;
 	}
 	editor { arg show=true;
 		window.if { this.sendMsg('/vis', show.asInteger); }
@@ -360,6 +381,7 @@ VSTPluginController {
 						"couldn't open '%'".format(path).error;
 					};
 					loading = false;
+					deferred = multiThreading || (mode.asSymbol != \auto) || info.bridged;
 					this.changed(\open, path, loaded);
 					action.value(this, loaded);
 					// report latency (if loaded)
@@ -396,6 +418,14 @@ VSTPluginController {
 		^this.makeMsg('/open', path.asString.standardizePath,
 			editor.asInteger, multiThreading.asInteger, intMode);
 	}
+	isOpen {
+		^this.info.notNil;
+	}
+	// deprecated in favor of isOpen
+	loaded {
+		this.deprecated(thisMethod, this.class.findMethod(\isOpen));
+		^this.isOpen;
+	}
 	prClear {
 		info !? { info.removeDependant(this) };
 		window = false; latency = nil; info = nil;
@@ -406,7 +436,7 @@ VSTPluginController {
 	addDependant { arg dependant;
 		super.addDependant(dependant);
 		// query after adding dependant!
-		this.loaded.if {
+		this.isOpen.if {
 			needQueryParams.if { this.prQueryParams };
 			needQueryPrograms.if { this.prQueryPrograms };
 		};
@@ -436,10 +466,12 @@ VSTPluginController {
 	resetMsg { arg async = false;
 		^this.makeMsg('/reset', async.asInteger);
 	}
+	// deprecated
 	setOffline { arg bool;
-		this.sendMsg('/mode', bool.asInteger);
+		this.deprecated(thisMethod);
 	}
 	setOfflineMsg { arg bool;
+		this.deprecated(thisMethod);
 		^this.makeMsg('/mode',  bool.asInteger);
 	}
 	// parameters
@@ -692,7 +724,10 @@ VSTPluginController {
 	program_ { arg number;
 		((number >= 0) && (number < this.numPrograms)).if {
 			this.sendMsg('/program_set', number);
-			this.prQueryParams;
+			program = number; // update!
+			// notify dependends
+			this.changed(\program_index, number);
+			this.prQueryParams(needFork: true); // never block!
 		} {
 			MethodError("program number % out of range".format(number), this).throw;
 		};
@@ -962,32 +997,42 @@ VSTPluginController {
 			^msg[(onset+1)..(onset+len)].collectAs({arg item; item.asInteger.asAscii}, String);
 		} { ^"" };
 	}
-	prQueryParams { arg wait;
+	prQueryParams { arg wait, needFork=false;
 		(this.dependants.size > 0).if {
-			this.prQuery(wait, this.numParameters, '/param_query');
+			needFork.if {
+				fork {
+					// make sure that values/displays are really up-to-date!
+					deferred.if { synth.server.sync };
+					this.prQuery(wait, this.numParameters, '/param_query');
+				}
+			} {
+				forkIfNeeded {
+					this.prQuery(wait, this.numParameters, '/param_query');
+				}
+			};
 			needQueryParams = false;
 		} { needQueryParams = true; }
 	}
 	prQueryPrograms { arg wait;
 		(this.dependants.size > 0).if {
-			this.prQuery(wait, this.numPrograms, '/program_query');
+			forkIfNeeded {
+				this.prQuery(wait, this.numPrograms, '/program_query');
+			};
 			needQueryPrograms = false;
 		} { needQueryPrograms = true; }
 	}
 	prQuery { arg wait, num, cmd;
-		{
-			var div, mod;
-			div = num.div(16);
-			mod = num.mod(16);
-			wait = wait ?? this.wait;
-			// request 16 parameters/programs at once
-			div.do { arg i;
-				this.sendMsg(cmd, i * 16, 16);
-				if(wait >= 0) { wait.wait } { synth.server.sync };
-			};
-			// request remaining parameters/programs
-			(mod > 0).if { this.sendMsg(cmd, num - mod, mod) };
-		}.forkIfNeeded;
+		var div, mod;
+		div = num.div(16);
+		mod = num.mod(16);
+		wait = wait ?? this.wait;
+		// request 16 parameters/programs at once
+		div.do { arg i;
+			this.sendMsg(cmd, i * 16, 16);
+			if (wait >= 0) { wait.wait } { synth.server.sync };
+		};
+		// request remaining parameters/programs
+		(mod > 0).if { this.sendMsg(cmd, num - mod, mod) };
 	}
 }
 

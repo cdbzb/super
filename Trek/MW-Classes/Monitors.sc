@@ -26,7 +26,7 @@ Monitors {  //setup monitoring for Trek piece
 			// }
 		};
 		ServerTree.add ({ 
-			var channels = deviceChannels.at(Server.default.options.outDevice);
+			var channels = deviceChannels.at(Server.default.options.outDevice) ? channels;
 			(channels == 2).if{
 				fork{
 					{ StageLimiter.activeSynth.isRunning }.try.notNil.if{ StageLimiter.deactivate; };
@@ -57,7 +57,8 @@ Monitors {  //setup monitoring for Trek piece
 
 	*pentagon {
 		decoder = FoaDecoderMatrix.newPanto(5,'flat','dual');
-		speakerOrder=#[0,4,1,3,2]
+		speakerOrder = #[0,4,1,3,2];
+		channels = 5
 	}
 
 	*decode { |i| 
@@ -88,17 +89,18 @@ Monitors {  //setup monitoring for Trek piece
 		o.outDevice_("EPOS PC 8 USB");
 		Server.default.reboot
 	}
-	*blackHole16 {
-		var o =Server.default.options;
-		o.inDevice_("BlackHole 16ch");
-		o.outDevice_("BlackHole 16ch");
-		Server.default.reboot
-	}
 	*blackHole {
 		var o =Server.default.options;
 		o.inDevice_("BlackHole 2ch");
 		o.outDevice_("BlackHole 2ch");
 		Server.default.reboot
+	}
+	*blackHole16 {
+		var o =Server.default.options;
+		o.inDevice_("BlackHole 16ch");
+		o.outDevice_("BlackHole 16ch");
+		Server.default.reboot;
+		channels = 5
 	}
 
 	*rme{

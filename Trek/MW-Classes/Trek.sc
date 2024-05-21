@@ -63,19 +63,19 @@ Trek {
 	*loadTransitions{
 		path +/+ "transitions.scd" => _.load
 	}
-	*recordOBS { |dir="/tmp" tail=2 wait=2|
+	*recordOBS { |dir="/tmp" tail=2 wait=2 numChannels=2|
 		var now = Date.getDate.stamp;
 		var path = dir +/+ now;
 		//preroll = 0.5;
-		(Server.default.options.outDevice == "BlackHole 2ch").if
-		{
+		case 
+		{numChannels == 2} { (Server.default.options.outDevice == "BlackHole 2ch").if{
 			fork{
 				"obs-cli --password Where4obs recording start".unixCmd;
 				wait.wait;
 				this.playAll;
 				// "obs-cli --password Where4obs recording stop".unixCmd;
 			}
-		}{
+		} {
 			Monitors.blackHole;
 			Server.default.waitForBoot{
 				{
@@ -84,9 +84,27 @@ Trek {
 					this.recordOBS( dir, tail)
 				}
 			}
-		}
-
-	}
+		}} 
+		{numChannels == 5} { (Server.default.options.outDevice == "BlackHole 16ch").if{
+			fork{
+				"obs-cli --password Where4obs recording start".unixCmd;
+				try{ Monitors.stopFoldDown };
+				wait.wait;
+				this.playAll;
+				// "obs-cli --password Where4obs recording stop".unixCmd;
+			}
+		} {
+			Monitors.blackHole16;
+			Server.default.waitForBoot{
+				{
+					Trek.prepare;
+					45.wait;
+					try{ Monitors.stopFoldDown };
+					this.recordOBS( dir, tail)
+				}
+			}
+		}}
+}
 	*loadSongs{|array|
 		fork{
 			array.do{|i x|

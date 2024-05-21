@@ -987,6 +987,20 @@ P(\triller,start:\alloy,music:{|p b e|
 	{ Env([0.1,0.1,0.0001],[1,9],\sin).kr(2) }.play(s,Song.trillBus)
 });
 ["Much stronger and harder than-- ","2 6 5 4 3 7 6 5 4".dm('c#',5)].addLine;
+Song.setTempoMap(\harder,"q ex xeeee e e ex xe e e");
+P(\swell, music: { |p b e|
+	[
+		freq: [ 1, 1, 5, 5, 5, 5, 5, 5, 4, 4, 5, 5, 5, 5, 4, 4 ].df('c#',4).q,
+		freq: [1, 2, 3, 4].df('c#').q,
+		// rests: [\r,\r,1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1].q,
+		instrument: \sawSynthSustain,
+		lofreq:1000,hifreq:2000,
+		// pulse:0.5,
+		// dur: "q e*12".beats.warpTo( e.tempoMap.quantizeWindow).q,
+		dur: b.parse([1, 2, 2, 4]).q,
+		out: Effect.bus({|i| i * Line.kr(0.5,2,b.sum) /2 }, inputChannels:2)
+	].ppm
+});
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -1034,6 +1048,7 @@ P('guitar',start:\Much, music: {|p b e|
 			/2 + Gendy1.ar([ 3,2,1 ], [ 4,5,6 ], 1.0, 1.0, i.freqSeq *0.98, i.freqSeq * 1.02, ampscale:0.9, durscale:0.9, initCPs:[ 12,2 ], knum:[2,12])
 			=> HPF.ar(_,150)
 			* Env.asr(0,b.sum,2).kr(2,gate:i.gateSeq) /50
+			* Line.kr( 1, 2, b.sum )
 	},
 		{|i|  Mix.ar(i) 
 		/3 
@@ -1065,6 +1080,13 @@ P('kerRecorde',start:\harder,music: {|p b e|
 	].pp
 });
 ["anything I've measured before. ","3 2 1 -7 -6 -5 -4 1 2 ".dm('b-',5,\mixolydian)].addLine;
+P(\note, music: { |p b e|
+	(
+		freq: 5.df('b-', [ 4, 5 ]),
+		instrument: \harp,
+		out: Effect.bus({|i| FreeVerb.ar(i,1,0.9)[0] => Pan2.ar(_,0) * 3 }, inputChannels:2)
+	).play
+});
 P.tune( _ <> [instrument:\default, out: Effect.bus({|i| CombN.ar(i)/2+i => Monitors.az(_, LFSaw.ar(0.23,0, 2))},time:4)].pm);
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 

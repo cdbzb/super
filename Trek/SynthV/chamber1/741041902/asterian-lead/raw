@@ -4,23 +4,23 @@ o = [
 	Array.prNew(8),  Array.prNew(1),  Event.prNew,  Array.prNew(12),  
 	Array.prNew(1),  Event.prNew,  Array.prNew(8),  Array.prNew(1),  
 	Event.prNew,  Array.prNew(32),  Event.prNew,  Array.prNew(16),  
-	Array.prNew(8),  Event.prNew,  Array.prNew(40),  "70560000",  
+	Array.prNew(8),  Event.prNew,  Array.prNew(40),  "00000",  
 	Event.prNew,  Array.prNew(4),  Event.prNew,  Array.prNew(8),  
 	Array.prNew(4),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  "Captain",  Event.prNew,  Array.prNew(8),  
 	Array.prNew(4),  Event.prNew,  Array.prNew(12),  Event.prNew,  
 	Array.prNew(12),  Event.prNew,  Array.prNew(12),  Event.prNew,  
-	Array.prNew(12),  "239900000",  "",  Event.prNew,  
-	Array.prNew(4),  Event.prNew,  Array.prNew(40),  "310460000",  
-	"+",  "162280000",  Event.prNew,  Array.prNew(40),  
-	"635030000",  "the",  "239900000",  Event.prNew,  
-	Array.prNew(40),  "874930000",  "security",  "414890000",  
-	Event.prNew,  Array.prNew(40),  "1289820000",  "+",  
-	"351380000",  Event.prNew,  Array.prNew(40),  "1641200000",  
-	"+",  "341510000",  Event.prNew,  Array.prNew(40),  
-	"1982710000",  "+",  "388070000",  Event.prNew,  
-	Array.prNew(40),  "2370780000",  "guards",  "588470000",  
+	Array.prNew(12),  "372550000",  "",  Event.prNew,  
+	Array.prNew(4),  Event.prNew,  Array.prNew(40),  "372550000",  
+	"+",  "224380000",  Event.prNew,  Array.prNew(40),  
+	"821310000",  "the",  "268120000",  Event.prNew,  
+	Array.prNew(40),  "1089430000",  "security",  "369730000",  
+	Event.prNew,  Array.prNew(40),  "1459160000",  "+",  
+	"381020000",  Event.prNew,  Array.prNew(40),  "1840180000",  
+	"+",  "349970000",  Event.prNew,  Array.prNew(40),  
+	"2190150000",  "+",  "386660000",  Event.prNew,  
+	Array.prNew(40),  "2576810000",  "guards",  "767690000",  
 	"main",  Event.prNew,  Array.prNew(32),  Event.prNew,  
 	Array.prNew(8),  Array.prNew,  "cubic",  Event.prNew,  
 	Array.prNew(8),  Array.prNew,  "cubic",  Event.prNew,  
@@ -40,7 +40,7 @@ o = [
 	Array.prNew(1),  Event.prNew,  Array.prNew(12),  "",  
 	"Unnamed Track",  Array.prNew,  Event.prNew,  Array.prNew(20),  
 	"ff7db235",  Event.prNew,  Array.prNew(28),  "synthV.wav",  
-	"NoAspiration",  "/Users/michael/tank/super/SynthV/chamber1/741041902/asterian-lead"
+	"NoAspiration",  "/Users/michael/tank/super/Trek/SynthV/chamber1/741041902/asterian-lead"
 ];
 p = [
 	// Event
@@ -144,7 +144,7 @@ p = [
 	// Array
 	26, [ 'liked',  false,  nil,  nil,  
 		nil,  nil,  'id',  0,  
-		'expr',  1.0,  nil,  nil ],  
+		'expr',  0.1,  nil,  nil ],  
 	// Event
 	27, [ array: o[28],  size: 3,  
 		proto: nil,  parent: nil,  
@@ -152,7 +152,7 @@ p = [
 	// Array
 	28, [ 'liked',  false,  nil,  nil,  
 		nil,  nil,  'id',  1,  
-		'expr',  1.0,  nil,  nil ],  
+		'expr',  0.1,  nil,  nil ],  
 	// Event
 	29, [ array: o[30],  size: 3,  
 		proto: nil,  parent: nil,  
@@ -160,7 +160,7 @@ p = [
 	// Array
 	30, [ 'liked',  false,  nil,  nil,  
 		nil,  nil,  'id',  2,  
-		'expr',  1.0,  nil,  nil ],  
+		'expr',  0.1,  nil,  nil ],  
 	// Event
 	31, [ array: o[32],  size: 3,  
 		proto: nil,  parent: nil,  
@@ -168,7 +168,7 @@ p = [
 	// Array
 	32, [ 'liked',  false,  nil,  nil,  
 		nil,  nil,  'id',  3,  
-		'expr',  1.0,  nil,  nil ],  
+		'expr',  0.1,  nil,  nil ],  
 	// Event
 	34, [ array: o[35],  size: 2,  
 		proto: nil,  parent: nil,  

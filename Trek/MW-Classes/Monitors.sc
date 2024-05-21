@@ -54,6 +54,7 @@ Monitors {  //setup monitoring for Trek piece
 	*startFoldDown{
 		foldDown.do(_.play)
 	}
+
 	*pentagon {
 		decoder = FoaDecoderMatrix.newPanto(5,'flat','dual');
 		speakerOrder=#[0,4,1,3,2]
@@ -74,7 +75,8 @@ Monitors {  //setup monitoring for Trek piece
 		)
 	}
 
-	*az { | i angle=0 width=1 | ^PanAz.ar(5,i,angle,width)[speakerOrder] }
+	*az { | i angle=0 width=2 | ^PanAz.ar(5, i, angle, width, orientation:  0.5)[[0,4,1,3,2]] }
+
 	*stereo {
 		decoder =FoaDecoderMatrix.newStereo();
 		channels = 2;

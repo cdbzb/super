@@ -4,7 +4,7 @@ SynthDef (\cymbal, {|amp=1 length=2| //{{{
 	var sig=PinkNoise.ar(EnvGen.kr(Env.perc(0,length)))!2;
 	sig=TwoTube.ar(RHPF.ar(sig,500,9),d1length:502,d2length:777,loss:0.99)*0.5;
 	DetectSilence.ar(sig,doneAction:2);
-	Out.ar(0,sig*amp)}
+	Out.ar(\out.kr(0),sig*amp)}
 ).add; //}}}
 SynthDef(\fb,
 	{|out=1 |

@@ -290,7 +290,7 @@ SynthV {
 		//event.dur.put(event.dur[event.dur.size],event.dur.last - (event.lag[0] ? 0));
 		
 		event.dur = event.dur + firstNoteOffset * 2 * 70560  => _.asInteger;
-		event.onset = [0] ++ event.dur.integrate => _.dropLast() + ( ( event.lag[0] ? 0 ) * 70560 * 2  );
+		event.onset = [0] ++ event.dur.integrate => _.dropLast() + ( ( event.lag !? _[0] ? 0 ) * 70560 * 2  );
 		event.duration = event.dur * ( event.legato ? 1 ) => _.collect{|i| i.asInteger .asString ++ "0000"};
 		event.onset= event.onset.collect {|i| i.asInteger.asString ++ "0000"};
 
@@ -448,10 +448,12 @@ SynthV {
 				};
 				i
 			};
-			event.keys.do{|k| 
-				( event.at(k).isCollection && event.at(k).isString.not ).if{
-					event.put(k, event.at(k)[range[0]..range[1]])
-				}
+			if(range.notNil){
+				event.keys.do{|k| 
+					( event.at(k).isCollection && event.at(k).isString.not ).if{
+						event.put(k, event.at(k)[range[0]..range[1]])
+					}
+				};
 			};
 			event.lyrics=event.lyrics.replace($, , "").split(Char.space).reject{|i| i.size==0};
 			event.pitch=event.midinote.asInteger;

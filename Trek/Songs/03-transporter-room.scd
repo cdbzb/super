@@ -90,15 +90,16 @@ P.synthVs(role:\mccoy, take: [ \lead, \double ], params: [
 	];
 );
 P(\keys,start:'kno-o-ow',music:{|p b e| 
+	defer{ s.plotTree; };
 		[
-			dur: "q q q q q q q q ex x".asBeats.warpTo(e.tempoMap).q,
+			dur: "q q q q q q q q ex x".asBeats.warpTo(e.tempoMap).postln.q,
 			freq:[3, 4, 5, 1, [ -17, -7 ], [-16, -6 ], [ -12, -22, -6, 2, 4 ], [ -11,-1 ], [-17, -7, 2,4,6 ], -7,6].df(\g, 4).q,
-			legato:[1,1,1,1, 1, 1, 1, 1, [2,0,1,1,1.2],1,1].q * 0.8,
+			// legato:[1,1,1,1, 1, 1, 1, 1, [2,1,1,1.2],1].q * 0.8,
 			att:0.01,
 			amp:0.15,
 			sus:0.5,
 			dec:0.2,
-			strum:[0,0,0,0,0,0,0.05,0,0.05].q(inf),
+			strum:[0,0,0,0,0,0,0.05,0,0.05,].q(inf),
 			lag:(-1)*[0,0,0,0,0,0,0.05,0,0.05].q(inf),
 			instrument:\sawSynthAdsr,
 			hiFreq:9000

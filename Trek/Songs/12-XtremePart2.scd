@@ -23,7 +23,7 @@ P.still(\henochExcellent, timecode:
 			\default, {
 				{|i|
 					DWGReverbC1C3.ar(i,mix:0.1)
-					/8
+					/4
 				}
 			}
 		);
@@ -41,7 +41,7 @@ P.synthV(role: \henoch, take: \lead,
 					e.playbuf
 					=> p.synthVTracks.at(e.key).(mix: 0.05)
 					* 2
-
+					* Env([0,0, 3].dbamp, [b.sum], curve:\step ).kr().poll //louder second half
 				}.play
 
 });
@@ -297,7 +297,8 @@ P.still(\wide, timecode: 2826.5.seconds, music: { |p b e|
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["I'm surprised the vulcans","never conquered your race"]
+		text: ["I'm surprised the vulcans","never conquered your race"],
+		onTop: true
 	)
 });
 P.synthVs(role: \henoch, take: [ \lead, \double ], params: {|p b| [
@@ -323,7 +324,8 @@ P(\chords, music: { |p b e|
 			[4, 6, 11]
 		].df(\c, \minor).q,
 		dur: b.parse([2, 2, 4]).q,
-		instrument: \default,
+		out: [1, 2, 3],
+		// instrument: \default,
 		instrument: \sawSynthSustain, lofreq: 8000, amp: 0.02
 	].ppm
 });
@@ -346,7 +348,8 @@ P(\bass, music: { |p b e|
 		Gendy4.ar(minfreq: freqs.dq.demand(durs), maxfreq: freqs.dq.demand(durs) + 0.05)
 		* (Decay.ar(trig => HPF.ar(_,1)))
 		=> FreeVerb.ar(_,0.1,1)
-		=> Pan2.ar(_)
+		// => Pan2.ar(_)
+		=> Monitors.az(_, 2.0)
 		=> LPF.ar(_,1000)
 		/5
 		// /3
@@ -421,7 +424,7 @@ P('key',start:\worship,music: {|p b e|
 				freq: [\r,3,1, 3, 2, 2, 1, 2, 3, 2, 1].df(\d,octave:6).q,
 				dur: [4,2,1,1,2,1,1, 1,1,1,1]/2 =>_.warpTo(e.tempoMap) =>_.q,
 				out: 
-				Effect.bus({|i| CombC.ar(i,1,b[0]) * 0.5 + i})
+				Effect.bus({|i| CombC.ar(i,1,b[0]) * 0.5 + i}, out: 2)
 			].pp
 });
 P(\bass,start:'worship',music:{|p b e|
@@ -479,7 +482,7 @@ P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
 });
 P(\bonk, music: { |p b e|
 	{
-		var durs = b.parse([2,2, 3, 4 ]) ++ e.bnext[0] => _.flat;// .postln;
+		var durs = b.parse([2,2, 3, 4 ]) ++ e.bNext[0] => _.flat;// .postln;
 		var trig = TDuty.ar(durs.dropLast().dq, gapFirst:0   ) => OnePole.ar(_);
 		var freqs = [7, 7, 4, 3, 2  ].df(\e,2);
 
@@ -488,7 +491,8 @@ P(\bonk, music: { |p b e|
 		Gendy4.ar(minfreq: freqs.dq.demand(durs), maxfreq: freqs.dq.demand(durs) + 0.05)
 		* (Decay.ar(trig => HPF.ar(_,1)))
 		=> FreeVerb.ar(_,0.1,1)
-		=> Pan2.ar(_)
+		// => Pan2.ar(_)
+		=> Monitors.az(_, 2)
 		=> LPF.ar(_,1000)
 		/2
 		// /3
@@ -532,16 +536,19 @@ P.still(\collapseNurse, timecode: 2839.2.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
-	).sequenceText2(
-			b.parse([1]), [ 
-			["Nurse!",""],
-			],
 	)
 });
-P.still(\transition,syl:0, lag:0.5, timecode: 2842.2.seconds, music: { |p b e|
+P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
+	e.still.( 
+		wait: b.drop(1)[0],
+		text: ["Nurse!",""],
+		onTop: true
+	)
+});
+P.still(\transition,syl:0, lag:0.0, timecode: 2842.2.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["",""],
+		text: ["Nurse!",""],
 	)
 });
 P.still(\sargonWobbleDoctor,syl:1,lag:0.5, timecode: 2845.7.seconds, music: { |p b e|
@@ -560,26 +567,14 @@ P.still(\kirkLieDown,syl:1, timecode: 2850.6.seconds, music: { |p b e|
 		text: ["",""],
 	)
 });
+P.still(\clear,syl: 2, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.drop(1).sum,
+		text: ["","Doctor!"],
+		onTop: true
+	)
+});
 P(\collapseTremolo,start:'collapses',music:{|p b e|
-			//////////
-			//idea delays without interpolation in the four channels
-			//////////
-			
-			// ~syn1.expression(127,0);
-			// ~syn1.expression(127,1);
-			// ~syn1.patch(\violins,\trem,1);
-			// ~syn1.patch(\violas,\trem,0);
-			// ~syn1.syn.set(\out, (Effect(FreeVerb.ar(_,0.8,0.8)).bus.index) );
-			// (
-			// 	type:\synful,
-			// 	instance:~syn1,
-			// 	freq:[-7,2,4,6].df(\e,scale:\minor,octave:4),
-			// 	amp:1,
-			// 	dur:b.sum,
-			//
-			// 	//		instrument:\trem,
-			//
-			// ).play;
 
 			[
 
@@ -589,7 +584,8 @@ P(\collapseTremolo,start:'collapses',music:{|p b e|
 				rate:[ 4,5,6,7 ] *2,
 				size:1,
 				dur:b.parse([1,1]).q,
-				rel:7
+				rel:10,
+				out: 2
 			].ppm
 });
 P(\tympanyCollapse,start:'collapses',music:{|p b e|
@@ -619,20 +615,30 @@ P(\bassnote, music: { |p b e|
 	out: Effect.bus( DWGReverbC1C3.ar(_) /5, out:2 )
 ].pp
 });
-P(\chord, music: { |p b e|
+P(\two,syl:1, music: { |p b e|
 	(
-		lag: b.parse([2]).unbubble,
-		freq: [-1, -3, 5.5, 1, 3].df(\f, 4),
-		att:3,
-		dur: b.sum,
-		// instrument: \sawSynthSustain,
-		instrument: \trem2,
-		amp:0.05
+		amp: 0.01,
+		att: 0.05,
+		instrument: \cymbalsDS
 	).play;
 	(
-		lag: b.parse([2]).unbubble,
+		freq: [-1, -3, 5.5, 1, 3].df(\f, 4),
+		att:3,
+		// dur: b.drop(1).sum,
+		dur: 0.1,
+		rel: 5,
+		// instrument: \sawSynthSustain,
+		instrument: \trem2,
+		out: Effect.bus({|i| DWGReverbC1C3.ar(i, mix: 0.3) },inputChannels:2),
+		amp:0.02
+	).play;
+	(
 		freq: [1].df(\f,3),
-		amp: 0.1
+		amp: 0.1,
+		lag: 0.02,
+		instrument: \defaultPiano,
+		dur: 8,
+		out: Effect.bus({|i| FreeVerb.ar(i, 0.1,1) }, inputChannels:2)
 	).play
 });
 P.synthV(role: \chapel, take: \lead, params: {|p b| [
@@ -760,6 +766,7 @@ P.still(\respond, timecode: 2854.1.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
+		fade:2
 	)
 });
 P.still(\clear, timecode: 0.seconds,lag:0.01, music: { |p b e|
@@ -1297,14 +1304,6 @@ P.synthV(\genbu, take:\lead,
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.double(\genbu, params: {|p b| [
-		
-	] }, music:{|p b e|
-		{
-			e.playbuf
-			=> p.synthVTracks.at(e.key).()
-		}.play
-});
 P(\baselineCondition,start:'your condition',music:{|p b|
 	[
 		freq:[ [1,11],[2,12] ].df('g',octave:3 ).q,
@@ -1470,7 +1469,7 @@ P(\baseNoteFortunate,start:'fortunate',syl:5,music:{ |p b|
 }
 );
 P(\reedChordFortunate,lag:-0.15,start:'fortunate',music:{ |p b|
-	(freq:[1,3,5,7].df('d',scale:\minor),out:{4.rand}!4, instrument:\reedy,sustain:1,release:4,amp:0.08 ).play 
+	(freq:[1,3,5,7].df('d',scale:\minor),out:[2, 3, 4, 2], instrument:\reedy,sustain:1,release:4,amp:0.08 ).play 
 }
 );
 ["transform-k transform-c","7 5".dm(\c)].addLine;

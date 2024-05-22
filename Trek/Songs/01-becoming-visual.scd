@@ -1065,8 +1065,7 @@ P.tune();
 P(\bass, music: { |p b e|
 		{
 			var freq = [-1, 1,  2, 3, 4.5, 4.5, 5.5, 6, -6 ].df('c',3);
-			var durs = "q q ee e e e e q q
-			".asBeats.warpTo(e.tempoMap);
+			var durs = "q q ee e e e e q q ".asBeats.warpTo(e.tempoMap);
 			Saw.ar( freq.dq.demand(
 				durs
 			))

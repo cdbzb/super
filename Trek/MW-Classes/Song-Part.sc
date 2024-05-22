@@ -1009,7 +1009,7 @@ Part {
 				Server.default.bind{
 					{
 						PlayBuf.ar(5, resources[\freeze].bufnum, doneAction:2)
-					}.play;
+					}.play(target: resources[\target] ? Server.default, addAction: resources[\addAction] ? \addToHead);
 				};
 				^resources[\freeze]
 			}

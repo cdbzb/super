@@ -58,7 +58,9 @@ Trek.setTransition(3, -1,
 		 Trek.faderSynths[3].release(1);
 		 ~activateFader.(4);
 	 }, trimStart: 1, trimEnd:0, dur: 1
-);
+)
+// .value
+;
 
 Trek.faders[4] = {~asrFader.(0,2,6)};
 
@@ -209,7 +211,7 @@ Trek.setTransition(21, -1, dur: 3, func: {
 	defer{ Stills.plotTitleCard("The Bridge", fade:1) };
 	~activateFader.(22);
 	Trek.faderSynths[21].release;
-}).value;
+});
 
 Trek.faders[22] = {~asrFader.(4, 4, 2)};
 )

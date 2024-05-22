@@ -50,6 +50,9 @@
 
 	asBeats { | map |
 		var tempomap=TempoMap();
+		map.isNil.if{
+			^this
+		};
 
 		map.isSymbol.if{
 

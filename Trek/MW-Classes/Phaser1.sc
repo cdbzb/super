@@ -32,8 +32,8 @@ Phaser2 {
 
 		// compute allpass coefficient
 		ac = { |freq, rq|
-			var a2 = 1 - (pi*(freq/SampleRate.ir)*rq);
-			var a1 = -2*a2*cos(freq*2pi*SampleDur.ir);
+			var a2 = 1 - (pi*(freq/48000)*rq);
+			var a1 = -2*a2*cos(freq*2pi*(48000.reciprocal));
 			a2 = a2.squared;
 			[a1, a2];
 		};

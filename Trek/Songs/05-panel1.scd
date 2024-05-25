@@ -103,7 +103,7 @@ P(\bassnotes, music: { |p b e|
 			out: Effect.bus({|i| DWGReverbC1C3.ar(i) },)
 		].pp
 });
-P.synthV(role: \vocoder, frozen: true, 
+P.synthV(role: \vocoder, frozen:true, 
 		// filter: (midinote: 48!16) ,
 		filter: (midinote: _ - 12),
 		params: [
@@ -130,6 +130,7 @@ P.synthV(role: \vocoder, frozen: true,
 				sus:b.sum,
 				rel:0,
 				dur:b.sum,
+				durRel:1.5,
 				// att:1,
 				// sus:b.sum-0.1,
 				// rel:0.2,
@@ -158,6 +159,7 @@ P.synthV(role: \vocoder, frozen: true,
 	filter: (midinote: _ - 12),
 	params: [
 	lyrics: "your readings + will show",
+	lag: [0.05, 0,0,0,0],
 	defaultVibratoDepth: 0.3,
 	language: "english",
 	phoneset: "arpabet"
@@ -177,7 +179,9 @@ P.synthV(role: \vocoder, frozen: true,
 		// amp:0.04,
 		verb:0.5,
 		att: 0,
-		sus:b.sum,
+		sus:b.sum - 0.25,
+		rel: 0.5,
+		durRel:0.5,
 		rel:1
 			// dur:b.sum+1,
 			// att:1,
@@ -575,16 +579,19 @@ P('click',start:\outtro,music: {|p b e|
 		).q,
 		//amp:0.05,
 		//lag:0.005,
+		amp2: 1.5,
+		out: Effect.bus({|i| EarlyRef.ar(i, [0,0,0],[1,2,3], [3, 4, 5], hw:0.9) + i },time: 2),
 		instrument: \sn_808,
 		rest:[\r,0,0,0,0,0,0].q,
 		amp: p.essenceGain/10
 	].pp;
 	[
-		dur: "e eqe ee e qq e ee e e eqe ee e qq ".asBeats-[0.01,0,0,0,0,0,0,0,0,0] =>_.warpTo(e.tempoMap
+		dur: "e eqe ee e qq e ee e eeqe ee e qq ".asBeats-[0.01,0,0,0,0,0,0,0,0,0] =>_.warpTo(e.tempoMap
 			.quantizeDft
 		//.quantizeWindow
 		)=>_.q,
-		vol:0.08 * p.essenceGain,
+		vol:0.08 * p.essenceGain * 2.dbamp,
+		att:0.005,
 		instrument: \kick_gentle,
 	].pp
 });
@@ -726,6 +733,8 @@ P(\tricorderArp, music: { |p b e|
 						* Env.perc(0.001, \decayS.kr(0.4)).ar(0, gate)
 						/4
 				})
+				=> HPF.ar(_, 55)
+				// => LeakDC.ar(_)
 		/3
 		* EnvGen.cutoff(b.sum, release, -3 )
 		=> Splay.ar(_)
@@ -1727,7 +1736,7 @@ P.synthVs(role: \spock, take: [ nil, \bg ], params: {|p b| [
 });
 P(\pedalTone, music: { |p b e|
 	[
-		freq: [[-27,-17], [-11, -1], [-12,-2],
+		freq: [[-27,-17] + 10, [-11, -1], [-12,-2],
 		// [-12.5,-2.5]
 		-1
 	].df(\e).q,
@@ -1737,8 +1746,8 @@ P(\pedalTone, music: { |p b e|
 		out: Effect.bus( _ * Line.kr(0,1,2))
 	].pp;
 	[
-		freq: [-27].df(\e).q,
-		lag: b[0].sum,
+		freq: [-15, -17].df(\e),
+		lag: b[0].sum.q,
 		// dur: [ b.sum ].q,
 		dur: b.q,
 		coef:0.15,
@@ -1846,7 +1855,7 @@ P.synthV(role: \vocoder, take: \lead, frozen: true, resources:(tail: 7),
 		// mix:0.5,
 		att:0.3,
 		sus:b.sum + e.bNext.sum,
-		modGain:2,
+		modGain:2 * 4.dbamp,
 		// durRel:1.5
 	);
 
@@ -1950,6 +1959,13 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 P(\cataclysm, syl:3, music: { |p b e|
 	(
 		instrument: \cymbalsDS,
+		amp: 0.1,
+		out:1,
+		out: Effect.bus({|i| CrossoverDistortion.ar(i) => LeakDC.ar(_) / 50 + i  },),
+		out: Effect.bus({|i| PitchShift.ar(i, pitchRatio: 0.25) }, inputChannels: 2)
+	).play;
+	(
+		instrument: \cymbalsDS,
 		amp: 0.02
 	).play
 });
@@ -1986,7 +2002,7 @@ P.synthV(role: \vocoder, take: \lead, frozen: true, params: {|p b| [
 		// mix:0.5,
 		att:0.3,
 		sus:b.sum ,
-		modGain:2,
+		modGain:2 * 4.dbamp,
 		chord:#[8,2]/2,
 		durRel: 1.5
 	);
@@ -2060,7 +2076,7 @@ P.synthV(role: \vocoder, take: \lead,resources:(tail: 4), frozen: true,
 		// mix:0.5,
 		att:0.3,
 		sus:b.sum + e.bNext.sum ,
-		modGain:2,
+		modGain:2 * 4.dbamp,
 
 	);
 });
@@ -2079,14 +2095,17 @@ P('chords2',start:\struggle,music: {|p b e|
 	[
 		freq: [[1,3,5], [1,4,6],1,[1,4,6],[3, 5, 7],[-7,2,4]].df('a-',[3,4],\minor).q,
 		dur:b.q,
-		out:Effect({ |i|  SineShaper.ar(i,0.2,5) => FreeVerb.ar(_,1,0.6) * [0.6,0.6]}, out: [0, p.carrierBus.index ]).bus.index
+		out:Effect({ |i|  SineShaper.ar(i,0.2,5) => FreeVerb.ar(_,1,0.6) * [1,0.6]}, out: [0, p.carrierBus.index ]).bus.index
 	].pp
 });
 P('bass',start:\struggle,music: {|p b e|
 	[
 		freq:[-5, 1,-6.5,-4,].df('c#',3) ++ [1].df(\f,2) =>_.q,
 		dur: b.parse([1,3,1,5, 1]).q,
-		instrument:\sawSynth
+		instrument:\sawSynth,
+		att: [0.2, 0.1, 0.1, 0.1].q,
+		rel: [1, 3, 2, 3].q,
+		amp: [1, 2, 1, 2]/15 => _.q
 	].pp
 });
 P(\morebass,syl:8, music: { |p b e|
@@ -2098,22 +2117,26 @@ P(\morebass,syl:8, music: { |p b e|
 });
 P.tune(\struggle, _ <> [instrument:\wash, amp:0.01].p);
 ["power that you could not comprehend. ","13 12 11.5 7 12 11.5 7 6 5.5 ".dm(\e,4),].addLine; 
+Song.durs.filter(\comprehend, {|i| i.dropLast ++ ( i.last * 0.7)});
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["power that you","could not comprehend"]
 	)
 });
-P.tune();
+P.tune(_ <> [instrument: \sparkTriangle, amp: 0.03, out: 4].pm);
 P(\bass, music: { |p b e|
 	[
 		freq: [1, 3, ].df(\b,[2,3]) ++ [1].df(\c,[3,4]) =>_.q,
 		// dur: b.parse( [[1, 0.5],[0.5,1]] ).q,
-		dur: b.parse([4,4,1]).q
+		dur: b.parse([4,4,1]).q,
+		legato: [0.8, 1, 1.5, ].q,
+		lag: [0.02, 0, 0].q,
+		out: [Effect.bus({|i| DWGReverbC1C3.ar(i, mix: 0.5) },inputChannels:2), 0, 0].q
 
 	].pp
 });
-P.tune( _ <> [instrument:\wash, amp:0.01].p);
+P.tune( _ <> [instrument:\wash, amp:0.02].p);
 P(\chords, music: { |p b e|
 	[
 		freq: [
@@ -2121,7 +2144,8 @@ P(\chords, music: { |p b e|
 			[7, 11, 13, 15]
 		].df(\b,\mixolydian).q,
 		dur: b.q,
-		instrument:\stringyy
+		instrument:\stringyy,
+		mix: 0.35
 	].ppm
 });
 P(\chord,syl:7, music: { |p b e|
@@ -2239,6 +2263,7 @@ P(\bassnotes, music: { |p b e|
 	[
 		freq: [ 11,\r,[-2,2],\r ].df(\f,3,\mixolydian).q,
 		dur: b.parse([6,1,3, 2]).q,
+		legato: [1, 1, 2, 1, ].q,
 		// sustain: b.parse([7]) ++ b[6..9].sum ++ b[7..11].sum++ b[10..11].sum => _.flat => _.q ,
 		instrument: [\default,\stringyy].q(2),
 		amp:[0.1,0.2].q(2)

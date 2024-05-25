@@ -1,4 +1,4 @@
-( //rising gongs no globals version
+{ //rising gongs no globals version
 var gong = { |freq group tolerance = 0.03 lowest=400 amp=0.1 release=20 |
 	freq.isNil.if  { \help.postln; }
 	{ {
@@ -18,11 +18,11 @@ Event.addEventType(\tuningGong,{
 	    var args = [~freq,~group,~tolerance,~lowest,~amp,~release];
 	    gong.(*args)
     },(freq:400,lowest:300,tolerance:0.03,group:s))
-);
+}.();
 //{ ~gong.(400,g,lowest:1000) }.sched([1,2,4]);
 //{ g.set(\transpose,1.1) }.sched(10);
 
-( //tune up sound - sounds good with gongs...
+{ //tune up sound - sounds good with gongs...
 var tuneUp = { |freq=150 amp=0.2 out=0.1|
 var numberOfPartials = s.sampleRate/freq/2;
 var noise = Array.rand(numberOfPartials,100,s.sampleRate/2).sort;
@@ -40,4 +40,4 @@ var tone = (numberOfPartials-1).asInteger.collect({|i| ( i + 1 ) * freq });
 	}.play(s,out);
 };
 Event.addEventType(\tuneUp,{var args = [~freq,~amp,~out]; tuneUp.(*args)},(type:\on,freq:300,amp:0.001,out:0));
-);
+}.();

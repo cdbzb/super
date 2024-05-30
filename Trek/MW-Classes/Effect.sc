@@ -48,8 +48,8 @@ event.yield
 			var desc = SynthDef(\temp,{ In.ar(0, inputChannels) => function => Out.ar(0,_) });
 			numChannels=desc.asSynthDesc.outputData[0].at(\numChannels);
 			target = target ? Server.default;
-			// bus=Bus.audio(numChannels:numChannels);
-			bus=Bus.audio(numChannels: inputChannels);
+			bus=Bus.audio(numChannels:numChannels);
+			// bus=Bus.audio(numChannels: inputChannels);
 			// bus.debug("bus: ");
 			// defer{bus.scope};
 			synth={|gate| 

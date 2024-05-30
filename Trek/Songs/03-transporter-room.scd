@@ -34,26 +34,27 @@ Song.synthVTracks = EventWithDefault(
 		}
 	}
 );
-[ "MCCOY: Jim, why no briefing on this? I'd at least like to kno-o-ow what we're getting into. ",[3,4,2,5,3,1, -7, -6, -7, 1, 2, 3, 4,5, 4, 3, 4, 5, 6, 6, -7].dm(\g) ].addLine;
-Song.setTempoMap('kno-o-ow', "q e e  e e e ee x x E E E e x x   x x x x  ex x");
-P.still(\wideShot, timecode: 642.8.seconds, music: { |p b e|
-		 e.still.( 
+{
+	[ "MCCOY: Jim, why no briefing on this? I'd at least like to kno-o-ow what we're getting into. ",[3,4,2,5,3,1, -7, -6, -7, 1, 2, 3, 4,5, 4, 3, 4, 5, 6, 6, -7].dm(\g) ].addLine;
+	Song.setTempoMap('kno-o-ow', "q e e  e e e ee x x E E E e x x   x x x x  ex x");
+	P.still(\wideShot, timecode: 642.8.seconds, music: { |p b e|
+		e.still.( 
 			wait: b.sum,
 			text: ["Jim, why no briefing","on this?"],
 		).sequenceText2(
-				b.parse([7,1,8,6]), [ 
+			b.parse([7,1,8,6]), [ 
 				["",""],
 				["I'd at least","like to know"],
 				["what we're getting","in to"]
-				],
+			],
 		)
-});
-( SynthDef(\pluckGendy, {
-	var decay;
-	Pluck.ar( PinkNoise.ar(\amp.kr(0.1)), 1, 0.1, \freq.kr(400) * Gendy1.kr(minfreq:0.2,maxfreq:[5,10]).range(0.992,1.008) =>_.reciprocal, decaytime:decay = \decay.kr(4))
-	=> Out.ar(\out.kr(0),_);
-	Line.kr(1,0,decay + 2,doneAction:2)
-}).add;
+	});
+	( SynthDef(\pluckGendy, {
+		var decay;
+		Pluck.ar( PinkNoise.ar(\amp.kr(0.1)), 1, 0.1, \freq.kr(400) * Gendy1.kr(minfreq:0.2,maxfreq:[5,10]).range(0.992,1.008) =>_.reciprocal, decaytime:decay = \decay.kr(4))
+		=> Out.ar(\out.kr(0),_);
+		Line.kr(1,0,decay + 2,doneAction:2)
+	}).add;
 );
 P(\chords, music: { |p b e|
 	[
@@ -65,32 +66,32 @@ P(\chords, music: { |p b e|
 	].pp
 });
 P.synthVs(role:\mccoy, take: [ \lead, \double ], params: [
-		lyrics: "Jim why no briefing + on this I'd at least like to know - - what we're getting + into +",
-		pitchTake:  [ 1,3 ],
-		lag: [ [0.05] ++ ( 0!16 ) ],
-		legato: [[0.5, 1, 1, 1, 1, 1, 0.7, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]],
-		paramTension: 0.9,
-		vocalMode: \Open,
-		filter: [12,12].collect{|i| (midinote: _ - i)}, 
-	] 
-	, music:[
-		{|p b e|
-			{
-				e.playbuf
-				=> p.synthVTracks.at(e.key).()
-				=> Pan2.ar(_,1	)
-			}.play
-		}, {|p b e|
-			{
-				e.playbuf
-				=> p.synthVTracks.at(e.key).()
-				=> Pan2.ar(_,1)
-			}.play
-		}
-	];
-);
-P(\keys,start:'kno-o-ow',music:{|p b e| 
-	defer{ s.plotTree; };
+	lyrics: "Jim why no briefing + on this I'd at least like to know - - what we're getting + into +",
+	pitchTake:  [ 1,3 ],
+	lag: [ [0.05] ++ ( 0!16 ) ],
+	legato: [[0.5, 1, 1, 1, 1, 1, 0.7, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]],
+	paramTension: 0.9,
+	vocalMode: \Open,
+	filter: [12,12].collect{|i| (midinote: _ - i)}, 
+] 
+, music:[
+	{|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+			=> Pan2.ar(_,1	)
+		}.play
+	}, {|p b e|
+		{
+			e.playbuf
+			=> p.synthVTracks.at(e.key).()
+			=> Pan2.ar(_,1)
+		}.play
+	}
+];
+	);
+	P(\keys,start:'kno-o-ow',music:{|p b e| 
+		defer{ s.plotTree; };
 		[
 			dur: "q q q q q q q q ex x".asBeats.warpTo(e.tempoMap).postln.q,
 			freq:[3, 4, 5, 1, [ -17, -7 ], [-16, -6 ], [ -12, -22, -6, 2, 4 ], [ -11,-1 ], [-17, -7, 2,4,6 ], -7,6].df(\g, 4).q,
@@ -112,19 +113,19 @@ P(\keys,start:'kno-o-ow',music:{|p b e|
 			amp: 0.03
 		].ppm
 
-});
-[ "KIRK: Easy, Bones. ","7 5 3".dm(\c,5,\mixolydian)].addLine;
-P.still(\wideTwo, timecode: 647.seconds, music: { |p b e|
-		 e.still.( 
+	});
+	[ "KIRK: Easy, Bones. ","7 5 3".dm(\c,5,\mixolydian)].addLine;
+	P.still(\wideTwo, timecode: 647.seconds, music: { |p b e|
+		e.still.( 
 			wait: b.sum + e.bNext.sum,
 			text: ["easy","bones"],
 		).sequenceText2(
-				b.parse([3]) ++ [1], [ 
-					["",""]
-				],
+			b.parse([3]) ++ [1], [ 
+				["",""]
+			],
 		)
-});
-P.synthVs(role: \kirk, take: [\lead, \double], params: {|p b| [
+	});
+	P.synthVs(role: \kirk, take: [\lead, \double], params: {|p b| [
 		lyrics: "Easy + Bones",
 		legato: [[1, 1, 0.85, ]],
 		pitchTake: [1, 3]
@@ -135,16 +136,16 @@ P.synthVs(role: \kirk, take: [\lead, \double], params: {|p b| [
 			=> p.synthVTracks.at(e.key).()
 			=> Pan2.ar(_,0)
 		}.play
-});
-P('answer',start:\Easy,music: {|p b e|
+	});
+	P('answer',start:\Easy,music: {|p b e|
 		[
 			freq:[1.5,-6.5,-3].df.q,
 			dur:RecOnsets('answer','Easy')
 			//.arm
 			.play.q
 		]//.p//p
-});
-P('wash',start:\Easy,music: {|p b e|
+	});
+	P('wash',start:\Easy,music: {|p b e|
 		[
 			freq: [[5,7]].df(\c,[4,5],\mixolydian).q,
 			dur: b.sum,
@@ -154,22 +155,22 @@ P('wash',start:\Easy,music: {|p b e|
 			sustain:0,
 			release:3
 		].pp
-});
-["As long as you know there's somethi--ng down there, you know as much as we do."," 1 2 3 3 2  -5 -6 -7 1 2 1 -4 4 3 2 1 -7 2 1".dm(\c) ].addLine;
-Song.setTempoMap('down there',"e e e eee ee e e x x eee e ee ee eee x xe e eee");
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["as long as","you know"],
-	).sequenceText2(
+	});
+	["As long as you know there's somethi--ng down there, you know as much as we do."," 1 2 3 3 2  -5 -6 -7 1 2 1 -4 4 3 2 1 -7 2 1".dm(\c) ].addLine;
+	Song.setTempoMap('down there',"e e e eee ee e e x x eee e ee ee eee x xe e eee");
+	P.still(\clear, timecode: 0.seconds, music: { |p b e|
+		e.still.( 
+			wait: b.sum,
+			text: ["as long as","you know"],
+		).sequenceText2(
 			b.parse([5,6,1, 6]), [ 
-			["there's something","down there"],
-			["",""],
-			["you know","as much as we do"]
+				["there's something","down there"],
+				["",""],
+				["you know","as much as we do"]
 			],
-	)
-});
-P.synthVs(role: \kirk, take: [ \lead, \double ], params:  [
+		)
+	});
+	P.synthVs(role: \kirk, take: [ \lead, \double ], params:  [
 		lyrics: "As long as you know there's something + - down there, r you know as much as we do.",
 		legato: [ [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.6, ] ],
 
@@ -195,44 +196,44 @@ P(\guitarTwo, music: { |p b e|
 		,
 		durs,
 		[],
-	{|i| Pluck.ar(
-		ClipNoise.ar(0.2),
-		trig: TDuty.kr(
-			durs
-			.dq,
-			reset:0.0,
-			level:[1, 1, 0, 1, 1, 0, 1, 1, 1].dq,
-			doneAction:0,
-			gapFirst:1
-		),
-		delaytime:i.freqSeq.reciprocal.demand(durs) *  Gendy1.kr(minfreq: 0.3, maxfreq: 3).range(0.995,1.005),
-		decaytime: 5
-	)
+		{|i| Pluck.ar(
+			ClipNoise.ar(0.2),
+			trig: TDuty.kr(
+				durs
+				.dq,
+				reset:0.0,
+				level:[1, 1, 0, 1, 1, 0, 1, 1, 1].dq,
+				doneAction:0,
+				gapFirst:1
+			),
+			delaytime:i.freqSeq.reciprocal.demand(durs) *  Gendy1.kr(minfreq: 0.3, maxfreq: 3).range(0.995,1.005),
+			decaytime: 5
+		)
 		* Env.asr(0.5).kr(0,gate:i.gateSeq )
-},
-		{|i|  Mix.ar(i)
-		=> CrossoverDistortion.ar(_, amp:0.5, smooth:0.1) /40
-		=> Phaser2.ar(_, rate: 0.2)
-		=> Out.ar(2,_);
-		EnvGen.cutoff(b.sum,0.5)
-	}
-	).play
-});
-P('wash',start:\somethi,music: {|p b e|
+	},
+	{|i|  Mix.ar(i)
+	=> CrossoverDistortion.ar(_, amp:0.5, smooth:0.1) /40
+	=> Phaser2.ar(_, rate: 0.2)
+	=> Out.ar(2,_);
+	EnvGen.cutoff(b.sum,0.5)
+}
+		).play
+	});
+	P('wash',start:\somethi,music: {|p b e|
 		[
 			freq: [\r,[11, 13],[7.5, 12],\r,3,\r,\r,[6,11],5].df(\c,4,\mixolydian).q,
 			dur: b.parse([3,1,1,4, 1,1,1, 1,1]).q,
 			legato:[1,1,1,1,1,1,1,[1,2]].q(2),
-	//		att:b.sum,
+			//		att:b.sum,
 			amp:0.02,
 			//instrument:\wash,
 			instrument:\pulse, amp:0.1,
-	//		sustain:0,
+			//		sustain:0,
 			release:3,
 			// out: 3
 		].pp
-});
-P(\xtra_notes,start:'down there',syl:11,music:{|p b e| 
+	});
+	P(\xtra_notes,start:'down there',syl:11,music:{|p b e| 
 		[
 			freq: [-6, 1, -11, -4, -7, 1].df(\c).q,
 			legato: [1, 1/3, 3,2,1,1].q,
@@ -250,8 +251,8 @@ P(\xtra_notes,start:'down there',syl:11,music:{|p b e|
 			strum: [0, 0, 0, 0, 0, 0, 0.05].q,
 			amp: 0.02, out:3
 		].pp
-});
-P(\bass,start:'down there',music:{|p b e| 
+	});
+	P(\bass,start:'down there',music:{|p b e| 
 		[
 			freq: [\r, -5, 5, -5, \r, -6, 6, 5, 4, -4, -4.5, -5, 5, -7, 1].df(\c,3).q,
 			dur: "eee q q q q q e e q qe e q e e q  ".asBeats.warpTo(e.tempoMap).q,
@@ -259,8 +260,8 @@ P(\bass,start:'down there',music:{|p b e|
 			legato:[0.9!14,2].flat.q,
 			rel: 0.9
 		].pp;
-});
-P(\click,start:'down there',music:{|p b e| 
+	});
+	P(\click,start:'down there',music:{|p b e| 
 		[
 			dur: ([ 1.5 ] ++ 1.dup(12) =>_.warpTo(e.tempoMap)) =>_.q,
 			freq: 
@@ -268,8 +269,9 @@ P(\click,start:'down there',music:{|p b e|
 			=> _.q,
 			instrument: \hat_808
 		].pp;
-});
+	});
 	// P.tune('down there', Pset(\dev, [1,1,1,1,1,1,1,1,1,1,1,\r].q(2),_));
+}.()
 ["The rest is only guesses. ","5 11 5 3 5 7 11".dm('c#',4,\harmonicMinor) ].addLine;
 P(\chord,syl:0, music: { |p b e|
 	{

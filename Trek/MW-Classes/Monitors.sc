@@ -15,7 +15,8 @@ Monitors {  //setup monitoring for Trek piece
 				"BlackHole 2ch",2,
 				"External Headphones",2,
 				"ZoomAudioD",2,
-				"BoseAg",2
+				"BoseAg",2,
+				"Mobious Ag", 2
 			]
 		);
 		StartUp.add{ 
@@ -74,6 +75,12 @@ Monitors {  //setup monitoring for Trek piece
 			FoaDecode.ar(i,decoder) 
 			=> {|i| i[speakerOrder]}
 		)
+	}
+	*mobius {
+		var o =Server.default.options;
+		o.inDevice_("Mobious Ag");
+		o.outDevice_("Mobious Ag");
+		Server.default.reboot
 	}
 
 	*az { | i angle=0 width=2 | ^PanAz.ar(5, i, angle, width, orientation:  0.5)[[0,4,1,3,2]] }

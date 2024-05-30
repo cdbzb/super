@@ -16,7 +16,9 @@ VSTI {
 			controller = VSTPluginController(syn);
 			vstis.put(id, this);
 			Server.default.sync;
-			controller.open("/Library/Audio/Plug-Ins/VST/" ++ plugin,
+			controller.open(
+				"/Library/Audio/Plug-Ins/VST/" ++ plugin,
+				mulitThreading: true,
 				action:{
 					condition.signalOne;
 					action.(syn, controller);

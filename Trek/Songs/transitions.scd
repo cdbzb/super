@@ -6,7 +6,11 @@ Stills.scale = 1;
 		In.ar(0,Monitors.channels)
 		* Env.asr(a, s, r).kr(2, gate: \gate.kr(1)).dbamp//.poll
 		=> ReplaceOut.ar(0, _);
-	}.play(s, target: Trek.transitionGroup);
+	}.play(s, 
+		// target: Trek.transitionGroup
+		// target: RootNode(s), addAction: \addToTail
+		target:StageLimiter.activeSynth.nodeID, addAction:\addAfter
+	);
 };
 ~activateFader = {|num| Trek.faderSynths[num] = Trek.faders[num].()};
 

@@ -91,7 +91,6 @@ P.synthVs(role:\mccoy, take: [ \lead, \double ], params: [
 ];
 	);
 	P(\keys,start:'kno-o-ow',music:{|p b e| 
-		defer{ s.plotTree; };
 		[
 			dur: "q q q q q q q q ex x".asBeats.warpTo(e.tempoMap).postln.q,
 			freq:[3, 4, 5, 1, [ -17, -7 ], [-16, -6 ], [ -12, -22, -6, 2, 4 ], [ -11,-1 ], [-17, -7, 2,4,6 ], -7,6].df(\g, 4).q,
@@ -271,7 +270,7 @@ P(\guitarTwo, music: { |p b e|
 		].pp;
 	});
 	// P.tune('down there', Pset(\dev, [1,1,1,1,1,1,1,1,1,1,1,\r].q(2),_));
-}.()
+}.();
 ["The rest is only guesses. ","5 11 5 3 5 7 11".dm('c#',4,\harmonicMinor) ].addLine;
 P(\chord,syl:0, music: { |p b e|
 	{
@@ -792,9 +791,10 @@ P(\bass,start:\correspond,syl:0,music:{|p b e|
 			dur: [ 1.052, 2.037, 1.895, 2.101 ]
 			//.warpRecordedTo(e.tempoMap)
 			.q,
+			lag: 0.01,
 			freq: 1.df('c#',3) ,
-			amp:1,
-			out: Effect( { |i| SineShaper.ar(i,0.1) => FreeVerb.ar(i,0.01,1)} ).bus.index
+			amp:0.5,
+			out: Effect( { |i| SineShaper.ar(i,0.1) => FreeVerb.ar(i,0.01,1)}, inputChannels:2 ).bus.index
 		].pp
 });
 P(\chords, music: { |p b e|
@@ -1365,6 +1365,7 @@ P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
+			=> Pan2.ar(_, 0.5)
 		}.play
 
 });
@@ -1547,6 +1548,7 @@ P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
+			=> Pan2.ar(_, 0.5)
 		}.play
 
 });
@@ -1783,6 +1785,7 @@ P.synthVs(role: \kirk, take: [ \lead,\double ], params: {|p b| [
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
+			=> Pan2.ar(_, -0.4)
 		}.play
 });
 P.tune('No,');

@@ -405,3 +405,7 @@ Trek/Frozen/panel1_xuan_11.wav filter=lfs diff=lfs merge=lfs -text
 Trek/Frozen/panel1_xuan_15.wav filter=lfs diff=lfs merge=lfs -text
 Trek/Frozen/panel1_xuan_lead_33.wav filter=lfs diff=lfs merge=lfs -text
 Trek/Frozen/xuan_lead_15.wav filter=lfs diff=lfs merge=lfs -text
+Trek/SynthV/song2/**/*.wav filter=lfs diff=lfs merge=lfs -text
+Trek/SynthV/chamber1/1422683892/synthV_MixDown.wav filter=lfs diff=lfs merge=lfs -text
+Trek/Frozen/visual_TUNE_42.wav filter=lfs diff=lfs merge=lfs -text
+Trek/Frozen/transporter_transporter_29.wav filter=lfs diff=lfs merge=lfs -text

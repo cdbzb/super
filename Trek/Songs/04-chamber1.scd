@@ -164,7 +164,7 @@ P('crash',start:\Captain,music: {|p b e|
 	(
 		freq: "3 5 7 12 13 15 17 22".df(\c,\mixolydian),
 		strum: 0.05,
-		out: Effect.bus({|i| i => FreeVerb.ar(_,1,1) * SinOsc.ar({3.rrand(5.0)}!6) => Splay.ar(_) => Phaser1.ar(_,rate:0.2) },)
+		out: Effect.bus({|i| i => FreeVerb.ar(_,1,1) * SinOsc.ar({3.rrand(5.0)}!6) => Splay.ar(_) => Phaser1.ar(_,rate:0.2) }, inputChannels:2)
 	).play
 });
 P.synthV(role: \spock, take:\lead, params: {|p b| [
@@ -214,7 +214,7 @@ P.still(\communicator, timecode: 902.seconds, music: { |p b e|
 			],
 	)
 });
-P.tune(_ <> [rest: [\r, 1, 1, \r].q,lag: 0.2,instrument: \sawSynth, amp: 0.03, out: Effect.bus({|i| DWGReverbC1C3.ar(i) },out:2) ].p);
+P.tune(_ <> [rest: [\r, 1, 1, \r].q,lag: 0.2,instrument: \sawSynth, amp: 0.03, out: Effect.bus({|i| DWGReverbC1C3.ar(i) * -3.dbamp },inputChannels:2, out:2) ].p);
 P(\tone, music: { |p b e|
 	{
 		SinOsc.ar( 11.df('c#')!20 => _.pareto() *.t [1,1.03] )
@@ -1139,6 +1139,7 @@ P('guitar',start:\anything,music: {|p b e|
 			//SinOsc.ar(i.freqSeq,0,0.1)
 		Pluck.ar( PinkNoise.ar(0.1),i.trigSeq,1,   ( i.freqSeq + 0.0001 ).reciprocal* [4,8] ,decaytime:10)
 			=> CrossoverDistortion.ar(_,amp:0.20,smooth:0.9)
+			=> LeakDC.ar(_)
 			+ (i==0).if { VarSaw.ar(i.freqSeq + SinOsc.ar([5,6]).range(0,5),0,0,mul:0.01) }{0}
 			* ( Env.asr().kr(2,gate:(i.gateSeq))  
 			//+ Env.perc(0.01,1).kr(0,gate:i.trigSeq)

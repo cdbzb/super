@@ -101,7 +101,7 @@ P(\chord,syl:4, lag:-0.05, music: { |p b e|
 	{|i x|
 		[ 
 			freq: i .q,
-			out: Effect.bus( { |i|  i.tanh * SinOsc.ar(3.5).range(0.5,1) => FreeVerb.ar(_,0.02,1)}, out:1 ),
+			out: Effect.bus( { |i|  i.tanh * SinOsc.ar(3.5).range(0.5,1) => FreeVerb.ar(_,0.02,1)}, out:1, inputChanels:2 ),
 			// lag: x * 0.11,
 			dur: [b.sum,0,0] + e.bNext.parse([5,7,1]) => _.q,
 			strum:0.05,
@@ -590,7 +590,6 @@ P(\piano, music: { |p b e|
 				instrument: \help_oteypiano, amp: 0.5,
 				instrument: \defaultPiano, amp: 0.1,
 				out: Effect.bus({|i| i => FreeVerb.ar(_,0.3,0.9) *2.5=>SineShaper.ar(_,0.2)  },inputChannels:2),
-				out: Effect.bus({|i| i => FreeVerb.ar(_,0.3,0.9) *2.5=>SineShaper.ar(_,0.2)  },inputChannels:2),
 				freq: [ [1,3],-5,-15,-7,[1,3],-5,-15,-7,1,[6,7,2.5],\r,-4.5, ].df('c#') ++ [3,2].df('g',4,\diminished2)=>_.q,
 				strum: [0,0,0,0,0,0,0,0,0,0.01,0,0,0,0].q,
 				dur: b.parse([1,0.5,0.5,1,1,0.5,0.5,1,1,1,0.1,0.9,1, 1, 1]).q,
@@ -802,7 +801,7 @@ P(\chordDouble, music: { |p b e|
 		freq: [[1, 3], [-5, 1],[-4, 1], [-2, -6], [5, 7], [6, 11.5]].df('c#',4).q,
 		dur: b.parse([2, 2, 3, 4, 4]) ++ e.bNext[..1].sum => _.q,
 		instrument: \visual_pad, amp: 1,
-		instrument: \sawSynthSustain, pulse: 0.6, amp: 0.15,out:Effect.bus({|i| i }, out:3)
+		instrument: \sawSynthSustain, pulse: 0.6, amp: 0.15, out:3
 	].ppm
 });
 P.synthVs(role: \kirk, take: [\lead, \double],
@@ -929,7 +928,8 @@ P(\chords, music: { |p b e|
 		out: Effect.bus({|i| 
 			i 
 			=> CrossoverDistortion.ar(_,0.1,0.95)
-			* Amplitude.ar(i).poll * 20
+			=> LeakDC.ar(_)
+			* Amplitude.ar(i) * 20
 			// /10
 			+ i.tanh
 			// => Pan2.ar(_,1)
@@ -1119,12 +1119,13 @@ P(\chords, music: { |p b e|
 		instrument: \default,
 		out: Effect.bus({|i| 
 			i 
-			=> CrossoverDistortion.ar(_,0.1,0.95)
+			=> CrossoverDistortion.ar(_,0.1,0.95) 
 			// /10
 			+ i.tanh
 			// => Pan2.ar(_,1)
 			*4
 			=> Phaser2.ar(_,rate: 0.2)
+			=> LeakDC.ar(_) => _.poll
 		},inputChannels:2, out: 1)
 
 	].pp
@@ -1802,7 +1803,7 @@ P(\pf, music: { |p b e|
 		dur: b.q,
 		instrument: \help_oteypiano,
 		amp:0.3,
-		out: Effect.bus({|i| OteySoundBoard.ar(i*2,c:2).tanh => SineShaper.ar(_,0.2) => {|i| CrossoverDistortion.ar(i)/10 + i} },)
+		out: Effect.bus({|i| OteySoundBoard.ar(i*2,c:2).tanh => SineShaper.ar(_,0.2) => {|i| CrossoverDistortion.ar(i)/10 + i} => LeakDC.ar(_) },)
 	].pp
 });
 P(\cymbal,syl:2, music: { |p b e|

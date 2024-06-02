@@ -3320,15 +3320,15 @@ P(\line, music: { |p b e|
 		dur: b.dropLast ++ (b.last/2) => _.q,
 		amp: 0.07 ,
 		instrument: \sparkTriangle,depth:0.001,
-		out: Effect.bus({|i| i => Monitors.az(_, Sweep.ar(1, 1)) => FreeVerb.ar(_,0.1,1) }+{WhiteNoise.ar(0.0001) * EnvGen.cutoff(b.sum, 0.5)})
+		out: Effect.bus({|i| i =>Monitors.az( _, Sweep.ar(1, 1)) => FreeVerb.ar(_,0.1,1) }+{WhiteNoise.ar(0.0001) * EnvGen.cutoff(b.sum, 0.5)})
 	].ppm;
 	
 	[
 		freq: [11, 7, 5, 3, 2, 1, 6, 5,5 ].df(\b, \minor ).q /2,
 		dur: b.dropLast ++ (b.last/2) => _.q,
-		amp: 0.03 ,
+		amp: 0.03  ,
 		instrument: \sparkTriangle,depth:0.001,
-		out: Effect.bus({|i| i => Monitors.az(_, Sweep.ar(1, 0.69)) => FreeVerb.ar(_,0.1,1) + {WhiteNoise.ar(0.0001) * EnvGen.cutoff(b.sum, 0.5)}  }, )
+		out: Effect.bus({|i| i => Monitors.az( _, Sweep.ar(1, 0.69)) => FreeVerb.ar(_,0.1,1) + {WhiteNoise.ar(0.0001) * EnvGen.cutoff(b.sum, 0.5)}  }, )
 	]//.ppm
 });
 Song.kissXfade = 1;

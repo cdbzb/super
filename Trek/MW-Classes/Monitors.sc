@@ -83,7 +83,7 @@ Monitors {  //setup monitoring for Trek piece
 		Server.default.reboot
 	}
 
-	*az { | i angle=0 width=2 | ^PanAz.ar(5, i, angle, width, orientation:  0.5)[[0,4,1,3,2]] }
+	*az { | i angle=0 width=2 | ^PanAz.ar(5, i, angle, width: width, orientation:  0.5)[[0,4,1,3,2]] }
 
 	*stereo {
 		decoder =FoaDecoderMatrix.newStereo();

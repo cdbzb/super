@@ -24,7 +24,7 @@ P(\chordsFirstHalp, music: { |p b e|
 		instrument: \defaultPiano,
 		out: Effect.bus({|i| 
 			i => BPF.ar(_, 1200, 0.5)
-		},inputChannels:4, out: 2)
+		},inputChannels:8, out: 2)
 	].pp
 });
 P.still(\clear, timecode: 1626.0.seconds, music: { |p b e|
@@ -65,7 +65,7 @@ P.synthV(role:\sargon,
 	}.play
 });
 P(\lineB,music:{
-	var effect=Effect(FreeVerb.ar(_,0.8,1),out:2);
+	var effect=Effect(FreeVerb.ar(_,0.8,1),out:2, inputChannels:2);
 	[
 		legato:[1.1,0.8,1,0.9,1].q,
 		amp:0.06,
@@ -191,7 +191,7 @@ P(\baseFirstHalf1,start:\Two,music:Song.currentSong.pbind[1].fin(6)
 		=>Pbindf(_,
 				\instrument,
 				\stringyy,\amp,0.1,
-				\out, Effect.bus({|i| i * EnvGen.cutoff(Song.durs['still survive'].list.sum -3,3) })
+				\out, Effect.bus({|i| i * [0.8,0.2] * EnvGen.cutoff(Song.durs['still survive'].list.sum -3,3) }, inputChannels:2)
 
 		)
 		=>Pmul(\freq,1/2,_)
@@ -207,10 +207,10 @@ P.tune( {|i|i <>
 		out: Effect.bus({|i| [
 			i,
 			DelayN.ar(i)
-		] },out:1)
+		] },out:1, inputChannels: 2)
 	].pm
 
-		=>Pmul(
+		=> Pmul(
 				\freq,
 				1!5++(-4).midiratio => _.q,
 				_
@@ -627,6 +627,7 @@ P.synthV(role: \sargon, take: \lead, params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		* 3.dbamp
 	}.play
 
 });
@@ -652,7 +653,7 @@ P(\chords, music: { |p b e|
 			i.freqSeq * [1, Gendy1.arWidth(ampdist:1, durdist:1, adparam:1.0, ddparam:1.0, freq:4, width:1.015, ampscale:0.5, durscale:0.5, initCPs:12, knum:nil, mul:1.0, add:0.0).linlin(0,1,0.99,1.01)]
 			,0,0.04)
 		* Env.asr().kr(0,gate:i.gateSeq)
-		* -4.dbamp
+		* -8.dbamp
 	},
 		{|i|  Mix.ar(i)}
 	).play
@@ -678,7 +679,7 @@ P(\dyads, music: { |p b e|
 P(\ep,syl: 1, music: { |p b e|
 	(
 		freq: [1, 3, 5, 7].df('f#'),
-		out: Effect.bus({|i| i => FreeVerb.ar(_, 1,1) * SinOsc.ar(3.1) }),
+		out: Effect.bus({|i| i => FreeVerb.ar(_, 1,1) * SinOsc.ar(3.1) * [0.8,0.2]  }, inputChannels:2),
 		strum: 0.05
 	).play
 });
@@ -709,6 +710,7 @@ P.synthV(role: \spock, take: \lead, params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		* 4.5.dbamp
 	}.play
 
 });
@@ -793,7 +795,7 @@ P('chords',start:\Only,music: {|p b e|
 	[
 		freq:[\r , [1,3,5,7], [1,4,6,8]].df(\c).q,
 	strum:0.03,
-	out: Effect.bus({|i| PitchShift.ar(i,0.2,2) + i => EchoNone.ar(_,decaytime:4)},out:3),
+	out: Effect.bus({|i| PitchShift.ar(i,0.2,2) + i * -3.dbamp => EchoNone.ar(_,decaytime:4)},out:3, inputChannels:2),
 	dur: b.parse([3,3,1,]).q,
 	amp:0.04
 ].p.play
@@ -1697,7 +1699,7 @@ P(\figure,start:\limit,syl:0,music:
 			dur:
 			b.drop(1).parse([1,1,1, 1/3,1/3,1/3,1, 1,1,1,0.5, 0.5,1,1,1, 1/3,1/3,1/3,1, 1,1,1,1,]).q
 			,
-			out: Effect.bus({|i| Phaser1.ar(i,rate:3,fb:0.6) }),
+			out: Effect.bus({|i| Phaser1.ar(i,rate:3,fb:0.6) }, ),
 		].pp
 	}
 );
@@ -1730,7 +1732,7 @@ P(\accent,syl: 0, music: { |p b e|
 			=> TwoTube.ar(_, k:0.01, loss:0.9, d1length:1200, d2length:1013, mul:1.0, add:0.0)
 			=> Phaser2.ar(_)
 			/5
-		},)
+		},inputChannels:2)
 
 	).play
 });
@@ -1885,12 +1887,18 @@ P('click',start:\need,music: {|p b e|
 	].pp
 });
 // P.tune(\need);
-P(\cymbal,start:\need,music:
-	(
-		instrument:\cymbalsDS,
-		amp:0.015,
-		out:Effect({|i|i.tanh=>Phaser1.ar(_,0.9,0.2,0.7)*0.4},out:[1,3]).bus.index,
-	)
+P(\cymbal,start:\need,music: {|p b e|
+		(
+			instrument:\cymbalsDS,
+			amp:0.015,
+			out:Effect.bus({|i|i.tanh=>Phaser1.ar(_,0.9,0.2,0.7)*0.4},out:1, inputChannels: 1),
+		).play;
+		(
+			instrument:\cymbalsDS,
+			amp:0.015,
+			out:Effect.bus({|i|i.tanh=>Phaser1.ar(_,0.9,0.2,0.7)*0.4},out:3, inputChannels: 1),
+		).play;
+	}
 );
 P(\basslineC,start:\need,syl:5,music:
 	{|p b e|

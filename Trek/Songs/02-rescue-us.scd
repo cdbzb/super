@@ -49,7 +49,7 @@ P.synthVs(role: \kirk, take: [\lead, \dbl], params: {|p b| [
 
 }
 });
-P.tune(_ <> [instrument: \stringyy, out: Effect.bus({|i| i => Monitors.az(_, -0.6) },)].pm);
+P.tune(_ <> [instrument: \stringyy, out: Effect.bus({|i| i => Mix.ar(_)  => Monitors.az(_, -0.6) },inputChannels:2)].pm);
 P(\eightPointThree, syl:8, music: { |p b e|
 	var a = [
 		freq: [12, 4, 3].df('f#', [4,5]).q,
@@ -98,7 +98,7 @@ P(\chords, music: { |p b e|
 		lag: 0.02,
 		amp:0.05,
 		pan: Array.series(5, -0.3, 0.065),
-		out: Effect.bus( {|i|Monitors.az(i, 1.8)} ),
+		// out: Effect.bus( {|i|Monitors.az(i, 1.8)} ),
 		out: Effect.bus({|i| HPF.ar(i,80) => FreeVerb.ar(_,0.2,1) }, inputChannels:2)
 	].pp
 });
@@ -151,7 +151,7 @@ P(\bassline, music: { |p b e|
 	[
 		freq: [\r, 1, 5, -2, -6, ].df(\a,3) ++ [5, 1].df('e-', 3).bubble => _.q,
 		dur: "e | eee eee eee eee eee".asBeats.warpTo( e.tempoMap ).q,
-		out: Effect.bus({|i| i.tanh.tanh => Pan2.ar(_,0) })
+		out: Effect.bus({|i| i.tanh.tanh => Pan2.ar(_,0) * -3.dbamp }, inputChannels:2)
 	].pp
 });
 Trek.strum;
@@ -602,7 +602,7 @@ P(\chord, syl: 4, music: { |p b e|
 		out: Effect.bus({|i| 
 			i * SinOsc.ar(4)
 			=> Monitors.az(_, SinOsc.ar(0.2))
-			/5
+			/2
 		},time:3)
 	).play
 });
@@ -667,6 +667,7 @@ P(\chords, music: { |p b e|
 		pan: [-1, 1], 
 		out: Effect.bus({|i| 
 			CrossoverDistortion.ar(i, amp:0.1, smooth:0.95)
+			=> LeakDC.ar(_)
 		}, inputChannels: 2, out: [1, 3])
 	].pp
 });
@@ -1581,8 +1582,9 @@ P(\bass, music: { |p b e|
 			)
 			/4.5
 			* EnvGen.cutoff(b.drop(-1).sum,0.0)
+			/2
 			
-		}, )
+		}, inputChannels:2 )
 
 	].ppm
 });
@@ -2271,6 +2273,7 @@ P(\plink, music: { |p b e|
 		+ Pluck.ar( PinkNoise.ar(0.1), Impulse.ar(0) => DelayN.ar(_,b[0..4].sum,b[0..3].sum), 0.1, -6.df('f#',4) + Gendy1.kr(minfreq:0.2,maxfreq:[5,10]).range(-5,5) =>_.reciprocal, decaytime:4)
 
 		=> {|i| CrossoverDistortion.ar(i * EnvGen.cutoff(b.parse([6]).unbubble,0))/30 + i}
+		=> LeakDC.ar(_)
 		=> FreeVerb.ar(_,0.5,1)
 	}.play
 });
@@ -2866,6 +2869,7 @@ P(\plink, music: { |p b e|
 	{
 		Pluck.ar( PinkNoise.ar(0.1), 1, 0.1, 1.df('a-',[2, 3 ]) + Gendy1.kr(minfreq:0.2,maxfreq:[5,10]).range(-5,5) =>_.reciprocal, decaytime:4)
 		=> {|i| CrossoverDistortion.ar(i) /50 + i }		
+		=> LeakDC.ar(_)
 		* [0.5,1] * 3.dbamp
 		=> DWGReverbC1C3.ar(_,mix:0.4)
 		* EnvGen.cutoff(b[0],9,-1)

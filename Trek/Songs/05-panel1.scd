@@ -92,15 +92,15 @@ P(\bassnotes, music: { |p b e|
 			freq: "5 -6 -4.5".df(\b,4).q,
 			dur: b.parse([4,5,1]).q,
 			instrument: \default,
-			amp: 0.1,
-			out: Effect.bus({|i| DWGReverbC1C3.ar(i) },out:1)
+			amp: 0.1 * -6.dbamp,
+			out: Effect.bus({|i| DWGReverbC1C3.ar(i[0]) },out:1, inputChannels:2)
 		].pp;
 		[
 			freq: "5 -6 -4.5".df(\b,4).q,
 			dur: b.parse([4,5,1]).q,
 			instrument: \wash,
-			amp: 0.15,
-			out: Effect.bus({|i| DWGReverbC1C3.ar(i) },)
+			amp: 0.15 * -6.dbamp,
+			out: Effect.bus({|i| DWGReverbC1C3.ar(i[0]) }, inputChannels:2)
 		].pp
 });
 P.synthV(role: \vocoder, frozen:true, 
@@ -225,7 +225,12 @@ P(\tune, music: { |p b e|
 		coef:0.1,
 		amp:0.02,
 		dur: "e*15 x".beats.warpTo(e.tempoMap.quantizeWindow(0.5)).q,
-		out: Effect.bus({|i| Phaser2.ar(i, rate:0.01) => Monitors.az(_,SinOsc.ar(0.2)) => FreeVerb.ar(_,0.2,1)  },time:5 )
+		out: Effect.bus({
+			|i| Phaser2.ar(i, rate:0.01)
+			=> Mix.ar(_)
+			=> Monitors.az(_,SinOsc.ar(0.2))
+			=> FreeVerb.ar(_,0.2,1)  
+		},time:5, inputChannels:2 )
 	].p
 =>_.play
 });
@@ -377,7 +382,7 @@ P('bass',start:\Sealed,music: {|p b e|
 	//.arm
 	.play - [0.12,0.00,0] ;
 	*/
-	 [2,3.75,1.5].push(1,1.05)=> {|i| [dur:i .warpTo(e.tempoMap) .q,instrument:\sn_808,rest:[\r,1,1,1].q,out:Effect.bus(EchoNone.ar(_,0.2,0.2,3)/1)].pp} ;
+	 [2,3.75,1.5].push(1,1.05)=> {|i| [dur:i .warpTo(e.tempoMap) .q,instrument:\sn_808,rest:[\r,1,1,1].q,out:Effect.bus(EchoNone.ar(_,0.2,0.2,3)/1), inputChannels:2].pp} ;
 
 
 });
@@ -402,7 +407,7 @@ P(\ep, music: { |p b e|
 		freq: [[-1, 3, 5, 7, 12], [-1, 3, 4, 6, 11]].df(\g).q,
 		strum: 0.05,
 		dur: b.parse([4, 3]).q,
-		out: Effect.bus({|i| i * SinOsc.ar([3, 4]) },out: 2),
+		out: Effect.bus({|i| i * SinOsc.ar([3, 4]) },inputChannels:2, out: 2),
 		amp: 0.07
 	].pp
 });
@@ -1961,7 +1966,7 @@ P(\cataclysm, syl:3, music: { |p b e|
 		instrument: \cymbalsDS,
 		amp: 0.1,
 		out:1,
-		out: Effect.bus({|i| CrossoverDistortion.ar(i) => LeakDC.ar(_) / 50 + i  },),
+		// out: Effect.bus({|i| CrossoverDistortion.ar(i) => LeakDC.ar(_) / 50 + i  },),
 		out: Effect.bus({|i| PitchShift.ar(i, pitchRatio: 0.25) }, inputChannels: 2)
 	).play;
 	(

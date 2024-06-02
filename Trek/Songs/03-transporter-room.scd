@@ -212,6 +212,7 @@ P(\guitarTwo, music: { |p b e|
 	},
 	{|i|  Mix.ar(i)
 	=> CrossoverDistortion.ar(_, amp:0.5, smooth:0.1) /40
+	=> LeakDC.ar(_)
 	=> Phaser2.ar(_, rate: 0.2)
 	=> Out.ar(2,_);
 	EnvGen.cutoff(b.sum,0.5)
@@ -860,16 +861,19 @@ P(\figure, music: { |p b e|
 		dur: "q q q q q q".asBeats.warpTo( e.tempoMap ).q,
 		instrument: \harp,
 		amp: 0.04,
+		lag:0.02,
 		out: Effect.bus({|i| CrossoverDistortion.ar(i) /50 => RHPF.ar(_, 300, 0.2) * EnvGen.cutoff(b.sum, 0.1)}, out: 2)
 	].pp;
 	[
 		freq: [[-7, 2],[1, 3]].df(\g,3,\mixolydian).q,
 		dur: "qqqq qq".asBeats.warpTo( e.tempoMap ).q,
+		lag:0.02,
 		out: Effect.bus({|i| CrossoverDistortion.ar(i) /50 => RHPF.ar(_, 300, 0.2) * EnvGen.cutoff(b.sum - 1,1) }, out: 2)
 	].pp;
 	[
 		freq: [[-7, 2],[1, 3]].df(\g,3,\mixolydian).q,
 		dur: "qqqq qq".asBeats.warpTo( e.tempoMap ).q,
+		lag:0.02,
 		out: Effect.bus({|i| Phaser1.ar(i,rate: 0.2) => HPF.ar(_, 175) }, 1)
 		// out: Effect.bus({|i| CrossoverDistortion.ar(i) /50 => RHPF.ar(_, 300, 0.2) }, out: 2)
 	].pp

@@ -12,6 +12,17 @@ Stills.scale = 1;
 		target:StageLimiter.activeSynth.nodeID, addAction:\addAfter
 	);
 };
+~asrFaderPreLimiter = {| a=0, s=9, r=1|
+	{
+		In.ar(0,Monitors.channels)
+		* Env.asr(a, s, r).kr(2, gate: \gate.kr(1)).dbamp//.poll
+		=> ReplaceOut.ar(0, _);
+	}.play(s, 
+		target: Trek.transitionGroup
+		// target: RootNode(s), addAction: \addToTail
+		// target:StageLimiter.activeSynth.nodeID, addAction:\addAfter
+	);
+};
 ~activateFader = {|num| Trek.faderSynths[num] = Trek.faders[num].()};
 
 Trek.faders[0] = { 
@@ -74,7 +85,7 @@ Trek.setTransition(4, -1,lag:-0.1, func: {
 } );
 //5 to 6   this one needs a musical transition fix
 Trek.faders[5] = {~asrFader.(0,2,5)};
-Trek.setTransition(5, -4,dur: 1, func:{
+Trek.setTransition(5, 0,dur: 1, func:{
 	Trek.faderSynths[5].release(1);
 	~activateFader.(6);
 		// 1.wait;
@@ -194,7 +205,7 @@ Trek.setTransition(17, -2, dur: 4.5, func: {
 	~activateFader.(18);
 	Trek.faderSynths[17].release;
 });
-Trek.faders[18] = {~asrFader.(8, 6, 2)};
+Trek.faders[18] = {~asrFaderPreLimiter.(8, 6, 2)};
 Trek.setTransition(18, -2, dur: 3.5, func: {
 	~activateFader.(19);
 	Trek.faderSynths[18].release;

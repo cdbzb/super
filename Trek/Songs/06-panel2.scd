@@ -1030,7 +1030,7 @@ P(\piano9,syl:7,music:
 			,
 			out: Effect.bus( {|i| 
 				HPF.ar(i.tanh,1300)
-			} ),
+			},  ),
 			amp:0.3,
 		].p
 		//		<> ~parent.value

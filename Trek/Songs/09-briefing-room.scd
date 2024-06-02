@@ -2649,7 +2649,7 @@ P(\bass,start:'possible miracles',music:{|p b e|
 				freq: [1, 2, 1.5, 2.5, 1, -5].df('e-',3,\mixolydian).q,
 				dur: b.parse([1,2,2,3,3,3]).q,
 				//instrument:\sawSynthSustain
-				out: Effect( { |i|  SineShaper.ar(i*10,limit:0.1) => FreeVerb.ar(_,0.5,0.9) =>Mix.ar(_) => Pan2.ar(-0.6) }, inputChannels:2  ).bus.index
+				out: Effect( { |i|  SineShaper.ar(i*10,limit:0.1) => FreeVerb.ar(_,0.5,0.9) =>Mix.ar(_) => Pan2.ar(_,-0.6) }, inputChannels:2  ).bus.index
 			].pp
 });
 P(\strum,start:'possible miracles',music:{|p b e| 

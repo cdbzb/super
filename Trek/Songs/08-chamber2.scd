@@ -135,6 +135,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["good",""],
+		onTop: true
 	).sequenceText2(
 			b.parse([1]), [ 
 			["his metabolic rate is","back to normal"],
@@ -815,25 +816,25 @@ P(\finalBaseNote,syl:7,music: {|p b e|
 		out: Effect.bus({|i| i.tanh.tanh },)
 	).play
 });
-P(\figure,music:[
-rel:4,
-strum:0.02,
-instrument:\sawSynth,
-amp:0.05,
-freq: [  
-	[1,3,5,7].df('c#') ,
-	[1,3,5,7].df(\c,scale:\minor),
-	[3,5,7, 11].df(\g,scale:\mixolydian,octave:3) 
-].q ,
-dur: Song.parse(15,[4, 4,1]).q,
-hifreq:8000,
-out: Effect.bus({|i|
-	MoogFF.ar(i,2000,2)
-	* 1.3
-	=>( CombC.ar(_,0.5,SinOsc.kr(0.3).range(0.4,0.405),decaytime:4)+Gain.ar(_,3) )
-},out:2,inputChannels:2)
-].p
-); 
+P(\figure,music:{|p b e| [
+	rel:4,
+	strum:0.02,
+	instrument:\sawSynth,
+	amp:0.05,
+	freq: [  
+		[1,3,5,7].df('c#') ,
+		[1,3,5,7].df(\c,scale:\minor),
+		[3,5,7, 11].df(\g,scale:\mixolydian,octave:3) 
+	].q ,
+	dur: Song.parse(15,[4, 4,1]).q,
+	hifreq:8000,
+	out: Effect.bus({|i|
+		MoogFF.ar(i,2000,2)
+		* 1.3
+		=>( CombC.ar(_,0.5,SinOsc.kr(0.3).range(0.4,0.405),decaytime:4)+Gain.ar(_,3) )
+	},out:2,inputChannels:2)
+].pp
+}); 
 /* 
 P(\figure,music:[
 out:3,
@@ -1386,12 +1387,12 @@ P.still(\clear, timecode:0.seconds, music: { |p b e|
 		text: ["all that are involved","must agree"],
 	)
 });
-P(\descant,music:[
+P(\descant,music:{|p b e| [
 	freq:[[7, 12 ],[ 13,11 ],[ 11,5 ],[11,5.5]].df('g',octave: 5).q,
 	dur: Song.parse(24,[2,2,5,1]).q,
 	out:  Effect.bus(EchoNone.ar(_,1,[0.2, 0.3 ],3),inputChannels:2),
 	amp:0.01,
-].pm(\sawSynthSustain)
+].ppm(\sawSynthSustain) }
 );
 P.synthV(role: \vocoder, frozen: true, filter: (midinote: _ -12 ),  params: {|p b| [
 lyrics:"all that are involved + - -  must agree +",
@@ -1467,26 +1468,26 @@ P(\bassnote,syl:3,music:{ |p b e|
 		freq:[11,12,5].df('c',octave: 2).q, 
 	].pp 
 });
-P(\wobble,music: [
-//		instrument:\sawSynth,
-amp:0.05,
-//		instrument:\tri,
-freq:[3,4].df('b',octave:4 ).q(inf),
-effect:{ Effect(EchoNone.ar(_,1,0.3,decaytime:5)).dur(Song.secDur[25]+6).bus.index },
-dur: Song.parse(25,1!4).q,
-out:Pkey(\effect),
-].pm(\sawSynth)
-
-);
-P(\wobble,music: [
-	//		instrument:\sawSynth,
-	amp:0.05,
-	//		instrument:\tri,
-	freq:[1.5,2].df('d',octave:4 ).q(inf),
-	out: Effect.bus(EchoNone.ar(_,1,0.3,decaytime:5),out:1),
-	dur: Song.parse(25,1!4).q,
-].pm(\sawSynth)
-
+P(\wobble,music: {|p b e|
+	[
+		//		instrument:\sawSynth,
+		amp:0.05,
+		//		instrument:\tri,
+		freq:[3,4].df('b',octave:4 ).q(inf),
+		out: Effect(EchoNone.ar(_,1,0.3,decaytime:5)).bus.index,
+		dur: Song.parse(25,1!4).q,
+	].ppm(\sawSynth)
+});
+P(\wobble2,music: {|p b e|
+	[
+		//		instrument:\sawSynth,
+		amp:0.05,
+		//		instrument:\tri,
+		freq:[1.5,2].df('d',octave:4 ).q(inf),
+		out: Effect.bus(EchoNone.ar(_,1,0.3,decaytime:5),out:1),
+		dur: Song.parse(25,1!4).q,
+	].ppm(\sawSynth)
+ }
 );
 // P('tune25',music:Song.currentSong.pbind[25]);
 ['we can wait a few more hours',[1,2,3,4,5,6,5].dm('d')].addLine;
@@ -1624,16 +1625,16 @@ P(\accompaniment,music:
 	].pp;
 }
 );
-P(\bass,music:
-[
-	freq:[1,1,4,4,5,5,5,5,1].df('c#',octave: 3).q,
-	dur:Song.parse(29,[1/7,1/7,1/7,1/7,1/7,1/7,1/7,
-		1,1,1,
-		1/4,1/4,1/4,1/4,
-		1,1,
-		1
-	]).clumps([ 3,1 ]).collect(_.sum).q
-].p;
+P(\bass,music: {|p b e|
+	[
+		freq:[1,1,4,4,5,5,5,5,1].df('c#',octave: 3).q,
+		dur:Song.parse(29,[1/7,1/7,1/7,1/7,1/7,1/7,1/7,
+			1,1,1,
+			1/4,1/4,1/4,1/4,
+			1,1,
+			1
+		]).clumps([ 3,1 ]).collect(_.sum).q
+	].pp; }
 
 );
 //MUTEDP(\machine,music:
@@ -1642,6 +1643,11 @@ P(\bass,music:
 //MUTED* 0.04
 //MUTED}.play(s)} }
 //MUTED);
+
+
+
+
+
 )
 
 

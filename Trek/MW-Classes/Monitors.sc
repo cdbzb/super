@@ -3,7 +3,9 @@ Monitors {  //setup monitoring for Trek piece
 	//classvar <>speakerOrder=#[0,2,4,3,1]; //for Trek
 	classvar <>speakerOrder=#[0,4,1,3,2]; //for Trek
 	classvar <>deviceChannels;
-	classvar <>foldDown;
+	classvar <>foldDown, <bassManagement, <rearLevelAdj;
+	classvar <volume, <fader, <>level;
+
 	*initClass {
 		Class.initClassTree(StageLimiter);
 		foldDown=[nil,nil,nil];
@@ -11,6 +13,7 @@ Monitors {  //setup monitoring for Trek piece
 		deviceChannels = Dictionary.newFrom(
 			[
 				"MacBook Pro Speakers",2,
+				"USBStreamer ", 8,
 				"Pro Ag",2,
 				"BlackHole 2ch",2,
 				"External Headphones",2,
@@ -25,6 +28,9 @@ Monitors {  //setup monitoring for Trek piece
 			// Server.default.boot;
 			// Server.default.waitForBoot{
 			// }
+			
+			// volume = Server.default.volume;
+			// fader = MonitorController(volume, volume.window );
 		};
 		ServerTree.add ({ 
 			var channels = deviceChannels.at(Server.default.options.outDevice) ? channels;
@@ -45,7 +51,13 @@ Monitors {  //setup monitoring for Trek piece
 				}
 			}{
 				{ StageLimiter.activeSynth.isRunning }.try.notNil.if{ StageLimiter.deactivate; };
-				StageLimiter.activate
+				StageLimiter.activate;
+				\settingBasss.postln;
+				{
+					bassManagement = {In.ar(0, 5) => Mix.ar(_) * -6.dbamp => ReplaceOut.ar(6, _)}.play(target: StageLimiter.activeSynth.nodeID, addAction:\addBefore);
+					 rearLevelAdj = {In.ar(4, 1) * 6.dbamp => ReplaceOut.ar(4, _)}.play(target: StageLimiter.activeSynth.nodeID, addAction:\addBefore)
+				}.defer(0.25);
+				// volume.volume_(Monitors.level ? ( -18 ));
 			}
 		});
 	}
@@ -54,6 +66,10 @@ Monitors {  //setup monitoring for Trek piece
 	}
 	*startFoldDown{
 		foldDown.do(_.play)
+	}
+
+	*gui{
+		^MonitorController(Server.default.volume, Server.default.volume.window)
 	}
 
 	*pentagon {
@@ -80,6 +96,12 @@ Monitors {  //setup monitoring for Trek piece
 		var o =Server.default.options;
 		o.inDevice_("Mobious Ag");
 		o.outDevice_("Mobious Ag");
+		Server.default.reboot
+	}
+	*streamer {
+		var o =Server.default.options;
+		o.inDevice_("USBStreamer ");
+		o.outDevice_("USBStreamer ");
 		Server.default.reboot
 	}
 
@@ -148,4 +170,49 @@ Monitors {  //setup monitoring for Trek piece
 		Server.default.reboot
 	}
 
+}
+
+
+MonitorController {
+	classvar <volume, <slider;
+
+	var <model, <window;
+
+	*new { | model, win, bounds |
+		^super.newCopyArgs(model).init(win, bounds)
+	}
+
+	init { | win, bounds |
+		var box, simpleController;
+		var spec = [model.min, model.max, \db].asSpec;
+		bounds = bounds ?? { Rect(0, 0, 80, 600) };
+		window = win ?? { Window.new("Volume", bounds).front };
+		box = NumberBox(window, Rect(10, 10, 60, 30))
+		.value_(model.volume);
+
+		slider = Slider(window, Rect(10, 40, 60, bounds.height - 60))
+		.value_(spec.unmap(model.volume));
+
+		slider.action_({ | item |
+			model.volume_(spec.map(item.value));
+			Monitors.level = (spec.map(item.value))
+		});
+		box.action_({ | item |
+			model.volume_(item.value);
+			Monitors.level = (item.value)
+		});
+		window.onClose_({
+			simpleController.remove;
+		});
+
+		simpleController = SimpleController(model)
+		.put(\amp, {|changer, what, volume|
+			box.value_(volume.round(0.01));
+			slider.value_(spec.unmap(volume));
+		})
+		.put(\ampRange, {|changer, what, min, max|
+			spec = [min, max, \db].asSpec.debug;
+			slider.value_(spec.unmap(model.volume));
+		})
+	}
 }

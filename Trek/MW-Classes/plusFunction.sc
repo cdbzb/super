@@ -1,4 +1,7 @@
 + Function {
+	pp {
+		^{|i| this.(i).pp }
+	}
 	sched { |when clock|
 		var fun;
 		clock ?? {clock = TempoClock.default};

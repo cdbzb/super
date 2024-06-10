@@ -1,5 +1,6 @@
 (
-(s.options.device != "Digiface USB (23953833)") .if{
+(s.options.device != "Digiface USB (24192375)") .if{
+	var g, m;
 	g = g ? Group.new(target:RootNode(s));
 	m = m ? Monitor.new;
 	m.play(2,3,0,2,g);

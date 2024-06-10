@@ -222,9 +222,8 @@ Trek {
 	*pf {
 		( piano.isNil or: try{ piano.syn.isPlaying.not } ).if {
 			piano = PF();
-			Song.currentSong.piano = piano;
-		}{
-			Song.currentSong.piano = piano;
+		};
+			Song.currentSong !? {|i| i.piano = piano;
 		};
 		// Song.resources.condition=Condition();
 		// Song.resources.infrastructure = {
@@ -247,12 +246,9 @@ Trek {
 		( strum1.isNil or: try{ strum1.syn.isPlaying.not } ).if {
 			strum1 = AAS_Strum();
 			strum2 = AAS_Strum();
-			Song.currentSong.strum1 = strum1;
-			Song.currentSong.strum2 = strum2;
-		}{
-			Song.currentSong.strum1 = strum1;
-			Song.currentSong.strum2 = strum2;
 		};
+			Song.currentSong !? {|i| i.strum1 = strum1};
+			Song.currentSong !? {|i| i.strum2 = strum2};
 		// Song.resources.condition=Condition();
 		// Song.resources.infrastructure = {
 		// 	FunctionList.new.array_([
@@ -275,16 +271,11 @@ Trek {
 		( synful1.isNil or: try{ synful1.syn.isPlaying.not } ).if {
 			synful1 = Synful();
 			synful2 = Synful();
-			if( Song.currentSong.notNil ) {
-				Song.currentSong.synful1 = synful1;
-				Song.currentSong.synful2 = synful2;
-			}
-		}{
-			if( Song.currentSong.notNil ) {
-				Song.currentSong.synful1 = synful1;
-				Song.currentSong.synful2 = synful2;
-			}
 		};
+			if( Song.currentSong.notNil ) {
+				Song.currentSong.synful1 = synful1;
+				Song.currentSong.synful2 = synful2;
+			}
 		// Song.resources.condition=Condition();
 		// Song.resources.infrastructure = {
 		// 	FunctionList.new.array_([

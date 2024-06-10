@@ -745,7 +745,7 @@ P(\bassKnow,  music: {|p b e|
 );
 P(\temp,music:Song.currentSong.pbind[14]=>Pbindf(_,\amp,0.3,\instrument,\stringyy));
 ['I know what he is and what he wants, ',[15,14,13,12,14,13,7,11,12.5].dm('a-')].addLine; 
-Song.setTempoMap('what he is'," e e e e e e e e e");
+Song.setTempoMap('what he is',"e e e e e e e e e");
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -867,7 +867,7 @@ P(\bassConnector, music: { |p b e|
 		out: Effect.bus({|i| i => Pan2.ar(_, 0.7) },)
 	].pp
 });
-P(\bassNote,syl:0,music:
+P(\bassNote,syl:2,music:
 	(
 		freq:[5].df(octave:2),
 		dur:2,

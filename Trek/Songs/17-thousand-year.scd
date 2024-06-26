@@ -219,7 +219,7 @@ P.still(\himTalking,timecode:3606.1.seconds, music: { |p b e|
 		text: ["you'll need","microgears"],
 	).sequenceText2(
 			b.parse([5]), [ 
-			["and a pulley that","do like a muscle does"],
+			["and a pulley that","work like a muscle does"],
 			],
 	)
 });
@@ -458,7 +458,6 @@ P.synthVs(role: \henoch, take:[\lead, \double],
 		dur: _ + [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
 
 	),
-
 	params: {|p b| [
 	lyrics: "r r r r r r r r r and it will last a thousand - - + years",
 	pitchTake: [1, 3]

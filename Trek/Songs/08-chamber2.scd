@@ -1526,7 +1526,6 @@ P.still(\twoShot, timecode: 2039.seconds, music: { |p b e|
 			],
 	)
 });
-
 P.synthV(role: \mccoy, filter: (midinote: _ - 12),  params: {|p b| [
 	lyrics: "and what if we decide + against + you?",
 	vocalMode: \Open,
@@ -1535,6 +1534,7 @@ P.synthV(role: \mccoy, filter: (midinote: _ - 12),  params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_, -0.5)
 	}.play
 });
 P(\resolution,syl:6,music:{ |p b e|

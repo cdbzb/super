@@ -139,6 +139,15 @@ Trek {
 		// Song.durTillEnd //return time till end
 	}
 
+	*playSongStartEnd { |num scroll=true start end| //does NOT set fader first
+		// cursor = cursor ? 0;
+		Song.songs.at(keys[num]).current;
+		scroll.if{Song.makeScroll};
+		// (cursor < 0).if{ cursor = Song.sections + cursor };
+		Song.cursor_(start);
+		Song.playRange(start, end);
+		// Song.durTillEnd //return time till end
+	}
 	*editFile{|num|
 		var cmd = "vim.cmd('edit" + this.allTheSongs[num] + "')";
 		SCNvim.luaeval(cmd)
@@ -147,6 +156,18 @@ Trek {
 	*transitionGroup {
 		( transitionGroup.notNil and: try{transitionGroup.isRunning} ).not.if{ transitionGroup = Group.after(Server.default.defaultGroup).register };
 		^transitionGroup
+	}
+
+	*playBit { |section start end|
+		fork{
+			Trek.editFile(section);
+			transitionGroup.release;Server.default.sync;
+			faderSynths[section] = faders[section].();
+			this.playSongStartEnd(section, start:start, end:end);
+		};
+
+			^Server.default.latency + 0.1 + Song.preroll 
+			+ (start..end).collect{|i| Song.secDur[i]}.sum;
 	}
 
 	*playTransition { |num cursor func trimStart=0 trimEnd=0 lag=0| // lag is before transition
@@ -177,10 +198,10 @@ Trek {
 		this.playRange(*array)
 	}
 
-	*playRange { |num cursor numSections=1|  // sets first fader then plays range
+	*playRange { |num cursor=0 numSections=1|  // sets first fader then plays range
 		var needLoad;
-			needLoad = (num..(num + numSections)).select{|i| Song.songs[Trek.keys[i]].isNil};
-			( needLoad.size!=0 ).if{ ^this.loadSongs(needLoad) };
+		needLoad = (num..(num + numSections)).select{|i| Song.songs[Trek.keys[i]].isNil};
+		( needLoad.size!=0 ).if{ ^this.loadSongs(needLoad) };
 		fork{
 			transitionGroup.release;Server.default.sync;
 			faderSynths[num] = faders[num].();
@@ -188,8 +209,8 @@ Trek {
 				var section = num + i;
 				var start = (i == 0).if{ cursor }{ transitions[section].start};
 					this.playSong(section, start, trimEnd: transitions[section].trimEnd ? 0) + (transitions[section+1].lag ? 0) => _.wait;
-					transitions[section].func.();
-					transitions[section].dur.wait
+					if(numSections > 1) { transitions[section].func.() };
+					if(numSections > 1) { transitions[section].dur.wait }
 			}
 		}
 	}

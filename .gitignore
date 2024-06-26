@@ -30,6 +30,7 @@ Extensions/PortedPlugins
 Extensions/PortedPlugins
 Extensions/PortedPlugins
 Extensions/PortedPlugins
+Extensions/sc2
 PortedPlugins
 PNG
 RPP
@@ -46,4 +47,5 @@ Extensions/VSTPlugin/README.md
 Extensions/VSTPlugin
 Extensions/VSTPlugin
 Extensions/VSTPlugin/README.md
+Extensions/SC3plugins/**
 Alik_Tutorials

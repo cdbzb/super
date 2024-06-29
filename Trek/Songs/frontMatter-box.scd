@@ -12,11 +12,12 @@ ___  __         __   __   __   __
 //
 //
 Trek.prepare
+Song.cursor_(0);
 (
 fork{
 	Stills.scale_(0.75);
-	Trek.playRange(16, 0);
-	Trek.editFile(16);
+	Trek.playRange(0, 0, 1); //section, cursor, numberOfSecs
+	Trek.editFile(0);
 }
 )
 s.pkill

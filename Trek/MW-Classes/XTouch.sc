@@ -155,6 +155,18 @@ XTouch : XMIDIController {
 
 	}
 }
+
+KeyStage : XMIDIController {
+	classvar <>id = -679037508;// INT
+	*initClass {
+		ServerTree.add(
+			{
+				MIDIFunc.cc( {|val| if(val > 0) {Song.play}}, 41, nil, id );
+				MIDIFunc.cc( {|val| if(val > 0) {~myFree.()}}, 42, nil, id )
+			}
+		)
+	}
+}
 +Object{
 	xplay{ |key|
 		XTouch.map({this.play},key);

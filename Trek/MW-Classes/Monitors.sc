@@ -3,7 +3,7 @@ Monitors {  //setup monitoring for Trek piece
 	//classvar <>speakerOrder=#[0,2,4,3,1]; //for Trek
 	classvar <>speakerOrder=#[0,4,1,3,2]; //for Trek
 	classvar <>deviceChannels;
-	classvar <>foldDown, <bassManagement, <rearLevelAdj;
+	classvar <>foldDown,<bassManagementSynth, <bassManagement, <rearLevelAdj;
 	classvar <volume, <fader, <>level;
 
 	*initClass {
@@ -22,7 +22,15 @@ Monitors {  //setup monitoring for Trek piece
 				"Mobious Ag", 2
 			]
 		);
-		StartUp.add{ 
+		StartUp.add( 
+			{ 
+				bassManagementSynth = SynthDef(\bassManagement,
+					{In.ar(0, 5) => Mix.ar(_) * -6.dbamp => ReplaceOut.ar(6, _)}
+				).add;
+
+				rearLevelAdj = SynthDef(\rearSpeakAdj, {In.ar(4, 1) * 6.dbamp => ReplaceOut.ar(4, _)}).add;
+			}
+		);
 			// this belongs in startup.scd
 			// Server.local.options.numOutputBusChannels = 5;
 			// Server.default.boot;
@@ -31,7 +39,6 @@ Monitors {  //setup monitoring for Trek piece
 			
 			// volume = Server.default.volume;
 			// fader = MonitorController(volume, volume.window );
-		};
 		ServerTree.add ({ 
 			var channels = deviceChannels.at(Server.default.options.outDevice) ? channels;
 			(channels == 2).if{
@@ -53,10 +60,11 @@ Monitors {  //setup monitoring for Trek piece
 				{ StageLimiter.activeSynth.isRunning }.try.notNil.if{ StageLimiter.deactivate; };
 				StageLimiter.activate;
 				\settingBasss.postln;
-				{
-					bassManagement = {In.ar(0, 5) => Mix.ar(_) * -6.dbamp => ReplaceOut.ar(6, _)}.play(target: StageLimiter.activeSynth.nodeID, addAction:\addBefore);
-					 rearLevelAdj = {In.ar(4, 1) * 6.dbamp => ReplaceOut.ar(4, _)}.play(target: StageLimiter.activeSynth.nodeID, addAction:\addBefore)
-				}.defer(0.25);
+					{
+						// not necessary when using TotalMix!!
+						// Synth(\bassManagement, target: StageLimiter.activeSynth.nodeID, addAction:\addBefore );
+						Synth(\rearSpeakAdj, target: StageLimiter.activeSynth.nodeID, addAction:\addBefore );
+					}.defer(0.25);
 				// volume.volume_(Monitors.level ? ( -18 ));
 			}
 		});

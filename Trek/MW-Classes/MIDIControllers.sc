@@ -5,7 +5,7 @@ XMIDIController {
 		fork{
 			MIDIClient.init;
 			MIDIIn.connectAll;
-			StageLimiter.activate;
+			// StageLimiter.activate;
 		}
 	}
 

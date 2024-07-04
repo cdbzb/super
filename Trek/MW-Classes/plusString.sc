@@ -1,4 +1,21 @@
 + String {
+	// postln {
+	// 	// do my custom stuff
+	// 	this.prPostln();
+	// }
+	// post {
+	// 	// do my custom stuff
+	// 	this.prPost();
+	// }
+	// prPostln {
+	// 	_PostLine
+	// 	^this.primitiveFailed
+	// }
+	// prPost {
+	// 	_PostString
+	// 	^this.primitiveFailed
+	// }
+
 	+++ { |that|
 		^this.bubble ++ 
 			that.isString.if{ that.bubble }{that}

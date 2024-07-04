@@ -321,9 +321,13 @@ Still {
 		var bounds =  b ? stills.monitors[monitor] + Rect(-1 * Stills.trimLeft) =>_.scale(Stills.scale);
 		var textHeight = bounds.height/4;
 		//  top in Rects below really should ALSO depend on textHeight also!
-		var top = Rect(bounds.left, bounds.height/8, bounds.width, textHeight);
+
+		// var top = Rect(bounds.left, bounds.height/8, bounds.width, textHeight);
+		var top = Rect(0, bounds.height/8, bounds.width, textHeight);
+
 		var bottom = Rect(bounds.left,bounds.height*3/4,bounds.width, textHeight);
 		shrink = shrink ? 0;
+		bounds.postln;
 		( text.size == 1 ).if
 		{
 			textUpper = StaticText(window,top)
@@ -354,7 +358,12 @@ Still {
 	}
 	value { //for backward comp
 		|monitor=0 wait fade fadeIn text onTop = false bounds shrink|
-		monitor.notNil.if{ this.monitor = monitor};
+
+		monitor.notNil.if{ this.monitor = monitor}
+
+		// this.monitor = 2.rand // to make image switch back and forth between two monitors
+		//replace this with a function - `monitorChoiceFunction`
+		;
 		wait.notNil.if{ this.wait = wait};
 		fade.notNil.if{ this.fade = fade};
 		fadeIn.notNil.if{ this.fadeIn = fadeIn};
@@ -386,7 +395,13 @@ Display {
 		});
 	}
 	*resolutions {
-		"displayplacer list | grep -e Type -e Resolution:".systemCmd
+		^"displayplacer list | grep -e Type -e Resolution:".systemCmd
+	}
+	*ids {
+		^"displayplacer list | grep -e Type -e 'Persistent screen id:'".systemCmd
+	}
+	*list {
+		"displayplacer list".systemCmd
 	}
 
 }

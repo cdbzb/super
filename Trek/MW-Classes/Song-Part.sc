@@ -21,6 +21,7 @@ Song {
 	classvar <>lastPlayOnly;
 	// TODO deprecate muteTunes !! 
 	classvar <>muteTunes;
+	classvar <>playCursor;
 
 
 	*initClass {
@@ -1085,7 +1086,9 @@ Part {
 			var when=this.calcTime;
 			this.sched(when+Server.default.latency);
 			{this.name.postln}.sched(when);
-			//			when.postln
+
+			//for scrolling
+			parent.playCursor = start
 		}
 	}
 	ppost {

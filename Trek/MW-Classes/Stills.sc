@@ -377,23 +377,50 @@ Still {
 }
 Display {
 	classvar <>connected;
-	classvar <>array;
+	classvar <>array, <>event;
+	classvar <>monitors;
 	*initClass {
-		var p, l, r, ll, rr;
-		connected = Dictionary.new;
-		array = List.new;
-		p=Pipe("displayplacer list | grep -e Type -e Resolution:","r");
-		l = p.getLine;
-		while({l.notNil},{
-			var e = ();
-			var r = p.getLine;
-			ll = l.split(Char.space)[0].drop(-1); rr = r.split(Char.space)[0].drop(-1);
-			e.put(ll, l.drop(ll.size));
-			e.put(rr, r.drop(rr.size));
-			array = array.add(e);
-			l = p.getLine;
-		});
+			// "displayplacer list > /tmp/displayList".systemCmd
+			var raw = Pipe("displayplacer list", "r");
+			var res = List[];
+			var line = raw.getLine;
+			monitors = List[ res ];
+			while({ line.notNil }, 
+				{monitors.last.add(line);
+				line=raw.getLine;
+				//each monitors description starts with "Persistent screen id" so add new entry
+				line.asString.contains("Persistent screen id:").if { monitors.add(List.new)} 
+			});
+			raw.close;
+			monitors = monitors.collect { |i|
+				i.collect(_.split($:))
+				[..8]
+				.inject((), {|i j| 
+					j = [j[0].toLower.asSymbol, j[1]].asEvent;
+					i ++ j
+				});
+			};
+			//clean up and parse 
+				monitors.do{|ev| 
+					ev.origin.contains("main").if { ev.put(\main, true) }{ ev.put(\main, false) };
+					ev.put(\origin, "Point" ++ ev.origin.split($))[0]++")" => _.interpret);
+					ev.put(\resolution, "Point(" ++ ev.resolution.replace("x",",") ++ ")" => _.interpret);
+					ev.put(\bounds, Rect(ev.origin.x, ev.origin.y, ev.resolution.x, ev.resolution.y))
+				}
 	}
+	*raw {
+		// "displayplacer list > /tmp/displayList".systemCmd
+		var raw = Pipe("displayplacer list", "r");
+		var res = List[];
+		var line = raw.getLine;
+		while({ line.notNil }, {res.add(line); line=raw.getLine});
+		raw.close
+		^res
+	}
+	*at {|num|
+		^monitors[num]
+	}
+
 	*resolutions {
 		^"displayplacer list | grep -e Type -e Resolution:".systemCmd
 	}

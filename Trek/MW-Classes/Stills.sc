@@ -13,6 +13,7 @@ Stills {
 	classvar <>scale=1;
 	classvar <>trimWidth=1; //0.87 for no border
 	classvar <>trimLeft=0; // 180 for no border
+	classvar <>monitorChoiceFunction;
 	var <>file;
 	var <>markers;
 	var <>fade;
@@ -20,7 +21,7 @@ Stills {
 	var <>window;
 	var <>stills;
 	var <>size=1200;
-	var <>monitors;
+	var <>monitors ;
 
 
 	*new {|movie| ^super.new.init(movie)}
@@ -156,11 +157,12 @@ Stills {
 		^w
 	}
 	plotClear{
-		|markerName monitor=(-1)|
+		|markerName monitor|
 
 		var w;
 		try{
-			w = Window(bounds:Rect(1500*monitor,200,1400,800) + Rect( trimLeft) => _.scale(scale),border:false)
+			// w = Window(bounds:Rect(1500*monitor,200,1400,800) + Rect( trimLeft) => _.scale(scale),border:false)
+			w = Window(bounds:monitors[monitor] + Rect(trimLeft,0,-1 * trimLeft,0) => _.scale(scale),border:false)
 			//1196 x 676
 			.background_( Color.clear)
 			.front;  
@@ -175,7 +177,7 @@ Stills {
 		var image=this.mark(markerName);
 		var w;
 		// image.setSize(monitors[monitor].width-10 * scale => _.asInteger,monitors[monitor].height-10 => _.asInteger * scale, \keepAspectRatio);
-		image.setSize(monitors[monitor].width-10 * scale => _.asInteger,monitors[monitor].height-10  * scale => _.asInteger, \keepAspectRatio);
+		// image.setSize(monitors[monitor].width-10 * scale => _.asInteger, monitors[monitor].height-10  * scale => _.asInteger, \keepAspectRatio);
 		image.scalesWhenResized_(false);
 		image.setSize(monitors[monitor].width-10 * scale * trimWidth  => _.asInteger, monitors[monitor].height-10 * scale =>_.asInteger);
 		try{
@@ -318,14 +320,14 @@ Still {
 	
 	title { |text b shrink|
 		var size=stills.size;
-		var bounds =  b ? stills.monitors[monitor] + Rect(-1 * Stills.trimLeft) =>_.scale(Stills.scale);
+		var bounds =  b ? stills.monitors[monitor] + Rect(-1 * Stills.trimLeft) => _.scale(Stills.scale);
 		var textHeight = bounds.height/4;
 		//  top in Rects below really should ALSO depend on textHeight also!
 
 		// var top = Rect(bounds.left, bounds.height/8, bounds.width, textHeight);
 		var top = Rect(0, bounds.height/8, bounds.width, textHeight);
 
-		var bottom = Rect(bounds.left,bounds.height*3/4,bounds.width, textHeight);
+		var bottom = Rect(0, bounds.height*3/4, bounds.width, textHeight);
 		shrink = shrink ? 0;
 		bounds.postln;
 		( text.size == 1 ).if
@@ -359,7 +361,7 @@ Still {
 	value { //for backward comp
 		|monitor=0 wait fade fadeIn text onTop = false bounds shrink|
 
-		monitor.notNil.if{ this.monitor = monitor}
+		monitor.notNil.if{ this.monitor = Stills.monitorChoiceFunction.() ? monitor}
 
 		// this.monitor = 2.rand // to make image switch back and forth between two monitors
 		//replace this with a function - `monitorChoiceFunction`
@@ -405,7 +407,10 @@ Display {
 					ev.origin.contains("main").if { ev.put(\main, true) }{ ev.put(\main, false) };
 					ev.put(\origin, "Point" ++ ev.origin.split($))[0]++")" => _.interpret);
 					ev.put(\resolution, "Point(" ++ ev.resolution.replace("x",",") ++ ")" => _.interpret);
-					ev.put(\bounds, Rect(ev.origin.x, ev.origin.y, ev.resolution.x, ev.resolution.y))
+					//need to subtract resolution.y from origin.y because 'bounds'
+					//uses x an y for lower left corner and displayplacer origin 
+					//uses upper left corner
+					ev.put(\bounds, Rect(ev.origin.x, ev.origin.y - ev.resolution.y, ev.resolution.x, ev.resolution.y))
 				}
 	}
 	*raw {

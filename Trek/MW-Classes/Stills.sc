@@ -21,7 +21,7 @@ Stills {
 	var <>window;
 	var <>stills;
 	var <>size=1200;
-	var <>monitors ;
+	classvar <>monitors ;
 
 
 	*new {|movie| ^super.new.init(movie)}
@@ -66,15 +66,20 @@ Stills {
 	}
 
 	//monitor -1 for left 0 for center default is -1
-	preview { |markerName wait=5 fade=0 monitor=0 text fadeIn| 
+	preview { |markerName wait=5 fade=0 monitor text fadeIn| 
 		var w;
 		muted.not.if{
-			(markerName.asString.contains ( "clear")).if{
-				w=this.plotClear(markerName,monitor)
+			if (markerName.asString.contains ( "clear")) {
+				Stills.monitors.do{ |i x|
+					w=this.plotClear(markerName, x);
+					fadeIn.notNil.if{w.fadeIn(fadeIn)};
+					text.notNil.if{this.title(w,text)};
+					{w.fade(fade)}.defer(wait);
+				};
+				^w
 			}{
-				w=this.plot(markerName,monitor)
+				w=this.plot(markerName, monitor)
 			};
-
 			fadeIn.notNil.if{w.fadeIn(fadeIn)};
 			text.notNil.if{this.title(w,text)};
 			{w.fade(fade)}.defer(wait);
@@ -138,7 +143,6 @@ Stills {
 	still { | key wait=5 fade=0 monitor text onTop=false|
 		^Still.new(this,key,wait,fade,monitor,text, onTop)
 	}
-
 	at {|seconds|
 		var fileName = stillsLocation++seconds.asString++".png";
 		^Image.open(fileName)
@@ -156,41 +160,38 @@ Stills {
 			.font_(Font(\helvetica,90 * Stills.scale => _.asInteger, bold:true))
 		^w
 	}
-	plotClear{
-		|markerName monitor|
-
-		var w;
-		try{
-			// w = Window(bounds:Rect(1500*monitor,200,1400,800) + Rect( trimLeft) => _.scale(scale),border:false)
-			w = Window(bounds:monitors[monitor] + Rect(trimLeft,0,-1 * trimLeft,0) => _.scale(scale),border:false)
-			//1196 x 676
-			.background_( Color.clear)
-			.front;  
-		}{
-			w = Window(bounds:Rect(0,200,1400 * scale,800 * scale).scale(scale),border:false)
-			.background_( Color.clear)
-			.front;  
-		}
+	plotClear{ |markerName monitor|
+			var w;
+			try{
+				// w = Window(bounds:Rect(1500*monitor,200,1400,800) + Rect( trimLeft) => _.scale(scale),border:false)
+				w = Window(bounds:monitors[monitor] + Rect(trimLeft,0,-1 * trimLeft,0) => _.scale(scale),border:false)
+				//1196 x 676
+				.background_( Color.clear)
+				.front;  
+			}{
+				w = Window(bounds:Rect(0,200,1400 * scale,800 * scale).scale(scale),border:false)
+				.background_( Color.clear)
+				.front;  
+			}
 		^w
 	}
 	plot {|markerName monitor=0|
 		var image=this.mark(markerName);
 		var w;
-		// image.setSize(monitors[monitor].width-10 * scale => _.asInteger,monitors[monitor].height-10 => _.asInteger * scale, \keepAspectRatio);
-		// image.setSize(monitors[monitor].width-10 * scale => _.asInteger, monitors[monitor].height-10  * scale => _.asInteger, \keepAspectRatio);
+
+		//first scale the image to the monitor
+		image.setSize(monitors[monitor].width-10 * scale => _.asInteger, monitors[monitor].height-10  * scale => _.asInteger, \keepAspectRatio);
+		//turn off scaling to trim - can I not do this with the drawFunc?
 		image.scalesWhenResized_(false);
-		image.setSize(monitors[monitor].width-10 * scale * trimWidth  => _.asInteger, monitors[monitor].height-10 * scale =>_.asInteger);
+		//now trim the right black edges with trimWidth (trimLeft for left black edge)
+		image.width_(image.width * trimWidth => _.asInteger);
+
 		try{
-			//w = Window(bounds:Rect(1500*monitor,200,size/12*14,size/12*8),border:false)
-			w = Window(bounds:monitors[monitor] + Rect(trimLeft,0,-1 * trimLeft,0) => _.scale(scale),border:false)
-			
-			// w = Window(bounds:Rect(1500*monitor,200,1400 * scale,800 * scale),border:false)
+			w = Window(bounds:monitors[monitor] + Rect(trimLeft, 0, -1 * trimLeft,0) => _.scale(scale),border:false)
 			.background_( Color.clear)
-			// .drawFunc_({Pen.drawImage(Point(100,100),image,operation:'sourceOver',opacity:1)})
 			.drawFunc_({Pen.drawImage(Point(( -1 * trimLeft + 50 * scale ).asInteger,50),image,operation:'sourceOver',opacity:1)})
 			.front;  
 		}{
-			//w = Window(bounds:Rect(0,200,size/12*14,size/12*8),border:false)
 			w = Window(bounds:monitors[monitor],border:false)
 			.background_( Color.clear)
 			.drawFunc_({Pen.drawImage(Point(100,100),image,operation:'sourceOver',opacity:1)})
@@ -199,7 +200,6 @@ Stills {
 		^w
 	}
 	//wiggle - get frames +- 10 
-
 	//for backwards compat  
 	title { |window text |
 		( text.size == 1 ).if
@@ -320,7 +320,7 @@ Still {
 	
 	title { |text b shrink|
 		var size=stills.size;
-		var bounds =  b ? stills.monitors[monitor] + Rect(-1 * Stills.trimLeft) => _.scale(Stills.scale);
+		var bounds =  b ? Stills.monitors[monitor] + Rect(-1 * Stills.trimLeft) => _.scale(Stills.scale);
 		var textHeight = bounds.height/4;
 		//  top in Rects below really should ALSO depend on textHeight also!
 
@@ -380,7 +380,7 @@ Still {
 Display {
 	classvar <>connected;
 	classvar <>array, <>event;
-	classvar <>monitors;
+	classvar <>monitors, <>mainMonitor;
 	*initClass {
 			// "displayplacer list > /tmp/displayList".systemCmd
 			var raw = Pipe("displayplacer list", "r");
@@ -403,14 +403,17 @@ Display {
 				});
 			};
 			//clean up and parse 
-				monitors.do{|ev| 
-					ev.origin.contains("main").if { ev.put(\main, true) }{ ev.put(\main, false) };
-					ev.put(\origin, "Point" ++ ev.origin.split($))[0]++")" => _.interpret);
+			monitors.do({|ev| 
+					ev.origin.contains("main").if { ev.put(\main, true); mainMonitor = ev }{ ev.put(\main, false) };
 					ev.put(\resolution, "Point(" ++ ev.resolution.replace("x",",") ++ ")" => _.interpret);
+			});
+				monitors.do{|ev x| 
+					ev.put(\origin, "Point" ++ ev.origin.split($))[0]++")" => _.interpret);
 					//need to subtract resolution.y from origin.y because 'bounds'
 					//uses x an y for lower left corner and displayplacer origin 
 					//uses upper left corner
-					ev.put(\bounds, Rect(ev.origin.x, ev.origin.y - ev.resolution.y, ev.resolution.x, ev.resolution.y))
+					// ev.put(\bounds, Rect(ev.origin.x, ev.origin.y - ev.resolution.y, ev.resolution.x, ev.resolution.y))
+					ev.put(\bounds, Rect(ev.origin.x, mainMonitor.resolution.y - ev.origin.y - ev.resolution.y, ev.resolution.x, ev.resolution.y))
 				}
 	}
 	*raw {

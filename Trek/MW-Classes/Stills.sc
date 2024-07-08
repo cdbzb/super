@@ -206,30 +206,9 @@ Stills {
 	}
 	//wiggle - get frames +- 10 
 	//for backwards compat  
-	title { |window text |
-		Stills.title(window, text)
-	// 	( text.size == 1 ).if
-	// 	{
-	// 		//size/12 * 6 size/12 * 14
-	// 		StaticText(window,Rect (0,size/1200*600,size/12*14,200) + Rect(trimLeft,0,0, 0, 0))
-	// 		.string_(text[0])
-	// 		.stringColor_(Color.rand)
-	// 		.align_(\center)
-	// 		.font_(Font(\helvetica,size/1200*90,bold:true))
-	// 	}{
-	// 		StaticText(window,Rect (0,size/1200*100,size/12*14,200)+ Rect(trimLeft,0,-0, 0, 0))
-	// 		.string_(text[0])
-	// 		.stringColor_(Color.rand)
-	// 		.align_(\center)
-	// 		.font_(Font(\helvetica,size/1200*90,bold:true))
-	// 		;
-	// 		StaticText(window,Rect (0,size/1200*600,size/12*14,200)+ Rect(trimLeft,0,-0, 0, 0))
-	// 		.string_(text[1])
-	// 		.stringColor_(Color.rand)
-	// 		.align_(\center)
-	// 		.font_(Font(\helvetica,size/1200*90,bold:true))
-	// 	}
-	}
+	// title { |window text |
+	// 	Still.title(window, text)
+	// }
 }
 
 Still {
@@ -242,16 +221,14 @@ Still {
 		^super.new.init(markerName,timecode,wait,fade,monitor,text,fadeIn,stills, onTop, bounds, shrink)
 	}
 
-        init{| n c w f m x i t o b, k |
+        init {| n c w f m x i t o b k |
           //DO WE EVEN NEED A MARKER NAME???????
-          markerName = n;
-		  bounds = b; shrink = k;
-          x.isNil.if{text=["",""]}{text=x};
+          markerName = n; wait = w; fade = f; monitor = m; fadeIn = i; onTop = o;
+		  bounds = b; shrink = k; timecode = c;
+          x.isNil.if{ text=["",""] }{ text = x };
           t.isNil.if{ stills = Stills.current }{ stills = t };
-          timecode = c;
           stills.set(markerName,timecode);
           image = stills.image(markerName);
-          wait = w;fade=f;monitor=m;fadeIn=i;onTop=o;
         }
 
         play { 
@@ -307,22 +284,7 @@ Still {
 	}
 
 	plot {|markerName monitor=0|
-		var image=this.mark(markerName);
-		var w;
-		try{
-			w = Window(bounds:Rect(1500*monitor,200,1400,800),border:false)
-			.background_( Color.clear)
-			.drawFunc_({Pen.drawImage(Point(100,100),image,operation:'sourceOver',opacity:1)})
-			.front;  //}.defer(Server.default.latency);
-		}{
-			w = Window(bounds:Rect(0,200,1400,800),border:false)
-			.background_( Color.clear)
-			.drawFunc_({Pen.drawImage(Point(100,100),image,operation:'sourceOver',opacity:1)})
-			.front;  //}.defer(Server.default.latency);
-		}
-		^w
-	//wiggle - get frames +- 10 
-        //
+		Stills.plot(markerName, monitor)
 	}
 	
 	title { |text b shrink|
@@ -470,14 +432,15 @@ Display {
         }
 }
 +P {
-	*still {   // renders the still when compiled
-		// and stores it in resources.still (e.still)
+	// renders the still when compiled
+	// and stores it in resources.still (e.still)
+	*still {   
 		|key start syl lag=0 timecode=60 music|
 		var aStill;
 		start = P.calcStart(start);
 		key = key ++ start;
 		aStill = timecode.isNumber.if{
-			Still(Song.key ++ key ++ ( Song.calcStart( start ) ) => _.asSymbol, timecode:timecode);
+			Still(Song.key ++ key => _.asSymbol, timecode:timecode);
 		}{
 			timecode.collect{|i x|
 				Still(key ++ ( Song.calcStart( start ) ) ++ x => _.asSymbol, timecode: i);
@@ -488,10 +451,10 @@ Display {
 		// e.still.wait_(4).fadeIn_(2).text_   etc etc
 		//}
 		^P(
-			key: ( key ++ start ).asSymbol, 
+			key: key ++ start => _.asSymbol, 
 			resources: (
 				still: aStill,
-				timecode: ( timecode.isNumber and: timecode.isStrictlyPositive ).if{timecode}{nil}
+				timecode: if (timecode.isNumber and: timecode.isStrictlyPositive){ timecode }{ nil }
 			),
 			start: start,
 			syl: syl,

@@ -55,14 +55,19 @@ Stills {
 		// file=movie ? ( this.class.filenameSymbol.asString.dirname.dirname +/+ "new.mp4" ); 
 		file=movie ? ( this.class.rootDir +/+ "trimmed433.mov" ); 
 		markers=();
-		monitors = switch( Platform.machine,
-			// monitor size = 1440 x 900
-			"MacBookPro16,2",{ [Rect(left:0,top:200,width:1400,height:800)] },
-			"MacPro6,1",{ [
-				Rect(left:0,top:200,width:1400,height:800),
-				Rect(left:-1500,top:200,width:1400,height:800)
-			] }
-		)
+
+		// monitors = switch( Platform.machine,
+		// 	// monitor size = 1440 x 900
+		// 	"MacBookPro16,2",{ [Rect(left:0,top:200,width:1400,height:800)] },
+		// 	"MacPro6,1",{ [
+		// 		Rect(left:0,top:200,width:1400,height:800),
+		// 		Rect(left:-1500,top:200,width:1400,height:800)
+		// 	] }
+		// )
+
+
+		//scale (virtual) monitors to legacy setting: (left:0,top:200,width:1400,height:800)
+		monitors = Display.monitors.collect{|i|var res = i.bounds.copy;  res.top = res.top + 200; res.width = res.width * 0.97; res.height = res.height * 0.88888; res }
 	}
 
 	//monitor -1 for left 0 for center default is -1
@@ -70,12 +75,12 @@ Stills {
 		var w;
 		muted.not.if{
 			if (markerName.asString.contains ( "clear")) {
-				Stills.monitors.do{ |i x|
-					w=this.plotClear(markerName, x);
+				// Stills.monitors.do{ |i x|
+					w=this.plotClear(markerName, monitor);
 					fadeIn.notNil.if{w.fadeIn(fadeIn)};
 					text.notNil.if{this.title(w,text)};
 					{w.fade(fade)}.defer(wait);
-				};
+				// };
 				^w
 			}{
 				w=this.plot(markerName, monitor)
@@ -202,26 +207,28 @@ Stills {
 	//wiggle - get frames +- 10 
 	//for backwards compat  
 	title { |window text |
-		( text.size == 1 ).if
-		{
-			StaticText(window,Rect (0,size/1200*600,size/12*14,200) + Rect(trimLeft,0,0, 0, 0))
-			.string_(text[0])
-			.stringColor_(Color.rand)
-			.align_(\center)
-			.font_(Font(\helvetica,size/1200*90,bold:true))
-		}{
-			StaticText(window,Rect (0,size/1200*100,size/12*14,200)+ Rect(trimLeft,0,-0, 0, 0))
-			.string_(text[0])
-			.stringColor_(Color.rand)
-			.align_(\center)
-			.font_(Font(\helvetica,size/1200*90,bold:true))
-			;
-			StaticText(window,Rect (0,size/1200*600,size/12*14,200)+ Rect(trimLeft,0,-0, 0, 0))
-			.string_(text[1])
-			.stringColor_(Color.rand)
-			.align_(\center)
-			.font_(Font(\helvetica,size/1200*90,bold:true))
-		}
+		Stills.title(window, text)
+	// 	( text.size == 1 ).if
+	// 	{
+	// 		//size/12 * 6 size/12 * 14
+	// 		StaticText(window,Rect (0,size/1200*600,size/12*14,200) + Rect(trimLeft,0,0, 0, 0))
+	// 		.string_(text[0])
+	// 		.stringColor_(Color.rand)
+	// 		.align_(\center)
+	// 		.font_(Font(\helvetica,size/1200*90,bold:true))
+	// 	}{
+	// 		StaticText(window,Rect (0,size/1200*100,size/12*14,200)+ Rect(trimLeft,0,-0, 0, 0))
+	// 		.string_(text[0])
+	// 		.stringColor_(Color.rand)
+	// 		.align_(\center)
+	// 		.font_(Font(\helvetica,size/1200*90,bold:true))
+	// 		;
+	// 		StaticText(window,Rect (0,size/1200*600,size/12*14,200)+ Rect(trimLeft,0,-0, 0, 0))
+	// 		.string_(text[1])
+	// 		.stringColor_(Color.rand)
+	// 		.align_(\center)
+	// 		.font_(Font(\helvetica,size/1200*90,bold:true))
+	// 	}
 	}
 }
 
@@ -322,6 +329,7 @@ Still {
 		var size=stills.size;
 		var bounds =  b ? Stills.monitors[monitor] + Rect(-1 * Stills.trimLeft) => _.scale(Stills.scale);
 		var textHeight = bounds.height/4;
+		var fontSize = bounds.height/10;
 		//  top in Rects below really should ALSO depend on textHeight also!
 
 		// var top = Rect(bounds.left, bounds.height/8, bounds.width, textHeight);
@@ -336,26 +344,26 @@ Still {
 			.string_("")
 			.stringColor_(Color.rand)
 			.align_(\center)
-			.font_(Font(\helvetica,90 * Stills.scale * (1-shrink) => _.asInteger, bold:true))
+			.font_(Font(\helvetica,fontSize * Stills.scale * (1-shrink) => _.asInteger, bold:true))
 			;
 			textLower = StaticText(window,bottom)
 			.string_(text[0])
 			.stringColor_(Color.rand)
 			.align_(\center)
-			.font_(Font(\helvetica,90 * Stills.scale * (1-shrink) => _.asInteger, bold:true))
+			.font_(Font(\helvetica,fontSize * Stills.scale * (1-shrink) => _.asInteger, bold:true))
 			;
 		}{
 			textUpper = StaticText(window,top)
 			.string_(text[0])
 			.stringColor_(Color.rand)
 			.align_(\center)
-			.font_(Font(\helvetica,90 * Stills.scale * (1-shrink) => _.asInteger, bold:true))
+			.font_(Font(\helvetica,fontSize * Stills.scale * (1-shrink) => _.asInteger, bold:true))
 			;
 			textLower = StaticText(window,bottom)
 			.string_(text[1])
 			.stringColor_(Color.rand)
 			.align_(\center)
-			.font_(Font(\helvetica,90 * Stills.scale * (1-shrink) => _.asInteger, bold:true))
+			.font_(Font(\helvetica,fontSize * Stills.scale * (1-shrink) => _.asInteger, bold:true))
 		}
 	}
 	value { //for backward comp
@@ -406,15 +414,11 @@ Display {
 			monitors.do({|ev| 
 					ev.origin.contains("main").if { ev.put(\main, true); mainMonitor = ev }{ ev.put(\main, false) };
 					ev.put(\resolution, "Point(" ++ ev.resolution.replace("x",",") ++ ")" => _.interpret);
-			});
-				monitors.do{|ev x| 
 					ev.put(\origin, "Point" ++ ev.origin.split($))[0]++")" => _.interpret);
-					//need to subtract resolution.y from origin.y because 'bounds'
-					//uses x an y for lower left corner and displayplacer origin 
-					//uses upper left corner
-					// ev.put(\bounds, Rect(ev.origin.x, ev.origin.y - ev.resolution.y, ev.resolution.x, ev.resolution.y))
-					ev.put(\bounds, Rect(ev.origin.x, mainMonitor.resolution.y - ev.origin.y - ev.resolution.y, ev.resolution.x, ev.resolution.y))
-				}
+			});
+			monitors.do{|ev x| 
+				ev.put(\bounds, Rect(ev.origin.x, mainMonitor.resolution.y - ev.origin.y - ev.resolution.y, ev.resolution.x, ev.resolution.y))
+			}
 	}
 	*raw {
 		// "displayplacer list > /tmp/displayList".systemCmd

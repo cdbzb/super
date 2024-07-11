@@ -14,6 +14,7 @@ Stills {
 	classvar <>trimWidth=1; //0.87 for no border
 	classvar <>trimLeft=0; // 180 for no border
 	classvar <>monitorChoiceFunction;
+	classvar <>titleFunction;
 	var <>file;
 	var <>markers;
 	var <>fade;
@@ -153,16 +154,27 @@ Stills {
 		^Image.open(fileName)
 	}
 	*plotTitleCard{ |text monitor=0 dur=2 top=0 fade=1|
-		var w;
-		w = Window(bounds:Rect(1500*monitor, top,1440,900).postln.scale(scale ? 1).postln,border:false)
+		var w, view;
+		var bounds = Display.at(titleFunction.() ? (monitor ? 0)).bounds;
+		// w = Window(bounds:Rect(1500*monitor, top,1440,900).postln.scale(scale ? 1).postln,border:false)
+		w = Window(bounds: bounds, border: false)
 		.background_(Color.rand)
 		.front;
 		{ w.fade(fade, 1) }.defer(dur);
-			 StaticText(w, Rect(1500*monitor,top, 1440, 900 ).scale(scale))
+			 StaticText(w, Rect.fromPoints(Point(0,0), w.bounds.extent))
 			.string_(text)
 			.stringColor_(Color.rand)
 			.align_(\center)
-			.font_(Font(\helvetica,90 * Stills.scale => _.asInteger, bold:true))
+			.font_(Font(\helvetica,90 * bounds.width / 1200 * Stills.scale => _.asInteger, bold:true));
+		view = w.view;
+		view.keyDownAction_({|view key|
+			Window.closeAll;
+			TempoClock.all.do(_.clear);
+			Server.default.freeMyDefaultGroup;
+			Trek.transitionGroup.release;
+			SCNvim.luaeval( "vim.api.nvim_input('%')".format(key) );
+			"open -a WezTerm.app".unixCmd;
+		});
 		^w
 	}
 	plotClear{ |markerName monitor|

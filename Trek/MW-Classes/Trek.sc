@@ -46,6 +46,10 @@ Trek {
 			^keys.indexOf(i) => this.allTheSongs[_]
 		}
 	}
+	*continue {
+		var num = Song.key => Trek.keys.indexOf(_);
+		Trek.playRange(num, Song.playCursor, Song.songs.size - 1 - num - 1)
+	}
 	*prepare{ |pause=0.25|
 		fork{
 			Song(\trashme,[]).current;
@@ -200,7 +204,8 @@ Trek {
 
 	*playRange { |num cursor=0 numSections=1|  // sets first fader then plays range
 		var needLoad;
-		needLoad = (num..(num + numSections)).select{|i| Song.songs[Trek.keys[i]].isNil};
+		needLoad = (num..(num + numSections min: ( Trek.allTheSongs.size - 1 ))).select{|i| Song.songs[Trek.keys[i]].isNil};
+
 		( needLoad.size!=0 ).if{ ^this.loadSongs(needLoad) };
 		fork{
 			transitionGroup.release;Server.default.sync;

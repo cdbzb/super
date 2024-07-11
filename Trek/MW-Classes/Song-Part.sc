@@ -316,8 +316,12 @@ Song {
 		// "print(match_pos)"
 		// "vim.api.nvim_win_set_cursor(0,{match_pos, 0 })"
 		.format(lyric);
+
 		Post << "lua code" <<luacode;
-		try{ SCNvim.luaeval(luacode) }
+		try{ SCNvim.luaeval(luacode) };
+		// fork{ 0.01.wait; try{
+			SCNvim.luaeval("vim.api.nvim_feedkeys(\"%\", \"%\", %)".format("z.", "m", "false")) 
+		// } }
 	}
 	hasDursButNotLyricsToDurs {
 		// Is there a file in the Dur folder?
@@ -1085,10 +1089,11 @@ Part {
 		(start>=parent.cursor).if{
 			var when=this.calcTime;
 			this.sched(when+Server.default.latency);
-			{this.name.postln}.sched(when);
-
+			{
 			//for scrolling
-			parent.playCursor = start
+				Song.playCursor = start; 
+				this.name.postln
+			}.sched(when);
 		}
 	}
 	ppost {

@@ -170,7 +170,8 @@ Trek {
 	*playBit { |section start end|
 		fork{
 			Trek.editFile(section);
-			try{Trek.editRemote(section)};
+			// use a flag to toggle
+			try{NvimRemote.edit( Trek.allTheSongs[section] )};
 			transitionGroup.release;Server.default.sync;
 			faderSynths[section] = faders[section].();
 			this.playSongStartEnd(section, start:start, end:end);

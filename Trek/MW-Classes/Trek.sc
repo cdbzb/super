@@ -157,6 +157,11 @@ Trek {
 		SCNvim.luaeval(cmd)
 	}
 
+	*editRemote{|num|
+		"nvim --server /tmp/nvim-server --remote %".format(this.allTheSongs[num])
+		.unixCmd
+	}
+
 	*transitionGroup {
 		( transitionGroup.notNil and: try{transitionGroup.isRunning} ).not.if{ transitionGroup = Group.after(Server.default.defaultGroup).register };
 		^transitionGroup
@@ -165,6 +170,7 @@ Trek {
 	*playBit { |section start end|
 		fork{
 			Trek.editFile(section);
+			try{Trek.editRemote(section)};
 			transitionGroup.release;Server.default.sync;
 			faderSynths[section] = faders[section].();
 			this.playSongStartEnd(section, start:start, end:end);

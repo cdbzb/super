@@ -1573,9 +1573,9 @@ P(\pad, music: { |p b e|
 		instrument: \stringyy,amp:0.3,freqLag:1, out:2
 	].ppm
 });
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, syl:0, music: { |p b e|
 		 e.still.( 
-			wait: b.sum,
+			wait: b.drop(1).sum,
 			text: ["just how much rock","are we going to go through"],
 		)
 });

@@ -22,7 +22,7 @@ Stills {
 	var <>window;
 	var <>stills;
 	var <>size=1200;
-	classvar <>monitors ;
+	classvar <>monitors, <>activeDisplays, <>clearOnAll = false ;
 
 
 	*new {|movie| ^super.new.init(movie)}
@@ -32,7 +32,8 @@ Stills {
 	}
 
 	*initClass {
-		stillsLocation = this.rootDir +/+ "cache/"
+		stillsLocation = this.rootDir +/+ "cache/";
+		activeDisplays = [0];
 	}
 
 	*emptyCache {
@@ -343,7 +344,7 @@ Still {
 	value { //for backward comp
 		|monitor wait fade fadeIn text onTop = false bounds shrink|
 
-		monitor.notNil.if{ this.monitor = Stills.monitorChoiceFunction.() ? monitor ? 0}
+		 this.monitor = Stills.monitorChoiceFunction.() ? this.monitor ? monitor ? 0
 
 		// this.monitor = 2.rand // to make image switch back and forth between two monitors
 		//replace this with a function - `monitorChoiceFunction`
@@ -449,15 +450,17 @@ Display {
 	*still {   
 		|key start syl lag=0 timecode=60 music allMonitors=false|
 		var aStill;
+		var clear = key.contains("clear");
 		start = P.calcStart(start);
 		key = key ++ start;
-		allMonitors.if{
-			var parts = 2.collect{|i|
-				aStill = Still(Song.key ++ key => _.asSymbol, timecode:timecode, monitor: i);
+
+		( allMonitors or: (clear and: Stills.clearOnAll ) ).if{
+			var parts = Stills.activeDisplays.collect{|i|
+				var still = Still(Song.key ++ key => _.asSymbol, timecode:timecode, monitor: i);
 				P(
 					key: key ++ start ++ i => _.asSymbol, 
 					resources: (
-						still: aStill,
+						still: still,
 						timecode: if (timecode.isNumber and: timecode.isStrictlyPositive){ timecode }{ nil }
 					),
 					start: start,
@@ -466,7 +469,7 @@ Display {
 					music: music
 				)
 			};
-			Part.current = Cluster( parts )
+			Part.current = Cluster( parts );
 		} {
 			aStill = timecode.isNumber.if{
 				Still(Song.key ++ key => _.asSymbol, timecode:timecode);

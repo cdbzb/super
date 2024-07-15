@@ -240,11 +240,11 @@ P(\bass, music: { |p b e|
 });
 P.tune( _ <> [instrument:\stringyy].pm );
 ["a world destroyed and dead for at least a half million years. ","1 1 2 2 3 3 2 1 -7 2 5 5 4.5 4 3/g".dm2].addLine;
-P.multiStill(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["a world destroyed","and dead"],
-		onTop:true
+		ontTop:true
 	).sequenceText2(
 			b.parse([6, 3]), [ 
 			["for","at least"],
@@ -252,14 +252,14 @@ P.multiStill(\clear, timecode: 0.seconds, music: { |p b e|
 			],
 	)
 });
-// P.still(\bridge, timecode: 425.401.seconds, music: { |p b e|
-// 	e.still.( 
-// 		wait: b.sum + e.bNext.sum,
-// 		fadeIn: b.sum,
-// 		text:["",""]
-// 		// text: ["yet from it comes","a voice"],
-// 	)
-// });
+P.still(\bridge, timecode: 425.401.seconds, music: { |p b e|
+	e.still.( 
+		wait: b.sum + e.bNext.sum,
+		fadeIn: b.sum,
+		text:["",""]
+		// text: ["yet from it comes","a voice"],
+	)
+});
 P(\bassnotes, music: { |p b e|
 	{
 		Gendy2.arWidth(

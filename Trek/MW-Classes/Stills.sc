@@ -223,7 +223,6 @@ Stills {
 	// }
 }
 
-
 Still {
 	var <>stills,<>image;
 	var <>markerName,<>wait,<>fade,<>fadeIn,<>monitor;
@@ -344,7 +343,7 @@ Still {
 	value { //for backward comp
 		|monitor=0 wait fade fadeIn text onTop = false bounds shrink|
 
-		monitor.notNil.if{ this.monitor =  monitor ? Stills.monitorChoiceFunction.()}
+		monitor.notNil.if{ this.monitor = Stills.monitorChoiceFunction.() ? monitor}
 
 		// this.monitor = 2.rand // to make image switch back and forth between two monitors
 		//replace this with a function - `monitorChoiceFunction`
@@ -360,26 +359,6 @@ Still {
 	}
 
 }
-
-MultiStill : Still {
-	var <array;
-	*new { |markerName timecode wait=5 fade=0 monitor text fadeIn stills onTop=false bounds shrink |
-		^super.new.init(markerName, timecode, wait, fade, monitor, text, fadeIn, stills, onTop, bounds, shrink)
-	}
-	init{|markerName timecode wait=5 fade=0 monitor text fadeIn stills onTop=false bounds shrink |
-		array = monitor.collect{|i| Still(markerName, timecode, wait, fade,i , text, fadeIn, stills, onTop, bounds, shrink) }
-	}
-	value { |monitor=0 wait fade fadeIn text onTop=false bounds shrink|
-		array.do( _.value( monitor, wait, fade, fadeIn, text, onTop, bounds, shrink) )
-	}
-	doesNotUnderstand { |selector...args|
-		Stills.respondsTo(selector).if {
-			array.do{|still| Message(still, selector, *args).value}
-		}
-	}
-
-}
-
 Display {
 	classvar <>connected;
 	classvar <>array, <>event;
@@ -477,36 +456,6 @@ Display {
 		}{
 			timecode.collect{|i x|
 				Still(key ++ ( Song.calcStart( start ) ) ++ x => _.asSymbol, timecode: i);
-			}
-		};
-		// nope - make a Still instead
-		// like define Still here and in the music:{
-		// e.still.wait_(4).fadeIn_(2).text_   etc etc
-		//}
-		^P(
-			key: key ++ start => _.asSymbol, 
-			resources: (
-				still: aStill,
-				timecode: if (timecode.isNumber and: timecode.isStrictlyPositive){ timecode }{ nil }
-			),
-			start: start,
-			syl: syl,
-			lag: lag,
-			music: music
-		)
-
-
-	}
-	*multiStill {   
-		|key start syl lag=0 timecode=60 music monitors|
-		var aStill;
-		start = P.calcStart(start);
-		key = key ++ start;
-		aStill = timecode.isNumber.if{
-			MultiStill(Song.key ++ key => _.asSymbol, timecode:timecode, monitor: monitors);
-		}{
-			timecode.collect{|i x|
-				MultiStill(key ++ ( Song.calcStart( start ) ) ++ x => _.asSymbol, timecode: i, monitor:monitors);
 			}
 		};
 		// nope - make a Still instead

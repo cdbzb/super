@@ -123,6 +123,20 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["the","Enterprise"],
+		monitor:2,
+		onTop: true
+	).sequenceText2(
+			b.parse([4, 4]), [ 
+			["is","in orbit"],
+			["above a planet","whose"]
+			],
+	)
+});
+P.still(\clear2, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["the","Enterprise"],
+		monitor:0,
 		onTop: true
 	).sequenceText2(
 			b.parse([4, 4]), [ 
@@ -592,6 +606,17 @@ P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
 			],
 	)
 });
+P.still(\clears,syl:0, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.drop(1).sum,
+		monitor:2,
+		text: ["resume","contact"],
+	).sequenceText2(
+			b.drop(1).parse([4]), [ 
+			["log entry", "out"],
+			],
+	)
+});
 Song.setTempoMap(\resume,"eeeee e ee ee ee ee e e e");
 P(\chord, syl: 4, music: { |p b e|
 	(
@@ -715,6 +740,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["Captain!",""],
+		monitor: 2,
 		onTop: true
 	)
 });
@@ -734,6 +760,7 @@ P.synthV(role: \spock, take: \lead, params: {|p b| [
 P.still(\spockClose, timecode: 453.106.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
+		monitor:2, 
 		text: ["",""],
 	)
 });
@@ -850,6 +877,22 @@ P.still(
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
+	).sequenceText2(
+		b.parse([2,5, 6]), [ 
+			["sensors","registering" ],
+			["some kind of","energy"],
+			["deep inside","the planet"]
+			],
+	)
+});
+P.still(
+	// \spockSensors
+	\clear
+	, timecode: 500.974.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["",""],
+		monitor: 2
 	).sequenceText2(
 		b.parse([2,5, 6]), [ 
 			["sensors","registering" ],
@@ -1618,6 +1661,17 @@ P.still(\clear,lag:0.01, timecode: 0.seconds, music: { |p b e|
 			],
 	)
 });
+P.still(\clear,lag:0.01, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["I will make it ","possible"],
+		monitor: 2,
+	).sequenceText2(
+			b.parse([7,9]), [ 
+			["for your transporter beam","to send you"],
+			],
+	)
+});
 P(\crash, music: { |p b e|
 	(
 		instrument: \cymbalsDS,
@@ -1701,6 +1755,19 @@ P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
 		wait: b.sum,
 		text: ["that","deep"],
 		fade:1
+	).sequenceText2(
+			b.drop(1).parse([10,5]), [ 
+			["beneath","the surface"],
+			["",""]
+			],
+	)
+});
+P.still(\clear2,syl:0, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		text: ["that","deep"],
+		fade:1,
+		monitor: 2
 	).sequenceText2(
 			b.drop(1).parse([10,5]), [ 
 			["beneath","the surface"],

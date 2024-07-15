@@ -341,9 +341,9 @@ Still {
 		}
 	}
 	value { //for backward comp
-		|monitor=0 wait fade fadeIn text onTop = false bounds shrink|
+		|monitor wait fade fadeIn text onTop = false bounds shrink|
 
-		monitor.notNil.if{ this.monitor = Stills.monitorChoiceFunction.() ? monitor}
+		monitor.notNil.if{ this.monitor = Stills.monitorChoiceFunction.() ? monitor ? 0}
 
 		// this.monitor = 2.rand // to make image switch back and forth between two monitors
 		//replace this with a function - `monitorChoiceFunction`
@@ -447,17 +447,34 @@ Display {
 	// renders the still when compiled
 	// and stores it in resources.still (e.still)
 	*still {   
-		|key start syl lag=0 timecode=60 music|
+		|key start syl lag=0 timecode=60 music allMonitors=false|
 		var aStill;
 		start = P.calcStart(start);
 		key = key ++ start;
-		aStill = timecode.isNumber.if{
-			Still(Song.key ++ key => _.asSymbol, timecode:timecode);
-		}{
-			timecode.collect{|i x|
-				Still(key ++ ( Song.calcStart( start ) ) ++ x => _.asSymbol, timecode: i);
-			}
-		};
+		allMonitors.if{
+			var parts = 2.collect{|i|
+				aStill = Still(Song.key ++ key => _.asSymbol, timecode:timecode, monitor: i);
+				P(
+					key: key ++ start ++ i => _.asSymbol, 
+					resources: (
+						still: aStill,
+						timecode: if (timecode.isNumber and: timecode.isStrictlyPositive){ timecode }{ nil }
+					),
+					start: start,
+					syl: syl,
+					lag: lag,
+					music: music
+				)
+			};
+			Part.current = Cluster( parts )
+		} {
+			aStill = timecode.isNumber.if{
+				Still(Song.key ++ key => _.asSymbol, timecode:timecode);
+			}{
+				timecode.collect{|i x|
+					Still(key ++ ( Song.calcStart( start ) ) ++ x => _.asSymbol, timecode: i);
+				}
+			};
 		// nope - make a Still instead
 		// like define Still here and in the music:{
 		// e.still.wait_(4).fadeIn_(2).text_   etc etc
@@ -474,6 +491,7 @@ Display {
 			music: music
 		)
 
+		}
 
 	}
 }

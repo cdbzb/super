@@ -607,15 +607,17 @@ P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
 	)
 });
 P.still(\clears,syl:0, timecode: 0.seconds, music: { |p b e|
-	 e.still.( 
+	 [e.still.monitor_(0), e.still.copy.monitor_(1)].do{|i x|i.postln;i.monitor.postln; i.( 
 		wait: b.drop(1).sum,
-		monitor:2,
+		// monitor:x,
+		// monitor: e.monitor,
 		text: ["resume","contact"],
 	).sequenceText2(
 			b.drop(1).parse([4]), [ 
 			["log entry", "out"],
 			],
 	)
+	}	
 });
 Song.setTempoMap(\resume,"eeeee e ee ee ee ee e e e");
 P(\chord, syl: 4, music: { |p b e|

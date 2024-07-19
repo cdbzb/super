@@ -22,7 +22,7 @@ Stills {
 	var <>window;
 	var <>stills;
 	var <>size=1200;
-	classvar <>monitors ;
+	classvar <>monitors;
 
 
 	*new {|movie| ^super.new.init(movie)}
@@ -345,6 +345,7 @@ Still {
 
 		monitor.notNil.if{ this.monitor = Stills.monitorChoiceFunction.() ? monitor}
 
+
 		// this.monitor = 2.rand // to make image switch back and forth between two monitors
 		//replace this with a function - `monitorChoiceFunction`
 		;
@@ -363,6 +364,7 @@ Display {
 	classvar <>connected;
 	classvar <>array, <>event;
 	classvar <>monitors, <>mainMonitor;
+	classvar <cmd;
 	*initClass {
 			// "displayplacer list > /tmp/displayList".systemCmd
 			var raw = Pipe("displayplacer list", "r");
@@ -373,7 +375,8 @@ Display {
 				{monitors.last.add(line);
 				line=raw.getLine;
 				//each monitors description starts with "Persistent screen id" so add new entry
-				line.asString.contains("Persistent screen id:").if { monitors.add(List.new)} 
+				line.asString.contains("Persistent screen id:").if { monitors.add(List.new)};
+				cmd = line ? cmd;
 			});
 			raw.close;
 			monitors = monitors.collect { |i|
@@ -394,6 +397,7 @@ Display {
 				ev.put(\bounds, Rect(ev.origin.x, mainMonitor.resolution.y - ev.origin.y - ev.resolution.y, ev.resolution.x, ev.resolution.y))
 			}
 	}
+
 	*raw {
 		// "displayplacer list > /tmp/displayList".systemCmd
 		var raw = Pipe("displayplacer list", "r");

@@ -156,14 +156,20 @@ Stills {
 	*plotTitleCard{ |text monitor=0 dur=2 top=0 fade=1|
 		var w, view;
 		var bounds = Display.at(titleFunction.() ? (monitor ? 0)).bounds;
+		var colors = [0.3, 0.8].scramble.collect{|i| [1.0.rand, 1.0.rrand(0.4), i, 1] 
+		=>_.postln 
+		=> Color.hsv(*_) };
 		// w = Window(bounds:Rect(1500*monitor, top,1440,900).postln.scale(scale ? 1).postln,border:false)
+		// colors.postln;
 		w = Window(bounds: bounds, border: false)
-		.background_(Color.rand)
+		// .background_(Color.rand)
+		.background_(colors[0])
 		.front;
 		{ w.fade(fade, 1) }.defer(dur);
 			 StaticText(w, Rect.fromPoints(Point(0,0), w.bounds.extent))
 			.string_(text)
-			.stringColor_(Color.rand)
+			// .stringColor_(Color.rand)
+			.stringColor_(colors[1])
 			.align_(\center)
 			.font_(Font(\helvetica,90 * bounds.width / 1200 * Stills.scale => _.asInteger, bold:true));
 		view = w.view;

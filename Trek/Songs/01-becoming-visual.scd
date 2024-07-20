@@ -1983,7 +1983,14 @@ P(\connector, music: { |p b e|
 P.still(\sargon, timecode: 105.188.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
+	)
+});
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		monitor: 2,
 		text: ["all of your questions","will be answered in time"],
+		onTop: true
 	)
 });
 [" Are your hailing frequencies open?","3 1 5 4 3 4 5 ".dm('e-',\lydian) ++ "3 1".dm(\d)].addLine;/*KIRK*/
@@ -2041,6 +2048,12 @@ P.still(\UhuraSpeaking, timecode: 113.15.seconds, music: { |p b e|
 P.still(\sargon, timecode: 114.7.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
+	)
+});
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		monitor: 2,
 		text: ["I am","Sargon"],
 	)
 });
@@ -2114,6 +2127,7 @@ P(\bassnote, music: { |p b e|
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
+		monitor: 2,
 		text: ["it is the energy","of my thoughts which has"],
 	)
 });
@@ -2148,6 +2162,7 @@ P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.drop(1).sum,
 		text: ["touched","your instruments"],
+		monitor: 2
 	).sequenceText2(
 			b.drop(1).parse([5]), [ 
 			["and directed you","here"],
@@ -2213,6 +2228,7 @@ Song.durs.filter(_*1.3);
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
+		monitor: 2,
 		text: ["now at this","closer distance"],
 	).sequenceText2(
 			b.parse([7, 5, 2]), [ 
@@ -2292,6 +2308,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["please","assume"],
+		monitor: 2,
 	).sequenceText2(
 			b.parse([3, 5]), [ 
 			["a standard","orbit"],
@@ -2376,6 +2393,7 @@ P(\bassnote,syl:2, music: { |p b e|
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
+		monitor: 2,
 		text: ["the choice","is yours"],
 	)
 });
@@ -2423,6 +2441,7 @@ P(\bassline, music: { |p b e|
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
+		monitor: 2,
 		text: ["I read what is","in your mind"],
 	)
 });
@@ -2460,6 +2479,7 @@ P.tune();
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
+		monitor: 2,
 		text: ["words are","unnecessary"],
 	)
 });
@@ -2586,8 +2606,9 @@ P(\bassline, music: { |p b e|
 });
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
+		wait: b.sum + e.bNext.sum,
 		text: ["and I","am as dead"],
+		monitor: 2,
 	).sequenceText2(
 			b.parse([5, 4]), [ 
 			["as my","planet"],
@@ -2614,7 +2635,6 @@ P.synthV(role: \vocoder,frozen:true, resources:(tail:6), take: \lead,
 P.still(\suluAndSomeone, timecode: 150.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["does that frighten you","James Kirk"],
 	)
 });
 P.tune(_ <> [instrument: \visual_pad,amp:0.15].pm);

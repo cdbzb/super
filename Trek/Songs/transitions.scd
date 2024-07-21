@@ -59,16 +59,27 @@ Trek.setTransition(0, -2, dur: 5, func: {
 	{ Stills.plotTitleCard("Contact", dur: 5, ); }.defer;
 	Trek.faderSynths[0].release;
 	~activateFader.(1)
-}).value;
+});
 
 Trek.faders[1] = {~asrFader.(1,7,2)};
 
-Trek.setTransition(1, -2, dur: 3, func: {
-	2.wait;
+Trek.setTransition(1, -2, dur: 5, func: {
+	3.wait;
+	defer{
+		Stills.plotTitleCard("The Planet", monitor:0, dur:3, top:0, fade:1);
+		Stills.plotTitleCard("The Planet", monitor:0, dur:3, top:0, fade:1);
+	};
 	Trek.faderSynths[1].release;
-	(instrument:\cymbalsDS,amp:0.03, att:2.5,target:Trek.transitionGroup,addAction:\addToTail).play;
-	defer{ Stills.plotTitleCard("The Planet", monitor:0, dur:2, top:0, fade:1) };
-	nil
+	// (instrument:\cymbalsDS,amp:0.03, att:2.5,target:Trek.transitionGroup,addAction:\addToTail).play;
+	(instrument:\cymbalsDSStereo,amp:0.01, att:2.5,target:Trek.transitionGroup,addAction:\addToTail).play;
+	[
+		instrument: \stringyy,
+		modWidth: 0.04,
+		coef: 0.1,
+		freq: [1, 2, 3, 4].df(\f, tuning: \just),
+		freqLag:8,
+		dur: 2
+	].ppm;
 });
 
 Trek.faders[2]={~asrFader.(1, 0, 1)};
@@ -84,9 +95,10 @@ Trek.setTransition(2, -2,
 
 Trek.faders[3]={~asrFader.(5, 3, 0.5)};
 
-Trek.setTransition(3, -1, 
+Trek.setTransition(3, -2, 
 	 func: {
 		 (instrument:\cymbalsDS, att:2.5, group: Trek.transitionGroup).play;
+		 defer{ Stills.plotTitleCard("The Chamber", dur: 3)};
 		 // fork{0.9.wait; Server.default.freeMyDefaultGroup};
 		 s.defaultGroup.release(1);
 		 Trek.faderSynths[3].release(1);
@@ -120,7 +132,9 @@ Trek.setTransition(6, -2,
 	func: {
 	~activateFader.(7);
 	Trek.faderSynths[6].release;
-});
+})
+// .value
+;
 
 Trek.faders[7] = {~asrFader.(3,8,1)};
 Trek.setTransition(7, -3,dur: 4.5, func:{
@@ -130,7 +144,9 @@ Trek.setTransition(7, -3,dur: 4.5, func:{
 	Trek.faderSynths[7].release(3);
 	~activateFader.(8);
 	(amp:0.03, instrument:\cymbalsDS, att:2.5, group: Trek.transitionGroup, out:[2, 0]).play;
-});
+})
+.value
+;
 
 Trek.faders[8] = {~asrFader.(1,2,1)};
 

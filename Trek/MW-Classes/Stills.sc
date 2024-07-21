@@ -414,7 +414,7 @@ Display {
 		^res
 	}
 	*at {|num|
-		^monitors[num]
+		^monitors.clipAt(num)
 	}
 
 	*resolutions {

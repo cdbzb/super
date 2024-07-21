@@ -34,13 +34,32 @@ Trek.faders[0] = {
 	}.play(s, target: RootNode(s), addAction:\addToTail);
 };
 
-Trek.setTransition(0, -2, dur: 4, func: {
+Trek.setTransition(0, -2, dur: 5, func: {
+	Trek.faderSynths[1].release;
 	1.wait;
-	(instrument: \cymbalsDS, att:0.5, amp: 0.02).play;
-	{ Stills.plotTitleCard("Contact", dur: 4); }.defer;
+	(instrument: \cymbalsDS, att:0.5, amp: 0.008).play;
+	(instrument: \stringyy, width: 10, freq: [ -11, -21, -11, -21, -1].df(\f)).play;
+	[
+		freq: [1, 3, 4].df(\f,3, \minor).q,
+		dur: 
+		[ Song.preroll * 2 + 0.2 + 5 + 0.1 , 0, 0] + Song.songs[Trek.keys[1]].durs[0].list.parse([5, 6, 1]) 
+			=> _.q,
+		amp: [0.2, 0.2 * -9.dbamp, 0.02 * -14.dbamp] * -9.dbamp => _.q,
+		coef: 0.2,
+		instrument: \harp,
+	].pp;
+	[
+		instrument: \harpGendy,
+		modWidth: 0.03,
+		out: Monitors.speakerOrder.q,
+		amp: Pgeom(0.05, 0.5, 6),
+		freq: -1.df('f'),
+		// dur: 0.6
+	].p.trace.play;
+	{ Stills.plotTitleCard("Contact", dur: 5, ); }.defer;
 	Trek.faderSynths[0].release;
 	~activateFader.(1)
-});
+}).value;
 
 Trek.faders[1] = {~asrFader.(1,7,2)};
 

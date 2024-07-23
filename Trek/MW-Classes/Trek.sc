@@ -186,6 +186,7 @@ Trek {
 		trimEnd.notNil.if{ transitions[num].put(\trimEnd, trimEnd) };
 		lag.notNil.if{ transitions[num + 1].put(\lag, lag) };
 		fork{
+			faderSynths.do(_.free);
 			faderSynths[num] = faders[num].();
 			this.playSong(num, cursor, trimEnd: trimEnd ) + lag => _.wait;
 			transitions[num].func.value;
@@ -215,7 +216,7 @@ Trek {
 		( needLoad.size!=0 ).if{ ^this.loadSongs(needLoad) };
 		fork{
 			transitionGroup.release;Server.default.sync;
-			faderSynths[num] = faders[num].();
+			faderSynths[num] !? {|i| i.isRunning.if{|j| j = faders[num].().register}};
 			numSections.do{|i| 
 				var section = num + i;
 				var start = (i == 0).if{ cursor }{ transitions[section].start};

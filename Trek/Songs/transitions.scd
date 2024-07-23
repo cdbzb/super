@@ -106,7 +106,7 @@ Trek.setTransition(3, -3,
 		 ~activateFader.(4);
 	 }, trimStart: 1, trimEnd:0, dur: 3
 )
-.value
+// .value
 ;
 
 Trek.faders[4] = {~asrFader.(0,2,6)};
@@ -138,13 +138,29 @@ Trek.setTransition(6, -2,
 ;
 
 Trek.faders[7] = {~asrFader.(3,8,1)};
-Trek.setTransition(7, -3,dur: 4.5, func:{
+Trek.setTransition(7, -2,dur: 4.5, func:{
 	2.wait;
-	defer{ Stills.plotTitleCard("Decision", dur:3, fade:2)}; 
 	fork{1.wait; Server.default.freeMyDefaultGroup};
 	Trek.faderSynths[7].release(3);
 	~activateFader.(8);
 	(amp:0.03, instrument:\cymbalsDS, att:2.5, group: Trek.transitionGroup, out:[2, 0]).play;
+	defer{ Stills.plotTitleCard("Decision", dur:6, fade:4)}; 
+	defer{ Stills.plotTitleCard("Decision", dur:3, fade:2)}; 
+	[
+		group: Trek.transitionGroup,
+		instrument: \stringyy,
+		freq: 
+		[5, 11, 13].bubble
+		++ [5, 7, 12].bubble
+		++ [-2, 6.5, 12].bubble 
+		=> _.df('c#', 4) => _.q,
+		dur: 2,
+		freqLag: 4,
+		out: (..4),
+		legato: [1,  0.9, 1].q,
+		att: [1, 1, 4].q
+	].ppma;
+	3.wait;
 })
 // .value
 ;
@@ -179,12 +195,26 @@ Trek.setTransition(9, -1, dur: 5,
 		// Trek.faderSynths[9].release;
 		Trek.transitionGroup.release(4);
 		defer{ Stills.plotTitleCard("Transfer", dur: 5, fade:2); };
+		(instrument: \stringyy, coef: 0.1, freq: [5, 1, 13].df('f#', \minor), dur: 5, out: (..4),mix: 0, amp: 0.04, group: Trek.transitionGroup).play;
+		// fork{
+		// 	15.do{
+		// 		[
+		// 			instrument: \default,
+		// 			amp: Pgeom(0.03, 0.7, inf),
+		// 			dur: Pwhite(0.2,0.3),
+		// 			freq: 300.exprand(900),
+		// 			out: (0..4).q(5),
+		// 			
+		// 		].pp;
+		// 		0.3.rand.wait
+		// 	};
+		// };
 		fork{1.wait; Server.default.freeMyDefaultGroup};
-		(instrument:\cymbalsDS, att:2.5, amp:0.03, group: Trek.transitionGroup, addAction:\addToTail).play;
+		(instrument:\cymbalsDSStereo, att:2.5, amp:0.01, group: Trek.transitionGroup, addAction:\addToTail).play;
 		1.wait;
 		(instrument:\cymbalsDS, att:2.5, amp:0.03,out:1, group: Trek.transitionGroup, addAction:\addToTail).play;
 		~activateFader.(10);
-});
+}).value;
 
 Trek.faders[10] = {~asrFader.(1, 0, 1)};
 // 10 and 11 are the same!!

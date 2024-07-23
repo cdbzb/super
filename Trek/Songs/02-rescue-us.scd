@@ -123,20 +123,6 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["the","Enterprise"],
-		monitor:2,
-		onTop: true
-	).sequenceText2(
-			b.parse([4, 4]), [ 
-			["is","in orbit"],
-			["above a planet","whose"]
-			],
-	)
-});
-P.still(\clear2, timecode: 0.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["the","Enterprise"],
-		monitor:0,
 		onTop: true
 	).sequenceText2(
 			b.parse([4, 4]), [ 
@@ -607,7 +593,7 @@ P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
 	)
 });
 P.still(\clears,syl:0, timecode: 0.seconds, music: { |p b e|
-	 [e.still.monitor_(0), e.still.copy.monitor_(1)].do{|i x|i.postln;i.monitor.postln; i.( 
+	 e.still.(
 		wait: b.drop(1).sum,
 		// monitor:x,
 		// monitor: e.monitor,
@@ -617,7 +603,7 @@ P.still(\clears,syl:0, timecode: 0.seconds, music: { |p b e|
 			["log entry", "out"],
 			],
 	)
-	}	
+	// }	
 });
 Song.setTempoMap(\resume,"eeeee e ee ee ee ee e e e");
 P(\chord, syl: 4, music: { |p b e|
@@ -887,22 +873,6 @@ P.still(
 			],
 	)
 });
-P.still(
-	// \spockSensors
-	\clear
-	, timecode: 500.974.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
-		monitor: 2
-	).sequenceText2(
-		b.parse([2,5, 6]), [ 
-			["sensors","registering" ],
-			["some kind of","energy"],
-			["deep inside","the planet"]
-			],
-	)
-});
 Song.setTempoMap(\Sensors, "e e e e | E E E E E E | e x xq | Q E Q E e e");
 P(\line, music: { |p b e|
 	[
@@ -1018,6 +988,13 @@ P(\alert, music: { |p b e|
 P.still(\sargonSpeaks, timecode: 503.269.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
+		text: ["",""],
+	)
+});
+P.still(\clear, timecode: 503.269.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		monitor: 2,
 		text: ["",""],
 	).sequenceText2(
 			b.parse([1,5]), [ 
@@ -1176,6 +1153,7 @@ P.synthVs(role: \spock, take: [\lead, \double], params: {|p b| [
 P.still(\clear, timecode: 0.seconds,lag: 0.01, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
+		monitor: 2,
 		text: ["I have locked","your"],
 	).sequenceText2(
 			b.parse([4, 5]), [ 
@@ -1249,6 +1227,7 @@ P(\chords, music: { |p b e|
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
+		monitor: 2,
 		text: ["please come","to us"],
 	).sequenceText2(
 			b.parse([4, 4]), [ 
@@ -1656,18 +1635,8 @@ P.still(\lookingAway, timecode: 530.seconds, music: { |p b e| //muted
 P.still(\clear,lag:0.01, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		text: ["I will make it ","possible"],
-	).sequenceText2(
-			b.parse([7,9]), [ 
-			["for your transporter beam","to send you"],
-			],
-	)
-});
-P.still(\clear,lag:0.01, timecode: 0.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["I will make it ","possible"],
 		monitor: 2,
+		text: ["I will make it ","possible"],
 	).sequenceText2(
 			b.parse([7,9]), [ 
 			["for your transporter beam","to send you"],
@@ -1756,20 +1725,8 @@ P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["that","deep"],
+		monitor: 2,
 		fade:1
-	).sequenceText2(
-			b.drop(1).parse([10,5]), [ 
-			["beneath","the surface"],
-			["",""]
-			],
-	)
-});
-P.still(\clear2,syl:0, timecode: 0.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["that","deep"],
-		fade:1,
-		monitor: 2
 	).sequenceText2(
 			b.drop(1).parse([10,5]), [ 
 			["beneath","the surface"],

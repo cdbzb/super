@@ -95,17 +95,18 @@ Trek.setTransition(2, -2,
 
 Trek.faders[3]={~asrFader.(5, 3, 0.5)};
 
-Trek.setTransition(3, -2, 
+Trek.setTransition(3, -3, 
 	 func: {
+		 3.wait;
 		 (instrument:\cymbalsDS, att:2.5, group: Trek.transitionGroup).play;
 		 defer{ Stills.plotTitleCard("The Chamber", dur: 3)};
 		 // fork{0.9.wait; Server.default.freeMyDefaultGroup};
 		 s.defaultGroup.release(1);
 		 Trek.faderSynths[3].release(1);
 		 ~activateFader.(4);
-	 }, trimStart: 1, trimEnd:0, dur: 1
+	 }, trimStart: 1, trimEnd:0, dur: 3
 )
-// .value
+.value
 ;
 
 Trek.faders[4] = {~asrFader.(0,2,6)};
@@ -145,7 +146,7 @@ Trek.setTransition(7, -3,dur: 4.5, func:{
 	~activateFader.(8);
 	(amp:0.03, instrument:\cymbalsDS, att:2.5, group: Trek.transitionGroup, out:[2, 0]).play;
 })
-.value
+// .value
 ;
 
 Trek.faders[8] = {~asrFader.(1,2,1)};

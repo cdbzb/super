@@ -34,10 +34,10 @@ Trek.faders[0] = {
 	}.play(s, target: RootNode(s), addAction:\addToTail);
 };
 
-Trek.setTransition(0, -2, dur: 4, func: {
+Trek.setTransition(0, -2, dur: 0, func: {
 	1.wait;
-	(instrument: \cymbalsDS, att:0.5, amp: 0.02).play;
-	{ Stills.plotTitleCard("Contact", dur: 4); }.defer;
+	// (instrument: \cymbalsDS, att:0.5, amp: 0.02).play;
+	// { Stills.plotTitleCard("Contact", dur: 4); }.defer;
 	Trek.faderSynths[0].release;
 	~activateFader.(1)
 });
@@ -50,7 +50,7 @@ Trek.setTransition(1, -2, dur: 3, func: {
 	(instrument:\cymbalsDS,amp:0.03, att:2.5,target:Trek.transitionGroup,addAction:\addToTail).play;
 	defer{ Stills.plotTitleCard("The Planet", monitor:0, dur:2, top:0, fade:1) };
 	nil
-});
+}).();
 
 Trek.faders[2]={~asrFader.(1, 0, 1)};
 

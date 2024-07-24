@@ -214,85 +214,142 @@ Trek.setTransition(9, -1, dur: 5,
 		1.wait;
 		(instrument:\cymbalsDS, att:2.5, amp:0.03,out:1, group: Trek.transitionGroup, addAction:\addToTail).play;
 		~activateFader.(10);
-}).value;
+})
+//.value
+;
 
 Trek.faders[10] = {~asrFader.(1, 0, 1)};
 // 10 and 11 are the same!!
-Trek.setTransition(10, -2, dur: 1,
+Trek.setTransition(10, -2, dur: 0,
 	func: {
-		Trek.faderSynths[10].release;
+		Trek.faderSynths[10].release(3);
 		Trek.transitionGroup.release(3);
 		~activateFader.(11);
 	}
-);
+)
+// .value
+;
 
-Trek.faders[11] = {~asrFader.(1, 6, 2)};
-Trek.setTransition(11, -1, dur:1, func:{
+Trek.faders[11] = {~asrFader.(3, 6, 2)};
+Trek.setTransition(11, -2, dur:1, func:{
+	defer{ a=Stills.plotTitleCard("This Formula", dur: 5.5); };
 	Trek.faderSynths[11].release;
 	try{ Trek.transitionGroup.release };
 	~activateFader.(12)
-}, );
+},)
+// .value
+;
 
 Trek.faders[12] = {~asrFader.(1, 3, 2)};
-Trek.setTransition(12, -3,dur: 5.5, func:{
-	1.5.wait;
-	defer{ a=Stills.plotTitleCard("With these bodies", dur: 5.5); };
+Trek.setTransition(12, -1,dur: 5.5, func:{
+	2.5.wait;
+	defer{ a=Stills.plotTitleCard("Three Alien Minds", dur: 5.5) };
+	defer{ a=Stills.plotTitleCard("Three Alien Minds", dur: 1, fade:4) };
+	fork{
+		(instrument: \harp, freq: [ 1, -11].df(\f), out: (..4), coef: 0.15, amp: 0.02,
+		// out: Effect.bus({|i| BPF.ar(i, 1200) * 2 },inputChannels:5)
+	).play;
+		[
+			instrument: \stringyy, 
+			freq: [1, 1.5].df(\f, [ 4, 5]).q,
+			dur: [1, 4.5].q,
+			freqLag: 8,
+			// out: Effect.bus({|i| BPF.ar(i, 1000) }, inputChannels:5)
+		].ppm;
+	};
 	~activateFader.(13);
 	Trek.faderSynths[12].release;
-});
+})
+// .value
+;
 Trek.faders[13] = {~asrFader.(1, 3, 8)};
 Trek.setTransition(13, -1, dur: 20, func:{
 	~activateFader.(14);
 	Trek.faderSynths[13].release;
-} );
+})
+// .value
+;
 Trek.faders[14] = {~asrFader.(8, 3, 2)};
-Trek.setTransition(13, 0, dur: 20 );
-Trek.setTransition(14, -1, dur: 5, func: { 
+Trek.setTransition(14, -3, dur: 5, func: { 
 	~activateFader.(15);
 	Trek.faderSynths[14].release;
 	// defer{ Stills.plotTitleCard("Sick Bay",fade:0) };
-}, trimStart:1);
+}, trimStart:0, )
+// .value
+;
 Trek.faders[15] = {~asrFader.(8, 3, 2)};
-Trek.setTransition(15, -1, dur: 0, func:{
+Trek.setTransition(15, -2,trimEnd:1, dur: 0, func:{
 	~activateFader.(16);
+	// 3.wait;
+	// defer{ a=Stills.plotTitleCard("With these bodies", dur: 2, fade:12) };
+	// (instrument: \stringyy, freq: [1, 2, 3 ].df(\c, 2), dur: 4, out: (..4), amp: 0.04).play;
+	// (instrument: \reedy, out:Effect.bus({|i| i/10 },)).play;
 	Trek.faderSynths[15].release;
-});
+})
+// .value
+;
 Trek.faders[16] = {~asrFader.(8, 3, 2)};
-Trek.setTransition(16, -1, dur: 2, func:{
+Trek.setTransition(16, -3, dur: 4, func:{
 	~activateFader.(17);
+	wait(2);
+	defer{ Stills.plotTitleCard("Henoch's Formula", dur:1, fade: 4) };
+	(instrument: \cymbalsDSStereo,out: [0,2,4], amp: 0.002).play;
 	Trek.faderSynths[16].release;
-});
+})
+// .value
+;
 Trek.faders[17] = {~asrFader.(8, 5, 2)};
 Trek.setTransition(17, -2, dur: 4.5, func: {
+	// 1.5.wait;
+	// defer{ Stills.plotTitleCard("Temptation", dur:3) };
+	// (instrument:\cymbalsDS, att:2.5, amp:0.03,out:1, group: Trek.transitionGroup, addAction:\addToTail).play;
+	// (instrument:\cymbalsDS,lag:1, out:2, att:2.5, amp:0.03,out:1, group: Trek.transitionGroup, addAction:\addToTail).play;
+	~activateFader.(18);
+	Trek.faderSynths[17].release;
+})
+// .value
+;
+Trek.faders[18] = {~asrFaderPreLimiter.(8, 6, 2)};
+Trek.setTransition(18, -2, dur: 2.5, func: {
+	~activateFader.(19);
+	// (instrument: \harp, freq: [-1].df(\b)).play;
+	// { Stills.plotTitleCard("Your New Home")}.defer;
+	Trek.faderSynths[18].release;
+})
+// .value
+;
+Trek.faders[19] = {~asrFader.(4, 4, 2)};
+Trek.setTransition(19, -4, dur: 3, func: {
+	~activateFader.(20);
 	1.5.wait;
 	defer{ Stills.plotTitleCard("Temptation", dur:3) };
 	(instrument:\cymbalsDS, att:2.5, amp:0.03,out:1, group: Trek.transitionGroup, addAction:\addToTail).play;
 	(instrument:\cymbalsDS,lag:1, out:2, att:2.5, amp:0.03,out:1, group: Trek.transitionGroup, addAction:\addToTail).play;
-	~activateFader.(18);
-	Trek.faderSynths[17].release;
-});
-Trek.faders[18] = {~asrFaderPreLimiter.(8, 6, 2)};
-Trek.setTransition(18, -2, dur: 3.5, func: {
-	~activateFader.(19);
-	Trek.faderSynths[18].release;
-});
-Trek.faders[19] = {~asrFader.(4, 4, 2)};
-Trek.setTransition(19, -4, dur: 1, func: {
-	~activateFader.(20);
 	Trek.faderSynths[19].release;
-});
+})
+// .value
+;
 Trek.faders[20] = {~asrFader.(4, 4, 2)};
-Trek.setTransition(20, -1, dur: 2, func: {
+Trek.setTransition(20, -6, dur: 0, func: {
 	~activateFader.(21);
+	// 3.wait;
+	// defer{ Stills.plotTitleCard("Poison", dur:3, fade: 3) };
+	// (instrument: \harpGendy, gendyFreq:[1, 2,3, 4], out:[0,1, 3, 4],amp: 0.01, modWidth: 0.01, freq: -1.df('c#'), ).play;
+	(instrument: \stringyy, mix:0, width:20,att:5, amp: 0.3, gendyFreq:[1, 2,3, 4], out:[0,1, 3, 4],amp: 0.01, modWidth: 0.01, freq: -1.df('c#'), ).play;
 	Trek.faderSynths[20].release;
-});
+})
+.value
+;
 Trek.faders[21] = {~asrFader.(4, 4, 2)};
-Trek.setTransition(21, -1, dur: 3, func: {
+Trek.setTransition(21, -1, dur: 0, func: {
 	1.wait;
-	defer{ Stills.plotTitleCard("The Bridge", fade:1) };
+	// defer{ Stills.plotTitleCard("The Bridge", fade:1) };
+	// (instrument: \stringyy, freq: [-21, -11, -5, 3].df('b-')).play;
 	~activateFader.(22);
 	Trek.faderSynths[21].release;
-});
+})
+// .value
+;
 
 Trek.faders[22] = {~asrFader.(4, 4, 2)};
 )

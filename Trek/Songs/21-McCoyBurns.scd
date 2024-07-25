@@ -1965,6 +1965,7 @@ P.still(
 	, timecode: 4513.666.seconds, music: { |p b e|
 		 e.still.( 
 			wait: b.sum,
+			monitor:1,
 			text: ["",""]
 		).sequenceText2(
 				b.parse([1, 7]), [ 
@@ -2080,6 +2081,13 @@ P.synthV(role: \thalassa, take: \lead, params: {|p b| [
 P.still(\lookingUp, timecode: 4527.5.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
+		text: ["",""],
+		// text: ["I have power","even Henoch"],
+	)});
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		monitor:1,
 		text: ["I have power","even Henoch"],
 	).sequenceText2(
 			b.parse([8]), [ 

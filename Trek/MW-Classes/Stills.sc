@@ -344,7 +344,7 @@ Still {
 	value { //for backward comp
 		|monitor wait fade fadeIn text onTop = false bounds shrink|
 
-		 this.monitor = Stills.monitorChoiceFunction.() ? this.monitor ? monitor ? 0
+		 this.monitor = Stills.monitorChoiceFunction.(this) ? this.monitor ? monitor ? 0
 
 		// this.monitor = 2.rand // to make image switch back and forth between two monitors
 		//replace this with a function - `monitorChoiceFunction`

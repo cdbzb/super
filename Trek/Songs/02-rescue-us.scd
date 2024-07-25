@@ -724,11 +724,10 @@ P.still(\uhuruclose, timecode: 452.451.seconds, music: { |p b e|
 	)
 }); */
 ["/*SPOCK:*/ Captain.","3 -5".dm(\b,\minor)].addLine;
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clearSargon, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["Captain!",""],
-		monitor: 2,
 		onTop: true
 	)
 });
@@ -991,10 +990,9 @@ P.still(\sargonSpeaks, timecode: 503.269.seconds, music: { |p b e|
 		text: ["",""],
 	)
 });
-P.still(\clear, timecode: 503.269.seconds, music: { |p b e|
+P.still(\clearSargon, timecode: 503.269.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		monitor: 2,
 		text: ["",""],
 	).sequenceText2(
 			b.parse([1,5]), [ 
@@ -1150,10 +1148,9 @@ P.synthVs(role: \spock, take: [\lead, \double], params: {|p b| [
 
 });
 [" I have locked your transporter device on my co-ordinates.","5 5 5 6 5 4 3 2 4 3 2 1 3 2 2".dm(\a,4)].addLine;/*SARGON [OC]*/
-P.still(\clear, timecode: 0.seconds,lag: 0.01, music: { |p b e|
+P.still(\clearSargon, timecode: 0.seconds,lag: 0.01, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		monitor: 2,
 		text: ["I have locked","your"],
 	).sequenceText2(
 			b.parse([4, 5]), [ 
@@ -1224,10 +1221,9 @@ P(\chords, music: { |p b e|
 });
 // P.tune();
 ["Please come to us. Rescue us from oblivion."," 3 3 2 2 4 3 -6 1".dm('f#',\minor) ++ "4 4 3 1".dm(\f)].addLine;
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clearSargon, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		monitor: 2,
 		text: ["please come","to us"],
 	).sequenceText2(
 			b.parse([4, 4]), [ 
@@ -1632,10 +1628,9 @@ P.still(\lookingAway, timecode: 530.seconds, music: { |p b e| //muted
 		text: ["",""],
 	)
 });
-P.still(\clear,lag:0.01, timecode: 0.seconds, music: { |p b e|
+P.still(\clearSargon,lag:0.01, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		monitor: 2,
 		text: ["I will make it ","possible"],
 	).sequenceText2(
 			b.parse([7,9]), [ 
@@ -1721,11 +1716,10 @@ P(\bass, music: { |p b e|
 });
 ["(boom) that deep (that deep that deep) beneath the surface. Have no fear."," -5 3 2 2 3 2 2 3 2 2 1 2 3 2 1 -7 1".dm(\d)].addLine;
 Song.setTempoMap(\fear,"q e e qqq e e qqq  e e e x xe x xe e e e");
-P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
+P.still(\clearSargonDeep,syl:0, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["that","deep"],
-		monitor: 2,
 		fade:1
 	).sequenceText2(
 			b.drop(1).parse([10,5]), [ 

@@ -1249,7 +1249,7 @@ P.synthV(role: \vocoder, frozen: true, take: nil, params: {|p b| [
 	}.play
 
 });
-P.still( \clear, start: \read, timecode:0, music: { |p b e|
+P.still( \clearSargon, start: \read, timecode:0, music: { |p b e|
 			e.still.value(
 				wait: b.sum,
 				text:["Henoch would","read your thoughts"]
@@ -1402,7 +1402,7 @@ P(\phrase1,start:\injection,music:{|p b e|
 ["SARGON [OC]: But Henoch believed and fled the body. ",[5,11,5,3,6.5].dm('c#',scale:\dorian)++[5,11,5,4,3].dm('e-')].addLine;
 //P.tune(\believed);
 //Song.voxBelieve = VocalRPP(\believed,\vox);
-P.still( \clear, start: \believed, timecode:0, music: { |p b e|
+P.still( \clearSargon, start: \believed, timecode:0, music: { |p b e|
 			e.still.value(
 				wait: b.sum,
 				text:["but Henoch","believed"]
@@ -1484,7 +1484,7 @@ P(\bass,start:\believed,music:{|p b e|
 });
 ["(boom) He is (boom) destroyed. ",[-5,5,5,-5,5,5].dm(\c)].addLine;
 Song.durs.filter(\destroyed, {|i| var last = i.last; i.dropLast ++ (last + 0.3)});
-P.still(\clear,syl: 0, timecode: 0.seconds, music: { |p b e|
+P.still(\clearSargon,syl: 0, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.drop(1).sum,
 		text: ["he","is"],
@@ -2422,7 +2422,7 @@ P(\line,start:\help,music:{|p b e|
 	).play
 });
 ["SARGON: Yes, my son. ",[1,-7,-5].dm('a-',scale:\mixolydian)].addLine;
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clearSargon, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["yes","my son"],
@@ -2456,7 +2456,7 @@ P(\bass,start:'my son',music:{|p b e|
 					freq:[1,-1,-11].df('a-')).play
 	});
 ["You can allow Thalassa and me to ",[1,2,4,5,6,5,6,4,12,11].dm('a-')].addLine;
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clearSargon, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["you can allow","Thalassa and me to"],
@@ -2516,7 +2516,7 @@ P(\bass,start:'Thalassa and me',music:{|p b e|
 
 	});
 ["(boom boom) share your bodies again. ",[1,1,13,12, 13,14,13,12,11].dm(\f)].addLine;
-P.still(\clear,syl: 1, timecode: 0.seconds, music: { |p b e|
+P.still(\clearSargon,syl: 1, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.drop(1).sum,
 		text: ["share your bodies","again"],
@@ -2609,7 +2609,7 @@ P(\boomboom,start:\bodies,music:{|p b e|
 	});
 ["A last moment together. ",[1,11,7,6,4,3,-7].dm('f#')].addLine;
 P.tune(\last);
-P.still( \clear, start: \last, timecode:0, music: { |p b e|
+P.still( \clearSargon, start: \last, timecode:0, music: { |p b e|
 	e.still.value(
 		wait: b.sum-3,
 		fade:3,

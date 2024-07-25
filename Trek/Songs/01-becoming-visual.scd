@@ -2045,15 +2045,15 @@ P.still(\UhuraSpeaking, timecode: 113.15.seconds, music: { |p b e|
 	)
 });
 ["SARGON [OC]: I am Sargon.","1 -7 4 3".dm('c#')].addLine;
-P.still(\sargon, timecode: 114.7.seconds, music: { |p b e|
+P.still(\listening, timecode: 114.7.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 	)
 });
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clearSargon, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		monitor: 2,
+		// monitor: 2,
 		text: ["I am","Sargon"],
 	)
 });
@@ -2304,7 +2304,7 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 
 });
 ["SARGON [OC]: Please assume a standard orbit about our planet, Captain.","1 2 2 1 2 3 3 2 1 2 3/c# 4 3 2 1/e-".dm2].addLine;
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clearSargon, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["please","assume"],
@@ -2390,10 +2390,9 @@ P(\bassnote,syl:2, music: { |p b e|
 		amp: 0.1 * p.g2
 	).play
 });
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clearSargon, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		monitor: 2,
 		text: ["the choice","is yours"],
 	)
 });
@@ -2438,10 +2437,9 @@ P(\bassline, music: { |p b e|
 		// out: Effect.bus({|i| i * Env([0.3, 1], b[..8].sum).kr(0,gate:1) },)
 	].ppm
 });
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clearSargon, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		monitor: 2,
 		text: ["I read what is","in your mind"],
 	)
 });
@@ -2476,10 +2474,9 @@ P.synthV(role: \vocoder, frozen:true, take: \lead, params: {|p b| [
 });
 P.tune();
 ["Words are unnecessary.","3 4 5  2 1 -7 -6".dm('a-', \mixolydian)].addLine;
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clearSargon, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		monitor: 2,
 		text: ["words are","unnecessary"],
 	)
 });
@@ -2604,11 +2601,10 @@ P(\bassline, music: { |p b e|
 		out:[0,1],
 	].ppm
 });
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clearSargon, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum + e.bNext.sum,
 		text: ["and I","am as dead"],
-		monitor: 2,
 	).sequenceText2(
 			b.parse([5, 4]), [ 
 			["as my","planet"],

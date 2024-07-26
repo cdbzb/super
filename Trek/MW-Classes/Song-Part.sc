@@ -319,9 +319,9 @@ Song {
 
 		Post << "lua code" <<luacode;
 		try{ SCNvim.luaeval(luacode) };
-		// fork{ 0.01.wait; try{
-			SCNvim.luaeval("vim.api.nvim_feedkeys(\"%\", \"%\", %)".format("z.", "m", "false")) 
-		// } }
+		//center
+		SCNvim.luaeval("vim.api.nvim_feedkeys(\"%\", \"%\", %)".format("z.", "m", "false")) ;
+		NvimRemote.findLineAndCenter(lyric)
 	}
 	hasDursButNotLyricsToDurs {
 		// Is there a file in the Dur folder?

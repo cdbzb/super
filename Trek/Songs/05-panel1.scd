@@ -80,6 +80,12 @@ P.synthVs(role: \spock, take: [\dbl, \lead ], params: {|p b| [
 P.still(\illuminated, timecode: 1024.6.seconds, music: { |p b e|
 		e.still.( 
 			wait: b.sum,
+			text: ["",""]
+		)
+});
+P.still(\clearSargon, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
 			text: ["you may use","your tricorder"],
 		).sequenceText2(
 			b.parse([7]), [ 
@@ -140,7 +146,7 @@ P.synthV(role: \vocoder, frozen:true,
 }.();
 {
 ["Your readings will show","-5 1 -7 1 2".dm(\e)].addLine;
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clearSargon, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["your readings","will show"],
@@ -199,7 +205,7 @@ P.still(\wideEnergy, timecode: 1030.85.seconds, music: { |p b e|
 	)
 });
 */
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clearSargon, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["Energy",""],
@@ -386,13 +392,13 @@ P('bass',start:\Sealed,music: {|p b e|
 
 
 });
-P.still(\receptacle, timecode: 1013.361.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
-	)
-});
-P.still(\clear, timecode: 0.seconds,lag:0.01, music: { |p b e|
+// P.still(\receptacle, timecode: 1013.361.seconds, music: { |p b e|
+// 	 e.still.( 
+// 		wait: b.sum,
+// 		text: ["",""],
+// 	)
+// });
+P.still(\clearSargon, timecode: 0.seconds,lag:0.01, music: { |p b e|
 	 e.still.( 
 		wait: b.sum ,
 		text: ["sealed in this","receptacle is the"],
@@ -411,7 +417,7 @@ P(\ep, music: { |p b e|
 		amp: 0.07
 	].pp
 });
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clearSargon, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.parse([7]).unbubble,
 		text: ["essence","of my mind"],
@@ -844,7 +850,7 @@ P(\bassline, music: { |p b e|
 });
 // P.tune();
 /*SARGON:*/[" A body much as yours, my children, although our minds were infinitely greater. ","-5 1 2 2 1 3".dm(\g) ++ "4 3 2 -6 -7 1 ".dm('a-') ++ "11 7 12 11 7 6 6 5".dm(\e)].addLine; 
-P.still(\lit, timecode: 1045.5.seconds, music: { |p b e|
+P.still(\clearSargon, timecode: 1045.5.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.parse([9]).unbubble,
 		text: ["a body much as yours","my children"],
@@ -853,7 +859,7 @@ P.still(\lit, timecode: 1045.5.seconds, music: { |p b e|
 		b.parse([9]).unbubble, ["",""]
 	])
 });
-P.still(\clear, syl:8, timecode: 0.seconds, music: { |p b e|
+P.still(\clearSargon, syl:8, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.drop(1).sum,
 		text: ["although our","minds were"],
@@ -1059,6 +1065,12 @@ P.still(\kirkSilent, timecode: 1053.7.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		// fade: 8,
+		text: ["",""]
+	)
+});
+P.still(\clearSargon, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
 		text: ["because it is","possible"],
 	).sequenceText2(
 			b.parse([8,6,4]), [ 
@@ -1127,7 +1139,7 @@ P.synthV(role: \vocoder, frozen: true,
 });
 ["(boom) Six thousand centuries ago, our vessels were ","-1 3 3 3 3 2 2 1 2 2 3 -4".dm('a-',\minor) ++ "11 5 6 3".dm(\c,5)].addLine;
 Song.setTempoMap(\Six,"e e e e e x e x e x x");
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clearSargon, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum + e.bNext[..8].sum,
 		text: ["",""]
@@ -1243,7 +1255,7 @@ P('bassnote',start:\colonising,music: {|p b e|
 	].p.play;
 });
 ["just as your own starships have ",[1,4,7,6,6,5].dm(\e,\mixolydian) ++ [1].dm('a-')].addLine;
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clearSargon, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["just as","your own"],
@@ -1301,7 +1313,7 @@ P('bass',start:\just,music: {|p b e|
 	].pp
 });
 ["now begun to explore that",[2,5,3,2,1,7,6].dm('a-',\mixolydian)].addLine;
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clearSargon, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["now begun","to explore that"],
@@ -1346,7 +1358,7 @@ P('bass',start:\begun,music: {|p b e|
 	].pp
 });
 [" vastness... ",[6,5].dm('a-')].addLine;// illustrate the dots
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clearSargon, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["vastness",""],
@@ -1396,7 +1408,7 @@ P.still(\altWide, timecode: 1110.seconds, music: { |p b e|
 		text: ["",""]
 	)
 });
-P.still(\clear, timecode: 0.seconds, lag:0.01, music: { |p b e|
+P.still(\clearSargon, timecode: 0.seconds, lag:0.01, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["as you now leave","your own seed on"],
@@ -1502,7 +1514,7 @@ P('bassNote',start:\seed,syl:9,music: {|p b e|
 });
 P.tune(\As, _ <> (instrument: \sawSynth, amp:0.04, out: 4));
 ["(boom) so we left our seed behind us.",[1,11,7,6,5,4,3,2,1,3,3,4].dm(\g,4,\mixolydian)].addLine;
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clearSargon, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],
@@ -1801,6 +1813,12 @@ P.still(\wide, timecode: 1139.9.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		fade: e.bNext.sum,
+		text: ["",""],
+	)
+});
+P.still(\clearSargon, timecode: 0.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
 		text: ["in any","case"],
 	).sequenceText2(
 		b.parse([4, 7, 2]), [ 
@@ -1900,7 +1918,7 @@ P('click',start:\In,music: {|p b e|
 // 		text: ["",""],
 // 	)
 // });
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clearSargon, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["so long","ago"],

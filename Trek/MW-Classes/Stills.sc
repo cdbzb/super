@@ -180,14 +180,14 @@ Stills {
 	}
 	plotClear{ |markerName monitor|
 			var w;
+			monitor = monitors[monitor];
 			try{
-				// w = Window(bounds:Rect(1500*monitor,200,1400,800) + Rect( trimLeft) => _.scale(scale),border:false)
-				w = Window(bounds:monitors[monitor] + Rect(trimLeft,0,-1 * trimLeft,0) => _.scale(scale),border:false)
+				w = Window(bounds:monitor + Rect(trimLeft,0,-1 * trimLeft,0) => _.scaleExtent(scale), border: false)
 				//1196 x 676
 				.background_( Color.clear)
 				.front;  
 			}{
-				w = Window(bounds:Rect(0,200,1400 * scale,800 * scale).scale(scale),border:false)
+				w = Window(bounds:monitor + Rect(trimLeft,0,-1 * trimLeft,0) => _.scaleExtent(scale), border:false)
 				.background_( Color.clear)
 				.front;  
 			}
@@ -205,7 +205,7 @@ Stills {
 		image.width_(image.width * trimWidth => _.asInteger);
 
 		try{
-			w = Window(bounds:monitors[monitor] + Rect(trimLeft, 0, -1 * trimLeft,0) => _.scale(scale),border:false)
+			w = Window(bounds:monitors[monitor] + Rect(trimLeft, 0, -1 * trimLeft,0) => _.scaleExtent(scale),border:false)
 			.background_( Color.clear)
 			.drawFunc_({Pen.drawImage(Point(( -1 * trimLeft + 50 * scale ).asInteger,50),image,operation:'sourceOver',opacity:1)})
 			.front;  
@@ -418,11 +418,10 @@ Display {
 		"displayplacer list".systemCmd
 	}
 	*hide{|app|
-		"osascript -e 'tell application \"System Events\" to set visible of process \"%\" to false'".format(app)
+		"osascript -e 'tell application \"System Events\" to set visible of process \"%\" to false'".format(app).systemCmd
 	}
 	*show{|app|
-		"osascript -e 'tell application \"System Events\" to set visible of process \"%\" to true'".format(app)
-		.systemCmd
+		"osascript -e 'tell application \"System Events\" to set visible of process \"%\" to true'".format(app).systemCmd
 	}
 
 }
@@ -503,5 +502,11 @@ Display {
 
 		}
 
+	}
+}
+
++ Rect{
+	scaleExtent {|scale|
+		^this.setExtent(this.width * scale, this.height * scale)
 	}
 }

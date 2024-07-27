@@ -724,7 +724,7 @@ P.still(\uhuruclose, timecode: 452.451.seconds, music: { |p b e|
 	)
 }); */
 ["/*SPOCK:*/ Captain.","3 -5".dm(\b,\minor)].addLine;
-P.still(\clearSargon, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["Captain!",""],
@@ -747,7 +747,6 @@ P.synthV(role: \spock, take: \lead, params: {|p b| [
 P.still(\spockClose, timecode: 453.106.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		monitor:2, 
 		text: ["",""],
 	)
 });
@@ -984,7 +983,7 @@ P(\alert, music: { |p b e|
 	}.play
 
 });
-P.still(\sargonSpeaks, timecode: 503.269.seconds, music: { |p b e|
+P.still(\listening, timecode: 503.269.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["",""],

@@ -417,6 +417,13 @@ Display {
 	*list {
 		"displayplacer list".systemCmd
 	}
+	*hide{|app|
+		"osascript -e 'tell application \"System Events\" to set visible of process \"%\" to false'".format(app)
+	}
+	*show{|app|
+		"osascript -e 'tell application \"System Events\" to set visible of process \"%\" to true'".format(app)
+		.systemCmd
+	}
 
 }
 

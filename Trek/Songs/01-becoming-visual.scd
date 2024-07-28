@@ -1980,15 +1980,15 @@ P(\connector, music: { |p b e|
 		instrument: \visual_pad
 	].ppm
 });
-P.still(\sargon, timecode: 105.188.seconds, music: { |p b e|
+P.still(\listening, timecode: 105.188.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 	)
 });
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clearSargon, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
-		monitor: 2,
+		// monitor: 2,
 		text: ["all of your questions","will be answered in time"],
 		onTop: true
 	)

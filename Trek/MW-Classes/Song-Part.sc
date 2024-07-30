@@ -6,6 +6,7 @@ Song {
 	classvar <>loading;
 	classvar <>songList;
 	classvar <>muteList,<muted;
+	classvar <>freeze=true;
 	var <lyricWindow,lyricWindowText;
 	var <song, <key, <cursor=0, sections, <lyrics, <tune; 
 	var <durs,  <>resources, <>lyricsToDurs;
@@ -1010,13 +1011,15 @@ Part {
 	}
 	play {
 		try{
-			frozen.if{
-				Server.default.bind{
-					{
-						PlayBuf.ar(5, resources[\freeze].bufnum, doneAction:2)
-					}.play(target: resources[\target] ? Server.default, addAction: resources[\addAction] ? \addToHead);
-				};
-				^resources[\freeze]
+			Song.freeze ? {
+				frozen.if{
+					Server.default.bind{
+						{
+							PlayBuf.ar(5, resources[\freeze].bufnum, doneAction:2)
+						}.play(target: resources[\target] ? Server.default, addAction: resources[\addAction] ? \addToHead);
+					};
+					^resources[\freeze]
+				}
 			}
 		};
 		^switch (music.class,

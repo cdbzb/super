@@ -56,6 +56,7 @@ SynthDef('cepstral-vocoder-buffer', {
 		var in, in2, chain, chain2, chain3, cepsch, cepsch2, fftsize = 2048;
 		var modulatorEnvelope=LocalBuf(fftsize); var carrierEnvelope=LocalBuf(fftsize);
 		var modulatorCepstrum=LocalBuf(fftsize/2); var carrierCepstrum=LocalBuf(fftsize/2);
+		var makeModulator, makeCarrier;
 		fftsize = 2048;
 		in = In.ar(modulator);
 		chain = FFT(LocalBuf(fftsize), in);
@@ -64,11 +65,11 @@ SynthDef('cepstral-vocoder-buffer', {
 		chain2 = FFT(LocalBuf(fftsize), in2);
 		cepsch2 = Cepstrum(carrierCepstrum, chain2);
 		cepsch = PV_BrickWall(cepsch, -0.92);
-		ICepstrum(cepsch, modulatorEnvelope);
+		makeModulator = ICepstrum(cepsch, modulatorEnvelope);
 		cepsch2 = PV_BrickWall(cepsch2, \smoothCarrier.kr(-0.92));
-		ICepstrum(cepsch2, carrierEnvelope);
-		chain2 = PV_MagDiv(chain2,carrierEnvelope);
-		chain2 = PV_MagMul(chain2, modulatorEnvelope);
+		makeCarrier = ICepstrum(cepsch2, carrierEnvelope);
+		chain2 = PV_MagDiv(chain2, carrierEnvelope <! makeCarrier);
+		chain2 = PV_MagMul(chain2, modulatorEnvelope <! makeModulator);
 		Out.ar( out, 
 			// Pan2.ar(IFFT(chain2)
 			IFFT(chain2)

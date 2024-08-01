@@ -54,12 +54,12 @@ SynthDef('cepstral-vocoder-buffer', {
 	SynthDef(\soundInMorph, {
 		|out = 0, modulator = 0, carrier = 1 | // takes bus indices
 		var in, in2, chain, chain2, chain3, cepsch, cepsch2, fftsize = 2048;
-		var modulatorEnvelope=LocalBuf(fftsize); var carrierEnvelope=LocalBuf(fftsize);
-		var modulatorCepstrum=LocalBuf(fftsize/2); var carrierCepstrum=LocalBuf(fftsize/2);
+		var modulatorEnvelope=LocalBuf(fftsize).clear; var carrierEnvelope=LocalBuf(fftsize).clear;
+		var modulatorCepstrum=LocalBuf(fftsize/2).clear; var carrierCepstrum=LocalBuf(fftsize/2).clear;
 		var makeModulator, makeCarrier;
 		fftsize = 2048;
 		in = In.ar(modulator);
-		chain = FFT(LocalBuf(fftsize), in);
+		chain = FFT(LocalBuf(fftsize).clear, in);
 		cepsch = Cepstrum(modulatorCepstrum, chain);
 		in2 = In.ar(carrier);
 		chain2 = FFT(LocalBuf(fftsize), in2);
@@ -68,11 +68,11 @@ SynthDef('cepstral-vocoder-buffer', {
 		makeModulator = ICepstrum(cepsch, modulatorEnvelope);
 		cepsch2 = PV_BrickWall(cepsch2, \smoothCarrier.kr(-0.92));
 		makeCarrier = ICepstrum(cepsch2, carrierEnvelope);
-		chain2 = PV_MagDiv(chain2, carrierEnvelope <! makeCarrier);
-		chain2 = PV_MagMul(chain2, modulatorEnvelope <! makeModulator);
+		chain2 = PV_MagDiv(chain2, carrierEnvelope );
+		chain2 = PV_MagMul(chain2, modulatorEnvelope );
 		Out.ar( out, 
 			// Pan2.ar(IFFT(chain2)
-			IFFT(chain2)
+			IFFT(chain2) =>_.poll
 			*\amp.kr(0.5)
 			// ,\pan.kr(0)) 
 		);

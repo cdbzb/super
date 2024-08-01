@@ -1011,7 +1011,7 @@ Part {
 	}
 	play {
 		try{
-			Song.freeze ? {
+			Song.freeze.if {
 				frozen.if{
 					Server.default.bind{
 						{

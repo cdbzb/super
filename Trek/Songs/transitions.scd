@@ -1,6 +1,6 @@
 ( // - 0-1
-Stills.scale = (256/144);
-Stills.scale = 1;
+// Stills.scale = (256/144);
+// Stills.scale = 1;
 ~asrFader = {| a=0, s=9, r=1|
 	{
 		In.ar(0,Monitors.channels)

@@ -211,6 +211,7 @@ Trek {
 
 	*playRange { |num cursor=0 numSections=1|  // sets first fader then plays range
 		var needLoad;
+		this.loadTransitions;
 		needLoad = (num..(num + numSections min: ( Trek.allTheSongs.size - 1 ))).select{|i| Song.songs[Trek.keys[i]].isNil};
 
 		( needLoad.size!=0 ).if{ ^this.loadSongs(needLoad) };

@@ -4,7 +4,7 @@
 	Song.currentSong.resources.infrastructure=FunctionList([ {
 		//			~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
 	} ]);
-	"~/tank/super/Trek/Songs/boilerplate.scd".standardizePath.load;
+	Trek.path +/+ "boilerplate.scd" => _.load;
 	Song.synthVTracks = EventWithDefault(\default, { |wet=0.3|
 		FreeVerb.ar(_,wet,0.9)
 		/5

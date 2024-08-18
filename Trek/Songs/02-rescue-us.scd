@@ -3,7 +3,7 @@
 Song(\rescue,[]).current;
 {
 	// "~/tank/super/Trek/Songs/boilerplate.scd".standardizePath.load;
-	Require('/Users/michael/tank/super/Trek/Songs/boilerplate.scd');
+	Require(Trek.path +/+ "boilerplate.scd");
 	( Song.synthVTracks = EventWithDefault(
 		\default, {
 			{

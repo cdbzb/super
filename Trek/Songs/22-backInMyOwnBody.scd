@@ -11,7 +11,7 @@
 	}
 };
 	Song.synthVTracks.default = Song.synthVTracks.aiko;
-	"/Users/michael/tank/super/Trek/Songs/boilerplate.scd" => Require(_);
+	Trek.path +/+ "boilerplate.scd" => Require(_);
 
 	// Require("McCoyAndThalassa.scd");
 	// "./McCoyAndThalassa.scd".standardizePath.load;

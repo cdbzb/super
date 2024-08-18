@@ -5,7 +5,7 @@
 {
 Song(\visual,[]).current;
 // Require('/Users/michael/tank/super/Trek/Songs/boilerplate.scd');
-"/Users/michael/tank/super/Trek/Songs/boilerplate.scd".load;
+Trek.path +/+ "boilerplate.scd" => _.load;
 Stills().current;
 ( Song.synthVTracks=EventWithDefault(
 	\default, {

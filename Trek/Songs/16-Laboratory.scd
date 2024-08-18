@@ -5,7 +5,7 @@
 	//effort to "through perform"
 	// Song(\chapelForgets2,[]).current; 
 
-	Require("/Users/michael/tank/super/Trek/Songs/boilerplate.scd");
+	Require(Trek.path +/+ "boilerplate.scd");
 	Trek.cast.mccoy = \jun;
 	Trek.presets.put(\mccoy,\jun,[ paramGender: 0.1, paramTension: 0.75 ]);
 	["(Chapel is holding the hypos and trying to remember something very important.)","c",[6]].addLine;

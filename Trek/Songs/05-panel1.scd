@@ -17,7 +17,7 @@ Song.energyDur = 0.1;
 		}
 	}
 ));
-"~/tank/super/Trek/Songs/boilerplate.scd".standardizePath.load;
+Trek.path +/+ "boilerplate.scd" => _.load;
 Song.vocoderRatio.set(1);
 //(A panel slides back to reveal a much larger area, with rock walls, and a glowing sphere elegantly poised on an angled support.) 
 

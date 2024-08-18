@@ -5,7 +5,7 @@
 	Trek.presets.put(\mccoy,\mo,[paramTension:0.8, paramGender:0.1]);
 	Trek.presets.put(\mccoy,\an,[paramTension:0.4, paramGender:0.12]);
 
-	"~/tank/super/Trek/Songs/boilerplate.scd".standardizePath.load;
+	Trek.path +/+ "boilerplate.scd" => _.load;
 
 	Trek.strum;
 	{

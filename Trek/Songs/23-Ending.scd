@@ -1,7 +1,7 @@
 ( 
 	 //Setup Monitor for back channels
 	 Song(\ending,[]).current;
-	 Require( "/Users/michael/tank/super/Trek/Songs/boilerplate.scd" );
+	 Require(Trek.path +/+ "boilerplate.scd");
 	 Trek.synful;
 	  {
 ( Song.synthVTracks=EventWithDefault(

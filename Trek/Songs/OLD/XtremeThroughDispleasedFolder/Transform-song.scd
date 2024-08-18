@@ -2,7 +2,7 @@
 	 //line 245
 	Song(\transform,[]).current;
 	Song.resources.condition=Condition.new;
-	"boilerplate.scd".load;
+	Trek.path +/+ "boilerplate.scd" => _.load;
 ( Song.resources.infrastructure={
 		FunctionList.new.array_([
 			( ~syn1.isNil or: try{ ~syn1.syn.isPlaying.not } ).if

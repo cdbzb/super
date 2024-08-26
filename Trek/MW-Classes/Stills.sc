@@ -375,7 +375,7 @@ Display {
 			// "displayplacer list > /tmp/displayList".systemCmd
 			var raw = Pipe("displayplacer list", "r");
 			var res = List[];
-			var line = raw.getLine;
+			var line = try{ raw.getLine };
 			monitors = List[ res ];
 			while({ line.notNil }, 
 				{monitors.last.add(line);

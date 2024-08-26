@@ -1,11 +1,13 @@
 FFMPEG {
-	classvar defaultFile= "~/tank/super/Trek/Stills/2023-07-03_01-37-42.mp4",
-	csvFile = "~/tank/super/Trek/Stills/Warping/2023-07-03 01-37-42.mp4.csv",
-	<>csv, <words, lineIndices, <timecode
+	classvar 
+	defaultFile, csvFile, <>csv, <words, lineIndices, <timecode
 	;
 
 	*initClass {
-		csv = CSVFileReader.read("~/tank/super/Trek/Stills/Warping/2023-07-03 01-37-42.mp4.csv".standardizePath);
+		Class.initClassTree(Trek);
+		defaultFile = Trek.path.dirname +/+  "Stills/Warping/2023-07-03 01-37-42.mp4.csv";
+		csvFile = Trek.path.dirname +/+  "Stills/Warping/2023-07-03 01-37-42.mp4.csv";
+		csv = CSVFileReader.read(Trek.path.dirname +/+ "Stills/Warping/2023-07-03 01-37-42.mp4.csv");
 		// csv = csv.deepCollect(2, (_.replace(Char.comma, "")));
 		csv = csv.collect{|i| i.reject{|x| x.size==1 and: x[0]==$" }};
 		words = csv.slice(nil, 0).drop(1).collect( _.replace($\",""));

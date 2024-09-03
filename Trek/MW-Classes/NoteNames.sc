@@ -1,5 +1,6 @@
 S{
 	classvar steps, modes, <modeSteps;
+	var <array;
 	*initClass {
 		steps = [\major,\major,\minor,\major,\major,\major,\minor]
 		.collect{|i| V(2,i) };
@@ -10,10 +11,28 @@ S{
 	}
 	*doesNotUnderstand {|i|
 		modes.includes(i).if {
-			^modeSteps.at(i).inject([V(1, \perfect)], {|a b| a ++ (a.last + b)})
+			^super.new.init(i)
 		}
 	}
+	*new{ |name from|
+		^super.new.init(name, from)
+	}
+	init{ |name from|
+		from = case {from.isKindOf(N) }{from.asV }
+		{from.isKindOf(V)}{from}
+		{from.isNil}{V(1, \perfect)};
+		array = modeSteps.at(name).inject([V(1, \perfect)], {|a b| a ++ (a.last + b)})
+		.collect(_ + from)
+	}
+	notes{ 
+		^array.collect(_.fromN)
+	}
+	*from{|key|
+		^super.new(name)
+		
+	}
 }
+
 N{
 	var <name, <accidental, <octave=0, <degree; 
 	classvar <intervalsFromA, <semitonesFromA, <qualitiesFromA, accidentals, <>names;
@@ -30,6 +49,9 @@ N{
 	}
 	init {
 		degree = names.at(name)
+	}
+	asV{
+		^(intervalsFromA[degree] + V.fromAccidental(accidental) )
 	}
 	- {|note|
 		^
@@ -68,7 +90,7 @@ V{
 		// default interval is in terms of quartertones
 		// imperfect intervals have odd defaults perfect have even
 		// seconds can be major or minor, so the default will be midway between
-		defaultIntervals = [0, 3, 7, 10, 14, 17, 21, 24];
+		defaultIntervals = [0, 3, 7, 10, 14, 17, 21];
 		names = [\unison, \second, \third, \fourth, \fifth, \sixth, \seventh, \octave].collect{|i x|
 			x->i
 		}.asDict;
@@ -103,9 +125,9 @@ V{
 	init{
 		degree = oneIndexedDegree - (oneIndexedDegree.sign);
 		direction = oneIndexedDegree.isNegative.if{-1}{1};
-		defaultInterval = defaultIntervals[degree.abs];
+		defaultInterval = defaultIntervals@@(degree.abs);
 	}
-	asN {
+	fromN {
 		^N(
 			noteNames.wrapAt(this.degree),
 			this.class.getAccidental(
@@ -129,13 +151,12 @@ V{
 	}
 	+ {|that|
 		var outDegrees = degree + that.degree ;
-		var error = this.quartertones + that.quartertones - defaultIntervals.wrapAt(outDegrees.abs);
+		var qualityInQuartertones = this.quartertones + that.quartertones - defaultIntervals.wrapAt(outDegrees.abs);
 		var outQuality = defaultIntervals.wrapAt(outDegrees.abs).odd.if{
-			imperfectIntervalQualities.findKeyForValue(error.asInteger % 8)
+			imperfectIntervalQualities.findKeyForValue(qualityInQuartertones.asInteger % 24 )
 		}{
-			perfectIntervalQualities.findKeyForValue(error.asInteger % 8)
+			perfectIntervalQualities.findKeyForValue(qualityInQuartertones.asInteger  % 24)
 		};
-		error.debug("outDegrees");
 		^V(outDegrees + outDegrees.sign, outQuality)
 	}
 	invert {

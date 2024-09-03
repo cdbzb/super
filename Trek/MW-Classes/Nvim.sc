@@ -33,6 +33,16 @@ Nvim {
         this.send(code)
     }
 
+	*insert{|text|
+		var t = "local buf = vim.api.nvim_get_current_buf()"
+			"local text = {"
+			"\"%\""
+			"}"
+			"vim.api.nvim_buf_set_lines(buf, -1, -1, false, text)"
+		;
+		SCNvim.luaeval(t.format(text))
+	}
+
     *tabnew{|file|
         var code = "vim.cmd[[tabnew " ++ file ++ "]]";
         this.send(code.postln)

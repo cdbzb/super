@@ -62,6 +62,7 @@ Song {
 		var song = Song.currentSong;
 		var synth,recorder,a;
 		var range = Array.with(rnge).flatten;
+		var vels = List.new;
 		var seq = (range[0]..range.clipAt(1))
 		.collect({|i|song.tune[i].list}).flatten;
 		seq.postln;
@@ -184,8 +185,9 @@ Song {
 		fork{
 			Server.default.sync;
 			'registering midifunc'.postln;
-			MIDIFunc.noteOn({
+			MIDIFunc.noteOn({|vel|
 				recorder.captureLoop.();
+				vels= vels.add(vel).postln;
 				synth.set(\t_trigger,1);
 				synth.postln}
 			)}

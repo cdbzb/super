@@ -29,11 +29,12 @@ S{
 	}
 	*from{|key|
 		^super.new(name)
+
 		
 	}
 }
 
-N{
+N {
 	var <name, <accidental, <octave=0, <degree; 
 	classvar <intervalsFromA, <semitonesFromA, <qualitiesFromA, accidentals, <>names;
 	*initClass {
@@ -44,14 +45,15 @@ N{
 			i -> x
 		}.asDict
 	}
-	*new { | name accidental octave |
+	*new { | name accidental octave=5 |
 		^super.newCopyArgs(name, accidental, octave).init
 	}
 	init {
 		degree = names.at(name)
 	}
-	asV{
-		^(intervalsFromA[degree] + V.fromAccidental(accidental) )
+	asV {
+		^(intervalsFromA.wrapAt(degree) + V.fromAccidental(accidental) + V(octave - 5 * 8, \perfect)
+	) 
 	}
 	- {|note|
 		^
@@ -63,10 +65,10 @@ N{
 		//naaaah just interval from y to A - interval from x to A - accidentaY.asInterval + accidental X.asInterval
 	}
 	printOn { |stream|
-		stream << "N(" <<  name << "," << accidental << ")"
+		stream << "N(" <<  name << "," << accidental <<  "," << octave << ")"
 	}
 }
-V{
+V { 
 	classvar <perfectIntervalQualities,<imperfectIntervalQualities,<defaultIntervals, names;
 	var <oneIndexedDegree, <quality, <octave, <direction, <defaultInterval,<degree, <octave ;
 	classvar <noteNames;
@@ -127,11 +129,14 @@ V{
 		direction = oneIndexedDegree.isNegative.if{-1}{1};
 		defaultInterval = defaultIntervals@@(degree.abs);
 	}
-	fromN {
+	fromN { |n|
+		var sum;
+		n = n ? N(\a, \natural);
+		sum = this + n.asV ;
 		^N(
-			noteNames.wrapAt(this.degree),
+			noteNames.wrapAt(sum.degree),
 			this.class.getAccidental(
-				(this - V(this.degree + this.degree.sign, V.qualitiesFromA.wrapAt(this.degree))).quality 
+				(sum - V(sum.degree + sum.degree.sign, V.qualitiesFromA.wrapAt(sum.degree))).quality 
 			)
 		)
 	}
@@ -139,10 +144,11 @@ V{
 		^(
 			defaultInterval +
 			defaultInterval.odd.if{
-				imperfectIntervalQualities[quality] 
+				imperfectIntervalQualities[quality]  
 			}{
 				perfectIntervalQualities[quality]
 			}
+			+ (( degree / 7 ).floor.asInteger.abs * 24)
 			* direction
 		)
 	}
@@ -150,12 +156,12 @@ V{
 		^this.quartertones / 2 + ( octave * 12 )
 	}
 	+ {|that|
-		var outDegrees = degree + that.degree ;
-		var qualityInQuartertones = this.quartertones + that.quartertones - defaultIntervals.wrapAt(outDegrees.abs);
+		var outDegrees = degree + that.degree;
+		var qualityInQuartertones = (this.quartertones + that.quartertones).abs % 24 - defaultIntervals.wrapAt(outDegrees.abs);
 		var outQuality = defaultIntervals.wrapAt(outDegrees.abs).odd.if{
-			imperfectIntervalQualities.findKeyForValue(qualityInQuartertones.asInteger % 24 )
+			imperfectIntervalQualities.findKeyForValue(qualityInQuartertones.abs % 24 * qualityInQuartertones.sign)
 		}{
-			perfectIntervalQualities.findKeyForValue(qualityInQuartertones.asInteger  % 24)
+			perfectIntervalQualities.findKeyForValue(qualityInQuartertones.abs % 24 * qualityInQuartertones.sign)
 		};
 		^V(outDegrees + outDegrees.sign, outQuality)
 	}

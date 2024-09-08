@@ -148,7 +148,7 @@ V {
 			}{
 				perfectIntervalQualities[quality]
 			}
-			+ (( degree / 7 ).floor.asInteger.abs * 24)
+			+ (( degree.abs / 7 ).floor.asInteger * 24)
 			* direction
 		)
 	}
@@ -156,9 +156,14 @@ V {
 		^this.quartertones / 2 + ( octave * 12 )
 	}
 	+ {|that|
-		var outDegrees = degree + that.degree;
-		var qualityInQuartertones = (this.quartertones + that.quartertones).abs % 24 - defaultIntervals.wrapAt(outDegrees.abs);
-		var outQuality = defaultIntervals.wrapAt(outDegrees.abs).odd.if{
+		var outDegrees = degree + that.degree 
+		=> _.debug("outDegrees:")
+		;
+		var qualityInQuartertones = (this.quartertones.debug("this.quarter:") + that.quartertones.debug("that.quarter:")).abs % 24 - 
+		( defaultIntervals.wrapAt(outDegrees.abs) * outDegrees.sign )
+		=> _.debug("qualityInQuartertones:")
+		;
+		var outQuality = defaultIntervals.wrapAt(outDegrees.abs) => _.debug("outQuality:" ) =>_.odd =>_.if{
 			imperfectIntervalQualities.findKeyForValue(qualityInQuartertones.abs % 24 * qualityInQuartertones.sign)
 		}{
 			perfectIntervalQualities.findKeyForValue(qualityInQuartertones.abs % 24 * qualityInQuartertones.sign)

@@ -84,10 +84,12 @@ V {
 			'doubly-augmented':4
 		);
 		imperfectIntervalQualities = (
+			'doubly-diminished': -5,
 			\diminished: -3,
 			\minor: -1,
 			\major: 1,
-			\augmented: 3
+			\augmented: 3,
+			'doubly-augmented': 5
 		);
 		// default interval is in terms of quartertones
 		// imperfect intervals have odd defaults perfect have even
@@ -159,16 +161,26 @@ V {
 		var outDegrees = degree + that.degree 
 		=> _.debug("outDegrees:")
 		;
-		var qualityInQuartertones = (this.quartertones.debug("this.quarter:") + that.quartertones.debug("that.quarter:")).abs % 24 - 
-		( defaultIntervals.wrapAt(outDegrees.abs) * outDegrees.sign )
+		var sign = outDegrees.isPositive.if{1}{-1};
+		var qualityInQuartertones = (this.quartertones
+			.debug("this.quarter:")
+			+ that.quartertones
+			.debug("that.quarter:")
+		).abs => {|i| ( i !=24 ).if{i % 24}{24}}  -
+		( defaultIntervals.wrapAt(outDegrees.abs) 
+		// * sign
+	)
 		=> _.debug("qualityInQuartertones:")
 		;
-		var outQuality = defaultIntervals.wrapAt(outDegrees.abs) => _.debug("outQuality:" ) =>_.odd =>_.if{
+		var outQuality = defaultIntervals.wrapAt(outDegrees.abs)
+		=> _.debug("outQuality:" ) =>_.odd =>_.if
+		//.odd.if
+		{
 			imperfectIntervalQualities.findKeyForValue(qualityInQuartertones.abs % 24 * qualityInQuartertones.sign)
 		}{
 			perfectIntervalQualities.findKeyForValue(qualityInQuartertones.abs % 24 * qualityInQuartertones.sign)
 		};
-		^V(outDegrees + outDegrees.sign, outQuality)
+		^V(outDegrees + sign, outQuality)
 	}
 	invert {
 		^V(oneIndexedDegree * ( -1 ), quality, octave * -1)

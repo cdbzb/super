@@ -33,6 +33,16 @@ Nvim {
         this.send(code)
     }
 
+	*replaceLineWith {|text|
+		var t = "local buf = vim.api.nvim_get_current_buf()"
+			"local line = vim.api.nvim_win_get_cursor(0)[1]"
+			"local text = {"
+			"\"%\""
+			"}"
+			"vim.api.nvim_buf_set_lines(buf, line-1, line, false, text)"
+		;
+		SCNvim.luaeval(t.format(text))
+	}
 	*insert{|text|
 		var t = "local buf = vim.api.nvim_get_current_buf()"
 			"local text = {"

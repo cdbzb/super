@@ -158,13 +158,26 @@ XTouch : XMIDIController {
 
 KeyStage : XMIDIController {
 	classvar <>id = -679037508;// INT
+	classvar <playFunc;
+	classvar <synths, <active;
 	*initClass {
 		ServerTree.add(
 			{
 				MIDIFunc.cc( {|val| if(val > 0) {Song.play}}, 41, nil, id );
 				MIDIFunc.cc( {|val| if(val > 0) {~myFree.()}}, 42, nil, id )
 			}
-		)
+		);
+	}
+	*func { |synthFunc|
+		synths = (0..128);
+		active = List.new;
+		MIDIdef.noteOn(key: \keyStage, func: {|v n c s|
+			synths.put(n, synthFunc.value(v, n, c, s));
+			active.add(n)
+		});
+		MIDIdef.noteOff(key:\keyStageOff, func:{|v n c s|
+			synths[n].set(\gate, 0);
+		});
 	}
 }
 +Object{

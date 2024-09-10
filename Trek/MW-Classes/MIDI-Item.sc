@@ -1,6 +1,6 @@
 MIDIItem {
 	classvar <>folder;
-	var <notes;
+	var <notes, <name;
 	var stamp;
 	var restFirst;
 
@@ -8,8 +8,12 @@ MIDIItem {
 		folder = this.filenameSymbol.asString.dirname.dirname +/+ "MIDI-items";
 		File.exists(folder).not.if{ "mkdir %".format(folder).unixCmd }
 	}
-	*new {|restFirst = false|
-		^super.new.init(restFirst)
+	*new {|name restFirst = false|
+		folder.asPathName.entries.collect(_.fileName).includesEqual(name).if{^Object.readArchive(folder +/+ name)}
+		{^super.new.init(name, restFirst)}
+	}
+	*insertNew{|name|
+		Nvim.replaceLineWith( "MIDIItem(\\\"%\\\")".format(name ++ "_" ++  Date.getDate.stamp) )
 	}
 	*mostRecent {
 		^
@@ -17,8 +21,9 @@ MIDIItem {
 		( folder => PathName(_) => _.files => _.collect( { |i| i.fileNameWithoutExtension} ) => _.sort => _.last)
 		=> Object.readArchive( _ )
 	}
-	init { |r|
+	init { |n r|
 		restFirst = r;
+		name = n;
 		notes = List.new;
 	}
 	record{ |restFirst=false synthFunc latencyCompensation|
@@ -54,10 +59,10 @@ MIDIItem {
 		});
 	}
 	save {
-		this.writeArchive( folder +/+ stamp )
+		this.writeArchive( folder +/+ name)
 	}
 	asPbind {
-		^[\midinote, \dur, \legato].collect{|key| [key, notes.collect(_.at(key)).q]}.flatten
+		^[\midinote, \dur, \legato].collect{|key| [key, notes.collect(_.at(key)).q]}.flatten.p 
 	}
 
 }

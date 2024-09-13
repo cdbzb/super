@@ -3,14 +3,15 @@ MIDIItem {
 	var <notes, <name;
 	var stamp;
 	var restFirst;
+	var <synthFunc, <synths;
 
 	*initClass {
 		folder = this.filenameSymbol.asString.dirname.dirname +/+ "MIDI-items";
 		File.exists(folder).not.if{ "mkdir %".format(folder).unixCmd }
 	}
-	*new {|name restFirst = false|
-		folder.asPathName.entries.collect(_.fileName).includesEqual(name).if{^Object.readArchive(folder +/+ name)}
-		{^super.new.init(name, restFirst)}
+	*new {|name restFirst = false synthFunc|
+		folder.asPathName.entries.collect(_.fileName).includesEqual(name.asString).if{\reading.postln; ^Object.readArchive(folder +/+ name)}
+		{\new.postln; ^super.new.init(name, restFirst, synthFunc)}
 	}
 	*insertNew{|name|
 		Nvim.replaceLineWith( "MIDIItem(\\\"%\\\")".format(name ++ "_" ++  Date.getDate.stamp) )
@@ -21,13 +22,23 @@ MIDIItem {
 		( folder => PathName(_) => _.files => _.collect( { |i| i.fileNameWithoutExtension} ) => _.sort => _.last)
 		=> Object.readArchive( _ )
 	}
-	init { |n r|
+	init { |n r sf|
 		restFirst = r;
 		name = n;
 		notes = List.new;
+		synths = (0..128);
+		synthFunc = sf;
 	}
-	record{ |restFirst=false synthFunc latencyCompensation|
-		var synths = (0..128);
+	monitor {
+		synthFunc = synthFunc ? {|v n c s| Synth(\stringyy, [\amp, v/128, \freq, n.midicps])};
+		MIDIdef.noteOn(key:\keyStage, func:{|v n c s| 
+			synths.put(n, synthFunc.value(v, n, c, s));
+		});
+		MIDIdef.noteOff(key:\keyStageOff, func:{|v n c s|
+			synths[n].release;
+		});
+	}
+	record{ |restFirst=false latencyCompensation|
 		var partialNotes = (0..128);
 		var start;
 		latencyCompensation = latencyCompensation ? Server.default.latency;

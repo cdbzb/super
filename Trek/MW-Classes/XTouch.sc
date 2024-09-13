@@ -160,6 +160,8 @@ KeyStage : XMIDIController {
 	classvar <>id = -679037508;// INT
 	classvar <playFunc;
 	classvar <synths, <active;
+	classvar <busses;
+
 	*initClass {
 		ServerTree.add(
 			{
@@ -167,13 +169,34 @@ KeyStage : XMIDIController {
 				MIDIFunc.cc( {|val| if(val > 0) {~myFree.()}}, 42, nil, id )
 			}
 		);
+		synths = (0..128);
+		busses = ();
+	}
+	*cc {|name|
+		^In.kr(busses.at(name))
+	}
+	*addBus {|name cc|
+		busses.put(name, Bus.control);
+		MIDIdef.cc(\KeyStage ++ name, { |v| busses.at(name).set(v / 128) }, cc)
+	}
+	*keyBus {
+
+		busses.put(\keys, Bus.control);
+		MIDIdef.noteOn(\KeyStage ++ "keys", { |v n| busses.at(\keys).set(n) })
+	}
+	*synth { |name|
+		MIDIdef.noteOn(key: \keyStageOn, func: {|v n c s|
+			synths.put(n, 
+				Synth(name, [freq: n.midicps, amp: v/(128 / 0.2)])
+			);
+		});
+		MIDIdef.noteOff(key:\keyStageOff, func:{|v n c s|
+			synths[n].set(\gate, 0);
+		});
 	}
 	*func { |synthFunc|
-		synths = (0..128);
-		active = List.new;
-		MIDIdef.noteOn(key: \keyStage, func: {|v n c s|
+		MIDIdef.noteOn(key: \keyStageOn, func: {|v n c s|
 			synths.put(n, synthFunc.value(v, n, c, s));
-			active.add(n)
 		});
 		MIDIdef.noteOff(key:\keyStageOff, func:{|v n c s|
 			synths[n].set(\gate, 0);

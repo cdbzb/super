@@ -38,24 +38,57 @@ MIDIItem {
 			synths[n].release;
 		});
 	}
-	record{ |restFirst=false latencyCompensation|
+	record{ |mono=false restFirst=false latencyCompensation|
 		var partialNotes = (0..128);
 		var start;
 		latencyCompensation = latencyCompensation ? Server.default.latency;
 		stamp = Date.getDate.stamp;
 		synthFunc = synthFunc ? {|v n c s| Synth(\stringyy, [\amp, v/128, \freq, n.midicps])};
 		start = SystemClock.seconds;
-		MIDIdef.noteOn(key:\keyStage, func:{|v n c s| 
-			restFirst.if{notes.add((type:\rest, start: start + latencyCompensation, dur: SystemClock.seconds - start - latencyCompensation, midinote:0 )); restFirst=false};
-			synths.put(n, synthFunc.value(v, n, c, s));
-			partialNotes.put(n, (midinote: n, amp: v/128, start: SystemClock.seconds ));
-		});
-		MIDIdef.noteOff(key:\keyStageOff, func:{|v n c s|
-			synths[n].release;
-			partialNotes[n].dur = SystemClock.seconds - partialNotes[n].start;
-			notes.add(partialNotes[n]);
-			partialNotes[n] = nil;
-		});
+		mono.if{
+			var released;
+			var keyDown = false ! 128, lastNote = 0;
+			MIDIdef.noteOn(key:\keyStage, func:{|v n c s| 
+				var running = (try{ synths[0].isRunning } == true) ;
+				keyDown[n] = true; 
+				lastNote.debug("last note ");
+				keyDown[lastNote].debug("keyDown[n] ");
+
+				restFirst.if{notes.add((type:\rest, start: start + latencyCompensation, dur: SystemClock.seconds - start - latencyCompensation, midinote:0 )); restFirst=false};
+				// if(running and: not(released))  
+				if(keyDown[lastNote] and: (lastNote != n)){
+					\set.postln;
+					synths[0].set(\freq, n.midicps); \set.postln
+				}{ 
+					\retrigger.postln;
+					synths.put(0, synthFunc.value(v, n, c, s).register) 
+				};
+				partialNotes.put(n, (midinote: n, amp: v/128, start: SystemClock.seconds ));
+				released = false;
+				lastNote = n
+			});
+			MIDIdef.noteOff(key:\keyStageOff, func:{|v n c s|
+				keyDown[n] = false;
+				keyDown[lastNote].not.if{
+					synths[0].set(\gate, 0);
+				};
+				partialNotes[n].dur = SystemClock.seconds - partialNotes[n].start;
+				notes.add(partialNotes[n]);
+				partialNotes[n] = nil;
+			})
+		}{
+			MIDIdef.noteOn(key:\keyStage, func:{|v n c s| 
+				restFirst.if{notes.add((type:\rest, start: start + latencyCompensation, dur: SystemClock.seconds - start - latencyCompensation, midinote:0 )); restFirst=false};
+				synths.put(n, synthFunc.value(v, n, c, s));
+				partialNotes.put(n, (midinote: n, amp: v/128, start: SystemClock.seconds ));
+			});
+			MIDIdef.noteOff(key:\keyStageOff, func:{|v n c s|
+				synths[n].release;
+				partialNotes[n].dur = SystemClock.seconds - partialNotes[n].start;
+				notes.add(partialNotes[n]);
+				partialNotes[n] = nil;
+			});
+		};
 		MIDIdef.cc(\stop, {|v| (v>0).if{ this.stop }})
 	}
 	stop {
@@ -72,8 +105,54 @@ MIDIItem {
 	save {
 		this.writeArchive( folder +/+ name)
 	}
+	reset {
+		notes = List.new
+	}
 	asPbind {
 		^[\midinote, \dur, \legato].collect{|key| [key, notes.collect(_.at(key)).q]}.flatten.p 
 	}
 
+}
+CC {
+	classvar <all;
+	var <name, <number, <>spec, <val=0.5, <bus;
+	*new {|name number spec| 
+		^super.newCopyArgs(name, number, spec).init
+	}
+	*initClass{
+		all = ()
+	}
+	init {
+		all[name] = this;
+		spec = spec ? ControlSpec.new;
+		bus = Bus.control;
+		bus.set(spec.map(0.5));
+		MIDIdef.cc(\KS ++ name, {|n| val = n / 128; spec.map(n) }, number);
+		MIDIdef.cc(\KS ++ name ++ "-bus", { spec.map(val) => bus.set(_) }, number);
+	}
+	map { |name func|
+		MIDIdef.cc(name, {func.(spec.map(val))}, number)
+	}
+	asBus { |name func|
+		^{In.kr(bus.index)}
+	}
+	mapSynth{|synth param|
+		fork{
+			while{ synth.isRunning.not }
+			{ 0.001.wait };
+
+			synth.debug("synth").map(param.debug("param"), bus.debug("bus"))
+		}
+
+	}
+	*array{
+		^all.keys.asArray.collect{|k| [k, all[k].val]}.flat.cs
+	}
+}
++ Synth{
+	mapCC{ |param num spec|
+		var cc = CC(param, num, spec);
+		this.set(param, cc.spec.map(cc.spec.map(cc.val)));
+		cc.mapSynth(this, param)
+	}
 }

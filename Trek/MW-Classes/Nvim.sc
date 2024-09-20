@@ -33,7 +33,7 @@ Nvim {
         this.send(code)
     }
 
-	*replaceLineWith {|text|
+	*replace {|text|
 		var t = "local buf = vim.api.nvim_get_current_buf()"
 			"local line = vim.api.nvim_win_get_cursor(0)[1]"
 			"local text = {"

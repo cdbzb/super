@@ -54,6 +54,13 @@ b = CC(\ffreq, 24, ControlSpec(60, 8000, \exp, default: 1000));
 }.play
 // a.bus.set(200)
 )
+(
+a = {
+	Saw.ar( \freq.kr(333), 0.1 )
+}.play.register;
+a.map(\freq, CC(\mod, 1, \freq.asSpec).bus)
+)
+a.map(\freq, CC(\mod, 1, \freq.asSpec).bus)
 a.bus.scope
 a.bus.index
 Bus(index: a.index).scope

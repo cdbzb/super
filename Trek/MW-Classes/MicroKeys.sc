@@ -66,6 +66,7 @@ MicroKeys {
 	split_ {|r| range=r}
 	register { |synth num|
 		keys[num]=synth;
+		^synth
 	}
 
 	makeMIDIdefs {

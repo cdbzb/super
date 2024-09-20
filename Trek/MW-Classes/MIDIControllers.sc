@@ -63,7 +63,7 @@ CC {
 	var <number, <>spec, <val=0.5, <bus;
 	*new {|number spec| 
 		all[number].notNil.if { var a = all[number]; a.spec = spec ? a.spec; ^a };
-		^super.newCopyArgs(name, number, spec).init
+		^super.newCopyArgs(number, spec).init
 	}
 	*initClass{
 		all = ()

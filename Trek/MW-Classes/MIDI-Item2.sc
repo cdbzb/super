@@ -1,6 +1,6 @@
 MIDIItem2 {
 	classvar <>folder;
-	var <midiEvents , <name;
+	var <midiEvents , <name, <>initialCCValues;
 	var stamp;
 	var restFirst, <notes;
 	classvar midiout;
@@ -28,10 +28,36 @@ MIDIItem2 {
 		( folder => PathName(_) => _.files => _.collect( { |i| i.fileNameWithoutExtension} ) => _.sort => _.last)
 		=> Object.readArchive( _ )
 	}
+	noteEvents { |microkeys|
+		^notes.collect{|i|
+			i.copy
+			.type_( \mk )
+			.mk_(microkeys)
+		}
+	}
+	asPbind { |microkeys|
+		var res = List.new;
+		var keys = [\midinote, \sustain, \amp, \dur];
+		keys.do{|key|
+			res.add(key);
+			res.add(  
+				notes.collect{|i|
+					i[key]
+				}.q
+			)
+		};
+		res = res ++ [
+			type: \mk,
+			mk: microkeys,
+			
+		] => _.p;
+		^res
+	}
 	init { |n r sf|
 		restFirst = r;
 		name = n;
 		midiEvents = List.new;
+		initialCCValues = ();
 	}
 	makeNotes {
 		var on = midiEvents.select({|e| e.midicmd == \noteOn}).copy;
@@ -49,6 +75,7 @@ MIDIItem2 {
 		}
 	}
 	record{
+		initialCCValues = CC.getValues;
 
 		restFirst.if{ midiEvents.add( (type: \rest, timestamp: SystemClock.seconds ) ) };
 		
@@ -78,6 +105,7 @@ MIDIItem2 {
 	}
 	play{
 		this.stop;
+		CC.setValues(initialCCValues);
 		fork{
 			midiEvents.collect(_.timestamp).differentiate.drop(1).do{|i x|
 				midiEvents[x].play;

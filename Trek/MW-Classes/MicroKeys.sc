@@ -4,6 +4,15 @@ MicroKeys {
 	var <>array,<>keys,<>func,<>range, <>namedList, tuningDeltas, tuningFunction;
 
 	classvar tuningFunction;
+	*initClass{
+		Event.addEventType(\mk, {
+			var syn = ~mk.prFunc.(~amp * 120, ~midinote); 
+			fork{
+				~sustain.wait; 
+				syn.release 
+			}
+		})
+	}
 	*new { |func|
 		^super.new.init(func)
 	}
@@ -68,9 +77,12 @@ MicroKeys {
 		keys[num]=synth;
 		^synth
 	}
+	prFunc {
+		^namedList.array.reverse.inject(I.d, _<>_)
+	}
 
 	makeMIDIdefs {
-		MIDIdef.noteOn(\microOn, namedList.array.reverse.inject(I.d, _<>_), noteNum:range);
+		MIDIdef.noteOn(\microOn, this.prFunc , noteNum:range);
 		MIDIdef.noteOff(\microOff, {|vel, num| keys[num].release})
 	}
 }

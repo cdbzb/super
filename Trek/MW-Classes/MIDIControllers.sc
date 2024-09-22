@@ -59,14 +59,33 @@ KS : XMIDIController {
 }
 
 CC {
-	classvar <all;
-	var <number, <>spec, <val=0.5, <bus;
+	classvar <all; 
+	var <number, <>spec, <>val=0.5, <bus, <ctl ;
 	*new {|number spec| 
-		all[number].notNil.if { var a = all[number]; a.spec = spec ? a.spec; ^a };
-		^super.newCopyArgs(number, spec).init
+		// all[number].notNil.if {
+		// 	var a = all[number]; 
+		// 	a.spec = spec ? a.spec; 
+		// 	^a 
+		// } {
+			^super.newCopyArgs(number, spec).init
+		// }
 	}
 	*initClass{
 		all = ()
+	}
+	*getValues {
+		^all.collect{|i| i.val}
+	}
+	*setValues {|e| 
+		e.keys.do{|i| CC(i).val = (e[i]); CC(i).bus.set(CC(i).spec.map(e[i]))}
+	}
+	asControl {|name default synth|
+		ctl = name;
+		^NamedControl(name, default, \control, spec: spec)
+
+	}
+	mapCtl {|synth|
+		MIDIdef.cc(number.asString ++ ctl, {|v| v.postln; synth.set(ctl, v) }, number);
 	}
 	init {
 		all[number] = this;
@@ -92,6 +111,20 @@ CC {
 	}
 	*array{
 		^all.keys.asArray.collect{|k| [k, all[k].val]}.flat.cs
+	}
+}
+CCSet{
+	classvar sets;
+	var all;
+	*initClass {
+		sets = List[\default]
+	}
+	*new{ 
+		^super.new.init
+	}
+	init{
+		all = ();
+		sets.add(this)
 	}
 }
 

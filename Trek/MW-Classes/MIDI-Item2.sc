@@ -2,7 +2,7 @@ MIDIItem2 {
 	classvar <>folder;
 	var <midiEvents , <name, <>initialCCValues;
 	var stamp;
-	var restFirst, <notes;
+	var restFirst, <notes, <ccTracks;
 	classvar midiout;
 
 	*initClass {
@@ -14,6 +14,7 @@ MIDIItem2 {
 		};
 		folder = this.filenameSymbol.asString.dirname.dirname +/+ "MIDI-items";
 		File.exists(folder).not.if{ "mkdir %".format(folder).unixCmd };
+		Event.addEventType(\setCC, { CC(~ctlNum).set( ~control / 127 ) })
 	}
 	*new {|name restFirst = false synthFunc|
 		folder.asPathName.entries.collect(_.fileName).includesEqual(name.asString).if{\reading.postln; ^Object.readArchive(folder +/+ name)}
@@ -34,6 +35,15 @@ MIDIItem2 {
 			.type_( \mk )
 			.mk_(microkeys)
 		}
+	}
+	ccEvents { |cc|
+		^ccTracks[cc].collect{|i|
+			i.copy
+			.type_( \setCC )
+		}
+	}
+	ccPbind { |num|
+		^this.ccEvents(num).eventsToPatternPairs.p
 	}
 	asPbind { |microkeys|
 		var res = List.new;
@@ -60,19 +70,37 @@ MIDIItem2 {
 		initialCCValues = ();
 	}
 	makeNotes {
-		var on = midiEvents.select({|e| e.midicmd == \noteOn}).copy;
-		var off = midiEvents.select({|e| e.midicmd == \noteOff}).copy;
+		// should copy be deepCopy??
+		var on = midiEvents.select{|e| e.midicmd == \noteOn}.copy;
+		var off = midiEvents.select{|e| e.midicmd == \noteOff}.copy;
 		var findMatch = {|midinote| off.collect{|e| e.midinote}.indexOf(midinote)}; //returns index
 		on.do{|e| var match = off.removeAt(findMatch.(e.midinote)).postln; e.sustain = match.timestamp - e.timestamp; };
-		on.collect(_.timestamp).differentiate.drop(1) ++ 1 => _.do{|i x|
-			on[x].dur = i
-		};
+		on.setDurs;
 		notes = on
+	}
+	makeCCs {
+		ccTracks = midiEvents.select{|e| e.midicmd == \control}.copy
+		.sort{ |i j| i.ctlNum < j.ctlNum }
+		.separate{ |i j| i.cltNum == j.ctlNum }
+		.do{|subarray| subarray.setDurs }
+		.collect{|subarray| subarray[0].ctlNum -> subarray}
+		.asDict;
+	}
+	ccsAsArraysOfPoints{
+		^
+		midiEvents.select{|e| e.midicmd == \control}.copy
+		.sort{ |i j| i.ctlNum < j.ctlNum }
+		.separate{ |i j| i.cltNum == j.ctlNum }
+		.collect{|sub| sub[0].ctlNum -> sub.collect{|i| Point(i.timestamp, i.control)}}
+		=> _.asDict
 	}
 	stop{
 		[\noteOn, \noteOff, \control, \polytouch, \bend ].do{|cmd|
 			MIDIdef(\record ++ cmd).free
-		}
+		};
+		this.makeNotes;
+		this.makeCCs;
+
 	}
 	record{
 		initialCCValues = CC.getValues;
@@ -127,4 +155,16 @@ MIDIItem2 {
 		this.set(param, cc.spec.map(cc.spec.map(cc.val)));
 		cc.mapSynth(this, param)
 	}
+}
+ 
++ SequenceableCollection {
+		setDurs { |finalDur = 1| 
+			^this
+			.sort{|i j| i.timestamp < j.timestamp}
+			.collect(_.timestamp).differentiate.drop(1) ++ finalDur 
+			=> _.do{|i x| this[x].dur = i }
+		}
+		eventsToPatternPairs{
+			^this.collect(_.asKeyValuePairs).flop.collect{|i| ( i[0].class == Symbol ).if { i[0] }{ i.q }}
+		}
 }

@@ -62,22 +62,25 @@ CC {
 	classvar <all; 
 	var <number, <>spec, <>val=0.5, <bus, <ctl ;
 	*new {|number spec| 
-		// all[number].notNil.if {
-		// 	var a = all[number]; 
-		// 	a.spec = spec ? a.spec; 
-		// 	^a 
-		// } {
+		all[number].notNil.if {
+			var a = all[number]; 
+			a.spec = spec ? a.spec; 
+			^a 
+		} {
 			^super.newCopyArgs(number, spec).init
-		// }
+		}
 	}
 	*initClass{
 		all = ()
 	}
 	*getValues {
-		^all.collect{|i| i.val}
+		^all.collect{|i| i.val }
 	}
 	*setValues {|e| 
-		e.keys.do{|i| CC(i).val = (e[i]); CC(i).bus.set(CC(i).spec.map(e[i]))}
+		e.keys.do{|i| CC(i).val = (e[i]); CC(i).set(e[i]) }
+	}
+	set{ |i|
+		val = i; bus.set(spec.map(i))
 	}
 	asControl {|name default synth|
 		ctl = name;

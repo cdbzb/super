@@ -1,8 +1,8 @@
 (
 MIDIIn.connectAll;
 a = MicroKeys();
-a.setSynth(\sawSynth);
-a.tuning_(\partch);
+a.setSynth(\default);
+a.tuning_(\just);
 b = MIDIItem2(\test);
 )
 

@@ -60,18 +60,20 @@ KS : XMIDIController {
 
 CC {
 	classvar <all; 
-	var <number, <>spec, <>val=0.5, <bus, <ctl ;
-	*new {|number spec| 
-		all[number].notNil.if {
-			var a = all[number]; 
-			a.spec = spec ? a.spec; 
-			^a 
-		} {
-			^super.newCopyArgs(number, spec).init
-		}
-	}
+	var <number, <>spec, <>mk, <>val=0.5, <bus, <ctl ;
 	*initClass{
 		all = ()
+	}
+	*new {|number spec mk| 
+		mk = mk ? \default;
+		all[number].notNil.if {
+			all[number][mk].notNil.if {
+				var a = all[number][mk]; 
+				a.spec = spec ? a.spec; 
+				^a 
+			}
+		} 
+		^super.new.init(number, spec, mk)
 	}
 	*getValues {
 		^all.collect{|i| i.val }
@@ -90,9 +92,9 @@ CC {
 	mapCtl {|synth|
 		MIDIdef.cc(number.asString ++ ctl, {|v| v.postln; synth.set(ctl, v) }, number);
 	}
-	init {
-		all[number] = this;
-		spec = spec ? ControlSpec.new;
+	init { |n s m|
+		number = n; spec = s ? ControlSpec(); mk = m ? \default;
+		all[number]= all[number] ? (); all[number][mk] = all[number][mk] ? this;
 		bus = Bus.control;
 		bus.set(spec.map(0.5));
 		MIDIdef.cc(\CC ++ number, {|n| val = n / 128; spec.map(n) }, number);

@@ -16,19 +16,23 @@ MIDIItem2 {
 		File.exists(folder).not.if{ "mkdir %".format(folder).unixCmd };
 		Event.addEventType(\setCC, { CC(~ctlNum).set( ~control / 127 ) })
 	}
+
 	*new {|name restFirst = false synthFunc|
 		folder.asPathName.entries.collect(_.fileName).includesEqual(name.asString).if{\reading.postln; ^Object.readArchive(folder +/+ name)}
 		{\new.postln; ^super.new.init(name, restFirst, synthFunc)}
 	}
+
 	*insertNew{|name|
-		Nvim.replaceLineWith( "MIDIItem(\\\"%\\\")".format(name ++ "_" ++  Date.getDate.stamp) )
+		Nvim.replace( "MIDIItem2(\\\"%\\\")".format(name ++ "_" ++  Date.getDate.stamp) )
 	}
+
 	*mostRecent {
 		^
 		folder +/+
 		( folder => PathName(_) => _.files => _.collect( { |i| i.fileNameWithoutExtension} ) => _.sort => _.last)
 		=> Object.readArchive( _ )
 	}
+
 	noteEvents { |microkeys|
 		^notes.collect{|i|
 			i.copy
@@ -42,10 +46,15 @@ MIDIItem2 {
 			.type_( \setCC )
 		}
 	}
-	ccPbind { |num|
+	ccPbind { |num microkeys|
 		^this.ccEvents(num).eventsToPatternPairs.p
 	}
-	asPbind { |microkeys|
+	ccPpar { |microkeys|
+		^this.ccTracks.keys.collect{ |x|
+			this.ccPbind(x, microkeys)
+		} => Ppar (_)
+	}
+	notesPbind { |microkeys|
 		var res = List.new;
 		var keys = [\midinote, \sustain, \amp, \dur];
 		keys.do{|key|

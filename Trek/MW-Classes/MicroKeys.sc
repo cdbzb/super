@@ -1,7 +1,7 @@
 // MicroKeys id=1898415352;
 
 MicroKeys {
-	var <>array,<>keys,<>func,<>range, <>namedList, tuningDeltas, tuningFunction;
+	var <>array,<>keys,<>range, <>namedList, tuningDeltas, tuningFunction, <heldNotes, <damperDown;
 
 	classvar tuningFunction;
 	*initClass{
@@ -16,13 +16,37 @@ MicroKeys {
 	*new { |func|
 		^super.new.init(func)
 	}
-	init { |f|
+	init { |func|
 		namedList = NamedList.new;
 		tuningFunction = { |tuning| { |e| e.num = e.num + tuningDeltas.wrapAt(e.num) }};
 		namedList.add( \event, {|v n c r| (vel:v/127, num:n, chan:c, src:r, raw:n)});
-		namedList.add( \synth, I.d);
+		this.synth_(func ? I.d);
 		keys = 0!128;
-		func=f
+		heldNotes = Set.new;
+	}
+	synth_ {|funcOrDefname|
+		funcOrDefname.isKindOf(Symbol).if{
+			var synth = funcOrDefname;
+			namedList.add(
+				\synth,
+				{
+					|e|
+					Synth(synth,[\freq,e.num.midicps,\amp,e.vel])
+					=> this.register(_,e.raw)
+				};
+			);
+		}{
+			var func = funcOrDefname;
+			namedList.add(
+				\synth,
+				{
+					|e|
+					func.value(e) => this.register(_,e.raw)
+				}
+			);
+		};
+		namedList.dump;
+		this.makeMIDIdefs
 	}
 	tuning_ { |tuning root| //todo add root
 		tuningDeltas = Tuning.at(tuning).semitones.collect{|i x| i - x};
@@ -51,27 +75,6 @@ MicroKeys {
 	add { |key func addAction target|
 		namedList.add( key, func, true, addAction, target)
 	}
-	setSynth { |synth | 
-		namedList.add(
-			\synth,
-			{
-				|e|
-				Synth(synth,[\freq,e.num.midicps,\amp,e.vel])
-				=> this.register(_,e.raw)
-			}
-		);
-		this.makeMIDIdefs
-	}
-	play {
-		namedList.add(
-			\synth,
-			{
-				|e|
-				func.value(e) => this.register(_,e.raw)
-			}
-		);
-		this.makeMIDIdefs
-	}
 	split_ {|r| range=r}
 	register { |synth num|
 		keys[num]=synth;
@@ -83,7 +86,8 @@ MicroKeys {
 
 	makeMIDIdefs {
 		MIDIdef.noteOn(\microOn, this.prFunc , noteNum:range);
-		MIDIdef.noteOff(\microOff, {|vel, num| keys[num].release})
+		MIDIdef.noteOff(\microOff, {|vel, num| damperDown.postln; ( damperDown == false ).if{ keys[num].release }{ heldNotes.add(keys[num]) }});
+		MIDIdef.cc(\damper, {|num| (num == 127).if{ damperDown = true.postln }{ damperDown = false.postln; heldNotes.do(_.release); heldNotes = Set[] } }, 64)
 	}
 }
 /*

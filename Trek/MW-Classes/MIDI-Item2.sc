@@ -17,9 +17,14 @@ MIDIItem2 {
 		Event.addEventType(\setCC, { CC(~ctlNum).set( ~control / 127 ) })
 	}
 
-	*new {|name restFirst = false synthFunc|
-		folder.asPathName.entries.collect(_.fileName).includesEqual(name.asString).if{\reading.postln; ^Object.readArchive(folder +/+ name)}
-		{\new.postln; ^super.new.init(name, restFirst, synthFunc)}
+	*new { |name restFirst=false synthFunc|
+		folder.asPathName.entries.collect(_.fileName).includesEqual(name.asString).if{
+			\reading.postln; 
+			^Object.readArchive(folder +/+ name)
+		} {
+			\new.postln; 
+			^super.new.init(name, restFirst, synthFunc)
+		}
 	}
 
 	*insertNew{|name|
@@ -72,6 +77,12 @@ MIDIItem2 {
 		] => _.p;
 		^res
 	}
+	ppar {
+		^Ppar(
+			[ this.notesPbind ]
+			++ this.ccPpar
+		)
+	}
 	init { |n r sf|
 		restFirst = r;
 		name = n;
@@ -96,20 +107,19 @@ MIDIItem2 {
 		.asDict;
 	}
 	ccsAsArraysOfPoints{
-		^
-		midiEvents.select{|e| e.midicmd == \control}.copy
+		^midiEvents.select{|e| e.midicmd == \control}.copy
 		.sort{ |i j| i.ctlNum < j.ctlNum }
 		.separate{ |i j| i.cltNum == j.ctlNum }
 		.collect{|sub| sub[0].ctlNum -> sub.collect{|i| Point(i.timestamp, i.control)}}
 		=> _.asDict
 	}
 	stop{
-		[\noteOn, \noteOff, \control, \polytouch, \bend ].do{|cmd|
+		[\noteOn, \noteOff, \control, \polytouch, \bend ].do{
+			|cmd|
 			MIDIdef(\record ++ cmd).free
 		};
 		this.makeNotes;
 		this.makeCCs;
-
 	}
 	record{
 		initialCCValues = CC.getValues;
@@ -151,6 +161,7 @@ MIDIItem2 {
 		}
 	}
 	save {
+		notes.isNil.if{this.makeNotes};
 		this.writeArchive( folder +/+ name)
 	}
 	reset {

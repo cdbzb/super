@@ -1,53 +1,48 @@
 // MicroKeys id=1898415352;
 
 MicroKeys {
-	var <>array,<>keys,<>range, <>namedList, tuningDeltas, tuningFunction, <heldNotes, <damperDown;
+	var <>array,<>keys,<>range, <>namedList, <tuningDeltas, tuningFunction, <heldNotes, <damperDown = false;
 
 	classvar tuningFunction;
 	*initClass{
 		Event.addEventType(\mk, {
-			var syn = ~mk.prFunc.(~amp * 120, ~midinote); 
-			fork{
-				~sustain.wait; 
-				syn.release 
-			}
+			var syn = ~mk.prFunc.(~amp * 127, ~midinote); 
+			fork{ ~sustain.wait; syn.release }
 		})
 	}
+
 	*new { |func|
 		^super.new.init(func)
 	}
+
 	init { |func|
 		namedList = NamedList.new;
-		tuningFunction = { |tuning| { |e| e.num = e.num + tuningDeltas.wrapAt(e.num) }};
-		namedList.add( \event, {|v n c r| (vel:v/127, num:n, chan:c, src:r, raw:n)});
+		tuningFunction = { |tuning| { |e| e.num = e.num + tuningDeltas.wrapAt(e.num); e }};
+		namedList.add( \event, {|v n c r| (vel: v/127, num: n, chan: c, src: r, raw: n)});
 		this.synth_(func ? I.d);
-		keys = 0!128;
-		heldNotes = Set.new;
+		keys = 0 ! 128;
+		heldNotes = Set[];
 	}
-	synth_ {|funcOrDefname|
+
+	synth_ { |funcOrDefname|
 		funcOrDefname.isKindOf(Symbol).if{
-			var synth = funcOrDefname;
 			namedList.add(
 				\synth,
-				{
-					|e|
-					Synth(synth,[\freq,e.num.midicps,\amp,e.vel])
-					=> this.register(_,e.raw)
-				};
-			);
-		}{
-			var func = funcOrDefname;
-			namedList.add(
-				\synth,
-				{
-					|e|
-					func.value(e) => this.register(_,e.raw)
+				{ |e|
+					Synth(funcOrDefname, [\freq, e.num.midicps, \amp, e.vel])
+					=> this.register(_, e.raw)
 				}
-			);
+			)
+		}{
+			namedList.add(
+				\synth,
+				{ |e| (mk: this).use{ funcOrDefname.valueWithEnvir(e) } => this.register(_, e.raw) } 
+			)
 		};
-		namedList.dump;
-		this.makeMIDIdefs
+		this.makeMIDIdefs;
+		namedList.dump
 	}
+
 	tuning_ { |tuning root| //todo add root
 		tuningDeltas = Tuning.at(tuning).semitones.collect{|i x| i - x};
 		tuning.notNil.if{ namedList.add(
@@ -56,7 +51,9 @@ MicroKeys {
 			addAction: \addBefore,
 			otherName: \synth
 		) };
+		this.makeMIDIdefs
 	}
+
 	velCurve_ { |curvature range|
 		namedList.add (
 			\velCurve, 
@@ -67,27 +64,33 @@ MicroKeys {
 			},
 			addAction: \addBefore,
 			otherName: \synth
-		)
+		);
+		this.makeMIDIdefs
 	}
-	get{ |key|
+
+	get { |key|
 		^namedList[key]
 	}
+
 	add { |key func addAction target|
 		namedList.add( key, func, true, addAction, target)
 	}
-	split_ {|r| range=r}
+
+	split_ { |r| range = r }
 	register { |synth num|
-		keys[num]=synth;
+		keys[num] = synth;
 		^synth
 	}
+
 	prFunc {
-		^namedList.array.reverse.inject(I.d, _<>_)
+		^namedList.array.reverse.inject(I.d, _ <> _)
 	}
 
 	makeMIDIdefs {
 		MIDIdef.noteOn(\microOn, this.prFunc , noteNum:range);
 		MIDIdef.noteOff(\microOff, {|vel, num| damperDown.postln; ( damperDown == false ).if{ keys[num].release }{ heldNotes.add(keys[num]) }});
-		MIDIdef.cc(\damper, {|num| (num == 127).if{ damperDown = true.postln }{ damperDown = false.postln; heldNotes.do(_.release); heldNotes = Set[] } }, 64)
+		MIDIdef.cc(\microDamper, {|num| (num == 127).if{ damperDown = true.postln }{ damperDown = false.postln; heldNotes.do(_.release); heldNotes = Set[] } }, 64);
+		MIDIdef.polytouch(\microPoly, {|val num| keys[num].set(\poly, val)});
 	}
 }
 /*

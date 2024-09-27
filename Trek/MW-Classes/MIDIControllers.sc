@@ -61,8 +61,15 @@ KS : XMIDIController {
 CC {
 	classvar <all; 
 	var <number, <>spec, <>mk, <>val=0.5, <bus, <ctl ;
+	var <down;
+
 	*initClass{
 		all = ()
+	}
+	*newMK { |number spec|
+		^{|mk|
+			CC(number, spec, mk)
+		}.valueEnvir;
 	}
 	*new {|number spec mk| 
 		mk = mk ? \default;
@@ -92,19 +99,46 @@ CC {
 	mapCtl {|synth|
 		MIDIdef.cc(number.asString ++ ctl, {|v| v.postln; synth.set(ctl, v) }, number);
 	}
+	*bend {|spec mk|
+		^CC(\bend, ( spec ? 
+			ControlSpec()
+		), mk )
+	}
+	*keys {|mk|
+		^CC(\keys,mk)
+	}
 	init { |n s m|
 		number = n; spec = s ? ControlSpec(); mk = m ? \default;
 		all[number]= all[number] ? (); all[number][mk] = all[number][mk] ? this;
 		bus = Bus.control;
 		bus.set(spec.map(0.5));
-		MIDIdef.cc(\CC ++ number, {|n| val = n / 128; spec.map(n) }, number);
-		MIDIdef.cc(\CC ++ number ++ "-bus", { spec.map(val) => bus.set(_) }, number);
+		down = List[];
+		switch(number)
+		{ \bend } {
+			MIDIdef.bend(\CC++number, {|n| val.postln; val = n/16384; spec.map(n)});
+			MIDIdef.bend(\CC++number++"-bus", { spec.map(val) => bus.set(_) });
+		} 
+		{ \keys } {
+			MIDIdef.noteOn(
+				\CC++number++\on, 
+				{|v n| down.add(n);val = n; bus.set(val) }
+			);
+			MIDIdef.noteOff(
+				\CC++number++\off, 
+				{|v n| down.remove(n);val = (down.size > 0).if{ down.last }{ n }; bus.set(val) }
+			) 
+		}
+		{ \monoGate } {
+			MIDIdef.noteOn(\CCMonoGateOn, {|vel num| down.add(num); val = 1; bus.set(val)  });
+			MIDIdef.noteOff(\microMonoGateOff, {|vel num|  down.remove(num); (down.size < 1).if { val = 0; bus.set(val)}  })
+		}
+		{
+			MIDIdef.cc(\CC ++ number, {|n| val = n / 128; spec.map(n) }, number);
+			MIDIdef.cc(\CC ++ number ++ "-bus", { spec.map(val) => bus.set(_) }, number);
+		}
 	}
 	map { |name func|
 		MIDIdef.cc(name, {func.(spec.map(val))}, number)
-	}
-	asBus { |name func|
-		^{In.kr(bus.index)}
 	}
 	mapSynth{|synth param|
 		fork{
@@ -118,20 +152,7 @@ CC {
 		^all.keys.asArray.collect{|k| [k, all[k].val]}.flat.cs
 	}
 }
-CCSet{
-	classvar sets;
-	var all;
-	*initClass {
-		sets = List[\default]
-	}
-	*new{ 
-		^super.new.init
-	}
-	init{
-		all = ();
-		sets.add(this)
-	}
-}
+
 
 + Synth{
 	mapCC{ |param num spec|

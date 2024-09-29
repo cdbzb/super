@@ -107,6 +107,9 @@ CC {
 	*keys {|mk|
 		^CC(\keys,mk)
 	}
+	*monoGate {|mk|
+		^CC(\monoGate, mk)
+	}
 	init { |n s m|
 		number = n; spec = s ? ControlSpec(); mk = m ? \default;
 		all[number]= all[number] ? (); all[number][mk] = all[number][mk] ? this;
@@ -129,7 +132,7 @@ CC {
 			) 
 		}
 		{ \monoGate } {
-			MIDIdef.noteOn(\CCMonoGateOn, {|vel num| down.add(num); val = 1; bus.set(val)  });
+			MIDIdef.noteOn(\CCMonoGateOn, {|vel num| \down ++ down => _.postln; down.add(num); val = 1; bus.set(val)  });
 			MIDIdef.noteOff(\microMonoGateOff, {|vel num|  down.remove(num); (down.size < 1).if { val = 0; bus.set(val)}  })
 		}
 		{

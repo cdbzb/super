@@ -91,19 +91,19 @@ MIDIItem2 {
 	}
 	makeNotes {
 		// should copy be deepCopy??
-		var on = midiEvents.select{|e| e.midicmd == \noteOn}.copy;
-		var off = midiEvents.select{|e| e.midicmd == \noteOff}.copy;
+		var on = midiEvents.select{|e| e.midicmd == \noteOn}.deepCopy;
+		var off = midiEvents.select{|e| e.midicmd == \noteOff}.deepCopy;
 		var findMatch = {|midinote| off.collect{|e| e.midinote}.indexOf(midinote)}; //returns index
 		on.do{|e| var match = off.removeAt(findMatch.(e.midinote)).postln; e.sustain = match.timestamp - e.timestamp; };
 		on.setDurs;
 		notes = on
 	}
 	makeCCs {
-		ccTracks = midiEvents.select{|e| e.midicmd == \control}.copy
+		ccTracks = midiEvents.select{|e| e.midicmd == \control}.copy 
 		.sort{ |i j| i.ctlNum < j.ctlNum }
 		.separate{ |i j| i.cltNum == j.ctlNum }
 		.do{|subarray| subarray.setDurs }
-		.collect{|subarray| subarray[0].ctlNum -> subarray}
+		.collect{|subarray| subarray[0] !? {|i| i.ctlNum -> subarray }}
 		.asDict;
 	}
 	ccsAsArraysOfPoints{
@@ -118,8 +118,10 @@ MIDIItem2 {
 			|cmd|
 			MIDIdef(\record ++ cmd).free
 		};
+
 		this.makeNotes;
 		this.makeCCs;
+		// midiEvents = midiEvents.setDurs //for midiEvents.play (raw play)
 	}
 	record{
 		initialCCValues = CC.getValues;
@@ -146,6 +148,7 @@ MIDIItem2 {
 						)
 					)
 				},msgType: cmd, 
+				srcID: KS.id,
 				//eliminate cc0
 				argTemplate: {|i| (cmd == \control).if{ i.isStrictlyPositive }{true}}
 			)};
@@ -179,10 +182,11 @@ MIDIItem2 {
  
 + SequenceableCollection {
 		setDurs { |finalDur = 1| 
-			^this
+			var durs = this
 			.sort{|i j| i.timestamp < j.timestamp}
-			.collect(_.timestamp).differentiate.drop(1) ++ finalDur 
-			=> _.do{|i x| this[x].dur = i }
+			.collect(_.timestamp).differentiate.drop(1) ++ finalDur ;
+			durs.do{|i x| try{ this[x].dur = i }  };
+			^this
 		}
 		eventsToPatternPairs{
 			^this.collect(_.asKeyValuePairs).flop.collect{|i| ( i[0].class == Symbol ).if { i[0] }{ i.q }}

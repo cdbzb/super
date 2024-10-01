@@ -39,7 +39,7 @@ b.play
 
 c = MIDIItem2(\ccOverdub);
 
-
+CC.initClass
 c.makeCCs.ccTracks[24]
 c.ccPbind(24).trace.play
 CC(24).bus.scope

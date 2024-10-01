@@ -14,6 +14,10 @@ MicroKeys {
 	*new { |func|
 		^super.new.init(func)
 	}
+	 
+	*mono { |...args|
+		^MonoKeys(*args)
+	}
 
 	init { |func|
 		namedList = NamedList.new;
@@ -92,7 +96,13 @@ MicroKeys {
 		MIDIdef.cc(\microDamper, {|num| (num == 127).if{ damperDown = true.postln }{ damperDown = false.postln; heldNotes.do(_.release); heldNotes = Set[] } }, 64);
 		MIDIdef.polytouch(\microPoly, {|val num| keys[num].set(\poly, val)});
 	}
-	makeMonoDefs {
+}
+
+MonoKeys : MicroKeys {
+	*new {|synthFunc|
+		^super.new.init(synthFunc)
+	}
+	makeMIDIdefs {
 		var monosynth;
 		down = List[];
 		MIDIdef.noteOn(\microOn, {|v n | 
@@ -102,16 +112,20 @@ MicroKeys {
 				monosynth = this.prFunc.(v, n) ;
 				down.add(n)
 			}{
-				var e;
-				// e = namedList.drop(1).reverse.inject(I.d, _<>_).(v, n);
-				e.debug("e");
-				// monosynth.set(\num, e.num).set(\vel, e.vel);
 				monosynth.set(\num, n).set(\vel, v);
 				down.add(n);
 			} }, noteNum:range);
 		MIDIdef.noteOff(\microOff, {|vel num| 
 			down.debug("down off");
-			(down.size == 1).if{ monosynth.release; down.remove(num) }{ down.remove(num); monosynth.set(\num, down.last) };
+			(down.size == 1).if{
+				monosynth.release;
+				down.remove(num) 
+			}{ 
+				down.remove(num);
+				monosynth.set(\num, down.last)  // snap back to previous note
+			};
+
+
 			// damperDown.postln; 
 			// (damperDown == false).if{ keys[num].release }{ heldNotes.add(keys[num]) }
 		});

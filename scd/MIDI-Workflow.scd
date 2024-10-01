@@ -1,7 +1,9 @@
 MIDIClient.init;
 MIDIIn.connectAll;
+CC.initClass
 (
-a = MicroKeys({|e| {
+a = MicroKeys();
+a.func = {|e| {
 
 	var gate = \gate.kr(1);
 	Saw.ar( Vibrato.kr( e.num.midicps, 5, CC(1, ControlSpec(0, 0.02)).bus => In.kr(_) ))
@@ -12,12 +14,12 @@ a = MicroKeys({|e| {
 	=> {|i| CombN.ar(i, 0.3, 0.25, 3)/3 + i}
 	=> Out.ar(5.rand, _);
 	Env.cutoff(1).kr(2, gate: gate)
-
 }.play
 });
 a.tuning_(\just);
 a.velCurve_(1);
 a.play;
+// a.setSynth(\stringyy)
 )
 
 b = MIDIItem2(\chords);
@@ -25,10 +27,16 @@ b = MIDIItem2(\chords2)
 b.record
 b.stop
 b.makeNotes
+b.notesPbind(a).trace.play
+b.notesPbind.patternpairs
+(type: \mk, mk:a, sustain:1, dur:1, freq:333).play
+(type:\midi, midiout:MIDIOut(0), ).play
+CC.initClass
 b.reset
 b.midiEvents
 b.save
 c= b.asPbind(a)
+valueArray
 CC.setValues(b.initialCCValues);
 CC(24).bus.set(4000)
 (type: \midi, midiout:MIDIOut(0), midiCmd:\noteOn).play
@@ -46,7 +54,6 @@ d.stop
 d.makeNotes
 e = d.asPbind(a)
 fork{ d.play; 0.2.wait;c.play }
-
 b.initialCCValues_(CC.getValues)
 b.save
 b.record

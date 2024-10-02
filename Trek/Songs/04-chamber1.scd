@@ -1,6 +1,6 @@
 (
 Song(\chamber1,[]).current;
-Trek +/+ "boilerplate.scd" => _.load;
+Trek.path +/+ "boilerplate.scd" => _.load;
 ( Song.synthVTracks=EventWithDefault(
 	\default, { |mix=0.1 az=0|
 		{

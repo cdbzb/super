@@ -63,24 +63,23 @@ Trek.setTransition(0, -2, dur: 5, func: {
 
 Trek.faders[1] = {~asrFader.(1,7,2)};
 
-Trek.setTransition(1, -2, dur: 5, func: {
-	3.wait;
+Trek.setTransition(1, -4, dur: 4, func: {
+	4.wait;
 	defer{
-		Stills.plotTitleCard("The Planet", monitor:0, dur:3, top:0, fade:1);
 		Stills.plotTitleCard("The Planet", monitor:0, dur:3, top:0, fade:1);
 	};
 	Trek.faderSynths[1].release;
-	// (instrument:\cymbalsDS,amp:0.03, att:2.5,target:Trek.transitionGroup,addAction:\addToTail).play;
+	(instrument:\cymbalsDS,amp:0.03, att:2.5,target:Trek.transitionGroup,addAction:\addToTail).play;
+	// (
+	// 	instrument: \stringyy,
+	// 	modWidth: 0.04,
+	// 	coef: 0.1,
+	// 	freq: [1, 2, 3, 4].df(\f, tuning: \just),
+	// 	freqLag:8,
+	// 	dur: 2
+	// ).play//.ppm;
 	(instrument:\cymbalsDSStereo,amp:0.01, att:2.5,target:Trek.transitionGroup,addAction:\addToTail).play;
-	[
-		instrument: \stringyy,
-		modWidth: 0.04,
-		coef: 0.1,
-		freq: [1, 2, 3, 4].df(\f, tuning: \just),
-		freqLag:8,
-		dur: 2
-	].ppm;
-});
+}).();
 
 Trek.faders[2]={~asrFader.(1, 0, 1)};
 

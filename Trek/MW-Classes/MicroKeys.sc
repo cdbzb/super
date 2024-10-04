@@ -23,7 +23,8 @@ MicroKeys {
 		namedList = NamedList.new;
 		tuningFunction = { |tuning| { |e| e.num = e.num + tuningDeltas.wrapAt(e.num); e }};
 		namedList.add( \event, {|v n c r| (vel: v/127, num: n, chan: c, src: r, raw: n)});
-		this.synth_(func ? I.d);
+		// this.synth_(func ? I.d);
+		this.synth_( func !? _.asDefName ? I.d);
 		keys = 0 ! 128;
 		heldNotes = Set[];
 	}
@@ -33,7 +34,7 @@ MicroKeys {
 			namedList.add(
 				\synth,
 				{ |e|
-					Synth(funcOrDefname, [\freq, e.num.midicps, \amp, e.vel])
+					Synth(funcOrDefname.postln, [\freq, e.num.midicps, \amp, e.vel])
 					=> this.register(_, e.raw)
 				}
 			)

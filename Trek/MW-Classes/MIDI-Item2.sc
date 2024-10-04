@@ -8,13 +8,15 @@ MIDIItem2 {
 	*initClass {
 		var parent;
 		Class.initClassTree(MIDIOut);
-		fork{
-			MIDIClient.init;
-			midiout = MIDIOut.newByName("IAC Driver", "Bus 1");
-		};
 		folder = this.filenameSymbol.asString.dirname.dirname +/+ "MIDI-items";
 		File.exists(folder).not.if{ "mkdir %".format(folder).unixCmd };
 		Event.addEventType(\setCC, { CC(~ctlNum).set( ~control / 127 ) })
+	}
+
+	*getMidiOut {
+			MIDIClient.init;
+			midiout = MIDIOut.newByName("IAC Driver", "Bus 1");
+			^midiout
 	}
 
 	*new { |name restFirst=false synthFunc|
@@ -134,7 +136,7 @@ MIDIItem2 {
 					(
 						midicmd: cmd,
 						timestamp: SystemClock.seconds,
-						midiout: midiout,
+						midiout: midiout ? this.getMidiOut,
 						type: \midi
 					)
 					++

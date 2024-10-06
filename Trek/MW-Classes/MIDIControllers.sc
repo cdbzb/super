@@ -61,7 +61,7 @@ KS : XMIDIController {
 CC {
 	classvar <all; 
 	var <number, <>spec, <>mk, <>val=0.5, <bus, <ctl ;
-	var <down;
+	var <down, <rawScale;
 
 	*initClass{
 		all = ()
@@ -71,24 +71,27 @@ CC {
 			CC(number, spec, mk)
 		}.valueEnvir;
 	}
-	*new {|number spec mk| 
+	*new {|number spec mk rawScale=127 default| 
 		mk = mk ? \default;
-		all[number].notNil.if {
-			all[number][mk].notNil.if {
-				var a = all[number][mk]; 
+		all[mk].notNil.if {
+			all[mk][number].notNil.if {
+				var a = all[mk][number]; 
 				a.spec = spec ? a.spec; 
 				^a 
 			}
 		} 
-		^super.new.init(number, spec, mk)
+		^super.new.init(number, spec, mk, rawScale, default)
 	}
-	*getValues {
-		^all.collect{|i| i.val }
+	*getValues {|mkInstance|
+		var res = ();
+		all[mkInstance ? \default].asKeyValuePairs.pairsDo{|i j| res.put(i, j.val)};
+		
+		^res
 	}
 	*setValues {|e| 
 		e.keys.do{|i| CC(i).val = (e[i]); CC(i).set(e[i]) }
 	}
-	set{ |i|
+	set { |i|
 		val = i; bus.set(spec.map(i))
 	}
 	asControl {|name default synth|
@@ -101,8 +104,8 @@ CC {
 	}
 	*bend {|spec mk|
 		^CC(\bend, ( spec ? 
-			ControlSpec()
-		), mk )
+			ControlSpec(0.5, 2,\exp, default: 1)
+		), mk, rawScale: 16384, default:0.5 )
 	}
 	*keys {|mk|
 		^CC(\keys,mk)
@@ -110,35 +113,47 @@ CC {
 	*monoGate {|mk|
 		^CC(\monoGate, mk)
 	}
-	init { |n s m|
-		number = n; spec = s ? ControlSpec(); mk = m ? \default;
-		all[number]= all[number] ? (); all[number][mk] = all[number][mk] ? this;
+	init { |n s m rs default|
+		var buildSymbol = {|symbol| symbol ++ number ++ mk => _.asSymbol};
+		number = n; spec = s ? ControlSpec(); mk = m ? \default; rawScale = rs;
+		all[mk] = all[mk] ? (); all[mk][number] = all[mk][number] ? this;
+		// all[number]= all[number] ? (); all[number][mk] = all[number][mk] ? this;
 		bus = Bus.control;
-		bus.set(spec.map(0.5));
+		val = default ? 0;
+		bus.set(spec.map(val));
 		down = List[];
 		switch(number)
 		{ \bend } {
-			MIDIdef.bend(\CC++number, {|n| val.postln; val = n/16384; spec.map(n)});
-			MIDIdef.bend(\CC++number++"-bus", { spec.map(val) => bus.set(_) });
+			MIDIdef.bend(buildSymbol.(\CC), {|n| this.setRaw(n)});
 		} 
 		{ \keys } {
 			MIDIdef.noteOn(
-				\CC++number++\on, 
+				buildSymbol.('CC-on')
+				, 
 				{|v n| down.add(n);val = n; bus.set(val) }
 			);
 			MIDIdef.noteOff(
-				\CC++number++\off, 
+				buildSymbol.('CC-off'),
 				{|v n| down.remove(n);val = (down.size > 0).if{ down.last }{ n }; bus.set(val) }
 			) 
 		}
 		{ \monoGate } {
-			MIDIdef.noteOn(\CCMonoGateOn, {|vel num| \down ++ down => _.postln; down.add(num); val = 1; bus.set(val)  });
-			MIDIdef.noteOff(\microMonoGateOff, {|vel num|  down.remove(num); (down.size < 1).if { val = 0; bus.set(val)}  })
+			MIDIdef.noteOn(
+				buildSymbol.('CC-monogateOn'),
+				{|vel num| \down ++ down => _.postln; down.add(num); val = 1; bus.set(val)  });
+			MIDIdef.noteOff(
+				buildSymbol.('CC-monogateOff'),
+				{|vel num|  down.remove(num); (down.size < 1).if { val = 0; bus.set(val)}  })
 		}
 		{
-			MIDIdef.cc(\CC ++ number, {|n| val = n / 128; spec.map(n) }, number);
-			MIDIdef.cc(\CC ++ number ++ "-bus", { spec.map(val) => bus.set(_) }, number);
+			MIDIdef.cc(
+				buildSymbol.(\CC),
+				{|n| this.setRaw(n)}, number);
 		}
+	}
+	setRaw{|num| // to 127
+		val = spec.map(num / rawScale);
+		bus.set(val)
 	}
 	map { |name func|
 		MIDIdef.cc(name, {func.(spec.map(val))}, number)

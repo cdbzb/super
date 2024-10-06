@@ -14,13 +14,13 @@ a = MicroKeys(
 ).tuning_(\werckmeister);
 m = MIDIItem2("test_24008_09",true,  mk: a)
 )
-
 m.record
 m.play
 m.stop
 
 m.ppar.play
-
+MIDIIn.connectAll
+MIDIClient.sources
 (
 c = Effect.bus(DWGReverbC1C3.ar(_,CC(25).bus.kr * 2000, mix: 0.1), time: 3000);
 d = MicroKeys(
@@ -46,6 +46,27 @@ m.ppar.play; n.record
 
 m.ppar.play;n.ppar.play
 n.record
+j
 n.stop
 n.ppar.play
-n.midiEvents
+(
+n.notesPbind.play; 
+d.keys[60].postln;
+fork{
+	(n.initialRest ++ n.polyEvents).do{|e| (e.type == \setPoly).if{ e.mk.keys[e.midinote].postln.set(e.polyTouch); (e.mk == d).postln }; e.dur.wait}
+	d
+	(type: \mk, mk: d).mk == d
+}
+)
+	n.mk.keys[60].postln
+}
+(type:\mk, mk: d, midinote: 60, sustain: 3, amp: 0.2).play;
+(type: \setPoly,dur:1, mk:d, midinote: 60, polyTouch:100, play:{~mk.keys[~midinote].set(\poly,~polyTouch)}).play
+(type: \setPoly,dur:1, mk:d, midinote: 60, polyTouch:100, play:{~mk.keys[~midinote].set(\poly,~polyTouch)}).play
+n.ppar.play
+n.polyEvents[1]
+n.noteEvents.do(_.postln)
+d.keys[60]
+(type:\mk, mk:d, sustain: 3,dur:3).play
+n.ppar.play
+n.polyEvents.q.play

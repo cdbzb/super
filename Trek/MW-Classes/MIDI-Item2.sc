@@ -2,7 +2,7 @@ MIDIItem2 {
 	classvar <>folder;
 	var <midiEvents , <name, <>initialCCValues;
 	var stamp;
-	var restFirst, initialRest, <notes, <ccTracks;
+	var restFirst, <initialRest, <notes, <ccTracks;
 	var takes;
 	var <mk;
 	classvar midiout;
@@ -12,8 +12,9 @@ MIDIItem2 {
 		Class.initClassTree(MIDIOut);
 		folder = this.filenameSymbol.asString.dirname.dirname +/+ "MIDI-items";
 		File.exists(folder).not.if{ "mkdir %".format(folder).unixCmd };
-		Event.addEventType(\setCC, { CC(~ctlNum).setRaw( ~control ) });
-		Event.addEventType(\setBend, { CC(~ctlNum).setRaw( ~control ) })
+		Event.addEventType(\setCC, { CC(~ctlNum, mk: ~mk).setRaw( ~control ) });
+		Event.addEventType(\setBend, { CC(~ctlNum, mk: ~mk).setRaw( ~control ) });
+		Event.addEventType(\setPoly, {{~mk.keys[~midinote]}.().set(\poly, ~polyTouch)})
 	}
 
 	*getMidiOut {
@@ -95,6 +96,7 @@ MIDIItem2 {
 		^Ppar(
 			[ this.notesPbind ]
 			++ this.ccPpar
+			++ (initialRest ++ this.polyEvents => _.setDurs => _.q)
 		)
 	}
 	makeNotes {
@@ -107,7 +109,7 @@ MIDIItem2 {
 		notes.setDurs;
 	}
 	makeCCs {
-		ccTracks = midiEvents.select{|e| [\control, \bend].includes(e.midicmd) }.deepCopy 
+		ccTracks = midiEvents.select{|e| [\control, \bend].includes(e.midicmd) }.copy
 		.select{|i| i.ctlNum.notNil}
 		.sort{ |i j|
 			var a = i.ctlNum.isKindOf(Symbol).if{0}{i.ctlNum};
@@ -118,6 +120,11 @@ MIDIItem2 {
 		.do{|subarray| subarray.setDurs }
 		.collect{|subarray| subarray[0] !? {|i| i.ctlNum -> subarray }}
 		.asDict;
+	}
+	polyEvents {
+		^midiEvents.select{|e| [\polytouch].includes(e.midicmd) }.copy
+		.do{|e| e.type = \setPoly}
+		.setDurs
 	}
 	ccsAsArraysOfPoints{
 		^midiEvents.select{|e| e.midicmd == \control}.deepCopy
@@ -178,7 +185,7 @@ MIDIItem2 {
 						switch( cmd, 
 							\noteOn,{ (midinote: num, amp: val/127 ) },
 							\noteOff,{ (midinote: num, amp: val/127 ) },
-							\polytouch, { (midinote: num, polyTouch: val) },
+							\polytouch, { (midinote: num, polyTouch: val, mk: mk) },
 							\control, { (ctlNum:num, control: val)},
 							\bend, { (ctlNum:\bend, control: val)},
 							// \bend, { (val: val, ctlNum:) }

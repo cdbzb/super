@@ -161,11 +161,7 @@ MIDIItem2 {
 					type: \midi,
 					midiout: midiout ? this.class.getMidiOut,
 					ctlNum: i,
-					control: 
-					CC(i).spec.unmap(j)
-					// j
-					* CC(i).rawScale, //put back in original
-
+					control: CC(i).spec.unmap(j) * CC(i).rawScale, //put back in original
 				).debug("CC:")
 			)
 		};

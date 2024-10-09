@@ -1,35 +1,22 @@
 
 SynthDef(\suddenGrowth, {
-    arg out=0, freq=100, growthTime=1, amp=0.5;
+    arg out=0, startFreq=100, endFreq=400, len=0.5, amp=0.5;
     var sig, env, freqEnv;
 
-    // Frequency envelope: rapid exponential growth
-    freqEnv = EnvGen.ar(
-        Env(
-            [freq, freq * 4],
-            [growthTime],
-            \exp
-        )
-    );
-
-    // Amplitude envelope: quick attack, slow decay
-    env = EnvGen.ar(
-        Env.perc(0.01, growthTime * 1.5, curve: 2),
-        doneAction: 2
-    );
-
+    freqEnv = Env( [startFreq, endFreq], len, \exp).kr(0)
+	+ LFBrownNoise1.ar(50, mul:5)
+	;
     // Main oscillator
-    sig = SinOsc.ar(freqEnv * LFBrownNoise2.ar(5).range(0.9,1.1)) * env;
-
+    SinOsc.ar(freqEnv 
+		// + 
+		// ( LFBrownNoise2.ar(5) *80 )
+	)
     // Add some complexity with FM synthesis
-    sig = sig + (SinOsc.ar(freqEnv * 1.5) * env * 0.3);
-
-    // Add some noise for texture
-    sig = sig + (PinkNoise.ar() * env * 0.1);
-
-    // Output
-    Out.ar(out, sig * amp ! 2);
-}).add;
+    + SinOsc.ar(freqEnv * 1.5, 0, 0.3)
+    + PinkNoise.ar(0.1)
+    * Env.perc(0.01,  len * 1.5, curve: 2).kr(2)
+    => Out.ar(out, _)
+}).play;
 
 
 

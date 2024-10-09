@@ -68,15 +68,18 @@ Reaper.sched(34f:14,{
 	initial: 34f:14,
 	grow1: (start: 45, end: 45f:15),
 	grow2: (start: 52f:14, end: 53f:15),
-	grow3: (start: 58f:18, end: 59f:5)
+	grow3: (start: 58f:18, end: 59f:5),
 );
+~len = {|i| ~collection[i].end - ~collection[i].start};
+
 [\grow1, \grow2, \grow3].collect{
 	|i x|
 	Reaper.sched( ~collection[i][\start], {
-		Synth( \stringyy, [freq: [1, 3, 5].df(\c)[x], amp:0.05]);
+		fork{ ~len.(i).wait; Synth( \stringyy, [freq: [100, 125, 140][x]*2.5, amp:0.05]); };
 		Synth(\suddenGrowth, [
-			\growthTime, ~collection[i][\end] - ~collection[i][\start],
-			\freq, [100,125,140][x],
+			\len, ~len.(i),
+			\startFreq, [100,125,140][x],
+			\endFreq, [100,125,140][x] * 5,
 			amp:0.05
 		]) 
 	})
@@ -133,7 +136,6 @@ Reaper.sched( 1309f:9 + 0.2,
 	{
 		{
 			Env( [1, 5, 2, 7].df(\e), [9f:9, 10f:6, 10f:22, 11f:12].differentiate.drop(1) ).kr(2)
-
 			=> Saw.ar(_)
 			/80
 		}.play

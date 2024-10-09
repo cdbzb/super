@@ -15,6 +15,7 @@ SynthDef(\suddenGrowth, {
     + SinOsc.ar(freqEnv * 1.5, 0, 0.3)
     + PinkNoise.ar(0.1)
     * Env.perc(0.01,  len * 1.5, curve: 2).kr(2)
+	* amp
     => Out.ar(out, _)
 }).play;
 

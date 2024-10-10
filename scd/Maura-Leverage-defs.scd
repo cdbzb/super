@@ -1,3 +1,47 @@
+~duration = {|from to| to.asFloat.asSeconds - from.asFloat.asSeconds};
+
+~circle = {
+};
+~dotted = 	{ | dur |
+	{ 
+		Dust.ar(50) 
+		=>Decay.ar(_,0.0001)
+		=>TwoTube.ar(_,loss:0.8,d1length:rrand(20,30))
+		=>MoogFF.ar(_,LFBrownNoise1.kr(2).range(4700,6000))
+		=>Pan2.ar(_,0.5,0.7)
+	}.play(s,0) .dur(dur)
+};
+~drawLine = {| start end | Reaper.sched(start, {~dotted.value(~duration.(start, end) )})};
+~record = { | name, length |
+	g = Group.after(1);
+	b = Buffer.alloc(s, 65536, 2);
+	b.write("~/tank/Leverage/SC".standardizePath +/+ name.asString, "wav", "int24", 0, 0, true);
+	// create the diskout node; making sure it comes after the source
+	d = Synth.tail(g, "diskout2", [\bufnum, b]);
+	fork{ 
+		length.wait ;
+		d.free; 
+	b.close;
+	b.free;
+	}
+	
+};
+
+~myFree = {
+	|vsti|
+	s.freeMyDefaultGroup;
+	fork{
+		//s.latency.wait;
+		TempoClock.all.do(_.clear);
+		SystemClock.do(_.clear);
+	};
+	// Alga.parGroups[s] = AlgaParGroup(s.defaultGroup);
+	~vstRegistry.do{|i| 16.do{|x| i.midi.allNotesOff(x)}};
+	Reaper.stop;
+	try{ Song.resources.select{|i| i.isKindOf(Node)}.do(_.release)};
+	Trek.transitionGroup.release;
+	// g=Group.new
+};
 
 SynthDef(\suddenGrowth, {
     arg out=0, startFreq=100, endFreq=400, len=0.5, amp=0.5;
@@ -17,7 +61,7 @@ SynthDef(\suddenGrowth, {
     * Env.perc(0.01,  len * 1.5, curve: 2).kr(2)
 	* amp
     => Out.ar(out, _)
-}).play;
+}).add;
 
 
 

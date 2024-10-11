@@ -15,7 +15,7 @@
 ~record = { | name, length |
 	g = Group.after(1);
 	b = Buffer.alloc(s, 65536, 2);
-	b.write("~/tank/Leverage/SC".standardizePath +/+ name.asString, "wav", "int24", 0, 0, true);
+	b.write("~/tank/Leverage/SC".standardizePath +/+ name.asString ++ ".wav", "wav", "int24", 0, 0, true);
 	// create the diskout node; making sure it comes after the source
 	d = Synth.tail(g, "diskout2", [\bufnum, b]);
 	fork{ 
@@ -72,11 +72,7 @@ SynthDef(\growingBalloonRub, {
 
     // Frequency envelope: gradual exponential growth
     freqEnv = EnvGen.ar(
-        Env(
-            [freq, freq * 2.5],
-            [growthTime],
-            \exp
-        )
+        Env( [freq, freq * 2.5], [growthTime], \exp)
     );
 
     // Amplitude envelope: slow attack, slow decay
@@ -108,3 +104,18 @@ SynthDef(\growingBalloonRub, {
     Out.ar(out, Pan2.ar(sig * amp, LFNoise1.kr(2).range(-0.3, 0.3)));
 }).add;
 
+~dotted2 = 	{ | dur env pan |
+	{ 
+		Dust.ar(50) 
+		=>Decay.ar(_,0.0001)
+		=>TwoTube.ar(_,loss:0.8,d1length:rrand(20,30))
+		=>MoogFF.ar(_,
+			// LFBrownNoise1.kr(2).range(4700,6000) +
+			// ~interestEnv.kr* 4000,
+			env.kr(0).poll,
+			gain: 3
+		)
+		=>Pan2.ar(_,pan,0.7)
+	}.play(s,0) .dur(dur)
+};
+~drawLineEnv = {| start end env pan | Reaper.sched(start, {~dotted2.value(~duration.(start, end), env, pan )})};

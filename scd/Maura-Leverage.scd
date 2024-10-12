@@ -73,7 +73,7 @@
 		})
 	};
 
-	~black = 101.seconds.asInteger f:08;
+	~black = 101.seconds.asInteger f:09;
 
 	~drawLine.(34f:15, 36f:20);
 	//boxed words
@@ -92,16 +92,19 @@
 		freq: [200, 250, 280][x] * 2,
 		amp:0.03,
 		coef:0.2,
-		out:Effect.bus({|i| FreeVerb.ar(i, 0.7, 1) }),
+		out:Effect.bus({|i| FreeVerb.ar(i, 0.6, 1) }),
 		instrument:\harp
 	).play })});
+
 	Reaper.sched(~boxed.loan.initial, {
 		{
 			Impulse.ar(
-				Env([100, 100, 125, 125, 140, ], [36f:20, 47f:7, 47f:15, 55f:18, 56f:02].differentiate.drop(1), \exp).kr(0,gate:1)
+				Env([100, 100, 125, 125, 140, ], [36f:20, 47f:9, 47f:23, 55f:16, 56f:03].differentiate.drop(1), \exp).kr(0,gate:1)
 			)
-			/10
+			/15
+
 			* EnvGen.cutoff(~black - ~boxed.loan.initial, 0.1)
+			=> Pan2.ar(_, 0.5)
 		}.play
 	});
 
@@ -112,6 +115,68 @@
 		(freq: 700 * [1, 1.2], rel:4, amp:0.1, out: Effect.bus({|i| FreeVerb.ar(i,1,1) * [0.1, 0.9] })).play
 	});
 	~drawLine.(40f:08, 41f:07);
+)
+( //2013 - 2019
+	Reaper.play(102 );
+
+	~dateRange = { |freq1 freq2 amp=0.1 |
+		var freq = [freq1, freq2];
+		{
+			{
+				Gendy3.arWidth(freq: freq, width: 1.040)
+				/2
+				+ Gendy1.arWidth(freq: freq, width: 1.040)
+				/2
+				* amp
+				* Env.perc(0.005, 10).kr(2,gate:1)
+			}.play
+		}
+	}; 
+	// ~dateRange.(300, 360, 0.05);
+	Reaper.sched(102f:23, ~dateRange.(300, 360, 0.05));
+	// ~chart = {
+	// 	Dust.ar([18, 13.1]) / 2
+	// 	=> FreeVerb.ar(_, 1,  )
+	// 	* Env.asr().kr(2,gate:\gate.kr(1))
+	// 	// * EnvGen.cutoff()
+	// }; 
+	// Reaper.sched( 106f:7, {
+	// 	~chart.play.dur(110f:5 - (106f:7) => _.abs) ;
+	// 	[
+	// 		instrument: \wash,
+	// 		freq:[[600, 700, 800, 900],[600, 700,800,900]*0.95].q,
+	// 		amp: 0.03,
+	// 		rel: 8,
+	// 		att:1,
+	// 		// dur: 2,
+	// 		dur: 110f:5 - (106f:7)
+	// 	].pm.play
+	// });
+	Reaper.sched(120f:2, ~dateRange.(300 * 0.95, 360 * 0.95, 0.05));
+	// Reaper.play(125 );
+	Reaper.sched(128f:17, { //circle
+			{
+				Dust.ar(50) 
+				=>Decay.ar(_,0.0001)
+				=> Pan2.ar(_, 
+					Env([0 , 1, 0, -1, 0], 0.8, \sin).kr(2).range(-0.3, -0.8)
+				)
+				=> BPF.ar(_, 
+					Env([0 , 1, 0, -1, 0], 0.8, \sin).kr(2).range(500, 2000)
+				)
+			}.play
+		}
+	);
+	~holeSound = {
+		BrownNoise.ar()
+		/4000
+		=> Klank.ar(`[[150, 200 ]], _)
+		*EnvGen.cutoff(28f:17 - (26f:22), 0.1)
+		// * Env.perc(0.1, 10).kr(2)
+	};
+	Reaper.sched( 126f:22, {
+	~holeSound.play	
+	} )
 )
 ( // pigtail
 	Reaper.play(1201, 1217);
@@ -150,7 +215,7 @@
 )
 ( //dustheads
 	Reaper.play(1512, 1610);
-	~record.("yacht", 1610-1512);
+	// ~record.("yacht", 1610-1512);
 	~fourPointFive = 1542f:16;
 	~embezzlement = [1544f:12, 1545f:9] ;
 	~malaysian = [1545f:18, 1546f:13];
@@ -183,15 +248,46 @@
 	})
 
 )
-( //hole
-	Reaper.play(813, 840);
+( //close hole
+	Reaper.play(813, 940);
+	"Maura-Leverage-defs.scd".load;
+	// ~record.("close-hole", 940.seconds - 813.seconds);
+	~dateRange = { |freq1 freq2 amp=0.1 |
+		var freq = [freq1, freq2];
+		{
+			{
+				Gendy3.arWidth(freq: freq, width: 1.040)
+				/2
+				+ Gendy1.arWidth(freq: freq, width: 1.040)
+				/2
+				* amp
+				* Env.perc(0.1, 10).kr(2,gate:1)
+			}.play
+		}
+	}; 
 	~holeSound = {
-		BrownNoise.ar()
+		BrownNoise.ar().dup
 		/4000
-		=> Klank.ar(`[[150, 200 ]], _)
-		*EnvGen.cutoff(26f:20 - (14f:4), 0.1)
+		=> Klank.ar(`[[ 50, 200,  ], [0.5, 1],[0.5, 0.5]], _)
+		// *EnvGen.cutoff(26f:20 - (14f:4), 0.1)
+		*Env([1, 0.7, 0.7, 0.3, 0.1, 0],[14f:4, 15f:12,24f:19,25f:18, 27].differentiate.drop(1) ++ 20).kr(0,gate:1)
+		/2
 	};
-	Reaper.sched( 814f:4, { ~holeSound.play } )
+	Reaper.sched( 814f:4, { ~holeSound.play } );
+	Reaper.sched(818f:2, ~dateRange.(400, 500, 0.01));
+	Reaper.sched(835f:4, ~dateRange.(400/1.2, 500/1.166, 0.01));
+
+	~drawLine.(842f:3, 843f:13);
+	2.do{ 
+		~drawLine.(842f:20, 844f:6);
+		~drawLine.(844f:7, 845f:1)
+	};
+	~drawLine.(848f:9, 849f:17);
+	3.do{ ~drawLine.(850f:14, 851f:13) };
+	~drawLine.(852f:4, 852f:19);
+	~drawLine.(853f:1, 853f:20);
+	~drawLine.(854f:1, 855f:5);
+
 )
 ( //earlyhole
 	Reaper.play(430, 555);
@@ -220,6 +316,7 @@
 	} )
 )
 ( //titles in hole
+	Reaper.play(515, 551);
 	"Maura-Leverage-defs.scd".load;
 	~holeSound = {
 		BrownNoise.ar()
@@ -246,7 +343,6 @@
 		}) 
 	};
 
-	Reaper.play(515, 551);
 	~notes = [1, 3, 4.5, 4, 5, 2, 2.5, 6, 5, 4.5, 1].df(\c).q.asStream;
 	[
 		[516f:21, 517f:22],
@@ -261,8 +357,8 @@
 		[540f:11, 541f:11],
 		[542f:11, 544f:6],
 	].do{|i| ~title.(i[0], i[1], ~notes.next)}
-	)
-	( //downturn
+)
+( //downturn
 	"Maura-Leverage-defs.scd".load;
 		SynthDef.new("rampDown", {arg start=20000, end=400,out = 0, amp = 0.05, len = 5;
 			var sine, env_gen, env, pEnv;
@@ -274,9 +370,10 @@
 		~falling = [start: 3000, end: 1500,instrument: \rampDown,amp: 0.01, len:20, dur: Pwhite(2.2, 3.4, 5)].p;
 		Reaper.sched(908f:13, ~falling.play);
 		Reaper.play(906, 950)
-	)
-	( //interest rates
-		Reaper.play(939, 1010);
+)
+( //interest rates
+		Reaper.play(936, 1020);
+		~record.("interest", 1010.seconds-936.seconds);
 		"Maura-Leverage-defs.scd".load;
 		~interestEnv = [[941, 0.66], [941f:14, 1], [941f:20, 1], [942f:22, 0.45], [943, 0.5], [943f:13, 0.1], [944f:16, 0.1], [945f:19, 0.55], [946f:15, 0.1], [946f:23, 0.1], [948f:14, 0.9]].flop.reverse
 		=> {|i| Env(i[0]* 4000, i[1].differentiate.drop(1), \exp)};
@@ -307,6 +404,36 @@
 				instrument: \sawSynthSustain,
 				hifreq: 9000,
 				freq: [1, 2, 3, 4, 5].df(\f),
+				att: len,
+				amp: 0.02,
+				dur: len,
+				rel: 8
+			).play
+		});
+
+		Reaper.sched(958f:11, { //speculative investment activity
+			(instrument: [\wash, \harp], coef: 0.15, freq: [500, 400], amp: [0.1, 0.03]).play
+		});
+
+		~drawLineEnv.(1001f:5, 1003f:4, Env([0.1, 0.1] * 4000,3), {Line.kr(-1, 1, 2)});
+
+		Reaper.sched(1003, {
+			(instrument: \harpGendyPan,modWidth: 0.01, freq: [-1, 1, 12].df('a-')).play;
+			(instrument: \stringyy,modWidth: 0.01, freq: [-1, 1, 12].df('a-')).play
+		});
+		~drawLineEnv.(1004f:9, 1007f:19, Env([0.2, 1]*4000,3f:10), {Line.kr(-0.5, 0.5, 3f:10)});
+		Reaper.sched(1006f:13, {
+			(instrument: \harpGendyPan,modWidth: 0.01, freq: [-1, 1, 12].df('a-')* 4/3).play;
+			(instrument: \stringyy,modWidth: 0.01, freq: [-1, 1, 12].df('a-') * 4/3).play
+		});
+		Reaper.sched(1008f:6, { //brackets
+			var end = 1009f:15;
+			var len = end - (1008f:6);
+			(
+				instrument: \sawSynthSustain,
+				center: 0.8,
+				hifreq: 9000,
+				freq: [1, 2, 3, 4, 5].df(\c),
 				att: len,
 				amp: 0.02,
 				dur: len,
@@ -375,7 +502,7 @@
 )
 (
 	Reaper.play(1735);
-	~record.("IOU-corkscrew-firstPart", 1755 - 1735 );
+	// ~record.("IOU-corkscrew-firstPart", 1755 - 1735 );
 	"Maura-Leverage-defs.scd".load;
 	~drawLineEnv.(1735f:13, 1743f:17, 
 		Env(
@@ -406,7 +533,7 @@
 	})
 )
 (
-	~record.("IOU-corkscrew", 1802 - 1750 );
+	// ~record.("IOU-corkscrew", 1802 - 1750 );
 	Reaper.play(1750);
 		~interestEnv = [[941, 0.66], [941f:14, 1], [941f:20, 1], [942f:22, 0.45], [943, 0.5], [943f:13, 0.1], [944f:16, 0.1], [945f:19, 0.55], [946f:15, 0.1], [946f:23, 0.1], [948f:14, 0.9]].flop.reverse
 		=> {|i| Env(i[0]* 4000, i[1].differentiate.drop(1) * 0.57, \exp)};

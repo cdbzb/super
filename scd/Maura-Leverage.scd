@@ -180,6 +180,7 @@
 )
 ( // pigtail
 	Reaper.play(1201, 1217);
+	~record.("pigtail", 28);
 	[
 		1203f:22
 		, 1205f: 20, 
@@ -187,28 +188,39 @@
 		// 1206f: 22
 	].do{|i x|
 		Reaper.sched(i , {
-			[1, 3.1, 6.2].df(\d)[x] => (instrument: \harp, freq: _) => _.play
+			[1, 3.1, 6.2].df(\d)[x] => 
+			(
+				instrument: \harpGendyPan,
+				modWidth:0,
+				pan: [-0.5,0,0.5][x],
+				freq: _,
+			)
+			=> _.play
 		} )
 	};
+	~drawLine.(1204f:2, 1205f:20);
+	~drawLine.(1206f:2, 1206f:19);
 	1208f:3 => Reaper.sched(_, {
 		{
 			SinOsc.ar([1300, 500, 650, 750])
 			* EnvGen.cutoff(14f:10-(8f:3), 0.1)
-			* XLine.kr(1, 0.1, 5)
+			* XLine.kr(1, 0.01, 15)
 			/100
 		}.play
 	})
 	//three disappointments
 )
 (
-//twisty up
+//friendship twisty
 	Reaper.play( 1308, 1320 );
+	~record.("twisty", 14);
 	Reaper.sched( 1309f:9 + 0.2, 
 		{
 			{
 				Env( [1, 5, 2, 7].df(\e), [9f:9, 10f:6, 10f:22, 11f:12].differentiate.drop(1) ).kr(2)
 				=> Saw.ar(_)
 				/80
+				=> Pan2.ar(_, 0)
 			}.play
 		}
 	)
@@ -373,7 +385,7 @@
 )
 ( //interest rates
 		Reaper.play(936, 1020);
-		~record.("interest", 1010.seconds-936.seconds);
+		~record.("interest", 1015.seconds-936.seconds);
 		"Maura-Leverage-defs.scd".load;
 		~interestEnv = [[941, 0.66], [941f:14, 1], [941f:20, 1], [942f:22, 0.45], [943, 0.5], [943f:13, 0.1], [944f:16, 0.1], [945f:19, 0.55], [946f:15, 0.1], [946f:23, 0.1], [948f:14, 0.9]].flop.reverse
 		=> {|i| Env(i[0]* 4000, i[1].differentiate.drop(1), \exp)};
@@ -440,6 +452,139 @@
 				rel: 8
 			).play
 		});
+)
+(//spiral
+	Reaper.play(1018);
+	// ~record.("spiral", 20);
+	~times = [1018f:7, 1019f:11, 1020f:2, 1020f:14, 1021, 1021f:19, 1022f:13, 1023f:1, 1023f:12, 1024f:7, 1025f:6, 1025f:16, 1026f:6, 1027f:4, 1028f:4, 1028f:16, 1029f:4, 1029f:19, 1030f:12];
+	~spiralEnv = Env([1, 2, 4, 3, 2, 3, 5, 4, 3, 4, 6, 5, 4, 5, 7, 6, 5, 6, 8] / 8 * 5000 ,~times.differentiate.drop(1));
+
+	~drawLineEnv.(1018f:16, 1030f:10, ~spiralEnv, 0);
+	~synths = List[];
+	Reaper.sched(~times[0], {
+		~effect = Effect.bus(
+			{|i| MoogFF.ar(i, Env([5000, 5000, 20], [1033f:22 - ~times[0], 1f:15]).kr(0), 2.5) },inputChannels:2)
+		});
+	~times.select({|i x| x%4==1}).do{|i x|
+		Reaper.sched(i, {
+			var pitch = [1, 3, 5, 7,  ].df(\c)[x];
+			var endPitch = [1, 2, 3, 4].df(\B)[x];
+			~synths.add(
+				{
+					SinOsc.ar(Env([pitch,pitch, endPitch],[1031f:10 - i, 2f:7] ).kr(0), 0, 0.02).tanh
+					* Env.asr(0).kr(2,gate:\gate.kr(1))
+					=> Out.ar(~effect, _)
+					// => Pan2.ar(_, -1)
+				}.play 
+			)
+		})
+	};
+	~times.select({|i x| x%4==3}).do{|i x|
+		Reaper.sched(i, {
+			var pitch = [1, 3, 5, 6, 12,].df(\g)[x];
+			var endPitch = [1, 2, 3, 4, 5].df('f#')[x];
+			~synths.add(
+				{
+					SinOsc.ar(Env([pitch,pitch, endPitch],[1031f:10 - i, 2f:7]).kr(0), 0, 0.02).tanh
+					* Env.asr(0).kr(2,gate:\gate.kr(1))
+
+					=> Out.ar(~effect + 1, _)
+					// => Pan2.ar(_, 1)
+				}.play
+			)
+		})
+	};
+	Reaper.sched(1035f:9, {
+		~synths.do(_.release)
+	})
+)
+(//2016 filing
+	Reaper.play(1052);
+	~record.("2016-filing", 60);
+	Reaper.sched(1052f:17, {
+
+	 
+		// Synths(\sparkTriangle,\rel, 5, \amp, 0.015,\out, [0, 1], \freq, [300, 400] * 1.2, \depth, 0.01).dur(1.5)
+		(
+			instrument: \sparkTriangle,
+			rel: 5, 
+			amp: 0.015, 
+			out: Effect.bus({|i| DWGReverbC1C3.ar(i, mix: 0.1) }),
+			freq: [300, 400]* 1.2 * 1.2,
+			dur: 2,
+			att: 0
+		
+		).play;
+	});
+	~bumplet = {|time pitch out amp|
+		{
+			{
+				SinOsc.ar(pitch, 0, Env.perc(0.5, 5).kr(0)) / 8
+				* amp
+			}.play(s, out);
+		} => Reaper.sched(time, _)
+	};
+		Reaper.sched(1057f:6, {
+
+		{
+			SinOsc.ar([1300, 500, 650, 750])
+			// * EnvGen.cutoff(14f:10-(8f:3), 0.1)
+			* XLine.kr(1, 0.01, 20)
+			/300
+		}.play
+		});
+	~bumplet.(1102f:13, 1300, 1, 0.1);
+	~bumplet.(1105, 650, 0, 0.05);
+	~bumplet.(1107f:8, 750, 1, 0.02);
+		Reaper.sched(1122f:1, {
+		{
+			SinOsc.ar([1300, 500, 650, 750].scramble +1).tanh
+			// * EnvGen.cutoff(14f:10-(8f:3), 0.1)
+			* XLine.kr(1, 0.01, 20)
+			/300
+			/2
+		}.play
+		});
+		~drawLine.(1119f:15, 1120f:16);
+		~drawLine.(1135f:23, 1137f:4);
+		Reaper.sched(1139f:20, {
+			var done = 1141f:19;
+			var out = 1144f:19;
+			{
+				Impulse.ar(
+					[
+						Line.kr(5.df(\e), 1.df(\e), done-(1139f:13)),
+						Line.kr(1.df(\e), 5.df(\e), done-(1139f:13))
+					]
+				)
+				/10
+				=> {|i| CombC.ar(i, 0.4, 0.4, 5)/3+i}
+				* EnvGen.cutoff(done - (1139f:13), 3)
+			}.play;
+		});
+		Reaper.sched(1141f:19, {
+			(amp: 0.03,instrument: \wash, freq: [1, 5, 12, 16, 17].df(\b)).play
+		});
+)
+(//after the parade
+	Reaper.play(1155);
+	~dateRange = { |freq1 freq2 amp=0.1 |
+		var freq = [freq1, freq2];
+		{
+			{
+				Gendy3.arWidth(freq: freq, width: 1.040)
+				/2
+				+ Gendy1.arWidth(freq: freq, width: 1.040)
+				/2
+				* amp
+				* Env.perc(0.1, 10).kr(2,gate:1)
+			}.play
+		}
+	}; 
+
+		Reaper.sched(1158f:17,{ 
+			~dateRange.(300, 375, 0.02).play
+		})
 )
 ( //last filing
 	// ~record.("lastArtistList", 1630 - 1611);

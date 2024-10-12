@@ -87,6 +87,24 @@
 		emptyUpper: 56f:22,
 		art:41f:4 
 	);
+
+	[\empty, \emptyUpper, \art].do({ |i x| ~boxed[i] => Reaper.sched(_,{ (
+		freq: [200, 250, 280][x] * 2,
+		amp:0.03,
+		coef:0.2,
+		out:Effect.bus({|i| FreeVerb.ar(i, 0.7, 1) }),
+		instrument:\harp
+	).play })});
+	Reaper.sched(~boxed.loan.initial, {
+		{
+			Impulse.ar(
+				Env([100, 100, 125, 125, 140, ], [36f:20, 47f:7, 47f:15, 55f:18, 56f:02].differentiate.drop(1), \exp).kr(0,gate:1)
+			)
+			/10
+			* EnvGen.cutoff(~black - ~boxed.loan.initial, 0.1)
+		}.play
+	});
+
 	Reaper.sched( 35f:6, {
 		(instrument: \sawSynth,freq: 250, att: 3,freq: 350, amp:0.02).play
 	});

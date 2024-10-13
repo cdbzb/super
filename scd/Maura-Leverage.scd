@@ -1,5 +1,6 @@
 ( //animation 1
 	Reaper.play(29, 145);
+	~record.("animation1", 80);
 	"Maura-Leverage-defs.scd".load;
 	// Reaper.play(*~region);
 
@@ -118,6 +119,7 @@
 )
 ( //2013 - 2019
 	Reaper.play(102 );
+	~record.("2013-2019",30 );
 
 	~dateRange = { |freq1 freq2 amp=0.1 |
 		var freq = [freq1, freq2];
@@ -301,16 +303,17 @@
 	~drawLine.(854f:1, 855f:5);
 
 )
-( //earlyhole
+( //hole1
 	Reaper.play(430, 555);
+	~record.("hole1", 90);
 	"Maura-Leverage-defs.scd".load;
-
-	~opening = [ 432f:17, 435f:09, 435f:22, 435f:05, 437f:03   ];
-	~openingEnv = Env([4, 10, 20, 40, 100]/1000,~opening.differentiate.drop(1), \exp);
+	~opening = [ 432f:17, 435f:09, 435f:22, 435f:05, 437f:03, 517f:22   ];
+	~openingEnv = Env([4, 10, 20, 40, 100, 100, 0]/1000,~opening.differentiate.drop(1) , \exp);
 	~holeSound = {
-		BrownNoise.ar()
+		BrownNoise.ar().dup
 		/600
-		=> Klank.ar(`[[150, 125 ] * 1.5], _)
+		/3
+		=> Klank.ar(`[[150, 125 ] * 1.5,nil ,0.7], _)
 		* ~openingEnv.kr(0).poll
 		* Env.asr(0).kr(2,gate:\gate.kr(1))
 		// *EnvGen.cutoff(26f:20 - (14f:4), 0.1)
@@ -318,44 +321,59 @@
 	Reaper.sched( 432f:17, { ~holeSound = ~holeSound.play } );
 	~firstTitle = 503f:13;
 	Reaper.sched( ~firstTitle, {
-		~holeSound.release(15);
+		// ~holeSound.release(15);
 		(
 			instrument: [\harp, \stringyy ],
 			amp: [0.01, 0.1],
-			freq: [1].df('f#'),
-			coef: 0.1
+			freq: [-1].df('f#'),
+			coef: 0.1,
+			dur: 2
 		).play
-	} )
-)
-( //titles in hole
-	Reaper.play(515, 551);
-	"Maura-Leverage-defs.scd".load;
-	~holeSound = {
-		BrownNoise.ar()
+	});
+	~holeSound2 = {|att = 1|
+		// var att = 1;
+		BrownNoise.ar().dup
 		/6000
-		=> Klank.ar(`[[150, 125 ] * 1.5], _)
+		/3
+		=> Klank.ar(`[[-1.df(\g),150, 125 ] * 1.5, nil, 0.5], _)
 		// * ~openingEnv.kr(0).poll
-		* Env.asr(0).kr(2,gate:\gate.kr(1))
+		* Env.asr(~att, 1, 2).kr(2,gate:\gate.kr(1))
+		
 		// *EnvGen.cutoff(26f:20 - (14f:4), 0.1)
 	};
-	~title = {|start end freq=400| 
-		Reaper.sched(start -0.2, {
+	~title = {|start end freq=400 num| 
 			var dur = end - start;
-			s.bind{
-				{
-					Impulse.ar( freq)
-					* EnvGen.cutoff(dur, 5)
-					/20
-					=> Pan2.ar(_, -1.rrand(1))
-				}.play;
+		Reaper.sched(start -0.2, {
+			fork{
+				s.bind{
+					{
+						Impulse.ar( freq)
+						* EnvGen.cutoff(dur, 5)
+						/20
+						=> Pan2.ar(_, -1.rrand(1))
+					}.play
+				}
 			};
-			(instrument: [\harp, \stringyy], freq: 300.rrand(500), amp: [0.01, 0.05]).play;
-			~holeSynth = ~holeSound.play;
-			fork{ dur.wait; ~holeSynth.release(1) }
-		}) 
+			// (instrument: [\harp, \stringyy], freq: [1, 3, 4.5, 2, 6, 5.5, 5, 4, 5].df(\c)[x], amp: [0.01, 0.05]).play;
+			(instrument: [\harp, \stringyy], freq: freq, amp: [0.01, 0.05]).play;
+		}) ;
+		Reaper.sched(start , {
+			fork{//to get the firstOne
+				dur.wait;
+				try{~holeSound.release(2)};
+			};
+			(num.isStrictlyPositive).if {
+				~holeSynth = ~holeSound2.play;
+				fork{ dur.wait;  ~holeSynth.release(2) }
+			}
+		}
+		)
 	};
 
-	~notes = [1, 3, 4.5, 4, 5, 2, 2.5, 6, 5, 4.5, 1].df(\c).q.asStream;
+	~notes = [1, 3, 4.5, 4, 5, 2, 2.5, 6, 5, 4.5, 1].df(\c);
+	~notes = [1, 3, 2, 4, 3, 5,  4, 6,  5,  7, 6 ].df(\c);
+	~notes = [1, 5, 3, 7, 5, 2, 7, 5, 2, 6, 3].df(\c);
+	~att = 3;
 	[
 		[516f:21, 517f:22],
 		[519f:5,  520f:4],
@@ -368,20 +386,31 @@
 		[538f:22, 539f:19],
 		[540f:11, 541f:11],
 		[542f:11, 544f:6],
-	].do{|i| ~title.(i[0], i[1], ~notes.next)}
+	].do{|i x| ~title.(i[0], i[1], ~notes[x], x)};
+	Reaper.sched(546f:21, {~holeSynth.release(1)});
 )
 ( //downturn
+	Reaper.play(906, 950);
 	"Maura-Leverage-defs.scd".load;
-		SynthDef.new("rampDown", {arg start=20000, end=400,out = 0, amp = 0.05, len = 5;
-			var sine, env_gen, env, pEnv;
-			env_gen = LFGauss.ar(len,0.25,loop:0);
-			pEnv = XLine.ar(start,end,len); //was 12k - 40
-			sine = SinOsc.ar(pEnv,0,amp*env_gen);
-			Out.ar(out, sine);
-		}).add;
-		~falling = [start: 3000, end: 1500,instrument: \rampDown,amp: 0.01, len:20, dur: Pwhite(2.2, 3.4, 5)].p;
-		Reaper.sched(908f:13, ~falling.play);
-		Reaper.play(906, 950)
+	~record.("downturn", 24);
+	~drawLineEnv.(915f:14, 919f:22, Env([1,0.4, 0.4, 0.1 ]* 4000,[915f:4, 917f:16, 919f:22].differentiate.drop(1)), {Line.kr(-0.2, 025, 4)});
+	SynthDef.new("rampDown", {arg start=20000, end=400,out = 0, amp = 0.05, len = 5;
+		var sine, env_gen, env, pEnv;
+		env_gen = LFGauss.ar(len,0.25,loop:0);
+		pEnv = XLine.ar(start,end,len); //was 12k - 40
+		sine = SinOsc.ar(pEnv,0,amp*env_gen);
+		Out.ar(out, sine);
+	}).add;
+	~falling = [start: 3000, end: 1500,instrument: \rampDown,amp: Pseg([0.001, 0.01, 0.01, 0.001], [3, 0, 6], \exp), len:20, dur: Pwhite(2.2, 3.4, 5)].p;
+	Reaper.sched(908f:13, ~falling.play);
+	// Reaper.sched(917f:16,{
+	// 	(
+	// 		instrument: [\harp, \wash],
+	// 		freq: [1, 1].df('g#'),
+	// 		coef: 0.2, 
+	// 		amp: [0.02, 0.04]
+	// 	).play
+	// });
 )
 ( //interest rates
 		Reaper.play(936, 1020);

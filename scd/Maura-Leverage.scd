@@ -117,6 +117,7 @@
 	});
 	~drawLine.(40f:08, 41f:07);
 )
+
 ( //2013 - 2019
 	Reaper.play(102 );
 	~record.("2013-2019",30 );
@@ -179,6 +180,16 @@
 	Reaper.sched( 126f:22, {
 	~holeSound.play	
 	} )
+)
+(//fruit
+	TempoClock.tempo_(0.95);
+	"Maura-Leverage-Fruit.scd".load;
+	Reaper.play(215 );
+	Reaper.sched(216f:15,
+		{
+			Song.play
+		}
+	)
 )
 ( // pigtail
 	Reaper.play(1201, 1217);

@@ -1,3 +1,17 @@
+(// 24 billion
+	Reaper.play(13);
+	~record.("24 billion", 12);
+	"Maura-Leverage-defs.scd".load;
+	Reaper.sched(13f:6,{
+		(instrument: \stringyy, freq: [1, 3, 5, 7].df('f#')).play;
+		(out: Effect.bus({|i| DWGReverbC1C3.ar(i) }),freq: 5.df('f#', [2,3]), amp: 0.05).play
+	});
+	Reaper.sched(19f:3, {
+			(instrument: [\harp, \wash], freq: [5, 1, 11].df('e-'), coef: 0.2, amp: [0.02, 0.1]).play
+		}
+	);
+	~drawLine.(23f:15, 24f:16)
+)
 ( //animation 1
 	Reaper.play(29, 145);
 	~record.("animation1", 80);
@@ -117,10 +131,9 @@
 	});
 	~drawLine.(40f:08, 41f:07);
 )
-
 ( //2013 - 2019
 	Reaper.play(102 );
-	~record.("2013-2019",30 );
+	~record.("2013-2019",70 );
 
 	~dateRange = { |freq1 freq2 amp=0.1 |
 		var freq = [freq1, freq2];
@@ -137,6 +150,25 @@
 	}; 
 	// ~dateRange.(300, 360, 0.05);
 	Reaper.sched(102f:23, ~dateRange.(300, 360, 0.05));
+
+	106f:5 => Reaper.sched(_, {
+		{
+			SinOsc.ar([1300, 500, 650, 750])
+			* EnvGen.cutoff(14f:10-(8f:3), 0.1)
+			* XLine.kr(1, 0.01, 15)
+			/100
+			/2
+		}.play
+	});
+	~bumplet = {|time pitch out amp|
+		{
+			{
+				SinOsc.ar(pitch, 0, Env.perc(0.5, 5).kr(0)) / 8
+				* amp
+			}.play(s, out);
+		} => Reaper.sched(time, _)
+	};
+	~bumplet.(110f:5, 750, 1, 0.01);
 	// ~chart = {
 	// 	Dust.ar([18, 13.1]) / 2
 	// 	=> FreeVerb.ar(_, 1,  )
@@ -155,7 +187,17 @@
 	// 		dur: 110f:5 - (106f:7)
 	// 	].pm.play
 	// });
-	Reaper.sched(120f:2, ~dateRange.(300 * 0.95, 360 * 0.95, 0.05));
+	Reaper.sched(120f:2, ~dateRange.(250, 400, 0.05));
+	Reaper.sched(120f:3, {
+			(
+				instrument: \stringyy,
+				width: 10,
+				freq: [100, 150],
+				dur: 205.seconds.asInteger f:4 - (120.seconds.asInteger f:3) ,
+				amp: 0.05
+			).play
+		}
+	);
 	// Reaper.play(125 );
 	Reaper.sched(128f:17, { //circle
 			{
@@ -173,6 +215,7 @@
 	~holeSound = {
 		BrownNoise.ar()
 		/4000
+		/3
 		=> Klank.ar(`[[150, 200 ]], _)
 		*EnvGen.cutoff(28f:17 - (26f:22), 0.1)
 		// * Env.perc(0.1, 10).kr(2)
@@ -181,15 +224,37 @@
 	~holeSound.play	
 	} )
 )
+(// debt theory
+	~record.("Debt Theory Title", 10);
+	Reaper.play(205);
+	Reaper.sched(206f:13, {
+		(freq: [1, 3, 5, 7].df(\f), instrument: \stringyy).play
+	})
+)
 (//fruit
-	TempoClock.tempo_(0.95);
-	"Maura-Leverage-Fruit.scd".load;
 	Reaper.play(215 );
-	Reaper.sched(216f:15,
+	~record.("fruit", 90);
+	Song.cursor_(0);
+	"Maura-Leverage-defs.scd".load;
+	TempoClock.tempo_(0.92);
+	Reaper.sched(251f:23, { TempoClock.tempo_(0.88) });
+	Reaper.sched(254f:23, { TempoClock.tempo_(0.86) });
+	Reaper.sched(256f:23, { TempoClock.tempo_(0.84) });
+	Reaper.sched(300f:23, { TempoClock.tempo_(0.825) });
+	Reaper.sched(303f:23, { TempoClock.tempo_(0.85) });
+	Reaper.sched(306f:23, { TempoClock.tempo_(0.86) });
+	Reaper.sched(309f:23, { TempoClock.tempo_(0.88) });
+	Reaper.sched(312f:23, { TempoClock.tempo_(0.9) });
+	"Maura-Leverage-Fruit.scd".load;
+	Reaper.sched(216f:15 ,
 		{
 			Song.play
 		}
-	)
+	);
+	// Reaper.play(302);
+	Reaper.sched(303f:14, {
+		(instrument: \ooh, freq: 1.df(\d, [7, 6 ]), amp: 0.05).play
+	});
 )
 ( // pigtail
 	Reaper.play(1201, 1217);
@@ -220,7 +285,9 @@
 			* XLine.kr(1, 0.01, 15)
 			/100
 		}.play
-	})
+	});
+
+
 	//three disappointments
 )
 (
@@ -276,7 +343,7 @@
 ( //close hole
 	Reaper.play(813, 940);
 	"Maura-Leverage-defs.scd".load;
-	// ~record.("close-hole", 940.seconds - 813.seconds);
+	~record.("close-hole", 940.seconds - 813.seconds);
 	~dateRange = { |freq1 freq2 amp=0.1 |
 		var freq = [freq1, freq2];
 		{
@@ -299,16 +366,14 @@
 		/2
 	};
 	Reaper.sched( 814f:4, { ~holeSound.play } );
-	Reaper.sched(818f:2, ~dateRange.(400, 500, 0.01));
-	Reaper.sched(835f:4, ~dateRange.(400/1.2, 500/1.166, 0.01));
+	// Reaper.sched(818f:2, ~dateRange.(400, 500, 0.01));
+	// Reaper.sched(835f:4, ~dateRange.(400/1.2, 500/1.166, 0.01));
 
 	~drawLine.(842f:3, 843f:13);
-	2.do{ 
-		~drawLine.(842f:20, 844f:6);
-		~drawLine.(844f:7, 845f:1)
-	};
+	~drawLine.(842f:20, 844f:6);
+	~drawLine.(844f:7, 845f:1);
 	~drawLine.(848f:9, 849f:17);
-	3.do{ ~drawLine.(850f:14, 851f:13) };
+	 ~drawLine.(850f:14, 851f:13);
 	~drawLine.(852f:4, 852f:19);
 	~drawLine.(853f:1, 853f:20);
 	~drawLine.(854f:1, 855f:5);
@@ -728,4 +793,40 @@
 			(amp: 0.1,instrument: \stringyy,modWidth: 0.01, freq: [-1, 1, 12].df('b-')).play
 		} )
 
+)
+(//ending
+Reaper.play(1803);
+~record.("end cue", 28);
+Reaper.sched(1804f:1, {
+		[
+			freq: [
+				[1, 3, 5, 7].df('f#'),
+				[1, 3, 4.5, 6].df('f#'),
+				[-7, 2.5, 4.5, 6].df('f#'),
+				[-7, 2.5, 4.5, 5.5].df('f#'),
+			].q,
+			wet:0,
+			dur: [1804f:1,1807f:7, 1809f:11, 1811f:23, 1812f:23 ].differentiate.drop(1).q,
+			instrument: \stringyy,
+			wet: 0.1,
+			amp: 0.05
+		].ppm
+});
+Reaper.sched(1814,{
+		[
+			wet:0,
+			freq: [
+				[-1, 1, 3, 5, 7],
+				[-1, 1, 3, 4, 6],
+				[-6.5, 6.5, 2, 4, 6],
+				[-7, 7, \r, 3, 5.5],
+				[-6, \r, \r, \r, 11.5]
+			].df('c', 6).q,
+			dur: [1814, 1816f:4,1818f:17, 1821, 1825f:5, 1830f:5].differentiate.drop(1) .dropLast ++ 1 =>_.q,
+			legato: [1, 1, 1, 1, 0.1].q,
+			instrument: \stringyy,
+			wet: 0.1,
+			amp: [10, 10, 9, 7, 4] /230 => _.q
+		].ppm
+})
 )

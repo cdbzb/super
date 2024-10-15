@@ -105,7 +105,7 @@
 
 	[\empty, \emptyUpper, \art].do({ |i x| ~boxed[i] => Reaper.sched(_,{ (
 		freq: [200, 250, 280][x] * 2,
-		amp:0.03,
+		amp:0.045,
 		coef:0.2,
 		out:Effect.bus({|i| FreeVerb.ar(i, 0.6, 1) }),
 		instrument:\harp
@@ -114,7 +114,7 @@
 	Reaper.sched(~boxed.loan.initial, {
 		{
 			Impulse.ar(
-				Env([100, 100, 125, 125, 140, ], [36f:20, 47f:9, 47f:23, 55f:16, 56f:03].differentiate.drop(1), \exp).kr(0,gate:1)
+				Env([100, 100, 125, 125, 140, ], [36f:20, 47f:9, 47f:23, 55f:16, 56f:03].differentiate.drop(1), \exp).kr(0,gate:1) * [1, 1.5] => Mix.ar(_)
 			)
 			/15
 

@@ -15,7 +15,6 @@
         }
 
 }
-
 +Float {
   seconds {
     var minutes = this / 100 => _.floor;

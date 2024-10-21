@@ -79,7 +79,7 @@ Trek.setTransition(1, -4, dur: 4, func: {
 	// 	dur: 2
 	// ).play//.ppm;
 	(instrument:\cymbalsDSStereo,amp:0.01, att:2.5,target:Trek.transitionGroup,addAction:\addToTail).play;
-}).();
+});
 
 Trek.faders[2]={~asrFader.(1, 0, 1)};
 
@@ -337,7 +337,7 @@ Trek.setTransition(20, -6, dur: 0, func: {
 	(instrument: \stringyy, mix:0, width:20,att:5, amp: 0.3, gendyFreq:[1, 2,3, 4], out:[0,1, 3, 4],amp: 0.01, modWidth: 0.01, freq: -1.df('c#'), ).play;
 	Trek.faderSynths[20].release;
 })
-.value
+// .value
 ;
 Trek.faders[21] = {~asrFader.(4, 4, 2)};
 Trek.setTransition(21, -1, dur: 0, func: {

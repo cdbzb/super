@@ -329,6 +329,20 @@ Trek {
 		// }.inEnvir;
 	}
 
+	*makePersistentFader {|num|
+		num = num ? keys.indexOf( Song.current );
+		num.debug("number: ");
+		this.loadTransitions;
+		Trek.faders[num].();
+		{
+			fork{
+				while { StageLimiter.activeSynth.isRunning.not } {0.1.wait};
+				Trek.faders[num].()
+			}
+		} => ServerTree.add(_);
+		"Do Cmd-. to start fader / recompile to turn off"
+	}
+
 	*vocoder {
 		vocoderGroup = vocoderGroup = Group(addAction:\addToTail);
 		carrierBus = Bus.audio(Server.default,5);
@@ -479,5 +493,6 @@ Trek {
 		\laMer;
 	].do({|i| Song.resources.put(i, Trek.perform(i))})
 	}
+
 }
 

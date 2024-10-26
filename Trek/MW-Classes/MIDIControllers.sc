@@ -84,8 +84,7 @@ CC {
 	}
 	*getValues {|mkInstance|
 		var res = ();
-		all[mkInstance ? \default].asKeyValuePairs.pairsDo{|i j| res.put(i, j.val)};
-		
+		(all[mkInstance ? \default] ? []) .asKeyValuePairs.pairsDo{|i j| res.put(i, j.val)};
 		^res
 	}
 	*setValues {|e| 

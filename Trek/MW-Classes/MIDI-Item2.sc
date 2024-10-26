@@ -1,10 +1,10 @@
 MIDIItem2 {
 	classvar <>folder;
-	var <midiEvents , <name, <>initialCCValues;
+	var <>midiEvents , <name, <>initialCCValues;
 	var stamp;
 	var restFirst, <initialRest, <notes, <ccTracks;
 	var takes;
-	var <mk;
+	var <>mk;
 	classvar midiout;
 
 	*initClass {
@@ -14,7 +14,13 @@ MIDIItem2 {
 		File.exists(folder).not.if{ "mkdir %".format(folder).unixCmd };
 		Event.addEventType(\setCC, { CC(~ctlNum, mk: ~mk).setRaw( ~control ) });
 		Event.addEventType(\setBend, { CC(~ctlNum, mk: ~mk).setRaw( ~control ) });
-		Event.addEventType(\setPoly, {{~mk.keys[~midinote]}.().set(\poly, ~polyTouch)})
+		Event.addEventType(\setPoly, {
+			( ~mk.keys[~midinote] != 0 ).if {
+				 ~mk.keys[~midinote].().set(\poly, ~polyTouch) 
+			}{
+				~type = \rest
+			}
+		})	
 	}
 
 	*getMidiOut {
@@ -32,6 +38,9 @@ MIDIItem2 {
 			\new.postln; 
 			^super.new.init(name, restFirst, mk)
 		}
+	}
+	*newFrom{ |midiEvents mk|
+		^ MIDIItem2( UniqueID ).mk_(mk).midiEvents_(midiEvents)
 	}
 
 	init { |n r m|
@@ -61,19 +70,13 @@ MIDIItem2 {
 			.mk_(mk)
 		}
 	}
-	ccEvents { |cc|
-		^ccTracks[cc].collect{|i|
-			i.copy
-			.type_( \setCC )
-		}
-	}
 	ccPbind { |num |
-		^this.ccEvents(num).eventsToPatternPairs.p
+		^this.ccTracks[num].eventsToPatternPairs.p
 	}
-	ccPpar {
+	ccPbinds {
 		^this.ccTracks.keys.collect{ |x|
-			this.ccPbind(x)
-		} => Ppar (_)
+			try{this.ccPbind(x)}
+		}.select{|i| i.notNil}.asArray 
 	}
 	notesPbind { 
 		var res = List.new;
@@ -94,9 +97,11 @@ MIDIItem2 {
 	}
 	ppar {
 		^Ppar(
-			[ this.notesPbind ]
-			++ this.ccPpar
-			++ (initialRest ++ this.polyEvents => _.setDurs => _.q)
+			[
+				this.notesPbind ,
+			]
+			++ this.ccPbinds
+			// ++ (initialRest ++ ccTracks[\poly]  => _.q)
 		)
 	}
 	makeNotes {
@@ -108,23 +113,23 @@ MIDIItem2 {
 		notes = initialRest.copy ? [] ++ on;
 		notes.setDurs;
 	}
-	makeCCs {
-		ccTracks = midiEvents.select{|e| [\control, \bend].includes(e.midicmd) }.copy
+	makeCCs { //seperate CC bend and poly data into tracks with \dur key for use in Pbinds
+		ccTracks = midiEvents.select{|e| e.midicmd == \control }.copy // do I need copy here??
 		.select{|i| i.ctlNum.notNil}
 		.sort{ |i j|
-			var a = i.ctlNum.isKindOf(Symbol).if{0}{i.ctlNum};
-			var b = j.ctlNum.isKindOf(Symbol).if{0}{j.ctlNum};
-			a < b
+			i.ctlNum  < j.ctlNum
 		}
 		.separate{ |i j| i.ctlNum != j.ctlNum}
 		.do{|subarray| subarray.setDurs }
 		.collect{|subarray| subarray[0] !? {|i| i.ctlNum -> subarray }}
 		.asDict;
-	}
-	polyEvents {
-		^midiEvents.select{|e| [\polytouch].includes(e.midicmd) }.copy
-		.do{|e| e.type = \setPoly}
-		.setDurs
+		ccTracks.add(
+			\poly -> midiEvents.select{|e| e.midicmd == \polytouch }.copy
+			.setDurs
+		);
+		ccTracks.add(
+			\bend -> midiEvents.select{|e| e.midicmd == \bend }.copy.setDurs
+		);
 	}
 	ccsAsArraysOfPoints{
 		^midiEvents.select{|e| e.midicmd == \control}.deepCopy
@@ -158,14 +163,28 @@ MIDIItem2 {
 				(
 					midicmd: \control,
 					timestamp: SystemClock.seconds - start,
-					type: \midi,
-					midiout: midiout ? this.class.getMidiOut,
+					type: \setCC,
+					initial: true,
+					mk: mk,
+					// midiout: midiout ? this.class.getMidiOut,
 					ctlNum: i,
 					control: CC(i).spec.unmap(j) * CC(i).rawScale, //put back in original
-				).debug("CC:")
+				)
 			)
 		};
-
+		midiEvents.add (
+			(
+				midicmd: \control,
+				timestamp: SystemClock.seconds - start,
+				type: \setPoly,
+				initial: true,
+				mk: mk,
+				// midiout: midiout ? this.class.getMidiOut,
+				ctlNum: \polytouch,
+				control: 0,
+				midinote: 60
+			)
+	);
 		restFirst.if{ initialRest = [( type: \rest, timestamp: SystemClock.seconds - start)] };
 		
 		[\noteOn, \noteOff, \control, \polytouch, \bend ].do{ |cmd|
@@ -175,15 +194,15 @@ MIDIItem2 {
 						midicmd: cmd,
 						timestamp: SystemClock.seconds - start,
 						midiout: midiout ? this.class.getMidiOut,
-						type: \midi
+						// type: \midi
 					).postln
 					++
 						switch( cmd, 
-							\noteOn,{ (midinote: num, amp: val/127 ) },
-							\noteOff,{ (midinote: num, amp: val/127 ) },
-							\polytouch, { (midinote: num, polyTouch: val, mk: mk) },
-							\control, { (ctlNum:num, control: val)},
-							\bend, { (ctlNum:\bend, control: val)},
+							\noteOn,{ (type: \midi, midinote: num, amp: val/127 ) },
+							\noteOff,{ (type: \midi, midinote: num, amp: val/127 ) },
+							\polytouch, { (type: \setPoly, midinote: num, polyTouch: val, mk: mk) },
+							\control, { (type: \setCC, ctlNum:num, control: val)},
+							\bend, { (type: \setBend, ctlNum:\bend, control: val)},
 							// \bend, { (val: val, ctlNum:) }
 							
 						)
@@ -195,14 +214,27 @@ MIDIItem2 {
 				argTemplate: {|i| (cmd == \control).if{ i.isStrictlyPositive }{true}}
 			)};
 	}
-	play {
+	playRaw {
+		var playbackEvents;
 		this.stop;
 		fork{
-			midiEvents.collect(_.timestamp).differentiate.drop(1).do{|i x|
+			// midiEvents.collect(_.timestamp).differentiate.drop(1).do{|i x|
+			this.midiEvents.collect(_.timestamp).differentiate.drop(1).do{|i x|
 				midiEvents[x].play;
 				i.wait;
 			}
 		}
+	}
+	play {
+		^this.player.play
+	}
+	player{ |num|
+		^MIDIItemPlayer(I.d, midiEvents, mk)
+		// ^MIDIItemPlayer(
+		// 	{|events| events.reject{|e| e.type == \setCC and: ( e.ctlNum == num )} },
+		// 	this.midiEvents,
+		// 	this.mk
+		// );
 	}
 	save {
 		notes.isNil.if{this.makeNotes};
@@ -213,6 +245,46 @@ MIDIItem2 {
 	}
 
 }
+
+MIDIItemPlayer{ //class to filter and play MIDIItems
+	var <func, <midiEvents, <mk, <outEvents;
+	*new {|func midiEvents mk|
+		^super.newCopyArgs(func, midiEvents, mk).init
+	}
+	init{
+		outEvents = func.(midiEvents)
+	}
+	play {
+		fork{
+			outEvents.collect(_.timestamp).differentiate.drop(1).do{|i x|
+				outEvents[x].play;
+				i.wait;
+			}
+		}		
+	}
+	filter {| func |
+		^MIDIItemPlayer(
+			func,
+			this.outEvents,
+			this.mk
+		);
+	}
+	muteCC{ |num|
+		^MIDIItemPlayer(
+			{|events| events.reject{|e| e.type == \setCC and: ( e.ctlNum == num )} },
+			this.outEvents,
+			this.mk
+		);
+	}
+	initialCCOnly{ |num|
+		^MIDIItemPlayer(
+			{|events| events.reject{|e| e.type == \setCC and: ( e.ctlNum == num ) and: (e.initial.isNil)} },
+			midiEvents,
+			mk
+		)
+	}
+}
+
 + Synth{
 	mapCC{ |param num spec|
 		var cc = CC(param, num, spec);
@@ -220,6 +292,7 @@ MIDIItem2 {
 		cc.mapSynth(this, param)
 	}
 }
+
  
 + SequenceableCollection {
 		setDurs { |finalDur = 1| 
@@ -230,6 +303,8 @@ MIDIItem2 {
 			^this
 		}
 		eventsToPatternPairs{
-			^this.collect({ |i| i.asAssociations.sort.asPairs}).flop.collect{|i| ( i[0].class == Symbol ).if { i[0] }{ i.q }}
+			^this.collect({ |i| i.asAssociations.sort.asPairs}).flop.collect{|i|
+				( i[0].class == Symbol ).if { i[0] }{ i.q }
+			}
 		}
 }

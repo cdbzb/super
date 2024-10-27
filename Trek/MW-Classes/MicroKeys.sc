@@ -34,7 +34,7 @@ MicroKeys {
 			namedList.add(
 				\synth,
 				{ |e|
-					Synth(funcOrDefname.postln, [\freq, e.num.midicps, \amp, e.vel])
+					Synth(funcOrDefname.postln, [\freq, e.num.midicps, \amp, e.vel, \num, e.num])
 					=> this.register(_, e.raw)
 				}
 			)

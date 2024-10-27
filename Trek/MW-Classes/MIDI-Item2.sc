@@ -182,7 +182,7 @@ MIDIItem2 {
 				// midiout: midiout ? this.class.getMidiOut,
 				ctlNum: \polytouch,
 				control: 0,
-				midinote: 60
+				midinote: \r
 			)
 	);
 		restFirst.if{ initialRest = [( type: \rest, timestamp: SystemClock.seconds - start)] };

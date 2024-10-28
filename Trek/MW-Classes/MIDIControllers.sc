@@ -113,7 +113,7 @@ CC {
 		^CC(\monoGate, mk)
 	}
 	init { |n s m rs default|
-		var buildSymbol = {|symbol| symbol ++ number ++ mk => _.asSymbol};
+		var buildSymbol = {|symbol| symbol ++ number ++ mk.hash => _.asSymbol};
 		number = n; spec = s ? ControlSpec(); mk = m ? \default; rawScale = rs;
 		all[mk] = all[mk] ? (); all[mk][number] = all[mk][number] ? this;
 		// all[number]= all[number] ? (); all[number][mk] = all[number][mk] ? this;

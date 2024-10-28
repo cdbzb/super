@@ -42,10 +42,8 @@ MicroKeys {
 			namedList.add(
 				\synth,
 				{ |e| (mk: this, e:e).use{ funcOrDefname.valueEnvir } => this.register(_, e.raw) } 
-				// { |e| (mk: this, e:e).use{ funcOrDefname.valueEnvir } => {|i| keys[e.num] = i }}
 			)
 		};
-		this.makeMIDIdefs;
 		namedList.dump
 	}
 
@@ -57,7 +55,6 @@ MicroKeys {
 			addAction: \addBefore,
 			otherName: \synth
 		) };
-		this.makeMIDIdefs
 	}
 
 	velCurve_ { |curvature range|
@@ -71,7 +68,6 @@ MicroKeys {
 			addAction: \addBefore,
 			otherName: \synth
 		);
-		this.makeMIDIdefs
 	}
 
 	get { |key|
@@ -91,7 +87,8 @@ MicroKeys {
 	prFunc {
 		^namedList.array.reverse.inject(I.d, _ <> _)
 	}
-	makeMIDIdefs {
+
+	activate {
 		MIDIdef.noteOn(\microOn, this.prFunc , noteNum:range);
 		MIDIdef.noteOff(\microOff, {|vel, num| damperDown.postln; ( damperDown == false ).if{ keys[num].release }{ heldNotes.add(keys[num]) }});
 		MIDIdef.cc(\microDamper, {|num| (num == 127).if{ damperDown = true.postln }{ damperDown = false.postln; heldNotes.do(_.release); heldNotes = Set[] } }, 64);
@@ -103,7 +100,7 @@ MonoKeys : MicroKeys {
 	*new {|synthFunc|
 		^super.new.init(synthFunc)
 	}
-	makeMIDIdefs {
+	activate {
 		var monosynth;
 		down = List[];
 		MIDIdef.noteOn(\microOn, {|v n | 

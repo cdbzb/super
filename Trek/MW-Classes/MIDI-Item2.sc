@@ -157,7 +157,7 @@ MIDIItem2 {
 	}
 	record{
 		var start = SystemClock.seconds;
-
+		mk.activate;
 		midiEvents = List[];
 		CC.getValues.asKeyValuePairs.pairsDo{ | i j |
 			midiEvents.add(

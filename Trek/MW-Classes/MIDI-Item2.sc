@@ -33,7 +33,7 @@ MIDIItem2 {
 	*new { |name restFirst=true mk|
 		folder.asPathName.entries.collect(_.fileName).includesEqual(name.asString).if{
 			\reading.postln; 
-			^Object.readArchive(folder +/+ name)
+			^Object.readArchive(folder +/+ name).mk_(mk) //saved mk won't be right otherwise - should not even save?
 		} {
 			\new.postln; 
 			^super.new.init(name, restFirst, mk)
@@ -112,6 +112,7 @@ MIDIItem2 {
 		on.do{|e| var match = off.removeAt(findMatch.(e.midinote)).postln; e.sustain = match.timestamp - e.timestamp; };
 		notes = initialRest.copy ? [] ++ on;
 		notes.setDurs;
+		midiEvents = notes ++ midiEvents.reject{|e| e.type == \mk} => _.sort{|i j| i.timestamp < j.timestamp}
 	}
 	makeCCs { //seperate CC bend and poly data into tracks with \dur key for use in Pbinds
 		ccTracks = midiEvents.select{|e| e.midicmd == \control }.copy // do I need copy here??
@@ -198,10 +199,10 @@ MIDIItem2 {
 					).postln
 					++
 						switch( cmd, 
-							\noteOn,{ (type: \midi, midinote: num, amp: val/127 ) },
-							\noteOff,{ (type: \midi, midinote: num, amp: val/127 ) },
+							\noteOn,{ (type: \mk, mk: mk, midinote: num, amp: val/127 ) },
+							\noteOff,{ (type: \midi, mk: mk, midinote: num, amp: val/127 ) },
 							\polytouch, { (type: \setPoly, midinote: num, polyTouch: val, mk: mk) },
-							\control, { (type: \setCC, ctlNum:num, control: val)},
+							\control, { (type: \setCC, ctlNum:num, control: val, mk: mk)},
 							\bend, { (type: \setBend, ctlNum:\bend, control: val)},
 							// \bend, { (val: val, ctlNum:) }
 							

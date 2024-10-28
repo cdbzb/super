@@ -7,7 +7,7 @@ MicroKeys {
 	*initClass{
 		Event.addEventType(\mk, {
 			var syn = ~mk.prFunc.(~amp * 127, ~midinote); 
-			fork{ ~sustain.wait; syn.release }
+			fork{ ~sustain.wait; syn.release } // add s.latency to wait?
 		})
 	}
 

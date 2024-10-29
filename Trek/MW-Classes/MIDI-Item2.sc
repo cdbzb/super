@@ -4,7 +4,6 @@ MIDIItem2 {
 	var stamp;
 	var restFirst, <initialRest, <notes, <ccTracks;
 	var takes;
-	var <>mk;
 	classvar midiout;
 
 	*initClass {
@@ -32,23 +31,21 @@ MIDIItem2 {
 	}
 
 
-	*new { |name restFirst=true mk|
+	*new { |name restFirst=true |
 		all.keys.includes(name).if { ^all[name] };
 		folder.asPathName.entries.collect(_.fileName).includesEqual(name.asString).if{
 			\reading.postln; 
-			^Object.readArchive(folder +/+ name).mk_(mk).register //saved mk won't be right otherwise - should not even save?
+			^Object.readArchive(folder +/+ name).register //saved mk won't be right otherwise - should not even save?
 		} {
 			\new.postln; 
-			^super.new.init(name, restFirst, mk).register
+			^super.new.init(name, restFirst).register
 		}
 	}
-	*newFrom{ |midiEvents mk|
-		^ MIDIItem2( UniqueID ).mk_(mk).midiEvents_(midiEvents)
+	*newFrom{ |midiEvents |
+		^ MIDIItem2( UniqueID ).midiEvents_(midiEvents)
 	}
 
 	init { |n r m|
-		mk = m ? \default;
-		"mk: %".format(mk).postln;
 		takes = List[];
 		restFirst = r;
 		name = n;
@@ -73,7 +70,6 @@ MIDIItem2 {
 		^notes.collect{|i|
 			i.copy
 			.type_( \mk )
-			.mk_(mk)
 		}
 	}
 	ccPbind { |num |
@@ -97,7 +93,6 @@ MIDIItem2 {
 		};
 		res = res ++ [
 			type: \mk,
-			mk: mk,
 		] => _.p;
 		^res
 	}
@@ -161,7 +156,7 @@ MIDIItem2 {
 	at {|num|
 		^takes[num]
 	}
-	record {
+	record { |mk|
 		var start = SystemClock.seconds;
 		mk.activate;
 		midiEvents = List[];
@@ -172,7 +167,6 @@ MIDIItem2 {
 					timestamp: SystemClock.seconds - start,
 					type: \setCC,
 					initial: true,
-					mk: mk,
 					// midiout: midiout ? this.class.getMidiOut,
 					ctlNum: i,
 					control: CC(i).spec.unmap(j) * CC(i).rawScale, //put back in original
@@ -185,7 +179,6 @@ MIDIItem2 {
 				timestamp: SystemClock.seconds - start,
 				type: \setPoly,
 				initial: true,
-				mk: mk,
 				// midiout: midiout ? this.class.getMidiOut,
 				ctlNum: \polytouch,
 				control: 0,
@@ -205,10 +198,10 @@ MIDIItem2 {
 					).postln
 					++
 						switch( cmd, 
-							\noteOn,{ (type: \mk, mk: mk, midinote: num, amp: val/127 ) },
-							\noteOff,{ (type: \midi, mk: mk, midinote: num, amp: val/127 ) },
-							\polytouch, { (type: \setPoly, midinote: num, polyTouch: val, mk: mk) },
-							\control, { (type: \setCC, ctlNum:num, control: val, mk: mk)},
+							\noteOn,{ (type: \mk, midinote: num, amp: val/127 ) },
+							\noteOff,{ (type: \midi, midinote: num, amp: val/127 ) },
+							\polytouch, { (type: \setPoly, midinote: num, polyTouch: val, ) },
+							\control, { (type: \setCC, ctlNum:num, control: val, )},
 							\bend, { (type: \setBend, ctlNum:\bend, control: val)},
 							// \bend, { (val: val, ctlNum:) }
 							
@@ -232,11 +225,11 @@ MIDIItem2 {
 			}
 		}
 	}
-	play {
-		^this.player.play
+	play { |mk|
+		^this.player.play(mk)
 	}
-	player{ |num|
-		^MIDIItemPlayer(I.d, midiEvents, mk)
+	player{ 
+		^MIDIItemPlayer(I.d, midiEvents)
 		// ^MIDIItemPlayer(
 		// 	{|events| events.reject{|e| e.type == \setCC and: ( e.ctlNum == num )} },
 		// 	this.midiEvents,
@@ -254,17 +247,17 @@ MIDIItem2 {
 }
 
 MIDIItemPlayer{ //class to filter and play MIDIItems
-	var <func, <midiEvents, <mk, <outEvents;
+	var <func, <midiEvents, <outEvents;
 	*new {|func midiEvents mk|
 		^super.newCopyArgs(func, midiEvents, mk).init
 	}
 	init{
 		outEvents = func.(midiEvents)
 	}
-	play {
+	play { |mk|
 		fork{
 			outEvents.collect(_.timestamp).differentiate.drop(1).do{|i x|
-				outEvents[x].play;
+				outEvents[x].mk_(mk).play;
 				i.wait;
 			}
 		}		
@@ -286,8 +279,7 @@ MIDIItemPlayer{ //class to filter and play MIDIItems
 	initialCCOnly{ |num|
 		^MIDIItemPlayer(
 			{|events| events.reject{|e| e.type == \setCC and: ( e.ctlNum == num ) and: (e.initial.isNil)} },
-			midiEvents,
-			mk
+			midiEvents
 		)
 	}
 }

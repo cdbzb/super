@@ -31,17 +31,18 @@ MicroKeys {
 
 	synth_ { |funcOrDefname|
 		funcOrDefname.isKindOf(Symbol).if{
-			namedList.add(
-				\synth,
+			namedList.add( \synth,
 				{ |e|
 					Synth(funcOrDefname.postln, [\freq, e.num.midicps, \amp, e.vel, \num, e.num])
 					=> this.register(_, e.raw)
 				}
 			)
 		}{
-			namedList.add(
-				\synth,
-				{ |e| (mk: this, e:e).use{ funcOrDefname.valueEnvir } => this.register(_, e.raw) } 
+			namedList.add( \synth,
+				{ |e| 
+					(mk: this, e:e).use{ funcOrDefname.valueEnvir } 
+					=> this.register(_, e.raw) 
+				} 
 			)
 		};
 		namedList.dump
@@ -93,6 +94,16 @@ MicroKeys {
 		MIDIdef.noteOff(\microOff, {|vel, num| damperDown.postln; ( damperDown == false ).if{ keys[num].release }{ heldNotes.add(keys[num]) }});
 		MIDIdef.cc(\microDamper, {|num| (num == 127).if{ damperDown = true.postln }{ damperDown = false.postln; heldNotes.do(_.release); heldNotes = Set[] } }, 64);
 		MIDIdef.polytouch(\microPoly, {|val num| keys[num].set(\poly, val)});
+	}
+
+	deactivate {
+		[\microOn, \microOff, \microDamper, \microPoly].do{|i| MIDIdef(i).free}
+	}
+
+	free {
+		this.deactivate; //remove MIDIdefs
+		CC.all[this].do{|i| i.bus.free; i.free}; //remove CC busses and CCs
+		this.free 
 	}
 }
 

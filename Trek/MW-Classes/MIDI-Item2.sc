@@ -1,5 +1,5 @@
 MIDIItem2 {
-	classvar <>folder;
+	classvar <>folder, <all;
 	var <>midiEvents , <name, <>initialCCValues;
 	var stamp;
 	var restFirst, <initialRest, <notes, <ccTracks;
@@ -9,6 +9,7 @@ MIDIItem2 {
 
 	*initClass {
 		var parent;
+		all = Dictionary.new(256);
 		Class.initClassTree(MIDIOut);
 		folder = this.filenameSymbol.asString.dirname.dirname +/+ "MIDI-items";
 		File.exists(folder).not.if{ "mkdir %".format(folder).unixCmd };
@@ -30,13 +31,15 @@ MIDIItem2 {
 			^midiout
 	}
 
+
 	*new { |name restFirst=true mk|
+		all.keys.includes(name).if { ^all[name] };
 		folder.asPathName.entries.collect(_.fileName).includesEqual(name.asString).if{
 			\reading.postln; 
-			^Object.readArchive(folder +/+ name).mk_(mk) //saved mk won't be right otherwise - should not even save?
+			^Object.readArchive(folder +/+ name).mk_(mk).register //saved mk won't be right otherwise - should not even save?
 		} {
 			\new.postln; 
-			^super.new.init(name, restFirst, mk)
+			^super.new.init(name, restFirst, mk).register
 		}
 	}
 	*newFrom{ |midiEvents mk|
@@ -51,6 +54,9 @@ MIDIItem2 {
 		name = n;
 		midiEvents = List.new;
 		initialCCValues = ();
+	}
+	register {
+		all.add(name -> this)
 	}
 	*insertNew{|name|
 		Nvim.replace( "MIDIItem2(\\\"%\\\")".format(name ++ "_" ++  Date.getDate.stamp) )
@@ -152,10 +158,10 @@ MIDIItem2 {
 		this.makeCCs;
 		// midiEvents = midiEvents.setDurs //for midiEvents.play (raw play)
 	}
-	at{|num|
+	at {|num|
 		^takes[num]
 	}
-	record{
+	record {
 		var start = SystemClock.seconds;
 		mk.activate;
 		midiEvents = List[];

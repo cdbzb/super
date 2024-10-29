@@ -2,24 +2,31 @@
 
 MicroKeys {
 	var <>array,<>keys,<>range, <>namedList, <tuningDeltas, tuningFunction, <heldNotes, <damperDown = false, <down;
+	classvar <all;
 
 	classvar tuningFunction;
 	*initClass{
 		Event.addEventType(\mk, {
 			var syn = ~mk.prFunc.(~amp * 127, ~midinote); 
 			fork{ ~sustain.wait; syn.release } // add s.latency to wait?
-		})
+		});
+		all = Dictionary(256)
 	}
 
-	*new { |func|
-		^super.new.init(func)
+	*new { |name func|
+		all[name].notNil.if {
+			^all[name]
+		} { 
+			^super.new.init(name, func) 
+		}  
 	}
 	 
 	*mono { |...args|
 		^MonoKeys(*args)
 	}
 
-	init { |func|
+	init { |name func|
+		\INIT.postln;
 		namedList = NamedList.new;
 		tuningFunction = { |tuning| { |e| e.num = e.num + tuningDeltas.wrapAt(e.num); e }};
 		namedList.add( \event, {|v n c r| (vel: v/127, num: n, chan: c, src: r, raw: n)});
@@ -27,6 +34,7 @@ MicroKeys {
 		this.synth_( func !? _.asDefName ? I.d);
 		keys = 0 ! 128;
 		heldNotes = Set[];
+		all.add(name -> this)
 	}
 
 	synth_ { |funcOrDefname|

@@ -9,6 +9,7 @@ MIDIEventList[slot] : List {
 		durs.do{|i x| try{ this[x].dur = i }  };
 		^this
 	}
+
 	notes{|initialRest|
 		//so call like: midiEvents.notes(initialRest)
 		var on = this.select{|e| e.midicmd == \noteOn}.deepCopy;
@@ -169,7 +170,7 @@ MIDIItem2 {
 		};
 		recording.stop; recording = nil;
 	}
-	stop{
+	stop {
 		takes.insert(0, midiEvents);
 
 		this.makeNotes;
@@ -254,7 +255,7 @@ MIDIItem2 {
 		^this.player.play(mk)
 	}
 	player{ 
-		^if(recording == this) { MIDIItemPlayer(I.d, midiEvents ) }{ SelfReturningObject }
+		^if(recording != this) { MIDIItemPlayer(I.d, midiEvents ) }{ SelfReturningObject() }
 		// ^MIDIItemPlayer(
 		// 	{|events| events.reject{|e| e.type == \setCC and: ( e.ctlNum == num )} },
 		// 	this.midiEvents,

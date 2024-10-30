@@ -1,32 +1,10 @@
-MIDIEventList[slot] : List {
-	*new { |...args|
-		^super.new(*args)
-	}
-	setDurs { |finalDur = 1|  //need to call on (initialRest + MIDIEventList)
-		var durs = this
-		.sort{|i j| i.timestamp < j.timestamp}
-		.collect(_.timestamp).differentiate.drop(1) ++ finalDur ;
-		durs.do{|i x| try{ this[x].dur = i }  };
-		^this
-	}
-
-	notes{|initialRest|
-		//so call like: midiEvents.notes(initialRest)
-		var on = this.select{|e| e.midicmd == \noteOn}.deepCopy;
-		var off = this.select{|e| e.midicmd == \noteOff}.deepCopy;
-		var findMatch = {|midinote| off.collect{|e| e.midinote}.indexOf(midinote)}; //returns index
-		on.do{|e| var match = off.removeAt(findMatch.(e.midinote)).postln; e.sustain = match.timestamp - e.timestamp; };
-		^( initialRest.copy ? MIDIEventList[] ++ on ).setDurs;
-	}
-}
-
 MIDIItem2 {
 	classvar <>folder, <all;
 	var <>midiEvents , <name, <>initialCCValues;
 	var stamp;
 	var restFirst, <initialRest, <notes, <ccTracks;
 	var takes;
-	classvar midiout, <recording;
+	classvar midiout, recording;
 
 	*initClass {
 		var parent;
@@ -71,7 +49,7 @@ MIDIItem2 {
 		takes = List[];
 		restFirst = r;
 		name = n;
-		midiEvents = MIDIEventList.new;
+		midiEvents = List.new;
 		initialCCValues = ();
 	}
 	register {
@@ -129,14 +107,13 @@ MIDIItem2 {
 	}
 	makeNotes {
 		// should copy be deepCopy??
-		// var on = midiEvents.select{|e| e.midicmd == \noteOn}.deepCopy;
-		// var off = midiEvents.select{|e| e.midicmd == \noteOff}.deepCopy;
-		// var findMatch = {|midinote| off.collect{|e| e.midinote}.indexOf(midinote)}; //returns index
-		// on.do{|e| var match = off.removeAt(findMatch.(e.midinote)).postln; e.sustain = match.timestamp - e.timestamp; };
-		// notes = initialRest.copy ? MIDIEventList[] ++ on;
-		// notes.setDurs;
-
-		midiEvents = midiEvents.notes ++ midiEvents.reject{|e| e.type == \mk} => _.sort{|i j| i.timestamp < j.timestamp}
+		var on = midiEvents.select{|e| e.midicmd == \noteOn}.deepCopy;
+		var off = midiEvents.select{|e| e.midicmd == \noteOff}.deepCopy;
+		var findMatch = {|midinote| off.collect{|e| e.midinote}.indexOf(midinote)}; //returns index
+		on.do{|e| var match = off.removeAt(findMatch.(e.midinote)).postln; e.sustain = match.timestamp - e.timestamp; };
+		notes = initialRest.copy ? [] ++ on;
+		notes.setDurs;
+		midiEvents = notes ++ midiEvents.reject{|e| e.type == \mk} => _.sort{|i j| i.timestamp < j.timestamp}
 	}
 	makeCCs { //seperate CC bend and poly data into tracks with \dur key for use in Pbinds
 		ccTracks = midiEvents.select{|e| e.midicmd == \control }.copy // do I need copy here??
@@ -271,19 +248,11 @@ MIDIItem2 {
 	}
 
 }
-SelfReturningObject{ //this is useful elsewhere
-	*new {
-		^super.new
-	}
-	doesNotUnderstand{
-		^this
-	}
-}
 
 MIDIItemPlayer{ //class to filter and play MIDIItems
 	var <func, <midiEvents, <outEvents;
-	*new {|func midiEvents mute=false|
-		^super.newCopyArgs(func, midiEvents, mute).init
+	*new {|func midiEvents mk|
+		^super.newCopyArgs(func, midiEvents, mk).init
 	}
 	init{
 		outEvents = func.(midiEvents)
@@ -328,6 +297,13 @@ MIDIItemPlayer{ //class to filter and play MIDIItems
 
  
 + SequenceableCollection {
+		setDurs { |finalDur = 1| 
+			var durs = this
+			.sort{|i j| i.timestamp < j.timestamp}
+			.collect(_.timestamp).differentiate.drop(1) ++ finalDur ;
+			durs.do{|i x| try{ this[x].dur = i }  };
+			^this
+		}
 		eventsToPatternPairs{
 			^this.collect({ |i| i.asAssociations.sort.asPairs}).flop.collect{|i|
 				( i[0].class == Symbol ).if { i[0] }{ i.q }

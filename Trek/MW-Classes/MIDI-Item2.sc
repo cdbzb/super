@@ -4,7 +4,7 @@ MIDIItem2 {
 	var stamp;
 	var restFirst, <initialRest, <notes, <ccTracks;
 	var takes;
-	classvar midiout;
+	classvar midiout, recording;
 
 	*initClass {
 		var parent;
@@ -140,13 +140,15 @@ MIDIItem2 {
 		.collect{|sub| sub[0].ctlNum -> sub.collect{|i| Point(i.timestamp, i.control)}}
 		=> _.asDict
 	}
-	stop{
-		takes.insert(0, midiEvents);
-
+	*stopRecording {
 		[\noteOn, \noteOff, \control, \polytouch, \bend ].do{
 			|cmd|
 			MIDIdef(\record ++ cmd => _.asSymbol).free
 		};
+		recording.stop; recording = nil;
+	}
+	stop{
+		takes.insert(0, midiEvents);
 
 		this.makeNotes;
 
@@ -159,6 +161,7 @@ MIDIItem2 {
 	record { |mk|
 		var start = SystemClock.seconds;
 		mk.activate;
+		recording = this;
 		midiEvents = List[];
 		CC.getValues.asKeyValuePairs.pairsDo{ | i j |
 			midiEvents.add(
@@ -257,7 +260,7 @@ MIDIItemPlayer{ //class to filter and play MIDIItems
 	play { |mk|
 		fork{
 			outEvents.collect(_.timestamp).differentiate.drop(1).do{|i x|
-				outEvents[x].mk_(mk).play;
+				outEvents[x].mk_(MicroKeys.all[mk]).play;
 				i.wait;
 			}
 		}		

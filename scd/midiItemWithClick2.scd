@@ -29,7 +29,7 @@ P(\click, music: { |p b e|
 });
 P(\item, music: { |p b e|
 	// var c;
-	var a = MicroKeys();
+	var a = MicroKeys(\twinge);
 	a.synth_( {
 		var gate = \gate.kr(1);
 		VarSaw.ar(\freq.kr(400) * ( \poly.kr / 64 + 1).midiratio , 0.1)
@@ -39,12 +39,12 @@ P(\item, music: { |p b e|
 		* Env.adsr(CC(24, ControlSpec(0.05, 1.2)).bus.kr, 0.1, 0.5, 5).kr(2,gate:gate)
 		=> PanAz.ar(5, _, \num.kr(0)/127 * 5)
 	}.asDefName).tuning_(\just);
-	c = MIDIItem2("_241029_093922", mk:a)
+	c = MIDIItem2("_241029_093922" )
 	// MIDIItem2.all.keys.do({ |i| i.class.postln})
 	// MIDIItem2.all["_241029_093922"]
 	// .reset
 	// .record
-	.play
+	.play(\twinge)
 	// c.stop
 	// c.mk.debug("mk: ");
 	;
@@ -56,30 +56,28 @@ P(\item, music: { |p b e|
 });
 P(\itemTwo, music: { |p b e|
 	// var c;
-	var a = MicroKeys();
-	a.synth_( {
+	MicroKeys(\twang)
+	.synth_( {
 		var gate = \gate.kr(1);
-		Pulse.ar(\freq.kr(400) * ( \poly.kr / 64 + 1).midiratio , 0.1)
+		Pulse.ar(\freq.kr(400) * ( \poly.kr / 64 + 1).midiratio / [ 4, 5 ]  , 0.1)
 		=> MoogFF.ar(_, 
-			CC(1, \freq.asSpec, a ).bus.ar => Gate.ar(_, gate) => _.lag2(0.1)  
+			CC(1, \freq.asSpec, MicroKeys(\twang) ).bus.ar => Gate.ar(_, gate) => _.lag2(0.1)  
 		)
-		* Env.adsr(CC(24, ControlSpec(0.05, 1.2)).bus.kr, 0.1, 0.5, 0.1).kr(2,gate:gate)
+		* Env.adsr(CC(24, ControlSpec(0.05, 1.2), MicroKeys(\twang)).bus.kr + 1, 0.1, 0.5, 0.1).kr(2,gate:gate)
 		=> PanAz.ar(5, _, \num.kr(0)/127 * 5)
-	}.asDefName).tuning_(\just);
-	MIDIItem2("_241029_101340", mk:a)
-	// MIDIItem2.all.keys.do({ |i| i.class.postln})
-	// MIDIItem2.all["_241029_093922"]
-	// .reset
+	}.asDefName)
+	.tuning_(\just);
+	
+	MIDIItem2("_241029_101340")
 	// .reset.record
 	// .play
-	.stop.play
-	// c.mk.debug("mk: ");
+	// .player.filter(
+	// 	{|e| e.collect( { |i| i.mk_(a)})}
+	// )
+	// .record
+	.play(\twang)
+	// MIDIItem2.recording
 	;
-	// c.stop
-	// c.midiEvents
-	// MIDIItem2.all
-	// c.play
-
 });
 )
 

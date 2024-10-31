@@ -32,11 +32,11 @@ KS : XMIDIController {
 	}
 	*addBus {|name cc|
 		busses.put(name, Bus.control);
-		MIDIdef.cc(\KS ++ name, { |v| busses.at(name).set(v / 128) }, cc)
+		MIDIdef.cc(\KS ++ name, { |v| busses.at(name).setSynchronous(v / 128) }, cc)
 	}
 	*keyBus {
 		busses.put(\keys, Bus.control);
-		MIDIdef.noteOn(\KS ++ "keys", { |v n| busses.at(\keys).set(n) })
+		MIDIdef.noteOn(\KS ++ "keys", { |v n| busses.at(\keys).setSynchronous(n) })
 	}
 	*synth { |name|
 		MIDIdef.noteOn(key: \keyStageOn, func: {|v n c s|
@@ -152,7 +152,7 @@ CC {
 	}
 	setRaw{|num| // to 127
 		val = spec.map(num / rawScale);
-		bus.set(val)
+		bus.setSynchronous(val)
 	}
 	map { |name func|
 		MIDIdef.cc(name, {func.(spec.map(val))}, number)

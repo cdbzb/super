@@ -14,6 +14,9 @@ MIDIItem2 {
 		File.exists(folder).not.if{ "mkdir %".format(folder).unixCmd };
 		Event.addEventType(\setCC, { CC(~ctlNum, mk: ~mk).setRaw( ~control ) });
 		Event.addEventType(\setBend, { CC(~ctlNum, mk: ~mk).setRaw( ~control ) });
+		Event.addEventType(\setDamper, { 
+			( ~mk.damperDown == false ).if{ ~mk.keys[~midinote].release }{ ~mk.heldNotes.add(~mk.keys[~midinote]) }
+		});
 		Event.addEventType(\setPoly, {
 			( ~mk.keys[~midinote] != 0 ).if {
 				 ~mk.keys[~midinote].().set(\poly, ~polyTouch) 

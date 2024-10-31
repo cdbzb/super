@@ -97,10 +97,18 @@ MicroKeys {
 		^namedList.array.reverse.inject(I.d, _ <> _)
 	}
 
+	setDamper {|num| 
+		(num == 127).if{
+			damperDown = true.postln 
+		}{ 
+			damperDown = false.postln; heldNotes.do(_.release); heldNotes = Set[] 
+		} 
+	}
+
 	activate {
 		MIDIdef.noteOn(\microOn, this.prFunc , noteNum:range);
 		MIDIdef.noteOff(\microOff, {|vel, num| damperDown.postln; ( damperDown == false ).if{ keys[num].release }{ heldNotes.add(keys[num]) }});
-		MIDIdef.cc(\microDamper, {|num| (num == 127).if{ damperDown = true.postln }{ damperDown = false.postln; heldNotes.do(_.release); heldNotes = Set[] } }, 64);
+		MIDIdef.cc(\microDamper,{|num| this.setDamper(num) }, 64);
 		MIDIdef.polytouch(\microPoly, {|val num| keys[num].set(\poly, val)});
 	}
 

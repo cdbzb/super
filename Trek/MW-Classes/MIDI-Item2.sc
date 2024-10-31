@@ -113,7 +113,7 @@ MIDIItem2 {
 		on.do{|e| var match = off.removeAt(findMatch.(e.midinote)).postln; e.sustain = match.timestamp - e.timestamp; };
 		notes = initialRest.copy ? [] ++ on;
 		notes.setDurs;
-		midiEvents = notes ++ midiEvents.reject{|e| e.type == \mk} => _.sort{|i j| i.timestamp < j.timestamp}
+		^notes ++ midiEvents.reject{|e| e.type == \mk} => _.sort{|i j| i.timestamp < j.timestamp}
 	}
 	makeCCs { //seperate CC bend and poly data into tracks with \dur key for use in Pbinds
 		ccTracks = midiEvents.select{|e| e.midicmd == \control }.copy // do I need copy here??
@@ -150,9 +150,10 @@ MIDIItem2 {
 	stop {
 		takes.insert(0, midiEvents);
 
-		this.makeNotes;
+		// this.makeNotes;  // move this to player
+		//
+		// this.makeCCs; //move this to player
 
-		this.makeCCs;
 		// midiEvents = midiEvents.setDurs //for midiEvents.play (raw play)
 	}
 	at {|num|
@@ -232,7 +233,11 @@ MIDIItem2 {
 		^this.player.play(mk)
 	}
 	player{ 
-		^if(recording != this) { MIDIItemPlayer(I.d, midiEvents ) }{ SelfReturningObject() }
+		^if(recording != this) {
+			MIDIItemPlayer(I.d, this.makeNotes) 
+		}{
+			SelfReturningObject()
+		}
 		// ^MIDIItemPlayer(
 		// 	{|events| events.reject{|e| e.type == \setCC and: ( e.ctlNum == num )} },
 		// 	this.midiEvents,
@@ -240,7 +245,7 @@ MIDIItem2 {
 		// );
 	}
 	save {
-		notes.isNil.if{this.makeNotes};
+		// notes.isNil.if{this.makeNotes};
 		this.writeArchive( folder +/+ name)
 	}
 	reset {
@@ -258,12 +263,7 @@ MIDIItemPlayer{ //class to filter and play MIDIItems
 		outEvents = func.(midiEvents)
 	}
 	play { |mk|
-		fork{
-			outEvents.collect(_.timestamp).differentiate.drop(1).do{|i x|
-				outEvents[x].mk_(MicroKeys.all[mk]).play;
-				i.wait;
-			}
-		}		
+		outEvents.do{|e| TempoClock.sched(e.timestamp, { e.mk_(mk).play })}
 	}
 	filter {| func |
 		^MIDIItemPlayer(
@@ -284,6 +284,14 @@ MIDIItemPlayer{ //class to filter and play MIDIItems
 			{|events| events.reject{|e| e.type == \setCC and: ( e.ctlNum == num ) and: (e.initial.isNil)} },
 			midiEvents
 		)
+	}
+}
+SelfReturningObject {
+	*new{
+		^super.new
+	}
+	doesNotUnderstand{
+		^this
 	}
 }
 

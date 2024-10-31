@@ -235,9 +235,9 @@ MIDIItem2 {
 	play { |mk|
 		^this.player.play(mk)
 	}
-	player{ 
+	player {|func| 
 		^if(recording != this) {
-			MIDIItemPlayer(I.d, this.makeNotes) 
+			MIDIItemPlayer(func ? I.d, this.makeNotes.deepCopy) 
 		}{
 			SelfReturningObject()
 		}

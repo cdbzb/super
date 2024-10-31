@@ -8,7 +8,11 @@ MicroKeys {
 	*initClass{
 		Event.addEventType(\mk, {
 			var syn = ~mk.prFunc.(~amp * 127, ~midinote); 
-			fork{ ~sustain.wait; syn.release } // add s.latency to wait?
+			fork{
+				~sustain.wait;
+				// syn.release 
+				( ~mk.damperDown == false ).if{ ~mk.keys[~midinote].release }{ ~mk.heldNotes.add(~mk.keys[~midinote]) }
+			}	
 		});
 		all = Dictionary(256)
 	}

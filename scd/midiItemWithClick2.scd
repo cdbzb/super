@@ -78,7 +78,7 @@ P(\itemTwo, music: { |p b e|
 	=> 
 	MIDIItem2("_241030_130953")
 	// .record(a)
-	.player({|i| i.collect{|e|if(e.midicmd == \control and: (e.ctlNum == 1)) {e.control = 10 + e.control / 2; e}{e}}})
+	.player({|i| i.collect{|e|if(e.midicmd == \control and: (e.ctlNum == 1)) {e.control = 20 + 15.rand + e.control / 2; e}{e}}})
 	// .player({|e| e.collect{|i| if( i.midicmd == \control and: (i.ctlNum == 1) ) { var f = i.copy; f.control = 120; f  } { i } }})
 	// .outEvents
 	// .filterTrack(1, {|e|  e.debug("i: "); e.control=( 20 )})

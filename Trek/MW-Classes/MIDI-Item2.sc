@@ -12,19 +12,6 @@ MIDIItem2 {
 		Class.initClassTree(MIDIOut);
 		folder = this.filenameSymbol.asString.dirname.dirname +/+ "MIDI-items";
 		File.exists(folder).not.if{ "mkdir %".format(folder).unixCmd };
-		Event.addEventType(\setCC, { CC(~ctlNum, mk: ~mk).setRaw( ~control ) });
-		Event.addEventType(\setBend, { CC(~ctlNum, mk: ~mk).setRaw( ~control ) });
-		Event.addEventType(\setDamper, { 
-			// (~mk.damperDown == false).if{ ~mk.keys[~midinote].release }{ ~mk.heldNotes.add(~mk.keys[~midinote]) }
-			 ~mk.setDamper(~control) 
-		});
-		Event.addEventType(\setPoly, {
-			( ~mk.keys[~midinote] != 0 ).if {
-				 ~mk.keys[~midinote].().set(\poly, ~polyTouch) 
-			}{
-				~type = \rest
-			}
-		})	
 	}
 
 	*getMidiOut {

@@ -2,17 +2,28 @@
 
 MicroKeys {
 	var <>array,<>keys,<>range, <>namedList, <tuningDeltas, tuningFunction, <heldNotes, <damperDown = false, <down;
+	var <doNoteOff;
 	classvar <all;
 
 	classvar tuningFunction;
 	*initClass{
 		Event.addEventType(\mk, {
-			var syn = ~mk.prFunc.(~amp * 127, ~midinote); 
+			var syn = ~mk.doNoteOn.(~amp * 127, ~midinote); 
 			fork{
 				~sustain.wait;
-				// syn.release 
-				( ~mk.damperDown == false ).if{ ~mk.keys[~midinote].release }{ ~mk.heldNotes.add(~mk.keys[~midinote]) }
+				~mk.doNoteOff.(~midinote)
 			}	
+		});
+		Event.addEventType(\setCC, { CC(~ctlNum, mk: ~mk).setRaw( ~control ) });
+		Event.addEventType(\setBend, { CC(~ctlNum, mk: ~mk).setRaw( ~control ) });
+		Event.addEventType(\setDamper, { ~mk.setDamper(~control) });
+		Event.addEventType(\setPoly, {
+			( ~mk.keys[~midinote] != 0 ).if {
+				 // ~mk.keys[~midinote].().set(\poly, ~polyTouch) 
+				 this.doPoly(~midinote, ~polyTouch)
+			}{
+				~type = \rest
+			}
 		});
 		all = Dictionary(256)
 	}
@@ -97,7 +108,7 @@ MicroKeys {
 		^synth
 	}
 
-	prFunc {
+	doNoteOn {
 		^namedList.array.reverse.inject(I.d, _ <> _)
 	}
 
@@ -109,11 +120,17 @@ MicroKeys {
 		} 
 	}
 
+	doNoteOff {|midinote| 
+		damperDown.not.if {keys[midinote].release} {heldNotes.add(keys[midinote])} 
+	};
+
+	doPoly {|val num| keys[num].set(\poly, val) }
 	activate {
-		MIDIdef.noteOn(\microOn, this.prFunc , noteNum:range);
-		MIDIdef.noteOff(\microOff, {|vel, num| damperDown.postln; ( damperDown == false ).if{ keys[num].release }{ heldNotes.add(keys[num]) }});
+		MIDIdef.noteOn(\microOn, this.doNoteOn, noteNum:range);
+		// MIDIdef.noteOff(\microOff, {|vel, num| damperDown.postln; ( damperDown == false ).if{ keys[num].release }{ heldNotes.add(keys[num]) }});
+		MIDIdef.noteOff(\microOff, {|val num| this.doNoteOff.(num) });
 		MIDIdef.cc(\microDamper,{|num| this.setDamper(num) }, 64);
-		MIDIdef.polytouch(\microPoly, {|val num| keys[num].set(\poly, val)});
+		MIDIdef.polytouch(\microPoly, {|val num| this.doPoly.(val, num)});
 	}
 
 	deactivate {
@@ -138,7 +155,7 @@ MonoKeys : MicroKeys {
 			monosynth.debug("ms");
 			down.debug("down");
 			( down.size == 0 ).if{
-				monosynth = this.prFunc.(v, n) ;
+				monosynth = this.doNoteOn.(v, n) ;
 				down.add(n)
 			}{
 				monosynth.set(\num, n).set(\vel, v);

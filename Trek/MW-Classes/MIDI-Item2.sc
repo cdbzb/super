@@ -166,7 +166,7 @@ MIDIItem2 {
 					++
 						switch( cmd, 
 							\noteOn,{ (type: \mk, midinote: num, amp: val/127 ) },
-							\noteOff,{ (type: \midi, midinote: num, amp: val/127 ) },
+							\noteOff,{ (type: \mkOff, midinote: num, amp: val/127 ) },
 							\polytouch, { (type: \setPoly, midinote: num, polyTouch: val, ) },
 							\control, {
 								( num == 64 ).if{

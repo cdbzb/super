@@ -4,6 +4,7 @@ MicroKeys {
 
 	classvar tuningFunction;
 	*initClass{
+		Event.addEventType(\mkOff, {});
 		Event.addEventType(\mk, {
 			var syn = ~mk.noteOnFunction.(~amp * 127, ~midinote); 
 			fork{
@@ -124,7 +125,8 @@ MicroKeys {
 
 	doPoly {|val num| keys[num].set(\poly, val) }
 	activate {
-		MIDIdef.noteOn(\microOn, {|val num| this.noteOnFunction}, noteNum:range);
+		// MIDIdef.noteOn(\microOn, {|val num| this.noteOnFunction.(val, num)}, noteNum:range);
+		MIDIdef.noteOn(\microOn,  this.noteOnFunction, noteNum:range);
 		// MIDIdef.noteOff(\microOff, {|vel, num| damperDown.postln; ( damperDown == false ).if{ keys[num].release }{ heldNotes.add(keys[num]) }});
 		MIDIdef.noteOff(\microOff, {|val num| this.doNoteOff(num) });
 		MIDIdef.cc(\microDamper,{|num| this.setDamper(num) }, 64);

@@ -75,16 +75,22 @@ P(\itemTwo, music: { |p b e|
 		* Env.adsr(CC(24, ControlSpec(0.05, 1.2), a).bus.kr, 0.1, 0.5, 0.1).kr(2,gate:gate)
 		=> PanAz.ar(5, _, \num.kr(0)/127 * 5)
 	}.asDefName).tuning_(\just)
-	=> 
-	MIDIItem2("_241030_130953")
+	;
+	MIDIItem2("_241030_130953") // .player.midiEvents.select{|e| e.type == \setDamper}
 	// .record(a)
-	.player({|i| i.collect{|e|if(e.midicmd == \control and: (e.ctlNum == 1)) {e.control = 20 + 15.rand + e.control / 2; e}{e}}})
+	// .player({|i| i.collect{|e|if(e.midicmd == \control and: (e.ctlNum == 1)) {e.control = 20 + 15.rand + e.control / 2; e}{e}}})
+	// .record(_)
+	// .player
+	// .filterChoice({|e| e.midicmd == \control and: (e.ctlNum == 1)}, {|e| e.control = 20 + 15.rand + e.control / 2; e} )
+	// .filterTrack(1, {|e| e.control = 20 + 15.rand + e.control / 2; e} )
+
+	// .player.filter({|e| if(e.midicmd == \control and: (e.ctlNum == 1)) {e.control = 20 + 15.rand + e.control / 1; e}{e}})
 	// .player({|e| e.collect{|i| if( i.midicmd == \control and: (i.ctlNum == 1) ) { var f = i.copy; f.control = 120; f  } { i } }})
 	// .outEvents
 	// .filterTrack(1, {|e|  e.debug("i: "); e.control=( 20 )})
 	// // .filterTrack(24, {|e| e.do{|i| i.control_(100)}})
 	// 
-	.play(_)
+	.play(a)
 	;
 });
 )

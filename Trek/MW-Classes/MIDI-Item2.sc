@@ -9,18 +9,9 @@ MIDIItem2 {
 	*initClass {
 		var parent;
 		all = Dictionary.new(256);
-		Class.initClassTree(MIDIOut);
 		folder = this.filenameSymbol.asString.dirname.dirname +/+ "MIDI-items";
 		File.exists(folder).not.if{ "mkdir %".format(folder).unixCmd };
 	}
-
-	*getMidiOut {
-			MIDIClient.initialized.not.postln
-			.if{MIDIClient.init};
-			midiout = MIDIOut.newByName("IAC Driver", "Bus 1");
-			^midiout
-	}
-
 
 	*new { |name restFirst=true |
 		all.keys.includes(name).if { ^all[name] };
@@ -170,7 +161,6 @@ MIDIItem2 {
 					(
 						midicmd: cmd,
 						timestamp: SystemClock.seconds - start,
-						midiout: midiout ? this.class.getMidiOut,
 						// type: \midi
 					).postln
 					++

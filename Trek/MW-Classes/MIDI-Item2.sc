@@ -224,7 +224,7 @@ MIDIItem2 {
 
 }
 
-MIDIItemPlayer{ //class to filter and play MIDIItems
+MIDIItemPlayer { //class to filter and play MIDIItems
 	var <func, <midiEvents, <outEvents, tracks;
 	*new {|func midiEvents |
 		^super.newCopyArgs(func, midiEvents).init
@@ -233,7 +233,10 @@ MIDIItemPlayer{ //class to filter and play MIDIItems
 		outEvents = func.(midiEvents)
 	}
 	play { |mk|
-		outEvents.do{|e| TempoClock.sched(e.timestamp, { e.mk_(mk).play })}
+		outEvents.do{|e| 
+			var playFunc = mk.notNil.if{ {e.mk_(mk).play} }{ { e.play } } ; 
+			TempoClock.sched(e.timestamp, playFunc)
+		}
 	}
 	tracks {
 		^(tracks ? this.makeTracks)

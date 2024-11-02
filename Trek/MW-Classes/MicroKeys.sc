@@ -18,7 +18,7 @@ MicroKeys {
 		Event.addEventType(\setPoly, {
 			( ~mk.keys[~midinote] != 0 ).if {
 				 // ~mk.keys[~midinote].().set(\poly, ~polyTouch) 
-				 this.doPoly(~midinote, ~polyTouch)
+				 ~mk.doPoly( ~polyTouch, ~midinote )
 			}{
 				~type = \rest
 			}

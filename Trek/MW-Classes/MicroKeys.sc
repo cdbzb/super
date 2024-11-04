@@ -49,11 +49,11 @@ MicroKeys {
 		all.add(name -> this)
 	}
 
-	synth_ { |funcOrDefname|
+	synth_ { |funcOrDefname params|
 		funcOrDefname.isKindOf(Symbol).if{
 			namedList.add( \synth,
 				{ |e|
-					Synth(funcOrDefname.postln, [\freq, e.num.midicps, \amp, e.vel, \num, e.num])
+					Synth(funcOrDefname.postln, [\freq, e.num.midicps, \amp, e.vel, \num, e.num] ++ params)
 					=> this.register(_, e.raw)
 				}
 			)

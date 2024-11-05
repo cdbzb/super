@@ -6,19 +6,23 @@ MicroKeys {
 	*initClass{
 		Event.addEventType(\mkOff, {});
 		Event.addEventType(\mk, {
-			var syn = ~mk.noteOnFunction.(~amp * 127, ~midinote); 
+			var syn;
+			Server.default.bind{ syn = ~mk.noteOnFunction.(~amp * 127, ~midinote) }; 
 			fork{
 				~sustain.wait;
+				//syn should be passed into doNoteOff to solve the overlapping notes issue
 				~mk.doNoteOff(~midinote)
 			}	
 		});
-		Event.addEventType(\setCC, { CC(~ctlNum, mk: ~mk).setRaw( ~control ) });
-		Event.addEventType(\setBend, { CC(~ctlNum, mk: ~mk).setRaw( ~control ) });
-		Event.addEventType(\setDamper, { ~mk.setDamper(~control) });
+		Event.addEventType(\setCC, { Server.default.bind{ CC(~ctlNum, mk: ~mk).setRaw( ~control ) } });
+		Event.addEventType(\setBend, { Server.default.bind{ CC(~ctlNum, mk: ~mk).setRaw( ~control ) } });
+		Event.addEventType(\setDamper, { Server.default.bind{ ~mk.setDamper(~control) } });
 		Event.addEventType(\setPoly, {
 			( ~mk.keys[~midinote] != 0 ).if {
 				 // ~mk.keys[~midinote].().set(\poly, ~polyTouch) 
-				 ~mk.doPoly( ~polyTouch, ~midinote )
+				 Server.default.bind{
+					 ~mk.doPoly( ~polyTouch, ~midinote )
+				 }
 			}{
 				~type = \rest
 			}

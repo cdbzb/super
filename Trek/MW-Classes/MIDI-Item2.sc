@@ -12,7 +12,6 @@ MIDIItem2 {
 		folder = this.filenameSymbol.asString.dirname.dirname +/+ "MIDI-items";
 		File.exists(folder).not.if{ "mkdir %".format(folder).unixCmd };
 	}
-
 	*new { |name restFirst=true |
 		all.keys.includes(name).if { ^all[name] };
 		folder.asPathName.entries.collect(_.fileName).includesEqual(name.asString).if{
@@ -26,7 +25,6 @@ MIDIItem2 {
 	*newFrom{ |midiEvents |
 		^ MIDIItem2( UniqueID ).midiEvents_(midiEvents)
 	}
-
 	init { |n r m|
 		takes = List[];
 		restFirst = r;
@@ -40,14 +38,12 @@ MIDIItem2 {
 	*insertNew{|name|
 		Nvim.replace( "MIDIItem2(\\\"%\\\")".format(name ++ "_" ++  Date.getDate.stamp) )
 	}
-
 	*mostRecent {
 		^
 		folder +/+
 		( folder => PathName(_) => _.files => _.collect( { |i| i.fileNameWithoutExtension} ) => _.sort => _.last)
 		=> Object.readArchive( _ )
 	}
-
 	noteEvents { 
 		^notes.collect{|i|
 			i.copy
@@ -87,6 +83,12 @@ MIDIItem2 {
 			// ++ (initialRest ++ ccTracks[\poly]  => _.q)
 		)
 	}
+	doesNotUnderstand { |selector ...args|
+		if(MIDIItemPlayer.respondsTo(selector)) {
+			// ^this.player.selector(*args)
+			Message(this.player, selector, args ).value
+		}
+	}
 	makeNotes {
 		// should copy be deepCopy??
 		var on = midiEvents.select{|e| e.midicmd == \noteOn}.deepCopy;
@@ -123,8 +125,9 @@ MIDIItem2 {
 	at {|num|
 		^takes[num]
 	}
-	record { |mk|
+	record { |mk latencyCompensation|
 		var start = SystemClock.seconds;
+		latencyCompensation = latencyCompensation ? Server.default.latency;
 		mk.activate;
 		recording = this;
 		midiEvents = List[];
@@ -160,7 +163,7 @@ MIDIItem2 {
 				midiEvents.add(
 					(
 						midicmd: cmd,
-						timestamp: SystemClock.seconds - start,
+						timestamp: SystemClock.seconds - start - latencyCompensation,
 						// type: \midi
 					).postln
 					++
@@ -221,7 +224,6 @@ MIDIItem2 {
 	reset {
 		midiEvents = List.new
 	}
-
 }
 
 MIDIItemPlayer { //class to filter and play MIDIItems
@@ -315,7 +317,6 @@ SelfReturningObject {
 		cc.mapSynth(this, param)
 	}
 }
-
  
 + SequenceableCollection {
 		setDurs { |finalDur = 1| 

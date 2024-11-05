@@ -166,7 +166,7 @@ Song(\quantizeMidiItems, []).current;
 P(\click, music: { |p b e|
 	[
 		instrument: \hat_808,
-		lag: 0.2,
+		// lag: 0.2,
 	].pp
 });
 P(\item, music: { |p b e|
@@ -189,12 +189,12 @@ P(\item, music: { |p b e|
 	// m.record(a);
 	// m.play(a);
 	n = "qqx x x xxx x xqqx x x xxx x xqqx x x xxx x xqqx x x xxx x x".beats;
-	n = "q e eq q q q q qq ".beats;
+	n = "q q q q q q q qq q q q q q q q ".beats; //where the notes should end up
 
-	~notes = (m.initialRest ++ m.makeNotes.select{|e| e.midicmd == \noteOn});
+	~notes = ( m.makeNotes.select{|e| e.midicmd == \noteOn});
 
 
-	t = ~notes.collect(_.timestamp) ; //this shouldn't be necessary!!
+	t = ~notes.collect(_.timestamp) ; //where the notes are
 	// t =  m.makeNotes.select{|e| e.midicmd == \noteOn}.collect(_.timestamp) ; //this shouldn't be necessary!!
 	// ~durs = t.differentiate.drop(1); 
 	~env = Env([0] ++ n.integrate, t.differentiate);
@@ -211,13 +211,11 @@ P(\item, music: { |p b e|
 			e.collect{|i|
 				i.timestamp_( 
 					~env[i.timestamp] 
-					- (s.latency * 3)
-					// s.latency_(0.2)
 				); 
 				i
 			};
 			// e
-		}
+}
 	).play(a);
 
 	~averageOffset = t.collect{|i| ~env[i] - i}.mean;

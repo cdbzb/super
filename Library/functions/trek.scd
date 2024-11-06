@@ -267,7 +267,7 @@ SynthDef(\recc,{|buf bus=0|DiskOut.ar(buf,In.ar(bus))}).add;
 	~vstRegistry.do{|i| 16.do{|x| i.midi.allNotesOff(x)}};
 	try{ Song.resources.select{|i| i.isKindOf(Node)}.do(_.release)};
 	Trek.transitionGroup.release;
-	MIDIItem2.stopRecording;
+	MIDIItem.stopRecording;
 	// g=Group.new
 }; 
 

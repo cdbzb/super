@@ -1,4 +1,15 @@
-MIDIItem2 {
+MIDIItem2 : MIDIItem {
+	*new { |...args|
+		^MIDIItem(*args)
+	}
+	doesNotUnderstand { |selector ...args|
+		if(MIDIItemPlayer.respondsTo(selector)) {
+			// ^this.player.selector(*args)
+			Message(this.player, selector, args ).value
+		}
+	}
+}
+MIDIItem {
 	classvar <>folder, <all;
 	var <>midiEvents , <name, <>initialCCValues;
 	var stamp;
@@ -23,7 +34,7 @@ MIDIItem2 {
 		}
 	}
 	*newFrom{ |midiEvents |
-		^ MIDIItem2( UniqueID ).midiEvents_(midiEvents)
+		^ MIDIItem( UniqueID ).midiEvents_(midiEvents)
 	}
 	init { |n r m|
 		takes = List[];
@@ -36,7 +47,7 @@ MIDIItem2 {
 		all.add(name -> this)
 	}
 	*insertNew{|name|
-		Nvim.replace( "MIDIItem2(\\\"%\\\")".format(name ++ "_" ++  Date.getDate.stamp) )
+		Nvim.replace( "MIDIItem(\\\"%\\\")".format(name ++ "_" ++  Date.getDate.stamp) )
 	}
 	*mostRecent {
 		^
@@ -226,7 +237,7 @@ MIDIItem2 {
 	}
 }
 
-MIDIItemPlayer { //class to filter and play MIDIItems
+MIDIItemPlayer { //class to collect and play MIDIItems
 	var <func, <midiEvents, <outEvents, tracks;
 	*new {|func midiEvents |
 		^super.newCopyArgs(func, midiEvents).init
@@ -261,30 +272,32 @@ MIDIItemPlayer { //class to filter and play MIDIItems
 		);
 		^tracks
 	}
-	filter{ |func|
+	collect { |func|
 		^MIDIItemPlayer(
 			{|e| e.collect(func) }, 
 			outEvents
 		)
 	}
-	filterChoice{ |choiceFunc, actionFunc| 
-		^this.filter(
+	//modify only elements for which choiceFunc answers true
+	filterOnly { |choiceFunc, actionFunc| 
+		^this.collect(
 			{|e| choiceFunc.(e).debug("choice").if { actionFunc.(e) } {e}},
 			outEvents
 		)
 	
 	}
-	filterTrack{|track actionFunc|
+	//modify only tracks with CC (by number) or other specified midicmd (\bend, \noteOn, \poly)
+	filterByMidicmd {|track actionFunc|
 		(
 				case
 					//use \noteOn for notes
 					{ track.class == Symbol } {{|e|  e.midicmd == track}}
 					{ track.class == Integer } {{|e| e.midicmd == \control and: ( e.ctlNum == track )}}
 		)
-		=> this.filterChoice( _, actionFunc )
+		=> this.filterOnly( _, actionFunc )
 	}
 	
-	// filter {| func |
+	// collect {| func |
 	// 	^MIDIItemPlayer( func, this.outEvents);
 	// }
 

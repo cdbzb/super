@@ -37,7 +37,7 @@ TempoMap {
 	  // var prev = timesInBeats.select{|i| i <= beat}.maxIndex;
 	  // [[ prev, prev + 1 ],[ timesInBeats[prev], timesInBeats[prev + 1] ]].postln;
 	  // ^beat-timesInBeats[prev] / ( timesInBeats.clipAt(prev + 1) - timesInBeats[prev] ) * ( timesInDurs.clipAt( prev + 1 ) - timesInDurs[prev] ) + timesInDurs[prev]
-	  ^Env(([0] ++ durs).integrate, times)[beat]
+	  ^Env(([0] ++ durs).integrate, beats)[beat]
   }
   interpolateBeatInverse { |beat|
 	  //simply swtched timesInBeats and timesInDurs !!
@@ -48,7 +48,7 @@ TempoMap {
 	  // [[ prev, prev + 1 ],[ timesInBeatz[prev], timesInBeatz[prev + 1] ]].postln;
 	  // ^beat-timesInBeatz[prev] / ( timesInBeatz.clipAt(prev + 1) - timesInBeatz[prev] ) * ( timesInDurz.clipAt( prev + 1 ) - timesInDurz[prev] ) + timesInDurz[prev]
 
-	  ^Env(time, ([0] ++ durs).integrate)[beat]
+	  ^Env(beats, ([0] ++ durs).integrate)[beat]
   }
   dursToBeats { | array |
 	  ^array.integrate.collect{|i| this.interpolateBeatInverse(i)}.differentiate

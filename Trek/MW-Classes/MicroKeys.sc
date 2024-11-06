@@ -9,7 +9,7 @@ MicroKeys {
 			var syn;
 			Server.default.bind{ syn = ~mk.noteOnFunction.(~amp * 127, ~midinote) }; 
 			fork{
-				~sustain.wait;
+				~sustain.().wait;
 				//syn should be passed into doNoteOff to solve the overlapping notes issue
 				~mk.doNoteOff(~midinote)
 			}	

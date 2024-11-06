@@ -274,9 +274,18 @@ MIDIItemPlayer { //class to collect and play MIDIItems
 	}
 	collect { |func|
 		^MIDIItemPlayer(
-			{|e| e.collect(func) }, 
+			{|midiEvents| midiEvents.collect(func) }, 
 			outEvents
 		)
+	}
+	makeNotes {
+		// should copy be deepCopy??
+		var notes;
+		var on = outEvents.select{|e| e.midicmd == \noteOn}.deepCopy;
+		var off = outEvents.select{|e| e.midicmd == \noteOff}.deepCopy;
+		var findMatch = {|midinote| off.collect{|e| e.midinote}.indexOf(midinote)}; //returns index
+		on.do{|e| var match = off.removeAt(findMatch.(e.midinote)); e.sustain = match.timestamp - e.timestamp; };
+		^on ++ midiEvents.reject{|e| e.type == \mk} => _.sort{|i j| i.timestamp < j.timestamp}
 	}
 	//modify only elements for which choiceFunc answers true
 	filterOnly { |choiceFunc, actionFunc| 
@@ -312,6 +321,35 @@ MIDIItemPlayer { //class to collect and play MIDIItems
 			{|events| events.reject{|e| e.type == \setCC and: ( e.ctlNum == num ) and: (e.initial.isNil)} },
 			midiEvents
 		)
+	}
+	quantize{ |beats function choiceFunc |
+		var tempoMap = MIDIItemTempoMap(midiEvents, choiceFunc, beats);
+		// ^MIDIItemPlayer( wrappedFunc, midiEvents )
+		^this.collect( {|e| e.timestamp_(tempoMap.env[e.timestamp])}, outEvents)
+	}
+	recalcSustains {
+		^MIDIItemPlayer(
+			I.d,
+			this.makeNotes
+		)
+	}
+}
+MIDIItemTempoMap{ //this is almost the same as TempoMap but with timestamps instead of beats 
+	var <times, <beats;
+	var <env, <averageOffset;
+
+	*new {|midiEvents, choiceFunc, beats|
+		^super.new.init( midiEvents, choiceFunc, beats)
+	}
+
+	init{| midiEvents, choiceFunc, b| 
+		times = 
+		(choiceFunc ? I.d)
+		.value( midiEvents.select({|e| e.midicmd == \noteOn}))
+		.collect{|e| e.timestamp};
+		beats = b;
+		env = Env([0] ++ beats.integrate, times.differentiate);
+		averageOffset = times.collect{|i| env[i] - i}.mean
 	}
 }
 SelfReturningObject {

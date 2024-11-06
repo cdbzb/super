@@ -15,8 +15,8 @@ b.synth_( {
 b.tuning_(\just);
 )
 
-~item = MIDIItem2("withClick_241027_091120",mk: a);
-~item2 = MIDIItem2("_241027_093140", mk: b);
+~item = MIDIItem("withClick_241027_091120",mk: a);
+~item2 = MIDIItem("_241027_093140", mk: b);
 ~item2.play
 s.latency_(0.2);
 CC(1, mk:a).bus.scope
@@ -42,13 +42,13 @@ P(\item, music: { |p b e|
 	}.asDefName).tuning_(\just)
 
 	;
-	// MIDIItem2("_241101_092647")
-	MIDIItem2("_241102_092338") //bendy thing in 5
+	// MIDIItem("_241101_092647")
+	MIDIItem("_241102_092338") //bendy thing in 5
 	// =>
 	// .record(a)
 	.player({|e| e.reject{|i| i.midinote.notNil.if{ i.midinote >68 }{false}}})
 	.play(a);
-	MIDIItem2("_241102_095929")
+	MIDIItem("_241102_095929")
 	// .record(a)
 	.player({|e| e.reject{|e| e.type == \setPoly and: e.midinote.notNil.if{e.midinote > 80}{false}} })
 	.play(a)
@@ -86,7 +86,7 @@ P(\item, music: { |p b e|
 	}.asDefName).tuning_(\just)
 	;
 P(\itemTwo, music: { |p b e|
-	MIDIItem2("_241030_130953") // .player.midiEvents.select{|e| e.type == \setDamper}
+	MIDIItem("_241030_130953") // .player.midiEvents.select{|e| e.type == \setDamper}
 	// .record(a)
 	// .player({|i| i.collect{|e|if(e.midicmd == \control and: (e.ctlNum == 1)) {e.control = 20 + 15.rand + e.control / 2; e}{e}}})
 	// .record(_)
@@ -120,9 +120,9 @@ a.synth_( {
 	* Env.adsr(CC(24, ControlSpec(0.05, 1.2)).bus.kr, 0.1, 0.5, 5).kr(2,gate:gate)
 	=> PanAz.ar(5, _, \num.kr(0)/127 * 5)
 }.asDefName).tuning_(\just);
-MIDIItem2("_241102_102434")
+MIDIItem("_241102_102434")
 .play(a);
-MIDIItem2("bass_241102_102824")
+MIDIItem("bass_241102_102824")
 
 // .record(a)
 // .play(Song.twang)
@@ -135,18 +135,18 @@ b.synth_({|e|
 		64, {Synth(\hat_808)}
 	)
 });
-MIDIItem2("sn_241102_141915")
+MIDIItem("sn_241102_141915")
 // .save
 // .record(b)
 .play(b);
-MIDIItem2("hat_241102_143700")
+MIDIItem("hat_241102_143700")
 // .save
 // .record(b)
 .play(b)
 )
 ( //working on quantization
 
-m = MIDIItem2("_241102_102434").makeNotes
+m = MIDIItem("_241102_102434").makeNotes
 .select{|i x| i.midicmd==\noteOn and: i.midinote == 77 }
 .select{|i x| x != 2}
 // .do{|i| TempoClock.sched(i.timestamp, {i.mk_(a);i.play})} //this could be a.sched( array )
@@ -183,49 +183,53 @@ P(\item, music: { |p b e|
 		=> PanAz.ar(5, _, \num.kr(0)/127 * 5)
 	}.asDefName);
 	a.tuning_(\just);
-	b = MicroKeys(\saw);
-	b.synth_(\sawSynth);
-	m =MIDIItem2("line_241103_103346");
+	c = MicroKeys(\saw);
+	c.synth_(\sawSynth);
+	m =
+	MIDIItem("line_241103_103347");
 	// m.record(a);
 	// m.play(a);
+	
 	n = "qqx x x xxx x xqqx x x xxx x xqqx x x xxx x xqqx x x xxx x x".beats;
 	n = "q q q q q q q qq q q q q q q q ".beats; //where the notes should end up
 
 	~notes = ( m.makeNotes.select{|e| e.midicmd == \noteOn});
 
-
 	t = ~notes.collect(_.timestamp) ; //where the notes are
 	// t =  m.makeNotes.select{|e| e.midicmd == \noteOn}.collect(_.timestamp) ; //this shouldn't be necessary!!
 	// ~durs = t.differentiate.drop(1); 
 	~env = Env([0] ++ n.integrate, t.differentiate);
-	// m.makeNotes.collect{|e| var f = e.copy.timestamp_( ~env[e.timestamp] + 0.40  ); f }
-
-	// .do({ |i| TempoClock.sched(i.timestamp, {i.mk_(a); s.bind{ i.play }})});
+	~averageOffset = t.collect{|i| ~env[i] - i}.mean;
 	m
 	// play(a)
 	// .record(a)
-
-	.player(
-		{|e| 
-			//quantize function here!!
-			e.collect{|i|
-				i.timestamp_( 
-					~env[i.timestamp] 
-				); 
-				i
-			};
-			// e
-}
-	).play(a);
-
-	~averageOffset = t.collect{|i| ~env[i] - i}.mean;
-
-
-	// m.play(b);
-
-	// m.makeNotes.collect{|e| e.timestamp}.collect{|e| [e, e * ~env[e]]}.do(_.postln)
-
- 
+	.player
+	.collect( {|i|
+			i.timestamp_( 
+				~env[i.timestamp] + ~averageOffset 
+			); 
+			i
+		};
+	)
+	.play(a);
+	// m.filter({|e| e.amp_(0.01)}).play(c)
+	// ;
 
 });
+)
+(
+m.play(a);
+n = MIDIItem("_241105_083448");
+n.synth_(\default);
+n
+// .r.ecord(b)
+.play(b)
+
+)
+(
+m.player.quantize(
+	"q q q q q q q q q q ex q q e e q".beats, 
+	choiceFunc: {|notes| notes[[0, 3, 4, 5, 6, 7, 8, 9, 10]]}
+).recalcSustains 
+.play(a)
 )

@@ -322,14 +322,21 @@ MIDIItemPlayer { //class to collect and play MIDIItems
 			midiEvents
 		)
 	}
-	quantize{ |beats function choiceFunc |
+	quantize{ |beats func choiceFunc recalcSustains=true |
 		var tempoMap = MIDIItemTempoMap(midiEvents, choiceFunc, beats);
 		// ^MIDIItemPlayer( wrappedFunc, midiEvents )
-		^this.collect( {|e| e.timestamp_(tempoMap.env[e.timestamp])}, outEvents)
+		func.notNil.if{
+			^this.quantizeFunc(beats, func, choiceFunc, recalcSustains) 
+		}{
+			^this.collect( {|e| e.timestamp_(tempoMap.env[e.timestamp])}, outEvents)
+		}
 	}
-	quantizeFunc { |beats func choiceFunc |
+	quantizeFunc { |beats func choiceFunc recalcSustains=true |
 		var tempoMap = MIDIItemTempoMap(midiEvents, choiceFunc, beats);
-		this.collect({|e| (env: tempoMap.env, e: e).use( func )})
+		this.collect({|e| (env: tempoMap.env, e: e).use( func )}) 
+		=> {|i|
+			recalcSustains.if { ^i.recalcSustains }{ ^i }
+		}
 	}
 	recalcSustains {
 		^MIDIItemPlayer(

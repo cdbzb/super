@@ -233,3 +233,15 @@ m.player.quantize(
 ).recalcSustains 
 .play(a)
 )
+(
+m.player.quantizeFunc(
+	"q q e e q q q q q q ex q q e e q".beats, 
+	{ ~e.timestamp_(~env[~e.timestamp])},
+	choiceFunc: {|notes| notes[[0, 3, 4, 5, 6, 7, 8, 9, 10]]}
+)
+	.recalcSustains
+	.play(a)
+	// .outEvents.select{|e| e.midicmd==\noteOn}[2]
+	
+)
+m.midiEvents.select{|e| e.midicmd == \noteOn}[2]

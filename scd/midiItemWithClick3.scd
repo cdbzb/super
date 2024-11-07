@@ -3,7 +3,7 @@
 b = MicroKeys();
 b.synth_( {
 	var gate = \gate.kr(1);
-	Pulse.ar(\freq.kr(400) * ( \poly.kr / 64 + 1).midiratio , 0.1, 0.1)
+	Pulse.ar(\freq.kr(400) * ( \poly.kr / 64 ).midiratio , 0.1, 0.1)
 	=> MoogFF.ar( 
 		_, 
 		CC(1, \freq.asSpec, b ).bus.ar => Gate.ar(_, gate) => _.lag2(0.1)  
@@ -15,7 +15,7 @@ b.synth_( {
 b.tuning_(\just);
 )
 
-~item = MIDIItem("withClick_241027_091120",mk: a);
+~item = MIDIItem("withClick_241027_091120").play(a)
 ~item2 = MIDIItem("_241027_093140", mk: b);
 ~item2.play
 s.latency_(0.2);
@@ -33,7 +33,7 @@ P(\item, music: { |p b e|
 	a = MicroKeys();
 	a.synth_( {
 		var gate = \gate.kr(1);
-		VarSaw.ar(\freq.kr(400) * ( \poly.kr / 64 + 1).midiratio , 0.1)
+		VarSaw.ar(\freq.kr(400) * ( \poly.kr / 64 ).midiratio , 0.1)
 		=> MoogFF.ar(_, 
 			CC(1, \freq.asSpec, a ).bus.ar => Gate.ar(_, gate) => _.lag2(0.1)  
 		)
@@ -75,7 +75,7 @@ P(\item, music: { |p b e|
 	Song.twang.synth_( {
 		
 		var gate = \gate.kr(1);
-		Pulse.ar(\freq.kr(400) * ( \poly.kr / 64 + 1).midiratio , 0.1)
+		Pulse.ar(\freq.kr(400) * ( \poly.kr / 64 ).midiratio , 0.1)
 		=> {|i| MoogFF.ar(i , 
 		CC(1, \freq.asSpec, a ).bus.ar => Gate.ar(_, gate) => _.lag2(0.1)  ,
 		3
@@ -113,7 +113,7 @@ TempoClock.default = TempoClock(queueSize:8192);
 a = MicroKeys();
 a.synth_( {
 	var gate = \gate.kr(1);
-	VarSaw.ar(\freq.kr(400) * ( \poly.kr / 64 + 1).midiratio , 0.1)
+	VarSaw.ar(\freq.kr(400) * ( \poly.kr / 64 ).midiratio , 0.1)
 	=> MoogFF.ar(_, 
 		CC(1, \freq.asSpec, a ).bus.ar => Gate.ar(_, gate) => _.lag2(0.1)  
 	)
@@ -173,7 +173,7 @@ P(\item, music: { |p b e|
 	a = MicroKeys();
 	a.synth_( {
 		var gate = \gate.kr(1);
-		Pulse.ar(\freq.kr(400) * ( \poly.kr / 64 + 1).midiratio , 0.1, 0.1)
+		Pulse.ar(\freq.kr(400) * ( \poly.kr / 64 ).midiratio , 0.1, 0.1)
 		=> MoogFF.ar( 
 			_, 
 			// CC(1, \freq.asSpec, b ).bus.ar => Gate.ar(_, gate) => _.lag2(0.1)  
@@ -245,4 +245,43 @@ m.player.quantize(
 	// .outEvents.select{|e| e.midicmd==\noteOn}[2]
 	
 )
+)
+(
+Song(\midiItemTest, []).current;
+    Song.mk = MicroKeys();
+	Song.mk.synth_( {
+		var gate = \gate.kr(1);
+		Pulse.ar(\freq.kr(400) * ( \poly.kr / 64 ).midiratio.poll , 0.1, \amp.kr(0.1))
+		=> MoogFF.ar( 
+			_, 
+			// CC(1, \freq.asSpec, b ).bus.ar => Gate.ar(_, gate) => _.lag2(0.1)  
+			5000
+		)
+		* Env.adsr(CC(24, ControlSpec(0.05, 1.2)).bus.kr, 0.1, 0.5, 1).kr(2,gate:gate)
+		=> PanAz.ar(5, _, \num.kr(0)/127 * 5)
+	}.asDefName);
+	Song.mk.tuning_(\just);
+
+	MIDIItem("_241102_092338").player.addLine("test");
+	/*
+	["test"].addLine
+	*/
+
+	Song.setTempoMap("test", "eeee e eee g e e eee g e e eee g e e eee e e");
+	P.tune(_ <> [ instrument: \stringyy ].p);
+	Song.durs[\test].list;
+	P(\cymbals, music: { |p b e|
+		e.tempoMap.beats.postln;
+		[
+			dur: "eeeee qqe qqe qqe qqe qq".beats.warpTo(e.tempoMap).q,
+			instrument: \cymbalsDS,
+			amp: 0.01, 
+			rest: [\r, 1, 1, 1, 1].q
+		].pp
+	});
+	P(\item,  music: { |p b e|
+	// TempoClock.default = TempoClock(queueSize: 8192)	;
+	MIDIItem("_241102_092338").player({|e| e.collect{|i| i.amp_(0.03).postln}}).play(p.mk)
+	// MIDIItem("_241102_092338").player.outEvents.select{|e| e.type == \rest}
+	});
 )

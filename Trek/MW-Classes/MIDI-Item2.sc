@@ -333,9 +333,15 @@ MIDIItemPlayer { //class to collect and play MIDIItems
 	}
 	quantizeFunc { |beats func choiceFunc recalcSustains=true |
 		var tempoMap = MIDIItemTempoMap(midiEvents, choiceFunc, beats);
-		this.collect({|e| (env: tempoMap.env, e: e).use( func )}) 
-		=> {|i|
-			recalcSustains.if { ^i.recalcSustains }{ ^i }
+		this.collect({|e x| 
+			(
+				env: tempoMap.env, 
+				e: e, 
+				x: x,
+				averageOffset: tempoMap.averageOffset,
+			).use(func)
+		}) => {|i|
+				recalcSustains.if { ^i.recalcSustains }{ ^i }
 		}
 	}
 	recalcSustains {
@@ -343,6 +349,27 @@ MIDIItemPlayer { //class to collect and play MIDIItems
 			I.d,
 			this.makeNotes
 		)
+	}
+	addLine { |name choiceFunc|
+		var initialRestDur = outEvents.select{|e| 
+			e.type == \rest and: (e.timestamp == 0)
+		}.collect(_.dur);
+		var notes = 
+		(choiceFunc ? I.d).value(
+
+			outEvents.select{|e| e.midicmd == \noteOn}
+		);
+		var midinotes = notes.collect{|e| e.midinote};
+		var durs = notes.collect{|e| e.timestamp}.differentiate.drop(1)
+		//last dur
+		++ notes.last.sustain;
+
+		// add initial rest
+		( initialRestDur.size > 0 ).if{
+			midinotes = midinotes.insert(0, \r);
+			durs = durs.insert(0, initialRestDur[0])
+		} ;
+		^[ name, midinotes, durs].addLine;
 	}
 }
 MIDIItemTempoMap{ //this is almost the same as TempoMap but with timestamps instead of beats 
@@ -360,7 +387,9 @@ MIDIItemTempoMap{ //this is almost the same as TempoMap but with timestamps inst
 		.collect{|e| e.timestamp};
 		beats = b;
 		env = Env([0] ++ beats.integrate, times.differentiate);
-		averageOffset = times.collect{|i| env[i] - i}.mean
+		averageOffset = times.collect{|i| env[i] - i}.mean;
+		// set Addline here? or just what that method needs?
+		
 	}
 }
 SelfReturningObject {

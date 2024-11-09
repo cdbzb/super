@@ -2,17 +2,36 @@ MIDIItem2 : MIDIItem {
 	*new { |...args|
 		^MIDIItem(*args)
 	}
-	doesNotUnderstand { |selector ...args|
-		if(MIDIItemPlayer.respondsTo(selector)) {
-			// ^this.player.selector(*args)
-			Message(this.player, selector, args ).value
+	*value{ |func|
+		^MIDIItemPlayer(this.midiEvents)
+	}
+}
+AbstractMidiEvents {
+	noteOns {
+		^MIDIItemPlayer(
+			this.midiEvents
+			.select{|e| e.midicmd == \noteOn}
+		)
+	}
+	splitVoices { |maxJump=5 numVoices=2|
+		^this.noteOns.midiEvents
+		.separate{|i j| (j.midinote - i.midinote).abs > maxJump}
+		=> _.clump(numVoices)
+		=> _.flop
+		=> _.collect(_.flat)
+		// => _.sort{|e f| e.collect(_.midinote).mean > f.collect(_.midinote).mean}
+	}
+	doesNotUnderstand{|selector ...args|
+		this.midiEvents.respondsTo(selector).if{
+			^MIDIItemPlayer(
+				Message(this.midiEvents, selector, args).()
+			)
 		}
 	}
 }
-MIDIItem {
+MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents for use with MicroKeys
 	classvar <>folder, <all;
 	var <>midiEvents , <name, <>initialCCValues;
-	var stamp;
 	var restFirst, <initialRest, <notes ;
 	var takes;
 	classvar midiout, recording;
@@ -55,12 +74,6 @@ MIDIItem {
 		( folder => PathName(_) => _.files => _.collect( { |i| i.fileNameWithoutExtension} ) => _.sort => _.last)
 		=> Object.readArchive( _ )
 	}
-	noteEvents { 
-		^notes.collect{|i|
-			i.copy
-			.type_( \mk )
-		}
-	}
 	ccPbind { |num |
 		^this.ccTracks[num].eventsToPatternPairs.p
 	}
@@ -94,12 +107,6 @@ MIDIItem {
 			// ++ (initialRest ++ ccTracks[\poly]  => _.q)
 		)
 	}
-	doesNotUnderstand { |selector ...args|
-		if(MIDIItemPlayer.respondsTo(selector)) {
-			// ^this.player.selector(*args)
-			Message(this.player, selector, args ).value
-		}
-	}
 	makeNotes {
 		// should copy be deepCopy??
 		var on = midiEvents.select{|e| e.midicmd == \noteOn}.deepCopy;
@@ -126,12 +133,6 @@ MIDIItem {
 	}
 	stop {
 		takes.insert(0, midiEvents);
-
-		// this.makeNotes;  // move this to player
-		//
-		// this.makeCCs; //move this to player
-
-		// midiEvents = midiEvents.setDurs //for midiEvents.play (raw play)
 	}
 	at {|num|
 		^takes[num]
@@ -218,15 +219,10 @@ MIDIItem {
 	}
 	player {|func| 
 		^if(recording != this) {
-			MIDIItemPlayer(func ? I.d, this.makeNotes.deepCopy) 
+			MIDIItemPlayer( this.makeNotes.deepCopy) 
 		}{
 			SelfReturningObject()
 		}
-		// ^MIDIItemPlayer(
-		// 	{|events| events.reject{|e| e.type == \setCC and: ( e.ctlNum == num )} },
-		// 	this.midiEvents,
-		// 	this.mk
-		// );
 	}
 	save {
 		// notes.isNil.if{this.makeNotes};
@@ -237,16 +233,13 @@ MIDIItem {
 	}
 }
 
-MIDIItemPlayer { //class to collect and play MIDIItems
-	var <func, <midiEvents, <outEvents, tracks;
-	*new {|func midiEvents |
-		^super.newCopyArgs(func, midiEvents).init
-	}
-	init{
-		outEvents = func.(midiEvents)
+MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
+	var <midiEvents, tracks;
+	*new {| midiEvents |
+		^super.newCopyArgs( midiEvents)
 	}
 	play { |mk|
-		outEvents.do{|e| 
+		midiEvents.do{|e| 
 			var playFunc = mk.notNil.if{ {e.mk_(mk).play} }{ { e.play } } ; 
 			TempoClock.sched(e.timestamp, playFunc)
 		}
@@ -272,17 +265,11 @@ MIDIItemPlayer { //class to collect and play MIDIItems
 		);
 		^tracks
 	}
-	collect { |func|
-		^MIDIItemPlayer(
-			{|midiEvents| midiEvents.collect(func) }, 
-			outEvents
-		)
-	}
 	makeNotes {
 		// should copy be deepCopy??
 		var notes;
-		var on = outEvents.select{|e| e.midicmd == \noteOn}.deepCopy;
-		var off = outEvents.select{|e| e.midicmd == \noteOff}.deepCopy;
+		var on = midiEvents.select{|e| e.midicmd == \noteOn}.deepCopy;
+		var off = midiEvents.select{|e| e.midicmd == \noteOff}.deepCopy;
 		var findMatch = {|midinote| off.collect{|e| e.midinote}.indexOf(midinote)}; //returns index
 		on.do{|e| var match = off.removeAt(findMatch.(e.midinote)); e.sustain = match.timestamp - e.timestamp; };
 		^on ++ midiEvents.reject{|e| e.type == \mk} => _.sort{|i j| i.timestamp < j.timestamp}
@@ -291,12 +278,12 @@ MIDIItemPlayer { //class to collect and play MIDIItems
 	filterOnly { |choiceFunc, actionFunc| 
 		^this.collect(
 			{|e| choiceFunc.(e).debug("choice").if { actionFunc.(e) } {e}},
-			outEvents
+			midiEvents
 		)
 	
 	}
 	//modify only tracks with CC (by number) or other specified midicmd (\bend, \noteOn, \poly)
-	filterByMidicmd {|track actionFunc|
+	filterOnlyMidicmd {|track actionFunc|
 		(
 				case
 					//use \noteOn for notes
@@ -305,15 +292,10 @@ MIDIItemPlayer { //class to collect and play MIDIItems
 		)
 		=> this.filterOnly( _, actionFunc )
 	}
-	
-	// collect {| func |
-	// 	^MIDIItemPlayer( func, this.outEvents);
-	// }
-
 	muteCC{ |num|
 		^MIDIItemPlayer(
 			{|events| events.reject{|e| e.type == \setCC and: ( e.ctlNum == num )} },
-			this.outEvents,
+			this.midiEvents,
 		);
 	}
 	initialCCOnly{ |num|
@@ -328,7 +310,7 @@ MIDIItemPlayer { //class to collect and play MIDIItems
 		func.notNil.if{
 			^this.quantizeFunc(beats, func, choiceFunc, recalcSustains) 
 		}{
-			^this.collect( {|e| e.timestamp_(tempoMap.env[e.timestamp])}, outEvents)
+			^this.collect( {|e| e.timestamp_(tempoMap.env[e.timestamp])}, midiEvents)
 		}
 	}
 	quantizeFunc { |beats func choiceFunc recalcSustains=true |
@@ -351,13 +333,13 @@ MIDIItemPlayer { //class to collect and play MIDIItems
 		)
 	}
 	addLine { |name choiceFunc|
-		var initialRestDur = outEvents.select{|e| 
+		var initialRestDur = midiEvents.select{|e| 
 			e.type == \rest and: (e.timestamp == 0)
 		}.collect(_.dur);
 		var notes = 
 		(choiceFunc ? I.d).value(
 
-			outEvents.select{|e| e.midicmd == \noteOn}
+			midiEvents.select{|e| e.midicmd == \noteOn}
 		);
 		var midinotes = notes.collect{|e| e.midinote};
 		var durs = notes.collect{|e| e.timestamp}.differentiate.drop(1)
@@ -379,7 +361,6 @@ MIDIItemTempoMap{ //this is almost the same as TempoMap but with timestamps inst
 	*new {|midiEvents, choiceFunc, beats|
 		^super.new.init( midiEvents, choiceFunc, beats)
 	}
-
 	init{| midiEvents, choiceFunc, b| 
 		times = 
 		(choiceFunc ? I.d)

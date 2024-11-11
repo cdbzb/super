@@ -1,13 +1,15 @@
 MicroKeys {
-	var <>array,<>keys,<>range, <>namedList, <tuningDeltas, tuningFunction, <heldNotes, <damperDown = false, <down;
+	var <>array,<>keys,<>range, <>namedList, <tuningDeltas, tuningFunction, <heldNotes, <damperDown = false, <down, <ccs;
 	classvar <all;
 
 	classvar tuningFunction;
 	*initClass{
 		Event.addEventType(\mkOff, {});
+
 		Event.addEventType(\mk, {
 			var syn;
-			Server.default.bind{ syn = ~mk.noteOnFunction.(~amp * 127, ~midinote) }; 
+			Server.default.bind{ syn = ~mk.noteOnFunction.(~amp * 127, ~midinote, nil, nil, ~params) }; 
+
 			fork{
 				~sustain.().wait;
 				//syn should be passed into doNoteOff to solve the overlapping notes issue
@@ -45,26 +47,27 @@ MicroKeys {
 	init { |name func|
 		namedList = NamedList.new;
 		tuningFunction = { |tuning| { |e| e.num = e.num + tuningDeltas.wrapAt(e.num); e }};
-		namedList.add( \event, {|v n c r| (vel: v/127, num: n, chan: c, src: r, raw: n)});
+		namedList.add( \event, {|v n c r params| (vel: v/127, num: n, chan: c, src: r, raw: n, params:params) });
 		// this.synth_(func ? I.d);
 		this.synth_( func !? _.asDefName ? I.d);
 		keys = 0 ! 128;
 		heldNotes = Set[];
-		all.add(name -> this)
+		all.add(name -> this);
+		ccs = List[];
 	}
 
 	synth_ { |funcOrDefname params|
 		funcOrDefname.isKindOf(Symbol).if{
 			namedList.add( \synth,
 				{ |e|
-					Synth(funcOrDefname.postln, [\freq, e.num.midicps, \amp, e.vel, \num, e.num] ++ params)
+					Synth(funcOrDefname.postln, [\freq, e.num.midicps, \amp, e.vel, \num, e.num] ++ params ++ ( e.params ? () ).asKeyValuePairs)
 					=> this.register(_, e.raw)
 				}
 			)
 		}{
 			namedList.add( \synth,
 				{ |e| 
-					(mk: this, e:e).use{ funcOrDefname.valueEnvir } 
+					((mk: this, e:e) ++ e.params).use{ funcOrDefname.valueEnvir } 
 					=> this.register(_, e.raw) 
 				} 
 			)
@@ -106,10 +109,12 @@ MicroKeys {
 	}
 
 	split_ { |r| range = r }
+
+
 	register { |synth num|
 		keys[num] = synth;
 		^synth
-	}
+}
 
 	noteOnFunction {
 		^namedList.array.reverse.inject(I.d, _ <> _)
@@ -146,6 +151,13 @@ MicroKeys {
 		CC.all[this].do{|i| i.bus.free; i.free}; //remove CC busses and CCs
 		this.free 
 	}
+
+	doesNotUnderstand {|selector ...args|
+		namedList.respondsto(selector).if{
+			^Message(namedList, selector, args).value
+		}
+	}
+
 }
 
 MonoKeys : MicroKeys {

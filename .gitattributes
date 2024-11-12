@@ -409,3 +409,11 @@ Trek/SynthV/song2/**/*.wav filter=lfs diff=lfs merge=lfs -text
 Trek/SynthV/chamber1/1422683892/synthV_MixDown.wav filter=lfs diff=lfs merge=lfs -text
 Trek/Frozen/visual_TUNE_42.wav filter=lfs diff=lfs merge=lfs -text
 Trek/Frozen/transporter_transporter_29.wav filter=lfs diff=lfs merge=lfs -text
+Trek/SynthV/MandT2 filter=lfs diff=lfs merge=lfs -text
+Trek/SynthV/trashme filter=lfs diff=lfs merge=lfs -text
+Trek/SynthV/trashem filter=lfs diff=lfs merge=lfs -text
+Trek/SynthV/song2 filter=lfs diff=lfs merge=lfs -text
+Trek/SynthV/test.svp.event-archive filter=lfs diff=lfs merge=lfs -text
+Trek/SynthV/HK filter=lfs diff=lfs merge=lfs -text
+Trek/SynthV/mandarin1 filter=lfs diff=lfs merge=lfs -text
+Trek/SynthV/ocean filter=lfs diff=lfs merge=lfs -text

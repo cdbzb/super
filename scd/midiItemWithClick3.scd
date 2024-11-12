@@ -1,6 +1,6 @@
 (
 
-b = MicroKeys();
+b = MicroKeys(\foo);
 b.synth_( {
 	var gate = \gate.kr(1);
 	Pulse.ar(\freq.kr(400) * ( \poly.kr / 64 ).midiratio , 0.1, 0.1)
@@ -30,7 +30,7 @@ P(\click, music: { |p b e|
 P(\item, music: { |p b e|
 	TempoClock.default = TempoClock(queueSize: 8192);
 	// var c;
-	a = MicroKeys();
+	a = MicroKeys(\bar);
 	a.synth_( {
 		var gate = \gate.kr(1);
 		VarSaw.ar(\freq.kr(400) * ( \poly.kr / 64 ).midiratio , 0.1)
@@ -263,6 +263,7 @@ Song(\midiItemTest, []).current;
 	Song.mk.tuning_(\just);
 
 	MIDIItem("_241102_092338").player.addLine("test");
+
 	/*
 	["test"].addLine
 	*/
@@ -285,3 +286,37 @@ Song(\midiItemTest, []).current;
 	// MIDIItem("_241102_092338").player.outEvents.select{|e| e.type == \rest}
 	});
 )
+
+	m = MIDIItem("_241102_092338")
+	//group chords
+	m.reject( {|e| ( e.midicmd == \noteOn ).if{ e.midinote<60 }{false}} ).play(Song.mk);
+	m.play(MicroKeys(\p).synth_(\stringyy));
+	
+	m.select( {|e| e.midicmd == \noteOn} ).select({|e| e.midinote < 60 }).play(Song.mk.copy)
+	TempoClock.default=TempoClock(queueSize:8192)
+	m.player.midiEvents
+	m.play(Song.mk)
+	.dump
+	MIDIItemPlayer(m.midiEvents).
+	.setDurs.separate{|i j| i.dur>0.05}
+	.select{|i| i.size > 1}
+
+(
+m = MIDIItem("_241102_092338");
+m.select({|e| e.midicmd == \noteOn})
+'doesNotUnderstand'.help
+.midiEvents
+b
+Array
+m.select({|e| e.midicmd == \noteOn})
+m.midiEvents.respondsTo(\select)
+.select( {|i| i.midinote > 50} )
+TempoClock.default = TempoClock(queueSize:8192)
+m.play(Song.mk)
+m.splitVoices(7, 3)[1] => MIDIItemPlayer(_) => _.play(Song.mk)
+)
+	m.respondsTo(\splitVoices)
+	m.splitVoices(5)
+	m.midiEvents.
+	MIDIItemPlayer().respondsTo(\tracks)
+[[1], [2, 3], [1, 2, 3], [2], [2, 4], [3]].clump(3).flop

@@ -135,9 +135,8 @@ P(\connector, music: { |p b e|
 });
 // sī niàn xiàng yǔ dī luò zài xīn lǐ
 // Memories fall like raindrops in my heart 
-
 // ## Chorus
-["等待黎明的第一道光","3 3  3 3 4 3 -6 3 -6 3".dm(\d) , "q q q qe e q q q qqqq".beats * 0.6].addLine;
+["等待黎明的第一道光","3 3  3 3 4 3 -5 3 -6 3".dm(\d) , "q q q qe e q q q qqqq".beats * 0.6].addLine;
 P(\drum, music: { |p b e|
 	[
 		instrument: \hat_808,
@@ -152,6 +151,7 @@ P(\drum, music: { |p b e|
 	].pp
 });
 P(\bassLine, music: { |p b e|
+	
 a = MicroKeys(\test);
 a.synth_({
 	Saw.ar(\freq.kr(400) * (\poly.kr(0) / 127 => _.midiratio))
@@ -162,7 +162,18 @@ a.velCurve_(2);
 a.tuning_(\just);
 // a.activate
 m = MIDIItem("bassline_241112_104446");
-m
+
+m.player
+.filterOnlyMidicmd(\noteOn,{|e x| e.postln;x.postln; (x == 5).if{ e.amp_(0.3) }})
+// .quantize(
+// 	"q e e q e e q e e q e e q e e q e e e e e e e e e e e ".beats * 1.2,
+// 	{ ~e.timestamp_(~env[~e.timestamp] + 0.02);  },
+// 	{ |notes| notes},
+// 	false,
+// 	// recalcSustains: true
+// )
+
+
 // .record(a)
 // .save
 .collect{|e| e.latency_(0.2)}
@@ -213,9 +224,7 @@ P(\cymbal, music: { |p b e|
 	).play
 });
 P.synthVs(\xuan, take: [ \lead, \dbl ], params: {|p b e| [
-	lyrics: 
-	"等 待 黎 明 的 第 一 道 光 -" 
-	,
+	lyrics: "等 待 黎 明 的 第 一 道 光 -" ,
 	language: \Mandarin,
 	pitchTake: [ 1, 3 ]
 ] }, music:{|p b e|

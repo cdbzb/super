@@ -277,7 +277,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	//modify only elements for which choiceFunc answers true
 	filterOnly { |choiceFunc, actionFunc| 
 		^this.collect(
-			{|e| choiceFunc.(e).debug("choice").if { actionFunc.(e) } {e}},
+			{|e x| choiceFunc.(e, x).debug("choice").if { actionFunc.(e, x) } {e}},
 			midiEvents
 		)
 	

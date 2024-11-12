@@ -8,7 +8,7 @@ MicroKeys {
 
 		Event.addEventType(\mk, {
 			var syn;
-			Server.default.bind{ syn = ~mk.noteOnFunction.(~amp * 127, ~midinote, nil, nil, ~params) }; 
+			Server.default.makeBundle(~latency, { syn = ~mk.noteOnFunction.(~amp * 127, ~midinote, nil, nil, ~params) }); 
 
 			fork{
 				~sustain.().wait;
@@ -48,6 +48,7 @@ MicroKeys {
 		namedList = NamedList.new;
 		tuningFunction = { |tuning| { |e| e.num = e.num + tuningDeltas.wrapAt(e.num); e }};
 		namedList.add( \event, {|v n c r params| (vel: v/127, num: n, chan: c, src: r, raw: n, params:params) });
+
 		// this.synth_(func ? I.d);
 		this.synth_( func !? _.asDefName ? I.d);
 		keys = 0 ! 128;
@@ -135,7 +136,7 @@ MicroKeys {
 	doPoly {|val num| keys[num].set(\poly, val) }
 	activate {
 		// MIDIdef.noteOn(\microOn, {|val num| this.noteOnFunction.(val, num)}, noteNum:range);
-		MIDIdef.noteOn(\microOn,  this.noteOnFunction, noteNum:range);
+		MIDIdef.noteOn(\microOn,  {|v n| (type: \mk, mk:this, amp: v/127, midinote: n, latency:0, sustain: inf ).play}, noteNum:range);
 		// MIDIdef.noteOff(\microOff, {|vel, num| damperDown.postln; ( damperDown == false ).if{ keys[num].release }{ heldNotes.add(keys[num]) }});
 		MIDIdef.noteOff(\microOff, {|val num| this.doNoteOff(num) });
 		MIDIdef.cc(\microDamper,{|num| this.setDamper(num) }, 64);

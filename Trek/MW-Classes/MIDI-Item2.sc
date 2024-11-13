@@ -280,7 +280,13 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			{|e x| choiceFunc.(e, x).debug("choice").if { actionFunc.(e, x) } {e}},
 			midiEvents
 		)
-	
+	}
+	filterNotes { |func|
+		var out = midiEvents.deepCopy;
+		midiEvents.select({|e| e.midicmd == \noteOn})
+		.collect({|e| [midiEvents.indexOf(e),  e]})
+		.do({|e x| out.put(e[0], func.(e[1], x))});
+		^MIDIItemPlayer(out)
 	}
 	//modify only tracks with CC (by number) or other specified midicmd (\bend, \noteOn, \poly)
 	filterOnlyMidicmd {|track actionFunc|

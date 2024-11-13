@@ -82,22 +82,6 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 			try{this.ccPbind(x)}
 		}.select{|i| i.notNil}.asArray 
 	}
-	notesPbind { 
-		var res = List.new;
-		var keys = [\midinote, \sustain, \amp, \dur];
-		keys.do{|key|
-			res.add(key);
-			res.add(  
-				notes.collect{|i|
-					i[key] ? 0 //avoid nil for rest
-				}.q
-			)
-		};
-		res = res ++ [
-			type: \mk,
-		] => _.p;
-		^res
-	}
 	ppar {
 		^Ppar(
 			[
@@ -238,10 +222,27 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	*new {| midiEvents |
 		^super.newCopyArgs( midiEvents)
 	}
-	play { |mk|
-		midiEvents.do{|e| 
-			var playFunc = mk.notNil.if{ {e.mk_(mk).play} }{ { e.play } } ; 
-			TempoClock.sched(e.timestamp, playFunc)
+	play { |mk log=#[] from=0|
+
+	// (log.size > 0).if{
+		"# note amp sus".postln 
+	// }
+		;
+
+		midiEvents.do{|e x| 
+			((e.timestamp == 0) or: (x >= from)).if {
+				var playFunc = mk.notNil.if{
+					{
+						e.mk_(mk).play; 
+						log.includes( e.midicmd ).if {
+							try{ "%: % % %".format(x, e.midinote, e.amp.round(0.001), e.sustain.round(0.001)).postln  }
+						}
+					} 
+				}{
+					{ e.play } 
+				}; 
+				TempoClock.sched(e.timestamp - midiEvents[from].timestamp, playFunc)
+			}
 		}
 	}
 	tracks {
@@ -358,6 +359,23 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			durs = durs.insert(0, initialRestDur[0])
 		} ;
 		^[ name, midinotes, durs].addLine;
+	}
+	notesPbind { |mk| 
+		var res = List.new;
+		var keys = [\midinote, \sustain, \amp, \dur];
+		keys.do{|key|
+			res.add(key);
+			res.add(  
+				midiEvents.select{|e| e.midicmd == \noteOn}.collect{|i|
+					i[key] ? \r //avoid nil for rest
+				}.q
+			)
+		};
+		res = res ++ [
+			type: \mk,
+			mk: mk
+		] => _.p;
+		^res
 	}
 }
 MIDIItemTempoMap{ //this is almost the same as TempoMap but with timestamps instead of beats 

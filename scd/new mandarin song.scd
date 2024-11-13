@@ -163,8 +163,13 @@ a.tuning_(\just);
 // a.activate
 m = MIDIItem("bassline_241112_104446");
 
-m.player
-.filterOnlyMidicmd(\noteOn,{|e x| e.postln;x.postln; (x == 5).if{ e.amp_(0.3) }})
+m = m.player
+.filterOnlyMidicmd(\noteOn,{|e x| (x == 5).if{ e.amp_(0.3) }})
+.filterOnlyMidicmd(\noteOn,{|e x| (x == 28).if{ e.amp_(0.25) }})
+.filterOnlyMidicmd(\noteOn,{|e x| (x == 35).if{ e.amp_(0.3) }})
+.filterOnlyMidicmd(\noteOn,{|e x| (x == 40).if{ e.amp_(0.28) }})
+.filterOnlyMidicmd(\noteOn,{|e x| (x == 48).if{ e.amp_(0.28) }})
+.filterOnlyMidicmd(\noteOn,{|e x| ((54 >= x) and: (x >= 49)).if{ e.amp_(e.amp+0.1) }})
 // .quantize(
 // 	"q e e q e e q e e q e e q e e q e e e e e e e e e e e ".beats * 1.2,
 // 	{ ~e.timestamp_(~env[~e.timestamp] + 0.02);  },
@@ -245,7 +250,7 @@ P(\connector, music: { |p b e|
 // děng dài lí míng de dì yī dào guāng
 // Waiting for the first ray of dawn
 
-["帶我找到回家的方向","4 4 4 4 5 4 3 5 4 3 2".dm(\d) , "q q q qe e q q q qqqq".beats * 0.6].addLine;
+["帶我找到回家的方向","4 4 4 4 5 4 3 5 4 -5 3 2 -6".dm(\d) , "q q q qe e q q q qq qq".beats * 0.6].addLine;
 P(\drum, music: { |p b e|
 	[
 		instrument: \hat_808,
@@ -277,7 +282,7 @@ P(\bassnote, music: { |p b e|
 });
 P.synthVs(\xuan, take: [ \lead, \dbl ], params: {|p b e| [
 	lyrics: 
-	"帶 我 找 到 回 家 的 方 向" 
+	"帶 我 找 到 回 家 的 方 向 -" 
 	,
 	language: \Mandarin,
 	pitchTake: [ 1, 3 ]

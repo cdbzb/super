@@ -34,7 +34,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	var <>midiEvents , <name, <>initialCCValues;
 	var restFirst, <initialRest, <notes ;
 	var takes;
-	classvar midiout, recording;
+	classvar midiout, <recording;
 
 	*initClass {
 		var parent;
@@ -186,6 +186,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 				srcID: KS.id,
 				// argTemplate: {|i| (cmd == \control).if{ i.isStrictlyPositive }{true}}
 			)};
+			^SelfReturningObject()
 	}
 	playRaw {
 		var playbackEvents;

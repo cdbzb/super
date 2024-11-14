@@ -1,18 +1,21 @@
 MicroKeys {
-	var <>array,<>keys,<>range, <>namedList, <tuningDeltas, tuningFunction, <heldNotes, <damperDown = false, <down, <ccs;
+	var <>array,<>keys,<>range, <>namedList, <tuningDeltas, tuningFunction, <heldNotes, <damperDown = false, <>down, <ccs;
 	classvar <all;
+	classvar <type=\mk;
 
 	classvar tuningFunction;
+	doNoteOn { |amp midinote params|
+			 this.noteOnFunction.(amp * 127, midinote, nil, nil, params); 
+	}
 	*initClass{
 		Event.addEventType(\mkOff, {});
 
 		Event.addEventType(\mk, {
 			var syn;
-			Server.default.makeBundle(~latency, { syn = ~mk.noteOnFunction.(~amp * 127, ~midinote, nil, nil, ~params) }); 
-
+			Server.default.makeBundle(~latency, { ~mk.doNoteOn(~amp * 127, ~midinote, ~params) });
 			fork{
 				~sustain.().wait;
-				//syn should be passed into doNoteOff to solve the overlapping notes issue
+				//syn could be passed into doNoteOff to solve the overlapping notes issue
 				~mk.doNoteOff(~midinote)
 			}	
 		});
@@ -162,14 +165,34 @@ MicroKeys {
 }
 
 MonoKeys : MicroKeys {
-	classvar monosynth;
-	*new {|synthFunc|
-		^super.new.init(synthFunc)
+	var monosynth;
+	classvar <type=\mkMono;
+	*new { |name func|
+		all[name].notNil.if {
+			all[name].down_(List[]);
+			^all[name]
+		} { 
+			^super.new.init(name, func) 
+		}  
 	}
+	 
+	doNoteOn { |amp midinote params|
+			 // ~mk.noteOnFunction.(~amp * 127, ~midinote, nil, nil, ~params); 
+			down.debug("down");
+			( down.size == 0 ).if{
+				monosynth = this.noteOnFunction.(amp * 127, midinote, nil, nil, params) ;
+				down.add(midinote)
+			}{
+				monosynth.set(\num, midinote).set(\vel, amp);
+				down.add(midinote);
+			} 
+	}
+	// *new {|synthFunc|
+	// 	^super.new.init(synthFunc)
+	// }
 	activate {
 		down = List[];
 		MIDIdef.noteOn(\microOn, {|v n | 
-			monosynth.debug("ms");
 			down.debug("down");
 			( down.size == 0 ).if{
 				monosynth = this.noteOnFunction.(v, n) ;
@@ -177,7 +200,8 @@ MonoKeys : MicroKeys {
 			}{
 				monosynth.set(\num, n).set(\vel, v);
 				down.add(n);
-			} }, noteNum:range);
+			} 
+		}, noteNum:range);
 		MIDIdef.noteOff(\microOff, {|vel num| 
 			this.doNoteOff(num);
 			// damperDown.postln; 

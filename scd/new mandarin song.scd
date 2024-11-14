@@ -150,12 +150,37 @@ P(\drum, music: { |p b e|
 		out: Effect.bus({|i| CombN.ar(i, decaytime:5)/2 + i => _.dup }, time:1)
 	].pp
 });
+P(\stringz, lag: 0.2, music: { |p b e|
+	
+	var c = MicroKeys(\stringz)	;
+	var m;
+	c.synth_(\stringyy);
+	c.add(\quiet, {|e| e.postln; e.vel = e.vel/ 100}, addAction: \addBefore, target: \synth);
+	m = MIDIItem("stringz_241114_124431");
+	m
+	// .record(c)
+	.save
+	.play(c)
+
+});
+P(\testtt,lag:0.2, music: { |p b e|
+	var c = MicroKeys(\sn_808)	;
+	var m;
+	c.synth_(\default, [\out, Effect.bus({|i| FreeVerb.ar(i, 1, 1) /5 },)]);
+	c.add(\quiet, {|e| e.postln; e.vel = e.vel/ 100}, addAction: \addBefore, target: \synth);
+	m = MIDIItem("241114_124432");
+	m
+	// .record(c)
+	.play(c)
+});
 P(\bassLine, music: { |p b e|
 	
-a = MicroKeys(\test);
+var a = MicroKeys(\test);
 a.synth_({
-	Saw.ar(\freq.kr(400) * (\poly.kr(0) / 127 => _.midiratio))
+	Saw.ar(\freq.kr(400) * (\poly.kr(0) / 1227 => _.midiratio))
 	* \amp.kr(0.1)
+	/4
+	/2
 	* Env.asr().kr(2,gate:\gate.kr(1))
 }.asDefName, [sustain: 3]);
 a.velCurve_(2);
@@ -163,13 +188,16 @@ a.tuning_(\just);
 // a.activate
 m = MIDIItem("bassline_241112_104446");
 
-m = m.player
-.filterOnlyMidicmd(\noteOn,{|e x| (x == 5).if{ e.amp_(0.3) }})
-.filterOnlyMidicmd(\noteOn,{|e x| (x == 28).if{ e.amp_(0.25) }})
-.filterOnlyMidicmd(\noteOn,{|e x| (x == 35).if{ e.amp_(0.3) }})
-.filterOnlyMidicmd(\noteOn,{|e x| (x == 40).if{ e.amp_(0.28) }})
-.filterOnlyMidicmd(\noteOn,{|e x| (x == 48).if{ e.amp_(0.28) }})
-.filterOnlyMidicmd(\noteOn,{|e x| ((54 >= x) and: (x >= 49)).if{ e.amp_(e.amp+0.1) }})
+// m = m.player
+m
+// .record(a)
+
+// .filterOnlyMidicmd(\noteOn,{|e x| (x == 5).if{ e.amp_(0.3) }})
+// .filterOnlyMidicmd(\noteOn,{|e x| (x == 28).if{ e.amp_(0.25) }})
+// .filterOnlyMidicmd(\noteOn,{|e x| (x == 35).if{ e.amp_(0.3) }})
+// .filterOnlyMidicmd(\noteOn,{|e x| (x == 40).if{ e.amp_(0.28) }})
+// .filterOnlyMidicmd(\noteOn,{|e x| (x == 48).if{ e.amp_(0.28) }})
+// .filterOnlyMidicmd(\noteOn,{|e x| ((54 >= x) and: (x >= 49)).if{ e.amp_(e.amp+0.1) }})
 // .quantize(
 // 	"q e e q e e q e e q e e q e e q e e e e e e e e e e e ".beats * 1.2,
 // 	{ ~e.timestamp_(~env[~e.timestamp] + 0.02);  },
@@ -179,8 +207,6 @@ m = m.player
 // )
 
 
-// .record(a)
-// .save
 .collect{|e| e.latency_(0.2)}
 .play(a)
 
@@ -295,6 +321,32 @@ P.synthVs(\xuan, take: [ \lead, \dbl ], params: {|p b e| [
 // dài wǒ zhǎo dào huí jiā de fāng xiàng
 // To guide me home
 
+P(\monoDouble,lag: 0.2, music: { |p b e|
+	// var m;
+	var a = MicroKeys.mono(\lead);
+
+	a.synth_({
+		SinOsc.ar( \num.kr(40).midicps.lag(0.3) * (\poly.kr / 127 ).midiratio, 0, 0.05 )
+		* Env.asr().kr(2,gate:\gate.kr(1))
+
+		* 3
+		=> CrossoverDistortion.ar(_)
+		// => _.distort
+		/4
+		=> FreeVerb.ar(_, 0.2, 1)
+		=> Pan2.ar(_, 1)
+	}.asDefName);
+	// a.activate
+	m = MIDIItem("line_241114_095359");
+	// m.player.midiEvents.select{|i| i.midicmd ==\noteOn}[3].play
+	m
+	// m.player.midiEvents.collect(_.type)
+	// .record(a)
+	.play(a)
+
+	
+	
+});
 ["每一步都是新的希望", "6.5 6 4 1 -5.5 4 3 4 3 -7".dm(\c) ,"q q q q q qe e q qq qq".beats * 0.6].addLine;
 P.synthVs(\xuan, take: [\lead, \dbl], params: {|p b| [
 	lyrics: "每 一 步 都 是 新 的 希 望 -",

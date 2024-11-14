@@ -1,0 +1,2082 @@
+var o, p;
+o = [
+	MIDIItem.prNew,  List.prNew,  Array.prNew(21),  Event.prNew,  
+	Array.prNew(28),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  "stringz_241114_124431",  Event.prNew,  Array.prNew(4),  
+	Array.prNew(1),  Event.prNew,  Array.prNew(16),  Array.prNew(11),  
+	Event.prNew,  Array.prNew(32),  Event.prNew,  Array.prNew(32),  
+	Event.prNew,  Array.prNew(32),  Event.prNew,  Array.prNew(32),  
+	Event.prNew,  Array.prNew(32),  Event.prNew,  Array.prNew(32),  
+	Event.prNew,  Array.prNew(32),  Event.prNew,  Array.prNew(32),  
+	Event.prNew,  Array.prNew(32),  Event.prNew,  Array.prNew(32),  
+	List.prNew,  Array.prNew(9),  List.prNew,  Array.prNew(1),  
+	Event.prNew,  Array.prNew(28),  List.prNew,  Array.prNew(5),  
+	Event.prNew,  Array.prNew(28),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  List.prNew,  Array.prNew(7),  
+	Event.prNew,  Array.prNew(28),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  List.prNew,  Array.prNew(3),  
+	Event.prNew,  Array.prNew(28),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  List.prNew,  Array.prNew(5),  
+	Event.prNew,  Array.prNew(28),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  List.prNew,  Array.prNew(37),  
+	Event.prNew,  Array.prNew(28),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  List.prNew,  Array.prNew(59),  
+	Event.prNew,  Array.prNew(28),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  List.prNew,  Array.prNew(51),  
+	Event.prNew,  Array.prNew(28),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16),  Event.prNew,  Array.prNew(16),  
+	Event.prNew,  Array.prNew(16)
+];
+p = [
+	// MIDIItem
+	0, [ midiEvents: o[1],  name: o[45],  
+		initialCCValues: o[46],  restFirst: true,  
+		initialRest: o[48],  notes: o[51],  
+		takes: o[72] ],  
+	// List
+	1, [ array: o[2] ],  
+	// Array
+	2, [ o[3],  o[5],  o[7],  o[9],  
+		o[11],  o[13],  o[15],  o[17],  
+		o[19],  o[21],  o[23],  o[25],  
+		o[27],  o[29],  o[31],  o[33],  
+		o[35],  o[37],  o[39],  o[41],  
+		o[43] ],  
+	// Event
+	3, [ array: o[4],  size: 7,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	4, [ nil,  nil,  nil,  nil,  
+		'initial',  true,  nil,  nil,  
+		'ctlNum',  'polytouch',  'timestamp',  0.0,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  'type',  'setPoly',  
+		nil,  nil,  'midicmd',  'control',  
+		'control',  0,  'midinote',  'r' ],  
+	// Event
+	5, [ array: o[6],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	6, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  -0.17321565100003,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.25984251968504,  'midinote',  78 ],  
+	// Event
+	7, [ array: o[8],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	8, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  -0.15493909100003,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.25984251968504,  'midinote',  74 ],  
+	// Event
+	9, [ array: o[10],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	10, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  2.25581238,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.1259842519685,  'midinote',  73 ],  
+	// Event
+	11, [ array: o[12],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	12, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  2.2723990289999,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.28346456692913,  'midinote',  74 ],  
+	// Event
+	13, [ array: o[14],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	14, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  4.5448671369999,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.25196850393701,  'midinote',  74 ],  
+	// Event
+	15, [ array: o[16],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	16, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  4.552068645,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.31496062992126,  'midinote',  71 ],  
+	// Event
+	17, [ array: o[18],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	18, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  4.593958022,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.05511811023622,  'midinote',  73 ],  
+	// Event
+	19, [ array: o[20],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	20, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  6.974641966,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.33070866141732,  'midinote',  79 ],  
+	// Event
+	21, [ array: o[22],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	22, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  6.9898095639999,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.22047244094488,  'midinote',  78 ],  
+	// Event
+	23, [ array: o[24],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	24, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  10.529011837,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.37795275590551,  'midinote',  69 ],  
+	// Event
+	25, [ array: o[26],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	26, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  10.61256318,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.1259842519685,  'midinote',  71 ],  
+	// Event
+	27, [ array: o[28],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	28, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  14.150871389,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.25984251968504,  'midinote',  74 ],  
+	// Event
+	29, [ array: o[30],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	30, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  14.158150694,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.33070866141732,  'midinote',  79 ],  
+	// Event
+	31, [ array: o[32],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	32, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  14.190284254,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.28346456692913,  'midinote',  77 ],  
+	// Event
+	33, [ array: o[34],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	34, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  14.19162909,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.32283464566929,  'midinote',  72 ],  
+	// Event
+	35, [ array: o[36],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	36, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  14.197127551,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.21259842519685,  'midinote',  69 ],  
+	// Event
+	37, [ array: o[38],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	38, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  18.945690229,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.18897637795276,  'midinote',  79 ],  
+	// Event
+	39, [ array: o[40],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	40, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  19.006654471,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.1496062992126,  'midinote',  77 ],  
+	// Event
+	41, [ array: o[42],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	42, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  21.357248823,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.50393700787402,  'midinote',  79 ],  
+	// Event
+	43, [ array: o[44],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	44, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  21.364542521,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.50393700787402,  'midinote',  72 ],  
+	// Event
+	46, [ array: o[47],  size: 0,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	47, [ nil,  nil,  nil,  nil ],  
+	// Array
+	48, [ o[49] ],  
+	// Event
+	49, [ array: o[50],  size: 3,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	50, [ nil,  nil,  'timestamp',  0.0,  
+		nil,  nil,  'dur',  2.25581238,  
+		nil,  nil,  'type',  'rest',  
+		nil,  nil,  nil,  nil ],  
+	// Array
+	51, [ o[52],  o[54],  o[49],  o[56],  
+		o[58],  o[60],  o[62],  o[64],  
+		o[66],  o[68],  o[70] ],  
+	// Event
+	52, [ array: o[53],  size: 7,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	53, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  -0.17321565100003,  'dur',  0.018276560000004,  
+		nil,  nil,  nil,  nil,  
+		'amp',  0.25984251968504,  'sustain',  7.1630252149999,  
+		'midinote',  78,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		nil,  nil,  nil,  nil ],  
+	// Event
+	54, [ array: o[55],  size: 7,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	55, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  -0.15493909100003,  'dur',  0.15493909100003,  
+		nil,  nil,  nil,  nil,  
+		'amp',  0.25984251968504,  'sustain',  2.4273381199999,  
+		'midinote',  74,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		nil,  nil,  nil,  nil ],  
+	// Event
+	56, [ array: o[57],  size: 7,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	57, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  2.25581238,  'dur',  2.2890547569999,  
+		nil,  nil,  nil,  nil,  
+		'amp',  0.1259842519685,  'sustain',  2.338145642,  
+		'midinote',  73,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		nil,  nil,  nil,  nil ],  
+	// Event
+	58, [ array: o[59],  size: 7,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	59, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  4.5448671369999,  'dur',  0.0072015080000938,  
+		nil,  nil,  nil,  nil,  
+		'amp',  0.25196850393701,  'sustain',  9.606004252,  
+		'midinote',  74,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		nil,  nil,  nil,  nil ],  
+	// Event
+	60, [ array: o[61],  size: 7,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	61, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  4.552068645,  'dur',  2.422573321,  
+		nil,  nil,  nil,  nil,  
+		'amp',  0.31496062992126,  'sustain',  6.060494535,  
+		'midinote',  71,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		nil,  nil,  nil,  nil ],  
+	// Event
+	62, [ array: o[63],  size: 7,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	63, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  6.974641966,  'dur',  3.5543698709999,  
+		nil,  nil,  nil,  nil,  
+		'amp',  0.33070866141732,  'sustain',  7.183508728,  
+		'midinote',  79,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		nil,  nil,  nil,  nil ],  
+	// Event
+	64, [ array: o[65],  size: 7,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	65, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  10.529011837,  'dur',  3.6612724170001,  
+		nil,  nil,  nil,  nil,  
+		'amp',  0.37795275590551,  'sustain',  3.668115714,  
+		'midinote',  69,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		nil,  nil,  nil,  nil ],  
+	// Event
+	66, [ array: o[67],  size: 7,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	67, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  14.190284254,  'dur',  0.0013448359999302,  
+		nil,  nil,  nil,  nil,  
+		'amp',  0.28346456692913,  'sustain',  4.816370217,  
+		'midinote',  77,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		nil,  nil,  nil,  nil ],  
+	// Event
+	68, [ array: o[69],  size: 7,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	69, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  14.19162909,  'dur',  4.754061139,  
+		nil,  nil,  nil,  nil,  
+		'amp',  0.32283464566929,  'sustain',  7.172913431,  
+		'midinote',  72,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		nil,  nil,  nil,  nil ],  
+	// Event
+	70, [ array: o[71],  size: 7,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	71, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  18.945690229,  'dur',  1,  
+		nil,  nil,  nil,  nil,  
+		'amp',  0.18897637795276,  'sustain',  2.4115585940001,  
+		'midinote',  79,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		nil,  nil,  nil,  nil ],  
+	// List
+	72, [ array: o[73] ],  
+	// Array
+	73, [ o[1],  o[74],  o[78],  o[90],  
+		o[106],  o[114],  o[126],  o[202],  
+		o[322] ],  
+	// List
+	74, [ array: o[75] ],  
+	// Array
+	75, [ o[76] ],  
+	// Event
+	76, [ array: o[77],  size: 7,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	77, [ nil,  nil,  nil,  nil,  
+		'initial',  true,  nil,  nil,  
+		'ctlNum',  'polytouch',  'timestamp',  0.0,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  'type',  'setPoly',  
+		nil,  nil,  'midicmd',  'control',  
+		'control',  0,  'midinote',  'r' ],  
+	// List
+	78, [ array: o[79] ],  
+	// Array
+	79, [ o[80],  o[82],  o[84],  o[86],  
+		o[88] ],  
+	// Event
+	80, [ array: o[81],  size: 7,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	81, [ nil,  nil,  nil,  nil,  
+		'initial',  true,  nil,  nil,  
+		'ctlNum',  'polytouch',  'timestamp',  0.0,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  'type',  'setPoly',  
+		nil,  nil,  'midicmd',  'control',  
+		'control',  0,  'midinote',  'r' ],  
+	// Event
+	82, [ array: o[83],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	83, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  0.52826787899999,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.7244094488189,  'midinote',  73 ],  
+	// Event
+	84, [ array: o[85],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	85, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  0.82741910099996,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.23622047244094,  'midinote',  73 ],  
+	// Event
+	86, [ array: o[87],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	87, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  0.97248214099993,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.48031496062992,  'midinote',  73 ],  
+	// Event
+	88, [ array: o[89],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	89, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  1.266585751,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.14173228346457,  'midinote',  73 ],  
+	// List
+	90, [ array: o[91] ],  
+	// Array
+	91, [ o[92],  o[94],  o[96],  o[98],  
+		o[100],  o[102],  o[104] ],  
+	// Event
+	92, [ array: o[93],  size: 7,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	93, [ nil,  nil,  nil,  nil,  
+		'initial',  true,  nil,  nil,  
+		'ctlNum',  'polytouch',  'timestamp',  0.0,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  'type',  'setPoly',  
+		nil,  nil,  'midicmd',  'control',  
+		'control',  0,  'midinote',  'r' ],  
+	// Event
+	94, [ array: o[95],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	95, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  0.57176911799995,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.55905511811024,  'midinote',  70 ],  
+	// Event
+	96, [ array: o[97],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	97, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  0.98050985299999,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.20472440944882,  'midinote',  70 ],  
+	// Event
+	98, [ array: o[99],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	99, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  1.175025418,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.73228346456693,  'midinote',  70 ],  
+	// Event
+	100, [ array: o[101],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	101, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  1.421044943,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.30708661417323,  'midinote',  70 ],  
+	// Event
+	102, [ array: o[103],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	103, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  1.750474417,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.71653543307087,  'midinote',  75 ],  
+	// Event
+	104, [ array: o[105],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	105, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  1.9368608500001,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.34645669291339,  'midinote',  75 ],  
+	// List
+	106, [ array: o[107] ],  
+	// Array
+	107, [ o[108],  o[110],  o[112] ],  
+	// Event
+	108, [ array: o[109],  size: 7,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	109, [ nil,  nil,  nil,  nil,  
+		'initial',  true,  nil,  nil,  
+		'ctlNum',  'polytouch',  'timestamp',  0.0,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  'type',  'setPoly',  
+		nil,  nil,  'midicmd',  'control',  
+		'control',  0,  'midinote',  'r' ],  
+	// Event
+	110, [ array: o[111],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	111, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  0.55524968100001,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.78740157480315,  'midinote',  70 ],  
+	// Event
+	112, [ array: o[113],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	113, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  0.965338195,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.30708661417323,  'midinote',  70 ],  
+	// List
+	114, [ array: o[115] ],  
+	// Array
+	115, [ o[116],  o[118],  o[120],  o[122],  
+		o[124] ],  
+	// Event
+	116, [ array: o[117],  size: 7,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	117, [ nil,  nil,  nil,  nil,  
+		'initial',  true,  nil,  nil,  
+		'ctlNum',  'polytouch',  'timestamp',  0.0,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  'type',  'setPoly',  
+		nil,  nil,  'midicmd',  'control',  
+		'control',  0,  'midinote',  'r' ],  
+	// Event
+	118, [ array: o[119],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	119, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  0.53806990200001,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.54330708661417,  'midinote',  66 ],  
+	// Event
+	120, [ array: o[121],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	121, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  0.84255078099993,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.14173228346457,  'midinote',  66 ],  
+	// Event
+	122, [ array: o[123],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	123, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  1.4186027799999,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.67716535433071,  'midinote',  66 ],  
+	// Event
+	124, [ array: o[125],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	125, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  1.6055168769999,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.36220472440945,  'midinote',  66 ],  
+	// List
+	126, [ array: o[127] ],  
+	// Array
+	127, [ o[128],  o[130],  o[132],  o[134],  
+		o[136],  o[138],  o[140],  o[142],  
+		o[144],  o[146],  o[148],  o[150],  
+		o[152],  o[154],  o[156],  o[158],  
+		o[160],  o[162],  o[164],  o[166],  
+		o[168],  o[170],  o[172],  o[174],  
+		o[176],  o[178],  o[180],  o[182],  
+		o[184],  o[186],  o[188],  o[190],  
+		o[192],  o[194],  o[196],  o[198],  
+		o[200] ],  
+	// Event
+	128, [ array: o[129],  size: 7,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	129, [ nil,  nil,  nil,  nil,  
+		'initial',  true,  nil,  nil,  
+		'ctlNum',  'polytouch',  'timestamp',  0.0,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  'type',  'setPoly',  
+		nil,  nil,  'midicmd',  'control',  
+		'control',  0,  'midinote',  'r' ],  
+	// Event
+	130, [ array: o[131],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	131, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  -0.14701980800001,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.32283464566929,  'midinote',  74 ],  
+	// Event
+	132, [ array: o[133],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	133, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  -0.143001334,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.34645669291339,  'midinote',  81 ],  
+	// Event
+	134, [ array: o[135],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	135, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  -0.139450759,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.10236220472441,  'midinote',  78 ],  
+	// Event
+	136, [ array: o[137],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	137, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  2.42131847,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.11811023622047,  'midinote',  73 ],  
+	// Event
+	138, [ array: o[139],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	139, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  2.425061052,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.35433070866142,  'midinote',  74 ],  
+	// Event
+	140, [ array: o[141],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	141, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  4.733812412,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.4251968503937,  'midinote',  71 ],  
+	// Event
+	142, [ array: o[143],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	143, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  4.751643603,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.1496062992126,  'midinote',  73 ],  
+	// Event
+	144, [ array: o[145],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	145, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  6.802371389,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.37007874015748,  'midinote',  81 ],  
+	// Event
+	146, [ array: o[147],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	147, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  6.900538848,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.023622047244094,  'midinote',  78 ],  
+	// Event
+	148, [ array: o[149],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	149, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  7.164169429,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.36220472440945,  'midinote',  79 ],  
+	// Event
+	150, [ array: o[151],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	151, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  7.165003128,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.25984251968504,  'midinote',  76 ],  
+	// Event
+	152, [ array: o[153],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	153, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  7.274296321,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.18897637795276,  'midinote',  71 ],  
+	// Event
+	154, [ array: o[155],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	155, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  9.561251059,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.43307086614173,  'midinote',  74 ],  
+	// Event
+	156, [ array: o[157],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	157, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  11.944105797,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.39370078740157,  'midinote',  73 ],  
+	// Event
+	158, [ array: o[159],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	159, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  11.946146965,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.32283464566929,  'midinote',  81 ],  
+	// Event
+	160, [ array: o[161],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	161, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  11.998371698,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.26771653543307,  'midinote',  79 ],  
+	// Event
+	162, [ array: o[163],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	163, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  12.02936058,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.32283464566929,  'midinote',  74 ],  
+	// Event
+	164, [ array: o[165],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	165, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  14.348327307,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.10236220472441,  'midinote',  73 ],  
+	// Event
+	166, [ array: o[167],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	167, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  14.352509071,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.47244094488189,  'midinote',  81 ],  
+	// Event
+	168, [ array: o[169],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	169, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  14.355883798,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.50393700787402,  'midinote',  77 ],  
+	// Event
+	170, [ array: o[171],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	171, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  14.369016804,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.46456692913386,  'midinote',  72 ],  
+	// Event
+	172, [ array: o[173],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	173, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  14.472340424,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.32283464566929,  'midinote',  76 ],  
+	// Event
+	174, [ array: o[175],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	175, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  16.695140709,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.30708661417323,  'midinote',  80 ],  
+	// Event
+	176, [ array: o[177],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	177, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  16.699150193,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.29133858267717,  'midinote',  68 ],  
+	// Event
+	178, [ array: o[179],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	179, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  18.882055959,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.2755905511811,  'midinote',  77 ],  
+	// Event
+	180, [ array: o[181],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	181, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  18.942399369,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.39370078740157,  'midinote',  80 ],  
+	// Event
+	182, [ array: o[183],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	183, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  19.021976378,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.078740157480315,  'midinote',  68 ],  
+	// Event
+	184, [ array: o[185],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	185, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  19.027513904,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.29133858267717,  'midinote',  72 ],  
+	// Event
+	186, [ array: o[187],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	187, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  19.138892636,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.16535433070866,  'midinote',  76 ],  
+	// Event
+	188, [ array: o[189],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	189, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  19.141940377,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.21259842519685,  'midinote',  65 ],  
+	// Event
+	190, [ array: o[191],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	191, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  19.167940249,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.23622047244094,  'midinote',  79 ],  
+	// Event
+	192, [ array: o[193],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	193, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  19.17376619,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.18897637795276,  'midinote',  84 ],  
+	// Event
+	194, [ array: o[195],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	195, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  21.571973909,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.47244094488189,  'midinote',  84 ],  
+	// Event
+	196, [ array: o[197],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	197, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  21.583850134,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.50393700787402,  'midinote',  65 ],  
+	// Event
+	198, [ array: o[199],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	199, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  21.596659865,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.50393700787402,  'midinote',  79 ],  
+	// Event
+	200, [ array: o[201],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	201, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  21.604703709,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.50393700787402,  'midinote',  76 ],  
+	// List
+	202, [ array: o[203] ],  
+	// Array
+	203, [ o[204],  o[206],  o[208],  o[210],  
+		o[212],  o[214],  o[216],  o[218],  
+		o[220],  o[222],  o[224],  o[226],  
+		o[228],  o[230],  o[232],  o[234],  
+		o[236],  o[238],  o[240],  o[242],  
+		o[244],  o[246],  o[248],  o[250],  
+		o[252],  o[254],  o[256],  o[258],  
+		o[260],  o[262],  o[264],  o[266],  
+		o[268],  o[270],  o[272],  o[274],  
+		o[276],  o[278],  o[280],  o[282],  
+		o[284],  o[286],  o[288],  o[290],  
+		o[292],  o[294],  o[296],  o[298],  
+		o[300],  o[302],  o[304],  o[306],  
+		o[308],  o[310],  o[312],  o[314],  
+		o[316],  o[318],  o[320] ],  
+	// Event
+	204, [ array: o[205],  size: 7,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	205, [ nil,  nil,  nil,  nil,  
+		'initial',  true,  nil,  nil,  
+		'ctlNum',  'polytouch',  'timestamp',  0.0,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  'type',  'setPoly',  
+		nil,  nil,  'midicmd',  'control',  
+		'control',  0,  'midinote',  'r' ],  
+	// Event
+	206, [ array: o[207],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	207, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  1.059687523,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.56692913385827,  'midinote',  78 ],  
+	// Event
+	208, [ array: o[209],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	209, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  1.062467522,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.33858267716535,  'midinote',  74 ],  
+	// Event
+	210, [ array: o[211],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	211, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  1.633388997,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.2755905511811,  'midinote',  78 ],  
+	// Event
+	212, [ array: o[213],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	213, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  1.648081876,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.33070866141732,  'midinote',  74 ],  
+	// Event
+	214, [ array: o[215],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	215, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  1.879872588,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.34645669291339,  'midinote',  74 ],  
+	// Event
+	216, [ array: o[217],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	217, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  1.882341799,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.38582677165354,  'midinote',  78 ],  
+	// Event
+	218, [ array: o[219],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	219, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  3.265849159,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.29133858267717,  'midinote',  74 ],  
+	// Event
+	220, [ array: o[221],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	221, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  3.43566215,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.29133858267717,  'midinote',  81 ],  
+	// Event
+	222, [ array: o[223],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	223, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  3.51971524,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.30708661417323,  'midinote',  81 ],  
+	// Event
+	224, [ array: o[225],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	225, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  3.601442985,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.63779527559055,  'midinote',  73 ],  
+	// Event
+	226, [ array: o[227],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	227, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  4.754584597,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.31496062992126,  'midinote',  71 ],  
+	// Event
+	228, [ array: o[229],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	229, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  4.768740426,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.16535433070866,  'midinote',  73 ],  
+	// Event
+	230, [ array: o[231],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	231, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  5.083988284,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.41732283464567,  'midinote',  74 ],  
+	// Event
+	232, [ array: o[233],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	233, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  5.173721591,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.34645669291339,  'midinote',  71 ],  
+	// Event
+	234, [ array: o[235],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	235, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  7.120093649,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.22834645669291,  'midinote',  79 ],  
+	// Event
+	236, [ array: o[237],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	237, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  7.127422617,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.15748031496063,  'midinote',  78 ],  
+	// Event
+	238, [ array: o[239],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	239, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  9.739833232,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.17322834645669,  'midinote',  81 ],  
+	// Event
+	240, [ array: o[241],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	241, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  9.880636068,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.34645669291339,  'midinote',  79 ],  
+	// Event
+	242, [ array: o[243],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	243, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  10.170402785,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.48818897637795,  'midinote',  81 ],  
+	// Event
+	244, [ array: o[245],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	245, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  10.279625393,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.45669291338583,  'midinote',  81 ],  
+	// Event
+	246, [ array: o[247],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	247, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  11.963429915,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.28346456692913,  'midinote',  78 ],  
+	// Event
+	248, [ array: o[249],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	249, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  12.027587833,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.30708661417323,  'midinote',  81 ],  
+	// Event
+	250, [ array: o[251],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	251, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  13.741511128,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.22834645669291,  'midinote',  78 ],  
+	// Event
+	252, [ array: o[253],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	253, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  13.749421818,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.28346456692913,  'midinote',  76 ],  
+	// Event
+	254, [ array: o[255],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	255, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  14.359277995,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.50393700787402,  'midinote',  76 ],  
+	// Event
+	256, [ array: o[257],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	257, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  14.463656729,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.36220472440945,  'midinote',  74 ],  
+	// Event
+	258, [ array: o[259],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	259, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  14.479512518,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.13385826771654,  'midinote',  72 ],  
+	// Event
+	260, [ array: o[261],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	261, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  14.543937893,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.50393700787402,  'midinote',  72 ],  
+	// Event
+	262, [ array: o[263],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	263, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  14.556231107,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.47244094488189,  'midinote',  77 ],  
+	// Event
+	264, [ array: o[265],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	265, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  14.763799766,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.50393700787402,  'midinote',  77 ],  
+	// Event
+	266, [ array: o[267],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	267, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  14.863835781,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.41732283464567,  'midinote',  72 ],  
+	// Event
+	268, [ array: o[269],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	269, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  14.939681453,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.11023622047244,  'midinote',  77 ],  
+	// Event
+	270, [ array: o[271],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	271, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  16.854749685,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.22834645669291,  'midinote',  68 ],  
+	// Event
+	272, [ array: o[273],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	273, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  16.909836405,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.35433070866142,  'midinote',  68 ],  
+	// Event
+	274, [ array: o[275],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	275, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  16.975796378,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.48031496062992,  'midinote',  68 ],  
+	// Event
+	276, [ array: o[277],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	277, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  17.087330971,  nil,  nil,  
+		'polyTouch',  9,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  68 ],  
+	// Event
+	278, [ array: o[279],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	279, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  17.098810621,  nil,  nil,  
+		'polyTouch',  16,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  68 ],  
+	// Event
+	280, [ array: o[281],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	281, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  17.110677128,  nil,  nil,  
+		'polyTouch',  21,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  68 ],  
+	// Event
+	282, [ array: o[283],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	283, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  17.122232653,  nil,  nil,  
+		'polyTouch',  23,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  68 ],  
+	// Event
+	284, [ array: o[285],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	285, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  17.133819317,  nil,  nil,  
+		'polyTouch',  22,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  68 ],  
+	// Event
+	286, [ array: o[287],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	287, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  17.145434164,  nil,  nil,  
+		'polyTouch',  17,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  68 ],  
+	// Event
+	288, [ array: o[289],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	289, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  17.157038959,  nil,  nil,  
+		'polyTouch',  11,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  68 ],  
+	// Event
+	290, [ array: o[291],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	291, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  17.169234254,  nil,  nil,  
+		'polyTouch',  12,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  68 ],  
+	// Event
+	292, [ array: o[293],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	293, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  17.180262597,  nil,  nil,  
+		'polyTouch',  13,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  68 ],  
+	// Event
+	294, [ array: o[295],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	295, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  17.192647843,  nil,  nil,  
+		'polyTouch',  14,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  68 ],  
+	// Event
+	296, [ array: o[297],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	297, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  17.203983401,  nil,  nil,  
+		'polyTouch',  16,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  68 ],  
+	// Event
+	298, [ array: o[299],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	299, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  17.225944401,  nil,  nil,  
+		'polyTouch',  13,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  68 ],  
+	// Event
+	300, [ array: o[301],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	301, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  17.237114632,  nil,  nil,  
+		'polyTouch',  1,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  68 ],  
+	// Event
+	302, [ array: o[303],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	303, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  17.248758493,  nil,  nil,  
+		'polyTouch',  0,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  68 ],  
+	// Event
+	304, [ array: o[305],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	305, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  17.251088985,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.086614173228346,  'midinote',  72 ],  
+	// Event
+	306, [ array: o[307],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	307, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  17.794429877,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.05511811023622,  'midinote',  72 ],  
+	// Event
+	308, [ array: o[309],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	309, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  19.084697553,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.2755905511811,  'midinote',  67 ],  
+	// Event
+	310, [ array: o[311],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	311, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  19.175480506,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.34645669291339,  'midinote',  68 ],  
+	// Event
+	312, [ array: o[313],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	313, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  20.118629512,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.15748031496063,  'midinote',  77 ],  
+	// Event
+	314, [ array: o[315],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	315, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  20.336907133,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.070866141732283,  'midinote',  76 ],  
+	// Event
+	316, [ array: o[317],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	317, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  21.508594311,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.13385826771654,  'midinote',  76 ],  
+	// Event
+	318, [ array: o[319],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	319, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  21.565093421,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.16535433070866,  'midinote',  72 ],  
+	// Event
+	320, [ array: o[321],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	321, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  21.601605596,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.2755905511811,  'midinote',  67 ],  
+	// List
+	322, [ array: o[323] ],  
+	// Array
+	323, [ o[324],  o[326],  o[328],  o[330],  
+		o[332],  o[334],  o[336],  o[338],  
+		o[340],  o[342],  o[344],  o[346],  
+		o[348],  o[350],  o[352],  o[354],  
+		o[356],  o[358],  o[360],  o[362],  
+		o[364],  o[366],  o[368],  o[370],  
+		o[372],  o[374],  o[376],  o[378],  
+		o[380],  o[382],  o[384],  o[386],  
+		o[388],  o[390],  o[392],  o[394],  
+		o[396],  o[398],  o[400],  o[402],  
+		o[404],  o[406],  o[408],  o[410],  
+		o[412],  o[414],  o[416],  o[418],  
+		o[420],  o[422],  o[424] ],  
+	// Event
+	324, [ array: o[325],  size: 7,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	325, [ nil,  nil,  nil,  nil,  
+		'initial',  true,  nil,  nil,  
+		'ctlNum',  'polytouch',  'timestamp',  0.0,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  'type',  'setPoly',  
+		nil,  nil,  'midicmd',  'control',  
+		'control',  0,  'midinote',  'r' ],  
+	// Event
+	326, [ array: o[327],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	327, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  1.150733463,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.26771653543307,  'midinote',  67 ],  
+	// Event
+	328, [ array: o[329],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	329, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  1.156206375,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.20472440944882,  'midinote',  72 ],  
+	// Event
+	330, [ array: o[331],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	331, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  1.174479468,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.4488188976378,  'midinote',  64 ],  
+	// Event
+	332, [ array: o[333],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	333, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  1.972428185,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.44094488188976,  'midinote',  64 ],  
+	// Event
+	334, [ array: o[335],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	335, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  2.01230695,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.49606299212598,  'midinote',  72 ],  
+	// Event
+	336, [ array: o[337],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	337, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  2.032536377,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.25196850393701,  'midinote',  67 ],  
+	// Event
+	338, [ array: o[339],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	339, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  7.086766094,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.45669291338583,  'midinote',  78 ],  
+	// Event
+	340, [ array: o[341],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	341, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  7.093858738,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.56692913385827,  'midinote',  62 ],  
+	// Event
+	342, [ array: o[343],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	343, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  7.0946748,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.51968503937008,  'midinote',  74 ],  
+	// Event
+	344, [ array: o[345],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	345, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  7.100666617,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.43307086614173,  'midinote',  69 ],  
+	// Event
+	346, [ array: o[347],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	347, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  8.002572037,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.13385826771654,  'midinote',  74 ],  
+	// Event
+	348, [ array: o[349],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	349, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  8.006417716,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.38582677165354,  'midinote',  78 ],  
+	// Event
+	350, [ array: o[351],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	351, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  8.015236086,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.25984251968504,  'midinote',  79 ],  
+	// Event
+	352, [ array: o[353],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	353, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  8.077079042,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.25196850393701,  'midinote',  74 ],  
+	// Event
+	354, [ array: o[355],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	355, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  8.404087939,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.33858267716535,  'midinote',  74 ],  
+	// Event
+	356, [ array: o[357],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	357, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  8.47087503,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.16535433070866,  'midinote',  69 ],  
+	// Event
+	358, [ array: o[359],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	359, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  8.554394584,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.33070866141732,  'midinote',  79 ],  
+	// Event
+	360, [ array: o[361],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	361, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  8.573366223,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.2755905511811,  'midinote',  62 ],  
+	// Event
+	362, [ array: o[363],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	363, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  8.69004823,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.63779527559055,  'midinote',  79 ],  
+	// Event
+	364, [ array: o[365],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	365, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  8.720767749,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.61417322834646,  'midinote',  76 ],  
+	// Event
+	366, [ array: o[367],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	367, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  8.728576058,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.45669291338583,  'midinote',  71 ],  
+	// Event
+	368, [ array: o[369],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	369, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  8.853203563,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.54330708661417,  'midinote',  64 ],  
+	// Event
+	370, [ array: o[371],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	371, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  9.375628354,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.26771653543307,  'midinote',  64 ],  
+	// Event
+	372, [ array: o[373],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	373, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  9.49666994,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.22834645669291,  'midinote',  71 ],  
+	// Event
+	374, [ array: o[375],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	375, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  9.571115116,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.36220472440945,  'midinote',  76 ],  
+	// Event
+	376, [ array: o[377],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	377, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  9.637179734,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.48031496062992,  'midinote',  76 ],  
+	// Event
+	378, [ array: o[379],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	379, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  9.692749954,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.50393700787402,  'midinote',  76 ],  
+	// Event
+	380, [ array: o[381],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	381, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  9.799924924,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.7244094488189,  'midinote',  74 ],  
+	// Event
+	382, [ array: o[383],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	383, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  11.93728349,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.26771653543307,  'midinote',  73 ],  
+	// Event
+	384, [ array: o[385],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	385, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  11.997631245,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.36220472440945,  'midinote',  74 ],  
+	// Event
+	386, [ array: o[387],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	387, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  12.938154299,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.22834645669291,  'midinote',  73 ],  
+	// Event
+	388, [ array: o[389],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	389, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  12.939672659,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.39370078740157,  'midinote',  76 ],  
+	// Event
+	390, [ array: o[391],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	391, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  13.160748534,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.11023622047244,  'midinote',  79 ],  
+	// Event
+	392, [ array: o[393],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	393, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  13.17298774,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.45669291338583,  'midinote',  76 ],  
+	// Event
+	394, [ array: o[395],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	395, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  13.276310294,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.59842519685039,  'midinote',  78 ],  
+	// Event
+	396, [ array: o[397],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	397, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  14.070439303,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.078740157480315,  'midinote',  78 ],  
+	// Event
+	398, [ array: o[399],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	399, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  14.359173839,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.46456692913386,  'midinote',  81 ],  
+	// Event
+	400, [ array: o[401],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	401, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  15.06943055,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.39370078740157,  'midinote',  81 ],  
+	// Event
+	402, [ array: o[403],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	403, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  15.246455923,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.71653543307087,  'midinote',  82 ],  
+	// Event
+	404, [ array: o[405],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	405, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  15.625783179,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.32283464566929,  'midinote',  82 ],  
+	// Event
+	406, [ array: o[407],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	407, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  15.799282083,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.26771653543307,  'midinote',  77 ],  
+	// Event
+	408, [ array: o[409],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	409, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  15.861646537,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.41732283464567,  'midinote',  77 ],  
+	// Event
+	410, [ array: o[411],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	411, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  17.440427807,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.50393700787402,  'midinote',  72 ],  
+	// Event
+	412, [ array: o[413],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	413, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  17.446080518,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.59842519685039,  'midinote',  77 ],  
+	// Event
+	414, [ array: o[415],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	415, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  19.182058316,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.34645669291339,  'midinote',  77 ],  
+	// Event
+	416, [ array: o[417],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	417, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  19.189297904,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.41732283464567,  'midinote',  79 ],  
+	// Event
+	418, [ array: o[419],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	419, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  19.190321743,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.38582677165354,  'midinote',  76 ],  
+	// Event
+	420, [ array: o[421],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	421, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  19.243316065,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.25196850393701,  'midinote',  76 ],  
+	// Event
+	422, [ array: o[423],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	423, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  21.488436301,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.17322834645669,  'midinote',  79 ],  
+	// Event
+	424, [ array: o[425],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	425, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  21.548705992,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.34645669291339,  'midinote',  72 ]
+];
+prUnarchive(o,p);

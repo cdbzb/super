@@ -41,7 +41,15 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		all = Dictionary.new(256);
 		folder = this.filenameSymbol.asString.dirname.dirname +/+ "MIDI-items";
 		File.exists(folder).not.if{ "mkdir %".format(folder).unixCmd };
+		MyFree.add({ this.stopRecording });
+		CmdPeriod.add(this);
+		TempoClock.default=TempoClock(queueSize:8192)
 	}
+
+	*cmdPeriod{
+		this.stopRecording
+	}
+
 	*new { |name restFirst=true |
 		all.keys.includes(name).if { ^all[name] };
 		folder.asPathName.entries.collect(_.fileName).includesEqual(name.asString).if{

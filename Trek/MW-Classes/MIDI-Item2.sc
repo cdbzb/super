@@ -33,7 +33,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	classvar <>folder, <all;
 	var <>midiEvents , <name, <>initialCCValues;
 	var restFirst, <initialRest, <notes ;
-	var takes;
+	var <takes;
 	classvar midiout, <recording;
 
 	*initClass {
@@ -131,30 +131,28 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	}
 	record { |mk latencyCompensation|
 		var start = SystemClock.seconds;
-		latencyCompensation = latencyCompensation ? Server.default.latency;
+		var initial =
+		(
+			midicmd: \control,
+			timestamp: Systemclock.seconds - start,
+			initial: true,
+		);
+		latencyCompensation = latencyCompensation ? 0 ; //Server.default.latency;
 		mk.activate;
 		recording = this;
 		midiEvents = List[];
 		CC.getValues.asKeyValuePairs.pairsDo{ | i j |
 			midiEvents.add(
-				(
-					midicmd: \control,
-					timestamp: SystemClock.seconds - start,
-					type: \setCC,
-					initial: true,
-					// midiout: midiout ? this.class.getMidiOut,
-					ctlNum: i,
-					control: CC(i).spec.unmap(j) * CC(i).rawScale, //put back in original
+				initial ++ (
+					type: \setcc,
+					ctlnum: i,
+					control: cc(i).spec.unmap(j) * cc(i).rawscale, //put back in original
 				)
 			)
 		};
-		midiEvents.add (
-			(
-				midicmd: \control,
-				timestamp: SystemClock.seconds - start,
+		midiEvents.add(
+			initial ++ (
 				type: \setPoly,
-				initial: true,
-				// midiout: midiout ? this.class.getMidiOut,
 				ctlNum: \polytouch,
 				control: 0,
 				midinote: \r
@@ -168,7 +166,6 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 					(
 						midicmd: cmd,
 						timestamp: SystemClock.seconds - start - latencyCompensation,
-						// type: \midi
 					).postln
 					++
 						switch( cmd, 

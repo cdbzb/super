@@ -169,6 +169,7 @@ MonoKeys : MicroKeys {
 	classvar <type=\mkMono;
 	*new { |name func|
 		all[name].notNil.if {
+			// reset down notes on reload
 			all[name].down_(List[]);
 			^all[name]
 		} { 

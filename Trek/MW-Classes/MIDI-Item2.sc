@@ -43,7 +43,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		File.exists(folder).not.if{ "mkdir %".format(folder).unixCmd };
 		MyFree.add({ this.stopRecording });
 		CmdPeriod.add(this);
-		TempoClock.default=TempoClock(queueSize:8192)
+		TempoClock.default=TempoClock(queueSize:8192).permanent_(true)
 	}
 
 	*cmdPeriod{
@@ -230,9 +230,9 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	}
 	play { |mk log=#[] from=0|
 
-	// (log.size > 0).if{
+	(log.size > 0).if{
 		"# note amp sus".postln 
-	// }
+	}
 		;
 
 		midiEvents.do{|e x| 
@@ -240,14 +240,21 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 				var playFunc = mk.notNil.if{
 					{
 						e.mk_(mk).play; 
-						log.includes( e.midicmd ).if {
-							try{ "%: % % %".format(x, e.midinote, e.amp.round(0.001), e.sustain.round(0.001)).postln  }
-						}
 					} 
 				}{
 					{ e.play } 
 				}; 
-				TempoClock.sched(e.timestamp - midiEvents[from].timestamp, playFunc)
+				TempoClock.sched(e.timestamp - midiEvents[from].timestamp, playFunc);
+				log.includes(e.midicmd).if{
+					var dict = e.asDict;
+					var logString = "% % % % ".format(
+						x,
+						dict.at(\midinote),
+						dict.at(\amp) !? _.round(0.001),
+						dict.at(\sustain) !? _.round(0.001)
+					);
+					AppClock.sched(e.timestamp - midiEvents[from].timestamp, { logString.postln }) 
+				}
 			}
 		}
 	}

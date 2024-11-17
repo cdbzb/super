@@ -151,23 +151,26 @@ P(\drum, music: { |p b e|
 	].pp
 });
 P(\stringz, lag: 0.2, music: { |p b e|
-	
-	var c = MicroKeys(\stringz)	;
-	var m;
+	// var 
+	c = MicroKeys(\stringz)	;
+	// var m;
 	c.synth_(\stringyy);
-	c.add(\quiet, {|e| e.postln; e.vel = e.vel/ 100}, addAction: \addBefore, target: \synth);
+	c.add(\quiet, {|e|  e.vel = e.vel/ 100}, addAction: \addBefore, target: \synth);
 	m = MIDIItem("stringz_241114_124431");
 	m
 	// .record(c)
-	.save
-	.play(c)
-
+	// .save
+	.player
+	.play(c, 
+		log:[\noteOn]
+	)
 });
 P(\testtt,lag:0.2, music: { |p b e|
 	var c = MicroKeys(\sn_808)	;
 	var m;
 	c.synth_(\default, [\out, Effect.bus({|i| FreeVerb.ar(i, 1, 1) /5 },)]);
-	c.add(\quiet, {|e| e.postln; e.vel = e.vel/ 100}, addAction: \addBefore, target: \synth);
+	c.add(\quiet, {|e| e.vel = e.vel/ 100}, addAction: \addBefore, target: \synth);
+
 	m = MIDIItem("241114_124432");
 	m
 	// .record(c)
@@ -206,7 +209,6 @@ m
 // 	// recalcSustains: true
 // )
 
-
 .collect{|e| e.latency_(0.2)}
 .play(a)
 
@@ -227,8 +229,10 @@ m = MIDIItem("bassline_241112_104447");
 m
 // .record(a)
 // .save
+.player
+.recalcSustains
 .collect{|e| e.latency_(0.2)}
-.play(a)
+.play(a, log:[\noteOn])
 
 });
 P(\chord, music: { |p b e|

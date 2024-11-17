@@ -342,7 +342,7 @@ p = [
 		know: true ],  
 	// Array
 	53, [ nil,  nil,  'midicmd',  'noteOn',  
-		'timestamp',  -0.17321565100003,  'dur',  0.018276560000004,  
+		'timestamp',  -0.17321565100003,  'dur',  0.01827656,  
 		nil,  nil,  nil,  nil,  
 		'amp',  0.25984251968504,  'sustain',  7.1630252149999,  
 		'midinote',  78,  nil,  nil,  
@@ -381,9 +381,9 @@ p = [
 		know: true ],  
 	// Array
 	59, [ nil,  nil,  'midicmd',  'noteOn',  
-		'timestamp',  4.5448671369999,  'dur',  0.0072015080000938,  
+		'timestamp',  4.5448671369999,  'dur',  0.0072015080001,  
 		nil,  nil,  nil,  nil,  
-		'amp',  0.25196850393701,  'sustain',  9.606004252,  
+		'amp',  0.25196850393701,  'sustain',  9.6060042520001,  
 		'midinote',  74,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  'type',  'mk',  
@@ -407,7 +407,7 @@ p = [
 		know: true ],  
 	// Array
 	63, [ nil,  nil,  'midicmd',  'noteOn',  
-		'timestamp',  6.974641966,  'dur',  3.5543698709999,  
+		'timestamp',  6.974641966,  'dur',  3.554369871,  
 		nil,  nil,  nil,  nil,  
 		'amp',  0.33070866141732,  'sustain',  7.183508728,  
 		'midinote',  79,  nil,  nil,  
@@ -420,7 +420,7 @@ p = [
 		know: true ],  
 	// Array
 	65, [ nil,  nil,  'midicmd',  'noteOn',  
-		'timestamp',  10.529011837,  'dur',  3.6612724170001,  
+		'timestamp',  10.529011837,  'dur',  3.661272417,  
 		nil,  nil,  nil,  nil,  
 		'amp',  0.37795275590551,  'sustain',  3.668115714,  
 		'midinote',  69,  nil,  nil,  
@@ -433,7 +433,7 @@ p = [
 		know: true ],  
 	// Array
 	67, [ nil,  nil,  'midicmd',  'noteOn',  
-		'timestamp',  14.190284254,  'dur',  0.0013448359999302,  
+		'timestamp',  14.190284254,  'dur',  0.0013448359999995,  
 		nil,  nil,  nil,  nil,  
 		'amp',  0.28346456692913,  'sustain',  4.816370217,  
 		'midinote',  77,  nil,  nil,  
@@ -461,7 +461,7 @@ p = [
 	71, [ nil,  nil,  'midicmd',  'noteOn',  
 		'timestamp',  18.945690229,  'dur',  1,  
 		nil,  nil,  nil,  nil,  
-		'amp',  0.18897637795276,  'sustain',  2.4115585940001,  
+		'amp',  0.18897637795276,  'sustain',  2.411558594,  
 		'midinote',  79,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
 		nil,  nil,  'type',  'mk',  

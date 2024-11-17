@@ -229,11 +229,9 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		^super.newCopyArgs( midiEvents)
 	}
 	play { |mk log=#[] from=0|
-
-	(log.size > 0).if{
-		"# note amp sus".postln 
-	}
-		;
+		(log.size > 0).if{
+			"# note amp sus".postln 
+		};
 
 		midiEvents.do{|e x| 
 			((e.timestamp == 0) or: (x >= from)).if {
@@ -247,7 +245,8 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 				TempoClock.sched(e.timestamp - midiEvents[from].timestamp, playFunc);
 				log.includes(e.midicmd).if{
 					var dict = e.asDict;
-					var logString = "% % % % ".format(
+					var logString = "% % % % % ".format(
+						mk !? _.name,
 						x,
 						dict.at(\midinote),
 						dict.at(\amp) !? _.round(0.001),
@@ -256,6 +255,20 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 					AppClock.sched(e.timestamp - midiEvents[from].timestamp, { logString.postln }) 
 				}
 			}
+		}
+	}
+	noteIndices {
+			^midiEvents.select{|e| e.midicmd == \noteOn}
+			.collect{|i x| x->midiEvents.indexOf(i) }
+			.asDict
+	}
+	at { |index|
+		index.isKindOf(Symbol).if{
+			^midiEvents.select{|e| e.midicmd == \noteOn}
+			.collect{|i x| i[index] }
+		}{
+			^midiEvents.select{|e| e.midicmd == \noteOn}
+			.at(index)
 		}
 	}
 	tracks {
@@ -300,6 +313,18 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		midiEvents.select({|e| e.midicmd == \noteOn})
 		.collect({|e| [midiEvents.indexOf(e),  e]})
 		.do({|e x| out.put(e[0], func.(e[1], x))});
+		^MIDIItemPlayer(out)
+	}
+	notes { |aMidiEvents|
+		^(aMidiEvents ? midiEvents).select({|e| e.midicmd == \noteOn})
+	}
+	pasteKey{|key precision=2|
+		Nvim.replace(this[key].round(10 ** (precision * -1)))
+	}
+	filterNotesKey {|key func|
+		var out = midiEvents.deepCopy;
+		var array = this[key];
+		func.(array).do{|i x| this.notes(out)[x].put(key, i)};
 		^MIDIItemPlayer(out)
 	}
 	//modify only tracks with CC (by number) or other specified midicmd (\bend, \noteOn, \poly)

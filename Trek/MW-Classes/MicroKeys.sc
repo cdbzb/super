@@ -1,5 +1,5 @@
 MicroKeys {
-	var <>array,<>keys,<>range, <>namedList, <tuningDeltas, tuningFunction, <heldNotes, <damperDown = false, <>down, <ccs;
+	var <>array,<>keys,<>range, <>namedList, <tuningDeltas, tuningFunction, <heldNotes, <damperDown = false, <>down, <ccs, <name;
 	classvar <all;
 	classvar <type=\mk;
 
@@ -47,7 +47,8 @@ MicroKeys {
 		^MonoKeys(*args)
 	}
 
-	init { |name func|
+	init { |aName func|
+		name = aName;
 		namedList = NamedList.new;
 		tuningFunction = { |tuning| { |e| e.num = e.num + tuningDeltas.wrapAt(e.num); e }};
 		namedList.add( \event, {|v n c r params| (vel: v/127, num: n, chan: c, src: r, raw: n, params:params) });
@@ -64,7 +65,7 @@ MicroKeys {
 		funcOrDefname.isKindOf(Symbol).if{
 			namedList.add( \synth,
 				{ |e|
-					Synth(funcOrDefname, [\freq, e.num.midicps, \amp, e.vel, \num, e.num] ++ params ++ ( e.params ? () ).asKeyValuePairs)
+					Synths(funcOrDefname, [\freq, e.num.midicps, \amp, e.vel, \num, e.num] ++ params ++ ( e.params ? () ).asKeyValuePairs)
 					=> this.register(_, e.raw)
 				}
 			)
@@ -136,7 +137,12 @@ MicroKeys {
 		damperDown.not.if {keys[midinote].release} {heldNotes.add(keys[midinote])} 
 	}
 
-	doPoly {|val num| keys[num].set(\poly, val) }
+	doPoly {|val num| 
+		// set the synth's poly control
+		// but what if there is none?
+		// in that case we need to set a bus and map that bus to freq?
+		keys[num].set(\poly, val)
+	}
 	activate {
 		// MIDIdef.noteOn(\microOn, {|val num| this.noteOnFunction.(val, num)}, noteNum:range);
 		MIDIdef.noteOn(\microOn,  {|v n| (type: \mk, mk:this, amp: v/127, midinote: n, latency:0, sustain: inf ).play}, noteNum:range);

@@ -5,9 +5,10 @@ Synths {
 	*new {|def ...args|
 		^super.new.init(def,args)
 			}
-
 	init {|def args|
-		var voices = args.collect(_.size).inject(0,(_ max: _));
+		var voices;
+		( args.size==1 ).if{ args = args.unbubble };
+		voices = args.collect(_.size).inject(0,(_ max: _));
 		defName = def;
 		args.postln;
 		synths=Array.newClear(voices);

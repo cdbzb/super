@@ -107,7 +107,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		on.do{|e| var match = off.removeAt(findMatch.(e.midinote)); e.sustain = match.timestamp - e.timestamp; };
 		notes = initialRest.copy ? [] ++ on;
 		notes.setDurs;
-		^notes ++ midiEvents.reject{|e| e.type == \mk} => _.sort{|i j| i.timestamp < j.timestamp}
+		^(notes ++ midiEvents.reject{|e| e.type == \mk}).sort{|i j| i.timestamp < j.timestamp}
 	}
 	ccsAsArraysOfPoints{
 		^midiEvents.select{|e| e.midicmd == \control}.deepCopy

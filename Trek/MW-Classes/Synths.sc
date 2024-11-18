@@ -7,8 +7,8 @@ Synths {
 			}
 	init {|def args|
 		var voices;
-		( args.size==1 ).if{ args = args.unbubble };
-		voices = args.collect(_.size).inject(0,(_ max: _));
+		( args.size==1 and: args.rank==2 ).if{ args = args.unbubble };
+		voices = args.flop.size;
 		defName = def;
 		args.postln;
 		synths=Array.newClear(voices);

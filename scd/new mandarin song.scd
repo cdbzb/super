@@ -216,12 +216,12 @@ m
 P(\bassLine2, music: { |p b e|
 var a = MicroKeys(\two);
 a.synth_({
-	Saw.ar(\freq.kr(400) * (\poly.kr(0) / 127 => _.midiratio))
+	Saw.ar(\freq.kr(400) * (\poly.kr(0) / 127 => _.midiratio) + \detune.kr(0))
 	* \amp.kr(0.1)
 	* Env.asr().kr(2,gate:\gate.kr(1))
-	=> MoogFF.ar(_, 4000)
+	=> MoogFF.ar(_, \ffreq.kr(4000))
 	=> Pan2.ar(_, 0)
-}.asDefName, [sustain: 3]);
+}.asDefName, [ffreq: [ 4000, 4000 ], pan:[-1,1], detune:[-0.81,1]]);
 a.velCurve_(2);
 a.tuning_(\just);
 // a.activate
@@ -230,7 +230,7 @@ m
 // .record(a)
 // .save
 .player
-.recalcSustains
+// .recalcSustains
 .collect{|e| e.latency_(0.2)}
 .play(a, log:[\noteOn])
 
@@ -363,7 +363,7 @@ P.synthVs(\xuan, take: [\lead, \dbl], params: {|p b| [
 });
 // měi yī bù dōu shì xīn de xī wàng
 // Each step brings new hope
-["verse 2", "-5 -5 -6 -7 1 1 2 1 3".dm(\c, tuning:\just), "q q ee q q qe e q qqqq" => _.beats * 0.6] .addLine;
+["verse 2", "-5 -5 -6 -7 ".dm(\c, tuning:\just), "q q ee q " => _.beats * 0.6] .addLine;
 P.synthV(\xuan, take: \lead, params: {|p b e| [
 	lyrics: 
 	"城 市 的 燈 火 漸 漸 熄 滅" 
@@ -396,6 +396,37 @@ P(\chords, music: { |p b e|
 });
 // chéng shì de dēng huǒ jiàn jiàn xī miè
 // The city lights slowly fade
+["城市的燈火漸漸熄滅", "-5 -5 -6 -7 1 1 2 1 3".dm(\c, tuning:\just), "q q ee q q qe e q qqqq" => _.beats * 0.6] .addLine;
+P.synthV(\xuan, take: \lead, params: {|p b e| [
+	lyrics: 
+	"城 市 的 燈 火 漸 漸 熄 滅" 
+	,
+	language: \Mandarin,
+	legato: [1, 1, 1, 1, 1, 1, 1, 1, 0.9],
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P(\line, music: { |p b e|
+	[
+		freq: [5,5,4,3,3,  3, 4, 3, -5].df(\c, tuning:\just).q,
+		dur: b.parse([1, 1, 1, 1, 1, 1, 1, 1, 1]).q, 
+		// instrument:\stringyy
+		instrument: \sawSynthSustain
+
+	]//.ppm
+});
+P(\chords, music: { |p b e|
+	[
+		freq: [ [1, 3,  5], [1, 4, 6], [-6, 1, 3, 5] ].df(\c, tuning:\just).q,
+		dur: b.parse([4, 4, 1]).q,
+		instrument: \stringyy,
+		amp:0.2
+	].ppm
+});
 ["寂寞的街道只剩我和月Two","-5 -5 -6 -7 1 3 4 3 3 2".dm(\c, tuning:\just) ,"q q ee q q qe e q qq qq" => _.beats * 0.6].addLine;
 P.synthV(\xuan, take: \lead, params: {|p b e| [
 	lyrics: 

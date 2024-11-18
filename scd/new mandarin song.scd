@@ -29,7 +29,8 @@ P(\line, music: { |p b e|
 		freq: [5,5,4,3,3,  3, 4, 3, -5].df(\c, tuning:\just).q,
 		dur: b.parse([1, 1, 1, 1, 1, 1, 1, 1, 1]).q, 
 		// instrument:\stringyy
-		instrument: \sawSynthSustain
+		instrument: \sawSynthSustain,
+		pulse:0.3
 
 	].ppm
 });
@@ -72,11 +73,20 @@ P(\line, music: { |p b e|
 		freq: [5,5,4,3,2,  2, 2,2, 1, -7].df(\c, tuning:\just).q,
 		dur: b.parse([1, 1, 1, 1, 1, 1, 1, 1, 1]).q, 
 		// instrument:\stringyy
-		instrument: \sparkTriangle,
-		amp:0.03,
+		amp:0.045,
 		out: Effect.bus({|i| i * [0.01,1] => FreeVerb.ar(_, 0.3, 1) },)
 
-	].ppm
+	] =>
+	{|i|
+		i ++ [instrument: \sparkTriangle] => _.ppm;
+		i ++ [
+			instrument: \harpS,
+			amp:0.04,
+			rest: [1, 1, 1, 1, 1, \r, \r, \r, 1].q,
+			coef:0.3,
+			out: Effect.bus({|i| Pan2.ar(i, Line.kr(1, -1, b.sum)) },)
+		] => _.p => _.trace => _.play;
+	}
 });
 // jì mò de jiē dào zhī shèng wǒ hé yuè
 // On the lonely street, just me and the moon remain
@@ -120,7 +130,8 @@ P(\line, music: { |p b e|
 		// instrument:\stringyy
 		instrument: \sawSynthSustain,
 		// amp:0.03,
-		out: Effect.bus({|i| i * [0.01,1] => FreeVerb.ar(_, 0.3, 1) },)
+		out: Effect.bus({|i| i * [0.01,1] => FreeVerb.ar(_, 0.3, 1) },),
+		pulse: 0.3
 
 	].ppm
 });
@@ -281,6 +292,8 @@ P(\connector, music: { |p b e|
 // Waiting for the first ray of dawn
 
 ["帶我找到回家的方向","4 4 4 4 5 4 3 5 4 -5 3 2 -6".dm(\d) , "q q q qe e q q q qq qq".beats * 0.6].addLine;
+// dài wǒ zhǎo dào huí jiā de fāng xiàng
+// To guide me home
 P(\drum, music: { |p b e|
 	[
 		instrument: \hat_808,
@@ -322,8 +335,6 @@ P.synthVs(\xuan, take: [ \lead, \dbl ], params: {|p b e| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-// dài wǒ zhǎo dào huí jiā de fāng xiàng
-// To guide me home
 
 P(\monoDouble,lag: 0.2, music: { |p b e|
 	// var m;
@@ -352,6 +363,25 @@ P(\monoDouble,lag: 0.2, music: { |p b e|
 	
 });
 ["每一步都是新的希望", "6.5 6 4 1 -5.5 4 3 4 3 -7".dm(\c) ,"q q q q q qe e q qq qq".beats * 0.6].addLine;
+// měi yī bù dōu shì xīn de xī wàng
+// Each step brings new hope
+P.synthVs(\feng, take: [ \hm1, \hm2 ],
+	pbind: [[ 1, 1, 1 ], [4, 4, 5]].collect{|i| {|p b| [
+		midinote: i.dm(\c, 6, ),
+		dur: b.parse([4, 4, 2]).q
+	].p } },
+	params: {|p b| [
+	lyrics: "each step hope r",
+	pitchTake: [ 1, 3 ],
+	// pitchDelta: [Env([0,0],b.sum), Env([0, 0, 200, 200], b.parse([3,1, 2]), -3) ]
+] }, music:{|p b e|
+	{
+		e.playbuf
+		/3
+		// => PitchShift.ar(_, pitchRatio:)
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
 P.synthVs(\xuan, take: [\lead, \dbl], params: {|p b| [
 	lyrics: "每 一 步 都 是 新 的 希 望 -",
 	pitchTake: [1, 3]
@@ -361,26 +391,26 @@ P.synthVs(\xuan, take: [\lead, \dbl], params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-// měi yī bù dōu shì xīn de xī wàng
-// Each step brings new hope
-["verse 2", "-5 -5 -6 -7 ".dm(\c, tuning:\just), "q q ee q " => _.beats * 0.6] .addLine;
-P.synthV(\xuan, take: \lead, params: {|p b e| [
-	lyrics: 
-	"城 市 的 燈 火 漸 漸 熄 滅" 
-	,
-	language: \Mandarin,
-	legato: [1, 1, 1, 1, 1, 1, 1, 1, 0.9],
-	pitchTake: 1
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-	}.play
-});
+["turnaround", "-5 -5 -6 -7 ".dm(\c, tuning:\just), "q q ee q " => _.beats * 0.6] .addLine;
+// P.synthV(\xuan, take: \lead, params: {|p b e| [
+// 	lyrics: 
+// 	"城 市 的 燈 火 漸 漸 熄 滅" 
+// 	,
+// 	language: \Mandarin,
+// 	legato: [1, 1, 1, 1, 1, 1, 1, 1, 0.9],
+// 	pitchTake: 1
+// ] }, music:{|p b e|
+// 	{
+// 		e.playbuf
+// 		=> p.synthVTracks.at(e.key).()
+// 	}.play
+// });
 P(\line, music: { |p b e|
 	[
 		freq: [5,5,4,3,3,  3, 4, 3, -5].df(\c, tuning:\just).q,
-		dur: b.parse([1, 1, 1, 1, 1, 1, 1, 1, 1]).q, 
+		dur: b.parse([1, 1, 1, 2, ]).q,
+		pulse:0.3,
+
 		// instrument:\stringyy
 		instrument: \sawSynthSustain
 
@@ -396,14 +426,16 @@ P(\chords, music: { |p b e|
 });
 // chéng shì de dēng huǒ jiàn jiàn xī miè
 // The city lights slowly fade
-["城市的燈火漸漸熄滅", "-5 -5 -6 -7 1 1 2 1 3".dm(\c, tuning:\just), "q q ee q q qe e q qqqq" => _.beats * 0.6] .addLine;
+// ["城市的燈火漸漸熄滅", "-5 -5 -6 -7 1 1 2 1 3".dm(\c, tuning:\just), "q q ee q q qe e q qqqq" => _.beats * 0.6] .addLine;
+["Verse 2","-5 -5 -6 -7 1 1 2 1 3".dm(\c, tuning:\just)].addLine;
+Song.cloneDursAndTempoMap("城市的燈火漸漸熄滅");
 P.synthV(\xuan, take: \lead, params: {|p b e| [
 	lyrics: 
 	"城 市 的 燈 火 漸 漸 熄 滅" 
 	,
 	language: \Mandarin,
 	legato: [1, 1, 1, 1, 1, 1, 1, 1, 0.9],
-	pitchTake: 1
+	pitchTake: 2
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -415,7 +447,8 @@ P(\line, music: { |p b e|
 		freq: [5,5,4,3,3,  3, 4, 3, -5].df(\c, tuning:\just).q,
 		dur: b.parse([1, 1, 1, 1, 1, 1, 1, 1, 1]).q, 
 		// instrument:\stringyy
-		instrument: \sawSynthSustain
+		instrument: \sawSynthSustain,
+		pulse:0.3
 
 	]//.ppm
 });

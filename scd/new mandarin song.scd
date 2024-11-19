@@ -389,26 +389,14 @@ P.synthVs(\xuan, take: [\lead, \dbl], params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+
 	}.play
 });
-["turnaround", "-5 -5 -6 -7 ".dm(\c, tuning:\just), "q q ee q " => _.beats * 0.6] .addLine;
-// P.synthV(\xuan, take: \lead, params: {|p b e| [
-// 	lyrics: 
-// 	"城 市 的 燈 火 漸 漸 熄 滅" 
-// 	,
-// 	language: \Mandarin,
-// 	legato: [1, 1, 1, 1, 1, 1, 1, 1, 0.9],
-// 	pitchTake: 1
-// ] }, music:{|p b e|
-// 	{
-// 		e.playbuf
-// 		=> p.synthVTracks.at(e.key).()
-// 	}.play
-// });
+["connector", "-5 -5 -6 -7 ".dm(\c, tuning:\just), "q q ee q " => _.beats * 0.6] .addLine;
 P(\line, music: { |p b e|
 	[
-		freq: [5,5,4,3,3,  3, 4, 3, -5].df(\c, tuning:\just).q,
-		dur: b.parse([1, 1, 1, 2, ]).q,
+		freq: [5,5,4,3,2,  -5, 4, 3, -5].df(\c, tuning:\just).q,
+		dur: e.bAll.parse([1, 1, 1, 1,5, 1 ]).q,
 		pulse:0.3,
 
 		// instrument:\stringyy
@@ -460,7 +448,66 @@ P(\chords, music: { |p b e|
 		amp:0.2
 	].ppm
 });
-["寂寞的街道只剩我和月Two","-5 -5 -6 -7 1 3 4 3 3 2".dm(\c, tuning:\just) ,"q q ee q q qe e q qq qq" => _.beats * 0.6].addLine;
+["V2Two","-5 -5 -6 -7 1 3 4 3 3 2".dm(\c, tuning:\just) ,"q q ee q q qe e q qq qq" => _.beats * 0.6].addLine;
+	P.synthV(\feng, take: \lead, 
+		pbind: {|p b| 
+			var a = Pbrown(1, 7,1).asStream;
+			[
+				dur: (1/8*0.6) ! 32,
+				midinote: Array.fill(32, {a.next} ).dm(\c)
+			].p
+		},
+		params: {|p b| [
+		lyrics: "aah  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -",
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> {|i| CombN.ar(i, 0.4,0.4,4)/3 + i}
+			// => p.synthVTracks.at(e.key).()
+			/10
+			=> Pan2.ar(_,1)
+		}.play
+	});
+	P.synthV(\feng, take: \lead2, 
+		pbind: {|p b| 
+			var a = Pbrown(1, 7,1).asStream;
+			[
+				dur: (1/6*0.6) ! 72,
+				midinote: Array.fill(72, {a.next} ).dm(\c, 6)
+			].p
+		},
+		params: {|p b| [
+		lyrics: "aah  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -",
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> {|i| CombN.ar(i, 0.4,0.4,4)/3 + i}
+			/10
+			=> Pan2.ar(_,0)
+			// => p.synthVTracks.at(e.key).()
+		}.play
+	});
+	P.synthV(\feng, take: \lead3, 
+		pbind: {|p b| 
+			var a = Pbrown(1, 7,1).asStream;
+			[
+				dur: (1/4*0.6) ! 32,
+				midinote: Array.fill(32, {a.next} ).dm(\c)
+			].p
+		},
+		params: {|p b| [
+		lyrics: "aah  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -",
+		pitchTake: 1
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			=> {|i| CombN.ar(i, 0.4,0.4,4)/3 + i}
+			/10
+			// => p.synthVTracks.at(e.key).()
+		}.play
+	});
 P.synthV(\xuan, take: \lead, params: {|p b e| [
 	lyrics: 
 	"寂 寞 的 街 道 只 剩 我 和 月" 

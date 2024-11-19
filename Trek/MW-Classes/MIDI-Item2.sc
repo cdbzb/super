@@ -134,7 +134,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		var initial =
 		(
 			midicmd: \control,
-			timestamp: Systemclock.seconds - start,
+			timestamp: SystemClock.seconds - start,
 			initial: true,
 		);
 		latencyCompensation = latencyCompensation ? 0 ; //Server.default.latency;

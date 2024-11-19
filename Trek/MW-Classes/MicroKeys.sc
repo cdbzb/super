@@ -162,6 +162,27 @@ MicroKeys {
 		this.free 
 	}
 
+	split { |cases defNames paramArrays|
+		namedList.add( \chooseDef,
+			{|e|
+				cases.collect(_.value(e.num)).debug("cases").do{|i x|
+					i.if { e.def_(defNames.at(x)) }
+				};
+			e.postln
+			};
+		);
+		namedList.addAfter( \synth,
+			{ |e|
+				Synth(e.def ? \default, [\freq, e.num.midicps, \amp, e.vel, \num, e.num] 
+				// ++ params  TODO
+				++ ( e.params ? () ).asKeyValuePairs)
+				=> this.register(_, e.raw)
+			},
+			\chooseDef
+		);
+		namedList.dump
+		
+	}
 	doesNotUnderstand {|selector ...args|
 		namedList.respondsto(selector).if{
 			^Message(namedList, selector, args).value
@@ -185,7 +206,7 @@ MonoKeys : MicroKeys {
 	 
 	doNoteOn { |amp midinote params|
 			 // ~mk.noteOnFunction.(~amp * 127, ~midinote, nil, nil, ~params); 
-			down.debug("down");
+			down;
 			( down.size == 0 ).if{
 				monosynth = this.noteOnFunction.(amp * 127, midinote, nil, nil, params) ;
 				down.add(midinote)
@@ -200,7 +221,7 @@ MonoKeys : MicroKeys {
 	activate {
 		down = List[];
 		MIDIdef.noteOn(\microOn, {|v n | 
-			down.debug("down");
+			down;
 			( down.size == 0 ).if{
 				monosynth = this.noteOnFunction.(v, n) ;
 				down.add(n)

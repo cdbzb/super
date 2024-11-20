@@ -162,7 +162,9 @@ MicroKeys {
 		this.free 
 	}
 
-	split { |cases defNames paramArrays|
+	split { |array|
+		var defNames, cases, paramArrays;
+		# defNames, cases, paramArrays = array.flop;
 		namedList.add( \chooseDef,
 			{|e|
 				cases.collect(_.value(e.num)).debug("cases").do{|i x|

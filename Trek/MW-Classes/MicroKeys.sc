@@ -166,7 +166,10 @@ MicroKeys {
 		namedList.add( \chooseDef,
 			{|e|
 				cases.collect(_.value(e.num)).debug("cases").do{|i x|
-					i.if { e.def_(defNames.at(x)) }
+					i.if {
+						e.def_(defNames.[x]);
+						e.params_(paramArrays[x])
+					}
 				};
 			e.postln
 			};

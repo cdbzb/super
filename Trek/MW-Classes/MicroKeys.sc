@@ -185,8 +185,11 @@ MicroKeys {
 			},
 			\chooseDef
 		);
-		namedList.dump
-		
+		namedList.dump;
+		this.test.isNil.if{ "noteOnFunction isNil".warn }
+	}
+	test {
+		^ try{ this.noteOnFunction.(40,40) }
 	}
 	doesNotUnderstand {|selector ...args|
 		namedList.respondsto(selector).if{

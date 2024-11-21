@@ -301,6 +301,9 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		on.do{|e| var match = off.removeAt(findMatch.(e.midinote)); e.sustain = match.timestamp - e.timestamp; };
 		^on ++ midiEvents.reject{|e| e.type == \mk} => _.sort{|i j| i.timestamp < j.timestamp}
 	}
+	filter{|func|
+		^MIDIItemPlayer((indices: this.noteIndices).use{ func.(midiEvents).valueEnvir })
+	}
 	//modify only elements for which choiceFunc answers true
 	filterOnly { |choiceFunc, actionFunc| 
 		^this.collect(

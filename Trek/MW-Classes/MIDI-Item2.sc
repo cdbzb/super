@@ -228,6 +228,14 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	*new {| midiEvents |
 		^super.newCopyArgs( midiEvents)
 	}
+
+	*initClass{
+		Event.addEventType(\mi, {
+			~dur = ~player[~to+1].timestamp - ~player[~from].timestamp;
+			~player.fromNoteTo(~from, ~to).play(~mk) 
+		}, parent: (type: \durEvent))
+	}
+
 	play { |mk log=#[] from=0|
 		(log.size > 0).if{
 			"# note amp sus".postln 
@@ -262,6 +270,14 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			.collect{|i x| x->midiEvents.indexOf(i) }
 			.asDict
 	}
+
+	fromNoteTo {|from to|
+		^this.filter({|e| e[this.noteIndices[from]..this.noteIndices[to]]})
+	}
+
+	//collects either: the params of notes selected by Symbol
+	//or the notes themselves if given a number
+	//so this[\amp] [0.2, 0.3] etc and this[4] the 4th note
 	at { |index|
 		index.isKindOf(Symbol).if{
 			^midiEvents.select{|e| e.midicmd == \noteOn}
@@ -292,6 +308,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		);
 		^tracks
 	}
+
 	makeNotes {
 		// should copy be deepCopy??
 		var notes;
@@ -301,6 +318,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		on.do{|e| var match = off.removeAt(findMatch.(e.midinote)); e.sustain = match.timestamp - e.timestamp; };
 		^on ++ midiEvents.reject{|e| e.type == \mk} => _.sort{|i j| i.timestamp < j.timestamp}
 	}
+
 	filter{|func|
 		^MIDIItemPlayer((indices: this.noteIndices).use{ func.(midiEvents).valueEnvir })
 	}

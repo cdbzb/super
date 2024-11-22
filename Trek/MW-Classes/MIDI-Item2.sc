@@ -232,11 +232,12 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	*initClass{
 		Event.addEventType(\mi, {
 			~dur = ~player[~to+1].timestamp - ~player[~from].timestamp;
-			~player.fromNoteTo(~from, ~to).play(~mk) 
+			~clock = TempoClock(~tempo / ~stretch);
+			~player.fromNoteTo(~from, ~to).play(~mk, clock: ~clock) 
 		}, parent: (type: \durEvent))
 	}
 
-	play { |mk log=#[] from=0|
+	play { |mk clock from=0 log=#[]|
 		(log.size > 0).if{
 			"# note amp sus".postln 
 		};
@@ -245,12 +246,15 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			((e.timestamp == 0) or: (x >= from)).if {
 				var playFunc = mk.notNil.if{
 					{
-						e.mk_(mk).play; 
+						e
+						.mk_(mk)
+						.latency_(Server.default.latency)
+						.play; 
 					} 
 				}{
 					{ e.play } 
 				}; 
-				TempoClock.sched(e.timestamp - midiEvents[from].timestamp, playFunc);
+				(clock ? TempoClock.default).sched(e.timestamp - midiEvents[from].timestamp, playFunc);
 				log.includes(e.midicmd).if{
 					var dict = e.asDict;
 					var logString = "% % % % % ".format(

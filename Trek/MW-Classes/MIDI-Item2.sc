@@ -13,6 +13,7 @@ AbstractMidiEvents {
 			.select{|e| e.midicmd == \noteOn}
 		)
 	}
+	
 	splitVoices { |maxJump=5 numVoices=2|
 		^this.noteOns.midiEvents
 		.separate{|i j| (j.midinote - i.midinote).abs > maxJump}
@@ -324,7 +325,10 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	}
 
 	filter{|func|
-		^MIDIItemPlayer((indices: this.noteIndices).use{ func.(midiEvents).valueEnvir })
+		^MIDIItemPlayer(
+			// (indices: this.noteIndices).use{ func.(midiEvents).valueEnvir })
+			func.(midiEvents).valueEnvir
+		)
 	}
 	//modify only elements for which choiceFunc answers true
 	filterOnly { |choiceFunc, actionFunc| 
@@ -449,11 +453,10 @@ MIDIItemTempoMap{ //this is almost the same as TempoMap but with timestamps inst
 		^super.new.init( midiEvents, choiceFunc, beats)
 	}
 	init{| midiEvents, choiceFunc, b| 
-		times = 
-		(choiceFunc ? I.d)
+		times = (choiceFunc ? I.d)
 		.value( midiEvents.select({|e| e.midicmd == \noteOn}))
 		.collect{|e| e.timestamp};
-		beats = b;
+		beats = [0] ++ b;
 		env = Env([0] ++ beats.integrate, times.differentiate);
 		averageOffset = times.collect{|i| env[i] - i}.mean;
 		// set Addline here? or just what that method needs?

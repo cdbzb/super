@@ -5,7 +5,7 @@ MicroKeys {
 
 	classvar tuningFunction;
 	doNoteOn { |amp midinote params|
-			 this.noteOnFunction.(amp * 127, midinote, nil, nil, params); 
+			 this.noteOnFunction.(amp, midinote, nil, nil, params); 
 	}
 	*initClass{
 		Event.addEventType(\mkOff, {});
@@ -186,10 +186,11 @@ MicroKeys {
 			\chooseDef
 		);
 		namedList.dump;
-		this.test.isNil.if{ "noteOnFunction isNil".warn }
+		// this.test.isNil.if{ "noteOnFunction isNil".warn }{}
+		this.test !? (_.release) ?? { "noteOnFunction isNil".warn }
 	}
 	test {
-		^ try{ this.noteOnFunction.(40,40) }
+		^try{ this.noteOnFunction.(40,40) }
 	}
 	doesNotUnderstand {|selector ...args|
 		namedList.respondsto(selector).if{

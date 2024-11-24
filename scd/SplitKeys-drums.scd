@@ -9,7 +9,6 @@ a.split( [
 a.activate
 )
 b = try{ a.noteOnFunction.(60,60) }
-().play
 b
 a.test
 (
@@ -33,16 +32,11 @@ fork{
 		~len.wait;
 	}
 }
-Event.addEventType(\mi, {  ~player.filter({|e| e[(~from..~to)] }).play(~mk) }, )
-Event.addEventType(\test, {~a.().postln}, (a: {~b+1}, b:0))
-
-(type:\mi, mk: a, player: m.player, from:17,to: 23).play
-[ type:\mi, mk: a, player: m.player, from:[ 17, 24 ].q(inf),to: [ 23, 31 ].q(inf), stretch:[ 1.01, 1.03 ].q(inf) ].pp
-m.player.fromNoteTo(9, 18).play(a)
-Event.addEventType(\mi, {~dur=5; ~player.fromNoteTo(~from, ~to).play(~mk) })
-Event.addEventType(\mi, {~dur=~player[~to+1].timestamp - ~player[~from].timestamp; ~player.fromNoteTo(~from, ~to).play(~mk) }, parent: (type: \durEvent))
-(type: \durEvent, dur:3, stretch:5).play
-
-// .save
-// .record(a);
 )
+
+(type:\mi, mk: a, player: m.player,tempo:0.5, from:17,to: 23).play
+[ type:\mi, mk: a, player: m.player,tempo:1, from:[ 17, 24 ].q(inf),to: [ 23, 31 ].q(inf), stretch:[ 1.01, 1.03 ].q(inf) ].pp
+
+
+m.midiEvents[9]
+a.namedList[\event].(m.midiEvents[9].amp,m.midiEvents[9].midinote) => a.namedList[\chooseDef] => _.def

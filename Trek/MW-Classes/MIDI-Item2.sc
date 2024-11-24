@@ -14,6 +14,10 @@ AbstractMidiEvents {
 		)
 	}
 	
+	dur {
+		^this.midiEvents.collect(_.dur).select(_.notNil).sum
+	}
+
 	splitVoices { |maxJump=5 numVoices=2|
 		^this.noteOns.midiEvents
 		.separate{|i j| (j.midinote - i.midinote).abs > maxJump}
@@ -108,7 +112,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		on.do{|e| var match = off.removeAt(findMatch.(e.midinote)); e.sustain = match.timestamp - e.timestamp; };
 		notes = initialRest.copy ? [] ++ on;
 		notes.setDurs;
-		^(notes ++ midiEvents.reject{|e| e.type == \mk}).sort{|i j| i.timestamp < j.timestamp}
+		^(notes ++ midiEvents.reject{|e| [\mk, \mkOff].includes(e.type)}).sort{|i j| i.timestamp < j.timestamp}
 	}
 	ccsAsArraysOfPoints{
 		^midiEvents.select{|e| e.midicmd == \control}.deepCopy
@@ -233,7 +237,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	*initClass{
 		Event.addEventType(\mi, {
 			~dur = ~player[~to+1].timestamp - ~player[~from].timestamp;
-			~clock = TempoClock(~tempo / ~stretch);
+			~clock = TempoClock(~tempo ? 1 / ~stretch ? 1);
 			~player.fromNoteTo(~from, ~to).play(~mk, clock: ~clock) 
 		}, parent: (type: \durEvent))
 	}
@@ -277,7 +281,12 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	}
 
 	fromNoteTo {|from to|
-		^this.filter({|e| e[this.noteIndices[from]..this.noteIndices[to]]})
+		^this.filter({|e| 
+			e[this.noteIndices[from]..this.noteIndices[to + 1]].setDurs
+			.drop(-1)
+
+	});
+
 	}
 
 	//collects either: the params of notes selected by Symbol
@@ -327,7 +336,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	filter{|func|
 		^MIDIItemPlayer(
 			// (indices: this.noteIndices).use{ func.(midiEvents).valueEnvir })
-			func.(midiEvents).valueEnvir
+			func.(midiEvents)
 		)
 	}
 	//modify only elements for which choiceFunc answers true

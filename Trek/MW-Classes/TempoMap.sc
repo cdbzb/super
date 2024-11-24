@@ -33,6 +33,7 @@ TempoMap {
   quarter {
 	  ^ durs.sum / beats.sum
   }
+
   at { |beat|
 	  ^env[beat]
   }

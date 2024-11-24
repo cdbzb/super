@@ -1,6 +1,6 @@
 
 TempoMap { 
-  var <beats,<durs,<timesInBeats,<>timesInDurs;
+  var <beats,<durs,<timesInBeats,<>timesInDurs, <env;
   var polynomial;
   *new { |beats = #[1,1,1,1,1,1,1] durs = #[1,1,1,1,1,1,1,1]|
     ^super.new.init(beats ,durs )
@@ -16,7 +16,8 @@ TempoMap {
 	};
 	timesInBeats = [ 0 ] ++ beats ++ beats.last => _.integrate;
 	timesInDurs = [ 0 ] ++ durs ++ durs.last => _.integrate;
-        ^this;
+	env = Env(([0] ++ durs).integrate, beats)
+	^this;
   }
   beats_{|i| 
 	  beats = i;  
@@ -33,11 +34,8 @@ TempoMap {
   quarter {
 	  ^ durs.sum / beats.sum
   }
-  interpolateBeat { |beat|
-	  // var prev = timesInBeats.select{|i| i <= beat}.maxIndex;
-	  // [[ prev, prev + 1 ],[ timesInBeats[prev], timesInBeats[prev + 1] ]].postln;
-	  // ^beat-timesInBeats[prev] / ( timesInBeats.clipAt(prev + 1) - timesInBeats[prev] ) * ( timesInDurs.clipAt( prev + 1 ) - timesInDurs[prev] ) + timesInDurs[prev]
-	  ^Env(([0] ++ durs).integrate, beats)[beat]
+  at { |beat|
+	  ^env[beat]
   }
   interpolateBeatInverse { |beat|
 	  //simply swtched timesInBeats and timesInDurs !!
@@ -55,7 +53,7 @@ TempoMap {
   }
   mapBeats { | b |
 	  b.collect{|i| 0.000001 max: i};
-	  ^b.integrate.collect{|i| this.interpolateBeat(i)}.differentiate.select(_.isStrictlyPositive)
+	  ^b.integrate.collect{|i| this[i]}.differentiate.select(_.isStrictlyPositive)
   }
   mapRecordedDurs { | durs |
 	  ^this.mapBeats( durs/this.quarters.mean )

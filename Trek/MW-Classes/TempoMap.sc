@@ -1,4 +1,3 @@
-
 TempoMap { 
   var <beats,<durs,<timesInBeats,<>timesInDurs, <env;
   var polynomial;
@@ -57,11 +56,10 @@ TempoMap {
   }
   mapRecordedDurs { | durs |
 	  ^this.mapBeats( durs/this.quarters.mean )
-	  //^this.mapBeats( durs/durs.sum )
   }
-  at { |time|
-    ^this.eval(time)
-  }
+  // at { |time|
+  //   ^this.eval(time)
+  // }
   quarters {
       ^this.mapBeats( 1.dup(beats.sum.floor) )
   }

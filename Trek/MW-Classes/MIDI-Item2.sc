@@ -379,7 +379,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		)
 	}
 	quantize{ |beats func choiceFunc recalcSustains=true |
-		var tempoMap = MIDIItemTempoMap(midiEvents, choiceFunc, beats);
+		var tempoMap = MIDIItemTempoMap(this, choiceFunc, beats);
 		// ^MIDIItemPlayer( wrappedFunc, midiEvents )
 		func.notNil.if{
 			^this.quantizeFunc(beats, func, choiceFunc, recalcSustains) 
@@ -388,7 +388,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		}
 	}
 	quantizeFunc { |beats func choiceFunc recalcSustains=true |
-		var tempoMap = MIDIItemTempoMap(midiEvents, choiceFunc, beats);
+		var tempoMap = MIDIItemTempoMap(this, choiceFunc, beats);
 		this.collect({|e x| 
 			(
 				env: tempoMap.env, 
@@ -445,22 +445,33 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		^res
 	}
 }
-MIDIItemTempoMap{ //this is almost the same as TempoMap but with timestamps instead of beats 
-	var <times, <beats;
-	var <env, <averageOffset;
+MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap but with timestamps instead of beats 
+	var <times, <beats, <midiEvents;
+	var <env, <tempoMap ;
 
-	*new {|midiEvents, choiceFunc, beats|
-		^super.new.init( midiEvents, choiceFunc, beats)
+	*new {|midiItem, choiceFunc, beats|
+		^super.new.init( midiItem, choiceFunc, beats)
 	}
-	init{| midiEvents, choiceFunc, b| 
+	init{|midiItem, choiceFunc, b| 
+		midiEvents = midiItem.midiEvents;
 		times = (choiceFunc ? I.d)
 		.value( midiEvents.select({|e| e.midicmd == \noteOn}))
 		.collect{|e| e.timestamp};
-		beats = [0] ++ b;
-		env = Env([0] ++ beats.integrate, times.differentiate);
-		averageOffset = times.collect{|i| env[i] - i}.mean;
-		// set Addline here? or just what that method needs?
-		
+		beats = b;
+		tempoMap = TempoMap(beats, times.differentiate.drop(1)) //what about the last dur!!!!!
+	}
+	offsets{
+		^times.collect{|i| env[i] - i};
+	}
+	averageOffset{
+		^this.offsets.mean
+	}
+	doesNotUnderstand{|selector ...args|
+		tempoMap.respondsTo(selector).if{
+			^Message(tempoMap, selector, args).()
+		}{
+		this.class + "does not understand" + selector	
+		}
 	}
 }
 SelfReturningObject {

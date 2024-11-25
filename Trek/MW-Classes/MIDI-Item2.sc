@@ -1,16 +1,16 @@
-MIDIItem2 : MIDIItem {
+MIDIItem2 : MIDIItem{
 	*new { |...args|
 		^MIDIItem(*args)
 	}
 	*value{ |func|
-		^MIDIItemPlayer(this.midiEvents)
+		^MIDIItemPlayer(this.midiEvents, this)
 	}
 }
 AbstractMidiEvents {
 	noteOns {
 		^MIDIItemPlayer(
-			this.midiEvents
-			.select{|e| e.midicmd == \noteOn}
+			this.midiEvents.select{|e| e.midicmd == \noteOn},
+			this.source
 		)
 	}
 	
@@ -29,9 +29,15 @@ AbstractMidiEvents {
 	doesNotUnderstand{|selector ...args|
 		this.midiEvents.respondsTo(selector).if{
 			^MIDIItemPlayer(
-				Message(this.midiEvents, selector, args).()
+				Message(this.midiEvents, selector, args).(),
+				this.source
 			)
-		}
+		}{
+			MIDIItemPlayer.findRespondingMethodFor(selector).notNil.if{
+				^Message(this.player, selector, args)
+			}
+		};
+		this.class + "does not understand" + selector
 	}
 }
 MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents for use with MicroKeys
@@ -86,6 +92,9 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		folder +/+
 		( folder => PathName(_) => _.files => _.collect( { |i| i.fileNameWithoutExtension} ) => _.sort => _.last)
 		=> Object.readArchive( _ )
+	}
+	source{
+		^this
 	}
 	ccPbind { |num |
 		^this.ccTracks[num].eventsToPatternPairs.p
@@ -214,7 +223,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	}
 	player {|func| 
 		^if(recording != this) {
-			MIDIItemPlayer( this.makeNotes.deepCopy) 
+			MIDIItemPlayer( this.makeNotes.deepCopy, this) 
 		}{
 			SelfReturningObject()
 		}
@@ -229,9 +238,10 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 }
 
 MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
-	var <midiEvents, tracks;
-	*new {| midiEvents |
-		^super.newCopyArgs( midiEvents)
+	var <midiEvents, <source;
+	var tracks;
+	*new {| midiEvents source |
+		^super.newCopyArgs(midiEvents, source)
 	}
 
 	*initClass{
@@ -336,7 +346,8 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	filter{|func|
 		^MIDIItemPlayer(
 			// (indices: this.noteIndices).use{ func.(midiEvents).valueEnvir })
-			func.(midiEvents)
+			func.(midiEvents),
+			this.source
 		)
 	}
 	//modify only elements for which choiceFunc answers true
@@ -351,7 +362,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		midiEvents.select({|e| e.midicmd == \noteOn})
 		.collect({|e| [midiEvents.indexOf(e),  e]})
 		.do({|e x| out.put(e[0], func.(e[1], x))});
-		^MIDIItemPlayer(out)
+		^MIDIItemPlayer(out, this.source)
 	}
 	notes { |aMidiEvents|
 		^(aMidiEvents ? midiEvents).select({|e| e.midicmd == \noteOn})
@@ -363,7 +374,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		var out = midiEvents.deepCopy;
 		var array = this[key];
 		func.(array).do{|i x| this.notes(out)[x].put(key, i)};
-		^MIDIItemPlayer(out)
+		^MIDIItemPlayer(out, this.source)
 	}
 	//modify only tracks with CC (by number) or other specified midicmd (\bend, \noteOn, \poly)
 	filterOnlyMidicmd {|track actionFunc|
@@ -377,19 +388,18 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	}
 	muteCC{ |num|
 		^MIDIItemPlayer(
-			{|events| events.reject{|e| e.type == \setCC and: ( e.ctlNum == num )} },
-			this.midiEvents,
+			midiEvents.reject{|e| e.type == \setCC and: ( e.ctlNum == num )} ,
+			this.source
 		);
 	}
 	initialCCOnly{ |num|
 		^MIDIItemPlayer(
-			{|events| events.reject{|e| e.type == \setCC and: ( e.ctlNum == num ) and: (e.initial.isNil)} },
-			midiEvents
+			midiEvents.reject{|e| e.type == \setCC and: ( e.ctlNum == num ) and: (e.initial.isNil)} ,
+			this.source
 		)
 	}
 	quantize{ |beats func choiceFunc recalcSustains=true |
 		var tempoMap = MIDIItemTempoMap(this, choiceFunc, beats);
-		// ^MIDIItemPlayer( wrappedFunc, midiEvents )
 		func.notNil.if{
 			^this.quantizeFunc(beats, func, choiceFunc, recalcSustains) 
 		}{
@@ -411,8 +421,8 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	}
 	recalcSustains {
 		^MIDIItemPlayer(
-			I.d,
-			this.makeNotes
+			this.makeNotes,
+			this.source
 		)
 	}
 	addLine { |name choiceFunc|
@@ -454,6 +464,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		^res
 	}
 }
+
 MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap but with timestamps instead of beats 
 	var <times, <beats, <midiEvents;
 	var <env, <tempoMap ;

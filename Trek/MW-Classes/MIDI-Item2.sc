@@ -34,10 +34,14 @@ AbstractMidiEvents {
 			)
 		}{
 			MIDIItemPlayer.findRespondingMethodFor(selector).notNil.if{
-				^Message(this.player, selector, args)
+				^Message(this.player, selector, args).()
 			}
 		};
 		this.class + "does not understand" + selector
+	}
+
+	bounds {
+		^(end: this.midiEvents.last.timestamp + ( this.midiEvents.last.dur ? 0 ),  start: this.midiEvents[0].timestamp)
 	}
 }
 MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents for use with MicroKeys
@@ -239,26 +243,39 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 
 MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	var <midiEvents, <source;
+	var <>start, <>end;
 	var tracks;
 	*new {| midiEvents source |
 		^super.newCopyArgs(midiEvents, source)
 	}
-
 	*initClass{
 		Event.addEventType(\mi, {
 			~dur = ~player[~to+1].timestamp - ~player[~from].timestamp;
 			~clock = TempoClock(~tempo ? 1 / ~stretch ? 1);
 			~player.fromNoteTo(~from, ~to).play(~mk, clock: ~clock) 
+		}, parent: (type: \durEvent));
+		Event.addEventType(\mi2, {
+			~dur = ~player.bounds.end - ~player.bounds.start;
+			~clock = TempoClock(~tempo ? 1 / ~stretch ? 1);
+			~player.play(~mk, clock: ~clock) 
 		}, parent: (type: \durEvent))
 	}
 
-	play { |mk clock from=0 log=#[]|
-		(log.size > 0).if{
+	setBounds {|event|
+		start = event.start; end = event.end
+	}
+
+	play { |mk clock post=#[]|
+
+		(post.size > 0).if{
 			"# note amp sus".postln 
 		};
 
 		midiEvents.do{|e x| 
-			((e.timestamp == 0) or: (x >= from)).if {
+			var from = start ? 0;
+			var to = end ? midiEvents.last.timestamp;
+
+			((e.timestamp == 0) or: (e.timestamp >= from) and: (e.timestamp <=  to )).if {
 				var playFunc = mk.notNil.if{
 					{
 						e
@@ -269,8 +286,10 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 				}{
 					{ e.play } 
 				}; 
+
 				(clock ? TempoClock.default).sched(e.timestamp - midiEvents[from].timestamp, playFunc);
-				log.includes(e.midicmd).if{
+
+				post.includes(e.midicmd).if{
 					var dict = e.asDict;
 					var logString = "% % % % % ".format(
 						mk !? _.name,
@@ -294,9 +313,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		^this.filter({|e| 
 			e[this.noteIndices[from]..this.noteIndices[to + 1]].setDurs
 			.drop(-1)
-
 	});
-
 	}
 
 	//collects either: the params of notes selected by Symbol
@@ -476,7 +493,9 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 		midiEvents = midiItem.midiEvents;
 		times = (choiceFunc ? I.d)
 		.value( midiEvents.select({|e| e.midicmd == \noteOn}))
-		.collect{|e| e.timestamp};
+		.collect{|e| e.timestamp}
+		++ midiItem.bounds.end
+		;
 		beats = b;
 		tempoMap = TempoMap(beats, times.differentiate.drop(1)) //what about the last dur!!!!!
 	}

@@ -9,9 +9,17 @@ a.split( [
 m = MIDIItem("drumset_241119_155106")
 .reject{|e| [67, 69].includes(e.midinote)};
 
-[ type:\mi, player:m.player, mk:a,from:18, to:23 ].p.play;
+/*
+m.fromNoteTo(18, 23).bounds;
+*/
+[ type:\mi, player:m, mk:a,from:18, to:23 ].p.play;
 
-t = MIDIItemTempoMap(m.fromNoteTo(18, 24), beats:"xe x q xe x q".beats);
+//check!!! can I do this with one fewer note given that the final
+//dur contains the necessary info?
+
+t = MIDIItemTempoMap(m.fromNoteTo(18, 23), beats:"xe x q xe x q".beats);
+
+// t.bounds //hoho!!
 
 [ dur: "e e x x x x e e e x x".asBeats.warpTo(t.tempoMap).q(24),instrument:\hat_808, midinote: (50..56) ].p.play;
 
@@ -34,11 +42,12 @@ t = MIDIItemTempoMap(m.fromNoteTo(18, 24), beats:"xe x q xe x q".beats);
 
 ].ppm;
 
-n=MIDIItem("drumset_241119_155106")
-.player
-.filter({|e| e.do{|i| [67, 69].includes(i.midinote).not.if{i.amp_(0.0)}; e}})
-=> {|i| [type:\mi, player:i.player ,mk:a,  from:48, to: 61].pp }
+~bounds = m.fromNoteTo(18, 23).bounds;
 
+n=MIDIItem("drumset_241119_155106")
+.filter({|e| e.do{|i| [67, 69].includes(i.midinote).not.if{i.amp_(0.0)}; e}}).()
+//need set bounds method - or even copyBounds method!!!
+=> {|i| [type:\mi, player:i ,mk:a,  from:48, to: 61].pp }
 )
 
 (
@@ -51,7 +60,7 @@ t.beats
 
 // (lag: t.tempoMap[1].postln).play
 //
-//tempoMap:at gives me *time* at beat so totally not work as durationin a pbind!!!!!
+//tempoMap:at gives me *time* at beat so totally not work as duration in a pbind!!!!!
 //
 m.fromNoteTo(18, 31).midiEvents.collect(_.timestamp.round(0.01)).differentiate.drop(1)
 t.durs

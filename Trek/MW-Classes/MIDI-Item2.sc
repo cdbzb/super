@@ -246,23 +246,31 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	var <>start, <>end;
 	var tracks;
 	*new {| midiEvents source |
-		^super.newCopyArgs(midiEvents, source)
+		^super.newCopyArgs(midiEvents, source).init
+	}
+	init{
+		this.start = this.bounds.start;
+		this.end = this.bounds.end;
 	}
 	*initClass{
 		Event.addEventType(\mi, {
 			~dur = ~player[~to+1].timestamp - ~player[~from].timestamp;
 			~clock = TempoClock(~tempo ? 1 / ~stretch ? 1);
 			~player.fromNoteTo(~from, ~to).play(~mk, clock: ~clock) 
-		}, parent: (type: \durEvent));
+		}, parentEvent: (type: \durEvent));
 		Event.addEventType(\mi2, {
-			~dur = ~player.bounds.end - ~player.bounds.start;
+			// ~dur = (~player.end ? ~player.bounds.end) - (~player.start ? ~player.bounds.start);
+			~dur=5;
 			~clock = TempoClock(~tempo ? 1 / ~stretch ? 1);
 			~player.play(~mk, clock: ~clock) 
-		}, parent: (type: \durEvent))
+		}, parentEvent: (type: \durEvent))
 	}
 
 	setBounds {|event|
 		start = event.start; end = event.end
+	}
+	copyBounds {|mi|
+		start = mi.bounds.start; end =mi.bounds.end
 	}
 
 	play { |mk clock post=#[]|
@@ -287,7 +295,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 					{ e.play } 
 				}; 
 
-				(clock ? TempoClock.default).sched(e.timestamp - midiEvents[from].timestamp, playFunc);
+				(clock ? TempoClock.default).sched(e.timestamp - ( start ? 0 ), playFunc);
 
 				post.includes(e.midicmd).if{
 					var dict = e.asDict;

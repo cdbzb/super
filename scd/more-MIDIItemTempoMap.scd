@@ -12,7 +12,8 @@ m = MIDIItem("drumset_241119_155106")
 /*
 m.fromNoteTo(18, 23).bounds;
 */
-[ type:\mi, player:m, mk:a,from:18, to:23 ].p.play;
+[ type:\mi2, player: m.fromNoteTo(18, 23) , mk:a].p.play;
+
 
 //check!!! can I do this with one fewer note given that the final
 //dur contains the necessary info?
@@ -44,10 +45,13 @@ t = MIDIItemTempoMap(m.fromNoteTo(18, 23), beats:"xe x q xe x q".beats);
 
 ~bounds = m.fromNoteTo(18, 23).bounds;
 
+// TempoClock.default = TempoClock(queueSize:8192)
 n=MIDIItem("drumset_241119_155106")
-.filter({|e| e.do{|i| [67, 69].includes(i.midinote).not.if{i.amp_(0.0)}; e}}).()
+// .filter({|e| e.do{|i| [67, 69].includes(i.midinote).not.if{i.amp_(0.0)}; e}}).()
+.select({|i| [67,69].includes(i.midinote)})
+.copyBounds(m.fromNoteTo(18, 23))
 //need set bounds method - or even copyBounds method!!!
-=> {|i| [type:\mi, player:i ,mk:a,  from:48, to: 61].pp }
+=> {|i| [type:\mi2, player:i ,mk:a  ].pp }
 )
 
 (

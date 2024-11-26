@@ -163,14 +163,14 @@ MicroKeys {
 	}
 
 	split { |array|
-		var defNames, cases, paramArrays;
-		# defNames, cases, paramArrays = array.flop;
+		var defNames, cases, paramEvents;
+		# defNames, cases, paramEvents = array.flop;
 		namedList.add( \chooseDef,
 			{|e|
 				cases.collect(_.value(e.num)).debug("cases").do{|i x|
 					i.if {
 						e.def_(defNames.[x]);
-						e.params_(paramArrays[x])
+						e.splitParams_(paramEvents[x] ? ())
 					}
 				};
 			e.postln
@@ -180,7 +180,7 @@ MicroKeys {
 			{ |e|
 				Synth(e.def ? \default, [\freq, e.num.midicps, \amp, e.vel, \num, e.num] 
 				// ++ params  TODO
-				++ ( e.params ? () ).asKeyValuePairs)
+				++ ((e.splitParams ? ()) ++ (e.params ? ())).asKeyValuePairs)
 				=> this.register(_, e.raw)
 			},
 			\chooseDef

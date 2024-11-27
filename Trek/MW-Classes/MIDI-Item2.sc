@@ -259,8 +259,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			~player.fromNoteTo(~from, ~to).play(~mk, clock: ~clock) 
 		}, parentEvent: (type: \durEvent));
 		Event.addEventType(\mi2, {
-			// ~dur = (~player.end ? ~player.bounds.end) - (~player.start ? ~player.bounds.start);
-			~dur=5;
+			~dur = (~player.end ? ~player.bounds.end) - (~player.start ? ~player.bounds.start);
 			~clock = TempoClock(~tempo ? 1 / ~stretch ? 1);
 			~player.play(~mk, clock: ~clock) 
 		}, parentEvent: (type: \durEvent))
@@ -368,7 +367,21 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		^on ++ midiEvents.reject{|e| e.type == \mk} => _.sort{|i j| i.timestamp < j.timestamp}
 	}
 
-	filter{|func|
+	setParams { |array|
+		var event = array.asEvent, makeOutEvent;
+		event.keys.do{|i| event[i] = event[i].asStream};
+		makeOutEvent = {|x|
+			event.keys.collect{|k| ().put(k, event[k].next)}
+			.inject( (), _ ++ _ )
+		};
+		^this.filter({|e|
+			e.collect{|i x| i.params = i.params ++
+				makeOutEvent.(x)
+			}
+		})
+	}
+
+	filter {|func|
 		^MIDIItemPlayer(
 			// (indices: this.noteIndices).use{ func.(midiEvents).valueEnvir })
 			func.(midiEvents),
@@ -382,15 +395,17 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			midiEvents
 		)
 	}
+
+	notes { |aMidiEvents|
+		^(aMidiEvents ? midiEvents).select({|e| e.midicmd == \noteOn})
+	}
+
 	filterNotes { |func|
 		var out = midiEvents.deepCopy;
 		midiEvents.select({|e| e.midicmd == \noteOn})
 		.collect({|e| [midiEvents.indexOf(e),  e]})
 		.do({|e x| out.put(e[0], func.(e[1], x))});
 		^MIDIItemPlayer(out, this.source)
-	}
-	notes { |aMidiEvents|
-		^(aMidiEvents ? midiEvents).select({|e| e.midicmd == \noteOn})
 	}
 	pasteKey{|key precision=2|
 		Nvim.replace(this[key].round(10 ** (precision * -1)))

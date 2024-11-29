@@ -1,7 +1,7 @@
 (
 a=MicroKeys(\dd);
 a.split( [
-	[\sn_808, {|x| [62, 64].includes(x)}, (tone: 600)],
+	[\sn_808, {|x| [62, 64].includes(x)}, (tone: 200)],
 	[\bd_808, {|x| [60, 48].includes(x)}, (tone: 100)],
 	[\hat_808, {|x| [67, 69].includes(x)},(tone: 100)],
 	// [\default, nil, (pan:1)]
@@ -9,21 +9,25 @@ a.split( [
 m = MIDIItem("drumset_241119_155106")
 .reject{|e| [67, 69].includes(e.midinote)};
 
-/*
-m.fromNoteTo(18, 23).bounds;
-*/
-// [ type:\mi, player:m, mk:a,from:18, to:23 ].p.play;
 [ type:\mi2, player: 
-	m.fromNoteTo(18, 23)
-	// /*
-	//hoho!
-	.filter({|e| e.collect{|i x| i.params = i.params ++ (
-		tone: ([500, 200, 100, 200, 100, ].wrapAt(x)),
-		out: [ Effect.bus({|i| FreeVerb.ar(i,1,0.9) }),0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0 ][x]
-	)}})
-	// */
-	// .play(a)
-	, mk:a  ].p.play;
+	[
+		m.fromNoteTo(18, 23).setParams (
+			[
+				tone: ([500, 200, 100, 200, 100, 100, 100, 100, 100, 100, 100, 100].q(inf)),
+				out: [ Effect.bus({|i| FreeVerb.ar(i,0.5,0.9) }),0,0,0,0,0,].q
+			]
+		),
+		m.fromNoteTo(18, 23).setParams (
+			[
+				tone: ([450, 200, 100, 200, 100, 100, 100, 100, 100, 100, 100, 100].q(inf)),
+				out: [ Effect.bus({|i| FreeVerb.ar(i,0.5,0.9) => Pan2.ar(_, 1)}),0,0,0,0,0,].q
+			]
+		),
+	].q(inf)
+	, mk:a  
+].p.play;
+
+// move setParams into params field in typw \mi2 Event
 
 
 t = MIDIItemTempoMap(m.fromNoteTo(18, 23), beats:"xe x q xe x q".beats);
@@ -50,8 +54,6 @@ t = MIDIItemTempoMap(m.fromNoteTo(18, 23), beats:"xe x q xe x q".beats);
 	dur: "qx".beats.warpTo(t.tempoMap).q ++ " e e e x qqx".beats.warpTo(t.tempoMap).q(inf) 
 
 ].ppm;
-
-~bounds = m.fromNoteTo(18, 23).bounds;
 
 n=MIDIItem("drumset_241119_155106")
 .select({|e| [67, 69].includes(e.midinote)})

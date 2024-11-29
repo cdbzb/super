@@ -10,6 +10,9 @@ MicroKeys {
 	*initClass{
 		Event.addEventType(\mkOff, {});
 
+		Event.addEventType(\mk2, {
+			~instrument =  ~mk.doNoteOn(~amp * 127, ~midinote, ~params).asDefName ;
+		});
 		Event.addEventType(\mk, {
 			var syn;
 			Server.default.makeBundle(~latency, { ~mk.doNoteOn(~amp * 127, ~midinote, ~params) });

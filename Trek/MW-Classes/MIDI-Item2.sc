@@ -375,7 +375,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			.inject( (), _ ++ _ )
 		};
 		^this.filter({|e|
-			e.collect{|i x| i.params = i.params ++
+			e.deepCopy.collect{|i x| i.params = i.params ++
 				makeOutEvent.(x)
 			}
 		})

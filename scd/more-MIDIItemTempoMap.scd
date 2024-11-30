@@ -9,22 +9,19 @@ a.split( [
 m = MIDIItem("drumset_241119_155106")
 .reject{|e| [67, 69].includes(e.midinote)};
 
-[ type:\mi2, player: 
-	[
-		m.fromNoteTo(18, 23).setParams (
-			[
-				tone: ([500, 200, 100, 200, 100, 100, 100, 100, 100, 100, 100, 100].q(inf)),
-				out: [ Effect.bus({|i| FreeVerb.ar(i,0.5,0.9) }),0,0,0,0,0,].q
-			]
-		),
-		m.fromNoteTo(18, 23).setParams (
-			[
-				tone: ([450, 200, 100, 200, 100, 100, 100, 100, 100, 100, 100, 100].q(inf)),
-				out: [ Effect.bus({|i| FreeVerb.ar(i,0.5,0.9) => Pan2.ar(_, 1)}),0,0,0,0,0,].q
-			]
-		),
-	].q(inf)
-	, mk:a  
+
+[
+	player: m.fromNoteTo(18, 23), type:\mi2, 
+	tone: [500, 450 ].collect {|i| i.bubble ++ [200, 100, 200, 100, 100, 100, 100, 100, 100, 100, 100] } => _.q(inf) ,
+	out: [ Effect.bus(FreeVerb.ar(_,0.5,1), out:1),Effect.bus(FreeVerb.ar(_,0.5,1))  ].q(inf),
+	amp: Pwhite(0.001,0.9,inf),
+	params: Pfunc( {|e| [
+		//these are expanded by the finish function - this shouldn't be here!
+		tone: e.tone.q,
+		out: e.out.q,
+		amp: e.amp.q
+	] } ),
+	mk: a
 ].p.play;
 
 // move setParams into params field in typw \mi2 Event

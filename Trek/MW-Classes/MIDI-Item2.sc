@@ -262,7 +262,10 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			~dur = (~player.end ? ~player.bounds.end) - (~player.start ? ~player.bounds.start);
 			~clock = TempoClock(~tempo ? 1 / ~stretch ? 1);
 			~player.play(~mk, clock: ~clock) 
-		}, parentEvent: (type: \durEvent))
+		}, parentEvent: (type: \durEvent));
+		Event.addParentType(\mi2,
+			( finish: {|e| e.player = e.player.setParams(e.params)})
+		);
 	}
 
 	setBounds {|event|

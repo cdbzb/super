@@ -44,7 +44,7 @@ Trek.setTransition(0, -2, dur: 5, func: {
 		dur: 
 		[ Song.preroll * 2 + 0.2 + 5 + 0.1 , 0, 0] + Song.songs[Trek.keys[1]].durs[0].list.parse([5, 6, 1]) 
 			=> _.q,
-		amp: [0.2, 0.2 * -9.dbamp, 0.02 * -14.dbamp] * -9.dbamp => _.q,
+		amp: [0.2, 0.2 * -9.dbamp, 0.02 * -14.dbamp] * -9.dbamp => _.q /2,
 		coef: 0.2,
 		instrument: \harp,
 	].pp;
@@ -52,14 +52,14 @@ Trek.setTransition(0, -2, dur: 5, func: {
 		instrument: \harpGendy,
 		modWidth: 0.03,
 		out: Monitors.speakerOrder.q,
-		amp: Pgeom(0.05, 0.5, 6),
+		amp: Pgeom(0.05, 0.5, 6) * -2.dbamp,
 		freq: -1.df('f'),
 		// dur: 0.6
 	].p.trace.play;
 	{ Stills.plotTitleCard("Contact", dur: 5, ); }.defer;
 	Trek.faderSynths[0].release;
 	~activateFader.(1)
-});
+}).();
 
 Trek.faders[1] = {~asrFader.(1,7,2)};
 

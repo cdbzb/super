@@ -2608,7 +2608,7 @@ P.synthVs(role: \spock, take: [\lead,\double], params: {|p b| [
 		=> HPF.ar(_,250)
 		=> BPF.ar(_,1100,3.5)
 		=> {|i| i => CombN.ar(_) / 4 + i}
-		// * 1.dbamp
+		* 3.dbamp
 		=> Pan2.ar(_,-0.25)
 	}.play
 
@@ -2697,7 +2697,7 @@ P.synthVs(role: \kirk, take: [\lead, \double], params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
-		* 1.dbamp
+		* 2.dbamp
 		=> Pan2.ar(_,0)
 	}.play
 

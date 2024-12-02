@@ -517,6 +517,7 @@ P(\comp,start:\attempting,music: {
 			Pbind(	\instrument, synth,
 				\degree, Pseq([\r, 5, 4, 3, 2, 4, 3, 2],1)-1+7, 
 				\root, -3 + 1,
+				\coef, 0.1,
 				\amp,amp,
 				\out, 1,
 			).play(clock:clock)
@@ -548,6 +549,7 @@ P(\comp,start:\attempting,music: {
 
 			tune.(\visual_vowel, 0.18 * busAmp);
 			descant.(\visual_pad,0.5 * busAmp);
+			descant.(\harp,0.05 * busAmp);
 			offbeats.(\visual_twotube, 0.1 * busAmp);
 			offbeats.(\defaultPiano, 0.1 * busAmp, octave: 3);
 			off2.(\visual_caw,[\amp,0.05 * busAmp]);
@@ -2554,6 +2556,14 @@ P(\bass, music: { |p b e|
 		out: Effect.bus({|i| Fverb.ar(i,i,decay:80)/2 + i },),
 		amp: 0.04 * 2
 	].ppm;
+	[
+		freq: [-5, -6, -16, -1].df(\d).q,
+		dur: b.parse([4, 4, 6, 2]).q,
+		// stretch: [1, 1, 2].q,
+		instrument: \default,
+		// out: Effect.bus({|i| Fverb.ar(i,i,decay:80)/2 + i },),
+		amp: 0.04 * 2
+	].ppm;
 
 });
 P(\connector,syl: 9, music: { |p b e|
@@ -2602,7 +2612,15 @@ P(\bassline, music: { |p b e|
 		instrument:\reedy,
 		amp: 0.1 * p.g2,
 		out:[0,1],
-	].ppm
+	].ppm;
+	[
+		freq: [5, 6, 5, 4, 3, 2, -7.5, [-1, -5, 1]].df('e-',[ 3,3 ], \minor).q,
+		dur: b.q + [0,0,0,0,0,0,0,0].q,
+		// legato: [1, 1, 1, 1, 1, 1, 1, 5, ].q,
+		instrument:\default,
+		amp: 0.05 * p.g2,
+		out:Effect.bus({|i| i.tanh },out:4),
+	].ppm;
 });
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 

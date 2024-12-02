@@ -1,4 +1,5 @@
 ( 
+	~panNotes={|string| Panola.new(string).midinotePattern.list};
 	{
 	//~synthsLoaded.isNil.if{"/Users/michael/tank/super/song-Synthdefs.scd".load};
 	Song(\theyUsed,[]).current;

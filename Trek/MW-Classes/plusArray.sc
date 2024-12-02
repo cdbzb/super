@@ -92,7 +92,7 @@
 		| quarters |
 		quarters.isNil.if{^this};
 		quarters = this.pr_getQuarters(quarters);
-		( quarters.class==TempoMap ).if{
+		( [TempoMap, MIDIItemTempoMap].includes(quarters.class) ).if{
 			^this.warpToTempoMap(quarters)
 		}{
 			^this.warpToArray(quarters)

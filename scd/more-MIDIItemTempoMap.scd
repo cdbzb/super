@@ -9,18 +9,16 @@ a.split( [
 m = MIDIItem("drumset_241119_155106")
 .reject{|e| [67, 69].includes(e.midinote)};
 
-
+// m.fromNoteTo(18, 23).reject({|e| e.midicmd == \noteOff}).midiEvents.size
+//should write rejectCmd(\noteOff)
 [
-	player: m.fromNoteTo(18, 23), type:\mi2, 
-	tone: [500, 450 ].collect {|i| i.bubble ++ [200, 100, 200, 100, 100, 100, 100, 100, 100, 100, 100] } => _.q(inf) ,
+	player: m.fromNoteTo(18, 23).reject(_.midicmd == \noteOff), type:\mi2, 
+	tone: [500, 450, 600, 450 ].collect {|i| i.bubble ++ [200, 100, 200, 100, 100, 100] } => _.q(inf),
 	out: [ Effect.bus(FreeVerb.ar(_,0.5,1), out:1),Effect.bus(FreeVerb.ar(_,0.5,1))  ].q(inf),
-	amp: Pwhite(0.001,0.9,inf),
-	params: Pfunc( {|e| [
-		//these are expanded by the finish function - this shouldn't be here!
-		tone: e.tone.q,
-		out: e.out.q,
-		amp: e.amp.q
-	] } ),
+	// amp: Pwhite(0.001,1.9,inf),
+	params: Pfunc( {|e| 
+		[\tone, \out].collect({|i| [ i, e.at(i).q ]}).flat
+} ),
 	mk: a
 ].p.play;
 
@@ -31,10 +29,10 @@ t = MIDIItemTempoMap(m.fromNoteTo(18, 23), beats:"xe x q xe x q".beats);
 
 // t.bounds //hoho!!
 
-[ dur: "e e x x x x e e e x x".asBeats.warpTo(t.tempoMap).q(24),instrument:\hat_808, midinote: (50..56) ].p.play;
+// [ dur: "e e x x x x e e e x x".asBeats.warpTo(t.tempoMap).q(inf),instrument:\hat_808, midinote: (50..56) ].p.play;
 
 [
-	dur: "e e e e x xe x xe ".beats.warpTo(t.tempoMap).q(10),
+	dur: [ "e e e e x xe x xe ".beats.warpTo(t.tempoMap).q(8), "qqqqqqqq".beats.warpTo(t.tempoMap).q(4) ].q(inf),
 	instrument: \kick_gentle, vol:0.5
 ].pp;
 
@@ -54,6 +52,7 @@ t = MIDIItemTempoMap(m.fromNoteTo(18, 23), beats:"xe x q xe x q".beats);
 
 n=MIDIItem("drumset_241119_155106")
 .select({|e| [67, 69].includes(e.midinote)})
+.filter{|e|e.collect{|f| f.amp = f.amp /1.7}}
 .copyBounds(m.fromNoteTo(18, 23))
 => {|i| [type:\mi2, player:i ,mk:a  ].pp }
 )

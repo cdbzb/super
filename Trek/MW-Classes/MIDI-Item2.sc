@@ -43,6 +43,14 @@ AbstractMidiEvents {
 	bounds {
 		^(end: this.midiEvents.last.timestamp + ( this.midiEvents.last.dur ? 0 ),  start: this.midiEvents[0].timestamp)
 	}
+	quantize{ |beats func choiceFunc recalcSustains=true |
+		var tempoMap = MIDIItemTempoMap(this, choiceFunc, beats);
+		func.notNil.if{
+			^this.quantizeFunc(beats, func, choiceFunc, recalcSustains) 
+		}{
+			^this.select(choiceFunc ? {true}).collect( {|e| e.timestamp_(tempoMap[e.timestamp])}, this.midiEvents)
+		}
+	}
 }
 MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents for use with MicroKeys
 	classvar <>folder, <all;
@@ -64,7 +72,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	*cmdPeriod{
 		this.stopRecording
 	}
-
+//
 	*new { |name restFirst=true |
 		all.keys.includes(name).if { ^all[name] };
 		folder.asPathName.entries.collect(_.fileName).includesEqual(name.asString).if{
@@ -184,7 +192,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 					(
 						midicmd: cmd,
 						timestamp: SystemClock.seconds - start - latencyCompensation,
-					).postln
+					)//.postln
 					++
 						switch( cmd, 
 							\noteOn,{ (type: \mk, midinote: num, amp: val/127 ) },
@@ -192,16 +200,16 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 							\polytouch, { (type: \setPoly, midinote: num, polyTouch: val, ) },
 							\control, {
 								( num == 64 ).if{
-									(type:\setDamper, control: val).postln 
+									(type:\setDamper, control: val)//.postln 
 								} { 
-									(type: \setCC, ctlNum:num, control: val).postln
+									(type: \setCC, ctlNum:num, control: val)//.postln
 								} 
 							},
 							\bend, { (type: \setBend, ctlNum:\bend, control: val)},
 							// \bend, { (val: val, ctlNum:) }
 							
 						)
-						=> _.postln
+						// => _.postln
 					)
 				},msgType: cmd, 
 				//eliminate cc0
@@ -246,7 +254,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	var <>start, <>end;
 	var tracks;
 	*new {| midiEvents source |
-		^super.newCopyArgs(midiEvents, source).init
+		^super.newCopyArgs(midiEvents.deepCopy, source).init
 	}
 	init{
 		this.start = this.bounds.start;
@@ -259,12 +267,20 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			~player.fromNoteTo(~from, ~to).play(~mk, clock: ~clock) 
 		}, parentEvent: (type: \durEvent));
 		Event.addEventType(\mi2, {
+			~filter !? ~player = ~filter.(~player);
 			~dur = (~player.end ? ~player.bounds.end) - (~player.start ? ~player.bounds.start);
 			~clock = TempoClock(~tempo ? 1 / ~stretch ? 1);
 			~player.play(~mk, clock: ~clock) 
 		}, parentEvent: (type: \durEvent));
 		Event.addParentType(\mi2,
-			( finish: {|e| e.player = e.player.setParams(e.params)})
+			( finish: {|e| 
+				(e.params.notNil).if { 
+					e.player = e.player.setParams(e.params) 
+				}
+				// implement lag and some setting to increase the duration
+				// maybe .filter({|e| e.collect{|f| f.timestamp = f.timestamp + f.lag}})
+			},
+		)
 		);
 	}
 
@@ -371,11 +387,14 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	}
 
 	setParams { |array|
+		//key-value pairs - values are patterns
+		//for an array, use a pseq
 		var event = array.asEvent, makeOutEvent;
 		event.keys.do{|i| event[i] = event[i].asStream};
 		makeOutEvent = {|x|
-			event.keys.collect{|k| ().put(k, event[k].next)}
-			.inject( (), _ ++ _ )
+			event.keys.collect{|k| 
+				().put(k, event[k].next)
+			}.inject( (), _ ++ _ )
 		};
 		^this.filter({|e|
 			e.deepCopy.collect{|i x| i.params = i.params ++
@@ -387,14 +406,14 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	filter {|func|
 		^MIDIItemPlayer(
 			// (indices: this.noteIndices).use{ func.(midiEvents).valueEnvir })
-			func.(midiEvents),
+			func.(midiEvents.deepCopy),
 			this.source
 		)
 	}
 	//modify only elements for which choiceFunc answers true
 	filterOnly { |choiceFunc, actionFunc| 
 		^this.collect(
-			{|e x| choiceFunc.(e, x).debug("choice").if { actionFunc.(e, x) } {e}},
+			{|e x| choiceFunc.(e, x).if { actionFunc.(e, x) } {e}},
 			midiEvents
 		)
 	}
@@ -440,14 +459,6 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			midiEvents.reject{|e| e.type == \setCC and: ( e.ctlNum == num ) and: (e.initial.isNil)} ,
 			this.source
 		)
-	}
-	quantize{ |beats func choiceFunc recalcSustains=true |
-		var tempoMap = MIDIItemTempoMap(this, choiceFunc, beats);
-		func.notNil.if{
-			^this.quantizeFunc(beats, func, choiceFunc, recalcSustains) 
-		}{
-			^this.collect( {|e| e.timestamp_(tempoMap.env[e.timestamp])}, midiEvents)
-		}
 	}
 	quantizeFunc { |beats func choiceFunc recalcSustains=true |
 		var tempoMap = MIDIItemTempoMap(this, choiceFunc, beats);

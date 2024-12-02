@@ -36,19 +36,19 @@ Song.synthVTracks = EventWithDefault(
 );
 {
 	[ "MCCOY: Jim, why no briefing on this? I'd at least like to kno-o-ow what we're getting into. ",[3,4,2,5,3,1, -7, -6, -7, 1, 2, 3, 4,5, 4, 3, 4, 5, 6, 6, -7].dm(\g) ].addLine;
-	Song.setTempoMap('kno-o-ow', "q e e  e e e ee x x E E E e x x   x x x x  ex x");
-	P.still(\wideShot, timecode: 642.8.seconds, music: { |p b e|
-		e.still.( 
-			wait: b.sum,
-			text: ["Jim, why no briefing","on this?"],
-		).sequenceText2(
-			b.parse([7,1,8,6]), [ 
-				["",""],
-				["I'd at least","like to know"],
-				["what we're getting","in to"]
-			],
-		)
-	});
+Song.setTempoMap('kno-o-ow', "q e e  e e e ee x x E E E e x x   x x x x  ex x");
+P.still(\wideShot, timecode: 642.8.seconds, music: { |p b e|
+	e.still.( 
+		wait: b.sum,
+		text: ["Jim, why no briefing","on this?"],
+	).sequenceText2(
+		b.parse([7,1,8,6]), [ 
+			["",""],
+			["I'd at least","like to know"],
+			["what we're getting","in to"]
+		],
+	)
+});
 	( SynthDef(\pluckGendy, {
 		var decay;
 		Pluck.ar( PinkNoise.ar(\amp.kr(0.1)), 1, 0.1, \freq.kr(400) * Gendy1.kr(minfreq:0.2,maxfreq:[5,10]).range(0.992,1.008) =>_.reciprocal, decaytime:decay = \decay.kr(4))
@@ -62,6 +62,7 @@ P(\chords, music: { |p b e|
 		instrument: \pluckGendy,
 		dur: "q q q q q q q qex x".asBeats.warpTo( e.tempoMap ).q,
 		out: (0..4).q(inf),
+		amp: 0.16 * [1, 1, 1, 1, 1, 1, 1, [1, 1, 1, 1, 2]/2, [1, 1, 1, 2]/2] => _.q,
 		strum: 0.06
 	].pp
 });
@@ -79,7 +80,8 @@ P.synthVs(role:\mccoy, take: [ \lead, \double ], params: [
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
-			=> Pan2.ar(_,1	)
+			=> Pan2.ar(_,0.75	)
+			* 1.dbamp
 		}.play
 	}, {|p b e|
 		{
@@ -180,6 +182,7 @@ P.synthVs(role:\mccoy, take: [ \lead, \double ], params: [
 			=> {|i| DelayN.ar(i, 0.3,0.25) *0.2 +i}
 			=> p.synthVTracks.at(e.key).()
 			=> Pan2.ar(_,0)
+			* 1.dbamp
 		}.play
 	}]
 );
@@ -686,6 +689,7 @@ P.synthV(\ninezero, take: \harm,
 			{
 				e.playbuf
 				=> p.synthVTracks.at(e.key).()
+				* -2.dbamp
 			}.play
 });
 P.double(\ninezero, take: \harm, params: {|p b| [
@@ -694,6 +698,7 @@ P.double(\ninezero, take: \harm, params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		* -2.dbamp
 	}.play
 });
 P.synthV(\kevin, take: \harm, params: {|p b| [
@@ -758,6 +763,8 @@ P.synthV(role: \mccoy, take: \lead,pbind:{|p b|
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
+			=> Pan2.ar(_, 0)
+			=> {|i| CombN.ar(i, 0.35, 0.35)* 0.2 + i}
 		}.play
 });
 [ "SPOCK: Unlikely. These co-ordinates correspond with the location of the","5 11 5  7 5 4 3 2 6 4 3 2 1 -7 4 2 -6 -5".dm('c#')].addLine;
@@ -769,7 +776,7 @@ P.still(\mediumSpock, timecode: 707.733.seconds, music: { |p b e|
 		).sequenceText2(
 				b.parse([3, 5, 5,]), [ 
 				["these","coordinates"],
-				["correspond to","the"],
+				["correspond with","the"],
 				["location","of the"]
 				],
 		)
@@ -785,6 +792,7 @@ P.synthVs(role: \spock, take: [\lead, \dbl], params: {|p b| [
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
 			=> Pan2.ar(_,pan)
+			* 2.dbamp
 		}.play
 	} });
 P(\bass,start:\correspond,syl:0,music:{|p b e| 
@@ -843,6 +851,7 @@ P.synthV(role: \spock, take:\lead, params: {|p b| [
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
+			* 1.dbamp
 		}.play
 });
 P.double(role: \spock, params: {|p b| [
@@ -852,6 +861,7 @@ P.double(role: \spock, params: {|p b| [
 				e.playbuf
 				=> p.synthVTracks.at(e.key).()
 				=> Pan2.ar(_,1)
+			* 1.dbamp
 			}.play
 		});
 P.tune(\subterranean);
@@ -961,18 +971,19 @@ P.still(\revealMul, timecode: 719.294.seconds, music: { |p b e|
 P.synthV(role: \mulhall, take: \lead, params: {|p b| [
 		lyrics: "they or it",
 		legato: [0.8, 1, 0.5, ],
+		lag: [0.05, 0, 0],
 		pitchTake: 1
 	] }, music:{|p b e|
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
 			=> EarlyRef.ar(_, [3,0,0],[0,0,0],[3.5,4,5])
-			* 4.dbamp
+			* 5.dbamp
 
 			
 		}.play
 });
-	Song.mulhallTune=Pbindf(_,\amp,0.08,\out,Effect(EchoNone.ar(_,0.3,0.3,4)*0.5).bus.index);
+	Song.mulhallTune=Pbindf(_,\amp,0.08,\out,Effect({ |i| EchoNone.ar(i,0.3,0.3,4)*0.5 * Line.kr(0, 1, 1)}).bus.index);
 P.tune('it?',Song.mulhallTune);
 
 P(\pad, music: { |p b e|
@@ -980,7 +991,7 @@ P(\pad, music: { |p b e|
 		instrument:\stringyy,wet:0,
 		dur: b.sum,
 		midinote: p.tune[e.start].list.postln,
-		out: Effect.bus({|i| i=> BPF.ar(_, XLine.kr(1000,300, b.sum + 3), 0.2,mul:8.dbamp) },)
+		out: Effect.bus({|i| i=> BPF.ar(_, XLine.kr(1000,300, b.sum + 3), 0.2,mul:8.dbamp) },out:2)
 	).play
 });
 [ "KIRK: Who are you? (boom) ","3 1 7 -6".dm(\f,5,\mixolydian) ].addLine;
@@ -991,8 +1002,8 @@ P(\pad, music: { |p b e|
 		midinote: p.tune[e.start].list[0..2],
 		out: Effect.bus({|i| i
 			=> BPF.ar(_, XLine.kr(1000,300, b.sum), 0.2, mul:8.dbamp)
-			=> Pan2.ar(_,1)
-		},)
+			// => Pan2.ar(_,1)
+		},out:3)
 	).play
 });
 /* P.still(\mulhallFace, timecode: 720.756.seconds, music: { |p b e|
@@ -1028,7 +1039,8 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 			// => EarlyRef.ar(_, [0,0,0],[3,0,0],[3.5,4,5])
 		}.play
 });
-P.tune('you?', Pfin(3,_));
+Song.kirkTune=Pbindf(_,\amp,0.08,\out,Effect.bus({ |i| EchoNone.ar(i,0.3,0.3,4)*0.5 * Line.kr(0, 1, 1) => Pan2.ar(_, 1) * -2.dbamp}));
+P.tune('you?', Song.kirkTune <> _.fin(3) );
 P(\chord,start:'you?',syl:2,music:{|p b e| 
 		[\stringyy,\sawSynthSustain].do
 		{ |i| (
@@ -1154,6 +1166,7 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
 			=> Pan2.ar(_,-0.5)
+			* 2.dbamp
 		}.play
 });
 P.tune( _ <> [instrument: \wash, amp: 0.02,freqLag:1, out: Effect.bus({|i| i + DelayN.ar(i,0.25,0.25) },inputChannels:2)].pm );
@@ -1217,7 +1230,8 @@ P.synthV(role: \mulhall, take: \lead,
 P(\chord,start:'Strange',music:{|p b e| 
 		[ instrument:\wash,
 			freq:[[1,3,4.5].df(\b,3), [3,4.5,6.5].df(\b,3)].q,
-			dur: b.parse([3,2]).q
+			dur: b.parse([3,2]).q,
+			amp: 0.07
 
 		].p.play
 });
@@ -1264,14 +1278,14 @@ P.still(\clear,lag:0.01, timecode: 0.seconds, music: { |p b e|
 		wait: b.sum,
 		text: ["",""]
 	).sequenceText2(
-			b.parse([1,6,1]), [ 
+			b.parse([1,5,1]), [ 
 				["I'm sure she did","captain"],
 				["",""],
 				["just as you received","an order to bring me along"],
 			],
 	)
 });
-	Song.setQuarters(\along,"e e ex x q e ee  ex x e e e e  e e e e x e x q");
+Song.setQuarters(\along,"e e ex x q e ee  ex x e e e e  e e e e x e x q");
 P.synthV(role: \spock, take:\lead, params: {|p b| [
 		lyrics: "r I'm sure she did captain + just as you received + an order + to bring me - along +",
 		legato: [1, 1, 1, 1, 0.7, 1, 0.7, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,],
@@ -1281,14 +1295,15 @@ P.synthV(role: \spock, take:\lead, params: {|p b| [
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
+			=> Pan2.ar(_, 0.7)
 		}.play
 });
 P.double(role: \spock, params: {|p b| [
-			
 		] }, music:{|p b e|
 			{
 				e.playbuf
 				=> p.synthVTracks.at(e.key).()
+				=> Pan2.ar(_, 0.5)
 			}.play
 		});
 	//Song.quarters[\along]=Song.quarters[\along].list.reject{|i| i.isPositive.not}.q;
@@ -1333,6 +1348,8 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
+			* 3.dbamp
+			=> Pan2.ar(_, -0.5)
 		}.play
 });
 P(\slide,start:'Oh, yes',music:{|p b e| 
@@ -1483,7 +1500,7 @@ P.synthV(role: \spock,take: \harmony,
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		=> p.synthVTracks.at(e.key).()
+		// => p.synthVTracks.at(e.key).()
 	}//.play
 });
 P(\harmony, music: { |p b e|
@@ -1495,25 +1512,6 @@ P(\harmony, music: { |p b e|
 
 instrument: \reedy, freqLag:0.05, rel:8, out: Effect.bus( {|i| CombN.ar(i, 0.3, 0.3, 3)/2 + i},out: 3) ;
 	].ppm
-});
-P.synthVs(\kevin, take: [\lead, \double], 
-	pbind: {|p b|
-		[
-			midinote: "1 -4 1 -7 -5 2 3".dm(\c),
-			dur: "qq q q qq q q ".asBeats.warpTo( p.tempoMap[\solid] ) ++ 1
-		].p
-	},
-	params: {|p b| [
-	lyrics: "r solid + rock  r r r ",
-	pitchTake: [1, 3]
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> p.synthVTracks.at(e.key).()
-		* EnvGen.cutoff(b.sum,0.5)
-		=> BPF.ar(_,1000)
-	}.play
-
 });
 P(\bass, music: { |p b e|
 	[
@@ -1553,6 +1551,7 @@ P.synthV(role: \mccoy, take: \lead, params: {|p b| [
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
 			=> Pan2.ar(_, 0.5)
+			* 2.dbamp
 		}.play
 
 });
@@ -1678,12 +1677,15 @@ P.synthVs(role: \spock, take: [ \lead, \double ], params: {|p b k| [
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
+			=> Pan2.ar(_,0.8)
+			*2.dbamp
 		}.play
 	},{|p b e|
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
 			=> Pan2.ar(_,1)
+			*2.dbamp
 		}.play
 	}
 ]);
@@ -1790,6 +1792,7 @@ P.synthVs(role: \kirk, take: [ \lead,\double ], params: {|p b| [
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
 			=> Pan2.ar(_, -0.4)
+			* 2.dbamp
 		}.play
 });
 P.tune('No,');

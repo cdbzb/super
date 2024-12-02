@@ -1,4 +1,5 @@
 (
+~panNotes={|string| Panola.new(string).midinotePattern.list};
 	// Stills("/Users/michael/trek/BySection/media/return to tomorrow.mov").current;
 	Stills().current;
 	Trek.cast.mccoy = \xuan;

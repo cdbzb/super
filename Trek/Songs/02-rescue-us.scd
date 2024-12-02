@@ -308,7 +308,7 @@ P.tune( _ <> [amp: 0.05,instrument: \sparkTriangle, depth: 0.005].p );
 ["Yet from it comes a voice, ","1 2 3 1 3 4.5/e-/6".dm2].addLine;
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum + e.bNext[..2],
+		wait: b.sum + e.bNext[..2].sum,
 		text: ["yet from it","comes a"],
 		fade:1
 	).sequenceText2(

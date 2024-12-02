@@ -118,7 +118,11 @@ t = MIDIItemTempoMap(m.fromNoteTo(18, 23), beats:"xe x q xe x q".beats);
 			i.fromNoteTo(18, 23)
 			.filter({|i| i.collect{|e| e.params = 
 				[
+<<<<<<< Updated upstream
 					out: ( [62, 64].includes(e.midinote) ).if{Effect.bus({|i| FreeVerb.ar(i, 0.5, 1) }, inputChannels:2)}{1}
+=======
+					out: ( [62, 64].includes(e.midinote) ).if{Effect.bus({|i| FreeVerb.ar(i, 0.5, 1) }, inputChannels:2)}{0}
+>>>>>>> Stashed changes
 				]
 			}})
 		},
@@ -127,7 +131,11 @@ t = MIDIItemTempoMap(m.fromNoteTo(18, 23), beats:"xe x q xe x q".beats);
 			i.fromNoteTo(18, 23)
 			.filter({|i| i.collect{|e| e.params = 
 				[
+<<<<<<< Updated upstream
 					out: ( [62, 64].includes(e.midinote) ).not.if{Effect.bus({|i| FreeVerb.ar(i, 0.5, 1) })}{1}
+=======
+					out: ( [62, 64].includes(e.midinote) ).not.if{Effect.bus({|i| FreeVerb.ar(i, 0.5, 1) })}{0}
+>>>>>>> Stashed changes
 				]
 			}})
 		}

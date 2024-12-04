@@ -59,7 +59,9 @@ Trek.setTransition(0, -2, dur: 5, func: {
 	{ Stills.plotTitleCard("Contact", dur: 5, ); }.defer;
 	Trek.faderSynths[0].release;
 	~activateFader.(1)
-}).();
+})
+//.value
+;
 
 Trek.faders[1] = {~asrFader.(1,7,2)};
 
@@ -230,13 +232,28 @@ Trek.setTransition(10, -2, dur: 0,
 ;
 
 Trek.faders[11] = {~asrFader.(3, 6, 2)};
-Trek.setTransition(11, -2, dur:1, func:{
-	defer{ a=Stills.plotTitleCard("This Formula", dur: 5.5); };
+Trek.setTransition(11, -1, dur:6, func:{
+	2.wait;
+	{ a=Stills.plotTitleCard("This Formula", dur: 4.5, fade:2); }.defer(1);
+	
+
+	{
+		Saw.ar(
+			[
+				1, 3, 5, 7, 12, 14, 16
+			].df(\e, tuning: \pythagorean)
+			+ Gendy5.ar(minfreq: 0.1, maxfreq:{1.0.rand}!7).range(-10, 10)
+			// /( 4.rand + 1 )
+		)
+		/30
+		* Env([0, 0, 1, 1, 0],[1,3, 2, 5.5],[\lin,\lin,\lin,-4]).kr(2,gate:1)
+	}.play;
+	2.wait;
 	Trek.faderSynths[11].release;
 	try{ Trek.transitionGroup.release };
 	~activateFader.(12)
 },)
-// .value
+.value
 ;
 
 Trek.faders[12] = {~asrFader.(1, 3, 2)};

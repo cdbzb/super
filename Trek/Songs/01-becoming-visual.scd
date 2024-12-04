@@ -1968,7 +1968,7 @@ P(\bass, music: { |p b e|
 });
 Song.g2 = 12.dbamp;
 [" All of your questions will be answered in time, Captain Kirk.", "4 3 2 1 2 2 3 2 1 -7 -7".dm(\c, 4) ].addLine;/*SARGON [OC]:*/
-P.synthV(role: \vocoder, take: \lead, frozen: false, params: {|p b| [
+P.synthV(role: \vocoder, take: \lead, frozen: true, params: {|p b| [
 	filter: (midinote: 45!11), 
 	lyrics: "All of your questions + will be answered + in time",
 	pitchTake: 1
@@ -1982,7 +1982,7 @@ P.synthV(role: \vocoder, take: \lead, frozen: false, params: {|p b| [
 		durRel:2
 	);
 	{
-		Song.laMer => PlayBuf.auto(2,_,rate: 5.midiratio ) / 2
+		Song.laMer => PlayBuf.auto(2,_,rate: 0.midiratio ) / 4
 		* Env([ 1, 1, 0], b.parse([ 8, 1])).kr()
 	}.play(s,p.carrierBus)
 });
@@ -2137,7 +2137,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	)
 });
 // P.tune();
-P.synthV(role: \vocoder, frozen: false, take: \lead,
+P.synthV(role: \vocoder, frozen: true, take: \lead,
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
 	lyrics: "It is the energy + + of my thoughts which has",
@@ -2214,7 +2214,7 @@ P(\note, music: { |p b e|
 		// instrument: \harp,
 	).play
 });
-P.synthV(role: \vocoder, frozen: false, take: \lead, params: {|p b| [
+P.synthV(role: \vocoder, frozen: true, take: \lead, params: {|p b| [
 	lyrics: "r touched your instruments + + and directed + + you here.",
 	filter: (midinote: _ - 12), 
 	pitchTake: 1
@@ -2398,7 +2398,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 		text: ["the choice","is yours"],
 	)
 });
-P.synthV(role: \vocoder, frozen: false, take: \lead, params: {|p b| [
+P.synthV(role: \vocoder, frozen: true, take: \lead, params: {|p b| [
 	lyrics: "the choice is yours",
 	// filter: (midinote: _ - 12), 
 	filter: (midinote: 50!4), 
@@ -2462,7 +2462,7 @@ P(\chords, music: { |p b e|
 
 });
 P.tune( _ <> [instrument: \sawSynth, out: Song.carrierBus, amp:0.02].p );
-P.synthV(role: \vocoder, frozen:false, take: \lead, params: {|p b| [
+P.synthV(role: \vocoder, frozen: true, take: \lead, params: {|p b| [
 	filter: (midinote: 45!7), 
 	lyrics: "I read what is in your mind",
 	pitchTake: 1
@@ -2484,7 +2484,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	)
 });
 P.tune({|i| i=>_.fin(3) <> [instrument: \visual_pad, legato: [1, 1, 3 ],amp:0.15].pm});
-P.synthV(role: \vocoder, frozen:true, take: \lead, params: {|p b| [
+P.synthV(role: \vocoder, frozen: true, take: \lead, params: {|p b| [
 	lyrics: "words are unnecessary + + + +",
 	filter: (midinote: 48), 
 	pitchTake: 1
@@ -2633,7 +2633,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 			],
 	)
 });
-P.synthV(role: \vocoder,frozen:false, resources:(tail:6), take: \lead,
+P.synthV(role: \vocoder,frozen: true, resources:(tail:6), take: \lead,
 	pbind: Song.enlarge(7),
 	// filter: (midinote: _ - 12), 
 	filter: (midinote: 45!16), 

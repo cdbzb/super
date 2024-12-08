@@ -163,7 +163,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 			timestamp: SystemClock.seconds - start,
 			initial: true,
 		);
-		latencyCompensation = latencyCompensation ? 0 ; //Server.default.latency;
+		latencyCompensation = latencyCompensation ? Server.default.latency;
 		mk.activate;
 		recording = this;
 		midiEvents = List[];

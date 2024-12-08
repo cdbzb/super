@@ -172,7 +172,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 				initial ++ (
 					type: \setcc,
 					ctlnum: i,
-					control: cc(i).spec.unmap(j) * cc(i).rawscale, //put back in original
+					control: CC(i).spec.unmap(j) * CC(i).rawScale, //put back in original
 				)
 			)
 		};

@@ -1,5 +1,5 @@
 MicroKeys {
-	var <>array,<>keys,<>range, <>namedList, <tuningDeltas, tuningFunction, <heldNotes, <damperDown = false, <>down, <ccs, <storedCCValues, <name;
+	var <>array,<>keys, <>namedList, <tuningDeltas, tuningFunction, <heldNotes, <damperDown = false, <>down, <ccs, <storedCCValues, <name;
 	classvar <all;
 	classvar <type=\mk;
 
@@ -66,7 +66,7 @@ MicroKeys {
 		name = aName;
 		namedList = NamedList.new;
 		tuningFunction = { |tuning| { |e| e.num = e.num + tuningDeltas.wrapAt(e.num); e }};
-		namedList.add( \event, {|v n c r params| (vel: v/127, num: n, chan: c, src: r, raw: n, params:params) });
+		namedList.add( \event, {|v n c r params| (vel: v/127, num: n, chan: c, src: r, raw: n, params: params) });
 
 		// this.synth_(func ? I.d);
 		this.synth_( func !? _.asDefName ? I.d);
@@ -130,8 +130,10 @@ MicroKeys {
 		namedList.add( key, func, true, addAction, target)
 	}
 
-	split_ { |r| range = r }
-
+	// split_ { |r| range = r }
+	range_ { |array| 
+	  this.add(\range, {|e| array.includes( e.num ).if{e}{nil} => _.debug("range: ")}, \addAfter, \event);
+	}
 
 	register { |synth num|
 		keys[num] = synth;
@@ -139,7 +141,8 @@ MicroKeys {
 }
 
 	noteOnFunction {
-		^namedList.array.reverse.inject(I.d, _ <> _)
+		// ^namedList.array.reverse.inject(I.d, _ <> _)
+		^namedList.array.reverse.inject(I.d, {|i j| try{i <> j} })
 	}
 
 	setDamper {|num| 
@@ -151,6 +154,7 @@ MicroKeys {
 	}
 
 	doNoteOff {|midinote| 
+		name.debug("noteOff");
 		damperDown.not.if {keys[midinote].release} {heldNotes.add(keys[midinote])} 
 	}
 
@@ -163,15 +167,15 @@ MicroKeys {
 	activate {
 		storedCCValues.notNil.if{ this.restoreCCValues };
 		// MIDIdef.noteOn(\microOn, {|val num| this.noteOnFunction.(val, num)}, noteNum:range);
-		MIDIdef.noteOn(\microOn,  {|v n| (type: \mk, mk:this, amp: v/127, midinote: n, latency:0, sustain: inf ).play}, noteNum:range);
+		MIDIdef.noteOn(\microOn ++ name => _.asSymbol,  {|v n| (type: \mk, mk:this, amp: v/127, midinote: n, latency:0, sustain: inf ).play}, );
 		// MIDIdef.noteOff(\microOff, {|vel, num| damperDown.postln; ( damperDown == false ).if{ keys[num].release }{ heldNotes.add(keys[num]) }});
-		MIDIdef.noteOff(\microOff, {|val num| this.doNoteOff(num) });
-		MIDIdef.cc(\microDamper,{|num| this.setDamper(num) }, 64);
-		MIDIdef.polytouch(\microPoly, {|val num| this.doPoly(val, num)});
+		MIDIdef.noteOff(\microOff ++ name => _.asSymbol, {|val num| this.doNoteOff(num) }, );
+		MIDIdef.cc(\microDamper ++ name => _.asSymbol,{|num| this.setDamper(num) }, 64);
+		MIDIdef.polytouch(\microPoly ++ name => _.asSymbol, {|val num| this.doPoly(val, num)});
 	}
 
 	deactivate {
-		[\microOn, \microOff, \microDamper, \microPoly].do{|i| MIDIdef(i).free}
+		[\microOn, \microOff, \microDamper, \microPoly].do{|i| MIDIdef(i ++ name => _.asSymbol).free}
 	}
 
 	free {
@@ -223,23 +227,45 @@ MonoKeys : MicroKeys {
 	classvar <type=\mkMono;
 	*new { |name func|
 		all[name].notNil.if {
+			(all[name].class == MonoKeys).if {
 			// reset down notes on reload
-			all[name].down_(List[]);
-			^all[name]
+				all[name].down_(List[]);
+				^all[name]
+			}
 		} { 
 			^super.new.init(name, func) 
 		}  
 	}
-	 
+	*initClass {
+		MyFree.add({ MicroKeys.all.do{|i| i.down_(List[]) } });
+		Event.addEventType(\mkMono, {
+			var syn;
+			Server.default.makeBundle(~latency, { ~mk.doNoteOn(~amp * 127, ~midinote, ~params) });
+			fork{
+				~sustain.().wait;
+				//syn could be passed into doNoteOff to solve the overlapping notes issue
+				Server.default.makeBundle(~latency, {~mk.doNoteOff(~midinote)})
+			}	
+		});
+	}
 	doNoteOn { |amp midinote params|
-			 // ~mk.noteOnFunction.(~amp * 127, ~midinote, nil, nil, ~params); 
-			down;
+
 			( down.size == 0 ).if{
-				monosynth = this.noteOnFunction.(amp * 127, midinote, nil, nil, params) ;
+				monosynth = this.noteOnFunction.(amp, midinote, nil, nil, params) ;
 				down.add(midinote)
 			}{
-				monosynth.set(\num, midinote).set(\vel, amp);
-				down.add(midinote);
+				var event, func = namedList.deepCopy;
+				func.removeAt(\synth);
+				event = func.reverse.inject(I.d, {|i j| try{i <> j}}).(amp, midinote, nil, nil, params);
+				event.notNil.if{
+					monosynth.set(
+						// \freq, event.num.midicps, 
+						\num, event.num, \vel, event.vel, \amp, event.vel);
+						down.add(midinote); // raw midinote for bookkeeping
+				};
+						// move this line down here to allow tracking outside the range
+						// down.add(midinote); // raw midinote for bookkeeping
+						
 			} 
 	}
 	// *new {|synthFunc|
@@ -247,27 +273,28 @@ MonoKeys : MicroKeys {
 	// }
 	activate {
 		down = List[];
-		MIDIdef.noteOn(\microOn, {|v n | 
-			down;
-			( down.size == 0 ).if{
-				monosynth = this.noteOnFunction.(v, n) ;
-				down.add(n)
-			}{
-				monosynth.set(\num, n).set(\vel, v);
-				down.add(n);
-			} 
-		}, noteNum:range);
-		MIDIdef.noteOff(\microOff, {|vel num| 
+		MIDIdef.noteOn(\microOn ++ name => _.asSymbol, {|v n | 
+			this.doNoteOn(v, n);
+			// ( down.size == 0 ).if{
+			// 	monosynth = this.noteOnFunction.(v, n) ;
+			// 	down.add(n)
+			// }{
+			// 	monosynth.set(\num, n).set(\vel, v);
+			// 	down.add(n);
+			// } 
+		});
+		MIDIdef.noteOff(\microOff ++ name => _.asSymbol, {|vel num| 
 			this.doNoteOff(num);
 			// damperDown.postln; 
 			// (damperDown == false).if{ keys[num].release }{ heldNotes.add(keys[num]) }
 		});
 		// MIDIdef.cc(\microDamper, {|num| (num == 127).if{ damperDown = true.postln }{ damperDown = false.postln; heldNotes.do(_.release); heldNotes = Set[] } }, 64);
-		MIDIdef.polytouch(\microPoly, {|val num| monosynth.set(\poly, val)});
+		MIDIdef.polytouch(\microPoly ++ name => _.asSymbol, {|val num| monosynth.set(\poly, val)});
 	}
 	doNoteOff{ |num|
+		name.debug("noteOff");
 			down.debug("down off");
-			(down.size == 1).if{
+			(down.size <= 1).if{
 				monosynth.release;
 				down.remove(num) 
 			}{ 

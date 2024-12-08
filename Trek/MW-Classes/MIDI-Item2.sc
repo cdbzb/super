@@ -164,7 +164,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 			initial: true,
 		);
 		latencyCompensation = latencyCompensation ? Server.default.latency;
-		mk.activate;
+		mk.do(_.activate);
 		recording = this;
 		midiEvents = List[];
 		CC.getValues.asKeyValuePairs.pairsDo{ | i j |
@@ -230,8 +230,12 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 			}
 		}
 	}
-	play { |mk|
-		^this.player.play(mk)
+	play { |mk clock post|
+		(mk.rank > 0).if {
+			^mk.do{|i| this.play(i)} 
+		} {
+			^this.player.play(mk)
+		}
 	}
 	player {|func| 
 		^if(recording != this) {
@@ -305,6 +309,9 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	}
 
 	play { |mk clock post=#[]|
+		(mk.rank > 0).if { mk.do{|i| this.play(i) }; ^this };
+		// (mk.size > 1).if { 'play first'.postln; mk.do(this.play() };
+		mk.name.debug("playing");
 		playing.add(mk);
 
 		(post.size > 0).if{

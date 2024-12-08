@@ -120,13 +120,13 @@ P(\connector, music: { |p b e|
 		/2
 		* Env.asr().kr(2,gate:\gate.kr(1))
 		=> {|i| DelayN.ar(i) / 2 + i}
-		=> MoogFF.ar(_, CC(24, \freq.asSpec).bus.kr)
+		=> MoogFF.ar(_, CC(24, \freq.asSpec, mk: MicroKeys(\lead)).bus.kr.poll)
 		=> PanAz.ar(5, _,Sweep.ar(1, 0.5))
 	}.asDefName);
 	// a.activate;
-	// MIDIItem("lead_241206_112010");
+	// MIDIItem("lead_241206_112010")
 	MIDIItem("lead_241206_125437")
-	.end_(18)
+	// .end_(18)
 	// .fromNoteTo(0, 9)
 
 	// .start_(1)

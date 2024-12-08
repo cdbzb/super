@@ -80,8 +80,10 @@ MicroKeys {
 		funcOrDefname.isKindOf(Symbol).if{
 			namedList.add( \synth,
 				{ |e|
-					Synths(funcOrDefname, [\freq, e.num.midicps, \amp, e.vel, \num, e.num] ++ params ++ ( e.params ? () ).asKeyValuePairs)
-					=> this.register(_, e.raw)
+					e.notNil.if  {
+						Synths(funcOrDefname, [\freq, e.num.midicps, \amp, e.vel, \num, e.num] ++ params ++ ( e.params ? () ).asKeyValuePairs)
+						=> this.register(_, e.raw)
+					}
 				}
 			)
 		}{

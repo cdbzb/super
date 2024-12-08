@@ -1,11 +1,17 @@
 MicroKeys {
-	var <>array,<>keys,<>range, <>namedList, <tuningDeltas, tuningFunction, <heldNotes, <damperDown = false, <>down, <ccs, <name;
+	var <>array,<>keys,<>range, <>namedList, <tuningDeltas, tuningFunction, <heldNotes, <damperDown = false, <>down, <ccs, <storedCCValues, <name;
 	classvar <all;
 	classvar <type=\mk;
 
 	classvar tuningFunction;
 	doNoteOn { |amp midinote params|
 			 this.noteOnFunction.(amp, midinote, nil, nil, params); 
+	}
+	storeCCValues {
+		^storedCCValues = CC.getValues(this)
+	}
+	restoreCCValues {
+		^CC.setValues(storedCCValues, this)
 	}
 	*initClass{
 		Event.addEventType(\mkOff, {});
@@ -19,12 +25,18 @@ MicroKeys {
 			fork{
 				~sustain.().wait;
 				//syn could be passed into doNoteOff to solve the overlapping notes issue
-				~mk.doNoteOff(~midinote)
+				Server.default.makeBundle(~latency, {~mk.doNoteOff(~midinote)})
 			}	
 		});
-		Event.addEventType(\setCC, { Server.default.bind{ CC(~ctlNum, mk: ~mk).setRaw( ~control ) } });
-		Event.addEventType(\setBend, { Server.default.bind{ CC(~ctlNum, mk: ~mk).setRaw( ~control ) } });
-		Event.addEventType(\setDamper, { Server.default.bind{ ~mk.setDamper(~control) } });
+		Event.addEventType(\setCC, {
+			Server.default.makeBundle(~latency, { CC(~ctlNum, mk: ~mk).setRaw(~control * 127) }) 
+		});
+		Event.addEventType(\setBend, {
+			Server.default.makeBundle(~latency, { CC(~ctlNum, mk: ~mk).setRaw(~control) }) 
+		});
+		Event.addEventType(\setDamper, {
+			Server.default.makeBundle(~latency, { ~mk.setDamper(~control) })
+		});
 		Event.addEventType(\setPoly, {
 			( ~mk.keys[~midinote] != 0 ).if {
 				 // ~mk.keys[~midinote].().set(\poly, ~polyTouch) 
@@ -147,6 +159,7 @@ MicroKeys {
 		keys[num].set(\poly, val)
 	}
 	activate {
+		storedCCValues.notNil.if{ this.restoreCCValues };
 		// MIDIdef.noteOn(\microOn, {|val num| this.noteOnFunction.(val, num)}, noteNum:range);
 		MIDIdef.noteOn(\microOn,  {|v n| (type: \mk, mk:this, amp: v/127, midinote: n, latency:0, sustain: inf ).play}, noteNum:range);
 		// MIDIdef.noteOff(\microOff, {|vel, num| damperDown.postln; ( damperDown == false ).if{ keys[num].release }{ heldNotes.add(keys[num]) }});

@@ -87,8 +87,10 @@ CC {
 		(all[mkInstance ? \default] ? () ).asKeyValuePairs.pairsDo{|i j| res.put(i, j.val)};
 		^res
 	}
-	*setValues {|e| 
-		e.keys.do{|i| CC(i).val = (e[i]); CC(i).set(e[i]) }
+
+	*setValues {|e mk| 
+		e.keys.do{|i| CC(i, mk: mk).val = (e[i]); CC(i, mk: mk).set(e[i]) }
+		
 	}
 	set { |i|
 		val = i; bus.set(spec.map(i))
@@ -151,9 +153,11 @@ CC {
 				{|n| this.setRaw(n)}, number);
 		}
 	}
-	setRaw{|num| // to 127
-		val = spec.map(num / rawScale);
-		bus.setSynchronous(val)
+	setRaw {|num| // to 127
+		// val = spec.map(num / rawScale);
+		// bus.setSynchronous(val)
+		val = num/rawScale;
+		bus.setSynchronous(spec.map(val))
 	}
 	map { |name func|
 		MIDIdef.cc(name, {func.(spec.map(val))}, number)

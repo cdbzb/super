@@ -202,7 +202,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 								( num == 64 ).if{
 									(type:\setDamper, control: val)//.postln 
 								} { 
-									(type: \setCC, ctlNum:num, control: val)//.postln
+									(type: \setCC, ctlNum:num, control: val / 127)//.postln
 								} 
 							},
 							\bend, { (type: \setBend, ctlNum:\bend, control: val)},
@@ -250,37 +250,50 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 }
 
 MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
+	classvar <playing;
 	var <midiEvents, <source;
 	var <>start, <>end;
 	var tracks;
 	*new {| midiEvents source |
 		^super.newCopyArgs(midiEvents.deepCopy, source).init
 	}
+	*stopAll {
+		playing.do({ |i| 
+			i.restoreCCValues;
+			playing.remove(i)
+		})
+	}
 	init{
 		this.start = this.bounds.start;
 		this.end = this.bounds.end;
 	}
 	*initClass{
+		playing = Set[];
+		MyFree.add({MIDIItemPlayer.stopAll});
 		Event.addEventType(\mi, {
 			~dur = ~player[~to+1].timestamp - ~player[~from].timestamp;
 			~clock = TempoClock(~tempo ? 1 / ~stretch ? 1);
 			~player.fromNoteTo(~from, ~to).play(~mk, clock: ~clock) 
 		}, parentEvent: (type: \durEvent));
 		Event.addEventType(\mi2, {
-			~filter !? ~player = ~filter.(~player);
-			~dur = (~player.end ? ~player.bounds.end) - (~player.start ? ~player.bounds.start);
+			~filter.notNil.if{~player = ~filter.(~player)};
+			// '!?'.help
+			~dur = (~player.end.isNil.if {~player.bounds.end}) - (~player.start ? ~player.bounds.start);
 			~clock = TempoClock(~tempo ? 1 / ~stretch ? 1);
 			~player.play(~mk, clock: ~clock) 
-		}, parentEvent: (type: \durEvent));
+		}, );
 		Event.addParentType(\mi2,
-			( finish: {|e| 
-				(e.params.notNil).if { 
-					e.player = e.player.setParams(e.params) 
-				}
-				// implement lag and some setting to increase the duration
-				// maybe .filter({|e| e.collect{|f| f.timestamp = f.timestamp + f.lag}})
-			},
-		)
+			(
+				finish: {|e| 
+					(e.params.notNil).if { 
+						// \setParams.postln;
+						e.player = e.player.setParams(e.params) 
+					}
+					// implement lag and some setting to increase the duration
+					// maybe .filter({|e| e.collect{|f| f.timestamp = f.timestamp + f.lag}})
+				},
+				parent: (type: \durEvent)
+			)
 		);
 	}
 
@@ -292,11 +305,12 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	}
 
 	play { |mk clock post=#[]|
+		playing.add(mk);
 
 		(post.size > 0).if{
 			"# note amp sus".postln 
 		};
-
+		mk.storeCCValues;
 		midiEvents.do{|e x| 
 			var from = start ? 0;
 			var to = end ? midiEvents.last.timestamp;
@@ -310,7 +324,11 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 						.play; 
 					} 
 				}{
-					{ e.play } 
+					{ 
+						e
+						.latency_(Server.default.latency)
+						.play
+					} 
 				}; 
 
 				(clock ? TempoClock.default).sched(e.timestamp - ( start ? 0 ), playFunc);
@@ -329,6 +347,11 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			}
 		}
 	}
+	
+	dur {
+		^(end - start)
+	}
+
 	noteIndices {
 			^midiEvents.select{|e| e.midicmd == \noteOn}
 			.collect{|i x| x->midiEvents.indexOf(i) }
@@ -472,6 +495,10 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		}) => {|i|
 				recalcSustains.if { ^i.recalcSustains }{ ^i }
 		}
+	}
+	tempomap {|beats choiceFunc|
+		beats.isString.if{ beats = beats.beats };
+		^MIDIItemTempoMap(this, choiceFunc, beats)
 	}
 	recalcSustains {
 		^MIDIItemPlayer(

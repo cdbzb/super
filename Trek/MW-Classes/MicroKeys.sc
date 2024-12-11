@@ -4,8 +4,10 @@ MicroKeys {
 	classvar <type=\mk;
 
 	classvar tuningFunction;
-	doNoteOn { |amp midinote params|
-			 this.noteOnFunction.(amp, midinote, nil, nil, params); 
+	doNoteOn { |amp midinote params silent|
+		silent.isNil.if{
+			this.noteOnFunction.(amp, midinote, nil, nil, params); 
+		}
 	}
 	storeCCValues {
 		^storedCCValues = CC.getValues(this)
@@ -21,7 +23,7 @@ MicroKeys {
 		});
 		Event.addEventType(\mk, {
 			var syn;
-			Server.default.makeBundle(~latency, { ~mk.doNoteOn(~amp * 127, ~midinote, ~params) });
+			Server.default.makeBundle(~latency, { ~mk.doNoteOn(~amp * 127, ~midinote, ~params, ~silent) });
 			fork{
 				~sustain.().wait;
 				//syn could be passed into doNoteOff to solve the overlapping notes issue
@@ -80,10 +82,11 @@ MicroKeys {
 		funcOrDefname.isKindOf(Symbol).if{
 			namedList.add( \synth,
 				{ |e|
-					e.notNil.if  {
+					e.silent.isNil.if {
 						Synths(funcOrDefname, [\freq, e.num.midicps, \amp, e.vel, \num, e.num] ++ params ++ ( e.params ? () ).asKeyValuePairs)
-						=> this.register(_, e.raw)
+						=> try{ this.register(_, e.raw) }
 					}
+					
 				}
 			)
 		}{
@@ -132,7 +135,7 @@ MicroKeys {
 
 	// split_ { |r| range = r }
 	range_ { |array| 
-	  this.add(\range, {|e| array.includes( e.num ).if{e}{nil} => _.debug("range: ")}, \addAfter, \event);
+	  this.add(\range, {|e| array.includes( e.num ).not.if{e.silent_(true)}; e}, \addAfter, \event);
 	}
 
 	register { |synth num|
@@ -142,7 +145,10 @@ MicroKeys {
 
 	noteOnFunction {
 		// ^namedList.array.reverse.inject(I.d, _ <> _)
-		^namedList.array.reverse.inject(I.d, {|i j| try{i <> j} })
+		^namedList.array.reverse
+		// .collect({|func| {|e| e.notNil.if{ func.(e) } } })
+
+		.inject(I.d, {|i j| try{i <> j} })
 	}
 
 	setDamper {|num| 
@@ -252,7 +258,9 @@ MonoKeys : MicroKeys {
 
 			( down.size == 0 ).if{
 				monosynth = this.noteOnFunction.(amp, midinote, nil, nil, params) ;
-				down.add(midinote)
+				monosynth.notNil.if {
+					down.add(midinote)
+				}
 			}{
 				var event, func = namedList.deepCopy;
 				func.removeAt(\synth);

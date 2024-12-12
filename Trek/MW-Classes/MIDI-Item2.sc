@@ -1,5 +1,5 @@
-	*new { |...args|
 MIDIItem2 : MIDIItem{
+	*new { |...args|
 		^MIDIItem(*args)
 	}
 	*value{ |func|

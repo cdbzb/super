@@ -71,8 +71,9 @@ CC {
 			CC(number, spec, mk)
 		}.valueEnvir;
 	}
-	*new {|number spec mk rawScale=127 default| 
+	*new {|number spec mk rawScale default| 
 		mk = mk ? \default;
+		rawScale = rawScale ? 127;
 		all[mk].notNil.if {
 			all[mk][number].notNil.if {
 				var a = all[mk][number]; 
@@ -105,7 +106,8 @@ CC {
 	}
 	*bend {|spec mk|
 		^CC(\bend, ( spec ? 
-			ControlSpec(0.5, 2,\exp, default: 1)
+			// ControlSpec(0.5, 2,\exp, default: 1)
+			ControlSpec(-1, 1, default: 0) //use midiratio or linexp to scale
 		), mk, rawScale: 16384, default:0.5 )
 	}
 	*keys {|mk|

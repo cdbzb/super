@@ -1,5 +1,5 @@
-MIDIItem2 : MIDIItem{
 	*new { |...args|
+MIDIItem2 : MIDIItem{
 		^MIDIItem(*args)
 	}
 	*value{ |func|
@@ -157,19 +157,21 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	}
 	record { |mk latencyCompensation|
 		var start = SystemClock.seconds;
-		var initial =
+		var initialEvent =
 		(
 			midicmd: \control,
 			timestamp: SystemClock.seconds - start,
-			initial: true,
+			initialEvent: true,
 		);
+		mk.isKindOf(Symbol).if{ mk = MicroKeys(mk) };
 		latencyCompensation = latencyCompensation ? Server.default.latency;
 		mk.do(_.activate);
 		recording = this;
 		midiEvents = List[];
+		// add Events to set initial CC values to midiEvents
 		CC.getValues.asKeyValuePairs.pairsDo{ | i j |
 			midiEvents.add(
-				initial ++ (
+				initialEvent ++ (
 					type: \setcc,
 					ctlnum: i,
 					control: CC(i).spec.unmap(j) * CC(i).rawScale, //put back in original
@@ -177,7 +179,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 			)
 		};
 		midiEvents.add(
-			initial ++ (
+			initialEvent ++ (
 				type: \setPoly,
 				ctlNum: \polytouch,
 				control: 0,
@@ -186,8 +188,11 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	);
 		restFirst.if{ initialRest = [( type: \rest, timestamp: SystemClock.seconds - start)] };
 		
+		//make MIDIdefs
 		[\noteOn, \noteOff, \control, \polytouch, \bend ].do{ |cmd|
+
 			MIDIdef(\record ++ cmd => _.asSymbol, func: { |val num| 
+				\recordDef.postln;
 				midiEvents.add(
 					(
 						midicmd: cmd,
@@ -195,7 +200,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 					)//.postln
 					++
 						switch( cmd, 
-							\noteOn,{ (type: \mk, midinote: num, amp: val/127 ) },
+							\noteOn,{ (type: \mk, midinote: num, amp: val/127 )},
 							\noteOff,{ (type: \mkOff, midinote: num, amp: val/127 ) },
 							\polytouch, { (type: \setPoly, midinote: num, polyTouch: val, ) },
 							\control, {
@@ -231,11 +236,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		}
 	}
 	play { |mk clock post|
-		(mk.rank > 0).if {
-			^mk.do{|i| this.play(i)} 
-		} {
 			^this.player.play(mk)
-		}
 	}
 	player {|func| 
 		^if(recording != this) {
@@ -310,8 +311,8 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 
 	play { |mk clock post=#[]|
 		(mk.rank > 0).if { mk.do{|i| this.play(i) }; ^this };
+		mk.isKindOf(Symbol).if{ mk = MicroKeys(mk) };
 		// (mk.size > 1).if { 'play first'.postln; mk.do(this.play() };
-		mk.name.debug("playing");
 		playing.add(mk);
 
 		(post.size > 0).if{

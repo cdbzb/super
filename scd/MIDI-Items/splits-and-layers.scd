@@ -16,26 +16,19 @@ s.waitForBoot{
 			// =>Out.ar(\out.kr(0),_)
 		}.asDefName
 	);
-
 	MicroKeys(\aa).range_((50..127));
 	MicroKeys(\b).synth_(\harp).range_( (0..50) );
-	// MicroKeys(\b).add(\range, {|e| (0..49).includes( e.num ).if{e}{nil}}, \addAfter, \event);
-	// MIDIItem("trashme_241209_091414").record(MicroKeys(\aa));
-// MicroKeys(\aa).activate
 MIDIItem("trashme_241209_091414")
-// .collect({|e| e.dur.notNil.if{ e.dur = (e.dur min: 3) }})
-// .record([MicroKeys(\b), MicroKeys(\aa)])
-// .record(MicroKeys(\aa))
-// .record([MicroKeys(\b),MicroKeys(\aa)])
 
-// .record([MicroKeys(\aa), MicroKeys(\b)])
+.record([MicroKeys(\aa), MicroKeys(\b)])
+// .record([ MicroKeys(\b)])
 .play(
 	[
-	MicroKeys(\b).add(\quiet, {|e| try{e.vel= (e.vel/ 10) max: 0.02} ? e}, \addBefore, \synth),
-	// MicroKeys(\bar).synth_(\sawSynthSustain).add(\down,{|e| e.num.notNil.if { e.num= e.num- 12 };nil}, \addBefore, \synth),
-	// MicroKeys(\foo).synth_(\sawSynthSustain).add(\down,{|e| e.num.notNil.if { e.num= e.num- 12 };}, \addBefore, \synth),
-	MicroKeys(\d).synth_(\default).add(\quiet, {|e| e.vel = e.vel / 4; e.params = (out: 3)}, \addBefore, \synth),
 	MicroKeys(\aa),
+	MicroKeys(\b).add(\quiet, {|e| e.vel= ((e.vel/ 10) max: 0.02) }, \addBefore, \synth),
+	MicroKeys(\bar).synth_(\sawSynthSustain).add(\down,{|e| e.num.notNil.if { e.num= e.num- 12 + 0.1.rrand(-0.1)};e.silent=[nil,true].choose}, \addBefore, \synth),
+	// MicroKeys(\foo).synth_(\sawSynthSustain).add(\down,{|e| e.num.notNil.if { e.num= e.num- 12 };}, \addBefore, \synth),
+	MicroKeys(\d).synth_(\default, [out:Effect.bus({|i| Phaser2.ar(i, 0.9, 0.8)* 3 })]).add(\quiet, {|e| e.vel = e.vel / 4; }, \addBefore, \synth),
 ]
 )
 

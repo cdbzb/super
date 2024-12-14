@@ -1,5 +1,5 @@
 MicroKeys {
-	var <>array,<>keys, <>namedList, <tuningDeltas, tuningFunction, <heldNotes, <damperDown = false, <>down, <ccs, <storedCCValues, <name;
+	var <>array,<>keys, <>namedList, <tuningDeltas, tuningFunction, <heldNotes, <damperDown = false, <>down, <ccs, <storedCCValues, <name, <item;
 	classvar <all;
 	classvar <type=\mk;
 
@@ -178,6 +178,8 @@ MicroKeys {
 		MIDIdef.noteOff(\microOff ++ name => _.asSymbol, {|val num| this.doNoteOff(num) }, );
 		MIDIdef.cc(\microDamper ++ name => _.asSymbol,{|num| this.setDamper(num) }, 64);
 		MIDIdef.polytouch(\microPoly ++ name => _.asSymbol, {|val num| this.doPoly(val, num)});
+		// auto-record item
+		this.recordMe
 	}
 
 	deactivate {
@@ -220,12 +222,24 @@ MicroKeys {
 	test {
 		^try{ this.noteOnFunction.(40,40) }
 	}
+	//
+	// auto-record items
+	//
+
+	recordMe {
+		item = MIDIItem.new( Date.getDate.stamp );
+		item.record(this)
+	}
+	insertItem {
+		var string = "MIDIItem(\\\"%\\\")".format(item.name);
+		Nvim.replace(string)
+	}
+
 	doesNotUnderstand {|selector ...args|
 		namedList.respondsto(selector).if{
 			^Message(namedList, selector, args).value
 		}
 	}
-
 }
 
 MonoKeys : MicroKeys {
@@ -268,7 +282,7 @@ MonoKeys : MicroKeys {
 				event.notNil.if{
 					monosynth.set(
 						// \freq, event.num.midicps, 
-						\num, event.num, \vel, event.vel, \amp, event.vel);
+						\num, event.num, \freq, event.num.midicps, \vel, event.vel, \amp, event.vel);
 						down.add(midinote); // raw midinote for bookkeeping
 				};
 						// move this line down here to allow tracking outside the range
@@ -283,18 +297,9 @@ MonoKeys : MicroKeys {
 		down = List[];
 		MIDIdef.noteOn(\microOn ++ name => _.asSymbol, {|v n | 
 			this.doNoteOn(v, n);
-			// ( down.size == 0 ).if{
-			// 	monosynth = this.noteOnFunction.(v, n) ;
-			// 	down.add(n)
-			// }{
-			// 	monosynth.set(\num, n).set(\vel, v);
-			// 	down.add(n);
-			// } 
 		});
 		MIDIdef.noteOff(\microOff ++ name => _.asSymbol, {|vel num| 
 			this.doNoteOff(num);
-			// damperDown.postln; 
-			// (damperDown == false).if{ keys[num].release }{ heldNotes.add(keys[num]) }
 		});
 		// MIDIdef.cc(\microDamper, {|num| (num == 127).if{ damperDown = true.postln }{ damperDown = false.postln; heldNotes.do(_.release); heldNotes = Set[] } }, 64);
 		MIDIdef.polytouch(\microPoly ++ name => _.asSymbol, {|val num| monosynth.set(\poly, val)});

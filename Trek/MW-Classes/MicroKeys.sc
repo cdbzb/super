@@ -1,5 +1,5 @@
 MicroKeys {
-	var <>array,<>keys, <>namedList, <tuningDeltas, tuningFunction, <heldNotes, <damperDown = false, <>down, <ccs, <storedCCValues, <name, <item;
+	var <>array,<>keys, <>namedList, <tuningDeltas, tuningFunction, <heldNotes, <damperDown = false, <>down, <ccs, <storedCCValues, <name, <item, <>active=false;
 	classvar <all;
 	classvar <type=\mk;
 
@@ -21,6 +21,7 @@ MicroKeys {
 		Event.addEventType(\mk2, {
 			~instrument =  ~mk.doNoteOn(~amp * 127, ~midinote, ~params).asDefName ;
 		});
+
 		Event.addEventType(\mk, {
 			var syn;
 			Server.default.makeBundle(~latency, { ~mk.doNoteOn(~amp * 127, ~midinote, ~params, ~silent) });
@@ -170,6 +171,9 @@ MicroKeys {
 		// in that case we need to set a bus and map that bus to freq?
 		keys[num].set(\poly, val)
 	}
+	record {
+		this.recordMe
+	}
 	activate {
 		storedCCValues.notNil.if{ this.restoreCCValues };
 		// MIDIdef.noteOn(\microOn, {|val num| this.noteOnFunction.(val, num)}, noteNum:range);
@@ -178,8 +182,6 @@ MicroKeys {
 		MIDIdef.noteOff(\microOff ++ name => _.asSymbol, {|val num| this.doNoteOff(num) }, );
 		MIDIdef.cc(\microDamper ++ name => _.asSymbol,{|num| this.setDamper(num) }, 64);
 		MIDIdef.polytouch(\microPoly ++ name => _.asSymbol, {|val num| this.doPoly(val, num)});
-		// auto-record item
-		this.recordMe
 	}
 
 	deactivate {
@@ -227,8 +229,8 @@ MicroKeys {
 	//
 
 	recordMe {
-		item = MIDIItem.new( Date.getDate.stamp );
-		item.record(this)
+		item.isNil.if{ item = MIDIItem.new( Date.getDate.stamp ) };
+		item.record(this);
 	}
 	insertItem {
 		var string = "MIDIItem(\\\"%\\\")".format(item.name);
@@ -317,13 +319,10 @@ MonoKeys : MicroKeys {
 	}
 }
 /*
-TODO: Migrate to MIDIdef and make layers and splits
-
 MicroKeys({|e|Synth(\default,[\freq,e.num.midicps,\pan,e.vel*2-1])}).tuning_(\partch).play
 (
 a=MicroKeys().tuning_(\pythagorean).simplePlay(\stringyy);
 a=MicroKeys().tuning_(\partch).range_((60..128)).simplePlay(\default)
-
 )
 
 a=MicroKeys().tuning_(\partch).velCurve_(2).simplePlay(\default)

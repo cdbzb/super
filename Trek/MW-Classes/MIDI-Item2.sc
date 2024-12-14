@@ -150,8 +150,9 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		recording.stop; recording = nil;
 	}
 	stop {
-		takes.insert(0, midiEvents);
+		takes.add(midiEvents);
 	}
+
 	at {|num|
 		^takes[num]
 	}
@@ -251,6 +252,9 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	}
 	reset {
 		midiEvents = List.new
+	}
+	take {|num|
+		^MIDIItemPlayer(takes[num])
 	}
 }
 

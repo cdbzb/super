@@ -1,0 +1,8 @@
+(
+m = MicroKeys(\keys).synth_( \default ).tuning_(\just);
+MicroKeys(\harp).synth_( \harp, [coef: 0.1, out: 1]).tuning_(\just).add(\quiet,{|e| e.vel= e.vel/ 2},  \addBefore, \synth);
+m.record;
+m.item.take(0).play(m);
+m.item.take(2).play(\harp);
+// m.item.takes.do{|i| i.size.postln}
+)

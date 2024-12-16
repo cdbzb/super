@@ -148,18 +148,27 @@ P(\connector, music: { |p b e|
 // Memories fall like raindrops in my heart 
 // ## Chorus
 ["等待黎明的第一道光","3 3  3 3 4 3 -5 3 -6 3".dm(\d) , "q q q qe e q q q qqqq".beats * 0.6].addLine;
-P(\drum, music: { |p b e|
-	[
-		instrument: \hat_808,
-		dur: "q q q q q q q q q q q q".beats.q * 0.6 * 2,
-	].pp;
-	[
-		instrument: \sn_808, 
-		dur: "q qq qq qq qq".beats.q * 1.2,
-		rest: MuteFirst(),
-		amp:0.2, 
-		out: Effect.bus({|i| CombN.ar(i, decaytime:5)/2 + i => _.dup }, time:1)
-	].pp
+// P(\drum, music: { |p b e|
+// 	[
+// 		instrument: \hat_808,
+// 		dur: "q q q q q q q q q q q q".beats.q * 0.6 * 2,
+// 	].pp;
+// 	[
+// 		instrument: \sn_808, 
+// 		dur: "q qq qq qq qq".beats.q * 1.2,
+// 		rest: MuteFirst(),
+// 		amp:0.2, 
+// 		out: Effect.bus({|i| CombN.ar(i, decaytime:5)/2 + i => _.dup }, time:1)
+// 	].pp
+// });
+P(\liveDrum, music: {|p b e|
+
+var echo = Effect.bus({|i| CombN.ar(i, decaytime:5)/4 + i => _.dup }, time:1);
+MicroKeys(\sn).synth_(\sn_808).range_([60, 48]);
+MicroKeys(\bd).synth_(\bd_808).range_([62,64]);
+MicroKeys(\hat).synth_(\hat_808).range_([67,69]);
+MIDIItem("241215_154339_traps").record([\sn, \bd, \hat]);
+
 });
 P(\stringz, lag: 0.2, music: { |p b e|
 	// var 

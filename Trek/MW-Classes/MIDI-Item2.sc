@@ -575,13 +575,18 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 		++ midiItem.bounds.end
 		;
 		beats = b;
-		tempoMap = TempoMap(beats, times.differentiate.drop(1)) //what about the last dur!!!!!
+		// env = Env([0] ++ beats.integrate, times.differentiate);
+		env = Env([0] ++ ([0] ++ beats.integrate + midiItem.start), times.differentiate );
+		// tempoMap = TempoMap(beats, times.differentiate.drop(1)) //what about the last dur!!!!!
 	}
 	offsets{
 		^times.collect{|i| env[i] - i};
 	}
 	averageOffset{
 		^this.offsets.mean
+	}
+	at{|x|
+		^env[x]
 	}
 	doesNotUnderstand{|selector ...args|
 		tempoMap.respondsTo(selector).if{

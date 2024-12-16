@@ -86,6 +86,9 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	*newFrom{ |midiEvents |
 		^ MIDIItem( UniqueID ).midiEvents_(midiEvents)
 	}
+	insert {
+		Nvim.replace( "MIDIItem(\\\"%\\\")".format(name) )
+	}
 	init { |n r m|
 		takes = List[];
 		restFirst = r;
@@ -164,9 +167,8 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 			timestamp: SystemClock.seconds - start,
 			initialEvent: true,
 		);
-		mk.isKindOf(Symbol).if{ mk = MicroKeys(mk) };
 		latencyCompensation = latencyCompensation ? Server.default.latency;
-		mk.do(_.activate);
+		mk.do{|i| (i.isKindOf(Symbol).if{ MicroKeys(i) }{ i }).monitor};
 		recording = this;
 		midiEvents = List[];
 		// add Events to set initial CC values to midiEvents

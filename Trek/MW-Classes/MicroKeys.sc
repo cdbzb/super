@@ -174,7 +174,7 @@ MicroKeys {
 	record {
 		this.recordMe
 	}
-	activate {
+	monitor {
 		storedCCValues.notNil.if{ this.restoreCCValues };
 		// MIDIdef.noteOn(\microOn, {|val num| this.noteOnFunction.(val, num)}, noteNum:range);
 		MIDIdef.noteOn(\microOn ++ name => _.asSymbol,  {|v n| (type: \mk, mk:this, amp: v/127, midinote: n, latency:0, sustain: inf ).play}, );
@@ -184,12 +184,12 @@ MicroKeys {
 		MIDIdef.polytouch(\microPoly ++ name => _.asSymbol, {|val num| this.doPoly(val, num)});
 	}
 
-	deactivate {
+	unmonitor {
 		[\microOn, \microOff, \microDamper, \microPoly].do{|i| MIDIdef(i ++ name => _.asSymbol).free}
 	}
 
 	free {
-		this.deactivate; //remove MIDIdefs
+		this.unmonitor ; //remove MIDIdefs
 		CC.all[this].do{|i| i.bus.free; i.free}; //remove CC busses and CCs
 		this.free 
 	}

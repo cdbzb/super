@@ -10,10 +10,10 @@ MicroKeys {
 		}
 	}
 	storeCCValues {
-		^storedCCValues = CC.getValues(this)
+		^storedCCValues = CC.getValues(this.name)
 	}
 	restoreCCValues {
-		^CC.setValues(storedCCValues, this)
+		^CC.setValues(storedCCValues, this.name)
 	}
 	*initClass{
 		Event.addEventType(\mkOff, {});
@@ -190,7 +190,7 @@ MicroKeys {
 
 	free {
 		this.unmonitor ; //remove MIDIdefs
-		CC.all[this].do{|i| i.bus.free; i.free}; //remove CC busses and CCs
+		CC.all[this.name].do{|i| i.bus.free; i.free}; //remove CC busses and CCs
 		this.free 
 	}
 

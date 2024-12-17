@@ -1,21 +1,25 @@
 (
 // first check/fix first note issue
-a = MicroKeys();
+a = MicroKeys(\pf);
 a.synth_(\default);
-a.activate;
+// a.activate;
 
-m = MIDIItem("test_241122_092623");
-m
+m = MIDIItem("test_241122_092623")
+// m
 // .save
 // .record(a)
-.player
-.fromNoteTo(0, 9)
+.fromNoteTo(0, 8)
+// .play(\pf)
 // .midiEvents[19]
-.quantize(
-	"q q  e e e e q e q".beats
-)
-.recalcSustain
-.play(a)
+// m.midiEvents.do({|i| i.midicmd.postln})
+// m.makeNotes.do({|i| i.midicmd.postln})
+.quantize( "x q  e e e e qqq e q".beats)
+;
+// ;
+// m
+m
+.recalcSustains
+.play(\pf)
 )
 
 (

@@ -1,7 +1,5 @@
-CC(\bend).bus.get.postln; CC(\bend).val.postln
-CC(1).bus.get
 (
-~standardControls = {|e mk| e * (\poly.kr() / 127+ CC.bend(mk: mk, rawScale: 16384).bus.kr => _.midiratio)};
+~standardControls = {|e mk| e * (\poly.kr() / 127+ CC.bend(mk: \pluck, rawScale: 16384).bus.kr => _.midiratio)};
 MicroKeys(\pluck);
 MicroKeys(\pluck).synth = { |gate=1 out=0 freq = 400|
 	var decaytime = \decaytime.kr(10);
@@ -11,9 +9,9 @@ MicroKeys(\pluck).synth = { |gate=1 out=0 freq = 400|
 		gate: gate,
 		maxdelaytime: 0.02,
 		// delaytime: freq * (\poly.kr() / 127 + CC.bend(mk:MicroKeys(\pluck), rawScale: 16384).bus.kr => _.midiratio)   + [0.5, 0, -0.1]=> _.reciprocal,
-		delaytime: ~standardControls.(freq, MicroKeys(\pluck)) =>  _.reciprocal,
+		delaytime: ~standardControls.(freq, \pluck) =>  _.reciprocal,
 		decaytime: decaytime,
-		coef:  CC(24, mk: MicroKeys(\pluck)).bus.kr + [0, 0.1, 0.2],
+		coef:  CC(24, mk: \pluck).bus.kr + [0, 0.1, 0.2],
 	)
 	=> Splay.ar(_)
 	* \amp.kr(0.1) * 10
@@ -27,5 +25,8 @@ MicroKeys(\pluck).record;
 // MicroKeys(\chordOd).synth_(\sawSynth).record;
 )
 // MIDIItem("241217_094128").take(7).play(\pluck)
-MIDIItem("241217_102915").take(8).start_(70).play(\pluck)
-MicroKeys(\pf).
+MIDIItem("241217_102915").take(8).start_(70).play(\pluck) // Rocking between c and c#
+MIDIItem("241217_120932").take(0).play(\pluck) //nice descending 7ths figure
+(
+
+)

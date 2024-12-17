@@ -51,6 +51,19 @@ AbstractMidiEvents {
 			^this.select(choiceFunc ? {true}).collect( {|e| e.timestamp_(tempoMap[e.timestamp])}, this.midiEvents)
 		}
 	}
+	quantizeFunc { |beats func choiceFunc recalcSustains=true |
+		var tempoMap = MIDIItemTempoMap(this, choiceFunc, beats);
+		this.collect({|e x| 
+			(
+				env: tempoMap.env, 
+				e: e, 
+				x: x,
+				averageOffset: tempoMap.averageOffset,
+			).use(func)
+		}) => {|i|
+				recalcSustains.if { ^i.recalcSustains }{ ^i }
+		}
+	}
 }
 MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents for use with MicroKeys
 	classvar <>folder, <all;
@@ -136,7 +149,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		on.do{|e| var match = off.removeAt(findMatch.(e.midinote)); e.sustain = match.timestamp - e.timestamp; };
 		notes = initialRest.copy ? [] ++ on;
 		notes.setDurs;
-		^(notes ++ midiEvents.reject{|e| [\mk, \mkOff].includes(e.type)}).sort{|i j| i.timestamp < j.timestamp}
+		^(notes ++ midiEvents.reject{|e| [\mk].includes(e.type)}).sort{|i j| i.timestamp < j.timestamp}
 	}
 	ccsAsArraysOfPoints{
 		^midiEvents.select{|e| e.midicmd == \control}.deepCopy
@@ -243,7 +256,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	}
 	player {|func| 
 		^if(recording != this) {
-			MIDIItemPlayer( this.makeNotes.deepCopy, this) 
+			MIDIItemPlayer( this.deepCopy.makeNotes, this) 
 		}{
 			SelfReturningObject()
 		}
@@ -367,15 +380,19 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	}
 
 	noteIndices {
-			^midiEvents.select{|e| e.midicmd == \noteOn}
-			.collect{|i x| x->midiEvents.indexOf(i) }
-			.asDict
+		^midiEvents.select{|e| e.midicmd == \noteOn}
+		.collect{|i x| x->midiEvents.indexOf(i) }
+		.asDict
 	}
 
 	fromNoteTo {|from to|
 		^this.filter({|e| 
-			e[this.noteIndices[from]..this.noteIndices[to + 1]].setDurs
-			.drop(-1)
+			var res = e[this.noteIndices[from]..this.noteIndices[to + 1]].setDurs;
+			this.noteIndices[to + 1].notNil.if {
+				res.drop(-1)
+			}{
+				res
+			}
 	});
 	}
 
@@ -497,19 +514,6 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			this.source
 		)
 	}
-	quantizeFunc { |beats func choiceFunc recalcSustains=true |
-		var tempoMap = MIDIItemTempoMap(this, choiceFunc, beats);
-		this.collect({|e x| 
-			(
-				env: tempoMap.env, 
-				e: e, 
-				x: x,
-				averageOffset: tempoMap.averageOffset,
-			).use(func)
-		}) => {|i|
-				recalcSustains.if { ^i.recalcSustains }{ ^i }
-		}
-	}
 	tempomap {|beats choiceFunc|
 		beats.isString.if{ beats = beats.beats };
 		^MIDIItemTempoMap(this, choiceFunc, beats)
@@ -577,7 +581,7 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 		beats = b;
 		// env = Env([0] ++ beats.integrate, times.differentiate);
 		env = Env([0] ++ ([0] ++ beats.integrate + midiItem.start), times.differentiate );
-		// tempoMap = TempoMap(beats, times.differentiate.drop(1)) //what about the last dur!!!!!
+		tempoMap = TempoMap(beats, times.differentiate.drop(1)) //what about the last dur!!!!!
 	}
 	offsets{
 		^times.collect{|i| env[i] - i};

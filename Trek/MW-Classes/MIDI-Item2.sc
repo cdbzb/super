@@ -29,7 +29,7 @@ AbstractMidiEvents {
 	doesNotUnderstand{|selector ...args|
 		this.midiEvents.respondsTo(selector).if{
 			^MIDIItemPlayer(
-				Message(this.midiEvents, selector, args).(),
+				Message(this.midiEvents.deepCopy, selector, args).(),
 				this.source
 			)
 		}{
@@ -48,7 +48,7 @@ AbstractMidiEvents {
 		func.notNil.if{
 			^this.quantizeFunc(beats, func, choiceFunc, recalcSustains) 
 		}{
-			^this.select(choiceFunc ? {true}).collect( {|e| e.timestamp_(tempoMap[e.timestamp])}, this.midiEvents)
+			^this.collect( {|e| e.timestamp_(tempoMap[e.timestamp])})
 		}
 	}
 	quantizeFunc { |beats func choiceFunc recalcSustains=true |
@@ -581,7 +581,7 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 		beats = b;
 		// env = Env([0] ++ beats.integrate, times.differentiate);
 		env = Env([0] ++ ([0] ++ beats.integrate + midiItem.start), times.differentiate );
-		tempoMap = TempoMap(beats, times.differentiate.drop(1)) //what about the last dur!!!!!
+		// tempoMap = TempoMap(beats, times.differentiate.drop(1)) //what about the last dur!!!!!
 	}
 	offsets{
 		^times.collect{|i| env[i] - i};

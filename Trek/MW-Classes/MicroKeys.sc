@@ -94,13 +94,14 @@ MicroKeys {
 					
 				}
 			)
-		}{
-			namedList.add( \synth,
-				{ |e| 
-					((mk: this, e:e) ++ e.params).use{ funcOrDefname.valueEnvir } 
-					=> this.register(_, e.raw) 
-				} 
-			)
+		}{ //otherwise should be a Function
+			this.synth_((mk: name).use{ funcOrDefname.asDefName })
+			// namedList.add( \synth,
+			// 	{ |e| 
+			// 		((mk: this, e:e) ++ e.params).use{ funcOrDefname.valueEnvir } 
+			// 		=> this.register(_, e.raw) 
+			// 	} 
+			// )
 		};
 		namedList.dump
 	}

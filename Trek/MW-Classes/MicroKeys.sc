@@ -4,6 +4,9 @@ MicroKeys {
 	classvar <type=\mk;
 
 	classvar tuningFunction;
+	*freq {
+		^{|mk| {\freq.kr(900) * (\poly.kr() / 127+ CC.bend(mk: mk, rawScale: 16384).bus.kr => _.midiratio)} }
+	}
 	doNoteOn { |amp midinote params silent|
 		silent.isNil.if{
 			this.noteOnFunction.(amp, midinote, nil, nil, params); 

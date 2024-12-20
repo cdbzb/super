@@ -265,6 +265,11 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		// notes.isNil.if{this.makeNotes};
 		this.writeArchive( folder +/+ name)
 	}
+	delete {
+		var result = folder +/+ name => File.delete(_); 
+		this.free;
+		^"file succeeded: %".format(result);
+	}
 	reset {
 		midiEvents = List.new
 	}

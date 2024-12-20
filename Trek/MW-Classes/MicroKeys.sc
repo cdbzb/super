@@ -36,11 +36,9 @@ MicroKeys {
 			}	
 		});
 		Event.addEventType(\setCC, {
-			// ~mk.isKindOf(Symbol).if { ~mk = MicroKeys(~mk) };
 			Server.default.makeBundle(~latency, { CC(~ctlNum, mk: ~mk).setRaw(~control * 127) }) 
 		});
 		Event.addEventType(\setBend, {
-			// ~mk.isKindOf(Symbol).if { ~mk = MicroKeys(~mk) };
 			Server.default.makeBundle(~latency, { CC(~ctlNum, mk: ~mk).setRaw(~control) }) 
 		});
 		Event.addEventType(\setDamper, {
@@ -93,7 +91,11 @@ MicroKeys {
 			namedList.add( \synth,
 				{ |e|
 					e.silent.isNil.if {
-						Synths(funcOrDefname, [\freq, e.num.midicps, \amp, e.vel, \num, e.num] ++ params ++ ( e.params ? () ).asKeyValuePairs)
+						Synths(funcOrDefname, 
+							[\freq, e.num.midicps, \amp, e.vel, \num, e.num] 
+							++ params 
+							++ ( e.params ? () ).asKeyValuePairs
+						)
 						=> try{ this.register(_, e.raw) }
 					}
 					
@@ -101,12 +103,6 @@ MicroKeys {
 			)
 		}{ //otherwise should be a Function
 			this.synth_((mk: name).use{ funcOrDefname.asDefName })
-			// namedList.add( \synth,
-			// 	{ |e| 
-			// 		((mk: this, e:e) ++ e.params).use{ funcOrDefname.valueEnvir } 
-			// 		=> this.register(_, e.raw) 
-			// 	} 
-			// )
 		};
 		namedList.dump
 	}
@@ -272,11 +268,11 @@ MonoKeys : MicroKeys {
 		MyFree.add({ MicroKeys.all.do{|i| i.down_(List[]) } });
 		Event.addEventType(\mkMono, {
 			var syn;
-			Server.default.makeBundle(~latency, { ~mk.doNoteOn(~amp * 127, ~midinote, ~params) });
+			Server.default.makeBundle(~latency, { MicroKeys( ~mk ).doNoteOn(~amp * 127, ~midinote, ~params) });
 			fork{
 				~sustain.().wait;
 				//syn could be passed into doNoteOff to solve the overlapping notes issue
-				Server.default.makeBundle(~latency, {~mk.doNoteOff(~midinote)})
+				Server.default.makeBundle(~latency, {MicroKeys( ~mk ).doNoteOff(~midinote)})
 			}	
 		});
 	}
@@ -305,7 +301,7 @@ MonoKeys : MicroKeys {
 	// *new {|synthFunc|
 	// 	^super.new.init(synthFunc)
 	// }
-	activate {
+	monitor {
 		down = List[];
 		MIDIdef.noteOn(\microOn ++ name => _.asSymbol, {|v n | 
 			this.doNoteOn(v, n);

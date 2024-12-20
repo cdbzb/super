@@ -71,16 +71,19 @@ CC {
 			CC(number, spec, mk)
 		}.valueEnvir;
 	}
-	*new {|number spec mk rawScale default| 
-		mk = mk ? \default;
-		rawScale = rawScale ? 127;
+	*new {|number spec mk rawScale=127 default| 
+		mk = mk ? currentEnvironment[\mk] ? \default;
+
 		all[mk].notNil.if {
 			all[mk][number].notNil.if {
 				var a = all[mk][number]; 
 				a.spec = spec ? a.spec; 
+				//should I check to see if its already there?
+				a.makeDef(number);
 				^a 
 			}
 		} 
+
 		^super.new.init(number, spec, mk, rawScale, default)
 	}
 	*getValues {|mkInstance|
@@ -116,8 +119,10 @@ CC {
 	*monoGate {|mk|
 		^CC(\monoGate, mk)
 	}
+	buildDefSymbol { |symbol|
+		^symbol ++ number ++ mk => _.asSymbol
+	}
 	init { |n s m rs default|
-		var buildSymbol = {|symbol| symbol ++ number ++ mk => _.asSymbol};
 		number = n; spec = s ? ControlSpec(); mk = m ? \default; rawScale = rs;
 		all[mk] = all[mk] ? (); all[mk][number] = all[mk][number] ? this;
 		(mk != \default ).if { MicroKeys(mk).ccs.add(this) };
@@ -126,32 +131,35 @@ CC {
 		val = default ? 0;
 		bus.set(spec.map(val));
 		down = List[];
-		switch(number)
+		this.makeDef(number)
+	}
+	makeDef { |number|
+		^switch(number)
 		{ \bend } {
-			MIDIdef.bend(buildSymbol.(\CC), {|n| this.setRaw(n)});
+			MIDIdef.bend(this.buildDefSymbol(\CC), {|n| this.setRaw(n)});
 		} 
 		{ \keys } {
 			MIDIdef.noteOn(
-				buildSymbol.('CC-on')
+				this.buildDefSymbol('CC-on')
 				, 
 				{|v n| down.add(n);val = n; bus.set(val) }
 			);
 			MIDIdef.noteOff(
-				buildSymbol.('CC-off'),
+				this.buildDefSymbol('CC-off'),
 				{|v n| down.remove(n);val = (down.size > 0).if{ down.last }{ n }; bus.set(val) }
 			) 
 		}
 		{ \monoGate } {
 			MIDIdef.noteOn(
-				buildSymbol.('CC-monogateOn'),
+				this.buildDefSymbol('CC-monogateOn'),
 				{|vel num| \down ++ down => _.postln; down.add(num); val = 1; bus.set(val)  });
 			MIDIdef.noteOff(
-				buildSymbol.('CC-monogateOff'),
+				this.buildDefSymbol('CC-monogateOff'),
 				{|vel num|  down.remove(num); (down.size < 1).if { val = 0; bus.set(val)}  })
 		}
 		{
 			MIDIdef.cc(
-				buildSymbol.(\CC),
+				this.buildDefSymbol(\CC),
 				{|n| this.setRaw(n)}, number);
 		}
 	}

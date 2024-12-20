@@ -122,7 +122,7 @@ fork{
 			// DetectSilence.ar(sig,doneAction:2);
 		}.asDefName
 	).add(\brightness, {|e| e.params = e.params ++ (coef:   1 - e.vel * ( (e.num / 10).reciprocal )).postln}, \addBefore, \synth);
-	~patternStarts = MIDIItem("_241212_093847").select({|e| e.midinote == -3.dm(\c)}).filter({|list| list.select{|e x| e.timestamp - list.wrapAt(x - 1).timestamp  > 1.2 }}).[\timestamp];
+	~patternStarts = MIDIItem("_241212_093847").select({|e| e.midinote == -3.dm(\c)}).filter({|list| list.select{|e x| e.timestamp - list.wrapAt(x - 1).timestamp  > 1.2 }})[\timestamp];
 	~patternStarts = [0] ++ ~patternStarts;
 	~durs = ~patternStarts.differentiate.drop(1);
 	Song(\harpsiSong, []).current;
@@ -137,10 +137,9 @@ fork{
 							.start_(~sectionStart[ x ])
 							.end_(~sectionStart[ x+1 ])
 							.play(\a)
-							
-							}				
-			});
-					}
+						}				
+					});
+				}
 	};
 	// ~counter = Pseries(0,1).dupEach(2).asStream;
 	// a = { var string = "[ \\\"%\\\", [r], [~durs[%]] ].addLine;".format(~counter.next, ~counter.next); Nvim.replace(string ) };

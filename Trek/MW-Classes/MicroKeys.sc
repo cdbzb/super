@@ -27,6 +27,7 @@ MicroKeys {
 
 		Event.addEventType(\mk, {
 			var syn;
+			~mk.isKindOf(Symbol).if { ~mk = MicroKeys(~mk) };
 			Server.default.makeBundle(~latency, { ~mk.doNoteOn(~amp * 127, ~midinote, ~params, ~silent) });
 			fork{
 				~sustain.().wait;
@@ -35,15 +36,19 @@ MicroKeys {
 			}	
 		});
 		Event.addEventType(\setCC, {
+			// ~mk.isKindOf(Symbol).if { ~mk = MicroKeys(~mk) };
 			Server.default.makeBundle(~latency, { CC(~ctlNum, mk: ~mk).setRaw(~control * 127) }) 
 		});
 		Event.addEventType(\setBend, {
+			// ~mk.isKindOf(Symbol).if { ~mk = MicroKeys(~mk) };
 			Server.default.makeBundle(~latency, { CC(~ctlNum, mk: ~mk).setRaw(~control) }) 
 		});
 		Event.addEventType(\setDamper, {
+			~mk.isKindOf(Symbol).if { ~mk = MicroKeys(~mk) };
 			Server.default.makeBundle(~latency, { ~mk.setDamper(~control) })
 		});
 		Event.addEventType(\setPoly, {
+			~mk.isKindOf(Symbol).if { ~mk = MicroKeys(~mk) };
 			( ~mk.keys[~midinote] != 0 ).if {
 				 // ~mk.keys[~midinote].().set(\poly, ~polyTouch) 
 				 Server.default.bind{

@@ -1,3 +1,21 @@
++ SequenceableCollection{
+	quantize {
+		| percent=1| 
+		var out = this.collect( _.value );
+		^( out*(1-percent) + ( out.mean*(percent) ) )
+	}
+
+	quantizeWindow {
+		|percent=0.25 windowSize=5|
+		(this.size-windowSize).postln;
+		this[0..(this.size-windowSize-1)].do{|i x|
+			var chunk = this[x..(x +windowSize)];
+			chunk=chunk.quantize(percent);
+			chunk.do{|it in| this.put(in+x,it)}
+		};
+		^this;
+	}
+}
 + Array {
 
 	pick { | indices |
@@ -31,22 +49,6 @@
 		^this.flop.collect(_.asEvent)
 	}
 
-	quantize {
-		| percent=1| 
-		var out = this.collect( _.value );
-		^( out*(1-percent) + ( out.mean*(percent) ) )
-	}
-
-	quantizeWindow {
-		|percent=0.25 windowSize=5|
-		(this.size-windowSize).postln;
-		this[0..(this.size-windowSize-1)].do{|i x|
-			var chunk = this[x..(x +windowSize)];
-			chunk=chunk.quantize(percent);
-			chunk.do{|it in| this.put(in+x,it)}
-		};
-		^this;
-	}
 
 	asBeats { | map |
 		var tempomap=TempoMap();

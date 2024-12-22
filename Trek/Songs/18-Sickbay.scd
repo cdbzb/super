@@ -7,7 +7,7 @@ Stills().current;
 //Song.dursFile_("/Users/michael/tank/super/theExtreme_Sep18");
 ~sickBay=Song(\sickBay,[]).current;
 // Song.speaker = Library.at(\functions,\prep).("/Users/michael/tank/IR/Saane/Speakers_&_Telephones/Very_small_speaker_mono.wav");
-Song.speaker = IR("/Users/michael/tank/IR/Saane/Speakers_&_Telephones/Very_small_speaker_mono.wav");
+Song.speaker = IR("/Users/michael/tank/super/IR/Saane/Speakers_&_Telephones/Very_small_speaker_mono.wav");
 Song.synthVTracks=EventWithDefault();
 Song.synthVTracks.aiko = { |preGain=1 ratio=2 amp = (1/8) len=2000 mix=0.1 |
 	{ |i|

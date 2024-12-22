@@ -236,7 +236,7 @@ P.synthV(role: \kirk,lag:0.2, take: \lead, params: {|p b| [
 		}.play
 });
 
-Song.smallSpeaker = [0,1].collect({ |i| IR("~/tank/IR/Saane/Speakers_&_Telephones/Small_speaker_stereo.wav".standardizePath,i)});
+Song.smallSpeaker = [0,1].collect({ |i| IR("~/tank/super/IR/Saane/Speakers_&_Telephones/Small_speaker_stereo.wav".standardizePath,i)});
 Song.offCamEffect = { Effect.bus( { |i|  PartConv.ar(i => SineShaper.ar(_,0.03),4096,Song.smallSpeaker) * 0.15}) };
 Song.offCamFn = { |i|  PartConv.ar(i => SineShaper.ar(_,0.3),4096,Song.smallSpeaker) * 0.05};
 ["SCOTT [OC]: Can you read me, Captain? ","3 2 5 3 2 1".dm(\b,\whole)].addLine;
@@ -1485,6 +1485,7 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 P.synthV(role: \vocoder,resources:(tail: 6, target: Trek.transitionGroup, addAction:\addToTail), frozen:true, params: {|p b| [
 	// filter: (midinote: 40), 
 	filter: (midinote: _ - 12), 
+	s.
 	lyrics: "ai am sar - gone",
 	language: \english,
 	phoneset: \arpabet,

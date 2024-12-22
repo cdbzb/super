@@ -42,7 +42,7 @@
 	subdivide { |beat=1|
 			var a = this.collect({
 					|i| 
-					(i.isKindOf(Tuple)).if{i=i.at1};
+					(i.class.asString.contains("Tuple")).if{i=i.at1};
 					if( i.size==0, {
 							if (i == \r,{Rest(beat)},{(i/i.abs)*beat})
 					},{

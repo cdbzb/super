@@ -1149,6 +1149,7 @@ P('guitar',start:\anything,music: {|p b e|
 		},
 		{|i|  Mix.ar(i)
 		=> BRF.ar(_,1200,1)
+
 	}
 	).play
 });
@@ -1485,7 +1486,6 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 P.synthV(role: \vocoder,resources:(tail: 6, target: Trek.transitionGroup, addAction:\addToTail), frozen:true, params: {|p b| [
 	// filter: (midinote: 40), 
 	filter: (midinote: _ - 12), 
-	s.
 	lyrics: "ai am sar - gone",
 	language: \english,
 	phoneset: \arpabet,

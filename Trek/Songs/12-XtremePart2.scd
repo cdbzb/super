@@ -1674,7 +1674,11 @@ P(\middlevoice, music: { |p b e|
 	].pp
 });
 P.tune('logy lab',{|i| i.drop(1) => Pmul(\freq,0.501,_) <> [instrument:\wash, freqLag:0.01].pm }, syl:0);
-P.tune('logy labo',{|i| i.drop(1) => Pmul(\freq,0.501,_) <> [instrument:\harp, freqLag:0.01, out:Effect.bus({|i| CrossoverDistortion.ar(i ,smooth:0.9) / 10 => {|i| i+ CombN.ar(i,0.3,0.3)} * EnvGen.cutoff(Song.durs['phar'].list.sum,1) },)].pm }, syl:0);
+P.tune('logy labo',{|i| i.drop(1) => Pmul(\freq,0.501,_) <> [instrument:\harp, freqLag:0.01, out:Effect.bus({|i| 
+	CrossoverDistortion.ar(i ,smooth:0.9) / 10 
+	=> {|i| i+ CombN.ar(i,0.3,0.3)} 
+	* EnvGen.cutoff(Song.durs['phar'].list.sum,1) 
+},)].pm }, syl:0);
 P.tune('pharmacology',{|i|i.drop(6) <> [instrument: \visual_pad, amp: [1, 1.3, 1.3, 1.3].q, vel: [0.1, 0.11, 0.1, 0.09], rel:2, legato:[1, 1, 1, 1,1].q].pma => Pmul(\freq,[1,2],_)},syl:5);
 P(\soundEffectPharmacology,lag:0.26,start:'pharmacology',music:{|p b|
 	(type:\tuneUp,freq:1.df('c',octave:4),amp:0.01).play

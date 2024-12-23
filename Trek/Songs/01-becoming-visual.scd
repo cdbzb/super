@@ -942,6 +942,8 @@ P(\chords, music: { |p b e|
 			// => Pan2.ar(_,1)
 			*3
 			// => Phaser2.ar(_,rate: 0.2)
+
+			* EnvGen.cutoff(wait:b.sum, release:4, curve:nil, doneAction:2)
 		},inputChannels:2, out: 1)
 
 	].pp
@@ -1781,7 +1783,10 @@ P(\dyad, music: { |p b e|
 		freq: [1,5].df(\f),
 		instrument: \harp,coef:0.7,
 		dur: b.parse([1, 1, 1, 4]).q,
-		out: Effect.bus({|i|CrossoverDistortion.ar(i)/10 },out:2)
+		out: Effect.bus({|i|
+			CrossoverDistortion.ar(i)/10 
+			* EnvGen.cutoff(wait:b.sum, release:4, curve:nil, doneAction:2)
+		},out:2)
 	].pp
 });
 P.synthVs(role: \spock, take: [\lead,\double],
@@ -1816,7 +1821,11 @@ P(\pf, music: { |p b e|
 		dur: b.q,
 		instrument: \help_oteypiano,
 		amp:0.3,
-		out: Effect.bus({|i| OteySoundBoard.ar(i*2,c:2).tanh => SineShaper.ar(_,0.2) => {|i| CrossoverDistortion.ar(i)/10 + i} => LeakDC.ar(_) },)
+		out: Effect.bus({|i| OteySoundBoard.ar(i*2,c:2).tanh => SineShaper.ar(_,0.2) => {|i| 
+			CrossoverDistortion.ar(i)/10 + i 
+			* EnvGen.cutoff(wait:b.sum, release:4, curve:nil, doneAction:2)
+			} => LeakDC.ar(_) 
+		})
 	].pp
 });
 P(\cymbal,syl:2, music: { |p b e|

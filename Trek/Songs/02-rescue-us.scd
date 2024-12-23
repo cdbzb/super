@@ -1457,7 +1457,7 @@ P(\bassnotes, music: { |p b e|
 			=> FreeVerb.ar(_,0.1,1) => SineShaper.ar(_,0.05,mul:3)
 			++ CrossoverDistortion.ar(i,mul:0.05)
 			/5
-			* EnvGen.cutoff(b.sum,1)
+			* EnvGen.cutoff(b.sum + 2,1)
 		},)
 	].pp
 });

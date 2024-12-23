@@ -218,7 +218,7 @@ P(\guitarTwo, music: { |p b e|
 	=> LeakDC.ar(_)
 	=> Phaser2.ar(_, rate: 0.2)
 	=> Out.ar(2,_);
-	EnvGen.cutoff(b.sum,0.5)
+	EnvGen.cutoff(b.sum + 1,1.5)
 }
 		).play
 	});

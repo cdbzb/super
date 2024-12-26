@@ -51,7 +51,7 @@ Trek {
 		Trek.playRange(num, Song.playCursor, Song.songs.size - 1 - num - 1)
 	}
 	*prepare{ |pause=0.25|
-		fork{
+		Server.default.waitForBoot{
 			Song(\trashme,[]).current;
 			(Trek.piano).isNil.if{this.pf};
 			(Trek.strum1).isNil.if{this.strum};
@@ -234,6 +234,7 @@ Trek {
 		( needLoad.size!=0 ).if{ ^this.loadSongs(needLoad) };
 		Song.scrollOn = true;
 		fork{
+			faderSynths.do{|i| i.free};
 			transitionGroup.release;Server.default.sync;
 			faderSynths[0] = faders[0].();
 			keys.size.do{|key section| 
@@ -251,6 +252,13 @@ Trek {
 				transitions[section].func.value;
 				transitions[section].dur.wait
 			}
+		}
+	}
+
+	*playOnTheHour {
+		|repeats = 3|
+		repeats.do{|i|
+			SystemClock.sched( 3600 * i, {Trek.playAll})
 		}
 	}
 

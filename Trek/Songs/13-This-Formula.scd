@@ -2079,7 +2079,6 @@ P(\sargonMiddleVoice,start:'with him',music:{|p b e|
 	//		[ 3 ]++
 	Effect(
 		{|i|
-
 			var chain = FFT({ LocalBuf(2048) }!2,i);
 			chain = PV_MagSmear.new(chain,  bins: 10.0);
 			chain = PV_MagSmooth.new(chain,  factor: 0.9);
@@ -2099,10 +2098,11 @@ P(\sargonTuningGong,start:'with him',syl:1,music:{|p b e|
 	(
 		dur:1,
 		type:\tuningGong,
-		amp:0.004,
+		amp:0.01,
 		sustain:0,
-		release:3,
-		freq: [1].df('f#',octave:5).unbubble
+		time: 5,
+		release:8,
+		freq: [1].df('f#',octave:4).unbubble
 ).play
 }
 );

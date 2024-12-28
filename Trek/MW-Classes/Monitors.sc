@@ -1,5 +1,5 @@
 Monitors {  //setup monitoring for Trek piece
-	classvar <>decoder,k=0.5,<channels=5;
+	classvar <>decoder,k=0.5,<channels=5, <>headphoneDecoder;
 	//classvar <>speakerOrder=#[0,2,4,3,1]; //for Trek
 	classvar <>speakerOrder=#[0,4,1,3,2]; //for Trek
 	classvar <>deviceChannels;
@@ -41,6 +41,21 @@ Monitors {  //setup monitoring for Trek piece
 			// fader = MonitorController(volume, volume.window );
 		ServerTree.add ({ 
 			var channels = deviceChannels.at(Server.default.options.outDevice) ? channels;
+			
+			fork{ 
+				headphoneDecoder = headphoneDecoder ? FoaDecoderKernel.newCIPIC(48);
+				Server.default.sync ;
+				SynthDef(\headphoneDecoder, {
+					// In.ar(0, 5)[0, 4, 1, 3, 2] 
+					[In.ar(0, 1), In.ar(2, 1), In.ar(4, 1), In.ar(3, 1), In.ar(1, 1)]
+					=> FoaEncode.ar(_, FoaEncoderMatrix.newPanto(5, \flat))
+
+					=> FoaRotate.ar(_, \angle.kr(0))
+					=> FoaDecode.ar(_, headphoneDecoder)
+					=> Out.ar(0, _)
+				}).add;
+			};
+
 			(channels == 2).if{
 				fork{
 					{ StageLimiter.activeSynth.isRunning }.try.notNil.if{ StageLimiter.deactivate; };
@@ -56,7 +71,7 @@ Monitors {  //setup monitoring for Trek piece
 						// {In.ar(0,2) * -4.8.dbamp => ReplaceOut.ar(0,_)}.play(target:StageLimiter.activeSynth.nodeID, addAction:\addBefore)
 					}.defer(0.2)
 				}
-			}{
+			}{ // channels = 5
 				{ StageLimiter.activeSynth.isRunning }.try.notNil.if{ StageLimiter.deactivate; };
 				StageLimiter.activate;
 				\settingBasss.postln;
@@ -79,7 +94,10 @@ Monitors {  //setup monitoring for Trek piece
 	*gui{
 		^MonitorController(Server.default.volume, Server.default.volume.window)
 	}
-
+	*ambiFoldDown { 
+		this.stopFoldDown;
+		^Synth(\headphoneDecoder, addAction: \addBefore, target: StageLimiter.activeSynth.nodeID)
+	}
 	*pentagon {
 		decoder = FoaDecoderMatrix.newPanto(5,'flat','dual');
 		speakerOrder = #[0,4,1,3,2];

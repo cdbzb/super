@@ -604,7 +604,7 @@ P('click',start:\outtro,music: {|p b e|
 }.();
 /*SPOCK:*/[" (boom) Pure energy. Matter without form. ","-4 11 7 6 5".dm(\c) ++ "7 6 5 4 11".dm(\e,\mixolydian)].addLine; 
 Song.setTempoMap(\Pure,"qq qq Q Q Q QQ QQ Q Q qq");
-Song.pureGain = -2.dbamp;
+Song.pureGain = 0.dbamp;
 P.still(\tricorder,timecode: 1037.75.seconds,music:{ |p b e|
 	e.still.(
 		wait: b.sum,
@@ -639,12 +639,14 @@ P.synthVs(Trek.cast.spock, take: [nil, \bg1],
 				pitchTake: 1
 		] }, music:{|p b e|
 	{
-			e.playbuf
+			var sig = e.playbuf
 			=> p.synthVTracks.at(e.key).(0.2)
 			/4
 			* p.pureGain
 			* 4.dbamp
-			* 3.5.dbamp
+			* 3.5.dbamp;
+			Out.ar(0, sig);
+			Out.ar(p.sidechain, sig)
 	}.play
 });
 P(\swell, music: { |p b e|
@@ -672,6 +674,7 @@ P(\chords, music: { |p b e|
 		].pp
 
 });
+Song.sidechain=Bus.audio(s, 1);
 P(\tricorderArp, music: { |p b e|
 		{
 				var release = e.bNext.sum + 3;// + 3;
@@ -693,10 +696,10 @@ P(\tricorderArp, music: { |p b e|
 				/
 				12  * p.essenceGain
 				* ( clock => Decay2.ar(_,0.01,0.5) )
-				=> {|i| [i, DelayN.ar(i,0.6,0.6)]}
-				=>DWGReverbC1C3.ar(_,mix:0.14!2)
+				=> {|i| [i, DelayN.ar(i,0.6,0.6) * Env([0, 0, 1], [1, 0.1]).kr(0,gate:1)]}
+				=>DWGReverbC1C3.ar(_,mix:0.14)
 				=> Splay.ar(_)
-				=>Phaser2.ar(_,rate:0.12,fb:0.5!4)
+				=>Phaser2.ar(_,rate:0.12,fb:0.5)
 				// hihat
 				// firstArg:
 				+
@@ -714,7 +717,8 @@ P(\tricorderArp, music: { |p b e|
 										].flat
 								)
 						}
-						/7
+						 * [0, 0, 0, 0, 1]
+						/4
 						// Kick
 						// firstArg:
 				)
@@ -746,6 +750,7 @@ P(\tricorderArp, music: { |p b e|
 						/4
 				})
 				=> HPF.ar(_, 55)
+				=> {|i|Compander.ar(in:i, control:In.ar(p.sidechain), thresh:0.1, slopeBelow:1.0, slopeAbove:-0.2, clampTime:0.01, relaxTime:0.1, mul:1.0, add:0.0)}
 				// => LeakDC.ar(_)
 		/3
 		* EnvGen.cutoff(b.sum, release, -3 )

@@ -315,6 +315,7 @@ P('chords',start:\energy,music: {|p b e|
 
 	].pp
 });
+
 ["Sealed in this receptacle is the ",[5, 4,3,2,3,4,3,-5,-6,-7].dm(\c,6)].addLine;
 P.synthV( role: \vocoder, frozen: true,
 		lag:-0.5,
@@ -1950,6 +1951,7 @@ P('bass',start:\long,music: {|p b e|
 	].pp
 });
 ["(boom) lost in the cataclysm which we unleashed upon ourselves. ","-7.5 5 6.5 7.5 11 5 3 1 -7 7 6.6 4 1 -7.5 6.5 6".dm('c#',\minor),].addLine; 
+Song.durs.filter(\cataclysm, {|i| i.dropLast ++ (i.last + 0.5)});
 P.tune();
 P(\chords,syl:3, music: { |p b e|
 	{
@@ -2031,7 +2033,9 @@ P.synthV(role: \vocoder, take: \lead, frozen: true, params: {|p b| [
 		durRel: 1.5
 	);
 });
+
 /*KIRK:*/[" A war? ","1 7".dm(\a,4,\mixolydian),].addLine; 
+Song.durs.filter('war?', _ + [0, 0.1]);
 P.still(\kirkCloseWar, timecode: 1138.316.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,

@@ -1054,7 +1054,8 @@ P.synthV(Trek.cast.kirk,
 		
 	}.play
 });
-/*SARGON:*/[" Because it is possible you are our descendants, Captain Kirk. ","1 3 5 7 12 7 5 3 ".dm(\f,4) ++ "1 3 5 7 12 11 13 11 7 6".dm(\g,4)].addLine;
+// /*SARGON:*/[" Because it is possible you are our descendants, Captain Kirk. ","1 3 5 7 12 7 5 3 ".dm(\f,4) ++ "1 3 5 7 12 11 13 11 7 6".dm(\g,4)].addLine;
+/*SARGON:*/[" Because it is possible you are our descendants, Captain Kirk. (insert bar) ","1 3 5 7 12 7 5 3 ".dm(\f,4) ++ "1 3 5 7 12 11 13 11 7 6".dm(\g,4) ++ "-1 3 3 3".dm('a-', \minor, 3), [ 0.243, 0.264, 0.273, 0.279, 0.267, 0.234, 0.246, 0.259, 0.259, 0.285, 0.267, 0.322, 0.274, 0.306, 0.331, 0.354, 0.382, 0.49 ] ++ [ 0.415, 0.446, 0.411, 0.492 ].dup.flat ].addLine;
 P.still(\kirkSilent, timecode: 1053.7.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -1068,20 +1069,22 @@ P.still(\kirkSilent, timecode: 1053.7.seconds, music: { |p b e|
 			],
 	)
 });
-// P.still(\litAgain, timecode: 1045.seconds, music: { |p b e|
-// 	 e.still.( 
-// 		wait: b.sum,
-// 		fade: 8,
-// 		text: ["becuse it is","possible"],
-// 	).sequenceText2(
-// 			b.parse([8,6,4]), [ 
-// 			["you are our","descendants"],
-// 			["Captain","Kirk"],
-// 			["",""]
-// 			],
-// 	)
-// });
-P.tune(\Because, { |i| i <> [instrument:\harp,\coef,0.2,amp:0.01 * (4/2),delaytime:-10,out:(0..4).q(inf)].p => Pmul(\freq,0.5,_)});
+/*
+P.still(\litAgain, timecode: 1045.seconds, music: { |p b e|
+	 e.still.( 
+		wait: b.sum,
+		fade: 8,
+		text: ["becuse it is","possible"],
+	).sequenceText2(
+			b.parse([8,6,4]), [ 
+			["you are our","descendants"],
+			["Captain","Kirk"],
+			["",""]
+			],
+	)
+});
+*/
+P.tune(\Because, { |i| i <> [instrument:\harp,\coef,0.2,amp:0.01 * (4/2),delaytime:-10,out:(0..4).q(inf)].p => Pmul(\freq,0.5,_) => _.fin(18)});
 P(\bassnote, music: { |p b e|
 	[
 		freq: [1,2].df(\f,2).q,
@@ -1099,7 +1102,7 @@ P(\chord,lag:-0.1, music: { |p b e|
 		dur: b.parse([8,12]) + [0.1,0] => _.q
 	].pm.play
 });
-P.tune(\Becaus,_ <> [instrument:\sparkTriangle,\depth:0,amp:0.01 * 4/2,out:(0..4)].pm);
+P.tune(\Becaus,_ <> [instrument:\sparkTriangle,\depth:0,amp:0.01 * 4/2,out:(0..4)].pm.fin(18));
 P.synthV(role: \vocoder, frozen: true,
 	filter: (midinote: 55!18), 
 	params: {|p b| [
@@ -1124,6 +1127,22 @@ P.synthV(role: \vocoder, frozen: true,
 		echo:0.5,
 		verb:0.5,
 	)
+});
+P('connector drums',syl: 17, music: {|p b e|
+	var bd=\bd_808,sn=\sn_808;
+	[
+		instrument: [bd, sn, bd, bd, sn].q,
+		dur: "q q e e q".beats.warpTo(p.tempoMap[\Six].quantize).q
+	].pp;
+	[
+		freq:[ [5,11],[4,7],[4,1] ].df('a-',4,\minor).q,
+		att: 2,
+		rel:[6,6,5].q,
+		amp:[1,1,0.4].q/10 /2 *2,
+		dur: e.bNext.parse([4,7]) => _.q,
+		instrument:\sawSynthSustain,
+		// out: 2
+	].pm(\sawSynthSustain).play
 });
 ["(boom) Six thousand centuries ago, our vessels were ","-1 3 3 3 3 2 2 1 2 2 3 -4".dm('a-',\minor) ++ "11 5 6 3".dm(\c,5)].addLine;
 Song.setTempoMap(\Six,"e e e e e x e x e x x");

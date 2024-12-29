@@ -1761,6 +1761,7 @@ P.synthVs(role: \chapel, take: [ \lead, \double ],
 });
 P.tune();
 ["life on our planet, Earth, evolved independently. ","3 2 4 3 1 -5 -6 2 1 -7 -6 1 -4".dm('c#'),].addLine; 
+Song.setTempoMap(\Earth, "q e e e e e e E E E E E E");
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -1798,6 +1799,7 @@ P(\bass, music: { |p b e|
 	[
 		midinote: [ 11, 7, 6, 5, 4, 2 ].dm('c#',2).stutter(2).q,
 		dur: b.parse([1, 2, 2, 2, 3, 2]).stutter(2).q /2 => _.drop(1),
+		// dur: "e e e e e e e e e e e e".beats.warpTo(e.tempoMap.quantizeWindow()).q,
 		ctranspose: [0, 12].q(inf),
 		instrument: \sawSynth
 	].pp;
@@ -1857,7 +1859,9 @@ P(\pedalTone, music: { |p b e|
 	].df(\e).q,
 		dur: [ b.parse([2,7]),0 ].flat + [0 , e.bNext.parse([2, 4, 6])].flat => _.q,
 		instrument: \sparkTriangle,
+		rel:2,
 		depth:0.005,
+		legato: 0.8,
 		out: Effect.bus( _ * Line.kr(0,1,2))
 	].pp;
 	[
@@ -1888,7 +1892,10 @@ P(\bassnote, syl: 5, music: { |p b e|
 	(
 		freq: 1.df(\g,[2,3]),
 		amp:0.3,
-		instrument: \stringyy
+		instrument: \stringyy,
+		release: 4,
+		mix: 0,
+		out: 3
 	).play
 });
 P.synthVs(role: \spock, take: [ nil,\lead ],params: {|p b| [
@@ -1942,7 +1949,7 @@ P(\chordz, music: { |p b e|
 		
 	].pp
 });
-P.synthV(role: \vocoder, take: \lead, frozen: true, resources:(tail: 7),
+P.synthV(role: \vocoder, take: \lead, frozen: false, resources:(tail: 7),
 	pbind: Song.enlarge2(0),
 	params: {|p b| [
 	lyrics: "In any + case, I do not know - baby + It was so long ago + and the records + of our travels + were ",
@@ -1978,10 +1985,11 @@ P.synthV(role: \vocoder, take: \lead, frozen: true, resources:(tail: 7),
 P(\arpeggio, music: { |p b e|
 	[
 		freq: [\r] ++ [11, 5, 3, 1].df(\d) ++ [1, 5, 3, 1].df(\c) ++ [13, 11, 5, 3].df(\g,4) ++ [11, 5, 3, 1].df(\a,4) => _.q,
-		dur: "e e e e e e e e e e e e e e e e e".asBeats.warpTo( e.tempoMap ).q,
+		dur: "e e e e e e e e e e e e e e e e e".asBeats.warpTo( e.tempoMap.quantizeDft ).q,
 		instrument: \harp,
+		decaytime: 5,
 		coef: 0.15,
-		amp:0.01,
+		amp:0.015,
 		out: Effect.bus( Phaser2.ar(_,rate: 0.16),  )
 	].pp
 });
@@ -1992,7 +2000,7 @@ P('bass',start:\In,music: {|p b e|
 		,
 		dur: [ 0.5 ] ++ "q e e ".asBeats.dup(4) =>_.flat 
 		//=> _.q,
-		=>_.warpTo(e.tempoMap.quantizeWindow()) =>_.q,
+		=>_.warpTo(e.tempoMap.quantizeDft()) =>_.q,
 		instrument:\sawSynth
 	].pp
 });
@@ -2021,12 +2029,24 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	)
 });
 // Song.setTempoMap(\records,"qq q e eee e e e e e e Q E E");
-P(\chors, music: { |p b e|
+P(\chordz, music: { |p b e|
 	[
 		freq: [[ 5, 11 ],[5, 7],[6, 3]].df(\d).q,
 		dur: "qq qq qq".asBeats.warpTo( e.tempoMap ).q,
 		instrument: \sawSynthSustain,
-		out: p.carrierBus.index
+		out: p.carrierBus.index,
+		amp: 0.05
+		
+	].ppm;
+	[
+		freq: [[ 5, 11 ],[5, 7],[6, 3], \r].df(\d, 4).q,
+		att: 2,
+		dur: "qq qq qe ".asBeats ++ [1] => _.warpTo( e.tempoMap ) => _.q,
+		instrument: \pulse,
+		att:3,
+		rel:3,
+		amp: 0.03,
+		out: 3
 	].ppm
 
 });
@@ -2043,6 +2063,18 @@ P('bass',start:\long,music: {|p b e|
 ["(boom) lost in the cataclysm which we unleashed upon ourselves. ","-7.5 5 6.5 7.5 11 5 3 1 -7 7 6.6 4 1 -7.5 6.5 6".dm('c#',\minor),].addLine; 
 Song.durs.filter(\cataclysm, {|i| i.dropLast ++ (i.last + 0.5)});
 P.tune();
+P(\doubling, music: { |p b e|
+	[
+		freq: "-7.5 5 6.5 7.5 11 5 3 1 -7 7 6.6 4 1 -7.5 6.5 6".df('c#',\minor).q,
+		dur: b.q,
+		mix: 0,
+		amp: 0.05,
+		legato: [0.9, 1, 1, 1, 0.9, 1, 1, 1, 0.9, 1, 0.9, 1, 1, 0.9, 1, 1].q,
+		out: [[0,  4], 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 0, 0, 0, 1, 1].q,
+		instrument: \stringyy
+
+	].ppma;
+});
 P(\chords,syl:3, music: { |p b e|
 	{
 		var freq = 
@@ -2095,9 +2127,17 @@ P(\bassnote, music: { |p b e|
 		dur: b.parse([4, 1]).q,
 		freqLag:0.3
 
-	].ppm
+	].ppm;
+	[
+		instrument: \harpGendy,
+		modWidth: 0.005,
+		dur: b.parse([4, 1]).q,
+		amp: 0.04,
+		lag: [0, 0.05].q,
+		freq: [-17.5,-11].df('c#',4,\minor).q,
+	].p.play
 });
-P.synthV(role: \vocoder, take: \lead, frozen: true, params: {|p b| [
+P.synthV(role: \vocoder, take: \lead, frozen: false, params: {|p b| [
 	lyrics: "r lost in the cataclysm + + + which we unleashed +  upon + our selves ",
 	filter: (midinote: _ - 12), 
 	pitchTake: 1
@@ -2118,13 +2158,38 @@ P.synthV(role: \vocoder, take: \lead, frozen: true, params: {|p b| [
 		// mix:0.5,
 		att:0.3,
 		sus:b.sum ,
-		modGain:2 * 4.dbamp,
+		modGain:2 * 4.dbamp * 1.dbamp,
 		chord:#[8,2]/2,
 		durRel: 1.5
 	);
 });
-
+P(\aah,syl:3, music: { |p b e|
+SynthDef(\aah, {
+		Formants.ar( Vibrato.ar(\freq.kr(300) * {-1.0.rrand(1.0) / 2 => _.midiratio}.dup(18), rate: {5.rrand(6.0)}.dup(18) ), Vowel(\a, \tenor) )
+		=> SplayAz.ar(3, _, )
+		* \amp.kr(0.1, 1)
+		// * Env.cutoff(2).kr(2,gate:\gate.kr(1))
+		* Env.asr(attackTime:\att.kr(0.01), sustainLevel:1.0, releaseTime:\rel.kr(1), curve:-4.0).kr(2,gate:\gate.kr(1))
+		=> Out.ar( \out.kr(2), _)
+}).add;
+	[
+		freq: [5, 4, 3, 1, -5, -4.5, -3, -2.5].df('f#', 4).q  ,
+		// amp: [0.1, 0.1, 0.05, 0.02].q / 3,
+		amp: Pseg( [1, 1, 0], b.parse([5, 6]) ) / 30 ,
+		// amp: 0.03,
+		instrument: \aah,
+		dur: e.bAll.drop(1).parse([4, 2, 1, 1, 1, 2  ]).q
+	].ppm
+});
 /*KIRK:*/[" A war? ","1 7".dm(\a,4,\mixolydian),].addLine; 
+P(\accent,syl:0, music: { |p b e|
+	{
+		Gendy1.arWidth(ampdist:1, durdist:1, adparam:1.0, ddparam:1.0, freq:7.df(\a,4, \mixolydian), width:{ 1.3.rrand(1.0) }!5, ampscale:0.5, durscale:0.5, initCPs:12, knum:nil, mul:1.0, add:0.0)
+		=> HPF.ar(_,2000)
+		* Env.perc(attackTime:0.1, releaseTime:3, level:1, curve:-4.0).kr(2,gate:1)
+		/40
+	}.play
+});
 Song.durs.filter('war?', _ + [0, 0.1]);
 P.still(\kirkCloseWar, timecode: 1138.316.seconds, music: { |p b e|
 	 e.still.( 
@@ -2150,6 +2215,24 @@ P('arpeggio',start:\war,syl:0,music: {|p b e|
 P.tune(\war);
 /*SARGON:*/["A struggle for such goals and the unleashing of such ","5 6 1 6 7 4 3.5 4 5  ".dm('a-',4,\minor) ++ [11, 3.5, 7, 6].dm(\f,4,\minor)].addLine;
 // P.tune();
+P(\wiggle,syl:0, music: { |p b e|
+	{
+		Impulse.ar(
+			Gendy1.kr().range(200, [300, 301, 302]) * 2
+		)
+		/40
+		=> LPF.ar(_, 8000)
+		* EnvGen.cutoff(b.parse([2]).unbubble, 2)
+		// * 2
+	}.play;
+	[
+		freq: [1, 2].df([\b,'f#'], 4).q(inf),
+		dur: Pwhite(0.1, 0.11),
+		amp: Pseries(0.1, -0.005, 19) 
+		// * 1.5,
+		instrument: \default
+	].ppm
+});
 P.still(\litStruggle, timecode: 1104.4.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
@@ -2168,7 +2251,7 @@ P.still(\clear, timecode: 0.seconds,lag: 0.01, music: { |p b e|
 			],
 	)
 });
-P.synthV(role: \vocoder, take: \lead,resources:(tail: 4), frozen: true,
+P.synthV(role: \vocoder, take: \lead,resources:(tail: 4), frozen: false,
 	pbind: Song.enlarge(9),
 	params: {|p b| [
 		filter: (midinote: _ - 12), 
@@ -2194,11 +2277,12 @@ P.synthV(role: \vocoder, take: \lead,resources:(tail: 4), frozen: true,
 		// mix:0.5,
 		att:0.3,
 		sus:b.sum + e.bNext.sum ,
-		modGain:2 * 4.dbamp,
+		modGain:2 * 4.dbamp * 3.dbamp,
 
 	);
 });
 // P.tune();
+
 P(\chord, music: { |p b e|
 	[
 		freq: [\r, [5, 11, 13, 15], [5,7.5,13,15] ].df('b-',4,\minor).q,
@@ -2213,7 +2297,7 @@ P('chords2',start:\struggle,music: {|p b e|
 	[
 		freq: [[1,3,5], [1,4,6],1,[1,4,6],[3, 5, 7],[-7,2,4]].df('a-',[3,4],\minor).q,
 		dur:b.q,
-		out:Effect({ |i|  SineShaper.ar(i,0.2,5) => FreeVerb.ar(_,1,0.6) * [1,0.6]}, out: [0, p.carrierBus.index ]).bus.index
+		out:Effect({ |i|  SineShaper.ar(i,0.2,5) => FreeVerb.ar(_,1,0.6) * [1,0.6]}, out: [2, p.carrierBus.index ]).bus.index
 	].pp
 });
 P('bass',start:\struggle,music: {|p b e|
@@ -2228,9 +2312,11 @@ P('bass',start:\struggle,music: {|p b e|
 });
 P(\morebass,syl:8, music: { |p b e|
 	(
-		instrument: \stringyy,
+		instrument: [\harp,\stringyy],
 		freq: [-1,1].df(\f,3),
-		amp:0.5
+		amp:[0.02,0.5],
+		coef: 0.15,
+		out: [4, 0]
 	).play
 });
 P.tune(\struggle, _ <> [instrument:\wash, amp:0.01].p);

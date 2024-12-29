@@ -1067,10 +1067,11 @@ P.synthV(Trek.cast.kirk,
 	}.play
 });
 // /*SARGON:*/[" Because it is possible you are our descendants, Captain Kirk. ","1 3 5 7 12 7 5 3 ".dm(\f,4) ++ "1 3 5 7 12 11 13 11 7 6".dm(\g,4)].addLine;
-/*SARGON:*/[" Because it is possible you are our descendants, Captain Kirk. (insert bar) ","1 3 5 7 12 7 5 3 ".dm(\f,4) ++ "1 3 5 7 12 11 13 11 7 6".dm(\g,4) ++ "-1 3 3 3".dm('a-', \minor, 3), [ 0.243, 0.264, 0.273, 0.279, 0.267, 0.234, 0.246, 0.259, 0.259, 0.285, 0.267, 0.322, 0.274, 0.306, 0.331, 0.354, 0.382, 0.49 ] ++ [ 0.415, 0.446, 0.411, 0.492 ].dup.flat ].addLine;
+/*SARGON:*/[" Because it is possible you are our descendants, Captain Kirk. (insert bar) ","1 3 5 7 12 7 5 3 ".dm(\f,4) ++ "1 3 5 7 12 11 13 11 7 6".dm(\g,4) ++ "-1 3 3 3".dm('a-', \minor, 3), [ 0.243, 0.264, 0.273, 0.279, 0.267, 0.234, 0.246, 0.259, 0.259, 0.285, 0.267, 0.322, 0.274, 0.306, 0.331, 0.354, 0.382, 0.49 ] ++ [ 0.415, 0.446, 0.411, 0.472 ].dup.flat ].addLine;
+Song.setTempoMap(\descendants, "e e e e e e e e e e e e e e e e e e");
 P.still(\kirkSilent, timecode: 1053.7.seconds, music: { |p b e|
 	 e.still.( 
-		wait: b.sum,
+		wait: b[..17].sum,
 		// fade: 8,
 		text: ["because it is","possible"],
 	).sequenceText2(
@@ -1097,6 +1098,15 @@ P.still(\litAgain, timecode: 1045.seconds, music: { |p b e|
 });
 */
 P.tune(\Because, { |i| i <> [instrument:\harp,\coef,0.2,amp:0.01 * (4/2),delaytime:-10,out:(0..4).q(inf)].p => Pmul(\freq,0.5,_) => _.fin(18)});
+P(\accents, music: { |p b e|
+	[
+		freq: [\r, 12,1,  13,1,  7 , 6].df(\g, 3).q,
+		dur: "eeeeeeeeeeee e e e e ee".beats.warpTo(e.tempoMap.quantizeWindow(0.4)).q,
+		instrument: \pulse, coef: 0.7,
+		out: [2, 3].q(inf),
+		amp: 0.2
+	].pp
+});
 P(\bassnote, music: { |p b e|
 	[
 		freq: [1,2].df(\f,2).q,

@@ -1153,20 +1153,36 @@ P.synthV(role: \vocoder, frozen: true,
 P('connector drums',syl: 17, music: {|p b e|
 	var bd=\bd_808,sn=\sn_808;
 	[
-		instrument: [bd, sn, bd, bd, sn].q,
-		dur: "q q e e q".beats.warpTo(p.tempoMap[\Six].quantize).q
+		instrument: [bd, sn, bd,  bd, bd, sn].q,
+		dur: "q ex x e e q".beats.warpTo(p.tempoMap[\Six].quantize).q
 	].pp;
 	[
-		freq:[ [5,11],[4,7],[4,1] ].df('a-',4,\minor).q,
+		instrument: \hat_808,
+		dur: "e e e e e e e e".beats.warpTo(p.tempoMap[\Six].quantize).q,
+		amp: 0.05
+	].pp;
+	[
+		freq:[ [15,11],[14,7],[4,1] ].df('a-',4,\minor).q,
+		// freq:[ [5,12],[14,7],[4,1] ].df('a-',4,\minor).q,
 		att: 2,
 		rel:[6,6,5].q,
 		amp:[1,1,0.4].q/10 /2 *2,
 		dur: e.bNext.parse([4,7]) => _.q,
 		instrument:\sawSynthSustain,
 		// out: 2
-	].pm(\sawSynthSustain).play
+	].pm(\sawSynthSustain).play;
+	[
+		dur: "qq x e e e x".beats.warpTo(p.tempoMap[\Six].quantize(0.5)).q,
+		freq: [\r, 5, 4, 2, 1, -7, ].df('a-',3,  \mixolydian, ).q,
+		legato: [1, 0.8, 0.8, 0.8, 0.4, 1, 1].q,
+		out: Effect.bus({|i| SineShaper.ar(i, 0.03, 2) },)
+	].pp
+
 });
 ["(boom) Six thousand centuries ago, our vessels were ","-1 3 3 3 3 2 2 1 2 2 3 -4".dm('a-',\minor) ++ "11 5 6 3".dm(\c,5)].addLine;
+P(\cymbal, music: { |p b e|
+	( instrument: \cymbalsDS, att: 0.1, amp: 0.02 ).play
+});
 Song.setTempoMap(\Six,"e e e e e x e x e x x");
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
@@ -1225,7 +1241,7 @@ P('dmx',start:\Six,music: {|p b e|
 		"x.......x.x..... x......",\kick_gentle,\vol,0.1 * 2,
 	].dmx(4)
 	=> Ppar(_) => Pfindur(b.sum,_)
-	=> _.play(clock:TempoClock.newFromQuarters(1!4=>_.warpTo(e.tempoMap)))
+	=> _.play(clock:TempoClock.newFromQuarters(1!4=>_.warpTo(e.tempoMap.quantizeDft())))
 });
 P('chords',start:\Six,music: {|p b e|
 	[
@@ -1256,12 +1272,39 @@ P('bass',start:\Six,music: {|p b e|
 });
 //["colonising this galaxy . . . ",[1,2,4,5,2,5.5,5,-7,-5.5,-5,-17].dm('e-')].addLine;
 ["colonising this galaxy . . . ",[1,2,4,5,6,6,5,-7/*,-6,-5,-2*/].dm('e-')].addLine;
+Song.setTempoMap(\colonising, "e e e e e q q q");
 P('drumsNextPart',start:\colonising,music: {|p b e|
 	[
-		"x..",\kick_gentle,\vol,\amp,0.02 * 2,
+		"x..",\bd_808,\vol,\amp,
 		"x..",\cymbalsDS,\amp,0.008 * 2
 	].dmx
 	=> Ppar(_)=> Pfin(3,_) => _.play
+},);
+P(\toms, music: { |p b e|
+	var hi = \HT_808, lo = \LT_808;
+	[
+		instrument: [hi, hi, hi, lo,lo, lo, lo].q,
+		freq:  [5, 5, 5, 4, 4, 4, 3].q * 20,
+		dur: [0.02] ++ "e e e e e".beats ++ [1] =>_.warpTo(e.tempoMap.quantize) => _.q,
+		amp: [1, 2, 1, 2, 1, 1, 2].q / 10 ,
+		out: Effect.bus({|i| FreeVerb.ar(i, 0.2, 1) => Pan2.ar(_, Line.kr(1, -1, b.sum)) },out: 2)
+	].pp
+});
+P(\accent,syl:4,  music: { |p b e|
+	(
+		instrument: \harpGendy,
+		freq: [1, 7, 6].df(\d, \minor),
+		strum: 0.05,
+		coef: 0.1,
+		modWidth: 0.008,
+		amp: 0.03,
+		out: (1..3)
+	).play;
+	(
+		instrument: \cymbalsDS,
+		att: 1,
+		amp: 0.02
+	).play
 });
 P.tune(\colonising,Pbindf(_,
 	\amp,[1,1,1,1,1,1,1,1,0,0,0].q/22 * 2 ,
@@ -1332,14 +1375,23 @@ P('line',start:\just,music: {|p b e|
 		amp: 0.1 * 2
 	].pm(\stringyy).play
 });
-P('bass',start:\just,music: {|p b e|
+P('bass',lag: 0.05,start:\just,music: {|p b e|
 	
 	[
 		freq:[1].df('e',[4,  3 ]).q,
 		dur: b.parse([4]).q,
 		instrument:\defaultPiano,
 		amp: 0.1 * 2
-	].pp
+	].pp;
+	[
+		freq:[1].df('e',[4,  3 ]).q,
+		dur: b.parse([4]).q,
+		out:[2,3],
+		coef: 0.2,
+		instrument:\harpGendy,
+		modWidth:0.005,
+		amp: 0.02
+	].pp;
 });
 ["now begun to explore that",[2,5,3,2,1,7,6].dm('a-',\mixolydian)].addLine;
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
@@ -1384,7 +1436,16 @@ P('bass',start:\begun,music: {|p b e|
 		dur: b.parse([5,2]).q,
 		instrument:\defaultPiano,
 		amp: 0.2
-	].pp
+	].pp;
+	[
+		freq:[1,7].df('a-',[3,  2 ],\mixolydian).q,
+		dur: b.parse([5,2]).q,
+		out:[2,3],
+		coef: 0.2,
+		instrument:\harpGendy,
+		modWidth:0.005,
+		amp: 0.02
+	].pp;
 });
 [" vastness... ",[6,5].dm('a-')].addLine;// illustrate the dots
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
@@ -1428,7 +1489,15 @@ P.synthV(role: \vocoder, frozen: true,
 P.tune([instrument: \stringyy,amp:0.05 * 2,out:4 ].p <> _ );
 P('bassNote',start:\vastness,music: {|p b e|
 	(freq:[-7].df(\b,3,\mixolydian) / [1,2],out:Effect.bus( { |i| DWGReverbC1C3.ar(i * 1.5)},inputChannels:2 )).play;
-	(freq:[11,5].df(\b,3),instrument:\defaultPiano,dur:b.sum, amp: 0.1 * 1.5).play
+	(freq:[11,5].df(\b,3),instrument:\defaultPiano,dur:b.sum, amp: 0.1 * 1.5).play;
+	(
+		freq:1.df(\b,1),
+		out:[2,3],
+		coef: 0.5,
+		instrument:\harp,
+		modWidth:0.005,
+		amp: 0.02
+	).play;
 });
 ["As you now leave your own seed on distant planets, ",[1,3,1,4,3,1,3,4,5,3,7,6].dm(\d,\dorian)].addLine;
 P.still(\altWide, timecode: 1110.seconds, music: { |p b e|

@@ -604,7 +604,7 @@ P('click',start:\outtro,music: {|p b e|
 }.();
 /*SPOCK:*/[" (boom) Pure energy. Matter without form. ","-4 11 7 6 5".dm(\c) ++ "7 6 5 4 11".dm(\e,\mixolydian)].addLine; 
 Song.setTempoMap(\Pure,"qq qq Q Q Q QQ QQ Q Q qq");
-Song.pureGain = 2.dbamp;
+Song.pureGain = -2.dbamp;
 P.still(\tricorder,timecode: 1037.75.seconds,music:{ |p b e|
 	e.still.(
 		wait: b.sum,
@@ -644,6 +644,7 @@ P.synthVs(Trek.cast.spock, take: [nil, \bg1],
 			/4
 			* p.pureGain
 			* 4.dbamp
+			* 3.5.dbamp
 	}.play
 });
 P(\swell, music: { |p b e|
@@ -655,13 +656,17 @@ P(\swell, music: { |p b e|
 	}.play
 });
 P.tune(\Pure, _ <> [rests:MuteFirst(), instrument: \stringyy].pm);
+P(\extraNote,syl:8, music: { |p b e|
+	( instrument: \sawSynthSustain,att:4,rel:5, freq: [ -11.5,-1.5, 1.5,2.5, 5.5, 7,  ].df(\f), amp:0.02 ).play
+});
 P(\chords, music: { |p b e|
 		[
 			freq: [[-1, 1,3,5,7], [-2, 2,4.5,6,11],[ -11.5,-1.5, 1.5,2.5, 5.5, 7, 11.5 ]].df(\f).q /2,
 			// dur: [8, 8, 8].reciprocal * 2 * 4 => _.q,
 			dur: "qqqqqq qqqq qq".asBeats.warpTo( e.tempoMap ).q,
 			instrument: \visual_pad,
-			amp: 0.07 * p.pureGain,
+			rel:[1, 1,  6 ].q,
+			amp: 0.07 * p.pureGain  ,
 			legato: [1,1,0.9].q
 
 		].pp
@@ -689,8 +694,9 @@ P(\tricorderArp, music: { |p b e|
 				12  * p.essenceGain
 				* ( clock => Decay2.ar(_,0.01,0.5) )
 				=> {|i| [i, DelayN.ar(i,0.6,0.6)]}
-				=>DWGReverbC1C3.ar(_,mix:0.14)
-				=>Phaser2.ar(_,rate:0.12,fb:0.5)
+				=>DWGReverbC1C3.ar(_,mix:0.14!2)
+				=> Splay.ar(_)
+				=>Phaser2.ar(_,rate:0.12,fb:0.5!4)
 				// hihat
 				// firstArg:
 				+

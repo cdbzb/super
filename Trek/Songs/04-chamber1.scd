@@ -551,7 +551,7 @@ P(\sirNote,syl:3, music: { |p b e|
 	(
 		instrument: \harp,
 		freq: 1.df(\b,3),coef:0.8,
-		out: Effect.bus({|i| FreeVerb.ar(i,0.5,1) },)
+		out: Effect.bus({|i| FreeVerb.ar(i,0.5,1) }, out: 2)
 	).play
 });
 P.still(\backInTheChamberScottOC, timecode: 916.251.seconds, music: { |p b e|
@@ -599,7 +599,7 @@ P(\passNote, music: { |p b e|
 		instrument: \harp,
 		freq: [-1].df(\c),
 		lag: b.parse([3]).unbubble,
-		out: Effect.bus({|i| DWGReverbC1C3.ar(i, len: 1000, mix:0.2) /4 })
+		out: Effect.bus({|i| DWGReverbC1C3.ar(i, len: 1000, mix:0.2) /4 }, out: 3)
 		// coef: 0.25
 	).play;
 	(
@@ -753,15 +753,17 @@ P.synthVs(role: \mulhall, take: [nil, \double],
 	legato: [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1, 1, 1, 1, 1, 1, ]],
 	loudness: Env([0,0,6,0],b.parse([13,1,1]) + [0.1,0,0]),
 	// vocalMode: \Opera
-] }, music:[
-	{Silent.ar(2)},
+] }, music: 
+[{Silent.ar(2)},
 	{|p b e|
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
+			* -1.dbamp
 		}.play
 	}
-]);
+]
+);
 P('testrec',start:\oxygen,music: {|p b e|
 	RecOnsets(\test,\oxygen)
 	//.armed_(true)
@@ -831,7 +833,7 @@ P.synthV(role:\spock, take: \lead,
 	{
 		e.playbuf
 		=> HPF.ar(_,100)
-		* -1.dbamp
+		* 1.dbamp
 		// => FreeVerb.ar(_,1,[ 0.4, 0.5 ])
 		=> p.synthVTracks.at(e.key).()
 	}.play
@@ -863,8 +865,8 @@ P.synthV(role: \spock, take: \lead,
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		=> HPF.ar(_,100)
-		* -2.dbamp
+		=> HPF.ar(_,120)
+		* 0.dbamp
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
@@ -898,6 +900,7 @@ P.synthV(role:\kirk,
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		* 2.5.dbamp
 	}.play
 });
 // P.tune(\Composition,Pdrop(1,_),syl:0);
@@ -954,7 +957,7 @@ P.synthV(role:\spock,
 	{
 		e.playbuf
 		=> HPF.ar(_,100)
-		* -1.dbamp
+		* 0.dbamp
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
@@ -977,8 +980,9 @@ P('lick',start:\alloy,music: {|p b e|
 			* i.amp
 		},
 		{|i|  Mix.ar(i)
-		=> DWGReverbC1C3.ar(_, len:3000, c1:1, c3:10, mix:1, coefs:nil, perm:nil, doprime:0)
+		=> DWGReverbC1C3.ar(_, len:3000, c1:1, c3:1, mix:0.5, coefs:nil, perm:nil, doprime:0)
 		=> BPeakEQ.ar(_,1500,2,-9)
+		=> Out.ar(1, _)
 	}
 	).play
 });
@@ -1120,7 +1124,7 @@ Song.setTempoMap(\measured, "e e ee|q e | e x x x xeq".asBeats);
 P(\crash,start:\measured,music:{|p b e| 
 	(
 		instrument:\cymbalsDS,
-		amp:0.05,
+		amp:0.03,
 		out: Effect.new(Decimator.ar(_,20000),  out: 0,  inputChannels: 1,  target: nil).bus.index
 	).play
 });
@@ -1142,6 +1146,7 @@ P('guitar',start:\anything,music: {|p b e|
 			=> LeakDC.ar(_)
 			+ (i==0).if { VarSaw.ar(i.freqSeq + SinOsc.ar([5,6]).range(0,5),0,0,mul:0.01) }{0}
 			* ( Env.asr().kr(2,gate:(i.gateSeq))  
+			* 2.dbamp
 			//+ Env.perc(0.01,1).kr(0,gate:i.trigSeq)
 		)
 			//* Env.perc(i.gate).kr(2,gate:1)
@@ -1197,7 +1202,7 @@ P('bass',start:\All,music: {|p b e|
 		pitch:1.df(\d,octave:2),
 		envAmount:2,
 		filterfreq:Pwhite(400,1200,inf),
-		dec:1,
+		dec:0.5,
 		dur:0.25! 26 => _.warpTo(e.tempoMap.quantize(1,0,7)) => _.q(2) => _.fin(28),
 		rest: \r!4 ++ (1!32) => _.flat => _.q,
 		amp:0.15 * e.bass
@@ -1229,9 +1234,12 @@ P(\triller,start:\scale,syl:8,music:{|p b e|
 });
 P('click',start:\All,music: {|p b e|
 	[
-		instrument:\sn_808,
-		dur:1.dup(7).warpTo(e.tempoMap.quantize(1,0,7)).q
-	].p//p
+		instrument:\hat_808,
+		dur:1.dup(7).warpTo(e.tempoMap.quantize(1,0,7)).q,
+		out:4,
+		rest: MuteFirst()
+	
+	].pp
 	//=>  { |i| Ptpar( [ [1].warpTo(e.tempoMap.quantize(1,0,7)).unbubble, i ] ).play} 
 });
 P('drumz',start:\All,music: {|p b e| 
@@ -1366,7 +1374,7 @@ P.synthV(role:\kirk,take: \lead, params: {|p b| [
 });
 P(\line, music: { |p b e|
 	[
-		out: Effect.bus({|i| PlateReverb.ar(i) },inputChannels:2, out: 2),
+		out: Effect.bus({|i| PlateReverb.ar(i) * Env([1, 1, 0], [b.sum, e.bNext.sum]).kr(2,gate:1) },inputChannels:2, out: 2),
 		dur: b.parse([3, 3, 3]).q,
 		freq: [\r,[5, 5],[4, 6]].df(\g, \whole).q,
 		amp: [0.05, 0.1]/3,
@@ -1515,5 +1523,24 @@ P(\chords,start:\Sargon,music: { |p b e|
 			p.carrierBus.ar
 		] ).bus.index
 	].pp
+});
+P(\connector, syl: 1,  music: { |p b e|
+	[
+		freq: [[-1, -3, 1, 3], [-2, -4.5, 2, 4.5]].df(\d).q,
+		instrument: \stringyy,
+		width: 8,
+		// out: 2,
+		freqLag: [6, 7, 4, 5],
+		mix: 0,
+		dur: [b.drop(1).sum + 2 , 1.5].q,
+		amp: 0.05,
+		out: Effect.bus({|i| HPF.ar(i, 2000) },out: 2,  inputChannels: 4),
+		attack: 7
+
+	].pm.trace.play
+});
+["transition", "r", [3, 0.3]].addLine;
+P(\moreChord, music: { |p b e|
+
 });
 )

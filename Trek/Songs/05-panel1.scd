@@ -50,19 +50,64 @@ P.synthV(role: \vocoder, frozen: true, params: {|p b| [
 		)
 }); */
 	/*SPOCK:*/[" Sargon, would it harm you if I ","4 5 7 11 12 6 5 4".dm(\d)].addLine; 
+
+	Song.durs.filter({|i| i = [2] ++ i}); //add a beat for fadeIn at the top
+	P(\notes, music: { |p b e|
+		[
+			freq: [[5, 7,7],[5, 6.5,11]].df(\a, 3).q,
+			attack: 4,
+			att:4,
+			instrument: \sawSynthSustain,
+		out: Effect.bus({|i| HPF.ar(i, 1000) },out: 2,  inputChannels: 4),
+			mix:0,
+			freqLag:6,
+			lagTime: 6,
+			dur: b.parse([1, 4])   => _.q,
+			// amp: [1, 2, 2]/30 
+		].ppm;
+		(
+			instrument: \harpGendy,
+			modWidth: 0.0001,
+			freq: 1.df('g#', 3),
+			amp: 0.005
+		).play
+	});
 P(\bassnotes, music: { |p b e|
 		[
-			freq: [1, -6].df(\g,[3,4]).q,
-			instrument: \wash
-		].pp
+			freq: [\r, 1, -6].df(\g,[3,4]).q,
+			instrument: \wash,
+			dur: b.parse([1,4, 4]).q,
+			amp: 0.05
+			// att: [3, 2].q,
+			// rel: [2, 3].q
+			// out: Effect.bus({|i| i * Env([0, 1], 4).kr(0,gate:1) },inputChannels: 2)
+
+
+		].pp;
 });
 P.still(\wideHarm, timecode: 1021.256.seconds, music: { |p b e|
 		e.still.( 
+			fadeIn: b[0],
 			wait: b.sum,
-			text: ["Sargon would it harm you","if I.."],
+			text: ["",""],
+		).sequenceText(
+			[
+				b[0],  ["Sargon would it harm you","if I.."],
+			]
 		)
 });
-P.tune('harm',_<>[instrument:\wash,freqLag:0.05].pm);
+// P.tune('harm',_<>[instrument:\wash,freqLag:0.05].pm);
+P(\tuuune, syl:0, music: { |p b e|
+	[
+		freq: " 4 5 7 11 12 6 5 4".df(\d).q,
+		amp: 0.03,
+		dur: b.drop(1).q,
+		// dur: b.parse([2, 1, 1, 1, 1, 1, 1, 1, ]).q,
+		// att: 4,
+		instrument: \wash, 
+		freqLag: 0.05
+	].ppm
+});
 P.synthVs(role: \spock, take: [\dbl, \lead ], params: {|p b| [
 		lyrics: "Sargon +  would it harm you if I ",
 		filter: (midinote: _ - 12), 
@@ -73,7 +118,10 @@ P.synthVs(role: \spock, take: [\dbl, \lead ], params: {|p b| [
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
+			* Env([0,1],0.1).kr(0,gate:1)
+			=> DelayN.ar(_, 2, 2)
 			/2
+			* -1.5.dbamp
 		}.play
 });
 	/*SARGON:*/[" You may use your tricorder, Mister Spock.","3 2 5 3 1 -7 -6 -6 -5 2".dm(\b,4)].addLine;

@@ -96,18 +96,22 @@ Trek.setTransition(2, -2,
 
 Trek.faders[3]={~asrFader.(5, 3, 0.5)};
 
-Trek.setTransition(3, -3, 
+Trek.setTransition(3, -4, 
 	 func: {
-		 3.wait;
-		 (instrument:\cymbalsDS, att:2.5, group: Trek.transitionGroup).play;
-		 defer{ Stills.plotTitleCard("The Chamber", dur: 3)};
+		 2.wait;
+		 (instrument:\cymbalsDS, att:2.5, amp: 0.01, group: Trek.transitionGroup, freq: 1.df(\d, 4)).play;
+		 (instrument:\cymbalsDS, att:2.5, amp: 0.004, group: Trek.transitionGroup,sustain: 2, release: 4, type: \tuningGong, freq: -3.df(\d)).play;
+		 (instrument:\cymbalsDS, att:2.5, amp: 0.004, group: Trek.transitionGroup,sustain: 2, release: 4, type: \tuningGong, freq: -1.df(\d)).play;
+		 ( amp: 0.04, dur: 3,instrument: \defaultPiano, freq: [7, 11, 13].df(\d,  \mixolydian,), strum: 0.04, out: Effect.bus({|i| CombN.ar(i, 0.4, 0.4, 5)/2 ++ i }, time: 2) ).play;
+		 ( amp: 0.02,instrument: \defaultPiano, dur: 3,freq: [7, 11, 13].df(\d,4,  \mixolydian, ),  strum: 0.04, out: Effect.bus({|i| CombN.ar(i, 0.4, 0.4, 5)/2 ++ i },out: 2, time: 2) ).play;
+		 defer{ Stills.plotTitleCard("Sargon's Chamber", dur: 3)};
 		 // fork{0.9.wait; Server.default.freeMyDefaultGroup};
 		 s.defaultGroup.release(1);
 		 Trek.faderSynths[3].release(1);
 		 ~activateFader.(4);
 	 }, trimStart: 1, trimEnd:0, dur: 3
 )
-// .value
+.value
 ;
 
 Trek.faders[4] = {~asrFader.(0,2,6)};
@@ -253,7 +257,7 @@ Trek.setTransition(11, -1, dur:6, func:{
 	try{ Trek.transitionGroup.release };
 	~activateFader.(12)
 },)
-.value
+//.value
 ;
 
 Trek.faders[12] = {~asrFader.(1, 3, 2)};

@@ -227,6 +227,8 @@ Trek {
 				var section = num + i;
 				var start = (i == 0).if{ cursor }{ transitions[section].start};
 					this.playSong(section, start, trimEnd: transitions[section].trimEnd ? 0) + (transitions[section+1].lag ? 0) => _.wait;
+					
+						
 					if(numSections > 1) { transitions[section].func.() };
 					if(numSections > 1) { transitions[section].dur.wait }
 			}
@@ -249,10 +251,20 @@ Trek {
 					start,
 					trimEnd: transitions[section].trimEnd ? 0
 				).wait; 
+					//for debugging
+					"NODES as of: %".format(section).postln;
+					10.wait;
+					Server.default.queryAllNodes;
+					//
 				(
 					transitions[section+1].notNil.if{
 					transitions[section + 1].lag ? 0
 				}).wait;
+					//for debugging
+					"NODES afterTransition: %".format(section).postln;
+					10.wait;
+					Server.default.queryAllNodes;
+					//
 				transitions[section].func.value;
 				transitions[section].dur.wait
 			}

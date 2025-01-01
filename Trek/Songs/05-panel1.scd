@@ -686,6 +686,7 @@ P.synthVs(Trek.cast.spock, take: [nil, \bg1],
 				loudness: Env([0,0,1,0,0,1,0,1,0,1] * 4, b),
 				pitchTake: 1
 		] }, music:{|p b e|
+			Song.sidechain=Bus.audio(s, 1);
 	{
 			var sig = e.playbuf
 			=> p.synthVTracks.at(e.key).(0.2)
@@ -695,7 +696,11 @@ P.synthVs(Trek.cast.spock, take: [nil, \bg1],
 			* 3.5.dbamp;
 			Out.ar(0, sig);
 			Out.ar(p.sidechain, sig)
-	}.play
+	}.play;
+	fork{
+		b.sum+3 => _.wait;
+		p.sidechain.free
+	}
 });
 P(\swell, music: { |p b e|
 	{
@@ -722,7 +727,6 @@ P(\chords, music: { |p b e|
 		].pp
 
 });
-Song.sidechain=Bus.audio(s, 1);
 P(\tricorderArp, music: { |p b e|
 		{
 				var release = e.bNext.sum + 3;// + 3;

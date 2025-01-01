@@ -1229,6 +1229,7 @@ P.synthVs(role: \formulaLead, take:[ \lead, \double ],
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		* 2.dbamp
 		=> Pan2.ar(_,0)
 	}.play
 });
@@ -1330,6 +1331,7 @@ P.synthV(role: \formulaLead, take: \lead,
 ] }, music:{|p b e|
 	{
 		e.playbuf
+		* 2.dbamp
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
@@ -1339,6 +1341,7 @@ P.double(role: \formulaLead, take: \lead, params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		* 2.dbamp
 		=> FreeVerb.ar(_,0.2,1)
 		=>Pan2.ar(_,1)
 	}.play
@@ -1405,6 +1408,7 @@ P.synthVs(role: \formulaLead, take: [\lead, \dbl], params: {|p b| [
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
+		* 2.dbamp
 			=> Pan2.ar(_, pan)
 			
 		}.play
@@ -1569,6 +1573,7 @@ P.synthVs(role: \formulaLead, take:[\lead, \dbl],
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
+		* 2.dbamp
 			=> Pan2.ar(_, 0)
 		}.play
 	}, {|p b e|

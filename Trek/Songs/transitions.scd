@@ -111,7 +111,7 @@ Trek.setTransition(3, -4,
 		 ~activateFader.(4);
 	 }, trimStart: 1, trimEnd:0, dur: 3
 )
-.value
+// .value
 ;
 
 Trek.faders[4] = {~asrFader.(0,2,6)};
@@ -249,8 +249,8 @@ Trek.setTransition(11, -1, dur:6, func:{
 			+ Gendy5.ar(minfreq: 0.1, maxfreq:{1.0.rand}!7).range(-10, 10)
 			// /( 4.rand + 1 )
 		)
-		/30
-		* Env([0, 0, 1, 1, 0],[1,3, 2, 5.5],[\lin,\lin,\lin,-4]).kr(2,gate:1)
+		/50
+		* Env([0, 0, 1, 1, 0],[1,3, 2, 7.5],[\lin,\lin,\lin,-4]).kr(2,gate:1)
 	}.play;
 	2.wait;
 	Trek.faderSynths[11].release;

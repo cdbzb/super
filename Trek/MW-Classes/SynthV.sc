@@ -80,7 +80,8 @@ SynthV {
 				'languageOverride': "english",
 				'phonesetOverride': "arpabet",
 				'backendType': "SVR2AI",
-				'version': "101"
+				// 'version': "101"
+				'version': "104"
 			),
 			kevin: ( 
 				'name':             "Kevin",
@@ -162,7 +163,8 @@ SynthV {
 				'languageOverride': "",
 				'phonesetOverride': "",
 				'backendType':      "SVR2AI",
-				'version':          "100"
+				// 'version':          "100"
+				'version':          "105"
 			)
 
 		);
@@ -401,7 +403,7 @@ SynthV {
 }
 
 + P {
-	*synthV{ | key start params syl lag=0 take double music song resources range filter pbind prepend role wait frozen record|
+	*synthV { | key start params syl lag=0 take double music song resources range filter pbind prepend role wait frozen record|
 		var event;
 		var section = P.calcStart(start );
 		var synthV, preset;

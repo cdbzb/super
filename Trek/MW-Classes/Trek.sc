@@ -2,6 +2,7 @@ Trek {
 	classvar <>cast, <path, <>presets, <keys, <synful1, <synful2, <strum1, <strum2, <piano;
 	classvar <condVar, <>transitions, transitionGroup, <>faders, <>faderSynths;
 	classvar carrierBus, modulatorBus, vocoderRatio ,monitorCarrier, sargonCarrier, auditionVocoder, vocoderFoa, vocodeTune, laMer, vocoderGroup, sargonModulator;
+	classvar debug=false;
 
 	*initClass {
 		path = this.filenameSymbol.asString.dirname.dirname +/+ "/Songs";
@@ -251,20 +252,24 @@ Trek {
 					start,
 					trimEnd: transitions[section].trimEnd ? 0
 				).wait; 
+				debug.if{
 					//for debugging
 					"NODES as of: %".format(section).postln;
 					10.wait;
 					Server.default.queryAllNodes;
 					//
+				};
 				(
 					transitions[section+1].notNil.if{
 					transitions[section + 1].lag ? 0
 				}).wait;
+				debug.if{
 					//for debugging
 					"NODES afterTransition: %".format(section).postln;
 					10.wait;
 					Server.default.queryAllNodes;
 					//
+				};
 				transitions[section].func.value;
 				transitions[section].dur.wait
 			}

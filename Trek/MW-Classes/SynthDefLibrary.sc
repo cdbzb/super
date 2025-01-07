@@ -10,7 +10,7 @@ SynthDefLibrary {
         //Server.default.waitForBoot
         StartUp.add( {
             var files=files++this.filenameSymbol.asString.dirname.dirname +/+ "SynthDefLibrary/*" => _.pathMatch;
-            files.do{|file| try{ file.load }}
+            files.do{|file| { file.load }.try("couldnt load: %".format(file))}
         } )
     }
 

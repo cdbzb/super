@@ -13,7 +13,7 @@ XMIDIController {
 }
 
 KS : XMIDIController {
-	classvar <>id = -679037508;// INT
+	classvar id;
 	classvar <playFunc;
 	classvar <synths, <active;
 	classvar <busses;
@@ -25,8 +25,10 @@ KS : XMIDIController {
 				MIDIFunc.cc( {|val| if(val > 0) {~myFree.()}}, 42, nil, id )
 			}
 		);
+
 		busses = ();
 	}
+	*id { ^ id ? (id = MIDIIn.findPort("Keystage", "KBD\/CTRL").uid ) }
 	*cc {|name|
 		^In.kr(busses.at(name))
 	}

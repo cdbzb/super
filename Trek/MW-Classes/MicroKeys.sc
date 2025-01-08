@@ -59,6 +59,19 @@ MicroKeys {
 		all = Dictionary(256)
 	}
 
+	*newFrom{ |mk itemName|
+		var newName = mk ++ itemName => _.asSymbol;
+		var new;
+
+		all[newName].notNil.if {
+			^all[newName]
+		} { 
+			new = super.new.init(newName) ;
+			new.namedList = MicroKeys(mk).namedList;
+			^new
+		}  
+		^new
+	}
 	*new { |name func|
 		all[name].notNil.if {
 			^all[name]
@@ -239,7 +252,9 @@ MicroKeys {
 		item.record(this);
 	}
 	insertItem {
-		var string = "MIDIItem(\\\"%\\\")".format(item.name);
+		var key = $\\ ++ $\\ ++ name;
+		var string = "MIDIItem(\\\"%\\\").play(%)".format(item.name, key);
+
 		Nvim.replace(string)
 	}
 

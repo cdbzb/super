@@ -9,7 +9,8 @@ MicroKeys {
 	}
 	doNoteOn { |amp midinote params silent|
 		silent.isNil.if{
-			this.noteOnFunction.(amp, midinote, nil, nil, params); 
+			this.noteOnFunction.(amp, midinote, nil, nil, params) 
+			=> {|e| this.register(e.synth, e.raw)} // register method could be moved here
 		}
 	}
 	storeCCValues {
@@ -91,17 +92,21 @@ MicroKeys {
 			namedList.add( \synth,
 				{ |e|
 					e.silent.isNil.if {
-						Synths(funcOrDefname, 
+						e.synth = Synths(
+							funcOrDefname, 
 							[\freq, e.num.midicps, \amp, e.vel, \num, e.num] 
 							++ params 
 							++ ( e.params ? () ).asKeyValuePairs
 						)
-						=> try{ this.register(_, e.raw) }
-					}
-					
+
+						//moving this to doNoteOn
+						// => try{ this.register(_, e.raw) }
+					};
+					e
 				}
 			)
 		}{ //otherwise should be a Function
+			//needs to return an Event with synth in synth:
 			this.synth_((mk: name).use{ funcOrDefname.asDefName })
 		};
 		namedList.dump
@@ -155,7 +160,8 @@ MicroKeys {
 		^namedList.array.reverse
 		// .collect({|func| {|e| e.notNil.if{ func.(e) } } })
 
-		.inject(I.d, {|i j| try{i <> j} })
+
+		.inject(I.d, {|i j| try{i <> j} }) //this should return an event with and raw synth or Synths
 	}
 
 	setDamper {|num| 

@@ -251,8 +251,8 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 			}
 		}
 	}
-	play { |mk clock post|
-			^this.player.play(mk)
+	play { |mk name clock post overdub=false |
+		^this.player.play(mk, overdub: overdub)
 	}
 	player {|func| 
 		^if(recording != this) {
@@ -333,9 +333,17 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		start = mi.bounds.start; end =mi.bounds.end
 	}
 
-	play { |mk clock post=#[]|
+	play { |mk clock post=#[] overdub=false|
+
 		(mk.rank > 0).if { mk.do{|i| this.play(i) }; ^this };
-		mk.isKindOf(Symbol).if{ mk = MicroKeys(mk) };
+
+		mk.isKindOf(Symbol).if {
+			overdub.if { 
+				mk = MicroKeys(mk) 
+			} {
+				mk = MicroKeys.newFrom(mk, source.name.asSymbol) 
+			}
+		};
 		// (mk.size > 1).if { 'play first'.postln; mk.do(this.play() };
 		playing.add(mk);
 

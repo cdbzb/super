@@ -9,8 +9,9 @@ MicroKeys {
 	}
 	doNoteOn { |amp midinote params silent|
 		silent.isNil.if{
-			this.noteOnFunction.(amp, midinote, nil, nil, params) 
-			=> {|e| this.register(e.synth, e.raw)} // register method could be moved here
+			this.noteOnFunction.(amp, midinote, nil, nil, params).debug("noteOn")
+
+			=> {|e| this.register(e)} // register method could be moved here
 		}
 	}
 	storeCCValues {
@@ -92,7 +93,7 @@ MicroKeys {
 			namedList.add( \synth,
 				{ |e|
 					e.silent.isNil.if {
-						e.synth = Synths(
+						e.synths = Synths(
 							funcOrDefname, 
 							[\freq, e.num.midicps, \amp, e.vel, \num, e.num] 
 							++ params 
@@ -150,9 +151,10 @@ MicroKeys {
 	  this.add(\range, {|e| array.includes( e.num ).not.if{e.silent_(true)}; e}, \addAfter, \event);
 	}
 
-	register { |synth num|
-		keys[num] = synth;
-		^synth
+	register { |event|
+		keys[event.raw] = event[\synths].debug("eventSynth");
+
+		// ^e.synth
 }
 
 	noteOnFunction {

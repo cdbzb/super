@@ -274,7 +274,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		midiEvents = List.new
 	}
 	take {|num|
-		^MIDIItemPlayer(takes[num])
+		^MIDIItemPlayer(takes[num], this).recalcSustains
 	}
 }
 

@@ -74,6 +74,16 @@
 		.reject({|i| i == 0.0})
 		.dm(*args)
 	}
-
+    
+    splitLines {
+    	var result, string, indices;
+    	result = [];
+    	string = this.copy;
+    	indices = string.findAllRegexp("\n");
+    	indices = indices.add(string.size);
+    	if (indices[0] != 0) { indices = [-1] ++ indices };
+    	indices.doAdjacentPairs { |a, b| result = result.add(string.copyRange(a + 1, b - 1) ) };
+    	^result;
+    }
 }
 

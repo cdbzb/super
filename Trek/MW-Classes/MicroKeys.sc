@@ -202,6 +202,7 @@ MicroKeys {
 		this.recordMe
 	}
 	monitor {
+		active = true;
 		storedCCValues.notNil.if{ this.restoreCCValues };
 		// MIDIdef.noteOn(\microOn, {|val num| this.noteOnFunction.(val, num)}, noteNum:range);
 		MIDIdef.noteOn(\microOn ++ name => _.asSymbol,  {|v n| (type: \mk, mk:this, amp: v/127, midinote: n, latency:0, sustain: inf ).play}, );
@@ -212,6 +213,7 @@ MicroKeys {
 	}
 
 	unmonitor {
+		active = false;
 		[\microOn, \microOff, \microDamper, \microPoly].do{|i| MIDIdef(i ++ name => _.asSymbol).free}
 	}
 

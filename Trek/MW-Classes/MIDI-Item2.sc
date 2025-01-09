@@ -166,11 +166,15 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		recording.stop; recording = nil;
 	}
 	stop {
-		takes.add(midiEvents);
+		takes.add(midiEvents);		
 	}
 
 	at {|num|
 		^takes[num]
+	}
+	*record {
+		var mks = MicroKeys.all.values.select{|i| i.active }.collect(_.name);
+		Nvim.replace( "MIDIItem(\\\"%\\\").record(%)".format(name ++ "_" ++  Date.getDate.stamp, mks.cs) )
 	}
 	record { |mk latencyCompensation|
 		var start = SystemClock.seconds;

@@ -166,7 +166,9 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		recording.stop; recording = nil;
 	}
 	stop {
-		takes.add(midiEvents);		
+		if (midiEvents.select{|e| e.timestamp > 0}.size > 0) {
+			takes.add(midiEvents);		
+		}
 	}
 
 	at {|num|
@@ -338,10 +340,12 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	}
 
 	play { |mk clock post=#[] overdub=false|
+	overdub.debug("overdub1");
 
-		(mk.rank > 0).if { mk.do{|i| this.play(i) }; ^this };
+		(mk.rank > 0).if { mk.do{|i| this.play(i, clock, post, overdub) }; ^this };
 
 		mk.isKindOf(Symbol).if {
+			overdub.debug("overdub"); 
 			overdub.if { 
 				mk = MicroKeys(mk) 
 			} {

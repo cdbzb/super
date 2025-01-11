@@ -1,0 +1,2137 @@
+var o, p;
+o = [
+	MIDIItem.prNew,  List.prNew,  Array.prNew(215),  Event.prNew,  
+	Array.prNew(32),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  Event.prNew,  Array.prNew(16),  Event.prNew,  
+	Array.prNew(16),  "_250116_170050",  Event.prNew,  Array.prNew(4),  
+	Array.prNew(1),  Event.prNew,  Array.prNew(8),  List.prNew,  
+	Array.prNew(1)
+];
+p = [
+	// MIDIItem
+	0, [ midiEvents: o[1],  name: o[433],  
+		initialCCValues: o[434],  restFirst: true,  
+		initialRest: o[436],  notes: nil,  
+		takes: o[439] ],  
+	// List
+	1, [ array: o[2] ],  
+	// Array
+	2, [ o[3],  o[5],  o[7],  o[9],  
+		o[11],  o[13],  o[15],  o[17],  
+		o[19],  o[21],  o[23],  o[25],  
+		o[27],  o[29],  o[31],  o[33],  
+		o[35],  o[37],  o[39],  o[41],  
+		o[43],  o[45],  o[47],  o[49],  
+		o[51],  o[53],  o[55],  o[57],  
+		o[59],  o[61],  o[63],  o[65],  
+		o[67],  o[69],  o[71],  o[73],  
+		o[75],  o[77],  o[79],  o[81],  
+		o[83],  o[85],  o[87],  o[89],  
+		o[91],  o[93],  o[95],  o[97],  
+		o[99],  o[101],  o[103],  o[105],  
+		o[107],  o[109],  o[111],  o[113],  
+		o[115],  o[117],  o[119],  o[121],  
+		o[123],  o[125],  o[127],  o[129],  
+		o[131],  o[133],  o[135],  o[137],  
+		o[139],  o[141],  o[143],  o[145],  
+		o[147],  o[149],  o[151],  o[153],  
+		o[155],  o[157],  o[159],  o[161],  
+		o[163],  o[165],  o[167],  o[169],  
+		o[171],  o[173],  o[175],  o[177],  
+		o[179],  o[181],  o[183],  o[185],  
+		o[187],  o[189],  o[191],  o[193],  
+		o[195],  o[197],  o[199],  o[201],  
+		o[203],  o[205],  o[207],  o[209],  
+		o[211],  o[213],  o[215],  o[217],  
+		o[219],  o[221],  o[223],  o[225],  
+		o[227],  o[229],  o[231],  o[233],  
+		o[235],  o[237],  o[239],  o[241],  
+		o[243],  o[245],  o[247],  o[249],  
+		o[251],  o[253],  o[255],  o[257],  
+		o[259],  o[261],  o[263],  o[265],  
+		o[267],  o[269],  o[271],  o[273],  
+		o[275],  o[277],  o[279],  o[281],  
+		o[283],  o[285],  o[287],  o[289],  
+		o[291],  o[293],  o[295],  o[297],  
+		o[299],  o[301],  o[303],  o[305],  
+		o[307],  o[309],  o[311],  o[313],  
+		o[315],  o[317],  o[319],  o[321],  
+		o[323],  o[325],  o[327],  o[329],  
+		o[331],  o[333],  o[335],  o[337],  
+		o[339],  o[341],  o[343],  o[345],  
+		o[347],  o[349],  o[351],  o[353],  
+		o[355],  o[357],  o[359],  o[361],  
+		o[363],  o[365],  o[367],  o[369],  
+		o[371],  o[373],  o[375],  o[377],  
+		o[379],  o[381],  o[383],  o[385],  
+		o[387],  o[389],  o[391],  o[393],  
+		o[395],  o[397],  o[399],  o[401],  
+		o[403],  o[405],  o[407],  o[409],  
+		o[411],  o[413],  o[415],  o[417],  
+		o[419],  o[421],  o[423],  o[425],  
+		o[427],  o[429],  o[431] ],  
+	// Event
+	3, [ array: o[4],  size: 7,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	4, [ 'control',  0,  'timestamp',  0.0,  
+		'midicmd',  'control',  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'ctlNum',  'polytouch',  'midinote',  'r',  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  'initialEvent',  true,  
+		nil,  nil,  'type',  'setPoly',  
+		nil,  nil,  nil,  nil ],  
+	// Event
+	5, [ array: o[6],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	6, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  0.95360275000012,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.65354330708661,  'midinote',  72 ],  
+	// Event
+	7, [ array: o[8],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	8, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  1.3995689170004,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.48031496062992,  'midinote',  72 ],  
+	// Event
+	9, [ array: o[10],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	10, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  1.4194985000002,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.76377952755906,  'midinote',  76 ],  
+	// Event
+	11, [ array: o[12],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	12, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  1.9258386670002,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.62204724409449,  'midinote',  79 ],  
+	// Event
+	13, [ array: o[14],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	14, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  1.9615477500004,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.33858267716535,  'midinote',  76 ],  
+	// Event
+	15, [ array: o[16],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	16, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  2.8745809580003,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.63779527559055,  'midinote',  84 ],  
+	// Event
+	17, [ array: o[18],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	18, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  2.8915664580002,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.46456692913386,  'midinote',  79 ],  
+	// Event
+	19, [ array: o[20],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	20, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  3.2719027080005,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.71653543307087,  'midinote',  86 ],  
+	// Event
+	21, [ array: o[22],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	22, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  3.3187050000004,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.33070866141732,  'midinote',  84 ],  
+	// Event
+	23, [ array: o[24],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	24, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  3.5976577500003,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.52755905511811,  'midinote',  84 ],  
+	// Event
+	25, [ array: o[26],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	26, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  3.7129069170003,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.25196850393701,  'midinote',  86 ],  
+	// Event
+	27, [ array: o[28],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	28, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  3.9230501670002,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.4488188976378,  'midinote',  81 ],  
+	// Event
+	29, [ array: o[30],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	30, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  3.9400730420005,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.43307086614173,  'midinote',  84 ],  
+	// Event
+	31, [ array: o[32],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	32, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.0861812080005,  nil,  nil,  
+		'polyTouch',  1,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	33, [ array: o[34],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	34, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.1090568750004,  nil,  nil,  
+		'polyTouch',  4,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	35, [ array: o[36],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	36, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.1199636250001,  nil,  nil,  
+		'polyTouch',  9,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	37, [ array: o[38],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	38, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.1313668750002,  nil,  nil,  
+		'polyTouch',  14,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	39, [ array: o[40],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	40, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.1434884580001,  nil,  nil,  
+		'polyTouch',  17,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	41, [ array: o[42],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	42, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.1652054580002,  nil,  nil,  
+		'polyTouch',  18,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	43, [ array: o[44],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	44, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.2309693330001,  nil,  nil,  
+		'polyTouch',  21,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	45, [ array: o[46],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	46, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.2419582080004,  nil,  nil,  
+		'polyTouch',  23,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	47, [ array: o[48],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	48, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.2536416250003,  nil,  nil,  
+		'polyTouch',  25,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	49, [ array: o[50],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	50, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.2654970420002,  nil,  nil,  
+		'polyTouch',  26,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	51, [ array: o[52],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	52, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.2985255830002,  nil,  nil,  
+		'polyTouch',  27,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	53, [ array: o[54],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	54, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.3107040000003,  nil,  nil,  
+		'polyTouch',  28,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	55, [ array: o[56],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	56, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.3221598330004,  nil,  nil,  
+		'polyTouch',  32,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	57, [ array: o[58],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	58, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.3339976250002,  nil,  nil,  
+		'polyTouch',  36,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	59, [ array: o[60],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	60, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.3461741670001,  nil,  nil,  
+		'polyTouch',  39,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	61, [ array: o[62],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	62, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.3574296250002,  nil,  nil,  
+		'polyTouch',  40,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	63, [ array: o[64],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	64, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.3681648330001,  nil,  nil,  
+		'polyTouch',  41,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	65, [ array: o[66],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	66, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.3791420000005,  nil,  nil,  
+		'polyTouch',  42,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	67, [ array: o[68],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	68, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.4122071670002,  nil,  nil,  
+		'polyTouch',  41,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	69, [ array: o[70],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	70, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.4240328330005,  nil,  nil,  
+		'polyTouch',  40,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	71, [ array: o[72],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	72, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.4356727500001,  nil,  nil,  
+		'polyTouch',  39,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	73, [ array: o[74],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	74, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.4481647080004,  nil,  nil,  
+		'polyTouch',  36,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	75, [ array: o[76],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	76, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.4592745420003,  nil,  nil,  
+		'polyTouch',  35,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	77, [ array: o[78],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	78, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.4705289580004,  nil,  nil,  
+		'polyTouch',  32,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	79, [ array: o[80],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	80, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.4826934170003,  nil,  nil,  
+		'polyTouch',  28,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	81, [ array: o[82],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	82, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.4945273330002,  nil,  nil,  
+		'polyTouch',  25,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	83, [ array: o[84],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	84, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.5061679170001,  nil,  nil,  
+		'polyTouch',  24,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	85, [ array: o[86],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	86, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.5181110830002,  nil,  nil,  
+		'polyTouch',  23,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	87, [ array: o[88],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	88, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.5296700830002,  nil,  nil,  
+		'polyTouch',  22,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	89, [ array: o[90],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	90, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.5418830000001,  nil,  nil,  
+		'polyTouch',  21,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	91, [ array: o[92],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	92, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.5533474580005,  nil,  nil,  
+		'polyTouch',  20,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	93, [ array: o[94],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	94, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.5644878750002,  nil,  nil,  
+		'polyTouch',  18,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	95, [ array: o[96],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	96, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.5761790000004,  nil,  nil,  
+		'polyTouch',  17,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	97, [ array: o[98],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	98, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.6087672500001,  nil,  nil,  
+		'polyTouch',  16,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	99, [ array: o[100],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	100, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.6201806250004,  nil,  nil,  
+		'polyTouch',  15,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	101, [ array: o[102],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	102, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.6321805420005,  nil,  nil,  
+		'polyTouch',  11,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	103, [ array: o[104],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	104, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.6445799170004,  nil,  nil,  
+		'polyTouch',  6,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	105, [ array: o[106],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	106, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  4.6559381670002,  nil,  nil,  
+		'polyTouch',  0,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  81 ],  
+	// Event
+	107, [ array: o[108],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	108, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  4.8479422920002,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.71653543307087,  'midinote',  77 ],  
+	// Event
+	109, [ array: o[110],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	110, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  4.9001660830002,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.50393700787402,  'midinote',  81 ],  
+	// Event
+	111, [ array: o[112],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	112, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  5.8187030830002,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.75590551181102,  'midinote',  84 ],  
+	// Event
+	113, [ array: o[114],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	114, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  5.8592883750005,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.45669291338583,  'midinote',  77 ],  
+	// Event
+	115, [ array: o[116],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	116, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  6.4659204580001,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.65354330708661,  'midinote',  88 ],  
+	// Event
+	117, [ array: o[118],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	118, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  6.5374316670002,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.50393700787402,  'midinote',  84 ],  
+	// Event
+	119, [ array: o[120],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	120, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  6.6755802920004,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.65354330708661,  'midinote',  89 ],  
+	// Event
+	121, [ array: o[122],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	122, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  6.7485925830004,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.34645669291339,  'midinote',  88 ],  
+	// Event
+	123, [ array: o[124],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	124, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  6.9370371670005,  nil,  nil,  
+		'polyTouch',  1,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  89 ],  
+	// Event
+	125, [ array: o[126],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	126, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  6.9488627920003,  nil,  nil,  
+		'polyTouch',  0,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  89 ],  
+	// Event
+	127, [ array: o[128],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	128, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  7.4251145000001,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.2755905511811,  'midinote',  88 ],  
+	// Event
+	129, [ array: o[130],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	130, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  7.4964368750005,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.45669291338583,  'midinote',  89 ],  
+	// Event
+	131, [ array: o[132],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	132, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  7.6933654170005,  nil,  nil,  
+		'polyTouch',  1,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	133, [ array: o[134],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	134, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  7.7047704580003,  nil,  nil,  
+		'polyTouch',  2,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	135, [ array: o[136],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	136, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  7.7161380000005,  nil,  nil,  
+		'polyTouch',  4,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	137, [ array: o[138],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	138, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  7.7280767080004,  nil,  nil,  
+		'polyTouch',  6,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	139, [ array: o[140],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	140, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  7.7500869580002,  nil,  nil,  
+		'polyTouch',  4,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	141, [ array: o[142],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	142, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  7.7621198750001,  nil,  nil,  
+		'polyTouch',  2,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	143, [ array: o[144],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	144, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  7.7743962920002,  nil,  nil,  
+		'polyTouch',  0,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	145, [ array: o[146],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	146, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  7.7960271250002,  nil,  nil,  
+		'polyTouch',  5,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	147, [ array: o[148],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	148, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  7.8073442500002,  nil,  nil,  
+		'polyTouch',  6,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	149, [ array: o[150],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	150, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  7.8184977080003,  nil,  nil,  
+		'polyTouch',  8,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	151, [ array: o[152],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	152, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  7.8308270000005,  nil,  nil,  
+		'polyTouch',  9,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	153, [ array: o[154],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	154, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  7.8527614170005,  nil,  nil,  
+		'polyTouch',  8,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	155, [ array: o[156],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	156, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  7.8650604580001,  nil,  nil,  
+		'polyTouch',  6,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	157, [ array: o[158],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	158, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  7.8767181250003,  nil,  nil,  
+		'polyTouch',  1,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	159, [ array: o[160],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	160, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  7.8880867500005,  nil,  nil,  
+		'polyTouch',  0,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	161, [ array: o[162],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	162, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  8.1855499170004,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.50393700787402,  'midinote',  88 ],  
+	// Event
+	163, [ array: o[164],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	164, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  8.2832491250004,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.48031496062992,  'midinote',  88 ],  
+	// Event
+	165, [ array: o[166],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	166, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  8.4376607920001,  nil,  nil,  
+		'polyTouch',  6,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	167, [ array: o[168],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	168, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  8.4494638330005,  nil,  nil,  
+		'polyTouch',  13,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	169, [ array: o[170],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	170, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  8.4609880420001,  nil,  nil,  
+		'polyTouch',  19,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	171, [ array: o[172],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	172, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  8.4733046250001,  nil,  nil,  
+		'polyTouch',  22,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	173, [ array: o[174],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	174, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  8.4847965000002,  nil,  nil,  
+		'polyTouch',  25,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	175, [ array: o[176],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	176, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  8.4974130000003,  nil,  nil,  
+		'polyTouch',  28,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	177, [ array: o[178],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	178, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  8.5081406670004,  nil,  nil,  
+		'polyTouch',  31,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	179, [ array: o[180],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	180, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  8.5191730830004,  nil,  nil,  
+		'polyTouch',  32,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	181, [ array: o[182],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	182, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  8.5301302920005,  nil,  nil,  
+		'polyTouch',  33,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	183, [ array: o[184],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	184, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  8.5536563330004,  nil,  nil,  
+		'polyTouch',  35,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	185, [ array: o[186],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	186, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  8.5653942500001,  nil,  nil,  
+		'polyTouch',  37,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	187, [ array: o[188],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	188, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  8.5757162080002,  nil,  nil,  
+		'polyTouch',  39,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	189, [ array: o[190],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	190, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  8.5983742080005,  nil,  nil,  
+		'polyTouch',  40,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	191, [ array: o[192],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	192, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  8.6212281250003,  nil,  nil,  
+		'polyTouch',  41,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	193, [ array: o[194],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	194, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  8.6538027080003,  nil,  nil,  
+		'polyTouch',  42,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	195, [ array: o[196],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	196, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  8.6765105420002,  nil,  nil,  
+		'polyTouch',  43,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	197, [ array: o[198],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	198, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  8.7090868330004,  nil,  nil,  
+		'polyTouch',  44,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	199, [ array: o[200],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	200, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  8.7736445420003,  nil,  nil,  
+		'polyTouch',  45,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	201, [ array: o[202],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	202, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  8.7961153750005,  nil,  nil,  
+		'polyTouch',  46,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	203, [ array: o[204],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	204, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  8.8180004170002,  nil,  nil,  
+		'polyTouch',  47,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	205, [ array: o[206],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	206, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  8.8624898330002,  nil,  nil,  
+		'polyTouch',  48,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	207, [ array: o[208],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	208, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  8.9058053750003,  nil,  nil,  
+		'polyTouch',  49,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	209, [ array: o[210],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	210, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  9.0029852920004,  nil,  nil,  
+		'polyTouch',  48,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	211, [ array: o[212],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	212, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  9.0572841250003,  nil,  nil,  
+		'polyTouch',  49,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	213, [ array: o[214],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	214, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  9.1114959170002,  nil,  nil,  
+		'polyTouch',  48,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	215, [ array: o[216],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	216, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  9.1338897920003,  nil,  nil,  
+		'polyTouch',  47,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	217, [ array: o[218],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	218, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  9.1454486670003,  nil,  nil,  
+		'polyTouch',  46,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	219, [ array: o[220],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	220, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  9.1572917920001,  nil,  nil,  
+		'polyTouch',  45,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	221, [ array: o[222],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	222, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  9.1690329170004,  nil,  nil,  
+		'polyTouch',  44,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	223, [ array: o[224],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	224, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  9.1813507080004,  nil,  nil,  
+		'polyTouch',  42,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	225, [ array: o[226],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	226, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  9.1928264170004,  nil,  nil,  
+		'polyTouch',  41,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	227, [ array: o[228],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	228, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  9.2040757080002,  nil,  nil,  
+		'polyTouch',  39,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	229, [ array: o[230],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	230, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  9.2161461670001,  nil,  nil,  
+		'polyTouch',  37,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	231, [ array: o[232],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	232, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  9.2271887500004,  nil,  nil,  
+		'polyTouch',  34,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	233, [ array: o[234],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	234, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  9.2385440000001,  nil,  nil,  
+		'polyTouch',  27,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	235, [ array: o[236],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	236, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  9.2504755000003,  nil,  nil,  
+		'polyTouch',  24,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	237, [ array: o[238],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	238, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  9.2730370420002,  nil,  nil,  
+		'polyTouch',  27,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	239, [ array: o[240],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	240, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  9.2847756670001,  nil,  nil,  
+		'polyTouch',  30,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	241, [ array: o[242],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	242, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  9.3064687920003,  nil,  nil,  
+		'polyTouch',  28,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	243, [ array: o[244],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	244, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  9.3188850000004,  nil,  nil,  
+		'polyTouch',  26,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	245, [ array: o[246],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	246, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  9.3305677920005,  nil,  nil,  
+		'polyTouch',  25,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	247, [ array: o[248],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	248, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  9.3421052920001,  nil,  nil,  
+		'polyTouch',  24,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	249, [ array: o[250],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	250, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  9.3648271670002,  nil,  nil,  
+		'polyTouch',  23,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	251, [ array: o[252],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	252, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  9.3864712920002,  nil,  nil,  
+		'polyTouch',  21,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	253, [ array: o[254],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	254, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  9.3986457920003,  nil,  nil,  
+		'polyTouch',  18,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	255, [ array: o[256],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	256, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  9.4104250830003,  nil,  nil,  
+		'polyTouch',  16,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	257, [ array: o[258],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	258, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  9.4221100830003,  nil,  nil,  
+		'polyTouch',  11,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	259, [ array: o[260],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	260, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  9.4343886250002,  nil,  nil,  
+		'polyTouch',  7,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	261, [ array: o[262],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	262, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  9.4458850830004,  nil,  nil,  
+		'polyTouch',  1,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	263, [ array: o[264],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	264, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  9.4573022500002,  nil,  nil,  
+		'polyTouch',  0,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	265, [ array: o[266],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	266, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  9.7093544580005,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.58267716535433,  'midinote',  91 ],  
+	// Event
+	267, [ array: o[268],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	268, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  9.7755328330002,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.2755905511811,  'midinote',  88 ],  
+	// Event
+	269, [ array: o[270],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	270, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  10.183638917,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.46456692913386,  'midinote',  89 ],  
+	// Event
+	271, [ array: o[272],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	272, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  10.330087167,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.2755905511811,  'midinote',  91 ],  
+	// Event
+	273, [ array: o[274],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	274, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  10.447369042,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.41732283464567,  'midinote',  88 ],  
+	// Event
+	275, [ array: o[276],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	276, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  10.600784042,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.14173228346457,  'midinote',  89 ],  
+	// Event
+	277, [ array: o[278],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	278, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  11.138751667,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.40944881889764,  'midinote',  86 ],  
+	// Event
+	279, [ array: o[280],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	280, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  11.204926542,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.43307086614173,  'midinote',  88 ],  
+	// Event
+	281, [ array: o[282],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	282, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  11.403725,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.43307086614173,  'midinote',  84 ],  
+	// Event
+	283, [ array: o[284],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	284, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  11.486066083,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.31496062992126,  'midinote',  86 ],  
+	// Event
+	285, [ array: o[286],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	286, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  12.520095625,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.45669291338583,  'midinote',  79 ],  
+	// Event
+	287, [ array: o[288],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	288, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  12.595783917,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.32283464566929,  'midinote',  84 ],  
+	// Event
+	289, [ array: o[290],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	290, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  13.584993292,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.43307086614173,  'midinote',  77 ],  
+	// Event
+	291, [ array: o[292],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	292, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  13.681700208,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.2755905511811,  'midinote',  79 ],  
+	// Event
+	293, [ array: o[294],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	294, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  14.530077375,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.39370078740157,  'midinote',  76 ],  
+	// Event
+	295, [ array: o[296],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	296, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  14.59897825,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.44094488188976,  'midinote',  77 ],  
+	// Event
+	297, [ array: o[298],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	298, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  15.235996083,  nil,  nil,  
+		'polyTouch',  2,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  76 ],  
+	// Event
+	299, [ array: o[300],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	300, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  15.247544375,  nil,  nil,  
+		'polyTouch',  6,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  76 ],  
+	// Event
+	301, [ array: o[302],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	302, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  15.259199042,  nil,  nil,  
+		'polyTouch',  11,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  76 ],  
+	// Event
+	303, [ array: o[304],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	304, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  15.271304083,  nil,  nil,  
+		'polyTouch',  15,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  76 ],  
+	// Event
+	305, [ array: o[306],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	306, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  15.282639083,  nil,  nil,  
+		'polyTouch',  18,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  76 ],  
+	// Event
+	307, [ array: o[308],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	308, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  15.294050375,  nil,  nil,  
+		'polyTouch',  20,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  76 ],  
+	// Event
+	309, [ array: o[310],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	310, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  15.306321375,  nil,  nil,  
+		'polyTouch',  21,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  76 ],  
+	// Event
+	311, [ array: o[312],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	312, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  15.317982125,  nil,  nil,  
+		'polyTouch',  22,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  76 ],  
+	// Event
+	313, [ array: o[314],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	314, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  15.351480583,  nil,  nil,  
+		'polyTouch',  23,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  76 ],  
+	// Event
+	315, [ array: o[316],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	316, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  15.362637958,  nil,  nil,  
+		'polyTouch',  22,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  76 ],  
+	// Event
+	317, [ array: o[318],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	318, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  15.384071333,  nil,  nil,  
+		'polyTouch',  21,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  76 ],  
+	// Event
+	319, [ array: o[320],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	320, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  15.3954365,  nil,  nil,  
+		'polyTouch',  20,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  76 ],  
+	// Event
+	321, [ array: o[322],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	322, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  15.448993750001,  nil,  nil,  
+		'polyTouch',  18,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  76 ],  
+	// Event
+	323, [ array: o[324],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	324, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  15.471926375,  nil,  nil,  
+		'polyTouch',  16,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  76 ],  
+	// Event
+	325, [ array: o[326],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	326, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  15.483832708,  nil,  nil,  
+		'polyTouch',  13,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  76 ],  
+	// Event
+	327, [ array: o[328],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	328, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  15.495749417,  nil,  nil,  
+		'polyTouch',  10,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  76 ],  
+	// Event
+	329, [ array: o[330],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	330, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  15.506884625,  nil,  nil,  
+		'polyTouch',  4,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  76 ],  
+	// Event
+	331, [ array: o[332],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	332, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  15.518026167,  nil,  nil,  
+		'polyTouch',  0,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  76 ],  
+	// Event
+	333, [ array: o[334],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	334, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  15.688043,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.30708661417323,  'midinote',  76 ],  
+	// Event
+	335, [ array: o[336],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	336, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  16.490763917,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.45669291338583,  'midinote',  76 ],  
+	// Event
+	337, [ array: o[338],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	338, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  17.44677,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.32283464566929,  'midinote',  79 ],  
+	// Event
+	339, [ array: o[340],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	340, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  17.533884708,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.18110236220472,  'midinote',  76 ],  
+	// Event
+	341, [ array: o[342],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	342, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  18.328367833,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.49606299212598,  'midinote',  84 ],  
+	// Event
+	343, [ array: o[344],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	344, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  18.377881833,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.32283464566929,  'midinote',  79 ],  
+	// Event
+	345, [ array: o[346],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	346, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  18.753888375,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.40944881889764,  'midinote',  86 ],  
+	// Event
+	347, [ array: o[348],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	348, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  18.773155917,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.36220472440945,  'midinote',  84 ],  
+	// Event
+	349, [ array: o[350],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	350, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  19.121016292,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.33070866141732,  'midinote',  84 ],  
+	// Event
+	351, [ array: o[352],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	352, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  19.169688042,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.23622047244094,  'midinote',  86 ],  
+	// Event
+	353, [ array: o[354],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	354, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  19.572021875,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.25984251968504,  'midinote',  81 ],  
+	// Event
+	355, [ array: o[356],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	356, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  19.587684542,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.33070866141732,  'midinote',  84 ],  
+	// Event
+	357, [ array: o[358],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	358, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  20.350608458,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.31496062992126,  'midinote',  77 ],  
+	// Event
+	359, [ array: o[360],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	360, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  20.390219208,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.44094488188976,  'midinote',  81 ],  
+	// Event
+	361, [ array: o[362],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	362, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  21.351210208,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.28346456692913,  'midinote',  84 ],  
+	// Event
+	363, [ array: o[364],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	364, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  21.405733208,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.25984251968504,  'midinote',  77 ],  
+	// Event
+	365, [ array: o[366],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	366, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  21.995475792,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.28346456692913,  'midinote',  88 ],  
+	// Event
+	367, [ array: o[368],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	368, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  22.13228925,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.24409448818898,  'midinote',  84 ],  
+	// Event
+	369, [ array: o[370],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	370, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  22.229373708,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.41732283464567,  'midinote',  89 ],  
+	// Event
+	371, [ array: o[372],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	372, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  22.265966792,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.16535433070866,  'midinote',  88 ],  
+	// Event
+	373, [ array: o[374],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	374, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  22.957691625,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.24409448818898,  'midinote',  88 ],  
+	// Event
+	375, [ array: o[376],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	376, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  23.071900833,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.24409448818898,  'midinote',  89 ],  
+	// Event
+	377, [ array: o[378],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	378, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  23.660770833001,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.2992125984252,  'midinote',  88 ],  
+	// Event
+	379, [ array: o[380],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	380, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  23.817747875,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.25196850393701,  'midinote',  88 ],  
+	// Event
+	381, [ array: o[382],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	382, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  24.641701875,  nil,  nil,  
+		'polyTouch',  2,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	383, [ array: o[384],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	384, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  24.653914208,  nil,  nil,  
+		'polyTouch',  3,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	385, [ array: o[386],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	386, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  24.664742625,  nil,  nil,  
+		'polyTouch',  4,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	387, [ array: o[388],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	388, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  24.676162792,  nil,  nil,  
+		'polyTouch',  5,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	389, [ array: o[390],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	390, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  24.688056042,  nil,  nil,  
+		'polyTouch',  4,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	391, [ array: o[392],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	392, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  24.700005958,  nil,  nil,  
+		'polyTouch',  1,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	393, [ array: o[394],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	394, [ nil,  nil,  'midicmd',  'polytouch',  
+		'timestamp',  24.711271042,  nil,  nil,  
+		'polyTouch',  0,  'type',  'setPoly',  
+		nil,  nil,  'midinote',  88 ],  
+	// Event
+	395, [ array: o[396],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	396, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  25.248275208,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.41732283464567,  'midinote',  91 ],  
+	// Event
+	397, [ array: o[398],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	398, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  25.287651917,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.28346456692913,  'midinote',  88 ],  
+	// Event
+	399, [ array: o[400],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	400, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  25.678794792,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.32283464566929,  'midinote',  89 ],  
+	// Event
+	401, [ array: o[402],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	402, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  25.762566167,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.2992125984252,  'midinote',  91 ],  
+	// Event
+	403, [ array: o[404],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	404, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  25.921294042001,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.36220472440945,  'midinote',  88 ],  
+	// Event
+	405, [ array: o[406],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	406, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  25.981136542,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.31496062992126,  'midinote',  89 ],  
+	// Event
+	407, [ array: o[408],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	408, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  26.567037417,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.26771653543307,  'midinote',  86 ],  
+	// Event
+	409, [ array: o[410],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	410, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  26.617957125,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.28346456692913,  'midinote',  88 ],  
+	// Event
+	411, [ array: o[412],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	412, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  26.933963542,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.2755905511811,  'midinote',  84 ],  
+	// Event
+	413, [ array: o[414],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	414, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  26.951970708,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.47244094488189,  'midinote',  86 ],  
+	// Event
+	415, [ array: o[416],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	416, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  28.102517083,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.25196850393701,  'midinote',  81 ],  
+	// Event
+	417, [ array: o[418],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	418, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  28.129682625,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.25984251968504,  'midinote',  84 ],  
+	// Event
+	419, [ array: o[420],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	420, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  28.496778208,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.50393700787402,  'midinote',  81 ],  
+	// Event
+	421, [ array: o[422],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	422, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  28.551446708,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.25984251968504,  'midinote',  79 ],  
+	// Event
+	423, [ array: o[424],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	424, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  29.11855975,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.32283464566929,  'midinote',  77 ],  
+	// Event
+	425, [ array: o[426],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	426, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  29.212992917,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.16535433070866,  'midinote',  79 ],  
+	// Event
+	427, [ array: o[428],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	428, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  30.037751458,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.37795275590551,  'midinote',  77 ],  
+	// Event
+	429, [ array: o[430],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	430, [ nil,  nil,  'midicmd',  'noteOn',  
+		'timestamp',  30.048535625,  nil,  nil,  
+		nil,  nil,  'type',  'mk',  
+		'amp',  0.18110236220472,  'midinote',  76 ],  
+	// Event
+	431, [ array: o[432],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	432, [ nil,  nil,  'midicmd',  'noteOff',  
+		'timestamp',  31.083935083,  nil,  nil,  
+		nil,  nil,  'type',  'mkOff',  
+		'amp',  0.45669291338583,  'midinote',  76 ],  
+	// Event
+	434, [ array: o[435],  size: 0,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	435, [ nil,  nil,  nil,  nil ],  
+	// Array
+	436, [ o[437] ],  
+	// Event
+	437, [ array: o[438],  size: 2,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	438, [ nil,  nil,  'type',  'rest',  
+		'timestamp',  0.0,  nil,  nil ],  
+	// List
+	439, [ array: o[440] ],  
+	// Array
+	440, [ o[1] ]
+];
+prUnarchive(o,p);

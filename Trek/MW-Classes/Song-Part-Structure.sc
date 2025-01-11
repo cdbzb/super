@@ -5,14 +5,21 @@
 	}
 }
 + P{
-	*clone{|section part| 
+	*clone{|section part resources| 
 		var newPart;
 		(part.size > 0).if{ part.do{ |singlePart|
 			P.clone(section, singlePart) };
 		} {
 			part = Song.at(Song.section(section)).select{|i| i.key == part}[0];
 			// newPart = part.copy; 
-			newPart = try{ P(part.key,start:P.calcStart(),syl:part.syl,lag:part.lag,music:part.music) };
+			newPart = try{ P(
+				part.key,
+				start: P.calcStart(),
+				syl: part.syl,
+				lag: part.lag,
+				resources: part.resources ++ ( resources ? () ),
+				music: part.music
+			) };
 			^newPart 
 		}
 	}

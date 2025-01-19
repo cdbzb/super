@@ -25,8 +25,9 @@ SynthV {
 		SynthV.renderMultiple(wait);
 	}
 	*initClass {
+		var mini = (Platform.machine.asSymbol == 'Mac16,10');
 
-	directory = this.filenameSymbol.asString.dirname.dirname ++ "/SynthV";
+		directory = this.filenameSymbol.asString.dirname.dirname ++ "/SynthV";
 		buffers = MultiLevelIdentityDictionary.new();
 
 		roles = ();
@@ -62,7 +63,15 @@ SynthV {
 			kevin: Set[\Clear,\Soft,\Belt,\Solid]
 		);
 		databaseLib = (
-			genbu:( 'backendType': "SVR2Standard", 'version': 100, 'name': "GENBU", 'phoneset': "romaji", 'language': "japanese", 'languageOverride': "", 'phonesetOverride': "" ), 
+			genbu:(
+				'backendType': "SVR2Standard",
+				'version': 100,
+				'name': "GENBU",
+				'phoneset': "romaji",
+				'language': "japanese",
+				'languageOverride': "",
+				'phonesetOverride': ""
+			), 
 
 			aiko: ( 
 				'version': 100, 
@@ -80,7 +89,7 @@ SynthV {
 				'languageOverride': "english",
 				'phonesetOverride': "arpabet",
 				'backendType': "SVR2AI",
-				'version': "101"
+				'version': mini.if{"105"}{"101"}
 			),
 			kevin: ( 
 				'name':             "Kevin",
@@ -89,7 +98,8 @@ SynthV {
 				'languageOverride': "",
 				'phonesetOverride': "",
 				'backendType':      "SVR2AI",
-				'version':          "108"
+				// 'version':          "108"
+				'version': mini.if{"108"}{"104"}
 			),
 			feng: (
 				'name': "Feng Yi",
@@ -107,7 +117,7 @@ SynthV {
 				'languageOverride': "english",
 				'phonesetOverride': "arpabet",
 				'backendType': "SVR2AI",
-				'version': "105"
+				'version': mini.if { "110" } { "105" }
 			),
 			mo: (
 				'name': "Mo Chen",

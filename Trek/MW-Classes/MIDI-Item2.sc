@@ -545,6 +545,27 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			this.source
 		)
 	}
+	synthVPbind { |choiceFunc|
+		var initialRestDur = midiEvents.select{|e| 
+			e.type == \rest and: (e.timestamp == 0)
+		}.collect(_.dur);
+		var notes = (choiceFunc ? I.d).value(
+			midiEvents.select{|e| e.midicmd == \noteOn}
+		);
+		var midinotes = notes.collect{|e| e.midinote};
+		var durs = notes.collect{|e| e.timestamp}.differentiate.drop(1)
+		//last dur
+		++ notes.last.sustain;
+
+		// add initial rest
+		( initialRestDur.size > 0 ).if{
+			midinotes = midinotes.insert(0, 60); //will be made rest by \r in lyric
+			durs = durs.insert(0, initialRestDur[0])
+		};
+
+		^[midinote: midinotes, dur: durs].p
+	}
+
 	addLine { |name choiceFunc|
 		var initialRestDur = midiEvents.select{|e| 
 			e.type == \rest and: (e.timestamp == 0)

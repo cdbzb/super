@@ -83,17 +83,20 @@ P(\keys,music: {|p b e|
 	MicroKeys(\vocalLine).synth_(\sawSynthSustain);
 	MIDIItem("_250119_105441").take(11).fromNoteTo(0, 100).filter{|e| e.collect{|i| i.amp.notNil.if{i.amp = i.amp / 3}}}.play('vocalLine', clock: TempoClock.new(0.52 / ~quarter, queueSize: 2**12  ))
 });
-P.synthV(\an, take: \lead, pbind: MIDIItem("_250119_105441").take(11).synthVPbind ,
+P.synthV(\an, take: \lead, pbind: 
+	MIDIItem("_250119_105441").take(11).synthVPbind
+	,
 // need to make Legato
 	params: {|p b| [
-		lyrics: "
-		时 代 的 风 吹 过 长 安
-人 群 像 落 叶 随 风 飘
-年 轻 的 眼 睛 寻 找 答 案
-但 真 相 藏 在 雾 里 逃
+		lyrics: " r 时 代 的 风 吹 过 长 安 
+		人 群 像 落 叶 随 风 飘 
+		年  轻 的 眼 睛 寻 找 答 案
+		但 真 相 藏 在 雾 里 逃
 		时 代 的 风 吹 过 长 安
 		",
 		pitchTake: 1,
+		legato: [1, 1, 1, 1, 1, 0.9, 1, 1, 1, 1, 1, 1, 0.5, 1, 1, 1, 1, 1, 1, 1, 0.5]
+		,
 		language: \Mandarin
 	]}, 
 	music:{|p b e|

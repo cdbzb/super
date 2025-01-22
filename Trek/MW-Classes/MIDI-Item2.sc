@@ -557,11 +557,16 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		//last dur
 		++ notes.last.sustain;
 
-		// add initial rest
-		( initialRestDur.size > 0 ).if{
+		// insert initial rest
+		if (initialRestDur.size > 0) {
 			midinotes = midinotes.insert(0, 60); //will be made rest by \r in lyric
 			durs = durs.insert(0, initialRestDur[0])
-		};
+		}{ 
+			if (notes[0].timestamp > 0) {
+			midinotes = midinotes.insert(0, 60); //will be made rest by \r in lyric
+			durs = durs.insert(0, notes[0].timestamp)
+			}
+		}
 
 		^[midinote: midinotes, dur: durs].p
 	}

@@ -172,12 +172,12 @@ SynthV {
 				'languageOverride': "",
 				'phonesetOverride': "",
 				'backendType':      "SVR2AI",
-				'version':          "100"
+				'version':          mini.if {"105"}{"100"}
 			)
 
-		);
-		synthVsToRender = List.new;
-	}
+			);
+			synthVsToRender = List.new;
+		}
 	checkDirty {
 		// ^project => JSON.stringify(_) != try{ String.readNew(File( file ,"r") )}
 		File.exists(file).not.if{ 

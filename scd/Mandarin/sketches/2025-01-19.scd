@@ -75,16 +75,14 @@ MIDIItem("_250119_105441").take(11).play('vocalLine', clock: TempoClock.new(0.52
 */
 Song(\Wind, []).current;
 
-Song.key=\c;
+Song.keySig=\c;
 Song.quarter = 0.52;
 
-[ "V1L1", "r", Song.quarter.dup(8)].addLine;
-P(\keys,music: {|p b e|
-	MicroKeys(\vocalLine).synth_(\sawSynthSustain);
-	MIDIItem("_250119_105441").take(11).fromNoteTo(0, 100).filter{|e| e.collect{|i| i.amp.notNil.if{i.amp = i.amp / 3}}}.play('vocalLine', clock: TempoClock.new(0.52 / ~quarter, queueSize: 2**12  ))
-});
-P.synthV(\an, take: \lead, pbind: 
-	MIDIItem("_250119_105441").take(11).synthVPbind
+["countoff", "r", [1]].addLine;
+P.synthV(\an, take: \lead, lag: -0.08, pbind: 
+	MIDIItem("_250119_105441").take(11)
+	.collect({|i x| (x >= 1).if { i.timestamp = i.timestamp - (Song.quarter * 4) - 1 }; i })
+	.synthVPbind
 	,
 // need to make Legato
 	params: {|p b| [
@@ -107,7 +105,56 @@ P.synthV(\an, take: \lead, pbind:
 			// => p.synthVTracks.at(e.key).()
 		}.play
 });
+[ "V1L1", "r", Song.quarter.dup(8)].addLine;
+P(\keys,music: {|p b e|
+	MicroKeys(\vocalLine).synth_(\sawSynthSustain);
+	MIDIItem("_250119_105441").take(11).fromNoteTo(0, 100).filter{|e| e.collect{|i| i.amp.notNil.if{i.amp = i.amp / 3}}}.play('vocalLine', clock: TempoClock.new(0.52 / ~quarter, queueSize: 2**12  ))
+});
+P.synthV(\jun, take: \lead,
+	pbind: MIDIItem("250122_113217").take(2)
+	.collect({|i x| (x >= 1).if { i.timestamp = i.timestamp - (Song.quarter * 4)  }; i })
+	.synthVPbind,
+	params: {|p b| [
+	lyrics: "r aaah aah ah - ah",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		/3
+		=> Pan2.ar(_,SinOsc.ar(0.12))
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+P.synthV(\jun, take: \lower,
+	pbind: 
+	[
+		dur: 
+		MIDIItem("250122_113217").take(2)
+		.collect({|i x| (x >= 1).if { i.timestamp = i.timestamp - (Song.quarter * 4)  }; i })
+		.synthVPbind.patternpairs.asEvent[\dur]
+		,
+		midinote: 
+		"r 5 4 4 5 4  5 4 4 5 4 5 4 4 5 4".dm(Song.keySig,6)
+
+		,
+	].p
+	,
+	params: {|p b| [
+	lyrics: "r aaah aah ah - ah",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		/3
+		=> Pan2.ar(_,SinOsc.ar(0.12))
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
 ~quarter = Song.quarter;
+P(\bgVox, music: { |p b e|
+MIDIItem("250122_113217").take(2)
+//.play(\vocaline)
+});
 P(\arrangement, music: { |p b e|
 (instrument: \cymbalsDS, amp: 0.02).play;
 [
@@ -137,5 +184,6 @@ P(\arrangement, music: { |p b e|
 	dur: "eee e ex x e e".beats * ~quarter * 2 => _.q(16),
 	amp: 0.3
 ].pp;
+
 });
 )

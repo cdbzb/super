@@ -406,7 +406,20 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		.asDict
 	}
 
-	fromNoteTo {|from to|
+	chaseCCs { |from|
+		^[\setDamper, \setCC, \setPoly, \setBend].collect{|i|
+			midiEvents.select{|e| e.type==i and: timestame <= from }.sort({|i j| i.timestamp <= j.timestamp}).last
+		}
+	}
+
+	from {|from to|
+		^this.filter({|e| 
+			e.collect{|i| i.timestamp >= from and: (i.timestamp <= (to ? inf))}
+			}
+		})
+	}
+
+	fromNote {|from to|
 		^this.filter({|e| 
 			var res = e[this.noteIndices[from]..this.noteIndices[to + 1]].setDurs;
 			this.noteIndices[to + 1].notNil.if {
@@ -416,6 +429,9 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			}
 	});
 	}
+
+	fromNoteTo{ |from to| ^this.fromNote(from, to) }
+
 
 	//collects either: the params of notes selected by Symbol
 	//or the notes themselves if given a number

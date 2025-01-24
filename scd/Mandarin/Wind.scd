@@ -1,4 +1,12 @@
 (
+//lyrics from Qwen
+
+春风拂面来 (5)
+花开满园香飘远 (7)
+心随梦飞翔 (5)
+爱永恒 (3)
+)
+(
 MicroKeys(\vocalLine).synth_(\sawSynthSustain)
 .monitor
 ;
@@ -10,7 +18,7 @@ MIDIItem("_250119_103705").play('vocalLine')
 (
 ~quarter = 0.52;
 MicroKeys(\port).synth_(\defaultPorto);//.monitor;
-MIDIItem("250121_120748").take(2).play(\vocalLine);
+// MIDIItem("250121_120748").take(2).play(\vocalLine);
 MIDIItem("_250120_094839").play(\port);
 (instrument: \cymbalsDS, amp: 0.02).play;
 [
@@ -79,18 +87,28 @@ Song.keySig=\c;
 Song.quarter = 0.52;
 
 ["countoff", "r", [1]].addLine;
-P.synthV(\an, take: \lead, lag: -0.08, pbind: 
+P.synthV(\an, take: \leadQwen, lag: -0.08, pbind: 
 	MIDIItem("_250119_105441").take(11)
 	.collect({|i x| (x >= 1).if { i.timestamp = i.timestamp - (Song.quarter * 4) - 1 }; i })
 	.synthVPbind
 	,
 // need to make Legato
 	params: {|p b| [
-		lyrics: " r 时 代 的 风 吹 过 长 安 
-		人 群 像 落 叶 随 风 飘 
-		年  轻 的 眼 睛 寻 找 答 案
-		但 真 相 藏 在 雾 里 逃
-		时 代 的 风 吹 过 长 安
+		// lyrics: " r 时 代 的 风 吹 过 长 安 
+		// 人 群 像 落 叶 随 风 飘 
+		// 年  轻 的 眼 睛 寻 找 答 案
+		// 但 真 相 藏 在 雾 里 逃
+		// 时 代 的 风 吹 过 长 安
+		// ",
+		lyrics: "r 
+		春 风 拂 面 来 
+		花 开 满 园 香 飘 远 
+		心 随 梦 飞 翔 
+		爱 永 恒 
+		星 夜 静 如 水 
+		月 光 洒 落 思 乡 情 
+		梦 回 故 乡 路 
+		心 依 恋 
 		",
 		pitchTake: 1,
 		legato: [1, 1, 1, 1, 1, 0.9, 1, 1, 1, 1, 1, 1, 0.5, 1, 1, 1, 1, 1, 1, 1, 0.5]

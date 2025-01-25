@@ -6,7 +6,7 @@ MicroKeys {
 	classvar tuningFunction;
 	// methods to make "standard" params
 	*freq {
-		^{|mk| {\freq.kr(900) * (\poly.kr() / 127+ CC.bend(mk: mk, rawScale: 16384).bus.kr => _.midiratio)} }
+		^{|mk| {\freq.kr(900) * (\poly.kr() / 127+ CC.bend(mk: mk).bus.kr => _.midiratio)} }
 	}
 	doNoteOn { |amp midinote params silent|
 		silent.isNil.if{

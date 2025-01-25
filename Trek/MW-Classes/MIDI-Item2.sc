@@ -401,22 +401,27 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	}
 
 	noteIndices {
-		^midiEvents.select{|e| e.midicmd == \noteOn}
+		^midiEvents.select{|e| e.midicmd == \noteOn }
 		.collect{|i x| x->midiEvents.indexOf(i) }
 		.asDict
 	}
 
 	chaseCCs { |from|
-		^midiEvents.select{|e| e.type.asString.contains("mk").not and: (e.timestamp <= from) }
+		^midiEvents
+		.select{|e| e.timestamp <= from }
+		.select{|e| e.ctlNum.notNil }
+		.sort{|i j| i.ctlNum <= j.ctlNum }
+		.separate{|i j| i.ctlNum != j.ctlNum }
+		.collect{|e| e.last}
 			// .sort({|i j| i.timestamp <= j.timestamp}).last
-			[2, 3, \e, 4].separate{|i j| i.type != j.type}
-		}
 	}
 
 	from {|from to|
-		^this.filter({|e| 
-			e.collect{|i| i.timestamp >= from and: (i.timestamp <= (to ? inf))}
-		})
+		^(
+			this.chaseCCs ++
+			midiEvents.select{|i| i.timestamp >= from and: (i.timestamp <= (to ? inf)) }
+			=> MIDIItemPlay(_, this)
+		)
 	}
 
 	fromNote {|from to|

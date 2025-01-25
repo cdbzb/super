@@ -17,7 +17,6 @@ KS : XMIDIController {
 	classvar <playFunc;
 	classvar <synths, <active;
 	classvar <busses;
-
 	*initClass {
 		ServerTree.add(
 			{
@@ -61,12 +60,13 @@ KS : XMIDIController {
 }
 
 CC {
-	classvar <all; 
+	classvar <all, <active; 
 	var <number, <>spec, <>mk, <>val=0.5, <bus, <ctl ;
 	var <down, <rawScale;
 
 	*initClass{
-		all = ()
+		all = ();
+		active = Set[];
 	}
 	*newMK { |number spec|
 		^{|mk|
@@ -81,7 +81,7 @@ CC {
 				var a = all[mk][number]; 
 				a.spec = spec ? a.spec; 
 				//should I check to see if its already there?
-				a.makeDef(number);
+				// a.makeDef(number);
 				^a 
 			}
 		} 
@@ -133,7 +133,12 @@ CC {
 		val = default ? 0;
 		bus.set(spec.map(val));
 		down = List[];
-		this.makeDef(number)
+		// this.makeDef(number)
+	}
+	activate {
+		this.makeDef(number);
+		active = active.add(this);
+		active.post; number.debug("added")
 	}
 	makeDef { |number|
 		^switch(number)

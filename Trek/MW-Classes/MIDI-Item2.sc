@@ -191,12 +191,13 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		recording = this;
 		midiEvents = List[];
 		// add Events to set initial CC values to midiEvents
-		CC.getValues.asKeyValuePairs.pairsDo{ | i j |
+		CC.getValues(mk).asKeyValuePairs.pairsDo{ | i j |
 			midiEvents.add(
 				initialEvent ++ (
-					type: \setcc,
-					ctlnum: i,
-					control: CC(i).spec.unmap(j) * CC(i).rawScale, //put back in original
+					type: \setCC,
+					ctlNum: i,
+					// control: CC(i).spec.unmap(j) * CC(i).rawScale , //put back in original
+					control: j
 				)
 			)
 		};
@@ -229,10 +230,11 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 								( num == 64 ).if{
 									(type:\setDamper, ctlNum:\damper, control: val)//.postln 
 								} { 
+									//TODO do away with this divisions ???
 									(type: \setCC, ctlNum:num, control: val / 127)//.postln
 								} 
 							},
-							\bend, { (type: \setBend, ctlNum:\bend, control: val)},
+							\bend, { (type: \setBend, ctlNum:\bend, control: val / 16384)},
 							// \bend, { (val: val, ctlNum:) }
 							
 						)
@@ -349,7 +351,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			overdub.if { 
 				mk = MicroKeys(mk) 
 			} {
-				mk = MicroKeys.newFrom(mk, source.name.asSymbol) 
+				mk = MicroKeys.newFrom(mk, UniqueID.next) 
 			}
 		};
 		// (mk.size > 1).if { 'play first'.postln; mk.do(this.play() };

@@ -227,7 +227,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 							\polytouch, { (type: \setPoly, midinote: num, polyTouch: val, ) },
 							\control, {
 								( num == 64 ).if{
-									(type:\setDamper, control: val)//.postln 
+									(type:\setDamper, ctlNum:\damper, control: val)//.postln 
 								} { 
 									(type: \setCC, ctlNum:num, control: val / 127)//.postln
 								} 
@@ -407,15 +407,15 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	}
 
 	chaseCCs { |from|
-		^[\setDamper, \setCC, \setPoly, \setBend].collect{|i|
-			midiEvents.select{|e| e.type==i and: timestame <= from }.sort({|i j| i.timestamp <= j.timestamp}).last
+		^midiEvents.select{|e| e.type.asString.contains("mk").not and: (e.timestamp <= from) }
+			// .sort({|i j| i.timestamp <= j.timestamp}).last
+			[2, 3, \e, 4].separate{|i j| i.type != j.type}
 		}
 	}
 
 	from {|from to|
 		^this.filter({|e| 
 			e.collect{|i| i.timestamp >= from and: (i.timestamp <= (to ? inf))}
-			}
 		})
 	}
 

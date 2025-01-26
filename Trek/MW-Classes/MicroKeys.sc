@@ -76,8 +76,12 @@ MicroKeys {
 			new = super.new.init(newName) ;
 			new.namedList = old.namedList.deepCopy;
 			func = old.synthFunc;
-			(mk: newName).use{ SynthDef(newName, func).add.name };
-			new.synth_(newName);
+			func.isKindOf(Symbol).if{
+				new.synth_(func) 
+			} {
+				(mk: newName).use{ SynthDef(newName, func).add.name };
+				new.synth_(newName);
+			};
 			^new
 		}  
 	}
@@ -110,6 +114,7 @@ MicroKeys {
 
 	synth_ { |funcOrDefname params|
 		funcOrDefname.isKindOf(Symbol).if{
+			synthFunc = funcOrDefname;
 			namedList.add( \synth,
 				{ |e|
 					e.silent.isNil.if {

@@ -415,7 +415,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	}
 
 	chaseCCs { |from|
-		midiEvents
+		^midiEvents
 		.select{|e| e.timestamp <= from }
 		.select{|e| e.ctlNum.notNil }
 		.sort{|i j| i.ctlNum <= j.ctlNum }
@@ -425,12 +425,12 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	}
 	notesStraddling {|time|
 			^midiEvents.select{|e| e.midicmd == \noteOn }
-			.select{|e| e.timestamp <= from and: (e.timestamp + e.sustain >= from)};
+			.select{|e| e.timestamp <= time and: (e.timestamp + e.sustain >= time )};
 	}
 
 	from {|from to trim=true|
 		
-		var firstNotes = notesStraddling(from).deepCopy; // Array
+		var firstNotes = this.notesStraddling(from).deepCopy; // Array
 
 		if (trim and: (firstNotes.size > 0)) {
 			firstNotes.do( _.timestamp = from )
@@ -439,8 +439,8 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		^(
 			firstNotes ++
 			this.chaseCCs(from) ++
-			midiEvents.select{|i| i.timestamp >= from and: (i.timestamp <= (to ? inf)) }
-			=> MIDIItemPlayer(_, this)
+			midiEvents.select{|i| i.timestamp >= from and: (i.timestamp <= (to ? inf)) }.deepCopy
+			=> MIDIItemPlayer(_, this.source)
 		)
 	}
 

@@ -409,7 +409,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	}
 
 	chaseCCs { |from|
-		^midiEvents
+		midiEvents
 		.select{|e| e.timestamp <= from }
 		.select{|e| e.ctlNum.notNil }
 		.sort{|i j| i.ctlNum <= j.ctlNum }
@@ -419,26 +419,35 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	}
 
 	from {|from to|
+		//chaseCCs
+
 		^(
-			this.chaseCCs ++
+			this.chaseCCs(from) ++
 			midiEvents.select{|i| i.timestamp >= from and: (i.timestamp <= (to ? inf)) }
 			=> MIDIItemPlay(_, this)
 		)
 	}
 
 	fromNote {|from to|
+		to = to ? this.notes.size;
+
 		^this.filter({|e| 
-			var res = e[this.noteIndices[from]..this.noteIndices[to + 1]].setDurs;
-			this.noteIndices[to + 1].notNil.if {
-				res.drop(-1)
-			}{
-				res
+
+			var res = this.chaseCCs(this.noteIndices[from]) 
+			++ e[this.noteIndices[from]..this.noteIndices[to + 1]].setDurs;
+
+			{
+				this.noteIndices[to + 1].notNil.if {
+					res.drop(-1)
+				}{
+					res
+				}
 			}
 	});
 	}
 
+	//deprecate this
 	fromNoteTo{ |from to| ^this.fromNote(from, to) }
-
 
 	//collects either: the params of notes selected by Symbol
 	//or the notes themselves if given a number

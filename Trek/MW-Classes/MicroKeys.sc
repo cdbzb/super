@@ -42,6 +42,8 @@ MicroKeys {
 		Event.addEventType(\setCC, {
 			Server.default.makeBundle(~latency, {var cc = CC(~ctlNum, mk: ~mk); cc.setRaw(~control * cc.rawScale) }) 
 		});
+
+		//deprecate
 		Event.addEventType(\setBend, {
 			Server.default.makeBundle(~latency, { CC(~ctlNum, mk: ~mk).setRaw(~control * 16384) }) 
 		});
@@ -65,7 +67,7 @@ MicroKeys {
 
 	*newFrom{ |mk itemName|
 		var newName = mk ++ itemName => _.asSymbol;
-		var new, old, func, def;
+		var new, old, func ;
 
 		all[newName].notNil.if {
 			^all[newName]
@@ -74,13 +76,12 @@ MicroKeys {
 			new = super.new.init(newName) ;
 			new.namedList = old.namedList.deepCopy;
 			func = old.synthFunc;
-			// new.synth_(MicroKeys(mk).synthFunc);
-			def = (mk: newName).use{ SynthDef(newName, func).add.name };
-			new.synth_( newName )
+			(mk: newName).use{ SynthDef(newName, func).add.name };
+			new.synth_(newName);
 			^new
 		}  
-		^new
 	}
+
 	*new { |name func|
 		all[name].notNil.if {
 			^all[name]
@@ -99,8 +100,6 @@ MicroKeys {
 		tuningFunction = { |tuning| { |e| e.num = e.num + tuningDeltas.wrapAt(e.num); e }};
 		namedList.add( \event, {|v n c r params| (vel: v/127, num: n, chan: c, src: r, raw: n, params: params) });
 
-		// this.synth_(func ? I.d);
-		// synthFunc = func;
 		this.synth_( func !? {|i| (mk: name).use{ i.asDefName }} ? I.d);
 		
 		keys = 0 ! 128;
@@ -120,9 +119,6 @@ MicroKeys {
 							++ params 
 							++ ( e.params ? () ).asKeyValuePairs
 						)
-
-						//moving this to doNoteOn
-						// => try{ this.register(_, e.raw) }
 					};
 					e
 				}
@@ -192,7 +188,9 @@ MicroKeys {
 		(num == 127).if{
 			damperDown = true.postln 
 		}{ 
-			damperDown = false.postln; heldNotes.do(_.release); heldNotes = Set[] 
+			damperDown = false.postln; 
+			heldNotes.do(_.release); 
+			heldNotes = Set[] 
 		} 
 	}
 

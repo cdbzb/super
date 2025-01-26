@@ -6,7 +6,8 @@ MIDIItem2 : MIDIItem{
 		^MIDIItemPlayer(this.midiEvents, this)
 	}
 }
-AbstractMidiEvents {
+AbstractMidiEvents { 
+	// class for MIDIItem and MIDIItemPlayer
 	noteOns {
 		^MIDIItemPlayer(
 			this.midiEvents.select{|e| e.midicmd == \noteOn},
@@ -41,9 +42,13 @@ AbstractMidiEvents {
 	}
 
 	bounds {
-		^(end: this.midiEvents.last.timestamp + ( this.midiEvents.last.dur ? 0 ),  start: this.midiEvents[0].timestamp)
+		^(
+			end: this.midiEvents.last.timestamp + ( this.midiEvents.last.dur ? 0 ),  
+			start: this.midiEvents[0].timestamp
+		)
 	}
-	quantize{ |beats func choiceFunc recalcSustains=true |
+
+	quantize { |beats func choiceFunc recalcSustains=true |
 		var tempoMap = MIDIItemTempoMap(this, choiceFunc, beats);
 		func.notNil.if{
 			^this.quantizeFunc(beats, func, choiceFunc, recalcSustains) 
@@ -65,6 +70,7 @@ AbstractMidiEvents {
 		}
 	}
 }
+
 MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents for use with MicroKeys
 	classvar <>folder, <all;
 	var <>midiEvents , <name, <>initialCCValues;
@@ -417,19 +423,29 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		.collect{|e| e.last}
 			// .sort({|i j| i.timestamp <= j.timestamp}).last
 	}
+	notesStraddling {|time|
+			^midiEvents.select{|e| e.midicmd == \noteOn }
+			.select{|e| e.timestamp <= from and: (e.timestamp + e.sustain >= from)};
+	}
 
-	from {|from to|
-		//chaseCCs
+	from {|from to trim=true|
+		
+		var firstNotes = notesStraddling(from).deepCopy; // Array
+
+		if (trim and: (firstNotes.size > 0)) {
+			firstNotes.do( _.timestamp = from )
+		}
 
 		^(
+			firstNotes ++
 			this.chaseCCs(from) ++
 			midiEvents.select{|i| i.timestamp >= from and: (i.timestamp <= (to ? inf)) }
-			=> MIDIItemPlay(_, this)
+			=> MIDIItemPlayer(_, this)
 		)
 	}
 
 	fromNote {|from to|
-		to = to ? this.notes.size;
+		to = to ? midiEvents.notes.size;
 
 		^this.filter({|e| 
 

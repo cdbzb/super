@@ -420,9 +420,9 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 
 	from {|from to|
 		^(
-			this.chaseCCs ++
+			this.chaseCCs(from) ++
 			midiEvents.select{|i| i.timestamp >= from and: (i.timestamp <= (to ? inf)) }
-			=> MIDIItemPlay(_, this)
+			=> MIDIItemPlayer(_, this)
 		)
 	}
 

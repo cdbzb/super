@@ -477,29 +477,38 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			.select{|e| e.timestamp <= time and: (e.timestamp + e.sustain >= time )};
 	}
 
-	from {|from to trim=true|
+	from {|from to trim=true| 
+		//makes a new player starting from from
+		//clips initial notes if trim==true 
+		//changes timestamps to start at 0
 		
 		var firstNotes = this.notesStraddling(from).deepCopy; // Array
 
 		if (trim and: (firstNotes.size > 0)) {
-			firstNotes.do( _.timestamp = from )
+
+			firstNotes.do{|e|
+				e.sustain = e.sustain - (from - e.timestamp);
+				e.timestamp = from 
+			}
 		}
 
 		^(
 			firstNotes ++
 			this.chaseCCs(from) ++
 			midiEvents.select{|i| i.timestamp >= from and: (i.timestamp <= (to ? inf)) }.deepCopy
+			.do{|e| e.timestamp = e.timestamp - from} //adjust times to start at 0
+			// [(),(),()].do(_.dur = 3)
 			=> MIDIItemPlayer(_, this.source)
 		)
 	}
 
 	fromNote {|from to|
-		to = to ? midiEvents.notes.size;
+		to = to ? midiEvents.select{|e| e.midicmd == \noteOn}.size;
 
 		^this.filter({|e| 
 
 			var res = this.chaseCCs(this.noteIndices[from]) 
-			++ e[this.noteIndices[from]..this.noteIndices[to + 1]].setDurs;
+			++ e[this.noteIndices[from]..this.noteIndices[to - 1]].setDurs;
 
 			{
 				this.noteIndices[to + 1].notNil.if {

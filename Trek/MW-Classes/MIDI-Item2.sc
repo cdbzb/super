@@ -6,7 +6,8 @@ MIDIItem2 : MIDIItem{
 		^MIDIItemPlayer(this.midiEvents, this)
 	}
 }
-AbstractMidiEvents {
+AbstractMidiEvents { 
+	// class for MIDIItem and MIDIItemPlayer
 	noteOns {
 		^MIDIItemPlayer(
 			this.midiEvents.select{|e| e.midicmd == \noteOn},
@@ -41,9 +42,13 @@ AbstractMidiEvents {
 	}
 
 	bounds {
-		^(end: this.midiEvents.last.timestamp + ( this.midiEvents.last.dur ? 0 ),  start: this.midiEvents[0].timestamp)
+		^(
+			end: this.midiEvents.last.timestamp + ( this.midiEvents.last.dur ? 0 ),  
+			start: this.midiEvents[0].timestamp
+		)
 	}
-	quantize{ |beats func choiceFunc recalcSustains=true |
+
+	quantize { |beats func choiceFunc recalcSustains=true |
 		var tempoMap = MIDIItemTempoMap(this, choiceFunc, beats);
 		func.notNil.if{
 			^this.quantizeFunc(beats, func, choiceFunc, recalcSustains) 
@@ -65,6 +70,7 @@ AbstractMidiEvents {
 		}
 	}
 }
+
 MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents for use with MicroKeys
 	classvar <>folder, <all;
 	var <>midiEvents , <name, <>initialCCValues;
@@ -417,28 +423,47 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		.collect{|e| e.last}
 			// .sort({|i j| i.timestamp <= j.timestamp}).last
 	}
+	notesStraddling {|time|
+			^midiEvents.select{|e| e.midicmd == \noteOn }
+			.select{|e| e.timestamp <= time and: (e.timestamp + e.sustain >= time )};
+	}
 
-	from {|from to|
+	from {|from to trim=true|
+		
+		var firstNotes = this.notesStraddling(from).deepCopy; // Array
+
+		if (trim and: (firstNotes.size > 0)) {
+			firstNotes.do( _.timestamp = from )
+		}
+
 		^(
+			firstNotes ++
 			this.chaseCCs(from) ++
-			midiEvents.select{|i| i.timestamp >= from and: (i.timestamp <= (to ? inf)) }
-			=> MIDIItemPlayer(_, this)
+			midiEvents.select{|i| i.timestamp >= from and: (i.timestamp <= (to ? inf)) }.deepCopy
+			=> MIDIItemPlayer(_, this.source)
 		)
 	}
 
 	fromNote {|from to|
+		to = to ? midiEvents.notes.size;
+
 		^this.filter({|e| 
-			var res = e[this.noteIndices[from]..this.noteIndices[to + 1]].setDurs;
-			this.noteIndices[to + 1].notNil.if {
-				res.drop(-1)
-			}{
-				res
+
+			var res = this.chaseCCs(this.noteIndices[from]) 
+			++ e[this.noteIndices[from]..this.noteIndices[to + 1]].setDurs;
+
+			{
+				this.noteIndices[to + 1].notNil.if {
+					res.drop(-1)
+				}{
+					res
+				}
 			}
 	});
 	}
 
+	//deprecate this
 	fromNoteTo{ |from to| ^this.fromNote(from, to) }
-
 
 	//collects either: the params of notes selected by Symbol
 	//or the notes themselves if given a number

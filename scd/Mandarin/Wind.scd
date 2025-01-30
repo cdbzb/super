@@ -125,12 +125,17 @@ P.synthV(\an, take: \leadQwen, lag: -0.08, pbind:
 });
 [ "V1L1", "r", Song.quarter.dup(8)].addLine;
 P(\keys,music: {|p b e|
-	MicroKeys(\vocalLine).synth_(\sawSynthSustain);
-	MIDIItem("_250119_105441").take(11).fromNoteTo(0, 100).filter{|e| e.collect{|i| i.amp.notNil.if{i.amp = i.amp / 3}}}.play('vocalLine', clock: TempoClock.new(0.52 / ~quarter, queueSize: 2**12  ))
+	MicroKeys(\vocalLine).synth_(\yowbass);
+	MicroKeys(\harp).synth_(\harp, params: [coef: 0.1]);
+	MIDIItem("_250119_105441").take(11)
+	.filter{|e| e.collect{|i| i.amp.notNil.if{i.amp = i.amp / 8}; i}}
+	.recalcSustains
+	.play([\vocalLine, \harp], clock: TempoClock.new(0.52 / Song.quarter, queueSize: 2**12  ))
 });
 P.synthV(\jun, take: \lead,
 	pbind: MIDIItem("250122_113217").take(2)
-	.collect({|i x| (x >= 1).if { i.timestamp = i.timestamp - (Song.quarter * 4)  }; i })
+	// .collect({|i x| (x >= 1).if { i.timestamp = i.timestamp - (Song.quarter * 4)  }; i })
+	// .from(Song.quarter * 4)
 	.synthVPbind,
 	params: {|p b| [
 	lyrics: "r aaah aah ah - ah",
@@ -148,12 +153,11 @@ P.synthV(\jun, take: \lower,
 	[
 		dur: 
 		MIDIItem("250122_113217").take(2)
-		.collect({|i x| (x >= 1).if { i.timestamp = i.timestamp - (Song.quarter * 4)  }; i })
+		.from(Song.quarter * 4)
 		.synthVPbind.patternpairs.asEvent[\dur]
 		,
 		midinote: 
 		"r 5 4 4 5 4  5 4 4 5 4 5 4 4 5 4".dm(Song.keySig,6)
-
 		,
 	].p
 	,
@@ -205,3 +209,41 @@ P(\arrangement, music: { |p b e|
 
 });
 )
+(
+
+Song(\WindChorus, []).current;
+Song.quarter = 0.52;
+["line1", "1 4 3 1 3 4 3 2 3 2 -7 -5/f 4 3 1/e- 5 6 5 4 5 4 3 1/d".dm2, "e e e e e x xx x xex e e ee e e e e x xx x xex e e e".beats * Song.quarter * 2].addLine;
+P.tune();
+P(\chords, music: { |p b e|
+	[
+		freq: [
+			[5, 11, 13].df('b-', 4),
+			[1, 3, 5].df('f'),
+			[-5, 1, 3].df(\a, \minor),
+			[1, 4, 5].df('e-'),
+			[2, 3, 5, 7 ].df('d', \mixolydian),
+			[1, 3, 5 ].df('d', \mixolydian)
+		].q,
+		instrument: \stringyy,
+		dur: 
+		"q q q q q q".beats * Song.quarter * 4
+		=> _.q
+	].ppm
+});
+P(\bass, music: { |p b e|
+	[
+		freq: [4, 1, -7, -6.5, -7, 1.5].df(\f, 2).dupEach(8).q,
+		dur: 0.5 * Song.quarter ,
+		instrument: \pluckD,
+		out: Effect.bus({|i| i/4 },)
+	].ppm
+});
+//these are loud
+)
+MIDIItem("sketch_250128_143314").save
+MIDIItem("_250128_144049").save.take(1).play(\harp)
+MIDIItem("_250128_144049").play(\harp)
+MIDIItem("_250128_145058").play(\harp)
+MIDIItem("_250128_145059").play(\harp)
+MIDIItem("_250128_145059").gui

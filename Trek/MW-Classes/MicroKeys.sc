@@ -1,12 +1,13 @@
 MicroKeys {
 	var <>array,<>keys, <>namedList, <tuningDeltas, tuningFunction, <heldNotes, <damperDown = false, <>down, <ccs, <storedCCValues, <name, <item, <>active=false;
+	var <>synthFunc;
 	classvar <all;
 	classvar <type=\mk;
 
 	classvar tuningFunction;
 	// methods to make "standard" params
 	*freq {
-		^{|mk| {\freq.kr(900) * (\poly.kr() / 127+ CC.bend(mk: mk, rawScale: 16384).bus.kr => _.midiratio)} }
+		^{|mk| {\freq.kr(900) * (\poly.kr() / 127+ CC.bend(mk: mk).bus.kr => _.midiratio)} }
 	}
 	doNoteOn { |amp midinote params silent|
 		silent.isNil.if{
@@ -39,10 +40,12 @@ MicroKeys {
 			}	
 		});
 		Event.addEventType(\setCC, {
-			Server.default.makeBundle(~latency, { CC(~ctlNum, mk: ~mk).setRaw(~control * 127) }) 
+			Server.default.makeBundle(~latency, {var cc = CC(~ctlNum, mk: ~mk); cc.setRaw(~control * cc.rawScale) }) 
 		});
+
+		//deprecate
 		Event.addEventType(\setBend, {
-			Server.default.makeBundle(~latency, { CC(~ctlNum, mk: ~mk).setRaw(~control) }) 
+			Server.default.makeBundle(~latency, { CC(~ctlNum, mk: ~mk).setRaw(~control * 16384) }) 
 		});
 		Event.addEventType(\setDamper, {
 			~mk.isKindOf(Symbol).if { ~mk = MicroKeys(~mk) };
@@ -64,17 +67,25 @@ MicroKeys {
 
 	*newFrom{ |mk itemName|
 		var newName = mk ++ itemName => _.asSymbol;
-		var new;
+		var new, old, func ;
 
 		all[newName].notNil.if {
 			^all[newName]
 		} { 
+			old = MicroKeys(mk);
 			new = super.new.init(newName) ;
-			new.namedList = MicroKeys(mk).namedList;
+			new.namedList = old.namedList.deepCopy;
+			func = old.synthFunc;
+			func.isKindOf(Symbol).if{
+				new.synth_(func) 
+			} {
+				(mk: newName).use{ SynthDef(newName, func).add.name };
+				new.synth_(newName);
+			};
 			^new
 		}  
-		^new
 	}
+
 	*new { |name func|
 		all[name].notNil.if {
 			^all[name]
@@ -93,7 +104,6 @@ MicroKeys {
 		tuningFunction = { |tuning| { |e| e.num = e.num + tuningDeltas.wrapAt(e.num); e }};
 		namedList.add( \event, {|v n c r params| (vel: v/127, num: n, chan: c, src: r, raw: n, params: params) });
 
-		// this.synth_(func ? I.d);
 		this.synth_( func !? {|i| (mk: name).use{ i.asDefName }} ? I.d);
 		
 		keys = 0 ! 128;
@@ -104,6 +114,7 @@ MicroKeys {
 
 	synth_ { |funcOrDefname params|
 		funcOrDefname.isKindOf(Symbol).if{
+			synthFunc = funcOrDefname;
 			namedList.add( \synth,
 				{ |e|
 					e.silent.isNil.if {
@@ -113,15 +124,13 @@ MicroKeys {
 							++ params 
 							++ ( e.params ? () ).asKeyValuePairs
 						)
-
-						//moving this to doNoteOn
-						// => try{ this.register(_, e.raw) }
 					};
 					e
 				}
 			)
 		}{ //otherwise should be a Function
 			//needs to return an Event with synth in synth:
+			synthFunc = funcOrDefname;
 			this.synth_((mk: name).use{ funcOrDefname.asDefName })
 		};
 		namedList.dump
@@ -184,7 +193,9 @@ MicroKeys {
 		(num == 127).if{
 			damperDown = true.postln 
 		}{ 
-			damperDown = false.postln; heldNotes.do(_.release); heldNotes = Set[] 
+			damperDown = false.postln; 
+			heldNotes.do(_.release); 
+			heldNotes = Set[] 
 		} 
 	}
 
@@ -204,7 +215,8 @@ MicroKeys {
 	}
 	monitor {
 		active = true;
-		storedCCValues.notNil.if{ this.restoreCCValues };
+		// storedCCValues.notNil.if{ this.restoreCCValues };
+		CC.all[name].do(_.activate);
 		// MIDIdef.noteOn(\microOn, {|val num| this.noteOnFunction.(val, num)}, noteNum:range);
 		MIDIdef.noteOn(\microOn ++ name => _.asSymbol,  {|v n| (type: \mk, mk:this, amp: v/127, midinote: n, latency:0, sustain: inf ).play}, );
 		// MIDIdef.noteOff(\microOff, {|vel, num| damperDown.postln; ( damperDown == false ).if{ keys[num].release }{ heldNotes.add(keys[num]) }});

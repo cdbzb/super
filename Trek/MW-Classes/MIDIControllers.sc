@@ -1,15 +1,10 @@
 XMIDIController {
-	*initClass
-	{
-
+	*initClass {
 		fork{
 			MIDIClient.init;
 			MIDIIn.connectAll;
-			// StageLimiter.activate;
 		}
 	}
-
-
 }
 
 KS : XMIDIController {
@@ -17,7 +12,6 @@ KS : XMIDIController {
 	classvar <playFunc;
 	classvar <synths, <active;
 	classvar <busses;
-
 	*initClass {
 		ServerTree.add(
 			{
@@ -61,12 +55,13 @@ KS : XMIDIController {
 }
 
 CC {
-	classvar <all; 
+	classvar <all, <active; 
 	var <number, <>spec, <>mk, <>val=0.5, <bus, <ctl ;
 	var <down, <rawScale;
 
 	*initClass{
-		all = ()
+		all = ();
+		active = Set[];
 	}
 	*newMK { |number spec|
 		^{|mk|
@@ -80,14 +75,13 @@ CC {
 			all[mk][number].notNil.if {
 				var a = all[mk][number]; 
 				a.spec = spec ? a.spec; 
-				//should I check to see if its already there?
-				a.makeDef(number);
 				^a 
 			}
 		} 
 
 		^super.new.init(number, spec, mk, rawScale, default)
 	}
+
 	*getValues {|mkInstance|
 		var res = ();
 		(all[mkInstance ? \default] ? () ).asKeyValuePairs.pairsDo{|i j| res.put(i, j.val)};
@@ -98,32 +92,36 @@ CC {
 		e.keys.do{|i| CC(i, mk: mk).val = (e[i]); CC(i, mk: mk).set(e[i]) }
 		
 	}
+
 	set { |i|
 		val = i; bus.set(spec.map(i))
 	}
+
 	asControl {|name default synth|
 		ctl = name;
 		^NamedControl(name, default, \control, spec: spec)
 
 	}
+
 	mapCtl {|synth|
 		MIDIdef.cc(number.asString ++ ctl, {|v| v.postln; synth.set(ctl, v) }, number);
 	}
+
 	*bend {|spec mk|
 		^CC(\bend, ( spec ? 
 			// ControlSpec(0.5, 2,\exp, default: 1)
 			ControlSpec(-1, 1, default: 0) //use midiratio or linexp to scale
 		), mk, rawScale: 16384, default:0.5 )
 	}
+
 	*keys {|mk|
 		^CC(\keys,mk)
 	}
+
 	*monoGate {|mk|
 		^CC(\monoGate, mk)
 	}
-	buildDefSymbol { |symbol|
-		^symbol ++ number ++ mk => _.asSymbol
-	}
+
 	init { |n s m rs default|
 		number = n; spec = s ? ControlSpec(); mk = m ? \default; rawScale = rs;
 		all[mk] = all[mk] ? (); all[mk][number] = all[mk][number] ? this;
@@ -133,47 +131,60 @@ CC {
 		val = default ? 0;
 		bus.set(spec.map(val));
 		down = List[];
-		this.makeDef(number)
+		// this.makeDef(number)
 	}
+
+	activate {
+		this.makeDef(number);
+		active = active.add(this);
+		active.post; number.debug("added")
+	}
+
 	makeDef { |number|
+
+		var defSymbol = {|symbol| symbol ++ number ++ mk => _.asSymbol};
+
 		^switch(number)
 		{ \bend } {
-			MIDIdef.bend(this.buildDefSymbol(\CC), {|n| this.setRaw(n)});
+			MIDIdef.bend(this.defSymbol(\CC), {|n| this.setRaw(n)});
 		} 
 		{ \keys } {
 			MIDIdef.noteOn(
-				this.buildDefSymbol('CC-on')
+				this.defSymbol('CC-on')
 				, 
 				{|v n| down.add(n);val = n; bus.set(val) }
 			);
 			MIDIdef.noteOff(
-				this.buildDefSymbol('CC-off'),
+				this.defSymbol('CC-off'),
 				{|v n| down.remove(n);val = (down.size > 0).if{ down.last }{ n }; bus.set(val) }
 			) 
 		}
 		{ \monoGate } {
 			MIDIdef.noteOn(
-				this.buildDefSymbol('CC-monogateOn'),
+				this.defSymbol('CC-monogateOn'),
 				{|vel num| \down ++ down => _.postln; down.add(num); val = 1; bus.set(val)  });
 			MIDIdef.noteOff(
-				this.buildDefSymbol('CC-monogateOff'),
+				this.defSymbol('CC-monogateOff'),
 				{|vel num|  down.remove(num); (down.size < 1).if { val = 0; bus.set(val)}  })
 		}
 		{
 			MIDIdef.cc(
-				this.buildDefSymbol(\CC),
+				this.defSymbol(\CC),
 				{|n| this.setRaw(n)}, number);
 		}
 	}
+
 	setRaw {|num| // to 127
 		// val = spec.map(num / rawScale);
 		// bus.setSynchronous(val)
 		val = num/rawScale;
 		bus.setSynchronous(spec.map(val))
 	}
+
 	map { |name func|
 		MIDIdef.cc(name, {func.(spec.map(val))}, number)
 	}
+
 	mapSynth{|synth param|
 		fork{
 			while{ synth.isRunning.not }
@@ -182,6 +193,7 @@ CC {
 		}
 
 	}
+
 	*array{
 		^all.keys.asArray.collect{|k| [k, all[k].val]}.flat.cs
 	}

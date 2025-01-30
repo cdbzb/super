@@ -6,7 +6,57 @@ MIDIItem2 : MIDIItem{
 		^MIDIItemPlayer(this.midiEvents, this)
 	}
 }
-AbstractMidiEvents {
+AbstractMidiEvents { 
+	// class for MIDIItem and MIDIItemPlayer
+	gui {
+		var notes = this.notes;
+		var start = notes[0].timestamp;
+		var end = notes.last.timestamp + notes.last.sustain;
+		var width = 1400;
+		var height = 800;
+		// Create a window
+		var window = Window("Piano Roll", Rect(100, 100, width, height)).front;
+
+		// Create a UserView for drawing
+		var view = UserView(window, Rect(0, 0, width, 1600))
+		.background_(Color.white);
+
+		// Define the drawing function
+		view.drawFunc = {
+			var noteHeight = 1600 / 128; // Height of each note row (window height divided by 128 notes)
+			var timeScale = width / (end - start); // Pixels per second
+
+			// Draw the piano roll grid
+			Pen.color = Color.gray(0.8);
+			128.do { |i| // 128 MIDI notes (0–127)
+				var y = i * noteHeight; // Calculate y position (no inversion for now)
+				Pen.line(0@y, width@y);
+			};
+			Pen.stroke;
+			// Draw the notes
+			notes.do { |e num|
+				var y =   height - (e.note - 30 * noteHeight).debug("y") ; // Calculate y position (no inversion for now)
+				var x = e.timestamp - start *  timeScale ; // Start at time 0 (you can adjust this if your events have start times)
+				var width = ( e.sustain ? 100 ) * timeScale ;
+
+				// Draw the note rectangle
+				Pen.color = Color.blue( e.amp ); // Use amplitude for color intensity
+				Pen.addRect(Rect(x, y, width, noteHeight).debug("rect"));
+				Pen.fill;
+				Pen.color = Color.black;
+				Pen.stringAtPoint(
+					num.asString, // Convert MIDI note number to string
+					Point(x, y - 15),  // Position text slightly above the rectangle
+					Font.default,
+					Color.black
+				);
+
+			};
+		};
+
+		// Refresh the view
+		view.refresh;
+	}
 	noteOns {
 		^MIDIItemPlayer(
 			this.midiEvents.select{|e| e.midicmd == \noteOn},
@@ -41,9 +91,13 @@ AbstractMidiEvents {
 	}
 
 	bounds {
-		^(end: this.midiEvents.last.timestamp + ( this.midiEvents.last.dur ? 0 ),  start: this.midiEvents[0].timestamp)
+		^(
+			end: this.midiEvents.last.timestamp + ( this.midiEvents.last.dur ? 0 ),  
+			start: this.midiEvents[0].timestamp
+		)
 	}
-	quantize{ |beats func choiceFunc recalcSustains=true |
+
+	quantize { |beats func choiceFunc recalcSustains=true |
 		var tempoMap = MIDIItemTempoMap(this, choiceFunc, beats);
 		func.notNil.if{
 			^this.quantizeFunc(beats, func, choiceFunc, recalcSustains) 
@@ -65,6 +119,7 @@ AbstractMidiEvents {
 		}
 	}
 }
+
 MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents for use with MicroKeys
 	classvar <>folder, <all;
 	var <>midiEvents , <name, <>initialCCValues;
@@ -191,12 +246,13 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		recording = this;
 		midiEvents = List[];
 		// add Events to set initial CC values to midiEvents
-		CC.getValues.asKeyValuePairs.pairsDo{ | i j |
+		CC.getValues(mk).asKeyValuePairs.pairsDo{ | i j |
 			midiEvents.add(
 				initialEvent ++ (
-					type: \setcc,
-					ctlnum: i,
-					control: CC(i).spec.unmap(j) * CC(i).rawScale, //put back in original
+					type: \setCC,
+					ctlNum: i,
+					// control: CC(i).spec.unmap(j) * CC(i).rawScale , //put back in original
+					control: j
 				)
 			)
 		};
@@ -229,10 +285,11 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 								( num == 64 ).if{
 									(type:\setDamper, ctlNum:\damper, control: val)//.postln 
 								} { 
+									//TODO do away with this divisions ???
 									(type: \setCC, ctlNum:num, control: val / 127)//.postln
 								} 
 							},
-							\bend, { (type: \setBend, ctlNum:\bend, control: val)},
+							\bend, { (type: \setBend, ctlNum:\bend, control: val / 16384)},
 							// \bend, { (val: val, ctlNum:) }
 							
 						)
@@ -349,7 +406,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			overdub.if { 
 				mk = MicroKeys(mk) 
 			} {
-				mk = MicroKeys.newFrom(mk, source.name.asSymbol) 
+				mk = MicroKeys.newFrom(mk, UniqueID.next) 
 			}
 		};
 		// (mk.size > 1).if { 'play first'.postln; mk.do(this.play() };
@@ -401,37 +458,61 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	}
 
 	noteIndices {
-		^midiEvents.select{|e| e.midicmd == \noteOn}
+		^midiEvents.select{|e| e.midicmd == \noteOn }
 		.collect{|i x| x->midiEvents.indexOf(i) }
 		.asDict
 	}
 
 	chaseCCs { |from|
-		^midiEvents.select{|e| e.type.asString.contains("mk").not and: (e.timestamp <= from) }
+		^midiEvents
+		.select{|e| e.timestamp <= from }
+		.select{|e| e.ctlNum.notNil }
+		.sort{|i j| i.ctlNum <= j.ctlNum }
+		.separate{|i j| i.ctlNum != j.ctlNum }
+		.collect{|e| e.last}
 			// .sort({|i j| i.timestamp <= j.timestamp}).last
-			[2, 3, \e, 4].separate{|i j| i.type != j.type}
-		}
+	}
+	notesStraddling {|time|
+			^midiEvents.select{|e| e.midicmd == \noteOn }
+			.select{|e| e.timestamp <= time and: (e.timestamp + e.sustain >= time )};
 	}
 
-	from {|from to|
-		^this.filter({|e| 
-			e.collect{|i| i.timestamp >= from and: (i.timestamp <= (to ? inf))}
-		})
+	from {|from to trim=true|
+		
+		var firstNotes = this.notesStraddling(from).deepCopy; // Array
+
+		if (trim and: (firstNotes.size > 0)) {
+			firstNotes.do( _.timestamp = from )
+		}
+
+		^(
+			firstNotes ++
+			this.chaseCCs(from) ++
+			midiEvents.select{|i| i.timestamp >= from and: (i.timestamp <= (to ? inf)) }.deepCopy
+			=> MIDIItemPlayer(_, this.source)
+		)
 	}
 
 	fromNote {|from to|
+		to = to ? midiEvents.notes.size;
+
 		^this.filter({|e| 
-			var res = e[this.noteIndices[from]..this.noteIndices[to + 1]].setDurs;
-			this.noteIndices[to + 1].notNil.if {
-				res.drop(-1)
-			}{
-				res
+
+			var res = this.chaseCCs(this.noteIndices[from]) 
+			++ e[this.noteIndices[from]..this.noteIndices[to + 1]].setDurs;
+
+			{
+				this.noteIndices[to + 1].notNil.if {
+					res.drop(-1)
+				}{
+					res
+				}
 			}
 	});
 	}
 
+	//deprecate this
 	fromNoteTo{ |from to| ^this.fromNote(from, to) }
-
 
 	//collects either: the params of notes selected by Symbol
 	//or the notes themselves if given a number

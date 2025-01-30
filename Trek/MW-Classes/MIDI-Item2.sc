@@ -11,7 +11,7 @@ AbstractMidiEvents {
 	gui {
 		var notes = this.notes;
 		var start = notes[0].timestamp;
-		var end= notes.last.timestamp + notes.last.sustain;
+		var end = notes.last.timestamp + notes.last.sustain;
 		var width = 1400;
 		var height = 800;
 		// Create a window
@@ -34,16 +34,13 @@ AbstractMidiEvents {
 			};
 			Pen.stroke;
 			// Draw the notes
-			notes.do { |event num|
-				var note = event[\midinote];
-				var sustain = event[\sustain ];
-				var amp = event[\amp];
-				var y =   height - (note - 30 * noteHeight).debug("y") ; // Calculate y position (no inversion for now)
-				var x = event.timestamp - start *  timeScale ; // Start at time 0 (you can adjust this if your events have start times)
-				var width = ( sustain ? 100 ) * timeScale ;
+			notes.do { |e num|
+				var y =   height - (e.note - 30 * noteHeight).debug("y") ; // Calculate y position (no inversion for now)
+				var x = e.timestamp - start *  timeScale ; // Start at time 0 (you can adjust this if your events have start times)
+				var width = ( e.sustain ? 100 ) * timeScale ;
 
 				// Draw the note rectangle
-				Pen.color = Color.blue( 1 ); // Use amplitude for color intensity
+				Pen.color = Color.blue( e.amp ); // Use amplitude for color intensity
 				Pen.addRect(Rect(x, y, width, noteHeight).debug("rect"));
 				Pen.fill;
 				Pen.color = Color.black;

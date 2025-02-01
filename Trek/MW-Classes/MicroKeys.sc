@@ -104,7 +104,20 @@ MicroKeys {
 		tuningFunction = { |tuning| { |e| e.num = e.num + tuningDeltas.wrapAt(e.num); e }};
 		namedList.add( \event, {|v n c r params| (vel: v/127, num: n, chan: c, src: r, raw: n, params: params) });
 
-		this.synth_( func !? {|i| (mk: name).use{ i.asDefName }} ? I.d);
+		this.synth_(
+			func.notNil.if { 
+				func.isKindOf(Symbol).if {
+					func
+				} {
+					(mk: name).use{ func.asDefName }
+				} 
+			} {
+				name
+			}
+		);
+		// this.synth_(
+		// 	func !? {|i| (mk: name).use{ i.asDefName }} ? I.d);
+			
 		
 		keys = 0 ! 128;
 		heldNotes = Set[];

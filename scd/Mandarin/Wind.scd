@@ -1,10 +1,29 @@
 (
 //lyrics from Qwen
+春风拂面来 
+花开满园香飘远 
+心随梦飞翔 
+爱永恒 
 
 春风拂面来 (5)
 花开满园香飘远 (7)
 心随梦飞翔 (5)
 爱永恒 (3)
+)
+(
+//bridge lyrics from DeepSeek
+() ) | 星光 | 闪烁 | 夜空 | 中 | 心 | 跳 | 动
+( ) | 你我 | 相拥 | 在这 | 一刻 | 爱 | 永 | 恒
+
+Transliteration (Pinyin):
+
+( ) | xīng guāng | shǎn shuò | yè kōng | zhōng | xīn | tiào | dòng
+( ) | nǐ wǒ | xiāng yōng | zài zhè | yī kè | ài | yǒng | héng
+
+Translation in English:
+
+( ) | Starlight | flickers | in the night sky | heart | beats | on
+( ) | You and I | embrace | in this | moment | love | eternal | forever
 )
 (
 MicroKeys(\vocalLine).synth_(\sawSynthSustain)
@@ -213,6 +232,19 @@ P(\arrangement, music: { |p b e|
 Song(\WindChorus, []).current;
 Song.quarter = 0.52 / 1;
 ["line1", "1 4 3 1 3 4 3 2 3 2 -7 -5/f 4 3 1/e- 5 6 5 4 5 4 3 1/d".dm2, "e e e e e x xx x xex e e ee e e e e x xx x xex e e e".beats * Song.quarter * 2].addLine;
+P.synthVs(\an, take: [\lead, \dbl], params: {|p b| [
+	lyrics: "r 星 光 闪 烁  夜 空  中 - 心 跳 动
+ 你 我  相 拥  在 这  一 - 刻  爱  永  恒",
+	pitchTake: 1,
+	language: \Mandarin
+] }, music:{|p b e|
+	{
+		e.playbuf
+		/3
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+P.tune();
 P(\arrangement, music: { |p b e|
 	(instrument: \cymbalsDS, amp: 0.02).play;
 	[
@@ -296,3 +328,4 @@ MIDIItem("_250128_145059").gui
 MicroKeys(\default).
 .monitor
 MIDIItem("_250130_150609").play([\harp, \stringyy])
+MIDIItem("_250130_150609").play(\harp)

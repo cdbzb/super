@@ -178,43 +178,75 @@ MIDIItem("250122_113217").take(2)
 //.play(\vocaline)
 });
 P(\arrangement, music: { |p b e|
-(instrument: \cymbalsDS, amp: 0.02).play;
-[
-	instrument: \JWSnare,
-	dur: "q e eq q".beats.q(inf) * ~quarter,
-	rest: [\r, 1, 1, 1].q(inf),
-	amp: 0.25
-	// dur: 
-].pp;
-[
-	instrument: \bd_808,
-	dur: "e eq qq".beats * ~quarter => _.q(inf),
-	amp: 0.6
+	(instrument: \cymbalsDS, amp: 0.02).play;
+	[
+		instrument: \JWSnare,
+		dur: "q e eq q".beats.q(inf) * ~quarter,
+		rest: [\r, 1, 1, 1].q(inf),
+		amp: 0.25
+		// dur: 
+	].pp;
+	[
+		instrument: \bd_808,
+		dur: "e eq qq".beats * ~quarter => _.q(inf),
+		amp: 0.6
 
-].pp;
-// ~quarter = 0.46;
-[
-	instrument: [\harp, \sawSynth],
-	freq: [1, 1, 1, 1, 1, 1, 1, 1, 5, 5, 5, 6, 4, 4, 5, 5, ].df(\c, [3, 4]).q(8),
-	dur: ~quarter / 2,
-	legato: 0.4,
-	att: 0, rel: 0.5,
-	amp: [0.05, 0.2]
-].pp;
-[
-	freq: [1, 4, 5, 6 ,4, 5, 1, 4, 5, 6 , 4, 5].df(\c, [3]).q(8),
-	dur: "eee e ex x e e".beats * ~quarter * 2 => _.q(16),
-	amp: 0.3
-].pp;
+	].pp;
+	// ~quarter = 0.46;
+	[
+		instrument: [\harp, \sawSynth],
+		freq: [1, 1, 1, 1, 1, 1, 1, 1, 5, 5, 5, 6, 4, 4, 5, 5, ].df(\c, [3, 4]).q(8),
+		dur: ~quarter / 2,
+		legato: 0.4,
+		att: 0, rel: 0.5,
+		amp: [0.05, 0.2]
+	].pp;
+	[
+		freq: [1, 4, 5, 6 ,4, 5, 1, 4, 5, 6 , 4, 5].df(\c, [3]).q(8),
+		dur: "eee e ex x e e".beats * ~quarter * 2 => _.q(16),
+		amp: 0.3
+	].pp;
 
 });
 )
 (
-
 Song(\WindChorus, []).current;
-Song.quarter = 0.52;
+Song.quarter = 0.52 / 1;
 ["line1", "1 4 3 1 3 4 3 2 3 2 -7 -5/f 4 3 1/e- 5 6 5 4 5 4 3 1/d".dm2, "e e e e e x xx x xex e e ee e e e e x xx x xex e e e".beats * Song.quarter * 2].addLine;
-P.tune();
+P(\arrangement, music: { |p b e|
+	(instrument: \cymbalsDS, amp: 0.02).play;
+	[
+		instrument: \JWSnare,
+		dur: "q ee q q".beats.q(inf) * ~quarter,
+		// rest: [\r, 1, 1, 1].q(inf),
+		rest: [\r, 1, \r, 1].q(inf),
+		amp: 0.25
+		// dur: 
+	].pp;
+	[
+		instrument: \bd_808,
+		dur: "qe e qq".beats * ~quarter => _.q(inf),
+		dur: "qee e q e".beats * ~quarter => _.q(inf),
+		amp: 0.6
+
+	].pp;
+	// ~quarter = 0.46;
+	// [
+	// 	instrument: [\harp, \sawSynth],
+	// 	freq: [1, 1, 1, 1, 1, 1, 1, 1, 5, 5, 5, 6, 4, 4, 5, 5, ].df(\c, [3, 4]).q(8),
+	// 	dur: ~quarter / 2,
+	// 	legato: 0.4,
+	// 	att: 0, rel: 0.5,
+	// 	amp: [0.05, 0.2]
+	// ].pp;
+	[
+		freq: [1, 4, 5, 6 ,4, 5, 1, 4, 5, 6 , 4, 5].df(\c, [3]).q(8),
+		dur: "eee e ex x e e".beats * ~quarter * 2 => _.q(16),
+		amp: 0.3
+	]//.pp;
+
+});
+P.tune( _ <> [instrument: \sawSynthSustain].pm  );
 P(\chords, music: { |p b e|
 	[
 		freq: [
@@ -223,23 +255,37 @@ P(\chords, music: { |p b e|
 			[-5, 1, 3].df(\a, \minor),
 			[1, 4, 5].df('e-'),
 			[2, 3, 5, 7 ].df('d', \mixolydian),
-			[1, 3, 5 ].df('d', \mixolydian)
+			[1, 3, 5, 11 ].df('d', \mixolydian)
 		].q,
 		instrument: \stringyy,
+		wet: 0.1, amp: 0.3,
 		dur: 
 		"q q q q q q".beats * Song.quarter * 4
 		=> _.q
 	].ppm
 });
 P(\bass, music: { |p b e|
-	[
-		freq: [4, 1, -7, -6.5, -7, 1.5].df(\f, 2).dupEach(8).q,
-		dur: 0.5 * Song.quarter ,
-		instrument: \pluckD,
-		out: Effect.bus({|i| i/4 },)
-	].ppm
+	var div = 8;
+	[\pluckD, \default].do{ |i x|
+		[
+			freq: [4, 1, -7, -6.5, -7, 1.5].df(\f, 2).dupEach(8).q,
+			freq: [
+				4, 4, 4, 4, 4, 4, 5, 6,
+				1, 1, 1, 1, 1, 1, 6, 5,
+				-7, -7, -7, -7, -7, -7, 5, 4.5,
+				-6.5, -6.5, -6.5, -6.5, -6.5, -6.5, 4, 3,
+				-7, -7, -7, -7, -7, -7, 1.5, 3,
+				-6, -6, -6, -6, -6, -6, 3, 6
+			].df(\f, 2).q,
+			dur:  Song.quarter * div / 8 / 2 ,
+			instrument: i,
+			out: Effect.bus({|i| 2 * i/( [4,0.5][x] ) => Pan2.ar(_, x * 2 -1) },)
+		].ppm
+	}
 });
 //these are loud
+["line2", "1 4 3 1 3 4 3 2 3 2 -7 -5/f 4 3 1/e- 5 6 5 4 5 4 3 1/d".dm2, "e e e e e x xx x xex e e ee e e e e x xx x xex e e e".beats * Song.quarter * 2].addLine;
+P.clone("line1", [\TUNE, \bass, \chords]); 
 )
 MIDIItem("sketch_250128_143314").save
 MIDIItem("_250128_144049").save.take(1).play(\harp)
@@ -247,3 +293,6 @@ MIDIItem("_250128_144049").play(\harp)
 MIDIItem("_250128_145058").play(\harp)
 MIDIItem("_250128_145059").play(\harp)
 MIDIItem("_250128_145059").gui
+MicroKeys(\default).
+.monitor
+MIDIItem("_250130_150609").play([\harp, \stringyy])

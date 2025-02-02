@@ -397,12 +397,10 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	}
 
 	play { |mk clock post=#[] overdub=false|
-	overdub.debug("overdub1");
 
 		(mk.rank > 0).if { mk.do{|i| this.play(i, clock, post, overdub) }; ^this };
 
 		mk.isKindOf(Symbol).if {
-			overdub.debug("overdub"); 
 			overdub.if { 
 				mk = MicroKeys(mk) 
 			} {

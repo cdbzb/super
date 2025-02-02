@@ -12,18 +12,18 @@
 )
 (
 //bridge lyrics from DeepSeek
-() ) | 星光 | 闪烁 | 夜空 | 中 | 心 | 跳 | 动
-( ) | 你我 | 相拥 | 在这 | 一刻 | 爱 | 永 | 恒
+	() ) | 星光 | 闪烁 | 夜空 | 中 | 心 | 跳 | 动
+	( ) | 你我 | 相拥 | 在这 | 一刻 | 爱 | 永 | 恒
 
-Transliteration (Pinyin):
+	Transliteration (Pinyin):
 
-( ) | xīng guāng | shǎn shuò | yè kōng | zhōng | xīn | tiào | dòng
-( ) | nǐ wǒ | xiāng yōng | zài zhè | yī kè | ài | yǒng | héng
+	( ) | xīng guāng | shǎn shuò | yè kōng | zhōng | xīn | tiào | dòng
+	( ) | nǐ wǒ | xiāng yōng | zài zhè | yī kè | ài | yǒng | héng
 
-Translation in English:
+	Translation in English:
 
-( ) | Starlight | flickers | in the night sky | heart | beats | on
-( ) | You and I | embrace | in this | moment | love | eternal | forever
+	( ) | Starlight | flickers | in the night sky | heart | beats | on
+	( ) | You and I | embrace | in this | moment | love | eternal | forever
 )
 (
 MicroKeys(\vocalLine).synth_(\sawSynthSustain)
@@ -93,7 +93,7 @@ MIDIItem("_250119_105441").take(11).play('vocalLine', clock: TempoClock.new(0.52
 // .take(7).play('vocalLine')
 // .record('vocalLine')
 )
-(
+( // song
 /*
 时代的风吹过长安街
 人群像落叶随风飘
@@ -229,7 +229,7 @@ P(\arrangement, music: { |p b e|
 });
 )
 (
-Song(\WindChorus, []).current;
+Song(\Wind, []).current;
 Song.quarter = 0.52 / 1;
 ["line1", "1 4 3 1 3 4 3 2 3 2 -7 -5/f 4 3 1/e- 5 6 5 4 5 4 3 1/d".dm2, "e e e e e x xx x xex e e ee e e e e x xx x xex e e e".beats * Song.quarter * 2].addLine;
 P.synthVs(\an, take: [\lead, \dbl], params: {|p b| [
@@ -329,3 +329,66 @@ MicroKeys(\default).
 .monitor
 MIDIItem("_250130_150609").play([\harp, \stringyy])
 MIDIItem("_250130_150609").play(\harp)
+(// third section
+/*
+梦在风中破碎，
+心在雾中徘徊
+*/
+Song(\Wind, []).current;
+Song.quarter = 0.52 * 2;
+["G chorus line 1", "3 -7 -6 4 3 4  6 4 2 7 6 5".dm(\g, \mixolydian), "e e x x e qq  e e x x e qq".beats * (Song.quarter ? (0.52 * 2))].addLine;
+P.tune();
+P.synthV(\an, take: 
+	// \lead_melisma
+	\lead
+	, params: {|p b| [
+	lyrics: " 梦 在 风 中 破 碎 心 在 雾 中 徘 徊 ",
+	// lyrics: " 梦 - - 中 - 碎 心 - - 中 - 徊 ",
+	pitchTake: 1,
+	language: \Mandarin
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+P(\line, music: { |p b e|
+	[
+		freq: [\r, 4, 2, -6, -7, 6].df(\g, \mixolydian).q,
+		dur: b.parse([5, 1/4, 1/4, 1/4, 1/4, 3]).q ,
+		instrument: \stringyy,
+		wet: 0,
+		amp: 1
+	].ppm;
+	[
+		freq: [\r, 2, 3, -7, 1 ].df(\g, \mixolydian).q,
+		dur: b.parse([8, [3, 1/4], 1/4, 1/4, 1/4]).q ,
+		instrument: \stringyy,
+		wet: 0,
+		amp: 1
+	].ppm;
+
+});
+P.synthV(\an, take: \lower, params: {|p b| [
+	filter: (midinote: _ - 12),
+	lyrics: " 梦 在 风 中 破 碎 心 在 雾 中 徘 徊 ",
+	pitchTake: 2,
+	language: \Mandarin
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+P(\bass, music: { |p b e|
+	[
+		freq: [11, 7].df(\g,[3, 2], \mixolydian).q(4),
+		dur: "qe e".beats.q(4)* Song.quarter
+	].pp
+});
+["repeat", "r","e e x x e qq  e e x x e qq".beats * (Song.quarter)].addLine;
+Song.cloneDursAndTempoMap('G chorus line 1');
+P.clone('G chorus line 1', [\bass, \line])
+
+
+)

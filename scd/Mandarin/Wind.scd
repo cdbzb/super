@@ -1,16 +1,17 @@
-(
-//lyrics from Qwen
-春风拂面来 
-花开满园香飘远 
-心随梦飞翔 
-爱永恒 
+( //lyrics
 
-春风拂面来 (5)
-花开满园香飘远 (7)
-心随梦飞翔 (5)
-爱永恒 (3)
-)
-(
+/*
+// verse lyrics from Qwen
+	春风拂面来 
+	花开满园香飘远 
+	心随梦飞翔 
+	爱永恒 
+
+	春风拂面来 (5)
+	花开满园香飘远 (7)
+	心随梦飞翔 (5)
+	爱永恒 (3)
+
 //bridge lyrics from DeepSeek
 	() ) | 星光 | 闪烁 | 夜空 | 中 | 心 | 跳 | 动
 	( ) | 你我 | 相拥 | 在这 | 一刻 | 爱 | 永 | 恒
@@ -24,75 +25,74 @@
 
 	( ) | Starlight | flickers | in the night sky | heart | beats | on
 	( ) | You and I | embrace | in this | moment | love | eternal | forever
+*/
+);
+( // some midi sketches
+MIDIItem("_250119_101434").take(1).play('sawSynthSustain') //2nd or third time aroung has a nice transition
+MIDIItem("_250119_102256").play('sawSynthSustain')
+MIDIItem("_250119_103705").play('sawSynthSustain')
+// .record('sawSynthSustain')
 )
-(
-MicroKeys(\vocalLine).synth_(\sawSynthSustain)
-.monitor
-;
-MIDIItem("_250119_101434").take(1).play('vocalLine') //2nd or third time aroung has a nice transition
-MIDIItem("_250119_102256").play('vocalLine')
-MIDIItem("_250119_103705").play('vocalLine')
-// .record('vocalLine')
-)
-(
+( // verse sketch with patterns
 ~quarter = 0.52;
-MicroKeys(\port).synth_(\defaultPorto);//.monitor;
-// MIDIItem("250121_120748").take(2).play(\vocalLine);
-MIDIItem("_250120_094839").play(\port);
-(instrument: \cymbalsDS, amp: 0.02).play;
-[
-	instrument: \JWSnare,
-	dur: "q e eq q".beats.q(inf) * ~quarter,
-	rest: [\r, 1, 1, 1].q(inf),
-	amp: 0.25
-	// dur: 
-].pp;
-[
-	instrument: \bd_808,
-	dur: "e eq qq".beats * ~quarter => _.q(inf),
-	amp: 0.6
+// MIDIItem("250121_120748").take(2).play(\sawSynthSustain);
+	MIDIItem("_250120_094839").play(\defaultPorto);
+	(instrument: \cymbalsDS, amp: 0.02).play;
+	[
+		instrument: \JWSnare,
+		dur: "q e eq q".beats.q(inf) * ~quarter,
+		rest: [\r, 1, 1, 1].q(inf),
+		amp: 0.25
+		// dur: 
+	].pp;
+	[
+		instrument: \bd_808,
+		dur: "e eq qq".beats * ~quarter => _.q(inf),
+		amp: 0.6
 
-].pp;
-// ~quarter = 0.46;
-[
-	instrument: [\harp, \sawSynth],
-	freq: [1, 1, 1, 1, 1, 1, 1, 1, 5, 5, 5, 6, 4, 4, 5, 5, ].df(\c, [3, 4]).q(8),
-	dur: ~quarter / 2,
-	legato: 0.4,
-	att: 0, rel: 0.5,
-	amp: [0.05, 0.2]
-].pp;
-[
-	freq: [1, 4, 5, 6 ,4, 5, 1, 4, 5, 6 , 4, 5].df(\c, [3]).q(8),
-	dur: "eee e ex x e e".beats * ~quarter * 2 => _.q(16),
-	amp: 0.3
-].pp;
-MicroKeys(\lead).synth_({ arg out=0,  amp = 0.1, att = 0.1, rel = 2, lofreq = 1000, hifreq = 3000, lagTime = 0.3, spread = 1, center = 0;
-	var env, snd, freq;
-	// freq = Lag.ar(
+	].pp;
+	// ~quarter = 0.46;
+	[
+		instrument: [\harp, \sawSynth],
+		freq: [1, 1, 1, 1, 1, 1, 1, 1, 5, 5, 5, 6, 4, 4, 5, 5, ].df(\c, [3, 4]).q(8),
+		dur: ~quarter / 2,
+		legato: 0.4,
+		att: 0, rel: 0.5,
+		amp: [0.05, 0.2]
+	].pp;
+	[
+		freq: [1, 4, 5, 6 ,4, 5, 1, 4, 5, 6 , 4, 5].df(\c, [3]).q(8),
+		dur: "eee e ex x e e".beats * ~quarter * 2 => _.q(16),
+		amp: 0.3
+	].pp;
+	( MicroKeys(\lead).synth_({
+		arg out=0,  amp = 0.1, att = 0.1, rel = 2, lofreq = 1000, hifreq = 3000, lagTime = 0.3, spread = 1, center = 0;
+		var env, snd, freq;
+		// freq = Lag.ar(
 		freq = MicroKeys.freq.(~mk).()
-		 => Lag.kr(_, lagTime)
+		=> Lag.kr(_, lagTime)
 
 		// ,lagTime);
 		;
-	env = Env.perc(
-		attackTime: att,
-		releaseTime: rel,
-		level: amp
-	).kr(doneAction: 2);
-	snd = Saw.ar(freq: freq * [0.99, 1, 1.001, 1.008], mul: env);
-	snd = LPF.ar(
-		in: snd,
-		freq: LFNoise2.kr(1).range(lofreq, hifreq)
+		env = Env.perc(
+			attackTime: att,
+			releaseTime: rel,
+			level: amp
+		).kr(doneAction: 2);
+		snd = Saw.ar(freq: freq * [0.99, 1, 1.001, 1.008], mul: env);
+		snd = LPF.ar(
+			in: snd,
+			freq: LFNoise2.kr(1).range(lofreq, hifreq)
+		);
+		snd = Splay.ar(snd,spread:spread,center:center);
+		Out.ar(out, snd);
+	}.asDefName);
 	);
-	snd = Splay.ar(snd,spread:spread,center:center);
-	Out.ar(out, snd);
-}.asDefName);
-// MicroKeys(\lead).monitor
-MIDIItem("_250119_105441").take(11).play('vocalLine', clock: TempoClock.new(0.52 / ~quarter, qeueSize: 2**12  ))
-// .take(7).play('vocalLine')
-// .record('vocalLine')
-)
+	// MicroKeys(\lead).monitor
+	MIDIItem("_250119_105441").take(11).play('sawSynthSustain', clock: TempoClock.new(0.52 / ~quarter, qeueSize: 2**12  ))
+	// .take(7).play('sawSynthSustain')
+	// .record('sawSynthSustain')
+	)
 ( // song
 /*
 时代的风吹过长安街
@@ -101,10 +101,8 @@ MIDIItem("_250119_105441").take(11).play('vocalLine', clock: TempoClock.new(0.52
 但真相藏在雾里逃
 */
 Song(\Wind, []).current;
-
 Song.keySig=\c;
 Song.quarter = 0.52;
-
 ["countoff", "r", [1]].addLine;
 P.synthV(\an, take: \leadQwen, lag: -0.08, pbind: 
 	MIDIItem("_250119_105441").take(11)
@@ -144,12 +142,12 @@ P.synthV(\an, take: \leadQwen, lag: -0.08, pbind:
 });
 [ "V1L1", "r", Song.quarter.dup(8)].addLine;
 P(\keys,music: {|p b e|
-	MicroKeys(\vocalLine).synth_(\yowbass);
+	MicroKeys(\sawSynthSustain).synth_(\yowbass);
 	MicroKeys(\harp).synth_(\harp, params: [coef: 0.1]);
 	MIDIItem("_250119_105441").take(11)
 	.filter{|e| e.collect{|i| i.amp.notNil.if{i.amp = i.amp / 8}; i}}
 	.recalcSustains
-	.play([\vocalLine, \harp], clock: TempoClock.new(0.52 / Song.quarter, queueSize: 2**12  ))
+	.play([\sawSynthSustain, \harp], clock: TempoClock.new(0.52 / Song.quarter, queueSize: 2**12  ))
 });
 P.synthV(\jun, take: \lead,
 	pbind: MIDIItem("250122_113217").take(2)
@@ -319,6 +317,7 @@ P(\bass, music: { |p b e|
 ["line2", "1 4 3 1 3 4 3 2 3 2 -7 -5/f 4 3 1/e- 5 6 5 4 5 4 3 1/d".dm2, "e e e e e x xx x xex e e ee e e e e x xx x xex e e e".beats * Song.quarter * 2].addLine;
 P.clone("line1", [\TUNE, \bass, \chords]); 
 )
+
 MIDIItem("sketch_250128_143314").save
 MIDIItem("_250128_144049").save.take(1).play(\harp)
 MIDIItem("_250128_144049").play(\harp)
@@ -329,6 +328,7 @@ MicroKeys(\default).
 .monitor
 MIDIItem("_250130_150609").play([\harp, \stringyy])
 MIDIItem("_250130_150609").play(\harp)
+
 (// third section
 /*
 梦在风中破碎，
@@ -353,21 +353,107 @@ P.synthV(\jun, take:
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
+P(\arrangement, music: { |p b e|
+	var div = 2;
+	(instrument: \cymbalsDS, amp: 0.02).play;
+	[
+		instrument: \JWSnare,
+		dur: "q ee q q".beats.q(inf) * Song.quarter / div,
+		// rest: [\r, 1, 1, 1].q(inf),
+		// rest: [\r, 1, \r, 1].q(inf),
+		amp: 0.25
+		// dur: 
+	].pp;
+	[
+		instrument: \bd_808,
+		dur: "qe e qq".beats * Song.quarter / div => _.q(inf),
+		dur: "q eee q e".beats * Song.quarter / div => _.q(inf),
+		amp: 0.6
+
+	].pp;
+P(\tamb, music: { |p b e|
+	{
+		var levels = [3,1,2,1] /3 => _.dq(inf);
+		var durs =  
+		1/8 ! 16 
+		* Song.quarter
+		+ ( [1, -1] /80 => _.dup(8) ) //swing amt
+		=> _.flat 
+		// => _.warpTo(e.tempoMap.quantizeWindow(0.3))
+		=> _.dq(8);
+		var triggers = TDuty.kr( durs, 0,1,gapFirst:0 );
+		var energy = EnvGen.ar( Env.linen(0, 0.00, 0.015), triggers, doneAction:0   ) 
+		* Demand.kr(triggers,0,levels 
+		);
+		Shakers.ar(3, energy:energy   , decay: 1).tanh
+		* 8
+		=> Pan2.ar(_, 0.8)
+		// * EnvGen.cutoff(b.parse([4]).unbubble,3)
+		=> DWGReverbC1C3.ar(_,mix:0.05)
+		/12
+		=> Pan2.ar(_,0.75)
+		=> Out.ar(1, _)
+
+	}.play;
+	[
+		instrument: \hat_808, 
+		dur: "x x e x x e  x x x x x x e".beats.q(16) * ~tempo / 2,
+		pan:0.5,
+		amp: 0.05
+	].pp;
+	(instrument: \cymbalsDS, amp:0.02).play
+
+});
+	// Song.quarter = 0.46;
+	// [
+	// 	instrument: [\harp, \sawSynth],
+	// 	freq: [1, 1, 1, 1, 1, 1, 1, 1, 5, 5, 5, 6, 4, 4, 5, 5, ].df(\c, [3, 4]).q(8),
+	// 	dur: Song.quarter / 2,
+	// 	legato: 0.4,
+	// 	att: 0, rel: 0.5,
+	// 	amp: [0.05, 0.2]
+	// ].pp;
+	[
+		freq: [1, 4, 5, 6 ,4, 5, 1, 4, 5, 6 , 4, 5].df(\c, [3]).q(8),
+		dur: "eee e ex x e e".beats * Song.quarter * 2 => _.q(16),
+		amp: 0.3
+	]//.pp;
+
+});
 P(\line, music: { |p b e|
 	[
 		freq: [\r, 4, 2, -6, -7, 6].df(\g, \mixolydian).q,
 		dur: b.parse([5, 1/4, 1/4, 1/4, 1/4, 3]).q ,
 		instrument: \stringyy,
 		wet: 0,
-		amp: 1
+		amp: 1,
+		out: Effect.bus({|i| Splay.ar(i, spread:0.5, center:1 ) })
 	].ppm;
 	[
-		freq: [\r, 2, 3, -7, 1 ].df(\g, \mixolydian).q,
-		dur: b.parse([8, [3, 1/4], 1/4, 1/4, 1/4]).q ,
+		freq: [\r, 4, 2, -6, -7, 6].df(\g, \mixolydian).q,
+		dur: b.parse([5, 1/4, 1/4, 1/4, 1/4, 3]).q ,
+		instrument: \harp,
+		coef:0.15,
+		amp: 0.05,
+		out: Effect.bus({|i| Splay.ar(i, spread:0.5, center:1 ) })
+	].pp;
+	[
+		freq: [\r, 2, 3, -7, 1, 3 ].df(\g, \mixolydian).q,
+		dur: b.parse([8, [3, 1/4], 1/4, 1/4, 1/4, 1]).q ,
 		instrument: \stringyy,
+		out: Effect.bus({|i| Splay.ar(i, spread:0.5, center:-1 ) }),
 		wet: 0,
 		amp: 1
 	].ppm;
+	[
+		freq: [\r, 2, 3, -7, 1, 3 ].df(\g, \mixolydian).q,
+		dur: b.parse([8, [3, 1/4], 1/4, 1/4, 1/4, 1]).q ,
+		instrument: \harp,
+		out: Effect.bus({|i| Splay.ar(i, spread:0.5, center:-1 ) }),
+		wet: 0,
+		coef:0.15,
+		amp: 0.05,
+	].pp
 
 });
 P(\beat, music: { |p b e|
@@ -399,10 +485,40 @@ P(\bass, music: { |p b e|
 		dur: "qe e".beats.q(4)* Song.quarter
 	].pp
 });
-["repeat", "r","e e x x e qq  e e x x e qq".beats * (Song.quarter)].addLine;
+["repeat", "3 -7 -6 4 3 4  6 4 2 7 6 5".dm(\g, \mixolydian) ,"e e x x e qq  e e x x e qq".beats * (Song.quarter)].addLine;
 Song.cloneDursAndTempoMap('G chorus line 1');
-P.clone('G chorus line 1', [\bass, \line])
+P.clone('G chorus line 1', [\bass, \line]);
 
+P.synthV(\an, take: 
+	// \lead_melisma
+	\lead
+	, params: {|p b| [
+	lyrics: " 梦 在 风 中 破 碎 心 在 雾 中 徘 徊 ",
+	// lyrics: " 梦 - - 中 - 碎 心 - - 中 - 徊 ",
+	pitchTake: 2,
+	language: \Mandarin
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+
+P.synthV(\an, take: \lower, params: {|p b| [
+	filter: (midinote: _ - 12),
+	lyrics: " 梦 在 风 中 破 碎 心 在 雾 中 徘 徊 ",
+	pitchTake: 3,
+	language: \Mandarin
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+
+)
+
+(
 
 )
 MIDIItem("_250204_105204").play(\default)//different bridge chords

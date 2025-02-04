@@ -355,19 +355,20 @@ P.synthV(\jun, take:
 });
 P(\arrangement, music: { |p b e|
 	var div = 2;
+	var div = 1;
 	(instrument: \cymbalsDS, amp: 0.02).play;
 	[
 		instrument: \JWSnare,
 		dur: "q ee q q".beats.q(inf) * Song.quarter / div,
 		// rest: [\r, 1, 1, 1].q(inf),
-		// rest: [\r, 1, \r, 1].q(inf),
+		rest: [\r, 1, \r, 1].q(inf),
 		amp: 0.25
 		// dur: 
 	].pp;
 	[
 		instrument: \bd_808,
 		dur: "qe e qq".beats * Song.quarter / div => _.q(inf),
-		dur: "q eee q e".beats * Song.quarter / div => _.q(inf),
+		// dur: "q eee q e".beats * Song.quarter / div => _.q(inf),
 		amp: 0.6
 
 	].pp;
@@ -457,14 +458,15 @@ P(\line, music: { |p b e|
 
 });
 P(\beat, music: { |p b e|
+	var reps = 4;
 	[
-		dur: "e t t t t eeeee t t t t".beats.q(2) * Song.quarter,
+		dur: "e t t t t eeeee t t t t".beats.q(reps) * Song.quarter,
 		instrument: 
 		// \cp_808
 		\MT_808
 		,
-		rest: [\r, 1, 1, 1, 1].q(4),
-		amp: 0.5
+		rest: [\r, 1, 1, 1, 1].q(reps * 2),
+		amp: 0.2
 	].pp
 });
 P.synthV(\jun, take: \lower, params: {|p b| [

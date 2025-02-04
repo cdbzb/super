@@ -29,27 +29,31 @@ end tell
 delay 0.1
 
 tell application "System Events" to tell application process "Synthesizer V Studio Pro"
+delay 0.5
 	
 		set target_button to a reference to (UI element "Bounce to Files") of window 1
-		if not (target_button exists) then
-			click menu item "Render Panel" of menu 1 of menu bar item "View" of menu bar 1
-		end if
+
+		# if not (target_button exists) then
+		# 	click menu item "Render Panel" of menu 1 of menu bar item "View" of menu bar 1
+		# end if
 
 		repeat 40 times 
+			delay 0.5
 			if target_button exists then exit repeat
 			click menu item "Render Panel" of menu 1 of menu bar item "View" of menu bar 1
-			delay 0.1
 		end repeat
 
 	click menu item "Select All" of menu 1 of menu item "Claires Scripts - Hotkey Scripts" of menu 1 of menu bar item "Scripts" of menu bar 1
+	# delay 2.5
+	# # click menu item "Recompute Pitch For Selected Notes" of menu 1 of menu bar item "Auto-Process" of menu bar 1
+	# click menu item "Select the Previous Take" of menu 1 of menu bar item "Auto-Process" of menu bar 1
+	# delay 2.5
+	# click menu item "Select the Next Take" of menu 1 of menu bar item "Auto-Process" of menu bar 1
+
 	delay 0.1
-
-	# click menu item "Recompute Pitch For Selected Notes" of menu 1 of menu bar item "Auto-Process" of menu bar 1
 	keystroke "r" using {option down}
-	
-	delay 2.5
 
-		click UI element "Bounce to Files" of window 1
+	click UI element "Bounce to Files" of window 1
 
 	delay 0.5
 

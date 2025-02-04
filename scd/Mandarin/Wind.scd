@@ -338,14 +338,15 @@ Song(\Wind, []).current;
 Song.quarter = 0.52 * 2;
 ["G chorus line 1", "3 -7 -6 4 3 4  6 4 2 7 6 5".dm(\g, \mixolydian), "e e x x e qq  e e x x e qq".beats * (Song.quarter ? (0.52 * 2))].addLine;
 P.tune();
-P.synthV(\an, take: 
+P.synthV(\jun, take: 
 	// \lead_melisma
 	\lead
 	, params: {|p b| [
 	lyrics: " 梦 在 风 中 破 碎 心 在 雾 中 徘 徊 ",
 	// lyrics: " 梦 - - 中 - 碎 心 - - 中 - 徊 ",
 	pitchTake: 1,
-	language: \Mandarin
+	language: \mandarin,
+	phoneset: \xsampa
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -369,11 +370,23 @@ P(\line, music: { |p b e|
 	].ppm;
 
 });
-P.synthV(\an, take: \lower, params: {|p b| [
+P(\beat, music: { |p b e|
+	[
+		dur: "e t t t t eeeee t t t t".beats.q(2) * Song.quarter,
+		instrument: 
+		// \cp_808
+		\MT_808
+		,
+		rest: [\r, 1, 1, 1, 1].q(4),
+		amp: 0.5
+	].pp
+});
+P.synthV(\jun, take: \lower, params: {|p b| [
 	filter: (midinote: _ - 12),
 	lyrics: " 梦 在 风 中 破 碎 心 在 雾 中 徘 徊 ",
 	pitchTake: 2,
-	language: \Mandarin
+	language: \mandarin,
+	phoneset: \xsampa
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -391,4 +404,11 @@ Song.cloneDursAndTempoMap('G chorus line 1');
 P.clone('G chorus line 1', [\bass, \line])
 
 
+)
+MIDIItem("_250204_105204").play(\default)//different bridge chords
+MIDIItem("_250205_105204").play(\default)//different bridge chords
+MIDIItem("_250205_105206").play(\default)//different bridge chords
+( // idea
+MIDIItem("_250202_105204").play(\default)
+MIDIItem("_250203_105204").play(\default)//with falling bassline
 )

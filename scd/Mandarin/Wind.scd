@@ -336,8 +336,41 @@ MIDIItem("_250130_150609").play(\harp)
 */
 Song(\Wind, []).current;
 Song.quarter = 0.52 * 2;
+Song.synthVTracks = EventWithDefault( \feng, { 
+	{|i|
+		i
+		/4
+		=> HPF.ar(_, 500)
+		=> BHiShelf.ar(_, 3000, db: 5)
+	}
+});
 ["G chorus line 1", "3 -7 -6 4 3 4  6 4 2 7 6 5".dm(\g, \mixolydian), "e e x x e qq  e e x x e qq".beats * (Song.quarter ? (0.52 * 2))].addLine;
 P.tune();
+P.synthVs(\feng, take: [\lead, \dbl ], params: {|p b| [
+	lyrics: "梦 - - 碎 ",
+	filter: (midinote: "3 4 3 4".dm(\g, \mixolydian), dur: b.parse([3, 1, 1, 3])),
+	pitchTake: [ 1, 3 ],
+	language: \mandarin, 
+	phoneset: \xsampa
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.synthVs(\feng, take: [\lead2, \dbl2 ], params: {|p b| [
+	lyrics: "r 心 - - 徊",
+	filter: (midinote: "1 6 7 6 5".dm(\g, \mixolydian), dur: b.parse([6, 3, 1, 1, 3])),
+	pitchTake: [ 1, 3 ],
+	language: \mandarin, 
+	phoneset: \xsampa
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> Pan2.ar(_,1)
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 P.synthV(\jun, take: 
 	// \lead_melisma
 	\lead
@@ -518,6 +551,32 @@ P.synthV(\an, take: \lower, params: {|p b| [
 	}.play
 });
 
+P.synthVs(\feng, take: [\lead, \dbl ], params: {|p b| [
+	lyrics: "梦 - - 碎 ",
+	filter: (midinote: "3 4 3 4".dm(\g, \mixolydian), dur: b.parse([3, 1, 1, 3])),
+	pitchTake: [ 2, 1 ],
+	language: \mandarin, 
+	phoneset: \xsampa
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
+P.synthVs(\feng, take: [\lead2, \dbl2 ], params: {|p b| [
+	lyrics: "r 心 - - 徊",
+	filter: (midinote: "1 6 7 6 5".dm(\g, \mixolydian), dur: b.parse([6, 3, 1, 1, 3])),
+	pitchTake: [ 2, 3 ],
+	language: \mandarin, 
+	phoneset: \xsampa
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => Pan2.ar(_,1)
+		// /4
+		=> p.synthVTracks.at(e.key).()
+	}.play
+});
 )
 
 (
@@ -612,7 +671,7 @@ P(\tamb, music: { |p b e|
 	{
 		var levels = [3,1,2,1] /3 => _.dq(inf);
 		var durs =  
-		1/8 ! 16 
+		1/4 ! 16 
 		* Song.quarter
 		+ ( [1, -1] /80 => _.dup(8) ) //swing amt
 		=> _.flat 

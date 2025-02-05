@@ -375,6 +375,11 @@ MonoKeys : MicroKeys {
 			};
 	}
 }
++ Symbol {
+	monitor {
+		MicroKeys(this).monitor
+	}
+}
 /*
 MicroKeys({|e|Synth(\default,[\freq,e.num.midicps,\pan,e.vel*2-1])}).tuning_(\partch).play
 (
@@ -390,3 +395,4 @@ Env.new([0,1],[1],[-1.5]).at(0.5)
 Tuning
 */
  
+

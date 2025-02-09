@@ -386,6 +386,7 @@ P.synthV(\jun, take:
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
+Song.quarter = 0.52; //run from here
 P(\arrangement, music: { |p b e|
 	// var div = 2;
 	var div = 1;

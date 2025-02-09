@@ -45,6 +45,7 @@ P.synthV(\an, take: \leadQwen, lag: -0.08, pbind:
 		{
 			e.playbuf
 			/3
+			* 2.5.dbamp
 			=> Pan2.ar(_, 0)
 			// => p.synthVTracks.at(e.key).()
 		}.play
@@ -58,50 +59,52 @@ P(\keys,music: {|p b e|
 	.recalcSustains
 	.play([\sawSynthSustain, \harp], clock: TempoClock.new(0.52 / Song.quarter, queueSize: 2**12  ))
 });
-P.synthV(\jun, take: \lead, pbind: 
+P.synthV(\jun, take: \lead, lag: 32*Song.quarter, resources: (startPos:32), pbind: 
 	[
 		dur: 
 		MIDIItem("250122_113217").take(2)
 		// .from(Song.quarter * 4)
 		.synthVPbind.patternpairs.asEvent[\dur]
-		[..20]
+		[..21]
 		,
 		midinote: 
 			[
 				1,
-				72, 69, 69, 71,69,
-				72, 69, 69, 71,69,
-				72, 69, 69, 71,69,
-				72, 69, 69, 71,69,
-			]	
+				11, 6, 6, 7, 6,
+				11, 6, 6, 7, 6,
+				11, 6, 6, 7, 6,
+				11, 6, 6, 7, 6,
+				11,
+			].dm(\c)
 	].p,
 	params: {|p b| [
 	lyrics: "r aaah aah ah - ah ah ah ah - ah ah ah ah - ah ah",
 	pitchTake: 1 //should this be nil  ??
 ] }, music:{|p b e|
 	{
-		e.playbuf
+		e.playbuf.(startPos: e.lag)//.(32 * p.quarter)//(startPos: 8)
 		/3
 		=> Pan2.ar(_,SinOsc.ar(0.12))
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
 // {SinOsc.ar([15, 21].df(\c))/30}.play; // add drone
-P.synthV(\jun, take: \lower,
+P.synthV(\jun, lag: 0 * Song.quarter, take: \lower,
 	pbind: 
 	[
 		dur: 
 		MIDIItem("250122_113217").take(2)
 		.from(Song.quarter * 4)
 		.synthVPbind.patternpairs.asEvent[\dur]
-		[[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 1, 2, 3, 4, 5 ]]
+		[[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 1, 2, 3, 4, 5, 6, 7, 8, 9 ]]
 		,
 		midinote: 
 		"r 
 		5 4 4 5 4 
 		5 4 4 5 4 
 		5 4 4 5 4 
-		5 4 4 5 4".dm(Song.keySig,6)
+		5 4 4 5 4
+		5 4 4 5 2.5".dm(Song.keySig,6)
 		,
 	].p
 	,
@@ -110,7 +113,7 @@ P.synthV(\jun, take: \lower,
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
-		e.playbuf
+		e.playbuf.(startPos: e.lag)
 		/3
 		=> Pan2.ar(_,SinOsc.ar(0.12))
 		// => p.synthVTracks.at(e.key).()
@@ -189,9 +192,6 @@ P(\bassline, music: { |p b e|
 		].ppm
 	}
 });
-
-
-
 // third section
 //
 ["G chorus line 1", "3 -7 -6 4 3 4  6 4 2 7 6 5".dm(\g, \mixolydian), "e e x x e qq  e e x x e qq".beats * (Song.quarter * 2 ? (0.52 * 2))].addLine;

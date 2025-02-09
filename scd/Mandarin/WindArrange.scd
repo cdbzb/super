@@ -147,7 +147,16 @@ P(\arrangement, music: { |p b e|
 		legato: 0.4,
 		att: 0, rel: 0.5,
 		amp: [0.05, 0.2]
-	].pp;
+	].pp
+	;
+	// [
+	// 	
+	// 	freq: [1, 1, 1, 1, 1, 1, 4, 4, 5, 5, 5, 6, 4, 4, 5, 5, ].df(\c, [2 ]).q(8),
+	// 	dur: ~quarter / 2,
+	// 	instrument: \harpRelease,
+	// 	legato: 0.2,
+	// 	out: Effect.bus({|i| CrossoverDistortion.ar(i, smooth:0.95)}, out:1)
+	// ].pp;
 	[
 		freq: [1, 4, 5, 6 ,4, 5, 1, 4, 5, 6 , 4, 5].df(\c, [3]).q(8),
 		dur: "eee e ex x e e".beats * ~quarter * 2 => _.q(16),
@@ -157,6 +166,9 @@ P(\arrangement, music: { |p b e|
 });
 // Song(\Wind, []);
 ["newBridge", "r", Song.quarter.dup(24)].addLine;
+P(\tempo, music: { |p b e|
+	TempoClock.tempo_(1)
+});
 P(\line, music: { |p b e|
 	MIDIItem("_250204_161748")
 	.filter({|e| e.collect{|i| i.amp.notNil.if{i.amp_(i.amp/2)}; i.timestamp_(i.timestamp * Song.quarter / 0.52)}})
@@ -196,6 +208,9 @@ P(\bassline, music: { |p b e|
 //
 ["G chorus line 1", "3 -7 -6 4 3 4  6 4 2 7 6 5".dm(\g, \mixolydian), "e e x x e qq  e e x x e qq".beats * (Song.quarter * 2 ? (0.52 * 2))].addLine;
 P.tune();
+P(\tempoChange, music: { |p b e|
+	TempoClock.tempo= 2;
+});
 P.synthV(\jun, take: 
 	// \lead_melisma
 	\lead
@@ -348,41 +363,37 @@ P.synthV(\jun, take:
 			dur: "qe e".beats.q(4)* Song.quarter
 		].pp
 	});
-	["repeat", "3 -7 -6 4 3 4  6 4 2 7 6 5".dm(\g, \mixolydian) ,"e e x x e qq  e e x x e q".beats * (Song.quarter)].addLine;
-	Song.cloneDursAndTempoMap('G chorus line 1');
-	P.clone('G chorus line 1', [\bass]);
-	Song.makeLine.(connector: true);
+["repeat", "3 -7 -6 4 3 4  6 4 2 7 6 5".dm(\g, \mixolydian) ,"e e x x e qq  e e x x e q qq".beats * (Song.quarter)].addLine;
+Song.cloneDursAndTempoMap('G chorus line 1');
+P.clone('G chorus line 1', [\bass]);
+Song.makeLine.(connector: true);
+P.synthV(\an, take: 
+	// \lead_melisma
+	\lead
+	, params: {|p b| [
+		lyrics: " 梦 在 风 中 破 碎 心 在 雾 中 徘 徊 ",
+		// lyrics: " 梦 - - 中 - 碎 心 - - 中 - 徊 ",
+		pitchTake: 2,
+		language: \Mandarin
+	] }, music:{|p b e|
+		{
+			e.playbuf
+			// => p.synthVTracks.at(e.key).()
+		}.play
+	});
 
-	P.synthV(\an, take: 
-		// \lead_melisma
-		\lead
-		, params: {|p b| [
-			lyrics: " 梦 在 风 中 破 碎 心 在 雾 中 徘 徊 ",
-			// lyrics: " 梦 - - 中 - 碎 心 - - 中 - 徊 ",
-			pitchTake: 2,
-			language: \Mandarin
-		] }, music:{|p b e|
-			{
-				e.playbuf
-				// => p.synthVTracks.at(e.key).()
-			}.play
-		});
-
-		P.synthV(\an, take: \lower, params: {|p b| [
-			filter: (midinote: _ - 12),
-			lyrics: " 梦 在 风 中 破 碎 心 在 雾 中 徘 徊 ",
-			pitchTake: 3,
-			language: \Mandarin
-		] }, music:{|p b e|
-			{
-				e.playbuf
-				// => p.synthVTracks.at(e.key).()
-			}.play
-		});
-
-
-["countoff2", "r", [0]].addLine;
-P.synthV(\an, take: \leadQwen, lag: -0.08, pbind: 
+P.synthV(\an, take: \lower, params: {|p b| [
+	filter: (midinote: _ - 12),
+	lyrics: " 梦 在 风 中 破 碎 心 在 雾 中 徘 徊 ",
+	pitchTake: 3,
+	language: \Mandarin
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+P.synthV(\an, take: \leadQwen, lag: (16 * Song.quarter - ( 1 * 2 ) -0.08), pbind: 
 	MIDIItem("_250119_105441").take(11)
 	.collect({|i x| (x >= 1).if { i.timestamp = i.timestamp - (Song.quarter * 4) - 1 }; i })
 	.synthVPbind
@@ -405,7 +416,7 @@ P.synthV(\an, take: \leadQwen, lag: -0.08, pbind:
 		梦 回 故 乡 路 
 		心 依 恋 
 		",
-		pitchTake: 1,
+		pitchTake: 2,
 		legato: [1, 1, 1, 1, 1, 0.9, 1, 1, 1, 1, 1, 1, 0.5, 1, 1, 1, 1, 1, 1, 1, 0.5]
 		,
 		language: \Mandarin
@@ -420,6 +431,9 @@ P.synthV(\an, take: \leadQwen, lag: -0.08, pbind:
 		}.play
 });
 [ "V1L12", "r", Song.quarter.dup(64)].addLine;
+P(\tempo, music: { |p b e|
+	TempoClock.tempo= 1;
+});
 P(\keys,music: {|p b e|
 	MicroKeys(\sawSynthSustain).synth_(\yowbass);
 	MicroKeys(\harp).synth_(\harp, params: [coef: 0.1]);
@@ -507,6 +521,14 @@ P(\arrangement, music: { |p b e|
 		dur: "e eq qq".beats * ~quarter => _.q(inf),
 		amp: 0.6
 
+	].pp;
+	[
+		
+		freq: [1, 1, 1, 1, 1, 1, 4, 4, 5, 5, 5, 6, 4, 4, 5, 5, ].df(\c, [2 ]).q(8),
+		dur: ~quarter / 2,
+		instrument: \harpRelease,
+		legato: 0.2,
+		out: Effect.bus({|i| CrossoverDistortion.ar(i, smooth:0.95)}, out:1)
 	].pp;
 	// ~quarter = 0.46;
 	[

@@ -1,0 +1,133 @@
+( // song
+/*
+时代的风吹过长安街
+人群像落叶随风飘
+年轻的眼睛寻找答案
+但真相藏在雾里逃
+*/
+Song(\Wind, []).current;
+Song.keySig=\c;
+Song.quarter = 0.52;
+["countoff", "r", [1]].addLine;
+P.synthV(\an, take: \leadQwen, lag: -0.08, pbind: 
+	MIDIItem("_250119_105441").take(11)
+	.collect({|i x| (x >= 1).if { i.timestamp = i.timestamp - (Song.quarter * 4) - 1 }; i })
+	.synthVPbind
+	,
+// need to make Legato
+	params: {|p b| [
+		// lyrics: " r 时 代 的 风 吹 过 长 安 
+		// 人 群 像 落 叶 随 风 飘 
+		// 年  轻 的 眼 睛 寻 找 答 案
+		// 但 真 相 藏 在 雾 里 逃
+		// 时 代 的 风 吹 过 长 安
+		// ",
+		lyrics: "r 
+		春 风 拂 面 来 
+		花 开 满 园 香 飘 远 
+		心 随 梦 飞 翔 
+		爱 永 恒 
+		星 夜 静 如 水 
+		月 光 洒 落 思 乡 情 
+		梦 回 故 乡 路 
+		心 依 恋 
+		",
+		pitchTake: 1,
+		legato: [1, 1, 1, 1, 1, 0.9, 1, 1, 1, 1, 1, 1, 0.5, 1, 1, 1, 1, 1, 1, 1, 0.5]
+		,
+		language: \Mandarin
+	]}, 
+	music:{|p b e|
+		{
+			e.playbuf
+			/3
+			=> Pan2.ar(_, 0)
+			// => p.synthVTracks.at(e.key).()
+		}.play
+});
+[ "V1L1", "r", Song.quarter.dup(64)].addLine;
+P(\keys,music: {|p b e|
+	MicroKeys(\sawSynthSustain).synth_(\yowbass);
+	MicroKeys(\harp).synth_(\harp, params: [coef: 0.1]);
+	MIDIItem("_250119_105441").take(11)
+	.filter{|e| e.collect{|i| i.amp.notNil.if{i.amp = i.amp / 8}; i}}
+	.recalcSustains
+	.play([\sawSynthSustain, \harp], clock: TempoClock.new(0.52 / Song.quarter, queueSize: 2**12  ))
+});
+P.synthV(\jun, take: \lead,
+	pbind: MIDIItem("250122_113217").take(2)
+	// .collect({|i x| (x >= 1).if { i.timestamp = i.timestamp - (Song.quarter * 4)  }; i })
+	// .from(Song.quarter * 4)
+	.synthVPbind,
+	params: {|p b| [
+	lyrics: "r aaah aah ah - ah",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		/3
+		=> Pan2.ar(_,SinOsc.ar(0.12))
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+P.synthV(\jun, take: \lower,
+	pbind: 
+	[
+		dur: 
+		MIDIItem("250122_113217").take(2)
+		.from(Song.quarter * 4)
+		.synthVPbind.patternpairs.asEvent[\dur]
+		,
+		midinote: 
+		"r 5 4 4 5 4  5 4 4 5 4 5 4 4 5 4".dm(Song.keySig,6)
+		,
+	].p
+	,
+	params: {|p b| [
+	lyrics: "r aaah aah ah - ah",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf
+		/3
+		=> Pan2.ar(_,SinOsc.ar(0.12))
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+~quarter = Song.quarter;
+P(\bgVox, music: { |p b e|
+MIDIItem("250122_113217").take(2)
+//.play(\vocaline)
+});
+P(\arrangement, music: { |p b e|
+	(instrument: \cymbalsDS, amp: 0.02).play;
+	[
+		instrument: \JWSnare,
+		dur: "q e eq q".beats.q(inf) * ~quarter,
+		rest: [\r, 1, 1, 1].q(inf),
+		amp: 0.25
+		// dur: 
+	].pp;
+	[
+		instrument: \bd_808,
+		dur: "e eq qq".beats * ~quarter => _.q(inf),
+		amp: 0.6
+
+	].pp;
+	// ~quarter = 0.46;
+	[
+		instrument: [\harp, \sawSynth],
+		freq: [1, 1, 1, 1, 1, 1, 1, 1, 5, 5, 5, 6, 4, 4, 5, 5, ].df(\c, [3, 4]).q(8),
+		dur: ~quarter / 2,
+		legato: 0.4,
+		att: 0, rel: 0.5,
+		amp: [0.05, 0.2]
+	].pp;
+	[
+		freq: [1, 4, 5, 6 ,4, 5, 1, 4, 5, 6 , 4, 5].df(\c, [3]).q(8),
+		dur: "eee e ex x e e".beats * ~quarter * 2 => _.q(16),
+		amp: 0.3
+	].pp;
+
+});
+)

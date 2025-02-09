@@ -45,7 +45,7 @@ P.synthV(\an, take: \leadQwen, lag: -0.08, pbind:
 		{
 			e.playbuf
 			/3
-			* 2.5.dbamp
+			* 2.dbamp
 			=> Pan2.ar(_, 0)
 			// => p.synthVTracks.at(e.key).()
 		}.play
@@ -279,42 +279,45 @@ P.synthV(\jun, take:
 		]//.pp;
 
 	});
-	P(\line, music: { |p b e|
-		[
-			freq: [\r, 4, 2, -6, -7, 6].df(\g, \mixolydian).q,
-			dur: b.parse([5, 1/4, 1/4, 1/4, 1/4, 3]).q ,
-			instrument: \stringyy,
-			wet: 0,
-			amp: 1,
-			out: Effect.bus({|i| Splay.ar(i, spread:0.5, center:1 ) })
-		].ppm;
-		[
-			freq: [\r, 4, 2, -6, -7, 6].df(\g, \mixolydian).q,
-			dur: b.parse([5, 1/4, 1/4, 1/4, 1/4, 3]).q ,
-			instrument: \harp,
-			coef:0.15,
-			amp: 0.05,
-			out: Effect.bus({|i| Splay.ar(i, spread:0.5, center:1 ) })
-		].pp;
-		[
-			freq: [\r, 2, 3, -7, 1, 3 ].df(\g, \mixolydian).q,
-			dur: b.parse([8, [3, 1/4], 1/4, 1/4, 1/4, 1]).q ,
-			instrument: \stringyy,
-			out: Effect.bus({|i| Splay.ar(i, spread:0.5, center:-1 ) }),
-			wet: 0,
-			amp: 1
-		].ppm;
-		[
-			freq: [\r, 2, 3, -7, 1, 3 ].df(\g, \mixolydian).q,
-			dur: b.parse([8, [3, 1/4], 1/4, 1/4, 1/4, 1]).q ,
-			instrument: \harp,
-			out: Effect.bus({|i| Splay.ar(i, spread:0.5, center:-1 ) }),
-			wet: 0,
-			coef:0.15,
-			amp: 0.05,
-		].pp
+	Song.makeLine = { |connector=false|
+		P(\line, music: { |p b e|
+			[
+				freq: [\r, 4, 2, -6, -7, 6].df(\g, \mixolydian).q,
+				dur: b.parse([5, 1/4, 1/4, 1/4, 1/4, 3]).q ,
+				instrument: \stringyy,
+				wet: 0,
+				amp: 1,
+				out: Effect.bus({|i| Splay.ar(i, spread:0.5, center:1 ) })
+			].ppm;
+			[
+				freq: [\r, 4, 2, -6, -7, 6].df(\g, \mixolydian).q,
+				dur: b.parse([5, 1/4, 1/4, 1/4, 1/4, 3]).q ,
+				instrument: \harp,
+				coef:0.15,
+				amp: 0.05,
+				out: Effect.bus({|i| Splay.ar(i, spread:0.5, center:1 ) })
+			].pp;
+			[
+				freq: [\r, 2, 3, -7, 1, 3 ].df(\g, \mixolydian).q,
+				dur: b.parse([8, [3, 1/4], 1/4, 1/4, 1/4, 1]).q ,
+				instrument: \stringyy,
+				out: Effect.bus({|i| Splay.ar(i, spread:0.5, center:-1 ) }),
+				wet: 0,
+				amp: 1
+			].pm.fin(connector.if { 5 }{ 6 }).play;
+			[
+				freq: [\r, 2, 3, -7, 1, 3 ].df(\g, \mixolydian).q,
+				dur: b.parse([8, [3, 1/4], 1/4, 1/4, 1/4, 1]).q ,
+				instrument: \harp,
+				out: Effect.bus({|i| Splay.ar(i, spread:0.5, center:-1 ) }),
+				wet: 0,
+				coef:0.15,
+				amp: 0.05,
+			].p.fin(connector.if { 5 }{ 6 }).play;
 
-	});
+		});
+	};
+	Song.makeLine.();
 	P(\beat, music: { |p b e|
 		var reps = 4;
 		[
@@ -345,9 +348,10 @@ P.synthV(\jun, take:
 			dur: "qe e".beats.q(4)* Song.quarter
 		].pp
 	});
-	["repeat", "3 -7 -6 4 3 4  6 4 2 7 6 5".dm(\g, \mixolydian) ,"e e x x e qq  e e x x e qq".beats * (Song.quarter)].addLine;
+	["repeat", "3 -7 -6 4 3 4  6 4 2 7 6 5".dm(\g, \mixolydian) ,"e e x x e qq  e e x x e q".beats * (Song.quarter)].addLine;
 	Song.cloneDursAndTempoMap('G chorus line 1');
-	P.clone('G chorus line 1', [\bass, \line]);
+	P.clone('G chorus line 1', [\bass]);
+	Song.makeLine.(connector: true);
 
 	P.synthV(\an, take: 
 		// \lead_melisma
@@ -375,6 +379,149 @@ P.synthV(\jun, take:
 				// => p.synthVTracks.at(e.key).()
 			}.play
 		});
-)
 
+
+["countoff2", "r", [0]].addLine;
+P.synthV(\an, take: \leadQwen, lag: -0.08, pbind: 
+	MIDIItem("_250119_105441").take(11)
+	.collect({|i x| (x >= 1).if { i.timestamp = i.timestamp - (Song.quarter * 4) - 1 }; i })
+	.synthVPbind
+	,
+// need to make Legato
+	params: {|p b| [
+		// lyrics: " r 时 代 的 风 吹 过 长 安 
+		// 人 群 像 落 叶 随 风 飘 
+		// 年  轻 的 眼 睛 寻 找 答 案
+		// 但 真 相 藏 在 雾 里 逃
+		// 时 代 的 风 吹 过 长 安
+		// ",
+		lyrics: "r 
+		春 风 拂 面 来 
+		花 开 满 园 香 飘 远 
+		心 随 梦 飞 翔 
+		爱 永 恒 
+		星 夜 静 如 水 
+		月 光 洒 落 思 乡 情 
+		梦 回 故 乡 路 
+		心 依 恋 
+		",
+		pitchTake: 1,
+		legato: [1, 1, 1, 1, 1, 0.9, 1, 1, 1, 1, 1, 1, 0.5, 1, 1, 1, 1, 1, 1, 1, 0.5]
+		,
+		language: \Mandarin
+	]}, 
+	music:{|p b e|
+		{
+			e.playbuf
+			/3
+			* 2.dbamp
+			=> Pan2.ar(_, 0)
+			// => p.synthVTracks.at(e.key).()
+		}.play
+});
+[ "V1L12", "r", Song.quarter.dup(64)].addLine;
+P(\keys,music: {|p b e|
+	MicroKeys(\sawSynthSustain).synth_(\yowbass);
+	MicroKeys(\harp).synth_(\harp, params: [coef: 0.1]);
+	MIDIItem("_250119_105441").take(11)
+	.filter{|e| e.collect{|i| i.amp.notNil.if{i.amp = i.amp / 8}; i}}
+	.recalcSustains
+	.play([\sawSynthSustain, \harp], clock: TempoClock.new(0.52 / Song.quarter, queueSize: 2**12  ))
+});
+P.synthV(\jun, take: \lead, lag: 32*Song.quarter, resources: (startPos:32), pbind: 
+	[
+		dur: 
+		MIDIItem("250122_113217").take(2)
+		// .from(Song.quarter * 4)
+		.synthVPbind.patternpairs.asEvent[\dur]
+		[..21]
+		,
+		midinote: 
+			[
+				1,
+				11, 6, 6, 7, 6,
+				11, 6, 6, 7, 6,
+				11, 6, 6, 7, 6,
+				11, 6, 6, 7, 6,
+				11,
+			].dm(\c)
+	].p,
+	params: {|p b| [
+	lyrics: "r aaah aah ah - ah ah ah ah - ah ah ah ah - ah ah",
+	pitchTake: 1 //should this be nil  ??
+] }, music:{|p b e|
+	{
+		e.playbuf.(startPos: e.lag)//.(32 * p.quarter)//(startPos: 8)
+		/3
+		=> Pan2.ar(_,SinOsc.ar(0.12))
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+// {SinOsc.ar([15, 21].df(\c))/30}.play; // add drone
+P.synthV(\jun, lag: 0 * Song.quarter, take: \lower,
+	pbind: 
+	[
+		dur: 
+		MIDIItem("250122_113217").take(2)
+		.from(Song.quarter * 4)
+		.synthVPbind.patternpairs.asEvent[\dur]
+		[[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 1, 2, 3, 4, 5, 6, 7, 8, 9 ]]
+		,
+		midinote: 
+		"r 
+		5 4 4 5 4 
+		5 4 4 5 4 
+		5 4 4 5 4 
+		5 4 4 5 4
+		5 4 4 5 2.5".dm(Song.keySig,6)
+		,
+	].p
+	,
+	params: {|p b| [
+	lyrics: "r aaah aah ah - ah",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf.(startPos: e.lag)
+		/3
+		=> Pan2.ar(_,SinOsc.ar(0.12))
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+~quarter = Song.quarter;
+P(\bgVox, music: { |p b e|
+MIDIItem("250122_113217").take(2)
+//.play(\vocaline)
+});
+P(\arrangement, music: { |p b e|
+	(instrument: \cymbalsDS, amp: 0.02).play;
+	[
+		instrument: \JWSnare,
+		dur: "q e eq q".beats.q(inf) * ~quarter,
+		rest: [\r, 1, 1, 1].q(inf),
+		amp: 0.25
+		// dur: 
+	].pp;
+	[
+		instrument: \bd_808,
+		dur: "e eq qq".beats * ~quarter => _.q(inf),
+		amp: 0.6
+
+	].pp;
+	// ~quarter = 0.46;
+	[
+		instrument: [\harp, \sawSynth],
+		freq: [1, 1, 1, 1, 1, 1, 1, 1, 5, 5, 5, 6, 4, 4, 5, 5, ].df(\c, [3, 4]).q(8),
+		dur: ~quarter / 2,
+		legato: 0.4,
+		att: 0, rel: 0.5,
+		amp: [0.05, 0.2]
+	].pp;
+	[
+		freq: [1, 4, 5, 6 ,4, 5, 1, 4, 5, 6 , 4, 5].df(\c, [3]).q(8),
+		dur: "eee e ex x e e".beats * ~quarter * 2 => _.q(16),
+		amp: 0.3
+	].pp;
+
+});
 )

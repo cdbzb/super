@@ -44,6 +44,9 @@ Song {
 		|key array dursInFile resources|
 		^super.new.init(key, array,dursInFile, resources);
 	}
+	*add { |key|
+		(current != key).if { Song(key, []).current }
+	}
 	*mute { |symbol|
 		symbol.notNil.if{ muted.add(symbol); }{muted = List[]};
 		^muted

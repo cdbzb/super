@@ -132,23 +132,23 @@ P(\arrangement, music: { |p b e|
 		rest: [\r, 1, 1, 1].q(inf),
 		amp: 0.25
 		// dur: 
-	].pp;
-	[
+	].p.bubble
+	++ [
 		instrument: \bd_808,
 		dur: "e eq qq".beats * ~quarter => _.q(inf),
 		amp: 0.6
 
-	].pp;
+	].p
 	// ~quarter = 0.46;
-	[
+	++ [
 		instrument: [\harp, \sawSynth],
 		freq: [1, 1, 1, 1, 1, 1, 1, 1, 5, 5, 5, 6, 4, 4, 5, 5, ].df(\c, [3, 4]).q(8),
 		dur: ~quarter / 2,
 		legato: 0.4,
 		att: 0, rel: 0.5,
 		amp: [0.05, 0.2]
-	].pp
-	;
+	].p
+	
 	// [
 	// 	
 	// 	freq: [1, 1, 1, 1, 1, 1, 4, 4, 5, 5, 5, 6, 4, 4, 5, 5, ].df(\c, [2 ]).q(8),
@@ -157,11 +157,14 @@ P(\arrangement, music: { |p b e|
 	// 	legato: 0.2,
 	// 	out: Effect.bus({|i| CrossoverDistortion.ar(i, smooth:0.95)}, out:1)
 	// ].pp;
-	[
+	++[
 		freq: [1, 4, 5, 6 ,4, 5, 1, 4, 5, 6 , 4, 5].df(\c, [3]).q(8),
 		dur: "eee e ex x e e".beats * ~quarter * 2 => _.q(16),
 		amp: 0.3
-	].pp;
+	].p
+	=> Ppar(_)
+	=> Pfindur( b.sum, _ )
+	=> _.play
 
 });
 // Song(\Wind, []);

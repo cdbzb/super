@@ -124,32 +124,39 @@ MIDIItem("250122_113217").take(2)
 P(\arrangement, music: { |p b e|
 	(instrument: \cymbalsDS, amp: 0.02).play;
 	[
-		instrument: \JWSnare,
-		dur: "q e eq q".beats.q(inf) * ~quarter,
-		rest: [\r, 1, 1, 1].q(inf),
-		amp: 0.25
-		// dur: 
-	].pp;
-	[
-		instrument: \bd_808,
-		dur: "e eq qq".beats * ~quarter => _.q(inf),
-		amp: 0.6
-
-	].pp;
-	// ~quarter = 0.46;
-	[
-		instrument: [\harp, \sawSynth],
-		freq: [1, 1, 1, 1, 1, 1, 1, 1, 5, 5, 5, 6, 4, 4, 5, 5, ].df(\c, [3, 4]).q(8),
-		dur: ~quarter / 2,
-		legato: 0.4,
-		att: 0, rel: 0.5,
-		amp: [0.05, 0.2]
-	].pp;
-	[
-		freq: [1, 4, 5, 6 ,4, 5, 1, 4, 5, 6 , 4, 5].df(\c, [3]).q(8),
-		dur: "eee e ex x e e".beats * ~quarter * 2 => _.q(16),
-		amp: 0.3
-	].pp;
+		[
+			instrument: \JWSnare,
+			dur: "q e eq q".beats.q(inf) * ~quarter,
+			rest: [\r, 1, 1, 1].q(inf),
+			amp: 0.25
+			// dur: 
+		].p,
+		[
+			instrument: \bd_808,
+			dur: "e eq qq".beats * ~quarter => _.q(inf),
+			amp: 0.6,
+			lag: -0.005
+		].p,
+		// ~quarter = 0.46;
+		[
+			// instrument: [\harpRelease, \sawSynth],
+			instrument: [\harp, \sawSynth],
+			freq: [1, 1, 1, 1, 1, 1, 1, 1, 5, 5, 5, 6, 4, 4, 5, 5, ].df(\c, [3, 4]).q(8),
+			dur: ~quarter / 2,
+			legato: 0.4,
+			att: 0, rel: 0.5,
+			amp: [0.05, 0.2],
+			out: [Effect.bus({|i| Phaser2.ar(i, rate: 0.1) },) , 0]
+		].p,
+		[
+			freq: [1, 4, 5, 6 ,4, 5, 1, 4, 5, 6 , 4, 5].df(\c, [3]).q(8),
+			dur: "eee e ex x e e".beats * ~quarter * 2 => _.q(16),
+			amp: 0.3
+		].p
+	]
+	=> Ppar(_)
+	=> _.findur( Song.quarter * 64 )
+	=> _.play
 
 });
 // Song(\Wind, []);

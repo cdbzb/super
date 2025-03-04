@@ -212,7 +212,7 @@ a.tuning_(\just);
 m = MIDIItem("bassline_241112_104446");
 
 // m = m.player
-m
+m.filter({|e| e.collect{|i| i.parent_(nil)}})
 // .record(a)
 
 // .filterOnlyMidicmd(\noteOn,{|e x| (x == 5).if{ e.amp_(0.3) }})
@@ -246,13 +246,13 @@ a.velCurve_(2);
 a.tuning_(\just);
 // a.activate
 m = MIDIItem("bassline_241112_104447");
-m
+
 // .record(a)
 // .save
-.player
+m.filter({|e| e.collect{|i| i.parent_(nil)}})
 // .recalcSustains
 .collect{|e| e.latency_(0.2)}
-.play(a, log:[\noteOn])
+.play(\two, log:[\noteOn], overdub:false)
 
 });
 P(\chord, music: { |p b e|

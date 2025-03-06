@@ -2,6 +2,8 @@
 TempoClock.tempo_(1);
 ~tempo = 1.08;
 ~tempo = 0.97;
+~tempo = 1.015; //adjusted to match other version!!!
+~swing = 0.01;
 // ~tempo = 0.96;
 		
 MicroKeys(\foo).synth_(\default)
@@ -32,7 +34,7 @@ P(\bassShort,resources:(transpose:0), music: { |p b e |
 		rel:0, att:0.1
 	].pp
 });
-P.synthV(\an, take: \lead, 
+P.synthV(\an, take: if(~tempo == 1.015) { \leadSlow } { \lead }, 
 	pbind: {
 		[
 			midinote: [1, 3, -7, 1, 2, 3, 2].dm(Song.keySig.()),
@@ -249,7 +251,8 @@ P(\tamb, music: { |p b e|
 		var durs =  
 		1/8 ! 16 
 		* ~tempo
-		+ ( [1, -1] /80 => _.dup(8) ) //swing amt
+		// + ( [1, -1] /80 => _.dup(8) ) //swing amt
+		+ ([1, -1] * ~swing)
 		=> _.flat 
 		// => _.warpTo(e.tempoMap.quantizeWindow(0.3))
 		=> _.dq(8);
@@ -281,7 +284,7 @@ P(\tamb, music: { |p b e|
 
 });
 P(\drum, music: { |p b e|
-	~swing = 0.05;
+	// ~swing = 0.01;
 [
 	inst: [0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1].q(8),
 	instrument: Pfunc({|e| [\bd_808, \JWSnare][e.inst]}),

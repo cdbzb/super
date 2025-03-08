@@ -1,17 +1,15 @@
 * Mandarin!! 
 ** Songs
-
 *** Memories "./new mandarin song.scd" 
- 
-    lyric: 
+**** TODO where are the drums in Ch1?? 
 *** Neon "./Neon-with-beat.scd" 
+**** TODO AAAK Get An Voice!!
 **** notes
     Tempo in "./sketches/beat_pattern-version.scd" feels a little better! (slow)
     There are some KB ideas in "./sketches/Neon-first-sketch.scd" (Organ part) that are worth resurecting
 ***** TODO Need chords in the chorus!! did I really not do these already?
-    
-*** Wind
 
+*** Wind
 **** Versions
    - current arranged version:
       "./WindArrange.scd"
@@ -19,10 +17,8 @@
       "./Wind.scd"
    - version without weird bridge doubling
       "./Wind-sections/WindShortBridge.scd"
-
 *** "./C-to-C#.scd"
     ( first load the \pluck Microkeys then there are main and outtro instrumental ideas )
- 
 * Captures 
 * on ln: [[file:/Users/michael/tank/super/scd/Mandarin/INDEX.org::21]] 
   clarify wind song

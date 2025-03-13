@@ -20,6 +20,12 @@
 }
 
 +Object{
+	dem { |trig repeats reset = 0|
+		var seq = this;
+		seq.isKindOf(SequenceableCollection).if{ seq = seq.dq(repeats) };
+		^Demand.multiNewList(['control', trig, reset] ++ seq)
+	}
+
   tduty{ |values=1 gapFirst=0|
 	  //^TDuty.kr(this.dq,0,values)
 		^TDuty.multiNew('control',this.dq,0,0,values, gapFirst)

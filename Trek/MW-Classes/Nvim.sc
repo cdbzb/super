@@ -32,6 +32,18 @@ Nvim {
         var code = "vim.api.nvim_paste('%', true, 1)".format(text);
         this.send(code)
     }
+	*scroll { |string|
+		// Need to excape [ and ]  !!!
+		var luacode = "vim.fn.search(\"%\")"
+		// "print(match_pos)"
+		// "vim.api.nvim_win_set_cursor(0,{match_pos, 0 })"
+		.format(string);
+
+		Post << "lua code" <<luacode;
+		try{ SCNvim.luaeval(luacode) };
+		//center
+		SCNvim.luaeval("vim.api.nvim_feedkeys(\"%\", \"%\", %)".format("z.", "m", "false")) ;
+	}
 	*replace {|text|
 		var t = "local buf = vim.api.nvim_get_current_buf()"
 			"local line = vim.api.nvim_win_get_cursor(0)[1]"

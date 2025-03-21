@@ -1,0 +1,55 @@
+diff a/Trek/MW-Classes/plusArray.sc b/Trek/MW-Classes/plusArray.sc	(rejected hunks)
+@@ -1,21 +1,3 @@
+-+ SequenceableCollection{
+-	quantize {
+-		| percent=1| 
+-		var out = this.collect( _.value );
+-		^( out*(1-percent) + ( out.mean*(percent) ) )
+-	}
+-
+-	quantizeWindow {
+-		|percent=0.25 windowSize=5|
+-		(this.size-windowSize).postln;
+-		this[0..(this.size-windowSize-1)].do{|i x|
+-			var chunk = this[x..(x +windowSize)];
+-			chunk=chunk.quantize(percent);
+-			chunk.do{|it in| this.put(in+x,it)}
+-		};
+-		^this;
+-	}
+-}
+ + Array {
+ 
+ 	pick { | indices |
+@@ -49,6 +31,22 @@
+ 		^this.flop.collect(_.asEvent)
+ 	}
+ 
++	quantize {
++		| percent=1| 
++		var out = this.collect( _.value );
++		^( out*(1-percent) + ( out.mean*(percent) ) )
++	}
++
++	quantizeWindow {
++		|percent=0.25 windowSize=5|
++		(this.size-windowSize).postln;
++		this[0..(this.size-windowSize-1)].do{|i x|
++			var chunk = this[x..(x +windowSize)];
++			chunk=chunk.quantize(percent);
++			chunk.do{|it in| this.put(in+x,it)}
++		};
++		^this;
++	}
+ 
+ 	asBeats { | map |
+ 		var tempomap=TempoMap();
+@@ -94,7 +92,7 @@
+ 		| quarters |
+ 		quarters.isNil.if{^this};
+ 		quarters = this.pr_getQuarters(quarters);
+-		( quarters.class==TempoMap ).if{
++		( [TempoMap, MIDIItemTempoMap].includes(quarters.class) ).if{
+ 			^this.warpToTempoMap(quarters)
+ 		}{
+ 			^this.warpToArray(quarters)

@@ -12,13 +12,13 @@
 		{Pipe.new("osascript -e \'activate application \"Kitty.app\"\'", "w").close}.defer(0.1)
 	}
 
-	meter { |numIns, numOuts|
-		^if( GUI.id == \swing and: { \JSCPeakMeter.asClass.notNil }, {
-			\JSCPeakMeter.asClass.meterServer( this );
-		}, {
-			ServerMeter(this, numIns, numOuts);
-			{Pipe.new("osascript -e \'activate application \"VimR\"\'", "w").close}.defer(0.1)
-		});
-	}
+	// meter { |numIns, numOuts|
+	// 	^if( GUI.id == \swing and: { \JSCPeakMeter.asClass.notNil }, {
+	// 		\JSCPeakMeter.asClass.meterServer( this );
+	// 	}, {
+	// 		ServerMeter(this, numIns, numOuts);
+	// 		{Pipe.new("osascript -e \'activate application \"VimR\"\'", "w").close}.defer(0.1)
+	// 	});
+	// }
 
 }

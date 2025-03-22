@@ -74,7 +74,7 @@ Trek {
 		case 
 		{numChannels == 2} { (Server.default.options.outDevice == "BlackHole 2ch").if{
 			fork{
-				"obs-cli --password Where4obs recording start".unixCmd;
+				"obs-cli --password Where4obs record start".unixCmd;
 				wait.wait;
 				this.playAll;
 				// "obs-cli --password Where4obs recording stop".unixCmd;
@@ -91,7 +91,7 @@ Trek {
 		}} 
 		{numChannels == 5} { (Server.default.options.outDevice == "BlackHole 16ch").if{
 			fork{
-				"obs-cli --password Where4obs recording start".unixCmd;
+				"obs-cli --password Where4obs record start".unixCmd;
 				try{ Monitors.stopFoldDown };
 				wait.wait;
 				this.playAll;

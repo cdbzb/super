@@ -121,8 +121,8 @@ P.synthV(\jun, lag: 0 * Song.quarter, take: \lower,
 });
 ~quarter = Song.quarter;
 P(\bgVox, music: { |p b e|
-MIDIItem("250122_113217").take(2)
-//.play(\vocaline)
+	MIDIItem("250122_113217").take(2)
+	//.play(\vocaline)
 });
 P(\arrangement, music: { |p b e|
 	(instrument: \cymbalsDS, amp: 0.02).play;
@@ -142,16 +142,6 @@ P(\arrangement, music: { |p b e|
 		].p,
 		// ~quarter = 0.46;
 		[
-			// instrument: [\harpRelease, \sawSynth],
-			instrument: [\harp, \sawSynth],
-			freq: [1, 1, 1, 1, 1, 1, 1, 1, 5, 5, 5, 6, 4, 4, 5, 5, ].df(\c, [3, 4]).q(8),
-			dur: ~quarter / 2,
-			legato: 0.4,
-			att: 0, rel: 0.5,
-			amp: [0.05, 0.2],
-			out: [Effect.bus({|i| Phaser2.ar(i, rate: 0.1) },) , 0]
-		].p,
-		[
 			freq: [1, 4, 5, 6 ,4, 5, 1, 4, 5, 6 , 4, 5].df(\c, [3]).q(8),
 			dur: "eee e ex x e e".beats * ~quarter * 2 => _.q(16),
 			amp: 0.3
@@ -160,7 +150,31 @@ P(\arrangement, music: { |p b e|
 	=> Ppar(_)
 	=> _.findur( Song.quarter * 64 )
 	=> _.play
+});
+P(\altGuit, music: { |p b e|
+	PluckMaker(
+				notes: 
+		 [1, 1, 1, 1, 1, 1, 1, 1, 5, 5, 5, 6, 4, 4, 5, 5, ].df(\c, [3, 4]).dup(8).flatten,
+		// ~quarters.dup(16),
+		noteDurs: {[~quarter].dq(inf) / 2},
+		triggers: 
+		{ ~quarter.bubble.dq(inf) / 2 => TDuty.ar(_, 0) 
+		// => HPF.ar(_, 200)
+	}
+	).play
 
+});
+P(\bassGuit, music: {|p b e|
+	[
+		// instrument: [\harpRelease, \sawSynth],
+		instrument: [\harp, \sawSynth],
+		freq: [1, 1, 1, 1, 1, 1, 1, 1, 5, 5, 5, 6, 4, 4, 5, 5, ].df(\c, [3, 4]).q(8),
+		dur: ~quarter / 2,
+		legato: 0.4,
+		att: 0, rel: 0.5,
+		amp: [0.05, 0.2],
+		out: [Effect.bus({|i| Phaser2.ar(i, rate: 0.1) },) , 0]
+	].pp
 });
 // Song(\Wind, []);
 ["newBridge", "r", Song.quarter.dup(24)].addLine;
@@ -169,6 +183,7 @@ P(\tempo, music: { |p b e|
 });
 P(\line, music: { |p b e|
 	MIDIItem("_250204_161748")
+	// .midiEvents.select{|i| i.midicmd == \noteOn}.collect{|i| i.midinote}
 	.filter({|e| e.collect{|i| i.amp.notNil.if{i.amp_(i.amp/2)}; i.timestamp_(i.timestamp * Song.quarter / 0.52)}})
 	// .save
 	.play(
@@ -184,23 +199,23 @@ P(\traps, music: { |p b e|
 	[
 		instrument: \openhihat_808,
 		dur: Song.quarter / 2,
-		rest: [\r, 1].q(inf),
+		rest: [\r, 1].q(24),
 		amp: 1
 	].pp
 });
 P(\bassline, music: { |p b e|
-	[\pluckD, \default].do
-	{ |instrument|
-		[
-			bass: [7, 7, 7, 11, 4, 4, 4, 3, 1, 1, 1, 3, 7, 7,7, 11, 5,5,5, 4, 6, 6, 6, 5].dupEach(2).q(1),
-			oct: [2, 3].dupEach(1).q(inf),
-			instrument: instrument,
-			freq: Pfunc{|e| e.bass.df('b-',e.oct, \mixolydian) * (e.instrument == \default).if {0.5}{1}},
-			dur: Song.quarter / 2,
-			// instrument: [\pluckD, \default]
-			out: Pfunc({|e| if (e.instrument == \pluckD) {Effect.bus({|i| i/2 => Pan2.ar(_) },)}{0}})
-		].ppm
-	}
+			 PluckMaker( notes: 
+				 [7, 7,7, 11, 4, 4, 4, 3, 1, 1, 1, 3, 7, 7,7, 11, 5,5,5, 4, 6, 6, 6, 5] +.x [0, 10] => _.df('b-',[1, 2], \mixolydian)
+				 ,
+				 
+				 noteDurs: {[~quarter].dq(48) / 2},
+				 triggers: { ~quarter.bubble.dq(48) / 2 => TDuty.ar(_, 0) 
+				 // => LPF.ar(_, 400)
+			 } ,
+				 amp: 0.1,
+				 decay: 1.7
+				 // noiseFilterFunc:  LPF.ar(_, 1800, 0.4) 
+			 ).play
 });
 // third section
 //
@@ -429,6 +444,65 @@ P.synthV(\an, take: \leadQwen, lag: (16 * Song.quarter - ( 1 * 2 ) -0.08), pbind
 		}.play
 });
 [ "V1L12", "r", Song.quarter.dup(64)].addLine;
+P.synthV(\jun, lag: 0 * Song.quarter, take: \lower,
+	pbind: 
+	[
+		dur: 
+		MIDIItem("250122_113217").take(2)
+		.from(Song.quarter * 4)
+		.synthVPbind.patternpairs.asEvent[\dur]
+		[[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 1, 2, 3, 4, 5, 6, 7, 8, 9 ]]
+		,
+		midinote: 
+		"r 
+		5 4 4 5 4 
+		5 4 4 5 4 
+		5 4 4 5 4 
+		5 4 4 5 4
+		5 4 4 5 2.5".dm(Song.keySig,6)
+		,
+	].p
+	,
+	params: {|p b| [
+	lyrics: "r aaah aah ah - ah",
+	pitchTake: 1
+] }, music:{|p b e|
+	{
+		e.playbuf.(startPos: e.lag)
+		/3
+		=> Pan2.ar(_,SinOsc.ar(0.12))
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+P.synthV(\jun, take: \lead, lag: 32*Song.quarter, resources: (startPos:32), pbind: 
+	[
+		dur: 
+		MIDIItem("250122_113217").take(2)
+		// .from(Song.quarter * 4)
+		.synthVPbind.patternpairs.asEvent[\dur]
+		[..21]
+		,
+		midinote: 
+			[
+				1,
+				11, 6, 6, 7, 6,
+				11, 6, 6, 7, 6,
+				11, 6, 6, 7, 6,
+				11, 6, 6, 7, 6,
+				11,
+			].dm(\c)
+	].p,
+	params: {|p b| [
+	lyrics: "r aaah aah ah - ah ah ah ah - ah ah ah ah - ah ah",
+	pitchTake: 1 //should this be nil  ??
+] }, music:{|p b e|
+	{
+		e.playbuf.(startPos: e.lag)//.(32 * p.quarter)//(startPos: 8)
+		/3
+		=> Pan2.ar(_,SinOsc.ar(0.12))
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
 P(\tempo, music: { |p b e|
 	TempoClock.tempo= 1;
 });

@@ -50,12 +50,29 @@ P.synthV(\an, take: \lead,
 		/4
 	}.play
 });
-P(\bass, music: { |p b e|
-	[
-		freq: [1, -7, -4, [-4, -5], [-4, -5], [-4, -5], [-4, -5]].df(p.keySig.(e.transpose).(), 3).dupEach(4).q,
-		dur: ~tempo/4,
-		legato: 0.7
-	].pp
+// P(\bass, music: { |p b e|
+// 	[
+// 		freq: [1, -7, -4, [-4, -5], [-4, -5], [-4, -5], [-4, -5]].df(p.keySig.(e.transpose).(), 3).dupEach(4).q,
+// 		dur: ~tempo/4,
+// 		legato: 0.7
+// 	].pp
+// });
+Song.sixteenthBassFunc = 
+		{ |freq dur |
+			{
+				VarSaw.ar(Duty.kr( dur.(), 0, freq.poll , doneAction: 0) * [0.993, 1.0015] *.x [2, 2], pi/2, 0.7)
+				* Env.perc(0.005, 0.3).kr(0,gate: TDuty.kr(dur.(), 0, 1, doneAction: 2))
+				=> RLPF.ar(_, 800 + SinOsc.ar(0.31).range(0, 300))
+				/20
+			}
+			// freq.duty(1!15).poll
+			
+		};
+P(\bassDemand, music: { |p b e|
+	p.sixteenthBassFunc.(
+		freq: {[1, -7, -4, [-4, -5], [-4, -5], [-4, -5], [-4, -5]].df(p.keySig.(e.transpose).(), 3).dupEach(4).dq}, 
+		dur: {{[~tempo/4].dq(28)}},
+		).play
 });
 ["Verse B", "r", [~tempo * 5]].addLine;
 P(\bassShort, music: { |p b e|
@@ -90,11 +107,11 @@ P.synthV(\an, take: \lead,
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
-P(\bass, music: { |p b e|
-	[
-		freq: [1, -6.5, -4, -2, -2].df(p.keySig.(e.transpose).(), 3).dupEach(4).q,
-		dur: ~tempo/4
-	].pp
+P(\bassDemand, music: { |p b e|
+	p.sixteenthBassFunc.(
+		freq: {[1, -6.5, -4, -2, -2].df(p.keySig.(e.transpose).(), 3).dupEach(4).dq},
+		dur: {{[~tempo/4].dq(20)}},
+	).play
 });
 ["VerseC", "r",[~tempo * 10]].addLine;
 P(\bass, music: { |p b e|
@@ -228,9 +245,9 @@ P(\keys, music: { |p b e|
 		MicroKeys(\stringyy).synth_(\stringyy, [mix:0, release: 1])
 		// .monitor
 		;
-		MicroKeys(\stringyy).add(\quiet, {|e| e.vel.notNil.if{e.vel = e.vel / 4}; e}, \addBefore, \synth);
+		MicroKeys(\stringyy).add(\quiet, {|e| e.vel.notNil.if{e.vel = e.vel / 2}; e}, \addBefore, \synth);
 		MIDIItem("_250116_165156").take(9)
-		.fromNoteTo(0, 13)
+		// .fromNoteTo(0, 13)
 		.play(\stringyy);
 		// .record(\stringyy)
 

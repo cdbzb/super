@@ -1,3 +1,4 @@
+
 + Pbind {
 	asPpar {
 		 ^Ppar(patternpairs.flop.collect({|i| Pseed(0,Pbind(*i)) }))
@@ -78,6 +79,7 @@
 		{ this.(f) })
 }
 }
+
 + Server { 
 	plotTreeL {|interval=0.5 x=(-800) y=400 dx=400 dy=800|
 		var onClose, window = Window.new(name.asString + "Node Tree",
@@ -89,16 +91,12 @@
 		window.onClose = {
 			onClose.value;
 		};
-		// {Pipe.new("osascript -e \'activate application \"Kitty.app\"\'", "w").close}.defer(0.1)
 	}
 
 	meter { |numIns, numOuts|
-		^if( GUI.id == \swing and: { \JSCPeakMeter.asClass.notNil }, {
-			\JSCPeakMeter.asClass.meterServer( this );
-		}, {
-			ServerMeter(this, numIns, numOuts);
-			// {Pipe.new("osascript -e \'activate application \"VimR\"\'", "w").close}.defer(0.1)
-		});
+			var servermeter = ServerMeter(this, numIns, numOuts);
+			"osascript -e \'activate application \"WezTerm\"\'".unixCmd;
+			^servermeter
 	}
 
 

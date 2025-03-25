@@ -248,7 +248,7 @@ Song {
 	}
 	showLyricWindow {
 		lyricWindow = Window.new(bounds:Rect(0,00,1040,200))
-			.background_(Color.clear)
+			// .background_(Color.clear)
 		;
 		lyricWindowText = StaticText.new(lyricWindow,  bounds: Rect(0,0,1040,300))
 			.align_(\center)
@@ -551,7 +551,7 @@ Song {
 	at {|...args|
 		var array;
 		array = all {:x,x<-this.pts,args.flatten.includes(x.start)};
-		array.do({|i|i.name.postln})
+		array.do({|i x| x.asString ++ i.name.postln})
 		^array
 	}
 

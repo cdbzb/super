@@ -8,24 +8,31 @@ MIDIItem2 : MIDIItem{
 }
 AbstractMidiEvents { 
 	// class for MIDIItem and MIDIItemPlayer
-	gui {
-		var notes = this.notes;
-		var start = notes[0].timestamp;
-		var end = notes.last.timestamp + notes.last.sustain;
-		var width = 1400;
-		var height = 800;
+	gui { |take| 
+		var notes, start, end, width, height, window, view;
+		take = take ? (this.takes.size - 1);
+		notes = this.take(take).notes;
+		start = notes[0].timestamp;
+		end = notes.last.timestamp + notes.last.sustain;
+		width = 1400;
+		height = 800;
 		// Create a window
-		var window = Window("Piano Roll", Rect(100, 100, width, height)).front;
+		window = Window("Piano Roll", Rect(100, 100, width, height)).front;
 
 		// Create a UserView for drawing
-		var view = UserView(window, Rect(0, 0, width, 1600))
+		view = UserView(window, Rect(0, 0, width, 1600))
 		.background_(Color.white);
+
 
 		// Define the drawing function
 		view.keyDownAction_({ |view char|
 			switch (char, 
 				$q, {window.close; "open -a WezTerm.app".unixCmd},
-				$n, {}
+				$0, {window.close; this.gui(0)},
+				$1, {window.close; this.gui(1)},
+				$2, {window.close; this.gui(2)},
+				$j, {window.close; take = take - 1; this.gui(take: take)},
+				$k, {window.close; take = take - 1; this.gui(take: take)}
 			)
 		});
 		view.drawFunc = {
@@ -58,6 +65,16 @@ AbstractMidiEvents {
 				);
 
 			};
+		// === NEW CODE: Display `take` in the upper-left corner ===
+		//if (this.takes.notNil) { // Only draw if `take` exists
+			// Pen.color = Color(100, 100, 100, 0.5); // Black with 50% transparency
+			Pen.stringAtPoint(
+				take.asString, // Convert `take` to string
+				Point(120, 120), // Position (x, y) from top-left corner
+				Font("Helvetica", 48), // Large font size
+				Color(0, 0, 0, 0.5) // Semi-transparent black
+			);
+		//};
 		};
 
 		// Refresh the view
@@ -129,7 +146,7 @@ AbstractMidiEvents {
 MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents for use with MicroKeys
 	classvar <>folder, <all;
 	var <>midiEvents , <name, <>initialCCValues;
-	var restFirst, <initialRest, <notes ;
+	var restFirst, <initialRest, notes ;
 	var <takes;
 	classvar midiout, <recording;
 
@@ -159,6 +176,12 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	}
 	*newFrom{ |midiEvents |
 		^ MIDIItem( UniqueID ).midiEvents_(midiEvents)
+	}
+	notes {
+		notes.isNil.if{
+			^this.player.notes
+		};
+		^notes
 	}
 	insert {
 		Nvim.replace( "MIDIItem(\\\"%\\\")".format(name) )

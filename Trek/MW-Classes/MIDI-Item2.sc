@@ -22,6 +22,12 @@ AbstractMidiEvents {
 		.background_(Color.white);
 
 		// Define the drawing function
+		view.keyDownAction_({ |view char|
+			switch (char, 
+				$q, {window.close; "open -a WezTerm.app".unixCmd},
+				$n, {}
+			)
+		});
 		view.drawFunc = {
 			var noteHeight = 1600 / 128; // Height of each note row (window height divided by 128 notes)
 			var timeScale = width / (end - start); // Pixels per second
@@ -35,7 +41,7 @@ AbstractMidiEvents {
 			Pen.stroke;
 			// Draw the notes
 			notes.do { |e num|
-				var y =   height - (e.note - 30 * noteHeight).debug("y") ; // Calculate y position (no inversion for now)
+				var y =   height - (e.midinote - 30 * noteHeight).debug("y") ; // Calculate y position (no inversion for now)
 				var x = e.timestamp - start *  timeScale ; // Start at time 0 (you can adjust this if your events have start times)
 				var width = ( e.sustain ? 100 ) * timeScale ;
 
@@ -218,7 +224,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 			|cmd|
 			MIDIdef(\record ++ cmd => _.asSymbol).free
 		};
-		recording.stop; recording = nil;
+		recording.stop; recording.save; recording = nil;
 	}
 	stop {
 		if (midiEvents.select{|e| e.timestamp > 0}.size > 0) {
@@ -317,7 +323,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	play { |mk name clock post overdub=false |
 		^this.player.play(mk, overdub: overdub)
 	}
-	player {|func| 
+	player {|func take| 
 		^if(recording != this) {
 			MIDIItemPlayer( this.deepCopy.makeNotes, this) 
 		}{
@@ -337,6 +343,10 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		midiEvents = List.new
 	}
 	take {|num|
+		(num < 0).if { num = takes.size - 1 + num  };
+		num.debug("num1");
+		(num < 0 or: (num > (takes.size - 1))).if { ^"only % takes in %".format(takes.size, name).postln};
+		num.debug("num2");
 		^MIDIItemPlayer(takes[num], this).recalcSustains
 	}
 }
@@ -396,7 +406,8 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		start = mi.bounds.start; end =mi.bounds.end
 	}
 
-	play { |mk clock post=#[] overdub=false|
+	play { |mk clock post=#[] overdub=false take|
+
 
 		(mk.rank > 0).if { mk.do{|i| this.play(i, clock, post, overdub) }; ^this };
 

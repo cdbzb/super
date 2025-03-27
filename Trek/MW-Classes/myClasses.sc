@@ -68,7 +68,7 @@
 	ooo {|a| ^a.(this)}
 	=>| {|a| a.(this)}
 	=>+ {|a b| ^a.(this,this)}//a is a fn of 2 vars
-        =< {|a| ^[a.(this),this]}
+	=< {|a| ^[a.(this),this]}
 	
 	pipe {|...fns|
 		^fns.inject({|x| x}, {|acc, el| el<>acc }).(this)
@@ -94,9 +94,13 @@
 	}
 
 	meter { |numIns, numOuts|
-			var servermeter = ServerMeter(this, numIns, numOuts);
+		if(serverMeter.isNil or: { serverMeter.isClosed }) {
+			serverMeter = ServerMeter(this, numIns, numOuts)
+		} {
+			serverMeter.window.front
+		};
 			"osascript -e \'activate application \"WezTerm\"\'".unixCmd;
-			^servermeter
+			^serverMeter
 	}
 
 

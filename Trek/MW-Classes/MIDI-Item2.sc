@@ -32,7 +32,7 @@ AbstractMidiEvents {
 				$1, {window.close; this.gui(1)},
 				$2, {window.close; this.gui(2)},
 				$j, {window.close; take = take - 1; this.gui(take: take)},
-				$k, {window.close; take = take - 1; this.gui(take: take)}
+				$k, {window.close; take = take + 1; this.gui(take: take)}
 			)
 		});
 		view.drawFunc = {

@@ -230,10 +230,11 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	}
 	makeNotes {
 		// should copy be deepCopy??
-		var on = midiEvents.select{|e| e.midicmd == \noteOn}.deepCopy;
-		var off = midiEvents.select{|e| e.midicmd == \noteOff}.deepCopy;
+		var events = midiEvents.deepCopy;
+		var on = events.select{|e| e.midicmd == \noteOn};
+		var off = events.select{|e| e.midicmd == \noteOff};
 		var findMatch = {|midinote| off.collect{|e| e.midinote}.indexOf(midinote)}; //returns index
-		on.do{|e| var match = off.removeAt(try{ findMatch.(e.midinote) }); e.sustain = match.timestamp - e.timestamp; };
+		on.do{|e| try{var match = off.removeAt( findMatch.(e.midinote) ); e.sustain = match.timestamp - e.timestamp;} };
 		notes = initialRest.copy ? [] ++ on;
 		notes.setDurs;
 		^(notes ++ midiEvents.reject{|e| [\mk].includes(e.type)}).sort{|i j| i.timestamp < j.timestamp}
@@ -380,12 +381,16 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	var <midiEvents, <source;
 	var <>start, <>end;
 	var tracks;
-	*new {| midiEvents source |
+
+	*new {| amidiEvents source |
 		var player, bounds;
-		midiEvents = midiEvents.deepCopy;
+		var midiEvents = amidiEvents.deepCopy;
 		player = super.newCopyArgs(midiEvents, source);
-		bounds = player.bounds;
-		midiEvents.notNil.if {
+		midiEvents.notNil.if { //this should not be necessary!!!!
+			bounds = (
+				end: midiEvents.last.timestamp + ( midiEvents.last.dur ? 0 ),  
+				start: midiEvents[0].timestamp
+			);
 			player.start = bounds.start;
 			player.end = bounds.end;
 		}{"MidiEvents nil!!".warn};
@@ -435,8 +440,6 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	}
 
 	play { |mk clock post=#[] overdub=false take|
-
-
 		(mk.rank > 0).if { mk.do{|i| this.play(i, clock, post, overdub) }; ^this };
 
 		mk.isKindOf(Symbol).if {
@@ -628,7 +631,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	filter {|func|
 		^MIDIItemPlayer(
 			// (indices: this.noteIndices).use{ func.(midiEvents).valueEnvir })
-			func.(midiEvents.deepCopy),
+			func.(midiEvents),
 			this.source
 		)
 	}

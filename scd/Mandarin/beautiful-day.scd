@@ -13,7 +13,8 @@ P.synthV(\an, take: \lead,
 	lyrics: " r 美 好 天  回 忆 里 -",
  // 美好天 (měi hǎo tiān) - Beautiful day
 	pitchTake: 1,
-	language: \Mandarin
+	language: \mandarin,
+
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -33,6 +34,24 @@ P.synthV(\an, take: \endUpper,
  // 美好天 (měi hǎo tiān) - Beautiful day
 	pitchTake: 3,
 	language: \Mandarin
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+P.synthV(\ninezero, take:  \lead , 
+	pbind: 
+	MIDIItem(\foo).take(1).fromNote(0, 50)
+	// .gui
+	.filter{|e| e.select{|i| i.midicmd==\noteOn}[[0, 3, 5, 9, 11, 13]]}
+	.synthVPbind,
+	params: {|p b| [
+	lyrics: "r 快 乐 的 日 子 像",// 流 水 不 停 歇",
+	pitchTake: [ 1, 4 ],
+	legato: [1, 1, 1, 1, 1,1,  9],
+	language: \mandarin,
+	phoneset: \xsampa
 ] }, music:{|p b e|
 	{
 		e.playbuf

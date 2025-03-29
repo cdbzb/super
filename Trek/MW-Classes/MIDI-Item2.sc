@@ -233,7 +233,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		var on = midiEvents.select{|e| e.midicmd == \noteOn}.deepCopy;
 		var off = midiEvents.select{|e| e.midicmd == \noteOff}.deepCopy;
 		var findMatch = {|midinote| off.collect{|e| e.midinote}.indexOf(midinote)}; //returns index
-		on.do{|e| var match = off.removeAt(findMatch.(e.midinote)); e.sustain = match.timestamp - e.timestamp; };
+		on.do{|e| var match = off.removeAt(try{ findMatch.(e.midinote) }); e.sustain = match.timestamp - e.timestamp; };
 		notes = initialRest.copy ? [] ++ on;
 		notes.setDurs;
 		^(notes ++ midiEvents.reject{|e| [\mk].includes(e.type)}).sort{|i j| i.timestamp < j.timestamp}
@@ -370,9 +370,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	}
 	take {|num|
 		(num < 0).if { num = takes.size - 1 + num  };
-		num.debug("num1");
 		(num < 0 or: (num > (takes.size - 1))).if { ^"only % takes in %".format(takes.size, name).postln};
-		num.debug("num2");
 		^MIDIItemPlayer(takes[num], this).recalcSustains
 	}
 }
@@ -542,19 +540,18 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	}
 
 	fromNote {|from to|
+		var indices = this.noteIndices;
 		to = to ? midiEvents.select{|e| e.midicmd == \noteOn}.size;
 
 		^this.filter({|e| 
 
-			var res = this.chaseCCs(this.noteIndices[from]) 
-			++ e[this.noteIndices[from]..this.noteIndices[to - 1]].setDurs;
+			var res = this.chaseCCs(indices[from]) 
+			++ e[indices[from]..indices[to - 1]].setDurs;
 
-			{
-				this.noteIndices[to + 1].notNil.if {
-					res.drop(-1)
-				}{
-					res
-				}
+			indices[to + 1].notNil.if {
+				res.drop(-1)
+			}{
+				res
 			}
 	});
 	}
@@ -602,7 +599,12 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		var on = midiEvents.select{|e| e.midicmd == \noteOn}.deepCopy;
 		var off = midiEvents.select{|e| e.midicmd == \noteOff}.deepCopy;
 		var findMatch = {|midinote| off.collect{|e| e.midinote}.indexOf(midinote)}; //returns index
-		on.do{|e| var match = off.removeAt(findMatch.(e.midinote)); e.sustain = match.timestamp - e.timestamp; };
+		on.do{|e| 
+			try{
+				var match = off.removeAt(findMatch.(e.midinote)); 
+				e.sustain = match.timestamp - e.timestamp 
+			}
+		};
 		^on ++ midiEvents.reject{|e| e.type == \mk} => _.sort{|i j| i.timestamp < j.timestamp}
 	}
 

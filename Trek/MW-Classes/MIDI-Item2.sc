@@ -172,8 +172,16 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 			\reading.postln; 
 			^Object.readArchive(folder +/+ name).register //saved mk won't be right otherwise - should not even save?
 		} {
+			var obj;
 			\new.postln; 
-			^super.new.init(name, restFirst).register
+			obj = super.new;
+			obj.takes = List[];
+			obj.restFirst = restFirst;
+			obj.name = name;
+			obj.midiEvents = List.new;
+			obj.initialCCValues = ();
+			obj.register;
+			^obj
 		}
 	}
 	*newFrom{ |midiEvents |
@@ -187,13 +195,6 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	}
 	insert {
 		Nvim.replace( "MIDIItem(\\\"%\\\")".format(name) )
-	}
-	init { |n r m|
-		takes = List[];
-		restFirst = r;
-		name = n;
-		midiEvents = List.new;
-		initialCCValues = ();
 	}
 	register {
 		all.add(name -> this)
@@ -382,7 +383,15 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	var <>start, <>end;
 	var tracks;
 	*new {| midiEvents source |
-		^super.newCopyArgs(midiEvents.deepCopy, source).init
+		var player, bounds;
+		midiEvents = midiEvents.deepCopy;
+		player = super.newCopyArgs(midiEvents, source);
+		bounds = player.bounds;
+		midiEvents.notNil.if {
+			player.start = bounds.start;
+			player.end = bounds.end;
+		}{"MidiEvents nil!!".warn};
+		^player
 	}
 	*stopAll {
 		playing.do({ |i| 
@@ -390,17 +399,13 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			playing.remove(i)
 		})
 	}
-	init{
-		this.start = this.bounds.start;
-		this.end = this.bounds.end;
-	}
 	*initClass{
 		playing = Set[];
 		MyFree.add({MIDIItemPlayer.stopAll});
 		Event.addEventType(\mi, {
 			~dur = ~player[~to+1].timestamp - ~player[~from].timestamp;
 			~clock = TempoClock(~tempo ? 1 / ~stretch ? 1);
-			~player.fromNoteTo(~from, ~to).play(~mk, clock: ~clock) 
+			~player.fromNote(~from, ~to).play(~mk, clock: ~clock) 
 		}, parentEvent: (type: \durEvent));
 		Event.addEventType(\mi2, {
 			~filter.notNil.if{~player = ~filter.(~player)};

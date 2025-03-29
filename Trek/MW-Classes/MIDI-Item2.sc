@@ -250,7 +250,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 			|cmd|
 			MIDIdef(\record ++ cmd => _.asSymbol).free
 		};
-		recording.stop; recording.save; recording = nil;
+		recording.notNil.if {recording.stop; recording.save; recording = nil;}
 	}
 	stop {
 		if (midiEvents.select{|e| e.timestamp > 0}.size > 0) {

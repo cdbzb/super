@@ -20,6 +20,25 @@ P.synthV(\an, take: \lead,
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
+P.synthV(\an, take: \endUpper, 
+	pbind: 
+	MIDIItem(\foo).take(1).fromNote(37, 50).filter{|e| e.select{|i| i.midicmd==\noteOn}[[2, 4, 7, 10]]}
+	// MIDIItem(\foo).take(1).fromNote(1, 48).gui
+	//.play(\default)//1.714
+	.synthVPbind
+	.patternpairs ++ [midinote: [1, 7, 7, 11 ].dm(\c)] => _.p,
+	params: {|p b| [
+	lyrics: " r   梦 不 停 r ",
+	legato: [1, 1, 1,  3],
+ // 美好天 (měi hǎo tiān) - Beautiful day
+	pitchTake: 3,
+	language: \Mandarin
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
 P.synthV(\an, take: \end, 
 	pbind: 
 	MIDIItem(\foo).take(1).fromNote(37, 50).filter{|e| e.select{|i| i.midicmd==\noteOn}[[2, 4, 7, 10]]}

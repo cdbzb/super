@@ -10,19 +10,21 @@ AbstractMidiEvents {
 	// class for MIDIItem and MIDIItemPlayer
 	gui { |take| 
 		var notes, start, end, width, height, window, view;
-		take = take ? (this.takes.size - 1);
-		notes = this.take(take).notes;
+		this.respondsTo(\takes).if{
+			take = take ? (this.takes.size - 1);
+			notes = this.take(take).notes;
+		}{
+			notes = this.notes;
+			take = 0
+		};
 		start = notes[0].timestamp;
 		end = notes.last.timestamp + notes.last.sustain;
 		width = 1400;
 		height = 800;
-		// Create a window
+		// Create a window and UserView
 		window = Window("Piano Roll", Rect(100, 100, width, height)).front;
-
-		// Create a UserView for drawing
 		view = UserView(window, Rect(0, 0, width, 1600))
 		.background_(Color.white);
-
 
 		// Define the drawing function
 		view.keyDownAction_({ |view char|

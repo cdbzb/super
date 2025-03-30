@@ -228,6 +228,16 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 			// ++ (initialRest ++ ccTracks[\poly]  => _.q)
 		)
 	}
+	makeNotesFromMidiEvents { |array|
+		var events = array.deepCopy;
+		var on = events.select{|e| e.midicmd == \noteOn};
+		var off = events.select{|e| e.midicmd == \noteOff};
+		var findMatch = {|midinote| off.collect{|e| e.midinote}.indexOf(midinote)}; //returns index
+		on.do{|e| try{var match = off.removeAt( findMatch.(e.midinote) ); e.sustain = match.timestamp - e.timestamp;} };
+		notes = initialRest.copy ? [] ++ on;
+		notes.setDurs;
+		^(notes ++ array.reject{|e| [\mk].includes(e.type)}).sort{|i j| i.timestamp < j.timestamp}
+	}
 	makeNotes {
 		// should copy be deepCopy??
 		var events = midiEvents.deepCopy;
@@ -370,9 +380,11 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		midiEvents = List.new
 	}
 	take {|num|
+		var obj;
 		(num < 0).if { num = takes.size - 1 + num  };
 		(num < 0 or: (num > (takes.size - 1))).if { ^"only % takes in %".format(takes.size, name).postln};
-		^MIDIItemPlayer(takes[num], this).recalcSustains
+		obj = MIDIItemPlayer(this.makeNotesFromMidiEvents(takes[num]), this);//.recalcSustains
+		^obj
 	}
 }
 

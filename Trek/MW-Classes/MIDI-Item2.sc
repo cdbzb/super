@@ -172,18 +172,21 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 			\reading.postln; 
 			^Object.readArchive(folder +/+ name).register //saved mk won't be right otherwise - should not even save?
 		} {
-			var obj;
 			\new.postln; 
-			obj = super.new;
-			obj.takes = List[];
-			obj.restFirst = restFirst;
-			obj.name = name;
-			obj.midiEvents = List.new;
-			obj.initialCCValues = ();
-			obj.register;
-			^obj
+			^super.new.initMIDIitem(name, restFirst)
 		}
 	}
+
+	initMIDIitem {|n r|
+		takes = List[];
+		restFirst = r;
+		name = n;
+		midiEvents = List.new;
+		initialCCValues = ();
+		this.register;
+		^this
+	}
+
 	*newFrom{ |midiEvents |
 		^ MIDIItem( UniqueID ).midiEvents_(midiEvents)
 	}
@@ -362,7 +365,8 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	}
 	player {|func take| 
 		^if(recording != this) {
-			MIDIItemPlayer( this.deepCopy.makeNotes, this) 
+			// MIDIItemPlayer( this.deepCopy.makeNotes, this) 
+			MIDIItemPlayer( this.makeNotesFromMidiEvents(midiEvents), this) 
 		}{
 			SelfReturningObject()
 		}

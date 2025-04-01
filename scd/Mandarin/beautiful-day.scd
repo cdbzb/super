@@ -2,8 +2,8 @@
 Song(\beautiful,[]).current;
 Song.pianoQuarters = 
 MIDIItem(\foo).take(1).fromNote(0, 98)
-// MIDIItem(\foo).take(1).fromNote(0, 98).gui
-.filter({|e| e.select{|i| i.midicmd == \noteOn}[[0, 9, 13, 19, 22, 31, 39, 44, 48, 55, 62,  70, 72, 80, 85, 92]]})
+// .gui
+.filter({|e| e.select{|i| i.midicmd == \noteOn}[[0, 9, 13, 19, 22, 31, 39, 44, 48, 55, 62,  70, 72, 80, 85, 94]]})
 // .gui
 .notes.collect{|i| i.timestamp}.differentiate;
 ["ch1", "r", Song.pianoQuarters].addLine;
@@ -17,7 +17,7 @@ P(\tamb,lag: Song.pianoQuarters[0], music: { |p b e|
 		// * Song.quarter
 		+ ( [1, -1] /80 => _.dup(8) ) //swing amt
 		=> _.flat 
-		=> _.warpTo(e.tempoMap.quantizeWindow(1, 8))
+		=> _.warpTo(e.tempoMap.quantizeWindow(0.3, 8))
 		=> _.dq(8);
 		var triggers = TDuty.kr( durs, 0,1,gapFirst:0 );
 		var energy = EnvGen.ar( Env.linen(0, 0.00, 0.015), triggers, doneAction:0   ) 
@@ -42,21 +42,47 @@ P(\tamb,lag: Song.pianoQuarters[0], music: { |p b e|
 	(instrument: \cymbalsDS, amp:0.02).play
 
 });
+P(\bd, music: { |p b e|
+	[
+		amp:1.5,
+		rest: MuteFirst(),
+
+		instrument: \bd_808, // make this a flam
+		// amp:1.9,
+		// strum: Pwhite(0.02, 0.04, inf),
+		dur: [1] ++ [1, 1.5, 1, 0.5].dup(4).flat =>_.warpTo(e.tempoMap ++ e.tempoMap
+			=>_.quantize()
+			// .quantizeWindow(0.5, 8)
+		) =>_.q
+	].pp
+});
 P(\click, music: { |p b e|
 	[
-		amp: 0.4,
+		amp: [ 0.4, 0.3 ] ,
 		rest: MuteFirst(),
 
 		instrument: \JWSnare, // make this a flam
-		dur: 1.dup(15).warpTo(e.tempoMap
-			// .quantizeDft()
-			.quantizeWindow(1, 8)
+		// amp:1.9,
+		strum: Pwhite(0.02, 0.04, inf),
+		dur: 1.dup(17).warpTo(e.tempoMap ++ e.tempoMap
+			.quantize()
+			// .quantizeWindow(0.5, 8)
 		).q
 	].pp
 });
 P(\keys, music: { |p b e|
-	MIDIItem(\foo).take(1).play(\default);
-	// .filter({|e|e.select{|f| f.midinote == 5.dm(\c) or: (f.midinote == 6.dm(\c))}[(4..8)]}).start_(0)
+	MIDIItem(\foo).take(1).fromNote(0, 98)//.play(\default)
+	.quantize(
+		[ 0.57, 0.57 ].dup(9).flat, 
+		nil, 
+		{|notes| [(timestamp:0)] ++ notes[[0, 9, 13, 19, 22, 31, 39, 44, 48, 55, 62,  70, 72, 80, 85, 94]] }
+	)
+   .filter { |e| //remove bad note (should be method?) 
+	  var note =  e.select{ |i| i.midicmd == \noteOn }[59];
+	  var off = e.select{|i| i.midicmd == \noteOff and: (i.timestamp >= note.timestamp)}.sort({|x y| x.timestamp < y.timestamp})[0];
+	  e.remove(note); e.remove(off);e
+	 }.recalcSustains
+  .play(\sawSynth)
 });
 P.synthV(\an, take: \lead, 
 	pbind: 
@@ -153,6 +179,19 @@ P.synthV(\an, take: \lower,
 {
 	MIDIItem(\foo).take(1).filter({|e|e.select{|f| f.midinote == 5.dm(\c) or: (f.midinote == 6.dm(\c))}[(4..8)]}).start_(0).synthVPbind
 }
+)
+(
+
+  MIDIItem(\foo).take(1).fromNote(0, 98)
+  .quantize( [ 0.57, 0.57 ].dup(8).flat, nil, {|notes| notes [[0, 9, 13, 19, 22, 31, 39, 44, 48, 55, 62,  70, 72, 80, 85, 94]]})
+   .filter{|e| 
+	  var note =  e.select{ |i| i.midicmd == \noteOn }[59];
+	  var off = e.select{|i| i.midicmd == \noteOff and: (i.timestamp >= note.timestamp)}.sort({|x y| x.timestamp < y.timestamp})[0];
+	  e.remove(note); e.remove(off);e
+	 }
+	 // .gui
+	.recalcSustains
+  .play(\sawSynth)
 )
 
 

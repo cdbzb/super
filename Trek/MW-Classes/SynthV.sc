@@ -421,6 +421,9 @@ SynthV {
 		};
 		synthV = SynthV(key,( start ? section ),take ,double );
 		synthV.setDatabase(key);
+
+		offset.notNil.if{ synthV.offset_(offset) };
+
 		preset = Trek.at(role, key);
 		synthV.buildFunc = {
 			pbind = pbind.notNil.if{  // pass in a pbind or get it from the song

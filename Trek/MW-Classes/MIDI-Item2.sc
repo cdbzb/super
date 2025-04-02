@@ -644,6 +644,13 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		})
 	}
 
+	filterEventsAndNotes{|func|
+		^MIDIItemPlayer(
+			// (indices: this.noteIndices).use{ func.(midiEvents).valueEnvir })
+			func.(midiEvents, this.notes),
+			this.source
+		)
+	}
 	filter {|func|
 		^MIDIItemPlayer(
 			// (indices: this.noteIndices).use{ func.(midiEvents).valueEnvir })
@@ -663,7 +670,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		^(aMidiEvents ? midiEvents).select({|e| e.midicmd == \noteOn})
 	}
 
-	filterNotes { |func|
+	filterNotes { |func| //applies function to notes in place
 		var out = midiEvents.deepCopy;
 		midiEvents.select({|e| e.midicmd == \noteOn})
 		.collect({|e| [midiEvents.indexOf(e),  e]})

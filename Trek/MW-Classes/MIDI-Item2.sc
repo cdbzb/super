@@ -8,80 +8,139 @@ MIDIItem2 : MIDIItem{
 }
 AbstractMidiEvents { 
 	// class for MIDIItem and MIDIItemPlayer
-	gui { |take| 
-		var notes, start, end, width, height, window, view;
-		this.respondsTo(\takes).if{
-			take = take ? (this.takes.size - 1);
-			notes = this.take(take).notes;
-		}{
-			notes = this.notes;
-			take = 0
-		};
-		start = notes[0].timestamp;
-		end = notes.last.timestamp + notes.last.sustain;
-		width = 1400;
-		height = 800;
-		// Create a window and UserView
-		window = Window("Piano Roll", Rect(100, 100, width, height)).front;
-		view = UserView(window, Rect(0, 0, width, 1600))
-		.background_(Color.white);
 
-		// Define the drawing function
-		view.keyDownAction_({ |view char|
-			switch (char, 
-				$q, {window.close; "open -a WezTerm.app".unixCmd},
-				$0, {window.close; this.gui(0)},
-				$1, {window.close; this.gui(1)},
-				$2, {window.close; this.gui(2)},
-				$j, {window.close; take = take - 1; this.gui(take: take)},
-				$k, {window.close; take = take + 1; this.gui(take: take)}
-			)
-		});
-		view.drawFunc = {
-			var noteHeight = 1600 / 128; // Height of each note row (window height divided by 128 notes)
-			var timeScale = width / (end - start); // Pixels per second
-
-			// Draw the piano roll grid
-			Pen.color = Color.gray(0.8);
-			128.do { |i| // 128 MIDI notes (0–127)
-				var y = i * noteHeight; // Calculate y position (no inversion for now)
-				Pen.line(0@y, width@y);
-			};
-			Pen.stroke;
-			// Draw the notes
-			notes.do { |e num|
-				var y =   height - (e.midinote - 30 * noteHeight).debug("y") ; // Calculate y position (no inversion for now)
-				var x = e.timestamp - start *  timeScale ; // Start at time 0 (you can adjust this if your events have start times)
-				var width = ( e.sustain ? 100 ) * timeScale ;
-
-				// Draw the note rectangle
-				Pen.color = Color.blue( e.amp ); // Use amplitude for color intensity
-				Pen.addRect(Rect(x, y, width, noteHeight).debug("rect"));
-				Pen.fill;
-				Pen.color = Color.black;
-				Pen.stringAtPoint(
-					num.asString, // Convert MIDI note number to string
-					Point(x, y - 15),  // Position text slightly above the rectangle
-					Font.default,
-					Color.black
-				);
-
-			};
-		// === NEW CODE: Display `take` in the upper-left corner ===
-		//if (this.takes.notNil) { // Only draw if `take` exists
-			// Pen.color = Color(100, 100, 100, 0.5); // Black with 50% transparency
-			Pen.stringAtPoint(
-				take.asString, // Convert `take` to string
-				Point(120, 120), // Position (x, y) from top-left corner
-				Font("Helvetica", 48), // Large font size
-				Color(0, 0, 0, 0.5) // Semi-transparent black
-			);
-		//};
-		};
-
-		// Refresh the view
-		view.refresh;
-	}
+gui { |take| 
+    var notes, start, end, width, height, window, view;
+    var selectedIndices; // Array to store selected note indices
+    
+    // Initialize selected indices array
+    selectedIndices = [];
+    
+    this.respondsTo(\takes).if{
+        take = take ? (this.takes.size - 1);
+        notes = this.take(take).notes;
+    }{
+        notes = this.notes;
+        take = 0
+    };
+    
+    start = notes[0].timestamp;
+    end = notes.last.timestamp + notes.last.sustain;
+    width = 1400;
+    height = 800;
+    
+    // Create a window and UserView
+    window = Window("Piano Roll", Rect(100, 100, width, height)).front;
+    view = UserView(window, Rect(0, 0, width, 1600))
+    .background_(Color.white);
+    
+    // Define the keyboard actions
+    view.keyDownAction_({ |view char|
+        switch (char, 
+            $q, {window.close; "open -a WezTerm.app".unixCmd},
+            $0, {window.close; this.gui(0)},
+            $1, {window.close; this.gui(1)},
+            $2, {window.close; this.gui(2)},
+            $j, {window.close; take = take - 1; this.gui(take: take)},
+            $k, {window.close; take = take + 1; this.gui(take: take)},
+            $r, {selectedIndices = []; view.refresh; "Selection cleared".postln}, // Clear selection
+            $g, {("Selected note indices: " ++ selectedIndices).postln; selectedIndices} // Get selected indices
+        )
+    });
+    
+    // Add mouse click handling
+    view.mouseDownAction_({ |view, x, y, mod|
+        var noteHeight = 1600 / 128;
+        var timeScale = width / (end - start);
+        var clickedNoteIndex = nil;
+        
+        // Check if click is on a note
+        notes.do { |e, idx|
+            var noteY = height - (e.midinote - 30 * noteHeight);
+            var noteX = (e.timestamp - start) * timeScale;
+            var noteWidth = (e.sustain ? 100) * timeScale;
+            var noteRect = Rect(noteX, noteY, noteWidth, noteHeight);
+            
+            // Check if click is within note rectangle
+            if(noteRect.contains(Point(x, y))) {
+                clickedNoteIndex = idx;
+            };
+        };
+        
+        // If we found a note, toggle its selection
+        if(clickedNoteIndex.notNil) {
+            if(selectedIndices.includes(clickedNoteIndex)) {
+                selectedIndices.remove(clickedNoteIndex);
+                ("Note " ++ clickedNoteIndex ++ " deselected").postln;
+            } {
+                selectedIndices = selectedIndices.add(clickedNoteIndex);
+                ("Note " ++ clickedNoteIndex ++ " selected").postln;
+            };
+            view.refresh;
+        };
+    });
+    
+    // Define the drawing function
+    view.drawFunc = {
+        var noteHeight = 1600 / 128; // Height of each note row
+        var timeScale = width / (end - start); // Pixels per second
+        
+        // Draw the piano roll grid
+        Pen.color = Color.gray(0.8);
+        128.do { |i| // 128 MIDI notes (0–127)
+            var y = i * noteHeight;
+            Pen.line(0@y, width@y);
+        };
+        Pen.stroke;
+        
+        // Draw the notes
+        notes.do { |e, num|
+            var y = height - (e.midinote - 30 * noteHeight);
+            var x = (e.timestamp - start) * timeScale;
+            var noteWidth = (e.sustain ? 100) * timeScale;
+            
+            // Change color if selected
+            if(selectedIndices.includes(num)) {
+                Pen.color = Color.red(e.amp); // Selected notes are red
+            } {
+                Pen.color = Color.blue(e.amp); // Normal notes are blue
+            };
+            
+            Pen.addRect(Rect(x, y, noteWidth, noteHeight));
+            Pen.fill;
+            
+            Pen.color = Color.black;
+            Pen.stringAtPoint(
+                num.asString,
+                Point(x, y - 15),
+                Font.default,
+                Color.black
+            );
+        };
+        
+        // Display take number
+        Pen.stringAtPoint(
+            take.asString,
+            Point(120, 120),
+            Font("Helvetica", 48),
+            Color(0, 0, 0, 0.5)
+        );
+        
+        // Display selection instructions
+        Pen.stringAtPoint(
+            "Click notes to select, press 'r' to reset, 'g' to get indices",
+            Point(10, 10),
+            Font("Helvetica", 14),
+            Color.black
+        );
+    };
+    
+    // Refresh the view
+    view.refresh;
+    
+    // Return a function that gives access to the selected indices
+    ^{ selectedIndices };
+}
 	noteOns {
 		^MIDIItemPlayer(
 			this.midiEvents.select{|e| e.midicmd == \noteOn},
@@ -650,6 +709,9 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			func.(midiEvents, this.notes),
 			this.source
 		)
+	}
+	pickNotes { |list|
+		^MIDIItemPlayer( this.notes[list], source: this)
 	}
 	filter {|func|
 		^MIDIItemPlayer(

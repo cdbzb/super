@@ -6,10 +6,7 @@ MIDIItem(\foo).take(1).fromNote(0, 98)
 .filter({|e| e.select{|i| i.midicmd == \noteOn}[[0, 9, 13, 19, 22, 31, 39, 44, 48, 55, 62,  70, 72, 80, 85, 94]]})
 // .gui
 .notes.collect{|i| i.timestamp}.differentiate;
-["ch1", "r",
-	Song.pianoQuarters
-	// 0.57!16
-].addLine;
+["ch1", "r", Song.pianoQuarters[0..7] ].addLine;
 
 Song.setTempoMap("ch1", 1 ! 17);
 P(\weeew,lag: Song.pianoQuarters[(..2)].sum + 0.2, music: { |p b e|
@@ -102,47 +99,6 @@ P(\keys, music: { |p b e|
 	 }.recalcSustains
   .play(\default)
 });
-P.synthV(\an, take: \lead2, 
-	pbind: 
-	MIDIItem(\foo).take(1).fromNote(0, 200).notes[[63, 67, 69, 72, 76, 80, 83]]
-	=> MIDIItemPlayer(_) 
-	=> _.start_(0)//.play(\default)//1.714
-	=> _.synthVPbind
-	,
-	params: {|p b| [
-	lyrics: " r 美 好 天  回 忆 里 -",
- // 美好天 (měi hǎo tiān) - Beautiful day
-	pitchTake: 1,
-	language: \mandarin,
-	phoneset: \xsampa
-] }, music:{|p b e|
-	{
-		e.playbuf
-		// => p.synthVTracks.at(e.key).()
-	}.play
-});
-P.synthV(\an, take: \lower2, 
-	pbind: 
-	MIDIItem(\foo).take(1).fromNote(0, 200)
-	// .gui
-	.notes[[64, 66, 70, 73, 75, 81, 84	]]
-	=> MIDIItemPlayer(_) 
-	// =>_.gui
-	=> _.start_(0)//.play(\default)//1.714
-	=> _.synthVPbind
-	,
-	params: {|p b| [
-	lyrics: " r 美 好 天  回 忆 里 -",
- // 美好天 (měi hǎo tiān) - Beautiful day
-	pitchTake: 2,
-	language: \Mandarin,
-	// phoneset: \xsampa
-] }, music:{|p b e|
-	{
-		e.playbuf
-		// => p.synthVTracks.at(e.key).()
-	}.play
-});
 P.synthV(\an, take: \lead, 
 	pbind: 
 	MIDIItem(\foo).take(1).filter({|e|e.select{|f| f.midinote == 5.dm(\c) or: (f.midinote == 6.dm(\c))}[(4..8)++(9..15)]}).start_(0)//.play(\default)//1.714
@@ -154,6 +110,24 @@ P.synthV(\an, take: \lead,
 	language: \mandarin,
 	phoneset: \xsampa
 
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+P.synthV(\an, take: \lower, 
+	pbind: 
+	MIDIItem(\foo).take(1).filter({|e|e.select{|f| f.midinote == 4.dm(\c) or: (f.midinote == 3.dm(\c))}[(4..8)++(9..15)]})
+	// .midiEvents[0] //1.398 714-398
+	.start_(0).synthVPbind,
+	params: {|p b| [
+	lyrics: " r 美 好 天  回 忆 里 -",
+	lag: [0, (0.714-0.39), 0, 0 , 0, 0, 0 ],
+ // 美好天 (měi hǎo tiān) - Beautiful day
+	pitchTake: 2,
+	
+	language: \Mandarin
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -179,6 +153,70 @@ P.synthV(\an, take: \endUpper,
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
+P.synthV(\an, take: \end, 
+	pbind: 
+	MIDIItem(\foo).take(1).fromNote(37, 50).filter{|e| e.select{|i| i.midicmd==\noteOn}[[2, 4, 7, 10]]}
+	// MIDIItem(\foo).take(1).fromNote(1, 48).gui
+	//.play(\default)//1.714
+	.synthVPbind,
+	params: {|p b| [
+	lyrics: " r   梦 不 停 -",
+	legato: [1, 1, 1, 1, 4],
+ // 美好天 (měi hǎo tiān) - Beautiful day
+	pitchTake: 1,
+	language: \Mandarin
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+["second halfCh1", "r", Song.pianoQuarters[9..]].addLine;
+P(\cymbals, music: { |p b e|
+	(instrument: \cymbalsDS).play
+});
+P.synthV(\an, take: \lead, 
+	pbind: 
+	MIDIItem(\foo).take(1).fromNote(0, 200)
+	.notes[[63, 67, 69, 72, 76, 80, 83]]
+	=> MIDIItemPlayer(_) 
+	=> _.start_(0)//.play(\default)//1.714
+	=> _.synthVPbind
+	,
+	params: {|p b| [
+	lyrics: " r 美 好 天  回 忆 里 -",
+ // 美好天 (měi hǎo tiān) - Beautiful day
+	pitchTake: 1,
+	language: \mandarin,
+	phoneset: \xsampa
+] }, music:{|p b e|
+	{
+		e.playbuf.(startPos: p.secDur[0])
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+P.synthV(\an, take: \lower, 
+	pbind: 
+	MIDIItem(\foo).take(1).fromNote(0, 200)
+	// .gui
+	.notes[[64, 66, 70, 73, 75, 81, 84	]]
+	=> MIDIItemPlayer(_) 
+	// =>_.gui
+	=> _.start_(0)//.play(\default)//1.714
+	=> _.synthVPbind
+	,
+	params: {|p b| [
+	lyrics: " r 美 好 天  回 忆 里 -",
+ // 美好天 (měi hǎo tiān) - Beautiful day
+	pitchTake: 2,
+	language: \Mandarin,
+	// phoneset: \xsampa
+] }, music:{|p b e|
+	{
+		e.playbuf.(startPos: p.secDur[0])
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
 P.synthV(\xuan, take:  \lead , 
 	pbind: 
 	MIDIItem(\foo).take(1).fromNote(0, 75)
@@ -198,42 +236,6 @@ P.synthV(\xuan, take:  \lead ,
 	{
 		e.playbuf
 		=> Pan2.ar(_,0)
-		// => p.synthVTracks.at(e.key).()
-	}.play
-});
-P.synthV(\an, take: \end, 
-	pbind: 
-	MIDIItem(\foo).take(1).fromNote(37, 50).filter{|e| e.select{|i| i.midicmd==\noteOn}[[2, 4, 7, 10]]}
-	// MIDIItem(\foo).take(1).fromNote(1, 48).gui
-	//.play(\default)//1.714
-	.synthVPbind,
-	params: {|p b| [
-	lyrics: " r   梦 不 停 -",
-	legato: [1, 1, 1, 1, 4],
- // 美好天 (měi hǎo tiān) - Beautiful day
-	pitchTake: 1,
-	language: \Mandarin
-] }, music:{|p b e|
-	{
-		e.playbuf
-		// => p.synthVTracks.at(e.key).()
-	}.play
-});
-P.synthV(\an, take: \lower, 
-	pbind: 
-	MIDIItem(\foo).take(1).filter({|e|e.select{|f| f.midinote == 4.dm(\c) or: (f.midinote == 3.dm(\c))}[(4..8)++(9..15)]})
-	// .midiEvents[0] //1.398 714-398
-	.start_(0).synthVPbind,
-	params: {|p b| [
-	lyrics: " r 美 好 天  回 忆 里 -",
-	lag: [0, (0.714-0.39), 0, 0 , 0, 0, 0 ],
- // 美好天 (měi hǎo tiān) - Beautiful day
-	pitchTake: 2,
-	
-	language: \Mandarin
-] }, music:{|p b e|
-	{
-		e.playbuf
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });

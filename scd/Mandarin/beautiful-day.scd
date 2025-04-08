@@ -6,7 +6,7 @@ MIDIItem(\foo).take(1).fromNote(0, 98)
 .filter({|e| e.select{|i| i.midicmd == \noteOn}[[0, 9, 13, 19, 22, 31, 39, 44, 48, 55, 62,  70, 72, 80, 85, 94]]})
 // .gui
 .notes.collect{|i| i.timestamp}.differentiate;
-["ch1", "r", Song.pianoQuarters[0..7] ].addLine;
+["ch1", "r", Song.pianoQuarters[0..8] ].addLine;
 
 Song.setTempoMap("ch1", 1 ! 17);
 P(\weeew,lag: Song.pianoQuarters[(..2)].sum + 0.2, music: { |p b e|
@@ -33,7 +33,7 @@ P(\tamb,lag: Song.pianoQuarters[0], music: { |p b e|
 		+ ( [1, -1] /80 => _.dup(8) ) //swing amt
 		=> _.flat 
 		=> _.warpTo(e.tempoMap.quantizeWindow(0.3, 8))
-		=> _.dq(8);
+		=> _.dq(2);
 		var triggers = TDuty.kr( durs, 0,1,gapFirst:0 );
 		var energy = EnvGen.ar( Env.linen(0, 0.00, 0.015), triggers, doneAction:0   ) 
 		* Demand.kr(triggers,0,levels 
@@ -92,7 +92,7 @@ P(\keys, music: { |p b e|
 		nil, 
 		{|notes| [(timestamp:0)] ++ notes[[0, 9, 13, 19, 22, 31, 39, 44, 48, 55, 62,  70, 72, 80, 85, 94]] }
 	)
-   .filter { |e| //remove bad note (should be method?) 
+	.filter { |e| //remove bad note (should be method?) 
 	  var note =  e.select{ |i| i.midicmd == \noteOn }[59];
 	  var off = e.select{|i| i.midicmd == \noteOff and: (i.timestamp >= note.timestamp)}.sort({|x y| x.timestamp < y.timestamp})[0];
 	  e.remove(note); e.remove(off);e
@@ -217,6 +217,14 @@ P.synthV(\an, take: \lower,
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
+P(\transition, music: { |p b e|
+	MIDIItem(\foo).take(1).fromNote(0, 101).pickNotes([85, 90, 94, 96, 98])
+	.filter{|e| e.collect{|i| i.pan = [-1,1] }}
+	.start_(p.secDur[0])
+	.play([
+		// \sparkTriangle, 
+		\sparkTrianglePan ])
+});
 P.synthV(\xuan, take:  \lead , 
 	pbind: 
 	MIDIItem(\foo).take(1).fromNote(0, 75)
@@ -234,14 +242,38 @@ P.synthV(\xuan, take:  \lead ,
 	phoneset: \xsampa
 ] }, music:{|p b e|
 	{
-		e.playbuf
+		e.playbuf.(startPos: p.secDur[0])
 		=> Pan2.ar(_,0)
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
-{
-	MIDIItem(\foo).take(1).filter({|e|e.select{|f| f.midinote == 5.dm(\c) or: (f.midinote == 6.dm(\c))}[(4..8)]}).start_(0).synthVPbind
-}
+["verse1", "r",[10] ].addLine;
+
+P(\chords, music: { |p b e|
+	var item = 
+	MIDIItem(\foo).take(1).fromNote(100, 198)//.gui
+	;
+	item
+	.pickNotes([3, 7, 11, 21, 26, 32, 42, 45, 47, 58, 60, 62])
+	.start_(p.secDur[0] + p.secDur[1])
+	.play([\harp, \defaultPorto]);
+	// .play(\default);
+
+	item
+	.pickNotes([1, 6, 9, 18, 25, 29, 40, 43, 46, 57, 59, 64])
+	.filterNotes{|e x| 
+		var n = #[ 11, 11, 7].dm(\c);
+		(x > 2 and: (x < 6)).if {e.midinote_(n[x-3])};e }
+	.start_(p.secDur[0] + p.secDur[1])
+	.play([ \sawSynth, \defaultPiano ]);
+	// .play(\default);
+	item
+	.pickNotes([2, 8, 10, 20, 28, 31, 41, 44, 48, 56, 61, 63])
+	.start_(p.secDur[0] + p.secDur[1])
+	.play(\sparkTriangle );
+	// .play(\default)
+
+});
 )
 (
 

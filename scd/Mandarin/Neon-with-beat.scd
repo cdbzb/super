@@ -19,6 +19,7 @@ Song.keySig = {|transpose|
 	+ ( transpose ? 0 ) 
 	=> NoteNames.names.findKeyForValue(_) 
 };
+~takeChooser = {|takeName| (~tempo == 1.015).if {takeName ++ \Slow} { takeName } };
 ["Verse A", "r", [~tempo * 7]].addLine;
 P(\bassShort,resources:(transpose:0), music: { |p b e |
 	[
@@ -34,7 +35,7 @@ P(\bassShort,resources:(transpose:0), music: { |p b e |
 		rel:0, att:0.1
 	].pp
 });
-P.synthV(\an, take: if(~tempo == 1.015) { \leadSlow } { \lead }, 
+P.synthV(\an, take: ~takeChooser.(\lead),  //is Mo better??
 	pbind: {
 		[
 			midinote: [1, 3, -7, 1, 2, 3, 2].dm(Song.keySig.()),
@@ -91,7 +92,7 @@ P(\bassShort, music: { |p b e|
 		rel:0, att:0.1
 	].pp
 });
-P.synthV(\an, take: \lead, 
+P.synthV(\an, take: ~takeChooser.(\lead), 
 	pbind: {
 		[
 			midinote: [3, 5, 2, 3, 4, 6, -7, -7].dm(Song.keySig.()).q,
@@ -143,7 +144,7 @@ P(\bassShort, music: { |p b e|
 		rel:0, att:0.1,
 	].pp
 });
-P.synthV(\an, take: \lead, 
+P.synthV(\an, take: ~takeChooser.(\lead), 
 	pbind: {
 		[
 			// midinote: "-1 5 2 3 1/f 7.5 3 4 5 11 1 3 4/b/minor/4 4 3 -5/d".dm2,
@@ -175,7 +176,7 @@ P.synthV(\an, take: \lead,
 	DetectSilence.ar(sig,doneAction:2);
 } => SynthDef(\bar, _) => _.add;
 );
-P.synthVs(\an, take: [ \lead, \dbl ], 
+P.synthVs(\an, take: [ ~takeChooser.(\lead), ~takeChooser.(\dbl) ], 
 	 pbind: {
 		 [
 			 dur: [ 0.968550166, 0.981686875, 0.931762042, 0.402953125, 0.31382825, 0.352575917, 0.927995083, 0.915147292, 0.822114291, 0.177609834, 0.661958125, 0.831168875, 1.395617541, 0.484949792, 0.258637125, 0.752724667, 0.245841166, 1.136198042, 1.001960917, 0.991963666, 1 ],
@@ -249,6 +250,7 @@ P(\keys, music: { |p b e|
 		;
 		MicroKeys(\stringyy).add(\quiet, {|e| e.vel.notNil.if{e.vel = e.vel / 2}; e}, \addBefore, \synth);
 		MIDIItem("_250116_165156").take(9)
+		.filter({|e| e.collect{|i| i.timestamp_( i.timestamp * ~tempo / 0.97 )}})
 		// .fromNoteTo(0, 13)
 		.play(\stringyy);
 		// .record(\stringyy)
@@ -332,7 +334,7 @@ P.clone("chorusA", \figureTranscribed);
 P.clone("chorusA", \bassline);
 P.clone("chorusA", \lead);
 P.clone("chorusA", \keys);
-P.synthVs(\an, take: [ \lead, \dbl ], 
+P.synthVs(\an, take: [ ~takeChooser.(\lead), ~takeChooser.(\dbl) ], 
 	 pbind: {
 		 [
 			 dur: [ 0.968550166, 0.981686875, 0.931762042, 0.402953125, 0.31382825, 0.352575917, 0.927995083, 0.915147292, 0.822114291, 0.177609834, 0.661958125, 0.831168875, 1.395617541, 0.484949792, 0.258637125, 0.752724667, 0.245841166, 1.136198042, 1.001960917, 0.991963666, 1 ],
@@ -357,7 +359,7 @@ Song.v2Transpose_(2);
 Song.cloneDursAndTempoMap("Verse A");
 P.clone("Verse A", \bass, (transpose:Song.v2Transpose));
 P.clone("Verse A", \bassShort, (transpose:Song.v2Transpose)) ;
-P.synthV(\mo,resources:(transpose:Song.v2Transpose), take: \lead, 
+P.synthV(\mo,resources:(transpose:Song.v2Transpose), take: ~takeChooser.(\lead), 
 	pbind: {
 		[
 			midinote: [1, 3, -7, 1, 2, 3, 2].dm(Song.keySig.(transpose: 2)),

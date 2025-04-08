@@ -294,11 +294,18 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		var events = array.deepCopy;
 		var on = events.select{|e| e.midicmd == \noteOn};
 		var off = events.select{|e| e.midicmd == \noteOff};
-		var findMatch = {|midinote| off.collect{|e| e.midinote}.indexOf(midinote)}; //returns index
-		on.do{|e| try{var match = off.removeAt( findMatch.(e.midinote) ); e.sustain = match.timestamp - e.timestamp;} };
+		var offMidinotes = off.collect{|e| e.midinote};
+		var findMatch = {|midinote| offMidinotes.indexOf(midinote)}; //returns index
+		on.do{|e| try{
+			var index = findMatch.(e.midinote);
+			var match = off.removeAt(index);
+			offMidinotes.removeAt(index);
+			e.sustain = match.timestamp - e.timestamp
+		}
+		};
 		notes = initialRest.copy ? [] ++ on;
 		notes.setDurs;
-		^(notes ++ array.reject{|e| [\mk].includes(e.type)}).sort{|i j| i.timestamp < j.timestamp}
+		^(notes ++ array.reject{|e| e.type == \mk}).sort{|i j| i.timestamp < j.timestamp}
 	}
 	makeNotes {
 		// should copy be deepCopy??
@@ -739,6 +746,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		.do({|e x| out.put(e[0], func.(e[1], x))});
 		^MIDIItemPlayer(out, this.source)
 	}
+
 	pasteKey{|key precision=2|
 		Nvim.replace(this[key].round(10 ** (precision * -1)))
 	}

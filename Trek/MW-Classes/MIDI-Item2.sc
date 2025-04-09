@@ -630,7 +630,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 
 		^this.filter({|e| 
 
-			var res = this.chaseCCs(indices[from]) 
+			var res = this.chaseCCs(e[indices[from]].timestamp) 
 			++ e[indices[from]..indices[to - 1]].setDurs;
 
 			indices[to + 1].notNil.if {

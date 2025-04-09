@@ -86,7 +86,8 @@ P(\click, music: { |p b e|
 	].pp
 });
 P(\keys, music: { |p b e|
-	MIDIItem(\foo).take(1).fromNote(0, 98)//.play(\default)
+	MIDIItem(\foo).take(1).fromNote(0, 98)
+	//.play(\default)
 	.quantize(
 		[ 0.57, 0.57 ].dup(9).flat, 
 		nil, 
@@ -171,7 +172,7 @@ P.synthV(\an, take: \end,
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
-["second halfCh1", "r", Song.pianoQuarters[9..]].addLine;
+["second halfCh1", "r", Song.pianoQuarters[9..] ++ 0.57.dup => _.flat].addLine;
 P(\cymbals, music: { |p b e|
 	(instrument: \cymbalsDS).play
 });
@@ -251,11 +252,24 @@ P.synthV(\xuan, take:  \lead ,
 
 P(\chords, music: { |p b e|
 	var item = 
-	MIDIItem(\foo).take(1).fromNote(100, 198)//.gui
+	MIDIItem(\foo).take(1).fromNote(100, 198)
+	// .gui
+	
+	.quantize(
+		0.57 * 4 ! 5, 
+		nil, 
+		{|notes| [(timestamp:0)] ++ notes[[0, 14, 35, 52, 66]] }
+	)
+	// .start
+	.start_(Song.secDur[0]+Song.secDur[1])
+	// .gui
+	// .play(\default)
 	;
 	item
 	.pickNotes([3, 7, 11, 21, 26, 32, 42, 45, 47, 58, 60, 62])
-	.start_(p.secDur[0] + p.secDur[1])
+
+	// .gui
+	// .start_(p.secDur[0] + p.secDur[1])
 	.play([\harp, \defaultPorto]);
 	// .play(\default);
 
@@ -264,12 +278,12 @@ P(\chords, music: { |p b e|
 	.filterNotes{|e x| 
 		var n = #[ 11, 11, 7].dm(\c);
 		(x > 2 and: (x < 6)).if {e.midinote_(n[x-3])};e }
-	.start_(p.secDur[0] + p.secDur[1])
+	// .start_(p.secDur[0] + p.secDur[1])
 	.play([ \sawSynth, \defaultPiano ]);
 	// .play(\default);
 	item
 	.pickNotes([2, 8, 10, 20, 28, 31, 41, 44, 48, 56, 61, 63])
-	.start_(p.secDur[0] + p.secDur[1])
+	// .start_(p.secDur[0] + p.secDur[1])
 	.play(\sparkTriangle );
 	// .play(\default)
 

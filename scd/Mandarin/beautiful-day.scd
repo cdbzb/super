@@ -248,7 +248,7 @@ P.synthV(\xuan, take:  \lead ,
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
-["verse1", "r",[10] ].addLine;
+["verse1", "r",[0.57*16] ].addLine;
 
 P(\chords, music: { |p b e|
 	var item = 
@@ -288,6 +288,88 @@ P(\chords, music: { |p b e|
 	// .play(\default)
 
 });
+["verse2", "r",[0.57*8] ].addLine;
+P.clone(\verse1, [\chords]);
+)
+(
+
+  MIDIItem(\foo).take(1).fromNote(0, 98)
+  .quantize( [ 0.57, 0.57 ].dup(8).flat, nil, {|notes| notes [[0, 9, 13, 19, 22, 31, 39, 44, 48, 55, 62,  70, 72, 80, 85, 94]]})
+   .filter{|e| 
+	  var note =  e.select{ |i| i.midicmd == \noteOn }[59];
+	  var off = e.select{|i| i.midicmd == \noteOff and: (i.timestamp >= note.timestamp)}.sort({|x y| x.timestamp < y.timestamp})[0];
+	  e.remove(note); e.remove(off);e
+	 }
+	 // .gui
+	.recalcSustains
+  .play(\sawSynth)
+)
+
+
+
+
+
+
+
+
+
+
+//always works
+MIDIItemPlayer( {|e|e.select{|f| f.midinote == 5.dm(\c) or: (f.midinote == 6.dm(\c))}}.(MIDIItem(\foo).midiEvents.deepCopy), MIDIItem(\foo) )
+MIDIItem(\foo).take(1).play(\default);
+MIDIItem(\foo).take(1).filter({|e|e.select{|f| f.midinote == 4.dm(\c) or: (f.midinote == 3.dm(\c))}[(4..8)]}).play(\default)
+//intermittent
+MIDIItem(\foo).take(1).filter({|e|e.select{|f| f.midinote == 5.dm(\c) or: (f.midinote == 6.dm(\c))}}).play(\default);
+midiitem(\foo).take(1).filter({|e|e.select{|f| f.midinote == 4.dm(\c) or: (f.midinote == 3.dm(\c))}[(4..8)]}).play(\default)
+MIDIItem(\foo).take(1).notes[(3..5)]=> MIDIItemPlayer(_, restFirst:true) => _.start_(0) => _.play(\default)
+MIDIItem(\foo).filterNotes({|e| e[(3..4)]}).play(\default)
+
+
+.midiEvents
+.fromNote(2, 5)
+.play(\default)
+.fromNote(3, 6).play(\default);
+// MIDIItem(\foo).take(1).play(\default)
+)
+
+a = MIDIItem(\foo)
+a.fromNote(3)
+[1]
+a.takes
+		MIDIItemPlayer(takes[num], this).recalcSustains
+.bounds
+.fromNote(4)
+.play(\default);
+a.take(1).
+(
+a = MIDIItem(\foo);
+{|e| 
+
+	var indices = a.noteIndices;
+			var res =a.chaseCCs(indices[3]) 
+			++ e[indices[3]..indices[5- 1]].setDurs;
+
+			{
+				indices[5+ 1].notNil.if {
+					res.drop(-1)
+				}{
+					res
+				}
+			}
+}.( a.midiEvents).() => _.class
+
+)
+)
+.respondsTo(\fromNote)
+.fromNote(3,5)
+			a.chaseCCs(a.noteIndices[3]) 
+.gui
+			a[a.noteIndices[3]..a.noteIndices[5 - 1]].setDurs;
+MIDIItem(\foo) .take(1) .select({|i| i.midinote == 3.dm(\c) or: (i.midinote == 4.dm(\c))}).gui
+.recalcSustains.play(\default)
+.gui
+.gui
+.play(\default);
 )
 (
 

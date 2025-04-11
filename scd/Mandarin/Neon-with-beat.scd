@@ -1,11 +1,13 @@
 ( // Song version
 TempoClock.tempo_(1);
-~tempo = 1.08;
-~tempo = 0.97;
-~tempo = 1.015; //adjusted to match other version!!!
+// ~tempo = 1.08;
+~tempo = 0.97; // original tempo
+~tempo = 1.015; //adjusted to match other version!!! comment out to hear faster version
 ~swing = 0.01;
 // ~tempo = 0.96;
 		
+~takeChooser = {|takeName| (~tempo == 1.015).if {takeName ++ \Slow} { takeName } };
+
 MicroKeys(\foo).synth_(\default)
 // .monitor
 ;
@@ -19,7 +21,6 @@ Song.keySig = {|transpose|
 	+ ( transpose ? 0 ) 
 	=> NoteNames.names.findKeyForValue(_) 
 };
-~takeChooser = {|takeName| (~tempo == 1.015).if {takeName ++ \Slow} { takeName } };
 ["Verse A", "r", [~tempo * 7]].addLine;
 P(\bassShort,resources:(transpose:0), music: { |p b e |
 	[
@@ -179,7 +180,7 @@ P.synthV(\an, take: ~takeChooser.(\lead),
 P.synthVs(\an, take: [ ~takeChooser.(\lead), ~takeChooser.(\dbl) ], 
 	 pbind: {
 		 [
-			 dur: [ 0.968550166, 0.981686875, 0.931762042, 0.402953125, 0.31382825, 0.352575917, 0.927995083, 0.915147292, 0.822114291, 0.177609834, 0.661958125, 0.831168875, 1.395617541, 0.484949792, 0.258637125, 0.752724667, 0.245841166, 1.136198042, 1.001960917, 0.991963666, 1 ],
+			 dur: [ 0.968550166, 0.981686875, 0.931762042, 0.402953125, 0.31382825, 0.352575917, 0.927995083, 0.915147292, 0.822114291, 0.177609834, 0.661958125, 0.831168875, 1.395617541, 0.484949792, 0.258637125, 0.752724667, 0.245841166, 1.136198042, 1.001960917, 0.991963666, 1 ] * ~tempo / 0.97,
 			 midinote: 
 			 [\r, 64, 67, 72, 74, 72, 69, 65, 72, 76, 77, 76, 76, 79, 77, 76, 74, 72, 67, 65, 64 ]
 		 ].p
@@ -189,13 +190,18 @@ P.synthVs(\an, take: [ ~takeChooser.(\lead), ~takeChooser.(\dbl) ],
 		 lyrics: "r 滑 动 屏- - - 幕 寻 找 共 - - 鸣 数 据 海 洋 中 迷 失 自 己",
 		 pitchTake: [ 1, 3 ],
 		 language: \Mandarin
-	 ]}, music:{|p b e|
-		 {
-			 e.playbuf
-			 // => p.synthVTracks.at(e.key).()
-			 /6
-		 }.play
- });
+	 ]}, music:
+	 [-0.75,-0.25].collect{|pan|
+		 {|p b e|
+			 {
+				 e.playbuf
+				 // => p.synthVTracks.at(e.key).()
+				 /6
+				 => Pan2.ar(_, pan)
+			 }.play
+		 }
+	 }
+ );
 
 P(\bassline, music: { |p b e|
 	[
@@ -243,14 +249,45 @@ P(\figureTranscribed, music: { |p b e|
 		out: 3
 	].ppma
 });
-P(\keys, music: { |p b e|
+Song.lines = VoiceLeading(
+	[
+		[1,  \_, 4, \_, 5, 4.5, 4,  3,  2 ],
+		[-5, \_, 1, 2,  3, \_,  -6, -5, \_ ]
+	],
+	~tempo * [2, 2, 2, 2, 1, 1, 2, 2, 2, 2]
+).dm(\c);
+
+P.synthVs(\mo, take:  [~takeChooser.(\bg1), ~takeChooser.(\bg2) ], 
+	pbind: 2.collect{|voice|
+		{|p b| 
+			[
+				midinote: Song.lines.voice(voice).line,
+				dur: Song.lines.voice(voice).durs
+			].p 
+		}
+	},
+	params: {|p b| [
+		lyrics: "ooh - - -",
+		pitchTake: [ 1, 3 ], 
+		language: \English
+	] }, music:{|p b e|
+	{
+		e.playbuf
+		=> BPF.ar(_, 1200, 0.3)
+		/2
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+P(\keys, lag: 0.05, music: { |p b e|
 	
 		MicroKeys(\stringyy).synth_(\stringyy, [mix:0, release: 1])
 		// .monitor
 		;
 		MicroKeys(\stringyy).add(\quiet, {|e| e.vel.notNil.if{e.vel = e.vel / 2}; e}, \addBefore, \synth);
-		MIDIItem("_250116_165156").take(9)
-		.filter({|e| e.collect{|i| i.timestamp_( i.timestamp * ~tempo / 0.97 )}})
+		MIDIItem("_250116_165156").take(9)//.gui
+		.filter({|e| e.collect{|i| i.timestamp_( i.timestamp * 
+			~tempo * 1.02 //fusge factor why??
+		)}})
 		// .fromNoteTo(0, 13)
 		.play(\stringyy);
 		// .record(\stringyy)
@@ -334,10 +371,10 @@ P.clone("chorusA", \figureTranscribed);
 P.clone("chorusA", \bassline);
 P.clone("chorusA", \lead);
 P.clone("chorusA", \keys);
-P.synthVs(\an, take: [ ~takeChooser.(\lead), ~takeChooser.(\dbl) ], 
+P.synthVs(\an,   take: [ ~takeChooser.(\lead) , ~takeChooser.(\dbl) ], 
 	 pbind: {
 		 [
-			 dur: [ 0.968550166, 0.981686875, 0.931762042, 0.402953125, 0.31382825, 0.352575917, 0.927995083, 0.915147292, 0.822114291, 0.177609834, 0.661958125, 0.831168875, 1.395617541, 0.484949792, 0.258637125, 0.752724667, 0.245841166, 1.136198042, 1.001960917, 0.991963666, 1 ],
+			 dur: [ 0.968550166, 0.981686875, 0.931762042, 0.402953125, 0.31382825, 0.352575917, 0.927995083, 0.915147292, 0.822114291, 0.177609834, 0.661958125, 0.831168875, 1.395617541, 0.484949792, 0.258637125, 0.752724667, 0.245841166, 1.136198042, 1.001960917, 0.991963666, 1 ] * ~tempo / 0.97,
 			 midinote: 
 			 [\r, 64, 67, 72, 74, 72, 69, 65, 72, 76, 77, 76, 76, 79, 77, 76, 74, 72, 67, 65, 64 ]
 		 ].p
@@ -345,19 +382,24 @@ P.synthVs(\an, take: [ ~takeChooser.(\lead), ~takeChooser.(\dbl) ],
 	 ,
 	 params: {|p b| [
 		 lyrics: "r 滑 动 屏- - - 幕 寻 找 共 - - 鸣 数 据 海 洋 中 迷 失 自 己",
-		 pitchTake: [ 1, 3 ],
+		 pitchTake: [nil, nil ],
+		 lag: [[0, -0.05] ++ 0.dup(19)] ,
 		 language: \Mandarin
 	 ]}, music:{|p b e|
-		 {
+	 {
 			 e.playbuf
 			 // => p.synthVTracks.at(e.key).()
 			 /6
+			 => Pan2.ar(_,0)
+			 // *[1, 0]
 		 }.play
 });
 ["VerseA in D", "r"].addLine;
 Song.v2Transpose_(2);
 Song.cloneDursAndTempoMap("Verse A");
-P.clone("Verse A", \bass, (transpose:Song.v2Transpose));
+P.clone("Verse A", [ \bass, \bassShort ],
+// (transpose:Song.v2Transpose)
+);
 P.clone("Verse A", \bassShort, (transpose:Song.v2Transpose)) ;
 P.synthV(\mo,resources:(transpose:Song.v2Transpose), take: ~takeChooser.(\lead), 
 	pbind: {

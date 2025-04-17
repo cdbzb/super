@@ -262,39 +262,6 @@ P(\arrangement, music: { |p b e|
 		amp: 0.6
 
 	].pp;
-	P(\tamb, music: { |p b e|
-		{
-			var levels = [3,1,2,1] /3 => _.dq(inf);
-			var durs =  
-			1/4 ! 16 
-			* Song.quarter
-			+ ( [1, -1] /80 => _.dup(8) ) //swing amt
-			=> _.flat 
-			// => _.warpTo(e.tempoMap.quantizeWindow(0.3))
-			=> _.dq(8);
-			var triggers = TDuty.kr( durs, 0,1,gapFirst:0 );
-			var energy = EnvGen.ar( Env.linen(0, 0.00, 0.015), triggers, doneAction:0   ) 
-			* Demand.kr(triggers,0,levels 
-			);
-			Shakers.ar(3, energy:energy   , decay: 1).tanh
-			* 8
-			=> Pan2.ar(_, 0.8)
-			// * EnvGen.cutoff(b.parse([4]).unbubble,3)
-			=> DWGReverbC1C3.ar(_,mix:0.05)
-			/12
-			=> Pan2.ar(_,0.75)
-			=> Out.ar(1, _)
-
-		}.play;
-		[
-			instrument: \hat_808, 
-			dur: "x x e x x e  x x x x x x e".beats.q(16) * ~tempo / 2,
-			pan:0.5,
-			amp: 0.05
-		].pp;
-		(instrument: \cymbalsDS, amp:0.02).play
-
-	});
 	// Song.quarter = 0.46;
 	// [
 	//	 instrument: [\harp, \sawSynth],
@@ -455,6 +422,39 @@ P.synthV(\an, take: \leadQwen, lag: (16 * Song.quarter - ( 1 * 2 ) -0.08), pbind
 		}.play
 });
 [ "V1L12", "r", Song.quarter.dup(64)].addLine;
+	P(\tamb, music: { |p b e|
+		{
+			var levels = [3,1,2,1] /3 => _.dq(inf);
+			var durs =  
+			1/4 ! 16 
+			* Song.quarter
+			+ ( [1, -1] /80 => _.dup(8) ) //swing amt
+			=> _.flat 
+			// => _.warpTo(e.tempoMap.quantizeWindow(0.3))
+			=> _.dq(8);
+			var triggers = TDuty.kr( durs, 0,1,gapFirst:0 );
+			var energy = EnvGen.ar( Env.linen(0, 0.00, 0.015), triggers, doneAction:0   ) 
+			* Demand.kr(triggers,0,levels 
+			);
+			Shakers.ar(3, energy:energy   , decay: 1).tanh
+			* 8
+			=> Pan2.ar(_, 0.8)
+			// * EnvGen.cutoff(b.parse([4]).unbubble,3)
+			=> DWGReverbC1C3.ar(_,mix:0.05)
+			/12
+			=> Pan2.ar(_,0.75)
+			=> Out.ar(1, _)
+
+		}.play;
+		[
+			instrument: \hat_808, 
+			dur: "x x e x x e  x x x x x x e".beats.q(16) * ~tempo / 2,
+			pan:0.5,
+			amp: 0.05
+		].pp;
+		(instrument: \cymbalsDS, amp:0.02).play
+
+	});
 P.synthV(\jun, lag: 0 * Song.quarter, take: \lower,
 	pbind: 
 	[
@@ -591,42 +591,45 @@ MIDIItem("250122_113217").take(2)
 //.play(\vocaline)
 });
 P(\arrangement, music: { |p b e|
+	var len = 12;
 	(instrument: \cymbalsDS, amp: 0.02).play;
 	[
-		instrument: \JWSnare,
-		dur: "q e eq q".beats.q(inf) * ~quarter,
-		rest: [\r, 1, 1, 1].q(inf),
-		amp: 0.25
-		// dur: 
-	].pp;
-	[
-		instrument: \bd_808,
-		dur: "e eq qq".beats * ~quarter => _.q(inf),
-		amp: 0.6
+		[
+			instrument: \JWSnare,
+			dur: "q e eq q".beats.q(inf) * ~quarter,
+			rest: [\r, 1, 1, 1].q(inf),
+			amp: 0.25
+			// dur: 
+		].p,
+		[
+			instrument: \bd_808,
+			dur: "e eq qq".beats * ~quarter => _.q(inf),
+			amp: 0.6
 
-	].pp;
-	[
-		
-		freq: [1, 1, 1, 1, 1, 1, 4, 4, 5, 5, 5, 6, 4, 4, 5, 5, ].df(\c, [2 ]).q(8),
-		dur: ~quarter / 2,
-		instrument: \harpRelease,
-		legato: 0.2,
-		out: Effect.bus({|i| CrossoverDistortion.ar(i, smooth:0.95)}, out:1)
-	].pp;
-	// ~quarter = 0.46;
-	[
-		instrument: [\harp, \sawSynth],
-		freq: [1, 1, 1, 1, 1, 1, 1, 1, 5, 5, 5, 6, 4, 4, 5, 5, ].df(\c, [3, 4]).q(8),
-		dur: ~quarter / 2,
-		legato: 0.4,
-		att: 0, rel: 0.5,
-		amp: [0.05, 0.2]
-	].pp;
-	[
-		freq: [1, 4, 5, 6 ,4, 5, 1, 4, 5, 6 , 4, 5].df(\c, [3]).q(8),
-		dur: "eee e ex x e e".beats * ~quarter * 2 => _.q(16),
-		amp: 0.3
-	].pp;
+		].p,
+		[
+
+			freq: [1, 1, 1, 1, 1, 1, 4, 4, 5, 5, 5, 6, 4, 4, 5, 5, ].df(\c, [2 ]).q(8),
+			dur: ~quarter / 2,
+			instrument: \harpRelease,
+			legato: 0.2,
+			out: Effect.bus({|i| CrossoverDistortion.ar(i, smooth:0.95)}, out:1)
+		].p,
+		// ~quarter = 0.46;
+		[
+			instrument: [\harp, \sawSynth],
+			freq: [1, 1, 1, 1, 1, 1, 1, 1, 5, 5, 5, 6, 4, 4, 5, 5, ].df(\c, [3, 4]).q(8),
+			dur: ~quarter / 2,
+			legato: 0.4,
+			att: 0, rel: 0.5,
+			amp: [0.05, 0.2]
+		].p,
+		[
+			freq: [1, 4, 5, 6 ,4, 5, 1, 4, 5, 6 , 4, 5].df(\c, [3]).q(8),
+			dur: "eee e ex x e e".beats * ~quarter * 2 => _.q(16),
+			amp: 0.3
+		].p
+	] => Ppar(_) => _.findur(~quarter * len * 8) => _.play
 
 });
 )

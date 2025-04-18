@@ -146,30 +146,30 @@ CC {
 
 		^switch(number)
 		{ \bend } {
-			MIDIdef.bend(this.defSymbol(\CC), {|n| this.setRaw(n)});
+			MIDIdef.bend(defSymbol.(\CC), {|n| this.setRaw(n)});
 		} 
 		{ \keys } {
 			MIDIdef.noteOn(
-				this.defSymbol('CC-on')
+				defSymbol.('CC-on')
 				, 
 				{|v n| down.add(n);val = n; bus.set(val) }
 			);
 			MIDIdef.noteOff(
-				this.defSymbol('CC-off'),
+				defSymbol.('CC-off'),
 				{|v n| down.remove(n);val = (down.size > 0).if{ down.last }{ n }; bus.set(val) }
 			) 
 		}
 		{ \monoGate } {
 			MIDIdef.noteOn(
-				this.defSymbol('CC-monogateOn'),
+				defSymbol.('CC-monogateOn'),
 				{|vel num| \down ++ down => _.postln; down.add(num); val = 1; bus.set(val)  });
 			MIDIdef.noteOff(
-				this.defSymbol('CC-monogateOff'),
+				defSymbol.('CC-monogateOff'),
 				{|vel num|  down.remove(num); (down.size < 1).if { val = 0; bus.set(val)}  })
 		}
 		{
 			MIDIdef.cc(
-				this.defSymbol(\CC),
+				defSymbol.(\CC),
 				{|n| this.setRaw(n)}, number);
 		}
 	}

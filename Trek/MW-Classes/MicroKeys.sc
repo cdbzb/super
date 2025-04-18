@@ -312,8 +312,34 @@ MonoKeys : MicroKeys {
 				^all[name]
 			}
 		} { 
-			^super.new.init(name, func) 
+			^super.new(name, func).initMono(name, func) 
 		}  
+	}
+	initMono { |aName func|
+		name = aName;
+		namedList = NamedList.new;
+		tuningFunction = { |tuning| { |e| e.num = e.num + tuningDeltas.wrapAt(e.num); e }};
+		namedList.add( \event, {|v n c r params| (vel: v/127, num: n, chan: c, src: r, raw: n, params: params) });
+
+		this.synth_(
+			func.notNil.if { 
+				func.isKindOf(Symbol).if {
+					func
+				} {
+					(mk: name).use{ func.asDefName }
+				} 
+			} {
+				name
+			}
+		);
+		// this.synth_(
+		// 	func !? {|i| (mk: name).use{ i.asDefName }} ? I.d);
+			
+		
+		keys = 0 ! 128;
+		heldNotes = Set[];
+		all.add(name -> this);
+		ccs = List[];
 	}
 	*initClass {
 		MyFree.add({ MicroKeys.all.do{|i| i.down_(List[]) } });
@@ -328,9 +354,8 @@ MonoKeys : MicroKeys {
 		});
 	}
 	doNoteOn { |amp midinote params|
-
 			( down.size == 0 ).if{
-				monosynth = this.noteOnFunction.(amp, midinote, nil, nil, params) ;
+				monosynth = this.noteOnFunction.(amp, midinote, nil, nil, params).synths ;
 				monosynth.notNil.if {
 					down.add(midinote)
 				}

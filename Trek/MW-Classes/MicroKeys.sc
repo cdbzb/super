@@ -74,8 +74,8 @@ MicroKeys {
 		} { 
 			old = MicroKeys(mk);
 			// old = MicroKeys.all[mk];
-			new = super.new.init(newName) ;
-			// new = old.class.new(newName);
+			// new = super.new.init(newName) ;
+			new = old.class.new(newName);
 			new.namedList = old.namedList.deepCopy;
 			func = old.synthFunc;
 			func.isKindOf(Symbol).if{
@@ -304,7 +304,7 @@ MicroKeys {
 }
 
 MonoKeys : MicroKeys {
-	var monosynth;
+	var <monosynth;
 	classvar <type=\mkMono;
 	*new { |name func|
 		all[name].notNil.if {
@@ -339,6 +339,7 @@ MonoKeys : MicroKeys {
 			
 		
 		keys = 0 ! 128;
+		down = List[];
 		heldNotes = Set[];
 		all.add(name -> this);
 		ccs = List[];

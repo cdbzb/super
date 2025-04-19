@@ -2,15 +2,15 @@ var o, p;
 o = [
 	MIDIItem.prNew,  List.prNew,  Array.prNew(1),  Event.prNew,  
 	Array.prNew(32),  "241215_154339_traps",  Event.prNew,  Array.prNew(4),  
-	Array.prNew(1),  Event.prNew,  Array.prNew(8),  List.prNew,  
-	Array.prNew
+	Array.prNew(1),  Event.prNew,  Array.prNew(8),  Array.prNew(1),  
+	Event.prNew,  Array.prNew(16),  List.prNew,  Array.prNew
 ];
 p = [
 	// MIDIItem
 	0, [ midiEvents: o[1],  name: o[5],  
 		initialCCValues: o[6],  restFirst: true,  
-		initialRest: o[8],  notes: nil,  
-		takes: o[11] ],  
+		initialRest: o[8],  notes: o[11],  
+		takes: o[14] ],  
 	// List
 	1, [ array: o[2] ],  
 	// Array
@@ -43,7 +43,18 @@ p = [
 	// Array
 	10, [ nil,  nil,  'type',  'rest',  
 		'timestamp',  0.0,  nil,  nil ],  
+	// Array
+	11, [ o[12] ],  
+	// Event
+	12, [ array: o[13],  size: 3,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	13, [ nil,  nil,  'timestamp',  0.0,  
+		nil,  nil,  'dur',  1,  
+		nil,  nil,  'type',  'rest',  
+		nil,  nil,  nil,  nil ],  
 	// List
-	11, [ array: o[12] ]
+	14, [ array: o[15] ]
 ];
 prUnarchive(o,p);

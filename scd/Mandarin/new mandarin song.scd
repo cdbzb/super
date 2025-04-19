@@ -120,7 +120,8 @@ P(\bassBend, music: { |p b e|
 	[
 		freq: [5, 6, 13].df(\c, 3).q,
 		dur: b.parse([4, 4, 2]).q,
-		amp:0.2
+		amp:0.2,
+		instrument: \default
 	].ppm
 });
 P(\line, music: { |p b e|
@@ -148,32 +149,29 @@ P(\connector, music: { |p b e|
 // Memories fall like raindrops in my heart 
 // ## Chorus
 ["等待黎明的第一道光","3 3  3 3 4 3 -5 3 -6 3".dm(\d) , "q q q qe e q q q qqqq".beats * 0.6].addLine;
-// P(\drum, music: { |p b e|
-// 	[
-// 		instrument: \hat_808,
-// 		dur: "q q q q q q q q q q q q".beats.q * 0.6 * 2,
-// 	].pp;
-// 	[
-// 		instrument: \sn_808, 
-// 		dur: "q qq qq qq qq".beats.q * 1.2,
-// 		rest: MuteFirst(),
-// 		amp:0.2, 
-// 		out: Effect.bus({|i| CombN.ar(i, decaytime:5)/2 + i => _.dup }, time:1)
-// 	].pp
-// });
+P(\drum, music: { |p b e|
+	[
+		instrument: \hat_808,
+		dur: "q q q q q q q q q q q q".beats.q * 0.6 * 2,
+	].pp;
+	[
+		instrument: \sn_808, amp:0.2, 
+		dur: "q qq qq qq qq qq qq qq q".beats.q * 1.2,
+		rest: MuteFirst(),
+		instrument: \JWSnare, amp:0.15,
+		out: Effect.bus({|i| CombN.ar(i,delaytime: 0.202, decaytime:5)/2 + i => _.dup }, time:1)
+	].pp
+});
 P(\liveDrum, music: {|p b e|
-
-var echo = Effect.bus({|i| CombN.ar(i, decaytime:5)/4 + i => _.dup }, time:1);
-MicroKeys(\sn).synth_(\sn_808).range_([60, 48]);
-MicroKeys(\bd).synth_(\bd_808).range_([62,64]);
-MicroKeys(\hat).synth_(\hat_808).range_([67,69]);
-MIDIItem("241215_154339_traps").record([\sn, \bd, \hat]);
-
+	var echo = Effect.bus({|i| CombN.ar(i, decaytime:5)/4 + i => _.dup }, time:1);
+	MicroKeys(\sn).synth_(\sn_808).range_([60, 48]);
+	MicroKeys(\bd).synth_(\bd_808).range_([62,64]);
+	MicroKeys(\hat).synth_(\hat_808).range_([67,69]);
+	MIDIItem("241215_154339_traps").record([\sn, \bd, \hat]);
 });
 P(\stringz, lag: 0.2, music: { |p b e|
-	// var 
+	var m;
 	c = MicroKeys(\stringz)	;
-	// var m;
 	c.synth_(\stringyy);
 	c.add(\quiet, {|e|  e.vel = e.vel/ 100}, addAction: \addBefore, target: \synth);
 	m = MIDIItem("stringz_241114_124431");
@@ -200,6 +198,7 @@ P(\bassLine, music: { |p b e|
 	
 var a = MicroKeys(\test);
 a.synth_({
+	var m;
 	Saw.ar(\freq.kr(400) * (\poly.kr(0) / 1227 => _.midiratio))
 	* \amp.kr(0.1)
 	/4
@@ -235,6 +234,7 @@ m.filter({|e| e.collect{|i| i.parent_(nil)}})
 });
 P(\bassLine2, music: { |p b e|
 var a = MicroKeys(\two);
+var m;
 a.synth_({
 	Saw.ar(\freq.kr(400) * (\poly.kr(0) / 127 => _.midiratio) + \detune.kr(0))
 	* \amp.kr(0.1)
@@ -309,11 +309,11 @@ P(\drum, music: { |p b e|
 		dur: "q q q q q q q q q q q q".beats.q * 0.6 * 2,
 	].pp;
 	[
-		instrument: \sn_808, 
-		dur: "q qq qq qq qq".beats.q * 1.2,
+		instrument: \sn_808, amp:0.2,
+		dur: "q qq qq qq qq qq q".beats.q * 1.2,
 		rest: MuteFirst(),
-		amp:0.2,
-		out: Effect.bus({|i| CombN.ar(i, decaytime:5)/2 + i => _.dup }, time:1)
+		instrument: \JWSnare, amp:0.15,
+		out: Effect.bus({|i| CombN.ar(i, decaytime:4)/2 + i => _.dup }, time:1)
 	].pp
 });
 P(\chord, music: { |p b e|
@@ -344,9 +344,8 @@ P.synthVs(\xuan, take: [ \lead, \dbl ], params: {|p b e| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-
 P(\monoDouble,lag: 0.2, music: { |p b e|
-	// var m;
+	var m;
 	var a = MicroKeys.mono(\lead);
 
 	a.synth_({
@@ -583,7 +582,8 @@ P(\bassBend, music: { |p b e|
 	[
 		freq: [5, 6, 13].df(\c, 3).q,
 		dur: b.parse([4, 4, 2]).q,
-		amp:0.2
+		amp:0.2,
+		instrument: \default
 	].ppm
 });
 P(\line, music: { |p b e|

@@ -182,14 +182,15 @@ P(\tempo, music: { |p b e|
 	TempoClock.tempo_(1)
 });
 P(\line, music: { |p b e|
-	var m =MicroKeys.mono(\sawSynth);
+	MicroKeys.mono(\sawSynthSustain);
 	MIDIItem("_250204_161748")
 	// .midiEvents.select{|i| i.midicmd == \noteOn}.collect{|i| i.midinote}
 	.filter({|e| e.collect{|i| i.amp.notNil.if{i.amp_(i.amp/2)}; i.timestamp_(i.timestamp * Song.quarter / 0.52)}})
 	// .save
 	.play(
 		\sawSynthSustain,
-		overdub: true
+		// \test,
+		// overdub: true
 	)
 });
 P(\traps, music: { |p b e|

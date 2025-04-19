@@ -73,7 +73,9 @@ MicroKeys {
 			^all[newName]
 		} { 
 			old = MicroKeys(mk);
+			// old = MicroKeys.all[mk];
 			new = super.new.init(newName) ;
+			// new = old.class.new(newName);
 			new.namedList = old.namedList.deepCopy;
 			func = old.synthFunc;
 			func.isKindOf(Symbol).if{
@@ -396,7 +398,7 @@ MonoKeys : MicroKeys {
 				down.remove(num) 
 			}{ 
 				down.remove(num);
-				monosynth.set(\num, down.last)  // snap back to previous note
+				monosynth.set(\num, down.last, \freq, down.last.midicps)  // snap back to previous note
 			};
 	}
 }

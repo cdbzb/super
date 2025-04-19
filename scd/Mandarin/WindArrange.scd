@@ -181,16 +181,33 @@ P(\bassGuit, music: {|p b e|
 P(\tempo, music: { |p b e|
 	TempoClock.tempo_(1)
 });
+P(\chords, music: { |p b e|
+	{
+		[
+			[7, 11, 4],
+			[6, 11, 4],
+			[5, 11, 4],
+			[5, 11, 3],
+		].df('b-', \mixolydian).dq.demand( [1, 1,  0.5, 0.5] * ~quarter * 4)	
+		=> Pulse.ar(_, 0.1, 0.1)
+		=> LPF.ar(_, 1100)
+		* Env.perc().kr(0,gate: TDuty.ar( ~quarter/ 4 => _.dup(4) => _.dq(16)) )
+	}.play
+});
 P(\line, music: { |p b e|
-	MicroKeys.mono(\sawSynthSustain);
+	var echo = Effect.bus({|i|  CombN.ar (i, [0.5, 0.45], 0.5, 5) / 3 + i },);
+	var m = MicroKeys.mono( \sawSynthSustain);
+
 	MIDIItem("_250204_161748")
 	// .midiEvents.select{|i| i.midicmd == \noteOn}.collect{|i| i.midinote}
 	.filter({|e| e.collect{|i| i.amp.notNil.if{i.amp_(i.amp/2)}; i.timestamp_(i.timestamp * Song.quarter / 0.52)}})
+	.filter{|e| e.collect{|i| i.params_((out: echo))}}
 	// .save
 	.play(
 		\sawSynthSustain,
+		// \default
 		// \test,
-		// overdub: true
+		overdub: true
 	)
 });
 P(\traps, music: { |p b e|

@@ -29,6 +29,6 @@ SynthDef(\JWSnare, {
     sig = (sig * 1.6).tanh * 0.7;
     sig = sig * Env.perc(0, 0.7).ar(Done.freeSelf);
     sig = sig * -10.dbamp;
-    Out.ar(0, sig * \amp.kr(0.1));
+    Out.ar(\out.kr(0), sig * \amp.kr(0.1));
 }).add;
 )

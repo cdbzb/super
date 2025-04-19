@@ -52,12 +52,12 @@ P.synthV(\an, take: \leadQwen, lag: -0.08, pbind:
 });
 [ "V1L1", "r", Song.quarter.dup(64)].addLine;
 P(\keys,music: {|p b e|
-	MicroKeys(\sawSynthSustain).synth_(\yowbass);
+	MicroKeys(\yow).synth_(\yowbass);
 	MicroKeys(\harp).synth_(\harp, params: [coef: 0.1]);
 	MIDIItem("_250119_105441").take(11)
 	.filter{|e| e.collect{|i| i.amp.notNil.if{i.amp = i.amp / 8}; i}}
 	.recalcSustains
-	.play([\sawSynthSustain, \harp], clock: TempoClock.new(0.52 / Song.quarter, queueSize: 2**12  ))
+	.play([\yow, \harp], clock: TempoClock.new(0.52 / Song.quarter, queueSize: 2**12  ))
 });
 P.synthV(\jun, take: \lead, lag: 32*Song.quarter, resources: (startPos:32), pbind: 
 	[
@@ -189,13 +189,14 @@ P(\chords, music: { |p b e|
 			[5, 11, 4],
 			[5, 11, 3],
 		].df('b-', \mixolydian).dq.demand( [1, 1,  0.5, 0.5] * ~quarter * 4)	
-		=> Pulse.ar(_, 0.1, 0.1)
-		=> LPF.ar(_, 1100)
-		* Env.perc().kr(0,gate: TDuty.ar( ~quarter/ 4 => _.dup(4) => _.dq(16)) )
+		=> Saw.ar(_, 0.1, 0.1)
+		/3
+		=> RLPF.ar(_, SinOsc.ar([0.2, 0.22, 0.31]).range(800, 7000), 0.5)
+		* Env.perc(0.006, 0.4).kr(0,gate: Impulse.kr(~quarter.reciprocal * 4))
 	}.play
 });
 P(\line, music: { |p b e|
-	var echo = Effect.bus({|i|  CombN.ar (i, [0.5, 0.45], 0.5, 5) / 3 + i },);
+	var echo = Effect.bus({|i|  CombN.ar (i, [0.5, 0.45], 0.5, 5) / 4 + i * -2.dbamp },);
 	var m = MicroKeys.mono( \sawSynthSustain);
 
 	MIDIItem("_250204_161748")
@@ -538,12 +539,12 @@ P(\tempo, music: { |p b e|
 	TempoClock.tempo= 1;
 });
 P(\keys,music: {|p b e|
-	MicroKeys(\sawSynthSustain).synth_(\yowbass);
+	MicroKeys(\yow).synth_(\yowbass);
 	MicroKeys(\harp).synth_(\harp, params: [coef: 0.1]);
 	MIDIItem("_250119_105441").take(11)
 	.filter{|e| e.collect{|i| i.amp.notNil.if{i.amp = i.amp / 8}; i}}
 	.recalcSustains
-	.play([\sawSynthSustain, \harp], clock: TempoClock.new(0.52 / Song.quarter, queueSize: 2**12  ))
+	.play([\yow, \harp], clock: TempoClock.new(0.52 / Song.quarter, queueSize: 2**12  ))
 });
 P.synthV(\jun, take: \lead, lag: 32*Song.quarter, resources: (startPos:32), pbind: 
 	[

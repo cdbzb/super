@@ -19,6 +19,7 @@ MicroKeys(\pluck).synth = { |gate=1 out=0 |
 	=> LeakDC.ar(_);
 	Out.ar(out,sig);
 };
+MicroKeys.mono(\ld).synth_(\stringyy, [release: 3]).add(\quiet, {|e| e.vel.notNil.if{ e.vel = e.vel * 1.5 + 30 }; e}, \addBefore, \synth);
 // MicroKeys(\pluck).record;
 // MIDIItem("241217_102915").take(1).start_(127.5).play(\pluck);
 // MicroKeys(\chordOd).synth_(\sawSynth).record;
@@ -28,9 +29,12 @@ MicroKeys(\pluck).monitor
 (
 var transport = 3;
 // MIDIItem("241217_102915").take(8).start_(70).play(\pluck); // Rocking between c and c#
-MIDIItem("241217_102915").take(8).start_(70 + transport).play(\pluck); // Rocking between c and c#
-MicroKeys(\vocalLine).synth_(\sawSynthSustain).monitor;
-MicroKeys(\ld).synth_(\stringyy, [release: 3]).add(\quiet, {|e| e.vel.notNil.if{ e.vel = e.vel * 1.5 + 30 }; e}, \addBefore, \synth);
+MIDIItem("241217_102915").take(8).fromNote(178).start_(73)
+// .filter({|i| i.collect{|e| e.amp.notNil.if{e.amp_ (e.amp -30); e}{e}}})
+.play(\pluck); // Rocking between c and c#
+// MicroKeys(\vocalLine).synth_(\sawSynthSustain).monitor;
+MIDIItem("vox_250424_164001").take(2) .play(\sawSynthSustain);
+MicroKeys.mono(\ld).synth_(\stringyy, [release: 3]).add(\quiet, {|e| e.vel.notNil.if{ e.vel = e.vel * 1.5 + 30 }; e}, \addBefore, \synth);
 // .monitor
 // .record
 MIDIItem("241220_132623")
@@ -40,6 +44,11 @@ MIDIItem("241220_132623")
 .play(\ld);
 // 城市的燈 (scratch lyric)
 
+)
+(// verse idea
+// MicroKeys(\vocalLine).synth_(\sawSynthSustain).monitor;
+MIDIItem("sketch_250424_164421").play(\sawSynthSustain)
+MicroKeys(\sawSynthSustain).monitor
 )
 (
 

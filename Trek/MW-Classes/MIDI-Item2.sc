@@ -186,7 +186,7 @@ gui { |take|
 		func.notNil.if{
 			^this.quantizeFunc(beats, func, choiceFunc, recalcSustains) 
 		}{
-			^this.collect( {|e| e.timestamp_(tempoMap[e.timestamp])})
+			^this.warpTo(tempoMap)
 		}
 	}
 

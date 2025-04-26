@@ -189,6 +189,7 @@ gui { |take|
 			^this.collect( {|e| e.timestamp_(tempoMap[e.timestamp])})
 		}
 	}
+
 	quantizeFunc { |beats func choiceFunc recalcSustains=true |
 		var tempoMap = MIDIItemTempoMap(this, choiceFunc, beats);
 		this.collect({|e x| 
@@ -584,7 +585,13 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		.collect{|i x| x->midiEvents.indexOf(i) }
 		.asDict
 	}
-
+	tempoMapFromIndices {
+		|indices=#[0, 3, 5, 7] beats=#[1, 1, 1, 1]|
+		^MIDIItemTempoMap(this, this.notes[indices], beats)
+	}
+	warpTo { |tempoMap|
+			^this.collect( {|e| e.timestamp_(tempoMap[e.timestamp - start] + start)}) //is start right? or should get from the map?
+	}
 	chaseCCs { |from|
 		^midiEvents
 		.select{|e| e.timestamp <= from }
@@ -624,7 +631,13 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		)
 	}
 
-	fromNote {|from to|
+	trim {|bool|
+		bool.if{
+			start = this[\timestamp][0];
+		}
+	}
+
+	fromNote {|from to trim=true|
 		var indices = this.noteIndices;
 		to = to ? midiEvents.select{|e| e.midicmd == \noteOn}.size;
 
@@ -638,7 +651,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			}{
 				res
 			}
-	});
+		}).trim(trim)
 	}
 
 	//deprecate this
@@ -646,7 +659,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 
 	//collects either: the params of notes selected by Symbol
 	//or the notes themselves if given a number
-	//so this[\amp] [0.2, 0.3] etc and this[4] the 4th note
+	//so this[\amp] returns [0.2, 0.3] etc and this[4] the 4th note
 	at { |index|
 		index.isKindOf(Symbol).if{
 			^midiEvents.select{|e| e.midicmd == \noteOn}
@@ -865,12 +878,13 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 		midiEvents = midiItem.midiEvents;
 		times = (choiceFunc ? I.d)
 		.value( midiEvents.select({|e| e.midicmd == \noteOn}))
-		.collect{|e| e.timestamp}
+		.collect{|e| e.timestamp } 
 		++ midiItem.bounds.end
+		=> {|i| i - i[0]} //relative to first item
 		;
 		beats = b;
 		// env = Env([0] ++ beats.integrate, times.differentiate);
-		env = Env([0] ++ ([0] ++ beats.integrate + midiItem.start), times.differentiate );
+		env = Env([0] ++ ([0] ++ beats.integrate ), times.differentiate );
 		// tempoMap = TempoMap(beats, times.differentiate.drop(1)) //what about the last dur!!!!!
 	}
 	offsets{

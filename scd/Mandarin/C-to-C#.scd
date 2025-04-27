@@ -1,4 +1,4 @@
-(
+( //setup
 MicroKeys(\pluck);
 MicroKeys(\pluck).synth = { |gate=1 out=0 |
 	var decaytime = \decaytime.kr(10);
@@ -26,10 +26,19 @@ MicroKeys.mono(\ld).synth_(\stringyy, [release: 3]).add(\quiet, {|e| e.vel.notNi
 )
 MicroKeys(\pluck).monitor
 // MIDIItem("241217_094128").take(7).play(\pluck)
-(
+( //basic loop
 var transport = 3;
 // MIDIItem("241217_102915").take(8).start_(70).play(\pluck); // Rocking between c and c#
-MIDIItem("241217_102915").take(8).fromNote(178).start_(73)
+m = MIDIItem("241217_102915").take(8).fromNote(218).select{|i| i.midinote.notNil.if{(i.midinote < 55)}{true}}//.start_(73)
+/// find average halfnote (2.687)
+// .notes[[0, 4, 10, 14, 19, 23, 29, 33, 39]] .collect{|i|i.timestamp} .differentiate.drop(1).do(_.postln) .mean
+//
+// .quantize(choiceFunc:{|e| e[[0, 4, 10, 14, 19, 23, 29, 33, 39 ]]}, beats: 2.687 ! 8)
+.filter{|r| r.collect{|e| e.amp.notNil.if{e.amp_(e.amp * 5)};e}}
+.start_(73)
+.play(\sawSynth);
+MIDIItem("241217_102915").take(8).fromNote(218)//.gui
+.start_(73)		
 // .filter({|i| i.collect{|e| e.amp.notNil.if{e.amp_ (e.amp -30); e}{e}}})
 .play(\pluck); // Rocking between c and c#
 // MicroKeys(\vocalLine).synth_(\sawSynthSustain).monitor;
@@ -40,6 +49,38 @@ MicroKeys.mono(\ld).synth_(\stringyy, [release: 3]).add(\quiet, {|e| e.vel.notNi
 MIDIItem("241220_132623")
 // .record(\ld) 
 .filter({|i| i.collect{|e| e.amp.notNil.if{e.amp_ (e.amp -30); e}{e}}})
+.start_( transport)
+.play(\ld);
+// 城市的燈 (scratch lyric)
+
+)
+( //basic loop tempomap
+var transport = 3;
+//bassnotes
+m = MIDIItem("241217_102915").take(8).fromNote(218);
+~bassnotes = m.select{|i| i.midinote.notNil.if{(i.midinote < 55)}{true}};
+t = ~bassnotes.tempoMapFromIndices([0, 4, 10, 14, 19, 23, 29, 33, 39 ], 2.687!8 * [1, 1,1,  9/8, 7/8, 1, 1, 1]);
+~bassnotes.warpTo(t).start_(73).play(\sawSynth);
+
+m.warpTo(t)
+.start_(73)		
+.filter({|i| i.collect{|e| e.amp.notNil.if{e.amp_ (e.amp /4); e}{e}}})
+.play(\pluck); // Rocking between c and c#
+
+// MicroKeys(\vocalLine).synth_(\sawSynthSustain).monitor;
+
+MIDIItem("vox_250424_164001").take(2)
+.filter{|e| e.collect{|i| i.amp.notNil.if{i.amp_(2 + i.amp / 3 + 1); i}{i}}}
+.warpTo(t)
+.play(\sawSynthSustain);
+MicroKeys.mono(\ld).synth_(\stringyy, [release: 3])
+.add(\quiet, {|e| e.vel.notNil.if{ e.vel = e.vel * 1.5 +10 }; e}, \addBefore, \synth);
+// .monitor
+// .record
+MIDIItem("241220_132623")
+// .record(\ld) 
+.warpTo(t)
+// .filter({|i| i.collect{|e| e.amp.notNil.if{e.amp_ (e.amp /30); e}{e}}})
 .start_( transport)
 .play(\ld);
 // 城市的燈 (scratch lyric)

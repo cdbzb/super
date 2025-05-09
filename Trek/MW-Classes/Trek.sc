@@ -235,7 +235,7 @@ Trek {
 			}
 		}
 	}
-	*playAll {
+	*playAll { |remote=false|
 		var needLoad;
 		needLoad = (0..( keys.size - 1 )).select{|i| Song.songs[Trek.keys[i]].isNil};
 		( needLoad.size!=0 ).if{ ^this.loadSongs(needLoad) };
@@ -247,6 +247,7 @@ Trek {
 			keys.size.do{|key section| 
 				var start = transitions[section].start ? 0;
 				Trek.editFile(section);
+				remote.if { Trek.editRemote(section) };
 				this.playSong(
 					section,
 					start,

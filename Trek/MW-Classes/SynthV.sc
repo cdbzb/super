@@ -267,6 +267,17 @@ SynthV {
 		).asPairs.pairsDo({|i j| project.renderConfig.put(i,j)})
 	}
 
+	*build{ |name voice take params|
+		var synthV;
+		synthV = SynthV(name, voice, take).setDatabase(voice);
+		synthV.buildFunc = { 
+			params.lyrics=params.lyrics.replace($, , "").split(Char.space).reject{|i| i.size==0};
+			params.pitch=params.midinote.asInteger;
+			synthV.set(params); 
+		};
+			take.notNil.if{voice = voice ++ "_" ++ take};
+			^synthV
+	}
 	open {
 		"open -a 'Synthesizer V Studio Pro'" + file => _.unixCmd 
 	}

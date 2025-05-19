@@ -1,6 +1,7 @@
 SynthV {
 	// project.tracks[0].database = "AiKO Lite"
 	classvar <>directory;
+	classvar <>currentName;
 	classvar <notePrototype, <databasePrototype, <databaseLib;
 	classvar <roles,<envelopes=#[ \toneShift, \pitchDelta, \voicing, \tension, \vibratoEnv, \loudness, \breathiness, \gender ];
 	classvar <vocalModes;
@@ -218,10 +219,28 @@ SynthV {
 	*load { |path|
 		^String.readNew(path.standardizePath => File(_,"r")) => JSON.parse(_)
 	}
-	init{ |n k t d|
-		name = n; double = d; take = t;
+	init2 { |name voice take|
+		// name = n; double = d; take = t;
 		// this.class.registry.put(n,k,(take ? \default),this);
 		// key = k.asString.replace(Char.space,$_);
+		var song = currentName ? "foo";
+		directory = directory.standardizePath;
+
+		// location = directory +/+ ( song.key.asString.replace(Char.space,$-) ) +/+ Song.lyrics[Song.section(key)].hash.abs +/+ name; //change storage scheme here
+		location = directory +/+ song +/+ name +/+ voice;
+		take.notNil.if{ location = location ++ "-" ++ take };
+
+		file = location +/+ "project.svp";
+
+		project = Object.readArchive(directory +/+ "test.svp.event-archive");
+
+		//strip erroneous points data - TODO clean this up in original file!
+		project.tracks[0].mainRef.systemPitchDelta.put(\points,[]);
+
+		this.refreshBuffer(song, name, voice, (take ? \default));
+	}
+	init{ |n k t d|
+		name = n; double = d; take = t;
 		key = k;
 		\KEY.post;key.postln;
 		song.isNil.if{ song = Song.currentSong };
@@ -266,10 +285,11 @@ SynthV {
 			numChannels:1,
 		).asPairs.pairsDo({|i j| project.renderConfig.put(i,j)})
 	}
-
 	*build{ |name voice take params|
 		var synthV;
-		synthV = SynthV(name, voice, take).setDatabase(voice);
+		synthV = 
+		// SynthV(name, voice, take).setDatabase(voice);
+		super.new.init2(name, voice, take).setDatabase(voice);
 		synthV.buildFunc = { 
 			params.lyrics=params.lyrics.replace($, , "").split(Char.space).reject{|i| i.size==0};
 			params.pitch=params.midinote.asInteger;

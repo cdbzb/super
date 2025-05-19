@@ -215,15 +215,17 @@ SynthV {
 		};
 		this.writeRawProject
 	}
-
 	*load { |path|
 		^String.readNew(path.standardizePath => File(_,"r")) => JSON.parse(_)
 	}
-	init2 { |name voice take|
+	init2 { |n v t|
+		
+		var voice = v;
+		song = currentName ? "foo";
+		name = n; take = t;
 		// name = n; double = d; take = t;
 		// this.class.registry.put(n,k,(take ? \default),this);
 		// key = k.asString.replace(Char.space,$_);
-		var song = currentName ? "foo";
 		directory = directory.standardizePath;
 
 		// location = directory +/+ ( song.key.asString.replace(Char.space,$-) ) +/+ Song.lyrics[Song.section(key)].hash.abs +/+ name; //change storage scheme here
@@ -273,7 +275,6 @@ SynthV {
 			// fork{0.05.wait;this.render}
 		}
 	}
-
 	setRenderConfig { 
 		(
 			sampleRate: 48000,
@@ -285,7 +286,7 @@ SynthV {
 			numChannels:1,
 		).asPairs.pairsDo({|i j| project.renderConfig.put(i,j)})
 	}
-	*build{ |name voice take params|
+	*build { |name voice take params|
 		var synthV;
 		synthV = 
 		// SynthV(name, voice, take).setDatabase(voice);
@@ -293,6 +294,8 @@ SynthV {
 		synthV.buildFunc = { 
 			params.lyrics=params.lyrics.replace($, , "").split(Char.space).reject{|i| i.size==0};
 			params.pitch=params.midinote.asInteger;
+			synthV.makeNotes(params.dur.size);
+
 			synthV.set(params); 
 		};
 			take.notNil.if{voice = voice ++ "_" ++ take};
@@ -415,7 +418,6 @@ SynthV {
 		.select{|i| "(?<![0-9])"++( key.asInteger - 1 ) =>_.matchRegexp(i.name.asString)} //match 5 but not 15
 		.unbubble
 	}
-	
 	prependNotes {|section synthV track=0|
 		var last = { this.findPartBefore.synthV.notes.last }.try({ "couldnt find part before!!".postln; this.dump.postln}) ;
 		last = last.put(\onset,"0");
@@ -425,12 +427,10 @@ SynthV {
 		// project.tracks[track].mainGroup.put(\notes, this.findPartBefore.synthV.notes ++ this.notes )
 		project.tracks[track].mainGroup.put(\notes, last.bubble ++ this.notes )
 	}
-
 	filterRests { |track=0|
 		project.tracks[track].mainGroup.notes =
 			this.notes.reject({|i| i.at(\lyrics)=="r"})
 	}
-
 	refreshBuffer{ |song n k t|
 		var old = try{buffers.at(song, n, k, t).()};
 		File.exists(location+/+"synthV_MixDown.wav").if{

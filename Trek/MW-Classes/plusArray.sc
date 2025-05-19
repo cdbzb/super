@@ -56,7 +56,7 @@
 			^this
 		};
 
-		map.isSymbol.if{
+		map.isKindOf(Symbol).if{
 
 			tempomap = ( Song.tempoMap[map] ? TempoMap.fromDurs(Song.durs[map]) );
 		};

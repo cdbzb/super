@@ -1,6 +1,6 @@
 +Array{
 	split  { | test | 
-		var b=this.collect{|i x| i.isSymbol.if{x}}.reject(_.isNil).flat;
+		var b=this.collect{|i x| i.isKindOf(Symbol).if{x}}.reject(_.isNil).flat;
 		b =b ++( this.size  );
 		(b[0] == 0).not.if{b = [0]++b};
 		b=b.dropLast.collect{|i x| b.at(x+1)-i};

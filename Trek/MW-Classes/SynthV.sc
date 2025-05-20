@@ -20,6 +20,16 @@ SynthV {
 			synthVsToRender = nil;
 		}
 	}
+	play { |server|
+		server = server ? Server.default;
+		fork{
+			server.bind{
+				this.buffer.wait;
+				this.buffer.().play
+			}
+		}
+
+	}
 	*renderSection { |wait = 8.5|
 		var section = Song.cursor;
 		synthVsToRender = Song.at(section).select{|i| i.synthV.notNil };

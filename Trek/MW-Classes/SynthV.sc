@@ -7,6 +7,7 @@ SynthV {
 	classvar <vocalModes;
 	classvar <>buffers;
 	classvar <>synthVsToRender;
+	classvar <>current;
 	var <name, <project, <file,<location,<buffer, <key, <song, <section;
 	var <>firstNoteOffset = 0;
 	var <> offset = 0;
@@ -20,12 +21,14 @@ SynthV {
 			synthVsToRender = nil;
 		}
 	}
-	play { |server|
+	play { |func server|
 		server = server ? Server.default;
+		func = func ? I.d;
+		this.refreshBuffer;
 		fork{
 			server.bind{
 				this.buffer.wait;
-				this.buffer.().play
+				func.(buffer.()).play
 			}
 		}
 
@@ -309,6 +312,7 @@ SynthV {
 			synthV.set(params); 
 		};
 			take.notNil.if{voice = voice ++ "_" ++ take};
+			SynthV.current_(synthV);
 			^synthV
 	}
 	open {

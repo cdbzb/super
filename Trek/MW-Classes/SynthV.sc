@@ -12,6 +12,7 @@ SynthV {
 	var <>firstNoteOffset = 0;
 	var <> offset = 0;
 	var <>double, <>take, <>buildFunc;
+	var <>playbuf;
 	*new {|key name take double| 
 			^super.new.init(key, name, take, double) 
 		}
@@ -313,6 +314,16 @@ SynthV {
 		};
 			take.notNil.if{voice = voice ++ "_" ++ take};
 			SynthV.current_(synthV);
+			synthV.playbuf = { |e startPos = 0| 
+					// { 
+					var buf = synthV.buffer.();
+						PlayBuf.auto( 1, buf,
+							startPos: ( synthV.offset + ( startPos ? 0 ) ) * BufSampleRate.kr( buf ),
+							doneAction: Line.kr(0,0, BufDur.kr(buf) + 3, doneAction:2)
+						)
+					// }
+				};
+				synthV.refreshBuffer(song, section, voice, (take ? \default));
 			^synthV
 	}
 	open {

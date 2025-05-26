@@ -69,7 +69,7 @@ Song.traps = [
 	}
 ];
 
-Song.lick= [
+Song.tunes = [
 	[\r, 3, 4, 5, 1, -7, 2, 1, \r].df(\c, \mixolydian),
 	[\r, -6, -7, 1, 3, 5, 6, 4, \r].df(\c, \minor),
 	[\r, 3, 4, 5, 1, 7, 11,  6, \r].df(\c, \mixolydian),
@@ -77,7 +77,9 @@ Song.lick= [
 
 	[\r, 1, 2, 3, 5, 7, \4].df(\c, \mixolydian),
 	[\r, 1, 2, 3, 5, 11, 7, 6, 4, 2].df(\c, \dorian)
-].collect{ |i x|
+];
+
+Song.licks = Song.tunes.collect{ |i x|
 	{ |instrument|
 		[
 			lag:0.2,
@@ -125,7 +127,35 @@ Song.chords =
 	}
 };
 
+
+Song.lineTwo = SynthV.build(\verseTwo, \an, \lead, (
+	lyrics:  "r 霓 虹  闪 烁 像 你 笑",
+	midinote: 
+	Song.tunes[2].collect({ |i| i.cpsmidi.asInteger})
+	,
+	dur: 
+	"q e e q q q e eq".beats * Song.quarter
+	,
+	language: \Mandarin,
+	pitchTake:2
+));
+Song.lineOne = SynthV.build(\verseOne, \mo, \lead, (
+	lyrics:  "r 夜 深 梦 醒 时 你 在",
+	midinote: 
+	Song.tunes[0].collect({ |i| i.cpsmidi.asInteger})
+	,
+	dur: 
+	"q e e q q q e eq".beats * Song.quarter
+	,
+	language: \Mandarin,
+	pitchTake:2
+));
 )
+)
+Song.lineTwo.render
+Song.lineTwo.play
+Song.lineTwo.open
+Song.lineOne.open
 (
 Song.playSection(\intro); (lag:0.2,amp:0.02, instrument: \cymbalsDS).play;
 8.do{|i| {fork{Song.chords[i % 2].()}}.sched(i * 8 + 4 * Song.quarter -0.1)};
@@ -134,7 +164,11 @@ SystemClock.sched(Song.quarter * 16 + 0.2, {(instrument:\cymbalsDS, amp:0.02).pl
 )
 (
 // Song.playSection(\intro); 
-(lag:0.2,amp:0.02, instrument: \cymbalsDS).play;
+(
+lag:0.2,amp:0.02, instrument: \cymbalsDS).play;
+
+fork{0.2.wait; Song.lineOne.play({|i| {PlayBuf.ar(1, i) / 4}}) };
+fork{0.2.wait; 8 * Song.quarter => _.wait; Song.lineTwo.play({|i| {PlayBuf.ar(1, i) / 4}}) };
 [0,0,0,1].do{|i x| {fork{Song.chords[i].()}}.sched(x * 8 + 4 * Song.quarter -0.1)};
 [0,2,0,1].do{|i x| {Song.lick[i].(\sawSynthSustain)}.sched(x * 8 * Song.quarter) };
 [1, 0].do{|i x| Song.bassLines[i].sched(x * 16 * Song.quarter + 0.2) };

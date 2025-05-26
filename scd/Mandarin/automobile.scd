@@ -70,9 +70,9 @@ Song.traps = [
 ];
 
 Song.tunes = [
-	[\r, 3, 4, 5, 1, -7, 2, 1, \r].df(\c, \mixolydian),
-	[\r, -6, -7, 1, 3, 5, 6, 4, \r].df(\c, \minor),
-	[\r, 3, 4, 5, 1, 7, 11,  6, \r].df(\c, \mixolydian),
+	[\r, 3,  4,  5, 1, -7, 2,  1, \r].df(\c, \mixolydian),
+	[\r, -6, -7, 1, 3, 5,  6,  4, \r].df(\c, \minor),
+	[\r, 3,  4,  5, 1, 7,  11, 6, \r].df(\c, \mixolydian),
 	[\r, 3, 4, 5, 1, -7, 2, 1, -7, -6, -5, \r].df(\c, \mixolydian),
 
 	[\r, 1, 2, 3, 5, 7, \4].df(\c, \mixolydian),
@@ -134,16 +134,22 @@ Song.words= [
 	  "r 跟我 跳 进 这 节 奏 "
 ];
 
-Song.singer = \an;
-
-Song.verseVox = Song.words.collect{ |i x|
-	SynthV.build(\verseVox ++ x, Song.singer, \lead, (
-		lyrics:  i,
-		midinote: Song.tunes[[0,2,0,1]][x].collect({ |i| i.cpsmidi.asInteger}) ,
-		dur: "q e e q q q e eq".beats * Song.quarter ,
-		language: \Mandarin,
-		pitchTake:2
-	));
+Song.singer = \jun;
+Song.verseVox = ();
+[\lead, \dbl].do{ |take takeNum|
+	Song.verseVox.put( 
+		take, 
+		Song.words.collect{ |i x|
+			SynthV.build("automobile", "verse" ++ x, Song.singer, take, (
+				lyrics:  i,
+				midinote: Song.tunes[[0,2,0,1]][x].collect({ |i| i.cpsmidi.asInteger}) ,
+				dur: "q e e q q q e eq".beats * Song.quarter ,
+				language: \mandarin,
+				phoneset: \xsampa,
+				pitchTake: 2 + takeNum
+			).postln)
+		}
+	)
 }
 )
 
@@ -160,8 +166,9 @@ lag:0.2,amp:0.02, instrument: \cymbalsDS).play;
 
 // fork{0.2.wait; Song.lineOne.play({|i| {PlayBuf.ar(1, i) / 4}}) };
 // fork{0.2.wait; 8 * Song.quarter => _.wait; Song.lineTwo.play({|i| {PlayBuf.ar(1, i) / 4}}) };
-Song.verseVox.do{|i x|
-	{i.play({|i| {PlayBuf.ar(1, i) / 4}})}.sched( x * 8 * Song.quarter + 0.2 )
+Song.verseVox.lead.size.do{|x|
+	{ s.bind{{ Song.verseVox.dbl[x].playbuf / 4 }.play} }.sched( x * 8 * Song.quarter + 0.2);
+	{ s.bind{{ Song.verseVox.lead[x].playbuf / 4 }.play} }.sched( x * 8 * Song.quarter + 0.2)
 };
 [0,0,0,1].do{|i x| {fork{Song.chords[i].()}}.sched(x * 8 + 4 * Song.quarter -0.1)};
 [0,2,0,1].do{|i x| {Song.lick[i].(\sawSynthSustain)}.sched(x * 8 * Song.quarter) };

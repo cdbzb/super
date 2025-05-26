@@ -1,7 +1,6 @@
 SynthV {
 	// project.tracks[0].database = "AiKO Lite"
 	classvar <>directory;
-	classvar <>currentName;
 	classvar <notePrototype, <databasePrototype, <databaseLib;
 	classvar <roles,<envelopes=#[ \toneShift, \pitchDelta, \voicing, \tension, \vibratoEnv, \loudness, \breathiness, \gender ];
 	classvar <vocalModes;
@@ -32,7 +31,6 @@ SynthV {
 				func.(buffer.()).play
 			}
 		}
-
 	}
 	*renderSection { |wait = 8.5|
 		var section = Song.cursor;
@@ -232,18 +230,17 @@ SynthV {
 	*load { |path|
 		^String.readNew(path.standardizePath => File(_,"r")) => JSON.parse(_)
 	}
-	init2 { |n v t|
-		
+	init2 { |son sec v t|
 		var voice = v;
-		song = currentName ? "foo";
-		name = n; take = t;
+		section = sec;
+		song = son; take = t;
 		// name = n; double = d; take = t;
 		// this.class.registry.put(n,k,(take ? \default),this);
 		// key = k.asString.replace(Char.space,$_);
 		directory = directory.standardizePath;
 
 		// location = directory +/+ ( song.key.asString.replace(Char.space,$-) ) +/+ Song.lyrics[Song.section(key)].hash.abs +/+ name; //change storage scheme here
-		location = directory +/+ song +/+ name +/+ voice;
+		location = directory +/+ song +/+ section +/+ voice;
 		take.notNil.if{ location = location ++ "-" ++ take };
 
 		file = location +/+ "project.svp";
@@ -255,10 +252,8 @@ SynthV {
 
 		this.refreshBuffer(song, name, voice, (take ? \default));
 	}
-	init{ |n k t d|
-		name = n; double = d; take = t;
-		key = k;
-		\KEY.post;key.postln;
+	init { |n k t d| //why is the arg order different than *new ???? 
+		name = n; double = d; take = t; key = k;
 		song.isNil.if{ song = Song.currentSong };
 		// section = song.section(key.replace($_,Char.space)); //does this do anything?
 		section = key;
@@ -300,11 +295,11 @@ SynthV {
 			numChannels:1,
 		).asPairs.pairsDo({|i j| project.renderConfig.put(i,j)})
 	}
-	*build { |name voice take params|
+	*build { |song section voice take params|
 		var synthV;
 		synthV = 
 		// SynthV(name, voice, take).setDatabase(voice);
-		super.new.init2(name, voice, take).setDatabase(voice);
+		super.new.init2(song, section, voice, take).setDatabase(voice);
 		synthV.buildFunc = { 
 			params.lyrics=params.lyrics.replace($, , "").split(Char.space).reject{|i| i.size==0};
 			params.pitch=params.midinote.asInteger;
@@ -394,7 +389,6 @@ SynthV {
 	)
 	}
 	setNote {| index key value|
-		
 		key.post;" ".post;value.postln;
 		this.notes[index].put(key,value);
 	}

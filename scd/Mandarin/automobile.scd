@@ -127,35 +127,26 @@ Song.chords =
 	}
 };
 
+Song.words= [
+	  "r 夜 深 梦 醒 时 你 在",
+	  "r 霓 虹  闪 烁 像 你 笑",
+	  "r 心 跳 快 到 疯 狂 啊",
+	  "r 跟我 跳 进 这 节 奏 "
+];
 
-Song.lineTwo = SynthV.build(\verseTwo, \an, \lead, (
-	lyrics:  "r 霓 虹  闪 烁 像 你 笑",
-	midinote: 
-	Song.tunes[2].collect({ |i| i.cpsmidi.asInteger})
-	,
-	dur: 
-	"q e e q q q e eq".beats * Song.quarter
-	,
-	language: \Mandarin,
-	pitchTake:2
-));
-Song.lineOne = SynthV.build(\verseOne, \mo, \lead, (
-	lyrics:  "r 夜 深 梦 醒 时 你 在",
-	midinote: 
-	Song.tunes[0].collect({ |i| i.cpsmidi.asInteger})
-	,
-	dur: 
-	"q e e q q q e eq".beats * Song.quarter
-	,
-	language: \Mandarin,
-	pitchTake:2
-));
+Song.singer = \an;
+
+Song.verseVox = Song.words.collect{ |i x|
+	SynthV.build(\verseVox ++ x, Song.singer, \lead, (
+		lyrics:  i,
+		midinote: Song.tunes[[0,2,0,1]][x].collect({ |i| i.cpsmidi.asInteger}) ,
+		dur: "q e e q q q e eq".beats * Song.quarter ,
+		language: \Mandarin,
+		pitchTake:2
+	));
+}
 )
-)
-Song.lineTwo.render
-Song.lineTwo.play
-Song.lineTwo.open
-Song.lineOne.open
+
 (
 Song.playSection(\intro); (lag:0.2,amp:0.02, instrument: \cymbalsDS).play;
 8.do{|i| {fork{Song.chords[i % 2].()}}.sched(i * 8 + 4 * Song.quarter -0.1)};
@@ -167,8 +158,11 @@ SystemClock.sched(Song.quarter * 16 + 0.2, {(instrument:\cymbalsDS, amp:0.02).pl
 (
 lag:0.2,amp:0.02, instrument: \cymbalsDS).play;
 
-fork{0.2.wait; Song.lineOne.play({|i| {PlayBuf.ar(1, i) / 4}}) };
-fork{0.2.wait; 8 * Song.quarter => _.wait; Song.lineTwo.play({|i| {PlayBuf.ar(1, i) / 4}}) };
+// fork{0.2.wait; Song.lineOne.play({|i| {PlayBuf.ar(1, i) / 4}}) };
+// fork{0.2.wait; 8 * Song.quarter => _.wait; Song.lineTwo.play({|i| {PlayBuf.ar(1, i) / 4}}) };
+Song.verseVox.do{|i x|
+	{i.play({|i| {PlayBuf.ar(1, i) / 4}})}.sched( x * 8 * Song.quarter + 0.2 )
+};
 [0,0,0,1].do{|i x| {fork{Song.chords[i].()}}.sched(x * 8 + 4 * Song.quarter -0.1)};
 [0,2,0,1].do{|i x| {Song.lick[i].(\sawSynthSustain)}.sched(x * 8 * Song.quarter) };
 [1, 0].do{|i x| Song.bassLines[i].sched(x * 16 * Song.quarter + 0.2) };

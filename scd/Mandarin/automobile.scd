@@ -163,7 +163,7 @@ SystemClock.sched(Song.quarter * 16 + 0.2, {(instrument:\cymbalsDS, amp:0.02).pl
 SystemClock.sched(~song.quarter * 16 + 0.2, {(instrument:\cymbalsDS, amp:0.02).play})
 )
 (
-var q = Song.quarter;
+var q = ~song.quarter;
 [
 [6.5, 6, 5.5].df(\c).q,
 [12, 11, 7].df(\c).q
@@ -171,15 +171,15 @@ var q = Song.quarter;
 	{ 
 		[
 			freq: i,
-			dur: Song.quarter * 2,
+			dur: ~song.quarter * 2,
 			instrument: [\harp, \stringyy],
 			amp: [0.02, 0.15],
 			coef: 0.15
 		].pp
-	}.sched(4 + (16 * x) * Song.quarter + 0.2);
+	}.sched(4 + (16 * x) * ~song.quarter + 0.2);
 };
-3.do{|i| Song.traps[0].sched(i * 8 * Song.quarter + 0.2 )};
-[2].do{|i x| Song.bassLines[i].sched(x * 16 * Song.quarter + 0.2) };
+3.do{|i| ~song.traps[0].sched(i * 8 * ~song.quarter + 0.2 )};
+[2].do{|i x| ~song.bassLines[i].sched(x * 16 * ~song.quarter + 0.2) };
 
-[4, 5].do{|i x| {Song.lick[i].(\sawSynthSustain)}.sched(x * 8 * Song.quarter) };
+[4, 5].do{|i x| {~song.lick[i].(\sawSynthSustain)}.sched(x * 8 * ~song.quarter) };
 )

@@ -5,14 +5,15 @@
 	sched { |when clock|
 		var fun;
 		clock ?? {clock = TempoClock.default};
-		fun={when.asArray.do(clock.sched(_,this))};
+		when = when.asArray.select (_.isPositive);
+		fun={when.do(clock.sched(_,this))};
 		fun.value;
 		^fun
 	}
 	schedL { |when clock|
 		var fun;
 		clock ? clock = TempoClock.default;
-		when=when.asArray.collect(_+Server.default.latency);
+		when=when.asArray.collect(_+Server.default.latency).select(_.isPositive);
 		fun={when.do(clock.sched(_,this))};
 		fun.value;
 		^fun

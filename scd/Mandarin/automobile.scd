@@ -1,46 +1,53 @@
-
-(
-~song = ();
+( // song
+~parent = (
+	markers: (),
+	t: 0
+);
+~song = (parent: ~parent);
 ~song.quarter = 132.reciprocal * 60;
+( //bass
 ~song.bassTrackFunc = {Effect({|i| CrossoverDistortion.ar(i) => Limiter.ar(_, 0.05) /2 + i })};
 ~song.bassTrack = ~song.bassTrackFunc.();
 ~song.bassLines = [
-	[1.dup(8), -7.dup(3), -4.dup(4), -3, -6.dup(8),  3.dup(3), -7.dup(4), -6].df(\c, 3, \minor).flat.q,
-	[1.dup(8), -7.dup(3), -4.dup(4), -3 ].df(\c, 3, \minor).flat.q(2),
-	[1.dup(8), -7.dup(8), -6.dup(8), -3.5.dup(8), -4.dup(8), -2.dup(4), -4.dup(4), -5.dup(8)].df(\c, 3, \minor).flat.q
+	[1!8, -7!3, -4!4, -3, -6!8,  3!3, -7!4, -6].df(\c, 3, \minor).flat.q,
+	[1!8, -7!3, -4!4, -3 ].df(\c, 3, \minor).flat.q(2),
+	[1!8, -7!8, -6!8, -3.5!8, -4!8, -2!4, -4!4, -5!8].df(\c, 3, \minor).flat.q
 ].collect { |i|
 	{
-		~song.bassTrack.synth.isRunning.not.if{ ~song.bassTrack = ~song.bassTrackFunc.() };
+		~song.bassTrack.synth.isRunning.not.if{
+			~song.bassTrack = ~song.bassTrackFunc.() 
+		};
 		[
 			dur: ~song.quarter/2,
-			// out: Effect.bus({|i| CrossoverDistortion.ar(i) => Limiter.ar(_, 0.05) /2 + i })  
 			out: ~song.bassTrack.bus.index
 		]
 		++[ freq: i]
 		=> _.pp
 	}
 };
-
+);
+( //traps
 ~song.traps = [
 	{
 		[
 			[
 				dur: "q e e q q".beats.q(4) * ~song.quarter,
 				instrument: \cp_808,
-				rest: [\r, 1, 1, \r, 1].q(4)
-
+				rest: [\r, 1, 1, \r, 1].q(4),
+				amp: 0.15
 			].p
 			,
 			[
 				dur: "q q q q".beats.q(4) * ~song.quarter,
-				instrument: \bd_808
-
+				instrument: \bd_808,
+				amp: 0.15
 			].p
 		]
-		=> Ppar(_)
+		=> Ppar(_) 
 		=> _.play
 	}
 ];
+);
 
 ~song.tunes = [
 	[\r, 3,  4,  5, 1, -7, 2,  1, \r].df(\c, \mixolydian),
@@ -113,7 +120,9 @@
 	"r 共 舞 到 晨 光 熄 灭",         
 ];
 
-~song.singer = \jun;
+// ~song.singer = \jun;
+~song.singer = \ninezero;
+
 ~song.verseVox = ();
 [\lead, \dbl].do{ |take takeNum|
 	~song.verseVox.put( 
@@ -129,46 +138,13 @@
 			).postln)
 		}
 	)
-}
-)
-
-(
-Song.playSection(\intro); (lag:0.2,amp:0.02, instrument: \cymbalsDS).play;
-8.do{|i| {fork{Song.chords[i % 2].()}}.sched(i * 8 + 4 * Song.quarter -0.1)};
-4.do{|i| {Song.lick[i % 2].(\sawSynthSustain)}.sched(i * 8 * Song.quarter) };
-SystemClock.sched(Song.quarter * 16 + 0.2, {(instrument:\cymbalsDS, amp:0.02).play})
-)
-(
-( lag:0.2,amp:0.02, instrument: \cymbalsDS).play;
-~song.verseVox.lead.size.do{|x|
-	// [\lead, \dbl]
-	[\lead]
-	.do{ |take|
-		{ 
-			s.bind{
-				{ 
-					~song.verseVox[take][x].playbuf
-					/ 4  * -3.dbamp 
-					=> {|i| CombN.ar(i, ~song.quarter/2, ~song.quarter, 5) / 4 + i}
-					=> Pan2.ar(_,0) 
-				}.play
-			} 
-		}.sched( x * 8 * ~song.quarter + 0.2);
-	}
 };
-[0,0,0,1].dup.flat.do{|i x|  {fork{~song.chords[i].()}}.sched(x * 8 + 4 * ~song.quarter -0.1)};
-// [0,2,0,1].do{|i x| {~song.lick[i].(\sawSynthSustain)}.sched(x * 8 * ~song.quarter) };
-[1, 0].dup.flat.do{|i x| ~song.bassLines[i].sched(x * 16 * ~song.quarter + 0.2) };
-4.do{|i| ~song.traps[0].sched(i + 4 * 8 * ~song.quarter + 0.2 )};
-SystemClock.sched(~song.quarter * 16 + 0.2, {(instrument:\cymbalsDS, amp:0.02).play})
-)
-(
-var q = ~song.quarter;
-[
-[6.5, 6, 5.5].df(\c).q,
-[12, 11, 7].df(\c).q
-].do {|i x|
-	{ 
+
+~song.transition = [
+	[6.5, 6, 5.5].df(\c).q,
+	[12, 11, 7].df(\c).q
+].collect{|i x|
+	{
 		[
 			freq: i,
 			dur: ~song.quarter * 2,
@@ -176,10 +152,86 @@ var q = ~song.quarter;
 			amp: [0.02, 0.15],
 			coef: 0.15
 		].pp
-	}.sched(4 + (16 * x) * ~song.quarter + 0.2);
+	}
 };
-3.do{|i| ~song.traps[0].sched(i * 8 * ~song.quarter + 0.2 )};
-[2].do{|i x| ~song.bassLines[i].sched(x * 16 * ~song.quarter + 0.2) };
 
-[4, 5].do{|i x| {~song.lick[i].(\sawSynthSustain)}.sched(x * 8 * ~song.quarter) };
+~song.figure = [
+	[1, 6, 5, 3, 1, 6, 5, 1, 2, 4, 7, 6, 1, 4, 5, 6].df(\c,5, \mixolydian).dup(3) ++ "3 11 7 5 3 11 7  3 5 6 7 2 4.5 7 6 4.5".df('a-', 4) => _.flat => _.q(2),
+	"3 5 11 5 3 5 11 5 2 4 7 4 1 4 6 1".df(\c, 5, \mixolydian).dup(3) ++ "5 11 13 11 5 11 13 11 5 7 12 7 4 6 12 6".df('a-', 4, \lydian) => _.flat => _.q(2)
+].collect {|i|
+	{
+		[
+			freq: i,
+			instrument: \harp, coef: 0.1,
+			dur: ~song.quarter /2,
+			instrument: \bl,
+			amp:0.04,
+			// legato: 0.9,
+			lagTime:0
+		].ppm
+	}
+};
+
+~song.p = { |song start offset|
+	// (lag:0.2,amp:0.02, instrument: \cymbalsDS).play;
+	~song.markers = ~song.markers ? ();
+	start = start ? 0;
+	start.isKindOf(Symbol).if{start = ~song.markers[start] + (offset ? 0)};
+	~song.t = start;
+	song.verseVox.lead.size.do{|x|
+		[\lead, \dbl]
+		// [\lead]
+		.do{ |take|
+			{ 
+				s.bind{
+					{ 
+						song.verseVox[take][x].playbuf
+						/ 4  * -3.dbamp 
+						=> {|i| CombN.ar(i, song.quarter/2, song.quarter, 5) / 4 + i}
+						=> Pan2.ar(_,0) 
+					}.play
+				} 
+			}
+			.sched( x * 8 * song.quarter + 0.2 - ~song.t);
+		}
+	};
+	[0,0,0,1].dup.flat.do{|i x|  {fork{song.chords[i].()}}.sched(x * 8 + 4 * song.quarter -0.1 - ~song.t)};
+	// [0,2,0,1].do{|i x| {song.lick[i].(\sawSynthSustain)}.sched(x * 8 * song.quarter) };
+	[1, 0].dup.flat.do{|i x| song.bassLines[i].sched(x * 16 * song.quarter + 0.2 - ~song.t) };
+	6.do{|i| song.traps[0].sched(i + 4 * 8 * song.quarter + 0.2 - ~song.t )};
+	// fill
+	{
+		[
+			instrument: [\cp_808, \cp_808, \bd_808, [ \bd_808, \cymbalsDS ]].q,
+			dur: "e e e e".beats.q * ~song.quarter,
+			amp:[1, 1, 1, [1, 0.02]].q * -3.dbamp
+		].pp
+	}.sched( 4 * [ 8, 16 ] - 1.5 * ( ~song.quarter )   + 0.2 - ~song.t);
+	{(instrument:\cymbalsDS, amp:0.01).play}.sched(~song.quarter * 32 + 0.2 - ~song.t);
+	~song.figure[1].sched(0.2 - ~song.t);
+	//bridge
+
+	[2].do{|i x| ~song.bassLines[i].sched(4 + x * 16 * ~song.quarter + 0.2 - ~song.t) };
+	~song.transition.do{|i x| i.sched(16 * (x + 4) + 4 * ~song.quarter + 0.2 - ~song.t)};
+	[4, 5].do{|i x| {~song.licks[i].(\sawSynthSustain)}.sched( x+8  * 8 * ~song.quarter - ~song.t ) => _.postln };
+};
+
+	~song.markers[\bridge] = 64 * ~song.quarter;
+
+)
+~song.p(\bridge)
+s.record("/tmp/song.wav");~song.p
+~song.figure.()
+~song.p
+(
+var q = ~song.quarter;
+3.do{|i| ~song.traps[0].sched(i * 8 * ~song.quarter + 0.2 )};
+
+)
+
+(
+Song.playSection(\intro); (lag:0.2,amp:0.02, instrument: \cymbalsDS).play;
+8.do{|i| {fork{Song.chords[i % 2].()}}.sched(i * 8 + 4 * Song.quarter -0.1)};
+4.do{|i| {Song.lick[i % 2].(\sawSynthSustain)}.sched(i * 8 * Song.quarter) };
+SystemClock.sched(Song.quarter * 16 + 0.2, {(instrument:\cymbalsDS, amp:0.02).play});
 )

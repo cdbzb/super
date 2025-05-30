@@ -54,8 +54,8 @@
 	[\r, -6, -7, 1, 3, 5,  6,  4, \r].df(\c, \minor),
 	[\r, 3,  4,  5, 1, 7,  11, 6, \r].df(\c, \mixolydian),
 	[\r, 3, 4, 5, 1, -7, 2, 1, -7, -6, -5, \r].df(\c, \mixolydian),
-
-	[\r, 1, 2, 3, 5, 7, 4].df(\c, \mixolydian),
+//transition
+	[\r, 1, 2, 3, 5, 7 ].df(\c, \mixolydian),
 	[\r, 1, 2, 3, 5, 11, 7, 6, 4, 2].df(\c, \dorian)
 ];
 
@@ -118,20 +118,40 @@
 	"r 霓 虹 中 目 光 交 叠",         
 	"r 心 跳 声 淹 没 一 切",         
 	"r 共 舞 到 晨 光 熄 灭",         
+	// transition
+	"r 时  间 停 止 了",
+	"r 心 跳 声 越 来 越 快 了 啊 "
 ];
 
 // ~song.singer = \jun;
 ~song.singer = \ninezero;
 
 ~song.verseVox = ();
+~song.transitionVox = ();
+	
 [\lead, \dbl].do{ |take takeNum|
 	~song.verseVox.put( 
 		take, 
-		~song.words.collect{ |i x|
+		~song.words[(..7)].collect{ |i x|
 			SynthV.build("automobile", "verse" ++ x, ~song.singer, take, (
 				lyrics:  i,
 				midinote: ~song.tunes[[0,2,0,1]].wrapAt(x).collect({ |i| i.cpsmidi.asInteger}) ,
 				dur: "q e e q q q e eq".beats * ~song.quarter ,
+				language: \mandarin,
+				phoneset: \xsampa,
+				pitchTake: 2 + takeNum
+			).postln)
+		}
+	)
+};
+[\lead, \dbl].do{ |take takeNum|
+	~song.transitionVox.put( 
+		take, 
+		~song.words[[8,9]].collect{ |i x|
+			SynthV.build("automobile", "transition" ++ x, ~song.singer, take, (
+				lyrics:  i,
+				midinote: ~song.tunes[[4, 5]].wrapAt(x).collect({ |i| i.cpsmidi.asInteger}) ,
+				dur: ["q e e q q q ", "q e e q q h h h h he"][x].beats * ~song.quarter ,
 				language: \mandarin,
 				phoneset: \xsampa,
 				pitchTake: 2 + takeNum
@@ -178,7 +198,7 @@
 	start = start ? 0;
 	start.isKindOf(Symbol).if{start = ~song.markers[start] + (offset ? 0)};
 	~song.t = start;
-	song.verseVox.lead.size.do{|x|
+	~song.verseVox.lead.size.do{|x|
 		[\lead, \dbl]
 		// [\lead]
 		.do{ |take|
@@ -210,10 +230,26 @@
 	{(instrument:\cymbalsDS, amp:0.01).play}.sched(~song.quarter * 32 + 0.2 - ~song.t);
 	~song.figure[1].sched(0.2 - ~song.t);
 	//bridge
-
 	[2].do{|i x| ~song.bassLines[i].sched(4 + x * 16 * ~song.quarter + 0.2 - ~song.t) };
 	~song.transition.do{|i x| i.sched(16 * (x + 4) + 4 * ~song.quarter + 0.2 - ~song.t)};
-	[4, 5].do{|i x| {~song.licks[i].(\sawSynthSustain)}.sched( x+8  * 8 * ~song.quarter - ~song.t ) => _.postln };
+	// [4, 5].do{|i x| {~song.licks[i].(\sawSynthSustain)}.sched( x+8  * 8 * ~song.quarter - ~song.t ) => _.postln };
+	~song.transitionVox.lead.size.do{|x|
+		[\lead, \dbl]
+		// [\lead]
+		.do{ |take|
+			{ 
+				s.bind{
+					{ 
+						~song.transitionVox[take][x].playbuf
+						/ 4  * -3.dbamp 
+						=> {|i| CombN.ar(i, ~song.quarter/2, ~song.quarter, 5) / 4 + i}
+						=> Pan2.ar(_,0) 
+					}.play
+				} 
+			}
+			.sched( ( x + 8 ) * 8 * ~song.quarter + 0.2 - ~song.t);
+		}
+	};
 };
 
 	~song.markers[\bridge] = 64 * ~song.quarter;

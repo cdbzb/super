@@ -191,72 +191,81 @@
 		].ppm
 	}
 };
-~song.p { |song sections start offset|
+~song.p= { |song sections start offset|
 	~song.markers = ~song.markers ? ();
 	start = start ? 0;
 	start.isKindOf(Symbol).if{start = ~song.markers[start] + (offset ? 0)};
 	~song.t = start;
-	fork {
-		sections.do { |sec|
+	// ~song.durTill = ~song.sections.collect( _.dur) => _.integrate;
+	fork{
+		sections.do { |sec x|
+			sec.postln;
 			song[sec].().wait
+			// {song[sec].p()}.sched(~song.durTill[x])
 		}
 	}
 };
-~song.p = { |song start offset|
+// ~song.p = { |song start offset|
 	// (lag:0.2,amp:0.02, instrument: \cymbalsDS).play;
-	~song.verseVox.lead.size.do{|x|
-		[\lead, \dbl]
-		// [\lead]
-		.do{ |take|
-			{ 
-				s.bind{
-					{ 
-						song.verseVox[take][x].playbuf
-						/ 4  * -3.dbamp 
-						=> {|i| CombN.ar(i, song.quarter/2, song.quarter, 5) / 4 + i}
-						=> Pan2.ar(_,0) 
-					}.play
-				} 
+	~song.verse = { |song|
+		~song.verseVox.lead.size.do{|x|
+			[\lead, \dbl]
+			// [\lead]
+			.do{ |take|
+				{ 
+					s.bind{
+						{ 
+							~song.verseVox[take][x].playbuf
+							/ 4  * -3.dbamp 
+							=> {|i| CombN.ar(i, ~song.quarter/2, ~song.quarter, 5) / 4 + i}
+							=> Pan2.ar(_,0) 
+						}.play
+					} 
+				}
+				.sched( x * 8 * ~song.quarter + 0.2 - ~song.t);
 			}
-			.sched( x * 8 * song.quarter + 0.2 - ~song.t);
-		}
+		};
+		[0,0,0,1].dup.flat.do{|i x|  {fork{~song.chords[i].()}}.sched(x * 8 + 4 * ~song.quarter -0.1 - ~song.t)};
+		// [0,2,0,1].do{|i x| {~song.lick[i].(\sawSynthSustain)}.sched(x * 8 * ~song.quarter) };
+		[1, 0].dup.flat.do{|i x| ~song.bassLines[i].sched(x * 16 * ~song.quarter + 0.2 - ~song.t) };
+		6.do{|i| ~song.traps[0].sched(i + 4 * 8 * ~song.quarter + 0.2 - ~song.t )};
+		// fill
+		{
+			[
+				instrument: [\cp_808, \cp_808, \bd_808, [ \bd_808, \cymbalsDS ]].q,
+				dur: "e e e e".beats.q * ~song.quarter,
+				amp:[1, 1, 1, [1, 0.02]].q * -3.dbamp
+			].pp
+		}.sched( 4 * [ 8, 16 ] - 1.5 * ( ~song.quarter )   + 0.2 - ~song.t);
+
+		{(instrument:\cymbalsDS, amp:0.01).play}.sched(~song.quarter * 32 + 0.2 - ~song.t);
+		~song.figure[1].sched(0.2 - ~song.t);
+		4 * 16 * ~song.quarter
 	};
-	[0,0,0,1].dup.flat.do{|i x|  {fork{song.chords[i].()}}.sched(x * 8 + 4 * song.quarter -0.1 - ~song.t)};
-	// [0,2,0,1].do{|i x| {song.lick[i].(\sawSynthSustain)}.sched(x * 8 * song.quarter) };
-	[1, 0].dup.flat.do{|i x| song.bassLines[i].sched(x * 16 * song.quarter + 0.2 - ~song.t) };
-	6.do{|i| song.traps[0].sched(i + 4 * 8 * song.quarter + 0.2 - ~song.t )};
-	// fill
-	{
-		[
-			instrument: [\cp_808, \cp_808, \bd_808, [ \bd_808, \cymbalsDS ]].q,
-			dur: "e e e e".beats.q * ~song.quarter,
-			amp:[1, 1, 1, [1, 0.02]].q * -3.dbamp
-		].pp
-	}.sched( 4 * [ 8, 16 ] - 1.5 * ( ~song.quarter )   + 0.2 - ~song.t);
-	{(instrument:\cymbalsDS, amp:0.01).play}.sched(~song.quarter * 32 + 0.2 - ~song.t);
-	~song.figure[1].sched(0.2 - ~song.t);
 	//bridge
-	[2].do{|i x| ~song.bassLines[i].sched(4 + x * 16 * ~song.quarter + 0.2 - ~song.t) };
-	~song.transition.do{|i x| i.sched(16 * (x + 4) + 4 * ~song.quarter + 0.2 - ~song.t)};
-	// [4, 5].do{|i x| {~song.licks[i].(\sawSynthSustain)}.sched( x+8  * 8 * ~song.quarter - ~song.t ) => _.postln };
-	~song.transitionVox.lead.size.do{|x|
-		[\lead, \dbl]
-		// [\lead]
-		.do{ |take|
-			{ 
-				s.bind{
-					{ 
-						~song.transitionVox[take][x].playbuf
-						/ 4  * -3.dbamp 
-						=> {|i| CombN.ar(i, ~song.quarter/2, ~song.quarter, 5) / 4 + i}
-						=> Pan2.ar(_,0) 
-					}.play
-				} 
+		~song.bridge = {
+		[2].do{|i x| ~song.bassLines[i].sched(x * 16 * ~song.quarter + 0.2 - ~song.t) };
+		~song.transition.do{|i x| i.sched(16 * (x ) + 4 * ~song.quarter + 0.2 - ~song.t)};
+		// [4, 5].do{|i x| {~song.licks[i].(\sawSynthSustain)}.sched( x+8  * 8 * ~song.quarter - ~song.t ) => _.postln };
+		~song.transitionVox.lead.size.do{|x|
+			[\lead, \dbl]
+			// [\lead]
+			.do{ |take|
+				{ 
+					s.bind{
+						{ 
+							~song.transitionVox[take][x].playbuf
+							/ 4  * -3.dbamp 
+							=> {|i| CombN.ar(i, ~song.quarter/2, ~song.quarter, 5) / 4 + i}
+							=> Pan2.ar(_,0) 
+						}.play
+					} 
+				}
+				.sched(  x  * 8 * ~song.quarter + 0.2 );
 			}
-			.sched( ( x + 8 ) * 8 * ~song.quarter + 0.2 - ~song.t);
-		}
+		};
+		32 * ~song.quarter;
 	};
-};
 
 	~song.markers[\bridge] = 64 * ~song.quarter;
 

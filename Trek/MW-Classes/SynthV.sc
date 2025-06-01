@@ -27,8 +27,9 @@ SynthV {
 		this.refreshBuffer;
 		fork{
 			server.bind{
-				this.buffer.wait;
-				func.(buffer.()).play
+				buffer.wait;
+				buffer.();
+				func.(playbuf).play
 			}
 		}
 	}
@@ -225,7 +226,11 @@ SynthV {
 		}{
 			directory +/+ "SCRIPTS/renderSynthesizerV.sh".standardizePath + file =>_.unixCmd
 		};
-		this.writeRawProject
+		this.writeRawProject;
+		fork{
+			this.buffer.wait;
+			this.buffer.()
+		}
 	}
 	*load { |path|
 		^String.readNew(path.standardizePath => File(_,"r")) => JSON.parse(_)
@@ -317,8 +322,8 @@ SynthV {
 							doneAction: Line.kr(0,0, BufDur.kr(buf) + 3, doneAction:2)
 						)
 					// }
-				};
-				synthV.refreshBuffer(song, section, voice, (take ? \default));
+			};
+			synthV.refreshBuffer(song, section, voice, (take ? \default));
 			^synthV
 	}
 	open {

@@ -191,13 +191,19 @@
 		].ppm
 	}
 };
-
-~song.p = { |song start offset|
-	// (lag:0.2,amp:0.02, instrument: \cymbalsDS).play;
+~song.p { |song sections start offset|
 	~song.markers = ~song.markers ? ();
 	start = start ? 0;
 	start.isKindOf(Symbol).if{start = ~song.markers[start] + (offset ? 0)};
 	~song.t = start;
+	fork {
+		sections.do { |sec|
+			song[sec].().wait
+		}
+	}
+};
+~song.p = { |song start offset|
+	// (lag:0.2,amp:0.02, instrument: \cymbalsDS).play;
 	~song.verseVox.lead.size.do{|x|
 		[\lead, \dbl]
 		// [\lead]

@@ -214,7 +214,7 @@ var parent = (
 	~sections = (
 		// bass: {|t c| { (freq:358).play }.sched(0.5 +t, c) },
 		verse: (
-			dur: 32,
+			dur: 64,
 			parts: ( 
 				vox: { |t c|
 					~song.verseVox.lead.size.do{ |x|
@@ -238,15 +238,15 @@ var parent = (
 				chords: { |t c| [0,0,0,1].dup.flat.do{|i x|  {Routine{~song.chords[i].(t,c)}.play(c,0)}.sched(x * 8 + 4 + 0.5 + t, c)}},
 				// [0,2,0,1].do{|i x| {~song.lick[i].(\sawSynthSustain)}.sched(x * 8 * ~song.quarter) };
 				bass: {|t c| [1, 0].dup.flat.do{|i x| ~song.bassLines[i].sched(x * 16  + 0.2 + t, c) }},
-				traps: {|t c| 6.do{|i| ~song.traps[0].sched(i + 4 * 8 + 0.2 + t, c )}},
+				traps: {|t c| 2.do{|i| ~song.traps[0].sched(i + 2 * 16 + 0.2 + t, c )}},
 				// fill
 				fill: {|t c|
 					{
 						[
 							instrument: [\cp_808, \cp_808, \bd_808, [ \bd_808, \cymbalsDS ]].q,
-							dur: "e e e e".beats.q * ~song.quarter,
+							dur: "e e e e".beats.q,
 							amp:[1, 1, 1, [1, 0.02]].q * -3.dbamp
-						].pp
+						].p.play(clock: ~song.clock)
 					}.sched( 4 * [ 8, 16 ] - 1.5  + 0.2 + t, c)},
 
 					crash: {|t c| {(instrument:\cymbalsDS, amp:0.01).play}.sched( 32 + 0.2 + t, c)},

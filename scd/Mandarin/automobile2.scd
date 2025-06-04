@@ -44,7 +44,7 @@ var parent = (
 			-6!8,  -3.5!3, -1!4, -17!1, 
 			-4!8, -2!4, -4!4, -5!8,
 			-4!4, -5!4, -6.5!8,
-			-2!4, -4!4, -5!4
+			-2!4, -4!4, -5!8
 		].df(\c, 3, \minor).flat.q,
 	].collect { |i|
 		{
@@ -93,7 +93,8 @@ var parent = (
 		//transition
 		[\r, 1, 2, 3, 5, 7 ].df(\c, \mixolydian),
 		[\r, 1, 2, 3, 5, 11, 7, 6, 4, 2].df(\c, \dorian),
-		[11, 7, 6, 5, 4, 3, 4].df(\c)
+		[11, 7, 6, 5, 4, 3, 4].df(\c),
+		[12, 11, 12, 12, 13, 12, 11, 7].df(\c)
 		
 	];
 
@@ -159,14 +160,14 @@ var parent = (
 		// transition
 		"r 时  间 停 止 了",
 		"r 心 跳 声 越 来 越 快 了 啊 ",
-		"时  间 停 - - 止 了",
+		"时  间 停 - - 止 了", // this is just a copy - check for nonsense
+		"越 来 越 快 了 啊" //dummy - change this!
 	];
 
 	// singer: \jun;
 	~singer = \ninezero;
 
 	~verseVox = ();
-	~transitionVox = ();
 
 	[\lead, \dbl].do{ |take takeNum|
 		~verseVox.put( 
@@ -183,17 +184,20 @@ var parent = (
 			}
 		)
 	};
+	~transitionVox = ();
 	[\lead, \dbl].do{ |take takeNum|
 		~transitionVox.put( 
 			take, 
-			~words[[8,9, 10]].collect{ |i x|
+			~words[[8,9, 10, 11]].collect{ |i x|
 				SynthV.build("automobile", "transition" ++ x, ~singer, take, (
 					lyrics:  i,
-					midinote: ~tunes[[4, 5, 6]].wrapAt(x).collect({ |i| i.cpsmidi.asInteger}) ,
+					midinote: ~tunes[[4, 5, 6, 7]].wrapAt(x).collect({ |i| i.cpsmidi.asInteger}) ,
 					dur: [
 						"q e e q q qqx ",
 						"q e e q q h h h h he",
-						"h qe ee e q q q"
+						"h qe ee e q q q",
+						// "qe e E E E q"
+						"hQ Q Q Q Q Q q q"
 					][x].beats * ~quarter ,
 					language: \mandarin,
 					phoneset: \xsampa,
@@ -303,7 +307,7 @@ var parent = (
 							}.play
 						} 
 					}
-					.sched([0,1,3.5][x] * 8 + 0.2 + t, c);
+					.sched([0,1,3.5, 4.5][x] * 8 + 0.2 + t, c);
 				}
 			};
 		}

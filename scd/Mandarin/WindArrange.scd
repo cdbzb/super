@@ -193,6 +193,7 @@ P(\chords, music: { |p b e|
 		/3
 		=> RLPF.ar(_, SinOsc.ar([0.2, 0.22, 0.31]).range(800, 7000), 0.5)
 		* Env.perc(0.006, 0.4).kr(0,gate: Impulse.kr(~quarter.reciprocal * 4))
+		* EnvGen.cutoff(~quarter * 16, 12)
 	}.play
 });
 P(\line, music: { |p b e|

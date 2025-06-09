@@ -514,7 +514,9 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			)
 		);
 	}
-
+	initialRest {
+		^midiEvents.select{|e| e.timestamp == 0 and:  (e.type == \rest)}[0].dur
+	}
 	setBounds {|event|
 		start = event.start; end = event.end
 	}

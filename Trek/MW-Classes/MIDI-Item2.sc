@@ -517,6 +517,19 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	initialRest {
 		^midiEvents.select{|e| e.timestamp == 0 and:  (e.type == \rest)}[0].dur
 	}
+	removeNote{ |index|
+		var notes = midiEvents.select{|i| i.midicmd == \noteOn};
+		^this.filter { |e| //remove bad note (should be method?) 
+			index.asArray.do{ |x|
+				var note =  notes[x];
+				var off = e.select{|i| i.midicmd == \noteOff and: (i.timestamp >= note.timestamp) and: (i.midinote == note.midinote)}
+				// .sort({|x y| x.timestamp < y.timestamp})
+				[0];
+				e.remove(note); e.remove(off)
+			};
+			e
+		}
+	}
 	setBounds {|event|
 		start = event.start; end = event.end
 	}

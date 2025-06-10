@@ -87,21 +87,14 @@ P(\click, music: { |p b e|
 });
 P(\keys, lag: MIDIItem(\foo).take(1).initialRest, music: { |p b e|
 	var keyFX = Effect.bus(BPF.ar(_, 1100, rq: 3.0));
-	MIDIItem(\foo).take(1)
-	.fromNote(0, 100)
+	MIDIItem(\foo).take(1).fromNote(0, 100)
 	.quantize(
 		[ 0.57, 0.57 ].dup(9).flat, 
 		nil, 
 		{|notes| [(timestamp:0)] ++ notes[[0, 9, 13, 19, 22, 31, 39, 44, 48, 55, 62,  70, 72, 80, 85, 94 ]] }
 	)
-	.filter { |e| //remove bad note (should be method?) 
-	  var note =  e.select{ |i| i.midicmd == \noteOn }[59];
-	  var off = e.select{|i| i.midicmd == \noteOff and: (i.timestamp >= note.timestamp) and: (i.midinote == note.midinote)}
-	  // .sort({|x y| x.timestamp < y.timestamp})
-	  [0];
-	  e.remove(note); e.remove(off);e
-	 }
-	 .filter{|e| e.collect{|i| i.params_((out: keyFX ))}}
+	 .removeNote(59)
+	 .collect{|i| i.params_((out: keyFX ))}
 	 .recalcSustains
 	 // .gui
   .play(\default)

@@ -301,6 +301,8 @@ SynthV {
 		).asPairs.pairsDo({|i j| project.renderConfig.put(i,j)})
 	}
 	*build { |song section voice take params|
+		//section is just there for the naming filetree - its just a secondary name in this case
+		//in the Song version it is a name used to retrieve blah blah
 		var synthV;
 		synthV = 
 		// SynthV(name, voice, take).setDatabase(voice);

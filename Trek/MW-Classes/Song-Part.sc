@@ -550,6 +550,7 @@ Song {
 	}
 	at {|...args|
 		var array;
+		args = args.collect {|i| this.section(i)};
 		array = all {:x,x<-this.pts,args.flatten.includes(x.start)};
 		array.do({|i x| x.asString ++ i.name.postln})
 		^array

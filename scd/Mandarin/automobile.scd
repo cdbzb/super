@@ -6,7 +6,11 @@
 ~song = (parent: ~parent);
 ~song.quarter = 132.reciprocal * 60;
 ( //bass
-~song.bassTrackFunc = {Effect({|i| CrossoverDistortion.ar(i) => Limiter.ar(_, 0.05) /2 + i })};
+~song.bassTrackFunc = {Effect({|i| 
+	CrossoverDistortion.ar(i) 
+	=> Limiter.ar(_, 0.05) /2 + i
+	* \gain.kr(1, 0.05)
+})};
 ~song.bassTrack = ~song.bassTrackFunc.();
 ~song.bassLines = [
 	[1!8, -7!3, -4!4, -3, -6!8,  3!3, -7!4, -6].df(\c, 3, \minor).flat.q,
@@ -120,7 +124,7 @@
 	"r 共 舞 到 晨 光 熄 灭",         
 	// transition
 	"r 时  间 停 止 了",
-	"r 心 跳 声 越 来 越 快 了 啊 "
+	"r 心 跳 声 越 来 越 快 了 啊 ",
 ];
 
 // ~song.singer = \jun;
@@ -160,10 +164,11 @@
 	)
 };
 
-~song.transition = [
+~song.transitionLicks = [
 	[6.5, 6, 5.5].df(\c).q,
 	[12, 11, 7].df(\c).q
-].collect{|i x|
+];
+~song.transition = ~song.transitionLicks.collect{|i x|
 	{
 		[
 			freq: i,
@@ -175,6 +180,22 @@
 	}
 };
 
+~song.transitionBgs = ();
+[\lead, \dbl].do{ |take takeNum|
+	~song.transitionBgs.put( 
+		take, 
+			SynthV.build("automobile", "transition_Bg" ++ x, \feng, take, (
+				lyrics:  ~song.words[9].drop(7),
+				midinote: 
+				~song.transitionLicks [1].list .collect({ |i| i.cpsmidi.asInteger}) 
+				,
+				dur: "h h h ".beats * ~song.quarter ,
+				language: \mandarin,
+				phoneset: \xsampa,
+				pitchTake: 2 + takeNum
+			).postln)
+	)
+};
 ~song.figure = [
 	[1, 6, 5, 3, 1, 6, 5, 1, 2, 4, 7, 6, 1, 4, 5, 6].df(\c,5, \mixolydian).dup(3) ++ "3 11 7 5 3 11 7  3 5 6 7 2 4.5 7 6 4.5".df('a-', 4) => _.flat => _.q(2),
 	"3 5 11 5 3 5 11 5 2 4 7 4 1 4 6 1".df(\c, 5, \mixolydian).dup(3) ++ "5 11 13 11 5 11 13 11 5 7 12 7 4 6 12 6".df('a-', 4, \lydian) => _.flat => _.q(2)
@@ -191,7 +212,7 @@
 		].ppm
 	}
 };
-~song.p= { |song sections start offset|
+~song.p = { |song sections start offset|
 	~song.markers = ~song.markers ? ();
 	start = start ? 0;
 	start.isKindOf(Symbol).if{start = ~song.markers[start] + (offset ? 0)};
@@ -243,31 +264,67 @@
 		4 * 16 * ~song.quarter
 	};
 	//bridge
-		~song.bridge = {
-		[2].do{|i x| ~song.bassLines[i].sched(x * 16 * ~song.quarter + 0.2 - ~song.t) };
-		~song.transition.do{|i x| i.sched(16 * (x ) + 4 * ~song.quarter + 0.2 - ~song.t)};
-		// [4, 5].do{|i x| {~song.licks[i].(\sawSynthSustain)}.sched( x+8  * 8 * ~song.quarter - ~song.t ) => _.postln };
-		~song.transitionVox.lead.size.do{|x|
-			[\lead, \dbl]
-			// [\lead]
-			.do{ |take|
-				{ 
-					s.bind{
-						{ 
-							~song.transitionVox[take][x].playbuf
-							/ 4  * -3.dbamp 
-							=> {|i| CombN.ar(i, ~song.quarter/2, ~song.quarter, 5) / 4 + i}
-							=> Pan2.ar(_,0) 
-						}.play
-					} 
-				}
-				.sched(  x  * 8 * ~song.quarter + 0.2 );
+~song.bridge = {
+	//bass
+	[2].do{|i x| ~song.bassLines[i].sched(x * 16 * ~song.quarter + 0.2 - ~song.t) };
+	//bass cutoff for hit
+	{ ~song.bassTrack.synth.set(\gain, 0) }.sched(7 * 4 * ~song.quarter + 0.5 + ~song.t);
+	// strings and harp
+	~song.transition.do{|i x| i.sched(16 * (x ) + 4 * ~song.quarter + 0.2 - ~song.t)};
+	// [4, 5].do{|i x| {~song.licks[i].(\sawSynthSustain)}.sched( x+8  * 8 * ~song.quarter - ~song.t ) => _.postln };
+		[\lead, \dbl]
+		// [\lead]
+		.do{ |take|
+			{ 
+				s.bind{
+					{ 
+						~song.transitionBgs[take].playbuf
+						/ 4  * -3.dbamp 
+						=> {|i| CombN.ar(i, ~song.quarter/2, ~song.quarter, 5) / 4 + i}
+						=> Pan2.ar(_,0) 
+					}.play
+				} 
 			}
-		};
-		32 * ~song.quarter;
+			.sched(  16 + 4 * ~song.quarter + 0.2 );
+	};
+	~song.transitionVox.lead.size.do{|x|
+		[\lead, \dbl]
+		// [\lead]
+		.do{ |take|
+			{ 
+				s.bind{
+					{ 
+						~song.transitionVox[take][x].playbuf
+						/ 4  * -3.dbamp 
+						=> {|i| CombN.ar(i, ~song.quarter/2, ~song.quarter, 5) / 4 + i}
+						=> Pan2.ar(_,0) 
+					}.play
+				} 
+			}
+			.sched(  x  * 8 * ~song.quarter + 0.2 );
+		}
+	};
+	//hit
+		SynthDef(\ring, { |gate=1 out=0 freq = 400|
+			var in=PinkNoise.ar(1);
+			var sig=Pluck.ar(in: in,  gate: gate,  maxdelaytime: 0.02,  delaytime: 1/freq,  decaytime: \decaytime.kr(10),  coef: \coef.kr(0.5),  mul: 0.7,  add: 0);
+			sig = sig * \amp.kr(0.1) * 10;
+			sig = LeakDC.ar(sig);
+			sig => DiodeRingMod.ar(car: sig , mod: SinOsc.ar(freq * SinOsc.ar(4).range(0.98,1.02)) )
+			=> Out.ar(out,_);
+			DetectSilence.ar(sig,doneAction:2);
+		}).add;
+	{ |def|
+		[
+			freq: [5, 7, 13].dup ++ [5, 7, 12].dup ++ [5, 7, 13].bubble => _.df(\c) => _.q,
+			dur: "q e ee e q".beats.q * ~song.quarter,
+			instrument:\ring
+		].pp
+	}.sched( 4 * 7 * ~song.quarter + 0.2 + ~song.t );
+
+	32 * ~song.quarter;
 	};
 
-	~song.markers[\bridge] = 64 * ~song.quarter;
 
 )
 ~song.p(\bridge)

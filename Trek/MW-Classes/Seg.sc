@@ -9,13 +9,11 @@ Seg { //segment - builds up Song structure
 		instance.name = key;
 		all.put(key, instance);
 		instance.segs = args;
+		args.do{|i| (all[i].isNil and: (Song.section(i) != (-1))).if {Seg(i, i)}};
 		(args.size <= 1).if { 
-			instance.dur = 1;
-			instance.segs = [key];
+			instance.dur = Song.secDur[key];
 		} {
 			instance.dur = instance.segs.debug("SEGS").collect{|i| all[i].dur }.sum;
-			// instance.dur=0;
-			instance.segs = args;
 		};
 		^instance
 	}
@@ -27,8 +25,9 @@ Seg { //segment - builds up Song structure
 					all[i].play.wait
 				})
 			} {
-				(freq: 666.rrand(900)).play;
-				dur.wait
+				Song.cursor_(Song.section(segs[0]));
+				Song.at(segs[0]).do(_.p);
+				// Song.secDur[name]
 			}
 		};
 		^dur

@@ -32,22 +32,25 @@
 );
 ( //traps
 ~song.traps = [
-	{
+	{|dur|
 		[
 			[
 				dur: "q e e q q".beats.q(4) * ~song.quarter,
 				instrument: \cp_808,
 				rest: [\r, 1, 1, \r, 1].q(4),
-				amp: 0.15
+				amp: 0.25
 			].p
 			,
 			[
 				dur: "q q q q".beats.q(4) * ~song.quarter,
 				instrument: \bd_808,
-				amp: 0.15
+				decay: 15,
+				amp: 0.25,
+				pan: 0
 			].p
 		]
 		=> Ppar(_) 
+		=> _.findur( dur)
 		=> _.play
 	}
 ];
@@ -82,32 +85,43 @@
 	}
 };
 
-~song.chords = 
-[
+~song.chordNotes = [
 	[
-		[-4, -7, 2],
-		[ -4, -6, 1]
-	].df(\c, \mixolydian),
+		[-4, -7, 12],
+		[ -4, 6, 11]
+	].df(\c, 4, \mixolydian),
 	[
-		[-5, -7, 3],
-		[-4, -7, 2]
+		[-5, 7, 3],
+		[-4, 7, 2]
 	].df(\c, \minor),
-].collect {|chords|
+];
+~song.chords = ~song.chordNotes.collect {|chords|
 	{ 
 		// fork{
-		4*~song.quarter.wait;
+		// 3.9*~song.quarter => _.wait;
+		// ~song.quarter.wait;
 		{
-			chords
-			.flop.collect {|i| i.dq.demand("qe e".beats * ~song.quarter)}
+			chords  
+			.flop.collect {|i| i.dq.demand("qe e".beats + [0.0, 0]   * ~song.quarter )}
+			// => DelayN.ar(_, 0.1, [0, 0.02, 0.04])
 			=> Pulse.ar(_, 0.2, 0.1)
-			=> BPF.ar(_, 900)
 
-			* EnvGen.cutoff(wait: 3*~song.quarter, release:2)
-			// => {|i| Convolution.ar(i, Dust.ar(4.df(\c)) => Decay.ar(_,0.02)=> FreeVerb.ar(_,0.5,0.1)) => HPF.ar(_, 1000) + i}
-			=> Splay.ar(_, spread:0.3, center:-0.3)
-			=> FreeVerb.ar(_,0.5,1)
+			// * EnvGen.cutoff(~song.quarter * 3, 0.2)
+			=> Mix.ar(_)
+			=> { |i| CrossoverDistortion.ar(i)/ 10   } 
+			* Env([1, 1, 0], [4*~song.quarter, [0.04, 0.05, 0.0613]] ).kr()
+			=> { |i| BPF.ar(i, 2900, rq: 0.3) + (i/2)}
+			=> HPF.ar(_, 400)
+			=> LPF.ar(_, 5000)
+			// => RHPF.ar(_, 400, 0.4)
+			// => Pan2.ar(_,1)
+			// /10
+			=> FreeVerb.ar(_,0.2,1)
+			// * -5.dbamp
+			// * 10.dbamp
+			=> Out.ar(1, _)
 		}.play
-		// }
+				// }
 	}
 };
 
@@ -223,7 +237,8 @@
 	fork{
 		sections.do { |sec x|
 			sec.postln;
-			song[sec].().wait
+			song[sec].() - start => _.wait;
+			song.t=0
 			// {song[sec].p()}.sched(~song.durTill[x])
 		}
 	}
@@ -248,10 +263,10 @@
 				.sched( x * 8 * ~song.quarter + 0.2 - ~song.t);
 			}
 		};
-		[0,0,0,1].dup.flat.do{|i x|  {fork{~song.chords[i].()}}.sched(x * 8 + 4 * ~song.quarter -0.1 - ~song.t)};
+		[0,0,0,1].dup.flat.do{|i x|  {fork{~song.chords[i].()}}.sched(x * 8 + 4 * ~song.quarter + 0.4 - ~song.t)};
 		// [0,2,0,1].do{|i x| {~song.lick[i].(\sawSynthSustain)}.sched(x * 8 * ~song.quarter) };
 		[1, 0].dup.flat.do{|i x| ~song.bassLines[i].sched(x * 16 * ~song.quarter + 0.2 - ~song.t) };
-		6.do{|i| ~song.traps[0].sched(i + 4 * 8 * ~song.quarter + 0.2 - ~song.t )};
+		2.do{|i| ~song.traps[0].sched(i + 2 * 16 * ~song.quarter + 0.2 - ~song.t )};
 		// fill
 		{
 			[
@@ -270,7 +285,9 @@
 	//bass
 	[2].do{|i x| ~song.bassLines[i].sched(x * 16 * ~song.quarter + 0.2 - ~song.t) };
 	//bass cutoff for hit
-	{ ~song.bassTrack.synth.set(\gain, 0) }.sched(7 * 4 * ~song.quarter + 0.5 + ~song.t);
+	{ ~song.bassTrack.synth.set(\gain, 0) }.sched(7 * 4 * ~song.quarter + 0.5 - ~song.t);
+	~song.traps[0].sched( 0.2 - ~song.t );
+	{ ~song.traps[0].(dur: ~song.quarter * 12) }.sched( ~song.quarter * 16 + 0.2 - ~song.t );
 	// strings and harp
 	~song.transition.do{|i x| i.sched(16 * (x ) + 4 * ~song.quarter + 0.2 - ~song.t)};
 	// [4, 5].do{|i x| {~song.licks[i].(\sawSynthSustain)}.sched( x+8  * 8 * ~song.quarter - ~song.t ) => _.postln };
@@ -287,7 +304,7 @@
 					}.play
 				} 
 			}
-			.sched(  16 + 4 * ~song.quarter + 0.2 );
+			.sched(  16 + 4 * ~song.quarter + 0.2 - ~song.t );
 	};
 	~song.transitionVox.lead.size.do{|x|
 		[\lead, \dbl]
@@ -303,7 +320,7 @@
 					}.play
 				} 
 			}
-			.sched(  x  * 8 * ~song.quarter + 0.2 );
+			.sched(  x  * 8 * ~song.quarter + 0.2 - ~song.t );
 		}
 	};
 	//hit
@@ -322,7 +339,7 @@
 			dur: "q e ee e q".beats.q * ~song.quarter,
 			instrument:\ring
 		].pp
-	}.sched( 4 * 7 * ~song.quarter + 0.2 + ~song.t );
+	}.sched( 4 * 7 * ~song.quarter + 0.2 - ~song.t );
 
 	32 * ~song.quarter;
 	};

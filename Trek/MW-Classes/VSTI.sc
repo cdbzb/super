@@ -229,3 +229,8 @@ PF : VSTI {
 		MIDIFunc.noteOn({ |vel num| var a=controller.midi;a.noteOn(0,num,vel)},srcID:-682393637).permanent_(true);
 	}
 }
+
+SV : VSTI {
+// classvar plugin = "Synthesizer V Studio ARA Plugin.vst3" 
+classvar plugin = "Synthesizer V Studio Pro.vst3";
+}

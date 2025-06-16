@@ -7,6 +7,7 @@ MIDIItem(\foo).take(1)//.play(\default)
 .filter({|e| e.select{|i| i.midicmd == \noteOn}[[0, 9, 13, 19, 22, 31, 39, 44, 48, 55, 62,  70, 72, 80, 85, 94]]})
 // .gui
 .notes.collect{|i| i.timestamp}.differentiate;
+//OK the issue here is that the rest at the top of the MIDIItem got included as pianoQuarters[0] becuase I used "timestamp.differentiate" - should *always drop[0] when doing this!!!
 ["ch1", "r", Song.pianoQuarters[..8] ].addLine;
 Song.setTempoMap("ch1", 1 ! 17);
 P(\weeew,lag: Song.pianoQuarters[(..2)].sum + 0.2, music: { |p b e|

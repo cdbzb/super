@@ -1,7 +1,3 @@
-"WindVerse.scd".load;
-"WindShortBridge.scd".load;
-Song.sections
-Song.playRanges(0, 4, 1, 2)
 ( // song
 /*
 时代的风吹过长安街
@@ -188,7 +184,11 @@ P(\chords, music: { |p b e|
 			[6, 11, 4],
 			[5, 11, 4],
 			[5, 11, 3],
-		].df('b-', \mixolydian).dq.demand( [1, 1,  0.5, 0.5] * ~quarter * 4)	
+			[7, 11, 4],
+			[7, 12, 5],
+			[6, 11, 3],
+			[6, 11, 3],
+		].df('b-', \mixolydian).dq(1).demand( [1, 1,  0.5, 0.5].dup.flat * ~quarter * 4)	
 		=> Saw.ar(_, 0.1, 0.1)
 		/3
 		=> RLPF.ar(_, SinOsc.ar([0.2, 0.22, 0.31]).range(800, 7000), 0.5)
@@ -230,8 +230,8 @@ P(\bassline, music: { |p b e|
 				 [7, 7,7, 11, 4, 4, 4, 3, 1, 1, 1, 3, 7, 7,7, 11, 5,5,5, 4, 6, 6, 6, 5] +.x [0, 10] => _.df('b-',[1, 2], \mixolydian)
 				 ,
 				 
-				 noteDurs: {[~quarter].dq(48) / 2},
-				 triggers: { ~quarter.bubble.dq(48) / 2 => TDuty.ar(_, 0) 
+				 noteDurs: {[~quarter].dq(47) / 2},
+				 triggers: { ~quarter.bubble.dq(47) / 2 => TDuty.ar(_, 0) 
 				 // => LPF.ar(_, 400)
 			 } ,
 				 amp: 0.1,

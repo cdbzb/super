@@ -185,11 +185,13 @@
 	~song.transitionBgs.put( 
 		take, 
 			SynthV.build("automobile", "transition_Bg" ++ x, \feng, take, (
-				lyrics:  ~song.words[9].drop(7),
+				lyrics:  
+				Strang.newFrom(~song.words[9]).drop(14).asString
+				,
 				midinote: 
 				~song.transitionLicks [1].list .collect({ |i| i.cpsmidi.asInteger}) 
 				,
-				dur: "h h h ".beats * ~song.quarter ,
+				dur: "h h hq ".beats * ~song.quarter ,
 				language: \mandarin,
 				phoneset: \xsampa,
 				pitchTake: 2 + takeNum
@@ -279,7 +281,7 @@
 				s.bind{
 					{ 
 						~song.transitionBgs[take].playbuf
-						/ 4  * -3.dbamp 
+						/ 4  * -8.dbamp 
 						=> {|i| CombN.ar(i, ~song.quarter/2, ~song.quarter, 5) / 4 + i}
 						=> Pan2.ar(_,0) 
 					}.play

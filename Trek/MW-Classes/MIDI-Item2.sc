@@ -195,6 +195,7 @@ gui { |take|
 		this.collect({|e x| 
 			(
 				env: tempoMap.env, 
+				quantized: tempoMap.env[e.timestamp - this.start],
 				e: e, 
 				x: x,
 				averageOffset: tempoMap.averageOffset,
@@ -297,6 +298,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		var off = events.select{|e| e.midicmd == \noteOff};
 		var offMidinotes = off.collect{|e| e.midinote};
 		var findMatch = {|midinote| offMidinotes.indexOf(midinote)}; //returns index
+		var notes;
 		on.do{|e| try{
 			var index = findMatch.(e.midinote);
 			var match = off.removeAt(index);
@@ -314,6 +316,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		var on = events.select{|e| e.midicmd == \noteOn};
 		var off = events.select{|e| e.midicmd == \noteOff};
 		var findMatch = {|midinote| off.collect{|e| e.midinote}.indexOf(midinote)}; //returns index
+		var notes;
 		on.do{|e| try{var match = off.removeAt( findMatch.(e.midinote) ); e.sustain = match.timestamp - e.timestamp;} };
 		notes = initialRest.copy ? [] ++ on;
 		notes.setDurs;

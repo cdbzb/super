@@ -6,9 +6,9 @@ VSTI {
 		vstis =Order.new
 	}
 
-	*new { |plugin action| ^super.new.init( plugin, action ) }
+	*new { |plugin action vstFolder | ^super.new.init( plugin, action, vstFolder ) }
 
-	init { | plugin action | 
+	init { | plugin action vstFolder = "VST" | 
 		condition = CondVar.new();
 		{
 			id = UniqueID.next;
@@ -17,7 +17,7 @@ VSTI {
 			vstis.put(id, this);
 			Server.default.sync;
 			controller.open(
-				"/Library/Audio/Plug-Ins/VST/" ++ plugin,
+				"/Library/Audio/Plug-Ins" +/+ vstFolder +/+ plugin,
 				multiThreading: true,
 				action:{
 					condition.signalOne;
@@ -188,11 +188,9 @@ Synful : VSTI {
 			this.line(expr[channel],expression,lag,channel:channel)
 		}	
 	}
-
 	setOut {|out|
 		syn.set(\out,out)
 	}
-
 	env {|envelope, interval=0.025, channel=0| 
 		var env=envelope.asStream;
 		var duration = envelope.times.sum;
@@ -203,7 +201,6 @@ Synful : VSTI {
 			}
 		}
 	}
-
 	line {| from, to, time, interval=0.025, channel=0| 
 		var env=Env([from,to],time).asStream;
 		var duration = time;
@@ -233,4 +230,6 @@ PF : VSTI {
 SV : VSTI {
 // classvar plugin = "Synthesizer V Studio ARA Plugin.vst3" 
 classvar plugin = "Synthesizer V Studio Pro.vst3";
+*new{ |path| ^super.new(plugin,action:{|syn controller| controller.readProgram(path)}, vstFolder:"VST3").init}
+
 }

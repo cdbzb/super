@@ -12,6 +12,7 @@ SynthV {
 	var <> offset = 0;
 	var <>double, <>take, <>buildFunc;
 	var <>playbuf;
+	var <>vst;
 	*new {|key name take double| 
 			^super.new.init(key, name, take, double) 
 		}

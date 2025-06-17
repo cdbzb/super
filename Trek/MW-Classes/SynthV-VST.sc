@@ -41,11 +41,12 @@
 		// this.refreshBuffer(song, name, voice, (take ? \default));
 	}
 	renderVST {
-		var path = "/tmp/" ++ [song,section,take].hash ++ ".svp";
+		var path = "/tmp/" ++ Date.new.stamp ++ ".svp";
 		this.buildFunc.value;
 		this.writeProjectVST(path) ; 
 		vst = SV( path );
 	}
+
 	writeProjectVST { |path|
 		this.setRenderConfig;
 		// File.exists(location).not.if{File.mkdir(location)};

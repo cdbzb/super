@@ -63,5 +63,6 @@ Seg { //segment - builds up Song structure
 		};
 		parts = res.flat
 		^this
+		
 	}
 }

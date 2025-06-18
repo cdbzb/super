@@ -186,9 +186,9 @@ P(\chords, music: { |p b e|
 			[5, 11, 3],
 			[7, 11, 4],
 			[7, 12, 5],
-			[6, 11, 3],
-			[6, 11, 3],
-		].df('b-', \mixolydian).dq(1).demand( [1, 1,  0.5, 0.5].dup.flat * ~quarter * 4)	
+			[6, 13, 11],
+			[6, 11, 13],
+		].df('b-', \mixolydian).dq(1)[[0,1, 2]].demand( [1, 1,  0.5, 0.5].dup.flat * ~quarter * 4)	
 		=> Saw.ar(_, 0.1, 0.1)
 		/3
 		=> RLPF.ar(_, SinOsc.ar([0.2, 0.22, 0.31]).range(800, 7000), 0.5)

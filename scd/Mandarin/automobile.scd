@@ -93,7 +93,7 @@
 	[
 		[-5, 7, 3],
 		[-4, 7, 2]
-	].df(\c, \minor),
+	].df(\c,4, \minor),
 ];
 ~song.chords = ~song.chordNotes.collect {|chords|
 	{ 
@@ -101,18 +101,27 @@
 		// 3.9*~song.quarter => _.wait;
 		// ~song.quarter.wait;
 		{
-			chords  
-			.flop.collect {|i| i.dq.demand("qe e".beats + [0.0, 0]   * ~song.quarter )}
+			chords[[0,0,1]] 
+			//.put(1, [10, 10, 10])  
+			.flop.collect {|i| i.dq.demand("q e e".beats + [0.0, 0, 0]   * ~song.quarter )}
 			// => DelayN.ar(_, 0.1, [0, 0.02, 0.04])
 			=> Pulse.ar(_, 0.2, 0.1)
+			* 
+			(
+				Impulse.kr(0) / 4 +
+				TDuty.ar("q e ".beats * ~song.quarter => _.dq, 0, restFirst:false)
+				=> Decay.ar(_, [0.08, 0.02, 0.5 * ~song.quarter].dq.demand("q e e".beats * ~song.quarter).poll)
+
+				// /5
+			)
 
 			// * EnvGen.cutoff(~song.quarter * 3, 0.2)
 			=> Mix.ar(_)
 			=> { |i| CrossoverDistortion.ar(i)/ 10   } 
 			* Env([1, 1, 0], [4*~song.quarter, [0.04, 0.05, 0.0613]] ).kr()
 			=> { |i| BPF.ar(i, 2900, rq: 0.3) + (i/2)}
-			=> HPF.ar(_, 400)
-			=> LPF.ar(_, 5000)
+			=> HPF.ar(_, 800)
+			=> RLPF.ar(_, 5000)
 			// => RHPF.ar(_, 400, 0.4)
 			// => Pan2.ar(_,1)
 			// /10

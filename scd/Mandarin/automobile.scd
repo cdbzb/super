@@ -343,12 +343,19 @@
 			=> Out.ar(out,_);
 			DetectSilence.ar(sig,doneAction:2);
 		}).add;
-	{ |def|
+	{ 
+		[
+			freq: [5, 7, 13].dup ++ [5, 7, 12].dup ++ [5, 7, 13].bubble => _.df(\c, 3) => _.q,
+			dur: "q e ee e q".beats.q * ~song.quarter,
+			instrument:\ring,
+			instrument: \defaultPorto
+		].pp;
 		[
 			freq: [5, 7, 13].dup ++ [5, 7, 12].dup ++ [5, 7, 13].bubble => _.df(\c) => _.q,
 			dur: "q e ee e q".beats.q * ~song.quarter,
 			instrument:\ring
-		].pp
+		].pp;
+		(instrument: [\harp,\wash],lag: ~song.quarter * 4, freq: [-1, 1].df(\g, [3,4])).play
 	}.sched( 4 * 7 * ~song.quarter + 0.2 - ~song.t );
 
 	32 * ~song.quarter;
@@ -360,6 +367,7 @@
 s.record("/tmp/song.wav");~song.p
 ~song.figure.()
 ~song.p
+
 (
 var q = ~song.quarter;
 3.do{|i| ~song.traps[0].sched(i * 8 * ~song.quarter + 0.2 )};

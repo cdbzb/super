@@ -87,8 +87,8 @@
 
 ~song.chordNotes = [
 	[
-		[-4, -7, 12],
-		[ -4, 6, 11]
+		[-4, 7, 2],
+		[ -4, 6, 1]
 	].df(\c, 4, \mixolydian),
 	[
 		[-5, 7, 3],
@@ -109,8 +109,9 @@
 			* 
 			(
 				Impulse.kr(0) / 4 +
-				TDuty.ar("q e ".beats * ~song.quarter => _.dq, 0, restFirst:false)
-				=> Decay.ar(_, [0.08, 0.02, 0.5 * ~song.quarter].dq.demand("q e e".beats * ~song.quarter).poll)
+				TDuty.ar("q e ".beats * ~song.quarter => _.dq, 0, restFirst:false, level: [1, 0.000001, 1].dq)
+				=> Decay.ar(_, [0.08, 0.02 + 0.02, 0.45 * ~song.quarter].dq.demand("q e e".beats * ~song.quarter).poll)
+				/2
 
 				// /5
 			)

@@ -19,7 +19,23 @@
 			// take.notNil.if{voice = voice ++ "_" ++ take};
 			// SynthV.current_(synthV);
 			// synthV.refreshBuffer(song, section, voice, (take ? \default));
+			synthV.renderVST;
 			^synthV
+	}
+	buildVST { |song section voice take params|
+		var path = "/tmp/" ++ Date.new.stamp;
+		this.setDatabase(voice);
+		this.buildFunc = { 
+			params.lyrics=params.lyrics.replace($, , "").split(Char.space).reject{|i| i.size==0};
+			params.pitch=params.midinote.asInteger;
+			this.makeNotes(params.dur.size);
+
+			this.set(params); 
+		};
+		this.buildFunc.value;
+		this.writeProjectVST(path ++ ".svp") ; 
+		this.writeFxp(path ++ ".fxp");
+		fork{0.1.wait;vst.controller.readProgram(path ++ ".fxp")};
 	}
 	initVST { |son sec v t |
 		var voice = v;
@@ -41,12 +57,45 @@
 		// this.refreshBuffer(song, name, voice, (take ? \default));
 	}
 	renderVST {
-		var path = "/tmp/" ++ Date.new.stamp ++ ".svp";
+		var path = "/tmp/" ++ Date.new.stamp;
 		this.buildFunc.value;
-		this.writeProjectVST(path) ; 
-		vst = SV( path );
+		this.writeProjectVST(path ++ ".svp") ; 
+		this.writeFxp(path ++ ".fxp");
+		fork{0.1.wait;vst = SV( path ++ ".fxp" )};
 	}
 
+	writeFxp { |path|
+		var oldPath = "/private/tmp/250617_142307.svp";
+		var newPath = "/private/tmp/" ++ Date.new.stamp ++ ".svp";
+		var fxpData = {
+			var file, data;
+			// this example fxp file has an embedded path
+			file = File("~/tank/super/Trek/SynthV/123456_123456.fxp".standardizePath, "rb"); // "rb" for read binary
+			data = Int8Array.newClear(file.length);
+			file.read(data);
+			file.close;
+			data;
+		}.();
+		var startIndex = (0..(fxpData.size - oldPath.size)).detect { |i|
+			oldPath.ascii.every
+			{ |byte, j|
+				fxpData[i + j] == byte;
+			};
+		};
+		if(startIndex.notNil) {
+			newPath.ascii.do { |byte, i|
+				fxpData[startIndex + i] = byte;
+			};
+			// here we write it back
+
+			{
+				var file;
+				file = File( path , "wb"); // "wb" for write binary
+				file.write(fxpData);
+				file.close;
+			}.value;
+		}
+	}
 	writeProjectVST { |path|
 		this.setRenderConfig;
 		// File.exists(location).not.if{File.mkdir(location)};
@@ -60,4 +109,5 @@
 			// fork{0.05.wait;this.render}
 		// }
 	}
+
 }

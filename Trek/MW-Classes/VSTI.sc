@@ -230,5 +230,18 @@ PF : VSTI {
 SV : VSTI {
 // classvar plugin = "Synthesizer V Studio ARA Plugin.vst3" 
 classvar plugin = "Synthesizer V Studio Pro.vst3";
-*new{ |path| ^super.new(plugin,action:{|syn controller| path.notNil.if { controller.readProgram(path) }}, vstFolder:"VST3").init}
+var <>bus;
+*new { |path|
+	var outBus = Bus.audio(Server.default, 1);
+	var ret = super.new(
+			plugin, 
+			action:{|syn controller| path.notNil.if { 
+				controller.readProgram(path);
+				syn.set(\out, outBus)
+			} }, 
+			vstFolder:"VST3"
+		).init;
+		ret.bus = outBus;
+		^ret
+	}
 }

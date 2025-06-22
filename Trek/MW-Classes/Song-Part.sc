@@ -213,7 +213,7 @@ Song {
 		^songs.at(current)
 	}
 	*play { |...args|
-		( args.size == 0 ).if{ 
+		( args.size == 0 ).if{
 			songList.isNil.if{
 				songs.at(current).play 
 			}{
@@ -1015,7 +1015,8 @@ Part {
 			synth.free; buffer.free
 		};
 	}
-	play {
+	play { |segParams |
+		segParams = segParams ? ();
 		try{
 			Song.freeze.if {
 				frozen.if{
@@ -1043,13 +1044,13 @@ Part {
 						// )
 					}
 				};
-				music.value(
+				segParams.use {music.value(
 					parent,
 					//durs from event start
 					parent.durs[start].list.drop(syl ? 0), //this is why you gotta use .drop(1) aaarg
 					this,
 					// parent.mix[start]
-				)
+				)}
 			}},
 			// Event,{ music.play},
 			Message,{Server.default.bind{music.value}},
@@ -1067,12 +1068,14 @@ Part {
 	}
 	test{^start}
 	awake { this.play }
-	sched { |when=1|
+	sched { |when=1 segParams |
+		segParams = segParams ? ();
+		segParams.debug("PARAMS");
 		////////////////trying to make setup be part of Part
 		//////////delete this line if not work
 		//(music.class=Routine).if(music.play);
 
-		TempoClock.sched(when,this)
+		TempoClock.sched(when,{ this.play(segParams) } )
 		//		parent.clock.sched(when,this)
 		//AppClock.sched(when,this)
 		//SystemClock.sched(when,this)
@@ -1093,7 +1096,7 @@ Part {
 			{this.name.postln}.schedAbs(when);
 		}
 	}
-	p {
+	p { 
 		parent.cursor = parent.cursor ? 0;
 		(start>=parent.cursor).if{
 			var when=this.calcTime;

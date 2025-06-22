@@ -1,68 +1,101 @@
-Seg { //segment - builds up Song structure
-	classvar <>all;
-	var <>name, <>segs, <>dur, <>filters, <>parts;
 
+Seg {
 	*initClass {
-		all = Dictionary.new
-	}
-
-	*new { |key ...args, kwargs|
-		var instance = super.new;
-		instance.name = key;
-		all.put(key, instance);
-		instance.segs = args;
-		instance.filters = kwargs;
-		// make Segs for any args that work
-		args.do{|i| (all[i].isNil and: (Song.section(i) != (-1))).if {Seg(i, i)}};
-		(args.size <= 1).if { 
-			// if there is one arg we are referencing a single Song section so set the dur
-			instance.dur = Song.secDur[args[0]];
-		} {
-			// otherwise recurse
-			instance.dur = instance.segs.collect{|i| all[i].dur }.sum;
-		};
-		^instance
-	}
-
-	play {
-		fork{
-			(segs.size > 1).if {
-				// if many segs recurse
-				segs.do{ |i| 
-					all[i].play.wait
-				}
+		Class.initClassTree(Event);
+		Event.addEventType(\seg, {
+			var sections, firstSection;
+			sections = ~section.isKindOf(Event).if {
+				~section.bubble
 			} {
-				//finally play the section
-				parts = Song.at(segs[0]);
-				Song.cursor_(Song.section(segs[0]));
-				//apply filters
-				filters.pairsDo {|j k|
-					this.performArgs(j, [k])
+				~section.asArray
+			}; // Convert to array to handle both single values and arrays
+
+			// Handle the first section for duration (whether it's an Event or section name)
+			firstSection = sections[0];
+			(firstSection.isKindOf(Event)).if {
+				// If it's an Event, use its duration or calculate from its data
+				~dur = firstSection[\dur] ?? { 
+					// Fallback: if the Event doesn't have dur, try to get it from Song
+					if (firstSection[\section].notNil) {
+						Song.secDur[Song.section(firstSection[\section])]
+					} {
+						1 // Default duration
+					}
 				};
-				parts.do{|i|
-					i.p
+			} {
+				// Original behavior for section names
+				~dur = Song.secDur[Song.section(firstSection)];
+			};
+
+			sections.do { |sectionItem|
+				var cursor, parts;
+				var currentEnv = currentEnvironment.copy; // Create a copy of the environment
+				~solo = ~solo ? []; ~mute = ~mute ? []; ~extra = ~extra ? [];
+
+				if (sectionItem.isKindOf(Event)) {
+					if (sectionItem[\type] == \seg) {
+						sectionItem = sectionItem.copy;
+						// If it's another seg Event, recursively process it
+						// Merge the seg Event's data into current environment
+						sectionItem.keysValuesDo { |key, value|
+
+							case
+							{ [\mute, \solo, \extra].includes(key) } {
+								sectionItem.put(key, currentEnv[key].asArray ++ value);
+							} { key != \type } { // Don't override the type
+								currentEnv.put(key, value); /////// HMMMMMMM
+							};
+						};
+						// Play the seg Event with merged environment
+						sectionItem.play;
+					} {
+						var sectionName = sectionItem[\section];
+						if (sectionName.notNil) {
+							cursor = Song.section(sectionName);
+							currentEnv.put(\section, sectionName);
+							parts = Song.at(sectionName);
+
+							// Apply muting and play parts
+							parts.reject {|i|
+								~mute.asArray.any{|j| i.asString.contains(j.asString)}
+							}
+							.do(_.prEventPlay(cursor, currentEnv));
+						} {
+							// If Event has no section, just play it directly
+							sectionItem.play;
+						}
+					}
+				} {
+					// if not an Event
+					var sectionName = sectionItem;
+					cursor = Song.section(sectionName);
+					currentEnv.put(\section, sectionName);
+					parts = Song.at(sectionName);
+
+					parts.reject {|i|
+						~mute.asArray.any{|j| i.asString.contains(j.asString)}
+					}
+					.do(_.prEventPlay(cursor, currentEnv));
 				}
-				// Song.secDur[name]
-			}
-		}
-		^dur
+			};
+			Server.default.bind{ fork{ ~extra.valueEnvir } }
+		});
+
 	}
-	mute { |what|
-		var res = parts;
-		
-		what.asArray.do {|i|
-			res = res.reject {|j| j.name.asString.contains(i.asString)}
-		};
-		parts = res;
-		^this
-	}
-	solo {|what|
-		var res = parts;
-		what.asArray.do {|i|
-			res = res ++ res.select{|j| j.name.asString.contains(i.asString)}
-		};
-		parts = res.flat
-		^this
-		
+}
+
++ Part {
+	prEventPlay {|cursor=0 segParams|
+		//calculate time
+		var when;
+		lag.isNil.if{lag=0};
+		when = parent.secLoc[start]-parent.secLoc[cursor];
+		when = when + lag + parent.preroll; // per song setting to allow for negative lags
+		syl !? {when = when + parent.durTill(start,syl)};
+
+		segParams = segParams ? ();
+		// (start>=parent.cursor).if{
+			this.sched(when+Server.default.latency, segParams);
+		// }
 	}
 }

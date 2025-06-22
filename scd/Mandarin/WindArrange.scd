@@ -115,7 +115,6 @@ P.synthV(\jun, lag: 0 * Song.quarter, take: \lower,
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
-~quarter = Song.quarter;
 P(\bgVox, music: { |p b e|
 	MIDIItem("250122_113217").take(2)
 	//.play(\vocaline)
@@ -125,21 +124,21 @@ P(\arrangement, music: { |p b e|
 	[
 		[
 			instrument: \JWSnare,
-			dur: "q e eq q".beats.q(inf) * ~quarter,
+			dur: "q e eq q".beats.q(inf) * Song.quarter,
 			rest: [\r, 1, 1, 1].q(inf),
 			amp: 0.25
 			// dur: 
 		].p,
 		[
 			instrument: \bd_808,
-			dur: "e eq qq".beats * ~quarter => _.q(inf),
+			dur: "e eq qq".beats * Song.quarter => _.q(inf),
 			amp: 0.6,
 			lag: -0.005
 		].p,
-		// ~quarter = 0.46;
+		// Song.quarter = 0.46;
 		[
 			freq: [1, 4, 5, 6 ,4, 5, 1, 4, 5, 6 , 4, 5].df(\c, [3]).q(8),
-			dur: "eee e ex x e e".beats * ~quarter * 2 => _.q(16),
+			dur: "eee e ex x e e".beats * Song.quarter * 2 => _.q(16),
 			amp: 0.3
 		].p
 	]
@@ -151,10 +150,10 @@ P(\altGuit, music: { |p b e|
 	PluckMaker(
 				notes: 
 		 [1, 1, 1, 1, 1, 1, 1, 1, 5, 5, 5, 6, 4, 4, 5, 5, ].df(\c, [3, 4]).dup(8).flatten,
-		// ~quarters.dup(16),
-		noteDurs: {[~quarter].dq(inf) / 2},
+		// Song.quarters.dup(16),
+		noteDurs: {[Song.quarter].dq(inf) / 2},
 		triggers: 
-		{ ~quarter.bubble.dq(inf) / 2 => TDuty.ar(_, 0) 
+		{ Song.quarter.bubble.dq(inf) / 2 => TDuty.ar(_, 0) 
 		// => HPF.ar(_, 200)
 	}
 	).play
@@ -165,7 +164,7 @@ P(\bassGuit, music: {|p b e|
 		// instrument: [\harpRelease, \sawSynth],
 		instrument: [\harp, \sawSynth],
 		freq: [1, 1, 1, 1, 1, 1, 1, 1, 5, 5, 5, 6, 4, 4, 5, 5, ].df(\c, [3, 4]).q(8),
-		dur: ~quarter / 2,
+		dur: Song.quarter / 2,
 		legato: 0.4,
 		att: 0, rel: 0.5,
 		amp: [0.05, 0.2],
@@ -188,12 +187,12 @@ P(\chords, music: { |p b e|
 			[7, 12, 5],
 			[6, 13, 11],
 			[6, 11, 13],
-		].df('b-', \mixolydian).dq(1)[[0,1, 2]].demand( [1, 1,  0.5, 0.5].dup.flat * ~quarter * 4)	
+		].df('b-', \mixolydian).dq(1)[[0,1, 2]].demand( [1, 1,  0.5, 0.5].dup.flat * Song.quarter * 4)	
 		=> Saw.ar(_, 0.1, 0.1)
 		/3
 		=> RLPF.ar(_, SinOsc.ar([0.2, 0.22, 0.31]).range(800, 7000), 0.5)
-		* Env.perc(0.006, 0.4).kr(0,gate: Impulse.kr(~quarter.reciprocal * 4))
-		* EnvGen.cutoff(~quarter * 16, 12)
+		* Env.perc(0.006, 0.4).kr(0,gate: Impulse.kr(Song.quarter.reciprocal * 4))
+		* EnvGen.cutoff(Song.quarter * 16, 12)
 	}.play
 });
 P(\line, music: { |p b e|
@@ -230,8 +229,8 @@ P(\bassline, music: { |p b e|
 				 [7, 7,7, 11, 4, 4, 4, 3, 1, 1, 1, 3, 7, 7,7, 11, 5,5,5, 4, 6, 6, 6, 5] +.x [0, 10] => _.df('b-',[1, 2], \mixolydian)
 				 ,
 				 
-				 noteDurs: {[~quarter].dq(47) / 2},
-				 triggers: { ~quarter.bubble.dq(47) / 2 => TDuty.ar(_, 0) 
+				 noteDurs: {[Song.quarter].dq(47) / 2},
+				 triggers: { Song.quarter.bubble.dq(47) / 2 => TDuty.ar(_, 0) 
 				 // => LPF.ar(_, 400)
 			 } ,
 				 amp: 0.1,
@@ -248,23 +247,6 @@ P(\tempoChange, music: { |p b e|
 });
 Song.chorusVocGain = -5.dbamp;
 Song.chorusVocPan = #[-1, 0, 0, 1];
-P.synthV(\jun, take: 
-	// \lead_melisma
-	\lead
-	, params: {|p b| [
-		lyrics: " 梦 在 风 中 破 碎 心 在 雾 中 徘 徊 ",
-		// lyrics: " 梦 - - 中 - 碎 心 - - 中 - 徊 ",
-		pitchTake: 1,
-		language: \mandarin,
-		phoneset: \xsampa
-	] }, music:{|p b e|
-		{
-			e.playbuf
-			* p.chorusVocGain
-			=> Pan2.ar(_, p.chorusVocPan[0])
-			// => p.synthVTracks.at(e.key).()
-		}.play
-	});
 P(\arrangement, music: { |p b e|
 	// var div = 2;
 	var div = 1;
@@ -618,40 +600,40 @@ P(\arrangement, music: { |p b e|
 	[
 		[
 			instrument: \JWSnare,
-			dur: "q e eq q".beats.q(inf) * ~quarter,
+			dur: "q e eq q".beats.q(inf) * Song.quarter,
 			rest: [\r, 1, 1, 1].q(inf),
 			amp: 0.25
 			// dur: 
 		].p,
 		[
 			instrument: \bd_808,
-			dur: "e eq qq".beats * ~quarter => _.q(inf),
+			dur: "e eq qq".beats * Song.quarter => _.q(inf),
 			amp: 0.6
 
 		].p,
 		[
 
 			freq: [1, 1, 1, 1, 1, 1, 4, 4, 5, 5, 5, 6, 4, 4, 5, 5, ].df(\c, [2 ]).q(8),
-			dur: ~quarter / 2,
+			dur: Song.quarter / 2,
 			instrument: \harpRelease,
 			legato: 0.2,
 			out: Effect.bus({|i| CrossoverDistortion.ar(i, smooth:0.95)}, out:1)
 		].p,
-		// ~quarter = 0.46;
+		// Song.quarter = 0.46;
 		[
 			instrument: [\harp, \sawSynth],
 			freq: [1, 1, 1, 1, 1, 1, 1, 1, 5, 5, 5, 6, 4, 4, 5, 5, ].df(\c, [3, 4]).q(8),
-			dur: ~quarter / 2,
+			dur: Song.quarter / 2,
 			legato: 0.4,
 			att: 0, rel: 0.5,
 			amp: [0.05, 0.2]
 		].p,
 		[
 			freq: [1, 4, 5, 6 ,4, 5, 1, 4, 5, 6 , 4, 5].df(\c, [3]).q(8),
-			dur: "eee e ex x e e".beats * ~quarter * 2 => _.q(16),
+			dur: "eee e ex x e e".beats * Song.quarter * 2 => _.q(16),
 			amp: 0.3
 		].p
-	] => Ppar(_) => _.findur(~quarter * len * 8) => _.play
+	] => Ppar(_) => _.findur(Song.quarter * len * 8) => _.play
 
 });
 )

@@ -60,16 +60,16 @@ Seg {
 
 							// Apply solo filtering first, then muting
 							parts = (~solo.asArray.size > 0).if {
-								parts.select {|i|
-									~solo.asArray.any{|j| i.asString.contains(j.asString)}
+								parts.select { |i|
+									~solo.asArray.any { |j| i.asString.contains(j.asString) }
 								}
 							} {
 								parts
 							};
 
 							// Apply muting and play parts
-							parts.reject {|i|
-								~mute.asArray.any{|j| i.asString.contains(j.asString)}
+							parts.reject { |i|
+								~mute.asArray.any { |j| i.asString.contains(j.asString) }
 							}
 							.do(_.prEventPlay(cursor, currentEnv));
 						} {
@@ -86,16 +86,16 @@ Seg {
 
 					// Apply solo filtering first, then muting
 					parts = (~solo.asArray.size > 0).if {
-						parts.select {|i|
-							~solo.asArray.any{|j| i.asString.contains(j.asString)}
+						parts.select { |i|
+							~solo.asArray.any { |j| i.asString.contains(j.asString) }
 						}
 					} {
 						parts
 					};
 
 					// Apply muting and play parts
-					parts.reject {|i|
-						~mute.asArray.any{|j| i.asString.contains(j.asString)}
+					parts.reject { |i|
+						~mute.asArray.any { |j| i.asString.contains(j.asString) }
 					}
 					.do(_.prEventPlay(cursor, currentEnv));
 				}
@@ -108,7 +108,7 @@ Seg {
 
 + Part {
 	prEventPlay { |cursor=0, segParams|
-		//calculate time
+		// calculate time
 		var when;
 		lag.isNil.if { lag = 0 };
 		when = parent.secLoc[start]-parent.secLoc[cursor];

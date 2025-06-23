@@ -55,6 +55,15 @@ Seg {
 							currentEnv.put(\section, sectionName);
 							parts = Song.at(sectionName);
 
+							// Apply solo filtering first, then muting
+							parts = (~solo.asArray.size > 0).if {
+								parts.select {|i|
+									~solo.asArray.any{|j| i.asString.contains(j.asString)}
+								}
+							} {
+								parts
+							};
+
 							// Apply muting and play parts
 							parts.reject {|i|
 								~mute.asArray.any{|j| i.asString.contains(j.asString)}

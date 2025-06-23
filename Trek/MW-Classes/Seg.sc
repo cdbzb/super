@@ -57,17 +57,18 @@ Seg {
 							currentEnv.put(\section, sectionName);
 							parts = Song.at(sectionName);
 
-							// Apply solo filtering otherwise muting
+							// Apply solo filtering first, if solo exists ignore mute
 							(~solo.asArray.size > 0).if {
 								parts.select{|i| 
 									~solo.asArray.any{|j| i.asString.contains(j.asString) } 
 								}
+								.do(_.prEventPlay(cursor, currentEnv));
 							} {
 								parts.reject{|i|
 									~mute.asArray.any{|j| i.asString.contains(j.asString) }
 								}
-							}
-							.do(_.prEventPlay(cursor, currentEnv));
+								.do(_.prEventPlay(cursor, currentEnv));
+							};
 						} {
 							// If Event has no section, just play it directly
 							sectionItem.play;
@@ -80,20 +81,18 @@ Seg {
 					currentEnv.put(\section, sectionName);
 					parts = Song.at(sectionName);
 
-					// Apply solo filtering first, then muting
-					parts = (~solo.asArray.size > 0).if {
+					// Apply solo filtering first, if solo exists ignore mute
+					(~solo.asArray.size > 0).if {
 						parts.select { |i|
 							~solo.asArray.any { |j| i.asString.contains(j.asString) }
 						}
+						.do(_.prEventPlay(cursor, currentEnv));
 					} {
-						parts
+						parts.reject { |i|
+							~mute.asArray.any { |j| i.asString.contains(j.asString) }
+						}
+						.do(_.prEventPlay(cursor, currentEnv));
 					};
-
-					// Apply muting and play parts
-					parts.reject { |i|
-						~mute.asArray.any { |j| i.asString.contains(j.asString) }
-					}
-					.do(_.prEventPlay(cursor, currentEnv));
 				}
 			};
 			Server.default.bind { fork{ ~extra.valueEnvir } };

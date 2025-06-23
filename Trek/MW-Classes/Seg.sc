@@ -4,6 +4,22 @@ Seg {
 		Class.initClassTree(Event);
 		Event.addEventType(\seg, {
 			var sections, firstSection;
+			
+			// Check if ~section is a Pseq
+			if (~section.isKindOf(Pseq)) {
+				// Create a Pseq of Events from the Pseq sections
+				var segEvents = Pseq(~section.list.collect { |sectionItem|
+					var segEvent = currentEnvironment.copy;
+					segEvent.put(\type, \seg);
+					segEvent.put(\section, sectionItem);
+					segEvent;
+				}, ~section.repeats);
+				
+				// Play the Pseq of Events
+				segEvents.play;
+				^nil; // Exit early since we've handled the Pseq case
+			};
+			
 			sections = ~section.isKindOf(Event).if {
 				~section.bubble
 			} {

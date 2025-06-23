@@ -8,7 +8,7 @@ Seg {
 				~section.bubble
 			} {
 				~section.asArray
-			}; // Convert to array to handle both single values and arrays
+			}; 
 
 			// Handle the first section for duration (whether it's an Event or section name)
 			firstSection = sections[0];
@@ -23,7 +23,6 @@ Seg {
 					}
 				};
 			} {
-				// Original behavior for section names
 				~dur = Song.secDur[Song.section(firstSection)];
 			};
 
@@ -58,18 +57,15 @@ Seg {
 							currentEnv.put(\section, sectionName);
 							parts = Song.at(sectionName);
 
-							// Apply solo filtering first, then muting
-							parts = (~solo.asArray.size > 0).if {
-								parts.select { |i|
-									~solo.asArray.any { |j| i.asString.contains(j.asString) }
+							// Apply solo filtering otherwise muting
+							(~solo.asArray.size > 0).if {
+								parts.select{|i| 
+									~solo.asArray.any{|j| i.asString.contains(j.asString) } 
 								}
 							} {
-								parts
-							};
-
-							// Apply muting and play parts
-							parts.reject { |i|
-								~mute.asArray.any { |j| i.asString.contains(j.asString) }
+								parts.reject{|i|
+									~mute.asArray.any{|j| i.asString.contains(j.asString) }
+								}
 							}
 							.do(_.prEventPlay(cursor, currentEnv));
 						} {
@@ -100,7 +96,7 @@ Seg {
 					.do(_.prEventPlay(cursor, currentEnv));
 				}
 			};
-			Server.default.bind { fork { ~extra.valueEnvir } };
+			Server.default.bind { fork{ ~extra.valueEnvir } };
 		});
 
 	}

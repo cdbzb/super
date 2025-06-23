@@ -30,7 +30,9 @@ Seg {
 			sections.do { |sectionItem|
 				var cursor, parts;
 				var currentEnv = currentEnvironment.copy; // Create a copy of the environment
-				~solo = ~solo ? []; ~mute = ~mute ? []; ~extra = ~extra ? [];
+				~solo = ~solo ? [];
+				~mute = ~mute ? [];
+				~extra = ~extra ? [];
 
 				if (sectionItem.isKindOf(Event)) {
 					if (sectionItem[\type] == \seg) {
@@ -42,8 +44,9 @@ Seg {
 							case
 							{ [\mute, \solo, \extra].includes(key) } {
 								sectionItem.put(key, currentEnv[key].asArray ++ value);
-							} { key != \type } { // Don't override the type
-								currentEnv.put(key, value); /////// HMMMMMMM
+							}
+							{ key != \type } { // Don't override the type
+								currentEnv.put(key, value);
 							};
 						};
 						// Play the seg Event with merged environment
@@ -97,24 +100,24 @@ Seg {
 					.do(_.prEventPlay(cursor, currentEnv));
 				}
 			};
-			Server.default.bind{ fork{ ~extra.valueEnvir } }
+			Server.default.bind { fork { ~extra.valueEnvir } };
 		});
 
 	}
 }
 
 + Part {
-	prEventPlay {|cursor=0 segParams|
+	prEventPlay { |cursor=0, segParams|
 		//calculate time
 		var when;
-		lag.isNil.if{lag=0};
+		lag.isNil.if { lag = 0 };
 		when = parent.secLoc[start]-parent.secLoc[cursor];
 		when = when + lag + parent.preroll; // per song setting to allow for negative lags
-		syl !? {when = when + parent.durTill(start,syl)};
+		syl !? { when = when + parent.durTill(start, syl) };
 
 		segParams = segParams ? ();
-		// (start>=parent.cursor).if{
-			this.sched(when+Server.default.latency, segParams);
+		// (start >= parent.cursor).if {
+			this.sched(when + Server.default.latency, segParams);
 		// }
 	}
 }

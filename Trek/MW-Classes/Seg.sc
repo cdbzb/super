@@ -117,6 +117,37 @@ Seg {
 	}
 }
 
+PatternScheduler {
+	*new { |pattern transport=0 clock latency=0.2|
+		^super.new.init(pattern, transport, clock, latency)
+    }
+    
+	init { |pattern transport clock, latency|
+        var stream = pattern.asStream;
+        var event, nextTime = 0, startTime;
+        var allEvents = [];
+        
+        // Collect all events and their timings
+        while { (event = stream.next(())).notNil } {
+            allEvents = allEvents.add([event, nextTime]);
+            nextTime = nextTime + (event[\dur] ? 1);
+        };
+        
+        // Schedule all events immediately
+		startTime = clock.beats + latency;
+        allEvents.do { |item|
+            var ev = item[0];
+            var time = item[1];
+			((time = time - transport) >= 0).if {
+				clock.schedAbs(startTime + time, {
+					ev.play;
+					nil // don't reschedule
+				});
+			}
+        };
+    }
+}
+
 + Part {
 	prEventPlay { |cursor=0, segParams|
 		// calculate time
@@ -132,3 +163,4 @@ Seg {
 		// }
 	}
 }
+

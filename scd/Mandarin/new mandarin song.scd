@@ -427,7 +427,8 @@ P(\chords, music: { |p b e|
 Song.cloneDursAndTempoMap("城市的燈火漸漸熄滅");
 P.synthV(\xuan, take: \lead, params: {|p b e| [
 	lyrics: 
-	"城 市 的 燈 火 漸 漸 熄 滅" 
+	// "城 市 的 燈 火 漸 漸 熄 滅" 
+	"霓 虹 的 倒 影 慢 慢 消 散"
 	,
 	language: \Mandarin,
 	legato: [1, 1, 1, 1, 1, 1, 1, 1, 0.9],
@@ -518,7 +519,8 @@ P(\chords, music: { |p b e|
 	});
 P.synthV(\xuan, take: \lead, params: {|p b e| [
 	lyrics: 
-	"寂 寞 的 街 道 只 剩 我 和 月" 
+	// "寂 寞 的 街 道 只 剩 我 和 月" 
+	"遠 處 的 呢 喃 在 耳 邊 迴 盪 -"
 	,
 	language: \Mandarin,
 	legato: [1, 1, 1, 1, 1, 1, 1, 1, 1, 0.9],
@@ -557,8 +559,8 @@ P.synthV(\xuan, take: \lead,
 	// pbind: Song.enlarge(1),
 	params: {|p b e| [
 	lyrics: 
-	"思 念 像 雨 滴 落 在 心 裡 -" 
-
+	// "思 念 像 雨 滴 落 在 心 裡 -" 
+	"回 憶 像 煙 霧 飄 在 夜 裡 - "
 	,
 	legato: [1, 1, 1, 1, 1, 1, 1, 1, 1, 0.9],
 	language: \Mandarin,

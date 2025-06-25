@@ -147,7 +147,37 @@ PatternScheduler {
         };
     }
 }
++ Array {
+	ps {
+		^this ++ [
+				type: \seg, 
+				dur: Pfunc({ |event|
+					var sections, firstSection;
+					var section = event[\section];
 
+					// Same logic as in your event type for calculating duration
+					sections = section.isKindOf(Event).if {
+						section.bubble
+					} {
+						section.asArray
+					};
+
+					firstSection = sections[0];
+					(firstSection.isKindOf(Event)).if {
+						firstSection[\dur] ?? { 
+							if (firstSection[\section].notNil) {
+								Song.secDur[Song.section(firstSection[\section])]
+							} {
+								1
+							}
+						};
+					} {
+						Song.secDur[Song.section(firstSection)];
+					};
+				})
+			]
+	}
+}
 + Part {
 	prEventPlay { |cursor=0, segParams|
 		// calculate time

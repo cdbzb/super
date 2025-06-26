@@ -111,7 +111,7 @@ Seg {
 					};
 				}
 			};
-			Server.default.bind { fork{ ~extra.valueEnvir } };
+			Server.default.bind { fork{0.2.wait; ~extra.valueEnvir } };
 		});
 
 	}

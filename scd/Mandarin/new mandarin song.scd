@@ -197,6 +197,8 @@ P(\testtt,lag:0.2, music: { |p b e|
 P(\bassLine, music: { |p b e|
 	
 var a = MicroKeys(\test);
+var m;
+// var cutoff = ~bassCutoff ?
 a.synth_({
 	var m;
 	Saw.ar(\freq.kr(400) * (\poly.kr(0) / 1227 => _.midiratio))
@@ -235,17 +237,19 @@ m.filter({|e| e.collect{|i| i.parent_(nil)}})
 P(\bassLine2, music: { |p b e|
 var a = MicroKeys(\two);
 var m;
+var cutoff = ~bassCutoff ? 4000;
 a.synth_({
 	Saw.ar(\freq.kr(400) * (\poly.kr(0) / 127 => _.midiratio) + \detune.kr(0))
 	* \amp.kr(0.1)
 	* Env.asr().kr(2,gate:\gate.kr(1))
-	=> MoogFF.ar(_, \ffreq.kr(4000))
+	=> MoogFF.ar(_, \ffreq.kr(cutoff))
 	=> Pan2.ar(_, 0)
 }.asDefName, [ffreq: [ 4000, 4000 ], pan:[-1,1], detune:[-0.81,1]]);
 a.velCurve_(2);
 a.tuning_(\just);
 // a.activate
 m = MIDIItem("bassline_241112_104447");
+// m.gui
 
 // .record(a)
 // .save

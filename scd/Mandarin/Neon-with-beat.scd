@@ -165,6 +165,7 @@ P.synthV(\an, take: Song.takeChooser.(\lead),
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
+
 ["chorusA","r",[16*Song.tempo]].addLine;
 ( //synthDef \bar
 { |gate=1 out=0 freq = 400|
@@ -397,10 +398,9 @@ P.synthVs(\an,   take: [ Song.takeChooser.(\lead) , Song.takeChooser.(\dbl) ],
 ["VerseA in D", "r"].addLine;
 Song.v2Transpose_(2);
 Song.cloneDursAndTempoMap("Verse A");
-P.clone("Verse A", [ \bass, \bassShort ],
-// (transpose:Song.v2Transpose)
+Song.partsExceptVocal = {|section| Song.at(Song.section(section)) .reject{|i| i.asString.contains("an_")}.collect({ |i| i.name.split($_)}).collect{|i|i[0].asSymbol} };
+P.clone("Verse A", Song.partsExceptVocal.("Verse A"), (transpose:Song.v2Transpose)
 );
-P.clone("Verse A", \bassShort, (transpose:Song.v2Transpose)) ;
 P.synthV(\mo,resources:(transpose:Song.v2Transpose), take: Song.takeChooser.(\lead), 
 	pbind: {
 		[
@@ -409,7 +409,8 @@ P.synthV(\mo,resources:(transpose:Song.v2Transpose), take: Song.takeChooser.(\le
 		].p
 	},
 	params: {|p b| [
-		lyrics: " 霓 虹 灯 照 亮 我 的 脸",
+		// lyrics: " 霓 虹 灯 照 亮 我 的 脸",
+		lyrics: "像 素 心 碎 成 玻 璃",
 		pitchTake: 1,
 		language: \Mandarin,
 ] }, music:{|p b e|
@@ -417,6 +418,53 @@ P.synthV(\mo,resources:(transpose:Song.v2Transpose), take: Song.takeChooser.(\le
 		e.playbuf
 		// => p.synthVTracks.at(e.key).()
 		/4
+	}.play
+});
+["VerseB in D", "r"].addLine;
+Song.cloneDursAndTempoMap("Verse B");
+P.clone("Verse B", Song.partsExceptVocal.("Verse B") , (transpose:Song.v2Transpose));
+P.synthV(\mo,resources:(transpose:Song.v2Transpose), take: Song.takeChooser.(\lead), 
+	pbind: {
+		[
+			midinote: [3, 5, 2, 3, 4, 6, -7, -7].dm(Song.keySig.(transpose: 2)),
+			dur: "q q q q q Q E qq".beats / 2 *  Song.tempo 
+		].p
+	},
+	params: {|p b| [
+		// lyrics: " 霓 虹 灯 照 亮 我 的 脸",
+		lyrics: "耳 机 里 只 有 回 声",
+		pitchTake: 1,
+		language: \Mandarin,
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+		/4
+	}.play
+});
+["Verse C in D", "r"].addLine;
+Song.cloneDursAndTempoMap("VerseC");
+P.clone("VerseC", Song.partsExceptVocal.("VerseC") , (transpose:Song.v2Transpose)) ;
+P.synthV(\mo,resources:(transpose:Song.v2Transpose), take: Song.takeChooser.(\lead), 
+	pbind: {
+		[
+			// midinote: "-1 5 2 3 1/f 7.5 3 4 5 11 1 3 4/b/minor/4 4 3 -5/d".dm2,
+			midinote: ([-1, 5, 2, 3, 1].dm(Song.keySig.(transpose: 2).()) + 3) ++ ([7.5, 3, 4, 5, 11, 1, 3, 4].dm(Song.keySig.(transpose:2).(), \minor) - 3) ++ ([4, 3, -5].dm(Song.keySig.(transpose:2).())) => _.flat ,
+			dur: "e x xe x xe x xe x xe x xe x xeqqe e x xe".beats * Song.tempo
+		].p
+	},
+	params: {|p b| [
+	lyrics: "r 高 楼 电 梯 上 下 行   人 群 中 没 有 姓 名",
+
+
+	pitchTake: 1,
+	language: \Mandarin
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> {|i| CombN.ar(i, 0.4, 0.4)/3 + i}
+		/5
+		// => p.synthVTracks.at(e.key).()
 	}.play
 });
 )

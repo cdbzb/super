@@ -214,6 +214,7 @@ m = MIDIItem("bassline_241112_104446");
 
 // m = m.player
 m.filter({|e| e.collect{|i| i.parent_(nil)}})
+.filter(~chorusFigureFilter ? I.d)
 // .record(a)
 
 // .filterOnlyMidicmd(\noteOn,{|e x| (x == 5).if{ e.amp_(0.3) }})
@@ -254,6 +255,7 @@ m = MIDIItem("bassline_241112_104447");
 // .record(a)
 // .save
 m.filter({|e| e.collect{|i| i.parent_(nil)}})
+.filter(~chorusBassFilter ? I.d)
 // .recalcSustains
 .collect{|e| e.latency_(0.2)}
 .play(\two, log:[\noteOn], overdub:false)
@@ -307,6 +309,7 @@ P(\connector, music: { |p b e|
 ["帶我找到回家的方向","4 4 4 4 5 4 3 5 4 -5 3 2 -6".dm(\d) , "q q q qe e q q q qq qq".beats * 0.6].addLine;
 // dài wǒ zhǎo dào huí jiā de fāng xiàng
 // To guide me home
+
 P(\drum, music: { |p b e|
 	[
 		instrument: \hat_808,
@@ -377,6 +380,14 @@ P(\monoDouble,lag: 0.2, music: { |p b e|
 ["每一步都是新的希望", "6.5 6 4 1 -5.5 4 3 4 3 -7".dm(\c) ,"q q q q q qe e q qq qq".beats * 0.6].addLine;
 // měi yī bù dōu shì xīn de xī wàng
 // Each step brings new hope
+P(\bassnote, music: { |p b e|
+	(
+		freq: 1.df(\f, [3,4]),
+		out: Effect.bus({|i| DWGReverbC1C3.ar(i) },),
+		instrument:\sawSynthSustain,
+		dur:2
+	).play
+});
 P.synthVs(\feng, take: [ \hm1, \hm2 ],
 	pbind: [[ 1, 1, 1 ], [4, 4, 5]].collect{|i| {|p b| [
 		midinote: i.dm(\c, 6, ),
@@ -405,6 +416,7 @@ P.synthVs(\xuan, take: [\lead, \dbl], params: {|p b| [
 	}.play
 });
 ["connector", "-5 -5 -6 -7 ".dm(\c, tuning:\just), "q q ee q " => _.beats * 0.6] .addLine;
+
 P(\line, music: { |p b e|
 	[
 		freq: [5,5,4,3,2,  -5, 4, 3, -5].df(\c, tuning:\just).q,
@@ -455,7 +467,7 @@ P(\line, music: { |p b e|
 });
 P(\chords, music: { |p b e|
 	[
-		freq: [ [1, 3,  5], [1, 4, 6], [-6, 1, 3, 5] ].df(\c, tuning:\just).q,
+		freq: [ [1, 1, 3,  5], [1, 1, 4, 6], [-6, 1, 3, 5] ].df(\c, tuning:\just).q,
 		dur: b.parse([4, 4, 1]).q,
 		instrument: \stringyy,
 		amp:0.2

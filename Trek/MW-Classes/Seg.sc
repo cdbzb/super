@@ -9,10 +9,13 @@ Seg {
 			if (~section.isKindOf(Pseq)) {
 				// Create a Pseq of Events from the Pseq sections
 				var segEvents = Pseq(~section.list.collect { |sectionItem|
-					var segEvent = currentEnvironment.copy;
-					segEvent.put(\type, \seg);
-					segEvent.put(\section, sectionItem);
-					segEvent;
+					
+					
+						var segEvent = currentEnvironment.copy;
+						segEvent.put(\type, \seg);
+						segEvent.put(\section, sectionItem);
+						segEvent;
+					
 				}, ~section.repeats);
 				
 				// Play the Pseq of Events
@@ -30,8 +33,10 @@ Seg {
 			firstSection = sections[0];
 			(firstSection.isKindOf(Event)).if {
 				// If it's an Event, use its duration or calculate from its data
+					firstSection[\section].debug("SECOND");
+					firstSection[\dur].debug("DUR");
 				~dur = firstSection[\dur] ?? { 
-					// Fallback: if the Event doesn't have dur, try to get it from Song
+                    // Fallback: if the Event doesn't have dur, try to get it from Song
 					if (firstSection[\section].notNil) {
 						Song.secDur[Song.section(firstSection[\section])]
 					} {
@@ -58,7 +63,7 @@ Seg {
 
 							case
 							{ [\mute, \solo, \extra].includes(key) } {
-								sectionItem.put(key, currentEnv[key].asArray ++ value);
+								sectionItem.put(key, currentEnv[key].asArray ++ value => _.debug("KKK"));
 							}
 							{ key != \type } { // Don't override the type
 								currentEnv.put(key, value);
@@ -91,7 +96,7 @@ Seg {
 						}
 					}
 				} {
-					// if not an Event
+					// if not an Event (String or Symbol)
 					var sectionName = sectionItem;
 					cursor = Song.section(sectionName);
 					currentEnv.put(\section, sectionName);
@@ -111,7 +116,7 @@ Seg {
 					};
 				}
 			};
-			Server.default.bind { fork{0.2.wait; ~extra.valueEnvir } };
+			Server.default.bind { fork{0.2.wait; ~extra.asArray.do(_.valueEnvir )} };
 		});
 
 	}

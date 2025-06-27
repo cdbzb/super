@@ -1,18 +1,18 @@
 ( // Song version
 TempoClock.tempo_(1);
-// ~tempo = 1.08;
-~tempo = 0.97; // original tempo
-~tempo = 1.015; //adjusted to match other version!!! comment out to hear faster version
-~swing = 0.01;
-// ~tempo = 0.96;
-		
-~takeChooser = {|takeName| (~tempo == 1.015).if {takeName ++ \Slow} { takeName } };
-
+// Song.tempo = 1.08;
 MicroKeys(\foo).synth_(\default)
 // .monitor
 ;
 MicroKeys(\foo).add(\quiet, {|e| e.vel.notNil.if{e.vel = e.vel / 4}; e}, \addBefore, \synth);
 Song(\neon2, []).current;
+
+Song.tempo = 0.97; // original tempo
+Song.tempo = 1.015; //adjusted to match other version!!! comment out to hear faster version
+Song.swing = 0.01;
+// Song.tempo = 0.96;
+		
+Song.takeChooser = {|takeName| (Song.tempo == 1.015).if {takeName ++ \Slow} { takeName } };
 
 Song.root= \B;
 Song.root= \c;
@@ -21,11 +21,11 @@ Song.keySig = {|transpose|
 	+ ( transpose ? 0 ) 
 	=> NoteNames.names.findKeyForValue(_) 
 };
-["Verse A", "r", [~tempo * 7]].addLine;
+["Verse A", "r", [Song.tempo * 7]].addLine;
 P(\bassShort,resources:(transpose:0), music: { |p b e |
 	[
 		midinote: [ 11, 7, 4, 5, 5, 5, 5  ].dm( p.keySig.(e.transpose).(e.transpose), 3)  => _.q,
-		dur: "q*16".beats * ~tempo => _.q,
+		dur: "q*16".beats * Song.tempo => _.q,
 		instrument: [\harp, \sawSynth ], 
 		coef:0.8, amp:[0.03, 0.1],
 		out: Effect.bus({|i| i + DelayN.ar(
@@ -36,11 +36,11 @@ P(\bassShort,resources:(transpose:0), music: { |p b e |
 		rel:0, att:0.1
 	].pp
 });
-P.synthV(\an, take: ~takeChooser.(\lead),  //is Mo better??
+P.synthV(\an, take: Song.takeChooser.(\lead),  //is Mo better??
 	pbind: {
 		[
 			midinote: [1, 3, -7, 1, 2, 3, 2].dm(Song.keySig.()),
-			dur: "q q q q q Q E qq".beats / 2 *  ~tempo 
+			dur: "q q q q q Q E qq".beats / 2 *  Song.tempo 
 		].p
 	},
 	params: {|p b| [
@@ -57,7 +57,7 @@ P.synthV(\an, take: ~takeChooser.(\lead),  //is Mo better??
 // P(\bass, music: { |p b e|
 // 	[
 // 		freq: [1, -7, -4, [-4, -5], [-4, -5], [-4, -5], [-4, -5]].df(p.keySig.(e.transpose).(), 3).dupEach(4).q,
-// 		dur: ~tempo/4,
+// 		dur: Song.tempo/4,
 // 		legato: 0.7
 // 	].pp
 // });
@@ -75,14 +75,14 @@ Song.sixteenthBassFunc =
 P(\bassDemand, music: { |p b e|
 	p.sixteenthBassFunc.(
 		freq: {[1, -7, -4, [-4, -5], [-4, -5], [-4, -5], [-4, -5]].df(p.keySig.(e.transpose).(), 3).dupEach(4).dq}, 
-		dur: {{[~tempo/4].dq(28)}},
+		dur: {{[Song.tempo/4].dq(28)}},
 		).play
 });
-["Verse B", "r", [~tempo * 5]].addLine;
+["Verse B", "r", [Song.tempo * 5]].addLine;
 P(\bassShort, music: { |p b e|
 	[
 		midinote: [ 11, 6.5, 4, 2, 2  ].dm(p.keySig.(e.transpose).(), 3)  => _.q,
-		dur: "q*16".beats * ~tempo => _.q,
+		dur: "q*16".beats * Song.tempo => _.q,
 		instrument: [\harp, \sawSynth ], 
 		coef:0.8, amp:[0.03, 0.1],
 		out: Effect.bus({|i| i + DelayN.ar(
@@ -93,11 +93,11 @@ P(\bassShort, music: { |p b e|
 		rel:0, att:0.1
 	].pp
 });
-P.synthV(\an, take: ~takeChooser.(\lead), 
+P.synthV(\an, take: Song.takeChooser.(\lead), 
 	pbind: {
 		[
 			midinote: [3, 5, 2, 3, 4, 6, -7, -7].dm(Song.keySig.()).q,
-			dur: "e e e e e E X q".beats * ~tempo
+			dur: "e e e e e E X q".beats * Song.tempo
 		].p
 	},
 	params: {|p b| [
@@ -114,27 +114,27 @@ P.synthV(\an, take: ~takeChooser.(\lead),
 P(\bassDemand, music: { |p b e|
 	p.sixteenthBassFunc.(
 		freq: {[1, -6.5, -4, -2, -2].df(p.keySig.(e.transpose).(), 3).dupEach(4).dq},
-		dur: {{[~tempo/4].dq(20)}},
+		dur: {{[Song.tempo/4].dq(20)}},
 	).play
 });
-["VerseC", "r",[~tempo * 10]].addLine;
+["VerseC", "r",[Song.tempo * 10]].addLine;
 P(\bass, music: { |p b e|
 	[
 		midinote: [ 11, 7, 6, 5, 4.5, 2, -7, -7, 3, 13  ].dm(p.keySig.(e.transpose).(), [2]) + 3 => _.dupEach(4) => _.q,
-		dur: ~tempo/4,
+		dur: Song.tempo/4,
 		legato: 0.7
 	].pp
 });
 P(\click, music: { |p b e|
 	[
 		instrument: \hat_808,
-		dur: ~tempo /2
+		dur: Song.tempo /2
 	].pp
 });
 P(\bassShort, music: { |p b e|
 	[
 		midinote: [ 11, 7, 6, 5, 4.5, 2, -7, -7, 3, 13  ].dm(p.keySig.(e.transpose).(), [2,3]) + 3 => _.q,
-		dur: "q*16".beats * ~tempo => _.q,
+		dur: "q*16".beats * Song.tempo => _.q,
 		instrument: [\harp, \sawSynth ], 
 		coef:0.8, amp:[0.03, 0.1] ,
 		out: Effect.bus({|i| i + DelayN.ar(
@@ -145,12 +145,12 @@ P(\bassShort, music: { |p b e|
 		rel:0, att:0.1,
 	].pp
 });
-P.synthV(\an, take: ~takeChooser.(\lead), 
+P.synthV(\an, take: Song.takeChooser.(\lead), 
 	pbind: {
 		[
 			// midinote: "-1 5 2 3 1/f 7.5 3 4 5 11 1 3 4/b/minor/4 4 3 -5/d".dm2,
 			midinote: ([-1, 5, 2, 3, 1].dm(Song.keySig.()) + 3) ++ ([7.5, 3, 4, 5, 11, 1, 3, 4].dm(Song.keySig.(), \minor) - 3) ++ ([4, 3, -5].dm(Song.keySig.())) => _.flat ,
-			dur: "e x xe x xe x xe x xe x xe x xeqqe e x xe".beats * ~tempo
+			dur: "e x xe x xe x xe x xe x xe x xeqqe e x xe".beats * Song.tempo
 		].p
 	},
 	params: {|p b| [
@@ -165,7 +165,7 @@ P.synthV(\an, take: ~takeChooser.(\lead),
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
-["chorusA","r",[16*~tempo]].addLine;
+["chorusA","r",[16*Song.tempo]].addLine;
 ( //synthDef \bar
 { |gate=1 out=0 freq = 400|
 	var in=PinkNoise.ar(1);
@@ -177,10 +177,10 @@ P.synthV(\an, take: ~takeChooser.(\lead),
 	DetectSilence.ar(sig,doneAction:2);
 } => SynthDef(\bar, _) => _.add;
 );
-P.synthVs(\an, take: [ ~takeChooser.(\lead), ~takeChooser.(\dbl) ], 
+P.synthVs(\an, take: [ Song.takeChooser.(\lead), Song.takeChooser.(\dbl) ], 
 	 pbind: {
 		 [
-			 dur: [ 0.968550166, 0.981686875, 0.931762042, 0.402953125, 0.31382825, 0.352575917, 0.927995083, 0.915147292, 0.822114291, 0.177609834, 0.661958125, 0.831168875, 1.395617541, 0.484949792, 0.258637125, 0.752724667, 0.245841166, 1.136198042, 1.001960917, 0.991963666, 1 ] * ~tempo / 0.97,
+			 dur: [ 0.968550166, 0.981686875, 0.931762042, 0.402953125, 0.31382825, 0.352575917, 0.927995083, 0.915147292, 0.822114291, 0.177609834, 0.661958125, 0.831168875, 1.395617541, 0.484949792, 0.258637125, 0.752724667, 0.245841166, 1.136198042, 1.001960917, 0.991963666, 1 ] * Song.tempo / 0.97,
 			 midinote: 
 			 [\r, 64, 67, 72, 74, 72, 69, 65, 72, 76, 77, 76, 76, 79, 77, 76, 74, 72, 67, 65, 64 ]
 		 ].p
@@ -206,7 +206,7 @@ P.synthVs(\an, take: [ ~takeChooser.(\lead), ~takeChooser.(\dbl) ],
 P(\bassline, music: { |p b e|
 	[
 		freq: [11, 7, 6, 5, 4, 3, 2, 1, -7, -7, 4, 3, 2, 2, 5, 5].df(p.keySig.(e.transpose).(),[3, 3]).dupEach(4).q,
-		dur: ~tempo/4,
+		dur: Song.tempo/4,
 		instrument: [
 			\bar , \sawSynth],
 		coef: 0.15, amp:[0.01, 0.04],
@@ -219,7 +219,7 @@ P(\bassFigure,  music: {|p b e|
 	MIDIItem("bassFigure_250116_161952").take(18)
 	// .filter{|i| i.collect{|e| e.sustain.notNil.if{ e.sustain_(e.sustain/2) }}}
 	// .filter({|i| i.collect{|e|e.midinote.notNil.if{e.midinote = e.midinote - 24}; e}})
-	// .play(\foo, clock: TempoClock(~tempo.reciprocal, queueSize:(2**12)))
+	// .play(\foo, clock: TempoClock(Song.tempo.reciprocal, queueSize:(2**12)))
 	// .record(\foo)
 }
 );
@@ -242,7 +242,7 @@ P(\figureTranscribed, music: { |p b e|
 			1,
 			[1, 1, 1, 1, 0.8].q(8)
 		].q,
-		dur: "qq e e e e".beats.dup(10) / 2 * ~tempo =>_.flat => _.q,
+		dur: "qq e e e e".beats.dup(10) / 2 * Song.tempo =>_.flat => _.q,
 		out: Effect.bus({|i| i.tanh ! 2 => {|i| CrossoverDistortion.ar(i, smooth: 0.995)/3 + i} },),
 		instrument: \sawSynthSustain,
 		pulse: 0.5,
@@ -254,10 +254,10 @@ Song.lines = VoiceLeading(
 		[1,  \_, 4, \_, 5, 4.5, 4,  3,  2 ],
 		[-5, \_, 1, 2,  3, \_,  -6, -5, \_ ]
 	],
-	~tempo * [2, 2, 2, 2, 1, 1, 2, 2, 2, 2]
+	Song.tempo * [2, 2, 2, 2, 1, 1, 2, 2, 2, 2]
 ).dm(\c);
 
-P.synthVs(\mo, take:  [~takeChooser.(\bg1), ~takeChooser.(\bg2) ], 
+P.synthVs(\mo, take:  [Song.takeChooser.(\bg1), Song.takeChooser.(\bg2) ], 
 	pbind: 2.collect{|voice|
 		{|p b| 
 			[
@@ -286,7 +286,7 @@ P(\keys, lag: 0.05, music: { |p b e|
 		MicroKeys(\stringyy).add(\quiet, {|e| e.vel.notNil.if{e.vel = e.vel / 2}; e}, \addBefore, \synth);
 		MIDIItem("_250116_165156").take(9)//.gui
 		.filter({|e| e.collect{|i| i.timestamp_( i.timestamp * 
-			~tempo * 1.02 //fusge factor why??
+			Song.tempo * 1.02 //fusge factor why??
 		)}})
 		// .fromNoteTo(0, 13)
 		.play(\stringyy);
@@ -306,9 +306,9 @@ P(\tamb, music: { |p b e|
 		var levels = [3,1,2,1] /3 => _.dq(inf);
 		var durs =  
 		1/8 ! 16 
-		* ~tempo
+		* Song.tempo
 		// + ( [1, -1] /80 => _.dup(8) ) //swing amt
-		+ ([1, -1] * ~swing)
+		+ ([1, -1] * Song.swing)
 		=> _.flat 
 		// => _.warpTo(e.tempoMap.quantizeWindow(0.3))
 		=> _.dq(8);
@@ -332,7 +332,7 @@ P(\tamb, music: { |p b e|
 	}.play;
 	[
 		instrument: \hat_808, 
-		dur: "x x e x x e  x x x x x x e".beats.q(16) * ~tempo / 2,
+		dur: "x x e x x e  x x x x x x e".beats.q(16) * Song.tempo / 2,
 		pan:0.5,
 		amp: 0.05
 	].pp;
@@ -340,7 +340,7 @@ P(\tamb, music: { |p b e|
 
 });
 P(\drum, music: { |p b e|
-	// ~swing = 0.01;
+	// Song.swing = 0.01;
 [
 	inst: [0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1].q(8),
 	instrument: Pfunc({|e| [\bd_808, \JWSnare][e.inst]}),
@@ -351,10 +351,10 @@ P(\drum, music: { |p b e|
 	.q(inf),
 	amp: Pfunc({|e| [0.1, 0.1][e.inst] * e.accent}),
 	dur: 
-	[1, 0.75 + ~swing, 0.25-~swing, 0.5, 0.5, 1]
+	[1, 0.75 + Song.swing, 0.25-Song.swing, 0.5, 0.5, 1]
 
 	++ [1, 0.75 + 0.03, 0.25-0.03, 0.25, 0.25,  0.5, 1]
-	* ~tempo
+	* Song.tempo
 	/2
 	
 	=>_
@@ -371,10 +371,10 @@ P.clone("chorusA", \figureTranscribed);
 P.clone("chorusA", \bassline);
 P.clone("chorusA", \lead);
 P.clone("chorusA", \keys);
-P.synthVs(\an,   take: [ ~takeChooser.(\lead) , ~takeChooser.(\dbl) ], 
+P.synthVs(\an,   take: [ Song.takeChooser.(\lead) , Song.takeChooser.(\dbl) ], 
 	 pbind: {
 		 [
-			 dur: [ 0.968550166, 0.981686875, 0.931762042, 0.402953125, 0.31382825, 0.352575917, 0.927995083, 0.915147292, 0.822114291, 0.177609834, 0.661958125, 0.831168875, 1.395617541, 0.484949792, 0.258637125, 0.752724667, 0.245841166, 1.136198042, 1.001960917, 0.991963666, 1 ] * ~tempo / 0.97,
+			 dur: [ 0.968550166, 0.981686875, 0.931762042, 0.402953125, 0.31382825, 0.352575917, 0.927995083, 0.915147292, 0.822114291, 0.177609834, 0.661958125, 0.831168875, 1.395617541, 0.484949792, 0.258637125, 0.752724667, 0.245841166, 1.136198042, 1.001960917, 0.991963666, 1 ] * Song.tempo / 0.97,
 			 midinote: 
 			 [\r, 64, 67, 72, 74, 72, 69, 65, 72, 76, 77, 76, 76, 79, 77, 76, 74, 72, 67, 65, 64 ]
 		 ].p
@@ -401,11 +401,11 @@ P.clone("Verse A", [ \bass, \bassShort ],
 // (transpose:Song.v2Transpose)
 );
 P.clone("Verse A", \bassShort, (transpose:Song.v2Transpose)) ;
-P.synthV(\mo,resources:(transpose:Song.v2Transpose), take: ~takeChooser.(\lead), 
+P.synthV(\mo,resources:(transpose:Song.v2Transpose), take: Song.takeChooser.(\lead), 
 	pbind: {
 		[
 			midinote: [1, 3, -7, 1, 2, 3, 2].dm(Song.keySig.(transpose: 2)),
-			dur: "q q q q q Q E qq".beats / 2 *  ~tempo 
+			dur: "q q q q q Q E qq".beats / 2 *  Song.tempo 
 		].p
 	},
 	params: {|p b| [

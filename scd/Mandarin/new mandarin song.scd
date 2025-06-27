@@ -164,8 +164,8 @@ P(\drum, music: { |p b e|
 });
 P(\liveDrum, music: {|p b e|
 	var echo = Effect.bus({|i| CombN.ar(i, decaytime:5)/4 + i => _.dup }, time:1);
-	MicroKeys(\sn).synth_(\sn_808).range_([60, 48]);
-	MicroKeys(\bd).synth_(\bd_808).range_([62,64]);
+	MicroKeys(\sn).synth_(\bd_808).range_([60, 48]);
+	MicroKeys(\bd).synth_(\sn_808).range_([62,64, 50,52]);
 	MicroKeys(\hat).synth_(\hat_808).range_([67,69]);
 	MIDIItem("241215_154339_traps").record([\sn, \bd, \hat]);
 });
@@ -272,6 +272,7 @@ P(\chord, music: { |p b e|
 });
 P(\bassnote, music: { |p b e|
 	(
+		att:0,
 		freq: 1.df(\d, [3,4]),
 		out: Effect.bus({|i| DWGReverbC1C3.ar(i) },),
 		instrument:\sawSynthSustain,
@@ -334,7 +335,7 @@ P(\chord, music: { |p b e|
 P(\bassnote, music: { |p b e|
 	(
 		freq: [  2 ].df(\d, [3,4]),
-		out: Effect.bus({|i| DWGReverbC1C3.ar(i) },),
+		out: Effect.bus({|i| DWGReverbC1C3.ar(i) + i * -3.dbamp },),
 		instrument:\sawSynthSustain,
 		dur:2
 	).play
@@ -381,12 +382,14 @@ P(\monoDouble,lag: 0.2, music: { |p b e|
 // měi yī bù dōu shì xīn de xī wàng
 // Each step brings new hope
 P(\bassnote, music: { |p b e|
-	(
-		freq: 1.df(\f, [3,4]),
-		out: Effect.bus({|i| DWGReverbC1C3.ar(i) },),
+	[
+		freq: [11, 2.5, 2].df(\f, [3, 2]).q,
+		out: Effect.bus({|i| DWGReverbC1C3.ar(i) + i * -3.dbamp },),
 		instrument:\sawSynthSustain,
-		dur:2
-	).play
+		att: 2,
+		dur: "qq qq q".beats.q * 1.2,
+		amp: [0.1, 0.05]
+	].p.play
 });
 P.synthVs(\feng, take: [ \hm1, \hm2 ],
 	pbind: [[ 1, 1, 1 ], [4, 4, 5]].collect{|i| {|p b| [
@@ -467,7 +470,7 @@ P(\line, music: { |p b e|
 });
 P(\chords, music: { |p b e|
 	[
-		freq: [ [1, 1, 3,  5], [1, 1, 4, 6], [-6, 1, 3, 5] ].df(\c, tuning:\just).q,
+		freq: [ [ 1, 3,  5], [1, 4, 6], [ 1, 3, 5] ].df(\c, tuning:\just).q,
 		dur: b.parse([4, 4, 1]).q,
 		instrument: \stringyy,
 		amp:0.2

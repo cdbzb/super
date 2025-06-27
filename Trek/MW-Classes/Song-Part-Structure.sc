@@ -8,7 +8,7 @@
 	*clone{|section part resources| 
 		var newPart;
 		(part.size > 0).if{ part.do{ |singlePart|
-			P.clone(section, singlePart) };
+			P.clone(section, singlePart, resources) };
 		} {
 			part = Song.at(Song.section(section)).select{|i| i.key == part}[0];
 			// newPart = part.copy; 

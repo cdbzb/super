@@ -35,13 +35,14 @@ Seg {
 				// If it's an Event, use its duration or calculate from its data
 					firstSection[\section].debug("SECOND");
 					firstSection[\dur].debug("DUR");
-				~dur = firstSection[\dur] ?? { 
+				~dur = 
+				// firstSection[\dur] ?? { 
                     // Fallback: if the Event doesn't have dur, try to get it from Song
 					if (firstSection[\section].notNil) {
 						Song.secDur[Song.section(firstSection[\section])]
 					} {
 						1 // Default duration
-					}
+					// }
 				};
 			} {
 				~dur = Song.secDur[Song.section(firstSection)];
@@ -169,12 +170,12 @@ PatternScheduler {
 
 					firstSection = sections[0];
 					(firstSection.isKindOf(Event)).if {
-						firstSection[\dur] ?? { 
+						// firstSection[\dur] ?? { 
 							if (firstSection[\section].notNil) {
 								Song.secDur[Song.section(firstSection[\section])]
 							} {
 								1
-							}
+							// }
 						};
 					} {
 						Song.secDur[Song.section(firstSection)];

@@ -19,6 +19,7 @@ Seg {
 				}, ~section.repeats);
 				
 				// Play the Pseq of Events
+                ~dur = 5;
 				segEvents.play;
 				^nil; // Exit early since we've handled the Pseq case
 			};

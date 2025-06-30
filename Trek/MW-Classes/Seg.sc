@@ -8,19 +8,21 @@ Seg {
 			var expand = { |event parent|
 				parent = parent ? ();
 				event.section.list.collect {|i|
-					i.isKindOf(Event).if{
+					(i.isKindOf(Event) and: try{ i[\section].isKindOf(Pseq) } {false}).if{
 						expand.(i, event)
 					} {
 						parent ++ event.deepCopy.put(\section, i).asEvent
 					}
 				}
 			};
-			
+			//if section is event merge
+			currentEnvironment.debug("THIS");
 			// Check if ~section is a Pseq
 			if (~section.isKindOf(Pseq)) {
 				// Create a Pseq of Events from the Pseq sections
 				expand.(currentEnvironment).flat.q.play;
 				^nil; // Exit early since we've handled the Pseq case
+				
 			};
 			
 			sections = ~section.isKindOf(Event).if {
@@ -51,10 +53,7 @@ Seg {
 			sections.do { |sectionItem|
 				var cursor, parts;
 				var currentEnv = currentEnvironment.copy; // Create a copy of the environment
-				~solo = ~solo ? [];
-				~mute = ~mute ? [];
-				~extra = ~extra ? [];
-
+				[\solo, \mute,\extra].do {|i| currentEnv[i] = currentEnv[i] ? []};
 				if (sectionItem.isKindOf(Event)) {
 					if (sectionItem[\type] == \seg) {
 						sectionItem = sectionItem.copy;
@@ -64,14 +63,14 @@ Seg {
 
 							case
 							{ [\mute, \solo, \extra].includes(key) } {
-								sectionItem.put(key, currentEnv[key].asArray ++ value
+								sectionItem.put(key, currentEnv[key].asArray ++ value)
 							}
 							{ key != \type } { // Don't override the type
 								currentEnv.put(key, value);
 							};
 						};
 						// Play the seg Event with merged environment
-						sectionItem.play;
+						(currentEnv ++ sectionItem).play;
 					} {
 						var sectionName = sectionItem[\section];
 						if (sectionName.notNil) {

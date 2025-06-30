@@ -4,23 +4,22 @@ Seg {
 		Class.initClassTree(Event);
 		Event.addEventType(\seg, {
 			var sections, firstSection;
+			//expand Pseqs
+			var expand = { |event parent|
+				parent = parent ? ();
+				event.section.list.collect {|i|
+					i.isKindOf(Event).if{
+						expand.(i, event)
+					} {
+						parent ++ event.deepCopy.put(\section, i).asEvent
+					}
+				}
+			};
 			
 			// Check if ~section is a Pseq
 			if (~section.isKindOf(Pseq)) {
 				// Create a Pseq of Events from the Pseq sections
-				var segEvents = Pseq(~section.list.collect { |sectionItem|
-					
-					
-						var segEvent = currentEnvironment.copy;
-						segEvent.put(\type, \seg);
-						segEvent.put(\section, sectionItem);
-						segEvent;
-					
-				}, ~section.repeats);
-				
-				// Play the Pseq of Events
-                ~dur = 5;
-				segEvents.play;
+				expand.(currentEnvironment).flat.q.play;
 				^nil; // Exit early since we've handled the Pseq case
 			};
 			
@@ -65,7 +64,7 @@ Seg {
 
 							case
 							{ [\mute, \solo, \extra].includes(key) } {
-								sectionItem.put(key, currentEnv[key].asArray ++ value => _.debug("KKK"));
+								sectionItem.put(key, currentEnv[key].asArray ++ value
 							}
 							{ key != \type } { // Don't override the type
 								currentEnv.put(key, value);

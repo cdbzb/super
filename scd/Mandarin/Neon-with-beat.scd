@@ -21,6 +21,11 @@ Song.keySig = {|transpose|
 	+ ( transpose ? 0 ) 
 	=> NoteNames.names.findKeyForValue(_) 
 };
+Song.synthVTracks = EventWithDefault(
+	\default, { {|i|
+		Pan2.ar(i, 0)
+	} }
+);
 ["Verse A", "r", [Song.tempo * 7]].addLine;
 P(\bassShort,resources:(transpose:0), music: { |p b e |
 	[
@@ -50,7 +55,7 @@ P.synthV(\an, take: Song.takeChooser.(\lead),  //is Mo better??
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		// => p.synthVTracks.at(e.key).()
+		=> p.synthVTracks.at(e.key).()
 		/4
 	}.play
 });
@@ -108,7 +113,7 @@ P.synthV(\an, take: Song.takeChooser.(\lead),
 	{
 		e.playbuf
 		/4
-		// => p.synthVTracks.at(e.key).()
+		=> p.synthVTracks.at(e.key).()
 	}.play
 });
 P(\bassDemand, music: { |p b e|
@@ -162,7 +167,7 @@ P.synthV(\an, take: Song.takeChooser.(\lead),
 		e.playbuf
 		=> {|i| CombN.ar(i, 0.4, 0.4)/3 + i}
 		/5
-		// => p.synthVTracks.at(e.key).()
+		=> p.synthVTracks.at(e.key).()
 	}.play
 });
 
@@ -276,7 +281,7 @@ P.synthVs(\mo, take:  [Song.takeChooser.(\bg1), Song.takeChooser.(\bg2) ],
 		e.playbuf
 		=> BPF.ar(_, 1200, 0.3)
 		/2
-		// => p.synthVTracks.at(e.key).()
+		=> p.synthVTracks.at(e.key).()
 	}.play
 });
 P(\keys, lag: 0.05, music: { |p b e|
@@ -416,7 +421,7 @@ P.synthV(\mo,resources:(transpose:Song.v2Transpose), take: Song.takeChooser.(\le
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		// => p.synthVTracks.at(e.key).()
+		=> p.synthVTracks.at(e.key).()
 		/4
 	}.play
 });
@@ -438,7 +443,7 @@ P.synthV(\mo,resources:(transpose:Song.v2Transpose), take: Song.takeChooser.(\le
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		// => p.synthVTracks.at(e.key).()
+		=> p.synthVTracks.at(e.key).()
 		/4
 	}.play
 });
@@ -487,7 +492,7 @@ P.synthV(\mo,resources:(transpose:Song.v2Transpose), take: Song.takeChooser.(\le
 		e.playbuf
 		=> {|i| CombN.ar(i, 0.4, 0.4)/3 + i}
 		/5
-		// => p.synthVTracks.at(e.key).()
+		=> p.synthVTracks.at(e.key).()
 	}.play
 });
 ["bridge", "r", Song.tempo * 8].addLine;
@@ -510,7 +515,7 @@ P.synthV(\mo,resources:(transpose:Song.v2Transpose), take: Song.takeChooser.(\le
 		e.playbuf
 		=> {|i| CombN.ar(i, 0.4, 0.4)/3 + i}
 		/5
-		// => p.synthVTracks.at(e.key).()
+		=> p.synthVTracks.at(e.key).()
 	}.play
 });
 P(\chords, music: { |p b e|

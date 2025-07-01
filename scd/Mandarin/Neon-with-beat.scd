@@ -442,21 +442,44 @@ P.synthV(\mo,resources:(transpose:Song.v2Transpose), take: Song.takeChooser.(\le
 		/4
 	}.play
 });
-["Verse C in D", "r"].addLine;
-Song.cloneDursAndTempoMap("VerseC");
+["Verse C in D", "r", Song.tempo * 6].addLine;
+// Song.cloneDursAndTempoMap("VerseC");
 P.clone("VerseC", Song.partsExceptVocal.("VerseC") , (transpose:Song.v2Transpose)) ;
+
+P(\bassShort,resources: (transpose: Song.v2Transpose), music: { |p b e|
+	[
+		midinote: [ 11, 7, 6, 5, 4.5, 2, -7, -7, 4, 14  ].dm(p.keySig.(e.transpose).(), [2,3]) + 3 => _.q,
+		dur: "q*16".beats * Song.tempo => _.q,
+		instrument: [\harp, \sawSynth ], 
+		coef:0.8, amp:[0.03, 0.1] ,
+		out: Effect.bus({|i| i + DelayN.ar(
+			i, 
+			"e".beats.warpTo(e.tempoMap) /2, 
+			"e".beats.warpTo(e.tempoMap) /2, 
+		)}),
+		rel:0, att:0.1,
+	].pp
+});
+P(\bass,resources: ( transpose: Song.v2Transpose ), music: { |p b e|
+	[
+		midinote: [ 11, 7, 6, 5, 4.5, 2, -7, -7, 4, 4  ].dm(p.keySig.(e.transpose).(), [2]) + 3 => _.dupEach(4) => _.q,
+		dur: Song.tempo/4,
+		legato: 0.7,
+		out: Effect.bus({|i| CrossoverDistortion.ar(i)/20 + i },)
+	].pp
+});
 P.synthV(\mo,resources:(transpose:Song.v2Transpose), take: Song.takeChooser.(\lead), 
 	pbind: {
 		[
 			// midinote: "-1 5 2 3 1/f 7.5 3 4 5 11 1 3 4/b/minor/4 4 3 -5/d".dm2,
-			midinote: ([-1, 5, 2, 3, 1].dm(Song.keySig.(transpose: 2).()) + 3) ++ ([7.5, 3, 4, 5, 11, 1, 3, 4].dm(Song.keySig.(transpose:2).(), \minor) - 3) ++ ([4, 3, -5].dm(Song.keySig.(transpose:2).())) => _.flat ,
-			dur: "e x xe x xe x xe x xe x xe x xeqqe e x xe".beats * Song.tempo
+			midinote: ([-1, 5, 2, 3, 1].dm(Song.keySig.(transpose: 2).()) + 3) ++ ([7.5, 3, 4, 5, 11, 1, 3, 4, 3].dm(Song.keySig.(transpose:2).(), \minor) - 3) ++ ([4, 3, -5].dm(Song.keySig.(transpose:2).())) => _.flat ,
+			// dur: "e x xe x xe x xe x xe x xe x xeqqe  e x xe".beats * Song.tempo
+			dur: "e x xe x xe x xe x xe x xe x xqq  qq ".beats * Song.tempo
 		].p
 	},
 	params: {|p b| [
-	lyrics: "r 高 楼 电 梯 上 下 行   人 群 中 没 有 姓 名",
-
-
+	lyrics: "r 高 楼 电 梯 上 下 行   人 群 中 没 有 - " //姓 - 名"
+	,
 	pitchTake: 1,
 	language: \Mandarin
 ] }, music:{|p b e|
@@ -467,4 +490,52 @@ P.synthV(\mo,resources:(transpose:Song.v2Transpose), take: Song.takeChooser.(\le
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
+["bridge", "r", Song.tempo * 8].addLine;
+P.synthV(\mo,resources:(transpose:Song.v2Transpose), take: Song.takeChooser.(\lead), 
+	pbind: {
+		[
+			// midinote: "-1 5 2 3 1/f 7.5 3 4 5 11 1 3 4/b/minor/4 4 3 -5/d".dm2,
+			midinote:  [1,4, 3, -5].dm(Song.keySig.(transpose:0).()),
+			// dur: "e x xe x xe x xe x xe x xe x xeqqe  e x xe".beats * Song.tempo
+			dur: "qqqqqqq e x xe".beats * Song.tempo
+		].p
+	},
+	params: {|p b| [
+	lyrics: "r 姓 - 名"
+	,
+	pitchTake: 1,
+	language: \Mandarin
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> {|i| CombN.ar(i, 0.4, 0.4)/3 + i}
+		/5
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+P(\chords, music: { |p b e|
+	[
+		freq: [
+			[3, 5, 11].df(\e, \minor),
+			[5, 11, 13].df('b-', 4)
+		].q,
+		dur: 2 * p.tempo,
+		instrument: \sawSynthSustain,
+		coef: 0.2,
+		amp: 0.04
+	].ppm;
+	fork{
+		Song.tempo * 4 => _.wait;
+		[
+			freq: [
+				[5, 11, 13].df('a-'),
+				[5, 11, 13].df(\g,~bridgeChordQuality ? \minor, 4)
+			].q,
+			// lag: 4 * Song.tempo,
+			dur: 2 * p.tempo,
+			instrument: \stringyy,
+		].ppm
+	}
+});
 )
+

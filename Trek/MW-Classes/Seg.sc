@@ -1,4 +1,25 @@
 
+Mandarin {
+    classvar path = "/Users/michael/tank/super/scd/Mandarin";
+    classvar event;
+    *initClass {
+        event = (
+            path: "/Users/michael/tank/super/scd/Mandarin", 
+            load: {|self file|  self.path +/+ self[file] => _.load },
+            edit: {|self | self.path +/+ self[Song.current] => Nvim.e(_)},
+            Wind: "windArrange.scd",
+            another: "another.scd",
+            beautiful: "beautiful-day.scd",
+            neon2: "Neon-with-beat.scd",
+            mandarin1: "new mandarin song.scd",
+            'c#': "C-sharp-song.scd",
+            songs: {|self| self.keys.reject{|i| [\path].includes(i) }.do {|key| self[key].isKindOf(String).if{key.postln} }}
+        )
+    }
+    *doesNotUnderstand { |selector ...args|
+        Message(event, selector).(*args)
+    }
+}
 Seg {
 	*initClass {
 		Class.initClassTree(Event);

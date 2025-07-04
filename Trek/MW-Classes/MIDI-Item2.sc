@@ -845,6 +845,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		^[midinote: midinotes, dur: durs].p
 	}
 
+    // choose the notes to make a Song line from (durations will be calculated)
 	addLine { |name choiceFunc|
 		var initialRestDur = midiEvents.select{|e| 
 			e.type == \rest and: (e.timestamp == 0)

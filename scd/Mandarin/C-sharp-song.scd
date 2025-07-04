@@ -156,7 +156,7 @@ P.synthV(\kevin, take: \lead,
 });
 P.clone('花 瓣 落',\bass);
 ["chorus1", "r", Song.quarter * 16].addLine;
-MicroKeys(\pluck).synth = { |gate=1 out=0 |
+( MicroKeys(\pluck).synth = { |gate=1 out=0 |
 	var decaytime = \decaytime.kr(10);
 	var in=PinkNoise.ar(1);
 	var sig=Pluck.ar(
@@ -176,6 +176,14 @@ MicroKeys(\pluck).synth = { |gate=1 out=0 |
 	/40;
 	Out.ar(out,sig);
 };
+);
+P(\click, music: { |p b e|
+	[
+		instrument: \hihat,
+		dur: p.quarter,
+		amp: 1
+	]//.pp
+});
 P(\pluck,lag: -0.08, music: { |p b e|
 	MIDIItem("241217_102915").take(8).fromNote(218)//.gui
 .start_(73)		
@@ -189,15 +197,23 @@ P(\vocalLine, music: { |p b e|
 	);e}{e}}}
 	.play(\sawSynthSustain);
 });
+P(\crash, music: { |p b e|
+	(
+		instrument: \cymbalsDS,
+		amp:0.02,
+		att: 0.05
+	).play
+});
 P(\lead, music: { |p b e|
-MicroKeys.mono(\ld).synth_(\stringyy, [release: 3]);//.add(\quiet, {|e| e.vel.notNil.if{ e.vel = e.vel / 2 }; e}, \addBefore, \synth);
-// .monitor
-// .record
-MIDIItem("241220_132623")
-// .record(\ld) 
-.filter({|i| i.collect{|e| e.amp.notNil.if{e.amp_ (e.amp * 2 ); e}{e}}})
-.start_(3)
-.play(\ld);
+	MicroKeys.mono(\ld).synth_(\stringyy, [release: 3]);//.add(\quiet, {|e| e.vel.notNil.if{ e.vel = e.vel / 2 }; e}, \addBefore, \synth);
+	// .monitor
+	// .record
+	MIDIItem("241220_132623")
+	// .record(\ld) 
+	.filter({|i| i.collect{|e| e.amp.notNil.if{e.amp_ (e.amp * 2  ); e}{e}}})
+	// .start_(3)
+	.fromNote(2)
+	.play(\ld);
 });
 P.synthVs(\jun, take: [ \lead, \dbl ], 
 	pbind: {|p b|
@@ -222,10 +238,93 @@ P.synthVs(\jun, take: [ \lead, \dbl ],
 		e.playbuf
 		=> DelayN.ar(_, 2, 2.5 * p.quarter - 0.1) 
 		=> FreeVerb.ar(_,0.3,1)
-		* -4.dbamp
+		* -6.dbamp
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
 ["chLine2", "r",Song.quarter * 16].addLine;
+// Find the half notes using .gui and use them as the tune
+( // ["testPluck" ].addline
+MIDIItem("241217_102915").take(8).fromNote(218)//.gui
+.addLine("testPluck", {|e| e[[1, 5, 11, 16, 20, 24, 30, 35, 39, 45, 51, 55, 59, 66, 72, 77, 81 ]] });
+Song.durs[\testPluck] = Song.durs[\testPluck].list.drop(-1).q;
+// Set the tempoMap
+Song.setTempoMap("testPluck", "h h h h h h h h h h h h h h h h");
+);
+// this SynthV rhythm is warped to the tempoMap above
+P.synthVs(\jun, take: [ \lead, \dbl ], pbind: {|p b|
+		[
+			midinote: [5, 5, 6, 5, 6, 5, 0].dm('c#') 
+			++ [5, 5, 6, 5, 0].dm(\c) 
+			++ [ 5, 5, 6, 5, 4, 3, 4, 0].dm(\c)
+			++ [5, 5, 6, 5, 4, 3, 4, 5, 6, 5].dm('c#')
+			,
+			dur: "e e e e e eee qq e e e eee ee e e e e e e e  e e e e e e e e e e e ".beats.warpTo(Song.tempoMap[\testPluck]) 
+		].p
+	},
+	params: {|p b| [
+		lyrics: 
+		"夏 雨 薇 风 - - r  夏 雨 薇 风 r 轻 轻 地 在 唱 - - r 星 河 流 转 时 光 慢 慢 飘 散"
+		,
+		legato: [
+			[1, 1, 1, 1, 1, 0.5, 1, 1, 1, 1, 1, 1,  1, 1, 1, 1, 1, 1, 1,  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+		],
+        lag:  [0.1.dup(12) ++ 0.1.dup(8) ++ 0.1.dup(10) => _.flat],
+		pitchTake: [ 1, 2 ], 
+        language: \mandarin,
+        phoneset: \xsampa
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> DelayN.ar(_, 2, 2.5 * p.quarter - 0.1) 
+		=> FreeVerb.ar(_,0.3,1)
+		* -6.dbamp
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+// P.tune(); //bass notes
+P.tune({ |i| var bn=~bassNoteAmp ? 0.5; i <>(instrument:\sawSynth, amp:bn)}); //bass notes
+P(\lead, music: { |p b e|
+	MicroKeys.mono(\ld).synth_(\stringyy, [release: 3]);//.add(\quiet, {|e| e.vel.notNil.if{ e.vel = e.vel / 2 }; e}, \addBefore, \synth);
+	// .monitor
+	// .record
+	MIDIItem("241220_132623")
+	// .record(\ld) 
+	.filter({|i| i.collect{|e| e.amp.notNil.if{e.amp_ (e.amp * 2  ); e}{e}}})
+	// .start_(3)
+	.fromNote(2)
+	.play(\ld);
+});
+// MIDIItem("241217_102915").take(8).fromNote(218)//.gui
+// .addLine("moreTestPluck", {|e| e[[82, 86, 93, 99, 106, 117, 126, 133, 142]] });
+// Song.setTempoMap(\moreTestPluck, "h h h h h h h h");
+// P.tune(_ <>(instrument:\sawSynth, amp:0.5)); //bass notes
+// P.synthVs(\jun, take: [ \lead, \dbl ], pbind: {|p b|
+// 		[
+// 			midinote: [5, 5, 6, 5, 4, 3, 4, 5, 6, 5].dm('c#'),
+// 			dur: "e e e e e e e e e ee".beats.warpTo(Song.tempoMap[\moreTestPluck]) 
+// 		].p
+// 	},
+// 	params: {|p b| [
+// 		lyrics: 
+// 		"夏 雨 薇 风 - - r  夏 雨 薇 风 r 轻 轻 地 在 唱 - - "
+// 		,
+// 		legato: [
+// 			[1, 1, 1, 1, 1, 0.5, 1, 1, 1, 1, 1, 1,  1, 1, 1, 1, 1, 1, 1]
+// 		],
+//         lag:  [0.1.dup(12) ++ 0.1.dup(7)],
+// 		pitchTake: [ 1, 2 ], 
+//         language: \mandarin,
+//         phoneset: \xsampa
+// ] }, music:{|p b e|
+// 	{
+// 		e.playbuf
+// 		=> DelayN.ar(_, 2, 2.5 * p.quarter - 0.1) 
+// 		=> FreeVerb.ar(_,0.3,1)
+// 		* -6.dbamp
+// 		// => p.synthVTracks.at(e.key).()
+// 	}.play
+// });
 )
+
 

@@ -27,23 +27,36 @@ P.synthV(\kevin, take: \lead, params: {|p b| [
 		// => p.synthVTracks.at(e.key).()
 	}//.play
 });
+(Song.verseBassReleases = [
+	1, 0.1, 1, 0.1
+];
+ Song.bassParams = [
+	instrument: \pluckDEnvPan,
+	amp:0.025,
+	pan:-1.0,
+	release:1,
+]
+);
 P(\bass, music: { |p b e|
-	var bassline = "1 1 1 1 1 2 2 3 4 4 4 4 4 5 5 6".df(\c, 3);
+	var bassline = "1 1 1 1 1 2 2 3 4 4 4 4 4 5 5 6".df(\c, 3) ;
+	p.bassParams ++
 	[ 
-		freq: bassline.q,
-		instrument: \pluckD,
+		freq: bassline.q + Pwhite(-1.0.rrand(1.0)),
 		dur: "e".beats * p.quarter => _.q(inf),
-		out: Effect.bus({|i| i/4 },)
-	].ppm
+		release: 1.dup(15) ++ Song.verseBassReleases[e.start] => _.q
+	] => _.ppm
 	;
+
+});
+P(\lowBass, music: {|p b e|
+	var bassline = "1 1 1 1 1 2 2 3 4 4 4 4 4 5 5 6".df(\c, 3);
 	[
 		freq: bassline.dupEach / 2 => _.q,
 		freq: bassline / 2 => _.q,
 		dur: "x".beats * p.quarter => _.q(inf),
 		dur: "e".beats * p.quarter => _.q(inf),
-		amp:0.05
+		amp: ~lowBassAmp ? 0.05,
 	].pp
-
 });
 P(\chords, music: { |p b e|
 	{
@@ -63,13 +76,26 @@ P(\chords, music: { |p b e|
 	}.play
 });
 ["花 瓣 落 如 诗- 一- 样-", "-1 2 3 4 3 2 1 2 3 2 1".dm(\c), "q e e qqe e e e e e e e".beats * Song.quarter].addLine;
+Song.bassFxFunc = {Song.bassFx.notNil.if {Song.bassFx.synth.running.not.if {Song.bassFx = Effect.bus {|i| i/4}}{Song.bassFx}}{Song.bassFx = Effect.bus({|i| i/4})}};
+
 P(\bass, music: { |p b e|
+	p.bassParams ++
 	[ 
 		freq: "2 2 2 2 2 3 3 4 5 5 5 5 5 6 5 6 ".df(\c, 3).q,
-		instrument: \pluckD,
 		dur: "e".beats * p.quarter => _.q(inf),
-		out: Effect.bus({|i| i/4 },)
-	].ppm
+		release: 1.dup(15) ++ Song.verseBassReleases[e.start.debug("SEC")] => _.q
+	] => _.ppm
+
+});
+P(\lowBass, music: { |p b e|
+	var bassline = "2 2 2 2 2 3 3 4 5 5 5 5 5 6 5 6 ".df(\c, 3);
+	[
+		freq: bassline.dupEach / 2 => _.q,
+		freq: bassline / 2 => _.q,
+		dur: "x".beats * p.quarter => _.q(inf),
+		dur: "e".beats * p.quarter => _.q(inf),
+		amp: ~lowBassAmp ? 0.05,
+	].pp
 
 });
 P.synthV(\jun, take: \lead, params: {|p b| [夏雨薇
@@ -119,7 +145,7 @@ P.synthV(\kevin, take: \lead,
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
-P.clone('夏雨薇',\bass);
+P.clone('夏雨薇',[ \bass, \lowBass ]);
 ["verseRepeat2", "-1 2 3 4 3 2 1 2 3 2 1".dm(\c), "q e e qqe e e e e e e e".beats * Song.quarter].addLine;
 P.synthV(\jun, take: \lead, params: {|p b| [
 	lyrics: "r 月 光 下 她 的 泪 闪 着 光 -",
@@ -139,7 +165,7 @@ P.synthV(\kevin, take: \lead,
 		[
 			dur: "e e qqq".beats * Song.quarter,
 			midinote: "-6 1 2".dm(\c)
-			* 3.dbamp
+			// * 3.dbamp
 		].p
 	},
 	params: {|p b| [
@@ -154,7 +180,7 @@ P.synthV(\kevin, take: \lead,
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
-P.clone('花 瓣 落',\bass);
+P.clone('花 瓣 落',[ \bass, \lowBass ]);
 ["chorus1", "r", Song.quarter * 16].addLine;
 ( MicroKeys(\pluck).synth = { |gate=1 out=0 |
 	var decaytime = \decaytime.kr(10);
@@ -185,7 +211,7 @@ P(\click, music: { |p b e|
 	]//.pp
 });
 P(\pluck,lag: -0.08, music: { |p b e|
-	MIDIItem("241217_102915").take(8).fromNote(218)//.gui
+	MIDIItem("241217_102915").take(8).fromNote(218, ~pluckEnd)//.gui
 .start_(73)		
 // .filter({|i| i.collect{|e| e.amp.notNil.if{e.amp_ (e.amp -30); e}{e}}})
 .play(\pluck); // Rocking between c and c#
@@ -246,7 +272,7 @@ P.synthVs(\jun, take: [ \lead, \dbl ],
 // Find the half notes using .gui and use them as the tune
 ( // ["testPluck" ].addline
 MIDIItem("241217_102915").take(8).fromNote(218)//.gui
-.addLine("testPluck", {|e| e[[1, 5, 11, 16, 20, 24, 30, 35, 39, 45, 51, 55, 59, 66, 72, 77, 81 ]] });
+.addLine("testPluck", {|e| e[[1, 5, 11, 16, 20, 24, 30, 35, 39, 45, 51, 55, 59, 66, 72, 77, 81, 87, 94, 108 ]] });
 Song.durs[\testPluck] = Song.durs[\testPluck].list.drop(-1).q;
 // Set the tempoMap
 Song.setTempoMap("testPluck", "h h h h h h h h h h h h h h h h");
@@ -296,6 +322,22 @@ P(\lead, music: { |p b e|
 	.play(\ld);
 });
 // MIDIItem("241217_102915").take(8).fromNote(218)//.gui
+["V2","r", 8 * Song.quarter].addLine;
+P.clone('夏雨薇', [\bass, \lowBass, \chords, \jun, \kevin]);
+P(\cymbal, music: {|p b e|
+	(
+		instrument:  \cymbalsDS,
+		amp:0.02
+	).play
+});
+["v2Repeat","r"].addLine;
+P.clone('花 瓣 落', [\bass, \lowBass, \chords, \jun, \kevin]);
+P(\cymbal, music: {|p b e|
+	(
+		instrument:  \cymbalsDS,
+		amp:0.02
+	).play
+});
 // .addLine("moreTestPluck", {|e| e[[82, 86, 93, 99, 106, 117, 126, 133, 142]] });
 // Song.setTempoMap(\moreTestPluck, "h h h h h h h h");
 // P.tune(_ <>(instrument:\sawSynth, amp:0.5)); //bass notes
@@ -326,5 +368,6 @@ P(\lead, music: { |p b e|
 // 	}.play
 // });
 )
+
 
 

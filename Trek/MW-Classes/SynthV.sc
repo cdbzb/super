@@ -113,8 +113,8 @@ SynthV {
 				'languageOverride': "",
 				'phonesetOverride': "",
 				'backendType':      "SVR2AI",
-				// 'version':          "108"
-				'version': mini.if{"108"}{"104"}
+				'version':          "108"
+				// 'version': mini.if{"108"}{"104"}
 			),
 			feng: (
 				'name': "Feng Yi",

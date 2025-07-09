@@ -272,7 +272,7 @@ P.synthVs(\jun, take: [ \lead, \dbl ],
 // Find the half notes using .gui and use them as the tune
 ( // ["testPluck" ].addline
 MIDIItem("241217_102915").take(8).fromNote(218)//.gui
-.addLine("testPluck", {|e| e[[1, 5, 11, 16, 20, 24, 30, 35, 39, 45, 51, 55, 59, 66, 72, 77, 81, 87, 94, 108 ]] });
+.addLine("testPluck", {|e| e[[1, 5, 11, 16, 20, 24, 30, 35, 39, 45, 51, 55, 59/*, 66, 72, 77, 81, 87, 94, 108 */ ]] });
 Song.durs[\testPluck] = Song.durs[\testPluck].list.drop(-1).q;
 // Set the tempoMap
 Song.setTempoMap("testPluck", "h h h h h h h h h h h h h h h h");
@@ -318,7 +318,7 @@ P(\lead, music: { |p b e|
 	// .record(\ld) 
 	.filter({|i| i.collect{|e| e.amp.notNil.if{e.amp_ (e.amp * 2  ); e}{e}}})
 	// .start_(3)
-	.fromNote(2)
+	.fromNote(2, 25)
 	.play(\ld);
 });
 // MIDIItem("241217_102915").take(8).fromNote(218)//.gui

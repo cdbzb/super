@@ -1,0 +1,394 @@
+* Songs
+** Memories
+   [[file://Users/michael/tank/super/scd/Mandarin/new mandarin song.scd][file]] 
+*** lyric 
+*** notes
+
+**** TODO dont forget to look at =bassNote= Parts in chorus! (just added third one)
+** "Neon" 
+   #+BEGIN_SRC supercollider 
+   "~/tank/super/scd/Mandarin/Neon-with-beat.scd".standardizePath.load
+   #+END_SRC
+
+*** TODO needs V2 lyrics!
+*** TODO add quarter hats to top (sounds good in V2 !!)
+*** idea: backing vox in the chorus
+*** idea: extra shimmer/fluttering in the verse where he sings with the nil voice
+*** notes
+   Tempo in "./sketches/beat_pattern-version.scd" feels a little better! (slow)
+   There are some KB ideas in "./sketches/Neon-first-sketch.scd" (Organ part) that are worth resurecting
+**** TODO Need chords in the chorus!! did I really not do these already? 
+   
+** Wind
+  - current arranged version:
+     #+BEGIN_SRC supercollider 
+     "~/tank/super/scd/Mandarin/WindArrange.scd".standardizePath.load
+     #+END_SRC
+  - original sketches:
+     "~/tank/super/scd/Mandarin/Wind.scd"
+  - version without weird bridge doubling
+     "~/tank/super/scd/Mandarin/Wind-sections/WindShortBridge.scd"
+** C to C# "/Users/michael/tank/super/scd/Mandarin/C-to-C#.scd" 
+   ( first load the \pluck Microkeys then there are main and outtro instrumental ideas )
+*** lyrics
+    夏日微风 - 星河乐队 (1989)
+
+    Verse 1:
+    夏 雨 薇 风，轻 轻 地 在 唱
+    月 光 下 她，的 泪 闪 着 光
+
+    Verse 2:
+    星 河 流 转，时 光 慢 慢 飘 散
+    梦 境 深 处，她 在 云 端 徘 徊
+
+    Alternative verses:
+    夜 空 无 边，银 色 月 光 如 水
+    迷 雾 之 中，远 方 传 来 回 声
+
+    晨 露 微 凉，花 瓣 轻 轻 飘 落
+    风 中 低 语，诉 说 昨 日 故 事
+
+    [Imaginary band from late 80s/early 90s Chinese synth-pop scene]
+    [Style: Ethereal, spacey synthesizer music]
+    [Structure: 4 syllables + 6 syllables per line]
+
+    --- English Translation ---
+
+    Verse 1:
+    Summer rain and gentle breeze, softly singing in the air
+    Beneath the moonlight, her tears shimmer bright
+
+    Verse 2:
+    The galaxy flows on, time gently drifts away
+    Deep inside a dream, she wanders among the clouds
+
+    Alternative verses:
+    The night sky endless, silver moonlight like water
+    Amidst the mist, echoes come from afar
+
+    Morning dew feels cool, petals slowly fall
+    Whispers in the wind, telling stories of yesterday
+
+    --- Phonetic Transliteration (Pinyin) ---
+
+    Verse 1:
+    Xià yǔ wēi fēng, qīng qīng de zài chàng
+    Yuè guāng xià tā, de lèi shǎn zhe guāng
+
+    Verse 2:
+    Xīng hé liú zhuǎn, shí guāng màn màn piāo sàn
+    Mèng jìng shēn chù, tā zài yún duān pái huái
+
+    Alternative verses:
+    Yè kōng wú biān, yín sè yuè guāng rú shuǐ
+    Mí wù zhī zhōng, yuǎn fāng chuán lái huí shēng
+
+    Chén lù wēi liáng, huā bàn qīng qīng piāo luò
+    Fēng zhōng dī yǔ, sù shuō zuó rì gù shì
+** Heartbeat song version "~/tank/super/scd/Mandarin/another.scd"
+*** sketch
+    nope this is not right!!
+MIDIItem("anotherChsketch_250510_124458").save.play(\default);
+down at the end of [[little sketch!! "Not good enough for you"][sketching]]
+*** playme
+    #+BEGIN_SRC supercollider
+    "~/tank/super/scd/Mandarin/another.scd".standardizePath.load
+    #+END_SRC
+** beautiful day "~/tank/super/scd/Mandarin/beautiful-day.scd"
+   "~/tank/super/scd/Mandarin/beautiful-day.scd".standardizePath.load
+*** lyrics
+    # Mandarin Song Lyrics
+ ## Backing Vocals (三个音节，八分音符/八分音符/四分音符)
+ 美好天 (měi hǎo tiān) - Beautiful day
+ 回忆里 (huí yì lǐ) - In memories 
+ 梦不停 (mèng bù tíng) - Dreams don't stop
+ 
+ ## Lead Vocal Pattern
+ 快乐的日子像流水不停歇 (kuài lè de rì zi xiàng liú shuǐ bù tíng xiē)
+ [十六分音符/十六分音符/八分音符/八分音符/八分音符] [八分音符/八分音符/四分音符] [停顿] [八分音符/八分音符/八分音符/八分音符]
+ 
+ ## Complete Pattern with Romanized Pronunciation
+ Lead: kuài lè de | rì zi xiàng | liú shuǐ bù
+ Backing: měi hǎo tiān
+ [pause]
+ Lead: tíng xiē
+ 
+ ## English Translation
+ Lead: "Happy days flow like water without stopping"
+ Backing: "Beautiful day" / "In memories" / "Dreams don't stop"
+
+*** sketches
+   #+BEGIN_SRC supercollider
+   MIDIItem(\foo).take(1).play(\default);
+   MIDIItem("_250326_103925").play(\default)
+   MIDIItem("_250326_125428").play(\default)
+   #+END_SRC
+
+   
+
+** automobile "~/tank/super/scd/Mandarin/automobile.scd"
+*** lyrics: 
+(e) 夜 | (e) 深 | (q) 梦 | (q) 醒 | (q) 时 | (e) 你 | (e) 在
+(yè) | (shēn) | (mèng) | (xǐng) | (shí) | (nǐ) | (zài)
+["Night | deep | dream | wakes | when | you’re | there"]
+
+(e) 霓 | (e) 虹 | (q) 闪 | (q) 烁 | (q) 像 | (e) 你 | (e) 笑
+(ní) | (hóng) | (shǎn) | (shuò) | (xiàng) | (nǐ) | (xiào)
+["Neon | lights | flash | bright | like | your | smile"]
+
+[Pre-Chorus]
+(e) 心 | (e) 跳 | (q) 快 | (q) 到 | (q) 疯 | (e) 狂 | (e) 啊
+(xīn) | (tiào) | (kuài) | (dào) | (fēng) | (kuáng) | (a)
+["Heart | beats | so | fast | it’s | crazy | ah!"]
+
+[Chorus]
+(e) 跟 | (e) 我 | (q) 跳 | (q) 进 | (q) 这 | (e) 节 | (e) 奏
+(gēn) | (wǒ) | (tiào) | (jìn) | (zhè) | (jié) | (zòu)
+["Come | with | me | jump | in | this | groove"]
+
+(e) 让 | (e) 爱 | (q) 像 | (q) 电 | (q) 流 | (e) 穿 | (e) 透
+(ràng) | (ài) | (xiàng) | (diàn) | (liú) | (chuān) | (tòu)
+["Let | love | shock | like | lightning | through | us"]
+*** website!!
+*** Songs
+**** Memories "./new mandarin song.scd" 
+***** TODO where are the drums in Ch1?? [[id:A8A855EE-8E3F-404E-AD57-F921ABACC49E][Memories]] 
+**** Neon "./Neon-with-beat.scd" 
+***** DONE AAAK Get An Voice!!
+      CLOSED: [2025-03-21 Fri 11:27]
+***** notes
+     Tempo in "./sketches/beat_pattern-version.scd" feels a little better! (slow)
+     There are some KB ideas in "./sketches/Neon-first-sketch.scd" (Organ part) that are worth resurecting
+****** DONE Need chords in the chorus!! did I really not do these already?
+       CLOSED: [2025-03-21 Fri 11:27]
+**** Wind
+***** Versions
+    - current arranged version:
+       "./WindArrange.scd"
+    - original sketches:
+       "./Wind.scd"
+    - version without weird bridge doubling
+       "./Wind-sections/WindShortBridge.scd"
+**** "./C-to-C#.scd"
+     ( first load the \pluck Microkeys then there are main and outtro instrumental ideas )
+** [[little sketch!! "Not good enough for you"][not good enough for you]]
+   arg **where** is the demo for this!!??!!?
+   #+BEGIN_SRC supercollider
+   "~/tank/super/scd/Mandarin/another.scd".standardizePath.load;
+   #+END_SRC
+*** lyrics
+《心跳的节奏》
+(The Rhythm of a Heartbeat)
+
+短短短短长，
+你的笑在回荡，
+短短短短长，
+像星光落我心上。
+
+短短短短长，
+思念悄悄生长，
+短短短短长，
+梦里有你在身旁。
+
+长长长长长，
+我想和你去远方，
+长长长长长，
+爱是唯一的方向。
+The Rhythm of a Heartbeat》
+
+Short short short short long,
+Your laughter echoes in my mind,
+Short short short short long,
+Like starlight falling on my heart.
+
+Short short short short long,
+Longing quietly grows,
+Short short short short long,
+In my dreams, you're by my side.
+
+Long long long long long,
+I want to wander far with you,
+Long long long long long,
+Love is the only direction
+---------
+《心跳的节奏》
+(The Rhythm of a Heartbeat)
+
+微风轻轻吹，
+你眼神在徘徊，
+星光洒下来，
+照亮了我的期待。
+
+脚步慢慢追，
+心跳乱了节拍，
+梦醒也不悔，
+因为你在我脑海。
+
+我想带你飞，
+去天涯和海角，
+爱像一首歌，
+唱出永远的承诺。
+
+English Translation:
+
+《The Rhythm of a Heartbeat》
+
+The breeze whispers softly,
+Your gaze lingers near,
+Starlight spills gently,
+Lighting up all my hopes here.
+
+I follow your steps slow,
+My heartbeat’s out of tune,
+Even when dreams let go,
+You’re all I think of soon.
+
+I want to fly with you,
+To the ends of the earth,
+Love is a melody true,
+Singing a promise of worth.
+
+* Mixes
+*** Memories
+**** file
+    #+BEGIN_SRC supercollider 
+    "~/tank/super/scd/Mandarin/new mandarin song.scd".standardizePath.load";
+    #+END_SRC
+    [[file://Users/michael/tank/super/scd/Mandarin/new mandarin song.scd][file]] 
+**** more drums in Ch 2?  nice!
+     #+BEGIN_SRC supercollider
+     "~/tank/super/scd/Mandarin/new mandarin song.scd".standardizePath.load";
+     (
+     var quarter = 0.6;
+     ~extraChorusDrums = { |att lag|
+     		{
+     				[
+     						[
+     								instrument: \hihat,
+     								amp: [3, 2].q(inf) / 50,
+     								dur: 0.3/1,
+     									lag: lag ? 0.03
+     						].p,
+     						[
+     								instrument: \bd_808,
+     								dur: "qqq q qqq q qqq q qqq q qqq q qqq q qqqq qqqq qqqq".beats.q * 0.6,
+     								amp: 0.1,
+     									
+     						].p
+     				] => Ppar(_) => _.findur(12*0.6) => _.play;
+     				(instrument: \cymbalsDS, att: [att], amp: 0.025, ).play
+     		}
+     };
+     ~biggerCh = (
+         type:\seg, section: [3, 4, 5].q, bassCutoff:400, 
+         chorusBassFilter: {|e| e.collect{|i| i.timestamp = (i.timestamp / 0.3).round * 0.3; i}},
+         chorusFigureFilter: {|e| e.collect{|i| i.timestamp = (i.timestamp / 0.3).round * 0.3; i}},
+     );
+     ~v2Effect = (type: \seg, section: 7, extra: {
+         {
+             LFSaw.ar(0.2) * 20 => _.floor * 2 
+
+             + 55 => _.midicps
+             => SinOsc.ar(_, 0, 0.1)
+             => {|i| i ++ CombN.ar(i, 0.2, 0.15, 3)}
+             /10
+             * Env([1, 1, 0],0.6 * [8,10]).kr(2)
+         }.play
+     });
+     ~evenBiggerCh = (type:\seg,section: ~biggerCh ++ (extra: {([3, 4, 5].includes(~section)).if {topEnvironment[\extraChorusDrums].(lag:0.03, att:[0.1,0,1][~section - 3]).play} }));//.play
+     )
+
+     (
+     var start = 0;
+     (section:[ ~v2Effect ++ (mute: \xuan), 8, 9, ~biggerCh ++ (extra: [~extraChorusDrums, {(instrument:\cymbals_DS)} ])].drop(start).q, type:\seg).play 
+     )
+
+
+
+     "~/tank/super/scd/Mandarin/new mandarin song.scd".standardizePath.load";
+     s.record("/tmp/Memories.wav");
+     (section: [0,1,2,3,4,5,6,~v2Effect,8,9,~evenBiggerCh,\countoff].q, type:\seg).play 
+     (section: [0,1,2,~evenBiggerCh,~v2Effect,8,9,~evenBiggerCh,\countoff].drop(2).q, type:\seg).play 
+     (section: [0,1,2,~evenBiggerCh,~v2Effect,8,9,~evenBiggerCh,\countoff].drop(2).q, type:\seg).play 
+     (section: [
+     (type:\seg, section:[0, [2, 0 ], 1, (type:\seg, section:9)], mute:\xuan).asKeyValuePairs.flop.collect {|e| currentEnvironment ++ e} =>_.q =>_.play
+     ~solo = []
+     ,~evenBiggerCh,8,9,~evenBiggerCh,\countoff].q, type:\seg).play 
+
+     #+END_SRC
+
+**** two verses:
+    #+BEGIN_SRC supercollider
+    (
+    [section: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 3, 4, 5].q].ps.p.drop(7).play
+    )
+    #+END_SRC
+*** Neon
+**** file
+   #+BEGIN_SRC supercollider 
+   "~/tank/super/scd/Mandarin/Neon-with-beat.scd".standardizePath.load
+   #+END_SRC
+**** Mixes
+***** basic Form
+     #+BEGIN_SRC supercollider
+     (
+     ~verse = [0, 1, 2];
+     ~chorus = (type: \seg, section: [3, 4].q );
+     ~verse2 = [5, 6, 7];
+     /*
+     (type:\seg, section:~verse.q).play;
+     (type: \seg, section:~chorus.q).play;
+     */
+     (type: \seg, section:[~verse, ~chorus, ~verse2, ~chorus ].drop(1).flat.q).play;
+     // ~chorus.play
+     // (type: \seg, section: [~chorus, 5, 6, 7].q).play
+
+     )
+     (
+     ~verse = [0, 1, 2];
+     ~chorus = (type: \seg, section: [3, 4].q );
+     ~verse2 = [5, 6, 7];
+
+     ~verse2PlusKick = (type: \seg, section: ~verse2.q, extra: { 
+         
+         [
+             dur: "q q q q".beats.q(8) * Song.tempo / 2,
+             instrument: \bd_808
+         ].pp
+     })//.play
+     ;
+     ~verse2PlusKick.play
+     MicroKeys(\default).monitor
+
+     ;
+     // (type: \seg, section: [~verse2PlusKick, ~chorus].q).play
+     )
+     #+END_SRC
+***** workingon bridge
+      #+BEGIN_SRC supercollider
+      (type: \seg, section: [0,1, 2, 3, 4, 5, 6,7,(\type: \seg, section: \bridge, bridgeChordQuality: \minor), (type:\seg, section: 3, \mute:\bg ), 4].drop(6).q).play
+      MicroKeys(\default).monitor
+      #+END_SRC
+*** c-to-c#
+**** here's one!
+#+BEGIN_SRC supercollider
+	 Mandarin.load('c#');
+     (
+         var noChords = (type:\seg, section: [0,1,2,3].q, mute:
+		 [
+		 	// \lowBass,
+		 	\chords //quarters hmmm..... save for V2
+		 ], lowBassAmp:0.02
+		 );
+         (
+             type:\seg, 
+			 // mute: \jun,
+             section:[
+                 // noChords,
+                 [\testPluck, (type:\seg, section:\chorus1, solo:\pluck, pluckEnd:  218+ /*104*/ /*59*/ 61 )]  ,
+				 \V2, \v2Repeat
+         ].drop(0).q, 
+         bassNoteAmp:0.10 
+     ).play
+     )
+#+END_SRC

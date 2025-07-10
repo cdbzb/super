@@ -1,3 +1,4 @@
+* Refile
 * Songs
 ** Memories
    [[file://Users/michael/tank/super/scd/Mandarin/new mandarin song.scd][file]] 
@@ -18,7 +19,6 @@
    Tempo in "./sketches/beat_pattern-version.scd" feels a little better! (slow)
    There are some KB ideas in "./sketches/Neon-first-sketch.scd" (Organ part) that are worth resurecting
 **** TODO Need chords in the chorus!! did I really not do these already? 
-   
 ** Wind
   - current arranged version:
      #+BEGIN_SRC supercollider 
@@ -33,15 +33,15 @@
 *** lyrics
     夏日微风 - 星河乐队 (1989)
 
-    Verse 1:
+    Chorus 1:
     夏 雨 薇 风，轻 轻 地 在 唱
     月 光 下 她，的 泪 闪 着 光
 
-    Verse 2:
+    Chorus 2:
     星 河 流 转，时 光 慢 慢 飘 散
     梦 境 深 处，她 在 云 端 徘 徊
 
-    Alternative verses:
+    Alternative Chorus :
     夜 空 无 边，银 色 月 光 如 水
     迷 雾 之 中，远 方 传 来 回 声
 
@@ -85,6 +85,92 @@
 
     Chén lù wēi liáng, huā bàn qīng qīng piāo luò
     Fēng zhōng dī yǔ, sù shuō zuó rì gù shì
+*** lyrics V2 (extended)
+    夏日微风 - 星河乐队 (1989)
+
+    Verse 1:
+    夏 雨 薇 风，轻 轻 地 在 唱
+    月 光 下 她，的 泪 闪 着 光
+
+    Verse 2:
+    星 河 流 转，时 光 慢 慢 飘 散
+    梦 境 深 处，她 在 云 端 徘 徊
+
+    Alternative verses:
+    夜 空 无 边，银 色 月 光 如 水
+    迷 雾 之 中，远 方 传 来 回 声
+
+    晨 露 微 凉，花 瓣 轻 轻 飘 落
+    风 中 低 语，诉 说 昨 日 故 事
+
+    Chorus:
+    夏 雨 薇, 风 轻 轻 唱
+    月 光 下, 她 的 泪 闪 着 光
+
+    星 河 转, 时 光 飘 散
+    梦 境 中, 她 的 影 不 消 散
+
+    迷 雾 中, 回 声 在 飘 荡
+    她 的 心, 在 寻 找 着 方 向
+
+    English Translation:
+
+    Verse 1:
+    Summer rain, gentle breeze, singing softly
+    Under the moonlight, her tears glimmering
+
+    Verse 2:
+    Milky Way flowing, time drifting away
+    In dream's depths, she lingers on the clouds
+
+    Alternative verses:
+    Boundless night sky, silver moonlight like water
+    In the mist, echoes from afar
+
+    Cool morning dew, petals gently falling
+    Whispers in the wind, telling yesterday's tale
+
+    Chorus:
+    Summer rain, the wind sings softly
+    Under the moonlight, her tears are glimmering
+
+    The galaxy turns, time drifts and scatters
+    In the dreamscape, her shadow does not disperse
+
+    In the mist, echoes are drifting
+    Her heart is searching for direction
+
+    Pinyin:
+
+    Verse 1:
+    Xià yǔ wēi fēng, qīng qīng de zài chàng
+    Yuè guāng xià tā, de lèi shǎn zhe guāng
+
+    Verse 2:
+    Xīng hé liú zhuǎn, shí guāng màn man piāo sàn
+    Mèng jìng shēn chù, tā zài yún duān pái huái
+
+    Alternative verses:
+    Yè kōng wú biān, yín sè yuè guāng rú shuǐ
+    Mí wù zhī zhōng, yuǎn fāng chuán lái huí shēng
+
+    Chén lù wēi liáng, huā bàn qīng qīng piāo luò
+    Fēng zhōng dī yǔ, sù shuō zuó rì gù shì
+
+    Chorus:
+    Xià yǔ wēi, fēng qīng qīng chàng
+    Yuè guāng xià, tā de lèi shǎn zhe guāng
+
+    Xīng hé zhuǎn, shí guāng piāo sàn
+    Mèng jìng zhōng, tā de yǐng bù xiāo sàn
+
+    Mí wù zhōng, huí shēng zài piāo dàng
+    Tā de xīn, zài xún zhǎo zhe fāng xiàng
+
+    [Imaginary band from late 80s/early 90s Chinese synth-pop scene]
+    [Style: Ethereal, spacey synthesizer music]
+    [Structure: Verse (4+6 syllables per line), Chorus (3+4, 3+6 syllables per line)]
+
 ** Heartbeat song version "~/tank/super/scd/Mandarin/another.scd"
 *** sketch
     nope this is not right!!

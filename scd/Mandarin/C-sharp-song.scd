@@ -43,7 +43,7 @@ P(\bass, music: { |p b e|
 	[ 
 		freq: bassline.q + Pwhite(-1.0.rrand(1.0)),
 		dur: "e".beats * p.quarter => _.q(inf),
-		release: 1.dup(15) ++ Song.verseBassReleases[e.start] => _.q
+		release: 1.dup(15) ++ Song.verseBassReleases.wrapAt(e.start) => _.q
 	] => _.ppm
 	;
 
@@ -83,7 +83,7 @@ P(\bass, music: { |p b e|
 	[ 
 		freq: "2 2 2 2 2 3 3 4 5 5 5 5 5 6 5 6 ".df(\c, 3).q,
 		dur: "e".beats * p.quarter => _.q(inf),
-		release: 1.dup(15) ++ Song.verseBassReleases[e.start.debug("SEC")] => _.q
+		release: 1.dup(15) ++ Song.verseBassReleases.wrapAt(e.start) => _.q
 	] => _.ppm
 
 });
@@ -322,21 +322,47 @@ P(\lead, music: { |p b e|
 	.play(\ld);
 });
 // MIDIItem("241217_102915").take(8).fromNote(218)//.gui
-["V2","r", 8 * Song.quarter].addLine;
-P.clone('夏雨薇', [\bass, \lowBass, \chords, \jun, \kevin]);
+["V2","3 4 5 4 3 2 4 ".dm(\c), "e e qqqe e e e qq".beats * Song.quarter].addLine;
+P.clone('夏雨薇', [\bass, \lowBass, \chords, \kevin]);
+P.synthV(\jun, take: \lead, params: {|p b| [
+	lyrics: "星 河 转 时 光 飘 散 ",
+	pitchTake: 1,
+	language: \mandarin,
+	phoneset: \xsampa,
+	vocalMode: \tsubaki
+] }, music:{|p b e|
+	{
+		e.playbuf
+		/4
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
 P(\cymbal, music: {|p b e|
 	(
 		instrument:  \cymbalsDS,
 		amp:0.02
 	).play
 });
-["v2Repeat","r"].addLine;
-P.clone('花 瓣 落', [\bass, \lowBass, \chords, \jun, \kevin]);
+["v2Repeat","-1 2 3 4 3 2 1 2 3 2 1".dm(\c), "q e e qqe e e e e e e e".beats * Song.quarter].addLine;
+P.synthV(\jun, take: \lead, params: {|p b| [
+	lyrics: "r 梦 境 中 她 的 影 不 消 散 -",
+	pitchTake: 1,
+	language: \mandarin,
+	phoneset: \xsampa,
+	vocalMode: \tsubaki
+] }, music:{|p b e|
+	{
+		e.playbuf
+		/4
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+P.clone('花 瓣 落', [\bass, \lowBass, \chords, ]);
 P(\cymbal, music: {|p b e|
 	(
 		instrument:  \cymbalsDS,
 		amp:0.02
-	).play
+	)//.play
 });
 // .addLine("moreTestPluck", {|e| e[[82, 86, 93, 99, 106, 117, 126, 133, 142]] });
 // Song.setTempoMap(\moreTestPluck, "h h h h h h h h");

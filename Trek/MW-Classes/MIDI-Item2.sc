@@ -765,18 +765,29 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			midiEvents
 		)
 	}
+    filterNotes { |func| //func acts on notes instead of midiEvents
+        var notes = func.(this.notes.copy);
+        var midiEvents = this.midiEvents.copy;
+        notes.do {|note index| 
+            midiEvents.put(
+                this.noteIndices[index],
+                note
+            )
+        };
+        ^MIDIItemPlayer(midiEvents, this.source)
+    }
 
 	notes { |aMidiEvents|
 		^(aMidiEvents ? midiEvents).select({|e| e.midicmd == \noteOn})
 	}
 
-	filterNotes { |func| //applies function to notes in place
-		var out = midiEvents.deepCopy;
-		midiEvents.select({|e| e.midicmd == \noteOn})
-		.collect({|e| [midiEvents.indexOf(e),  e]})
-		.do({|e x| out.put(e[0], func.(e[1], x))});
-		^MIDIItemPlayer(out, this.source)
-	}
+	// filterNotes { |func| //applies function to notes in place
+	// 	var out = midiEvents.deepCopy;
+	// 	midiEvents.select({|e| e.midicmd == \noteOn})
+	// 	.collect({|e| [midiEvents.indexOf(e),  e]})
+	// 	.do({|e x| out.put(e[0], func.(e[1], x))});
+	// 	^MIDIItemPlayer(out, this.source)
+	// }
 
 	pasteKey{|key precision=2|
 		Nvim.replace(this[key].round(10 ** (precision * -1)))

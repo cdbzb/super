@@ -275,7 +275,6 @@ MIDIItem(\foo).take(1).filter({|e|e.select{|f| f.midinote == 4.dm(\c) or: (f.mid
 MIDIItem(\foo).take(1).filter({|e|e.select{|f| f.midinote == 5.dm(\c) or: (f.midinote == 6.dm(\c))}}).play(\default);
 midiitem(\foo).take(1).filter({|e|e.select{|f| f.midinote == 4.dm(\c) or: (f.midinote == 3.dm(\c))}[(4..8)]}).play(\default)
 MIDIItem(\foo).take(1).notes[(3..5)]=> MIDIItemPlayer(_, restFirst:true) => _.start_(0) => _.play(\default)
-MIDIItem(\foo).filterNotes({|e| e[(3..4)]}).play(\default)
 
 
 .midiEvents

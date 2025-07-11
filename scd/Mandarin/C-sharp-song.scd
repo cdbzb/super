@@ -317,8 +317,9 @@ P(\lead, music: { |p b e|
 	MIDIItem("241220_132623")
 	// .record(\ld) 
 	.filter({|i| i.collect{|e| e.amp.notNil.if{e.amp_ (e.amp * 2  ); e}{e}}})
+	.filterNotes({|i| [5, 4, 3, 3].dm('c#', 6).do {|num x| i[26 + x].midinote_(num)}; i})
 	// .start_(3)
-	.fromNote(2, 25)
+	.fromNote(2, 31)
 	.play(\ld);
 });
 // MIDIItem("241217_102915").take(8).fromNote(218)//.gui

@@ -5,7 +5,7 @@
 *** lyric 
 *** notes
 
-**** TODO dont forget to look at =bassNote= Parts in chorus! (just added third one)
+**** TODO Memories: dont forget to look at =bassNote= Parts in chorus! (just added third one)
 ** "Neon" 
    #+BEGIN_SRC supercollider 
    "~/tank/super/scd/Mandarin/Neon-with-beat.scd".standardizePath.load
@@ -335,7 +335,7 @@ Love is a melody true,
 Singing a promise of worth.
 
 * Mixes
-*** Memories
+*** Memories Mix
 **** file
     #+BEGIN_SRC supercollider 
     "~/tank/super/scd/Mandarin/new mandarin song.scd".standardizePath.load";
@@ -409,7 +409,7 @@ Singing a promise of worth.
     [section: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 3, 4, 5].q].ps.p.drop(7).play
     )
     #+END_SRC
-*** Neon
+*** Neon Mix
 **** file
    #+BEGIN_SRC supercollider 
    "~/tank/super/scd/Mandarin/Neon-with-beat.scd".standardizePath.load
@@ -455,7 +455,7 @@ Singing a promise of worth.
       (type: \seg, section: [0,1, 2, 3, 4, 5, 6,7,(\type: \seg, section: \bridge, bridgeChordQuality: \minor), (type:\seg, section: 3, \mute:\bg ), 4].drop(6).q).play
       MicroKeys(\default).monitor
       #+END_SRC
-*** c-to-c#
+*** c-to-c# Mix
 **** here's one!
 #+BEGIN_SRC supercollider
 	 Mandarin.load('c#');
@@ -470,7 +470,7 @@ Singing a promise of worth.
              type:\seg, 
 			 // mute: \jun,
              section:[
-                 // noChords,
+                 noChords,
                  [\testPluck, (type:\seg, section:\chorus1, solo:\pluck, pluckEnd:  218+ /*104*/ /*59*/ 61 )]  ,
 				 \V2, \v2Repeat
          ].drop(0).q, 

@@ -21,12 +21,15 @@ Song.keySig = {|transpose|
 	+ ( transpose ? 0 ) 
 	=> NoteNames.names.findKeyForValue(_) 
 };
-Song.synthVTracks = EventWithDefault(
-	\default, { {|i|
-		Pan2.ar(i, 0)
-	} }
-);
 ["Verse A", "r", [Song.tempo * 7]].addLine;
+P(\click, music: { |p b e|
+	[
+		instrument: \hat_808,
+		dur: [Song.tempo /2].q(14),
+		amp: 0.05
+
+	].pp;
+});
 P(\bassShort,resources:(transpose:0), music: { |p b e |
 	[
 		midinote: [ 11, 7, 4, 5, 5, 5, 5  ].dm( p.keySig.(e.transpose).(e.transpose), 3)  => _.q,
@@ -55,7 +58,7 @@ P.synthV(\an, take: Song.takeChooser.(\lead),  //is Mo better??
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		=> p.synthVTracks.at(e.key).()
+		// => p.synthVTracks.at(e.key).()
 		/4
 	}.play
 });
@@ -84,6 +87,21 @@ P(\bassDemand, music: { |p b e|
 		).play
 });
 ["Verse B", "r", [Song.tempo * 5]].addLine;
+P(\click, music: { |p b e|
+	[
+		instrument: \hat_808,
+		dur: [Song.tempo /2].q(10),
+		amp: 0.05
+	].pp;
+});
+P(\claves, music: { |p b e|
+	[
+		instrument: \claves_808,
+		dur: "x e e e e e e e e e e".beats.q * Song.tempo,
+		rests: MuteFirst(),
+		amp: 0.02
+	].pp
+});
 P(\bassShort, music: { |p b e|
 	[
 		midinote: [ 11, 6.5, 4, 2, 2  ].dm(p.keySig.(e.transpose).(), 3)  => _.q,
@@ -113,7 +131,7 @@ P.synthV(\an, take: Song.takeChooser.(\lead),
 	{
 		e.playbuf
 		/4
-		=> p.synthVTracks.at(e.key).()
+		// => p.synthVTracks.at(e.key).()
 	}.play
 });
 P(\bassDemand, music: { |p b e|
@@ -123,17 +141,35 @@ P(\bassDemand, music: { |p b e|
 	).play
 });
 ["VerseC", "r",[Song.tempo * 10]].addLine;
+P(\click, music: { |p b e|
+	[
+		instrument: \hat_808,
+		dur: [Song.tempo /2].q(20),
+		// amp: 0.05
+
+	].pp;
+});
+P(\claves, music: { |p b e|
+	[
+		instrument: \claves_808,
+		dur: "x e e e e e e e e e e e e e e e e e".beats.q * Song.tempo,
+		rests: MuteFirst(),
+		amp: 0.02,
+		out: Effect.bus({|i| i => Pan2.ar(_, 1) },),
+		pan: -1
+	].pp
+});
+P(\cymbal, music: { |p b e|
+	(
+		instrument: \cymbalsDS, att:1,
+		amp: 0.01
+	).play
+});
 P(\bass, music: { |p b e|
 	[
 		midinote: [ 11, 7, 6, 5, 4.5, 2, -7, -7, 3, 13  ].dm(p.keySig.(e.transpose).(), [2]) + 3 => _.dupEach(4) => _.q,
 		dur: Song.tempo/4,
 		legato: 0.7
-	].pp
-});
-P(\click, music: { |p b e|
-	[
-		instrument: \hat_808,
-		dur: Song.tempo /2
 	].pp
 });
 P(\bassShort, music: { |p b e|
@@ -167,7 +203,7 @@ P.synthV(\an, take: Song.takeChooser.(\lead),
 		e.playbuf
 		=> {|i| CombN.ar(i, 0.4, 0.4)/3 + i}
 		/5
-		=> p.synthVTracks.at(e.key).()
+		// => p.synthVTracks.at(e.key).()
 	}.play
 });
 
@@ -232,7 +268,7 @@ P(\bassFigure,  music: {|p b e|
 P(\figureTranscribed, music: { |p b e|
 	[
 		midinote: [ 
-			\r,
+			60, //\r,
 			60, 62, 64, 59,
 			57, 60, 62, 64, 60, 
 			53, 60, 62, 64, 60, 
@@ -281,7 +317,7 @@ P.synthVs(\mo, take:  [Song.takeChooser.(\bg1), Song.takeChooser.(\bg2) ],
 		e.playbuf
 		=> BPF.ar(_, 1200, 0.3)
 		/2
-		=> p.synthVTracks.at(e.key).()
+		// => p.synthVTracks.at(e.key).()
 	}.play
 });
 P(\keys, lag: 0.05, music: { |p b e|
@@ -350,12 +386,13 @@ P(\drum, music: { |p b e|
 [
 	inst: [0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1].q(8),
 	instrument: Pfunc({|e| [\bd_808, \JWSnare][e.inst]}),
+	decay: 12,
 	accent: 
 	[1, 1, 0.5, 1, 1, 1]
 	++ [1, 1, 0.5, 1, 0.5, 1, 1]
 	=>_
 	.q(inf),
-	amp: Pfunc({|e| [0.1, 0.1][e.inst] * e.accent}),
+	amp: Pfunc({|e| [0.14, 0.1][e.inst] * e.accent}),
 	dur: 
 	[1, 0.75 + Song.swing, 0.25-Song.swing, 0.5, 0.5, 1]
 
@@ -421,7 +458,7 @@ P.synthV(\mo,resources:(transpose:Song.v2Transpose), take: Song.takeChooser.(\le
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		=> p.synthVTracks.at(e.key).()
+		// => p.synthVTracks.at(e.key).()
 		/4
 	}.play
 });
@@ -443,7 +480,7 @@ P.synthV(\mo,resources:(transpose:Song.v2Transpose), take: Song.takeChooser.(\le
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		=> p.synthVTracks.at(e.key).()
+		// => p.synthVTracks.at(e.key).()
 		/4
 	}.play
 });
@@ -477,13 +514,13 @@ P.synthV(\mo,resources:(transpose:Song.v2Transpose), take: Song.takeChooser.(\le
 	pbind: {
 		[
 			// midinote: "-1 5 2 3 1/f 7.5 3 4 5 11 1 3 4/b/minor/4 4 3 -5/d".dm2,
-			midinote: ([-1, 5, 2, 3, 1].dm(Song.keySig.(transpose: 2).()) + 3) ++ ([7.5, 3, 4, 5, 11, 1, 3, 4, 3].dm(Song.keySig.(transpose:2).(), \minor) - 3) ++ ([4, 3, -5].dm(Song.keySig.(transpose:2).())) => _.flat ,
+			midinote: ([-1, 5, 2, 3, 1].dm(Song.keySig.(transpose: 2).()) + 3) ++ ([7.5, 3, 4, 5, 11, 1, 3, 4, 3, 1.5, -7.5].dm(Song.keySig.(transpose:2).(), \minor) - 3)  => _.flat ,
 			// dur: "e x xe x xe x xe x xe x xe x xeqqe  e x xe".beats * Song.tempo
-			dur: "e x xe x xe x xe x xe x xe x xqq  qq ".beats * Song.tempo
+			dur: "e x xe x xe x xe x xe x xe x xqq  qq qq qq q ".beats * Song.tempo
 		].p
 	},
 	params: {|p b| [
-	lyrics: "r 高 楼 电 梯 上 下 行   人 群 中 没 有 - " //姓 - 名"
+	lyrics: "r 高 楼 电 梯 上 下 行   人 群 中 没 有 - - -" //姓 - 名"
 	,
 	pitchTake: 1,
 	language: \Mandarin
@@ -492,7 +529,7 @@ P.synthV(\mo,resources:(transpose:Song.v2Transpose), take: Song.takeChooser.(\le
 		e.playbuf
 		=> {|i| CombN.ar(i, 0.4, 0.4)/3 + i}
 		/5
-		=> p.synthVTracks.at(e.key).()
+		// => p.synthVTracks.at(e.key).()
 	}.play
 });
 ["bridge", "r", Song.tempo * 8].addLine;
@@ -515,7 +552,7 @@ P.synthV(\mo,resources:(transpose:Song.v2Transpose), take: Song.takeChooser.(\le
 		e.playbuf
 		=> {|i| CombN.ar(i, 0.4, 0.4)/3 + i}
 		/5
-		=> p.synthVTracks.at(e.key).()
+		// => p.synthVTracks.at(e.key).()
 	}.play
 });
 P(\chords, music: { |p b e|

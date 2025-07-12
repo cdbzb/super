@@ -19,7 +19,6 @@ AudioItem {
 				buffers[name.asSymbol] = Buffer();
 				buffers[name.asSymbol];
 			};
-			
 			// Load audio file if it exists
 			File.exists(path).if{
 				buffer.allocRead(path).updateInfo;
@@ -39,26 +38,22 @@ AudioItem {
 						self.recorder.record(self.path, 8, duration: self.dur)
 					}
 				},
-				
-				// Play function (this gets called when .play is used on the event)
-				play: {
-					Server.default.makeBundle(
-						(~latency ? 0.2) + (~lag ? 0),
-						{
-							{
-								PlayBuf.ar(
-									~numChannels ? 1,
-									buffer.bufnum,
-									rate: ~rate ? 1,
-									startPos: ~startPos ? 0
-								)
-								* (~amp ? 1)
-								=> Out.ar(~out ? 0, _)
-							}.play
-						}
-					)
-				}
 			));
+			Server.default.makeBundle(
+				(~latency ? 0.2) + (~lag ? 0),
+				{
+					{
+						PlayBuf.ar(
+							~numChannels ? 1,
+							buffer.bufnum,
+							rate: ~rate ? 1,
+							startPos: ~startPos ? 0
+						)
+						* (~amp ? 1)
+						=> Out.ar(~out ? 0, _)
+					}.play
+				}
+			)
 		});
 	}
 	

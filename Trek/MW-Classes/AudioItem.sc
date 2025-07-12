@@ -1,65 +1,70 @@
+// AudioItem Event Type - use like: (type: \audioItem, name: "myAudio").play
 
-AudioItem{
-	classvar <>all, <folder, <buffers;
-	*initClass {
-		all = Dictionary.new(512); //is this big enough??
-        buffers = ();
-		Class.initClassTree(Event);
-		folder = "~/tank/SC_audiofiles".standardizePath;
-		File.exists(folder).not.if{ "mkdir %".format(folder).unixCmd };
-		Event.addEventType(\aItem, {
-			var buffer = buffers[~name] ? (buffers[~name] = Buffer());
-            // var path = 
-		})
-	}
-	*insertNew{|name|
-		Nvim.replace( "AudioItem(\\\"%\\\")".format(name ++ "_" ++  Date.getDate.stamp) )
-	}
-	*new{|name ...args, kwargs|
-		var env = kwargs.asEvent;
-		var buffer = (
-			buffers[name.asSymbol].isNil.if{
-				buffers[name.asSymbol] = Buffer()  
-			};
-			buffers[name.asSymbol]
-		);
-		File.exists(this.folder +/+ name ++ ".wav").if{
-			buffer.allocRead(this.folder +/+ name ++ ".wav").updateInfo
-		};
-		/* psuedo-code
-		File.exists(audio).if {
-			get last take number;
-			set take number to last take number + 1
-		}
-		*/
+(
+var all, folder, buffers;
+
+// Initialize on first load
+all = Dictionary.new(512);
+buffers = ();
+Class.initClassTree(Event);
+folder = "~/tank/SC_audiofiles".standardizePath;
+File.exists(folder).not.if{ "mkdir %".format(folder).unixCmd };
+
+Event.addEventType(\audioItem, {
+	var name = ~name ?? { Error("AudioItem requires a name").throw };
+	var buffer = buffers[name.asSymbol];
+	var path = folder +/+ name ++ ".wav";
+	var recorder = Recorder(Server.default);
 	
-		^ env ++
-		(
-			path: this.folder +/+ name ++ ".wav",
-			recorder: Recorder(Server.default),
-			buffer:buffer,
-			dur: 5,
-			// this should use Buffer.cue perhaps
-			record: {|self| self.recorder.prepareForRecord(self.path, 1); Server.default.bind{ self.recorder.record(self.path, 8, duration: self.dur)} },
-			play: {
-                // self.buffer.allocRead( self.path).updateInfo; 
-				Server.default.makeBundle(
-					(~latency ? 0.2) + (~lag ? 0),
+	// Create buffer if it doesn't exist
+	buffer = buffer ?? {
+		buffers[name.asSymbol] = Buffer();
+		buffers[name.asSymbol];
+	};
+	
+	// Load audio file if it exists
+	File.exists(path).if{
+		buffer.allocRead(path).updateInfo;
+	};
+	
+	// Set up the event with all the functionality
+	currentEnvironment.putAll((
+		path: path,
+		recorder: recorder,
+		buffer: buffer,
+		dur: ~dur ? 5,
+		
+		// Record function
+		record: {|self| 
+			self.recorder.prepareForRecord(self.path, 1); 
+			Server.default.bind{ 
+				self.recorder.record(self.path, 8, duration: self.dur)
+			}
+		},
+		
+		// Play function (this gets called when .play is used on the event)
+		play: {
+			Server.default.makeBundle(
+				(~latency ? 0.2) + (~lag ? 0),
+				{
 					{
-                        {
-                            PlayBuf.ar(
-                                ~numChannels ? 1,
-                                buffer.bufnum,
-                                rate: ~rate ? 1,
-                                startPos: ~startPos ? 0
-                            )
-                            * (~amp ? 1)
-                            => Out.ar(~out ? 0, _)
-                        }.play
-					}
-				)
-			},
-		)
-	}
-	
-}
+						PlayBuf.ar(
+							~numChannels ? 1,
+							buffer.bufnum,
+							rate: ~rate ? 1,
+							startPos: ~startPos ? 0
+						)
+						* (~amp ? 1)
+						=> Out.ar(~out ? 0, _)
+					}.play
+				}
+			)
+		}
+	));
+});
+
+// Utility function for Nvim integration
+~insertNewAudioItem = {|name|
+	Nvim.replace( "(type: \\audioItem, name: \\\"%\\\")".format(name ++ "_" ++  Date.getDate.stamp) )
+};
+)

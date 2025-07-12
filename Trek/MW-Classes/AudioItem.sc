@@ -26,6 +26,13 @@ AudioItem{
 		File.exists(this.folder +/+ name ++ ".wav").if{
 			buffer.allocRead(this.folder +/+ name ++ ".wav").updateInfo
 		};
+		/* psuedo-code
+		File.exists(audio).if {
+			get last take number;
+			set take number to last take number + 1
+		}
+		*/
+	
 		^ env ++
 		(
 			path: this.folder +/+ name ++ ".wav",

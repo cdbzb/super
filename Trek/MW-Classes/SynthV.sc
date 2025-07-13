@@ -78,6 +78,15 @@ SynthV {
 			kevin: Set[\Clear,\Soft,\Belt,\Solid]
 		);
 		databaseLib = (
+            uni:(
+                'name': "UNI",
+                'language': "korean",
+                'phoneset': "xsampa",
+                'languageOverride': "",
+                'phonesetOverride': "",
+                'backendType': "SVR3",
+                'version': "200"
+            ),
 			genbu:(
 				'backendType': "SVR2Standard",
 				'version': 100,
@@ -223,7 +232,13 @@ SynthV {
 		this.buildFunc.value;
 		this.writeProject; 
 		take.notNil.if {
-			directory +/+ "SCRIPTS/renderSynthV-recompute.sh".standardizePath + file =>_.unixCmd
+            name.debug("NAME");
+            name.class.debug("CLASS");
+            (name == \uni).if {
+                directory +/+ "SCRIPTS/renderSynthV-recompute_2.sh".standardizePath + file =>_.unixCmd
+            } {
+                directory +/+ "SCRIPTS/renderSynthV-recompute.sh".standardizePath + file =>_.unixCmd
+            }
 		}{
 			directory +/+ "SCRIPTS/renderSynthesizerV.sh".standardizePath + file =>_.unixCmd
 		};
@@ -271,6 +286,11 @@ SynthV {
 		file = location +/+ "project.svp";
 
 		project = Object.readArchive(directory +/+ "test.svp.event-archive");
+		/////////   
+
+		(n == \uni).if{
+			project.version_(200);
+		};
 
 		//strip erroneous points data - TODO clean this up in original file!
 		project.tracks[0].mainRef.systemPitchDelta.put(\points,[]);

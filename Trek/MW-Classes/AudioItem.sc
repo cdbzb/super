@@ -30,34 +30,35 @@ AudioItem {
 				recorder: recorder,
 				buffer: buffer,
 				dur: ~dur ? 5,
-				
-				// Record function
-				record: {|self| 
-					self.recorder.prepareForRecord(self.path, 1); 
-					Server.default.bind{ 
-						self.recorder.record(self.path, 8, duration: self.dur)
-					}
-				},
+                record: ~record ? false,
 			));
-			Server.default.makeBundle(
-				(~latency ? 0.2) + (~lag ? 0),
-				{
-					{
-						PlayBuf.ar(
-							~numChannels ? 1,
-							buffer.bufnum,
-							rate: ~rate ? 1,
-							startPos: ~startPos ? 0
-						)
-						* (~amp ? 1)
-						=> Out.ar(~out ? 0, _)
-					}.play
-				}
-			)
-		});
+            ~record.if{
+					~recorder.prepareForRecord(~path, 1); 
+					Server.default.bind{ 
+						~recorder.record(~path, 8, duration: ~dur)
+					}
+            } {
+                Server.default.makeBundle(
+                    (~latency ? 0.2) + (~lag ? 0),
+                    {
+                        {
+                            PlayBuf.ar(
+                                ~numChannels ? 1,
+                                buffer.bufnum,
+                                rate: ~rate ? 1,
+                                startPos: ~startPos ? 0
+                            )
+                            * (~amp ? 1)
+                            => Out.ar(~out ? 0, _)
+                        }.play
+                    }
+                )
+            }
+		}, (dur:5)
+	);
 	}
 	
 	*insertNew {|name|
-		Nvim.replace( "(type: \\audioItem, name: \\\"%\\\")".format(name ++ "_" ++  Date.getDate.stamp) )
+		Nvim.replace( "(type: \\\\audioItem, name: \\\"%\\\")".format(name ++ "_" ++  Date.getDate.stamp) )
 	}
 }

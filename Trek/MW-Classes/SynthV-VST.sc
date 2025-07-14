@@ -9,6 +9,7 @@
 		synthV = 
 		// SynthV(name, voice, take).setDatabase(voice);
 		super.new.initVST(song, section, voice, take).setDatabase(voice);
+
 		synthV.buildFunc = { 
 			params.lyrics=params.lyrics.replace($, , "").split(Char.space).reject{|i| i.size==0};
 			params.pitch=params.midinote.asInteger;
@@ -23,7 +24,7 @@
 			^synthV
 	}
 	buildVST { |song section voice take params|
-		var path = "/tmp/" ++ Date.new.stamp;
+		var path = "/private/tmp/" ++ Date.new.stamp;
 		this.setDatabase(voice);
 		this.buildFunc = { 
 			params.lyrics=params.lyrics.replace($, , "").split(Char.space).reject{|i| i.size==0};
@@ -57,16 +58,19 @@
 		// this.refreshBuffer(song, name, voice, (take ? \default));
 	}
 	renderVST {
-		var path = "/tmp/" ++ Date.new.stamp;
+		var path = "/private/tmp/" ++ Date.new.stamp;
 		this.buildFunc.value;
 		this.writeProjectVST(path ++ ".svp") ; 
-		this.writeFxp(path ++ ".fxp");
+		this.writeFxp(path);
 		fork{0.1.wait;vst = SV( path ++ ".fxp" )};
 	}
 
-	writeFxp { |path|
+	writeFxp { |path| //pass in path without .svp or .fxp
+        //this path is embedded in the example fxp file below
 		var oldPath = "/private/tmp/250617_142307.svp";
-		var newPath = "/private/tmp/" ++ Date.new.stamp ++ ".svp";
+		// var newPath = "/private/tmp/" ++ Date.new.stamp ++ ".svp";
+        //this is the path we will be embedding in the fxp file
+		var newPath = path ++ ".svp";
 		var fxpData = {
 			var file, data;
 			// this example fxp file has an embedded path
@@ -90,7 +94,8 @@
 
 			{
 				var file;
-				file = File( path , "wb"); // "wb" for write binary
+				"WRITING".postln;
+				file = File( path ++ ".fxp" , "wb"); // "wb" for write binary
 				file.write(fxpData);
 				file.close;
 			}.value;
@@ -111,3 +116,4 @@
 	}
 
 }
+

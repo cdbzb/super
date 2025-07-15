@@ -57,6 +57,16 @@ SynthV {
 				'activeTakeId': 0,
 				'takes': 4.collect{|i| (liked: false, id: i, expr: 1.0) },
 			),
+			'takes': (  // Single 'takes' object instead of separate pitch/timbre
+				'activeTakeId': 0,
+				'takes': 5.collect{|i| (  // Generate 5 takes (0-4)
+				id: i, 
+				seedDuration: i * 100000,  // Random 32-bit unsigned int
+				seedPitch: i * 1000000,     // Random 32-bit unsigned int  
+				seedTimbre: i * 1000000,    // Random 32-bit unsigned int
+				liked: false
+	)},
+    ),
 			'lyrics': "la",
 			'timbreTakes': (
 				'activeTakeId': 0,
@@ -428,7 +438,9 @@ SynthV {
 		this.notes.do{|i x| this.setNote(x, key, array.clipAt(x))}
 	}
 	setPitchTakeId {|id|
-		this.notes.do{|i x| this.notes[x].pitchTakes.put(\activeTakeId,id)}
+		// this.notes.do{|i x| this.notes[x].pitchTakes.put(\activeTakeId,id)}
+		//for V2
+		this.notes.do{|i x| this.notes[x].takes.put(\activeTakeId, id)}
 	}
 	setPitchExpression { |array|   // puts the values in all the takes
 		( array.rank==0 ).if{array = array.bubble};

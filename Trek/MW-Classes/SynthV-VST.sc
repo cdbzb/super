@@ -52,6 +52,9 @@
 
 		project = Object.readArchive(directory +/+ "test.svp.event-archive");
 
+		(voice == \uni).if{
+			project.version_(200);
+		};
 		//strip erroneous points data - TODO clean this up in original file!
 		project.tracks[0].mainRef.systemPitchDelta.put(\points,[]);
 
@@ -67,7 +70,10 @@
 
 	writeFxp { |path| //pass in path without .svp or .fxp
         //this path is embedded in the example fxp file below
-		var oldPath = "/private/tmp/250617_142307.svp";
+		// var oldPath = "/private/tmp/250617_142307.svp";
+
+		// for V2 
+		var oldPath = "/private/tmp/250717_080003.svp";
 		// var newPath = "/private/tmp/" ++ Date.new.stamp ++ ".svp";
         //this is the path we will be embedding in the fxp file
 		var newPath = path ++ ".svp";
@@ -75,6 +81,8 @@
 			var file, data;
 			// this example fxp file has an embedded path
 			file = File("~/tank/super/Trek/SynthV/123456_123456.fxp".standardizePath, "rb"); // "rb" for read binary
+			// this is a V2 example
+			file = File("~/tank/super/Trek/SynthV/654321_654321.fxp".standardizePath, "rb"); // "rb" for read binary
 			data = Int8Array.newClear(file.length);
 			file.read(data);
 			file.close;
@@ -94,7 +102,8 @@
 
 			{
 				var file;
-				"WRITING".postln;
+				// "WRITING".postln;
+                path ++".fxp" => _.debug("FXP");
 				file = File( path ++ ".fxp" , "wb"); // "wb" for write binary
 				file.write(fxpData);
 				file.close;

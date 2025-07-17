@@ -229,7 +229,8 @@ PF : VSTI {
 
 SV : VSTI {
 // classvar plugin = "Synthesizer V Studio ARA Plugin.vst3" 
-classvar plugin = "Synthesizer V Studio Pro.vst3";
+// classvar plugin = "Synthesizer V Studio Pro.vst3";
+classvar plugin = "Synthesizer V Studio 2 Pro.vst3";
 var <>bus;
 *new { |path|
 	var outBus = Bus.audio(Server.default, 1);

@@ -245,12 +245,12 @@ SynthV {
 		take.notNil.if {
             name.debug("NAME");
             name.class.debug("CLASS");
-            (name == \uni).if {
+            (appVersion == 2).if {
                 directory +/+ "SCRIPTS/renderSynthV-recompute_2.sh".standardizePath + file =>_.unixCmd
             } {
                 directory +/+ "SCRIPTS/renderSynthV-recompute.sh".standardizePath + file =>_.unixCmd
             }
-		}{
+		} {
 			directory +/+ "SCRIPTS/renderSynthesizerV.sh".standardizePath + file =>_.unixCmd
 		};
 		this.writeRawProject;
@@ -264,7 +264,7 @@ SynthV {
 	}
 	initForBuildMethod { |son sec v t version|
 		var voice = v;
-        version = version ? 1;
+        appVersion = version ? 1;
 		section = sec;
 		song = son; take = t;
 		// name = n; double = d; take = t;
@@ -311,8 +311,7 @@ SynthV {
 	}
 
     setProjectVersion {
-
-		(n == \uni).if{
+		(name == \uni).if{
             appVersion = 2
 		};
         
@@ -354,7 +353,7 @@ SynthV {
 		super.new.initForBuildMethod(song, section, voice, take, version).setDatabase(voice);
 		synthV.buildFunc = { 
 			params.lyrics=params.lyrics.replace($, , "").split(Char.space).reject{|i| i.size==0};
-			params.pitch=params.midinote.asInteger;
+			params.pitch=params.midinote; 
 			synthV.makeNotes(params.dur.size);
 
 			synthV.set(params); 
@@ -453,8 +452,8 @@ SynthV {
 	}
 	setPitchTakeId {|id|
         case
-        { version == 1 } { this.notes.do{|i x| this.notes[x].pitchTakes.put(\activeTakeId,id)}
-        { version == 2 } { this.notes.do{|i x| this.notes[x].takes.put(\activeTakeId, id)} }
+        { appVersion == 1 } { this.notes.do{|i x| this.notes[x].pitchTakes.put(\activeTakeId,id) } }
+        { appVersion == 2 } { this.notes.do{|i x| this.notes[x].takes.put(\activeTakeId, id) } }
 	}
 
 	setPitchExpression { |array|   // puts the values in all the takes

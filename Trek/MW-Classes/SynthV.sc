@@ -6,15 +6,16 @@ SynthV {
 	classvar <vocalModes;
 	classvar <>buffers;
 	classvar <>synthVsToRender;
-	classvar <>current;
+	classvar <>current; 
 	var <name, <project, <file,<location,<buffer, <key, <song, <section;
 	var <>firstNoteOffset = 0;
 	var <> offset = 0;
 	var <>double, <>take, <>buildFunc;
 	var <>playbuf;
 	var <>vst;
-	*new {|key name take double| 
-			^super.new.init(key, name, take, double) 
+    var appVersion = 1;
+	*new {|key name take double version| 
+			^super.new.init(key, name, take, double, version) 
 		}
 	*renderMultiple { |wait = 8.5 |
 		fork{
@@ -57,16 +58,16 @@ SynthV {
 				'activeTakeId': 0,
 				'takes': 4.collect{|i| (liked: false, id: i, expr: 1.0) },
 			),
-			'takes': (  // Single 'takes' object instead of separate pitch/timbre
-				'activeTakeId': 0,
-				'takes': 5.collect{|i| (  // Generate 5 takes (0-4)
-				id: i, 
-				seedDuration: i * 100000,  // Random 32-bit unsigned int
-				seedPitch: i * 1000000,     // Random 32-bit unsigned int  
-				seedTimbre: i * 1000000,    // Random 32-bit unsigned int
-				liked: false
-	)},
-    ),
+            'takes': (  // Single 'takes' object instead of separate pitch/timbre
+                'activeTakeId': 0,
+                'takes': 5.collect{ |i| (  // Generate 5 takes (0-4)
+                    id: i, 
+                    seedDuration: i * 100000,  // Random 32-bit unsigned int
+                    seedPitch: i * 1000000,     // Random 32-bit unsigned int  
+                    seedTimbre: i * 1000000,    // Random 32-bit unsigned int
+                    liked: false
+                )},
+            ),
 			'lyrics': "la",
 			'timbreTakes': (
 				'activeTakeId': 0,
@@ -261,8 +262,9 @@ SynthV {
 	*load { |path|
 		^String.readNew(path.standardizePath => File(_,"r")) => JSON.parse(_)
 	}
-	init2 { |son sec v t|
+	initForBuildMethod { |son sec v t version|
 		var voice = v;
+        version = version ? 1;
 		section = sec;
 		song = son; take = t;
 		// name = n; double = d; take = t;
@@ -278,13 +280,15 @@ SynthV {
 
 		project = Object.readArchive(directory +/+ "test.svp.event-archive");
 
+        this.setProjectVersion;
+
 		//strip erroneous points data - TODO clean this up in original file!
 		project.tracks[0].mainRef.systemPitchDelta.put(\points,[]);
 
 		this.refreshBuffer(song, name, voice, (take ? \default));
 	}
-	init { |n k t d| //why is the arg order different than *new ???? 
-		name = n; double = d; take = t; key = k;
+	init { |n k t d v| //why is the arg order different than *new ???? 
+		name = n; double = d; take = t; key = k; appVersion = v ? 1;
 		song.isNil.if{ song = Song.currentSong };
 		// section = song.section(key.replace($_,Char.space)); //does this do anything?
 		section = key;
@@ -298,15 +302,25 @@ SynthV {
 		project = Object.readArchive(directory +/+ "test.svp.event-archive");
 		/////////   
 
-		(n == \uni).if{
-			project.version_(200);
-		};
+        this.setProjectVersion;
 
 		//strip erroneous points data - TODO clean this up in original file!
 		project.tracks[0].mainRef.systemPitchDelta.put(\points,[]);
 
 		this.refreshBuffer(song, n, k, (take ? \default));
 	}
+
+    setProjectVersion {
+
+		(n == \uni).if{
+            appVersion = 2
+		};
+        
+        case 
+        { appVersion == 1 } { project.version_(135) }
+        { appVersion == 2 } { project.version_(200) }
+    }
+
 	writeProject {
 		this.setRenderConfig;
 		File.exists(location).not.if{File.mkdir(location)};
@@ -331,13 +345,13 @@ SynthV {
 			numChannels:1,
 		).asPairs.pairsDo({|i j| project.renderConfig.put(i,j)})
 	}
-	*build { |song section voice take params|
+	*build { |song section voice take params version|
 		//section is just there for the naming filetree - its just a secondary name in this case
 		//in the Song version it is a name used to retrieve blah blah
 		var synthV;
 		synthV = 
 		// SynthV(name, voice, take).setDatabase(voice);
-		super.new.init2(song, section, voice, take).setDatabase(voice);
+		super.new.initForBuildMethod(song, section, voice, take, version).setDatabase(voice);
 		synthV.buildFunc = { 
 			params.lyrics=params.lyrics.replace($, , "").split(Char.space).reject{|i| i.size==0};
 			params.pitch=params.midinote.asInteger;
@@ -438,10 +452,11 @@ SynthV {
 		this.notes.do{|i x| this.setNote(x, key, array.clipAt(x))}
 	}
 	setPitchTakeId {|id|
-		// this.notes.do{|i x| this.notes[x].pitchTakes.put(\activeTakeId,id)}
-		//for V2
-		this.notes.do{|i x| this.notes[x].takes.put(\activeTakeId, id)}
+        case
+        { version == 1 } { this.notes.do{|i x| this.notes[x].pitchTakes.put(\activeTakeId,id)}
+        { version == 2 } { this.notes.do{|i x| this.notes[x].takes.put(\activeTakeId, id)} }
 	}
+
 	setPitchExpression { |array|   // puts the values in all the takes
 		( array.rank==0 ).if{array = array.bubble};
 		this.notes.do{ |i x|

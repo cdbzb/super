@@ -53,6 +53,7 @@ SynthV {
 			'duration': 1146600000,
 			'pitch': 66,
 			'detune': 0,
+			'musicalType': "singing",
 			'systemAttributes': (  ),
 			'pitchTakes': (
 				'activeTakeId': 0,
@@ -74,7 +75,7 @@ SynthV {
 				'takes': 4.collect{|i| (liked: false, id: i, expr: 1.0) },
 			),
 			'phonemes': "" , 
-			'attributes': (  )
+			'attributes': ( 'evenSyllableDuration': true, 'muted': false )
 		);
 		databasePrototype = ( 
 			'version': 100, 
@@ -316,8 +317,19 @@ SynthV {
 		};
         
         case 
-        { appVersion == 1 } { project.version_(135) }
-        { appVersion == 2 } { project.version_(200) }
+        { appVersion == 1 } { 
+			project.version_(135);
+			// V1 structure adjustments
+			project.time.removeAt('startTimeSeconds');
+		}
+        { appVersion == 2 } { 
+			project.version_(185);
+			// V2 structure adjustments  
+			project.time.put('startTimeSeconds', 0.0);
+			// Remove pitchTakes/timbreTakes from mainRef if they exist
+			project.tracks[0].mainRef.removeAt('pitchTakes');
+			project.tracks[0].mainRef.removeAt('timbreTakes');
+		}
     }
 
 	writeProject {
@@ -417,10 +429,24 @@ SynthV {
 			{ i == \vocalMode} {
 				(event.vocalMode.class == Array).not.if{
 					this.voice.put(\vocalModePreset, event.vocalMode);
-					this.voice.put(\vocalModeParams, ((event.vocalMode): 100))
+					case 
+					{ appVersion == 1 } {
+						this.voice.put(\vocalModeParams, ((event.vocalMode): 100))
+					}
+					{ appVersion == 2 } {
+						this.voice.put(\vocalModeParams, ((event.vocalMode): (
+							'pitch': 150.0, 'timbre': 150.0, 'pronunciation': 150.0
+						)))
+					}
 				}{
 					var modes = ();
-					event.vocalMode.do{|i| modes.put(i, 100)};
+					event.vocalMode.do{|i| 
+						case 
+						{ appVersion == 1 } { modes.put(i, 100) }
+						{ appVersion == 2 } { modes.put(i, (
+							'pitch': 150.0, 'timbre': 150.0, 'pronunciation': 150.0
+						)) }
+					};
 					this.voice.put(\vocalModePreset, \Customized);
 					this.voice.put(\vocalModeParams, modes)
 				}
@@ -458,10 +484,17 @@ SynthV {
 
 	setPitchExpression { |array|   // puts the values in all the takes
 		( array.rank==0 ).if{array = array.bubble};
-		this.notes.do{ |i x|
-			this.notes[x].pitchTakes.takes.do{ |take takeNumber|
-				take.put( \expr, array.clipAt(x) )
+		case 
+		{ appVersion == 1 } {
+			this.notes.do{ |i x|
+				this.notes[x].pitchTakes.takes.do{ |take takeNumber|
+					take.put( \expr, array.clipAt(x) )
+				}
 			}
+		}
+		{ appVersion == 2 } {
+			// V2 doesn't use pitch expression in the same way
+			// Could implement if needed for V2 compatibility
 		}
 	}
 	setDatabase { |key|
@@ -474,7 +507,25 @@ SynthV {
 		}
 	}
 	makeNotes {|num track=0|
-		project.tracks[track].mainGroup.notes = notePrototype ! num
+		var prototype = notePrototype.copy;
+		
+		// Adjust prototype based on version
+		case 
+		{ appVersion == 2 } {
+			// V2 doesn't have instantMode, pitchTakes, timbreTakes
+			prototype.removeAt('pitchTakes');
+			prototype.removeAt('timbreTakes');
+			// V2 uses single takes object
+		}
+		{ appVersion == 1 } {
+			// V1 doesn't have takes object, uses separate pitch/timbre takes
+			prototype.removeAt('takes');
+			prototype.removeAt('musicalType');
+			prototype.put('instantMode', true);
+			prototype.put('attributes', ());
+		};
+		
+		project.tracks[track].mainGroup.notes = prototype ! num
 	}
 	shiftNotes {| seconds |
 		this.notes.do{ |e| 

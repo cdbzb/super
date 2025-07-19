@@ -400,10 +400,11 @@ SynthV {
 		{ appVersion == 1 } { project.tracks[track].mainGroup.notes }
 		{ appVersion == 2 } { project.library[track].notes }
 	}
-	voice{ |track=0|
+	voice { |track=0|
 		^case 
 		{ appVersion == 1 } { project.tracks[track].mainRef.voice }
-		{ appVersion == 2 } { project.library[track].voice }
+		// { appVersion == 2 } { project.library[track].voice }
+		{ appVersion == 2 } { project.tracks[track].groups[0].voice }
 	}
 	*secondsToBlicks{|seconds|
 		^seconds * 2 * 7056 * 10e4 => _.round(1)// => _.asString => _.dropLast(2)

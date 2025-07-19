@@ -303,13 +303,15 @@ SynthV {
 
 		file = location +/+ "project.svp";
 
-		project = Object.readArchive(directory +/+ "test.svp.event-archive");
+		project = case
+		{ appVersion == 1 } { Object.readArchive(directory +/+ "test.svp.event-archive") }
+		{ appVersion == 2 } { Object.readArchive(directory +/+ "test.svp.event-archive-V2") };
 		/////////   
 
         this.setProjectVersion;
 
 		//strip erroneous points data - TODO clean this up in original file!
-		project.tracks[0].mainRef.systemPitchDelta.put(\points,[]);
+		(appVersion == 1).if { project.tracks[0].mainRef.systemPitchDelta.put(\points,[]) };
 
 		this.refreshBuffer(song, n, k, (take ? \default));
 	}
@@ -481,12 +483,11 @@ SynthV {
 		var lastNote, groupEnd;
 		var notes = this.notes;
 
-		notes.notEmpty.if {
-			lastNote = notes.last;
-			groupEnd = lastNote.onset.blicksToSeconds + lastNote.duration.blicksToSeconds => _.secondsToBlicks;
+		(appVersion == 2).if { 
+			notes.notEmpty.if {
+				lastNote = notes.last;
+				groupEnd = lastNote.onset.blicksToSeconds + lastNote.duration.blicksToSeconds => _.secondsToBlicks;
 
-			case
-			{ appVersion == 2 } { 
 				project.tracks[track].groups[0].put(\blickAbsoluteEnd, groupEnd)
 			}
 		}
@@ -605,7 +606,7 @@ SynthV {
 }
 
 + P {
-	*synthV{ | key start params syl lag=0 take double music song resources range filter pbind prepend role wait frozen record offset|
+	*synthV{ | key start params syl lag=0 take double music song resources range filter pbind prepend role wait frozen record offset version|
 		var event;
 		var section = P.calcStart(start );
 		var synthV, preset;
@@ -613,7 +614,7 @@ SynthV {
 		role.notNil.if{
 			key = Trek.cast.at(role);
 		};
-		synthV = SynthV(key,( start ? section ),take ,double );
+		synthV = SynthV(key,( start ? section ),take ,double, version ? 1 );
 		synthV.setDatabase(key);
 
 		offset.notNil.if{ synthV.offset_(offset) };

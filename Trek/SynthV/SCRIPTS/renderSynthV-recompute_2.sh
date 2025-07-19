@@ -24,6 +24,17 @@ tell application "System Events"
 		-- Click the button
 		try
 			click button "Bounce to Files" of front window
+			-- Select "Save" from the "File" menu
+			delay 0.5
+
+			click menu item "Save" of menu "File" of menu bar 1
+
+			delay 0.5 -- Wait a moment for save to complete
+			
+
+			-- Select "Quit Synthesizer V Studio 2 Pro" from app menu
+			click menu item "Quit Synthesizer V Studio 2 Pro" of menu "Synthesizer V Studio 2 Pro" of menu bar 1
+
 			return "Successfully clicked 'Bounce to Files' button"
 		on error errMsg
 			return "Error: Could not find or click 'Bounce to Files' button - " & errMsg

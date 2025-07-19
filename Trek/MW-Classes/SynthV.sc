@@ -13,7 +13,7 @@ SynthV {
 	var <>double, <>take, <>buildFunc;
 	var <>playbuf;
 	var <>vst;
-    var appVersion = 1;
+    var <appVersion = 1;
 	*new {|key name take double version| 
 			^super.new.init(key, name, take, double, version) 
 		}
@@ -125,7 +125,7 @@ SynthV {
 				'languageOverride': "english",
 				'phonesetOverride': "arpabet",
 				'backendType': "SVR2AI",
-				'version': mini.if{"105"}{"101"}
+				'version': "105"
 			),
 			kevin: ( 
 				'name':             "Kevin",
@@ -241,18 +241,19 @@ SynthV {
 		}
 	}
 	render {
+		appVersion.debug("VERSION");
+		take.debug("TAKE");
 		this.buildFunc.value;
 		this.writeProject; 
-		take.notNil.if {
-            name.debug("NAME");
-            name.class.debug("CLASS");
-            (appVersion == 2).if {
-                directory +/+ "SCRIPTS/renderSynthV-recompute_2.sh".standardizePath + file =>_.unixCmd
-            } {
-                directory +/+ "SCRIPTS/renderSynthV-recompute.sh".standardizePath + file =>_.unixCmd
-            }
-		} {
-			directory +/+ "SCRIPTS/renderSynthesizerV.sh".standardizePath + file =>_.unixCmd
+
+		(appVersion == 2).if {
+			directory +/+ "SCRIPTS/renderSynthV-recompute_2.sh".standardizePath + file =>_.unixCmd
+		} { //appVersion is 1
+			take.notNil.if {
+				directory +/+ "SCRIPTS/renderSynthV-recompute.sh".standardizePath + file =>_.unixCmd
+			} {
+				directory +/+ "SCRIPTS/renderSynthesizerV.sh".standardizePath + file =>_.unixCmd
+			};
 		};
 		this.writeRawProject;
 		fork{
@@ -279,12 +280,14 @@ SynthV {
 
 		file = location +/+ "project.svp";
 
-		project = Object.readArchive(directory +/+ "test.svp.event-archive");
+		project = case
+		{ appVersion == 1 } { Object.readArchive(directory +/+ "test.svp.event-archive") }
+		{ appVersion == 2 } { Object.readArchive(directory +/+ "test.svp.event-archive-V2") };
 
         this.setProjectVersion;
 
 		//strip erroneous points data - TODO clean this up in original file!
-		project.tracks[0].mainRef.systemPitchDelta.put(\points,[]);
+		(appVersion == 1).if { project.tracks[0].mainRef.systemPitchDelta.put(\points,[]) };
 
 		this.refreshBuffer(song, name, voice, (take ? \default));
 	}
@@ -388,13 +391,19 @@ SynthV {
 		"open -a 'Synthesizer V Studio Pro'" + file => _.unixCmd 
 	}
 	database { |track=0|
-		^project.tracks[track].mainRef.database
+		^case 
+		{appVersion == 1 }{ project.tracks[track].mainRef.database }
+		{appVersion == 2 }{ project.groups[track].database }
 	}
 	notes { | track=0  |
-		^project.tracks[track].mainGroup.notes
+		^case 
+		{ appVersion == 1 } { project.tracks[track].mainGroup.notes }
+		{ appVersion == 2 } { project.library[track].notes }
 	}
 	voice{ |track=0|
-		^project.tracks[track].mainRef.voice
+		^case 
+		{ appVersion == 1 } { project.tracks[track].mainRef.voice }
+		{ appVersion == 2 } { project.library[track].voice }
 	}
 	*secondsToBlicks{|seconds|
 		^seconds * 2 * 7056 * 10e4 => _.round(1)// => _.asString => _.dropLast(2)
@@ -462,8 +471,24 @@ SynthV {
 			{ true }                         { this.setNotes(i,event.at(i)) }
 		};
 		//this should be done with an array flop and pairsDo instad but...
-		this.filterRests 
+		this.filterRests;
+		this.setGroupEnd;
 	)
+	}
+	//from Claude
+	setGroupEnd { |track=0|
+		var lastNote, groupEnd;
+		var notes = this.notes;
+
+		notes.notEmpty.if {
+			lastNote = notes.last;
+			groupEnd = lastNote.onset.blicksToSeconds + lastNote.duration.blicksToSeconds => _.secondsToBlicks;
+
+			case
+			{ appVersion == 2 } { 
+				project.tracks[track].groups[0].put(\blickAbsoluteEnd, groupEnd)
+			}
+		}
 	}
 	setNote {| index key value|
 		key.post;" ".post;value.postln;
@@ -498,10 +523,15 @@ SynthV {
 		}
 	}
 	setDatabase { |key|
-		project.tracks[0].mainRef.put(\database, databaseLib.at(key) )
+		case
+		{ appVersion == 1 } { project.tracks[0].mainRef.put(\database, databaseLib.at(key) ) }
+		{ appVersion == 2 } { project.tracks[0].groups[0].put(\database, databaseLib.at(key) ) }
 	}
 	setLanguage { | array |
-		var where = project.tracks[0].mainRef.database;
+		var where = case
+		{ appVersion == 1 } { project.tracks[0].mainRef.database }
+		{ appVersion == 2 } { project.tracks[0].groups[0].database }
+		;
 		[\languageOverride, \phonesetOverride].do{|i x| 
 			where.put(i, array[0][x])
 		}
@@ -516,6 +546,7 @@ SynthV {
 			prototype.removeAt('pitchTakes');
 			prototype.removeAt('timbreTakes');
 			// V2 uses single takes object
+			project.library[track].notes = prototype ! num
 		}
 		{ appVersion == 1 } {
 			// V1 doesn't have takes object, uses separate pitch/timbre takes
@@ -523,9 +554,9 @@ SynthV {
 			prototype.removeAt('musicalType');
 			prototype.put('instantMode', true);
 			prototype.put('attributes', ());
+			project.tracks[track].mainGroup.notes = prototype ! num
 		};
 		
-		project.tracks[track].mainGroup.notes = prototype ! num
 	}
 	shiftNotes {| seconds |
 		this.notes.do{ |e| 
@@ -552,8 +583,15 @@ SynthV {
 		project.tracks[track].mainGroup.put(\notes, last.bubble ++ this.notes )
 	}
 	filterRests { |track=0|
-		project.tracks[track].mainGroup.notes =
+		case
+		{ appVersion == 1 } {
+			project.tracks[track].mainGroup.notes =
 			this.notes.reject({|i| i.at(\lyrics)=="r"})
+		} 
+		{ appVersion == 2 } {
+			project.library[track].notes =
+			this.notes.reject({|i| i.at(\lyrics)=="r"})
+		}
 	}
 	refreshBuffer{ |song n k t|
 		var old = try{buffers.at(song, n, k, t).()};

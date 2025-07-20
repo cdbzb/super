@@ -2,13 +2,11 @@
 	*newVST { |key name take double| 
 		^super.new.initVST(key, name, take, double) 
 	}
-	*buildVST { |song section voice take params|
+	*buildVST { |song section voice take params version|
 		//section is just there for the naming filetree - its just a secondary name in this case
 		//in the Song version it is a name used to retrieve blah blah
 		var synthV;
-		synthV = 
-		// SynthV(name, voice, take).setDatabase(voice);
-		super.new.initVST(song, section, voice, take).setDatabase(voice);
+		synthV = super.new.initVST(song, section, voice, take, version).setDatabase(voice);
 
 		synthV.buildFunc = { 
 			params.lyrics=params.lyrics.replace($, , "").split(Char.space).reject{|i| i.size==0};
@@ -38,11 +36,11 @@
 		this.writeFxp(path ++ ".fxp");
 		fork{0.1.wait;vst.controller.readProgram(path ++ ".fxp")};
 	}
-	initVST { |son sec v t |
+	initVST { |son sec v t version |
 		var voice = v;
 		section = sec;
 		song = son; take = t;
-
+        appVersion = version ? 1;
 		// directory = "/tmp";
 
 		// location = directory +/+ ( song.key.asString.replace(Char.space,$-) ) +/+ Song.lyrics[Song.section(key)].hash.abs +/+ name; //change storage scheme here
@@ -50,13 +48,13 @@
 
 		file = location +/+ "project.svp";
 
-		project = Object.readArchive(directory +/+ "test.svp.event-archive");
+		project = case
+		{ appVersion == 1 } { Object.readArchive(directory +/+ "test.svp.event-archive") }
+		{ appVersion == 2 } { Object.readArchive(directory +/+ "test.svp.event-archive-V2") };
 
-		(voice == \uni).if{
-			project.version_(200);
-		};
+        this.setProjectVersion;
 		//strip erroneous points data - TODO clean this up in original file!
-		project.tracks[0].mainRef.systemPitchDelta.put(\points,[]);
+		(appVersion == 1).if { project.tracks[0].mainRef.systemPitchDelta.put(\points,[]) };
 
 		// this.refreshBuffer(song, name, voice, (take ? \default));
 	}

@@ -33,14 +33,14 @@ VSTI {
 				controller = VSTPluginController(syn);
 				vstis.put(id, this);
 				Server.default.sync;
-				controller.open("/Library/Audio/Plug-Ins/VST/"++plugin,
+				controller.open(
+					plugin,
 					action:{
 						condition.signalOne;
 						action.(syn, controller);
 					}
 				);
 			}
-			
 		};
 
 		CmdPeriod.add( cmdPeriodAction )
@@ -232,17 +232,24 @@ SV : VSTI {
 // classvar plugin = "Synthesizer V Studio Pro.vst3";
 classvar plugin = "Synthesizer V Studio 2 Pro.vst3";
 var <>bus;
-*new { |path|
-	var outBus = Bus.audio(Server.default, 1);
-	var ret = super.new(
+*new { |path id|
+	id.notNil.if {
+		^VSTI.vstis[id]
+	} {
+		var outBus = Bus.audio(Server.default, 1);
+		var ret = super.new(
 			plugin, 
-			action:{|syn controller| path.notNil.if { 
-				controller.readProgram(path);
+			action:{|syn controller| 
+				path.notNil.if { 
+					controller.readProgram(path);
+				};
 				syn.set(\out, outBus)
-			} }, 
+			}, 
 			vstFolder:"VST3"
-		).init;
+		)//.init
+		;
 		ret.bus = outBus;
 		^ret
+	}
 	}
 }

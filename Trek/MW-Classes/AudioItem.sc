@@ -1,5 +1,6 @@
 AudioItem {
 	classvar <>all, <folder, <buffers;
+	var <>name, <>buffer, <>path, <>recorder;
 	
 	*initClass {
 		all = Dictionary.new(512);
@@ -35,7 +36,7 @@ AudioItem {
             ~record.if{
 					~recorder.prepareForRecord(~path, 1); 
 					Server.default.bind{ 
-						~recorder.record(~path, 8, duration: ~dur)
+						~recorder.record(~path, Server.default.options.numOutputBusChannels, duration: ~dur)
 					}
             } {
                 Server.default.makeBundle(
@@ -58,7 +59,69 @@ AudioItem {
 	);
 	}
 	
+    *new {|name|
+        var ret = super.new;
+
+        ret.recorder = Recorder(Server.default);
+		ret.name = name;
+
+        // Create buffer if it doesn't exist
+		ret.path = folder +/+ ( name.isNil.if  { Error("requires a name").throw }{ name } )  ++ ".wav";
+
+        ret.buffer = buffers[name.asSymbol] ?? {
+            buffers[name.asSymbol] = Buffer();
+            buffers[name.asSymbol];
+        };
+        // Load audio file if it exists
+        File.exists(ret.path).if{
+            ret.buffer.allocRead(ret.path).updateInfo;
+        };
+		^ret
+    }
 	*insertNew {|name|
+		Nvim.replace("AudioItem(\\\"%\\\")".format(name ++ "_" ++ Date.getDate.stamp))
+	}
+	*insertEvent {|name|
 		Nvim.replace( "(type: \\\\audioItem, name: \\\"%\\\")".format(name ++ "_" ++  Date.getDate.stamp) )
+	}
+	record {|length|
+		recorder.prepareForRecord(path, 1); 
+		Server.default.bind{ 
+			recorder.record(
+				path,
+				Server.default.options.numOutputBusChannels ,
+				duration: length
+			)
+		}
+	}
+	prepare {
+			buffer.updateInfo; 
+	}
+	play { |amp out rate, startPos latency lag|
+
+		fork{
+			var syncTime = SystemClock.seconds;
+			buffer.updateInfo;Server.default.sync;buffer.debug("BUF");
+			SystemClock.seconds - syncTime => _.debug("SyncTime");
+			Server.default.makeBundle(
+				(latency ? 0.2) + (lag ? 0) - SystemClock.seconds + syncTime,
+				{
+					{
+						PlayBuf.ar(
+							// numChannels ? 1,
+							// (buffer.numChannels == 0).if { 1}{ buffer.numChannels },
+							buffer.numChannels,
+							// 1,
+							buffer.bufnum,
+							rate: rate ? 1,
+							startPos: startPos ? 0,
+                            doneAction:2
+						)
+						* (amp ? 1)
+						=> Out.ar(out ? 0, _);
+					}.play
+				}
+			)
+		}
 	}
 }

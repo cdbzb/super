@@ -94,24 +94,19 @@ AudioItem {
 			)
 		}
 	}
-	prepare {
-			buffer.updateInfo; 
-	}
 	play { |amp out rate, startPos latency lag|
 
 		fork{
+			// get time to sync Server for buffer info
 			var syncTime = SystemClock.seconds;
-			buffer.updateInfo;Server.default.sync;buffer.debug("BUF");
-			SystemClock.seconds - syncTime => _.debug("SyncTime");
+			buffer.updateInfo;Server.default.sync;
+
 			Server.default.makeBundle(
-				(latency ? 0.2) + (lag ? 0) - SystemClock.seconds + syncTime,
+				(latency ? 0.2) + (lag ? 0) - (SystemClock.seconds - syncTime),
 				{
 					{
 						PlayBuf.ar(
-							// numChannels ? 1,
-							// (buffer.numChannels == 0).if { 1}{ buffer.numChannels },
 							buffer.numChannels,
-							// 1,
 							buffer.bufnum,
 							rate: rate ? 1,
 							startPos: startPos ? 0,

@@ -1,10 +1,11 @@
 AudioItem {
 	classvar <>all, <folder, <buffers;
 	var <>name, <>buffer, <>path, <>recorder;
+	var <>directory, <>takes;
 	
 	*initClass {
 		all = Dictionary.new(512);
-		buffers = ();
+		buffers = MultiLevelIdentityDictionary.new;
 		Class.initClassTree(Event);
 		folder = "~/tank/SC_audiofiles".standardizePath;
 		File.exists(folder).not.if{ "mkdir %".format(folder).unixCmd };
@@ -58,19 +59,28 @@ AudioItem {
 		}, (dur:5)
 	);
 	}
-	
+
     *new {|name|
         var ret = super.new;
 
         ret.recorder = Recorder(Server.default);
 		ret.name = name;
+		//takes version
+		ret.directory = folder +/+ name;
+		File.exists(ret.directory).if{
+			ret.takes = PathName(ret.directory).entries.size
+		} {
+			File.mkdir(ret.directory);
+			ret.takes = 1
+		};
 
+		//set path to most recent take
+		ret.path = ret.directory +/+ (ret.takes - 1) ++ ".wav";
         // Create buffer if it doesn't exist
-		ret.path = folder +/+ ( name.isNil.if  { Error("requires a name").throw }{ name } )  ++ ".wav";
-
-        ret.buffer = buffers[name.asSymbol] ?? {
-            buffers[name.asSymbol] = Buffer();
-            buffers[name.asSymbol];
+        ret.buffer = buffers[name.asSymbol, ret.takes - 1] ?? {
+			var newBuf = Buffer();
+            buffers.put(name.asSymbol, ret.takes, newBuf);
+			newBuf;
         };
         // Load audio file if it exists
         File.exists(ret.path).if{
@@ -84,17 +94,58 @@ AudioItem {
 	*insertEvent {|name|
 		Nvim.replace( "(type: \\\\audioItem, name: \\\"%\\\")".format(name ++ "_" ++  Date.getDate.stamp) )
 	}
-	record {|length|
-		recorder.prepareForRecord(path, 1); 
-		Server.default.bind{ 
-			recorder.record(
-				path,
-				Server.default.options.numOutputBusChannels ,
-				duration: length
+	record {
+		|length|
+		var path;
+		takes = takes + 1;
+		path = directory +/+ takes ++ ".wav";
+		recorder.prepareForRecord(path);
+			Server.default.bind{ 
+				recorder.record(
+					path,
+					Server.default.options.numOutputBusChannels ,
+					duration: length
+				)
+			};
+			fork{ length.wait; buffers.put(name, takes, Buffer.read(Server.default, path)).debug("BUFFER") };
+			CmdPeriod.doOnce{ buffers.put(name, takes, Buffer.read(Server.default, path)) };
+	}
+	take { |num|
+        ^Take(name, num)
+	}
+
+    play {
+        ^Take(name, takes).play
+    }
+}
+Take : AudioItem {
+    var name, num, buffer;
+    *new { |name, num|
+        var newTake = super.newCopyArgs;
+		var directory = folder +/+ name;
+        newTake.buffer = AudioItem.buffers[name.asSymbol][num].notNil.if { 
+			 AudioItem.buffers[name.asSymbol][num] 
+		} {
+			 AudioItem.buffers.put(name.asSymbol, num, Buffer.read(Server.default,directory +/+ num ++ ".wav"));
+			 AudioItem.buffers[name.asSymbol][num]
+		} 
+        ^newTake
+    }
+	playbuf {| amp out rate startPos |
+		^ 
+			PlayBuf.ar(
+				buffer.numChannels,
+				buffer.bufnum,
+				rate: rate ? 1,
+				startPos: startPos ? 0,
+				doneAction:2
 			)
-		}
+			* (amp ? 1)
+			=> Out.ar(out ? 0, _);
+		
 	}
 	play { |amp out rate, startPos latency lag|
+		// take.notNil.if { buffer = buffers[name][playTake] };
 
 		fork{
 			// get time to sync Server for buffer info
@@ -104,17 +155,7 @@ AudioItem {
 			Server.default.makeBundle(
 				(latency ? 0.2) + (lag ? 0) - (SystemClock.seconds - syncTime),
 				{
-					{
-						PlayBuf.ar(
-							buffer.numChannels,
-							buffer.bufnum,
-							rate: rate ? 1,
-							startPos: startPos ? 0,
-                            doneAction:2
-						)
-						* (amp ? 1)
-						=> Out.ar(out ? 0, _);
-					}.play
+					{this.playbuf(amp, out, rate, startPos)}.play
 				}
 			)
 		}

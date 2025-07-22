@@ -68,18 +68,19 @@ AudioItem {
 		//takes version
 		ret.directory = folder +/+ name;
 		File.exists(ret.directory).if{
-			ret.takes = PathName(ret.directory).entries.size
+			ret.takes = PathName(ret.directory).entries.size;  // Count of existing files
 		} {
 			File.mkdir(ret.directory);
-			ret.takes = 1
+			ret.takes = 0;  // No files yet, so count is 0
 		};
 
-		//set path to most recent take
-		ret.path = ret.directory +/+ (ret.takes - 1) ++ ".wav";
-        // Create buffer if it doesn't exist
-        ret.buffer = buffers[name.asSymbol, ret.takes - 1] ?? {
+		// Set path to most recent take (takes-1, or 0 if no files exist)
+		ret.path = ret.directory +/+ (ret.takes - 1).max(0) ++ ".wav";
+		
+        // Create buffer for the most recent take if it exists
+        ret.buffer = buffers[name.asSymbol, (ret.takes - 1).max(0)] ?? {
 			var newBuf = Buffer();
-            buffers.put(name.asSymbol, ret.takes, newBuf);
+            buffers.put(name.asSymbol, (ret.takes - 1).max(0), newBuf);  // Store at correct index
 			newBuf;
         };
         // Load audio file if it exists
@@ -97,25 +98,31 @@ AudioItem {
 	record {
 		|length|
 		var path;
-		takes = takes + 1;
-		path = directory +/+ takes ++ ".wav";
+		path = directory +/+ takes ++ ".wav";  // New file at index 'takes'
 		recorder.prepareForRecord(path);
-			Server.default.bind{ 
-				recorder.record(
-					path,
-					Server.default.options.numOutputBusChannels ,
-					duration: length
-				)
-			};
-			fork{ length.wait; buffers.put(name, takes, Buffer.read(Server.default, path)).debug("BUFFER") };
-			CmdPeriod.doOnce{ buffers.put(name, takes, Buffer.read(Server.default, path)) };
+		Server.default.bind{ 
+			recorder.record(
+				path,
+				Server.default.options.numOutputBusChannels,
+				duration: length
+			)
+		};
+		fork{
+			length.wait; 
+			buffers.put(name, takes, Buffer.read(Server.default, path)).debug("BUFFER");
+			takes = takes + 1;  // Increment after successful recording
+		};
+		CmdPeriod.doOnce{
+			buffers.put(name, takes, Buffer.read(Server.default, path));
+			takes = takes + 1;  // Also increment here
+		};
 	}
 	take { |num|
         ^Take(name, num)
 	}
 
     play {
-        ^Take(name, takes).play
+        ^Take(name, takes - 1).play  // Play the most recent take
     }
 }
 Take : AudioItem {

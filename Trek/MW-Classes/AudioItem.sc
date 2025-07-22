@@ -108,13 +108,16 @@ AudioItem {
 			)
 		};
 		fork{
-			length.wait; 
-			buffers.put(name, takes, Buffer.read(Server.default, path)).debug("BUFFER");
+			length + 0.05 => _.wait;  // time for file to write?
+			buffers.put(name, takes, Buffer.read(Server.default, path).debug("BUFFER"));
 			takes = takes + 1;  // Increment after successful recording
 		};
 		CmdPeriod.doOnce{
-			buffers.put(name, takes, Buffer.read(Server.default, path));
-			takes = takes + 1;  // Also increment here
+			fork{
+				0.05.wait; //time for file to write?
+				buffers.put(name, takes, Buffer.read(Server.default, path));
+				takes = takes + 1;  // Also increment here
+			}
 		};
 	}
 	take { |num|
@@ -141,7 +144,7 @@ Take : AudioItem {
 	playbuf {| amp out rate startPos |
 		^ 
 			PlayBuf.ar(
-				buffer.numChannels,
+				buffer.numChannels max: 1,
 				buffer.bufnum,
 				rate: rate ? 1,
 				startPos: startPos ? 0,

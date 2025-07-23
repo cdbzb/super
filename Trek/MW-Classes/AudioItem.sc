@@ -48,7 +48,7 @@ AudioItem {
                                 ~numChannels ? 1,
                                 buffer.bufnum,
                                 rate: ~rate ? 1,
-                                startPos: ~startPos ? 0
+                                startPos: ~startPos !? (_ * Server.default.sampleRate) ? 0
                             )
                             * (~amp ? 1)
                             => Out.ar(~out ? 0, _)

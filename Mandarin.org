@@ -11,7 +11,8 @@
    "~/tank/super/scd/Mandarin/Neon-with-beat.scd".standardizePath.load
    #+END_SRC
 
-*** TODO needs V2 lyrics!
+*** DONE needs V2 lyrics!
+    CLOSED: [2025-07-17 Thu 06:59]
 *** TODO add quarter hats to top (sounds good in V2 !!)
 *** idea: backing vox in the chorus
 *** idea: extra shimmer/fluttering in the verse where he sings with the nil voice
@@ -459,18 +460,21 @@ Singing a promise of worth.
 **** here's one!
 #+BEGIN_SRC supercollider
 	 Mandarin.load('c#');
+	 /*
+	 Mandarin.edit('c#');
+	 */
      (
-         var noChords = (type:\seg, section: [0,1,2,3].q, mute:
-		 [
-		 	// \lowBass,
-		 	\chords //quarters hmmm..... save for V2
-		 ], lowBassAmp:0.02
-		 );
+         var verse = ( type:\seg, section: [0,1,2,3].q );
          (
              type:\seg, 
 			 // mute: \jun,
              section:[
-                 noChords,
+                 verse ++ ( mute: [
+         		\lowBass,
+         		\chords //quarters hmmm..... save for V2
+         	],
+         	lowBassAmp:0.02
+				 ),
                  [\testPluck, (type:\seg, section:\chorus1, solo:\pluck, pluckEnd:  218+ /*104*/ /*59*/ 61 )]  ,
 				 \V2, \v2Repeat
          ].drop(0).q, 

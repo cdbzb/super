@@ -7,7 +7,7 @@ P.synthV(\jun, take: \lead, params: {|p b| [
 	pitchTake: 1,
 	language: \mandarin,
 	phoneset: \xsampa,
-	vocalMode: \tsubaki
+	vocalMode: \Tsubaki
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -115,10 +115,11 @@ P.synthV(\jun, take: \lead, params: {|p b| [夏雨薇
 ["verseRepeat", "3 4 5 4 3 2 4 ".dm(\c), "e e qqqe e e e qq".beats * Song.quarter].addLine;
 P.synthV(\jun, take: \lead, params: {|p b| [
 	lyrics: "夏 雨 薇 风 轻 轻 唱",
-	pitchTake: 2,
+	pitchTake: 3,
+	paramTension:0.2,
 	language: \mandarin,
 	phoneset: \xsampa,
-	vocalMode: \tsubaki
+	vocalMode: \Tsubaki
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -152,7 +153,7 @@ P.synthV(\jun, take: \lead, params: {|p b| [
 	pitchTake: 2,
 	language: \mandarin,
 	phoneset: \xsampa,
-	vocalMode: \tsubaki
+	vocalMode: \Tsubaki
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -270,13 +271,11 @@ P.synthVs(\jun, take: [ \lead, \dbl ],
 });
 ["chLine2", "r",Song.quarter * 16].addLine;
 // Find the half notes using .gui and use them as the tune
-( // ["testPluck" ].addline
-MIDIItem("241217_102915").take(8).fromNote(218)//.gui
-.addLine("testPluck", {|e| e[[1, 5, 11, 16, 20, 24, 30, 35, 39, 45, 51, 55, 59/*, 66, 72, 77, 81, 87, 94, 108 */ ]] });
+// ["testPluck" ].addline
+"[testPluck" => {|i| MIDIItem("241217_102915").take(8).fromNote(218).addLine(i.drop(1), {|e| e[[1, 5, 11, 16, 20, 24, 30, 35, 39, 45, 51, 55, 59/*, 66, 72, 77, 81, 87, 94, 108 */ ]] }) };
 Song.durs[\testPluck] = Song.durs[\testPluck].list.drop(-1).q;
 // Set the tempoMap
 Song.setTempoMap("testPluck", "h h h h h h h h h h h h h h h h");
-);
 // this SynthV rhythm is warped to the tempoMap above
 P.synthVs(\jun, take: [ \lead, \dbl ], pbind: {|p b|
 		[
@@ -311,13 +310,14 @@ P.synthVs(\jun, take: [ \lead, \dbl ], pbind: {|p b|
 // P.tune(); //bass notes
 P.tune({ |i| var bn=~bassNoteAmp ? 0.5; i <>(instrument:\sawSynth, amp:bn)}); //bass notes
 P(\lead, music: { |p b e|
-	MicroKeys.mono(\ld).synth_(\stringyy, [release: 3]);//.add(\quiet, {|e| e.vel.notNil.if{ e.vel = e.vel / 2 }; e}, \addBefore, \synth);
+	MicroKeys.mono(\ld).synth_(\stringyyPan, [release: 3 ]);//.add(\quiet, {|e| e.vel.notNil.if{ e.vel = e.vel / 2 }; e}, \addBefore, \synth);
 	// .monitor
 	// .record
 	MIDIItem("241220_132623")
 	// .record(\ld) 
-	.filter({|i| i.collect{|e| e.amp.notNil.if{e.amp_ (e.amp * 2  ); e}{e}}})
 	.filterNotes({|i| [5, 4, 3, 3].dm('c#', 6).do {|num x| i[26 + x].midinote_(num)}; i})
+	.filter({|i| i.collect{|e| e.amp.notNil.if{e.amp_ (e.amp * 2  ); e}{e}}})
+	.filter({|i| i.collect{|e| e.params = (pan:0.5); e}{e}})
 	// .start_(3)
 	.fromNote(2, 31)
 	.play(\ld);

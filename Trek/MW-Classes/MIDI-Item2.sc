@@ -3,7 +3,7 @@ MIDIItem2 : MIDIItem{
 		^MIDIItem(*args)
 	}
 	*value{ |func|
-		^MIDIItemPlayer(this.midiEvents, this)
+		^MIDIItemPlayer(this.midiEvents, this).copyBounds(this)
 	}
 }
 AbstractMidiEvents { 
@@ -145,7 +145,7 @@ gui { |take|
 		^MIDIItemPlayer(
 			this.midiEvents.select{|e| e.midicmd == \noteOn},
 			this.source
-		)
+		).copyBounds(this)
 	}
 	
 	dur {
@@ -161,11 +161,12 @@ gui { |take|
 		// => _.sort{|e f| e.collect(_.midinote).mean > f.collect(_.midinote).mean}
 	}
 	doesNotUnderstand{|selector ...args|
+        // for collect - reject - select - drop 
 		this.midiEvents.respondsTo(selector).if{
 			^MIDIItemPlayer(
 				Message(this.midiEvents.deepCopy, selector, args).(),
 				this.source
-			)
+			).copyBounds(this)
 		}{
 			MIDIItemPlayer.findRespondingMethodFor(selector).notNil.if{
 				^Message(this.player, selector, args).()
@@ -537,7 +538,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		start = event.start; end = event.end
 	}
 	copyBounds {|mi|
-		start = mi.bounds.start; end =mi.bounds.end
+		start = mi.start; end =mi.end
 	}
 
 	play { |mk clock post=#[] overdub=false take|
@@ -746,17 +747,17 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			// (indices: this.noteIndices).use{ func.(midiEvents).valueEnvir })
 			func.(midiEvents, this.notes),
 			this.source
-		)
+		).copyBounds(this)
 	}
 	pickNotes { |list|
-		^MIDIItemPlayer( this.notes[list], source: this)
+		^MIDIItemPlayer( this.notes[list], source: this).copyBounds(this)
 	}
 	filter {|func|
 		^MIDIItemPlayer(
 			// (indices: this.noteIndices).use{ func.(midiEvents).valueEnvir })
 			func.(midiEvents),
 			this.source
-		)
+		).copyBounds(this)
 	}
 	//modify only elements for which choiceFunc answers true
 	filterOnly { |choiceFunc, actionFunc| 
@@ -774,7 +775,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
                 note
             )
         };
-        ^MIDIItemPlayer(midiEvents, this.source)
+        ^MIDIItemPlayer(midiEvents, this.source).copyBounds(this)
     }
 
 	notes { |aMidiEvents|
@@ -786,7 +787,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	// 	midiEvents.select({|e| e.midicmd == \noteOn})
 	// 	.collect({|e| [midiEvents.indexOf(e),  e]})
 	// 	.do({|e x| out.put(e[0], func.(e[1], x))});
-	// 	^MIDIItemPlayer(out, this.source)
+	// 	^MIDIItemPlayer(out, this.source).copyBounds(this)
 	// }
 
 	pasteKey{|key precision=2|
@@ -796,7 +797,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		var out = midiEvents.deepCopy;
 		var array = this[key];
 		func.(array).do{|i x| this.notes(out)[x].put(key, i)};
-		^MIDIItemPlayer(out, this.source)
+		^MIDIItemPlayer(out, this.source).copyBounds(this)
 	}
 	//modify only tracks with CC (by number) or other specified midicmd (\bend, \noteOn, \poly)
 	filterOnlyMidicmd {|track actionFunc|
@@ -812,13 +813,13 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		^MIDIItemPlayer(
 			midiEvents.reject{|e| e.type == \setCC and: ( e.ctlNum == num )} ,
 			this.source
-		);
+		).copyBounds(this);
 	}
 	initialCCOnly{ |num|
 		^MIDIItemPlayer(
 			midiEvents.reject{|e| e.type == \setCC and: ( e.ctlNum == num ) and: (e.initial.isNil)} ,
 			this.source
-		)
+		).copyBounds(this)
 	}
 	tempomap {|beats choiceFunc|
 		beats.isString.if{ beats = beats.beats };
@@ -828,7 +829,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		^MIDIItemPlayer(
 			this.makeNotes,
 			this.source
-		)
+		).copyBounds(this)
 	}
 	synthVPbind { |choiceFunc|
 		var initialRestDur = midiEvents.select{|e| 

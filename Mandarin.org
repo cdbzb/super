@@ -462,10 +462,14 @@ Singing a promise of worth.
 	 Mandarin.load('c#');
 	 /*
 	 Mandarin.edit('c#');
-
+	 Song.synthVtracks
 	 */
+	 (type:\seg, section:\chorus1,solo:\jun, junChorus: {|i|  HPF.ar(i, 100) + i /20}).play;
      (
          var verse = ( type:\seg, section: [0,1,2,3].drop(3).q );
+		 var junChorus = {|i|
+		 PlateReverb.ar(i)
+		 };
          (
              type:\seg, 
 			 // mute: \jun,

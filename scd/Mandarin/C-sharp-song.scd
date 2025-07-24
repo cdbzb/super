@@ -266,21 +266,23 @@ P.synthVs(\jun, take: [ \lead, \dbl ],
         language: \mandarin,
         phoneset: \xsampa
 ] }, music:{|p b e|
+	var fx = ~junChorus;
+	var amp = ~junChorusAmp;
 	{
 		e.playbuf
 		//compensation for lag above
 		=> DelayN.ar(_, 2, 2.5 * p.quarter - 0.2) 
-		=> 
-		p.synthVTracks.notNil.if  {
-			p.synthVTracks.at(\junChorus).notNil.if {
-				p.synthVTracks.at(\junChorus)
-			}   
-		} { 
+		=> fx.isNil.if  {
 			{|i|
 				FreeVerb.ar(i,0.3,1)
 				* -6.dbamp
 			}
+		} {
+			fx
 		}
+		* (amp ? 1)
+
+
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
@@ -314,20 +316,23 @@ P.synthVs(\jun, take: [ \lead, \dbl ], pbind: {|p b|
         language: \mandarin,
         phoneset: \xsampa
 ] }, music:{|p b e|
+	var fx = ~junChorus;
+	var amp = ~junChorusAmp;
 	{
 		e.playbuf
 		//compensation for lag above
 		=> DelayN.ar(_, 2, 2.5 * p.quarter - 0.2) 
-		=> p.synthVTracks.notNil.if  {
-			p.synthVTracks.at(\junChorus).notNil.if {
-				p.synthVTracks.at(\junChorus)
-			}   
-		} { 
+		=> fx.isNil.if  {
 			{|i|
 				FreeVerb.ar(i,0.3,1)
 				* -6.dbamp
 			}
+		} {
+			fx
 		}
+		* (amp ? 1)
+
+
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });

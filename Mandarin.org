@@ -464,13 +464,16 @@ Singing a promise of worth.
 	 Mandarin.edit('c#');
 	 Song.synthVtracks
 	 */
-	 (type:\seg, section:\chorus1,solo:\jun, junChorus: {|i|  HPF.ar(i, 100) + i /20}).play;
      (
-         var verse = ( type:\seg, section: [0,1,2,3].drop(3).q );
-		 var junChorus = {|i|
-		 PlateReverb.ar(i)
-		 };
-         (
+         var verse = ( type:\seg, section: [0,1,2,3].drop(0).q );
+
+		 (  // Chorus levels
+			 // junChorus: {|i| PlateReverb.ar(i, mix:0.5)=>HPF.ar(_, 100) /2  },
+			 junChorus: {|i| FreeVerb.ar(i, 0.3, 1) => HPF.ar(_, 120) * -3.dbamp  },
+			 pluckGain: 1.25,
+             leadAmp: 0.75,
+		 ) 
+         ++ (
              type:\seg, 
 			 // mute: \jun,
              section:[
@@ -481,18 +484,17 @@ Singing a promise of worth.
          	lowBassAmp:0.02
 				 ),
 		 //add vol param to \pluck?
-                 [\testPluck, 
-		 (type:\seg, section:\chorus1, solo:\pluck, pluckGain:1.4, pluckEnd:  218+ /*104*/ /*59*/ 61 )
-		 ]  ,
+                 [\testPluck, (type:\seg, section:\chorus1, solo:\pluck,  pluckEnd:  218+ /*104*/ /*59*/ 61,) ]  ,
 				 (type: \seg, extra: {MIDIItem("_250723_152718")
 				 .filter({|i| i.collect {|e| e.amp.notNil.if {e.amp_(e.amp/6)}; e}})
 				 .start_(0.2)
-				 .play(\sawSynthSustain)}, section: \V2)
+				 .play(\sawSynthSustain)}, section: \V2, verseChordAmp:2)
 				 ,
-				 \v2Repeat
-         ].drop(1).q, 
+				 \V2Line2,\verse2Repeat, \verse2Repeat2 ,
+				 \testPluck
+         ].drop(2).q, 
          bassNoteAmp:0.10 
-     ).play
+     ) => _.play
      )
      MicroKeys(\stringyy).monitor
      (
@@ -500,6 +502,6 @@ Singing a promise of worth.
 	     var mk = MicroKeys.mono(\stringyyPan);
 	     // MIDIItem("_250723_152718") .record (\stringyy);
 	     MIDIItem("_250723_152718") .play(mk);
-	     (type:\seg, section: [\V2, \v2Repeat, \V2, \v2Repeat].q).play; 
+	     (type:\seg, section: [\V2, \V2Line2, \V2Repeat, \V2Repeat2].q).play; 
      )
 #+END_SRC

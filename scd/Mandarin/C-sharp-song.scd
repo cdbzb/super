@@ -59,6 +59,7 @@ P(\lowBass, music: {|p b e|
 	].pp
 });
 P(\chords, music: { |p b e|
+	var amp = (~verseChordAmp ? 1);
 	{
 
 		Env.perc(0,2.4).kr(0,gate: Impulse.kr(p.quarter.reciprocal /2  ) -0.001) *
@@ -68,11 +69,16 @@ P(\chords, music: { |p b e|
 				[1, 4, 6],
 				[1, 4, 6],
 				[2, 5, 7]
-			].df(\c, 5).dq(2).demand([4, 4, 4, 4, 4, 4] * p.quarter)
+			].df(\c, 5, tuning: \just).dq(2).demand(
+				// [4, 4, 4, 4, 4, 4] * p.quarter
+				p.quarter.dup(7) * 4
+			)
 		)
 		=> DelayN.ar(_,0.05, [0, 0.02, 0.0271])
 		/ 30
 		=> Phaser2.ar(_, rate:0.2)
+		* EnvGen.cutoff(p.quarter * 31, p.quarter )
+		* amp
 	}.play
 });
 ["花 瓣 落 如 诗- 一- 样-", "-1 2 3 4 3 2 1 2 3 2 1".dm(\c), "q e e qqe e e e e e e e".beats * Song.quarter].addLine;
@@ -240,7 +246,7 @@ P(\lead, music: { |p b e|
 	// .record
 	MIDIItem("241220_132623")
 	// .record(\ld) 
-	.filter({|i| i.collect{|e| e.amp.notNil.if{e.amp_ (e.amp * 2  ); e}{e}}})
+	.filter({|i| i.collect{|e| e.amp.notNil.if{e.amp_ (e.amp * 2 * ( ~leadAmp ? 1 )  ); e}{e}}})
 	// .start_(3)
 	.fromNote(2, 47)
 	.filterNotes({|i| i.collect{|e x| (42..44).includes(x).if {e.amp.notNil.if{e.amp_ (e.amp / 2  )}; e}{e}}})
@@ -345,7 +351,7 @@ P(\lead, music: { |p b e|
 	MIDIItem("241220_132623")
 	// .record(\ld) 
 	.filterNotes({|i| [5, 4, 3, 3].dm('c#', 6).do {|num x| i[26 + x].midinote_(num)}; i})
-	.filter({|i| i.collect{|e| e.amp.notNil.if{e.amp_ (e.amp * 2  ); e}{e}}})
+	.filter({|i| i.collect{|e| e.amp.notNil.if{e.amp_ (e.amp * 2 * ( ~leadAmp ? 0 )  ); e}{e}}})
 	.filter({|i| i.collect{|e| e.params = (pan:0.5); e}{e}})
 	// .start_(3)
 	.fromNote(2, 31)
@@ -356,6 +362,7 @@ P(\lead, music: { |p b e|
 P.clone('夏雨薇', [\bass, \lowBass, \chords, \kevin]);
 P.synthV(\jun, take: \lead, params: {|p b| [
 	lyrics: "星 河 转 时 光 飘 散 ",
+
 	pitchTake: 1,
 	language: \mandarin,
 	phoneset: \xsampa,
@@ -373,13 +380,13 @@ P(\cymbal, music: {|p b e|
 		amp:0.02
 	).play
 });
-["v2Repeat","-1 2 3 4 3 2 1 2 3 2 1".dm(\c), "q e e qqe e e e e e e e".beats * Song.quarter].addLine;
+["V2Line2","-1 2 3 4 3 2 1 2 3 2 1".dm(\c), "q e e qqe e e e e e e e".beats * Song.quarter].addLine;
 P.synthV(\jun, take: \lead, params: {|p b| [
 	lyrics: "r 梦 境 中 她 的 影 不 消 散 -",
 	pitchTake: 1,
 	language: \mandarin,
 	phoneset: \xsampa,
-	vocalMode: \tsubaki
+	vocalMode: \Tsubaki
 ] }, music:{|p b e|
 	{
 		e.playbuf
@@ -394,6 +401,78 @@ P(\cymbal, music: {|p b e|
 		amp:0.02
 	)//.play
 });
+["verse2Repeat", "3 4 5 4 3 2 4 ".dm(\c), "e e qqqe e e e qq".beats * Song.quarter].addLine;
+P.synthV(\jun, take: \lead, params: {|p b| [
+	lyrics: "迷 雾 中 回 声 在 飘 荡",
+	pitchTake: 2,
+	paramTension:0.2,
+	language: \mandarin,
+	phoneset: \xsampa,
+	vocalMode: \Tsubaki
+] }, music:{|p b e|
+	{
+		e.playbuf
+		/4
+		// => p.synthVTracks.at(e.key).()
+		=> (Song.synthVTracks !? _[\junVerse] ? I.d)
+	}.play
+});
+P.synthV(\kevin, take: \lead,
+	pbind: {|p b|
+		[
+			dur: "e e qqq".beats * Song.quarter,
+			midinote: "1 2 3".dm(\c)
+		].p
+	},
+	params: {|p b| [
+	lyrics: "迷 雾 中 回 声 在 飘 荡",
+	pitchTake: 1,
+	language: \mandarin,
+	phoneset: \xsampa
+] }, music:{|p b e|
+	{
+		e.playbuf
+		/4
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+P.clone('夏雨薇',[ \bass, \lowBass ]);
+["verse2Repeat2", "-1 2 3 4 3 2 1 2 3 2 1".dm(\c), "q e e qqe e e e e e e e".beats * Song.quarter].addLine;
+P.synthV(\jun, take: \lead, params: {|p b| [
+	lyrics: "r 她 的 心 在 寻 找 着 方 向 -",
+	pitchTake: 2,
+	language: \mandarin,
+	phoneset: \xsampa,
+	vocalMode: \Tsubaki
+] }, music:{|p b e|
+	{
+		e.playbuf
+		/4
+		=> (Song.synthVTracks !? _[\junVerse] ? I.d)
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+P.synthV(\kevin, take: \lead,
+	pbind: {|p b|
+		[
+			dur: "e e qqq".beats * Song.quarter,
+			midinote: "-6 1 2".dm(\c)
+			// * 3.dbamp
+		].p
+	},
+	params: {|p b| [
+	lyrics: "她 的 心",
+	pitchTake: 1,
+	language: \mandarin,
+	phoneset: \xsampa
+] }, music:{|p b e|
+	{
+		e.playbuf
+		/4
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+P.clone('花 瓣 落',[ \bass, \lowBass ]);
 // .addLine("moreTestPluck", {|e| e[[82, 86, 93, 99, 106, 117, 126, 133, 142]] });
 // Song.setTempoMap(\moreTestPluck, "h h h h h h h h");
 // P.tune(_ <>(instrument:\sawSynth, amp:0.5)); //bass notes

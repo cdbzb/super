@@ -216,8 +216,8 @@ P(\click, music: { |p b e|
 });
 P(\pluck,lag: -0.08, music: { |p b e|
 	MIDIItem("241217_102915").take(8).fromNote(218, ~pluckEnd)//.gui
+.start_(73)
 .filter({|i| i.collect{|e| e.amp.notNil.if{e.amp_ (e.amp * (~pluckGain ? 1)); e}{e}}})
-.start_(73)		
 .play(\pluck); // Rocking between c and c#
 });
 P(\vocalLine, music: { |p b e|
@@ -242,7 +242,9 @@ P(\lead, music: { |p b e|
 	// .record(\ld) 
 	.filter({|i| i.collect{|e| e.amp.notNil.if{e.amp_ (e.amp * 2  ); e}{e}}})
 	// .start_(3)
-	.fromNote(2)
+	.fromNote(2, 47)
+	.filterNotes({|i| i.collect{|e x| (42..44).includes(x).if {e.amp.notNil.if{e.amp_ (e.amp / 2  )}; e}{e}}})
+	
 	.play(\ld);
 });
 P.synthVs(\jun, take: [ \lead, \dbl ], 

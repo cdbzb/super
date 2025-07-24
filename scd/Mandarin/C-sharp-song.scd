@@ -12,7 +12,7 @@ P.synthV(\jun, take: \lead, params: {|p b| [
 	{
 		e.playbuf
 		/4
-		// => p.synthVTracks.at(e.key).()
+		=> (Song.synthVTracks !? _[\junVerse] ? I.d)
 	}.play
 });
 P.synthV(\kevin, take: \lead, params: {|p b| [
@@ -109,6 +109,7 @@ P.synthV(\jun, take: \lead, params: {|p b| [夏雨薇
 	{
 		e.playbuf
 		/4
+		=> (Song.synthVTracks !? _[\junVerse] ? I.d)
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
@@ -125,6 +126,7 @@ P.synthV(\jun, take: \lead, params: {|p b| [
 		e.playbuf
 		/4
 		// => p.synthVTracks.at(e.key).()
+		=> (Song.synthVTracks !? _[\junVerse] ? I.d)
 	}.play
 });
 P.synthV(\kevin, take: \lead,
@@ -158,6 +160,7 @@ P.synthV(\jun, take: \lead, params: {|p b| [
 	{
 		e.playbuf
 		/4
+		=> (Song.synthVTracks !? _[\junVerse] ? I.d)
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
@@ -213,8 +216,8 @@ P(\click, music: { |p b e|
 });
 P(\pluck,lag: -0.08, music: { |p b e|
 	MIDIItem("241217_102915").take(8).fromNote(218, ~pluckEnd)//.gui
+.filter({|i| i.collect{|e| e.amp.notNil.if{e.amp_ (e.amp * (~pluckGain ? 1)); e}{e}}})
 .start_(73)		
-// .filter({|i| i.collect{|e| e.amp.notNil.if{e.amp_ (e.amp -30); e}{e}}})
 .play(\pluck); // Rocking between c and c#
 });
 P(\vocalLine, music: { |p b e|
@@ -256,23 +259,33 @@ P.synthVs(\jun, take: [ \lead, \dbl ],
 		legato: [
 			[1, 1, 1, 1, 1, 0.5, 1, 1, 1, 1, 1, 1,  1, 1, 1, 1, 1, 1, 1]
 		],
-        lag:  [0.1.dup(12) ++ 0.0.dup(7)],
+        lag:  [0.2.dup(12) ++ 0.0.dup(7)],
 		pitchTake: [ 1, 2 ], 
         language: \mandarin,
         phoneset: \xsampa
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		=> DelayN.ar(_, 2, 2.5 * p.quarter - 0.1) 
-		=> FreeVerb.ar(_,0.3,1)
-		* -6.dbamp
+		//compensation for lag above
+		=> DelayN.ar(_, 2, 2.5 * p.quarter - 0.2) 
+		=> 
+		p.synthVTracks.notNil.if  {
+			p.synthVTracks.at(\junChorus).notNil.if {
+				p.synthVTracks.at(\junChorus)
+			}   
+		} { 
+			{|i|
+				FreeVerb.ar(i,0.3,1)
+				* -6.dbamp
+			}
+		}
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
 ["chLine2", "r",Song.quarter * 16].addLine;
 // Find the half notes using .gui and use them as the tune
 // ["testPluck" ].addline
-"[testPluck" => {|i| MIDIItem("241217_102915").take(8).fromNote(218).addLine(i.drop(1), {|e| e[[1, 5, 11, 16, 20, 24, 30, 35, 39, 45, 51, 55, 59/*, 66, 72, 77, 81, 87, 94, 108 */ ]] }) };
+"testPluck" => {|i| MIDIItem("241217_102915").take(8).fromNote(218).addLine(i, {|e| e[[1, 5, 11, 16, 20, 24, 30, 35, 39, 45, 51, 55, 59/*, 66, 72, 77, 81, 87, 94, 108 */ ]] }) };
 Song.durs[\testPluck] = Song.durs[\testPluck].list.drop(-1).q;
 // Set the tempoMap
 Song.setTempoMap("testPluck", "h h h h h h h h h h h h h h h h");
@@ -294,16 +307,25 @@ P.synthVs(\jun, take: [ \lead, \dbl ], pbind: {|p b|
 		legato: [
 			[1, 1, 1, 1, 1, 0.5, 1, 1, 1, 1, 1, 1,  1, 1, 1, 1, 1, 1, 1,  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 		],
-        lag:  [0.1.dup(12) ++ 0.1.dup(8) ++ 0.1.dup(10) => _.flat],
+        lag:  [0.2.dup(12) ++ 0.2.dup(8) ++ 0.2.dup(10) => _.flat],
 		pitchTake: [ 1, 2 ], 
         language: \mandarin,
         phoneset: \xsampa
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		=> DelayN.ar(_, 2, 2.5 * p.quarter - 0.1) 
-		=> FreeVerb.ar(_,0.3,1)
-		* -6.dbamp
+		//compensation for lag above
+		=> DelayN.ar(_, 2, 2.5 * p.quarter - 0.2) 
+		=> p.synthVTracks.notNil.if  {
+			p.synthVTracks.at(\junChorus).notNil.if {
+				p.synthVTracks.at(\junChorus)
+			}   
+		} { 
+			{|i|
+				FreeVerb.ar(i,0.3,1)
+				* -6.dbamp
+			}
+		}
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });

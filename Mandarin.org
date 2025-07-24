@@ -462,9 +462,10 @@ Singing a promise of worth.
 	 Mandarin.load('c#');
 	 /*
 	 Mandarin.edit('c#');
+
 	 */
      (
-         var verse = ( type:\seg, section: [0,1,2,3].q );
+         var verse = ( type:\seg, section: [0,1,2,3].drop(3).q );
          (
              type:\seg, 
 			 // mute: \jun,
@@ -475,10 +476,26 @@ Singing a promise of worth.
          	],
          	lowBassAmp:0.02
 				 ),
-                 [\testPluck, (type:\seg, section:\chorus1, solo:\pluck, pluckEnd:  218+ /*104*/ /*59*/ 61 )]  ,
-				 \V2, \v2Repeat
-         ].drop(0).q, 
+		 //add vol param to \pluck?
+                 [\testPluck, 
+		 (type:\seg, section:\chorus1, solo:\pluck, pluckGain:1.4, pluckEnd:  218+ /*104*/ /*59*/ 61 )
+		 ]  ,
+				 (type: \seg, extra: {MIDIItem("_250723_152718")
+				 .filter({|i| i.collect {|e| e.amp.notNil.if {e.amp_(e.amp/6)}; e}})
+				 .start_(0.2)
+				 .play(\sawSynthSustain)}, section: \V2)
+				 ,
+				 \v2Repeat
+         ].drop(1).q, 
          bassNoteAmp:0.10 
      ).play
+     )
+     MicroKeys(\stringyy).monitor
+     (
+     //recording string line for V2
+	     var mk = MicroKeys.mono(\stringyyPan);
+	     // MIDIItem("_250723_152718") .record (\stringyy);
+	     MIDIItem("_250723_152718") .play(mk);
+	     (type:\seg, section: [\V2, \v2Repeat, \V2, \v2Repeat].q).play; 
      )
 #+END_SRC

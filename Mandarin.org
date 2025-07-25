@@ -1,4 +1,5 @@
 * Refile
+* Website!
 * Songs
 ** Memories
    [[file://Users/michael/tank/super/scd/Mandarin/new mandarin song.scd][file]] 
@@ -213,7 +214,11 @@ down at the end of [[little sketch!! "Not good enough for you"][sketching]]
 
    
 
-** automobile "~/tank/super/scd/Mandarin/automobile.scd"
+** automobile "~/tank/super/scd/Mandarin/automobile2.scd"
+   play by interpreting:
+   #+BEGIN_SRC supercollider
+   ~song.p([array of sections])
+   #+END_SRC
 *** lyrics: 
 (e) 夜 | (e) 深 | (q) 梦 | (q) 醒 | (q) 时 | (e) 你 | (e) 在
 (yè) | (shēn) | (mèng) | (xǐng) | (shí) | (nǐ) | (zài)
@@ -236,7 +241,6 @@ down at the end of [[little sketch!! "Not good enough for you"][sketching]]
 (e) 让 | (e) 爱 | (q) 像 | (q) 电 | (q) 流 | (e) 穿 | (e) 透
 (ràng) | (ài) | (xiàng) | (diàn) | (liú) | (chuān) | (tòu)
 ["Let | love | shock | like | lightning | through | us"]
-*** website!!
 *** Songs
 **** Memories "./new mandarin song.scd" 
 ***** TODO where are the drums in Ch1?? [[id:A8A855EE-8E3F-404E-AD57-F921ABACC49E][Memories]] 
@@ -418,6 +422,7 @@ Singing a promise of worth.
 **** Mixes
 ***** basic Form
      #+BEGIN_SRC supercollider
+	  Mandarin.load(\neon2);
      (
      ~verse = [0, 1, 2];
      ~chorus = (type: \seg, section: [3, 4].q );
@@ -492,7 +497,7 @@ Singing a promise of worth.
 				 ,
 				 \V2Line2,\verse2Repeat, \verse2Repeat2 ,
 				 \testPluck
-         ].drop(2).q, 
+         ].drop(1).q, 
          bassNoteAmp:0.10 
      ) => _.play
      )

@@ -380,17 +380,14 @@
 
 
 )
-s.record("/tmp/song.wav");~song.p
-
-(
-var q = ~song.quarter;
-3.do{|i| ~song.traps[0].sched(i * 8 * ~song.quarter + 0.2 )};
-
-)
-
+/*
+s.record("/tmp/song.wav"); ~song.p
+*/
+/*
 (
 Song.playSection(\intro); (lag:0.2,amp:0.02, instrument: \cymbalsDS).play;
 8.do{|i| {fork{Song.chords[i % 2].()}}.sched(i * 8 + 4 * Song.quarter -0.1)};
 4.do{|i| {Song.lick[i % 2].(\sawSynthSustain)}.sched(i * 8 * Song.quarter) };
 SystemClock.sched(Song.quarter * 16 + 0.2, {(instrument:\cymbalsDS, amp:0.02).play});
 )
+*/

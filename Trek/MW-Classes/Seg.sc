@@ -6,8 +6,10 @@ Mandarin {
         event = (
             path: "/Users/michael/tank/super/scd/Mandarin", 
             load: {|self file|  self.path +/+ self[file] => _.load },
-            edit: {|self | self.path +/+ self[Song.current] => Nvim.e(_)},
+            edit: {|self name | self.path +/+ (name !? self[name] ? self[Song.current]) => Nvim.e(_)},
             Wind: "windArrange.scd",
+            automobile: "automobile.scd",
+            automobile2: "automobile2.scd",
             another: "another.scd",
             beautiful: "beautiful-day.scd",
             neon2: "Neon-with-beat.scd",

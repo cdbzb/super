@@ -10,6 +10,7 @@ Mandarin {
             Wind: "windArrange.scd",
             automobile: "automobile.scd",
             automobile2: "automobile2.scd",
+            automobile3: "automobile3.scd",
             another: "another.scd",
             beautiful: "beautiful-day.scd",
             neon2: "Neon-with-beat.scd",

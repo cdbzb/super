@@ -214,7 +214,11 @@ down at the end of [[little sketch!! "Not good enough for you"][sketching]]
 
    
 
-** automobile "~/tank/super/scd/Mandarin/automobile2.scd"
+** automobile - there are two versions!
+   this one has a long bridge and organ chords:
+   "~/tank/super/scd/Mandarin/automobile2.scd"
+   this one has a short bridge and a synth connector
+   "~/tank/super/scd/Mandarin/automobile.scd"
    play by interpreting:
    #+BEGIN_SRC supercollider
    ~song.p([array of sections])
@@ -340,128 +344,148 @@ Love is a melody true,
 Singing a promise of worth.
 
 * Mixes
-*** Memories Mix
-**** file
-    #+BEGIN_SRC supercollider 
-    "~/tank/super/scd/Mandarin/new mandarin song.scd".standardizePath.load";
-    #+END_SRC
-    [[file://Users/michael/tank/super/scd/Mandarin/new mandarin song.scd][file]] 
-**** more drums in Ch 2?  nice!
-     #+BEGIN_SRC supercollider
-     "~/tank/super/scd/Mandarin/new mandarin song.scd".standardizePath.load";
-     (
-     var quarter = 0.6;
-     ~extraChorusDrums = { |att lag|
-     		{
-     				[
-     						[
-     								instrument: \hihat,
-     								amp: [3, 2].q(inf) / 50,
-     								dur: 0.3/1,
-     									lag: lag ? 0.03
-     						].p,
-     						[
-     								instrument: \bd_808,
-     								dur: "qqq q qqq q qqq q qqq q qqq q qqq q qqqq qqqq qqqq".beats.q * 0.6,
-     								amp: 0.1,
-     									
-     						].p
-     				] => Ppar(_) => _.findur(12*0.6) => _.play;
-     				(instrument: \cymbalsDS, att: [att], amp: 0.025, ).play
-     		}
-     };
-     ~biggerCh = (
-         type:\seg, section: [3, 4, 5].q, bassCutoff:400, 
-         chorusBassFilter: {|e| e.collect{|i| i.timestamp = (i.timestamp / 0.3).round * 0.3; i}},
-         chorusFigureFilter: {|e| e.collect{|i| i.timestamp = (i.timestamp / 0.3).round * 0.3; i}},
-     );
-     ~v2Effect = (type: \seg, section: 7, extra: {
-         {
-             LFSaw.ar(0.2) * 20 => _.floor * 2 
-
-             + 55 => _.midicps
-             => SinOsc.ar(_, 0, 0.1)
-             => {|i| i ++ CombN.ar(i, 0.2, 0.15, 3)}
-             /10
-             * Env([1, 1, 0],0.6 * [8,10]).kr(2)
-         }.play
-     });
-     ~evenBiggerCh = (type:\seg,section: ~biggerCh ++ (extra: {([3, 4, 5].includes(~section)).if {topEnvironment[\extraChorusDrums].(lag:0.03, att:[0.1,0,1][~section - 3]).play} }));//.play
-     )
-
-     (
-     var start = 0;
-     (section:[ ~v2Effect ++ (mute: \xuan), 8, 9, ~biggerCh ++ (extra: [~extraChorusDrums, {(instrument:\cymbals_DS)} ])].drop(start).q, type:\seg).play 
-     )
-
-
-
-     "~/tank/super/scd/Mandarin/new mandarin song.scd".standardizePath.load";
-     s.record("/tmp/Memories.wav");
-     (section: [0,1,2,3,4,5,6,~v2Effect,8,9,~evenBiggerCh,\countoff].q, type:\seg).play 
-     (section: [0,1,2,~evenBiggerCh,~v2Effect,8,9,~evenBiggerCh,\countoff].drop(2).q, type:\seg).play 
-     (section: [0,1,2,~evenBiggerCh,~v2Effect,8,9,~evenBiggerCh,\countoff].drop(2).q, type:\seg).play 
-     (section: [
-     (type:\seg, section:[0, [2, 0 ], 1, (type:\seg, section:9)], mute:\xuan).asKeyValuePairs.flop.collect {|e| currentEnvironment ++ e} =>_.q =>_.play
-     ~solo = []
-     ,~evenBiggerCh,8,9,~evenBiggerCh,\countoff].q, type:\seg).play 
-
-     #+END_SRC
-
-**** two verses:
-    #+BEGIN_SRC supercollider
+** automobile Mix
+#+BEGIN_SRC supercollider
+Mandarin.load(\automobile3);
+/*
+Mandarin.edit(\automobile3);
+*/
+( // this is how automobile2 used to play
     (
-    [section: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 3, 4, 5].q].ps.p.drop(7).play
+        type: \seg, section:[
+            \verse,
+            \bridge,  //longer bridge
+			// \shortBridge, \connector, //short one
+            [
+                (type:\seg, section: \V2), //traps 
+                (type:\seg, section: \verse, mute:[\traps])
+            ]
+        ].drop(1).q
+    ).play
+)
+#+END_SRC
+** Memories Mix
+*** file
+   #+BEGIN_SRC supercollider 
+   "~/tank/super/scd/Mandarin/new mandarin song.scd".standardizePath.load";
+   #+END_SRC
+   [[file://Users/michael/tank/super/scd/Mandarin/new mandarin song.scd][file]] 
+*** more drums in Ch 2?  nice!
+    #+BEGIN_SRC supercollider
+    "~/tank/super/scd/Mandarin/new mandarin song.scd".standardizePath.load";
+    (
+    var quarter = 0.6;
+    ~extraChorusDrums = { |att lag|
+    		{
+    				[
+    						[
+    								instrument: \hihat,
+    								amp: [3, 2].q(inf) / 50,
+    								dur: 0.3/1,
+    									lag: lag ? 0.03
+    						].p,
+    						[
+    								instrument: \bd_808,
+    								dur: "qqq q qqq q qqq q qqq q qqq q qqq q qqqq qqqq qqqq".beats.q * 0.6,
+    								amp: 0.1,
+    									
+    						].p
+    				] => Ppar(_) => _.findur(12*0.6) => _.play;
+    				(instrument: \cymbalsDS, att: [att], amp: 0.025, ).play
+    		}
+    };
+    ~biggerCh = (
+        type:\seg, section: [3, 4, 5].q, bassCutoff:400, 
+        chorusBassFilter: {|e| e.collect{|i| i.timestamp = (i.timestamp / 0.3).round * 0.3; i}},
+        chorusFigureFilter: {|e| e.collect{|i| i.timestamp = (i.timestamp / 0.3).round * 0.3; i}},
+    );
+    ~v2Effect = (type: \seg, section: 7, extra: {
+        {
+            LFSaw.ar(0.2) * 20 => _.floor * 2 
+
+            + 55 => _.midicps
+            => SinOsc.ar(_, 0, 0.1)
+            => {|i| i ++ CombN.ar(i, 0.2, 0.15, 3)}
+            /10
+            * Env([1, 1, 0],0.6 * [8,10]).kr(2)
+        }.play
+    });
+    ~evenBiggerCh = (type:\seg,section: ~biggerCh ++ (extra: {([3, 4, 5].includes(~section)).if {topEnvironment[\extraChorusDrums].(lag:0.03, att:[0.1,0,1][~section - 3]).play} }));//.play
+    )
+
+    (
+    var start = 0;
+    (section:[ ~v2Effect ++ (mute: \xuan), 8, 9, ~biggerCh ++ (extra: [~extraChorusDrums, {(instrument:\cymbals_DS)} ])].drop(start).q, type:\seg).play 
+    )
+
+
+
+    "~/tank/super/scd/Mandarin/new mandarin song.scd".standardizePath.load";
+    s.record("/tmp/Memories.wav");
+    (section: [0,1,2,3,4,5,6,~v2Effect,8,9,~evenBiggerCh,\countoff].q, type:\seg).play 
+    (section: [0,1,2,~evenBiggerCh,~v2Effect,8,9,~evenBiggerCh,\countoff].drop(2).q, type:\seg).play 
+    (section: [0,1,2,~evenBiggerCh,~v2Effect,8,9,~evenBiggerCh,\countoff].drop(2).q, type:\seg).play 
+    (section: [
+    (type:\seg, section:[0, [2, 0 ], 1, (type:\seg, section:9)], mute:\xuan).asKeyValuePairs.flop.collect {|e| currentEnvironment ++ e} =>_.q =>_.play
+    ~solo = []
+    ,~evenBiggerCh,8,9,~evenBiggerCh,\countoff].q, type:\seg).play 
+
+    #+END_SRC
+
+*** two verses:
+   #+BEGIN_SRC supercollider
+   (
+   [section: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 3, 4, 5].q].ps.p.drop(7).play
+   )
+   #+END_SRC
+** Neon Mix
+*** file
+  #+BEGIN_SRC supercollider 
+  "~/tank/super/scd/Mandarin/Neon-with-beat.scd".standardizePath.load
+  #+END_SRC
+*** Mixes
+**** basic Form
+    #+BEGIN_SRC supercollider
+  Mandarin.load(\neon2);
+    (
+    ~verse = [0, 1, 2];
+    ~chorus = (type: \seg, section: [3, 4].q );
+    ~verse2 = [5, 6, 7];
+    /*
+    (type:\seg, section:~verse.q).play;
+    (type: \seg, section:~chorus.q).play;
+    */
+    (type: \seg, section:[~verse, ~chorus, ~verse2, ~chorus ].drop(1).flat.q).play;
+    // ~chorus.play
+    // (type: \seg, section: [~chorus, 5, 6, 7].q).play
+
+    )
+    (
+    ~verse = [0, 1, 2];
+    ~chorus = (type: \seg, section: [3, 4].q );
+    ~verse2 = [5, 6, 7];
+
+    ~verse2PlusKick = (type: \seg, section: ~verse2.q, extra: { 
+        
+        [
+            dur: "q q q q".beats.q(8) * Song.tempo / 2,
+            instrument: \bd_808
+        ].pp
+    })//.play
+    ;
+    ~verse2PlusKick.play
+    MicroKeys(\default).monitor
+
+    ;
+    // (type: \seg, section: [~verse2PlusKick, ~chorus].q).play
     )
     #+END_SRC
-*** Neon Mix
-**** file
-   #+BEGIN_SRC supercollider 
-   "~/tank/super/scd/Mandarin/Neon-with-beat.scd".standardizePath.load
-   #+END_SRC
-**** Mixes
-***** basic Form
+**** workingon bridge
      #+BEGIN_SRC supercollider
-	  Mandarin.load(\neon2);
-     (
-     ~verse = [0, 1, 2];
-     ~chorus = (type: \seg, section: [3, 4].q );
-     ~verse2 = [5, 6, 7];
-     /*
-     (type:\seg, section:~verse.q).play;
-     (type: \seg, section:~chorus.q).play;
-     */
-     (type: \seg, section:[~verse, ~chorus, ~verse2, ~chorus ].drop(1).flat.q).play;
-     // ~chorus.play
-     // (type: \seg, section: [~chorus, 5, 6, 7].q).play
-
-     )
-     (
-     ~verse = [0, 1, 2];
-     ~chorus = (type: \seg, section: [3, 4].q );
-     ~verse2 = [5, 6, 7];
-
-     ~verse2PlusKick = (type: \seg, section: ~verse2.q, extra: { 
-         
-         [
-             dur: "q q q q".beats.q(8) * Song.tempo / 2,
-             instrument: \bd_808
-         ].pp
-     })//.play
-     ;
-     ~verse2PlusKick.play
+     (type: \seg, section: [0,1, 2, 3, 4, 5, 6,7,(\type: \seg, section: \bridge, bridgeChordQuality: \minor), (type:\seg, section: 3, \mute:\bg ), 4].drop(6).q).play
      MicroKeys(\default).monitor
-
-     ;
-     // (type: \seg, section: [~verse2PlusKick, ~chorus].q).play
-     )
      #+END_SRC
-***** workingon bridge
-      #+BEGIN_SRC supercollider
-      (type: \seg, section: [0,1, 2, 3, 4, 5, 6,7,(\type: \seg, section: \bridge, bridgeChordQuality: \minor), (type:\seg, section: 3, \mute:\bg ), 4].drop(6).q).play
-      MicroKeys(\default).monitor
-      #+END_SRC
-*** c-to-c# Mix
+** c-to-c# Mix
 **** here's one!
 #+BEGIN_SRC supercollider
 	 Mandarin.load('c#');
@@ -497,7 +521,7 @@ Singing a promise of worth.
 				 ,
 				 \V2Line2,\verse2Repeat, \verse2Repeat2 ,
 				 \testPluck
-         ].drop(1).q, 
+         ].drop(0).q, 
          bassNoteAmp:0.10 
      ) => _.play
      )

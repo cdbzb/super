@@ -434,8 +434,9 @@ Mandarin.edit(\automobile3);
 
 *** two verses:
    #+BEGIN_SRC supercollider
+	Mandarin.load(\mandarin1)
    (
-   [section: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 3, 4, 5].q].ps.p.drop(7).play
+   [section: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 3, 4, 5].q].ps.p.drop(0).play
    )
    #+END_SRC
 ** Neon Mix
@@ -455,7 +456,7 @@ Mandarin.edit(\automobile3);
     (type:\seg, section:~verse.q).play;
     (type: \seg, section:~chorus.q).play;
     */
-    (type: \seg, section:[~verse, ~chorus, ~verse2, ~chorus ].drop(1).flat.q).play;
+    (type: \seg, section:[~verse, ~chorus, ~verse2, ~chorus ].drop(0).flat.q).play;
     // ~chorus.play
     // (type: \seg, section: [~chorus, 5, 6, 7].q).play
 
@@ -512,7 +513,6 @@ Mandarin.edit(\automobile3);
          	],
          	lowBassAmp:0.02
 				 ),
-		 //add vol param to \pluck?
                  [\testPluck, (type:\seg, section:\chorus1, solo:\pluck,  pluckEnd:  218+ /*104*/ /*59*/ 61,) ]  ,
 				 (type: \seg, extra: {MIDIItem("_250723_152718")
 				 .filter({|i| i.collect {|e| e.amp.notNil.if {e.amp_(e.amp/6)}; e}})
@@ -520,8 +520,8 @@ Mandarin.edit(\automobile3);
 				 .play(\sawSynthSustain)}, section: \V2, verseChordAmp:2)
 				 ,
 				 \V2Line2,\verse2Repeat, \verse2Repeat2 ,
-				 \testPluck
-         ].drop(0).q, 
+                 [\testPluck, (type:\seg, section:\chorus1, solo:\pluck,  pluckEnd:  218+ /*104*/ /*59*/ 61,) ]  ,
+         ].drop(4).q, 
          bassNoteAmp:0.10 
      ) => _.play
      )

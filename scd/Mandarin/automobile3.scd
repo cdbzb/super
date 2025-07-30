@@ -1,13 +1,17 @@
 (
 Song(\automobile, []).current;
-Song.clock = TempoClock.new.permanent_(true);
+Song.clock = TempoClock.new;
+Song.clock.permanent_(true);
 Song.quarter = 132.reciprocal * 60;
 Song.clock.tempo_(Song.quarter.reciprocal);
 
 	// resources
 	//bass
-Song.bassTrackFunc = {Effect({|i| CrossoverDistortion.ar(i) => Limiter.ar(_, 0.05) /2 + i })};
-Song.bassTrack = Song.bassTrackFunc.();
+Song.bassTrackFunc = {Effect({|i| CrossoverDistortion.ar(i) => LeakDC.ar(_) => Limiter.ar(_, 0.05) /2 + i })};
+
+// Song.bassTrack = {Song.bassTrackFunc.()};
+// Song.bassTrack.free;
+
 Song.bassLines = [
 	[1!8, -7!3, -4!4, -3, -6!8,  3!3, -7!4, -6].df(\c, 3, \minor).flat.q,
 	[1!8, -7!3, -4!4, -3 ].df(\c, 3, \minor).flat.q(2),
@@ -22,8 +26,15 @@ Song.bassLines = [
 	].df(\c, 3, \minor).flat.q,
 ].collect { |i|
 	{
-		Song.bassTrack.synth.isRunning.not.if{
-			Song.bassTrack = Song.bassTrackFunc.() 
+		Song.bassTrack.notNil.if
+		{
+			Song.bassTrack.synth.isRunning.not.if{
+				s.freeMyDefaultGroup;
+				Song.bassTrack = Song.bassTrackFunc.() 
+			}
+		}{
+				s.freeMyDefaultGroup;
+				Song.bassTrack = Song.bassTrackFunc.() 
 		};
 		[
 			dur: 1/2 * Song.quarter,
@@ -212,6 +223,8 @@ Song.transitionVox = ();
 					"hQ Q Q Q Q Q q q"
 				][x].beats * Song.quarter ,
 				language: \mandarin,
+				legato: (x == 2).if {[1, 1, 1, 1, 1, 1, 0.9]},
+				lag: (x == 3).if {[0.05, 0,0,0,0,0,0,0]},
 				phoneset: \xsampa,
 				pitchTake: 2 + takeNum
 			).postln)

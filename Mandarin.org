@@ -447,26 +447,37 @@ Mandarin.edit(\automobile3);
 *** Mixes
 **** basic Form
     #+BEGIN_SRC supercollider
-  Mandarin.load(\neon2);
+      Mandarin.load(\neon2);
     (
     ~verse = [0, 1, 2];
     ~chorus = (type: \seg, section: [3, 4].q );
-    ~verse2 = [5, 6, 7];
+    ~verse2 = [5, 6, 7, \bridge]; //8 is bridge
     /*
     (type:\seg, section:~verse.q).play;
     (type: \seg, section:~chorus.q).play;
     */
-    (type: \seg, section:[~verse, ~chorus, ~verse2, ~chorus ].drop(0).flat.q).play;
+    (type: \seg, section:[~verse, ~chorus, ~verse2, ~chorus ].drop(2).flat.q).play;
     // ~chorus.play
     // (type: \seg, section: [~chorus, 5, 6, 7].q).play
 
     )
+    (// experiment with bridge...
+        Seg(
+            [
+                7,
+                [Seg( \chorusFlat7, mute:[\an, \chord] ), \bridge ],
+                4
+            ].drop(0).q, 
+				 // mute\chords
+        ).play;
+    )
+
     (
     ~verse = [0, 1, 2];
     ~chorus = (type: \seg, section: [3, 4].q );
-    ~verse2 = [5, 6, 7];
+    ~verse2 = [5, 6, 7].q;
 
-    ~verse2PlusKick = (type: \seg, section: ~verse2.q, extra: { 
+    ~verse2PlusKick = (type: \seg, section: [5, 6, 7].q, extra: { 
         
         [
             dur: "q q q q".beats.q(8) * Song.tempo / 2,
@@ -475,8 +486,9 @@ Mandarin.edit(\automobile3);
     })//.play
     ;
     ~verse2PlusKick.play
+/*
     MicroKeys(\default).monitor
-
+*/
     ;
     // (type: \seg, section: [~verse2PlusKick, ~chorus].q).play
     )
@@ -534,3 +546,11 @@ Mandarin.edit(\automobile3);
 	     (type:\seg, section: [\V2, \V2Line2, \V2Repeat, \V2Repeat2].q).play; 
      )
 #+END_SRC
+** Wind Mix
+   #+BEGIN_SRC supercollider
+   Mandarin.load(\Wind)
+   Mandarin.edit(\Wind)
+   (
+   (type:\seg, section: (0..6).q).play
+   )
+   #+END_SRC

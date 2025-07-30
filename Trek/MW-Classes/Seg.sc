@@ -144,6 +144,9 @@ Seg {
 		});
 
 	}
+    *new {|section ...args, kwargs|
+        ^(type:\seg, section:section) ++ kwargs.asEvent
+    }
 }
 
 PatternScheduler {

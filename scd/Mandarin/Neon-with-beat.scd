@@ -621,7 +621,7 @@ P.synthVs(\an, take: [ Song.takeChooser.(\lead), Song.takeChooser.(\dbl) ],
 
 P(\bassline, music: { |p b e|
 	[
-		freq: [11, 6.5, 6	, 5, 4, 2.5, 2, 1, -7, -7, 4, 3, 2, 2, 5, 5].df(p.keySig.(e.transpose).(),[3, 3]).dupEach(4).q,
+		freq: [11, 5, 6.5, 5, 4, 2.5, 2, 1, -7, -7, 4, 3, 2, 2, 5, 5].df(p.keySig.(e.transpose).(),[3, 3]).dupEach(4).q,
 		dur: Song.tempo/4,
 		instrument: [
 			\bar , \sawSynth],

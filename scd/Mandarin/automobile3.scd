@@ -14,16 +14,23 @@ Song.bassTrackFunc = {Effect({|i| CrossoverDistortion.ar(i) => LeakDC.ar(_) => L
 
 Song.bassLines = [
 	[1!8, -7!3, -4!4, -3, -6!8,  3!3, -7!4, -6].df(\c, 3, \minor).flat.q,
+	//bridge no passing tones
 	[1!8, -7!3, -4!4, -3 ].df(\c, 3, \minor).flat.q(2),
+	// shortBridge
 	[1!8, -7!8, -6!8, -3.5!8, -4!8, -2!4, -4!4, -5!8].df(\c, 3, \minor).flat.q,
-	//transition/bridge ([3])
+	// long bridge ([3])
 	[
 		1!8, -7!3, -4!4, -3, 
 		-6!8,  -3.5!3, -1!4, -7!1, 
+	].df(\c, 3, \minor).flat.q,
+	// variant [4]
+	[
+		1!8, -7!8,-6!8, -3.5!7, -7,
 		-4!8, -2!4, -4!4, -5!8,
 		-4!4, -5!4, -6.5!8,
 		-2!4, -4!4, -5!8
-	].df(\c, 3, \minor).flat.q,
+	].df(\c, 3, \minor).flat.q
+
 ].collect { |i|
 	{
 		Song.bassTrack.notNil.if
@@ -315,7 +322,7 @@ P(\traps,
 	}
 );
 ["bridge", "r", [48 * Song.quarter]].addLine;
-P(\bass, music: { {|t c| [3].do{|i x| Song.bassLines[i].sched(x * 16 + t, c) } }.(0, Song.clock) });
+P(\bass, music: { {|t c| [4].do{|i x| Song.bassLines[i].sched(x * 16 + t, c) } }.(0, Song.clock) });
 P(\traps, music: {{|t c| 2.do{|i| Song.traps[1].sched(0 + t, c )}}.(0, Song.clock)};
 );
 P( \transitionLead, music: {

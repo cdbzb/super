@@ -1,3 +1,4 @@
+#+FILETAGS: :mandarin:
 * Refile
 * Website!
 * Songs
@@ -546,7 +547,7 @@ Mandarin.edit(\automobile3);
 	     (type:\seg, section: [\V2, \V2Line2, \V2Repeat, \V2Repeat2].q).play; 
      )
 #+END_SRC
-** Wind Mix
+** Wind Mix                                                               :wind:
    #+BEGIN_SRC supercollider
    Mandarin.load(\Wind)
    Mandarin.edit(\Wind)

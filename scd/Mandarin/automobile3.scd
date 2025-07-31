@@ -90,6 +90,7 @@ Song.traps = [
 			].p
 		]
 		=> Ppar(_) 
+		=> _.findur(Song.quarter * 50 * 2 - 1)
 		=> _.play(Song.clock)
 	},
 
@@ -257,14 +258,17 @@ Song.transition = [
 
 Song.figure = [
 	[1, 6, 5, 3, 1, 6, 5, 1, 2, 4, 7, 6, 1, 4, 5, 6].df(\c,5, \mixolydian).dup(3) ++ "3 11 7 5 3 11 7  3 5 6 7 2 4.5 7 6 4.5".df('a-', 4) => _.flat => _.q(2),
-	"3 5 11 5 3 5 11 5 2 4 7 4 1 4 6 1".df(\c, 5, \mixolydian).dup(3) ++ "5 11 13 11 5 11 13 11 5 7 12 7 4 6 12 6".df('a-', 4, \lydian) => _.flat => _.q(2)
-].collect {|i|
+	"3 5 11 5 3 5 11 5 2 4 7 4 1 4 6 1".df(\c, 5, \mixolydian).dup(3) ++ "5 11 13 11 5 11 13 11 5 7 12 7 4 6 12 6".df('a-', 4, \lydian) => _.flat => _.q(2),
+	 2 *[1, 6, 5, 3, 1, 6, 5, 1, 2, 4, 7, 6, 1, 4, 5, 6].df(\c,5, \mixolydian).dup(1) ++ "3 11 7 5 3 11 7  3 5 6 7 2 4.5 7 6 4.5".df('a-', 4) => _.flat => _.q(2),
+	"3 5 11 5  3 5 11 5 2 4 7 4 2 4 6 4 ".df(\c, 5, \mixolydian) ++ "5 11 13 11 5 11 13 11".df('a-', 4) ++ "3 5 11 5 3 5 7 5".df(\c, 5, \mixolydian) => _.flat => _.q
+
+].collect {|i x|
 	{
 		[
 			freq: i,
 			instrument: \harp, coef: 0.1,
 			dur: Song.quarter /2,
-			instrument: \bl,
+			instrument: (x != 2).if {\bl} {\sawSynthSustain},
 			amp:0.04,
 			// legato: 0.9,
 			lagTime:0
@@ -323,7 +327,7 @@ P(\traps,
 );
 ["bridge", "r", [48 * Song.quarter]].addLine;
 P(\bass, music: { {|t c| [4].do{|i x| Song.bassLines[i].sched(x * 16 + t, c) } }.(0, Song.clock) });
-P(\traps, music: {{|t c| 2.do{|i| Song.traps[1].sched(0 + t, c )}}.(0, Song.clock)};
+P(\traps, music: {{|t c| [2].do{|i| Song.traps[1].sched(0 + t, c )}}.(0, Song.clock)};
 );
 P( \transitionLead, music: {
 	{|t c| Song.transition.do{|i x| i.sched(16 * (x ) + 4 * Song.quarter  - t)}}.(0, Song.clock)

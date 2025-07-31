@@ -365,6 +365,20 @@ Mandarin.edit(\automobile3);
     ).play
 )
 #+END_SRC
+** key recording on bridge
+#+BEGIN_SRC supercollider
+   (
+	   a = MIDIItem("keys_250731_120152");
+           c = MIDIItem("extraLine_250731_122239");
+	   b = MicroKeys(\sawSynthSustain);
+	   d = MicroKeys(\sparkTriangle);
+	   b.velCurve_(0, [0, 0.1]);
+	   d.velCurve_(0, [0, 0.06]);
+	   // d.monitor;
+	   Seg(\bridge, extra: {a.play(b); c.take(3).play(d)}).play;
+	   // c.takes.size
+   )
+#+END_SRC
 ** Memories Mix
 *** file
    #+BEGIN_SRC supercollider 

@@ -88,19 +88,19 @@ MicroKeys {
 		}  
 	}
 
-	*new { |name func|
+	*new { |name func params|
 		all[name].notNil.if {
 			^all[name]
 		} { 
-			^super.new.init(name, func) 
+			^super.new.init(name, func, params) 
 		}  
 	}
 	 
 	*mono { |...args|
-		^MonoKeys(*args)
+		^MonoKeys.new(*args)
 	}
 
-	init { |aName func|
+	init { |aName func params|
 		name = aName;
 		namedList = NamedList.new;
 		tuningFunction = { |tuning| { |e| e.num = e.num + tuningDeltas.wrapAt(e.num); e }};

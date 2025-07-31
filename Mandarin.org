@@ -367,15 +367,34 @@ Mandarin.edit(\automobile3);
 #+END_SRC
 ** key recording on bridge
 #+BEGIN_SRC supercollider
+m = MicroKeys(\harpS);
+m.add(\coef, {|i| i.put(\params, (pan: 0.8,coef: 0.1))}, \addAfter, \event);
+m.monitor
+n = MicroKeys.mono(\stringyyPan);
+n.add(\coef, {|i| i.put(\params, (wet: 0.1))}, \addAfter, \event);
+Mandarin.load('automobile3');
+
    (
 	   a = MIDIItem("keys_250731_120152");
-           c = MIDIItem("extraLine_250731_122239");
+       c = MIDIItem("extraLine_250731_122239");
+       e = MIDIItem(\plink_250731_152758);
+	  m.velCurve_(0, [0, 0.05]);
+	  n.velCurve_(0, [0, 0.3]);
+
+
 	   b = MicroKeys(\sawSynthSustain);
 	   d = MicroKeys(\sparkTriangle);
 	   b.velCurve_(0, [0, 0.1]);
 	   d.velCurve_(0, [0, 0.06]);
 	   // d.monitor;
-	   Seg(\bridge, extra: {a.play(b); c.take(3).play(d)}).play;
+	   Seg([
+	   	\verse,
+	   	Seg(\bridge, extra: {e.play(n);e.play(m);a.play(b); c.take(3).play(d)}),
+            [
+                (type:\seg, section: \V2), //traps 
+                (type:\seg, section: \verse, mute:[\traps])
+            ]
+	   ].drop(0).q).play;
 	   // c.takes.size
    )
 #+END_SRC

@@ -56,7 +56,7 @@ gui { |take|
         
         // Check if click is on a note
         notes.do { |e, idx|
-            var noteY = height - (e.midinote - 30 * noteHeight);
+            var noteY = height - (e.midinote * noteHeight);
             var noteX = (e.timestamp - start) * timeScale;
             var noteWidth = (e.sustain ? 100) * timeScale;
             var noteRect = Rect(noteX, noteY, noteWidth, noteHeight);
@@ -97,7 +97,7 @@ gui { |take|
         
         // Draw black key shading first
         128.do { |i| // 128 MIDI notes (0–127)
-            var y = i * noteHeight;
+            var y = height - (i * noteHeight); // Invert Y coordinate
             if(isBlackKey.(i)) {
                 Pen.color = Color.gray(0.9);
                 Pen.addRect(Rect(0, y, width, noteHeight));
@@ -108,14 +108,14 @@ gui { |take|
         // Draw the piano roll grid
         Pen.color = Color.gray(0.8);
         128.do { |i| // 128 MIDI notes (0–127)
-            var y = i * noteHeight;
+            var y = height - (i * noteHeight); // Invert Y coordinate
             Pen.line(0@y, width@y);
         };
         Pen.stroke;
         
         // Draw the notes
         notes.do { |e, num|
-            var y = height - (e.midinote - 30 * noteHeight);
+            var y = height - (e.midinote * noteHeight);
             var x = (e.timestamp - start) * timeScale;
             var noteWidth = (e.sustain ? 100) * timeScale;
             
@@ -149,7 +149,7 @@ gui { |take|
         // Draw note name labels on the left
         Pen.color = Color.black;
         128.do { |i|
-            var y = i * noteHeight;
+            var y = height - (i * noteHeight); // Invert Y coordinate
             var noteName = midiNoteToName.(i);
             // Only draw labels for C notes and every 12 notes to avoid clutter
             if(i % 12 == 0) {

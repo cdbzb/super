@@ -51,7 +51,7 @@ gui { |take|
             $k, {window.close; take = take + 1; this.gui(take: take)},
             $J, {startMidiNote = (startMidiNote - 12).max(0); view.refresh; ("Scrolled down to MIDI note " ++ startMidiNote).postln}, // Scroll down one octave
             $K, {startMidiNote = (startMidiNote + 12).min(115); view.refresh; ("Scrolled up to MIDI note " ++ startMidiNote).postln}, // Scroll up one octave
-            65515, { // Left arrow key
+            $h, { // Scroll left
                 var duration = viewEnd - viewStart;
                 var scrollAmount = duration * 0.1;
                 viewStart = (viewStart - scrollAmount).max(start);
@@ -59,7 +59,7 @@ gui { |take|
                 view.refresh;
                 ("Scrolled left to " ++ viewStart.round(0.01)).postln;
             },
-            65514, { // Right arrow key
+            $l, { // Scroll right
                 var duration = viewEnd - viewStart;
                 var scrollAmount = duration * 0.1;
                 viewStart = (viewStart + scrollAmount).min(end - duration);
@@ -67,7 +67,7 @@ gui { |take|
                 view.refresh;
                 ("Scrolled right to " ++ viewStart.round(0.01)).postln;
             },
-            65517, { // Shift+Left arrow key (zoom out)
+            $H, { // Zoom out horizontally
                 var center = (viewStart + viewEnd) / 2;
                 var duration = (viewEnd - viewStart) * 1.2;
                 viewStart = (center - (duration / 2)).max(start);
@@ -75,7 +75,7 @@ gui { |take|
                 view.refresh;
                 ("Zoomed out, duration: " ++ duration.round(0.01)).postln;
             },
-            65516, { // Shift+Right arrow key (zoom in)
+            $L, { // Zoom in horizontally
                 var center = (viewStart + viewEnd) / 2;
                 var duration = (viewEnd - viewStart) * 0.8;
                 duration = duration.max(0.1); // Minimum zoom level
@@ -97,9 +97,8 @@ gui { |take|
                         "k - Next take\n" ++
                         "J - Scroll down one octave\n" ++
                         "K - Scroll up one octave\n" ++
-                        "← → - Scroll horizontally\n" ++
-                        "Shift+← - Zoom out horizontally\n" ++
-                        "Shift+→ - Zoom in horizontally\n" ++
+                        "h/l - Scroll horizontally left/right\n" ++
+                        "H/L - Zoom out/in horizontally\n" ++
                         "r - Clear note selection\n" ++
                         "g - Get selected note indices\n" ++
                         "? - Show this help menu\n\n" ++

@@ -44,7 +44,30 @@ gui { |take|
             $j, {window.close; take = take - 1; this.gui(take: take)},
             $k, {window.close; take = take + 1; this.gui(take: take)},
             $r, {selectedIndices = []; view.refresh; "Selection cleared".postln}, // Clear selection
-            $g, {("Selected note indices: " ++ selectedIndices).postln; selectedIndices} // Get selected indices
+            $g, {("Selected note indices: " ++ selectedIndices).postln; selectedIndices}, // Get selected indices
+            $?, {
+                // Show help menu
+                var helpWindow = Window("Piano Roll Help", Rect(200, 200, 400, 300)).front;
+                var helpText = StaticText(helpWindow, Rect(10, 10, 380, 280))
+                    .string_("Piano Roll Keyboard Shortcuts:\n\n" ++
+                        "q - Close window and open WezTerm\n" ++
+                        "0, 1, 2 - Switch to take 0, 1, or 2\n" ++
+                        "j - Previous take\n" ++
+                        "k - Next take\n" ++
+                        "r - Clear note selection\n" ++
+                        "g - Get selected note indices\n" ++
+                        "? - Show this help menu\n\n" ++
+                        "Mouse:\n" ++
+                        "Click notes to select/deselect them\n" ++
+                        "Selected notes appear in red\n\n" ++
+                        "Visual Guide:\n" ++
+                        "Gray shading = Black keys\n" ++
+                        "C note labels on left side\n" ++
+                        "MIDI note range: 36-127")
+                    .font_(Font("Helvetica", 12))
+                    .align_(\left);
+                helpWindow.onClose_({helpWindow = nil});
+            }
         )
     });
     

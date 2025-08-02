@@ -50,13 +50,14 @@ gui { |take|
     
     // Add mouse click handling
     view.mouseDownAction_({ |view, x, y, mod|
-        var noteHeight = 1600 / 128;
+        var noteRange = 92; // MIDI notes 36-127
+        var noteHeight = 1600 / noteRange;
         var timeScale = width / (end - start);
         var clickedNoteIndex = nil;
         
         // Check if click is on a note
         notes.do { |e, idx|
-            var noteY = height - (e.midinote * noteHeight);
+            var noteY = height - ((e.midinote - 36) * noteHeight);
             var noteX = (e.timestamp - start) * timeScale;
             var noteWidth = (e.sustain ? 100) * timeScale;
             var noteRect = Rect(noteX, noteY, noteWidth, noteHeight);
@@ -82,7 +83,8 @@ gui { |take|
     
     // Define the drawing function
     view.drawFunc = {
-        var noteHeight = 1600 / 128; // Height of each note row
+        var noteRange = 92; // MIDI notes 36-127 (92 notes total)
+        var noteHeight = 1600 / noteRange; // Height of each note row
         var timeScale = width / (end - start); // Pixels per second
         var isBlackKey = { |midiNote|
             var noteInOctave = midiNote % 12;
@@ -96,9 +98,10 @@ gui { |take|
         };
         
         // Draw black key shading first
-        128.do { |i| // 128 MIDI notes (0–127)
+        noteRange.do { |i| // MIDI notes 36-127
+            var midiNote = i + 36;
             var y = height - (i * noteHeight); // Invert Y coordinate
-            if(isBlackKey.(i)) {
+            if(isBlackKey.(midiNote)) {
                 Pen.color = Color.gray(0.9);
                 Pen.addRect(Rect(0, y, width, noteHeight));
                 Pen.fill;
@@ -107,7 +110,7 @@ gui { |take|
         
         // Draw the piano roll grid
         Pen.color = Color.gray(0.8);
-        128.do { |i| // 128 MIDI notes (0–127)
+        noteRange.do { |i| // MIDI notes 36-127
             var y = height - (i * noteHeight); // Invert Y coordinate
             Pen.line(0@y, width@y);
         };
@@ -115,7 +118,9 @@ gui { |take|
         
         // Draw the notes
         notes.do { |e, num|
-            var y = height - (e.midinote * noteHeight);
+            var noteRange = 92; // MIDI notes 36-127
+            var noteHeight = 1600 / noteRange;
+            var y = height - ((e.midinote - 36) * noteHeight);
             var x = (e.timestamp - start) * timeScale;
             var noteWidth = (e.sustain ? 100) * timeScale;
             
@@ -148,11 +153,12 @@ gui { |take|
         
         // Draw note name labels on the left
         Pen.color = Color.black;
-        128.do { |i|
+        noteRange.do { |i|
+            var midiNote = i + 36;
             var y = height - (i * noteHeight); // Invert Y coordinate
-            var noteName = midiNoteToName.(i);
+            var noteName = midiNoteToName.(midiNote);
             // Only draw labels for C notes and every 12 notes to avoid clutter
-            if(i % 12 == 0) {
+            if(midiNote % 12 == 0) {
                 Pen.stringAtPoint(
                     noteName,
                     Point(5, y + (noteHeight / 2) - 6),

@@ -391,14 +391,14 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	ccsAsArraysOfPoints{
 		^midiEvents.select{|e| e.midicmd == \control}.deepCopy
 		.sort{ |i j| i.ctlNum < j.ctlNum }
-		.separate{ |i j| i.cltNum == j.ctlNum }
+		.separate{ |i j| i.ctlNum == j.ctlNum }
 		.collect{|sub| sub[0].ctlNum -> sub.collect{|i| Point(i.timestamp, i.control)}}
 		=> _.asDict
 	}
 	*stopRecording {
 		[\noteOn, \noteOff, \control, \polytouch, \bend ].do{
 			|cmd|
-			MIDIdef(\record ++ cmd => _.asSymbol).free
+			MIDIdef((\record ++ cmd).asSymbol).free
 		};
 		recording.notNil.if {recording.stop; recording.save; recording = nil;}
 	}
@@ -451,7 +451,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		//make MIDIdefs
 		[\noteOn, \noteOff, \control, \polytouch, \bend ].do{ |cmd|
 
-			MIDIdef(\record ++ cmd => _.asSymbol, func: { |val num| 
+			MIDIdef((\record ++ cmd).asSymbol, func: { |val num| 
 				\recordDef.postln;
 				midiEvents.add(
 					(
@@ -479,7 +479,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 					)
 				},msgType: cmd, 
 				//eliminate cc0
-				msgNum: (cmd == \control).if{ (..127) },
+				msgNum: (cmd == \control).if{ (0..127) },
 				srcID: KS.id,
 				// argTemplate: {|i| (cmd == \control).if{ i.isStrictlyPositive }{true}}
 			)};
@@ -512,7 +512,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		this.writeArchive( folder +/+ name)
 	}
 	delete {
-		var result = folder +/+ name => File.delete(_); 
+		var result = File.delete(folder +/+ name); 
 		this.free;
 		^"file succeeded: %".format(result);
 	}
@@ -593,7 +593,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 				var note =  notes[x];
 				var off = e.select{|i| i.midicmd == \noteOff and: (i.timestamp >= note.timestamp) and: (i.midinote == note.midinote)}
 				// .sort({|x y| x.timestamp < y.timestamp})
-				[0];
+				.at(0);
 				e.remove(note); e.remove(off)
 			};
 			e

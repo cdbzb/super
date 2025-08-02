@@ -13,6 +13,7 @@ gui { |take|
     var notes, start, end, width, height, window, view;
     var selectedIndices; // Array to store selected note indices
     var startMidiNote = 36; // Starting MIDI note for display range
+    var viewStart, viewEnd, zoomFactor = 1; // Horizontal view and zoom variables
     
     // Initialize selected indices array
     selectedIndices = [];
@@ -30,6 +31,10 @@ gui { |take|
     width = 1400;
     height = 800;
     
+    // Initialize horizontal view
+    viewStart = start;
+    viewEnd = end;
+    
     // Create a window and UserView
     window = Window("Piano Roll", Rect(100, 100, width, height)).front;
     view = UserView(window, Rect(0, 0, width, 1600))
@@ -46,6 +51,39 @@ gui { |take|
             $k, {window.close; take = take + 1; this.gui(take: take)},
             $J, {startMidiNote = (startMidiNote - 12).max(0); view.refresh; ("Scrolled down to MIDI note " ++ startMidiNote).postln}, // Scroll down one octave
             $K, {startMidiNote = (startMidiNote + 12).min(115); view.refresh; ("Scrolled up to MIDI note " ++ startMidiNote).postln}, // Scroll up one octave
+            65515, { // Left arrow key
+                var duration = viewEnd - viewStart;
+                var scrollAmount = duration * 0.1;
+                viewStart = (viewStart - scrollAmount).max(start);
+                viewEnd = (viewEnd - scrollAmount).max(start + duration);
+                view.refresh;
+                ("Scrolled left to " ++ viewStart.round(0.01)).postln;
+            },
+            65514, { // Right arrow key
+                var duration = viewEnd - viewStart;
+                var scrollAmount = duration * 0.1;
+                viewStart = (viewStart + scrollAmount).min(end - duration);
+                viewEnd = (viewEnd + scrollAmount).min(end);
+                view.refresh;
+                ("Scrolled right to " ++ viewStart.round(0.01)).postln;
+            },
+            65517, { // Shift+Left arrow key (zoom out)
+                var center = (viewStart + viewEnd) / 2;
+                var duration = (viewEnd - viewStart) * 1.2;
+                viewStart = (center - (duration / 2)).max(start);
+                viewEnd = (center + (duration / 2)).min(end);
+                view.refresh;
+                ("Zoomed out, duration: " ++ duration.round(0.01)).postln;
+            },
+            65516, { // Shift+Right arrow key (zoom in)
+                var center = (viewStart + viewEnd) / 2;
+                var duration = (viewEnd - viewStart) * 0.8;
+                duration = duration.max(0.1); // Minimum zoom level
+                viewStart = center - (duration / 2);
+                viewEnd = center + (duration / 2);
+                view.refresh;
+                ("Zoomed in, duration: " ++ duration.round(0.01)).postln;
+            },
             $r, {selectedIndices = []; view.refresh; "Selection cleared".postln}, // Clear selection
             $g, {("Selected note indices: " ++ selectedIndices).postln; selectedIndices}, // Get selected indices
             $?, {
@@ -59,6 +97,9 @@ gui { |take|
                         "k - Next take\n" ++
                         "J - Scroll down one octave\n" ++
                         "K - Scroll up one octave\n" ++
+                        "← → - Scroll horizontally\n" ++
+                        "Shift+← - Zoom out horizontally\n" ++
+                        "Shift+→ - Zoom in horizontally\n" ++
                         "r - Clear note selection\n" ++
                         "g - Get selected note indices\n" ++
                         "? - Show this help menu\n\n" ++
@@ -80,13 +121,13 @@ gui { |take|
     view.mouseDownAction_({ |view, x, y, mod|
         var noteRange = 92; // Display 92 notes at a time
         var noteHeight = 1600 / noteRange;
-        var timeScale = width / (end - start);
+        var timeScale = width / (viewEnd - viewStart);
         var clickedNoteIndex = nil;
         
         // Check if click is on a note
         notes.do { |e, idx|
             var noteY = height - ((e.midinote - startMidiNote) * noteHeight);
-            var noteX = (e.timestamp - start) * timeScale;
+            var noteX = (e.timestamp - viewStart) * timeScale;
             var noteWidth = (e.sustain ? 100) * timeScale;
             var noteRect = Rect(noteX, noteY, noteWidth, noteHeight);
             
@@ -113,7 +154,7 @@ gui { |take|
     view.drawFunc = {
         var noteRange = 92; // MIDI notes 36-127 (92 notes total)
         var noteHeight = 1600 / noteRange; // Height of each note row
-        var timeScale = width / (end - start); // Pixels per second
+        var timeScale = width / (viewEnd - viewStart); // Pixels per second
         var isBlackKey = { |midiNote|
             var noteInOctave = midiNote % 12;
             [1, 3, 6, 8, 10].includes(noteInOctave); // C#, D#, F#, G#, A#
@@ -149,11 +190,12 @@ gui { |take|
             var noteRange = 92; // Display 92 notes at a time
             var noteHeight = 1600 / noteRange;
             var y = height - ((e.midinote - startMidiNote) * noteHeight);
-            var x = (e.timestamp - start) * timeScale;
+            var x = (e.timestamp - viewStart) * timeScale;
             var noteWidth = (e.sustain ? 100) * timeScale;
             
-            // Only draw notes that are within the visible range
-            if(e.midinote >= startMidiNote and: (e.midinote < (startMidiNote + noteRange))) {
+            // Only draw notes that are within the visible range (both vertical and horizontal)
+            if(e.midinote >= startMidiNote and: (e.midinote < (startMidiNote + noteRange)) and:
+               (e.timestamp >= viewStart) and: (e.timestamp <= viewEnd)) {
                 // Change color if selected
                 if(selectedIndices.includes(num)) {
                     Pen.color = Color.red(e.amp); // Selected notes are red

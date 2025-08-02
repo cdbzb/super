@@ -84,6 +84,26 @@ gui { |take|
     view.drawFunc = {
         var noteHeight = 1600 / 128; // Height of each note row
         var timeScale = width / (end - start); // Pixels per second
+        var isBlackKey = { |midiNote|
+            var noteInOctave = midiNote % 12;
+            [1, 3, 6, 8, 10].includes(noteInOctave); // C#, D#, F#, G#, A#
+        };
+        var midiNoteToName = { |midiNote|
+            var noteNames = ["c", "c#", "d", "d#", "e", "f", "f#", "g", "g#", "a", "a#", "b"];
+            var octave = (midiNote / 12).floor - 2;
+            var noteIndex = midiNote % 12;
+            noteNames[noteIndex] ++ octave.asString;
+        };
+        
+        // Draw black key shading first
+        128.do { |i| // 128 MIDI notes (0–127)
+            var y = i * noteHeight;
+            if(isBlackKey.(i)) {
+                Pen.color = Color.gray(0.9);
+                Pen.addRect(Rect(0, y, width, noteHeight));
+                Pen.fill;
+            };
+        };
         
         // Draw the piano roll grid
         Pen.color = Color.gray(0.8);
@@ -125,6 +145,22 @@ gui { |take|
             Font("Helvetica", 48),
             Color(0, 0, 0, 0.5)
         );
+        
+        // Draw note name labels on the left
+        Pen.color = Color.black;
+        128.do { |i|
+            var y = i * noteHeight;
+            var noteName = midiNoteToName.(i);
+            // Only draw labels for C notes and every 12 notes to avoid clutter
+            if(i % 12 == 0) {
+                Pen.stringAtPoint(
+                    noteName,
+                    Point(5, y + (noteHeight / 2) - 6),
+                    Font("Helvetica", 10),
+                    Color.black
+                );
+            };
+        };
         
         // Display selection instructions
         Pen.stringAtPoint(

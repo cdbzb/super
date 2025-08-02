@@ -92,7 +92,7 @@ gui { |take|
         };
         var midiNoteToName = { |midiNote|
             var noteNames = ["c", "c#", "d", "d#", "e", "f", "f#", "g", "g#", "a", "a#", "b"];
-            var octave = (midiNote / 12).floor - 2;
+            var octave = (midiNote / 12).floor - 1;
             var noteIndex = midiNote % 12;
             noteNames[noteIndex] ++ octave.asString;
         };

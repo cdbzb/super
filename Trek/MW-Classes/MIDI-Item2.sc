@@ -12,6 +12,7 @@ AbstractMidiEvents {
 gui { |take| 
     var notes, start, end, width, height, window, view;
     var selectedIndices; // Array to store selected note indices
+    var startMidiNote = 36; // Starting MIDI note for display range
     
     // Initialize selected indices array
     selectedIndices = [];
@@ -43,6 +44,8 @@ gui { |take|
             $2, {window.close; this.gui(2)},
             $j, {window.close; take = take - 1; this.gui(take: take)},
             $k, {window.close; take = take + 1; this.gui(take: take)},
+            $J, {startMidiNote = (startMidiNote - 12).max(0); view.refresh; ("Scrolled down to MIDI note " ++ startMidiNote).postln}, // Scroll down one octave
+            $K, {startMidiNote = (startMidiNote + 12).min(115); view.refresh; ("Scrolled up to MIDI note " ++ startMidiNote).postln}, // Scroll up one octave
             $r, {selectedIndices = []; view.refresh; "Selection cleared".postln}, // Clear selection
             $g, {("Selected note indices: " ++ selectedIndices).postln; selectedIndices}, // Get selected indices
             $?, {
@@ -54,6 +57,8 @@ gui { |take|
                         "0, 1, 2 - Switch to take 0, 1, or 2\n" ++
                         "j - Previous take\n" ++
                         "k - Next take\n" ++
+                        "J - Scroll down one octave\n" ++
+                        "K - Scroll up one octave\n" ++
                         "r - Clear note selection\n" ++
                         "g - Get selected note indices\n" ++
                         "? - Show this help menu\n\n" ++
@@ -63,7 +68,7 @@ gui { |take|
                         "Visual Guide:\n" ++
                         "Gray shading = Black keys\n" ++
                         "C note labels on left side\n" ++
-                        "MIDI note range: 36-127")
+                        "MIDI note range: 36-127 (scrollable)")
                     .font_(Font("Helvetica", 12))
                     .align_(\left);
                 helpWindow.onClose_({helpWindow = nil});
@@ -73,14 +78,14 @@ gui { |take|
     
     // Add mouse click handling
     view.mouseDownAction_({ |view, x, y, mod|
-        var noteRange = 92; // MIDI notes 36-127
+        var noteRange = 92; // Display 92 notes at a time
         var noteHeight = 1600 / noteRange;
         var timeScale = width / (end - start);
         var clickedNoteIndex = nil;
         
         // Check if click is on a note
         notes.do { |e, idx|
-            var noteY = height - ((e.midinote - 36) * noteHeight);
+            var noteY = height - ((e.midinote - startMidiNote) * noteHeight);
             var noteX = (e.timestamp - start) * timeScale;
             var noteWidth = (e.sustain ? 100) * timeScale;
             var noteRect = Rect(noteX, noteY, noteWidth, noteHeight);
@@ -121,8 +126,8 @@ gui { |take|
         };
         
         // Draw black key shading first
-        noteRange.do { |i| // MIDI notes 36-127
-            var midiNote = i + 36;
+        noteRange.do { |i| // Display noteRange notes starting from startMidiNote
+            var midiNote = i + startMidiNote;
             var y = height - (i * noteHeight); // Invert Y coordinate
             if(isBlackKey.(midiNote)) {
                 Pen.color = Color.gray(0.9);
@@ -133,7 +138,7 @@ gui { |take|
         
         // Draw the piano roll grid
         Pen.color = Color.gray(0.8);
-        noteRange.do { |i| // MIDI notes 36-127
+        noteRange.do { |i| // Display noteRange notes starting from startMidiNote
             var y = height - (i * noteHeight); // Invert Y coordinate
             Pen.line(0@y, width@y);
         };
@@ -141,29 +146,32 @@ gui { |take|
         
         // Draw the notes
         notes.do { |e, num|
-            var noteRange = 92; // MIDI notes 36-127
+            var noteRange = 92; // Display 92 notes at a time
             var noteHeight = 1600 / noteRange;
-            var y = height - ((e.midinote - 36) * noteHeight);
+            var y = height - ((e.midinote - startMidiNote) * noteHeight);
             var x = (e.timestamp - start) * timeScale;
             var noteWidth = (e.sustain ? 100) * timeScale;
             
-            // Change color if selected
-            if(selectedIndices.includes(num)) {
-                Pen.color = Color.red(e.amp); // Selected notes are red
-            } {
-                Pen.color = Color.blue(e.amp); // Normal notes are blue
+            // Only draw notes that are within the visible range
+            if(e.midinote >= startMidiNote and: (e.midinote < (startMidiNote + noteRange))) {
+                // Change color if selected
+                if(selectedIndices.includes(num)) {
+                    Pen.color = Color.red(e.amp); // Selected notes are red
+                } {
+                    Pen.color = Color.blue(e.amp); // Normal notes are blue
+                };
+                
+                Pen.addRect(Rect(x, y, noteWidth, noteHeight));
+                Pen.fill;
+                
+                Pen.color = Color.black;
+                Pen.stringAtPoint(
+                    num.asString,
+                    Point(x, y - 15),
+                    Font.default,
+                    Color.black
+                );
             };
-            
-            Pen.addRect(Rect(x, y, noteWidth, noteHeight));
-            Pen.fill;
-            
-            Pen.color = Color.black;
-            Pen.stringAtPoint(
-                num.asString,
-                Point(x, y - 15),
-                Font.default,
-                Color.black
-            );
         };
         
         // Display take number
@@ -177,7 +185,7 @@ gui { |take|
         // Draw note name labels on the left
         Pen.color = Color.black;
         noteRange.do { |i|
-            var midiNote = i + 36;
+            var midiNote = i + startMidiNote;
             var y = height - (i * noteHeight); // Invert Y coordinate
             var noteName = midiNoteToName.(midiNote);
             // Only draw labels for C notes and every 12 notes to avoid clutter

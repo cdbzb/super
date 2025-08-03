@@ -41,81 +41,139 @@ gui { |take|
     .background_(Color.white);
     
     // Define the keyboard actions
-    view.keyDownAction_({ |view char|
-        switch (char, 
-            $q, {window.close; "open -a WezTerm.app".unixCmd},
-            $0, {window.close; this.gui(0)},
-            $1, {window.close; this.gui(1)},
-            $2, {window.close; this.gui(2)},
-            $j, {window.close; take = take - 1; this.gui(take: take)},
-            $k, {window.close; take = take + 1; this.gui(take: take)},
-            $J, {startMidiNote = (startMidiNote - 12).max(0); view.refresh; ("Scrolled down to MIDI note " ++ startMidiNote).postln}, // Scroll down one octave
-            $K, {startMidiNote = (startMidiNote + 12).min(115); view.refresh; ("Scrolled up to MIDI note " ++ startMidiNote).postln}, // Scroll up one octave
-            $h, { // Scroll left
-                var duration = viewEnd - viewStart;
-                var scrollAmount = duration * 0.1;
-                viewStart = (viewStart - scrollAmount).max(start);
-                viewEnd = (viewEnd - scrollAmount).max(start + duration);
-                view.refresh;
-                ("Scrolled left to " ++ viewStart.round(0.01)).postln;
-            },
-            $l, { // Scroll right
-                var duration = viewEnd - viewStart;
-                var scrollAmount = duration * 0.1;
-                viewStart = (viewStart + scrollAmount).min(end - duration);
-                viewEnd = (viewEnd + scrollAmount).min(end);
-                view.refresh;
-                ("Scrolled right to " ++ viewStart.round(0.01)).postln;
-            },
-            $H, { // Zoom out horizontally
-                var center = (viewStart + viewEnd) / 2;
-                var duration = (viewEnd - viewStart) * 1.2;
-                viewStart = (center - (duration / 2)).max(start);
-                viewEnd = (center + (duration / 2)).min(end);
-                view.refresh;
-                ("Zoomed out, duration: " ++ duration.round(0.01)).postln;
-            },
-            $L, { // Zoom in horizontally
-                var center = (viewStart + viewEnd) / 2;
-                var duration = (viewEnd - viewStart) * 0.8;
-                duration = duration.max(0.1); // Minimum zoom level
-                viewStart = center - (duration / 2);
-                viewEnd = center + (duration / 2);
-                view.refresh;
-                ("Zoomed in, duration: " ++ duration.round(0.01)).postln;
-            },
-            $r, {selectedIndices = []; view.refresh; "Selection cleared".postln}, // Clear selection
-            $g, {("Selected note indices: " ++ selectedIndices).postln; selectedIndices}, // Get selected indices
-            $?, {
-                // Show help menu
-                var helpWindow = Window("Piano Roll Help", Rect(200, 200, 400, 300)).front;
-                var helpText = StaticText(helpWindow, Rect(10, 10, 380, 280))
-                    .string_("Piano Roll Keyboard Shortcuts:\n\n" ++
-                        "q - Close window and open WezTerm\n" ++
-                        "0, 1, 2 - Switch to take 0, 1, or 2\n" ++
-                        "j - Previous take\n" ++
-                        "k - Next take\n" ++
-                        "J - Scroll down one octave\n" ++
-                        "K - Scroll up one octave\n" ++
-                        "h/l - Scroll horizontally left/right\n" ++
-                        "H/L - Zoom out/in horizontally\n" ++
-                        "r - Clear note selection\n" ++
-                        "g - Get selected note indices\n" ++
-                        "? - Show this help menu\n\n" ++
-                        "Mouse:\n" ++
-                        "Click notes to select/deselect them\n" ++
-                        "Selected notes appear in red\n\n" ++
-                        "Visual Guide:\n" ++
-                        "Gray shading = Black keys\n" ++
-                        "C note labels on left side\n" ++
-                        "MIDI note range: 36-127 (scrollable)")
-                    .font_(Font("Helvetica", 12))
-                    .align_(\left);
-                helpWindow.onClose_({helpWindow = nil});
-            }
-        )
-    });
-    
+	// Replace the key action section in your gui method with this fixed version:
+
+// Replace the key action section in your gui method with this fixed version:
+
+view.keyDownAction_({ |view char|
+    switch (char, 
+        $q, {window.close; "open -a WezTerm.app".unixCmd},
+        $0, {window.close; this.gui(0)},
+        $1, {window.close; this.gui(1)},
+        $2, {window.close; this.gui(2)},
+        $j, {window.close; take = take - 1; this.gui(take: take)},
+        $k, {window.close; take = take + 1; this.gui(take: take)},
+        $J, {startMidiNote = (startMidiNote - 12).max(0); view.refresh; ("Scrolled down to MIDI note " ++ startMidiNote).postln}, 
+        $K, {startMidiNote = (startMidiNote + 12).min(115); view.refresh; ("Scrolled up to MIDI note " ++ startMidiNote).postln}, 
+        $h, { // Scroll left - FIXED
+            var duration, scrollAmount, newViewStart, newViewEnd;
+            duration = viewEnd - viewStart;
+            scrollAmount = duration * 0.1;
+            newViewStart = viewStart - scrollAmount;
+            newViewEnd = viewEnd - scrollAmount;
+            
+            // Ensure we don't scroll past the beginning
+            if(newViewStart < start) {
+                newViewStart = start;
+                newViewEnd = start + duration;
+            };
+            
+            viewStart = newViewStart;
+            viewEnd = newViewEnd;
+            view.refresh;
+            ("Scrolled left to " ++ viewStart.round(0.01)).postln;
+        },
+        $l, { // Scroll right - FIXED
+            var duration, scrollAmount, newViewStart, newViewEnd;
+            duration = viewEnd - viewStart;
+            scrollAmount = duration * 0.1;
+            newViewStart = viewStart + scrollAmount;
+            newViewEnd = viewEnd + scrollAmount;
+            
+            // Ensure we don't scroll past the end
+            if(newViewEnd > end) {
+                newViewEnd = end;
+                newViewStart = end - duration;
+            };
+            
+            viewStart = newViewStart;
+            viewEnd = newViewEnd;
+            view.refresh;
+            ("Scrolled right to " ++ viewStart.round(0.01)).postln;
+        },
+        $H, { // Zoom out horizontally - FIXED (anchored to left)
+            var newDuration, newViewStart, newViewEnd;
+            newDuration = (viewEnd - viewStart) * 1.2;
+            newViewStart = viewStart; // Keep left boundary fixed
+            newViewEnd = viewStart + newDuration;
+            
+            // Constrain to the bounds of the actual data
+            if(newViewStart < start) {
+                newViewStart = start;
+                newViewEnd = start + newDuration;
+            };
+            if(newViewEnd > end) {
+                newViewEnd = end;
+                // Only adjust start if we hit the right boundary
+                newViewStart = (end - newDuration).max(start);
+            };
+            
+            viewStart = newViewStart;
+            viewEnd = newViewEnd;
+            view.refresh;
+            ("Zoomed out, duration: " ++ (viewEnd - viewStart).round(0.01)).postln;
+        },
+        $L, { // Zoom in horizontally - FIXED (anchored to left)
+            var newDuration, minDuration, newViewStart, newViewEnd;
+            newDuration = (viewEnd - viewStart) * 0.8;
+            minDuration = 0.1; // Minimum zoom level
+            
+            // Ensure minimum duration
+            if(newDuration < minDuration) {
+                newDuration = minDuration;
+            };
+            
+            newViewStart = viewStart; // Keep left boundary fixed
+            newViewEnd = viewStart + newDuration;
+            
+            // Ensure we stay within bounds
+            if(newViewStart < start) {
+                newViewStart = start;
+                newViewEnd = start + newDuration;
+            };
+            if(newViewEnd > end) {
+                newViewEnd = end;
+                // Only adjust start if we hit the right boundary
+                newViewStart = (end - newDuration).max(start);
+            };
+            
+            viewStart = newViewStart;
+            viewEnd = newViewEnd;
+            view.refresh;
+            ("Zoomed in, duration: " ++ newDuration.round(0.01)).postln;
+        },
+        $r, {selectedIndices = []; view.refresh; "Selection cleared".postln}, 
+        $g, {("Selected note indices: " ++ selectedIndices).postln; selectedIndices}, 
+        $?, {
+            // Show help menu
+            var helpWindow = Window("Piano Roll Help", Rect(200, 200, 400, 300)).front;
+            var helpText = StaticText(helpWindow, Rect(10, 10, 380, 280))
+                .string_("Piano Roll Keyboard Shortcuts:\n\n" ++
+                    "q - Close window and open WezTerm\n" ++
+                    "0, 1, 2 - Switch to take 0, 1, or 2\n" ++
+                    "j - Previous take\n" ++
+                    "k - Next take\n" ++
+                    "J - Scroll down one octave\n" ++
+                    "K - Scroll up one octave\n" ++
+                    "h/l - Scroll horizontally left/right\n" ++
+                    "H/L - Zoom out/in horizontally\n" ++
+                    "r - Clear note selection\n" ++
+                    "g - Get selected note indices\n" ++
+                    "? - Show this help menu\n\n" ++
+                    "Mouse:\n" ++
+                    "Click notes to select/deselect them\n" ++
+                    "Selected notes appear in red\n\n" ++
+                    "Visual Guide:\n" ++
+                    "Gray shading = Black keys\n" ++
+                    "C note labels on left side\n" ++
+                    "MIDI note range: 36-127 (scrollable)")
+                .font_(Font("Helvetica", 12))
+                .align_(\left);
+            helpWindow.onClose_({helpWindow = nil});
+        }
+    )
+});
+
     // Add mouse click handling
     view.mouseDownAction_({ |view, x, y, mod|
         var noteRange = 92; // Display 92 notes at a time

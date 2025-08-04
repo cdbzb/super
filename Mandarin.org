@@ -346,6 +346,7 @@ Singing a promise of worth.
 
 * Mixes
 ** automobile Mix
+*** basic form
 #+BEGIN_SRC supercollider
 Mandarin.load(\automobile3);
 /*
@@ -365,39 +366,77 @@ Mandarin.edit(\automobile3);
     ).play
 )
 #+END_SRC
-** key recording on bridge
-#+BEGIN_SRC supercollider
-m = MicroKeys(\harpS);
-m.add(\coef, {|i| i.put(\params, (pan: 0.8,coef: 0.1))}, \addAfter, \event);
-m.monitor
-n = MicroKeys.mono(\stringyyPan);
-n.add(\coef, {|i| i.put(\params, (wet: 0.1))}, \addAfter, \event);
-Mandarin.load('automobile3');
-
-   (
-	   a = MIDIItem("keys_250731_120152");
-       c = MIDIItem("extraLine_250731_122239");
-       e = MIDIItem(\plink_250731_152758);
-	  m.velCurve_(0, [0, 0.05]);
-	  n.velCurve_(0, [0, 0.3]);
-
-
-	   b = MicroKeys(\sawSynthSustain);
-	   d = MicroKeys(\sparkTriangle);
-	   b.velCurve_(0, [0, 0.1]);
-	   d.velCurve_(0, [0, 0.06]);
-	   // d.monitor;
-	   Seg([
-	   	\verse,
-	   	Seg(\bridge, extra: {e.play(n);e.play(m);a.play(b); c.take(3).play(d)}),
-            [
-                (type:\seg, section: \V2), //traps 
-                (type:\seg, section: \verse, mute:[\traps])
-            ]
-	   ].drop(0).q).play;
-	   // c.takes.size
-   )
-#+END_SRC
+*** key recording on bridge
+ #+BEGIN_SRC supercollider
+    (
+ 	   Mandarin.load('automobile3');
+ 	   m = MicroKeys(\harpS);
+ 	   m.add(\coef, {|i| i.put(\params, (pan: 0.8,coef: 0.1))}, \addAfter, \event);
+ 	   // m.monitor
+ 	   n = MicroKeys.mono(\stringyyPan);
+ 	   n.add(\coef, {|i| i.put(\params, (wet: 0.1))}, \addAfter, \event);
+    )
+    b.monitor
+    (
+ 	   a = MIDIItem("keys_250731_120152");
+        c = MIDIItem("extraLine_250731_122239");
+        e = MIDIItem(\plink_250731_152758);
+ 	  m.velCurve_(0, [0, 0.05]);
+ 	  n.velCurve_(0, [0, 0.3]);
+ 
+ 	   b = MicroKeys(\sawSynthSustain);
+ 	   d = MicroKeys(\sparkTriangle);
+ 	   b.velCurve_(0, [0, 0.1]);
+ 	   d.velCurve_(0, [0, 0.06]);
+         z = MIDIItem("newKey_250802_144156");
+         y = MIDIItem("newTri_250802_144157");
+ 
+ 	   // d.monitor;
+ 	   Seg([
+ 	   	\verse,
+ 	   	Seg(\bridge, 
+ 		// extra: {e.play(n);e.play(m);a.play(b); c.take(3).play(d)}
+         extra: {
+             // z.play(b);
+             // y.play(d)
+             [
+                 freq: [
+                     [3, 6],
+                     [3, 5],
+                     [\r, \r], 
+                     [2.5, 5.5],
+                     [2.5, 5],
+                     [\r, \r], 
+                     [11, 4],
+                     [6, 4],
+                 ].df(\c, 4).q,
+                 dur: [2, 2,4,2,2, 4, 2, 2]
+                 * Song.quarter => _.q
+                 ,
+                 // instrument: \sparkTriangle,
+                 instrument: \wash,
+                 legato: [1, 1, 0.0, 1, 1, 0.0, 1,1].q
+             ].ppma;
+             [
+                 instrument: \pluckD,
+                 freq: [6, 3, 5, 1, 4, 1, 3, 1, 5.5, 2.5, 5, 2.5, 3, 1, 3, -6.5, 4, 1, 1, -6, -6.5, 2, -6, 1, -5].df(\c, [4, 5]).q,
+                 dur: 
+                 Song.quarter ! 24 ++ (Song.quarter*4)
+                 => _.q  ,
+                 amp: 0.01
+             ].ppm
+ 
+         }
+ 		),
+             [
+                 (type:\seg, section: \V2), //traps 
+                 (type:\seg, section: \verse, mute:[\traps])
+             ]
+ 	   ].drop(1).q).play;
+ 	   // c.takes.size
+    // Seg(\verse).play
+    )
+ #+END_SRC
 ** Memories Mix
 *** file
    #+BEGIN_SRC supercollider 

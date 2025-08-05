@@ -327,6 +327,38 @@ P(\traps,
 	}
 );
 ["bridge", "r", [48 * Song.quarter]].addLine;
+P(\guitarFigure, music: { |p b e|
+	[
+                 instrument: \pluckD,
+                 freq: [6, 3, 5, 1, 4, 1, 3, 1, 5.5, 2.5, 5, 2.5, 3, 1, 3, -6.5, 4, 1, 1, -6, -6.5, 2, -6, 1, -5].df(\c, [4, 5]).q,
+                 dur: 
+                 Song.quarter ! 24 ++ (Song.quarter*4)
+                 => _.q  ,
+                 amp: 0.01
+             ].ppma
+});
+P(\wash, music: { |p b e|
+	[
+                 freq: [
+                     [3, 6],
+                     [3, 5],
+                     [\r, \r], 
+                     [2.5, 5.5],
+                     [2.5, 5],
+                     [\r, \r], 
+                     [11, 4],
+                     [6, 4],
+                 ].df(\c, 4).q,
+                 dur: [2, 2,4,2,2, 4, 2, 2]
+                 * Song.quarter => _.q
+                 ,
+                 // instrument: \sparkTriangle,
+                 instrument: \wash,
+                 freqLag: 1.5,
+                 amp:0.1 * -3.dbamp,
+                 legato: [1, 1, 0.0, 1, 1, 0.0, 1,1].q
+             ].pp
+});
 P(\guitar,lag: 28*Song.quarter, music: { |p b e|
 	
                 {

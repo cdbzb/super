@@ -534,16 +534,6 @@ Mandarin.edit(\automobile3);
     // (type: \seg, section: [~chorus, 5, 6, 7].q).play
 
     )
-    (// experiment with bridge...
-        Seg(
-            [
-                7,
-                [Seg( \chorusFlat7, mute:[\an, \chord] ), \bridge ],
-                4
-            ].drop(0).q, 
-				 // mute\chords
-        ).play;
-    )
 
     (
     ~verse = [0, 1, 2];
@@ -566,6 +556,20 @@ Mandarin.edit(\automobile3);
     // (type: \seg, section: [~verse2PlusKick, ~chorus].q).play
     )
     #+END_SRC
+**** big bridge                                              :neon:mix:mandarin:
+     #+BEGIN_SRC supercollider
+    Mandarin.load(\neon2) ;
+    (// experiment with bridge...
+        Seg(
+            [
+                7,
+                [Seg( \chorusFlat7, mute:[\an, \chord] ), \bridge ],
+                4
+            ].drop(0).q, 
+				 // mute\chords
+        ).play;
+    )
+     #+END_SRC
 **** workingon bridge
      #+BEGIN_SRC supercollider
      (type: \seg, section: [0,1, 2, 3, 4, 5, 6,7,(\type: \seg, section: \bridge, bridgeChordQuality: \minor), (type:\seg, section: 3, \mute:\bg ), 4].drop(6).q).play

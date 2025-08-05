@@ -36,7 +36,7 @@ Song.bassLines = [
 		Song.bassTrack.notNil.if
 		{
 			Song.bassTrack.synth.isRunning.not.if{
-				s.freeMyDefaultGroup;
+				// s.freeMyDefaultGroup;
 				Song.bassTrack = Song.bassTrackFunc.() 
 			}
 		}{
@@ -256,6 +256,7 @@ Song.transition = [
 	}
 };
 
+
 Song.figure = [
 	[1, 6, 5, 3, 1, 6, 5, 1, 2, 4, 7, 6, 1, 4, 5, 6].df(\c,5, \mixolydian).dup(3) ++ "3 11 7 5 3 11 7  3 5 6 7 2 4.5 7 6 4.5".df('a-', 4) => _.flat => _.q(2),
 	"3 5 11 5 3 5 11 5 2 4 7 4 1 4 6 1".df(\c, 5, \mixolydian).dup(3) ++ "5 11 13 11 5 11 13 11 5 7 12 7 4 6 12 6".df('a-', 4, \lydian) => _.flat => _.q(2),
@@ -326,6 +327,32 @@ P(\traps,
 	}
 );
 ["bridge", "r", [48 * Song.quarter]].addLine;
+P(\guitar,lag: 28*Song.quarter, music: { |p b e|
+	
+                {
+                    var minfreq= [4, 5, 6, 2, 4, 5].df(\c,4).dq.demand([2, 2, 4, 2, 2, 4]*Song.quarter) * [3/2,  1/2, 1] ;
+                    0.2 
+                    // * Env.perc(0.05, 3.99).kr(0,gate:Impulse.kr(0.25)) 
+                    * Env([0, 1, 1, 0], [0.005, 16*Song.quarter, 3]).kr(2,gate:1)
+					* (TDuty.ar([Song.quarter/2].dq(16*2), reset:0.0, level:1.0, doneAction:0, gapFirst:0) => Decay.ar(_, 0.5) => _.linlin(0,1,0.5,1))
+                    * LorenzTrig.ar(
+                        minfreq:{ minfreq }.dup(5),
+                        maxfreq: minfreq + 5,
+                        s:{9.0.rrand(10.9)}.dup(5),
+                        r:28,
+                        b:2.6666667.rrand(1) / 5,
+                        h:0.02,
+                        x0:0.090879182417163,
+                        y0:2.97077458055.rand,
+                        z0:24.282041054363.rand
+                    )
+                    => Mix.ar(_)
+					// => Decay.ar(_, 0.0003) /2
+                    => CrossoverDistortion.ar(_)
+                    => LPF.ar(_,4000)=> Mix.ar(_) 
+                    => LeakDC.ar(_)
+                }.play;
+});
 P(\bass, music: { {|t c| [4].do{|i x| Song.bassLines[i].sched(x * 16 + t, c) } }.(0, Song.clock) });
 P(\traps, music: {{|t c| [2].do{|i| Song.traps[1].sched(0 + t, c )}}.(0, Song.clock)};
 );

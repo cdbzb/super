@@ -383,14 +383,14 @@ Mandarin.edit(\automobile3);
         e = MIDIItem(\plink_250731_152758);
  	  m.velCurve_(0, [0, 0.05]);
  	  n.velCurve_(0, [0, 0.3]);
- 
+
  	   b = MicroKeys(\sawSynthSustain);
  	   d = MicroKeys(\sparkTriangle);
  	   b.velCurve_(0, [0, 0.1]);
  	   d.velCurve_(0, [0, 0.06]);
          z = MIDIItem("newKey_250802_144156");
          y = MIDIItem("newTri_250802_144157");
- 
+
  	   // d.monitor;
  	   Seg([
  	   	\verse,
@@ -415,8 +415,8 @@ Mandarin.edit(\automobile3);
                  ,
                  // instrument: \sparkTriangle,
                  instrument: \wash,
-				 freqLag: 1.5,
-				 amp:0.1 * -3.dbamp,
+                 freqLag: 1.5,
+                 amp:0.1 * -3.dbamp,
                  legato: [1, 1, 0.0, 1, 1, 0.0, 1,1].q
              ].ppma;
              [
@@ -427,39 +427,13 @@ Mandarin.edit(\automobile3);
                  => _.q  ,
                  amp: 0.01
              ].ppm;
- 
- 			 fork{
- 				 28*Song.quarter + 0.2 =>_.wait;
- 					 {
- 						 var minfreq= [4, 5, 6, 2, 4, 5].df(\c,4).dq.demand([2, 2, 4, 2, 2, 4]*Song.quarter) * [3/2,  1/2, 1] ;
- 						 0.2 
- 						 // * Env.perc(0.05, 3.99).kr(0,gate:Impulse.kr(0.25)) 
- 						 * Env([0, 1, 1, 0], [0.005, 16*Song.quarter, 3]).kr(2,gate:1)
- 						 * LorenzTrig.ar(
- 							 minfreq:{ minfreq }.dup(5),
- 							 maxfreq: minfreq + 5,
- 							 s:{9.0.rrand(10.9)}.dup(5),
- 							 r:28,
- 							 b:2.6666667.rrand(1) / 5,
- 							 h:0.02,
- 							 x0:0.090879182417163,
- 							 y0:2.97077458055.rand,
- 							 z0:24.282041054363.rand
- 						 )
-						 => Mix.ar(_)
-						 => CrossoverDistortion.ar(_)
-						 => LPF.ar(_,4000)=> Mix.ar(_) 
-						 => LeakDC.ar(_)
-					 }.play;
-
- 					 }
          }
  		),
              [
                  (type:\seg, section: \V2), //traps 
                  (type:\seg, section: \verse, mute:[\traps])
              ]
- 	   ].drop(1).q).play;
+ 	   ].drop(0).q).play;
  	   // c.takes.size
     // Seg(\verse).play
     )

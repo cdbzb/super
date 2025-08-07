@@ -121,7 +121,7 @@ MicroKeys {
 		// 	func !? {|i| (mk: name).use{ i.asDefName }} ? I.d);
 			
 		
-		keys = 0 ! 128;
+		keys = List[] ! 128;
 		heldNotes = Set[];
 		all.add(name -> this);
 		ccs = List[];
@@ -190,7 +190,7 @@ MicroKeys {
 	}
 
 	register { |event|
-		keys[event.raw] = event[\synths].debug("eventSynth");
+		keys[event.raw] add: event[\synths] => _.debug("keys @: %".format(event.raw));
 
 		// ^e.synth
 }
@@ -214,9 +214,14 @@ MicroKeys {
 		} 
 	}
 
-	doNoteOff {|midinote| 
+	doNoteOff {|midinote latency=0| 
 		name.debug("noteOff");
-		damperDown.not.if {keys[midinote].release} {heldNotes.add(keys[midinote])} 
+		damperDown.not.if {
+			Server.default.makeBundle(
+				latency,
+				{ try {  keys[midinote].removeAt(0).release  } }
+			)
+		} { heldNotes.add(keys[midinote]) } 
 	}
 
 	doPoly {|val num| 
@@ -228,14 +233,14 @@ MicroKeys {
 	record {
 		this.recordMe
 	}
-	monitor {
+	monitor { |offLatency = 0.02|
 		active = true;
 		// storedCCValues.notNil.if{ this.restoreCCValues };
 		CC.all[name].do(_.activate);
 		// MIDIdef.noteOn(\microOn, {|val num| this.noteOnFunction.(val, num)}, noteNum:range);
 		MIDIdef.noteOn(\microOn ++ name => _.asSymbol,  {|v n| (type: \mk, mk:this, amp: v/127, midinote: n, latency:0, sustain: inf ).play}, );
 		// MIDIdef.noteOff(\microOff, {|vel, num| damperDown.postln; ( damperDown == false ).if{ keys[num].release }{ heldNotes.add(keys[num]) }});
-		MIDIdef.noteOff(\microOff ++ name => _.asSymbol, {|val num| this.doNoteOff(num) }, );
+		MIDIdef.noteOff(\microOff ++ name => _.asSymbol, {|val num| this.doNoteOff(num, offLatency) }, );
 		MIDIdef.cc(\microDamper ++ name => _.asSymbol,{|num| this.setDamper(num) }, 64);
 		MIDIdef.polytouch(\microPoly ++ name => _.asSymbol, {|val num| this.doPoly(val, num)});
 	}

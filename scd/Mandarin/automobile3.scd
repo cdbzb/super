@@ -192,7 +192,28 @@ Song.words= [
 	"r 时  间 停 止 了",
 	"r 心 跳 声 越 来 越 快 了 啊 ",
 	"时  间 停 - - 止 了", // this is just a copy - check for nonsense
-	"越 来 越 快 了 啊" //dummy - change this!
+	"越 来 越 快 了 啊", //dummy - change this!
+//V1B
+"r 新 的 夜 晚 又 来 临",  //12
+"r 爱 在 心 中 像 火 焚",
+"r 心 跳 的 节 奏 如 鼓 点",
+"r 跟 随 我 到 永 远 - ",
+
+// A new night comes again
+// Love in the heart like a burning fire
+// The rhythm of the heartbeat like drumbeats
+// Follow me forever
+
+//V2B
+"r 星 光 照 亮 你 的 眼", //16
+"r 夜 空 中 爱 情 飞 翔",
+"r 心 中 的 爱 永 不 减",
+"r 共 度 每 一 个 晚 上"
+
+// Starlight shines on your eyes
+// Love flies in the night sky
+// The love in the heart never decreases
+// Share every night together
 ];
 
 // singer: \jun;
@@ -203,7 +224,7 @@ Song.verseVox = ();
 [\lead, \dbl].do{ |take takeNum|
 	Song.verseVox.put( 
 		take, 
-		Song.words[(..7)].collect{ |i x|
+		Song.words[(..7) ++ (12..19) => _.flat].collect{ |i x|
 			SynthV.build("automobile", "verse" ++ x, Song.singer, take, (
 				lyrics:  i,
 				midinote: Song.tunes[[0,2,0,1]].wrapAt(x).collect({ |i| i.cpsmidi.asInteger}) ,
@@ -278,7 +299,7 @@ Song.figure = [
 };
 [\verse, "r", [64*Song.quarter]].addLine;
 // could make a line per phrase
-Song.verseVox.lead.do{|i x|
+Song.verseVox.lead[(..7)].do{|i x|
 	[\lead, \dbl].do{ |take|
 		P(\vox++"_"++x++"_"++take,lag:x*8*Song.quarter, music:{
 			{ 
@@ -470,10 +491,26 @@ P(\connector, music: {
 			=> Out.ar(out,_);
 			DetectSilence.ar(sig,doneAction:2);
 		}).add;
+["verseTwo", "r"].addLine;
+Song.verseVox.lead[(8..15)].do{|i x|
+	[\lead, \dbl].do{ |take|
+		P(\vox++"_"++x++"_"++take,lag:x*8*Song.quarter, music:{
+			{ 
+				Song.verseVox[take][x + 8].playbuf
+				/ 4  * -3.dbamp 
+				=> {|i| CombN.ar(i, Song.quarter/2, Song.quarter, 5) / 4 + i}
+				=> Pan2.ar(_,0) 
+			}.play
+		} 
+	)
+}
+};
+
 )
 
 ///////////repeat
 // ~song2.sections.verse2 = ~song2.sections.verse.deepCopy;
 // ~song2.sections.verse2.parts.traps = ( );
 //////////
+
 

@@ -399,7 +399,9 @@ Mandarin.edit(\automobile3);
  		),
              [
                  (type:\seg, section: \V2), //traps 
-                 (type:\seg, section: \verse, mute:[\traps])
+                 (type:\seg, section: \verse, mute:[\traps, \vox]),
+                 // (type:\seg, section: \verse,solo:[ \vox]) ,
+                 (type:\seg, section: \verseTwo, solo:[\vox])
              ]
  	   ].drop(1).q).play;
  	   // c.takes.size

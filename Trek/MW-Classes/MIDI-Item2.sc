@@ -437,7 +437,9 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		all.add(name -> this)
 	}
 	*insertNew{|name|
-		Nvim.replace( "MIDIItem(\\\"%\\\")".format(name ++ "_" ++  Date.getDate.stamp) )
+        var date = Date.getDate.stamp;
+		Nvim.replace( "MIDIItem(\\\"%\\\")".format(name ++ "_" ++  date) );
+		^MIDIItem(name ++ "_" ++ date)
 	}
 	*mostRecent {
 		^
@@ -587,7 +589,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 				},msgType: cmd, 
 				//eliminate cc0
 				msgNum: (cmd == \control).if{ (0..127) },
-				srcID: KS.id,
+				// srcID: KS.id,
 				// argTemplate: {|i| (cmd == \control).if{ i.isStrictlyPositive }{true}}
 			)};
 			^SelfReturningObject()

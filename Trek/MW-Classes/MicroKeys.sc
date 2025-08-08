@@ -228,7 +228,9 @@ MicroKeys {
 		// set the synth's poly control
 		// but what if there is none?
 		// in that case we need to set a bus and map that bus to freq?
-		keys[num].set(\poly, val)
+
+		// set[0] because keys are now a list
+		keys[num][0].set(\poly, val)
 	}
 	record {
 		this.recordMe
@@ -293,11 +295,12 @@ MicroKeys {
 	recordMe {
 		item.isNil.if{ item = MIDIItem.new( Date.getDate.stamp ) };
 		item.record(this);
+		^item
 	}
+
 	insertItem {
 		var key = $\\ ++ $\\ ++ name;
 		var string = "MIDIItem(\\\"%\\\").play(%)".format(item.name, key);
-
 		Nvim.replace(string)
 	}
 

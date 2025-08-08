@@ -92,11 +92,14 @@ CC {
 		e.keys.do{|i| CC(i, mk: mk).val = (e[i]); CC(i, mk: mk).set(e[i]) }
 		
 	}
-
 	set { |i|
 		val = i; bus.set(spec.map(i))
 	}
-
+    control {
+        ^
+            {CC(number, mk:~mk).bus.kr}
+        
+    }
 	asControl {|name default synth|
 		ctl = name;
 		^NamedControl(name, default, \control, spec: spec)

@@ -77,7 +77,7 @@ CC {
 				a.spec = spec ? a.spec; 
 				^a 
 			}
-		} 
+		};
 
 		^super.new.init(number, spec, mk, rawScale, default)
 	}
@@ -96,9 +96,7 @@ CC {
 		val = i; bus.set(spec.map(i))
 	}
     control {
-        ^
-            {CC(number, mk:~mk).bus.kr}
-        
+        ^{ CC(number, mk:~mk).bus.kr }
     }
 	asControl {|name default synth|
 		ctl = name;

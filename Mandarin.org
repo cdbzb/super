@@ -546,7 +546,7 @@ Mandarin.edit(\automobile3);
      (type: \seg, section: [0,1, 2, 3, 4, 5, 6,7,(\type: \seg, section: \bridge, bridgeChordQuality: \minor), (type:\seg, section: 3, \mute:\bg ), 4].drop(6).q).play
      MicroKeys(\default).monitor
      #+END_SRC
-** c-to-c# Mix
+** c-to-c# Mix - -
 **** here's one!
 #+BEGIN_SRC supercollider
 	 Mandarin.load('c#');
@@ -554,12 +554,30 @@ Mandarin.edit(\automobile3);
 	 Mandarin.edit('c#');
 	 Song.synthVtracks
 	 */
+	  (
+          var swell = {
+              WhiteNoise.ar(0.03) * Env([0, 1],Song.quarter * 2).kr(2,gate:1);
+          };
+          ~drumIdea = {
+              fork{
+                      s.bind{ swell.play};
+                      (instrument: \hat_808).play;
+                      Song.quarter * 2 => _.wait;
+                      (instrument: \sn_808,amp: 0.1, out: Effect.bus({|i| CombN.ar(i, 0.2, Song.quarter/4, 2)/2 +i  },)).play;
+
+              };
+          }
+	  )
      (
-         var verse = ( type:\seg, section: [0,1,2,3].drop(0).q );
+         var verse = ( type:\seg, 
+             //verse drum ideas
+             extra:~drumIdea,
+
+             kevinVersePan: -0.5, section: [0,1,2,3].drop(0).q );
 
 		 (  // Chorus levels
 			 // junChorus: {|i| PlateReverb.ar(i, mix:0.5)=>HPF.ar(_, 100) /2  },
-			 junChorus: {|i| FreeVerb.ar(i, 0.3, 1) => HPF.ar(_, 120) * -3.dbamp  },
+			 junChorus: {|i| FreeVerb.ar(i, 0.3, 0.9) => HPF.ar(_, 120) * -3.dbamp  },
 			 pluckGain: 1.25,
              leadAmp: 0.75,
 		 ) 
@@ -571,7 +589,7 @@ Mandarin.edit(\automobile3);
          		\lowBass,
          		\chords //quarters hmmm..... save for V2
          	],
-         	lowBassAmp:0.02
+         	lowBassAmp:0.02,
 				 ),
                  [\testPluck, (type:\seg, section:\chorus1, solo:\pluck,  pluckEnd:  218+ /*104*/ /*59*/ 61,) ]  ,
 				 (type: \seg, extra: {MIDIItem("_250723_152718")
@@ -581,7 +599,7 @@ Mandarin.edit(\automobile3);
 				 ,
 				 \V2Line2,\verse2Repeat, \verse2Repeat2 ,
                  [\testPluck, (type:\seg, section:\chorus1, solo:\pluck,  pluckEnd:  218+ /*104*/ /*59*/ 61,) ]  ,
-         ].drop(4).q, 
+         ].drop(0).q, 
          bassNoteAmp:0.10 
      ) => _.play
      )

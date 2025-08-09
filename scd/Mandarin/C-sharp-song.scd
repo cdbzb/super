@@ -151,6 +151,7 @@ P.synthV(\kevin, take: \lead,
 	{
 		e.playbuf
 		/4
+		=> Pan2.ar(_, (~kevinVersePan ? -1))
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
@@ -173,13 +174,14 @@ P.synthV(\jun, take: \lead, params: {|p b| [
 P.synthV(\kevin, take: \lead,
 	pbind: {|p b|
 		[
-			dur: "e e qqq".beats * Song.quarter,
-			midinote: "-6 1 2".dm(\c)
+			dur: "e e qe eq e".beats * Song.quarter,
+			// midinote: "-6 1 2".dm(\c),
+			midinote: "-6 1 2 1 -7".dm(\c)
 			// * 3.dbamp
 		].p
 	},
 	params: {|p b| [
-	lyrics: "月 光 下",
+	lyrics: "月 光 下 - -",
 	pitchTake: 1,
 	language: \mandarin,
 	phoneset: \xsampa
@@ -187,6 +189,7 @@ P.synthV(\kevin, take: \lead,
 	{
 		e.playbuf
 		/4
+		=> Pan2.ar(_,(~kevinVersePan ? -1))
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
@@ -434,6 +437,7 @@ P.synthV(\kevin, take: \lead,
 		e.playbuf
 		/4
 		// => p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_, (~kevinVersePan ? -1))
 	}.play
 });
 P.clone('夏雨薇',[ \bass, \lowBass ]);
@@ -455,14 +459,15 @@ P.synthV(\jun, take: \lead, params: {|p b| [
 P.synthV(\kevin, take: \lead,
 	pbind: {|p b|
 		[
-			dur: "e e qqq".beats * Song.quarter,
-			midinote: "-6 1 2".dm(\c)
+			dur: "e e qe eq x".beats * Song.quarter,
+			// midinote: "-6 1 2".dm(\c),
+			midinote: "-6 1 2 1 -7".dm(\c)
 			// * 3.dbamp
 		].p
 	},
 	params: {|p b| [
-	lyrics: "她 的 心",
-	pitchTake: 1,
+	lyrics: "她 的 心 - - ",
+	pitchTake: 2,
 	language: \mandarin,
 	phoneset: \xsampa
 ] }, music:{|p b e|
@@ -470,6 +475,7 @@ P.synthV(\kevin, take: \lead,
 		e.playbuf
 		/4
 		// => p.synthVTracks.at(e.key).()
+		=> Pan2.ar(_,(~kevinVersePan ? -1))
 	}.play
 });
 P.clone('花 瓣 落',[ \bass, \lowBass ]);

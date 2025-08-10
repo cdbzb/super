@@ -1,0 +1,49 @@
+var o, p;
+o = [
+	MIDIItem.prNew,  List.prNew,  Array.prNew(1),  Event.prNew,  
+	Array.prNew(32),  "_250807_172529",  Event.prNew,  Array.prNew(4),  
+	Array.prNew(1),  Event.prNew,  Array.prNew(8),  List.prNew,  
+	Array.prNew
+];
+p = [
+	// MIDIItem
+	0, [ midiEvents: o[1],  name: o[5],  
+		initialCCValues: o[6],  restFirst: true,  
+		initialRest: o[8],  notes: nil,  
+		takes: o[11] ],  
+	// List
+	1, [ array: o[2] ],  
+	// Array
+	2, [ o[3] ],  
+	// Event
+	3, [ array: o[4],  size: 7,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	4, [ 'control',  0,  'timestamp',  0.0,  
+		'midicmd',  'control',  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'ctlNum',  'polytouch',  'midinote',  'r',  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  'initialEvent',  true,  
+		nil,  nil,  'type',  'setPoly',  
+		nil,  nil,  nil,  nil ],  
+	// Event
+	6, [ array: o[7],  size: 0,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	7, [ nil,  nil,  nil,  nil ],  
+	// Array
+	8, [ o[9] ],  
+	// Event
+	9, [ array: o[10],  size: 2,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	10, [ nil,  nil,  'type',  'rest',  
+		'timestamp',  0.0,  nil,  nil ],  
+	// List
+	11, [ array: o[12] ]
+];
+prUnarchive(o,p);

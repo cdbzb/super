@@ -562,46 +562,73 @@ Mandarin.edit(\automobile3);
               fork{
                       s.bind{ swell.play};
                       (instrument: \hat_808).play;
-                      Song.quarter * 2 => _.wait;
-                      (instrument: \sn_808,amp: 0.1, out: Effect.bus({|i| CombN.ar(i, 0.2, Song.quarter/4, 2)/2 +i  },)).play;
-
+					  [
+						  instrument: \hat_808, 
+						  dur:Song.quarter / 2 => _.bubble => _.q(16),
+						  amp:[ 0.05, 0.03 ].q(inf)
+					  ].pp;
+					  [
+						  instrument: \sn_808,
+						  dur: "qq qqqq qq".beats * Song.quarter => _.q,
+						  out: Effect.bus({|i| CombN.ar(i, 0.2, Song.quarter/4, 2)/2 +i => Pan2.ar(_,0)}, time:2),
+						  rest: MuteFirst(),
+						  amp:0.1
+					  ].pp
               };
-          }
+		  [
+			  instrument: \bd_808, 
+			  dur: "qqqq q qe q e".beats.q(2) * Song.quarter
+		  ].pp
+          }; ~drumIdea.()
 	  )
      (
-         var verse = ( type:\seg, 
-             //verse drum ideas
-             extra:~drumIdea,
+		 var verse = Seg( 
+			 //verse drum ideas
+			 extra:~drumIdea,
+			 kevinVersePan: -0.5, section: [0,1,2,3].drop(3).q 
+		 );
+	~drumz = [\sn_808, \bd_808, \hat_808].collect{|i x| var ranges = [
+		[ 48 ],
+		[ 60, 61 ],
+		[ 62, 64 ]
+	]; MicroKeys(i).range_(ranges[x])};
+	~drumz.do(_.monitor);
+MIDIItem("traps_250810_175817").player
 
-             kevinVersePan: -0.5, section: [0,1,2,3].drop(0).q );
+.filter{|e|e.select{|e|e.midicmd==\noteOn}}
+.filter({|f|f.collect {|e| e.amp= e.amp/2}})
+.play(~drumz);
+			 (// Chorus levels
+				 // junChorus: {|i| PlateReverb.ar(i, mix:0.5)=>HPF.ar(_, 100) /2  },
+				 junChorus: {|i| FreeVerb.ar(i, 0.3, 0.9) => HPF.ar(_, 120) * -3.dbamp  },
+				 pluckGain: 1.25,
+				 leadAmp: 0.75,
+			 )
+			 ++ Seg(
+				 // mute: \jun,
+				 section:[
+					 verse ++ (mute: [ \lowBass, \chords /* quarters hmmm..... save for V2*/ ], lowBassAmp:0.02,),
+					 [Seg(\testPluck, extra:{(instrument:\cymbalsDS, amp:0.01).play}), Seg(section:\chorus1, solo:\pluck,  pluckEnd:  218+ /*104*/ /*59*/ 61),],
+					 Seg(
+						 \V2,
+						 extra: {
+							 MIDIItem("_250723_152718")
+							 .filter({|i| i.collect {|e| e.amp.notNil.if {e.amp_(e.amp/6)}; e}})
+							 .start_(0.2)
+							 .play(\sawSynthSustain);
+							 topEnvironment[\drumIdea].()
+						 }, 
+						 verseChordAmp:2
+					 )
 
-		 (  // Chorus levels
-			 // junChorus: {|i| PlateReverb.ar(i, mix:0.5)=>HPF.ar(_, 100) /2  },
-			 junChorus: {|i| FreeVerb.ar(i, 0.3, 0.9) => HPF.ar(_, 120) * -3.dbamp  },
-			 pluckGain: 1.25,
-             leadAmp: 0.75,
-		 ) 
-         ++ (
-             type:\seg, 
-			 // mute: \jun,
-             section:[
-                 verse ++ ( mute: [
-         		\lowBass,
-         		\chords //quarters hmmm..... save for V2
-         	],
-         	lowBassAmp:0.02,
-				 ),
-                 [\testPluck, (type:\seg, section:\chorus1, solo:\pluck,  pluckEnd:  218+ /*104*/ /*59*/ 61,) ]  ,
-				 (type: \seg, extra: {MIDIItem("_250723_152718")
-				 .filter({|i| i.collect {|e| e.amp.notNil.if {e.amp_(e.amp/6)}; e}})
-				 .start_(0.2)
-				 .play(\sawSynthSustain)}, section: \V2, verseChordAmp:2)
-				 ,
-				 \V2Line2,\verse2Repeat, \verse2Repeat2 ,
-                 [\testPluck, (type:\seg, section:\chorus1, solo:\pluck,  pluckEnd:  218+ /*104*/ /*59*/ 61,) ]  ,
-         ].drop(0).q, 
-         bassNoteAmp:0.10 
-     ) => _.play
+					 ,
+					 \V2Line2,
+					 \verse2Repeat, 
+					 \verse2Repeat2 ,
+					 [\testPluck, (type:\seg, section:\chorus1, solo:\pluck,  pluckEnd:  218+ /*104*/ /*59*/ 61,) ]  ,
+				 ].drop(0).q, 
+				 bassNoteAmp:0.10 
+			 ) => _.play
      )
      MicroKeys(\stringyy).monitor
      (

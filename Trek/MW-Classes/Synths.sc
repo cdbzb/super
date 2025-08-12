@@ -35,7 +35,7 @@ Synths {
 			args.pairsDo({|i j| this.set(i, j)})
 		} {
 			(args.flop.size==1).if{args=[args[0]]++[args[1].dup(synths.size)]};
-			args.postln;
+			// args.postln;
 			args.flop.do({|i x| 
 				synths[x].set(*i)
 			})

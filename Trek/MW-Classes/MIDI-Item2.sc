@@ -558,14 +558,15 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		restFirst.if{ initialRest = [( type: \rest, timestamp: SystemClock.seconds - start)] };
 		
 		//make MIDIdefs
-		[\noteOn, \noteOff, \control, \polytouch, \bend ].do{ |cmd|
+		[\noteOn, \noteOff, \control, \polytouch, \bend, \touch ].do{ |cmd|
 
-			MIDIdef((\record ++ cmd).asSymbol, func: { |val num| 
+			MIDIdef((\record ++ cmd).asSymbol, func: { |val num chan| 
 				\recordDef.postln;
 				midiEvents.add(
 					(
 						midicmd: cmd,
 						timestamp: SystemClock.seconds - start - latencyCompensation,
+						channel: chan,
 					)//.postln
 					++
 						switch( cmd, 
@@ -576,12 +577,16 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 								( num == 64 ).if{
 									(type:\setDamper, ctlNum:\damper, control: val)//.postln 
 								} { 
-									//TODO do away with this divisions ???
-									(type: \setCC, ctlNum:num, control: val / 127)//.postln
+									( num == 74 ).if{
+										(type: \setCC74, ctlNum: 74, control: val / 127)
+									} {
+										//TODO do away with this divisions ???
+										(type: \setCC, ctlNum:num, control: val / 127)//.postln
+									}
 								} 
 							},
 							\bend, { (type: \setBend, ctlNum:\bend, control: val / 16384)},
-							// \bend, { (val: val, ctlNum:) }
+							\touch, { (type: \setPressure, ctlNum:\pressure, control: val / 127)},
 							
 						)
 						// => _.postln

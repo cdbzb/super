@@ -9,9 +9,9 @@ MicroKeys {
 	*freq {
 		^{|mk| {\freq.kr(900) * (\poly.kr() / 127+ CC.bend(mk: mk).bus.kr => _.midiratio)} }
 	}
-	doNoteOn { |amp midinote params silent|
+	doNoteOn { |amp midinote params silent channel|
 		silent.isNil.if{
-			this.noteOnFunction.(amp, midinote, nil, nil, params).debug("noteOn")
+			this.noteOnFunction.(amp, midinote, channel, nil, params).debug("noteOn")
 
 			=> {|e| this.register(e)} // register method could be moved here
 		}
@@ -32,11 +32,11 @@ MicroKeys {
 		Event.addEventType(\mk, {
 			var syn;
 			~mk.isKindOf(Symbol).if { ~mk = MicroKeys(~mk) };
-			Server.default.makeBundle(~latency, { ~mk.doNoteOn(~amp * 127, ~midinote, ~params, ~silent) });
+			Server.default.makeBundle(~latency, { ~mk.doNoteOn(~amp * 127, ~midinote, ~params, ~silent, ~channel) });
 			fork{
 				~sustain.().wait;
 				//syn could be passed into doNoteOff to solve the overlapping notes issue
-				Server.default.makeBundle(~latency, {~mk.doNoteOff(~midinote)})
+				Server.default.makeBundle(~latency, {~mk.doNoteOff(~midinote, channel: ~channel)})
 			}	
 		});
 		Event.addEventType(\setCC, {
@@ -62,6 +62,19 @@ MicroKeys {
 				~type = \rest
 			}
 		});
+Event.addEventType(\setCC74, {
+    ~mk.isKindOf(Symbol).if { ~mk = MicroKeys(~mk) };
+    Server.default.makeBundle(~latency, { ~mk.doCC74(~control * 127, ~channel ? 1) })
+});
+
+Event.addEventType(\setPressure, {
+    ~mk.isKindOf(Symbol).if { ~mk = MicroKeys(~mk) };
+    Server.default.makeBundle(~latency, { ~mk.doPressure(~control * 127 , ~channel ? 1) })
+});
+Event.addEventType(\setBend, {
+    ~mk.isKindOf(Symbol).if { ~mk = MicroKeys(~mk) };
+    Server.default.makeBundle(~latency, { ~mk.doBend(~control * 16383 + 8192, ~channel ? 1) })
+});
 		all = Dictionary(256)
 	}
 
@@ -104,6 +117,9 @@ MicroKeys {
 		name = aName;
 		namedList = NamedList.new;
 		tuningFunction = { |tuning| { |e| e.num = e.num + tuningDeltas.wrapAt(e.num); e }};
+        //scale vel and set raw to n
+        //should I alternatively set raw to c?
+        //...because raw is used by register to determine storage
 		namedList.add( \event, {|v n c r params| (vel: v/127, num: n, chan: c, src: r, raw: n, params: params) });
 
 		this.synth_(
@@ -193,7 +209,9 @@ MicroKeys {
 	}
 
 	register { |event|
-		keys[event.raw] add: event[\synths] => _.debug("keys @: %".format(event.raw));
+        var channel = event[\chan];
+		event.debug("EEEEEEEE");
+		keys[(channel == 1).if{ event.raw }{ channel }] add: event[\synths] => _.debug("keys @: %".format(event.raw));
 
 		// ^e.synth
 }
@@ -215,12 +233,12 @@ MicroKeys {
 		} 
 	}
 
-	doNoteOff {|midinote latency=0| 
+	doNoteOff {|midinote latency=0 channel=1| 
 		name.debug("noteOff");
 		damperDown.not.if {
 			Server.default.makeBundle(
 				latency,
-				{ try {  keys[midinote].removeAt(0).release  } }
+				{ try {  var index = (channel == 1).if {midinote}{channel}; keys[index].removeAt(0).release  } }
 			)
 		} { heldNotes.add(keys[midinote]) } 
 	}
@@ -236,16 +254,48 @@ MicroKeys {
 	record {
 		this.recordMe
 	}
+doCC74 {|val chan=1|
+    var keyIndex = (chan == 1).if{ 0 }{ chan }; // might need different logic here
+    keys[keyIndex].do{|keyList, index|
+        keyList.do{|synth|
+            synth.set(\expr, val / 127.0); // normalize to 0-1
+        }
+    }
+}
+
+doPressure {|val chan=1|
+    var keyIndex = (chan == 1).if{ 0 }{ chan }; // might need different logic here
+    keys[keyIndex].do{|keyList, index|
+        keyList.do{|synth|
+            synth.set(\pressure, val / 127.0); // normalize to 0-1
+        }
+    }
+}
+doBend {|val chan=1|
+    var keyIndex = (chan == 1).if{ 0 }{ chan };
+    var bendValue = (val - 8192) / 8192.0; // normalize bend from -1 to 1
+    keys[keyIndex].do{|keyList, index|
+        keyList.do{|synth|
+            synth.set(\bend, bendValue);
+        }
+    }
+}
 	monitor { |offLatency = 0.02|
 		active = true;
 		// storedCCValues.notNil.if{ this.restoreCCValues };
 		CC.all[name].do(_.activate);
 		// MIDIdef.noteOn(\microOn, {|val num| this.noteOnFunction.(val, num)}, noteNum:range);
-		MIDIdef.noteOn(\microOn ++ name => _.asSymbol,  {|v n| (type: \mk, mk:this, amp: v/127, midinote: n, latency:0, sustain: inf ).play}, );
+		MIDIdef.noteOn(\microOn ++ name => _.asSymbol,  {|v n c| (type: \mk, mk:this, amp: v/127, midinote: n, latency:0, sustain: inf, channel:c ).play}, );
 		// MIDIdef.noteOff(\microOff, {|vel, num| damperDown.postln; ( damperDown == false ).if{ keys[num].release }{ heldNotes.add(keys[num]) }});
-		MIDIdef.noteOff(\microOff ++ name => _.asSymbol, {|val num| this.doNoteOff(num, offLatency) }, );
+		MIDIdef.noteOff(\microOff ++ name => _.asSymbol, {|val num chan| this.doNoteOff(num, offLatency, chan) }, );
 		MIDIdef.cc(\microDamper ++ name => _.asSymbol,{|num| this.setDamper(num) }, 64);
-		MIDIdef.polytouch(\microPoly ++ name => _.asSymbol, {|val num| this.doPoly(val, num)});
+	 // Add CC 74 handling
+    MIDIdef.cc(\microCC74 ++ name => _.asSymbol, {|val num chan| this.doCC74(val, chan) }, 74);
+    
+    // Add bend handling
+    MIDIdef.bend(\microBend ++ name => _.asSymbol, {|val chan| this.doBend(val, chan) });
+    MIDIdef.touch(\microTouch ++ name => _.asSymbol, {|val chan| this.doPressure(val, chan) });
+    		MIDIdef.polytouch(\microPoly ++ name => _.asSymbol, {|val num| this.doPoly(val, num)});
 	}
 
 	unmonitor {
@@ -278,7 +328,7 @@ MicroKeys {
 				Synth(e.def ? \default, [\freq, e.num.midicps, \amp, e.vel, \num, e.num] 
 				// ++ params  TODO
 				++ ((e.splitParams ? ()) ++ (e.params ? ())).asKeyValuePairs)
-				=> this.register(_, e.raw)
+				=> this.register(_)
 			},
 			\chooseDef
 		);
@@ -365,7 +415,7 @@ MonoKeys : MicroKeys {
 			}	
 		});
 	}
-	doNoteOn { |amp midinote params|
+	doNoteOn { |amp midinote params channel|
 			( down.size == 0 ).if{
 				monosynth = this.noteOnFunction.(amp, midinote, nil, nil, params).synths ;
 				monosynth.notNil.if {
@@ -391,11 +441,11 @@ MonoKeys : MicroKeys {
 	// }
 	monitor {
 		down = List[];
-		MIDIdef.noteOn(\microOn ++ name => _.asSymbol, {|v n | 
-			this.doNoteOn(v, n);
+		MIDIdef.noteOn(\microOn ++ name => _.asSymbol, {|v n c| 
+			this.doNoteOn(v, n, channel:c);
 		});
-		MIDIdef.noteOff(\microOff ++ name => _.asSymbol, {|vel num| 
-			this.doNoteOff(num);
+		MIDIdef.noteOff(\microOff ++ name => _.asSymbol, {|vel num c| 
+			this.doNoteOff(num, channel:c);
 		});
 		// MIDIdef.cc(\microDamper, {|num| (num == 127).if{ damperDown = true.postln }{ damperDown = false.postln; heldNotes.do(_.release); heldNotes = Set[] } }, 64);
 		MIDIdef.polytouch(\microPoly ++ name => _.asSymbol, {|val num| monosynth.set(\poly, val)});

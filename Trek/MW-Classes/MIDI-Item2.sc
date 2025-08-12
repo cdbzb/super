@@ -524,81 +524,105 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		var mks = MicroKeys.all.values.select{|i| i.active }.collect(_.name);
 		Nvim.replace( "MIDIItem(\\\"%\\\").record(%)".format(name ++ "_" ++  Date.getDate.stamp, mks.cs) )
 	}
-	record { |mk latencyCompensation|
-		var start = SystemClock.seconds;
-		var initialEvent =
-		(
-			midicmd: \control,
-			timestamp: SystemClock.seconds - start,
-			initialEvent: true,
-		);
-		latencyCompensation = latencyCompensation ? Server.default.latency;
-		mk.do{|i| (i.isKindOf(Symbol).if{ MicroKeys(i) }{ i }).monitor};
-		recording = this;
-		midiEvents = List[];
-		// add Events to set initial CC values to midiEvents
-		CC.getValues(mk).asKeyValuePairs.pairsDo{ | i j |
-			midiEvents.add(
-				initialEvent ++ (
-					type: \setCC,
-					ctlNum: i,
-					// control: CC(i).spec.unmap(j) * CC(i).rawScale , //put back in original
-					control: j
-				)
-			)
-		};
+record { |mk latencyCompensation|
+	var start = SystemClock.seconds;
+	var initialEvent =
+	(
+		midicmd: \control,
+		timestamp: SystemClock.seconds - start,
+		initialEvent: true,
+	);
+	latencyCompensation = latencyCompensation ? Server.default.latency;
+	mk.do{|i| (i.isKindOf(Symbol).if{ MicroKeys(i) }{ i }).monitor};
+	recording = this;
+	midiEvents = List[];
+	// add Events to set initial CC values to midiEvents
+	CC.getValues(mk).asKeyValuePairs.pairsDo{ | i j |
 		midiEvents.add(
 			initialEvent ++ (
-				type: \setPoly,
-				ctlNum: \polytouch,
-				control: 0,
-				midinote: \r
+				type: \setCC,
+				ctlNum: i,
+				// control: CC(i).spec.unmap(j) * CC(i).rawScale , //put back in original
+				control: j
 			)
-	);
-		restFirst.if{ initialRest = [( type: \rest, timestamp: SystemClock.seconds - start)] };
-		
-		//make MIDIdefs
-		[\noteOn, \noteOff, \control, \polytouch, \bend, \touch ].do{ |cmd|
-
-			MIDIdef((\record ++ cmd).asSymbol, func: { |val num chan| 
-				\recordDef.postln;
-				midiEvents.add(
-					(
-						midicmd: cmd,
-						timestamp: SystemClock.seconds - start - latencyCompensation,
-						channel: chan,
-					)//.postln
-					++
-						switch( cmd, 
-							\noteOn,{ (type: \mk, midinote: num, amp: val/127 )},
-							\noteOff,{ (type: \mkOff, midinote: num, amp: val/127 ) },
-							\polytouch, { (type: \setPoly, midinote: num, polyTouch: val, ) },
-							\control, {
-								( num == 64 ).if{
-									(type:\setDamper, ctlNum:\damper, control: val)//.postln 
-								} { 
-									( num == 74 ).if{
-										(type: \setCC74, ctlNum: 74, control: val / 127)
-									} {
-										//TODO do away with this divisions ???
-										(type: \setCC, ctlNum:num, control: val / 127)//.postln
-									}
-								} 
-							},
-							\bend, { (type: \setBend, ctlNum:\bend, control: val / 16384)},
-							\touch, { (type: \setPressure, ctlNum:\pressure, control: val / 127)},
-							
-						)
-						// => _.postln
+		)
+	};
+	midiEvents.add(
+		initialEvent ++ (
+			type: \setPoly,
+			ctlNum: \polytouch,
+			control: 0,
+			midinote: \r
+		)
+);
+	restFirst.if{ initialRest = [( type: \rest, timestamp: SystemClock.seconds - start)] };
+	
+	//make MIDIdefs - FIXED: Different parameter patterns for different message types
+	
+	// Messages with val, num, chan parameters
+	[\noteOn, \noteOff, \control, \polytouch ].do{ |cmd|
+		MIDIdef((\record ++ cmd).asSymbol, func: { |val num chan| 
+			\recordDef.postln;
+            chan.debug("chan");
+			midiEvents.add(
+				(
+					midicmd: cmd,
+					timestamp: SystemClock.seconds - start - latencyCompensation,
+					channel: chan,
+				)//.postln
+				++
+					switch( cmd, 
+						\noteOn,{ (type: \mk, midinote: num, amp: val/127 )},
+						\noteOff,{ (type: \mkOff, midinote: num, amp: val/127 ) },
+						\polytouch, { (type: \setPoly, midinote: num, polyTouch: val, ) },
+						\control, {
+							( num == 64 ).if{
+								(type:\setDamper, ctlNum:\damper, control: val)//.postln 
+							} { 
+								( num == 74 ).if{
+									(type: \setCC74, ctlNum: 74, control: val / 127)
+								} {
+									//TODO do away with this divisions ???
+									(type: \setCC, ctlNum:num, control: val / 127)//.postln
+								}
+							} 
+						}
 					)
-				},msgType: cmd, 
-				//eliminate cc0
-				msgNum: (cmd == \control).if{ (0..127) },
-				// srcID: KS.id,
-				// argTemplate: {|i| (cmd == \control).if{ i.isStrictlyPositive }{true}}
-			)};
-			^SelfReturningObject()
-	}
+					// => _.postln
+				)
+			},msgType: cmd, 
+			//eliminate cc0
+			msgNum: (cmd == \control).if{ (0..127) },
+			// srcID: KS.id,
+			// argTemplate: {|i| (cmd == \control).if{ i.isStrictlyPositive }{true}}
+		)
+	};
+	
+	// Messages with only val, chan parameters (NO num parameter!)
+	[\bend, \touch ].do{ |cmd|
+		MIDIdef((\record ++ cmd).asSymbol, func: { |val chan| // FIXED: Only 2 parameters!
+			\recordDef.postln;
+            chan.debug("chan");
+			midiEvents.add(
+				(
+					midicmd: cmd,
+					timestamp: SystemClock.seconds - start - latencyCompensation,
+					channel: chan,  // FIXED: Now chan is the correct parameter
+				)//.postln
+				++
+					switch( cmd, 
+						\bend, { (type: \setBend, ctlNum:\bend, control: val / 16384)},
+						\touch, { (type: \setPressure, ctlNum:\pressure, control: val / 127)},
+					)
+					// => _.postln
+				)
+			},msgType: cmd 
+			// No msgNum for bend/touch
+		)
+	};
+	
+	^SelfReturningObject()
+}
 	playRaw {
 		var playbackEvents;
 		this.stop;

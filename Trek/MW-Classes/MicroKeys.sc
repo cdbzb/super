@@ -44,9 +44,9 @@ MicroKeys {
 		});
 
 		//deprecate
-		Event.addEventType(\setBend, {
-			Server.default.makeBundle(~latency, { CC(~ctlNum, mk: ~mk).setRaw(~control * 16384) }) 
-		});
+		// Event.addEventType(\setBend, {
+		// 	Server.default.makeBundle(~latency, { CC(~ctlNum, mk: ~mk).setRaw(~control * 16384) }) 
+		// });
 		Event.addEventType(\setDamper, {
 			~mk.isKindOf(Symbol).if { ~mk = MicroKeys(~mk) };
 			Server.default.makeBundle(~latency, { ~mk.setDamper(~control) })

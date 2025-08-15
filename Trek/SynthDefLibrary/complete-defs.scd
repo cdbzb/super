@@ -23,9 +23,10 @@ SynthDef( \phase_verb2,{//{{{
 
  SynthDef(\harpS, { |gate=1 out=0 freq = 400|
 	var in=PinkNoise.ar(1);
-	var sig=Pluck.ar(in: in,  gate: gate,  maxdelaytime: 0.02,  delaytime: 1/freq,  decaytime: \decaytime.kr(10),  coef: \coef.kr(0.5),  mul: 0.7,  add: 0);
+	var sig=Pluck.ar(in: in, trig: gate,  maxdelaytime: 0.02,  delaytime: 1/freq,  decaytime: \decaytime.kr(10),  coef: \coef.kr(0.5),  mul: 0.7,  add: 0);
 	sig = sig * \amp.kr(0.1) * 10;
-	sig = LeakDC.ar(sig);
+	sig = LeakDC.ar(sig)
+	* Env([1,0],0.1).kr(2,gate: DetectSilence.ar(sig,doneAction:0));
 	sig => Pan2.ar(_,\pan.kr(0,\panLag.kr(0)))
 
 	=> Out.ar(out,_);
@@ -36,26 +37,27 @@ SynthDef( \phase_verb2,{//{{{
  SynthDef(\harpGendy, { |gate=1 out=0 freq = 400|
 	var in=PinkNoise.ar(1);
 	var modwidth = \modWidth.kr(0.1);
-	var sig=Pluck.ar(in: in,  gate: gate,  maxdelaytime: 0.02,  delaytime: (
+	var sig=Pluck.ar(in: in, trig: gate,  maxdelaytime: 0.02,  delaytime: (
 		freq 
 		* Gendy1.arWidth(ampdist:1, durdist:1, adparam:1.0, ddparam:1.0, freq:\gendyFreq.kr(400), width:\width.kr(1.015), ampscale:0.5, durscale:0.5, initCPs:12, knum:nil)
 		.linlin( 0,1, 1-modwidth, 1+modwidth ) 
 	).reciprocal,
 		decaytime: \decaytime.kr(10),  coef: \coef.kr(0.5),  mul: 0.7,  add: 0);
 	sig = sig * \amp.kr(0.1) * 10;
-	sig = LeakDC.ar(sig);
+	sig = LeakDC.ar(sig)
+	* Env([1,0],0.1).kr(2,gate: DetectSilence.ar(sig,doneAction:0));
 	Out.ar(out,sig);
-	DetectSilence.ar(sig,doneAction:2);
+
 },  rates: nil,  prependArgs: nil,  variants: nil,  metadata: nil
 ).add.tag(\pluck);
 
  SynthDef(\harp, { |gate=1 out=0 freq = 400|
 	var in=PinkNoise.ar(1);
-	var sig=Pluck.ar(in: in,  gate: gate,  maxdelaytime: 0.02,  delaytime: 1/freq,  decaytime: \decaytime.kr(10),  coef: \coef.kr(0.5),  mul: 0.7,  add: 0);
+	var sig=Pluck.ar(in: in,trig: gate,  maxdelaytime: 0.02,  delaytime: 1/freq,  decaytime: \decaytime.kr(10),  coef: \coef.kr(0.5),  mul: 0.7,  add: 0);
 	sig = sig * \amp.kr(0.1) * 10;
-	sig = LeakDC.ar(sig);
+	sig = LeakDC.ar(sig)
+	* Env([1,0],0.1).kr(2,gate: DetectSilence.ar(sig,doneAction:0));
 	Out.ar(out,sig);
-	DetectSilence.ar(sig,doneAction:2);
 },  rates: nil,  prependArgs: nil,  variants: nil,  metadata: nil
 ).add.tag(\pluck);
 
@@ -68,9 +70,9 @@ SynthDef( \phase_verb2,{//{{{
 	decaytime = ( gate > 0.1 ) => Select.kr(_, [\release.kr(1), decaytime]);
 	sig = Pluck.ar(in: in, trig: gate,  maxdelaytime: 0.02,  delaytime: 1/freq,  decaytime: decaytime,  coef: \coef.kr(0.5),  mul: 0.7,  add: 0);
 	sig = sig * \amp.kr(0.1) * 10;
-	sig = LeakDC.ar(sig);
+	sig = LeakDC.ar(sig)
+	* Env([1,0],0.1).kr(2,gate: DetectSilence.ar(sig,doneAction:0));
 	Out.ar(out,sig);
-	DetectSilence.ar(sig,doneAction:2);
 },  rates: nil,  prependArgs: nil,  variants: nil,  metadata: nil
 ).add.tag(\pluck);
 

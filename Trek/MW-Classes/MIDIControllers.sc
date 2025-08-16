@@ -95,8 +95,8 @@ CC {
 	set { |i|
 		val = i; bus.set(spec.map(i))
 	}
-    control {
-        ^{ CC(number, mk:~mk).bus.kr }
+    control { |default|
+        ^{ CC(number, mk:~mk).val_(default).bus.set(default).kr }
     }
 	asControl {|name default synth|
 		ctl = name;

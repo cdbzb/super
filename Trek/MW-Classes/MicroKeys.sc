@@ -131,7 +131,8 @@ Event.addEventType(\setBend, {
 				} 
 			} {
 				name
-			}
+			},
+            params
 		);
 		// this.synth_(
 		// 	func !? {|i| (mk: name).use{ i.asDefName }} ? I.d);

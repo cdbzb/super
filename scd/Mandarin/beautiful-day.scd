@@ -1,7 +1,7 @@
 (
 Song(\beautiful,[]).current;
 Song.pianoQuarters = 
-MIDIItem(\foo).take(1)//.play(\default)
+MIDIItem(\foo).take(1)
 .fromNote(0, 98)
 // .gui
 .filter({|e| e.select{|i| i.midicmd == \noteOn}[[0, 9, 13, 19, 22, 31, 39, 44, 48, 55, 62,  70, 72, 80, 85, 94]]})
@@ -86,15 +86,16 @@ P(\click, music: { |p b e|
 		).q
 	].pp
 });
-P(\keys, lag: MIDIItem(\foo).take(1).initialRest, music: { |p b e|
-	var keyFX = Effect.bus(BPF.ar(_, 1100, rq: 3.0));
-	MIDIItem(\foo).take(1).fromNote(0, 100)
+Song.quantizedKeysV1 = MIDIItem(\foo).take(1).fromNote(0, 100)
 	.quantize(
 		[ 0.57, 0.57 ].dup(9).flat, 
 		nil, 
 		{|notes| [(timestamp:0)] ++ notes[[0, 9, 13, 19, 22, 31, 39, 44, 48, 55, 62,  70, 72, 80, 85, 94 ]] }
 	)
-	 .removeNote(59)
+	 .removeNote(59);
+P(\keys, lag: MIDIItem(\foo).take(1).initialRest, music: { |p b e|
+	var keyFX = Effect.bus(BPF.ar(_, 1100, rq: 3.0));
+	p.quantizedKeysV1
 	 .collect{|i| i.params_((out: keyFX ))}
 	 .recalcSustains
 	 // .gui
@@ -200,49 +201,88 @@ P.synthV(\xuan, take:  \lead ,  offset: Song.pianoQuarters[..8].sum,
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
-// P.synthV(\an, take: \lead2, //lag: 4, offset: true,
-// 	pbind: 
-// 	MIDIItem(\foo).take(1).fromNote(0, 200).notes[[63, 67, 69, 72, 76, 80, 83]]
-// 	=> MIDIItemPlayer(_) 
-// 	=> _.start_(0)//.play(\default)//1.714
-// 	=> _.synthVPbind
-// 	,
-// 	params: {|p b| [
-// 	lyrics: " r 美 好 天  回 忆 里 -",
-//  // 美好天 (měi hǎo tiān) - Beautiful day
-// 	pitchTake: 1,
-// 	language: \Mandarin,
-// ] }, music:{|p b e|
-// 	{
-// 		e.playbuf
-// 		// => p.synthVTracks.at(e.key).()
-// 	}.play
-// });
-// P.synthV(\an, take: \lower2, 
-// 	pbind: 
-// 	MIDIItem(\foo).take(1).fromNote(0, 200)
-// 	// .gui
-// 	.notes[[64, 66, 70, 73, 75, 81, 84	]]
-// 	=> MIDIItemPlayer(_) 
-// 	// =>_.gui
-// 	=> _.start_(0)//.play(\default)//1.714
-// 	=> _.synthVPbind
-// 	,
-// 	params: {|p b| [
-// 	lyrics: " r 美 好 天  回 忆 里 -",
-//  // 美好天 (měi hǎo tiān) - Beautiful day
-// 	pitchTake: 2,
-// 	language: \Mandarin,
-// 	// phoneset: \xsampa
-// ] }, music:{|p b e|
-// 	{
-// 		e.playbuf
-// 		// => p.synthVTracks.at(e.key).()
-// 	}.play
-// });
-{
-	MIDIItem(\foo).take(1).filter({|e|e.select{|f| f.midinote == 5.dm(\c) or: (f.midinote == 6.dm(\c))}[(4..8)]}).start_(0).synthVPbind
-}
+// MIDIItem(\foo).take(1).notes[50].timestamp;
+P.synthV(\an,lag:0.0817, take: \lead2, //lag is fudge factor because of wrong timestamp
+	pbind: 
+	Song.quantizedKeysV1.fromNote(0, 200)//.gui // use 1 to compensate for removal of 59
+	.notes[[63, 67, 69, 72, 76, 80, 83]]
+	=> MIDIItemPlayer(_)
+	=> _.collect({|e| e.timestamp = e.timestamp - 5.1953})
+	=> _.synthVPbind
+	,
+	params: {|p b| [
+		lyrics: " r 美 好 天  回 忆 里 -",
+		pitchTake: 1,
+		language: \Mandarin,
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+P.synthV(\an, lag:0.0817,take: \lower2, 
+	pbind: 
+	// MIDIItem(\foo).take(1).fromNote(0, 200)
+	Song.quantizedKeysV1.fromNote(0, 200)//.gui // use 1 to compensate for removal of 59
+	// .gui
+	.notes[[64, 66, 70, 73, 75, 81, 84	] - 1]
+	=> MIDIItemPlayer(_) 
+	// =>_.gui
+	// => _.start_(0)//.play(\default)//1.714
+	=> _.collect({|e| e.timestamp = e.timestamp - 5.1953})
+	=> _.synthVPbind
+	,
+	params: {|p b| [
+	lyrics: " r 美 好 天  回 忆 里 -",
+ // 美好天 (měi hǎo tiān) - Beautiful day
+	pitchTake: 2,
+	language: \Mandarin,
+	// phoneset: \xsampa
+] }, music:{|p b e|
+	{
+		e.playbuf
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+["verse1", "1 5 4 4 4 4 3 2 1.5 -6 1 -7 -6".dm(\g), "e e e q e e q e e q e e q".beats * Song.pianoQuarters.mean * 2].addLine;
+// P.tune(_ <> [rest: MuteFirst()].p);
+P(\keys, music: {|p b e|
+	[
+		[
+			freq: [\r, 
+				[3, 5, 11].df(\d),
+				[3, 5, 7].df(\d, \mixolydian),
+				[3, 5, 7].df(\d, \mixolydian),
+				// [2, 5, 7].df(\d, \mixolydian),
+				// [2, 5, 7].df(\d, \mixolydian),
+				// [2, 5, 6].df(\d, \mixolydian),
+				[2, 4, 6, 11].df(\d, \mixolydian),
+				[2, 4, 6, 11].df(\d, \mixolydian),
+				[2, 4, 5, 7].df(\d, \mixolydian),
+
+			].q,
+			dur: "e e e q e e e".beats.q * Song.pianoQuarters.mean * 2	
+		].p,
+		[
+			freq: [\r, 1, -7, -5, -6].df(\a).q,
+			dur: "q q q e eq".beats.q * Song.pianoQuarters.mean,
+			rest: MuteFirst()
+		].p,
+		[
+			freq: [4, 3, 2, 2, 3, 2, 1, 1].df(\d).q,
+			dur: "q q e x xe e q e".beats.q * Song.pianoQuarters.mean
+		].p
+	].drop(0).q.play;
+});
+	P(\bass,start:2, music:{|p b e |
+		[
+			freq: [1, 2, 3, 4, 5].df(\d, 3).q,
+			dur: "w w w h h".beats.q * Song.pianoQuarters.mean,
+			instrument: \sawSynthSustain
+		].pp
+	})
+
+
 )
 (
 

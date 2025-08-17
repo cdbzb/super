@@ -80,7 +80,9 @@ P(\click, music: { |p b e|
 		instrument: \JWSnare, // make this a flam
 		// amp:1.9,
 		strum: Pwhite(0.02, 0.04, inf),
-		dur: 1.dup(17).warpTo(e.tempoMap ++ e.tempoMap
+		dur: 1.dup(17).warpTo(e.tempoMap
+			.quantize()
+			++ e.tempoMap
 			.quantize()
 			// .quantizeWindow(0.5, 8)
 		).q
@@ -244,7 +246,7 @@ P.synthV(\an, lag:0.0817,take: \lower2,
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
-["verse1", "1 5 4 4 4 4 3 2 1.5 -6 1 -7 -6".dm(\g), "e e e q e e q e e q e e q".beats * Song.pianoQuarters.mean * 2].addLine;
+["verse1A", "1 5 4 4 4 4 3 2 1.5 -6 1 -7 -6".dm(\g), "e e e q e e q e e q e e q".beats * Song.pianoQuarters.mean * 2].addLine;
 // P.tune(_ <> [rest: MuteFirst()].p);
 P(\keys, music: {|p b e|
 	[
@@ -253,12 +255,12 @@ P(\keys, music: {|p b e|
 				[3, 5, 11].df(\d),
 				[3, 5, 7].df(\d, \mixolydian),
 				[3, 5, 7].df(\d, \mixolydian),
-				// [2, 5, 7].df(\d, \mixolydian),
-				// [2, 5, 7].df(\d, \mixolydian),
-				// [2, 5, 6].df(\d, \mixolydian),
-				[2, 4, 6, 11].df(\d, \mixolydian),
-				[2, 4, 6, 11].df(\d, \mixolydian),
-				[2, 4, 5, 7].df(\d, \mixolydian),
+				[2, 5, 7].df(\d, \mixolydian),
+				[2, 5, 7].df(\d, \mixolydian),
+				[2, 5, 6].df(\d, \mixolydian),
+				// [2, 4, 6, 11].df(\d, \mixolydian),
+				// [2, 4, 6, 11].df(\d, \mixolydian),
+				// [2, 4, 5, 7].df(\d, \mixolydian),
 
 			].q,
 			dur: "e e e q e e e".beats.q * Song.pianoQuarters.mean * 2	
@@ -275,15 +277,57 @@ P(\keys, music: {|p b e|
 	].drop(0).q.play;
 });
 	P(\bass,start:2, music:{|p b e |
+			var freq= [0,1, 2, 3, 4, 5].df(\d, 3);
+			var freqDur= "w w w hq q".beats * Song.pianoQuarters.mean;
 		[
-			freq: [1, 2, 3, 4, 5].df(\d, 3).q,
-			dur: "w w w h h".beats.q * Song.pianoQuarters.mean,
+			freq: Pseg.new(freq, freqDur,\step ),
+			dur:"qqqe e e eqqe e w hq q".beats.q(4) * Song.pianoQuarters.mean,
 			instrument: \sawSynthSustain
 		].pp
-	})
+	});
+	P(\bassLick, music: { |p b e|
+		[
+			freq: [2, 2.5, 3, -7, -5, -3].df(\c,3).q,
+			dur: "qqqe e e e e eq".beats.q * Song.pianoQuarters.mean,
+			amp:0.3
+		].pp
+	});
+["verse1B", "1 5 4 4 4 4 3 2 1.5 -6 3 4 4".dm(\g), "e e e q e e q e e q e e q".beats * Song.pianoQuarters.mean * 2].addLine;
+P(\keys, music: {|p b e|
+	[
+		[
+			freq: [\r, 
+				[3, 5, 11].df(\d),
+				[3, 5, 7].df(\d, \mixolydian),
+				[3, 5, 7].df(\d, \mixolydian),
+				[2, 5, 7].df(\d, \mixolydian),
+				[2, 5, 7].df(\d, \mixolydian),
+				[2, 5, 6].df(\d, \mixolydian),
+				// [2, 4, 6, 11].df(\d, \mixolydian),
+				// [2, 4, 6, 11].df(\d, \mixolydian),
+				// [2, 4, 5, 7].df(\d, \mixolydian),
 
-
+			].q,
+			dur: "e e e q e e e".beats.q * Song.pianoQuarters.mean * 2	
+		].p,
+		[
+			freq: [\r, 1, -7, -5, -6].df(\a).q,
+			dur: "q q q e eq".beats.q * Song.pianoQuarters.mean,
+			rest: MuteFirst()
+		].p,
+[
+			freq: [ 
+				[5, 7, 2].df(\c),
+				[5, 7, 2].df(\c),
+				[3, 5, 11].df(\c),
+			].q,
+			dur: "e e e e ".beats.q * Song.pianoQuarters.mean * 2	
+		].p
+	].drop(0).q.play;
+});
 )
+
+
 (
 
   MIDIItem(\foo).take(1).fromNote(0, 98)

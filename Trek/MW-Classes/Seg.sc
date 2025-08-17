@@ -65,7 +65,7 @@ Seg {
 				// firstSection[\dur] ?? { 
                     // Fallback: if the Event doesn't have dur, try to get it from Song
 					if (firstSection[\section].notNil) {
-						Song.secDur[Song.section(firstSection[\section])]
+						Song.secDur[Song.section(firstSection[\section])] + ~stretch
 					} {
 						1 // Default duration
 					// }

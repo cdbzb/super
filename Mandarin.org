@@ -650,10 +650,11 @@ MIDIItem("traps_250810_175817").player
 ** Beautiful-day Mix
 #+BEGIN_SRC supercollider
 Mandarin.load('beautiful')
+// Mandarin.edit('beautiful')
 // Seg([ Seg(2,stretch: Song.pianoQuarters.mean.neg), Seg(3, stretch: Song.pianoQuarters.mean.neg * 2), 0].q).play 
 (
 	var subdiv = 0.5 ;
-	var quarter = Song.pianoQuarters.mean;
+	var quarter = Song.pianoQuarters[..7].mean * 0.99;
 	var drumQuarter = quarter * subdiv;
 	var drmz = 			{ [
 		instrument:\hat_808,
@@ -663,7 +664,7 @@ Mandarin.load('beautiful')
 	].pp;
 		[
 			instrument:\bd_808,
-			// out: Effect.bus({|i| CrossoverDistortion.ar(i, smooth:0.98)/2 + i },),
+			out: Effect.bus({|i| CrossoverDistortion.ar(i, smooth:0.98)/2 + i },),
 			tone: 56, // 56
 			decay:60,
 			// dur:"eee eeee e eee eeee e".beats * drumQuarter => _.q(4),
@@ -692,7 +693,7 @@ Mandarin.load('beautiful')
 		0,
 		1,
 		Seg( 2,keyInstrument:[ \sawSynth, \sawSynthSustain ], extra: [extraTune, drmz ] ),
-		[ Seg(3, keyInstrument:[ \sawSynth, \sawSynthSustain ],stretch:quarter.neg), Seg(2, solo:\bassLick) ],
+		[ Seg(3, keyInstrument:[ \sawSynth, \sawSynthSustain ],stretch:quarter.neg + 0.03), Seg(2, solo:\bassLick) ],
 		Seg( 0, extra: {
 			(amp:0.15,lag:0.6,instrument:\sawSynthSustain, freq:[5, 11, 3].df(\c), dur: 0.4).play;
 			(amp:0.15 * 14,lag:0.6,instrument:\default, freq:[1].df(\c, 3), dur: 1, out: Effect.bus( FreeVerb.ar(_,1,[0.9, 1 ]) )).play;
@@ -700,7 +701,7 @@ Mandarin.load('beautiful')
 		} )
 		,
 		1
-	].drop(2).q, solo:nil ).play
+	].drop(0).q, solo:nil ).play
 )
 Seg([3, 0].q).play
 #+END_SRC

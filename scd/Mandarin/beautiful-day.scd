@@ -246,18 +246,19 @@ P.synthV(\an, lag:0.0817,take: \lower2,
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
-["verse1A", "1 5 4 4 4 4 3 2 1.5 -6 1 -7 -6".dm(\g), "e e e q e e q e e q e e e".beats * Song.pianoQuarters[..7].mean * 2].addLine;
-Song.verseLyrics = [
+Song.verseQuarters = Song.pianoQuarters[..7] * 0.99;
+["verse1A", "1 5 4 4 4 4 3 2 1.5 -6 1 -7 -6".dm(\g), "e e e q e e q e e q e e e".beats * Song.verseQuarters.mean * 2].addLine;
+( Song.verseLyrics = [
 	[
-		"阳光照",
-		"微风绕",
-		"花香正飘摇",
-		"心情无限好",
+		"阳 光 照",
+		"微 风 绕",
+		"花 香 正 飘 摇",
+		"心 情 无 限 - - 好",
 
-		"听欢笑",
-		"看飞鸟",
-		"世界多美妙",
-		"真逍遥",
+		"听 欢 笑",
+		"看 飞 鸟",
+		"世 界 多 美 妙",
+		"真 逍 遥",
 	],
 
 	[
@@ -297,8 +298,54 @@ Song.verseLyrics = [
 	// Love this display
 
 ];
+);
 // P.tune(_ <> [rest: MuteFirst()].p);
-Song.verseQuarters = Song.pianoQuarters[..7];
+P.synthV(\jun, take: \lead, range: [0, 6],
+	params: {|p b| [
+	lyrics: 
+	"r" + Song.verseLyrics[0][0] + Song.verseLyrics[0][1] 
+	,
+	
+	pitchTake: 1,
+	legato: [1,1, 1, 0.8, 1, 1, 0.8],
+	language: \mandarin,
+	// phoneset: \xsampa,
+	vocalMode: \tsubaki
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> {|i|  JPverb.ar(i, t60:1.0, damp:0.0, size:1.0, earlyDiff:0.707, modDepth:0.1, modFreq:2.0, low:1.0, mid:1.0, high:1.0, lowcut:500.0, highcut:2000.0) / 2 + i }
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+P.synthV(\jun, syl: 6, take: \lead2ndHalf, 
+	pbind: {
+		[
+			midinote: [ 1, -7, -5, -6].dm(\a)
+			 ++ [4, 3, 2, 2, 3, 2, 1, 1].dm(\d),
+			dur: 
+			"q q e eq".beats 
+			++ "q q e x xe e q e".beats * Song.verseQuarters.mean
+			=> _.flat
+			,
+		].p
+	},
+	params: {|p b| [
+	lyrics: Song.verseLyrics[0][2] + Song.verseLyrics[0][3]  ,
+	legato: [1, 1, 1, 0.8,  1, 1, 1, 1, 1, 1, 1],
+	
+	pitchTake: 1,
+	// legato: [1,1, 1, 0.8, 1, 1, 0.8],
+	language: \mandarin,
+	// phoneset: \xsampa,
+	vocalMode: \tsubaki
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> {|i|  JPverb.ar(i, t60:1.0, damp:0.0, size:1.0, earlyDiff:0.707, modDepth:0.1, modFreq:2.0, low:1.0, mid:1.0, high:1.0, lowcut:500.0, highcut:2000.0) / 2 + i }
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
 P(\keys, music: {|p b e|
 	[
 		[
@@ -413,3 +460,49 @@ P(\keys,start:3, music: {|p b e|
 
 
 
+P.synthV(\jun, take: \lead, range: [0, 6],
+	params: {|p b| [
+	lyrics: 
+	"r" + Song.verseLyrics[0][4] + Song.verseLyrics[0][5] 
+	,
+	
+	pitchTake: 1,
+	legato: [1,1, 1, 0.8, 1, 1, 0.8],
+	language: \mandarin,
+	// phoneset: \xsampa,
+	vocalMode: \tsubaki
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> {|i|  JPverb.ar(i, t60:1.0, damp:0.0, size:1.0, earlyDiff:0.707, modDepth:0.1, modFreq:2.0, low:1.0, mid:1.0, high:1.0, lowcut:500.0, highcut:2000.0) / 2 + i }
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});
+P.synthV(\jun, syl: 6, take: \lead2ndHalf, 
+	pbind: {
+		[
+			midinote: [ 1, -7, -5, -6].dm(\a)
+			 ++ [3, 3, 4].dm(\g),
+			dur: 
+			"q q e eq".beats 
+			++ "q q q".beats * Song.verseQuarters.mean
+			=> _.flat
+			,
+		].p
+	},
+	params: {|p b| [
+	lyrics: Song.verseLyrics[0][6] + Song.verseLyrics[0][7]  ,
+	legato: [1, 1, 1, 0.8,  1, 1, 1, 1, 1, 1, 1],
+	
+	pitchTake: 1,
+	// legato: [1,1, 1, 0.8, 1, 1, 0.8],
+	language: \mandarin,
+	// phoneset: \xsampa,
+	vocalMode: \tsubaki
+] }, music:{|p b e|
+	{
+		e.playbuf
+		=> {|i|  JPverb.ar(i, t60:1.0, damp:0.0, size:1.0, earlyDiff:0.707, modDepth:0.1, modFreq:2.0, low:1.0, mid:1.0, high:1.0, lowcut:500.0, highcut:2000.0) / 2 + i }
+		// => p.synthVTracks.at(e.key).()
+	}.play
+});

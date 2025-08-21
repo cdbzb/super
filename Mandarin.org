@@ -647,3 +647,60 @@ MIDIItem("traps_250810_175817").player
    (type:\seg, section: (0..6).q).play
    )
    #+END_SRC
+** Beautiful-day Mix
+#+BEGIN_SRC supercollider
+Mandarin.load('beautiful')
+// Seg([ Seg(2,stretch: Song.pianoQuarters.mean.neg), Seg(3, stretch: Song.pianoQuarters.mean.neg * 2), 0].q).play 
+(
+	var subdiv = 0.5 ;
+	var quarter = Song.pianoQuarters.mean;
+	var drumQuarter = quarter * subdiv;
+	var drmz = 			{ [
+		instrument:\hat_808,
+		dur:drumQuarter / 2 * [0.95, 1.05].reverse => _.q(inf),
+		amp: [2,2].q(32 * 2 ) /30,
+		out: Effect.bus({|i| CrossoverDistortion.ar(i, smooth:0.98)/2 + i },),
+	].pp;
+		[
+			instrument:\bd_808,
+			// out: Effect.bus({|i| CrossoverDistortion.ar(i, smooth:0.98)/2 + i },),
+			tone: 56, // 56
+			decay:60,
+			// dur:"eee eeee e eee eeee e".beats * drumQuarter => _.q(4),
+			// dur: "w q qqq w q qqe e".beats * drumQuarter => _. q(4),
+			dur: "w q qqq w q qq ee".beats * drumQuarter => _.q(4),
+			amp:0.9
+		].pp;
+	[
+		instrument:\sn_808,
+		dur:"h w w w w w w w w w w w w w w w w".beats * drumQuarter  => _.q(1),
+		amp:0.3,
+		// lag:0.02,
+		out: Effect.bus({|i| i * 5 => _.tanh  => FreeVerb.ar(_, 0.5,0.5) => CompanderD.ar(_, thresh:0.5, slopeBelow:1.0, slopeAbove:0.1, clampTime:0.01, relaxTime:0.01) * -6.dbamp => Pan2.ar(_, 0) },),
+		rest: MuteFirst.new()
+	].pp; 
+};
+	var extraTune = {
+		[
+			freq: [\r, 11, 7, 5, 7, 6, 5, 4, 5].df(\d, [4, 5], \mixolydian).q,
+			instrument: \sparkTrianglePan,
+			pan:[-1,1],
+			dur: "e e e e e e e x xe ".beats.q * quarter * 2
+		]//.ppm
+	};
+	Seg([
+		0,
+		1,
+		Seg( 2,keyInstrument:[ \sawSynth, \sawSynthSustain ], extra: [extraTune, drmz ] ),
+		[ Seg(3, keyInstrument:[ \sawSynth, \sawSynthSustain ],stretch:quarter.neg), Seg(2, solo:\bassLick) ],
+		Seg( 0, extra: {
+			(amp:0.15,lag:0.6,instrument:\sawSynthSustain, freq:[5, 11, 3].df(\c), dur: 0.4).play;
+			(amp:0.15 * 14,lag:0.6,instrument:\default, freq:[1].df(\c, 3), dur: 1, out: Effect.bus( FreeVerb.ar(_,1,[0.9, 1 ]) )).play;
+			(amp:0.15 ,lag:0.6,instrument:\defaultPorto, freq:[1, 5, 13, 21].df(\c, [ 4, 6 ]), dur: 1, ).play;
+		} )
+		,
+		1
+	].drop(2).q, solo:nil ).play
+)
+Seg([3, 0].q).play
+#+END_SRC

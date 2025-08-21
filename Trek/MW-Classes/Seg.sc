@@ -45,104 +45,96 @@ Seg {
 			if (~section.isKindOf(Pseq)) {
 				// Create a Pseq of Events from the Pseq sections
 				expand.(currentEnvironment).flat.q.play;
-				^nil; // Exit early since we've handled the Pseq case
-				
-			};
-			
-			sections = ~section.isKindOf(Event).if {
-				~section.bubble
+				// Don't use ^nil here - just end the function naturally
 			} {
-				~section.asArray
-			}; 
-
-			// Handle the first section for duration (whether it's an Event or section name)
-			firstSection = sections[0];
-			(firstSection.isKindOf(Event)).if {
-				// If it's an Event, use its duration or calculate from its data
-					firstSection[\section].debug("SECOND");
-					firstSection[\dur].debug("DUR");
-				~dur = 
-				// firstSection[\dur] ?? { 
-                    // Fallback: if the Event doesn't have dur, try to get it from Song
-					if (firstSection[\section].notNil) {
-						Song.secDur[Song.section(firstSection[\section])] + ~stretch
-					} {
-						1 // Default duration
-					// }
-				};
-			} {
-				~dur = Song.secDur[Song.section(firstSection)];
-			};
-
-			sections.do { |sectionItem|
-				var cursor, parts;
-				var currentEnv = currentEnvironment.copy; // Create a copy of the environment
-				[\solo, \mute,\extra].do {|i| currentEnv[i] = currentEnv[i] ? []};
-				if (sectionItem.isKindOf(Event)) {
-					if (sectionItem[\type] == \seg) {
-						sectionItem = sectionItem.copy;
-						// If it's another seg Event, recursively process it
-						// Merge the seg Event's data into current environment
-						sectionItem.keysValuesDo { |key, value|
-
-							case
-							{ [\mute, \solo, \extra].includes(key) } {
-								sectionItem.put(key, currentEnv[key].asArray ++ value)
-							}
-							{ key != \type } { // Don't override the type
-								currentEnv.put(key, value);
-							};
-						};
-						// Play the seg Event with merged environment
-						(currentEnv ++ sectionItem).play;
-					} {
-						var sectionName = sectionItem[\section];
-						if (sectionName.notNil) {
-							cursor = Song.section(sectionName);
-							currentEnv.put(\section, sectionName);
-							parts = Song.at(sectionName);
-
-							// Apply solo filtering first, if solo exists ignore mute
-							(~solo.asArray.size > 0).if {
-								parts.select{|i| 
-									~solo.asArray.any{|j| i.asString.contains(j.asString) } 
-								}
-								.do(_.prEventPlay(cursor, currentEnv));
-							} {
-								parts.reject{|i|
-									~mute.asArray.any{|j| i.asString.contains(j.asString) }
-								}
-								.do(_.prEventPlay(cursor, currentEnv));
-							};
-						} {
-							// If Event has no section, just play it directly
-							sectionItem.play;
-						}
-					}
+				// Move all the rest of the logic into the else block
+				sections = ~section.isKindOf(Event).if {
+					~section.bubble
 				} {
-					// if not an Event (String or Symbol)
-					var sectionName = sectionItem;
-					cursor = Song.section(sectionName);
-					currentEnv.put(\section, sectionName);
-					parts = Song.at(sectionName);
-
-					// Apply solo filtering first, if solo exists ignore mute
-					(~solo.asArray.size > 0).if {
-						parts.select { |i|
-							~solo.asArray.any { |j| i.asString.contains(j.asString) }
-						}
-						.do(_.prEventPlay(cursor, currentEnv));
-					} {
-						parts.reject { |i|
-							~mute.asArray.any { |j| i.asString.contains(j.asString) }
-						}
-						.do(_.prEventPlay(cursor, currentEnv));
+					~section.asArray
+				}; 
+				// Handle the first section for duration (whether it's an Event or section name)
+				firstSection = sections[0];
+				(firstSection.isKindOf(Event)).if {
+					// If it's an Event, use its duration or calculate from its data
+						firstSection[\section].debug("SECOND");
+						firstSection[\dur].debug("DUR");
+					~dur = 
+						if (firstSection[\section].notNil) {
+							Song.secDur[Song.section(firstSection[\section])] + ( firstSection[\stretch]?0 ).debug("STRETCH")
+						} {
+							1 // Default duration
+						// }
 					};
-				}
+				} {
+					~dur = Song.secDur[Song.section(firstSection)];
+				};
+				sections.do { |sectionItem|
+					var cursor, parts;
+					var currentEnv = currentEnvironment.copy; // Create a copy of the environment
+					[\solo, \mute,\extra].do {|i| currentEnv[i] = currentEnv[i] ? []};
+					if (sectionItem.isKindOf(Event)) {
+						if (sectionItem[\type] == \seg) {
+							sectionItem = sectionItem.copy;
+							// If it's another seg Event, recursively process it
+							// Merge the seg Event's data into current environment
+							sectionItem.keysValuesDo { |key, value|
+								case
+								{ [\mute, \solo, \extra].includes(key) } {
+									sectionItem.put(key, currentEnv[key].asArray ++ value)
+								}
+								{ key != \type } { // Don't override the type
+									currentEnv.put(key, value);
+								};
+							};
+							// Play the seg Event with merged environment
+							(currentEnv ++ sectionItem).play;
+						} {
+							var sectionName = sectionItem[\section];
+							if (sectionName.notNil) {
+								cursor = Song.section(sectionName);
+								currentEnv.put(\section, sectionName);
+								parts = Song.at(sectionName);
+								// Apply solo filtering first, if solo exists ignore mute
+								(~solo.asArray.size > 0).if {
+									parts.select{|i| 
+										~solo.asArray.any{|j| i.asString.contains(j.asString) } 
+									}
+									.do(_.prEventPlay(cursor, currentEnv));
+								} {
+									parts.reject{|i|
+										~mute.asArray.any{|j| i.asString.contains(j.asString) }
+									}
+									.do(_.prEventPlay(cursor, currentEnv));
+								};
+							} {
+								// If Event has no section, just play it directly
+								sectionItem.play;
+							}
+						}
+					} {
+						// if not an Event (String or Symbol)
+						var sectionName = sectionItem;
+						cursor = Song.section(sectionName);
+						currentEnv.put(\section, sectionName);
+						parts = Song.at(sectionName);
+						// Apply solo filtering first, if solo exists ignore mute
+						(~solo.asArray.size > 0).if {
+							parts.select { |i|
+								~solo.asArray.any { |j| i.asString.contains(j.asString) }
+							}
+							.do(_.prEventPlay(cursor, currentEnv));
+						} {
+							parts.reject { |i|
+								~mute.asArray.any { |j| i.asString.contains(j.asString) }
+							}
+							.do(_.prEventPlay(cursor, currentEnv));
+						};
+					}
+				};
+				Server.default.bind { fork{0.2.wait; ~extra.asArray.do(_.valueEnvir )} };
 			};
-			Server.default.bind { fork{0.2.wait; ~extra.asArray.do(_.valueEnvir )} };
 		});
-
 	}
     *new {|section ...args, kwargs|
         ^(type:\seg, section:section) ++ kwargs.asEvent

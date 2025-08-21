@@ -246,7 +246,7 @@ P.synthV(\an, lag:0.0817,take: \lower2,
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
-["verse1A", "1 5 4 4 4 4 3 2 1.5 -6 1 -7 -6".dm(\g), "e e e q e e q e e q e e e".beats * Song.pianoQuarters.mean * 2].addLine;
+["verse1A", "1 5 4 4 4 4 3 2 1.5 -6 1 -7 -6".dm(\g), "e e e q e e q e e q e e e".beats * Song.pianoQuarters[..7].mean * 2].addLine;
 Song.verseLyrics = [
 	[
 		"阳光照",
@@ -296,8 +296,9 @@ Song.verseLyrics = [
 	// Time shines its ray
 	// Love this display
 
-]
+];
 // P.tune(_ <> [rest: MuteFirst()].p);
+Song.verseQuarters = Song.pianoQuarters[..7];
 P(\keys, music: {|p b e|
 	[
 		[
@@ -313,51 +314,51 @@ P(\keys, music: {|p b e|
 				[2, 4, 5, 7].df(\d, \mixolydian),
 
 			].q,
-			dur: "e e e q e e e".beats.q * Song.pianoQuarters.mean * 2	
+			dur: "e e e q e e e".beats.q * Song.verseQuarters.mean * 2	
 		],
 		[
 			freq: [\r, 1, -7, -5, -6].df(\a).q,
-			dur: "q q q e eq".beats.q * Song.pianoQuarters.mean,
+			dur: "q q q e eq".beats.q * Song.verseQuarters.mean,
 			rest: MuteFirst()
 		],
 		[
 			freq: [4, 3, 2, 2, 3, 2, 1, 1].df(\d).q,
-			dur: "q q e x xe e q e".beats.q * Song.pianoQuarters.mean
+			dur: "q q e x xe e q e".beats.q * Song.verseQuarters.mean
 		]
 	].collect{|i| i ++ [instrument: (~keyInstrument ? \default)] => _.p}.drop(0).q.play;
 });
 P(\bass,start:2, music:{|p b e |
 		var freq= [0,1, 2, 3, 4, 5].df(\d, 3);
-		var freqDur= "w w w  h qq".beats - 0.001 * Song.pianoQuarters.mean;
+		var freqDur= "w w w  h qq".beats - 0.001 * Song.verseQuarters.mean;
 	[
 		freq: Pseg.new(freq, freqDur,\step ),
-		// dur:"qqqe e e eqqe e w hq q".beats.q(1) * Song.pianoQuarters.mean,
-		dur:"qqqe e e eqqe e e ee ee ee e  |e eqe ee e".beats.q(1) * Song.pianoQuarters.mean,
+		// dur:"qqqe e e eqqe e w hq q".beats.q(1) * Song.verseQuarters.mean,
+		dur:"qqqe e e eqqe e e ee ee ee e  |e eqe ee e".beats.q(1) * Song.verseQuarters.mean,
 		instrument: \sawSynthSustain
 	].pp
 });
 P(\bassLick, music: { |p b e|
 	[
 		freq: [2, 2.5, 3, -7, -5, -3].df(\c,3).q,
-		dur: "qqqe e e e e eq".beats.q * Song.pianoQuarters.mean,
+		dur: "qqqe e e e e eq".beats.q * Song.verseQuarters.mean,
 		amp:0.3
 	].pp
 });
-["verse1B", "1 5 4 4 4 4 3 2 1.5 -6 3 4 4".dm(\g), "e e e q e e q e e q e e e".beats * Song.pianoQuarters.mean * 2].addLine;
+["verse1B", "1 5 4 4 4 4 3 2 1.5 -6 3 4 4".dm(\g), "e e e q e e q e e q e e e".beats * Song.verseQuarters.mean * 2].addLine;
 P(\bassLick, music: { |p b e|
 	[
 		freq: [2, 2.5, 3, -7, -5, -3].df(\c,3).q,
-		dur: "qqqe e e e e eq".beats.q * Song.pianoQuarters.mean,
+		dur: "qqqe e e e e eq".beats.q * Song.verseQuarters.mean,
 		amp:0.3
 	].pp
 });
 P(\bass,start:3, music:{|p b e |
 		var freq= [0,1, 2, 3, 4].df(\d, 3);
-		var freqDur= "w w w he qq".beats - 0.001 * Song.pianoQuarters.mean;
+		var freqDur= "w w w he qq".beats - 0.001 * Song.verseQuarters.mean;
 	[
 		freq: Pseg.new(freq, freqDur,\step ),
-		// dur:"qqqe e e eqqe e w hq q".beats.q(1) * Song.pianoQuarters.mean,
-		dur:"qqqe e e eqqe e e ee ee ee e  |e eqe ee e".beats.q(1) * Song.pianoQuarters.mean,
+		// dur:"qqqe e e eqqe e w hq q".beats.q(1) * Song.verseQuarters.mean,
+		dur:"qqqe e e eqqe e e ee ee ee e  |e eqe ee e".beats.q(1) * Song.verseQuarters.mean,
 		instrument: \sawSynthSustain
 	].pp
 });
@@ -376,11 +377,11 @@ P(\keys,start:3, music: {|p b e|
 	a			// [2, 4, 5, 7].df(\d, \mixolydian),
 
 			].q,
-			dur: "e e e q e e e".beats.q * Song.pianoQuarters.mean * 2	
+			dur: "e e e q e e e".beats.q * Song.verseQuarters.mean * 2	
 		],
 		[
 			freq: [\r, 1, -7, -5, -6].df(\a).q,
-			dur: "q q q e eq".beats.q * Song.pianoQuarters.mean,
+			dur: "q q q e eq".beats.q * Song.verseQuarters.mean,
 			rest: MuteFirst()
 		],
 		[
@@ -389,7 +390,7 @@ P(\keys,start:3, music: {|p b e|
 				[5, 7, 2].df(\c),
 				[3, 5, 11].df(\c),
 			].q,
-			dur: "e e e e ".beats.q * Song.pianoQuarters.mean * 2	
+			dur: "e e e e ".beats.q * Song.verseQuarters.mean * 2	
 		]
 	].collect{|i| i ++ [instrument: (~keyInstrument ? \default)] => _.p}.drop(0).q.play;
 });

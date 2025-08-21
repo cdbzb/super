@@ -1,7 +1,7 @@
 (
 Song(\beautiful,[]).current;
 Song.pianoQuarters = 
-MIDIItem(\foo).take(1)
+MIDIItem(\foo).take(1)//.gui
 .fromNote(0, 98)
 // .gui
 .filter({|e| e.select{|i| i.midicmd == \noteOn}[[0, 9, 13, 19, 22, 31, 39, 44, 48, 55, 62,  70, 72, 80, 85, 94]]})
@@ -246,7 +246,57 @@ P.synthV(\an, lag:0.0817,take: \lower2,
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
-["verse1A", "1 5 4 4 4 4 3 2 1.5 -6 1 -7 -6".dm(\g), "e e e q e e q e e q e e q".beats * Song.pianoQuarters.mean * 2].addLine;
+["verse1A", "1 5 4 4 4 4 3 2 1.5 -6 1 -7 -6".dm(\g), "e e e q e e q e e q e e e".beats * Song.pianoQuarters.mean * 2].addLine;
+Song.verseLyrics = [
+	[
+		"阳光照",
+		"微风绕",
+		"花香正飘摇",
+		"心情无限好",
+
+		"听欢笑",
+		"看飞鸟",
+		"世界多美妙",
+		"真逍遥",
+	],
+
+	[
+		"白云高",
+		"彩虹桥",
+		"音符在蹦跳",
+		"把烦恼丢掉",
+
+		"唱今朝",
+		"舞曼妙",
+		"时光轻闪耀",
+		"乐陶陶",
+	]
+	//
+	// ----------
+	// English Translation:
+	// Verse 1:
+	// Sunshine glows
+	// Gentle breeze flows
+	// Floral scent sways
+	// Mind in blissful phase
+	//
+	// Hear laughter ring
+	// Watch birds take wing
+	// World's magic thing
+	// Pure joy it brings
+	//
+	// Verse 2:
+	// White clouds high
+	// Rainbow nearby
+	// Music notes fly
+	// Worries goodbye
+	//
+	// Sing today
+	// Dance ballet
+	// Time shines its ray
+	// Love this display
+
+]
 // P.tune(_ <> [rest: MuteFirst()].p);
 P(\keys, music: {|p b e|
 	[
@@ -255,45 +305,63 @@ P(\keys, music: {|p b e|
 				[3, 5, 11].df(\d),
 				[3, 5, 7].df(\d, \mixolydian),
 				[3, 5, 7].df(\d, \mixolydian),
-				[2, 5, 7].df(\d, \mixolydian),
-				[2, 5, 7].df(\d, \mixolydian),
-				[2, 5, 6].df(\d, \mixolydian),
-				// [2, 4, 6, 11].df(\d, \mixolydian),
-				// [2, 4, 6, 11].df(\d, \mixolydian),
-				// [2, 4, 5, 7].df(\d, \mixolydian),
+				// [2, 5, 7].df(\d, \mixolydian),
+				// [2, 5, 7].df(\d, \mixolydian),
+				// [2, 5, 6].df(\d, \mixolydian),
+				[2, 4, 6, 11].df(\d, \mixolydian),
+				[2, 4, 6, 11].df(\d, \mixolydian),
+				[2, 4, 5, 7].df(\d, \mixolydian),
 
 			].q,
 			dur: "e e e q e e e".beats.q * Song.pianoQuarters.mean * 2	
-		].p,
+		],
 		[
 			freq: [\r, 1, -7, -5, -6].df(\a).q,
 			dur: "q q q e eq".beats.q * Song.pianoQuarters.mean,
 			rest: MuteFirst()
-		].p,
+		],
 		[
 			freq: [4, 3, 2, 2, 3, 2, 1, 1].df(\d).q,
 			dur: "q q e x xe e q e".beats.q * Song.pianoQuarters.mean
-		].p
-	].drop(0).q.play;
+		]
+	].collect{|i| i ++ [instrument: (~keyInstrument ? \default)] => _.p}.drop(0).q.play;
 });
-	P(\bass,start:2, music:{|p b e |
-			var freq= [0,1, 2, 3, 4, 5].df(\d, 3);
-			var freqDur= "w w w hq q".beats * Song.pianoQuarters.mean;
-		[
-			freq: Pseg.new(freq, freqDur,\step ),
-			dur:"qqqe e e eqqe e w hq q".beats.q(4) * Song.pianoQuarters.mean,
-			instrument: \sawSynthSustain
-		].pp
-	});
-	P(\bassLick, music: { |p b e|
-		[
-			freq: [2, 2.5, 3, -7, -5, -3].df(\c,3).q,
-			dur: "qqqe e e e e eq".beats.q * Song.pianoQuarters.mean,
-			amp:0.3
-		].pp
-	});
-["verse1B", "1 5 4 4 4 4 3 2 1.5 -6 3 4 4".dm(\g), "e e e q e e q e e q e e q".beats * Song.pianoQuarters.mean * 2].addLine;
-P(\keys, music: {|p b e|
+P(\bass,start:2, music:{|p b e |
+		var freq= [0,1, 2, 3, 4, 5].df(\d, 3);
+		var freqDur= "w w w  h qq".beats - 0.001 * Song.pianoQuarters.mean;
+	[
+		freq: Pseg.new(freq, freqDur,\step ),
+		// dur:"qqqe e e eqqe e w hq q".beats.q(1) * Song.pianoQuarters.mean,
+		dur:"qqqe e e eqqe e e ee ee ee e  |e eqe ee e".beats.q(1) * Song.pianoQuarters.mean,
+		instrument: \sawSynthSustain
+	].pp
+});
+P(\bassLick, music: { |p b e|
+	[
+		freq: [2, 2.5, 3, -7, -5, -3].df(\c,3).q,
+		dur: "qqqe e e e e eq".beats.q * Song.pianoQuarters.mean,
+		amp:0.3
+	].pp
+});
+["verse1B", "1 5 4 4 4 4 3 2 1.5 -6 3 4 4".dm(\g), "e e e q e e q e e q e e e".beats * Song.pianoQuarters.mean * 2].addLine;
+P(\bassLick, music: { |p b e|
+	[
+		freq: [2, 2.5, 3, -7, -5, -3].df(\c,3).q,
+		dur: "qqqe e e e e eq".beats.q * Song.pianoQuarters.mean,
+		amp:0.3
+	].pp
+});
+P(\bass,start:3, music:{|p b e |
+		var freq= [0,1, 2, 3, 4].df(\d, 3);
+		var freqDur= "w w w he qq".beats - 0.001 * Song.pianoQuarters.mean;
+	[
+		freq: Pseg.new(freq, freqDur,\step ),
+		// dur:"qqqe e e eqqe e w hq q".beats.q(1) * Song.pianoQuarters.mean,
+		dur:"qqqe e e eqqe e e ee ee ee e  |e eqe ee e".beats.q(1) * Song.pianoQuarters.mean,
+		instrument: \sawSynthSustain
+	].pp
+});
+P(\keys,start:3, music: {|p b e|
 	[
 		[
 			freq: [\r, 
@@ -305,104 +373,42 @@ P(\keys, music: {|p b e|
 				[2, 5, 6].df(\d, \mixolydian),
 				// [2, 4, 6, 11].df(\d, \mixolydian),
 				// [2, 4, 6, 11].df(\d, \mixolydian),
-				// [2, 4, 5, 7].df(\d, \mixolydian),
+	a			// [2, 4, 5, 7].df(\d, \mixolydian),
 
 			].q,
 			dur: "e e e q e e e".beats.q * Song.pianoQuarters.mean * 2	
-		].p,
+		],
 		[
 			freq: [\r, 1, -7, -5, -6].df(\a).q,
 			dur: "q q q e eq".beats.q * Song.pianoQuarters.mean,
 			rest: MuteFirst()
-		].p,
-[
+		],
+		[
 			freq: [ 
 				[5, 7, 2].df(\c),
 				[5, 7, 2].df(\c),
 				[3, 5, 11].df(\c),
 			].q,
 			dur: "e e e e ".beats.q * Song.pianoQuarters.mean * 2	
-		].p
-	].drop(0).q.play;
+		]
+	].collect{|i| i ++ [instrument: (~keyInstrument ? \default)] => _.p}.drop(0).q.play;
 });
 )
 
-
-(
-
-  MIDIItem(\foo).take(1).fromNote(0, 98)
-  .quantize( [ 0.57, 0.57 ].dup(8).flat, nil, {|notes| notes [[0, 9, 13, 19, 22, 31, 39, 44, 48, 55, 62,  70, 72, 80, 85, 94]]})
-   .filter{|e| 
-	  var note =  e.select{ |i| i.midicmd == \noteOn }[59];
-	  var off = e.select{|i| i.midicmd == \noteOff and: (i.timestamp >= note.timestamp)}.sort({|x y| x.timestamp < y.timestamp})[0];
-	  e.remove(note); e.remove(off);e
-	 }
-	 // .gui
-	.recalcSustains
-  .play(\sawSynth)
-)
-
+// (
+//
+//   MIDIItem(\foo).take(1).fromNote(0, 98)
+//   .quantize( [ 0.57, 0.57 ].dup(8).flat, nil, {|notes| notes [[0, 9, 13, 19, 22, 31, 39, 44, 48, 55, 62,  70, 72, 80, 85, 94]]})
+//    .filter{|e| 
+// 	  var note =  e.select{ |i| i.midicmd == \noteOn }[59];
+// 	  var off = e.select{|i| i.midicmd == \noteOff and: (i.timestamp >= note.timestamp)}.sort({|x y| x.timestamp < y.timestamp})[0];
+// 	  e.remove(note); e.remove(off);e
+// 	 }
+// 	 // .gui
+// 	.recalcSustains
+//   .play(\sawSynth)
+// )
 
 
 
 
-
-
-
-
-
-//always works
-MIDIItemPlayer( {|e|e.select{|f| f.midinote == 5.dm(\c) or: (f.midinote == 6.dm(\c))}}.(MIDIItem(\foo).midiEvents.deepCopy), MIDIItem(\foo) )
-MIDIItem(\foo).take(1).play(\default);
-MIDIItem(\foo).take(1).filter({|e|e.select{|f| f.midinote == 4.dm(\c) or: (f.midinote == 3.dm(\c))}[(4..8)]}).play(\default)
-//intermittent
-MIDIItem(\foo).take(1).filter({|e|e.select{|f| f.midinote == 5.dm(\c) or: (f.midinote == 6.dm(\c))}}).play(\default);
-midiitem(\foo).take(1).filter({|e|e.select{|f| f.midinote == 4.dm(\c) or: (f.midinote == 3.dm(\c))}[(4..8)]}).play(\default)
-MIDIItem(\foo).take(1).notes[(3..5)]=> MIDIItemPlayer(_, restFirst:true) => _.start_(0) => _.play(\default)
-
-
-.midiEvents
-.fromNote(2, 5)
-.play(\default)
-.fromNote(3, 6).play(\default);
-// MIDIItem(\foo).take(1).play(\default)
-)
-
-a = MIDIItem(\foo)
-a.fromNote(3)
-[1]
-a.takes
-		MIDIItemPlayer(takes[num], this).recalcSustains
-.bounds
-.fromNote(4)
-.play(\default);
-a.take(1).
-(
-a = MIDIItem(\foo);
-{|e| 
-
-	var indices = a.noteIndices;
-			var res =a.chaseCCs(indices[3]) 
-			++ e[indices[3]..indices[5- 1]].setDurs;
-
-			{
-				indices[5+ 1].notNil.if {
-					res.drop(-1)
-				}{
-					res
-				}
-			}
-}.( a.midiEvents).() => _.class
-
-)
-)
-.respondsTo(\fromNote)
-.fromNote(3,5)
-			a.chaseCCs(a.noteIndices[3]) 
-.gui
-			a[a.noteIndices[3]..a.noteIndices[5 - 1]].setDurs;
-MIDIItem(\foo) .take(1) .select({|i| i.midinote == 3.dm(\c) or: (i.midinote == 4.dm(\c))}).gui
-.recalcSustains.play(\default)
-.gui
-.gui
-.play(\default);

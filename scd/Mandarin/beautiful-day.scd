@@ -460,49 +460,49 @@ P(\keys,start:3, music: {|p b e|
 
 
 
-P.synthV(\jun, take: \lead, range: [0, 6],
-	params: {|p b| [
-	lyrics: 
-	"r" + Song.verseLyrics[0][4] + Song.verseLyrics[0][5] 
-	,
-	
-	pitchTake: 1,
-	legato: [1,1, 1, 0.8, 1, 1, 0.8],
-	language: \mandarin,
-	// phoneset: \xsampa,
-	vocalMode: \tsubaki
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> {|i|  JPverb.ar(i, t60:1.0, damp:0.0, size:1.0, earlyDiff:0.707, modDepth:0.1, modFreq:2.0, low:1.0, mid:1.0, high:1.0, lowcut:500.0, highcut:2000.0) / 2 + i }
-		// => p.synthVTracks.at(e.key).()
-	}.play
-});
-P.synthV(\jun, syl: 6, take: \lead2ndHalf, 
-	pbind: {
-		[
-			midinote: [ 1, -7, -5, -6].dm(\a)
-			 ++ [3, 3, 4].dm(\g),
-			dur: 
-			"q q e eq".beats 
-			++ "q q q".beats * Song.verseQuarters.mean
-			=> _.flat
-			,
-		].p
-	},
-	params: {|p b| [
-	lyrics: Song.verseLyrics[0][6] + Song.verseLyrics[0][7]  ,
-	legato: [1, 1, 1, 0.8,  1, 1, 1, 1, 1, 1, 1],
-	
-	pitchTake: 1,
-	// legato: [1,1, 1, 0.8, 1, 1, 0.8],
-	language: \mandarin,
-	// phoneset: \xsampa,
-	vocalMode: \tsubaki
-] }, music:{|p b e|
-	{
-		e.playbuf
-		=> {|i|  JPverb.ar(i, t60:1.0, damp:0.0, size:1.0, earlyDiff:0.707, modDepth:0.1, modFreq:2.0, low:1.0, mid:1.0, high:1.0, lowcut:500.0, highcut:2000.0) / 2 + i }
-		// => p.synthVTracks.at(e.key).()
-	}.play
-});
+// P.synthV(\jun, take: \lead, range: [0, 6],
+// 	params: {|p b| [
+// 	lyrics: 
+// 	"r" + Song.verseLyrics[0][4] + Song.verseLyrics[0][5] 
+// 	,
+// 	
+// 	pitchTake: 1,
+// 	legato: [1,1, 1, 0.8, 1, 1, 0.8],
+// 	language: \mandarin,
+// 	// phoneset: \xsampa,
+// 	vocalMode: \tsubaki
+// ] }, music:{|p b e|
+// 	{
+// 		e.playbuf
+// 		=> {|i|  JPverb.ar(i, t60:1.0, damp:0.0, size:1.0, earlyDiff:0.707, modDepth:0.1, modFreq:2.0, low:1.0, mid:1.0, high:1.0, lowcut:500.0, highcut:2000.0) / 2 + i }
+// 		// => p.synthVTracks.at(e.key).()
+// 	}.play
+// });
+// P.synthV(\jun, syl: 6, take: \lead2ndHalf, 
+// 	pbind: {
+// 		[
+// 			midinote: [ 1, -7, -5, -6].dm(\a)
+// 			 ++ [3, 3, 4].dm(\g),
+// 			dur: 
+// 			"q q e eq".beats 
+// 			++ "q q q".beats * Song.verseQuarters.mean
+// 			=> _.flat
+// 			,
+// 		].p
+// 	},
+// 	params: {|p b| [
+// 	lyrics: Song.verseLyrics[0][6] + Song.verseLyrics[0][7]  ,
+// 	legato: [1, 1, 1, 0.8,  1, 1, 1, 1, 1, 1, 1],
+// 	
+// 	pitchTake: 1,
+// 	// legato: [1,1, 1, 0.8, 1, 1, 0.8],
+// 	language: \mandarin,
+// 	// phoneset: \xsampa,
+// 	vocalMode: \tsubaki
+// ] }, music:{|p b e|
+// 	{
+// 		e.playbuf
+// 		=> {|i|  JPverb.ar(i, t60:1.0, damp:0.0, size:1.0, earlyDiff:0.707, modDepth:0.1, modFreq:2.0, low:1.0, mid:1.0, high:1.0, lowcut:500.0, highcut:2000.0) / 2 + i }
+// 		// => p.synthVTracks.at(e.key).()
+// 	}.play
+// });

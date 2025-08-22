@@ -650,7 +650,7 @@ MIDIItem("traps_250810_175817").player
 ** Beautiful-day Mix
 #+BEGIN_SRC supercollider
 Mandarin.load('beautiful')
-// Mandarin.edit('beautiful')
+Mandarin.edit('beautiful')
 // Seg([ Seg(2,stretch: Song.pianoQuarters.mean.neg), Seg(3, stretch: Song.pianoQuarters.mean.neg * 2), 0].q).play 
 (
 	var subdiv = 0.5 ;
@@ -690,7 +690,19 @@ Mandarin.load('beautiful')
 		]//.ppm
 	};
 	Seg([
-		0,
+		   Seg( 0, extra: {
+		 MIDIItem("lick_250822_144325")
+		       .collect {|i| i.timestamp_ (i.timestamp - 0.2)}
+			  .recalcSustains
+		      
+		    .play(\Rolandd,latencyCompensation: 0.4, clock: TempoClock.new(queueSize: 2**16));
+		 MIDIItem("bass_250822_144325")
+		       .collect {|i| i.timestamp_ (i.timestamp - 0.2)}
+			  .recalcSustains
+		      
+		    .play(\Rolandd,latencyCompensation: 0.4, clock: TempoClock.new(queueSize: 2**16));
+	 }
+		      ),
 		1,
 		Seg( 2,keyInstrument:[ \sawSynth, \sawSynthSustain ], extra: [extraTune, drmz ] ),
 		[ Seg(3, keyInstrument:[ \sawSynth, \sawSynthSustain ],stretch:quarter.neg + 0.03), Seg(2, solo:\bassLick) ],
@@ -701,7 +713,10 @@ Mandarin.load('beautiful')
 		} )
 		,
 		1
-	].drop(0).q, solo:nil ).play
+	   ].drop(0).q, solo:nil , 
+	   ).play;
+// MIDIItem("superSaw_250822_143613").collect{|i| i.timestamp = i.timestamp - 0.2; i.amp = (i.amp ? 0/4)}.play(\Rolandd)
 )
+   MicroKeys(\Rolandd).monitor
 Seg([3, 0].q).play
 #+END_SRC

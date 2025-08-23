@@ -648,6 +648,7 @@ MIDIItem("traps_250810_175817").player
    )
    #+END_SRC
 ** Beautiful-day Mix
+*** Beautiful mix 1
 #+BEGIN_SRC supercollider
 Mandarin.load('beautiful')
 Mandarin.edit('beautiful')
@@ -692,14 +693,13 @@ Mandarin.edit('beautiful')
 	Seg([
 		   Seg( 0, extra: {
 		 MIDIItem("lick_250822_144325")
-		       .collect {|i| i.timestamp_ (i.timestamp - 0.2)}
+		       .collect {|i| i.timestamp_ (i.timestamp + 0.2)}
 			  .recalcSustains
-		      
 		    .play(\Rolandd,latencyCompensation: 0.4, clock: TempoClock.new(queueSize: 2**16));
 		 MIDIItem("bass_250822_144325")
-		       .collect {|i| i.timestamp_ (i.timestamp - 0.2)}
+		    .start_(0)
+		       .collect {|i| i.timestamp_ (i.timestamp + 0.2)}
 			  .recalcSustains
-		      
 		    .play(\Rolandd,latencyCompensation: 0.4, clock: TempoClock.new(queueSize: 2**16));
 	 }
 		      ),
@@ -720,3 +720,33 @@ Mandarin.edit('beautiful')
    MicroKeys(\Rolandd).monitor
 Seg([3, 0].q).play
 #+END_SRC
+*** Beautiful mix 2
+    #+BEGIN_SRC supercollider
+    Mandarin.load('beautiful')
+    Mandarin.edit('beautiful')
+
+    (
+    Seg([
+        \countoff,
+        // Seg( 0, extra: { MIDIItem("MIDIItem_250823_124821").record('Rolandd') } )
+        Seg( 0, extra: {
+            MIDIItem("MIDIItem_250823_124821").play('Rolandd') ;
+            // MIDIItem("high_250823_124821").record('Rolandd') ;
+            MIDIItem("high_250823_124821").play('Rolandd') ;
+        } )
+        ,
+        1,
+        2,
+        Seg( 3,
+            extra: {
+                // MIDIItem("MIDIItem_250823_124822").record('Rolandd') 
+                // MIDIItem("MIDIItem_250823_124822").play('Rolandd') 
+            },
+            stretch: Song.pianoQuarters[..7].mean * -0.99 
+        )
+        ,
+        0
+
+    ].drop(0).q).play
+    )
+    #+END_SRC

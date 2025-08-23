@@ -441,6 +441,13 @@ P(\keys,start:3, music: {|p b e|
 		]
 	].collect{|i| i ++ [instrument: (~keyInstrument ? \default)] => _.p}.drop(0).q.play;
 });
+["countoff", "1 1 1 1".dm, Song.pianoQuarters[..3].mean.dup(4)].addLine;
+P(\click, music:{|p b e| 
+	[
+		instrument: \hihat,
+		dur: b.q
+	].pp
+});
 )
 
 // (

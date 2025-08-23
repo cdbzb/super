@@ -564,10 +564,11 @@ record { |mk latencyCompensation|
 		MIDIdef((\record ++ cmd).asSymbol, func: { |val num chan| 
 			\recordDef.postln;
             chan.debug("chan");
+            SystemClock.seconds - start => _.debug("UNCOMPENSATED");
 			midiEvents.add(
 				(
 					midicmd: cmd,
-					timestamp: SystemClock.seconds - start - latencyCompensation,
+					timestamp: SystemClock.seconds - start - latencyCompensation => _.debug("COMPENSATED"),
 					channel: chan,
 				)//.postln
 				++
@@ -679,7 +680,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		midiEvents.notNil.if { //this should not be necessary!!!!
 			bounds = (
 				end: midiEvents.last.timestamp + ( midiEvents.last.dur ? 0 ),  
-				start: midiEvents[0].timestamp
+				start: midiEvents[0].timestamp max: 0
 			);
 			player.start = bounds.start;
 			player.end = bounds.end;

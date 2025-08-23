@@ -570,14 +570,13 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
                             } 
                         }
                     )
-                )
-            },msgType: cmd, 
-            // RME device floods input with cc0 - two solutions below!!
-            //eliminate cc0
-            msgNum: (cmd == \control).if{ (0..127) }, //change 0 to 1 to filter out
-            // argTemplate: {|i| (cmd == \control).if{ i.isStrictlyPositive }{ true } }
-            )
-        };
+				},msgType: cmd, 
+				// RME device floods input with cc0 - two solutions below!!
+				//eliminate cc0
+				msgNum: (cmd == \control).if{ (0..127) }, //change 0 to 1 to filter out
+				// argTemplate: {|i| (cmd == \control).if{ i.isStrictlyPositive }{ true } }
+			)
+		};
 
         // Messages with only val, chan parameters - NO num parameter!
         [\bend, \touch ].do { |cmd|

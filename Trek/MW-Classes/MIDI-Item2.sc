@@ -562,13 +562,10 @@ record { |mk latencyCompensation|
 	// Messages with val, num, chan parameters
 	[\noteOn, \noteOff, \control, \polytouch ].do{ |cmd|
 		MIDIdef((\record ++ cmd).asSymbol, func: { |val num chan| 
-			\recordDef.postln;
-            chan.debug("chan");
-            SystemClock.seconds - start => _.debug("UNCOMPENSATED");
 			midiEvents.add(
 				(
 					midicmd: cmd,
-					timestamp: SystemClock.seconds - start - latencyCompensation => _.debug("COMPENSATED"),
+					timestamp: SystemClock.seconds - start - latencyCompensation,
 					channel: chan,
 				)//.postln
 				++

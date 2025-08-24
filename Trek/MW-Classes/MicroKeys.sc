@@ -221,7 +221,7 @@ MicroKeys {
 		// ^namedList.array.reverse.inject(I.d, _ <> _)
 		^namedList.array.reverse
 		// .collect({|func| {|e| e.notNil.if{ func.(e) } } })
-		.inject(I.d, {|i j| try{i <> j} }) //this should return an event with and raw synth or Synths
+		.inject(I.d, {|i j| i <> j  }) //this should return an event with and raw synth or Synths
 	}
 
 	setDamper {|num| 

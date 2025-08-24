@@ -179,16 +179,12 @@ MicroKeys {
 		namedList.dump
 	}
 
-	velCurve_ { |curvature range|
+	velCurve_ { |env|
 		namedList.add (
 			\velCurve, 
-			{
-				|e|
-				range = range ? [0,1];
-				e.vel=Env(range,[1],[curvature]).at(e.vel)
-			},
-			addAction: \addBefore,
-			otherName: \synth
+			{ |e| e.vel=env.at(e.vel ? 0) },
+			addAction: \addAfter,
+			otherName: \event
 		);
 		namedList.dump
 	}
@@ -201,8 +197,13 @@ MicroKeys {
 		namedList.add(key, func, true, addAction, target)
 	}
     addMidi {|key func| 
-        namedList.addBefore(key, func, \synth )
+        namedList.addBefore(key, func, \synth);
+        namedList.dump
     }
+	removeFunc { |key|
+		namedList.removeAt(key);
+        namedList.dump
+	}
 
 	// split_ { |r| range = r }
 	range_ { |array| 

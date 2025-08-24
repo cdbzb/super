@@ -364,7 +364,7 @@ monitor { |offLatency = 0.02|
 }
 
 MonoKeys : MicroKeys {
-	var <monosynth;
+	var <monosynth, <>constantVel=false;
 	classvar <type=\mkMono;
 	*new { |name func|
 		all[name].notNil.if {
@@ -430,8 +430,12 @@ MonoKeys : MicroKeys {
 				event.notNil.if{
 					monosynth.set(
 						// \freq, event.num.midicps, 
-						\num, event.num, \freq, event.num.midicps, \vel, event.vel, \amp, event.vel);
-						down.add(midinote); // raw midinote for bookkeeping
+						\num, event.num, \freq, event.num.midicps, 
+					);
+					down.add(midinote); // raw midinote for bookkeeping
+					constantVel.not.if {
+						monosynth.set(\vel, event.vel, \amp, event.vel)
+					};
 				};
 						// move this line down here to allow tracking outside the range
 						// down.add(midinote); // raw midinote for bookkeeping

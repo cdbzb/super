@@ -4,8 +4,8 @@ MicroKeys {
     var <>species;
 	// MonoKeys-specific variables
 	var <monosynth, <>constantVel=false;
-	// MPE mode flag and current channel tracking
-	var <>mpeMode=false, <currentChannel;
+	// Current channel tracking for MPE detection
+	var <currentChannel;
 	classvar <all;
 	classvar <type=\mk;
 
@@ -128,7 +128,6 @@ MicroKeys {
 			new.namedList = old.namedList.deepCopy;
 			new.tuningDeltas = old.tuningDeltas;
 			new.storedCCValues = old.storedCCValues;
-			new.mpeMode = old.mpeMode;
 			func = old.synthFunc;
 			func.isKindOf(Symbol).if{
 				new.synth_(func) 
@@ -351,8 +350,10 @@ doPressure {|val chan=1|
         }
     }
     { species == \mono } {
+        // MPE mode auto-detection: if chan > 0, we're in MPE mode
         // Only apply pressure if this is the currently sounding channel
-        (down.size > 0 && (chan == currentChannel)).if {
+        // In standard mode (chan 0), always apply pressure
+        (chan == 0 || (down.size > 0 && (chan == currentChannel))).if {
             monosynth.set(\pressure, val / 127.0)
         }
     };
@@ -473,7 +474,6 @@ monitor { |offLatency = 0.02|
 		newInstance.namedList = namedList.deepCopy;
 		newInstance.tuningDeltas = tuningDeltas;
 		newInstance.storedCCValues = storedCCValues;
-		newInstance.mpeMode = mpeMode;
 		^newInstance;
 	}
 	
@@ -487,18 +487,7 @@ monitor { |offLatency = 0.02|
 		newInstance.namedList = namedList.deepCopy;
 		newInstance.tuningDeltas = tuningDeltas;
 		newInstance.storedCCValues = storedCCValues;
-		newInstance.mpeMode = mpeMode;
 		^newInstance;
-	}
-
-	mpe {
-		mpeMode = true;
-		^this;
-	}
-	
-	standardMode {
-		mpeMode = false;
-		^this;
 	}
 
 	doesNotUnderstand {|selector ...args|

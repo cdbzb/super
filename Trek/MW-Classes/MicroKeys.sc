@@ -4,6 +4,8 @@ MicroKeys {
     var <>species;
 	// MonoKeys-specific variables
 	var <monosynth, <>constantVel=false;
+	// MPE mode flag and current channel tracking
+	var <>mpeMode=false, <currentChannel;
 	classvar <all;
 	classvar <type=\mk;
 
@@ -25,7 +27,8 @@ MicroKeys {
 			( down.size == 0 ).if{
 				monosynth = this.noteOnFunction.(amp, midinote, nil, nil, params).synths ;
 				monosynth.notNil.if {
-					down.add(midinote)
+					down.add(midinote);
+					currentChannel = channel; // Track the current channel
 				}
 			}{
 				var event, func = namedList.deepCopy;
@@ -37,6 +40,7 @@ MicroKeys {
 						\num, event.num, \freq, event.num.midicps, 
 					);
 					down.add(midinote); // raw midinote for bookkeeping
+					currentChannel = channel; // Update current channel
 					constantVel.not.if {
 						monosynth.set(\vel, event.vel, \amp, event.vel)
 					};
@@ -124,6 +128,7 @@ MicroKeys {
 			new.namedList = old.namedList.deepCopy;
 			new.tuningDeltas = old.tuningDeltas;
 			new.storedCCValues = old.storedCCValues;
+			new.mpeMode = old.mpeMode;
 			func = old.synthFunc;
 			func.isKindOf(Symbol).if{
 				new.synth_(func) 
@@ -179,6 +184,7 @@ MicroKeys {
 		{ species == \mono } {
 			keys = 0 ! 128;
 			down = List[];
+			currentChannel = nil;
 		}
 		{ species == \poly } {
 			keys = List[] ! 128;
@@ -295,9 +301,14 @@ MicroKeys {
 			down.debug("down off");
 			(down.size <= 1).if{
 				monosynth.release;
-				down.remove(midinote) 
+				down.remove(midinote);
+				currentChannel = nil; // Clear current channel when no notes playing
 			}{ 
 				down.remove(midinote);
+				// If the released note was the current one, update to previous
+				(midinote == down.last).if {
+					currentChannel = channel; // Keep tracking the channel of the new current note
+				};
 				monosynth.set(\num, down.last, \freq, down.last.midicps)  // snap back to previous note
 			};
 		};
@@ -340,10 +351,8 @@ doPressure {|val chan=1|
         }
     }
     { species == \mono } {
-		"MONO".postln;
-        // Only apply pressure if this is the currently sounding channel/key
-        (down.size > 0 && (chan == down.last)).if {
-			"SETTING".postln;
+        // Only apply pressure if this is the currently sounding channel
+        (down.size > 0 && (chan == currentChannel)).if {
             monosynth.set(\pressure, val / 127.0)
         }
     };
@@ -464,6 +473,7 @@ monitor { |offLatency = 0.02|
 		newInstance.namedList = namedList.deepCopy;
 		newInstance.tuningDeltas = tuningDeltas;
 		newInstance.storedCCValues = storedCCValues;
+		newInstance.mpeMode = mpeMode;
 		^newInstance;
 	}
 	
@@ -477,7 +487,18 @@ monitor { |offLatency = 0.02|
 		newInstance.namedList = namedList.deepCopy;
 		newInstance.tuningDeltas = tuningDeltas;
 		newInstance.storedCCValues = storedCCValues;
+		newInstance.mpeMode = mpeMode;
 		^newInstance;
+	}
+
+	mpe {
+		mpeMode = true;
+		^this;
+	}
+	
+	standardMode {
+		mpeMode = false;
+		^this;
 	}
 
 	doesNotUnderstand {|selector ...args|

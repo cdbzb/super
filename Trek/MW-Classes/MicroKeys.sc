@@ -330,12 +330,21 @@ doCC74 {|val chan=1|
 }
 
 doPressure {|val chan=1|
-    var keyIndex = (chan == 1).if{ 0 }{ chan }; // might need different logic here
-    keys[keyIndex].do{|keyList, index|
-        keyList.do{|synth|
-            synth.set(\pressure, val / 127.0); // normalize to 0-1
+    case 
+    { species == \poly } {
+        var keyIndex = (chan == 1).if{ 0 }{ chan }; // might need different logic here
+        keys[keyIndex].do{|keyList, index|
+            keyList.do{|synth|
+                synth.set(\pressure, val / 127.0); // normalize to 0-1
+            }
         }
     }
+    { species == \mono } {
+        // Only apply pressure if this is the currently sounding channel/key
+        (down.size > 0 && (chan == down.last)).if {
+            monosynth.set(\pressure, val / 127.0)
+        }
+    };
 }
 doBend {|val chan=1|
     var keyIndex = (chan == 1).if{ 0 }{ chan };

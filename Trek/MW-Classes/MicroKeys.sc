@@ -1,6 +1,7 @@
 MicroKeys {
 	var <>array,<>keys, <>namedList, <tuningDeltas, tuningFunction, <heldNotes, <damperDown = false, <>down, <ccs, <storedCCValues, <name, <item, <>active=false;
 	var <>synthFunc;
+    var species;
 	classvar <all;
 	classvar <type=\mk;
 
@@ -78,10 +79,9 @@ MicroKeys {
         all = Dictionary(256)
 	}
 
-	*newFrom{ |mk itemName|
+	*newFrom { |mk itemName|
 		var newName = mk ++ itemName => _.asSymbol;
 		var new, old, func ;
-
 		all[newName].notNil.if {
 			^all[newName]
 		} { 
@@ -196,7 +196,7 @@ MicroKeys {
 	add { |key func addAction target|
 		namedList.add(key, func, true, addAction, target)
 	}
-    addMidi {|key func| 
+    addFunc {|key func| 
         namedList.addBefore(key, func, \synth);
         namedList.dump
     }

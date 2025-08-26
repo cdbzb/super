@@ -149,6 +149,7 @@ MicroKeys {
 		name = aName;
 		species = argSpecies;
 		namedList = NamedList.new;
+		tuningDeltas = 0 ! 128; // Initialize tuningDeltas
 		tuningFunction = { |tuning| { |e| e.num = e.num + tuningDeltas.wrapAt(e.num); e }};
         //scale vel and set raw to n
         //should I alternatively set raw to c?

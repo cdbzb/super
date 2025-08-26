@@ -474,7 +474,6 @@ monitor { |offLatency = 0.02|
 		newInstance.namedList = namedList.deepCopy;
 		newInstance.tuningDeltas = tuningDeltas;
 		newInstance.storedCCValues = storedCCValues;
-        all.put(\name, newInstance);
 		^newInstance;
 	}
 	
@@ -488,7 +487,6 @@ monitor { |offLatency = 0.02|
 		newInstance.namedList = namedList.deepCopy;
 		newInstance.tuningDeltas = tuningDeltas;
 		newInstance.storedCCValues = storedCCValues;
-        all.put(\name, newInstance);
 		^newInstance;
 
 	}

@@ -441,24 +441,28 @@ monitor { |offLatency = 0.02|
 	}
 
 	mono {
-		var newInstance = this.class.new.init(name, synthFunc, species: \mono);
+		var newInstance;
+		// Remove the current instance from all dictionary temporarily
+		all.removeAt(name);
+		// Create new instance with mono species
+		newInstance = this.class.new(name, synthFunc, species: \mono);
 		// Copy over any additional state that might be needed
 		newInstance.namedList = namedList.deepCopy;
 		newInstance.tuningDeltas = tuningDeltas;
 		newInstance.storedCCValues = storedCCValues;
-		// Replace in the all dictionary
-		all[name] = newInstance;
 		^newInstance;
 	}
 	
 	poly {
-		var newInstance = this.class.new(name, synthFunc, species: \poly);
+		var newInstance;
+		// Remove the current instance from all dictionary temporarily
+		all.removeAt(name);
+		// Create new instance with poly species
+		newInstance = this.class.new(name, synthFunc, species: \poly);
 		// Copy over any additional state that might be needed
 		newInstance.namedList = namedList.deepCopy;
 		newInstance.tuningDeltas = tuningDeltas;
 		newInstance.storedCCValues = storedCCValues;
-		// Replace in the all dictionary
-		all[name] = newInstance;
 		^newInstance;
 	}
 

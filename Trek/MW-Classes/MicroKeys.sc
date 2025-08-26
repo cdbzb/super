@@ -1,5 +1,5 @@
 MicroKeys {
-	var <>array,<>keys, <>namedList, <tuningDeltas, tuningFunction, <heldNotes, <damperDown = false, <>down, <ccs, <storedCCValues, <name, <item, <>active=false;
+	var <>array,<>keys, <>namedList, <>tuningDeltas, tuningFunction, <heldNotes, <damperDown = false, <>down, <ccs, <>storedCCValues, <name, <item, <>active=false;
 	var <>synthFunc;
     var <>species;
 	// MonoKeys-specific variables

@@ -120,8 +120,10 @@ MicroKeys {
 			old = MicroKeys(mk);
 			// old = MicroKeys.all[mk];
 			// new = super.new.init(newName) ;
-			new = old.class.new(newName);
+			new = old.class.new(newName, species: old.species);
 			new.namedList = old.namedList.deepCopy;
+			new.tuningDeltas = old.tuningDeltas;
+			new.storedCCValues = old.storedCCValues;
 			func = old.synthFunc;
 			func.isKindOf(Symbol).if{
 				new.synth_(func) 

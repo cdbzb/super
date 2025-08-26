@@ -340,8 +340,10 @@ doPressure {|val chan=1|
         }
     }
     { species == \mono } {
+		"MONO".postln;
         // Only apply pressure if this is the currently sounding channel/key
         (down.size > 0 && (chan == down.last)).if {
+			"SETTING".postln;
             monosynth.set(\pressure, val / 127.0)
         }
     };

@@ -114,7 +114,6 @@ MicroKeys {
         });
         all = Dictionary(256)
 	}
-
 	*newFrom { |mk itemName|
 		var newName = mk ++ itemName => _.asSymbol;
 		var new, old, func ;
@@ -138,7 +137,6 @@ MicroKeys {
 			^new
 		}  
 	}
-
 	*new { |name func params species=\poly|
 		all[name].notNil.if {
 			^all[name]
@@ -146,11 +144,9 @@ MicroKeys {
 			^super.new.init(name, func, params, species) 
 		}  
 	}
-	 
 	*mono { |name func params|
 		^this.new(name, func, params, \mono)
 	}
-
 	init { |aName func params argSpecies=\poly|
 		name = aName;
 		species = argSpecies;
@@ -193,7 +189,6 @@ MicroKeys {
 		all.add(name -> this);
 		ccs = List[];
 	}
-
 	synth_ { |funcOrDefname params|
 		funcOrDefname.isKindOf(Symbol).if{
 			synthFunc = funcOrDefname;
@@ -217,7 +212,6 @@ MicroKeys {
 		};
 		namedList.dump
 	}
-
 	tuning_ { |tuning root| //todo add root
 		tuningDeltas = Tuning.at(tuning).semitones.collect{|i x| i - x};
 		tuning.notNil.if{ namedList.add(
@@ -228,7 +222,6 @@ MicroKeys {
 		) };
 		namedList.dump
 	}
-
 	velCurve_ { |env|
 		namedList.add (
 			\velCurve, 
@@ -238,11 +231,9 @@ MicroKeys {
 		);
 		namedList.dump
 	}
-
 	get { |key|
 		^namedList[key]
 	}
-
 	add { |key func addAction target|
 		namedList.add(key, func, true, addAction, target)
 	}
@@ -259,22 +250,23 @@ MicroKeys {
 	range_ { |array| 
 	  this.add(\range, {|e| array.includes( e.num ).not.if{e.silent_(true)}; e}, \addAfter, \event);
 	}
-
 	register { |event|
         var channel = event[\chan];
-		event.debug("EEEEEEEE");
-		keys[(channel.isNil or: try{ channel == 0}).if{ event.raw }{ channel }] add: event[\synths] => _.debug("keys @: %".format(event.raw));
-
-		// ^e.synth
-}
-
+        //check for MPE
+        var notMPE = (channel.isNil or: try{ channel == 0});
+		var index = notMPE.if{
+				event.raw 
+			}{
+				channel 
+			};
+		keys[index].add(event[\synths])
+	}
 	noteOnFunction {
 		// ^namedList.array.reverse.inject(I.d, _ <> _)
 		^namedList.array.reverse
 		// .collect({|func| {|e| e.notNil.if{ func.(e) } } })
 		.inject(I.d, {|i j| i <> j  }) //this should return an event with and raw synth or Synths
 	}
-
 	setDamper {|num| 
 		(num == 127).if{
 			damperDown = true.postln 
@@ -284,7 +276,6 @@ MicroKeys {
 			heldNotes = Set[] 
 		} 
 	}
-
 	doNoteOff {|midinote latency=0 channel=1| 
 		name.debug("noteOff");
 		case 
@@ -312,7 +303,6 @@ MicroKeys {
 			};
 		};
 	}
-
 	doPoly {|val num| 
 		case 
 		{ species == \poly } {
@@ -338,7 +328,6 @@ doCC74 {|val chan=1|
         }
     }
 }
-
 doPressure {|val chan=1|
     case 
     { species == \poly } {
@@ -406,18 +395,15 @@ monitor { |offLatency = 0.02|
 		MIDIdef.touch(\microTouch ++ name => _.asSymbol, {|val chan|  this.doPressure(val * 127, chan) });
 	};
 }
-
 	unmonitor {
 		active = false;
 		[\microOn, \microOff, \microDamper, \microPoly].do{|i| MIDIdef(i ++ name => _.asSymbol).free}
 	}
-
 	free {
 		this.unmonitor ; //remove MIDIdefs
 		CC.all[this.name].do{|i| i.bus.free; i.free}; //remove CC busses and CCs
 		this.free 
 	}
-
 	split { |array|
 		var defNames, cases, paramEvents;
 		# defNames, cases, paramEvents = array.flop;
@@ -457,13 +443,11 @@ monitor { |offLatency = 0.02|
 		item.record(this);
 		^item
 	}
-
 	insertItem {
 		var key = $\\ ++ $\\ ++ name;
 		var string = "MIDIItem(\\\"%\\\").play(%)".format(item.name, key);
 		Nvim.replace(string)
 	}
-
 	mono {
 		var newInstance;
 		// Remove the current instance from all dictionary temporarily
@@ -476,7 +460,6 @@ monitor { |offLatency = 0.02|
 		newInstance.storedCCValues = storedCCValues;
 		^newInstance;
 	}
-	
 	poly {
 		var newInstance;
 		// Remove the current instance from all dictionary temporarily
@@ -490,7 +473,6 @@ monitor { |offLatency = 0.02|
 		^newInstance;
 
 	}
-
 	doesNotUnderstand {|selector ...args|
 		namedList.respondsto(selector).if{
 			^Message(namedList, selector, args).value

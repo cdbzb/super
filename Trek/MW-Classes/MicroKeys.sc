@@ -441,7 +441,7 @@ monitor { |offLatency = 0.02|
 	}
 
 	mono {
-		var newInstance = this.class.new(name, synthFunc, species: \mono);
+		var newInstance = this.class.new.init(name, synthFunc, species: \mono);
 		// Copy over any additional state that might be needed
 		newInstance.namedList = namedList.deepCopy;
 		newInstance.tuningDeltas = tuningDeltas;

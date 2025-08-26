@@ -440,6 +440,28 @@ monitor { |offLatency = 0.02|
 		Nvim.replace(string)
 	}
 
+	mono {
+		var newInstance = this.class.new(name, synthFunc, species: \mono);
+		// Copy over any additional state that might be needed
+		newInstance.namedList = namedList.deepCopy;
+		newInstance.tuningDeltas = tuningDeltas;
+		newInstance.storedCCValues = storedCCValues;
+		// Replace in the all dictionary
+		all[name] = newInstance;
+		^newInstance;
+	}
+	
+	poly {
+		var newInstance = this.class.new(name, synthFunc, species: \poly);
+		// Copy over any additional state that might be needed
+		newInstance.namedList = namedList.deepCopy;
+		newInstance.tuningDeltas = tuningDeltas;
+		newInstance.storedCCValues = storedCCValues;
+		// Replace in the all dictionary
+		all[name] = newInstance;
+		^newInstance;
+	}
+
 	doesNotUnderstand {|selector ...args|
 		namedList.respondsto(selector).if{
 			^Message(namedList, selector, args).value

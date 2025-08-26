@@ -42,7 +42,7 @@ MicroKeys {
 					down.add(midinote); // raw midinote for bookkeeping
 					currentChannel = channel; // Update current channel
 					constantVel.not.if {
-						monosynth.set(\vel, event.vel, \amp, event.vel)
+						monosynth.set(\vel, event.vel, \amp, event.vel /127)
 					};
 				};
 						// move this line down here to allow tracking outside the range
@@ -390,7 +390,7 @@ monitor { |offLatency = 0.02|
 	{ species == \mono } {
 		down = List[];
 		MIDIdef.noteOn(\microOn ++ name => _.asSymbol, {|v n c| 
-			this.doNoteOn(v, n, channel:c);
+			this.doNoteOn(v/127, n, channel:c);
 		});
 		MIDIdef.noteOff(\microOff ++ name => _.asSymbol, {|vel num c| 
 			this.doNoteOff(num, channel:c);

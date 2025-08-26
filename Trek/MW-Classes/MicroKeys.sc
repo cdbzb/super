@@ -25,7 +25,7 @@ MicroKeys {
 		}
 		{ species == \mono } {
 			( down.size == 0 ).if{
-				monosynth = this.noteOnFunction.(amp/127, midinote, nil, nil, params).synths ;
+				monosynth = this.noteOnFunction.(amp, midinote, nil, nil, params).synths ;
 				monosynth.notNil.if {
 					down.add(midinote);
 					currentChannel = channel; // Track the current channel
@@ -33,7 +33,7 @@ MicroKeys {
 			}{
 				var event, func = namedList.deepCopy;
 				func.removeAt(\synth);
-				event = func.reverse.inject(I.d, {|i j| try{i <> j}}).(amp/127, midinote, nil, nil, params);
+				event = func.reverse.inject(I.d, {|i j| try{i <> j}}).(amp, midinote, nil, nil, params);
 				event.notNil.if{
 					monosynth.set(
 						// \freq, event.num.midicps, 

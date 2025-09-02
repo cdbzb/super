@@ -8,8 +8,7 @@ MicroKeys {
 	var <currentChannel;
 	classvar <all;
 	classvar <type=\mk;
-
-	classvar tuningFunction;
+	var tuningFunction;
 	// methods to make "standard" params
 	*freq {
 		^{|mk| {\freq.kr(900) * (\poly.kr() / 127+ CC.bend(mk: mk).bus.kr => _.midiratio)} }

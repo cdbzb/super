@@ -422,7 +422,7 @@ monitor { |offLatency = 0.02|
 		// MIDIdef.cc(\microDamper, {|num| (num == 127).if{ damperDown = true.postln }{ damperDown = false.postln; heldNotes.do(_.release); heldNotes = Set[] } }, 64);
 		MIDIdef.polytouch(\microPoly ++ name => _.asSymbol, {|val num| monosynth.set(\poly, val)});
 		//MPE
-		MIDIdef.cc(\microCC74 ++ name => _.asSymbol, {|val num chan| monosynth.set(\expression, val / 127) }, 74);
+		MIDIdef.cc(\microCC74 ++ name => _.asSymbol, {|val num chan| this.doCC74(val, chan) }, 74);
 
 		// Add bend handling
 		///aaaak  should denominator be 16384

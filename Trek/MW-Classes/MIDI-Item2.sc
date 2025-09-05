@@ -386,7 +386,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		File.exists(folder).not.if{ "mkdir %".format(folder).unixCmd };
 		MyFree.add({ this.stopRecording });
 		CmdPeriod.add(this);
-		TempoClock.default=TempoClock(queueSize:8192).permanent_(true)
+		// TempoClock.default=TempoClock(queueSize:8192).permanent_(true)
 	}
 	*cmdPeriod{
 		this.stopRecording

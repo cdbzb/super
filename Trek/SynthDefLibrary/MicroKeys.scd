@@ -41,3 +41,14 @@ LFSaw.ar(freqs[n], Rand(0, 2))
 	sig * Env.asr().kr(2,\gate.kr(1))
 	   => Out.ar(\out.kr(0), _)
 }).add;
+
+(
+	   { arg out=0, freq=440, amp=0.1, pan=0, gate=1;
+		   var z;
+		   z = LPF.ar(
+			   Mix.new(VarSaw.ar(freq * (\poly.kr(0) / 127 * \polyRange.kr(1) => _.midiratio) + [0, Rand(-0.4,0.0), Rand(0.0,0.4)], 0, 0.3, 0.3)),
+			   XLine.kr(Rand(4000,5000), Rand(2500,3200), 1)
+		   ) * Linen.kr(gate, 0.01, 0.7, 0.3, 2);
+		   OffsetOut.ar(out, Pan2.ar(z, pan, amp));
+	   } => SynthDef(\defaultMk, _) => _.add
+   )

@@ -6,7 +6,7 @@ MicroKeys {
 	var <monosynth, <>constantVel=false;
 	// Current channel tracking for MPE detection
 	var <currentChannel;
-	classvar <all;
+	classvar <all, <current;
 	classvar <type=\mk;
 	var tuningFunction;
 	// methods to make "standard" params
@@ -392,7 +392,9 @@ doBend {|val chan=1|
     };
 }
 monitor { |offLatency = 0.02|
+	CmdPeriod.add(this);
 	active = true;
+	current = this;
 	// storedCCValues.notNil.if{ this.restoreCCValues };
 	CC.all[name].do(_.activate);
 	
@@ -433,6 +435,9 @@ monitor { |offLatency = 0.02|
 	unmonitor {
 		active = false;
 		[\microOn, \microOff, \microDamper, \microPoly].do{|i| MIDIdef(i ++ name => _.asSymbol).free}
+	}
+	cmdPeriod {
+		this.unmonitor
 	}
 	free {
 		this.unmonitor ; //remove MIDIdefs

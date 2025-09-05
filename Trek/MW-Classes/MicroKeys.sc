@@ -320,20 +320,42 @@ MicroKeys {
 		this.recordMe
 	}
 doCC74 {|val chan=1|
-    var keyIndex = (chan == 1).if{ 0 }{ chan }; // might need different logic here
-    keys[keyIndex].do{|keyList, index|
-        keyList.do{|synth|
-            synth.set(\expr, val / 127.0); // normalize to 0-1
+    case 
+    { species == \poly } {
+        var keyIndex = (chan == 0 || chan == 1).if{ 0 }{ chan };
+        // For non-MPE (chan 0), apply to all active synths
+        (chan == 0 || chan == 1).if {
+            keys.do{|keyList, index|
+                keyList.do{|synth|
+                    synth.set(\expr, val / 127.0);
+                }
+            }
+        } {
+            // For MPE mode, apply only to specific channel
+            keys[keyIndex].do{|synth|
+                synth.set(\expr, val / 127.0);
+            }
         }
     }
+    { species == \mono } {
+        monosynth.set(\expr, val / 127.0);
+    };
 }
 doPressure {|val chan=1|
     case 
     { species == \poly } {
-        var keyIndex = (chan == 1).if{ 0 }{ chan }; // might need different logic here
-        keys[keyIndex].do{|keyList, index|
-            keyList.do{|synth|
-                synth.set(\pressure, val / 127.0); // normalize to 0-1
+        var keyIndex = (chan == 0 || chan == 1).if{ 0 }{ chan };
+        // For non-MPE (chan 0), apply to all active synths
+        (chan == 0 || chan == 1).if {
+            keys.do{|keyList, index|
+                keyList.do{|synth|
+                    synth.set(\pressure, val / 127.0);
+                }
+            }
+        } {
+            // For MPE mode, apply only to specific channel
+            keys[keyIndex].do{|synth|
+                synth.set(\pressure, val / 127.0);
             }
         }
     }
@@ -347,13 +369,27 @@ doPressure {|val chan=1|
     };
 }
 doBend {|val chan=1|
-    var keyIndex = (chan == 1).if{ 0 }{ chan };
     var bendValue = (val - 8192) / 8192.0; // normalize bend from -1 to 1
-    keys[keyIndex].do{|keyList, index|
-        keyList.do{|synth|
-            synth.set(\bend, bendValue);
+    case 
+    { species == \poly } {
+        var keyIndex = (chan == 0 || chan == 1).if{ 0 }{ chan };
+        // For non-MPE (chan 0), apply to all active synths
+        (chan == 0 || chan == 1).if {
+            keys.do{|keyList, index|
+                keyList.do{|synth|
+                    synth.set(\bend, bendValue);
+                }
+            }
+        } {
+            // For MPE mode, apply only to specific channel
+            keys[keyIndex].do{|synth|
+                synth.set(\bend, bendValue);
+            }
         }
     }
+    { species == \mono } {
+        monosynth.set(\bend, bendValue);
+    };
 }
 monitor { |offLatency = 0.02|
 	active = true;

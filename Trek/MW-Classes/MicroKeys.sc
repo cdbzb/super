@@ -486,7 +486,7 @@ monitor { |offLatency = 0.02|
 		// Add bend handling
 		///aaaak  should denominator be 16384
 		MIDIdef.bend(\microBend ++ name => _.asSymbol, {|val chan| monosynth.set(\bend, val - 8192 /8192) });
-		MIDIdef.touch(\microTouch ++ name => _.asSymbol, {|val chan|  this.doPressure(val * 127, chan) });
+		MIDIdef.touch(\microTouch ++ name => _.asSymbol, {|val chan|  this.doPressure(val, chan) });
 	};
 }
 	unmonitor {

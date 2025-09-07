@@ -1,5 +1,9 @@
 MicroKeys {
-	var <>array,<>keys, <>namedList, <>tuningDeltas, tuningFunction, <heldNotes, <damperDown = false, <>down, <ccs, <>storedCCValues, <name, <item, <>active=false;
+	var <>array,<>keys, <>namedList, <>tuningDeltas, tuningFunction, <heldNotes, <damperDown = false, <>down, <>downChannel,  <>storedCCValues, <name, <item, <>active=false, <>sounding;
+    //state of these will only change during monitoring
+    classvar <>ccs;
+	//when monitoring is enabled we set these to be the same as the classvar
+	var instanceCCs;
 	var <>synthFunc;
     var <>species;
 	// MonoKeys-specific variables
@@ -27,6 +31,7 @@ MicroKeys {
 				monosynth = this.noteOnFunction.(amp, midinote, nil, nil, params).synths ;
 				monosynth.notNil.if {
 					down.add(midinote);
+                    downChannel.put(midinote, channel);
 					currentChannel = channel; // Track the current channel
 				}
 			}{
@@ -39,6 +44,7 @@ MicroKeys {
 						\num, event.num, \freq, event.num.midicps, 
 					);
 					down.add(midinote); // raw midinote for bookkeeping
+                    downChannel.put(midinote, channel);
 					currentChannel = channel; // Update current channel
 					constantVel.not.if {
 						monosynth.set(\vel, event.vel, \amp, event.vel /127)
@@ -57,6 +63,8 @@ MicroKeys {
 		^CC.setValues(storedCCValues, this.name)
 	}
 	*initClass{
+        ccs = ();
+
 		MyFree.add({ MicroKeys.all.do{|i| i.down_(List[]) } });
 		
 		Event.addEventType(\mkOff, {});
@@ -76,7 +84,14 @@ MicroKeys {
 			}	
 		});
 		Event.addEventType(\setCC, {
-			Server.default.makeBundle(~latency, {var cc = CC(~ctlNum, mk: ~mk); cc.setRaw(~control * cc.rawScale) }) 
+			Server.default.makeBundle(~latency, 
+                // {var cc = CC(~ctlNum, mk: ~mk); cc.setRaw(~control * cc.rawScale) }
+                { 
+					var mk = ~mk.isKindOf(Symbol).if{ MicroKeys(~mk) }{ ~mk };
+					[~mk, mk, ~control, ~ctlNum].postln;
+					mk.doCC(~control * 127, ~ctlNum, ~channel)
+				} //TODO change 127 for bend
+            ) 
 		});
 
 		//deprecate
@@ -178,15 +193,18 @@ MicroKeys {
 		{ species == \mono } {
 			keys = 0 ! 128;
 			down = List[];
+			downChannel = ();
 			currentChannel = nil;
 		}
 		{ species == \poly } {
 			keys = List[] ! 128;
+			sounding = Set[];
 		};
 		
 		heldNotes = Set[];
+
 		all.add(name -> this);
-		ccs = List[];
+		instanceCCs = ()
 	}
 	synth_ { |funcOrDefname params|
 		funcOrDefname.isKindOf(Symbol).if{
@@ -258,7 +276,11 @@ MicroKeys {
 			}{
 				channel 
 			};
-		keys[index].add(event[\synths])
+		keys[index].add(event[\synths]);
+		event[\synths].synths.do {|i|
+			sounding.add(i);
+			i.onFree({ sounding.remove(i)})
+		};
 	}
 	noteOnFunction {
 		// ^namedList.array.reverse.inject(I.d, _ <> _)
@@ -281,7 +303,7 @@ MicroKeys {
 		{ species == \poly } {
 			damperDown.not.if {
 				Server.default.makeBundle(
-					latency,
+					latency + 0.02, //TODO this should check to see if the note is sounding instead of 0.02 fudge factor
 					{ try {  var index = (channel.isNil or: (channel == 0)).if {midinote}{channel}; keys[index].removeAt(0).release  } }
 				)
 			} { heldNotes.add(keys[midinote]) }
@@ -291,13 +313,13 @@ MicroKeys {
 			(down.size <= 1).if{
 				monosynth.release;
 				down.remove(midinote);
+                downChannel.put(midinote, nil);
 				currentChannel = nil; // Clear current channel when no notes playing
 			}{ 
 				down.remove(midinote);
-				// If the released note was the current one, update to previous
-				(midinote == down.last).if {
-					currentChannel = channel; // Keep tracking the channel of the new current note
-				};
+                downChannel.put(midinote, nil);
+                //update channel to previous
+                currentChannel = downChannel[down.last]; 
 				monosynth.set(\num, down.last, \freq, down.last.midicps)  // snap back to previous note
 			};
 		};
@@ -319,6 +341,24 @@ MicroKeys {
 	record {
 		this.recordMe
 	}
+doCC {|val cc chan=1|
+
+	cc = cc.asSymbol;
+    //sets for all ccs inc damper and expression
+    ccs.put(cc, val);
+
+    [0, 74, 64].includes(cc).if {^nil};
+
+    case 
+    { species == \poly } {
+            sounding.do{|synth|
+                    synth.set(cc, val / 127.0);
+            }
+        } 
+    { species == \mono } {
+        monosynth.set(cc, val / 127.0);
+    };
+}
 doCC74 {|val chan=1|
     case 
     { species == \poly } {
@@ -397,11 +437,28 @@ monitor { |offLatency = 0.02|
 	current = this;
 	// storedCCValues.notNil.if{ this.restoreCCValues };
 	CC.all[name].do(_.activate);
-	
+
+	//set to current state when monitoring begins
+	instanceCCs = ccs;
+	//if we are monitoring a cc we set these
+    MIDIdef.cc(\setClassCCs, {|v n| ccs.put(n.asSymbol, v)});
+	MIDIdef.cc(\microCC ++ name => _.asSymbol, {|val num, chan| this.doCC(val, num, chan) } );
 	case 
 	{ species == \poly } {
 		// MIDIdef.noteOn(\microOn, {|val num| this.noteOnFunction.(val, num)}, noteNum:range);
-		MIDIdef.noteOn(\microOn ++ name => _.asSymbol,  {|v n c| (type: \mk, mk:this, amp: v/127, midinote: n, latency:0, sustain: inf, channel:c ).play}, );
+		//we need to set all the ccs for each note-on
+		//so adding ccs asArray to params 
+		//TODO - should this not be doNoteOn ??
+		MIDIdef.noteOn(\microOn ++ name => _.asSymbol,  {|v n c| (
+			type: \mk,
+			mk:this,
+			amp: v/127,
+			params: ccs,
+			midinote: n,
+			latency:0,
+			sustain: inf,
+			channel:c
+		).postln.play}, );
 		// MIDIdef.noteOff(\microOff, {|vel, num| damperDown.postln; ( damperDown == false ).if{ keys[num].release }{ heldNotes.add(keys[num]) }});
 		MIDIdef.noteOff(\microOff ++ name => _.asSymbol, {|val num chan| this.doNoteOff(num, offLatency, chan) }, );
 		MIDIdef.cc(\microDamper ++ name => _.asSymbol,{|num| this.setDamper(num) }, 64);

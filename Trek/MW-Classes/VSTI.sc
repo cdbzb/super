@@ -6,9 +6,9 @@ VSTI {
 		vstis =Order.new
 	}
 
-	*new { |plugin action vstFolder | ^super.new.init( plugin, action, vstFolder ) }
+	*new { |plugin action vstFolder | ^super.new.init( plugin, action, ( vstFolder ? "VST" ) ) }
 
-	init { | plugin action vstFolder = "VST" | 
+	init { | plugin action vstFolder | 
 		condition = CondVar.new();
 		{
 			id = UniqueID.next;

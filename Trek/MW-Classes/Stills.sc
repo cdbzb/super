@@ -347,7 +347,7 @@ Still {
 		}
 	}
 	value { //for backward comp
-		|monitor=0 wait fade fadeIn text onTop = false bounds shrink|
+		|monitor=0 wait fade fadeIn text onTop = false bounds shrink korean|
 
 		monitor.notNil.if{ this.monitor = Stills.monitorChoiceFunction.() ? monitor}
 
@@ -362,6 +362,7 @@ Still {
 		onTop.notNil.if{ this.onTop = onTop};
 		bounds.notNil.if{ this.bounds=bounds};
 		shrink.notNil.if{ this.shrink=shrink};
+		korean.notNil.if{ this.korean = korean};
 		this.play
 	}
 

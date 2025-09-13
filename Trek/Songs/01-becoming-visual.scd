@@ -29,7 +29,7 @@ Trek.presets.put(\sulu,\an,[
 	paramGender: -0.35,
 	paramToneShift: 200,
 ]);
-P.still(\suluClose, timecode: 1.385.seconds, music: { |p b e|
+P.still(\suluClose, timecode: 1.385.seconds, korean: "판독값이 강해지고 있습니다, 함장님", music: { |p b e|
 		e.still.( 
 			wait: b.sum+ e.bNext.sum,
 			text: ["the readings","growing stronger, captain"],
@@ -214,7 +214,7 @@ P(\chords, music: { |p b e|
 });
 }.();
 [" It's not a signal, sir."," 7 11 6 12 7 4".dm('d#')].addLine;/*UHURA:*/
-P.still(\uhuru,start:\signal, timecode: 8.716.seconds, music: { |p b e|
+P.still(\uhuru,start:\signal, timecode: 8.716.seconds, korean: "신호가 아닙니다, 함장님", music: { |p b e|
 	e.still.( 
 		wait: b.sum + e.bNext.sum,
 		text: ["its not a signal","sir"],
@@ -279,7 +279,7 @@ Pulse.ar(freq )
 }).add;
 );
 ["It does not seem to even exist, and yet","7 11 12 13 11 12 13 11 14.5 15 15.5".dm(\c,\mixolydian)].addLine;
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, korean: "존재하지 않는 것 같습니다", music: { |p b e|
 	e.still.( 
 		wait: b.sum,
 		text: ["It does not seem","to even exist"],
@@ -440,7 +440,7 @@ P(\chord, music: { |p b e|
 
 });
 [" Well?",[1].dm('f#')].addLine;/*KIRK:*/
-P.still(\kirk, timecode: 11.597.seconds, music: { |p b e|
+P.still(\kirk, timecode: 11.597.seconds, korean: "음...", music: { |p b e|
 		e.still.( 
 			wait: b.sum,
 			text: ["well...",""],

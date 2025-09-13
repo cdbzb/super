@@ -356,7 +356,7 @@ P.synthV(role: \uhuru, take: \lead, params: {|p b| [
 // P.tune();
 ["it's affecting all my channels.",[5, 5, 5, 5, 5, 6, 5, 4].dm('d#')].addLine;
 
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, korean: "모든 채널에 영향을 주고 있습니다", music: { |p b e|
 	e.still.( 
 		wait: b.sum,
 		text: ["its affecting","all my channels"],

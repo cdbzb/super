@@ -348,7 +348,7 @@ Still {
 		// var top = Rect(bounds.left, bounds.height/8, bounds.width, textHeight);
 		var top = Rect(0, bounds.height/8, bounds.width, textHeight);
 		var bottom = Rect(0, bounds.height*3/4, bounds.width, textHeight);
-		var koreanRect = Rect(0, bounds.height*7/8, bounds.width, textHeight/1.75); // Korean below English
+		var koreanRect = Rect(0, bounds.height*7/8, bounds.width, textHeight/2); // Korean below English
 		
 		shrink = shrink ? 0;
 		bounds.postln;
@@ -392,7 +392,7 @@ Still {
 			.string_(korean)
 			.stringColor_(Color.gray(0.8))
 			.align_(\center)
-			.font_(Font(\helvetica,koreanFontSize * Stills.scale * (1-shrink) => _.asInteger - 2, bold:false));
+			.font_(Font(\helvetica,koreanFontSize * Stills.scale * (1-shrink) => _.asInteger, bold:false));
 			
 			// Track this Korean subtitle globally
 			Stills.currentKoreanText = textKorean;

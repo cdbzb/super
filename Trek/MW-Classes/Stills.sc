@@ -15,6 +15,7 @@ Stills {
 	classvar <>trimLeft=0; // 180 for no border
 	classvar <>monitorChoiceFunction;
 	classvar <>titleFunction;
+	classvar <>currentKoreanText; // Track current Korean subtitle
 	var <>file;
 	var <>markers;
 	var <>fade;
@@ -232,18 +233,19 @@ Stills {
 Still {
 	var <>stills,<>image;
 	var <>markerName,<>wait,<>fade,<>fadeIn,<>monitor;
-	var <>window,<>textUpper,<>textLower,timecode,<>text;
+	var <>window,<>textUpper,<>textLower,<>textKorean,timecode,<>text,<>korean;
 	var <>onTop, <>bounds, <>shrink;
 
-	*new{|markerName timecode wait=5 fade=0 monitor text fadeIn stills onTop=false bounds shrink |
-		^super.new.init(markerName,timecode,wait,fade,monitor,text,fadeIn,stills, onTop, bounds, shrink)
+	*new{|markerName timecode wait=5 fade=0 monitor text fadeIn stills onTop=false bounds shrink korean |
+		^super.new.init(markerName,timecode,wait,fade,monitor,text,fadeIn,stills, onTop, bounds, shrink, korean)
 	}
 
-        init {| n c w f m x i t o b k |
+        init {| n c w f m x i t o b k kr |
           //DO WE EVEN NEED A MARKER NAME???????
           markerName = n; wait = w; fade = f; monitor = m; fadeIn = i; onTop = o;
-		  bounds = b; shrink = k; timecode = c;
+		  bounds = b; shrink = k; timecode = c; korean = kr;
           x.isNil.if{ text=["",""] }{ text = x };
+          kr.isNil.if{ korean="" }{ korean = kr };
           t.isNil.if{ stills = Stills.current }{ stills = t };
           stills.set(markerName,timecode);
           image = stills.image(markerName);
@@ -285,20 +287,50 @@ Still {
 
               defer{textUpper.string_( strings[0] )};
               defer{textLower.string_( strings[1] )}
+            };
+            
+            // If setting empty text, clear Korean subtitle
+            ((strings == ["",""]) || (strings == [""])).if{
+              defer{
+                Stills.currentKoreanText.notNil.if{
+                  Stills.currentKoreanText.close;
+                  Stills.currentKoreanText = nil;
+                }
+              }
             }
         }
 
-        sequenceText { | array |
+        setKoreanText { |koreanString|
+          korean = koreanString;
+          defer{
+            Stills.currentKoreanText.notNil.if{
+              Stills.currentKoreanText.string_(koreanString);
+            }
+          }
+        }
+
+        sequenceText { | array koreanArray |
           fork{
-            array.pairsDo{ |time, textt|
+            array.pairsDo{ |time, textt, i|
               time.wait;
-              this.setText(textt)
+              this.setText(textt);
+              koreanArray.notNil.if{
+                var koreanText = koreanArray[i+1]; // i+1 because pairsDo gives index of first element
+                koreanText.notNil.if{
+                  this.setKoreanText(koreanText);
+                }
+              }
             }            
           }
         }
-	sequenceText2 { | times texts |
+	sequenceText2 { | times texts koreanTexts |
 		var array = [times, texts].flop.flatten;
-		this.sequenceText( array )
+		var koreanArray = koreanTexts.notNil.if{
+			[times, koreanTexts].flop.flatten
+		}{
+			nil
+		};
+		this.sequenceText( array, koreanArray );
 	}
 
 	plot {|markerName monitor=0|
@@ -310,12 +342,14 @@ Still {
 		var bounds =  b ? Stills.monitors[monitor] + Rect(-1 * Stills.trimLeft) => _.scale(Stills.scale);
 		var textHeight = bounds.height/4;
 		var fontSize = bounds.height/10;
+		var koreanFontSize = fontSize * 0.6; // Korean text 60% of English size
 		//  top in Rects below really should ALSO depend on textHeight also!
 
 		// var top = Rect(bounds.left, bounds.height/8, bounds.width, textHeight);
 		var top = Rect(0, bounds.height/8, bounds.width, textHeight);
-
 		var bottom = Rect(0, bounds.height*3/4, bounds.width, textHeight);
+		var koreanRect = Rect(0, bounds.height*7/8, bounds.width, textHeight/2); // Korean below English
+		
 		shrink = shrink ? 0;
 		bounds.postln;
 		( text.size == 1 ).if
@@ -344,10 +378,28 @@ Still {
 			.stringColor_(Color.rand)
 			.align_(\center)
 			.font_(Font(\helvetica,fontSize * Stills.scale * (1-shrink) => _.asInteger, bold:true))
+		};
+		
+		// Close any existing Korean subtitle
+		Stills.currentKoreanText.notNil.if{
+			Stills.currentKoreanText.close;
+			Stills.currentKoreanText = nil;
+		};
+		
+		// Add Korean subtitle if provided
+		korean.notEmpty.if{
+			textKorean = StaticText(window,koreanRect)
+			.string_(korean)
+			.stringColor_(Color.rand)
+			.align_(\center)
+			.font_(Font(\helvetica,koreanFontSize * Stills.scale * (1-shrink) => _.asInteger, bold:false));
+			
+			// Track this Korean subtitle globally
+			Stills.currentKoreanText = textKorean;
 		}
 	}
 	value { //for backward comp
-		|monitor=0 wait fade fadeIn text onTop = false bounds shrink|
+		|monitor=0 wait fade fadeIn text onTop = false bounds shrink korean|
 
 		monitor.notNil.if{ this.monitor = Stills.monitorChoiceFunction.() ? monitor}
 
@@ -362,6 +414,7 @@ Still {
 		onTop.notNil.if{ this.onTop = onTop};
 		bounds.notNil.if{ this.bounds=bounds};
 		shrink.notNil.if{ this.shrink=shrink};
+		korean.notNil.if{ this.korean = korean};
 		this.play
 	}
 
@@ -464,15 +517,15 @@ Display {
 	// renders the still when compiled
 	// and stores it in resources.still (e.still)
 	*still {   
-		|key start syl lag=0 timecode=60 music|
+		|key start syl lag=0 timecode=60 music korean|
 		var aStill;
 		start = P.calcStart(start);
 		key = key ++ start;
 		aStill = timecode.isNumber.if{
-			Still(Song.key ++ key => _.asSymbol, timecode:timecode);
+			Still(Song.key ++ key => _.asSymbol, timecode:timecode, korean:korean);
 		}{
 			timecode.collect{|i x|
-				Still(key ++ ( Song.calcStart( start ) ) ++ x => _.asSymbol, timecode: i);
+				Still(key ++ ( Song.calcStart( start ) ) ++ x => _.asSymbol, timecode: i, korean:korean);
 			}
 		};
 		// nope - make a Still instead

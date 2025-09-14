@@ -26,6 +26,7 @@ Song.synthVTracks = EventWithDefault(
 			i
 			=> DWGReverbC1C3.ar(_,mix:mix)
 			* -10.dbamp
+			* 2.dbamp //for Seoul
 
 		}
 	}

@@ -3,6 +3,7 @@
 // Stills.scale = 1;
 ~asrFader = {| a=0, s=9, r=1|
 	{
+		[a, s, r].debug("ASR-FADER");
 		In.ar(0,Monitors.channels)
 		* Env.asr(a, s, r).kr(2, gate: \gate.kr(1)).dbamp//.poll
 		=> ReplaceOut.ar(0, _);
@@ -174,12 +175,12 @@ Trek.setTransition(12, -3,dur: 5.5, func:{
 	~activateFader.(13);
 	Trek.faderSynths[12].release;
 });
-Trek.faders[13] = {~asrFader.(1, 3, 8)};
+Trek.faders[13] = {~asrFader.(-4, 3, 8)}; //changed to -1 from 1 for seoul
 Trek.setTransition(13, -1, dur: 20, func:{
 	~activateFader.(14);
 	Trek.faderSynths[13].release;
 } );
-Trek.faders[14] = {~asrFader.(8, 3, 2)};
+Trek.faders[14] = {~asrFader.(10, 3, 2)}; //8 to 10
 Trek.setTransition(13, 0, dur: 20 );
 Trek.setTransition(14, -1, dur: 5, func: { 
 	~activateFader.(15);
@@ -199,9 +200,9 @@ Trek.setTransition(16, -1, dur: 2, func:{
 Trek.faders[17] = {~asrFader.(8, 5, 2)};
 Trek.setTransition(17, -2, dur: 4.5, func: {
 	1.5.wait;
-	defer{ Stills.plotTitleCard("Temptation", dur:3) };
-	(instrument:\cymbalsDS, att:2.5, amp:0.03,out:1, group: Trek.transitionGroup, addAction:\addToTail).play;
-	(instrument:\cymbalsDS,lag:1, out:2, att:2.5, amp:0.03,out:1, group: Trek.transitionGroup, addAction:\addToTail).play;
+	// defer{ Stills.plotTitleCard("Temptation", dur:3) };
+	// (instrument:\cymbalsDS, att:2.5, amp:0.03,out:1, group: Trek.transitionGroup, addAction:\addToTail).play;
+	// (instrument:\cymbalsDS,lag:1, out:2, att:2.5, amp:0.03,out:1, group: Trek.transitionGroup, addAction:\addToTail).play;
 	~activateFader.(18);
 	Trek.faderSynths[17].release;
 });

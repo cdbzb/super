@@ -222,6 +222,7 @@ Trek {
 			numSections.do{|i| 
 				var section = num + i;
 				var start = (i == 0).if{ cursor }{ transitions[section].start};
+                    this.editFile(section);
 					this.playSong(section, start, trimEnd: transitions[section].trimEnd ? 0) + (transitions[section+1].lag ? 0) => _.wait;
 					if(numSections > 1) { transitions[section].func.() };
 					if(numSections > 1) { transitions[section].dur.wait }

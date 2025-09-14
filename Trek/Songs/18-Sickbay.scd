@@ -544,12 +544,13 @@ P(\chord, music: { |p b e|
 // 		text:["",""]
 // 	)
 // });
-P.still(\clear, timecode: 0.seconds, korean: "네", music: { |p b e|
+P.still(\clear, timecode: 0.seconds, korean: "네, 확실히 하고 싶었습니다", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["yes",""],
 		fade: e.bNext[ 0..1 ].sum,
-		onTop:true
+		onTop:true,
+		korean: "네"
 
 		// fadeIn: b[0]
 	).sequenceText2(

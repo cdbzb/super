@@ -1382,7 +1382,7 @@ P(\bass,start:\mankind,syl:2,music:{|p b e|
 P.still(\spockXYZ, timecode:
        // 3732.2 //hot (charlie not like)
        3717.3
-       .seconds, music: { |p b e|
+       .seconds, korean: "이 몸들이 너무 많은 대가를 요구하는 건가요?", music: { |p b e|
         e.still.(
                wait: b.sum,
                text: ["are these bodies","too much to ask for"],
@@ -1390,6 +1390,9 @@ P.still(\spockXYZ, timecode:
                        b.parse([9]), [
                        ["in","return?"],
                        ],
+                       [
+                               "대가로?"
+                       ]
        )
 });
 P.synthVs(role: \henoch, take: [ \lead, \double ], params: {|p b| [

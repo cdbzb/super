@@ -1143,12 +1143,12 @@ P(\bass,start:'awoke',music: {|p b e|
 		mix:0
 	].pp
 });
-P.still(\embrace,start:\awoke,timecode:3701.9.seconds,korean:"",music:{|p b e|
+P.still(\embrace,start:\awoke,timecode:3701.9.seconds,korean:"이 몸에서 깨어났을 때, 탈라사",music:{|p b e|
 		e.still.value(
 			fadeIn:1,
 			wait:b.sum,
 			text: ["",""],
-			korean:""
+			korean:"이 몸에서 깨어났을 때, 탈라사"
 		).sequenceText2(
 				b.parse([1]), [ 
 				["when you awoke","in this body, Thalassa"],

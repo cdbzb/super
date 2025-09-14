@@ -1044,7 +1044,7 @@ Part {
 						// )
 					}
 				};
-				segParams.use {music.value(
+				(topEnvironment ++ segParams).use {music.value(
 					parent,
 					//durs from event start
 					parent.durs[start].list.drop(syl ? 0), //this is why you gotta use .drop(1) aaarg

@@ -1575,12 +1575,6 @@ P.still(\departs, timecode: 3740.35.seconds, korean: "", music: { |p b e|
 		text: ["",""],
 	)
 });
-/* P.still(\smirk,lag:1, timecode: 3746.4.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["",""],
-	)
-}); */
 )
 /*
 a=Buffer.read(s,"/Users/michael/reaper-subproject/media/01-210826_1331.rpp-PROX")

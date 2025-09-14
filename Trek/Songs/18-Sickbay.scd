@@ -97,7 +97,7 @@ P.still( \kirk, start:0 , timecode:3758.61.seconds, music: { |p b e|
 				text:["Sickbay",""]
 		)
 });
-P.still(\clear, timecode: 0.seconds,syl:1, music: { |p b e|
+P.still(\clear, timecode: 0.seconds,syl:1, korean: "의무실, 맥코이", music: { |p b e|
 	 e.still.( 
 		wait: b.drop(1).sum,
 		text: ["","SickBay, McCoy"],
@@ -369,7 +369,7 @@ P(\plucks,music:{ |p b e|
 				instrument: \harp, coef:0.8
 		].pp 
 });
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, korean: "중요한 건 아닙니다, 피로일 뿐", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["nothing of importance","fatigue, perhaps"],
@@ -710,7 +710,7 @@ P(\pedalTones, music: { |p b e|
 	}
 });
 ["rrect. Don't be concer -- ned, this is an","d4 c# e d f# g f# d e f# "].addLine;  //9
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, korean: "걱정하지 마세요", music: { |p b e|
 	 e.still.( 
 		wait: b.sum + e.bNext.sum => _.postln,
 		text: ["don't be","concerned"],
@@ -718,6 +718,9 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 			b.parse([7]), [ 
 			["this is an","excellent body"],
 			],
+			[ 
+				"이것은 훌륭한 몸입니다"
+			]
 	)
 });
 P.synthV(\genbu,
@@ -784,7 +787,7 @@ P(\note, music: { |p b e|
 		instrument: \defaultPiano
 	).play
 });
-P.still(\twoShot, timecode: 3834.1.seconds, music: { |p b e|
+P.still(\twoShot, timecode: 3834.1.seconds, korean: "거기", music: { |p b e|
 	 e.still.( 
 		wait: b.parse([[1,1,1,1,1,1,1,1,1,0.5]]).unbubble,
 		text: ["There",""],
@@ -792,6 +795,9 @@ P.still(\twoShot, timecode: 3834.1.seconds, music: { |p b e|
 			b.parse([1]), [ 
 			["I feel better","already"],
 			],
+			[ 
+				"벌써 기분이 좋아집니다"
+			]
 	)
 });
 	SynthDef( \synth_simpleSine, {
@@ -871,7 +877,7 @@ P(\ting,lag:0.07, music: { |p b e|
 });
 ["in Time a host  -- body will become...  ",[-1,1,-7,1,2,1,-7,-6,-7,1].dm(\b,scale:\minor)].addLine; //12
 Song.quarters[ \Time ]=Song.parseBeats(\Time,[1,3,3/4,1/4,2,1,1,1.5,0.5,1]);
-P.still(\reverse, timecode: 3838.333.seconds, music: { |p b e|
+P.still(\reverse, timecode: 3838.333.seconds, korean: "시간이 지나면", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["in","time"],
@@ -879,6 +885,9 @@ P.still(\reverse, timecode: 3838.333.seconds, music: { |p b e|
 			b.parse([2]), [ 
 			["a host body","will become"],
 			],
+			[ 
+				"숙주 몸이 될 것입니다"
+			]
 	)
 });
 P.synthV(\aiko, params: [
@@ -980,7 +989,7 @@ P(\extraNote,start:\accustomed,syl:4,music:{|p b e|
 //	].p.play(clock:p.quarters[e.start] ++ p.quarters[\accustomed] =>_.asTempoClock)
 //});
 ["injections will no longer be necessary",[6,5,4,3,4,5,6,2,5,3,2,1].dm(\d)].addLine;
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, korean: "주사는 더 이상 필요하지 않습니다", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["injections will","no longer be"],
@@ -988,6 +997,9 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 			b.parse([8]), [ 
 			["necessary",""],
 			],
+			[ 
+				"필요하지 않습니다"
+			]
 	)
 });
 P(\bass,start:\injections,syl:0,music:{|p b e| 
@@ -1342,7 +1354,7 @@ P(\lick2,start:\thoughts,syl:10,music:{|p b e|
 	].pm(\default)
 });
 ["/*MULHALL:*/ Will they, husband?  Will they intertwine like this? ",[4,1,3,2].dm(\b,octave:5) ++ [-7,1,4,2,5,5.5,5,4,7].dm('c#')].addLine;
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, korean: "그럴까요, 남편?", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["will they,","husband?"],

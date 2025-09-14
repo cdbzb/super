@@ -78,7 +78,7 @@ P(\drums, music: { |p b e|
 
 	].pp
 });
-P.still(\space, timecode: 3244.seconds, music: { |p b e|
+P.still(\space, timecode: 3244.seconds, korean: "세 개의 외계 정신", music: { |p b e|
 	e.still.( 
 		wait: b.sum,
 		text: ["",""],
@@ -88,6 +88,10 @@ P.still(\space, timecode: 3244.seconds, music: { |p b e|
 			["three","alien minds"],
 			["",""],
 		],
+		[ 
+			"세 개의 외계 정신",
+			""
+		]
 	)
 });
 ( Trek.presets.put(\mccoy,\an, [
@@ -200,7 +204,7 @@ P(\bass0,start:0,music: {
 		].pp
 	});
 	Song.setTempoMap(\inhab,"e x e x e e e e");
-	P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	P.still(\clear, timecode: 0.seconds, korean: "이제 몸을 차지하고 있습니다", music: { |p b e|
 		e.still.( 
 			wait: b.sum,
 			text: ["now inhabit","the bodies of"],
@@ -261,7 +265,7 @@ P(\bass0,start:0,music: {
 				amp: 0.2, vol: 0.15
 			].pp
 		});
-		P.still(\clear, timecode: 0.seconds, music: { |p b e|
+		P.still(\clear, timecode: 0.seconds, korean: "커크 선장", music: { |p b e|
 			e.still.( 
 				wait: b.sum,
 				text: ["captain","kirk"],
@@ -269,6 +273,9 @@ P(\bass0,start:0,music: {
 				b.parse([3, 7]), [ 
 					["science officer","Spock and"],
 				],
+				[ 
+					"과학 장교 스팍과"
+				]
 			)
 		});
 		P.synthVs(role: \mccoy, take:[ \lead, \double ],
@@ -524,7 +531,7 @@ P.still(\mccoy, timecode: 3251.3.seconds,lag: -1, syl: 4, music: { |p b e|
 			=> {|i| CombN.ar(i, 0.4,0.4) * [0.1,0.9] + i}
 		}.play
 	});
-	P.still(\closer, timecode: 3255.seconds, music: { |p b e|
+	P.still(\closer, timecode: 3255.seconds, korean: "모든 것이 진행되고 있습니다", music: { |p b e|
 		e.still.( 
 			wait: b.sum,
 			text: ["everything's","proceeding"],
@@ -533,6 +540,9 @@ P.still(\mccoy, timecode: 3251.3.seconds,lag: -1, syl: 4, music: { |p b e|
 				["as expected","and as promised"],
 
 			],
+			[ 
+				"예상대로 약속대로"
+			]
 		)
 	});
 	~quarters6= Song.parse(6,1!4!4);
@@ -654,7 +664,7 @@ P.still(\mccoy, timecode: 3251.3.seconds,lag: -1, syl: 4, music: { |p b e|
 		}
 	);
 	["I can see no rea- son for con-","e-5 d c b-4 g b- c5 d"].addLine; //7
-	P.still(\clear, timecode: 0.seconds, music: { |p b e|
+	P.still(\clear, timecode: 0.seconds, korean: "걱정할 이유가 없습니다", music: { |p b e|
 		e.still.( 
 			wait: b.sum + e.bNext[0],
 			text: ["I can see no","reason for"],
@@ -662,6 +672,9 @@ P.still(\mccoy, timecode: 3251.3.seconds,lag: -1, syl: 4, music: { |p b e|
 			b.parse([7]), [ 
 				["concern...",""],
 			],
+			[ 
+				"걱정..."
+			]
 		)
 	});
 	P.synthVs(role: \mccoy, take:[ \lead, \double ],
@@ -678,7 +691,7 @@ P.still(\mccoy, timecode: 3251.3.seconds,lag: -1, syl: 4, music: { |p b e|
 		}.play
 	} });
 	["cern. And yet, I am filled with fore- bo- ding...", "d5 c b4 a b c5 e4 a g f#"].addLine; //8
-	P.still(\wide, timecode: 3302.seconds, syl:0,  music: { |p b e|
+	P.still(\wide, timecode: 3302.seconds, syl:0, korean: "그런데", music: { |p b e|
 		e.still.( 
 			wait: b.sum,
 			text: ["and","yet"],
@@ -687,6 +700,9 @@ P.still(\mccoy, timecode: 3251.3.seconds,lag: -1, syl: 4, music: { |p b e|
 			b.drop(1).parse([2]), [ 
 				["I am filled","with foreboding"],
 			],
+			[ 
+				"불안감으로 가득 차 있습니다"
+			]
 		)
 	});
 	P.synthV(role: \mccoy, take: \lead,

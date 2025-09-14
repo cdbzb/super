@@ -62,7 +62,7 @@ P(\reflection,start:\reflection,music:{|p b e|
 P.still(\twoShot, timecode:
 	// 3551.67.seconds
 	3555.seconds
-	, music: { |p b e|
+	, korean: "준비했나요?", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["have you","prepared"],
@@ -71,6 +71,10 @@ P.still(\twoShot, timecode:
 			["the negaton","hydrocoils"],
 			["for the drawing","Sargon supplied?"]
 			],
+			[ 
+				"네가톤 하이드로코일을",
+				"사르곤이 제공한 도면을 위해?"
+			]
 	)
 });
 // Trek.cast.thalassa = \aiko;
@@ -108,7 +112,7 @@ P(\bass,start:\prepared,music:{|p b e|
 	(amp:0.06,att:1,freq:[-11,-1].df(\g),dur:b.sum,instrument:\sawSynth,rel:b.sum).play
 });
 ["/*SCOTT:*/ For all the good it'll do you. It's a fa -- -- ncy name, but",[5,6,7,12,11,7,12,11].dm('b-',octave:4) ++ [-7,1,4,3,2,1,5,3].dm('g')].addLine;
-P.still(\scottSpeaks, timecode: 3555.5.seconds, music: { |p b e|
+P.still(\scottSpeaks, timecode: 3555.5.seconds, korean: "소용없을 텐데", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["for all the good ","it'll do you"],
@@ -116,6 +120,9 @@ P.still(\scottSpeaks, timecode: 3555.5.seconds, music: { |p b e|
 			b.parse([8]), [ 
 			["its a","fancy name but"],
 			],
+			[ 
+				"멋진 이름이지만"
+			]
 	)
 });
 Trek.cast.scott = \kevin;
@@ -170,7 +177,7 @@ P(\bass,start:\name,music:{|p b e|
 	].pp
 });
 ["how will something that looks like a drop of jelly make this thing work?",[3,4, 3,4,5, 3, 3,4,5,3, 6,4, 7,7,4.5,2].dm('g',scale:\mixolydian,octave:5)].addLine;
-P.still(\transition, timecode: 3559.5.seconds, music: { |p b e|
+P.still(\transition, timecode: 3559.5.seconds, korean: "어떻게 할 건가요?", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["how will","something that"],
@@ -179,6 +186,10 @@ P.still(\transition, timecode: 3559.5.seconds, music: { |p b e|
 			["looks like a ","drop of jelly"],
 			["make this thing","work"]
 			],
+			[ 
+				"젤리 방울 같은 것이",
+				"이걸 작동시킬까요?"
+			]
 	)
 });
 P.synthV(role: \scott,
@@ -291,7 +302,7 @@ P(\moreChords,start:\microgears,syl:4,music:{|p b e|
 });
 ["/*MULHALL:*/ That would be highly inefficient.",[7,5,2,11,7,5,2,6,4.5].dm(\d,scale:\mixolydian)].addLine;
 
-P.still(\behindMachine, timecode: 3613.1.seconds, music: { |p b e|
+P.still(\behindMachine, timecode: 3613.1.seconds, korean: "그건 매우 비효율적일 것입니다", music: { |p b e|
 	 e.still.( 
 		wait: b.sum + e.bNext.sum,
 		text: ["that would be","highly inefficient"],
@@ -324,7 +335,7 @@ P.double(role: \thalassa, take: \lead, params: {|p b| [
 P.tune(_ <> (instrument:\wash));
 ["/*SCOTT:*/ I tell you, lady, this thing won't work.",[7,13,11,7,5].dm('b',scale:\mixolydian) ++ [5,6,7,11].dm('d')].addLine;
 Song.setTempoMap('tell you',"e e e e ee e e e x");
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, korean: "말씀드리지만, 아가씨", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["I tell you","lady"],
@@ -332,6 +343,9 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 			b.parse([5]), [ 
 				["this thing won't","work"]
 			],
+			[ 
+				"이건 작동하지 않을 겁니다"
+			]
 	)
 });
 P.synthVs(role: \scott, take:[\lead, \double],

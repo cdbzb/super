@@ -25,20 +25,21 @@ var stillScale = 0.915;
 	Nvim.cmd("wincmd h");
 }.defer(0.5);
 
+
 fork{
+	// Stills.scale_(0.75);
 	Stills.scale_(stillScale);
-	OBS.record; 
-	2.wait;
-	Trek.playRange(13, 0); Trek.editFile(13); 49.wait; 
-	Trek.playRange(16, 0, 2);
+	Trek.playRange(16, 0);
+	5.wait;
+	// OBS.record; 
 	0.5.wait;
 	Trek.editFile(16);
-	1.wait;
-	Song.durTillEnd + 139.5 + 5  =>_.wait;
+	// 1.wait;
+	Song.durTillEnd + 7  =>_.wait;
 	OBS.stop
 }
 )
-
+s.pkill
 
 
 

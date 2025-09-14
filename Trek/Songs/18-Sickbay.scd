@@ -1727,10 +1727,11 @@ P(\boom, music: { |p b e|
 	// 	amp: 0.05
 	// ).play
 });
-P.still(\mcCoy,syl:0, start:\dead, timecode:4003.0.seconds, music:{ |p b e|
+P.still(\mcCoy,syl:0, start:\dead, timecode:4003.0.seconds, korean: "그는 죽었습니다", music:{ |p b e|
 		e.still.value(
 				wait:b.sum,
-				text:["He's","dead"]
+				text:["He's","dead"],
+				korean: "그는 죽었습니다"
 		)
 });
 )

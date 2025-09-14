@@ -1437,7 +1437,8 @@ P.still(\thalassa,start:'Will they',syl:3,timecode:
 	.seconds,music:{|p b e| 
 		e.still.(
 				wait:b.sum,
-				text:["will they intertwine","like this?"]
+				text:["will they intertwine","like this?"],
+				korean:"그들이 이렇게 얽힐까요?"
 		)
 });
 P(\bass,start:'Will they',syl:11,music:{|p b e| 

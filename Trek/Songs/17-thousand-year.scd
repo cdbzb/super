@@ -589,7 +589,7 @@ P(\bass,start:'last a thousand',music:{
 });
 ["That is, assuming you'll stop wasting your time and allow us to complete ", [6,5,4,2.5,4,2,5.5].dm(\a,)++[7,6,5, 4,5,4 ,3,4, 4,5].dm(\f,scale:\melodicMinor)++[6,7,7].dm(\c) ].addLine;
 Song.quarters[\assuming]= Song.parseBeats(\assuming,[[1,1,1]/3,[1,1,1,1]/2,[2,1,1]/2,[1,1,1]/3,[1,1,1,1,1,1,3,1]/2].flat/1);
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, korean: "그것은 가정하는 것입니다", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["","that is assuming"],
@@ -598,6 +598,10 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 			["you'll stop","wasting your time"],
 			["and allow us to","complete it"]
 			],
+			[ 
+				"당신이 시간 낭비를 멈출 것이라고",
+				"그리고 우리가 완성하도록 허락할 것이라고"
+			]
 	)
 });
 //P.tune(\assuming);
@@ -703,7 +707,7 @@ P(\door,start:\laughs,syl:6,music:{|p b e|
 	Synth(\door,[\out,0,\amp,0.1])
 });
 ["/*SPOCK:*/ (boom) A thousand-year prison, Thalassa.",[1,2,3,1,6,3,1,-7,-6].dm(\c)].addLine;
-P.still(\spock, timecode: 3634.seconds, music: { |p b e|
+P.still(\spock, timecode: 3634.seconds, korean: "천 년의 감옥, 탈라사", music: { |p b e|
 	 e.still.( 
 		wait: b.sum + e.bNext.sum, fadeIn:b.sum,
 		text: ["a thousand year","prison, Thalassa"],
@@ -711,6 +715,9 @@ P.still(\spock, timecode: 3634.seconds, music: { |p b e|
 			b.parse([9]), [ 
 		["",""]
 			],
+			[ 
+				""
+			]
 	)
 });
 P.synthVs(role:\henoch, take:[\lead, \double],
@@ -766,7 +773,7 @@ P(\chords, music: { |p b e|
 
 	].pp
 });
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, korean: "그리고 낡으면", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["and when it","wears out"],
@@ -774,6 +781,9 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 			b.parse([6]), [ 
 			["we'll build","another one"]
 			],
+			[ 
+				"우리는 또 다른 것을 만들 것입니다"
+			]
 	)
 });
 // List[ 0.526, 0.533, 0.527, 0.254, 0.312, 0.728, 0.409, 0.429, 0.468, 0.552, 0.338, 0.513 ]
@@ -969,8 +979,8 @@ P.double(role: \henoch, params: {|p b| [
 			=> p.synthVTracks.at(e.key).()
 		}.play
 	});
-P.still(\spock,start:\mind,timecode:3648.5.seconds,music:{ |p b e|
-	e.still.value(wait:b.sum,fade:1,text:["Sargon has closed his mind","to a better way"])
+P.still(\spock,start:\mind,timecode:3648.5.seconds,korean:"사르곤은 더 나은 방법에 마음을 닫았습니다",music:{ |p b e|
+	e.still.value(wait:b.sum,fade:1,text:["Sargon has closed his mind","to a better way"],korean:"사르곤은 더 나은 방법에 마음을 닫았습니다")
 });
 P(\bass,start:\closed,music:{|p b e| 
 	[
@@ -1001,7 +1011,7 @@ P(\strum,start:\closed,music:{|p b e|
 	).play
 });
 ["(boom) With these bodies. (la la la la la la  with the-- ese bodies)",[1,5,5.5,3,2,1,-7,1,2,1,-7,-6, ].dm(\d) ++ [7,11,5,5,4].dm(\c)].addLine;
-P.still(\clear, syl:0, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, syl:0, timecode: 0.seconds, korean: "이 몸들로", music: { |p b e|
 	 e.still.( 
 		wait: b.drop(1).sum,
 		text: ["with these","bodies"],
@@ -1485,14 +1495,14 @@ P(\chord,syl:4,music:{|p b e|
 
 	).play
 });
-P.still(\this,syl:4, timecode: 3733.85.seconds, music: { |p b e|
+P.still(\this,syl:4, timecode: 3733.85.seconds, korean: "이것을!", music: { |p b e|
 	 e.still.( 
 		wait: b.drop(1).sum,
 		text: ["this!",""],
 	)
 });
 ["/*MULHALL:*/ No. I'm beginning to hate it.",[ 1.dm(\b) ] ++ "3 3 3 3 3 4 -4.5".dm('b-')].addLine;
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, korean: "아니요, 싫어지기 시작했어요", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["no I'm beginning","to hate it"],
@@ -1521,7 +1531,7 @@ P(\lingeringNo, music: { |p b e|
 	 instrument: \stringyy, amp:0.2
  ).play
 });
- P.still(\No, timecode: 3738.seconds, music: { |p b e|
+ P.still(\No, timecode: 3738.seconds, korean: "", music: { |p b e|
  	 e.still.( 
  		wait: b.sum ,
  		text: ["",""],
@@ -1558,7 +1568,7 @@ P(\bassnote, music: { |p b e|
 		out: Effect.bus({|i| i => DWGReverbC1C3.ar(_) },)
 	).play
 });
-P.still(\departs, timecode: 3740.35.seconds, music: { |p b e|
+P.still(\departs, timecode: 3740.35.seconds, korean: "", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		fade:2,

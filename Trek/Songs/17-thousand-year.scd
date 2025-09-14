@@ -224,7 +224,7 @@ P(\accent,start:\jelly,music:{|p b e|
 	].p.trace.play;
 });
 ["You'll need microgears and a pulley that work like a muscle does.",[2,2,4,3,1].dm('d',octave:6)++ [4,3,2,1,-6,-7,-6,-5,-4,-3,-17].dm(\e,scale:\mixolydian,octave:6)].addLine;
-P.still(\himTalking,timecode:3606.1.seconds, music: { |p b e|
+P.still(\himTalking,timecode:3606.1.seconds, korean: "마이크로기어가 필요합니다", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["you'll need","microgears"],
@@ -232,6 +232,9 @@ P.still(\himTalking,timecode:3606.1.seconds, music: { |p b e|
 			b.parse([5]), [ 
 			["and a pulley that","work like a muscle does"],
 			],
+			[ 
+				"근육처럼 작동하는 도르래와"
+			]
 	)
 });
 P.synthV(role: \scott, take:\lead,
@@ -443,7 +446,7 @@ P(\chord2,start:\twice,syl:7,music:{ |p b e|
 		rel:5
 	).play
 });
-P.still(\henochTwice, timecode: 3625.seconds, music: { |p b e|
+P.still(\henochTwice, timecode: 3625.seconds, korean: "두 배의 힘을 가질 것입니다", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["it will have","twice the strength"],
@@ -451,11 +454,14 @@ P.still(\henochTwice, timecode: 3625.seconds, music: { |p b e|
 			b.parse([6]), [ 
 			["and agility","of"],
 			],
+			[ 
+				"그리고 민첩성을"
+			]
 	)
 });
 ["your body, engineer, and it will",[11,12,11,7,6,5,4,5,6, 3,4,5].dm('c#',scale:\mixolydian)].addLine;
 Song.setTempoMap('your body',"ex x e ee e e x x e e e e");
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, korean: "당신의 몸, 기술자", music: { |p b e|
 	 e.still.( 
 		wait: b.sum ,
 		text: ["your body","engineer"],
@@ -463,6 +469,9 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 			b.parse([9]), [ 
 			["and","it will"],
 			],
+			[ 
+				"그리고 그것은"
+			]
 	)
 });
 P.synthVs(role: \henoch, take:[\lead, \double],
@@ -522,7 +531,7 @@ P(\cymbals, music: { |p b e|
 	( lag:b.parse([6]).unbubble, instrument:\cymbalsDS,amp:amp, out:Effect.bus({|i| Pan2.ar(i,0.6) },)).play;
 
 });
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, korean: "천 년을 지속할 것입니다", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["last","a thousand"],
@@ -531,6 +540,9 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 			b.parse([6]), [ 
 			["years",""],
 			],
+			[ 
+				"년"
+			]
 	)
 });
 P.synthV(role: \henoch, take:\lead,
@@ -806,7 +818,7 @@ P(\bass,start:\wears,music:{|p b e|
 	}.play
 });
 ["and we'll lock ourselves into it for another thousand years. And another, and another.", [1,2,3,4,2,3,2,1.5,2,3].dm(\a) ++ [1,-6, 2,3,1,2,4].dm('e-',scale:\whole,octave:6) ++[2,2,3,2,2,2,3,2].dm('a-',scale:\minor,octave: 6) ].addLine;
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, korean: "우리 자신을 가둘 것입니다", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["and we'll lock ourselves","into it"],
@@ -815,6 +827,10 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 			["for another","thousand years"],
 			["and another", "and another"]
 			],
+			[ 
+				"또 다른 천 년 동안",
+				"또 다른, 또 다른"
+			]
 	)
 });
 P.synthVs(role: \henoch, take:[ \lead, \double ], params: {|p b| [
@@ -1087,8 +1103,8 @@ P(\chord,start:\Henoch,syl:1,music:{|p b e|
 	).play
 });
 
-P.still(\thalassa,start:'not ours',timecode:3657.seconds,music:{|p b e|
-	e.still.value(wait:b.sum,text:["they`re not ours,","Henoch!"],fade:2)
+P.still(\thalassa,start:'not ours',timecode:3657.seconds,korean:"그들은 우리 것이 아니야, 헤녹!",music:{|p b e|
+	e.still.value(wait:b.sum,text:["they`re not ours,","Henoch!"],fade:2,korean:"그들은 우리 것이 아니야, 헤녹!")
 });
 ["/*SPOCK:*/ (boom) When you awoke in this body, Thalassa,",[-1,1,2,3,6].dm('f#')++[1,3,5].dm(\a)++[3,1,3,2].dm(\b)].addLine;
 Trek.presets.put(\henoch,\ninezero,
@@ -1117,16 +1133,19 @@ P(\bass,start:'awoke',music: {|p b e|
 		mix:0
 	].pp
 });
-P.still(\embrace,start:\awoke,timecode:3701.9.seconds,music:{|p b e|
+P.still(\embrace,start:\awoke,timecode:3701.9.seconds,korean:"",music:{|p b e|
 		e.still.value(
 			fadeIn:1,
 			wait:b.sum,
 			text: ["",""],
-
+			korean:""
 		).sequenceText2(
 				b.parse([1]), [ 
 				["when you awoke","in this body, Thalassa"],
 				],
+				[ 
+					"이 몸에서 깨어났을 때, 탈라사"
+				]
 		)
 });
 ["you said how go--od it was _. to breathe again,",[1,2,3, 3,4, 3, 3,2, 1, 4, 3, 2].dm('c#',octave:6),].addLine;
@@ -1159,15 +1178,19 @@ P(\strum1, music: { |p b e|
 		instance: p.strum1
 	) => _.play;
 });
-P.still(\embrace,timecode:3704.8.seconds,music:{|p b e|
+P.still(\embrace,timecode:3704.8.seconds,korean:"당신이 말했죠",music:{|p b e|
 	e.still.value(
 		wait:b.sum,
 		// fadeIn:1,
-		text:["you said","how good it was"]
+		text:["you said","how good it was"],
+		korean:"당신이 말했죠"
 	).sequenceText2(
 			b.parse([8,4]), [ 
 			["to breathe","again"],
 			],
+			[ 
+				"다시 숨쉬는 것이 얼마나 좋은지"
+			]
 	)
 });
 Song.quarters[\breathe]= Song.parseBeats(\breathe,[1,1,1/2,1/4,3/4,1/2,1/2,11/2,1/2,1,1/2, 5/2]);
@@ -1224,7 +1247,7 @@ P(\bass,start:\breathe,music:{|p b e|
 //["To live and feel again,.","r"].addLine;
 
 [" Thalassa, (boom) just think how much (go--od) we can do for mankind.",[5,4,3].dm(\c,octave:6) ++ [-4,3,4,1,3,2,1,-7,2,-6,-5].dm('e-',octave:6)].addLine;
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, korean: "탈라사", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["Thalassa",""],
@@ -1233,6 +1256,10 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 				["",""],
 				["just think how much","we can do for mankind"],
 			],
+			[ 
+				"",
+				"인류를 위해 얼마나 많은 일을 할 수 있을지 생각해봐"
+			]
 	)
 });
 Song.setTempoMap(\mankind,"q qe e   q q q e eq e e e e e e");

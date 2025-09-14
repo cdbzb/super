@@ -544,7 +544,7 @@ P(\chord, music: { |p b e|
 // 		text:["",""]
 // 	)
 // });
-P.still(\clear, timecode: 0.seconds, korean: "네, 확실히 하고 싶었습니다", music: { |p b e|
+P.still(\clear,lag:0.05,front:true, timecode: 0.seconds, korean: "네, 확실히 하고 싶었습니다", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["yes",""],
@@ -624,7 +624,7 @@ P(\chords,start:'cer- tain',music:{|p b e|
 		].pp
 	}
 });
-P.still(\kirkClose, timecode: 3412.2.seconds, korean: "", music: { |p b e|
+P.still(\kirkClose, timecode: 3412.2.seconds,  music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text:["",""],
@@ -1072,16 +1072,17 @@ P.still(\twoShot, timecode: 3847.9.seconds, korean: "", music: { |p b e|
 	)
 });
 P.tune(\months, _ <> [ instrument: \sawSynthSustain, amp: 0.02 ].pm);
-P.still(\clear,\months,korean:"몇 달, 아마 몇 년이 걸릴 것입니다",music:{|p b e|
+P.still(\clear,lag:0.02,korean:"몇 달, 아마 몇 년이 걸릴 것입니다",music:{|p b e|
 	e.still.(
 		text:["that will take months","perhaps years"],
 		wait:b.sum,
-		onTop:true,
+		// onTop:true,
 		korean:"몇 달, 아마 몇 년이 걸릴 것입니다"
 	);
-	e.still.sequenceText(
+	e.still.sequenceText2(
+		b.parse([7]).sum,
 		[
-			b.parse([7]).sum,["we haven't that choice", "Thalassa"]
+			["we haven't that choice", "Thalassa"]
 		],
 		[
 			"우리에게는 그런 선택권이 없습니다, 탈라사"

@@ -856,7 +856,7 @@ P(\tamb, music: { |p b e|
 	}.play;
 
 });
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, korean: " ", music: { |p b e|
 		e.still.( 
 			wait: b.sum,
 			text: ["follow,","but how?"],
@@ -864,6 +864,9 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 			b.parse([4]), [ 
 				["what's causing","it?"],
 			],
+			[ 
+				"무엇이 원인일까요?"
+			]
 		)
 });
 P(\pad, music: { |p b e|
@@ -943,7 +946,7 @@ P(\chords, music: { |p b e|
 
 	].pp
 });
-P.still(\spockAgain, timecode: 29.254.seconds, music: { |p b e|
+P.still(\spockAgain, timecode: 29.254.seconds, korean: " ", music: { |p b e|
 		e.still.( 
 			wait: b.sum,
 			text: ["I","do not know"],
@@ -951,6 +954,9 @@ P.still(\spockAgain, timecode: 29.254.seconds, music: { |p b e|
 			b.parse([4]), [ 
 				["not even a Vulcan can","know the unknown"],
 			],
+			[ 
+				"벌칸도 알 수 없는 것을 알 수 없습니다"
+			]
 		)
 });
 P(\kick, music: { |p b e|
@@ -1054,7 +1060,7 @@ P(\crashes, music: { |p b e|
 		instrument: \bd_808, amp: 0.3 
 	].pp;
 });
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, korean: " ", music: { |p b e|
 		e.still.( 
 			wait: b.sum,
 			text: ["we","are"],
@@ -1062,6 +1068,9 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 			b.parse([2]), [ 
 				["hundreds of light years past","where any"],
 			],
+			[ 
+				"수백 광년 떨어진 곳입니다"
+			]
 		)
 });
 P.tune();
@@ -1473,7 +1482,7 @@ P(\bass, music: { |p b e|
 		amp: 0.05
 	].pp;
 });
-P.still(\spockClassM, timecode: 46.865.seconds, music: { |p b e|
+P.still(\spockClassM, timecode: 46.865.seconds, korean: "M급 행성, 함장님", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["class M planet","Captain"],
@@ -1501,7 +1510,7 @@ P.synthV(role: \spock, take: \lead, params: {|p b| [
 
 });
 [" Close to Earth conditions.","5 2 11 5 2 -6".dm('a-')].addLine;/*KIRK:*/
-P.still(\kirkClose, timecode: 48.072.seconds, music: { |p b e|
+P.still(\kirkClose, timecode: 48.072.seconds, korean: "지구 조건과 비슷합니다", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["close to","Earth conditions"],
@@ -1529,7 +1538,7 @@ P(\line, music: { |p b e|
 });
 P.tune();
 ["(boom) With two very important exceptions.","4 1 5 3 4 1 5 4 5 5.5 -5.5".dm('c')].addLine;/*SPOCK:*/
-P.still(\spock, timecode: 50.62.seconds, music: { |p b e|
+P.still(\spock, timecode: 50.62.seconds, korean: "두 가지 중요한 예외가 있습니다", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["with two very important","exceptions"],
@@ -1826,7 +1835,7 @@ P(\ride, music: { |p b e|
 		rest: MuteFirst()
 	].pp
 });
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, korean: " ", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["the planet","has"],
@@ -1835,6 +1844,10 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 			["evidently",""],
 			["been dead","since then"]
 			],
+			[ 
+				"분명히",
+				"그때부터 죽었습니다"
+			]
 	)
 });
 P(\click, music: { |p b e|
@@ -1922,7 +1935,7 @@ P(\vibes, music: { |p b e|
 // P.tune();
 Song.durs.filter(\evidently,{|i| var last = i.last; i.dropLast ++ (last * 0.75) });
 ["Sensors detect no life of any kind.","2 3 1 -6 1 4 1 2 3 4".dm(\e)].addLine;
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, korean: "센서가 어떤 생명체도 감지하지 못합니다", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["sensors detect no life","of any kind"],
@@ -1984,7 +1997,7 @@ P(\connector, music: { |p b e|
 		instrument: \visual_pad
 	].ppm
 });
-P.still(\sargon, timecode: 105.188.seconds, music: { |p b e|
+P.still(\sargon, timecode: 105.188.seconds, korean: "모든 질문에 때가 되면 답해드리겠습니다", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["all of your questions","will be answered in time"],
@@ -2014,7 +2027,7 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 
 });
 P.tune();
-P.still(\kirkHailing, timecode: 111.8.seconds, music: { |p b e|
+P.still(\kirkHailing, timecode: 111.8.seconds, korean: "호출 주파수가 열려 있나요?", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["are your","hailing frequencies open"],
@@ -2035,14 +2048,14 @@ P.synthV(role: \uhuru, take: \lead, params: {|p b| [
 
 });
 P.tune( _ <> [instrument: \sparkTriangle, amp: 0.06, out: Effect.bus({|i| CombC.ar(i, )/2 + i },)].pm );
-P.still(\UhuraSpeaking, timecode: 113.15.seconds, music: { |p b e|
+P.still(\UhuraSpeaking, timecode: 113.15.seconds, korean: "아니요, 함장님", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["no","sir"],
 	)
 });
 ["SARGON [OC]: I am Sargon.","1 -7 4 3".dm('c#')].addLine;
-P.still(\sargon, timecode: 114.7.seconds, music: { |p b e|
+P.still(\sargon, timecode: 114.7.seconds, korean: "나는 사르곤입니다", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["I am","Sargon"],
@@ -2115,7 +2128,7 @@ P(\bassnote, music: { |p b e|
 		amp: 0.1 * p.g2
 	].pp
 });
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, korean: "내 생각의 에너지가", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["it is the energy","of my thoughts which has"],
@@ -2148,7 +2161,7 @@ P(\chord,syl: 7, music: { |p b e|
 	).play
 });
 ["(boom) touched your instruments and directed you here.","7 11 5 4 2 3".dm(\c) ++ "3 4 3 1 -5 11.5".dm('a',4)].addLine;
-P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
+P.still(\clear,syl:0, timecode: 0.seconds, korean: " ", music: { |p b e|
 	 e.still.( 
 		wait: b.drop(1).sum,
 		text: ["touched","your instruments"],
@@ -2156,6 +2169,9 @@ P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
 			b.drop(1).parse([5]), [ 
 			["and directed you","here"],
 			],
+			[ 
+				"당신을 여기로 인도했습니다"
+			]
 	)
 });
 P(\openStrings, music: { |p b e|
@@ -2214,7 +2230,7 @@ P.synthV(role: \vocoder, frozen: true, take: \lead, params: {|p b| [
 });
 ["Now at this closer distance","5 4 3 2 1 3 2 4 3 3 2 2 1 -7 -6 4.5".dm(\d)].addLine;
 Song.durs.filter(_*1.3);
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, korean: " ", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["now at this","closer distance"],
@@ -2224,6 +2240,11 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 			["",""],
 			["at","last"]
 			],
+			[ 
+				"당신과 말할 수 있습니다",
+				"",
+				"마침내"
+			]
 	)
 });
 P.tune( { |i| i  <> [legato: 3,amp:0.03 * Song.g2].p => Pmul(\freq,[0.25,0.5,1],_) });
@@ -2272,7 +2293,7 @@ PlayBuf.auto(2,Song.laMer,trigger:TDuty.ar(4,0), rate: [2,3].dq.demand(b.parse([
 	// fork{0.25.wait; Song.ambiSynth.map(\gain,env) } //use this if sus line is commented out
 });
 [" Who are you, Sargon?","-7 3 1 -7 -5".dm(\c,\mixolydian)].addLine;/*KIRK:*/
-P.still(\kirk, timecode: 125.75.seconds, music: { |p b e|
+P.still(\kirk, timecode: 125.75.seconds, korean: "당신은 누구입니까, 사르곤?", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["who are you","Sargon?"],
@@ -2292,7 +2313,7 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 
 });
 ["SARGON [OC]: Please assume a standard orbit about our planet, Captain.","1 2 2 1 2 3 3 2 1 2 3/c# 4 3 2 1/e-".dm2].addLine;
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, korean: " ", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["please","assume"],
@@ -2301,6 +2322,10 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 			["a standard","orbit"],
 			["about our planet,","Captain"]
 			],
+			[ 
+				"표준 궤도를",
+				"우리 행성 주위로, 함장님"
+			]
 	)
 });
 P(\bass, music: { |p b e|
@@ -2346,7 +2371,7 @@ P(\bassline, music: { |p b e|
 		out: Effect.bus({|i| i * Env([0.3, 1], b[..8].sum).kr(0,gate:1) },)
 	].ppm
 });
-P.still(\kirkRequest, timecode: 131.6.seconds, music: { |p b e|
+P.still(\kirkRequest, timecode: 131.6.seconds, korean: "그것은 요청입니까 명령입니까?", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["is that a request","or a demand"],
@@ -2377,7 +2402,7 @@ P(\bassnote,syl:2, music: { |p b e|
 		amp: 0.1 * p.g2
 	).play
 });
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, korean: "선택은 당신의 것입니다", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["the choice","is yours"],
@@ -2424,7 +2449,7 @@ P(\bassline, music: { |p b e|
 		// out: Effect.bus({|i| i * Env([0.3, 1], b[..8].sum).kr(0,gate:1) },)
 	].ppm
 });
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, korean: "당신의 마음을 읽습니다", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["I read what is","in your mind"],
@@ -2461,7 +2486,7 @@ P.synthV(role: \vocoder, frozen:true, take: \lead, params: {|p b| [
 });
 P.tune();
 ["Words are unnecessary.","3 4 5  2 1 -7 -6".dm('a-', \mixolydian)].addLine;
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, korean: "말은 불필요합니다", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["words are","unnecessary"],
@@ -2496,7 +2521,7 @@ P(\growl, music: { |p b e|
 		mix:0, amp:0.06, out: Effect.bus({|i| i=>HPF.ar(_,200) },inputChannels:2)
 	).play
 });
-P.still(\kirkDead, timecode: 143.1.seconds, music: { |p b e|
+P.still(\kirkDead, timecode: 143.1.seconds, korean: "행성이 죽었습니다", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["the planet is","dead"],
@@ -2552,7 +2577,7 @@ P(\connector,syl: 9, music: { |p b e|
 		amp: 0.1 
 	].ppm
 });
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, korean: " ", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["there's no possibility","of life there"],
@@ -2560,6 +2585,9 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 			b.parse([10]), [ 
 			["as we understand","life"],
 			],
+			[ 
+				"우리가 이해하는 생명체는"
+			]
 	)
 });
 P.synthV(role: \kirk, take: \lead, params: {|p b| [
@@ -2588,7 +2616,7 @@ P(\bassline, music: { |p b e|
 		out:[0,1],
 	].ppm
 });
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, korean: " ", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["and I","am as dead"],
@@ -2597,6 +2625,10 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 			["as my","planet"],
 			["does that frighten you", "James Kirk"]
 			],
+			[ 
+				"내 행성처럼",
+				"그것이 당신을 두렵게 합니까, 제임스 커크?"
+			]
 	)
 });
 P.synthV(role: \vocoder,frozen:true, resources:(tail:6), take: \lead,
@@ -2615,7 +2647,7 @@ P.synthV(role: \vocoder,frozen:true, resources:(tail:6), take: \lead,
 });
 /// end here???
 ["Does that frighten you, James Kirk?","4 3 7 5 3 2 1/b-/mixolydian/4".dm2].addLine;
-P.still(\suluAndSomeone, timecode: 150.seconds, music: { |p b e|
+P.still(\suluAndSomeone, timecode: 150.seconds, korean: "그것이 당신을 두렵게 합니까, 제임스 커크?", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["does that frighten you","James Kirk"],

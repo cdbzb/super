@@ -281,7 +281,7 @@ P(\chords, music: { |p b e|
 		{|i| Splay.ar(i)}
 	).play
 });
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, korean: "목소리가 끔찍해요, 거기서 기다려요", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["you sound terrible","wait there for me"],
@@ -314,7 +314,7 @@ P(\static3,start:3,music: {|p b e|
 	}
 );
 ["Sar- gon what's wrong?","b4 g b e5"].addLine;  //4
-P.still(\medium_shot, timecode: 3807.9.seconds, music: { |p b e|
+P.still(\medium_shot, timecode: 3807.9.seconds, korean: "사르곤, 무슨 일이야?", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["Sargon","what's wrong?"],

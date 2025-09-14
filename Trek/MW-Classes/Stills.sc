@@ -323,9 +323,14 @@ Still {
             }            
           }
         }
-	sequenceText2 { | times texts |
+	sequenceText2 { | times texts koreanTexts |
 		var array = [times, texts].flop.flatten;
-		this.sequenceText( array )
+		var koreanArray = koreanTexts.notNil.if{
+			[times, koreanTexts].flop.flatten
+		}{
+			nil
+		};
+		this.sequenceText( array, koreanArray );
 	}
 
 	plot {|markerName monitor=0|

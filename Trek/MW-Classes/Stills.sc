@@ -15,6 +15,7 @@ Stills {
 	classvar <>trimLeft=0; // 180 for no border
 	classvar <>monitorChoiceFunction;
 	classvar <>titleFunction;
+	classvar <>currentKoreanText; // Track current Korean subtitle
 	var <>file;
 	var <>markers;
 	var <>fade;
@@ -286,6 +287,16 @@ Still {
 
               defer{textUpper.string_( strings[0] )};
               defer{textLower.string_( strings[1] )}
+            };
+            
+            // If setting empty text, clear Korean subtitle
+            ((strings == ["",""]) || (strings == [""])).if{
+              defer{
+                Stills.currentKoreanText.notNil.if{
+                  Stills.currentKoreanText.close;
+                  Stills.currentKoreanText = nil;
+                }
+              }
             }
         }
 
@@ -349,13 +360,22 @@ Still {
 			.font_(Font(\helvetica,fontSize * Stills.scale * (1-shrink) => _.asInteger, bold:true))
 		};
 		
+		// Close any existing Korean subtitle
+		Stills.currentKoreanText.notNil.if{
+			Stills.currentKoreanText.close;
+			Stills.currentKoreanText = nil;
+		};
+		
 		// Add Korean subtitle if provided
 		korean.notEmpty.if{
 			textKorean = StaticText(window,koreanRect)
 			.string_(korean)
 			.stringColor_(Color.rand)
 			.align_(\center)
-			.font_(Font(\helvetica,koreanFontSize * Stills.scale * (1-shrink) => _.asInteger, bold:false))
+			.font_(Font(\helvetica,koreanFontSize * Stills.scale * (1-shrink) => _.asInteger, bold:false));
+			
+			// Track this Korean subtitle globally
+			Stills.currentKoreanText = textKorean;
 		}
 	}
 	value { //for backward comp

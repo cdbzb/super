@@ -164,7 +164,7 @@ P(\pad, music: { |p b e|
 		out: 3
 	].ppm
 });
-P.still(\kirk, timecode: 3759.61.seconds, music: { |p b e|
+P.still(\kirk, timecode: 3759.61.seconds, korean: "", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		// text: ["",""],

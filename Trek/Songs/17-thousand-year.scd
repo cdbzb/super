@@ -1260,14 +1260,15 @@ P(\bass,start:\breathe,music:{|p b e|
 P.still(\clear, timecode: 0.seconds, korean: "탈라사", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
+		korean:"탈라사",
 		text: ["Thalassa",""],
 	).sequenceText2(
 			b.parse([3,1]), [ 
-				["",""],
+				[" ",""],
 				["just think how much","we can do for mankind"],
 			],
 			[ 
-				"",
+				" ",
 				"인류를 위해 얼마나 많은 일을 할 수 있을지 생각해봐"
 			]
 	)
@@ -1378,19 +1379,7 @@ P(\bass,start:\mankind,syl:2,music:{|p b e|
 	].pp
 });
 ["Are these bodies too much to ask for in return?",[1,3,4,3,1,2,3,2,1,-7,-6,1.5].dm(\e)].addLine;
-P.still(\spockXYZ, timecode: 
-	// 3732.2 //hot (charlie not like)
-	3717.3
-	.seconds, music: { |p b e|
-	 e.still.( 
-		wait: b.sum,
-		text: ["are these bodies","too much to ask for"],
-	).sequenceText2(
-			b.parse([9]), [ 
-			["in","return?"],
-			],
-	)
-});
+탈라사
 P.synthVs(role: \henoch, take: [ \lead, \double ], params: {|p b| [
 	lyrics: "are these bodies + too much to ask for in return? +",
 	legato: [ [1, 1, 1, 0.85, 1, 1, 1, 1, 1, 1, 1, 1, ] ],
@@ -1502,9 +1491,10 @@ P.still(\this,syl:4, timecode: 3733.85.seconds, korean: "이것을!", music: { |
 	)
 });
 ["/*MULHALL:*/ No. I'm beginning to hate it.",[ 1.dm(\b) ] ++ "3 3 3 3 3 4 -4.5".dm('b-')].addLine;
-P.still(\clear, timecode: 0.seconds, korean: "아니요, 싫어지기 시작했어요", music: { |p b e|
+P.still(\clear,lag:0.01, timecode: 0.seconds, korean: "아니요, 싫어지기 시작했어요", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
+		korean: "아니요, 싫어지기 시작했어요",
 		text: ["no I'm beginning","to hate it"],
 		onTop:true
 	)
@@ -1582,7 +1572,7 @@ a{ PlayBuf.ar(2,a.bufnum) =>TwoTube.ar(_,0.7,0.8,678,876) }.play(s,1)
 P(\test,start:\rushes,resources:(impulse:{Impulse.ar(5)}.asDefName),music:{|p b e|
 	(
 		instrument: e.impulse,
-		dur: b.sum
+		dur: b.sum17
  ).play
 });
 */

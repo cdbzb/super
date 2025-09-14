@@ -300,11 +300,26 @@ Still {
             }
         }
 
-        sequenceText { | array |
+        setKoreanText { |koreanString|
+          korean = koreanString;
+          defer{
+            Stills.currentKoreanText.notNil.if{
+              Stills.currentKoreanText.string_(koreanString);
+            }
+          }
+        }
+
+        sequenceText { | array koreanArray |
           fork{
-            array.pairsDo{ |time, textt|
+            array.pairsDo{ |time, textt, i|
               time.wait;
-              this.setText(textt)
+              this.setText(textt);
+              koreanArray.notNil.if{
+                var koreanText = koreanArray[i+1]; // i+1 because pairsDo gives index of first element
+                koreanText.notNil.if{
+                  this.setKoreanText(koreanText);
+                }
+              }
             }            
           }
         }

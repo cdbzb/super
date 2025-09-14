@@ -38,6 +38,10 @@ P.still(\suluClose, timecode: 1.385.seconds, korean: "판독값이 강해지고 
 				["coming from a","star system"],
 				["directly","ahead"]
 			],
+			[ 
+				"별계에서 오고 있습니다",
+				"바로 앞에서"
+			]
 		)
 });
 P.synthVs(role: \sulu, take:[\lead, \double], params: {|p b| [

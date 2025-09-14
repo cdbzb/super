@@ -1148,7 +1148,7 @@ P.still(\embrace,start:\awoke,timecode:3701.9.seconds,korean:"이 몸에서 깨�
 			fadeIn:1,
 			wait:b.sum,
 			text: ["",""],
-			korean:"이 몸에서 깨어났을 때, 탈라사"
+			korean:" "
 		).sequenceText2(
 				b.parse([1]), [ 
 				["when you awoke","in this body, Thalassa"],

@@ -267,8 +267,8 @@ Still {
 						SCNvim.luaeval( "vim.api.nvim_input('%')".format(key) );
 						"open -a WezTerm.app".unixCmd;
 					});
-					this.title(["",""], bounds, shrink);
-					this.setText(text) 
+					this.title(text, bounds, shrink);
+					// this.setText(text) 
 				}.defer(Server.default.latency - 0.1); // timing fudge factor!! why does this work(or does it?) 
 			}
           //{

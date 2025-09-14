@@ -87,14 +87,15 @@ P(\pad, music: { |p b e|
 		dur: e.bAll.parse([2, 3, 1, 2]).q
 	].pm.play
 });
-P.still( \kirk, start:0 , timecode:3758.61.seconds, music: { |p b e|
+P.still( \kirk, start:0 , timecode:3758.61.seconds, korean: "의무실", music: { |p b e|
 		e.still.value(
 
 				wait: b.parse([2]).unbubble,
 				// fade: e.bNext.parse([3]).flat,
 				fade: 0.1,
 				monitor: 0,
-				text:["Sickbay",""]
+				text:["Sickbay",""],
+				korean: "의무실"
 		)
 });
 P.still(\clear, timecode: 0.seconds,syl:1, korean: "의무실, 맥코이", music: { |p b e|
@@ -469,7 +470,7 @@ P(\moreChords, music: { |p b e|
 		=> Out.ar(\out.kr(0),_)
 	}.play
 });
-P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
+P.still(\clear,syl:0, timecode: 0.seconds, korean: "오류", music: { |p b e|
 	var mon = 
 	Stills.current.monitors[0];
 	 e.still.( 
@@ -478,11 +479,12 @@ P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
 		text: ["ß∂çøß","çç≈√øπ"],
 		shrink: 0.5, 
 		onTop: true,
-		bounds: Rect(mon.left, mon.top, mon.width / 2, mon.height / 2).scale(Stills.scale)
+		bounds: Rect(mon.left, mon.top, mon.width / 2, mon.height / 2).scale(Stills.scale),
+		korean: "오류"
 		// fadeIn: b[0]
 	)
 });
-P.still(\clearTwo, timecode: 0.seconds,syl:1, music: { |p b e|
+P.still(\clearTwo, timecode: 0.seconds,syl:1, korean: "헤녹의 공식", music: { |p b e|
 	 e.still.( 
 		wait: b.drop(1).sum,
 		text: ["Henoch's","formula"],
@@ -538,7 +540,7 @@ P(\chord, music: { |p b e|
 // 		text:["",""]
 // 	)
 // });
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, korean: "네", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["yes",""],
@@ -551,6 +553,10 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 			["I wanted","to be certain"],
 			["there was no","error"]
 			],
+			[ 
+				"확실히 하고 싶었습니다",
+				"오류가 없는지"
+			]
 	)
 });
 P.synthV(\genbu, pbind: Song.enlarge(2), params:
@@ -613,7 +619,7 @@ P(\chords,start:'cer- tain',music:{|p b e|
 		].pp
 	}
 });
-P.still(\kirkClose, timecode: 3412.2.seconds, music: { |p b e|
+P.still(\kirkClose, timecode: 3412.2.seconds, korean: "", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text:["",""],
@@ -632,7 +638,7 @@ P(\bass,start:'cer- tain',music:{|p b e|
 });
 ["er- ror. For- mu- la is co- ",[5, -7, 1, 2, 3, 1, 3].dm(\g,\mixolydian)].addLine; //8
 Song.setTempoMap('er- ror.',"e e e x x ex x");
-P.still(\standingUp,syl:1, timecode: 3827.8.seconds, music: { |p b e|
+P.still(\standingUp,syl:1, timecode: 3827.8.seconds, korean: "공식이 정확합니다", music: { |p b e|
 	 e.still.( 
 		wait: b.drop(1).sum,
 		text: ["formula is","correct"],
@@ -641,6 +647,9 @@ P.still(\standingUp,syl:1, timecode: 3827.8.seconds, music: { |p b e|
 			b.drop(1).sum.bubble, [ 
 			["",""]
 			],
+			[ 
+				""
+			]
 	);
 });
 P(\chord,syl:1, music: { |p b e|
@@ -953,7 +962,7 @@ P(\bass,start:\Time,music:{|p b e|
 	].p.play(clock:p.quarters[e.start] ++ p.quarters[\accustomed] =>_.asTempoClock)
 });
 ["(cis d a fis) accustomed to us (fis)",[-7,1,2,3,7,12,11,7,11,3].dm(\d)].addLine;
-P.still(\clear,syl:3, timecode: 0.seconds, music: { |p b e|
+P.still(\clear,syl:3, timecode: 0.seconds, korean: "우리에게 익숙해집니다", music: { |p b e|
 	 e.still.( 
 		wait: b.drop(1).sum,
 		text: ["accustomed","to us"],
@@ -961,6 +970,9 @@ P.still(\clear,syl:3, timecode: 0.seconds, music: { |p b e|
 			b.drop(1).parse([5]), [ 
 			["",""],
 			],
+			[ 
+				""
+			]
 	)
 });
 P.synthV(\aiko,params:[
@@ -1046,7 +1058,7 @@ P(\lick2,start:\injections,syl:0,music:{|p b e|
 	].pma(\sparkTriangle).play;
 });
 ["/*KIRK:*/ That will take months, perhaps years. We haven't that choice, Thalassa. ",[1,-7,1,3, 2,1,5,2,5,4.5,5,6,11,7,6,5].dm(\c,4)].addLine;
-P.still(\twoShot, timecode: 3847.9.seconds, music: { |p b e|
+P.still(\twoShot, timecode: 3847.9.seconds, korean: "", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		// text: ["that will take", "months"]
@@ -1055,15 +1067,19 @@ P.still(\twoShot, timecode: 3847.9.seconds, music: { |p b e|
 	)
 });
 P.tune(\months, _ <> [ instrument: \sawSynthSustain, amp: 0.02 ].pm);
-P.still(\clear,\months,music:{|p b e|
+P.still(\clear,\months,korean:"몇 달, 아마 몇 년이 걸릴 것입니다",music:{|p b e|
 	e.still.(
 		text:["that will take months","perhaps years"],
 		wait:b.sum,
-		onTop:true
+		onTop:true,
+		korean:"몇 달, 아마 몇 년이 걸릴 것입니다"
 	);
 	e.still.sequenceText(
 		[
 			b.parse([7]).sum,["we haven't that choice", "Thalassa"]
+		],
+		[
+			"우리에게는 그런 선택권이 없습니다, 탈라사"
 		]
 	)
 });
@@ -1112,13 +1128,15 @@ P.synthV(\aiko, params:
 			p.synthVTracks.at(e.key).()   
 		}.play
 });
-P.still( \thalassa, start: \Feel, timecode:3854.seconds, music: { |p b e|
+P.still( \thalassa, start: \Feel, timecode:3854.seconds, korean: "남편...", music: { |p b e|
 		fork{
-				e.still.text_(["husband..."]).wait_(b.sum).monitor_(0).fade_(2).play;
+				e.still.text_(["husband..."]).wait_(b.sum).monitor_(0).fade_(2).korean_("남편...").play;
 				b[0..1].sum.wait;
 				e.still.setText(["feel the touch","of my hand"]);
+				e.still.setKoreanText("내 손의 감촉을 느껴봐");
 				b[2..7].sum.wait;
-				e.still.setText(["husband"])
+				e.still.setText(["husband"]);
+				e.still.setKoreanText("남편");
 		}
 });
 P.tune(\Feel, _ <> [instrument: \stringyy, ].pm);
@@ -1152,10 +1170,11 @@ P.synthV(\genbu, params: [
 );
 P.tune(\torment, _ <> [instrument: \reedyAmp, amp:0.6].pm);
 
-P.still( \kirk, start: \torment, timecode: 3859.7.seconds, music: { |p b e|
+P.still( \kirk, start: \torment, timecode: 3859.7.seconds, korean: "아니야, 사랑하는 이여", music: { |p b e|
 		e.still.value(
 				wait: b.sum ,
-				text:["No, beloved","if we torment ourselves"]
+				text:["No, beloved","if we torment ourselves"],
+				korean: "아니야, 사랑하는 이여"
 		);
 });
 P(\dyads,start:\torment,music:{|p b e| 
@@ -1230,14 +1249,16 @@ P.synthV(\aiko, params:
 			p.synthVTracks.at(e.key).()   
 		}.play
 });
-P.still( \thalassa, start: 'to a machine', timecode: 3903.5.seconds, music: { |p b e|
+P.still( \thalassa, start: 'to a machine', timecode: 3903.5.seconds, korean: "사랑하는 이!?", music: { |p b e|
 		fork{
 				e.still.value(
 						wait: b.sum ,
-						text:["beloved!?"]
+						text:["beloved!?"],
+						korean: "사랑하는 이!?"
 				);
 				b[0..2].sum.wait;
-				e.still.setText(["what would that word","mean to a machine?"])
+				e.still.setText(["what would that word","mean to a machine?"]);
+				e.still.setKoreanText("그 말이 기계에게 무슨 의미가 있을까요?");
 		}
 });
 P(\bass,start:'to a machine',syl:2,music:{|p b e| 
@@ -1282,11 +1303,12 @@ P.synthV(\genbu, params: {|p b| [
 		p.synthVTracks.at(e.key).(preGain: 1.1)
 	}.play
 });
-P.still(\clear,timecode:0,music: {|p b e|
+P.still(\clear,timecode:0,korean:"우리의 생각이 얽힐 것입니다",music: {|p b e|
 		e.still.value(
 
 			wait:b.sum,
-			text:["our thoughts","will intertwine"]
+			text:["our thoughts","will intertwine"],
+			korean:"우리의 생각이 얽힐 것입니다"
 		)
 	}
 );
@@ -1464,10 +1486,11 @@ P(\this,start:\press,syl:5,music:{|p b e|
 				dur:2
 		).play
 });
-P.still(\thalassa,start:'press close',timecode:3915.542.seconds,music:{|p b e| 
+P.still(\thalassa,start:'press close',timecode:3915.542.seconds,korean:"두 마음이 이렇게 가까이 다가갈 수 있을까요?",music:{|p b e| 
 		e.still.value(
 				wait: b.sum,
-				text:["can two minds press close","like this?"]
+				text:["can two minds press close","like this?"],
+				korean:"두 마음이 이렇게 가까이 다가갈 수 있을까요?"
 		)});
 ["Can robot lips do this?" , [3,5,4,3,2,11].dm(\e) ].addLine;
 //P.tune(\robot);
@@ -1488,11 +1511,12 @@ P(\this,start:\robot,syl:4,music:{|p b e|
 				legato:0.8
 		).play
 });
-P.still(\thalassa,start:'robot lips',timecode:3920.5.seconds,music:{|p b e| 
+P.still(\thalassa,start:'robot lips',timecode:3920.5.seconds,korean:"로봇의 입술이 이런 걸 할 수 있을까요?",music:{|p b e| 
 		e.still.value(
 				wait:b.sum-2,
 				fade:2,
-				text:["can robot lips","do this?"]
+				text:["can robot lips","do this?"],
+				korean:"로봇의 입술이 이런 걸 할 수 있을까요?"
 		)});
 [ "(they kiss, then Kirk falls gently to the floor) (boooom boom boom boom boom boom boom boom) Sargon, /*what is it?*/ what's wrong? ",[11,7,6,5,4,3,2,1].dm('b-',scale:\minor)++[3,-7,1,4.5].dm(\f,scale:\mixolydian)].addLine;
 P.synthV(\aiko, params:[lyrics:"Sar gon wats rong"],syl:7,range:[8,11],music: { |p b e|
@@ -1547,10 +1571,11 @@ P.still(\falling, start:\kiss, syl:4,  timecode: 3937.5.seconds,  music: {|p b e
 				fade:1
 		)
 });
-P.still(\thalassa, start: \kiss,syl:7, timecode:3939.46.seconds, music: { |p b e|
+P.still(\thalassa, start: \kiss,syl:7, timecode:3939.46.seconds, korean: "사르곤! 무슨 일이야?!", music: { |p b e|
 		e.still.value(
 				wait: b.drop(1).[0..3].sum ,
-				text:["Sargon!","What's wrong?!"]
+				text:["Sargon!","What's wrong?!"],
+				korean: "사르곤! 무슨 일이야?!"
 		);
 });
 ["(McCoy and Chapel enter.) ","r",[1,3]].addLine;
@@ -1575,7 +1600,7 @@ P(\trill,start:\Chapel,music:{|p b e|
 	};
 	//d=Synths(\wash,\freq,[7,1,-7].df(\d),\out,[(0..3)])
 });
-P.still(\mcCoyEnters, start:\Chapel,timecode: 3940.5.seconds, music:{|p b e|
+P.still(\mcCoyEnters, start:\Chapel,timecode: 3940.5.seconds, korean: "", music:{|p b e|
 		e.still.value(wait:b.sum - 2, fade:1);
 		Synth(\door,[\amp,0.2])
 });
@@ -1605,17 +1630,17 @@ P(\wibble,start:\hypo,music:{|p b e|
 		Synth(\hypo,[\amp,0.1,\out,Effect.bus( { |i| BPF.ar(i,1000,7.5) => Pan2.ar(_, -0.2) },out:0, inputChannels: 1) ])
 	}
 });
-P.still(\sensor, start:\hypo, timecode:3947.seconds, music:{ |p b e|
+P.still(\sensor, start:\hypo, timecode:3947.seconds, korean: "", music:{ |p b e|
 		e.still.value(
 				wait:b[0..2].sum,
 				text:["",""]
 		);
 		fork{
 				b[0].wait;
-				e.still.value(text:["hypo!"])
+				e.still.value(text:["hypo!"], korean:"주사!")
 		}
 });
-P.still(\hypo, start:\hypo,syl:2, timecode:3949.5.seconds, music:{ |p b e|
+P.still(\hypo, start:\hypo,syl:2, timecode:3949.5.seconds, korean: "", music:{ |p b e|
 		var window = e.still.value(
 				wait:b.drop(1).sum
 		);
@@ -1632,10 +1657,11 @@ P.synthV(\aiko,params:[ lyrics:" dak tar help him" ], music:{|p b e |
 		}.play
 });
 //P.tune(\Doctor);
-P.still(\mulhall, start:'help him', timecode:3953.0.seconds, music:{ |p b e|
+P.still(\mulhall, start:'help him', timecode:3953.0.seconds, korean:"의사 선생님, 도와주세요!", music:{ |p b e|
 		e.still.value(
 				wait:b.sum,
-				text:["Doctor","help him!"]
+				text:["Doctor","help him!"],
+				korean:"의사 선생님, 도와주세요!"
 		)
 });
 P(\noise,syl: 1,  music: { |p b e|

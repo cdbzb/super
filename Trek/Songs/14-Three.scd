@@ -146,7 +146,7 @@ Song.strum1Fx={ |b|
 };
 
 Song.strum1Fx0= Song.strum1Fx.(Song.durs[0].list.sum + 5);
-P.still(\enterprise, timecode: 3246.9.seconds, music: { |p b e|
+P.still(\enterprise, timecode: 3246.9.seconds, korean: "", music: { |p b e|
 	e.still.( 
 		wait: b.sum,
 		text: ["",""],
@@ -210,7 +210,7 @@ P(\bass0,start:0,music: {
 			text: ["now inhabit","the bodies of"],
 		)
 	});
-	P.still(\wide, timecode: 3303.5.seconds, music: { |p b e|
+	P.still(\wide, timecode: 3303.5.seconds, korean: "", music: { |p b e|
 		e.still.( 
 			wait: b.sum,
 			text: ["",""],
@@ -316,7 +316,7 @@ P(\bass0,start:0,music: {
 	}
 );
 ["Doctor Jane Mulhall. As -- ","b c5 d d c c f"].addLine; //3
-P.still(\clear1, timecode: 0.seconds, music: { |p b e|
+P.still(\clear1, timecode: 0.seconds, korean: "제인 멀홀 박사", music: { |p b e|
 	e.still.( 
 		wait: b.parse([5]).unbubble + e.bNext.sum,
 		text: ["doctor Jane","Mulhall"],
@@ -325,11 +325,13 @@ P.still(\clear1, timecode: 0.seconds, music: { |p b e|
 			b.parse([5]), [ 
 			["",""],
 			],
-			
+			[ 
+				""
+			]
 		)
 });
 Song.preroll_(1);
-P.still(\mccoy, timecode: 3251.3.seconds,lag: -1, syl: 4, music: { |p b e|
+P.still(\mccoy, timecode: 3251.3.seconds,lag: -1, syl: 4, korean: "", music: { |p b e|
 	e.still.( 
 		fadeIn: 1,
 		wait: b.drop(1).sum + e.bNext.sum,
@@ -337,7 +339,7 @@ P.still(\mccoy, timecode: 3251.3.seconds,lag: -1, syl: 4, music: { |p b e|
 		fade: 2
 	)
 });
-	P.still(\clear, timecode: 1.seconds, syl:4, music: { |p b e|
+	P.still(\clear, timecode: 1.seconds, syl:4, korean: "계획대로 건설이", music: { |p b e|
 		e.still.( 
 			wait: b.drop(1).sum + e.bNext.sum + p.durs[e.start+2].list.sum => _.postln,
 			text: ["as planned","the construction"],
@@ -349,6 +351,9 @@ P.still(\mccoy, timecode: 3251.3.seconds,lag: -1, syl: 4, music: { |p b e|
 			[ 
 				["of android robots","is underway"],
 			],
+			[ 
+				"안드로이드 로봇의 진행 중입니다"
+			]
 		)
 	});
 	P.synthV(\ninezero, take: \bg,

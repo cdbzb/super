@@ -178,6 +178,9 @@ P.still(\clear,lag:0.05, timecode: 0.seconds, music: { |p b e|
 			b.parse([3]), [ 
 			["I'm in your","deck six briefing-room"],
 			],
+			[ 
+				"당신의 6층 브리핑룸에 있습니다"
+			]
 	)
 });
 P.synthV(\genbu, take:"low", params: [ 

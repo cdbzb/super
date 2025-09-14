@@ -1467,7 +1467,7 @@ P(\lick,start:\return,syl:3,music:{|p b e|
 		fade:3
 	)
 }); */
-P.still(\clear, timecode: 0.seconds, lag: 0.01, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, lag: 0.01, korean: "아니면 선호하시나요?", music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["or would you","prefer"],

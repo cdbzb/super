@@ -78,7 +78,7 @@ P(\drums, music: { |p b e|
 
 	].pp
 });
-P.still(\space, timecode: 3244.seconds, korean: "세 개의 외계 정신", music: { |p b e|
+P.still(\space, timecode: 3244.seconds, korean: " ", music: { |p b e|
 	e.still.( 
 		wait: b.sum,
 		text: ["",""],

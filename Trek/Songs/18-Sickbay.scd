@@ -174,6 +174,7 @@ P.still(\clear,lag:0.05, timecode: 0.seconds, music: { |p b e|
 	 e.still.( 
 		wait: b.sum,
 		text: ["Sargon","here"],
+		korean: "사르곤 여기"
 	).sequenceText2(
 			b.parse([3]), [ 
 			["I'm in your","deck six briefing-room"],

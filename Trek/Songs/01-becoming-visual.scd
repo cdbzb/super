@@ -736,7 +736,7 @@ P(\highNote, music: { |p b e|
 		dur: b.parse([7, 4, 4]) ++ e.bNext[..3].sum => _.q, out:4
 	].ppm
 });
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, korean: " ", music: { |p b e|
 			e.still.( 
 				wait: b.sum,
 				text: ["activated","we've been"],
@@ -744,6 +744,9 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 				b.parse([7]), [ 
 					["given a direction","to"],
 				],
+				[ 
+					"방향이 주어졌습니다"
+				]
 			)
 });
 P(\line, music: { |p b e|
@@ -1179,7 +1182,7 @@ P(\fuzz, music: { |p b e|
 	].pp.play
 });
 [" Earth ship has ever explored.","3 3 2 4 3 2 1 -7 2".dm('d')].addLine;
-P.still(\clear, timecode: 0.seconds, music: { |p b e|
+P.still(\clear, timecode: 0.seconds, korean: "우주선이 탐험한 적이 없는 곳", music: { |p b e|
 	e.still.( 
 		wait: b.sum ,
 		text: ["starship has","ever explored before"],

@@ -390,7 +390,7 @@ Still {
 		korean.notEmpty.if{
 			textKorean = StaticText(window,koreanRect)
 			.string_(korean)
-			.stringColor_(Color.rand)
+			.stringColor_(Color.gray(0.8))
 			.align_(\center)
 			.font_(Font(\helvetica,koreanFontSize * Stills.scale * (1-shrink) => _.asInteger, bold:false));
 			

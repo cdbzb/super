@@ -118,6 +118,14 @@ SynthV {
 				'languageOverride': "", 
 				'backendType': "SVR2Standard"
 			),
+			xuan2: (
+				'name': "Xuan Yu 2",
+				'language': "mandarin",
+				'phoneset': "xsampa",
+				'backendType': "SVR3",
+				//CHANGE TODO
+				'version': "201"
+			),
 			xuan: (
 				'name': "Xuan Yu",
 				'language': "mandarin",
@@ -125,7 +133,8 @@ SynthV {
 				'languageOverride': "english",
 				'phonesetOverride': "arpabet",
 				'backendType': "SVR2AI",
-				'version': "105"
+				//CHANGE TODO
+				'version': "101"
 			),
 			kevin: ( 
 				'name':             "Kevin",
@@ -536,7 +545,12 @@ SynthV {
 		;
 		[\languageOverride, \phonesetOverride].do{|i x| 
 			where.put(i, array[0][x])
+		};
+		(appVersion == 2).if {
+			where.put(\language, "");
+			where.put(\phoneset, "");
 		}
+
 	}
 	makeNotes {|num track=0|
 		var prototype = notePrototype.copy;

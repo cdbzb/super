@@ -476,8 +476,8 @@ SynthV {
 			{ i == \defaultVibratoDepth}     { this.voice.put(\dF0Vbr,event.at(i))}
 			{ envelopes.includes(i)}         { this.setEnv(i,event.at(i))}
 			{ i.asString.contains("vm") }    { this.setVocalModeEnv(i.asString.drop(2).asSymbol, event.at(i))}
-			{ i == \language }               { \LANGUAGE.postln; project.tracks[0].mainRef.database.put(\languageOverride,event.at(i)).postln }
-			{ i == \phoneset}                { project.tracks[0].mainRef.database.put(\phonesetOverride,event.at(i)) }
+			{ i == \language }               { \LANGUAGE.postln; this.setLanguage([[event.at(i), event.at(\phoneset)]]).postln }
+			{ i == \phoneset}                { /* handled by language case above */ }
 			{ i == \pitchTake}               { this.setPitchTakeId(event.at(i)) }
 			{ i == \pitchExpression }        { this.setPitchExpression(event.at(i)) }
 			{ true }                         { this.setNotes(i,event.at(i)) }

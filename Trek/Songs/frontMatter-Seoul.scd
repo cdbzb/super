@@ -34,7 +34,7 @@ fork{
 	0.5.wait;
 	Trek.editFile(16);
 	1.wait;
-	Song.durTillEnd + 5  =>_.wait;
+	Song.durTillEnd + 139.5 + 5  =>_.wait;
 	OBS.stop
 }
 )

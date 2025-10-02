@@ -1171,6 +1171,7 @@ P(\click, music: { |p b e|
 Trek.strum;
 P(\strum1, music: { |p b e|
 	\strum => Song.strum1.setPlayMode( _ ) ;
+	p.strum1.syn.run(true);
 	[
 		midinote: [\r, 1, 4, 5, 4, 1 ].dm('c#',4).q ,
 		dur: "qqq qqq q qqq q qq".asBeats.warpTo( e.tempoMap ).q,
@@ -1189,6 +1190,7 @@ P(\strum1, music: { |p b e|
 		instance: p.strum1
 	) => _.play;
 });
+
 P.still(\embrace,timecode:3704.8.seconds,korean:"당신이 말했죠",music:{|p b e|
 	e.still.value(
 		wait:b.sum,

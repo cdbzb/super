@@ -546,10 +546,10 @@ SynthV {
 		[\languageOverride, \phonesetOverride].do{|i x| 
 			where.put(i, array[0][x])
 		};
-		(appVersion == 2).if {
-			where.put(\language, "");
-			where.put(\phoneset, "");
-		}
+		// (appVersion == 2).if {
+		// 	where.put(\language, "");
+		// 	where.put(\phoneset, "");
+		// }
 
 	}
 	makeNotes {|num track=0|

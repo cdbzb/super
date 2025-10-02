@@ -12,8 +12,10 @@ S{
 N{
 	var <name, <accidental, <degree; 
 	classvar <intervalsFromA, <semitonesFromA, <qualitiesFromA, accidentals, <>names;
+	classvar <accidentals;
 	*initClass {
 		qualitiesFromA = [\perfect, \major, \minor, \perfect, \perfect, \minor, \minor];
+		accidentals = ['double-flat', \flat, \natural, \sharp, 'double-sharp'];
 		intervalsFromA = qualitiesFromA.collect{|i x| V(x+1, i)};
 		semitonesFromA = intervalsFromA.collect(_.semitones);
 		names = [\a,\b,\c,\d,\e,\f,\g].collect{|i x|
@@ -25,6 +27,22 @@ N{
 	}
 	init {
 		degree = names.at(name)
+	}
+	asInterval {
+		^V.fromNoteName(name) + V.fromAccidental(accidental)
+	}
+	+ {|interval|
+		^N(
+			names[name].debug("AAK") 
+			+ interval.oneIndexedDegree
+			=>_.debug("PPO")
+			- 1 
+			=> [\a,\b,\c,\d,\e,\f,\g].wrapAt(_).debug("WRRR") 
+			// => _.debug("PPP")
+			, 
+			accidentals.indexOf(accidental)  
+			//
+		)
 	}
 	- {|note|
 		^
@@ -74,9 +92,15 @@ V{
 		);
 		^V(1, quality)
 	}
+	*fromNoteName { |name|
+		var index = 
+		[\a, \b, \c, \d, \e, \f, \g, \a].indexOf(name);
+
+		^V(index + 1, [\perfect, \major, \minor, \perfect, \perfect, \minor, \minor][index] )
+	}
 	init{
 		degree = oneIndexedDegree - (oneIndexedDegree.sign);
-		direction =oneIndexedDegree.isNegative.if{-1}{1};
+		direction = oneIndexedDegree.isNegative.if{-1}{1};
 		defaultInterval = defaultIntervals[degree.abs]
 	}
 	quartertones {
@@ -103,6 +127,12 @@ V{
 		};
 		error.postln;
 		^V(outDegrees + 1, outQuality)
+	}
+	asNotefromA {
+		var name = [\a, \b, \c, \d, \e, \f, \g].wrapAt( oneIndexedDegree - 1);
+		var defaultSemitones = [0, 2, 3, 5, 7, 8, 10][oneIndexedDegree - 1];
+		var excess = this.semitones - defaultSemitones => _.debug("EXCESS");
+		^N(name, ['double-flat', \flat, \natural, \sharp, 'double-sharp'][excess + 2] )
 	}
 	invert {
 		^V(oneIndexedDegree * ( -1 ), quality)

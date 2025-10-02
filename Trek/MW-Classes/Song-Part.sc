@@ -1070,7 +1070,7 @@ Part {
 	awake { this.play }
 	sched { |when=1 segParams |
 		segParams = segParams ? ();
-		segParams.debug("PARAMS");
+		// segParams.debug("PARAMS");
 		////////////////trying to make setup be part of Part
 		//////////delete this line if not work
 		//(music.class=Routine).if(music.play);

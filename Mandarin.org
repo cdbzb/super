@@ -647,6 +647,14 @@ MIDIItem("traps_250810_175817").player
    (
    (type:\seg, section: (0..6).q).play
    )
+   ( // record
+	   fork{
+		   s.record("/tmp/Wind_Sep21.wav");
+		   Song.play;
+		   Song.durTillEnd + 8 => _.wait;
+		   s.stopRecording;
+	   }
+   )
    #+END_SRC
 ** Beautiful-day Mix
 *** Beautiful mix 1

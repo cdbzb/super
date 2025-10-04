@@ -57,9 +57,9 @@ Seg {
 				firstSection = sections[0];
 				(firstSection.isKindOf(Event)).if {
 					// If it's an Event, use its duration or calculate from its data
-						firstSection[\section].debug("SECOND");
 						firstSection[\dur].debug("DUR");
 					~dur = 
+					firstSection[\dur] ? 
 						if (firstSection[\section].notNil) {
 							Song.secDur[Song.section(firstSection[\section])] + ( firstSection[\stretch]?0 ).debug("STRETCH")
 						} {
@@ -137,7 +137,12 @@ Seg {
 		});
 	}
     *new {|section ...args, kwargs|
-        ^(type:\seg, section:section) ++ kwargs.asEvent
+        ^(type:\seg, section:section) ++ kwargs.asEvent ++ (record:{|self path head tail|
+			var newSectionList = (play: {Server.default.record(path)}, dur:head).bubble 
+				++ self.section.list 
+				++ (play: {fork{tail.wait; Server.default.stopRecording}}).bubble;
+			Seg(section:newSectionList.q).play
+		})
     }
 }
 

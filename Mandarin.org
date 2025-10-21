@@ -354,17 +354,19 @@ Mandarin.load(\automobile3);
 Mandarin.edit(\automobile3);
 */
 ( // this is how automobile2 used to play
-    (
-        type: \seg, section:[
+    Seg(
+         section:[
             \verse,
             \bridge,  //longer bridge
-			// \shortBridge, \connector, //short one
+			\shortBridge, \connector, //short one
             [
                 (type:\seg, section: \V2), //traps 
                 (type:\seg, section: \verse, mute:[\traps])
             ]
         ].drop(1).q
-    ).play
+	)
+	.play
+	// .record("/tmp/foo.wav",3,4)
 )
 #+END_SRC
 *** key recording on bridge

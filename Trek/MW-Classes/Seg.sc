@@ -1,4 +1,3 @@
-
 Mandarin {
     classvar path = "/Users/michael/tank/super/scd/Mandarin";
     classvar event;
@@ -137,10 +136,12 @@ Seg {
 		});
 	}
     *new {|section ...args, kwargs|
-        ^(type:\seg, section:section) ++ kwargs.asEvent ++ (record:{|self path head tail|
-			var newSectionList = (play: {Server.default.record(path)}, dur:head).bubble 
-				++ self.section.list 
-				++ (play: {fork{tail.wait; Server.default.stopRecording}}).bubble;
+        ^(type:\seg, section:section) ++ kwargs.asEvent ++ (record:{|self path head=0.2 tail|
+            var newSectionList = [
+                (play: { Server.default.record(path) }, dur:head),
+                self.section.list, 
+                (play: { fork{ tail.wait; Server.default.stopRecording } })
+            ].flatten;
 			Seg(section:newSectionList.q).play
 		})
     }

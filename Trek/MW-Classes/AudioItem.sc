@@ -33,6 +33,7 @@ AudioItem {
 				buffer: buffer,
 				dur: ~dur ? 5,
                 record: ~record ? false,
+				startPos: ~start ? 0
 			));
             ~record.if{
 					~recorder.prepareForRecord(~path, 1); 
@@ -124,7 +125,7 @@ AudioItem {
         ^Take(name, num)
 	}
 
-    play {
+    play { 
         ^Take(name, takes - 1).play  // Play the most recent take
     }
 }
@@ -147,14 +148,14 @@ Take : AudioItem {
 				buffer.numChannels max: 1,
 				buffer.bufnum,
 				rate: rate ? 1,
-				startPos: startPos ? 0,
+				startPos: startPos * SampleRate.ir ? 0,
 				doneAction:2
 			)
 			* (amp ? 1)
 			=> Out.ar(out ? 0, _);
 		
 	}
-	play { |amp out rate, startPos latency lag|
+	play { |amp out rate, startPos, latency, lag|
 		// take.notNil.if { buffer = buffers[name][playTake] };
 
 		fork{
@@ -165,7 +166,8 @@ Take : AudioItem {
 			Server.default.makeBundle(
 				(latency ? 0.2) + (lag ? 0) - (SystemClock.seconds - syncTime),
 				{
-					{this.playbuf(amp, out, rate, startPos)}.play
+					{this.playbuf(amp, out, rate, startPos )}.play
+
 				}
 			)
 		}

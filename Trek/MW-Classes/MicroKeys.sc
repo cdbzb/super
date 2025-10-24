@@ -452,7 +452,8 @@ monitor { |offLatency = 0.02|
 		MIDIdef.noteOn(\microOn ++ name => _.asSymbol,  {|v n c| (
 			type: \mk,
 			mk:this,
-			amp: v/127,
+			// amp: v/127,
+			amp: v,
 			params: ccs,
 			midinote: n,
 			latency:0,
@@ -473,7 +474,8 @@ monitor { |offLatency = 0.02|
 	{ species == \mono } {
 		down = List[];
 		MIDIdef.noteOn(\microOn ++ name => _.asSymbol, {|v n c| 
-			this.doNoteOn(v/127, n, channel:c);
+			// this.doNoteOn(v/127, n, channel:c);
+			this.doNoteOn(v, n, channel:c);
 		});
 		MIDIdef.noteOff(\microOff ++ name => _.asSymbol, {|vel num c| 
 			this.doNoteOff(num, channel:c);

@@ -142,7 +142,7 @@ Take : AudioItem {
 		} 
         ^newTake
     }
-	playbuf {| amp out rate startPos |
+	playbuf {| amp out rate startPos dur |
 		^ 
 			PlayBuf.ar(
 				buffer.numChannels max: 1,
@@ -152,10 +152,11 @@ Take : AudioItem {
 				doneAction:2
 			)
 			* (amp ? 1)
+            * EnvGen.cutoff(dur, 0.0)
 			=> Out.ar(out ? 0, _);
 		
 	}
-	play { |amp out rate, startPos, latency, lag|
+	play { |amp out rate, startPos, latency, lag, dur|
 		// take.notNil.if { buffer = buffers[name][playTake] };
 
 		fork{
@@ -166,7 +167,7 @@ Take : AudioItem {
 			Server.default.makeBundle(
 				(latency ? 0.2) + (lag ? 0) - (SystemClock.seconds - syncTime),
 				{
-					{this.playbuf(amp, out, rate, startPos )}.play
+					{this.playbuf(amp, out, rate, startPos, dur )}.play
 
 				}
 			)

@@ -831,7 +831,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	}
 
 	trimTimeStampsToStart {
-		^this.collect {|i| i.timestamp = i.timestamp - start}
+		^this.collect {|i| i.timestamp = i.timestamp - start; i }
 		.reject {|i| i.timestamp < 0}
 		.start_(0)
 	}

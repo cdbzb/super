@@ -715,7 +715,6 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	copyBounds {|mi|
 		start = mi.start; end =mi.end
 	}
-
 	play { |mk clock post=#[] overdub=false take|
 		(mk.rank > 0).if { mk.do{|i| this.play(i, clock, post, overdub) }; ^this };
 
@@ -829,6 +828,12 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		bool.if{
 			start = this[\timestamp][0];
 		}
+	}
+
+	trimTimeStampsToStart {
+		^this.collect {|i| i.timestamp = i.timestamp - start}
+		.reject {|i| i.timestamp < 0}
+		.start_(0)
 	}
 
 	fromNote {|from to trim=true|
@@ -1006,7 +1011,14 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			this.source
 		).copyBounds(this)
 	}
-	synthVPbind { |choiceFunc|
+	synthVPbind { |choiceFunc trimToStart=true|
+		^trimToStart.if{
+			this.trimTimeStampsToStart 
+		}{ 
+			this 
+		}.doSynthVPbind(choiceFunc)
+	}
+	doSynthVPbind { |choiceFunc|
 		var initialRestDur = midiEvents.select{|e| 
 			e.type == \rest and: (e.timestamp == 0)
 		}.collect(_.dur);

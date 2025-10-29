@@ -12,18 +12,26 @@ AudioItem {
 
 		Event.addEventType(\audioItem, {
 			var name = ~name ?? { Error("AudioItem requires a name").throw };
-			var buffer = buffers[name.asSymbol];
-			var path = folder +/+ name ++ ".wav";
+			var directory = folder +/+ name;
+			var lastTakeNum = File.exists(directory).if {
+				(PathName(directory).entries.size - 1).max(0)
+			} { 0 };
+			var takeNum = ~take ?? lastTakeNum;  // Use ?? instead of ?
+			var path = directory +/+ takeNum ++ ".wav";
+			var buffer = buffers.at(name.asSymbol, takeNum);
 			var recorder = Recorder(Server.default);
-			
+
 			// Create buffer if it doesn't exist
 			buffer = buffer ?? {
-				buffers[name.asSymbol] = Buffer();
-				buffers[name.asSymbol];
+				buffers.put(name.asSymbol, takeNum, Buffer());
+				buffers.at(name.asSymbol, takeNum);
 			};
+
 			// Load audio file if it exists
-			File.exists(path).if{
-				buffer.allocRead(path).updateInfo;
+			File.exists(path).if {
+				(buffer.numFrames.isNil or: (buffer.numFrames == 0)).if {
+					buffer.allocRead(path).updateInfo;
+				}
 			};
 			
 			// Set up the event with all the functionality
@@ -33,7 +41,8 @@ AudioItem {
 				buffer: buffer,
 				dur: ~dur ? 5,
                 record: ~record ? false,
-				startPos: ~start ? 0
+				startPos: ~start ? 0,
+
 			));
             ~record.if{
 					~recorder.prepareForRecord(~path, 1); 
@@ -148,11 +157,11 @@ Take : AudioItem {
 				buffer.numChannels max: 1,
 				buffer.bufnum,
 				rate: rate ? 1,
-				startPos: startPos * SampleRate.ir ? 0,
+				startPos: (startPos ? 0) * SampleRate.ir,
 				doneAction:2
 			)
 			* (amp ? 1)
-            * EnvGen.cutoff(dur, 0.0)
+            * EnvGen.cutoff(dur ? 1000, 0.0)
 			=> Out.ar(out ? 0, _);
 		
 	}

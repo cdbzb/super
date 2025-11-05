@@ -95,7 +95,9 @@ AudioItem {
         };
         // Load audio file if it exists
         File.exists(ret.path).if{
-            ret.buffer.allocRead(ret.path).updateInfo;
+            (ret.buffer.numFrames.isNil or: (ret.buffer.numFrames == 0)).if {
+                ret.buffer.allocRead(ret.path).updateInfo;
+            };
         };
 		^ret
     }

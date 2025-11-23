@@ -134,7 +134,8 @@ SynthV {
 				'phonesetOverride': "arpabet",
 				'backendType': "SVR2AI",
 				//CHANGE TODO
-				'version': "101"
+				// 'version': "101",
+				'version': "105",
 			),
 			kevin: ( 
 				'name':             "Kevin",

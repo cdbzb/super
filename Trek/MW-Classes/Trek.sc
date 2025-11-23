@@ -228,7 +228,48 @@ Trek {
 					if(numSections > 1) { transitions[section].dur.wait }
 			}
 		}
-	}
+	}*playArray { |array cursor=0|
+    var needLoad;
+    this.loadTransitions;
+    
+    // Check which songs need loading
+    needLoad = array.select{|i| Song.songs[Trek.keys[i]].isNil};
+    
+    ( needLoad.size!=0 ).if{ ^this.loadSongs(needLoad) };
+    
+    fork{
+        transitionGroup.release;
+        Server.default.sync;
+        
+        array.do{|songNum, index|
+            var start = (index == 0).if{ cursor }{ transitions[songNum].start ? 0 };
+            var isLast = (index == (array.size - 1));
+            
+            // Set fader for first song or if fader changed
+            (index == 0).if{
+                faderSynths[songNum] !? {|i| i.isRunning.if{|j| j = faders[songNum].().register}};
+            };
+            
+            this.editFile(songNum);
+            this.playSong(
+                songNum, 
+                start, 
+                trimEnd: transitions[songNum].trimEnd ? 0
+            ).wait;
+            
+            // Handle transition if not the last song
+            isLast.not.if{
+                var nextSongNum = array[index + 1];
+                transitions[nextSongNum].lag ? 0 => _.wait;
+                transitions[songNum].func.();
+                transitions[songNum].dur.wait;
+                
+                // Set fader for next song if needed
+                faderSynths[nextSongNum] = faders[nextSongNum].();
+            }
+        }
+    }
+}
 	*playAll { |remote=false|
 		var needLoad;
 		needLoad = (0..( keys.size - 1 )).select{|i| Song.songs[Trek.keys[i]].isNil};

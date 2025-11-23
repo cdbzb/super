@@ -129,6 +129,12 @@ Monitors {  //setup monitoring for Trek piece
 		o.outDevice_("EPOS PC 8 USB");
 		Server.default.reboot
 	}
+	*obs {
+		var o =Server.default.options;
+		o.inDevice_("BlackHole 2ch");
+		o.outDevice_("OBS");
+		Server.default.reboot
+	}
 	*blackHole {
 		var o =Server.default.options;
 		o.inDevice_("BlackHole 2ch");

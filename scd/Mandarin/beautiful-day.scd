@@ -206,11 +206,12 @@ P.synthV(\xuan, take:  \lead ,  offset: Song.pianoQuarters[..8].sum,
 // MIDIItem(\foo).take(1).notes[50].timestamp;
 P.synthV(\an,lag:0.0817, take: \lead2, //lag is fudge factor because of wrong timestamp
 	pbind: 
-	Song.quantizedKeysV1.fromNote(0, 200)//.gui // use 1 to compensate for removal of 59
+	a = Song.quantizedKeysV1.fromNote(0, 200)//.gui // use 1 to compensate for removal of 59
 	.notes[[63, 67, 69, 72, 76, 80, 83]]
 	=> MIDIItemPlayer(_)
-	=> _.collect({|e| e.timestamp = e.timestamp - 5.1953})
+	=> _.collect{|e| e.timestamp = e.timestamp - 5.1953; e}
 	=> _.synthVPbind
+	// a.collect{|i| i.timestamp = i.timestamp - 0; i} => _.reject{|i| i.timestamp < 0}.start_(0).gui
 	,
 	params: {|p b| [
 		lyrics: " r 美 好 天  回 忆 里 -",

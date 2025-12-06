@@ -109,3 +109,12 @@ NoteNames {
 		^this
 	}
 }
+
++String {
+	degreesmidi {
+		^this
+	}
+	degreescps {
+		^this
+	}
+}

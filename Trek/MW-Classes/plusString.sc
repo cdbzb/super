@@ -63,7 +63,10 @@
 	df { | ...args |
 		^this.split(Char.space)
 		.reject({|i| i.size == 0})
-		.collect(_.asFloat)
+		.collect({|i| 
+			var asFloat = i.asFloat;
+			(asFloat == 0.0 && i != "0" && i != "0.0").if { i } { asFloat }
+		})
 		.df(*args)
 	}
 	dm { | ...args |

@@ -72,7 +72,7 @@ Yoeminrak {
     }
 }
 + Pattern {
-    jgb { |beatDur=1|
+    jgb {
         ^Prout({ |ev|
             var stream = this.asStream;
             var event;
@@ -80,9 +80,10 @@ Yoeminrak {
                 event = stream.next(ev);
                 event.notNil;
             } {
-                var deg = event[\degree];
-                if(deg.isArray and: { deg.isKindOf(Ref).not }) {
-                    var n = deg.size;
+                var freq = event[\freq];
+                var originalDur = event[\dur] ? 1;
+                if(freq.isArray and: { freq.isKindOf(Ref).not }) {
+                    var n = freq.size;
                     n.do { |i|
                         var newEvent = event.copy;
                         newEvent.keysValuesDo { |k, v|
@@ -90,12 +91,11 @@ Yoeminrak {
                                 newEvent[k] = v[i];
                             };
                         };
-                        newEvent[\dur] = beatDur / n;
+                        newEvent[\dur] = originalDur / n;
                         ev = newEvent.yield;
                     };
                 } {
-                    if(deg.isKindOf(Ref)) { event[\degree] = deg.value };
-                    event[\dur] = beatDur;
+                    if(freq.isKindOf(Ref)) { event[\freq] = freq.value };
                     ev = event.yield;
                 };
             };

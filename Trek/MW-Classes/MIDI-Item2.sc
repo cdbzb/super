@@ -25,7 +25,7 @@ gui { |take|
     };
     
     start = notes[0].timestamp;
-    end = notes.last.timestamp + notes.last.sustain;
+    end = notes.last.timestamp + (notes.last.sustain ? 0);
     width = 1400;
     height = 800;
     
@@ -392,6 +392,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		this.stopRecording
 	}
 //
+
 	*new { |name restFirst=true |
 		all.keys.includes(name).if { ^all[name] };
 		folder.asPathName.entries.collect(_.fileName).includesEqual(name.asString).if{
@@ -646,7 +647,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 
 	*new {| amidiEvents source |
 		var player, bounds;
-		var midiEvents = amidiEvents.deepCopy;
+		var midiEvents = (amidiEvents.size != 0).if{ amidiEvents.deepCopy }{ [(type: \rest, timestamp:0, dur: 1, sustain: 1)]};
 		player = super.newCopyArgs(midiEvents, source);
 		midiEvents.notNil.if { //this should not be necessary!!!!
 			bounds = (
@@ -1028,7 +1029,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		var midinotes = notes.collect{|e| e.midinote};
 		var durs = notes.collect{|e| e.timestamp}.differentiate.drop(1)
 		//last dur
-		++ notes.last.sustain;
+		++ (notes.last !? _.sustain ? 0);
 
 		// insert initial rest
 		if (initialRestDur.size > 0) {
@@ -1057,7 +1058,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		var midinotes = notes.collect{|e| e.midinote};
 		var durs = notes.collect{|e| e.timestamp}.differentiate.drop(1)
 		//last dur
-		++ notes.last.sustain;
+		++ (notes.last.sustain ? 0);
 
 		// add initial rest
 		( initialRestDur.size > 0 ).if{

@@ -453,7 +453,7 @@ monitor { |offLatency = 0.02|
 			type: \mk,
 			mk:this,
 			// amp: v/127,
-			amp: v,
+			amp: v/127,
 			params: ccs,
 			midinote: n,
 			latency:0,

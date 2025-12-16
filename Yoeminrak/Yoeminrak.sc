@@ -56,32 +56,69 @@ Yoeminrak {
            ~wiggle = {
                ~b.free; ~b = { SinOsc.ar(5, 0, 0.2).dup(5) => Out.kr(env[\ornament], _)}.play;
            };
-           ~synthFunc = {
-               // [ Gendy2,Gendy1, Gendy3 ]
-               // [Gendy1]
-               // .collect
-               // {
-               // |i|
-               Gendy1.arWidth(
-                   initCPs:12,
-                   ampdist:0,
-                   knum:SinOsc.ar(0.02, 0,  6).abs + 2.1,
-                   // knum:\knum.kr(4.1),
-                   freq: 
-                   [1, 2, 3, 5, 6].df(\c) *
-                   ~pitch.kr().midiratio
-                   .lag2({ 0.5.rand}.dup(5) + \freqLag.kr(3))
-                   // .midiratio 
-                   *  ~ornament.kr.midiratio,
-                   width:0.5.midiratio,
-               ) / 3
-               // }// => Mix.ar(_)
-               * [2, 2, 2, 1, 0.5]
-               * Env.asr(0.5,releaseTime:5).kr(doneAction:0, gate:
-                   NamedControl.kr(\myGate, [1, 1, 1, 1, 1])
-               )
-               => Splay.ar(_)
-           };
+		   ~synthFunc2 = {|freqLag=3 knum=2 width=(0.5.midiratio)| {
+			   // [ Gendy2,Gendy1, Gendy3 ]
+			   // [Gendy1]
+			   // .collect
+			   // {
+			   // |i|
+			   var freqLag = \freqLag.kr(freqLag);
+               var knum=NamedControl.kr(\knum,#[2,2,2,2,2]);
+               var width=NamedControl.kr(\width,#[1.05,1.05,1.05,1.05,1.05]);
+			   var chord=NamedControl.kr(\chord, #[1, 2, 3, 5, 6].df(\c));
+               chord.collect { |i x|
+                   [ Gendy1, Gendy2, Gendy3 ].collect {|ugen|
+                       ugen.arWidth(
+                           initCPs:12,
+                           ampdist:0,
+                           // knum:SinOsc.ar(0.02, 0,  6).abs + 2.1,
+                           // knum:\knum.kr(knum),
+                           knum:knum[x].poll,
+                           freq: 
+                           i * ~pitch.kr[x].midiratio
+                           .lag2({ 0.5.rand} + freqLag * (freqLag > 0))
+                           *  ~ornament.kr[x].midiratio,
+                           width:width[x]
+                       ) / 3
+                   } => SelectX.ar(\select.kr(1), _)
+               }
+			   * [2, 2, 2, 1, 0.5]
+			   * Env.asr(0.5,releaseTime:5).kr(doneAction:0, gate:
+				   NamedControl.kr(\myGate, [1, 1, 1, 1, 1])
+			   )
+			   => Splay.ar(_)
+		   }.play };
+		   ~synthFunc = {|freqLag=3 knum=2 width=(0.5.midiratio)| {
+			   // [ Gendy2,Gendy1, Gendy3 ]
+			   // [Gendy1]
+			   // .collect
+			   // {
+			   // |i|
+			   var freqLag = \freqLag.kr(freqLag);
+			   Gendy1.arWidth(
+				   initCPs:12,
+				   ampdist:0,
+				   // knum:SinOsc.ar(0.02, 0,  6).abs + 2.1,
+				   // knum:\knum.kr(knum),
+				   knum:NamedControl.kr(\knum,#[2,2,2,2,2]),
+				   freq: 
+				   [1, 2, 3, 5, 6].df(\c) *
+				   ~pitch.kr().midiratio
+				   .lag2(
+					   { 0.5.rand}.dup(5) + freqLag 
+					   * (freqLag > 0) // use freqLag 0 to turn off
+				   )
+				   // .midiratio 
+				   *  ~ornament.kr.midiratio,
+				   width:\width.kr(width),
+			   ) / 3
+			   // }// => Mix.ar(_)
+			   * [2, 2, 2, 1, 0.5]
+			   * Env.asr(0.5,releaseTime:5).kr(doneAction:0, gate:
+				   NamedControl.kr(\myGate, [1, 1, 1, 1, 1])
+			   )
+			   => Splay.ar(_)
+		   }.play };
        }
     }
     *playVid { |vid sec  audio=true fullscreen=false length=1 start=0 end=5| 
@@ -96,6 +133,48 @@ Yoeminrak {
 		Event.addEventType(name, { ~dur = ~dur * secDur[~section ? 0] / 20 => _.postln} ++ func  )
     }
     *makeStringEventType {
+        Yoeminrak.addEventType(\yoeString2, {  //multi-voice version from Claude
+            // make array if single num
+            var freq = 5.collect {|i|~freq.asArray.wrapAt(i)} ;
+            var gates = 5.collect {|i| 
+                var f = ~freq.asArray.wrapAt(i);
+                if(f == "r", { 0 }, { 1 })
+            };
+            var pitches = 5.collect {|i|
+                var f = ~freq.asArray.wrapAt(i);
+                if((f == "r") || (f == "-"), { env[\pitch].getnSynchronous(5)[i] }, { f })
+            };
+			var go = { |newPitch time=1 curve| 
+				{
+					Env([env[\pitch].kr => Latch.kr(_,1), newPitch], time, curve).kr(2,gate:1)
+					=> Out.kr(env[\pitch].index, _)
+				}.play 
+			};
+
+            //retrigger if resting
+            ( env[\synth].isPlaying.not or: env[\resting] ).if{
+                env.use{~synth=~synthFunc2.(~freqLag, ~knum,~width).register; ~resting = false};
+
+            };
+
+            // env[\pitch].setn(pitches);
+            env[\synth].set(\freqLag, ~freqLag ? 2);
+			try{
+				go.(pitches, ~time ? 0.1 => _.postln, ~curve);
+			};
+            // env[\synth].setn(\myGate, gates);
+            (~freq.asString == "r" ).if {
+                env[\synth].setn(\myGate, [0,0,0,0,0]);
+            } {
+                env[\synth].setn(\myGate, [1,1,1,1,1]);
+            }
+            ;
+            ~ornament !? _.(~dur);
+            env[\synth].setn(\knum, ~knum);
+            env[\synth].setn(\chord, ~chord);
+            env[\synth].setn(\select, ~select);
+            env[\synth].setn(\width, ~width ? 1.05);
+        });
         Yoeminrak.addEventType(\yoeString, {  //multi-voice version from Claude
             // make array if single num
             var freq = 5.collect {|i|~freq.asArray.wrapAt(i)} ;
@@ -107,14 +186,24 @@ Yoeminrak {
                 var f = ~freq.asArray.wrapAt(i);
                 if((f == "r") || (f == "-"), { env[\pitch].getnSynchronous(5)[i] }, { f })
             };
+			var go = { |newPitch time=1 curve| 
+				{
+					Env([env[\pitch].kr => Latch.kr(_,1), newPitch], time, curve).kr(2,gate:1).poll 
+					=> Out.kr(env[\pitch].index, _)
+				}.play 
+			};
 
             //retrigger if resting
             ( env[\synth].isPlaying.not or: env[\resting] ).if{
-                env.use{~synth=~synthFunc.play.register; ~resting = false}
+                env.use{~synth=~synthFunc.(~freqLag, ~knum,~width).register; ~resting = false};
+
             };
 
-            env[\pitch].setn(pitches);
+            // env[\pitch].setn(pitches);
             env[\synth].set(\freqLag, ~freqLag ? 2);
+			try{
+				go.(pitches, ~time ? 0.1 => _.postln, ~curve);
+			};
             // env[\synth].setn(\myGate, gates);
             (~freq.asString == "r" ).if {
                 env[\synth].setn(\myGate, [0,0,0,0,0]);
@@ -124,6 +213,7 @@ Yoeminrak {
             ;
             ~ornament !? _.(~dur);
             env[\synth].setn(\knum, ~knum);
+            env[\synth].setn(\width, ~width ? 1.05);
         });
     }
 	*makeRestEventType {
@@ -189,19 +279,31 @@ Yoeminrak {
         // song.at(sec)
         Yoeminrak.song[sec].keys.reject {|key| (muted ? [] ).any {|i| key.asString.contains(i)}} .do {|i| Yoeminrak.song.at(sec, i).q.play}
     }
+	*playSong {|sec=0|
+		song[sec].keys.do {|key|
+			song[sec][key].q.play
+		}
+	}
 }
 + Array {
+    jgb_slots { |section key|
+        var slots = (type:\yoeRest) ! 20;
+        this.flop.collect(_.asEvent).do {|e| slots.put(e.beat, e)};
+        Yoeminrak.song.put(section ? 0, (key ? \current), slots);
+        ^slots
+    }
+
     jgb {
-	^this.flop.collect { |i| 
-	    (i.flop.size > 1).if {
-			i.flop.collect { |subArray|
-				subArray.asEvent.put(\dur,1/3).asKeyValuePairs
-			}
-		} {
-			i ++ [dur:1] =>_.bubble
-		}}.flatten
-        .deepCollect(2, {|i| i.isKindOf(Ref).if{i.value}{i}})
-        .collect {|i x| i ++ [beat: x] => _.asEvent}
+		^this.flop.collect { |i| 
+			(i.flop.size > 1).if {
+				i.flop.collect { |subArray|
+					subArray.asEvent.put(\dur,1/3).asKeyValuePairs
+				}
+			} {
+				i ++ [dur:1] =>_.bubble
+			}}.flatten
+			.deepCollect(2, {|i| i.isKindOf(Ref).if{i.value}{i}})
+			.collect {|i x| i ++ [beat: x] => _.asEvent}
     }
     jgbq {
         ^this.jgb.q

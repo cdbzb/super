@@ -47,7 +47,7 @@ MicroKeys {
                     downChannel.put(midinote, channel);
 					currentChannel = channel; // Update current channel
 					constantVel.not.if {
-						monosynth.set(\vel, event.vel, \amp, event.vel /127)
+						monosynth.set(\vel, event.vel, \amp, event.vel )
 					};
 				};
 						// move this line down here to allow tracking outside the range

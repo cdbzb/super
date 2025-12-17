@@ -12,12 +12,13 @@ Yoeminrak {
     classvar <>song;
     classvar <> muted;
 
+	
     *initClass {
         Class.initClassTree(aClass:Bus);
         Class.initClassTree(aClass:Env);
         Class.initClassTree(aClass:SinOsc);
 		env = Environment.new;
-        song = MultiLevelIdentityDictionary();
+		song = ();
 		ServerTree.add({"pkill mpv".unixCmd});
         video = (
        particles: "'/Users/michael/tank/Hyojin/Video Sync/Media/여민락_2025__yeomillak-2025 (720p).mp4'",
@@ -47,80 +48,61 @@ Yoeminrak {
        this.makeStringEventType;
 	   this.makeNoteEventType;
 	   this.makeRestEventType;
-       env.use {
-           ~pitch = Bus.control(Server.default, 5).setn([0,0,0,0,0]);
-           ~ornament =  Bus.control(Server.default, 5).setn([0,0,0,0,0]);
-           ~bendUpFunc = {|dur=1|
-			   ~b.free; ~b = { Env([0,0,1,0],[dur-0.5,0.5,0]).kr(0, 1).dup(5) => Out.kr(env[\ornament],_)}.play
-           };
-           ~wiggle = {
-               ~b.free; ~b = { SinOsc.ar(5, 0, 0.2).dup(5) => Out.kr(env[\ornament], _)}.play;
-           };
-		   ~synthFunc2 = {|freqLag=3 knum=2 width=(0.5.midiratio)| {
-			   // [ Gendy2,Gendy1, Gendy3 ]
-			   // [Gendy1]
-			   // .collect
-			   // {
-			   // |i|
-			   var freqLag = \freqLag.kr(freqLag);
-               var knum=NamedControl.kr(\knum,#[2,2,2,2,2]);
-               var width=NamedControl.kr(\width,#[1.05,1.05,1.05,1.05,1.05]);
-			   var chord=NamedControl.kr(\chord, #[1, 2, 3, 5, 6].df(\c));
-               chord.collect { |i x|
-                   [ Gendy1, Gendy2, Gendy3 ].collect {|ugen|
-                       ugen.arWidth(
-                           initCPs:12,
-                           ampdist:0,
-                           // knum:SinOsc.ar(0.02, 0,  6).abs + 2.1,
-                           // knum:\knum.kr(knum),
-                           knum:knum[x].poll,
-                           freq: 
-                           i * ~pitch.kr[x].midiratio
-                           .lag2({ 0.5.rand} + freqLag * (freqLag > 0))
-                           *  ~ornament.kr[x].midiratio,
-                           width:width[x]
-                       ) / 3
-                   } => SelectX.ar(\select.kr(1), _)
-               }
-			   * [2, 2, 2, 1, 0.5]
-			   * Env.asr(0.5,releaseTime:5).kr(doneAction:0, gate:
-				   NamedControl.kr(\myGate, [1, 1, 1, 1, 1])
-			   )
-			   => Splay.ar(_)
-		   }.play };
-		   ~synthFunc = {|freqLag=3 knum=2 width=(0.5.midiratio)| {
-			   // [ Gendy2,Gendy1, Gendy3 ]
-			   // [Gendy1]
-			   // .collect
-			   // {
-			   // |i|
-			   var freqLag = \freqLag.kr(freqLag);
-			   Gendy1.arWidth(
-				   initCPs:12,
-				   ampdist:0,
-				   // knum:SinOsc.ar(0.02, 0,  6).abs + 2.1,
-				   // knum:\knum.kr(knum),
-				   knum:NamedControl.kr(\knum,#[2,2,2,2,2]),
-				   freq: 
-				   [1, 2, 3, 5, 6].df(\c) *
-				   ~pitch.kr().midiratio
-				   .lag2(
-					   { 0.5.rand}.dup(5) + freqLag 
-					   * (freqLag > 0) // use freqLag 0 to turn off
-				   )
-				   // .midiratio 
-				   *  ~ornament.kr.midiratio,
-				   width:\width.kr(width),
-			   ) / 3
-			   // }// => Mix.ar(_)
-			   * [2, 2, 2, 1, 0.5]
-			   * Env.asr(0.5,releaseTime:5).kr(doneAction:0, gate:
-				   NamedControl.kr(\myGate, [1, 1, 1, 1, 1])
-			   )
-			   => Splay.ar(_)
-		   }.play };
-       }
-    }
+	   Server.default.waitForBoot{
+		   env.use {
+			   var s = Server.default;
+			   CmdPeriod.add({env.use{~playing = nil}});
+			   ~know = true;
+			   ~root = Bus.control(s, 1).set(0);
+			   ~ornament = Bus.control(s, 5).set(0);
+			   ~chord = Bus.control(s, 5).setn( [261.6255653006, 293.66476791741, 329.62755691287, 391.99543598175, 440.0]);
+			   ~width = Bus.control(s, 5).setn(1.015 ! 5);
+			   ~knum = Bus.control(s, 5).setn(2 ! 5);
+			   ~select = Bus.control(s, 1).set(0.0);
+			   ~ampDist = Bus.control(s, 5).set(0 ! 5);
+			   ~durDist = Bus.control(s, 5).setn(1 ! 5);
+			   ~ampDistParam = Bus.control(s, 5).setn(1 ! 5);
+			   ~durDistParam = Bus.control(s, 5).setn(1 ! 5);
+			   ~ampScale = Bus.control(s, 5).setn(0.5 ! 5);
+			   ~durScale = Bus.control(s, 5).setn(0.5 ! 5);
+			   ~amp = Bus.control(s,5).setn([2,2,2,1,0.5]);
+			   // Gendy1.ar(ampdist:1, durdist:1, adparam:1.0, ddparam:1.0, minfreq:440, maxfreq:660, ampscale:0.5, durscale:0.5, initCPs:12, knum:nil, mul:1.0, add:0.0)
+			   ~func = {
+				   env.use {
+					   {
+						   [Gendy1, Gendy2, Gendy3].collect { |i|
+							   i.arWidth(
+								   ampdist:~ampDist.kr,
+								   adparam:~ampDistParam.kr,
+								   durdist:~durDist.kr,
+								   ddparam:~durDistParam.kr,
+								   durscale:~durScale.kr,
+								   ampscale:~ampScale.kr,
+								   freq: (~root.kr + ~ornament.kr).midiratio
+								   * ~chord.kr ,
+								   width: ~width.kr,
+								   knum: ~knum.kr,
+							   ) / 3
+							   * ~amp.kr
+						   } 
+						   => SelectX.ar(~select.kr,_)
+						   // => _.poll
+						   * Env.asr(0.5, 1, \release.kr(2)).kr(0,gate:NamedControl.kr(\gates, [1, 1, 1, 1, 1]))
+						   => Splay.ar(_)
+					   }.play
+				   }
+			   };
+			   ~go = { 
+				   |bus newPitch time=1 curve| 
+				   {
+					   Env([bus.kr => Latch.kr(_,1), newPitch], time, curve).kr(2,gate:1) 
+					   => Out.kr(bus.index,_)
+				   }.play 
+			   };
+		   }
+	   }
+ }
+
     *playVid { |vid sec  audio=true fullscreen=false length=1 start=0 end=5| 
 		var path = (vid==0).if{video.at(\live)}{video.at(\particles)};
 		sec.notNil.if {
@@ -133,6 +115,38 @@ Yoeminrak {
 		Event.addEventType(name, { ~dur = ~dur * secDur[~section ? 0] / 20 => _.postln} ++ func  )
     }
     *makeStringEventType {
+
+	 Yoeminrak.addEventType(\yoeString3,{
+		 (~gates != [0,0,0,0,0]).if {
+			 env.use {( ~playing.isNil ).if {~synth = ~func.();~playing=true}};
+		 };
+		 ~gates.notNil.if {
+			 env[\synth].setn(\gates, ~gates);
+			 (~gates == [0,0,0,0,0]).if { env[\playing] = nil };
+		 };
+		 ~extra !? _.();
+		 env[\synth].set(\release, ~release);
+		 currentEnvironment.keysValuesDo {|i j|
+			 env.use{
+				 // ~synth.isPlaying.not.if {~synth = ~func.play.register};
+				 // ~release !? ~synth.release(_);
+				 env[i] !?
+				 {|bus|
+						 case
+						 { j.isNumber } {"setting".postln; bus.setn(j ! bus.numChannels)} 
+						 { j.isKindOf(Function)} { {
+							 j
+						 => _.poll
+							 => Out.kr(bus, _) 
+					 }.play }
+						 { j.isKindOf(Array)} { bus.setn(j)}
+						 { j.isKindOf(Tuple2)} { bus.setAt(j.at1, j.at2)}
+						 {j.isKindOf(Tuple3)} {~go.(bus, j.at1,j.at2, j.at3  )}
+					}
+				 }
+			 }
+		 }
+	 );
         Yoeminrak.addEventType(\yoeString2, {  //multi-voice version from Claude
             // make array if single num
             var freq = 5.collect {|i|~freq.asArray.wrapAt(i)} ;
@@ -308,8 +322,9 @@ Yoeminrak {
     jgbq {
         ^this.jgb.q
     }
-    jgbp { |section=0 key|
-        Yoeminrak.song.put(section, key.asSymbol, this.jgb)
+    jgbp { |section key|
+        Yoeminrak.song[section] = this.jgb;
+		^Yoeminrak.song[section]
     }
     tracker {
         var columns = this[0].size;

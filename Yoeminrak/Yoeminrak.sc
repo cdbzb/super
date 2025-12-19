@@ -407,12 +407,18 @@ Yoeminrak {
         ^[this[0],this[1].clump(columns).flop].lace
     }
 }
-+ Set{
-	yPlay { |cursor=0 section=0|
-        CmdPeriod.run;
-		^ fork{
++ SequenceableCollection {
+	yPlay { |cursor=0 section=0 solo continue=false|
+        // CmdPeriod.run;
+		// Yoeminrak.env[\synth].free;
+		fork{
             Server.default.sync;
-            this.do {|i|
+			solo.notNil.if{
+				this.select{ |i| i.type.isNil.if{false}{i.type.contains(solo.asString) }}
+			}{
+				this.reject{|i| i.beat.isNil}
+			}
+			.do {|i|
                 if (i.beat >= cursor) {
                     TempoClock.sched(Yoeminrak.secDur[section] / 20 * (i.beat - cursor), {i.play})
                 }

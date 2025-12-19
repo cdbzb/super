@@ -410,11 +410,14 @@ Yoeminrak {
 + Set{
 	yPlay { |cursor=0 section=0|
         CmdPeriod.run;
-		^this.asArray.do {|i|
-            if (i.beat >= cursor) {
-                TempoClock.sched(Yoeminrak.secDur[section] / 20 * (i.beat - cursor), {i.play})
+		^ fork{
+            Server.default.sync;
+            this.do {|i|
+                if (i.beat >= cursor) {
+                    TempoClock.sched(Yoeminrak.secDur[section] / 20 * (i.beat - cursor), {i.play})
+                }
             }
-		}
+        }
 	}
 }
 + Pattern {

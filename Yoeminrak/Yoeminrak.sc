@@ -11,7 +11,23 @@ Yoeminrak {
     classvar <>env;
     classvar <>song;
     classvar <> muted;
-
+    *resetBusses {
+        env.use {
+            ~root.set(0);
+            ~ornament.set(0);
+            ~chord.setn( [261.6255653006, 293.66476791741, 329.62755691287, 391.99543598175, 440.0]);
+            ~width.setn(1.015 ! 5);
+            ~knum.setn(2 ! 5);
+            ~select.set(0.0);
+            ~ampDist.set(0 ! 5);
+            ~durDist.setn(1 ! 5);
+            ~ampDistParam.setn(1 ! 5);
+            ~durDistParam.setn(1 ! 5);
+            ~ampScale.setn(0.5 ! 5);
+            ~durScale.setn(0.5 ! 5);
+            ~amp.setn([2,2,2,1,0.5]);
+        }
+    }
 	
     *initClass {
         Class.initClassTree(aClass:Bus);
@@ -70,6 +86,7 @@ Yoeminrak {
 			   ~func = {
 				   env.use {
 					   {
+						   var freqLag = \freqLag.kr(3);
 						   [Gendy1, Gendy2, Gendy3].collect { |i|
 							   i.arWidth(
 								   ampdist:~ampDist.kr,
@@ -78,7 +95,7 @@ Yoeminrak {
 								   ddparam:~durDistParam.kr,
 								   durscale:~durScale.kr,
 								   ampscale:~ampScale.kr,
-								   freq: (~root.kr + ~ornament.kr).midiratio
+								   freq: (~root.kr.lag2(freqLag.poll) + ~ornament.kr).midiratio
 								   * ~chord.kr ,
 								   width: ~width.kr,
 								   knum: ~knum.kr,
@@ -93,9 +110,9 @@ Yoeminrak {
 				   }
 			   };
 			   ~go = { 
-				   |bus newPitch time=1 curve| 
+				   |bus newPitch time=1 curve freqLag=0| 
 				   {
-					   Env([bus.kr => Latch.kr(_,1), newPitch], time, curve).kr(2,gate:1) 
+					   Env([bus.kr => Latch.kr(_,1), newPitch], time, curve).kr(2,gate:1).lag2(freqLag) 
 					   => Out.kr(bus.index,_)
 				   }.play 
 			   };
@@ -114,38 +131,47 @@ Yoeminrak {
     *addEventType { |name func|
 		Event.addEventType(name, { ~dur = ~dur * secDur[~section ? 0] / 20 => _.postln} ++ func  )
     }
+	*makeSectionEventType {
+		Event.addEventType( \ySec, {
+			Yoeminrak.song[~sec]
+		})
+	}
     *makeStringEventType {
-
 	 Yoeminrak.addEventType(\yoeString3,{
 		 (~gates != [0,0,0,0,0]).if {
 			 env.use {( ~playing.isNil ).if {~synth = ~func.();~playing=true}};
 		 };
-		 ~gates.notNil.if {
-			 env[\synth].setn(\gates, ~gates);
-			 (~gates == [0,0,0,0,0]).if { env[\playing] = nil };
-		 };
-		 ~extra !? _.();
-		 env[\synth].set(\release, ~release);
-		 currentEnvironment.keysValuesDo {|i j|
-			 env.use{
-				 // ~synth.isPlaying.not.if {~synth = ~func.play.register};
-				 // ~release !? ~synth.release(_);
-				 env[i] !?
-				 {|bus|
+		 Server.default.makeBundle(0.2,{
+			 ~gates.notNil.if {
+				 env[\synth].setn(\gates, ~gates);
+				 (~gates == [0,0,0,0,0]).if { env[\playing] = nil };
+			 };
+			 ~extra !? _.();
+			 env[\synth].set(\release, ~release);
+			 env[\synth].set(\freqLag, ~freqLag);
+			 currentEnvironment.keysValuesDo {|i j|
+				 env.use{
+					 // ~synth.isPlaying.not.if {~synth = ~func.play.register};
+					 // ~release !? ~synth.release(_);
+					 env[i] !?
+					 {|bus|
 						 case
 						 { j.isNumber } {"setting".postln; bus.setn(j ! bus.numChannels)} 
 						 { j.isKindOf(Function)} { {
 							 j
-						 => _.poll
+							 => _.poll
 							 => Out.kr(bus, _) 
-					 }.play }
-						 { j.isKindOf(Array)} { bus.setn(j)}
-						 { j.isKindOf(Tuple2)} { bus.setAt(j.at1, j.at2)}
-						 {j.isKindOf(Tuple3)} {~go.(bus, j.at1,j.at2, j.at3  )}
-					}
+						 }.play }
+						 { j.isKindOf(Array) } { bus.setn(j) }
+						 { j.isKindOf(Tuple2) } { bus.setAt(j.at1, j.at2) }
+						 { j.isKindOf(Tuple3) } { ~go.(bus, j.at1,j.at2, j.at3  ) }
+						 { j.isKindOf(Tuple4) } { ~go.(bus, j.at1,j.at2, j.at3, j.at4) }
+					 }
 				 }
 			 }
 		 }
+     )
+	 }
 	 );
         Yoeminrak.addEventType(\yoeString2, {  //multi-voice version from Claude
             // make array if single num
@@ -214,7 +240,7 @@ Yoeminrak {
             };
 
             // env[\pitch].setn(pitches);
-            env[\synth].set(\freqLag, ~freqLag ? 2);
+            ~freqLag.notNil.if {env[\synth].set(\freqLag, ~freqLag )};
 			try{
 				go.(pitches, ~time ? 0.1 => _.postln, ~curve);
 			};
@@ -276,6 +302,16 @@ Yoeminrak {
 				section: (start..end).stutter(6).q
 			].p
     }
+    *addDrum{|section params|
+		song[section].isNil.if{song[section]=Set[]};
+			[
+				type: [0, 1, 0, 1, 2, 3].collect{|i| "yoeDrum"++i => _.asSymbol},
+                beat: [0, 1, 6, 10, 14, 15],
+			] ++ params
+            => _.flop
+            => _.collect {|i| i.asEvent}
+            => _.do {|i| Yoeminrak.song[section].add(i)}
+    }
     *drumArray {|section|
 
 			^[
@@ -300,6 +336,15 @@ Yoeminrak {
 	}
 }
 + Array {
+	addType { |type|
+		^this.collect{
+			|i| i.isKindOf(Event).if{
+				i.put(\type, type)
+			}{
+				i.collect{|j| j.put(\type, type)}
+			}
+		}
+	}
     jgb_slots { |section key|
         var slots = (type:\yoeRest) ! 20;
         this.flop.collect(_.asEvent).do {|e| slots.put(e.beat, e)};
@@ -308,28 +353,69 @@ Yoeminrak {
     }
 
     jgb {
-		^this.flop.collect { |i| 
+		var events = this.flop.collect { |i| 
 			(i.flop.size > 1).if {
-				i.flop.collect { |subArray|
-					subArray.asEvent.put(\dur,1/3).asKeyValuePairs
+				i.flop.collect { |subArray x|
+					var event = subArray.asEvent;
+					event.put(\dur,1/3);
+					event.asKeyValuePairs;
 				}
 			} {
 				i ++ [dur:1] =>_.bubble
 			}}.flatten
 			.deepCollect(2, {|i| i.isKindOf(Ref).if{i.value}{i}})
-			.collect {|i x| i ++ [beat: x] => _.asEvent}
+			// .collect {|i x| i ++ [beat: x] => _.asEvent};
+			.collect (_.asEvent);
+
+			// Now add beat positions by accumulating durations
+			var beat = 0;
+			^ events.collect { |event|
+				var thisEvent = event.put(\beat, beat);
+				beat = beat + event[\dur];
+				thisEvent
+			};
+
     }
+	add20 { |section|
+		var counter=0;
+		this.do{|i|
+			if (i.isKindOf(Array)) {
+                "ADD 1/3".postln;
+				i.do {|j x|
+					j.put(\beat, counter);
+					counter = counter + (1/3)
+				}
+			} {
+                "ADD 1".postln;
+				i.put(\beat, counter);
+				counter = counter + 1;
+			}
+		};
+		Yoeminrak.song[section].isNil.if{ Yoeminrak.song[section]=Set[]};
+        Yoeminrak.song[section].addAll(this.flat)
+	}
     jgbq {
         ^this.jgb.q
     }
     jgbp { |section key|
-        Yoeminrak.song[section] = this.jgb;
+		Yoeminrak.song[section].isNil.if {Yoeminrak.song[section] = Set[]};
+        this.jgb.do {|i| Yoeminrak.song[section].add(i)};
 		^Yoeminrak.song[section]
     }
     tracker {
         var columns = this[0].size;
         ^[this[0],this[1].clump(columns).flop].lace
     }
+}
++ Set{
+	yPlay { |cursor=0 section=0|
+        CmdPeriod.run;
+		^this.asArray.do {|i|
+            if (i.beat >= cursor) {
+                TempoClock.sched(Yoeminrak.secDur[section] / 20 * (i.beat - cursor), {i.play})
+            }
+		}
+	}
 }
 + Pattern {
     jgb {

@@ -95,7 +95,7 @@ Yoeminrak {
 								   ddparam:~durDistParam.kr,
 								   durscale:~durScale.kr,
 								   ampscale:~ampScale.kr,
-								   freq: (~root.kr.lag2(freqLag.poll) + ~ornament.kr).midiratio
+								   freq: (~root.kr.lag2(freqLag) + ~ornament.kr).midiratio
 								   * ~chord.kr ,
 								   width: ~width.kr,
 								   knum: ~knum.kr,
@@ -275,8 +275,8 @@ Yoeminrak {
                { 
                    ~amp = 1;
                    ~out = { Effect.bus({ |i| FreeVerb.ar(i, 1,1) * 8 }) };
-				   ~type = \note;
-                   currentEnvironment.play;
+				   // ~type = \note;
+                   currentEnvironment.copy.put(\type,\note).play;
                    // (
                        // freq: env[\pitch].getSynchronous * 2/6,
                        // freq: ~freq ,
@@ -303,7 +303,7 @@ Yoeminrak {
 			].p
     }
     *addDrum{|section params|
-		song[section].isNil.if{song[section]=Set[]};
+		song[section].isNil.if{song[section]=List[]};
 			[
 				type: [0, 1, 0, 1, 2, 3].collect{|i| "yoeDrum"++i => _.asSymbol},
                 beat: [0, 1, 6, 10, 14, 15],
@@ -416,11 +416,11 @@ Yoeminrak {
 			solo.notNil.if{
 				this.select{ |i| i.type.isNil.if{false}{i.type.contains(solo.asString) }}
 			}{
-				this.reject{|i| i.beat.isNil}
+				this
 			}
 			.do {|i|
                 if (i.beat >= cursor) {
-                    TempoClock.sched(Yoeminrak.secDur[section] / 20 * (i.beat - cursor), {i.play})
+                    TempoClock.sched(Yoeminrak.secDur[section] / 20 * (i.beat - cursor), {i.copy.play})
                 }
             }
         }

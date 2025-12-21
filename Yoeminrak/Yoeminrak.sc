@@ -69,6 +69,7 @@ Yoeminrak {
 			   var s = Server.default;
 			   CmdPeriod.add({env.use{~playing = nil}});
 			   ~know = true;
+			   ~running = ();
 			   ~root = Bus.control(s, 1).set(0);
 			   ~ornament = Bus.control(s, 5).set(0);
 			   ~chord = Bus.control(s, 5).setn( [261.6255653006, 293.66476791741, 329.62755691287, 391.99543598175, 440.0]);
@@ -156,12 +157,13 @@ Yoeminrak {
 					 env[i] !?
 					 {|bus|
 						 case
-						 { j.isNumber } {"setting".postln; bus.setn(j ! bus.numChannels)} 
-						 { j.isKindOf(Function)} { {
-							 j
-							 => _.poll
-							 => Out.kr(bus, _) 
-						 }.play }
+						 { j.isNumber } { try { ~running[i].release(~release ? 0.1) }; bus.setn(j ! bus.numChannels) } 
+						 { j.isKindOf(Function)} {
+							 ~running.put(i, {
+								 j * Env.cutoff(releaseTime:0.1, level:1.0, curve:\lin).kr(2, \gate.kr)
+								 => Out.kr(bus, _) 
+							 }.play )
+						 }
 						 { j.isKindOf(Array) } { bus.setn(j) }
 						 { j.isKindOf(Tuple2) } { bus.setAt(j.at1, j.at2) }
 						 { j.isKindOf(Tuple3) } { ~go.(bus, j.at1,j.at2, j.at3  ) }

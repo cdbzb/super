@@ -27,6 +27,35 @@
 	findur{|i |
 		^Pfindur(i,this)
 	}
+    jgb { |beatDur=1|
+        ^Prout({ |ev|
+            var stream = this.asStream;
+            var event;
+            while {
+                event = stream.next(ev);
+                event.notNil;
+            } {
+                var deg = event[\degree];
+                if(deg.isArray and: { deg.isKindOf(Ref).not }) {
+                    var n = deg.size;
+                    n.do { |i|
+                        var newEvent = event.copy;
+                        newEvent.keysValuesDo { |k, v|
+                            if(v.isArray and: { v.size == n } and: { v.isKindOf(Ref).not }) {
+                                newEvent[k] = v[i];
+                            };
+                        };
+                        newEvent[\dur] = beatDur / n;
+                        ev = newEvent.yield;
+                    };
+                } {
+                    if(deg.isKindOf(Ref)) { event[\degree] = deg.value };
+                    event[\dur] = beatDur;
+                    ev = event.yield;
+                };
+            };
+        });
+    }
 }
 +Ppar {
 	set { |...args| var first = [this.list,args.flop].flop;

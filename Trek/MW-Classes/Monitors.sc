@@ -180,10 +180,16 @@ Monitors {  //setup monitoring for Trek piece
 		o.outDevice_("Pro Ag");
 		Server.default.reboot
 	}
-	*zoom {
+	*zoom{
 		var o =Server.default.options;
 		o.inDevice_("ZoomAudioD");
 		o.outDevice_("ZoomAudioD");
+		Server.default.reboot
+	}
+	*teams{
+		var o =Server.default.options;
+		o.inDevice_("MacBook Pro Microphone");
+		o.outDevice_("TeamsMulti");
 		Server.default.reboot
 	}
 

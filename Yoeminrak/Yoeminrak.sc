@@ -160,7 +160,8 @@ Yoeminrak {
 						 { j.isNumber } { try { ~running[i].release(~release ? 0.1) }; bus.setn(j ! bus.numChannels) } 
 						 { j.isKindOf(Function)} {
 							 ~running.put(i, {
-								 j * Env.cutoff(releaseTime:0.1, level:1.0, curve:\lin).kr(2, \gate.kr)
+								 Env.cutoff(releaseTime:0.1, level:1.0, curve:\lin).kr(2, \gate.kr)
+								 * j
 								 => Out.kr(bus, _) 
 							 }.play )
 						 }

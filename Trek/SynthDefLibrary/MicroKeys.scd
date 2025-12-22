@@ -57,7 +57,7 @@ LFSaw.ar(freqs[n], Rand(0, 2))
  SynthDef(\sawSynthBend, {
 	 arg out=0, freq = 440, amp = 0.1, att = 0.1, rel = 2, lofreq = 1000, hifreq = 3000, lagTime = 0.3, spread=1, center=0, pulse = 0, t_trig = 0;
 	 var env, snd;
-	 freq=Lag.kr(freq * \bend.kr.midiratio, lagTime);
+	 freq=Lag.kr(freq * \bend.kr.midiratio.reciprocal, lagTime);
 	 env = Env.asr(
 		 attackTime: att,
 		 sustainLevel: amp,

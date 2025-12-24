@@ -295,7 +295,7 @@ Yoeminrak {
         }
 	}
 }
-+ List {
++ SequenceableCollection{
 	play { |cursor=0 section=0 solo continue=false|
         // CmdPeriod.run;
 		// Yoeminrak.env[\synth].free;

@@ -11,6 +11,10 @@ Yoeminrak {
     classvar <>env;
     classvar <>song;
     classvar <> muted;
+    classvar <> dir = "/Users/michael/tank/super/Yoeminrak";
+	*loadSongs {
+		^(PathName(dir) +/+ "songs").files.do { |e| e.fullPath.load };
+	}
     *resetBusses {
         env.use {
             ~root.set(0);
@@ -35,6 +39,7 @@ Yoeminrak {
         Class.initClassTree(aClass:SinOsc);
 		env = Environment.new;
 		song = ();
+        // this.loadSongs;
 		ServerTree.add({"pkill mpv".unixCmd});
         video = (
        particles: "'/Users/michael/tank/Hyojin/Video Sync/Media/여민락_2025__yeomillak-2025 (720p).mp4'",
@@ -60,10 +65,8 @@ Yoeminrak {
    	      -76, //15
    	   ].collect{|i x| x * 52 + 6 + i };
 	   secDur = sections.differentiate.drop(1);
-       this.makeDrumEventTypes;
-       this.makeStringEventType;
+       this.loadEventTypes;
 	   this.makeNoteEventType;
-	   this.makeRestEventType;
 	   Server.default.waitForBoot{
 		   env.use {
 			   var s = Server.default;
@@ -132,171 +135,30 @@ Yoeminrak {
     *addEventType { |name func|
 		Event.addEventType(name, { ~dur = ~dur * secDur[~section ? 0] / 20 => _.postln} ++ func  )
     }
-	*makeSectionEventType {
-		Event.addEventType( \ySec, {
-			Yoeminrak.song[~sec]
-		})
+	*loadEventTypes {
+		var eventTypesPath = this.filenameSymbol.asString.dirname +/+ "eventTypes";
+		var eventTypeFiles = [
+			"drumEventType.scd",
+			"stringEventType.scd", 
+			"sectionEventType.scd",
+			"rEventType.scd"
+		];
+		
+		eventTypeFiles.do { |filename|
+			var fullPath = eventTypesPath +/+ filename;
+			if (File.exists(fullPath)) {
+				fullPath.load;
+			} {
+				("EventType file not found: " ++ fullPath).warn;
+			};
+		};
 	}
-    *makeStringEventType {
-	 Yoeminrak.addEventType(\yoeString3,{
-		 (~gates != [0,0,0,0,0]).if {
-			 env.use {( ~playing.isNil ).if {~synth = ~func.();~playing=true}};
-		 };
-		 Server.default.makeBundle(0.2,{
-			 ~gates.notNil.if {
-				 env[\synth].setn(\gates, ~gates);
-				 (~gates == [0,0,0,0,0]).if { env[\playing] = nil };
-			 };
-			 ~extra !? _.();
-			 env[\synth].set(\release, ~release);
-			 env[\synth].set(\freqLag, ~freqLag);
-			 currentEnvironment.keysValuesDo {|i j|
-				 env.use{
-					 // ~synth.isPlaying.not.if {~synth = ~func.play.register};
-					 // ~release !? ~synth.release(_);
-					 env[i] !?
-					 {|bus|
-						 case
-						 { j.isNumber } { try { ~running[i].release(~release ? 0.1) }; bus.setn(j ! bus.numChannels) } 
-						 { j.isKindOf(Function)} {
-							 ~running.put(i, {
-								 Env.cutoff(releaseTime:0.1, level:1.0, curve:\lin).kr(2, \gate.kr)
-								 * j
-								 => Out.kr(bus, _) 
-							 }.play )
-						 }
-						 { j.isKindOf(Array) } { bus.setn(j) }
-						 { j.isKindOf(Tuple2) } { bus.setAt(j.at1, j.at2) }
-						 { j.isKindOf(Tuple3) } { ~go.(bus, j.at1,j.at2, j.at3  ) }
-						 { j.isKindOf(Tuple4) } { ~go.(bus, j.at1,j.at2, j.at3, j.at4) }
-					 }
-				 }
-			 }
-		 }
-     )
-	 }
-	 );
-        Yoeminrak.addEventType(\yoeString2, {  //multi-voice version from Claude
-            // make array if single num
-            var freq = 5.collect {|i|~freq.asArray.wrapAt(i)} ;
-            var gates = 5.collect {|i| 
-                var f = ~freq.asArray.wrapAt(i);
-                if(f == "r", { 0 }, { 1 })
-            };
-            var pitches = 5.collect {|i|
-                var f = ~freq.asArray.wrapAt(i);
-                if((f == "r") || (f == "-"), { env[\pitch].getnSynchronous(5)[i] }, { f })
-            };
-			var go = { |newPitch time=1 curve| 
-				{
-					Env([env[\pitch].kr => Latch.kr(_,1), newPitch], time, curve).kr(2,gate:1)
-					=> Out.kr(env[\pitch].index, _)
-				}.play 
-			};
-
-            //retrigger if resting
-            ( env[\synth].isPlaying.not or: env[\resting] ).if{
-                env.use{~synth=~synthFunc2.(~freqLag, ~knum,~width).register; ~resting = false};
-
-            };
-
-            // env[\pitch].setn(pitches);
-            env[\synth].set(\freqLag, ~freqLag ? 2);
-			try{
-				go.(pitches, ~time ? 0.1 => _.postln, ~curve);
-			};
-            // env[\synth].setn(\myGate, gates);
-            (~freq.asString == "r" ).if {
-                env[\synth].setn(\myGate, [0,0,0,0,0]);
-            } {
-                env[\synth].setn(\myGate, [1,1,1,1,1]);
-            }
-            ;
-            ~ornament !? _.(~dur);
-            env[\synth].setn(\knum, ~knum);
-            env[\synth].setn(\chord, ~chord);
-            env[\synth].setn(\select, ~select);
-            env[\synth].setn(\width, ~width ? 1.05);
-        });
-        Yoeminrak.addEventType(\yoeString, {  //multi-voice version from Claude
-            // make array if single num
-            var freq = 5.collect {|i|~freq.asArray.wrapAt(i)} ;
-            var gates = 5.collect {|i| 
-                var f = ~freq.asArray.wrapAt(i);
-                if(f == "r", { 0 }, { 1 })
-            };
-            var pitches = 5.collect {|i|
-                var f = ~freq.asArray.wrapAt(i);
-                if((f == "r") || (f == "-"), { env[\pitch].getnSynchronous(5)[i] }, { f })
-            };
-			var go = { |newPitch time=1 curve| 
-				{
-					Env([env[\pitch].kr => Latch.kr(_,1), newPitch], time, curve).kr(2,gate:1).poll 
-					=> Out.kr(env[\pitch].index, _)
-				}.play 
-			};
-
-            //retrigger if resting
-            ( env[\synth].isPlaying.not or: env[\resting] ).if{
-                env.use{~synth=~synthFunc.(~freqLag, ~knum,~width).register; ~resting = false};
-
-            };
-
-            // env[\pitch].setn(pitches);
-            ~freqLag.notNil.if {env[\synth].set(\freqLag, ~freqLag )};
-			try{
-				go.(pitches, ~time ? 0.1 => _.postln, ~curve);
-			};
-            // env[\synth].setn(\myGate, gates);
-            (~freq.asString == "r" ).if {
-                env[\synth].setn(\myGate, [0,0,0,0,0]);
-            } {
-                env[\synth].setn(\myGate, [1,1,1,1,1]);
-            }
-            ;
-            ~ornament !? _.(~dur);
-            env[\synth].setn(\knum, ~knum);
-            env[\synth].setn(\width, ~width ? 1.05);
-        });
-    }
-	*makeRestEventType {
-        Event.addEventType(\yoeRest,{
-            ~dur = (~dur ? 1) * Yoeminrak.secDur[ ~section ? 0 ] / 20;
-            ~type = \rest;
-            currentEnvironment.play
-        })
-    }
 	*makeNoteEventType {
 		Event.addEventType(type:\yoeNote, func:{
             ~dur = (~dur ? 1) * Yoeminrak.secDur[ ~section ? 0 ] / 20;
             ~type = ~freq.isKindOf(Number).if {\note.postln}{\rest.postln};
             currentEnvironment.play;
         }, parentEvent:nil)
-	}
-	*makeDrumEventTypes { |funcArray|
-        funcArray = funcArray ? [
-               { 
-                   ~amp = 1;
-                   ~out = { Effect.bus({ |i| FreeVerb.ar(i, 1,1) * 8 }) };
-				   // ~type = \note;
-                   currentEnvironment.copy.put(\type,\note).play;
-                   // (
-                       // freq: env[\pitch].getSynchronous * 2/6,
-                       // freq: ~freq ,
-                   // ).play ;
-                   },{
-                       { MembraneCircle.ar(excitation: Impulse.ar(0) => {|i| i  => Decay.ar(_, 0.3) * PinkNoise.ar(1) }, tension:SinOsc.ar(LFNoise0.ar().range(4,[ 5, 6 ])) /100 + 0.001, loss:0.9999) * XLine.kr (0.3,00001,9) => LeakDC.ar(_)}.play;
-                   },{
-                       (
-                           instrument:\cymbalsDS, amp: [ 0.02, 0.021 ], out:Effect.bus({|i| FreeVerb.ar(i, 1, 1) * [3,2]})
-                       ).play
-                   },{
-                       (instrument:[ \stringyy, \harpGendy ],freq:~freq, amp: 0.3, out: Effect.bus({|i| FreeVerb.ar(i, 1, 1) },)).play ;
-                   }
-	       ];
-		funcArray.do {|i x|
-			this.addEventType( "yoeDrum" ++ x => _.asSymbol, i)
-		};
 	}
     *drumPbind{ |start=0 end=15|
 			^[
@@ -401,7 +263,7 @@ Yoeminrak {
         ^this.jgb.q
     }
     jgbp { |section key|
-		Yoeminrak.song[section].isNil.if {Yoeminrak.song[section] = Set[]};
+		Yoeminrak.song[section].isNil.if {Yoeminrak.song[section] = List[]};
         this.jgb.do {|i| Yoeminrak.song[section].add(i)};
 		^Yoeminrak.song[section]
     }
@@ -458,5 +320,27 @@ Yoeminrak {
                 };
             };
         });
+    }
+}
++ Pbind {
+    eventsWithBeats { |n=10, protoEvent|
+        var stream = this.asStream;
+        var events = List.new;
+        var beat = 0;
+        var event;
+        
+        protoEvent = protoEvent ?? Event.default;
+        
+        n.do {
+            event = stream.next(protoEvent.copy);
+            if(event.isNil) { 
+                ^events.asArray 
+            };
+            event.put(\beat, beat);
+            beat = beat + (event[\dur] ?? 1);
+            events.add(event);
+        };
+        
+        ^events.asArray
     }
 }

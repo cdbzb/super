@@ -141,17 +141,15 @@ Yoeminrak {
     }
 	*loadEventTypes {
 		var eventTypesPath = this.filenameSymbol.asString.dirname +/+ "eventTypes";
-		var eventTypeFiles = [
-			"drumEventType.scd",
-			"stringEventType.scd", 
-			"sectionEventType.scd",
-			"rEventType.scd"
-		];
+		var eventTypeFiles = PathName(eventTypesPath).files.select { |file|
+			file.extension == "scd"
+		};
 		
-		eventTypeFiles.do { |filename|
-			var fullPath = eventTypesPath +/+ filename;
+		eventTypeFiles.do { |file|
+			var fullPath = file.fullPath;
 			if (File.exists(fullPath)) {
 				fullPath.load;
+				("Loaded event type: " ++ file.fileName).postln;
 			} {
 				("EventType file not found: " ++ fullPath).warn;
 			};

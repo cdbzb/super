@@ -15,6 +15,10 @@ Yoeminrak {
 	*loadSongs {
 		^(PathName(dir) +/+ "songs").files.do { |e| e.fullPath.load };
 	}
+	*editSong { |songName|
+		var songPath = PathName(dir) +/+ "songs" +/+ (songName.asString ++ ".scd");
+		Nvim.e(songPath.fullPath);
+	}
     *resetBusses {
         env.use {
             ~root.set(0);
@@ -274,6 +278,25 @@ Yoeminrak {
 }
 + SequenceableCollection {
 	yPlay { |cursor=0 section=0 solo continue=false|
+        // CmdPeriod.run;
+		// Yoeminrak.env[\synth].free;
+		fork{
+            Server.default.sync;
+			solo.notNil.if{
+				this.select{ |i| i.type.isNil.if{false}{i.type.contains(solo.asString) }}
+			}{
+				this
+			}
+			.do {|i|
+                if (i.beat >= cursor) {
+                    TempoClock.sched(Yoeminrak.secDur[section] / 20 * (i.beat - cursor), {i.copy.play})
+                }
+            }
+        }
+	}
+}
++ List {
+	play { |cursor=0 section=0 solo continue=false|
         // CmdPeriod.run;
 		// Yoeminrak.env[\synth].free;
 		fork{

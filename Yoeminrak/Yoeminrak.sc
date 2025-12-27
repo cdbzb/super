@@ -36,12 +36,32 @@ Yoeminrak {
             ~amp.setn([2,2,2,1,0.5]);
         }
     }
-	
+    * makeBusses {
+        var s = Server.default;
+        s.waitForBoot{
+            env.use {
+                ~root = Bus.control(s, 1).set(0);
+                ~ornament = Bus.control(s, 5).set(0);
+                ~chord = Bus.control(s, 5).setn( [261.6255653006, 293.66476791741, 329.62755691287, 391.99543598175, 440.0]);
+                ~width = Bus.control(s, 5).setn(1.015 ! 5);
+                ~knum = Bus.control(s, 5).setn(2 ! 5);
+                ~select = Bus.control(s, 1).set(0.0);
+                ~ampDist = Bus.control(s, 5).set(0 ! 5);
+                ~durDist = Bus.control(s, 5).setn(1 ! 5);
+                ~ampDistParam = Bus.control(s, 5).setn(1 ! 5);
+                ~durDistParam = Bus.control(s, 5).setn(1 ! 5);
+                ~ampScale = Bus.control(s, 5).setn(0.5 ! 5);
+                ~durScale = Bus.control(s, 5).setn(0.5 ! 5);
+                ~amp = Bus.control(s,5).setn([2,2,2,1,0.5]);
+            }
+        }
+    }	
     *initClass {
         Class.initClassTree(aClass:Bus);
         Class.initClassTree(aClass:Env);
         Class.initClassTree(aClass:SinOsc);
 		env = Environment.new;
+        this.makeBusses;
 		song = ();
         // this.loadSongs;
 		ServerTree.add({"pkill mpv".unixCmd});
@@ -73,23 +93,9 @@ Yoeminrak {
 	   this.makeNoteEventType;
 	   Server.default.waitForBoot{
 		   env.use {
-			   var s = Server.default;
 			   CmdPeriod.add({env.use{~playing = nil}});
 			   ~know = true;
 			   ~running = ();
-			   ~root = Bus.control(s, 1).set(0);
-			   ~ornament = Bus.control(s, 5).set(0);
-			   ~chord = Bus.control(s, 5).setn( [261.6255653006, 293.66476791741, 329.62755691287, 391.99543598175, 440.0]);
-			   ~width = Bus.control(s, 5).setn(1.015 ! 5);
-			   ~knum = Bus.control(s, 5).setn(2 ! 5);
-			   ~select = Bus.control(s, 1).set(0.0);
-			   ~ampDist = Bus.control(s, 5).set(0 ! 5);
-			   ~durDist = Bus.control(s, 5).setn(1 ! 5);
-			   ~ampDistParam = Bus.control(s, 5).setn(1 ! 5);
-			   ~durDistParam = Bus.control(s, 5).setn(1 ! 5);
-			   ~ampScale = Bus.control(s, 5).setn(0.5 ! 5);
-			   ~durScale = Bus.control(s, 5).setn(0.5 ! 5);
-			   ~amp = Bus.control(s,5).setn([2,2,2,1,0.5]);
 			   // Gendy1.ar(ampdist:1, durdist:1, adparam:1.0, ddparam:1.0, minfreq:440, maxfreq:660, ampscale:0.5, durscale:0.5, initCPs:12, knum:nil, mul:1.0, add:0.0)
 			   ~func = {
 				   env.use {

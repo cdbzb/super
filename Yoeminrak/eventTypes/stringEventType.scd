@@ -38,39 +38,35 @@ Event.addEventType(\yoeString3, {
             ~extra !? _.();
             
             // List of bus-mappable parameters
-            [\root, \ornament, \chord, \width, \knum, \select, 
-             \ampDist, \durDist, \ampDistParam, \durDistParam, 
-             \ampScale, \durScale, \amp].do { |key|
-                var value = currentEnvironment[key];
-                var bus = instance[key];
-                
-                value.notNil.if {
-                    case
-                    { value.isNumber } {
-                        try { instance[\running][key].release(releaseTime ? 0.1) };
-                        bus.setn(value ! bus.numChannels);
-                    }
-                    { value.isKindOf(Function) } {
-                        instance[\running].put(key, {
-                            Env.cutoff(releaseTime: 0.1, level: 1.0, curve: \lin).kr(2, \gate.kr)
-                            * value
-                            => Out.kr(bus.index, _)
-                        }.play);
-                    }
-                    { value.isKindOf(Array) } {
-                        bus.setn(value);
-                    }
-                    { value.isKindOf(Tuple2) } {
-                        bus.setAt(value.at1, value.at2);
-                    }
-                    { value.isKindOf(Tuple3) } {
-                        Yoeminrak.env[\go].(bus, value.at1, value.at2, value.at3);
-                    }
-                    { value.isKindOf(Tuple4) } {
-                        Yoeminrak.env[\go].(bus, value.at1, value.at2, value.at3, value.at4);
-                    };
-                };
-            };
+
+			currentEnvironment.keysValuesDo { |key, value|
+				instance[key] !? { |bus|
+					case
+					{ value.isNumber } {
+						try { instance[\running][key].release(releaseTime ? 0.1) };
+						bus.setn(value ! bus.numChannels);
+					}
+					{ value.isKindOf(Function) } {
+						instance[\running].put(key, {
+							Env.cutoff(releaseTime: 0.1, level: 1.0, curve: \lin).kr(2, \gate.kr)
+							* value
+							=> Out.kr(bus.index, _)
+						}.play);
+					}
+					{ value.isKindOf(Array) } {
+						bus.setn(value);
+					}
+					{ value.isKindOf(Tuple2) } {
+						bus.setAt(value.at1, value.at2);
+					}
+					{ value.isKindOf(Tuple3) } {
+						Yoeminrak.env[\go].(bus, value.at1, value.at2, value.at3);
+					}
+					{ value.isKindOf(Tuple4) } {
+						Yoeminrak.env[\go].(bus, value.at1, value.at2, value.at3, value.at4);
+					};
+				};
+			};
         });
     };
 });

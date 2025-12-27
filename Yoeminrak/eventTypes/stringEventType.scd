@@ -1,38 +1,78 @@
 // String EventTypes
-Event.addEventType(\yoeString3,{
-	(~gates != [0,0,0,0,0]).if {
-		Yoeminrak.env.use {( ~playing.isNil ).if {~synth = ~func.();~playing=true}};
-	};
-	Server.default.makeBundle(0.2,{
-		~gates.notNil.if {
-			Yoeminrak.env[\synth].setn(\gates, ~gates);
-			(~gates == [0,0,0,0,0]).if { Yoeminrak.env[\playing] = nil };
-		};
-		~extra !? _.();
-		Yoeminrak.env[\synth].set(\release, ~release);
-		Yoeminrak.env[\synth].set(\freqLag, ~freqLag);
-		currentEnvironment.keysValuesDo {|i j|
-			Yoeminrak.env.use{
-				Yoeminrak.env[i] !?
-				{|bus|
-					case
-					{ j.isNumber } { try { ~running[i].release(~release ? 0.1) }; bus.setn(j ! bus.numChannels) } 
-					{ j.isKindOf(Function)} {
-						~running.put(i, {
-							Env.cutoff(releaseTime:0.1, level:1.0, curve:\lin).kr(2, \gate.kr)
-							* j
-							=> Out.kr(bus, _) 
-						}.play )
-					}
-					{ j.isKindOf(Array) } { bus.setn(j) }
-					{ j.isKindOf(Tuple2) } { bus.setAt(j.at1, j.at2) }
-					{ j.isKindOf(Tuple3) } { ~go.(bus, j.at1,j.at2, j.at3  ) }
-					{ j.isKindOf(Tuple4) } { ~go.(bus, j.at1,j.at2, j.at3, j.at4) }
+Event.addEventType(\yoeString3, {
+    var instance;
+    var releaseTime = ~release ? 2;
+    
+    // If gates are all zero, release current instance
+    (~gates == [0, 0, 0, 0, 0]).if {
+        Yoeminrak.env.use {
+            ~currentInstance !? { |inst|
+				fork{
+					inst[\synth].release(releaseTime);
+					s.sync;
+					~currentInstance = nil;
 				}
-			}
-		}
-	}
-)
+            };
+        };
+    } {
+        // Otherwise, create new instance or update existing
+        Yoeminrak.env.use {
+            // If no current instance, create one
+            (~currentInstance.isNil).if {
+                ~currentInstance = ~func.();
+            };
+            instance = ~currentInstance;
+        };
+        
+        // Set gates on the synth
+        ~gates.notNil.if {
+            instance[\synth].setn(\gates, ~gates);
+        };
+        
+        // Set other synth parameters
+        instance[\synth].set(\release, releaseTime);
+        ~freqLag.notNil.if { instance[\synth].set(\freqLag, ~freqLag) };
+        
+        // Update busses from event parameters
+        Server.default.makeBundle(0.0, {
+            ~extra !? _.();
+            
+            // List of bus-mappable parameters
+            [\root, \ornament, \chord, \width, \knum, \select, 
+             \ampDist, \durDist, \ampDistParam, \durDistParam, 
+             \ampScale, \durScale, \amp].do { |key|
+                var value = currentEnvironment[key];
+                var bus = instance[key];
+                
+                value.notNil.if {
+                    case
+                    { value.isNumber } {
+                        try { instance[\running][key].release(releaseTime ? 0.1) };
+                        bus.setn(value ! bus.numChannels);
+                    }
+                    { value.isKindOf(Function) } {
+                        instance[\running].put(key, {
+                            Env.cutoff(releaseTime: 0.1, level: 1.0, curve: \lin).kr(2, \gate.kr)
+                            * value
+                            => Out.kr(bus.index, _)
+                        }.play);
+                    }
+                    { value.isKindOf(Array) } {
+                        bus.setn(value);
+                    }
+                    { value.isKindOf(Tuple2) } {
+                        bus.setAt(value.at1, value.at2);
+                    }
+                    { value.isKindOf(Tuple3) } {
+                        Yoeminrak.env[\go].(bus, value.at1, value.at2, value.at3);
+                    }
+                    { value.isKindOf(Tuple4) } {
+                        Yoeminrak.env[\go].(bus, value.at1, value.at2, value.at3, value.at4);
+                    };
+                };
+            };
+        });
+    };
 });
 
 Event.addEventType(\yoeString2, {

@@ -99,7 +99,7 @@ Yoeminrak {
 			   // Gendy1.ar(ampdist:1, durdist:1, adparam:1.0, ddparam:1.0, minfreq:440, maxfreq:660, ampscale:0.5, durscale:0.5, initCPs:12, knum:nil, mul:1.0, add:0.0)
 			   ~func = {
 				   env.use {
-					   {
+					   var synth = {
 						   var freqLag = \freqLag.kr(3);
 						   [Gendy1, Gendy2, Gendy3].collect { |i|
 							   i.arWidth(
@@ -120,7 +120,18 @@ Yoeminrak {
 						   // => _.poll
 						   * Env.asr(0.5, 1, \release.kr(2)).kr(0,gate:NamedControl.kr(\gates, [1, 1, 1, 1, 1]))
 						   => Splay.ar(_)
-					   }.play
+					   }.play;
+					   
+					   // Add onFree callback to free all busses
+					   synth.onFree({
+						   env.keysValuesDo { |key, value|
+							   if (value.respondsTo(\free)) {
+								   try { value.free };
+							   };
+						   };
+					   });
+					   
+					   synth;
 				   }
 			   };
 			   ~go = { 

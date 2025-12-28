@@ -22,7 +22,7 @@ Event.addEventType(\cyc, {
 		}
 	};
 	
-	~dur = Yoeminrak.secDur[~sec ? 0] / 20 * (20 - ~start);
+	~dur = Yoeminrak.secDur[~sec ? 0] / 20 * (20 - ( ~start ? 0 ));
 	song.play(~start ? 0);
 	Yoeminrak.env.put(\lastCyc, currentEnvironment)
 });

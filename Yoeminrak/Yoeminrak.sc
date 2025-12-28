@@ -269,76 +269,78 @@ Yoeminrak {
         
         Server.default.waitForBoot {
             env.use {
-                CmdPeriod.add({ env.use { ~instances = () } });
+                // CmdPeriod.add({ env.use { ~instances = () } });
+                CmdPeriod.add({ env.use { ~instances = (); ~currentInstance = nil } });
                 ~know = true;
                 ~instances = ();  // Stores active synth instances with their busses
                 ~instanceCounter = 0;
                 
                 ~func = {
                     var s = Server.default;
-                    var instance = ();
+                    var instance = Environment.new;
                     var synth;
                     
                     // Create busses for this instance
-                    instance[\root] = Bus.control(s, 1).set(0);
-                    instance[\ornament] = Bus.control(s, 5).set(0);
-                    instance[\chord] = Bus.control(s, 5).setn([261.6255653006, 293.66476791741, 329.62755691287, 391.99543598175, 440.0]);
-                    instance[\width] = Bus.control(s, 5).setn(1.015 ! 5);
-                    instance[\knum] = Bus.control(s, 5).setn(2 ! 5);
-                    instance[\select] = Bus.control(s, 1).set(0.0);
-                    instance[\ampDist] = Bus.control(s, 5).set(0 ! 5);
-                    instance[\durDist] = Bus.control(s, 5).setn(1 ! 5);
-                    instance[\ampDistParam] = Bus.control(s, 5).setn(1 ! 5);
-                    instance[\durDistParam] = Bus.control(s, 5).setn(1 ! 5);
-                    instance[\ampScale] = Bus.control(s, 5).setn(0.5 ! 5);
-                    instance[\durScale] = Bus.control(s, 5).setn(0.5 ! 5);
-                    instance[\amp] = Bus.control(s, 5).setn([2, 2, 2, 1, 0.5]);
-                    instance[\running] = ();
-                    
-                    synth = {
-                        var freqLag = \freqLag.kr(3);
-                        [Gendy1, Gendy2, Gendy3].collect { |i|
-                            i.arWidth(
-                                ampdist: In.kr(instance[\ampDist].index, 5),
-                                adparam: In.kr(instance[\ampDistParam].index, 5),
-                                durdist: In.kr(instance[\durDist].index, 5),
-                                ddparam: In.kr(instance[\durDistParam].index, 5),
-                                durscale: In.kr(instance[\durScale].index, 5),
-                                ampscale: In.kr(instance[\ampScale].index, 5),
-                                freq: (In.kr(instance[\root].index, 1).lag2(freqLag) + In.kr(instance[\ornament].index, 5)).midiratio
-                                    * In.kr(instance[\chord].index, 5),
-                                width: In.kr(instance[\width].index, 5),
-                                knum: In.kr(instance[\knum].index, 5),
-                            ) / 3
-                            * In.kr(instance[\amp].index, 5)
-                        }
-                        => SelectX.ar(In.kr(instance[\select].index, 1), _)
-                        * Env.asr(0.5, 1, \release.kr(2)).kr(0, gate: NamedControl.kr(\gates, [1, 1, 1, 1, 1]))
-                        => Splay.ar(_)
-                    }.play;
-                    
-                    instance[\synth] = synth;
-                    
-                    // Clean up busses when synth is freed
-                    synth.onFree {
-                        instance[\running].do { |r| try { r.free } };
-                        instance[\root].free;
-                        instance[\ornament].free;
-                        instance[\chord].free;
-                        instance[\width].free;
-                        instance[\knum].free;
-                        instance[\select].free;
-                        instance[\ampDist].free;
-                        instance[\durDist].free;
-                        instance[\ampDistParam].free;
-                        instance[\durDistParam].free;
-                        instance[\ampScale].free;
-                        instance[\durScale].free;
-                        instance[\amp].free;
-                        "Instance busses freed".postln;
-                    };
-                    
-                    instance  // Return the whole instance
+					instance.use{
+						~root = Bus.control(s, 1).set(0);
+						~ornament = Bus.control(s, 5).set(0);
+						~chord = Bus.control(s, 5).setn([261.6255653006, 293.66476791741, 329.62755691287, 391.99543598175, 440.0]);
+						~width = Bus.control(s, 5).setn(1.015 ! 5);
+						~knum = Bus.control(s, 5).setn(2 ! 5);
+						~select = Bus.control(s, 1).set(0.0);
+						~ampDist = Bus.control(s, 5).set(0 ! 5);
+						~durDist = Bus.control(s, 5).setn(1 ! 5);
+						~ampDistParam = Bus.control(s, 5).setn(1 ! 5);
+						~durDistParam = Bus.control(s, 5).setn(1 ! 5);
+						~ampScale = Bus.control(s, 5).setn(0.5 ! 5);
+						~durScale = Bus.control(s, 5).setn(0.5 ! 5);
+						~amp = Bus.control(s, 5).setn([2, 2, 2, 1, 0.5]);
+						~running = ();
+
+						synth = {
+							var freqLag = \freqLag.kr(3);
+							[Gendy1, Gendy2, Gendy3].collect { |i|
+								i.arWidth(
+									ampdist: In.kr(~ampDist.index, 5),
+									adparam: In.kr(~ampDistParam.index, 5),
+									durdist: In.kr(~durDist.index, 5),
+									ddparam: In.kr(~durDistParam.index, 5),
+									durscale: In.kr(~durScale.index, 5),
+									ampscale: In.kr(~ampScale.index, 5),
+									freq: (In.kr(~root.index, 1).lag2(freqLag) + In.kr(~ornament.index, 5)).midiratio
+									* In.kr(~chord.index, 5),
+									width: In.kr(~width.index, 5),
+									knum: In.kr(~knum.index, 5),
+								) / 3
+								* In.kr(~amp.index, 5)
+							}
+							=> SelectX.ar(In.kr(~select.index, 1), _)
+							* Env.asr(0.5, 1, \release.kr(2)).kr(0, gate: NamedControl.kr(\gates, [1, 1, 1, 1, 1]))
+							=> Splay.ar(_)
+						}.play;
+
+						~synth = synth;
+
+						// Clean up busses when synth is freed
+						synth.onFree {
+							~running.do { |r| try { r.free } };
+							~root.free;
+							~ornament.free;
+							~chord.free;
+							~width.free;
+							~knum.free;
+							~select.free;
+							~ampDist.free;
+							~durDist.free;
+							~ampDistParam.free;
+							~durDistParam.free;
+							~ampScale.free;
+							~durScale.free;
+							~amp.free;
+							"Instance busses freed".postln;
+						};
+					};
+					instance  // Return the whole instance
                 };
                 
                 ~go = { |bus newPitch time=1 curve freqLag=0|

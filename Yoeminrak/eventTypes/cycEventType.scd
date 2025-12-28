@@ -1,6 +1,6 @@
 // Cycle EventType
 Event.addEventType(\cyc, {
-	var song = Yoeminrak.song[~sec];
+	var song = Yoeminrak.song[~song];
 	
 	// Apply solo filtering if solo is specified
 	~solo.notNil.if {
@@ -22,6 +22,7 @@ Event.addEventType(\cyc, {
 		}
 	};
 	
+	~dur = Yoeminrak.secDur[~sec ? 0] / 20 * (20 - ~start);
 	song.play(~start ? 0);
 	Yoeminrak.env.put(\lastCyc, currentEnvironment)
 });

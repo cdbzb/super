@@ -345,7 +345,7 @@ Yoeminrak {
                 
                 ~go = { |bus newPitch time=1 curve freqLag=0|
                     {
-                        Env([In.kr(bus.index, 1) => Latch.kr(_, 1), newPitch], time, curve).kr(2, gate: 1).lag2(freqLag)
+                        Env([In.kr(bus.index, 1) => Latch.kr(_, 1) =>_.poll, newPitch.poll], time, curve).kr(2, gate: 1).lag2(freqLag)
                         => Out.kr(bus.index, _)
                     }.play
                 };
@@ -480,10 +480,11 @@ Yoeminrak {
 		var counter=0;
 		this.do{|i|
 			if (i.isKindOf(Array)) {
+                var size = i.size;
                 "ADD 1/3".postln;
 				i.do {|j x|
 					j.put(\beat, counter);
-					counter = counter + (1/3)
+					counter = counter + size.reciprocal
 				}
 			} {
                 "ADD 1".postln;
@@ -491,7 +492,7 @@ Yoeminrak {
 				counter = counter + 1;
 			}
 		};
-		Yoeminrak.song[section].isNil.if{ Yoeminrak.song[section]=Set[]};
+		Yoeminrak.song[section].debug("SECTION").isNil.if{ Yoeminrak.song[section]=List[]};
         Yoeminrak.song[section].addAll(this.flat)
 	}
     jgbq {
@@ -597,4 +598,19 @@ Yoeminrak {
         
         ^events.asArray
     }
+    asEvents { |max = 100|
+        var stream = this.asStream;
+        var events = [];
+        var time = 0;
+        
+        max.do {
+            var ev = stream.next(Event.default);
+            if(ev.isNil) { ^events };
+            ev[\beat] = time;
+            time = time + (ev[\dur] ?? 1);
+            events = events.add(ev);
+        };
+        
+        ^events
+}
 }

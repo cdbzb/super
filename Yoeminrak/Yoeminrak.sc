@@ -432,6 +432,68 @@ Yoeminrak {
             song[sec][key].q.play
         }
     }
+	*garland { |totalDur, initDur, numDivisions, curve = \exp|
+		var durations;
+
+		durations = switch(curve,
+			\exp, {
+				// We need: initDur * (r^0 + r^1 + r^2 + ... + r^(n-1)) = totalDur
+				// Sum of geometric series: initDur * (r^n - 1) / (r - 1) = totalDur
+				// Solve for r numerically
+				var r, sum, target, n;
+				n = numDivisions;
+				target = totalDur / initDur;
+
+				// Newton-Raphson to solve: (r^n - 1) / (r - 1) = target
+				r = 1.5; // initial guess
+				10.do {
+					var f, fPrime;
+					if(r == 1) { r = 1.001 }; // avoid division by zero
+					f = ((r.pow(n) - 1) / (r - 1)) - target;
+					// derivative of (r^n - 1)/(r - 1)
+					fPrime = ((n * r.pow(n-1) * (r - 1)) - (r.pow(n) - 1)) / (r - 1).squared;
+					r = r - (f / fPrime);
+				};
+
+				(0..n-1).collect { |i| initDur * r.pow(i) }
+			},
+
+			\linear, {
+				// durations: initDur, initDur + d, initDur + 2d, ...
+				// sum = n * initDur + d * (0 + 1 + 2 + ... + (n-1))
+				// sum = n * initDur + d * n * (n-1) / 2 = totalDur
+				// solve for d:
+				var d, n;
+				n = numDivisions;
+				d = (totalDur - (n * initDur)) / (n * (n - 1) / 2);
+
+				(0..n-1).collect { |i| initDur + (i * d) }
+			},
+
+			\sin, {
+				// Approximate by scaling a sine curve
+				// More complex to solve exactly, so we iterate
+				var rawShape, scale, offset, result;
+				var n = numDivisions;
+
+				rawShape = (0..n-1).collect { |i|
+					sin(i / (n-1) * 0.5pi)
+				};
+
+				// We want: offset + scale * rawShape[i] for each i
+				// Constraints: offset = initDur (since sin(0) = 0)
+				//              sum of all = totalDur
+				// sum = n * offset + scale * rawShape.sum = totalDur
+
+				offset = initDur;
+				scale = (totalDur - (n * offset)) / rawShape.sum;
+
+				(0..n-1).collect { |i| offset + (scale * rawShape[i]) }
+			}
+		);
+
+		^durations
+	}
 }
 
 

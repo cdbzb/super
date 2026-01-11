@@ -345,7 +345,7 @@ Yoeminrak {
                 
                 ~go = { |bus newPitch time=1 curve freqLag=0|
                     {
-                        Env([In.kr(bus.index, bus.numChannels) => Latch.kr(_, 1) =>_.poll, newPitch.poll], time, curve).kr(2, gate: 1).lag2(freqLag)
+                        Env([In.kr(bus.index, bus.numChannels) => Latch.kr(_, 1) , newPitch], time, curve).kr(2, gate: 1).lag2(freqLag)
                         => Out.kr(bus.index, _)
                     }.play
                 };

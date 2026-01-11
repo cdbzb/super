@@ -7,6 +7,8 @@ Event.addEventType(\yoeString3, {
 	updateBusses = 
 	{|environment| environment.keysValuesDo { |key, value|
 		instance[key] !? { |bus|
+			bus.debug("BUS");
+			bus.getSynchronous.debug("BUS VAL");
 			case
 			{ value.isNumber } {
 				try { instance[\running][key].release(releaseTime ? 0.1) };

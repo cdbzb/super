@@ -65,7 +65,7 @@
 		.reject({|i| i.size == 0})
 		.collect({|i| 
 			var asFloat = i.asFloat;
-			(asFloat == 0.0 && i != "0" && i != "0.0").if { i } { asFloat }
+			((asFloat == 0.0) && (i != "0") && (i != "0.0")).if { i } { asFloat }
 		})
 		.df(*args)
 	}

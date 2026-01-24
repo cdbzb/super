@@ -126,7 +126,7 @@ CC {
 	init { |n s m rs default|
 		number = n; spec = s ? ControlSpec(); mk = m ? \default; rawScale = rs;
 		all[mk] = all[mk] ? (); all[mk][number] = all[mk][number] ? this;
-		(mk != \default ).if { MicroKeys(mk).ccs.add(this) };
+		// (mk != \default ).if { MicroKeys.ccs.add(this) };  // TODO: fix tracking
 		// all[number]= all[number] ? (); all[number][mk] = all[number][mk] ? this;
 		bus = Bus.control;
 		val = default ? 0;

@@ -432,7 +432,7 @@ Yoeminrak {
             song[sec][key].q.play
         }
     }
-	*garland { |totalDur, initDur, numDivisions, curve = \exp|
+	*garland { |totalDur=5, initDur=0.5, numDivisions=7, curve = \exp|
 		var durations;
 
 		durations = switch(curve,

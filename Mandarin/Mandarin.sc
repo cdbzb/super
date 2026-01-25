@@ -19,7 +19,7 @@ Mandarin {
         )
     }
     *doesNotUnderstand { |selector ...args|
-        Message(event, selector).(*args)
+        ^Message(event, selector).(*args)
     }
 }
 Seg {

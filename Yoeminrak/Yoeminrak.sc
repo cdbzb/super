@@ -590,7 +590,7 @@ Yoeminrak {
 	}
 }
 + SequenceableCollection{
-	play { |cursor=0 section=0 solo continue=false|
+	play { |cursor=0 section solo continue=false|
         // CmdPeriod.run;
 		// Yoeminrak.env[\synth].free;
 		fork{
@@ -602,7 +602,7 @@ Yoeminrak {
 			}
 			.do {|i|
                 if (i.beat >= cursor) {
-                    TempoClock.sched(Yoeminrak.secDur[section] / 20 * (i.beat - cursor), {i.copy.play})
+                    TempoClock.sched(Yoeminrak.secDur[section ? i.section ? 0] / 20 * (i.beat - cursor), {i.copy.play})
                 }
             }
         }

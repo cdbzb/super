@@ -35,7 +35,7 @@ Event.addEventType(\garlands, {
         / 2
     }.play
 });
-)
+);
 
 
 

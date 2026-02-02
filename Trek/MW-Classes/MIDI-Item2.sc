@@ -408,7 +408,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	}
 	*record {
 		var mks = MicroKeys.all.values.select{|i| i.active }.collect(_.name);
-		Nvim.replace( "MIDIItem(\\\"%\\\").record(%)".format(name ++ "_" ++  Date.getDate.stamp, mks.cs) )
+		Nvim.replace( "(\\\"%\\\").record(%)".format(name ++ "_" ++  Date.getDate.stamp, mks.cs) )
 	}
 	initMIDIitem {|n r|
 		takes = List[];

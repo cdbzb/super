@@ -593,19 +593,20 @@ Yoeminrak {
 	play { |cursor=0 section solo continue=false|
         // CmdPeriod.run;
 		// Yoeminrak.env[\synth].free;
-		fork{
-            Server.default.sync;
+		// fork{
+            // Server.default.sync;
 			solo.notNil.if{
 				this.select{ |i| i.type.isNil.if{false}{i.type.contains(solo.asString) }}
 			}{
 				this
 			}
 			.do {|i|
+                var copy = i.copy;
                 if (i.beat >= cursor) {
-                    TempoClock.sched(Yoeminrak.secDur[section ? i.section ? 0] / 20 * (i.beat - cursor), {i.copy.play})
+                    TempoClock.sched(Yoeminrak.secDur[section ? i.section ? 0] / 20 * (i.beat - cursor), {copy.play})
                 }
             }
-        }
+        // }
 	}
 }
 + Pattern {

@@ -183,7 +183,7 @@
 	 env.section = 1;
      // (env.chord.class == Array and: (env.beat>0)).if {env.chord = T(env.chord, , \lin).postln};
      Yoeminrak.song.two.add(env);
-     // env.play;
+     env.play;
      env.harp.isNil.if {
 	 env2 = currentEnvironment.copy;
 	 env2.type = \default;
@@ -330,25 +330,90 @@
 
 // Yoeminrak.song.two.play(13)
 (
-   { // var tempoScale = 2;
-   var tempoScale = 1;
-   Yoeminrak.song.drums=List[];Yoeminrak.addDrum(section:\drums,);
-   // (type:\cyc, song:\drums, sec:8).play;
-   (type:\yoeString3, chord:[1, 2, 3, 5, 6].df('a-'), select:2).play;
+ Event.addEventType(\addMe, {
+     var env,env2, env3, getChordFreq;
+     getChordFreq = { |e, filter|
+         e.chord.notNil.if {
+             var c = e.chord.isKindOf(Tuple3).if { e.chord.at1 }{ e.chord };
+             c[e.which ? [0,1,2,3,4]] => ( filter ? I.d ) 
+         }
+     };
+     env = currentEnvironment.copy;
+     env.type = ~newType ? \yoeString3;
+     env.section = 8;
+     Yoeminrak.song.eight.add(env);
+
+     Yoeminrak.env[\preview].notNil.if { env.play };
+     (env.harp.isNil and: env.chord.notNil).if {
+         env2 = currentEnvironment.copy;
+	 env2.section = 8;
+         env2.freq = { getChordFreq.value(env2) };
+         env2.use {
+             ~type = \default;
+             ~instrument = \harp;
+             ~coef = 0.1;
+             ~latency= 0.025;
+             ~strum = 0.1;
+             ~amp = 0.1;
+         };
+         Yoeminrak.song.eight.add(env2);
+         Yoeminrak.env[\preview].notNil.if { env2.play };
+		//
+         env3 = currentEnvironment.copy;
+         
+	 env3.section = 8;
+	 // note this will follow the same "which" as the harp!!
+         env3.freq = { getChordFreq.value(env3, {|i| i / 2}) };
+         env3.use {
+             ~type = \default;
+             ~instrument = \stringyy;
+             ~amp=1;
+             ~latency= 0.025;
+         };
+         Yoeminrak.song.eight.add(env3);
+     };
+ });
+   Yoeminrak.env[\preview] = nil;
+   { 
+	   var tempoScale = 2;
+   // var tempoScale = 1;
+   Yoeminrak.song.drums=List[];Yoeminrak.addDrum(\drums,[freq: [1, 1, 1, 1].df('e-')]);
+   Yoeminrak.song.eight=List[];
+
+   (beat:0, type:\addMe, chord:[2, 7, 2, 7, 2].df('a-', 4), select:1.5, amp: 1.5).play;
+   (beat: 1, type: \addMe,lag:0.15, chord: T( [2, 7, 2, 7, 2].df('c#'), 1.5, \lin )).play
+   (beat:1,amp:9, type: \addMe, newType:\garlands).play;
+   (beat:2,amp:9, type: \addMe, newType:\garlands).play;
+   (beat:3,amp:9, type: \addMe, newType:\garlands).play;
+   (beat:4,amp:9, type: \addMe, newType:\garlands).play;
+
+   Yoeminrak.song.eight.play;
    [
-   freq: [-5, -6, -5, -6, 1, 2, 1, 2, 4, 5, 4, 5, -6, -6, -6, -7].df('a-', [3]).q,
+   freq: [-5, -6, 1, 2, 4, 5, -6, -7].df('a-', [2]).q,
    instrument:\default,
    amp:1,
-   out: Effect.bus({|i| CrossoverDistortion.ar(i)/2 },),
-   dur: Yoeminrak.secDur[8]/20/4 * tempoScale,
+   out: Effect.bus({|i| CrossoverDistortion.ar(i)/3 + i },),
+   dur: Yoeminrak.secDur[8]/20/4 * tempoScale * [3, 1, 3, 1, 3, 1, 3, 1].q,
 
    // amp:0.6,
    // type:\yoeString3
 
    ].ppm;
    [
-   freq: [\r, 5, 4, 4, 3, 1, 4, 3, 1, 3, 2 ].df('a-').q,
-   dur: Yoeminrak.secDur[8]/40 * [0.5,0.75, 0.75, 
+   freq: [
+   	\r,
+   	[5, 7, 2, 15],
+   	[4, 7, 2, 14],
+   	[4, 7, 2, 14],
+   	[3, 7, 2, 13],
+   	1,
+   	4,
+   	3,
+   	1,
+   	3,
+   	2
+   ].df('a-').q,
+   dur: Yoeminrak.secDur[8]/40 * tempoScale * [0.5,0.75, 0.75, 
    0.75, 0.75, 0.5, 0.75, 0.75, 0.5, 1.5, 0.5
    // 0.70, 0.70, 0.59, 0.66, 0.67, 0.66
    ].q * tempoScale,

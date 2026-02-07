@@ -44,24 +44,31 @@ Nvim {
 		//center
 		SCNvim.luaeval("vim.api.nvim_feedkeys(\"%\", \"%\", %)".format("z.", "m", "false")) ;
 	}
+	*sanitize{|text|
+		^text.asString.collectAs({|c| if(c.ascii < 32, {$ }, {c})}, String)
+	}
 	*replace {|text|
-		var t = "local buf = vim.api.nvim_get_current_buf()"
-			"local line = vim.api.nvim_win_get_cursor(0)[1]"
-			"local text = {"
-			"\"%\""
-			"}"
-			"vim.api.nvim_buf_set_lines(buf, line-1, line, false, text)"
-		;
-		SCNvim.luaeval(t.format(text))
+		var clean = this.sanitize(text);
+		var prefix = "local buf = vim.api.nvim_get_current_buf() "
+			"local line = vim.api.nvim_win_get_cursor(0)[1] "
+			"local text = {[=[";
+		var suffix = "]=]} "
+			"vim.api.nvim_buf_set_lines(buf, line-1, line, false, text)";
+		SCNvim.luaeval(prefix ++ clean ++ suffix)
 	}
 	*insert{|text|
-		var t = "local buf = vim.api.nvim_get_current_buf()"
-			"local text = {"
-			"\"%\""
-			"}"
-			"vim.api.nvim_buf_set_lines(buf, -1, -1, false, text)"
-		;
-		SCNvim.luaeval(t.format(text))
+		var clean = this.sanitize(text);
+		var prefix = "local buf = vim.api.nvim_get_current_buf() "
+			"local line = vim.api.nvim_win_get_cursor(0)[1] "
+			"local text = {[=[";
+		var suffix = "]=]} "
+			"vim.api.nvim_buf_set_lines(buf, line, line, false, text)";
+		SCNvim.luaeval(prefix ++ clean ++ suffix)
+	}
+	*nextLine{
+		var t = "local pos = vim.api.nvim_win_get_cursor(0)"
+			"vim.api.nvim_win_set_cursor(0, {pos[1] + 1, pos[2]})";
+		SCNvim.luaeval(t)
 	}
 
     *tabnew{|file|

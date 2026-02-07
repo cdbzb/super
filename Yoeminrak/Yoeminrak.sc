@@ -661,6 +661,27 @@ Yoeminrak {
         
         ^events.asArray
     }
+    fmtValue { |v| //make Tuples display right
+        ^case
+            { v.isKindOf(Symbol) } { "\\" ++ v }
+            { v.class.name.asString.beginsWith("Tuple") } {
+                "T(" ++ v.storeArgs.collect({ |a| this.fmtValue(a) }).join(", ") ++ ")"
+            }
+            { v }
+    }
+    insertEventsWithBeats { |n=10, protoEvent|
+        this.eventsWithBeats(n, protoEvent).do { |event|
+            var sorted = event.collect({ |v| this.fmtValue(v) });
+            var pairs = sorted.asSortedArray;
+            var beatPair = pairs.detect({ |p| p[0] == \beat });
+            var rest = pairs.reject({ |p| p[0] == \beat });
+            var str = "(" ++ ([beatPair] ++ rest).collect({ |p|
+                p[0] ++ ": " ++ p[1]
+            }).join(", ") ++ ")";
+            Nvim.insert(str);
+            Nvim.nextLine;
+        }
+    }
     asEvents { |max = 100|
         var stream = this.asStream;
         var events = [];

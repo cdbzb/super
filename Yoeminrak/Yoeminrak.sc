@@ -697,4 +697,32 @@ Yoeminrak {
         
         ^events
 }
+
+dropTime { | beats=2, section=0 |
+    var scale = Yoeminrak.secDur[section] / 20;
+    ^Prout { |inval|
+        var stream = this.asStream;
+        var totalDur = 0;
+        var event;
+
+        while { totalDur < ( beats * scale ) } {
+            event = stream.next(inval);
+            if (event.isNil) { nil.yield };
+            totalDur = totalDur + (event[\dur] ?? 1) ;
+        };
+
+        // if we overshot, insert a rest for the overlap (in pattern time)
+        if (totalDur > ( beats * scale )) {
+            (type: \rest, dur: (totalDur - (beats * scale)) , latency: 0).yield;
+        };
+
+        loop {
+            event = stream.next(inval);
+            if (event.isNil) { nil.yield };
+            event.yield;
+        }
+    }
 }
+}
+
+

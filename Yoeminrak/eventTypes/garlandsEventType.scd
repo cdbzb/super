@@ -49,15 +49,15 @@ Event.addEventType(\garlands2, {
     var useGendy = ~useGendy ? false;
     var useConvolution = ~useConvolution ? false;
 
-    var durations = Yoeminrak.garland(totalDur, initDur, numDivisions, curve) ++ ~extraDur;
+    var durations = Yoeminrak.garland(totalDur, initDur, numDivisions, curve) ++ (~extraDur ? 1);
 
     var env = currentEnvironment;
     env.type = nil;
     currentEnvironment.asKeyValuePairs.postln ++
     [
-	// type:\note,
+	type:\note,
 	dur: durations.q,
     ]
-    => {|i| ~mono.if { i.ppm }{ i.pp }}
+    => {|i| ( ~mono ? false ).if { i.ppm }{ i.pp }}
 });
 )

@@ -55,7 +55,7 @@ Event.addEventType(\garlands2, {
     env.type = nil;
     currentEnvironment.asKeyValuePairs.postln ++
     [
-	type:\note,
+	// type:\note,
 	dur: durations.q,
     ]
     => {|i| ( ~mono ? false ).if { i.ppm }{ i.pp }}

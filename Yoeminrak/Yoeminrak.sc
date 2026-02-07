@@ -353,7 +353,7 @@ Yoeminrak {
         }
     }
 
-    *playVid { |vid sec audio=true fullscreen=false length=1 start=0 end=5|
+    *playVid { |vid sec audio=false fullscreen=false length=1 start=0 end=5|
         var path = (vid == 0).if { video.at(\live) } { video.at(\particles) };
         sec.notNil.if {
             start = sections[sec] + (vid * particleVidOffset);

@@ -494,6 +494,66 @@ Yoeminrak {
 
 		^durations
 	}
+
+	*terminalState { |eventList|
+		var busKeys = #[\root, \ornament, \chord, \width, \knum, \select,
+			\ampDist, \durDist, \ampDistParam, \durDistParam,
+			\ampScale, \durScale, \amp];
+		var defaults = {(
+			root: 0,
+			ornament: 0 ! 5,
+			chord: [261.6255653006, 293.66476791741, 329.62755691287, 391.99543598175, 440.0],
+			width: 1.015 ! 5,
+			knum: 2 ! 5,
+			select: 0.0,
+			ampDist: 0 ! 5,
+			durDist: 1 ! 5,
+			ampDistParam: 1 ! 5,
+			durDistParam: 1 ! 5,
+			ampScale: 0.5 ! 5,
+			durScale: 0.5 ! 5,
+			amp: [2, 2, 2, 1, 0.5]
+		)};
+		var state = defaults.();
+		var sorted = eventList.select { |e|
+			e[\type] == \yoeString3
+		}.sort { |a, b| (a[\beat] ? 0) <= (b[\beat] ? 0) };
+
+		sorted.do { |event|
+			// gates [0,0,0,0,0] kills the instance; next event creates fresh defaults
+			(event[\gates] == [0, 0, 0, 0, 0]).if {
+				state = defaults.();
+			};
+
+			busKeys.do { |key|
+				event.includesKey(key).if { var value = event[key];
+					case
+					{ value.isNumber } {
+						state[key] = value
+					}
+					{ value.isKindOf(Array) } {
+						state[key] = value
+					}
+					{ value.isKindOf(Tuple3) } {
+						// ~go envelope: current -> at1 over at2 with curve at3
+						state[key] = value.at1
+					}
+					{ value.isKindOf(Tuple2) } {
+						// setAt: partial update
+						state[key] = state[key].copy;
+						state[key][value.at1] = value.at2
+					}
+					// Functions (e.g. default Event's ~amp) are silently skipped
+				};
+			};
+
+			event[\extra].notNil.if {
+				("terminalState: extra function at beat " ++ (event[\beat] ? "?") ++ " may modify busses").warn
+			};
+		};
+
+		^state
+	}
 }
 
 

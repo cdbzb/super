@@ -22,6 +22,7 @@ StageLimiter {
 				var input = In.ar(0, numChannels);
 				input = Select.ar(CheckBadValues.ar(input, 0, 0), [input, DC.ar(0), DC.ar(0), input]);
 				input => LeakDC.ar(_, 0.9995)
+                * \trim.kr(1)
 				=> Limiter.ar(_)
 				=> ReplaceOut.ar(0, _) ;
 			}).add;

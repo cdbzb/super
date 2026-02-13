@@ -1,5 +1,5 @@
 
-( //tangled from yoeminrak-tangleDoc-12-25.org
+( 
 Event.addEventType(\garlands, {
     var section = ~section ? 1;
     var useGendy = ~useGendy ? false;  // false = SinOsc/Saw/Pulse/VarSaw, true = Gendy1/Gendy3
@@ -39,7 +39,7 @@ Event.addEventType(\garlands, {
 
 
 
-( //tangled from yoeminrak-tangleDoc-12-25.org
+( 
 Event.addEventType(\garlands2, {
     var totalDur = ~totalDur ? 8 * Yoeminrak.secDur[~section ? 0]/20;
     var initDur = ~initDur ? 0.1 * Yoeminrak.secDur[~section ? 0]/20;
@@ -58,6 +58,6 @@ Event.addEventType(\garlands2, {
 	// type:\note,
 	dur: durations.q,
     ]
-    => {|i| ~mono.if { i.ppm }{ i.pp }}
+    => {|i| ( ~mono ? false ).if { i.ppm }{ i.pp }}
 });
 )

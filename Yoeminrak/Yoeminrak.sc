@@ -265,6 +265,7 @@ Yoeminrak {
         ].collect{|i x| x * 52 + 6 + i };
         secDur = sections.differentiate.drop(1);
         this.loadEventTypes;
+		this.filenameSymbol.asString.dirname +/+ "ornaments/ornaments.scd" => _.load;
         this.makeNoteEventType;
         
         Server.default.waitForBoot {

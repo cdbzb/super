@@ -400,15 +400,16 @@ Yoeminrak {
         ].p
     }
 
-    *addDrum { |section params|
-        song[section].isNil.if { song[section] = List[] };
+    *addDrum { |name params section|
+        song[name].isNil.if { song[name] = List[] };
         [
+            section: section,
             type: [0, 1, 0, 1, 2, 3].collect { |i| "yoeDrum" ++ i => _.asSymbol },
             beat: [0, 1, 6, 10, 14, 15],
         ] ++ params
         => _.flop
         => _.collect { |i| i.asEvent }
-        => _.do { |i| Yoeminrak.song[section].add(i) }
+        => _.do { |i| Yoeminrak.song[name].add(i) }
     }
 
     *drumArray { |section|

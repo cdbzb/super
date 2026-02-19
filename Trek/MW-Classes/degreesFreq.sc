@@ -27,9 +27,14 @@ NoteNames {
 		^this.degreesmidi(root,octave,scale,tuning,transpose)
 	}
 
-	df { 
+	df {
 		|root=0 octave=5 scale=\major tuning transpose|
-		^this.degreescps(root,octave,scale,tuning, transpose)	
+		^this.degreescps(root,octave,scale,tuning, transpose)
+	}
+
+	dr {
+		|octave=0 scale=\major tuning transpose|
+		^this.degreesmidiratio(octave,scale,tuning,transpose)
 	}
 
 	md { 
@@ -95,6 +100,10 @@ NoteNames {
 		^this.asDegrees(root,octave,scale,tuning,transpose).midicps
 	}
 
+	degreesmidiratio { |octave=0 scale=\major tuning transpose|
+		^this.asDegrees(0,octave,scale,tuning,transpose).midiratio
+	}
+
 	q {
 		^[this].q
 	}
@@ -108,6 +117,9 @@ NoteNames {
 	degreescps {
 		^this
 	}
+	degreesmidiratio {
+		^this
+	}
 }
 
 +String {
@@ -115,6 +127,9 @@ NoteNames {
 		^this
 	}
 	degreescps {
+		^this
+	}
+	degreesmidiratio {
 		^this
 	}
 }

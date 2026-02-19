@@ -45,6 +45,14 @@
 		}
 	}
 
+	degreesmidiratio { |octave=0 scale=\major tuning transpose|
+
+		octave.isKindOf(Symbol).if{scale=octave;octave=0};
+		^this.collect{|i|
+			i.degreesmidiratio(octave,scale,tuning,transpose)
+		}
+	}
+
 	flopEvents {
 		^this.flop.collect(_.asEvent)
 	}

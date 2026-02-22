@@ -17,9 +17,9 @@ Event.addEventType(\garlands, {
         var sig;
 
         useGendy.if({
-            [Gendy1, Gendy3].choose.arWidth(width: ~width ? 1.03.rrand(1.2), freq: freq * [2,4,5,6,8].choose) / 2
+            [Gendy1, Gendy3].choose.arWidth(width: ~width ? 1.03.rrand(1.2), freq: freq *(~ratio ?  [2,4,5,6,8].choose)) / 2
         }, {
-            [SinOsc, Saw, Pulse, VarSaw].choose.ar(freq * [2,4,5,6,16].choose) / 2
+            [SinOsc, Saw, Pulse, VarSaw].choose.ar(freq * (~ratio ? [2,4,5,6,16].choose => _.debug("AAA"))) / 2
         })
 
         * Env.perc(0.05, 0.1).ar(0, trig)
@@ -33,6 +33,7 @@ Event.addEventType(\garlands, {
         })
 
         / 2
+		* ( ~gain ? 1 )
     }.play
 })
 );
@@ -52,12 +53,16 @@ Event.addEventType(\garlands2, {
     var durations = Yoeminrak.garland(totalDur, initDur, numDivisions, curve) ++ ~extraDur;
 
     var env = currentEnvironment;
+	env.chord = Yoeminrak.env[\currentInstance][\chord];
     env.type = nil;
-    currentEnvironment.asKeyValuePairs.postln ++
+
+    (currentEnvironment.asKeyValuePairs ++
     [
 	// type:\note,
 	dur: durations.q,
-    ]
+    ])
+    .clump(2).sort({|a,b| a[1].isKindOf(Pfunc).not}).flat
+    .postln
     => {|i| ( ~mono ? false ).if { i.ppm }{ i.pp }}
 });
 )

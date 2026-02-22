@@ -2,6 +2,7 @@
 Event.addEventType(\cyc, {
 	var song = Yoeminrak.song[~song];
 	var section = ~sec ? song.collect{|i| i.section ? 0 } => {|x| x.maxItem { |item| x.occurrencesOf(item) }};
+	var start = ~start ? Yoeminrak.env[\cursor] ? 0;
 	
 	// Apply solo filtering if solo is specified
 	~solo.notNil.if {
@@ -23,8 +24,9 @@ Event.addEventType(\cyc, {
 		}
 	};
 	
-	~dur = Yoeminrak.secDur[section] / 20 * (20 - ( ~start ? 0 ));
-	(Yoeminrak.env[\silent] ? false).not.if {song.play(~start ? 0)};
+	~dur = Yoeminrak.secDur[section] / 20 * (20 - (start));
+	(Yoeminrak.env[\silent] ? false).not.if {song.play(start)};
+	(Yoeminrak.env[\vid] ? false).if { Yoeminrak.playVid(~vid ? 1, section) };
 	Yoeminrak.env.put(\lastCyc, currentEnvironment)
 });
 

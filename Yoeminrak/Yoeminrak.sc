@@ -1,6 +1,7 @@
 MPV {
 	*play {|path start end audio=true fullscreen=false|
-		"mpv" + audio.if{""}{"--no-audio"} + fullscreen.if{"--fs "}{" "} ++ "--start=% --end=% %".format(start, end, path) => _.unixCmd
+		var endArg = end.isNil.if { "" } { "--end=% ".format(end) };
+		"mpv" + audio.if{""}{"--no-audio"} + fullscreen.if{"--fs "}{" "} ++ "--start=% %%".format(start, endArg, path) => _.unixCmd
 	}
 }
 
@@ -54,7 +55,7 @@ Yoeminrak {
             -67,    // 13
             -81,    // 14
             -94,    // 15
-            -76,    // 16
+            -107,    // 16
         ].collect{|i x| x * 52 + 6 + i };
         secDur = sections.differentiate.drop(1);
         this.loadEventTypes;

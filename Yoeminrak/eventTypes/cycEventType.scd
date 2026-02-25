@@ -26,7 +26,13 @@ Event.addEventType(\cyc, {
 	
 	~dur = Yoeminrak.secDur[section] / 20 * (20 - (start));
 	(Yoeminrak.env[\silent] ? false).not.if {song.play(start)};
-	(Yoeminrak.env[\vid] ? false).if { Yoeminrak.playVid(~vid ? 1, section) };
+	(Yoeminrak.env[\vid] ? false).if {
+		var vidNum = ~vid ? 1;
+		var vidOffset = vidNum * Yoeminrak.particleVidOffset;
+		var vidStart = Yoeminrak.sections[section] + vidOffset + (Yoeminrak.secDur[section] / 20 * start);
+		var vidEnd = (~playTilEnd ? false).if { nil } { Yoeminrak.sections[section + (~length ? 0 + 1)] + vidOffset };
+		Yoeminrak.playVid(vidNum, start: vidStart, end: vidEnd)
+	};
 	Yoeminrak.env.put(\lastCyc, currentEnvironment)
 });
 

@@ -16,10 +16,11 @@ Event.addEventType(\addMe, {
         ?? { Error("\\addMe: Yoeminrak.env[\\addMeSection] not set").throw };
     song = Yoeminrak.song[songKey];
 
-    getChordFreq = { |e, filter|
-        e.chord.notNil.if {
-            var c = e.chord.isKindOf(Tuple3).if { e.chord.at1 }{ e.chord };
-            c[e.which ? [0,1,2,3,4]] => ( filter ? I.d )
+    getChordFreq = { |env filter|
+        var chord = env.chord;
+        (chord.isKindOf(SequenceableCollection) or: { chord.isKindOf(Tuple3) }).if {
+            var array = chord.isKindOf(Tuple3).if { chord.at1 }{ chord };
+            array[env.which ? [0,1,2,3,4]] => ( filter ? I.d )
         }
     };
 
@@ -30,7 +31,10 @@ Event.addEventType(\addMe, {
 
     Yoeminrak.env[\preview].notNil.if { env.play };
 
-    (env.harp.isNil and: env.chord.notNil).if {
+    (env.harp.isNil and: {
+        var ch = env.chord;
+        ch.isKindOf(SequenceableCollection) or: { ch.isKindOf(Tuple3) }
+    }).if {
         env2 = env.copy;
         env2.freq = { getChordFreq.value(env2) };
         env2.use {

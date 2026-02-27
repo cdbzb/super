@@ -116,9 +116,14 @@ Yoeminrak {
 
 						~synth = synth;
 
+						~ornamentZero.isNil.if {
+							~ornamentZero = { DC.kr(0) ! 5 => Out.kr(~ornament.index, _) }.play(target: synth, addAction: \addBefore);
+						};
+
 						// Clean up busses when synth is freed
 						synth.onFree {
 							instance.use {
+								~ornamentZero.free;
 								~running.do { |r| try { r.free } };
 								~root.free;
 								~ornament.free;
@@ -298,10 +303,7 @@ Yoeminrak {
 	}
 
 	*terminalState { |eventList|
-		var busKeys = #[\root, \ornament, \chord, \width, \knum, \select,
-			\ampDist, \durDist, \ampDistParam, \durDistParam,
-			\ampScale, \durScale, \amp];
-		var defaults = {(
+		var defaults = (
 			root: 0,
 			ornament: 0 ! 5,
 			chord: [261.6255653006, 293.66476791741, 329.62755691287, 391.99543598175, 440.0],
@@ -315,8 +317,9 @@ Yoeminrak {
 			ampScale: 0.5 ! 5,
 			durScale: 0.5 ! 5,
 			amp: [2, 2, 2, 1, 0.5]
-		)};
-		var state = defaults.();
+		);
+		var busKeys = defaults.keys;
+		var state = defaults.copy;
 		var sorted = eventList.select { |e|
 			e[\type] == \yoeString3
 		}.sort { |a, b| (a[\beat] ? 0) <= (b[\beat] ? 0) };
@@ -324,7 +327,7 @@ Yoeminrak {
 		sorted.do { |event|
 			// gates [0,0,0,0,0] kills the instance; next event creates fresh defaults
 			(event[\gates] == [0, 0, 0, 0, 0]).if {
-				state = defaults.();
+				state = defaults.copy;
 			};
 
 			busKeys.do { |key|
@@ -355,6 +358,30 @@ Yoeminrak {
 		};
 
 		^state
+	}
+
+	*chaseState { |eventList instance|
+		var cursor = env[\cursor] ? 0;
+		var eventsUpToCursor = eventList.select { |e| (e[\beat] ? 0) <= cursor };
+		var state = this.terminalState(eventsUpToCursor);
+		var inst = instance ?? { env[\currentInstance] };
+
+		inst.notNil.if {
+			inst.use {
+				state.keysValuesDo { |key, value|
+					var bus = inst[key];
+					bus.notNil.if {
+						value.isKindOf(Array).if {
+							bus.setn(value)
+						} {
+							bus.set(value)
+						}
+					}
+				}
+			}
+		} {
+			"chaseState: no instance found in env[\\currentInstance]".warn
+		}
 	}
 }
 

@@ -19,7 +19,7 @@ Event.addEventType(\yoeString3, {
 					Env.cutoff(releaseTime: 0.1, level: 1.0, curve: \lin).kr(2, \gate.kr)
 					* value
 					=> Out.kr(bus.index, _)
-				}.play);
+				}.play(target: instance[\synth], addAction: \addBefore));
 			}
 			{ value.isKindOf(Array) } {
 				bus.setn(value);

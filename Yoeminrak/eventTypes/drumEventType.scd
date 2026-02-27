@@ -1,6 +1,6 @@
 // Drum EventTypes
 Event.addEventType(\yoeDrum0, {
-	~amp = 1;
+	~amp = ~amp ? 1;
 	~out = { Effect.bus({ |i| FreeVerb.ar(i, 1,1) * 8 }) };
 	currentEnvironment.copy.put(\type,\note).play;
 });

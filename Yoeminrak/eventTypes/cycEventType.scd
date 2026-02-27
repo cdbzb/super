@@ -25,6 +25,7 @@ Event.addEventType(\cyc, {
 	};
 	
 	~dur = Yoeminrak.secDur[section] / 20 * (20 - (start));
+	(~chase ? false).if { Yoeminrak.chaseState(song) };
 	(Yoeminrak.env[\silent] ? false).not.if {song.play(start)};
 	(Yoeminrak.env[\vid] ? false).if {
 		var vidNum = ~vid ? 1;

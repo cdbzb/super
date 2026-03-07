@@ -12,7 +12,9 @@ MPV {
 Yoeminrak {
     classvar <video;
     classvar <sections, <secDur;
-    classvar <>particleVidOffset = 20;
+    // classvar <>particleVidOffset = 20;
+     classvar <>particleVidOffset = 25.7;
+
     classvar <>env;
     classvar <>song;
     classvar <>muted;
@@ -155,11 +157,18 @@ Yoeminrak {
         }
     }
 
-    *playVid { |vid sec audio=false fullscreen=false length=1 start=0 end=5|
+    *playVid { |vid sec audio=false fullscreen=false length=1 start=0 end=5 syncBeats=false|
         var path = (vid == 0).if { video.at(\live) } { video.at(\particles) };
         sec.notNil.if {
-            start = sections[sec] + (vid * particleVidOffset);
-            end = sections[sec + length] + (vid * particleVidOffset)
+            var vidOffset = vid * particleVidOffset;
+            start = syncBeats.if {
+                var marks = JSONlib.parseFile("/Users/michael/tank/Hyojin/Video Sync/frame_marks.json");
+                var markIdx = (sec * 20) + start + 1;
+                (marks[markIdx.asSymbol][\frame] / 29.97) + vidOffset
+            } {
+                sections[sec] + vidOffset
+            };
+            end = sections[sec + length] + vidOffset;
         };
         MPV.play(path, start, end, audio, fullscreen)
     }
@@ -182,6 +191,31 @@ Yoeminrak {
             } {
                 ("EventType file not found: " ++ fullPath).warn;
             };
+        };
+    }
+
+    *initSong { |song, section tempoEvents=true|
+        (currentEnvironment[\yoeminrak] ? false).not.if{Yoeminrak.env.push};
+        song = song ?? { env[\addMeSong] };
+        section = section ?? { env[\addMeSection] ? 0 };
+        this.song[song] = List[];
+        env[\addMeSong]    = song;
+        env[\addMeSection] = section;
+        env[\preview]      = nil;
+        (tempoEvents).if {this.addTempoEvents(section)};
+    }
+
+    *addTempoEvents { |section|
+        var fps = 29.97;
+        var marks = JSONlib.parseFile("/Users/michael/tank/Hyojin/Video Sync/frame_marks.json");
+        var sec = section ?? { currentEnvironment[\addMeSection] ? 0 };
+        var startMark = (sec * 20) + 1;
+        var frameNums = (startMark .. startMark + 20).collect { |i| marks[i.asSymbol][\frame] };
+        var deltas = (0..19).collect { |i| frameNums[i+1] - frameNums[i] };
+        var expectedFrames = secDur[sec] / 20 * fps;
+        var tempi = (deltas / expectedFrames).reciprocal;
+        tempi.do { |tempo beat|
+            (beat: beat, extra: { TempoClock.tempo_(tempo); "TEMPO: %".format(tempo).postln }, type: \addMe).play;
         };
     }
 

@@ -61,7 +61,7 @@ Event.addEventType(\garlands2, {
 	// type:\note,
 	dur: durations.q,
     ])
-    .clump(2).sort({|a,b| a[1].isKindOf(Pfunc).not}).flat
+    .clump(2).sort({|a,b| a[1].isKindOf(Pfunc).not}).flatten
     .postln
     => {|i| ( ~mono ? false ).if { i.ppm }{ i.pp }}
 });

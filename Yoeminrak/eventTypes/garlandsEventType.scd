@@ -18,6 +18,7 @@ Event.addEventType(\garlands, {
 
         useGendy.if({
             [Gendy1, Gendy3].choose.arWidth(width: ~width ? 1.03.rrand(1.2), freq: freq *(~ratio ?  [2,4,5,6,8].choose)) / 2
+			=> Limiter.ar(_, ( ~amp ? 1 ))
         }, {
             [SinOsc, Saw, Pulse, VarSaw].choose.ar(freq * (~ratio ? [2,4,5,6,16].choose => _.debug("AAA"))) / 2
         })

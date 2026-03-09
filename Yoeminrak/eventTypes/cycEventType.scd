@@ -29,12 +29,12 @@ Event.addEventType(\cyc, {
 		~dur = Yoeminrak.secDur[section] / 20 * (20 - (start));
 		(~chase ? false).if { Yoeminrak.chaseState(song) };
 		(Yoeminrak.env[\silent] ? false).not.if {song.play(start)};
-		(Yoeminrak.env[\vid] ? false).if {
+		((Yoeminrak.env[\vid] ? false) and: { (Yoeminrak.env[\silent] ? false).not }).if {
 			(~skipVid ? false).not.if {
 				var vidNum = ~vid ? 1;
 				var vidOffset = vidNum * Yoeminrak.particleVidOffset;
 				var vidStart = Yoeminrak.sections[section] + vidOffset + (Yoeminrak.secDur[section] / 20 * start);
-				var vidEnd = (~playTilEnd ? false).if { nil } { Yoeminrak.sections[section + (~length ? 0 + 1)] + vidOffset };
+				var vidEnd = (~keepPlaying ? false).if { nil } { Yoeminrak.sections[section + (~length ? 0 + 1)] + vidOffset };
 				Yoeminrak.playVid(vidNum, start: vidStart, end: vidEnd, audio:(~audio ? false))
 			}
 		};
@@ -43,9 +43,9 @@ Event.addEventType(\cyc, {
 });
 
 Event.addEventType(\cycs, {
-	var skipVidPat = (~playTilEnd ? false).if {
+	var skipVidPat = (~keepPlaying ? false).if {
 		[false].q ++ Pn(true, inf)
 	} { false };
-	[type:\cyc, song:~songs.q, start:[~start ? Yoeminrak.env[\cursor] ? 0].q ++ [0].q(inf), skipVid:skipVidPat, playTilEnd:(~playTilEnd ? false), audio:(~audio ? false), fullscreen:(~fullscreen ? false), vid:(~vid ? 1)].pp;
+	[type:\cyc, song:~songs.q, start:[~start ? Yoeminrak.env[\cursor] ? 0].q ++ [0].q(inf), skipVid:skipVidPat, keepPlaying:(~keepPlaying ? false), audio:(~audio ? false), fullscreen:(~fullscreen ? false), vid:(~vid ? 1)].pp;
 	Yoeminrak.env.put(\lastCyc, currentEnvironment)
 });

@@ -40,24 +40,45 @@ Yoeminrak {
             particles: "'/Users/michael/tank/Hyojin/Video Sync/Media/여민락_2025__yeomillak-2025 (720p).mp4'",
             live: "'/Users/michael/tank/Hyojin/Video Sync/Media/1015_여민락_실연_full (720p).mp4'";
         );
+        // sections = [
+        //     -2.7,   // 0  forward arms up and down
+        //     -1.3,   // 1  the same
+        //     0,      // 2  to the right - crouch
+        //     -3,     // 3  to the left and crouch
+        //     -2.75,  // 4  to the rear
+        //     -3.5,   // 5  spin and to the front
+        //     -4,     // 6
+        //     -8,     // 7
+        //     -14,    // 8
+        //     -23,    // 9
+        //     -34,    // 10
+        //     -44,    // 11
+        //     -56,    // 12
+        //     -67,    // 13
+        //     -81,    // 14
+        //     -94,    // 15
+        //     -107,    // 16
+        // ].collect{|i x| x * 52 + 6 + i };
+
+        // corrected from frame_marks.json (secs 0-13); 14-16 unchanged
         sections = [
-            -2.7,   // 0  forward arms up and down
-            -1.3,   // 1  the same
-            0,      // 2  to the right - crouch
-            -3,     // 3  to the left and crouch
-            -2.75,  // 4  to the rear
-            -3.5,   // 5  spin and to the front
-            -4,     // 6
-            -8,     // 7
-            -14,    // 8
-            -23,    // 9
-            -34,    // 10
-            -44,    // 11
-            -56,    // 12
-            -67,    // 13
-            -81,    // 14
-            -94,    // 15
-            -107,    // 16
+            -2.6633,  // 0  forward arms up and down
+            -1.2432,  // 1  the same
+            -0.2903,  // 2  to the right - crouch
+            -3.8752,  // 3  to the left and crouch
+            -2.8222,  // 4  to the rear
+            -4.1381,  // 5  spin and to the front
+            -5.5876,  // 6
+            -7.0704,  // 7
+            -14.2256, // 8
+            -22.7487, // 9
+            -33.4074, // 10
+            -44.7668, // 11
+            -56.6266, // 12
+            -67.5189, // 13
+            -81,      // 14
+            -94,      // 15
+            -107,     // 16
         ].collect{|i x| x * 52 + 6 + i };
         secDur = sections.differentiate.drop(1);
         this.loadEventTypes;
@@ -194,7 +215,7 @@ Yoeminrak {
         };
     }
 
-    *initSong { |song, section tempoEvents=true|
+    *initSong { |song, section, tempoEvents=true|
         (currentEnvironment[\yoeminrak] ? false).not.if{Yoeminrak.env.push};
         song = song ?? { env[\addMeSong] };
         section = section ?? { env[\addMeSection] ? 0 };
@@ -210,12 +231,17 @@ Yoeminrak {
         var marks = JSONlib.parseFile("/Users/michael/tank/Hyojin/Video Sync/frame_marks.json");
         var sec = section ?? { currentEnvironment[\addMeSection] ? 0 };
         var startMark = (sec * 20) + 1;
-        var frameNums = (startMark .. startMark + 20).collect { |i| marks[i.asSymbol][\frame] };
-        var deltas = (0..19).collect { |i| frameNums[i+1] - frameNums[i] };
-        var expectedFrames = secDur[sec] / 20 * fps;
-        var tempi = (deltas / expectedFrames).reciprocal;
-        tempi.do { |tempo beat|
-            (beat: beat, extra: { TempoClock.tempo_(tempo); "TEMPO: %".format(tempo).postln }, type: \addMe).play;
+        var frameNums, deltas, expectedFrames, tempi;
+        (marks[startMark.asSymbol].isNil or: { marks[(startMark + 20).asSymbol].isNil }).if {
+            "addTempoEvents: incomplete marks for section % (marks %–%). Playing without tempo events.".format(sec, startMark, startMark + 20).warn;
+        } {
+            frameNums = (startMark .. startMark + 20).collect { |i| marks[i.asSymbol][\frame] };
+            deltas = (0..19).collect { |i| frameNums[i+1] - frameNums[i] };
+            expectedFrames = secDur[sec] / 20 * fps;
+            tempi = (deltas / expectedFrames).reciprocal;
+            tempi.do { |tempo beat|
+                (beat: beat, extra: { TempoClock.tempo_(tempo); "TEMPO: %".format(tempo).postln }, type: \addMe).play;
+            };
         };
     }
 

@@ -26,6 +26,8 @@ Yoeminrak {
     classvar <>song;
     classvar <>muted;
     classvar <>dir = "/Users/michael/tank/super/Yoeminrak";
+    classvar <>counterWin;
+    classvar <>bookmarks;
 
     *loadSongs {
         ^(PathName(dir) +/+ "songs").files.do { |e| e.fullPath.load };
@@ -42,6 +44,7 @@ Yoeminrak {
         Class.initClassTree(aClass:SinOsc);
         env = Environment.new;
         song = ();
+        bookmarks = List[];
         ServerTree.add({"pkill mpv".unixCmd});
         video = (
             particles: "'/Users/michael/tank/Hyojin/Video Sync/Media/여민락_2025__yeomillak-2025 (720p).mp4'",
@@ -232,7 +235,11 @@ Yoeminrak {
         env[\addMeSong]    = song;
         env[\addMeSection] = section;
         env[\preview]      = nil;
-        (tempoEvents).if {this.addTempoEvents(section)};
+        tempoEvents.if {
+            this.addTempoEvents(section)
+        } {
+            this.addCounterEvents(section)
+        };
     }
 
     *addTempoEvents { |section|
@@ -240,6 +247,7 @@ Yoeminrak {
         var marks = JSONlib.parseFile("/Users/michael/tank/Hyojin/Video Sync/frame_marks.json");
         var sec = section ?? { currentEnvironment[\addMeSection] ? 0 };
         var startMark = (sec * 20) + 1;
+        var songName = env[\addMeSong];
         var frameNums, deltas, expectedFrames, tempi;
         (marks[startMark.asSymbol].isNil or: { marks[(startMark + 20).asSymbol].isNil }).if {
             "addTempoEvents: incomplete marks for section % (marks %–%). Playing without tempo events.".format(sec, startMark, startMark + 20).warn;
@@ -249,9 +257,67 @@ Yoeminrak {
             expectedFrames = secDur.wrapAt(sec) / 20 * fps;
             tempi = (deltas / expectedFrames).reciprocal;
             tempi.do { |tempo beat|
-                (beat: beat, extra: { TempoClock.tempo_(tempo); "TEMPO: %".format(tempo).postln }, type: \addMe).play;
+                (beat: beat, extra: {
+                    TempoClock.tempo_(tempo);
+                    counterWin.notNil.if { defer {
+                        env[\counterSong] = songName;
+                        env[\counterBeat] = beat;
+                        env[\counterText] !? { |t| t.string = "% : %".format(songName, beat) };
+                    }};
+                }, type: \addMe).play;
             };
         };
+    }
+
+    *addCounterEvents { |section numBeats=20|
+        var songName = env[\addMeSong];
+        var sec = section ?? { env[\addMeSection] ? 0 };
+        numBeats.do { |beat|
+            (beat: beat, extra: {
+                counterWin.notNil.if { defer {
+                    env[\counterSong] = songName;
+                    env[\counterBeat] = beat;
+                    env[\counterText] !? { |t| t.string = "% : %".format(songName, beat) };
+                }};
+            }, type: \addMe, newType: \yoeRest).play;
+        };
+    }
+
+    *counter { |show=true|
+        var doBookmark, doList;
+        show.not.if { counterWin !? { counterWin.close; counterWin = nil }; ^this };
+        counterWin.notNil.if { counterWin.front; ^this };
+
+        doBookmark = {
+            env[\counterSong].notNil.if {
+                bookmarks.add((
+                    song: env[\counterSong],
+                    beat: env[\counterBeat] ? 0,
+                    time: Date.getDate.format("%H:%M:%S")
+                ));
+                env[\counterText].string = "** SAVED **";
+            }
+        };
+        doList = {
+            bookmarks.do { |b, i| "% — % beat:% (%)".format(i, b.song, b.beat, b.time).postln }
+        };
+
+        counterWin = Window("counter", Rect(10, 800, 280, 120)).alwaysOnTop_(true);
+        counterWin.onClose = { counterWin = nil };
+        counterWin.view.keyDownAction = { |view, char|
+            case
+            { char == $b } { doBookmark.() }
+            { char == $l } { doList.() }
+        };
+        env[\counterText] = StaticText().string_("--").font_(Font("Monaco", 28)).minHeight_(50);
+        counterWin.layout = VLayout(
+            env[\counterText],
+            HLayout(
+                Button().states_([["Bookmark (b)"]]).action_(doBookmark),
+                Button().states_([["List (l)"]]).action_(doList)
+            )
+        );
+        counterWin.front;
     }
 
     *makeNoteEventType {

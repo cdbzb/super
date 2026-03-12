@@ -5,7 +5,7 @@ Yoeminrak.env.use {
     {
         var sec = currentEnvironment[\section] ? 0;
         var beat = currentEnvironment[\beat] ? 0;
-        var beatDurMean = Yoeminrak.secDur[sec] / 20;
+        var beatDurMean = Yoeminrak.secDur.wrapAt(sec) / 20;
         var totalSecs;
 
         tempo.if {

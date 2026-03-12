@@ -6,7 +6,9 @@ Event.addEventType(\garlands, {
     var useConvolution = ~useConvolution ? false;
 
     {
-        var trig = Impulse.ar(XLine.kr(8, 2, 5) * [2,1,0.66].choose);
+        var rateStart = (~reverse ? false).if { 2 } { 8 };
+        var rateEnd = (~reverse ? false).if { 8 } { 2 };
+        var trig = Impulse.ar(XLine.kr(rateStart, rateEnd, 5) * [2,1,0.66].choose);
         var freq = Demand.ar(
             trig: trig,
             reset: 0,
@@ -43,17 +45,19 @@ Event.addEventType(\garlands, {
 
 ( 
 Event.addEventType(\garlands2, {
-    var totalDur = ~totalDur ? 8 * Yoeminrak.secDur[~section ? 0]/20;
-    var initDur = ~initDur ? 0.1 * Yoeminrak.secDur[~section ? 0]/20;
+    var totalDur = ~totalDur ? 8 * Yoeminrak.secDur.wrapAt(~section ? 0)/20;
+    var initDur = ~initDur ? 0.1 * Yoeminrak.secDur.wrapAt(~section ? 0)/20;
     var numDivisions = ~numDivisions ? 12;
     var curve = ~curve ? \exp;
     var section = ~section ? 1;
     var useGendy = ~useGendy ? false;
     var useConvolution = ~useConvolution ? false;
 
-    var durations = Yoeminrak.garland(totalDur, initDur, numDivisions, curve) ++ ~extraDur;
-
+    var durations = Yoeminrak.garland(totalDur, initDur, numDivisions, curve);
     var env = currentEnvironment;
+
+    (~reverse ? false).if { durations = durations.reverse };
+    durations = durations ++ ~extraDur;
 	env.chord = Yoeminrak.env[\currentInstance][\chord];
     env.type = nil;
 

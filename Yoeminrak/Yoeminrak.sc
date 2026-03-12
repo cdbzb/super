@@ -1,7 +1,14 @@
 MPV {
-	*play {|path start end audio=true fullscreen=false|
+	classvar <>socket = "/tmp/mpvsocket";
+
+	*play {|path start end audio=true fullscreen=false paused=false|
 		var endArg = end.isNil.if { "" } { "--end=% ".format(end) };
-		"mpv" + audio.if{""}{"--no-audio"} + fullscreen.if{"--fs "}{" "} ++ "--start=% %%".format(start, endArg, path) => _.unixCmd
+		var pauseArg = paused.if { "--pause --input-ipc-server=% ".format(socket) } { "" };
+		"mpv" + audio.if{""}{"--no-audio"} + fullscreen.if{"--fs "}{" "} ++ pauseArg ++ "--start=% %%".format(start, endArg, path) => _.unixCmd
+	}
+
+	*unpause {
+		"echo '{\"command\":[\"set_property\",\"pause\",false]}' | nc -U %".format(socket).unixCmd
 	}
 }
 
@@ -12,8 +19,8 @@ MPV {
 Yoeminrak {
     classvar <video;
     classvar <sections, <secDur;
-    // classvar <>particleVidOffset = 20;
-     classvar <>particleVidOffset = 25.7;
+    classvar <>particleVidOffset = 20;
+     // classvar <>particleVidOffset = 25.7;
 
     classvar <>env;
     classvar <>song;
@@ -60,27 +67,29 @@ Yoeminrak {
         //     -107,    // 16
         // ].collect{|i x| x * 52 + 6 + i };
 
-        // corrected from frame_marks.json (secs 0-13); 14-16 unchanged
+        // corrected from frame_marks.json
         sections = [
-            -2.6633,  // 0  forward arms up and down
-            -1.2432,  // 1  the same
-            -0.2903,  // 2  to the right - crouch
-            -3.8752,  // 3  to the left and crouch
-            -2.8222,  // 4  to the rear
-            -4.1381,  // 5  spin and to the front
-            -5.5876,  // 6
-            -7.0704,  // 7
-            -14.2256, // 8
-            -22.7487, // 9
-            -33.4074, // 10
-            -44.7668, // 11
-            -56.6266, // 12
-            -67.5189, // 13
-            -81,      // 14
-            -94,      // 15
-            -107,     // 16
+            -2.6633,   // 0  forward arms up and down
+            -1.2432,   // 1  the same
+            -0.2903,   // 2  to the right - crouch
+            -3.8752,   // 3  to the left and crouch
+            -2.8222,   // 4  to the rear
+            -4.1381,   // 5  spin and to the front
+            -5.5876,   // 6
+            -7.0704,   // 7
+            -14.2256,  // 8
+            -22.7487,  // 9
+            -33.4074,  // 10
+            -44.7668,  // 11
+            -56.6266,  // 12
+            -67.5189,  // 13
+            -80.5465,  // 14
+            -92.9069,  // 15
+            -104.9336, // 16
         ].collect{|i x| x * 52 + 6 + i };
         secDur = sections.differentiate.drop(1);
+        sections = sections.add(15 - particleVidOffset);  // negativeOne video start (particles: 15s)
+        secDur = secDur.add(sections[0] - sections.last);  // negativeOne duration ≈ 8.34s
         this.loadEventTypes;
 		this.filenameSymbol.asString.dirname +/+ "ornaments/ornaments.scd" => _.load;
         this.makeNoteEventType;
@@ -178,7 +187,7 @@ Yoeminrak {
         }
     }
 
-    *playVid { |vid sec audio=false fullscreen=false length=1 start=0 end=5 syncBeats=false|
+    *playVid { |vid sec audio=false fullscreen=false length=1 start=0 end=5 syncBeats=false paused=false|
         var path = (vid == 0).if { video.at(\live) } { video.at(\particles) };
         sec.notNil.if {
             var vidOffset = vid * particleVidOffset;
@@ -187,15 +196,15 @@ Yoeminrak {
                 var markIdx = (sec * 20) + start + 1;
                 (marks[markIdx.asSymbol][\frame] / 29.97) + vidOffset
             } {
-                sections[sec] + vidOffset
+                sections.wrapAt(sec) + vidOffset
             };
-            end = sections[sec + length] + vidOffset;
+            end = sections.wrapAt(sec + length) + vidOffset;
         };
-        MPV.play(path, start, end, audio, fullscreen)
+        MPV.play(path, start, end, audio, fullscreen, paused)
     }
 
     *addEventType { |name func|
-        Event.addEventType(name, { ~dur = ~dur * secDur[~section ? 0] / 20 => _.postln } ++ func)
+        Event.addEventType(name, { ~dur = ~dur * secDur.wrapAt(~section ? 0) / 20 => _.postln } ++ func)
     }
 
     *loadEventTypes {
@@ -237,7 +246,7 @@ Yoeminrak {
         } {
             frameNums = (startMark .. startMark + 20).collect { |i| marks[i.asSymbol][\frame] };
             deltas = (0..19).collect { |i| frameNums[i+1] - frameNums[i] };
-            expectedFrames = secDur[sec] / 20 * fps;
+            expectedFrames = secDur.wrapAt(sec) / 20 * fps;
             tempi = (deltas / expectedFrames).reciprocal;
             tempi.do { |tempo beat|
                 (beat: beat, extra: { TempoClock.tempo_(tempo); "TEMPO: %".format(tempo).postln }, type: \addMe).play;
@@ -247,7 +256,7 @@ Yoeminrak {
 
     *makeNoteEventType {
         Event.addEventType(type: \yoeNote, func: {
-            ~dur = (~dur ? 1) * Yoeminrak.secDur[~section ? 0] / 20;
+            ~dur = (~dur ? 1) * Yoeminrak.secDur.wrapAt(~section ? 0) / 20;
             ~type = ~freq.isKindOf(Number).if { \note.postln } { \rest.postln };
             currentEnvironment.play;
         }, parentEvent: nil)
@@ -532,14 +541,14 @@ Yoeminrak {
 			}
 			.do {|i|
                 if (i.beat >= cursor) {
-                    TempoClock.sched(Yoeminrak.secDur[section] / 20 * (i.beat - cursor), {i.copy.play})
+                    TempoClock.sched(Yoeminrak.secDur.wrapAt(section) / 20 * (i.beat - cursor), {i.copy.play})
                 }
             }
         }
 	}
 }
 + SequenceableCollection{
-	play { |cursor=0 section solo continue=false|
+	play { |cursor=0 section solo continue=false lag=0|
         // CmdPeriod.run;
 		// Yoeminrak.env[\synth].free;
 		// fork{
@@ -552,7 +561,7 @@ Yoeminrak {
 			.do {|i|
                 var copy = i.copy;
                 if (i.beat >= cursor) {
-                    TempoClock.sched(Yoeminrak.secDur[section ? i.section ? 0] / 20 * (i.beat - cursor), {copy.play})
+                    TempoClock.sched(Yoeminrak.secDur.wrapAt(section ? i.section ? 0) / 20 * (i.beat - cursor) + lag , {copy.play})
                 }
             }
         // }
@@ -648,7 +657,7 @@ Yoeminrak {
 }
 
 dropTime { | beats=2, section=0 |
-    var scale = Yoeminrak.secDur[section] / 20;
+    var scale = Yoeminrak.secDur.wrapAt(section) / 20;
     ^Prout { |inval|
         var stream = this.asStream;
         var totalDur = 0;

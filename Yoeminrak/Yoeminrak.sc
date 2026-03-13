@@ -29,6 +29,8 @@ Yoeminrak {
     classvar <>counterWin;
     classvar <>bookmarks;
 
+    *songAt { |key| ^song[key].value }
+
     *loadSongs {
         ^(PathName(dir) +/+ "songs").files.do { |e| e.fullPath.load };
     }
@@ -493,6 +495,20 @@ Yoeminrak {
 		};
 
 		^state
+	}
+
+	*resetBusses { |instance|
+		var defaults = this.terminalState([]);
+		var inst = instance ?? { env[\currentInstance] };
+		inst.notNil.if {
+			defaults.keysValuesDo { |key, value|
+				inst[key].notNil.if {
+					value.isKindOf(Array).if { inst[key].setn(value) } { inst[key].set(value) }
+				}
+			}
+		} {
+			"resetBusses: no instance found".warn
+		}
 	}
 
 	*chaseState { |eventList instance|

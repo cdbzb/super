@@ -4,6 +4,11 @@ Event.addEventType(\yoeDrum0, {
 	~out = { Effect.bus({ |i| FreeVerb.ar(i, 1,1) * 8 }) };
 	currentEnvironment.copy.put(\type,\note).play;
 });
+Event.addEventType(\yoeDrum0Reverse, {
+	~amp = ~amp ? 1;
+	~out = { Effect.bus({ |i| FreeVerb.ar(i, 1,1)  * 8 => Pan2.ar(_,0.5) }, inputChannels:2) };
+	currentEnvironment.copy.put(\type,\note).play;
+});
 
 Event.addEventType(\yoeDrum1, {
 	{ MembraneCircle.ar(excitation: Impulse.ar(0) => {|i| i  => Decay.ar(_, 0.3) * PinkNoise.ar(1) }, tension:SinOsc.ar(LFNoise0.ar().range(4,[ 5, 6 ])) /100 + 0.001, loss:0.9999) * XLine.kr (0.3,00001,9) => LeakDC.ar(_)}.play;

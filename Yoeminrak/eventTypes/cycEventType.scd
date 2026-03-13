@@ -1,8 +1,8 @@
 // Cycle EventType
 Event.addEventType(\cyc, {
-	Yoeminrak.song[~song].notNil.if
+	Yoeminrak.songAt(~song).notNil.if
 	{
-		var song = Yoeminrak.song[~song];
+		var song = Yoeminrak.songAt(~song);
 		var section = (~sec ? (song.collect{|i| i.section ? 0 } => {|x| x.maxItem { |item| x.occurrencesOf(item) }})) ? 0;
 		var start = ~start ? Yoeminrak.env[\cursor] ? 0;
 

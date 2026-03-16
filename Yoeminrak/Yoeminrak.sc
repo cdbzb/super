@@ -276,6 +276,60 @@ Yoeminrak {
         MPV.play(path, start, end, audio, fullscreen, paused)
     }
 
+    *recordReference { |songs outPath|
+        var nameMap = IdentityDictionary[\negativeOne -> -1, \zero -> 0, \one -> 1, \two -> 2,
+            \three -> 3, \four -> 4, \five -> 5, \six -> 6, \seven -> 7, \eight -> 8,
+            \nine -> 9, \ten -> 10, \eleven -> 11, \twelve -> 12, \thirteen -> 13,
+            \fourteen -> 14, \fifteen -> 15];
+        var audioPath = "/tmp/yoeminrak_recording.wav";
+        var totalDur, audioTimeAtSync, videoTimeAtSync, offset, syncFound;
+
+        songs = songs ?? { (-1..15) };
+        outPath = outPath ?? { "~/Desktop/yoeminrak_reference.mp4" };
+
+        // Normalize: integers stay as integers (cycs/songAt handles them)
+        // Calculate total duration and sync offset
+        totalDur = 0;
+        audioTimeAtSync = 0;
+        syncFound = false;
+        songs.do { |s|
+            var sec = s.isInteger.if { s } { nameMap[s] ? 0 };
+            var dur = secDur.wrapAt(sec);
+            totalDur = totalDur + dur;
+            syncFound.not.if {
+                (sec >= 0).if {
+                    videoTimeAtSync = (this.markFrame(sec * 20 + 1) / 29.97) + particleVidOffset;
+                    syncFound = true;
+                } {
+                    audioTimeAtSync = audioTimeAtSync + dur;
+                }
+            };
+        };
+
+        offset = videoTimeAtSync - audioTimeAtSync;
+
+        "Recording % songs, total duration: %s".format(songs.size, totalDur.round(0.1)).postln;
+        "Audio sync offset: %s".format(offset.round(0.001)).postln;
+
+        env[\silent] = false;
+        env[\vid] = false;
+        // Prepare recording buffer/synthdef ahead of time
+        Server.default.prepareForRecord(audioPath);
+        fork {
+            Server.default.sync;  // wait for buffer allocation + file open
+            "Ready to record".postln;
+            Server.default.record;  // instant — synth already prepared
+            (type:\cycs, songs: songs).play;
+            (totalDur + 20).wait;
+            Server.default.stopRecording;
+            2.wait;
+            "ffmpeg -y -ss % -i % -i % -map 0:v -map 1:a -c:v copy -c:a aac -shortest %"
+                .format(offset, video[\particles], audioPath, outPath).unixCmd({ |res|
+                    "Reference saved to: %".format(outPath).postln;
+                });
+        };
+    }
+
     *addEventType { |name func|
         Event.addEventType(name, { ~dur = ~dur * secDur.wrapAt(~section ? 0) / 20 => _.postln } ++ func)
     }

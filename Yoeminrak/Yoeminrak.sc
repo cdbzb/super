@@ -28,8 +28,76 @@ Yoeminrak {
     classvar <>dir = "/Users/michael/tank/super/Yoeminrak";
     classvar <>counterWin;
     classvar <>bookmarks;
+    classvar <>marks;
+    classvar <>markAdj;
 
     *songAt { |key| ^song[key].value }
+
+    *loadMarks {
+        marks = JSONlib.parseFile("/Users/michael/tank/Hyojin/Video Sync/frame_marks.json");
+        markAdj = ();
+    }
+
+    *markFrame { |index|
+        ^marks[index.asSymbol][\frame] + ((markAdj[index] ? 0) * 29.97)
+    }
+
+    *moveMark { |section beat offset|
+        var idx = section * 20 + beat + 1;
+        markAdj[idx] = offset;
+        "mark %: % → % (% sec)".format(idx, marks[idx.asSymbol][\frame], this.markFrame(idx).round, offset).postln;
+    }
+
+    *warpRange { |section startBeat endBeat beatToMove amount|
+        var startSec, endSec, startIdx, endIdx, moveIdx;
+        section.isArray.if {
+            startSec = section[0]; endSec = section.last;
+        } {
+            startSec = section; endSec = section;
+        };
+        startIdx = startSec * 20 + startBeat + 1;
+        endIdx = endSec * 20 + endBeat + 1;
+        // resolve beatToMove: prefer startSec, fall back to endSec
+        moveIdx = startSec * 20 + beatToMove + 1;
+        ((moveIdx < startIdx) or: { moveIdx > endIdx }).if {
+            moveIdx = endSec * 20 + beatToMove + 1;
+        };
+        (startIdx .. endIdx).do { |idx|
+            var offset = case
+                { idx == moveIdx } { amount }
+                { idx < moveIdx }  { (moveIdx == startIdx).if { amount } { amount * ((idx - startIdx) / (moveIdx - startIdx)) } }
+                { true }           { (moveIdx == endIdx).if { amount } { amount * ((endIdx - idx) / (endIdx - moveIdx)) } };
+            markAdj[idx] = offset;
+        };
+        this.showMarks(section, startBeat, endBeat);
+    }
+
+    *clearMarks { |section|
+        var startIdx = section * 20 + 1;
+        (startIdx .. startIdx + 20).do { |idx| markAdj.removeAt(idx) };
+    }
+
+    *showMarks { |section startBeat=0 endBeat=19 fps=29.97|
+        var startSec, endSec, startIdx, endIdx;
+        section.isArray.if {
+            startSec = section[0]; endSec = section.last;
+        } {
+            startSec = section; endSec = section;
+        };
+        startIdx = startSec * 20 + startBeat + 1;
+        endIdx = endSec * 20 + endBeat + 1;
+        "--- section % (beats %–%) ---".format(section, startBeat, endBeat).postln;
+        (startIdx .. endIdx).do { |idx|
+            var sec = (idx - 1) div: 20;
+            var beat = (idx - 1) % 20;
+            var origFrame = marks[idx.asSymbol][\frame];
+            var adjFrame = this.markFrame(idx);
+            var nextFrame = marks[(idx + 1).asSymbol].notNil.if { this.markFrame(idx + 1) };
+            var delta = nextFrame.notNil.if { ((nextFrame - adjFrame) / fps * 1000).round(0.1) };
+            var adjStr = (markAdj[idx].notNil).if { " [adj: %s → %]".format(markAdj[idx], adjFrame.round) } { "" };
+            "%:%  frame %%  delta: % ms".format(sec, beat.asString.padLeft(2, " "), origFrame, adjStr, delta ? "--").postln;
+        };
+    }
 
     *loadSongs {
         ^(PathName(dir) +/+ "songs").files.do { |e| e.fullPath.load };
@@ -95,6 +163,7 @@ Yoeminrak {
         secDur = sections.differentiate.drop(1);
         sections = sections.add(15 - particleVidOffset);  // negativeOne video start (particles: 15s)
         secDur = secDur.add(sections[0] - sections.last);  // negativeOne duration ≈ 8.34s
+        this.loadMarks;
         this.loadEventTypes;
 		this.filenameSymbol.asString.dirname +/+ "ornaments/ornaments.scd" => _.load;
         this.makeNoteEventType;
@@ -197,9 +266,8 @@ Yoeminrak {
         sec.notNil.if {
             var vidOffset = vid * particleVidOffset;
             start = syncBeats.if {
-                var marks = JSONlib.parseFile("/Users/michael/tank/Hyojin/Video Sync/frame_marks.json");
                 var markIdx = (sec * 20) + start + 1;
-                (marks[markIdx.asSymbol][\frame] / 29.97) + vidOffset
+                (this.markFrame(markIdx) / 29.97) + vidOffset
             } {
                 sections.wrapAt(sec) + vidOffset
             };
@@ -246,27 +314,25 @@ Yoeminrak {
 
     *addTempoEvents { |section|
         var fps = 29.97;
-        var marks = JSONlib.parseFile("/Users/michael/tank/Hyojin/Video Sync/frame_marks.json");
         var sec = section ?? { currentEnvironment[\addMeSection] ? 0 };
         var startMark = (sec * 20) + 1;
         var songName = env[\addMeSong];
-        var frameNums, deltas, expectedFrames, tempi;
+        var expectedFrames;
         (marks[startMark.asSymbol].isNil or: { marks[(startMark + 20).asSymbol].isNil }).if {
             "addTempoEvents: incomplete marks for section % (marks %–%). Playing without tempo events.".format(sec, startMark, startMark + 20).warn;
         } {
-            frameNums = (startMark .. startMark + 20).collect { |i| marks[i.asSymbol][\frame] };
-            deltas = (0..19).collect { |i| frameNums[i+1] - frameNums[i] };
             expectedFrames = secDur.wrapAt(sec) / 20 * fps;
-            tempi = (deltas / expectedFrames).reciprocal;
-            tempi.do { |tempo beat|
+            20.do { |beat|
                 (beat: beat, extra: {
+                    var delta = Yoeminrak.markFrame(startMark + beat + 1) - Yoeminrak.markFrame(startMark + beat);
+                    var tempo = expectedFrames / delta;
                     TempoClock.tempo_(tempo);
                     counterWin.notNil.if { defer {
                         env[\counterSong] = songName;
                         env[\counterBeat] = beat;
                         env[\counterText] !? { |t| t.string = "% : %".format(songName, beat) };
                     }};
-                }, type: \addMe).play;
+                }, newType: \yoeRest, type: \addMe).play;
             };
         };
     }

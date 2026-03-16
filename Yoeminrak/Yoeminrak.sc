@@ -617,6 +617,23 @@ Yoeminrak {
 		^state
 	}
 
+	*diffFromDefaults { |songKey|
+		var defaults = this.terminalState([]);
+		var state = this.terminalState(this.songAt(songKey));
+		var diff = ();
+		state.keysValuesDo { |key, val|
+			var defVal = defaults[key];
+			var normVal = val.isNumber.if { val ! 5 } { val };
+			var normDef = defVal.isNumber.if { defVal ! 5 } { defVal };
+			(normVal != normDef).if { diff[key] = val }
+		};
+		"--- % terminal state (non-default) ---".format(songKey).postln;
+		diff.isEmpty.if { "  (all defaults)".postln } {
+			diff.keysValuesDo { |k, v| "  % : %".format(k, v).postln }
+		};
+		^diff
+	}
+
 	*resetBusses { |instance|
 		var defaults = this.terminalState([]);
 		var inst = instance ?? { env[\currentInstance] };

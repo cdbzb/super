@@ -4,14 +4,14 @@
 		*newOld { |function out=0 inputChannels=1|
 			^super.new.init(function , out,inputChannels);
 		}
-		*new { |function out=0 inputChannels=1 target time=1|
-			^super.new.init(function , out,inputChannels, target, time);
+		*new { |function out=0 inputChannels=1 target time=1 maxDur release=3|
+			^super.new.init(function , out,inputChannels, target, time, maxDur, release);
 		}
 		*newSidechain {|function out=0 inputChannels=1| ^super.new.initSidechain(function,out,inputChannels) }
 
 		*new2 {|function out=0 inputChannels=1| ^super.new.init(function,out,inputChannels)}
 		*lfo {|function inputChannels=1 dur| ^super.new.initLfo(function,inputChannels,dur)}
-		*bus {|function out=0 inputChannels=1 target time=1| ^Effect.new(function , out,inputChannels, target, time).bus.index}
+		*bus {|function out=0 inputChannels=1 target time=1 maxDur release=3| ^Effect.new(function , out,inputChannels, target, time, maxDur, release).bus.index}
 		*kbus {|function inputChannels=1 dur| ^super.new.initLfo(function,inputChannels,dur).bus.index}
 
 		initLfo { |function inputChannels=1 dur |
@@ -44,19 +44,16 @@
 event.yield
 		}
 
-		init { |function out inputChannels=1 target time=1 |
+		init { |function out inputChannels=1 target time=1 maxDur release=3|
 			var desc = SynthDef(\temp,{ In.ar(0, inputChannels) => function => Out.ar(0,_) });
 			numChannels=desc.asSynthDesc.outputData[0].at(\numChannels);
 			target = target ? Server.default;
 			bus=Bus.audio(numChannels:numChannels);
-			// bus=Bus.audio(numChannels: inputChannels);
-			// bus.debug("bus: ");
-			// defer{bus.scope};
-			synth={|gate| 
-				In.ar(bus.index, inputChannels)
-				=> function
-				=>.first DetectSilence.ar(_, time: time, doneAction: 2)
-				=> Out.ar(out, _)
+			synth={|gate|
+				var sig = In.ar(bus.index, inputChannels) => function;
+				maxDur.notNil.if { sig = sig * EnvGen.kr(Env.linen(0, maxDur, release), doneAction: 2) };
+				DetectSilence.ar(sig.asArray.first, time: time, doneAction: 2);
+				Out.ar(out, sig)
 			}.play(addAction:\addToTail, target: target);
 			NodeWatcher.register(synth, assumePlaying: true);
 			synth.onFree({ 

@@ -25,7 +25,7 @@ Yoeminrak {
     classvar <>env;
     classvar <>song;
     classvar <>muted;
-    classvar <>dir = "/Users/michael/tank/super/Yoeminrak";
+    classvar <>dir;
     classvar <>counterWin;
     classvar <>bookmarks;
     classvar <>marks;
@@ -34,8 +34,16 @@ Yoeminrak {
     *songAt { |key| ^song[key].value }
 
     *loadMarks {
-        marks = JSONlib.parseFile("/Users/michael/tank/Hyojin/Video Sync/frame_marks.json");
+        var negOneStartFrame, beatFrames;
+        marks = JSONlib.parseFile(dir +/+ "data/frame_marks.json");
         markAdj = ();
+        // Synthesize 20 marks for section -1 (indices -19 through 0)
+        negOneStartFrame = marks[\1][\frame] - (secDur.last * 29.97);
+        beatFrames = secDur.last / 20 * 29.97;
+        20.do { |beat|
+            var idx = beat - 19;  // -19, -18, ... 0
+            marks[idx.asSymbol] = (frame: (negOneStartFrame + (beat * beatFrames)).round);
+        };
     }
 
     *markFrame { |index|
@@ -112,6 +120,7 @@ Yoeminrak {
         Class.initClassTree(aClass:Bus);
         Class.initClassTree(aClass:Env);
         Class.initClassTree(aClass:SinOsc);
+        dir = this.filenameSymbol.asString.dirname;
         env = Environment.new;
         song = ();
         bookmarks = List[];
@@ -150,6 +159,7 @@ Yoeminrak {
             -4.1381,   // 5  spin and to the front
             -5.5876,   // 6
             -7.0704,   // 7
+			// -8,// revertt
             -14.2256,  // 8
             -22.7487,  // 9
             -33.4074,  // 10
@@ -282,7 +292,7 @@ Yoeminrak {
             \nine -> 9, \ten -> 10, \eleven -> 11, \twelve -> 12, \thirteen -> 13,
             \fourteen -> 14, \fifteen -> 15];
         var audioPath = "/tmp/yoeminrak_recording.wav";
-        var totalDur, audioTimeAtSync, videoTimeAtSync, offset, syncFound;
+        var totalDur, offset;
 
         songs = songs ?? { (-1..15) };
         outPath = outPath ?? { "~/Desktop/yoeminrak_reference.mp4" };
@@ -290,26 +300,19 @@ Yoeminrak {
         // Normalize: integers stay as integers (cycs/songAt handles them)
         // Calculate total duration and sync offset
         totalDur = 0;
-        audioTimeAtSync = 0;
-        syncFound = false;
         songs.do { |s|
             var sec = s.isInteger.if { s } { nameMap[s] ? 0 };
-            var dur = secDur.wrapAt(sec);
-            totalDur = totalDur + dur;
-            syncFound.not.if {
-                (sec >= 0).if {
-                    videoTimeAtSync = (this.markFrame(sec * 20 + 1) / 29.97) + particleVidOffset;
-                    syncFound = true;
-                } {
-                    audioTimeAtSync = audioTimeAtSync + dur;
-                }
-            };
+            totalDur = totalDur + secDur.wrapAt(sec);
         };
-
-        offset = videoTimeAtSync - audioTimeAtSync;
+        // Video offset: use first song's first mark, same as \cyc would
+        {
+            var firstSec = songs[0].isInteger.if { songs[0] } { nameMap[songs[0]] ? 0 };
+            var markIdx = (firstSec * 20) + 1;  // same as \cyc: (section * 20) + start + 1
+            offset = (this.markFrame(markIdx) / 29.97) + particleVidOffset;
+        }.value;
 
         "Recording % songs, total duration: %s".format(songs.size, totalDur.round(0.1)).postln;
-        "Audio sync offset: %s".format(offset.round(0.001)).postln;
+        "Video seek offset: %s".format(offset.round(0.001)).postln;
 
         env[\silent] = false;
         env[\vid] = false;

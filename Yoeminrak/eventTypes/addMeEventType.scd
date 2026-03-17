@@ -40,11 +40,11 @@ Event.addEventType(\addMe, {
         env2.use {
             ~type       = \default;
             ~instrument = \harp;
-            ~coef       = 0.1;
+            ~coef       = ~coef ? 0.1;
             ~latency    = 0.025;
             // nil or Float 0.0 → use default 0.1; Integer 0 → intentional zero strum
             ~strum      = (~strum.isNil or: { ~strum.isFloat and: { ~strum == 0.0 } }).if { 0.1 } { ~strum };
-            ~amp        = 0.1;
+            ~amp        = ~harpAmp ? 0.1;
         };
         song.add(env2);
         Yoeminrak.env[\preview].notNil.if { env2.play };

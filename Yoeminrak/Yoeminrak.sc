@@ -129,6 +129,12 @@ Yoeminrak {
             particles: "'/Users/michael/tank/Hyojin/Video Sync/Media/여민락_2025__yeomillak-2025 (720p).mp4'",
             live: "'/Users/michael/tank/Hyojin/Video Sync/Media/1015_여민락_실연_full (720p).mp4'";
         );
+        video.keysValuesDo { |key, path|
+            var unquoted = path.replace("'", "");
+            File.exists(unquoted).not.if {
+                "Yoeminrak: video '%' not found at %".format(key, unquoted).warn;
+            }
+        };
         // sections = [
         //     -2.7,   // 0  forward arms up and down
         //     -1.3,   // 1  the same
@@ -295,7 +301,7 @@ Yoeminrak {
         var totalDur, offset;
 
         songs = songs ?? { (-1..15) };
-        outPath = outPath ?? { "~/Desktop/yoeminrak_reference.mp4" };
+        outPath = outPath ?? { "~/Desktop/yoeminrak_reference_%.mp4".format(Date.getDate.stamp) };
 
         // Normalize: integers stay as integers (cycs/songAt handles them)
         // Calculate total duration and sync offset

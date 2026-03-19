@@ -58,8 +58,9 @@ Event.addEventType(\addMe, {
             env3.use {
                 ~type       = \default;
                 ~instrument = \stringyy;
-                ~amp        = 1;
+                ~amp        = ~stringyyAmp ? 1;
                 ~latency    = 0.025;
+				~mix        = ~mix ? Yoeminrak.env[\stringyyMix] ? 1
             };
             song.add(env3);
             Yoeminrak.env[\preview].notNil.if { env3.play };

@@ -12,7 +12,7 @@ Yoeminrak.env.use {
             var fps = 29.97;
             var beatNum = beat.floor.asInteger;
             var beatFrac = beat % 1;
-            var marks = JSONlib.parseFile("/Users/michael/tank/Hyojin/Video Sync/frame_marks.json");
+            var marks = Yoeminrak.marks;
             var durRemaining = dur;
             var i = 0;
             var chunk, beatDur;

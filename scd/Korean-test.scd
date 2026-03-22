@@ -1,13 +1,16 @@
 
 (
-Song(\kimchi,[]).current;
-["english", "1 2 3 4 3 4 2 5".dm(\g, 4)].addLine;
+Song(\babelTest,[]).current;
+["english", "1 2 3 4 3 4 2 5".dm(\g, 4), 1!8].addLine;
 P.synthV(\xuan2, take: \lead, version: 2, params: {|p b| [
 	lyrics: "I would like some kimchi + and rice",
 	language: \english,
 	phoneset:\arpabet,
 	// phonesetOverride:\arpabet,
 	pitchTake: 1,
+	phonemes: 
+	"I would like some kimchi + and rice".morphPhonemes(\xuan2, [\english, \chinese])
+	,
 	// languageOverride: \Korean,
 	// phoneset: \xsampa,
 	// language: \Korean

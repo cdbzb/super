@@ -10,7 +10,7 @@ SynthV {
 	var <name, <project, <file,<location,<buffer, <key, <song, <section;
 	var <>firstNoteOffset = 0;
 	var <> offset = 0;
-	var <>double, <>take, <>buildFunc;
+	var <>double, <>take, <>buildFunc, <>vstParams;
 	var <>playbuf;
 	var <>vst;
     var <appVersion = 1;
@@ -774,6 +774,24 @@ SynthV {
 			=> P.synthV(*_)
 			=> {|i| SynthV.synthVsToRender.add(i) }
 		};
+	}
+	*synthVMulti { | key start lyrics languages params syl lag=0 take double music song resources range filter pbind prepend role wait frozen record offset version randomSeed=12345|
+		var morphed = lyrics.morphPhonemes(key, languages.sort, randomSeed);
+		^P.synthV(
+			key, start: start, take: take, double: double, version: version ? 2,
+			syl: syl, lag: lag, music: music, song: song, resources: resources,
+			range: range, filter: filter, pbind: pbind, prepend: prepend,
+			role: role, wait: wait, frozen: frozen, record: record, offset: offset,
+			params: {|p b k|
+				var userParams = params.value(p, b, k) ? [];
+				userParams ++ [
+					lyrics: lyrics,
+					phonemes: morphed.phonemes,
+					languageOverride: morphed.languageOverride,
+					phonesetOverride: morphed.phonesetOverride
+				]
+			}
+		)
 	}
 }
 +String{

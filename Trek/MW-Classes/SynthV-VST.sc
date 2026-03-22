@@ -1,6 +1,37 @@
 + SynthV {
-	*newVST { |key name take double| 
-		^super.new.initVST(key, name, take, double) 
+	*newVST { |key name take double version|
+		^super.new.initVST(key, name, take, double, version)
+	}
+	*vst { |voice params version=2|
+		var synthV;
+		synthV = super.new.initVST(voice, \default, voice, nil, version);
+		synthV.vstParams = params;
+		synthV.vstParams[\voice] = voice;
+		^synthV
+	}
+	buildVSTParams {
+		var params = vstParams;
+		this.buildFunc = {
+			params.lyrics = params.lyrics.replace($, , "").split(Char.space).reject{|i| i.size==0};
+			params.pitch = params.midinote.asInteger;
+			this.makeNotes(params.dur.size);
+			this.setDatabase(params[\voice]);
+			this.set(params);
+		};
+	}
+	build {
+		this.buildVSTParams;
+		this.renderVST;
+		^this
+	}
+	morphPhonemesVST { |languages randomSeed=12345|
+		var morphed = vstParams.lyrics.morphPhonemes(nil, languages.sort, randomSeed);
+		vstParams.putAll((
+			phonemes: morphed.phonemes,
+			languageOverride: morphed.languageOverride,
+			phonesetOverride: morphed.phonesetOverride
+		));
+		^this
 	}
 	*buildVST { |song section voice take params version|
 		//section is just there for the naming filetree - its just a secondary name in this case
@@ -8,12 +39,13 @@
 		var synthV;
 		synthV = super.new.initVST(song, section, voice, take, version).setDatabase(voice);
 
-		synthV.buildFunc = { 
+		synthV.vstParams = params;
+		synthV.buildFunc = {
 			params.lyrics=params.lyrics.replace($, , "").split(Char.space).reject{|i| i.size==0};
 			params.pitch=params.midinote.asInteger;
 			synthV.makeNotes(params.dur.size);
 
-			synthV.set(params); 
+			synthV.set(params);
 		};
 			// take.notNil.if{voice = voice ++ "_" ++ take};
 			// SynthV.current_(synthV);
@@ -33,7 +65,7 @@
 		};
 		this.buildFunc.value;
 		this.writeProjectVST(path ++ ".svp") ; 
-		this.writeFxp(path ++ ".fxp");
+		this.writeFxp(path);
 		fork{0.1.wait;vst.controller.readProgram(path ++ ".fxp")};
 	}
 	initVST { |son sec v t version |
@@ -57,9 +89,10 @@
 		(appVersion == 1).if { project.tracks[0].mainRef.systemPitchDelta.put(\points,[]) };
 
 		// this.refreshBuffer(song, name, voice, (take ? \default));
+		^this
 	}
 	renderVST {
-		var path = "/private/tmp/" ++ Date.new.stamp;
+		var path = "/private/tmp/" ++ UniqueID.next.asString.padLeft(13, "0");
 		this.buildFunc.value;
 		this.writeProjectVST(path ++ ".svp") ; 
 		this.writeFxp(path);
@@ -67,26 +100,28 @@
 	}
 
 	writeFxp { |path| //pass in path without .svp or .fxp
-        //this path is embedded in the example fxp file below
-		// var oldPath = "/private/tmp/250617_142307.svp";
-
-		// for V2 
-		var oldPath = "/private/tmp/250717_080003.svp";
-		// var newPath = "/private/tmp/" ++ Date.new.stamp ++ ".svp";
-        //this is the path we will be embedding in the fxp file
-		var newPath = path ++ ".svp";
-		var fxpData = {
+		var oldPath, newPath, templateFile, fxpData, startIndex;
+		//this is the path we will be embedding in the fxp file
+		newPath = path ++ ".svp";
+		// select template and embedded path based on appVersion
+		case
+		{ appVersion == 1 } {
+			oldPath = "/private/tmp/250617_142307.svp";
+			templateFile = "123456_123456.fxp";
+		}
+		{ appVersion == 2 } {
+			oldPath = "/private/tmp/250717_080003.svp";
+			templateFile = "654321_654321.fxp";
+		};
+		fxpData = {
 			var file, data;
-			// this example fxp file has an embedded path
-			file = File("~/tank/super/Trek/SynthV/123456_123456.fxp".standardizePath, "rb"); // "rb" for read binary
-			// this is a V2 example
-			file = File("~/tank/super/Trek/SynthV/654321_654321.fxp".standardizePath, "rb"); // "rb" for read binary
+			file = File(("~/tank/super/Trek/SynthV/" ++ templateFile).standardizePath, "rb");
 			data = Int8Array.newClear(file.length);
 			file.read(data);
 			file.close;
 			data;
 		}.();
-		var startIndex = (0..(fxpData.size - oldPath.size)).detect { |i|
+		startIndex = (0..(fxpData.size - oldPath.size)).detect { |i|
 			oldPath.ascii.every
 			{ |byte, j|
 				fxpData[i + j] == byte;
@@ -106,6 +141,19 @@
 				file.write(fxpData);
 				file.close;
 			}.value;
+		}
+	}
+	playVST { |func tail=1|
+		var syn, dur;
+		func = func ? I.d;
+		dur = vstParams.dur.sum + tail;
+		fork{
+			syn = { In.ar(vst.bus) => func }.play;
+			vst.controller.setTransportPos(0);
+			vst.controller.setPlaying(true);
+			dur.wait;
+			vst.controller.setPlaying(false);
+			syn.free;
 		}
 	}
 	writeProjectVST { |path|

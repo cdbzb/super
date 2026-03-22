@@ -481,6 +481,9 @@ SynthV {
 			{ i == \phoneset}                { /* handled by language case above */ }
 			{ i == \pitchTake}               { this.setPitchTakeId(event.at(i)) }
 			{ i == \pitchExpression }        { this.setPitchExpression(event.at(i)) }
+			{ [\languageOverride, \phonesetOverride].includes(i) } {
+				this.setNoteAttributes(i, event.at(i))
+			}
 			{ true }                         { this.setNotes(i,event.at(i)) }
 		};
 		//this should be done with an array flop and pairsDo instad but...
@@ -505,6 +508,18 @@ SynthV {
 	setNote {| index key value|
 		key.post;" ".post;value.postln;
 		this.notes[index].put(key,value);
+	}
+	setNoteAttributes { |key array|
+		"setNoteAttributes: % %".format(key, array).postln;
+		( array.rank==0 ).if{ array = array.bubble };
+		this.notes.do{|note, x|
+			var val = array.clipAt(x);
+			// ensure each note has its own attributes Event
+			note.put(\attributes, note.attributes.copy);
+			(val.notNil and: { val.isString.not or: { val.size > 0 } }).if{
+				note.attributes.put(key, val.asString)
+			}
+		}
 	}
 	setNotes { |key array| //can use an integer or shorter array
 		// array.do{|i x|

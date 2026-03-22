@@ -1,6 +1,6 @@
 SynthVVST {
 	classvar <>cache;
-	var <>synthV, <>params, <>voice, <>version;
+	var <>synthV, <>params, <>voice, <>version, <cacheKey;
 
 	*initClass {
 		cache = IdentityDictionary.new;
@@ -14,6 +14,7 @@ SynthVVST {
 		voice = v;
 		params = p.copy;
 		version = ver;
+		cacheKey = [voice, params, version].hash;
 		^this
 	}
 
@@ -24,26 +25,27 @@ SynthVVST {
 			languageOverride: morphed.languageOverride,
 			phonesetOverride: morphed.phonesetOverride
 		));
+		cacheKey = [voice, params, version].hash;
 		^this
 	}
 
 	build {
-		var path, h;
-		h = [voice, params, version].hash;
-		cache[h].notNil.if{
-			^cache[h]
+		var path, buildParams;
+		cache[cacheKey].notNil.if{
+			^cache[cacheKey]
 		};
 		path = "/private/tmp/" ++ UniqueID.next.asString.padLeft(13, "0");
 		synthV = SynthV.newVST(voice, \default, nil, nil, version);
-		params.lyrics = params.lyrics.replace($, , "").split(Char.space).reject{|i| i.size==0};
-		params.pitch = params.midinote.asInteger;
-		synthV.makeNotes(params.dur.size);
+		buildParams = params.copy;
+		buildParams.lyrics = buildParams.lyrics.replace($, , "").split(Char.space).reject{|i| i.size==0};
+		buildParams.pitch = buildParams.midinote.asInteger;
+		synthV.makeNotes(buildParams.dur.size);
 		synthV.setDatabase(voice);
-		synthV.set(params);
+		synthV.set(buildParams);
 		synthV.writeProjectVST(path ++ ".svp");
 		synthV.writeFxp(path);
 		fork{ 0.1.wait; synthV.vst = SV(path ++ ".fxp") };
-		cache[h] = this;
+		cache[cacheKey] = this;
 		^this
 	}
 
@@ -61,7 +63,19 @@ SynthVVST {
 		}
 	}
 
-	*clearCache {
+	*freeAll {
+		cache.do{|item|
+			item.synthV.notNil.if{
+				item.synthV.vst.notNil.if{
+					try{ item.synthV.vst.bus.free };
+					try{ item.synthV.vst.controller.close };
+				}
+			}
+		};
 		cache = IdentityDictionary.new;
+	}
+
+	*clearCache {
+		this.freeAll;
 	}
 }

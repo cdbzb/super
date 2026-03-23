@@ -44,7 +44,7 @@ SynthVVST {
 		synthV.set(buildParams);
 		synthV.writeProjectVST(path ++ ".svp");
 		synthV.writeFxp(path);
-		fork{ 0.1.wait; synthV.vst = SV(path ++ ".fxp") };
+		synthV.vst = SV(path ++ ".fxp");
 		cache[cacheKey] = this;
 		^this
 	}
@@ -54,6 +54,7 @@ SynthVVST {
 		func = func ? I.d;
 		dur = params.dur.sum + tail;
 		fork{
+			synthV.vst.condition.wait;
 			syn = { In.ar(synthV.vst.bus) => func }.play;
 			synthV.vst.controller.setTransportPos(0);
 			synthV.vst.controller.setPlaying(true);
@@ -77,5 +78,31 @@ SynthVVST {
 
 	*clearCache {
 		this.freeAll;
+	}
+}
++ P {
+	*synthVVST { |voice start params syl lag=0 music song resources filters version=2|
+		var sv, section;
+		section = P.calcStart(start);
+		song = song ? Song.currentSong;
+		sv = SynthVVST(voice, version: version, params: params.value(
+			song,
+			song.durs[section].list,
+			voice
+		) => Event.newFrom(_));
+		filters = filters ? [];
+		filters.isKindOf(Function).if{ filters = [filters] };
+		filters.do{|f| f.(sv) };
+		sv = sv.build;
+		^P(voice, start, syl, lag, {|p b e|
+			sv.synthV.vst.controller.setTransportPos(0);
+			sv.synthV.vst.controller.setPlaying(true);
+			music.(p, b, e);
+		}, song,
+			resources: resources ++ (
+				bus: { In.ar(sv.synthV.vst.bus) },
+				sv: sv
+			)
+		)
 	}
 }

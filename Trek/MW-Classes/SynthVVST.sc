@@ -81,8 +81,9 @@ SynthVVST {
 	}
 }
 + P {
-	*synthVVST { |voice start params syl lag=0 music song resources filters version=2|
-		var sv, section;
+	*synthVVST { |voice start params syl lag=0 music song resources filters version=2 take|
+		var sv, section, key;
+		key = take.notNil.if{ voice ++ "_" ++ take }{ voice };
 		section = P.calcStart(start);
 		song = song ? Song.currentSong;
 		sv = SynthVVST(voice, version: version, params: params.value(
@@ -94,7 +95,7 @@ SynthVVST {
 		filters.isKindOf(Function).if{ filters = [filters] };
 		filters.do{|f| f.(sv) };
 		sv = sv.build;
-		^P(voice, start, syl, lag, {|p b e|
+		^P(key, start, syl, lag, {|p b e|
 			sv.synthV.vst.controller.setTransportPos(0);
 			sv.synthV.vst.controller.setPlaying(true);
 			music.(p, b, e);

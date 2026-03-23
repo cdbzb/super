@@ -51,7 +51,7 @@ Phonemes {
 			korean: (
 				vowels: ["6","e_o","i","M","o","u","V"],
 				consonants: [
-					"4","l","b","p","pp","d","t","tt","g","k","k_t",
+					"4","l","b","p","d","t","g","k","k_t",
 					"dz\\","ts\\_h","ts\\h",
 					"h","m","n","N","s","s_t","w","j"
 				]
@@ -122,17 +122,25 @@ Phonemes {
 	}
 
 	// Returns array of \c and \v, collapsing consecutive runs
+	// Strips silent trailing 'e' after consonant (rice→CVC not CVCV)
 	*cvPattern { |syllable|
 		var vowelChars = "aeiouAEIOU";
+		var letters = syllable.select{|c| c.isAlpha };
 		var pattern = List.new;
 		var last = nil;
-		syllable.do{|char|
-			char.isAlpha.if{
-				var type = vowelChars.includes(char).if{ \v }{ \c };
-				(type != last).if{
-					pattern.add(type);
-					last = type;
+		// drop silent trailing e: if word ends in consonant+e and has another vowel
+		(letters.size > 2 and: {
+			"eE".includes(letters.last) and: {
+				vowelChars.includes(letters[letters.size - 2]).not and: {
+					letters.drop(-1).any{|c| vowelChars.includes(c) }
 				}
+			}
+		}).if{ letters = letters.drop(-1) };
+		letters.do{|char|
+			var type = vowelChars.includes(char).if{ \v }{ \c };
+			(type != last).if{
+				pattern.add(type);
+				last = type;
 			}
 		};
 		// ensure at least one vowel for singability
@@ -156,12 +164,14 @@ Phonemes {
 		}
 	}
 
-	vowelRun { |voice, languages, min=3, max=5|
+	vowelRun { |voice, languages, min=3, max=5, randomSeed=12345|
 		var pools = Phonemes.langPools(languages);
+		var rng = Pseq((0..999), inf).asStream;
 		var syllables = this.replace(",", "").replace(".", "")
 			.replace("!", "").replace("?", "")
 			.split(Char.space).reject{|i| i.size == 0 };
 		var phonemes, langOverrides, phonesetOverrides;
+		thisThread.randSeed = randomSeed;
 		phonemes = List.new;
 		langOverrides = List.new;
 		phonesetOverrides = List.new;
@@ -186,15 +196,20 @@ Phonemes {
 		)
 	}
 
-	morphPhonemes { |voice, languages|
+	morphPhonemes { |voice, languages, randomSeed=12345|
 		var pools = Phonemes.langPools(languages);
 		var syllables = this.replace(",", "").replace(".", "")
 			.replace("!", "").replace("?", "")
 			.split(Char.space).reject{|i| i.size == 0 };
 		var phonemes, langOverrides, phonesetOverrides;
+		var vowelMap, consonantMap;
+		thisThread.randSeed = randomSeed;
 		phonemes = List.new;
 		langOverrides = List.new;
 		phonesetOverrides = List.new;
+		// per-language substitution ciphers: same input char → same output phoneme
+		vowelMap = IdentityDictionary.new;
+		consonantMap = IdentityDictionary.new;
 		syllables.do{|syl|
 			(["+", "-"].includes(syl)).if{
 				phonemes.add("");
@@ -202,10 +217,44 @@ Phonemes {
 				phonesetOverrides.add("");
 			}{
 				var pick = pools.choose;
+				var langKey = pick.language;
 				var pattern = Phonemes.cvPattern(syl);
+				var vowelChars = "aeiouAEIOU";
+				var letters = syl.select{|c| c.isAlpha };
+				var vIdx = 0, cIdx = 0;
+				// ensure per-language maps exist
+				vowelMap[langKey].isNil.if{ vowelMap[langKey] = () };
+				consonantMap[langKey].isNil.if{ consonantMap[langKey] = () };
 				phonemes.add(
-					pattern.collect{|cv|
-						(cv == \v).if{ pick.vowels.choose }{ pick.consonants.choose }
+					Phonemes.cvPattern(syl).collect{|cv|
+						var charGroup, mapKey, map;
+						(cv == \v).if{
+							// collect consecutive vowel chars as the group
+							charGroup = "";
+							while({ vIdx < letters.size and: { vowelChars.includes(letters[vIdx]) } }, {
+								charGroup = charGroup ++ letters[vIdx];
+								vIdx = vIdx + 1;
+							});
+							mapKey = charGroup.toLower.asSymbol;
+							map = vowelMap[langKey];
+							map[mapKey].isNil.if{
+								map[mapKey] = pick.vowels.choose;
+							};
+							map[mapKey]
+						}{
+							// collect consecutive consonant chars as the group
+							charGroup = "";
+							while({ cIdx < letters.size and: { vowelChars.includes(letters[cIdx]).not } }, {
+								charGroup = charGroup ++ letters[cIdx];
+								cIdx = cIdx + 1;
+							});
+							mapKey = charGroup.toLower.asSymbol;
+							map = consonantMap[langKey];
+							map[mapKey].isNil.if{
+								map[mapKey] = pick.consonants.choose;
+							};
+							map[mapKey]
+						}
 					}.join(" ")
 				);
 				langOverrides.add(pick.language.asString);

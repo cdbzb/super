@@ -224,6 +224,151 @@ SynthV {
 			);
 			synthVsToRender = List.new;
 		}
+	*scanDatabases { |dir|
+		var phonesetMap, keyAliases;
+		dir = dir ? "/Library/Application Support/Dreamtonics/Synthesizer V Studio/databases";
+		phonesetMap = (english: "arpabet", mandarin: "xsampa", japanese: "romaji", korean: "xsampa");
+		keyAliases = (
+			'Xuan_Yu': \xuan, 'An_Xiao': \an, 'Mo_Chen': \mo,
+			'Feng_Yi': \feng, 'Kasane_Teto': \teto, 'Cheng_Xiao': \cheng,
+			'AiKO_(Lite)': \aikolite
+		);
+		PathName(dir).folders.do{|folder|
+			var baseKey, nofs;
+			baseKey = keyAliases[folder.folderName.asSymbol] ? folder.folderName.toLower
+				.replace("_", "").replace("(", "").replace(")", "").asSymbol;
+			// collect all .nofs files in this folder
+			nofs = folder.files.select{|f| f.extension == "nofs" };
+			nofs.do{|nofsFile|
+				var filePath, file, data, fields, key, entry, existing;
+				var name, version, language, multi, hdvm, phoneset, backendType;
+				var fileName, versionSuffix;
+				filePath = nofsFile.fullPath;
+				// derive key: voice.nofs → baseKey, voice.107.nofs → baseKey ++ "107"
+				fileName = nofsFile.fileNameWithoutExtension; // "voice" or "voice.107"
+				versionSuffix = (fileName.contains(".")).if{
+					fileName.split($.)[1]
+				}{ nil };
+				key = versionSuffix.notNil.if{
+					(baseKey ++ versionSuffix).asSymbol
+				}{ baseKey };
+				// read first 16KB of binary (metadata is in the header)
+				file = File(filePath, "rb");
+				data = Int8Array.newClear(16384.min(file.length));
+				file.read(data);
+				file.close;
+				// parse tagged fields: .key<lenU32LE><ascii string>
+				fields = ();
+				[\name, \version, \language, \multi, \hdvm, \timbre_styles].do{|tag|
+					var search, idx, len, val, start;
+					search = Int8Array.newFrom(("." ++ tag).ascii);
+					idx = nil;
+					(data.size - search.size).do{|i|
+						(idx.isNil and: { data.copyRange(i, i + search.size - 1) == search }).if{
+							idx = i;
+						}
+					};
+					idx.notNil.if{
+						start = idx + search.size;
+						len = (data[start].bitAnd(255))
+							+ (data[start+1].bitAnd(255) << 8)
+							+ (data[start+2].bitAnd(255) << 16)
+							+ (data[start+3].bitAnd(255) << 24);
+						val = data.copyRange(start+4, start+3+len)
+							.collect{|b| b.bitAnd(255).asAscii}.join;
+						fields[tag] = val;
+					}
+				};
+				name = fields[\name] ? folder.folderName.replace("_", " ");
+				version = fields[\version] ? "100";
+				language = fields[\language] ? "english";
+				phoneset = phonesetMap[language.asSymbol] ? "arpabet";
+				multi = fields[\multi].notNil and: { fields[\multi].size > 0 };
+				hdvm = fields[\hdvm] == "true";
+				backendType = (hdvm or: multi).if{ "SVR2AI" }{ "SVR2Standard" };
+				entry = (
+					'name': name,
+					'language': language,
+					'phoneset': phoneset,
+					'languageOverride': "",
+					'phonesetOverride': "",
+					'backendType': backendType,
+					'version': version
+				);
+				databaseLib[key].isNil.if{
+					databaseLib[key] = entry;
+					"SynthV.scanDatabases: added % (v%)".format(key, version).postln;
+				}{
+					// update version if installed database is newer
+					existing = databaseLib[key];
+					(version.asInteger > existing.version.asInteger).if{
+						existing.version = version;
+						"SynthV.scanDatabases: updated % version to %".format(key, version).postln;
+					}
+				}
+			}
+		};
+		// V2 databases: scan meta catalog JSONs
+		this.scanV2Meta;
+	}
+	*scanV2Meta { |dir|
+		var metaDir;
+		dir = dir ? (Platform.userAppSupportDir +/+
+			"Dreamtonics/Synthesizer V Studio 2/databases");
+		metaDir = dir +/+ "meta";
+		File.exists(metaDir).not.if{
+			"SynthV.scanV2Meta: no V2 meta directory found".postln;
+			^nil
+		};
+		PathName(metaDir).files.select{|f| f.extension == "json" }.do{|jsonFile|
+			var raw, meta, name, language, phoneset, version, key, entry, existing;
+			var phonesetMap, url, versionMatch;
+			phonesetMap = (
+				english: "arpabet", mandarin: "xsampa", japanese: "romaji",
+				korean: "xsampa", cantonese: "xsampa", spanish: "arpabet"
+			);
+			raw = File.readAllString(jsonFile.fullPath);
+			meta = raw.parseJSON;
+			name = meta.at("name");
+			name.isNil.if{ ^nil };
+			language = meta.at("languages");
+			language = (language.notNil and: { language.size > 0 }).if{
+				language[0]
+			}{ "english" };
+			phoneset = phonesetMap[language.asSymbol] ? "arpabet";
+			// extract version from audioSampleUrl: "..._201a3_..." or "..._200_..."
+			url = meta.at("audioSampleUrl") ? "";
+			versionMatch = url.findRegexp("_(\\d{3})[a-z]?\\d?_");
+			version = (versionMatch.size >= 2).if{
+				versionMatch[1][1]
+			}{ "201" };
+			// generate key: lowercase, remove spaces/punctuation, truncate
+			key = name.toLower
+				.replace(" ", "").replace("#", "").replace(".", "")
+				.replace("-", "").replace("_", "").replace("(", "").replace(")", "")
+				.asSymbol;
+			entry = (
+				'name': name,
+				'language': language,
+				'phoneset': phoneset,
+				'languageOverride': "",
+				'phonesetOverride': "",
+				'backendType': "SVR3",
+				'version': version
+			);
+			databaseLib[key].isNil.if{
+				databaseLib[key] = entry;
+			}{
+				// update version if catalog has newer
+				existing = databaseLib[key];
+				(version.asInteger > existing.version.asInteger).if{
+					existing.version = version;
+					existing.backendType = "SVR3";
+				}
+			}
+		};
+		"SynthV.scanV2Meta: V2 catalog scanned".postln;
+	}
 	checkDirty {
 		// ^project => JSON.stringify(_) != try{ String.readNew(File( file ,"r") )}
 		File.exists(file).not.if{ 

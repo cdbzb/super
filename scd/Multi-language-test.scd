@@ -1,50 +1,53 @@
 
-~phonemes = "I would like some kimchi + and rice".morphPhonemes(\uni, [ \mandarin, \korean]);
+~phonemes = "I would like some kimchi + and rice".morphPhonemes(\uni, [ \english, \korean]);
 ~phonemes
 (
 Song(\babelTest,[]).current;
 ["english", "1 2 3 4 3 4 2 5".dm(\g, 5), [0.9504120349884, 0.53408051729202, 1.2251254916191, 0.88254528045654, 1.0220561981201, 1.146061372757, 1.2214063405991, 0.60947215557098]
 ].addLine;
-P.synthV(\xuan2,start:0, take:1, version: 2, params: {|p b| [
+P.synthVMulti(\xuan2,randomSeed:3,languages:[\english, \korean],start:0, take:1, version: 2,
 	lyrics: "I would like some kimchi + and rice",
+params: {|p b| [
 	language: \mandarin,
 	phoneset:\xsampa,
 	// phonesetOverride:\arpabet,
 	pitchTake: 1,
-	phonemes: ~phonemes.phonemes,
-	languageOverride: ~phonemes.language,
-	phonesetOverride: ~phonemes.phoneset,
-	// "I would like some kimchi + and rice".morphPhonemes(\xuan2, [ \mandarin, \korean])
- // ["T @", "D @", "S i", "Z i", "tS i", "dZ i", "r\\ @", "{ t"]
-	// ,
-	// languageOverride: \Korean,
-	// phoneset: \xsampa,
-	// language: \Korean
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		=> FreeVerb.ar(_,0.5,1)
+		=> FreeVerb.ar(_,0.2,1)
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
-P.synthV(\uni,start:0, take:3, version: 2, params: {|p b| [
+P.synthVMulti(\uni,randomSeed:3,languages:[\english, \korean],start:0, take:\high, version: 2,
+lyrics: "I would like some kimchi + and rice",
+pbind:{|p b|[ midinote: [11, 11, 7, 11, 6, 5, 7, 6, 5].dm( \g,5),
+dur:b
+].p},
+
+params: {|p b| [
+language: \mandarin,
+phoneset:\xsampa,
+// phonesetOverride:\arpabet,
+pitchTake: 1,
+] }, music:{|p b e|
+{
+	e.playbuf
+	=> FreeVerb.ar(_,0.2,1)
+	// => p.synthVTracks.at(e.key).()
+}.play
+});
+P.synthVMulti(\uni,randomSeed:3, languages:[\korean, \english],start:0, take:3, version: 2,
 	lyrics: "I would like some kimchi + and rice",
-	language: \korean,
+	params: {|p b| [
+	language: \mandarin,
 	phoneset:\xsampa,
 	// phonesetOverride:\arpabet,
 	pitchTake: 1,
-	phonemes: 
-	// "I would like some kimchi + and rice".morphPhonemes(\xuan2, [ \mandarin, \korean])
-	~phonemes
- // ["T @", "D @", "S i", "Z i", "tS i", "dZ i", "r\\ @", "{ t"]
-	,
-	// languageOverride: \Korean,
-	// phoneset: \xsampa,
-	// language: \Korean
 ] }, music:{|p b e|
 	{
 		e.playbuf
-		=> FreeVerb.ar(_,0.5,1)
+		=> FreeVerb.ar(_,0.2,1)
 		// => p.synthVTracks.at(e.key).()
 	}.play
 });
@@ -56,11 +59,6 @@ P.synthV(\uni, take:4, version: 2, params: {|p b| [
 	pitchTake: 1,
 	phonemes: 
 	"I would like some kimchi + and rice".vowelRun(\xuan2,  [\mandarin], 7,10)
- // ["T @", "D @", "S i", "Z i", "tS i", "dZ i", "r\\ @", "{ t"]
-	,
-	// languageOverride: \Korean,
-	// phoneset: \xsampa,
-	// language: \Korean
 ] }, music:{|p b e|
 	{
 		e.playbuf

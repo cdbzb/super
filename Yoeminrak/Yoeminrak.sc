@@ -368,7 +368,7 @@ Yoeminrak {
         env[\addMeSong]    = song;
         env[\addMeSection] = section;
         env[\preview]      = nil;
-        tempoEvents.if {
+        (tempoEvents and: { (env[\tempoEvents] ? true) }).if {
             this.addTempoEvents(section)
         } {
             this.addCounterEvents(section)

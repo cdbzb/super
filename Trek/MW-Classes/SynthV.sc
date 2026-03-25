@@ -223,6 +223,7 @@ SynthV {
 
 			);
 			synthVsToRender = List.new;
+			this.scanDatabases;
 		}
 	*scanDatabases { |dir|
 		var phonesetMap, keyAliases;
@@ -313,8 +314,8 @@ SynthV {
 	}
 	*scanV2Meta { |dir|
 		var metaDir;
-		dir = dir ? (Platform.userAppSupportDir +/+
-			"Dreamtonics/Synthesizer V Studio 2/databases");
+		dir = dir ? ("HOME".getenv +/+
+			"Library/Application Support/Dreamtonics/Synthesizer V Studio 2/databases");
 		metaDir = dir +/+ "meta";
 		File.exists(metaDir).not.if{
 			"SynthV.scanV2Meta: no V2 meta directory found".postln;
@@ -322,48 +323,65 @@ SynthV {
 		};
 		PathName(metaDir).files.select{|f| f.extension == "json" }.do{|jsonFile|
 			var raw, meta, name, language, phoneset, version, key, entry, existing;
-			var phonesetMap, url, versionMatch;
+			var phonesetMap, langKeyMap, keyOverrides, url, versionMatch, firstWord, hasAudio;
 			phonesetMap = (
 				english: "arpabet", mandarin: "xsampa", japanese: "romaji",
 				korean: "xsampa", cantonese: "xsampa", spanish: "arpabet"
 			);
+			langKeyMap = (
+				english: "En", mandarin: "Zh", japanese: "Ja",
+				korean: "Ko", cantonese: "Yue", spanish: "Es"
+			);
+			keyOverrides = Dictionary["Mo Xu" -> "moXu"];
 			raw = File.readAllString(jsonFile.fullPath);
 			meta = raw.parseJSON;
 			name = meta.at("name");
-			name.isNil.if{ ^nil };
-			language = meta.at("languages");
-			language = (language.notNil and: { language.size > 0 }).if{
-				language[0]
-			}{ "english" };
-			phoneset = phonesetMap[language.asSymbol] ? "arpabet";
-			// extract version from audioSampleUrl: "..._201a3_..." or "..._200_..."
-			url = meta.at("audioSampleUrl") ? "";
-			versionMatch = url.findRegexp("_(\\d{3})[a-z]?\\d?_");
-			version = (versionMatch.size >= 2).if{
-				versionMatch[1][1]
-			}{ "201" };
-			// generate key: lowercase, remove spaces/punctuation, truncate
-			key = name.toLower
-				.replace(" ", "").replace("#", "").replace(".", "")
-				.replace("-", "").replace("_", "").replace("(", "").replace(")", "")
-				.asSymbol;
-			entry = (
-				'name': name,
-				'language': language,
-				'phoneset': phoneset,
-				'languageOverride': "",
-				'phonesetOverride': "",
-				'backendType': "SVR3",
-				'version': version
-			);
-			databaseLib[key].isNil.if{
-				databaseLib[key] = entry;
-			}{
-				// update version if catalog has newer
-				existing = databaseLib[key];
-				(version.asInteger > existing.version.asInteger).if{
-					existing.version = version;
-					existing.backendType = "SVR3";
+			name.isNil.if{ /* skip */ }{
+				// skip legacy V1 entries in V2 catalog (no audio sample)
+				hasAudio = (meta.at("audioSampleUrl") ? "").size > 0;
+				language = meta.at("languages");
+				language = (language.notNil and: { language.size > 0 }).if{
+					language[0]
+				}{ "english" };
+				phoneset = phonesetMap[language.asSymbol] ? "arpabet";
+				// extract version from audioSampleUrl: "..._201a3_..." or "..._200_..."
+				url = meta.at("audioSampleUrl") ? "";
+				versionMatch = url.findRegexp("_(\\d{3})[a-z]?\\d?_");
+				version = (versionMatch.size >= 2).if{
+					versionMatch[1][1]
+				}{ "201" };
+				// generate key: first word lowercase + "2"
+				// special cases: "Choir Voices #N" → choirLang2, keyOverrides
+				key = keyOverrides[name].notNil.if{
+					(keyOverrides[name] ++ "2").asSymbol
+				}{
+					name.beginsWith("Choir Voices").if{
+						("choir" ++ (langKeyMap[language.asSymbol] ? "En") ++ "2").asSymbol
+					}{
+						firstWord = name.split($ )[0].toLower
+							.replace("#", "").replace(".", "")
+							.replace("-", "").replace("_", "")
+							.replace("(", "").replace(")", "");
+						(firstWord ++ "2").asSymbol
+					}
+				};
+				entry = (
+					'name': name,
+					'language': language,
+					'phoneset': phoneset,
+					'languageOverride': "",
+					'phonesetOverride': "",
+					'backendType': "SVR3",
+					'version': version
+				);
+				hasAudio.if{
+					// real V2 entry — always overwrite legacy/no-audio entries
+					databaseLib[key] = entry;
+				}{
+					// no-audio (legacy V1 listing) — only insert if key is empty
+					databaseLib[key].isNil.if{
+						databaseLib[key] = entry;
+					}
 				}
 			}
 		};

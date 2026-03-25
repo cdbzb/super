@@ -374,6 +374,10 @@ SynthV {
 					'backendType': "SVR3",
 					'version': version
 				);
+				name.beginsWith("Choir").if{
+					entry.put(\singers, 5);
+					entry.put(\spacing, 0.7);
+				};
 				hasAudio.if{
 					// real V2 entry — always overwrite legacy/no-audio entries
 					databaseLib[key] = entry;
@@ -644,6 +648,8 @@ SynthV {
 			{ i == \phoneset}                { /* handled by language case above */ }
 			{ i == \pitchTake}               { this.setPitchTakeId(event.at(i)) }
 			{ i == \pitchExpression }        { this.setPitchExpression(event.at(i)) }
+			{ i == \singers }                { this.voice.put(\choirNumStems, event.at(i)) }
+			{ i == \spacing }                { this.voice.put(\choirSeatingSeparation, event.at(i)) }
 			{ [\languageOverride, \phonesetOverride].includes(i) } {
 				this.setNoteAttributes(i, event.at(i))
 			}
@@ -713,9 +719,17 @@ SynthV {
 		}
 	}
 	setDatabase { |key|
+		var db = databaseLib.at(key);
 		case
-		{ appVersion == 1 } { project.tracks[0].mainRef.put(\database, databaseLib.at(key) ) }
-		{ appVersion == 2 } { project.tracks[0].groups[0].put(\database, databaseLib.at(key) ) }
+		{ appVersion == 1 } { project.tracks[0].mainRef.put(\database, db) }
+		{ appVersion == 2 } {
+			project.tracks[0].groups[0].put(\database, db);
+			// apply choir defaults if present
+			db[\singers].notNil.if{
+				this.voice.put(\choirNumStems, db[\singers]);
+				this.voice.put(\choirSeatingSeparation, db[\spacing] ? 0.7);
+			}
+		}
 	}
 	setLanguage { | array |
 		var where = case

@@ -833,10 +833,12 @@ SynthV {
 	}
 	setDatabase { |key|
 		var db = databaseLib.at(key);
+		var dbClean = db.copy;
+		[\modes, \singers, \spacing].do{|k| dbClean.removeAt(k) };
 		case
-		{ appVersion == 1 } { project.tracks[0].mainRef.put(\database, db) }
+		{ appVersion == 1 } { project.tracks[0].mainRef.put(\database, dbClean) }
 		{ appVersion == 2 } {
-			project.tracks[0].groups[0].put(\database, db);
+			project.tracks[0].groups[0].put(\database, dbClean);
 			// apply choir defaults if present
 			db[\singers].notNil.if{
 				this.voice.put(\choirNumStems, db[\singers]);

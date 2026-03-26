@@ -2,7 +2,7 @@ SynthV {
 	// project.tracks[0].database = "AiKO Lite"
 	classvar <>directory;
 	classvar <notePrototype, <databasePrototype, <databaseLib;
-	classvar <roles,<envelopes=#[ \toneShift, \pitchDelta, \voicing, \tension, \vibratoEnv, \loudness, \breathiness, \gender ];
+	classvar <roles,<envelopes=#[ \toneShift, \pitchDelta, \voicing, \tension, \vibratoEnv, \loudness, \breathiness, \gender, \mouthOpening ];
 	classvar <vocalModes;
 	classvar <>buffers;
 	classvar <>synthVsToRender;
@@ -696,13 +696,19 @@ SynthV {
 	}
 	setEnv{ |param env|
 		var points = [env.timeLine.collect({|i| this.class.secondsToBlicks(i)}),env.levels].flop.flat;
-		project.tracks[0].mainGroup.parameters.at(param).put(\points,points)
+		var group = case
+		{ appVersion == 1 } { project.tracks[0].mainGroup }
+		{ appVersion == 2 } { project.library[0] };
+		group.parameters.at(param).put(\points,points)
 	}
 	setVocalModeEnv{ |vocalMode env|
 		var points = [env.timeLine.collect({|i| this.class.secondsToBlicks(i)}),env.levels].flop.flat;
-		project.tracks[0].mainGroup.put( \vocalModes, project.tracks[0].mainGroup.vocalModes ? () );
-		project.tracks[0].mainGroup.vocalModes.put(  vocalMode, () ) ;
-		project.tracks[0].mainGroup.vocalModes.at(vocalMode).put(\points,points) ;
+		var group = case
+		{ appVersion == 1 } { project.tracks[0].mainGroup }
+		{ appVersion == 2 } { project.library[0] };
+		group.put( \vocalModes, group.vocalModes ? () );
+		group.vocalModes.put(  vocalMode, () ) ;
+		group.vocalModes.at(vocalMode).put(\points,points) ;
 	}
 	set { |event|
 		(event.lyric == "\r").not.if(

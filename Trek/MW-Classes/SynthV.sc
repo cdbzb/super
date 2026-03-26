@@ -294,14 +294,18 @@ SynthV {
 					'languageOverride': "",
 					'phonesetOverride': "",
 					'backendType': backendType,
-					'version': version
+					'version': version,
+					'modes': fields[\timbre_styles].notNil.if{
+						fields[\timbre_styles].split($ ).collect(_.asSymbol).as(Set)
+					}{ Set[] }
 				);
 				databaseLib[key].isNil.if{
 					databaseLib[key] = entry;
 					"SynthV.scanDatabases: added % (v%)".format(key, version).postln;
 				}{
-					// update version if installed database is newer
 					existing = databaseLib[key];
+					// always update modes from installed database
+					existing.modes = entry.modes;
 					(version.asInteger > existing.version.asInteger).if{
 						existing.version = version;
 						"SynthV.scanDatabases: updated % version to %".format(key, version).postln;
@@ -313,7 +317,7 @@ SynthV {
 		this.scanV2Meta;
 	}
 	*scanV2Meta { |dir|
-		var metaDir;
+		var metaDir, v2Modes;
 		dir = dir ? ("HOME".getenv +/+
 			"Library/Application Support/Dreamtonics/Synthesizer V Studio 2/databases");
 		metaDir = dir +/+ "meta";
@@ -321,6 +325,104 @@ SynthV {
 			"SynthV.scanV2Meta: no V2 meta directory found".postln;
 			^nil
 		};
+		v2Modes = Dictionary[
+			// English
+			"ANRI Arcane RDX" -> "Dark Edge Flow Mellow Power Princess Serious Smokey Sumire Vivid Whisper",
+			"ASTERIAN" -> "Clear Warm Gentle Strained Rough Open Closed Passionate Theatrical",
+			"ASTERIAN II" -> "Clear Warm Gentle Strained Rough Open Closed Passionate Theatrical",
+			"Danny" -> "Soft Clear Power",
+			"Etta" -> "Soft Clear Power",
+			"Felicia 2" -> "Airy Bright Musical Operatic Powerful",
+			"Hayden 2" -> "Clear Heavy Soft Powerful",
+			"HXVOC" -> "Aggressive Belt Nasal Dark Clear Subdued Rap Scream",
+			"JUN" -> "Dark Chest Soul Power Light Soft Tsubaki",
+			"JUN Nocturne" -> "Dark Chest Soul Power Light Soft Tsubaki",
+			"Kevin" -> "Belt Clear Soft Solid",
+			"Kevin 2" -> "Belt Clear Soft Solid",
+			"Liam" -> "Soft Clear Power",
+			"Natalie 2" -> "Soft Soulful Steady Bold Warm",
+			"Ninezero" -> "Solid Overdrive Muted",
+			"Ninezero 2" -> "Solid Overdrive Muted",
+			"NOA Hex RDX" -> "Attack Clear Deep Flow Glow Husky Nasal Power Smooth Twangy Vivid Waltz Whisper",
+			"NYL II" -> "Power Solid Warm Soft Delicate Falsetto Masculine Passionate Emphatic Rhythmic Poetic",
+			"REMMANT" -> "Soft Clear Power",
+			"Ritchy 2" -> "HighTone MidTone LowTone Singing",
+			"SAROS II" -> "Passionate Power Bright Dark Falsetto Full Soft Gentle Feminine Resounding",
+			"Sheena 2" -> "Soft Clear Chest Tense",
+			"SOLARIA II" -> "Clear Soft Airy Power Passionate Solid Light",
+			"Weina 2" -> "Delicate Tender Lucid Firm Powerful Resonant",
+			"Amara" -> "Soft Clear Power",
+			"Archie" -> "Soft Clear Power",
+			// Japanese
+			"Ayame 2" -> "Soft Mellow Sweet Powerful",
+			"Eri 2" -> "Relaxed Aggressive Focused Singing",
+			"Frimomen AI 2" -> "Bassmen Gentlemen Hardmen Softmen Youngmen",
+			"GALENAIA" -> "Soft Clear Power",
+			"GUMI AI 2" -> "Ballade Cute Soft Vivid",
+			"HALO AI 2" -> "Soft Clear Power",
+			"Hanakuma Chifuyu AI" -> "Kawaii Soft Rock Adult Piano_Ballade",
+			"Hanakuma Chifuyu AI 2" -> "Kawaii Soft Rock Adult Piano_Ballade",
+			"Haruno Sora AI 2" -> "Sweet Soft Adult Pop Cool",
+			"Hibiki Koto AI 2" -> "Ballade Cute Dark Musical Falsetto Power",
+			"Hiyama Kiyoteru AI 2" -> "Soft Clear Power",
+			"Jin 2" -> "Airy Gentle Resonant Belt Powerful",
+			"Kasane Teto" -> "Joyful Cute Power Mellow",
+			"Kasane Teto AI 2" -> "Joyful Cute Power Mellow",
+			"Koharu Rikka" -> "Kawaii Soft Pops Emotional Ballade",
+			"Koharu Rikka AI" -> "Kawaii Soft Pops Emotional Ballade",
+			"Koharu Rikka AI 2" -> "Kawaii Soft Pops Emotional Ballade",
+			"Kyomachi Seika AI 2" -> "Breathy Bright Straight Tight",
+			"Mai" -> "Emotional Soft",
+			"Mai 2" -> "Breathy Downer Emotional Powerful Rap Sweet",
+			"miki AI 2" -> "Soft Clear Power",
+			"Miyamai Moca AI 2" -> "Cheeky Cute Soft Mellow Powerful Cool",
+			"Nakuru AI 2" -> "Soft Clear Power",
+			"Natsuki Karin AI" -> "Kawaii Soft Cool Happy Falsetto",
+			"Natsuki Karin AI 2" -> "Kawaii Soft Cool Happy Falsetto",
+			"Natsumeitsuki AI 2" -> "Soft Clear Power",
+			"Nekomura Iroha AI 2" -> "Soft Clear Power",
+			"Otomachi Una AI 2" -> "Soft Clear Power",
+			"PASTEL AI 2" -> "Soft Clear Power",
+			"POPY AI 2" -> "Soft Powerful Mellow Joyful",
+			"Riku 2" -> "Soft Warm Powerful",
+			"ROSA AI" -> "Cute Fun Power Soft Solid",
+			"ROSE AI 2" -> "Natural Powerful Mellow Ballad",
+			"Ryo 2" -> "Open Soft Airy Clear Nasal Resonant",
+			"Saki 2" -> "Chest Airy Open Soft",
+			"Shimon Topaz AI" -> "Soft Clear Power",
+			"Shimon Topaz AI 2" -> "Soft Clear Power",
+			"Tsuina-Chan AI 2" -> "Attacky Breathy Crispy Soft",
+			"Tsurumaki Maki AI 2" -> "Adult Breathy PowerPop Twangy Whisper",
+			"UNI" -> "Soft Clear Power",
+			"Yuma 2" -> "Gentle Airy Powerful Solid",
+			// Mandarin
+			"An Xiao" -> "Airy Chest Open Power Soft",
+			"An Xiao 2" -> "Airy Chest Open Power Soft",
+			"Cheng Xiao" -> "Open Closed Resonant",
+			"Cheng Xiao 2" -> "Open Closed Resonant",
+			"Cong Zheng 2" -> "Gentle Closed Vivid Soft Solid Powerful",
+			"D-Lin 2" -> "HighTone MidTone LowTone Singing",
+			"Feng Yi" -> "Chest Power Open Opera Soft Airy",
+			"Feng Yi 2" -> "Chest Power Open Opera Soft Airy",
+			"Lang Chuan" -> "Soft Clear Power",
+			"Lin Lai 2" -> "Gentle Unadorned Lively Bright",
+			"Mo Chen" -> "Open Soft Clear",
+			"Mo Chen 2" -> "Open Soft Clear",
+			"Mo Xu" -> "Soft Clear Power",
+			"Oscar 2" -> "Power Rock Soft Whisper Nasal Classic Who Special",
+			"Qing Su 2" -> "Airy Chest Power Soft Sweet",
+			"Xia Yu Yao 2" -> "Sweet Solid Whisper Dark Soft",
+			"Xuan Yu" -> "Soft Light Passionate Solid Open",
+			"Xuan Yu 2" -> "Soft Light Passionate Solid Open",
+			"Yi Wei" -> "Soft Clear Power",
+			"Yi Xi 2" -> "Soft Languid Relaxed Cool Firm",
+			"Yun Hua" -> "Soft Clear Power",
+			// Cantonese
+			"Ling Wan 2" -> "Firm Gentle Lively Powerful Soft Steady",
+			"Wei Shu 2" -> "Soft Bright Powerful Subdued",
+			// Korean
+			"Kotonoha Akane & Aoi" -> "Soft Clear Power"
+		];
 		PathName(metaDir).files.select{|f| f.extension == "json" }.do{|jsonFile|
 			var raw, meta, name, language, phoneset, version, key, entry, existing;
 			var phonesetMap, langKeyMap, keyOverrides, url, versionMatch, firstWord, hasAudio;
@@ -377,6 +479,10 @@ SynthV {
 				name.beginsWith("Choir").if{
 					entry.put(\singers, 5);
 					entry.put(\spacing, 0.7);
+				};
+				v2Modes[name].notNil.if{
+					entry.put(\modes,
+						v2Modes[name].split($ ).collect(_.asSymbol).as(Set))
 				};
 				hasAudio.if{
 					// real V2 entry — always overwrite legacy/no-audio entries
@@ -717,6 +823,13 @@ SynthV {
 			// V2 doesn't use pitch expression in the same way
 			// Could implement if needed for V2 compatibility
 		}
+	}
+	*modes { |key|
+		var db = databaseLib.at(key);
+		db.isNil.if{ "SynthV: unknown voice '%'".format(key).postln; ^nil };
+		db.modes.isNil.if{ "SynthV: no modes for '%'".format(key).postln; ^nil };
+		"% — % modes: %".format(key, db.name, db.modes.as(Array).sort.join(", ")).postln;
+		^db.modes
 	}
 	setDatabase { |key|
 		var db = databaseLib.at(key);

@@ -1,4 +1,5 @@
 + SequenceableCollection {
+	ls { this.do(_.postln) }
 	quantize {
 		| percent=1| 
 		var out = this.collect( _.value );

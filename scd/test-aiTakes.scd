@@ -1,7 +1,7 @@
-// Test: do AI take seeds in the SVP affect VST rendering?
-// Build two SynthVVSTs with identical params, one with aiTakes enabled.
-// A/B them to hear if the seeds change the output.
+// Test AI takes: activeTakeId per note
+// 0 = default rendering, 1+ = AI variation takes
 
+// --- Build all variants ---
 (
 var params = (
 	lyrics: "hello world how are you doing today friend",
@@ -10,21 +10,34 @@ var params = (
 	lag: 0.15.dup(8),
 );
 
-~noAI = SynthVVST(\xuan2, params: params);
-~noAI.build;
+// default (all notes take 0)
+~default = SynthVVST(\xuan2, params: params);
+~default.build;
 
-~withAI = SynthVVST(\xuan2, params: params.copy.put(\aiTakes, 99999));
-~withAI.build;
+// all notes use take 1
+~take1 = SynthVVST(\xuan2, params: params.copy.put(\aiTakes, 1));
+~take1.build;
+
+// all notes use take 2
+~take2 = SynthVVST(\xuan2, params: params.copy.put(\aiTakes, 2));
+~take2.build;
+
+// per-note: default for first 4, take 1 for last 4
+~mixed = SynthVVST(\xuan2, params: params.copy.put(\aiTakes, [0,0,0,0,1,1,1,1]));
+~mixed.build;
+
+// short array with clipAt: take 0 for note 1, take 2 for notes 2-8
+~short = SynthVVST(\xuan2, params: params.copy.put(\aiTakes, [0, 2]));
+~short.build;
 )
 
-// play without AI takes (default, activeTakeId: 0)
-~noAI.play;
-
-// play with AI takes (activeTakeId: 1, random seeds from seed 99999)
-~withAI.play;
-
-// if they sound different, the seeds work!
-// if identical, the VST ignores pre-written seeds and we'd need to trigger generation via the controller.
+// --- A/B test ---
+~default.play;
+~take1.play;
+~take2.play;
+~mixed.play;
+~take1.play;
+~short.play;
 
 // cleanup
 SynthVVST.freeAll;

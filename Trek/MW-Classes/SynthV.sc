@@ -819,20 +819,26 @@ SynthV {
         { appVersion == 2 } { this.notes.do{|i x| this.notes[x].takes.put(\activeTakeId, id) } }
 	}
 
-	setAITakes { |seed=12345|
-		// write random seeds to take 1 and activate it
+	setAITakes { |ids|
+		// ids: integer or array of per-note take IDs (clipAt for short arrays)
+		// 0 = default rendering, 1+ = AI variation takes
+		// non-zero takes get unique random seeds per note
 		(appVersion == 2).if{
-			var rng = thisThread.randSeed_(seed);
+			ids = ids.asArray;
 			this.notes.do{|note, x|
-				var take1 = note.takes.takes.detect{|t| t.id == 1 };
-				take1.isNil.if{
-					take1 = (id: 1, liked: false);
-					note.takes.takes = note.takes.takes.add(take1);
+				var id = ids.clipAt(x);
+				(id > 0).if{
+					var take = note.takes.takes.detect{|t| t.id == id };
+					take.isNil.if{
+						take = (id: id, liked: false);
+						note.takes.takes = note.takes.takes.add(take);
+					};
+					thisThread.randSeed_(id * 1000 + x);
+					take.put(\seedDuration, 2147483647.rand);
+					take.put(\seedPitch, 2147483647.rand);
+					take.put(\seedTimbre, 2147483647.rand);
 				};
-				take1.put(\seedDuration, 2147483647.rand);
-				take1.put(\seedPitch, 2147483647.rand);
-				take1.put(\seedTimbre, 2147483647.rand);
-				note.takes.put(\activeTakeId, 1);
+				note.takes.put(\activeTakeId, id);
 			}
 		}
 	}
@@ -893,13 +899,13 @@ SynthV {
 		var prototype = notePrototype.copy;
 		
 		// Adjust prototype based on version
-		case 
+		case
 		{ appVersion == 2 } {
 			// V2 doesn't have instantMode, pitchTakes, timbreTakes
 			prototype.removeAt('pitchTakes');
 			prototype.removeAt('timbreTakes');
-			// V2 uses single takes object
-			project.library[track].notes = prototype ! num
+			// V2 uses single takes object — deepCopy each so notes don't share state
+			project.library[track].notes = num.collect{ prototype.deepCopy }
 		}
 		{ appVersion == 1 } {
 			// V1 doesn't have takes object, uses separate pitch/timbre takes
@@ -907,7 +913,7 @@ SynthV {
 			prototype.removeAt('musicalType');
 			prototype.put('instantMode', true);
 			prototype.put('attributes', ());
-			project.tracks[track].mainGroup.notes = prototype ! num
+			project.tracks[track].mainGroup.notes = num.collect{ prototype.deepCopy }
 		};
 		
 	}

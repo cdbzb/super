@@ -8,7 +8,9 @@ VSTI {
 
 	*new { |plugin action vstFolder | ^super.new.init( plugin, action, ( vstFolder ? "VST" ) ) }
 
-	init { | plugin action vstFolder | 
+	preOpen {}
+
+	init { | plugin action vstFolder |
 		condition = CondVar.new();
 		{
 			id = UniqueID.next;
@@ -16,6 +18,7 @@ VSTI {
 			controller = VSTPluginController(syn);
 			vstis.put(id, this);
 			Server.default.sync;
+			this.preOpen;
 			controller.open(
 				"/Library/Audio/Plug-Ins" +/+ vstFolder +/+ plugin,
 				multiThreading: true,
@@ -228,10 +231,30 @@ PF : VSTI {
 }
 
 SV : VSTI {
-// classvar plugin = "Synthesizer V Studio ARA Plugin.vst3" 
+// classvar plugin = "Synthesizer V Studio ARA Plugin.vst3"
 // classvar plugin = "Synthesizer V Studio Pro.vst3";
 classvar plugin = "Synthesizer V Studio 2 Pro.vst3";
+classvar searchState; // nil=not started, \searching, \done
+classvar searchCond;
 var <>bus;
+*initClass {
+	searchCond = CondVar.new;
+}
+*search {
+	// call from within a Routine (e.g. inside fork)
+	(searchState == \done).if{ ^this };
+	(searchState == \searching).if{
+		searchCond.wait{ searchState == \done };
+		^this
+	};
+	searchState = \searching;
+	VSTPlugin.search(Server.default, ["/Library/Audio/Plug-Ins/VST3"], verbose: false);
+	Server.default.sync;
+	searchState = \done;
+	"SV: VST3 plugins cached".postln;
+	searchCond.signalAll;
+}
+preOpen { SV.search }
 *new { |path id|
 	id.notNil.if {
 		^VSTI.vstis[id]

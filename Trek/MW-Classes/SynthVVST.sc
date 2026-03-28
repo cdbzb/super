@@ -92,6 +92,17 @@ SynthVVST {
 			synthV.vst = SV(path ++ ".fxp");
 		};
 		cache[cacheKey] = this;
+		fork{
+			var renderEstimate;
+			isMulti.if{
+				synthV.do{|sv| sv.vst.condition.wait }
+			}{
+				synthV.vst.condition.wait
+			};
+			renderEstimate = params.dur.sum / 4;
+			renderEstimate.wait;
+			"SynthVVST: % ready (~%s)".format(voice, params.dur.sum.round(0.1)).postln;
+		};
 		^this
 	}
 

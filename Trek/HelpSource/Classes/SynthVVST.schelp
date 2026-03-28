@@ -1,0 +1,353 @@
+TITLE:: SynthVVST
+summary:: Synthesizer V VST wrapper with caching and multi-voice expansion
+categories:: SynthV
+related:: Classes/SynthV, Classes/P
+
+DESCRIPTION::
+SynthVVST wraps the Synthesizer V Studio VST plugin for real-time vocal synthesis. It generates an SVP project file and FXP preset, loads them into a VST instance, and provides transport control for playback.
+
+Features include build caching (identical params reuse the same VST), automatic multi-voice expansion via SC's rank/flop idiom, phoneme morphing across languages, AI take variation, and integration with the Song system via link::Classes/P#*synthVVST::.
+
+subsection:: Basic workflow
+
+code::
+// 1. Create with voice key and params
+s = SynthVVST(\xuan2, params: (
+    lyrics: "hello world how are you",
+    midinote: [60, 62, 64, 65, 67],
+    dur: [1, 1, 0.5, 0.5, 1],
+    lag: 0.15.dup(5)
+));
+
+// 2. Optionally apply filters
+s.morphPhonemes([\korean, \english, \mandarin], randomSeed: 4);
+
+// 3. Build (generates SVP, loads VST)
+s.build;
+
+// 4. Wait for "SynthVVST: xuan2 ready" in post window, then play
+s.play;
+
+// 5. Cleanup
+SynthVVST.freeAll;
+::
+
+CLASSMETHODS::
+
+METHOD:: new
+Create a new SynthVVST instance. If any parameter value has code::rank > 1:: (arrays of arrays), multi-voice expansion is triggered automatically.
+
+ARGUMENT:: voice
+A Symbol key into code::SynthV.databaseLib::. Available V2 voices include code::\xuan2::, code::\uni::, code::\choirZh2::, code::\choirEn2::. V1 voices: code::\kevin::, code::\feng::, code::\an::, code::\mo::, code::\genbu::, code::\aiko::.
+
+ARGUMENT:: params
+An Event of synthesis parameters. See link::#Params reference:: below.
+
+ARGUMENT:: version
+SynthV engine version. Default code::2::.
+
+returns:: A SynthVVST instance.
+
+METHOD:: freeAll
+Free all cached VST instances (buses, controllers) and clear the cache.
+
+METHOD:: clearCache
+Alias for code::freeAll::.
+
+INSTANCEMETHODS::
+
+METHOD:: build
+Generate the SVP project, write the FXP preset, and load the VST plugin. Results are cached by content -- calling build again with identical params returns instantly.
+
+A background notification code::"SynthVVST: <voice> ready":: posts to the post window when the VST has loaded and rendering is estimated to be complete.
+
+returns:: this
+
+METHOD:: play
+Start VST transport and route audio through an optional processing function. Automatically stops transport and frees the synth after the duration completes. Safe to call multiple times -- previous cleanup routines are cancelled.
+
+ARGUMENT:: func
+A signal processing function applied to the VST output. Default is identity (passthrough).
+
+code::
+// with reverb and panning
+s.play({ |sig| FreeVerb.ar(sig, 0.3, 1) => Pan2.ar(_, 0) });
+
+// with volume scaling
+s.play({ |sig| sig * 0.5 });
+::
+
+ARGUMENT:: tail
+Extra seconds of playback after the last note. Default code::1::.
+
+METHOD:: morphPhonemes
+Apply cross-language phoneme substitution cipher to lyrics. Modifies params in place. In multi-voice mode, each voice gets a different random seed (code::randomSeed + voiceIndex::).
+
+ARGUMENT:: languages
+Array of language Symbols to draw phonemes from. Sorted internally. Options: code::\english::, code::\mandarin::, code::\korean::, code::\japanese::.
+
+ARGUMENT:: randomSeed
+Integer seed for deterministic phoneme substitution. Default code::12345::.
+
+returns:: this (chainable)
+
+METHOD:: buses
+Access the raw audio bus(es).
+
+returns:: A Bus (single voice) or Array of Bus (multi-voice).
+
+METHOD:: isMulti
+returns:: Boolean. code::true:: if multi-voice expansion is active.
+
+METHOD:: voices
+returns:: Array of per-voice param Events, or code::nil:: if single voice.
+
+METHOD:: params
+returns:: The params Event (in multi-voice mode, returns the first voice's params).
+
+METHOD:: synthV
+returns:: The underlying SynthV instance (single voice) or Array of SynthV instances (multi-voice).
+
+SECTION:: Params reference
+
+The code::params:: Event controls all aspects of the synthesis. Required keys are code::lyrics::, code::midinote::, and code::dur::.
+
+subsection:: Core params
+
+definitionList::
+## lyrics
+|| String of space-separated words. Use code::"r":: for rests (filtered out). Number of words should match number of notes.
+## midinote
+|| Array of MIDI note numbers (integers). One per note.
+## dur
+|| Array of durations in beats. Determines the number of notes created.
+## lag
+|| Array of onset offsets in beats. Typically code::0.15.dup(n)::. Uses clipAt for short arrays.
+## legato
+|| Array of legato multipliers for note duration. Default code::1::. Uses clipAt.
+::
+
+subsection:: Voice and expression
+
+definitionList::
+## vocalMode
+|| Symbol or Array of Symbols. Sets the vocal mode preset. e.g. code::\Soft::, code::\Belt::, code::\Clear::. Use code::SynthV.modes(\voiceKey):: to list available modes.
+## singers
+|| Integer. Number of choir stems (for choir voices like code::\choirZh2::, code::\choirEn2::).
+## spacing
+|| Float. Choir seating separation. Default code::0.7::.
+## language
+|| Symbol. Override the voice's default language.
+## phoneset
+|| Symbol. Override the voice's default phoneset.
+::
+
+subsection:: AI takes
+
+definitionList::
+## aiTakes
+|| Integer or Array of per-note take IDs. code::0:: = default rendering, code::1+:: = AI variation with deterministic seeds derived from code::(takeId * 1000 + noteIndex)::. Short arrays use clipAt.
+::
+
+code::
+// all notes use AI take 1
+(aiTakes: 1)
+
+// per-note: default for first 4, variation for last 4
+(aiTakes: [0, 0, 0, 0, 1, 1, 1, 1])
+
+// short array: note 0 default, notes 1+ use take 2
+(aiTakes: [0, 2])
+::
+
+subsection:: Choir spread
+
+Per-note attributes controlling choir voice dispersion. Use clipAt for short arrays.
+
+definitionList::
+## pitchSpread
+|| Float. Pitch dispersion across choir voices. Default code::0.15::.
+## startSpread
+|| Float. Note start time dispersion. Default code::0.5::.
+## endSpread
+|| Float. Phrase tail dispersion. Default code::0.35::.
+::
+
+subsection:: Envelopes
+
+Time-varying parameters accept an Env value:
+
+definitionList::
+## toneShift || Env
+## pitchDelta || Env
+## voicing || Env
+## tension || Env
+## vibratoEnv || Env
+## loudness || Env
+## breathiness || Env
+## gender || Env
+## mouthOpening || Env
+::
+
+Vocal mode envelopes use the prefix code::vm:: followed by the mode name:
+code::
+(vmSoft: Env([0, 100, 0], [2, 2]))
+::
+
+subsection:: Pitch control
+
+definitionList::
+## pitchTake
+|| Integer. Active pitch take ID.
+## pitchExpression
+|| Float or Array. Expression value written to all pitch takes.
+## defaultVibratoDepth
+|| Float. Default vibrato depth.
+::
+
+SECTION:: Multi-voice expansion
+
+When any param value has code::rank > 1:: (an array of arrays), SynthVVST automatically creates multiple internal VST instances. Scalar and rank-1 params are shared across voices; rank-2 params are distributed one per voice.
+
+code::
+// Two voices with different pitches, same lyrics/rhythm
+s = SynthVVST(\xuan2, params: (
+    lyrics: "hello world how are you",
+    midinote: [[60, 62, 64, 65, 67], [65, 67, 69, 70, 72]],  // rank 2 -> 2 voices
+    dur: [1, 1, 0.5, 0.5, 1],  // rank 1 -> shared
+    lag: 0.15.dup(5)
+));
+s.build;
+
+// play mixes all voices through func
+s.play({ |sig| sig * 0.5 });
+
+// access individual buses
+s.buses;  // -> Array of 2 Bus objects
+::
+
+Multi-voice expansion also works with code::aiTakes:::
+
+code::
+// aiTakes: [[0, 0, 0], [1, 1, 1]] -> voice 1 default, voice 2 AI variation
+::
+
+SECTION:: Song integration with P.synthVVST
+
+code::P.synthVVST:: creates a link::Classes/P:: (Part) that integrates SynthVVST into the Song system.
+
+code::
+P.synthVVST(\xuan2, take: \lead, start: \verse,
+    params: { |song durs key| [
+        lyrics: "hello world how are you doing today friend",
+        midinote: [1, 3, 5, 4, 5, 4, 3, 2].dm(\c),
+        dur: durs,
+        lag: 0.15.dup(8)
+    ]},
+    filters: _.morphPhonemes([\korean, \english, \mandarin], randomSeed: 4),
+    music: { |p b e|
+        {
+            e.bus
+            => FreeVerb.ar(_, 0.3, 1)
+            => Pan2.ar(_, 0)
+        }.play
+    }
+);
+::
+
+subsection:: P.synthVVST arguments
+
+definitionList::
+## voice || Symbol. Voice key.
+## start || Symbol or Integer. Song section name or index.
+## params || Function receiving code::(song, durs, voiceKey):: and returning a flat array of key-value pairs.
+## syl || Syllable count (optional).
+## lag || Default lag. Default code::0::.
+## music || Function receiving code::(part, bus, event)::. code::e.bus:: returns code::In.ar:: of the VST output (or Array for multi-voice). code::e.sv:: returns the SynthVVST instance.
+## song || Song instance. Default code::Song.currentSong::.
+## resources || Additional resources Event merged into the Part.
+## filters || Function or Array of Functions applied to the SynthVVST before building. e.g. code::_.morphPhonemes(...)::
+## version || SynthV engine version. Default code::2::.
+## take || Symbol. Differentiates multiple parts using the same voice.
+## tail || Extra seconds after last note. Default code::1::.
+::
+
+EXAMPLES::
+
+subsection:: Basic standalone usage
+
+code::
+(
+~sv = SynthVVST(\xuan2, params: (
+    lyrics: "the quick brown fox jumps over",
+    midinote: [60, 62, 64, 65, 67, 69],
+    dur: [0.5, 0.5, 0.5, 0.5, 1, 1],
+    lag: 0.15.dup(6)
+));
+~sv.build;
+)
+// wait for ready message
+~sv.play({ |sig| Pan2.ar(sig, 0) });
+::
+
+subsection:: With phoneme morphing
+
+code::
+(
+~sv = SynthVVST(\xuan2, params: (
+    lyrics: "singing across languages today",
+    midinote: [60, 64, 67, 64, 60],
+    dur: [1, 1, 1, 1, 2],
+    lag: 0.15.dup(5)
+));
+~sv.morphPhonemes([\korean, \english, \mandarin], randomSeed: 42);
+~sv.build;
+)
+~sv.play;
+::
+
+subsection:: AI take variations
+
+code::
+(
+var params = (
+    lyrics: "hello world how are you",
+    midinote: [60, 62, 64, 65, 67],
+    dur: [1, 1, 0.5, 0.5, 1],
+    lag: 0.15.dup(5)
+);
+~default = SynthVVST(\xuan2, params: params);
+~default.build;
+
+~varied = SynthVVST(\xuan2, params: params.copy.put(\aiTakes, 1));
+~varied.build;
+)
+~default.play;  // default rendering
+~varied.play;   // AI variation
+::
+
+subsection:: Multi-voice with choir
+
+code::
+(
+~choir = SynthVVST(\choirZh2, params: (
+    lyrics: "la la la la",
+    midinote: [[60, 64, 67, 72], [55, 59, 62, 67]],  // soprano + alto
+    dur: [1, 1, 1, 2],
+    lag: 0.15.dup(4),
+    singers: 8,
+    spacing: 0.3
+));
+~choir.build;
+)
+~choir.play({ |sig| FreeVerb.ar(sig, 0.5, 1) });
+
+// individual bus access
+~choir.buses;
+::
+
+subsection:: Cleanup
+
+code::
+SynthVVST.freeAll;  // free all cached instances
+::

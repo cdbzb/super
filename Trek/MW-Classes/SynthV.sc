@@ -762,6 +762,10 @@ SynthV {
 			{ i == \pitchExpression }        { this.setPitchExpression(event.at(i)) }
 			{ i == \singers }                { this.voice.put(\choirNumStems, event.at(i)) }
 			{ i == \spacing }                { this.voice.put(\choirSeatingSeparation, event.at(i)) }
+			{ i == \aiTakes }                { this.setAITakes(event.at(i)) }
+			{ i == \pitchSpread }            { this.setNoteAttributes(\cPitchDispersion, event.at(i)) }
+			{ i == \startSpread }            { this.setNoteAttributes(\cTimeDispersion, event.at(i)) }
+			{ i == \endSpread }              { this.setNoteAttributes(\cPhraseTailDispersion, event.at(i)) }
 			{ [\languageOverride, \phonesetOverride].includes(i) } {
 				this.setNoteAttributes(i, event.at(i))
 			}
@@ -815,6 +819,24 @@ SynthV {
         { appVersion == 2 } { this.notes.do{|i x| this.notes[x].takes.put(\activeTakeId, id) } }
 	}
 
+	setAITakes { |seed=12345|
+		// write random seeds to take 1 and activate it
+		(appVersion == 2).if{
+			var rng = thisThread.randSeed_(seed);
+			this.notes.do{|note, x|
+				var take1 = note.takes.takes.detect{|t| t.id == 1 };
+				take1.isNil.if{
+					take1 = (id: 1, liked: false);
+					note.takes.takes = note.takes.takes.add(take1);
+				};
+				take1.put(\seedDuration, 2147483647.rand);
+				take1.put(\seedPitch, 2147483647.rand);
+				take1.put(\seedTimbre, 2147483647.rand);
+				note.takes.put(\activeTakeId, 1);
+			}
+		}
+	}
+
 	setPitchExpression { |array|   // puts the values in all the takes
 		( array.rank==0 ).if{array = array.bubble};
 		case 
@@ -845,6 +867,7 @@ SynthV {
 		{ appVersion == 1 } { project.tracks[0].mainRef.put(\database, dbClean) }
 		{ appVersion == 2 } {
 			project.tracks[0].groups[0].put(\database, dbClean);
+			project.tracks[0].mainRef.put(\database, dbClean);
 			// apply choir defaults if present
 			db[\singers].notNil.if{
 				this.voice.put(\choirNumStems, db[\singers]);

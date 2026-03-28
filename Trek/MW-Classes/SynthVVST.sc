@@ -1,6 +1,6 @@
 SynthVVST {
 	classvar <>cache;
-	var <>synthV, <>params, <>voice, <>version, <cacheKey;
+	var <>synthV, <>params, <>voice, <>version, <cacheKey, <>voices, <>isMulti, <>cleanup;
 
 	*initClass {
 		cache = IdentityDictionary.new;
@@ -11,40 +11,86 @@ SynthVVST {
 	}
 
 	init { |v p ver|
+		var voiceCount;
 		voice = v;
-		params = p.copy;
 		version = ver;
-		cacheKey = [voice, params, version].hash;
+		voiceCount = p.values.collect{|val|
+			(val.respondsTo(\rank) and: { val.rank > 1 }).if{ val.size }{ 1 }
+		}.maxItem;
+		(voiceCount > 1).if{
+			voices = voiceCount.collect{|i|
+				p.collect{|val|
+					(val.respondsTo(\rank) and: { val.rank > 1 }).if{ val[i] }{ val }
+				}
+			};
+			params = voices[0];
+			isMulti = true;
+		}{
+			params = p.copy;
+			voices = nil;
+			isMulti = false;
+		};
+		cacheKey = [voice, params, version, voices].hash;
 		^this
 	}
 
 	morphPhonemes { |languages randomSeed=12345|
-		var morphed = params.lyrics.morphPhonemes(nil, languages.sort, randomSeed);
-		params.putAll((
-			phonemes: morphed.phonemes,
-			languageOverride: morphed.languageOverride,
-			phonesetOverride: morphed.phonesetOverride
-		));
-		cacheKey = [voice, params, version].hash;
+		isMulti.if{
+			voices.do{|p, i|
+				var morphed = p.lyrics.morphPhonemes(nil, languages.sort, randomSeed + i);
+				p.putAll((
+					phonemes: morphed.phonemes,
+					languageOverride: morphed.languageOverride,
+					phonesetOverride: morphed.phonesetOverride
+				));
+			}
+		}{
+			var morphed = params.lyrics.morphPhonemes(nil, languages.sort, randomSeed);
+			params.putAll((
+				phonemes: morphed.phonemes,
+				languageOverride: morphed.languageOverride,
+				phonesetOverride: morphed.phonesetOverride
+			));
+		};
+		cacheKey = [voice, params, version, voices].hash;
 		^this
 	}
 
 	build {
-		var path, buildParams;
 		cache[cacheKey].notNil.if{
-			^cache[cacheKey]
+			synthV = cache[cacheKey].synthV;
+			^this
 		};
-		path = "/private/tmp/" ++ UniqueID.next.asString.padLeft(13, "0");
-		synthV = SynthV.newVST(voice, \default, nil, nil, version);
-		buildParams = params.copy;
-		buildParams.lyrics = buildParams.lyrics.replace($, , "").split(Char.space).reject{|i| i.size==0};
-		buildParams.pitch = buildParams.midinote.asInteger;
-		synthV.makeNotes(buildParams.dur.size);
-		synthV.setDatabase(voice);
-		synthV.set(buildParams);
-		synthV.writeProjectVST(path ++ ".svp");
-		synthV.writeFxp(path);
-		synthV.vst = SV(path ++ ".fxp");
+		isMulti.if{
+			synthV = voices.collect{|voiceParams|
+				var path, sv, buildParams;
+				path = "/private/tmp/" ++ UniqueID.next.asString.padLeft(13, "0");
+				sv = SynthV.newVST(voice, \default, nil, nil, version);
+				buildParams = voiceParams.copy;
+				buildParams.lyrics = buildParams.lyrics.replace($, , "").split(Char.space).reject{|i| i.size==0};
+				buildParams.pitch = buildParams.midinote.asInteger;
+				sv.makeNotes(buildParams.dur.size);
+				sv.setDatabase(voice);
+				sv.set(buildParams);
+				sv.writeProjectVST(path ++ ".svp");
+				sv.writeFxp(path);
+				sv.vst = SV(path ++ ".fxp");
+				sv
+			};
+		}{
+			var path, buildParams;
+			path = "/private/tmp/" ++ UniqueID.next.asString.padLeft(13, "0");
+			synthV = SynthV.newVST(voice, \default, nil, nil, version);
+			buildParams = params.copy;
+			buildParams.lyrics = buildParams.lyrics.replace($, , "").split(Char.space).reject{|i| i.size==0};
+			buildParams.pitch = buildParams.midinote.asInteger;
+			synthV.makeNotes(buildParams.dur.size);
+			synthV.setDatabase(voice);
+			synthV.set(buildParams);
+			synthV.writeProjectVST(path ++ ".svp");
+			synthV.writeFxp(path);
+			synthV.vst = SV(path ++ ".fxp");
+		};
 		cache[cacheKey] = this;
 		^this
 	}
@@ -53,23 +99,46 @@ SynthVVST {
 		var syn, dur;
 		func = func ? I.d;
 		dur = params.dur.sum + tail;
-		fork{
-			synthV.vst.condition.wait;
-			syn = { In.ar(synthV.vst.bus) => func }.play;
-			synthV.vst.controller.setTransportPos(0);
-			synthV.vst.controller.setPlaying(true);
-			dur.wait;
-			synthV.vst.controller.setPlaying(false);
-			syn.free;
+		cleanup.notNil.if{ cleanup.stop };
+		isMulti.if{
+			cleanup = fork{
+				syn = { synthV.collect{|sv| In.ar(sv.vst.bus) }.sum => func }.play;
+				synthV.do{|sv|
+					sv.vst.controller.setTransportPos(0);
+					sv.vst.controller.setPlaying(true);
+				};
+				dur.wait;
+				synthV.do{|sv| sv.vst.controller.setPlaying(false) };
+				syn.free;
+			}
+		}{
+			cleanup = fork{
+				syn = { In.ar(synthV.vst.bus) => func }.play;
+				synthV.vst.controller.setTransportPos(0);
+				synthV.vst.controller.setPlaying(true);
+				dur.wait;
+				synthV.vst.controller.setPlaying(false);
+				syn.free;
+			}
+		}
+	}
+
+	buses {
+		isMulti.if{
+			^synthV.collect{|sv| sv.vst.bus }
+		}{
+			^synthV.vst.bus
 		}
 	}
 
 	*freeAll {
 		cache.do{|item|
-			item.synthV.notNil.if{
-				item.synthV.vst.notNil.if{
-					try{ item.synthV.vst.bus.free };
-					try{ item.synthV.vst.controller.close };
+			item.synthV.asArray.do{|sv|
+				sv.notNil.if{
+					sv.vst.notNil.if{
+						try{ sv.vst.bus.free };
+						try{ sv.vst.controller.close };
+					}
 				}
 			}
 		};
@@ -97,18 +166,34 @@ SynthVVST {
 		sv = sv.build;
 		^P(key, start, syl, lag, {|p b e|
 			var syn, dur;
-			sv.synthV.vst.controller.setTransportPos(0);
-			sv.synthV.vst.controller.setPlaying(true);
+			sv.cleanup.notNil.if{ sv.cleanup.stop };
+			sv.isMulti.if{
+				sv.synthV.do{|s|
+					s.vst.controller.setTransportPos(0);
+					s.vst.controller.setPlaying(true);
+				}
+			}{
+				sv.synthV.vst.controller.setTransportPos(0);
+				sv.synthV.vst.controller.setPlaying(true);
+			};
 			syn = music.(p, b, e);
 			dur = sv.params.dur.sum + tail;
-			fork{
+			sv.cleanup = fork{
 				dur.wait;
-				sv.synthV.vst.controller.setPlaying(false);
+				sv.isMulti.if{
+					sv.synthV.do{|s| s.vst.controller.setPlaying(false) }
+				}{
+					sv.synthV.vst.controller.setPlaying(false)
+				};
 				syn.free;
 			}
 		}, song,
 			resources: resources ++ (
-				bus: { In.ar(sv.synthV.vst.bus) },
+				bus: sv.isMulti.if{
+					{ sv.synthV.collect{|s| In.ar(s.vst.bus) } }
+				}{
+					{ In.ar(sv.synthV.vst.bus) }
+				},
 				sv: sv
 			)
 		)

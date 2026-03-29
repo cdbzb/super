@@ -10,6 +10,7 @@ MicroKeys {
 	var <monosynth, <>constantVel=false;
 	// Current channel tracking for MPE detection
 	var <currentChannel;
+	var <>polyFunc;
 	classvar <all, <current;
 	classvar <type=\mk;
 	var tuningFunction;
@@ -202,6 +203,7 @@ MicroKeys {
 		};
 		
 		heldNotes = Set[];
+		polyFunc = {|k v| k.set(\poly, v)};
 
 		all.add(name -> this);
 		instanceCCs = ()
@@ -324,18 +326,13 @@ MicroKeys {
 			};
 		};
 	}
-	doPoly {|val num| 
-		case 
+	doPoly {|val num|
+		case
 		{ species == \poly } {
-			// set the synth's poly control
-			// but what if there is none?
-			// in that case we need to set a bus and map that bus to freq?
-
-			// set[0] because keys are now a list
-			keys[num][0].set(\poly, val)
+			polyFunc.(keys[num][0], val, num)
 		}
 		{ species == \mono } {
-			monosynth.set(\poly, val)
+			polyFunc.(monosynth, val, num)
 		};
 	}
 	record {

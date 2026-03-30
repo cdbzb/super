@@ -103,7 +103,7 @@ MicroKeys {
                 { 
 					var mk = ~mk.isKindOf(Symbol).if{ MicroKeys(~mk) }{ ~mk };
 					[~mk, mk, ~control, ~ctlNum].postln;
-					mk.doCC(~control * 127, ~ctlNum, ~channel)
+					mk.doCC(~control, ~ctlNum, ~channel)
 				} //TODO change 127 for bend
             ) 
 		});
@@ -408,22 +408,22 @@ MicroKeys {
 doCC {|val cc chan=1|
 
 	cc = cc.asSymbol;
-    //sets for all ccs inc damper and expression
+    //sets for all ccs inc damper and expression — val is 0-1
     ccs.put(cc, val);
 
     [0, 74, 64].includes(cc).if {^nil};
 
     modMap.notNil.if {
         var ccKey = ("cc" ++ cc).asSymbol;
-        modState[ccKey] = val / 127.0;
-        this.updateVoices(ccKey, val / 127.0, chan)
+        modState[ccKey] = val;
+        this.updateVoices(ccKey, val, chan)
     } {
         case
         { species == \poly } {
-            sounding.do{|synth| synth.set(cc, val / 127.0) }
+            sounding.do{|synth| synth.set(cc, val) }
         }
         { species == \mono } {
-            monosynth.set(cc, val / 127.0);
+            monosynth.set(cc, val);
         };
     }
 }
@@ -514,8 +514,8 @@ monitor { |offLatency = 0.02|
 	//set to current state when monitoring begins
 	instanceCCs = ccs;
 	//if we are monitoring a cc we set these
-    MIDIdef.cc(\setClassCCs, {|v n| ccs.put(n.asSymbol, v)});
-	MIDIdef.cc(\microCC ++ name => _.asSymbol, {|val num, chan| this.doCC(val, num, chan) } );
+    MIDIdef.cc(\setClassCCs, {|v n| ccs.put(n.asSymbol, v / 127.0)});
+	MIDIdef.cc(\microCC ++ name => _.asSymbol, {|val num, chan| this.doCC(val / 127.0, num, chan) } );
 	case 
 	{ species == \poly } {
 		// MIDIdef.noteOn(\microOn, {|val num| this.noteOnFunction.(val, num)}, noteNum:range);

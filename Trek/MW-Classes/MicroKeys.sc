@@ -360,7 +360,7 @@ MicroKeys {
 	}
 	applyMods { |voice|
 		modMap.keysValuesDo {|param, func|
-			voice[\synth].set(param, func.(voice))
+			voice[\synth].set(param, voice.use { func.() })
 		}
 	}
 	updateVoices { |key, val, chan=1|
@@ -380,11 +380,13 @@ MicroKeys {
 		}
 	}
 	doPoly {|val num|
+		var normVal = val / 127.0;
+		modState[\poly] = normVal;
 		case
 		{ species == \poly } {
 			modMap.notNil.if {
 				keys[num].do{|voice|
-					voice[\poly] = val;
+					voice[\poly] = normVal;
 					this.applyMods(voice);
 				}
 			}{
@@ -393,7 +395,7 @@ MicroKeys {
 		}
 		{ species == \mono } {
 			modMap.notNil.if {
-				monosynth[\poly] = val;
+				monosynth[\poly] = normVal;
 				this.applyMods(monosynth);
 			}{
 				polyFunc.(monosynth, val, num)

@@ -11,6 +11,7 @@ MicroKeys {
 	// Current channel tracking for MPE detection
 	var <currentChannel;
 	var <>polyFunc;
+	var <>modMap;
 	classvar <all, <current;
 	classvar <type=\mk;
 	var tuningFunction;
@@ -29,7 +30,13 @@ MicroKeys {
 		}
 		{ species == \mono } {
 			( down.size == 0 ).if{
-				monosynth = this.noteOnFunction.(amp, midinote, nil, nil, params).synths ;
+				var synths = this.noteOnFunction.(amp, midinote, nil, nil, params).synths;
+				monosynth = modMap.notNil.if {
+					(
+						synth: synths, num: midinote, vel: amp/127,
+						bend: 0, poly: 0, pressure: 0, expr: 0
+					)
+				}{ synths };
 				monosynth.notNil.if {
 					down.add(midinote);
                     downChannel.put(midinote, channel);
@@ -40,16 +47,21 @@ MicroKeys {
 				func.removeAt(\synth);
 				event = func.reverse.inject(I.d, {|i j| try{i <> j}}).(amp, midinote, nil, nil, params);
 				event.notNil.if{
-					monosynth.set(
-						// \freq, event.num.midicps, 
-						\num, event.num, \freq, event.num.midicps, 
-					);
+					modMap.notNil.if {
+						monosynth[\num] = event.num;
+						monosynth[\vel] = event.vel;
+						this.applyMods(monosynth);
+					}{
+						monosynth.set(
+							\num, event.num, \freq, event.num.midicps,
+						);
+						constantVel.not.if {
+							monosynth.set(\vel, event.vel, \amp, event.vel )
+						};
+					};
 					down.add(midinote); // raw midinote for bookkeeping
                     downChannel.put(midinote, channel);
 					currentChannel = channel; // Update current channel
-					constantVel.not.if {
-						monosynth.set(\vel, event.vel, \amp, event.vel )
-					};
 				};
 						// move this line down here to allow tracking outside the range
 						// down.add(midinote); // raw midinote for bookkeeping
@@ -274,11 +286,20 @@ MicroKeys {
         //check for MPE
         var notMPE = (channel.isNil or: try{ channel == 0});
 		var index = notMPE.if{
-				event.raw 
+				event.raw
 			}{
-				channel 
+				channel
 			};
-		keys[index].add(event[\synths]);
+		var voice = modMap.notNil.if {
+			(
+				synth: event[\synths],
+				num: event[\raw], vel: event[\vel],
+				bend: 0, poly: 0, pressure: 0, expr: 0
+			)
+		}{
+			event[\synths]
+		};
+		keys[index].add(voice);
 		event[\synths].synths.do {|i|
 			sounding.add(i);
 			i.onFree({ sounding.remove(i)})
@@ -306,14 +327,18 @@ MicroKeys {
 			damperDown.not.if {
 				Server.default.makeBundle(
 					latency + 0.02, //TODO this should check to see if the note is sounding instead of 0.02 fudge factor
-					{ try {  var index = (channel.isNil or: (channel == 0)).if {midinote}{channel}; keys[index].removeAt(0).release  } }
+					{ try {
+						var index = (channel.isNil or: (channel == 0)).if {midinote}{channel};
+						var voice = keys[index].removeAt(0);
+						modMap.notNil.if { voice[\synth].release }{ voice.release }
+					} }
 				)
 			} { heldNotes.add(keys[midinote]) }
 		}
 		{ species == \mono } {
 			down.debug("down off");
 			(down.size <= 1).if{
-				monosynth.release;
+				modMap.notNil.if { monosynth[\synth].release }{ monosynth.release };
 				down.remove(midinote);
                 downChannel.put(midinote, nil);
 				currentChannel = nil; // Clear current channel when no notes playing
@@ -321,18 +346,56 @@ MicroKeys {
 				down.remove(midinote);
                 downChannel.put(midinote, nil);
                 //update channel to previous
-                currentChannel = downChannel[down.last]; 
-				monosynth.set(\num, down.last, \freq, down.last.midicps)  // snap back to previous note
+                currentChannel = downChannel[down.last];
+				modMap.notNil.if {
+					monosynth[\num] = down.last;
+					this.applyMods(monosynth);
+				}{
+					monosynth.set(\num, down.last, \freq, down.last.midicps)  // snap back to previous note
+				}
 			};
 		};
+	}
+	applyMods { |voice|
+		modMap.keysValuesDo {|param, func|
+			voice[\synth].set(param, func.(voice))
+		}
+	}
+	updateVoices { |key, val, chan=1|
+		var keyIndex = ((chan == 0) || (chan == 1)).if{ 0 }{ chan };
+		((chan == 0) || (chan == 1)).if {
+			128.do{|i|
+				keys[i].do{|voice|
+					voice[key] = val;
+					this.applyMods(voice);
+				}
+			}
+		} {
+			keys[keyIndex].do{|voice|
+				voice[key] = val;
+				this.applyMods(voice);
+			}
+		}
 	}
 	doPoly {|val num|
 		case
 		{ species == \poly } {
-			polyFunc.(keys[num][0], val, num)
+			modMap.notNil.if {
+				keys[num].do{|voice|
+					voice[\poly] = val;
+					this.applyMods(voice);
+				}
+			}{
+				polyFunc.(keys[num][0], val, num)
+			}
 		}
 		{ species == \mono } {
-			polyFunc.(monosynth, val, num)
+			modMap.notNil.if {
+				monosynth[\poly] = val;
+				this.applyMods(monosynth);
+			}{
+				polyFunc.(monosynth, val, num)
+			}
 		};
 	}
 	record {
@@ -357,75 +420,77 @@ doCC {|val cc chan=1|
     };
 }
 doCC74 {|val chan=1|
-    case 
+    var normVal = val / 127.0;
+    case
     { species == \poly } {
-        var keyIndex = (chan == 0 || chan == 1).if{ 0 }{ chan };
-        // For non-MPE (chan 0), apply to all active synths
-        (chan == 0 || chan == 1).if {
-            keys.do{|keyList, index|
-                keyList.do{|synth|
-                    synth.set(\expr, val / 127.0);
-                }
-            }
+        modMap.notNil.if {
+            this.updateVoices(\expr, normVal, chan)
         } {
-            // For MPE mode, apply only to specific channel
-            keys[keyIndex].do{|synth|
-                synth.set(\expr, val / 127.0);
+            var keyIndex = ((chan == 0) || (chan == 1)).if{ 0 }{ chan };
+            ((chan == 0) || (chan == 1)).if {
+                keys.do{|keyList| keyList.do{|synth| synth.set(\expr, normVal) } }
+            } {
+                keys[keyIndex].do{|synth| synth.set(\expr, normVal) }
             }
         }
     }
     { species == \mono } {
-        monosynth.set(\expr, val / 127.0);
+        modMap.notNil.if {
+            monosynth[\expr] = normVal;
+            this.applyMods(monosynth);
+        }{
+            monosynth.set(\expr, normVal)
+        }
     };
 }
 doPressure {|val chan=1|
-    case 
+    var normVal = val / 127.0;
+    case
     { species == \poly } {
-        var keyIndex = (chan == 0 || chan == 1).if{ 0 }{ chan };
-        // For non-MPE (chan 0), apply to all active synths
-        (chan == 0 || chan == 1).if {
-            keys.do{|keyList, index|
-                keyList.do{|synth|
-                    synth.set(\pressure, val / 127.0);
-                }
-            }
+        modMap.notNil.if {
+            this.updateVoices(\pressure, normVal, chan)
         } {
-            // For MPE mode, apply only to specific channel
-            keys[keyIndex].do{|synth|
-                synth.set(\pressure, val / 127.0);
+            var keyIndex = ((chan == 0) || (chan == 1)).if{ 0 }{ chan };
+            ((chan == 0) || (chan == 1)).if {
+                keys.do{|keyList| keyList.do{|synth| synth.set(\pressure, normVal) } }
+            } {
+                keys[keyIndex].do{|synth| synth.set(\pressure, normVal) }
             }
         }
     }
     { species == \mono } {
-        // MPE mode auto-detection: if chan > 0, we're in MPE mode
-        // Only apply pressure if this is the currently sounding channel
-        // In standard mode (chan 0), always apply pressure
-        (chan == 0 || (down.size > 0 && (chan == currentChannel))).if {
-            monosynth.set(\pressure, val / 127.0)
+        ((chan == 0) || ((down.size > 0) && (chan == currentChannel))).if {
+            modMap.notNil.if {
+                monosynth[\pressure] = normVal;
+                this.applyMods(monosynth);
+            }{
+                monosynth.set(\pressure, normVal)
+            }
         }
     };
 }
 doBend {|val chan=1|
     var bendValue = (val - 8192) / 8192.0; // normalize bend from -1 to 1
-    case 
+    case
     { species == \poly } {
-        var keyIndex = (chan == 0 || chan == 1).if{ 0 }{ chan };
-        // For non-MPE (chan 0), apply to all active synths
-        (chan == 0 || chan == 1).if {
-            keys.do{|keyList, index|
-                keyList.do{|synth|
-                    synth.set(\bend, bendValue);
-                }
-            }
+        modMap.notNil.if {
+            this.updateVoices(\bend, bendValue, chan)
         } {
-            // For MPE mode, apply only to specific channel
-            keys[keyIndex].do{|synth|
-                synth.set(\bend, bendValue);
+            var keyIndex = ((chan == 0) || (chan == 1)).if{ 0 }{ chan };
+            ((chan == 0) || (chan == 1)).if {
+                keys.do{|keyList| keyList.do{|synth| synth.set(\bend, bendValue) } }
+            } {
+                keys[keyIndex].do{|synth| synth.set(\bend, bendValue) }
             }
         }
     }
     { species == \mono } {
-        monosynth.set(\bend, bendValue);
+        modMap.notNil.if {
+            monosynth[\bend] = bendValue;
+            this.applyMods(monosynth);
+        }{
+            monosynth.set(\bend, bendValue)
+        }
     };
 }
 monitor { |offLatency = 0.02|

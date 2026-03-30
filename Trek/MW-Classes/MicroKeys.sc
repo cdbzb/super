@@ -12,6 +12,7 @@ MicroKeys {
 	var <currentChannel;
 	var <>polyFunc;
 	var <>modMap;
+	var <>modState;
 	classvar <all, <current;
 	classvar <type=\mk;
 	var tuningFunction;
@@ -32,12 +33,12 @@ MicroKeys {
 			( down.size == 0 ).if{
 				var synths = this.noteOnFunction.(amp, midinote, nil, nil, params).synths;
 				monosynth = modMap.notNil.if {
-					(
-						synth: synths, num: midinote, vel: amp/127,
-						bend: 0, poly: 0, pressure: 0, expr: 0
-					)
+					modState.copy.putAll((
+						synth: synths, num: midinote, vel: amp/127
+					))
 				}{ synths };
 				monosynth.notNil.if {
+					modMap.notNil.if { this.applyMods(monosynth) };
 					down.add(midinote);
                     downChannel.put(midinote, channel);
 					currentChannel = channel; // Track the current channel
@@ -216,6 +217,7 @@ MicroKeys {
 		
 		heldNotes = Set[];
 		polyFunc = {|k v| k.set(\poly, v)};
+		modState = (bend: 0, poly: 0, pressure: 0, expr: 0);
 
 		all.add(name -> this);
 		instanceCCs = ()
@@ -291,15 +293,15 @@ MicroKeys {
 				channel
 			};
 		var voice = modMap.notNil.if {
-			(
+			modState.copy.putAll((
 				synth: event[\synths],
-				num: event[\raw], vel: event[\vel],
-				bend: 0, poly: 0, pressure: 0, expr: 0
-			)
+				num: event[\raw], vel: event[\vel]
+			))
 		}{
 			event[\synths]
 		};
 		keys[index].add(voice);
+		modMap.notNil.if { this.applyMods(voice) };
 		event[\synths].synths.do {|i|
 			sounding.add(i);
 			i.onFree({ sounding.remove(i)})
@@ -409,18 +411,23 @@ doCC {|val cc chan=1|
 
     [0, 74, 64].includes(cc).if {^nil};
 
-    case 
-    { species == \poly } {
-            sounding.do{|synth|
-                    synth.set(cc, val / 127.0);
-            }
-        } 
-    { species == \mono } {
-        monosynth.set(cc, val / 127.0);
-    };
+    modMap.notNil.if {
+        var ccKey = ("cc" ++ cc).asSymbol;
+        modState[ccKey] = val / 127.0;
+        this.updateVoices(ccKey, val / 127.0, chan)
+    } {
+        case
+        { species == \poly } {
+            sounding.do{|synth| synth.set(cc, val / 127.0) }
+        }
+        { species == \mono } {
+            monosynth.set(cc, val / 127.0);
+        };
+    }
 }
 doCC74 {|val chan=1|
     var normVal = val / 127.0;
+    modState[\expr] = normVal;
     case
     { species == \poly } {
         modMap.notNil.if {
@@ -445,6 +452,7 @@ doCC74 {|val chan=1|
 }
 doPressure {|val chan=1|
     var normVal = val / 127.0;
+    modState[\pressure] = normVal;
     case
     { species == \poly } {
         modMap.notNil.if {
@@ -471,6 +479,7 @@ doPressure {|val chan=1|
 }
 doBend {|val chan=1|
     var bendValue = (val - 8192) / 8192.0; // normalize bend from -1 to 1
+    modState[\bend] = bendValue;
     case
     { species == \poly } {
         modMap.notNil.if {

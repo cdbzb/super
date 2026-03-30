@@ -376,7 +376,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	classvar <>folder, <all;
 	var <>midiEvents , <name, <>initialCCValues;
 	var restFirst, <initialRest, notes ;
-	var <takes;
+	var <takes, <recordedMk;
 	classvar midiout, <recording;
 
 	*initClass {
@@ -406,9 +406,9 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	*newFrom { |midiEvents |
 		^ MIDIItem( UniqueID ).midiEvents_(midiEvents)
 	}
-	*record {
-		var mks = MicroKeys.all.values.select{|i| i.active }.collect(_.name);
-		Nvim.replace( "(\\\"%\\\").record(%)".format(name ++ "_" ++  Date.getDate.stamp, mks.cs) )
+	*record {|name="item"|
+		var stamp = name ++ "_" ++ Date.getDate.stamp;
+		Nvim.replace( "MIDIItem2(\"%\").record".format(stamp) )
 	}
 	initMIDIitem {|n r|
 		takes = List[];
@@ -518,6 +518,8 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
             timestamp: SystemClock.seconds - start,
             initialEvent: true,
         );
+        mk = mk ? MicroKeys.current;
+        recordedMk = mk.isKindOf(Symbol).if{ mk }{ mk.name };
         latencyCompensation = latencyCompensation ? Server.default.latency;
         mk.do{|i| (i.isKindOf(Symbol).if{ MicroKeys(i) }{ i }).monitor};
         recording = this;
@@ -608,7 +610,9 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		}
 	}
 	play { |mk name clock post overdub=false |
+		mk = mk ? recordedMk;
 		^this.player.play(mk, overdub: overdub)
+
 	}
 	player {|func take| 
 		^if(recording != this) {

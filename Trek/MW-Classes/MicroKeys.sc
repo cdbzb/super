@@ -411,7 +411,7 @@ doCC {|val cc chan=1|
     //sets for all ccs inc damper and expression — val is 0-1
     ccs.put(cc, val);
 
-    [0, 74, 64].includes(cc).if {^nil};
+    [\0, \74, \64].includes(cc).if {^nil};
 
     modMap.notNil.if {
         var ccKey = ("cc" ++ cc).asSymbol;

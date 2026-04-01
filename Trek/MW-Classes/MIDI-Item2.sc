@@ -519,13 +519,13 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
             initialEvent: true,
         );
         mk = mk ? MicroKeys.current;
-        recordedMk = mk.isKindOf(Symbol).if{ mk }{ mk.name };
+        recordedMk = mk.isKindOf(MicroKeys).if{ mk.name }{ mk };
         latencyCompensation = latencyCompensation ? Server.default.latency;
         mk.do{|i| (i.isKindOf(Symbol).if{ MicroKeys(i) }{ i }).monitor};
         recording = this;
         midiEvents = List[];
         // add Events to set initial CC values to midiEvents
-        CC.getValues(mk).asKeyValuePairs.pairsDo{ | i j |
+        MicroKeys.ccs.asKeyValuePairs.pairsDo{ | i j |
             midiEvents.add(
                 initialEvent ++ (
                     type: \setCC,
@@ -549,7 +549,8 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 
         // Messages with val, num, chan parameters
         [\noteOn, \noteOff, \control, \polytouch ].do { |cmd|
-            MIDIdef((\record ++ cmd).asSymbol, func: { |val num chan| 
+            MIDIdef((\record ++ cmd).asSymbol, func: { |val num chan src|
+                MicroKeys.excludeSrcIDs.includes(src).not.if {
                 midiEvents.add(
                     (
                         midicmd: cmd,
@@ -573,28 +574,26 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
                             } 
                         }
                     )
-				},msgType: cmd, 
-				// RME device floods input with cc0 - two solutions below!!
-				//eliminate cc0
-				msgNum: (cmd == \control).if{ (0..127) }, //change 0 to 1 to filter out
-				// argTemplate: {|i| (cmd == \control).if{ i.isStrictlyPositive }{ true } }
+				}},msgType: cmd,
+				msgNum: (cmd == \control).if{ (0..127) },
 			)
 		};
 
         // Messages with only val, chan parameters - NO num parameter!
         [\bend, \touch ].do { |cmd|
-            MIDIdef((\record ++ cmd).asSymbol, func: { |val chan| 
+            MIDIdef((\record ++ cmd).asSymbol, func: { |val chan src|
+                MicroKeys.excludeSrcIDs.includes(src).not.if {
                 midiEvents.add(
                     (
                         midicmd: cmd,
                         timestamp: SystemClock.seconds - start - latencyCompensation,
-                        channel: chan,  // FIXED: Now chan is the correct parameter
+                        channel: chan,
                     )
-                    ++ switch(cmd) 
+                    ++ switch(cmd)
                         {\bend} { (type: \setBend, ctlNum:\bend, control: val / 16384) }
                         {\touch} { (type: \setPressure, ctlNum:\pressure, control: val / 127) }
                 )
-            },msgType: cmd )
+            }},msgType: cmd )
         };
         ^SelfReturningObject()
     }
@@ -610,7 +609,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		}
 	}
 	play { |mk name clock post overdub=false |
-		mk = mk ? recordedMk;
+		mk = mk ? recordedMk.notNil.if{ MicroKeys(recordedMk) };
 		^this.player.play(mk, overdub: overdub)
 
 	}

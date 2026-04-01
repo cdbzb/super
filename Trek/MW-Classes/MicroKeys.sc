@@ -15,6 +15,7 @@ MicroKeys {
 	var <>modState;
 	classvar <all, <current;
 	classvar <type=\mk;
+	classvar <>excludeSrcIDs;
 	var tuningFunction;
 	// methods to make "standard" params
 	*freq {
@@ -78,6 +79,7 @@ MicroKeys {
 	}
 	*initClass{
         ccs = ();
+		excludeSrcIDs = Set[-496537509]; // RME ARC
 
 		MyFree.add({ MicroKeys.all.do{|i| i.down_(List[]) } });
 		
@@ -155,6 +157,8 @@ MicroKeys {
 			new.namedList = old.namedList.deepCopy;
 			new.tuningDeltas = old.tuningDeltas;
 			new.storedCCValues = old.storedCCValues;
+			new.modMap = old.modMap;
+			new.modState = old.modState.copy;
 			func = old.synthFunc;
 			func.isKindOf(Symbol).if{
 				new.synth_(func) 
@@ -166,11 +170,15 @@ MicroKeys {
 		}  
 	}
 	*new { |name func params species=\poly|
+		name.isKindOf(Function).if {
+			func = name;
+			name = func.cs.hash.asSymbol;
+		};
 		all[name].notNil.if {
 			^all[name]
-		} { 
-			^super.new.init(name, func, params, species) 
-		}  
+		} {
+			^super.new.init(name, func, params, species)
+		}
 	}
 	*mono { |name func params|
 		^this.new(name, func, params, \mono)
@@ -514,8 +522,8 @@ monitor { |offLatency = 0.02|
 	//set to current state when monitoring begins
 	instanceCCs = ccs;
 	//if we are monitoring a cc we set these
-    MIDIdef.cc(\setClassCCs, {|v n| ccs.put(n.asSymbol, v / 127.0)});
-	MIDIdef.cc(\microCC ++ name => _.asSymbol, {|val num, chan| this.doCC(val / 127.0, num, chan) } );
+    MIDIdef.cc(\setClassCCs, {|v n c src| excludeSrcIDs.includes(src).not.if{ ccs.put(n.asSymbol, v / 127.0) } });
+	MIDIdef.cc(\microCC ++ name => _.asSymbol, {|val num chan src| excludeSrcIDs.includes(src).not.if{ this.doCC(val / 127.0, num, chan) } } );
 	case 
 	{ species == \poly } {
 		// MIDIdef.noteOn(\microOn, {|val num| this.noteOnFunction.(val, num)}, noteNum:range);

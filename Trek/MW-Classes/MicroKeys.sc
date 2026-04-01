@@ -425,15 +425,18 @@ doCC {|val cc chan=1|
         var ccKey = ("cc" ++ cc).asSymbol;
         modState[ccKey] = val;
         this.updateVoices(ccKey, val, chan)
-    } {
-        case
-        { species == \poly } {
-            sounding.do{|synth| synth.set(cc, val) }
-        }
-        { species == \mono } {
-            monosynth.set(cc, val);
-        };
+    };
+    case
+    { species == \poly } {
+        sounding.do{|synth| synth.set(cc, val) }
     }
+    { species == \mono } {
+        modMap.notNil.if {
+            monosynth[\synth].set(cc, val)
+        }{
+            monosynth.set(cc, val)
+        };
+    };
 }
 doCC74 {|val chan=1|
     var normVal = val / 127.0;

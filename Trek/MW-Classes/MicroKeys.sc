@@ -428,7 +428,7 @@ doCC {|val cc chan=1|
     };
     case
     { species == \poly } {
-        sounding.do{|synth| synth.set(cc, val) }
+        sounding.do{|synth| synth.isPlaying.if { synth.set(cc, val) } }
     }
     { species == \mono } {
         modMap.notNil.if {

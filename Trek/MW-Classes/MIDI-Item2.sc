@@ -609,13 +609,15 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		}
 	}
 	play { |mk name clock post overdub=false |
-		mk = mk ? recordedMk.notNil.if{
-			recordedMk.isKindOf(Event).if{
-				recordedMk.play; MicroKeys(recordedMk[\name])
-			}{
-				MicroKeys(recordedMk)
+		mk = case
+			{ mk.isKindOf(Event) && recordedMk.isKindOf(Event) } {
+				var e = (proto: recordedMk) ++ mk;
+				e.play[\mk]
 			}
-		};
+			{ mk.isKindOf(Event) } { mk.play[\mk] }
+			{ mk.notNil } { mk.isKindOf(Symbol).if{ MicroKeys(mk) }{ mk } }
+			{ recordedMk.isKindOf(Event) } { recordedMk.play[\mk] }
+			{ recordedMk.notNil } { MicroKeys(recordedMk) };
 		^this.player.play(mk, overdub: overdub)
 
 	}

@@ -143,11 +143,13 @@ MicroKeys {
             Server.default.makeBundle(~latency, { ~mk.doBend(~control * 16383 + 8192, ~channel ? 1) })
         });
         Event.addEventType(\microKeys, {
-            var mk = MicroKeys(~name, ~synthFunc, ~params, ~species);
+            var mk = MicroKeys(~name, ~synthFunc, ~params, ~species ? \poly);
+            ~synthFunc.notNil.if { mk.synth_(~synthFunc) };
             ~modMap.notNil.if { mk.modMap = ~modMap };
             ~tuning.notNil.if { mk.tuning_(~tuning) };
             ~velCurve.notNil.if { mk.velCurve_(~velCurve) };
             ~range.notNil.if { mk.range_(~range) };
+            ~mk = mk;
         });
         all = Dictionary(256)
 	}
@@ -303,7 +305,7 @@ MicroKeys {
 		var voice = modMap.notNil.if {
 			modState.copy.putAll((
 				synth: event[\synths],
-				num: event[\raw], vel: event[\vel]
+				num: event[\num], vel: event[\vel]
 			))
 		}{
 			event[\synths]

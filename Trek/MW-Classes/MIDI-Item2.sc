@@ -376,7 +376,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	classvar <>folder, <all;
 	var <>midiEvents , <name, <>initialCCValues;
 	var restFirst, <initialRest, notes ;
-	var <takes, <recordedMk;
+	var <takes, <recordedMks, <>recordedMk;
 	classvar midiout, <recording;
 
 	*initClass {
@@ -412,6 +412,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	}
 	initMIDIitem {|n r|
 		takes = List[];
+		recordedMks = List[];
 		restFirst = r;
 		name = n;
 		midiEvents = List.new;
@@ -503,7 +504,9 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	}
 	stop {
 		if (midiEvents.select{|e| e.timestamp > 0}.size > 0) {
-			takes.add(midiEvents);		
+			takes.add(midiEvents);
+			recordedMks = recordedMks ? List[];
+			recordedMks.add(recordedMk);
 		}
 	}
 	at {|num|
@@ -518,8 +521,13 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
             timestamp: SystemClock.seconds - start,
             initialEvent: true,
         );
+        mk.isKindOf(Event).if {
+            var base = MicroKeys.current.asEvent;
+            recordedMk = base.putAll(mk);
+            mk = recordedMk.play[\mk]
+        };
         mk = mk ? MicroKeys.current;
-        recordedMk = mk.isKindOf(MicroKeys).if{ mk.asEvent }{ mk };
+        recordedMk = recordedMk ? mk.isKindOf(MicroKeys).if{ mk.asEvent }{ mk };
         latencyCompensation = latencyCompensation ? Server.default.latency;
         mk.do{|i| (i.isKindOf(Symbol).if{ MicroKeys(i) }{ i }).monitor};
         recording = this;
@@ -643,16 +651,17 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	}
 	take {|num|
 		var obj;
-		(num < 0).if { num = takes.size - 1 + num  };
+		(num < 0).if { num = takes.size + num  };
 		(num < 0 or: (num > (takes.size - 1))).if { ^"only % takes in %".format(takes.size, name).postln};
 		obj = MIDIItemPlayer(this.makeNotesFromMidiEvents(takes[num]), this);//.recalcSustains
+		obj.recordedMk = recordedMks !? _[num];
 		^obj
 	}
 }
 
 MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	classvar <playing;
-	var <midiEvents, <source;
+	var <midiEvents, <source, <>recordedMk;
 	var <>start, <>end;
 	var tracks;
 
@@ -730,6 +739,21 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	play { |mk clock post=#[] overdub=false take|
 		(mk.rank > 0).if { mk.do{|i| this.play(i, clock, post, overdub) }; ^this };
 
+		mk.isNil.if {
+			var rmk = recordedMk ? source.recordedMk;
+			mk = case
+				{ rmk.isKindOf(Event) } { rmk.play[\mk] }
+				{ rmk.notNil } { MicroKeys(rmk) }
+		};
+		mk.isKindOf(Event).if {
+			var rmk = recordedMk ? source.recordedMk;
+			mk = rmk.isKindOf(Event).if {
+				var e = (proto: rmk) ++ mk;
+				e.play[\mk]
+			}{
+				mk.play[\mk]
+			}
+		};
 		mk.isKindOf(Symbol).if {
 			overdub.if { 
 				mk = MicroKeys(mk) 
@@ -738,7 +762,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			}
 		};
 		// (mk.size > 1).if { 'play first'.postln; mk.do(this.play() };
-		playing.add(mk);
+		mk.notNil.if { playing.add(mk) };
 
 		(post.size > 0).if{
 			"# note amp sus".postln 

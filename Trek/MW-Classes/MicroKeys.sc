@@ -144,6 +144,9 @@ MicroKeys {
         });
         Event.addEventType(\microKeys, {
             var mk = MicroKeys(~name, ~synthFunc, ~params, ~species ? \poly);
+            ((~species.notNil) && (mk.species != ~species)).if {
+                mk = (~species == \mono).if{ mk.mono }{ mk.poly }
+            };
             ~synthFunc.notNil.if { mk.synth_(~synthFunc) };
             ~modMap.notNil.if { mk.modMap = ~modMap };
             ~tuning.notNil.if { mk.tuning_(~tuning) };
@@ -284,6 +287,7 @@ MicroKeys {
 		namedList.removeAt(key);
         namedList.dump
 	}
+	current { current = this }
 	asEvent {
 		^(type: \microKeys, name: name, synthFunc: synthFunc, species: species,
 			modMap: modMap)

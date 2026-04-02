@@ -142,6 +142,13 @@ MicroKeys {
             ~mk.isKindOf(Symbol).if { ~mk = MicroKeys(~mk) };
             Server.default.makeBundle(~latency, { ~mk.doBend(~control * 16383 + 8192, ~channel ? 1) })
         });
+        Event.addEventType(\microKeys, {
+            var mk = MicroKeys(~name, ~synthFunc, ~params, ~species);
+            ~modMap.notNil.if { mk.modMap = ~modMap };
+            ~tuning.notNil.if { mk.tuning_(~tuning) };
+            ~velCurve.notNil.if { mk.velCurve_(~velCurve) };
+            ~range.notNil.if { mk.range_(~range) };
+        });
         all = Dictionary(256)
 	}
 	*newFrom { |mk itemName|
@@ -194,18 +201,7 @@ MicroKeys {
         //...because raw is used by register to determine storage
 		namedList.add( \event, {|v n c r params| (vel: v/127, num: n, chan: c, src: r, raw: n, params: params) });
 
-		this.synth_(
-			func.notNil.if { 
-				func.isKindOf(Symbol).if {
-					func
-				} {
-					(mk: name).use{ func.asDefName }
-				} 
-			} {
-				name
-			},
-            params
-		);
+		this.synth_(func ? name, params);
 		// this.synth_(
 		// 	func !? {|i| (mk: name).use{ i.asDefName }} ? I.d);
 			
@@ -232,7 +228,7 @@ MicroKeys {
 	}
 	synth_ { |funcOrDefname params|
 		funcOrDefname.isKindOf(Symbol).if{
-			synthFunc = funcOrDefname;
+			synthFunc = synthFunc ? funcOrDefname;
 			namedList.add( \synth,
 				{ |e|
 					e.silent.isNil.if {
@@ -285,6 +281,10 @@ MicroKeys {
 	removeFunc { |key|
 		namedList.removeAt(key);
         namedList.dump
+	}
+	asEvent {
+		^(type: \microKeys, name: name, synthFunc: synthFunc, species: species,
+			modMap: modMap)
 	}
 
 	// split_ { |r| range = r }

@@ -519,7 +519,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
             initialEvent: true,
         );
         mk = mk ? MicroKeys.current;
-        recordedMk = mk.isKindOf(MicroKeys).if{ mk.name }{ mk };
+        recordedMk = mk.isKindOf(MicroKeys).if{ mk.asEvent }{ mk };
         latencyCompensation = latencyCompensation ? Server.default.latency;
         mk.do{|i| (i.isKindOf(Symbol).if{ MicroKeys(i) }{ i }).monitor};
         recording = this;
@@ -609,7 +609,13 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		}
 	}
 	play { |mk name clock post overdub=false |
-		mk = mk ? recordedMk.notNil.if{ MicroKeys(recordedMk) };
+		mk = mk ? recordedMk.notNil.if{
+			recordedMk.isKindOf(Event).if{
+				recordedMk.play; MicroKeys(recordedMk[\name])
+			}{
+				MicroKeys(recordedMk)
+			}
+		};
 		^this.player.play(mk, overdub: overdub)
 
 	}

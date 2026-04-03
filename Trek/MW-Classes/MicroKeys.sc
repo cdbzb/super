@@ -25,7 +25,7 @@ MicroKeys {
 		case 
 		{ species == \poly } {
 			silent.isNil.if{
-				this.noteOnFunction.(amp, midinote, channel, nil, params).debug("noteOn")
+				this.noteOnFunction.(amp, midinote, channel, nil, params)//.debug("noteOn")
 
 				=> {|e| this.register(e)} // register method could be moved here
 			}
@@ -82,6 +82,7 @@ MicroKeys {
 		excludeSrcIDs = Set[-496537509]; // RME ARC
 
 		MyFree.add({ MicroKeys.all.do{|i| i.down_(List[]) } });
+		MyFree.add({ MicroKeys.all.do {|i| i.unmonitor } });
 		
 		Event.addEventType(\mkOff, {});
 
@@ -289,8 +290,7 @@ MicroKeys {
 	}
 	current { current = this }
 	asEvent {
-		^(type: \microKeys, name: name, synthFunc: synthFunc, species: species,
-			modMap: modMap)
+		^(type: \microKeys, name: name, synthFunc: synthFunc, species: species, modMap: modMap)
 	}
 
 	// split_ { |r| range = r }
@@ -352,7 +352,7 @@ MicroKeys {
 			} { heldNotes.add(keys[midinote]) }
 		}
 		{ species == \mono } {
-			down.debug("down off");
+			// down.debug("down off");
 			(down.size <= 1).if{
 				modMap.notNil.if { monosynth[\synth].release }{ monosynth.release };
 				down.remove(midinote);

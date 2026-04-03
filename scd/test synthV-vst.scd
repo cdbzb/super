@@ -114,3 +114,27 @@ c = SynthVVST( \uni, version:2, params:(
 
 		)
 	)
+	(
+		Event.addEventType(type:\sv, func:{
+					~sv = SynthVVST(
+						~voice, ~params, ~version
+					)
+					.morphPhonemes(~languages ? [\korean])
+					.build;
+			topEnvironment[\build].isNil.if { 
+				~sv.play(~func) 
+			}
+		});
+
+		a = (type:\sv, voice:\xuan2, version:2, params: (
+				lyrics: "hi how are you r elephant + + chicken +",
+				midinote: [1, 3, 5, 4, 4, 5, 6, 4, 3, 6 ].dm(\c),
+				dur: "e e x e e ex x e x xe".beats,
+				lag:0.2.dup(4),
+				languages:[\korean, \english],
+		),func:{|i| FreeVerb.ar(i,1,1)}
+			).play
+	)
+	~build=nil
+	a.sv
+	a

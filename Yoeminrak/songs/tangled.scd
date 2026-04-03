@@ -139,7 +139,7 @@ Yoeminrak.env[\silent] = true;
  	 (beat: 5.5,chord: [1,-5, 3, 5, 5].df('f#', 4), type:\addMe).play;
 
 	 (beat:6, chord: [1,2, 3, 5, 7].df('f', 4),amp:T([2, 2, 2, 2, 2] /2, 4, \lin), type:\addMe, knum:T(6, 2, \lin)).play;
-	 (beat:8);
+	 (beat: 6, newType:\yoeDrum0, freq:99*5.midiratio, amp:1, type:\addMe ).play;
  	 (beat:7, chord: [1,-5, 3, 5, 7].df('f', 4),gates:[1, 1, 1, 0, 1], type:\addMe).play;
 	 (beat:9, which:2 ,chord: T([1,-5,2.5 , 5, 7].df('f', 4), 0.5, \lin), type:\addMe).play;
 

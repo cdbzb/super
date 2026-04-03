@@ -522,9 +522,9 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
             initialEvent: true,
         );
         mk.isKindOf(Event).if {
-            var base = MicroKeys.current.asEvent;
-            recordedMk = base.putAll(mk);
-            mk = recordedMk.play[\mk]
+            var base = MicroKeys.current !? _.asEvent ? ();
+            recordedMk = (type: \microKeys).putAll(base).putAll(mk);
+            mk = recordedMk.copy.play[\mk]
         };
         mk = mk ? MicroKeys.current;
         recordedMk = recordedMk ? mk.isKindOf(MicroKeys).if{ mk.asEvent }{ mk };
@@ -619,12 +619,14 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	play { |mk name clock post overdub=false |
 		mk = case
 			{ mk.isKindOf(Event) && recordedMk.isKindOf(Event) } {
-				var e = (proto: recordedMk) ++ mk;
-				e.play[\mk]
+				var merged = recordedMk.copy.putAll(mk);
+				// if user overrides synthFunc but not name, use synthFunc as name
+				(mk[\synthFunc].notNil && mk[\name].isNil).if { merged[\name] = nil };
+				merged.play[\mk]
 			}
-			{ mk.isKindOf(Event) } { mk.play[\mk] }
+			{ mk.isKindOf(Event) } { (type: \microKeys).putAll(mk).play[\mk] }
 			{ mk.notNil } { mk.isKindOf(Symbol).if{ MicroKeys(mk) }{ mk } }
-			{ recordedMk.isKindOf(Event) } { recordedMk.play[\mk] }
+			{ recordedMk.isKindOf(Event) } { recordedMk.copy.play[\mk] }
 			{ recordedMk.notNil } { MicroKeys(recordedMk) };
 		^this.player.play(mk, overdub: overdub)
 
@@ -748,10 +750,12 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		mk.isKindOf(Event).if {
 			var rmk = recordedMk ? source.recordedMk;
 			mk = rmk.isKindOf(Event).if {
-				var e = (proto: rmk) ++ mk;
-				e.play[\mk]
+				var merged = rmk.copy.putAll(mk);
+				// if user overrides synthFunc but not name, use synthFunc as name
+				(mk[\synthFunc].notNil && mk[\name].isNil).if { merged[\name] = nil };
+				merged.play[\mk]
 			}{
-				mk.play[\mk]
+				(type: \microKeys).putAll(mk).play[\mk]
 			}
 		};
 		mk.isKindOf(Symbol).if {
@@ -768,7 +772,8 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			"# note amp sus".postln 
 		};
 		mk.storeCCValues;
-		midiEvents.do{|e x| 
+		mk.modState = (bend: 0, poly: 0, pressure: 0, expr: 0);
+		midiEvents.do{|e x|
 			var from = start ? 0;
 			var to = end ? midiEvents.last.timestamp;
 

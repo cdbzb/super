@@ -25,6 +25,7 @@ MicroKeys {
 		case 
 		{ species == \poly } {
 			silent.isNil.if{
+				down.add(midinote);
 				this.noteOnFunction.(amp, midinote, channel, nil, params).debug("noteOn")
 
 				=> {|e| this.register(e)} // register method could be moved here
@@ -83,7 +84,12 @@ MicroKeys {
 
 		MyFree.add({ MicroKeys.all.do{|i| i.down_(List[]) } });
 		
-		Event.addEventType(\mkOff, {});
+		Event.addEventType(\mkOff, {
+			~mk.isKindOf(Symbol).if { ~mk = MicroKeys(~mk) };
+			~mk.notNil.if {
+				Server.default.makeBundle(~latency, { ~mk.doNoteOff(~midinote, channel: ~channel) })
+			}
+		});
 
 		Event.addEventType(\mk2, {
 			~instrument =  ~mk.doNoteOn(~amp * 127, ~midinote, ~params).asDefName ;
@@ -140,10 +146,10 @@ MicroKeys {
         });
         Event.addEventType(\setBend, {
             ~mk.isKindOf(Symbol).if { ~mk = MicroKeys(~mk) };
-            Server.default.makeBundle(~latency, { ~mk.doBend(~control * 16383 + 8192, ~channel ? 1) })
+            Server.default.makeBundle(~latency, { ~mk.doBend(~control * 16384, ~channel ? 1) })
         });
         Event.addEventType(\microKeys, {
-            var mk = MicroKeys(~name, ~synthFunc, ~params, ~species ? \poly);
+            var mk = MicroKeys(~name ? ~synthFunc ? \default, ~synthFunc, ~params, ~species ? \poly);
             ((~species.notNil) && (mk.species != ~species)).if {
                 mk = (~species == \mono).if{ mk.mono }{ mk.poly }
             };
@@ -222,6 +228,7 @@ MicroKeys {
 		{ species == \poly } {
 			keys = List[] ! 128;
 			sounding = Set[];
+			down = List[];
 		};
 		
 		heldNotes = Set[];
@@ -308,7 +315,7 @@ MicroKeys {
 			};
 		var voice = modMap.notNil.if {
 			modState.copy.putAll((
-				synth: event[\synths],
+				mk: this, synth: event[\synths],
 				num: event[\num], vel: event[\vel]
 			))
 		}{
@@ -340,6 +347,7 @@ MicroKeys {
 		name.debug("noteOff");
 		case 
 		{ species == \poly } {
+			down.remove(midinote);
 			damperDown.not.if {
 				Server.default.makeBundle(
 					latency + 0.02, //TODO this should check to see if the note is sounding instead of 0.02 fudge factor
@@ -377,8 +385,10 @@ MicroKeys {
 			voice[\synth].set(param, voice.use { func.() })
 		}
 	}
-	updateVoices { |key, val, chan=1|
-		var keyIndex = ((chan == 0) || (chan == 1)).if{ 0 }{ chan };
+	updateVoices { |key, val, chan|
+		var keyIndex;
+		chan = chan ? 1;
+		keyIndex = ((chan == 0) || (chan == 1)).if{ 0 }{ chan };
 		((chan == 0) || (chan == 1)).if {
 			128.do{|i|
 				keys[i].do{|voice|
@@ -530,6 +540,10 @@ monitor { |offLatency = 0.02|
 
 	//set to current state when monitoring begins
 	instanceCCs = ccs;
+	// seed modState with current physical CC values
+	modMap.notNil.if {
+		ccs.keysValuesDo{|k v| modState[("cc" ++ k).asSymbol] = v }
+	};
 	//if we are monitoring a cc we set these
     MIDIdef.cc(\setClassCCs, {|v n c src| excludeSrcIDs.includes(src).not.if{ ccs.put(n.asSymbol, v / 127.0) } });
 	MIDIdef.cc(\microCC ++ name => _.asSymbol, {|val num chan src| excludeSrcIDs.includes(src).not.if{ this.doCC(val / 127.0, num, chan) } } );
@@ -586,7 +600,21 @@ monitor { |offLatency = 0.02|
 		[\microOn, \microOff, \microDamper, \microPoly].do{|i| MIDIdef(i ++ name => _.asSymbol).free}
 	}
 	cmdPeriod {
-		this.unmonitor
+		this.unmonitor;
+		case
+		{ species == \poly } {
+			keys = List[] ! 128;
+			sounding = Set[];
+			down = List[];
+		}
+		{ species == \mono } {
+			keys = 0 ! 128;
+			down = List[];
+			downChannel = ();
+			currentChannel = nil;
+			monosynth = nil;
+		};
+		modState = (bend: 0, poly: 0, pressure: 0, expr: 0);
 	}
 	free {
 		this.unmonitor ; //remove MIDIdefs

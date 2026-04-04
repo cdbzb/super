@@ -91,14 +91,12 @@ MicroKeys {
 		});
 
 		Event.addEventType(\mk, {
-			var syn;
-			~mk.isKindOf(Symbol).if { ~mk = MicroKeys(~mk) };
-			Server.default.makeBundle(~latency, { ~mk.doNoteOn(~amp * 127, ~midinote, ~params, ~silent, ~channel) });
+			var mk = ~mk.isKindOf(Symbol).if{ MicroKeys(~mk) }{ ~mk };
+			Server.default.makeBundle(~latency, { mk.doNoteOn(~amp * 127, ~midinote, ~params, ~silent, ~channel) });
 			fork{
 				~sustain.().wait;
-				//syn could be passed into doNoteOff to solve the overlapping notes issue
-				Server.default.makeBundle(~latency, {~mk.doNoteOff(~midinote, channel: ~channel)})
-			}	
+				Server.default.makeBundle(~latency, {mk.doNoteOff(~midinote, channel: ~channel)})
+			}
 		});
 		Event.addEventType(\setCC, {
 			Server.default.makeBundle(~latency, 
@@ -116,32 +114,31 @@ MicroKeys {
 		// 	Server.default.makeBundle(~latency, { CC(~ctlNum, mk: ~mk).setRaw(~control * 16384) }) 
 		// });
 		Event.addEventType(\setDamper, {
-			~mk.isKindOf(Symbol).if { ~mk = MicroKeys(~mk) };
-			Server.default.makeBundle(~latency, { ~mk.setDamper(~control) })
+			var mk = ~mk.isKindOf(Symbol).if{ MicroKeys(~mk) }{ ~mk };
+			Server.default.makeBundle(~latency, { mk.setDamper(~control) })
 		});
 		Event.addEventType(\setPoly, {
-			~mk.isKindOf(Symbol).if { ~mk = MicroKeys(~mk) };
-			( ~mk.keys[~midinote] != 0 ).if {
-				 // ~mk.keys[~midinote].().set(\poly, ~polyTouch) 
+			var mk = ~mk.isKindOf(Symbol).if{ MicroKeys(~mk) }{ ~mk };
+			( mk.keys[~midinote] != 0 ).if {
 				 Server.default.bind{
-					 ~mk.doPoly( ~polyTouch, ~midinote )
+					 mk.doPoly( ~polyTouch, ~midinote )
 				 }
 			}{
 				~type = \rest
 			}
 		});
         Event.addEventType(\setCC74, {
-            ~mk.isKindOf(Symbol).if { ~mk = MicroKeys(~mk) };
-            Server.default.makeBundle(~latency, { ~mk.doCC74(~control * 127, ~channel ? 1) })
+            var mk = ~mk.isKindOf(Symbol).if{ MicroKeys(~mk) }{ ~mk };
+            Server.default.makeBundle(~latency, { mk.doCC74(~control * 127, ~channel ? 1) })
         });
 
         Event.addEventType(\setPressure, {
-            ~mk.isKindOf(Symbol).if { ~mk = MicroKeys(~mk) };
-            Server.default.makeBundle(~latency, { ~mk.doPressure(~control * 127 , ~channel ? 1) })
+            var mk = ~mk.isKindOf(Symbol).if{ MicroKeys(~mk) }{ ~mk };
+            Server.default.makeBundle(~latency, { mk.doPressure(~control * 127 , ~channel ? 1) })
         });
         Event.addEventType(\setBend, {
-            ~mk.isKindOf(Symbol).if { ~mk = MicroKeys(~mk) };
-            Server.default.makeBundle(~latency, { ~mk.doBend(~control * 16383 + 8192, ~channel ? 1) })
+            var mk = ~mk.isKindOf(Symbol).if{ MicroKeys(~mk) }{ ~mk };
+            Server.default.makeBundle(~latency, { mk.doBend(~control * 16383 + 8192, ~channel ? 1) })
         });
         Event.addEventType(\microKeys, {
             var mk = MicroKeys(~name, ~synthFunc, ~params, ~species ? \poly);

@@ -776,7 +776,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 				var playFunc = mk.notNil.if{
 					{
 						e
-						.mk_(mk.name)
+						.mk_(mk.name ? mk)
 						.latency_(Server.default.latency)
 						.play; 
 					} 

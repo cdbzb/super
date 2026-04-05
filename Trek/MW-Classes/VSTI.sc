@@ -36,8 +36,10 @@ VSTI {
 				controller = VSTPluginController(syn);
 				vstis.put(id, this);
 				Server.default.sync;
+				this.preOpen;
 				controller.open(
-					plugin,
+					"/Library/Audio/Plug-Ins" +/+ vstFolder +/+ plugin,
+					multiThreading: true,
 					action:{
 						condition.signalOne;
 						action.(syn, controller);
@@ -255,19 +257,23 @@ var <>bus;
 	searchCond.signalAll;
 }
 preOpen { SV.search }
-*new { |path id|
+*new { |path id onReady|
 	id.notNil.if {
 		^VSTI.vstis[id]
 	} {
 		var outBus = Bus.audio(Server.default, 1);
 		var ret = super.new(
-			plugin, 
-			action:{|syn controller| 
-				path.notNil.if { 
-					controller.readProgram(path);
+			plugin,
+			action:{|syn controller|
+				path.notNil.if {
+					controller.readProgram(path, {|self success|
+						onReady.value(success);
+					});
+				} {
+					onReady.value(true);
 				};
 				syn.set(\out, outBus)
-			}, 
+			},
 			vstFolder:"VST3"
 		)//.init
 		;

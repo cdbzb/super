@@ -525,25 +525,106 @@ Song.words[(12..19)].do{|lyrics x|
 		}.play
 	});
 };
-// background vocals
-Song.words[(12..19)].do{|lyrics x|
-	var words = lyrics.split($ );
-	var bgLyrics = (words.size.min(4).collect{"r"} ++ words.drop(4)).join(" ");
-	P.synthVVST(\ninezero2, start:\verseTwo, take: "bg" ++ x,
-		lag: x*8*Song.quarter,
-		params:{|p b k| [
-		lyrics: bgLyrics,
-		midinote: 60.dup(words.size),
-		dur: "q e e q q q e eq".beats * Song.quarter,
-		languageOverride: \mandarin, phonesetOverride: \xsampa
-	]}, music:{|p b e|
-		{ e.bus
-			=> {|i| i / 4 * -3.dbamp}
-			=> {|i| CombN.ar(i, Song.quarter/2, Song.quarter, 5) / 4 + i}
-			=> Pan2.ar(_, 0)
-		}.play
-	});
-};
+// background vocals — V1B
+P.synthVVST(\ninezero2, start:\verseTwo, take: \bg0, lag: 0,
+	params:{|p b k| [
+	lyrics: "r r r r r 又 来 临",
+	midinote: [0,0,0,0,0,1, 1, 1].dm(\c),
+	dur: "q e e q q q e eq".beats * Song.quarter,
+	singers:2,
+	languageOverride: \mandarin, phonesetOverride: \xsampa
+]}, music:{|p b e|
+	{ e.bus => {|i| i / 4 * -3.dbamp * 7.dbamp}
+		=> {|i| CombN.ar(i, Song.quarter/2, Song.quarter, 5) / 4 + i}
+		=> Pan2.ar(_, 0);
+	}.play
+});
+P.synthVVST(\ninezero2, start:\verseTwo, take: \bg1, lag: 8*Song.quarter,
+	params:{|p b k| [
+	lyrics: "r r r r r 火 焚",
+	midinote: [0,0,0,0,0,1, -7, 1].dm(\c),
+	singers:2,
+	dur: "q e e q q q e eq".beats * Song.quarter,
+	languageOverride: \mandarin, phonesetOverride: \xsampa
+]}, music:{|p b e|
+	{ e.bus => {|i| i / 4 * -3.dbamp * 7.dbamp}
+		=> {|i| CombN.ar(i, Song.quarter/2, Song.quarter, 5) / 4 + i}
+		=> Pan2.ar(_, 0)
+	}.play
+});
+P.synthVVST(\ninezero2, start:\verseTwo, take: \bg2, lag: 16*Song.quarter,
+	params:{|p b k| [
+	lyrics: "r r r r 节 奏 如 鼓 点",
+	midinote: [60, 60, 60, 60, 60, 60, 60, 60, 60],
+	dur: "q e e q q q e eq".beats * Song.quarter,
+	languageOverride: \mandarin, phonesetOverride: \xsampa
+]}, music:{|p b e|
+	{ e.bus => {|i| i / 4 * -3.dbamp}
+		=> {|i| CombN.ar(i, Song.quarter/2, Song.quarter, 5) / 4 + i}
+		=> Pan2.ar(_, 0)
+	}.play
+});
+P.synthVVST(\ninezero2, start:\verseTwo, take: \bg3, lag: 24*Song.quarter,
+	params:{|p b k| [
+	lyrics: "r r r r 永 远 -",
+	midinote: [60, 60, 60, 60, 66, 60, 60],
+	dur: "q e e q q q e eq".beats * Song.quarter,
+	languageOverride: \mandarin, phonesetOverride: \xsampa
+]}, music:{|p b e|
+	{ e.bus => {|i| i / 4 * -3.dbamp}
+		=> {|i| CombN.ar(i, Song.quarter/2, Song.quarter, 5) / 4 + i}
+		=> Pan2.ar(_, 0)
+	}.play
+});
+// background vocals — V2B
+P.synthVVST(\ninezero2, start:\verseTwo, take: \bg4, lag: 32*Song.quarter,
+	params:{|p b k| [
+	lyrics: "r r r r 你 的 眼",
+	midinote: [60, 60, 60, 60, 60, 60, 60],
+	dur: "q e e q q q e eq".beats * Song.quarter,
+	languageOverride: \mandarin, phonesetOverride: \xsampa
+]}, music:{|p b e|
+	{ e.bus => {|i| i / 4 * -3.dbamp}
+		=> {|i| CombN.ar(i, Song.quarter/2, Song.quarter, 5) / 4 + i}
+		=> Pan2.ar(_, 0)
+	}.play
+});
+P.synthVVST(\ninezero2, start:\verseTwo, take: \bg5, lag: 40*Song.quarter,
+	params:{|p b k| [
+	lyrics: "r r r r 情 飞 翔",
+	midinote: [60, 60, 60, 60, 60, 60, 60],
+	dur: "q e e q q q e eq".beats * Song.quarter,
+	languageOverride: \mandarin, phonesetOverride: \xsampa
+]}, music:{|p b e|
+	{ e.bus => {|i| i / 4 * -3.dbamp}
+		=> {|i| CombN.ar(i, Song.quarter/2, Song.quarter, 5) / 4 + i}
+		=> Pan2.ar(_, 0)
+	}.play
+});
+P.synthVVST(\ninezero2, start:\verseTwo, take: \bg6, lag: 48*Song.quarter,
+	params:{|p b k| [
+	lyrics: "r r r r 永 不 减",
+	midinote: [60, 60, 60, 60, 60, 60, 60],
+	dur: "q e e q q q e eq".beats * Song.quarter,
+	languageOverride: \mandarin, phonesetOverride: \xsampa
+]}, music:{|p b e|
+	{ e.bus => {|i| i / 4 * -3.dbamp}
+		=> {|i| CombN.ar(i, Song.quarter/2, Song.quarter, 5) / 4 + i}
+		=> Pan2.ar(_, 0)
+	}.play
+});
+P.synthVVST(\ninezero2, start:\verseTwo, take: \bg7, lag: 56*Song.quarter,
+	params:{|p b k| [
+	lyrics: "r r r r 个 晚 上",
+	midinote: [60, 60, 60, 60, 60, 60, 60],
+	dur: "q e e q q q e eq".beats * Song.quarter,
+	languageOverride: \mandarin, phonesetOverride: \xsampa
+]}, music:{|p b e|
+	{ e.bus => {|i| i / 4 * -3.dbamp}
+		=> {|i| CombN.ar(i, Song.quarter/2, Song.quarter, 5) / 4 + i}
+		=> Pan2.ar(_, 0)
+	}.play
+});
 
 )
 

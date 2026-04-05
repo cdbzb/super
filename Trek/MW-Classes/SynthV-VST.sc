@@ -100,7 +100,7 @@
 	}
 
 	writeFxp { |path| //pass in path without .svp or .fxp
-		var oldPath, newPath, templateFile, fxpData, startIndex;
+		var oldPath, newPath, templateFile, fxpData, startIndex, sizeDiff, newFxpData;
 		//this is the path we will be embedding in the fxp file
 		newPath = path ++ ".svp";
 		// select template and embedded path based on appVersion
@@ -110,7 +110,7 @@
 			templateFile = "123456_123456.fxp";
 		}
 		{ appVersion == 2 } {
-			oldPath = "/private/tmp/250717_080003.svp";
+			oldPath = "/private/tmp/svvst_665F5C6F.svp";
 			templateFile = "654321_654321.fxp";
 		};
 		fxpData = {
@@ -128,17 +128,23 @@
 			};
 		};
 		if(startIndex.notNil) {
-			newPath.ascii.do { |byte, i|
-				fxpData[startIndex + i] = byte;
+			sizeDiff = newPath.size - oldPath.size;
+			newFxpData = Int8Array.newClear(fxpData.size + sizeDiff);
+			// copy before path
+			startIndex.do{|i| newFxpData[i] = fxpData[i] };
+			// write new path
+			newPath.ascii.do{|byte, i| newFxpData[startIndex + i] = byte };
+			// copy after old path
+			(fxpData.size - startIndex - oldPath.size).do{|i|
+				newFxpData[startIndex + newPath.size + i] = fxpData[startIndex + oldPath.size + i]
 			};
-			// here we write it back
-
+			// update JSON length byte at offset 0x28
+			newFxpData[0x28] = fxpData[0x28] + sizeDiff;
 			{
 				var file;
-				// "WRITING".postln;
                 path ++".fxp" => _.debug("FXP");
-				file = File( path ++ ".fxp" , "wb"); // "wb" for write binary
-				file.write(fxpData);
+				file = File( path ++ ".fxp" , "wb");
+				file.write(newFxpData);
 				file.close;
 			}.value;
 		}

@@ -1,9 +1,10 @@
 SynthVVST {
 	classvar <>cache;
-	var <>synthV, <>params, <>voice, <>version, <cacheKey, <>voices, <>isMulti, <>cleanup;
+	var <>synthV, <>params, <>voice, <>version, <cacheKey, <>voices, <>isMulti, <>cleanup, <ready;
 
 	*initClass {
 		cache = IdentityDictionary.new;
+		CmdPeriod.add(this);
 	}
 
 	*new { |voice params version=2|
@@ -57,14 +58,18 @@ SynthVVST {
 	}
 
 	build {
+		var readyCount = 0, targetCount;
 		cache[cacheKey].notNil.if{
 			synthV = cache[cacheKey].synthV;
+			ready = cache[cacheKey].ready;
 			^this
 		};
+		ready = Condition(false);
 		isMulti.if{
-			synthV = voices.collect{|voiceParams|
+			targetCount = voices.size;
+			synthV = voices.collect{|voiceParams, vi|
 				var path, sv, buildParams;
-				path = "/private/tmp/" ++ UniqueID.next.asString.padLeft(13, "0");
+				path = "/private/tmp/" ++ cacheKey.asHexString ++ "_" ++ vi;
 				sv = SynthV.newVST(voice, \default, nil, nil, version);
 				buildParams = voiceParams.copy;
 				buildParams.lyrics = buildParams.lyrics.replace($, , "").split(Char.space).reject{|i| i.size==0};
@@ -74,12 +79,16 @@ SynthVVST {
 				sv.set(buildParams);
 				sv.writeProjectVST(path ++ ".svp");
 				sv.writeFxp(path);
-				sv.vst = SV(path ++ ".fxp");
+				sv.vst = SV(path ++ ".fxp", onReady: {
+					readyCount = readyCount + 1;
+					(readyCount >= targetCount).if { ready.test_(true).signal };
+				});
 				sv
 			};
 		}{
 			var path, buildParams;
-			path = "/private/tmp/" ++ UniqueID.next.asString.padLeft(13, "0");
+			targetCount = 1;
+			path = "/private/tmp/" ++ cacheKey.asHexString;
 			synthV = SynthV.newVST(voice, \default, nil, nil, version);
 			buildParams = params.copy;
 			buildParams.lyrics = buildParams.lyrics.replace($, , "").split(Char.space).reject{|i| i.size==0};
@@ -89,19 +98,14 @@ SynthVVST {
 			synthV.set(buildParams);
 			synthV.writeProjectVST(path ++ ".svp");
 			synthV.writeFxp(path);
-			synthV.vst = SV(path ++ ".fxp");
+			synthV.vst = SV(path ++ ".fxp", onReady: {
+				ready.test_(true).signal;
+			});
 		};
 		cache[cacheKey] = this;
 		fork{
-			var renderEstimate;
-			isMulti.if{
-				synthV.do{|sv| sv.vst.condition.wait }
-			}{
-				synthV.vst.condition.wait
-			};
-			renderEstimate = params.dur.sum / 4;
-			renderEstimate.wait;
-			"SynthVVST: % ready (~%s)".format(voice, params.dur.sum.round(0.1)).postln;
+			ready.wait;
+			"SynthVVST: % ready".format(voice).postln;
 		};
 		^this
 	}
@@ -113,6 +117,7 @@ SynthVVST {
 		cleanup.notNil.if{ cleanup.stop };
 		isMulti.if{
 			cleanup = fork{
+				ready.wait;
 				syn = { synthV.collect{|sv| In.ar(sv.vst.bus) }.sum => func }.play;
 				synthV.do{|sv|
 					sv.vst.controller.setTransportPos(0);
@@ -124,6 +129,7 @@ SynthVVST {
 			}
 		}{
 			cleanup = fork{
+				ready.wait;
 				syn = { In.ar(synthV.vst.bus) => func }.play;
 				synthV.vst.controller.setTransportPos(0);
 				synthV.vst.controller.setPlaying(true);
@@ -139,6 +145,12 @@ SynthVVST {
 			^synthV.collect{|sv| sv.vst.bus }
 		}{
 			^synthV.vst.bus
+		}
+	}
+
+	*doOnCmdPeriod {
+		cache.do{|item|
+			item.ready.test_(false);
 		}
 	}
 

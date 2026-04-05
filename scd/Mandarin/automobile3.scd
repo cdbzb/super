@@ -7,7 +7,7 @@ Song.clock.tempo_(Song.quarter.reciprocal);
 
 	// resources
 	//bass
-Song.bassTrackFunc = {Effect({|i| CrossoverDistortion.ar(i) => LeakDC.ar(_) => Limiter.ar(_, 0.05) /2 + i })};
+Song.bassTrackFunc = {Effect({|i| CrossoverDistortion.ar(i) => LeakDC.ar(_) => Limiter.ar(_, 0.05) /2 + i * (Song.bassTrackGain ? 1) => Pan2.ar(_, (Song.bassPan ? -1)) })};
 
 // Song.bassTrack = {Song.bassTrackFunc.()};
 // Song.bassTrack.free;
@@ -491,19 +491,58 @@ P(\connector, music: {
 			=> Out.ar(out,_);
 			DetectSilence.ar(sig,doneAction:2);
 		}).add;
-["verseTwo", "r"].addLine;
-Song.verseVox.lead[(8..15)].do{|i x|
-	[\lead, \dbl].do{ |take|
-		P(\vox++"_"++x++"_"++take,lag:x*8*Song.quarter, music:{
-			{ 
-				Song.verseVox[take][x + 8].playbuf
-				/ 4  * -3.dbamp 
-				=> {|i| CombN.ar(i, Song.quarter/2, Song.quarter, 5) / 4 + i}
-				=> Pan2.ar(_,0) 
-			}.play
-		} 
-	)
-}
+["verseTwo", "r",[64 * Song.quarter]].addLine;
+// Song.verseVox.lead[(8..15)].do{|i x|
+// 	[\lead, \dbl].do{ |take|
+// 		P(\vox++"_"++x++"_"++take,lag:x*8*Song.quarter, music:{
+// 			{
+// 				Song.verseVox[take][x + 8].playbuf
+// 				/ 4  * -3.dbamp
+// 				=> {|i| CombN.ar(i, Song.quarter/2, Song.quarter, 5) / 4 + i}
+// 				=> Pan2.ar(_,0)
+// 			}.play
+// 		}
+// 	)
+// }
+// };
+Song.words[(12..19)].do{|lyrics x|
+	P.synthVVST(\ninezero2, start:\verseTwo, take: x,
+		lag: x*8*Song.quarter ,
+		params:{|p b k| [
+		lyrics: lyrics,
+		midinote: Song.tunes[[0,2,0,1].wrapAt(x)].collect({|i| i.cpsmidi.asInteger}),
+		vocalMode: \Overdrive,
+		singers:2,
+		dur: "q e e q q q e eq".beats * Song.quarter,
+		languageOverride: \mandarin, phonesetOverride: \xsampa
+	]}, music:{|p b e|
+		{ e.bus
+			=> {|i| i/ 4 * -3.dbamp}
+			* 7.dbamp
+
+			=> {|i| CombN.ar(i, Song.quarter/2, Song.quarter, 5) / 4 + i}
+			=> Pan2.ar(_, 0)
+		}.play
+	});
+};
+// background vocals
+Song.words[(12..19)].do{|lyrics x|
+	var words = lyrics.split($ );
+	var bgLyrics = (words.size.min(4).collect{"r"} ++ words.drop(4)).join(" ");
+	P.synthVVST(\ninezero2, start:\verseTwo, take: "bg" ++ x,
+		lag: x*8*Song.quarter,
+		params:{|p b k| [
+		lyrics: bgLyrics,
+		midinote: 60.dup(words.size),
+		dur: "q e e q q q e eq".beats * Song.quarter,
+		languageOverride: \mandarin, phonesetOverride: \xsampa
+	]}, music:{|p b e|
+		{ e.bus
+			=> {|i| i / 4 * -3.dbamp}
+			=> {|i| CombN.ar(i, Song.quarter/2, Song.quarter, 5) / 4 + i}
+			=> Pan2.ar(_, 0)
+		}.play
+	});
 };
 
 )

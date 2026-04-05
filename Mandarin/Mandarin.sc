@@ -1,9 +1,11 @@
 Mandarin {
     classvar path = "/Users/michael/tank/super/scd/Mandarin";
-    classvar event;
+    classvar event, <>env;
     *initClass {
+        Class.initClassTree(Event);
+        env = ();
         event = (
-            path: "/Users/michael/tank/super/scd/Mandarin", 
+            path: "/Users/michael/tank/super/scd/Mandarin",
             load: {|self file|  self.path +/+ self[file] => _.load },
             edit: {|self name | self.path +/+ (name !? self[name] ? self[Song.current]) => Nvim.e(_)},
             Wind: "windArrange.scd",
@@ -16,7 +18,20 @@ Mandarin {
             mandarin1: "new mandarin song.scd",
             'c#': "C-sharp-song.scd",
             songs: {|self| self.keys.reject{|i| [\path].includes(i) }.do {|key| self[key].isKindOf(String).if{key.postln} }}
-        )
+        );
+        Event.addEventType(\add, {
+            var ev = (type: \seg);
+            currentEnvironment.keys.reject({|i| [\dur, \type].includes(i) }).do {|i|
+                ev.put(i, currentEnvironment[i])
+            };
+            Mandarin.env[\current].add(ev);
+            Mandarin.env[\preview].notNil.if { ev.play }
+        });
+    }
+    *setup {
+        (topEnvironment != env).if { env.push };
+        env[\current] = List[];
+        env[\preview] = nil;
     }
     *doesNotUnderstand { |selector ...args|
         ^Message(event, selector).(*args)

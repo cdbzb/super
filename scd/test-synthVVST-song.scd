@@ -70,7 +70,7 @@ P(\bassline, music: { |p b e|
 		amp:0.5,
 	].ppm
 });
-P.synthVVST(\kevin2, 1,
+P.synthVVST(\kevin2, 1,tail:5,
 	params: {|song durs key| [
 		lyrics:Song.lyric2,
 		midinote: [1, 3, 5, 4, 5, 4, 3, 2].dm(\c),

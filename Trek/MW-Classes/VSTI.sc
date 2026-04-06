@@ -261,7 +261,7 @@ preOpen { SV.search }
 	id.notNil.if {
 		^VSTI.vstis[id]
 	} {
-		var outBus = Bus.audio(Server.default, 1);
+		var outBus = Bus.audio(Server.default, 2);
 		var ret = super.new(
 			plugin,
 			action:{|syn controller|

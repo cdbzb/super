@@ -602,7 +602,7 @@ P.synthVVST(\ninezero2, start:\verseTwo, take: \bg0, lag: 0,
 P.synthVVST(\ninezero2, start:\verseTwo, take: \bg1, lag: 8*Song.quarter,
 	params:{|p b k| [
 	lyrics: "r r r r r 火 焚",
-	midinote: [0,0,0,0,0,1, -7, 1].dm(\c),
+	midinote: [0,0,0,0,0,4, 3, 1].dm(\c),
 	singers:2, spacing:3,
 	dur: "q e e q q q e eq".beats * Song.quarter,
 	languageOverride: \mandarin, phonesetOverride: \xsampa
@@ -621,7 +621,8 @@ P.synthVVST(\ninezero2, start:\verseTwo, take: \bg2, lag: 16*Song.quarter,
 });
 P.synthVVST(\ninezero2, start:\verseTwo, take: \bg3, lag: 24*Song.quarter,
 	params:{|p b k| [
-	lyrics: "r r r r 永 远 -",
+	lyrics: "r r r r  到 永 远 -",
+
 	midinote: [60, 60, 60, 60, 66, 60, 60],
 	singers:2, spacing:3,
 	dur: "q e e q q q e eq".beats * Song.quarter,
@@ -643,7 +644,7 @@ P.synthVVST(\ninezero2, start:\verseTwo, take: \bg4, lag: 32*Song.quarter,
 P.synthVVST(\ninezero2, start:\verseTwo, take: \bg5, lag: 40*Song.quarter,
 	params:{|p b k| [
 	lyrics: "r r r r 情 飞 翔",
-	midinote: [60, 60, 60, 60, 60, 60, 60],
+	midinote: [0, 0, 0, 0, 4, 4, 3, 1].dm(\c),
 	singers:2, spacing:3,
 	dur: "q e e q q q e eq".beats * Song.quarter,
 	languageOverride: \mandarin, phonesetOverride: \xsampa
@@ -670,7 +671,14 @@ P.synthVVST(\ninezero2, start:\verseTwo, take: \bg7, lag: 56*Song.quarter,
 ]}, music:{|p b e|
 	p.bgVoxFunc.(e)
 });
-
+P(\guitFill,lag:Song.quarter * 31, music: { |p b e|
+	[
+		freq: "4 4 3 1".df([ \c, \G ]).q,
+		dur: "e e e q".beats.q,
+		amp:1,
+		out: Effect.bus({|i| CrossoverDistortion.ar(i) })
+	].p.play(clock:Song.clock)
+});
 )
 
 ///////////repeat

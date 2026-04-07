@@ -86,6 +86,13 @@ SynthVVST {
 		frozenBuffers = nil;
 	}
 
+	calcCacheKey {
+		// Array.hash and Event.hash are identity-based in SC; only String.hash is content-based
+		^[voice, params.asSortedArray, version,
+			voices.notNil.if{ voices.collect{|v| v.asSortedArray} }
+		].asCompileString.hash
+	}
+
 	*new { |voice params version=2|
 		^super.new.init(voice, params, version)
 	}
@@ -110,7 +117,7 @@ SynthVVST {
 			voices = nil;
 			isMulti = false;
 		};
-		cacheKey = [voice, params, version, voices].hash;
+		cacheKey = this.calcCacheKey;
 		^this
 	}
 
@@ -132,7 +139,7 @@ SynthVVST {
 				phonesetOverride: morphed.phonesetOverride
 			));
 		};
-		cacheKey = [voice, params, version, voices].hash;
+		cacheKey = this.calcCacheKey;
 		^this
 	}
 

@@ -2,15 +2,10 @@
 APP_NAME="Synthesizer V Studio 2 Pro"
 # Open the application
 open -a "$APP_NAME" $1
-# Wait for the application to launch
-sleep 5
+sleep 3
 
 osascript <<EOF
--- Open the application
 tell application "Synthesizer V Studio 2 Pro" to activate
--- Wait for the application to fully load and become frontmost
-delay 3
--- Click the "Bounce to Files" button
 tell application "System Events"
 	tell process "Synthesizer V Studio 2 Pro"
 		-- Wait until a window is visible
@@ -18,21 +13,17 @@ tell application "System Events"
 			delay 0.5
 		end repeat
 
-		-- Additional small delay to ensure window is fully loaded
-		delay 1
-
 		-- Ensure Render Panel is visible
 		try
 			if not (exists button "Bounce to Files" of front window) then
 				click menu item "Render Panel" of menu "View" of menu bar 1
-				delay 1
+				delay 0.5
 			end if
 		end try
 
-		-- Click the button
+		-- Click Bounce immediately; app waits until loaded to render
 		try
 			click button "Bounce to Files" of front window
-			-- Select "Save" from the "File" menu
 			delay 0.5
 
 			click menu item "Save" of menu "File" of menu bar 1

@@ -12,13 +12,12 @@ fi
 
 # Open the first file to launch the app
 open -a "$APP_NAME" "$1"
-sleep 5
+sleep 3
 
 osascript - "$@" <<'APPLESCRIPT'
 on run argv
     set appName to "Synthesizer V Studio 2 Pro"
     tell application appName to activate
-    delay 3
 
     tell application "System Events"
         tell process appName
@@ -26,13 +25,12 @@ on run argv
             repeat until (count of windows) > 0
                 delay 0.5
             end repeat
-            delay 1
 
             -- Ensure Render Panel is visible
             try
                 if not (exists button "Bounce to Files" of front window) then
                     click menu item "Render Panel" of menu "View" of menu bar 1
-                    delay 1
+                    delay 0.5
                 end if
             end try
         end tell
@@ -42,42 +40,58 @@ on run argv
     repeat with i from 1 to (count of argv)
         set svpPath to item i of argv
 
+        -- Derive expected wav path from SVP path:
+        -- /private/tmp/HASH.svp -> frozenDir/HASH/synthV_MixDown.wav
+        set svpName to do shell script "basename " & quoted form of svpPath & " .svp"
+        set frozenDir to do shell script "dirname $(dirname " & quoted form of svpPath & ")" & "/tank/super/Trek/SynthV/frozen"
+        -- Actually, read destination from the SVP JSON
+        set wavPath to do shell script "python3 -c \"import json,sys; d=json.load(open(sys.argv[1])); print(d['renderConfig']['destination'])\" " & quoted form of svpPath & " 2>/dev/null || echo ''"
+        if wavPath is not "" then
+            set wavPath to wavPath & "/synthV_MixDown.wav"
+        end if
+
         -- For files after the first, open via File > Open
         if i > 1 then
             tell application appName
                 activate
                 open POSIX file svpPath
             end tell
-            delay 3
         end if
 
-        -- Click Bounce to Files
+        -- Click Bounce to Files immediately
         tell application "System Events"
             tell process appName
-                delay 1
-
-                -- Ensure Render Panel is still visible
+                -- Ensure Render Panel is visible
                 try
                     if not (exists button "Bounce to Files" of front window) then
                         click menu item "Render Panel" of menu "View" of menu bar 1
-                        delay 1
+                        delay 0.5
                     end if
                 end try
 
                 try
                     click button "Bounce to Files" of front window
-                    delay 1
                 on error errMsg
                     log "Error bouncing " & svpPath & ": " & errMsg
                 end try
             end tell
         end tell
 
-        -- Wait for render to complete by checking if the wav file appeared
-        -- The destination is embedded in the SVP; poll for synthV_MixDown.wav
-        -- Extract destination from the SVP path pattern: /private/tmp/HASH.svp -> frozen/HASH/
-        -- We can't easily extract it here, so just wait a reasonable time
-        delay 5
+        -- Poll for wav file to appear
+        if wavPath is not "" then
+            set maxWait to 120
+            set waited to 0
+            repeat while waited < maxWait
+                set fileExists to do shell script "test -f " & quoted form of wavPath & " && echo yes || echo no"
+                if fileExists is "yes" then exit repeat
+                delay 1
+                set waited to waited + 1
+            end repeat
+            -- Small extra delay to ensure file is fully written
+            delay 1
+        else
+            delay 5
+        end if
     end repeat
 
     -- Save and quit after all files are done

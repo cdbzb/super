@@ -75,7 +75,7 @@ Seg {
 					~dur = 
 					firstSection[\dur] ? 
 						if (firstSection[\section].notNil) {
-							Song.secDur[Song.section(firstSection[\section])] + ( firstSection[\stretch]?0 ).debug("STRETCH")
+							Song.secDur[Song.section(firstSection[\section])] + ( firstSection[\extend]?0 ).debug("EXTEND")
 						} {
 							1 // Default duration
 						// }

@@ -27,12 +27,20 @@ SynthVVST {
 
 	checkDirty { ^this.isFrozen.not }
 
-	render {
-		var script = SynthV.directory +/+ "SCRIPTS/renderSynthV-recompute_2.sh";
-		this.isFrozen.if{
-			"SynthVVST: % already frozen".format(voice).postln;
-			^this
-		};
+	svpPaths {
+		// Returns array of SVP paths for this instance
+		isMulti.if{
+			^voices.size.collect{|vi|
+				"/private/tmp/" ++ cacheKey.asHexString ++ "_" ++ vi ++ ".svp"
+			}
+		}{
+			^["/private/tmp/" ++ cacheKey.asHexString ++ ".svp"]
+		}
+	}
+
+	prepareRender {
+		// Write SVP files with frozen destination, return SVP paths
+		this.isFrozen.if{ ^nil };
 		isMulti.if{
 			synthV.do{|sv, vi|
 				var dest = this.class.frozenDir +/+ cacheKey.asHexString ++ "_" ++ vi;
@@ -42,7 +50,6 @@ SynthVVST {
 				sv.project.renderConfig[\destination] = dest;
 				sv.project.renderConfig[\numChannels] = 2;
 				JSON.stringify(sv.project).write(svpPath, overwrite: true, ask: false);
-				(script + svpPath).unixCmd;
 			}
 		}{
 			var dest = this.class.frozenDir +/+ cacheKey.asHexString;
@@ -52,6 +59,17 @@ SynthVVST {
 			synthV.project.renderConfig[\destination] = dest;
 			synthV.project.renderConfig[\numChannels] = 2;
 			JSON.stringify(synthV.project).write(svpPath, overwrite: true, ask: false);
+		};
+		^this.svpPaths
+	}
+
+	render {
+		var script = SynthV.directory +/+ "SCRIPTS/renderSynthV-recompute_2.sh";
+		this.isFrozen.if{
+			"SynthVVST: % already frozen".format(voice).postln;
+			^this
+		};
+		this.prepareRender.do{|svpPath|
 			(script + svpPath).unixCmd;
 		};
 		^this
@@ -264,6 +282,21 @@ SynthVVST {
 
 	*clearCache {
 		this.freeAll;
+	}
+
+	*renderAll {
+		var script = SynthV.directory +/+ "SCRIPTS/renderSynthV-batch.sh";
+		var paths = List.new;
+		cache.do{|item|
+			var prepared = item.prepareRender;
+			prepared.notNil.if{ paths.addAll(prepared) };
+		};
+		(paths.size > 0).if{
+			(script + paths.collect{|p| p.shellQuote}.join(" ")).unixCmd;
+			"SynthVVST.renderAll: % files queued".format(paths.size).postln;
+		}{
+			"SynthVVST.renderAll: all parts already frozen".postln;
+		}
 	}
 }
 + P {

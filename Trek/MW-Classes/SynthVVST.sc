@@ -213,9 +213,9 @@ SynthVVST {
 		}, song,
 			resources: resources ++ (
 				bus: sv.isMulti.if{
-					{ sv.synthV.collect{|s| In.ar(s.vst.bus) } }
+					{ sv.synthV.collect{|svv| In.ar(svv.vst.bus, 2) } }
 				}{
-					{ In.ar(sv.synthV.vst.bus) }
+					{ In.ar(sv.synthV.vst.bus, 2) }
 				},
 				sv: sv
 			)

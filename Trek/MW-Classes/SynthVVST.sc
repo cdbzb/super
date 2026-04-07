@@ -1,10 +1,71 @@
 SynthVVST {
 	classvar <>cache;
-	var <>synthV, <>params, <>voice, <>version, <cacheKey, <>voices, <>isMulti, <>cleanup, <ready;
+	var <>synthV, <>params, <>voice, <>version, <cacheKey, <>voices, <>isMulti, <>cleanup, <ready, <>frozenBuffers;
 
 	*initClass {
 		cache = IdentityDictionary.new;
 		CmdPeriod.add(this);
+	}
+
+	*frozenDir { ^SynthV.directory +/+ "frozen" }
+
+	frozenPath { |vi|
+		vi.notNil.if{
+			^this.class.frozenDir +/+ cacheKey.asHexString ++ "_" ++ vi +/+ "synthV_MixDown.wav"
+		}{
+			^this.class.frozenDir +/+ cacheKey.asHexString +/+ "synthV_MixDown.wav"
+		}
+	}
+
+	isFrozen {
+		isMulti.if{
+			^voices.size.collect{|vi| File.exists(this.frozenPath(vi)) }.every{|i| i }
+		}{
+			^File.exists(this.frozenPath)
+		}
+	}
+
+	checkDirty { ^this.isFrozen.not }
+
+	render {
+		var script = SynthV.directory +/+ "SCRIPTS/renderSynthV-recompute_2.sh";
+		this.isFrozen.if{
+			"SynthVVST: % already frozen".format(voice).postln;
+			^this
+		};
+		isMulti.if{
+			synthV.do{|sv, vi|
+				var dest = this.class.frozenDir +/+ cacheKey.asHexString ++ "_" ++ vi;
+				var svpPath = "/private/tmp/" ++ cacheKey.asHexString ++ "_" ++ vi ++ ".svp";
+				File.mkdir(dest);
+				sv.writeProjectVST(svpPath);
+				sv.project.renderConfig[\destination] = dest;
+				sv.project.renderConfig[\numChannels] = 2;
+				JSON.stringify(sv.project).write(svpPath, overwrite: true, ask: false);
+				(script + svpPath).unixCmd;
+			}
+		}{
+			var dest = this.class.frozenDir +/+ cacheKey.asHexString;
+			var svpPath = "/private/tmp/" ++ cacheKey.asHexString ++ ".svp";
+			File.mkdir(dest);
+			synthV.writeProjectVST(svpPath);
+			synthV.project.renderConfig[\destination] = dest;
+			synthV.project.renderConfig[\numChannels] = 2;
+			JSON.stringify(synthV.project).write(svpPath, overwrite: true, ask: false);
+			(script + svpPath).unixCmd;
+		};
+		^this
+	}
+
+	unfreeze {
+		isMulti.if{
+			voices.size.do{|vi|
+				("rm -rf" + (this.class.frozenDir +/+ cacheKey.asHexString ++ "_" ++ vi).shellQuote).unixCmd;
+			}
+		}{
+			("rm -rf" + (this.class.frozenDir +/+ cacheKey.asHexString).shellQuote).unixCmd;
+		};
+		frozenBuffers = nil;
 	}
 
 	*new { |voice params version=2|
@@ -62,9 +123,42 @@ SynthVVST {
 		cache[cacheKey].notNil.if{
 			synthV = cache[cacheKey].synthV;
 			ready = cache[cacheKey].ready;
+			frozenBuffers = cache[cacheKey].frozenBuffers;
+			(this.isFrozen and: { frozenBuffers.isNil }).if{
+				isMulti.if{
+					frozenBuffers = voices.size.collect{|vi|
+						Buffer.read(Server.default, this.frozenPath(vi))
+					};
+				}{
+					frozenBuffers = Buffer.read(Server.default, this.frozenPath);
+				};
+				ready = Condition(false);
+				cache[cacheKey] = this;
+				fork{
+					Server.default.sync;
+					ready.test_(true).signal;
+					"SynthVVST: % ready (frozen)".format(voice).postln;
+				};
+			};
 			^this
 		};
 		ready = Condition(false);
+		this.isFrozen.if{
+			isMulti.if{
+				frozenBuffers = voices.size.collect{|vi|
+					Buffer.read(Server.default, this.frozenPath(vi))
+				};
+			}{
+				frozenBuffers = Buffer.read(Server.default, this.frozenPath);
+			};
+			cache[cacheKey] = this;
+			fork{
+				Server.default.sync;
+				ready.test_(true).signal;
+				"SynthVVST: % ready (frozen)".format(voice).postln;
+			};
+			^this
+		};
 		isMulti.if{
 			targetCount = voices.size;
 			synthV = voices.collect{|voiceParams, vi|
@@ -187,37 +281,53 @@ SynthVVST {
 		filters.isKindOf(Function).if{ filters = [filters] };
 		filters.do{|f| f.(sv) };
 		sv = sv.build;
+		sv.isFrozen.not.if{
+			"SynthVVST: % not frozen.\nSong.%.synthV.render".format(key, key).postln;
+		};
 		^P(key, start, syl, lag, {|p b e|
 			var syn, dur;
-			sv.cleanup.notNil.if{ sv.cleanup.stop };
-			sv.isMulti.if{
-				sv.synthV.do{|s|
-					s.vst.controller.setTransportPos(0);
-					s.vst.controller.setPlaying(true);
-				}
+			sv.isFrozen.if{
+				syn = music.(p, b, e);
 			}{
-				sv.synthV.vst.controller.setTransportPos(0);
-				sv.synthV.vst.controller.setPlaying(true);
-			};
-			syn = music.(p, b, e);
-			dur = sv.params.dur.sum + tail;
-			sv.cleanup = fork{
-				dur.wait;
+				sv.cleanup.notNil.if{ sv.cleanup.stop };
 				sv.isMulti.if{
-					sv.synthV.do{|s| s.vst.controller.setPlaying(false) }
+					sv.synthV.do{|svv|
+						svv.vst.controller.setTransportPos(0);
+						svv.vst.controller.setPlaying(true);
+					}
 				}{
-					sv.synthV.vst.controller.setPlaying(false)
+					sv.synthV.vst.controller.setTransportPos(0);
+					sv.synthV.vst.controller.setPlaying(true);
 				};
-				syn.free;
+				syn = music.(p, b, e);
+				dur = sv.params.dur.sum + tail;
+				sv.cleanup = fork{
+					dur.wait;
+					sv.isMulti.if{
+						sv.synthV.do{|svv| svv.vst.controller.setPlaying(false) }
+					}{
+						sv.synthV.vst.controller.setPlaying(false)
+					};
+					syn.free;
+				}
 			}
 		}, song,
 			resources: resources ++ (
-				bus: sv.isMulti.if{
-					{ sv.synthV.collect{|svv| In.ar(svv.vst.bus, 2) } }
+				bus: sv.isFrozen.if{
+					sv.isMulti.if{
+						{ sv.frozenBuffers.collect{|buf| PlayBuf.ar(2, buf, doneAction: 2) } }
+					}{
+						{ PlayBuf.ar(2, sv.frozenBuffers, doneAction: 2) }
+					}
 				}{
-					{ In.ar(sv.synthV.vst.bus, 2) }
+					sv.isMulti.if{
+						{ sv.synthV.collect{|svv| In.ar(svv.vst.bus, 2) } }
+					}{
+						{ In.ar(sv.synthV.vst.bus, 2) }
+					}
 				},
-				sv: sv
+				sv: sv,
+				synthV: sv
 			)
 		)
 	}

@@ -17,10 +17,18 @@ tell application "System Events"
 		repeat until (count of windows) > 0
 			delay 0.5
 		end repeat
-		
+
 		-- Additional small delay to ensure window is fully loaded
 		delay 1
-		
+
+		-- Ensure Render Panel is visible
+		try
+			if not (exists button "Bounce to Files" of front window) then
+				click menu item "Render Panel" of menu "View" of menu bar 1
+				delay 1
+			end if
+		end try
+
 		-- Click the button
 		try
 			click button "Bounce to Files" of front window
@@ -30,7 +38,7 @@ tell application "System Events"
 			click menu item "Save" of menu "File" of menu bar 1
 
 			delay 0.5 -- Wait a moment for save to complete
-			
+
 
 			-- Select "Quit Synthesizer V Studio 2 Pro" from app menu
 			click menu item "Quit Synthesizer V Studio 2 Pro" of menu "Synthesizer V Studio 2 Pro" of menu bar 1

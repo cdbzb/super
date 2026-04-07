@@ -25,11 +25,22 @@ Song.bassLines = [
 	].df(\c, 3, \minor).flat.q,
 	// variant [4]
 	[
-		1!8, -7!8,-6!8, -3.5!7, -7,
+		1!8, -7!8,- 6!8, -3.5!7, -7,
 		-4!8, -2!4, -4!4, -5!8,
 		-4!4, -5!4, -6.5!8,
 		-2!4, -4!4, -5!8
-	].df(\c, 3, \minor).flat.q
+	].df(\c, 3, \minor).flat.q,
+	//bridgeConnector only
+	[
+		// 1!8, -7!8,- 6!8, -3.5!7, -7,
+		// -4!8, -2!4, -4!4, -5!8,
+		// -4!4, -5!4, -6.5!8,
+		-4,-3,-2,-1,-2,-1,-17,-16.5, -16.5!8,
+		// -4, -3, -2, -1, -5, -4, -3, -2, -16.5!8,
+		// -4, -3, -2, -1, -5, -4, -17, -15, -16.5!8,
+		// [11, 6.5, 5.5, 5, 5.5, 5, 4, 3, 6.5!7] * (-1),
+		-2!4, -4!4, -5!8
+	].df(\c, 4, \minor).flat.q,
 
 ].collect { |i|
 	{
@@ -406,7 +417,7 @@ P(\guitar,lag: 28*Song.quarter, music: { |p b e|
                     => LeakDC.ar(_)
                 }.play;
 });
-P(\bass, music: { {|t c| [4].do{|i x| Song.bassLines[i].sched(x * 16 + t, c) } }.(0, Song.clock) });
+P(\bass, music: { {|t c| Song.bassLines[4].sched(t, c) }.(0, Song.clock) });
 P(\traps, music: {{|t c| [2].do{|i| Song.traps[1].sched(0 + t, c )}}.(0, Song.clock)};
 );
 P( \transitionLead, music: {
@@ -429,6 +440,49 @@ P(\vox, music: { {|t c|
 			}
 		};
 	}.(0, Song.clock) 
+});
+["bridgeConnector", "r", [20 * Song.quarter]].addLine;
+P(\guitar, music: { |p b e|
+                {
+                    var minfreq= [4, 5, 6, 2, 4, 5].df(\c,4).dq.demand([2, 2, 4, 2, 2, 4]*Song.quarter) * [3/2,  1/2, 1] ;
+                    0.2
+                    * Env([0, 1, 1, 0], [0.005, 16*Song.quarter, 3]).kr(2,gate:1)
+					* (TDuty.ar([Song.quarter/2].dq(16*2), reset:0.0, level:1.0, doneAction:0, gapFirst:0) => Decay.ar(_, 0.5) => _.linlin(0,1,0.5,1))
+                    * LorenzTrig.ar(
+                        minfreq:{ minfreq }.dup(5),
+                        maxfreq: minfreq + 5,
+                        s:{9.0.rrand(10.9)}.dup(5),
+                        r:28,
+                        b:2.6666667.rrand(1) / 5,
+                        h:0.02,
+                        x0:0.090879182417163,
+                        y0:2.97077458055.rand,
+                        z0:24.282041054363.rand
+                    )
+                    => Mix.ar(_)
+                    => CrossoverDistortion.ar(_)
+                    => LPF.ar(_,4000)=> Mix.ar(_)
+                    => LeakDC.ar(_)
+                }.play;
+});
+P(\traps, music: {{|t c| Song.traps[1].sched(0 + t, c)}.(0, Song.clock)});
+P(\bass, music: {   Song.bassLines[5].()});
+P(\vox, music: { {|t c|
+		Song.transitionVox.lead[[2,3]].do{|i x|
+			[\lead, \dbl]
+			.do{ |take|
+				{
+						{
+							Song.transitionVox[take][[2,3][x]].playbuf
+							/ 4  * -3.dbamp
+							=> {|i| CombN.ar(i, Song.quarter/2, Song.quarter, 5) / 4 + i}
+							=> Pan2.ar(_,0)
+						}.play
+				}
+				.sched([0.5, 8.5][x] + t, c);
+			}
+		};
+	}.(0, Song.clock)
 });
 ["shortBridge", "r", [28*Song.quarter]].addLine;
 P(\bass, music: { {|t c| [2].do{|i x| Song.bassLines[i].sched(x * 16 + t, c) } }.(0, Song.clock) });
@@ -521,109 +575,100 @@ Song.words[(12..19)].do{|lyrics x|
 			* 7.dbamp
 
 			=> {|i| CombN.ar(i, Song.quarter/2, Song.quarter, 5) / 4 + i}
-			=> Pan2.ar(_, 0)
+			// => Pan2.ar(_, 0)
 		}.play
 	});
 };
 // background vocals — V1B
+// s.meter;
+Song.bgVoxFunc = {|e| {
+	e.bus.()
+	// [0]
+	=> {|i| i / 4 * -3.dbamp * 1.dbamp}
+	// => {|i| CombN.ar(i, Song.quarter/2, Song.quarter, 5) / 4 + i}
+	// => Pan2.ar(_, 0);
+}.play };
 P.synthVVST(\ninezero2, start:\verseTwo, take: \bg0, lag: 0,
 	params:{|p b k| [
 	lyrics: "r r r r r 又 来 临",
 	midinote: [0,0,0,0,0,1, 1, 1].dm(\c),
 	dur: "q e e q q q e eq".beats * Song.quarter,
 	singers:2,
+	spacing:3,
 	languageOverride: \mandarin, phonesetOverride: \xsampa
 ]}, music:{|p b e|
-	{ e.bus => {|i| i / 4 * -3.dbamp * 7.dbamp}
-		=> {|i| CombN.ar(i, Song.quarter/2, Song.quarter, 5) / 4 + i}
-		=> Pan2.ar(_, 0);
-	}.play
+	p.bgVoxFunc.(e)
 });
 P.synthVVST(\ninezero2, start:\verseTwo, take: \bg1, lag: 8*Song.quarter,
 	params:{|p b k| [
 	lyrics: "r r r r r 火 焚",
 	midinote: [0,0,0,0,0,1, -7, 1].dm(\c),
-	singers:2,
+	singers:2, spacing:3,
 	dur: "q e e q q q e eq".beats * Song.quarter,
 	languageOverride: \mandarin, phonesetOverride: \xsampa
 ]}, music:{|p b e|
-	{ e.bus => {|i| i / 4 * -3.dbamp * 7.dbamp}
-		=> {|i| CombN.ar(i, Song.quarter/2, Song.quarter, 5) / 4 + i}
-		=> Pan2.ar(_, 0)
-	}.play
+	p.bgVoxFunc.(e)
 });
 P.synthVVST(\ninezero2, start:\verseTwo, take: \bg2, lag: 16*Song.quarter,
 	params:{|p b k| [
 	lyrics: "r r r r 节 奏 如 鼓 点",
 	midinote: [60, 60, 60, 60, 60, 60, 60, 60, 60],
+	singers:2, spacing:3,
 	dur: "q e e q q q e eq".beats * Song.quarter,
 	languageOverride: \mandarin, phonesetOverride: \xsampa
 ]}, music:{|p b e|
-	{ e.bus => {|i| i / 4 * -3.dbamp}
-		=> {|i| CombN.ar(i, Song.quarter/2, Song.quarter, 5) / 4 + i}
-		=> Pan2.ar(_, 0)
-	}.play
+	p.bgVoxFunc.(e)
 });
 P.synthVVST(\ninezero2, start:\verseTwo, take: \bg3, lag: 24*Song.quarter,
 	params:{|p b k| [
 	lyrics: "r r r r 永 远 -",
 	midinote: [60, 60, 60, 60, 66, 60, 60],
+	singers:2, spacing:3,
 	dur: "q e e q q q e eq".beats * Song.quarter,
 	languageOverride: \mandarin, phonesetOverride: \xsampa
 ]}, music:{|p b e|
-	{ e.bus => {|i| i / 4 * -3.dbamp}
-		=> {|i| CombN.ar(i, Song.quarter/2, Song.quarter, 5) / 4 + i}
-		=> Pan2.ar(_, 0)
-	}.play
+	p.bgVoxFunc.(e)
 });
 // background vocals — V2B
 P.synthVVST(\ninezero2, start:\verseTwo, take: \bg4, lag: 32*Song.quarter,
 	params:{|p b k| [
-	lyrics: "r r r r 你 的 眼",
+	lyrics: "r r r r r 的 眼",
 	midinote: [60, 60, 60, 60, 60, 60, 60],
+	singers:2, spacing:3,
 	dur: "q e e q q q e eq".beats * Song.quarter,
 	languageOverride: \mandarin, phonesetOverride: \xsampa
 ]}, music:{|p b e|
-	{ e.bus => {|i| i / 4 * -3.dbamp}
-		=> {|i| CombN.ar(i, Song.quarter/2, Song.quarter, 5) / 4 + i}
-		=> Pan2.ar(_, 0)
-	}.play
+	p.bgVoxFunc.(e)
 });
 P.synthVVST(\ninezero2, start:\verseTwo, take: \bg5, lag: 40*Song.quarter,
 	params:{|p b k| [
 	lyrics: "r r r r 情 飞 翔",
 	midinote: [60, 60, 60, 60, 60, 60, 60],
+	singers:2, spacing:3,
 	dur: "q e e q q q e eq".beats * Song.quarter,
 	languageOverride: \mandarin, phonesetOverride: \xsampa
 ]}, music:{|p b e|
-	{ e.bus => {|i| i / 4 * -3.dbamp}
-		=> {|i| CombN.ar(i, Song.quarter/2, Song.quarter, 5) / 4 + i}
-		=> Pan2.ar(_, 0)
-	}.play
+	p.bgVoxFunc.(e)
 });
 P.synthVVST(\ninezero2, start:\verseTwo, take: \bg6, lag: 48*Song.quarter,
 	params:{|p b k| [
 	lyrics: "r r r r 永 不 减",
 	midinote: [60, 60, 60, 60, 60, 60, 60],
+	singers:2, spacing:3,
 	dur: "q e e q q q e eq".beats * Song.quarter,
 	languageOverride: \mandarin, phonesetOverride: \xsampa
 ]}, music:{|p b e|
-	{ e.bus => {|i| i / 4 * -3.dbamp}
-		=> {|i| CombN.ar(i, Song.quarter/2, Song.quarter, 5) / 4 + i}
-		=> Pan2.ar(_, 0)
-	}.play
+	p.bgVoxFunc.(e)
 });
 P.synthVVST(\ninezero2, start:\verseTwo, take: \bg7, lag: 56*Song.quarter,
 	params:{|p b k| [
 	lyrics: "r r r r 个 晚 上",
 	midinote: [60, 60, 60, 60, 60, 60, 60],
+	singers:2, spacing:3,
 	dur: "q e e q q q e eq".beats * Song.quarter,
 	languageOverride: \mandarin, phonesetOverride: \xsampa
 ]}, music:{|p b e|
-	{ e.bus => {|i| i / 4 * -3.dbamp}
-		=> {|i| CombN.ar(i, Song.quarter/2, Song.quarter, 5) / 4 + i}
-		=> Pan2.ar(_, 0)
-	}.play
+	p.bgVoxFunc.(e)
 });
 
 )

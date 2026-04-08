@@ -641,6 +641,14 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		// notes.isNil.if{this.makeNotes};
 		this.writeArchive( folder +/+ name)
 	}
+	filterCC { |ctlNum=0 suffix="noZeros"|
+		var newName = name ++ "_" ++ suffix;
+		var mi = this.class.new(newName, false);
+		mi.midiEvents = midiEvents.reject{|e| (e.midicmd == \control) and: {e.ctlNum == ctlNum}};
+		mi.save;
+		"filterCC: removed CC % from % → %".format(ctlNum, name, newName).postln;
+		^mi
+	}
 	delete {
 		var result = File.delete(folder +/+ name); 
 		this.free;

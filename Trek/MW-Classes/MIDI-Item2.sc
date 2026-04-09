@@ -976,62 +976,68 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	pickNotes { |list|
 		^MIDIItemPlayer( this.notes[list], source: this).copyBounds(this)
 	}
-	filter {|func|
-		^MIDIItemPlayer(
-			// (indices: this.noteIndices).use{ func.(midiEvents).valueEnvir })
-			func.(midiEvents),
-			this.source
-		).copyBounds(this)
+	filter {|func, key, choice, onlyNotes=false, midicmd|
+		var choiceFunc, out, array, notes, evts;
+		// midicmd builds a choice function
+		midicmd.notNil.if {
+			choice.notNil.if { "filter: midicmd overrides choice".warn };
+			choiceFunc = case
+				{ midicmd.class == Symbol } {{ |e| e.midicmd == midicmd }}
+				{ midicmd.class == Integer } {{ |e| e.midicmd == \control and: (e.ctlNum == midicmd) }};
+		} {
+			choiceFunc = choice;
+		};
+		// key: extract one param from notes, apply func, write back
+		key.notNil.if {
+			(choiceFunc.notNil or: midicmd.notNil).if { "filter: key ignores choice/midicmd".warn };
+			out = midiEvents.deepCopy;
+			array = this[key];
+			func.(array).do{|i x| this.notes(out)[x].put(key, i)};
+			^MIDIItemPlayer(out, this.source).copyBounds(this)
+		};
+		// onlyNotes: func acts on notes array, spliced back in
+		onlyNotes.if {
+			choiceFunc.notNil.if { "filter: onlyNotes ignores choice/midicmd".warn };
+			notes = func.(this.notes.copy);
+			evts = this.midiEvents.copy;
+			notes.do {|note index|
+				evts.put(this.noteIndices[index], note)
+			};
+			^MIDIItemPlayer(evts, this.source).copyBounds(this)
+		};
+		// choice/midicmd: apply func only where choiceFunc is true
+		choiceFunc.notNil.if {
+			^this.collect(
+				{|e x| choiceFunc.(e, x).if { func.(e, x) } {e}},
+				midiEvents
+			)
+		};
+		// base case: func receives full midiEvents array
+		^MIDIItemPlayer(func.(midiEvents), this.source).copyBounds(this)
 	}
-	//modify only elements for which choiceFunc answers true
-	filterOnly { |choiceFunc, actionFunc| 
-		^this.collect(
-			{|e x| choiceFunc.(e, x).if { actionFunc.(e, x) } {e}},
-			midiEvents
-		)
+	//deprecated — use filter(func, choice:choiceFunc)
+	filterOnly { |choiceFunc, actionFunc|
+		^this.filter(actionFunc, choice: choiceFunc)
 	}
-    filterNotes { |func| //func acts on notes instead of midiEvents
-        var notes = func.(this.notes.copy);
-        var midiEvents = this.midiEvents.copy;
-        notes.do {|note index| 
-            midiEvents.put(
-                this.noteIndices[index],
-                note
-            )
-        };
-        ^MIDIItemPlayer(midiEvents, this.source).copyBounds(this)
+	//deprecated — use filter(func, onlyNotes:true)
+    filterNotes { |func|
+		^this.filter(func, onlyNotes: true)
     }
 
 	notes { |aMidiEvents|
 		^(aMidiEvents ? midiEvents).select({|e| e.midicmd == \noteOn})
 	}
 
-	// filterNotes { |func| //applies function to notes in place
-	// 	var out = midiEvents.deepCopy;
-	// 	midiEvents.select({|e| e.midicmd == \noteOn})
-	// 	.collect({|e| [midiEvents.indexOf(e),  e]})
-	// 	.do({|e x| out.put(e[0], func.(e[1], x))});
-	// 	^MIDIItemPlayer(out, this.source).copyBounds(this)
-	// }
-
 	pasteKey{|key precision=2|
 		Nvim.replace(this[key].round(10 ** (precision * -1)))
 	}
+	//deprecated — use filter(func, key:key)
 	filterNotesKey {|key func|
-		var out = midiEvents.deepCopy;
-		var array = this[key];
-		func.(array).do{|i x| this.notes(out)[x].put(key, i)};
-		^MIDIItemPlayer(out, this.source).copyBounds(this)
+		^this.filter(func, key: key)
 	}
-	//modify only tracks with CC (by number) or other specified midicmd (\bend, \noteOn, \poly)
+	//deprecated — use filter(func, midicmd:track)
 	filterOnlyMidicmd {|track actionFunc|
-		(
-				case
-					//use \noteOn for notes
-					{ track.class == Symbol } {{|e|  e.midicmd == track}}
-					{ track.class == Integer } {{|e| e.midicmd == \control and: ( e.ctlNum == track )}}
-		)
-		=> this.filterOnly( _, actionFunc )
+		^this.filter(actionFunc, midicmd: track)
 	}
 	muteCC{ |num|
 		^MIDIItemPlayer(

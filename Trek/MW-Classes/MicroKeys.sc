@@ -231,7 +231,7 @@ MicroKeys {
 	}
 	synth_ { |funcOrDefname params|
 		funcOrDefname.isKindOf(Symbol).if{
-			synthFunc = synthFunc ? funcOrDefname;
+			synthFunc.isKindOf(Function).not.if { synthFunc = funcOrDefname };
 			namedList.add( \synth,
 				{ |e|
 					e.silent.isNil.if {

@@ -1,14 +1,21 @@
 EventList {
 	classvar <all, <>current;
-	var <events, <>preview, <>defaultType, <routes, <>addFunc;
-	var <>env;
+	var <events, <preview, <>defaultType, <routes, <>addFunc, <>previewPrep;
+	var <>env, <>context;
 
 	*initClass {
 		all = ();
 	}
 
 	*new { |name, defaultType|
-		var instance = super.new.init(defaultType);
+		var instance;
+		name.notNil.if {
+			all[name].notNil.if {
+				current = all[name];
+				^all[name]
+			}
+		};
+		instance = super.new.init(defaultType);
 		name !? {
 			all[name] = instance;
 			current = instance;
@@ -28,8 +35,19 @@ EventList {
 		};
 		^current.add(event)
 	}
+	*addContext { |...args, kwargs|
+		var event;
+		args[0].isKindOf(Event).if {
+			event = args[0]
+		} {
+			event = (when: args[0] ? 0) ++ kwargs.asEvent
+		};
+		^current.addContext(event)
+	}
 	*play { |from=0| ^current.play(from) }
 	*clear { ^current.clear }
+	*clearContext { ^current.clearContext }
+	*setupContext { ^current.setupContext }
 	*size { ^current.size }
 	*do { |func| ^current.do(func) }
 	*addRoute { |key, type| ^current.addRoute(key, type) }
@@ -37,9 +55,14 @@ EventList {
 	*preview { ^current.preview }
 	*addFunc_ { |val| ^current.addFunc_(val) }
 	*env { ^current.env }
+	*context { ^current.context }
+	*context_ { |list| ^current.context_(list) }
+	*previewPrep { ^current.previewPrep }
+	*previewPrep_ { |val| ^current.previewPrep_(val) }
 
 	init { |defType|
 		events = List[];
+		context = List[];
 		defaultType = defType;
 		routes = ();
 		env = ();
@@ -51,45 +74,68 @@ EventList {
 
 	add { |...args, kwargs|
 		var event;
-		// add(event) or add(when, key: val, ...)
 		args[0].isKindOf(Event).if {
 			event = args[0]
 		} {
 			event = (when: args[0] ? 0) ++ kwargs.asEvent
 		};
-		// check routed keys first
-		routes.keysValuesDo { |key, type|
-			event[key].notNil.if {
-				event.put(\type, type);
-				this.gate(event);
-				^event
-			}
-		};
-		// array expansion (skip routed keys)
-		event.select { |v, k| routes[k].isNil }.values
-			.any { |i| i.rank > 0 }.if {
-			event.asPairs.flop.collect { |i| i.asEvent }
-				.do { |e| this.add(e) };
-			^event
-		};
-		// default type
-		event.put(\type, event[\newType] ? defaultType);
-		// optional transform
-		addFunc !? { addFunc.(event, this) };
-		this.gate(event);
+		this.dispatch(event, { |e| this.gate(e) });
 		^event
 	}
 
+	addContext { |...args, kwargs|
+		var event;
+		args[0].isKindOf(Event).if {
+			event = args[0]
+		} {
+			event = (when: args[0] ? 0) ++ kwargs.asEvent
+		};
+		this.dispatch(event, { |e| context.add(e) });
+		^event
+	}
+
+	dispatch { |event, sink|
+		routes.keysValuesDo { |key, type|
+			event[key].notNil.if {
+				event.put(\type, type);
+				sink.(event);
+				^this
+			}
+		};
+		event.select { |v, k| routes[k].isNil }.values
+			.any { |i| i.rank > 0 }.if {
+			event.asPairs.flop.collect { |i| i.asEvent }
+				.do { |e| this.dispatch(e, sink) };
+			^this
+		};
+		event.put(\type, event[\newType] ? defaultType);
+		addFunc !? { addFunc.(event, this) };
+		sink.(event);
+		^this
+	}
+
 	gate { |event|
-		preview.notNil.if { event.put(\when, 0).play } { events.add(event) }
+		preview.notNil.if {
+			previewPrep !? { previewPrep.(event, this) };
+			event.play
+		} { events.add(event) }
+	}
+
+	preview_ { |val|
+		var wasOff = preview.isNil;
+		preview = val;
+		(wasOff and: { val.notNil }).if { this.setupContext }
+	}
+
+	setupContext {
+		context.do { |e| e.copy.put(\when, 0).play }
 	}
 
 	play { |from=0|
 		events.do { |e|
-			((e.when ? 0) >= from).if {
-				TempoClock.sched((e.when ? 0) - from, {
-					e.copy.put(\when, 0).play; nil
-				})
+			var t = e.when ? 0;
+			(t >= from).if {
+				TempoClock.sched(t - from, { e.play; nil })
 			}
 		}
 	}
@@ -98,6 +144,8 @@ EventList {
 		events = List[];
 		preview = nil;
 	}
+
+	clearContext { context = List[] }
 
 	size { ^events.size }
 

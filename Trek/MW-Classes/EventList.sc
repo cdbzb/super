@@ -119,10 +119,11 @@ EventList {
 	}
 
 	gate { |event|
+		events.add(event);
 		preview.notNil.if {
 			previewPrep !? { previewPrep.(event, this) };
 			event.play
-		} { events.add(event) }
+		}
 	}
 
 	preview_ { |val|

@@ -2,6 +2,7 @@ EventList {
 	classvar <all, <>current;
 	var <events, <preview, <>defaultType, <routes, <>addFunc, <>previewPrep;
 	var <>env, <>context;
+	var <>autoExpand = true;
 
 	*initClass {
 		all = ();
@@ -12,7 +13,8 @@ EventList {
 		name.notNil.if {
 			all[name].notNil.if {
 				current = all[name];
-				^all[name]
+				defaultType !? { current.defaultType_(defaultType) };
+				^current
 			}
 		};
 		instance = super.new.init(defaultType);
@@ -102,11 +104,13 @@ EventList {
 				^this
 			}
 		};
-		event.select { |v, k| routes[k].isNil }.values
-			.any { |i| i.rank > 0 }.if {
-			event.asPairs.flop.collect { |i| i.asEvent }
-				.do { |e| this.dispatch(e, sink) };
-			^this
+		autoExpand.if {
+			event.select { |v, k| routes[k].isNil }.values
+				.any { |i| i.rank > 0 }.if {
+				event.asPairs.flop.collect { |i| i.asEvent }
+					.do { |e| this.dispatch(e, sink) };
+				^this
+			};
 		};
 		event.put(\type, event[\newType] ? defaultType);
 		addFunc !? { addFunc.(event, this) };

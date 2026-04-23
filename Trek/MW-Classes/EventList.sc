@@ -1,8 +1,9 @@
 EventList {
-	classvar <all, <>current;
+	classvar <all, <>current, <>playFn;
 	var <events, <preview, <>defaultType, <routes, <>addFunc, <>previewPrep;
 	var <>env, <>context;
 	var <>autoExpand = true;
+	var <>batchWindow = 0.05, batchEndTime = -1e9, batchFirstWhen = 0;
 
 	*initClass {
 		all = ();
@@ -29,13 +30,20 @@ EventList {
 
 	// class-level forwarding for common methods
 	*add { |...args, kwargs|
-		var event;
-		args[0].isKindOf(Event).if {
-			event = args[0]
-		} {
-			event = (when: args[0] ? 0) ++ kwargs.asEvent
+		var when = args[0];
+		when.isKindOf(Array).if {
+			var whens = when;
+			var n = whens.size;
+			var base = (when: whens) ++ kwargs.asEvent;
+			var previewAts = current.previewAtFor(whens);
+			^n.collect { |i|
+				var ev = current.sliceAxis(base, i, n);
+				current.dispatch(ev, { |e| current.gateWithPreviewAt(e, previewAts[i]) });
+				ev
+			}
 		};
-		^current.add(event)
+		when.isKindOf(Event).if { ^current.add(when) };
+		^current.add((when: when ? 0) ++ kwargs.asEvent)
 	}
 	*addContext { |...args, kwargs|
 		var event;
@@ -75,14 +83,58 @@ EventList {
 	}
 
 	add { |...args, kwargs|
-		var event;
-		args[0].isKindOf(Event).if {
-			event = args[0]
-		} {
-			event = (when: args[0] ? 0) ++ kwargs.asEvent
+		var event, previewAt, when = args[0];
+		when.isKindOf(Array).if {
+			var whens = when;
+			var n = whens.size;
+			var base = (when: whens) ++ kwargs.asEvent;
+			var previewAts = this.previewAtFor(whens);
+			^n.collect { |i|
+				var ev = this.sliceAxis(base, i, n);
+				this.dispatch(ev, { |e| this.gateWithPreviewAt(e, previewAts[i]) });
+				ev
+			}
 		};
-		this.dispatch(event, { |e| this.gate(e) });
+		when.isKindOf(Event).if {
+			event = when
+		} {
+			event = (when: when ? 0) ++ kwargs.asEvent
+		};
+		event[\voice].isKindOf(Array).if {
+			^this.expandAxis(event[\voice].size, event)
+		};
+		previewAt = this.previewAtFor(event[\when] ? 0);
+		this.dispatch(event, { |e| this.gateWithPreviewAt(e, previewAt) });
 		^event
+	}
+
+	previewAtFor { |when|
+		var now = SystemClock.seconds;
+		var ref = when.isKindOf(Array).if { when[0] } { when };
+		(now >= batchEndTime).if { batchFirstWhen = ref };
+		batchEndTime = now + batchWindow;
+		^when.isKindOf(Array).if {
+			when.collect { |w| w - batchFirstWhen }
+		} {
+			when - batchFirstWhen
+		}
+	}
+
+	expandAxis { |n, base|
+		^n.collect { |i| this.add(this.sliceAxis(base, i, n)) }
+	}
+
+	sliceAxis { |base, i, n|
+		var ev = ();
+		base.keysValuesDo { |k, v|
+			case
+				{ v.isKindOf(Env) or: { v.isKindOf(Tuple3) } or: { v.isKindOf(Tuple4) } }
+					{ ev[k] = v }
+				{ v.isArray }
+					{ ev[k] = v.clipAt(i) }
+				{ ev[k] = v }
+		};
+		^ev
 	}
 
 	addContext { |...args, kwargs|
@@ -119,10 +171,17 @@ EventList {
 	}
 
 	gate { |event|
+		this.gateWithPreviewAt(event, 0)
+	}
+
+	gateWithPreviewAt { |event, previewAt|
 		events.add(event);
 		preview.notNil.if {
 			previewPrep !? { previewPrep.(event, this) };
-			event.play
+			SystemClock.sched(
+				previewAt * TempoClock.default.beatDur,
+				{ event.play; nil }
+			)
 		}
 	}
 
@@ -137,10 +196,13 @@ EventList {
 	}
 
 	play { |from=0|
+		var beatDur;
+		playFn.notNil.if { ^playFn.(this, from) };
+		beatDur = TempoClock.default.beatDur;
 		events.do { |e|
 			var t = e.when ? 0;
 			(t >= from).if {
-				TempoClock.sched(t - from, { e.play; nil })
+				SystemClock.sched((t - from) * beatDur, { e.play; nil })
 			}
 		}
 	}

@@ -313,10 +313,10 @@ MicroKeys {
 		};
 		keys[index].add(voice);
 		modMap.notNil.if { this.applyMods(voice) };
-		event[\synths].synths.do {|i|
+		event[\synths] !? {|s| s.synths.do {|i|
 			sounding.add(i);
 			i.onFree({ sounding.remove(i)})
-		};
+		}};
 	}
 	noteOnFunction {
 		// ^namedList.array.reverse.inject(I.d, _ <> _)

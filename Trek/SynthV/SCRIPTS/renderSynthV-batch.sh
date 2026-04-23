@@ -56,6 +56,25 @@ on run argv
                 activate
                 open POSIX file svpPath
             end tell
+            -- Dismiss any "Save changes?" dialog
+            tell application "System Events"
+                tell process appName
+                    delay 0.5
+                    try
+                        if exists sheet 1 of front window then
+                            click button "Don't Save" of sheet 1 of front window
+                            delay 0.5
+                        end if
+                    end try
+                    -- Also check for standalone dialog
+                    try
+                        if exists button "Don't Save" of front window then
+                            click button "Don't Save" of front window
+                            delay 0.5
+                        end if
+                    end try
+                end tell
+            end tell
         end if
 
         -- Click Bounce to Files immediately

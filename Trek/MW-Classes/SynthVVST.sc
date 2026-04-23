@@ -75,6 +75,23 @@ SynthVVST {
 		^this
 	}
 
+	freeVSTs {
+		synthV.asArray.do{|sv|
+			sv.notNil.if{
+				sv.vst.notNil.if{
+					try{ sv.vst.bus.free };
+					try{ sv.vst.controller.close };
+					sv.vst = nil;
+				}
+			}
+		};
+		"SynthVVST: % VSTs freed".format(voice).postln;
+	}
+
+	*freeAllVSTs {
+		cache.do{|item| item.freeVSTs };
+	}
+
 	unfreeze {
 		isMulti.if{
 			voices.size.do{|vi|
@@ -97,18 +114,21 @@ SynthVVST {
 		^super.new.init(voice, params, version)
 	}
 
+	isExpandable { |key, val|
+		// envelope params: Array means one-per-voice
+		// other params: rank > 1 means one-per-voice (e.g. [[notes],[notes]])
+		(SynthV.envelopes.includes(key) and: { val.isKindOf(Array) }).if{ ^true };
+		^(val.respondsTo(\rank) and: { val.rank > 1 })
+	}
+
 	init { |v p ver|
 		var voiceCount;
 		voice = v;
 		version = ver;
-		voiceCount = p.values.collect{|val|
-			(val.respondsTo(\rank) and: { val.rank > 1 }).if{ val.size }{ 1 }
-		}.maxItem;
+		voiceCount = p.collect{|val, key| this.isExpandable(key, val).if{ val.size }{ 1 }}.values.maxItem ? 1;
 		(voiceCount > 1).if{
 			voices = voiceCount.collect{|i|
-				p.collect{|val|
-					(val.respondsTo(\rank) and: { val.rank > 1 }).if{ val[i] }{ val }
-				}
+				p.collect{|val, key| this.isExpandable(key, val).if{ val[i] }{ val } }
 			};
 			params = voices[0];
 			isMulti = true;
@@ -150,6 +170,7 @@ SynthVVST {
 			ready = cache[cacheKey].ready;
 			frozenBuffers = cache[cacheKey].frozenBuffers;
 			(this.isFrozen and: { frozenBuffers.isNil }).if{
+				this.freeVSTs;
 				isMulti.if{
 					frozenBuffers = voices.size.collect{|vi|
 						Buffer.read(Server.default, this.frozenPath(vi))
@@ -326,6 +347,7 @@ SynthVVST {
 		};
 		^P(key, start, syl, lag, {|p b e|
 			var syn, dur;
+			sv.ready.wait;
 			sv.isFrozen.if{
 				syn = music.(p, b, e);
 			}{

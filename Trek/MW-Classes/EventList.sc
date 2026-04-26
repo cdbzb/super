@@ -4,7 +4,7 @@ EventList {
 	var <>env, <>context;
 	var <>autoExpand = false;
 	var <>batchWindow = 0.05, batchEndTime = -1e9, batchFirstWhen = 0;
-	var <>scope;
+	var <>scope, <>voiceSpace;
 
 	*initClass {
 		all = ();
@@ -31,6 +31,10 @@ EventList {
 	}
 
 	*at { |name| ^all[name] }
+
+	*kf { |name, voiceSpace|
+		^this.new(name, \keyFrame).voiceSpace_(voiceSpace ? VoiceSpace.default)
+	}
 
 	*newFrom { |other, name|
 		var instance = this.new(name, other.defaultType);
@@ -118,8 +122,15 @@ EventList {
 	}
 
 	projectEvent { |ev|
-		scope.isNil.if { ^ev };
-		^ev.copy.put(\voice, this.scopedVoice(ev[\voice] ? \default))
+		var proj = ev;
+		scope.notNil.if {
+			proj = ev.copy.put(\voice, this.scopedVoice(ev[\voice] ? \default))
+		};
+		voiceSpace.notNil.if {
+			(proj === ev).if { proj = ev.copy };
+			proj.proto = (voiceSpace: voiceSpace)
+		};
+		^proj
 	}
 
 	scopedEvents { ^events.collect { |e| this.projectEvent(e) } }
@@ -237,6 +248,27 @@ EventList {
 		this.gateWithPreviewAt(event, 0)
 	}
 
+	addPattern { |when=0, pattern, n, maxWhen=300|
+		var stream = pattern.asStream;
+		var t = when;
+		var i = 0;
+		block { |break|
+			loop {
+				var event, previewAt;
+				(n.notNil and: { i >= n }).if { break.value };
+				(t > maxWhen).if { break.value };
+				event = stream.next(());
+				event.isNil.if { break.value };
+				event.put(\when, t);
+				previewAt = this.previewAtFor(t);
+				this.gateWithPreviewAt(event, previewAt);
+				t = t + (event[\dur] ? 1);
+				i = i + 1;
+			}
+		};
+		^this
+	}
+
 	gateWithPreviewAt { |event, previewAt|
 		events.add(event);
 		preview.notNil.if {
@@ -261,6 +293,7 @@ EventList {
 
 	play { |from=0|
 		var beatDur;
+		voiceSpace.notNil.if { ^voiceSpace.playFrom(this, from) };
 		playFn.notNil.if { ^playFn.(this, from) };
 		beatDur = TempoClock.default.beatDur;
 		this.scopedEvents.do { |e|

@@ -19,6 +19,12 @@
 			}
 	}
 	set { |...args| ^Pbindf(this,*args) }
+
+	// Convert a pattern (typically a Pbind) into a fresh EventList.
+	// See EventList:addPattern for streaming semantics.
+	ev { |name, defaultType, n|
+		^EventList(name, defaultType ? \note).addPattern(0, this, n)
+	}
 }
 +Array{
 	par{|num=1| ^Ppar(this,num)}

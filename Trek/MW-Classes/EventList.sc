@@ -1,12 +1,15 @@
 EventList {
-	classvar <all, <>current, <>playFn;
+	classvar <all, <>current, <>playFn, <>cursor;
 	var <events, <preview, <>defaultType, <routes, <>addFunc, <>previewPrep;
 	var <>env, <>context;
-	var <>autoExpand = true;
+	var <>autoExpand = false;
 	var <>batchWindow = 0.05, batchEndTime = -1e9, batchFirstWhen = 0;
+	var <>scope;
 
 	*initClass {
 		all = ();
+		Class.initClassTree(Event);
+        Event.addEventType(\eventList, {~eventList.isKindOf(EventList).if{~eventList}{EventList(~eventList)}.play(~start)});
 	}
 
 	*new { |name, defaultType|
@@ -22,11 +25,34 @@ EventList {
 		name !? {
 			all[name] = instance;
 			current = instance;
+			instance.scope = name;
 		};
 		^instance
 	}
 
 	*at { |name| ^all[name] }
+
+	*newFrom { |other, name|
+		var instance = this.new(name, other.defaultType);
+		^instance.copyFrom(other)
+	}
+
+	copy {
+		var instance = this.class.new(nil, defaultType);
+		^instance.copyFrom(this)
+	}
+
+	copyFrom { |other|
+		events      = other.events.copy;
+		context     = other.context.copy;
+		routes      = other.routes.copy;
+		env         = other.env.copy;
+		addFunc     = other.addFunc;
+		previewPrep = other.previewPrep;
+		autoExpand  = other.autoExpand;
+		batchWindow = other.batchWindow;
+		^this
+	}
 
 	// class-level forwarding for common methods
 	*add { |...args, kwargs|
@@ -54,7 +80,7 @@ EventList {
 		};
 		^current.addContext(event)
 	}
-	*play { |from=0| ^current.play(from) }
+	*play { |from| ^current.play(cursor.debug("CURSOR") ? from ? 0 => _.postln) }
 	*clear { ^current.clear }
 	*clearContext { ^current.clearContext }
 	*setupContext { ^current.setupContext }
@@ -69,6 +95,8 @@ EventList {
 	*context_ { |list| ^current.context_(list) }
 	*previewPrep { ^current.previewPrep }
 	*previewPrep_ { |val| ^current.previewPrep_(val) }
+	*voices { ^current.voices }
+	*scopedEvents { ^current.scopedEvents }
 
 	init { |defType|
 		events = List[];
@@ -80,6 +108,28 @@ EventList {
 
 	addRoute { |key, type|
 		routes[key] = type;
+	}
+
+	scopedVoice { |v|
+		(scope.notNil and: { v.notNil }).if {
+			^(scope.asString ++ "_" ++ v.asString).asSymbol
+		};
+		^v
+	}
+
+	projectEvent { |ev|
+		scope.isNil.if { ^ev };
+		^ev.copy.put(\voice, this.scopedVoice(ev[\voice] ? \default))
+	}
+
+	scopedEvents { ^events.collect { |e| this.projectEvent(e) } }
+
+	voices {
+		var seen = Set[];
+		events.do { |e|
+			e[\voice] !? { |v| seen.add(this.scopedVoice(v)) }
+		};
+		^seen.asArray
 	}
 
 	add { |...args, kwargs|
@@ -125,16 +175,29 @@ EventList {
 	}
 
 	sliceAxis { |base, i, n|
-		var ev = ();
+		var scratch = ();
+		var hasFunc = false;
+		var out = ();
 		base.keysValuesDo { |k, v|
 			case
 				{ v.isKindOf(Env) or: { v.isKindOf(Tuple3) } or: { v.isKindOf(Tuple4) } }
-					{ ev[k] = v }
+					{ scratch[k] = v }
+				{ v.isKindOf(Function) and: { v.numArgs == 0 } }
+					{ scratch[k] = v; hasFunc = true }
 				{ v.isArray }
-					{ ev[k] = v.clipAt(i) }
-				{ ev[k] = v }
+					{ scratch[k] = v.clipAt(i) }
+				{ scratch[k] = v }
 		};
-		^ev
+		hasFunc.not.if { ^scratch };
+		scratch[\x] = i;
+		scratch[\n] = n;
+		scratch[\whens] = base[\when].asArray;
+		{
+			var le = LambdaEnvir(scratch);
+			le.use { scratch.keysDo { |k| out[k] = le.at(k) } };
+		}.value;
+		[\x, \n, \whens].do { |k| out.removeAt(k) };
+		^out
 	}
 
 	addContext { |...args, kwargs|
@@ -177,10 +240,11 @@ EventList {
 	gateWithPreviewAt { |event, previewAt|
 		events.add(event);
 		preview.notNil.if {
-			previewPrep !? { previewPrep.(event, this) };
+			var projected = this.projectEvent(event);
+			previewPrep !? { previewPrep.(projected, this) };
 			SystemClock.sched(
 				previewAt * TempoClock.default.beatDur,
-				{ event.play; nil }
+				{ projected.play; nil }
 			)
 		}
 	}
@@ -192,14 +256,14 @@ EventList {
 	}
 
 	setupContext {
-		context.do { |e| e.copy.put(\when, 0).play }
+		context.do { |e| this.projectEvent(e).copy.put(\when, 0).play }
 	}
 
 	play { |from=0|
 		var beatDur;
 		playFn.notNil.if { ^playFn.(this, from) };
 		beatDur = TempoClock.default.beatDur;
-		events.do { |e|
+		this.scopedEvents.do { |e|
 			var t = e.when ? 0;
 			(t >= from).if {
 				SystemClock.sched((t - from) * beatDur, { e.play; nil })

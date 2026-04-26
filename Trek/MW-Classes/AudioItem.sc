@@ -13,10 +13,11 @@ AudioItem {
 		Event.addEventType(\audioItem, {
 			var name = ~name ?? { Error("AudioItem requires a name").throw };
 			var directory = folder +/+ name;
-			var lastTakeNum = File.exists(directory).if {
-				(PathName(directory).entries.size - 1).max(0)
+			var entryCount = File.exists(directory).if {
+				PathName(directory).entries.size
 			} { 0 };
-			var takeNum = ~take ?? lastTakeNum;  // Use ?? instead of ?
+			var defaultTake = ~record.if { entryCount } { (entryCount - 1).max(0) };
+			var takeNum = ~take ?? defaultTake;
 			var path = directory +/+ takeNum ++ ".wav";
 			var buffer = buffers.at(name.asSymbol, takeNum);
 			var recorder = Recorder(Server.default);
@@ -45,10 +46,13 @@ AudioItem {
 
 			));
             ~record.if{
-					~recorder.prepareForRecord(~path, 1); 
-					Server.default.bind{ 
-						~recorder.record(~path, Server.default.options.numOutputBusChannels, duration: ~dur)
-					}
+					var nc = ~numChannels ? 1;
+					~recorder.prepareForRecord(~path, nc);
+					Server.default.bind{
+						~recorder.record(~path, ~in ? Server.default.options.numOutputBusChannels, nc, duration: ~dur)
+					};
+					// invalidate cached buffer so next playback reloads from disk
+					buffers.put(name.asSymbol, takeNum, Buffer());
             } {
                 Server.default.makeBundle(
                     (~latency ? 0.2) + (~lag ? 0),

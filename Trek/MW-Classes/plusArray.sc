@@ -1,5 +1,12 @@
 + SequenceableCollection {
 	ls { this.do(_.postln) }
+
+	deltaAt { |x, last|
+		var d = this.differentiate.drop(1);
+		last !? { d = d.add(last) };
+		^d.clipAt(x)
+	}
+
 	quantize {
 		| percent=1| 
 		var out = this.collect( _.value );

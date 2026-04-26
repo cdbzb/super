@@ -396,7 +396,7 @@ VoiceSpace {
 	// ---- timeline-driven playback (cancelable via stop) --------------------
 
 	playFrom { |list, from=0|
-		var events      = list.scopedEvents;
+		var events      = list.scopedEvents.select { |e| list.shouldPlay(e) };
 		var keyEvents   = events.select { |e| (e[\type] ? \keyFrame) == \keyFrame };
 		var otherEvents = events.reject { |e| (e[\type] ? \keyFrame) == \keyFrame };
 		var tempoTl     = this.extractTempo(events);

@@ -5,6 +5,7 @@ EventList {
 	var <>autoExpand = false;
 	var <>batchWindow = 0.05, batchEndTime = -1e9, batchFirstWhen = 0;
 	var <>scope, <>voiceSpace;
+	var <solo, <mute;
 
 	*initClass {
 		all = ();
@@ -61,6 +62,7 @@ EventList {
 	// class-level forwarding for common methods
 	*add { |...args, kwargs|
 		var when = args[0];
+		args[1].isKindOf(Pattern).if { ^current.addPattern(when ? 0, args[1]) };
 		when.isKindOf(Array).if {
 			var whens = when;
 			var n = whens.size;
@@ -145,6 +147,7 @@ EventList {
 
 	add { |...args, kwargs|
 		var event, previewAt, when = args[0];
+		args[1].isKindOf(Pattern).if { ^this.addPattern(when ? 0, args[1]) };
 		when.isKindOf(Array).if {
 			var whens = when;
 			var n = whens.size;
@@ -248,7 +251,7 @@ EventList {
 		this.gateWithPreviewAt(event, 0)
 	}
 
-	addPattern { |when=0, pattern, n, maxWhen=300|
+	addPattern { |when=0, pattern, n, maxWhen=300, name|
 		var stream = pattern.asStream;
 		var t = when;
 		var i = 0;
@@ -260,6 +263,7 @@ EventList {
 				event = stream.next(());
 				event.isNil.if { break.value };
 				event.put(\when, t);
+				name !? { event.put(\name, name) };
 				previewAt = this.previewAtFor(t);
 				this.gateWithPreviewAt(event, previewAt);
 				t = t + (event[\dur] ? 1);
@@ -269,9 +273,24 @@ EventList {
 		^this
 	}
 
+	solo_ { |val| solo = val.notNil.if { val.asArray.as(Set) } }
+	mute_ { |val| mute = val.notNil.if { val.asArray.as(Set) } }
+
+	shouldPlay { |event|
+		var name = event[\name];
+		solo.notNil.if {
+			name.isNil.if { ^false };
+			^solo.any { |s| name.asString.contains(s.asString) }
+		};
+		(mute.notNil and: { name.notNil }).if {
+			^mute.any { |s| name.asString.contains(s.asString) }.not
+		};
+		^true
+	}
+
 	gateWithPreviewAt { |event, previewAt|
 		events.add(event);
-		preview.notNil.if {
+		(preview.notNil and: { this.shouldPlay(event) }).if {
 			var projected = this.projectEvent(event);
 			previewPrep !? { previewPrep.(projected, this) };
 			SystemClock.sched(
@@ -298,7 +317,7 @@ EventList {
 		beatDur = TempoClock.default.beatDur;
 		this.scopedEvents.do { |e|
 			var t = e.when ? 0;
-			(t >= from).if {
+			((t >= from) and: { this.shouldPlay(e) }).if {
 				SystemClock.sched((t - from) * beatDur, { e.play; nil })
 			}
 		}
@@ -316,4 +335,36 @@ EventList {
 	do { |func| events.do(func) }
 
 	at { |index| ^events[index] }
+}
+
+// Sugar: \bass.add(0, freq: 999, ...) → EventList.current.add tagged with name: \bass.
+// Mirrors EventList *add's three branches (scalar/Array/Event when) since SC has no
+// way to splat kwargs through to another method.
++ Symbol {
+	add { |...args, kwargs|
+		var when = args[0];
+		var list = EventList.current;
+		args[1].isKindOf(Pattern).if { ^list.addPattern(when ? 0, args[1], name: this) };
+		kwargs = kwargs ++ [\name, this];
+		when.isKindOf(Event).if {
+			when[\name] = this;
+			^list.add(when)
+		};
+		when.isKindOf(Array).if {
+			var whens = when;
+			var n = whens.size;
+			var base = (when: whens) ++ kwargs.asEvent;
+			var previewAts = list.previewAtFor(whens);
+			^n.collect { |i|
+				var ev = list.sliceAxis(base, i, n);
+				list.dispatch(ev, { |e| list.gateWithPreviewAt(e, previewAts[i]) });
+				ev
+			}
+		};
+		^list.add((when: when ? 0) ++ kwargs.asEvent)
+	}
+
+	addPattern { |when=0, pattern, n, maxWhen=300|
+		^EventList.current.addPattern(when, pattern, n, maxWhen, this)
+	}
 }

@@ -38,8 +38,11 @@ EventList {
 	}
 
 	*newFrom { |other, name, newVoiceSpace=false|
-		var instance = this.new(name, other.defaultType);
-		^instance.copyFrom(other, newVoiceSpace)
+		var src = other.isKindOf(Symbol).if { all[other] } { other };
+		var instance;
+		src.isNil.if { Error("EventList.newFrom: no list named %".format(other)).throw };
+		instance = this.new(name, src.defaultType);
+		^instance.copyFrom(src, newVoiceSpace)
 	}
 
 	copy { |newVoiceSpace=false|

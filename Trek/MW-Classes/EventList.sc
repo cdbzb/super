@@ -37,17 +37,17 @@ EventList {
 		^this.new(name, \keyFrame).voiceSpace_(voiceSpace ? VoiceSpace.default)
 	}
 
-	*newFrom { |other, name|
+	*newFrom { |other, name, newVoiceSpace=false|
 		var instance = this.new(name, other.defaultType);
-		^instance.copyFrom(other)
+		^instance.copyFrom(other, newVoiceSpace)
 	}
 
-	copy {
+	copy { |newVoiceSpace=false|
 		var instance = this.class.new(nil, defaultType);
-		^instance.copyFrom(this)
+		^instance.copyFrom(this, newVoiceSpace)
 	}
 
-	copyFrom { |other|
+	copyFrom { |other, newVoiceSpace=false|
 		events      = other.events.copy;
 		context     = other.context.copy;
 		routes      = other.routes.copy;
@@ -56,6 +56,7 @@ EventList {
 		previewPrep = other.previewPrep;
 		autoExpand  = other.autoExpand;
 		batchWindow = other.batchWindow;
+		voiceSpace  = newVoiceSpace.if { VoiceSpace.new } { other.voiceSpace };
 		^this
 	}
 

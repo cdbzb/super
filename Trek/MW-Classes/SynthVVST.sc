@@ -377,9 +377,18 @@ SynthVVST {
 			resources: resources ++ (
 				bus: sv.isFrozen.if{
 					sv.isMulti.if{
-						{ sv.frozenBuffers.collect{|buf| PlayBuf.ar(2, buf, doneAction: 2) } }
+						{
+							var bufs = sv.frozenBuffers;
+							var dur = bufs.collect{|b| BufDur.kr(b)}.maxItem + tail;
+							Line.kr(0, 0, dur, doneAction: 2);
+							bufs.collect{|buf| PlayBuf.ar(2, buf, doneAction: 0) }
+						}
 					}{
-						{ PlayBuf.ar(2, sv.frozenBuffers, doneAction: 2) }
+						{
+							var buf = sv.frozenBuffers;
+							Line.kr(0, 0, BufDur.kr(buf) + tail, doneAction: 2);
+							PlayBuf.ar(2, buf, doneAction: 0)
+						}
 					}
 				}{
 					sv.isMulti.if{

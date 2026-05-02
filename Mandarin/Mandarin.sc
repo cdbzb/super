@@ -27,11 +27,29 @@ Mandarin {
             Mandarin.env[\current].add(ev);
             Mandarin.env[\preview].notNil.if { ev.play }
         });
+        Event.addEventType(\segList, {
+            var ev = ();
+            currentEnvironment.keys.reject({|i| [\dur, \type, \when].includes(i) }).do {|i|
+                ev.put(i, currentEnvironment[i])
+            };
+            EventList(\mandarin).add(ev);
+        });
     }
     *setup {
+        var list = EventList(\mandarin, \seg);
         (topEnvironment != env).if { env.push };
-        env[\current] = List[];
-        env[\preview] = nil;
+        list.clear;
+        list.preview = nil;
+        list.beatDur = Song.clock.notNil.if { Song.clock.beatDur } { Song.quarter ? 1 };
+        list.addFunc = { |ev, l|
+            ev[\section].notNil.if {
+                ev[\when] = Mandarin.env[\nextWhen] ? 0;
+                Mandarin.env[\nextWhen] = ev[\when] + (Seg.durOf(ev) / (l.beatDur ? 1));
+                "  @ % beats : %".format(ev[\when].round(0.001), ev[\section]).postln;
+            }
+        };
+        env[\nextWhen] = 0;
+        ^list
     }
     *doesNotUnderstand { |selector ...args|
         ^Message(event, selector).(*args)
@@ -150,6 +168,36 @@ Seg {
 			};
 		});
 	}
+    *durOf { |event|
+        var sections, firstSection, expand;
+        (event[\section].isKindOf(Pseq)).if {
+            expand = { |ev, parent|
+                parent = parent ? ();
+                ev[\section].list.collect { |i|
+                    (i.isKindOf(Event) and: { try { i[\section].isKindOf(Pseq) } { false } }).if {
+                        expand.(i, ev)
+                    } {
+                        parent ++ ev.deepCopy.put(\section, i).asEvent
+                    }
+                }
+            };
+            ^expand.(event).flat.sum { |e| Seg.durOf(e) }
+        };
+        sections = event[\section].isKindOf(Event).if { event[\section].bubble } { event[\section].asArray };
+        firstSection = sections[0];
+        ^(firstSection.isKindOf(Event)).if {
+            firstSection[\dur] ??
+            {
+                firstSection[\section].notNil.if {
+                    Song.secDur[Song.section(firstSection[\section])] + (firstSection[\extend] ? 0)
+                } {
+                    1
+                }
+            }
+        } {
+            Song.secDur[Song.section(firstSection)]
+        }
+    }
     *new {|section ...args, kwargs|
         ^(type:\seg, section:section) ++ kwargs.asEvent ++ (record:{|self path head=0.2 tail|
             var newSectionList = [

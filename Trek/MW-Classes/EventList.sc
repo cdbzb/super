@@ -6,11 +6,12 @@ EventList {
 	var <>batchWindow = 0.05, batchEndTime = -1e9, batchFirstWhen = 0;
 	var <>scope, <>voiceSpace;
 	var <solo, <mute;
+	var <>beatDur;
 
 	*initClass {
 		all = ();
 		Class.initClassTree(Event);
-        Event.addEventType(\eventList, {~eventList.isKindOf(EventList).if{~eventList}{EventList(~eventList)}.play(~start)});
+        Event.addEventType(\eventList, {~eventList.isKindOf(EventList).if{~eventList}{EventList(~eventList)}.play(~start ? 0)});
 	}
 
 	*new { |name, defaultType|
@@ -296,9 +297,10 @@ EventList {
 		events.add(event);
 		(preview.notNil and: { this.shouldPlay(event) }).if {
 			var projected = this.projectEvent(event);
+			var bd = beatDur ? TempoClock.default.beatDur;
 			previewPrep !? { previewPrep.(projected, this) };
 			SystemClock.sched(
-				previewAt * TempoClock.default.beatDur,
+				previewAt * bd,
 				{ projected.play; nil }
 			)
 		}
@@ -315,14 +317,15 @@ EventList {
 	}
 
 	play { |from=0|
-		var beatDur;
+		var bd;
+		from = from ? 0;
 		voiceSpace.notNil.if { ^voiceSpace.playFrom(this, from) };
 		playFn.notNil.if { ^playFn.(this, from) };
-		beatDur = TempoClock.default.beatDur;
+		bd = beatDur ? TempoClock.default.beatDur;
 		this.scopedEvents.do { |e|
 			var t = e.when ? 0;
 			((t >= from) and: { this.shouldPlay(e) }).if {
-				SystemClock.sched((t - from) * beatDur, { e.play; nil })
+				SystemClock.sched((t - from) * bd, { e.play; nil })
 			}
 		}
 	}

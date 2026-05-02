@@ -11,6 +11,9 @@ VoiceSpace {
 	classvar default;
 	var <voices, <aliveLanes, <lastScalar, <>voiceDefs, <>defaultDef;
 	var <>scheduledRoutine;
+	// TODO: target/addAction are per-VoiceSpace, not per-voice. If a single VoiceSpace
+	// ever needs voices placed in different groups, add a voiceTargets dict mirroring voiceDefs.
+	var <>target, <>addAction;
 
 	*default { ^default ?? { default = this.new } }
 	*resetDefault { default = nil }
@@ -53,7 +56,7 @@ VoiceSpace {
 			args = args ++ [n, bus.asMap];
 		};
 		voices[voice] = (
-			syn: Synth(defName, args).register,
+			syn: Synth(defName, args, target, addAction ? \addToHead).register,
 			busses: busses,
 			defaults: defaults,
 			envSyns: List[]
@@ -396,15 +399,17 @@ VoiceSpace {
 	// ---- timeline-driven playback (cancelable via stop) --------------------
 
 	playFrom { |list, from=0|
-		var events      = list.scopedEvents.select { |e| list.shouldPlay(e) };
-		var keyEvents   = events.select { |e| (e[\type] ? \keyFrame) == \keyFrame };
-		var otherEvents = events.reject { |e| (e[\type] ? \keyFrame) == \keyFrame };
-		var tempoTl     = this.extractTempo(events);
-		var tempoEnv    = (tempoTl.size > 0).if { this.timelineToEnv(tempoTl, 1) };
-		var fromWall    = this.beatToWall(from, tempoEnv);
-		var expanded    = this.expandLanes(keyEvents);
-		var tls         = this.extractTimelines(expanded);
-		var pending     = List[];
+		var events, keyEvents, otherEvents, tempoTl, tempoEnv, fromWall, expanded, tls, pending;
+		from = from ? 0;
+		events      = list.scopedEvents.select { |e| list.shouldPlay(e) };
+		keyEvents   = events.select { |e| (e[\type] ? \keyFrame) == \keyFrame };
+		otherEvents = events.reject { |e| (e[\type] ? \keyFrame) == \keyFrame };
+		tempoTl     = this.extractTempo(events);
+		tempoEnv    = (tempoTl.size > 0).if { this.timelineToEnv(tempoTl, 1) };
+		fromWall    = this.beatToWall(from, tempoEnv);
+		expanded    = this.expandLanes(keyEvents);
+		tls         = this.extractTimelines(expanded);
+		pending     = List[];
 
 		expanded.do { |e|
 			(e[\defName].notNil and: { e[\voice].notNil }).if {

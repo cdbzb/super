@@ -308,6 +308,7 @@ Song.figure = [
 		].ppm
 	}
 };
+
 [\verse, "r", [64*Song.quarter]].addLine;
 // could make a line per phrase
 Song.verseVox.lead[(..7)].do{|i x|
@@ -671,12 +672,12 @@ P.synthVVST(\ninezero2, start:\verseTwo, take: \bg7, lag: 56*Song.quarter,
 ]}, music:{|p b e|
 	p.bgVoxFunc.(e)
 });
-P(\guitFill,lag:Song.quarter * 31, music: { |p b e|
+P(\guitFill,lag:Song.quarter * 30.5, music: { |p b e|
 	[
 		freq: "4 4 3 1".df([ \c, \G ]).q,
-		dur: "e e e q".beats.q,
+		dur: "e e e qqqqqqqqqqqqqqqq".beats.q,
 		amp:1,
-		out: Effect.bus({|i| CrossoverDistortion.ar(i) })
+		out: Effect.bus({|i| CrossoverDistortion.ar(i) =>Limiter.ar(_,level:0.1) * EnvGen.cutoff(4*Song.quarter, 4.00) })
 	].p.play(clock:Song.clock)
 });
 )

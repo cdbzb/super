@@ -19,7 +19,7 @@ MicroKeys {
 	var tuningFunction;
 	// methods to make "standard" params
 	*freq {
-		^{|mk| {\freq.kr(900) * (\poly.kr() / 127+ CC.bend(mk: mk).bus.kr => _.midiratio)} }
+		^{|mk| {\freq.kr(900) * (\poly.kr(0) / 127 + (\bend.kr(0) * \bendRange.kr(2))).midiratio} }
 	}
 	doNoteOn { |amp midinote params silent channel=0|
 		case 
@@ -81,8 +81,7 @@ MicroKeys {
         ccs = ();
 		excludeSrcIDs = Set[-496537509]; // RME ARC
 
-		MyFree.add({ MicroKeys.all.do{|i| i.down_(List[]) } });
-		MyFree.add({ MicroKeys.all.do {|i| i.unmonitor } });
+		MyFree.add({ MicroKeys.all.do {|i| i.unmonitor; i.clearVoiceState } });
 		
 		Event.addEventType(\mkOff, {});
 
@@ -92,10 +91,14 @@ MicroKeys {
 
 		Event.addEventType(\mk, {
 			var mk = ~mk.isKindOf(Symbol).if{ MicroKeys(~mk) }{ ~mk };
-			Server.default.makeBundle(~latency, { mk.doNoteOn(~amp * 127, ~midinote, ~params, ~silent, ~channel) });
+			var sustain = ~sustain;
+			var latency = ~latency;
+			var midinote = ~midinote;
+			var channel = ~channel;
+			Server.default.makeBundle(latency, { mk.doNoteOn(~amp * 127, midinote, ~params, ~silent, channel) });
 			fork{
-				~sustain.().wait;
-				Server.default.makeBundle(~latency, {mk.doNoteOff(~midinote, channel: ~channel)})
+				sustain.().wait;
+				mk.doNoteOff(midinote, latency, channel)
 			}
 		});
 		Event.addEventType(\setCC, {
@@ -583,7 +586,15 @@ monitor { |offLatency = 0.02|
 		[\microOn, \microOff, \microDamper, \microPoly].do{|i| MIDIdef(i ++ name => _.asSymbol).free}
 	}
 	cmdPeriod {
-		this.unmonitor
+		this.unmonitor;
+		this.clearVoiceState
+	}
+	clearVoiceState {
+		keys = List[] ! 128;
+		sounding = Set[];
+		heldNotes = Set[];
+		down = List[];
+		damperDown = false;
 	}
 	free {
 		this.unmonitor ; //remove MIDIdefs

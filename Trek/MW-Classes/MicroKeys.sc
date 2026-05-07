@@ -5,6 +5,7 @@ MicroKeys {
 	//when monitoring is enabled we set these to be the same as the classvar
 	var instanceCCs;
 	var <>synthFunc;
+	var <defName;
     var <>species;
 	// MonoKeys-specific variables
 	var <monosynth, <>constantVel=false;
@@ -235,6 +236,7 @@ MicroKeys {
 	synth_ { |funcOrDefname params|
 		funcOrDefname.isKindOf(Symbol).if{
 			synthFunc.isKindOf(Function).not.if { synthFunc = funcOrDefname };
+			defName = funcOrDefname;
 			namedList.add( \synth,
 				{ |e|
 					e.silent.isNil.if {
@@ -251,7 +253,7 @@ MicroKeys {
 		}{ //otherwise should be a Function
 			//needs to return an Event with synth in synth:
 			synthFunc = funcOrDefname;
-			this.synth_((mk: name).use{ funcOrDefname.asDefName })
+			this.synth_((mk: name).use{ funcOrDefname.asSynthDef.add.name })
 		};
 		namedList.dump
 	}
@@ -352,24 +354,25 @@ MicroKeys {
 			} { heldNotes.add(keys[midinote]) }
 		}
 		{ species == \mono } {
-			// down.debug("down off");
-			(down.size <= 1).if{
-				modMap.notNil.if { monosynth[\synth].release }{ monosynth.release };
-				down.remove(midinote);
-                downChannel.put(midinote, nil);
-				currentChannel = nil; // Clear current channel when no notes playing
-			}{ 
-				down.remove(midinote);
-                downChannel.put(midinote, nil);
-                //update channel to previous
-                currentChannel = downChannel[down.last];
-				modMap.notNil.if {
-					monosynth[\num] = down.last;
-					this.applyMods(monosynth);
+			Server.default.makeBundle(latency + 0.02, {
+				(down.size <= 1).if{
+					modMap.notNil.if { monosynth[\synth].release }{ monosynth.release };
+					down.remove(midinote);
+					downChannel.put(midinote, nil);
+					currentChannel = nil; // Clear current channel when no notes playing
 				}{
-					monosynth.set(\num, down.last, \freq, down.last.midicps)  // snap back to previous note
-				}
-			};
+					down.remove(midinote);
+					downChannel.put(midinote, nil);
+					//update channel to previous
+					currentChannel = downChannel[down.last];
+					modMap.notNil.if {
+						monosynth[\num] = down.last;
+						this.applyMods(monosynth);
+					}{
+						monosynth.set(\num, down.last, \freq, down.last.midicps)  // snap back to previous note
+					}
+				};
+			});
 		};
 	}
 	applyMods { |voice|

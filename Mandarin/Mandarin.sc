@@ -1,11 +1,12 @@
 Mandarin {
-    classvar path = "/Users/michael/tank/super/scd/Mandarin";
+    classvar path;
     classvar event, <>env;
     *initClass {
         Class.initClassTree(Event);
+        path = PathName(Mandarin.filenameSymbol.asString).pathOnly +/+ "Songs";
         env = ();
         event = (
-            path: "/Users/michael/tank/super/scd/Mandarin",
+            path: path,
             load: {|self file|  self.path +/+ self[file] => _.load },
             edit: {|self name | self.path +/+ (name !? self[name] ? self[Song.current]) => Nvim.e(_)},
             Wind: "windArrange.scd",

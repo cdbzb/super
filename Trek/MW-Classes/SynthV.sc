@@ -866,8 +866,20 @@ SynthV {
 		^db.modes
 	}
 	setDatabase { |key|
+		// nil database is intentional — produces a voiceless/breath line
+		// (used e.g. by silver-lake `role: \desc`); write nil through and skip cleanup
 		var db = databaseLib.at(key);
-		var dbClean = db.copy;
+		var dbClean;
+		db.isNil.if {
+			case
+			{ appVersion == 1 } { project.tracks[0].mainRef.put(\database, nil) }
+			{ appVersion == 2 } {
+				project.tracks[0].groups[0].put(\database, nil);
+				project.tracks[0].mainRef.put(\database, nil);
+			};
+			^this
+		};
+		dbClean = db.copy;
 		[\modes, \singers, \spacing].do{|k| dbClean.removeAt(k) };
 		case
 		{ appVersion == 1 } { project.tracks[0].mainRef.put(\database, dbClean) }

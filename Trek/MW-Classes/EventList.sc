@@ -234,6 +234,7 @@ EventList {
 		routes.keysValuesDo { |key, type|
 			event[key].notNil.if {
 				event.put(\type, type);
+				addFunc !? { addFunc.(event, this) };
 				sink.(event);
 				^this
 			}
@@ -375,3 +376,4 @@ EventList {
 		^EventList.current.addPattern(when, pattern, n, maxWhen, this)
 	}
 }
+

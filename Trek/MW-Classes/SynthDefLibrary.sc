@@ -5,15 +5,22 @@ SynthDefLibrary {
     *initClass {
         listings=List.new;
         taglist = ();
-        StartUp.add( {
+        ServerBoot.add({
             var dir = this.filenameSymbol.asString.dirname.dirname +/+ "SynthDefLibrary";
             var scdFiles = (dir +/+ "*.scd").pathMatch;
             var cacheDir = dir +/+ "cached";
             File.mkdir(cacheDir);
-            Server.default.waitForBoot{
+            this.loadWithCache(scdFiles, cacheDir)
+        }, Server.default);
+        StartUp.add({
+            var dir = this.filenameSymbol.asString.dirname.dirname +/+ "SynthDefLibrary";
+            var scdFiles = (dir +/+ "*.scd").pathMatch;
+            var cacheDir = dir +/+ "cached";
+            File.mkdir(cacheDir);
+            Server.default.serverRunning.if {
                 this.loadWithCache(scdFiles, cacheDir)
             }
-        } )
+        })
     }
 
     *loadWithCache { |scdFiles, cacheDir|

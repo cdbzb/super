@@ -333,11 +333,11 @@ SynthVVST {
 		key = take.notNil.if{ voice ++ "_" ++ take }{ voice };
 		section = P.calcStart(start);
 		song = song ? Song.currentSong;
-		sv = SynthVVST(voice, version: version, params: params.value(
-			song,
-			song.durs[section].list,
-			voice
-		) => Event.newFrom(_));
+		sv = SynthVVST(voice, version: version, params:
+			song.pbind[section].patternpairs.collect{|i| (i.class==Pseq).if{i.list}{i} }
+			++ params.value(song, song.durs[section].list, voice)
+			=> Event.newFrom(_)
+		);
 		filters = filters ? [];
 		filters.isKindOf(Function).if{ filters = [filters] };
 		filters.do{|f| f.(sv) };
@@ -346,31 +346,40 @@ SynthVVST {
 			"SynthVVST: % not frozen.\nSong.%.synthV.render".format(key, key).postln;
 		};
 		^P(key, start, syl, lag, {|p b e|
-			var syn, dur;
-			sv.ready.wait;
-			sv.isFrozen.if{
-				syn = music.(p, b, e);
-			}{
-				sv.cleanup.notNil.if{ sv.cleanup.stop };
-				sv.isMulti.if{
-					sv.synthV.do{|svv|
-						svv.vst.controller.setTransportPos(0);
-						svv.vst.controller.setPlaying(true);
-					}
+			var doMusic = {
+				var syn, dur;
+				sv.isFrozen.if{
+					syn = music.(p, b, e);
 				}{
-					sv.synthV.vst.controller.setTransportPos(0);
-					sv.synthV.vst.controller.setPlaying(true);
-				};
-				syn = music.(p, b, e);
-				dur = sv.params.dur.sum + tail;
-				sv.cleanup = fork{
-					dur.wait;
+					sv.cleanup.notNil.if{ sv.cleanup.stop };
 					sv.isMulti.if{
-						sv.synthV.do{|svv| svv.vst.controller.setPlaying(false) }
+						sv.synthV.do{|svv|
+							svv.vst.controller.setTransportPos(0);
+							svv.vst.controller.setPlaying(true);
+						}
 					}{
-						sv.synthV.vst.controller.setPlaying(false)
+						sv.synthV.vst.controller.setTransportPos(0);
+						sv.synthV.vst.controller.setPlaying(true);
 					};
-					syn.free;
+					syn = music.(p, b, e);
+					dur = sv.params.dur.sum + tail;
+					sv.cleanup = fork{
+						dur.wait;
+						sv.isMulti.if{
+							sv.synthV.do{|svv| svv.vst.controller.setPlaying(false) }
+						}{
+							sv.synthV.vst.controller.setPlaying(false)
+						};
+						syn.free;
+					}
+				}
+			};
+			sv.ready.test.if{
+				doMusic.value;
+			}{
+				fork {
+					sv.ready.wait;
+					Server.default.bind { doMusic.value };
 				}
 			}
 		}, song,

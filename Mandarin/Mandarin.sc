@@ -13,7 +13,7 @@ Mandarin {
             automobile: "automobile.scd",
             automobile2: "automobile2.scd",
             automobile3: "automobile3.scd",
-            another: "another.scd",
+            heartbeat: "Heartbeat.scd",
             beautiful: "beautiful-day.scd",
             neon2: "Neon-with-beat.scd",
             mandarin1: "new mandarin song.scd",

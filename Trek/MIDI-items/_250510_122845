@@ -1108,7 +1108,8 @@ p = [
 	0, [ midiEvents: o[1],  name: o[833],  
 		initialCCValues: o[834],  restFirst: true,  
 		initialRest: o[836],  notes: o[839],  
-		takes: o[1254] ],  
+		takes: o[1254],  recordedMks: nil,  
+		recordedMk: nil ],  
 	// List
 	1, [ array: o[2] ],  
 	// Array

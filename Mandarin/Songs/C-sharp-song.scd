@@ -248,11 +248,12 @@ P(\lead, music: { |p b e|
 	// .monitor
 	// .record
 	MIDIItem("241220_132623")
+	.collect{|e| e.sustain.notNil.if{ e.sustain = e.sustain + 0.05 }; e}
 	// .record(\ld) 
-	.filter({|i| i.collect{|e| e.amp.notNil.if{e.amp_ (e.amp * 2 * ( ~leadAmp ? 1 )  ); e}{e}}})
+	.filter({|i| i.collect{|e| e.amp.notNil.if{e.amp_ (e.amp * 1 * ( ~leadAmp ? 1 )  ); e}{e}}})
 	// .start_(3)
 	.fromNote(2, 47)
-	.filterNotes({|i| i.collect{|e x| (42..44).includes(x).if {e.amp.notNil.if{e.amp_ (e.amp / 2  )}; e}{e}}})
+	// .filterNotes({|i| i.collect{|e x| (42..44).includes(x).if {e.amp.notNil.if{e.amp_ (e.amp / 2  )}; e}{e}}})
 	
 	.play(\ld);
 });

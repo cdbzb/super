@@ -18,6 +18,7 @@ Mandarin {
             neon2: "Neon-with-beat.scd",
             mandarin1: "new mandarin song.scd",
             'c#': "C-sharp-song.scd",
+            notGoodEnough: "Not_Good_Enough.scd",
             songs: {|self| self.keys.reject{|i| [\path].includes(i) }.do {|key| self[key].isKindOf(String).if{key.postln} }}
         );
         Event.addEventType(\add, {
@@ -36,7 +37,7 @@ Mandarin {
             EventList(\mandarin).add(ev);
         });
     }
-    *setup {
+    *setupEventList {
         var list = EventList(\mandarin, \seg);
         (topEnvironment != env).if { env.push };
         list.clear;

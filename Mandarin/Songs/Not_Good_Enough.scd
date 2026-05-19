@@ -397,7 +397,7 @@ P.synthVVST(\feng2, take: \descant3, params: {|p b| p.language ++ [
 	lyrics: "r 可 我 靠 不 到 你",
 	midinote: [\r] ++ [2, 4, 6, 2, 4, 1].dm(\c),
 	lyrics: "r 可 我 靠- 不 到 你 可 我 靠- - - 不 到 你 - ",
-	midinote: [\r] ++ [2, 4, 5, 6, 2, 1, 4, 5, 2, 4, 5, 6, 7, 6, 5, 4, 5].dm(\c, \mixolydian),
+	midinote: [\r] ++ [2, 4, 5, 6, 2, 1, 4, 5, 2, 4, 5, 6, 7, 6, 5, 4, 4.5].dm(\c, \mixolydian),
 	// pitchDelta: Env([0,0,0,20,0,0,0],"qq q q qq q q qq".beats*p.quarter, \step),
 	dur: "qq q q qq q q qq".beats * p.quarter,
 	dur: "qq q q E Qq q q E Qq q q E Qe e e e q q q".beats  * p.quarter,
@@ -458,4 +458,175 @@ P.synthVVST(\xuan2,lag:-0.1, take:\lead, params: {|p b| p.language ++ [
 	}.play
 });
 // --- end Verse B ---
+Song.ch2Key = \G;
+["chorusB1", [\r] ++ "5 5 4 3 1 3 2".dm(Song.ch2Key, 5), "q q q ex xq q q q".beats * Song.quarter].addLine;
+P.tune();
+P.synthVVST(\xuan2, take: \lead, params:{|p b| [
+    lyrics: "r 我 永 远 配 不 上 你",
+    midinote:
+    [\r] ++ "5 5 4 3 1 3 2".dm(\G, [ 5, 6 ]) => _ .flop
+    ,
+    singers:2
+] },music: { |p b e|
+{
+		e.bus.() => Mix.ar(_) => Pan2.ar(_,-1)
+		=> FreeVerb.ar(_,0.2,1)
+}.play
+});
+P(\guitar, music: { |p b e|
+	[
+	    freq:
+
+	    (Song.ch2Key == \c or: (Song.ch2Key == \cc)).if
+{
+[
+[1, -5, 11, 13, ].df(\g, 4),
+[1, -5, 11, 13, ].df(\f, 4),
+[1, -5, 11, 13, ].df(\c, 4),
+[1, -5, 11, 13, ].df(\f, 4),
+]
+}
+
+
+{
+[
+[1, -5, 11, 13, ].df(\d, 5),
+[1, -5, 11, 13, ].df(\c, 5),
+[1, -5, 11, 13, ].df(\g, 4),
+[1, -5, 11, 13, ].df(\c, 4),
+]
+} .q,
+dur: "qq qq qq qq".beats * p.quarter => _.q,
+	    instrument: \harp,
+	    out: Effect.bus({|i| CrossoverDistortion.ar(i) /2  => Pan2.ar(_, 1)})
+].pp
+});
+P(\bass, music: { |p b e|
+	[
+	    freq: "5 12 5 4 5 6 7 11 12 13 11 4 11 4".df(
+
+	    (Song.ch2Key == \c or: (Song.ch2Key == \cc)).if{\c}{Song.ch2Key}
+		, 3).q,
+	    instrument: \sawSynth,
+	    dur: "e q e e e e e e e e e e q e".beats * p.quarter => _.q,
+	    amp: 1
+	].pp
+});
+["chorusB2", [\r] ++ "5 5 4 3 1 3 2".dm(Song.ch2Key, 5), "q q q ex xq q q q".beats * Song.quarter].addLine;
+P.tune();
+P.synthVVST(\xuan2, take: \lead2, params:{|p b| [
+    lyrics: "r 我 只 能 远 远 看 你",
+    midinote:
+    // [\r] ++ "5 5 4 3 1 3 2".dm(\g, [ 5, 6 ]) => _ .flop
+    [\r] ++ "5 5 4 3 1 3 2".dm(\G,  5 ) => _.bubble ++
+	[
+
+    [\r] ++ "5 5 4 3 1 -6 -5 ".dm(\G,  6 )
+	]
+    ,
+    singers:2
+] },music: { |p b e|
+{
+		e.bus.() => Mix.ar(_) => Pan2.ar(_,-1)
+		=> FreeVerb.ar(_,0.2,1)
+}.play
+});
+P(\guitar, music: { |p b e|
+	[
+	    freq:
+
+	    (Song.ch2Key == \c or: (Song.ch2Key == \cc)).if
+{
+[
+[1, -5, 11, 13, ].df(\g, 4),
+[1, -5, 11, 13, ].df(\f, 4),
+[1, -5, 11, 13, ].df(\c, 4),
+[1, -5, 11, 13, ].df(\f, 4),
+]
+}
+
+
+{
+[
+[1, -5, 11, 13, ].df(\d, 5),
+[1, -5, 11, 13, ].df(\c, 5),
+[1, -5, 11, 13, ].df(\g, 4),
+[1, -5, 11, 13, ].df(\c, 4),
+]
+} .q,
+dur: "qq qq qq qq".beats * p.quarter => _.q,
+	    instrument: \harp,
+	    out: Effect.bus({|i| CrossoverDistortion.ar(i) /2  => Pan2.ar(_, 1)})
+].pp
+});
+P(\bass, music: { |p b e|
+	[
+	    freq: "5 12 5 4 5 6 7 11 12 13 11 4 11 4".df(
+
+	    (Song.ch2Key == \c or: (Song.ch2Key == \cc)).if{\c}{Song.ch2Key}
+		, 3).q,
+	    instrument: \sawSynth,
+	    dur: "e q e e e e e e e e e e q e".beats * p.quarter => _.q,
+	    amp: 1
+	].pp
+});
+["chorusB3", [\r] ++ "5 5 4 3 1 3 2".dm(Song.ch2Key, 5), "q q q ex xq q q q".beats * Song.quarter].addLine;
+P.tune();
+P.synthVVST(\xuan2, take: \lead3, params:{|p b| [
+    lyrics: "r 我 隔 着 银 河 望 你",
+    midinote:
+    // [\r] ++ "5 5 4 3 1 3 2".dm(\g, [ 5, 6 ]) => _ .flop
+    [\r] ++ "5 4 3 2 1 -6 -7".dm(\g,  5 ) => _.bubble ++
+	[
+
+    [\r] ++ "5 4 3 2 1 -6 -7 ".dm(\g,  6 )
+	]
+    ,
+    singers:2
+] },music: { |p b e|
+{
+		e.bus.() => Mix.ar(_) => Pan2.ar(_,-1)
+		=> FreeVerb.ar(_,0.2,1)
+}.play
+});
+P(\guitar, music: { |p b e|
+	[
+	    freq:
+
+	    (Song.ch2Key == \c or: (Song.ch2Key == \cc)).if
+{
+[
+[1, -5, 11, 13, ].df(\g, 4),
+[1, -5, 11, 13, ].df(\f, 4),
+[1, -5, 11, 13, ].df(\c, 4),
+[1, -5, 11, 13, ].df(\f, 4),
+]
+}
+
+
+{
+[
+[1, -5, 11, 13, ].df(\d, 5),
+[1, -5, 11, 13, ].df(\c, 5),
+[1, -5, 11, 13, ].df(\g, 4),
+[1, -5, 11, 13, ].df(\c, 4),
+]
+} .q,
+dur: "qq qq qq qq".beats * p.quarter => _.q,
+	    instrument: \harp,
+	    out: Effect.bus({|i| CrossoverDistortion.ar(i) /2  => Pan2.ar(_, 1)})
+].pp
+});
+P(\bass, music: { |p b e|
+	[
+	    freq: "5 12 5 4 5 6 7 11 12 13 11 4 11 5 12".df(
+
+	    (Song.ch2Key == \c or: (Song.ch2Key == \cc)).if{\c}{Song.ch2Key}
+		, 3).q,
+	    instrument: \sawSynth,
+	    dur: "e q e e e e e e e e e e e e e".beats * p.quarter => _.q,
+	    amp: 1
+	].pp
+});
+// --- end chorusB ---
 )

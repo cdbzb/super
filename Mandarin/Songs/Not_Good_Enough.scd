@@ -20,7 +20,14 @@ P.synthVVST(\xuan2,lag:0.00, take: \lead, params: {|p b k| [
 		/2
 	}.play
 });
-
+P(\line, music: { |p b e|
+	[
+		freq: [\r] ++ ("3 2 3 4 3 2 1  6 5 11 6  3 2 3 4 5 2 3 1 ".df(\c)) =>_.q(2),
+		dur: "e e e e e e e ee e e e qqe e e e e e e e qqqq".beats.q(3) * Song.quarter,
+		amp:2,
+		instrument:\reedy
+	].ppm
+});
 // P.synthVs(\xuan, take: [\lead, \dbl], params: {|p b| p.language ++ [
 // 	lyrics: "你 的 香 - 水  太 遥 不 可 及",
 // 	pitchTake: [3, 1],
@@ -155,6 +162,13 @@ P.synthVVST(\xuan2,lag:-0.1, take:\lead, params: {|p b| p.language ++ [
 });
 Song.ch1Key = \c;
 ["chorus1", [\r] ++ "5 5 4 3 1 3 2".dm(Song.ch1Key, 5), "q q q ex xq q q q".beats * Song.quarter].addLine;
+P(\traps, music: { |p b e|
+	[
+		instrument: \hat_808,
+		dur: "e".beats.q(24) * Song.quarter * 2,
+		out: Effect.bus( Phaser2.ar(_,depth:0.9,fb:-0.999,rate:0.13) )
+	].pp
+});
 P.tune();
 P.synthVVST(\xuan2, take: \lead, params:{|p b| [
     lyrics: "r 我 永 远 配 不 上 你",
@@ -324,6 +338,17 @@ P(\bass, music: { |p b e|
 	].pp
 });
 ["lineB1", "3 5 1 3 4 3 5 1 3 4".dm(\c), "e e e e qq e e e e qq".beats * Song.quarter].addLine;
+P(\linelet, music: { |p b e|
+	(instrument:\cymbalsDS).play;
+	[
+		freq: [\r] ++ ("3 2 3 4 3 2 1  6 5 11 6  3 2 3 4 5 2 3 1 ".df(\c, 6)) =>_.q(2),
+		dur: "e e e e e e e ee e e e qqe e e e e e e e qqqq".beats.q(3) * Song.quarter,
+		legato: 1.dup(19) ++ 0.95 => _.q(2), 
+		amp:0.5,
+		instrument:\reedy,
+		out: Effect.bus({|i| Pan2.ar(i,0) },)
+	].ppma
+});
 P.synthVVST(\xuan2,lag:0.00, take: \lead, params: {|p b k| [
 	lyrics: "你 的 项 - 链  是 银 河 标 本",
 	// pitchTake: [3, 1],
@@ -460,6 +485,59 @@ P.synthVVST(\xuan2,lag:-0.1, take:\lead, params: {|p b| p.language ++ [
 // --- end Verse B ---
 Song.ch2Key = \G;
 ["chorusB1", [\r] ++ "5 5 4 3 1 3 2".dm(Song.ch2Key, 5), "q q q ex xq q q q".beats * Song.quarter].addLine;
+P(\tamb, music: { |p b e|
+	{
+		var levels = [3,1,2,1] /3 => _.dq(inf);
+		var durs =  
+		1/8 ! 16 
+		* Song.quarter *2
+		+ ( [1, -1] /80 => _.dup(8) ) //swing amt
+		=> _.flat 
+		// => _.warpTo(e.tempoMap.quantizeWindow(0.3))
+		=> _.dq(8);
+		var triggers = TDuty.kr( durs, 0,1,gapFirst:0 );
+		var energy = EnvGen.ar( Env.linen(0, 0.00, 0.015), triggers, doneAction:0   ) 
+		* Demand.kr(triggers,0,levels 
+		);
+		Shakers.ar(3, energy:energy   , decay: 1).tanh
+		* 8
+		=> Pan2.ar(_, 0.8)
+		// * EnvGen.cutoff(b.parse([4]).unbubble,3)
+		=> DWGReverbC1C3.ar(_,mix:0.05)
+		/4
+		=> Pan2.ar(_,0.75)
+		=> Out.ar(1, _)
+
+	}.play;
+	[
+		instrument: \hat_808, 
+		dur: "x x e x x e  x x x x x x e".beats.q(16) * ~tempo / 2,
+		pan:0.5,
+		amp: 0.05
+	].pp;
+	(instrument: \cymbalsDS, amp:0.02).play
+
+});
+P(\traps, music: { |p b e|
+	[
+		instrument: \hat_808,
+		dur: "x x e e e x x x x e e".beats.q(24) * Song.quarter,
+		out: Effect.bus( Phaser2.ar(_,depth:0.9,fb:-0.999,rate:0.13) ),
+		amp:0.2,
+	].pp;
+	[
+		instrument:\JWSnare,
+		dur:Song.quarter,
+		amp:1,
+	].pp;
+	[
+		instrument:\bd_808,
+		dur:Song.quarter * "eee x xx x xx  e e".beats.q(3) ,
+		dur:Song.quarter * "qq e ee e".beats.q(3) ,
+		amp:2,
+	].pp;
+	
+});
 P.tune();
 P.synthVVST(\xuan2, take: \lead, params:{|p b| [
     lyrics: "r 我 永 远 配 不 上 你",
@@ -507,10 +585,12 @@ P(\bass, music: { |p b e|
 
 	    (Song.ch2Key == \c or: (Song.ch2Key == \cc)).if{\c}{Song.ch2Key}
 		, 3).q,
-	    instrument: \sawSynth,
+	    instrument: \sawSynthSustain,
+		lagTime:0,
+		pulse:0.9,
 	    dur: "e q e e e e e e e e e e q e".beats * p.quarter => _.q,
 	    amp: 1
-	].pp
+	].ppm
 });
 ["chorusB2", [\r] ++ "5 5 4 3 1 3 2".dm(Song.ch2Key, 5), "q q q ex xq q q q".beats * Song.quarter].addLine;
 P.tune();

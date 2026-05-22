@@ -59,11 +59,13 @@ VoiceSpace {
 			syn: Synth(defName, args, target, addAction ? \addToHead).register,
 			busses: busses,
 			defaults: defaults,
-			envSyns: List[]
+			envSyns: List[],
+			plusSyns: ()
 		);
 		voices[voice].syn.onFree {
 			voices[voice] !? { |v|
-				v.envSyns.do { |syn| syn.free };
+				v.envSyns.do { |syn| try { syn.free } };
+				v.plusSyns.do { |syn| try { syn.free } };
 				v.busses.do { |bus| bus.free };
 				voices[voice] = nil;
 			};
@@ -92,6 +94,42 @@ VoiceSpace {
 		}.play(target: syn, addAction: \addBefore)
 	}
 
+	// ---- plus: per-param Function synths layered onto busses ---------------
+	// Out.kr is additive on control busses, so each plus synth sums into the
+	// existing scalar/Env driving that bus. plusSyns may free themselves early
+	// (user-supplied func can include its own done-action), so all .free /
+	// .release calls are wrapped in try.
+
+	applyPlus { |voice, plusEv|
+		var v = voices[voice];
+		v.isNil.if { ^this };
+		plusEv.keysValuesDo { |param, val|
+			var bus = v.busses[param];
+			var existing = v.plusSyns[param];
+			bus.notNil.if {
+				case
+					{ val == \free } {
+						existing !? { try { existing.free } };
+						v.plusSyns[param] = nil;
+					}
+					{ val == \release } {
+						existing !? { try { existing.release } };
+						v.plusSyns[param] = nil;
+					}
+					{ val.isKindOf(SequenceableCollection) and: { val[0] == \release } } {
+						existing !? { try { existing.release(val[1]) } };
+						v.plusSyns[param] = nil;
+					}
+					{ val.isKindOf(Function) } {
+						existing !? { try { existing.free } };
+						v.plusSyns[param] = { Out.kr(bus.index, val.value) }
+							.play(target: v.syn, addAction: \addBefore);
+					}
+				;
+			}
+		}
+	}
+
 	// ---- per-event dispatch (sets busses; spawns ramp synths) --------------
 
 	dispatch { |ev, voice|
@@ -115,6 +153,8 @@ VoiceSpace {
 	// ---- live event firing (used by \keyFrame event type) -------------------
 
 	fireLive { |ev|
+		var plusEv = ev[\plus];
+		var plusVoice = ev[\voice] ? \default;
 		this.fanLive(ev).do { |laneEv|
 			var voice = laneEv[\voice] ? \default;
 			var defName;
@@ -124,13 +164,22 @@ VoiceSpace {
 				voices[voice].isNil.if { this.startVoice(defName, voice) };
 				this.dispatch(laneEv, voice);
 			}
+		};
+		plusEv !? {
+			Server.default.bind {
+				ev[\defName] !? { |d| voiceDefs[plusVoice] = d };
+				voices[plusVoice].isNil.if {
+					this.startVoice(voiceDefs[plusVoice] ? defaultDef, plusVoice)
+				};
+				this.applyPlus(plusVoice, plusEv);
+			}
 		}
 	}
 
 	// ---- live fan-out: persistent per-voice lane state ---------------------
 
 	fanLive { |ev|
-		var skip = [\when, \voice, \type, \newType, \beat, \delta, \dur, \tempo, \defName, \server, \voiceSpace];
+		var skip = [\when, \voice, \type, \newType, \beat, \delta, \dur, \tempo, \defName, \server, \voiceSpace, \plus];
 		var isLaneParam = { |v|
 			v.isArray
 				and: { v.isKindOf(Tuple3).not }
@@ -252,7 +301,7 @@ VoiceSpace {
 	// ---- pre-baked-timeline expansion (playFrom path) ----------------------
 
 	expandLanes { |events|
-		var skip = [\when, \voice, \type, \newType, \beat, \delta, \dur, \tempo, \defName];
+		var skip = [\when, \voice, \type, \newType, \beat, \delta, \dur, \tempo, \defName, \plus];
 		var isLaneParam, maxWidth, lastScalarLocal, aliveLanesLocal, out;
 		isLaneParam = { |v|
 			v.isArray
@@ -324,7 +373,7 @@ VoiceSpace {
 	}
 
 	extractTimelines { |events|
-		var skip = [\when, \voice, \type, \newType, \beat, \delta, \dur, \tempo, \defName];
+		var skip = [\when, \voice, \type, \newType, \beat, \delta, \dur, \tempo, \defName, \plus];
 		var tls = ();
 		events.do { |ev|
 			var voice = ev[\voice] ? \default;
@@ -422,6 +471,25 @@ VoiceSpace {
 			var delay = this.beatToWall(beat, tempoEnv) - fromWall;
 			(delay >= 0).if {
 				pending.add([delay, { ev.copy.play }])
+			}
+		};
+
+		keyEvents.do { |ev|
+			ev[\plus] !? { |plusEv|
+				var voice = ev[\voice] ? \default;
+				var beat  = ev[\when] ? 0;
+				var delay = this.beatToWall(beat, tempoEnv) - fromWall;
+				(delay >= 0).if {
+					pending.add([delay, {
+						Server.default.bind {
+							ev[\defName] !? { |d| voiceDefs[voice] = d };
+							voices[voice].isNil.if {
+								this.startVoice(voiceDefs[voice] ? defaultDef, voice)
+							};
+							this.applyPlus(voice, plusEv);
+						}
+					}])
+				}
 			}
 		};
 

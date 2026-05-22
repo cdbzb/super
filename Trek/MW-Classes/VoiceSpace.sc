@@ -59,13 +59,20 @@ VoiceSpace {
 			syn: Synth(defName, args, target, addAction ? \addToHead).register,
 			busses: busses,
 			defaults: defaults,
+			lastVal: defaults.copy,
 			envSyns: List[],
-			plusSyns: ()
+			plusSyns: (),
+			rampSyns: (),
+			rampBuses: (),
+			dispatchRamps: ()
 		);
 		voices[voice].syn.onFree {
 			voices[voice] !? { |v|
 				v.envSyns.do { |syn| try { syn.free } };
 				v.plusSyns.do { |syn| try { syn.free } };
+				v.rampSyns.do { |syn| try { syn.free } };
+				v.dispatchRamps.do { |syn| try { syn.free } };
+				v.rampBuses.do { |b| b.free };
 				v.busses.do { |bus| bus.free };
 				voices[voice] = nil;
 			};
@@ -95,10 +102,66 @@ VoiceSpace {
 	}
 
 	// ---- plus: per-param Function synths layered onto busses ---------------
-	// Out.kr is additive on control busses, so each plus synth sums into the
-	// existing scalar/Env driving that bus. plusSyns may free themselves early
-	// (user-supplied func can include its own done-action), so all .free /
-	// .release calls are wrapped in try.
+	// The plus synth uses ReplaceOut.kr and combines a baseline (named control
+	// "<param>_val") with the user's modulation function. dispatch routes
+	// scalar/Tuple/Env writes through that baseline control: scalars via .set,
+	// ramps via a private rampBus that the named control is .map'd onto.
+	// plusSyns may free themselves early (user func can include its own
+	// done-action), so all .free/.release are try-wrapped.
+	//
+	// Note: this is the live/preview path. playFrom uses additive Out.kr
+	// plus over the timeline's ReplaceOut env, which is a different (also
+	// correct) shape — see top of playFrom.
+
+	plusBaseKey { |param| ^(param.asString ++ "_val").asSymbol }
+
+	freeRamp { |voice, param|
+		var v = voices[voice];
+		v.isNil.if { ^this };
+		v.rampSyns[param] !? { |syn| try { syn.free } };
+		v.rampSyns[param] = nil;
+		v.rampBuses[param] !? { |b| b.free };
+		v.rampBuses[param] = nil;
+	}
+
+	freeDispatchRamp { |voice, param|
+		var v = voices[voice];
+		v.isNil.if { ^this };
+		v.dispatchRamps[param] !? { |syn| try { syn.free } };
+		v.dispatchRamps[param] = nil;
+	}
+
+	scheduleRamp { |voice, param, dest, time, curve=\lin, lag=0|
+		var v = voices[voice];
+		var plus = v.plusSyns[param];
+		var start = v.lastVal[param] ? v.defaults[param];
+		var env = Env([start, dest], [time], [curve]);
+		var rampBus;
+		plus.isNil.if { ^this };
+		this.freeRamp(voice, param);
+		rampBus = Bus.control(Server.default, 1);
+		rampBus.set(start);
+		v.rampBuses[param] = rampBus;
+		v.rampSyns[param] = {
+			ReplaceOut.kr(rampBus.index, EnvGen.kr(env, doneAction: 0).lag2(lag))
+		}.play(target: plus, addAction: \addBefore);
+		plus.map(this.plusBaseKey(param), rampBus);
+	}
+
+	scheduleRampEnv { |voice, param, env|
+		var v = voices[voice];
+		var plus = v.plusSyns[param];
+		var rampBus;
+		plus.isNil.if { ^this };
+		this.freeRamp(voice, param);
+		rampBus = Bus.control(Server.default, 1);
+		rampBus.set(env.levels[0]);
+		v.rampBuses[param] = rampBus;
+		v.rampSyns[param] = {
+			ReplaceOut.kr(rampBus.index, EnvGen.kr(env, doneAction: 0))
+		}.play(target: plus, addAction: \addBefore);
+		plus.map(this.plusBaseKey(param), rampBus);
+	}
 
 	applyPlus { |voice, plusEv|
 		var v = voices[voice];
@@ -106,24 +169,35 @@ VoiceSpace {
 		plusEv.keysValuesDo { |param, val|
 			var bus = v.busses[param];
 			var existing = v.plusSyns[param];
+			var baseKey = this.plusBaseKey(param);
+			var lastVal = v.lastVal[param] ? v.defaults[param];
 			bus.notNil.if {
 				case
 					{ val == \free } {
+						this.freeRamp(voice, param);
 						existing !? { try { existing.free } };
 						v.plusSyns[param] = nil;
+						bus.set(lastVal);
 					}
 					{ val == \release } {
+						existing !? { |syn| try { syn.set(baseKey, lastVal) } };
+						this.freeRamp(voice, param);
 						existing !? { try { existing.release } };
 						v.plusSyns[param] = nil;
 					}
 					{ val.isKindOf(SequenceableCollection) and: { val[0] == \release } } {
+						existing !? { |syn| try { syn.set(baseKey, lastVal) } };
+						this.freeRamp(voice, param);
 						existing !? { try { existing.release(val[1]) } };
 						v.plusSyns[param] = nil;
 					}
 					{ val.isKindOf(Function) } {
+						this.freeRamp(voice, param);
+						this.freeDispatchRamp(voice, param);
 						existing !? { try { existing.free } };
-						v.plusSyns[param] = { Out.kr(bus.index, val.value) }
-							.play(target: v.syn, addAction: \addBefore);
+						v.plusSyns[param] = {
+							ReplaceOut.kr(bus.index, baseKey.kr(lastVal) + val.value)
+						}.play(target: v.syn, addAction: \addBefore);
 					}
 				;
 			}
@@ -139,11 +213,50 @@ VoiceSpace {
 			var val = ev[k];
 			(k != \voice).if {
 				v.busses[k] !? { |bus|
+					var plus = v.plusSyns[k];
+					var baseKey = this.plusBaseKey(k);
 					case
-						{ val.isNumber }         { bus.set(val) }
-						{ val.isKindOf(Tuple3) } { this.go(bus, val.at1, val.at2, val.at3, 0, v.syn) }
-						{ val.isKindOf(Tuple4) } { this.go(bus, val.at1, val.at2, val.at3, val.at4, v.syn) }
-						{ val.isKindOf(Env) }    { { EnvGen.kr(val, doneAction: 2) => Out.kr(bus.index, _) }.play(target: v.syn, addAction: \addBefore) }
+						{ val.isNumber } {
+							this.freeDispatchRamp(voice, k);
+							plus.notNil.if {
+								this.freeRamp(voice, k);
+								try { plus.set(baseKey, val) };
+							} {
+								bus.set(val);
+							};
+							v.lastVal[k] = val;
+						}
+						{ val.isKindOf(Tuple3) } {
+							var dest = val.at1.value;
+							plus.notNil.if {
+								this.scheduleRamp(voice, k, dest, val.at2, val.at3);
+							} {
+								this.freeDispatchRamp(voice, k);
+								v.dispatchRamps[k] = this.go(bus, dest, val.at2, val.at3, 0, v.syn);
+							};
+							v.lastVal[k] = dest;
+						}
+						{ val.isKindOf(Tuple4) } {
+							var dest = val.at1.value;
+							plus.notNil.if {
+								this.scheduleRamp(voice, k, dest, val.at2, val.at3, val.at4);
+							} {
+								this.freeDispatchRamp(voice, k);
+								v.dispatchRamps[k] = this.go(bus, dest, val.at2, val.at3, val.at4, v.syn);
+							};
+							v.lastVal[k] = dest;
+						}
+						{ val.isKindOf(Env) } {
+							plus.notNil.if {
+								this.scheduleRampEnv(voice, k, val);
+							} {
+								this.freeDispatchRamp(voice, k);
+								v.dispatchRamps[k] = {
+									EnvGen.kr(val, doneAction: 2) => Out.kr(bus.index, _)
+								}.play(target: v.syn, addAction: \addBefore);
+							};
+							v.lastVal[k] = val.levels.last;
+						}
 					;
 				}
 			}
@@ -449,6 +562,7 @@ VoiceSpace {
 
 	playFrom { |list, from=0|
 		var events, keyEvents, otherEvents, tempoTl, tempoEnv, fromWall, expanded, tls, pending;
+		var plusParams;
 		from = from ? 0;
 		events      = list.scopedEvents.select { |e| list.shouldPlay(e) };
 		keyEvents   = events.select { |e| (e[\type] ? \keyFrame) == \keyFrame };
@@ -459,10 +573,22 @@ VoiceSpace {
 		expanded    = this.expandLanes(keyEvents);
 		tls         = this.extractTimelines(expanded);
 		pending     = List[];
+		plusParams  = ();
 
 		expanded.do { |e|
 			(e[\defName].notNil and: { e[\voice].notNil }).if {
 				voiceDefs[e[\voice]] = e[\defName]
+			}
+		};
+
+		// Pre-scan: which (voice, param) pairs will ever have a plus event?
+		// Those get routed through a private rampBus so the persistent plus synth
+		// can read the timeline env into its baseline (\<param>_val) and ride on top.
+		keyEvents.do { |ev|
+			ev[\plus] !? { |plusEv|
+				var voice = ev[\voice] ? \default;
+				plusParams[voice] ?? { plusParams[voice] = Set[] };
+				plusEv.keys.do { |param| plusParams[voice].add(param) };
 			}
 		};
 
@@ -471,25 +597,6 @@ VoiceSpace {
 			var delay = this.beatToWall(beat, tempoEnv) - fromWall;
 			(delay >= 0).if {
 				pending.add([delay, { ev.copy.play }])
-			}
-		};
-
-		keyEvents.do { |ev|
-			ev[\plus] !? { |plusEv|
-				var voice = ev[\voice] ? \default;
-				var beat  = ev[\when] ? 0;
-				var delay = this.beatToWall(beat, tempoEnv) - fromWall;
-				(delay >= 0).if {
-					pending.add([delay, {
-						Server.default.bind {
-							ev[\defName] !? { |d| voiceDefs[voice] = d };
-							voices[voice].isNil.if {
-								this.startVoice(voiceDefs[voice] ? defaultDef, voice)
-							};
-							this.applyPlus(voice, plusEv);
-						}
-					}])
-				}
 			}
 		};
 
@@ -507,12 +614,32 @@ VoiceSpace {
 						v.busses[param] !? { |bus|
 							var env = this.timelineToEnv(tl, v.defaults[param]);
 							var total = env.times.sum;
-							bus.set(env.at(startBeat));
+							var hasPlus = (plusParams[voice] ?? { Set[] }).includes(param);
+							var writeBus, baseKey, rampBus;
+							v.lastVal[param] = env.at(startBeat);
+							hasPlus.if {
+								var seed = env.at(startBeat);
+								rampBus = Bus.control(Server.default, 1);
+								rampBus.set(seed);
+								v.rampBuses[param] = rampBus;
+								baseKey = this.plusBaseKey(param);
+								// Passthrough plus until the first plus event swaps in userFunc.
+								// Mapping is set via /s_new args (atomic with synth creation).
+								// .map after .play would race against /d_recv's async load.
+								v.plusSyns[param] = {
+									ReplaceOut.kr(bus.index, baseKey.kr(seed))
+								}.play(target: v.syn, addAction: \addBefore,
+									args: [baseKey, rampBus.asMap]);
+								writeBus = rampBus;
+							} {
+								bus.set(env.at(startBeat));
+								writeBus = bus;
+							};
 							(startBeat < total).if {
 								var trimmed = (startBeat > 0).if { env.segment(startBeat, total) } { env };
 								var rescaled = this.rescaleEnv(trimmed, startBeat, tempoEnv);
 								v.envSyns.add(
-									{ EnvGen.kr(rescaled, doneAction: 0) => ReplaceOut.kr(bus.index, _) }
+									{ EnvGen.kr(rescaled, doneAction: 0) => ReplaceOut.kr(writeBus.index, _) }
 										.play(target: v.syn, addAction: \addBefore)
 								);
 							}
@@ -520,6 +647,59 @@ VoiceSpace {
 					};
 				}
 			}])
+		};
+
+		// Plus events: free the passthrough/old plus and spawn a new one carrying userFunc.
+		// rampBus mapping is restored so plus's baseline continues tracking the timeline env.
+		keyEvents.do { |ev|
+			ev[\plus] !? { |plusEv|
+				var voice = ev[\voice] ? \default;
+				var beat  = ev[\when] ? 0;
+				var delay = this.beatToWall(beat, tempoEnv) - fromWall;
+				(delay >= 0).if {
+					pending.add([delay, {
+						Server.default.bind {
+							ev[\defName] !? { |d| voiceDefs[voice] = d };
+							voices[voice].isNil.if {
+								this.startVoice(voiceDefs[voice] ? defaultDef, voice)
+							};
+							plusEv.keysValuesDo { |param, val|
+								var v = voices[voice];
+								var bus = v !? { v.busses[param] };
+								var existing = v !? { v.plusSyns[param] };
+								var rampBus = v !? { v.rampBuses[param] };
+								var baseKey = this.plusBaseKey(param);
+								(v.notNil and: { bus.notNil }).if {
+									case
+										{ val == \free } {
+											existing !? { try { existing.free } };
+											// Revert to passthrough so the timeline env still reaches voice bus.
+											// Mapping via /s_new args avoids /n_mapn-before-/s_new race.
+											v.plusSyns[param] = {
+												ReplaceOut.kr(bus.index, baseKey.kr(0))
+											}.play(target: v.syn, addAction: \addBefore,
+												args: rampBus.notNil.if({ [baseKey, rampBus.asMap] }, { [] }));
+										}
+										{ val == \release } {
+											existing !? { try { existing.release } };
+										}
+										{ val.isKindOf(SequenceableCollection) and: { val[0] == \release } } {
+											existing !? { try { existing.release(val[1]) } };
+										}
+										{ val.isKindOf(Function) } {
+											existing !? { try { existing.free } };
+											v.plusSyns[param] = {
+												ReplaceOut.kr(bus.index, baseKey.kr(0) + val.value)
+											}.play(target: v.syn, addAction: \addBefore,
+												args: rampBus.notNil.if({ [baseKey, rampBus.asMap] }, { [] }));
+										}
+									;
+								}
+							}
+						}
+					}])
+				}
+			}
 		};
 
 		pending.sort { |a, b| a[0] < b[0] };

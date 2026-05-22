@@ -374,11 +374,18 @@ VoiceSpace {
 		};
 		plusEv !? {
 			Server.default.bind {
+				var n = aliveLanes[plusVoice] ? 0;
+				var targets;
 				ev[\defName] !? { |d| voiceDefs[plusVoice] = d };
-				voices[plusVoice].isNil.if {
-					this.startVoice(voiceDefs[plusVoice] ? defaultDef, plusVoice)
-				};
-				this.applyPlus(plusVoice, plusEv);
+				targets = (n > 0).if(
+					{ (0 .. n - 1).collect { |i| (plusVoice ++ "_" ++ i).asSymbol } },
+					{ [plusVoice] }
+				);
+				targets.do { |laneVoice|
+					var def = voiceDefs[laneVoice] ? voiceDefs[plusVoice] ? defaultDef;
+					voices[laneVoice].isNil.if { this.startVoice(def, laneVoice) };
+					this.applyPlus(laneVoice, plusEv);
+				}
 			}
 		}
 	}
@@ -503,6 +510,35 @@ VoiceSpace {
 			curves = [\step];
 		};
 		^Env(levels, times, curves)
+	}
+
+	// max lane-fan width per base voice across the event list. >1 means fanned.
+	computeLaneCounts { |events|
+		var skip = [\when, \voice, \type, \newType, \beat, \delta, \dur, \tempo, \defName, \plus];
+		var isLaneParam = { |v|
+			v.isArray and: { v.isKindOf(Tuple3).not }
+				and: { v.isKindOf(Tuple4).not } and: { v.isKindOf(Env).not }
+		};
+		var counts = ();
+		events.do { |ev|
+			var voice = ev[\voice] ? \default;
+			var w = 1;
+			ev.keysValuesDo { |k, v|
+				(skip.includes(k).not and: { isLaneParam.(v) }).if { w = w.max(v.size) }
+			};
+			counts[voice] = (counts[voice] ? 0).max(w);
+		};
+		^counts
+	}
+
+	// Return the lane voice symbols for a base voice given a lane-count dict.
+	// Voices with count <= 1 stay as-is; otherwise expand to \base_0..\base_(n-1).
+	laneVoicesFor { |voice, laneCounts|
+		var n = laneCounts[voice] ? 1;
+		^(n > 1).if(
+			{ (0 .. n - 1).collect { |i| (voice ++ "_" ++ i).asSymbol } },
+			{ [voice] }
+		)
 	}
 
 	// ---- pre-baked-timeline expansion (playFrom path) ----------------------
@@ -656,7 +692,7 @@ VoiceSpace {
 
 	playFrom { |list, from=0|
 		var events, keyEvents, otherEvents, tempoTl, tempoEnv, fromWall, expanded, tls, pending;
-		var plusParams;
+		var plusParams, laneCounts;
 		from = from ? 0;
 		events      = list.scopedEvents.select { |e| list.shouldPlay(e) };
 		keyEvents   = events.select { |e| (e[\type] ? \keyFrame) == \keyFrame };
@@ -664,6 +700,7 @@ VoiceSpace {
 		tempoTl     = this.extractTempo(events);
 		tempoEnv    = (tempoTl.size > 0).if { this.timelineToEnv(tempoTl, 1) };
 		fromWall    = this.beatToWall(from, tempoEnv);
+		laneCounts  = this.computeLaneCounts(keyEvents);
 		expanded    = this.expandLanes(keyEvents);
 		tls         = this.extractTimelines(expanded);
 		pending     = List[];
@@ -678,11 +715,14 @@ VoiceSpace {
 		// Pre-scan: which (voice, param) pairs will ever have a plus event?
 		// Those get routed through a private rampBus so the persistent plus synth
 		// can read the timeline env into its baseline (\<param>_val) and ride on top.
+		// Plus fans out across lanes for any base voice that was lane-expanded.
 		keyEvents.do { |ev|
 			ev[\plus] !? { |plusEv|
-				var voice = ev[\voice] ? \default;
-				plusParams[voice] ?? { plusParams[voice] = Set[] };
-				plusEv.keys.do { |param| plusParams[voice].add(param) };
+				var baseVoice = ev[\voice] ? \default;
+				this.laneVoicesFor(baseVoice, laneCounts).do { |laneVoice|
+					plusParams[laneVoice] ?? { plusParams[laneVoice] = Set[] };
+					plusEv.keys.do { |param| plusParams[laneVoice].add(param) };
+				}
 			}
 		};
 
@@ -745,49 +785,53 @@ VoiceSpace {
 
 		// Plus events: free the passthrough/old plus and spawn a new one carrying userFunc.
 		// rampBus mapping is restored so plus's baseline continues tracking the timeline env.
+		// Fans across lanes for any base voice that was lane-expanded.
 		keyEvents.do { |ev|
 			ev[\plus] !? { |plusEv|
-				var voice = ev[\voice] ? \default;
+				var baseVoice = ev[\voice] ? \default;
 				var beat  = ev[\when] ? 0;
 				var delay = this.beatToWall(beat, tempoEnv) - fromWall;
+				var laneVoices = this.laneVoicesFor(baseVoice, laneCounts);
 				(delay >= 0).if {
 					pending.add([delay, {
 						Server.default.bind {
-							ev[\defName] !? { |d| voiceDefs[voice] = d };
-							voices[voice].isNil.if {
-								this.startVoice(voiceDefs[voice] ? defaultDef, voice)
-							};
-							plusEv.keysValuesDo { |param, val|
-								var v = voices[voice];
-								var bus = v !? { v.busses[param] };
-								var existing = v !? { v.plusSyns[param] };
-								var rampBus = v !? { v.rampBuses[param] };
-								var baseKey = this.plusBaseKey(param);
-								(v.notNil and: { bus.notNil }).if {
-									case
-										{ val == \free } {
-											existing !? { try { existing.free } };
-											// Revert to passthrough so the timeline env still reaches voice bus.
-											// Mapping via /s_new args avoids /n_mapn-before-/s_new race.
-											v.plusSyns[param] = {
-												ReplaceOut.kr(bus.index, baseKey.kr(0))
-											}.play(target: v.syn, addAction: \addBefore,
-												args: rampBus.notNil.if({ [baseKey, rampBus.asMap] }, { [] }));
-										}
-										{ val == \release } {
-											existing !? { try { existing.release } };
-										}
-										{ val.isKindOf(SequenceableCollection) and: { val[0] == \release } } {
-											existing !? { try { existing.release(val[1]) } };
-										}
-										{ val.isKindOf(Function) } {
-											existing !? { try { existing.free } };
-											v.plusSyns[param] = {
-												ReplaceOut.kr(bus.index, baseKey.kr(0) + val.value)
-											}.play(target: v.syn, addAction: \addBefore,
-												args: rampBus.notNil.if({ [baseKey, rampBus.asMap] }, { [] }));
-										}
-									;
+							laneVoices.do { |voice|
+								ev[\defName] !? { |d| voiceDefs[voice] = d };
+								voices[voice].isNil.if {
+									this.startVoice(voiceDefs[voice] ? defaultDef, voice)
+								};
+								plusEv.keysValuesDo { |param, val|
+									var v = voices[voice];
+									var bus = v !? { v.busses[param] };
+									var existing = v !? { v.plusSyns[param] };
+									var rampBus = v !? { v.rampBuses[param] };
+									var baseKey = this.plusBaseKey(param);
+									(v.notNil and: { bus.notNil }).if {
+										case
+											{ val == \free } {
+												existing !? { try { existing.free } };
+												// Revert to passthrough so the timeline env still reaches voice bus.
+												// Mapping via /s_new args avoids /n_mapn-before-/s_new race.
+												v.plusSyns[param] = {
+													ReplaceOut.kr(bus.index, baseKey.kr(0))
+												}.play(target: v.syn, addAction: \addBefore,
+													args: rampBus.notNil.if({ [baseKey, rampBus.asMap] }, { [] }));
+											}
+											{ val == \release } {
+												existing !? { try { existing.release } };
+											}
+											{ val.isKindOf(SequenceableCollection) and: { val[0] == \release } } {
+												existing !? { try { existing.release(val[1]) } };
+											}
+											{ val.isKindOf(Function) } {
+												existing !? { try { existing.free } };
+												v.plusSyns[param] = {
+													ReplaceOut.kr(bus.index, baseKey.kr(0) + val.value)
+												}.play(target: v.syn, addAction: \addBefore,
+													args: rampBus.notNil.if({ [baseKey, rampBus.asMap] }, { [] }));
+											}
+										;
+									}
 								}
 							}
 						}

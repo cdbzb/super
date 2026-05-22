@@ -297,7 +297,15 @@ VoiceSpace {
 							} {
 								// `go` reads current bus via In.kr — sample it here too so
 								// rampInfo's startVal matches what go's EnvGen will actually use.
-								var startVal = bus.getSynchronous ? (v.lastVal[k] ? v.defaults[k]);
+								// But getSynchronous only reflects committed state: if startVoice's
+								// bus.set(default) is bundled with this same dispatch, the bundle
+								// hasn't been sent yet → getSynchronous returns 0. Only trust it
+								// when a previous dispatchRamp was running (proves bus is committed
+								// and actively moving); otherwise lastVal/defaults is authoritative.
+								var startVal = v.dispatchRamps[k].notNil.if(
+									{ bus.getSynchronous },
+									{ v.lastVal[k] ? v.defaults[k] }
+								);
 								this.freeDispatchRamp(voice, k);
 								v.dispatchRamps[k] = this.go(bus, dest, val.at2, val.at3, 0, v.syn);
 								v.rampInfo[k] = (
@@ -313,7 +321,10 @@ VoiceSpace {
 							plus.notNil.if {
 								this.scheduleRamp(voice, k, dest, val.at2, val.at3, val.at4);
 							} {
-								var startVal = bus.getSynchronous ? (v.lastVal[k] ? v.defaults[k]);
+								var startVal = v.dispatchRamps[k].notNil.if(
+									{ bus.getSynchronous },
+									{ v.lastVal[k] ? v.defaults[k] }
+								);
 								this.freeDispatchRamp(voice, k);
 								v.dispatchRamps[k] = this.go(bus, dest, val.at2, val.at3, val.at4, v.syn);
 								v.rampInfo[k] = (

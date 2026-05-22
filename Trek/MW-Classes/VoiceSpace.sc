@@ -64,7 +64,8 @@ VoiceSpace {
 			plusSyns: (),
 			rampSyns: (),
 			rampBuses: (),
-			dispatchRamps: ()
+			dispatchRamps: (),
+			rampInfo: ()
 		);
 		voices[voice].syn.onFree {
 			voices[voice] !? { |v|
@@ -129,6 +130,29 @@ VoiceSpace {
 		v.isNil.if { ^this };
 		v.dispatchRamps[param] !? { |syn| try { syn.free } };
 		v.dispatchRamps[param] = nil;
+		v.rampInfo[param] = nil;
+	}
+
+	// Snapshot a dispatchRamp's current state. Returns (currentVal, remainingEnv, lag)
+	// where remainingEnv is non-nil only when the original was a Tuple3/Tuple4 ramp
+	// still in progress. Multi-segment Env ramps are snapshotted to currentVal only.
+	dispatchRampSnapshot { |voice, param|
+		var v = voices[voice];
+		var info, elapsed, remaining, fullEnv, currentVal, remainingEnv, lag = 0;
+		v.isNil.if { ^(currentVal: nil, remainingEnv: nil, lag: 0) };
+		info = v.rampInfo[param];
+		info.isNil.if { ^(currentVal: nil, remainingEnv: nil, lag: 0) };
+		elapsed = Main.elapsedTime - info[\start];
+		remaining = (info[\dur] - elapsed).max(0);
+		fullEnv = info[\env] ?? {
+			Env([info[\startVal], info[\dest]], [info[\dur]], [info[\curve]])
+		};
+		currentVal = fullEnv.at(elapsed.min(info[\dur]));
+		((remaining > 0) and: { info[\env].isNil }).if {
+			remainingEnv = Env([currentVal, info[\dest]], [remaining], [info[\curve]]);
+			lag = info[\lag] ? 0;
+		};
+		^(currentVal: currentVal, remainingEnv: remainingEnv, lag: lag)
 	}
 
 	scheduleRamp { |voice, param, dest, time, curve=\lin, lag=0|
@@ -174,10 +198,19 @@ VoiceSpace {
 			bus.notNil.if {
 				case
 					{ val == \free } {
-						this.freeRamp(voice, param);
+						var rampBus = v.rampBuses[param];
 						existing !? { try { existing.free } };
-						v.plusSyns[param] = nil;
-						bus.set(lastVal);
+						rampBus.notNil.if {
+							// Keep rampSyn alive; replace user func with a passthrough
+							// so the voice bus continues tracking the in-flight ramp.
+							v.plusSyns[param] = {
+								ReplaceOut.kr(bus.index, baseKey.kr(0))
+							}.play(target: v.syn, addAction: \addBefore,
+								args: [baseKey, rampBus.asMap]);
+						} {
+							v.plusSyns[param] = nil;
+							bus.set(lastVal);
+						};
 					}
 					{ val == \release } {
 						existing !? { |syn| try { syn.set(baseKey, lastVal) } };
@@ -192,12 +225,31 @@ VoiceSpace {
 						v.plusSyns[param] = nil;
 					}
 					{ val.isKindOf(Function) } {
+						var snap = this.dispatchRampSnapshot(voice, param);
+						var baseVal = snap[\currentVal] ? lastVal;
 						this.freeRamp(voice, param);
 						this.freeDispatchRamp(voice, param);
 						existing !? { try { existing.free } };
-						v.plusSyns[param] = {
-							ReplaceOut.kr(bus.index, baseKey.kr(lastVal) + val.value)
-						}.play(target: v.syn, addAction: \addBefore);
+						snap[\remainingEnv].notNil.if {
+							// Continue the in-flight ramp on a private rampBus so plus
+							// baseline (\<param>_val) tracks the rising/falling motion.
+							var rampBus = Bus.control(Server.default, 1);
+							rampBus.set(baseVal);
+							v.rampBuses[param] = rampBus;
+							v.plusSyns[param] = {
+								ReplaceOut.kr(bus.index, baseKey.kr(0) + val.value)
+							}.play(target: v.syn, addAction: \addBefore,
+								args: [baseKey, rampBus.asMap]);
+							v.rampSyns[param] = {
+								ReplaceOut.kr(rampBus.index,
+									EnvGen.kr(snap[\remainingEnv], doneAction: 0).lag2(snap[\lag]))
+							}.play(target: v.syn, addAction: \addBefore);
+						} {
+							v.plusSyns[param] = {
+								ReplaceOut.kr(bus.index, baseKey.kr(baseVal) + val.value)
+							}.play(target: v.syn, addAction: \addBefore);
+						};
+						v.lastVal[param] = baseVal;
 					}
 				;
 			}
@@ -231,8 +283,14 @@ VoiceSpace {
 							plus.notNil.if {
 								this.scheduleRamp(voice, k, dest, val.at2, val.at3);
 							} {
+								var startVal = v.lastVal[k] ? v.defaults[k];
 								this.freeDispatchRamp(voice, k);
 								v.dispatchRamps[k] = this.go(bus, dest, val.at2, val.at3, 0, v.syn);
+								v.rampInfo[k] = (
+									start: Main.elapsedTime, dur: val.at2,
+									startVal: startVal, dest: dest, curve: val.at3,
+									lag: 0, env: nil
+								);
 							};
 							v.lastVal[k] = dest;
 						}
@@ -241,8 +299,14 @@ VoiceSpace {
 							plus.notNil.if {
 								this.scheduleRamp(voice, k, dest, val.at2, val.at3, val.at4);
 							} {
+								var startVal = v.lastVal[k] ? v.defaults[k];
 								this.freeDispatchRamp(voice, k);
 								v.dispatchRamps[k] = this.go(bus, dest, val.at2, val.at3, val.at4, v.syn);
+								v.rampInfo[k] = (
+									start: Main.elapsedTime, dur: val.at2,
+									startVal: startVal, dest: dest, curve: val.at3,
+									lag: val.at4, env: nil
+								);
 							};
 							v.lastVal[k] = dest;
 						}
@@ -254,6 +318,11 @@ VoiceSpace {
 								v.dispatchRamps[k] = {
 									EnvGen.kr(val, doneAction: 2) => Out.kr(bus.index, _)
 								}.play(target: v.syn, addAction: \addBefore);
+								v.rampInfo[k] = (
+									start: Main.elapsedTime, dur: val.times.sum,
+									startVal: val.levels[0], dest: val.levels.last,
+									curve: nil, lag: 0, env: val
+								);
 							};
 							v.lastVal[k] = val.levels.last;
 						}

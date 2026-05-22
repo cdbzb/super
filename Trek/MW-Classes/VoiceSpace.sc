@@ -295,7 +295,9 @@ VoiceSpace {
 							plus.notNil.if {
 								this.scheduleRamp(voice, k, dest, val.at2, val.at3);
 							} {
-								var startVal = v.lastVal[k] ? v.defaults[k];
+								// `go` reads current bus via In.kr — sample it here too so
+								// rampInfo's startVal matches what go's EnvGen will actually use.
+								var startVal = bus.getSynchronous ? (v.lastVal[k] ? v.defaults[k]);
 								this.freeDispatchRamp(voice, k);
 								v.dispatchRamps[k] = this.go(bus, dest, val.at2, val.at3, 0, v.syn);
 								v.rampInfo[k] = (
@@ -311,7 +313,7 @@ VoiceSpace {
 							plus.notNil.if {
 								this.scheduleRamp(voice, k, dest, val.at2, val.at3, val.at4);
 							} {
-								var startVal = v.lastVal[k] ? v.defaults[k];
+								var startVal = bus.getSynchronous ? (v.lastVal[k] ? v.defaults[k]);
 								this.freeDispatchRamp(voice, k);
 								v.dispatchRamps[k] = this.go(bus, dest, val.at2, val.at3, val.at4, v.syn);
 								v.rampInfo[k] = (

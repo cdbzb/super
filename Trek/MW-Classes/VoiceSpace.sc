@@ -158,33 +158,45 @@ VoiceSpace {
 	scheduleRamp { |voice, param, dest, time, curve=\lin, lag=0|
 		var v = voices[voice];
 		var plus = v.plusSyns[param];
-		var start = v.lastVal[param] ? v.defaults[param];
-		var env = Env([start, dest], [time], [curve]);
-		var rampBus;
+		var rampBus = v.rampBuses[param];
+		var fresh = rampBus.isNil;
 		plus.isNil.if { ^this };
-		this.freeRamp(voice, param);
-		rampBus = Bus.control(Server.default, 1);
-		rampBus.set(start);
-		v.rampBuses[param] = rampBus;
+		// Free only the running rampSyn; keep rampBus alive so the new env can
+		// pick up its actual current value via In.kr (avoids jumping back to
+		// a stale lastVal when re-ramping mid-flight).
+		v.rampSyns[param] !? { |syn| try { syn.free } };
+		v.rampSyns[param] = nil;
+		fresh.if {
+			var start = v.lastVal[param] ? v.defaults[param];
+			rampBus = Bus.control(Server.default, 1);
+			rampBus.set(start);
+			v.rampBuses[param] = rampBus;
+		};
 		v.rampSyns[param] = {
-			ReplaceOut.kr(rampBus.index, EnvGen.kr(env, doneAction: 0).lag2(lag))
+			Env([In.kr(rampBus.index) => Latch.kr(_, 1), dest], [time], [curve])
+				.kr(0, gate: 1).lag2(lag)
+			=> ReplaceOut.kr(rampBus.index, _)
 		}.play(target: plus, addAction: \addBefore);
-		plus.map(this.plusBaseKey(param), rampBus);
+		fresh.if { plus.map(this.plusBaseKey(param), rampBus) };
 	}
 
 	scheduleRampEnv { |voice, param, env|
 		var v = voices[voice];
 		var plus = v.plusSyns[param];
-		var rampBus;
+		var rampBus = v.rampBuses[param];
+		var fresh = rampBus.isNil;
 		plus.isNil.if { ^this };
-		this.freeRamp(voice, param);
-		rampBus = Bus.control(Server.default, 1);
-		rampBus.set(env.levels[0]);
-		v.rampBuses[param] = rampBus;
+		v.rampSyns[param] !? { |syn| try { syn.free } };
+		v.rampSyns[param] = nil;
+		fresh.if {
+			rampBus = Bus.control(Server.default, 1);
+			rampBus.set(env.levels[0]);
+			v.rampBuses[param] = rampBus;
+		};
 		v.rampSyns[param] = {
 			ReplaceOut.kr(rampBus.index, EnvGen.kr(env, doneAction: 0))
 		}.play(target: plus, addAction: \addBefore);
-		plus.map(this.plusBaseKey(param), rampBus);
+		fresh.if { plus.map(this.plusBaseKey(param), rampBus) };
 	}
 
 	applyPlus { |voice, plusEv|

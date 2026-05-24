@@ -267,10 +267,15 @@ MicroKeys {
 		) };
 		namedList.dump
 	}
-	velCurve_ { |env|
+	velCurve_ { |curvatureOrEnv, range|
+		var env = curvatureOrEnv.isKindOf(Env).if {
+			curvatureOrEnv
+		} {
+			Env(range ? [0, 1], [1], [curvatureOrEnv])
+		};
 		namedList.add (
-			\velCurve, 
-			{ |e| e.vel=env.at(e.vel ? 0) },
+			\velCurve,
+			{ |e| e.vel = env.at(e.vel ? 0) },
 			addAction: \addAfter,
 			otherName: \event
 		);

@@ -45,8 +45,14 @@ Mandarin {
         list.beatDur = Song.clock.notNil.if { Song.clock.beatDur } { Song.quarter ? 1 };
         list.addFunc = { |ev, l|
             ev[\section].notNil.if {
-                ev[\when] = Mandarin.env[\nextWhen] ? 0;
-                Mandarin.env[\nextWhen] = ev[\when] + (Seg.durOf(ev) / (l.beatDur ? 1));
+                var explicit = ev[\when].notNil;
+                explicit.if {
+                    var prev = l.events.last;
+                    ev[\when] = (prev !? { prev[\when] } ? 0) + ev[\when];
+                } {
+                    ev[\when] = Mandarin.env[\nextWhen] ? 0;
+                    Mandarin.env[\nextWhen] = ev[\when] + (Seg.durOf(ev) / (l.beatDur ? 1));
+                };
                 "  @ % beats : %".format(ev[\when].round(0.001), ev[\section]).postln;
             }
         };

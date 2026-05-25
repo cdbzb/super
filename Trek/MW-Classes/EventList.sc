@@ -91,7 +91,9 @@ EventList {
 		};
 		^current.addContext(event)
 	}
-	*play { |from| ^current.play(cursor.debug("CURSOR") ? from ? 0 => _.postln) }
+	*play { |from, fromEvent, fromSection|
+		^current.play(cursor.debug("CURSOR") ? from ? 0 => _.postln, fromEvent, fromSection)
+	}
 	*clear { ^current.clear }
 	*clearContext { ^current.clearContext }
 	*setupContext { ^current.setupContext }
@@ -167,7 +169,8 @@ EventList {
 		when.isKindOf(Event).if {
 			event = when
 		} {
-			event = (when: when ? 0) ++ kwargs.asEvent
+			event = kwargs.asEvent;
+			when.notNil.if { event[\when] = when }
 		};
 		event[\voice].isKindOf(Array).if {
 			^this.expandAxis(event[\voice].size, event)
@@ -317,9 +320,21 @@ EventList {
 		context.do { |e| this.projectEvent(e).copy.put(\when, 0).play }
 	}
 
-	play { |from=0|
+	play { |from=0, fromEvent, fromSection|
 		var bd;
 		from = from ? 0;
+		fromEvent !? {
+			var ev = events[fromEvent];
+			ev.notNil.if { from = (ev[\when] ? 0) + from }
+		};
+		fromSection !? {
+			(defaultType == \seg).if {
+				var hit = events.detect { |e| e[\section] == fromSection };
+				hit.notNil.if { from = (hit[\when] ? 0) + from }
+			} {
+				"EventList.play: fromSection ignored — defaultType is %".format(defaultType).warn
+			}
+		};
 		voiceSpace.notNil.if { ^voiceSpace.playFrom(this, from) };
 		playFn.notNil.if { ^playFn.(this, from) };
 		bd = beatDur ? TempoClock.default.beatDur;

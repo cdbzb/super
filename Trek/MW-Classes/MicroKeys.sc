@@ -538,6 +538,10 @@ monitor { |offLatency = 0.02|
 
 	//set to current state when monitoring begins
 	instanceCCs = ccs;
+	// seed modState with current physical CC values
+	modMap.notNil.if {
+		ccs.keysValuesDo{|k v| modState[("cc" ++ k).asSymbol] = v }
+	};
 	//if we are monitoring a cc we set these
     MIDIdef.cc(\setClassCCs, {|v n c src| excludeSrcIDs.includes(src).not.if{ ccs.put(n.asSymbol, v / 127.0) } });
 	MIDIdef.cc(\microCC ++ name => _.asSymbol, {|val num chan src| excludeSrcIDs.includes(src).not.if{ this.doCC(val / 127.0, num, chan) } } );
@@ -598,11 +602,22 @@ monitor { |offLatency = 0.02|
 		this.clearVoiceState
 	}
 	clearVoiceState {
-		keys = List[] ! 128;
-		sounding = Set[];
+		case
+		{ species == \poly } {
+			keys = List[] ! 128;
+			sounding = Set[];
+			down = List[];
+		}
+		{ species == \mono } {
+			keys = 0 ! 128;
+			down = List[];
+			downChannel = ();
+			currentChannel = nil;
+			monosynth = nil;
+		};
 		heldNotes = Set[];
-		down = List[];
 		damperDown = false;
+		modState = (bend: 0, poly: 0, pressure: 0, expr: 0);
 	}
 	free {
 		this.unmonitor ; //remove MIDIdefs

@@ -776,7 +776,8 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			"# note amp sus".postln 
 		};
 		mk.storeCCValues;
-		midiEvents.do{|e x| 
+		mk.modState = (bend: 0, poly: 0, pressure: 0, expr: 0);
+		midiEvents.do{|e x|
 			var from = start ? 0;
 			var to = end ? midiEvents.last.timestamp;
 

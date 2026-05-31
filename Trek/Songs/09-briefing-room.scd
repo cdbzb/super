@@ -520,7 +520,9 @@ P(\androidBass,syl:13, music: { |p b e|
 	[
 		freq: [11, 11, 7, 7, 4 ].df(\f,2).q,
 		dur: b.drop(1).parse([ 1, 1, 1, 2, 1]).q,
-		out: Effect.bus({|i| i ++ (CrossoverDistortion.ar(i) /30) },)
+		out: Effect.bus({|i| i ++ (CrossoverDistortion.ar(i) /30 
+		* EnvGen.cutoff(b.drop(1).sum, 0.5)
+	) },)
 	].pp;
 });
 P(\chordsPartTwo,syl: 13, music: { |p b e|
@@ -1896,6 +1898,7 @@ P.synthV(\feng, filter: (midinote: _ - 12),take:nil,  params: {|p b| [
 		=> CrossoverDistortion.ar(_, amp:0.2, smooth:0.2, mul:1.0, add:0)
 		+ i 
 		/2
+		* EnvGen.cutoff(wait:b.sum, release:0.5, curve:nil, doneAction:2)
 		}
 		=> p.synthVTracks.at(e.key).()
 	}.play

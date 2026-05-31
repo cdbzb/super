@@ -143,6 +143,7 @@ params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		* 1.dbamp
 		=> Pan2.ar(_, 0)
 	}.play
 
@@ -727,6 +728,7 @@ P.synthV(role: \spock, take: \lead, params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		* 3.dbamp
 		=> Pan2.ar(_, -0.25)
 	}.play
 
@@ -792,6 +794,7 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		* 1.dbamp
 		=> Pan2.ar(_,0)
 	}.play
 
@@ -888,6 +891,7 @@ P.synthVs(role: \spock, take: [\lead,\double], params: {|p b| [
 	{
 		e.playbuf
 		/ 10 
+		* 2.dbamp
 		=> Pan2.ar(_, pan)
 		// => p.synthVTracks.at(e.key).()
 	}.play
@@ -915,6 +919,7 @@ P.synthVs(role: \spock, take: [\harmony, \harnmony2],
 		=> HPF.ar(_,200)
 		=> Pan2.ar(_,pan)
 		/12
+		* 2.dbamp
 		// => p.synthVTracks.at(e.key).()
 	}.play
 }});
@@ -991,7 +996,7 @@ P.synthV(role: \vocoder, frozen: true, take: \lead, params: {|p b| [
 		mix:0.01,
 		chord: #[1, 2, 4, 8],
 		verb:0.2,
-		modGain:1.5,
+		modGain:1.5 * 2.dbamp,
 		mix: p.vocoderMix, width: p.vocoderWidth,
 	);
 	{
@@ -1022,11 +1027,10 @@ P(\bassOffbeats, music: { |p b e|
 		dur: "Q e e e e e e e e e e e e".asBeats.warpTo( e.tempoMap.quantizeDft(0.6) ).q,
 		rest: [\r,1, 1, 1, 1, 1, 1, 1, 1, 1, 1].q(inf),
 		rest: [\r,1].q(inf),
-		instrument: \bl,amp:0.05,
+		instrument: \bl,amp:0.05 * 3.1.dbamp,
+		out: 2,
 		freq: [1,2 ,3].df('f#',3) =>Pstep(_,b.parse([5,5,2]))
 	].pp
-});
-P(\kick, music: { |p b e|
 });
 P.still(\spockAnswers, timecode: 506.3.seconds, music: { |p b e|
 	 e.still.( 
@@ -1048,13 +1052,15 @@ P(\arp, music: { |p b e|
 	var dur = 0.125;
 	[
 		instrument: \sawSynthSustain,
+		lofreq: 6000, hifreq: 9000,
 		degree: [0,8,15].q(inf),
 		root: [6!( dur.reciprocal*5/3 ),8!( dur.reciprocal *7/3),10!(dur.reciprocal*2)]=> _.flat => _.q,
 		// dur: "Q q q q q q".asBeats.warpTo( e.tempoMap ).q,
 		dur: (0.125).dup(48).asBeats.warpTo( e.tempoMap.quantizeDft(0.6) ).q,
 		octave:4,
 		lagTime:0,
-		amp:0.03
+		out: 0,
+		amp:0.03 * -1.1.dbamp
 	].ppm
 });
 P(\click2, music: { |p b e|
@@ -1067,7 +1073,7 @@ P(\click2, music: { |p b e|
 		dur: (dur).dup(24).asBeats.warpTo( e.tempoMap.quantizeDft(0.6) ).q,
 		octave:3,
 		lagTime:0,
-		amp:Pseries(0.1,-0.005,inf),
+		amp:Pseries(0.15,-0.005,inf) * 3.1.dbamp,
 		pan:1
 	].pp
 });
@@ -1077,10 +1083,12 @@ P(\traps, music: { |p b e|
 		,
 		instrument: \hat_808,
 		pan:-1,
-		out: Effect.bus({|i| CombN.ar(i,0.05,0.005,0.31)+i /4
-		* Line.kr(1,0,b.sum+1)
-		=> FreeVerb.ar(_,0.4,1) 
-	},)
+		amp: 0.1 * 3.1.dbamp,
+		out: Effect.bus({|i| 
+			CombN.ar(i,0.05,0.005,0.31)+i /4
+			* Line.kr(1,0,b.sum+1)
+			=> FreeVerb.ar(_,0.4,1) 
+		},)
 	].pp;
 	[
 		dur: 32.collect{ [4,[ 8, 8 ],[ 16, 8, 16 ]].choose.reciprocal * 2  }.flat.warpTo( e.tempoMap.quantizeDft(0.6) ).q(1)// => _.findur(b[..10].sum)
@@ -1093,17 +1101,20 @@ P(\traps, music: { |p b e|
 		=> DWGReverbC1C3.ar(_,mix:0.2)
 		* Line.kr(1,0,b.sum+1)
 		=> FreeVerb.ar(_,0.2,1)
-		/10 * 3.dbamp
+		/10 * 3.dbamp * 3.1.dbamp
 	},inputChannels:2, out: 2)
 	].pp;
 	[
 		dur: "Q e e e e e e e e e e e e".asBeats.warpTo( e.tempoMap.quantizeDft(0.6) ).q,
 		rest: [1,1, 1, 1, 1, 1, 1, 1, 1, 1, 1].q(inf),
-		instrument: \kick,amp:0.05,
+		instrument: \kick,
+		amp:0.05 * 3.1.dbamp,
 		instrument: \bd_808,
 		lag: 0.02,
 		freq: [1,2 ,3].df('f#',3) =>Pstep(_,b.parse([5,5,2])),
-		out: Effect.bus({|i| i => DWGReverbC1C3.ar(i,mix:0.05)  }, inputChannels:2, out: 1)
+		out: Effect.bus({|i| i 
+			// => DWGReverbC1C3.ar(i,mix:0.05)
+		}, inputChannels:2, out: 1)
 	].pp
 });
 P(\bassline, music: { |p b e|
@@ -1119,14 +1130,16 @@ P.synthVs(role: \spock, take: [\lead, \double], params: {|p b| [
 	lyrics: "Reading + energy + + only + captain + no life forms",
 	filter: (midinote: _ - 12), 
 	pitchTake: [1, 3]
-] }, music:{|p b e|
+] }, music:[-0.5, 0].collect{|pan| {|p b e|
 	{
 		e.playbuf
 		// => p.synthVTracks.at(e.key).()
 		/10
+		* 2.5.dbamp
+		=> Pan2.ar(_, pan)
 	}.play
 
-});
+}});
 [" I have locked your transporter device on my co-ordinates.","5 5 5 6 5 4 3 2 4 3 2 1 3 2 2".dm(\a,4)].addLine;/*SARGON [OC]*/
 P.still(\clear, timecode: 0.seconds,lag: 0.01, music: { |p b e|
 	 e.still.( 
@@ -1164,7 +1177,7 @@ P.synthV(role: \vocoder, frozen: true, take: \lead, params: {|p b| [
 		mix:0.5,
 		chord: #[1, 2, 3, 4, 8] * 2,
 		verb:0.7,
-		modGain:2.dbamp,
+		modGain:4.dbamp,
 		mix: p.vocoderMix, width: p.vocoderWidth,
 		durRel:0.5
 	);
@@ -1180,7 +1193,7 @@ P.synthV(role: \vocoder, frozen: true, take: \lead, params: {|p b| [
 Song.setTempoMap('co-ordinates',"q e eq e eq e eq e eq e eq e eq e eq");
 P(\bass, music: { |p b e|
 	[
-		freq: [6, 5, 4, 5, 6, 7, 11, 5].df(\a,2).q,
+		freq: [[6, -6], 5, 4, 5, 6, 7, 11, 5].df(\a,2).q,
 		dur: [4,4,1,1,1,1,2,2].warpTo(e.tempoMap).q
 	].pp
 });
@@ -1223,7 +1236,7 @@ P.synthV(role: \vocoder, frozen: true, resources:(tail: 3), take: \lead, params:
 		att: 0.2,
 		sus: b.sum - 0.2,
 		rel: 1,
-		modGain: 1.5,
+		modGain: 2,
 		mix: p.vocoderMix, width: p.vocoderWidth,
 		durRel:1
 	);
@@ -1253,7 +1266,8 @@ P(\laMerChords, music: { |p b e|
 P(\bass, music: { |p b e|
 	[
 		freq: [\r,1,-7,6,].df('f#',[3,2],\minor) ++ [5,11].dup.df('f',[3,2]) =>_.q,
-		dur: b.parse([1,3, 2,2,  1,3]).q
+		dur: b.parse([1,3, 2,2,  1,3]).q,
+		amp: 0.1 * 3.dbamp
 	].pp
 });
 P(\answer, syl: 10, music: { |p b e|
@@ -1261,8 +1275,7 @@ P(\answer, syl: 10, music: { |p b e|
 		freq: [4,3,1,-6,1,2,3].df(\f).q,
 		dur:0.5,
 		instrument:\ooh,
-		amp: 0.2,
-		amp:Pseries(0.1,-0.018,inf) / 6,
+		amp:Pseries(0.1,-0.018,inf) / 2,
 		out: [3, 4, 2].q(inf),
 
 	].pp
@@ -1371,7 +1384,8 @@ P.synthV(role: \spock, take: \lead, params: {|p b| [
 		e.playbuf
 		// => p.synthVTracks.at(e.key).()
 		/8
-		=> Pan2.ar(_, 0)
+		* 1.dbamp
+		=> Pan2.ar(_, -0.04)
 	}.play
 
 });
@@ -1384,6 +1398,7 @@ P.double(role: \spock,
 		e.playbuf
 		// => p.synthVTracks.at(e.key).()
 		/ 5
+		* 1.dbamp
 		=> Pan2.ar(_, 0)
 	}.play
 
@@ -1442,7 +1457,7 @@ P(\bassnotes, music: { |p b e|
 			=> FreeVerb.ar(_,0.1,1) => SineShaper.ar(_,0.05,mul:3)
 			++ CrossoverDistortion.ar(i,mul:0.05)
 			/5
-			* EnvGen.cutoff(b.sum,1)
+			* EnvGen.cutoff(b.sum + 2,1)
 		},)
 	].pp
 });
@@ -1483,12 +1498,13 @@ P(\kick, music: { |p b e|
 		[
 			dur: "q ex xq ex x".asBeats.warpTo( tm ).q,
 			instrument: \snare,
+			out: 0.1 * 2.dbamp,
 			rest: [\r,1,1,1,1,1,1].q
 		].p,
 		[
 			dur: "q qq qq qq".asBeats.warpTo( tm ).q,
 			instrument: \cymbalsDS,
-			amp: 0.03,
+			amp: 0.03 * 2.dbamp,
 			rest: [\r,1,1,1,1,1,1].q
 		].p
 	] => Ppar(_)
@@ -1504,6 +1520,7 @@ P.synthVs(role: \spock, take: [\lead, \dbl], params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		* 2.dbamp
 		=> Pan2.ar(_,0.2)
 	}.play
 
@@ -1523,6 +1540,7 @@ P.synthV(role: \spock,take: \harmony,
 ] }, music:{|p b e|
 	{
 		e.playbuf
+		* 2.dbamp
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
@@ -1533,6 +1551,7 @@ P.synthVs(\feng, take: [\bg, \bg1], params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		* -3.dbamp
 		=> Pan2.ar(_,0.9)
 	}.play
 });
@@ -1560,6 +1579,7 @@ P.synthVs(\kevin, take: [\lead, \double],
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 		* EnvGen.cutoff(b.sum,0.5)
+		* 3.dbamp
 		=> BPF.ar(_,1000)
 		=> Pan2.ar(_,0)
 	}.play
@@ -1579,6 +1599,7 @@ P(\bass, music: { |p b e|
 				CrossoverDistortion.ar(i,mul:0.05)
 				// /6
 				*3
+				* 4.dbamp
 			)
 			/4.5
 			* EnvGen.cutoff(b.drop(-1).sum,0.0)
@@ -1655,7 +1676,7 @@ P.synthV(role: \vocoder, frozen: true, take: \lead, params: {|p b| [
 		dur:b.sum + 3 => _.postln,
 		att: 2,
 		rel: 5,
-		gain: 1.dbamp,
+		gain: 1 + 1.5 => _.dbamp,
 		sus:b.sum,
 		durRel: 1,
 		mix: p.vocoderMix, width: p.vocoderWidth,
@@ -1671,7 +1692,8 @@ P.synthV(role: \vocoder, frozen: true, take: \lead, params: {|p b| [
 P(\tambo, music: { |p b e|
 	[
 		dur: "qq qqqq qqqq qqqq qqqq qqqq qqqq".asBeats.warpTo( e.tempoMap ).q,	
-		instrument: \rescueTamb, amp: 0.3,
+		instrument: \rescueTamb,
+		amp: 0.3 * 1.5.dbamp,
 		rest: [\r, 1, 1, 1, 1, 1, 1, 1, 1].q,
 		out: Effect.bus({|i| FreeVerb.ar(i,0.5,1) },)
 	].pp
@@ -1682,6 +1704,7 @@ P(\chord, music: { |p b e|
 		instrument: \sawSynth,
 		freq: [-1,1,3,5].df(\a, [4,5]).bubble.q,
 		strum:0.05,out: [1, 4],
+		amp: 0.1 * 1.5.dbamp,
 		out: Effect.bus( FreeVerb.ar(_, mix:1, room:1, damp:0.5), out:0, inputChannels:2, target:nil)
 	].pp
 });
@@ -1689,8 +1712,8 @@ P(\bass, music: { |p b e|
 	[
 		freq: "1 1 -7 -7 1 -4 -6 -7 -17 -1 -1".df(\a,[3,4],\mixolydian).q,
 		dur: "qe e q e e qe e qe e qe e".asBeats *2 =>_.warpTo(e.tempoMap)=>_.q,
-		out: [4,p.carrierBus],
-		amp: [0.05, 0.1]
+		out: [3,p.carrierBus],
+		amp: [0.05, 0.1] * ( 1.5 ).dbamp
 	].pp
 
 });
@@ -1711,7 +1734,8 @@ P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
 P(\tambo, music: { |p b e|
 	[
 		dur: "q qq qq qq qq qq qq".asBeats.warpTo( e.tempoMap ).q,	
-		instrument: \rescueTamb, amp: 0.3,
+		instrument: \rescueTamb, 
+		amp: 0.3 * 1.5.dbamp,
 		rest: [\r, 1, 1, 1, 1, 1, 1, 1, 1].q,
 		out: Effect.bus({|i| FreeVerb.ar(i,0.5,1) },)
 	].pp
@@ -1764,6 +1788,7 @@ P(\deep, music: { |p b e|
 
 		// => LPF.ar(_,400)
 		/3
+		* 1.5.dbamp
 		=> Phaser2.ar(_,rate:0.1)
 		=> DWGReverbC1C3.ar(_,mix: 0.5)
 		/ 3
@@ -1773,6 +1798,7 @@ P(\bass, music: { |p b e|
 	[
 		// freq: [1, 4, 5,  1, 4, 5].df(\d,3).q(2),
 		freq: [1,3, 4, 5,  1,3, 4, 5,1,3,5,-5, 1, 3].df(\d,3).q(2),
+		amp: 0.1 * 1.5.dbamp,
 		// dur: "qq qe e qq qe e qq qe e q".asBeats.warpTo( e.tempoMap ).q
 		dur: "qe e qe e qe e qe e qe e q q qe e ".asBeats.warpTo( e.tempoMap ).q
 		// dur: b.parse([2, 3/6,1/6,[2/6,1],3/6,1/6,[ 2/6,1 ]]).q
@@ -1782,6 +1808,7 @@ P(\keys, music: { |p b e|
 	[
 		freq: [\r,2, -7, 1, 3, 1, -4].df(\d,4).q,
 		dur: "qqqqqqqqqqq e e q e e".asBeats.warpTo( e.tempoMap ).q,
+		amp: 0.1 * 1.5.dbamp,
 		instrument:  \sawSynth
 
 	].pp
@@ -1806,6 +1833,7 @@ P(\bass, music: { |p b e|
 	[
 		
 		freq: [ 4, 5,  1,3, 4, ].df(\d,3).q,
+		amp: 0.1 * 1.5.dbamp,
 		dur: "qe e qe e ".asBeats.warpTo( e.tempoMap ) ++ e.bNext[0..3].sum =>_.q
 	].pp
 });
@@ -1814,6 +1842,7 @@ P(\keys, music: { |p b e|
 		// freq: [ -4, 4, [6, 14], [7, 12], [1,11,13],5, [11,13],[12,-13 ] ,[ -14, 6 ], [ 11,-4 ],[6, 14], [7, 12], [1,11,13]].df(\d).q,
 		freq: [ -4, 4, [6, 14], [7, 12], [1,11,13],5, [11,13],[12,-13 ] ,[ -14,  6 ]].df(\d).q,
 		dur: 0.5.dup(8).asBeats.warpTo( e.tempoMap ) ++ e.bNext[0..3].sum => _.q ,
+		amp: 0.1 * -2.dbamp ,
 		instrument:  \sawSynth
 	].pp
 });
@@ -1863,6 +1892,7 @@ P(\click, music: { |p b e|
 		freq: [ 1, 13 ].df(\g)!4 ++ ([1, -5].df('b-')!4) ++ [1].df('a-')  => _.q /[ 2 ],
 		// freq: 400,
 		amp:0.05,
+		out: 2,
 		dur: "q e  ee Q Q Q Q Ee q q q e".beats.warpTo( e.tempoMap.quantize(0.2) ).q
 	].pp
 });
@@ -1875,6 +1905,7 @@ P.synthVs(role: \spock, take: [\lead,\double], params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		* 1.dbamp
 		=> Pan2.ar(_, -0.25)
 	}.play
 
@@ -1896,7 +1927,7 @@ P(\chords, music: { |p b e|
 		attack:0,
 		dur: b.parse([6, 6,3,4, 3]).q,
 		// out: Effect.bus({|i| i* ( Impulse.ar(5) => Decay.ar(_,2)  )}, )
-		out: Effect.bus({|i| i* ( TDuty.ar( "x*82".beats.warpTo( e.tempoMap.quantize ).dq ) => Decay.ar(_,1)  )},inputChannels: 2, out:1 )
+		out: Effect.bus({|i| i* ( TDuty.ar( "x*82".beats.warpTo( e.tempoMap.quantize ).dq ) => Decay.ar(_,1)  )},inputChannels: 2, out:3 )
 
 	].ppm
 });
@@ -1952,11 +1983,14 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	lyrics: "Lieutenant + + Uhura + +, have Doctor + McCoy + report + to the transporter + + room in ten minutes +",
 	pitchTake: 1,
 	legato: [1, 1, 1, 1, 1, 0.8, 1, 1, 1, 1, 0.8, 1, 0.7, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1   ],
+	lag: [0.05, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0,   0, 0,   0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  ]
 ] }, music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		* 2.5.dbamp
 		=> Pan2.ar(_,0)
+
 	}.play
 
 });
@@ -1973,11 +2007,14 @@ Trek.cast.uhura = \cheng;
 P.synthV(role: \uhura, take: \lead, params: {|p b| [
 	lyrics: "yes sir",
 	legato: [0.8, 0.3, ],
+	lag: [0.05, 0],
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		* 5.dbamp
+		* 3.dbamp
 		=> Pan2.ar(_,-0.4)
 	}.play
 });
@@ -2062,14 +2099,15 @@ Song.durs.filter(\inspect, _ + [0,0,0,0, 0.1 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0]);
 P.synthV(role: \spock, take: \lead, params: {|p b| [
 	lyrics: "Captain + I do wish to inspect + whatever + + this is that lived so long ago + ",
 	// legato: [1, 0.6, 1, 0.8, 1, 1, 1, 1,  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ],
-	legato: [1, 0.5, 1, 1, 0.6, 1, 1, 1,  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ],
+	lag: [0.05, 0,   0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ],
+	legato: [1, 0.5, 1, 1, 0.6, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ],
 	filter: (midinote: _ - 12), 
 	pitchTake: 1
 ] }, music:{|p b e|
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
-		* 3.dbamp
+		* 2.dbamp
 		=> Pan2.ar(_, -0.25)
 	}.play
 
@@ -2131,6 +2169,7 @@ P.synthVs(role: \kirk, take: [\lead, \double], params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		* 1.dbamp
 		=> Pan2.ar(_,0)
 	}.play
 
@@ -2208,6 +2247,7 @@ Song.setTempoMap(\unusual,"q %x x x x x% e ee e e e e e e x xe x xe e e x xq".rh
 // Song.strum1 = AAS_Strum();
 P(\strum, music: { |p b e|
 	p.strum1.syn.run(true);
+	p.strum1.setOut(2);
 	p.strum1.setPlayMode(\strum );
 	fork{ b.sum + 1 => _.wait; 
 		p.strum1.syn.run(false)
@@ -2217,7 +2257,8 @@ P(\strum, music: { |p b e|
 		instance: p.strum1,
 		freq: [ [1,3], [-6,1],[-4, -6],[2,4],[5, 7] ].df(\c).q,
 		dur: b.parse([6,3,4,[ 1,1,1,1,1/3 ],[2/3,1,1,1,1],4]).q,
-		legato:1
+		legato:1,
+		out: 2
 	].pp;
 	[
 		type: \strum,
@@ -2228,6 +2269,7 @@ P(\strum, music: { |p b e|
 		// dur: 10
 		lag:0.01,
 		dur: b.parse([1, 5,3,4,[ 1,1,1,1,1/3 ],[2/3,1,1,1,1],4]).q,
+		out: 2
 
 		// lag:0.05
 	].pp
@@ -2240,6 +2282,7 @@ P.synthVs(role: \kirk, take: [\lead, \double], params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		* 1.dbamp
 		=> Pan2.ar(_,0)
 	}.play
 
@@ -2285,6 +2328,7 @@ P.synthVs(role: \kirk, take: [\lead, \double], params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		* 5.dbamp
 		=> Pan2.ar(_,0)
 	}.play
 
@@ -2355,6 +2399,7 @@ P(\bassnotes, music: { |p b e|
 	var a =LocalBuf(s.sampleRate * 2,2);
 	BufWr.ar(in, a, Sweep.ar(1, 44100), 1.0 );
 	BufRd.ar(2,a,Sweep.ar(2, Env([44099,44099,10],[4,1],-1).kr(2)) - 0.1, loop:1.0,interpolation:1)
+	=> LeakDC.ar(_)
 	=> Out.ar(0,  _)
 }).add;
 );
@@ -2366,6 +2411,7 @@ P.synthVs(role: \kirk, take: [\lead, \double], params: {|p b| [
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 		=> Pan2.ar(_,0)
+		* -2.dbamp
 		=> Out.ar(12,_)
 		}.play;
 		fork{
@@ -2430,11 +2476,12 @@ P.synthV(role: \sulu, take: \lead, params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		* 3.dbamp
 		=> Pan2.ar(_,0.7)
 	}.play
 
 });
-P.tune();
+P.tune( _ <> [instrument: \bl, out: Effect.bus({|i| FreeVerb.ar(i, 0.5, 0.9) },)].p );
 P(\chords, music: { |p b e|
 	[
 		strum: 0.05,
@@ -2477,6 +2524,7 @@ P.synthVs(role: \kirk, take: [\lead, \double],
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		* 2.dbamp
 		=> Pan2.ar(_,0)
 	}.play
 
@@ -2559,6 +2607,7 @@ P.synthVs(role: \spock, take: [\lead,\double], params: {|p b| [
 		=> HPF.ar(_,250)
 		=> BPF.ar(_,1100,3.5)
 		=> {|i| i => CombN.ar(_) / 4 + i}
+		* 3.dbamp
 		=> Pan2.ar(_,-0.25)
 	}.play
 
@@ -2577,7 +2626,7 @@ P(\connector, music: { |p b e|
 		instrument: \sawSynthSustain, pulse: 0.5, amp: 0.05, out:Effect.bus({|i| i => HPF.ar(_,200) },out:3) 
 	].ppm
 });
-P.tune();
+P.tune(_ <> [instrument: \sparkTriangle, amp:0.02].pm);
 // ["SULU: All normal. No damage at all.","r"].addLine;
 // ["KIRK: I see.","r"].addLine;
 [" Will you transport down with us, Mister Spo--ck?","1 -5 1 2 3 2 1 -5 -4 -4 -3".dm('f#')].addLine;
@@ -2606,18 +2655,27 @@ P(\strum, music: { |p b e|
 	[ 
 		freq: "1 5 11 13 15 21".df('f#',3).dup ++ "1 4 11 14 16".df('f#',3).bubble ++ "2 5 12 15 17".df('f#',3).bubble => _.q,
 		strum: [0.05, 0.01, 0.03, 0.025].q,
+		out: 3,
 		dur: "qqq q qq q".asBeats.warpTo( e.tempoMap ).q,
-		instrument: \harp,coef:0.3,amp:0.03
+		instrument: \harp,coef:0.3,amp:0.027
 	].p.play
 });
 P(\line, music: { |p b e|
 	[
-		freq: "3 5 3 5 3 5 3 5 5 4 3  2 1 ".df('f#').q,
-		dur: 0.5.dup(15).warpTo( e.tempoMap ).q
+		freq: "3 5 3 5 3 5 3 5 5 4 3  2 1, -7, 4 ".df('f#').q,
+		dur: 0.5.dup(16).warpTo( e.tempoMap 
+			.quantizeDft(0.3)
+		) ++ [1] =>_.q,
+		instrument: \defaultPiano,
+		amp:0.07
 	].pp;
 	[
 		freq: "1 -7 1 -7 1 -7 1- -7 -6 -6 -6 -6 -5".df('f#').q,
-		dur: 0.5.dup(15).warpTo( e.tempoMap ).q
+		dur: 0.5.dup(15).warpTo( e.tempoMap.
+			quantizeDft(0.3)
+		).q,
+		instrument: \defaultPiano,
+		amp:0.07
 	].pp
 });
 P.still(\kirkWillYou, timecode: 631.425.seconds, music: { |p b e|
@@ -2638,11 +2696,12 @@ P.synthVs(role: \kirk, take: [\lead, \double], params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		* 2.dbamp
 		=> Pan2.ar(_,0)
 	}.play
 
 });
-P.tune();
+P.tune(_ <> [instrument: \sawSynthSustain, amp:0.02 ].pm);
 P(\horns, music: { |p b e|
 	[
 		[
@@ -2681,14 +2740,18 @@ P.synthV(role: \spock, take: \lead, params: {|p b|
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
+			* 5.dbamp
 			=> Pan2.ar(_,-0.2)
 		}.play
 });
-P.tune();
+P.tune(_ <> [instrument: [ \harp, \stringyy ], amp:[0.03, 0.1], out:[1, 0]].p);
 Song.setTempoMap(\Evidently, "qe e qe e qe e");
 P(\line, music: { |p b e|
 	[
 		freq: "4 3 2 1 -7 1".df('f#',4).q,
+		instrument: [ \sawSynth, \bl ],
+		rel:1,
+		amp:0.05,
 		dur: "q q q q q q q".asBeats.warpTo(e.tempoMap).q 
 	].pp
 });
@@ -2721,7 +2784,7 @@ P(\line, music: { |p b e|
 			// midinote: p.tune[e.start],
 		freq: "4 3 2 1 -7 1".df('f#',4).q,
 			dur: b.q,
-			amp:0.03
+			amp:0.01
 		].p.fin(6).play
 	}
 });
@@ -2742,6 +2805,7 @@ P.synthVs(role: \kirk, take: [\alt, \altDouble], params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		* 2.5.dbamp
 		=> Pan2.ar(_,0)
 	}.play
 
@@ -2818,7 +2882,7 @@ P(\line, music: { |p b e|
 	fork{
 		var inst = Barrier.collect(
 			{
-				Pulse.ar(\freq.kr(400) * [0.99,1,1.011],0.2)
+				Pulse.ar(\freq.kr(400) * [0.99,1,1.011] * [0.5, 1],0.2)
 				* Env.perc(0.005,2).kr(2,gate:1)
 				* \amp.kr(0.1)
 				=> Phaser2.ar(_,rate: 0.1)

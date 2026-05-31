@@ -618,6 +618,7 @@ P(\chords,start:'cer- tain',music:{|p b e|
 					=> LeakDC.ar(_)
 					=> DelayC.ar(_,0.2,SinOsc.ar(5).range(0,0.001)) 
 					=> MoogVCF.ar(_,SinOsc.ar([0.11,0.1,0.13]).range(900,2000),0.8) * 2
+					* EnvGen.cutoff(wait:b.sum, release:2, curve:nil, doneAction:2)
 				},inputChannels:3
 			).bus.index
 		].pp

@@ -14,6 +14,11 @@ Stills().current;
 			// /10
 		}
 	},
+	\asturian, {
+		{|i| 
+			i * 2.dbamp
+		}
+	},
 	\cheng, {
 		{|i|
 			i
@@ -516,6 +521,7 @@ P(\comp,start:\attempting,music: {
 			Pbind(	\instrument, synth,
 				\degree, Pseq([\r, 5, 4, 3, 2, 4, 3, 2],1)-1+7, 
 				\root, -3 + 1,
+				\coef, 0.1,
 				\amp,amp,
 				\out, 1,
 			).play(clock:clock)
@@ -547,6 +553,7 @@ P(\comp,start:\attempting,music: {
 
 			tune.(\visual_vowel, 0.18 * busAmp);
 			descant.(\visual_pad,0.5 * busAmp);
+			descant.(\harp,0.05 * busAmp);
 			offbeats.(\visual_twotube, 0.1 * busAmp);
 			offbeats.(\defaultPiano, 0.1 * busAmp, octave: 3);
 			off2.(\visual_caw,[\amp,0.05 * busAmp]);
@@ -945,6 +952,8 @@ P(\chords, music: { |p b e|
 			// => Pan2.ar(_,1)
 			*3
 			// => Phaser2.ar(_,rate: 0.2)
+
+			* EnvGen.cutoff(wait:b.sum, release:4, curve:nil, doneAction:2)
 		},inputChannels:2, out: 1)
 
 	].pp
@@ -997,12 +1006,14 @@ P.synthVs(\kevin, take: [\aah, \aahDbl],
 		pitchTake: [1, 3],
 		pitchExpression: 1.5,
 		paramDefaultVibratoDepth: 1 //semitones
-	] }, music:{|p b e|
+	] }, music:[-1, 1].collect{ |pan|
+		{|p b e|
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
+			=> Pan2.ar(_, pan)
 		}.play
-});
+	} });
 P(\cymbals, music: { |p b e|
 		( instrument: \cymbalsDS, amp:0.03 ).play;
 		[
@@ -1529,6 +1540,7 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 		=> Pan2.ar(_,0)
 		=> {|i| Fverb.ar(i,i)/6 + i /3 }
+		* 2.dbamp
 	}.play
 
 });
@@ -1571,7 +1583,8 @@ P.synthVs(role: \spock, take: [\lead,\double], params: {|p b| [
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 		=> Pan2.ar(_,pan)
-		/2
+		* -3.dbamp
+		// /2
 	}.play
 
 }});
@@ -1585,13 +1598,13 @@ P(\bassnotes, syl:8, music: { |p b e|
 });
 }.();
 {
- ["Its much older than Earth", "5 5 11 5 5 5 5".dm('f#',4)].addLine;
- P.still(\clear, timecode: 0.seconds, music: { |p b e|
- 	 e.still.( 
- 		wait: b.sum,
- 		text: ["its much","older than the Earth"],
- 	)
- });
+["Its much older than Earth", "5 5 11 5 5 5 5".dm('f#',4)].addLine;
+P.still(\clear, timecode: 0.seconds, music: { |p b e|
+ e.still.( 
+	wait: b.sum,
+	text: ["its much","older than the Earth"],
+)
+});
 P.synthVs(role: \spock, take: [\lead,\double], params: {|p b| [
 	lyrics: "its much older + than the Earth",
 	pitchTake: [1,3]
@@ -1600,7 +1613,7 @@ P.synthVs(role: \spock, take: [\lead,\double], params: {|p b| [
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 		=> Pan2.ar(_,pan)
-		* -6.dbamp
+		* -3.dbamp
 	}.play
 
 }});
@@ -1638,7 +1651,7 @@ P.synthVs(role: \spock, take: [\lead,\double],
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 		=> Pan2.ar(_,pan)
-		* -6.dbamp
+		* -3.dbamp
 	}.play
 }});
 Song.setTempoMap(\about,"e x xe e q e x g g xe x xe x ");
@@ -1743,7 +1756,8 @@ P.synthVs(role: \spock, take: [\lead,nil],
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 		=> Pan2.ar(_,pan)
-		/2.5
+		* -3.dbamp
+		// /2.5
 	}.play
 
 }});
@@ -1785,7 +1799,10 @@ P(\dyad, music: { |p b e|
 		freq: [1,5].df(\f),
 		instrument: \harp,coef:0.7,
 		dur: b.parse([1, 1, 1, 4]).q,
-		out: Effect.bus({|i|CrossoverDistortion.ar(i)/10 },out:2)
+		out: Effect.bus({|i|
+			CrossoverDistortion.ar(i)/10 
+			* EnvGen.cutoff(wait:b.sum, release:4, curve:nil, doneAction:2)
+		},out:2)
 	].pp
 });
 P.synthVs(role: \spock, take: [\lead,\double],
@@ -1800,7 +1817,8 @@ P.synthVs(role: \spock, take: [\lead,\double],
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
 		=> Pan2.ar(_,pan)
-		/2
+		// /2
+		* -3.dbamp
 		=> {|i|  CombN.ar(i,0.3,0.3,3)/2 + i}
 	}.play
 
@@ -1819,7 +1837,11 @@ P(\pf, music: { |p b e|
 		dur: b.q,
 		instrument: \help_oteypiano,
 		amp:0.3,
-		out: Effect.bus({|i| OteySoundBoard.ar(i*2,c:2).tanh => SineShaper.ar(_,0.2) => {|i| CrossoverDistortion.ar(i)/10 + i} => LeakDC.ar(_) },)
+		out: Effect.bus({|i| OteySoundBoard.ar(i*2,c:2).tanh => SineShaper.ar(_,0.2) => {|i| 
+			CrossoverDistortion.ar(i)/10 + i 
+			* EnvGen.cutoff(wait:b.sum, release:4, curve:nil, doneAction:2)
+			} => LeakDC.ar(_) 
+		})
 	].pp
 });
 P(\cymbal,syl:2, music: { |p b e|
@@ -1898,7 +1920,8 @@ P.synthVs(role: \spock, take: [\lead, \double],
 		=> p.synthVTracks.at(e.key).()
 		=> Pan2.ar(_,pan)
 		=> HPF.ar(_,400)
-		/2
+		// /2
+		* -3.dbamp
 	}.play
 
 }});
@@ -1959,7 +1982,7 @@ P.synthV(role: \spock,lag: -0.1, take: \lead, params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 		=> HPF.ar(_,400)
 		=> Pan2.ar(_)
-		* -6.dbamp
+		* -2.dbamp
 
 	}.play
 });
@@ -1973,14 +1996,14 @@ P(\bass, music: { |p b e|
 	].pp
 });
 Song.g2 = 12.dbamp;
-[" All of your questions will be answered in time, Captain Kirk.", "4 3 2 1 2 2 3 2 1 -7 -7".dm(\c) ].addLine;/*SARGON [OC]:*/
+[" All of your questions will be answered in time, Captain Kirk.", "4 3 2 1 2 2 3 2 1 -7 -7".dm(\c, 4) ].addLine;/*SARGON [OC]:*/
 P.synthV(role: \vocoder, take: \lead, frozen: true, params: {|p b| [
 	filter: (midinote: 45!11), 
 	lyrics: "All of your questions + will be answered + in time",
 	pitchTake: 1
 ] }, music:{|p b e|
 	p.vocodeTune.(p, b, e, e.rpp,
-		modGain:2,
+		modGain:3,
 		gain: p.g2,
 		carrierGain:3,
 		dur: b.sum + 3,
@@ -1988,7 +2011,8 @@ P.synthV(role: \vocoder, take: \lead, frozen: true, params: {|p b| [
 		durRel:2
 	);
 	{
-		Song.laMer => PlayBuf.auto(2,_,rate: 0.midiratio ) / 8
+		Song.laMer => PlayBuf.auto(2,_,rate: 0.midiratio ) / 4
+		* Env([ 1, 1, 0], b.parse([ 8, 1])).kr()
 	}.play(s,p.carrierBus)
 });
 P(\connector, music: { |p b e|
@@ -2025,7 +2049,9 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 		=> Pan2.ar(_,-0.3)
 		=> {|i| Fverb.ar(i[0], i[1],decay:5) /4 +i *0.6
-	}		/1.5
+	}		
+	* 2.dbamp
+	// /1.5
 	}.play
 
 });
@@ -2046,7 +2072,8 @@ P.synthV(role: \uhuru, take: \lead, params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 		=> Pan2.ar(_,0.4)
 		=> {|i| Fverb.ar(i[0], i[1],decay:5) /4 +i * 0.6}
-		/1.5
+		* 1.dbamp
+		// /1.5
 	}.play
 
 });
@@ -2105,6 +2132,7 @@ P(\line, music: { |p b e|
 		amp: 0.01 * p.g2
 	).play
 });
+
 P.synthV(role: \vocoder, frozen: true, take: \lead, params: {|p b| [
 	lyrics: "I am sargon +",
 	legato: [0.7, 1, 1, 0.7, ],
@@ -2138,14 +2166,14 @@ P.still(\clear, timecode: 0.seconds, korean: "내 생각의 에너지가", music
 	)
 });
 // P.tune();
-P.synthV(role: \vocoder, frozen:true, take: \lead,
+P.synthV(role: \vocoder, frozen: true, take: \lead,
 	filter: (midinote: _ - 12), 
 	params: {|p b| [
 	lyrics: "It is the energy + + of my thoughts which has",
 	pitchTake: 1,
 ]}, music:{|p b e|
 	p.vocodeTune.(p,b,e,e.rpp,
-		modGain:1,
+		modGain:1.5,
 		gain: p.g2,
 		carrierGain:2,
 		durRel: 1,
@@ -2225,7 +2253,7 @@ P.synthV(role: \vocoder, frozen: true, take: \lead, params: {|p b| [
 ] }, music:{|p b e|
 	p.vocodeTune.(
 		p,b,e,e.rpp,
-		modGain: 1.5,
+		modGain: 1.7,
 		gain: p.g2,
 		att:0, sus:b.sum-0.5, rel:0.55
 	)
@@ -2419,7 +2447,8 @@ P.synthV(role: \vocoder, frozen: true, take: \lead, params: {|p b| [
 	pitchTake: 1
 ] }, music:{|p b e|
 	p.vocodeTune.(p,b,e,e.rpp,
-		echo:0.2, modGain:4,
+		echo:0.2, modGain:5,
+		carrierGain: 3,
 		gain: p.g2,
 		chord: #[2,4,6,8],
 		att:0,
@@ -2440,7 +2469,7 @@ P.synthV(role: \vocoder, frozen: true, take: \lead, params: {|p b| [
 		text: ["",""],
 	)
 }); */
-["I read what is in your mind.","3 11 7 3 2 7 3".dm(\d)].addLine;
+["I read what is in your mind.","3 11 7 3 2 7 3".dm(\d )].addLine;
 P(\bassline, music: { |p b e|
 	[
 		freq: [2, 1, -7].df('e',[3,4],\mixolydian).q,
@@ -2474,15 +2503,15 @@ P(\chords, music: { |p b e|
 
 });
 P.tune( _ <> [instrument: \sawSynth, out: Song.carrierBus, amp:0.02].p );
-P.synthV(role: \vocoder, frozen:true, take: \lead, params: {|p b| [
+P.synthV(role: \vocoder, frozen: true, take: \lead, params: {|p b| [
 	filter: (midinote: 45!7), 
 	lyrics: "I read what is in your mind",
 	pitchTake: 1
 ] }, music:{|p b e|
 	p.vocodeTune.(p,b,e,e.rpp,
-		modGain:2,mix:0.8,width:1.01,
+		modGain:2.5,mix:0.8,width:1.01,
 		gain: p.g2,
-		rel:0.1,sus:b.sum, att:0,
+		rel:0.1,sus:b.sum + 1, att:0,
 		durRel:2
 	)
 
@@ -2496,7 +2525,7 @@ P.still(\clear, timecode: 0.seconds, korean: "말은 불필요합니다", music:
 	)
 });
 P.tune({|i| i=>_.fin(3) <> [instrument: \visual_pad, legato: [1, 1, 3 ],amp:0.15].pm});
-P.synthV(role: \vocoder, frozen:true, take: \lead, params: {|p b| [
+P.synthV(role: \vocoder, frozen: true, take: \lead, params: {|p b| [
 	lyrics: "words are unnecessary + + + +",
 	filter: (midinote: 48), 
 	pitchTake: 1
@@ -2553,6 +2582,7 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 		=> Pan2.ar(_,0)
 		=> {|i| Fverb.ar(i[0], i[1],decay:5) /4 +i *0.6}
+		* 3.dbamp
 		// /3
 	}.play
 
@@ -2565,6 +2595,14 @@ P(\bass, music: { |p b e|
 		// stretch: [1, 1, 2].q,
 		instrument: \reedy,
 		out: Effect.bus({|i| Fverb.ar(i,i,decay:80)/2 + i },),
+		amp: 0.04 * 2
+	].ppm;
+	[
+		freq: [-5, -6, -16, -1].df(\d).q,
+		dur: b.parse([4, 4, 6, 2]).q,
+		// stretch: [1, 1, 2].q,
+		instrument: \default,
+		// out: Effect.bus({|i| Fverb.ar(i,i,decay:80)/2 + i },),
 		amp: 0.04 * 2
 	].ppm;
 
@@ -2603,7 +2641,8 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 	=> p.synthVTracks.at(e.key).()
 	=> Pan2.ar(_,0)
 		=> {|i| Fverb.ar(i[0], i[1],decay:5) /4 +i *0.6}
-		/1.5
+		// /1.5
+		* 3.dbamp
 	}.play
 
 });
@@ -2617,7 +2656,15 @@ P(\bassline, music: { |p b e|
 		instrument:\reedy,
 		amp: 0.1 * p.g2,
 		out:[0,1],
-	].ppm
+	].ppm;
+	[
+		freq: [5, 6, 5, 4, 3, 2, -7.5, [-1, -5, 1]].df('e-',[ 3,3 ], \minor).q,
+		dur: b.q + [0,0,0,0,0,0,0,0].q,
+		// legato: [1, 1, 1, 1, 1, 1, 1, 5, ].q,
+		instrument:\default,
+		amp: 0.05 * p.g2,
+		out:Effect.bus({|i| i.tanh },out:4),
+	].ppm;
 });
 P.still(\clear, timecode: 0.seconds, korean: " ", music: { |p b e|
 	 e.still.( 
@@ -2634,7 +2681,7 @@ P.still(\clear, timecode: 0.seconds, korean: " ", music: { |p b e|
 			]
 	)
 });
-P.synthV(role: \vocoder,frozen:true, resources:(tail:6), take: \lead,
+P.synthV(role: \vocoder,frozen: true, resources:(tail:6), take: \lead,
 	pbind: Song.enlarge(7),
 	// filter: (midinote: _ - 12), 
 	filter: (midinote: 45!16), 
@@ -2644,7 +2691,7 @@ P.synthV(role: \vocoder,frozen:true, resources:(tail:6), take: \lead,
 	pitchTake: 1
 ] }, music:{|p b e|
 	p.vocodeTune.(p,b,e,e.rpp,
-		modGain:2,
+		modGain:3,
 		gain: p.g2,
 		enlarge: 7, tune: p.tune[e.start].list ++ p.tune[e.start+1].list, dur: b.sum + e.bNext.sum + 2, sus:b.sum+e.bNext.sum+2)
 });

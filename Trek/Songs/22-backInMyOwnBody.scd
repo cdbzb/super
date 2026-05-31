@@ -678,7 +678,7 @@ P(\bassNotesOne, music: { |p b e|
 			dur: b.parse([6,4,4,1]).q,
 			decaytime: b.sum,
 			legato: 1,
-			out: Effect.bus({|i| CrossoverDistortion.ar(i, gain: 0.2) / 15 => FreeVerb.ar(_,1,1) => LeakDC.ar(_) },)
+			out: Effect.bus({|i| CrossoverDistortion.ar(i, gain: 0.2) / 15 => FreeVerb.ar(_,1,1) => LeakDC.ar(_) * EnvGen.cutoff(wait:b.sum , release:10, curve:nil, doneAction:2) },)
 		].pp
 });
 P.synthVs(role: \mccoy, take: [\lead, \double], params: {|p b| [

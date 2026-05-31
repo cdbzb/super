@@ -512,7 +512,7 @@ P(\powerchords, music: { |p b e|
 		freq: [ [1, 5].df('c#'), [1,5].df('b',4), [1, 5].df('f#',4) ].dupEach.q /2,
 		dur: "qe e qe e qq".asBeats.warpTo( e.tempoMap ).q,
 		legato: [ 1, 1, 1, 1, 2 ]/2=>_.q,
-		out: Effect.bus({|i| i=> CrossoverDistortion.ar(_) /15 => LeakDC.ar(_) => Pan2.ar(_,-0.4) },inputChannels:1),
+		out: Effect.bus({|i| i=> CrossoverDistortion.ar(_) /15 => LeakDC.ar(_) => Pan2.ar(_,-0.4) * EnvGen.cutoff(wait:b.sum, release:1, curve:nil, doneAction:2) },inputChannels:1),
 	].pp
 });
 P(\bass,start:\engineer,music:{|p b e|
@@ -743,10 +743,10 @@ P(\arpeggio,start:\prison,syl:3,lag:-0.15,music:{
 		instrument: \defaultPiano, amp: 0.03
 	).play;
 });
-P(\stab,start:\prison,syl:3,music:{
+P(\stab,start:\prison,syl:3,music:{|p b e|
 	(
 		instrument:\cymbalsDS,amp:0.04,
-		out:Effect.bus({|i| CrossoverDistortion.ar(i)*0.01 => LeakDC.ar(_)}, )
+		out:Effect.bus({|i| CrossoverDistortion.ar(i)*0.01 * EnvGen.cutoff(wait:b.sum, release:4, curve:nil, doneAction:2)=> LeakDC.ar(_)}, )
 	).play;
 	(
 		instrument:\stringyy,
@@ -1064,7 +1064,7 @@ P(\bass, music: { |p b e|
 
 	  ].pp
 });
-P(\chords,start:'With these bodies',music:{
+P(\chords,start:'With these bodies',music:{|p b e|
 	[
 		[
 			freq:[
@@ -1077,7 +1077,7 @@ P(\chords,start:'With these bodies',music:{
 			freq:[ 1,-7,-6,-5 ].stutter(2).df(\d,octave:3).q,
 			dur:[3,1]/2=>_.q(4),
 			//instrument:\sawSynth,amp:0.06
-			out:Effect({ |i| CrossoverDistortion.ar(i,amp:0.01,smooth:0.1)/4 => LeakDC.ar(_)}).bus.index,
+			out:Effect({ |i| CrossoverDistortion.ar(i,amp:0.01,smooth:0.1)/4 * EnvGen.cutoff(wait:b.sum, release:1, curve:nil, doneAction:2) => LeakDC.ar(_)}).bus.index,
 		].p,
 
 		"x.x.x.x.".asDrumPat(2,3)=>[dur:_,instrument:\sn_808]=>_.p,

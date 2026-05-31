@@ -1229,6 +1229,7 @@ P.synthVs(role: \formulaLead, take:[ \lead, \double ],
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		* 2.dbamp
 		=> Pan2.ar(_,0)
 	}.play
 });
@@ -1330,6 +1331,7 @@ P.synthV(role: \formulaLead, take: \lead,
 ] }, music:{|p b e|
 	{
 		e.playbuf
+		* 2.dbamp
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
@@ -1339,6 +1341,7 @@ P.double(role: \formulaLead, take: \lead, params: {|p b| [
 	{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
+		* 2.dbamp
 		=> FreeVerb.ar(_,0.2,1)
 		=>Pan2.ar(_,1)
 	}.play
@@ -1405,6 +1408,7 @@ P.synthVs(role: \formulaLead, take: [\lead, \dbl], params: {|p b| [
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
+		* 2.dbamp
 			=> Pan2.ar(_, pan)
 			
 		}.play
@@ -1569,6 +1573,7 @@ P.synthVs(role: \formulaLead, take:[\lead, \dbl],
 		{
 			e.playbuf
 			=> p.synthVTracks.at(e.key).()
+		* 2.dbamp
 			=> Pan2.ar(_, 0)
 		}.play
 	}, {|p b e|
@@ -1850,6 +1855,7 @@ P(\chord, music: { |p b e|
 		dur: b.parse([2, 1, 3, 2, 3]).q,
 		// sustain: 0,
 		instrument: \reedyAsr,
+		amp: 0.08,
 		release: 4,
 		out: (1..4)
 		// instrument: \sawSynthSustain
@@ -1861,7 +1867,7 @@ P(\dyads, syl: 7,  music: { |p b e|
 		freq: [[1, 3], [1, 4],[1, 4],[1, 3]].df('b-').q,
 		dur: b.drop(1).q,
 		instrument: \defaultPiano,
-		out: Effect.bus({|i| FreeVerb.ar(i, 0.3, 1) => SineShaper.ar(_, 0.06) / 2 },out: 2)
+		out: Effect.bus({|i| FreeVerb.ar(i, 0.3, 0.9) => SineShaper.ar(_, 0.06) / 2 },out: 2)
 	].pp
 });
 P(\chords, music: { |p b e|
@@ -1913,19 +1919,19 @@ P.synthVs(role: \formulaLead,
 // );
 P(\keepThisOctaves,start:'keep this',music:{|p b e|
 [
-	freq: [\r,1,-6,-5].df('b-',octave:[2,3,1] ).q,
-	dur: b.parse([2, 4,2,4]) + [0,0,0,1] =>_.q,
-	legato:1,
-	out:[ 0 ]++Effect(
-		{|i|
+freq: [\r,1,-6,-5].df('b-',octave:[2,3,1] ).q,
+dur: b.parse([2, 4,2,4]) + [0,0,0,1] =>_.q,
+legato:1,
+out:[ 0 ]++Effect(
+	{|i|
 
-			var chain = FFT({ LocalBuf(2048) }!2,i);
-			chain = PV_MagSmear.new(chain,  bins: 10.0);
-			chain = PV_MagSmooth.new(chain,  factor: 0.9);
-			IFFT(chain)
-		},
-		out:0,inputChannels:2
-	).bus.index,
+		var chain = FFT({ LocalBuf(2048) }!2,i);
+		chain = PV_MagSmear.new(chain,  bins: 10.0);
+		chain = PV_MagSmooth.new(chain,  factor: 0.9);
+		IFFT(chain)
+	},
+	out:0,inputChannels:2
+).bus.index,
 
 ].p.play
 }
@@ -1957,12 +1963,12 @@ P.synthVs(role: \formulaLead, take:[\lead, \double],
 	legato: [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1, 1, 1, 1, 1, 1, 1, 1, ]],
 	pitchTake: [1, 3]
 ] }, music:{|p b e|
-	{
+	[-1, 1].collect{|pan|{
 		e.playbuf
 		=> p.synthVTracks.at(e.key).()
-		=> Pan2.ar(_,0)
+		=> Pan2.ar(_, Env([1, 0], e.bAll.sum).kr(2) * pan => _.poll)
 	}.play
-});
+}});
 
 //P.tune('necessary');
 // P(\vocoder,start:'necessary',music:{|p b e|
@@ -1980,27 +1986,53 @@ P.synthVs(role: \formulaLead, take:[\lead, \double],
 // )
 // }.value
 // );
-P.tune('therefore',{|i| i.fin(4)=> Pmul(\freq,[ 0.5 , 0.25 ],_) <> [instrument: \sparkTriangle, amp: 0.06, out: 4].pm});
+// P.tune('therefore',{|i| i.fin(4)=> Pmul(\freq,[ 0.5 , 0.25 ],_) <> [instrument: \sparkTriangle, amp: 0.06, out: 4].pm});
+P(\triBass, music: { |p b e|
+	[
+
+		freq: [-7, 1, 2, 3,4 ].df('b-', [3, 4]).q,
+		instrument: \sparkTriangle,
+		out: 3,
+		dur: b.parse([1, 1, 1, 1, 5, 4, 2]).q,
+		amp: 0.025
+	].p;//p;
+	[
+		freq: [-7, 1, 2, 3, -6, -5.5, -5 ].df('b-', [3, 4]).q,
+		instrument: \sparkTriangle, 
+		amp: 0.05 * [1, 1, 1, 1, 0.5, 0.3, 0.2] => _.q, 
+		out: 4,
+		dur: b.parse([1, 1, 1, 1, 5, 4, 2]).q,
+		legato: [1, 1, 1, 1, 0.4, 0.4, 0.4,].q
+	].ppma
+});
 P(\necessaryBaseNote,start:'necessary',music:{|p b e|
 [out:
 	[ 0 ]++
 	Effect(
 		{|i|
 
-			var chain = FFT({ LocalBuf(2048) }!2,i);
+			var chain = FFT({ LocalBuf(2048) }!4,i);
 			chain = PV_MagSmear.new(chain,  bins: 10.0);
 			chain = PV_MagSmooth.new(chain,  factor: 0.9);
 			IFFT(chain)
 			=> EchoNone.ar(_,1,0.2,2)
 		},
-		out:0,inputChannels:2
+		out:2,inputChannels:4
 	).bus.index,
-	freq:[\r,6,5.5,5].df('b-',octave:[2,3] ).q,
+	freq:[\r,6,5.5,5].df('b-',octave:[2,3, ] ).q,
 	amp:0.3,
-	[ \instrument,\amp,\mix,\release ]:[ \stringyy,0.15 ,0,4 ],
+	[ \instrument,\amp,\mix,\release ]:[ \stringyy,0.18 ,0,4 ],
 	legato:1,
 	dur:e.bAll.parse([4,5,4,2]).q,
-].ppm(\stringyy)
+].ppm(\stringyy);
+[
+	freq:[\r,6,5.5,5].df('b-',octave:[2,1 ] ).q,
+
+	amp:0.01,
+	out: [1, 2],
+	instrument: \harp, coef: 0.2,
+	dur:e.bAll.parse([4,5,4,2]).q,
+].pp
 }
 );
 ["you to kill your captain ", [4,3,5,4,3,2].dm('b-',octave:5)].addLine;
@@ -2019,7 +2051,7 @@ P(\doubling, music: { |p b e|
 		dur: b.q,
 		pan: 0,
 		out: Pwhite(0,4,inf),
-		amp: 0.02,
+		amp: 0.023,
 		coef: 0.13
 	].pp
 });
@@ -2029,14 +2061,14 @@ P.still(\clear, timecode: 0.seconds, music: { |p b e|
 		text: ["so that Sargon","will die with him"],
 	)
 });
-P.tune('with him', _ <> [instrument: \stringyy, out: 2, mix: 0.2, amp: 0.08].pm);
+P.tune('with him', _ <> [instrument: \stringyy, out: 2, mix: 0.2, amp: 0.08, release: 4].pm);
 P(\sargonLowerBass,start:'with him',music:{|p b e|
 [
 freq: [\r,5.5,6,7,11].df('b-',octave:[ 1,2 ] ).q,
 amp:0.2,
 dur:b.parse([2,2,2,1,1]).q,
 	legato:1.1,
-	[ \instrument,\amp,\mix,\release ]:[ \stringyy,0.15 ,0.1,4 ],
+	[ \instrument,\amp,\mix,\release ]:[ \stringyy,0.18 ,0.1,4 ],
 	instrument: \stringyy
 ].ppm
 
@@ -2051,7 +2083,7 @@ P(\sargonBassline,start:'with him',music:{|p b e|
 
 
 	dur:b.parse([2,2,2,2]).q,
-].p//p
+].pp
 }
 );
 P(\sargonNote,start:'with him',syl:5,music:{|p b e|
@@ -2079,7 +2111,6 @@ P(\sargonMiddleVoice,start:'with him',music:{|p b e|
 	//		[ 3 ]++
 	Effect(
 		{|i|
-
 			var chain = FFT({ LocalBuf(2048) }!2,i);
 			chain = PV_MagSmear.new(chain,  bins: 10.0);
 			chain = PV_MagSmooth.new(chain,  factor: 0.9);
@@ -2099,10 +2130,11 @@ P(\sargonTuningGong,start:'with him',syl:1,music:{|p b e|
 	(
 		dur:1,
 		type:\tuningGong,
-		amp:0.004,
+		amp:0.006,
 		sustain:0,
-		release:3,
-		freq: [1].df('f#',octave:5).unbubble
+		time: 4,
+		release:6,
+		freq: [1].df('f#',octave:4).unbubble
 ).play
 }
 );
@@ -2110,7 +2142,7 @@ P(\sargonStrum,start:'with him',music:{|p b e|
 [
 
 	freq: [\r,[5,11,13,15,21]].df('b',octave:4,scale:\minor,tuning:\sept1,).q,
-	lfo: Effect.lfo({ SinOsc.kr(3.5).range(0.02 , 0.1) }),
+	lfo: Effect.lfo({ SinOsc.kr(3.5).range(0.02 , 0.1) * Env([1, 1],b).kr(2) }),
 	amp:Pfunc({|e|e.lfo}) ,
 	out:Effect({|i|i.distort => EarlyRef.ar(_,[1,1,1],[2,3,1],[5,6,4])=> DWGReverbC1C3.ar(_,2000,1,30,mix:0.5)},inputChannels:2,out:2,).bus.index,
 	strum:0.06,

@@ -221,7 +221,9 @@ P(\bassnote, music: { |p b e|
 			i 
 			* 2 
 			// => _.tanh 
-			=> {|i| CrossoverDistortion.ar(in:i, amp:0.1, smooth:0.9) => LeakDC.ar(_)}
+			=> {|i| CrossoverDistortion.ar(in:i, amp:0.1, smooth:0.9)
+			* EnvGen.cutoff(wait:b.sum, release:2, curve:nil, doneAction:2)
+			=> LeakDC.ar(_)}
 			=> Pan2.ar(_,0) 
 		},)
 	].pp;
@@ -1523,7 +1525,7 @@ P.double(role:\thalassa, take: \lead,
 			*[0,1] /2
 		}.play
 	});
-P.tune(\defy, {|i| Pset(\out,Effect( { |i| CrossoverDistortion.ar(i,drive:0.9,smooth:0.1) * 0.02 => LeakDC.ar(_)} ).bus.index,i) => Pmul(\freq,[1,0.75]!5 => _.q ++ [1].q(inf),_)});
+P.tune(\defy, {|i| Pset(\out,Effect( { |i| CrossoverDistortion.ar(i,amp:0.8,smooth:0.1) * 0.02 * EnvGen.cutoff(wait:Song.secDur[\knees], release:1, curve:nil, doneAction:2) => LeakDC.ar(_)} ).bus.index,i) => Pmul(\freq,[1,0.75]!5 => _.q ++ [1].q(inf),_)});
 P(\dist, music: { |p b e|
 	[
 		midinote: p.tune[e.start].postln.fin(6),

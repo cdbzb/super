@@ -1145,23 +1145,6 @@ P(\808,start:'Hands',music: {|p b e|
 	] => Ppar(_) => _.play(clock:Song.introClock)
 
 });
-P(\lick,start:'Hands',music: {|p b e|
-	[
-		freq: [\r,5,4,6,\r,5,4,4].df(p.handsKeys.reprise).q * [0.5,1],
-		dur: [2,1,1,4,2,1,1,4].q ,
-		rawLegato: [1,1,1,1,0.8, 1,1,1,0.8]=>_.flat=>_.q,
-		detune: [0, 0.1,0.201 ],
-		//amp:0.25,
-		legato: Pfunc({|e| (e.rawLegato==1).if{1}{0.6}}),
-		//out:Effect({|i| MoogFF.ar(i,1500)=>FreeVerb.ar(_,0.5,0.9) }).bus.index
-
-
-	].p
-	<> p.handsSynth.()
-	//=>_.pma(\sawSynthSustain)
-	//=> _.p
-	//=>_.play (clock:Song.introClock)
-});
 ["Enjoy the taste of life while you can. ","1 11 7 6 5 4 13.5 14 13.5 12 13.5 16".dm(Song.handsKeys.outro,4,\dorian)].addLine;
 P.still(\henoch, timecode: 3356.seconds, music: { |p b e|
 	 e.still.( 

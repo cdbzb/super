@@ -219,7 +219,7 @@ Synful : VSTI {
 }
 
 PF : VSTI {
-	classvar plugin = 'Pianoteq 5.vst';  //++self.plugin
+	classvar plugin = 'Pianoteq 7.vst';  //++self.plugin
 	*new{ ^super.new(plugin) }
 	attachMIDI {
 		MIDIClient.init;

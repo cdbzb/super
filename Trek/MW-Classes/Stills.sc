@@ -270,6 +270,7 @@ Still {
 					this.title(text, bounds, shrink);
 					// this.setText(text) 
 				}.defer(Server.default.latency - 0.1); // timing fudge factor!! why does this work(or does it?) 
+				{image=nil; view=nil; window=nil}.defer( wait + fade + Server.default.latency - 0.1 )
 			}
           //{
           //}.defer
@@ -467,7 +468,7 @@ Display {
 		^res
 	}
 	*at {|num|
-		^monitors[num]
+		^monitors.clipAt(num)
 	}
 
 	*resolutions {

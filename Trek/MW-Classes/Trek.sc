@@ -2,6 +2,7 @@ Trek {
 	classvar <>cast, <path, <>presets, <keys, <synful1, <synful2, <strum1, <strum2, <piano;
 	classvar <condVar, <>transitions, transitionGroup, <>faders, <>faderSynths;
 	classvar carrierBus, modulatorBus, vocoderRatio ,monitorCarrier, sargonCarrier, auditionVocoder, vocoderFoa, vocodeTune, laMer, vocoderGroup, sargonModulator;
+	classvar debug=false;
 
 	*initClass {
 		path = this.filenameSymbol.asString.dirname.dirname +/+ "/Songs";
@@ -46,12 +47,16 @@ Trek {
 			^keys.indexOf(i) => this.allTheSongs[_]
 		}
 	}
-	*continue {
+	*playFromHere{
 		var num = Song.key => Trek.keys.indexOf(_);
+		faderSynths.do(_.free);
 		Trek.playRange(num, Song.playCursor, Song.songs.size - 1 - num - 1)
 	}
+	*resume{
+		this.playFromHere
+	}
 	*prepare{ |pause=0.25|
-		fork{
+		Server.default.waitForBoot{
 			Song(\trashme,[]).current;
 			(Trek.piano).isNil.if{this.pf};
 			(Trek.strum1).isNil.if{this.strum};
@@ -224,6 +229,8 @@ Trek {
 				var start = (i == 0).if{ cursor }{ transitions[section].start};
                     this.editFile(section);
 					this.playSong(section, start, trimEnd: transitions[section].trimEnd ? 0) + (transitions[section+1].lag ? 0) => _.wait;
+					
+						
 					if(numSections > 1) { transitions[section].func.() };
 					if(numSections > 1) { transitions[section].dur.wait }
 			}
@@ -276,6 +283,7 @@ Trek {
 		( needLoad.size!=0 ).if{ ^this.loadSongs(needLoad) };
 		Song.scrollOn = true;
 		fork{
+			faderSynths.do{|i| i.free};
 			transitionGroup.release;Server.default.sync;
 			faderSynths[0] = faders[0].();
 			keys.size.do{|key section| 
@@ -287,13 +295,34 @@ Trek {
 					start,
 					trimEnd: transitions[section].trimEnd ? 0
 				).wait; 
+				debug.if{
+					//for debugging
+					"NODES as of: %".format(section).postln;
+					10.wait;
+					Server.default.queryAllNodes;
+					//
+				};
 				(
 					transitions[section+1].notNil.if{
 					transitions[section + 1].lag ? 0
 				}).wait;
+				debug.if{
+					//for debugging
+					"NODES afterTransition: %".format(section).postln;
+					10.wait;
+					Server.default.queryAllNodes;
+					//
+				};
 				transitions[section].func.value;
 				transitions[section].dur.wait
 			}
+		}
+	}
+
+	*playOnTheHour {
+		|repeats = 3|
+		repeats.do{|i|
+			SystemClock.sched( 3600 * i, {Trek.playAll})
 		}
 	}
 
@@ -303,22 +332,6 @@ Trek {
 		};
 			Song.currentSong !? {|i| i.piano = piano;
 		};
-		// Song.resources.condition=Condition();
-		// Song.resources.infrastructure = {
-		// 	FunctionList.new.array_([
-		// 		( currentEnvironment.at(\piano).isNil or: try{ currentEnvironment.at(\piano).syn.isPlaying.not } ).if
-		// 		(Trek.piano.isNil or: try{ Trek.piano.syn.isPlaying.not }).if {
-		// 			Song.currentSong.piano = Trek.piano = PF();
-		// 		},
-		// 		{ fork {
-		// 			while( {
-		// 				Trek.piano.controller.isOpen.not;
-		// 			},{0.05.wait});
-		// 			Song.resources.condition.test_(true).signal
-		// 		}}
-		// 	]).value
-		// }.inEnvir;
-
 	}
 	*strum {
 		( strum1.isNil or: try{ strum1.syn.isPlaying.not } ).if {
@@ -327,23 +340,6 @@ Trek {
 		};
 			Song.currentSong !? {|i| i.strum1 = strum1};
 			Song.currentSong !? {|i| i.strum2 = strum2};
-		// Song.resources.condition=Condition();
-		// Song.resources.infrastructure = {
-		// 	FunctionList.new.array_([
-		// 		( currentEnvironment.at(\strum1).isNil or: try{ currentEnvironment.at(\strum1).syn.isPlaying.not } ).if
-		// 		(Trek.strum1.isNil or: try{ Trek.strum1.syn.isPlaying.not }).if {
-		// 			Song.currentSong.strum1 = Trek.strum1 = AAS_Strum();
-		// 			Song.currentSong.strum2 = Trek.strum2 = AAS_Strum();
-		// 		},
-		// 		{ fork {
-		// 			while( {
-		// 				Trek.strum2.controller.isOpen.not;
-		// 			},{0.05.wait});
-		// 			Song.resources.condition.test_(true).signal
-		// 		}}
-		// 	]).value
-		// }.inEnvir;
-
 	}
 	*synful {
 		( synful1.isNil or: try{ synful1.syn.isPlaying.not } ).if {
@@ -354,22 +350,20 @@ Trek {
 				Song.currentSong.synful1 = synful1;
 				Song.currentSong.synful2 = synful2;
 			}
-		// Song.resources.condition=Condition();
-		// Song.resources.infrastructure = {
-		// 	FunctionList.new.array_([
-		// 		( currentEnvironment.at(\synful1).isNil or: try{ currentEnvironment.at(\synful1).syn.isPlaying.not } ).if
-		// 		(Trek.synful1.isNil or: try{ Trek.synful1.syn.isPlaying.not }).if {
-		// 			Song.currentSong.synful1 = Trek.synful1 = Synful();
-		// 			Song.currentSong.synful2 = Trek.synful2 = Synful();
-		// 		},
-		// 		{ fork {
-		// 			while( {
-		// 				Trek.synful2.controller.isOpen.not;
-		// 			},{0.05.wait});
-		// 			Song.resources.condition.test_(true).signal
-		// 		}}
-		// 	]).value
-		// }.inEnvir;
+	}
+
+	*makePersistentFader {|num|
+		num = num ? keys.indexOf( Song.current );
+		num.debug("number: ");
+		this.loadTransitions;
+		Trek.faders[num].();
+		{
+			fork{
+				while { StageLimiter.activeSynth.isRunning.not } {0.1.wait};
+				Trek.faders[num].()
+			}
+		} => ServerTree.add(_);
+		"Do Cmd-. to start fader / recompile to turn off"
 	}
 
 	*vocoder {
@@ -522,5 +516,6 @@ Trek {
 		\laMer;
 	].do({|i| Song.resources.put(i, Trek.perform(i))})
 	}
+
 }
 

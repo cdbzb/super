@@ -215,6 +215,11 @@ Trek {
 		this.playRange(*array)
 	}
 
+	*reset {
+		transitionGroup.release; 
+		faderSynths.do{ |x| x !? _.release };	
+	}
+
 	*playRange { |num cursor=0 numSections=1|  // sets first fader then plays range
 		var needLoad;
 		this.loadTransitions;

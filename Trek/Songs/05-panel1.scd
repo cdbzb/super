@@ -693,7 +693,9 @@ P.synthVs(Trek.cast.spock, take: [nil, \bg1],
 			/4
 			* p.pureGain
 			* 4.dbamp
-			* 3.5.dbamp;
+			* 3.5.dbamp
+			* 4.dbamp
+			;
 			Out.ar(0, sig);
 			Out.ar(p.sidechain, sig)
 	}.play;
@@ -2001,7 +2003,7 @@ P(\chordz, music: { |p b e|
 		
 	].pp
 });
-P.synthV(role: \vocoder, take: \lead, frozen: false, resources:(tail: 7),
+P.synthV(role: \vocoder, take: \lead, frozen: true, resources:(tail: 7),
 	pbind: Song.enlarge2(0),
 	params: {|p b| [
 	lyrics: "In any + case, I do not know - baby + It was so long ago + and the records + of our travels + were ",
@@ -2189,7 +2191,7 @@ P(\bassnote, music: { |p b e|
 		freq: [-17.5,-11].df('c#',4,\minor).q,
 	].p.play
 });
-P.synthV(role: \vocoder, take: \lead, frozen: false, params: {|p b| [
+P.synthV(role: \vocoder, take: \lead, frozen: true, params: {|p b| [
 	lyrics: "r lost in the cataclysm + + + which we unleashed +  upon + our selves ",
 	filter: (midinote: _ - 12), 
 	pitchTake: 1

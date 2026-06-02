@@ -16,6 +16,7 @@ Stills {
 	classvar <>monitorChoiceFunction;
 	classvar <>titleFunction;
 	classvar <>currentKoreanText; // Track current Korean subtitle
+	classvar <>showKorean = false; // toggle Korean subtitle display
 	var <>file;
 	var <>markers;
 	var <>fade;
@@ -388,7 +389,7 @@ Still {
 		};
 		
 		// Add Korean subtitle if provided
-		korean.notEmpty.if{
+		(Stills.showKorean and: { korean.notEmpty }).if{
 			textKorean = StaticText(window,koreanRect)
 			.string_(korean)
 			.stringColor_(Color.gray(0.8))

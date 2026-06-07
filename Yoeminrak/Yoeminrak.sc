@@ -19,8 +19,8 @@ MPV {
 Yoeminrak {
     classvar <video;
     classvar <sections, <secDur;
-    classvar <>particleVidOffset = 20;
-     // classvar <>particleVidOffset = 25.7;
+    classvar <>particleVid = \p04;   // which render vid=1 refers to: \p04 or \old
+    classvar <>particleOffsets;      // per-video offset vs live marks (set in initClass)
 
     classvar <>env;
     classvar <>song;
@@ -30,6 +30,9 @@ Yoeminrak {
     classvar <>bookmarks;
     classvar <>marks;
     classvar <>markAdj;
+
+    *particleVidOffset { ^particleOffsets[particleVid] }
+    *particleVidOffset_ { |val| particleOffsets[particleVid] = val }
 
     *songAt { |key| ^song[key].value }
 
@@ -126,9 +129,13 @@ Yoeminrak {
         bookmarks = List[];
         ServerTree.add({"pkill mpv".unixCmd});
         video = (
-            particles: "'/Users/michael/tank/Hyojin/Video Sync/Media/여민락_2025__yeomillak-2025 (720p).mp4'",
+            p04: "'/Users/michael/tank/Hyojin/Video Sync/Media/Particle Dance 04 [Hh1SNBCkAFw] (720p).mp4'",
+            old: "'/Users/michael/tank/Hyojin/Video Sync/Media/여민락_2025__yeomillak-2025 (720p).mp4'",
             live: "'/Users/michael/tank/Hyojin/Video Sync/Media/1015_여민락_실연_full (720p).mp4'";
         );
+        // offsets measured by motion/silhouette correlation against the live video,
+        // p04 refined by eye with Video Sync/overlap_nudge.py (2026-06)
+        particleOffsets = (old: 20, p04: 5.373);
         video.keysValuesDo { |key, path|
             var unquoted = path.replace("'", "");
             File.exists(unquoted).not.if {
@@ -177,7 +184,7 @@ Yoeminrak {
             -104.9336, // 16
         ].collect{|i x| x * 52 + 6 + i };
         secDur = sections.differentiate.drop(1);
-        sections = sections.add(15 - particleVidOffset);  // negativeOne video start (particles: 15s)
+        sections = sections.add(15 - 20);  // negativeOne start: old particles 15s − its 20s offset (live time −5s)
         secDur = secDur.add(sections[0] - sections.last);  // negativeOne duration ≈ 8.34s
         this.loadMarks;
         this.loadEventTypes;
@@ -278,9 +285,9 @@ Yoeminrak {
     }
 
     *playVid { |vid sec audio=false fullscreen=false length=1 start=0 end=5 syncBeats=false paused=false|
-        var path = (vid == 0).if { video.at(\live) } { video.at(\particles) };
+        var path = (vid == 0).if { video.at(\live) } { video.at(particleVid) };
         sec.notNil.if {
-            var vidOffset = vid * particleVidOffset;
+            var vidOffset = vid * this.particleVidOffset;
             start = syncBeats.if {
                 var markIdx = (sec * 20) + start + 1;
                 (this.markFrame(markIdx) / 29.97) + vidOffset
@@ -314,7 +321,7 @@ Yoeminrak {
         {
             var firstSec = songs[0].isInteger.if { songs[0] } { nameMap[songs[0]] ? 0 };
             var markIdx = (firstSec * 20) + 1;  // same as \cyc: (section * 20) + start + 1
-            offset = (this.markFrame(markIdx) / 29.97) + particleVidOffset;
+            offset = (this.markFrame(markIdx) / 29.97) + this.particleVidOffset;
         }.value;
 
         "Recording % songs, total duration: %s".format(songs.size, totalDur.round(0.1)).postln;
@@ -333,7 +340,7 @@ Yoeminrak {
             Server.default.stopRecording;
             2.wait;
             "ffmpeg -y -ss % -i % -i % -map 0:v -map 1:a -c:v copy -c:a aac -shortest %"
-                .format(offset, video[\particles], audioPath, outPath).unixCmd({ |res|
+                .format(offset, video[particleVid], audioPath, outPath).unixCmd({ |res|
                     "Reference saved to: %".format(outPath).postln;
                 });
         };

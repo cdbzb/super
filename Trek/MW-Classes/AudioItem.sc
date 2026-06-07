@@ -1,16 +1,19 @@
 AudioItem {
-	classvar <>all, <folder, <buffers;
+	classvar <>all, <folder, <buffers, <recorders;
     classvar <>armed = false;
 	var <>name, <>buffer, <>path, <>recorder;
-	var <>directory, <>takes;
-	
+	var <>directory, <>takes, stopFunc;
+
 	*initClass {
 		all = Dictionary.new(512);
 		buffers = MultiLevelIdentityDictionary.new;
+		recorders = Dictionary.new;
 		Class.initClassTree(Event);
 		folder = "~/tank/SC_audiofiles".standardizePath;
 		File.exists(folder).not.if{ "mkdir %".format(folder).unixCmd };
 		CmdPeriod.add(this);
+		Class.initClassTree(MyFree);
+		MyFree.add({ this.stopRecording });
 
 		Event.addEventType(\audioItem, {
 			var name = ~name ?? { Error("AudioItem requires a name").throw };
@@ -18,14 +21,17 @@ AudioItem {
 			var entryCount = File.exists(directory).if {
 				PathName(directory).entries.size
 			} { 0 };
-			var defaultTake = ~record.if { entryCount } { (entryCount - 1).max(0) };
+			var defaultTake = (~record ? false).if { entryCount } { (entryCount - 1).max(0) };
 			var takeNum = ~take ?? defaultTake;
 			var format = (~format ? \wav).asString;
-			var path = ~record.if
+			var path = (~record ? false).if
 				{ directory +/+ takeNum ++ "." ++ format }
 				{ AudioItem.takePath(directory, takeNum) };
 			var buffer = buffers.at(name.asSymbol, takeNum);
 			var recorder = Recorder(Server.default);
+			// dur the user actually set, ignoring the (dur: 5) parent default —
+			// own keys don't consult the parent chain
+			var userDur = currentEnvironment.keys.includes(\dur).if { ~dur };
 
 			// Create buffer if it doesn't exist
 			buffer = buffer ?? {
@@ -57,10 +63,16 @@ AudioItem {
 					currentEnvironment.play
 				} {
 					var nc = ~numChannels ? 1;
+					// restarting a name that is still recording closes the old take first
+					recorders[name.asSymbol] !? {|r| r.isRecording.if { r.stopRecording } };
+					recorders[name.asSymbol] = recorder;
 					~recorder.recHeaderFormat_(format).recSampleFormat_(AudioItem.sampleFormatFor(format));
 					~recorder.prepareForRecord(~path, nc);
 					Server.default.bind{
-						~recorder.record(~path, ~in ? Server.default.options.numOutputBusChannels, nc, duration: ~dur)
+						// no dur given -> record until AudioItem.stopRecording(name) or Cmd-.
+						// dur given -> record recTail (default 5s) beyond it in case a tail is needed
+						~recorder.record(~path, ~in ? Server.default.options.numOutputBusChannels, nc,
+							duration: userDur !? (_ + (~recTail ? 5)))
 					};
 					// invalidate cached buffer so next playback reloads from disk
 					buffers.put(name.asSymbol, takeNum, Buffer());
@@ -131,36 +143,62 @@ AudioItem {
 		^ret
     }
 	*insertNew {|name|
-		Nvim.replace("AudioItem(\\\"%\\\")".format(name ++ "_" ++ Date.getDate.stamp))
+		Nvim.replace("AudioItem(\"%\")".format(name ++ "_" ++ Date.getDate.stamp))
 	}
 	*insertEvent {|name|
-		Nvim.replace( "(type: \\\\audioItem, name: \\\"%\\\")".format(name ++ "_" ++  Date.getDate.stamp) )
+		Nvim.replace( "(type: \\audioItem, name: \"%\")".format(name ++ "_" ++  Date.getDate.stamp) )
+	}
+	// stop an event-started open-ended recording; no name stops all of them
+	*stopRecording { |name|
+		name.isNil.if {
+			recorders.copy.keysDo{ |k| this.stopRecording(k) }
+		} {
+			recorders.removeAt(name.asSymbol) !? { |r|
+				r.isRecording.if { r.stopRecording }
+			}
+		}
 	}
 	record {
-		|length, format = \wav|
-		var path;
-		path = directory +/+ takes ++ "." ++ format;  // New file at index 'takes'
+		|length, format = \wav, tail = 5|
+		var take, path, finished = false, finish;
+		// restarting while a take is still recording closes it first (bumps takes synchronously)
+		recorders[name.asSymbol] !? {|r| r.isRecording.if { r.stopRecording } };
+		recorders[name.asSymbol] = this;
+		take = takes;
+		path = directory +/+ take ++ "." ++ format;  // New file at index 'takes'
+		finish = {
+			finished.not.if {
+				finished = true;
+				stopFunc = nil;
+				takes = take + 1;  // Increment after successful recording
+				fork{
+					0.05.wait;  // time for file to write?
+					buffers.put(name.asSymbol, take, Buffer.read(Server.default, path).debug("BUFFER"));
+				}
+			}
+		};
 		recorder.recHeaderFormat_(format.asString).recSampleFormat_(AudioItem.sampleFormatFor(format));
 		recorder.prepareForRecord(path);
-		Server.default.bind{ 
+		Server.default.bind{
 			recorder.record(
 				path,
 				Server.default.options.numOutputBusChannels,
-				duration: length
+				// nil -> record until .stopRecording or Cmd-.; else add tail for safety
+				duration: length !? (_ + tail)
 			)
 		};
-		fork{
-			length + 0.05 => _.wait;  // time for file to write?
-			buffers.put(name, takes, Buffer.read(Server.default, path).debug("BUFFER"));
-			takes = takes + 1;  // Increment after successful recording
+		stopFunc = {
+			recorder.stopRecording;
+			finish.();
 		};
-		CmdPeriod.doOnce{
-			fork{
-				0.05.wait; //time for file to write?
-				buffers.put(name, takes, Buffer.read(Server.default, path));
-				takes = takes + 1;  // Also increment here
-			}
-		};
+		length !? { fork{ (length + tail + 0.05).wait; finish.() } };
+		CmdPeriod.doOnce{ finish.() };  // Recorder's node onFree already closes the file
+	}
+	stopRecording {
+		stopFunc !? _.();
+	}
+	isRecording {
+		^stopFunc.notNil
 	}
 	take { |num|
         ^Take(name, num)

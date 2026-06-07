@@ -1,5 +1,6 @@
 AudioItem {
 	classvar <>all, <folder, <buffers;
+    classvar <>armed = false;
 	var <>name, <>buffer, <>path, <>recorder;
 	var <>directory, <>takes;
 	
@@ -9,6 +10,7 @@ AudioItem {
 		Class.initClassTree(Event);
 		folder = "~/tank/SC_audiofiles".standardizePath;
 		File.exists(folder).not.if{ "mkdir %".format(folder).unixCmd };
+		CmdPeriod.add(this);
 
 		Event.addEventType(\audioItem, {
 			var name = ~name ?? { Error("AudioItem requires a name").throw };
@@ -18,7 +20,10 @@ AudioItem {
 			} { 0 };
 			var defaultTake = ~record.if { entryCount } { (entryCount - 1).max(0) };
 			var takeNum = ~take ?? defaultTake;
-			var path = directory +/+ takeNum ++ ".wav";
+			var format = (~format ? \wav).asString;
+			var path = ~record.if
+				{ directory +/+ takeNum ++ "." ++ format }
+				{ AudioItem.takePath(directory, takeNum) };
 			var buffer = buffers.at(name.asSymbol, takeNum);
 			var recorder = Recorder(Server.default);
 
@@ -46,13 +51,20 @@ AudioItem {
 
 			));
             ~record.if{
+				armed.not.if {
+					"AudioItem not armed! not recording".warn;
+					~record = false;
+					currentEnvironment.play
+				} {
 					var nc = ~numChannels ? 1;
+					~recorder.recHeaderFormat_(format).recSampleFormat_(AudioItem.sampleFormatFor(format));
 					~recorder.prepareForRecord(~path, nc);
 					Server.default.bind{
 						~recorder.record(~path, ~in ? Server.default.options.numOutputBusChannels, nc, duration: ~dur)
 					};
 					// invalidate cached buffer so next playback reloads from disk
 					buffers.put(name.asSymbol, takeNum, Buffer());
+				}
             } {
                 Server.default.makeBundle(
                     (~latency ? 0.2) + (~lag ? 0),
@@ -73,6 +85,19 @@ AudioItem {
 		}, (dur:5)
 	);
 	}
+*cmdPeriod {
+	armed = false
+}
+	// resolve an existing take file regardless of extension (wav/flac); fall back to .wav
+	*takePath { |directory, takeNum|
+		var matches = (directory +/+ takeNum ++ ".*").pathMatch;
+		^matches.notEmpty.if { matches.first } { directory +/+ takeNum ++ ".wav" }
+	}
+
+	// flac caps at 24-bit int; otherwise keep the server's float32
+	*sampleFormatFor { |format|
+		^(format.asString == "flac").if { "int24" } { "float" }
+	}
 
     *new {|name|
         var ret = super.new;
@@ -89,7 +114,7 @@ AudioItem {
 		};
 
 		// Set path to most recent take (takes-1, or 0 if no files exist)
-		ret.path = ret.directory +/+ (ret.takes - 1).max(0) ++ ".wav";
+		ret.path = AudioItem.takePath(ret.directory, (ret.takes - 1).max(0));
 		
         // Create buffer for the most recent take if it exists
         ret.buffer = buffers[name.asSymbol, (ret.takes - 1).max(0)] ?? {
@@ -112,9 +137,10 @@ AudioItem {
 		Nvim.replace( "(type: \\\\audioItem, name: \\\"%\\\")".format(name ++ "_" ++  Date.getDate.stamp) )
 	}
 	record {
-		|length|
+		|length, format = \wav|
 		var path;
-		path = directory +/+ takes ++ ".wav";  // New file at index 'takes'
+		path = directory +/+ takes ++ "." ++ format;  // New file at index 'takes'
+		recorder.recHeaderFormat_(format.asString).recSampleFormat_(AudioItem.sampleFormatFor(format));
 		recorder.prepareForRecord(path);
 		Server.default.bind{ 
 			recorder.record(
@@ -152,7 +178,7 @@ Take : AudioItem {
         newTake.buffer = AudioItem.buffers[name.asSymbol][num].notNil.if { 
 			 AudioItem.buffers[name.asSymbol][num] 
 		} {
-			 AudioItem.buffers.put(name.asSymbol, num, Buffer.read(Server.default,directory +/+ num ++ ".wav"));
+			 AudioItem.buffers.put(name.asSymbol, num, Buffer.read(Server.default, AudioItem.takePath(directory, num)));
 			 AudioItem.buffers[name.asSymbol][num]
 		} 
         ^newTake

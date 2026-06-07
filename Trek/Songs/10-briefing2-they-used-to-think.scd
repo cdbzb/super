@@ -33,10 +33,10 @@ P.still(\kirk, timecode: 2314.1.seconds, music: { |p b e|
 			e.still.( 
 				wait: b.sum + e.bNext.sum + 2,
 				fade:11,
-				fadeIn: b.sum + e.bNext.sum;
+				fadeIn: b.sum + e.bNext.sum
 			).sequenceText2(
 				b.sum, [ 
-				["",""],
+					["",""],
 				],
 			)
 });

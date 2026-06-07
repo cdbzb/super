@@ -328,16 +328,16 @@ view.keyDownAction_({ |view char|
 		=> _.collect(_.flat)
 		// => _.sort{|e f| e.collect(_.midinote).mean > f.collect(_.midinote).mean}
 	}
-	doesNotUnderstand{|selector ...args|
-        // for collect - reject - select - drop 
+	doesNotUnderstand{|selector ...args, kwargs|
+        // for collect - reject - select - drop
 		this.midiEvents.respondsTo(selector).if{
 			^MIDIItemPlayer(
-				Message(this.midiEvents.deepCopy, selector, args).(),
+				this.midiEvents.deepCopy.performArgs(selector, args, kwargs ? #[]),
 				this.source
 			).copyBounds(this)
 		}{
 			MIDIItemPlayer.findRespondingMethodFor(selector).notNil.if{
-				^Message(this.player, selector, args).()
+				^this.player.performArgs(selector, args, kwargs ? #[])
 			}
 		};
 		this.class + "does not understand" + selector
@@ -427,7 +427,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		^notes
 	}
 	insert {
-		Nvim.replace( "MIDIItem(\\\"%\\\")".format(name) )
+		Nvim.replace( "MIDIItem(\"%\")".format(name) )
 	}
 	register {
 		all.add(name -> this)

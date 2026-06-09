@@ -15,16 +15,24 @@ gui { |take|
     var extrapolateMode = false, gridLines, currentLine = 0, anchorPair, manualIndices;
     var rebuildGrid, updateExtrapSelection, ensureLineVisible, effTime;
     var dpMode = false, beatTracker, pinSet, repin, applyManualPick;
+    var savedSel;
     
     // Initialize selected indices array
     selectedIndices = [];
     
     this.respondsTo(\takes).if{
         take = take ? (this.takes.size - 1);
+        (take < 0).if { take = this.takes.size + take };
         notes = this.take(take).notes;
+        savedSel = this.selections(take) !? _.last;
     }{
         notes = this.notes;
-        take = 0
+        take = 0;
+        savedSel = this.tryPerform(\currentSelection);
+    };
+    savedSel.notNil.if {
+        selectedIndices = (savedSel[\indices] ? []).copy;
+        ("Loaded saved selection: % notes".format(selectedIndices.size)).postln;
     };
     
     start = notes[0].timestamp;
@@ -326,7 +334,48 @@ view.keyDownAction_({ |view char|
             ("Zoomed in, duration: " ++ newDuration.round(0.01)).postln;
         },
         $r, {selectedIndices = []; extrapolateMode = false; dpMode = false; pinSet = nil; gridLines = []; view.refresh; "Selection cleared".postln},
-        $g, {("Selected note indices: " ++ selectedIndices).postln; selectedIndices}, 
+        $g, {("Selected note indices: " ++ selectedIndices).postln; selectedIndices},
+        $w, { // persist selection — immutable, appends a new version if changed
+            var sel, beatPos, sortedSel, positions;
+            (selectedIndices.size == 0).if {
+                "nothing selected — not saved".postln
+            }{
+                // beat position of each selected note: manual clicks count 1 beat
+                // apiece, grid picks sit at their line index (ghosts widen the gap)
+                beatPos = Dictionary.new;
+                extrapolateMode.if {
+                    manualIndices.do{|idx i| beatPos[idx] = i };
+                    gridLines.do{|l i|
+                        l[\noteIndex].notNil.if { beatPos[l[\noteIndex]] = manualIndices.size + i }
+                    };
+                };
+                sortedSel = selectedIndices.copy.sort{|a b| notes[a].timestamp < notes[b].timestamp};
+                positions = List[];
+                sortedSel.do{|idx|
+                    positions.add( beatPos[idx] ?? { (positions.last ? -1) + 1 } )
+                };
+                sel = (
+                    indices: sortedSel,
+                    beats: positions.asArray.differentiate.drop(1).collect(_.max(1))
+                );
+                extrapolateMode.if {
+                    sel[\periodPrior] = anchorPair[1] - anchorPair[0];
+                };
+                dpMode.if {
+                    sel[\pins] = pinSet.asArray.sort;
+                    sel[\anchor] = beatTracker.anchorIndex;
+                };
+                this.respondsTo(\takes).if {
+                    this.addSelection(take, sel)
+                }{
+                    this.tryPerform(\takeIndex).notNil.if {
+                        this.source.addSelection(this.takeIndex, sel)
+                    }{
+                        "no take context — open the gui from a MIDIItem (or via .take) to save selections".postln
+                    }
+                }
+            }
+        },
         $?, {
             // Show help menu
             var helpWindow = Window("Piano Roll Help", Rect(200, 200, 400, 300)).front;
@@ -342,6 +391,7 @@ view.keyDownAction_({ |view char|
                     "H/L - Zoom out/in horizontally\n" ++
                     "r - Clear note selection\n" ++
                     "g - Get selected note indices\n" ++
+                    "w - Save selection to the MIDIItem (immutable, new version per change)\n" ++
                     "e - Toggle extrapolate mode (tempo grid from last 2 selected notes)\n" ++
                     "E - Same, but DP beat tracker (globally optimal; j/k pin notes)\n" ++
                     "      h/l - previous/next grid line\n" ++
@@ -564,16 +614,33 @@ view.keyDownAction_({ |view char|
 			start: this.midiEvents[0].timestamp
 		)
 	}
+	// fill omitted beats/choiceFunc from a loaded selection (player.currentSelection):
+	// choiceFunc <- the selected notes, beats <- saved spans + trailing anchor-to-end entry
+	prSelectionArgs { |beats, choiceFunc|
+		var sel = this.tryPerform(\currentSelection);
+		sel.notNil.if {
+			choiceFunc = choiceFunc ?? { this.notes[sel[\indices]] };
+			beats = beats ?? {
+				var b = sel[\beats] ?? { Array.fill(sel[\indices].size - 1, 1) };
+				b ++ (b.last ? 1)
+			};
+		};
+		^[beats, choiceFunc]
+	}
 	quantize { |beats func choiceFunc recalcSustains=true |
-		var tempoMap = MIDIItemTempoMap(this, choiceFunc, beats);
+		var tempoMap;
+		#beats, choiceFunc = this.prSelectionArgs(beats, choiceFunc);
+		tempoMap = MIDIItemTempoMap(this, choiceFunc, beats);
 		func.notNil.if{
-			^this.quantizeFunc(beats, func, choiceFunc, recalcSustains) 
+			^this.quantizeFunc(beats, func, choiceFunc, recalcSustains)
 		}{
 			^this.warpTo(tempoMap)
 		}
 	}
     quantizeFunc { |beats func choiceFunc recalcSustains=true |
-        var tempoMap = MIDIItemTempoMap(this, choiceFunc, beats);
+        var tempoMap;
+        #beats, choiceFunc = this.prSelectionArgs(beats, choiceFunc);
+        tempoMap = MIDIItemTempoMap(this, choiceFunc, beats);
         this.collect({|e x| 
             (
                 env: tempoMap.env, 
@@ -593,6 +660,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	var <>midiEvents , <name, <>initialCCValues;
 	var restFirst, <initialRest, notes ;
 	var <takes, <recordedMks, <>recordedMk;
+	var <beatSelections; // Dictionary: take -> List of selection Events (append-only, immutable versions)
 	classvar midiout, <recording;
 
 	*initClass {
@@ -879,7 +947,36 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		(num < 0 or: (num > (takes.size - 1))).if { ^"only % takes in %".format(takes.size, name).postln};
 		obj = MIDIItemPlayer(this.makeNotesFromMidiEvents(takes[num]), this);//.recalcSustains
 		obj.recordedMk = recordedMks !? _[num];
+		obj.takeIndex = num;
 		^obj
+	}
+	// selections are immutable: appending is the only mutation, identical saves are no-ops
+	addSelection { |take, sel|
+		var list, last, same;
+		(take < 0).if { take = takes.size + take };
+		beatSelections = beatSelections ?? { Dictionary.new };
+		list = beatSelections[take] ?? { List[] };
+		beatSelections[take] = list;
+		last = list.last;
+		same = last.notNil and: {
+			[\indices, \beats, \pins, \periodPrior, \anchor].every{ |k| last[k] == sel[k] }
+		};
+		same.if {
+			^"selection unchanged — take % stays at % version(s)".format(take, list.size).postln
+		};
+		list.add(sel);
+		this.save;
+		"take %: saved selection version %".format(take, list.size - 1).postln;
+		^sel
+	}
+	selections { |take = (-1)|
+		(take < 0).if { take = takes.size + take };
+		^beatSelections !? { |d| d[take] }
+	}
+	// singular returns a configured player (plural returns the data):
+	// MIDIItem("foo").selection(4, 3) == MIDIItem("foo").take(3).selection(4)
+	selection { |version = (-1), take = (-1)|
+		^this.take(take).selection(version)
 	}
 }
 
@@ -888,6 +985,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	var <midiEvents, <source, <>recordedMk;
 	var <>start, <>end;
 	var tracks;
+	var <>takeIndex, <>currentSelection; // set by MIDIItem.take / selection — not preserved through filters
 
 	*new {| amidiEvents source |
 		var player, bounds;
@@ -1034,6 +1132,21 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		^(end - start)
 	}
 
+	// load a saved selection version onto this player (chainable):
+	// MIDIItem("foo").take(3).selection(2).gui
+	selection { |version = (-1)|
+		var list = takeIndex !? { source.tryPerform(\selections, takeIndex) };
+		currentSelection = list !? { |l|
+			(version < 0).if { l[l.size + version] }{ l[version] }
+		};
+		currentSelection.isNil.if {
+			"no saved selection (take %, version %)".format(takeIndex, version).postln
+		};
+		^this
+	}
+	selections {
+		^source.tryPerform(\selections, takeIndex)
+	}
 	noteIndices {
 		^midiEvents.select{|e| e.midicmd == \noteOn }
 		.collect{|i x| x->midiEvents.indexOf(i) }
@@ -1270,6 +1383,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	}
 	tempomap {|beats choiceFunc|
 		beats.isString.if{ beats = beats.beats };
+		#beats, choiceFunc = this.prSelectionArgs(beats, choiceFunc);
 		^MIDIItemTempoMap(this, choiceFunc, beats)
 	}
 	recalcSustains {

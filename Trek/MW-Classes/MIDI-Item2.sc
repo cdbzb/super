@@ -12,6 +12,8 @@ gui { |take|
     var selectedIndices; // Array to store selected note indices
     var startMidiNote = 36; // Starting MIDI note for display range
     var viewStart, viewEnd, zoomFactor = 1; // Horizontal view and zoom variables
+    var extrapolateMode = false, gridLines, currentLine = 0, anchorPair, manualIndices;
+    var rebuildGrid, updateExtrapSelection, ensureLineVisible, effTime;
     
     // Initialize selected indices array
     selectedIndices = [];
@@ -32,7 +34,62 @@ gui { |take|
     // Initialize horizontal view
     viewStart = start;
     viewEnd = end;
-    
+
+    // Extrapolate-mode helpers
+    gridLines = [];
+
+    // effective beat time of a grid line: chosen note's onset, or the line's grid time;
+    // -1 and -2 address the anchor pair (the last two manually selected notes)
+    effTime = { |i|
+        case
+        { i == -2 } { anchorPair[0] }
+        { i == -1 } { anchorPair[1] }
+        {
+            gridLines[i][\noteIndex].notNil.if {
+                notes[gridLines[i][\noteIndex]].timestamp
+            }{
+                gridLines[i][\time]
+            }
+        }
+    };
+
+    rebuildGrid = { |lineIdx = -1| // recompute lines after lineIdx from the pair (lineIdx-1, lineIdx)
+        var prevT = effTime.(lineIdx - 1);
+        var curT = effTime.(lineIdx);
+        var delta = curT - prevT;
+        var tol = delta / 5; // auto-select only within a fifth of a beat
+        var t = curT + delta;
+        gridLines = gridLines.keep(lineIdx + 1);
+        (delta > 0.001).if {
+            while { t <= end } {
+                var nearIdx, nearDist = inf;
+                notes.do { |e i|
+                    var d = (e.timestamp - t).abs;
+                    (d < nearDist).if { nearDist = d; nearIdx = i };
+                };
+                (nearDist > tol).if { nearIdx = nil };
+                gridLines = gridLines.add((time: t, noteIndex: nearIdx));
+                t = t + delta;
+            }
+        }
+    };
+
+    updateExtrapSelection = {
+        selectedIndices = manualIndices ++ gridLines.collect{|l| l[\noteIndex]}.reject(_.isNil);
+    };
+
+    ensureLineVisible = { |t|
+        var duration = viewEnd - viewStart;
+        (t < viewStart or: (t > viewEnd)).if {
+            viewStart = (t - (duration / 2)).max(start);
+            viewEnd = viewStart + duration;
+            (viewEnd > end).if {
+                viewEnd = end;
+                viewStart = (end - duration).max(start);
+            };
+        };
+    };
+
     // Create a window and UserView
     window = Window("Piano Roll", Rect(100, 100, width, height)).front;
     view = UserView(window, Rect(0, 0, width, 1600))
@@ -44,7 +101,89 @@ gui { |take|
 // Replace the key action section in your gui method with this fixed version:
 
 view.keyDownAction_({ |view char|
-    switch (char, 
+    var handled = false;
+
+    (char == $e).if {
+        handled = true;
+        extrapolateMode.if {
+            extrapolateMode = false;
+            gridLines = [];
+            view.refresh;
+            ("Extrapolate mode off. Selected: " ++ selectedIndices).postln;
+        }{
+            (selectedIndices.size < 2).if {
+                "Extrapolate mode needs at least 2 selected notes".postln;
+            }{
+                var sorted = selectedIndices.copy.sort{|a b| notes[a].timestamp < notes[b].timestamp};
+                manualIndices = sorted;
+                anchorPair = sorted.keep(-2).collect{|i| notes[i].timestamp};
+                gridLines = [];
+                rebuildGrid.(-1);
+                (gridLines.size == 0).if {
+                    "Extrapolate: could not build grid (pair interval zero or past end)".postln;
+                }{
+                    extrapolateMode = true;
+                    currentLine = 0;
+                    updateExtrapSelection.();
+                    ensureLineVisible.(gridLines[0][\time]);
+                    view.refresh;
+                    ("Extrapolate mode: % lines, beat = %s"
+                        .format(gridLines.size, (anchorPair[1] - anchorPair[0]).round(0.001))).postln;
+                }
+            }
+        }
+    };
+
+    (handled.not and: extrapolateMode).if {
+        switch (char,
+            $h, {
+                handled = true;
+                currentLine = (currentLine - 1).max(0);
+                ensureLineVisible.(gridLines[currentLine][\time]);
+                view.refresh;
+            },
+            $l, {
+                handled = true;
+                currentLine = (currentLine + 1).min(gridLines.size - 1);
+                ensureLineVisible.(gridLines[currentLine][\time]);
+                view.refresh;
+            },
+            $j, { // pick earlier note at current line, re-extrapolate after it
+                var line = gridLines[currentLine];
+                var idx = line[\noteIndex];
+                handled = true;
+                line[\noteIndex] = idx.notNil.if {
+                    (idx - 1).max(0)
+                }{
+                    var after = notes.detectIndex{|e| e.timestamp > line[\time]};
+                    after.isNil.if { notes.size - 1 }{ (after - 1).max(0) }
+                };
+                line[\time] = notes[line[\noteIndex]].timestamp;
+                rebuildGrid.(currentLine);
+                updateExtrapSelection.();
+                view.refresh;
+                ("Line %: note % at %".format(currentLine, line[\noteIndex], line[\time].round(0.001))).postln;
+            },
+            $k, { // pick later note at current line, re-extrapolate after it
+                var line = gridLines[currentLine];
+                var idx = line[\noteIndex];
+                handled = true;
+                line[\noteIndex] = idx.notNil.if {
+                    (idx + 1).min(notes.size - 1)
+                }{
+                    notes.detectIndex{|e| e.timestamp > line[\time]} ? (notes.size - 1)
+                };
+                line[\time] = notes[line[\noteIndex]].timestamp;
+                rebuildGrid.(currentLine);
+                updateExtrapSelection.();
+                view.refresh;
+                ("Line %: note % at %".format(currentLine, line[\noteIndex], line[\time].round(0.001))).postln;
+            }
+        )
+    };
+
+    handled.not.if {
+    switch (char,
         $q, {window.close; "open -a WezTerm.app".unixCmd},
         $0, {window.close; this.gui(0)},
         $1, {window.close; this.gui(1)},
@@ -140,7 +279,7 @@ view.keyDownAction_({ |view char|
             view.refresh;
             ("Zoomed in, duration: " ++ newDuration.round(0.01)).postln;
         },
-        $r, {selectedIndices = []; view.refresh; "Selection cleared".postln}, 
+        $r, {selectedIndices = []; extrapolateMode = false; gridLines = []; view.refresh; "Selection cleared".postln},
         $g, {("Selected note indices: " ++ selectedIndices).postln; selectedIndices}, 
         $?, {
             // Show help menu
@@ -157,6 +296,9 @@ view.keyDownAction_({ |view char|
                     "H/L - Zoom out/in horizontally\n" ++
                     "r - Clear note selection\n" ++
                     "g - Get selected note indices\n" ++
+                    "e - Toggle extrapolate mode (tempo grid from last 2 selected notes)\n" ++
+                    "      h/l - previous/next grid line\n" ++
+                    "      j/k - pick earlier/later note at current line (re-extrapolates)\n" ++
                     "? - Show this help menu\n\n" ++
                     "Mouse:\n" ++
                     "Click notes to select/deselect them\n" ++
@@ -170,6 +312,7 @@ view.keyDownAction_({ |view char|
             helpWindow.onClose_({helpWindow = nil});
         }
     )
+    };
 });
 
     // Add mouse click handling
@@ -271,6 +414,28 @@ view.keyDownAction_({ |view char|
             };
         };
         
+        // Draw extrapolate-mode grid lines
+        extrapolateMode.if {
+            gridLines.do { |l i|
+                var t = l[\time];
+                (t >= viewStart and: (t <= viewEnd)).if {
+                    var x = (t - viewStart) * timeScale;
+                    Pen.width = (i == currentLine).if { 3 }{ 1 };
+                    Pen.color = (i == currentLine).if { Color.red(1, 0.9) }{ Color.green(0.5, 0.6) };
+                    Pen.line(x@0, x@1600);
+                    Pen.stroke;
+                };
+            };
+            Pen.width = 1;
+            Pen.stringAtPoint(
+                "EXTRAPOLATE  line %/%  h/l: move  j/k: pick note  e: exit"
+                    .format(currentLine + 1, gridLines.size),
+                Point(10, 30),
+                Font("Helvetica", 14),
+                Color.red
+            );
+        };
+
         // Display take number
         Pen.stringAtPoint(
             take.asString,
@@ -298,7 +463,7 @@ view.keyDownAction_({ |view char|
         
         // Display selection instructions
         Pen.stringAtPoint(
-            "Click notes to select, press 'r' to reset, 'g' to get indices",
+            "Click notes to select, 'r' reset, 'g' get indices, 'e' extrapolate tempo grid",
             Point(10, 10),
             Font("Helvetica", 14),
             Color.black

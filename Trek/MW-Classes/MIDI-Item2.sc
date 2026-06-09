@@ -1139,11 +1139,13 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap but with timestamps instead of beats 
 	var <times, <beats, <midiEvents;
 	var <env, <tempoMap ;
+	var <invEnv, <curved = false, <curveAmount = 0;
 
 	*new {|midiItem, choiceFunc, beats|
 		^super.new.init( midiItem, choiceFunc, beats)
 	}
-	init{|midiItem, choiceFunc, b| 
+	init{|midiItem, choiceFunc, b|
+		var gaps;
 		midiEvents = midiItem.midiEvents;
 		times = (choiceFunc ? I.d)
 		.value( midiEvents.select({|e| e.midicmd == \noteOn}))
@@ -1152,9 +1154,14 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 		=> {|i| i - i[0]} //relative to first item
 		;
 		beats = b;
-		// env = Env([0] ++ beats.integrate, times.differentiate);
+		// direction 1: performedTime -> idealBeat (piecewise-linear; unchanged)
 		env = Env([0] ++ ([0] ++ beats.integrate ), times.differentiate );
-		// tempoMap = TempoMap(beats, times.differentiate.drop(1)) //what about the last dur!!!!!
+		gaps = times.differentiate.drop(1);
+		// inner TempoMap kept only for doesNotUnderstand forwarding of TempoMap methods.
+		tempoMap = TempoMap(beats, gaps);
+		// direction 2: idealBeat -> performedTime, exact inverse of env's anchor nodes.
+		// curve() rebuilds this (and env) as a monotone-Hermite sampling.
+		invEnv = Env(times, beats);
 	}
 	offsets{
 		^times.collect{|i| env[i] - i};
@@ -1164,6 +1171,97 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 	}
 	at{|x|
 		^env[x]
+	}
+	// map cumulative positions through anEnv; positions past `domain` are extrapolated
+	// at the env's final slope (carry the last tempo forward) instead of being clamped/
+	// dropped. The finite-difference slope is the last linear segment OR, when curved,
+	// the Hermite endpoint tangent -- so the tempo is continuous across the boundary.
+	prMapThrough {|positions, anEnv, domain|
+		var endV, eps, rate;
+		(domain <= 0).if { ^positions.collect{|x| anEnv.at(x) } };
+		endV = anEnv.at(domain);
+		eps  = (domain * 1e-4) max: 1e-9;
+		rate = (endV - anEnv.at(domain - eps)) / eps;
+		^positions.collect{|x|
+			(x <= domain).if { anEnv.at(x) }{ endV + ((x - domain) * rate) }
+		}
+	}
+	mapBeats{|b|
+		// domain = invEnv's actual beat-extent (robust when beats.size != anchor count)
+		^this.prMapThrough(b.integrate, invEnv, invEnv.times.sum)
+			.differentiate.select(_.isStrictlyPositive)
+	}
+	dursToBeats{|a|
+		^this.prMapThrough(a.integrate, env, env.times.sum).differentiate
+	}
+
+	// Return a NEW MIDIItemTempoMap whose performed<->ideal mapping is a monotone
+	// cubic Hermite (PCHIP) curve through the same anchor nodes, instead of the
+	// piecewise-linear (constant-tempo-per-span) default. Because the curve passes
+	// through every anchor exactly, the integral over each span is preserved:
+	// anchors stay locked, only the tempo SHAPE between them bends.
+	//   amount: 0 = linear (identical to the default map), 1 = full curvature.
+	//   oversample: samples per span baked into the resulting Env (resolution of the curve).
+	// Monotone tangent-clamping (Fritsch-Carlson) guarantees tempo never goes negative.
+	curve {|amount = 1, oversample = 32|
+		^this.copy.prCurve(amount, oversample)
+	}
+	prCurve {|amount = 1, oversample = 32|
+		var b = [0] ++ beats.integrate;   // ideal-beat node positions (x)
+		var t = times;                    // performed-time node positions (y)
+		var n = b.size min: t.size;
+		var m, bs = [], ts = [];
+		b = b.keep(n); t = t.keep(n);
+		m = this.prMonotoneTangents(b, t);
+		(n - 1).do {|k|
+			var h  = b[k+1] - b[k];
+			var dy = t[k+1] - t[k];
+			oversample.do {|j|
+				var x    = j / oversample;
+				var lin  = t[k] + (dy * x);
+				var herm = this.prHermite(x, t[k], t[k+1], m[k] * h, m[k+1] * h);
+				bs = bs.add( b[k] + (h * x) );
+				ts = ts.add( lin + ((herm - lin) * amount) );
+			}
+		};
+		bs = bs.add(b.last); ts = ts.add(t.last);
+		env    = Env(bs, ts.differentiate.drop(1));   // performedTime -> beat (direction 1)
+		invEnv = Env(ts, bs.differentiate.drop(1));    // beat -> performedTime (direction 2)
+		curved = true;
+		curveAmount = amount;
+		^this
+	}
+	// cubic Hermite basis on a single span, local x in [0,1]
+	prHermite {|x, y0, y1, m0, m1|
+		var x2 = x * x, x3 = x2 * x;
+		^( ((2 * x3) - (3 * x2) + 1) * y0 )
+		+ ( (x3 - (2 * x2) + x) * m0 )
+		+ ( (((-2) * x3) + (3 * x2)) * y1 )
+		+ ( (x3 - x2) * m1 )
+	}
+	// per-node tangents dy/dx with Fritsch-Carlson monotonicity clamp
+	prMonotoneTangents {|x, y|
+		var dx = x.differentiate.drop(1).collect{|i| i.abs max: 1e-9 };
+		var d  = y.differentiate.drop(1) / dx;   // secant slopes (size n-1)
+		var n  = x.size;
+		var m  = [ d[0] ];
+		(n - 2).do {|i| m = m.add( (d[i] + d[i+1]) * 0.5 ) };
+		m = m.add(d.last);
+		(n - 1).do {|k|
+			(d[k] == 0).if
+				{ m[k] = 0; m[k+1] = 0 }
+				{
+					var a  = m[k]   / d[k];
+					var bb = m[k+1] / d[k];
+					var s  = (a * a) + (bb * bb);
+					(s > 9).if {
+						var tau = 3 / s.sqrt;
+						m[k]   = tau * a  * d[k];
+						m[k+1] = tau * bb * d[k];
+					}
+				}
+		};
+		^m
 	}
 	doesNotUnderstand{|selector ...args|
 		tempoMap.respondsTo(selector).if{

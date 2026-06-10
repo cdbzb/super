@@ -1160,17 +1160,21 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			^this.collect( {|e| e.timestamp_(tempoMap[e.timestamp - start] + start)}) //is start right? or should get from the map?
 	}
 	chaseCCs { |from|
-		^midiEvents
+		var ccs = midiEvents
 		.select{|e| e.timestamp <= from }
-		.select{|e| e.ctlNum.notNil }
+		.select{|e| e.ctlNum.notNil };
+		(ccs.size == 0).if { ^[] }; // [].separate yields [[]] -> collect(_.last) -> [nil]
+		^ccs
 		.sort{|i j| i.ctlNum <= j.ctlNum }
 		.separate{|i j| i.ctlNum != j.ctlNum }
 		.collect{|e| e.last}
 			// .sort({|i j| i.timestamp <= j.timestamp}).last
 	}
 	notesStraddling {|time|
+			// strictly before: a note starting exactly at time isn't straddling
+			// (and would otherwise be duplicated by from's main select)
 			^midiEvents.select{|e| e.midicmd == \noteOn }
-			.select{|e| e.timestamp <= time and: (e.timestamp + e.sustain >= time )};
+			.select{|e| e.timestamp < time and: (e.timestamp + e.sustain >= time )};
 	}
 
 	from {|from to trim=true| 
@@ -1189,10 +1193,10 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		}
 
 		^(
-			firstNotes ++
-			this.chaseCCs(from) ++
-			midiEvents.select{|i| i.timestamp >= from and: (i.timestamp <= (to ? inf)) }.deepCopy
-			.do{|e| e.timestamp = e.timestamp - from} //adjust times to start at 0
+			(firstNotes ++
+			this.chaseCCs(from).deepCopy.do{|e| e.timestamp = from } ++ // chased CC state lands at the start
+			midiEvents.select{|i| i.timestamp >= from and: (i.timestamp <= (to ? inf)) }.deepCopy)
+			.do{|e| e.timestamp = e.timestamp - from} //adjust times to start at 0 (incl. straddlers/CCs)
 			// [(),(),()].do(_.dur = 3)
 			=> MIDIItemPlayer(_, this.source)
 		)
@@ -1386,6 +1390,24 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		#beats, choiceFunc = this.prSelectionArgs(beats, choiceFunc);
 		^MIDIItemTempoMap(this, choiceFunc, beats)
 	}
+	tempoMap {|beats choiceFunc| ^this.tempomap(beats, choiceFunc) }
+	// performed timestamp of an ideal beat position of the loaded selection
+	// (beat 0 = the first selected note); extrapolates beyond the selection
+	// at the boundary tempo, so negative beats address a pickup
+	timeAtBeat { |beat, tempoMap|
+		var tm = tempoMap ?? { this.tempomap };
+		^tm.timeAt(beat) + tm.t0
+	}
+	// sub-player between two beat positions — beat-domain mirror of fromNote;
+	// needs a loaded selection (or explicit beats/choiceFunc via .tempomap first)
+	fromBeat { |from, to, trim = true|
+		var tm;
+		currentSelection.isNil.if {
+			^"fromBeat needs a loaded selection — use .selection first".postln
+		};
+		tm = this.tempomap;
+		^this.from(this.timeAtBeat(from, tm), to !? { this.timeAtBeat(to, tm) }, trim)
+	}
 	recalcSustains {
 		^MIDIItemPlayer(
 			this.makeNotes,
@@ -1470,6 +1492,7 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 	var <times, <beats, <midiEvents;
 	var <env, <tempoMap ;
 	var <invEnv, <curved = false, <curveAmount = 0;
+	var <t0; // absolute timestamp of the first anchor (times/env are relative to it)
 
 	*new {|midiItem, choiceFunc, beats|
 		^super.new.init( midiItem, choiceFunc, beats)
@@ -1479,10 +1502,10 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 		midiEvents = midiItem.midiEvents;
 		times = (choiceFunc ? I.d)
 		.value( midiEvents.select({|e| e.midicmd == \noteOn}))
-		.collect{|e| e.timestamp } 
-		++ midiItem.bounds.end
-		=> {|i| i - i[0]} //relative to first item
-		;
+		.collect{|e| e.timestamp }
+		++ midiItem.bounds.end;
+		t0 = times[0];
+		times = times - t0; //relative to first anchor
 		beats = b;
 		// direction 1: performedTime -> idealBeat (piecewise-linear; unchanged)
 		env = Env([0] ++ ([0] ++ beats.integrate ), times.differentiate );
@@ -1501,6 +1524,28 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 	}
 	at{|x|
 		^env[x]
+	}
+	// ideal beat -> performed time, scalar (relative to the first anchor; add t0
+	// for absolute time). Unlike `at`/`[]`, extrapolates past BOTH ends at the
+	// boundary tempo instead of clamping — consistent with prMapThrough, and the
+	// finite-difference slope follows the Hermite tangent when curved.
+	timeAt { |beat|
+		^this.prAtExtrapolated(beat, invEnv)
+	}
+	prAtExtrapolated { |x, anEnv|
+		var domain = anEnv.times.sum;
+		var eps, rate;
+		(domain <= 0).if { ^anEnv.at(x) };
+		eps = (domain * 1e-4) max: 1e-9;
+		(x < 0).if {
+			rate = (anEnv.at(eps) - anEnv.at(0)) / eps;
+			^anEnv.at(0) + (x * rate)
+		};
+		(x > domain).if {
+			rate = (anEnv.at(domain) - anEnv.at(domain - eps)) / eps;
+			^anEnv.at(domain) + ((x - domain) * rate)
+		};
+		^anEnv.at(x)
 	}
 	// map cumulative positions through anEnv; positions past `domain` are extrapolated
 	// at the env's final slope (carry the last tempo forward) instead of being clamped/

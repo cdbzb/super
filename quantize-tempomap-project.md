@@ -39,6 +39,36 @@ Recent work this session:
     forwarding of `TempoMap` methods.
   - Hand-traced correct against live data; NOT yet machine-confirmed (see Testing notes).
 
+### Selections + beat-domain access (2026-06-09/10 session)
+Versioned beat selections now live on `MIDIItem` and drive quantize/tempomap/beat addressing:
+
+- **Storage**: `MIDIItem.beatSelections` — Dictionary `take -> List` of selection Events,
+  **append-only/immutable** (identical saves no-op). A selection holds `indices`, `beats`
+  (spans between anchors — same quantity as the `beats` arg to `MIDIItemTempoMap`),
+  and DP-tracker state (`pins`, `periodPrior`, `anchor`).
+- **Access rule**: plural = data, singular = configured player.
+  `mi.selections(3)[2]` → raw Event; `mi.selection(2, 3)` == `mi.take(3).selection(2)` →
+  player with `currentSelection` loaded (take/version default to -1 = latest).
+- **gui**: `e` manual extrapolate mode, `E` DP beat tracker (`MIDIBeatTracker`,
+  `Trek/MW-Classes/BeatTracker.sc` — Ellis-style salience DP, j/k pin notes), `w` persists.
+  Opening a take preloads its latest selection.
+- **Consumers**: `quantize`/`quantizeFunc`/`tempomap` fall back to `currentSelection` for
+  omitted `choiceFunc`/`beats` (via `prSelectionArgs`, which appends the trailing
+  anchor-to-end span). So: `mi.take(-1).selection.quantize`, and for Pbinds:
+  `durs.warpTo(mi.selection.tempomap)` (alias `tempoMap` exists).
+- **Beat-domain methods**: `MIDIItemTempoMap.timeAt(beat)` (scalar dir-2, extrapolates past
+  BOTH ends at boundary tempo, unlike clamping `at`/`[]`; `t0` ivar = absolute time of first
+  anchor), player `timeAtBeat(beat)` (absolute; negative beats = pickup), and
+  `fromBeat(from, to, trim)` — beat-domain mirror of `fromNote`, delegates to `from`.
+- **Scoping contract**: only `take()`-stamped players (`takeIndex`) can address selections;
+  derived players (filter/from/quantize results) deliberately refuse — their index space
+  diverged. Open: stamp `mi.player` with `takeIndex = takes.size - 1` when
+  `midiEvents === takes.last` (true after `stop`).
+- **`from()` fixes** (latent, exposed by `fromBeat` landing exactly on onsets / CC-less takes):
+  `chaseCCs` returned `[nil]` on empty (`[].separate` → `[[]]`); `notesStraddling` `<=` → `<`
+  (exact-onset duplicate); rebase-to-zero now covers straddlers + chased CCs (CCs deep-copied,
+  placed at start — previously uncopied and left at original timestamps).
+
 ### `TempoMap` (`Trek/MW-Classes/TempoMap.sc`) — existing quantize family
 - `quantize(amount, start, end)` (`:67`) — blend each span toward the **single global mean**
   tempo. Rigid metronome at amount 1.
@@ -86,7 +116,9 @@ Decisions:
   musical if notes are evenly spaced in beats. `\beat` = anchor at beats 0, N, 2N… (bar grid);
   needs each note's beat position and a rule when no note sits on the anchor beat (nearest-note
   snap, or interpolate a synthetic anchor time). Start with `\note`; `\beat` needs a per-note
-  beat list at call time (confirm we have it).
+  beat list at call time — **confirmed available** (2026-06-10): a saved selection's `beats`
+  spans integrate to per-anchor beat positions, and `MIDIItemTempoMap.at` gives any note's
+  beat position from its timestamp.
 - **`reduce: \pick` vs `\mean`.** Pure pick-every-Nth **aliases** sub-grid jitter into the
   low-frequency tempo. `\mean` (bin-average the notes in each interval = non-overlapping
   `quantizeWindow`) is the robust default.
@@ -134,11 +166,12 @@ boundary, while `pattern.warpTo(t)` carries forward. Document or unify (relates 
 
 ## 4. Journal directions (Jun 09) folded in
 
-### 4a. Better interactive quantization tool
-"Guess from the first couple of selections and carry the suggested tempo forward." An
-interactive flow: user clicks a few anchors, the tool infers a tempo and extends it forward
-(synergy with the carry-final-tempo-forward boundary we just built — the same extrapolation
-is the "suggestion"). Could drive the existing note-selection UI in `MIDI-Item2.sc`.
+### 4a. Better interactive quantization tool — **largely DONE (2026-06-09/10)**
+"Guess from the first couple of selections and carry the suggested tempo forward." Built as
+the gui's `e` (greedy last-pair extrapolation) and `E` (`MIDIBeatTracker` DP — globally
+optimal, salience-weighted, j/k pins) modes, with `w` persisting versioned selections and
+`mi.take(-1).selection.quantize` closing the loop. Remaining polish lives in §1
+"Selections" scoping note and the fromBeat follow-ons (beatFilter/onBeats deferred).
 
 ### 4b. "Clamp slow change but keep jitter" — inverse of `quantizeDft`
 A **high-pass** tempo filter: remove slow drift, preserve fast articulation/jitter. Literally
@@ -163,6 +196,14 @@ friction. Decide: shared superclass, mixin, or one class with two construction m
 - [ ] `warpTo(t.tempoMap)` truncates vs `warpTo(t)` carries forward (§3e).
 - [ ] MIDIItem `quantize` takes `beats` at face value (→ 4c).
 - [ ] Machine-confirm the carry-forward boundary fix (see Testing notes).
+- [x] `chaseCCs` `[nil]` on CC-less region; `notesStraddling` exact-onset duplicate;
+      `from()` partial rebase (straddlers/chased CCs) — fixed 2026-06-10.
+- [ ] Stamp `mi.player` with `takeIndex` when `midiEvents === takes.last` (selection
+      addressing from the post-record player; see §1 scoping contract).
+- [ ] `AbstractMidiEvents.doesNotUnderstand` error path does `class + "doesnt understand"`
+      → masks real errors with `Message '+' not understood`.
+- [ ] Deferred beat-domain selectors: `beats` (per-note positions), `beatOf`, `beatFilter`,
+      `onBeats` (designed 2026-06-10, only `fromBeat` + upstream built).
 
 ---
 
@@ -172,7 +213,7 @@ friction. Decide: shared superclass, mixin, or one class with two construction m
 2. **`.smooth`** pragmatic version over `quantizeWindow`; fix `quantizeDft` windowing. (§3b, 3d)
 3. **Carry-forward / `t.tempoMap` consistency** + machine-confirm boundary. (§3e, §5)
 4. **`quantizeInPlace` auto-scale** + **high-pass ("keep jitter") filter**. (§4b, 4c)
-5. **Interactive quantization tool** prototype. (§4a)
+5. ~~**Interactive quantization tool** prototype.~~ (§4a — done 2026-06-09/10, see §1 Selections)
 6. **Unify TempoMap / MIDIItemTempoMap** (or method-parity audit). (§4d)
 7. (stretch) **Monotone smoothing-spline** λ unifier, and/or B-spline approximation. (§3b, 3c)
 
@@ -194,9 +235,11 @@ friction. Decide: shared superclass, mixin, or one class with two construction m
   ```
 
 ## 8. Key files
-- `Trek/MW-Classes/MIDI-Item2.sc` — `MIDIItemTempoMap` (`:1139`), `.curve` (`:1206`),
-  `prMapThrough` (`:1179`), MIDIItem `quantize`/`quantizeFunc` (`:351`/`:359`),
-  `tempoMapFromIndices` (`:826`), player `warpTo` (`:830`).
+- `Trek/MW-Classes/MIDI-Item2.sc` — `MIDIItemTempoMap` (incl. `timeAt`/`t0`), `.curve`,
+  `prMapThrough`, `quantize`/`quantizeFunc`/`prSelectionArgs`, selection API
+  (`addSelection`/`selections`/`selection`), player `timeAtBeat`/`fromBeat`, gui modes.
+- `Trek/MW-Classes/BeatTracker.sc` — `MIDIBeatTracker` (DP beat tracking; salience,
+  pins, tunable weights).
 - `Trek/MW-Classes/TempoMap.sc` — quantize family (`:67`–`:130`).
 - `Trek/MW-Classes/plusArray.sc` — array `warpTo` / `warpToTempoMap` dispatch.
 - Journal seed: `~/home/org_roam_files/org.org` (Jun 09, 2026).

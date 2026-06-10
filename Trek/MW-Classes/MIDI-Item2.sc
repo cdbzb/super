@@ -1018,21 +1018,25 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		Event.addEventType(\mi2, {
 			~filter.notNil.if{~player = ~filter.(~player)};
 			// '!?'.help
-			~dur = (~player.end.isNil.if {~player.bounds.end}) - (~player.start ? ~player.bounds.start);
+			~dur = (~player.end ? ~player.bounds.end) - (~player.start ? ~player.bounds.start);
 			~clock = TempoClock(~tempo ? 1 / ~stretch ? 1);
-			~player.play(~mk, clock: ~clock) 
+			~player.play(~mk ? MicroKeys(\default), clock: ~clock) 
 		}, );
 		Event.addParentType(\mi2,
+			// NB: type:durEvent and finish MUST live on this one event with a nil
+			// .parent, so addParentType chains it to defaultParentEvent. Nesting
+			// `parent: (type: \durEvent)` dead-ends the chain before playerEvent,
+			// so ~eventTypes/~parentTypes vanish and play fails with 'at'/nil.
 			(
-				finish: {|e| 
-					(e.params.notNil).if { 
+				type: \durEvent,
+				finish: {|e|
+					(e.params.notNil).if {
 						// \setParams.postln;
-						e.player = e.player.setParams(e.params) 
+						e.player = e.player.setParams(e.params)
 					}
 					// implement lag and some setting to increase the duration
 					// maybe .filter({|e| e.collect{|f| f.timestamp = f.timestamp + f.lag}})
-				},
-				parent: (type: \durEvent)
+				}
 			)
 		);
 	}

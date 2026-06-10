@@ -614,10 +614,48 @@ view.keyDownAction_({ |view char|
 			start: this.midiEvents[0].timestamp
 		)
 	}
-	// fill omitted beats/choiceFunc from a loaded selection (player.currentSelection):
-	// choiceFunc <- the selected notes, beats <- saved spans + trailing anchor-to-end entry
+	// selected notes carry a \selBeat marker = their absolute beat coordinate
+	// (beat 0 = first selected note). Because the marker lives on the event,
+	// it rides through filter/quantize/from/etc. via deepCopy — no stale
+	// indices. Returned in beat order (selBeat), which survives time warps.
+	selectedNotes {
+		^this.midiEvents.select{|e| e[\selBeat].notNil }.sort{|a b| a[\selBeat] < b[\selBeat] }
+	}
+	// stamp markers from a saved selection Event (indices + per-span beats).
+	prStampSelection { |sel|
+		var coords = sel[\beats].notNil.if(
+			{ [0] ++ sel[\beats].integrate },
+			{ Array.series(sel[\indices].size) });
+		^this.markSelection(sel[\indices], coords)
+	}
+	// set markers directly: indices into this.notes; coords = absolute beat
+	// coordinate per selected note (defaults to 0,1,2,... — one beat apiece).
+	markSelection { |indices, coords|
+		var ns = this.notes;
+		coords = coords ?? { Array.series(indices.size) };
+		this.clearSelection;
+		indices.do{|idx i| ns[idx] !? { ns[idx][\selBeat] = coords[i] } };
+		^this
+	}
+	clearSelection {
+		this.midiEvents.do{|e| e.removeAt(\selBeat) };
+		^this
+	}
+	// fill omitted beats/choiceFunc from the loaded selection. Prefer the
+	// marker-based selection (\selBeat, transform-robust); fall back to the
+	// legacy index-based currentSelection when no markers are present.
 	prSelectionArgs { |beats, choiceFunc|
-		var sel = this.tryPerform(\currentSelection);
+		var marked = this.selectedNotes;
+		var sel;
+		(marked.size > 0).if {
+			choiceFunc = choiceFunc ?? { marked };
+			beats = beats ?? {
+				var b = marked.collect(_[\selBeat]).differentiate.drop(1);
+				b ++ (b.last ? 1)
+			};
+			^[beats, choiceFunc]
+		};
+		sel = this.tryPerform(\currentSelection);
 		sel.notNil.if {
 			choiceFunc = choiceFunc ?? { this.notes[sel[\indices]] };
 			beats = beats ?? {
@@ -1145,6 +1183,8 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		};
 		currentSelection.isNil.if {
 			"no saved selection (take %, version %)".format(takeIndex, version).postln
+		}{
+			this.prStampSelection(currentSelection) // ride markers through transforms
 		};
 		^this
 	}
@@ -1406,7 +1446,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	// needs a loaded selection (or explicit beats/choiceFunc via .tempomap first)
 	fromBeat { |from, to, trim = true|
 		var tm;
-		currentSelection.isNil.if {
+		(this.selectedNotes.size > 0 or: { currentSelection.notNil }).not.if {
 			^"fromBeat needs a loaded selection — use .selection first".postln
 		};
 		tm = this.tempomap;

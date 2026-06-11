@@ -235,8 +235,10 @@ o = [
 	Array.prNew(32),  Event.prNew,  Array.prNew(32),  Event.prNew,  
 	Array.prNew(32),  Event.prNew,  Array.prNew(32),  Event.prNew,  
 	Array.prNew(32),  "test_260608_140038",  Event.prNew,  Array.prNew(4),  
-	Array.prNew(1),  Event.prNew,  Array.prNew(8),  List.prNew,  
-	Array.prNew(1),  List.prNew,  Array.prNew(1)
+	Array.prNew(1),  Event.prNew,  Array.prNew(16),  List.prNew,  
+	Array.prNew(1),  List.prNew,  Array.prNew(1),  Dictionary.prNew,  
+	Array.prNew(32),  List.prNew,  Array.prNew(1),  Event.prNew,  
+	Array.prNew(16),  Array.prNew(32),  Array.prNew(33),  Array.prNew
 ];
 p = [
 	// MIDIItem
@@ -244,7 +246,7 @@ p = [
 		initialCCValues: o[938],  restFirst: true,  
 		initialRest: o[940],  notes: nil,  
 		takes: o[943],  recordedMks: o[945],  
-		recordedMk: 'default' ],  
+		recordedMk: 'default',  beatSelections: o[947] ],  
 	// List
 	1, [ array: o[2] ],  
 	// Array
@@ -6445,12 +6447,14 @@ p = [
 	// Array
 	940, [ o[941] ],  
 	// Event
-	941, [ array: o[942],  size: 2,  
+	941, [ array: o[942],  size: 3,  
 		proto: nil,  parent: nil,  
 		know: true ],  
 	// Array
-	942, [ nil,  nil,  'type',  'rest',  
-		'timestamp',  0.0,  nil,  nil ],  
+	942, [ nil,  nil,  'timestamp',  0.0,  
+		nil,  nil,  'dur',  0.797514542,  
+		nil,  nil,  'type',  'rest',  
+		nil,  nil,  nil,  nil ],  
 	// List
 	943, [ array: o[944] ],  
 	// Array
@@ -6458,6 +6462,49 @@ p = [
 	// List
 	945, [ array: o[946] ],  
 	// Array
-	946, [ 'default' ]
+	946, [ 'default' ],  
+	// Dictionary
+	947, [ array: o[948],  size: 1 ],  
+	// Array
+	948, [ nil,  nil,  nil,  nil,  
+		0,  o[949],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil ],  
+	// List
+	949, [ array: o[950] ],  
+	// Array
+	950, [ o[951] ],  
+	// Event
+	951, [ array: o[952],  size: 5,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	952, [ nil,  nil,  'beats',  o[953],  
+		'indices',  o[954],  'pins',  o[955],  
+		'anchor',  10,  'periodPrior',  1.676387291,  
+		nil,  nil,  nil,  nil ],  
+	// Array
+	953, [ 1,  1,  1,  1,  
+		1,  1,  1,  1,  
+		1,  1,  1,  1,  
+		1,  1,  1,  1,  
+		1,  1,  1,  1,  
+		1,  1,  1,  1,  
+		1,  1,  1,  1,  
+		1,  1,  1,  1 ],  
+	// Array
+	954, [ 0,  10,  16,  25,  
+		34,  43,  48,  56,  
+		65,  74,  81,  90,  
+		100,  103,  106,  111,  
+		117,  126,  130,  138,  
+		147,  154,  161,  170,  
+		180,  189,  195,  203,  
+		212,  216,  221,  226,  
+		231 ]
 ];
 prUnarchive(o,p);

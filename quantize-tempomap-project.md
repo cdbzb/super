@@ -204,6 +204,17 @@ friction. Decide: shared superclass, mixin, or one class with two construction m
       → masks real errors with `Message '+' not understood`.
 - [ ] Deferred beat-domain selectors: `beats` (per-note positions), `beatOf`, `beatFilter`,
       `onBeats` (designed 2026-06-10, only `fromBeat` + upstream built).
+- [x] `fromBeat(a,b).tempomap` degenerate final beat when the last selected note sustains
+      past the slice: closing anchor used `bounds.end` (≈ last onset, because a trailing
+      `mk` event sits there), so the final beat collapsed to a few ms. Fixed 2026-06-11 —
+      `fromBeat` stamps `closingAnchor` (time:, beats:) from the parent's NEXT selected beat
+      past `to`; `MIDIItemTempoMap.init` and `prSelectionArgs` consume it. The final span now
+      follows the performed tempo at the boundary (beats 1→3 ⇒ 3 real beats, not 2 + a stub).
+- [ ] **Revisit `fromBeat` last-beat fallback.** When `to` is the *last* selected beat there
+      is no next parent beat, so `closingAnchor` stays nil and `init` falls back to
+      `bounds.end` (unchanged today — still degenerate if that final note sustains past).
+      Decide the right closing anchor: the note's sustain end, an extrapolated beat at the
+      prevailing tempo, or leave as clip end. (Michael flagged 2026-06-11.)
 
 ---
 

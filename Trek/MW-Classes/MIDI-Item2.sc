@@ -651,7 +651,9 @@ view.keyDownAction_({ |view char|
 			choiceFunc = choiceFunc ?? { marked };
 			beats = beats ?? {
 				var b = marked.collect(_[\selBeat]).differentiate.drop(1);
-				b ++ (b.last ? 1)
+				// closing beat-gap from fromBeat's anchor (gap to the next parent beat),
+				// else repeat the last gap to give the final note its own beat
+				b ++ ((this.tryPerform(\closingAnchor) !? (_[\beats])) ? (b.last ? 1))
 			};
 			^[beats, choiceFunc]
 		};
@@ -1024,6 +1026,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	var <>start, <>end;
 	var tracks;
 	var <>takeIndex, <>currentSelection; // set by MIDIItem.take / selection — not preserved through filters
+	var <>closingAnchor; // (time:, beats:) closing tempo-anchor from the parent's next selected beat; set by fromBeat
 
 	*new {| amidiEvents source |
 		var player, bounds;
@@ -1445,12 +1448,28 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	// sub-player between two beat positions — beat-domain mirror of fromNote;
 	// needs a loaded selection (or explicit beats/choiceFunc via .tempomap first)
 	fromBeat { |from, to, trim = true|
-		var tm;
+		var tm, sub, next;
 		(this.selectedNotes.size > 0 or: { currentSelection.notNil }).not.if {
 			^"fromBeat needs a loaded selection — use .selection first".postln
 		};
 		tm = this.tempomap;
-		^this.from(this.timeAtBeat(from, tm), to !? { this.timeAtBeat(to, tm) }, trim)
+		sub = this.from(this.timeAtBeat(from, tm), to !? { this.timeAtBeat(to, tm) }, trim);
+		// Closing tempo-anchor: the parent's NEXT selected beat past `to`, so the final
+		// span follows the performed tempo at the boundary instead of bounds.end — which,
+		// when the last note sustains past the slice, collapses to a degenerate tiny beat.
+		// Left nil (→ bounds.end fallback in MIDIItemTempoMap.init) when `to` is nil or is
+		// the last selected beat. TODO(quantize-tempomap): revisit the last-beat fallback.
+		to !? {
+			next = this.selectedNotes.detect{|e| e[\selBeat] > to };
+			next !? {
+				var sliceLast = (sub.selectedNotes.last !? (_[\selBeat])) ? to;
+				sub.closingAnchor = (
+					time: next.timestamp - this.timeAtBeat(from, tm),
+					beats: next[\selBeat] - sliceLast
+				);
+			};
+		};
+		^sub
 	}
 	recalcSustains {
 		^MIDIItemPlayer(
@@ -1542,12 +1561,14 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 		^super.new.init( midiItem, choiceFunc, beats)
 	}
 	init{|midiItem, choiceFunc, b|
-		var gaps;
+		var gaps, closeTime;
 		midiEvents = midiItem.midiEvents;
+		// closing anchor: fromBeat supplies the parent's next-beat time; else clip end
+		closeTime = (midiItem.tryPerform(\closingAnchor) !? (_[\time])) ? midiItem.bounds.end;
 		times = (choiceFunc ? I.d)
 		.value( midiEvents.select({|e| e.midicmd == \noteOn}))
 		.collect{|e| e.timestamp }
-		++ midiItem.bounds.end;
+		++ closeTime;
 		t0 = times[0];
 		times = times - t0; //relative to first anchor
 		beats = b;

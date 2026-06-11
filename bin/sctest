@@ -1,0 +1,146 @@
+#!/usr/bin/env bash
+# sctest — run SuperCollider code in Michael's LIVE scnvim sclang and capture the output.
+#
+# Why live-session (not a fresh sclang): on this box a second sclang collides with the
+# running one (fixed-port quark -> "address in use") and the Qt/IDE build won't read FIFO
+# stdin, while `-a` standalone fails to compile. Driving the live sclang via scnvim is
+# collision-free, uses the already-compiled classes, and the server works natively (no
+# attach, no boot/quit). Output is captured from the [scnvim] post buffer.
+#
+# Trade-off: this runs against the CURRENTLY COMPILED classes. If you edited a class file,
+# recompile your session first (this script does not recompile — that would reboot scsynth).
+#
+# Usage:
+#   sctest [opts] FILE.scd          # run a file (paren blocks OK — it's .load'ed)
+#   sctest [opts] -e 'CODE'         # run an inline string
+#   echo 'CODE' | sctest [opts]     # run from stdin
+#
+# Options:
+#   -t, --timeout N   seconds to wait for completion (default 30)
+#   -w, --wait N      extra seconds to wait after load before reading (for fork/async; default 0)
+#   -r, --raw         print every post-buffer line the run produced, unfiltered
+#   -f, --force       allow session-killing calls (0.exit / .quit / recompile); off by default
+#   -h, --help        this help
+#
+# SAFETY: code runs in your LIVE sclang, so 0.exit / s.quit / recompile would kill or reboot
+# your real session. Those are refused unless you pass --force.
+#
+# Exit: 0 if the run completed (DONE marker seen); 1 on setup failure or timeout.
+
+set -u
+
+TIMEOUT=30
+POSTWAIT=0
+RAW=0
+FORCE=0
+CODE=""
+FILE=""
+
+die() { printf 'sctest: %s\n' "$1" >&2; exit 1; }
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -t|--timeout) TIMEOUT="$2"; shift 2;;
+    -w|--wait)    POSTWAIT="$2"; shift 2;;
+    -r|--raw)     RAW=1; shift;;
+    -f|--force)   FORCE=1; shift;;
+    -e|--eval)    CODE="$2"; shift 2;;
+    -h|--help)    sed -n '2,31p' "$0" | sed 's/^# \{0,1\}//'; exit 0;;
+    -*)           die "unknown option: $1";;
+    *)            FILE="$1"; shift;;
+  esac
+done
+
+# --- locate the live scnvim sclang and its nvim socket ----------------------
+SCLANG_PID=$(pgrep -f "sclang.*scnvim" | head -1)
+[ -n "$SCLANG_PID" ] || die "no live scnvim sclang found (pgrep 'sclang.*scnvim'). Start sclang in nvim first."
+NVIM_PID=$(ps -o ppid= -p "$SCLANG_PID" 2>/dev/null | tr -d ' ')
+SOCK=$(find /private/var/folders -maxdepth 6 -name "nvim.$NVIM_PID.*" -type s 2>/dev/null | head -1)
+[ -z "$SOCK" ] && SOCK=$(find /tmp -maxdepth 3 -name "nvim.$NVIM_PID.*" -type s 2>/dev/null | head -1)
+[ -n "$SOCK" ] || die "could not find nvim socket for nvim pid $NVIM_PID"
+
+WORK="$(mktemp -d "${TMPDIR:-/tmp}/sctest.XXXXXX")" || die "mktemp failed"
+trap 'rm -rf "$WORK"' EXIT
+
+# Find the [scnvim] post window. bufnr("[scnvim]") is unusable: the brackets are
+# a regex char-class. Match basename == "[scnvim]" AND buftype nofile, so a real
+# file literally named [scnvim] (buftype "") doesn't win.
+cat > "$WORK/findbuf.lua" <<'LUA'
+vim.g._sctbuf = (function()
+  for _, b in ipairs(vim.api.nvim_list_bufs()) do
+    local base = vim.api.nvim_buf_get_name(b):match("[^/]*$")
+    if base == "[scnvim]"
+       and vim.api.nvim_get_option_value("buftype", { buf = b }) == "nofile" then
+      return b
+    end
+  end
+  return -1
+end)()
+LUA
+nvim --server "$SOCK" --remote-expr "execute('luafile $WORK/findbuf.lua')" >/dev/null 2>&1
+BUF=$(nvim --server "$SOCK" --remote-expr 'get(g:, "_sctbuf", -1)' 2>/dev/null)
+{ [ -n "$BUF" ] && [ "$BUF" != "-1" ]; } || die "no [scnvim] post buffer (nofile) in nvim $NVIM_PID"
+
+# --- gather code ------------------------------------------------------------
+NONCE="$$_$(date +%s)"
+BEGIN="___SCTEST_BEGIN_${NONCE}___"
+DONE="___SCTEST_DONE_${NONCE}___"
+USERCODE="$WORK/user.scd"
+if   [ -n "$CODE" ];   then printf '%s\n' "$CODE" > "$USERCODE"
+elif [ -n "$FILE" ];   then [ -f "$FILE" ] || die "no such file: $FILE"; cp "$FILE" "$USERCODE"
+elif [ ! -t 0 ];       then cat > "$USERCODE"
+else die "no code: pass a FILE, -e 'CODE', or pipe via stdin (see --help)"; fi
+
+# Safety: this runs in the LIVE sclang. Refuse session-killing calls unless --force.
+if [ "$FORCE" -ne 1 ] && \
+   grep -nE '\b0[[:space:]]*\.[[:space:]]*exit\b|\.[[:space:]]*quit\b|thisProcess[[:space:]]*\.[[:space:]]*(recompile|shutdown)' "$USERCODE" >/dev/null; then
+  echo "sctest: refusing — code contains a session-killing call (0.exit / .quit / recompile/shutdown)." >&2
+  echo "        This runs in your LIVE sclang. Remove it, or pass --force if you really mean it." >&2
+  grep -nE '\b0[[:space:]]*\.[[:space:]]*exit\b|\.[[:space:]]*quit\b|thisProcess[[:space:]]*\.[[:space:]]*(recompile|shutdown)' "$USERCODE" | sed 's/^/        > /' >&2
+  exit 1
+fi
+
+# wrapper brackets the run with unique markers and catches errors so DONE always prints
+WRAP="$WORK/wrap.scd"
+{
+  printf '"%s".postln;\n' "$BEGIN"
+  printf 'try { "%s".load } { |e| ("SCTEST_ERROR: " ++ e.errorString).postln };\n' "$USERCODE"
+  printf '"%s".postln;\n' "$DONE"
+} > "$WRAP"
+
+# --- send to the live sclang via scnvim (lua file avoids escaping hell) ------
+LUA="$WORK/send.lua"
+printf 'require("scnvim.sclang").send([[ "%s".load; ]])\n' "$WRAP" > "$LUA"
+nvim --server "$SOCK" --remote-expr "execute('luafile $LUA')" >/dev/null 2>&1 \
+  || die "failed to send to scnvim"
+
+# --- poll the post buffer for the DONE marker -------------------------------
+# writefile dumps the buffer lines verbatim (real newlines, no vimscript escaping).
+read_buf() {
+  nvim --server "$SOCK" --remote-expr "writefile(getbufline($BUF, 1, 1000000), '$WORK/post.txt')" >/dev/null 2>&1
+  cat "$WORK/post.txt" 2>/dev/null
+}
+deadline=$(( $(date +%s) + TIMEOUT ))
+got=0
+while [ "$(date +%s)" -lt "$deadline" ]; do
+  if read_buf | grep -q "$DONE"; then got=1; break; fi
+  sleep 0.4
+done
+[ "$POSTWAIT" != "0" ] && sleep "$POSTWAIT"
+
+OUT="$(read_buf)"
+if [ "$got" -ne 1 ]; then
+  echo "sctest: timed out after ${TIMEOUT}s waiting for completion." >&2
+  echo "--- post buffer tail ---" >&2
+  printf '%s\n' "$OUT" | tail -15 >&2
+  exit 1
+fi
+
+# --- present output: lines between our unique BEGIN and DONE ----------------
+if [ "$RAW" -eq 1 ]; then
+  printf '%s\n' "$OUT" | awk -v b="$BEGIN" -v d="$DONE" '$0~b{f=1;next} $0~d{f=0} f'
+else
+  printf '%s\n' "$OUT" | awk -v b="$BEGIN" -v d="$DONE" '$0~b{f=1;next} $0~d{f=0} f' \
+    | grep -vE '^(sc3>|->)\s*$'
+fi
+exit 0

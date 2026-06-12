@@ -1042,6 +1042,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		}{"MidiEvents nil!!".warn};
 		^player
 	}
+	player { ^this } // a player is already a player; lets asEventList etc. resolve uniformly
 	*stopAll {
 		playing.do({ |i| 
 			i.restoreCCValues;
@@ -1059,7 +1060,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		Event.addEventType(\mi2, {
 			~filter.notNil.if{~player = ~filter.(~player)};
 			// '!?'.help
-			~dur = (~player.end ? ~player.bounds.end) - (~player.start ? ~player.bounds.start);
+			~dur = ~dur ? ((~player.end ? ~player.bounds.end) - (~player.start ? ~player.bounds.start));
 			~clock = TempoClock(~tempo ? 1 / ~stretch ? 1);
 			~player.play(~mk ? MicroKeys(\default), clock: ~clock) 
 		}, );
@@ -1086,7 +1087,8 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	}
 	removeNote{ |index|
 		var notes = midiEvents.select{|i| i.midicmd == \noteOn};
-		^this.filter { |e| //remove bad note (should be method?) 
+		^this.filter { |e| //remove bad note (should be method?)
+			e = e.copy; // don't mutate the receiver's midiEvents
 			index.asArray.do{ |x|
 				var note =  notes[x];
 				var off = e.select{|i| i.midicmd == \noteOff and: (i.timestamp >= note.timestamp) and: (i.midinote == note.midinote)}

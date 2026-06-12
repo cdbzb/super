@@ -393,7 +393,7 @@ VoiceSpace {
 	// ---- live fan-out: persistent per-voice lane state ---------------------
 
 	fanLive { |ev|
-		var skip = [\when, \voice, \type, \newType, \beat, \delta, \dur, \tempo, \defName, \server, \voiceSpace, \plus];
+		var skip = [\when, \voice, \type, \newType, \beat, \delta, \dur, \tempoTrack, \tempo, \defName, \server, \voiceSpace, \plus];
 		var isLaneParam = { |v|
 			v.isArray
 				and: { v.isKindOf(Tuple3).not }
@@ -514,7 +514,7 @@ VoiceSpace {
 
 	// max lane-fan width per base voice across the event list. >1 means fanned.
 	computeLaneCounts { |events|
-		var skip = [\when, \voice, \type, \newType, \beat, \delta, \dur, \tempo, \defName, \plus];
+		var skip = [\when, \voice, \type, \newType, \beat, \delta, \dur, \tempoTrack, \tempo, \defName, \plus];
 		var isLaneParam = { |v|
 			v.isArray and: { v.isKindOf(Tuple3).not }
 				and: { v.isKindOf(Tuple4).not } and: { v.isKindOf(Env).not }
@@ -544,7 +544,7 @@ VoiceSpace {
 	// ---- pre-baked-timeline expansion (playFrom path) ----------------------
 
 	expandLanes { |events|
-		var skip = [\when, \voice, \type, \newType, \beat, \delta, \dur, \tempo, \defName, \plus];
+		var skip = [\when, \voice, \type, \newType, \beat, \delta, \dur, \tempoTrack, \tempo, \defName, \plus];
 		var isLaneParam, maxWidth, lastScalarLocal, aliveLanesLocal, out;
 		isLaneParam = { |v|
 			v.isArray
@@ -616,7 +616,7 @@ VoiceSpace {
 	}
 
 	extractTimelines { |events|
-		var skip = [\when, \voice, \type, \newType, \beat, \delta, \dur, \tempo, \defName, \plus];
+		var skip = [\when, \voice, \type, \newType, \beat, \delta, \dur, \tempoTrack, \tempo, \defName, \plus];
 		var tls = ();
 		events.do { |ev|
 			var voice = ev[\voice] ? \default;
@@ -636,7 +636,7 @@ VoiceSpace {
 	extractTempo { |events|
 		var tl = List[];
 		events.do { |ev|
-			ev[\tempo] !? { |v| tl.add([ev[\when] ? 0, v]) }
+			ev[\tempoTrack] !? { |v| tl.add([ev[\when] ? 0, v]) }
 		};
 		tl.sort({ |a, b| a[0] < b[0] });
 		^tl

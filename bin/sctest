@@ -52,12 +52,19 @@ while [ $# -gt 0 ]; do
 done
 
 # --- locate the live scnvim sclang and its nvim socket ----------------------
-SCLANG_PID=$(pgrep -f "sclang.*scnvim" | head -1)
-[ -n "$SCLANG_PID" ] || die "no live scnvim sclang found (pgrep 'sclang.*scnvim'). Start sclang in nvim first."
-NVIM_PID=$(ps -o ppid= -p "$SCLANG_PID" 2>/dev/null | tr -d ' ')
-SOCK=$(find /private/var/folders -maxdepth 6 -name "nvim.$NVIM_PID.*" -type s 2>/dev/null | head -1)
-[ -z "$SOCK" ] && SOCK=$(find /tmp -maxdepth 3 -name "nvim.$NVIM_PID.*" -type s 2>/dev/null | head -1)
-[ -n "$SOCK" ] || die "could not find nvim socket for nvim pid $NVIM_PID"
+# Try every scnvim sclang, not just the first: a stale/orphaned sclang (parent
+# nvim died -> ppid 1) has no socket and would otherwise shadow the live one.
+SCLANG_PIDS=$(pgrep -f "sclang.*scnvim")
+[ -n "$SCLANG_PIDS" ] || die "no live scnvim sclang found (pgrep 'sclang.*scnvim'). Start sclang in nvim first."
+SOCK=""
+for SCLANG_PID in $SCLANG_PIDS; do
+  NVIM_PID=$(ps -o ppid= -p "$SCLANG_PID" 2>/dev/null | tr -d ' ')
+  [ -n "$NVIM_PID" ] && [ "$NVIM_PID" != "1" ] || continue
+  SOCK=$(find /private/var/folders -maxdepth 6 -name "nvim.$NVIM_PID.*" -type s 2>/dev/null | head -1)
+  [ -z "$SOCK" ] && SOCK=$(find /tmp -maxdepth 3 -name "nvim.$NVIM_PID.*" -type s 2>/dev/null | head -1)
+  [ -n "$SOCK" ] && break
+done
+[ -n "$SOCK" ] || die "no live scnvim sclang with a reachable nvim socket (orphaned sclang? start sclang in a running nvim)."
 
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/sctest.XXXXXX")" || die "mktemp failed"
 trap 'rm -rf "$WORK"' EXIT

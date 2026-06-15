@@ -642,6 +642,46 @@ VoiceSpace {
 		^tl
 	}
 
+	// Route (c): warp a \mi2 item's internal events onto the list's tempo track. Each
+	// event at item-time t is placed at list-beat originBeat + (t / rate), rate =
+	// ~tempo/~stretch (the item's nominal playback rate), then mapped to wall-clock by
+	// beatToWall — so the item's notes follow the global tempo, not a private constant
+	// clock. Onsets AND sustains are warped (a held note stretches/compresses with the
+	// track). When `from` is past the item's onset, the item is trimmed to the matching
+	// item-time (player.from also chases CC state) so play(from) starts partway INTO the
+	// item rather than dropping it; returns nil if `from` is past the whole item.
+	// Returned player's timestamps are wall-seconds relative to its first event (play it
+	// on a unit clock). A flat track reproduces the sealed \mi2 timing exactly.
+	prWarpItemToTrack { |ev, tempoEnv, from = 0|
+		var player = ev[\player];
+		var b0     = ev[\when] ? 0;
+		var rate   = ((ev[\tempo] ? 1) / (ev[\stretch] ? 1));
+		var originBeat = b0.max(from), base, pstart, warped, out;
+		player.isNil.if { ^nil };
+		ev[\filter] !? { |f| player = f.(player) };
+		ev[\params] !? { |p| player = player.setParams(p) }; // \mi2 finish does this
+		(from > b0).if {
+			var tFrom = (player.start ? 0) + ((from - b0) * rate);
+			(tFrom >= (player.end ? player.bounds.end)).if { ^nil }; // item fully before `from`
+			player = player.from(tFrom); // rebases to 0 and chases CC state to tFrom
+		};
+		base   = this.beatToWall(originBeat, tempoEnv);
+		pstart = player.start ? 0;
+		warped = player.midiEvents.collect { |e|
+			var c   = e.copy;
+			var rel = (e[\timestamp] ? 0) - pstart;
+			c[\timestamp] = this.beatToWall(originBeat + (rel / rate), tempoEnv) - base;
+			e[\sustain] !? { |s|
+				c[\sustain] = this.beatToWall(originBeat + ((rel + s) / rate), tempoEnv)
+					- this.beatToWall(originBeat + (rel / rate), tempoEnv)
+			};
+			c
+		};
+		out = MIDIItemPlayer(warped, player.source);
+		out.start = 0; // timestamps are already wall-relative to playback start
+		^out
+	}
+
 	beatToWall { |beat, tempoEnv|
 		var levels, times, curves;
 		var cur = 0, sum = 0, i = 0, done = false;
@@ -729,8 +769,19 @@ VoiceSpace {
 		otherEvents.do { |ev|
 			var beat  = ev[\when] ? 0;
 			var delay = this.beatToWall(beat, tempoEnv) - fromWall;
-			(delay >= 0).if {
-				pending.add([delay, { ev.copy.play }])
+			// Route (c): a \mi2 item opts in (followTrack:) to having its INTERNAL notes
+			// warped by the tempo track, not just its onset. It is NOT gated on its onset
+			// >= `from`: prWarpItemToTrack trims the item to `from`, so play(from) starts
+			// partway INTO the item rather than dropping it.
+			// (\mi is excluded: its fromNote(~from,~to) sub-range isn't replicated here.)
+			((ev[\followTrack] == true) and: { ev[\type] == \mi2 }).if {
+				var warped = this.prWarpItemToTrack(ev, tempoEnv, from);
+				warped !? {
+					pending.add([delay.max(0), { warped.play(ev[\mk] ? MicroKeys(\default), clock: TempoClock(1)) }])
+				}
+			} {
+				// self-contained event type (private constant clock); preview/standalone path
+				(delay >= 0).if { pending.add([delay, { ev.copy.play }]) }
 			}
 		};
 

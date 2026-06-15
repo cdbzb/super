@@ -78,6 +78,10 @@ AudioItem {
 					buffers.put(name.asSymbol, takeNum, Buffer());
 				}
             } {
+                // build the effect (if ~out is a thunk) BEFORE the bundle — Effect.bus
+                // allocates a Bus, sends its own SynthDef and spawns a synth, none of
+                // which can happen during this graph's compilation inside makeBundle.
+                var outBus = (~out ? 0).value;
                 Server.default.makeBundle(
                     (~latency ? 0.2) + (~lag ? 0),
                     {
@@ -89,7 +93,7 @@ AudioItem {
                                 startPos: ~startPos !? (_ * Server.default.sampleRate) ? 0
                             )
                             * (~amp ? 1)
-                            => Out.ar(~out ? 0, _)
+                            => Out.ar(outBus, _)
                         }.play
                     }
                 )

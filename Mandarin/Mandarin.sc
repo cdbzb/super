@@ -53,10 +53,22 @@ Mandarin {
                     ev[\when] = Mandarin.env[\nextWhen] ? 0;
                     Mandarin.env[\nextWhen] = ev[\when] + (Seg.durOf(ev) / (l.beatDur ? 1));
                 };
+                // only section events move the cursor — the anchor that
+                // non-section events align to.
+                Mandarin.env[\cursor] = ev[\when];
                 "  @ % beats : %".format(ev[\when].round(0.001), ev[\section]).postln;
+            } {
+                // non-section event (e.g. \audioItem): anchor to the cursor (the
+                // current section's start); any explicit \when is a relative offset.
+                // It does NOT advance the cursor, so chord voices and successive
+                // non-section events share one anchor instead of chaining.
+                var base = Mandarin.env[\cursor] ? 0;
+                ev[\when] = base + (ev[\when] ? 0);
+                "  @ % beats : %".format(ev[\when].round(0.001), ev[\type]).postln;
             }
         };
         env[\nextWhen] = 0;
+        env[\cursor] = 0;
         ^list
     }
     *doesNotUnderstand { |selector ...args|

@@ -1061,8 +1061,8 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			~filter.notNil.if{~player = ~filter.(~player)};
 			// '!?'.help
 			~dur = ~dur ? ((~player.end ? ~player.bounds.end) - (~player.start ? ~player.bounds.start));
-			~clock = TempoClock(~tempo ? 1 / ~stretch ? 1);
-			~player.play(~mk ? MicroKeys(\default), clock: ~clock) 
+			~clock = TempoClock(~tempo ? 1 / ~stretch ? 1, queueSize: 65536);
+			~player.play(~mk ? MicroKeys(\default), clock: ~clock)
 		}, );
 		Event.addParentType(\mi2,
 			// NB: type:durEvent and finish MUST live on this one event with a nil

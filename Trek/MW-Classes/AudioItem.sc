@@ -213,11 +213,12 @@ AudioItem {
     }
 }
 Take : AudioItem {
-    var name, num, buffer;
+    var name, <>num, buffer;
     *new { |name, num|
         var newTake = super.newCopyArgs;
 		var directory = folder +/+ name;
-        newTake.buffer = AudioItem.buffers[name.asSymbol][num].notNil.if { 
+        newTake.name = name; newTake.num = num;   // store identity (needed by .retune)
+        newTake.buffer = AudioItem.buffers[name.asSymbol][num].notNil.if {
 			 AudioItem.buffers[name.asSymbol][num] 
 		} {
 			 AudioItem.buffers.put(name.asSymbol, num, Buffer.read(Server.default, AudioItem.takePath(directory, num)));
@@ -225,6 +226,7 @@ Take : AudioItem {
 		} 
         ^newTake
     }
+	retune { ^RetuneItem(this) }   // -> RetuneItem (load-or-analyze-and-save)
 	playbuf {| amp out rate startPos dur |
 		^ 
 			PlayBuf.ar(

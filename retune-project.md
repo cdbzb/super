@@ -281,8 +281,13 @@ pitch correction.
 **Reference-guided tuning (§2d), designed 2026-06-24:**
 6. ~~**`asMIDIItem`**~~ — compact spec → MIDIItem (`[midinote:…, dur:"q e e".beats]`). **Done
    2026-06-24** (`MIDI-Item2.sc`, `+ Event` / `+ SequenceableCollection`; verified headless). (§2d)
-7. **Anchored `tuneTo` (pitch-only)** — reduce any reference to `(pitches, beatOnsets)`; reuse
-   selection/beat-tracker for the warp; **persist** it; `set` targets per matched note. (§2d)
+7. ~~**`tuneTo` (pitch-only) v0**~~ — **Done 2026-06-24** (`Retune.sc`: `RetunePlayer.tuneTo` +
+   `RetuneItem.tuneTo`). Reduces a reference (MIDIItem or spec) to `(refPitch, refBeat)`;
+   **normalized-time nearest-match** alignment (simpler than the selection/beat-tracker warp —
+   graceful on count mismatch); target = reference pitch-class at the octave nearest the sung
+   center, blended from `measuredCenter` by `amount` (1=full, 0=off); records `(refMidi, refBeat)`
+   on each note so the warp anchors ride the note model. Verified headless. Onsets frozen.
+   Deferred: selection/beat-tracker + DTW alignment (§8), disk-persisted warp, onset-warp (§9). (§2d)
 8. **Content-DTW alignment** — automatic anchors, insert/delete driving fractional split/merge;
    pitch-class match / absolute correct. Output = a tempo map. (§2d)
 9. **Onset-warp axis** — time-snap `amount` via §2c's variable RB `rate` off the persisted warp

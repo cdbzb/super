@@ -347,6 +347,8 @@ RetuneItem : AbstractRetune {
 		^Synth(\retunePreview, [\voice, voice, \start, sub.first.timestamp,
 			\dur, sub.last.timestamp + (sub.last.dur ? 0) - sub.first.timestamp]);
 	}
+	// tune the whole item to a reference melody (see RetunePlayer.tuneTo)
+	tuneTo { |reference, amount = 1| ^this.player.tuneTo(reference, amount) }
 }
 
 RetunePlayer : AbstractRetune {
@@ -386,6 +388,44 @@ RetunePlayer : AbstractRetune {
 	}
 	snapToScale { |scale, root = 0|
 		^this.collect { |e| var n = e.copy; n.midinote = VocoderPattern.prQuantize(n.midinote, scale, root); n }
+	}
+	// reference-guided tuning (retune-project.md §2d / milestone 7). Set each note's
+	// target (midinote) from a reference melody. `reference` is a MIDIItem or a compact
+	// spec ([midinote:..., dur:...]) coerced via asMIDIItem; both reduce to (refPitch,
+	// refBeat). v0 alignment: normalize the detected onsets (sec) and the reference onsets
+	// (beats) each to [0,1] over their span and match each detected note to the nearest
+	// reference note in normalized time (graceful when the counts differ; pitch is not yet
+	// used in the match -- DTW is §8, so the reference should cover the same phrase as this
+	// player). Target = the reference pitch-class at the octave nearest the sung center
+	// (snaps pitch, keeps the singer's register, repairs small errors), blended from
+	// measuredCenter by `amount` (1 = full snap, 0 = uncorrected). Records the matched
+	// (refMidi, refBeat) on each note -- the warp anchors ride on the note model, so they
+	// persist with split-takes and feed the later onset-warp. Onsets are NOT moved here:
+	// the time axis is frozen (milestone 9).
+	tuneTo { |reference, amount = 1|
+		var ref, refNotes, refPitch, refBeat, det, detOn, dlo, dspan, rlo, rspan, detN, refN;
+		ref = reference.isKindOf(MIDIItem).if({ reference }, { reference.asMIDIItem });
+		refNotes = ref.player.notes;
+		refNotes.isEmpty.if { ^"Retune.tuneTo: reference has no notes".warn };
+		refPitch = refNotes.collect(_.midinote);
+		refBeat  = refNotes.collect(_.timestamp);
+		det = this.notes;
+		det.isEmpty.if { ^this };
+		detOn = det.collect(_.timestamp);
+		dlo = detOn.first;   dspan = (detOn.last  - dlo).max(1e-9);
+		rlo = refBeat.first; rspan = (refBeat.last - rlo).max(1e-9);
+		detN = detOn.collect  { |t| (t - dlo) / dspan };
+		refN = refBeat.collect { |t| (t - rlo) / rspan };
+		^this.collect { |e, i|
+			var dn = detN[i], mc = e.measuredCenter ? e.midinote;
+			var j = (0 .. refN.lastIndex).minItem { |k| (refN[k] - dn).abs };
+			var rp = refPitch[j];
+			var snapped = rp + (12 * ((mc - rp) / 12).round);
+			var n = e.copy;
+			n.midinote = mc + ((snapped - mc) * amount);
+			n.refMidi = rp; n.refBeat = refBeat[j];
+			n
+		}
 	}
 
 	// ---- structural edits: re-segment from the source's retained per-frame data ----

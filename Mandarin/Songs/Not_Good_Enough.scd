@@ -207,6 +207,10 @@ P(\guitar, music: { |p b e|
 } .q,
 dur: "qq qq qq qq".beats * p.quarter => _.q,
 	    instrument: \harp,
+	    instrument: \harpRelease, release:0.05, 
+		instrument: Pfunc{( Song.oldGuit.debug("old?") ? false ).if{\harp}{\harpRelease.postln}},
+		legato:Pfunc{( Song.oldGuit ? false ).if{0.9}{1}},
+
 	    out: Effect.bus({|i| CrossoverDistortion.ar(i) /2  => Pan2.ar(_, 1)})
 ].pp
 });

@@ -229,11 +229,18 @@ gui); the spec is the compact authoring form.
   `e*4` multipliers, grace `g`, `h/w/t`; `tempomap` already calls it) and per-token `String.asBeats`
   (`plusString.sc:27`); `MIDIItem.newFrom(midiEvents)` (`MIDI-Item2.sc:730`) builds an item from a
   raw event list.
-- *Missing*: `asMIDIItem`. ~15 lines, pure-language, on `Event`/`Array` (the keyword-array literal
-  is `.asEvent`). Per note i emit `(midicmd:\noteOn, midinote: m[i], timestamp: onset[i], vel:64)`
-  + `(midicmd:\noteOff, midinote: m[i], timestamp: onset[i]+dur[i])` with
-  `onset = dur.integrate.drop(-1).addFirst(0)`, then `MIDIItem.newFrom`. Pairing-by-`midinote` is
-  safe for a monophonic reference (adjacent same-pitch notes don't overlap).
+- *Built 2026-06-24* (`MIDI-Item2.sc` bottom: `+ Event` core + `+ SequenceableCollection` keyword-
+  array entry). Per note i emit a paired noteOn/noteOff with `onset = dur.integrate.drop(-1)
+  .addFirst(0)`; `dur` accepts an Array, a scalar, or a rhythm String (auto-`.beats`); `amp`
+  optional. **Format gotcha (learned the hard way):** the events must be the RAW recorded form
+  `type: \mk` (noteOn) / `\mkOff` (noteOff), NOT `\midi`. `makeNotesFromMidiEvents` does
+  `on ++ array.reject{type == \mk}` — it pairs offs into each noteOn's `sustain` and rejects the
+  raw `\mk` copies; with `\midi` the noteOns survive the reject and **double** (persisted real
+  items with `\midi` actually double through this path too). And it does NOT route through
+  `MIDIItem.newFrom` — that names items after the `UniqueID` *class* (not `.next`), so repeated
+  builds alias/overwrite in `MIDIItem.all`; instead it constructs `MIDIItem("ref_"++UniqueID.next)`.
+  Verified headless: `player.notes` → clean `[60,62,64]` @ onsets `[0,1,1.5]`, sustains
+  `[1,0.5,0.5]`, bounds `[0,2]`, rhythm-string + scalar forms, and two builds stay distinct.
 - *Timebase caveat*: these timestamps are in BEATS (a reference is a score, not a performance) —
   exactly what the alignment wants. But MIDIItem gui/playback assume seconds, so to see/hear the
   reference you interpret beats at a nominal tempo.
@@ -251,8 +258,8 @@ pitch correction.
 - **`AbstractMidiEvents` quantize/from/fromBeat/tempomap** — retune notes are already
   subclasses; the symbolic layer of §2c is mostly wiring, not new machinery.
 - **Variable-rate RB primitive** — shared by §2a (manual rate) and §2c (tempo-map-driven rate).
-- **`String.beats`/`asBeats` + `MIDIItem.newFrom`** — `asMIDIItem` (§2d) is a thin bridge over
-  existing rhythm parsing + item construction; only the spec→events glue is new.
+- **`String.beats`/`asBeats` + `MIDIItem` construction** — `asMIDIItem` (§2d, done) is a thin
+  bridge over existing rhythm parsing + `makeNotesFromMidiEvents`; only the spec→events glue is new.
 - **`MIDIItemTempoMap` as the alignment** (§2d) — a reference warp IS a tempo map; reuse
   `env`/`invEnv`/`.curve`. The variable-rate RB primitive then moves onsets off it.
 - **Selection-pin gui + fractional split/merge** — the manual-correction escape hatch for
@@ -272,8 +279,8 @@ pitch correction.
 5. (stretch) selection/extrapolate tempo tooling inside the Retune gui.
 
 **Reference-guided tuning (§2d), designed 2026-06-24:**
-6. **`asMIDIItem`** — compact spec → MIDIItem (`[midinote:…, dur:"q e e".beats]`). Pure-language
-   first brick; independently useful. (§2d)
+6. ~~**`asMIDIItem`**~~ — compact spec → MIDIItem (`[midinote:…, dur:"q e e".beats]`). **Done
+   2026-06-24** (`MIDI-Item2.sc`, `+ Event` / `+ SequenceableCollection`; verified headless). (§2d)
 7. **Anchored `tuneTo` (pitch-only)** — reduce any reference to `(pitches, beatOnsets)`; reuse
    selection/beat-tracker for the warp; **persist** it; `set` targets per matched note. (§2d)
 8. **Content-DTW alignment** — automatic anchors, insert/delete driving fractional split/merge;

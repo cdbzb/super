@@ -1743,4 +1743,46 @@ SelfReturningObject {
 				( i[0].class == Symbol ).if { i[0] }{ i.q }
 			}
 		}
+		// keyword-array form: [midinote: [...], dur: [...]].asMIDIItem
+		asMIDIItem {
+			var e = ();
+			this.pairsDo { |k, v| e[k] = v };
+			^e.asMIDIItem
+		}
+}
+
++ Event {
+	// Build an ad-hoc MIDIItem from a compact pitch/duration spec, e.g.
+	//   [midinote: [60,62,64], dur: "q e e".beats].asMIDIItem
+	// `midinote` (or `note`) is a pitch (Array or scalar); `dur` is an Array, a
+	// scalar (applied to all), or a rhythm String ("q e e" -> .beats); `amp`
+	// optional (Array/scalar, default 0.7). Emits paired noteOn/noteOff events in
+	// the RAW recorded format (\mk / \mkOff) — what makeNotesFromMidiEvents consumes
+	// (it pairs offs into the noteOn `sustain` and rejects the raw \mk copies, so
+	// notes don't double). Timestamps are in BEATS — a reference is a score, not a
+	// performance — so MIDIItem gui/playback (which assume seconds) read it at a
+	// nominal tempo. Monophonic: adjacent same-pitch notes don't overlap, so
+	// off-pairing by midinote is unambiguous. (Rests: not yet.)
+	asMIDIItem {
+		var notes, durs, amps, onsets, events, n;
+		notes = (this[\midinote] ? this[\note]).asArray;
+		n = notes.size;
+		(n == 0).if { ^Error("asMIDIItem: spec needs a \\midinote (or \\note)").throw };
+		durs = this[\dur] ? 1;
+		durs.isString.if { durs = durs.beats };
+		durs = durs.asArray.wrapExtend(n);
+		amps = (this[\amp] ? 0.7).asArray.wrapExtend(n);
+		onsets = durs.integrate.drop(-1).addFirst(0);   // cumulative onsets, beat time
+		events = List.new;
+		n.do { |i|
+			events.add((midicmd: \noteOn,  type: \mk,    midinote: notes[i],
+				timestamp: onsets[i],           sustain: durs[i], amp: amps[i]));
+			events.add((midicmd: \noteOff, type: \mkOff, midinote: notes[i],
+				timestamp: onsets[i] + durs[i], amp: amps[i]));
+		};
+		events = events.sort { |a, b| a.timestamp < b.timestamp };
+		// NB: not MIDIItem.newFrom — it names items after the UniqueID *class* (not
+		// .next), so repeated builds would alias/overwrite each other in MIDIItem.all.
+		^MIDIItem(("ref_" ++ UniqueID.next).asSymbol).midiEvents_(events)
+	}
 }

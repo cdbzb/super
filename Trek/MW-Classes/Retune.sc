@@ -19,7 +19,7 @@ AbstractRetune : AbstractMidiEvents {
 	// "save split-take" button = freeze edits. Blue block = target (labelled with index),
 	// red line = as-sung center. Edits accumulate on a mutable working player.
 	gui {
-		var notes0, work, dragIndex, postTable, kstr;
+		var notes0, work, dragIndex, postTable, kstr, nav, view;
 		var w = 1200, h = 460, pad = 46, t1, lo, hi, xOf, yOf, tOf, font;
 		notes0 = this.notes;
 		(notes0.isNil or: { notes0.isEmpty }).if {
@@ -29,9 +29,11 @@ AbstractRetune : AbstractMidiEvents {
 		t1 = notes0.collect({ |n| n.timestamp + (n.dur ? 0) }).maxItem.max(0.001);
 		lo = notes0.collect({ |n| min(n.midinote, n.measuredCenter ? n.midinote) }).minItem - 1.5;
 		hi = notes0.collect({ |n| max(n.midinote, n.measuredCenter ? n.midinote) }).maxItem + 1.5;
-		xOf = { |t| pad + (t / t1 * (w - (pad * 2))) };
-		yOf = { |m| (h - pad) - ((m - lo) / (hi - lo) * (h - (pad * 2))) };
-		tOf = { |mx| ((mx - pad) / (w - (pad * 2)) * t1).clip(0, t1) };   // inverse of xOf
+		// shared piano-roll navigation (zoom/scroll/pitch keys, same as MIDIItem.gui)
+		nav = PianoRollNav(0, t1, lo, hi, w, h, pad);
+		xOf = { |t| nav.xOf(t) };   // all transforms route through nav -> respond to zoom/scroll
+		yOf = { |m| nav.yOf(m) };
+		tOf = { |mx| nav.tOf(mx) };
 		font = Font("Helvetica", 9);
 		kstr = { |k| (k.asFloat.frac == 0).if({ k.asInteger.asString }, { k.asString }) };
 		postTable = {
@@ -47,9 +49,12 @@ AbstractRetune : AbstractMidiEvents {
 			var win = Window("Retune", Rect(80, 80, w, h + 30)).front;
 			Button(win, Rect(8, 4, 150, 22)).states_([["save split-take"]])
 				.action_({ work.save });   // freeze the EDITED working notes as a split-take
-			UserView(win, Rect(0, 30, w, h)).background_(Color.grey(0.97)).drawFunc_({
+			StaticText(win, Rect(166, 4, w - 174, 22))
+				.string_("h/l scroll   H/L zoom   J/K octave   0 reset   dbl-clk split   R-clk merge   drag right-edge")
+				.font_(font).stringColor_(Color.grey(0.45));
+			view = UserView(win, Rect(0, 30, w, h)).background_(Color.grey(0.97)).drawFunc_({
 				Pen.width = 1;
-				(lo.ceil.asInteger .. hi.floor.asInteger).do { |m|
+				(nav.loNote.ceil.asInteger .. nav.hiNote.floor.asInteger).do { |m|
 					var y = yOf.(m);
 					Pen.strokeColor = ((m % 12) == 0).if({ Color.grey(0.6) }, { Color.grey(0.9) });
 					Pen.line(Point(pad, y), Point(w - pad, y)); Pen.stroke;
@@ -58,15 +63,18 @@ AbstractRetune : AbstractMidiEvents {
 					};
 				};
 				work.notes.do { |n, i|
-					var x = xOf.(n.timestamp), x2 = xOf.(n.timestamp + (n.dur ? 0));
-					var yt = yOf.(n.midinote), ym = yOf.(n.measuredCenter ? n.midinote);
-					Pen.strokeColor = Color(0.85, 0.2, 0.2, 0.7);     // as-sung center
-					Pen.line(Point(x, ym), Point(x2, ym)); Pen.stroke;
-					Pen.strokeColor = Color.grey(0.5);                // boundary handle (right edge)
-					Pen.line(Point(x2, yt - 7), Point(x2, yt + 7)); Pen.stroke;
-					Pen.fillColor = Color(0.2, 0.5, 0.9, 0.55);       // target block
-					Pen.fillRect(Rect(x, yt - 5, (x2 - x).max(2.0), 10));
-					Pen.stringAtPoint(kstr.(n[\key] ? i), Point(x + 1, yt - 19), font, Color.black);
+					var a = n.timestamp, b = n.timestamp + (n.dur ? 0), x, x2, yt, ym;
+					nav.overlaps(a, b).if {   // cull notes outside the visible window
+						x = xOf.(a); x2 = xOf.(b);
+						yt = yOf.(n.midinote); ym = yOf.(n.measuredCenter ? n.midinote);
+						Pen.strokeColor = Color(0.85, 0.2, 0.2, 0.7);     // as-sung center
+						Pen.line(Point(x, ym), Point(x2, ym)); Pen.stroke;
+						Pen.strokeColor = Color.grey(0.5);                // boundary handle (right edge)
+						Pen.line(Point(x2, yt - 7), Point(x2, yt + 7)); Pen.stroke;
+						Pen.fillColor = Color(0.2, 0.5, 0.9, 0.55);       // target block
+						Pen.fillRect(Rect(x, yt - 5, (x2 - x).max(2.0), 10));
+						Pen.stringAtPoint(kstr.(n[\key] ? i), Point(x + 1, yt - 19), font, Color.black);
+					};
 				};
 			})
 			.mouseDownAction_({ |v, mx, my, mod, btn, clicks|
@@ -97,7 +105,18 @@ AbstractRetune : AbstractMidiEvents {
 					work = work.moveBoundary(dragIndex, tOf.(mx)); v.refresh; postTable.value;
 					dragIndex = nil;
 				};
+			})
+			.keyDownAction_({ |v, char|
+				nav.keyDown(char).if({ v.refresh }, {   // nav keys consume h/l/H/L/J/K
+					switch (char,
+						$0, { nav.resetView; v.refresh },
+						$q, { win.close },
+						$?, { ("Retune.gui keys: h/l scroll  H/L zoom  J/K octave  0 reset view  "
+							"q close | mouse: dbl-clk split, right-clk merge, drag right-edge, click audition").postln }
+					)
+				});
 			});
+			view.focus(true);   // take key focus so nav works without clicking first
 		}.defer;
 		^this
 	}
@@ -319,9 +338,9 @@ RetuneItem : AbstractRetune {
 	}
 
 	player { ^RetunePlayer(midiEvents.deepCopy, this) }
-	play     { |args| this.whenReady({ this.player.play(args) }); ^this }
-	playTrue { |args| this.whenReady({ this.player.playTrue(args) }); ^this }
-	playRB   { |args| this.whenReady({ this.player.playRB(args) }); ^this }
+	play     { |rate = 1 ...args, kwargs| this.whenReady({ this.player.performArgs(\play,     [rate] ++ args, kwargs) }); ^this }
+	playTrue { |rate = 1 ...args, kwargs| this.whenReady({ this.player.performArgs(\playTrue, [rate] ++ args, kwargs) }); ^this }
+	playRB   { |rate = 1 ...args, kwargs| this.whenReady({ this.player.performArgs(\playRB,   [rate] ++ args, kwargs) }); ^this }
 	playNote { |key|
 		var sub = this.prNotesForKey(key);
 		sub.isEmpty.if { ^("RetuneItem.playNote: no note with key %".format(key)).warn };
@@ -438,23 +457,38 @@ RetunePlayer : AbstractRetune {
 			(lo..hi).do { |i| mc[i] = e.measuredCenter ? 0; tc[i] = e.midinote ? 0 };
 		};
 		interleaved = nframes.collect { |i| [sm[i], mc[i], tc[i], cf[i]] }.flatten;
-		curve !? _.free;   // free the previous curve (avoid leaking 4-ch buffers)
+		// each play frees its OWN curve when its synth ends (see prPlay) -> no leak, and no
+		// shared-ivar double-free if the same player is re-rendered while a synth is still live
 		curve = Buffer.loadCollection(Server.default, interleaved, 4, { action.value(this) });
 		^this
 	}
-	prPlay { |defName, args|
+	prPlay { |defName, rate, kwargs|
 		var s = playStart ? 0;
 		var d = playEnd.notNil.if({ playEnd - (playStart ? 0) }, { 0 });   // 0 = whole buffer
 		this.render({
+			var c = curve;   // this play's curve; capture so onFree can't free a later one
 			synth = Synth(defName,
-				[\voice, source.buffer, \curve, curve, \analysisHop, source.analysisHop,
-				 \startPos, s, \playDur, d] ++ (args ? []));
+				[\voice, source.buffer, \curve, c, \analysisHop, source.analysisHop,
+				 \startPos, s, \playDur, d, \rate, rate] ++ (kwargs ? []));
+			// free the curve buffer when playback ends (doneAction / FreeSelf), else 4-ch curves
+			// leak and their bufnums eventually clobber the 1-ch voice buffer
+			synth.onFree({ c.free });
 		});
 		^this
 	}
-	play     { |args| ^this.prPlay(\autotuneNotes, args) }       // single-pass lifter
-	playTrue { |args| ^this.prPlay(\autotuneNotesTrue, args) }   // true-envelope cascade
-	playRB   { |args| ^this.prPlay(\autotuneRB, args) }          // RubberBand transposition
+	// rate = playback speed (time stretch). On RB it is decoupled from pitch (0.5 = half speed,
+	// same pitch); the cepstral engines resample (couples pitch + mis-indexes the correction by
+	// 12*log2(rate)) so they refuse rate != 1 -- see retune-project.md §2a. Extra keyword args
+	// (amp:, dry:, glide:, modAmt:, formant:, liftK: ...) pass straight through to the SynthDef.
+	play     { |rate = 1 ...args, kwargs| ^this.prPlay(\autotuneNotes,     this.prCepstralRate(rate), kwargs) }
+	playTrue { |rate = 1 ...args, kwargs| ^this.prPlay(\autotuneNotesTrue, this.prCepstralRate(rate), kwargs) }
+	playRB   { |rate = 1 ...args, kwargs| ^this.prPlay(\autotuneRB,        rate, kwargs) }
+	prCepstralRate { |rate|   // cepstral mistunes at rate != 1; clamp to 1 with a warning
+		^(rate != 1).if({
+			("Retune: cepstral engines mistune at rate != 1 (off by 12*log2(rate)); "
+			 "use .playRB for time-stretch. Forcing rate 1.").warn; 1
+		}, { rate })
+	}
 	// audition the original audio of the note(s) referenced by `key` (integer N -> whole
 	// original note [N, N+1); fractional -> one fragment)
 	playNote { |key|

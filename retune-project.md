@@ -293,16 +293,38 @@ pitch correction.
 9. **Onset-warp axis** — time-snap `amount` via §2c's variable RB `rate` off the persisted warp
    (optional 5th curve channel). (§2d, §2c.2)
 
+**Engine quality (2026-06-24):**
+10. **Adopt RubberBand R3 ("Finer") engine** — quality upgrade for `\autotuneRB`. R3 (RubberBand
+    v3) has cleaner transients / less phasiness / better formants on monophonic vocal, and ships
+    `R3LiveShifter`, a real-time pitch-shifter purpose-built for our case (shift + formant, no
+    time-stretch). Both machines are M-series arm64, so the arm64-only R3 `.scx` runs on both —
+    no arch blocker. NOT a blind copy: dropping the R3 quark in produced **metallic distortion**
+    (see §5), which is misconfiguration, not R3 being worse. The task: (a) put the *identical* R3
+    quark (`.scx` + `.sc`) on both machines; (b) dial in the R3-only options the SynthDef currently
+    leaves at 0 (`pitchMode`, `window`, `channelMode`, `transients`, `detector`, `phase`) and
+    verify the `engine` integer actually selects Finer/LiveShifter (mapping never confirmed);
+    (c) measure R3's latency and set `look`/`dryLatency` for it (ours were tuned for R2); (d) A/B
+    vs R2 and, if it wins, switch both. R3 quark backed up on the mini at `~/RubberBand.r3-bak`.
+
 ---
 
 ## 5. Known issues / backlog
-- [ ] **RubberBand quark mismatch.** `\autotuneRB` (`vocoders.sc:241`) passes `transients`,
-  `detector`, `phase`, `engine` to `RubberBand.ar`, but the installed quark
-  (`~/Library/Application Support/SuperCollider/Extensions/RubberBand/Classes/RubberBand.sc`)
-  only accepts `numChannels, bufnum, rate, pitchShift, trig, startPos, loop, doneAction, formant`.
-  The four extra kwargs are silently ignored (runtime warnings) → no R3/"Finer" engine, transient
-  or phase control today; only `formant` preservation is live. Decide: upgrade the quark to a
-  build exposing `engine`, or drop the dead args.
+- [ ] **RubberBand quark/engine differs across machines** (investigated 2026-06-24). `\autotuneRB`
+  (`vocoders.sc:241`) passes `transients, detector, phase, engine` by keyword. Two installs found:
+  - **MacBook** (M4): `RubberBand.scx` 817 KB **universal** (x86_64+arm64), R2 engine; `.sc` `*ar`
+    has 9 inputs (no `engine`/etc.) → those kwargs are **silently dropped**, so only `formant` is
+    live. md5 `.scx` `d2125328…`, `.sc` `f3d2adeb…`.
+  - **mac mini** (M-series): `.scx` 393 KB **arm64-only**, **R3** engine (`R3Stretcher`/
+    `R3LiveShifter` symbols); `.sc` `*ar` has 16 inputs incl. `engine, pitchMode, window, …`.
+  Our default `engine=1` is a no-op on R2 (MacBook) but selects an engine on R3 (mini) → the mini
+  produced **metallic distortion**. Root cause: engine/quark difference + unconfigured R3 options +
+  R2-tuned latency, NOT sample rate (both servers at 48 kHz). **Resolved for now by standardizing
+  both on R2**: copied the MacBook's universal R2 quark (both files) to the mini; mini's R3 saved at
+  `~/RubberBand.r3-bak` (kept OUTSIDE Extensions — a `.sc` left under Extensions triggers
+  "Duplicate Class Found"). Proper R3 adoption is milestone 10.
+  - **Cross-machine gotcha:** keep the RubberBand quark identical on all machines; `engine`/
+    `transients`/`detector`/`phase` are silently ignored on the R2 quark but active on R3, so the
+    same SynthDef sounds different per machine.
 - [ ] **Cepstral `rate ≠ 1` mistunes** (§2a) — output lands `12·log2(rate)` semitones off.
   Keep `rate ≠ 1` on the RB engine until a cepstral compensation / PV time-stretch lands.
 - [ ] **Octave-fold can fold a genuine large downward leap up an octave** (`*prOctaveFold`).

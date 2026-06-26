@@ -16,8 +16,9 @@ gui { |take|
     var rebuildGrid, updateExtrapSelection, ensureLineVisible, effTime;
     var dpMode = false, beatTracker, pinSet, repin, applyManualPick;
     var savedSel;
-    var cursorTime, playClock, isPlaying = false, playhead, playStartWall, activeMks = [];
+    var cursorTime, playClock, isPlaying = false, playhead, playStartWall, playOriginTime, activeMks = [];
     var viewedPlayer, playFrom, stopPlay, togglePlay;
+    var clickEnabled = false, clickClock, scheduleClicks, currentNoteTime;
 
     // Initialize selected indices array
     selectedIndices = [];
@@ -50,15 +51,31 @@ gui { |take|
     cursorTime = start;          // cursor begins at the start of content
     playhead = start;
     playClock = TempoClock(1, queueSize: 1024); // dedicated so stop can .clear cleanly
+    clickClock = TempoClock(1, queueSize: 1024); // beat clicks, cleared independently of notes
 
     // the player whose notes are on screen (the viewed take, or this)
     viewedPlayer = {
         this.respondsTo(\takes).if { this.take(take) }{ this.player }
     };
 
+    // note-time at the cursor right now (un-clamped, no latency offset) — for scheduling
+    currentNoteTime = { playOriginTime + (SystemClock.seconds - playStartWall) };
+
+    // schedule a hihat click at every grid beat from `fromTime` forward, on clickClock.
+    // (instrument:\hihat).play bundles with Server latency, matching the note playback.
+    scheduleClicks = { |fromTime|
+        clickClock.clear;
+        gridLines.do { |l|
+            var gt = l[\time];
+            (gt >= fromTime).if {
+                clickClock.sched(gt - fromTime, { (instrument: \hihat).play; nil })
+            }
+        }
+    };
+
     // start playback from the cursor; tracks which MicroKeys we started so stop can release them
     playFrom = { |t|
-        var p, before;
+        var p, before, latency;
         isPlaying.if { stopPlay.() };
         p = viewedPlayer.();
         p.start = t; p.end = end;
@@ -67,11 +84,18 @@ gui { |take|
         p.play(clock: playClock);
         activeMks = (MIDIItemPlayer.playing - before).asArray; // the voices we just launched
         isPlaying = true;
+        latency = Server.default.latency ? 0; // notes sound this far after they're scheduled
         playStartWall = SystemClock.seconds;
+        playOriginTime = t;
+        (clickEnabled and: { gridLines.notNil and: { gridLines.notEmpty } }).if {
+            scheduleClicks.(t)
+        };
         playhead = t;
         Routine({
             while { isPlaying and: { playhead <= end } } {
-                playhead = t + (SystemClock.seconds - playStartWall);
+                // offset by server latency so the playhead tracks the audio, not the scheduling;
+                // clamp to the cursor while the first bundle is still in the latency window
+                playhead = (t + (SystemClock.seconds - playStartWall - latency)).max(t);
                 view.refresh;
                 (1/30).wait;
             };
@@ -82,6 +106,7 @@ gui { |take|
     stopPlay = {
         isPlaying = false;
         playClock.clear;
+        clickClock.clear;
         activeMks.do { |mk|
             mk.sounding.copy.do(_.release); // release any voices still ringing
             mk.restoreCCValues;
@@ -175,7 +200,7 @@ gui { |take|
 
     // Create a window and UserView
     window = Window("Piano Roll", Rect(100, 100, width, height)).front;
-    window.onClose_({ isPlaying.if { stopPlay.() }; playClock.stop }); // don't leak the transport clock
+    window.onClose_({ isPlaying.if { stopPlay.() }; playClock.stop; clickClock.stop }); // don't leak the transport clocks
     view = UserView(window, Rect(0, 0, width, 1600))
     .background_(Color.white);
     
@@ -289,6 +314,15 @@ view.keyDownAction_({ |view char|
     handled.not.if {
     switch (char,
         $ , {togglePlay.()}, // space: toggle play/stop from the cursor
+        $c, { // toggle hihat clicks on the grid beats
+            clickEnabled = clickEnabled.not;
+            clickEnabled.if {
+                isPlaying.if { scheduleClicks.(currentNoteTime.()) }; // catch up mid-playback
+            }{
+                clickClock.clear; // drop any pending clicks
+            };
+            ("Beat clicks " ++ clickEnabled.if("on", "off")).postln;
+        },
         $q, {window.close; "open -a WezTerm.app".unixCmd},
         $0, {window.close; this.gui(0)},
         $1, {window.close; this.gui(1)},
@@ -444,6 +478,7 @@ view.keyDownAction_({ |view char|
                     "g - Get selected note indices\n" ++
                     "w - Save selection to the MIDIItem (immutable, new version per change)\n" ++
                     "space - Play/stop from the cursor\n" ++
+                    "c - Toggle hihat clicks on the grid beats (needs an e/E grid)\n" ++
                     "e - Toggle extrapolate mode (tempo grid from last 2 selected notes)\n" ++
                     "E - Same, but DP beat tracker (globally optimal; j/k pin notes)\n" ++
                     "      h/l - previous/next grid line\n" ++
@@ -641,7 +676,7 @@ view.keyDownAction_({ |view char|
         
         // Display selection instructions
         Pen.stringAtPoint(
-            "space play/stop · alt-click cursor · 'r' reset · 'g' indices · 'e' extrapolate · 'E' DP beat tracker",
+            "space play/stop · 'c' beat clicks · alt-click cursor · 'r' reset · 'g' indices · 'e' extrapolate · 'E' DP beat tracker",
             Point(10, 10),
             Font("Helvetica", 14),
             Color.black

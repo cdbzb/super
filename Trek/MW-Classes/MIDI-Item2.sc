@@ -16,7 +16,9 @@ gui { |take|
     var rebuildGrid, updateExtrapSelection, ensureLineVisible, effTime;
     var dpMode = false, beatTracker, pinSet, repin, applyManualPick;
     var savedSel;
-    
+    var cursorTime, playClock, isPlaying = false, playhead, playStartWall, activeMks = [];
+    var viewedPlayer, playFrom, stopPlay, togglePlay;
+
     // Initialize selected indices array
     selectedIndices = [];
     
@@ -43,6 +45,53 @@ gui { |take|
     // Initialize horizontal view
     viewStart = start;
     viewEnd = end;
+
+    // Playback cursor / transport
+    cursorTime = start;          // cursor begins at the start of content
+    playhead = start;
+    playClock = TempoClock(1, queueSize: 1024); // dedicated so stop can .clear cleanly
+
+    // the player whose notes are on screen (the viewed take, or this)
+    viewedPlayer = {
+        this.respondsTo(\takes).if { this.take(take) }{ this.player }
+    };
+
+    // start playback from the cursor; tracks which MicroKeys we started so stop can release them
+    playFrom = { |t|
+        var p, before;
+        isPlaying.if { stopPlay.() };
+        p = viewedPlayer.();
+        p.start = t; p.end = end;
+        before = MIDIItemPlayer.playing.copy;
+        playClock.clear;
+        p.play(clock: playClock);
+        activeMks = (MIDIItemPlayer.playing - before).asArray; // the voices we just launched
+        isPlaying = true;
+        playStartWall = SystemClock.seconds;
+        playhead = t;
+        Routine({
+            while { isPlaying and: { playhead <= end } } {
+                playhead = t + (SystemClock.seconds - playStartWall);
+                view.refresh;
+                (1/30).wait;
+            };
+            isPlaying.if { stopPlay.() }; // reached the end on its own
+        }).play(AppClock);
+    };
+
+    stopPlay = {
+        isPlaying = false;
+        playClock.clear;
+        activeMks.do { |mk|
+            mk.sounding.copy.do(_.release); // release any voices still ringing
+            mk.restoreCCValues;
+            MIDIItemPlayer.playing.remove(mk);
+        };
+        activeMks = [];
+        view.refresh;
+    };
+
+    togglePlay = { isPlaying.if { stopPlay.() }{ playFrom.(cursorTime) } };
 
     // Extrapolate-mode helpers
     gridLines = [];
@@ -126,6 +175,7 @@ gui { |take|
 
     // Create a window and UserView
     window = Window("Piano Roll", Rect(100, 100, width, height)).front;
+    window.onClose_({ isPlaying.if { stopPlay.() }; playClock.stop }); // don't leak the transport clock
     view = UserView(window, Rect(0, 0, width, 1600))
     .background_(Color.white);
     
@@ -238,6 +288,7 @@ view.keyDownAction_({ |view char|
 
     handled.not.if {
     switch (char,
+        $ , {togglePlay.()}, // space: toggle play/stop from the cursor
         $q, {window.close; "open -a WezTerm.app".unixCmd},
         $0, {window.close; this.gui(0)},
         $1, {window.close; this.gui(1)},
@@ -392,6 +443,7 @@ view.keyDownAction_({ |view char|
                     "r - Clear note selection\n" ++
                     "g - Get selected note indices\n" ++
                     "w - Save selection to the MIDIItem (immutable, new version per change)\n" ++
+                    "space - Play/stop from the cursor\n" ++
                     "e - Toggle extrapolate mode (tempo grid from last 2 selected notes)\n" ++
                     "E - Same, but DP beat tracker (globally optimal; j/k pin notes)\n" ++
                     "      h/l - previous/next grid line\n" ++
@@ -399,6 +451,7 @@ view.keyDownAction_({ |view char|
                     "? - Show this help menu\n\n" ++
                     "Mouse:\n" ++
                     "Click notes to select/deselect them\n" ++
+                    "Alt-click to place the playback cursor\n" ++
                     "Selected notes appear in red\n\n" ++
                     "Visual Guide:\n" ++
                     "Gray shading = Black keys\n" ++
@@ -418,8 +471,18 @@ view.keyDownAction_({ |view char|
         var noteHeight = 1600 / noteRange;
         var timeScale = width / (viewEnd - viewStart);
         var clickedNoteIndex = nil;
-        
+        var altDown = (mod bitAnd: 524288) > 0; // 0x80000 = alt/option
+
+        // alt-click: place the playback cursor at the clicked time (skip note selection)
+        altDown.if {
+            cursorTime = (viewStart + (x / timeScale)).clip(start, end);
+            isPlaying.not.if { playhead = cursorTime };
+            view.refresh;
+            ("Cursor at " ++ cursorTime.round(0.001)).postln;
+        };
+
         // Check if click is on a note
+        altDown.not.if {
         notes.do { |e, idx|
             var noteY = height - ((e.midinote - startMidiNote) * noteHeight);
             var noteX = (e.timestamp - viewStart) * timeScale;
@@ -443,8 +506,9 @@ view.keyDownAction_({ |view char|
             };
             view.refresh;
         };
+        }; // end altDown.not
     });
-    
+
     // Define the drawing function
     view.drawFunc = {
         var noteRange = 92; // MIDI notes 36-127 (92 notes total)
@@ -537,6 +601,19 @@ view.keyDownAction_({ |view char|
             );
         };
 
+        // Draw the playback cursor (blue) and, while playing, the moving playhead (orange)
+        (cursorTime >= viewStart and: { cursorTime <= viewEnd }).if {
+            var cx = (cursorTime - viewStart) * timeScale;
+            Pen.width = 2; Pen.color = Color.blue(1, 0.7);
+            Pen.line(cx@0, cx@1600); Pen.stroke;
+        };
+        (isPlaying and: { playhead >= viewStart and: { playhead <= viewEnd } }).if {
+            var px = (playhead - viewStart) * timeScale;
+            Pen.width = 2; Pen.color = Color(1, 0.5, 0);
+            Pen.line(px@0, px@1600); Pen.stroke;
+        };
+        Pen.width = 1;
+
         // Display take number
         Pen.stringAtPoint(
             take.asString,
@@ -564,7 +641,7 @@ view.keyDownAction_({ |view char|
         
         // Display selection instructions
         Pen.stringAtPoint(
-            "Click notes to select, 'r' reset, 'g' get indices, 'e' extrapolate tempo grid",
+            "space play/stop · alt-click cursor · 'r' reset · 'g' indices · 'e' extrapolate · 'E' DP beat tracker",
             Point(10, 10),
             Font("Helvetica", 14),
             Color.black

@@ -1166,14 +1166,16 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		MyFree.add({MIDIItemPlayer.stopAll});
 		Event.addEventType(\mi, {
 			~dur = ~player[~to+1].timestamp - ~player[~from].timestamp;
-			~clock = TempoClock(~tempo ? 1 / ~stretch ? 1);
+			// tempo wins; else 1/stretch (sec per beat); else 1. Parens are load-bearing:
+			// SC binary ops are flat L-to-R, so the un-parenthesized form divided by nil.
+			~clock = TempoClock(~tempo ? (1 / (~stretch ? 1)));
 			~player.fromNote(~from, ~to).play(~mk, clock: ~clock) 
 		}, parentEvent: (type: \durEvent));
 		Event.addEventType(\mi2, {
 			~filter.notNil.if{~player = ~filter.(~player)};
 			// '!?'.help
 			~dur = ~dur ? ((~player.end ? ~player.bounds.end) - (~player.start ? ~player.bounds.start));
-			~clock = TempoClock(~tempo ? 1 / ~stretch ? 1, queueSize: 65536);
+			~clock = TempoClock(~tempo ? (1 / (~stretch ? 1)), queueSize: 65536);
 			~player.play(~mk ? MicroKeys(\default), clock: ~clock)
 		}, );
 		Event.addParentType(\mi2,
@@ -1552,6 +1554,10 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		^MIDIItemTempoMap(this, choiceFunc, beats)
 	}
 	tempoMap {|beats choiceFunc| ^this.tempomap(beats, choiceFunc) }
+	// measured tempo of the loaded selection (see MIDIItemTempoMap.bps).
+	// e.g. q = m.quantize; q.play(nil, TempoClock(m.bps)) -> original tempo.
+	bps {|beats choiceFunc| ^this.tempomap(beats, choiceFunc).bps }
+	bpm {|beats choiceFunc| ^this.tempomap(beats, choiceFunc).bpm }
 	// performed timestamp of an ideal beat position of the loaded selection
 	// (beat 0 = the first selected note); extrapolates beyond the selection
 	// at the boundary tempo, so negative beats address a pickup
@@ -1701,6 +1707,15 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 	averageOffset{
 		^this.offsets.mean
 	}
+	// average performed tempo of the selection, in beats per second. Full span:
+	// total beats over the whole mapped region (first onset -> closing anchor),
+	// since beats.sum maps to times.last. Playing the unit-beat quantize result
+	// on TempoClock(bps) reproduces this tempo. Note: times.last is the closing
+	// anchor (clip end when no closingAnchor), so a long final sustain skews this.
+	bps {
+		^(times.last > 0).if { beats.sum / times.last }
+	}
+	bpm { ^this.bps !? (_ * 60) }
 	at{|x|
 		^env[x]
 	}

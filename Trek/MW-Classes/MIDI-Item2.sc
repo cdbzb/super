@@ -1320,7 +1320,13 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		^MIDIItemTempoMap(this, this.notes[indices], beats)
 	}
 	warpTo { |tempoMap|
-			^this.collect( {|e| e.timestamp_(tempoMap[e.timestamp - start] + start)}) //is start right? or should get from the map?
+			var origin = tempoMap.tryPerform(\t0) ? start;
+			tempoMap.respondsTo(\prAtExtrapolated).if {
+				^this.collect({ |e|
+					e.timestamp_(tempoMap.prAtExtrapolated(e.timestamp - origin, tempoMap.env) + origin)
+				})
+			};
+			^this.collect({ |e| e.timestamp_(tempoMap[e.timestamp - start] + start) })
 	}
 	chaseCCs { |from|
 		var ccs = midiEvents

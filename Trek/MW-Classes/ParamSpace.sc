@@ -103,7 +103,7 @@ ParamSpace {
 	//     one (or with a MicroKeys-typed mkOrDefName).
 	asEventList { |name mkOrDefName paramSpace|
 		var el = EventList(name);
-		var mk, psEvent;
+		var mk, psEvent, tm;
 		case
 			{ mkOrDefName.isKindOf(MicroKeys) } {
 				mk = mkOrDefName;
@@ -118,12 +118,18 @@ ParamSpace {
 				paramSpace = paramSpace ?? {
 					SynthDescLib.global[mkOrDefName].notNil.if { ParamSpace(mkOrDefName) }
 				}
-			};
+		};
 		psEvent = paramSpace !? { paramSpace.asEvent };
+		tm = { this.tempomap }.try;
 		el.beatDur = 1;
+		tm !? { el.tempoMap = tm };
 		paramSpace !? { el.paramSpace_(paramSpace) };
 		this.player.midiEvents.do { |e|
-			var copy = e.copy.put(\when, e.timestamp);
+			var when = tm.notNil.if(
+				{ tm.prAtExtrapolated(e.timestamp - tm.t0, tm.env) },
+				{ e.timestamp }
+			);
+			var copy = e.copy.put(\when, when);
 			copy.put(\latency, Server.default.latency);
 			mk !? { copy.put(\mk, mk.name ? mk) };
 			(copy[\type] == \mk and: { psEvent.notNil }).if {

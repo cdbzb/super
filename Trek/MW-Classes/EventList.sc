@@ -6,7 +6,7 @@ EventList {
 	var <>batchWindow = 0.05, batchEndTime = -1e9, batchFirstWhen = 0;
 	var <>scope, <>voiceSpace;
 	var <solo, <mute;
-	var <>beatDur;
+	var <>beatDur, <>tempoMap;
 
 	*initClass {
 		all = ();
@@ -321,7 +321,7 @@ EventList {
 	}
 
 	play { |from=0, fromEvent, fromSection|
-		var bd;
+		var bd, secondsAt;
 		from = from ? 0;
 		fromEvent !? {
 			var ev = events[fromEvent];
@@ -338,10 +338,14 @@ EventList {
 		voiceSpace.notNil.if { ^voiceSpace.playFrom(this, from) };
 		playFn.notNil.if { ^playFn.(this, from) };
 		bd = beatDur ? TempoClock.default.beatDur;
+		secondsAt = tempoMap.notNil.if(
+			{ { |beat| tempoMap.timeAt(beat) } },
+			{ { |beat| beat * bd } }
+		);
 		this.scopedEvents.do { |e|
 			var t = e.when ? 0;
 			((t >= from) and: { this.shouldPlay(e) }).if {
-				SystemClock.sched((t - from) * bd, { e.play; nil })
+				SystemClock.sched(secondsAt.(t) - secondsAt.(from), { e.play; nil })
 			}
 		}
 	}
@@ -391,4 +395,3 @@ EventList {
 		^EventList.current.addPattern(when, pattern, n, maxWhen, this)
 	}
 }
-

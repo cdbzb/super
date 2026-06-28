@@ -165,6 +165,15 @@ SynthVVST {
 
 	build {
 		var readyCount = 0, targetCount;
+		(cache[cacheKey].notNil
+			and: { cache[cacheKey].ready.notNil }
+			and: { cache[cacheKey].ready.test.not }
+			and: { this.isFrozen.not }
+		).if{
+			"SynthVVST: % cached VST was not ready; rebuilding".format(voice).postln;
+			cache[cacheKey].freeVSTs;
+			cache.removeAt(cacheKey);
+		};
 		cache[cacheKey].notNil.if{
 			synthV = cache[cacheKey].synthV;
 			ready = cache[cacheKey].ready;
@@ -219,9 +228,13 @@ SynthVVST {
 				sv.set(buildParams);
 				sv.writeProjectVST(path ++ ".svp");
 				sv.writeFxp(path);
-				sv.vst = SV(path ++ ".fxp", onReady: {
-					readyCount = readyCount + 1;
-					(readyCount >= targetCount).if { ready.test_(true).signal };
+				sv.vst = SV(path ++ ".fxp", onReady: {|success|
+					success.if{
+						readyCount = readyCount + 1;
+						(readyCount >= targetCount).if { ready.test_(true).signal };
+					}{
+						"SynthVVST: % failed to load FXP %".format(voice, path ++ ".fxp").warn;
+					}
 				});
 				sv
 			};
@@ -238,8 +251,12 @@ SynthVVST {
 			synthV.set(buildParams);
 			synthV.writeProjectVST(path ++ ".svp");
 			synthV.writeFxp(path);
-			synthV.vst = SV(path ++ ".fxp", onReady: {
-				ready.test_(true).signal;
+			synthV.vst = SV(path ++ ".fxp", onReady: {|success|
+				success.if{
+					ready.test_(true).signal;
+				}{
+					"SynthVVST: % failed to load FXP %".format(voice, path ++ ".fxp").warn;
+				}
 			});
 		};
 		cache[cacheKey] = this;

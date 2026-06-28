@@ -10,10 +10,21 @@ VSTI {
 
 	preOpen {}
 
+	ensureVSTSynthDef {
+		SynthDescLib.global.at(\vsti2).isNil.if{
+			SynthDef(\vsti2,{|out=0|
+				var sig = VSTPlugin.ar(nil, 2);
+				Out.ar(out, sig)
+			}).add;
+			Server.default.sync;
+		}
+	}
+
 	init { | plugin action vstFolder |
 		condition = CondVar.new();
 		{
 			id = UniqueID.next;
+			this.ensureVSTSynthDef;
 			syn = Synth(\vsti2,target:RootNode(Server.default));
 			controller = VSTPluginController(syn);
 			vstis.put(id, this);
@@ -22,9 +33,13 @@ VSTI {
 			controller.open(
 				"/Library/Audio/Plug-Ins" +/+ vstFolder +/+ plugin,
 				multiThreading: true,
-				action:{
-					condition.signalOne;
-					action.(syn, controller);
+				action:{|openedController, loaded|
+					loaded.if{
+						condition.signalOne;
+						action.(syn, controller);
+					}{
+						"VSTI: failed to open %".format(plugin).warn;
+					}
 				}
 			);
 		}.fork;
@@ -32,6 +47,7 @@ VSTI {
 		cmdPeriodAction = {
 			fork{
 				0.1.wait;
+				this.ensureVSTSynthDef;
 				syn = Synth(\vsti2,target:RootNode(Server.default));
 				controller = VSTPluginController(syn);
 				vstis.put(id, this);
@@ -40,9 +56,13 @@ VSTI {
 				controller.open(
 					"/Library/Audio/Plug-Ins" +/+ vstFolder +/+ plugin,
 					multiThreading: true,
-					action:{
-						condition.signalOne;
-						action.(syn, controller);
+					action:{|openedController, loaded|
+						loaded.if{
+							condition.signalOne;
+							action.(syn, controller);
+						}{
+							"VSTI: failed to open %".format(plugin).warn;
+						}
 					}
 				);
 			}
@@ -267,6 +287,9 @@ preOpen { SV.search }
 			action:{|syn controller|
 				path.notNil.if {
 					controller.readProgram(path, {|self success|
+						success.not.if{
+							"SV: failed to read program %".format(path).warn;
+						};
 						onReady.value(success);
 					});
 				} {

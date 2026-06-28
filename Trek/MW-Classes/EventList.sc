@@ -320,8 +320,146 @@ EventList {
 		context.do { |e| this.projectEvent(e).copy.put(\when, 0).play }
 	}
 
+	// evts defaults to this list's own events; VoiceSpace passes its filtered
+	// (scoped + shouldPlay) set so the tempo derivation matches what it plays.
+	extractTempo { |evts|
+		var tl = List[];
+		(evts ? events).do { |ev|
+			ev[\tempoTrack] !? { |v| tl.add([ev[\when] ? 0, v]) }
+		};
+		tl.sort({ |a, b| a[0] < b[0] });
+		^tl
+	}
+
+	timelineToEnv { |timeline, initial|
+		var levels = [initial];
+		var times = [];
+		var curves = [];
+		var curBeat = 0, curLevel = initial;
+		timeline.do { |pair|
+			var beat = pair[0];
+			var val = pair[1];
+			var dt = beat - curBeat;
+			(dt > 0).if {
+				levels = levels.add(curLevel);
+				times = times.add(dt);
+				curves = curves.add(\step);
+			};
+			case
+				{ val.isNumber } {
+					levels = levels.add(val);
+					times = times.add(0);
+					curves = curves.add(\step);
+					curLevel = val;
+					curBeat = beat;
+				}
+				{ val.isKindOf(Tuple3) } {
+					var resolved = val.at1.value;
+					levels = levels.add(resolved);
+					times = times.add(val.at2);
+					curves = curves.add(val.at3);
+					curLevel = resolved;
+					curBeat = beat + val.at2;
+				}
+				{ val.isKindOf(Env) } {
+					levels = levels.add(val.levels[0]);
+					times = times.add(0);
+					curves = curves.add(\step);
+					val.times.do { |t, i|
+						levels = levels.add(val.levels[i+1]);
+						times = times.add(t);
+						curves = curves.add(val.curves.isArray.if { val.curves.wrapAt(i) } { val.curves });
+					};
+					curLevel = val.levels.last;
+					curBeat = beat + val.times.sum;
+				};
+		};
+		while { (times.size > 0) and: { times[0] == 0 } } {
+			levels = levels.drop(1);
+			times = times.drop(1);
+			curves = curves.drop(1);
+		};
+		(times.size == 0).if {
+			levels = [levels[0], levels[0]];
+			times = [0];
+			curves = [\step];
+		};
+		^Env(levels, times, curves)
+	}
+
+	// \tempoTrack values are dimensionless tempo MULTIPLIERS (identity = 1) on the
+	// base tempo, NOT absolute beatDurs — so a recorded tempoMap and a \tempoTrack
+	// automation compose. Identity is 1 (regions with no \tempoTrack keep the base
+	// tempo). For a list with no tempoMap and beatDur 1 (the ParamSpace path), a
+	// multiplier equals the old absolute sec/beat numerically.
+	tempoEnv { |evts|
+		var tl = this.extractTempo(evts);
+		^(tl.size > 0).if { this.timelineToEnv(tl, 1) }
+	}
+
+	// Base wall-seconds elapsed across the beat interval [a, b], BEFORE any
+	// \tempoTrack multiplier: the recorded tempoMap's delta if present, else flat
+	// beatDur. t0 cancels in the delta, so this is offset-free (and the play-time
+	// secondsAt(t) - secondsAt(from) subtraction stays identical to the old map).
+	baseWallDelta { |a, b|
+		tempoMap.notNil.if { ^tempoMap.timeAt(b) - tempoMap.timeAt(a) };
+		^(b - a) * (beatDur ? TempoClock.default.beatDur)
+	}
+
+	// Pointwise compose of the \tempoTrack multiplier with the base tempo:
+	//   wall(beat) = INTEGRAL over [0, beat] of baseSecPerBeat(x) * m(x) dx.
+	// A flat multiplier of 1 reproduces the base map exactly; 2 plays it twice as
+	// slow while preserving the base map's accel/rit SHAPE.
+	beatToWall { |beat, tempoEnv|
+		var levels, times, curves;
+		var cur = 0, sum = 0, i = 0, done = false;
+		tempoEnv.isNil.if { ^this.baseWallDelta(0, beat) };
+		levels = tempoEnv.levels;
+		times = tempoEnv.times;
+		curves = tempoEnv.curves;
+		while { (i < times.size) and: { done.not } } {
+			var segBeats = times[i];
+			var segEnd = cur + segBeats;
+			var cv = curves.isArray.if { curves.wrapAt(i) } { curves };
+			var top = beat min: segEnd;
+			(top > cur).if {
+				(cv == \step).if {
+					sum = sum + (levels[i] * this.baseWallDelta(cur, top));
+				} {
+					sum = sum + this.prIntegrateRamp(levels[i], levels[i+1], cur, segBeats, cur, top);
+				};
+			};
+			(beat <= segEnd).if { done = true } { cur = segEnd; i = i + 1 };
+		};
+		(done.not and: { beat > cur }).if {
+			sum = sum + (levels.last * this.baseWallDelta(cur, beat))
+		};
+		^sum
+	}
+
+	// INTEGRAL over [a, b] of m(x) * baseSecPerBeat(x) dx, where m ramps linearly
+	// from mA (at segStart) to mB (at segStart + segLen). With a flat base this is
+	// the exact trapezoid in m; a nonlinear tempoMap base is sub-sampled (~16
+	// steps/beat, m read at segment midpoints) since m * nonlinear-base has no
+	// closed form.
+	prIntegrateRamp { |mA, mB, segStart, segLen, a, b|
+		var k, x0, sum = 0;
+		var mAt = { |x| mA + ((mB - mA) * (x - segStart) / segLen) };
+		tempoMap.isNil.if {
+			^(mAt.(a) + mAt.(b)) / 2 * this.baseWallDelta(a, b)
+		};
+		k = (16 * (b - a)).ceil max: 1;
+		x0 = a;
+		k.do { |j|
+			var x1 = a + ((b - a) * (j + 1) / k);
+			sum = sum + (mAt.((x0 + x1) / 2) * this.baseWallDelta(x0, x1));
+			x0 = x1;
+		};
+		^sum
+	}
+
 	play { |from=0, fromEvent, fromSection|
-		var bd, secondsAt;
+		var tempoEnv, secondsAt;
 		from = from ? 0;
 		fromEvent !? {
 			var ev = events[fromEvent];
@@ -337,14 +475,11 @@ EventList {
 		};
 		voiceSpace.notNil.if { ^voiceSpace.playFrom(this, from) };
 		playFn.notNil.if { ^playFn.(this, from) };
-		bd = beatDur ? TempoClock.default.beatDur;
-		secondsAt = tempoMap.notNil.if(
-			{ { |beat| tempoMap.timeAt(beat) } },
-			{ { |beat| beat * bd } }
-		);
+		tempoEnv = this.tempoEnv;
+		secondsAt = { |beat| this.beatToWall(beat, tempoEnv) };
 		this.scopedEvents.do { |e|
 			var t = e.when ? 0;
-			((t >= from) and: { this.shouldPlay(e) }).if {
+			((t >= from) and: { this.shouldPlay(e) } and: { e[\tempoTrack].isNil }).if {
 				SystemClock.sched(secondsAt.(t) - secondsAt.(from), { e.play; nil })
 			}
 		}

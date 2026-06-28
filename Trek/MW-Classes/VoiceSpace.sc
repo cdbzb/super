@@ -454,63 +454,8 @@ VoiceSpace {
 		^out
 	}
 
-	// ---- timeline → Env ----------------------------------------------------
-
-	timelineToEnv { |timeline, initial|
-		var levels = [initial];
-		var times  = [];
-		var curves = [];
-		var curBeat = 0, curLevel = initial;
-		timeline.do { |pair|
-			var beat = pair[0];
-			var val  = pair[1];
-			var dt   = beat - curBeat;
-			(dt > 0).if {
-				levels = levels.add(curLevel);
-				times  = times.add(dt);
-				curves = curves.add(\step);
-			};
-			case
-				{ val.isNumber } {
-					levels = levels.add(val);
-					times  = times.add(0);
-					curves = curves.add(\step);
-					curLevel = val;
-					curBeat = beat;
-				}
-				{ val.isKindOf(Tuple3) } {
-					var resolved = val.at1.value;
-					levels = levels.add(resolved);
-					times  = times.add(val.at2);
-					curves = curves.add(val.at3);
-					curLevel = resolved;
-					curBeat = beat + val.at2;
-				}
-				{ val.isKindOf(Env) } {
-					levels = levels.add(val.levels[0]);
-					times  = times.add(0);
-					curves = curves.add(\step);
-					val.times.do { |t, i|
-						levels = levels.add(val.levels[i+1]);
-						times  = times.add(t);
-						curves = curves.add(val.curves.isArray.if { val.curves.wrapAt(i) } { val.curves });
-					};
-					curLevel = val.levels.last;
-					curBeat = beat + val.times.sum;
-				};
-		};
-		while { (times.size > 0) and: { times[0] == 0 } } {
-			levels = levels.drop(1);
-			times  = times.drop(1);
-			curves = curves.drop(1);
-		};
-		(times.size == 0).if {
-			levels = [levels[0], levels[0]];
-			times  = [0];
-			curves = [\step];
-		};
-		^Env(levels, times, curves)
-	}
+	// timelineToEnv / extractTempo / beatToWall live on EventList (single engine);
+	// playFrom calls them through `list`. See EventList.sc.
 
 	// max lane-fan width per base voice across the event list. >1 means fanned.
 	computeLaneCounts { |events|
@@ -633,15 +578,6 @@ VoiceSpace {
 		^tls
 	}
 
-	extractTempo { |events|
-		var tl = List[];
-		events.do { |ev|
-			ev[\tempoTrack] !? { |v| tl.add([ev[\when] ? 0, v]) }
-		};
-		tl.sort({ |a, b| a[0] < b[0] });
-		^tl
-	}
-
 	// Route (c): warp a \mi2 item's internal events onto the list's tempo track. Each
 	// event at item-time t is placed at list-beat originBeat + (t / rate), rate =
 	// ~tempo/~stretch (the item's nominal playback rate), then mapped to wall-clock by
@@ -652,7 +588,9 @@ VoiceSpace {
 	// item rather than dropping it; returns nil if `from` is past the whole item.
 	// Returned player's timestamps are wall-seconds relative to its first event (play it
 	// on a unit clock). A flat track reproduces the sealed \mi2 timing exactly.
-	prWarpItemToTrack { |ev, tempoEnv, from = 0|
+	// beat -> wall conversion is delegated to the EventList (single engine, so a
+	// recorded tempoMap composes with \tempoTrack); `list` is threaded in for it.
+	prWarpItemToTrack { |list, ev, tempoEnv, from = 0|
 		var player = ev[\player];
 		var b0     = ev[\when] ? 0;
 		var rate   = ((ev[\tempo] ? 1) / (ev[\stretch] ? 1));
@@ -665,15 +603,15 @@ VoiceSpace {
 			(tFrom >= (player.end ? player.bounds.end)).if { ^nil }; // item fully before `from`
 			player = player.from(tFrom); // rebases to 0 and chases CC state to tFrom
 		};
-		base   = this.beatToWall(originBeat, tempoEnv);
+		base   = list.beatToWall(originBeat, tempoEnv);
 		pstart = player.start ? 0;
 		warped = player.midiEvents.collect { |e|
 			var c   = e.copy;
 			var rel = (e[\timestamp] ? 0) - pstart;
-			c[\timestamp] = this.beatToWall(originBeat + (rel / rate), tempoEnv) - base;
+			c[\timestamp] = list.beatToWall(originBeat + (rel / rate), tempoEnv) - base;
 			e[\sustain] !? { |s|
-				c[\sustain] = this.beatToWall(originBeat + ((rel + s) / rate), tempoEnv)
-					- this.beatToWall(originBeat + (rel / rate), tempoEnv)
+				c[\sustain] = list.beatToWall(originBeat + ((rel + s) / rate), tempoEnv)
+					- list.beatToWall(originBeat + (rel / rate), tempoEnv)
 			};
 			c
 		};
@@ -682,46 +620,12 @@ VoiceSpace {
 		^out
 	}
 
-	beatToWall { |beat, tempoEnv|
-		var levels, times, curves;
-		var cur = 0, sum = 0, i = 0, done = false;
-		tempoEnv.isNil.if { ^beat };
-		levels = tempoEnv.levels;
-		times  = tempoEnv.times;
-		curves = tempoEnv.curves;
-		while { (i < times.size) and: { done.not } } {
-			var segBeats = times[i];
-			var segEnd   = cur + segBeats;
-			var cv       = curves.isArray.if { curves.wrapAt(i) } { curves };
-			(beat >= segEnd).if {
-				(cv == \step).if {
-					sum = sum + (levels[i] * segBeats);
-				} {
-					sum = sum + ((levels[i] + levels[i+1]) / 2 * segBeats);
-				};
-				cur = segEnd;
-				i = i + 1;
-			} {
-				var partial = beat - cur;
-				(cv == \step).if {
-					sum = sum + (levels[i] * partial);
-				} {
-					var endLevel = levels[i] + (partial / segBeats * (levels[i+1] - levels[i]));
-					sum = sum + ((levels[i] + endLevel) / 2 * partial);
-				};
-				done = true;
-			};
-		};
-		(done.not and: { beat > cur }).if { sum = sum + (levels.last * (beat - cur)) };
-		^sum
-	}
-
-	rescaleEnv { |env, startBeat, tempoEnv|
+	rescaleEnv { |list, env, startBeat, tempoEnv|
 		var newTimes = [];
 		var cur = startBeat;
 		env.times.do { |t|
 			var next = cur + t;
-			var wallDur = this.beatToWall(next, tempoEnv) - this.beatToWall(cur, tempoEnv);
+			var wallDur = list.beatToWall(next, tempoEnv) - list.beatToWall(cur, tempoEnv);
 			newTimes = newTimes.add(wallDur);
 			cur = next;
 		};
@@ -731,15 +635,17 @@ VoiceSpace {
 	// ---- timeline-driven playback (cancelable via stop) --------------------
 
 	playFrom { |list, from=0|
-		var events, keyEvents, otherEvents, tempoTl, tempoEnv, fromWall, expanded, tls, pending;
+		var events, keyEvents, otherEvents, tempoEnv, fromWall, expanded, tls, pending;
 		var plusParams, laneCounts;
 		from = from ? 0;
+		// No tempoMap on a VoiceSpace list => base of 1 s/beat, so \tempoTrack values
+		// read as absolute s/beat (identity = 1), matching the pre-delegation behavior.
+		list.beatDur ?? { list.beatDur_(1) };
 		events      = list.scopedEvents.select { |e| list.shouldPlay(e) };
 		keyEvents   = events.select { |e| (e[\type] ? \keyFrame) == \keyFrame };
 		otherEvents = events.reject { |e| (e[\type] ? \keyFrame) == \keyFrame };
-		tempoTl     = this.extractTempo(events);
-		tempoEnv    = (tempoTl.size > 0).if { this.timelineToEnv(tempoTl, 1) };
-		fromWall    = this.beatToWall(from, tempoEnv);
+		tempoEnv    = list.tempoEnv(events);
+		fromWall    = list.beatToWall(from, tempoEnv);
 		laneCounts  = this.computeLaneCounts(keyEvents);
 		expanded    = this.expandLanes(keyEvents);
 		tls         = this.extractTimelines(expanded);
@@ -768,14 +674,14 @@ VoiceSpace {
 
 		otherEvents.do { |ev|
 			var beat  = ev[\when] ? 0;
-			var delay = this.beatToWall(beat, tempoEnv) - fromWall;
+			var delay = list.beatToWall(beat, tempoEnv) - fromWall;
 			// Route (c): a \mi2 item opts in (followTrack:) to having its INTERNAL notes
 			// warped by the tempo track, not just its onset. It is NOT gated on its onset
 			// >= `from`: prWarpItemToTrack trims the item to `from`, so play(from) starts
 			// partway INTO the item rather than dropping it.
 			// (\mi is excluded: its fromNote(~from,~to) sub-range isn't replicated here.)
 			((ev[\followTrack] == true) and: { ev[\type] == \mi2 }).if {
-				var warped = this.prWarpItemToTrack(ev, tempoEnv, from);
+				var warped = this.prWarpItemToTrack(list, ev, tempoEnv, from);
 				warped !? {
 					pending.add([delay.max(0), { warped.play(ev[\mk] ? MicroKeys(\default), clock: TempoClock(1)) }])
 				}
@@ -787,7 +693,7 @@ VoiceSpace {
 
 		tls.keysValuesDo { |voice, params|
 			var firstBeat = params.values.collect({ |tl| tl[0][0] }).minItem;
-			var firstWall = this.beatToWall(firstBeat, tempoEnv);
+			var firstWall = list.beatToWall(firstBeat, tempoEnv);
 			var delayWall = (firstWall - fromWall).max(0);
 			var startBeat = from.max(firstBeat);
 			pending.add([delayWall, {
@@ -797,7 +703,7 @@ VoiceSpace {
 					v = voices[voice];
 					params.keysValuesDo { |param, tl|
 						v.busses[param] !? { |bus|
-							var env = this.timelineToEnv(tl, v.defaults[param]);
+							var env = list.timelineToEnv(tl, v.defaults[param]);
 							var total = env.times.sum;
 							var hasPlus = (plusParams[voice] ?? { Set[] }).includes(param);
 							var writeBus, baseKey, rampBus;
@@ -822,7 +728,7 @@ VoiceSpace {
 							};
 							(startBeat < total).if {
 								var trimmed = (startBeat > 0).if { env.segment(startBeat, total) } { env };
-								var rescaled = this.rescaleEnv(trimmed, startBeat, tempoEnv);
+								var rescaled = this.rescaleEnv(list, trimmed, startBeat, tempoEnv);
 								v.envSyns.add(
 									{ EnvGen.kr(rescaled, doneAction: 0) => ReplaceOut.kr(writeBus.index, _) }
 										.play(target: v.syn, addAction: \addBefore)
@@ -841,7 +747,7 @@ VoiceSpace {
 			ev[\plus] !? { |plusEv|
 				var baseVoice = ev[\voice] ? \default;
 				var beat  = ev[\when] ? 0;
-				var delay = this.beatToWall(beat, tempoEnv) - fromWall;
+				var delay = list.beatToWall(beat, tempoEnv) - fromWall;
 				var laneVoices = this.laneVoicesFor(baseVoice, laneCounts);
 				(delay >= 0).if {
 					pending.add([delay, {

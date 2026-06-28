@@ -898,8 +898,13 @@ SynthV {
 		{ appVersion == 1 } { project.tracks[0].mainRef.database }
 		{ appVersion == 2 } { project.tracks[0].groups[0].database }
 		;
-		[\languageOverride, \phonesetOverride].do{|i x| 
-			where.put(i, array[0][x])
+		[\languageOverride, \phonesetOverride].do{|i x|
+			var v = array[0][x];
+			(i == \languageOverride).if{
+				v = (chinese: "mandarin")[v.asSymbol] ? v;            // alias chinese→mandarin (SynthV 2 id)
+				(v.asString == where[\language].asString).if{ v = "" }; // redundant w/ DB native → clear
+			};
+			where.put(i, v)
 		};
 		// (appVersion == 2).if {
 		// 	where.put(\language, "");

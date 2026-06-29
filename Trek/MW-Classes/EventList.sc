@@ -307,10 +307,22 @@ EventList {
 			var projected = this.projectEvent(event);
 			var bd = beatDur ? TempoClock.default.beatDur;
 			previewPrep !? { previewPrep.(projected, this) };
-			SystemClock.sched(
-				previewAt * bd,
-				{ projected.play; nil }
-			)
+			(projected[\type] == \audioItemTempoFollow).if {
+				var tempoEnv = this.tempoEnv(this.scopedEvents);
+				var actions = (projected[\tempoFollowMode] == \env).if {
+					AudioItem.tempoFollowEnvActions(projected, this, tempoEnv, batchFirstWhen)
+				} {
+					AudioItem.tempoFollowActions(projected, this, tempoEnv, batchFirstWhen)
+				};
+				actions.do { |pair|
+					SystemClock.sched(pair[0], { pair[1].value; nil })
+				}
+			} {
+				SystemClock.sched(
+					previewAt * bd,
+					{ projected.play; nil }
+				)
+			}
 		}
 	}
 
@@ -509,8 +521,21 @@ EventList {
 		secondsAt = { |beat| this.beatToWall(beat, tempoEnv) };
 		this.scopedEvents.do { |e|
 			var t = e.when ? 0;
-			((t >= from) and: { this.shouldPlay(e) } and: { e[\tempoTrack].isNil }).if {
-				SystemClock.sched(secondsAt.(t) - secondsAt.(from), { e.play; nil })
+			(this.shouldPlay(e) and: { e[\tempoTrack].isNil }).if {
+				(e[\type] == \audioItemTempoFollow).if {
+					var actions = (e[\tempoFollowMode] == \env).if {
+						AudioItem.tempoFollowEnvActions(e, this, tempoEnv, from)
+					} {
+						AudioItem.tempoFollowActions(e, this, tempoEnv, from)
+					};
+					actions.do { |pair|
+						SystemClock.sched(pair[0], { pair[1].value; nil })
+					}
+				} {
+					(t >= from).if {
+						SystemClock.sched(secondsAt.(t) - secondsAt.(from), { e.play; nil })
+					}
+				}
 			}
 		}
 	}

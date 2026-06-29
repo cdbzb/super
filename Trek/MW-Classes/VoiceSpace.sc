@@ -680,14 +680,25 @@ VoiceSpace {
 			// >= `from`: prWarpItemToTrack trims the item to `from`, so play(from) starts
 			// partway INTO the item rather than dropping it.
 			// (\mi is excluded: its fromNote(~from,~to) sub-range isn't replicated here.)
-			((ev[\followTrack] == true) and: { ev[\type] == \mi2 }).if {
-				var warped = this.prWarpItemToTrack(list, ev, tempoEnv, from);
-				warped !? {
-					pending.add([delay.max(0), { warped.play(ev[\mk] ? MicroKeys(\default), clock: TempoClock(1)) }])
+			(ev[\type] == \audioItemTempoFollow).if {
+				var actions = (ev[\tempoFollowMode] == \env).if {
+					AudioItem.tempoFollowEnvActions(ev, list, tempoEnv, from)
+				} {
+					AudioItem.tempoFollowActions(ev, list, tempoEnv, from)
+				};
+				actions.do { |pair|
+					pending.add(pair)
 				}
 			} {
-				// self-contained event type (private constant clock); preview/standalone path
-				(delay >= 0).if { pending.add([delay, { ev.copy.play }]) }
+				((ev[\followTrack] == true) and: { ev[\type] == \mi2 }).if {
+					var warped = this.prWarpItemToTrack(list, ev, tempoEnv, from);
+					warped !? {
+						pending.add([delay.max(0), { warped.play(ev[\mk] ? MicroKeys(\default), clock: TempoClock(1)) }])
+					}
+				} {
+					// self-contained event type (private constant clock); preview/standalone path
+					(delay >= 0).if { pending.add([delay, { ev.copy.play }]) }
+				}
 			}
 		};
 

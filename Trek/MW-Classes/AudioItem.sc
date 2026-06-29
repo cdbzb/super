@@ -15,6 +15,31 @@ AudioItem {
 		Class.initClassTree(MyFree);
 		MyFree.add({ this.stopRecording });
 
+		SynthDef(\audioItemTempoFollowRB, {
+			|out=0, bufnum=0, amp=1, rate=1, startPos=0, sustain=1, fade=0.02,
+			 pitchShift=1, formant=1, pan=0|
+			var sig, env, safeFade;
+			safeFade = fade.min(sustain * 0.45);
+			sig = RubberBand.ar(1, bufnum,
+				rate: rate,
+				pitchShift: pitchShift,
+				trig: 1,
+				startPos: startPos * BufSampleRate.kr(bufnum),
+				loop: 0,
+				doneAction: 0,
+				formant: formant
+			);
+			env = EnvGen.kr(
+				Env.linen(safeFade, (sustain - (safeFade * 2)).max(0), safeFade),
+				doneAction: 2
+			);
+			Out.ar(out, Pan2.ar(sig * env, pan) * amp)
+		}).add;
+
+		Event.addEventType(\audioItemTempoFollow, {
+			"\\audioItemTempoFollow needs EventList playback; use EventList.add(... newType: \\audioItemTempoFollow ...)".warn
+		});
+
 		Event.addEventType(\audioItem, {
 			var name = ~name ?? { Error("AudioItem requires a name").throw };
 			var directory = folder +/+ name;
@@ -113,6 +138,227 @@ AudioItem {
 	// flac caps at 24-bit int; otherwise keep the server's float32
 	*sampleFormatFor { |format|
 		^(format.asString == "flac").if { "int24" } { "float" }
+	}
+
+	*tempoFollowActions { |ev, list, tempoEnv, from = 0|
+		var name = ev[\name] ?? { Error("AudioItem tempoFollow requires a name").throw };
+		var directory = folder +/+ name;
+		var entryCount = File.exists(directory).if { PathName(directory).entries.size } { 0 };
+		var takeNum = ev[\take] ?? { (entryCount - 1).max(0) };
+		var path = AudioItem.takePath(directory, takeNum);
+		var buffer, sf, sourceDur, srcOffset, b0, startSec, endSec;
+		var segBeats, fade, fromBeat, fromSec, actions, beat, lastBeat;
+
+		File.exists(path).not.if {
+			"AudioItem tempoFollow: no file at %".format(path).warn;
+			^List[]
+		};
+
+		buffer = buffers.at(name.asSymbol, takeNum) ?? {
+			buffers.put(name.asSymbol, takeNum, Buffer());
+			buffers.at(name.asSymbol, takeNum)
+		};
+		(buffer.numFrames.isNil or: { buffer.numFrames == 0 }).if {
+			buffer.allocRead(path).updateInfo
+		};
+
+		sf = SoundFile.openRead(path);
+		sf.isNil.if {
+			"AudioItem tempoFollow: cannot read %".format(path).warn;
+			^List[]
+		};
+		sourceDur = sf.numFrames / sf.sampleRate;
+		sf.close;
+
+		b0 = ev[\when] ? 0;
+		startSec = ev[\start] ? ev[\startPos] ? 0;
+		// Map an ideal beat to elapsed seconds into the SOURCE recording. The take was
+		// recorded on the list's base clock (recorded tempoMap, else flat beatDur), so
+		// source position advances with baseWallDelta — NOT a flat 1-beat-per-second
+		// grid. An explicit \sourceBeatDur overrides for takes recorded off the clock.
+		srcOffset = ev[\sourceBeatDur].notNil.if {
+			{ |bt| (bt - b0) * ev[\sourceBeatDur] }
+		} {
+			{ |bt| list.baseWallDelta(b0, bt) }
+		};
+		endSec = ev[\dur].notNil.if {
+			(startSec + srcOffset.(b0 + ev[\dur])).min(sourceDur)
+		} {
+			sourceDur
+		};
+		fromBeat = from.max(b0);
+		fromSec = startSec + srcOffset.(fromBeat);
+		(fromSec >= endSec).if { ^List[] };
+
+		segBeats = ev[\tempoFollowSegBeats] ? 0.25;
+		fade = ev[\tempoFollowFade] ? 0.03;
+		actions = List[];
+		beat = fromBeat;
+		// With \dur the end beat is exact; otherwise iterate until the source position
+		// reaches the file end (avoids inverting the tempoMap to find the last beat).
+		lastBeat = ev[\dur].notNil.if { b0 + ev[\dur] } { inf };
+
+		while { (beat < lastBeat) and: { (startSec + srcOffset.(beat)) < endSec } } {
+			var nextBeat = (beat + segBeats).min(lastBeat);
+			var sourceA = startSec + srcOffset.(beat);
+			var sourceBFull = startSec + srcOffset.(nextBeat);
+			var sourceB = sourceBFull.min(endSec);
+			var wallA = list.beatToWall(beat, tempoEnv);
+			var wallB = list.beatToWall(nextBeat, tempoEnv);
+			// rate from the full segment (local source-secs per wall-sec); the wall span
+			// is truncated by the same fraction when the final chunk hits the file end.
+			var rate = (sourceBFull - sourceA) / (wallB - wallA).max(0.001);
+			var wallDur = (wallB - wallA) * ((sourceB - sourceA) / (sourceBFull - sourceA).max(1e-9));
+			var delay = wallA - list.beatToWall(from, tempoEnv);
+			(wallDur > 0).if {
+				actions.add([delay.max(0), {
+					Server.default.makeBundle((ev[\latency] ? Server.default.latency) + (ev[\lag] ? 0), {
+						Synth(\audioItemTempoFollowRB, [
+							\bufnum, buffer.bufnum,
+							\out, (ev[\out] ? 0).value,
+							\amp, ev[\amp] ? 1,
+							\rate, rate * (ev[\rate] ? 1),
+							\startPos, sourceA,
+							\sustain, wallDur + (fade * 2),
+							\fade, fade,
+							\pitchShift, ev[\pitchShift] ? 1,
+							\formant, ev[\formant] ? 1,
+							\pan, ev[\pan] ? 0
+						])
+					})
+				}])
+			};
+			beat = nextBeat;
+		};
+		^actions
+	}
+
+	*tempoFollowEnvActions { |ev, list, tempoEnv, from = 0|
+		var name = ev[\name] ?? { Error("AudioItem tempoFollow env mode requires a name").throw };
+		var directory = folder +/+ name;
+		var entryCount = File.exists(directory).if { PathName(directory).entries.size } { 0 };
+		var takeNum = ev[\take] ?? { (entryCount - 1).max(0) };
+		var path = AudioItem.takePath(directory, takeNum);
+		var buffer, sf, sourceDur, srcOffset, b0, startSec, endSec;
+		var fromBeat, fromSec, lastBeat, points, levels, times, curves;
+		var totalSourceDur, wallDur, tempoPoints, curBeat, segEnds, actions;
+
+		File.exists(path).not.if {
+			"AudioItem tempoFollow env: no file at %".format(path).warn;
+			^List[]
+		};
+
+		buffer = buffers.at(name.asSymbol, takeNum) ?? {
+			buffers.put(name.asSymbol, takeNum, Buffer());
+			buffers.at(name.asSymbol, takeNum)
+		};
+		(buffer.numFrames.isNil or: { buffer.numFrames == 0 }).if {
+			buffer.allocRead(path).updateInfo
+		};
+
+		sf = SoundFile.openRead(path);
+		sf.isNil.if {
+			"AudioItem tempoFollow env: cannot read %".format(path).warn;
+			^List[]
+		};
+		sourceDur = sf.numFrames / sf.sampleRate;
+		sf.close;
+
+		b0 = ev[\when] ? 0;
+		startSec = ev[\start] ? ev[\startPos] ? 0;
+		// beat -> elapsed seconds into the SOURCE recording, on the list's base clock
+		// (recorded tempoMap, else flat beatDur); \sourceBeatDur overrides. Same
+		// rationale as the non-env tempoFollowActions.
+		srcOffset = ev[\sourceBeatDur].notNil.if {
+			{ |bt| (bt - b0) * ev[\sourceBeatDur] }
+		} {
+			{ |bt| list.baseWallDelta(b0, bt) }
+		};
+		endSec = ev[\dur].notNil.if {
+			(startSec + srcOffset.(b0 + ev[\dur])).min(sourceDur)
+		} {
+			sourceDur
+		};
+		fromBeat = from.max(b0);
+		fromSec = startSec + srcOffset.(fromBeat);
+		(fromSec >= endSec).if { ^List[] };
+
+		// Beat at which the source position reaches endSec. With \dur it's exact;
+		// otherwise invert the base clock (tempoMap if present, else flat beatDur).
+		lastBeat = ev[\dur].notNil.if { b0 + ev[\dur] } {
+			list.tempoMap.notNil.if {
+				list.tempoMap.at(list.tempoMap.timeAt(b0) + (endSec - startSec))
+			} {
+				b0 + ((endSec - startSec) / (list.beatDur ? TempoClock.default.beatDur))
+			}
+		};
+		totalSourceDur = endSec - fromSec;
+		wallDur = list.beatToWall(lastBeat, tempoEnv) - list.beatToWall(fromBeat, tempoEnv);
+
+		points = List[fromBeat];
+		curves = List[];
+		tempoEnv.notNil.if {
+			curBeat = 0;
+			tempoEnv.times.do { |dt, i|
+				var nextBeat = curBeat + dt;
+				((nextBeat > fromBeat) and: { nextBeat < lastBeat }).if {
+					points.add(nextBeat)
+				};
+				curBeat = nextBeat;
+			}
+		};
+		points.add(lastBeat);
+		points = points.asArray.sort;
+
+		levels = tempoEnv.notNil.if {
+			points.collect { |beat| tempoEnv.at(beat) }
+		} {
+			points.collect { 1 }
+		};
+		// EnvGen advances in WALL time, so the tempo-multiplier breakpoints are spaced
+		// by each segment's MODIFIED wall duration (their sum == wallDur), not source
+		// seconds — otherwise the multiplier ramp races ahead of the audio.
+		times = points.drop(-1).collect { |beat, i|
+			list.beatToWall(points[i + 1], tempoEnv) - list.beatToWall(beat, tempoEnv)
+		};
+		tempoEnv.notNil.if {
+			segEnds = tempoEnv.times.integrate;
+			curves = points.drop(-1).collect { |beat|
+				var idx = segEnds.detectIndex { |end| beat < end };
+				idx.isNil.if { tempoEnv.curves.asArray.last ? \linear } {
+					tempoEnv.curves.isArray.if { tempoEnv.curves.wrapAt(idx) } { tempoEnv.curves }
+				}
+			}
+		} {
+			curves = times.collect { \linear }
+		};
+
+		actions = List[];
+		actions.add([list.beatToWall(fromBeat, tempoEnv) - list.beatToWall(from, tempoEnv), {
+			Server.default.makeBundle((ev[\latency] ? Server.default.latency) + (ev[\lag] ? 0), {
+				{
+					var tempoMult = EnvGen.kr(Env(levels, times, curves));
+						var rate = tempoMult.reciprocal * (ev[\rate] ? 1);
+						var sig = RubberBand.ar(1, buffer.bufnum,
+							rate: rate,
+							pitchShift: ev[\pitchShift] ? 1,
+							trig: 1,
+							startPos: fromSec * BufSampleRate.kr(buffer.bufnum),
+							loop: 0,
+							doneAction: 0,
+							formant: ev[\formant] ? 1
+						);
+						var ampEnv = EnvGen.kr(
+							Env.linen(ev[\tempoFollowFade] ? 0.03,
+								(wallDur - ((ev[\tempoFollowFade] ? 0.03) * 2)).max(0),
+								ev[\tempoFollowFade] ? 0.03),
+							doneAction: 2
+						);
+						Out.ar((ev[\out] ? 0).value, Pan2.ar(sig * ampEnv, ev[\pan] ? 0) * (ev[\amp] ? 1))
+					}.play
+				})
+		}]);
+		^actions
 	}
 
     *new {|name|

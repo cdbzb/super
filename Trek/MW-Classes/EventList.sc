@@ -7,6 +7,10 @@ EventList {
 	var <>scope, <>voiceSpace;
 	var <solo, <mute;
 	var <>beatDur, <>tempoMap;
+	// Memoized beat->wall integral (see beatToWall): cumulative wall-seconds at each
+	// tempoEnv segment boundary, built once per tempoEnv so completed segments aren't
+	// re-integrated for every event. Keyed on tempoEnv identity.
+	var prWallEnv, prWallStarts, prWallCum, prWallLevels, prWallTimes, prWallCurves;
 
 	*initClass {
 		all = ();
@@ -410,31 +414,57 @@ EventList {
 	//   wall(beat) = INTEGRAL over [0, beat] of baseSecPerBeat(x) * m(x) dx.
 	// A flat multiplier of 1 reproduces the base map exactly; 2 plays it twice as
 	// slow while preserving the base map's accel/rit SHAPE.
-	beatToWall { |beat, tempoEnv|
-		var levels, times, curves;
-		var cur = 0, sum = 0, i = 0, done = false;
-		tempoEnv.isNil.if { ^this.baseWallDelta(0, beat) };
-		levels = tempoEnv.levels;
-		times = tempoEnv.times;
-		curves = tempoEnv.curves;
-		while { (i < times.size) and: { done.not } } {
-			var segBeats = times[i];
-			var segEnd = cur + segBeats;
+	// One-time integral of the tempoEnv: cumulative wall-seconds at every segment
+	// boundary. Each segment's contribution (the exact trapezoid for a flat base, or
+	// the sub-sampled ramp for a tempoMap base) is computed ONCE here instead of being
+	// re-derived from beat 0 on every beatToWall call. O(segments) build; beatToWall is
+	// then O(1) + one partial segment per event.
+	prBuildWallCache { |tempoEnv|
+		var levels = tempoEnv.levels, times = tempoEnv.times, curves = tempoEnv.curves;
+		var cur = 0, sum = 0;
+		var starts = [0], cum = [0];
+		times.size.do { |i|
 			var cv = curves.isArray.if { curves.wrapAt(i) } { curves };
-			var top = beat min: segEnd;
-			(top > cur).if {
-				(cv == \step).if {
-					sum = sum + (levels[i] * this.baseWallDelta(cur, top));
-				} {
-					sum = sum + this.prIntegrateRamp(levels[i], levels[i+1], cur, segBeats, cur, top);
-				};
+			var segEnd = cur + times[i];
+			sum = sum + (cv == \step).if {
+				levels[i] * this.baseWallDelta(cur, segEnd)
+			} {
+				this.prIntegrateRamp(levels[i], levels[i+1], cur, times[i], cur, segEnd)
 			};
-			(beat <= segEnd).if { done = true } { cur = segEnd; i = i + 1 };
+			cur = segEnd;
+			starts = starts.add(cur);
+			cum = cum.add(sum);
 		};
-		(done.not and: { beat > cur }).if {
-			sum = sum + (levels.last * this.baseWallDelta(cur, beat))
+		prWallEnv = tempoEnv;
+		prWallStarts = starts; prWallCum = cum;
+		prWallLevels = levels; prWallTimes = times; prWallCurves = curves;
+	}
+
+	beatToWall { |beat, tempoEnv|
+		var seg, segStart, cv;
+		tempoEnv.isNil.if { ^this.baseWallDelta(0, beat) };
+		(prWallEnv !== tempoEnv).if { this.prBuildWallCache(tempoEnv) };
+		(beat <= 0).if { ^0 };
+		// Segment whose half-open span contains beat (or the flat tail past the last one).
+		seg = prWallTimes.size;
+		block { |break|
+			prWallTimes.size.do { |k|
+				(beat <= prWallStarts[k + 1]).if { seg = k; break.value };
+			};
 		};
-		^sum
+		(seg < prWallTimes.size).if {
+			segStart = prWallStarts[seg];
+			cv = prWallCurves.isArray.if { prWallCurves.wrapAt(seg) } { prWallCurves };
+			^prWallCum[seg] + (cv == \step).if {
+				prWallLevels[seg] * this.baseWallDelta(segStart, beat)
+			} {
+				this.prIntegrateRamp(
+					prWallLevels[seg], prWallLevels[seg + 1],
+					segStart, prWallTimes[seg], segStart, beat)
+			};
+		};
+		// Past the final boundary: flat extrapolation at the last multiplier.
+		^prWallCum.last + (prWallLevels.last * this.baseWallDelta(prWallStarts.last, beat))
 	}
 
 	// INTEGRAL over [a, b] of m(x) * baseSecPerBeat(x) dx, where m ramps linearly

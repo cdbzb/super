@@ -624,7 +624,7 @@ view.keyDownAction_({ |view char|
             };
             Pen.width = 1;
             Pen.stringAtPoint(
-                "%  line %/%  h/l: move  j/k: %  e: exit"
+                "%  line %/%  h/l: move  j/k: %  w: write  e: exit"
                     .format(
                         dpMode.if { "EXTRAPOLATE (DP)" }{ "EXTRAPOLATE" },
                         currentLine + 1, gridLines.size,

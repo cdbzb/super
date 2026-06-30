@@ -156,6 +156,29 @@ EventList {
 		^seen.asArray
 	}
 
+	// Copy events of `voice` whose `when` is in [from, to) (nil bound = open),
+	// shift each by `offset` beats, and re-insert. `newVoice` retargets the copies;
+	// `dropTempoTrack` strips \tempoTrack so the copy doesn't duplicate tempo anchors.
+	// `offset` is a pure delta — to land a slice at beat X, use offset = X - from.
+	copyVoice { |voice, offset = 0, from, to, newVoice, dropTempoTrack = true|
+		var copies = events
+			.select { |e|
+				var w = e[\when] ? 0;
+				((e[\voice] ? \default) == voice)
+					and: { from.isNil or: { w >= from } }
+					and: { to.isNil   or: { w <  to  } }
+			}
+			.collect { |e|
+				var c = e.copy;
+				c[\when] = (c[\when] ? 0) + offset;
+				newVoice       !? { c[\voice] = newVoice };
+				dropTempoTrack.if { c.removeAt(\tempoTrack) };
+				c
+			};
+		events.addAll(copies);
+		^copies
+	}
+
 	add { |...args, kwargs|
 		var event, previewAt, when = args[0];
 		args[1].isKindOf(Pattern).if { ^this.addPattern(when ? 0, args[1]) };

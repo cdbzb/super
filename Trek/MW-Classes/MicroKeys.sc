@@ -197,6 +197,12 @@ MicroKeys {
 	*mono { |name func params|
 		^this.new(name, func, params, \mono)
 	}
+	// A MicroKeys whose notes/CC/bend/pedal are forwarded to a VST instrument
+	// (VSTPluginController) instead of spawning server Synths. `MIDIItem.play(mk)`
+	// and the \mi2 event type then route straight into the plugin.
+	*vst { |name controller|
+		^VSTKeys.vst(name, controller)
+	}
 	init { |aName func params argSpecies=\poly|
 		name = aName;
 		species = argSpecies;
@@ -697,6 +703,73 @@ monitor { |offLatency = 0.02|
 		namedList.respondsto(selector).if{
 			^Message(namedList, selector, args).value
 		}
+	}
+}
+
+// A MicroKeys that forwards everything to a hosted VST instrument. It keeps the
+// MicroKeys front end (MIDIItem.play, \mi2, \mk/\setCC/\setBend/... event types,
+// monitor() for live MIDI, tuning + velCurve) but routes each note/CC/bend/pedal
+// to `controller.midi` (a VSTPluginMIDIProxy) rather than making server Synths —
+// so the plugin owns voice allocation and sustain. Microtonal tuning survives via
+// the proxy's fractional-note detune (note.frac * 100 cents).
+VSTKeys : MicroKeys {
+	var <>controller;
+
+	*vst { |name controller|
+		var inst;
+		// tolerate MicroKeys.vst(controller) with the name omitted
+		(name.isKindOf(Symbol).not and: { name.notNil }).if { controller = name; name = nil };
+		name = name ?? { ("vstKeys_" ++ UniqueID.next).asSymbol };
+		// make sure we get a VSTKeys, not a plain MicroKeys previously cached under this name
+		(all[name].notNil and: { all[name].class !== VSTKeys }).if { all.removeAt(name) };
+		inst = this.new(name);              // poly MicroKeys; registered in `all` by name
+		inst.controller = controller;
+		^inst
+	}
+
+	// Run the namedList minus its terminal \synth step, so tuning / velCurve /
+	// range / params still shape the note. Returns the transformed event (e.num
+	// may be fractional for microtuning; e.vel is 0..1; e.silent set if out of range).
+	prShape { |amp midinote channel params|
+		var pipe = namedList.deepCopy;
+		pipe.removeAt(\synth);
+		^pipe.reverse.inject(I.d, { |i j| try { i <> j } }).(amp, midinote, channel, nil, params)
+	}
+	// Same tuning delta the \tuning step applies, so noteOff's pitch matches noteOn's.
+	prTuned { |midinote| ^midinote + (tuningDeltas.wrapAt(midinote) ? 0) }
+
+	doNoteOn { |amp midinote params silent channel = 0|
+		var e;
+		silent.notNil.if { ^this };
+		e = this.prShape(amp, midinote, channel, params);
+		(e.notNil and: { e.silent.isNil }).if {
+			controller.midi.noteOn(channel ? 0, e.num, (e.vel * 127).clip(1, 127))
+		}
+	}
+	doNoteOff { |midinote latency = 0 channel = 1|
+		Server.default.makeBundle(latency, {
+			controller.midi.noteOff(channel ? 0, this.prTuned(midinote))
+		})
+	}
+	doCC { |val cc chan = 1|                       // val 0..1 (matches \setCC)
+		ccs.put(cc.asSymbol, val);
+		controller.midi.control(chan ? 0, cc.asInteger, (val * 127).round.clip(0, 127))
+	}
+	doCC74 { |val chan = 1|                         // \setCC74 passes control * 127
+		controller.midi.control(chan ? 0, 74, val.round.clip(0, 127))
+	}
+	doPressure { |val chan = 1|                     // \setPressure passes control * 127
+		controller.midi.touch(chan ? 0, val.round.clip(0, 127))
+	}
+	doBend { |val chan = 1|                          // \setBend passes control * 16383 + 8192
+		controller.midi.bend(chan ? 0, val.round.clip(0, 16383))
+	}
+	doPoly { |val num|
+		controller.midi.polyTouch(0, num, val.round.clip(0, 127))
+	}
+	setDamper { |num|                                 // forward CC64; the plugin holds notes
+		damperDown = num >= 64;
+		controller.midi.control(0, 64, num.asInteger.clip(0, 127))
 	}
 }
 

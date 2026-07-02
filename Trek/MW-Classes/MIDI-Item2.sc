@@ -842,6 +842,40 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	*newFrom { |midiEvents |
 		^ MIDIItem( UniqueID ).midiEvents_(midiEvents)
 	}
+	// Build a MIDIItem from a Standard MIDI File (e.g. an acoustic-piano
+	// transcription). Reads via wslib's SimpleMIDIFile with times converted to
+	// SECONDS (MIDIItem's timestamp convention), then emits the RAW recorded
+	// event stream — paired \mk/\mkOff notes plus \setDamper for CC64 — so
+	// makeNotesFromMidiEvents/gui/play all behave exactly as with a recorded
+	// item. name defaults to the file's basename (sans extension).
+	*fromMIDIFile { |path name|
+		var f, events;
+		path = path.standardizePath;
+		File.exists(path).not.if { ^"MIDIItem.fromMIDIFile: no file at %".format(path).warn };
+		name = (name ?? { PathName(path).fileNameWithoutExtension }).asSymbol;
+		f = SimpleMIDIFile.read(path);
+		f.timeMode_(\seconds); // absolute onsets + durations now in seconds
+		events = List.new;
+		// notes: [track, onset, \noteOn, channel, note, velo, dur, upVelo]
+		f.noteSustainEvents.do { |ev|
+			var t = ev[1], chan = ev[3], note = ev[4], velo = ev[5], dur = ev[6], up = ev[7];
+			// a note with no matching noteOff reports inf sustain — clamp so the
+			// off timestamp stays finite (rare with clean transcriptions).
+			(dur.isNil or: { dur == inf }).if { dur = 0 };
+			events.add((midicmd: \noteOn,  type: \mk,    midinote: note, channel: chan,
+				timestamp: t,       sustain: dur, amp: velo / 127));
+			events.add((midicmd: \noteOff, type: \mkOff, midinote: note, channel: chan,
+				timestamp: t + dur, amp: (up ? velo) / 127));
+		};
+		// sustain pedal (CC64): [track, time, \cc, channel, 64, value] — kept as
+		// raw 0..127 in `control`, matching how record stores \setDamper.
+		f.damperEvents.do { |ev|
+			events.add((midicmd: \control, type: \setDamper, ctlNum: \damper,
+				channel: ev[3], timestamp: ev[1], control: ev[5]));
+		};
+		events = events.sort { |a, b| a.timestamp < b.timestamp };
+		^MIDIItem(name, false).midiEvents_(events)
+	}
 	*record {|name="item"|
 		var stamp = name ++ "_" ++ Date.getDate.stamp;
 		Nvim.replace( "MIDIItem2(\"%\").record".format(stamp) )
@@ -1917,5 +1951,15 @@ SelfReturningObject {
 		// NB: not MIDIItem.newFrom — it names items after the UniqueID *class* (not
 		// .next), so repeated builds would alias/overwrite each other in MIDIItem.all.
 		^MIDIItem(("ref_" ++ UniqueID.next).asSymbol).midiEvents_(events)
+	}
+}
+
++ String {
+	// Build a MIDIItem from a Standard MIDI File on disk:
+	//   "~/home/studio-idea/recordings/tb_rec_20260428_152927.mid".asMIDIItem("myTake")
+	// name is optional (defaults to the file's basename). The receiver is a path;
+	// contrast Event/SequenceableCollection asMIDIItem, which build score specs.
+	asMIDIItem { |name|
+		^MIDIItem.fromMIDIFile(this, name)
 	}
 }

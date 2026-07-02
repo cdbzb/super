@@ -127,6 +127,9 @@ Decisions:
 - Implementation: build anchor indices from stride → **re-aggregate `beats`** (each new gap =
   sum of original beats it spans) → feed the existing `invEnv`/`.curve` machinery. API as a
   composable transform (`t.anchorEvery(4, mode: \note, reduce: \mean)`), not a constructor arg.
+- Note (2026-07-01): `\beat` mode gets easier once §9a lands — for guide-track recordings
+  every note's beat position comes free from `wallToBeat`, so don't build `\beat` solely
+  around the selection machinery.
 
 Likely outcome: **interval-anchoring + `.curve` alone covers most jitter**; spectral smoothing
 may be unnecessary.
@@ -188,6 +191,26 @@ At minimum, ensure every method works in both contexts (beats-vs-time vs irregul
 so the API is consistent. The duplicated `mapBeats`/`quantize`/`warpTo` surfaces are the main
 friction. Decide: shared superclass, mixin, or one class with two construction modes.
 
+**Reframed 2026-07-01 — unify as a protocol, not a merge.** Since `b50cff46`/`abe53a74` the
+center of gravity is `EventList.beatToWall` — a THIRD engine (base map × `\tempoTrack`
+multiplier env, with its own integration cache and extrapolation policy) that AudioItem
+tempo-follow and VoiceSpace consume exclusively. (`TempoClock.newFromQuarters` in
+`plusTempoClock.sc` is a vestigial fourth — fold or deprecate.) Target: any tempo source
+answers `timeAt(beat)`, `beatAt(time)`, `mapDurs(array)` plus a **stated** extrapolation
+policy; implemented by `TempoMap`, `MIDIItemTempoMap`, and a first-class composed-map object
+that EventList exposes (wrapping its `prWall*` cache). That resolves §3e for free (both
+`warpTo` forms hit one protocol) and provides the seam for §9's
+source → ideal → list → wall composition.
+- Parity audit item #1: **`at` is inverted between the classes** — `TempoMap.at(beat)` → time
+  (`TempoMap.sc:18,37`) vs `MIDIItemTempoMap.at(time)` → beat (`MIDI-Item2.sc:1725`), and
+  `doesNotUnderstand` forwarding means the SAME object can answer both conventions. Pick
+  direction-encoding names (`timeAt`/`beatAt`), alias `at` to exactly one.
+- dNU-forwarded methods (e.g. a forwarded `quantize`) return a bare `TempoMap`, not a
+  re-wrapped `MIDIItemTempoMap` — build the rewrap helper (already implied by §3b's
+  pragmatic route) as its own primitive; §9a fragment capture wants it too.
+- Add a `(times, beats)` constructor so a map doesn't require a MIDI item at all (§9c.2 —
+  audio selections reduce to exactly that pair).
+
 ---
 
 ## 5. Known bugs / cleanup backlog
@@ -204,6 +227,42 @@ friction. Decide: shared superclass, mixin, or one class with two construction m
       → masks real errors with `Message '+' not understood`.
 - [ ] Deferred beat-domain selectors: `beats` (per-note positions), `beatOf`, `beatFilter`,
       `onBeats` (designed 2026-06-10, only `fromBeat` + upstream built).
+
+Found in the 2026-07-01 review:
+- [ ] **`TempoMap.quantizeRangeInPlace` writes to wrong indices** (`TempoMap.sc:92-99`):
+      `(start..end).do{|i| dursCopy.put(start+i, quantized[i])}` — `.do` yields the VALUES
+      `start, start+1, …`, so it writes at `start+start …` and reads past `quantized`'s end
+      (size is only `end-start+1`). Only correct when `start == 0`. Should be
+      `quantized.do{|v i| dursCopy.put(start+i, v)}`. Also `quantize`'s range branch defaults
+      `end = durs.size` (`:73`) — one past the last index; `quantizeRange` then slices a nil.
+- [ ] **`TempoMap.env` goes stale after any mutation** — built once in `init` (`:18`);
+      `beats_`/`durs_` (`:21-28`) only rebuild `timesIn*`, and `quantizeWindow` (`:107`)
+      mutates `result.durs` in place, patching `timesInDurs` but never `env`. Since
+      `at`/`mapBeats` read `env`, a `quantizeWindow` result MAPS LIKE THE UNQUANTIZED
+      ORIGINAL. **Blocks §3b's pragmatic `.smooth`** (which delegates to `quantizeWindow`) —
+      fix first. Simplest: computed `env` property, or one shared `prRebuild` from init +
+      both setters. Also two leftover `.postln`s in `quantizeWindow`.
+- [ ] **`TempoMap.mapBeats:55` clamp is a no-op** — `b.collect{|i| 0.000001 max: i};` result
+      discarded.
+- [ ] **`mapBeats` silently changes array length** — `.select(_.isStrictlyPositive)` in
+      `TempoMap.mapBeats` (`:56`), `MIDIItemTempoMap.mapBeats` (`MIDI-Item2.sc:1767`), and
+      `warpToArray` (`plusArray.sc:106`) DROPS non-positive durs, so a Pbind's `\dur` desyncs
+      from its `\midinote` array from that point on — worse than the glitch it avoids. Clamp
+      to epsilon (what the dead `:55` line intended) to preserve alignment. Same "silent
+      length change" family as the fixed boundary truncation.
+- [ ] **`EventList.copyFrom` drops `tempoMap` and `beatDur`** (`EventList.sc:58-69`) — copies
+      lose the base tempo and play flat 1 s/beat. (`solo`/`mute` also dropped — decide and
+      comment either way.)
+- [ ] `at` direction inversion + dNU rewrap (see §4d).
+- [ ] **AudioItem take numbering counts non-take files** — `PathName(directory).entries.size`
+      (`AudioItem.sc:46-49,372`); a `.DS_Store` or future metadata sidecar misnumbers takes.
+      Count numeric-stem matches instead. **Must land before §9a sidecars.**
+- [ ] `asEventList` gives pickup events negative `when` (`ParamSpace.sc:127-131`) and
+      `EventList.play`'s `(t >= from)` gate then drops them at `from = 0` — decide: fold
+      pickups to 0, or accept a small negative window.
+- [ ] MIDI capture subtracts `Server.default.latency` (`MIDI-Item2.sc:1001`) but audio via
+      `Recorder` contains hardware INPUT latency instead — two conventions, constant
+      ~20-40 ms offset between media. Record the convention per take (§9a sidecar).
 - [x] `fromBeat(a,b).tempomap` degenerate final beat when the last selected note sustains
       past the slice: closing anchor used `bounds.end` (≈ last onset, because a trailing
       `mk` event sits there), so the final beat collapsed to a few ms. Fixed 2026-06-11 —
@@ -221,12 +280,22 @@ friction. Decide: shared superclass, mixin, or one class with two construction m
 ## 6. Suggested milestones
 1. **`anchorEvery(n, mode:\note, reduce:\mean)`** + endpoint pinning + beats re-aggregation.
    Lowest effort, likely highest payoff. (§3a)
-2. **`.smooth`** pragmatic version over `quantizeWindow`; fix `quantizeDft` windowing. (§3b, 3d)
+2. **`.smooth`** pragmatic version over `quantizeWindow`; fix `quantizeDft` windowing AND the
+   `env`-staleness bug first (§5 — `quantizeWindow` results currently map unquantized). (§3b, 3d)
 3. **Carry-forward / `t.tempoMap` consistency** + machine-confirm boundary. (§3e, §5)
-4. **`quantizeInPlace` auto-scale** + **high-pass ("keep jitter") filter**. (§4b, 4c)
-5. ~~**Interactive quantization tool** prototype.~~ (§4a — done 2026-06-09/10, see §1 Selections)
-6. **Unify TempoMap / MIDIItemTempoMap** (or method-parity audit). (§4d)
-7. (stretch) **Monotone smoothing-spline** λ unifier, and/or B-spline approximation. (§3b, 3c)
+4. **Guide-track fragment capture** — `wallToBeat` + play epoch + `captureFragment` +
+   AudioItem take sidecar. Depends on 3; makes 5 more valuable (real fragments to smooth).
+   Sub-steps 1–3 are pure-language. (§9a)
+5. **`quantizeInPlace` auto-scale** + **high-pass ("keep jitter") filter**. (§4b, 4c)
+6. ~~**Interactive quantization tool** prototype.~~ (§4a — done 2026-06-09/10, see §1 Selections)
+7. **Wild-fragment alignment polish** — `sourceTempoMap:` composition on `\mi2` +
+   tempoFollow, EventList-without-VoiceSpace gap, `t0` rebase, `list.addItem`. (§9b)
+8. **Audio beat marking** — `BeatMarkMode` extraction → `(times, beats)` constructor +
+   `_beats` sidecar → waveform beat mode in the retune gui → `trackOnsetsOffline`. (§9c)
+9. **Unify TempoMap / MIDIItemTempoMap / EventList composed map** as a protocol
+   (method-parity audit; `at` inversion first). Overlaps 4/7/8 — do the protocol pieces
+   as those milestones touch them. (§4d)
+10. (stretch) **Monotone smoothing-spline** λ unifier, and/or B-spline approximation. (§3b, 3c)
 
 ---
 
@@ -250,7 +319,152 @@ friction. Decide: shared superclass, mixin, or one class with two construction m
   `prMapThrough`, `quantize`/`quantizeFunc`/`prSelectionArgs`, selection API
   (`addSelection`/`selections`/`selection`), player `timeAtBeat`/`fromBeat`, gui modes.
 - `Trek/MW-Classes/BeatTracker.sc` — `MIDIBeatTracker` (DP beat tracking; salience,
-  pins, tunable weights).
+  pins, tunable weights). Media-agnostic — see §9c.
 - `Trek/MW-Classes/TempoMap.sc` — quantize family (`:67`–`:130`).
 - `Trek/MW-Classes/plusArray.sc` — array `warpTo` / `warpToTempoMap` dispatch.
+- `Trek/MW-Classes/EventList.sc` — `beatToWall` + `prWall*` cache (`:457-524`), `tempoEnv`/
+  `extractTempo`/`timelineToEnv`, `play` (`:526`). §9a's `wallToBeat` lands here.
+- `Trek/MW-Classes/AudioItem.sc` — take storage, `tempoFollowActions`/`tempoFollowEnvActions`
+  (`srcOffset` seam for `sourceTempoMap:`, `:176-183` / `:269-294`).
+- `Trek/MW-Classes/VoiceSpace.sc` — `playFrom` routes (`:637`), `prWarpItemToTrack` (`:593`).
+- `Trek/MW-Classes/Retune.sc` — `RetuneItem` note model + `_retune/` sidecar pattern
+  (`:233-246`), `trackPitchOffline` harness (`:297`), `\retunePreview` (`:542`).
+- `Trek/MW-Classes/PianoRollNav.sc` — the shared-gui-extraction precedent for `BeatMarkMode`.
 - Journal seed: `~/home/org_roam_files/org.org` (Jun 09, 2026).
+
+---
+
+## 9. Cross-media fragment recording & alignment (2026-07-01 discussion)
+
+Goal restated: one coherent tempo system across MIDIItem / AudioItem / EventList / Patterns,
+supporting (a) recording a fragment **against a playing EventList**, and (b) recording
+**wild**, marking beats, and aligning to the list's map afterwards. The system is closer to
+coherent than §1 suggests: everything funnels through `EventList.beatToWall` (recorded
+tempoMap × `\tempoTrack` multiplier), and MIDI items, audio tempo-follow, and VoiceSpace all
+consume it. What's missing is mostly the **inverse direction** (wall → beat) and **metadata**.
+Recurring conclusion in every sub-problem below: prefer maps that COMPOSE
+(`source → ideal → list → wall`) over timestamps that get rewritten.
+
+### 9a. Guide-track fragment capture (record while the list plays)
+When recording against a playing list, the tempo map is KNOWN at record time — no beat
+tracking needed. Recorded wall timestamps push through the inverse of the composed map and
+land on the ideal-beat grid exactly, micro-timing preserved as fractional beats; the
+quantize family then applies in the beat domain. The selections/tracker path (§1) stays for
+free recordings (→ §9b).
+
+Missing primitives, in dependency order:
+1. **`EventList.wallToBeat(sec, tempoEnv)`** — inverse of `beatToWall` (`EventList.sc:478`).
+   Monotone piecewise: binary-search `prWallCum` for the segment, closed-form solve for step
+   and flat-base ramp segments, bisection for the subsampled tempoMap×ramp case. The
+   existing `prWallStarts`/`prWallCum` cache is exactly the structure the inverse needs.
+2. **Play epoch** — `EventList.play` (`:526`) captures nothing at start. Add a
+   `lastPlayEpoch`: (SystemClock second at transport start, `from` beat, tempoEnv snapshot).
+   `MIDIItem.record` already stamps `SystemClock.seconds - latency` (`MIDI-Item2.sc:1001`)
+   and EventList schedules on SystemClock — same clock, so alignment is pure arithmetic.
+3. **`list.captureFragment(take, voice:)`** — convert each recorded event's wall time via
+   `wallToBeat`, insert into `events` with `when:` in beats. Build as the same insertion
+   primitive as §9b's `list.addItem` — both recording modes use it.
+4. **AudioItem per-take metadata sidecar** — takes are bare numbered files today, and
+   `tempoFollowActions` ASSUMES the take was recorded on the list's base clock
+   (`AudioItem.sc:176-183`; flat `\sourceBeatDur` is the only escape). Sidecar Event next to
+   the audio file: start beat, list name, tempoMap/tempoEnv snapshot, latency convention,
+   sample rate. A captured audio fragment becomes
+   `(type: \audioItemTempoFollow, name:, take:, when: startBeat, ...)` that keeps
+   re-stretching correctly after later tempo-track edits — the point of tempo-following
+   playback. **Prereq: fix take-numbering-by-entries first (§5)** or every sidecar bumps the
+   take count.
+5. **Latency convention** — decide and record per take (§5 last item): MIDI subtracts server
+   latency, Recorder audio contains hardware input latency; unrecorded, fragments sit a
+   constant ~20-40 ms off-grid.
+
+Sketch:
+```supercollider
+list.play(from: 8);
+mi.record(mk);                          // wall time, as today
+// ... perform ... ; mi.stop;
+list.captureFragment(mi.take(-1), voice: \lead);
+```
+
+### 9b. Wild recording → mark beats → align (MIDI ~90% in place; audio needs §9c)
+A wild recording + a saved selection IS a tempo map (`mi.take(-1).selection.tempomap`).
+Alignment then has two existing routes:
+- **Route A (non-destructive)** — `\mi2` event with `followTrack: true`:
+  `VoiceSpace.prWarpItemToTrack` (`VoiceSpace.sc:593`) places internal notes at
+  `originBeat + t/rate`, then through `beatToWall` → the item follows the composed tempo.
+- **Route B (destructive)** — `mi.selection.quantize` rewrites timestamps to ideal beats;
+  anything that treats timestamps as beats then works, incl. `asEventList`.
+
+Caveats = the work items:
+- **followTrack assumes timestamps are already beats**, so today Route A REQUIRES Route B's
+  quantize first. Cleaner: a **`sourceTempoMap:`** key on the `\mi2` event
+  (`mi.selection.tempomap`); `prWarpItemToTrack` composes
+  performedTime → idealBeat → listBeat → wall. Original take stays intact and
+  `.curve`/`.smooth` variants stay swappable at play time.
+- **Route A is VoiceSpace-only** — plain `EventList.play` (`EventList.sc:545-563`) has no
+  followTrack branch; a `\mi2` there plays on a private constant TempoClock
+  (`MIDI-Item2.sc:1174-1180`): onset aligned, internals not. Port route (c) into
+  `EventList.play`, or at least warn when a `followTrack:` event plays without a VoiceSpace.
+- **`t0` offset trap in Route B** — `warpTo` (`MIDI-Item2.sc:1322`) yields `idealBeat + t0`,
+  so a pickup/initial rest offsets every "beat" by the first anchor's absolute time. Need
+  `quantize(rebase:)` or `from`/`trimTimeStampsToStart` before treating timestamps as list
+  beats. (`asEventList` already subtracts `t0` correctly, `ParamSpace.sc:129`.)
+- **No merge convenience** — `asEventList` builds a NEW list; want
+  `list.addItem(player, at: beat, voice:)` (shared with §9a step 3).
+- Tempo matching is already handled: `mi.bps`/`bpm` (`MIDI-Item2.sc:1721-1724`) measures the
+  wild tempo; `\mi2`'s `rate = tempo/stretch` scales fragment-beats to list-beats for
+  half/double-time takes.
+
+**Audio wild bits — the `sourceTempoMap` generalization.** Selections/gui/tracker are
+MIDI-only, and `srcOffset` in `tempoFollowActions`/`tempoFollowEnvActions` supports only the
+list's base clock or a FLAT `\sourceBeatDur`. Generalize `srcOffset` to accept a per-take
+irregular map (`sourceTempoMap.timeAt(beat)`) — the same key and convention as the `\mi2`
+case above: **one seam, both media**. Authoring the map for audio is §9c; available TODAY
+with zero new code: tap along on a MicroKeys while recording (or while listening back),
+record the taps as a MIDIItem, mark/save its selection, use that map as the audio take's
+`sourceTempoMap`.
+
+### 9c. Audio beat marking (gui + detection)
+Two big pieces already exist:
+- **`RetuneItem` note model** (`Retune.sc:195`) — offline pitch tracking turns a take into
+  midiEvents (timestamp/dur/sustain/midinote), and `AbstractRetune : AbstractMidiEvents`
+  means audio notes INHERIT the selection machinery
+  (`selectedNotes`/`markSelection`/`prSelectionArgs`/`quantize`, `MIDI-Item2.sc:733-807`).
+  `MIDIItemTempoMap.init` only asks its item for `midiEvents`/`bounds`/`closingAnchor`
+  (`:1689-1697`) — a `RetunePlayer` satisfies all three. Gap: `tempomap`/`tempoMap`/`bps`
+  sit on `MIDIItemPlayer` (`:1557-1566`), not `AbstractMidiEvents` — move them up.
+- **`MIDIBeatTracker` is media-agnostic** (`BeatTracker.sc:22`) — needs only `timestamp`
+  (+ `amp`/`sustain`/`midinote` for salience, all gracefully defaulted). Zero changes to run
+  on retune notes or onset events; audio-specific salience (detection strength instead of
+  chord/bass bonuses) is a one-liner via the `salienceFunc` hook (`:15`).
+
+To build, in order (1-2 are pure-language + archive I/O; only 4 needs the server):
+1. **Extract `BeatMarkMode` from `MIDIItem.gui`** (`MIDI-Item2.sc:121-500`). The machinery —
+   `effTime`/`rebuildGrid`/`updateExtrapSelection`/`applyManualPick`/`repin`/
+   `scheduleClicks` + the e/E/j/k/w/c key handling — is already media-agnostic (touches only
+   `notes[i].timestamp` and salience fields). Follow the `PianoRollNav` precedent (already
+   shared by both guis, `Retune.sc:33`). Controller owns gridLines/currentLine/pins/
+   selection; host hooks: `drawOver(pen, timeToX)`, `audition(fromTime)`,
+   `onSave(selectionEvent)` (abstracts away the `respondsTo(\takes)` dance in the current
+   `w` handler). Rehost `MIDIItem.gui` first — behavior-preserving, verifiable against the
+   current gui. This is what prevents a third copy later.
+2. **`(times, beats)` map constructor + `_beats` sidecar.** The map shouldn't need a fake
+   MIDI item — the note model is just the PICKER for anchor times (dovetails with §4d).
+   Sidecar mirrors `_retune/` (`Retune.sc:233-246`): `_beats/<name>_<num>.beats`, an
+   append-only versioned List of selection Events with the same no-op-on-identical semantics
+   as `addSelection` (`MIDI-Item2.sc:1106`). IMPORTANT: store anchor **times** (seconds),
+   not note indices — retune indices are unstable across `reanalyze`/split/merge; timestamps
+   are ground truth from the audio. After this step pitched audio works END-TO-END with no
+   new gui (mark via `take.retune.gui` indices + code), de-risking step 3. Result:
+   `take.beatSelection.tempomap` → `sourceTempoMap:` (§9b) → wild audio on the list's grid.
+3. **Beat mode + waveform in the retune gui.** The genuinely new UI is small:
+   `SoundFile.readData` → per-pixel min/max peaks drawn behind the note blocks (cache per
+   zoom; decimate channel 0 for long files). Transport is SIMPLER than MIDI's: one PlayBuf
+   synth with startPos (`\retunePreview` already does it, `Retune.sc:542`), no MicroKeys CC
+   chasing; hihat clicks live in the controller. Put beat mode inside `AbstractRetune.gui`
+   first (note model already on screen); split into an `AudioBeatView` only if crowded.
+4. **`trackOnsetsOffline`** for unpitched/percussive takes — pitch segmentation only fires
+   on voiced material and smears onsets ~±30-80 ms (median filter / min-frames): fine for
+   marking by ear, poor for drums. Sibling of `VocoderPattern.trackPitchOffline`
+   (`Retune.sc:297`): `Onsets.kr(FFT)` + `Amplitude.kr` to a buffer → onset events
+   `(timestamp:, amp: strength)` → same gui, same tracker. `Onsets` is core SC; the
+   OfflineProcess quark is installed if the NRT plumbing helps; no aubio on this machine.

@@ -712,6 +712,9 @@ monitor { |offLatency = 0.02|
 // to `controller.midi` (a VSTPluginMIDIProxy) rather than making server Synths —
 // so the plugin owns voice allocation and sustain. Microtonal tuning survives via
 // the proxy's fractional-note detune (note.frac * 100 cents).
+// `controller` may be a VSTPluginController or a VSTI; a VSTI is dereferenced
+// lazily at note time (prMidi), so it works even when the plugin is still opening
+// (VSTI:init forks) and survives Cmd-. (which gives the VSTI a fresh controller).
 VSTKeys : MicroKeys {
 	var <>controller;
 
@@ -737,39 +740,44 @@ VSTKeys : MicroKeys {
 	}
 	// Same tuning delta the \tuning step applies, so noteOff's pitch matches noteOn's.
 	prTuned { |midinote| ^midinote + (tuningDeltas.wrapAt(midinote) ? 0) }
+	prMidi {
+		var ctl = controller.isKindOf(VSTI).if { controller.controller } { controller };
+		ctl.isNil.if { "%: VST controller not ready — note dropped".format(name).warn };
+		^ctl !? _.midi
+	}
 
 	doNoteOn { |amp midinote params silent channel = 0|
 		var e;
 		silent.notNil.if { ^this };
 		e = this.prShape(amp, midinote, channel, params);
 		(e.notNil and: { e.silent.isNil }).if {
-			controller.midi.noteOn(channel ? 0, e.num, (e.vel * 127).clip(1, 127))
+			this.prMidi !? _.noteOn(channel ? 0, e.num, (e.vel * 127).clip(1, 127))
 		}
 	}
 	doNoteOff { |midinote latency = 0 channel = 1|
 		Server.default.makeBundle(latency, {
-			controller.midi.noteOff(channel ? 0, this.prTuned(midinote))
+			this.prMidi !? _.noteOff(channel ? 0, this.prTuned(midinote))
 		})
 	}
 	doCC { |val cc chan = 1|                       // val 0..1 (matches \setCC)
 		ccs.put(cc.asSymbol, val);
-		controller.midi.control(chan ? 0, cc.asInteger, (val * 127).round.clip(0, 127))
+		this.prMidi !? _.control(chan ? 0, cc.asInteger, (val * 127).round.clip(0, 127))
 	}
 	doCC74 { |val chan = 1|                         // \setCC74 passes control * 127
-		controller.midi.control(chan ? 0, 74, val.round.clip(0, 127))
+		this.prMidi !? _.control(chan ? 0, 74, val.round.clip(0, 127))
 	}
 	doPressure { |val chan = 1|                     // \setPressure passes control * 127
-		controller.midi.touch(chan ? 0, val.round.clip(0, 127))
+		this.prMidi !? _.touch(chan ? 0, val.round.clip(0, 127))
 	}
 	doBend { |val chan = 1|                          // \setBend passes control * 16383 + 8192
-		controller.midi.bend(chan ? 0, val.round.clip(0, 16383))
+		this.prMidi !? _.bend(chan ? 0, val.round.clip(0, 16383))
 	}
 	doPoly { |val num|
-		controller.midi.polyTouch(0, num, val.round.clip(0, 127))
+		this.prMidi !? _.polyTouch(0, num, val.round.clip(0, 127))
 	}
 	setDamper { |num|                                 // forward CC64; the plugin holds notes
 		damperDown = num >= 64;
-		controller.midi.control(0, 64, num.asInteger.clip(0, 127))
+		this.prMidi !? _.control(0, 64, num.asInteger.clip(0, 127))
 	}
 }
 

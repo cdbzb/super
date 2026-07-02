@@ -56,6 +56,37 @@ Nvim {
 			"vim.api.nvim_buf_set_lines(buf, line-1, line, false, text)";
 		SCNvim.luaeval(prefix ++ clean ++ suffix)
 	}
+	// escape Lua pattern magic characters so `str` matches literally
+	*luaPatternEscape {|str|
+		var out = "";
+		str.asString.do{ |c| "^$()%.[]*+-?".includes(c).if { out = out ++ "%" }; out = out ++ c };
+		^out
+	}
+	// search backwards from the cursor line (inclusive) for the first line
+	// where any of the [luaPattern, replacement] `pairs` (tried in order per
+	// line) matches; splice that pair's replacement over the matched span,
+	// preserving the rest of the line. nvim-notifies when nothing matches
+	*substituteBefore {|pairs|
+		this.send(this.prSubstituteBeforeCode(pairs))
+	}
+	*prSubstituteBeforeCode {|pairs|
+		var subs = pairs.collect{ |pr|
+			"{[=[" ++ this.sanitize(pr[0]) ++ "]=], [=[" ++ this.sanitize(pr[1]) ++ "]=]}"
+		}.join(", ");
+		^"local buf = vim.api.nvim_get_current_buf() " ++
+			"local cur = vim.api.nvim_win_get_cursor(0)[1] " ++
+			"local lines = vim.api.nvim_buf_get_lines(buf, 0, cur, false) " ++
+			"local subs = {" ++ subs ++ "} " ++
+			"for i = #lines, 1, -1 do " ++
+			"local l = lines[i] " ++
+			"for _, sub in ipairs(subs) do " ++
+			"local s, e = l:find(sub[1]) " ++
+			"if s then " ++
+			"vim.api.nvim_buf_set_lines(buf, i-1, i, false, {l:sub(1, s-1) .. sub[2] .. l:sub(e+1)}) " ++
+			"return " ++
+			"end end end " ++
+			"vim.notify('substituteBefore: no match before cursor for ' .. subs[#subs][1], vim.log.levels.WARN)"
+	}
 	*insert{|text|
 		var clean = this.sanitize(text);
 		var prefix = "local buf = vim.api.nvim_get_current_buf() "

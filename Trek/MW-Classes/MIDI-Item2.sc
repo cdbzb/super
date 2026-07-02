@@ -814,6 +814,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	var <takes, <recordedMks, <>recordedMk;
 	var <beatSelections; // Dictionary: take -> List of selection Events (append-only, immutable versions)
 	classvar midiout, <recording;
+	classvar <current; // last item .record was called on; survives stopRecording
 
 	*initClass {
 		var parent;
@@ -898,6 +899,48 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	}
 	insert {
 		Nvim.replace( "MIDIItem(\"%\")".format(name) )
+	}
+	// pin the take into the buffer: called blind, e.g. from a controller.
+	// reads the item name from the nearest MIDIItem("...") mention at/above
+	// the cursor, then round-trips through scnvim to that item's insertTake
+	// (sclang side knows the take count, the buffer side knows the name)
+	*insertTake { |num|
+		Nvim.send(this.prInsertTakeCode(num))
+	}
+	*prInsertTakeCode { |num|
+		var call = ".insertTake(" ++ (num ? "") ++ ")";
+		^"local cur = vim.api.nvim_win_get_cursor(0)[1] " ++
+			"local lines = vim.api.nvim_buf_get_lines(0, 0, cur, false) " ++
+			"for i = #lines, 1, -1 do " ++
+			"local n = lines[i]:match([=[MIDIItem2?%(\"([^\"]+)\"%)]=]) " ++
+			"if n then " ++
+			"require('scnvim.sclang').send('MIDIItem(\"' .. n .. '\")" ++ call ++ "') " ++
+			"return " ++
+			"end end " ++
+			"vim.notify('insertTake: no MIDIItem(...) before cursor', vim.log.levels.WARN)"
+	}
+	// find this item's nearest mention at/above the cursor (MIDIItem or
+	// MIDIItem2 spelling) and rewrite it: .record/.play become .take(n).play
+	// (call args survive as trailing material), an existing .take(k) is
+	// renumbered, a bare receiver gains .take(n); everything else on the
+	// line is preserved. num defaults to the latest take, negatives count
+	// from the end
+	insertTake { |num|
+		(takes.size == 0).if { ^"insertTake: no takes in %".format(name).postln };
+		num = num ?? { takes.size - 1 };
+		(num < 0).if { num = takes.size + num };
+		Nvim.substituteBefore(this.prInsertTakePairs(num))
+	}
+	prInsertTakePairs { |num|
+		var recv = "MIDIItem2?%(\"" ++ Nvim.luaPatternEscape(name) ++ "\"%)";
+		var take = "MIDIItem(\"%\").take(%)".format(name, num);
+		var takePlay = take ++ ".play";
+		^[
+			[recv ++ "%s*%.%s*record%f[%W]", takePlay],
+			[recv ++ "%s*%.%s*play%f[%W]", takePlay],
+			[recv ++ "%s*%.%s*take%b()", take],
+			[recv, take]
+		]
 	}
 	register {
 		all.add(name -> this)
@@ -1001,6 +1044,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
         latencyCompensation = latencyCompensation ? Server.default.latency;
         mk.do{|i| (i.isKindOf(Symbol).if{ MicroKeys(i) }{ i }).monitor};
         recording = this;
+        current = this;
         midiEvents = List[];
         // add Events to set initial CC values to midiEvents
         MicroKeys.ccs.asKeyValuePairs.pairsDo{ | i j |

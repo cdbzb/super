@@ -145,6 +145,10 @@ Make the curve pass *near* jittery anchors, not through them.
   `.smooth` a single continuum. More code (penalized least-squares).
 - Smooth the **tempo** (rate), not cumulative position (smoothing position under-smooths tempo).
 - Endpoint anchoring decision: pin first/last (preserve span) or let it float.
+- **Build gate (2026-07-02):** don't start `.smooth` until `anchorEvery` + `.curve`
+  (milestone 1) has been tried on real takes and the anchors are still audibly noisy.
+  §3a already predicts it may be unnecessary; the kill criterion is real material, not
+  intuition. Same gate, doubled, for the milestone-10 spline work.
 
 ### 3c. B-spline approximation (note the asset doesn't exist yet)
 A **B-spline** of order > linear passes *near* its control points, not through — i.e. it is
@@ -205,6 +209,13 @@ source → ideal → list → wall composition.
   (`TempoMap.sc:18,37`) vs `MIDIItemTempoMap.at(time)` → beat (`MIDI-Item2.sc:1725`), and
   `doesNotUnderstand` forwarding means the SAME object can answer both conventions. Pick
   direction-encoding names (`timeAt`/`beatAt`), alias `at` to exactly one.
+- **Decide the protocol NAMES now; implement the unification at milestone 9 (2026-07-02).**
+  Milestones 4, 7, and 8 each add new consumers of the tempo-map API (`wallToBeat`,
+  `sourceTempoMap:`, the `(times, beats)` constructor); every consumer written before the
+  `at` rename bakes in the ambiguous convention and enlarges the migration. Cheap move:
+  freeze `timeAt(beat)` / `beatAt(time)` / `mapDurs(array)` + the extrapolation-policy
+  vocabulary up front (part of milestone 0), add them as thin aliases on both classes, and
+  require all new §9 code to use ONLY those names. Full unification stays at milestone 9.
 - dNU-forwarded methods (e.g. a forwarded `quantize`) return a bare `TempoMap`, not a
   re-wrapped `MIDIItemTempoMap` — build the rewrap helper (already implied by §3b's
   pragmatic route) as its own primitive; §9a fragment capture wants it too.
@@ -214,11 +225,14 @@ source → ideal → list → wall composition.
 ---
 
 ## 5. Known bugs / cleanup backlog
+
+Items tagged **[M0]** are pulled into milestone 0 (fix-before-build, test-driven — see §6).
+
 - [ ] `polynomial` ivar never assigned → `mapBeatsPoly` dead (`TempoMap.sc:3,29`).
 - [ ] `quantizeDft` rect/hamming asymmetry (`TempoMap.sc:85-86`).
 - [ ] `warpTo(t.tempoMap)` truncates vs `warpTo(t)` carries forward (§3e).
 - [ ] MIDIItem `quantize` takes `beats` at face value (→ 4c).
-- [ ] Machine-confirm the carry-forward boundary fix (see Testing notes).
+- [ ] **[M0]** Machine-confirm the carry-forward boundary fix (see Testing notes).
 - [x] `chaseCCs` `[nil]` on CC-less region; `notesStraddling` exact-onset duplicate;
       `from()` partial rebase (straddlers/chased CCs) — fixed 2026-06-10.
 - [ ] Stamp `mi.player` with `takeIndex` when `midiEvents === takes.last` (selection
@@ -229,22 +243,22 @@ source → ideal → list → wall composition.
       `onBeats` (designed 2026-06-10, only `fromBeat` + upstream built).
 
 Found in the 2026-07-01 review:
-- [ ] **`TempoMap.quantizeRangeInPlace` writes to wrong indices** (`TempoMap.sc:92-99`):
+- [ ] **[M0]** **`TempoMap.quantizeRangeInPlace` writes to wrong indices** (`TempoMap.sc:92-99`):
       `(start..end).do{|i| dursCopy.put(start+i, quantized[i])}` — `.do` yields the VALUES
       `start, start+1, …`, so it writes at `start+start …` and reads past `quantized`'s end
       (size is only `end-start+1`). Only correct when `start == 0`. Should be
       `quantized.do{|v i| dursCopy.put(start+i, v)}`. Also `quantize`'s range branch defaults
       `end = durs.size` (`:73`) — one past the last index; `quantizeRange` then slices a nil.
-- [ ] **`TempoMap.env` goes stale after any mutation** — built once in `init` (`:18`);
+- [ ] **[M0]** **`TempoMap.env` goes stale after any mutation** — built once in `init` (`:18`);
       `beats_`/`durs_` (`:21-28`) only rebuild `timesIn*`, and `quantizeWindow` (`:107`)
       mutates `result.durs` in place, patching `timesInDurs` but never `env`. Since
       `at`/`mapBeats` read `env`, a `quantizeWindow` result MAPS LIKE THE UNQUANTIZED
       ORIGINAL. **Blocks §3b's pragmatic `.smooth`** (which delegates to `quantizeWindow`) —
       fix first. Simplest: computed `env` property, or one shared `prRebuild` from init +
       both setters. Also two leftover `.postln`s in `quantizeWindow`.
-- [ ] **`TempoMap.mapBeats:55` clamp is a no-op** — `b.collect{|i| 0.000001 max: i};` result
+- [ ] **[M0]** **`TempoMap.mapBeats:55` clamp is a no-op** — `b.collect{|i| 0.000001 max: i};` result
       discarded.
-- [ ] **`mapBeats` silently changes array length** — `.select(_.isStrictlyPositive)` in
+- [ ] **[M0]** **`mapBeats` silently changes array length** — `.select(_.isStrictlyPositive)` in
       `TempoMap.mapBeats` (`:56`), `MIDIItemTempoMap.mapBeats` (`MIDI-Item2.sc:1767`), and
       `warpToArray` (`plusArray.sc:106`) DROPS non-positive durs, so a Pbind's `\dur` desyncs
       from its `\midinote` array from that point on — worse than the glitch it avoids. Clamp
@@ -278,10 +292,21 @@ Found in the 2026-07-01 review:
 ---
 
 ## 6. Suggested milestones
+0. **Headless regression suite + fix-before-build** (added 2026-07-02). A pure-language test
+   file (`sclang <file>.scd` headless, or UnitTest2) over TempoMap/MIDIItemTempoMap
+   invariants: env/invEnv round-trip, anchors preserved through `.curve`, `mapBeats`
+   preserves array length, `quantize(0)` == identity, range-quantize writes the right
+   indices, carry-forward boundary values. Fix the **[M0]**-tagged §5 bugs in this
+   milestone, driven by the failing tests: env staleness, `quantizeRangeInPlace` indices,
+   `end = durs.size` off-by-one, `mapBeats` clamp/length. Also freeze the protocol names
+   (`timeAt`/`beatAt`/`mapDurs` — §4d) as thin aliases so all later milestones code to them.
+   Rationale: every recompile reboots the server, so regressions must be caught headless;
+   and milestone 1's `reduce: \mean` can't be verified against a broken `quantizeWindow`.
 1. **`anchorEvery(n, mode:\note, reduce:\mean)`** + endpoint pinning + beats re-aggregation.
    Lowest effort, likely highest payoff. (§3a)
-2. **`.smooth`** pragmatic version over `quantizeWindow`; fix `quantizeDft` windowing AND the
-   `env`-staleness bug first (§5 — `quantizeWindow` results currently map unquantized). (§3b, 3d)
+2. **`.smooth`** pragmatic version over `quantizeWindow`; fix `quantizeDft` windowing first
+   (env staleness lands in milestone 0). **Gated on milestone 1 proving insufficient on real
+   takes — see §3b build gate.** (§3b, 3d)
 3. **Carry-forward / `t.tempoMap` consistency** + machine-confirm boundary. (§3e, §5)
 4. **Guide-track fragment capture** — `wallToBeat` + play epoch + `captureFragment` +
    AudioItem take sidecar. Depends on 3; makes 5 more valuable (real fragments to smooth).

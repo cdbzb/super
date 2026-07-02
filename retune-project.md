@@ -251,6 +251,126 @@ pitch correction.
 
 ---
 
+## 2e. `moveNote` / `asTune` / anchors — the time-move axis (designed 2026-07-02, NOT built)
+
+Request: `aTake.retune.moveNote(index, startDelta, endDelta)` to move individual notes, plus (a)
+MIDIItem/Retune **filter parity**, (b) a rename — "Retune" bakes in the *purpose*; the object is
+really "consider this audio as a monophonic tune," so **`asTune`**, and (c) **anchor points** for
+audio that is not a tune (transient/manual), all cohering with quantize/tempomaps.
+
+**`moveNote` IS the frozen-onset axis (§2d/§9), and it forces the deferred decision.** Today a note's
+`timestamp`/`dur` does two jobs at once: **source position** (`render` reads `frame = timestamp*sr/aHop`
+from the retained arrays; `prPlay` windows the buffer at `playStart`) AND **output position** (one
+Phasor sweeps the buffer at constant rate, so they're identical). "Onsets are frozen" is exactly that
+identity. `moveNote` breaks it: the note's **audio stays put in the take** but **sounds at a shifted
+time / stretched duration**. So a note needs two spans:
+- `srcStart, srcDur` — fixed, from the recording (what today's `timestamp`/`dur` really are).
+- `timestamp, dur` (OUTPUT) — editable; `rate = srcDur/outputDur`, `delay = outputStart`.
+That difference IS a src↔output warp — i.e. a `MIDIItemTempoMap`. `moveNote` edits it locally; §2c
+`quantize` produces it from a grid; §2d alignment produces it from a reference. **Same object, three
+sources.** This is the "plays well with quantize/tempomaps" ask: they're not adjacent features, they
+are the same warp.
+
+**The renderer already exists.** `AudioItem.tempoFollowActions` (`AudioItem.sc:143`) already schedules
+ONE `\audioItemTempoFollowRB` synth **per segment**, each with its own `rate`, `startPos`, `delay`,
+off a tempo map. That is precisely the render a warped Tune needs. So:
+```
+Tune note model ──▶ warp (src↔output, == MIDIItemTempoMap) ──▶ per-segment RB (tempoFollow-style)
+```
+Falls out cleanly: per-note `rate ≠ 1` is **RB-only** (cepstral resamples/mistunes at rate≠1, §2a/§5),
+so a moved note renders on `\autotuneRB`; an unmoved Tune can still use the cepstral chain. Gaps =
+silence, overlaps = both play (crossfade) — Melodyne-like "slip" mode; "ripple" (neighbours follow) is
+a later mode.
+
+**Naming.** `RetuneItem→Tune`, `RetunePlayer→TunePlayer`, `AbstractRetune→AbstractTune`; `aTake.asTune`
+primary; **`retune` kept as an alias** (`^this.asTune`) — reads well for the pitch-fix path, keeps
+back-compat + saved-take headers. `retune` conceptually = a Tune with `snapToScale`/`tuneTo` applied,
+not a separate class.
+
+**Anchors for non-tune audio — same spine, drop the pitch.** A note is one kind of anchor (pitch+time);
+a bare anchor is time-only. Anchors come from note onsets (Tune), transient detection, or manual GUI
+placement — all feed the *same* src↔output warp and the *same* per-segment renderer. `aTake.asClip`
+(or `.warp`/`.anchors`) → transient/manual anchors, no pitch, but full quantize/moveNote/tempomap.
+Follow-on, but designing `moveNote` on the *warp* (not on pitch) now is what makes `asClip` free later.
+
+**Class hierarchy — subclass the ANALYSIS side, not `AudioItem` (decided 2026-07-02).** Q raised: any
+AudioItem should carry warp markers whether or not it has pitch (needed to record audio *fragments* in
+reference to an `EventList` tempomap); only some can be analysed/retuned — so `AudioTune : AudioItem`?
+Decision: **no.** The is-a ("a tune IS a warpable clip that also has pitch") is real but belongs one
+layer UP from the recorder. `AudioItem` is the recording slot (takes, `Recorder`, arm); `Take` is one
+buffer; warp/pitch are *non-destructive versioned views over a take's buffer* (exactly how `RetuneItem`
+saves `.retune` archives under `_retune/`). Subclassing `AudioItem`→`AudioTune` collapses three layers:
+(a) item≠take — take 0 and take 3 have different transients, so warp is per-buffer; (b) pitchedness is
+*discovered by analysis*, not declarable at construction; (c) it re-entangles recorder + analysis. So:
+```
+AbstractMidiEvents
+ └─ AbstractWarp        anchors (src<->output) + moveNote/quantize/warpTo + per-segment RB render
+     ├─ ClipItem / ClipPlayer      bare warp anchors (transient/manual); no pitch    <- Take.asClip
+     └─ AbstractTune : AbstractWarp    + pitch note model + snapToScale/tuneTo/bypass
+         └─ TuneItem / TunePlayer      anchors ARE note onsets; + per-frame pitch/conf <- Take.asTune (retune alias)
+```
+An anchor is the primitive `(srcTime->outTime)` point; a note = anchor pair + pitch + span semantics.
+Every `AudioItem`/`Take` gets markers via `.asClip`; only pitched material also answers `.asTune`.
+
+**Take vs Clip — keep both, distinct roles (2026-07-02).** Same relationship as `Take`<->`RetuneItem`:
+`Take` = raw buffer + recording identity (`: AudioItem`, knows the takes dir/num), recorder-side;
+`ClipItem` = one *versioned* warp view that *references* the take's buffer (`voice = take.buffer`),
+analysis-side. 1 take -> many clip versions (like split-takes), so they can't be one object; folding
+warp onto `Take` would drag recorder machinery into the analysis object (the `AudioItem`-subclass smell,
+one level down). A take with no markers needs no Clip — it plays straight (today's behaviour); Clip is
+the opt-in warp layer. (Open sub-q: do `ClipItem` and `TuneItem` stay separate classes, or one
+`WarpItem` with optional pitch? Subclass is cleaner since pitched adds methods meaningless without
+pitch — but revisit if the archive schemas want to converge; see versioning.)
+
+**EventList integration is ~80% built.** `AudioItem.tempoFollowActions` (`AudioItem.sc:143`) already
+warps a take to an `EventList` tempomap, but with a UNIFORM src<->beat map
+(`srcOffset = sourceBeatDur ? baseWallDelta`). Markers generalize that to an *anchor map* interpolating
+`(srcTime<->beat)` through pinned points; `ClipItem` emits the `srcOffset`/tempomap that
+`tempoFollowActions` already consumes — per-segment RB render unchanged. This is the fragment workflow:
+record against the list tempomap (record-start beat is already `ev[\when]`), stamp anchors
+(transient/manual), warp back onto the grid. Ableton's model exactly.
+
+**Versioning — OPEN (discussing 2026-07-02).** Questions on the table, not yet decided:
+- *One version axis or two?* §2d/§2e want the onset-warp applied/un-applied independently of pitch
+  correction — but that can be a RENDER choice (honour src-vs-output), not separate files. Leaning:
+  ONE linear append-only history per take (snapshot = anchors + warp + pitch), extend the existing
+  split-take schema with `srcStart`/`srcDur` (birth = identity) rather than fork a second history.
+- *One archive, two lenses?* A Tune archive is a SUPERSET of a Clip archive (adds pitch + per-frame
+  arrays). Want `asClip` on a take that has Tune versions to read the same anchors (ignore pitch), so a
+  unified dir + a `kind` field beats separate `_retune`/`_clip` trees that silently diverge.
+- *Anchor stability.* Bare anchors need the fractional-key trick too, so an EventList reference
+  ("beat 3 pins to anchor k") survives adding/removing other anchors.
+- *Reference-to-version.* An EventList `\audioItemTempoFollow` event must name a version (default
+  latest); append-only numbering already gives stable ids.
+- *Migration.* Existing `.retune` archives must keep loading (add `srcStart`/`srcDur` defaults + a
+  `kind: \tune` marker on load, like the current key migration).
+
+**Filter parity — lift symbolic filters to the shared base.** MIDIItem's `from`/`fromNote`/`fromBeat`,
+`quantize`, `filter`/`filterNotes`/`filterNotesKey`, `set`/`setParams`, `removeNote`, `warpTo`, `trim`,
+`notesStraddling` are pure note-model ops; Tune notes already subclass `AbstractMidiEvents`, so they
+belong on the shared base — both players inherit them. The *filter* is shared; only the *realization*
+differs (MIDIItem replays symbolic timestamps; Tune warps audio to them). Retune-only (`snapToScale`,
+`tuneTo`, `bypass`) stays Tune-side.
+
+**Open forks (asked 2026-07-02, awaiting Michael; recommended defaults in bold):**
+1. Rename appetite: full `Retune*→Tune*` + `retune` alias / **add `asTune` alias only** / rename later.
+2. `moveNote` API: **`moveNote(key, startDelta, endDelta)` in seconds, key-based** (like `move`/`set`,
+   survives split/merge) / `index`+seconds (as written, but positions renumber) / key+beats (needs the
+   tempomap layer up front).
+3. Render: **per-segment RB now** (reuse `tempoFollowActions`; ships fast; RB-only) / unified 5th-channel
+   variable-rate Phasor (§2d; one synth, serves cepstral+quantize, but bigger and blocks `moveNote`).
+
+**Additive build plan (each step reversible, testable headless for the model part):**
+1. Add `srcStart`/`srcDur` to the note Event (birth = current `timestamp`/`dur`); make `render`/`prPlay`
+   read the SOURCE span, output span drives scheduling. No behaviour change while output==source.
+2. `moveNote` symbolic filter (new `TunePlayer`, key-based) sets output `timestamp`/`dur` → per-note rate.
+3. Per-segment RB playback method (`playWarp`, or teach `playRB` to honour per-note rates) reusing the
+   `\audioItemTempoFollowRB` scheduling; leave existing `play`/`playRB` paths untouched.
+4. Lift the symbolic MIDIItem filters onto `AbstractMidiEvents`; wire `quantize` on the Tune → warp.
+5. (later) `asClip` transient/manual anchors; `asTune` rename; gui drag = `moveNote`.
+
+---
+
 ## 3. Reuse opportunities
 - **`PianoRollNav`** (done) — viewport + zoom/scroll/pitch + pixel transforms, shared.
 - **Keyboard-draw helper** in `PianoRollNav` (§2b.2) — both guis draw the same keys.
@@ -292,6 +412,18 @@ pitch correction.
    pitch-class match / absolute correct. Output = a tempo map. (§2d)
 9. **Onset-warp axis** — time-snap `amount` via §2c's variable RB `rate` off the persisted warp
    (optional 5th curve channel). (§2d, §2c.2)
+
+**Time-move / anchors / rename (§2e), designed 2026-07-02 (NOT built):**
+11. **`srcStart`/`srcDur` split** — decouple source span from output span on the note Event;
+    `render`/`prPlay` read source, output span schedules. No behaviour change while equal. (§2e.1)
+12. **`moveNote`** — key-based symbolic filter setting output `timestamp`/`dur` → per-note RB `rate`;
+    the concrete instance of milestone 9's onset-warp. (§2e.2)
+13. **Per-segment RB playback** (`playWarp`) — reuse `AudioItem.tempoFollowActions` scheduling; leave
+    existing `play`/`playRB` untouched. (§2e.3)
+14. **Filter parity** — lift symbolic MIDIItem filters onto `AbstractMidiEvents`; wire Tune `quantize`
+    → warp. (§2e, §2c.1)
+15. **`asTune` rename + `asClip` anchors** — `Retune*→Tune*` (retune alias); transient/manual
+    anchor clips share the warp+render; gui drag = `moveNote`. (§2e)
 
 **Engine quality (2026-06-24):**
 10. **Adopt RubberBand R3 ("Finer") engine** — quality upgrade for `\autotuneRB`. R3 (RubberBand

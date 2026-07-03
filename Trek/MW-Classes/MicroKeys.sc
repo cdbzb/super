@@ -173,6 +173,11 @@ MicroKeys {
 			new.storedCCValues = old.storedCCValues;
 			new.modMap = old.modMap;
 			new.modState = old.modState.copy;
+			// A VSTKeys forwards to a hosted plugin — carry the VSTI/controller across
+			// the copy or the played instance has no plugin to send to. We hold the VSTI
+			// (not the raw controller), so this reference re-resolves the fresh controller
+			// after Cmd-. rebuilds the plugin (prMidi derefs controller.controller lazily).
+			old.isKindOf(VSTKeys).if { new.controller = old.controller };
 			func = old.synthFunc;
 			func.isKindOf(Symbol).if{
 				new.synth_(func) 
@@ -184,6 +189,15 @@ MicroKeys {
 		}  
 	}
 	*new { |name func params species=\poly|
+		// A VSTI / VSTPluginController arg means "forward notes to the plugin", not
+		// "build a SynthDef from this". Route to VSTKeys so we don't feed it to
+		// asSynthDef (which yields a bogus def and a "SynthDef not found" at note time).
+		(func.isKindOf(VSTI) or: { func.isKindOf(VSTPluginController) }).if {
+			^VSTKeys.vst(name, func)
+		};
+		(name.isKindOf(VSTI) or: { name.isKindOf(VSTPluginController) }).if {
+			^VSTKeys.vst(func, name)   // MicroKeys(aVSTI) or MicroKeys(aVSTI, \piano)
+		};
 		name.isKindOf(Function).if {
 			func = name;
 			name = func.cs.hash.asSymbol;

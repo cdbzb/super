@@ -328,9 +328,16 @@ warps a take to an `EventList` tempomap, but with a UNIFORM src<->beat map
 `(srcTime<->beat)` through pinned points; `ClipItem` emits the `srcOffset`/tempomap that
 `tempoFollowActions` already consumes — per-segment RB render unchanged. This is the fragment workflow:
 record against the list tempomap (record-start beat is already `ev[\when]`), stamp anchors
-(transient/manual), warp back onto the grid. Ableton's model exactly.
+(transient/manual), warp back onto the grid. Ableton's model exactly. (Ownership note
+2026-07-02: the `srcOffset`/`sourceTempoMap:` seam itself is designed in
+`quantize-tempomap-project.md` §9b — this section is the consumer; anchor STORAGE is owned
+here, the SEAM is owned there.)
 
-**Versioning — OPEN (discussing 2026-07-02).** Questions on the table, not yet decided:
+**Versioning — OPEN (discussing 2026-07-02).** One thing IS settled (2026-07-02): **this
+archive owns anchor storage for audio takes.** `quantize-tempomap-project.md` §9c.2
+originally specced a parallel `_beats/` sidecar for the same artifact (versioned time
+anchors on a take) — superseded; that doc now defers here. Whatever schema shakes out below
+must serve both the Tune lens and the bare-anchor Clip lens. Questions still on the table:
 - *One version axis or two?* §2d/§2e want the onset-warp applied/un-applied independently of pitch
   correction — but that can be a RENDER choice (honour src-vs-output), not separate files. Leaning:
   ONE linear append-only history per take (snapshot = anchors + warp + pitch), extend the existing
@@ -351,6 +358,15 @@ record against the list tempomap (record-start beat is already `ev[\when]`), sta
 belong on the shared base — both players inherit them. The *filter* is shared; only the *realization*
 differs (MIDIItem replays symbolic timestamps; Tune warps audio to them). Retune-only (`snapToScale`,
 `tuneTo`, `bypass`) stays Tune-side.
+- **Prereq gap (2026-07-02): a domain-per-filter table.** Once `srcStart`/`srcDur` and output
+  `timestamp`/`dur` diverge, every lifted filter must declare which timeline it addresses:
+  does `fromNote(3, 5)` on a moved Tune select by SOURCE position or OUTPUT position? Which
+  beats does `fromBeat` mean? Build-plan step 1's "no behaviour change while output==source"
+  hides this until the first `moveNote` + `from` composition. Recommended default: source
+  spans are birth-fixed identity, so everything user-facing addresses OUTPUT time
+  (`from`/`fromNote`/`fromBeat`/`trim`/`notesStraddling` select by what you hear);
+  `quantize`/`moveNote` WRITE output; nothing mutates source after birth. Decide the full
+  table before step 4 lands — a one-hour decision now vs a subtle bug hunt later.
 
 **Open forks (asked 2026-07-02, awaiting Michael; recommended defaults in bold):**
 1. Rename appetite: full `Retune*→Tune*` + `retune` alias / **add `asTune` alias only** / rename later.
@@ -359,6 +375,8 @@ differs (MIDIItem replays symbolic timestamps; Tune warps audio to them). Retune
    tempomap layer up front).
 3. Render: **per-segment RB now** (reuse `tempoFollowActions`; ships fast; RB-only) / unified 5th-channel
    variable-rate Phasor (§2d; one synth, serves cepstral+quantize, but bigger and blocks `moveNote`).
+4. Filter-domain table (see "Prereq gap" above): confirm **output-time addressing for all
+   user-facing filters, source immutable after birth**, or call out exceptions per filter.
 
 **Additive build plan (each step reversible, testable headless for the model part):**
 1. Add `srcStart`/`srcDur` to the note Event (birth = current `timestamp`/`dur`); make `render`/`prPlay`
@@ -367,6 +385,7 @@ differs (MIDIItem replays symbolic timestamps; Tune warps audio to them). Retune
 3. Per-segment RB playback method (`playWarp`, or teach `playRB` to honour per-note rates) reusing the
    `\audioItemTempoFollowRB` scheduling; leave existing `play`/`playRB` paths untouched.
 4. Lift the symbolic MIDIItem filters onto `AbstractMidiEvents`; wire `quantize` on the Tune → warp.
+   **Prereq: the filter-domain table (open fork 4) must be decided first.**
 5. (later) `asClip` transient/manual anchors; `asTune` rename; gui drag = `moveNote`.
 
 ---

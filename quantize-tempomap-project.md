@@ -316,17 +316,25 @@ Found in the 2026-07-01 review:
 7. **Wild-fragment alignment polish** — `sourceTempoMap:` composition on `\mi2` +
    tempoFollow, EventList-without-VoiceSpace gap, `t0` rebase, `list.addItem`. (§9b)
 8. **Audio beat marking** — `BeatMarkMode` extraction → `(times, beats)` constructor +
-   `_beats` sidecar → waveform beat mode in the retune gui → `trackOnsetsOffline`. (§9c)
+   persisted anchors (schema owned by retune §2e's archive — see §9c.2) → waveform beat
+   mode in the retune gui → `trackOnsetsOffline`. (§9c)
 9. **Unify TempoMap / MIDIItemTempoMap / EventList composed map** as a protocol
-   (method-parity audit; `at` inversion first). Overlaps 4/7/8 — do the protocol pieces
-   as those milestones touch them. (§4d)
-10. (stretch) **Monotone smoothing-spline** λ unifier, and/or B-spline approximation. (§3b, 3c)
+   (method-parity audit; `at` inversion first — names already frozen in milestone 0, this
+   milestone finishes the implementation + parity audit). Overlaps 4/7/8 — do the protocol
+   pieces as those milestones touch them. (§4d)
+10. (stretch) **Monotone smoothing-spline** λ unifier, and/or B-spline approximation.
+    Same build gate as `.smooth` (§3b): only if real material shows anchors still noisy
+    after milestones 1–2 — don't build by momentum. (§3b, 3c)
 
 ---
 
 ## 7. Testing notes
 - These are **pure-language** tests (no audio server needed) — `MIDIItemTempoMap`, `warpTo`,
   `mapBeats`, `quantize*` are all language-side.
+- Milestone 0 turns the ad-hoc checks below into a persistent headless suite (UnitTest2 is
+  installed; a stock `sclang <file>.scd` run loads the Trek classes with no server). For
+  one-off checks in the live session, `bin/sctest` runs SC code in the running scnvim sclang
+  and captures output.
 - Verifying an edited class requires recompiling the class library. In Michael's live scnvim
   session, `recompile()` **re-runs his startup and reboots scsynth** — recompile AT MOST once
   per change, warn him first, and prefer handing him a one-line check to run himself. (Burned
@@ -400,7 +408,10 @@ Missing primitives, in dependency order:
    take count.
 5. **Latency convention** — decide and record per take (§5 last item): MIDI subtracts server
    latency, Recorder audio contains hardware input latency; unrecorded, fragments sit a
-   constant ~20-40 ms off-grid.
+   constant ~20-40 ms off-grid. **Ordering correction (2026-07-02): decide this BEFORE
+   step 3 ships** — fragments captured before the convention exists (and is stamped in the
+   step-4 sidecar) are permanently off-grid. Listed last only because it's a decision, not
+   code; it's a prereq of 3/4, not a follow-on.
 
 Sketch:
 ```supercollider
@@ -443,7 +454,9 @@ Caveats = the work items:
 MIDI-only, and `srcOffset` in `tempoFollowActions`/`tempoFollowEnvActions` supports only the
 list's base clock or a FLAT `\sourceBeatDur`. Generalize `srcOffset` to accept a per-take
 irregular map (`sourceTempoMap.timeAt(beat)`) — the same key and convention as the `\mi2`
-case above: **one seam, both media**. Authoring the map for audio is §9c; available TODAY
+case above: **one seam, both media**. (Ownership note 2026-07-02: THIS doc owns the
+`sourceTempoMap:` seam design; `retune-project.md` §2e describes the same seam from the
+consumer side and defers here — keep edits here first.) Authoring the map for audio is §9c; available TODAY
 with zero new code: tap along on a MicroKeys while recording (or while listening back),
 record the taps as a MIDIItem, mark/save its selection, use that map as the audio take's
 `sourceTempoMap`.
@@ -472,11 +485,15 @@ To build, in order (1-2 are pure-language + archive I/O; only 4 needs the server
    `onSave(selectionEvent)` (abstracts away the `respondsTo(\takes)` dance in the current
    `w` handler). Rehost `MIDIItem.gui` first — behavior-preserving, verifiable against the
    current gui. This is what prevents a third copy later.
-2. **`(times, beats)` map constructor + `_beats` sidecar.** The map shouldn't need a fake
+2. **`(times, beats)` map constructor + persisted anchors.** The map shouldn't need a fake
    MIDI item — the note model is just the PICKER for anchor times (dovetails with §4d).
-   Sidecar mirrors `_retune/` (`Retune.sc:233-246`): `_beats/<name>_<num>.beats`, an
-   append-only versioned List of selection Events with the same no-op-on-identical semantics
-   as `addSelection` (`MIDI-Item2.sc:1106`). IMPORTANT: store anchor **times** (seconds),
+   **Storage superseded (2026-07-02):** the `_beats/<name>_<num>.beats` sidecar originally
+   specced here duplicated `retune-project.md` §2e's versioned warp-anchor archive (unified
+   dir + `kind` field; Tune anchors are a superset of bare anchors) — two stores for the
+   same artifact on one take would silently disagree. §2e OWNS the on-disk schema; this
+   step's deliverable is the `(times, beats)` constructor + reading anchors from that
+   archive. The semantics carried over: append-only versioned, no-op-on-identical (like
+   `addSelection`, `MIDI-Item2.sc:1106`). IMPORTANT: store anchor **times** (seconds),
    not note indices — retune indices are unstable across `reanalyze`/split/merge; timestamps
    are ground truth from the audio. After this step pitched audio works END-TO-END with no
    new gui (mark via `take.retune.gui` indices + code), de-risking step 3. Result:

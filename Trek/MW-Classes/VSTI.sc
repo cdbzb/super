@@ -241,6 +241,45 @@ Synful : VSTI {
 PF : VSTI {
 	classvar plugin = 'Pianoteq 7.vst';  //++self.plugin
 	*new{ ^super.new(plugin) }
+
+	// by index, or case-insensitive substring match against the plugin's
+	// program names; exact match wins, otherwise first substring match
+	// (warns if ambiguous)
+	program { |name|
+		var names, matches, idx;
+		controller.info.isNil.if{ ^"PF: plugin not open yet".warn };
+		names = controller.info.programs.collect(_.name);
+		name.isNumber.if{
+			((name < 0) || (name >= names.size)).if{
+				^"PF: program index % out of range (0..%)".format(name, names.size - 1).warn
+			};
+			controller.program_(name);
+			^names[name]
+		};
+		idx = names.detectIndex{ |n| n.compare(name.asString, true) == 0 };
+		idx.isNil.if{
+			matches = names.selectIndices{ |n| n.containsi(name.asString) };
+			matches.isEmpty.if{ ^"PF: no program matching %".format(name).warn };
+			(matches.size > 1).if{
+				"PF: % matches for '%', using '%': %".format(
+					matches.size, name, names[matches[0]], matches.collect(names.at(_))
+				).postln
+			};
+			idx = matches[0];
+		};
+		controller.program_(idx);
+		^names[idx]
+	}
+
+	// list program names, optionally filtered by substring
+	programs { |filter|
+		var names;
+		controller.info.isNil.if{ ^"PF: plugin not open yet".warn };
+		names = controller.info.programs.collect(_.name);
+		filter !? { names = names.select(_.containsi(filter.asString)) };
+		names.do{ |n i| "% %".format(i, n).postln };
+		^names
+	}
 	attachMIDI {
 		MIDIClient.init;
 		MIDIIn.connectAll;

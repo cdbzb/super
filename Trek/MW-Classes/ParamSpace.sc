@@ -103,7 +103,7 @@ ParamSpace {
 	//     one (or with a MicroKeys-typed mkOrDefName).
 	asEventList { |name mkOrDefName paramSpace|
 		var el = EventList(name);
-		var mk, psEvent, tm;
+		var mk, psEvent, tm, player, srcName;
 		case
 			{ mkOrDefName.isKindOf(MicroKeys) } {
 				mk = mkOrDefName;
@@ -124,12 +124,17 @@ ParamSpace {
 		el.beatDur = 1;
 		tm !? { el.tempoMap = tm };
 		paramSpace !? { el.paramSpace_(paramSpace) };
-		this.player.midiEvents.do { |e|
+		player = this.player;
+		// tag with the source MIDIItem's name so EventList solo_/mute_ can
+		// isolate these events from ones added to the list later
+		srcName = player.source.tryPerform(\name) !? { |n| n.asString.asSymbol };
+		player.midiEvents.do { |e|
 			var when = tm.notNil.if(
 				{ tm.prAtExtrapolated(e.timestamp - tm.t0, tm.env) },
 				{ e.timestamp }
 			);
 			var copy = e.copy.put(\when, when);
+			srcName !? { copy[\name] = copy[\name] ? srcName };
 			copy.put(\latency, Server.default.latency);
 			mk !? { copy.put(\mk, mk.name ? mk) };
 			(copy[\type] == \mk and: { psEvent.notNil }).if {

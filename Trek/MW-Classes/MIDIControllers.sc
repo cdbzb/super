@@ -16,7 +16,7 @@ KS : XMIDIController {
 		ServerTree.add(
 			{
 				MIDIFunc.cc( {|val| if(val > 0) {Song.play}}, 41, nil, id );
-				MIDIFunc.cc( {|val| if(val > 0) {~myFree.()}}, 42, nil, id )
+				MIDIFunc.cc( {|val| if(val > 0) {MyFree()}}, 42, nil, id )
 			}
 		);
 

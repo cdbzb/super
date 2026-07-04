@@ -13,7 +13,7 @@ AudioItem {
 		File.exists(folder).not.if{ "mkdir %".format(folder).unixCmd };
 		CmdPeriod.add(this);
 		Class.initClassTree(MyFree);
-		MyFree.add({ this.stopRecording });
+		MyFree.add({ this.stopRecording; armed = false });
 
 		SynthDef(\audioItemTempoFollowRB, {
 			|out=0, bufnum=0, amp=1, rate=1, startPos=0, sustain=1, fade=0.02,

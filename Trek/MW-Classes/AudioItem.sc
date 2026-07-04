@@ -46,10 +46,14 @@ AudioItem {
 			var entryCount = File.exists(directory).if {
 				PathName(directory).entries.size
 			} { 0 };
-			var defaultTake = (~record ? false).if { entryCount } { (entryCount - 1).max(0) };
-			var takeNum = ~take ?? defaultTake;
+			var recording = ~record ? false;
+			// recording always writes a fresh take — a specified ~take selects which
+			// take to PLAY, it never overwrites an existing recording
+			var takeNum = recording.if
+				{ AudioItem.nextTake(directory) }
+				{ ~take ?? (entryCount - 1).max(0) };
 			var format = (~format ? \wav).asString;
-			var path = (~record ? false).if
+			var path = recording.if
 				{ directory +/+ takeNum ++ "." ++ format }
 				{ AudioItem.takePath(directory, takeNum) };
 			var buffer = buffers.at(name.asSymbol, takeNum);

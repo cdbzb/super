@@ -133,6 +133,18 @@ AudioItem {
 *cmdPeriod {
 	armed = false
 }
+	// next free take index: one past the highest numbered file, so gaps or
+	// strays (.DS_Store etc.) never cause an existing take to be overwritten
+	*nextTake { |directory|
+		var nums;
+		File.exists(directory).not.if { ^0 };
+		nums = PathName(directory).files
+			.collect { |p| p.fileNameWithoutExtension }
+			.select { |stem| stem.notEmpty and: { stem.every(_.isDecDigit) } }
+			.collect(_.asInteger);
+		^nums.isEmpty.if { 0 } { nums.maxItem + 1 }
+	}
+
 	// resolve an existing take file regardless of extension (wav/flac); fall back to .wav
 	*takePath { |directory, takeNum|
 		var matches = (directory +/+ takeNum ++ ".*").pathMatch;

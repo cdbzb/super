@@ -1485,23 +1485,7 @@ o = [
 	Array.prNew(32),  Event.prNew,  Array.prNew(32),  Event.prNew,  
 	Array.prNew(32),  Event.prNew,  Array.prNew(32),  Event.prNew,  
 	Array.prNew(32),  Event.prNew,  Array.prNew(32),  List.prNew,  
-	Array.prNew(12),  PF.prNew,  CondVar.prNew,  Array.prNew,  
-	Synth.prNew,  s,  RootNode.prNew,  VSTPluginController.prNew,  
-	VSTPluginMIDIProxy.prNew,  List.prNew,  Array.prNew(9),  OSCFunc.prNew,  
-	{ | msg | "open Function" },  NetAddr.prNew,  "127.0.0.1",  OSCMessageDispatcher.prNew,  
-	IdentityDictionary.prNew,  Array.prNew(64),  OSCFuncAddrMessageMatcher.prNew,  { | msg | "open Function" },  
-	OSCFuncAddrMessageMatcher.prNew,  { | m | "open Function" },  OSCFuncAddrMessageMatcher.prNew,  { | msg | "open Function" },  
-	OSCFuncAddrMessageMatcher.prNew,  { | msg | "open Function" },  OSCFuncAddrMessageMatcher.prNew,  { | msg | "open Function" },  
-	OSCFuncAddrMessageMatcher.prNew,  { | msg | "open Function" },  OSCFuncAddrMessageMatcher.prNew,  { | msg | "open Function" },  
-	IdentityDictionary.prNew,  Array.prNew(64),  OSCFunc.prNew,  OSCFunc.prNew,  
-	OSCFunc.prNew,  OSCFunc.prNew,  OSCFunc.prNew,  OSCFunc.prNew,  
-	OSCFunc.prNew,  Array.prNew(2),  OSCFunc.prNew,  { | msg | "open Function" },  
-	Array.prNew(2),  OSCFunc.prNew,  { | msg | "open Function" },  Array.prNew(2),  
-	OSCFunc.prNew,  { | msg | "open Function" },  Array.prNew(2),  OSCFunc.prNew,  
-	{ | msg | "open Function" },  Array.prNew(2),  OSCFunc.prNew,  { | msg | "open Function" },  
-	Array.prNew(2),  OSCFunc.prNew,  { | msg | "open Function" },  Array.prNew(2),  
-	OSCFunc.prNew,  { | msg | "open Function" },  Array.prNew(2),  OSCFunc.prNew,  
-	{ | msg | "open Function" },  Array.prNew(2),  { "open Function" }
+	Array.prNew(12)
 ];
 p = [
 	// MIDIItem
@@ -1509,7 +1493,7 @@ p = [
 		initialCCValues: o[1696],  restFirst: true,  
 		initialRest: o[1698],  notes: nil,  
 		takes: o[1701],  recordedMks: o[5939],  
-		recordedMk: o[5941],  beatSelections: nil ],  
+		recordedMk: nil,  beatSelections: nil ],  
 	// List
 	1, [ array: o[2] ],  
 	// Array
@@ -40703,202 +40687,8 @@ p = [
 	// List
 	5939, [ array: o[5940] ],  
 	// Array
-	5940, [ o[5941],  o[5941],  o[5941],  o[5941],  
-		o[5941],  o[5941],  o[5941],  o[5941],  
-		o[5941],  o[5941],  o[5941],  o[5941] ],  
-	// PF
-	5941, [ condition: o[5942],  syn: o[5944],  
-		controller: o[5947],  id: 1006,  
-		cmdPeriodAction: o[6006] ],  
-	// CondVar
-	5942, [ waitingThreads: o[5943] ],  
-	// Synth
-	5944, [ nodeID: 1028,  server: o[5945],  
-		group: o[5946],  isPlaying: false,  
-		isRunning: false,  defName: 'vsti2' ],  
-	// RootNode
-	5946, [ nodeID: 0,  server: o[5945],  
-		group: o[5946],  isPlaying: true,  
-		isRunning: true ],  
-	// VSTPluginController
-	5947, [ synth: o[5944],  synthIndex: 1,  
-		info: nil,  wait: -1,  
-		midi: o[5948],  program: nil,  
-		latency: nil,  parameterAutomated: nil,  
-		midiReceived: nil,  sysexReceived: nil,  
-		latencyChanged: nil,  pluginCrashed: nil,  
-		parameterCache: nil,  programCache: nil,  
-		oscFuncs: o[5949],  currentPreset: nil,  
-		window: false,  loading: false,  
-		browser: nil,  needQueryParams: false,  
-		needQueryPrograms: true,  deferred: true ],  
-	// VSTPluginMIDIProxy
-	5948, [ owner: o[5947],  uid: nil ],  
-	// List
-	5949, [ array: o[5950] ],  
-	// Array
-	5950, [ o[5951],  o[5982],  o[5985],  o[5988],  
-		o[5991],  o[5994],  o[5997],  o[6000],  
-		o[6003] ],  
-	// OSCFunc
-	5951, [ func: o[5952],  srcID: o[5953],  
-		enabled: false,  dispatcher: o[5955],  
-		permanent: false,  path: '/vst_param',  
-		recvPort: nil,  argTemplate: o[5981] ],  
-	// NetAddr
-	5953, [ addr: 2130706433,  port: 57110,  
-		hostname: o[5954],  socket: nil ],  
-	// OSCMessageDispatcher
-	5955, [ registered: true,  active: o[5956],  
-		wrappedFuncs: o[5972] ],  
-	// IdentityDictionary
-	5956, [ array: o[5957],  size: 7,  
-		proto: nil,  parent: nil,  
-		know: false ],  
-	// Array
-	5957, [ nil,  nil,  nil,  nil,  
-		'/n_end',  o[5958],  nil,  nil,  
-		nil,  nil,  '/b_info',  o[5960],  
+	5940, [ nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		nil,  nil,  '/volumeUpdate',  o[5962],  
-		nil,  nil,  nil,  nil,  
-		'/n_go',  o[5964],  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  '/n_on',  o[5966],  
-		'/n_off',  o[5968],  '/status.reply',  o[5970],  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil ],  
-	// OSCFuncAddrMessageMatcher
-	5958, [ func: o[5959],  addr: o[5953] ],  
-	// OSCFuncAddrMessageMatcher
-	5960, [ func: o[5961],  addr: o[5953] ],  
-	// OSCFuncAddrMessageMatcher
-	5962, [ func: o[5963],  addr: o[5953] ],  
-	// OSCFuncAddrMessageMatcher
-	5964, [ func: o[5965],  addr: o[5953] ],  
-	// OSCFuncAddrMessageMatcher
-	5966, [ func: o[5967],  addr: o[5953] ],  
-	// OSCFuncAddrMessageMatcher
-	5968, [ func: o[5969],  addr: o[5953] ],  
-	// OSCFuncAddrMessageMatcher
-	5970, [ func: o[5971],  addr: o[5953] ],  
-	// IdentityDictionary
-	5972, [ array: o[5973],  size: 7,  
-		proto: nil,  parent: nil,  
-		know: false ],  
-	// Array
-	5973, [ o[5974],  o[5964],  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  o[5975],  o[5958],  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		o[5976],  o[5962],  nil,  nil,  
-		nil,  nil,  o[5977],  o[5968],  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		o[5978],  o[5966],  o[5979],  o[5970],  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		nil,  nil,  nil,  nil,  
-		o[5980],  o[5960],  nil,  nil ],  
-	// OSCFunc
-	5974, [ func: o[5965],  srcID: o[5953],  
-		enabled: true,  dispatcher: o[5955],  
-		permanent: true,  path: '/n_go',  
-		recvPort: nil,  argTemplate: nil ],  
-	// OSCFunc
-	5975, [ func: o[5959],  srcID: o[5953],  
-		enabled: true,  dispatcher: o[5955],  
-		permanent: true,  path: '/n_end',  
-		recvPort: nil,  argTemplate: nil ],  
-	// OSCFunc
-	5976, [ func: o[5963],  srcID: o[5953],  
-		enabled: true,  dispatcher: o[5955],  
-		permanent: true,  path: '/volumeUpdate',  
-		recvPort: nil,  argTemplate: nil ],  
-	// OSCFunc
-	5977, [ func: o[5969],  srcID: o[5953],  
-		enabled: true,  dispatcher: o[5955],  
-		permanent: true,  path: '/n_off',  
-		recvPort: nil,  argTemplate: nil ],  
-	// OSCFunc
-	5978, [ func: o[5967],  srcID: o[5953],  
-		enabled: true,  dispatcher: o[5955],  
-		permanent: true,  path: '/n_on',  
-		recvPort: nil,  argTemplate: nil ],  
-	// OSCFunc
-	5979, [ func: o[5971],  srcID: o[5953],  
-		enabled: true,  dispatcher: o[5955],  
-		permanent: true,  path: '/status.reply',  
-		recvPort: nil,  argTemplate: nil ],  
-	// OSCFunc
-	5980, [ func: o[5961],  srcID: o[5953],  
-		enabled: true,  dispatcher: o[5955],  
-		permanent: true,  path: '/b_info',  
-		recvPort: nil,  argTemplate: nil ],  
-	// Array
-	5981, [ 1028,  1 ],  
-	// OSCFunc
-	5982, [ func: o[5983],  srcID: o[5953],  
-		enabled: false,  dispatcher: o[5955],  
-		permanent: false,  path: '/vst_program_index',  
-		recvPort: nil,  argTemplate: o[5984] ],  
-	// Array
-	5984, [ 1028,  1 ],  
-	// OSCFunc
-	5985, [ func: o[5986],  srcID: o[5953],  
-		enabled: false,  dispatcher: o[5955],  
-		permanent: false,  path: '/vst_program',  
-		recvPort: nil,  argTemplate: o[5987] ],  
-	// Array
-	5987, [ 1028,  1 ],  
-	// OSCFunc
-	5988, [ func: o[5989],  srcID: o[5953],  
-		enabled: false,  dispatcher: o[5955],  
-		permanent: false,  path: '/vst_auto',  
-		recvPort: nil,  argTemplate: o[5990] ],  
-	// Array
-	5990, [ 1028,  1 ],  
-	// OSCFunc
-	5991, [ func: o[5992],  srcID: o[5953],  
-		enabled: false,  dispatcher: o[5955],  
-		permanent: false,  path: '/vst_latency',  
-		recvPort: nil,  argTemplate: o[5993] ],  
-	// Array
-	5993, [ 1028,  1 ],  
-	// OSCFunc
-	5994, [ func: o[5995],  srcID: o[5953],  
-		enabled: false,  dispatcher: o[5955],  
-		permanent: false,  path: '/vst_update',  
-		recvPort: nil,  argTemplate: o[5996] ],  
-	// Array
-	5996, [ 1028,  1 ],  
-	// OSCFunc
-	5997, [ func: o[5998],  srcID: o[5953],  
-		enabled: false,  dispatcher: o[5955],  
-		permanent: false,  path: '/vst_crash',  
-		recvPort: nil,  argTemplate: o[5999] ],  
-	// Array
-	5999, [ 1028,  1 ],  
-	// OSCFunc
-	6000, [ func: o[6001],  srcID: o[5953],  
-		enabled: false,  dispatcher: o[5955],  
-		permanent: false,  path: '/vst_midi',  
-		recvPort: nil,  argTemplate: o[6002] ],  
-	// Array
-	6002, [ 1028,  1 ],  
-	// OSCFunc
-	6003, [ func: o[6004],  srcID: o[5953],  
-		enabled: false,  dispatcher: o[5955],  
-		permanent: false,  path: '/vst_sysex',  
-		recvPort: nil,  argTemplate: o[6005] ],  
-	// Array
-	6005, [ 1028,  1 ]
+		nil,  nil,  nil,  nil ]
 ];
 prUnarchive(o,p);

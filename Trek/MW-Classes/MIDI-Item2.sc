@@ -1040,6 +1040,10 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
             mk = recordedMk.play[\mk]
         };
         mk = mk ? MicroKeys.current;
+        // a raw VSTI/VSTPluginController must not land in recordedMk: save would
+        // archive the live plugin graph (Synth, controller, OSC dispatcher). Wrap it
+        // in a VSTKeys (same routing as MicroKeys.new) so asEvent stores a light form.
+        (mk.isKindOf(VSTI) or: { mk.isKindOf(VSTPluginController) }).if { mk = MicroKeys(mk) };
         recordedMk = recordedMk ? mk.isKindOf(MicroKeys).if{ mk.asEvent }{ mk };
         latencyCompensation = latencyCompensation ? Server.default.latency;
         mk.do{|i| (i.isKindOf(Symbol).if{ MicroKeys(i) }{ i }).monitor};
@@ -1153,7 +1157,36 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	}
 	save {
 		// notes.isNil.if{this.makeNotes};
-		this.writeArchive( folder +/+ name)
+		// never archive live objects through recordedMk/recordedMks (a PF once
+		// dragged its whole VST + OSC-dispatcher graph into the file). Swap in
+		// sanitized values for the write, then restore so the in-session mk —
+		// which playback may still depend on — is untouched.
+		var savedMk = recordedMk, savedMks = recordedMks;
+		var sane = { |m|
+			case
+			{ m.isNil or: { m.isKindOf(Symbol) } } { m }
+			{ m.isKindOf(Event) } {
+				var e = m.copy;
+				m.keysValuesDo { |k v|
+					(v.isKindOf(VSTI) or: { v.isKindOf(VSTPluginController) } or: { v.isKindOf(Node) }).if {
+						"MIDIItem %: dropping live % at key '%' from archived recordedMk".format(name, v.class, k).warn;
+						e[k] = nil
+					}
+				};
+				e
+			}
+			{ m.isKindOf(MicroKeys) } { m.asEvent }
+			{
+				"MIDIItem %: recordedMk is a live % — archived as nil".format(name, m.class).warn;
+				nil
+			}
+		};
+		recordedMk = sane.(recordedMk);
+		recordedMks = recordedMks !? { recordedMks.collect(sane) };
+		{ this.writeArchive( folder +/+ name) }.protect {
+			recordedMk = savedMk;
+			recordedMks = savedMks;
+		}
 	}
 	filterCC { |ctlNum=0 suffix="noZeros"|
 		var newName = name ++ "_" ++ suffix;

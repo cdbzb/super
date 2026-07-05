@@ -594,7 +594,7 @@ VoiceSpace {
 		var player = ev[\player];
 		var b0     = ev[\when] ? 0;
 		var rate   = ((ev[\tempo] ? 1) / (ev[\stretch] ? 1));
-		var originBeat = b0.max(from), base, pstart, warped, out;
+		var originBeat = b0.max(from), base, pstart, warped, out, beatOff, tm;
 		player.isNil.if { ^nil };
 		ev[\filter] !? { |f| player = f.(player) };
 		ev[\params] !? { |p| player = player.setParams(p) }; // \mi2 finish does this
@@ -605,13 +605,34 @@ VoiceSpace {
 		};
 		base   = list.beatToWall(originBeat, tempoEnv);
 		pstart = player.start ? 0;
+		// beatOff: beat offset from the item onset for a note recorded `rel` seconds into
+		// the item. The tempoTrack is applied in the BEAT domain by beatToWall below, so
+		// the recorded seconds must first become beats.
+		//   default        — treat recorded seconds as beats (flat clock), scaled by rate.
+		//   sourceTempoMap:\eventList — the item was recorded against the list's OWN
+		//     tempoMap, so invert performed-seconds -> beats through it. Anchoring at
+		//     tm.timeAt(originBeat) makes this exact: with no tempoTrack it reproduces the
+		//     recorded timing (tm.timeAt(tm.at(x)) == x), and a tempoTrack re-warps around
+		//     it. Needs an invertible MIDIItemTempoMap; falls back to flat otherwise.
+		tm = list.tempoMap;
+		beatOff = (ev[\sourceTempoMap] == \eventList).if {
+			(tm.notNil and: { tm.respondsTo(\prAtExtrapolated) }).if {
+				var startSec = tm.timeAt(originBeat);
+				{ |rel| (tm.prAtExtrapolated(startSec + rel, tm.env) - originBeat) / rate }
+			} {
+				"prWarpItemToTrack: sourceTempoMap:\\eventList needs a MIDIItemTempoMap base; using flat".warn;
+				{ |rel| rel / rate }
+			}
+		} {
+			{ |rel| rel / rate }
+		};
 		warped = player.midiEvents.collect { |e|
 			var c   = e.copy;
 			var rel = (e[\timestamp] ? 0) - pstart;
-			c[\timestamp] = list.beatToWall(originBeat + (rel / rate), tempoEnv) - base;
+			c[\timestamp] = list.beatToWall(originBeat + beatOff.(rel), tempoEnv) - base;
 			e[\sustain] !? { |s|
-				c[\sustain] = list.beatToWall(originBeat + ((rel + s) / rate), tempoEnv)
-					- list.beatToWall(originBeat + (rel / rate), tempoEnv)
+				c[\sustain] = list.beatToWall(originBeat + beatOff.(rel + s), tempoEnv)
+					- list.beatToWall(originBeat + beatOff.(rel), tempoEnv)
 			};
 			c
 		};
@@ -680,6 +701,9 @@ VoiceSpace {
 			// >= `from`: prWarpItemToTrack trims the item to `from`, so play(from) starts
 			// partway INTO the item rather than dropping it.
 			// (\mi is excluded: its fromNote(~from,~to) sub-range isn't replicated here.)
+			// sourceTempoMap:\eventList on the event makes prWarpItemToTrack invert the
+			// item's recorded seconds through list.tempoMap (for takes recorded to it),
+			// instead of assuming a flat recording tempo.
 			(ev[\type] == \audioItemTempoFollow).if {
 				var actions = (ev[\tempoFollowMode] == \env).if {
 					AudioItem.tempoFollowEnvActions(ev, list, tempoEnv, from)
@@ -693,7 +717,11 @@ VoiceSpace {
 				((ev[\followTrack] == true) and: { ev[\type] == \mi2 }).if {
 					var warped = this.prWarpItemToTrack(list, ev, tempoEnv, from);
 					warped !? {
-						pending.add([delay.max(0), { warped.play(ev[\mk] ? MicroKeys(\default), clock: TempoClock(1)) }])
+						// MIDIItemPlayer.play schedules every event onto the clock up front, so a
+						// dense take overflows TempoClock's default 256-slot queue and drops the
+						// tail (~"stops after N bars"). Match the \mi2 event type's big queue
+						// (MIDI-Item2.sc:1289). Tempo 1: warped timestamps are already wall-seconds.
+						pending.add([delay.max(0), { warped.play(ev[\mk] ? MicroKeys(\default), clock: TempoClock(1, queueSize: 65536)) }])
 					}
 				} {
 					// self-contained event type (private constant clock); preview/standalone path

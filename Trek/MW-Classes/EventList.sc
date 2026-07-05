@@ -313,13 +313,15 @@ EventList {
 	mute_ { |val| mute = val.notNil.if { val.asArray.as(Set) } }
 
 	shouldPlay { |event|
-		var name = event[\name];
+		// match solo/mute tokens against BOTH the event's name and its voice, so
+		// voices (\chords, \chords2, ...) can be muted/soloed even when name is nil.
+		var keys = [event[\name], event[\voice]].reject(_.isNil).collect(_.asString);
 		solo.notNil.if {
-			name.isNil.if { ^false };
-			^solo.any { |s| name.asString.contains(s.asString) }
+			keys.isEmpty.if { ^false };
+			^solo.any { |s| keys.any { |k| k.contains(s.asString) } }
 		};
-		(mute.notNil and: { name.notNil }).if {
-			^mute.any { |s| name.asString.contains(s.asString) }.not
+		(mute.notNil and: { keys.isEmpty.not }).if {
+			^mute.any { |s| keys.any { |k| k.contains(s.asString) } }.not
 		};
 		^true
 	}

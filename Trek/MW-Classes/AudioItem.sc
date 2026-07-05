@@ -111,8 +111,11 @@ AudioItem {
                 // allocates a Bus, sends its own SynthDef and spawns a synth, none of
                 // which can happen during this graph's compilation inside makeBundle.
                 var outBus = (~out ? 0).value;
+                // match \audioItemTempoFollow / Server.bind / note events: default the
+                // playback bundle to the real server latency, not a hardcoded 0.2, so
+                // audioItems stay aligned with voices under any s.latency setting.
                 Server.default.makeBundle(
-                    (~latency ? 0.2) + (~lag ? 0),
+                    (~latency ? Server.default.latency) + (~lag ? 0),
                     {
                         {
                             PlayBuf.ar(

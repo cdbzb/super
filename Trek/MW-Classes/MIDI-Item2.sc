@@ -1793,6 +1793,9 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 	var <env, <tempoMap ;
 	var <invEnv, <curved = false, <curveAmount = 0;
 	var <t0; // absolute timestamp of the first anchor (times/env are relative to it)
+	// Per-Env O(log n) lookup cache (see prEnvLinCache): identity-keyed cumulative-time
+	// index so timeAt/mapBeats don't linear-scan a big (oversampled) Env every call.
+	var prEnvCache;
 
 	*new {|midiItem, choiceFunc, beats|
 		^super.new.init( midiItem, choiceFunc, beats)
@@ -1844,19 +1847,60 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 		^this.prAtExtrapolated(beat, invEnv)
 	}
 	prAtExtrapolated { |x, anEnv|
-		var domain = anEnv.times.sum;
+		var domain = this.prEnvDomain(anEnv);
 		var eps, rate;
-		(domain <= 0).if { ^anEnv.at(x) };
+		(domain <= 0).if { ^this.prEnvAtFast(anEnv, x) };
 		eps = (domain * 1e-4) max: 1e-9;
 		(x < 0).if {
-			rate = (anEnv.at(eps) - anEnv.at(0)) / eps;
-			^anEnv.at(0) + (x * rate)
+			rate = (this.prEnvAtFast(anEnv, eps) - this.prEnvAtFast(anEnv, 0)) / eps;
+			^this.prEnvAtFast(anEnv, 0) + (x * rate)
 		};
 		(x > domain).if {
-			rate = (anEnv.at(domain) - anEnv.at(domain - eps)) / eps;
-			^anEnv.at(domain) + ((x - domain) * rate)
+			rate = (this.prEnvAtFast(anEnv, domain) - this.prEnvAtFast(anEnv, domain - eps)) / eps;
+			^this.prEnvAtFast(anEnv, domain) + ((x - domain) * rate)
 		};
-		^anEnv.at(x)
+		^this.prEnvAtFast(anEnv, x)
+	}
+	// ---- fast piecewise-linear Env evaluation (O(log n), cached) ------------
+	// env/invEnv (and .curve's oversampled outputs) are all built with \lin curves,
+	// so a cached cumulative-time index + binary search reproduces Env.at exactly.
+	// Any non-linear Env returns nil here and callers fall back to Env.at.
+	prEnvLinCache { |anEnv|
+		var entry, allLin, cum;
+		prEnvCache ?? { prEnvCache = IdentityDictionary.new };
+		entry = prEnvCache[anEnv];
+		entry.notNil.if { ^(entry === \nonLinear).if { nil } { entry } };
+		allLin = anEnv.curves.asArray.every { |c|
+			(c == \lin) or: { c == \linear } or: { c == 0 }
+		};
+		allLin.not.if { prEnvCache[anEnv] = \nonLinear; ^nil };
+		cum = [0] ++ anEnv.times.integrate;   // cumulative x-nodes (== the Env's time axis)
+		entry = [cum, anEnv.levels];
+		prEnvCache[anEnv] = entry;
+		^entry
+	}
+	// domain (== sum of times) without an O(n) .times.sum every call
+	prEnvDomain { |anEnv|
+		var c = this.prEnvLinCache(anEnv);
+		^c.notNil.if { c[0].last } { anEnv.times.sum }
+	}
+	// interior evaluation; clamps at the ends exactly like Env.at (extrapolation is
+	// the caller's job in prAtExtrapolated/prMapThrough).
+	prEnvAtFast { |anEnv, x|
+		var c = this.prEnvLinCache(anEnv);
+		var cum, lv, lo, hi, mid, x0, x1, y0, y1;
+		c.isNil.if { ^anEnv.at(x) };
+		cum = c[0]; lv = c[1];
+		(x <= cum[0]).if { ^lv[0] };
+		(x >= cum.last).if { ^lv.last };
+		lo = 0; hi = cum.size - 1;                 // invariant: cum[lo] <= x < cum[hi]
+		while { (hi - lo) > 1 } {
+			mid = (lo + hi) div: 2;
+			(cum[mid] <= x).if { lo = mid } { hi = mid };
+		};
+		x0 = cum[lo]; x1 = cum[lo + 1]; y0 = lv[lo]; y1 = lv[lo + 1];
+		(x1 == x0).if { ^y0 };
+		^y0 + ((y1 - y0) * (x - x0) / (x1 - x0))
 	}
 	// map cumulative positions through anEnv; positions past `domain` are extrapolated
 	// at the env's final slope (carry the last tempo forward) instead of being clamped/
@@ -1864,12 +1908,12 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 	// the Hermite endpoint tangent -- so the tempo is continuous across the boundary.
 	prMapThrough {|positions, anEnv, domain|
 		var endV, eps, rate;
-		(domain <= 0).if { ^positions.collect{|x| anEnv.at(x) } };
-		endV = anEnv.at(domain);
+		(domain <= 0).if { ^positions.collect{|x| this.prEnvAtFast(anEnv, x) } };
+		endV = this.prEnvAtFast(anEnv, domain);
 		eps  = (domain * 1e-4) max: 1e-9;
-		rate = (endV - anEnv.at(domain - eps)) / eps;
+		rate = (endV - this.prEnvAtFast(anEnv, domain - eps)) / eps;
 		^positions.collect{|x|
-			(x <= domain).if { anEnv.at(x) }{ endV + ((x - domain) * rate) }
+			(x <= domain).if { this.prEnvAtFast(anEnv, x) }{ endV + ((x - domain) * rate) }
 		}
 	}
 	mapBeats{|b|
@@ -1913,6 +1957,7 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 		bs = bs.add(b.last); ts = ts.add(t.last);
 		env    = Env(bs, ts.differentiate.drop(1));   // performedTime -> beat (direction 1)
 		invEnv = Env(ts, bs.differentiate.drop(1));    // beat -> performedTime (direction 2)
+		prEnvCache = nil;                              // copy shared the parent's dict; start fresh
 		curved = true;
 		curveAmount = amount;
 		^this

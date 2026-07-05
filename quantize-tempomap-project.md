@@ -242,6 +242,20 @@ Items tagged **[M0]** are pulled into milestone 0 (fix-before-build, test-driven
 - [ ] Deferred beat-domain selectors: `beats` (per-note positions), `beatOf`, `beatFilter`,
       `onBeats` (designed 2026-06-10, only `fromBeat` + upstream built).
 
+Fixed 2026-07-05:
+- [x] **`MIDIItemTempoMap.timeAt`/`mapBeats` linear-scanned the Env every call** — `Env.at`
+      is O(segments), and `.curve(1)` bakes `oversample` (default 32) points **per span**, so
+      the invEnv grows ~32× and every `timeAt` got ~32× slower. `VoiceSpace.playFrom` calls
+      `beatToWall→timeAt` 3× per warped guide note (`prWarpItemToTrack`) and per env segment in
+      `rescaleEnv` (the latter **inside the scheduling Routine**), so a curved base map stalled
+      the Routine ~1-2 s → silence then a burst of "late" messages, then normal. Fix
+      (`MIDI-Item2.sc`): identity-keyed per-Env cache (`prEnvLinCache`/`prEnvAtFast`/
+      `prEnvDomain`) does O(log n) binary search over cumulative times for the linear envs
+      (env/invEnv/`.curve` outputs are all `\lin`), falling back to `Env.at` for any non-linear
+      Env. `prCurve` resets the cache (copy had shared the parent's dict). Confirms the doc's
+      "extend the wall cache to the base map" note — `EventList.beatToWall`'s `prWall*` cache
+      only ever covered the `\tempoTrack` path, never `tempoMap.timeAt`.
+
 Found in the 2026-07-01 review:
 - [ ] **[M0]** **`TempoMap.quantizeRangeInPlace` writes to wrong indices** (`TempoMap.sc:92-99`):
       `(start..end).do{|i| dursCopy.put(start+i, quantized[i])}` — `.do` yields the VALUES
@@ -431,11 +445,22 @@ Alignment then has two existing routes:
   anything that treats timestamps as beats then works, incl. `asEventList`.
 
 Caveats = the work items:
-- **followTrack assumes timestamps are already beats**, so today Route A REQUIRES Route B's
-  quantize first. Cleaner: a **`sourceTempoMap:`** key on the `\mi2` event
-  (`mi.selection.tempomap`); `prWarpItemToTrack` composes
+- **followTrack assumes timestamps are already beats**, so by default Route A treats recorded
+  seconds as beats (`rel / rate`) — correct only when the base map is flat. Cleaner: a
+  **`sourceTempoMap:`** key on the `\mi2` event; `prWarpItemToTrack` composes
   performedTime → idealBeat → listBeat → wall. Original take stays intact and
   `.curve`/`.smooth` variants stay swappable at play time.
+  - **Narrow case DONE (2026-07-05): `sourceTempoMap: \eventList`.** When the item was
+    recorded against the list's OWN tempoMap, the source map IS `list.tempoMap` — no extra
+    plumbing. `prWarpItemToTrack` (`VoiceSpace.sc:593`) now inverts performedTime → idealBeat
+    through `list.tempoMap` (anchored at `tm.timeAt(originBeat)`, via `prAtExtrapolated` on
+    `env`) instead of `rel/rate`, so a `\tempoTrack` re-warps the body correctly. Exact by
+    construction: with no track, `tm.timeAt(tm.at(x)) == x` reproduces the recorded timing.
+    Requires an invertible `MIDIItemTempoMap` base (warns + falls back to flat otherwise);
+    needs `followTrack: true` (the flag only affects the warp, not the route gate).
+  - **Still open — the general case:** `sourceTempoMap: <a DIFFERENT map>` (e.g.
+    `mi.selection.tempomap` for a take recorded off a foreign clock). Same seam, but the
+    source map is not `list.tempoMap`, so it needs the map passed/stamped on the event.
 - **Route A is VoiceSpace-only** — plain `EventList.play` (`EventList.sc:545-563`) has no
   followTrack branch; a `\mi2` there plays on a private constant TempoClock
   (`MIDI-Item2.sc:1174-1180`): onset aligned, internals not. Port route (c) into

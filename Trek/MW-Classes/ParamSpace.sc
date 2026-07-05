@@ -131,7 +131,7 @@ ParamSpace {
 		player.midiEvents.do { |e|
 			var when = tm.notNil.if(
 				{ tm.prAtExtrapolated(e.timestamp - tm.t0, tm.env) },
-				{ e.timestamp }
+				{ e.timestamp - (player.start ? 0) }
 			);
 			var copy = e.copy.put(\when, when);
 			srcName !? { copy[\name] = copy[\name] ? srcName };

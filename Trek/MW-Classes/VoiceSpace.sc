@@ -578,99 +578,43 @@ VoiceSpace {
 		^tls
 	}
 
-	// Route (c): warp a \mi2 item's internal events onto the list's tempo track. Each
-	// event at item-time t is placed at list-beat originBeat + (t / rate), rate =
-	// ~tempo/~stretch (the item's nominal playback rate), then mapped to wall-clock by
-	// beatToWall — so the item's notes follow the global tempo, not a private constant
-	// clock. Onsets AND sustains are warped (a held note stretches/compresses with the
-	// track). When `from` is past the item's onset, the item is trimmed to the matching
-	// item-time (player.from also chases CC state) so play(from) starts partway INTO the
-	// item rather than dropping it; returns nil if `from` is past the whole item.
-	// Returned player's timestamps are wall-seconds relative to its first event (play it
-	// on a unit clock). A flat track reproduces the sealed \mi2 timing exactly.
-	// beat -> wall conversion is delegated to the EventList (single engine, so a
-	// recorded tempoMap composes with \tempoTrack); `list` is threaded in for it.
-	prWarpItemToTrack { |list, ev, tempoEnv, from = 0|
-		var player = ev[\player];
-		var b0     = ev[\when] ? 0;
-		var rate   = ((ev[\tempo] ? 1) / (ev[\stretch] ? 1));
-		var originBeat = b0.max(from), base, pstart, warped, out, beatOff, tm;
-		player.isNil.if { ^nil };
-		ev[\filter] !? { |f| player = f.(player) };
-		ev[\params] !? { |p| player = player.setParams(p) }; // \mi2 finish does this
-		(from > b0).if {
-			var tFrom = (player.start ? 0) + ((from - b0) * rate);
-			(tFrom >= (player.end ? player.bounds.end)).if { ^nil }; // item fully before `from`
-			player = player.from(tFrom); // rebases to 0 and chases CC state to tFrom
-		};
-		base   = list.beatToWall(originBeat, tempoEnv);
-		pstart = player.start ? 0;
-		// beatOff: beat offset from the item onset for a note recorded `rel` seconds into
-		// the item. The tempoTrack is applied in the BEAT domain by beatToWall below, so
-		// the recorded seconds must first become beats.
-		//   default        — treat recorded seconds as beats (flat clock), scaled by rate.
-		//   sourceTempoMap:\eventList — the item was recorded against the list's OWN
-		//     tempoMap, so invert performed-seconds -> beats through it. Anchoring at
-		//     tm.timeAt(originBeat) makes this exact: with no tempoTrack it reproduces the
-		//     recorded timing (tm.timeAt(tm.at(x)) == x), and a tempoTrack re-warps around
-		//     it. Needs an invertible MIDIItemTempoMap; falls back to flat otherwise.
-		tm = list.tempoMap;
-		beatOff = (ev[\sourceTempoMap] == \eventList).if {
-			(tm.notNil and: { tm.respondsTo(\prAtExtrapolated) }).if {
-				var startSec = tm.timeAt(originBeat);
-				{ |rel| (tm.prAtExtrapolated(startSec + rel, tm.env) - originBeat) / rate }
-			} {
-				"prWarpItemToTrack: sourceTempoMap:\\eventList needs a MIDIItemTempoMap base; using flat".warn;
-				{ |rel| rel / rate }
-			}
-		} {
-			{ |rel| rel / rate }
-		};
-		warped = player.midiEvents.collect { |e|
-			var c   = e.copy;
-			var rel = (e[\timestamp] ? 0) - pstart;
-			c[\timestamp] = list.beatToWall(originBeat + beatOff.(rel), tempoEnv) - base;
-			e[\sustain] !? { |s|
-				c[\sustain] = list.beatToWall(originBeat + beatOff.(rel + s), tempoEnv)
-					- list.beatToWall(originBeat + beatOff.(rel), tempoEnv)
-			};
-			c
-		};
-		out = MIDIItemPlayer(warped, player.source);
-		out.start = 0; // timestamps are already wall-relative to playback start
-		^out
-	}
+	// prWarpItemToTrack moved to EventList.prEmitMi2Follow (§10): the warp is beat-domain
+	// and placement goes through `place`, so it works in plain EventList.play and
+	// composes under nested \eventList events.
 
-	rescaleEnv { |list, env, startBeat, tempoEnv|
+	// Rescale an env's beat-durations to wall-durations through the list's `place`
+	// (absolute beat -> absolute wall-second; differences give segment wall lengths).
+	rescaleEnv { |env, startBeat, place|
 		var newTimes = [];
 		var cur = startBeat;
 		env.times.do { |t|
 			var next = cur + t;
-			var wallDur = list.beatToWall(next, tempoEnv) - list.beatToWall(cur, tempoEnv);
-			newTimes = newTimes.add(wallDur);
+			newTimes = newTimes.add(place.(next) - place.(cur));
 			cur = next;
 		};
 		^Env(env.levels, newTimes, env.curves)
 	}
 
-	// ---- timeline-driven playback (cancelable via stop) --------------------
+	// ---- timeline-driven playback ------------------------------------------
 
+	// Superseded by EventList.prepare/fire (§10): EventList.play no longer routes
+	// through here. Kept as a compat shim for direct callers.
 	playFrom { |list, from=0|
-		var events, keyEvents, otherEvents, tempoEnv, fromWall, expanded, tls, pending;
-		var plusParams, laneCounts;
-		from = from ? 0;
-		// No tempoMap on a VoiceSpace list => base of 1 s/beat, so \tempoTrack values
-		// read as absolute s/beat (identity = 1), matching the pre-delegation behavior.
-		list.beatDur ?? { list.beatDur_(1) };
-		events      = list.scopedEvents.select { |e| list.shouldPlay(e) };
+		^list.play(from)
+	}
+
+	// §10: emit schedule entries for the \keyFrame timeline machinery — a refactor of
+	// the old playFrom voice/plus blocks. Same math, but times are absolute
+	// wall-seconds through `place` and entries are returned for EventList.fire instead
+	// of scheduled here. `events` is the list's filtered (scoped + shouldPlay) set,
+	// `tempoEnv` the env prepare derived from it.
+	prepareVoices { |list, epoch, from = 0, place, events, tempoEnv|
+		var out = List[];
+		var keyEvents, expanded, tls, plusParams, laneCounts;
 		keyEvents   = events.select { |e| (e[\type] ? \keyFrame) == \keyFrame };
-		otherEvents = events.reject { |e| (e[\type] ? \keyFrame) == \keyFrame };
-		tempoEnv    = list.tempoEnv(events);
-		fromWall    = list.beatToWall(from, tempoEnv);
 		laneCounts  = this.computeLaneCounts(keyEvents);
 		expanded    = this.expandLanes(keyEvents);
 		tls         = this.extractTimelines(expanded);
-		pending     = List[];
 		plusParams  = ();
 
 		expanded.do { |e|
@@ -693,49 +637,10 @@ VoiceSpace {
 			}
 		};
 
-		otherEvents.do { |ev|
-			var beat  = ev[\when] ? 0;
-			var delay = list.beatToWall(beat, tempoEnv) - fromWall;
-			// Route (c): a \mi2 item opts in (followTrack:) to having its INTERNAL notes
-			// warped by the tempo track, not just its onset. It is NOT gated on its onset
-			// >= `from`: prWarpItemToTrack trims the item to `from`, so play(from) starts
-			// partway INTO the item rather than dropping it.
-			// (\mi is excluded: its fromNote(~from,~to) sub-range isn't replicated here.)
-			// sourceTempoMap:\eventList on the event makes prWarpItemToTrack invert the
-			// item's recorded seconds through list.tempoMap (for takes recorded to it),
-			// instead of assuming a flat recording tempo.
-			(ev[\type] == \audioItemTempoFollow).if {
-				var actions = (ev[\tempoFollowMode] == \env).if {
-					AudioItem.tempoFollowEnvActions(ev, list, tempoEnv, from)
-				} {
-					AudioItem.tempoFollowActions(ev, list, tempoEnv, from)
-				};
-				actions.do { |pair|
-					pending.add(pair)
-				}
-			} {
-				((ev[\followTrack] == true) and: { ev[\type] == \mi2 }).if {
-					var warped = this.prWarpItemToTrack(list, ev, tempoEnv, from);
-					warped !? {
-						// MIDIItemPlayer.play schedules every event onto the clock up front, so a
-						// dense take overflows TempoClock's default 256-slot queue and drops the
-						// tail (~"stops after N bars"). Match the \mi2 event type's big queue
-						// (MIDI-Item2.sc:1289). Tempo 1: warped timestamps are already wall-seconds.
-						pending.add([delay.max(0), { warped.play(ev[\mk] ? MicroKeys(\default), clock: TempoClock(1, queueSize: 65536)) }])
-					}
-				} {
-					// self-contained event type (private constant clock); preview/standalone path
-					(delay >= 0).if { pending.add([delay, { ev.copy.play }]) }
-				}
-			}
-		};
-
 		tls.keysValuesDo { |voice, params|
 			var firstBeat = params.values.collect({ |tl| tl[0][0] }).minItem;
-			var firstWall = list.beatToWall(firstBeat, tempoEnv);
-			var delayWall = (firstWall - fromWall).max(0);
 			var startBeat = from.max(firstBeat);
-			pending.add([delayWall, {
+			out.add((time: place.(startBeat), label: \voice, send: {
 				Server.default.bind {
 					var v;
 					voices[voice].isNil.if { this.startVoice(voiceDefs[voice] ? defaultDef, voice) };
@@ -767,7 +672,7 @@ VoiceSpace {
 							};
 							(startBeat < total).if {
 								var trimmed = (startBeat > 0).if { env.segment(startBeat, total) } { env };
-								var rescaled = this.rescaleEnv(list, trimmed, startBeat, tempoEnv);
+								var rescaled = this.rescaleEnv(trimmed, startBeat, place);
 								v.envSyns.add(
 									{ EnvGen.kr(rescaled, doneAction: 0) => ReplaceOut.kr(writeBus.index, _) }
 										.play(target: v.syn, addAction: \addBefore)
@@ -776,7 +681,7 @@ VoiceSpace {
 						}
 					};
 				}
-			}])
+			}))
 		};
 
 		// Plus events: free the passthrough/old plus and spawn a new one carrying userFunc.
@@ -786,10 +691,9 @@ VoiceSpace {
 			ev[\plus] !? { |plusEv|
 				var baseVoice = ev[\voice] ? \default;
 				var beat  = ev[\when] ? 0;
-				var delay = list.beatToWall(beat, tempoEnv) - fromWall;
 				var laneVoices = this.laneVoicesFor(baseVoice, laneCounts);
-				(delay >= 0).if {
-					pending.add([delay, {
+				(beat >= from).if {
+					out.add((time: place.(beat), label: \plus, send: {
 						Server.default.bind {
 							laneVoices.do { |voice|
 								ev[\defName] !? { |d| voiceDefs[voice] = d };
@@ -831,20 +735,11 @@ VoiceSpace {
 								}
 							}
 						}
-					}])
+					}))
 				}
 			}
 		};
 
-		pending.sort { |a, b| a[0] < b[0] };
-		this.stop;
-		scheduledRoutine = Routine {
-			var t = 0;
-			pending.do { |pair|
-				(pair[0] - t).max(0).wait;
-				t = pair[0];
-				pair[1].value;
-			};
-		}.play(SystemClock);
+		^out
 	}
 }

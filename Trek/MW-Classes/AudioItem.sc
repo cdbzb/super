@@ -159,7 +159,10 @@ AudioItem {
 		^(format.asString == "flac").if { "int24" } { "float" }
 	}
 
-	*tempoFollowActions { |ev, list, tempoEnv, from = 0|
+	// wallAt: optional { |beat| -> wall-seconds } overriding list.beatToWall — the §10
+	// `place` seam. Returned delays stay relative to wallAt(from), so absolute-time
+	// callers (EventList.prEmit) add place.(from) back on.
+	*tempoFollowActions { |ev, list, tempoEnv, from = 0, wallAt|
 		var name = ev[\name] ?? { Error("AudioItem tempoFollow requires a name").throw };
 		var directory = folder +/+ name;
 		var entryCount = File.exists(directory).if { PathName(directory).entries.size } { 0 };
@@ -189,6 +192,7 @@ AudioItem {
 		sourceDur = sf.numFrames / sf.sampleRate;
 		sf.close;
 
+		wallAt = wallAt ?? { { |bt| list.beatToWall(bt, tempoEnv) } };
 		b0 = ev[\when] ? 0;
 		startSec = ev[\start] ? ev[\startPos] ? 0;
 		// Map an ideal beat to elapsed seconds into the SOURCE recording. The take was
@@ -222,13 +226,13 @@ AudioItem {
 			var sourceA = startSec + srcOffset.(beat);
 			var sourceBFull = startSec + srcOffset.(nextBeat);
 			var sourceB = sourceBFull.min(endSec);
-			var wallA = list.beatToWall(beat, tempoEnv);
-			var wallB = list.beatToWall(nextBeat, tempoEnv);
+			var wallA = wallAt.(beat);
+			var wallB = wallAt.(nextBeat);
 			// rate from the full segment (local source-secs per wall-sec); the wall span
 			// is truncated by the same fraction when the final chunk hits the file end.
 			var rate = (sourceBFull - sourceA) / (wallB - wallA).max(0.001);
 			var wallDur = (wallB - wallA) * ((sourceB - sourceA) / (sourceBFull - sourceA).max(1e-9));
-			var delay = wallA - list.beatToWall(from, tempoEnv);
+			var delay = wallA - wallAt.(from);
 			(wallDur > 0).if {
 				actions.add([delay.max(0), {
 					Server.default.makeBundle((ev[\latency] ? Server.default.latency) + (ev[\lag] ? 0), {
@@ -252,7 +256,10 @@ AudioItem {
 		^actions
 	}
 
-	*tempoFollowEnvActions { |ev, list, tempoEnv, from = 0|
+	// wallAt: same seam as tempoFollowActions. NB under nested followTrack placement the
+	// EnvGen's tempo-multiplier LEVELS still come from this list's own tempoEnv, so
+	// within-segment rates are approximate there; segment boundaries stay exact.
+	*tempoFollowEnvActions { |ev, list, tempoEnv, from = 0, wallAt|
 		var name = ev[\name] ?? { Error("AudioItem tempoFollow env mode requires a name").throw };
 		var directory = folder +/+ name;
 		var entryCount = File.exists(directory).if { PathName(directory).entries.size } { 0 };
@@ -283,6 +290,7 @@ AudioItem {
 		sourceDur = sf.numFrames / sf.sampleRate;
 		sf.close;
 
+		wallAt = wallAt ?? { { |bt| list.beatToWall(bt, tempoEnv) } };
 		b0 = ev[\when] ? 0;
 		startSec = ev[\start] ? ev[\startPos] ? 0;
 		// beat -> elapsed seconds into the SOURCE recording, on the list's base clock
@@ -312,7 +320,7 @@ AudioItem {
 			}
 		};
 		totalSourceDur = endSec - fromSec;
-		wallDur = list.beatToWall(lastBeat, tempoEnv) - list.beatToWall(fromBeat, tempoEnv);
+		wallDur = wallAt.(lastBeat) - wallAt.(fromBeat);
 
 		points = List[fromBeat];
 		curves = List[];
@@ -338,7 +346,7 @@ AudioItem {
 		// by each segment's MODIFIED wall duration (their sum == wallDur), not source
 		// seconds — otherwise the multiplier ramp races ahead of the audio.
 		times = points.drop(-1).collect { |beat, i|
-			list.beatToWall(points[i + 1], tempoEnv) - list.beatToWall(beat, tempoEnv)
+			wallAt.(points[i + 1]) - wallAt.(beat)
 		};
 		tempoEnv.notNil.if {
 			segEnds = tempoEnv.times.integrate;
@@ -353,7 +361,7 @@ AudioItem {
 		};
 
 		actions = List[];
-		actions.add([list.beatToWall(fromBeat, tempoEnv) - list.beatToWall(from, tempoEnv), {
+		actions.add([wallAt.(fromBeat) - wallAt.(from), {
 			Server.default.makeBundle((ev[\latency] ? Server.default.latency) + (ev[\lag] ? 0), {
 				{
 					var tempoMult = EnvGen.kr(Env(levels, times, curves));

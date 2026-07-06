@@ -1330,8 +1330,11 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	copyBounds {|mi|
 		start = mi.start; end =mi.end
 	}
-	play { |mk clock post=#[] overdub=false take|
-		(mk.rank > 0).if { mk.do{|i| this.play(i, clock, post, overdub) }; ^this };
+	// sched: optional { |relTime, playFunc| } hook — when given, events are handed to it
+	// instead of clock.sched (EventList.prepare flattens them into its own schedule,
+	// §10; no clock, so no queueSize overflow). mk resolution/CC store still run here.
+	play { |mk clock post=#[] overdub=false take sched|
+		(mk.rank > 0).if { mk.do{|i| this.play(i, clock, post, overdub, take, sched) }; ^this };
 
 		mk.isNil.if {
 			var rmk = recordedMk ? source.recordedMk;
@@ -1383,7 +1386,11 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 					} 
 				}; 
 
-				(clock ? TempoClock.default).sched(e.timestamp - ( start ? 0 ), playFunc);
+				sched.notNil.if {
+					sched.(e.timestamp - (start ? 0), playFunc)
+				} {
+					(clock ? TempoClock.default).sched(e.timestamp - ( start ? 0 ), playFunc)
+				};
 
 				post.includes(e.midicmd).if{
 					var dict = e.asDict;

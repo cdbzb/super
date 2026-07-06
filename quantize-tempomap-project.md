@@ -278,9 +278,8 @@ Found in the 2026-07-01 review:
       from its `\midinote` array from that point on — worse than the glitch it avoids. Clamp
       to epsilon (what the dead `:55` line intended) to preserve alignment. Same "silent
       length change" family as the fixed boundary truncation.
-- [ ] **`EventList.copyFrom` drops `tempoMap` and `beatDur`** (`EventList.sc:58-69`) — copies
-      lose the base tempo and play flat 1 s/beat. (`solo`/`mute` also dropped — decide and
-      comment either way.)
+- [x] **`EventList.copyFrom` drops `tempoMap` and `beatDur`** — fixed 2026-07-06 (§10e):
+      copies carry `beatDur`/`tempoMap`/`solo`/`mute` (decision: mix state travels).
 - [ ] `at` direction inversion + dNU rewrap (see §4d).
 - [ ] **AudioItem take numbering counts non-take files** — `PathName(directory).entries.size`
       (`AudioItem.sc:46-49,372`); a `.DS_Store` or future metadata sidecar misnumbers takes.
@@ -461,10 +460,9 @@ Caveats = the work items:
   - **Still open — the general case:** `sourceTempoMap: <a DIFFERENT map>` (e.g.
     `mi.selection.tempomap` for a take recorded off a foreign clock). Same seam, but the
     source map is not `list.tempoMap`, so it needs the map passed/stamped on the event.
-- **Route A is VoiceSpace-only** — plain `EventList.play` (`EventList.sc:545-563`) has no
-  followTrack branch; a `\mi2` there plays on a private constant TempoClock
-  (`MIDI-Item2.sc:1174-1180`): onset aligned, internals not. Port route (c) into
-  `EventList.play`, or at least warn when a `followTrack:` event plays without a VoiceSpace.
+- ~~**Route A is VoiceSpace-only**~~ — CLOSED 2026-07-06 by §10: the followTrack warp now
+  lives in `EventList.prEmitMi2Follow` and `EventList.play` routes through prepare/fire,
+  so `followTrack: \mi2` works with or without a VoiceSpace.
 - **`t0` offset trap in Route B** — `warpTo` (`MIDI-Item2.sc:1322`) yields `idealBeat + t0`,
   so a pickup/initial rest offsets every "beat" by the first anchor's absolute time. Need
   `quantize(rebase:)` or `from`/`trimTimeStampsToStart` before treating timestamps as list
@@ -535,3 +533,219 @@ To build, in order (1-2 are pure-language + archive I/O; only 4 needs the server
    (`Retune.sc:297`): `Onsets.kr(FFT)` + `Amplitude.kr` to a buffer → onset events
    `(timestamp:, amp: strength)` → same gui, same tracker. `Onsets` is core SC; the
    OfflineProcess quark is installed if the NRT plumbing helps; no aubio on this machine.
+
+---
+
+## 10. EventList `prepare(epoch)` / `fire` split + nested `\eventList` composition
+
+Design of record (sketched 2026-07-05). **IMPLEMENTED 2026-07-06** — see §10e for what
+landed and where it deviates from the sketches below. Headless suite:
+`standalone-tests/prepare-fire-test.scd` (27 checks, all passing; also serves as the
+compile check). Two problems share one fix:
+
+- **Play-start "late" messages.** `VoiceSpace.playFrom` sorts everything into one
+  `pending` list and fires it from a `Routine` on SystemClock (`VoiceSpace.sc:811-820`).
+  Every beat-0 event has `delay ≈ 0`, so the initial cluster runs back-to-back with
+  `wait(0)` between actions — and several are expensive AT that instant: each
+  `followTrack:\mi2` `warped.play` schedules hundreds of `clock.sched` calls
+  (`MIDI-Item2.sc:1386`), per-voice `startVoice` compiles/`d_recv`s SynthDefs, `Effect.bus`
+  allocates buses. Each consumes wall-time while the Routine's logical clock is frozen at 0
+  → the later zero-delay actions run physically late → "late N".
+- **Nesting `\eventList` events.** Goal: insert `type:\eventList` events into other lists.
+  Today's event type fires the child at RUNTIME (`EventList.sc:18`,
+  `~eventList…play(~start)`), so the child's whole beat-0 cluster runs inside a single
+  parent action (re-creating the stall one level down), its clock start is anchored to a
+  jittery language time (leads stack, don't compose), and the child plays on its OWN clock
+  ignoring the parent's `tempoTrack` (same class of bug as `\mi2 followTrack` before §9b).
+
+**The fix — separate prepare (all language/allocation work, synchronous) from fire (dispatch
+pre-timestamped bundles).** `prepare` resolves the whole list — and any nested `\eventList`
+events — into a flat schedule of absolute-timed server sends against a SHARED epoch; `fire`
+just schedules them. The beat-0 cluster is then paid ONCE, up front, in a lead window before
+the epoch, for the entire nested tree. This is the concrete form of §4d's "list → wall"
+composition and §9b's "one seam" (insert-a-sublist == insert-a-warped-item).
+
+### 10a. Schedule element + `prepare(epoch, from, place)`
+Each entry: `( time: <absWallSeconds>, send: {…}, label: <sym> )`. `time` is ABSOLUTE
+(SystemClock.seconds frame); `send` is lightweight (fires an already-built synth/bundle — no
+warping/compiling/allocation, that all happened during prepare).
+
+The key abstraction is `place`: "given a beat in THIS list's frame, what absolute wall-second
+does it land on?" Top-level lists get the default; nested lists get a `place` from the parent.
+
+```supercollider
+// EventList
+prepare { |epoch, from = 0, place|
+    var sched    = List[];
+    var tempoEnv = this.tempoEnv;                       // EventList.sc:434
+    var fromWall = this.beatToWall(from, tempoEnv);
+    place = place ?? { |beat| epoch + (this.beatToWall(beat, tempoEnv) - fromWall) };
+    this.scopedEvents.do { |ev|
+        (this.shouldPlay(ev) and: { ev[\tempoTrack].isNil }).if {
+            (ev[\type] == \eventList).if {
+                sched.addAll(this.prExpandList(ev, epoch, place, tempoEnv));   // hook, §10b
+            } {
+                // per-type builders REUSED but RETURNING [absTime, send] instead of
+                // scheduling a clock:
+                //   \mi2 followTrack     → prWarpItemToTrack, each warped note flattened to
+                //                          (place.(noteBeat), send) — no inner TempoClock,
+                //                          which structurally retires the queueSize:65536 hack
+                //   audioItemTempoFollow → tempoFollowActions, times rebased onto `place`
+                //   plain event          → ( place.(ev[\when]?0), { ev.copy.play } )
+                sched.addAll(this.prEmit(ev, place, tempoEnv, epoch));
+            }
+        }
+    };
+    // voices (keyFrame) aggregate across the whole timeline, not per-event — the current
+    // tls.keysValuesDo block becomes prepareVoices, emitting (place.(firstBeat), startVoice)
+    // + env-write sends. Its existing firstWall/delayWall math just routes through `place`.
+    voiceSpace !? { sched.addAll(voiceSpace.prepareVoices(this, epoch, from, place)) };
+    ^sched
+}
+```
+
+### 10b. The `\eventList` expansion hook
+Mirrors the `\mi2` `followTrack` / `sourceTempoMap:\eventList` / `rate` convention (§9b), so
+"insert a sublist" and "insert a warped item" share semantics:
+
+```supercollider
+prExpandList { |ev, epoch, place, tempoEnv|
+    var child = ev[\eventList].isKindOf(EventList).if { ev[\eventList] } { EventList(ev[\eventList]) };
+    var b0    = ev[\when] ? 0;                          // insert point, PARENT beats
+    var cFrom = ev[\start] ? 0;                         // child start beat
+    var rate  = (ev[\tempo] ? 1) / (ev[\stretch] ? 1);
+    var childPlace;
+    (ev[\followTrack] == true).if {
+        // FOLLOW: child rides the PARENT's tempoTrack. child-beat k reinterpreted in the
+        // parent frame (b0 + (k-cFrom)/rate) then placed through the parent's map.
+        childPlace = { |cBeat| place.(b0 + ((cBeat - cFrom) / rate)) };
+    } {
+        // OWN TEMPO: child keeps its own beat→wall, shifted so cFrom lands at parent wall(b0).
+        var cEnv = child.tempoEnv, cFromWall, anchor = place.(b0);
+        cFromWall = child.beatToWall(cFrom, cEnv);
+        childPlace = { |cBeat| anchor + (child.beatToWall(cBeat, cEnv) - cFromWall) };
+    };
+    ^child.prepare(epoch, cFrom, childPlace)   // recurse: whole tree shares one epoch
+}
+```
+
+### 10c. `fire` + `play` wiring (the lead falls out here)
+```supercollider
+fire { |sched|
+    var lat = Server.default.latency;
+    sched.do { |item|
+        // run the send `lat` early; it bundles at +lat → lands at item.time.
+        SystemClock.schedAbs(item.time - lat, { item.send.value; nil })
+    }
+}
+play { |from = 0|
+    var t0 = SystemClock.seconds, lead = this.leadTime ? 0.25, epoch = t0 + lead;
+    var sched = this.prepare(epoch, from);             // ALL heavy work here, before epoch
+    var spent = SystemClock.seconds - t0;
+    (spent > lead).if { var d = spent - lead + 0.02;   // adaptive: never already-late
+        epoch = epoch + d; sched.do { |i| i.time = i.time + d } };
+    this.fire(sched);
+}
+```
+
+### 10d. Sharp edges / open decisions
+- **`\eventList` is dual-interpretation.** Under `play` it's an expansion directive consumed
+  by `prepare` (never a runtime `.play`). Keep the existing runtime event type
+  (`EventList.sc:18`) for the PREVIEW path only — preview is inherently runtime, doesn't nest.
+- **Voices are the one non-trivial builder.** `prepareVoices` must emit "start synth at
+  `place.(firstBeat)`, then env-writes" rather than one send per event — a refactor of the
+  `tls.keysValuesDo` block (`VoiceSpace.sc:705`), same shape (it already computes
+  `firstWall`/`delayWall`).
+- **Flattening `\mi2` into the parent schedule retires the queue hack.** Each warped note as
+  its own `(absTime, send)` removes the inner `TempoClock(1, queueSize:65536)` entirely.
+- **`Effect.bus` lifetime.** Buses/effect synths allocate during prepare and must not be
+  idle-freed by `DetectSilence` (`Effect.sc:55`, default `time:1`) before `epoch` — safe at
+  `lead ≈ 0.25`; don't set a huge lead. (Or give prepared effects `maxDur`/no-silence-free.)
+- **`copyFrom` already drops `tempoMap`/`beatDur`/`solo`/`mute`** (§5) — fix before nested
+  lists copy, or nested children play flat.
+- **Preview vs prepare divergence risk** — two code paths for "how an event sounds." Keep the
+  per-type `send` builders shared between `prEmit` and the preview event types where possible.
+- Relationship to milestones: this is milestone-7-adjacent (composition seam) but stands
+  alone; the `place`-composition is the same math as `prWarpItemToTrack`'s
+  `sourceTempoMap:\eventList` (done §9b) generalized from one item to a whole list.
+
+### 10e. As built (2026-07-06) — deltas from the sketches above
+Landed in `EventList.sc` (`prepare`/`prExpandList`/`prEmit`/`prEmitMi2Follow`/`fire`/
+`stop`/`prPlayPrepared`, `leadTime` ivar), `VoiceSpace.sc` (`prepareVoices`, `rescaleEnv`
+via `place`, `playFrom` now a shim to `list.play`), `MIDI-Item2.sc` (`MIDIItemPlayer.play`
+optional `sched:` hook), `AudioItem.sc` (`wallAt` arg on both tempoFollow builders).
+
+- **Adding a nested list requires `newType: \eventList`**, not `type:` — `dispatch`
+  overwrites `\type` with `newType ? defaultType` on every add. (Or register a route:
+  `addRoute(\eventList, \eventList)`.)
+- The §10a sketch's `place = place ?? { |beat| … }` was a bug — `??` calls the block with
+  no args. Built as `place ?? { { |beat| … } }` (block returning the function).
+- `prExpandList` resolves names via `EventList.at` (warn on unknown), NOT `EventList(name)`
+  — the constructor registers a fresh empty list and reassigns `current` as a side effect.
+- **Cycle guard**: `prepare(epoch, from, place, seen)` threads an IdentitySet of ancestors;
+  cyclic nesting warns and returns empty rather than recursing forever.
+- **from-trim**: followTrack children trim exactly (`cFrom += (from - b0) * rate`, the \mi2
+  convention). Own-tempo children can't trim exactly without `wallToBeat` (§9a step 1);
+  their pre-epoch entries are dropped in `prPlayPrepared` instead (tolerance 1 ms).
+- `prWarpItemToTrack` MOVED from VoiceSpace to `EventList.prEmitMi2Follow`, converted to
+  beat-domain warp + `place` placement, and flattened through the new `MIDIItemPlayer.play
+  sched:` hook — so mk resolution/CC store/`playing` bookkeeping are reused, no inner
+  TempoClock exists on this path (queue hack retired there; the sealed `\mi2` event type
+  keeps its private clock for preview/standalone), and **followTrack \mi2 now also works
+  under plain `EventList.play`** (closes part of §9b's "Route A is VoiceSpace-only").
+- `fire` = ONE Routine on SystemClock walking the sorted schedule, each send fired
+  `latency` early (sends self-bundle at +latency, landing on time). NOT the sketch's
+  per-entry `schedAbs`: that put one slot per entry in SystemClock's fixed-size GLOBAL
+  queue, so a flattened \mi2 take overflowed it ("scheduler queue is full") and silently
+  dropped everything after — found on first live test 2026-07-06. Lightweight sends make
+  the single-routine dispatch safe (the §10 premise); regression-tested with a 5000-entry
+  list. Cancellation: generation counter `prPlayGen` — `EventList.stop` bumps it (the
+  routine breaks at its next wake), replay auto-cancels the previous generation.
+  VoiceSpace's `scheduledRoutine`/`stop` remain only as legacy no-ops for that path.
+- **`leadTime` = deterministic prepare BUDGET** (Michael's call 2026-07-06, replacing the
+  sketch's fixed 0.25 pre-roll): with `leadTime` set, the first sound lands at exactly
+  `leadTime + s.latency` after the play call — same philosophy as server latency: fix the
+  wait, don't minimize it. Choose it slightly above the list's prepare cost; if the budget
+  is OVERRUN the epoch slides (with a warning) because sliding beats a late storm.
+  `leadTime` nil = adaptive ASAP start (prepare-end + latency + 0.02), minimal but not
+  deterministic. Since sends fire `latency` early, the language-side deadline for the
+  first entry is `epoch - latency` = t0 + leadTime.
+- **The epoch anchors to LOGICAL time** (`thisThread.seconds` at `.play`), like all sclang
+  scheduling — so events co-evaluated with `.play` align by construction: a
+  `(lag: leadTime)` event sounds exactly on the list's first beat, wrapped in a fork or
+  not. (Found via Michael's fork/unwrap experiment: with a physical-time anchor,
+  same-block work before `.play` — e.g. `tempoMap.curve(1)` — delayed the list relative
+  to a co-evaluated lag note; forking past a `wait` re-aligned logical to physical and
+  hid it.) Consequence: the budget must cover logical drift (same-block eval work before
+  `.play`) + prepare; the overrun warning reports the combined figure. The safety
+  deadline check itself stays PHYSICAL (`Main.elapsedTime`) — that part of the earlier
+  "never anchor to SystemClock.seconds" note still stands; it's the epoch that is logical.
+- **Ramp-segment sub-grid cache** (`prBuildRampSub`/`prRampSubAt`): `beatToWall` for a
+  beat inside a ramp (`\lin` etc.) segment over a tempoMap base used to re-integrate the
+  sub-sampled ramp from the segment start on EVERY call — 383 µs/call on the real guide
+  list (env `[step, lin]`), which put ~0.2 s of the 0.22 s prepare inside the ramp window
+  and made `leadTime: 0` feel like a lag-0.35 note. The wall cache now stores a cumulative
+  sub-grid (same 16 steps/beat scheme, fixed grid) per such segment; in-ramp lookups are
+  O(1) (~6 µs). Verified against a brute-force integral in the headless suite.
+- **Anchor/measure with `Main.elapsedTime`, never `SystemClock.seconds`** —
+  `SystemClock.seconds` is the calling thread's LOGICAL time, frozen for an entire
+  synchronous evaluation. The first build anchored the epoch to it: prepare cost read as
+  zero, the epoch sat Δ (eval lag + prepare) in the physical past, and since bundles are
+  stamped logical + latency, every send left with latency - Δ of headroom → "late" storms
+  whenever Δ > latency (empirically looked like "leadTime must be ≥ 2× s.latency" — it was
+  really latency + Δ). Fixed 2026-07-06; the fire routine needed no change (its waits
+  target absolute times, and SystemClock re-aligns logical to physical at each wake).
+- **`copyFrom` now carries `beatDur`/`tempoMap`/`solo`/`mute`** (§5 item done — decision:
+  mix state travels with the copy).
+- `tempoFollowEnvActions` under a nested followTrack `place`: segment boundaries are exact
+  but within-segment rate multipliers still come from the child's own tempoEnv (noted in
+  the method comment). Non-env mode is exact (rates derive from wallAt diffs).
+- **NOT done — voices still do heavy work at fire time.** `prepareVoices` emits entries
+  (times through `place`, so nested lists with voiceSpaces compose) but the send bodies
+  still `startVoice`/compile env synths inside `Server.default.bind` when they fire; the
+  §10 "all allocation in prepare" ideal would need Function→SynthDef precompilation
+  (`asSynthDef`/`d_recv` during the lead, `/s_new` at fire). Do it if voice-heavy lists
+  still post "late"; the \mi2 flattening was the dominant beat-0 cost.
+- Headless-test caveat: a stock `sclang <file>.scd` run loads startup functions that
+  ATTACH to the running scsynth (client login, cached SynthDef loads, StageLimiter) —
+  exit does not /quit it, but don't loop the suite while the live rig is up.

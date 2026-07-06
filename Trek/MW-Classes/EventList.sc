@@ -7,10 +7,19 @@ EventList {
 	var <>scope, <>voiceSpace;
 	var <solo, <mute;
 	var <>beatDur, <>tempoMap;
+	// §10 prepare/fire: leadTime = prepare budget; first sound lands at exactly
+	// leadTime + latency after play (deterministic — see prPlayPrepared; nil =
+	// adaptive ASAP start). prPlayGen = generation counter letting stop/replay
+	// cancel already-scheduled sends.
+	var <>leadTime;
+	var prPlayGen = 0;
 	// Memoized beat->wall integral (see beatToWall): cumulative wall-seconds at each
 	// tempoEnv segment boundary, built once per tempoEnv so completed segments aren't
 	// re-integrated for every event. Keyed on tempoEnv identity.
 	var prWallEnv, prWallStarts, prWallCum, prWallLevels, prWallTimes, prWallCurves;
+	// Per-segment cumulative sub-grids for ramp segments over a tempoMap base
+	// (nil for step/flat-base segments) — see prBuildRampSub.
+	var prWallSubs;
 
 	*initClass {
 		all = ();
@@ -64,6 +73,12 @@ EventList {
 		previewPrep = other.previewPrep;
 		autoExpand  = other.autoExpand;
 		batchWindow = other.batchWindow;
+		// tempo + mix state travel with the copy — without these a copied (or nested)
+		// list plays flat at 1 s/beat and forgets its solo/mute scoping (§5).
+		beatDur     = other.beatDur;
+		tempoMap    = other.tempoMap;
+		solo        = other.solo.copy;
+		mute        = other.mute.copy;
 		voiceSpace  = newVoiceSpace.if { VoiceSpace.new } { other.voiceSpace };
 		^this
 	}
@@ -459,15 +474,27 @@ EventList {
 	prBuildWallCache { |tempoEnv|
 		var levels = tempoEnv.levels, times = tempoEnv.times, curves = tempoEnv.curves;
 		var cur = 0, sum = 0;
-		var starts = [0], cum = [0];
+		var starts = [0], cum = [0], subs = [];
 		times.size.do { |i|
 			var cv = curves.isArray.if { curves.wrapAt(i) } { curves };
 			var segEnd = cur + times[i];
-			sum = sum + (cv == \step).if {
-				levels[i] * this.baseWallDelta(cur, segEnd)
+			var contrib, sub;
+			((cv != \step) and: { tempoMap.notNil } and: { times[i] > 0 }).if {
+				// Ramp over a tempoMap base: cache the cumulative sub-grid so
+				// beatToWall partials inside this segment are O(1), not a fresh
+				// re-integration from the segment start per call (383 us/call on a
+				// real guide list — dominated prepare).
+				sub = this.prBuildRampSub(levels[i], levels[i + 1], cur, times[i]);
+				contrib = sub[\cum].last;
 			} {
-				this.prIntegrateRamp(levels[i], levels[i+1], cur, times[i], cur, segEnd)
+				contrib = (cv == \step).if {
+					levels[i] * this.baseWallDelta(cur, segEnd)
+				} {
+					this.prIntegrateRamp(levels[i], levels[i+1], cur, times[i], cur, segEnd)
+				};
 			};
+			sum = sum + contrib;
+			subs = subs.add(sub);
 			cur = segEnd;
 			starts = starts.add(cur);
 			cum = cum.add(sum);
@@ -475,6 +502,36 @@ EventList {
 		prWallEnv = tempoEnv;
 		prWallStarts = starts; prWallCum = cum;
 		prWallLevels = levels; prWallTimes = times; prWallCurves = curves;
+		prWallSubs = subs;
+	}
+
+	// Cumulative sub-sampled integral across ONE ramp segment (same ~16 steps/beat
+	// scheme as prIntegrateRamp, but on a fixed grid anchored at the segment start).
+	prBuildRampSub { |mA, mB, segStart, segLen|
+		var k = (16 * segLen).ceil.max(1).asInteger;
+		var step = segLen / k;
+		var mAt = { |x| mA + ((mB - mA) * (x - segStart) / segLen) };
+		var cum = [0];
+		var sum = 0, x0 = segStart;
+		k.do { |j|
+			var x1 = segStart + ((j + 1) * step);
+			sum = sum + (mAt.((x0 + x1) / 2) * this.baseWallDelta(x0, x1));
+			cum = cum.add(sum);
+			x0 = x1;
+		};
+		^(step: step, mA: mA, mB: mB, segStart: segStart, segLen: segLen, cum: cum)
+	}
+
+	// O(1) partial-ramp lookup: cached cumulative up to the last grid point at or
+	// before `beat`, plus one midpoint step for the remainder. Continuous and
+	// monotone; agrees with prBuildRampSub at every grid point.
+	prRampSubAt { |sub, beat|
+		var j = ((beat - sub[\segStart]) / sub[\step]).floor.asInteger.clip(0, sub[\cum].size - 1);
+		var x0 = sub[\segStart] + (j * sub[\step]);
+		var mAt = { |x| sub[\mA] + ((sub[\mB] - sub[\mA]) * (x - sub[\segStart]) / sub[\segLen]) };
+		^sub[\cum][j] + ((beat > x0).if {
+			mAt.((x0 + beat) / 2) * this.baseWallDelta(x0, beat)
+		} { 0 })
 	}
 
 	beatToWall { |beat, tempoEnv|
@@ -495,9 +552,13 @@ EventList {
 			^prWallCum[seg] + (cv == \step).if {
 				prWallLevels[seg] * this.baseWallDelta(segStart, beat)
 			} {
-				this.prIntegrateRamp(
-					prWallLevels[seg], prWallLevels[seg + 1],
-					segStart, prWallTimes[seg], segStart, beat)
+				prWallSubs[seg].notNil.if {
+					this.prRampSubAt(prWallSubs[seg], beat)
+				} {
+					this.prIntegrateRamp(
+						prWallLevels[seg], prWallLevels[seg + 1],
+						segStart, prWallTimes[seg], segStart, beat)
+				}
 			};
 		};
 		// Past the final boundary: flat extrapolation at the last multiplier.
@@ -526,7 +587,6 @@ EventList {
 	}
 
 	play { |from=0, fromEvent, fromSection|
-		var tempoEnv, secondsAt;
 		from = from ? 0;
 		fromEvent !? {
 			var ev = events[fromEvent];
@@ -540,30 +600,250 @@ EventList {
 				"EventList.play: fromSection ignored — defaultType is %".format(defaultType).warn
 			}
 		};
-		voiceSpace.notNil.if { ^voiceSpace.playFrom(this, from) };
+		voiceSpace.notNil.if {
+			// No tempoMap on a VoiceSpace list => base of 1 s/beat, so \tempoTrack values
+			// read as absolute s/beat (identity = 1), matching pre-delegation behavior.
+			beatDur ?? { this.beatDur_(1) };
+			^this.prPlayPrepared(from)
+		};
 		playFn.notNil.if { ^playFn.(this, from) };
-		tempoEnv = this.tempoEnv;
-		secondsAt = { |beat| this.beatToWall(beat, tempoEnv) };
-		this.scopedEvents.do { |e|
-			var t = e.when ? 0;
-			(this.shouldPlay(e) and: { e[\tempoTrack].isNil }).if {
-				(e[\type] == \audioItemTempoFollow).if {
-					var actions = (e[\tempoFollowMode] == \env).if {
-						AudioItem.tempoFollowEnvActions(e, this, tempoEnv, from)
-					} {
-						AudioItem.tempoFollowActions(e, this, tempoEnv, from)
-					};
-					actions.do { |pair|
-						SystemClock.sched(pair[0], { pair[1].value; nil })
-					}
+		^this.prPlayPrepared(from)
+	}
+
+	// §10c: prepare (all language/allocation work, synchronous, before the epoch) then
+	// fire (schedule lightweight sends).
+	//
+	// leadTime is the prepare BUDGET, and the point of setting it is DETERMINISM (same
+	// idea as server latency: fix the wait, don't minimize it): with leadTime set, the
+	// first sound lands exactly leadTime + latency after the play call — choose it
+	// slightly above this list's prepare cost. Only if prepare OVERRUNS the budget does
+	// the epoch slide (with a warning), because sliding beats a late storm. leadTime
+	// nil = adaptive: start as soon as safely possible (prepare-end + latency + pad),
+	// minimal but not deterministic.
+	//
+	// Timing MUST be measured with Main.elapsedTime (physical), NOT SystemClock.seconds:
+	// that is the calling THREAD's logical time, frozen for the whole of a synchronous
+	// evaluation — prepare cost reads as zero against it, and an epoch anchored to it
+	// sits Δ (eval lag + prepare cost) in the physical past. Bundles are stamped from
+	// logical time + latency, so every send then leaves with only latency - Δ of real
+	// headroom → server "late" storms whenever Δ > latency. (Found live 2026-07-06:
+	// lates until leadTime ≈ latency + Δ, misread as "2x latency".)
+	prPlayPrepared { |from = 0|
+		var lat = Server.default.latency ? 0.2;
+		// The epoch anchors to LOGICAL time (thisThread.seconds), like everything else
+		// scheduled in sclang — so events co-evaluated with .play line up with the list
+		// by construction: (lag: leadTime).play sounds exactly on the list's first
+		// beat, no matter how much eval work preceded .play in the same block (that
+		// work is exactly what broke the alignment when the epoch anchored to physical
+		// time). The overrun check below still guards against PHYSICAL time, so the
+		// budget must cover logical-drift + prepare; it warns + slides when it doesn't.
+		var t0 = thisThread.seconds;
+		var epoch = t0 + (leadTime ? 0) + lat;
+		var sched = this.prepare(epoch, from);
+		// Sends fire `lat` early (they self-bundle at +lat), so the real deadline for
+		// the FIRST entry is epoch - lat = t0 + leadTime.
+		var d = (Main.elapsedTime + 0.02) - (epoch - lat);
+		(d > 0).if {
+			(leadTime.notNil and: { leadTime > 0 }).if {
+				"EventList.play: eval drift + prepare (%s) overran leadTime (%s) — starting %s late"
+					.format((Main.elapsedTime - t0).round(0.001), leadTime, d.round(0.001)).warn
+			};
+			epoch = epoch + d;
+			sched.do { |i| i[\time] = i[\time] + d };
+		};
+		// A nested own-tempo child inserted before `from` can produce pre-epoch entries
+		// (no wallToBeat inverse yet to trim it exactly — §9a); drop them rather than
+		// firing a burst at start.
+		sched = sched.reject { |i| i[\time] < (epoch - 0.001) };
+		this.fire(sched);
+		^this
+	}
+
+	// §10a: resolve this list — and any nested \eventList events — into a flat schedule
+	// of (time: absWallSeconds, send: {}, label:) entries against a shared epoch.
+	// `place` answers "what absolute wall-second does a beat in THIS list's frame land
+	// on?"; top-level lists get the default, nested lists get one from prExpandList.
+	// `seen` guards cyclic nesting.
+	prepare { |epoch, from = 0, place, seen|
+		var sched = List[];
+		var evts, tempoEnv, fromWall, playable;
+		seen = seen ?? { IdentitySet[] };
+		seen.includes(this).if {
+			"EventList.prepare: cyclic \\eventList nesting at % — skipped".format(scope).warn;
+			^sched
+		};
+		evts     = this.scopedEvents.select { |e| this.shouldPlay(e) };
+		tempoEnv = this.tempoEnv(evts);
+		fromWall = this.beatToWall(from, tempoEnv);
+		place    = place ?? { { |beat| epoch + (this.beatToWall(beat, tempoEnv) - fromWall) } };
+		playable = voiceSpace.notNil.if {
+			evts.reject { |e| (e[\type] ? \keyFrame) == \keyFrame }
+		} { evts };
+		playable.do { |ev|
+			ev[\tempoTrack].isNil.if {
+				(ev[\type] == \eventList).if {
+					sched.addAll(this.prExpandList(ev, epoch, place, from, seen))
 				} {
-					(t >= from).if {
-						SystemClock.sched(secondsAt.(t) - secondsAt.(from), { e.play; nil })
-					}
+					sched.addAll(this.prEmit(ev, place, tempoEnv, from))
 				}
 			}
-		}
+		};
+		voiceSpace !? {
+			sched.addAll(voiceSpace.prepareVoices(this, epoch, from, place, evts, tempoEnv))
+		};
+		^sched
 	}
+
+	// tempoEnv as play/prepare will actually use it: derived from the filtered
+	// (scoped + shouldPlay) events, so it matches what sounds.
+	prPlayTempoEnv {
+		^this.tempoEnv(this.scopedEvents.select { |e| this.shouldPlay(e) })
+	}
+
+	// §10b: expand a nested \eventList event into schedule entries. followTrack: true
+	// reinterprets child beats in the PARENT frame (the child rides the parent's
+	// tempoTrack — same convention as \mi2 followTrack); otherwise the child keeps its
+	// own beat->wall map, shifted so child beat `start` lands at the parent's wall time
+	// for `when`. rate = tempo/stretch scales child beats per parent beat.
+	prExpandList { |ev, epoch, place, from = 0, seen|
+		var child = ev[\eventList].isKindOf(EventList).if { ev[\eventList] } { EventList.at(ev[\eventList]) };
+		var b0    = ev[\when] ? 0;
+		var cFrom = ev[\start] ? 0;
+		var rate  = (ev[\tempo] ? 1) / (ev[\stretch] ? 1);
+		var childPlace, childSeen;
+		child.isNil.if {
+			"EventList.prepare: no list named %".format(ev[\eventList]).warn;
+			^List[]
+		};
+		childSeen = (seen ?? { IdentitySet[] }).copy;
+		childSeen.add(this);
+		(ev[\followTrack] == true).if {
+			// Trim like \mi2: playing the parent from past the insert point starts
+			// partway INTO the child.
+			(from > b0).if { cFrom = cFrom + ((from - b0) * rate); b0 = from };
+			childPlace = { |cBeat| place.(b0 + ((cBeat - cFrom) / rate)) };
+		} {
+			var cEnv = child.prPlayTempoEnv;
+			var anchor = place.(b0);
+			var cFromWall = child.beatToWall(cFrom, cEnv);
+			childPlace = { |cBeat| anchor + (child.beatToWall(cBeat, cEnv) - cFromWall) };
+		};
+		^child.prepare(epoch, cFrom, childPlace, childSeen)
+	}
+
+	// Per-type schedule builders (§10a). Sends must stay lightweight: everything
+	// expensive (warping, file reads, env math) happens here, at prepare time.
+	prEmit { |ev, place, tempoEnv, from = 0|
+		var out = List[];
+		(ev[\type] == \audioItemTempoFollow).if {
+			var fromAbs = place.(from);
+			var actions = (ev[\tempoFollowMode] == \env).if {
+				AudioItem.tempoFollowEnvActions(ev, this, tempoEnv, from, place)
+			} {
+				AudioItem.tempoFollowActions(ev, this, tempoEnv, from, place)
+			};
+			actions.do { |pair|
+				out.add((time: fromAbs + pair[0], send: pair[1], label: \audioItemTempoFollow))
+			};
+			^out
+		};
+		((ev[\followTrack] == true) and: { ev[\type] == \mi2 }).if {
+			^this.prEmitMi2Follow(ev, tempoEnv, from, place)
+		};
+		((ev[\when] ? 0) >= from).if {
+			out.add((time: place.(ev[\when] ? 0), send: { ev.copy.play }, label: (ev[\type] ? \event)))
+		};
+		^out
+	}
+
+	// Route (c) (§9b/§10): warp a followTrack \mi2 item's internal events onto this
+	// list's tempo frame and flatten each note into the schedule — one (time, send) per
+	// event, no inner TempoClock (which retires the queueSize:65536 hack). The warp is
+	// done in the BEAT domain and placement goes through `place`, so it composes under
+	// nesting. sourceTempoMap: \eventList inverts recorded seconds through this list's
+	// own tempoMap (for takes recorded against it); the default treats recorded seconds
+	// as beats (flat clock), scaled by rate. When `from` is past the item's onset the
+	// item is trimmed (player.from also chases CC state); emits nothing if `from` is
+	// past the whole item. A flat track reproduces the sealed \mi2 timing exactly.
+	// (\mi is excluded: its fromNote(~from,~to) sub-range isn't replicated here.)
+	prEmitMi2Follow { |ev, tempoEnv, from = 0, place|
+		var out    = List[];
+		var player = ev[\player];
+		var b0     = ev[\when] ? 0;
+		var rate   = (ev[\tempo] ? 1) / (ev[\stretch] ? 1);
+		var originBeat = b0.max(from);
+		var pstart, beatOff, tm, wallBase, warped, wPlayer;
+		player.isNil.if { ^out };
+		ev[\filter] !? { |f| player = f.(player) };
+		ev[\params] !? { |p| player = player.setParams(p) }; // \mi2 finish does this
+		(from > b0).if {
+			var tFrom = (player.start ? 0) + ((from - b0) * rate);
+			(tFrom >= (player.end ? player.bounds.end)).if { ^out }; // fully before `from`
+			player = player.from(tFrom); // rebases to 0 and chases CC state to tFrom
+		};
+		pstart = player.start ? 0;
+		tm = tempoMap;
+		beatOff = (ev[\sourceTempoMap] == \eventList).if {
+			(tm.notNil and: { tm.respondsTo(\prAtExtrapolated) }).if {
+				var startSec = tm.timeAt(originBeat);
+				{ |rel| (tm.prAtExtrapolated(startSec + rel, tm.env) - originBeat) / rate }
+			} {
+				"prEmitMi2Follow: sourceTempoMap:\\eventList needs a MIDIItemTempoMap base; using flat".warn;
+				{ |rel| rel / rate }
+			}
+		} {
+			{ |rel| rel / rate }
+		};
+		wallBase = place.(originBeat);
+		warped = player.midiEvents.collect { |e|
+			var c   = e.copy;
+			var rel = (e[\timestamp] ? 0) - pstart;
+			var nb  = originBeat + beatOff.(rel);
+			c[\timestamp] = place.(nb) - wallBase;
+			e[\sustain] !? { |sus|
+				c[\sustain] = place.(originBeat + beatOff.(rel + sus)) - place.(nb)
+			};
+			c
+		};
+		wPlayer = MIDIItemPlayer(warped, player.source);
+		wPlayer.start = 0; // timestamps are already wall-relative to wallBase
+		wPlayer.play(ev[\mk] ? MicroKeys(\default), sched: { |t, func|
+			out.add((time: wallBase + t, send: func, label: \mi2))
+		});
+		^out
+	}
+
+	// §10c: dispatch the prepared sends from ONE Routine walking the sorted schedule.
+	// (One schedAbs per entry overflows SystemClock's fixed-size global queue on dense
+	// \mi2 takes — "scheduler queue is full" — and dropped everything after it.) Each
+	// send runs `latency` early and self-bundles at +latency (event latency /
+	// makeBundle), landing at item.time; sends are lightweight by construction (all
+	// heavy work happened in prepare), so same-time sends running back-to-back can't
+	// stall the logical clock the way the old playFrom actions did. The generation
+	// bump cancels any previous playback of this list; stop cancels this one (the
+	// routine breaks at its next wake).
+	fire { |sched|
+		var lat = Server.default.latency ? 0.2;
+		var gen, sorted;
+		sorted = sched.asArray.sort { |a, b| (a[\time] ? 0) < (b[\time] ? 0) };
+		prPlayGen = prPlayGen + 1;
+		gen = prPlayGen;
+		Routine {
+			var t = thisThread.seconds;
+			block { |break|
+				sorted.do { |item|
+					var due = (item[\time] ? 0) - lat;
+					(due - t).max(0).wait;
+					t = t.max(due);
+					(gen != prPlayGen).if { break.value };
+					item[\send].value;
+				}
+			}
+		}.play(SystemClock);
+	}
+
+	// Cancel anything scheduled by fire (pending sends check the generation first).
+	stop { prPlayGen = prPlayGen + 1 }
 
 	clear {
 		events = List[];

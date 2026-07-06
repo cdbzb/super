@@ -484,6 +484,24 @@ with zero new code: tap along on a MicroKeys while recording (or while listening
 record the taps as a MIDIItem, mark/save its selection, use that map as the audio take's
 `sourceTempoMap`.
 
+**Server-side integration (`Sweep`) — where it fits and where it doesn't (2026-07-06).**
+`Sweep.kr(trig, rate)` outputs ∫rate dt, i.e. a real-time integrator — but it is CAUSAL:
+it answers "what beat is it now", never "when will beat 37 land", so it cannot replace
+the prepare-time beat→wall integrals (§10 needs future spans to stamp bundles ahead of
+time), and a stateful block-rate float32 integrator is neither reproducible nor as
+precise as the language-side cached sub-grid. Where it genuinely fits:
+- **Tempo-follow playback by exact phase** — replace the 0.25-beat segment chopping in
+  `tempoFollowActions` with one phase-driven player,
+  `BufRd(phase: startFrame + Sweep(rate: sourceRate))`: sample-exact integration removes
+  segment-boundary seams and the §10e caveat (env-mode within-segment rates approximate
+  under nested followTrack). RubberBand env mode already integrates its rate input
+  implicitly; this is the exact version of that idea.
+- **Live beat-position bus** — a synth integrating the composed tempo onto a control bus:
+  playhead guis, server-side beat-threshold triggering, visual sync.
+- **§9a capture cross-check** — sample that bus at note-on to stamp recorded events with
+  beats. Keep it as a CROSS-CHECK only: the planned language-side `wallToBeat` inverse is
+  exact against the composed map and replayable; the bus read adds round-trip jitter.
+
 ### 9c. Audio beat marking (gui + detection)
 Two big pieces already exist:
 - **`RetuneItem` note model** (`Retune.sc:195`) — offline pitch tracking turns a take into

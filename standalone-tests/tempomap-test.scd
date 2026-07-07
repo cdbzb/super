@@ -1,0 +1,148 @@
+// Headless regression suite for TempoMap / MIDIItemTempoMap invariants
+// (milestone 0, quantize-tempomap-project.md §6). Pure language — no server.
+// Run: /Applications/SuperCollider.app/Contents/MacOS/sclang standalone-tests/tempomap-test.scd
+//
+// Covers the M0 invariants + the M0 bug fixes:
+//   - env/invEnv round-trip
+//   - anchors preserved through .curve
+//   - mapBeats / warpToArray preserve array length (clamp, not select)
+//   - quantize(0) == identity
+//   - range-quantize writes the right indices
+//   - quantizeWindow leaves env consistent with its durs (no staleness)
+//   - carry-forward boundary values (machine-confirm)
+(
+var failures = 0, count = 0;
+var assert = { |cond, msg|
+	count = count + 1;
+	cond.if { ("  ok - " ++ msg).postln } {
+		failures = failures + 1;
+		("FAIL - " ++ msg).postln
+	}
+};
+var assertClose = { |a, b, msg, tol = 1e-6|
+	assert.((a - b).abs < tol, msg + " (got % want %)".format(a, b))
+};
+// element-wise closeness for equal-length arrays
+var assertArr = { |a, b, msg, tol = 1e-6|
+	var ok = (a.size == b.size) and: {
+		a.every { |x, i| (x - b[i]).abs < tol }
+	};
+	assert.(ok, msg + " (got % want %)".format(a, b))
+};
+var t, r, warped, close, p, mt, mkNote, notes, sweep;
+
+"== TempoMap / MIDIItemTempoMap tests ==".postln;
+
+// wrap so an unexpected throw still reaches 0.exit (never leave a live sclang).
+// try (not protect): the handler runs ONLY on error, not on success.
+try {
+
+// ------------------------------------------------------------------ TempoMap
+// A jittery performance: ideal beats all 1, performed durs wobble.
+t = TempoMap([1,1,1,1,1,1], [1,2,1,3,1,2]);
+
+// -- 1. env (beat -> performed time) is a proper cumulative map ------------
+assertClose.(t.at(0), 0, "TempoMap at(0) == 0");
+assertClose.(t.at(t.beats.sum), t.durs.sum, "TempoMap at(total beats) == total durs");
+sweep = (0, 0.25 .. t.beats.sum);
+assert.(sweep.differentiate.drop(1).collect { |d, i|
+	t.at(sweep[i + 1]) - t.at(sweep[i]) }.every(_ >= -1e-9),
+	"TempoMap at() is monotonic non-decreasing");
+
+// -- 2. mapBeats reproduces durs on the ideal grid, preserves length -------
+warped = t.mapBeats(1 ! 6);
+assert.(warped.size == 6, "mapBeats: length preserved on unit beats");
+assertArr.(warped, [1,2,1,3,1,2], "mapBeats: reproduces performed durs");
+
+// -- 3. mapBeats preserves length across a ZERO-length span ----------------
+// [1,0,1] integrates to a repeated position -> a 0 dur; the old
+// .select(_.isStrictlyPositive) DROPPED it and desynced the array.
+warped = TempoMap([1,1,1],[1,1,1]).mapBeats([1,0,1]);
+assert.(warped.size == 3, "mapBeats: zero-span keeps length (clamp not select)");
+assert.(warped[1] > 0, "mapBeats: zero-span clamped positive");
+assert.(warped[1] < 1e-3, "mapBeats: zero-span stays ~0");
+
+// -- 4. warpToArray (plusArray) also clamps, not selects -------------------
+warped = [1,0,1].warpTo([1,1,1,1]);
+assert.(warped.size == 3, "warpToArray: zero-span keeps length");
+
+// -- 5. quantize(0) == identity -------------------------------------------
+r = t.quantize(0);
+assertArr.(r.durs, t.durs, "quantize(0): durs unchanged");
+assertArr.(r.beats, t.beats, "quantize(0): beats unchanged");
+
+// -- 6. quantize(1) == constant mean tempo --------------------------------
+r = t.quantize(1);
+close = t.durs.sum / t.beats.sum;   // mean seconds-per-beat
+assertArr.(r.durs, t.beats * close, "quantize(1): rigid mean tempo");
+assertClose.(r.durs.sum, t.durs.sum, "quantize(1): total duration preserved");
+
+// -- 7. range-quantize writes the RIGHT indices ---------------------------
+// durs [1,2,3,4,5,6]; quantize(1) over indices 2..4 -> those become the
+// range mean (12/3 = 4), everything else untouched. The old
+// (start..end).do bug wrote at start+start.. and read past `quantized`.
+t = TempoMap([1,1,1,1,1,1], [1,2,3,4,5,6]);
+r = t.quantize(1, 2, 4);
+assertArr.(r.durs, [1,2,4,4,4,6], "quantizeRange: correct indices written");
+// and no off-by-one nil when end omitted (defaults to last index)
+r = t.quantize(0, 1);   // amount 0 -> identity even over the default range
+assertArr.(r.durs, t.durs, "quantizeRange: end defaults to last index (no nil)");
+
+// -- 8. quantizeWindow leaves env consistent with its durs (no staleness) --
+// env is read by at()/mapBeats; if quantizeWindow mutates durs but not env,
+// the result MAPS LIKE THE UNQUANTIZED ORIGINAL.
+t = TempoMap([1,1,1,1,1,1], [1,3,1,3,1,3]);
+r = t.quantizeWindow(1, 3);
+assertArr.(r.env.levels, ([0] ++ r.durs).integrate,
+	"quantizeWindow: env tracks mutated durs");
+// the durs setter must rebuild env too
+t = TempoMap([1,1,1], [1,1,1]);
+t.durs = [2,2,2];
+assertArr.(t.env.levels, [0,2,4,6], "durs setter rebuilds env");
+
+// -------------------------------------------------------- MIDIItemTempoMap
+// Build a synthetic player so this is pure-language (no MIDI fixture).
+// 6 noteOns; first 5 are anchors, 6th + its dur sets the closing anchor.
+mkNote = { |ts, note = 60| (midicmd: \noteOn, type: \mk, timestamp: ts,
+	midinote: note, dur: 1, sustain: 1, amp: 0.5) };
+notes = [0, 1, 2, 3, 4, 6].collect { |ts| mkNote.(ts) };
+p  = MIDIItemPlayer(notes, nil);
+mt = MIDIItemTempoMap(p, { |n| n[0..4] }, [1,1,1,1,1]);
+
+// closing anchor: last note at 6 + dur 1 = 7, so the final span (ideal beat
+// 4->5) maps to performed 4->7 = 3 s/beat.
+// -- 9. MIDIItemTempoMap env/invEnv (at <-> timeAt) round-trip -------------
+[0.5, 2.0, 3.5].do { |beat|
+	assertClose.(mt.at(mt.timeAt(beat)), beat,
+		"mi2 round-trip beat" + beat, 1e-4)
+};
+
+// -- 10. mapBeats reproduces performed spans on the beat grid --------------
+warped = mt.mapBeats(1 ! 5);
+assert.(warped.size == 5, "mi2 mapBeats: length preserved");
+assertArr.(warped, [1,1,1,1,3], "mi2 mapBeats: reproduces performed spans", 1e-4);
+
+// -- 11. carry-forward boundary: beats past the map extrapolate at the -----
+// final tempo (3 s/beat), and length is preserved (no drop).
+warped = (1 ! 8).warpTo(mt);
+assert.(warped.size == 8, "mi2 carry-forward: length preserved past domain");
+assertArr.(warped, [1,1,1,1,3,3,3,3], "mi2 carry-forward: final tempo held", 1e-3);
+
+// -- 12. .curve preserves anchors -----------------------------------------
+// curve(0) == linear bit-for-similar; curve(1) still passes through anchors.
+assertArr.((1 ! 8).warpTo(mt.curve(0)), (1 ! 8).warpTo(mt),
+	"mi2 curve(0) == linear", 1e-4);
+assertArr.((1 ! 5).warpTo(mt.curve(1)), [1,1,1,1,3],
+	"mi2 curve(1) passes through anchors", 1e-3);
+
+} { |e|
+	failures = failures + 1;
+	("EXCEPTION - " ++ e.errorString).postln;
+};
+
+// -------------------------------------------------------------------- report
+"".postln;
+("== % checks, % failures ==".format(count, failures)).postln;
+failures.postln;
+0.exit;
+)

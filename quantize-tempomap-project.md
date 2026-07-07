@@ -232,7 +232,9 @@ Items tagged **[M0]** are pulled into milestone 0 (fix-before-build, test-driven
 - [ ] `quantizeDft` rect/hamming asymmetry (`TempoMap.sc:85-86`).
 - [ ] `warpTo(t.tempoMap)` truncates vs `warpTo(t)` carries forward (§3e).
 - [ ] MIDIItem `quantize` takes `beats` at face value (→ 4c).
-- [ ] **[M0]** Machine-confirm the carry-forward boundary fix (see Testing notes).
+- [x] **[M0]** Machine-confirm the carry-forward boundary fix — done 2026-07-07 (test 11
+      in `standalone-tests/tempomap-test.scd`: unit-beats past the map domain hold the
+      final performed tempo, length preserved).
 - [x] `chaseCCs` `[nil]` on CC-less region; `notesStraddling` exact-onset duplicate;
       `from()` partial rebase (straddlers/chased CCs) — fixed 2026-06-10.
 - [ ] Stamp `mi.player` with `takeIndex` when `midiEvents === takes.last` (selection
@@ -256,28 +258,28 @@ Fixed 2026-07-05:
       "extend the wall cache to the base map" note — `EventList.beatToWall`'s `prWall*` cache
       only ever covered the `\tempoTrack` path, never `tempoMap.timeAt`.
 
-Found in the 2026-07-01 review:
-- [ ] **[M0]** **`TempoMap.quantizeRangeInPlace` writes to wrong indices** (`TempoMap.sc:92-99`):
+Found in the 2026-07-01 review (all four **[M0]** items FIXED 2026-07-07 — see block below):
+- [x] **[M0]** **`TempoMap.quantizeRangeInPlace` writes to wrong indices** (`TempoMap.sc:92-99`):
       `(start..end).do{|i| dursCopy.put(start+i, quantized[i])}` — `.do` yields the VALUES
       `start, start+1, …`, so it writes at `start+start …` and reads past `quantized`'s end
-      (size is only `end-start+1`). Only correct when `start == 0`. Should be
-      `quantized.do{|v i| dursCopy.put(start+i, v)}`. Also `quantize`'s range branch defaults
-      `end = durs.size` (`:73`) — one past the last index; `quantizeRange` then slices a nil.
-- [ ] **[M0]** **`TempoMap.env` goes stale after any mutation** — built once in `init` (`:18`);
-      `beats_`/`durs_` (`:21-28`) only rebuild `timesIn*`, and `quantizeWindow` (`:107`)
-      mutates `result.durs` in place, patching `timesInDurs` but never `env`. Since
-      `at`/`mapBeats` read `env`, a `quantizeWindow` result MAPS LIKE THE UNQUANTIZED
-      ORIGINAL. **Blocks §3b's pragmatic `.smooth`** (which delegates to `quantizeWindow`) —
-      fix first. Simplest: computed `env` property, or one shared `prRebuild` from init +
-      both setters. Also two leftover `.postln`s in `quantizeWindow`.
-- [ ] **[M0]** **`TempoMap.mapBeats:55` clamp is a no-op** — `b.collect{|i| 0.000001 max: i};` result
-      discarded.
-- [ ] **[M0]** **`mapBeats` silently changes array length** — `.select(_.isStrictlyPositive)` in
-      `TempoMap.mapBeats` (`:56`), `MIDIItemTempoMap.mapBeats` (`MIDI-Item2.sc:1767`), and
-      `warpToArray` (`plusArray.sc:106`) DROPS non-positive durs, so a Pbind's `\dur` desyncs
-      from its `\midinote` array from that point on — worse than the glitch it avoids. Clamp
-      to epsilon (what the dead `:55` line intended) to preserve alignment. Same "silent
-      length change" family as the fixed boundary truncation.
+      (size is only `end-start+1`). Only correct when `start == 0`. Fixed:
+      `quantized.do{|v i| dursCopy.put(start+i, v)}`. Also `quantize`'s range branch defaulted
+      `end = durs.size` (`:73`) — one past the last index; `quantizeRange` then sliced a nil.
+      Both `end` defaults now `durs.size - 1`.
+- [x] **[M0]** **`TempoMap.env` goes stale after any mutation** — built once in `init` (`:18`);
+      `beats_`/`durs_` (`:21-28`) only rebuilt `timesIn*`, and `quantizeWindow` (`:107`)
+      mutated `result.durs` in place, patching `timesInDurs` but never `env`. Since
+      `at`/`mapBeats` read `env`, a `quantizeWindow` result MAPPED LIKE THE UNQUANTIZED
+      ORIGINAL. **Was blocking §3b's pragmatic `.smooth`.** Fixed with one shared `prRebuild`
+      (rebuilds timesIn*/env) called from `init` + both setters + `quantizeWindow`; debug
+      `.postln` removed.
+- [x] **[M0]** **`TempoMap.mapBeats:55` clamp is a no-op** — `b.collect{|i| 0.000001 max: i};`
+      result discarded. Dead line removed; clamp moved to the OUTPUT (see next item).
+- [x] **[M0]** **`mapBeats` silently changes array length** — `.select(_.isStrictlyPositive)` in
+      `TempoMap.mapBeats` (`:56`), `MIDIItemTempoMap.mapBeats` (`MIDI-Item2.sc:1947`), and
+      `warpToArray` (`plusArray.sc:102`) DROPPED non-positive durs, so a Pbind's `\dur` desynced
+      from its `\midinote` array from that point on. All three now clamp non-positive spans to
+      `1e-9` (`.collect{|i| 1e-9 max: i}`) instead of dropping — preserves alignment.
 - [x] **`EventList.copyFrom` drops `tempoMap` and `beatDur`** — fixed 2026-07-06 (§10e):
       copies carry `beatDur`/`tempoMap`/`solo`/`mute` (decision: mix state travels).
 - [ ] `at` direction inversion + dNU rewrap (see §4d).
@@ -305,16 +307,21 @@ Found in the 2026-07-01 review:
 ---
 
 ## 6. Suggested milestones
-0. **Headless regression suite + fix-before-build** (added 2026-07-02). A pure-language test
-   file (`sclang <file>.scd` headless, or UnitTest2) over TempoMap/MIDIItemTempoMap
-   invariants: env/invEnv round-trip, anchors preserved through `.curve`, `mapBeats`
-   preserves array length, `quantize(0)` == identity, range-quantize writes the right
-   indices, carry-forward boundary values. Fix the **[M0]**-tagged §5 bugs in this
-   milestone, driven by the failing tests: env staleness, `quantizeRangeInPlace` indices,
-   `end = durs.size` off-by-one, `mapBeats` clamp/length. Also freeze the protocol names
-   (`timeAt`/`beatAt`/`mapDurs` — §4d) as thin aliases so all later milestones code to them.
-   Rationale: every recompile reboots the server, so regressions must be caught headless;
-   and milestone 1's `reduce: \mean` can't be verified against a broken `quantizeWindow`.
+0. **Headless regression suite + fix-before-build** (added 2026-07-02). **MOSTLY DONE
+   2026-07-07.** Suite lives at `standalone-tests/tempomap-test.scd` (26 checks, pure
+   language via stock `sclang <file>.scd` — attaches to scsynth on startup but is
+   language-side; don't loop while the live rig is up). Covers: TempoMap `at` endpoint +
+   monotonicity, MIDIItemTempoMap env↔timeAt round-trip, anchors preserved through `.curve`,
+   `mapBeats`/`warpToArray` length preservation (incl. zero-span), `quantize(0)` == identity,
+   `quantize(1)` rigid-mean, range-quantize indices, `quantizeWindow` env freshness, durs
+   setter env rebuild, carry-forward boundary. All four **[M0]** §5 bugs FIXED driven by the
+   suite (env staleness → shared `prRebuild`; `quantizeRangeInPlace` indices; `end` off-by-one;
+   `mapBeats` clamp/length at all 3 sites). Machine-confirmed the carry-forward boundary.
+   **STILL OPEN in M0:** freeze the protocol names (`timeAt`/`beatAt`/`mapDurs` — §4d) as thin
+   aliases so all later milestones code to them (no new consumers written yet, so not yet
+   blocking; do before milestone 1's beat-domain work). Rationale unchanged: recompiles reboot
+   the server so regressions must be caught headless, and M1's `reduce:\mean` can't be verified
+   against a broken `quantizeWindow`.
 1. **`anchorEvery(n, mode:\note, reduce:\mean)`** + endpoint pinning + beats re-aggregation.
    Lowest effort, likely highest payoff. (§3a)
 2. **`.smooth`** pragmatic version over `quantizeWindow`; fix `quantizeDft` windowing first

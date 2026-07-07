@@ -102,8 +102,10 @@
 	warpToArray{ |quarters|
 		quarters = quarters ++ quarters.last;
 
+		// clamp non-positive spans to epsilon rather than dropping them, so the
+		// warped array stays aligned with its \midinote (quantize-tempomap-project.md §5)
 		^this.integrate.collect{|i|quarters.atInterpolated(i)}.differentiate
-		.select(_.isStrictlyPositive)
+		.collect{|i| 1e-9 max: i}
 	}
 
 	warpTo {

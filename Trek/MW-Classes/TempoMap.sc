@@ -13,18 +13,25 @@ TempoMap {
 		beats = beats[(0..newSize)];
 		durs = durs[(0..newSize)];
 	};
-	timesInBeats = [ 0 ] ++ beats ++ beats.last => _.integrate;
-	timesInDurs = [ 0 ] ++ durs ++ durs.last => _.integrate;
-	env = Env(([0] ++ durs).integrate, beats)
+	this.prRebuild;
 	^this;
   }
-  beats_{|i| 
-	  beats = i;  
+  // rebuild every derived cache (timesIn*, env) from beats/durs. Shared by init
+  // and both setters so env can't go stale after a mutation — env is read by
+  // at()/mapBeats, so a stale env made e.g. a quantizeWindow result MAP LIKE THE
+  // UNQUANTIZED ORIGINAL (quantize-tempomap-project.md §5).
+  prRebuild {
 	  timesInBeats = [ 0 ] ++ beats ++ beats.last => _.integrate;
+	  timesInDurs = [ 0 ] ++ durs ++ durs.last => _.integrate;
+	  env = Env(([0] ++ durs).integrate, beats);
   }
-  durs_{|i| 
-	  durs= i;  
-	  timesInDurs = [ 0 ] ++ durs++durs.last => _.integrate;
+  beats_{|i|
+	  beats = i;
+	  this.prRebuild;
+  }
+  durs_{|i|
+	  durs= i;
+	  this.prRebuild;
   }
   mapBeatsPoly { | beats |
 	beats = beats.integrate;
@@ -52,8 +59,10 @@ TempoMap {
 	  ^array.integrate.collect{|i| this.interpolateBeatInverse(i)}.differentiate
   }
   mapBeats { | b |
-	  b.collect{|i| 0.000001 max: i};
-	  ^b.integrate.collect{|i| this[i]}.differentiate.select(_.isStrictlyPositive)
+	  // Clamp non-positive spans to epsilon instead of .select-dropping them:
+	  // dropping silently shortened the array and desynced a Pbind's \dur from
+	  // its \midinote from that point on (quantize-tempomap-project.md §5).
+	  ^b.integrate.collect{|i| this[i]}.differentiate.collect{|i| 1e-9 max: i}
   }
   mapRecordedDurs { | durs |
 	  ^this.mapBeats( durs/this.quarters.mean )
@@ -70,7 +79,7 @@ TempoMap {
 		  + (durs * (1 - amount));
 		  ^TempoMap.new( beats.copy, quantized)
 	  }{
-		  end.isNil.if{ end = this.durs.size };
+		  end.isNil.if{ end = this.durs.size - 1 };  // last index, not one past
 		  ^this.quantizeRangeInPlace( amount, start, end )
 	  }
   }
@@ -92,21 +101,24 @@ TempoMap {
   quantizeRangeInPlace { |amount start end|
 	  var quantized = this.quantizeRange(amount,[start,end]);
 	  var dursCopy = durs.copy;
-	  (start..end).do{|i|
-		  dursCopy.put(start+i,quantized[i])
+	  // iterate the quantized VALUES (loop index 0..size-1). The old
+	  // (start..end).do yielded start,start+1,.. as the index, writing at
+	  // start+start.. and reading past `quantized` (size end-start+1) —
+	  // only correct when start == 0 (quantize-tempomap-project.md §5).
+	  quantized.do{|v i|
+		  dursCopy.put(start+i,v)
 	  };
 	  ^TempoMap.new(beats.copy,dursCopy)
 
   }
   quantizeRange { |amount range| // returns new durs
-	  range = range ? [0,durs.size];
+	  range = range ? [0,durs.size-1];  // last index, not one past
 	  range = (range[0]..range[1]);
 		  ^durs[range].sum/beats[range].sum * beats[range] * amount 
 		  + (durs[range]*(1-amount)) 
   }
   quantizeWindow { |amount=1 window=3|
 	        var result = TempoMap(beats.copy,durs.copy);
-		(result.durs.size-window).postln;
 		result.durs[0..(result.durs.size-window-1)].do{|i x|
 			//var chunk = this[x..(x +windowSize)];
 			var range = [x,(x + window)];
@@ -114,7 +126,9 @@ TempoMap {
 			chunk.do{|it in|result.durs.put(in+x,it)}
 		};
 
-		result.timesInDurs = [ 0 ] ++ result.durs ++ result.durs.last => _.integrate;
+		// durs were mutated in place; rebuild timesInDurs AND env (the old code
+		// patched only timesInDurs, leaving env — read by at()/mapBeats — stale).
+		result.prRebuild;
 
 		^result;
   }

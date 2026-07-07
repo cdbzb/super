@@ -1946,8 +1946,11 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 	}
 	mapBeats{|b|
 		// domain = invEnv's actual beat-extent (robust when beats.size != anchor count)
+		// Clamp non-positive spans to epsilon rather than dropping them (which
+		// shortened the array and desynced \dur from \midinote) — see TempoMap.mapBeats
+		// and quantize-tempomap-project.md §5.
 		^this.prMapThrough(b.integrate, invEnv, invEnv.times.sum)
-			.differentiate.select(_.isStrictlyPositive)
+			.differentiate.collect{|i| 1e-9 max: i}
 	}
 	dursToBeats{|a|
 		^this.prMapThrough(a.integrate, env, env.times.sum).differentiate

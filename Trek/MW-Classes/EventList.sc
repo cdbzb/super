@@ -17,6 +17,9 @@ EventList {
 	// tempoEnv segment boundary, built once per tempoEnv so completed segments aren't
 	// re-integrated for every event. Keyed on tempoEnv identity.
 	var prWallEnv, prWallStarts, prWallCum, prWallLevels, prWallTimes, prWallCurves;
+	// Base-wall integral (prBaseWallAt) at each prWallStarts boundary, cached so a warm
+	// beatToWall pays ONE tempoMap.timeAt (the partial's endpoint), not two.
+	var prWallBase;
 	// Per-segment cumulative sub-grids for ramp segments over a tempoMap base
 	// (nil for step/flat-base segments) — see prBuildRampSub.
 	var prWallSubs;
@@ -462,6 +465,14 @@ EventList {
 		^(b - a) * (beatDur ? TempoClock.default.beatDur)
 	}
 
+	// Absolute form of baseWallDelta: base wall-seconds from beat 0 to `beat`.
+	// baseWallDelta(a, b) == prBaseWallAt(b) - prBaseWallAt(a); caching this at fixed
+	// anchor points (prWallBase, ramp sub-grids) halves the timeAt calls per lookup.
+	prBaseWallAt { |beat|
+		tempoMap.notNil.if { ^tempoMap.timeAt(beat) };
+		^beat * (beatDur ? TempoClock.default.beatDur)
+	}
+
 	// Pointwise compose of the \tempoTrack multiplier with the base tempo:
 	//   wall(beat) = INTEGRAL over [0, beat] of baseSecPerBeat(x) * m(x) dx.
 	// A flat multiplier of 1 reproduces the base map exactly; 2 plays it twice as
@@ -503,6 +514,7 @@ EventList {
 		prWallStarts = starts; prWallCum = cum;
 		prWallLevels = levels; prWallTimes = times; prWallCurves = curves;
 		prWallSubs = subs;
+		prWallBase = starts.collect { |st| this.prBaseWallAt(st) };
 	}
 
 	// Cumulative sub-sampled integral across ONE ramp segment (same ~16 steps/beat
@@ -512,14 +524,16 @@ EventList {
 		var step = segLen / k;
 		var mAt = { |x| mA + ((mB - mA) * (x - segStart) / segLen) };
 		var cum = [0];
+		var base = [this.prBaseWallAt(segStart)];
 		var sum = 0, x0 = segStart;
 		k.do { |j|
 			var x1 = segStart + ((j + 1) * step);
 			sum = sum + (mAt.((x0 + x1) / 2) * this.baseWallDelta(x0, x1));
 			cum = cum.add(sum);
+			base = base.add(this.prBaseWallAt(x1));
 			x0 = x1;
 		};
-		^(step: step, mA: mA, mB: mB, segStart: segStart, segLen: segLen, cum: cum)
+		^(step: step, mA: mA, mB: mB, segStart: segStart, segLen: segLen, cum: cum, base: base)
 	}
 
 	// O(1) partial-ramp lookup: cached cumulative up to the last grid point at or
@@ -530,7 +544,7 @@ EventList {
 		var x0 = sub[\segStart] + (j * sub[\step]);
 		var mAt = { |x| sub[\mA] + ((sub[\mB] - sub[\mA]) * (x - sub[\segStart]) / sub[\segLen]) };
 		^sub[\cum][j] + ((beat > x0).if {
-			mAt.((x0 + beat) / 2) * this.baseWallDelta(x0, beat)
+			mAt.((x0 + beat) / 2) * (this.prBaseWallAt(beat) - sub[\base][j])
 		} { 0 })
 	}
 
@@ -550,7 +564,7 @@ EventList {
 			segStart = prWallStarts[seg];
 			cv = prWallCurves.isArray.if { prWallCurves.wrapAt(seg) } { prWallCurves };
 			^prWallCum[seg] + (cv == \step).if {
-				prWallLevels[seg] * this.baseWallDelta(segStart, beat)
+				prWallLevels[seg] * (this.prBaseWallAt(beat) - prWallBase[seg])
 			} {
 				prWallSubs[seg].notNil.if {
 					this.prRampSubAt(prWallSubs[seg], beat)
@@ -562,7 +576,7 @@ EventList {
 			};
 		};
 		// Past the final boundary: flat extrapolation at the last multiplier.
-		^prWallCum.last + (prWallLevels.last * this.baseWallDelta(prWallStarts.last, beat))
+		^prWallCum.last + (prWallLevels.last * (this.prBaseWallAt(beat) - prWallBase.last))
 	}
 
 	// INTEGRAL over [a, b] of m(x) * baseSecPerBeat(x) dx, where m ramps linearly
@@ -799,9 +813,10 @@ EventList {
 			var c   = e.copy;
 			var rel = (e[\timestamp] ? 0) - pstart;
 			var nb  = originBeat + beatOff.(rel);
-			c[\timestamp] = place.(nb) - wallBase;
+			var placedNb = place.(nb);
+			c[\timestamp] = placedNb - wallBase;
 			e[\sustain] !? { |sus|
-				c[\sustain] = place.(originBeat + beatOff.(rel + sus)) - place.(nb)
+				c[\sustain] = place.(originBeat + beatOff.(rel + sus)) - placedNb
 			};
 			c
 		};

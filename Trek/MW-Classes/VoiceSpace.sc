@@ -587,10 +587,13 @@ VoiceSpace {
 	rescaleEnv { |env, startBeat, place|
 		var newTimes = [];
 		var cur = startBeat;
+		var prevWall = place.(cur); // carried: each node's place.(next) is the next node's place.(cur)
 		env.times.do { |t|
-			var next = cur + t;
-			newTimes = newTimes.add(place.(next) - place.(cur));
-			cur = next;
+			var nextWall;
+			cur = cur + t;
+			nextWall = place.(cur);
+			newTimes = newTimes.add(nextWall - prevWall);
+			prevWall = nextWall;
 		};
 		^Env(env.levels, newTimes, env.curves)
 	}

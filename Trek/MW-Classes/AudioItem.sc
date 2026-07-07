@@ -170,6 +170,7 @@ AudioItem {
 		var path = AudioItem.takePath(directory, takeNum);
 		var buffer, sf, sourceDur, srcOffset, b0, startSec, endSec;
 		var segBeats, fade, fromBeat, fromSec, actions, beat, lastBeat;
+		var wallFrom, srcCarry, wallCarry;
 
 		File.exists(path).not.if {
 			"AudioItem tempoFollow: no file at %".format(path).warn;
@@ -221,18 +222,24 @@ AudioItem {
 		// reaches the file end (avoids inverting the tempoMap to find the last beat).
 		lastBeat = ev[\dur].notNil.if { b0 + ev[\dur] } { inf };
 
-		while { (beat < lastBeat) and: { (startSec + srcOffset.(beat)) < endSec } } {
+		// Loop-invariant / carried values: wallAt.(from) is fixed, and each iteration's
+		// (sourceA, wallA) is the previous one's (sourceBFull, wallB) — recomputing them
+		// tripled the beatToWall cost of this loop.
+		wallFrom  = wallAt.(from);
+		srcCarry  = fromSec; // == startSec + srcOffset.(fromBeat)
+		wallCarry = wallAt.(beat);
+		while { (beat < lastBeat) and: { srcCarry < endSec } } {
 			var nextBeat = (beat + segBeats).min(lastBeat);
-			var sourceA = startSec + srcOffset.(beat);
+			var sourceA = srcCarry;
 			var sourceBFull = startSec + srcOffset.(nextBeat);
 			var sourceB = sourceBFull.min(endSec);
-			var wallA = wallAt.(beat);
+			var wallA = wallCarry;
 			var wallB = wallAt.(nextBeat);
 			// rate from the full segment (local source-secs per wall-sec); the wall span
 			// is truncated by the same fraction when the final chunk hits the file end.
 			var rate = (sourceBFull - sourceA) / (wallB - wallA).max(0.001);
 			var wallDur = (wallB - wallA) * ((sourceB - sourceA) / (sourceBFull - sourceA).max(1e-9));
-			var delay = wallA - wallAt.(from);
+			var delay = wallA - wallFrom;
 			(wallDur > 0).if {
 				actions.add([delay.max(0), {
 					Server.default.makeBundle((ev[\latency] ? Server.default.latency) + (ev[\lag] ? 0), {
@@ -252,6 +259,8 @@ AudioItem {
 				}])
 			};
 			beat = nextBeat;
+			srcCarry = sourceBFull;
+			wallCarry = wallB;
 		};
 		^actions
 	}

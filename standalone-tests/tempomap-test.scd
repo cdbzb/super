@@ -135,6 +135,31 @@ assertArr.((1 ! 8).warpTo(mt.curve(0)), (1 ! 8).warpTo(mt),
 assertArr.((1 ! 5).warpTo(mt.curve(1)), [1,1,1,1,3],
 	"mi2 curve(1) passes through anchors", 1e-3);
 
+// -- 13. scaleBeats: relabel the beat axis, non-mutating -------------------
+r = mt.scaleBeats(2);
+assertArr.(r.beats, [2,2,2,2,2], "scaleBeats: beats multiplied by k");
+assertArr.(mt.beats, [1,1,1,1,1], "scaleBeats: original map unchanged");
+// pure relabel: same performed time, addressed at k*beat
+assertClose.(r.timeAt(2), mt.timeAt(1), "scaleBeats: timeAt(k*b) == old timeAt(b)", 1e-4);
+// tempo scales by k
+assertClose.(r.bps, mt.bps * 2, "scaleBeats: bps scales by k", 1e-4);
+// to reproduce the anchor gaps you now feed k-beat spans
+assertArr.((2 ! 5).warpTo(r), [1,1,1,1,3],
+	"scaleBeats: (k!n).warpTo reproduces performed spans", 1e-3);
+
+// -- 14. MIDIItemPlayer.scaleBeats flows into tempomap (what asEventList uses) --
+// p has 6 noteOns; with no selection, tempomap(1!6) uses I.d (all 6) as anchors.
+assertArr.(p.scaleBeats(2).tempomap(1 ! 6).beats, 2 ! 6,
+	"player scaleBeats: tempomap beats scaled");
+assertArr.(p.tempomap(1 ! 6).beats, 1 ! 6,
+	"player scaleBeats: original player unchanged (non-mutating)");
+// env drives asEventList's `when`; performed time 1 maps to 2x the beat
+assertClose.(p.scaleBeats(2).tempomap(1 ! 6).at(1), 2,
+	"player scaleBeats: env (when source) doubles", 1e-4);
+assertClose.(p.tempomap(1 ! 6).at(1), 1, "player scaleBeats: unscaled env unchanged", 1e-4);
+assertArr.(p.scaleBeats(2).scaleBeats(2).tempomap(1 ! 6).beats, 4 ! 6,
+	"player scaleBeats: composes");
+
 } { |e|
 	failures = failures + 1;
 	("EXCEPTION - " ++ e.errorString).postln;

@@ -1250,6 +1250,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	var tracks;
 	var <>takeIndex, <>currentSelection; // set by MIDIItem.take / selection — not preserved through filters
 	var <>closingAnchor; // (time:, beats:) closing tempo-anchor from the parent's next selected beat; set by fromBeat
+	var <>beatScale; // ideal-beats-per-anchor multiplier (nil == 1); applied by tempomap, see scaleBeats
 
 	*new {| amidiEvents source |
 		var player, bounds;
@@ -1675,9 +1676,19 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	tempomap {|beats choiceFunc|
 		beats.isString.if{ beats = beats.beats };
 		#beats, choiceFunc = this.prSelectionArgs(beats, choiceFunc);
-		^MIDIItemTempoMap(this, choiceFunc, beats)
+		// player-level beat scale: each anchor gap counts as beatScale ideal beats
+		// (same as MIDIItemTempoMap.scaleBeats, folded in before construction).
+		^MIDIItemTempoMap(this, choiceFunc, beats * (beatScale ? 1))
 	}
 	tempoMap {|beats choiceFunc| ^this.tempomap(beats, choiceFunc) }
+	// Return a COPY of this player whose tempomap treats each anchor gap as k ideal
+	// beats instead of 1 — so everything derived from the map picks it up, including
+	// asEventList (which builds its own map internally): pure relabel, playback is
+	// unchanged, but bps/bpm and the EventList's beat grid scale by k. Non-mutating,
+	// so chain it — m.scaleBeats(2).asEventList(\x, \default) — or m = m.scaleBeats(2)
+	// to keep it. Composes: scaleBeats(2).scaleBeats(2) == 4.
+	scaleBeats {|k = 1| ^this.copy.prScaleBeats(k) }
+	prScaleBeats {|k = 1| beatScale = (beatScale ? 1) * k; ^this }
 	// measured tempo of the loaded selection (see MIDIItemTempoMap.bps).
 	// e.g. q = m.quantize; q.play(nil, TempoClock(m.bps)) -> original tempo.
 	bps {|beats choiceFunc| ^this.tempomap(beats, choiceFunc).bps }
@@ -1796,7 +1807,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 }
 
 MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap but with timestamps instead of beats 
-	var <times, <beats, <midiEvents;
+	var <times, <>beats, <midiEvents;
 	var <env, <tempoMap ;
 	var <invEnv, <curved = false, <curveAmount = 0;
 	var <t0; // absolute timestamp of the first anchor (times/env are relative to it)
@@ -1808,7 +1819,7 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 		^super.new.init( midiItem, choiceFunc, beats)
 	}
 	init{|midiItem, choiceFunc, b|
-		var gaps, closeTime;
+		var closeTime;
 		midiEvents = midiItem.midiEvents;
 		// closing anchor: fromBeat supplies the parent's next-beat time; else clip end
 		closeTime = (midiItem.tryPerform(\closingAnchor) !? (_[\time])) ? midiItem.bounds.end;
@@ -1819,14 +1830,23 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 		t0 = times[0];
 		times = times - t0; //relative to first anchor
 		beats = b;
-		// direction 1: performedTime -> idealBeat (piecewise-linear; unchanged)
-		env = Env([0] ++ ([0] ++ beats.integrate ), times.differentiate );
-		gaps = times.differentiate.drop(1);
+		this.prBuildLinear;
+	}
+	// (re)build env / tempoMap / invEnv from the current times + beats as the
+	// piecewise-linear (constant-tempo-per-span) maps. Shared by init and the
+	// beats transforms (scaleBeats); resets any curvature and the per-Env cache.
+	// curve() replaces env/invEnv with a monotone-Hermite sampling afterwards.
+	prBuildLinear {
+		var gaps = times.differentiate.drop(1);
+		// direction 1: performedTime -> idealBeat
+		env = Env([0] ++ ([0] ++ beats.integrate), times.differentiate);
 		// inner TempoMap kept only for doesNotUnderstand forwarding of TempoMap methods.
 		tempoMap = TempoMap(beats, gaps);
 		// direction 2: idealBeat -> performedTime, exact inverse of env's anchor nodes.
-		// curve() rebuilds this (and env) as a monotone-Hermite sampling.
 		invEnv = Env(times, beats);
+		curved = false;
+		curveAmount = 0;
+		prEnvCache = nil;
 	}
 	offsets{
 		^times.collect{|i| env[i] - i};
@@ -1954,6 +1974,21 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 	}
 	dursToBeats{|a|
 		^this.prMapThrough(a.integrate, env, env.times.sum).differentiate
+	}
+
+	// Return a NEW map with every ideal-beat span multiplied by `k` — i.e. each
+	// recorded anchor gap counts as k ideal beats instead of 1. Pure relabel of the
+	// beat axis: performed times are untouched, but bps/bpm scale by k and beat-domain
+	// addressing rescales (timeAt(k*b) == old timeAt(b)). To reproduce the performance
+	// you now feed k-beat spans: (k ! n).warpTo(t.scaleBeats(k)). Resets curvature —
+	// compose it: t.scaleBeats(k).curve(amount).
+	scaleBeats {|k = 1|
+		^this.copy.prScaleBeats(k)
+	}
+	prScaleBeats {|k = 1|
+		beats = beats * k;   // new array — the original's beats is left untouched
+		this.prBuildLinear;
+		^this
 	}
 
 	// Return a NEW MIDIItemTempoMap whose performed<->ideal mapping is a monotone

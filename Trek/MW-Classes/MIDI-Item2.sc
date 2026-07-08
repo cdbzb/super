@@ -1991,6 +1991,33 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 		^this
 	}
 
+	// Return a NEW map covering only ideal beats [from, to], re-zeroed so it starts at
+	// beat 0 / time 0; t0 absorbs the offset (t0' = t0 + timeAt(from)) so absolute
+	// placement is preserved. Endpoints are synthesized exactly at from/to via timeAt
+	// (interpolates mid-span, extrapolates past the ends); interior anchors are kept.
+	// `to` defaults to the map's end. Beat-domain analog of player.fromBeat;
+	// non-mutating; resets curvature (compose .trim(a, b).curve(amount)).
+	trim {|from = 0, to|
+		^this.copy.prTrim(from, to)
+	}
+	prTrim {|from = 0, to|
+		var cum = [0] ++ beats.integrate;    // cumulative beat nodes, parallel to `times`
+		var lo = from, hi, keep, fromTime;
+		hi = to ? cum.last;
+		(hi <= lo).if {
+			("MIDIItemTempoMap.trim: to (%) must be > from (%)".format(hi, lo)).warn;
+			^this
+		};
+		keep     = (0 .. (cum.size - 1)).select { |i| (cum[i] > lo) and: { cum[i] < hi } };
+		fromTime = this.timeAt(lo);
+		// exact endpoints + interior anchors, then re-zero to the window start
+		beats = (([lo] ++ keep.collect { |i| cum[i] } ++ [hi]) - lo).differentiate.drop(1);
+		times = ([fromTime] ++ keep.collect { |i| times[i] } ++ [this.timeAt(hi)]) - fromTime;
+		t0 = t0 + fromTime;
+		this.prBuildLinear;
+		^this
+	}
+
 	// Return a NEW MIDIItemTempoMap whose performed<->ideal mapping is a monotone
 	// cubic Hermite (PCHIP) curve through the same anchor nodes, instead of the
 	// piecewise-linear (constant-tempo-per-span) default. Because the curve passes

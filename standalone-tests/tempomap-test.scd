@@ -160,6 +160,26 @@ assertClose.(p.tempomap(1 ! 6).at(1), 1, "player scaleBeats: unscaled env unchan
 assertArr.(p.scaleBeats(2).scaleBeats(2).tempomap(1 ! 6).beats, 4 ! 6,
 	"player scaleBeats: composes");
 
+// -- 15. trim(from, to): beat-domain sub-map, re-zeroed, t0 preserves offset --
+r = mt.trim(1, 3);
+assertArr.(r.beats, [1,1], "trim: beats are the windowed gaps");
+assertArr.(r.times, [0,1,2], "trim: times re-zeroed to window start");
+assertClose.(r.t0, mt.t0 + 1, "trim: t0 absorbs the offset");
+assertArr.((1 ! 2).warpTo(r), [1,1], "trim: warpTo reproduces windowed spans");
+// absolute placement preserved: r's beat 0 == mt's beat 1
+assertClose.(r.timeAt(0) + r.t0, mt.timeAt(1) + mt.t0, "trim: absolute start preserved", 1e-4);
+assertArr.(mt.beats, [1,1,1,1,1], "trim: original map unchanged");
+// window crossing the fast final span (ideal beat 4->5 is 3 s/beat)
+r = mt.trim(3, 5);
+assertArr.((1 ! 2).warpTo(r), [1,3], "trim: fast final span captured", 1e-4);
+// fractional / mid-span endpoints
+r = mt.trim(0.5, 2.5);
+assertClose.(r.beats.sum, 2, "trim: total beats == to - from");
+assertClose.(r.timeAt(r.beats.sum) + r.t0, mt.timeAt(2.5) + mt.t0,
+	"trim: window end preserved", 1e-4);
+// to defaults to the map end -> trim(0) is identity
+assertArr.(mt.trim(0).beats, mt.beats, "trim(0): identity");
+
 } { |e|
 	failures = failures + 1;
 	("EXCEPTION - " ++ e.errorString).postln;

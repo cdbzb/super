@@ -27,7 +27,7 @@ EventList {
 	*initClass {
 		all = ();
 		Class.initClassTree(Event);
-        Event.addEventType(\eventList, {~eventList.isKindOf(EventList).if{~eventList}{EventList(~eventList)}.play(~start ? 0)});
+        Event.addEventType(\eventList, {~eventList.isKindOf(EventList).if{~eventList}{EventList(~eventList)}.play(~start ? 0, to: ~end)});
 	}
 
 	*new { |name, defaultType|
@@ -600,7 +600,11 @@ EventList {
 		^sum
 	}
 
-	play { |from=0, fromEvent, fromSection|
+	// `to` (nil = play to the end) upper-bounds playback to the half-open beat
+	// window [from, to) in THIS list's frame — the counterpart to `from`. It is
+	// absolute (not shifted by fromEvent/fromSection). Reached from \eventList via
+	// end:. Ignored on the playFn override path.
+	play { |from=0, fromEvent, fromSection, to|
 		from = from ? 0;
 		fromEvent !? {
 			var ev = events[fromEvent];
@@ -618,10 +622,10 @@ EventList {
 			// No tempoMap on a VoiceSpace list => base of 1 s/beat, so \tempoTrack values
 			// read as absolute s/beat (identity = 1), matching pre-delegation behavior.
 			beatDur ?? { this.beatDur_(1) };
-			^this.prPlayPrepared(from)
+			^this.prPlayPrepared(from, to)
 		};
 		playFn.notNil.if { ^playFn.(this, from) };
-		^this.prPlayPrepared(from)
+		^this.prPlayPrepared(from, to)
 	}
 
 	// §10c: prepare (all language/allocation work, synchronous, before the epoch) then
@@ -642,7 +646,7 @@ EventList {
 	// logical time + latency, so every send then leaves with only latency - Δ of real
 	// headroom → server "late" storms whenever Δ > latency. (Found live 2026-07-06:
 	// lates until leadTime ≈ latency + Δ, misread as "2x latency".)
-	prPlayPrepared { |from = 0|
+	prPlayPrepared { |from = 0, to|
 		var lat = Server.default.latency ? 0.2;
 		// The epoch anchors to LOGICAL time (thisThread.seconds), like everything else
 		// scheduled in sclang — so events co-evaluated with .play line up with the list
@@ -653,7 +657,7 @@ EventList {
 		// budget must cover logical-drift + prepare; it warns + slides when it doesn't.
 		var t0 = thisThread.seconds;
 		var epoch = t0 + (leadTime ? 0) + lat;
-		var sched = this.prepare(epoch, from);
+		var sched = this.prepare(epoch, from, to: to);
 		// Sends fire `lat` early (they self-bundle at +lat), so the real deadline for
 		// the FIRST entry is epoch - lat = t0 + leadTime.
 		var d = (Main.elapsedTime + 0.02) - (epoch - lat);
@@ -678,7 +682,7 @@ EventList {
 	// `place` answers "what absolute wall-second does a beat in THIS list's frame land
 	// on?"; top-level lists get the default, nested lists get one from prExpandList.
 	// `seen` guards cyclic nesting.
-	prepare { |epoch, from = 0, place, seen|
+	prepare { |epoch, from = 0, place, seen, to|
 		var sched = List[];
 		var evts, tempoEnv, fromWall, playable;
 		seen = seen ?? { IdentitySet[] };
@@ -705,6 +709,14 @@ EventList {
 		voiceSpace !? {
 			sched.addAll(voiceSpace.prepareVoices(this, epoch, from, place, evts, tempoEnv))
 		};
+		// Half-open upper bound: drop everything at/after beat `to`. Done in the WALL
+		// domain (place is monotonic in beat, so time >= place.(to) iff beat >= to) so
+		// one filter covers every branch — discrete, mi2/audioItem follow, voices — and
+		// applies per-list, so a nested child trims to its own end: in its own frame.
+		to !? {
+			var toWall = place.(to);
+			sched = sched.reject { |i| i[\time] >= (toWall - 0.001) };
+		};
 		^sched
 	}
 
@@ -723,6 +735,7 @@ EventList {
 		var child = ev[\eventList].isKindOf(EventList).if { ev[\eventList] } { EventList.at(ev[\eventList]) };
 		var b0    = ev[\when] ? 0;
 		var cFrom = ev[\start] ? 0;
+		var cTo   = ev[\end];  // child-frame half-open end (nil = to child's end)
 		var rate  = (ev[\tempo] ? 1) / (ev[\stretch] ? 1);
 		var childPlace, childSeen;
 		child.isNil.if {
@@ -742,7 +755,7 @@ EventList {
 			var cFromWall = child.beatToWall(cFrom, cEnv);
 			childPlace = { |cBeat| anchor + (child.beatToWall(cBeat, cEnv) - cFromWall) };
 		};
-		^child.prepare(epoch, cFrom, childPlace, childSeen)
+		^child.prepare(epoch, cFrom, childPlace, childSeen, cTo)
 	}
 
 	// Per-type schedule builders (§10a). Sends must stay lightweight: everything

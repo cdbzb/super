@@ -2,17 +2,9 @@
 // quantize-tempomap-project.md). Pure language — no server needed.
 // Run: /Applications/SuperCollider.app/Contents/MacOS/sclang standalone-tests/prepare-fire-test.scd
 (
-var failures = 0, count = 0;
-var assert = { |cond, msg|
-	count = count + 1;
-	cond.if { ("  ok - " ++ msg).postln } {
-		failures = failures + 1;
-		("FAIL - " ++ msg).postln
-	}
-};
-var assertClose = { |a, b, msg, tol = 1e-9|
-	assert.((a - b).abs < tol, msg + "(got % want %)".format(a, b))
-};
+var h = (thisProcess.nowExecutingPath.dirname +/+ "test-helpers.scd").load;
+var assert = h[\assert];
+var assertClose = { |a, b, msg, tol = 1e-9| h[\assertClose].(a, b, msg, tol) };
 var epoch = 100;
 var flat, tempo, child, parent, ftChild, ftParent, la, lb, orig, copied;
 var sched, times, hits, missed, live, stopped, stress, bigSink, finish;
@@ -186,9 +178,7 @@ finish = {
 			"leadTime: first send at exactly t0 + leadTime", 0.03);
 	};
 	assert.(bigSink.size == 5000, "dense: all 5000 sends fired (got %)".format(bigSink.size));
-	"".postln;
-	"% checks, % failures".format(count, failures).postln;
-	(failures == 0).if { "ALL PASS".postln } { "FAILURES".postln };
+	h[\report].();
 	0.exit;
 };
 SystemClock.sched(2.5, { finish.value; nil });

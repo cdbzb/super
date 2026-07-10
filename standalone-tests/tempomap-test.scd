@@ -11,24 +11,10 @@
 //   - quantizeWindow leaves env consistent with its durs (no staleness)
 //   - carry-forward boundary values (machine-confirm)
 (
-var failures = 0, count = 0;
-var assert = { |cond, msg|
-	count = count + 1;
-	cond.if { ("  ok - " ++ msg).postln } {
-		failures = failures + 1;
-		("FAIL - " ++ msg).postln
-	}
-};
-var assertClose = { |a, b, msg, tol = 1e-6|
-	assert.((a - b).abs < tol, msg + " (got % want %)".format(a, b))
-};
-// element-wise closeness for equal-length arrays
-var assertArr = { |a, b, msg, tol = 1e-6|
-	var ok = (a.size == b.size) and: {
-		a.every { |x, i| (x - b[i]).abs < tol }
-	};
-	assert.(ok, msg + " (got % want %)".format(a, b))
-};
+var h = (thisProcess.nowExecutingPath.dirname +/+ "test-helpers.scd").load;
+var assert = h[\assert];
+var assertClose = { |a, b, msg, tol = 1e-6| h[\assertClose].(a, b, msg, tol) };
+var assertArr = { |a, b, msg, tol = 1e-6| h[\assertArr].(a, b, msg, tol) };
 var t, r, warped, close, p, mt, mkNote, notes, sweep;
 
 "== TempoMap / MIDIItemTempoMap tests ==".postln;
@@ -181,13 +167,10 @@ assertClose.(r.timeAt(r.beats.sum) + r.t0, mt.timeAt(2.5) + mt.t0,
 assertArr.(mt.trim(0).beats, mt.beats, "trim(0): identity");
 
 } { |e|
-	failures = failures + 1;
-	("EXCEPTION - " ++ e.errorString).postln;
+	h[\fail].("EXCEPTION - " ++ e.errorString);
 };
 
 // -------------------------------------------------------------------- report
-"".postln;
-("== % checks, % failures ==".format(count, failures)).postln;
-failures.postln;
+h[\report].();
 0.exit;
 )

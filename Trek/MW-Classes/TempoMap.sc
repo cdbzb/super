@@ -1,5 +1,5 @@
-TempoMap { 
-  var <beats,<durs,<timesInBeats,<>timesInDurs, <env;
+TempoMap {
+  var <beats,<durs,<timesInBeats,<>timesInDurs, <env, <invEnv;
   var polynomial;
   *new { |beats = #[1,1,1,1,1,1,1] durs = #[1,1,1,1,1,1,1,1]|
     ^super.new.init(beats ,durs )
@@ -24,6 +24,7 @@ TempoMap {
 	  timesInBeats = [ 0 ] ++ beats ++ beats.last => _.integrate;
 	  timesInDurs = [ 0 ] ++ durs ++ durs.last => _.integrate;
 	  env = Env(([0] ++ durs).integrate, beats);
+	  invEnv = env.invert;   // performed time -> beat (plusEnv.sc)
   }
   beats_{|i|
 	  beats = i;
@@ -44,16 +45,13 @@ TempoMap {
   at { |beat|
 	  ^env[beat]
   }
-  interpolateBeatInverse { |beat|
-	  //simply swtched timesInBeats and timesInDurs !!
-
-	  // var timesInDurz = timesInBeats;
-	  // var timesInBeatz = timesInDurs;
-	  // var prev = timesInBeatz.select{|i| i <= beat}.maxIndex;
-	  // [[ prev, prev + 1 ],[ timesInBeatz[prev], timesInBeatz[prev + 1] ]].postln;
-	  // ^beat-timesInBeatz[prev] / ( timesInBeatz.clipAt(prev + 1) - timesInBeatz[prev] ) * ( timesInDurz.clipAt( prev + 1 ) - timesInDurz[prev] ) + timesInDurz[prev]
-
-	  ^Env(beats, ([0] ++ durs).integrate)[beat]
+  // performed time -> ideal beat. Was `Env(beats, ([0] ++ durs).integrate)[t]`,
+  // rebuilt per call AND malformed (levels = per-span beat counts, not
+  // cumulative; times one LONGER than levels instead of one shorter) — it
+  // returned a constant, so dursToBeats gave [x, 0, 0, ...]. Now the cached
+  // inverse map (quantize-tempomap-project.md §5).
+  interpolateBeatInverse { |time|
+	  ^invEnv[time]
   }
   dursToBeats { | array |
 	  ^array.integrate.collect{|i| this.interpolateBeatInverse(i)}.differentiate

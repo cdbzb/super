@@ -86,6 +86,23 @@ t = TempoMap([1,1,1], [1,1,1]);
 t.durs = [2,2,2];
 assertArr.(t.env.levels, [0,2,4,6], "durs setter rebuilds env");
 
+// -- 8b. dursToBeats / interpolateBeatInverse (performed time -> beat) ------
+// Was broken (constant output -> [x,0,0,...]): interpolateBeatInverse built a
+// malformed Env per call. Now the cached env.invert (plusEnv.sc).
+t = TempoMap([1,1,1,1,1,1], [1,2,1,3,1,2]);
+assertArr.(t.dursToBeats([1,2,1,3,1,2]), 1 ! 6,
+	"dursToBeats: performed durs back to unit beats");
+// roundtrip with mapBeats on an uneven beat grid
+assertArr.(t.dursToBeats(t.mapBeats([0.5, 1.5, 2, 1, 1])), [0.5, 1.5, 2, 1, 1],
+	"dursToBeats: inverse of mapBeats");
+// mid-span: time 2 lies halfway through the 2s span (beat 1 -> 2)
+assertClose.(t.interpolateBeatInverse(2), 1.5, "interpolateBeatInverse: mid-span");
+// at() roundtrip
+[0.5, 2.0, 5.5, 8.0].do { |time|
+	assertClose.(t.at(t.interpolateBeatInverse(time)), time,
+		"interpolateBeatInverse: at() roundtrip time" + time)
+};
+
 // -------------------------------------------------------- MIDIItemTempoMap
 // Build a synthetic player so this is pure-language (no MIDI fixture).
 // 6 noteOns; first 5 are anchors, 6th + its dur sets the closing anchor.

@@ -89,7 +89,7 @@ Quantizing a jittery performance is really three independent choices:
 
 | axis | question | tool today | tool wanted |
 |---|---|---|---|
-| **resolution** | how many control points / anchors? | `choiceFunc` (manual) | interval anchoring |
+| **resolution** | how many control points / anchors? | `choiceFunc` (manual) | `clump` / `newBeats` |
 | **between-anchor shape** | how to flow between control points? | `.curve` | (done) |
 | **at-anchor fidelity** | pass *through* anchors, or *near* them? | (none — always through) | `.smooth` / approximation |
 
@@ -98,40 +98,70 @@ anchors themselves are noisy, so we also want **approximation** (pass near, not 
 and **resolution control** (fewer, structural anchors). They compose:
 
 ```
-anchorEvery(n)  →  .curve(amount)  →  .smooth(amount)   (each optional)
-   resolution        shape              residual fidelity
+clump(n)  →  .curve(amount)  →  .smooth(amount)   (each optional)
+ resolution     shape              residual fidelity
 ```
 
 ---
 
 ## 3. Hanging design items (from the 2026-06-08/09 discussion)
 
-### 3a. Interval anchoring — `anchorEvery(n, mode, reduce)`  ← recommended first build
-Reduce anchor density to every Nth point. Lower density can't represent high-frequency
-wobble (Nyquist), so it low-passes the tempo while staying musically legible ("trust the
-bar lines"). `interval 1` == current behavior.
+### 3a. Resolution reduction — `clump` / `newBeats`  ← recommended first build
+(Redesigned 2026-07-08 from the earlier `anchorEvery(n, mode, reduce)` sketch — Michael's
+naming: the old `mode:\note` was misleading since in this codebase `beats` already means
+spans-between-anchors; the operation is really a transform of the `beats` array.)
 
-Decisions:
-- **`mode: \note` vs `\beat`.** `\note` = index stride (trivial: `indices[(0, n ..)]`), only
-  musical if notes are evenly spaced in beats. `\beat` = anchor at beats 0, N, 2N… (bar grid);
-  needs each note's beat position and a rule when no note sits on the anchor beat (nearest-note
-  snap, or interpolate a synthetic anchor time). Start with `\note`; `\beat` needs a per-note
-  beat list at call time — **confirmed available** (2026-06-10): a saved selection's `beats`
-  spans integrate to per-anchor beat positions, and `MIDIItemTempoMap.at` gives any note's
-  beat position from its timestamp.
-- **`reduce: \pick` vs `\mean`.** Pure pick-every-Nth **aliases** sub-grid jitter into the
-  low-frequency tempo. `\mean` (bin-average the notes in each interval = non-overlapping
-  `quantizeWindow`) is the robust default.
-- **Pin endpoints** — always keep first & last note as anchors so the map spans the full
-  region and total duration is preserved.
-- Implementation: build anchor indices from stride → **re-aggregate `beats`** (each new gap =
-  sum of original beats it spans) → feed the existing `invEnv`/`.curve` machinery. API as a
-  composable transform (`t.anchorEvery(4, mode: \note, reduce: \mean)`), not a constructor arg.
-- Note (2026-07-01): `\beat` mode gets easier once §9a lands — for guide-track recordings
-  every note's beat position comes free from `wallToBeat`, so don't build `\beat` solely
-  around the selection machinery.
+Reduce anchor density. Lower density can't represent high-frequency wobble (Nyquist), so it
+low-passes the tempo while staying musically legible ("trust the bar lines"). All variants
+are **resampling the map at lower resolution**; they differ only in where the new anchors
+sit and in the estimator for each new anchor's time:
 
-Likely outcome: **interval-anchoring + `.curve` alone covers most jitter**; spectral smoothing
+| operation | new anchor positions | new anchor time estimated by |
+|---|---|---|
+| `clump` (pick) | subset of existing anchors | that note's performed time, verbatim |
+| `clump(…, mean:)` | subset of existing anchors | average over the group's notes |
+| `newBeats` | arbitrary ideal beats | point-sample `timeAt(beat)` (linear interp of neighbor anchors) |
+
+**`clump(n)` / `clump(array)`** — the SC idiom, operating on the `beats` array:
+- `t.clump(2)`: merge every 2 spans into one — new `beats` = old beats clumped and summed
+  (`beats.clump(2).collect(_.sum)`); keep boundary anchors, drop interior ones. Equivalent
+  to the old `anchorEvery(2, mode:\note)`.
+- `t.clump([2,4,6,5,3])`: variable group sizes — clump by bar across mixed meters.
+  SC precedent `clumps([...])` **cycles** the array; adopt that (`clump([4])` = clump by
+  4-beat bars forever), remainder group always kept so the final anchor pins.
+- **Pin endpoints** — first & last anchors always survive, so the map spans the full region
+  and total duration is preserved.
+- Implementation: re-aggregate `beats` + thin the anchor list → feed the existing
+  `invEnv`/`.curve` machinery. Composable transform on the map, not a constructor arg.
+  Needs nothing new — buildable today.
+- Alternate name if Collection's `clump` feels too close: `clumpBeats`.
+
+**Aliasing / the mean option.** Plain clump = *pick*: boundary anchors keep their performed
+times, so those specific notes' jitter survives and **aliases** into low-frequency tempo
+(one rushed note at a kept anchor bends the whole group's span). Mean placement (boundary
+anchor at a locally-averaged position ≈ non-overlapping `quantizeWindow`) is the robust
+estimator. Decision (2026-07-08): **one method, placement as a flag** — `clump(4, mean: true)`
+— not two names (`bin`/`downsample` etc. were considered and dropped; pick-vs-mean is one
+operation with two placement policies). Build `pick` first, listen on real takes, add `mean:`
+if pick-jitter is audible.
+
+**`newBeats([0, 4, 8, ...])`** — resample the map at an explicit ideal-beat grid: new anchor
+times = `timeAt(beat)` point-samples. This resolves the old "no note sits on the anchor beat"
+question (synthetic anchor via interpolation wins — no nearest-note snap rule needed) and is
+the true "bar grid" mode (old `mode:\beat`). Caveats:
+- Point-sampling does **not** anti-alias — a synthetic anchor inherits the jitter of its two
+  neighboring performed anchors. Anti-aliasing must come from sampling a smoothed/`.curve`'d
+  map, or a future local-mean estimator.
+- Wants the frozen `timeAt` protocol name (M0 open item) and dovetails with §4d's
+  `(times, beats)` constructor. Build AFTER `clump`, on evidence of need.
+- (2026-07-01 note still applies: for guide-track recordings, per-note beat positions come
+  free from §9a's `wallToBeat`.)
+
+A fully unified `resample(positions, estimator:)` (pick / interpolate / local-mean as one
+axis, anchor placement as the other) was considered 2026-07-08 — deferred: `clump(n, mean:)`
++ `newBeats(array)` likely covers real usage with less API surface.
+
+Likely outcome: **`clump` + `.curve` alone covers most jitter**; spectral smoothing
 may be unnecessary.
 
 ### 3b. Anchor denoising — `.smooth(amount, window)`
@@ -145,7 +175,7 @@ Make the curve pass *near* jittery anchors, not through them.
   `.smooth` a single continuum. More code (penalized least-squares).
 - Smooth the **tempo** (rate), not cumulative position (smoothing position under-smooths tempo).
 - Endpoint anchoring decision: pin first/last (preserve span) or let it float.
-- **Build gate (2026-07-02):** don't start `.smooth` until `anchorEvery` + `.curve`
+- **Build gate (2026-07-02):** don't start `.smooth` until `clump` + `.curve`
   (milestone 1) has been tried on real takes and the anchors are still audibly noisy.
   §3a already predicts it may be unnecessary; the kill criterion is real material, not
   intuition. Same gate, doubled, for the milestone-10 spline work.
@@ -322,7 +352,8 @@ Found in the 2026-07-01 review (all four **[M0]** items FIXED 2026-07-07 — see
    blocking; do before milestone 1's beat-domain work). Rationale unchanged: recompiles reboot
    the server so regressions must be caught headless, and M1's `reduce:\mean` can't be verified
    against a broken `quantizeWindow`.
-1. **`anchorEvery(n, mode:\note, reduce:\mean)`** + endpoint pinning + beats re-aggregation.
+1. **`clump(n)` / `clump(array)`** (pick placement) + endpoint pinning + beats
+   re-aggregation; `mean:` flag and `newBeats` gated on real-take listening.
    Lowest effort, likely highest payoff. (§3a)
 2. **`.smooth`** pragmatic version over `quantizeWindow`; fix `quantizeDft` windowing first
    (env staleness lands in milestone 0). **Gated on milestone 1 proving insufficient on real

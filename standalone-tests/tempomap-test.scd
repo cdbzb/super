@@ -40,6 +40,12 @@ warped = t.mapBeats(1 ! 6);
 assert.(warped.size == 6, "mapBeats: length preserved on unit beats");
 assertArr.(warped, [1,2,1,3,1,2], "mapBeats: reproduces performed durs");
 
+// -- 2b. direction-explicit protocol aliases ------------------------------
+assertClose.(t.timeAt(2), t.at(2), "TempoMap timeAt aliases beat -> time");
+assertClose.(t.beatAt(t.timeAt(2.5)), 2.5, "TempoMap beatAt inverts timeAt");
+assertArr.(t.mapDurs([1,2,1,2]), t.mapBeats([1,2,1,2]),
+	"TempoMap mapDurs aliases beat-span mapping");
+
 // -- 3. mapBeats preserves length across a ZERO-length span ----------------
 // [1,0,1] integrates to a repeated position -> a 0 dur; the old
 // .select(_.isStrictlyPositive) DROPPED it and desynced the array.
@@ -119,11 +125,18 @@ mt = MIDIItemTempoMap(p, { |n| n[0..4] }, [1,1,1,1,1]);
 	assertClose.(mt.at(mt.timeAt(beat)), beat,
 		"mi2 round-trip beat" + beat, 1e-4)
 };
+assertClose.(mt.beatAt(mt.timeAt(2.5)), 2.5,
+	"mi2 beatAt inverts timeAt", 1e-4);
+assertClose.(mt.beatAt(mt.timeAt(-1)), -1,
+	"mi2 protocol carries boundary tempo before domain", 1e-4);
+assertClose.(mt.beatAt(mt.timeAt(7)), 7,
+	"mi2 protocol carries boundary tempo after domain", 1e-3);
 
 // -- 10. mapBeats reproduces performed spans on the beat grid --------------
 warped = mt.mapBeats(1 ! 5);
 assert.(warped.size == 5, "mi2 mapBeats: length preserved");
 assertArr.(warped, [1,1,1,1,3], "mi2 mapBeats: reproduces performed spans", 1e-4);
+assertArr.(mt.mapDurs(1 ! 5), warped, "mi2 mapDurs aliases beat-span mapping", 1e-4);
 
 // -- 11. carry-forward boundary: beats past the map extrapolate at the -----
 // final tempo (3 s/beat), and length is preserved (no drop).
@@ -182,6 +195,29 @@ assertClose.(r.timeAt(r.beats.sum) + r.t0, mt.timeAt(2.5) + mt.t0,
 	"trim: window end preserved", 1e-4);
 // to defaults to the map end -> trim(0) is identity
 assertArr.(mt.trim(0).beats, mt.beats, "trim(0): identity");
+
+// -- 16. clump: lower anchor resolution, pick placement, pinned endpoints --
+r = mt.clump(2);
+assertArr.(r.beats, [2,2,1], "clump(2): spans merged with remainder retained");
+assertArr.(r.times, [0,2,4,7], "clump(2): boundary anchor times picked verbatim");
+assertClose.(r.timeAt(0), mt.timeAt(0), "clump(2): first endpoint pinned");
+assertClose.(r.timeAt(r.beats.sum), mt.timeAt(mt.beats.sum),
+	"clump(2): last endpoint pinned");
+assertArr.(mt.beats, [1,1,1,1,1], "clump: original map unchanged");
+
+// array sizes cycle; [1,2] over five spans -> groups 1,2,1,1(remainder)
+r = mt.clump([1,2]);
+assertArr.(r.beats, [1,2,1,1], "clump(array): group sizes cycle");
+assertArr.(r.times, [0,1,3,4,7], "clump(array): correct picked anchors");
+
+// arbitrary beat values are summed, rather than assuming unit beats
+r = MIDIItemTempoMap(p, { |n| n[0..4] }, [1,2,3,4,5]).clump([2,1]);
+assertArr.(r.beats, [3,3,9], "clump: re-aggregates non-unit beat spans");
+
+// a transform after curve deliberately returns to linear; curvature composes after it
+r = mt.curve(1).clump(2);
+assert.(r.curved.not, "clump(curved map): rebuilds linear map");
+assertArr.(r.times, [0,2,4,7], "clump(curved map): picks original anchors");
 
 } { |e|
 	h[\fail].("EXCEPTION - " ++ e.errorString);

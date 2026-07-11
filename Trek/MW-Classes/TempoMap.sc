@@ -45,6 +45,13 @@ TempoMap {
   at { |beat|
 	  ^env[beat]
   }
+  // Direction-explicit tempo-map protocol. Keep `at` for compatibility, but
+  // new consumers should use timeAt/beatAt/mapDurs so the direction is not
+  // inverted when switching between TempoMap and MIDIItemTempoMap.
+  // TempoMap retains Env's endpoint-clamping policy in both scalar directions.
+  timeAt { |beat|
+	  ^this.at(beat)
+  }
   // performed time -> ideal beat. Was `Env(beats, ([0] ++ durs).integrate)[t]`,
   // rebuilt per call AND malformed (levels = per-span beat counts, not
   // cumulative; times one LONGER than levels instead of one shorter) — it
@@ -52,6 +59,9 @@ TempoMap {
   // inverse map (quantize-tempomap-project.md §5).
   interpolateBeatInverse { |time|
 	  ^invEnv[time]
+  }
+  beatAt { |time|
+	  ^this.interpolateBeatInverse(time)
   }
   dursToBeats { | array |
 	  ^array.integrate.collect{|i| this.interpolateBeatInverse(i)}.differentiate
@@ -61,6 +71,9 @@ TempoMap {
 	  // dropping silently shortened the array and desynced a Pbind's \dur from
 	  // its \midinote from that point on (quantize-tempomap-project.md §5).
 	  ^b.integrate.collect{|i| this[i]}.differentiate.collect{|i| 1e-9 max: i}
+  }
+  mapDurs { |beatDurs|
+	  ^this.mapBeats(beatDurs)
   }
   mapRecordedDurs { | durs |
 	  ^this.mapBeats( durs/this.quarters.mean )
@@ -149,4 +162,3 @@ TempoMap {
 		^this.reshapeLike(array.differentiate.collect({|i| 1.dup(i)}))
 	}
 }
-

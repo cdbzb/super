@@ -1873,6 +1873,12 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 	timeAt { |beat|
 		^this.prAtExtrapolated(beat, invEnv)
 	}
+	// Direction-explicit protocol aliases. Unlike the legacy `at`, beatAt also
+	// follows this class's boundary policy and carries the endpoint tempo beyond
+	// both ends of the map.
+	beatAt { |time|
+		^this.prAtExtrapolated(time, env)
+	}
 	prAtExtrapolated { |x, anEnv|
 		// fetch the lin-cache ONCE per call (prEnvDomain + prEnvAtFast each did their
 		// own IdentityDictionary lookup — measurable at prepare-time call volumes).
@@ -1972,8 +1978,52 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 		^this.prMapThrough(b.integrate, invEnv, invEnv.times.sum)
 			.differentiate.collect{|i| 1e-9 max: i}
 	}
+	mapDurs {|beatDurs|
+		^this.mapBeats(beatDurs)
+	}
 	dursToBeats{|a|
 		^this.prMapThrough(a.integrate, env, env.times.sum).differentiate
+	}
+
+	// Reduce anchor density by merging adjacent ideal-beat spans. `sizes` is
+	// either one positive integer or an array of positive integers which cycles
+	// (mixed-meter/bar grouping). Placement is "pick": every new boundary keeps
+	// the corresponding original anchor time verbatim. The remainder is always
+	// retained, so both endpoints stay pinned and the full duration is preserved.
+	// This is non-mutating and rebuilds a linear map; compose curvature afterward:
+	//     map.clump(4).curve(amount)
+	clump {|sizes = 2|
+		^this.copy.prClump(sizes)
+	}
+	prClump {|sizes = 2|
+		var grouping = sizes.asArray;
+		var spanCount = beats.size;
+		var starts = List[0], pos = 0, groupIndex = 0;
+		var newBeats = List.new, newTimes;
+		(grouping.isEmpty or: {
+			grouping.any { |n| n.isNumber.not or: { n.asInteger != n } or: { n <= 0 } }
+		}).if {
+			("MIDIItemTempoMap.clump: group sizes must be positive integers (%)"
+				.format(sizes)).warn;
+			^this
+		};
+		(times.size != (spanCount + 1)).if {
+			("MIDIItemTempoMap.clump: expected one more anchor time than beat spans "
+				"(% times, % spans)".format(times.size, spanCount)).warn;
+			^this
+		};
+		while { pos < spanCount } {
+			var next = (pos + grouping.wrapAt(groupIndex)).min(spanCount);
+			newBeats.add(beats.copyRange(pos, next - 1).sum);
+			starts.add(next);
+			pos = next;
+			groupIndex = groupIndex + 1;
+		};
+		newTimes = starts.collect { |i| times[i] };
+		beats = newBeats.asArray;
+		times = newTimes.asArray;
+		this.prBuildLinear;
+		^this
 	}
 
 	// Return a NEW map with every ideal-beat span multiplied by `k` — i.e. each

@@ -347,14 +347,17 @@ Found in the 2026-07-01 review (all four **[M0]** items FIXED 2026-07-07 — see
    setter env rebuild, carry-forward boundary. All four **[M0]** §5 bugs FIXED driven by the
    suite (env staleness → shared `prRebuild`; `quantizeRangeInPlace` indices; `end` off-by-one;
    `mapBeats` clamp/length at all 3 sites). Machine-confirmed the carry-forward boundary.
-   **STILL OPEN in M0:** freeze the protocol names (`timeAt`/`beatAt`/`mapDurs` — §4d) as thin
-   aliases so all later milestones code to them (no new consumers written yet, so not yet
-   blocking; do before milestone 1's beat-domain work). Rationale unchanged: recompiles reboot
+   **DONE 2026-07-11:** froze the protocol names (`timeAt`/`beatAt`/`mapDurs` — §4d) as thin
+   aliases on both map classes, with regression coverage. `TempoMap` retains its clamping
+   boundary policy; `MIDIItemTempoMap` carries endpoint tempo in both scalar directions.
+   All later milestones should code to these names. Rationale unchanged: recompiles reboot
    the server so regressions must be caught headless, and M1's `reduce:\mean` can't be verified
    against a broken `quantizeWindow`.
-1. **`clump(n)` / `clump(array)`** (pick placement) + endpoint pinning + beats
-   re-aggregation; `mean:` flag and `newBeats` gated on real-take listening.
-   Lowest effort, likely highest payoff. (§3a)
+1. **`clump(n)` / `clump(array)` — DONE 2026-07-11** (pick placement) + endpoint
+   pinning + beats re-aggregation. Integer sizes group regularly; arrays cycle and retain
+   the remainder. The transform is non-mutating and resets curvature, so compose as
+   `t.clump(4).curve(amount)`. `mean:` and `newBeats` remain gated on real-take listening.
+   (§3a)
 2. **`.smooth`** pragmatic version over `quantizeWindow`; fix `quantizeDft` windowing first
    (env staleness lands in milestone 0). **Gated on milestone 1 proving insufficient on real
    takes — see §3b build gate.** (§3b, 3d)

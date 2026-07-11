@@ -380,6 +380,92 @@ Found in the 2026-07-01 review (all four **[M0]** items FIXED 2026-07-07 — see
     Same build gate as `.smooth` (§3b): only if real material shows anchors still noisy
     after milestones 1–2 — don't build by momentum. (§3b, 3c)
 
+### 6a. Architecture review after milestone 1 (2026-07-11)
+
+The long-term center should be an algebra of monotone coordinate transformations, not a
+collection of unrelated quantizers. Quantization algorithms then become transforms of a
+map; MIDI, audio, patterns, and EventLists become producers/consumers of that map.
+
+**Move the protocol foundation earlier than milestone 9.** Milestones 4, 7, and 8 already
+need it and must not grow new reads of `env`/`invEnv`, calls to ambiguous `at`, or manual
+`t0` arithmetic. Before those milestones, establish these common operations:
+
+```supercollider
+timeAt(beat)
+beatAt(time)
+mapDurs(durs, fromBeat: 0)
+```
+
+`mapDurs` needs `fromBeat` because duration mapping is position-dependent on a changing
+tempo map; its implementation is successive differences of `timeAt` at cumulative beat
+positions. Also expose the beat/time domains and the extrapolation policy (`\carry`,
+`\clamp`, or `\error`) instead of leaving boundary behavior implicit in the concrete class.
+For musical playback `\carry` is generally useful; `\error` is valuable for authoring and
+tests because it exposes accidental out-of-domain access.
+
+**Separate mapping from placement.** The core map should be relative. Absolute placement
+belongs in a wrapper such as `PlacedTempoMap(map, beatOrigin, timeOrigin)`, rather than in
+scattered `+ t0` conventions. Likewise, source→ideal→list→wall should become a first-class
+composed map answering both directions, not closures reimplemented by EventList, MIDI, and
+AudioItem consumers.
+
+**Promote the `(times, beatPositions)` constructor.** A MIDI selection is one way to AUTHOR
+anchor arrays, not part of a tempo map's identity. A media-neutral anchor-map constructor
+should land before audio marking and general `sourceTempoMap:` work. It also supplies the
+rewrap primitive and lets `MIDIItemTempoMap` retire `doesNotUnderstand` forwarding over time.
+
+**Keep smoothing beat-domain aware.** `quantizeWindow` uses a count of anchor indices, which
+represents inconsistent musical widths when anchors are irregular. If real-take listening
+opens the `.smooth` gate, prefer `windowBeats:` and a local beat-domain regression over
+further investment in DFT smoothing. For `clump(mean: true)`, do not average raw timestamps
+belonging to different beat positions; fit local `time = offset + secondsPerBeat * beat` (or
+average timing residuals) and evaluate the retained boundary beat.
+
+**Keep map transforms separate from applying a map to events.** `clump`/`curve`/`smooth`
+transform a mapping. `warpThrough`/`toBeatDomain`/pattern duration mapping apply it. Make
+destructive timestamp rewrites, rebasing, and origin selection explicit at the application
+stage.
+
+Recommended dependency order from here:
+
+1. Common protocol semantics: origins, domains, extrapolation, and `mapDurs(..., fromBeat:)`.
+2. Media-neutral anchor-map constructor.
+3. First-class placed/composed map.
+4. Migrate NEW consumers away from `at`, direct Env access, and manual inversion.
+5. `wallToBeat` and fragment capture.
+6. Listen to `clump + curve` on real takes; build beat-domain smoothing only on evidence.
+7. Audio authoring and general `sourceTempoMap:`.
+8. Retire legacy forwarding only after compatibility coverage and migration.
+
+### 6b. `Trek/Songs` backward-compatibility contract
+
+The architecture work MUST NOT break the existing song corpus. `Trek/Songs` has extensive
+live use of these concrete idioms:
+
+```supercollider
+durs.warpTo(e.tempoMap)
+e.tempoMap.mapBeats(durs)
+e.tempoMap.quantize(...)
+e.tempoMap.quantizeWindow(...)
+e.tempoMap.quantizeDft(...)
+e.tempoMap ++ anotherMap
+```
+
+Some code also relies on concrete `TempoMap.beats`/`durs` access and on transformed maps
+remaining concatenable `TempoMap` instances. Therefore protocol work is ADDITIVE during
+migration:
+
+- retain the `TempoMap` constructor, `beats`, `durs`, `at`, `mapBeats`, `warpTo`, all
+  `quantize*` methods, and `++` with their current song-facing behavior;
+- do not change existing transform return types to generic/composed map classes;
+- add direction-explicit names and new map types first for new workflows;
+- deprecate ambiguous methods only after the song corpus is migrated; do not remove them;
+- add a compatibility suite covering the idioms above before changing TempoMap internals.
+
+The protocol may become the internal foundation while `TempoMap` remains a stable facade.
+Milestone 0/1 changes (`timeAt`/`beatAt`/`mapDurs`, `MIDIItemTempoMap.clump`) are additive and
+do not change the song-facing API.
+
 ---
 
 ## 7. Testing notes

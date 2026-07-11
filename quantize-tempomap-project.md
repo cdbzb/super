@@ -560,10 +560,15 @@ quantize family then applies in the beat domain. The selections/tracker path (§
 free recordings (→ §9b).
 
 Missing primitives, in dependency order:
-1. **`EventList.wallToBeat(sec, tempoEnv)`** — inverse of `beatToWall` (`EventList.sc:478`).
+1. **`EventList.wallToBeat(sec, tempoEnv)`** — DONE (2026-07-11). Inverse of
+   `beatToWall` (`EventList.sc:551`).
    Monotone piecewise: binary-search `prWallCum` for the segment, closed-form solve for step
    and flat-base ramp segments, bisection for the subsampled tempoMap×ramp case. The
    existing `prWallStarts`/`prWallCum` cache is exactly the structure the inverse needs.
+   Base-only maps use `beatAt`; step segments and the held tail invert directly; flat-base
+   ramps use the quadratic solution; tempoMap×ramp segments bisect the same cached
+   approximation used by `beatToWall`. Non-positive composed wall time clamps to beat 0,
+   matching `beatToWall`'s existing composed-map boundary behavior.
 2. **Play epoch** — `EventList.play` (`:526`) captures nothing at start. Add a
    `lastPlayEpoch`: (SystemClock second at transport start, `from` beat, tempoEnv snapshot).
    `MIDIItem.record` already stamps `SystemClock.seconds - latency` (`MIDI-Item2.sc:1001`)

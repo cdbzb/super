@@ -8,7 +8,7 @@ var assertClose = { |a, b, msg, tol = 1e-9| h[\assertClose].(a, b, msg, tol) };
 var epoch = 100;
 var flat, tempo, child, parent, ftChild, ftParent, la, lb, orig, copied;
 var sched, times, hits, missed, live, stopped, stress, bigSink, finish;
-var ramp, rampEnv, ref, detHits, det, detT0;
+var ramp, rampEnv, ref, detHits, det, detT0, inv, invEnv;
 
 "== EventList prepare/fire tests ==".postln;
 
@@ -106,7 +106,10 @@ assert.(copied.solo.notNil and: { copied.solo.includes(\bass) }, "copyFrom: solo
 // The cached sub-grid (prBuildRampSub/prRampSubAt) must agree with a fine
 // brute-force integral of multiplier(x) * baseSecPerBeat(x).
 ramp = EventList.new;
-ramp.tempoMap = (timeAt: { |self, b| b + (0.05 * b * b) }); // accelerating base clock
+ramp.tempoMap = (
+	timeAt: { |self, b| b + (0.05 * b * b) },
+	beatAt: { |self, t| ((1 + (0.2 * t)).sqrt - 1) / 0.1 }
+); // accelerating base clock, with its exact inverse
 ramp.add(0, tempoTrack: 1);
 ramp.add(4, tempoTrack: Env([1, 2], [8], \lin)); // ramp over beats 4..12
 rampEnv = ramp.prPlayTempoEnv;
@@ -122,7 +125,23 @@ ref = { |b|
 [6, 10, 12, 14].do { |b|
 	assertClose.(ramp.beatToWall(b, rampEnv), ref.(b),
 		"rampSub: beatToWall(%) matches integral".format(b), 5e-3);
+	assertClose.(ramp.wallToBeat(ramp.beatToWall(b, rampEnv), rampEnv), b,
+		"rampSub: wallToBeat round trip at %".format(b), 1e-8);
 };
+
+// -- 9c. wallToBeat: exact flat/step/ramp inverses and held tail ----------
+inv = EventList.new;
+inv.beatDur = 0.5;
+inv.add(0, tempoTrack: 2);
+inv.add(4, tempoTrack: Env([2, 1], [4], \lin));
+invEnv = inv.prPlayTempoEnv;
+[0, 2, 4, 6, 8, 11].do { |b|
+	assertClose.(inv.wallToBeat(inv.beatToWall(b, invEnv), invEnv), b,
+		"wallToBeat: flat-base round trip at %".format(b), 1e-8);
+};
+assertClose.(inv.wallToBeat(-1, invEnv), 0, "wallToBeat: composed map clamps before zero");
+assertClose.(inv.wallToBeat(inv.beatToWall(3), nil), 3,
+	"wallToBeat: base-only round trip", 1e-9);
 
 // -- 10. fire/stop (async): sends fire once, stop cancels ------------------
 Event.addEventType(\testHit, { ~sink.add([~id, SystemClock.seconds]) });

@@ -579,6 +579,75 @@ EventList {
 		^prWallCum.last + (prWallLevels.last * (this.prBaseWallAt(beat) - prWallBase.last))
 	}
 
+	// Inverse of beatToWall: elapsed wall-seconds from beat 0 -> list beat.
+	// With a tempoEnv, beatToWall clamps beats <= 0, so its inverse likewise
+	// returns 0 for non-positive wall time. Tempo multipliers must stay positive
+	// for the composed clock to be invertible.
+	wallToBeat { |sec, tempoEnv|
+		var seg, lo, hi, mid, local, cv, level, baseTarget;
+		tempoEnv.isNil.if {
+			tempoMap.notNil.if {
+				^tempoMap.beatAt(tempoMap.timeAt(0) + sec)
+			};
+			^sec / (beatDur ? TempoClock.default.beatDur)
+		};
+		(prWallEnv !== tempoEnv).if { this.prBuildWallCache(tempoEnv) };
+		(sec <= 0).if { ^0 };
+
+		// Last cumulative boundary not greater than sec (binary search).
+		lo = 0; hi = prWallCum.size - 1;
+		while { lo < hi } {
+			mid = ((lo + hi + 1) / 2).floor.asInteger;
+			(prWallCum[mid] <= sec).if { lo = mid } { hi = mid - 1 };
+		};
+		seg = lo;
+		local = sec - prWallCum[seg];
+
+		// Past the final boundary: the final multiplier is held constant.
+		(seg >= prWallTimes.size).if {
+			level = prWallLevels.last;
+			(level <= 0).if { Error("EventList.wallToBeat: tempo multiplier must be positive").throw };
+			baseTarget = prWallBase.last + (local / level);
+			tempoMap.notNil.if { ^tempoMap.beatAt(baseTarget) };
+			^prWallStarts.last + (local / (level * (beatDur ? TempoClock.default.beatDur)))
+		};
+
+		cv = prWallCurves.isArray.if { prWallCurves.wrapAt(seg) } { prWallCurves };
+		(cv == \step).if {
+			level = prWallLevels[seg];
+			(level <= 0).if { Error("EventList.wallToBeat: tempo multiplier must be positive").throw };
+			baseTarget = prWallBase[seg] + (local / level);
+			tempoMap.notNil.if { ^tempoMap.beatAt(baseTarget) };
+			^prWallStarts[seg] + (local / (level * (beatDur ? TempoClock.default.beatDur)))
+		};
+
+		// A linear multiplier over a flat base has an exact quadratic inverse.
+		tempoMap.isNil.if {
+			var mA = prWallLevels[seg], mB = prWallLevels[seg + 1];
+			var len = prWallTimes[seg], slope = (mB - mA) / len;
+			var baseDur = beatDur ? TempoClock.default.beatDur, x;
+			(mA.min(mB) <= 0).if { Error("EventList.wallToBeat: tempo multiplier must be positive").throw };
+			x = (slope.abs < 1e-12).if {
+				local / (baseDur * mA)
+			} {
+				((mA.neg) + ((mA.squared + (2 * slope * local / baseDur)).sqrt)) / slope
+			};
+			^prWallStarts[seg] + x
+		};
+
+		// tempoMap x ramp uses the same cached approximation as beatToWall;
+		// bisection therefore round-trips that approximation, not a second integral.
+		(prWallLevels[seg].min(prWallLevels[seg + 1]) <= 0).if {
+			Error("EventList.wallToBeat: tempo multiplier must be positive").throw
+		};
+		lo = prWallStarts[seg]; hi = prWallStarts[seg + 1];
+		40.do {
+			mid = (lo + hi) / 2;
+			(this.beatToWall(mid, tempoEnv) < sec).if { lo = mid } { hi = mid };
+		};
+		^(lo + hi) / 2
+	}
+
 	// INTEGRAL over [a, b] of m(x) * baseSecPerBeat(x) dx, where m ramps linearly
 	// from mA (at segStart) to mB (at segStart + segLen). With a flat base this is
 	// the exact trapezoid in m; a nonlinear tempoMap base is sub-sampled (~16

@@ -1978,8 +1978,10 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 		^this.prMapThrough(b.integrate, invEnv, invEnv.times.sum)
 			.differentiate.collect{|i| 1e-9 max: i}
 	}
-	mapDurs {|beatDurs|
-		^this.mapBeats(beatDurs)
+	// `durs` always means elapsed seconds; map them into musical beat spans.
+	// mapBeats is the opposite direction: beat spans -> second durations.
+	mapDurs {|durs|
+		^this.dursToBeats(durs)
 	}
 	dursToBeats{|a|
 		^this.prMapThrough(a.integrate, env, env.times.sum).differentiate

@@ -230,7 +230,7 @@ center of gravity is `EventList.beatToWall` — a THIRD engine (base map × `\te
 multiplier env, with its own integration cache and extrapolation policy) that AudioItem
 tempo-follow and VoiceSpace consume exclusively. (`TempoClock.newFromQuarters` in
 `plusTempoClock.sc` is a vestigial fourth — fold or deprecate.) Target: any tempo source
-answers `timeAt(beat)`, `beatAt(time)`, `mapDurs(array)` plus a **stated** extrapolation
+answers `timeAt(beat)`, `beatAt(time)`, `mapBeats(beats)`, `mapDurs(durs)` plus a **stated** extrapolation
 policy; implemented by `TempoMap`, `MIDIItemTempoMap`, and a first-class composed-map object
 that EventList exposes (wrapping its `prWall*` cache). That resolves §3e for free (both
 `warpTo` forms hit one protocol) and provides the seam for §9's
@@ -243,7 +243,7 @@ source → ideal → list → wall composition.
   Milestones 4, 7, and 8 each add new consumers of the tempo-map API (`wallToBeat`,
   `sourceTempoMap:`, the `(times, beats)` constructor); every consumer written before the
   `at` rename bakes in the ambiguous convention and enlarges the migration. Cheap move:
-  freeze `timeAt(beat)` / `beatAt(time)` / `mapDurs(array)` + the extrapolation-policy
+  freeze `timeAt(beat)` / `beatAt(time)` / `mapBeats(beats)` / `mapDurs(durs)` + the extrapolation-policy
   vocabulary up front (part of milestone 0), add them as thin aliases on both classes, and
   require all new §9 code to use ONLY those names. Full unification stays at milestone 9.
 - dNU-forwarded methods (e.g. a forwarded `quantize`) return a bare `TempoMap`, not a
@@ -347,8 +347,10 @@ Found in the 2026-07-01 review (all four **[M0]** items FIXED 2026-07-07 — see
    setter env rebuild, carry-forward boundary. All four **[M0]** §5 bugs FIXED driven by the
    suite (env staleness → shared `prRebuild`; `quantizeRangeInPlace` indices; `end` off-by-one;
    `mapBeats` clamp/length at all 3 sites). Machine-confirmed the carry-forward boundary.
-   **DONE 2026-07-11:** froze the protocol names (`timeAt`/`beatAt`/`mapDurs` — §4d) as thin
-   aliases on both map classes, with regression coverage. `TempoMap` retains its clamping
+   **DONE 2026-07-11:** froze the protocol names (`timeAt`/`beatAt`/`mapBeats`/`mapDurs` — §4d)
+   on both map classes, with regression coverage. Naming convention: `beats` are musical
+   spans and `durs` are elapsed seconds, so `mapBeats` maps beats→durs and `mapDurs` maps
+   durs→beats. `TempoMap` retains its clamping
    boundary policy; `MIDIItemTempoMap` carries endpoint tempo in both scalar directions.
    All later milestones should code to these names. Rationale unchanged: recompiles reboot
    the server so regressions must be caught headless, and M1's `reduce:\mean` can't be verified
@@ -393,12 +395,15 @@ need it and must not grow new reads of `env`/`invEnv`, calls to ambiguous `at`, 
 ```supercollider
 timeAt(beat)
 beatAt(time)
-mapDurs(durs, fromBeat: 0)
+mapBeats(beats, fromBeat: 0) // musical beat spans -> elapsed-second durations
+mapDurs(durs, fromTime: 0)   // elapsed-second durations -> musical beat spans
 ```
 
-`mapDurs` needs `fromBeat` because duration mapping is position-dependent on a changing
-tempo map; its implementation is successive differences of `timeAt` at cumulative beat
-positions. Also expose the beat/time domains and the extrapolation policy (`\carry`,
+Settle the vocabulary: `durs` ALWAYS means elapsed seconds; `beats` means musical beat
+spans. Both array mappings need an origin because duration mapping is position-dependent on
+a changing tempo map. `mapBeats` is successive differences of `timeAt` at cumulative beat
+positions; `mapDurs` is successive differences of `beatAt` at cumulative times. Also expose
+the beat/time domains and the extrapolation policy (`\carry`,
 `\clamp`, or `\error`) instead of leaving boundary behavior implicit in the concrete class.
 For musical playback `\carry` is generally useful; `\error` is valuable for authoring and
 tests because it exposes accidental out-of-domain access.
@@ -428,7 +433,8 @@ stage.
 
 Recommended dependency order from here:
 
-1. Common protocol semantics: origins, domains, extrapolation, and `mapDurs(..., fromBeat:)`.
+1. Common protocol semantics: origins, domains, extrapolation,
+   `mapBeats(..., fromBeat:)`, and `mapDurs(..., fromTime:)`.
 2. Media-neutral anchor-map constructor.
 3. First-class placed/composed map.
 4. Migrate NEW consumers away from `at`, direct Env access, and manual inversion.

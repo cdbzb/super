@@ -43,8 +43,8 @@ assertArr.(warped, [1,2,1,3,1,2], "mapBeats: reproduces performed durs");
 // -- 2b. direction-explicit protocol aliases ------------------------------
 assertClose.(t.timeAt(2), t.at(2), "TempoMap timeAt aliases beat -> time");
 assertClose.(t.beatAt(t.timeAt(2.5)), 2.5, "TempoMap beatAt inverts timeAt");
-assertArr.(t.mapDurs([1,2,1,2]), t.mapBeats([1,2,1,2]),
-	"TempoMap mapDurs aliases beat-span mapping");
+assertArr.(t.mapDurs(t.mapBeats([1,2,1,2])), [1,2,1,2],
+	"TempoMap mapDurs maps second durs back to beats");
 
 // -- 3. mapBeats preserves length across a ZERO-length span ----------------
 // [1,0,1] integrates to a repeated position -> a 0 dur; the old
@@ -136,7 +136,8 @@ assertClose.(mt.beatAt(mt.timeAt(7)), 7,
 warped = mt.mapBeats(1 ! 5);
 assert.(warped.size == 5, "mi2 mapBeats: length preserved");
 assertArr.(warped, [1,1,1,1,3], "mi2 mapBeats: reproduces performed spans", 1e-4);
-assertArr.(mt.mapDurs(1 ! 5), warped, "mi2 mapDurs aliases beat-span mapping", 1e-4);
+assertArr.(mt.mapDurs(warped), 1 ! 5,
+	"mi2 mapDurs maps second durs back to beats", 1e-4);
 
 // -- 11. carry-forward boundary: beats past the map extrapolate at the -----
 // final tempo (3 s/beat), and length is preserved (no drop).

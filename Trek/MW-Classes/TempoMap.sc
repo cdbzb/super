@@ -46,7 +46,7 @@ TempoMap {
 	  ^env[beat]
   }
   // Direction-explicit tempo-map protocol. Keep `at` for compatibility, but
-  // new consumers should use timeAt/beatAt/mapDurs so the direction is not
+  // new consumers should use timeAt/beatAt so the direction is not
   // inverted when switching between TempoMap and MIDIItemTempoMap.
   // TempoMap retains Env's endpoint-clamping policy in both scalar directions.
   timeAt { |beat|
@@ -72,8 +72,11 @@ TempoMap {
 	  // its \midinote from that point on (quantize-tempomap-project.md §5).
 	  ^b.integrate.collect{|i| this[i]}.differentiate.collect{|i| 1e-9 max: i}
   }
-  mapDurs { |beatDurs|
-	  ^this.mapBeats(beatDurs)
+  // Naming convention: `beats` are musical spans; `durs` are elapsed seconds.
+  // Therefore mapDurs maps second durations -> beat spans (the inverse of
+  // mapBeats, which maps beat spans -> second durations).
+  mapDurs { |durs|
+	  ^this.dursToBeats(durs)
   }
   mapRecordedDurs { | durs |
 	  ^this.mapBeats( durs/this.quarters.mean )

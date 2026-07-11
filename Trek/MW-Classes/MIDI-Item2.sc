@@ -796,7 +796,9 @@ view.keyDownAction_({ |view char|
         this.collect({|e x| 
             (
                 env: tempoMap.env, 
-                quantized: tempoMap.env[e.timestamp - this.start],
+                // Keep `env` in the callback Event for compatibility, but use the
+                // public direction-explicit protocol for the actual inversion.
+                quantized: tempoMap.beatAt(e.timestamp - this.start),
                 e: e, 
                 x: x,
                 averageOffset: tempoMap.averageOffset,

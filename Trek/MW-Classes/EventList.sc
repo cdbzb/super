@@ -811,11 +811,11 @@ EventList {
 		pstart = player.start ? 0;
 		tm = tempoMap;
 		beatOff = (ev[\sourceTempoMap] == \eventList).if {
-			(tm.notNil and: { tm.respondsTo(\prAtExtrapolated) }).if {
+			(tm.notNil and: { tm.respondsTo(\timeAt) } and: { tm.respondsTo(\beatAt) }).if {
 				var startSec = tm.timeAt(originBeat);
-				{ |rel| (tm.prAtExtrapolated(startSec + rel, tm.env) - originBeat) / rate }
+				{ |rel| (tm.beatAt(startSec + rel) - originBeat) / rate }
 			} {
-				"prEmitMi2Follow: sourceTempoMap:\\eventList needs a MIDIItemTempoMap base; using flat".warn;
+				"prEmitMi2Follow: sourceTempoMap:\\eventList needs an invertible tempo-map base; using flat".warn;
 				{ |rel| rel / rate }
 			}
 		} {

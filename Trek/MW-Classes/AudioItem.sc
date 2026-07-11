@@ -323,7 +323,7 @@ AudioItem {
 		// otherwise invert the base clock (tempoMap if present, else flat beatDur).
 		lastBeat = ev[\dur].notNil.if { b0 + ev[\dur] } {
 			list.tempoMap.notNil.if {
-				list.tempoMap.at(list.tempoMap.timeAt(b0) + (endSec - startSec))
+				list.tempoMap.beatAt(list.tempoMap.timeAt(b0) + (endSec - startSec))
 			} {
 				b0 + ((endSec - startSec) / (list.beatDur ? TempoClock.default.beatDur))
 			}

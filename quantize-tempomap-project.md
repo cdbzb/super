@@ -459,7 +459,13 @@ Recommended dependency order from here:
    source and target origins differ. It exposes source/target/mapped time domains, the shared
    beat-domain intersection, and both boundary policies. Once a unified map host exists,
    `sourceMap.warpTo(targetMap)` can be added as constructor sugar without duplicating logic.
-4. Migrate NEW consumers away from `at`, direct Env access, and manual inversion.
+4. **Protocol consumer migration — IN PROGRESS 2026-07-11.** EventList's
+   `sourceTempoMap:\eventList` path now uses `timeAt`/`beatAt` instead of private
+   `prAtExtrapolated` + `env`, so any invertible protocol map works. AudioItem's source-end
+   inversion uses `beatAt` rather than ambiguous `at`; MIDI `quantizeFunc` computes its
+   result through `beatAt` while retaining the callback's legacy `env` field. Deliberately
+   deferred: `MIDIItemPlayer.warpTo` has two historical meanings depending on concrete map
+   type and needs a compatibility audit before its private/ambiguous dispatch is changed.
 5. `wallToBeat` and fragment capture.
 6. Listen to `clump + curve` on real takes; build beat-domain smoothing only on evidence.
 7. Audio authoring and general `sourceTempoMap:`.

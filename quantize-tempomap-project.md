@@ -447,7 +447,12 @@ Recommended dependency order from here:
    tested `curve`/`clump`/protocol behavior. `MIDIItemTempoMap.fromAnchors` exposes the same
    construction path for compatibility. A future placed-map wrapper will replace `t0` as
    the general placement mechanism.
-3. First-class placed/composed map.
+3. **First-class placed map — DONE 2026-07-11.** `PlacedTempoMap(map, beatOrigin,
+   timeOrigin)` wraps any protocol-compatible map without mutation. The origins specify
+   where the wrapped domains begin in the external coordinate frame; scalar mappings,
+   position-aware span mappings, and domains translate accordingly, while extrapolation
+   policy is forwarded unchanged. Placement wrappers can nest. The composed-map half
+   (source→ideal→list→wall) remains open.
 4. Migrate NEW consumers away from `at`, direct Env access, and manual inversion.
 5. `wallToBeat` and fragment capture.
 6. Listen to `clump + curve` on real takes; build beat-domain smoothing only on evidence.

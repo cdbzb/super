@@ -170,6 +170,60 @@ TempoMap {
 	  ^TempoMap.new(this.beats ++ that.beats, this.durs ++ that.durs)
   }
 }
+
+// Place any protocol-compatible relative tempo map into an external beat/time
+// coordinate frame. `beatOrigin` and `timeOrigin` are the external coordinates
+// corresponding to the wrapped map's domain starts. The wrapped map is never
+// mutated; placement can itself be wrapped or composed later.
+PlacedTempoMap {
+  var <map, <beatOrigin, <timeOrigin;
+
+  *new { |map, beatOrigin = 0, timeOrigin = 0|
+	  ^super.new.init(map, beatOrigin, timeOrigin)
+  }
+  init { |aMap, aBeatOrigin, aTimeOrigin|
+	  [\timeAt, \beatAt, \mapBeats, \mapDurs, \beatDomain, \timeDomain,
+		  \extrapolation].do { |selector|
+		  aMap.respondsTo(selector).not.if {
+			  Error("PlacedTempoMap: wrapped map does not implement %".format(selector)).throw
+		  }
+	  };
+	  map = aMap;
+	  beatOrigin = aBeatOrigin;
+	  timeOrigin = aTimeOrigin;
+	  ^this
+  }
+  timeAt { |beat|
+	  var bd = map.beatDomain, td = map.timeDomain;
+	  ^timeOrigin + (map.timeAt(bd.first + (beat - beatOrigin)) - td.first)
+  }
+  beatAt { |time|
+	  var bd = map.beatDomain, td = map.timeDomain;
+	  ^beatOrigin + (map.beatAt(td.first + (time - timeOrigin)) - bd.first)
+  }
+  mapBeats { |beats, fromBeat|
+	  var origin = fromBeat ? beatOrigin;
+	  ^([this.timeAt(origin)] ++ beats.integrate.collect { |span|
+		  this.timeAt(origin + span)
+	  }).differentiate.drop(1).collect { |dur| 1e-9 max: dur }
+  }
+  mapDurs { |durs, fromTime|
+	  var origin = fromTime ? timeOrigin;
+	  ^([this.beatAt(origin)] ++ durs.integrate.collect { |dur|
+		  this.beatAt(origin + dur)
+	  }).differentiate.drop(1)
+  }
+  beatDomain {
+	  var d = map.beatDomain;
+	  ^[beatOrigin, beatOrigin + (d.last - d.first)]
+  }
+  timeDomain {
+	  var d = map.timeDomain;
+	  ^[timeOrigin, timeOrigin + (d.last - d.first)]
+  }
+  extrapolation { ^map.extrapolation }
+}
+
 +Array{
 	goodBeats { |array|
 		^this.reshapeLike(array.differentiate.collect({|i| 1.dup(i)}))

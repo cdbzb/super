@@ -15,7 +15,7 @@ var h = (thisProcess.nowExecutingPath.dirname +/+ "test-helpers.scd").load;
 var assert = h[\assert];
 var assertClose = { |a, b, msg, tol = 1e-6| h[\assertClose].(a, b, msg, tol) };
 var assertArr = { |a, b, msg, tol = 1e-6| h[\assertArr].(a, b, msg, tol) };
-var t, r, warped, close, p, mt, am, mkNote, notes, sweep;
+var t, r, warped, close, p, mt, am, placed, mkNote, notes, sweep;
 
 "== TempoMap / MIDIItemTempoMap tests ==".postln;
 
@@ -269,6 +269,33 @@ assert.(am.clump(2).class == AnchorTempoMap,
 assert.(am.curve(1).class == AnchorTempoMap,
 	"AnchorTempoMap: curve preserves media-neutral type");
 assertArr.(am.clump(2).beats, [3,1], "AnchorTempoMap: clump composes");
+
+// -- 18. explicit placement wrapper ---------------------------------------
+placed = PlacedTempoMap(am, 8, 20);
+assertClose.(placed.timeAt(8), 20, "PlacedTempoMap: beat origin -> time origin");
+assertClose.(placed.timeAt(11), 23, "PlacedTempoMap: translated beat -> time");
+assertClose.(placed.beatAt(23), 11, "PlacedTempoMap: translated time -> beat");
+assertArr.(placed.beatDomain, [8,12], "PlacedTempoMap: translated beat domain");
+assertArr.(placed.timeDomain, [20,24], "PlacedTempoMap: translated time domain");
+assert.(placed.extrapolation == \carry, "PlacedTempoMap: forwards boundary policy");
+assertArr.(placed.mapBeats([1,2,1]), [1,2,1],
+	"PlacedTempoMap: mapBeats defaults to placed origin");
+assertArr.(placed.mapDurs([1,2,1]), [1,2,1],
+	"PlacedTempoMap: mapDurs defaults to placed origin");
+assertClose.(placed.timeAt(13), 25,
+	"PlacedTempoMap: wrapped carry policy survives placement");
+
+// Placement is type-neutral and composable: an outer placement treats the
+// inner placed domain start as its own relative source origin.
+r = PlacedTempoMap(placed, 100, 200);
+assertClose.(r.timeAt(100), 200, "PlacedTempoMap: nested origin");
+assertClose.(r.timeAt(103), 203, "PlacedTempoMap: nested translation");
+assertClose.(r.beatAt(203), 103, "PlacedTempoMap: nested inverse");
+
+// Legacy TempoMap remains clamped when wrapped; placement does not alter policy.
+r = PlacedTempoMap(TempoMap([1,1], [2,3]), 4, 10);
+assert.(r.extrapolation == \clamp, "PlacedTempoMap: legacy clamp policy forwarded");
+assertClose.(r.timeAt(99), 15, "PlacedTempoMap: wrapped clamp behavior preserved");
 
 } { |e|
 	h[\fail].("EXCEPTION - " ++ e.errorString);

@@ -452,7 +452,13 @@ Recommended dependency order from here:
    where the wrapped domains begin in the external coordinate frame; scalar mappings,
    position-aware span mappings, and domains translate accordingly, while extrapolation
    policy is forwarded unchanged. Placement wrappers can nest. The composed-map half
-   (source→ideal→list→wall) remains open.
+   is now represented by **`TempoWarp(sourceMap, targetMap)` — DONE 2026-07-11**. A
+   `TempoWarp` is deliberately NOT called a tempo map: it is a directional seconds→seconds
+   transform through a shared beat coordinate, with `mapTime`/`unmapTime` and position-aware
+   `mapDurs`/`unmapDurs`. It never guesses beat offsets; use `PlacedTempoMap` first when the
+   source and target origins differ. It exposes source/target/mapped time domains, the shared
+   beat-domain intersection, and both boundary policies. Once a unified map host exists,
+   `sourceMap.warpTo(targetMap)` can be added as constructor sugar without duplicating logic.
 4. Migrate NEW consumers away from `at`, direct Env access, and manual inversion.
 5. `wallToBeat` and fragment capture.
 6. Listen to `clump + curve` on real takes; build beat-domain smoothing only on evidence.

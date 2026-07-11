@@ -224,6 +224,65 @@ PlacedTempoMap {
   extrapolation { ^map.extrapolation }
 }
 
+// A directional time->time transform between two tempo maps which share the
+// same beat coordinate system. Placement is deliberately NOT inferred: place
+// either side first with PlacedTempoMap when their beat origins differ.
+TempoWarp {
+  var <sourceMap, <targetMap;
+
+  *new { |sourceMap, targetMap|
+	  ^super.new.init(sourceMap, targetMap)
+  }
+  init { |source, target|
+	  [source, target].do { |map|
+		  [\timeAt, \beatAt, \beatDomain, \timeDomain, \extrapolation].do { |selector|
+			  map.respondsTo(selector).not.if {
+				  Error("TempoWarp: map does not implement %".format(selector)).throw
+			  }
+		  }
+	  };
+	  sourceMap = source;
+	  targetMap = target;
+	  ^this
+  }
+  // Source seconds -> shared beat coordinate -> target seconds.
+  mapTime { |sourceTime|
+	  ^targetMap.timeAt(sourceMap.beatAt(sourceTime))
+  }
+  // Target seconds -> shared beat coordinate -> source seconds.
+  unmapTime { |targetTime|
+	  ^sourceMap.timeAt(targetMap.beatAt(targetTime))
+  }
+  // Both inputs and outputs are `durs` (elapsed seconds), but in different
+  // media clocks. Origins are required for position-dependent tempo changes.
+  mapDurs { |sourceDurs, fromTime|
+	  var origin = fromTime ? sourceMap.timeDomain.first;
+	  ^([this.mapTime(origin)] ++ sourceDurs.integrate.collect { |dur|
+		  this.mapTime(origin + dur)
+	  }).differentiate.drop(1).collect { |dur| 1e-9 max: dur }
+  }
+  unmapDurs { |targetDurs, fromTime|
+	  var origin = fromTime ? targetMap.timeDomain.first;
+	  ^([this.unmapTime(origin)] ++ targetDurs.integrate.collect { |dur|
+		  this.unmapTime(origin + dur)
+	  }).differentiate.drop(1).collect { |dur| 1e-9 max: dur }
+  }
+  sourceTimeDomain { ^sourceMap.timeDomain }
+  targetTimeDomain { ^targetMap.timeDomain }
+  mappedTimeDomain {
+	  var d = sourceMap.timeDomain;
+	  ^[this.mapTime(d.first), this.mapTime(d.last)]
+  }
+  sharedBeatDomain {
+	  var a = sourceMap.beatDomain, b = targetMap.beatDomain;
+	  var lo = a.first max: b.first, hi = a.last min: b.last;
+	  ^(hi >= lo).if { [lo, hi] } { nil }
+  }
+  extrapolation {
+	  ^[sourceMap.extrapolation, targetMap.extrapolation]
+  }
+}
+
 +Array{
 	goodBeats { |array|
 		^this.reshapeLike(array.differentiate.collect({|i| 1.dup(i)}))

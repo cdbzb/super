@@ -15,7 +15,7 @@ var h = (thisProcess.nowExecutingPath.dirname +/+ "test-helpers.scd").load;
 var assert = h[\assert];
 var assertClose = { |a, b, msg, tol = 1e-6| h[\assertClose].(a, b, msg, tol) };
 var assertArr = { |a, b, msg, tol = 1e-6| h[\assertArr].(a, b, msg, tol) };
-var t, r, warped, close, p, mt, am, placed, mkNote, notes, sweep;
+var t, r, warped, close, p, mt, am, placed, sourceMap, targetMap, warp, mkNote, notes, sweep;
 
 "== TempoMap / MIDIItemTempoMap tests ==".postln;
 
@@ -296,6 +296,39 @@ assertClose.(r.beatAt(203), 103, "PlacedTempoMap: nested inverse");
 r = PlacedTempoMap(TempoMap([1,1], [2,3]), 4, 10);
 assert.(r.extrapolation == \clamp, "PlacedTempoMap: legacy clamp policy forwarded");
 assertClose.(r.timeAt(99), 15, "PlacedTempoMap: wrapped clamp behavior preserved");
+
+// -- 19. source-time -> target-time composition ----------------------------
+sourceMap = AnchorTempoMap([0,1,3], [0,1,2]);
+targetMap = AnchorTempoMap([0,2,3], [0,1,2]);
+warp = TempoWarp(sourceMap, targetMap);
+assertClose.(warp.mapTime(0), 0, "TempoWarp: source start -> target start");
+assertClose.(warp.mapTime(1), 2, "TempoWarp: source time -> shared beat -> target time");
+assertClose.(warp.mapTime(3), 3, "TempoWarp: source end -> target end");
+assertClose.(warp.unmapTime(2), 1, "TempoWarp: inverse target time -> source time");
+[0,0.5,1,2,3].do { |sourceTime|
+	assertClose.(warp.unmapTime(warp.mapTime(sourceTime)), sourceTime,
+		"TempoWarp: scalar round trip" + sourceTime, 1e-4)
+};
+assertArr.(warp.mapDurs([1,2]), [2,1],
+	"TempoWarp: source durs -> target durs", 1e-4);
+assertArr.(warp.unmapDurs([2,1]), [1,2],
+	"TempoWarp: target durs -> source durs", 1e-4);
+assertArr.(warp.mapDurs([1], 1), [0.5],
+	"TempoWarp: duration mapping honors nonzero source-time origin", 1e-4);
+assertArr.(warp.sourceTimeDomain, [0,3], "TempoWarp: source time domain");
+assertArr.(warp.targetTimeDomain, [0,3], "TempoWarp: target time domain");
+assertArr.(warp.mappedTimeDomain, [0,3], "TempoWarp: mapped time domain");
+assertArr.(warp.sharedBeatDomain, [0,2], "TempoWarp: shared beat domain");
+assert.(warp.extrapolation == [\carry, \carry], "TempoWarp: reports both policies");
+
+// Explicit placement aligns the two maps at beat 8; TempoWarp does not guess it.
+sourceMap = PlacedTempoMap(sourceMap, 8, 10);
+targetMap = PlacedTempoMap(targetMap, 8, 20);
+warp = TempoWarp(sourceMap, targetMap);
+assertClose.(warp.mapTime(10), 20, "TempoWarp: placed origins align explicitly");
+assertClose.(warp.mapTime(11), 22, "TempoWarp: placed source -> target");
+assertClose.(warp.unmapTime(22), 11, "TempoWarp: placed inverse");
+assertArr.(warp.sharedBeatDomain, [8,10], "TempoWarp: placed shared beat domain");
 
 } { |e|
 	h[\fail].("EXCEPTION - " ++ e.errorString);

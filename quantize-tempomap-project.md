@@ -440,7 +440,13 @@ Recommended dependency order from here:
    reports its legacy `\clamp` behavior for song compatibility; `MIDIItemTempoMap` reports
    `\carry`. New maps should prefer `\carry` for playback or `\error` for strict authoring;
    `\clamp` is descriptive legacy policy, not a recommended creation option.
-2. Media-neutral anchor-map constructor.
+2. **Media-neutral anchor-map constructor — DONE 2026-07-11.**
+   `AnchorTempoMap(times, beatPositions)` accepts paired absolute seconds and cumulative
+   ideal-beat positions without a MIDI item. It normalizes both axes, retains the first
+   time as `t0`, validates equal-size numeric strictly-increasing anchors, and inherits the
+   tested `curve`/`clump`/protocol behavior. `MIDIItemTempoMap.fromAnchors` exposes the same
+   construction path for compatibility. A future placed-map wrapper will replace `t0` as
+   the general placement mechanism.
 3. First-class placed/composed map.
 4. Migrate NEW consumers away from `at`, direct Env access, and manual inversion.
 5. `wallToBeat` and fragment capture.

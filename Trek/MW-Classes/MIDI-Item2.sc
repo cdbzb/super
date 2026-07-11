@@ -1818,6 +1818,12 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 	*new {|midiItem, choiceFunc, beats|
 		^super.new.init( midiItem, choiceFunc, beats)
 	}
+	// Media-neutral construction path: anchor times in seconds paired with
+	// cumulative ideal-beat positions. Both axes are normalized to zero; the
+	// first absolute time is retained as t0 for compatibility with placement.
+	*fromAnchors {|anchorTimes, beatPositions|
+		^super.new.initAnchors(anchorTimes, beatPositions)
+	}
 	init{|midiItem, choiceFunc, b|
 		var closeTime;
 		midiEvents = midiItem.midiEvents;
@@ -1831,6 +1837,28 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 		times = times - t0; //relative to first anchor
 		beats = b;
 		this.prBuildLinear;
+	}
+	initAnchors {|anchorTimes, beatPositions|
+		var sourceTimes = anchorTimes.asArray;
+		var sourceBeats = beatPositions.asArray;
+		((sourceTimes.size < 2) or: { sourceTimes.size != sourceBeats.size }).if {
+			Error("AnchorTempoMap: times and beatPositions must have the same size >= 2").throw
+		};
+		(sourceTimes.every(_.isNumber) and: { sourceBeats.every(_.isNumber) }).not.if {
+			Error("AnchorTempoMap: every time and beat position must be numeric").throw
+		};
+		(sourceTimes.differentiate.drop(1).every(_ > 0)).not.if {
+			Error("AnchorTempoMap: times must be strictly increasing").throw
+		};
+		(sourceBeats.differentiate.drop(1).every(_ > 0)).not.if {
+			Error("AnchorTempoMap: beat positions must be strictly increasing").throw
+		};
+		midiEvents = nil;
+		t0 = sourceTimes.first;
+		times = sourceTimes - sourceTimes.first;
+		beats = (sourceBeats - sourceBeats.first).differentiate.drop(1);
+		this.prBuildLinear;
+		^this
 	}
 	// (re)build env / tempoMap / invEnv from the current times + beats as the
 	// piecewise-linear (constant-tempo-per-span) maps. Shared by init and the
@@ -2155,6 +2183,16 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 		}
 	}
 }
+
+// Public media-neutral name. MIDI selections remain one authoring adapter for
+// the same anchor representation; callers with audio, taps, imported markers,
+// or synthetic data can construct the map directly without a fake MIDIItem.
+AnchorTempoMap : MIDIItemTempoMap {
+	*new {|times, beatPositions|
+		^this.fromAnchors(times, beatPositions)
+	}
+}
+
 SelfReturningObject {
 	*new{
 		^super.new

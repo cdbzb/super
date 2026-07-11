@@ -15,7 +15,7 @@ var h = (thisProcess.nowExecutingPath.dirname +/+ "test-helpers.scd").load;
 var assert = h[\assert];
 var assertClose = { |a, b, msg, tol = 1e-6| h[\assertClose].(a, b, msg, tol) };
 var assertArr = { |a, b, msg, tol = 1e-6| h[\assertArr].(a, b, msg, tol) };
-var t, r, warped, close, p, mt, mkNote, notes, sweep;
+var t, r, warped, close, p, mt, am, mkNote, notes, sweep;
 
 "== TempoMap / MIDIItemTempoMap tests ==".postln;
 
@@ -247,6 +247,28 @@ assertArr.(r.beats, [3,3,9], "clump: re-aggregates non-unit beat spans");
 r = mt.curve(1).clump(2);
 assert.(r.curved.not, "clump(curved map): rebuilds linear map");
 assertArr.(r.times, [0,2,4,7], "clump(curved map): picks original anchors");
+
+// -- 17. media-neutral anchor constructor ----------------------------------
+// Inputs may use nonzero source coordinates; the core map normalizes both axes
+// and retains the first absolute time as the existing placement offset `t0`.
+am = AnchorTempoMap([10,11,13,14], [4,5,7,8]);
+assertArr.(am.times, [0,1,3,4], "AnchorTempoMap: times normalized to zero");
+assertArr.(am.beats, [1,2,1], "AnchorTempoMap: beat positions become spans");
+assertClose.(am.t0, 10, "AnchorTempoMap: first absolute time retained as t0");
+assertArr.(am.beatDomain, [0,4], "AnchorTempoMap: relative beat domain");
+assertArr.(am.timeDomain, [0,4], "AnchorTempoMap: relative time domain");
+assert.(am.extrapolation == \carry, "AnchorTempoMap: carries endpoint tempo");
+assertClose.(am.timeAt(3), 3, "AnchorTempoMap: beat -> time at anchor");
+assertClose.(am.beatAt(3), 3, "AnchorTempoMap: time -> beat at anchor");
+assertArr.(am.mapBeats([1,2,1]), [1,2,1],
+	"AnchorTempoMap: maps anchor beat spans to durs");
+assertArr.(am.mapDurs([1,2,1]), [1,2,1],
+	"AnchorTempoMap: maps anchor durs to beat spans");
+assert.(am.clump(2).class == AnchorTempoMap,
+	"AnchorTempoMap: clump preserves media-neutral type");
+assert.(am.curve(1).class == AnchorTempoMap,
+	"AnchorTempoMap: curve preserves media-neutral type");
+assertArr.(am.clump(2).beats, [3,1], "AnchorTempoMap: clump composes");
 
 } { |e|
 	h[\fail].("EXCEPTION - " ++ e.errorString);

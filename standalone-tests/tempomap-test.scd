@@ -45,6 +45,10 @@ assertClose.(t.timeAt(2), t.at(2), "TempoMap timeAt aliases beat -> time");
 assertClose.(t.beatAt(t.timeAt(2.5)), 2.5, "TempoMap beatAt inverts timeAt");
 assertArr.(t.mapDurs(t.mapBeats([1,2,1,2])), [1,2,1,2],
 	"TempoMap mapDurs maps second durs back to beats");
+assertArr.(t.mapBeats([1,1], 1), [2,1],
+	"TempoMap mapBeats: nonzero beat origin selects local tempo");
+assertArr.(t.mapDurs([2,1], 1), [1,1],
+	"TempoMap mapDurs: nonzero time origin selects local tempo");
 
 // -- 3. mapBeats preserves length across a ZERO-length span ----------------
 // [1,0,1] integrates to a repeated position -> a 0 dur; the old
@@ -138,6 +142,16 @@ assert.(warped.size == 5, "mi2 mapBeats: length preserved");
 assertArr.(warped, [1,1,1,1,3], "mi2 mapBeats: reproduces performed spans", 1e-4);
 assertArr.(mt.mapDurs(warped), 1 ! 5,
 	"mi2 mapDurs maps second durs back to beats", 1e-4);
+assertArr.(mt.mapBeats([1,1], 3), [1,3],
+	"mi2 mapBeats: nonzero beat origin selects local tempo", 1e-4);
+assertArr.(mt.mapDurs([1,3], 3), [1,1],
+	"mi2 mapDurs: nonzero time origin selects local tempo", 1e-4);
+assertArr.(mt.mapBeats([1,1], 5), [3,3],
+	"mi2 mapBeats: nonzero origin carries final tempo past domain", 1e-3);
+assertArr.(mt.mapDurs([3,3], 7), [1,1],
+	"mi2 mapDurs: nonzero origin carries final tempo past domain", 1e-3);
+assertArr.((1 ! 5).warpTo(mt), warped,
+	"legacy warpTo remains zero-origin mapBeats", 1e-4);
 
 // -- 11. carry-forward boundary: beats past the map extrapolate at the -----
 // final tempo (3 s/beat), and length is preserved (no drop).

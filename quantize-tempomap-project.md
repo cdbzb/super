@@ -433,8 +433,10 @@ stage.
 
 Recommended dependency order from here:
 
-1. Common protocol semantics: origins, domains, extrapolation,
-   `mapBeats(..., fromBeat:)`, and `mapDurs(..., fromTime:)`.
+1. **Position-aware span mapping — DONE 2026-07-11:**
+   `mapBeats(..., fromBeat:)` and `mapDurs(..., fromTime:)` on both map classes; defaults
+   preserve all existing zero-origin calls. Common protocol semantics still open here:
+   expose domains and extrapolation metadata.
 2. Media-neutral anchor-map constructor.
 3. First-class placed/composed map.
 4. Migrate NEW consumers away from `at`, direct Env access, and manual inversion.

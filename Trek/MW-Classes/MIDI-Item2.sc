@@ -1970,21 +1970,22 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 			(x <= domain).if { at.(x) }{ endV + ((x - domain) * rate) }
 		}
 	}
-	mapBeats{|b|
+	mapBeats{|b, fromBeat = 0|
 		// domain = invEnv's actual beat-extent (robust when beats.size != anchor count)
 		// Clamp non-positive spans to epsilon rather than dropping them (which
 		// shortened the array and desynced \dur from \midinote) — see TempoMap.mapBeats
 		// and quantize-tempomap-project.md §5.
-		^this.prMapThrough(b.integrate, invEnv, invEnv.times.sum)
-			.differentiate.collect{|i| 1e-9 max: i}
+		^([this.timeAt(fromBeat)] ++ b.integrate.collect{|i| this.timeAt(fromBeat + i)})
+			.differentiate.drop(1).collect{|i| 1e-9 max: i}
 	}
 	// `durs` always means elapsed seconds; map them into musical beat spans.
 	// mapBeats is the opposite direction: beat spans -> second durations.
-	mapDurs {|durs|
-		^this.dursToBeats(durs)
+	mapDurs {|durs, fromTime = 0|
+		^([this.beatAt(fromTime)] ++ durs.integrate.collect{|i| this.beatAt(fromTime + i)})
+			.differentiate.drop(1)
 	}
-	dursToBeats{|a|
-		^this.prMapThrough(a.integrate, env, env.times.sum).differentiate
+	dursToBeats{|a, fromTime = 0|
+		^this.mapDurs(a, fromTime)
 	}
 
 	// Reduce anchor density by merging adjacent ideal-beat spans. `sizes` is

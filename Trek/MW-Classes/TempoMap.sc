@@ -63,20 +63,24 @@ TempoMap {
   beatAt { |time|
 	  ^this.interpolateBeatInverse(time)
   }
-  dursToBeats { | array |
-	  ^array.integrate.collect{|i| this.interpolateBeatInverse(i)}.differentiate
+  dursToBeats { | array, fromTime = 0 |
+	  ^this.mapDurs(array, fromTime)
   }
-  mapBeats { | b |
+  mapBeats { | b, fromBeat = 0 |
 	  // Clamp non-positive spans to epsilon instead of .select-dropping them:
 	  // dropping silently shortened the array and desynced a Pbind's \dur from
 	  // its \midinote from that point on (quantize-tempomap-project.md §5).
-	  ^b.integrate.collect{|i| this[i]}.differentiate.collect{|i| 1e-9 max: i}
+	  ^([this.timeAt(fromBeat)]
+		  ++ b.integrate.collect{|i| this.timeAt(fromBeat + i)})
+		  .differentiate.drop(1).collect{|i| 1e-9 max: i}
   }
   // Naming convention: `beats` are musical spans; `durs` are elapsed seconds.
   // Therefore mapDurs maps second durations -> beat spans (the inverse of
   // mapBeats, which maps beat spans -> second durations).
-  mapDurs { |durs|
-	  ^this.dursToBeats(durs)
+  mapDurs { |durs, fromTime = 0|
+	  ^([this.beatAt(fromTime)]
+		  ++ durs.integrate.collect{|i| this.beatAt(fromTime + i)})
+		  .differentiate.drop(1)
   }
   mapRecordedDurs { | durs |
 	  ^this.mapBeats( durs/this.quarters.mean )

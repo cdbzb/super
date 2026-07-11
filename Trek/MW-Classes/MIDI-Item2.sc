@@ -1873,6 +1873,13 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 	timeAt { |beat|
 		^this.prAtExtrapolated(beat, invEnv)
 	}
+	// Public protocol metadata in this map's relative coordinate frame (`t0`
+	// remains the separate absolute placement offset). Curved maps may contain
+	// oversampled Envs, so ask their actual domains rather than recomputing from
+	// the original anchor arrays.
+	beatDomain { ^[0, this.prEnvDomain(invEnv)] }
+	timeDomain { ^[0, this.prEnvDomain(env)] }
+	extrapolation { ^\carry }
 	// Direction-explicit protocol aliases. Unlike the legacy `at`, beatAt also
 	// follows this class's boundary policy and carries the endpoint tempo beyond
 	// both ends of the map.

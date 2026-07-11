@@ -435,8 +435,11 @@ Recommended dependency order from here:
 
 1. **Position-aware span mapping — DONE 2026-07-11:**
    `mapBeats(..., fromBeat:)` and `mapDurs(..., fromTime:)` on both map classes; defaults
-   preserve all existing zero-origin calls. Common protocol semantics still open here:
-   expose domains and extrapolation metadata.
+   preserve all existing zero-origin calls. **Protocol metadata DONE 2026-07-11:** both
+   classes expose relative `beatDomain`, `timeDomain`, and `extrapolation`. `TempoMap`
+   reports its legacy `\clamp` behavior for song compatibility; `MIDIItemTempoMap` reports
+   `\carry`. New maps should prefer `\carry` for playback or `\error` for strict authoring;
+   `\clamp` is descriptive legacy policy, not a recommended creation option.
 2. Media-neutral anchor-map constructor.
 3. First-class placed/composed map.
 4. Migrate NEW consumers away from `at`, direct Env access, and manual inversion.

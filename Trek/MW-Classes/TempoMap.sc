@@ -52,6 +52,12 @@ TempoMap {
   timeAt { |beat|
 	  ^this.at(beat)
   }
+  // Public protocol metadata. Domains use the map's relative coordinate frame.
+  // `\clamp` documents the legacy Env.at boundary behavior; it is retained for
+  // Trek/Songs compatibility rather than recommended for new composed maps.
+  beatDomain { ^[0, beats.sum] }
+  timeDomain { ^[0, durs.sum] }
+  extrapolation { ^\clamp }
   // performed time -> ideal beat. Was `Env(beats, ([0] ++ durs).integrate)[t]`,
   // rebuilt per call AND malformed (levels = per-span beat counts, not
   // cumulative; times one LONGER than levels instead of one shorter) — it

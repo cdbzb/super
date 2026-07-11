@@ -49,6 +49,11 @@ assertArr.(t.mapBeats([1,1], 1), [2,1],
 	"TempoMap mapBeats: nonzero beat origin selects local tempo");
 assertArr.(t.mapDurs([2,1], 1), [1,1],
 	"TempoMap mapDurs: nonzero time origin selects local tempo");
+assertArr.(t.beatDomain, [0,6], "TempoMap beatDomain reports relative extent");
+assertArr.(t.timeDomain, [0,10], "TempoMap timeDomain reports relative extent");
+assert.(t.extrapolation == \clamp, "TempoMap declares legacy clamp policy");
+assertClose.(t.timeAt(100), t.timeDomain.last,
+	"TempoMap clamp policy matches out-of-domain behavior");
 
 // -- 3. mapBeats preserves length across a ZERO-length span ----------------
 // [1,0,1] integrates to a repeated position -> a 0 dur; the old
@@ -152,6 +157,15 @@ assertArr.(mt.mapDurs([3,3], 7), [1,1],
 	"mi2 mapDurs: nonzero origin carries final tempo past domain", 1e-3);
 assertArr.((1 ! 5).warpTo(mt), warped,
 	"legacy warpTo remains zero-origin mapBeats", 1e-4);
+assertArr.(mt.beatDomain, [0,5], "mi2 beatDomain reports relative extent");
+assertArr.(mt.timeDomain, [0,7], "mi2 timeDomain reports relative extent");
+assert.(mt.extrapolation == \carry, "mi2 declares carry policy");
+assert.(mt.timeAt(6) > mt.timeDomain.last,
+	"mi2 carry policy continues beyond time domain");
+assertArr.(mt.curve(1).beatDomain, mt.beatDomain,
+	"mi2 curved map preserves beat domain", 1e-4);
+assertArr.(mt.clump(2).timeDomain, mt.timeDomain,
+	"mi2 clumped map preserves time domain", 1e-4);
 
 // -- 11. carry-forward boundary: beats past the map extrapolate at the -----
 // final tempo (3 s/beat), and length is preserved (no drop).

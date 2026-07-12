@@ -453,7 +453,18 @@ EventList {
 	// multiplier equals the old absolute sec/beat numerically.
 	tempoEnv { |evts|
 		var tl = this.extractTempo(evts);
-		^(tl.size > 0).if { this.timelineToEnv(tl, 1) }
+		^(tl.size > 0).if {
+			var env = this.timelineToEnv(tl, 1);
+			// Validate here — the one place both directions share — rather than
+			// throwing only from wallToBeat: a non-positive multiplier makes the
+			// composed clock non-monotone, so playback is already wrong before any
+			// capture-time inversion crashes.
+			env.levels.any { |l| l <= 0 }.if {
+				"EventList.tempoEnv: non-positive \\tempoTrack multiplier in % — beat<->wall mapping is not invertible"
+					.format(env.levels).warn
+			};
+			env
+		}
 	}
 
 	// Base wall-seconds elapsed across the beat interval [a, b], BEFORE any
@@ -584,7 +595,7 @@ EventList {
 	// returns 0 for non-positive wall time. Tempo multipliers must stay positive
 	// for the composed clock to be invertible.
 	wallToBeat { |sec, tempoEnv|
-		var seg, lo, hi, mid, local, cv, level, baseTarget;
+		var seg, lo, hi, mid, local, cv, level, baseTarget, steps;
 		tempoEnv.isNil.if {
 			tempoMap.notNil.if {
 				^tempoMap.beatAt(tempoMap.timeAt(0) + sec)
@@ -630,7 +641,9 @@ EventList {
 			x = (slope.abs < 1e-12).if {
 				local / (baseDur * mA)
 			} {
-				((mA.neg) + ((mA.squared + (2 * slope * local / baseDur)).sqrt)) / slope
+				// max(0): the discriminant is mB^2 at the segment end in exact
+				// arithmetic, so float rounding can only dip it epsilon-negative.
+				((mA.neg) + ((mA.squared + (2 * slope * local / baseDur)).max(0).sqrt)) / slope
 			};
 			^prWallStarts[seg] + x
 		};
@@ -641,9 +654,13 @@ EventList {
 			Error("EventList.wallToBeat: tempo multiplier must be positive").throw
 		};
 		lo = prWallStarts[seg]; hi = prWallStarts[seg + 1];
-		40.do {
+		steps = 0;
+		// Early exit at 1e-10 beats; the step cap bounds the loop when lo/hi are
+		// large enough that adjacent floats sit further apart than the tolerance.
+		while { ((hi - lo) > 1e-10) and: { steps < 60 } } {
 			mid = (lo + hi) / 2;
 			(this.beatToWall(mid, tempoEnv) < sec).if { lo = mid } { hi = mid };
+			steps = steps + 1;
 		};
 		^(lo + hi) / 2
 	}
@@ -726,8 +743,11 @@ EventList {
 		// budget must cover logical-drift + prepare; it warns + slides when it doesn't.
 		var t0 = thisThread.seconds;
 		var epoch = t0 + (leadTime ? 0) + lat;
-		var tempoEnv = this.prPlayTempoEnv;
-		var sched = this.prepare(epoch, from, to: to, tempoEnv: tempoEnv);
+		// Select once; prepare reuses both the events and the env built from them
+		// instead of re-running the scoped/shouldPlay selection.
+		var evts = this.prPlayEvents;
+		var tempoEnv = this.tempoEnv(evts);
+		var sched = this.prepare(epoch, from, to: to, tempoEnv: tempoEnv, evts: evts);
 		// Sends fire `lat` early (they self-bundle at +lat), so the real deadline for
 		// the FIRST entry is epoch - lat = t0 + leadTime.
 		var d = (Main.elapsedTime + 0.02) - (epoch - lat);
@@ -742,7 +762,10 @@ EventList {
 		// Absolute transport time at which `from` sounds, plus the exact composed
 		// tempo environment used to prepare this playback. Recording/capture code can
 		// subtract seconds, add beatToWall(from), then call wallToBeat without
-		// reconstructing mutable playback state.
+		// reconstructing mutable playback state. Deliberately NOT cleared by stop or
+		// invalidated by later list mutation: the snapshot describes what the recorded
+		// take actually heard, so capture-after-stop (or after a re-quantize) must
+		// keep using it, not the list's current state.
 		lastPlayEpoch = (seconds: epoch, fromBeat: from, tempoEnv: tempoEnv);
 		// A nested own-tempo child inserted before `from` can produce pre-epoch entries.
 		// Exact wallToBeat trimming is not wired into nested preparation yet; drop them
@@ -757,15 +780,15 @@ EventList {
 	// `place` answers "what absolute wall-second does a beat in THIS list's frame land
 	// on?"; top-level lists get the default, nested lists get one from prExpandList.
 	// `seen` guards cyclic nesting.
-	prepare { |epoch, from = 0, place, seen, to, tempoEnv|
+	prepare { |epoch, from = 0, place, seen, to, tempoEnv, evts|
 		var sched = List[];
-		var evts, fromWall, playable;
+		var fromWall, playable;
 		seen = seen ?? { IdentitySet[] };
 		seen.includes(this).if {
 			"EventList.prepare: cyclic \\eventList nesting at % — skipped".format(scope).warn;
 			^sched
 		};
-		evts     = this.scopedEvents.select { |e| this.shouldPlay(e) };
+		evts     = evts ?? { this.prPlayEvents };
 		tempoEnv = tempoEnv ?? { this.tempoEnv(evts) };
 		fromWall = this.beatToWall(from, tempoEnv);
 		place    = place ?? { { |beat| epoch + (this.beatToWall(beat, tempoEnv) - fromWall) } };
@@ -795,10 +818,14 @@ EventList {
 		^sched
 	}
 
+	// The filtered (scoped + shouldPlay) events exactly as play/prepare uses them.
+	prPlayEvents {
+		^this.scopedEvents.select { |e| this.shouldPlay(e) }
+	}
 	// tempoEnv as play/prepare will actually use it: derived from the filtered
-	// (scoped + shouldPlay) events, so it matches what sounds.
+	// events, so it matches what sounds.
 	prPlayTempoEnv {
-		^this.tempoEnv(this.scopedEvents.select { |e| this.shouldPlay(e) })
+		^this.tempoEnv(this.prPlayEvents)
 	}
 
 	// §10b: expand a nested \eventList event into schedule entries. followTrack: true
@@ -888,6 +915,12 @@ EventList {
 		beatOff = (ev[\sourceTempoMap] == \eventList).if {
 			(tm.notNil and: { tm.respondsTo(\timeAt) } and: { tm.respondsTo(\beatAt) }).if {
 				var startSec = tm.timeAt(originBeat);
+				// TempoMap (\clamp) freezes the beat past the map's ends, where
+				// MIDIItemTempoMap (\carry) keeps the endpoint tempo going — item
+				// events past the map's end behave differently per base map class.
+				(tm.respondsTo(\extrapolation) and: { tm.extrapolation == \clamp }).if {
+					"prEmitMi2Follow: base tempo map clamps at its ends — item events past the map's end freeze at the boundary beat".warn
+				};
 				{ |rel| (tm.beatAt(startSec + rel) - originBeat) / rate }
 			} {
 				"prEmitMi2Follow: sourceTempoMap:\\eventList needs an invertible tempo-map base; using flat".warn;

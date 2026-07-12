@@ -269,6 +269,14 @@ assert.(am.clump(2).class == AnchorTempoMap,
 assert.(am.curve(1).class == AnchorTempoMap,
 	"AnchorTempoMap: curve preserves media-neutral type");
 assertArr.(am.clump(2).beats, [3,1], "AnchorTempoMap: clump composes");
+assert.(try { AnchorTempoMap([0,1], [0,1,2]); false } { true },
+	"AnchorTempoMap: rejects mismatched array sizes");
+assert.(try { AnchorTempoMap([0,1,1], [0,1,2]); false } { true },
+	"AnchorTempoMap: rejects non-increasing times");
+assert.(try { AnchorTempoMap([0,1,2], [0,2,2]); false } { true },
+	"AnchorTempoMap: rejects non-increasing beat positions");
+assert.(try { am.midiEvents; false } { |e| e.errorString.contains("anchors") },
+	"AnchorTempoMap: MIDI-only access fails with a clear error");
 
 // -- 18. explicit placement wrapper ---------------------------------------
 placed = PlacedTempoMap(am, 8, 20);
@@ -282,6 +290,8 @@ assertArr.(placed.mapBeats([1,2,1]), [1,2,1],
 	"PlacedTempoMap: mapBeats defaults to placed origin");
 assertArr.(placed.mapDurs([1,2,1]), [1,2,1],
 	"PlacedTempoMap: mapDurs defaults to placed origin");
+assertArr.(placed.dursToBeats([1,2,1]), [1,2,1],
+	"PlacedTempoMap: dursToBeats legacy alias answers");
 assertClose.(placed.timeAt(13), 25,
 	"PlacedTempoMap: wrapped carry policy survives placement");
 
@@ -309,11 +319,11 @@ assertClose.(warp.unmapTime(2), 1, "TempoWarp: inverse target time -> source tim
 	assertClose.(warp.unmapTime(warp.mapTime(sourceTime)), sourceTime,
 		"TempoWarp: scalar round trip" + sourceTime, 1e-4)
 };
-assertArr.(warp.mapDurs([1,2]), [2,1],
+assertArr.(warp.warpDurs([1,2]), [2,1],
 	"TempoWarp: source durs -> target durs", 1e-4);
-assertArr.(warp.unmapDurs([2,1]), [1,2],
+assertArr.(warp.unwarpDurs([2,1]), [1,2],
 	"TempoWarp: target durs -> source durs", 1e-4);
-assertArr.(warp.mapDurs([1], 1), [0.5],
+assertArr.(warp.warpDurs([1], 1), [0.5],
 	"TempoWarp: duration mapping honors nonzero source-time origin", 1e-4);
 assertArr.(warp.sourceTimeDomain, [0,3], "TempoWarp: source time domain");
 assertArr.(warp.targetTimeDomain, [0,3], "TempoWarp: target time domain");
@@ -329,6 +339,11 @@ assertClose.(warp.mapTime(10), 20, "TempoWarp: placed origins align explicitly")
 assertClose.(warp.mapTime(11), 22, "TempoWarp: placed source -> target");
 assertClose.(warp.unmapTime(22), 11, "TempoWarp: placed inverse");
 assertArr.(warp.sharedBeatDomain, [8,10], "TempoWarp: placed shared beat domain");
+
+// Disjoint beat domains have no shared coordinate range.
+warp = TempoWarp(PlacedTempoMap(AnchorTempoMap([0,1], [0,1]), 0, 0),
+	PlacedTempoMap(AnchorTempoMap([0,1], [0,1]), 5, 0));
+assert.(warp.sharedBeatDomain.isNil, "TempoWarp: disjoint beat domains -> nil");
 
 } { |e|
 	h[\fail].("EXCEPTION - " ++ e.errorString);

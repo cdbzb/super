@@ -8,7 +8,7 @@ var assertClose = { |a, b, msg, tol = 1e-9| h[\assertClose].(a, b, msg, tol) };
 var epoch = 100;
 var flat, tempo, child, parent, ftChild, ftParent, la, lb, orig, copied;
 var sched, times, hits, missed, live, stopped, stress, bigSink, finish;
-var ramp, rampEnv, ref, detHits, det, detT0, inv, invEnv;
+var ramp, rampEnv, ref, detHits, det, detT0, inv, invEnv, inv2, inv2Env;
 
 "== EventList prepare/fire tests ==".postln;
 
@@ -142,6 +142,19 @@ invEnv = inv.prPlayTempoEnv;
 assertClose.(inv.wallToBeat(-1, invEnv), 0, "wallToBeat: composed map clamps before zero");
 assertClose.(inv.wallToBeat(inv.beatToWall(3), nil), 3,
 	"wallToBeat: base-only round trip", 1e-9);
+
+// Step segment AFTER a ramp: exercises the binary search landing mid-array and
+// the step inverse away from segment 0.
+inv2 = EventList.new;
+inv2.beatDur = 0.25;
+inv2.add(0, tempoTrack: 1);
+inv2.add(2, tempoTrack: Env([1, 3], [4], \lin)); // ramp over beats 2..6
+inv2.add(8, tempoTrack: 0.5);                    // step back down after the ramp
+inv2Env = inv2.prPlayTempoEnv;
+[1, 3, 5, 7, 9, 12].do { |b|
+	assertClose.(inv2.wallToBeat(inv2.beatToWall(b, inv2Env), inv2Env), b,
+		"wallToBeat: multi-segment round trip at %".format(b), 1e-8);
+};
 
 // -- 10. fire/stop (async): sends fire once, stop cancels ------------------
 Event.addEventType(\testHit, { ~sink.add([~id, SystemClock.seconds]) });

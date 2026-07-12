@@ -1808,8 +1808,8 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	}
 }
 
-MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap but with timestamps instead of beats 
-	var <times, <>beats, <midiEvents;
+MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap but with timestamps instead of beats
+	var <times, <>beats, midiEvents;
 	var <env, <tempoMap ;
 	var <invEnv, <curved = false, <curveAmount = 0;
 	var <t0; // absolute timestamp of the first anchor (times/env are relative to it)
@@ -1839,6 +1839,15 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 		times = times - t0; //relative to first anchor
 		beats = b;
 		this.prBuildLinear;
+	}
+	// Anchor-constructed maps (initAnchors) have no MIDI source; fail loudly with
+	// the reason instead of letting inherited AbstractMidiEvents methods
+	// (noteOns, bounds, ...) crash on nil deep inside their bodies.
+	midiEvents {
+		^midiEvents ?? {
+			Error("%: no MIDI events — this map was built from anchors, not a MIDIItem"
+				.format(this.class)).throw
+		}
 	}
 	initAnchors {|anchorTimes, beatPositions|
 		var sourceTimes = anchorTimes.asArray;
@@ -2008,18 +2017,16 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 		}
 	}
 	mapBeats{|b, fromBeat = 0|
-		// domain = invEnv's actual beat-extent (robust when beats.size != anchor count)
 		// Clamp non-positive spans to epsilon rather than dropping them (which
 		// shortened the array and desynced \dur from \midinote) — see TempoMap.mapBeats
 		// and quantize-tempomap-project.md §5.
-		^([this.timeAt(fromBeat)] ++ b.integrate.collect{|i| this.timeAt(fromBeat + i)})
-			.differentiate.drop(1).collect{|i| 1e-9 max: i}
+		^b.mapSpansFrom(fromBeat, { |beat| this.timeAt(beat) })
+			.collect{|i| 1e-9 max: i}
 	}
 	// `durs` always means elapsed seconds; map them into musical beat spans.
 	// mapBeats is the opposite direction: beat spans -> second durations.
 	mapDurs {|durs, fromTime = 0|
-		^([this.beatAt(fromTime)] ++ durs.integrate.collect{|i| this.beatAt(fromTime + i)})
-			.differentiate.drop(1)
+		^durs.mapSpansFrom(fromTime, { |t| this.beatAt(t) })
 	}
 	dursToBeats{|a, fromTime = 0|
 		^this.mapDurs(a, fromTime)

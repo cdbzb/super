@@ -76,17 +76,14 @@ TempoMap {
 	  // Clamp non-positive spans to epsilon instead of .select-dropping them:
 	  // dropping silently shortened the array and desynced a Pbind's \dur from
 	  // its \midinote from that point on (quantize-tempomap-project.md §5).
-	  ^([this.timeAt(fromBeat)]
-		  ++ b.integrate.collect{|i| this.timeAt(fromBeat + i)})
-		  .differentiate.drop(1).collect{|i| 1e-9 max: i}
+	  ^b.mapSpansFrom(fromBeat, { |beat| this.timeAt(beat) })
+		  .collect{|i| 1e-9 max: i}
   }
   // Naming convention: `beats` are musical spans; `durs` are elapsed seconds.
   // Therefore mapDurs maps second durations -> beat spans (the inverse of
   // mapBeats, which maps beat spans -> second durations).
   mapDurs { |durs, fromTime = 0|
-	  ^([this.beatAt(fromTime)]
-		  ++ durs.integrate.collect{|i| this.beatAt(fromTime + i)})
-		  .differentiate.drop(1)
+	  ^durs.mapSpansFrom(fromTime, { |t| this.beatAt(t) })
   }
   mapRecordedDurs { | durs |
 	  ^this.mapBeats( durs/this.quarters.mean )
@@ -202,16 +199,16 @@ PlacedTempoMap {
 	  ^beatOrigin + (map.beatAt(td.first + (time - timeOrigin)) - bd.first)
   }
   mapBeats { |beats, fromBeat|
-	  var origin = fromBeat ? beatOrigin;
-	  ^([this.timeAt(origin)] ++ beats.integrate.collect { |span|
-		  this.timeAt(origin + span)
-	  }).differentiate.drop(1).collect { |dur| 1e-9 max: dur }
+	  ^beats.mapSpansFrom(fromBeat ? beatOrigin, { |beat| this.timeAt(beat) })
+		  .collect { |dur| 1e-9 max: dur }
   }
   mapDurs { |durs, fromTime|
-	  var origin = fromTime ? timeOrigin;
-	  ^([this.beatAt(origin)] ++ durs.integrate.collect { |dur|
-		  this.beatAt(origin + dur)
-	  }).differentiate.drop(1)
+	  ^durs.mapSpansFrom(fromTime ? timeOrigin, { |t| this.beatAt(t) })
+  }
+  // Legacy protocol alias — TempoMap and MIDIItemTempoMap both answer it, so a
+  // placed map must too or old callers get doesNotUnderstand.
+  dursToBeats { |durs, fromTime|
+	  ^this.mapDurs(durs, fromTime)
   }
   beatDomain {
 	  var d = map.beatDomain;
@@ -254,18 +251,16 @@ TempoWarp {
 	  ^sourceMap.timeAt(targetMap.beatAt(targetTime))
   }
   // Both inputs and outputs are `durs` (elapsed seconds), but in different
-  // media clocks. Origins are required for position-dependent tempo changes.
-  mapDurs { |sourceDurs, fromTime|
-	  var origin = fromTime ? sourceMap.timeDomain.first;
-	  ^([this.mapTime(origin)] ++ sourceDurs.integrate.collect { |dur|
-		  this.mapTime(origin + dur)
-	  }).differentiate.drop(1).collect { |dur| 1e-9 max: dur }
+  // media clocks. Deliberately NOT named mapDurs: on every tempo map that
+  // selector returns beat spans, while a warp's output stays in seconds.
+  // Origins are required for position-dependent tempo changes.
+  warpDurs { |sourceDurs, fromTime|
+	  ^sourceDurs.mapSpansFrom(fromTime ? sourceMap.timeDomain.first,
+		  { |t| this.mapTime(t) }).collect { |dur| 1e-9 max: dur }
   }
-  unmapDurs { |targetDurs, fromTime|
-	  var origin = fromTime ? targetMap.timeDomain.first;
-	  ^([this.unmapTime(origin)] ++ targetDurs.integrate.collect { |dur|
-		  this.unmapTime(origin + dur)
-	  }).differentiate.drop(1).collect { |dur| 1e-9 max: dur }
+  unwarpDurs { |targetDurs, fromTime|
+	  ^targetDurs.mapSpansFrom(fromTime ? targetMap.timeDomain.first,
+		  { |t| this.unmapTime(t) }).collect { |dur| 1e-9 max: dur }
   }
   sourceTimeDomain { ^sourceMap.timeDomain }
   targetTimeDomain { ^targetMap.timeDomain }
@@ -286,5 +281,18 @@ TempoWarp {
 +Array{
 	goodBeats { |array|
 		^this.reshapeLike(array.differentiate.collect({|i| 1.dup(i)}))
+	}
+}
+
++SequenceableCollection {
+	// Position-aware span mapping shared by the tempo-map protocol (TempoMap,
+	// MIDIItemTempoMap, PlacedTempoMap, TempoWarp): treat the receiver as
+	// consecutive spans starting at `origin`, map every boundary through `func`,
+	// and return the spans between the mapped boundaries. Epsilon-clamping of
+	// non-positive output spans stays at the call sites (it only applies in the
+	// seconds direction).
+	mapSpansFrom { |origin, func|
+		^([func.(origin)] ++ this.integrate.collect { |span| func.(origin + span) })
+			.differentiate.drop(1)
 	}
 }

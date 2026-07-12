@@ -455,7 +455,9 @@ Recommended dependency order from here:
    is now represented by **`TempoWarp(sourceMap, targetMap)` — DONE 2026-07-11**. A
    `TempoWarp` is deliberately NOT called a tempo map: it is a directional seconds→seconds
    transform through a shared beat coordinate, with `mapTime`/`unmapTime` and position-aware
-   `mapDurs`/`unmapDurs`. It never guesses beat offsets; use `PlacedTempoMap` first when the
+   `warpDurs`/`unwarpDurs` (renamed from `mapDurs`/`unmapDurs` 2026-07-12: on every tempo map
+   that selector returns beat spans, so a seconds→seconds method must not reuse it). It never
+   guesses beat offsets; use `PlacedTempoMap` first when the
    source and target origins differ. It exposes source/target/mapped time domains, the shared
    beat-domain intersection, and both boundary policies. Once a unified map host exists,
    `sourceMap.warpTo(targetMap)` can be added as constructor sugar without duplicating logic.

@@ -11,7 +11,7 @@ EventList {
 	// leadTime + latency after play (deterministic — see prPlayPrepared; nil =
 	// adaptive ASAP start). prPlayGen = generation counter letting stop/replay
 	// cancel already-scheduled sends.
-	var <>leadTime;
+	var <>leadTime, <lastPlayEpoch;
 	var prPlayGen = 0;
 	// Memoized beat->wall integral (see beatToWall): cumulative wall-seconds at each
 	// tempoEnv segment boundary, built once per tempoEnv so completed segments aren't
@@ -726,7 +726,8 @@ EventList {
 		// budget must cover logical-drift + prepare; it warns + slides when it doesn't.
 		var t0 = thisThread.seconds;
 		var epoch = t0 + (leadTime ? 0) + lat;
-		var sched = this.prepare(epoch, from, to: to);
+		var tempoEnv = this.prPlayTempoEnv;
+		var sched = this.prepare(epoch, from, to: to, tempoEnv: tempoEnv);
 		// Sends fire `lat` early (they self-bundle at +lat), so the real deadline for
 		// the FIRST entry is epoch - lat = t0 + leadTime.
 		var d = (Main.elapsedTime + 0.02) - (epoch - lat);
@@ -738,9 +739,14 @@ EventList {
 			epoch = epoch + d;
 			sched.do { |i| i[\time] = i[\time] + d };
 		};
-		// A nested own-tempo child inserted before `from` can produce pre-epoch entries
-		// (no wallToBeat inverse yet to trim it exactly — §9a); drop them rather than
-		// firing a burst at start.
+		// Absolute transport time at which `from` sounds, plus the exact composed
+		// tempo environment used to prepare this playback. Recording/capture code can
+		// subtract seconds, add beatToWall(from), then call wallToBeat without
+		// reconstructing mutable playback state.
+		lastPlayEpoch = (seconds: epoch, fromBeat: from, tempoEnv: tempoEnv);
+		// A nested own-tempo child inserted before `from` can produce pre-epoch entries.
+		// Exact wallToBeat trimming is not wired into nested preparation yet; drop them
+		// rather than firing a burst at start.
 		sched = sched.reject { |i| i[\time] < (epoch - 0.001) };
 		this.fire(sched);
 		^this
@@ -751,16 +757,16 @@ EventList {
 	// `place` answers "what absolute wall-second does a beat in THIS list's frame land
 	// on?"; top-level lists get the default, nested lists get one from prExpandList.
 	// `seen` guards cyclic nesting.
-	prepare { |epoch, from = 0, place, seen, to|
+	prepare { |epoch, from = 0, place, seen, to, tempoEnv|
 		var sched = List[];
-		var evts, tempoEnv, fromWall, playable;
+		var evts, fromWall, playable;
 		seen = seen ?? { IdentitySet[] };
 		seen.includes(this).if {
 			"EventList.prepare: cyclic \\eventList nesting at % — skipped".format(scope).warn;
 			^sched
 		};
 		evts     = this.scopedEvents.select { |e| this.shouldPlay(e) };
-		tempoEnv = this.tempoEnv(evts);
+		tempoEnv = tempoEnv ?? { this.tempoEnv(evts) };
 		fromWall = this.beatToWall(from, tempoEnv);
 		place    = place ?? { { |beat| epoch + (this.beatToWall(beat, tempoEnv) - fromWall) } };
 		playable = voiceSpace.notNil.if {

@@ -169,10 +169,17 @@ det = EventList.new;
 det.beatDur = 0.1;
 det.leadTime = 0.25;
 detHits = List[];
-det.add((when: 0, newType: \testHit, sink: detHits, id: 4));
+det.add(0, tempoTrack: 2);
+det.add((when: 3, newType: \testHit, sink: detHits, id: 4));
 SystemClock.sched(0.1, {
 	detT0 = thisThread.seconds;
-	det.play;
+	det.play(3);
+	assert.(det.lastPlayEpoch.notNil, "play epoch: snapshot captured");
+	assertClose.(det.lastPlayEpoch[\seconds], detT0 + det.leadTime + (Server.default.latency ? 0.2),
+		"play epoch: transport sound time captured", 0.03);
+	assertClose.(det.lastPlayEpoch[\fromBeat], 3, "play epoch: starting beat captured");
+	assertClose.(det.lastPlayEpoch[\tempoEnv].at(0), 2,
+		"play epoch: composed tempo environment captured");
 	nil
 });
 

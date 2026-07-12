@@ -569,8 +569,12 @@ Missing primitives, in dependency order:
    ramps use the quadratic solution; tempoMap×ramp segments bisect the same cached
    approximation used by `beatToWall`. Non-positive composed wall time clamps to beat 0,
    matching `beatToWall`'s existing composed-map boundary behavior.
-2. **Play epoch** — `EventList.play` (`:526`) captures nothing at start. Add a
-   `lastPlayEpoch`: (SystemClock second at transport start, `from` beat, tempoEnv snapshot).
+2. **Play epoch** — DONE (2026-07-11). `EventList.lastPlayEpoch` records
+   `(seconds: transport sound epoch, fromBeat: starting beat, tempoEnv: exact prepared env)`.
+   The snapshot is written only after any prepare-budget overrun has shifted the epoch, so
+   it describes the schedule that actually fires. `prepare` accepts that same env as an
+   optional final argument, preventing capture metadata from being reconstructed from
+   later mutable list state.
    `MIDIItem.record` already stamps `SystemClock.seconds - latency` (`MIDI-Item2.sc:1001`)
    and EventList schedules on SystemClock — same clock, so alignment is pure arithmetic.
 3. **`list.captureFragment(take, voice:)`** — convert each recorded event's wall time via

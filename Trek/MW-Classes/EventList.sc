@@ -901,13 +901,25 @@ EventList {
 	}
 
 	// Route a \audioItemTempoFollow event, or a \audioItem carrying followTrack,
-	// to the tempo-follow builders. record: true stays on the sealed \audioItem
-	// path (recording can't tempo-follow; followTrack only applies on playback).
+	// to the tempo-follow builders. record: true only means record when ARMED —
+	// recording stays on the sealed \audioItem path, but unarmed the event is
+	// playback intent and follows (the rapid record/play toggle: leave record:
+	// true in the event, flip AudioItem.armed). The warning is a deliberate
+	// reminder that the item will record on the next armed play. Armed is
+	// sampled at prepare time, not mid-playback.
 	prIsAudioFollow { |ev|
 		^(ev[\type] == \audioItemTempoFollow) or: {
 			(ev[\type] == \audioItem)
 			and: { (ev[\followTrack] ? false) != false }
-			and: { (ev[\record] ? false) != true }
+			and: {
+				((ev[\record] ? false) != true) or: {
+					AudioItem.armed.not.if {
+						"AudioItem %: not armed — following track; will record if armed"
+							.format(ev[\name]).warn;
+						true
+					} { false }
+				}
+			}
 		}
 	}
 

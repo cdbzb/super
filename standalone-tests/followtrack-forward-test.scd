@@ -133,9 +133,16 @@ assert.((tAFlat.size != tBase.size) or: { (tAFlat - tBase).abs.maxItem > 1e-6 },
 	"audio sanity: flat differs from base-map source (% vs % entries)".format(tAFlat.size, tBase.size));
 assert.(timesFor.((when: 0, type: \audioItem, name: aName)).size == 1,
 	"audio: plain \\audioItem stays sealed (1 entry)");
+// record: true only means record when ARMED: armed keeps the sealed path,
+// unarmed routes to follow playback (rapid record/play toggle workflow)
+AudioItem.armed = true;
 assert.(timesFor.((when: 0, type: \audioItem, name: aName, followTrack: \eventList,
 	record: true, dur: 6)).size == 1,
-	"audio: record: true stays sealed even with followTrack (1 entry)");
+	"audio: record: true + armed stays sealed (1 entry)");
+AudioItem.armed = false;
+assert.(timesFor.((when: 0, type: \audioItem, name: aName, followTrack: \eventList,
+	record: true, dur: 6)).size > 1,
+	"audio: record: true unarmed follows track");
 
 // ------------------------------------------- \audioItem general case: map OBJECT
 // Flat list + stamped take map: the source advances through the map (10 s of

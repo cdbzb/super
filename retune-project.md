@@ -409,8 +409,11 @@ per audio-device configuration, loopback measurement) is captured into each reco
 stamp (`roundTrip:`) and applied by stamp-based `prSrcOffset`/`prSrcEndBeat` — so one
 measurement retroactively corrects every stamped take. `\gridAligned` is reserved as the
 tag for internal bounces (server-side, no converters — aligned by construction, rt 0).
-Still open: the loopback measurement helper itself (play click, record input,
-cross-correlate) — roadmap.
+Helper BUILT 2026-07-13: `AudioItem.measureRoundTrip(in:, out:)` — one synth pings 2 kHz
+out and records the input from the same bundle; leading-edge detection gives the round
+trip, sets the classvar, and `writeStartupLatency` idempotently pins
+`AudioItem.roundTripLatency = <rt>;` in startup.scd (per-machine home — deliberately NOT
+in a version-controlled repo). Needs a physical loopback (cable or mic-at-speaker) when run.
 
 **Filter parity — lift symbolic filters to the shared base.** MIDIItem's `from`/`fromNote`/`fromBeat`,
 `quantize`, `filter`/`filterNotes`/`filterNotesKey`, `set`/`setParams`, `removeNote`, `warpTo`, `trim`,

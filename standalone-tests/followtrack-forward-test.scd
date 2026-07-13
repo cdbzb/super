@@ -19,7 +19,7 @@ var ftChild, ftParentT, ftParentE, sT, sE;
 var aName = "zzz-followtrack-test", aDir, aPath, sf;
 var tBase, tEvList, tAFlat, tFtTrue;
 var gSrc, gOneKey, gOnMapList, gTrimSrc, gTrimEvList, aSrc, aSrcOneKey, aSrcOnMapList;
-var tDir, stampList, stamp, aNoStamp, aStamped, aStampedFlat, aStamped2;
+var tDir, stampList, stamp, aNoStamp, aStamped, aStampedFlat, aStamped2, tPath, tLines;
 
 "== followTrack forwarding tests ==".postln;
 
@@ -197,6 +197,23 @@ aStamped2 = flatTimesFor.((when: 0, type: \audioItem, followTrack: \eventList,
 assert.(aStamped2.size < aSrc.size,
 	"stamp: roundTrip shifts source reads later (% < % entries)".format(aStamped2.size, aSrc.size));
 AudioItem.recordedMaps.put(aName.asSymbol, 0, nil);
+
+// ------------------------------------------- startup.scd latency pinning
+tPath = AudioItem.folder +/+ "zzz-followtrack-startup.scd";
+File.use(tPath, "w", { |f| f.write("s.boot;\n\"hello\".postln;\n") });
+AudioItem.writeStartupLatency(0.014, tPath);
+tLines = File.readAllString(tPath).split(Char.nl);
+assert.(tLines.detect { |l| l.contains("AudioItem.roundTripLatency = 0.014;") }.notNil,
+	"startup: assignment appended");
+assert.(tLines[0] == "s.boot;" and: { tLines[1] == "\"hello\".postln;" },
+	"startup: existing content preserved");
+AudioItem.writeStartupLatency(0.021, tPath);
+tLines = File.readAllString(tPath).split(Char.nl);
+assert.(tLines.count { |l| l.contains("AudioItem.roundTripLatency") } == 1,
+	"startup: re-measure replaces, never duplicates");
+assert.(tLines.detect { |l| l.contains("= 0.021;") }.notNil,
+	"startup: replaced with the new value");
+File.delete(tPath);
 
 // ------------------------------------------- take numbering ignores strays
 tDir = AudioItem.folder +/+ "zzz-followtrack-takes";

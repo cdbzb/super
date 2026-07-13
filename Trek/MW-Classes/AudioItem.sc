@@ -149,6 +149,76 @@ AudioItem {
 *cmdPeriod {
 	armed = false
 }
+
+	// Measure the device's input+output round trip by loopback and persist it.
+	// Physically route output channel `out` back into input channel `in` (cable,
+	// or mic close to the speaker), then: AudioItem.measureRoundTrip.
+	// One synth emits a 2 kHz ping and records the input FROM THE SAME BUNDLE, so
+	// the ping's position in the buffer IS the full hardware round trip. The
+	// result is set on roundTripLatency and (write: true) written to startup.scd
+	// — the right home: per-machine, so it doesn't belong in a shared repo.
+	// Re-measure after buffer-size or interface changes.
+	*measureRoundTrip { |in = 0, out = 0, amp = 0.5, dur = 0.5, write = true, action|
+		var server = Server.default;
+		server.serverRunning.not.if {
+			^"AudioItem.measureRoundTrip: server not running".warn
+		};
+		fork {
+			var frames = (dur * server.sampleRate).asInteger;
+			var buf = Buffer.alloc(server, frames, 1);
+			server.sync;
+			SynthDef(\audioItemLoopbackPing, { |out = 0, in = 0, amp = 0.5, buf|
+				var ping = Decay.ar(Impulse.ar(0), 0.005) * SinOsc.ar(2000) * amp;
+				Out.ar(out, ping);
+				RecordBuf.ar(SoundIn.ar(in), buf, loop: 0, doneAction: 2);
+			}).add;
+			server.sync;
+			server.bind {
+				Synth(\audioItemLoopbackPing, [\out, out, \in, in, \amp, amp, \buf, buf])
+			};
+			(dur + 0.2).wait;
+			buf.loadToFloatArray(action: { |data|
+				var peak = data.abs.maxItem;
+				var idx, rt;
+				(peak < 0.01).if {
+					"measureRoundTrip: no signal (peak %) — is the loopback connected?"
+						.format(peak.round(1e-4)).warn
+				} {
+					// leading edge (first half-peak crossing), not the peak itself
+					idx = data.detectIndex { |x| x.abs > (peak * 0.5) };
+					rt = idx / server.sampleRate;
+					roundTripLatency = rt;
+					"measureRoundTrip: % ms (peak %, set on AudioItem.roundTripLatency)"
+						.format((rt * 1000).round(0.01), peak.round(0.01)).postln;
+					write.if { AudioItem.writeStartupLatency(rt) };
+					action.(rt);
+				};
+				buf.free;
+			});
+		}
+	}
+
+	// Idempotently pin `AudioItem.roundTripLatency = <rt>;` in startup.scd:
+	// replaces the existing assignment line if present, else appends one.
+	*writeStartupLatency { |rt, path|
+		var lines, idx, line;
+		path = path ?? { Platform.userConfigDir +/+ "startup.scd" };
+		File.exists(path).not.if {
+			^"writeStartupLatency: no startup file at %".format(path).warn
+		};
+		lines = File.readAllString(path).split(Char.nl);
+		line = "AudioItem.roundTripLatency = %; // loopback-measured %"
+			.format(rt, Date.getDate.stamp);
+		idx = lines.detectIndex { |l| l.contains("AudioItem.roundTripLatency") };
+		idx.notNil.if {
+			lines[idx] = line;
+		} {
+			(lines.last.size == 0).if { lines = lines.drop(-1) }; // keep single trailing \n
+			lines = lines ++ [line];
+		};
+		File.use(path, "w", { |f| f.write(lines.join(Char.nl) ++ Char.nl) });
+		"writeStartupLatency: pinned % in %".format(line, path).postln;
+	}
 	// next free take index: one past the highest numbered file, so gaps or
 	// strays (.DS_Store etc.) never cause an existing take to be overwritten
 	*nextTake { |directory|

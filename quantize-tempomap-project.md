@@ -313,9 +313,9 @@ Found in the 2026-07-01 review (all four **[M0]** items FIXED 2026-07-07 — see
 - [x] **`EventList.copyFrom` drops `tempoMap` and `beatDur`** — fixed 2026-07-06 (§10e):
       copies carry `beatDur`/`tempoMap`/`solo`/`mute` (decision: mix state travels).
 - [ ] `at` direction inversion + dNU rewrap (see §4d).
-- [ ] **AudioItem take numbering counts non-take files** — `PathName(directory).entries.size`
-      (`AudioItem.sc:46-49,372`); a `.DS_Store` or future metadata sidecar misnumbers takes.
-      Count numeric-stem matches instead. **Must land before §9a sidecars.**
+- [x] **AudioItem take numbering counts non-take files** — fixed 2026-07-13: playback
+      defaults and `*new` now use `latestTake`/`nextTake` (highest numeric stem), and
+      `takePath` matches only audio extensions so future sidecars can't shadow a take.
 - [ ] `asEventList` gives pickup events negative `when` (`ParamSpace.sc:127-131`) and
       `EventList.play`'s `(t >= from)` gate then drops them at `from = 0` — decide: fold
       pickups to 0, or accept a small negative window.
@@ -591,6 +591,17 @@ Missing primitives, in dependency order:
    re-stretching correctly after later tempo-track edits — the point of tempo-following
    playback. **Prereq: fix take-numbering-by-entries first (§5)** or every sidecar bumps the
    take count.
+   **In-memory half DONE (2026-07-13):** `EventList.prEmit` stamps `record: true`
+   `\audioItem` sends with `prRecordStamp` (detached tempoMap/beatDur snapshot list +
+   composed tempoEnv + when/start/latency/lag); the `\audioItem` record branch stores it
+   in `AudioItem.recordedMaps[(name, take)]`; `prSrcOffset`/`prSrcEndBeat` resolve it
+   with priority explicit `sourceTempoMap` > `sourceBeatDur` > stamp > list base clock —
+   so bare `followTrack: \eventList` plays a stamped take against its TRUE recorded clock
+   even after a destructive quantize. Still open here: persist the stamp as the sidecar
+   (schema owned by retune-project.md §2e's versioned anchor archive), and STEP 5's
+   latency compensation: the stamp already carries `latency`/`lag`; remaining work is
+   measuring the actual Recorder start offset (`prepareForRecord` is async) and applying
+   it as a playback start-offset — on the roadmap, per 2026-07-13 decision.
 5. **Latency convention** — decide and record per take (§5 last item): MIDI subtracts server
    latency, Recorder audio contains hardware input latency; unrecorded, fragments sit a
    constant ~20-40 ms off-grid. **Ordering correction (2026-07-02): decide this BEFORE

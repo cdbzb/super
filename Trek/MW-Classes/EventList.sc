@@ -923,6 +923,26 @@ EventList {
 		}
 	}
 
+	// §9a step 2 (in-memory): snapshot of the clock a record: true \audioItem is
+	// about to record against — a detached EventList carrying copies of this
+	// list's tempoMap/beatDur plus the composed tempoEnv, so later mutations
+	// (e.g. a destructive quantize swapping tempoMap) can't rewrite history.
+	// latency/lag are captured for future record-onset compensation (roadmap);
+	// persisted sidecar storage is future work (retune-project.md §2e schema).
+	prRecordStamp { |ev, tempoEnv|
+		var snap = EventList.new;
+		snap.tempoMap = tempoMap;
+		snap.beatDur = beatDur;
+		^(
+			list: snap,
+			tempoEnv: tempoEnv.copy,
+			when: ev[\when] ? 0,
+			start: ev[\start] ? ev[\startPos] ? 0,
+			latency: ev[\latency] ? Server.default.latency,
+			lag: ev[\lag] ? 0
+		)
+	}
+
 	// Per-type schedule builders (§10a). Sends must stay lightweight: everything
 	// expensive (warping, file reads, env math) happens here, at prepare time.
 	prEmit { |ev, place, tempoEnv, from = 0|
@@ -945,7 +965,16 @@ EventList {
 			^this.prEmitMi2Follow(ev, tempoEnv, from, place)
 		};
 		((ev[\when] ? 0) >= from).if {
-			out.add((time: place.(ev[\when] ? 0), send: { ev.copy.play }, label: (ev[\type] ? \event)))
+			var send = (((ev[\type] == \audioItem) and: { (ev[\record] ? false) == true })).if {
+				// record-time clock stamp: the \audioItem record branch stores it
+				// under (name, take) so playback can resolve the true source clock
+				var stamped = ev.copy;
+				stamped[\recordedAgainst] = this.prRecordStamp(stamped, tempoEnv);
+				{ stamped.copy.play }
+			} {
+				{ ev.copy.play }
+			};
+			out.add((time: place.(ev[\when] ? 0), send: send, label: (ev[\type] ? \event)))
 		};
 		^out
 	}

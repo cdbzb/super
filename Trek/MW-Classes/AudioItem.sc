@@ -1,5 +1,6 @@
 AudioItem {
 	classvar <>all, <folder, <buffers, <recorders;
+	classvar <recordedMaps; // (name, take) -> record-time clock stamp (§9a step 2)
     classvar <>armed = false;
 	var <>name, <>buffer, <>path, <>recorder;
 	var <>directory, <>takes, stopFunc;
@@ -7,6 +8,7 @@ AudioItem {
 	*initClass {
 		all = Dictionary.new(512);
 		buffers = MultiLevelIdentityDictionary.new;
+		recordedMaps = MultiLevelIdentityDictionary.new;
 		recorders = Dictionary.new;
 		Class.initClassTree(Event);
 		folder = "~/tank/SC_audiofiles".standardizePath;
@@ -43,15 +45,12 @@ AudioItem {
 		Event.addEventType(\audioItem, {
 			var name = ~name ?? { Error("AudioItem requires a name").throw };
 			var directory = folder +/+ name;
-			var entryCount = File.exists(directory).if {
-				PathName(directory).entries.size
-			} { 0 };
 			var recording = ~record ? false;
 			// recording always writes a fresh take — a specified ~take selects which
 			// take to PLAY, it never overwrites an existing recording
 			var takeNum = recording.if
 				{ AudioItem.nextTake(directory) }
-				{ ~take ?? (entryCount - 1).max(0) };
+				{ ~take ?? { AudioItem.latestTake(directory) } };
 			var format = (~format ? \wav).asString;
 			var path = recording.if
 				{ directory +/+ takeNum ++ "." ++ format }
@@ -105,6 +104,13 @@ AudioItem {
 					};
 					// invalidate cached buffer so next playback reloads from disk
 					buffers.put(name.asSymbol, takeNum, Buffer());
+					// record-time clock stamp from EventList.prEmit (§9a step 2):
+					// remembers what this take was recorded against, so playback
+					// can resolve the true source clock even after the list's map
+					// changes (e.g. destructive quantize)
+					~recordedAgainst !? { |stamp|
+						AudioItem.recordedMaps.put(name.asSymbol, takeNum, stamp)
+					};
 				}
             } {
                 // build the effect (if ~out is a thunk) BEFORE the bundle — Effect.bus
@@ -148,9 +154,19 @@ AudioItem {
 		^nums.isEmpty.if { 0 } { nums.maxItem + 1 }
 	}
 
-	// resolve an existing take file regardless of extension (wav/flac); fall back to .wav
+	// latest existing take index (highest numbered file, same rule as nextTake).
+	// Playback defaults used PathName.entries.size - 1, which counts strays
+	// (.DS_Store, sidecars) and pointed past the real take.
+	*latestTake { |directory|
+		^(this.nextTake(directory) - 1).max(0)
+	}
+
+	// resolve an existing take file regardless of AUDIO extension; fall back to
+	// .wav. Non-audio siblings (future metadata sidecars) must not shadow the take.
 	*takePath { |directory, takeNum|
-		var matches = (directory +/+ takeNum ++ ".*").pathMatch;
+		var matches = (directory +/+ takeNum ++ ".*").pathMatch.select { |p|
+			#["wav", "aif", "aiff", "flac", "caf"].includesEqual(p.splitext.last.asString.toLower)
+		};
 		^matches.notEmpty.if { matches.first } { directory +/+ takeNum ++ ".wav" }
 	}
 
@@ -159,14 +175,22 @@ AudioItem {
 		^(format.asString == "flac").if { "int24" } { "float" }
 	}
 
+	// Record-time clock stamp for (name, take), or nil (§9a step 2).
+	*recordedMapAt { |name, takeNum|
+		^name !? { recordedMaps.at(name.asSymbol, takeNum) }
+	}
+
 	// Source-position seam shared by tempoFollowActions/tempoFollowEnvActions
 	// (quantize-tempomap-project.md §9b, same convention as \mi2): ideal beat ->
 	// elapsed seconds into the source recording. Priority: \sourceTempoMap map
 	// object (the take's own map, item-frame coordinates — beat b0 == map domain
 	// start == ev[\start] seconds into the file), then flat \sourceBeatDur, then
+	// the take's record-time stamp (what it was ACTUALLY recorded against — beats
+	// identified across lists, so this survives a destructive quantize), then
 	// the list's base clock (recorded tempoMap, else flat beatDur).
-	*prSrcOffset { |ev, list, b0|
+	*prSrcOffset { |ev, list, b0, takeNum|
 		var sm = ev[\sourceTempoMap];
+		var stamp;
 		(sm.notNil and: { sm.respondsTo(\timeAt) }).if {
 			var bd = sm.beatDomain.first, t0 = sm.timeDomain.first;
 			^{ |bt| sm.timeAt(bd + (bt - b0)) - t0 }
@@ -174,18 +198,31 @@ AudioItem {
 		ev[\sourceBeatDur].notNil.if {
 			^{ |bt| (bt - b0) * ev[\sourceBeatDur] }
 		};
+		stamp = this.recordedMapAt(ev[\name], takeNum);
+		stamp.notNil.if {
+			var sl = stamp[\list], sEnv = stamp[\tempoEnv], sb0 = stamp[\when];
+			var w0 = sl.beatToWall(sb0, sEnv);
+			^{ |bt| sl.beatToWall(sb0 + (bt - b0), sEnv) - w0 }
+		};
 		^{ |bt| list.baseWallDelta(b0, bt) }
 	}
 	// Inverse of prSrcOffset for the no-\dur case: the beat at which the source
 	// position reaches endSec.
-	*prSrcEndBeat { |ev, list, b0, startSec, endSec|
+	*prSrcEndBeat { |ev, list, b0, startSec, endSec, takeNum|
 		var sm = ev[\sourceTempoMap];
 		var rel = endSec - startSec;
+		var stamp;
 		(sm.notNil and: { sm.respondsTo(\beatAt) }).if {
 			^b0 + (sm.beatAt(sm.timeDomain.first + rel) - sm.beatDomain.first)
 		};
 		ev[\sourceBeatDur].notNil.if {
 			^b0 + (rel / ev[\sourceBeatDur])
+		};
+		stamp = this.recordedMapAt(ev[\name], takeNum);
+		stamp.notNil.if {
+			var sl = stamp[\list], sEnv = stamp[\tempoEnv], sb0 = stamp[\when];
+			var w0 = sl.beatToWall(sb0, sEnv);
+			^b0 + (sl.wallToBeat(w0 + rel, sEnv) - sb0)
 		};
 		list.tempoMap.notNil.if {
 			^list.tempoMap.beatAt(list.tempoMap.timeAt(b0) + rel)
@@ -199,8 +236,7 @@ AudioItem {
 	*tempoFollowActions { |ev, list, tempoEnv, from = 0, wallAt|
 		var name = ev[\name] ?? { Error("AudioItem tempoFollow requires a name").throw };
 		var directory = folder +/+ name;
-		var entryCount = File.exists(directory).if { PathName(directory).entries.size } { 0 };
-		var takeNum = ev[\take] ?? { (entryCount - 1).max(0) };
+		var takeNum = ev[\take] ?? { AudioItem.latestTake(directory) };
 		var path = AudioItem.takePath(directory, takeNum);
 		var buffer, sf, sourceDur, srcOffset, b0, startSec, endSec;
 		var segBeats, fade, fromBeat, fromSec, actions, beat, lastBeat;
@@ -236,7 +272,7 @@ AudioItem {
 		// flat 1-beat-per-second grid. A \sourceTempoMap map object overrides with the
 		// take's own map (item-frame coordinates, for takes whose map the list doesn't
 		// own); \sourceBeatDur is the flat override for takes recorded off any clock.
-		srcOffset = AudioItem.prSrcOffset(ev, list, b0);
+		srcOffset = AudioItem.prSrcOffset(ev, list, b0, takeNum);
 		endSec = ev[\dur].notNil.if {
 			(startSec + srcOffset.(b0 + ev[\dur])).min(sourceDur)
 		} {
@@ -303,8 +339,7 @@ AudioItem {
 	*tempoFollowEnvActions { |ev, list, tempoEnv, from = 0, wallAt|
 		var name = ev[\name] ?? { Error("AudioItem tempoFollow env mode requires a name").throw };
 		var directory = folder +/+ name;
-		var entryCount = File.exists(directory).if { PathName(directory).entries.size } { 0 };
-		var takeNum = ev[\take] ?? { (entryCount - 1).max(0) };
+		var takeNum = ev[\take] ?? { AudioItem.latestTake(directory) };
 		var path = AudioItem.takePath(directory, takeNum);
 		var buffer, sf, sourceDur, srcOffset, b0, startSec, endSec;
 		var fromBeat, fromSec, lastBeat, points, levels, times, curves;
@@ -336,7 +371,7 @@ AudioItem {
 		startSec = ev[\start] ? ev[\startPos] ? 0;
 		// beat -> elapsed seconds into the SOURCE recording; see prSrcOffset. Same
 		// rationale as the non-env tempoFollowActions.
-		srcOffset = AudioItem.prSrcOffset(ev, list, b0);
+		srcOffset = AudioItem.prSrcOffset(ev, list, b0, takeNum);
 		endSec = ev[\dur].notNil.if {
 			(startSec + srcOffset.(b0 + ev[\dur])).min(sourceDur)
 		} {
@@ -349,7 +384,7 @@ AudioItem {
 		// Beat at which the source position reaches endSec. With \dur it's exact;
 		// otherwise invert the source clock (see prSrcEndBeat).
 		lastBeat = ev[\dur].notNil.if { b0 + ev[\dur] } {
-			AudioItem.prSrcEndBeat(ev, list, b0, startSec, endSec)
+			AudioItem.prSrcEndBeat(ev, list, b0, startSec, endSec, takeNum)
 		};
 		totalSourceDur = endSec - fromSec;
 		wallDur = wallAt.(lastBeat) - wallAt.(fromBeat);
@@ -428,7 +463,8 @@ AudioItem {
 		//takes version
 		ret.directory = folder +/+ name;
 		File.exists(ret.directory).if{
-			ret.takes = PathName(ret.directory).entries.size;  // Count of existing files
+			// one past the highest numbered take (entries.size counted strays)
+			ret.takes = AudioItem.nextTake(ret.directory);
 		} {
 			File.mkdir(ret.directory);
 			ret.takes = 0;  // No files yet, so count is 0

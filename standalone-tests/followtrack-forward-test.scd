@@ -19,6 +19,7 @@ var ftChild, ftParentT, ftParentE, sT, sE;
 var aName = "zzz-followtrack-test", aDir, aPath, sf;
 var tBase, tEvList, tAFlat, tFtTrue;
 var gSrc, gOneKey, gOnMapList, gTrimSrc, gTrimEvList, aSrc, aSrcOneKey, aSrcOnMapList;
+var tDir, stampList, stamp, aNoStamp, aStamped, aStampedFlat, aStamped2;
 
 "== followTrack forwarding tests ==".postln;
 
@@ -159,6 +160,45 @@ assertArr.(aSrcOneKey, aSrc, "audio: followTrack: <map> == true + sourceTempoMap
 aSrcOnMapList = timesFor.((when: 0, type: \audioItem, followTrack: true,
 	sourceTempoMap: mt, name: aName, dur: 6));
 assertArr.(aSrcOnMapList, tBase, "audio: stamped list-own map == base-map default");
+
+// ------------------------------------------- record-time clock stamp (§9a step 2)
+// Without a stamp, bare \eventList on a flat list is the flat base clock; with a
+// stamp (what the take was ACTUALLY recorded against) the same event resolves the
+// recorded map — the post-destructive-quantize "just works" path.
+aNoStamp = flatTimesFor.((when: 0, type: \audioItem, followTrack: \eventList,
+	name: aName, dur: 6));
+assert.(aNoStamp.size == 24, "stamp: absent — flat list base (% entries)".format(aNoStamp.size));
+stampList = EventList.new;
+stampList.tempoMap = mt;
+stamp = stampList.prRecordStamp((when: 0, start: 0), nil);
+AudioItem.recordedMaps.put(aName.asSymbol, 0, stamp);
+aStamped = flatTimesFor.((when: 0, type: \audioItem, followTrack: \eventList,
+	name: aName, dur: 6));
+assertArr.(aStamped, aSrc, "stamp: bare \\eventList resolves the recorded clock");
+aStampedFlat = flatTimesFor.((when: 0, type: \audioItem, followTrack: true,
+	name: aName, dur: 6));
+assert.(aStampedFlat.size == 24, "stamp: explicit flat source (followTrack: true) still wins");
+stampList.tempoMap = nil; // stamp must be detached from the source list
+aStamped2 = flatTimesFor.((when: 0, type: \audioItem, followTrack: \eventList,
+	name: aName, dur: 6));
+assertArr.(aStamped2, aSrc, "stamp: survives later source-list mutation");
+AudioItem.recordedMaps.put(aName.asSymbol, 0, nil);
+
+// ------------------------------------------- take numbering ignores strays
+tDir = AudioItem.folder +/+ "zzz-followtrack-takes";
+File.mkdir(tDir);
+File.use(tDir +/+ "0.wav", "w", { |f| f.write("x") });
+File.use(tDir +/+ "2.wav", "w", { |f| f.write("x") });
+File.use(tDir +/+ "2.json", "w", { |f| f.write("{}") });
+File.use(tDir +/+ "notes.txt", "w", { |f| f.write("stray") });
+assert.(AudioItem.latestTake(tDir) == 2,
+	"takes: latestTake is highest numeric stem (got %)".format(AudioItem.latestTake(tDir)));
+assert.(AudioItem.nextTake(tDir) == 3,
+	"takes: nextTake one past highest (got %)".format(AudioItem.nextTake(tDir)));
+assert.(AudioItem.takePath(tDir, 2).endsWith("2.wav"),
+	"takes: takePath skips non-audio sidecar (got %)".format(AudioItem.takePath(tDir, 2)));
+[tDir +/+ "0.wav", tDir +/+ "2.wav", tDir +/+ "2.json", tDir +/+ "notes.txt"].do(File.delete(_));
+File.delete(tDir);
 
 // forwarding unit checks (wall times can't see sourceBeatDur when the file is long enough)
 assert.(EventList.new.prForwardAudioFollow((type: \audioItem, followTrack: true))[\sourceBeatDur] == 1,

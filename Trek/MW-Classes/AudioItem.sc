@@ -159,6 +159,40 @@ AudioItem {
 		^(format.asString == "flac").if { "int24" } { "float" }
 	}
 
+	// Source-position seam shared by tempoFollowActions/tempoFollowEnvActions
+	// (quantize-tempomap-project.md §9b, same convention as \mi2): ideal beat ->
+	// elapsed seconds into the source recording. Priority: \sourceTempoMap map
+	// object (the take's own map, item-frame coordinates — beat b0 == map domain
+	// start == ev[\start] seconds into the file), then flat \sourceBeatDur, then
+	// the list's base clock (recorded tempoMap, else flat beatDur).
+	*prSrcOffset { |ev, list, b0|
+		var sm = ev[\sourceTempoMap];
+		(sm.notNil and: { sm.respondsTo(\timeAt) }).if {
+			var bd = sm.beatDomain.first, t0 = sm.timeDomain.first;
+			^{ |bt| sm.timeAt(bd + (bt - b0)) - t0 }
+		};
+		ev[\sourceBeatDur].notNil.if {
+			^{ |bt| (bt - b0) * ev[\sourceBeatDur] }
+		};
+		^{ |bt| list.baseWallDelta(b0, bt) }
+	}
+	// Inverse of prSrcOffset for the no-\dur case: the beat at which the source
+	// position reaches endSec.
+	*prSrcEndBeat { |ev, list, b0, startSec, endSec|
+		var sm = ev[\sourceTempoMap];
+		var rel = endSec - startSec;
+		(sm.notNil and: { sm.respondsTo(\beatAt) }).if {
+			^b0 + (sm.beatAt(sm.timeDomain.first + rel) - sm.beatDomain.first)
+		};
+		ev[\sourceBeatDur].notNil.if {
+			^b0 + (rel / ev[\sourceBeatDur])
+		};
+		list.tempoMap.notNil.if {
+			^list.tempoMap.beatAt(list.tempoMap.timeAt(b0) + rel)
+		};
+		^b0 + (rel / (list.beatDur ? TempoClock.default.beatDur))
+	}
+
 	// wallAt: optional { |beat| -> wall-seconds } overriding list.beatToWall — the §10
 	// `place` seam. Returned delays stay relative to wallAt(from), so absolute-time
 	// callers (EventList.prEmit) add place.(from) back on.
@@ -196,15 +230,13 @@ AudioItem {
 		wallAt = wallAt ?? { { |bt| list.beatToWall(bt, tempoEnv) } };
 		b0 = ev[\when] ? 0;
 		startSec = ev[\start] ? ev[\startPos] ? 0;
-		// Map an ideal beat to elapsed seconds into the SOURCE recording. The take was
-		// recorded on the list's base clock (recorded tempoMap, else flat beatDur), so
-		// source position advances with baseWallDelta — NOT a flat 1-beat-per-second
-		// grid. An explicit \sourceBeatDur overrides for takes recorded off the clock.
-		srcOffset = ev[\sourceBeatDur].notNil.if {
-			{ |bt| (bt - b0) * ev[\sourceBeatDur] }
-		} {
-			{ |bt| list.baseWallDelta(b0, bt) }
-		};
+		// Map an ideal beat to elapsed seconds into the SOURCE recording. The default
+		// assumes the take was recorded on the list's base clock (recorded tempoMap,
+		// else flat beatDur), so source position advances with baseWallDelta — NOT a
+		// flat 1-beat-per-second grid. A \sourceTempoMap map object overrides with the
+		// take's own map (item-frame coordinates, for takes whose map the list doesn't
+		// own); \sourceBeatDur is the flat override for takes recorded off any clock.
+		srcOffset = AudioItem.prSrcOffset(ev, list, b0);
 		endSec = ev[\dur].notNil.if {
 			(startSec + srcOffset.(b0 + ev[\dur])).min(sourceDur)
 		} {
@@ -302,14 +334,9 @@ AudioItem {
 		wallAt = wallAt ?? { { |bt| list.beatToWall(bt, tempoEnv) } };
 		b0 = ev[\when] ? 0;
 		startSec = ev[\start] ? ev[\startPos] ? 0;
-		// beat -> elapsed seconds into the SOURCE recording, on the list's base clock
-		// (recorded tempoMap, else flat beatDur); \sourceBeatDur overrides. Same
+		// beat -> elapsed seconds into the SOURCE recording; see prSrcOffset. Same
 		// rationale as the non-env tempoFollowActions.
-		srcOffset = ev[\sourceBeatDur].notNil.if {
-			{ |bt| (bt - b0) * ev[\sourceBeatDur] }
-		} {
-			{ |bt| list.baseWallDelta(b0, bt) }
-		};
+		srcOffset = AudioItem.prSrcOffset(ev, list, b0);
 		endSec = ev[\dur].notNil.if {
 			(startSec + srcOffset.(b0 + ev[\dur])).min(sourceDur)
 		} {
@@ -320,13 +347,9 @@ AudioItem {
 		(fromSec >= endSec).if { ^List[] };
 
 		// Beat at which the source position reaches endSec. With \dur it's exact;
-		// otherwise invert the base clock (tempoMap if present, else flat beatDur).
+		// otherwise invert the source clock (see prSrcEndBeat).
 		lastBeat = ev[\dur].notNil.if { b0 + ev[\dur] } {
-			list.tempoMap.notNil.if {
-				list.tempoMap.beatAt(list.tempoMap.timeAt(b0) + (endSec - startSec))
-			} {
-				b0 + ((endSec - startSec) / (list.beatDur ? TempoClock.default.beatDur))
-			}
+			AudioItem.prSrcEndBeat(ev, list, b0, startSec, endSec)
 		};
 		totalSourceDur = endSec - fromSec;
 		wallDur = wallAt.(lastBeat) - wallAt.(fromBeat);

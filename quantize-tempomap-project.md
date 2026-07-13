@@ -641,9 +641,13 @@ Caveats = the work items:
     the shorthand's `true` = flat convention applies only via `\audioItem` + followTrack).
     On nested `\eventList` events a non-boolean value warns and follows like `true`.
     Regression: `standalone-tests/followtrack-forward-test.scd`.
-  - **Still open — the general case:** `sourceTempoMap: <a DIFFERENT map>` (e.g.
-    `mi.selection.tempomap` for a take recorded off a foreign clock). Same seam, but the
-    source map is not `list.tempoMap`, so it needs the map passed/stamped on the event.
+  - **General case DONE (2026-07-12): `sourceTempoMap: <a map object>`** (e.g.
+    `mi.selection.tempomap` for a take recorded off a foreign clock, or the take's own
+    map after a destructive `quantize` flattened the list's). The map is stamped on the
+    event (or passed as the `followTrack:` value — same forwarding); `prEmitMi2Follow`
+    inverts recorded seconds through it in item-frame coordinates (relative to the map's
+    `beatDomain`/`timeDomain` starts, the `PlacedTempoMap` convention), including the
+    mid-list `from` trim. Requires `timeAt`+`beatAt`; warns on `\clamp` extrapolation.
 - ~~**Route A is VoiceSpace-only**~~ — CLOSED 2026-07-06 by §10: the followTrack warp now
   lives in `EventList.prEmitMi2Follow` and `EventList.play` routes through prepare/fire,
   so `followTrack: \mi2` works with or without a VoiceSpace.
@@ -657,11 +661,13 @@ Caveats = the work items:
   wild tempo; `\mi2`'s `rate = tempo/stretch` scales fragment-beats to list-beats for
   half/double-time takes.
 
-**Audio wild bits — the `sourceTempoMap` generalization.** Selections/gui/tracker are
-MIDI-only, and `srcOffset` in `tempoFollowActions`/`tempoFollowEnvActions` supports only the
-list's base clock or a FLAT `\sourceBeatDur`. Generalize `srcOffset` to accept a per-take
-irregular map (`sourceTempoMap.timeAt(beat)`) — the same key and convention as the `\mi2`
-case above: **one seam, both media**. (Ownership note 2026-07-02: THIS doc owns the
+**Audio wild bits — the `sourceTempoMap` generalization. DONE (2026-07-12).**
+`AudioItem.prSrcOffset` (shared by `tempoFollowActions`/`tempoFollowEnvActions`) now
+resolves the source position with priority `sourceTempoMap: <map>` (item-frame, beat b0 ==
+map domain start == `ev[\start]` seconds into the file) → flat `\sourceBeatDur` → list's
+base clock; `prSrcEndBeat` is the matching inverse for the no-`\dur` case (which previously
+ignored `sourceBeatDur` — fixed in passing). Same key and forwarding convention as the
+`\mi2` case above: **one seam, both media**. (Ownership note 2026-07-02: THIS doc owns the
 `sourceTempoMap:` seam design; `retune-project.md` §2e describes the same seam from the
 consumer side and defers here — keep edits here first.) Authoring the map for audio is §9c; available TODAY
 with zero new code: tap along on a MicroKeys while recording (or while listening back),

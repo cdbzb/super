@@ -12,11 +12,13 @@
 var h = (thisProcess.nowExecutingPath.dirname +/+ "test-helpers.scd").load;
 var assert = h[\assert];
 var assertArr = h[\assertArr];
-var mkNote, notes, mkPlayer, mt, mkList, timesFor;
+var assertClose = h[\assertClose];
+var mkNote, notes, mkPlayer, mt, mkList, timesFor, flatTimesFor;
 var tA, tB, tFlat, tOverride, tFlatLabel;
 var ftChild, ftParentT, ftParentE, sT, sE;
 var aName = "zzz-followtrack-test", aDir, aPath, sf;
 var tBase, tEvList, tAFlat, tFtTrue;
+var gSrc, gOneKey, gOnMapList, gTrimSrc, gTrimEvList, aSrc, aSrcOneKey, aSrcOnMapList;
 
 "== followTrack forwarding tests ==".postln;
 
@@ -34,8 +36,16 @@ mkList = { |ev|
 	l.events.add(ev);
 	l
 };
-timesFor = { |ev|
-	mkList.(ev).prepare(100, 0).collect { |i| i[\time] }.asArray.sort
+timesFor = { |ev, from = 0|
+	mkList.(ev).prepare(100, from).collect { |i| i[\time] }.asArray.sort
+};
+// flat list (no tempoMap): the "after a destructive quantize" world, where the
+// list no longer owns the take's map and it must be stamped per event instead
+flatTimesFor = { |ev, from = 0|
+	var l = EventList.new;
+	l.beatDur = 1;
+	l.events.add(ev);
+	l.prepare(100, from).collect { |i| i[\time] }.asArray.sort
 };
 
 // ---------------------------------------------------------------- \mi2
@@ -73,6 +83,30 @@ sT = ftParentT.prepare(100, 0).collect { |i| i[\time] }.asArray.sort;
 sE = ftParentE.prepare(100, 0).collect { |i| i[\time] }.asArray.sort;
 assertArr.(sE, sT, "nested \\eventList: followTrack: \\eventList follows like true");
 
+// ------------------------------------------- \mi2 general case: map OBJECT
+// Flat list + stamped take map: recorded seconds invert through the map to
+// ideal beats, which the flat list renders 1:1 — so wall times ARE the ideal
+// beats. mt: 1 s/beat for beats 0..4, closing anchor 6.5 => 2.5 s/beat after,
+// so the note at recorded second 6 lands on beat 4 + (6-4)/2.5 = 4.8.
+gSrc = flatTimesFor.((when: 0, type: \mi2, player: mkPlayer.(),
+	followTrack: true, sourceTempoMap: mt));
+gOneKey = flatTimesFor.((when: 0, type: \mi2, player: mkPlayer.(),
+	followTrack: mt));
+assertArr.(gSrc, [100, 101, 102, 103, 104, 104.8],
+	"mi2 map object: recorded seconds land on ideal beats", 1e-6);
+assertArr.(gOneKey, gSrc, "mi2: followTrack: <map> == true + sourceTempoMap: <map>");
+
+// On a list that DOES own the map (b0 = 0), the stamped map and \eventList are
+// the same inversion — including the mid-list `from` trim path.
+gOnMapList = timesFor.((when: 0, type: \mi2, player: mkPlayer.(),
+	followTrack: true, sourceTempoMap: mt));
+assertArr.(gOnMapList, tA, "mi2: stamped list-own map == sourceTempoMap: \\eventList");
+gTrimSrc = timesFor.((when: 0, type: \mi2, player: mkPlayer.(),
+	followTrack: true, sourceTempoMap: mt), 2.5);
+gTrimEvList = timesFor.((when: 0, type: \mi2, player: mkPlayer.(),
+	followTrack: \eventList), 2.5);
+assertArr.(gTrimSrc, gTrimEvList, "mi2: map-object trim matches \\eventList trim");
+
 // ---------------------------------------------------------------- \audioItem
 // 8 s fixture: short enough that the base-map source (10 s needed for dur: 6 on
 // this map) exhausts the file early while the flat source (6 s) does not, so the
@@ -103,6 +137,22 @@ assert.(timesFor.((when: 0, type: \audioItem, name: aName, followTrack: \eventLi
 	record: true, dur: 6)).size == 1,
 	"audio: record: true stays sealed even with followTrack (1 entry)");
 
+// ------------------------------------------- \audioItem general case: map OBJECT
+// Flat list + stamped take map: the source advances through the map (10 s of
+// source needed for dur: 6), so the 8 s file exhausts early — fewer entries than
+// the flat source's 24. On the map-owning list the stamped map must reproduce
+// the base-map default exactly.
+aSrc = flatTimesFor.((when: 0, type: \audioItem, followTrack: true,
+	sourceTempoMap: mt, name: aName, dur: 6));
+aSrcOneKey = flatTimesFor.((when: 0, type: \audioItem, followTrack: mt,
+	name: aName, dur: 6));
+assert.((aSrc.size > 0) and: { aSrc.size < 24 },
+	"audio map object: source exhausts file early (% entries)".format(aSrc.size));
+assertArr.(aSrcOneKey, aSrc, "audio: followTrack: <map> == true + sourceTempoMap: <map>");
+aSrcOnMapList = timesFor.((when: 0, type: \audioItem, followTrack: true,
+	sourceTempoMap: mt, name: aName, dur: 6));
+assertArr.(aSrcOnMapList, tBase, "audio: stamped list-own map == base-map default");
+
 // forwarding unit checks (wall times can't see sourceBeatDur when the file is long enough)
 assert.(EventList.new.prForwardAudioFollow((type: \audioItem, followTrack: true))[\sourceBeatDur] == 1,
 	"forward: true stamps sourceBeatDur: 1");
@@ -112,6 +162,10 @@ assert.(EventList.new.prForwardAudioFollow((type: \audioItem, followTrack: true,
 	"forward: explicit sourceBeatDur wins");
 assert.(EventList.new.prForwardAudioFollow((type: \audioItemTempoFollow))[\sourceBeatDur].isNil,
 	"forward: \\audioItemTempoFollow untouched");
+assert.(EventList.new.prForwardAudioFollow((type: \audioItem, followTrack: mt))[\sourceTempoMap] === mt,
+	"forward: map value stamps sourceTempoMap");
+assert.(EventList.new.prForwardAudioFollow((type: \audioItem, followTrack: mt))[\sourceBeatDur].isNil,
+	"forward: map value does not stamp sourceBeatDur");
 
 File.delete(aPath);
 File.delete(aDir);

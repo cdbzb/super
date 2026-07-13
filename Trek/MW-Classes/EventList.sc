@@ -866,18 +866,38 @@ EventList {
 	}
 
 	// \mi2 convention on \audioItem: followTrack routes to the tempo-follow path.
-	// true (or any non-\eventList value) = flat source (sourceBeatDur: 1, recorded
-	// seconds as beats), \eventList = the list's base map (tempo-follow's native
-	// default); explicit sourceBeatDur wins. \audioItemTempoFollow passes through
-	// unchanged. Only affects list playback — a direct .play stays sealed.
+	// true/\flat = flat source (sourceBeatDur: 1, recorded seconds as beats),
+	// \eventList = the list's base map (tempo-follow's native default), a map
+	// object = that map as the source (forwards to sourceTempoMap:, for takes
+	// whose map the list no longer owns — e.g. after a destructive quantize).
+	// Explicit sourceTempoMap/sourceBeatDur wins. \audioItemTempoFollow passes
+	// through unchanged. Only affects list playback — a direct .play stays sealed.
 	prForwardAudioFollow { |ev|
-		((ev[\type] == \audioItem) and: {
-			(ev[\followTrack] != \eventList) and: { ev[\sourceBeatDur].isNil }
-		}).if {
-			ev = ev.copy;
-			ev[\sourceBeatDur] = 1;
+		(ev[\type] == \audioItem).if {
+			var ft = ev[\followTrack];
+			(ev[\sourceTempoMap].isNil and: { ev[\sourceBeatDur].isNil }).if {
+				ft.respondsTo(\timeAt).if {
+					ev = ev.copy;
+					ev[\sourceTempoMap] = ft;
+				} {
+					(ft != \eventList).if {
+						ev = ev.copy;
+						ev[\sourceBeatDur] = 1;
+					}
+				}
+			}
 		};
 		^ev
+	}
+
+	// Item-frame accessors for a per-event source map (sourceTempoMap: <map>):
+	// itemBeat/itemSec are relative to the map's domain starts, so a selection map
+	// built from the take lines up with the player's own timestamps.
+	prSrcTimeAt { |map, itemBeat|
+		^map.timeAt(map.beatDomain.first + itemBeat) - map.timeDomain.first
+	}
+	prSrcBeatAt { |map, itemSec|
+		^map.beatAt(map.timeDomain.first + itemSec) - map.beatDomain.first
 	}
 
 	// Route a \audioItemTempoFollow event, or a \audioItem carrying followTrack,
@@ -923,9 +943,11 @@ EventList {
 	// event, no inner TempoClock (which retires the queueSize:65536 hack). The warp is
 	// done in the BEAT domain and placement goes through `place`, so it composes under
 	// nesting. sourceTempoMap: \eventList inverts recorded seconds through this list's
-	// own tempoMap (for takes recorded against it); the default treats recorded seconds
-	// as beats (flat clock), scaled by rate. Shorthand: any non-boolean followTrack
-	// value forwards to sourceTempoMap, so followTrack: \eventList is the one-key
+	// own tempoMap (for takes recorded against it); a map OBJECT inverts through that
+	// map in item-frame coordinates (e.g. take.selection.tempomap, for takes whose map
+	// this list doesn't own); the default treats recorded seconds as beats (flat
+	// clock), scaled by rate. Shorthand: any non-boolean followTrack value forwards to
+	// sourceTempoMap, so followTrack: \eventList (or a map) is the one-key
 	// form. When `from` is past the item's onset the item is trimmed (player.from
 	// also chases CC state); emits nothing if `from` is past the whole item. A flat track reproduces the sealed \mi2 timing exactly.
 	// (\mi is excluded: its fromNote(~from,~to) sub-range isn't replicated here.)
@@ -935,7 +957,7 @@ EventList {
 		var b0     = ev[\when] ? 0;
 		var rate   = (ev[\tempo] ? 1) / (ev[\stretch] ? 1);
 		var originBeat = b0.max(from);
-		var pstart, beatOff, tm, wallBase, warped, wPlayer, useMap, mapAnchor, srcMap;
+		var pstart, beatOff, tm, wallBase, warped, wPlayer, useMap, useSrc, mapAnchor, srcMap;
 		player.isNil.if { ^out };
 		ev[\filter] !? { |f| player = f.(player) };
 		ev[\params] !? { |p| player = player.setParams(p) }; // \mi2 finish does this
@@ -951,34 +973,51 @@ EventList {
 				false
 			}
 		};
+		// general case: a map OBJECT stamped on the event — the take's own map, in
+		// item-frame coordinates (independent of this list's tempoMap)
+		useSrc = useMap.not and: {
+			srcMap.respondsTo(\timeAt) and: { srcMap.respondsTo(\beatAt) }
+		};
 		// item-frame beat that sounds at list beat originBeat (== originBeat until rate != 1)
 		mapAnchor = b0 + ((originBeat - b0) * rate);
 		(from > b0).if {
 			// trim in the player's own time domain: recorded seconds through the map
-			// when sourceTempoMap:\eventList, else flat beats-as-seconds — a beat-domain
-			// cut on a map base trims at the wrong recorded second AND shifts the
+			// when one is in play, else flat beats-as-seconds — a beat-domain cut on
+			// a map source trims at the wrong recorded second AND shifts the
 			// inversion's rel-origin, skewing every note after a mid-list `from`.
 			var tFrom = (player.start ? 0) + (useMap.if {
 				tm.timeAt(mapAnchor) - tm.timeAt(b0)
 			} {
-				(from - b0) * rate
+				useSrc.if {
+					this.prSrcTimeAt(srcMap, mapAnchor - b0)
+				} {
+					(from - b0) * rate
+				}
 			});
 			(tFrom >= (player.end ? player.bounds.end)).if { ^out }; // fully before `from`
 			player = player.from(tFrom); // rebases to 0 and chases CC state to tFrom
 		};
 		pstart = player.start ? 0;
-		beatOff = useMap.if {
-			var startSec = tm.timeAt(mapAnchor);
-			// TempoMap (\clamp) freezes the beat past the map's ends, where
-			// MIDIItemTempoMap (\carry) keeps the endpoint tempo going — item
-			// events past the map's end behave differently per base map class.
-			(tm.respondsTo(\extrapolation) and: { tm.extrapolation == \clamp }).if {
-				"prEmitMi2Follow: base tempo map clamps at its ends — item events past the map's end freeze at the boundary beat".warn
-			};
-			{ |rel| (tm.beatAt(startSec + rel) - mapAnchor) / rate }
-		} {
-			{ |rel| rel / rate }
-		};
+		beatOff = case
+			{ useMap } {
+				var startSec = tm.timeAt(mapAnchor);
+				// TempoMap (\clamp) freezes the beat past the map's ends, where
+				// MIDIItemTempoMap (\carry) keeps the endpoint tempo going — item
+				// events past the map's end behave differently per base map class.
+				(tm.respondsTo(\extrapolation) and: { tm.extrapolation == \clamp }).if {
+					"prEmitMi2Follow: base tempo map clamps at its ends — item events past the map's end freeze at the boundary beat".warn
+				};
+				{ |rel| (tm.beatAt(startSec + rel) - mapAnchor) / rate }
+			}
+			{ useSrc } {
+				var itemAnchor = mapAnchor - b0;
+				var startSec = this.prSrcTimeAt(srcMap, itemAnchor);
+				(srcMap.respondsTo(\extrapolation) and: { srcMap.extrapolation == \clamp }).if {
+					"prEmitMi2Follow: source map clamps at its ends — item events past the map's end freeze at the boundary beat".warn
+				};
+				{ |rel| (this.prSrcBeatAt(srcMap, startSec + rel) - itemAnchor) / rate }
+			}
+			{ { |rel| rel / rate } };
 		wallBase = place.(originBeat);
 		warped = player.midiEvents.collect { |e|
 			var c   = e.copy;

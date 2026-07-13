@@ -333,24 +333,84 @@ record against the list tempomap (record-start beat is already `ev[\when]`), sta
 `quantize-tempomap-project.md` §9b — this section is the consumer; anchor STORAGE is owned
 here, the SEAM is owned there.)
 
-**Versioning — OPEN (discussing 2026-07-02).** One thing IS settled (2026-07-02): **this
-archive owns anchor storage for audio takes.** `quantize-tempomap-project.md` §9c.2
-originally specced a parallel `_beats/` sidecar for the same artifact (versioned time
-anchors on a take) — superseded; that doc now defers here. Whatever schema shakes out below
-must serve both the Tune lens and the bare-anchor Clip lens. Questions still on the table:
-- *One version axis or two?* §2d/§2e want the onset-warp applied/un-applied independently of pitch
-  correction — but that can be a RENDER choice (honour src-vs-output), not separate files. Leaning:
-  ONE linear append-only history per take (snapshot = anchors + warp + pitch), extend the existing
-  split-take schema with `srcStart`/`srcDur` (birth = identity) rather than fork a second history.
-- *One archive, two lenses?* A Tune archive is a SUPERSET of a Clip archive (adds pitch + per-frame
-  arrays). Want `asClip` on a take that has Tune versions to read the same anchors (ignore pitch), so a
-  unified dir + a `kind` field beats separate `_retune`/`_clip` trees that silently diverge.
-- *Anchor stability.* Bare anchors need the fractional-key trick too, so an EventList reference
-  ("beat 3 pins to anchor k") survives adding/removing other anchors.
-- *Reference-to-version.* An EventList `\audioItemTempoFollow` event must name a version (default
-  latest); append-only numbering already gives stable ids.
-- *Migration.* Existing `.retune` archives must keep loading (add `srcStart`/`srcDur` defaults + a
-  `kind: \tune` marker on load, like the current key migration).
+**Versioning — v2 schema DRAFTED (design pass 2026-07-13; supersedes the 2026-07-02 open
+list below, which is kept for the reasoning).** Settled earlier (2026-07-02): **this
+archive owns anchor storage for audio takes** (`quantize-tempomap-project.md` §9c.2's
+`_beats/` sidecar superseded; that doc defers here).
+
+Decisions taken 2026-07-13:
+- **One linear append-only history per take** — snapshot = anchors + warp + pitch;
+  applied/un-applied is a render choice, never a second file axis.
+- **No `kind:` discriminator** (and no `tune: true` flag) — tune-ness is STRUCTURAL:
+  the pitch block is optional, "has been tuned" == `smoothed.notNil`. A flag can lie
+  about the data; presence can't. Provenance that a flag can't carry lives in
+  `anchorSource:` instead. (Michael 2026-07-13: `\clip` naming confusing — dropped from
+  the schema entirely; class-side `asClip` naming still open, `asWarp` candidate.)
+- **Anchors are Events with fractional keys** (not parallel arrays) — same stability
+  trick as retune notes: initial keys 0..n-1, insertion between k and k+1 gets
+  (k+(k+1))/2, so "beat 3 pins to anchor k" survives adding/removing anchors. Events
+  extend per-anchor later (pinned flags, curvature) without a schema bump.
+- **Beats stored as the recording list saw them** (absolute-at-record, not rebased to
+  0) — preserves where in the song the take happened; all consumers already do
+  domain-first-relative math (PlacedTempoMap convention), so rebasing is free.
+- **`src` times are absolute seconds into the take FILE** (not selection-relative).
+
+```supercollider
+// _retune/<name>_<num>/N.retune — one snapshot Event, writeArchive'd. N = version id
+// (append-only; EventList events may carry version:, default latest).
+(
+  retuneVersion: 2,
+  name: "vox_260703_103507", num: 9,       // take identity (as v1)
+  saved: <Date.stamp>,                      // provenance
+  sampleRate: 48000,
+
+  // -- anchors: ALWAYS present. The src<->beat warp as pinned points.
+  anchors: [ (key: 0, src: 0.0, beat: 0.0), (key: 1, src: 1.02, beat: 1.0), ... ],
+  anchorSource: \recordStamp,               // | \noteOnsets | \transients | \manual
+
+  // -- record-stamp block: OPTIONAL, present when recorded against an EventList.
+  // The composed map itself is serialized INTO the anchors (tempoEnv breakpoints,
+  // bakeLinear for curved segments); these are the scalars around it.
+  recordedAgainst: (
+    listName: \bar,                         // informational
+    when: 0,                                // list beat the record event fired at
+    start: 0.62,                            // ev[\start]: file seconds offset convention
+    latency: 0.3, lag: 0,                   // captured at record time
+    roundTrip: 0.014,                       // AudioItem.roundTripLatency at record time
+    latencyConvention: \raw                 // \raw = file untrimmed (see below)
+  ),
+
+  // -- note model: OPTIONAL (present once analysed/edited). Each note carries BOTH
+  // spans (§2e): srcStart/srcDur fixed from the recording; timestamp/dur = OUTPUT,
+  // editable by moveNote/quantize. Birth: srcStart == timestamp, srcDur == dur.
+  midiEvents: [ (key: 0, srcStart: 0.62, srcDur: 0.41, timestamp: 0.62, dur: 0.41,
+                 midinote: 58.3, ...), ... ],
+
+  // -- pitch block: OPTIONAL. Presence == "a tuning pass has run".
+  smoothed: [...], conf: [...], analysisHop: 512, scale: nil
+)
+```
+
+Who writes what: record finish → anchors(\recordStamp) + recordedAgainst, no notes/pitch
+(persists `AudioItem.recordedMaps`, quantize doc §9a step 2). Tuning pass → carries the
+latest anchors forward, adds midiEvents + pitch block. Transient/manual marking → new
+anchors, new version. Load rebuilds the map via `AnchorTempoMap.fromAnchors(times, beats)`.
+
+Migration (v1 → v2, at load, never written back until next save): v1 implies the pitch
+block; per note `srcStart = timestamp`, `srcDur = dur`; anchors generated from note
+onsets (`anchorSource: \noteOnsets`); no `recordedAgainst`.
+
+`latencyConvention:` — DECIDED 2026-07-13: **`\raw`**. The file is whatever the Recorder
+wrote (never trimmed); mic content sits input+output round trip LATE relative to the grid
+(the latencies ADD — equal in/out gives 2x one, not zero; DAWs compensate on the write
+side by shifting the recorded item, e.g. REAPER's driver-reported latency + manual
+offsets). Ours compensates on the READ side: `AudioItem.roundTripLatency` classvar (set
+per audio-device configuration, loopback measurement) is captured into each record-time
+stamp (`roundTrip:`) and applied by stamp-based `prSrcOffset`/`prSrcEndBeat` — so one
+measurement retroactively corrects every stamped take. `\gridAligned` is reserved as the
+tag for internal bounces (server-side, no converters — aligned by construction, rt 0).
+Still open: the loopback measurement helper itself (play click, record input,
+cross-correlate) — roadmap.
 
 **Filter parity — lift symbolic filters to the shared base.** MIDIItem's `from`/`fromNote`/`fromBeat`,
 `quantize`, `filter`/`filterNotes`/`filterNotesKey`, `set`/`setParams`, `removeNote`, `warpTo`, `trim`,

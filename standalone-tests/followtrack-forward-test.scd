@@ -182,6 +182,20 @@ stampList.tempoMap = nil; // stamp must be detached from the source list
 aStamped2 = flatTimesFor.((when: 0, type: \audioItem, followTrack: \eventList,
 	name: aName, dur: 6));
 assertArr.(aStamped2, aSrc, "stamp: survives later source-list mutation");
+
+// round-trip compensation: a stamp carrying roundTrip reads the file later, so
+// the 8 s file exhausts at an earlier beat than the uncompensated stamp
+stampList.tempoMap = mt;
+AudioItem.roundTripLatency = 0.5;
+stamp = stampList.prRecordStamp((when: 0, start: 0), nil);
+AudioItem.roundTripLatency = 0;
+assert.(stamp[\roundTrip] == 0.5, "stamp: captures AudioItem.roundTripLatency");
+assert.(stamp[\latencyConvention] == \raw, "stamp: tagged \\raw convention");
+AudioItem.recordedMaps.put(aName.asSymbol, 0, stamp);
+aStamped2 = flatTimesFor.((when: 0, type: \audioItem, followTrack: \eventList,
+	name: aName, dur: 6));
+assert.(aStamped2.size < aSrc.size,
+	"stamp: roundTrip shifts source reads later (% < % entries)".format(aStamped2.size, aSrc.size));
 AudioItem.recordedMaps.put(aName.asSymbol, 0, nil);
 
 // ------------------------------------------- take numbering ignores strays

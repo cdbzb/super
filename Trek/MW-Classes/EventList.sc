@@ -939,7 +939,11 @@ EventList {
 			when: ev[\when] ? 0,
 			start: ev[\start] ? ev[\startPos] ? 0,
 			latency: ev[\latency] ? Server.default.latency,
-			lag: ev[\lag] ? 0
+			lag: ev[\lag] ? 0,
+			// measured device round trip at record time (\raw convention):
+			// stamp-based playback reads the file this much later
+			roundTrip: AudioItem.roundTripLatency,
+			latencyConvention: \raw
 		)
 	}
 

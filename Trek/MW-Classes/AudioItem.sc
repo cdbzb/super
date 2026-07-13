@@ -1,6 +1,13 @@
 AudioItem {
 	classvar <>all, <folder, <buffers, <recorders;
 	classvar <recordedMaps; // (name, take) -> record-time clock stamp (§9a step 2)
+	// Measured input+output round trip of the current audio-device configuration
+	// (seconds; set after a loopback measurement, re-measure on buffer-size or
+	// interface change). Mic overdubs land this LATE in the file relative to the
+	// grid — the latencies ADD, they never cancel. Captured into each record-time
+	// stamp and applied by stamp-based playback resolution (\raw convention: the
+	// file is never trimmed; compensation is a read-side offset).
+	classvar <>roundTripLatency = 0;
     classvar <>armed = false;
 	var <>name, <>buffer, <>path, <>recorder;
 	var <>directory, <>takes, stopFunc;
@@ -202,7 +209,8 @@ AudioItem {
 		stamp.notNil.if {
 			var sl = stamp[\list], sEnv = stamp[\tempoEnv], sb0 = stamp[\when];
 			var w0 = sl.beatToWall(sb0, sEnv);
-			^{ |bt| sl.beatToWall(sb0 + (bt - b0), sEnv) - w0 }
+			var rt = stamp[\roundTrip] ? 0; // mic content sits rt LATE in the file
+			^{ |bt| sl.beatToWall(sb0 + (bt - b0), sEnv) - w0 + rt }
 		};
 		^{ |bt| list.baseWallDelta(b0, bt) }
 	}
@@ -222,7 +230,8 @@ AudioItem {
 		stamp.notNil.if {
 			var sl = stamp[\list], sEnv = stamp[\tempoEnv], sb0 = stamp[\when];
 			var w0 = sl.beatToWall(sb0, sEnv);
-			^b0 + (sl.wallToBeat(w0 + rel, sEnv) - sb0)
+			var rt = stamp[\roundTrip] ? 0;
+			^b0 + (sl.wallToBeat(w0 + (rel - rt), sEnv) - sb0)
 		};
 		list.tempoMap.notNil.if {
 			^list.tempoMap.beatAt(list.tempoMap.timeAt(b0) + rel)

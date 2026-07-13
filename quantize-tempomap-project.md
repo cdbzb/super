@@ -629,6 +629,18 @@ Caveats = the work items:
     construction: with no track, `tm.timeAt(tm.at(x)) == x` reproduces the recorded timing.
     Requires an invertible `MIDIItemTempoMap` base (warns + falls back to flat otherwise);
     needs `followTrack: true` (the flag only affects the warp, not the route gate).
+  - **Shorthand DONE (2026-07-12): followTrack value-forwarding, both media.** Any
+    non-boolean `followTrack` value forwards to the source-map key, so one convention:
+    `followTrack: true` = follow with the FLAT source (recorded seconds as beats),
+    `followTrack: \eventList` = follow inverting through the list's own tempoMap.
+    On `\mi2` the value forwards to `sourceTempoMap`; on `\audioItem` it routes the event
+    to the tempo-follow path (`prIsAudioFollow`), where `true`/`\flat` forwards to
+    `sourceBeatDur: 1` and `\eventList` keeps tempo-follow's native base-map default
+    (`prForwardAudioFollow`). Explicit `sourceTempoMap`/`sourceBeatDur` wins on conflict;
+    `\audioItemTempoFollow` passes through unchanged (its bare default remains base-map —
+    the shorthand's `true` = flat convention applies only via `\audioItem` + followTrack).
+    On nested `\eventList` events a non-boolean value warns and follows like `true`.
+    Regression: `standalone-tests/followtrack-forward-test.scd`.
   - **Still open — the general case:** `sourceTempoMap: <a DIFFERENT map>` (e.g.
     `mi.selection.tempomap` for a take recorded off a foreign clock). Same seam, but the
     source map is not `list.tempoMap`, so it needs the map passed/stamped on the event.

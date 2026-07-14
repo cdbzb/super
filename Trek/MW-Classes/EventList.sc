@@ -931,7 +931,9 @@ EventList {
 	// persisted sidecar storage is future work (retune-project.md §2e schema).
 	prRecordStamp { |ev, tempoEnv|
 		var snap = EventList.new;
-		snap.tempoMap = tempoMap;
+		// deepCopy: shallow copy would share the beats/durs arrays, so in-place
+		// setters (durs_/beats_) on the live map would still rewrite the stamp
+		snap.tempoMap = tempoMap.deepCopy;
 		snap.beatDur = beatDur;
 		^(
 			list: snap,

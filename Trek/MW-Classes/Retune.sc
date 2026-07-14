@@ -20,9 +20,20 @@ RetuneArchive {
 	*folder { ^AudioItem.folder +/+ "_retune" }
 	*dir { |name, num| ^this.folder +/+ (name.asString ++ "_" ++ num.asString) }
 	*path { |name, num, v| ^this.dir(name, num) +/+ (v.asString ++ ".retune") }
-	*versions { |name, num|   // count of N.retune versions on disk
+	*versionIds { |name, num|   // sorted ids of N.retune versions on disk (gaps allowed)
 		var dir = this.dir(name, num);
-		^File.exists(dir).if({ (dir +/+ "*.retune").pathMatch.size }, { 0 })
+		^File.exists(dir).if({
+			(dir +/+ "*.retune").pathMatch
+				.collect({ |p| p.basename.splitext.first })
+				.select({ |s| s.notEmpty and: { s.every(_.isDecDigit) } })
+				.collect(_.asInteger).sort
+		}, { [] })
+	}
+	// next free version id: 1 + highest id present, NOT the file count — after a
+	// manual prune leaves gaps, counting would reuse (and overwrite) a live id
+	*versions { |name, num|
+		var ids = this.versionIds(name, num);
+		^ids.isEmpty.if({ 0 }, { ids.maxItem + 1 })
 	}
 	// append `event` as the next version; returns its version id
 	*write { |name, num, event|
@@ -50,8 +61,7 @@ RetuneArchive {
 	}
 	// newest version satisfying pred; ^[versionId, event] or nil
 	*latestWhere { |name, num, pred|
-		var n = this.versions(name, num);
-		(n - 1).forBy(0, -1) { |v|
+		this.versionIds(name, num).reverseDo { |v|
 			var d = this.read(name, num, v);
 			(d.notNil and: { pred.(d) }).if { ^[v, d] }
 		};
@@ -439,6 +449,10 @@ RetuneItem : AbstractRetune {
 	}
 	prLoadSplitTake { |n|
 		var d = RetuneArchive.read(name, num, n);
+		d.isNil.if {   // pruned/missing id inside the 0..max range
+			^("RetuneItem: %/%.retune not on disk"
+				.format(this.splitTakeDir.basename, n)).warn
+		};
 		d[\midiEvents].isNil.if {
 			^("RetuneItem: %/%.retune is a record stamp (no notes) — keeping current notes"
 				.format(this.splitTakeDir.basename, n)).warn

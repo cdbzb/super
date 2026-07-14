@@ -8,6 +8,147 @@
 //   aTake.retune.player.move(5,2).snapToScale([0,2,4,5,7,9]).play
 // Detection/segmentation and the \autotuneNotes SynthDef are reused from VocoderPattern.
 
+// Class-side archive I/O for the per-take retune history (retune-project.md §2e):
+// one append-only directory of numbered v2 archives per (name, num) audio take,
+//   _retune/<name>_<num>/N.retune
+// Owned here (not on RetuneItem) so AudioItem's record path can persist record-time
+// clock stamps and RetuneItem can persist analysis/edits through ONE path scheme and
+// version counter. v2 has no kind flag: a version with midiEvents is a tuning/edit
+// snapshot, one with only anchors + recordedAgainst is a record stamp — presence is
+// the discriminator.
+RetuneArchive {
+	*folder { ^AudioItem.folder +/+ "_retune" }
+	*dir { |name, num| ^this.folder +/+ (name.asString ++ "_" ++ num.asString) }
+	*path { |name, num, v| ^this.dir(name, num) +/+ (v.asString ++ ".retune") }
+	*versions { |name, num|   // count of N.retune versions on disk
+		var dir = this.dir(name, num);
+		^File.exists(dir).if({ (dir +/+ "*.retune").pathMatch.size }, { 0 })
+	}
+	// append `event` as the next version; returns its version id
+	*write { |name, num, event|
+		var dir = this.dir(name, num), n = this.versions(name, num);
+		File.exists(this.folder).not.if { File.mkdir(this.folder) };
+		File.exists(dir).not.if { File.mkdir(dir) };
+		event.writeArchive(this.path(name, num, n));
+		^n
+	}
+	// read version v (nil when absent), migrating v1 -> v2 in memory — never
+	// written back until the next save: v1 implies the pitch block; per note the
+	// source span is the recorded span (srcStart/srcDur = birth timestamp/dur).
+	*read { |name, num, v|
+		var p = this.path(name, num, v);
+		^File.exists(p).if { this.prMigrate(Object.readArchive(p)) }
+	}
+	*prMigrate { |d|
+		((d[\retuneVersion] ? 1) < 2).if {
+			d[\midiEvents].do { |e|
+				e[\srcStart] = e[\srcStart] ? e[\timestamp];
+				e[\srcDur] = e[\srcDur] ? e[\dur];
+			};
+		};
+		^d
+	}
+	// newest version satisfying pred; ^[versionId, event] or nil
+	*latestWhere { |name, num, pred|
+		var n = this.versions(name, num);
+		(n - 1).forBy(0, -1) { |v|
+			var d = this.read(name, num, v);
+			(d.notNil and: { pred.(d) }).if { ^[v, d] }
+		};
+		^nil
+	}
+
+	// Persist a record-time clock stamp (EventList.prRecordStamp) as a v2 version:
+	// the composed beat->wall map is serialized INTO (src, beat) anchors — beats
+	// absolute-at-record, src = seconds into the take file (0 at the record event's
+	// fire beat), \raw latency convention (roundTrip stored in recordedAgainst, not
+	// baked into the anchors). Errors warn instead of throwing: a failed sidecar
+	// write must never abort the recording itself.
+	*writeStamp { |name, num, stamp|
+		^try {
+			this.write(name, num, (
+				retuneVersion: 2,
+				name: name.asString, num: num,
+				saved: Date.getDate.stamp,
+				sampleRate: Server.default.sampleRate ? 48000,
+				anchors: this.prStampAnchors(stamp),
+				anchorSource: \recordStamp,
+				recordedAgainst: (
+					when: stamp[\when] ? 0,
+					start: stamp[\start] ? 0,
+					latency: stamp[\latency],
+					lag: stamp[\lag] ? 0,
+					roundTrip: stamp[\roundTrip] ? 0,
+					latencyConvention: stamp[\latencyConvention] ? \raw
+				)
+			))
+		} { |err|
+			"RetuneArchive.writeStamp(%, %): % — stamp not persisted"
+				.format(name, num, err.errorString).warn;
+			nil
+		}
+	}
+	// Sample the stamp's composed clock into anchor Events with stable fractional-
+	// capable keys. Grid: <= 0.25-beat steps (capped at ~2048 points) plus the exact
+	// tempoEnv breakpoints; linear interpolation between samples bounds the error on
+	// curved stretches well under a millisecond. One padding beat past all tempo
+	// structure makes the final segment's slope the carried tail tempo, so
+	// AnchorTempoMap's \carry extrapolation reproduces beatToWall beyond the map.
+	*prStampAnchors { |stamp|
+		var sl = stamp[\list], env = stamp[\tempoEnv], sb0 = stamp[\when] ? 0;
+		var w0 = sl.beatToWall(sb0, env);
+		var mapEnd = sl.tempoMap.notNil.if({ sl.tempoMap.beatDomain.last }, { 0 });
+		var envEnd = env.notNil.if({ env.times.sum }, { 0 });
+		var endBeat = max(mapEnd, envEnd).max(sb0 + 1) + 1;
+		var step = ((endBeat - sb0) / 2048).max(0.25);
+		var beats = Set[];
+		var sorted, out, last;
+		(sb0, sb0 + step .. endBeat).do { |b| beats.add(b) };
+		beats.add(endBeat);
+		env !? { ([0] ++ env.times.integrate).do { |b|
+			((b > sb0) and: { b < endBeat }).if { beats.add(b) }
+		} };
+		sorted = beats.asArray.sort;
+		out = List[];
+		last = nil;
+		sorted.do { |b|
+			(last.isNil or: { (b - last) > 1e-6 }).if {
+				out.add((key: out.size, src: sl.beatToWall(b, env) - w0, beat: b));
+				last = b;
+			}
+		};
+		^out.asArray
+	}
+	// Rebuild a playable stamp from the newest persisted version carrying a
+	// recordedAgainst block — the loaded form of AudioItem.recordedMaps entries:
+	// map-based (AnchorTempoMap over the serialized anchors, relative frame starting
+	// at the record-fire beat) instead of list+tempoEnv; AudioItem.prSrcOffset/
+	// prSrcEndBeat accept both forms. ^nil when nothing usable is on disk.
+	*loadStamp { |name, num|
+		^try {
+			var found = this.latestWhere(name, num, { |d|
+				d[\recordedAgainst].notNil and: { (d[\anchors] ? []).size >= 2 }
+			});
+			found !? {
+				var d = found[1], ra = d[\recordedAgainst];
+				(
+					map: AnchorTempoMap(
+						d[\anchors].collect(_[\src]), d[\anchors].collect(_[\beat])),
+					when: ra[\when] ? 0,
+					start: ra[\start] ? 0,
+					latency: ra[\latency],
+					lag: ra[\lag] ? 0,
+					roundTrip: ra[\roundTrip] ? 0,
+					latencyConvention: ra[\latencyConvention] ? \raw
+				)
+			}
+		} { |err|
+			"RetuneArchive.loadStamp(%, %): %".format(name, num, err.errorString).warn;
+			nil
+		}
+	}
+}
+
 // Shared base: retune notes ARE the events; filters wrap RetunePlayer (not MIDIItemPlayer).
 AbstractRetune : AbstractMidiEvents {
 	notes { ^this.midiEvents }   // one noteOn-style Event per note; no on/off pairing
@@ -172,15 +313,27 @@ AbstractRetune : AbstractMidiEvents {
 	// append the current (possibly edited) notes as a new immutable split-take under the
 	// source item's directory. Never overwrites -> append-only, like MIDIItem selections.
 	// Works on item (source=self) or player (source=item, supplies the per-frame arrays).
+	// Writes the v2 schema (retune-project.md §2e): notes carry both spans (srcStart/
+	// srcDur = recorded, timestamp/dur = output; equal at birth), and the source item's
+	// anchors/anchorSource/recordedAgainst provenance is carried forward when present.
 	save {
-		var src = this.source, dir = src.splitTakeDir, n = src.splitTakes;
-		File.exists(dir).not.if { File.mkdir(dir) };
-		(
-			retuneVersion: 1, name: src.name, num: src.num,
-			midiEvents: this.notes, smoothed: src.smoothed, conf: src.conf,
-			analysisHop: src.analysisHop, sampleRate: src.sampleRate, scale: src.scale
-		).writeArchive(src.splitTakePath(n));
-		("Retune: saved split-take % (% notes) -> %".format(n, this.notes.size, dir.basename)).postln;
+		var src = this.source, n, evts;
+		evts = this.notes.collect { |e|
+			var c = e.copy;
+			c[\srcStart] = c[\srcStart] ? c[\timestamp];
+			c[\srcDur] = c[\srcDur] ? c[\dur];
+			c
+		};
+		n = RetuneArchive.write(src.name, src.num, (
+			retuneVersion: 2, name: src.name, num: src.num,
+			saved: Date.getDate.stamp,
+			midiEvents: evts, smoothed: src.smoothed, conf: src.conf,
+			analysisHop: src.analysisHop, sampleRate: src.sampleRate, scale: src.scale,
+			anchors: src.anchors, anchorSource: src.anchorSource,
+			recordedAgainst: src.recordedAgainst
+		));
+		("Retune: saved split-take % (% notes) -> %".format(
+			n, evts.size, RetuneArchive.dir(src.name, src.num).basename)).postln;
 		^n
 	}
 	// computed bounds (RetunePlayer overrides with stored vars)
@@ -197,12 +350,15 @@ RetuneItem : AbstractRetune {
 	var <>name, <>num, <>voice;                // identity + audio buffer (buffer not archived)
 	var <>smoothed, <>conf;                    // fixed per-frame analysis arrays
 	var <>analysisHop, <>sampleRate, <>scale;
+	// v2 provenance carried through load -> save (retune-project.md §2e): the src<->beat
+	// warp anchors, where they came from, and the record-time stamp scalars
+	var <>anchors, <>anchorSource, <>recordedAgainst;
 	var ready = false, pending, <currentTake;   // index of the loaded split-take
 
 	*new { |take| ^super.new.prInit(take) }
 
 	prInit { |take|
-		var dir, legacy, latest;
+		var dir, legacy, latest, noteVersion;
 		pending = [];
 		name = take.name;
 		num = take.num;
@@ -216,9 +372,33 @@ RetuneItem : AbstractRetune {
 			Object.readArchive(legacy).writeArchive(this.splitTakePath(0));
 			("RetuneItem: migrated legacy cache -> %/0.retune".format(dir.basename)).postln;
 		};
+		// newest-first scan: notes load from the newest version that HAS them (a
+		// record-time stamp version has anchors but no notes and must not shadow an
+		// older edit); anchors/provenance carry from the newest version bearing them.
 		latest = this.splitTakes - 1;
-		(latest >= 0).if({
-			this.prLoadSplitTake(latest);
+		(latest >= 0).if {
+			block { |break|
+				latest.forBy(0, -1) { |v|
+					var d = RetuneArchive.read(name, num, v);
+					d.notNil.if {
+						(anchors.isNil and: { d[\anchors].notNil }).if {
+							anchors = d[\anchors];
+							anchorSource = d[\anchorSource];
+							recordedAgainst = d[\recordedAgainst];
+						};
+						(noteVersion.isNil and: { d[\midiEvents].notNil }).if {
+							this.prLoad(d);
+							noteVersion = v;
+						};
+						(anchors.notNil and: { noteVersion.notNil }).if { break.value };
+					};
+				};
+			};
+		};
+		noteVersion.notNil.if({
+			currentTake = noteVersion;
+			("RetuneItem: loaded %/%.retune (% notes)"
+				.format(this.splitTakeDir.basename, noteVersion, midiEvents.size)).postln;
 			// become ready only once the voice buffer has actually loaded, else play reads an
 			// unloaded bufnum (stale 4-ch curve data) -> garble + channel mismatch
 			fork { Server.default.sync; this.prSetReady };
@@ -230,13 +410,12 @@ RetuneItem : AbstractRetune {
 	// split-takes live in a per-(name,num) directory of numbered archives, mirroring
 	// AudioItem's per-name take dir. Kept under _retune/ (a sibling of the take dirs) so it
 	// can't match AudioItem.takePath's "<num>.*" glob or inflate its entries-based count.
-	retuneFolder { ^AudioItem.folder +/+ "_retune" }
-	splitTakeDir  { ^this.retuneFolder +/+ (name ++ "_" ++ num.asString) }
-	splitTakePath { |n| ^this.splitTakeDir +/+ (n.asString ++ ".retune") }
-	splitTakes {   // count of N.retune versions on disk
-		var dir = this.splitTakeDir;
-		^File.exists(dir).if({ (dir +/+ "*.retune").pathMatch.size }, { 0 })
-	}
+	// Path scheme + version counter now live class-side on RetuneArchive (shared with
+	// AudioItem's record-time stamp persistence); these delegate for existing callers.
+	retuneFolder { ^RetuneArchive.folder }
+	splitTakeDir  { ^RetuneArchive.dir(name, num) }
+	splitTakePath { |n| ^RetuneArchive.path(name, num, n) }
+	splitTakes { ^RetuneArchive.versions(name, num) }
 	splitTake { |n|   // load a specific version (default load is the most recent)
 		((n < 0) or: { n >= this.splitTakes }).if {
 			^("RetuneItem: split-take % out of range (0..%)".format(n, this.splitTakes - 1)).warn
@@ -259,7 +438,12 @@ RetuneItem : AbstractRetune {
 		// readiness is set by the caller once the voice buffer is confirmed loaded
 	}
 	prLoadSplitTake { |n|
-		this.prLoad(Object.readArchive(this.splitTakePath(n)));
+		var d = RetuneArchive.read(name, num, n);
+		d[\midiEvents].isNil.if {
+			^("RetuneItem: %/%.retune is a record stamp (no notes) — keeping current notes"
+				.format(this.splitTakeDir.basename, n)).warn
+		};
+		this.prLoad(d);
 		currentTake = n;
 		("RetuneItem: loaded %/%.retune (% notes)".format(this.splitTakeDir.basename, n, midiEvents.size)).postln;
 	}

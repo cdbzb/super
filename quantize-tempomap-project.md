@@ -597,11 +597,16 @@ Missing primitives, in dependency order:
    in `AudioItem.recordedMaps[(name, take)]`; `prSrcOffset`/`prSrcEndBeat` resolve it
    with priority explicit `sourceTempoMap` > `sourceBeatDur` > stamp > list base clock —
    so bare `followTrack: \eventList` plays a stamped take against its TRUE recorded clock
-   even after a destructive quantize. Still open here: persist the stamp as the sidecar
-   (schema owned by retune-project.md §2e's versioned anchor archive), and STEP 5's
-   latency compensation: the stamp already carries `latency`/`lag`; remaining work is
-   measuring the actual Recorder start offset (`prepareForRecord` is async) and applying
-   it as a playback start-offset — on the roadmap, per 2026-07-13 decision.
+   even after a destructive quantize.
+   **Persisted half DONE (2026-07-13):** `RetuneArchive.writeStamp` (Retune.sc, schema
+   owned by retune-project.md §2e) serializes the stamp's composed beat→wall map into
+   (src, beat) anchors and appends it as a v2 archive version from the record branch;
+   `AudioItem.recordedMapAt` falls back to `RetuneArchive.loadStamp` (AnchorTempoMap
+   over the anchors) on an in-memory miss and caches it — stamps survive sclang
+   restarts. Suite: `standalone-tests/retune-archive-test.scd` (26 checks). Remaining
+   from STEP 5's latency compensation: the stamp carries `latency`/`lag`/`roundTrip`
+   (\raw convention, applied read-side); still unmeasured is the actual Recorder start
+   offset (`prepareForRecord` is async) — on the roadmap, per 2026-07-13 decision.
 5. **Latency convention** — decide and record per take (§5 last item): MIDI subtracts server
    latency, Recorder audio contains hardware input latency; unrecorded, fragments sit a
    constant ~20-40 ms off-grid. **Ordering correction (2026-07-02): decide this BEFORE

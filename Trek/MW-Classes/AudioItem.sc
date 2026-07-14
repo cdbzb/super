@@ -116,7 +116,11 @@ AudioItem {
 					// can resolve the true source clock even after the list's map
 					// changes (e.g. destructive quantize)
 					~recordedAgainst !? { |stamp|
-						AudioItem.recordedMaps.put(name.asSymbol, takeNum, stamp)
+						AudioItem.recordedMaps.put(name.asSymbol, takeNum, stamp);
+						// persist as a v2 retune-archive version (anchors +
+						// recordedAgainst) so the stamp survives sclang restarts;
+						// a write failure only warns — never aborts the recording
+						RetuneArchive.writeStamp(name, takeNum, stamp);
 					};
 				}
             } {
@@ -252,9 +256,19 @@ AudioItem {
 		^(format.asString == "flac").if { "int24" } { "float" }
 	}
 
-	// Record-time clock stamp for (name, take), or nil (§9a step 2).
+	// Record-time clock stamp for (name, take), or nil (§9a step 2). In-memory
+	// stamps (this session's recordings) win; on a miss the persisted archive is
+	// consulted (RetuneArchive.loadStamp — the anchors-serialized form survives
+	// sclang restarts) and cached back here so the disk scan runs once per take.
 	*recordedMapAt { |name, takeNum|
-		^name !? { recordedMaps.at(name.asSymbol, takeNum) }
+		^name !? {
+			recordedMaps.at(name.asSymbol, takeNum) ?? {
+				RetuneArchive.loadStamp(name, takeNum) !? { |stamp|
+					recordedMaps.put(name.asSymbol, takeNum, stamp);
+					stamp
+				}
+			}
+		}
 	}
 
 	// Source-position seam shared by tempoFollowActions/tempoFollowEnvActions
@@ -277,9 +291,13 @@ AudioItem {
 		};
 		stamp = this.recordedMapAt(ev[\name], takeNum);
 		stamp.notNil.if {
-			var sl = stamp[\list], sEnv = stamp[\tempoEnv], sb0 = stamp[\when];
-			var w0 = sl.beatToWall(sb0, sEnv);
 			var rt = stamp[\roundTrip] ? 0; // mic content sits rt LATE in the file
+			var m = stamp[\map], sl, sEnv, sb0, w0;
+			// disk-loaded form: an AnchorTempoMap over the serialized anchors, whose
+			// relative frame starts at the record-fire beat (src there == 0)
+			m.notNil.if { ^{ |bt| m.timeAt(bt - b0) + rt } };
+			sl = stamp[\list]; sEnv = stamp[\tempoEnv]; sb0 = stamp[\when];
+			w0 = sl.beatToWall(sb0, sEnv);
 			^{ |bt| sl.beatToWall(sb0 + (bt - b0), sEnv) - w0 + rt }
 		};
 		^{ |bt| list.baseWallDelta(b0, bt) }
@@ -298,9 +316,11 @@ AudioItem {
 		};
 		stamp = this.recordedMapAt(ev[\name], takeNum);
 		stamp.notNil.if {
-			var sl = stamp[\list], sEnv = stamp[\tempoEnv], sb0 = stamp[\when];
-			var w0 = sl.beatToWall(sb0, sEnv);
 			var rt = stamp[\roundTrip] ? 0;
+			var m = stamp[\map], sl, sEnv, sb0, w0;
+			m.notNil.if { ^b0 + m.beatAt(rel - rt) };
+			sl = stamp[\list]; sEnv = stamp[\tempoEnv]; sb0 = stamp[\when];
+			w0 = sl.beatToWall(sb0, sEnv);
 			^b0 + (sl.wallToBeat(w0 + (rel - rt), sEnv) - sb0)
 		};
 		list.tempoMap.notNil.if {

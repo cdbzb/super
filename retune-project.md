@@ -333,8 +333,22 @@ record against the list tempomap (record-start beat is already `ev[\when]`), sta
 `quantize-tempomap-project.md` §9b — this section is the consumer; anchor STORAGE is owned
 here, the SEAM is owned there.)
 
-**Versioning — v2 schema DRAFTED (design pass 2026-07-13; supersedes the 2026-07-02 open
-list below, which is kept for the reasoning).** Settled earlier (2026-07-02): **this
+**Versioning — v2 schema DRAFTED (design pass 2026-07-13) and the archive I/O BUILT
+(2026-07-13): `RetuneArchive` (class-side, top of `Retune.sc`) owns the path scheme +
+version counter (`folder`/`dir`/`path`/`versions`/`write`/`read`/`latestWhere`);
+`writeStamp` serializes a record-time stamp's composed beat→wall map into (src, beat)
+anchors (≤0.25-beat grid + exact tempoEnv breakpoints + one padding beat so the \carry
+tail slope is right) and appends it as a v2 version from AudioItem's record branch;
+`loadStamp` rebuilds the newest recordedAgainst-bearing version into a map-form stamp
+(`AnchorTempoMap` over the anchors) which `AudioItem.recordedMapAt` falls back to and
+caches when the in-memory stamp is gone — stamps now survive sclang restarts.
+`RetuneItem` carries `anchors`/`anchorSource`/`recordedAgainst` through load→save
+(newest-first scan; a stamp version never shadows an older edit's notes), and
+`AbstractRetune.save` writes v2 (notes get birth `srcStart`/`srcDur`; v1 reads migrate
+in memory, never written back until the next save). Suite:
+`standalone-tests/retune-archive-test.scd` (26 checks). Still open here: `version:`
+reference on EventList events (play a pinned archive version). Supersedes the
+2026-07-02 open list below, which is kept for the reasoning.** Settled earlier (2026-07-02): **this
 archive owns anchor storage for audio takes** (`quantize-tempomap-project.md` §9c.2's
 `_beats/` sidecar superseded; that doc defers here).
 

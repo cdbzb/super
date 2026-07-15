@@ -220,6 +220,19 @@ aesthetic — lock the macro pulse, keep the human micro-timing.
 that auto-scales the supplied `beats` to the measured span instead of trusting absolute
 values — removes a class of "my beats summed to the wrong total" errors.
 
+**Mutation policy (decided 2026-07-14).** Everything item-level returns a NEW
+player/item (already true: `quantize`/`warpTo` go through `collect`→dNU over a
+deepCopy; takes and selections are append-only). The ONLY sanctioned destructive op
+is assigning a new map to a list (`list.tempoMap = ...`) — re-clocking the piece is a
+forward-looking edit, and history survives it via record stamps + the detached
+`lastPlayEpoch` clock snapshot. In-place map mutators (`durs_`, `beats_`,
+`quantizeRangeInPlace`) are the remaining hazard — they mutate objects other state
+may reference and are only defused by defensive deepCopies; retire them from the
+public vocabulary when this milestone lands (build the 4c variant returning-new,
+"InPlace" name notwithstanding). Known gap: a warped result carries no
+`sourceTempoMap` back-link (can't invert/re-warp cleanly) — closes with §4d/
+milestone 9's protocol work plus §9b's `t0` rebase.
+
 ### 4d. (maybe) Fold `TempoMap` and `MIDIItemTempoMap` together
 At minimum, ensure every method works in both contexts (beats-vs-time vs irregular-anchor-time)
 so the API is consistent. The duplicated `mapBeats`/`quantize`/`warpTo` surfaces are the main
@@ -582,6 +595,20 @@ Missing primitives, in dependency order:
 3. **`list.captureFragment(take, voice:)`** — convert each recorded event's wall time via
    `wallToBeat`, insert into `events` with `when:` in beats. Build as the same insertion
    primitive as §9b's `list.addItem` — both recording modes use it.
+   **DONE (2026-07-14, pending live listening test):** shared primitive
+   `EventList.prInsertItemEvents` (asEventList-style tagging: source name, latency,
+   voice/mk) feeds both `captureFragment(take, voice:, mk:)` and §9b's
+   `addItem(player, at:, voice:, mk:)`. MIDIItem now stores a per-take SOUND epoch
+   (`recordEpochs`; `recordEpoch + timestamp` = the SystemClock moment the note
+   sounded — record's latencyCompensation folded in once, so capture needs no latency
+   term), carried onto players by `take(n)`/`player`. Session-local: meaningless
+   after sclang restart, so capture must happen in the recording session.
+   `lastPlayEpoch` now also carries `list:` — a detached clock snapshot
+   (`prClockSnapshot`, shared with `prRecordStamp`) — because `wallToBeat` on the
+   live list reads mutable `tempoMap`/`beatDur`, and capture-after-requantize must
+   convert through the clock the take actually heard. Default `mk:` resolves from
+   the take's `recordedMk` reduced to a name Symbol. Suite:
+   `standalone-tests/capture-fragment-test.scd`.
 4. **AudioItem per-take metadata sidecar** — takes are bare numbered files today, and
    `tempoFollowActions` ASSUMES the take was recorded on the list's base clock
    (`AudioItem.sc:176-183`; flat `\sourceBeatDur` is the only escape). Sidecar Event next to

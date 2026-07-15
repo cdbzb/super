@@ -814,6 +814,11 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	var <>midiEvents , <name, <>initialCCValues;
 	var restFirst, <initialRest, notes ;
 	var <takes, <recordedMks, <>recordedMk;
+	// §9a step 3: wall-clock sound epoch per take — recordEpoch + timestamp is the
+	// SystemClock moment a recorded event SOUNDED (record's latencyCompensation is
+	// folded in, undoing the subtraction at MIDI-Item2 capture). Session-local:
+	// archived values are meaningless after an sclang restart.
+	var <recordEpochs, <recordEpoch;
 	var <beatSelections; // Dictionary: take -> List of selection Events (append-only, immutable versions)
 	classvar midiout, <recording;
 	classvar <current; // last item .record was called on; survives stopRecording
@@ -1022,6 +1027,8 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 			takes.add(midiEvents);
 			recordedMks = recordedMks ? List[];
 			recordedMks.add(recordedMk);
+			recordEpochs = recordEpochs ? List[];
+			recordEpochs.add(recordEpoch);
 		}
 	}
 	at {|num|
@@ -1048,6 +1055,8 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
         (mk.isKindOf(VSTI) or: { mk.isKindOf(VSTPluginController) }).if { mk = MicroKeys(mk) };
         recordedMk = recordedMk ? mk.isKindOf(MicroKeys).if{ mk.asEvent }{ mk };
         latencyCompensation = latencyCompensation ? Server.default.latency;
+        // sound epoch for this take (see recordEpoch ivar comment)
+        recordEpoch = start + latencyCompensation;
         mk.do{|i| (i.isKindOf(Symbol).if{ MicroKeys(i) }{ i }).monitor};
         recording = this;
         current = this;
@@ -1149,10 +1158,12 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		^this.player.play(mk, overdub: overdub)
 
 	}
-	player {|func take| 
+	player {|func take|
 		^if(recording != this) {
-			// MIDIItemPlayer( this.deepCopy.makeNotes, this) 
-			MIDIItemPlayer( this.makeNotesFromMidiEvents(midiEvents), this) 
+			// MIDIItemPlayer( this.makeNotesFromMidiEvents(midiEvents), this) built from
+			// the LIVE buffer = the most recent recording -> carries its sound epoch
+			MIDIItemPlayer( this.makeNotesFromMidiEvents(midiEvents), this)
+				.recordEpoch_(recordEpoch)
 		}{
 			SelfReturningObject()
 		}
@@ -1212,6 +1223,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		(num < 0 or: (num > (takes.size - 1))).if { ^"only % takes in %".format(takes.size, name).postln};
 		obj = MIDIItemPlayer(this.makeNotesFromMidiEvents(takes[num]), this);//.recalcSustains
 		obj.recordedMk = recordedMks !? _[num];
+		obj.recordEpoch = recordEpochs !? _[num];
 		obj.takeIndex = num;
 		^obj
 	}
@@ -1251,6 +1263,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	var <>start, <>end;
 	var tracks;
 	var <>takeIndex, <>currentSelection; // set by MIDIItem.take / selection — not preserved through filters
+	var <>recordEpoch; // wall-clock sound epoch of the take (MIDIItem.recordEpochs) — not preserved through filters
 	var <>closingAnchor; // (time:, beats:) closing tempo-anchor from the parent's next selected beat; set by fromBeat
 	var <>beatScale; // ideal-beats-per-anchor multiplier (nil == 1); applied by tempomap, see scaleBeats
 

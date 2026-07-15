@@ -197,6 +197,80 @@ EventList {
 		^copies
 	}
 
+	// §9a step 3 / §9b: shared insertion primitive. Copies a player's events into
+	// THIS list, `whenFn.(e)` supplying each event's `when:` in list beats. Tags
+	// mirror asEventList (ParamSpace.sc): source name for solo/mute isolation,
+	// server latency, optional voice/mk. Returns the added copies.
+	prInsertItemEvents { |player, whenFn, voice, mk|
+		var srcName = player.source.tryPerform(\name) !? { |n| n.asString.asSymbol };
+		var added = player.midiEvents.collect { |e|
+			var c = e.copy.put(\when, whenFn.(e));
+			srcName !? { c[\name] = c[\name] ? srcName };
+			c.put(\latency, Server.default.latency);
+			voice !? { c[\voice] = voice };
+			mk !? { c.put(\mk, mk) };
+			c
+		};
+		events.addAll(added);
+		^added
+	}
+
+	// default \mk for inserted events: the take's recordedMk, reduced to a light
+	// reference (name Symbol) — never a live object
+	prItemMk { |player|
+		^player.tryPerform(\recordedMk) !? { |r|
+			case
+			{ r.isKindOf(Event) } { r[\name] }
+			{ r.isKindOf(MicroKeys) } { r.name ? r }
+			{ r.isKindOf(Symbol) } { r }
+		}
+	}
+
+	// §9b merge convenience: insert a MIDI item/player/selection at list beat `at`.
+	// Each event's position within the item comes from its selection tempomap when
+	// one exists (timestamps -> ideal beats), else timestamps are taken as flat
+	// seconds-as-beats from the player's start.
+	addItem { |player, at = 0, voice, mk|
+		var tm, whenFn;
+		player = player.player;
+		tm = { player.tempomap }.try;
+		whenFn = tm.notNil.if(
+			{ { |e| at + tm.prAtExtrapolated(e.timestamp - tm.t0, tm.env) } },
+			{ { |e| at + (e.timestamp - (player.start ? 0)) } });
+		^this.prInsertItemEvents(player, whenFn, voice, mk ?? { this.prItemMk(player) })
+	}
+
+	// §9a step 3: capture a take recorded WHILE this list was playing. Each recorded
+	// event's wall-clock sound moment (take.recordEpoch + timestamp) is converted
+	// through lastPlayEpoch + wallToBeat into a list beat, so fragments land on the
+	// ideal-beat grid with micro-timing preserved as fractional beats — the quantize
+	// family then applies in the beat domain. Uses the epoch's OWN tempoEnv (the
+	// schedule the take actually heard), so capture stays correct after stop or a
+	// later re-quantize. Sketch: list.play; mi.record(mk); ...; mi.stop;
+	// list.captureFragment(mi.take(-1), voice: \lead).
+	captureFragment { |take, voice, mk|
+		var player = take.player, ep = lastPlayEpoch, sl, env, fromWall, epoch;
+		ep.isNil.if {
+			^"EventList.captureFragment: list has no lastPlayEpoch — play it first".warn
+		};
+		player.isKindOf(MIDIItemPlayer).not.if {
+			^"EventList.captureFragment: % is not a MIDI take/player (still recording?)"
+				.format(take).warn
+		};
+		epoch = player.recordEpoch;
+		epoch.isNil.if {
+			^"EventList.captureFragment: take has no recordEpoch (recorded in an older session/class?)".warn
+		};
+		sl = ep[\list] ? this;   // the epoch's detached clock, never the live list
+		env = ep[\tempoEnv];
+		fromWall = sl.beatToWall(ep[\fromBeat], env);
+		^this.prInsertItemEvents(
+			player,
+			{ |e| sl.wallToBeat(epoch + e.timestamp - ep[\seconds] + fromWall, env) },
+			voice,
+			mk ?? { this.prItemMk(player) })
+	}
+
 	add { |...args, kwargs|
 		var event, previewAt, when = args[0];
 		args[1].isKindOf(Pattern).if { ^this.addPattern(when ? 0, args[1]) };
@@ -768,7 +842,11 @@ EventList {
 		// invalidated by later list mutation: the snapshot describes what the recorded
 		// take actually heard, so capture-after-stop (or after a re-quantize) must
 		// keep using it, not the list's current state.
-		lastPlayEpoch = (seconds: epoch, fromBeat: from, tempoEnv: tempoEnv);
+		// list: a detached clock snapshot — beatToWall/wallToBeat on the LIVE list
+		// read tempoMap/beatDur, so a later destructive quantize would otherwise
+		// silently re-time captures against a clock the take never heard.
+		lastPlayEpoch = (seconds: epoch, fromBeat: from, tempoEnv: tempoEnv,
+			list: this.prClockSnapshot);
 		// A nested own-tempo child inserted before `from` can produce pre-epoch entries.
 		// Exact wallToBeat trimming is not wired into nested preparation yet; drop them
 		// rather than firing a burst at start.
@@ -923,6 +1001,17 @@ EventList {
 		}
 	}
 
+	// Detached copy of this list's base clock — an EventList carrying only
+	// tempoMap/beatDur, so later mutations of the live list (in-place durs_/beats_
+	// included: hence deepCopy, a shallow copy would share the beats/durs arrays)
+	// can't rewrite history. Used by prRecordStamp and lastPlayEpoch.
+	prClockSnapshot {
+		var snap = EventList.new;
+		snap.tempoMap = tempoMap.deepCopy;
+		snap.beatDur = beatDur;
+		^snap
+	}
+
 	// §9a step 2 (in-memory): snapshot of the clock a record: true \audioItem is
 	// about to record against — a detached EventList carrying copies of this
 	// list's tempoMap/beatDur plus the composed tempoEnv, so later mutations
@@ -930,13 +1019,8 @@ EventList {
 	// latency/lag are captured for future record-onset compensation (roadmap);
 	// persisted sidecar storage is future work (retune-project.md §2e schema).
 	prRecordStamp { |ev, tempoEnv|
-		var snap = EventList.new;
-		// deepCopy: shallow copy would share the beats/durs arrays, so in-place
-		// setters (durs_/beats_) on the live map would still rewrite the stamp
-		snap.tempoMap = tempoMap.deepCopy;
-		snap.beatDur = beatDur;
 		^(
-			list: snap,
+			list: this.prClockSnapshot,
 			tempoEnv: tempoEnv.copy,
 			when: ev[\when] ? 0,
 			start: ev[\start] ? ev[\startPos] ? 0,

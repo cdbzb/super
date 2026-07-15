@@ -377,7 +377,8 @@ Found in the 2026-07-01 review (all four **[M0]** items FIXED 2026-07-07 — see
    (env staleness lands in milestone 0). **Gated on milestone 1 proving insufficient on real
    takes — see §3b build gate.** (§3b, 3d)
 3. **Carry-forward / `t.tempoMap` consistency** + machine-confirm boundary. (§3e, §5)
-4. **Guide-track fragment capture** — `wallToBeat` + play epoch + `captureFragment` +
+4. **Guide-track fragment capture** — `wallToBeat` + play epoch + `addItem` (source
+   preferred position; née `captureFragment`) +
    AudioItem take sidecar. Depends on 3; makes 5 more valuable (real fragments to smooth).
    Sub-steps 1–3 are pure-language. (§9a)
 5. **`quantizeInPlace` auto-scale** + **high-pass ("keep jitter") filter**. (§4b, 4c)
@@ -595,10 +596,15 @@ Missing primitives, in dependency order:
 3. **`list.captureFragment(take, voice:)`** — convert each recorded event's wall time via
    `wallToBeat`, insert into `events` with `when:` in beats. Build as the same insertion
    primitive as §9b's `list.addItem` — both recording modes use it.
-   **DONE (2026-07-14, pending live listening test):** shared primitive
-   `EventList.prInsertItemEvents` (asEventList-style tagging: source name, latency,
-   voice/mk) feeds both `captureFragment(take, voice:, mk:)` and §9b's
-   `addItem(player, at:, voice:, mk:)`. MIDIItem now stores a per-take SOUND epoch
+   **DONE (2026-07-14, pending live listening test):** ONE method for both modes
+   (renamed 2026-07-15; `captureFragment` folded away): `addItem(player, at:,
+   voice:, mk:)` over shared primitive `EventList.prInsertItemEvents`
+   (asEventList-style tagging: source name, latency, voice/mk). `at: <beat>` =
+   explicit placement (§9b); `at: nil` = SOURCE PREFERRED POSITION (REAPER's
+   term) — events land at the beats they were performed at. First two args are
+   order-flexible: `addItem(9, take) == addItem(take, 9)`; bare
+   `addItem(mi.take(-1), voice: \lead)` captures at recorded position.
+   MIDIItem now stores a per-take SOUND epoch
    (`recordEpochs`; `recordEpoch + timestamp` = the SystemClock moment the note
    sounded — record's latencyCompensation folded in once, so capture needs no latency
    term), carried onto players by `take(n)`/`player`. Session-local: meaningless
@@ -608,7 +614,7 @@ Missing primitives, in dependency order:
    live list reads mutable `tempoMap`/`beatDur`, and capture-after-requantize must
    convert through the clock the take actually heard. Default `mk:` resolves from
    the take's `recordedMk` reduced to a name Symbol. Suite:
-   `standalone-tests/capture-fragment-test.scd`.
+   `standalone-tests/add-item-test.scd`.
 4. **AudioItem per-take metadata sidecar** — takes are bare numbered files today, and
    `tempoFollowActions` ASSUMES the take was recorded on the list's base clock
    (`AudioItem.sc:176-183`; flat `\sourceBeatDur` is the only escape). Sidecar Event next to
@@ -646,7 +652,7 @@ Sketch:
 list.play(from: 8);
 mi.record(mk);                          // wall time, as today
 // ... perform ... ; mi.stop;
-list.captureFragment(mi.take(-1), voice: \lead);
+list.addItem(mi.take(-1), voice: \lead);   // at: nil = source preferred position
 ```
 
 ### 9b. Wild recording → mark beats → align (MIDI ~90% in place; audio needs §9c)

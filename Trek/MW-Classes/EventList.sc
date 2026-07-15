@@ -226,49 +226,48 @@ EventList {
 		}
 	}
 
-	// §9b merge convenience: insert a MIDI item/player/selection at list beat `at`.
-	// Each event's position within the item comes from its selection tempomap when
-	// one exists (timestamps -> ideal beats), else timestamps are taken as flat
-	// seconds-as-beats from the player's start.
-	addItem { |player, at = 0, voice, mk|
-		var tm, whenFn;
+	// §9a step 3 + §9b: insert a MIDI item/player/selection into this list.
+	//   at: <beat>  — the item START lands there; positions within the item come
+	//     from its selection tempomap when one exists (timestamps -> ideal beats),
+	//     else timestamps are flat seconds-as-beats from the player's start.
+	//   at: nil     — SOURCE PREFERRED POSITION (REAPER's term): each event lands
+	//     at the beat it was PERFORMED at, resolving the take's wall-clock sound
+	//     moments (recordEpoch + timestamp) through lastPlayEpoch — including its
+	//     detached clock snapshot, so this stays correct after stop or a later
+	//     re-quantize. Fragments land on the ideal-beat grid with micro-timing as
+	//     fractional beats; the quantize family then applies in the beat domain.
+	//     Needs same-session capture of a take recorded while this list played.
+	// First two args are order-flexible for reading ease:
+	//   list.addItem(9, mi.take(-1)) == list.addItem(mi.take(-1), 9)
+	//   list.addItem(mi.take(-1), voice: \lead)  // recorded position
+	addItem { |player, at, voice, mk|
+		var tm, whenFn, ep, sl, env, fromWall, epoch;
+		player.isNumber.if { var swap = player; player = at; at = swap };
 		player = player.player;
-		tm = { player.tempomap }.try;
-		whenFn = tm.notNil.if(
-			{ { |e| at + tm.prAtExtrapolated(e.timestamp - tm.t0, tm.env) } },
-			{ { |e| at + (e.timestamp - (player.start ? 0)) } });
+		at.notNil.if {
+			tm = { player.tempomap }.try;
+			whenFn = tm.notNil.if(
+				{ { |e| at + tm.prAtExtrapolated(e.timestamp - tm.t0, tm.env) } },
+				{ { |e| at + (e.timestamp - (player.start ? 0)) } });
+		} {
+			ep = lastPlayEpoch;
+			ep.isNil.if {
+				^"EventList.addItem: no lastPlayEpoch — play the list first, or pass at:".warn
+			};
+			player.isKindOf(MIDIItemPlayer).not.if {
+				^"EventList.addItem: % is not a MIDI take/player (still recording?)"
+					.format(player).warn
+			};
+			epoch = player.recordEpoch;
+			epoch.isNil.if {
+				^"EventList.addItem: take has no recordEpoch (recorded in an older session/class?) — pass at:".warn
+			};
+			sl = ep[\list] ? this;   // the epoch's detached clock, never the live list
+			env = ep[\tempoEnv];
+			fromWall = sl.beatToWall(ep[\fromBeat], env);
+			whenFn = { |e| sl.wallToBeat(epoch + e.timestamp - ep[\seconds] + fromWall, env) };
+		};
 		^this.prInsertItemEvents(player, whenFn, voice, mk ?? { this.prItemMk(player) })
-	}
-
-	// §9a step 3: capture a take recorded WHILE this list was playing. Each recorded
-	// event's wall-clock sound moment (take.recordEpoch + timestamp) is converted
-	// through lastPlayEpoch + wallToBeat into a list beat, so fragments land on the
-	// ideal-beat grid with micro-timing preserved as fractional beats — the quantize
-	// family then applies in the beat domain. Uses the epoch's OWN tempoEnv (the
-	// schedule the take actually heard), so capture stays correct after stop or a
-	// later re-quantize. Sketch: list.play; mi.record(mk); ...; mi.stop;
-	// list.captureFragment(mi.take(-1), voice: \lead).
-	captureFragment { |take, voice, mk|
-		var player = take.player, ep = lastPlayEpoch, sl, env, fromWall, epoch;
-		ep.isNil.if {
-			^"EventList.captureFragment: list has no lastPlayEpoch — play it first".warn
-		};
-		player.isKindOf(MIDIItemPlayer).not.if {
-			^"EventList.captureFragment: % is not a MIDI take/player (still recording?)"
-				.format(take).warn
-		};
-		epoch = player.recordEpoch;
-		epoch.isNil.if {
-			^"EventList.captureFragment: take has no recordEpoch (recorded in an older session/class?)".warn
-		};
-		sl = ep[\list] ? this;   // the epoch's detached clock, never the live list
-		env = ep[\tempoEnv];
-		fromWall = sl.beatToWall(ep[\fromBeat], env);
-		^this.prInsertItemEvents(
-			player,
-			{ |e| sl.wallToBeat(epoch + e.timestamp - ep[\seconds] + fromWall, env) },
-			voice,
-			mk ?? { this.prItemMk(player) })
 	}
 
 	add { |...args, kwargs|

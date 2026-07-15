@@ -61,9 +61,6 @@ Monitors {  //setup monitoring for Trek piece
 				StageLimiter.activate;
 				\settingBasss.postln;
 					{
-						foldDown[0]=Monitor.new => _.play(2,2,0,2,target:StageLimiter.activeSynth.nodeID, addAction:\addBefore);
-						foldDown[1]=Monitor.new => _.play(4,1,0,1,target:StageLimiter.activeSynth.nodeID, addAction:\addBefore, volume: -6.dbamp);
-						foldDown[2]=Monitor.new => _.play(4,1,1,1,target:StageLimiter.activeSynth.nodeID, addAction:\addBefore, volume: -6.dbamp);
 						// not necessary when using TotalMix!!
 						// Synth(\bassManagement, target: StageLimiter.activeSynth.nodeID, addAction:\addBefore );
 						Synth(\rearSpeakAdj, target: StageLimiter.activeSynth.nodeID, addAction:\addBefore );

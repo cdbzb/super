@@ -249,10 +249,14 @@ EventList {
 	//     beats; the quantize family then applies in the beat domain. Needs
 	//     same-session capture of a take recorded while this list played (epochs are
 	//     absolute SystemClock seconds, void after a restart).
+	// shift: <beats> — additive beat-domain nudge applied after position
+	//   resolution in either mode. With at: nil it moves the whole take off its
+	//   recorded position (a bar later: shift: 4; push the feel: shift: -0.25)
+	//   while keeping performed micro-timing intact.
 	// First two args are order-flexible for reading ease:
 	//   list.addItem(9, mi.take(-1)) == list.addItem(mi.take(-1), 9)
 	//   list.addItem(mi.take(-1), voice: \lead)  // recorded position
-	addItem { |player, at, voice, mk|
+	addItem { |player, at, voice, mk, shift|
 		var tm, whenFn, ep, sl, env, fromWall, epoch;
 		player.isNumber.if { var swap = player; player = at; at = swap };
 		player = player.player;
@@ -282,7 +286,31 @@ EventList {
 			fromWall = sl.beatToWall(ep[\fromBeat], env);
 			whenFn = { |e| sl.wallToBeat(epoch + e.timestamp - ep[\seconds] + fromWall, env) };
 		};
+		shift.notNil.if { var f = whenFn; whenFn = { |e| f.(e) + shift } };
 		^this.prInsertItemEvents(player, whenFn, voice, mk ?? { this.prItemMk(player) })
+	}
+
+	// beat in THIS list's CURRENT frame that sounds at the take's recorded wall
+	// moment (player.recordWall) — the wall-preserving b0 for a sealed
+	// followTrack: \eventList insert. Change the tempoMap FIRST, then call: the
+	// wall moment is fixed by the take's baked epoch, the beat is resolved
+	// against whatever this list's clock is NOW. Composed through this.tempoEnv
+	// (bare wallToBeat with nil env would ignore \tempoTrack events). nil for
+	// takes without a recordPlayEpoch.
+	// Frame-origin conversion: recordWall counts from the RECORDED playthrough's
+	// beat 0, but a tempoMap wall frame is rebased by its t0 (first selected
+	// note) — a selection-map guide plays t0 EARLIER than the flat playthrough
+	// the take heard. Convert recorded wall -> source timestamps (+ srcT0) ->
+	// this list's rebased frame (- dstT0), else the take lands t0 late relative
+	// to the guide. Limitation: a rebase done outside the tempoMap (e.g. a flat
+	// list whose player.start was set) is invisible to the epoch snapshot.
+	itemStartBeat { |player|
+		^player.player.tryPerform(\recordWall) !? { |w|
+			var ep = player.player.recordPlayEpoch;
+			var srcT0 = (ep !? { ep[\list].tempoMap.tryPerform(\t0) }) ? 0;
+			var dstT0 = tempoMap.tryPerform(\t0) ? 0;
+			this.wallToBeat(w + srcT0 - dstT0, this.tempoEnv)
+		}
 	}
 
 	add { |...args, kwargs|

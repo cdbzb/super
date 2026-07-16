@@ -1278,8 +1278,8 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	var <>start, <>end;
 	var tracks;
 	var <>takeIndex, <>currentSelection; // set by MIDIItem.take / selection — not preserved through filters
-	var <>recordEpoch; // wall-clock sound epoch of the take (MIDIItem.recordEpochs) — not preserved through filters
-	var <>recordPlayEpoch; // the list-play epoch this take overdubbed against (MIDIItem.recordPlayEpochs) — not preserved through filters
+	var <>recordEpoch; // wall-clock sound epoch of the take (MIDIItem.recordEpochs) — carried through filters via copyBounds
+	var <>recordPlayEpoch; // the list-play epoch this take overdubbed against (MIDIItem.recordPlayEpochs) — carried through filters via copyBounds
 	var <>closingAnchor; // (time:, beats:) closing tempo-anchor from the parent's next selected beat; set by fromBeat
 	var <>beatScale; // ideal-beats-per-anchor multiplier (nil == 1); applied by tempomap, see scaleBeats
 
@@ -1359,8 +1359,30 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	setBounds {|event|
 		start = event.start; end = event.end
 	}
+	// carry bounds + record epochs from the player/item this one derives from —
+	// filtered events still occurred at the same wall-clock moments, so
+	// source-preferred addItem keeps working down a filter chain. Caveat: a
+	// timestamp-mutating filter (quantize, +lag) makes the epoch map the MUTATED
+	// timestamps as performed moments — deliberate retiming lands shifted.
 	copyBounds {|mi|
-		start = mi.start; end =mi.end
+		start = mi.start; end = mi.end;
+		recordEpoch = recordEpoch ? mi.tryPerform(\recordEpoch);
+		recordPlayEpoch = recordPlayEpoch ? mi.tryPerform(\recordPlayEpoch);
+	}
+	// wall offset (seconds from the recorded playthrough's beat-0 origin) at which
+	// the take's timestamp 0 sounded. Pure difference of same-session epochs, so it
+	// survives archive round-trips and machine moves. nil for pre-epoch takes.
+	recordWall {
+		var ep = recordPlayEpoch ?? { ^nil };
+		recordEpoch ?? { ^nil };
+		^recordEpoch - ep[\seconds] + ep[\list].beatToWall(ep[\fromBeat], ep[\tempoEnv])
+	}
+	// beat the take START was performed at, in the recorded playthrough's frame —
+	// what source-preferred addItem resolves for timestamp 0. For b0 in ANOTHER
+	// list's current frame (wall-preserving), use thatList.itemStartBeat(this).
+	recordBeat {
+		var ep = recordPlayEpoch ?? { ^nil };
+		^this.recordWall !? { |w| ep[\list].wallToBeat(w, ep[\tempoEnv]) }
 	}
 	// sched: optional { |relTime, playFunc| } hook — when given, events are handed to it
 	// instead of clock.sched (EventList.prepare flattens them into its own schedule,

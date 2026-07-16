@@ -1,5 +1,9 @@
 EventList {
 	classvar <all, <>current, <>playFn, <>cursor;
+	// §9b: the most recent list-play epoch, snapshotted by MIDIItem.record into the
+	// take so source-preferred addItem aligns to the playthrough the overdub actually
+	// heard — not this list's lastPlayEpoch, which any later replay would clobber.
+	classvar <currentPlayEpoch;
 	var <events, <preview, <>defaultType, <routes, <>addFunc, <>previewPrep;
 	var <>env, <>context;
 	var <>autoExpand = false;
@@ -216,9 +220,13 @@ EventList {
 	}
 
 	// default \mk for inserted events: the take's recordedMk, reduced to a light
-	// reference (name Symbol) — never a live object
+	// reference (name Symbol) — never a live object. MIDIItem.player doesn't stamp
+	// recordedMk onto the player, so fall back to the source item (mirrors
+	// MIDIItemPlayer.play's `recordedMk ? source.recordedMk`).
 	prItemMk { |player|
-		^player.tryPerform(\recordedMk) !? { |r|
+		var r = player.tryPerform(\recordedMk)
+			?? { player.tryPerform(\source).tryPerform(\recordedMk) };
+		^r !? {
 			case
 			{ r.isKindOf(Event) } { r[\name] }
 			{ r.isKindOf(MicroKeys) } { r.name ? r }
@@ -234,9 +242,13 @@ EventList {
 	//     at the beat it was PERFORMED at, resolving the take's wall-clock sound
 	//     moments (recordEpoch + timestamp) through lastPlayEpoch — including its
 	//     detached clock snapshot, so this stays correct after stop or a later
-	//     re-quantize. Fragments land on the ideal-beat grid with micro-timing as
-	//     fractional beats; the quantize family then applies in the beat domain.
-	//     Needs same-session capture of a take recorded while this list played.
+	//     re-quantize. MIDIItem.record snapshots that epoch (EventList
+	//     .currentPlayEpoch) into the take, so a LATER replay of this list can't
+	//     misalign it; older takes without the snapshot fall back to lastPlayEpoch.
+	//     Fragments land on the ideal-beat grid with micro-timing as fractional
+	//     beats; the quantize family then applies in the beat domain. Needs
+	//     same-session capture of a take recorded while this list played (epochs are
+	//     absolute SystemClock seconds, void after a restart).
 	// First two args are order-flexible for reading ease:
 	//   list.addItem(9, mi.take(-1)) == list.addItem(mi.take(-1), 9)
 	//   list.addItem(mi.take(-1), voice: \lead)  // recorded position
@@ -250,9 +262,12 @@ EventList {
 				{ { |e| at + tm.prAtExtrapolated(e.timestamp - tm.t0, tm.env) } },
 				{ { |e| at + (e.timestamp - (player.start ? 0)) } });
 		} {
-			ep = lastPlayEpoch;
+			// Prefer the epoch snapshotted INTO the take at record time (the playthrough
+			// it overdubbed against) so a later replay of this list can't misalign it;
+			// fall back to this list's lastPlayEpoch for takes from before this was wired.
+			ep = player.tryPerform(\recordPlayEpoch) ? lastPlayEpoch;
 			ep.isNil.if {
-				^"EventList.addItem: no lastPlayEpoch — play the list first, or pass at:".warn
+				^"EventList.addItem: no play epoch — record the take while this list plays, or pass at:".warn
 			};
 			player.isKindOf(MIDIItemPlayer).not.if {
 				^"EventList.addItem: % is not a MIDI take/player (still recording?)"
@@ -846,6 +861,9 @@ EventList {
 		// silently re-time captures against a clock the take never heard.
 		lastPlayEpoch = (seconds: epoch, fromBeat: from, tempoEnv: tempoEnv,
 			list: this.prClockSnapshot);
+		// Publish for MIDIItem.record to snapshot: a take recorded now is overdubbing
+		// against THIS playthrough. Survives stop (the take keeps its own copy).
+		currentPlayEpoch = lastPlayEpoch;
 		// A nested own-tempo child inserted before `from` can produce pre-epoch entries.
 		// Exact wallToBeat trimming is not wired into nested preparation yet; drop them
 		// rather than firing a burst at start.

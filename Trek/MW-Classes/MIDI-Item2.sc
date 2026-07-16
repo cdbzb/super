@@ -819,6 +819,10 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	// folded in, undoing the subtraction at MIDI-Item2 capture). Session-local:
 	// archived values are meaningless after an sclang restart.
 	var <recordEpochs, <recordEpoch;
+	// §9b: the EventList play epoch this take overdubbed against, snapshotted at record
+	// time so source-preferred addItem aligns to the playthrough the take heard rather
+	// than the list's current lastPlayEpoch. Session-local, same caveat as recordEpoch.
+	var <recordPlayEpochs, <recordPlayEpoch;
 	var <beatSelections; // Dictionary: take -> List of selection Events (append-only, immutable versions)
 	classvar midiout, <recording;
 	classvar <current; // last item .record was called on; survives stopRecording
@@ -1029,6 +1033,8 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 			recordedMks.add(recordedMk);
 			recordEpochs = recordEpochs ? List[];
 			recordEpochs.add(recordEpoch);
+			recordPlayEpochs = recordPlayEpochs ? List[];
+			recordPlayEpochs.add(recordPlayEpoch);
 		}
 	}
 	at {|num|
@@ -1043,6 +1049,10 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
             timestamp: SystemClock.seconds - start,
             initialEvent: true,
         );
+        // fresh take: clear any prior take's recordedMk so `recordedMk ?` below (and the
+        // Event branch) rebuild from THIS call's mk — otherwise re-recording with a new
+        // synth silently keeps the old one and playback uses the stale voice.
+        recordedMk = nil;
         mk.isKindOf(Event).if {
             var base = MicroKeys.current.asEvent;
             recordedMk = base.putAll(mk);
@@ -1057,6 +1067,9 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
         latencyCompensation = latencyCompensation ? Server.default.latency;
         // sound epoch for this take (see recordEpoch ivar comment)
         recordEpoch = start + latencyCompensation;
+        // and the list-play epoch this overdub is sounding against (nil if no list is
+        // playing) — lets addItem stay aligned even if that list is later replayed
+        recordPlayEpoch = EventList.currentPlayEpoch;
         mk.do{|i| (i.isKindOf(Symbol).if{ MicroKeys(i) }{ i }).monitor};
         recording = this;
         current = this;
@@ -1164,6 +1177,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 			// the LIVE buffer = the most recent recording -> carries its sound epoch
 			MIDIItemPlayer( this.makeNotesFromMidiEvents(midiEvents), this)
 				.recordEpoch_(recordEpoch)
+				.recordPlayEpoch_(recordPlayEpoch)
 		}{
 			SelfReturningObject()
 		}
@@ -1224,6 +1238,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		obj = MIDIItemPlayer(this.makeNotesFromMidiEvents(takes[num]), this);//.recalcSustains
 		obj.recordedMk = recordedMks !? _[num];
 		obj.recordEpoch = recordEpochs !? _[num];
+		obj.recordPlayEpoch = recordPlayEpochs !? _[num];
 		obj.takeIndex = num;
 		^obj
 	}
@@ -1264,6 +1279,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	var tracks;
 	var <>takeIndex, <>currentSelection; // set by MIDIItem.take / selection — not preserved through filters
 	var <>recordEpoch; // wall-clock sound epoch of the take (MIDIItem.recordEpochs) — not preserved through filters
+	var <>recordPlayEpoch; // the list-play epoch this take overdubbed against (MIDIItem.recordPlayEpochs) — not preserved through filters
 	var <>closingAnchor; // (time:, beats:) closing tempo-anchor from the parent's next selected beat; set by fromBeat
 	var <>beatScale; // ideal-beats-per-anchor multiplier (nil == 1); applied by tempomap, see scaleBeats
 

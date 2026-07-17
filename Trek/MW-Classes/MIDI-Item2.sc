@@ -826,18 +826,24 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	var <beatSelections; // Dictionary: take -> List of selection Events (append-only, immutable versions)
 	classvar midiout, <recording;
 	classvar <current; // last item .record was called on; survives stopRecording
+	// gate for DECLARATIVE record intent only (record: true on \mi2 events, which
+	// persists in a song across replays) — imperative .record calls (KeyStage
+	// button, recordMe, evaluated code) are one-shot gestures and are NOT gated.
+	// Mirrors AudioItem.armed: disarmed by MyFree and Cmd-.
+	classvar <>armed = false;
 
 	*initClass {
 		var parent;
 		all = Dictionary.new(256);
 		folder = this.filenameSymbol.asString.dirname.dirname +/+ "MIDI-items";
 		File.exists(folder).not.if{ "mkdir %".format(folder).unixCmd };
-		MyFree.add({ this.stopRecording });
+		MyFree.add({ this.stopRecording; armed = false });
 		CmdPeriod.add(this);
 		// TempoClock.default=TempoClock(queueSize:8192).permanent_(true)
 	}
 	*cmdPeriod{
-		this.stopRecording
+		this.stopRecording;
+		armed = false
 	}
 //
 
@@ -1020,11 +1026,41 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		=> _.asDict
 	}
 	*stopRecording {
+		var item = recording, before;
 		[\noteOn, \noteOff, \control, \polytouch, \bend ].do{
 			|cmd|
 			MIDIdef((\record ++ cmd).asSymbol).free
 		};
-		recording.notNil.if {recording.stop; recording.save; recording = nil;}
+		item.notNil.if {
+			before = item.takes.size;
+			item.stop;
+			item.save;
+			recording = nil;
+			// a take was sealed — whether this stop came from the KeyStage record
+			// toggle, MyFree/stop, or Cmd-. — so hand the insert line to nvim
+			(item.takes.size > before).if { this.prRegisterAddItemLine(item) }
+		}
+	}
+	// union of every XMIDIController subclass's *recordIgnores for this msgType:
+	// controller messages (transport buttons etc.) that record must not capture.
+	// Re-read at each .record, so controllers can re-map live.
+	*recordIgnoredNums { |cmd|
+		^(XMIDIController.allSubclasses ? []).collect { |c| (c.recordIgnores ? ())[cmd] }
+			.reject(_.isNil).flatten(1)
+	}
+	// ready-to-paste insert line for the just-sealed take -> nvim register d.
+	// take(n) carries recordedMk/epochs, so addItem resolves mk and source-preferred
+	// position by itself; at: 0 is appended when no EventList was playing during
+	// the take (no play epoch for source-preferred position to resolve against).
+	*prRegisterAddItemLine { |item|
+		var line = "e.addItem(MIDIItem(\"%\").take(%)%)".format(
+			item.name,
+			item.takes.size - 1,
+			item.recordPlayEpoch.isNil.if{ ", at: 0" }{ "" }
+		);
+		Nvim.setReg("d", line);
+		Nvim.notify("reg d: " ++ line);
+		"reg d: %".format(line).postln
 	}
 	stop {
 		if (midiEvents.select{|e| e.timestamp > 0}.size > 0) {
@@ -1043,6 +1079,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
     record {
         |mk latencyCompensation|
         var start = SystemClock.seconds;
+        var ccIgnore;
         var initialEvent =
         (
             midicmd: \control,
@@ -1074,16 +1111,21 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
         recording = this;
         current = this;
         midiEvents = List[];
-        // add Events to set initial CC values to midiEvents
+        // add Events to set initial CC values to midiEvents — skipping controller-
+        // ignored CCs (transport buttons), which land in MicroKeys.ccs as numeric
+        // Symbols ('45') via monitor's setClassCCs
+        ccIgnore = MIDIItem.recordIgnoredNums(\control);
         MicroKeys.ccs.asKeyValuePairs.pairsDo{ | i j |
-            midiEvents.add(
-                initialEvent ++ (
-                    type: \setCC,
-                    ctlNum: i,
-                    // control: CC(i).spec.unmap(j) * CC(i).rawScale , //put back in original
-                    control: j
+            ccIgnore.includes(i.asString.asInteger).not.if {
+                midiEvents.add(
+                    initialEvent ++ (
+                        type: \setCC,
+                        ctlNum: i,
+                        // control: CC(i).spec.unmap(j) * CC(i).rawScale , //put back in original
+                        control: j
+                    )
                 )
-            )
+            }
         };
         midiEvents.add(
             initialEvent ++ (
@@ -1099,6 +1141,9 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 
         // Messages with val, num, chan parameters
         [\noteOn, \noteOff, \control, \polytouch ].do { |cmd|
+            // controller-declared non-musical messages (transport buttons etc.)
+            // must not land in the take
+            var ignore = MIDIItem.recordIgnoredNums(cmd);
             MIDIdef((\record ++ cmd).asSymbol, func: { |val num chan src|
                 MicroKeys.excludeSrcIDs.includes(src).not.if {
                 midiEvents.add(
@@ -1125,7 +1170,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
                         }
                     )
 				}},msgType: cmd,
-				msgNum: (cmd == \control).if{ (0..127) },
+				msgNum: ((cmd == \control) or: { ignore.size > 0 }).if{ (0..127).difference(ignore) },
 			)
 		};
 
@@ -1315,11 +1360,46 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			~player.fromNote(~from, ~to).play(~mk, clock: ~clock) 
 		}, parentEvent: (type: \durEvent));
 		Event.addEventType(\mi2, {
-			~filter.notNil.if{~player = ~filter.(~player)};
-			// '!?'.help
-			~dur = ~dur ? ((~player.end ? ~player.bounds.end) - (~player.start ? ~player.bounds.start));
-			~clock = TempoClock(~tempo ? (1 / (~stretch ? 1)), queueSize: 65536);
-			~player.play(~mk ? MicroKeys(\default), clock: ~clock)
+			// record: true only means record when ARMED (MIDIItem.armed) — the
+			// audioItem pattern: leave record: true in the event, flip armed for the
+			// pass you want captured. Armed, recording REPLACES playback (you're
+			// re-performing the part); the take lands on the event's source item,
+			// snapshots the playing list's epoch, and is sealed by stopRecording
+			// (KeyStage record button, MyFree/stop, Cmd-.) — which also writes the
+			// e.addItem(...) line to nvim register d.
+			var wantsRecord = (~record ? false) == true;
+			var item = wantsRecord.if { ~player.tryPerform(\source) };
+			var doRecord = wantsRecord and: {
+				MIDIItem.armed.not.if {
+					"MIDIItem %: not armed — playing; will record if armed"
+						.format(item.tryPerform(\name)).warn;
+					false
+				} {
+					case
+					{ item.isNil } {
+						"mi2 record: player % has no source item — playing instead"
+							.format(~player).warn;
+						false
+					}
+					// one shared recording at a time (classvar + \record* MIDIdefs) —
+					// never steal an in-progress take
+					{ MIDIItem.recording.notNil } {
+						"mi2 record: already recording % — playing % instead"
+							.format(MIDIItem.recording.name, item.name).warn;
+						false
+					}
+					{ true }
+				}
+			};
+			doRecord.if {
+				item.record(~mk ? ~player.recordedMk ? item.recordedMk)
+			} {
+				~filter.notNil.if{~player = ~filter.(~player)};
+				// '!?'.help
+				~dur = ~dur ? ((~player.end ? ~player.bounds.end) - (~player.start ? ~player.bounds.start));
+				~clock = TempoClock(~tempo ? (1 / (~stretch ? 1)), queueSize: 65536);
+				~player.play(~mk ? MicroKeys(\default), clock: ~clock)
+			}
 		}, );
 		Event.addParentType(\mi2,
 			// NB: type:durEvent and finish MUST live on this one event with a nil

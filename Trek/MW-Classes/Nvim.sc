@@ -47,6 +47,11 @@ Nvim {
 	*sanitize{|text|
 		^text.asString.collectAs({|c| if(c.ascii < 32, {$ }, {c})}, String)
 	}
+	// set an nvim register, e.g. Nvim.setReg("d", "e.addItem(...)") — single-line text
+	*setReg {|reg="d", text|
+		var code = "vim.fn.setreg('%', [=[%]=])".format(reg, this.sanitize(text));
+		this.send(code)
+	}
 	*replace {|text|
 		var clean = this.sanitize(text);
 		var prefix = "local buf = vim.api.nvim_get_current_buf() "

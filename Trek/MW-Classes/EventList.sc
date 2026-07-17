@@ -249,6 +249,11 @@ EventList {
 	//     beats; the quantize family then applies in the beat domain. Needs
 	//     same-session capture of a take recorded while this list played (epochs are
 	//     absolute SystemClock seconds, void after a restart).
+	//   at: \original — sugar for at: this.itemStartBeat(player): the take START
+	//     lands on the wall-preserving beat (recorded wall moment resolved through
+	//     THIS list's CURRENT frame — see itemStartBeat), then positions within the
+	//     item follow the at:<beat> rules. The sealed insert after a tempoMap
+	//     change: change the map FIRST, then addItem(take, \original).
 	// shift: <beats> — additive beat-domain nudge applied after position
 	//   resolution in either mode. With at: nil it moves the whole take off its
 	//   recorded position (a bar later: shift: 4; push the feel: shift: -0.25)
@@ -258,8 +263,13 @@ EventList {
 	//   list.addItem(mi.take(-1), voice: \lead)  // recorded position
 	addItem { |player, at, voice, mk, shift|
 		var tm, whenFn, ep, sl, env, fromWall, epoch;
-		player.isNumber.if { var swap = player; player = at; at = swap };
+		(player.isNumber or: { player == \original }).if { var swap = player; player = at; at = swap };
 		player = player.player;
+		(at == \original).if {
+			at = this.itemStartBeat(player) ?? {
+				^"EventList.addItem: at: \\original needs a take with a recordPlayEpoch (same-session recording) — pass a beat instead".warn
+			}
+		};
 		at.notNil.if {
 			tm = { player.tempomap }.try;
 			whenFn = tm.notNil.if(
@@ -1096,7 +1106,19 @@ EventList {
 			};
 			^out
 		};
-		(((ev[\followTrack] ? false) != false) and: { ev[\type] == \mi2 }).if {
+		// mirrors prIsAudioFollow: record: true + armed must stay on the sealed
+		// \mi2 path (the event type does the recording — the follow path flattens
+		// events at prepare time and never runs it); unarmed it's playback intent
+		// and follows. Armed is sampled at prepare time, not mid-playback.
+		(((ev[\followTrack] ? false) != false) and: { ev[\type] == \mi2 } and: {
+			((ev[\record] ? false) != true) or: {
+				MIDIItem.armed.not.if {
+					"MIDIItem %: not armed — following track; will record if armed"
+						.format(ev[\name]).warn;
+					true
+				} { false }
+			}
+		}).if {
 			^this.prEmitMi2Follow(ev, tempoEnv, from, place)
 		};
 		((ev[\when] ? 0) >= from).if {

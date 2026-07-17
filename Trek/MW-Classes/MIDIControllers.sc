@@ -5,6 +5,13 @@ XMIDIController {
 			MIDIIn.connectAll;
 		}
 	}
+	// subclasses override to declare non-musical messages (transport buttons etc.)
+	// that MIDIItem.record must not capture into takes: (msgType -> [msgNums]),
+	// e.g. (control: [41, 42, 45]). Read at each .record via
+	// MIDIItem.recordIgnoredNums, so a live re-map takes effect on the next take.
+	// Only numbered msgTypes (\control, \noteOn, \noteOff, \polytouch) can be
+	// filtered — \bend/\touch have no msgNum.
+	*recordIgnores { ^() }
 }
 
 KS : XMIDIController {
@@ -12,15 +19,43 @@ KS : XMIDIController {
 	classvar <playFunc;
 	classvar <synths, <active;
 	classvar <busses;
+	classvar <>recordCC = 45;
+	classvar <>transportCCs;
+	// transport buttons are non-musical: keep them out of recorded takes
+	*recordIgnores { ^(control: transportCCs) }
 	*initClass {
+		transportCCs = [41, 42, recordCC];
 		ServerTree.add(
 			{
 				MIDIFunc.cc( {|val| if(val > 0) {Song.play}}, 41, nil, id );
-				MIDIFunc.cc( {|val| if(val > 0) {MyFree()}}, 42, nil, id )
+				MIDIFunc.cc( {|val| if(val > 0) {MyFree()}}, 42, nil, id );
+				// keyed + permanent so repeated ServerTree fires can't stack a second
+				// responder (a duplicate would start AND stop the toggle in one press)
+				MIDIdef.cc(\ksRecord, {|val| if(val > 0) {KS.recordButton}}, recordCC, srcID: id).permanent_(true);
 			}
 		);
 
 		busses = ();
+	}
+	// KeyStage record button (CC recordCC), toggle:
+	//   press 1 — start recording a MIDIItem take on the monitoring MicroKeys
+	//     (MicroKeys.current if still active, else any active instance, else
+	//     MicroKeys(\default)) via recordMe — takes accumulate on that mk's item;
+	//   press 2 — MIDIItem.stopRecording seals + saves the take and writes the
+	//     e.addItem(...) insert line to nvim register d (that also happens when
+	//     the recording is ended by MyFree/stop or Cmd-. instead).
+	*recordButton {
+		MIDIItem.recording.notNil.if {
+			MIDIItem.stopRecording
+		} {
+			var mk = MicroKeys.current, item;
+			(mk.isNil or: { mk.active.not }).if {
+				mk = MicroKeys.all.detect(_.active) ?? { MicroKeys(\default) }
+			};
+			item = mk.recordMe;
+			Nvim.notify("REC % -> item %".format(mk.name, item.name));
+			"REC % -> item %".format(mk.name, item.name).postln;
+		}
 	}
 	*id { ^ id ? (id = MIDIIn.findPort("Keystage", "KBD\/CTRL").uid ) }
 	*cc {|name|

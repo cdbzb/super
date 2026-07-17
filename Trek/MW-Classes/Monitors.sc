@@ -70,10 +70,15 @@ Monitors {  //setup monitoring for Trek piece
 		});
 	}
 	*stopFoldDown{
-		foldDown.do(_.stop)
+		foldDown.do(_ !? _.stop)
 	}
 	*startFoldDown{
-		foldDown.do(_.play)
+		// instantiate the OBS/stereo-capture fold-down monitors on demand
+		// (stop any existing first so repeated calls don't stack duplicates)
+		foldDown.do(_ !? _.stop);
+		foldDown[0]=Monitor.new => _.play(2,2,0,2,target:StageLimiter.activeSynth.nodeID, addAction:\addBefore);
+		foldDown[1]=Monitor.new => _.play(4,1,0,1,target:StageLimiter.activeSynth.nodeID, addAction:\addBefore, volume: -6.dbamp);
+		foldDown[2]=Monitor.new => _.play(4,1,1,1,target:StageLimiter.activeSynth.nodeID, addAction:\addBefore, volume: -6.dbamp);
 	}
 
 	*gui{

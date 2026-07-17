@@ -1,0 +1,106 @@
+var o, p;
+o = [
+	MIDIItem.prNew,  List.prNew,  Array.prNew(1),  Event.prNew,  
+	Array.prNew(32),  "260717_110033",  Event.prNew,  Array.prNew(4),  
+	Array.prNew(1),  Event.prNew,  Array.prNew(8),  List.prNew,  
+	Array.prNew,  Array.prNew,  Event.prNew,  Array.prNew(20),  
+	Event.prNew,  Array.prNew(16),  EventList.prNew,  List.prNew,  
+	Array.prNew,  Event.prNew,  Array.prNew(4),  Event.prNew,  
+	Array.prNew(4),  List.prNew,  Array.prNew
+];
+p = [
+	// MIDIItem
+	0, [ midiEvents: o[1],  name: o[5],  
+		initialCCValues: o[6],  restFirst: true,  
+		initialRest: o[8],  notes: nil,  
+		takes: o[11],  recordedMks: o[13],  
+		recordedMk: o[14],  recordEpochs: nil,  
+		recordEpoch: 12.814783583,  recordPlayEpochs: nil,  
+		recordPlayEpoch: o[16],  beatSelections: nil ],  
+	// List
+	1, [ array: o[2] ],  
+	// Array
+	2, [ o[3] ],  
+	// Event
+	3, [ array: o[4],  size: 7,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	4, [ 'control',  0,  'timestamp',  0.0,  
+		'midicmd',  'control',  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'ctlNum',  'polytouch',  'midinote',  'r',  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  'initialEvent',  true,  
+		nil,  nil,  'type',  'setPoly',  
+		nil,  nil,  nil,  nil ],  
+	// Event
+	6, [ array: o[7],  size: 0,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	7, [ nil,  nil,  nil,  nil ],  
+	// Array
+	8, [ o[9] ],  
+	// Event
+	9, [ array: o[10],  size: 2,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	10, [ nil,  nil,  'type',  'rest',  
+		'timestamp',  0.0,  nil,  nil ],  
+	// List
+	11, [ array: o[12] ],  
+	// Event
+	14, [ array: o[15],  size: 4,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	15, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  'synthFunc',  'default',  
+		'name',  'default',  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'species',  'poly',  'type',  'microKeys' ],  
+	// Event
+	16, [ array: o[17],  size: 3,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	17, [ 'fromBeat',  120,  'seconds',  6.589477792,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  'list',  o[18] ],  
+	// EventList
+	18, [ events: o[19],  preview: nil,  
+		defaultType: nil,  routes: o[21],  
+		addFunc: nil,  previewPrep: nil,  
+		env: o[23],  context: o[25],  
+		autoExpand: false,  batchWindow: 0.05,  
+		batchEndTime: -1000000000.0,  batchFirstWhen: 0,  
+		scope: nil,  voiceSpace: nil,  
+		solo: nil,  mute: nil,  
+		beatDur: nil,  tempoMap: nil,  
+		leadTime: nil,  lastPlayEpoch: nil,  
+		prPlayGen: 0,  prWallEnv: nil,  
+		prWallStarts: nil,  prWallCum: nil,  
+		prWallLevels: nil,  prWallTimes: nil,  
+		prWallCurves: nil,  prWallBase: nil,  
+		prWallSubs: nil ],  
+	// List
+	19, [ array: o[20] ],  
+	// Event
+	21, [ array: o[22],  size: 0,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	22, [ nil,  nil,  nil,  nil ],  
+	// Event
+	23, [ array: o[24],  size: 0,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	24, [ nil,  nil,  nil,  nil ],  
+	// List
+	25, [ array: o[26] ]
+];
+prUnarchive(o,p);

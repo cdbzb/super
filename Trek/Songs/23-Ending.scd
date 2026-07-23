@@ -3640,7 +3640,7 @@ P.still(\chapelEnd, timecode: 5223.9.seconds, music: { |p b e|
 });
 ["stop OBS","r",[3,1]].addLine;
 P(\obs, syl:0, music: { |p b e|
-				"obs-cli --password Where4obs recording stop".unixCmd;
+				OBS.stop;
 });
 }.()
 )

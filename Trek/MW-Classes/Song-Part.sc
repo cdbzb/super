@@ -652,11 +652,11 @@ Song {
 			Song.playRange(start,end);
 			fork{
 				Server.default.latency.wait;
-				"obs-cli --password Where4obs record start".unixCmd;
+				OBS.record;
 				(start..end).collect(Song.secDur[_]).sum.wait;
 				tail.wait;
 				2.wait;
-				"obs-cli --password Where4obs record stop".unixCmd;
+				OBS.stop;
 			}
 		}{
 			Monitors.blackHole;

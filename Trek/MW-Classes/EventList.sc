@@ -974,7 +974,12 @@ EventList {
 		var cFrom = ev[\start] ? 0;
 		var cTo   = ev[\end];  // child-frame half-open end (nil = to child's end)
 		var rate  = (ev[\tempo] ? 1) / (ev[\stretch] ? 1);
-		var childPlace, childSeen;
+		// groove: a Groove (beat->beat) applied in the CHILD's beat frame, before the
+		// conversion to parent beats — so the child swings on its own subdivisions
+		// while the parent's tempo map still governs the wall placement.
+		var groove = ev[\groove];
+		var gAt = groove.notNil.if({ { |b| groove.mapBeat(b) } }, { { |b| b } });
+		var childPlace, childSeen, refG;
 		child.isNil.if {
 			"EventList.prepare: no list named %".format(ev[\eventList]).warn;
 			^List[]
@@ -986,14 +991,22 @@ EventList {
 				"EventList.prepare: followTrack:% on nested \\eventList — source-map values only apply to \\mi2; following track".format(ev[\followTrack]).warn
 			};
 			// Trim like \mi2: playing the parent from past the insert point starts
-			// partway INTO the child.
-			(from > b0).if { cFrom = cFrom + ((from - b0) * rate); b0 = from };
-			childPlace = { |cBeat| place.(b0 + ((cBeat - cFrom) / rate)) };
+			// partway INTO the child. The cut is a GROOVED child beat, so `from`
+			// resolves through the inverse — else a mid-list start lands on the wrong
+			// child beat and every note after it skews.
+			refG = gAt.(cFrom);
+			(from > b0).if {
+				var cut = refG + ((from - b0) * rate);
+				cFrom = groove.notNil.if({ groove.unmapBeat(cut) }, { cut });
+				refG = cut;
+				b0 = from;
+			};
+			childPlace = { |cBeat| place.(b0 + ((gAt.(cBeat) - refG) / rate)) };
 		} {
 			var cEnv = child.prPlayTempoEnv;
 			var anchor = place.(b0);
-			var cFromWall = child.beatToWall(cFrom, cEnv);
-			childPlace = { |cBeat| anchor + (child.beatToWall(cBeat, cEnv) - cFromWall) };
+			var cFromWall = child.beatToWall(gAt.(cFrom), cEnv);
+			childPlace = { |cBeat| anchor + (child.beatToWall(gAt.(cBeat), cEnv) - cFromWall) };
 		};
 		^child.prepare(epoch, cFrom, childPlace, childSeen, cTo)
 	}

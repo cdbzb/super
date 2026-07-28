@@ -816,8 +816,9 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	var <takes, <recordedMks, <>recordedMk;
 	// §9a step 3: wall-clock sound epoch per take — recordEpoch + timestamp is the
 	// SystemClock moment a recorded event SOUNDED (record's latencyCompensation is
-	// folded in, undoing the subtraction at MIDI-Item2 capture). Session-local:
-	// archived values are meaningless after an sclang restart.
+	// folded in, undoing the subtraction at MIDI-Item2 capture). Overdubs are also
+	// pulled back by AudioItem.outputLatency — the press was aimed at monitoring.
+	// Session-local: archived values are meaningless after an sclang restart.
 	var <recordEpochs, <recordEpoch;
 	// §9b: the EventList play epoch this take overdubbed against, snapshotted at record
 	// time so source-preferred addItem aligns to the playthrough the take heard rather
@@ -1102,11 +1103,15 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
         (mk.isKindOf(VSTI) or: { mk.isKindOf(VSTPluginController) }).if { mk = MicroKeys(mk) };
         recordedMk = recordedMk ? mk.isKindOf(MicroKeys).if{ mk.asEvent }{ mk };
         latencyCompensation = latencyCompensation ? Server.default.latency;
-        // sound epoch for this take (see recordEpoch ivar comment)
-        recordEpoch = start + latencyCompensation;
         // and the list-play epoch this overdub is sounding against (nil if no list is
         // playing) — lets addItem stay aligned even if that list is later replayed
         recordPlayEpoch = EventList.currentPlayEpoch;
+        // sound epoch for this take (see recordEpoch ivar comment)
+        recordEpoch = start + latencyCompensation;
+        //subtract outputLatency from MIDI recording only when overdubbing
+        recordPlayEpoch.notNil.if {
+            recordEpoch = recordEpoch - AudioItem.outputLatency
+        };
         mk.do{|i| (i.isKindOf(Symbol).if{ MicroKeys(i) }{ i }).monitor};
         recording = this;
         current = this;

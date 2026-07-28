@@ -332,9 +332,31 @@ Found in the 2026-07-01 review (all four **[M0]** items FIXED 2026-07-07 — see
 - [ ] `asEventList` gives pickup events negative `when` (`ParamSpace.sc:127-131`) and
       `EventList.play`'s `(t >= from)` gate then drops them at `from = 0` — decide: fold
       pickups to 0, or accept a small negative window.
-- [ ] MIDI capture subtracts `Server.default.latency` (`MIDI-Item2.sc:1001`) but audio via
-      `Recorder` contains hardware INPUT latency instead — two conventions, constant
-      ~20-40 ms offset between media. Record the convention per take (§9a sidecar).
+- [x] MIDI capture subtracts `Server.default.latency` but audio via `Recorder` contains
+      hardware INPUT latency instead — two conventions, constant ~20-40 ms offset between
+      media. **Resolved 2026-07-27 (§9a step 5): they need different terms, not one
+      convention.** MIDI now also subtracts `AudioItem.outputLatency` for overdubs.
+- [ ] **`outputLatency` is not stamped per take.** It is baked into `recordEpoch` at
+      record time (matching the audio stamp convention), so a take cut before a
+      re-measure keeps the old constant with no record of which — the same
+      unattributable-constant problem the `roundTrip: 0` archives had. Add it to the
+      `recordedAgainst` block alongside `roundTrip`.
+- [ ] **`recordedAgainst` has no device identity.** `RetuneArchive.writeStamp` persists
+      `saved`/`sampleRate`/`latency`/`lag`/`roundTrip` but nothing naming the machine,
+      audio device, or buffer size — so a stamp cannot be attributed to a rig after the
+      fact. `roundTrip` is a property of device + buffer, not of the host: add `device`,
+      `hardwareBufferSize`, `host`. (Cost paid on 2026-07-26: the archives had to be
+      patched on the word that all recording happened downstairs.)
+- [ ] **`playFn` bypasses the play epoch.** `EventList.play` returns at
+      `playFn.notNil.if { ^playFn.(this, from) }` BEFORE `prPlayPrepared`, which is where
+      `lastPlayEpoch`/`currentPlayEpoch` are set — so a take recorded during a
+      `playFn`-driven playthrough snapshots a STALE epoch and `addItem` at `at: nil`
+      places it in the wrong frame. Latent: nothing assigns `playFn` in the tree today.
+- [ ] **The `\eventList` event TYPE calls `.play`** (`initClass`), so if an `\eventList`
+      event is ever EMITTED rather than expanded — from a Pbind, or a preview/context
+      replay rather than `prepare` — the child clobbers `currentPlayEpoch` with its own
+      frame. Cannot fire inside a prepared playthrough, since `prepare` always expands
+      first (`prExpandList` calls `child.prepare`, never `child.play`).
 - [x] `fromBeat(a,b).tempomap` degenerate final beat when the last selected note sustains
       past the slice: closing anchor used `bounds.end` (≈ last onset, because a trailing
       `mk` event sits there), so the final beat collapsed to a few ms. Fixed 2026-06-11 —
@@ -487,6 +509,44 @@ Recommended dependency order from here:
 7. Audio authoring and general `sourceTempoMap:`.
 8. Retire legacy forwarding only after compatibility coverage and migration.
 
+**Composition semantics (2026-07-27).** Free composition — `warpTo: [m1, m2, m3]`, or
+`a.warpTo(b).warpTo(c)` — has no mathematical obstruction: strictly monotone maps are
+closed under composition and `(g∘f)⁻¹ = f⁻¹∘g⁻¹`, which is all `beatAt`/`wallToBeat`/
+`unmapTime` need. Four practical constraints, in order of sharpness:
+
+- **It is FRAMES, not units.** Beats and seconds share a dimension; what makes two
+  quantities composable is the same origin AND parametrization. Proof it cannot be units:
+  `TempoWarp` is a seconds→seconds map that is not the identity, because the two sides are
+  seconds in DIFFERENT frames. Second proof, from our own API: `mapBeats(beats, fromBeat:)`
+  needs an origin at all only because span mapping is position-dependent — a unit
+  conversion would not be. So tag maps `fromFrame`/`toFrame` and check on compose. The tag
+  must name the SPECIFIC axis (`\itemBeat_take3`, `\listBeat_main`), not the dimension —
+  two maps both tagged `(\beat, \seconds)` would look composable while sharing nothing.
+  `TempoWarp`'s "never guesses beat offsets; use `PlacedTempoMap` first" is exactly this
+  rule already stated as prose; a tag moves the check to construction time.
+- **`\clamp` breaks the groupoid.** Clamped extrapolation is constant outside the domain,
+  hence not injective, so anything composed after a clamped region is non-invertible there
+  and `beatAt` silently returns a boundary value instead of failing. `\carry` extends with
+  the final slope and stays monotone. A composable chain requires `\carry` or `\error`
+  throughout — and since `TempoMap` reports legacy `\clamp` while `MIDIItemTempoMap`
+  reports `\carry`, mixed chains are the normal case. Also check range(mᵢ) ⊆ domain(mᵢ₊₁).
+- **Order is load-bearing** — composition is associative, not commutative. Already true
+  in-tree: `clump` resets curvature, hence `t.clump(4).curve(x)` and not the reverse. An
+  array form needs a documented direction (left-to-right = applied in order).
+- **Evaluate lazily.** Materializing each step resamples: `curve(1)` bakes `oversample: 32`
+  points per span, `prStampAnchors` up to 2048. Composing by materialization compounds
+  interpolation error and blows up anchor counts — precisely the §5 bug where a curved base
+  map grew invEnv ~32x and stalled the scheduling Routine. Keep the chain symbolic.
+
+Two TempoMaps do NOT chain directly (`beat→sec` then `beat→sec`), but compose in exactly
+two ways through an inverse, and both are useful: sharing the BEAT axis gives `g∘f⁻¹` =
+seconds→seconds, which is `TempoWarp`; sharing the SECONDS axis gives `g⁻¹∘f` =
+beats→beats, which is a `Groove` (§11). Keep `++` (concatenation along one axis, extending
+the domain) verbally distinct from composition, or `[a, b, c]` is ambiguous between them.
+Note also that `warp` is overloaded to breaking point — `warpTo`, `warpToArray`,
+`TempoWarp`, `warpDurs`, `warpThrough` — so reserve it for seconds→seconds (the meaning
+the 2026-07-12 `mapDurs`→`warpDurs` rename already carved out) and do not spend it again.
+
 ### 6b. `Trek/Songs` backward-compatibility contract
 
 The architecture work MUST NOT break the existing song corpus. `Trek/Songs` has extensive
@@ -519,8 +579,15 @@ do not change the song-facing API.
 ---
 
 ## 7. Testing notes
+- Suites in `standalone-tests/`, all pure-language, as of 2026-07-27:
+  `tempomap-test` 141, `followtrack-forward-test` 46, `groove-test` 46,
+  `retune-archive-test` 26, `add-item-test` 19. Run one with
+  `/Applications/SuperCollider.app/Contents/MacOS/sclang standalone-tests/<name>.scd`.
 - These are **pure-language** tests (no audio server needed) — `MIDIItemTempoMap`, `warpTo`,
   `mapBeats`, `quantize*` are all language-side.
+- `prepare(epoch, from)` REBASES: `place` subtracts `fromWall`, so a mid-list `from` shifts
+  surviving events down by the cut. Assert spacing, not absolute wall times. (Cost me a
+  false failure on 2026-07-27.)
 - Milestone 0 turns the ad-hoc checks below into a persistent headless suite (UnitTest2 is
   installed; a stock `sclang <file>.scd` run loads the Trek classes with no server). For
   one-off checks in the live session, `bin/sctest` runs SC code in the running scnvim sclang
@@ -553,6 +620,10 @@ do not change the song-facing API.
 - `Trek/MW-Classes/Retune.sc` — `RetuneItem` note model + `_retune/` sidecar pattern
   (`:233-246`), `trackPitchOffline` harness (`:297`), `\retunePreview` (`:542`).
 - `Trek/MW-Classes/PianoRollNav.sc` — the shared-gui-extraction precedent for `BeatMarkMode`.
+- `Trek/MW-Classes/Groove.sc` — beat→beat reparametrization (§11); `swing`/`modulate`,
+  `mapBeat`/`unmapBeat`, `mapSpans`/`unmapSpans`.
+- `bin/audio-latency.swift` — CoreAudio per-direction latency, for the `L_out`/`L_in`
+  split a loopback cannot measure (§9a step 5). `--list`, `--device`, `--roundtrip`.
 - Journal seed: `~/home/org_roam_files/org.org` (Jun 09, 2026).
 
 ---
@@ -646,6 +717,31 @@ Missing primitives, in dependency order:
    step 3 ships** — fragments captured before the convention exists (and is stamped in the
    step-4 sidecar) are permanently off-grid. Listed last only because it's a decision, not
    code; it's a prereq of 3/4, not a follow-on.
+   **RESOLVED 2026-07-26/27.** The two media need DIFFERENT terms, which is why one
+   constant could never work. Audio needs the whole round trip: the voice lands `L_in`
+   late in the file AND referenced monitoring that was `L_out` late, and those ADD. MIDI
+   needs `L_out` ALONE — the press carries no input latency, but the performer aimed at
+   monitoring, which lags the server sound domain that `lastPlayEpoch` is expressed in.
+   - `AudioItem.measureRoundTrip` (loopback) measures only the SUM; the split is not
+     observable from inside the box, so `bin/audio-latency.swift` asks CoreAudio
+     (device latency + safety offset + buffer frames + stream latency, per direction).
+     Trust the OS for the RATIO, the loopback for the TOTAL — drivers omit outboard
+     converters (an ADAT front end reports none of them).
+   - `measureRoundTrip` now also sets `AudioItem.outputLatency = rt * share` and
+     `writeStartupLatency` pins both lines. `MIDIItem.record` subtracts `outputLatency`
+     from `recordEpoch` when `recordPlayEpoch` is present — overdubs only; a free
+     recording had no monitored reference and must not shift.
+   - **MEASURE THROUGH THE REAL PATH.** A TotalMix-style internal loopback never reaches
+     a converter and measures the driver, not the rig. Downstairs that read 47.29 ms
+     (2270 frames) — exactly 2x the true 23.65 ms (1135 frames) from a physical cable.
+     The physical figure is the coherent one: CoreAudio reports 1092 frames of digital
+     path, so the residual is 43 frames (~0.9 ms) of converter + block turnaround, and
+     the OS output leg (546) sits 0.45 ms from `rt/2`. Mini legs are symmetric (share
+     0.500, so `rt/2` is sound there); the MacBook's built-in mic + speakers are NOT
+     (0.396), so the share must be per-device, never a hardcoded half.
+   - The 15 record-stamp archives under `~/tank/SC_audiofiles/_retune` were patched from
+     `roundTrip: 0` to the measured value (backups `~/retune-backup-260726*.tgz` on the
+     mini). They carried 0 because the constant did not exist when they were cut.
 
 Sketch:
 ```supercollider
@@ -1006,3 +1102,86 @@ optional `sched:` hook), `AudioItem.sc` (`wallAt` arg on both tempoFollow builde
 - Headless-test caveat: a stock `sclang <file>.scd` run loads startup functions that
   ATTACH to the running scsynth (client login, cached SynthDef loads, StageLimiter) —
   exit does not /quit it, but don't loop the suite while the live rig is up.
+
+---
+
+## 11. Groove — beat→beat reparametrization (2026-07-27)
+
+Motivating case that nothing could express: a **parent with slow tempo changes**, a child
+that must FOLLOW that rubato, and the child swung while the parent stays straight.
+`followTrack: true` was the only way to ride the parent's tempo, and it forced the child
+onto the parent's grid; turning it off gave the child its own swing but lost the rubato.
+
+The missing object is not a tempo map. Under `followTrack` the child has no wall frame of
+its own — only a beat axis fed to the parent — so what is needed is a monotone **beat→beat**
+reparametrization inserted before the child→parent conversion:
+
+```
+beat_C --[groove]--> beat_C' --(affine: -cFrom, /rate, +b0)--> beat_P --[parent map]--> wall
+```
+
+The two never interact: rubato lives entirely in the last arrow. And because the groove is
+expressed in the BEAT domain, its depth stays proportional as the parent slows — which it
+would not if the displacement were in seconds.
+
+**Swing and wave modulation are one family.** Swing is a square wave in the duration domain;
+its integral (the displacement) is a triangle. A sine in the duration domain integrates to a
+cosine displacement — breathing/rubato. So `shape` selects among one mechanism, not several
+features. `[1,1,1,...]` beats against `[0.6,0.4,0.6,...]` durs IS swing, at ratio 3:2; for a
+long:short ratio `r` the depth is `(r-1)/(r+1)`, so 0.6/0.4 is amount 0.2 and triplet 2:1 is
+1/3.
+
+**Why a duration multiplier, not a displacement.** Written as displacement `b + A·sin(2πb/P)`
+monotonicity requires `A < P/(2π)` — at a 1-beat period that caps you near 0.159 beats before
+the map folds back and every inversion in the system breaks. Written as a multiplier on durs
+of mean 1, the constraint collapses to `|amount| < 1`, because ANY array of positive spans is
+a valid strictly-increasing cumulative time. Monotonicity becomes structural rather than
+policed, and mean 1 gives period preservation (no net tempo drift) for free.
+
+**Deliberately not a tempo map.** Both sides are beats in the SAME frame — an endomorphism —
+so `Groove` does not answer `timeAt`/`beatAt`. `prEmitMi2Follow` and `AudioItem.prSrcOffset`
+duck-type on exactly that pair to decide a map converts beats↔seconds and would consume a
+Groove as one. It is also periodic and TOTAL, so unlike a tempo map it has no domain boundary
+and no extrapolation policy to reconcile when composed (see §6a).
+
+### 11a. As built
+- `Groove.swing(ratio, periodBeats)`, `Groove.modulate(periodBeats, amount, shape, phase)`,
+  `Groove.identity`. Shapes `\square`/`\sine`/`\tri`; `phase` is a CYCLE FRACTION (0..1).
+  Phasing by subtraction keeps `Φ(0) = Φ(1) = 0` for every shape, so phase can never
+  introduce an offset or break period preservation. Inverse by bisection, as in
+  `wallToBeat`'s subsampled case.
+- `mapBeat`/`unmapBeat` (scalar), `mapSpans`/`unmapSpans` (position-aware with `from:`, same
+  contract as `mapBeats`/`mapDurs`; non-positive results clamp to 1e-9 rather than drop,
+  preserving length).
+- `groove:` on a nested `\eventList` event, applied in BOTH `prExpandList` branches. The
+  mid-list trim resolves through `unmapBeat` — the cut is a GROOVED child beat, so a straight
+  comparison drops events whose grooved position is past the cut (a child event at 1.4
+  grooves to 1.52 and must survive a cut at 1.5; same failure class as the `\mi2` note in
+  §5). `groove` nil is exactly the old arithmetic, asserted as a no-op.
+- Suite `standalone-tests/groove-test.scd`, 46 checks.
+
+### 11b. Not built / next
+- **Grooves are strictly cyclic**, phase-locked to beat 0 of the child's own frame, with a
+  constant beat-count period. That rules out changing meter, per-bar variation (imported
+  groove templates, humanize), evolving depth, and pickup realignment beyond global `phase`.
+- **Array `periodBeats`, cycling like `clump`** — `Groove.modulate(periodBeats: [3,2,2])`
+  for odd meters. Strong in-house precedent (`grouping.wrapAt`), stays periodic and total.
+  The cheap win; do this first.
+- **`Groove.fromAnchors(straightBeats, groovedBeats)`** for the general non-periodic case.
+  Monotone by validation rather than construction, and it GIVES UP totality — reintroducing
+  the domain + extrapolation question, including §6a's rule that `\clamp` cannot appear in a
+  chain. Different animal; should not share a constructor with the periodic form.
+- **A list cannot groove its OWN events** — `groove:` lives on the nesting event, so
+  grooving material means wrapping it in a parent. A list-level `groove` ivar folded into
+  `prepare`'s default `place` would fix it.
+- **Not wired to `\mi2`/`\audioItem`.** A `\mi2` child under a rubato parent is already
+  expressible via `sourceTempoMap:` (a map object in item-frame coordinates), by a different
+  route — unifying the two is the milestone 9 chain work.
+- **The time-base twin is unbuilt**: `aTempoMap.swing(1.5)` returning a TempoMap, which
+  lurches the clock so audio time-stretches and sustains change length. Both are wanted;
+  keep them visibly distinct (instance method vs class constructor) or this becomes the
+  `warpTo` two-meanings disease again.
+- **`clump` still has no inverse** — `split(n)`. Why eighth-note swing needs the map built
+  at eighths rather than derived from a quarter-note map.
+- Caveat when applying: a groove on a child containing `\audioItem` tempo-follow does not
+  displace onsets, it TIME-STRETCHES the audio. Fine for MIDI, usually not for a live take.

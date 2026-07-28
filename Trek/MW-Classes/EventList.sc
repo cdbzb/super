@@ -1271,6 +1271,8 @@ EventList {
 	clear {
 		events = List[];
 		preview = nil;
+		tempoMap = nil;
+		beatDur = nil;
 	}
 
 	clearContext { context = List[] }

@@ -213,6 +213,23 @@ assert.(tLines.count { |l| l.contains("AudioItem.roundTripLatency") } == 1,
 	"startup: re-measure replaces, never duplicates");
 assert.(tLines.detect { |l| l.contains("= 0.021;") }.notNil,
 	"startup: replaced with the new value");
+assert.(tLines.count { |l| l.contains("AudioItem.outputLatency") } == 0,
+	"startup: no outputLatency line when none passed");
+// outputLatency rides along on the same write — the MIDI-side term (§9a step 5)
+AudioItem.writeStartupLatency(0.021, tPath, 0.0105);
+tLines = File.readAllString(tPath).split(Char.nl);
+assert.(tLines.detect { |l| l.contains("AudioItem.outputLatency = 0.0105;") }.notNil,
+	"startup: outputLatency pinned alongside the round trip");
+assert.(tLines.count { |l| l.contains("AudioItem.roundTripLatency") } == 1,
+	"startup: round trip still single after adding outputLatency");
+AudioItem.writeStartupLatency(0.03, tPath, 0.015);
+tLines = File.readAllString(tPath).split(Char.nl);
+assert.(tLines.count { |l| l.contains("AudioItem.outputLatency") } == 1,
+	"startup: outputLatency replaced, never duplicated");
+assert.(tLines.detect { |l| l.contains("AudioItem.outputLatency = 0.015;") }.notNil,
+	"startup: outputLatency replaced with the new value");
+assert.(tLines[0] == "s.boot;" and: { tLines[1] == "\"hello\".postln;" },
+	"startup: existing content still preserved after two-line pin");
 File.delete(tPath);
 
 // ------------------------------------------- take numbering ignores strays

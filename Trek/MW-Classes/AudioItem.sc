@@ -8,6 +8,14 @@ AudioItem {
 	// stamp and applied by stamp-based playback resolution (\raw convention: the
 	// file is never trimmed; compensation is a read-side offset).
 	classvar <>roundTripLatency = 0;
+	// The OUTPUT leg alone (seconds) — what MIDI capture needs. A performer aims at
+	// what reached their ears, which is roundTrip's output half beyond the server
+	// sound domain EventList's play epoch is expressed in; the press itself carries
+	// no input latency, so MIDI must not use the full round trip. Audio capture is
+	// the opposite case and correctly uses the whole trip: the voice lands L_in late
+	// in the file AND referenced monitoring that was L_out late, and those add.
+	// Set by measureRoundTrip from the loopback total x the OS-reported split.
+	classvar <>outputLatency = 0;
     classvar <>armed = false;
 	var <>name, <>buffer, <>path, <>recorder;
 	var <>directory, <>takes, stopFunc;
@@ -162,7 +170,16 @@ AudioItem {
 	// result is set on roundTripLatency and (write: true) written to startup.scd
 	// — the right home: per-machine, so it doesn't belong in a shared repo.
 	// Re-measure after buffer-size or interface changes.
-	*measureRoundTrip { |in = 0, out = 0, amp = 0.5, dur = 0.5, write = true, action|
+	// outputLatency is set at the same time: the ping traverses BOTH legs, so the
+	// loopback can only ever yield their sum, and the split comes from CoreAudio
+	// via prQueryOutputShare (0.5 if the helper is unavailable — correct only for
+	// symmetric legs, which is common on a single interface but false for built-in
+	// mic + speakers). Pass outputShare: to override.
+	// Route the cable through the REAL path — the monitoring output you listen to
+	// into the input you record through. An internal TotalMix-style loopback never
+	// reaches a converter and measures the driver, not the rig.
+	*measureRoundTrip { |in = 0, out = 0, amp = 0.5, dur = 0.5, write = true, action,
+		outputShare|
 		var server = Server.default;
 		server.serverRunning.not.if {
 			^"AudioItem.measureRoundTrip: server not running".warn
@@ -183,7 +200,7 @@ AudioItem {
 			(dur + 0.2).wait;
 			buf.loadToFloatArray(action: { |data|
 				var peak = data.abs.maxItem;
-				var idx, rt;
+				var idx, rt, share;
 				(peak < 0.01).if {
 					"measureRoundTrip: no signal (peak %) — is the loopback connected?"
 						.format(peak.round(1e-4)).warn
@@ -191,10 +208,14 @@ AudioItem {
 					// leading edge (first half-peak crossing), not the peak itself
 					idx = data.detectIndex { |x| x.abs > (peak * 0.5) };
 					rt = idx / server.sampleRate;
+					share = outputShare ?? { this.prQueryOutputShare ? 0.5 };
 					roundTripLatency = rt;
-					"measureRoundTrip: % ms (peak %, set on AudioItem.roundTripLatency)"
+					outputLatency = rt * share;
+					"measureRoundTrip: % ms round trip (peak %)"
 						.format((rt * 1000).round(0.01), peak.round(0.01)).postln;
-					write.if { AudioItem.writeStartupLatency(rt) };
+					"  output leg % ms (share %) — set on AudioItem.outputLatency"
+						.format((outputLatency * 1000).round(0.01), share.round(0.001)).postln;
+					write.if { AudioItem.writeStartupLatency(rt, outLatency: outputLatency) };
 					action.(rt);
 				};
 				buf.free;
@@ -202,26 +223,55 @@ AudioItem {
 		}
 	}
 
-	// Idempotently pin `AudioItem.roundTripLatency = <rt>;` in startup.scd:
-	// replaces the existing assignment line if present, else appends one.
-	*writeStartupLatency { |rt, path|
-		var lines, idx, line;
+	// Ask CoreAudio for the output leg's share of the round trip. The loopback only
+	// ever measures the SUM (the ping traverses both legs), so the split has to come
+	// from the driver: device latency + safety offset + buffer frames + stream
+	// latency, per direction. Returns nil when the helper is missing or silent —
+	// callers fall back to 0.5. Note the driver reports only what it can see: on an
+	// ADAT front end the outboard converters are invisible, so trust this for the
+	// RATIO and the loopback for the TOTAL.
+	*prQueryOutputShare { |helper|
+		var line;
+		helper = helper ?? { "~/tank/super/bin/audio-latency.swift".standardizePath };
+		File.exists(helper).not.if { ^nil };
+		line = "% 2>/dev/null".format(helper.shellQuote).unixCmdGetStdOut
+			.split(Char.nl).detect { |l| l.beginsWith("L_out share") };
+		^line !? { line.split($ ).reject(_.isEmpty)[2].asFloat }
+	}
+
+	// Idempotently pin `AudioItem.<name> = <value>;` into a startup.scd line array:
+	// replaces the existing assignment if present, else appends.
+	*prPinLine { |lines, name, value, stamp|
+		var line = "AudioItem.% = %; // loopback-measured %".format(name, value, stamp);
+		var idx = lines.detectIndex { |l| l.contains("AudioItem." ++ name) };
+		idx.notNil.if {
+			lines[idx] = line;
+			^lines
+		};
+		(lines.last.size == 0).if { lines = lines.drop(-1) }; // keep single trailing \n
+		^lines ++ [line]
+	}
+
+	// Pin the measured latencies in startup.scd — per-machine state, deliberately
+	// outside version control. outLatency nil pins only the round trip (the pre-
+	// outputLatency call shape).
+	*writeStartupLatency { |rt, path, outLatency|
+		var lines, stamp;
 		path = path ?? { Platform.userConfigDir +/+ "startup.scd" };
 		File.exists(path).not.if {
 			^"writeStartupLatency: no startup file at %".format(path).warn
 		};
+		stamp = Date.getDate.stamp;
 		lines = File.readAllString(path).split(Char.nl);
-		line = "AudioItem.roundTripLatency = %; // loopback-measured %"
-			.format(rt, Date.getDate.stamp);
-		idx = lines.detectIndex { |l| l.contains("AudioItem.roundTripLatency") };
-		idx.notNil.if {
-			lines[idx] = line;
-		} {
-			(lines.last.size == 0).if { lines = lines.drop(-1) }; // keep single trailing \n
-			lines = lines ++ [line];
+		lines = this.prPinLine(lines, "roundTripLatency", rt, stamp);
+		outLatency.notNil.if {
+			lines = this.prPinLine(lines, "outputLatency", outLatency, stamp)
 		};
 		File.use(path, "w", { |f| f.write(lines.join(Char.nl) ++ Char.nl) });
-		"writeStartupLatency: pinned % in %".format(line, path).postln;
+		"writeStartupLatency: pinned roundTripLatency = % in %".format(rt, path).postln;
+		outLatency.notNil.if {
+			"writeStartupLatency: pinned outputLatency = %".format(outLatency).postln
+		};
 	}
 	// next free take index: one past the highest numbered file, so gaps or
 	// strays (.DS_Store etc.) never cause an existing take to be overwritten

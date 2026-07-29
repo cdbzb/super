@@ -243,13 +243,37 @@ AudioItem {
 	// replaces the existing assignment if present, else appends.
 	*prPinLine { |lines, name, value, stamp|
 		var line = "AudioItem.% = %; // loopback-measured %".format(name, value, stamp);
-		var idx = lines.detectIndex { |l| l.contains("AudioItem." ++ name) };
-		idx.notNil.if {
-			lines[idx] = line;
-			^lines
-		};
+		var closeIdx;
+		// drop any previous pin first, wherever in the file it happens to sit —
+		// the insertion point below decides where the new one belongs
+		lines = lines.reject { |l| l.contains("AudioItem." ++ name) };
+		closeIdx = this.prTrailingBlockClose(lines);
+		closeIdx.notNil.if { ^lines.keep(closeIdx) ++ [line] ++ lines.drop(closeIdx) };
 		(lines.last.size == 0).if { lines = lines.drop(-1) }; // keep single trailing \n
 		^lines ++ [line]
+	}
+
+	// A startup.scd that is one `( var ...; ... )` block is sclang's WHOLE-PROGRAM
+	// form (the cmdlinecode grammar): nothing may follow the closing paren — not
+	// another statement, not even a `;`. Appending our pin after it produced
+	//   ERROR: syntax error, unexpected CLASSNAME, expecting end of file
+	// and sclang then ran NONE of the startup file, silently, since startup output
+	// scrolls past. So when the file ends in such a block, the pin goes INSIDE it.
+	// Returns the index of that closing paren, or nil when the file is a plain
+	// sequence of statements (where appending at the end is correct).
+	*prTrailingBlockClose { |lines|
+		var lastCode, code, cut;
+		lines.do { |l, i|
+			var t = l.stripWhiteSpace;
+			(t.notEmpty and: { t.beginsWith("//").not }).if { lastCode = i }
+		};
+		lastCode.isNil.if { ^nil };
+		// a trailing line comment is whitespace to the parser, so `) // note`
+		// closes the block just as `)` does
+		code = lines[lastCode];
+		cut = code.find("//");
+		cut.notNil.if { code = code.keep(cut) };
+		^(code.stripWhiteSpace == ")").if { lastCode } { nil }
 	}
 
 	// Pin the measured latencies in startup.scd — per-machine state, deliberately

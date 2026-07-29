@@ -2,6 +2,10 @@
 
 Started 2026-06-09. Working branch: `guide-track-features`.
 
+**2026-07-28: V2 rebuild spec'd in `tempomap-v2-design.md`** — one monotone-map core
+(frames, extension policy, combinators, cyclic cells) replacing the map-class zoo.
+That doc owns the new core; this doc stays the journal and owns §6b (song compat).
+
 Goal: unify and extend the tempo-map / quantize machinery so that turning a jittery
 recorded performance into a usable tempo reference is principled, composable, and
 consistent between `TempoMap` and `MIDIItemTempoMap`.

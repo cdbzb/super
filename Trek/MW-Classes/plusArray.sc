@@ -114,9 +114,10 @@
 		quarters = this.pr_getQuarters(quarters);
 		( [TempoMap, MIDIItemTempoMap].includes(quarters.class) ).if{
 			^this.warpToTempoMap(quarters)
-		}{
-			^this.warpToArray(quarters)
-		}
+		};
+		// V2 bridge (tempomap-v2-design.md step 5b): MonoMaps warp via mapSpans
+		quarters.isKindOf(MonoMap).if{ ^quarters.mapSpans(this) };
+		^this.warpToArray(quarters)
 	}
 
 

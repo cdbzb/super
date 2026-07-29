@@ -87,6 +87,13 @@ All produce the same kind of object; pick by what data you have.
   Same map as `fromAnchors` of the cumulative sums.
 - `fromCell(...)` — one period of a cyclic map (swing ratio, wave shape, or anchors).
 - `fromFunction(f, fInv)` — analytic escape hatch; caller guarantees monotone.
+  Built 2026-07-29 as `FunctionMap`. Its `domain` is a *declaration* of where the
+  caller vouches for monotonicity rather than a table bound, so `\carry` there
+  means "the wrapped function is trusted outside the domain" and `\error` is the
+  only way to fence off a region where it is not invertible. Cannot fuse: `bake`
+  returns it unchanged and any chain holding one stays symbolic; `sample(n)` is
+  the explicit, approximate freeze (named apart from `bake`, which is exact by
+  contract).
 
 ## Cyclic maps (changing meters) — `MapSeq`
 
@@ -192,16 +199,44 @@ Two separate vocabularies, never mixed:
       Deliberately `\carry`, not the old clamp.
    b. `array.warpTo(aMonoMap)` → `mapSpans` in the plusArray dispatch — the
       songs' central idiom accepts new maps with no facade surgery.
-   c. `MIDIItemTempoMap.asMonoMap` — producer-minted frames land here: `\sec`
-      frame from take identity, `\beat` frame from the piece, cached so maps
-      from the same take share frames.
-   d. `list.asMonoMap` — EventList's beatToWall/wallToBeat wrapped in a small
-      function-backed map class (the deferred `fromFunction` made real), frames
-      minted per list. Closes the "any tempo source answers the protocol" goal
-      by wrapping, not merging.
+   c. `MIDIItemTempoMap.asMonoMap` — **DONE 2026-07-29.** Exact, not a
+      resampling: `prBuildLinear` builds env/invEnv from precisely the `times`
+      and `beats` the snapshot reads. Its declared extrapolation is already
+      `\carry`, so unlike TempoMap there is no clamp to argue with.
+      `origin: \relative` (default) matches `timeAt`; `\absolute` adds `t0`,
+      matching `EventList.timeAtBeat`. The two are deliberately different axes
+      with different frames — composing them is the t0 bug the frame system
+      exists to catch. Producer-minted frames land here: the `\sec` frame is
+      keyed on the TAKE (the midiEvents array), so several readings of one
+      recording share a wall axis and compose, while the `\beat` frame is keyed
+      on the map, since a different `choiceFunc` is a different reading of the
+      beats. Curved maps are refused rather than silently flattened
+      (`allowCurved: true` takes the linear anchors on purpose) — curved
+      snapshot is DEFERRED until a real need appears; the linear anchors survive
+      `curve` untouched, so nothing is lost by waiting.
+   d. `list.asMonoMap` — **DONE 2026-07-29.** EventList's beatToWall/wallToBeat
+      wrapped in `FunctionMap`, frames minted per list. Closes the "any tempo
+      source answers the protocol" goal by wrapping, not merging. Three
+      decisions worth remembering:
+      - **Live, not a snapshot** — the map reads the list, so later edits to
+        events / tempoMap / beatDur show through. An EventList is a live object
+        and a silently stale snapshot would be worse; `.sample(n)` freezes it.
+        This is the one place the bridges deliberately differ (5a and 5c both
+        snapshot).
+      - **`\error` below beat 0** — `beatToWall` CLAMPS there (returns 0 for any
+        beat <= 0), and a clamped region is not invertible, so the map fences it
+        off instead of carrying it. A pickup before beat 0 now raises where it
+        used to quietly read 0. Above the last event the wrapped function holds
+        its final multiplier, which is honest `\carry`.
+      - The tempoEnv is captured ONCE at construction, because beatToWall
+        memoizes against its identity; `useTempoTrack: false` captures nil
+        instead, which is the materially different base-tempo-only map.
+   Frames for both bridges come from `MapFrame.forSource(source, dimension,
+   slot)`, a strong-keyed registry so that maps off one source land on one axis.
    Internal delegation is demoted to an option held in reserve, exercised only
    if a shared bug ever needs fixing in both engines. (`asMap` was rejected as a
    name: already means Synth-control-to-bus mapping in the class library.)
+   Suite at 255 checks; the compat suite (41) stays green, TempoMap untouched.
 
 Existing suites (tempomap-test 141, groove-test 46) are the porting harness: move
 assertions over before internals.

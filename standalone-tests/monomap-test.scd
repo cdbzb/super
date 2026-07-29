@@ -16,6 +16,8 @@ var wallF = MapFrame(\sec, \wall);
 var c, p, g, spans, b, ch, n2;
 var ms, ms2, cellA, cellB, sw, gr, sn, gsn, dr, cat;
 var m5, cv0, cv1, cv05, q0, q1, qw, qwd, jit, tm, varOf, widths;
+var fm, fmT, fmS, mkNote, fxNotes, fxPlayer, tk1, tk2, mit, mitM, mitA, mitC;
+var el, el2, elM, elFrozen, elFlat;
 
 // ---- MapFrame ----
 assert.(MapFrame(\beat, \a) == MapFrame(\beat, \a), "frame value equality");
@@ -396,6 +398,139 @@ assertArr.([1, 1, 1].warpTo(g), g.mapBeats([1, 1, 1]),
 	"array warpTo TempoMap path unchanged");
 assertArr.([1, 1].warpTo(MapSeq.swing(1.5)), [1.2, 0.8],
 	"warpTo works with any MonoMap (swing MapSeq)");
+
+// ---- FunctionMap (the fromFunction escape hatch, step 5d's substrate) ----
+fm = FunctionMap({ |x| x * 3 }, { |y| y / 3 }, [0, 10], beatF, secF);
+assertClose.(fm.at(2), 6, "function map forward");
+assertClose.(fm.invAt(6), 2, "function map inverse");
+assertArr.(fm.domain, [0, 10], "function map domain is what it declared");
+assertArr.(fm.range, [0, 30], "function map range is the image of its domain");
+assertClose.(fm.inverse.at(6), 2, "function map inverse.at");
+assert.(fm.inverse.fromFrame == secF and: { fm.inverse.toFrame == beatF },
+	"function map inverse swaps frames");
+assertArr.(fm.inverse.domain, [0, 30], "function map inverse domain is the range");
+assert.(fm.bake === fm, "function map does not bake (no exact finite form)");
+assert.(fm.withFrames(listF, wallF).fromFrame == listF, "function map withFrames");
+assert.(throws.({ FunctionMap({ |x| x }) }), "function map needs both directions");
+assert.(throws.({ FunctionMap({ |x| x }, { |y| y }, [5, 1]) }),
+	"function map rejects an empty domain");
+// \carry means "trust the function outside the domain"; \error fences it off
+assertClose.(fm.at(20), 60, "carry trusts the function above the domain");
+fmT = FunctionMap({ |x| x * 3 }, { |y| y / 3 }, [0, 10], beatF, secF, \error, \error);
+assert.(throws.({ fmT.at(-1) }), "\\error below refuses under the domain");
+assert.(throws.({ fmT.at(11) }), "\\error above refuses over the domain");
+assert.(throws.({ fmT.invAt(-1) }), "\\error below guards the OUTPUT axis on invAt");
+assertClose.(fmT.at(10), 30, "the domain end itself is inside");
+// sample: exact on a linear map, frames and policy carried over
+fmS = fm.sample(4);
+assert.(fmS.isKindOf(AnchorMap), "sample freezes to an AnchorMap");
+assert.(fmS.xs.size == 5, "sample n gives n+1 anchors");
+assertClose.(fmS.xs.last, 10, "sample pins the far end of the domain");
+assertClose.(fmS.at(7), 21, "sample of a linear map is exact");
+assert.(fmS.fromFrame == beatF and: { fmS.toFrame == secF }, "sample keeps the frames");
+assert.(throws.({ fm.sample(0) }), "sample rejects n < 1");
+assert.(throws.({ FunctionMap({ |x| x }, { |y| y }).sample }),
+	"sample needs a finite domain");
+
+// ---- 5c: MIDIItemTempoMap.asMonoMap ----
+// anchors at 10, 11, 12, 14 s for beats 0..3 — t0 10, relative times 0,1,2,4
+mit = MIDIItemTempoMap.fromAnchors([10, 11, 12, 14], [0, 1, 2, 3]);
+mitM = mit.asMonoMap;
+assert.(mitM.isKindOf(AnchorMap), "MIDIItemTempoMap.asMonoMap returns an AnchorMap");
+assert.(mitM.mapsDimensions(\beat, \sec), "5c maps beat -> sec");
+assertArr.(mitM.xs, [0, 1, 2, 3], "5c beat anchors are the cumulative beat spans");
+assertArr.(mitM.ys, [0, 1, 2, 4], "5c sec anchors are the relative times");
+assertArr.([0, 0.5, 1, 2, 2.5, 3].collect { |b| mitM.at(b) },
+	[0, 0.5, 1, 2, 2.5, 3].collect { |b| mit.timeAt(b) },
+	"5c agrees with timeAt across the domain");
+assertClose.(mitM.at(4), 6, "5c carries the final tempo past the end, like timeAt");
+assertClose.(mitM.at(-1), -1, "5c carries the first tempo below 0, like timeAt");
+assertClose.(mitM.invAt(4), 3, "5c inverts");
+// absolute origin
+mitA = mit.asMonoMap(origin: \absolute);
+assertArr.(mitA.ys, [10, 11, 12, 14], "origin \\absolute adds t0");
+assertArr.([0, 1.5, 3].collect { |b| mitA.at(b) },
+	[0, 1.5, 3].collect { |b| mit.timeAt(b) + mit.t0 },
+	"origin \\absolute matches timeAt + t0 (EventList.timeAtBeat's idiom)");
+assert.((mitA.toFrame == mitM.toFrame).not,
+	"relative and absolute seconds are different axes");
+assert.(throws.({ mit.asMonoMap(origin: \wall) }), "origin must be relative or absolute");
+// snapshot: no aliasing of the source arrays
+mit.beats = [5, 5, 5];
+assertArr.(mitM.ys, [0, 1, 2, 4], "5c is a snapshot — later mutation does not leak in");
+// frames: shared per take, distinct per map
+mkNote = { |ts, note = 60| (midicmd: \noteOn, type: \mk, timestamp: ts,
+	midinote: note, dur: 0.5, sustain: 0.5, amp: 0.5) };
+fxNotes = [0, 1, 2, 3, 4, 6].collect { |ts| mkNote.(ts) };
+fxPlayer = MIDIItemPlayer(fxNotes, nil);
+tk1 = MIDIItemTempoMap(fxPlayer, { |n| n[0..4] }, [1, 1, 1, 1, 1]);
+tk2 = MIDIItemTempoMap(fxPlayer, { |n| n[0..4] }, [2, 2, 2, 2, 2]);
+assert.(tk1.asMonoMap.toFrame == tk2.asMonoMap.toFrame,
+	"two maps off one take share the wall axis");
+assert.((tk1.asMonoMap.fromFrame == tk2.asMonoMap.fromFrame).not,
+	"different beat readings of one take are different beat axes");
+assert.(tk1.asMonoMap.fromFrame == tk1.asMonoMap.fromFrame,
+	"repeated asMonoMap on one map agrees with itself");
+assert.((tk1.asMonoMap.toFrame == mitM.toFrame).not,
+	"anchor-built maps have no take, so they mint their own wall axis");
+assert.((tk1.asMonoMap >> tk2.asMonoMap.inverse).isKindOf(ComposedMap),
+	"shared wall axis lets one take's maps compose (a beat->beat relabel)");
+// curved maps are refused, not silently flattened
+mitC = MIDIItemTempoMap.fromAnchors([0, 1, 2, 4], [0, 1, 2, 3]).curve(1);
+assert.(throws.({ mitC.asMonoMap }), "a curved map refuses to snapshot");
+assertArr.(mitC.asMonoMap(allowCurved: true).ys, [0, 1, 2, 4],
+	"allowCurved takes the linear anchors, explicitly dropping the curve");
+
+// ---- 5d: EventList.asMonoMap ----
+el = EventList.new;
+el.beatDur = 0.5;
+el.add(8, midinote: 60);
+elM = el.asMonoMap;
+assert.(elM.isKindOf(FunctionMap), "EventList.asMonoMap wraps, not merges");
+assert.(elM.mapsDimensions(\beat, \sec), "5d maps beat -> sec");
+assertClose.(elM.at(4), 2, "5d flat list: beat * beatDur");
+assertClose.(elM.invAt(2), 4, "5d inverts back to beats");
+assertArr.(elM.domain, [0, 8], "5d domain runs to the last event");
+// the clamp at 0 is fenced off rather than carried
+assert.(elM.extendBelow == \error, "5d declares \\error below (beatToWall clamps at 0)");
+assert.(throws.({ elM.at(-1) }), "5d refuses beats below 0 instead of reading a clamped 0");
+assertClose.(elM.at(20), 10, "5d carries above: the list holds its final tempo");
+// \tempoTrack is captured and honoured
+el2 = EventList.new;
+el2.beatDur = 0.5;
+el2.add(0, tempoTrack: 2);
+el2.add(8, midinote: 60);
+assertClose.(el2.asMonoMap.at(4), 4, "5d \\tempoTrack multiplier is in the map");
+assertClose.(el2.asMonoMap(useTempoTrack: false).at(4), 2,
+	"useTempoTrack: false is the base-tempo-only map");
+// live, not a snapshot — and sample is the freeze
+elFrozen = elM.sample(8);
+el.beatDur = 1;
+assertClose.(elM.at(4), 4, "5d is LIVE: a later beatDur change shows through");
+assertClose.(elFrozen.at(4), 2, "sample froze the map at capture time");
+el.beatDur = 0.5;
+// frames are per list, so cross-list composition is refused until rebased
+assert.(throws.({ el.asMonoMap >> el2.asMonoMap.inverse }),
+	"two lists' wall axes do not compose by tag coincidence");
+assert.(el.asMonoMap.fromFrame == el.asMonoMap.fromFrame,
+	"repeated asMonoMap on one list agrees with itself");
+assert.((MapFrame.forSource(el, \beat) == MapFrame.forSource(el, \sec)).not,
+	"one source's beat and sec axes are different frames");
+assert.(MapFrame.forSource(el, \beat) == MapFrame.forSource(el, \beat),
+	"forSource is cached per source and slot");
+assert.((MapFrame.forSource(el, \sec, \relative)
+	== MapFrame.forSource(el, \sec, \absolute)).not,
+	"an explicit slot splits two axes of the same dimension");
+// a list whose tempo track outruns its events still vouches for the whole span
+elFlat = EventList.new;
+elFlat.beatDur = 1;
+elFlat.add(0, tempoTrack: 1);
+elFlat.add(2, tempoTrack: Tuple3(2, 12, \lin));
+assert.(elFlat.asMonoMap.domain[1] >= 12,
+	"5d extent covers a \\tempoTrack ramp running past the last event");
+MapFrame.clearSourceFrames;
+assert.(MapFrame.forSource(el, \beat) != elM.fromFrame,
+	"clearSourceFrames drops the registry (frames are re-minted after)");
 
 (h[\report].() == 0).if { 0.exit } { 1.exit };
 )

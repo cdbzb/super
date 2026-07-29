@@ -1,9 +1,10 @@
 // TempoMap V2 core (see tempomap-v2-design.md). A MonoMap is a strictly
 // increasing map between two named axes, with an inverse. Everything the old
 // map zoo did — TempoMap, PlacedTempoMap, TempoWarp, Groove — is one of these
-// plus combinators. This file is the step-1 core: frames, per-end extension,
-// compose / inverse / place, generic span mapping, and the piecewise-linear
-// implementation. PL fusion, Cyclic cells, and fromFunction come later.
+// plus combinators. This file is the core: frames, per-end extension,
+// compose / inverse / place, generic span mapping, the piecewise-linear
+// implementation with exact fusion, MapSeq tiling, the anchor transforms, the
+// function-backed escape hatch, and the bridges from the old classes.
 //
 // Frames: a MapFrame names a SPECIFIC axis (dimension + tag), not a dimension —
 // two maps compose only when the inner toFrame equals the outer fromFrame,
@@ -16,6 +17,7 @@
 // Total maps (affine) have domain nil; their extension slots are inert.
 
 MapFrame {
+	classvar prSourceFrames;
 	var <dimension, <tag;
 	*new { |dimension = \any, tag|
 		^super.newCopyArgs(dimension.asSymbol, (tag ?? { this.prNextTag }).asSymbol)
@@ -23,6 +25,32 @@ MapFrame {
 	// auto-minted frames are unique: nothing composes with them by accident
 	*mint { |dimension = \any| ^this.new(dimension) }
 	*prNextTag { ^("f" ++ UniqueID.next).asSymbol }
+
+	// A frame minted once per SOURCE OBJECT and cached, so that two maps derived
+	// from the same thing land on the SAME axis and therefore compose. This is
+	// how the bridges mint "producer" frames: a take's wall clock is one axis no
+	// matter how many tempo maps read it, while each map's beat reading is its
+	// own axis. `slot` separates several axes of the SAME dimension off one
+	// source (e.g. a take's relative and absolute seconds); it defaults to the
+	// dimension, so one source's beat and sec axes never collide.
+	// The cache holds its keys strongly — a source object stays alive as long as
+	// its frames are registered; clearSourceFrames drops the lot.
+	*forSource { |source, dimension = \any, slot|
+		var perSource;
+		slot = slot ? dimension;
+		prSourceFrames ?? { prSourceFrames = IdentityDictionary.new };
+		perSource = prSourceFrames.at(source) ?? {
+			var d = IdentityDictionary.new;
+			prSourceFrames.put(source, d);
+			d
+		};
+		^perSource.at(slot) ?? {
+			var f = this.mint(dimension);
+			perSource.put(slot, f);
+			f
+		}
+	}
+	*clearSourceFrames { prSourceFrames = nil }
 	== { |that|
 		^that.isKindOf(MapFrame) and: {
 			dimension == that.dimension and: { tag == that.tag }
@@ -797,6 +825,119 @@ MapSeq : MonoMap {
 	}
 }
 
+// The analytic escape hatch (design doc, "Constructors": fromFunction), made
+// real for step 5d. The caller supplies BOTH directions and guarantees
+// monotonicity — nothing here can check it. Used to wrap a tempo source that
+// already answers both directions (EventList) instead of merging it into the
+// core.
+//
+// Extension policy reads differently here than on the PL maps: \carry means
+// "the wrapped function is trusted outside the domain" (it usually is — an
+// analytic map is defined everywhere, and EventList holds its final tempo past
+// the last event), \error refuses. So `domain` is a DECLARATION of the interval
+// the caller vouches for, not a table bound. It is the only way to fence off a
+// region where the wrapped function is NOT invertible — which is exactly why
+// EventList's map declares \error below beat 0.
+//
+// This map cannot fuse: `bake` returns it unchanged, and any chain containing
+// one stays symbolic, paying the wrapped function on every lookup. `sample` is
+// the explicit, approximate freeze.
+FunctionMap : MonoMap {
+	var <func, <invFunc, prDomain, prRange;
+	*new { |func, invFunc, domain, fromFrame, toFrame, extendBelow, extendAbove|
+		^super.new.initFunctionMap(func, invFunc, domain, fromFrame, toFrame,
+			extendBelow, extendAbove)
+	}
+	// design-doc spelling; same thing
+	*fromFunction { |func, invFunc, domain, fromFrame, toFrame, extendBelow, extendAbove|
+		^this.new(func, invFunc, domain, fromFrame, toFrame, extendBelow, extendAbove)
+	}
+	initFunctionMap { |f, fInv, aDomain, inF, outF, below, above|
+		func = f; invFunc = fInv;
+		(func.isNil or: { invFunc.isNil }).if {
+			Error("FunctionMap: needs both directions — "
+				"a map with no inverse is not a MonoMap").throw
+		};
+		aDomain.notNil.if {
+			prDomain = aDomain.asArray.collect(_.asFloat);
+			(prDomain.size != 2).if {
+				Error("FunctionMap: domain must be [lo, hi], got %".format(aDomain)).throw
+			};
+			(prDomain[1] < prDomain[0]).if {
+				Error("FunctionMap: domain % is empty".format(prDomain)).throw
+			};
+		};
+		fromFrame = this.prAsFrame(inF);
+		toFrame = this.prAsFrame(outF);
+		this.prSetPolicy(below, above);
+	}
+	domain { ^prDomain }
+	// cached: each end costs a call into the wrapped function
+	range { ^prDomain !? { prRange ?? { prRange = [func.value(prDomain[0]), func.value(prDomain[1])] } } }
+
+	at { |x|
+		prDomain.notNil.if {
+			((x < prDomain[0]) and: { extendBelow == \error }).if {
+				this.prExtensionError(x, \below)
+			};
+			((x > prDomain[1]) and: { extendAbove == \error }).if {
+				this.prExtensionError(x, \above)
+			};
+		};
+		^func.value(x)
+	}
+	// the guard is on the OUTPUT axis here; the map is increasing, so below
+	// stays below (same convention as AnchorMap.inverse)
+	invAt { |y|
+		var r = this.range;
+		r.notNil.if {
+			((y < r[0]) and: { extendBelow == \error }).if { this.prRangeError(y, \below) };
+			((y > r[1]) and: { extendAbove == \error }).if { this.prRangeError(y, \above) };
+		};
+		^invFunc.value(y)
+	}
+	inverse {
+		^FunctionMap(invFunc, func, this.range, toFrame, fromFrame,
+			extendBelow, extendAbove)
+	}
+	withFrames { |fromFrame, toFrame|
+		^FunctionMap(func, invFunc, prDomain, fromFrame, toFrame,
+			extendBelow, extendAbove)
+	}
+
+	// Freeze to an AnchorMap by sampling n even steps across the domain.
+	// APPROXIMATE by construction — exact only where the wrapped map is
+	// piecewise linear with its breakpoints on the sample grid. Deliberately NOT
+	// called `bake`: bake is exact by contract, and a function map has no exact
+	// finite form. Frames and extension policy carry over, so the result drops
+	// into any chain the original fitted.
+	sample { |n = 128|
+		var lo, hi, xs;
+		prDomain.isNil.if {
+			Error("FunctionMap.sample: needs a finite domain to sample over").throw
+		};
+		(n.isNumber.not or: { n.asInteger != n } or: { n < 1 }).if {
+			Error("FunctionMap.sample: n must be a positive integer, got %".format(n)).throw
+		};
+		# lo, hi = prDomain;
+		(hi <= lo).if {
+			Error("FunctionMap.sample: domain % has no width".format(prDomain)).throw
+		};
+		xs = (n + 1).collect { |i| lo + ((hi - lo) * i / n) };
+		xs[n] = hi;   // no rounding drift on the far end
+		^AnchorMap(xs, xs.collect { |x| func.value(x) },
+			fromFrame, toFrame, extendBelow, extendAbove)
+	}
+
+	prRangeError { |y, end|
+		Error("%: % outside range % (% end is \\error)"
+			.format(this.class, y, this.range, end)).throw
+	}
+	printOn { |stream|
+		stream << "FunctionMap(" << (prDomain ?? { "total" }) << ")"
+	}
+}
+
 // V2 bridge (tempomap-v2-design.md step 5a): the old world enters the core at
 // explicit seams; TempoMap itself is frozen (see tempomap-compat-test.scd).
 + TempoMap {
@@ -807,5 +948,100 @@ MapSeq : MonoMap {
 		^AnchorMap.fromSpans(beats, durs,
 			fromFrame: fromFrame ? \beat, toFrame: toFrame ? \sec,
 			extendBelow: extendBelow, extendAbove: extendAbove)
+	}
+}
+
+// Step 5c. A MIDIItemTempoMap is already an anchor map wearing a different
+// constructor: prBuildLinear builds env/invEnv from exactly `times` and
+// `beats`, so the snapshot below is EXACT, not a resampling. Its declared
+// extrapolation is already \carry, so unlike TempoMap there is no clamp to
+// argue with.
++ MIDIItemTempoMap {
+	// beat -> sec, snapshotted: later mutation of this map (scaleBeats, trim,
+	// curve) does not leak into the result.
+	//
+	// origin: \relative (default) matches `timeAt` — seconds from the first
+	//   anchor. \absolute adds t0, matching EventList.timeAtBeat's
+	//   `tm.timeAt(beat) + tm.t0`. These are DIFFERENT axes and get different
+	//   frames on purpose: composing a relative map with an absolute one is the
+	//   t0 bug the frame system exists to catch.
+	//
+	// Frames: the \sec frame is keyed on the TAKE (the midiEvents array), so two
+	// maps read off one recording — different choiceFunc, different beat
+	// spellings — share a single wall axis and compose. The \beat frame is keyed
+	// on THIS map, since a different choiceFunc is a different reading of the
+	// beats; repeated asMonoMap calls on one map still agree. Anchor-built maps
+	// (fromAnchors, no MIDI source) have no take and key both on themselves.
+	//
+	// Curved maps are refused rather than silently flattened (design doc: curved
+	// snapshot deferred). The linear anchors survive `curve` untouched, so
+	// allowCurved: true takes them and drops the curve, explicitly.
+	asMonoMap { |fromFrame, toFrame, origin = \relative, allowCurved = false,
+		extendBelow, extendAbove|
+		var ys = times.asArray;
+		#[\relative, \absolute].includes(origin).not.if {
+			Error("MIDIItemTempoMap.asMonoMap: origin must be \\relative or "
+				"\\absolute, got %".format(origin)).throw
+		};
+		(curved and: { allowCurved.not }).if {
+			Error("MIDIItemTempoMap.asMonoMap: this map is curved (curveAmount %) and "
+				"the snapshot would keep only its linear anchors. Pass allowCurved: true "
+				"to drop the curve deliberately.".format(curveAmount)).throw
+		};
+		(origin == \absolute).if { ys = ys + t0 };
+		^AnchorMap.fromAnchors(
+			[0] ++ beats.asArray.integrate, ys,
+			fromFrame: fromFrame ?? { MapFrame.forSource(this, \beat) },
+			toFrame: toFrame ?? { MapFrame.forSource(midiEvents ? this, \sec, origin) },
+			extendBelow: extendBelow, extendAbove: extendAbove)
+	}
+}
+
+// Step 5d. EventList's composed clock (recorded tempoMap x \tempoTrack
+// automation) answers both directions already, so it enters V2 by being
+// WRAPPED, not merged: the goal was "any tempo source answers the protocol",
+// not "one engine".
++ EventList {
+	// beat -> sec, LIVE: the returned map reads this list, so later edits to
+	// events / tempoMap / beatDur show through. That is deliberate — an
+	// EventList is a live object and a silent stale snapshot would be worse —
+	// and it is the one place the bridges differ, since TempoMap.asMonoMap and
+	// MIDIItemTempoMap.asMonoMap both snapshot. Call `.sample(n)` on the result
+	// to freeze it.
+	//
+	// The tempoEnv is captured ONCE, here: beatToWall/wallToBeat take it as an
+	// argument and memoize against its identity, so rebuilding it per lookup
+	// would thrash that cache. useTempoTrack: false captures nil instead, which
+	// is the base-tempo-only map (a materially different map — nil there means
+	// "ignore \tempoTrack events", not "no tempo").
+	//
+	// Extension: \error below, because beatToWall CLAMPS at beat 0 (returns 0
+	// for any beat <= 0) and so does wallToBeat below 0 s. A clamped region is
+	// not invertible and the core does not carry one silently — a pickup before
+	// beat 0 now raises instead of quietly reading 0. Above the last event the
+	// wrapped function holds the final multiplier, which is honest \carry, so
+	// the upper bound only shapes `range` and checkComposable.
+	//
+	// Frames are minted per list, so composing two lists' maps is a hard error
+	// until an explicit rebase affine is inserted between them — the wall frames
+	// really are offset by their tempoMaps' t0 (see prBeatFromSource).
+	asMonoMap { |fromFrame, toFrame, useTempoTrack = true, extendBelow, extendAbove|
+		var tEnv = useTempoTrack.if { this.tempoEnv };
+		^FunctionMap(
+			{ |beat| this.beatToWall(beat, tEnv) },
+			{ |sec| this.wallToBeat(sec, tEnv) },
+			[0, this.prMonoMapExtent(tEnv)],
+			fromFrame ?? { MapFrame.forSource(this, \beat) },
+			toFrame ?? { MapFrame.forSource(this, \sec) },
+			extendBelow ? \error,
+			extendAbove)
+	}
+	// Beat extent this list vouches for: its last event, or the end of the
+	// \tempoTrack automation when that runs past it.
+	prMonoMapExtent { |tEnv|
+		var hi = 0;
+		events.do { |e| hi = max(hi, e[\when] ? 0) };
+		tEnv !? { hi = max(hi, tEnv.times.sum) };
+		^hi
 	}
 }

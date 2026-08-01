@@ -10,7 +10,9 @@ EventList {
 	var <>batchWindow = 0.05, batchEndTime = -1e9, batchFirstWhen = 0;
 	var <>scope, <>voiceSpace;
 	var <solo, <mute;
-	var <>beatDur, <>tempoMap;
+	// tempoMap is getter-only here: the setter (tempoMap_) coerces V2 MonoMaps and
+	// drops the beat->wall cache, so it must not be auto-generated.
+	var <>beatDur, <tempoMap;
 	// §10 prepare/fire: leadTime = prepare budget; first sound lands at exactly
 	// leadTime + latency after play (deterministic — see prPlayPrepared; nil =
 	// adaptive ASAP start). prPlayGen = generation counter letting stop/replay
@@ -593,6 +595,26 @@ EventList {
 			};
 			env
 		}
+	}
+
+	// §12 seam: this list's base clock. A V2 MonoMap is COERCED here, once, into a
+	// concrete AnchorTempoMap — the list must never HOLD a raw MonoMap: every
+	// beatToWall/prBaseWallAt lookup would then pay a symbolic chain's per-event
+	// cost, and a FunctionMap wrapping another EventList (the 5d bridge) would
+	// recurse straight back into this list. rebase: true, because a list clock is
+	// a SHAPE read from beat 0 — prBaseWallAt calls timeAt and never adds t0, so a
+	// map whose seconds start mid-take must not drag the whole list late.
+	// Anything else (a MIDIItemTempoMap, a TempoMap facade, nil) is stored exactly
+	// as it always was.
+	tempoMap_ { |map|
+		tempoMap = map.isKindOf(MonoMap).if { map.asAnchorTempoMap(rebase: true) } { map };
+		// The beat->wall integral is keyed on tempoEnv IDENTITY only, but its
+		// cumulative sums (prWallCum / prWallBase / prWallSubs) are integrals of
+		// the BASE clock — swapping that clock under a retained tempoEnv (which
+		// every caller holds across a batch: prepare, asMonoMap, fire) would keep
+		// serving the old map's seconds. Drop it; the next lookup rebuilds.
+		prWallEnv = nil;
+		^this
 	}
 
 	// Base wall-seconds elapsed across the beat interval [a, b], BEFORE any
@@ -1284,7 +1306,7 @@ EventList {
 	clear {
 		events = List[];
 		preview = nil;
-		tempoMap = nil;
+		this.tempoMap = nil;   // through the setter: also drops the beat->wall cache
 		beatDur = nil;
 	}
 

@@ -447,7 +447,13 @@ EventList {
 				event.put(\when, t);
 				name !? { event.put(\name, name) };
 				previewAt = this.previewAtFor(t);
-				this.gateWithPreviewAt(event, previewAt);
+				// via dispatch, so pattern events get routes/addFunc/type stamping too.
+				// A \type the pattern set is promoted to \newType, else dispatch's
+				// fallback stamp overwrites it with defaultType.
+				(event[\type].notNil and: { event[\newType].isNil }).if {
+					event.put(\newType, event[\type])
+				};
+				this.dispatch(event, { |e| this.gateWithPreviewAt(e, previewAt) });
 				t = t + (event[\dur] ? 1);
 				i = i + 1;
 			}

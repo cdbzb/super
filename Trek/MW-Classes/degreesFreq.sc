@@ -104,8 +104,8 @@ NoteNames {
 		^this.asDegrees(0,octave,scale,tuning,transpose).midiratio
 	}
 
-	q {
-		^[this].q
+	q { arg repeats=1;
+		^[this].q(repeats)
 	}
 
 }

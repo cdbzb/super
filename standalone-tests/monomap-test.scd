@@ -18,6 +18,8 @@ var ms, ms2, cellA, cellB, sw, gr, sn, gsn, dr, cat;
 var m5, cv0, cv1, cv05, q0, q1, qw, qwd, jit, tm, varOf, widths;
 var fm, fmT, fmS, mkNote, fxNotes, fxPlayer, tk1, tk2, mit, mitM, mitA, mitC;
 var el, el2, elM, elFrozen, elFlat;
+var sl, sp, mOff, tsId, qs, st, pt, ssl, stm, msq, mcells;
+var ad, atm, atmInv, atmR, pk, pkF, elT, tmPass, elC, tEnvC;
 
 // ---- MapFrame ----
 assert.(MapFrame(\beat, \a) == MapFrame(\beat, \a), "frame value equality");
@@ -378,6 +380,195 @@ assertClose.(qwd.ys.last - qwd.ys.first, jit.ys.last - jit.ys.first,
 assertArr.(widths.(jit.quantizeWindow(1, 1000)), widths.(jit.quantize(1)),
 	"a window wider than the domain reduces to the global quantize(1)", 1e-12);
 
+// ============ local editing: slices / span transforms (§12 step 1) ============
+// m5: xs [0,1,2,3,4,5], ys [0,1,3,3.5,5,6]
+
+// ---- slices ----
+sl = m5.slices(2);
+assert.(sl.size == 2, "slices at one boundary gives two cells (got %)".format(sl.size));
+assert.(sl.every(_.isKindOf(AnchorMap)), "slices answers AnchorMaps");
+assertArr.(sl[0].xs, [0, 1, 2], "cut at an existing anchor: first cell xs");
+assertArr.(sl[0].ys, [0, 1, 3], "cut at an existing anchor: first cell ys");
+assertArr.(sl[1].xs, [2, 3, 4, 5], "second cell starts AT the cut, in absolute coords");
+assertArr.(sl[1].ys, [3, 3.5, 5, 6], "second cell ys are absolute too");
+assert.(sl[0].xs.last == sl[1].xs.first, "an existing anchor cut is not duplicated");
+assertArr.(sl.collect { |c| c.xs.size }.sum ! 1, [7],
+	"cutting at an anchor adds no anchors (6 + the shared cut)");
+sl = m5.slices([2.5]);
+assertArr.(sl[0].xs, [0, 1, 2, 2.5], "a mid-span cut synthesizes an anchor");
+assertClose.(sl[0].ys.last, m5.at(2.5), "synthesized cut value == at(x), exactly", 1e-15);
+assertClose.(sl[0].ys.last, 3.25, "synthesized cut value is the PL lerp");
+assert.((sl[1].xs.first == 2.5) and: { sl[1].ys.first == sl[0].ys.last },
+	"cells meet bit-exactly at the cut");
+assert.(m5.slices([1, 2.5, 4]).size == 4, "n boundaries give n+1 cells");
+assert.(m5.slices([]).size == 1, "no boundaries: one cell, the whole map");
+assertArr.(m5.slices([]).first.ys, m5.ys, "the no-cut cell is the map itself");
+assert.(throws.({ m5.slices([2, 2]) }), "slices rejects repeated boundaries");
+assert.(throws.({ m5.slices([3, 1]) }), "slices rejects descending boundaries");
+assert.(throws.({ m5.slices(0) }), "slices rejects a boundary at the domain start");
+assert.(throws.({ m5.slices(5) }), "slices rejects a boundary at the domain end");
+assert.(throws.({ m5.slices(7) }), "slices rejects a boundary outside the domain");
+assert.(throws.({ m5.slices(-1) }), "slices rejects a boundary below the domain");
+assert.(throws.({ m5.slices([\two]) }), "slices rejects a non-numeric boundary");
+g = AnchorMap(m5.xs, m5.ys, beatF, secF, \error, \error);
+sl = g.slices([2, 4]);
+assert.(sl.every { |c| (c.fromFrame == beatF) and: { c.toFrame == secF } },
+	"slices carries the frames to every cell");
+assert.((sl[0].extendBelow == \error) and: { sl[0].extendAbove == \carry },
+	"first cell keeps extendBelow; its cut end is \\carry");
+assert.((sl[1].extendBelow == \carry) and: { sl[1].extendAbove == \carry },
+	"an interior cell is \\carry at both cut ends");
+assert.((sl.last.extendBelow == \carry) and: { sl.last.extendAbove == \error },
+	"last cell keeps extendAbove; its cut end is \\carry");
+
+// ---- round trip: slices -> MapSeq -> bake ----
+msq = MapSeq(m5.slices([1, 2.5, 4]), 1, m5.fromFrame, m5.toFrame);
+assertArr.(msq.domain, m5.domain, "the reassembled MapSeq spans the same input extent");
+b = msq.bake;
+assert.(b.isKindOf(AnchorMap), "slices -> MapSeq bakes back to anchors");
+assertArr.(b.xs, [0, 1, 2, 2.5, 3, 4, 5], "round trip keeps every anchor and every cut", 1e-12);
+assertArr.(m5.xs.collect { |x| b.at(x) }, m5.ys,
+	"round trip is exact at every original anchor", 1e-12);
+assert.(h[\maxErrOver].(0, 5, { |t| (b.at(t) - m5.at(t)).abs }, 500) < 1e-12,
+	"round trip is exact across the whole domain");
+
+// ---- transformSpan ----
+tsId = m5.transformSpan(1, 4, { |cell| cell });
+assertArr.(tsId.xs, m5.xs, "identity transformSpan keeps the xs", 1e-12);
+assertArr.(tsId.ys, m5.ys, "identity transformSpan keeps the ys", 1e-12);
+assert.((tsId.xs == m5.xs) and: { tsId.ys == m5.ys },
+	"identity transformSpan is bit-exact on an integer-anchored map");
+assert.((tsId.fromFrame == beatF) and: { tsId.toFrame == secF },
+	"transformSpan carries the frames");
+tsId = m5.transformSpan(1.5, 3.5, { |cell| cell });
+assert.(h[\maxErrOver].(0, 5, { |t| (tsId.at(t) - m5.at(t)).abs }, 400) < 1e-12,
+	"identity transformSpan at non-anchor cuts is the same map (extra anchors only)");
+assertArr.(m5.transformSpan(0, 5, { |c| c.quantize(1) }).ys, m5.quantize(1).ys,
+	"a whole-domain transformSpan is just the transform", 1e-12);
+assert.(throws.({ m5.transformSpan(4, 1, { |c| c }) }), "transformSpan needs from < to");
+assert.(throws.({ m5.transformSpan(2, 2, { |c| c }) }), "transformSpan refuses an empty span");
+assert.(throws.({ m5.transformSpan(-1, 3, { |c| c }) }),
+	"transformSpan refuses a span starting below the domain");
+assert.(throws.({ m5.transformSpan(1, 9, { |c| c }) }),
+	"transformSpan refuses a span running past the domain");
+assert.(throws.({ m5.transformSpan(1, 4, { |c| AnchorMap([0, 5], [0, 3]) }) }),
+	"transformSpan rejects a result whose INPUT width changed");
+assert.(m5.transformSpan(1, 4, { |c| AnchorMap([0, 3], [0, 9]) }).notNil,
+	"transformSpan accepts a from-scratch shape of the right input width");
+assert.(throws.({ m5.transformSpan(1, 4, { |c| 7 }) }),
+	"transformSpan rejects a non-MonoMap result");
+assert.(throws.({ m5.transformSpan(1, 4, { |c| MapSeq.swing(1.5) }) }),
+	"transformSpan rejects a result that does not bake to anchors");
+
+// ---- quantizeSpan ----
+qs = m5.quantizeSpan(1, 4);
+assertArr.(qs.xs, m5.xs, "quantizeSpan keeps the input anchors", 1e-12);
+assertArr.(widths.(qs)[1..3], (4/3) ! 3,
+	"quantizeSpan(1) gives the span's spans its mean slope", 1e-12);
+assertArr.([widths.(qs)[0], widths.(qs)[4]], [1, 1],
+	"spans outside the quantized span keep their widths exactly", 1e-12);
+assertArr.(qs.ys[4..5], m5.ys[4..5],
+	"quantize preserves the span's output extent, so later anchors do not move", 1e-12);
+assertClose.(qs.ys.first, 0, "quantizeSpan leaves the origin alone", 1e-12);
+assertArr.(m5.quantizeSpan(1, 4, 0).ys, m5.ys, "quantizeSpan(amount 0) is the identity", 1e-12);
+
+// ---- origin restoration on a map whose domain does not start at 0 ----
+mOff = AnchorMap([16, 17, 18, 20], [40, 41, 43, 44], beatF, secF);
+sp = mOff.transformSpan(17, 18, { |c| c });
+assert.((sp.xs.first == 16) and: { sp.ys.first == 40 },
+	"transformSpan restores the receiver's origin exactly");
+assertArr.(sp.xs, mOff.xs, "off-origin identity keeps the xs", 1e-12);
+assertArr.(sp.ys, mOff.ys, "off-origin identity keeps the ys", 1e-12);
+sp = mOff.stretchSpan(17, 18, 2);
+assertClose.(sp.at(16), 40, "off-origin edit keeps the first anchor put", 1e-12);
+assertClose.(sp.at(17), 41, "material before the span is untouched", 1e-12);
+assertClose.(sp.at(18), 45, "the span's output width (2) doubled", 1e-12);
+assertClose.(sp.at(20), 46, "material after the span shifts by the delta (+2)", 1e-12);
+
+// ---- stretchSpan ----
+// span [1, 3]: output width 3.5 - 1 = 2.5
+st = m5.stretchSpan(1, 3, 2);
+assertArr.(st.xs, m5.xs, "stretchSpan never touches the input anchors", 1e-12);
+assertClose.(st.ys[1], 1, "stretchSpan leaves earlier anchors alone", 1e-12);
+assertClose.(st.ys[3] - st.ys[1], 5, "factor 2 doubles the span's output width", 1e-12);
+assertClose.(st.ys[2] - st.ys[1], 4,
+	"anchors inside keep their relative proportions (2 of 2.5 -> 4 of 5)", 1e-12);
+assertClose.(st.ys.last - m5.ys.last, 2.5,
+	"later material shifts by the span's original output width", 1e-12);
+assertArr.(widths.(st)[3..4], widths.(m5)[3..4],
+	"spans after the stretched span keep their widths exactly", 1e-12);
+assertArr.(m5.stretchSpan(1, 3, 1).ys, m5.ys, "stretchSpan factor 1 is the identity", 1e-12);
+assert.(throws.({ m5.stretchSpan(1, 3, 0) }), "stretchSpan rejects factor 0");
+assert.(throws.({ m5.stretchSpan(1, 3, -1) }), "stretchSpan rejects a negative factor");
+assert.(throws.({ m5.stretchSpan(1, 3, \x) }), "stretchSpan rejects a non-numeric factor");
+// preserveTotal: total 6, span 2.5 -> 5, so the remaining 3.5 must become 1
+pt = m5.stretchSpan(1, 3, 2, true);
+assertClose.(pt.ys.last - pt.ys.first, m5.ys.last - m5.ys.first,
+	"preserveTotal pins the total output extent", 1e-12);
+assertClose.(pt.ys[3] - pt.ys[1], 5, "preserveTotal still stretches the span itself", 1e-12);
+assertArr.([widths.(pt)[0], widths.(pt)[3], widths.(pt)[4]], [1, 1.5, 1] * (1 / 3.5),
+	"everything outside is scaled by one common factor", 1e-12);
+assert.(widths.(pt).every { |v| v > 0 }, "preserveTotal stays strictly monotone");
+assert.(throws.({ m5.stretchSpan(0, 5, 2, true) }),
+	"preserveTotal errors when the span is the whole domain");
+assert.(throws.({ m5.stretchSpan(1, 3, 3, true) }),
+	"preserveTotal errors when the stretched span would exceed the total");
+assert.(m5.stretchSpan(1, 3, 2.3, true).notNil,
+	"preserveTotal fine right up to the limit (2.5 * 2.3 < 6)");
+
+// ---- setSpanSlope / setSpanTempo ----
+ssl = m5.setSpanSlope(1, 3, 1);
+assertClose.((ssl.ys[3] - ssl.ys[1]) / 2, 1, "setSpanSlope sets the mean slope exactly", 1e-12);
+assertClose.((ssl.ys[2] - ssl.ys[1]) / (ssl.ys[3] - ssl.ys[1]), 2 / 2.5,
+	"setSpanSlope preserves the span's internal shape", 1e-12);
+assertArr.(ssl.xs, m5.xs, "setSpanSlope never touches the input anchors", 1e-12);
+assertClose.(ssl.ys.first, 0, "setSpanSlope leaves the origin alone", 1e-12);
+assertClose.(ssl.ys.last, 6 - 0.5, "setSpanSlope ripples the rest (2.5 s of span -> 2)", 1e-12);
+assert.(throws.({ m5.setSpanSlope(1, 3, 0) }), "setSpanSlope rejects slope 0");
+assert.(throws.({ m5.setSpanSlope(1, 3, -2) }), "setSpanSlope rejects a negative slope");
+assert.(throws.({ m5.setSpanSlope(3, 1, 1) }), "setSpanSlope validates the span too");
+stm = m5.setSpanTempo(1, 3, 2);
+assertClose.(stm.ys[3] - stm.ys[1], 1, "setSpanTempo(2 bps): 2 beats take 1 second", 1e-12);
+assertClose.(m5.setSpanTempo(1, 3, 2).ys.last, m5.setSpanSlope(1, 3, 0.5).ys.last,
+	"setSpanTempo(bps) == setSpanSlope(1/bps)", 1e-12);
+assert.(throws.({ m5.setSpanTempo(1, 3, 0) }), "setSpanTempo rejects bps 0");
+assert.(throws.({ AnchorMap(m5.xs, m5.ys, MapFrame(\beat, \a), MapFrame(\beat, \b))
+		.setSpanTempo(1, 3, 2) }),
+	"setSpanTempo refuses a beat->beat map (a groove has no tempo)");
+assert.(throws.({ AnchorMap(m5.xs, m5.ys, MapFrame(\sec, \a), MapFrame(\beat, \b))
+		.setSpanTempo(1, 3, 2) }),
+	"setSpanTempo refuses a sec->beat map (wrong direction)");
+assert.(AnchorMap(m5.xs, m5.ys, MapFrame(\beat, \a), MapFrame(\sec, \b))
+		.setSpanTempo(1, 3, 2).notNil,
+	"setSpanTempo accepts any beat->sec frames");
+
+// ---- MapSeq.replaceCell / collectCells ----
+mcells = MapSeq([cellA, cellB], 2, beatF, listF, \error, \carry);
+msq = mcells.replaceCell(1, AnchorMap([0, 2], [0, 4]));
+assert.(msq.isKindOf(MapSeq) and: { (msq === mcells).not }, "replaceCell answers a NEW MapSeq");
+assertArr.(msq.outWidths, [3, 4], "replaceCell installs the new cell");
+assertArr.(mcells.outWidths, [3, 2], "replaceCell does not mutate the receiver");
+assert.((msq.repeats == 2) and: { (msq.fromFrame == beatF) and: { msq.toFrame == listF } },
+	"replaceCell keeps repeats and frames");
+assert.((msq.extendBelow == \error) and: { msq.extendAbove == \carry },
+	"replaceCell keeps the per-end extension");
+assertClose.(msq.at(5), 7, "replaceCell changes the values (cycleOut 3 + 4)");
+assertClose.(mcells.at(5), 5, "the original MapSeq still answers its old values");
+assert.(throws.({ mcells.replaceCell(2, cellA) }), "replaceCell rejects an index past the end");
+assert.(throws.({ mcells.replaceCell(-1, cellA) }), "replaceCell rejects a negative index");
+assert.(throws.({ mcells.replaceCell(0.5, cellA) }), "replaceCell rejects a fractional index");
+assert.(throws.({ mcells.replaceCell(0, AffineMap(1, 0)) }),
+	"replaceCell revalidates through the constructor (total cell refused)");
+g = mcells.collectCells { |c| AnchorMap(c.xs, c.ys * 2) };
+assertArr.(g.outWidths, [6, 4], "collectCells maps every cell");
+assertArr.(mcells.outWidths, [3, 2], "collectCells does not mutate the receiver");
+assertClose.(g.at(5), 10, "collectCells changes the values");
+assert.((g.repeats == 2) and: { g.fromFrame == beatF }, "collectCells keeps repeats and frames");
+assertArr.(mcells.collectCells { |c, i| c }.outWidths, [3, 2],
+	"collectCells with an identity func rebuilds the same tiling");
+assert.(throws.({ mcells.collectCells { |c| AffineMap(1, 0) } }),
+	"collectCells revalidates through the constructor");
+
 // ---- bridge: TempoMap.asMonoMap + array warpTo dispatch (step 5a/5b) ----
 g = TempoMap([1, 1, 1, 1], [1, 1, 2, 2]);
 b = g.asMonoMap;
@@ -528,6 +719,87 @@ elFlat.add(0, tempoTrack: 1);
 elFlat.add(2, tempoTrack: Tuple3(2, 12, \lin));
 assert.(elFlat.asMonoMap.domain[1] >= 12,
 	"5d extent covers a \\tempoTrack ramp running past the last event");
+
+// ---- §12 seam: MonoMap -> AnchorTempoMap (the REVERSE bridge) ----
+// beats 0,1,2,3 played at 10, 11, 12, 14 s (the 5c fixture, the other way round)
+ad = AnchorMap([0, 1, 2, 3], [10, 11, 12, 14], MapFrame(\beat, \tk), MapFrame(\sec, \tk));
+atm = ad.asAnchorTempoMap;
+assert.(atm.isKindOf(AnchorTempoMap), "asAnchorTempoMap returns a concrete AnchorTempoMap");
+assertClose.(atm.t0, 10, "rebase: false keeps the first anchor's seconds as t0 (take-absolute)");
+assertArr.(atm.times, [0, 1, 2, 4], "anchor times normalized against t0");
+assertArr.(atm.beats, [1, 1, 1], "beat SPANS come from the map's beat-side anchors");
+// orientation is read from the frame dimensions, so the inverse map converts identically
+atmInv = ad.inverse.asAnchorTempoMap;
+assert.(ad.inverse.mapsDimensions(\sec, \beat), "the inverse really is sec -> beat");
+assertClose.(atmInv.t0, atm.t0, "sec->beat orientation finds the same t0");
+assertArr.(atmInv.times, atm.times, "sec->beat orientation recovers the same times");
+assertArr.(atmInv.beats, atm.beats, "sec->beat orientation recovers the same beats");
+// rebase: the two placements, and round trips against the source map
+atmR = ad.asAnchorTempoMap(rebase: true);
+assertClose.(atmR.t0, 0, "rebase: true puts the first anchor at 0 s (a list clock is a shape)");
+assertArr.(atmR.times, atm.times, "rebase moves the origin only, never the shape");
+assertArr.([0, 0.5, 2, 3, 4].collect { |b| atm.timeAt(b) + atm.t0 },
+	[0, 0.5, 2, 3, 4].collect { |b| ad.at(b) },
+	"rebase false: timeAt + t0 reproduces the source map (carry past the end included)");
+assertArr.([0, 0.5, 2, 3].collect { |b| atmR.timeAt(b) },
+	[0, 0.5, 2, 3].collect { |b| ad.at(b) - 10 },
+	"rebase true: timeAt alone reproduces the source map's shape from 0");
+assertArr.([10, 11.5, 14].collect { |t| atm.beatAt(t - atm.t0) },
+	[10, 11.5, 14].collect { |t| ad.invAt(t) }, "beatAt inverts the source map");
+// refusals: nothing is guessed or silently approximated
+assert.(throws.({ AffineMap(2, 1, beatF, secF).asAnchorTempoMap }),
+	"an AffineMap is total — no finite anchors to hand over");
+assert.(throws.({ AnchorMap([0, 1], [0, 2], MapFrame(\beat, \x), MapFrame(\beat, \y))
+	.asAnchorTempoMap }), "a beat->beat map (a groove) is not a tempo map");
+assert.(throws.({ AnchorMap([0, 1], [0, 2]).asAnchorTempoMap }),
+	"\\any dimensions refuse to guess an orientation (withFrames binds the real axes)");
+assert.(throws.({ fm.asAnchorTempoMap }),
+	"a FunctionMap stays symbolic under bake and is refused (.sample(n) is the freeze)");
+assert.(throws.({ (fm >> AffineMap(2, 0, secF, wallF)).asAnchorTempoMap }),
+	"a chain holding a FunctionMap is refused too");
+assert.(throws.({ MapSeq([AnchorMap([0, 1], [0, 1], beatF, secF)], inf,
+	beatF, secF).asAnchorTempoMap }), "infinite repeats have no finite anchor table");
+assertArr.(fm.sample(4).asAnchorTempoMap.times, fm.sample(4).ys - fm.sample(4).ys.first,
+	"the named way out works: sample(n) then convert");
+
+// peekSource: a lookup that never mints
+pk = EventList.new;
+assert.(MapFrame.peekSource(pk, \beat).isNil, "peekSource on an unknown source is nil");
+assert.(MapFrame.peekSource(pk, \beat).isNil,
+	"peeking twice is still nil — the first peek minted nothing");
+pkF = MapFrame.forSource(pk, \beat);
+assert.(MapFrame.peekSource(pk, \beat) == pkF, "peekSource finds what forSource minted");
+assert.(MapFrame.peekSource(pk, \sec).isNil, "peekSource does not leak across slots");
+
+// ---- §12 seam: EventList.tempoMap_ coercion (extends 5d) ----
+elT = EventList.new;
+elT.tempoMap = ad;
+assert.(elT.tempoMap.isKindOf(AnchorTempoMap),
+	"a MonoMap assigned to tempoMap is coerced to a concrete AnchorTempoMap");
+assert.(elT.tempoMap.isKindOf(MonoMap).not, "the list never holds a raw MonoMap");
+assertClose.(elT.tempoMap.t0, 0, "a list clock is rebased: t0 == 0");
+assertArr.([0, 1, 2.5, 3].collect { |b| elT.tempoMap.timeAt(b) },
+	[0, 1, 2.5, 3].collect { |b| ad.at(b) - 10 },
+	"the stored clock agrees with the source map's values from beat 0");
+assertClose.(elT.baseWallDelta(0, 3), 4, "the coerced clock drives baseWallDelta");
+// non-MonoMap assignment behaves exactly as before
+tmPass = MIDIItemTempoMap.fromAnchors([5, 6, 7], [0, 1, 2]);
+elT.tempoMap = tmPass;
+assert.(elT.tempoMap === tmPass, "a non-MonoMap tempoMap is stored exactly as given");
+assertClose.(elT.tempoMap.t0, 5, "and keeps its own t0 (no rebasing of old-world maps)");
+elT.tempoMap = nil;
+assert.(elT.tempoMap.isNil, "nil still clears the clock");
+// swapping the clock invalidates the memoized beat->wall integral
+elC = EventList.new;
+elC.add(0, tempoTrack: 1);
+elC.add(8, midinote: 60);
+tEnvC = elC.tempoEnv;
+elC.tempoMap = ad;
+assertClose.(elC.beatToWall(3, tEnvC), 4, "beatToWall through the first coerced clock");
+elC.tempoMap = AnchorMap([0, 1, 2, 3], [0, 2, 4, 8], MapFrame(\beat, \tk2), MapFrame(\sec, \tk2));
+assertClose.(elC.beatToWall(3, tEnvC), 8,
+	"assigning a new clock drops the cache keyed on the RETAINED tempoEnv");
+
 MapFrame.clearSourceFrames;
 assert.(MapFrame.forSource(el, \beat) != elM.fromFrame,
 	"clearSourceFrames drops the registry (frames are re-minted after)");

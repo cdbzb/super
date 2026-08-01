@@ -50,6 +50,15 @@ MapFrame {
 			f
 		}
 	}
+	// Non-minting lookup: the frame ALREADY registered for (source, slot), or nil.
+	// forSource mints on a miss and retains the source strongly, so asking a mere
+	// question through it — "is this map's seconds axis that take's relative
+	// axis?" (the warpTo frame check) — would pollute the registry and pin an
+	// object alive for every comparison. `slot` defaults the way forSource's does.
+	*peekSource { |source, slot = \any|
+		var perSource = prSourceFrames !? { prSourceFrames.at(source) };
+		^perSource !? { perSource.at(slot) }
+	}
 	*clearSourceFrames { prSourceFrames = nil }
 	== { |that|
 		^that.isKindOf(MapFrame) and: {
@@ -384,6 +393,230 @@ AnchorMap : MonoMap {
 		newYs = ([ys.first] ++ newW).integrate;
 		newYs[nSpans] = ys.last;
 		^AnchorMap(xs, newYs, fromFrame, toFrame, extendBelow, extendAbove)
+	}
+
+	// ---- Local editing (quantize-tempomap-project.md §12b A). A local edit is
+	// an UNBAKE: `bake` already flattens a MapSeq into an AnchorMap exactly, so
+	// the only missing move is its inverse — cut an AnchorMap into cells, edit
+	// one, reconcatenate. Every transform above is then local for free
+	// (`map.transformSpan(16, 24, _.quantize(1))`) with no new map class. Like
+	// the transforms, these return NEW maps, never mutate, and carry the frames
+	// and the per-end extension policy over unchanged.
+
+	// Cut the domain at `boundaries` (a number, or an array of them: strictly
+	// increasing and strictly inside the open interval (xs.first, xs.last)) and
+	// answer the cells. No boundaries answers one cell, the whole map.
+	//
+	// Cells are in ABSOLUTE coordinates — cell i starts where cell i-1 ended on
+	// both axes — which is what MapSeq wants: it reads a cell's domain[0] (and
+	// its value there) as that cell's local origin, so
+	// `MapSeq(map.slices(bars), 1, map.fromFrame, map.toFrame)` is the map
+	// again, up to the translation to (0, 0) that a MapSeq always imposes
+	// (transformSpan puts the origin back).
+	//
+	// A boundary that is not already an anchor synthesizes one via at(x). That
+	// is EXACT, not a resampling: the map is piecewise linear, so the new anchor
+	// lies on the segment it splits. A boundary that IS an anchor cuts there
+	// without duplicating it.
+	//
+	// Extension: the two outer ends keep the receiver's policy, every interior
+	// cut end is \carry. A cut is not a domain edge — an \error there would be a
+	// map that refuses to be put back together.
+	slices { |boundaries|
+		var raw = boundaries.asArray, cuts, edges, n;
+		raw.any { |x| x.isNumber.not }.if {
+			Error("AnchorMap.slices: boundaries must be numbers, got %"
+				.format(boundaries)).throw
+		};
+		cuts = raw.collect(_.asFloat);
+		cuts.doAdjacentPairs { |a, b|
+			(b <= a).if {
+				Error("AnchorMap.slices: boundaries must be strictly increasing (% then %)"
+					.format(a, b)).throw
+			}
+		};
+		cuts.do { |x|
+			((x <= xs.first) or: { x >= xs.last }).if {
+				Error("AnchorMap.slices: boundary % is not strictly inside the domain %"
+					.format(x, this.domain)).throw
+			}
+		};
+		edges = [xs.first] ++ cuts ++ [xs.last];
+		n = edges.size - 1;
+		^n.collect { |k|
+			var lo = edges[k], hi = edges[k + 1], cellXs, cellYs;
+			cellXs = [lo]; cellYs = [this.prAnchorY(lo)];
+			xs.do { |x, i|
+				((x > lo) and: { x < hi }).if {
+					cellXs = cellXs.add(x); cellYs = cellYs.add(ys[i])
+				}
+			};
+			cellXs = cellXs.add(hi); cellYs = cellYs.add(this.prAnchorY(hi));
+			AnchorMap(cellXs, cellYs, fromFrame, toFrame,
+				(k == 0).if { extendBelow } { \carry },
+				(k == (n - 1)).if { extendAbove } { \carry })
+		}
+	}
+
+	// Apply `func` to ONE span and put the result back. Slices at [from, to]
+	// (no cut where a boundary already IS a domain end), hands the middle cell —
+	// an AnchorMap in the receiver's absolute input coordinates — to func,
+	// reconcatenates, and translates the whole thing back so the first anchor
+	// sits exactly where it did. func may answer any MonoMap that bakes to an
+	// AnchorMap, so the shape can be authored from scratch, not only derived.
+	//
+	// The result's INPUT width may not change: on a beat->sec map the input axis
+	// carries beat NUMBERS, and moving them would relabel every later event.
+	// The OUTPUT width may change freely — everything after the span then shifts
+	// by the delta, which IS the wanted ripple ("bar 5 dragged" -> the take gets
+	// shorter and the following bars keep their shape, translated).
+	transformSpan { |from, to, func|
+		var cells, mid, edited;
+		# cells, mid = this.prSpanCells(from, to, \transformSpan);
+		edited = func.value(cells[mid]);
+		edited.isKindOf(MonoMap).not.if {
+			Error("AnchorMap.transformSpan: func must answer a MonoMap, got %"
+				.format(edited.class)).throw
+		};
+		edited = edited.bake;
+		edited.isKindOf(AnchorMap).not.if {
+			Error("AnchorMap.transformSpan: func's map does not bake to an AnchorMap (got %)"
+				.format(edited.class)).throw
+		};
+		this.prCheckSpanWidth(cells[mid], edited, \transformSpan);
+		^this.prFromCells(cells.copy.put(mid, edited), \transformSpan)
+	}
+
+	// Scale one span's output width by `factor`, keeping its internal shape: a
+	// pure y-scale of the cell about its own start, so anchors inside the span
+	// keep their relative output proportions. factor > 1 makes the span take
+	// longer (slower, on a beat->sec map).
+	//
+	// preserveTotal pins the map's TOTAL output extent by rescaling everything
+	// OUTSIDE the span by one common factor. Widths stay positive under a
+	// positive scale, so monotonicity survives — but the compensating factor
+	// itself must stay positive, i.e. the stretched span must still fit inside
+	// the original total. It is refused rather than fudged, and so is a span
+	// that covers the whole domain (nothing left to compensate with).
+	stretchSpan { |from, to, factor, preserveTotal = false|
+		var cells, mid, spanW, total, k;
+		((factor.isNumber.not) or: { factor <= 0 }).if {
+			Error("AnchorMap.stretchSpan: factor must be > 0, got %".format(factor)).throw
+		};
+		# cells, mid = this.prSpanCells(from, to, \stretchSpan);
+		spanW = cells[mid].ys.last - cells[mid].ys.first;
+		cells = cells.copy.put(mid, cells[mid].prScaledY(factor));
+		preserveTotal.if {
+			(cells.size < 2).if {
+				Error("AnchorMap.stretchSpan: preserveTotal needs material outside the "
+					"span, but [%, %] covers the whole domain %"
+					.format(from, to, this.domain)).throw
+			};
+			total = ys.last - ys.first;
+			k = (total - (spanW * factor)) / (total - spanW);
+			(k <= 0).if {
+				Error("AnchorMap.stretchSpan: factor % leaves no room — the stretched "
+					"span (%) is not shorter than the whole output extent (%)"
+					.format(factor, spanW * factor, total)).throw
+			};
+			cells = cells.collect { |c, i| (i == mid).if { c } { c.prScaledY(k) } };
+		};
+		^this.prFromCells(cells, \stretchSpan)
+	}
+
+	// Set the span's MEAN slope (output units per input unit) exactly while
+	// preserving its internal shape — the stretchSpan factor that lands the
+	// span's output width on slope * input width.
+	setSpanSlope { |from, to, slope|
+		var outW;
+		((slope.isNumber.not) or: { slope <= 0 }).if {
+			Error("AnchorMap.setSpanSlope: slope must be > 0, got %".format(slope)).throw
+		};
+		this.prCheckSpan(from, to, \setSpanSlope);
+		outW = this.prAnchorY(to) - this.prAnchorY(from);
+		^this.stretchSpan(from, to, slope * (to - from) / outW)
+	}
+
+	// beat -> sec only: bps is beats per second, so the target slope is 1/bps
+	// seconds per beat. Guarded on the frame DIMENSIONS rather than duck-typing,
+	// like timeAt/beatAt — asking a groove (beat->beat) for a tempo is a units
+	// error, not a shape error.
+	setSpanTempo { |from, to, bps|
+		this.mapsDimensions(\beat, \sec).not.if {
+			Error("AnchorMap.setSpanTempo: needs a beat -> sec map, this one maps % -> %"
+				.format(fromFrame.dimension, toFrame.dimension)).throw
+		};
+		((bps.isNumber.not) or: { bps <= 0 }).if {
+			Error("AnchorMap.setSpanTempo: bps must be > 0, got %".format(bps)).throw
+		};
+		^this.setSpanSlope(from, to, bps.reciprocal)
+	}
+
+	// the point of the whole exercise: a whole-map transform, applied to a span
+	quantizeSpan { |from, to, amount = 1|
+		^this.transformSpan(from, to, _.quantize(amount))
+	}
+
+	// value at a cut: bit-exact when the cut IS an anchor, the PL lerp otherwise
+	prAnchorY { |x|
+		var i = xs.indexOf(x);
+		^i.notNil.if { ys[i] } { this.at(x) }
+	}
+	// pure output-axis scale about this map's own start. factor 1 answers the
+	// receiver rather than round-tripping through y0 + (y - y0), which is not
+	// bit-exact.
+	prScaledY { |factor|
+		var y0 = ys.first;
+		(factor == 1).if { ^this };
+		^AnchorMap(xs, ys.collect { |y| y0 + ((y - y0) * factor) },
+			fromFrame, toFrame, extendBelow, extendAbove)
+	}
+	prCheckSpan { |from, to, caller|
+		((from.isNumber.not) or: { to.isNumber.not }).if {
+			Error("AnchorMap.%: from and to must be numbers, got % and %"
+				.format(caller, from, to)).throw
+		};
+		(from >= to).if {
+			Error("AnchorMap.%: need from < to, got % and %".format(caller, from, to)).throw
+		};
+		((from < xs.first) or: { to > xs.last }).if {
+			Error("AnchorMap.%: span [%, %] is not inside the domain %"
+				.format(caller, from, to, this.domain)).throw
+		};
+		^this
+	}
+	// [cells, index of the span's cell]. A span end that coincides with a domain
+	// end is NOT cut: slices refuses a boundary there (it would make a
+	// zero-width cell), and there is nothing to keep on that side anyway.
+	prSpanCells { |from, to, caller|
+		var cuts = [];
+		this.prCheckSpan(from, to, caller);
+		(from > xs.first).if { cuts = cuts.add(from) };
+		(to < xs.last).if { cuts = cuts.add(to) };
+		^[this.slices(cuts), (from > xs.first).if { 1 } { 0 }]
+	}
+	prCheckSpanWidth { |cell, edited, caller|
+		var want = cell.xs.last - cell.xs.first;
+		var got = edited.xs.last - edited.xs.first;
+		((got - want).abs > 1e-9).if {
+			Error("AnchorMap.%: the transform changed the span's INPUT width (% -> %); "
+				"input positions are labels and must survive".format(caller, want, got)).throw
+		};
+		^edited
+	}
+	// Reassemble edited cells. A MapSeq of them IS the map again, and bake
+	// flattens it back to anchors — but a MapSeq starts at 0 on both axes, so
+	// the receiver's origin is added back here. Everything is revalidated on the
+	// way through the two constructors, so an edit that broke monotonicity
+	// errors here instead of yielding a bad map.
+	prFromCells { |someCells, caller|
+		var baked = MapSeq(someCells, 1, fromFrame, toFrame, extendBelow, extendAbove).bake;
+		baked.isKindOf(AnchorMap).not.if {
+			Error("AnchorMap.%: the edited cells do not flatten to anchors (got %)"
+				.format(caller, baked.class)).throw
+		};
+		^AnchorMap(baked.xs + xs.first, baked.ys + ys.first,
+			fromFrame, toFrame, extendBelow, extendAbove)
 	}
 
 	// cubic Hermite basis on one span, local u in [0, 1]
@@ -772,6 +1005,26 @@ MapSeq : MonoMap {
 		^MapSeq(cells, repeats, fromFrame, toFrame, extendBelow, extendAbove)
 	}
 
+	// ---- cell editing (quantize-tempomap-project.md §12b A). Non-mutating, so
+	// a bar list is directly editable: the new cell array goes back through the
+	// constructor, which revalidates widths, dimensions and repeats. Everything
+	// else — repeats, frames, per-end extension — is kept, since replacing a
+	// cell reinterprets the same two axes, exactly like AnchorMap's transforms.
+	replaceCell { |i, cell|
+		((i.isNumber.not) or: { i.asInteger != i }
+			or: { i < 0 } or: { i >= cells.size }).if {
+				Error("MapSeq.replaceCell: index % is out of range 0..%"
+					.format(i, cells.size - 1)).throw
+		};
+		^MapSeq(cells.copy.put(i.asInteger, cell), repeats,
+			fromFrame, toFrame, extendBelow, extendAbove)
+	}
+	// func.(cell, index) -> cell
+	collectCells { |func|
+		^MapSeq(cells.collect { |c, i| func.value(c, i) }, repeats,
+			fromFrame, toFrame, extendBelow, extendAbove)
+	}
+
 	// Finite tilings of PL cells flatten to one AnchorMap: translate each
 	// cell's anchors by its cumulative offsets and drop the duplicated joins.
 	// Infinite repeats cannot be finite anchors, and a cell that does not bake
@@ -1043,5 +1296,62 @@ FunctionMap : MonoMap {
 		events.do { |e| hi = max(hi, e[\when] ? 0) };
 		tEnv !? { hi = max(hi, tEnv.times.sum) };
 		^hi
+	}
+}
+
+// §12 seam — the REVERSE bridge. Steps 5a-5d carry the old world INTO V2; this
+// carries a core map back OUT, once, at an explicit boundary, so the old
+// consumers (warpTo's env walk, EventList's beatToWall integral) keep running on
+// the object they already understand and never learn what a MonoMap is.
++ MonoMap {
+	// This map's anchors as a concrete AnchorTempoMap.
+	//
+	// `.bake` first, always: the old engines look the map up per event and have
+	// no way to say "flatten yourself", so the exact PL fusion happens HERE,
+	// where it is still exact, rather than being paid per lookup forever. A map
+	// that cannot bake to finite anchors is refused with the way out named —
+	// guessing (sampling silently) would hand the old world an approximation it
+	// could never tell apart from a recording.
+	//
+	// Two placements, because the two consumers mean different things by the
+	// seconds axis, and AnchorTempoMap's t0 is exactly that difference:
+	//   rebase: false — times pass through, so t0 == the first anchor's sec
+	//     value. That is warpTo's contract: t0 is the ABSOLUTE timestamp at which
+	//     the take's first anchor was played, and warpTo maps around it
+	//     (`timestamp - origin` ... `+ origin`). Take-absolute placement.
+	//   rebase: true — times shift so the first anchor sits at 0 s, hence t0 == 0.
+	//     That is a list clock: an EventList's tempoMap is a SHAPE read from beat
+	//     0 (prBaseWallAt/baseWallDelta call timeAt and never add t0), so a map
+	//     that happens to start 40 s into a take must not push the whole list 40
+	//     s late.
+	// Non-mutating: the receiver is untouched and the result shares no state with it.
+	asAnchorTempoMap { |rebase = false|
+		var baked = this.bake, times, beats;
+		baked.isKindOf(AnchorMap).not.if {
+			baked.isKindOf(AffineMap).if {
+				Error("MonoMap.asAnchorTempoMap: an AffineMap is TOTAL — it has no finite "
+					"anchors to hand over, and an AnchorTempoMap is an anchor table. Slice a "
+					"finite region first, e.g. AnchorMap([lo, hi], [map.at(lo), map.at(hi)], "
+					"map.fromFrame, map.toFrame).").throw
+			};
+			Error("MonoMap.asAnchorTempoMap: % stayed symbolic under bake (a FunctionMap "
+				"link cannot fuse, and a MapSeq with infinite repeats has no finite anchor "
+				"table). Freeze it explicitly with .sample(n), or give the MapSeq finite "
+				"repeats — bake is exact by contract and will not approximate for you."
+				.format(baked.class)).throw
+		};
+		// Orientation comes from the frame DIMENSIONS, never from a guess about
+		// which array "looks like" seconds. \any (an unbound shape) is refused
+		// along with beat->beat grooves: binding real axes is withFrames' job.
+		baked.mapsDimensions(\beat, \sec).if { beats = baked.xs; times = baked.ys } {
+			baked.mapsDimensions(\sec, \beat).if { times = baked.xs; beats = baked.ys } {
+				Error("MonoMap.asAnchorTempoMap: an AnchorTempoMap is a beat<->sec map, but "
+					"this one maps % -> %. Bind the real axes with withFrames(fromFrame, "
+					"toFrame) — the adapter will not guess an orientation."
+					.format(baked.fromFrame.dimension, baked.toFrame.dimension)).throw
+			}
+		};
+		rebase.if { times = times - times.first };
+		^AnchorTempoMap(times, beats)
 	}
 }

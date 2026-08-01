@@ -1189,3 +1189,100 @@ and no extrapolation policy to reconcile when composed (see §6a).
   at eighths rather than derived from a quarter-note map.
 - Caveat when applying: a groove on a child containing `\audioItem` tempo-follow does not
   displace onsets, it TIME-STRETCHES the audio. Fine for MIDI, usually not for a live take.
+
+---
+
+## 12. AnchorMap creation/editing overhaul (2026-07-30 discussion)
+
+Pain points from live use of the `.gui`-based map authoring flow, with diagnosis, then
+the design. Theme: local editing = **unbake** — `bake` already flattens MapSeq →
+AnchorMap exactly; the missing move is the inverse (cut an AnchorMap into cells, edit
+one, reconcatenate). This makes "fix the tempo of bars 5–6" an ordinary algebra
+expression instead of a new feature.
+
+### 12a. Diagnosis
+
+1. **Throat-clearing notes at the start of a take.** No mechanism ignores them.
+   `gui` sets `start = notes[0].timestamp` (`MIDI-Item2.sc:41`), so cursor, playback,
+   and view all begin at junk. Worse: `warpTo` (`MIDI-Item2.sc:1579`) extrapolates
+   below the first anchor at the boundary tempo, so a destructive quantize maps junk
+   notes to NEGATIVE beats and they ride silently through `asEventList`. The map is
+   fine (domain starts at the first selected anchor); the item/gui level has no
+   "content starts here" concept.
+2. **Beat playback doesn't start cleanly.** `scheduleClicks` (`MIDI-Item2.sc:66`)
+   reads `gridLines`, which exist ONLY in extrapolate mode — a saved selection has a
+   beat grid (`\selBeat` markers) but no click path. No count-in; cursor placement is
+   free (alt-click, unsnapped) so playback rarely starts ON a beat; the first click at
+   delta 0 on a freshly-cleared clock races the note bundle.
+3. **No local tempo correction.** Every transform is whole-map: `quantize` /
+   `quantizeWindow` / `clump` / `curve` (`MonoMap.sc:334/358/269/294` + the
+   MIDIItemTempoMap mirrors). `quantizeWindow` smooths locally but cannot TARGET a
+   span. `trim` extracts a span but nothing puts an edited span back.
+4. **No tempo visualization.** drawFunc shows notes + grid lines; the map's slope
+   (the tempo) is never drawn.
+
+### 12b. Design
+
+**A. Algebra — local edit = unbake (MonoMap.sc; step 1, build first).**
+- `AnchorMap.slices(boundaries)` → array of finite cells cut at input-axis positions
+  (bar lines, in beats for a beat→sec map). A boundary mid-span synthesizes its anchor
+  via `at(x)` — exact, the map is PL. Cells keep the receiver's frames; interior cut
+  ends are `\carry`, the two outer ends keep the receiver's policy. Round trip
+  `slices → MapSeq → bake` is lossless.
+- `AnchorMap.transformSpan(from, to, func)` — slice at [from, to], apply `func` to the
+  middle cell, reconcatenate, bake, restore the receiver's origin (first anchor stays
+  at the same (x, y)). The result's input width must equal the original (beats are
+  labels and must survive); output width may change — later material shifts on the
+  output axis, which IS the wanted ripple semantics for "bar 5 too slow". Every
+  existing transform becomes local for free:
+  `map.transformSpan(16, 24, _.quantize(1))`.
+- Span sugar: `stretchSpan(from, to, factor, preserveTotal: false)` (scale the span's
+  output widths; `preserveTotal` compensates by rescaling the rest so the total output
+  extent is pinned), `setSpanSlope(from, to, slope)` (span's mean slope set exactly,
+  shape within preserved, = stretchSpan with the implied factor), `setSpanTempo(from,
+  to, bps)` (beat→sec maps only, = `setSpanSlope(1/bps)`), `quantizeSpan(from, to,
+  amount)`.
+- MapSeq gets `replaceCell(i, cell)` / `collectCells(func)` — non-mutating, so the
+  bar list itself is directly editable and revalidated by the constructor.
+- No new map classes; pure language, suite-first.
+
+**B. Throat clearing.**
+- Selection carries it: the `w` save gains `contentStart` (time of the first selected
+  note, or an explicit marker); new gui key (`x` = trim intro to cursor/selection).
+- `warpTo`/`quantize` grow a policy: drop (or leave unwarped, flagged) events before
+  beat 0 instead of extrapolating them negative.
+- Item level: `mi.selection.fromSelection` ≡ `from(firstAnchorTime)` — junk gone
+  before any downstream use.
+
+**C. Clean beat playback.**
+- Click grid built from the SAVED selection map (`\selBeat` + `tempomap`), not just
+  the live extrapolate grid — clicks work whenever a selection is loaded.
+- Snap cursor to nearest beat on alt-click when a grid exists (shift-alt-click free).
+- Count-in: N clicks at the local tempo (slope at the start beat) before playback,
+  notes delayed by the count-in.
+- First click scheduled with the same latency epoch as the note bundle.
+
+**D. Tempo viz + editor rework.**
+- Phase 1 (cheap): a tempo-lane strip at the top of the existing gui — bpm(t) step
+  line from the map's slopes (curved overlay when `curved`), beat ticks from the
+  grid, bpm numbers per segment. Immediately shows "bar 12 sags".
+  Per-bar shading DEFERRED (2026-07-31): nothing in the system groups beats into
+  bars, and Michael uses shifting meters — a bar concept (likely `clump`-style
+  cycled group sizes stored as `sel[\meter]`, feeding both viz and bar-wise
+  transforms) waits until a real need forces the design.
+- Phase 2 (first principles): a `MapEditor` controller separate from the piano roll,
+  built TOGETHER with the §9c step-1 `BeatMarkMode` extraction (same refactor). Model
+  = immutable AnchorMap + undo stack (immutability makes undo an array of maps —
+  free). Tempo-lane view: drag anchors, click-drag selects a beat span, keys apply
+  `transformSpan` ops (quantize / curve / stretch / clump / set-bpm) to the
+  selection, audition = clicks through the candidate map before commit. Host hooks
+  (`drawOver`, `audition`, `onSave`) so the same controller sits over the MIDI piano
+  roll now and the audio waveform later.
+
+### 12c. Build order
+
+1. A — `slices` / `transformSpan` / span sugar + suite (pure language; unblocks all).
+2. B — trim intro (small, kills a daily annoyance).
+3. C — clicks from selection + snap + count-in.
+4. D phase 1 — tempo lane.
+5. D phase 2 — MapEditor + BeatMarkMode extraction (biggest, last).

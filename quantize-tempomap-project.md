@@ -1279,6 +1279,39 @@ expression instead of a new feature.
   (`drawOver`, `audition`, `onSave`) so the same controller sits over the MIDI piano
   roll now and the audio waveform later.
 
+### 12d. Terminology (pinned 2026-08-01)
+
+Extent-words were proliferating (old `TempoMap(beats, durs)` vs Patterns `\dur`
+vs V2 `spans` — note `durs` already contradicts itself: seconds in TempoMap,
+beats in Patterns). Rule: ONE vocabulary per layer, committed API not renamed.
+
+- **Core (MonoMap)**: positions = `anchors`/`xs`/`ys`; widths between adjacent
+  anchors = `spans`, axis-neutral on purpose (a groove's widths are neither
+  beats-vs-seconds nor durs); the edited region [from, to] = the `*Span` method
+  family. A `*Span` method never takes a `spans` parameter — that was the
+  double-meaning in the original retimeSpan sketch.
+- **Item level (players)**: Patterns world, so widths are `durs` in beat units
+  with IOI semantics (`\dur` = time to next event; sustain separate; rests fold
+  into the previous dur). `"e. s q q. e".beats` produces exactly these.
+- `quantizeWindow`'s `window` = smoothing kernel width — a different concept,
+  unchanged.
+
+### 12c'. retimeSpan + onsets (settled 2026-08-01, after discussion)
+
+Picking ISOLATED from transforming (auto-pick judged too fragile to bury):
+
+- `player.onsets(fromBeat, toBeat)` — pure query: beat window -> performed time
+  window through the loaded selection map -> noteOn timestamps in it, chord
+  clusters (< 30 ms) deduped to one rhythmic event. Inspect/edit the result
+  when auto-picking misfires (grace notes, stray chord tones).
+- `player.retimeSpan(from, durs, onsets, to)` — re-anchor: the map gains
+  anchors pairing each performed onset with its intended beat position
+  (cumulative durs from `from`). Onsets REQUIRED (no picking inside);
+  `onsets.size == durs.size` or error listing what it got; `to` defaults to
+  `from + durs.sum`; boundary times kept so there is NO ripple (moving the
+  bar itself stays stretchSpan's job); returns the new map, non-mutating —
+  caller picks `warpTo` (destructive) vs `sourceTempoMap:` (non-destructive).
+
 ### 12c. Build order
 
 1. A — `slices` / `transformSpan` / span sugar + suite (pure language; unblocks all).

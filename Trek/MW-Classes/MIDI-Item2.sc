@@ -2344,6 +2344,170 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			(dt > 1e-9).if { 60 * beat / dt }
 		}
 	}
+	// §12c': the PICKING half of the retime flow — performed onsets inside a
+	// BEAT window, deliberately kept out of retimeSpan (auto-picking judged too
+	// fragile to bury: grace notes, stray chord tones and a missed event all
+	// want an eye on the result, and a query you can print and edit is that eye).
+	// Needs a loaded selection, like every beat-addressed method here.
+	//
+	// The window is [fromBeat, toBeat) run through the selection's tempomap, so
+	// it is asked in beats and answered in ABSOLUTE performed seconds — which is
+	// exactly what retimeSpan's `onsets` argument takes. Half-open on purpose:
+	// onsets(0, 4) ++ onsets(4, 8) partitions the take with nothing counted
+	// twice, and the next bar's downbeat — which retimeSpan reads off the MAP,
+	// never off a played note — cannot sneak in as an extra event.
+	//
+	// `choice` is a picker, `{ |note, i| bool }` over the noteOn events (the
+	// `filter` choiceFunc convention, minus the midicmd sugar — everything here
+	// is a note already; `i` indexes this.notes). Applied BEFORE windowing and
+	// dedupe, so a register band or an amp floor costs a lambda instead of a
+	// filter-player round trip: onsets(20, 24, choice: { |n| n.midinote < 60 }).
+	// nil keeps every note.
+	//
+	// dedupe (seconds, 0 or negative disables): a chord is ONE rhythmic event,
+	// so onsets closer together than this collapse to the FIRST of the cluster.
+	// The comparison is between SUCCESSIVE onsets, not against the kept one, so
+	// a rolled chord chains into a single event however long the roll — the
+	// reading that matches how a spread chord is played. A genuinely fast
+	// passage wants a smaller dedupe (or 0) and a look at the result.
+	onsets { |fromBeat, toBeat, dedupe = 0.03, choice|
+		var tm, lo, hi, picked, times, out, prev;
+		var eps = 1e-9;
+		(this.selectedNotes.size > 0 or: { currentSelection.notNil }).not.if {
+			"onsets needs a loaded selection — use .selection first".postln;
+			^[]
+		};
+		(fromBeat.isNumber.not or: { toBeat.isNumber.not }).if {
+			("onsets: fromBeat and toBeat must be numbers (% and %)"
+				.format(fromBeat, toBeat)).warn;
+			^[]
+		};
+		(toBeat <= fromBeat).if { ^[] };   // empty window, quietly
+		tm = this.tempomap;
+		lo = this.timeAtBeat(fromBeat, tm);
+		hi = this.timeAtBeat(toBeat, tm);
+		picked = this.notes;
+		choice !? { picked = picked.select { |e, i| choice.(e, i) } };
+		// eps on BOTH ends: float dust must not make an onset that IS the span
+		// start miss it, nor one that IS the end creep in (the end is exclusive)
+		times = picked.collect(_.timestamp)
+			.select { |t| (t >= (lo - eps)) and: { t < (hi - eps) } }
+			.sort;
+		(dedupe.isNumber.not or: { dedupe <= 0 }).if { ^times };
+		out = [];
+		times.do { |t|
+			(prev.isNil or: { (t - prev) >= dedupe }).if { out = out.add(t) };
+			prev = t;
+		};
+		^out
+	}
+	// §12c': re-anchor ONE beat span onto the onsets that were actually played —
+	// "this bar is five events, and here is when each of them sounded". The
+	// canonical call is the composition of the two halves:
+	//
+	//     m2 = p.retimeSpan(20, "ex x q qe e".beats, p.onsets(20, 24));
+	//     q  = p.warpTo(m2);            // destructive, or
+	//     list.sourceTempoMap = m2;     // non-destructive — both take a MonoMap
+	//
+	// (the doc's "e. s q q. e" spelling is not in String.beats' vocabulary — it
+	// has no dots and no `s`; "ex x q qe e" is that same rhythm in the tokens the
+	// parser does know, since a token's chars SUM: ex == dotted eighth.)
+	//
+	// `durs` are ITEM-LEVEL widths (§12d): beat-unit IOIs, one per rhythmic
+	// event, precisely what `.beats` yields — a String is parsed for you, same
+	// precedent as `tempomap`. `to` is the span's end beat, defaulting to
+	// from + durs.sum; when given it is a CHECK, not a rescale — a disagreement
+	// means a miscounted bar, and quietly stretching the rhythm to fit would
+	// bury it.
+	//
+	// `onsets` is REQUIRED and never picked here (see `onsets`, the query above):
+	// one performed time per dur, increasing, the first being the event AT beat
+	// `from`. Each later onset pairs with the cumulative dur position.
+	//
+	// NO RIPPLE: both of the span's boundary times are read off the CURRENT map,
+	// not off the onsets, so only events inside the span move — displacing the
+	// bar itself stays stretchSpan's job. That falls out of the algebra rather
+	// than being imposed: the edited cell's output width is (map time of `to`)
+	// minus the first onset, and the first onset is required to sit at the span
+	// start (see the tolerance below), so the width is the one it replaced.
+	//
+	// Non-mutating: receiver, selection and map are untouched, and the result is
+	// a plain AnchorMap (beat -> absolute take seconds) for the caller to apply.
+	retimeSpan { |from, durs, onsets, to|
+		var map, sum;
+		(this.selectedNotes.size > 0 or: { currentSelection.notNil }).not.if {
+			Error("retimeSpan needs a loaded selection — use .selection first").throw
+		};
+		durs.isString.if { durs = durs.beats };
+		durs = durs.asArray;
+		(from.isNumber.not).if {
+			Error("retimeSpan: from must be a beat number, got %".format(from)).throw
+		};
+		(durs.isEmpty or: { durs.every { |d| d.isNumber and: { d > 0 } }.not }).if {
+			Error("retimeSpan: durs must be a non-empty array of positive beat-unit "
+				"IOIs, got %".format(durs)).throw
+		};
+		sum = durs.sum;
+		to = to ?? { from + sum };
+		(to.isNumber.not).if {
+			Error("retimeSpan: to must be a beat number, got %".format(to)).throw
+		};
+		(((to - from) - sum).abs > 1e-9).if {
+			Error("retimeSpan: the durs span % beats but [%, %] is % beats — `to` is a "
+				"check, not a rescale, so fix the count or leave `to` out"
+				.format(sum, from, to, to - from)).throw
+		};
+		onsets.isNil.if {
+			Error("retimeSpan: onsets is required — % durs, no onsets. This method never "
+				"picks; query them first, e.g. p.onsets(%, %)".format(durs.size, from, to)).throw
+		};
+		onsets = onsets.asArray;
+		onsets.every(_.isNumber).not.if {
+			Error("retimeSpan: onsets must be performed times in seconds, got %"
+				.format(onsets)).throw
+		};
+		(onsets.size != durs.size).if {
+			Error("retimeSpan: % onsets for % durs — one onset per rhythmic event. "
+				"Got: %".format(onsets.size, durs.size, onsets)).throw
+		};
+		onsets.differentiate.drop(1).every(_ > 0).not.if {
+			Error("retimeSpan: onsets must be strictly increasing, got %".format(onsets)).throw
+		};
+		// The committed algebra (§12b A): snapshot beat -> ABSOLUTE seconds (the
+		// axis the onsets live on), then edit exactly one cell. transformSpan
+		// slices, hands the cell over, reconcatenates and restores the origin, so
+		// nothing outside [from, to] is touched.
+		map = this.tempomap.asMonoMap(origin: \absolute);
+		^map.transformSpan(from, to, { |cell|
+			// tolerance: HALF the first dur's performed width under the current
+			// map. Past that the first onset is nearer some other intended
+			// position than the span start — nearest-grid-point reasoning, the
+			// same half-a-gap boundary quantizing uses — which in practice means
+			// the wrong span, or a leading onset too many/few. Cheap to widen by
+			// asking for the right window; expensive to discover after a warp.
+			var lo = cell.at(from), hi = cell.at(to);
+			var tol = 0.5 * (cell.at(from + durs[0]) - lo);
+			((onsets.first - lo).abs > tol).if {
+				Error("retimeSpan: beat % sits at % s in the current map, but the first "
+					"onset is at % s — off by % s, more than half the first dur's "
+					"performed width (% s). Wrong span, or a missing/extra leading onset?"
+					.format(from, lo, onsets.first, onsets.first - lo, tol)).throw
+			};
+			(onsets.last >= (hi - 1e-9)).if {
+				Error("retimeSpan: the last onset (% s) is at or past the span's end "
+					"(beat % = % s) — every onset must lie inside the span's performed "
+					"window.".format(onsets.last, to, hi)).throw
+			};
+			// beat widths = durs; performed widths = the gaps between the onsets,
+			// closed by the span's end time from the map (never from a note).
+			// x0/y0 keep the cell in the receiver's absolute coordinates like the
+			// one `slices` handed over — MapSeq re-glues either way, but an
+			// inspectable cell is worth the two keywords.
+			AnchorMap.fromSpans(durs, (onsets ++ [hi]).differentiate.drop(1),
+				x0: from, y0: onsets.first,
+				fromFrame: cell.fromFrame, toFrame: cell.toFrame)
+		})
+	}
 	// sub-player between two beat positions — beat-domain mirror of fromNote;
 	// needs a loaded selection (or explicit beats/choiceFunc via .tempomap first)
 	fromBeat { |from, to, trim = true|

@@ -68,15 +68,15 @@ assertArr.(p.onsets(4, 3), [], "onsets: reversed window -> []");
 // are performed seconds 4..6, which holds three of the five events.
 assertArr.(p.onsets(4, 6), [4, 4.9, 5.1], "onsets: a partial window stops where asked");
 
-// choice: a picker over the noteOns (filter's choiceFunc convention), applied
+// choiceFunc: a picker over the noteOns (filter's choiceFunc convention), applied
 // BEFORE the window and the dedupe
-assertArr.(p.onsets(4, 8, choice: { |n| n.midinote < 71 }), [4, 4.9],
-	"onsets: choice narrows to a register");
-assertArr.(p.onsets(4, 8, choice: { |n| n.midinote > 200 }), [],
-	"onsets: a choice that keeps nothing -> []");
-assertArr.(p.onsets(4, 8, choice: { |n, i| i.even }), [4, 5.1, 7.4],
-	"onsets: choice gets the note AND its index");
-assertArr.(p.onsets(4, 8, choice: nil), ons, "onsets: choice nil keeps every note");
+assertArr.(p.onsets(4, 8, choiceFunc: { |n| n.midinote < 71 }), [4, 4.9],
+	"onsets: choiceFunc narrows to a register");
+assertArr.(p.onsets(4, 8, choiceFunc: { |n| n.midinote > 200 }), [],
+	"onsets: a choiceFunc that keeps nothing -> []");
+assertArr.(p.onsets(4, 8, choiceFunc: { |n, i| i.even }), [4, 5.1, 7.4],
+	"onsets: choiceFunc gets the note AND its index");
+assertArr.(p.onsets(4, 8, choiceFunc: nil), ons, "onsets: choiceFunc nil keeps every note");
 
 // -------------------------------------------------------------- chord dedupe
 // same take with an extra chord tone 10 ms after the 4.9 event — one rhythmic
@@ -93,10 +93,10 @@ assertArr.(chord.onsets(4, 8, dedupe: 0.005), [4, 4.9, 4.91, 5.1, 6.1, 7.4],
 	"onsets: a dedupe below the gap keeps both");
 assertArr.(chord.onsets(4, 8, dedupe: 0.5), [4, 4.9, 6.1, 7.4],
 	"onsets: a wide dedupe chains 4.9/4.91/5.1 into one cluster, first kept");
-// choice runs FIRST: keeping only the low tone yields 4.91, which a
+// choiceFunc runs FIRST: keeping only the low tone yields 4.91, which a
 // dedupe-then-pick order could never return (4.91 would already be gone)
-assertArr.(chord.onsets(4, 8, choice: { |n| n.midinote < 60 }), [4.91],
-	"onsets: choice is applied BEFORE dedupe (the second chord tone survives alone)");
+assertArr.(chord.onsets(4, 8, choiceFunc: { |n| n.midinote < 60 }), [4.91],
+	"onsets: choiceFunc is applied BEFORE dedupe (the second chord tone survives alone)");
 
 // ------------------------------------------------------- no selection / args
 bare = mkPlayer.([60, 62, 64], 1);

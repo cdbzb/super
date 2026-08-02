@@ -16,6 +16,7 @@ var mkPlayer, onsets, stamps, shortenNote, sameArr;
 var throws = { |fn| var t = false; try { fn.value } { t = true }; t };
 var p, sliced, q, qKeep, plain, noJunk, cc, ccOut, warpedPlain, held, item;
 var tm, mono, monoRel, manual, other, otherRel;
+var flush, selA, seed, oldFolder;
 
 "== trim intro (§12B) tests ==".postln;
 
@@ -29,9 +30,9 @@ mkPlayer = { |midinotes, durs, indices, coords|
 onsets = { |pl| pl.notes.collect(_.timestamp) };
 stamps = { |pl| pl.midiEvents.collect(_.timestamp) };
 // asMIDIItem lays notes end to end, so a junk note's release lands EXACTLY on the
-// next onset — which `notesStraddling` (>=) counts as straddling. A real take has
-// a gap there, so open one by releasing the note early (the straddling case is
-// pinned separately at the end).
+// next onset. A note occupies [timestamp, timestamp + sustain), so that note is
+// already over and does NOT straddle (pinned below) — but a real take has an
+// audible gap there, so these fixtures open one by releasing the note early.
 shortenNote = { |pl, noteIdx, newSustain|
 	var note = pl.notes[noteIdx];
 	var off = pl.midiEvents.detect { |e|
@@ -82,6 +83,23 @@ sliced = held.fromSelection;
 assert.(sliced.notes.size == 5, "straddler: a junk note held past the start is kept");
 assertClose.(sliced.notes.first.timestamp, 0, "straddler: clipped to the content start");
 assertClose.(sliced.notes.first.sustain, 0.4, "straddler: sustain clipped by the removed head");
+
+// The boundary itself: a note RELEASED exactly at the content start is over, not
+// straddling — occupancy is half-open [timestamp, timestamp + sustain), matching
+// onsets/beatTimes' [from, to) windows. When the release end was >=, `from` took
+// it as a straddler and clipped it to sustain 0: a silent ghost noteOn at the
+// slice start. asMIDIItem lays notes end to end, so this fixture IS that edge.
+p = mkPlayer.([48, 60, 62, 64, 65], [0.5, 1, 1, 1, 1], [1, 2, 3, 4]);
+assertClose.(p.notes[0].timestamp + p.notes[0].sustain, 0.5,
+	"boundary fixture: the junk note is released exactly at the content start");
+assert.(p.notesStraddling(0.5).size == 0,
+	"notesStraddling: a note released exactly at the boundary is NOT straddling");
+assert.(p.notesStraddling(0.4).size == 1,
+	"notesStraddling: a note still sounding at the boundary IS straddling");
+sliced = p.fromSelection;
+assert.(sliced.notes.size == 4, "boundary: no ghost note at the slice start");
+assert.(sliced.notes.every { |e| e.sustain > 0 }, "boundary: no zero-sustain ghost survives");
+assert.(sliced.notes.every { |e| e.midinote != 48 }, "boundary: the junk pitch is really gone");
 
 // legacy index-based selection (no \selBeat markers) resolves the same start
 p = shortenNote.(mkPlayer.([48, 60, 62, 64, 65], [0.5, 1, 1, 1, 1]), 0, 0.4);
@@ -204,6 +222,41 @@ assert.(throws.({ p.warpTo(otherRel) }).not,
 	"a map off ANOTHER take is foreign — trusted, not refused");
 assert.(throws.({ p.warpTo(mono) }).not,
 	"the absolute map is still accepted after a relative one exists for the take");
+
+// ------------------------------------ selection versioning (addSelection \manual)
+// Parked in this suite for want of one covering MIDIItem selection persistence.
+// \manual is the hand-picked/grid-picked partition of \indices and the gui cannot
+// recover it from \indices on reload, so two saves differing only there are two
+// selections — it belongs in addSelection's dedupe key set.
+//
+// No disk: the dedupe branch returns before this.save, and for the append branch
+// MIDIItem.folder is nil'd so save raises (on `nil +/+ name`) BEFORE any file
+// operation. The version list is appended to before save is called, so what is
+// asserted — that the save was not treated as a duplicate — still holds.
+item = [midinote: [60, 62, 64, 65], dur: 1].asMIDIItem;
+seed = { |sel| var d = Dictionary.new; d[0] = List[sel]; item.instVarPut(\beatSelections, d) };
+flush = { |sel| try { item.addSelection(0, sel) } { } };   // swallows the save raise
+
+selA = (indices: [0, 1, 2], beats: [1, 1], manual: [0, 1]);
+seed.(selA);
+oldFolder = MIDIItem.folder;
+MIDIItem.folder = nil;   // no suite run may write into the real MIDI-items folder
+assert.(item.addSelection(0, (indices: [0, 1, 2], beats: [1, 1], manual: [0, 1])).isString,
+	"addSelection: an identical save (\\manual included) still dedupes");
+assert.(item.selections(0).size == 1, "addSelection: the dedupe appended nothing");
+flush.((indices: [0, 1, 2], beats: [1, 1], manual: [0, 2]));
+assert.(item.selections(0).size == 2,
+	"addSelection: same notes, different \\manual set -> a new version");
+// legacy saves carry no \manual at all: nil vs nil must still dedupe
+seed.((indices: [0, 1, 2], beats: [1, 1]));
+assert.(item.addSelection(0, (indices: [0, 1, 2], beats: [1, 1])).isString,
+	"addSelection: legacy saves with no \\manual dedupe (nil vs nil)");
+assert.(item.selections(0).size == 1, "addSelection: the legacy dedupe appended nothing");
+// ...but gaining one is a real edit
+flush.((indices: [0, 1, 2], beats: [1, 1], manual: [0, 1]));
+assert.(item.selections(0).size == 2,
+	"addSelection: nil vs a \\manual set -> a new version");
+MIDIItem.folder = oldFolder;
 
 } { |err|
 	("UNCAUGHT: " ++ err.errorString).postln;

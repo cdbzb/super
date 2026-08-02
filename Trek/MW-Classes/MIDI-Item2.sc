@@ -1160,9 +1160,21 @@ view.keyDownAction_({ |view char|
 	// same coordinate warpTo's `origin` uses), so notes exactly AT the first anchor
 	// are kept (strict <). Nothing before the first anchor => output is identical
 	// either way, so this is behaviour-compatible for takes with no junk intro.
+	//
+	// With no loaded selection AND no explicit beats, prSelectionArgs answers
+	// [nil, nil] and MIDIItemTempoMap.prBuildLinear then evaluates `beats.integrate`
+	// on nil — a doesNotUnderstand whose error report dumps the whole receiver
+	// (every event of the take), which in the post window reads as a hang. Guard
+	// on `beats` rather than on the selection itself: passing beats/choiceFunc
+	// explicitly is a legitimate way to quantize without a saved selection.
+	// Answers the receiver unwarped, like fromSelection.
 	quantize { |beats func choiceFunc recalcSustains=true, dropIntro = true |
 		var tempoMap, dropBefore;
 		#beats, choiceFunc = this.prSelectionArgs(beats, choiceFunc);
+		beats ?? {
+			"quantize needs a loaded selection — use .selection first (or pass beats)".postln;
+			^this
+		};
 		tempoMap = MIDIItemTempoMap(this, choiceFunc, beats);
 		dropBefore = dropIntro.if { tempoMap.tryPerform(\t0) };
 		func.notNil.if{
@@ -1174,6 +1186,11 @@ view.keyDownAction_({ |view char|
     quantizeFunc { |beats func choiceFunc recalcSustains=true |
         var tempoMap;
         #beats, choiceFunc = this.prSelectionArgs(beats, choiceFunc);
+        // same nil-beats guard as quantize (which also reaches here via func:)
+        beats ?? {
+            "quantizeFunc needs a loaded selection — use .selection first (or pass beats)".postln;
+            ^this
+        };
         tempoMap = MIDIItemTempoMap(this, choiceFunc, beats);
         this.collect({|e x| 
             (
@@ -1689,8 +1706,15 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		last = list.last;
 		same = last.notNil and: {
 			// \contentStart counts: re-marking the intro is a real edit, worth a version.
-			// (\manual is deliberately NOT compared — it is derivable bookkeeping.)
-			[\indices, \beats, \pins, \periodPrior, \anchor, \contentStart]
+			// \manual counts too: it is the hand-picked/grid-picked PARTITION of
+			// \indices, and the gui's reload path (savedSel[\manual] ?? fallback)
+			// cannot recover it from \indices — its own comment says so ("the true
+			// manual set is unrecoverable"). Two saves with the same notes but a
+			// different manual set rebuild different grids, so they are different
+			// selections. Comparison is nil-safe by ordinary ==: legacy saves have
+			// the key on neither side (nil == nil, dedupes), and gaining a manual
+			// set (nil vs an Array) is correctly a new version.
+			[\indices, \beats, \pins, \periodPrior, \anchor, \contentStart, \manual]
 				.every{ |k| last[k] == sel[k] }
 		};
 		same.if {
@@ -2041,10 +2065,18 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			// .sort({|i j| i.timestamp <= j.timestamp}).last
 	}
 	notesStraddling {|time|
-			// strictly before: a note starting exactly at time isn't straddling
-			// (and would otherwise be duplicated by from's main select)
+			// A note occupies the HALF-OPEN interval [timestamp, timestamp + sustain),
+			// the same convention as onsets/beatTimes' [from, to) windows. So both
+			// ends are strict: a note starting exactly at `time` is not straddling
+			// (from's main select already takes it, and it would be duplicated), and
+			// a note RELEASED exactly at `time` is not straddling either — it is
+			// already over. The release end used to be >=, which handed `from` a
+			// straddler it then clipped to sustain 0: a silent ghost noteOn at every
+			// slice boundary that happened to coincide with a release. Legato takes
+			// and asMIDIItem-built material (notes laid end to end) hit that
+			// constantly.
 			^midiEvents.select{|e| e.midicmd == \noteOn }
-			.select{|e| e.timestamp < time and: (e.timestamp + e.sustain >= time )};
+			.select{|e| e.timestamp < time and: (e.timestamp + e.sustain > time )};
 	}
 
 	from {|from to trim=true| 
@@ -2357,12 +2389,13 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	// twice, and the next bar's downbeat — which retimeSpan reads off the MAP,
 	// never off a played note — cannot sneak in as an extra event.
 	//
-	// `choice` is a picker, `{ |note, i| bool }` over the noteOn events (the
-	// `filter` choiceFunc convention, minus the midicmd sugar — everything here
-	// is a note already; `i` indexes this.notes). Applied BEFORE windowing and
-	// dedupe, so a register band or an amp floor costs a lambda instead of a
-	// filter-player round trip: onsets(20, 24, choice: { |n| n.midinote < 60 }).
-	// nil keeps every note.
+	// `choiceFunc` is a picker, `{ |note, i| bool }` over the noteOn events —
+	// `filter`'s choiceFunc convention, minus the midicmd sugar (everything here
+	// is a note already; `i` indexes this.notes), and plain-function-only, which
+	// is why it carries that name rather than filter's `choice`. Applied BEFORE
+	// windowing and dedupe, so a register band or an amp floor costs a lambda
+	// instead of a filter-player round trip:
+	// onsets(20, 24, choiceFunc: { |n| n.midinote < 60 }). nil keeps every note.
 	//
 	// dedupe (seconds, 0 or negative disables): a chord is ONE rhythmic event,
 	// so onsets closer together than this collapse to the FIRST of the cluster.
@@ -2370,7 +2403,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	// a rolled chord chains into a single event however long the roll — the
 	// reading that matches how a spread chord is played. A genuinely fast
 	// passage wants a smaller dedupe (or 0) and a look at the result.
-	onsets { |fromBeat, toBeat, dedupe = 0.03, choice|
+	onsets { |fromBeat, toBeat, dedupe = 0.03, choiceFunc|
 		var tm, lo, hi, picked, times, out, prev;
 		var eps = 1e-9;
 		(this.selectedNotes.size > 0 or: { currentSelection.notNil }).not.if {
@@ -2387,7 +2420,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		lo = this.timeAtBeat(fromBeat, tm);
 		hi = this.timeAtBeat(toBeat, tm);
 		picked = this.notes;
-		choice !? { picked = picked.select { |e, i| choice.(e, i) } };
+		choiceFunc !? { picked = picked.select { |e, i| choiceFunc.(e, i) } };
 		// eps on BOTH ends: float dust must not make an onset that IS the span
 		// start miss it, nor one that IS the end creep in (the end is exclusive)
 		times = picked.collect(_.timestamp)

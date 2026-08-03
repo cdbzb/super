@@ -1669,26 +1669,73 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	// == exactly the old behaviour, and with nothing before the threshold the two
 	// paths are bit-identical.
 	warpTo { |tempoMap, dropBefore|
-			var origin, src = this;
+			var origin, src;
+			// §12f: a sec -> sec MonoMap is a TIME REMAP, not a tempo map, and it
+			// gets its own branch. Routing it through prTempoMapFromMonoMap would
+			// throw (asAnchorTempoMap wants beat<->sec), and it SHOULD: driving a
+			// BEAT map through the walk below lands every event on its beat number,
+			// i.e. warps the WHOLE take onto the ideal 1 s/beat grid — warpTo is
+			// quantize's engine. A sec -> sec map instead says "this played second
+			// becomes that played second", which is what lets an edit stay LOCAL and
+			// leave the performed feel everywhere else alone (see requantizeSpan).
+			(tempoMap.isKindOf(MonoMap) and: { tempoMap.mapsDimensions(\sec, \sec) }).if {
+				// Absolute in, absolute out: a sec -> sec map composed out of
+				// origin: \absolute snapshots already speaks take time, so there is
+				// NO origin/t0 arithmetic in this branch — the timestamps go in raw.
+				// prSecMapForWarp guards the one map that would break that.
+				var remap = this.prSecMapForWarp(tempoMap);
+				^this.prDropBefore(dropBefore).collect({ |e|
+					e.timestamp_(remap.at(e.timestamp))
+				})
+			};
 			// §12 seam: a V2 MonoMap is accepted here and converted ONCE, before
 			// anything reads t0, into the AnchorTempoMap the walk below already
 			// knows how to drive. Everything downstream is untouched.
 			tempoMap.isKindOf(MonoMap).if { tempoMap = this.prTempoMapFromMonoMap(tempoMap) };
 			origin = tempoMap.tryPerform(\t0) ? start;
-			dropBefore.notNil.if {
-				src = this
-				.reject({ |e|
-					((e.timestamp < dropBefore)
-						and: { (e.midicmd == \noteOn) or: { e.midicmd == \noteOff } })
-				})
-				.collect({ |e| (e.timestamp < dropBefore).if { e.timestamp = dropBefore }; e })
-			};
+			src = this.prDropBefore(dropBefore);
 			tempoMap.respondsTo(\prAtExtrapolated).if {
 				^src.collect({ |e|
 					e.timestamp_(tempoMap.prAtExtrapolated(e.timestamp - origin, tempoMap.env) + origin)
 				})
 			};
 			^src.collect({ |e| e.timestamp_(tempoMap[e.timestamp - start] + start) })
+	}
+	// The dropBefore policy, factored out so both warpTo branches share it (the
+	// comment above warpTo documents the policy itself). nil answers the receiver
+	// untouched, so the no-policy path allocates nothing and stays bit-identical
+	// to the `src = this` it replaced.
+	prDropBefore { |dropBefore|
+		dropBefore.isNil.if { ^this };
+		^this
+		.reject({ |e|
+			((e.timestamp < dropBefore)
+				and: { (e.midicmd == \noteOn) or: { e.midicmd == \noteOff } })
+		})
+		.collect({ |e| (e.timestamp < dropBefore).if { e.timestamp = dropBefore }; e })
+	}
+	// §12f: the sec -> sec half of the seam. `bake` first because the map is
+	// looked up once per event and PL fusion is exact and paid once; the frame
+	// check is prTempoMapFromMonoMap's, restated for the other orientation.
+	prSecMapForWarp { |map|
+		var baked = map.bake;
+		var relFrame = MapFrame.peekSource(this.midiEvents, \relative);
+		// A sec -> sec map assembled from origin: \relative snapshots measures
+		// seconds from its own first anchor on BOTH ends, while these timestamps
+		// are absolute take time: applying it would shift everything by t0 instead
+		// of remapping it. Only an EXACT match against the take's registered
+		// relative axis is an error (peekSource never mints, so a foreign map reads
+		// nil and is trusted) — same deliberate asymmetry, same player-identity
+		// reason, as the beat<->sec check.
+		(relFrame.notNil and: {
+			(baked.fromFrame == relFrame) or: { baked.toFrame == relFrame }
+		}).if {
+			Error("warpTo: this sec -> sec map is built on seconds RELATIVE to its own "
+				"first anchor (origin: \\relative), but warpTo needs absolute take time "
+				"— it would shift by t0 instead of remapping. Rebuild the pieces it was "
+				"composed from with asMonoMap(origin: \\absolute).").throw
+		};
+		^baked
 	}
 	// §12 seam (MonoMap.asAnchorTempoMap is the other half). rebase: false —
 	// warpTo's `origin` IS the map's t0, the absolute timestamp its first anchor
@@ -2107,10 +2154,28 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	// "this bar is five events, and here is when each of them sounded". The
 	// canonical call is the composition of the two halves:
 	//
-	//     m2 = p.retimeSpan(20, "ex x q qe e".beats, p.onsets(20, 24));
-	//     q  = p.warpTo(m2);            // destructive (takes a MonoMap), or
-	//     sourceTempoMap: m2.asAnchorTempoMap(rebase: false)  // per-event key,
-	//                                   // non-destructive; needs the concrete map
+	//     o  = p.onsets(20, 24);
+	//     m2 = p.retimeSpan(20, "ex x q qe e".beats, o);
+	//
+	// followed by ONE of three applications, which say genuinely different things
+	// (§12f):
+	//
+	//     p.requantizeSpan(20, "ex x q qe e".beats, o)
+	//         // DESTRUCTIVE and LOCAL — the whole flow in one call. Only the
+	//         // span's events move; every timestamp outside it is bit-identical,
+	//         // so the performed feel of the rest of the take survives.
+	//     list.tempoMap = m2
+	//         // NON-DESTRUCTIVE, list level — timestamps stay performed and the
+	//         // EventList reads them through the new map (the setter coerces a
+	//         // V2 MonoMap for you).
+	//     sourceTempoMap: m2.asAnchorTempoMap(rebase: false)
+	//         // NON-DESTRUCTIVE, per-event key; needs the concrete map.
+	//
+	// NOT `p.warpTo(m2)`. warpTo drives a BEAT map by sending every event to its
+	// beat number, i.e. it flattens the ENTIRE take onto the ideal 1 s/beat grid —
+	// warpTo is quantize's engine, and the retimed span is then only the part of
+	// that flattening you steered. requantizeSpan is warpTo of the sec -> sec map
+	// `(m2.inverse >> currentMap)`, which is the local statement instead.
 	//
 	// (the doc's "e. s q q. e" spelling is not in String.beats' vocabulary — it
 	// has no dots and no `s`; "ex x q qe e" is that same rhythm in the tokens the
@@ -2137,50 +2202,97 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	// Non-mutating: receiver, selection and map are untouched, and the result is
 	// a plain AnchorMap (beat -> absolute take seconds) for the caller to apply.
 	retimeSpan { |from, durs, onsets, to|
-		var map, sum;
+		^this.prRetimeSpanMap(from, durs, onsets, to, \retimeSpan)
+	}
+	// §12f: retimeSpan APPLIED, locally and destructively — "these five events of
+	// bar 5 were meant to be this rhythm; move them there and leave the rest of
+	// the take exactly as played". Same arguments, same guards (they fire from the
+	// shared builder, so only the method name in the message changes), but it
+	// answers a warped PLAYER rather than a map.
+	//
+	// The composition is the whole idea. `warpTo(retimed beat map)` would flatten
+	// the entire take onto the ideal grid; what is wanted instead is a sec -> sec
+	// statement, "the second this note was played at becomes the second the OLD
+	// map would have put its intended beat at":
+	//
+	//     mNew.inverse   played sec -> intended beat   (the retimed map, backwards)
+	//     >> mOld        intended beat -> performed sec (the map as it stands)
+	//
+	// Outside [from, to] the two maps are the SAME anchors, so the composition is
+	// the identity there — not approximately, by construction — and warpTo's
+	// sec -> sec branch hands those timestamps back untouched to float precision.
+	// Inside, each onset lands on mOld's time for its cumulative-dur beat.
+	//
+	// Both maps come from ONE `tempomap.asMonoMap` call on purpose: `tempomap`
+	// builds a fresh MIDIItemTempoMap every time it is asked, so its \beat frame
+	// is minted anew per call and two snapshots taken separately REFUSE to compose
+	// (that is the frame system working). One call, one beat axis, no `withFrames`
+	// repair.
+	//
+	// Non-mutating in warpTo's sense: the receiver keeps its performed times and
+	// the warped copy is returned.
+	requantizeSpan { |from, durs, onsets, to|
+		var mOld, mNew;
+		this.prNeedSelection(\requantizeSpan);
+		mOld = this.tempomap.asMonoMap(origin: \absolute);
+		mNew = this.prRetimeSpanMap(from, durs, onsets, to, \requantizeSpan, mOld);
+		^this.warpTo((mNew.inverse >> mOld).bake)
+	}
+	prNeedSelection { |who|
 		(this.selectedNotes.size > 0 or: { currentSelection.notNil }).not.if {
-			Error("retimeSpan needs a loaded selection — use .selection first").throw
+			Error("% needs a loaded selection — use .selection first".format(who)).throw
 		};
+		^this
+	}
+	// The retime builder both callers share: every guard, and the one edited cell.
+	// `who` names the caller in the error messages (the guards are the caller's,
+	// as far as the user is concerned). `map` lets requantizeSpan pass the
+	// snapshot it already holds, so the two maps it composes share a beat frame;
+	// nil takes a fresh one, which is retimeSpan's case.
+	prRetimeSpanMap { |from, durs, onsets, to, who = \retimeSpan, map|
+		var sum;
+		this.prNeedSelection(who);
 		durs.isString.if { durs = durs.beats };
 		durs = durs.asArray;
 		(from.isNumber.not).if {
-			Error("retimeSpan: from must be a beat number, got %".format(from)).throw
+			Error("%: from must be a beat number, got %".format(who, from)).throw
 		};
 		(durs.isEmpty or: { durs.every { |d| d.isNumber and: { d > 0 } }.not }).if {
-			Error("retimeSpan: durs must be a non-empty array of positive beat-unit "
-				"IOIs, got %".format(durs)).throw
+			Error("%: durs must be a non-empty array of positive beat-unit "
+				"IOIs, got %".format(who, durs)).throw
 		};
 		sum = durs.sum;
 		to = to ?? { from + sum };
 		(to.isNumber.not).if {
-			Error("retimeSpan: to must be a beat number, got %".format(to)).throw
+			Error("%: to must be a beat number, got %".format(who, to)).throw
 		};
 		(((to - from) - sum).abs > 1e-9).if {
-			Error("retimeSpan: the durs span % beats but [%, %] is % beats — `to` is a "
+			Error("%: the durs span % beats but [%, %] is % beats — `to` is a "
 				"check, not a rescale, so fix the count or leave `to` out"
-				.format(sum, from, to, to - from)).throw
+				.format(who, sum, from, to, to - from)).throw
 		};
 		onsets.isNil.if {
-			Error("retimeSpan: onsets is required — % durs, no onsets. This method never "
-				"picks; query them first, e.g. p.onsets(%, %)".format(durs.size, from, to)).throw
+			Error("%: onsets is required — % durs, no onsets. This method never "
+				"picks; query them first, e.g. p.onsets(%, %)"
+				.format(who, durs.size, from, to)).throw
 		};
 		onsets = onsets.asArray;
 		onsets.every(_.isNumber).not.if {
-			Error("retimeSpan: onsets must be performed times in seconds, got %"
-				.format(onsets)).throw
+			Error("%: onsets must be performed times in seconds, got %"
+				.format(who, onsets)).throw
 		};
 		(onsets.size != durs.size).if {
-			Error("retimeSpan: % onsets for % durs — one onset per rhythmic event. "
-				"Got: %".format(onsets.size, durs.size, onsets)).throw
+			Error("%: % onsets for % durs — one onset per rhythmic event. "
+				"Got: %".format(who, onsets.size, durs.size, onsets)).throw
 		};
 		onsets.differentiate.drop(1).every(_ > 0).not.if {
-			Error("retimeSpan: onsets must be strictly increasing, got %".format(onsets)).throw
+			Error("%: onsets must be strictly increasing, got %".format(who, onsets)).throw
 		};
 		// The committed algebra (§12b A): snapshot beat -> ABSOLUTE seconds (the
 		// axis the onsets live on), then edit exactly one cell. transformSpan
 		// slices, hands the cell over, reconcatenates and restores the origin, so
 		// nothing outside [from, to] is touched.
-		map = this.tempomap.asMonoMap(origin: \absolute);
+		map = map ?? { this.tempomap.asMonoMap(origin: \absolute) };
 		^map.transformSpan(from, to, { |cell|
 			// tolerance: HALF the first dur's performed width under the current
 			// map. Past that the first onset is nearer some other intended
@@ -2191,15 +2303,15 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			var lo = cell.at(from), hi = cell.at(to);
 			var tol = 0.5 * (cell.at(from + durs[0]) - lo);
 			((onsets.first - lo).abs > tol).if {
-				Error("retimeSpan: beat % sits at % s in the current map, but the first "
+				Error("%: beat % sits at % s in the current map, but the first "
 					"onset is at % s — off by % s, more than half the first dur's "
 					"performed width (% s). Wrong span, or a missing/extra leading onset?"
-					.format(from, lo, onsets.first, onsets.first - lo, tol)).throw
+					.format(who, from, lo, onsets.first, onsets.first - lo, tol)).throw
 			};
 			(onsets.last >= (hi - 1e-9)).if {
-				Error("retimeSpan: the last onset (% s) is at or past the span's end "
+				Error("%: the last onset (% s) is at or past the span's end "
 					"(beat % = % s) — every onset must lie inside the span's performed "
-					"window.".format(onsets.last, to, hi)).throw
+					"window.".format(who, onsets.last, to, hi)).throw
 			};
 			// beat widths = durs; performed widths = the gaps between the onsets,
 			// closed by the span's end time from the map (never from a note).

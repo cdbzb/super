@@ -20,8 +20,11 @@ var assertArr = { |a, b, msg, tol = 1e-6| h[\assertArr].(a, b, msg, tol) };
 var mkPlayer, sameArr, stamps;
 var throws = { |fn| var t = false; try { fn.value } { t = true }; t };
 var p, chord, bare, durs, ons, m0, m2, mStr, mTo, base, warped, tight, orig;
+var errMsg;
+var secF, idMap, off, offOrig, tm, mRel, mAbs;
+var slow, sDurs, sOns, sOrig, sM0, sM2, sReq, sFlat, mFix, manual;
 
-"== onsets / retimeSpan (§12c') tests ==".postln;
+"== onsets / retimeSpan (§12c') + requantizeSpan (§12f) tests ==".postln;
 
 // player from a pitch/dur spec, with a selection stamped on the HELD player.
 // indices/coords index the NOTES (noteOns), matching a saved selection.
@@ -31,6 +34,9 @@ mkPlayer = { |midinotes, dur, indices, coords|
 	pl
 };
 stamps = { |pl| pl.notes.collect(_.timestamp) };
+// the message of the error a thunk raises ("" when it raises none), for the
+// guards whose PREFIX is the thing under test
+errMsg = { |fn| var m = ""; try { fn.value } { |e| m = e.errorString }; m };
 // exact equality, for the "must be bit-identical" claims
 sameArr = { |a, b, msg| h[\assert].((a == b), msg + "(got % want %)".format(a, b)) };
 
@@ -195,6 +201,137 @@ assert.(chord.onsets(4, 8).size == 5, "canonical: the chord take still yields 5 
 tight = chord.retimeSpan(4, durs, chord.onsets(4, 8));
 assertArr.(tight.ys, [0, 4, 4.9, 5.1, 6.1, 7.4, 8, 9],
 	"canonical: the chord take re-anchors on the cluster's first onset");
+
+// ================================================ §12f: warpTo's sec -> sec branch
+// A map from the seconds axis to ITSELF is a time remap, not a tempo map: it
+// says "the second this was played at becomes that second", so warpTo applies
+// it raw — absolute in, absolute out, no t0/start arithmetic — instead of
+// routing it through asAnchorTempoMap, which only knows beat<->sec.
+secF = m0.toFrame;                                  // the take's ABSOLUTE sec axis
+idMap = AnchorMap([0, 12], [0, 12], secF, secF);
+assert.(idMap.mapsDimensions(\sec, \sec), "sec->sec: the identity fixture map maps sec -> sec");
+assert.(throws.({ idMap.asAnchorTempoMap }),
+	"sec->sec: the beat<->sec path really would have refused it (so the branch is load-bearing)");
+sameArr.(stamps.(p.warpTo(idMap)), orig, "warpTo(sec->sec identity): nothing moves at all");
+// dropBefore works in this branch too, with the same reject/clamp rule
+sameArr.(stamps.(p.warpTo(idMap, 3)), orig.drop(3),
+	"warpTo(sec->sec, dropBefore): notes before the threshold are dropped");
+sameArr.(stamps.(p.warpTo(idMap, nil)), orig,
+	"warpTo(sec->sec, dropBefore nil): the no-policy path is bit-identical");
+
+// raw application: no origin offset. A take whose first event is at 10 s (start
+// == 10) run through a doubling map lands at 2t, not at 2(t - start) + start.
+off = MIDIItemPlayer(p.midiEvents.deepCopy.collect { |e| e.timestamp = e.timestamp + 10; e }, nil);
+offOrig = stamps.(off);
+assert.(off.start == 10, "fixture: the offset take's start is 10 s (got %)".format(off.start));
+sameArr.(stamps.(off.warpTo(AffineMap(2, 0, \sec, \sec))), offOrig * 2,
+	"warpTo(sec->sec): timestamps go in ABSOLUTE — no start/t0 subtraction");
+sameArr.(stamps.(off.warpTo(AffineMap(1, 0.5, \sec, \sec))), offOrig + 0.5,
+	"warpTo(sec->sec): an affine shift is a shift, and a total map needs no anchors");
+sameArr.(stamps.(off), offOrig, "warpTo(sec->sec): the receiver is untouched");
+
+// ---------------------------------------------------------- the relative-axis trap
+// One tempomap object, two snapshots: the \relative one measures seconds from
+// its own first anchor, so a sec -> sec map built on THAT axis would shift the
+// take by t0 rather than remap it. Only an exact frame match is an error.
+tm = p.tempomap;
+mRel = tm.asMonoMap(origin: \relative);
+mAbs = tm.asMonoMap(origin: \absolute);
+assert.(throws.({ p.warpTo((mRel.inverse >> mRel).bake) }),
+	"warpTo: a sec->sec map on this take's RELATIVE seconds axis is refused");
+assert.(errMsg.({ p.warpTo((mRel.inverse >> mRel).bake) }).contains("origin"),
+	"warpTo: the relative-axis error names the way out (origin: \\absolute)");
+sameArr.(stamps.(p.warpTo((mAbs.inverse >> mAbs).bake)), orig,
+	"warpTo: the same composition on the ABSOLUTE axis is accepted, and is the identity");
+
+// ===================================================== §12f: requantizeSpan
+// A take whose map is NOT the identity, which is what makes the difference
+// visible: bar 1 is slow (4 beats over 5 s), bar 2 fast (4 beats over 3 s), and
+// two notes trail past the last anchor. Only the bar lines are selected (notes
+// 0, 4, 9 at beats 0, 4, 8), so bar 2's inner events sit on the wrong beats.
+slow = mkPlayer.([60, 62, 64, 65, 67, 69, 71, 72, 74, 76, 77, 79],
+	[1.25, 1.25, 1.25, 1.25, 0.7, 0.2, 0.7, 0.8, 0.6, 0.4, 0.3, 0.3], [0, 4, 9], [0, 4, 8]);
+sOrig = stamps.(slow);
+sDurs = "ex x q qe e".beats;
+assertArr.(sOrig, [0, 1.25, 2.5, 3.75, 5, 5.7, 5.9, 6.6, 7.4, 8, 8.4, 8.7],
+	"fixture: the uneven take's performed onsets");
+sM0 = slow.tempomap.asMonoMap(origin: \absolute);
+assertArr.(sM0.xs, [0, 4, 8, 12], "fixture: the map's beats (bar lines + closing anchor)");
+assertArr.(sM0.ys, [0, 5, 8, 9], "fixture: bar 1 takes 5 s, bar 2 takes 3 s — NOT the identity");
+sOns = slow.onsets(4, 8);
+assertArr.(sOns, [5, 5.7, 5.9, 6.6, 7.4], "fixture: the five performed onsets of bar 2");
+
+// what warpTo does with the retimed BEAT map: it flattens the WHOLE take onto
+// the ideal 1 s/beat grid (warpTo is quantize's engine) — bar 1 was played
+// 1.25 s to the beat and comes back at 1 s to the beat. Correct for quantize,
+// wrong for "fix bar 2".
+sM2 = slow.retimeSpan(4, sDurs, sOns);
+sFlat = stamps.(slow.warpTo(sM2));
+assertArr.(sFlat, [0, 1, 2, 3, 4, 4.75, 5, 6, 7.5, 8, 9.6, 10.8],
+	"warpTo(beat map): every event lands on its BEAT — the whole take is flattened");
+assert.((sFlat[1] - sOrig[1]).abs > 0.2,
+	"warpTo(beat map): even bar 1, which nobody edited, has moved");
+
+// requantizeSpan instead: warpTo of (mNew.inverse >> mOld), the sec -> sec
+// statement. Only bar 2's inner events move.
+sReq = slow.requantizeSpan(4, sDurs, sOns);
+assert.(sReq.isKindOf(MIDIItemPlayer), "requantizeSpan: answers a player, got %".format(sReq.class));
+assertArr.(stamps.(sReq), [0, 1.25, 2.5, 3.75, 5, 5.5625, 5.75, 6.5, 7.625, 8, 8.4, 8.7],
+	"requantizeSpan: the span's onsets move, the performed take around them does not");
+sameArr.(stamps.(sReq).keep(4), sOrig.keep(4),
+	"requantizeSpan: everything BEFORE the span is bit-identical");
+sameArr.(stamps.(sReq).drop(9), sOrig.drop(9),
+	"requantizeSpan: the span's end and everything AFTER it are bit-identical");
+// where the moved events land: mOld's time for each cumulative-dur beat
+assertArr.(stamps.(sReq)[4..8], [4, 4.75, 5, 6, 7.5].collect { |b| sM0.at(b) },
+	"requantizeSpan: each onset lands where the OLD map puts its intended beat");
+sameArr.(stamps.(slow), sOrig, "requantizeSpan: the receiver keeps its performed times");
+// a String dur spec, and `to` as a check, exactly as retimeSpan takes them
+sameArr.(stamps.(slow.requantizeSpan(4, "ex x q qe e", sOns)), stamps.(sReq),
+	"requantizeSpan: a String dur spec is parsed with .beats");
+sameArr.(stamps.(slow.requantizeSpan(4, sDurs, sOns, 8)), stamps.(sReq),
+	"requantizeSpan: a consistent `to` changes nothing");
+
+// ------------------------------------------------- the frame wart, and the manual form
+// Every `tempomap` call builds a fresh MIDIItemTempoMap, so asMonoMap mints a
+// fresh BEAT frame: two snapshots taken separately refuse to compose. That is
+// why requantizeSpan takes ONE snapshot and hands it to the shared builder.
+assert.(throws.({
+	slow.tempomap.asMonoMap(origin: \absolute).inverse >> slow.tempomap.asMonoMap(origin: \absolute)
+}), "frames: two separate tempomap snapshots refuse to compose (a new beat axis per call)");
+// withFrames is the repair when the two maps DID come from separate calls —
+// and the hand-built composition reproduces requantizeSpan exactly
+mFix = sM0.withFrames(sM2.fromFrame, sM2.toFrame);
+manual = stamps.(slow.warpTo((sM2.inverse >> mFix).bake));
+sameArr.(manual, stamps.(sReq),
+	"manual (mNew.inverse >> mOld.withFrames(...)) == requantizeSpan, timestamp for timestamp");
+
+// -------------------------------------------------------------- shared guards
+// The guards live in the builder both methods call, so they fire identically —
+// only the name in the message changes.
+assert.(throws.({ slow.requantizeSpan(4, sDurs, nil) }),
+	"requantizeSpan: onsets is required here too");
+assert.(throws.({ slow.requantizeSpan(4, sDurs, sOns.drop(1)) }),
+	"requantizeSpan: one onset per dur");
+assert.(throws.({ slow.requantizeSpan(4, sDurs, [5, 5.9, 5.7, 6.6, 7.4]) }),
+	"requantizeSpan: onsets must be strictly increasing");
+assert.(throws.({ slow.requantizeSpan(4, sDurs, sOns, 9) }),
+	"requantizeSpan: an inconsistent `to` is an error, not a stretch");
+assert.(throws.({ slow.requantizeSpan(4, sDurs, [5.5, 5.7, 5.9, 6.6, 7.4]) }),
+	"requantizeSpan: a first onset outside the tolerance is an error");
+assert.(errMsg.({ slow.requantizeSpan(4, sDurs, sOns.drop(1)) }).contains("requantizeSpan:"),
+	"requantizeSpan: the guards name requantizeSpan, not retimeSpan");
+assert.(errMsg.({ slow.requantizeSpan(4, sDurs, sOns.drop(1)) }).contains("retimeSpan").not,
+	"requantizeSpan: retimeSpan is not mentioned at all");
+assert.(errMsg.({ bare.requantizeSpan(0, [1, 1], [0, 1]) })
+	.contains("requantizeSpan needs a loaded selection"),
+	"requantizeSpan: no loaded selection is an error, in its own name");
+// and retimeSpan's own messages are unchanged by the refactor
+assert.(errMsg.({ p.retimeSpan(4, durs, ons.drop(1)) }).contains("retimeSpan:"),
+	"retimeSpan: its messages still say retimeSpan");
+assert.(errMsg.({ bare.retimeSpan(0, [1, 1], [0, 1]) })
+	.contains("retimeSpan needs a loaded selection"),
+	"retimeSpan: the no-selection message is unchanged");
 
 } { |err|
 	("UNCAUGHT: " ++ err.errorString).postln;

@@ -1367,3 +1367,98 @@ Decisions taken while building:
 
 Suite: `standalone-tests/map-editor-test.scd` (139 checks, pure language — no
 server, no window, no `Pen`, which is itself the evidence the extraction worked).
+
+### 12f. Local application — `requantizeSpan` + warpTo's sec -> sec branch (2026-08-03)
+
+Found by applying §12c' for real: `retimeSpan` hands back the right map, and then
+`p.warpTo(m2)` **quantizes the whole take**. That is not a bug in either piece —
+`warpTo` drives a beat->sec map by sending every event to its beat number, i.e. it
+IS quantize's engine (`quantize` is `warpTo(this.tempomap)`), so a retimed span
+only steers where the flattening puts that bar. The performed feel of every OTHER
+bar is gone. Nothing in the system said "move these notes and leave the rest".
+
+The fix is a change of axis, not a new engine. What "fix bar 5 only" means is a
+**sec -> sec** statement — the second a note was played at becomes the second the
+OLD map puts its intended beat at:
+
+```supercollider
+o    = p.onsets(9, 10);
+mNew = p.retimeSpan(9, durs, o);            // beat -> sec, span re-anchored
+mOld = p.tempomap.asMonoMap(origin: \absolute);
+w    = (mNew.inverse >> mOld).bake;         // sec -> sec: played -> intended beat -> old map
+q    = p.warpTo(w);
+```
+
+Outside `[from, to]` the two maps are the same anchors, so `w` is the identity
+there by construction, not by tolerance — verified identity to 1e-6 on a real
+take, and bit-identical in the suite. Inside, each onset lands on
+`mOld.at(from + cumulative durs)`.
+
+Two pieces were built for it:
+
+- **`warpTo` grew a sec -> sec branch** (`MIDI-Item2.sc:1671`). A `MonoMap` that
+  `mapsDimensions(\sec, \sec)` is applied raw — `timestamp_(map.at(timestamp))`,
+  no `t0`/`start` arithmetic, because a map composed from `origin: \absolute`
+  snapshots is already absolute on both ends. It cannot go through
+  `prTempoMapFromMonoMap`, which throws on anything that is not beat<->sec, and
+  that throw is correct: routing it there would mean asking for the flattening
+  again. `dropBefore` works in both branches (`prDropBefore`, factored out).
+  `prSecMapForWarp` restates the relative-axis guard for this orientation: if
+  either frame of the map is exactly this take's registered `\relative` seconds
+  axis, the warp would shift by `t0` instead of remapping, so it raises instead
+  — same peek-don't-mint asymmetry as the beat<->sec check.
+- **`MIDIItemPlayer.requantizeSpan(from, durs, onsets, to)`**
+  (`MIDI-Item2.sc:2234`) — the whole composition in one call, answering the
+  warped player. `retimeSpan`'s guards and cell construction moved into
+  `prRetimeSpanMap(from, durs, onsets, to, who, map)`, which both methods call;
+  `who` puts the caller's name in the messages, `map` lets `requantizeSpan` pass
+  the snapshot it already holds. `retimeSpan` keeps its exact signature and
+  messages and is now one line.
+
+**The frame wart.** `tempomap` builds a fresh `MIDIItemTempoMap` on every call, so
+`asMonoMap` mints a fresh `\beat` frame each time (the `\sec` frame is keyed on
+the take's `midiEvents` array and IS stable) — two snapshots taken separately
+REFUSE to compose. That is the frame system working, but it means the recipe
+above only reads cleanly inside ONE method that calls `tempomap` once, which is
+why `requantizeSpan` takes the snapshot itself and hands it down. By hand across
+two calls the repair is `mOld.withFrames(mNew.fromFrame, mNew.toFrame)`.
+
+Three applications now, and the doc comment on `retimeSpan` names all three
+instead of the misleading `warpTo(m2)`: `requantizeSpan` (destructive, local),
+`list.tempoMap = m2` (non-destructive, list level), `sourceTempoMap:
+m2.asAnchorTempoMap(rebase: false)` (non-destructive, per event). Plain
+`warpTo(m2)` stays exactly what it was — quantize's engine — and is right when
+flattening everything is what you meant.
+
+Suite: `standalone-tests/retime-span-test.scd` grew a second, deliberately
+NON-identity fixture (bar 1 at 1.25 s/beat, bar 2 at 0.75) — the original
+fixture's map is the identity, which is precisely why the whole-take flattening
+was invisible in tests until it showed up in use.
+
+### 12g. (maybe) EventList-level retimeSpan — respec a span's rhythm after conversion
+
+Came up walking the asEventList seam (2026-08-03). At list level the "performed
+onsets" already exist as the fractional `\when`s, so the player pair could mirror
+onto EventList:
+
+    el.onsets(from, to, dedupe, choiceFunc)   // query: whens in [from, to), deduped
+    el.retimeSpan(from, durs, onsets)         // assigns the edited map, returns el
+
+Shape B, not A: don't rewrite whens (that would add a second destructive op where
+§4 sanctions exactly one) — instead re-anchor the span's cell AT the queried
+whens, so played-uneven whens land at the wall positions the intended beats
+deserve. This is `quantizeSpan` generalized: quantizeSpan straightens the anchors
+that exist; this replaces them with anchors at event positions. Same
+`transformSpan` machinery, one sanctioned `tempoMap` assignment.
+
+Decisions if built:
+- **dedupe unit**: whens are beats; convert the ~30ms chord threshold through the
+  map's local slope rather than asking for a beat-width — chord clumping is
+  physical.
+- **which events**: `\mk` notes yes; embedded `\mi2` starts excluded by default
+  (retiming an item's start ≠ retiming its contents), choiceFunc can opt in.
+- **when it earns keep**: a list born from one `asEventList` should just
+  `requantizeSpan` upstream. This exists for merged/edited/native lists —
+  multiple items, post-hoc additions, lists that never were MIDIItems.
+
+Status: maybe. Not building until a real merged-list case wants it.

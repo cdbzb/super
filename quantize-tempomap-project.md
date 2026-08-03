@@ -1319,3 +1319,51 @@ Picking ISOLATED from transforming (auto-pick judged too fragile to bury):
 3. C — clicks from selection + snap + count-in.
 4. D phase 1 — tempo lane.
 5. D phase 2 — MapEditor + BeatMarkMode extraction (biggest, last).
+
+### 12e. As built — step 5 (2026-08-02)
+
+`AbstractMidiEvents.gui` (`MIDI-Item2.sc:22`) is now a HOST: window, transport,
+clicks, note drawing. The editing model moved into two classes, both with no
+view state and no MIDI knowledge (they read `timestamp` and seconds only), which
+is what lets §9c step 3 rehost them over a waveform instead of forking a third
+copy.
+
+- **`BeatMarkMode`** (`Trek/MW-Classes/BeatMarkMode.sc`) — "where are the beats".
+  Owns `gridLines`/`currentLine`/`pinSet`/`beatTracker`/`manualIndices` AND
+  `selectedIndices` (the gui has no mirror; `gui`'s return function reads through
+  it). `keyDown(char)` consumes e/E always and h l j k only while a grid is up,
+  answering a Boolean so the host falls through — the `PianoRollNav` precedent.
+  Hooks: `onChange` (redraw), `onGridChange` (drop derived caches, then redraw),
+  `ensureVisible(time)`, `onSave(selEvent)` — the last abstracting away the
+  `respondsTo(\takes)` dance the `w` handler used to carry inline. Two change
+  hooks rather than one because h/l navigation must NOT re-derive a tempo map
+  per keystroke.
+- **`MapEditor`** (`Trek/MW-Classes/MapEditor.sc`) — "what should the tempo be".
+  Model = an immutable `AnchorMap` (beat -> ABSOLUTE take seconds, built from the
+  beat grid by `*mapFromTimes(times, subdiv)`) + an undo stack, which
+  immutability makes free. Every edit is a §12b A span op, defaulting to the
+  whole domain when no span is picked. View = the §12D lane, moved here whole;
+  in map-edit mode (`m`) the lane is also the edit surface (drag = span). Hooks:
+  `sourceFunc` -> `[times, subdiv]`, `onChange`, `audition(times)`,
+  `onSave(map)`, `drawOver(xOf, laneTop, laneBot)`.
+
+Decisions taken while building:
+
+- **Commit target.** An edited map's ys are no longer note onsets, so it cannot
+  round-trip through the selection archive (`indices` + `beats`). `W` therefore
+  hands the map out rather than persisting it: `MapEditor.last` plus the
+  `onSave` hook, for `warpTo` (destructive) or `sourceTempoMap:`
+  (non-destructive) — the same choice §12c' gives `retimeSpan`. Persisting
+  edited maps is left for the §2e-style versioned archive.
+- **Edits outrank cache invalidation.** `MapEditor.invalidate` is a no-op once
+  the map has been edited, so re-marking beats cannot silently discard the edit;
+  `reload` is the explicit way to throw it away. `commit` deliberately leaves the
+  dirty flag set for the same reason.
+- **Keys.** The new bindings (`m`, then `i o A Q V N S F B P u U Z W` while the
+  mode is on) were chosen to collide with nothing the gui already binds, so the
+  mode gates behaviour but no key is shadowed even when it is on.
+- **Still no bars.** A span is named by its two beat numbers; nothing groups
+  beats, nothing shades per bar.
+
+Suite: `standalone-tests/map-editor-test.scd` (139 checks, pure language — no
+server, no window, no `Pen`, which is itself the evidence the extraction worked).

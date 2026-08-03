@@ -7,25 +7,31 @@ MIDIItem2 : MIDIItem{
 	}
 }
 AbstractMidiEvents { // class for MIDIItem and MIDIItemPlayer
-gui { |take| 
+// §12c step 5: this method is now a HOST, not a monolith. Two controllers do the
+// editing work and this gui only lends them a window, a transport and pixels:
+//
+//   beatMark (BeatMarkMode) — "where are the beats": the extrapolate/DP grid, the
+//     current line, the pin set, the hand picks, and THE selection
+//     (`beatMark.selectedIndices` is the one copy; there is no gui-local mirror).
+//   mapEd (MapEditor) — "what should the tempo be": the tempo lane, plus an
+//     immutable AnchorMap over it with an undo stack and the §12b A span algebra.
+//
+// Both are media-agnostic (they touch `timestamp` and seconds and nothing else),
+// which is the point: the audio editor of §9c step 3 rehosts them instead of
+// growing a third copy of this code.
+gui { |take|
     var notes, start, end, width, height, window, view;
-    var selectedIndices; // Array to store selected note indices
     var startMidiNote = 36; // Starting MIDI note for display range
     var viewStart, viewEnd, zoomFactor = 1; // Horizontal view and zoom variables
-    var extrapolateMode = false, gridLines, currentLine = 0, anchorPair, manualIndices;
-    var rebuildGrid, updateExtrapSelection, ensureLineVisible, effTime;
-    var dpMode = false, beatTracker, pinSet, repin, applyManualPick;
+    var ensureLineVisible;
     var savedSel;
     var cursorTime, playClock, isPlaying = false, playhead, playStartWall, playOriginTime, activeMks = [];
     var viewedPlayer, playFrom, stopPlay, togglePlay;
     var clickEnabled = false, clickClock, scheduleClicks, currentNoteTime;
     var contentStart; // §12B: "content starts here" — everything before it is throat clearing
     var countInBeats = 0, clickTimes, beatGrid, localPeriod; // §12C: clicks/snap/count-in
-    var showLane = true, laneCache, laneData, invalidateLane; // §12D: tempo lane
+    var beatMark, mapEd, laneSource, invalidateLane;
 
-    // Initialize selected indices array
-    selectedIndices = [];
-    
     this.respondsTo(\takes).if{
         take = take ? (this.takes.size - 1);
         (take < 0).if { take = this.takes.size + take };
@@ -36,20 +42,24 @@ gui { |take|
         take = 0;
         savedSel = this.tryPerform(\currentSelection);
     };
+
+    start = notes[0].timestamp;
+    end = notes.last.timestamp + (notes.last.sustain ? 0);
+    width = 1400;
+    height = 800;
+
+    beatMark = BeatMarkMode(notes, end);
+    mapEd = MapEditor.new;
+
     savedSel.notNil.if {
-        selectedIndices = (savedSel[\indices] ? []).copy;
-        ("Loaded saved selection: % notes".format(selectedIndices.size)).postln;
+        beatMark.selectedIndices = (savedSel[\indices] ? []).copy;
+        ("Loaded saved selection: % notes".format(beatMark.selectedIndices.size)).postln;
         // §12B: restore the content start, so reopening the gui doesn't put the
         // cursor back on the junk intro this selection already decided to ignore
         contentStart = savedSel[\contentStart];
         contentStart !? { ("Content starts at " ++ contentStart.round(0.001)).postln };
     };
 
-    start = notes[0].timestamp;
-    end = notes.last.timestamp + (notes.last.sustain ? 0);
-    width = 1400;
-    height = 800;
-    
     // Initialize horizontal view
     viewStart = start;
     viewEnd = end;
@@ -74,9 +84,7 @@ gui { |take|
     // still clicks, snaps and counts in. Memoized: the saved selection can only
     // change through 'w', which clears the memo.
     clickTimes = {
-        (extrapolateMode and: { gridLines.notNil and: { gridLines.notEmpty } }).if {
-            gridLines.collect(_[\time])
-        }{
+        beatMark.gridTimes ?? {
             beatGrid ?? {
                 var p = viewedPlayer.();
                 // take() hands back an unmarked player — stamp the selection we loaded
@@ -88,43 +96,35 @@ gui { |take|
         }
     };
 
-    // §12D phase 1: the tempo lane's data — bpm per beat span, from the SAME beat
+    // §12D: the beat grid the tempo lane / MapEditor read their map off — the SAME
     // source the clicks use (live extrapolate/DP grid first, else the loaded
-    // selection's tempomap). Read lazily by drawFunc and memoized here, so the
-    // mutation sites only have to invalidate; `times` empty means "no source, no
-    // lane" and is cached too (a nil cache would rebuild every animation frame).
-    laneData = {
-        laneCache ?? {
-            var times = [], bpms, sub = 1, p, mean;
-            (extrapolateMode and: { gridLines.notNil and: { gridLines.notEmpty } }).if {
-                times = gridLines.collect(_[\time])
-            }{
-                p = viewedPlayer.();
-                (p.selectedNotes.isEmpty and: { (savedSel !? (_[\indices])).notNil }).if {
-                    p.prStampSelection(savedSel)
-                };
-                times = p.beatTimes;
-                // a curved map's slope varies WITHIN the beat: sample finer so the
-                // staircase reads as the curve it is
-                (times.size > 1 and: {
-                    (p.tryPerform(\tempomap) !? { |tm| tm.tryPerform(\curved) }) == true
-                }).if {
-                    sub = 4;
-                    times = p.beatTimes(sub);
-                };
+    // selection's tempomap), answered as [times, subdiv]. MapEditor calls this
+    // lazily and memoizes, so the mutation sites only have to invalidate.
+    laneSource = {
+        var times, sub = 1, p;
+        times = beatMark.gridTimes;
+        times.isNil.if {
+            p = viewedPlayer.();
+            (p.selectedNotes.isEmpty and: { (savedSel !? (_[\indices])).notNil }).if {
+                p.prStampSelection(savedSel)
             };
-            bpms = MIDIItemPlayer.bpmFromTimes(times, sub);
-            mean = bpms.reject(_.isNil);
-            laneCache = (
-                times: times,
-                bpms: bpms,
-                subdiv: sub,
-                mean: (mean.size > 0).if { mean.sum / mean.size }
-            )
-        }
+            times = p.beatTimes;
+            // a curved map's slope varies WITHIN the beat: sample finer so the
+            // staircase reads as the curve it is
+            (times.size > 1 and: {
+                (p.tryPerform(\tempomap) !? { |tm| tm.tryPerform(\curved) }) == true
+            }).if {
+                sub = 4;
+                times = p.beatTimes(sub);
+            };
+        };
+        [times, sub]
     };
+    mapEd.sourceFunc = laneSource;
 
-    invalidateLane = { laneCache = nil };
+    // an edited map is NOT dropped by this (MapEditor.invalidate keeps it) — only
+    // an untouched lane re-reads its source
+    invalidateLane = { mapEd.invalidate };
 
     // grid spacing at (or just after) note-time `t` — the count-in's beat length.
     // nil when there is no usable grid.
@@ -239,49 +239,8 @@ gui { |take|
         }
     };
 
-    // Extrapolate-mode helpers
-    gridLines = [];
-
-    // effective beat time of a grid line: chosen note's onset, or the line's grid time;
-    // -1 and -2 address the anchor pair (the last two manually selected notes)
-    effTime = { |i|
-        case
-        { i == -2 } { anchorPair[0] }
-        { i == -1 } { anchorPair[1] }
-        {
-            gridLines[i][\noteIndex].notNil.if {
-                notes[gridLines[i][\noteIndex]].timestamp
-            }{
-                gridLines[i][\time]
-            }
-        }
-    };
-
-    rebuildGrid = { |lineIdx = -1| // recompute lines after lineIdx from the pair (lineIdx-1, lineIdx)
-        var prevT = effTime.(lineIdx - 1);
-        var curT = effTime.(lineIdx);
-        var delta = curT - prevT;
-        var tol = delta / 5; // auto-select only within a fifth of a beat
-        var t = curT + delta;
-        gridLines = gridLines.keep(lineIdx + 1);
-        (delta > 0.001).if {
-            while { t <= end } {
-                var nearIdx, nearDist = inf;
-                notes.do { |e i|
-                    var d = (e.timestamp - t).abs;
-                    (d < nearDist).if { nearDist = d; nearIdx = i };
-                };
-                (nearDist > tol).if { nearIdx = nil };
-                gridLines = gridLines.add((time: t, noteIndex: nearIdx));
-                t = t + delta;
-            }
-        }
-    };
-
-    updateExtrapSelection = {
-        selectedIndices = manualIndices ++ gridLines.collect{|l| l[\noteIndex]}.reject(_.isNil);
-    };
-
+    // The one view-shaped helper that stays here: only the host knows about the
+    // horizontal window. Handed to beatMark as its ensureVisible hook below.
     ensureLineVisible = { |t|
         var duration = viewEnd - viewStart;
         (t < viewStart or: (t > viewEnd)).if {
@@ -294,110 +253,11 @@ gui { |take|
         };
     };
 
-    // manual ('e') correction: change this line's note, re-extrapolate after it
-    applyManualPick = { |line, newIdx|
-        line[\noteIndex] = newIdx;
-        line[\time] = notes[newIdx].timestamp;
-        rebuildGrid.(currentLine);
-        updateExtrapSelection.();
-        invalidateLane.();
-        view.refresh;
-        ("Line %: note % at %".format(currentLine, newIdx, line[\time].round(0.001))).postln;
-    };
-
-    // DP ('E') correction: pin the note as a forced beat and re-run the tracker;
-    // earlier lines may also update, since the optimization is global
-    repin = { |oldIdx, newIdx|
-        oldIdx.notNil.if { pinSet.remove(oldIdx) };
-        pinSet.add(newIdx);
-        beatTracker.pins = pinSet.asArray;
-        gridLines = beatTracker.track;
-        currentLine = gridLines.detectIndex{|l| l[\noteIndex] == newIdx}
-            ? currentLine.min(gridLines.size - 1).max(0);
-        updateExtrapSelection.();
-        invalidateLane.();
-        ensureLineVisible.(notes[newIdx].timestamp);
-        view.refresh;
-        ("Pinned note % — % lines".format(newIdx, gridLines.size)).postln;
-    };
-
-    // Resume beat-mark editing from a saved selection. DP saves (anchor + pins)
-    // rebuild the tracker — the DP is deterministic given periodPrior/anchor/pins,
-    // so the saved grid reappears exactly, editable again (h/l/j/k). Manual ('e')
-    // saves rebuild lines from the saved picks: ghost lines are re-interpolated
-    // between picks (their extrapolated times were not saved) and trailing empty
-    // lines re-extrapolated at the last line spacing.
-    (savedSel.notNil and: { savedSel[\periodPrior].notNil }).if {
-        var restored = false;
-        manualIndices = savedSel[\manual] ?? {
-            savedSel[\anchor].notNil.if {
-                // older DP saves lack \manual: the hand-picked notes are the ones
-                // at or before the anchor (tracking runs strictly forward from it)
-                var anchorT = (notes[savedSel[\anchor]] !? _.timestamp) ? inf;
-                selectedIndices.select { |i| notes[i].timestamp <= anchorT }
-            }{
-                // older manual saves: the true manual set is unrecoverable; the
-                // first two picks give rebuildGrid a working anchor pair
-                selectedIndices.select(_ < notes.size)
-                    .sort{ |a b| notes[a].timestamp < notes[b].timestamp }.keep(2)
-            }
-        };
-        anchorPair = manualIndices.keep(-2).collect { |i| notes[i].timestamp };
-        (savedSel[\anchor].notNil and: { savedSel[\anchor] < notes.size }).if {
-            pinSet = Set.newFrom(savedSel[\pins] ? []);
-            beatTracker = MIDIBeatTracker(notes, savedSel[\periodPrior],
-                savedSel[\anchor], pinSet.asArray);
-            gridLines = beatTracker.track;
-            dpMode = gridLines.size > 0;
-            restored = dpMode;
-        }{
-            var sorted = selectedIndices.select(_ < notes.size)
-                .sort{ |a b| notes[a].timestamp < notes[b].timestamp };
-            var cum = [0] ++ (savedSel[\beats] ? []).integrate; // beat coord per sorted note
-            var nManual = manualIndices.size.clip(1, sorted.size);
-            var prevBeat, prevT, delta, tEx;
-            gridLines = [];
-            (sorted.size > nManual).if {
-                prevBeat = cum[nManual - 1] ? (nManual - 1);
-                prevT = notes[sorted[nManual - 1]].timestamp;
-                (nManual .. sorted.size - 1).do { |si|
-                    var idx = sorted[si];
-                    var b = cum[si] ? (prevBeat + 1);
-                    var t = notes[idx].timestamp;
-                    var gap = (b - prevBeat).max(1).asInteger;
-                    (gap - 1).do { |k|
-                        gridLines = gridLines.add((
-                            time: prevT + ((t - prevT) * (k + 1) / gap),
-                            noteIndex: nil));
-                    };
-                    gridLines = gridLines.add((time: t, noteIndex: idx));
-                    prevBeat = b; prevT = t;
-                };
-                // trailing empty lines to the end of the take
-                delta = (gridLines.size >= 2).if {
-                    gridLines.last[\time] - gridLines[gridLines.size - 2][\time]
-                }{ savedSel[\periodPrior] };
-                (delta > 0.001).if {
-                    tEx = gridLines.last[\time] + delta;
-                    while { tEx <= end } {
-                        gridLines = gridLines.add((time: tEx, noteIndex: nil));
-                        tEx = tEx + delta;
-                    };
-                };
-            }{
-                // no grid picks saved (all-manual selection): fresh extrapolation
-                (anchorPair.size == 2).if { rebuildGrid.(-1) };
-            };
-            restored = gridLines.size > 0;
-        };
-        restored.if {
-            extrapolateMode = true;
-            currentLine = 0;
-            updateExtrapSelection.();
-            ("Resumed % beat grid: % lines"
-                .format(dpMode.if { "DP" }{ "manual" }, gridLines.size)).postln;
-        };
-    };
+    // Resume beat-mark editing from a saved selection — DP saves rebuild the
+    // tracker exactly, manual saves re-interpolate their ghost lines
+    // (BeatMarkMode.resume). Model-only and it posts what it found, so it is safe
+    // before the window exists.
+    beatMark.resume(savedSel);
 
     // Create a window and UserView
     window = Window("Piano Roll", Rect(100, 100, width, height)).front;
@@ -405,113 +265,48 @@ gui { |take|
     view = UserView(window, Rect(0, 0, width, 1600))
     .background_(Color.white);
     
-    // Define the keyboard actions
-	// Replace the key action section in your gui method with this fixed version:
-
-// Replace the key action section in your gui method with this fixed version:
-
-view.keyDownAction_({ |view char|
-    var handled = false;
-
-    (char == $e or: (char == $E)).if {
-        handled = true;
-        invalidateLane.(); // the beat source changes either way — recompute lazily
-        extrapolateMode.if {
-            extrapolateMode = false;
-            dpMode = false;
-            gridLines = [];
-            view.refresh;
-            ("Extrapolate mode off. Selected: " ++ selectedIndices).postln;
+    // ---- controller hooks. The gui keeps the window, the transport and the
+    // pixels; the two controllers keep the model and ask for these back.
+    // onChange vs onGridChange: line navigation only needs a redraw, while a
+    // re-pick changes the beat grid that the click schedule and the tempo lane
+    // are derived from, and re-deriving a tempo map per arrow press is what the
+    // split avoids.
+    beatMark.onChange = { view.refresh };
+    beatMark.onGridChange = { invalidateLane.(); view.refresh };
+    beatMark.ensureVisible = ensureLineVisible;
+    // the respondsTo(\takes) dance the 'w' handler used to carry inline
+    beatMark.onSave = { |sel|
+        this.respondsTo(\takes).if {
+            this.addSelection(take, sel)
         }{
-            (char == $E).if {
-                (selectedIndices.size < 2).if {
-                    "Extrapolate mode needs at least 2 selected notes".postln;
-                }{
-                    var sorted = selectedIndices.copy.sort{|a b| notes[a].timestamp < notes[b].timestamp};
-                    manualIndices = sorted;
-                    anchorPair = sorted.keep(-2).collect{|i| notes[i].timestamp};
-                    pinSet = Set[];
-                    beatTracker = MIDIBeatTracker(notes, anchorPair[1] - anchorPair[0], sorted.last);
-                    gridLines = beatTracker.track;
-                    (gridLines.size == 0).if {
-                        "Extrapolate (DP): no beats found after the anchor".postln;
-                    }{
-                        extrapolateMode = true;
-                        dpMode = true;
-                        currentLine = 0;
-                        updateExtrapSelection.();
-                        ensureLineVisible.(gridLines[0][\time]);
-                        view.refresh;
-                        ("Extrapolate (DP): % lines, prior beat = %s"
-                            .format(gridLines.size, (anchorPair[1] - anchorPair[0]).round(0.001))).postln;
-                    }
-                }
+            this.tryPerform(\takeIndex).notNil.if {
+                this.source.addSelection(this.takeIndex, sel)
             }{
-            (selectedIndices.size < 2).if {
-                "Extrapolate mode needs at least 2 selected notes".postln;
-            }{
-                var sorted = selectedIndices.copy.sort{|a b| notes[a].timestamp < notes[b].timestamp};
-                manualIndices = sorted;
-                anchorPair = sorted.keep(-2).collect{|i| notes[i].timestamp};
-                gridLines = [];
-                rebuildGrid.(-1);
-                (gridLines.size == 0).if {
-                    "Extrapolate: could not build grid (pair interval zero or past end)".postln;
-                }{
-                    extrapolateMode = true;
-                    currentLine = 0;
-                    updateExtrapSelection.();
-                    ensureLineVisible.(gridLines[0][\time]);
-                    view.refresh;
-                    ("Extrapolate mode: % lines, beat = %s"
-                        .format(gridLines.size, (anchorPair[1] - anchorPair[0]).round(0.001))).postln;
-                }
-            }
+                "no take context — open the gui from a MIDIItem (or via .take) to save selections".postln
             }
         }
     };
-
-    (handled.not and: extrapolateMode).if {
-        switch (char,
-            $h, {
-                handled = true;
-                currentLine = (currentLine - 1).max(0);
-                ensureLineVisible.(gridLines[currentLine][\time]);
-                view.refresh;
-            },
-            $l, {
-                handled = true;
-                currentLine = (currentLine + 1).min(gridLines.size - 1);
-                ensureLineVisible.(gridLines[currentLine][\time]);
-                view.refresh;
-            },
-            $j, { // pick earlier note at current line
-                var line = gridLines[currentLine];
-                var idx = line[\noteIndex];
-                var newIdx;
-                handled = true;
-                newIdx = idx.notNil.if {
-                    (idx - 1).max(0)
-                }{
-                    var after = notes.detectIndex{|e| e.timestamp > line[\time]};
-                    after.isNil.if { notes.size - 1 }{ (after - 1).max(0) }
-                };
-                dpMode.if { repin.(idx, newIdx) }{ applyManualPick.(line, newIdx) };
-            },
-            $k, { // pick later note at current line
-                var line = gridLines[currentLine];
-                var idx = line[\noteIndex];
-                var newIdx;
-                handled = true;
-                newIdx = idx.notNil.if {
-                    (idx + 1).min(notes.size - 1)
-                }{
-                    notes.detectIndex{|e| e.timestamp > line[\time]} ? (notes.size - 1)
-                };
-                dpMode.if { repin.(idx, newIdx) }{ applyManualPick.(line, newIdx) };
-            }
-        )
+    mapEd.onChange = { view.refresh };
+    // audition (§12b D phase 2): click through the CANDIDATE map before
+    // committing, on the click clock, same event form as the count-in
+    mapEd.audition = { |times|
+        var t0 = times.first;
+        clickClock.clear;
+        times.do { |t, i|
+            clickClock.sched(t - t0, {
+                (instrument: \hihat, amp: (i == 0).if { 0.2 }{ 0.1 }).play; nil
+            })
+        };
     };
+
+    // Define the keyboard actions. Order: beatMark first (it owns e/E always and
+    // h l j k while a grid is up), then mapEd (m always, its edit keys while map
+    // edit is on), then this gui's own switch — each answers whether it consumed
+    // the key, so nothing is handled twice.
+view.keyDownAction_({ |view char|
+    var handled = beatMark.keyDown(char);
+
+    handled.not.if { handled = mapEd.keyDown(char, cursorTime) };
 
     handled.not.if {
     switch (char,
@@ -631,15 +426,10 @@ view.keyDownAction_({ |view char|
             view.refresh;
             ("Zoomed in, duration: " ++ newDuration.round(0.01)).postln;
         },
-        $r, {selectedIndices = []; extrapolateMode = false; dpMode = false; pinSet = nil; gridLines = []; invalidateLane.(); view.refresh; "Selection cleared".postln},
-        $t, { // §12D: toggle the tempo lane
-            showLane = showLane.not;
-            view.refresh;
-            ("Tempo lane " ++ showLane.if("on", "off")
-                ++ ((showLane and: { laneData.()[\times].size < 2 }).if {
-                    " (no beat grid — select notes, or e/E)" }{ "" })).postln;
-        },
-        $g, {("Selected note indices: " ++ selectedIndices).postln; selectedIndices},
+        $r, {beatMark.clear; invalidateLane.(); view.refresh; "Selection cleared".postln},
+        $t, {mapEd.toggleLane}, // §12D: toggle the tempo lane
+        $g, {("Selected note indices: " ++ beatMark.selectedIndices).postln;
+             beatMark.selectedIndices},
         $x, { // §12B: mark the cursor as the content start — everything left of it
               // is throat clearing, dimmed here and dropped by quantize/fromSelection
             contentStart = cursorTime;
@@ -651,50 +441,10 @@ view.keyDownAction_({ |view char|
             view.refresh;
             "Content start cleared".postln;
         },
-        $w, { // persist selection — immutable, appends a new version if changed
-            var sel, beatPos, sortedSel, positions;
-            (selectedIndices.size == 0).if {
-                "nothing selected — not saved".postln
-            }{
-                // beat position of each selected note: manual clicks count 1 beat
-                // apiece, grid picks sit at their line index (ghosts widen the gap)
-                beatPos = Dictionary.new;
-                extrapolateMode.if {
-                    manualIndices.do{|idx i| beatPos[idx] = i };
-                    gridLines.do{|l i|
-                        l[\noteIndex].notNil.if { beatPos[l[\noteIndex]] = manualIndices.size + i }
-                    };
-                };
-                sortedSel = selectedIndices.copy.sort{|a b| notes[a].timestamp < notes[b].timestamp};
-                positions = List[];
-                sortedSel.do{|idx|
-                    positions.add( beatPos[idx] ?? { (positions.last ? -1) + 1 } )
-                };
-                sel = (
-                    indices: sortedSel,
-                    beats: positions.asArray.differentiate.drop(1).collect(_.max(1))
-                );
-                // §12B: where the real content begins. An explicit 'x' mark wins;
-                // otherwise the first selected note IS the first anchor, so it is
-                // the natural content start (and makes quantize's drop a no-op).
-                sel[\contentStart] = contentStart ?? { sortedSel.first !? { |i| notes[i].timestamp } };
-                extrapolateMode.if {
-                    sel[\periodPrior] = anchorPair[1] - anchorPair[0];
-                    sel[\manual] = manualIndices;
-                };
-                dpMode.if {
-                    sel[\pins] = pinSet.asArray.sort;
-                    sel[\anchor] = beatTracker.anchorIndex;
-                };
-                this.respondsTo(\takes).if {
-                    this.addSelection(take, sel)
-                }{
-                    this.tryPerform(\takeIndex).notNil.if {
-                        this.source.addSelection(this.takeIndex, sel)
-                    }{
-                        "no take context — open the gui from a MIDIItem (or via .take) to save selections".postln
-                    }
-                };
+        $w, { // persist selection — immutable, appends a new version if changed.
+              // BeatMarkMode builds the Event (indices + beat gaps + tracker
+              // state) and the onSave hook above knows where to put it.
+            beatMark.save(contentStart) !? { |sel|
                 // §12C: the click grid follows the selection just saved
                 savedSel = sel;
                 beatGrid = nil;
@@ -703,8 +453,8 @@ view.keyDownAction_({ |view char|
         },
         $?, {
             // Show help menu
-            var helpWindow = Window("Piano Roll Help", Rect(200, 200, 400, 560)).front;
-            var helpText = StaticText(helpWindow, Rect(10, 10, 380, 540))
+            var helpWindow = Window("Piano Roll Help", Rect(200, 200, 460, 760)).front;
+            var helpText = StaticText(helpWindow, Rect(10, 10, 440, 740))
                 .string_("Piano Roll Keyboard Shortcuts:\n\n" ++
                     "q - Close window and open WezTerm\n" ++
                     "0, 1, 2 - Switch to take 0, 1, or 2\n" ++
@@ -731,11 +481,24 @@ view.keyDownAction_({ |view char|
                     "E - Same, but DP beat tracker (globally optimal; j/k pin notes)\n" ++
                     "      h/l - previous/next grid line\n" ++
                     "      j/k - pick earlier/later note at current line (re-extrapolates)\n" ++
+                    "m - Toggle MAP EDIT mode (edits the tempo map in the lane; the keys\n" ++
+                    "      below act only while it is on — everything else is unchanged)\n" ++
+                    "      i/o - span start/end at the cursor; drag across the lane also\n" ++
+                    "      A   - select the whole map (the default span)\n" ++
+                    "      Q   - straighten the span to one constant tempo (quantize)\n" ++
+                    "      V   - curve the span (monotone cubic through its anchors)\n" ++
+                    "      N   - clump: keep every 2nd anchor in the span\n" ++
+                    "      S/F - slower/faster: stretch the span's time by ±5%\n" ++
+                    "      B   - set the span to the grid's mean bpm\n" ++
+                    "      P   - audition: click through the candidate map\n" ++
+                    "      u/U - undo/redo    Z - back to the loaded map\n" ++
+                    "      W   - commit: MapEditor.last, for warpTo / sourceTempoMap:\n" ++
                     "? - Show this help menu\n\n" ++
                     "Mouse:\n" ++
                     "Click notes to select/deselect them\n" ++
                     "Alt-click to place the playback cursor (snaps to the nearest beat)\n" ++
                     "Shift-alt-click to place it freely (no snap)\n" ++
+                    "In map edit mode, drag across the tempo lane to select a beat span\n" ++
                     "Selected notes appear in red\n\n" ++
                     "Visual Guide:\n" ++
                     "Gray shading = Black keys\n" ++
@@ -757,6 +520,13 @@ view.keyDownAction_({ |view char|
         var clickedNoteIndex = nil;
         var altDown = (mod bitAnd: 524288) > 0; // 0x80000 = alt/option
         var shiftDown = (mod bitAnd: 131072) > 0; // 0x20000 = shift
+        // §12b D phase 2: a plain click inside the tempo-lane strip, in map-edit
+        // mode, starts a beat-span drag. Checked FIRST and only consumed there,
+        // so with the mode off (the default) the lane is inert and every click
+        // behaves exactly as before.
+        var onLane = altDown.not and: {
+            mapEd.mouseDown(x, y, viewStart, viewEnd, width)
+        };
 
         // alt-click: place the playback cursor at the clicked time (skip note selection).
         // §12C: snap to the NEAREST click-grid time when a grid exists, so playback
@@ -778,7 +548,7 @@ view.keyDownAction_({ |view char|
         };
 
         // Check if click is on a note
-        altDown.not.if {
+        (altDown.not and: { onLane.not }).if {
         notes.do { |e, idx|
             var noteY = height - ((e.midinote - startMidiNote) * noteHeight);
             var noteX = (e.timestamp - viewStart) * timeScale;
@@ -793,17 +563,22 @@ view.keyDownAction_({ |view char|
         
         // If we found a note, toggle its selection
         if(clickedNoteIndex.notNil) {
-            if(selectedIndices.includes(clickedNoteIndex)) {
-                selectedIndices.remove(clickedNoteIndex);
+            if(beatMark.selectedIndices.includes(clickedNoteIndex)) {
+                beatMark.selectedIndices.remove(clickedNoteIndex);
                 ("Note " ++ clickedNoteIndex ++ " deselected").postln;
             } {
-                selectedIndices = selectedIndices.add(clickedNoteIndex);
+                beatMark.selectedIndices = beatMark.selectedIndices.add(clickedNoteIndex);
                 ("Note " ++ clickedNoteIndex ++ " selected").postln;
             };
             view.refresh;
         };
         }; // end altDown.not
     });
+
+    // the drag half of the lane's span selection — inert unless mouseDown
+    // started one, so ordinary note clicking never sees these
+    view.mouseMoveAction_({ |view, x, y| mapEd.mouseMove(x, y, viewStart, viewEnd, width) });
+    view.mouseUpAction_({ |view, x, y| mapEd.mouseUp });
 
     // Define the drawing function
     view.drawFunc = {
@@ -840,103 +615,10 @@ view.keyDownAction_({ |view char|
         };
         Pen.stroke;
 
-        // §12D phase 1: tempo lane — instantaneous bpm (1/slope of the beat→time
-        // map, i.e. the bpm between adjacent beat anchors) as a step line: the
-        // honest piecewise-constant reading of a PL map. Drawn BEFORE the notes so
-        // it can never occlude them; the strip lives at y 52..116, clear of the help
-        // line (y 10) and the extrapolate status line (y 30).
-        (showLane and: { laneData.()[\times].size >= 2 }).if {
-            var d = laneData.();
-            var times = d[\times], bpms = d[\bpms], mean = d[\mean], sub = d[\subdiv];
-            var laneTop = 52, laneBot = 116, laneH;
-            var lo = inf, hi = -inf, pad, yOf, xOf, prevY;
-            var devThresh = 0.05; // label a span only if it is >5% off the mean...
-            var minLabelW = 30;   // ...and at least this many pixels wide
-            laneH = laneBot - laneTop;
-            // auto-range over the VISIBLE spans, with the whole-grid mean always in
-            // range, so a uniformly sagging window still reads against the average
-            bpms.do { |b, i|
-                ((b.notNil and: { times[i + 1] >= viewStart }) and: { times[i] <= viewEnd }).if {
-                    lo = lo.min(b); hi = hi.max(b);
-                }
-            };
-            mean !? { lo = lo.min(mean); hi = hi.max(mean) };
-            (lo <= hi).if {
-                pad = ((hi - lo) * 0.1).max(1); // ~10% headroom, never a zero range
-                lo = lo - pad; hi = hi + pad;
-                yOf = { |b| laneBot - ((b - lo) / (hi - lo) * laneH) };
-                xOf = { |t| ((t - viewStart) * timeScale).clip(0, width) };
-                // backing, so the key shading doesn't muddy the line (the notes are
-                // drawn after this and stay on top)
-                Pen.color = Color(1, 1, 1, 0.7);
-                Pen.addRect(Rect(0, laneTop, width, laneH));
-                Pen.fill;
-                Pen.color = Color.gray(0.6, 0.6);
-                Pen.line(0@laneTop, width@laneTop);
-                Pen.line(0@laneBot, width@laneBot);
-                Pen.stroke;
-                // dashed midline at the mean bpm of the WHOLE grid
-                mean !? {
-                    var my = yOf.(mean);
-                    Pen.color = Color.gray(0.45, 0.8);
-                    (width / 14).floor.asInteger.do { |k|
-                        var x = k * 14;
-                        Pen.line(x@my, (x + 7)@my);
-                    };
-                    Pen.stroke;
-                };
-                // the step line itself: horizontal per span, vertical at the anchors
-                Pen.color = Color.gray(0.3, 0.85);
-                Pen.width = 1.5;
-                bpms.do { |b, i|
-                    var x0, x1, y;
-                    ((b.notNil and: { times[i + 1] >= viewStart }) and: { times[i] <= viewEnd }).if {
-                        x0 = xOf.(times[i]);
-                        x1 = xOf.(times[i + 1]);
-                        y = yOf.(b).clip(laneTop, laneBot);
-                        prevY !? { Pen.line(x0@prevY, x0@y) };
-                        Pen.line(x0@y, x1@y);
-                        prevY = y;
-                    }
-                };
-                Pen.stroke;
-                Pen.width = 1;
-                // beat ticks on the baseline — whole beats only, so a subdivided
-                // (curved) lane doesn't become a picket fence
-                Pen.color = Color.gray(0.5, 0.8);
-                times.do { |t, i|
-                    (((i % sub) == 0) and: { (t >= viewStart) and: { t <= viewEnd } }).if {
-                        var x = xOf.(t);
-                        Pen.line(x@(laneBot - 5), x@laneBot);
-                    }
-                };
-                Pen.stroke;
-                // lane range, at the left edge
-                Pen.stringAtPoint(hi.round(1).asInteger.asString,
-                    Point(2, laneTop + 1), Font("Helvetica", 9), Color.gray(0.35));
-                Pen.stringAtPoint(lo.round(1).asInteger.asString,
-                    Point(2, laneBot - 11), Font("Helvetica", 9), Color.gray(0.35));
-                // bpm numbers only where they say something — per-segment labels at
-                // quarter density are unreadable
-                (mean.notNil and: { mean > 0 }).if {
-                    bpms.do { |b, i|
-                        var x0, x1, y;
-                        (b.notNil and: { (b - mean).abs > (mean * devThresh) }).if {
-                            x0 = xOf.(times[i]);
-                            x1 = xOf.(times[i + 1]);
-                            (((x1 - x0) >= minLabelW) and: {
-                                (times[i + 1] >= viewStart) and: { times[i] <= viewEnd }
-                            }).if {
-                                y = yOf.(b).clip(laneTop + 11, laneBot);
-                                Pen.stringAtPoint(b.round(1).asInteger.asString,
-                                    Point(x0 + 2, y - 11), Font("Helvetica", 9),
-                                    Color.gray(0.2));
-                            }
-                        }
-                    };
-                };
-            };
-        };
+        // §12D phase 1: the tempo lane, drawn BEFORE the notes so it can never
+        // occlude them. MapEditor owns it now (model, memoization and Pen work);
+        // this gui only says where the visible time window is.
+        mapEd.drawLane(viewStart, viewEnd, width);
 
         // Draw the notes
         notes.do { |e, num|
@@ -950,7 +632,7 @@ view.keyDownAction_({ |view char|
             if(e.midinote >= startMidiNote and: (e.midinote < (startMidiNote + noteRange)) and:
                (e.timestamp >= viewStart) and: (e.timestamp <= viewEnd)) {
                 // Change color if selected
-                if(selectedIndices.includes(num)) {
+                if(beatMark.selectedIndices.includes(num)) {
                     Pen.color = Color.red(e.amp); // Selected notes are red
                 } {
                     Pen.color = Color.blue(e.amp); // Normal notes are blue
@@ -983,31 +665,17 @@ view.keyDownAction_({ |view char|
             Pen.width = 1;
         };
 
-        // Draw extrapolate-mode grid lines
-        extrapolateMode.if {
-            gridLines.do { |l i|
-                var t = l[\time];
-                (t >= viewStart and: (t <= viewEnd)).if {
-                    var x = (t - viewStart) * timeScale;
-                    Pen.width = (i == currentLine).if { 3 }{ 1 };
-                    Pen.color = (i == currentLine).if { Color.red(1, 0.9) }{ Color.green(0.5, 0.6) };
-                    Pen.line(x@0, x@1600);
-                    Pen.stroke;
-                };
-            };
-            Pen.width = 1;
-            Pen.stringAtPoint(
-                "%  line %/%  h/l: move  j/k: %  w: write  e: exit"
-                    .format(
-                        dpMode.if { "EXTRAPOLATE (DP)" }{ "EXTRAPOLATE" },
-                        currentLine + 1, gridLines.size,
-                        dpMode.if { "pin note" }{ "pick note" }
-                    ),
-                Point(10, 30),
-                Font("Helvetica", 14),
-                Color.red
-            );
-        };
+        // Extrapolate-mode grid lines + status: BeatMarkMode paints them, this gui
+        // only lends it the two coordinate closures and the roll's height.
+        beatMark.draw(
+            { |t| (t - viewStart) * timeScale },
+            { |t| (t >= viewStart) and: { t <= viewEnd } },
+            1600);
+
+        // §12b D phase 2: the map editor's span highlight + status, on TOP of the
+        // notes. A no-op unless map-edit mode is on, so the gui is pixel-for-pixel
+        // what it was whenever the mode is off.
+        mapEd.drawEditOverlay(viewStart, viewEnd, width, 1600);
 
         // Draw the playback cursor (blue) and, while playing, the moving playhead (orange)
         (cursorTime >= viewStart and: { cursorTime <= viewEnd }).if {
@@ -1059,8 +727,9 @@ view.keyDownAction_({ |view char|
     // Refresh the view
     view.refresh;
     
-    // Return a function that gives access to the selected indices
-    ^{ selectedIndices };
+    // Return a function that gives access to the selected indices (the selection
+    // lives on the controller now, so this reads through it and stays live)
+    ^{ beatMark.selectedIndices };
 }
 	noteOns {
 		^MIDIItemPlayer(
@@ -2439,8 +2108,9 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	// canonical call is the composition of the two halves:
 	//
 	//     m2 = p.retimeSpan(20, "ex x q qe e".beats, p.onsets(20, 24));
-	//     q  = p.warpTo(m2);            // destructive, or
-	//     list.sourceTempoMap = m2;     // non-destructive — both take a MonoMap
+	//     q  = p.warpTo(m2);            // destructive (takes a MonoMap), or
+	//     sourceTempoMap: m2.asAnchorTempoMap(rebase: false)  // per-event key,
+	//                                   // non-destructive; needs the concrete map
 	//
 	// (the doc's "e. s q q. e" spelling is not in String.beats' vocabulary — it
 	// has no dots and no `s`; "ex x q qe e" is that same rhythm in the tokens the

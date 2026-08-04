@@ -1,4 +1,4 @@
-SynthDef(\defaultPorto,{
+SynthDef(\defaultPorto,{|fixOut=(-1)|
 	var freq=\freq.kr(400,0.5)-5;
 	var gate=\gate.kr(1);
 	var width=\width.kr(19);
@@ -15,7 +15,7 @@ SynthDef(\defaultPorto,{
 	=> .first
 	DetectSilence.ar(_,doneAction:2)
 	//=> DetectSilenceDry.ar(_,doneAction:2)
-	=> Out.ar(Rand(4),_);
+	=> Out.ar((fixOut==(-1)).if {Rand(4)}{fixOut},_);
 //	Env.cutoff(release+3).kr(2,gate:gate)
 },variants:(
 	noisy1: [\ampScale,1.0,\durScale,1.5],

@@ -166,6 +166,39 @@ MonoMap {
 		^(fromFrame.dimension == a) and: { toFrame.dimension == b }
 	}
 
+	// Mean slope over [from, to] — output units per input unit. The READER the
+	// *Span writer family (setSpanSlope / setSpanTempo / stretchSpan) never had.
+	// Defined here rather than on AnchorMap so a MapSeq or a ComposedMap answers
+	// it too; `at` applies whatever extension policy the map carries, so a span
+	// reaching outside the domain follows the same \carry / \error rule as any
+	// other lookup rather than inventing a third behaviour.
+	spanSlope { |from, to|
+		((from.isNumber.not) or: { to.isNumber.not }).if {
+			Error("%.spanSlope: from and to must be numbers, got % and %"
+				.format(this.class, from, to)).throw
+		};
+		(from >= to).if {
+			Error("%.spanSlope: need from < to, got % and %"
+				.format(this.class, from, to)).throw
+		};
+		^(this.at(to) - this.at(from)) / (to - from)
+	}
+	// beat -> sec only: the span's mean tempo in beats per second — exactly the
+	// quantity setSpanTempo sets, so `m.setSpanTempo(a, b, x).spanTempo(a, b)` is
+	// x. Guarded on frame DIMENSIONS like timeAt/beatAt: asking a groove
+	// (beat->beat) for a tempo is a units error, not a shape error. nil when the
+	// span has no output width (a clamped region), where no tempo is defined.
+	spanTempo { |from, to|
+		var slope;
+		this.mapsDimensions(\beat, \sec).not.if {
+			Error("%.spanTempo: needs a beat -> sec map, this one maps % -> %"
+				.format(this.class, fromFrame.dimension, toFrame.dimension)).throw
+		};
+		slope = this.spanSlope(from, to);
+		^(slope > 1e-9).if { slope.reciprocal }
+	}
+	spanBpm { |from, to| ^this.spanTempo(from, to) !? (_ * 60) }
+
 	prExtensionError { |x, end|
 		Error("%: % outside domain % (% end is \\error)"
 			.format(this.class, x, this.domain, end)).throw

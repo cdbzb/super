@@ -2043,6 +2043,28 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	// e.g. q = m.quantize; q.play(nil, TempoClock(m.bps)) -> original tempo.
 	bps {|beats choiceFunc| ^this.tempomap(beats, choiceFunc).bps }
 	bpm {|beats choiceFunc| ^this.tempomap(beats, choiceFunc).bpm }
+	// mean tempo over a BEAT span of the loaded selection — the reader that bps/bpm
+	// (whole selection) and MapEditor.spanBpm (gui, current span only) both left
+	// out. Goes through timeAtBeat, so it extrapolates past the selection at the
+	// boundary tempo like every other beat-addressed method here, and a subrange
+	// answers the tempo the MAP holds there — NOT fromBeat(from, to).bpm, which
+	// rebuilds a map from the slice and is skewed by its closing anchor (see
+	// MIDIItemTempoMap.bps). Pass `tempoMap` to reuse one across a sweep.
+	spanBps { |from, to, tempoMap|
+		var tm, dt;
+		((from.isNumber.not) or: { to.isNumber.not }).if {
+			("spanBps: from and to must be numbers, got % and %".format(from, to)).warn;
+			^nil
+		};
+		(from >= to).if {
+			("spanBps: need from < to, got % and %".format(from, to)).warn;
+			^nil
+		};
+		tm = tempoMap ?? { this.tempomap };
+		dt = this.timeAtBeat(to, tm) - this.timeAtBeat(from, tm);
+		^(dt > 1e-9).if { (to - from) / dt }
+	}
+	spanBpm { |from, to, tempoMap| ^this.spanBps(from, to, tempoMap) !? (_ * 60) }
 	// performed timestamp of an ideal beat position of the loaded selection
 	// (beat 0 = the first selected note); extrapolates beyond the selection
 	// at the boundary tempo, so negative beats address a pickup

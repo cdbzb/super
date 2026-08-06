@@ -886,11 +886,14 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	// SystemClock moment a recorded event SOUNDED (record's latencyCompensation is
 	// folded in, undoing the subtraction at MIDI-Item2 capture). Overdubs are also
 	// pulled back by AudioItem.outputLatency — the press was aimed at monitoring.
-	// Session-local: archived values are meaningless after an sclang restart.
+	// Absolute alone, but every consumer takes a difference against recordPlayEpoch's
+	// \seconds, so placement survives restarts and machine moves (see recordWall).
 	var <recordEpochs, <recordEpoch;
 	// §9b: the EventList play epoch this take overdubbed against, snapshotted at record
 	// time so source-preferred addItem aligns to the playthrough the take heard rather
-	// than the list's current lastPlayEpoch. Session-local, same caveat as recordEpoch.
+	// than the list's current lastPlayEpoch. Archives (detached clock + Env, no live
+	// objects); missing on pre-epoch takes, where addItem at:nil falls back to the
+	// live lastPlayEpoch and misplaces silently — prefer at:\original after a restart.
 	var <recordPlayEpochs, <recordPlayEpoch;
 	var <beatSelections; // Dictionary: take -> List of selection Events (append-only, immutable versions)
 	classvar midiout, <recording;

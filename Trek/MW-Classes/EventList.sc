@@ -248,9 +248,9 @@ EventList {
 	//     .currentPlayEpoch) into the take, so a LATER replay of this list can't
 	//     misalign it; older takes without the snapshot fall back to lastPlayEpoch.
 	//     Fragments land on the ideal-beat grid with micro-timing as fractional
-	//     beats; the quantize family then applies in the beat domain. Needs
-	//     same-session capture of a take recorded while this list played (epochs are
-	//     absolute SystemClock seconds, void after a restart).
+	//     beats; the quantize family then applies in the beat domain. Needs a take
+	//     recorded while this list played; both epochs archive and the arithmetic
+	//     differences them, so a later session still places correctly.
 	//   at: \original — sugar for at: this.itemStartBeat(player): the take START
 	//     lands on the wall-preserving beat (recorded wall moment resolved through
 	//     THIS list's CURRENT frame — see itemStartBeat), then positions within the
@@ -269,7 +269,7 @@ EventList {
 		player = player.player;
 		(at == \original).if {
 			at = this.itemStartBeat(player) ?? {
-				^"EventList.addItem: at: \\original needs a take with a recordPlayEpoch (same-session recording) — pass a beat instead".warn
+				^"EventList.addItem: at: \\original needs a take with a recordPlayEpoch (recorded against a playing list) — pass a beat instead".warn
 			}
 		};
 		at.notNil.if {

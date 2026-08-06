@@ -682,8 +682,14 @@ Missing primitives, in dependency order:
    MIDIItem now stores a per-take SOUND epoch
    (`recordEpochs`; `recordEpoch + timestamp` = the SystemClock moment the note
    sounded — record's latencyCompensation folded in once, so capture needs no latency
-   term), carried onto players by `take(n)`/`player`. Session-local: meaningless
-   after sclang restart, so capture must happen in the recording session.
+   term), carried onto players by `take(n)`/`player`. The raw value is an absolute
+   SystemClock reading, but every consumer differences it against `recordPlayEpoch`'s
+   `\seconds` and resolves through that epoch's detached clock, so the origin cancels:
+   **capture works in a later session** (`recordWall`/`recordBeat`/`itemStartBeat`,
+   `MIDI-Item2.sc:1543`). Both epochs archive with the item. Exception: a take with no
+   `recordPlayEpoch` (pre-epoch) makes `at: nil` fall back to the LIVE `lastPlayEpoch`
+   and misplace silently — after a restart prefer `at: \original`, which returns nil
+   instead.
    `lastPlayEpoch` now also carries `list:` — a detached clock snapshot
    (`prClockSnapshot`, shared with `prRecordStamp`) — because `wallToBeat` on the
    live list reads mutable `tempoMap`/`beatDur`, and capture-after-requantize must

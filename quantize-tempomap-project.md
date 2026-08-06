@@ -1528,3 +1528,34 @@ rather than competing.
 
 Cumulative, not absolute: two `quantize(0.5)` calls land near 0.75. For a live knob,
 keep the original map and blend from it each time.
+
+### 12i. `EventList.alignTo` — the lock↔as-performed knob (2026-08-06)
+
+§12h's `quantize` turned out to be the wrong axis for the question it kept getting
+asked. Straightening a child's clock aims it at the CHILD's own mean tempo, which is
+free-floating against the parent: past the anchor beat the two walk apart, which
+reads as drift. The knob actually wanted is between the two things `prExpandList`
+already does — `followTrack: true` (child beats ARE parent beats) and followTrack off
+(child plays its own performed seconds) — and neither `quantize` nor `groove` spans
+that, because both stay inside the child's own frame.
+
+    c.alignTo(parent, at, amount, scale)   // 0 = every child beat on a parent beat
+                                           // 1 = as performed
+
+Blends the child's anchor times toward the parent's beat→wall spans over the span the
+child will occupy, then assigns through `tempoMap_`. Convex blend of two strictly
+increasing sequences, so monotonicity is structural (same argument as `quantize`).
+`at` is the parent beat child beat 0 lands on — the same value the nesting event's
+`when:` gets — and `scale` is parent beats per child beat, for a take whose marks sit
+at a different metric level than the parent's beat. Requires followTrack OFF; with it
+on the child's clock is ignored and the knob does nothing.
+
+Verified against a deliberately uneven parent (beat spans 1.0 / 1.5 / 0.7 s): amount
+0 reproduces the parent grid exactly (including its rubato — this is what
+followTrack: true gives, so 0 and followTrack: true agree), amount 1 is bit-identical
+to untouched playback, `scale: 2` matches the parent's 2-beat spans.
+
+Open: `scale` is a constant, so a child whose metric level CHANGES mid-take needs the
+per-span treatment (§12g's `retimeSpan` territory). And nothing yet reads the
+mismatch automatically — `[c.beatToWall(1), parent.beatToWall(at + 1) -
+parent.beatToWall(at)]` is the manual check.

@@ -654,6 +654,36 @@ EventList {
 	// Straighten the beat span [from, to] only, leaving the rest of the clock alone.
 	quantizeSpan { |from, to, amount = 1| ^this.prMapEdit { |m| m.quantizeSpan(from, to, amount) } }
 
+	// The knob from "every child beat on a parent beat" (amount 0) to "as performed"
+	// (amount 1). NOT what quantize does: quantize straightens toward the CHILD's own
+	// mean tempo, which floats free of the parent and so drifts against it; this
+	// blends the child's clock toward the PARENT's clock over the span it will
+	// occupy, so 0 is exactly what followTrack: true gives and 1 is untouched
+	// playback. Use with followTrack OFF — the child has to keep its own clock for
+	// this to mean anything. `at` is the parent beat child beat 0 lands on (the same
+	// value the nesting event's when: gets); `scale` is parent beats per child beat,
+	// for a take whose marks sit at a different metric level.
+	alignTo { |parent, at = 0, amount = 0, scale = 1|
+		var m, xs, x0, y0, env, base;
+		tempoMap.isNil.if { ^this };
+		m = tempoMap.asMonoMap;
+		m.respondsTo(\xs).not.if {
+			Error("EventList.alignTo: need an anchor map, got %".format(m.class)).throw
+		};
+		xs = m.xs;
+		x0 = xs.first;
+		y0 = m.ys.first;
+		env = parent.tempoEnv;
+		base = parent.beatToWall(at, env);
+		^this.tempoMap_(AnchorMap(
+			xs,
+			xs.collect { |x, i|
+				(parent.beatToWall(at + ((x - x0) * scale), env) - base)
+					.blend(m.ys[i] - y0, amount)
+			},
+			m.fromFrame, m.toFrame, m.extendBelow, m.extendAbove))
+	}
+
 	// Bridge out to a MonoMap, edit, and assign THROUGH tempoMap_ — the setter owns
 	// both the coercion back to an AnchorTempoMap and dropping the beat->wall cache,
 	// so this must never touch the ivar. A flat list (nil map) is already straight,

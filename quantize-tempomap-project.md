@@ -810,6 +810,26 @@ Caveats = the work items:
   so a pickup/initial rest offsets every "beat" by the first anchor's absolute time. Need
   `quantize(rebase:)` or `from`/`trimTimeStampsToStart` before treating timestamps as list
   beats. (`asEventList` already subtracts `t0` correctly, `ParamSpace.sc:129`.)
+- **`t0` in the two placement routes — FIXED 2026-08-06.** They had mirror-image holes.
+  Route 1 (`addItem(p.selection, at:)`) subtracts `t0` correctly but anchors the FIRST
+  MARKED NOTE, and nothing computed that beat: `itemStartBeat`/`recordBeat`/`recordWall`
+  all anchor timestamp 0. Added **`EventList.itemAnchorBeat(player)`** (`itemStartBeat` +
+  the map's `t0`, shared `prItemBeat`); usually `.round(1)` it, since positioning the take
+  on the grid is a separate act from regularizing its contents. Route 3
+  (`\mi2` + `followTrack: <map>`) had the anchor (`when: itemStartBeat`) but fed the map
+  `rel = timestamp - player.start` while a `MIDIItemTempoMap`'s times are rebased by `t0`
+  (it reports `timeDomain [0, ...]`), so takes shifted by start→first-mark. `prEmitMi2Follow`
+  now tracks `srcOrigin` (the map's domain start in the player's own timeline, re-based by
+  the mid-list `from` trim), resolved as `t0` → a non-zero `timeDomain.first` (an
+  absolute-origin `asMonoMap`) → `player.start` (the old general-map convention). That
+  middle case is what makes `tempomap.asMonoMap(origin: \absolute)` usable as a
+  `sourceTempoMap:`, and hence the partial-quantize knob `…asMonoMap(origin: \absolute)
+  .quantize(1 - strength)` — note the INVERSE sense: `AnchorMap.quantize` straightens the
+  map, and a straighter source map corrects the notes LESS. `origin: \relative` on a `t0`
+  map stays broken and can't be detected (it discarded `t0`; domain start 0 is
+  indistinguishable from an honestly item-start-based map) — use `\absolute`.
+  Bit-identical for maps with no `t0` and a zero domain start. UNTESTED — compiles, but
+  needs a listening check.
 - **No merge convenience** — `asEventList` builds a NEW list; want
   `list.addItem(player, at: beat, voice:)` (shared with §9a step 3).
 - Tempo matching is already handled: `mi.bps`/`bpm` (`MIDI-Item2.sc:1721-1724`) measures the

@@ -316,12 +316,26 @@ EventList {
 	// this list's rebased frame (- dstT0), else the take lands t0 late relative
 	// to the guide. Limitation: a rebase done outside the tempoMap (e.g. a flat
 	// list whose player.start was set) is invisible to the epoch snapshot.
-	itemStartBeat { |player|
+	itemStartBeat { |player| ^this.prItemBeat(player, 0) }
+
+	// The list beat at which the take's FIRST MARKED NOTE was played — i.e. the
+	// right value for addItem's at:, which positions that note rather than the
+	// take's start. (itemStartBeat is the take's start, so passing it instead puts
+	// the whole take early by the recorded distance from the start to the first
+	// mark.) With no saved selection there is no map, addItem positions timestamp 0
+	// instead, and this returns itemStartBeat to match. Round to land on the grid:
+	//   e.addItem(p, at: e.itemAnchorBeat(p).round(1))
+	itemAnchorBeat { |player|
+		^this.prItemBeat(player, { player.player.tempomap.t0 }.try ? 0)
+	}
+
+	// beat in this list's current frame at which `tOff` seconds into the take sounded
+	prItemBeat { |player, tOff = 0|
 		^player.player.tryPerform(\recordWall) !? { |w|
 			var ep = player.player.recordPlayEpoch;
 			var srcT0 = (ep !? { ep[\list].tempoMap.tryPerform(\t0) }) ? 0;
 			var dstT0 = tempoMap.tryPerform(\t0) ? 0;
-			this.wallToBeat(w + srcT0 - dstT0, this.tempoEnv)
+			this.wallToBeat(w + tOff + srcT0 - dstT0, this.tempoEnv)
 		}
 	}
 
@@ -1196,7 +1210,7 @@ EventList {
 		var b0     = ev[\when] ? 0;
 		var rate   = (ev[\tempo] ? 1) / (ev[\stretch] ? 1);
 		var originBeat = b0.max(from);
-		var pstart, beatOff, tm, wallBase, warped, wPlayer, useMap, useSrc, mapAnchor, srcMap;
+		var pstart, beatOff, tm, wallBase, warped, wPlayer, useMap, useSrc, mapAnchor, srcMap, srcOrigin;
 		player.isNil.if { ^out };
 		ev[\filter] !? { |f| player = f.(player) };
 		ev[\params] !? { |p| player = player.setParams(p) }; // \mi2 finish does this
@@ -1219,12 +1233,28 @@ EventList {
 		};
 		// item-frame beat that sounds at list beat originBeat (== originBeat until rate != 1)
 		mapAnchor = b0 + ((originBeat - b0) * rate);
+		// Where item-seconds 0 sits in the player's own timeline — prSrcTimeAt/BeatAt
+		// measure from the map's domain start, so this is that start as a take
+		// timestamp. In order: a MIDIItemTempoMap's t0 (its times were rebased by t0 at
+		// construction, so it reports timeDomain [0, ...] and the start is invisible
+		// there); an absolute-origin map's own domain start (asMonoMap(origin:
+		// \absolute)); else player.start, the general convention that a map's domain
+		// starts where the item does. Wrong here and the take shifts by the gap from
+		// its start to the first marked note. A relative-origin asMonoMap of a t0 map
+		// is the one unfixable case — it discarded t0, and its domain start of 0 is
+		// indistinguishable from an honestly item-start-based map. Use \absolute.
+		// The trim below moves the timestamps, so the origin moves with them.
+		srcOrigin = srcMap.tryPerform(\t0) ?? {
+			var d = (srcMap.tryPerform(\timeDomain) !? (_.first)) ? 0;
+			(d != 0).if { d } { player.start ? 0 }
+		};
 		(from > b0).if {
 			// trim in the player's own time domain: recorded seconds through the map
 			// when one is in play, else flat beats-as-seconds — a beat-domain cut on
 			// a map source trims at the wrong recorded second AND shifts the
 			// inversion's rel-origin, skewing every note after a mid-list `from`.
-			var tFrom = (player.start ? 0) + (useMap.if {
+			var base = useSrc.if { srcOrigin } { player.start ? 0 };
+			var tFrom = base + (useMap.if {
 				tm.timeAt(mapAnchor) - tm.timeAt(b0)
 			} {
 				useSrc.if {
@@ -1235,6 +1265,7 @@ EventList {
 			});
 			(tFrom >= (player.end ? player.bounds.end)).if { ^out }; // fully before `from`
 			player = player.from(tFrom); // rebases to 0 and chases CC state to tFrom
+			srcOrigin = srcOrigin - tFrom; // timestamps moved, so the origin does too
 		};
 		pstart = player.start ? 0;
 		beatOff = case
@@ -1250,11 +1281,11 @@ EventList {
 			}
 			{ useSrc } {
 				var itemAnchor = mapAnchor - b0;
-				var startSec = this.prSrcTimeAt(srcMap, itemAnchor);
+				var itemOff = pstart - srcOrigin; // rel (from player.start) -> item seconds
 				(srcMap.respondsTo(\extrapolation) and: { srcMap.extrapolation == \clamp }).if {
 					"prEmitMi2Follow: source map clamps at its ends — item events past the map's end freeze at the boundary beat".warn
 				};
-				{ |rel| (this.prSrcBeatAt(srcMap, startSec + rel) - itemAnchor) / rate }
+				{ |rel| (this.prSrcBeatAt(srcMap, rel + itemOff) - itemAnchor) / rate }
 			}
 			{ { |rel| rel / rate } };
 		wallBase = place.(originBeat);

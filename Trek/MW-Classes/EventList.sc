@@ -637,6 +637,30 @@ EventList {
 		^this
 	}
 
+	// Straighten this list's clock: amount 1 = one constant tempo, 0 = bit-exact
+	// unchanged. On a list from asEventList — whose map holds the performance's
+	// rubato, which is what makes the regularized whens play back as performed —
+	// this is a continuous knob from as-played to metronomic. The notes never move,
+	// their clock does, so this is NOT AbstractMidiEvents.quantize, which rewrites
+	// timestamps. Chainable. Cumulative: two 0.5 calls land near 0.75, so for a knob
+	// blend from a kept original rather than calling again.
+	quantize { |amount = 1| ^this.prMapEdit { |m| m.quantize(amount) } }
+
+	// Straighten locally: each span blends toward the mean slope over a `window` of
+	// BEATS (default a quarter of the map's extent), so jitter goes and long-range
+	// shape stays.
+	quantizeWindow { |amount = 1, window| ^this.prMapEdit { |m| m.quantizeWindow(amount, window) } }
+
+	// Straighten the beat span [from, to] only, leaving the rest of the clock alone.
+	quantizeSpan { |from, to, amount = 1| ^this.prMapEdit { |m| m.quantizeSpan(from, to, amount) } }
+
+	// Bridge out to a MonoMap, edit, and let tempoMap_ coerce the result back to an
+	// AnchorTempoMap. A flat list (nil map) is already straight, so it is a no-op.
+	prMapEdit { |func|
+		tempoMap.isNil.if { ^this };
+		^this.tempoMap_(func.(tempoMap.asMonoMap))
+	}
+
 	// Base wall-seconds elapsed across the beat interval [a, b], BEFORE any
 	// \tempoTrack multiplier: the recorded tempoMap's delta if present, else flat
 	// beatDur. t0 cancels in the delta, so this is offset-free (and the play-time

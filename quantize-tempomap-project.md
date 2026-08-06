@@ -1488,3 +1488,43 @@ Decisions if built:
   multiple items, post-hoc additions, lists that never were MIDIItems.
 
 Status: maybe. Not building until a real merged-list case wants it.
+
+### 12h. `EventList.quantize` — the clock-side knob (2026-08-06)
+
+`asEventList` puts the whens on ideal beats AND hands the child the map they came
+from (`ParamSpace.sc:125`), so the child's clock *undoes* the regularization and it
+plays back as performed. Straightening that clock is therefore a continuous
+as-played → metronomic knob, and it needs no new machinery:
+
+    c = mi.take(3).selection.asEventList(\chords, \harp);
+    e.add(b, newType: \eventList, eventList: c.quantize(0.5));   // followTrack OFF
+
+Built as `quantize(amount)`, `quantizeWindow(amount, window)` and
+`quantizeSpan(from, to, amount)` on EventList, all forwarding through one
+`prMapEdit` that bridges out with `asMonoMap`, applies, and lets `tempoMap_` coerce
+the result back to an `AnchorTempoMap`. Chainable (returns the list), so it inlines
+as an `eventList:` value. A flat list (nil map) is a no-op. Verified on take 3 of
+`260804_103507`: amount 0 is bit-exact, 1 is exactly even spacing, `quantizeSpan(0,
+2, 1)` leaves beats past 2 untouched.
+
+Two traps this deliberately does not paper over:
+- **The sense depends on which direction the map is used.** Straightening a map used
+  as a CLOCK quantizes; straightening one used as a `sourceTempoMap:` (inverted,
+  sec → beat) UN-quantizes, because it removes the correction rather than the
+  rubato. Same `AnchorMap.quantize` either way. That asymmetry is why the verb lives
+  on EventList and not on the map: a map cannot know how it will be consumed.
+- **`quantize` is already taken on the map side.** `MIDIItemTempoMap :
+  AbstractMidiEvents` inherits `AbstractMidiEvents.quantize` (`MIDI-Item2.sc:840`),
+  which rewrites note timestamps and needs a loaded selection — a different
+  operation on an object that also legitimately has notes. If a map-level verb is
+  ever wanted, name it `straighten`.
+
+Also settled here: `anEventList.tempoMap` is one of nil, `AnchorTempoMap` (what
+`tempoMap_` mints from ANY MonoMap, `EventList.sc:630`), `MIDIItemTempoMap`, or a
+legacy `TempoMap`. Only `timeAt`/`beatAt` (+ `tryPerform(\t0)`, `deepCopy`) are ever
+asked of it. `TempoMap.quantize` (`TempoMap.sc:97`) blends durs by the same formula
+`AnchorMap.quantize` blends anchors, so routing through `asMonoMap` agrees with it
+rather than competing.
+
+Cumulative, not absolute: two `quantize(0.5)` calls land near 0.75. For a live knob,
+keep the original map and blend from it each time.

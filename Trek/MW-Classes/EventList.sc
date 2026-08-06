@@ -654,16 +654,18 @@ EventList {
 	// Straighten the beat span [from, to] only, leaving the rest of the clock alone.
 	quantizeSpan { |from, to, amount = 1| ^this.prMapEdit { |m| m.quantizeSpan(from, to, amount) } }
 
-	// The knob from "every child beat on a parent beat" (amount 0) to "as performed"
-	// (amount 1). NOT what quantize does: quantize straightens toward the CHILD's own
-	// mean tempo, which floats free of the parent and so drifts against it; this
-	// blends the child's clock toward the PARENT's clock over the span it will
-	// occupy, so 0 is exactly what followTrack: true gives and 1 is untouched
-	// playback. Use with followTrack OFF — the child has to keep its own clock for
-	// this to mean anything. `at` is the parent beat child beat 0 lands on (the same
-	// value the nesting event's when: gets); `scale` is parent beats per child beat,
-	// for a take whose marks sit at a different metric level.
-	alignTo { |parent, at = 0, amount = 0, scale = 1|
+	// The knob from "as performed" (amount 0) to "every child beat on a parent beat"
+	// (amount 1) — same sense as the `align:` key on a nested \eventList event. NOT
+	// what quantize does: quantize straightens toward the CHILD's own mean tempo,
+	// which floats free of the parent and so drifts against it; this blends the
+	// child's clock toward the PARENT's clock over the span it will occupy, so 1 is
+	// exactly what followTrack: true gives and 0 is untouched playback. Use with
+	// followTrack OFF — the child has to keep its own clock for this to mean
+	// anything. `at` is the parent beat child beat 0 lands on (the same value the
+	// nesting event's when: gets); `scale` is parent beats per child beat, for a take
+	// whose marks sit at a different metric level. This is the authoring-time bake;
+	// `align:` does the same blend at play time, without touching the child's map.
+	alignTo { |parent, at = 0, amount = 1, scale = 1|
 		var m, xs, x0, y0, env, base;
 		tempoMap.isNil.if { ^this };
 		m = tempoMap.asMonoMap;
@@ -678,8 +680,9 @@ EventList {
 		^this.tempoMap_(AnchorMap(
 			xs,
 			xs.collect { |x, i|
-				(parent.beatToWall(at + ((x - x0) * scale), env) - base)
-					.blend(m.ys[i] - y0, amount)
+				(m.ys[i] - y0).blend(
+					parent.beatToWall(at + ((x - x0) * scale), env) - base,
+					amount)
 			},
 			m.fromFrame, m.toFrame, m.extendBelow, m.extendAbove))
 	}
@@ -1084,6 +1087,10 @@ EventList {
 		// while the parent's tempo map still governs the wall placement.
 		var groove = ev[\groove];
 		var gAt = groove.notNil.if({ { |b| groove.mapBeat(b) } }, { { |b| b } });
+		// align: 0..1 — 1 is followTrack: true (child beats ARE parent beats), 0 is
+		// followTrack absent (child plays its own performed seconds), in between a
+		// blend of the two. Present => it decides, and followTrack is redundant.
+		var align = ev[\align];
 		var childPlace, childSeen, refG;
 		child.isNil.if {
 			"EventList.prepare: no list named %".format(ev[\eventList]).warn;
@@ -1091,6 +1098,8 @@ EventList {
 		};
 		childSeen = (seen ?? { IdentitySet[] }).copy;
 		childSeen.add(this);
+		align.notNil.if { ^this.prExpandBlended(ev, epoch, place, from, childSeen,
+			child, b0, cFrom, cTo, rate, gAt, align) };
 		((ev[\followTrack] ? false) != false).if {
 			(ev[\followTrack] == true).not.if {
 				"EventList.prepare: followTrack:% on nested \\eventList — source-map values only apply to \\mi2; following track".format(ev[\followTrack]).warn
@@ -1114,6 +1123,46 @@ EventList {
 			childPlace = { |cBeat| anchor + (child.beatToWall(gAt.(cBeat), cEnv) - cFromWall) };
 		};
 		^child.prepare(epoch, cFrom, childPlace, childSeen, cTo)
+	}
+
+	// The `align:` blend. Both endpoint placements answer WALL times and both are
+	// monotone in child beat, so their blend is too — which is what makes it safe to
+	// invert below. At align 1 and 0 the expression reduces exactly to prExpandList's
+	// two branches, so those stay the reference. Nothing is mutated: unlike alignTo,
+	// the child's tempoMap is untouched, so replays and nesting stay repeatable.
+	// The mid-list cut has no closed form here (the blend mixes two beat axes), so it
+	// is bisected — same move as Groove's inverse and wallToBeat's subsampled case.
+	prExpandBlended { |ev, epoch, place, from, childSeen, child, b0, cFrom, cTo, rate, gAt, align|
+		var cEnv      = child.prPlayTempoEnv;
+		var anchor    = place.(b0);
+		var refG      = gAt.(cFrom);
+		var cFromWall = child.beatToWall(refG, cEnv);
+		var childPlace = { |cBeat|
+			(anchor + (child.beatToWall(gAt.(cBeat), cEnv) - cFromWall))
+				.blend(place.(b0 + ((gAt.(cBeat) - refG) / rate)), align)
+		};
+		(((ev[\followTrack] ? false) != false) and: { align != 1 }).if {
+			"EventList.prepare: align:% on a nested \\eventList overrides followTrack"
+				.format(align).warn
+		};
+		(from > b0).if { cFrom = this.prBisectBeat(childPlace, place.(from), cFrom) };
+		^child.prepare(epoch, cFrom, childPlace, childSeen, cTo)
+	}
+
+	// child beat whose placement reaches targetWall, never below `lo`. Bracket by
+	// doubling, then halve; the placement is monotone, so this converges.
+	prBisectBeat { |placeFn, targetWall, lo|
+		var hi = lo + 1, span = 1;
+		(placeFn.(lo) >= targetWall).if { ^lo };
+		while { placeFn.(hi) < targetWall and: { span < 1e6 } } {
+			span = span * 2;
+			hi = lo + span
+		};
+		64.do {
+			var mid = (lo + hi) * 0.5;
+			(placeFn.(mid) < targetWall).if { lo = mid } { hi = mid }
+		};
+		^(lo + hi) * 0.5
 	}
 
 	// \mi2 convention on \audioItem: followTrack routes to the tempo-follow path.

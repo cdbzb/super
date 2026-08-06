@@ -1539,8 +1539,8 @@ already does — `followTrack: true` (child beats ARE parent beats) and followTr
 (child plays its own performed seconds) — and neither `quantize` nor `groove` spans
 that, because both stay inside the child's own frame.
 
-    c.alignTo(parent, at, amount, scale)   // 0 = every child beat on a parent beat
-                                           // 1 = as performed
+    c.alignTo(parent, at, amount, scale)   // 1 = every child beat on a parent beat
+                                           // 0 = as performed
 
 Blends the child's anchor times toward the parent's beat→wall spans over the span the
 child will occupy, then assigns through `tempoMap_`. Convex blend of two strictly
@@ -1551,11 +1551,56 @@ at a different metric level than the parent's beat. Requires followTrack OFF; wi
 on the child's clock is ignored and the knob does nothing.
 
 Verified against a deliberately uneven parent (beat spans 1.0 / 1.5 / 0.7 s): amount
-0 reproduces the parent grid exactly (including its rubato — this is what
-followTrack: true gives, so 0 and followTrack: true agree), amount 1 is bit-identical
+1 reproduces the parent grid exactly (including its rubato — this is what
+followTrack: true gives, so 1 and followTrack: true agree), amount 0 is bit-identical
 to untouched playback, `scale: 2` matches the parent's 2-beat spans.
 
 Open: `scale` is a constant, so a child whose metric level CHANGES mid-take needs the
 per-span treatment (§12g's `retimeSpan` territory). And nothing yet reads the
 mismatch automatically — `[c.beatToWall(1), parent.beatToWall(at + 1) -
 parent.beatToWall(at)]` is the manual check.
+
+### 12j. `align:` — the blend as an event key (2026-08-06)
+
+§12i's `alignTo` bakes the blend into the child's tempoMap. As a nesting-event key
+the same blend wants to be declarative instead, and the natural home was considered
+and rejected: overloading `followTrack` with a number.
+
+- **The sense inverts.** `followTrack: 0` would have to mean "maximally following",
+  and the gate is `!= false`, so `0` reads as ON. Someone typing `followTrack: 0`
+  for "off" would get the strongest lock there is.
+- **`followTrack` already means two things by event type** — a source map on `\mi2`,
+  a boolean on nested `\eventList`. A number valid on only one of them makes three,
+  and a number on `\mi2` is silently swallowed today (`0.3.respondsTo(\timeAt)` is
+  false, so it falls back to flat).
+
+So: a separate key, `align: 0..1`, **1 = every child beat on a parent beat** (same as
+`followTrack: true`), **0 = as performed** (same as `followTrack` absent). Same sense
+as `alignTo`'s `amount`, which was flipped to match — one quantity, one convention.
+Present => it decides, and a truthy `followTrack` alongside a non-1 `align` warns.
+
+Built as `prExpandBlended`, a third branch of `prExpandList`. Both endpoint
+placements answer WALL times and both are monotone in child beat, so their blend is
+too. Nothing is mutated — unlike `alignTo`, the child's tempoMap is untouched, so
+replays and nesting stay repeatable, which is the property an event key needs and the
+reason this could not just call `alignTo` from inside `prepare` (that would re-blend
+an already-blended map on every play). `rate` (`tempo:`/`stretch:`) covers what
+`alignTo` spells `scale`, so no extra key.
+
+The mid-list cut has no closed form — the blend mixes two beat axes — so it is
+bisected, the same move as `Groove`'s inverse and `wallToBeat`'s subsampled case.
+
+Verified end to end on schedule times, uneven parent, child = take 3 of
+`260804_103507` at parent beat 4:
+
+    followTrack: true : [4.4, 4.4422, 4.4623, 4.4666]
+    align: 1          : [4.4, 4.4422, 4.4623, 4.4666]   bit-identical
+    followTrack off   : [4.4, 4.5386, 4.6046, 4.6188]
+    align: 0          : [4.4, 4.5386, 4.6046, 4.6188]   bit-identical
+    align: 0.5        : [4.4, 4.4904, 4.5335, 4.5427]
+
+and with a mid-list start (`play(6)` against an insert at 4), `align: 1` reproduces
+`followTrack: true` exactly, i.e. the bisected cut agrees with the closed-form one.
+At intermediate values the cut legitimately lands elsewhere — a different align puts
+the child at different wall positions, so parent beat 6 falls at a different point in
+it.

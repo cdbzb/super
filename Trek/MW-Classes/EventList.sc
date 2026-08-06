@@ -654,11 +654,20 @@ EventList {
 	// Straighten the beat span [from, to] only, leaving the rest of the clock alone.
 	quantizeSpan { |from, to, amount = 1| ^this.prMapEdit { |m| m.quantizeSpan(from, to, amount) } }
 
-	// Bridge out to a MonoMap, edit, and let tempoMap_ coerce the result back to an
-	// AnchorTempoMap. A flat list (nil map) is already straight, so it is a no-op.
+	// Bridge out to a MonoMap, edit, and assign THROUGH tempoMap_ — the setter owns
+	// both the coercion back to an AnchorTempoMap and dropping the beat->wall cache,
+	// so this must never touch the ivar. A flat list (nil map) is already straight,
+	// so it is a no-op. The guard is the point: without it a func that answers
+	// nil (a span op given a bad range) stores nil and the list silently goes flat.
 	prMapEdit { |func|
+		var edited;
 		tempoMap.isNil.if { ^this };
-		^this.tempoMap_(func.(tempoMap.asMonoMap))
+		edited = func.(tempoMap.asMonoMap);
+		edited.isKindOf(MonoMap).not.if {
+			Error("EventList.prMapEdit: map edit answered %, expected a MonoMap"
+				.format(edited.class)).throw
+		};
+		^this.tempoMap_(edited)
 	}
 
 	// Base wall-seconds elapsed across the beat interval [a, b], BEFORE any

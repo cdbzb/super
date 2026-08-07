@@ -760,7 +760,10 @@ view.keyDownAction_({ |view char|
 				^this.player.performArgs(selector, args, kwargs ? #[])
 			}
 		};
-		this.class + "does not understand" + selector
+		// a real DNU error, not the old `class + "..."` — Class doesn't understand
+		// `+`, so that line itself threw and masked every genuinely-unknown
+		// selector as "Message '+' not understood" (§5 backlog, fixed 2026-08-07)
+		DoesNotUnderstandError(this, selector, args).throw
 	}
 	bounds {
 		^(
@@ -2226,8 +2229,15 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	//
 	// Non-mutating: receiver, selection and map are untouched, and the result is
 	// a plain AnchorMap (beat -> absolute take seconds) for the caller to apply.
-	retimeSpan { |from, durs, onsets, to|
-		^this.prRetimeSpanMap(from, durs, onsets, to, \retimeSpan)
+	// `amount` as in requantizeSpan: 1 is the fully retimed map, 0 the map as it
+	// stands, in between a blend. Needs its own snapshot to blend against, since the
+	// two must share a beat frame (see the ONE-call note below).
+	retimeSpan { |from, durs, onsets, to, amount = 1|
+		var mOld, mNew;
+		(amount == 1).if { ^this.prRetimeSpanMap(from, durs, onsets, to, \retimeSpan) };
+		mOld = this.tempomap.asMonoMap(origin: \absolute);
+		mNew = this.prRetimeSpanMap(from, durs, onsets, to, \retimeSpan, mOld);
+		^mOld.blendWith(mNew, amount)
 	}
 	// §12f: retimeSpan APPLIED, locally and destructively — "these five events of
 	// bar 5 were meant to be this rhythm; move them there and leave the rest of
@@ -2256,11 +2266,18 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	//
 	// Non-mutating in warpTo's sense: the receiver keeps its performed times and
 	// the warped copy is returned.
-	requantizeSpan { |from, durs, onsets, to|
+	// `amount` is quantize STRENGTH: 1 puts every onset on its intended beat, 0 leaves
+	// the take as played, in between each onset moves that fraction of the way. It is
+	// a blend of the two MAPS, not of the timestamps, so the no-ripple guarantee holds
+	// at every strength — outside the span the maps are the same anchors, so any blend
+	// of them is still the identity there and warpTo's sec -> sec branch hands those
+	// timestamps back untouched.
+	requantizeSpan { |from, durs, onsets, to, amount = 1|
 		var mOld, mNew;
 		this.prNeedSelection(\requantizeSpan);
 		mOld = this.tempomap.asMonoMap(origin: \absolute);
 		mNew = this.prRetimeSpanMap(from, durs, onsets, to, \requantizeSpan, mOld);
+		(amount != 1).if { mNew = mOld.blendWith(mNew, amount) };
 		^this.warpTo((mNew.inverse >> mOld).bake)
 	}
 	prNeedSelection { |who|

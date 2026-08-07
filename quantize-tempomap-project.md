@@ -1642,3 +1642,35 @@ name:)` event, so placement is recomputed every prepare through §12j's blend.
   the "live knob" reading was struck).
 - Returns a one-element Array so removal reads the same in both modes:
   `e.events.removeAll(a)`.
+
+### 12l. `amount` on retimeSpan / requantizeSpan (2026-08-07)
+
+Quantize STRENGTH for the local retime: 1 puts every onset on its intended beat, 0
+leaves the take as played, in between each onset moves that fraction of the way.
+
+    p.requantizeSpan(20, "ex x q qe e".beats, o, amount: 0.6)
+    p.retimeSpan(20, durs, o, amount: 0.6)      // the blended map, unapplied
+
+It blends the two MAPS, not the timestamps: `mOld.blendWith(mNew, amount)`, then the
+existing `(mNew.inverse >> mOld)` composition. That is what keeps NO RIPPLE at every
+strength — outside the span the two maps are the same anchors, so any blend of them
+is still the identity there and warpTo's sec -> sec branch hands those timestamps
+back untouched. Measured: the last note's delta is exactly 0.0 at amount 1, 0.5 and
+0, and amount 0 reproduces the performed times bit-for-bit (which incidentally
+confirms `(mOld.inverse >> mOld).bake` is the exact identity the PL-fusion comment
+claims).
+
+New primitive `AnchorMap.blendWith(other, amount)`: sampled on the UNION of both
+breakpoint sets, since retimeSpan's output is the old map with one cell's anchors
+replaced and the union keeps every corner of both. Convex blend of two increasing
+functions, so monotone by construction inside [0, 1]; outside it warns. Frames must
+match — that both maps come from ONE `tempomap.asMonoMap` call (already required for
+the composition to typecheck) is exactly what makes them blendable.
+
+`retimeSpan` at amount 1 still takes the original single-snapshot path, so its
+existing behaviour is untouched; only a non-1 amount takes the second snapshot it
+needs to blend against.
+
+Candidate cleanup: `alignTo` (§12i) open-codes this same blend for a different pair
+of maps and could route through `blendWith` — not done, since its pair is sampled on
+the child's anchors rather than a union.

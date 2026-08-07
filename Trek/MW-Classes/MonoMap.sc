@@ -385,6 +385,31 @@ AnchorMap : MonoMap {
 		^AnchorMap(xs, newYs, fromFrame, toFrame, extendBelow, extendAbove)
 	}
 
+	// Blend toward ANOTHER map on the same axes: amount 0 is this map (bit-exact),
+	// 1 is `other`, in between a convex blend and so strictly monotone, same argument
+	// as quantize. Sampled on the UNION of both breakpoint sets, because the maps
+	// generally differ in where their anchors sit — retimeSpan's output is this map
+	// with one cell's anchors replaced, so the union keeps every corner of both. Where
+	// the two agree (outside an edited span) the blend is the identity by
+	// construction, at every amount. Frames must match: the whole point is that both
+	// describe the same axis, and a mismatch means one of them was minted separately.
+	blendWith { |other, amount = 1|
+		var us, ys2;
+		(fromFrame == other.fromFrame and: { toFrame == other.toFrame }).not.if {
+			Error("AnchorMap.blendWith: frame mismatch — % / % vs % / %"
+				.format(fromFrame, toFrame, other.fromFrame, other.toFrame)).throw
+		};
+		((amount < 0) or: { amount > 1 }).if {
+			"AnchorMap.blendWith: amount % is outside [0, 1] — monotonicity is only "
+				"guaranteed inside it".format(amount).warn
+		};
+		us = (xs ++ (other.tryPerform(\xs) ? []).asArray).sort;
+		// drop duplicates: two maps sharing an anchor would give AnchorMap a repeat
+		us = us.select { |x, i| (i == 0) or: { (x - us[i - 1]) > (1e-12 * max(1.0, x.abs)) } };
+		ys2 = us.collect { |x| this.at(x).blend(other.at(x), amount) };
+		^AnchorMap(us, ys2, fromFrame, toFrame, extendBelow, extendAbove)
+	}
+
 	// Local quantize: each span blends toward the mean slope over a window
 	// centred on that span. The window is `window` INPUT-AXIS units wide — NOT a
 	// count of anchors as the old TempoMap.quantizeWindow used, because with

@@ -1060,7 +1060,9 @@ optional `sched:` hook), `AudioItem.sc` (`wallAt` arg on both tempoFollow builde
 
 - **Adding a nested list requires `newType: \eventList`**, not `type:` — `dispatch`
   overwrites `\type` with `newType ? defaultType` on every add. (Or register a route:
-  `addRoute(\eventList, \eventList)`.)
+  `addRoute(\eventList, \eventList)`.) SOFTENED 2026-08-06: `add` now infers
+  `newType: \eventList` when the event carries an `eventList:` key and no explicit
+  `newType:` — the key is only ever meaningful on that type.
 - The §10a sketch's `place = place ?? { |beat| … }` was a bug — `??` calls the block with
   no args. Built as `place ?? { { |beat| … } }` (block returning the function).
 - `prExpandList` resolves names via `EventList.at` (warn on unknown), NOT `EventList(name)`
@@ -1560,6 +1562,15 @@ per-span treatment (§12g's `retimeSpan` territory). And nothing yet reads the
 mismatch automatically — `[c.beatToWall(1), parent.beatToWall(at + 1) -
 parent.beatToWall(at)]` is the manual check.
 
+Two traps, noted 2026-08-06 review:
+- **Cumulative**, like `quantize` — a second call re-blends the blended map. Keep the
+  pristine map for a knob.
+- **The result is single-purpose.** Its anchor times embed one parent's tempoEnv at
+  one `at`/`scale`, and the coerced `AnchorTempoMap` carries no record of that (the
+  frame system never sees it — `asAnchorTempoMap` mints fresh frames). Nested
+  elsewhere, at a different `when:`, or under an `align:` key (double blend) it is
+  silently wrong. Prefer `align:` unless standalone playback needs the bake.
+
 ### 12j. `align:` — the blend as an event key (2026-08-06)
 
 §12i's `alignTo` bakes the blend into the child's tempoMap. As a nesting-event key
@@ -1604,3 +1615,30 @@ and with a mid-list start (`play(6)` against an insert at 4), `align: 1` reprodu
 At intermediate values the cut legitimately lands elsewhere — a different align puts
 the child at different wall positions, so parent beat 6 falls at a different point in
 it.
+
+Mid-list note: at `align: 0` the bisected cut trims EXACTLY, whereas the plain
+followTrack-absent branch still drops pre-epoch entries with 1 ms tolerance (§10e).
+Bisect is arguably better; backporting `prBisectBeat` to the own-tempo branch (and
+retiring the drop-pre-epoch hack) is deferred, noted here so the asymmetry isn't
+rediscovered as a bug.
+
+### 12k. `addItem align:` — nesting insert mode (2026-08-06)
+
+`addItem(player, align: 0.6)` switches addItem from FLATTENING (one editable event
+per note, tagged with the source name — solo/mute and event surgery see the notes)
+to NESTING: `prAddItemNested` wraps the take via `asEventList` into an ANONYMOUS
+child (`EventList(nil)` — a named child would double its events on a second
+`asEventList` call) and adds one `(when:, newType: \eventList, eventList:, align:,
+name:)` event, so placement is recomputed every prepare through §12j's blend.
+
+- **Entry beat blends by the same amount as the interior.** Both endpoint placements
+  pin child beat 0 to `when`, so a fixed entry would pull the interior toward a grid
+  the take does not start on. Default `when` =
+  `itemAnchorBeat(player).blend(round(1), align)`: 0 enters where played, 1 on the
+  beat. Explicit `at:` wins. No epoch → warn, ask for `at:` (same idiom as
+  `at: \original`).
+- **`when` is baked at insert time.** Editing `\align` on the stored event re-blends
+  the interior but not the entry — to change align, re-insert (decision 2026-08-06;
+  the "live knob" reading was struck).
+- Returns a one-element Array so removal reads the same in both modes:
+  `e.events.removeAll(a)`.

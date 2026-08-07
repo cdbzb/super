@@ -263,10 +263,15 @@ EventList {
 	// First two args are order-flexible for reading ease:
 	//   list.addItem(9, mi.take(-1)) == list.addItem(mi.take(-1), 9)
 	//   list.addItem(mi.take(-1), voice: \lead)  // recorded position
-	addItem { |player, at, voice, mk, shift|
+	// align: 0..1 switches from FLATTENING to NESTING — see prAddItemNested. The two
+	// differ in what lands in `events`: flattened gives one editable event per note,
+	// tagged with the source name, so solo/mute and event surgery see the notes;
+	// nested gives one opaque event whose placement is recomputed every prepare.
+	addItem { |player, at, voice, mk, shift, align|
 		var tm, whenFn, ep, sl, env, fromWall, epoch;
 		(player.isNumber or: { player == \original }).if { var swap = player; player = at; at = swap };
 		player = player.player;
+		align.notNil.if { ^this.prAddItemNested(player, at, voice, mk, shift, align) };
 		(at == \original).if {
 			at = this.itemStartBeat(player) ?? {
 				^"EventList.addItem: at: \\original needs a take with a recordPlayEpoch (recorded against a playing list) — pass a beat instead".warn
@@ -300,6 +305,38 @@ EventList {
 		};
 		shift.notNil.if { var f = whenFn; whenFn = { |e| f.(e) + shift } };
 		^this.prInsertItemEvents(player, whenFn, voice, mk ?? { this.prItemMk(player) })
+	}
+
+	// addItem's align: mode. Nests the take as a child \eventList rather than
+	// flattening it, so placement is recomputed every prepare. The entry beat is
+	// blended by the SAME amount as the interior: both endpoint placements pin child
+	// beat 0 to `when` (§12j), so a fixed entry would pull the interior toward a grid
+	// the take does not start on — at align 1 you would be locked to a grid offset by
+	// the whole rounding residual. Blending keeps both ends exact: 0 enters where it
+	// was played, 1 on the beat. An explicit at: wins over the computed entry.
+	// `when` is baked at INSERT time — editing \align on the stored event re-blends
+	// the interior but not the entry, so to change align, re-insert.
+	// Returned as a one-element Array so removal reads the same in both modes:
+	// e.events.removeAll(a).
+	prAddItemNested { |player, at, voice, mk, shift, align|
+		var name = mk ?? { this.prItemMk(player) };
+		// anonymous child on purpose: EventList(name) ANSWERS an existing list of that
+		// name, and asEventList appends to it — so a named child silently doubles its
+		// events on a second call.
+		var child = player.asEventList(nil, name ? \default);
+		var when = at ?? {
+			var a = this.itemAnchorBeat(player) ?? {
+				^"EventList.addItem: align: needs a take with a recordPlayEpoch (recorded against a playing list) — pass at: as well".warn
+			};
+			a.blend(a.round(1), align)
+		};
+		voice !? { child.events.do { |e| e[\voice] = voice } };
+		^[this.add((
+			when: when + (shift ? 0),
+			newType: \eventList,
+			eventList: child,
+			align: align,
+			name: player.source.tryPerform(\name) !? { |n| n.asString.asSymbol }))]
 	}
 
 	// beat in THIS list's CURRENT frame that sounds at the take's recorded wall
@@ -361,6 +398,11 @@ EventList {
 		};
 		event[\voice].isKindOf(Array).if {
 			^this.expandAxis(event[\voice].size, event)
+		};
+		// eventList: is only ever meaningful on an \eventList event, so infer the type
+		// rather than making every nesting call spell out newType:
+		(event[\eventList].notNil and: { event[\newType].isNil }).if {
+			event[\newType] = \eventList
 		};
 		previewAt = this.previewAtFor(event[\when] ? 0);
 		this.dispatch(event, { |e| this.gateWithPreviewAt(e, previewAt) });
@@ -665,6 +707,12 @@ EventList {
 	// nesting event's when: gets); `scale` is parent beats per child beat, for a take
 	// whose marks sit at a different metric level. This is the authoring-time bake;
 	// `align:` does the same blend at play time, without touching the child's map.
+	// Cumulative like quantize: a second call re-blends the already-blended map, so
+	// for a knob keep the pristine map and blend from it each time. The result is
+	// SINGLE-PURPOSE: its anchor times embed THIS parent's tempoEnv at THIS at/scale,
+	// and the coerced AnchorTempoMap carries no record of that — nest it elsewhere,
+	// at a different when:, or stack the align: key on top (a double blend) and it is
+	// silently wrong. Prefer the align: key unless standalone playback needs the bake.
 	alignTo { |parent, at = 0, amount = 1, scale = 1|
 		var m, xs, x0, y0, env, base;
 		tempoMap.isNil.if { ^this };
@@ -1157,6 +1205,10 @@ EventList {
 		while { placeFn.(hi) < targetWall and: { span < 1e6 } } {
 			span = span * 2;
 			hi = lo + span
+		};
+		(placeFn.(hi) < targetWall).if {
+			"EventList.prBisectBeat: target wall never reached — child ends before the cut; nothing will play".warn;
+			^hi
 		};
 		64.do {
 			var mid = (lo + hi) * 0.5;

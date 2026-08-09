@@ -2680,11 +2680,7 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 		}
 	}
 	mapBeats{|b, fromBeat = 0|
-		// Clamp non-positive spans to epsilon rather than dropping them (which
-		// shortened the array and desynced \dur from \midinote) — see TempoMap.mapBeats
-		// and quantize-tempomap-project.md §5.
 		^b.mapSpansFrom(fromBeat, { |beat| this.timeAt(beat) })
-			.collect{|i| 1e-9 max: i}
 	}
 	// `durs` always means elapsed seconds; map them into musical beat spans.
 	// mapBeats is the opposite direction: beat spans -> second durations.

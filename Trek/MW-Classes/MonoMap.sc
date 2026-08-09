@@ -124,29 +124,10 @@ MonoMap {
 			>> AffineMap(1, toOrigin, this.toFrame, outF)
 	}
 
-	// Span mapping, written once: differences of cumulative at/invAt. Spans are
-	// relative so they need an origin. Non-positive results clamp to 1e-9 rather
-	// than drop (the mapBeats length-preservation convention).
-	mapSpans { |spans, from = 0|
-		var pos = from, prev = this.at(from), out = Array(spans.size);
-		spans.do { |s| var y;
-			pos = pos + s;
-			y = this.at(pos);
-			out = out.add(max(y - prev, 1e-9));
-			prev = y;
-		};
-		^out
-	}
-	unmapSpans { |spans, from = 0|
-		var pos = from, prev = this.invAt(from), out = Array(spans.size);
-		spans.do { |s| var x;
-			pos = pos + s;
-			x = this.invAt(pos);
-			out = out.add(max(x - prev, 1e-9));
-			prev = x;
-		};
-		^out
-	}
+	// Span mapping: differences of cumulative at/invAt. Contract (origin,
+	// length preservation, epsilon clamp) lives on mapSpansFrom in plusArray.sc.
+	mapSpans   { |spans, from = 0| ^spans.mapSpansFrom(from, { |p| this.at(p)    }) }
+	unmapSpans { |spans, from = 0| ^spans.mapSpansFrom(from, { |p| this.invAt(p) }) }
 
 	// Frame-dispatched sugar. Valid only when the map connects a beat axis and
 	// a seconds axis — a beat->beat map (a groove) answers neither.

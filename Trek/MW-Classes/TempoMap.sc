@@ -73,11 +73,7 @@ TempoMap {
 	  ^this.mapDurs(array, fromTime)
   }
   mapBeats { | b, fromBeat = 0 |
-	  // Clamp non-positive spans to epsilon instead of .select-dropping them:
-	  // dropping silently shortened the array and desynced a Pbind's \dur from
-	  // its \midinote from that point on (quantize-tempomap-project.md §5).
 	  ^b.mapSpansFrom(fromBeat, { |beat| this.timeAt(beat) })
-		  .collect{|i| 1e-9 max: i}
   }
   // Naming convention: `beats` are musical spans; `durs` are elapsed seconds.
   // Therefore mapDurs maps second durations -> beat spans (the inverse of
@@ -200,7 +196,6 @@ PlacedTempoMap {
   }
   mapBeats { |beats, fromBeat|
 	  ^beats.mapSpansFrom(fromBeat ? beatOrigin, { |beat| this.timeAt(beat) })
-		  .collect { |dur| 1e-9 max: dur }
   }
   mapDurs { |durs, fromTime|
 	  ^durs.mapSpansFrom(fromTime ? timeOrigin, { |t| this.beatAt(t) })
@@ -256,11 +251,11 @@ TempoWarp {
   // Origins are required for position-dependent tempo changes.
   warpDurs { |sourceDurs, fromTime|
 	  ^sourceDurs.mapSpansFrom(fromTime ? sourceMap.timeDomain.first,
-		  { |t| this.mapTime(t) }).collect { |dur| 1e-9 max: dur }
+		  { |t| this.mapTime(t) })
   }
   unwarpDurs { |targetDurs, fromTime|
 	  ^targetDurs.mapSpansFrom(fromTime ? targetMap.timeDomain.first,
-		  { |t| this.unmapTime(t) }).collect { |dur| 1e-9 max: dur }
+		  { |t| this.unmapTime(t) })
   }
   sourceTimeDomain { ^sourceMap.timeDomain }
   targetTimeDomain { ^targetMap.timeDomain }
@@ -284,15 +279,5 @@ TempoWarp {
 	}
 }
 
-+SequenceableCollection {
-	// Position-aware span mapping shared by the tempo-map protocol (TempoMap,
-	// MIDIItemTempoMap, PlacedTempoMap, TempoWarp): treat the receiver as
-	// consecutive spans starting at `origin`, map every boundary through `func`,
-	// and return the spans between the mapped boundaries. Epsilon-clamping of
-	// non-positive output spans stays at the call sites (it only applies in the
-	// seconds direction).
-	mapSpansFrom { |origin, func|
-		^([func.(origin)] ++ this.integrate.collect { |span| func.(origin + span) })
-			.differentiate.drop(1)
-	}
-}
+// mapSpansFrom (the shared span-mapping helper) lives in plusArray.sc alongside
+// the other SequenceableCollection extensions — MonoMap and Groove use it too.

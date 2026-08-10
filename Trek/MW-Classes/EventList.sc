@@ -8,7 +8,7 @@ EventList {
 	var <>env, <>context;
 	var <>autoExpand = false;
 	var <>batchWindow = 0.05, batchEndTime = -1e9, batchFirstWhen = 0;
-	var <>scope, <>voiceSpace;
+	var <name, <>voiceSpace;
 	var <solo, <mute;
 	// tempoMap is getter-only here: the setter (tempoMap_) coerces V2 MonoMaps and
 	// drops the beat->wall cache, so it must not be auto-generated.
@@ -33,7 +33,12 @@ EventList {
 	*initClass {
 		all = ();
 		Class.initClassTree(Event);
-        Event.addEventType(\eventList, {~eventList.isKindOf(EventList).if{~eventList}{EventList(~eventList)}.play(~start ? 0, to: ~end)});
+        Event.addEventType(\eventList, {
+            ~eventList.isKindOf(EventList).if{
+                ~eventList
+            }{
+                EventList(~eventList)
+            }.play(~start ? 0, to: ~end)});
 	}
 
 	*new { |name, defaultType|
@@ -45,11 +50,10 @@ EventList {
 				^current
 			}
 		};
-		instance = super.new.init(defaultType);
+		instance = super.new.init(defaultType, name);
 		name !? {
 			all[name] = instance;
 			current = instance;
-			instance.scope = name;
 		};
 		^instance
 	}
@@ -137,12 +141,16 @@ EventList {
 	*previewPrep { ^current.previewPrep }
 	*previewPrep_ { |val| ^current.previewPrep_(val) }
 	*voices { ^current.voices }
-	*scopedEvents { ^current.scopedEvents }
+	*resolvedEvents { ^current.resolvedEvents }
 
-	init { |defType|
+	// aName is the registry key under `all`, and the prefix voiceKey namespaces
+	// this list's voices with. Set here rather than by the caller so it stays
+	// getter-only: writing it later would desync the instance from its `all` key.
+	init { |defType, aName|
 		events = List[];
 		context = List[];
 		defaultType = defType;
+		name = aName;
 		routes = ();
 		env = ();
 	}
@@ -151,31 +159,29 @@ EventList {
 		routes[key] = type;
 	}
 
-	scopedVoice { |v|
-		(scope.notNil and: { v.notNil }).if {
-			^(scope.asString ++ "_" ++ v.asString).asSymbol
+	voiceKey { |v|
+		(name.notNil and: { v.notNil }).if {
+			^(name.asString ++ "_" ++ v.asString).asSymbol
 		};
 		^v
 	}
 
-	projectEvent { |ev|
-		var proj = ev;
-		scope.notNil.if {
-			proj = ev.copy.put(\voice, this.scopedVoice(ev[\voice] ? \default))
-		};
-		voiceSpace.notNil.if {
-			(proj === ev).if { proj = ev.copy };
-			proj.proto = (voiceSpace: voiceSpace)
-		};
-		^proj
+	// Read-time view of a stored event: the voice namespaced, the voiceSpace
+	// attached. Copy only if something is actually rewritten — the stored event
+	// in `events` is never mutated.
+	resolveEvent { |ev|
+		var res = (name.notNil or: { voiceSpace.notNil }).if { ev.copy } { ev };
+		name.notNil.if { res.put(\voice, this.voiceKey(ev[\voice] ? \default)) };
+		voiceSpace.notNil.if { res.proto = (voiceSpace: voiceSpace) };
+		^res
 	}
 
-	scopedEvents { ^events.collect { |e| this.projectEvent(e) } }
+	resolvedEvents { ^events.collect { |e| this.resolveEvent(e) } }
 
 	voices {
 		var seen = Set[];
 		events.do { |e|
-			e[\voice] !? { |v| seen.add(this.scopedVoice(v)) }
+			e[\voice] !? { |v| seen.add(this.voiceKey(v)) }
 		};
 		^seen.asArray
 	}
@@ -319,11 +325,11 @@ EventList {
 	// Returned as a one-element Array so removal reads the same in both modes:
 	// e.events.removeAll(a).
 	prAddItemNested { |player, at, voice, mk, shift, align|
-		var name = mk ?? { this.prItemMk(player) };
+		var mkName = mk ?? { this.prItemMk(player) };
 		// anonymous child on purpose: EventList(name) ANSWERS an existing list of that
 		// name, and asEventList appends to it — so a named child silently doubles its
 		// events on a second call.
-		var child = player.asEventList(nil, name ? \default);
+		var child = player.asEventList(nil, mkName ? \default);
 		var when = at ?? {
 			var a = this.itemAnchorBeat(player) ?? {
 				^"EventList.addItem: align: needs a take with a recordPlayEpoch (recorded against a playing list) — pass at: as well".warn
@@ -362,8 +368,14 @@ EventList {
 	// mark.) With no saved selection there is no map, addItem positions timestamp 0
 	// instead, and this returns itemStartBeat to match. Round to land on the grid:
 	//   e.addItem(p, at: e.itemAnchorBeat(p).round(1))
+	// NB deliberately split into statements: with the `{...}.try` inlined in the
+	// prItemBeat argument list, the closure's caught throw (no-selection tempomap)
+	// corrupted the pending call frame in the 3.14.0-dev build — prItemBeat then
+	// fired against a garbage receiver ("Message 'prItemBeat' not understood",
+	// receiver a derived MIDIItemPlayer). Split form is immune. 2026-08-07.
 	itemAnchorBeat { |player|
-		^this.prItemBeat(player, { player.player.tempomap.t0 }.try ? 0)
+		var tOff = { player.player.tempomap.t0 }.try;
+		^this.prItemBeat(player, tOff ? 0)
 	}
 
 	// beat in this list's current frame at which `tOff` seconds into the take sounded
@@ -489,7 +501,7 @@ EventList {
 		this.gateWithPreviewAt(event, 0)
 	}
 
-	addPattern { |when=0, pattern, n, maxWhen=300, name|
+	addPattern { |when=0, pattern, n, maxWhen=300, eventName|
 		var stream = pattern.asStream;
 		var t = when;
 		var i = 0;
@@ -501,7 +513,7 @@ EventList {
 				event = stream.next(());
 				event.isNil.if { break.value };
 				event.put(\when, t);
-				name !? { event.put(\name, name) };
+				eventName !? { event.put(\name, eventName) };
 				previewAt = this.previewAtFor(t);
 				// via dispatch, so pattern events get routes/addFunc/type stamping too.
 				// A \type the pattern set is promoted to \newType, else dispatch's
@@ -537,11 +549,11 @@ EventList {
 	gateWithPreviewAt { |event, previewAt|
 		events.add(event);
 		(preview.notNil and: { this.shouldPlay(event) }).if {
-			var projected = this.projectEvent(event);
+			var projected = this.resolveEvent(event);
 			var bd = beatDur ? TempoClock.default.beatDur;
 			previewPrep !? { previewPrep.(projected, this) };
 			this.prIsAudioFollow(projected).if {
-				var tempoEnv = this.tempoEnv(this.scopedEvents);
+				var tempoEnv = this.tempoEnv(this.resolvedEvents);
 				var actions;
 				projected = this.prForwardAudioFollow(projected);
 				actions = (projected[\tempoFollowMode] == \env).if {
@@ -568,7 +580,7 @@ EventList {
 	}
 
 	setupContext {
-		context.do { |e| this.projectEvent(e).copy.put(\when, 0).play }
+		context.do { |e| this.resolveEvent(e).copy.put(\when, 0).play }
 	}
 
 	// evts defaults to this list's own events; VoiceSpace passes its filtered
@@ -1076,7 +1088,7 @@ EventList {
 		var fromWall, playable;
 		seen = seen ?? { IdentitySet[] };
 		seen.includes(this).if {
-			"EventList.prepare: cyclic \\eventList nesting at % — skipped".format(scope).warn;
+			"EventList.prepare: cyclic \\eventList nesting at % — skipped".format(name).warn;
 			^sched
 		};
 		evts     = evts ?? { this.prPlayEvents };
@@ -1111,7 +1123,7 @@ EventList {
 
 	// The filtered (scoped + shouldPlay) events exactly as play/prepare uses them.
 	prPlayEvents {
-		^this.scopedEvents.select { |e| this.shouldPlay(e) }
+		^this.resolvedEvents.select { |e| this.shouldPlay(e) }
 	}
 	// tempoEnv as play/prepare will actually use it: derived from the filtered
 	// events, so it matches what sounds.
@@ -1527,7 +1539,7 @@ EventList {
 	add { |...args, kwargs|
 		var when = args[0];
 		var list = EventList.current;
-		args[1].isKindOf(Pattern).if { ^list.addPattern(when ? 0, args[1], name: this) };
+		args[1].isKindOf(Pattern).if { ^list.addPattern(when ? 0, args[1], eventName: this) };
 		kwargs = kwargs ++ [\name, this];
 		when.isKindOf(Event).if {
 			when[\name] = this;

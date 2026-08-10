@@ -583,10 +583,16 @@ do not change the song-facing API.
 ---
 
 ## 7. Testing notes
-- Suites in `standalone-tests/`, all pure-language, as of 2026-07-27:
+- Suites in `standalone-tests/`, all pure-language, as of 2026-08-07:
   `tempomap-test` 141, `followtrack-forward-test` 46, `groove-test` 46,
-  `retune-archive-test` 26, `add-item-test` 19. Run one with
-  `/Applications/SuperCollider.app/Contents/MacOS/sclang standalone-tests/<name>.scd`.
+  `retune-archive-test` 26, `add-item-test` 19, `align-test` 48 (§12h-§12k). Run one
+  with `/Applications/SuperCollider.app/Contents/MacOS/sclang standalone-tests/<name>.scd`.
+- **Own-build sclang hazard (2026-08-07):** an inline `{...}.try` INSIDE an argument
+  list, when the closure throws and is caught, resumes with a corrupted call frame in
+  the 3.14.0-dev build — the pending outer send fires against a garbage receiver
+  (found via `itemAnchorBeat`: "Message 'prItemBeat' not understood", receiver a
+  derived MIDIItemPlayer that nothing constructed). Assign the try result to a var
+  first; the split form is immune. Minimal repro candidate for the C++ side.
 - These are **pure-language** tests (no audio server needed) — `MIDIItemTempoMap`, `warpTo`,
   `mapBeats`, `quantize*` are all language-side.
 - `prepare(epoch, from)` REBASES: `place` subtracts `fromWall`, so a mid-list `from` shifts
@@ -963,7 +969,7 @@ prepare { |epoch, from = 0, place|
     var tempoEnv = this.tempoEnv;                       // EventList.sc:434
     var fromWall = this.beatToWall(from, tempoEnv);
     place = place ?? { |beat| epoch + (this.beatToWall(beat, tempoEnv) - fromWall) };
-    this.scopedEvents.do { |ev|
+    this.resolvedEvents.do { |ev|
         (this.shouldPlay(ev) and: { ev[\tempoTrack].isNil }).if {
             (ev[\type] == \eventList).if {
                 sched.addAll(this.prExpandList(ev, epoch, place, tempoEnv));   // hook, §10b
@@ -1642,6 +1648,12 @@ name:)` event, so placement is recomputed every prepare through §12j's blend.
   the "live knob" reading was struck).
 - Returns a one-element Array so removal reads the same in both modes:
   `e.events.removeAll(a)`.
+
+Suite: `standalone-tests/align-test.scd` (48 checks — §12h quantize family, §12i
+alignTo, §12j align:/groove/mid-list bisect, newType inference, itemAnchorBeat,
+this section's nesting mode, prBisectBeat guard). Landing it also caught two real
+bugs: the §5 dNU-masking line (`class + "..."` — fixed, proper
+DoesNotUnderstandError now) and the own-build inline-try frame corruption (§7).
 
 ### 12l. `amount` on retimeSpan / requantizeSpan (2026-08-07)
 

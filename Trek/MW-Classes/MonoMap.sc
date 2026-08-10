@@ -129,32 +129,32 @@ MonoMap {
 	mapSpans   { |spans, from = 0| ^spans.mapSpansFrom(from, { |p| this.at(p)    }) }
 	unmapSpans { |spans, from = 0| ^spans.mapSpansFrom(from, { |p| this.invAt(p) }) }
 
-	// Frame-dispatched sugar. Valid only when the map connects a beat axis and
-	// a seconds axis — a beat->beat map (a groove) answers neither.
-	timeAt { |beat|
-		(fromFrame.dimension == \beat and: { toFrame.dimension == \sec }).if { ^this.at(beat) };
-		(fromFrame.dimension == \sec and: { toFrame.dimension == \beat }).if { ^this.invAt(beat) };
-		Error("timeAt: % maps % -> %, not beat<->sec"
-			.format(this.class, fromFrame.dimension, toFrame.dimension)).throw
-	}
-	beatAt { |time|
-		(fromFrame.dimension == \sec and: { toFrame.dimension == \beat }).if { ^this.at(time) };
-		(fromFrame.dimension == \beat and: { toFrame.dimension == \sec }).if { ^this.invAt(time) };
-		Error("beatAt: % maps % -> %, not beat<->sec"
-			.format(this.class, fromFrame.dimension, toFrame.dimension)).throw
-	}
 	mapsDimensions { |a, b|
 		^(fromFrame.dimension == a) and: { toFrame.dimension == b }
 	}
 
-	// Mean slope over [from, to] — output units per input unit. The READER the
-	// *Span writer family (setSpanSlope / setSpanTempo / stretchSpan) never had.
+	// Frame-dispatched sugar. Valid only when the map connects a beat axis and
+	// a seconds axis — a beat->beat map (a groove) answers neither.
+	timeAt { |beat|
+		this.mapsDimensions(\beat, \sec).if{ ^this.at(beat)};
+		this.mapsDimensions(\sec, \beat).if{ ^this.invAt(beat)};
+		Error("timeAt: % maps % -> %, not beat<->sec"
+			.format(this.class, fromFrame.dimension, toFrame.dimension)).throw
+	}
+	beatAt { |time|
+		this.mapsDimensions(\sec, \beat).if{ ^this.at(time)};
+		this.mapsDimensions(\beat, \sec).if{ ^this.invAt(time)};
+		Error("beatAt: % maps % -> %, not beat<->sec"
+			.format(this.class, fromFrame.dimension, toFrame.dimension)).throw
+	}
+
+	// Mean slope over [from, to] — output units per input unit.
 	// Defined here rather than on AnchorMap so a MapSeq or a ComposedMap answers
 	// it too; `at` applies whatever extension policy the map carries, so a span
 	// reaching outside the domain follows the same \carry / \error rule as any
 	// other lookup rather than inventing a third behaviour.
 	spanSlope { |from, to|
-		((from.isNumber.not) or: { to.isNumber.not }).if {
+		(from.isNumber and: to.isNumber).not.if {
 			Error("%.spanSlope: from and to must be numbers, got % and %"
 				.format(this.class, from, to)).throw
 		};
@@ -176,6 +176,8 @@ MonoMap {
 				.format(this.class, fromFrame.dimension, toFrame.dimension)).throw
 		};
 		slope = this.spanSlope(from, to);
+		// 1e-9 here is a near-zero guard, not a positivity test: isStrictlyPositive
+		// would let a 1e-12 slope through and return a 1e12 tempo.
 		^(slope > 1e-9).if { slope.reciprocal }
 	}
 	spanBpm { |from, to| ^this.spanTempo(from, to) !? (_ * 60) }
@@ -230,6 +232,9 @@ AnchorMap : MonoMap {
 			fromFrame, toFrame, extendBelow, extendAbove)
 	}
 	initAnchor { |anXs, anYs, inF, outF, below, above|
+		// collect() is the defensive COPY as much as the coercion: without it the map
+		// shares storage with the caller's arrays, so a later `xs[i] = ...` would edit
+		// the anchors behind the strictly-increasing check and the prInverse cache.
 		xs = anXs.asArray.collect(_.asFloat);
 		ys = anYs.asArray.collect(_.asFloat);
 		(xs.size != ys.size or: { xs.size < 2 }).if {
@@ -1368,15 +1373,14 @@ FunctionMap : MonoMap {
 		var baked = this.bake, times, beats;
 		baked.isKindOf(AnchorMap).not.if {
 			baked.isKindOf(AffineMap).if {
-				Error("MonoMap.asAnchorTempoMap: an AffineMap is TOTAL — it has no finite "
-					"anchors to hand over, and an AnchorTempoMap is an anchor table. Slice a "
-					"finite region first, e.g. AnchorMap([lo, hi], [map.at(lo), map.at(hi)], "
-					"map.fromFrame, map.toFrame).").throw
+				Error(
+					"cant make AnchorMap from AffineMap - Slice a finite region first, "
+					"e.g. AnchorMap([lo, hi], [map.at(lo), map.at(hi)], map.fromFrame, map.toFrame)."
+				).throw
 			};
 			Error("MonoMap.asAnchorTempoMap: % stayed symbolic under bake (a FunctionMap "
 				"link cannot fuse, and a MapSeq with infinite repeats has no finite anchor "
-				"table). Freeze it explicitly with .sample(n), or give the MapSeq finite "
-				"repeats — bake is exact by contract and will not approximate for you."
+				"table). Freeze explicitly with .sample(n), or give MapSeq finite repeats "
 				.format(baked.class)).throw
 		};
 		// Orientation comes from the frame DIMENSIONS, never from a guess about
@@ -1386,7 +1390,7 @@ FunctionMap : MonoMap {
 			baked.mapsDimensions(\sec, \beat).if { times = baked.xs; beats = baked.ys } {
 				Error("MonoMap.asAnchorTempoMap: an AnchorTempoMap is a beat<->sec map, but "
 					"this one maps % -> %. Bind the real axes with withFrames(fromFrame, "
-					"toFrame) — the adapter will not guess an orientation."
+					"toFrame)"
 					.format(baked.fromFrame.dimension, baked.toFrame.dimension)).throw
 			}
 		};

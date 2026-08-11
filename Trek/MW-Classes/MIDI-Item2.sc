@@ -1127,11 +1127,20 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	// take(n) carries recordedMk/epochs, so addItem resolves mk and source-preferred
 	// position by itself; at: 0 is appended when no EventList was playing during
 	// the take (no play epoch for source-preferred position to resolve against).
+	//
+	// The played beat rides along as a COMMENT, not an argument: passing at: would
+	// switch addItem off the recorded-epoch path onto the take's own tempomap (and,
+	// for a take without one, onto a flat 1 s/beat reading of its timestamps). The
+	// comment documents where it landed without changing how it lands.
 	*prRegisterAddItemLine { |item|
-		var line = "e.addItem(MIDIItem(\"%\").take(%)%)".format(
+		var n = item.takes.size - 1;
+		var list = item.recordPlayEpoch !? { |ep| ep[\list] };
+		var beat = list !? { { list.itemStartBeat(item.take(n)) }.try };
+		var line = "e.addItem(MIDIItem(\"%\").take(%)%)%".format(
 			item.name,
-			item.takes.size - 1,
-			item.recordPlayEpoch.isNil.if{ ", at: 0" }{ "" }
+			n,
+			item.recordPlayEpoch.isNil.if{ ", at: 0" }{ "" },
+			beat !? { |b| " //at " ++ b.round(0.001) } ? ""
 		);
 		Nvim.setReg("d", line);
 		Nvim.notify("reg d: " ++ line);

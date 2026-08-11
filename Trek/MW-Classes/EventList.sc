@@ -262,10 +262,13 @@ EventList {
 	//     THIS list's CURRENT frame — see itemStartBeat), then positions within the
 	//     item follow the at:<beat> rules. The sealed insert after a tempoMap
 	//     change: change the map FIRST, then addItem(take, \original).
-	// shift: <beats> — additive beat-domain nudge applied after position
+	// offset: <beats> — additive beat-domain nudge applied after position
 	//   resolution in either mode. With at: nil it moves the whole take off its
-	//   recorded position (a bar later: shift: 4; push the feel: shift: -0.25)
-	//   while keeping performed micro-timing intact.
+	//   recorded position (a bar later: offset: 4; push the feel: offset: -0.25)
+	//   while keeping performed micro-timing intact. Beats, not seconds — it lands
+	//   downstream of every wall<->beat conversion, so it never touches the map.
+	//   Same meaning as copyVoice's offset, and consumed at insert either way: to
+	//   change it, re-insert.
 	// First two args are order-flexible for reading ease:
 	//   list.addItem(9, mi.take(-1)) == list.addItem(mi.take(-1), 9)
 	//   list.addItem(mi.take(-1), voice: \lead)  // recorded position
@@ -273,11 +276,11 @@ EventList {
 	// differ in what lands in `events`: flattened gives one editable event per note,
 	// tagged with the source name, so solo/mute and event surgery see the notes;
 	// nested gives one opaque event whose placement is recomputed every prepare.
-	addItem { |player, at, voice, mk, shift, align|
+	addItem { |player, at, voice, mk, offset, align|
 		var tm, whenFn, ep, sl, env, fromWall, epoch;
 		(player.isNumber or: { player == \original }).if { var swap = player; player = at; at = swap };
 		player = player.player;
-		align.notNil.if { ^this.prAddItemNested(player, at, voice, mk, shift, align) };
+		align.notNil.if { ^this.prAddItemNested(player, at, voice, mk, offset, align) };
 		(at == \original).if {
 			at = this.itemStartBeat(player) ?? {
 				^"EventList.addItem: at: \\original needs a take with a recordPlayEpoch (recorded against a playing list) — pass a beat instead".warn
@@ -309,7 +312,7 @@ EventList {
 			fromWall = sl.beatToWall(ep[\fromBeat], env);
 			whenFn = { |e| sl.wallToBeat(epoch + e.timestamp - ep[\seconds] + fromWall, env) };
 		};
-		shift.notNil.if { var f = whenFn; whenFn = { |e| f.(e) + shift } };
+		offset.notNil.if { var f = whenFn; whenFn = { |e| f.(e) + offset } };
 		^this.prInsertItemEvents(player, whenFn, voice, mk ?? { this.prItemMk(player) })
 	}
 
@@ -324,7 +327,7 @@ EventList {
 	// the interior but not the entry, so to change align, re-insert.
 	// Returned as a one-element Array so removal reads the same in both modes:
 	// e.events.removeAll(a).
-	prAddItemNested { |player, at, voice, mk, shift, align|
+	prAddItemNested { |player, at, voice, mk, offset, align|
 		var mkName = mk ?? { this.prItemMk(player) };
 		// anonymous child on purpose: EventList(name) ANSWERS an existing list of that
 		// name, and asEventList appends to it — so a named child silently doubles its
@@ -338,7 +341,7 @@ EventList {
 		};
 		voice !? { child.events.do { |e| e[\voice] = voice } };
 		^[this.add((
-			when: when + (shift ? 0),
+			when: when + (offset ? 0),
 			newType: \eventList,
 			eventList: child,
 			align: align,

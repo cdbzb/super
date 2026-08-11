@@ -104,10 +104,10 @@ EventList {
 			var whens = when;
 			var n = whens.size;
 			var base = (when: whens) ++ kwargs.asEvent;
-			var previewAts = current.previewAtFor(whens);
+			var previewOffsets = current.nextPreviewOffset(whens);
 			^n.collect { |i|
 				var ev = current.sliceAxis(base, i, n);
-				current.dispatch(ev, { |e| current.gateWithPreviewAt(e, previewAts[i]) });
+				current.dispatch(ev, { |e| current.storeAndPreview(e, previewOffsets[i]) });
 				ev
 			}
 		};
@@ -392,16 +392,16 @@ EventList {
 	}
 
 	add { |...args, kwargs|
-		var event, previewAt, when = args[0];
+		var event, previewOffset, when = args[0];
 		args[1].isKindOf(Pattern).if { ^this.addPattern(when ? 0, args[1]) };
 		when.isKindOf(Array).if {
 			var whens = when;
 			var n = whens.size;
 			var base = (when: whens) ++ kwargs.asEvent;
-			var previewAts = this.previewAtFor(whens);
+			var previewOffsets = this.nextPreviewOffset(whens);
 			^n.collect { |i|
 				var ev = this.sliceAxis(base, i, n);
-				this.dispatch(ev, { |e| this.gateWithPreviewAt(e, previewAts[i]) });
+				this.dispatch(ev, { |e| this.storeAndPreview(e, previewOffsets[i]) });
 				ev
 			}
 		};
@@ -419,15 +419,23 @@ EventList {
 		(event[\eventList].notNil and: { event[\newType].isNil }).if {
 			event[\newType] = \eventList
 		};
-		previewAt = this.previewAtFor(event[\when] ? 0);
-		this.dispatch(event, { |e| this.gateWithPreviewAt(e, previewAt) });
+		previewOffset = this.nextPreviewOffset(event[\when] ? 0);
+		this.dispatch(event, { |e| this.storeAndPreview(e, previewOffset) });
 		^event
 	}
 
-	previewAtFor { |when|
+	// Beats from the current batch's first event to `when` — the delay the preview
+	// is scheduled at, so evaluating several add lines together auditions them with
+	// their real rhythm instead of stacking them on one instant. A batch is inferred
+	// from evaluation speed, not from the selection: adds landing within batchWindow
+	// of each other share an origin, and each add extends the window.
+	//
+	// NOT a pure query, hence `next`: it opens or extends the batch. Calling it
+	// speculatively (or twice, or from a postln) shifts the batch's timing.
+	nextPreviewOffset { |when|
 		var now = SystemClock.seconds;
-		var ref = when.isKindOf(Array).if { when[0] } { when };
-		(now >= batchEndTime).if { batchFirstWhen = ref };
+		var first = when.isKindOf(Array).if { when[0] } { when };
+		(now >= batchEndTime).if { batchFirstWhen = first };
 		batchEndTime = now + batchWindow;
 		^when.isKindOf(Array).if {
 			when.collect { |w| w - batchFirstWhen }
@@ -436,33 +444,41 @@ EventList {
 		}
 	}
 
-	expandAxis { |n, base|
-		^n.collect { |i| this.add(this.sliceAxis(base, i, n)) }
+	expandAxis { |numSlices, base|
+		^numSlices.collect { |index| this.add(this.sliceAxis(base, index, numSlices)) }
 	}
 
-	sliceAxis { |base, i, n|
+	// Slice `index` of `numSlices` from a template event: every array-valued key is
+	// one axis, and clipAt (not wrapAt) means a short array clamps to its last
+	// element rather than cycling — [60, 64] over 4 slices gives 60, 64, 64, 64.
+	// Zero-arg Function values are left unevaluated here and resolved through
+	// LambdaEnvir below, where they can see their position on the axis as ~x / ~n
+	// (NB ~x, not ~i) and every position as ~whens. Those three are stripped again
+	// so they never reach the played event.
+	sliceAxis { |base, index, numSlices|
 		var scratch = ();
 		var hasFunc = false;
 		var out = ();
-		base.keysValuesDo { |k, v|
+		base.keysValuesDo { |key, val|
 			case
-				{ v.isKindOf(Env) or: { v.isKindOf(Tuple3) } or: { v.isKindOf(Tuple4) } }
-					{ scratch[k] = v }
-				{ v.isKindOf(Function) and: { v.numArgs == 0 } }
-					{ scratch[k] = v; hasFunc = true }
-				{ v.isArray }
-					{ scratch[k] = v.clipAt(i) }
-				{ scratch[k] = v }
+				{ val.isKindOf(Env) or: { val.isKindOf(Tuple3) } or: { val.isKindOf(Tuple4) } }
+					{ scratch[key] = val }
+				{ val.isKindOf(Function) and: { val.numArgs == 0 } }
+					{ scratch[key] = val; hasFunc = true }
+				{ val.isArray }
+					{ scratch[key] = val.clipAt(index) }
+				{ scratch[key] = val }
 		};
+		// nothing to resolve: skip LambdaEnvir entirely (hence scratch, not out)
 		hasFunc.not.if { ^scratch };
-		scratch[\x] = i;
-		scratch[\n] = n;
+		scratch[\x] = index;
+		scratch[\n] = numSlices;
 		scratch[\whens] = base[\when].asArray;
 		{
 			var le = LambdaEnvir(scratch);
-			le.use { scratch.keysDo { |k| out[k] = le.at(k) } };
+			le.use { scratch.keysDo { |key| out[key] = le.at(key) } };
 		}.value;
-		[\x, \n, \whens].do { |k| out.removeAt(k) };
+		[\x, \n, \whens].do { |key| out.removeAt(key) };
 		^out
 	}
 
@@ -500,31 +516,27 @@ EventList {
 		^this
 	}
 
-	gate { |event|
-		this.gateWithPreviewAt(event, 0)
-	}
-
 	addPattern { |when=0, pattern, n, maxWhen=300, eventName|
 		var stream = pattern.asStream;
 		var t = when;
 		var i = 0;
 		block { |break|
 			loop {
-				var event, previewAt;
+				var event, previewOffset;
 				(n.notNil and: { i >= n }).if { break.value };
 				(t > maxWhen).if { break.value };
 				event = stream.next(());
 				event.isNil.if { break.value };
 				event.put(\when, t);
 				eventName !? { event.put(\name, eventName) };
-				previewAt = this.previewAtFor(t);
+				previewOffset = this.nextPreviewOffset(t);
 				// via dispatch, so pattern events get routes/addFunc/type stamping too.
 				// A \type the pattern set is promoted to \newType, else dispatch's
 				// fallback stamp overwrites it with defaultType.
 				(event[\type].notNil and: { event[\newType].isNil }).if {
 					event.put(\newType, event[\type])
 				};
-				this.dispatch(event, { |e| this.gateWithPreviewAt(e, previewAt) });
+				this.dispatch(event, { |e| this.storeAndPreview(e, previewOffset) });
 				t = t + (event[\dur] ? 1);
 				i = i + 1;
 			}
@@ -549,28 +561,32 @@ EventList {
 		^true
 	}
 
-	gateWithPreviewAt { |event, previewAt|
+	// Terminal step of the add pipeline (add -> dispatch -> here): the event ALWAYS
+	// lands in `events`; it is additionally auditioned when preview is on and
+	// solo/mute lets it through. previewOffset is in beats from the batch origin —
+	// see nextPreviewOffset — and 0 means "at the batch origin", not "no preview".
+	storeAndPreview { |event, previewOffset|
 		events.add(event);
 		(preview.notNil and: { this.shouldPlay(event) }).if {
-			var projected = this.resolveEvent(event);
+			var resolved = this.resolveEvent(event);
 			var bd = beatDur ? TempoClock.default.beatDur;
-			previewPrep !? { previewPrep.(projected, this) };
-			this.prIsAudioFollow(projected).if {
+			previewPrep !? { previewPrep.(resolved, this) };
+			this.prIsAudioFollow(resolved).if {
 				var tempoEnv = this.tempoEnv(this.resolvedEvents);
 				var actions;
-				projected = this.prForwardAudioFollow(projected);
-				actions = (projected[\tempoFollowMode] == \env).if {
-					AudioItem.tempoFollowEnvActions(projected, this, tempoEnv, batchFirstWhen)
+				resolved = this.prForwardAudioFollow(resolved);
+				actions = (resolved[\tempoFollowMode] == \env).if {
+					AudioItem.tempoFollowEnvActions(resolved, this, tempoEnv, batchFirstWhen)
 				} {
-					AudioItem.tempoFollowActions(projected, this, tempoEnv, batchFirstWhen)
+					AudioItem.tempoFollowActions(resolved, this, tempoEnv, batchFirstWhen)
 				};
 				actions.do { |pair|
 					SystemClock.sched(pair[0], { pair[1].value; nil })
 				}
 			} {
 				SystemClock.sched(
-					previewAt * bd,
-					{ projected.play; nil }
+					previewOffset * bd,
+					{ resolved.play; nil }
 				)
 			}
 		}
@@ -1552,10 +1568,10 @@ EventList {
 			var whens = when;
 			var n = whens.size;
 			var base = (when: whens) ++ kwargs.asEvent;
-			var previewAts = list.previewAtFor(whens);
+			var previewOffsets = list.nextPreviewOffset(whens);
 			^n.collect { |i|
 				var ev = list.sliceAxis(base, i, n);
-				list.dispatch(ev, { |e| list.gateWithPreviewAt(e, previewAts[i]) });
+				list.dispatch(ev, { |e| list.storeAndPreview(e, previewOffsets[i]) });
 				ev
 			}
 		};

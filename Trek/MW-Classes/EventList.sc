@@ -106,7 +106,7 @@ EventList {
 			var base = (when: whens) ++ kwargs.asEvent;
 			var previewOffsets = current.nextPreviewOffset(whens);
 			^n.collect { |i|
-				var ev = current.sliceAxis(base, i, n);
+				var ev = current.getSlice(base, i, n);
 				current.dispatch(ev, { |e| current.storeAndPreview(e, previewOffsets[i]) });
 				ev
 			}
@@ -143,9 +143,11 @@ EventList {
 	*voices { ^current.voices }
 	*resolvedEvents { ^current.resolvedEvents }
 
-	// aName is the registry key under `all`, and the prefix voiceKey namespaces
-	// this list's voices with. Set here rather than by the caller so it stays
-	// getter-only: writing it later would desync the instance from its `all` key.
+	/*
+	 aName is the registry key under `all`, and the prefix voiceKey namespaces
+	 this list's voices with. Set here rather than by the caller so it stays
+	 getter-only: writing it later would desync the instance from its `all` key.
+	*/
 	init { |defType, aName|
 		events = List[];
 		context = List[];
@@ -166,9 +168,11 @@ EventList {
 		^v
 	}
 
-	// Read-time view of a stored event: the voice namespaced, the voiceSpace
-	// attached. Copy only if something is actually rewritten — the stored event
-	// in `events` is never mutated.
+	/*
+	 Read-time view of a stored event: the voice namespaced, the voiceSpace
+	 attached. Copy only if something is actually rewritten — the stored event
+	 in `events` is never mutated.
+	*/
 	resolveEvent { |ev|
 		var res = (name.notNil or: { voiceSpace.notNil }).if { ev.copy } { ev };
 		name.notNil.if { res.put(\voice, this.voiceKey(ev[\voice] ? \default)) };
@@ -242,40 +246,37 @@ EventList {
 		}
 	}
 
-	// §9a step 3 + §9b: insert a MIDI item/player/selection into this list.
-	//   at: <beat>  — the item START lands there; positions within the item come
-	//     from its selection tempomap when one exists (timestamps -> ideal beats),
-	//     else timestamps are flat seconds-as-beats from the player's start.
-	//   at: nil     — SOURCE PREFERRED POSITION (REAPER's term): each event lands
-	//     at the beat it was PERFORMED at, resolving the take's wall-clock sound
-	//     moments (recordEpoch + timestamp) through lastPlayEpoch — including its
-	//     detached clock snapshot, so this stays correct after stop or a later
-	//     re-quantize. MIDIItem.record snapshots that epoch (EventList
-	//     .currentPlayEpoch) into the take, so a LATER replay of this list can't
-	//     misalign it; older takes without the snapshot fall back to lastPlayEpoch.
-	//     Fragments land on the ideal-beat grid with micro-timing as fractional
-	//     beats; the quantize family then applies in the beat domain. Needs a take
-	//     recorded while this list played; both epochs archive and the arithmetic
-	//     differences them, so a later session still places correctly.
-	//   at: \original — sugar for at: this.itemStartBeat(player): the take START
-	//     lands on the wall-preserving beat (recorded wall moment resolved through
-	//     THIS list's CURRENT frame — see itemStartBeat), then positions within the
-	//     item follow the at:<beat> rules. The sealed insert after a tempoMap
-	//     change: change the map FIRST, then addItem(take, \original).
-	// offset: <beats> — additive beat-domain nudge applied after position
-	//   resolution in either mode. With at: nil it moves the whole take off its
-	//   recorded position (a bar later: offset: 4; push the feel: offset: -0.25)
-	//   while keeping performed micro-timing intact. Beats, not seconds — it lands
-	//   downstream of every wall<->beat conversion, so it never touches the map.
-	//   Same meaning as copyVoice's offset, and consumed at insert either way: to
-	//   change it, re-insert.
-	// First two args are order-flexible for reading ease:
-	//   list.addItem(9, mi.take(-1)) == list.addItem(mi.take(-1), 9)
-	//   list.addItem(mi.take(-1), voice: \lead)  // recorded position
-	// align: 0..1 switches from FLATTENING to NESTING — see prAddItemNested. The two
-	// differ in what lands in `events`: flattened gives one editable event per note,
-	// tagged with the source name, so solo/mute and event surgery see the notes;
-	// nested gives one opaque event whose placement is recomputed every prepare.
+	/*
+	 §9a step 3 + §9b: insert a MIDI item/player/selection into this list.
+
+	 at: <beat> — item START lands there. Positions within it come from the
+	 selection tempomap when one exists; WITHOUT one, timestamps are read as flat
+	 seconds-as-beats from player.start, which misplaces the interior on any list
+	 whose tempoMap is not 1 s/beat.
+
+	 at: nil — SOURCE PREFERRED POSITION (REAPER's term): each event lands at the
+	 beat it was PERFORMED at. MIDIItem.record snapshots the play epoch
+	 (EventList.currentPlayEpoch) into the take, so a LATER replay of this list
+	 cannot misalign it; older takes without the snapshot fall back to
+	 lastPlayEpoch. Both epochs archive and the arithmetic differences them, so a
+	 later session still places correctly. Needs a take recorded while this list
+	 played.
+
+	 at: \original — sugar for at: this.itemStartBeat(player). THE sealed insert
+	 after a tempoMap change, and the order matters: change the map FIRST, then
+	 addItem(take, \original).
+
+	 offset: <beats> — additive nudge after position resolution, in beats, so it
+	 lands downstream of every wall<->beat conversion and never touches the map.
+	 Same meaning as copyVoice's offset. Consumed at insert: to change it,
+	 re-insert.
+
+	 align: 0..1 switches from FLATTENING to NESTING — see prAddItemNested. What
+	 differs is what lands in `events`: flattened gives one editable event per
+	 note, tagged with the source name, so solo/mute and event surgery see the
+	 notes; nested gives one opaque event whose placement is recomputed every
+	 prepare.
+	*/
 	addItem { |player, at, voice, mk, offset, align|
 		var tm, whenFn, ep, sl, env, fromWall, epoch;
 		(player.isNumber or: { player == \original }).if { var swap = player; player = at; at = swap };
@@ -400,7 +401,7 @@ EventList {
 			var base = (when: whens) ++ kwargs.asEvent;
 			var previewOffsets = this.nextPreviewOffset(whens);
 			^n.collect { |i|
-				var ev = this.sliceAxis(base, i, n);
+				var ev = this.getSlice(base, i, n);
 				this.dispatch(ev, { |e| this.storeAndPreview(e, previewOffsets[i]) });
 				ev
 			}
@@ -412,7 +413,7 @@ EventList {
 			when.notNil.if { event[\when] = when }
 		};
 		event[\voice].isKindOf(Array).if {
-			^this.expandAxis(event[\voice].size, event)
+			^this.expandEvent(event[\voice].size, event)
 		};
 		// eventList: is only ever meaningful on an \eventList event, so infer the type
 		// rather than making every nesting call spell out newType:
@@ -424,14 +425,16 @@ EventList {
 		^event
 	}
 
-	// Beats from the current batch's first event to `when` — the delay the preview
-	// is scheduled at, so evaluating several add lines together auditions them with
-	// their real rhythm instead of stacking them on one instant. A batch is inferred
-	// from evaluation speed, not from the selection: adds landing within batchWindow
-	// of each other share an origin, and each add extends the window.
-	//
-	// NOT a pure query, hence `next`: it opens or extends the batch. Calling it
-	// speculatively (or twice, or from a postln) shifts the batch's timing.
+	/*
+	 Beats from the current batch's first event to `when` — the delay the preview
+	 is scheduled at, so evaluating several add lines together auditions them with
+	 their real rhythm instead of stacking them on one instant. A batch is inferred
+	 from evaluation speed, not from the selection: adds landing within batchWindow
+	 of each other share an origin, and each add extends the window.
+
+	 NOT a pure query, hence `next`: it opens or extends the batch. Calling it
+	 speculatively (or twice, or from a postln) shifts the batch's timing.
+	*/
 	nextPreviewOffset { |when|
 		var now = SystemClock.seconds;
 		var first = when.isKindOf(Array).if { when[0] } { when };
@@ -444,22 +447,27 @@ EventList {
 		}
 	}
 
-	expandAxis { |numSlices, base|
-		^numSlices.collect { |index| this.add(this.sliceAxis(base, index, numSlices)) }
+	// Every slice of a multi-valued event, added. getSlice is the single-slice form.
+	expandEvent { |numSlices, event|
+		^numSlices.collect { |index| this.add(this.getSlice(event, index, numSlices)) }
 	}
 
-	// Slice `index` of `numSlices` from a template event: every array-valued key is
-	// one axis, and clipAt (not wrapAt) means a short array clamps to its last
-	// element rather than cycling — [60, 64] over 4 slices gives 60, 64, 64, 64.
-	// Zero-arg Function values are left unevaluated here and resolved through
-	// LambdaEnvir below, where they can see their position on the axis as ~x / ~n
-	// (NB ~x, not ~i) and every position as ~whens. Those three are stripped again
-	// so they never reach the played event.
-	sliceAxis { |base, index, numSlices|
+    /*
+	 Slice `index` of `numSlices` out of a multi-valued template event:
+	
+	 uses .clipAt, so a short array clamps to its last element: [60, 64] over 4 slices
+	 gives 60, 64, 64, 64. 
+	
+	 Zero-arg Function values are left unevaluated here and resolved through
+	 LambdaEnvir below, where they see their position as ~x / ~n (NB ~x, not ~i),
+	 the whole axis as ~whens, and each other. Those three helpers are stripped
+	 again so they never reach the played event.
+     */
+	getSlice { |event, index, numSlices|
 		var scratch = ();
 		var hasFunc = false;
 		var out = ();
-		base.keysValuesDo { |key, val|
+		event.keysValuesDo { |key, val|
 			case
 				{ val.isKindOf(Env) or: { val.isKindOf(Tuple3) } or: { val.isKindOf(Tuple4) } }
 					{ scratch[key] = val }
@@ -473,7 +481,7 @@ EventList {
 		hasFunc.not.if { ^scratch };
 		scratch[\x] = index;
 		scratch[\n] = numSlices;
-		scratch[\whens] = base[\when].asArray;
+		scratch[\whens] = event[\when].asArray;
 		{
 			var le = LambdaEnvir(scratch);
 			le.use { scratch.keysDo { |key| out[key] = le.at(key) } };
@@ -516,20 +524,27 @@ EventList {
 		^this
 	}
 
-	addPattern { |when=0, pattern, n, maxWhen=300, eventName|
+	/*
+	 Drain a pattern into stored events, walking `beat` forward by each event's
+	 \dur. Three independent stops: maxEvents (nil = uncapped), maxWhen as a beat
+	 ceiling, and the stream itself running out — so an endless pattern with no
+	 maxEvents still terminates at maxWhen. The count is checked before pulling,
+	 so maxEvents: 8 stores exactly 8.
+	*/
+	addPattern { |when=0, pattern, maxEvents, maxWhen=300, eventName|
 		var stream = pattern.asStream;
-		var t = when;
+		var beat = when;
 		var i = 0;
 		block { |break|
 			loop {
 				var event, previewOffset;
-				(n.notNil and: { i >= n }).if { break.value };
-				(t > maxWhen).if { break.value };
+				(maxEvents.notNil and: { i >= maxEvents }).if { break.value };
+				(beat > maxWhen).if { break.value };
 				event = stream.next(());
 				event.isNil.if { break.value };
-				event.put(\when, t);
+				event.put(\when, beat);
 				eventName !? { event.put(\name, eventName) };
-				previewOffset = this.nextPreviewOffset(t);
+				previewOffset = this.nextPreviewOffset(beat);
 				// via dispatch, so pattern events get routes/addFunc/type stamping too.
 				// A \type the pattern set is promoted to \newType, else dispatch's
 				// fallback stamp overwrites it with defaultType.
@@ -537,7 +552,7 @@ EventList {
 					event.put(\newType, event[\type])
 				};
 				this.dispatch(event, { |e| this.storeAndPreview(e, previewOffset) });
-				t = t + (event[\dur] ? 1);
+				beat = beat + (event[\dur] ? 1);
 				i = i + 1;
 			}
 		};
@@ -561,10 +576,12 @@ EventList {
 		^true
 	}
 
-	// Terminal step of the add pipeline (add -> dispatch -> here): the event ALWAYS
-	// lands in `events`; it is additionally auditioned when preview is on and
-	// solo/mute lets it through. previewOffset is in beats from the batch origin —
-	// see nextPreviewOffset — and 0 means "at the batch origin", not "no preview".
+	/*
+	 Terminal step of the add pipeline (add -> dispatch -> here): the event ALWAYS
+	 lands in `events`; it is additionally auditioned when preview is on and
+	 solo/mute lets it through. previewOffset is in beats from the batch origin —
+	 see nextPreviewOffset — and 0 means "at the batch origin", not "no preview".
+	*/
 	storeAndPreview { |event, previewOffset|
 		events.add(event);
 		(preview.notNil and: { this.shouldPlay(event) }).if {
@@ -1570,7 +1587,7 @@ EventList {
 			var base = (when: whens) ++ kwargs.asEvent;
 			var previewOffsets = list.nextPreviewOffset(whens);
 			^n.collect { |i|
-				var ev = list.sliceAxis(base, i, n);
+				var ev = list.getSlice(base, i, n);
 				list.dispatch(ev, { |e| list.storeAndPreview(e, previewOffsets[i]) });
 				ev
 			}
@@ -1578,7 +1595,7 @@ EventList {
 		^list.add((when: when ? 0) ++ kwargs.asEvent)
 	}
 
-	addPattern { |when=0, pattern, n, maxWhen=300|
-		^EventList.current.addPattern(when, pattern, n, maxWhen, this)
+	addPattern { |when=0, pattern, maxEvents, maxWhen=300|
+		^EventList.current.addPattern(when, pattern, maxEvents, maxWhen, this)
 	}
 }

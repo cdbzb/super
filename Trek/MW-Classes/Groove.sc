@@ -82,10 +82,12 @@ Groove {
 		^(lo + hi) * 0.5
 	}
 
-	// Position-aware span mapping, same contract as mapBeats/mapDurs — see
-	// SequenceableCollection.mapSpansFrom (plusArray.sc). The epsilon clamp is not
-	// belt-and-braces here: unmapBeat is bisection, so two grooved beats closer
-	// than the final bracket can return the same float and yield a zero span.
+	/*
+	 Position-aware span mapping, same contract as mapBeats/mapDurs — see
+	 SequenceableCollection.mapSpansFrom (plusArray.sc). The epsilon clamp is not
+	 belt-and-braces here: unmapBeat is bisection, so two grooved beats closer
+	 than the final bracket can return the same float and yield a zero span.
+	*/
 	mapSpans   { |spans, from = 0| ^spans.mapSpansFrom(from, { |p| this.mapBeat(p)   }) }
 	unmapSpans { |spans, from = 0| ^spans.mapSpansFrom(from, { |p| this.unmapBeat(p) }) }
 

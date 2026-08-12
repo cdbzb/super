@@ -232,9 +232,11 @@ AnchorMap : MonoMap {
 			fromFrame, toFrame, extendBelow, extendAbove)
 	}
 	initAnchor { |anXs, anYs, inF, outF, below, above|
-		// collect() is the defensive COPY as much as the coercion: without it the map
-		// shares storage with the caller's arrays, so a later `xs[i] = ...` would edit
-		// the anchors behind the strictly-increasing check and the prInverse cache.
+		/*
+		 collect() is the defensive COPY as much as the coercion: without it the map
+		 shares storage with the caller's arrays, so a later `xs[i] = ...` would edit
+		 the anchors behind the strictly-increasing check and the prInverse cache.
+		*/
 		xs = anXs.asArray.collect(_.asFloat);
 		ys = anYs.asArray.collect(_.asFloat);
 		(xs.size != ys.size or: { xs.size < 2 }).if {

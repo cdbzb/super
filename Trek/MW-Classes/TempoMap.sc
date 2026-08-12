@@ -11,6 +11,7 @@ TempoMap {
 	( durs.size != beats.size ).if{
 		var newSize = ( beats.size min: durs.size ) - 1;
 		beats = beats[(0..newSize)];
+
 		durs = durs[(0..newSize)];
 	};
 	this.prRebuild;
@@ -153,9 +154,9 @@ TempoMap {
 	 ^ durs.sum / beats.sum => _.reciprocal * 60
   }
   goodBeats {|amount ...args|
-	  args = [0] ++ args => _.flat => _.postln;
+	  args = [0] ++ args => _.flat;
 	  ^(args.size-1 ) 
-	  .collect {|i|args[[i,i+1]] - [0,1]}.postln
+	  .collect {|i|args[[i,i+1]] - [0,1]}
 	  .collect {|i|this.quantizeRange(amount,i)}
 	  .flat ++ durs[( args.last..( durs.size-1 ))]
   }

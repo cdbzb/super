@@ -22,8 +22,8 @@
 
 	// Convert a pattern (typically a Pbind) into a fresh EventList.
 	// See EventList:addPattern for streaming semantics.
-	ev { |name, defaultType, n|
-		^EventList(name, defaultType ? \note).addPattern(0, this, n)
+	ev { |name, defaultType, maxEvents|
+		^EventList(name, defaultType ? \note).addPattern(0, this, maxEvents)
 	}
 }
 +Array{

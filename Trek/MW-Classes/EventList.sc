@@ -1426,9 +1426,16 @@ EventList {
 		var rate   = (ev[\tempo] ? 1) / (ev[\stretch] ? 1);
 		var originBeat = b0.max(from);
 		var pstart, beatOff, tm, wallBase, warped, wPlayer, useMap, useSrc, mapAnchor, srcMap, srcOrigin;
+		var pstart0;
 		player.isNil.if { ^out };
 		ev[\filter] !? { |f| player = f.(player) };
 		ev[\params] !? { |p| player = player.setParams(p) }; // \mi2 finish does this
+		// start BEFORE any trim. player.from does not rebase to 0: it shifts
+		// timestamps by tFrom and leaves start at the gap between the trim point and
+		// the first SURVIVING note. rel is measured from start, so that gap has to be
+		// added back or the take lands early by it (the useSrc branch gets this for
+		// free from its srcOrigin bookkeeping).
+		pstart0 = player.start ? 0;
 		tm = tempoMap;
 		// followTrack forwards non-boolean values to sourceTempoMap (followTrack: \eventList
 		// == followTrack: true, sourceTempoMap: \eventList); explicit sourceTempoMap wins.
@@ -1485,7 +1492,8 @@ EventList {
 		pstart = player.start ? 0;
 		beatOff = case
 			{ useMap } {
-				var startSec = tm.timeAt(mapAnchor);
+				// + the trim residual: see pstart0. Zero when untrimmed.
+				var startSec = tm.timeAt(mapAnchor) + (pstart - pstart0);
 				// TempoMap (\clamp) freezes the beat past the map's ends, where
 				// MIDIItemTempoMap (\carry) keeps the endpoint tempo going — item
 				// events past the map's end behave differently per base map class.

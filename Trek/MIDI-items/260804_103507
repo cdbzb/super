@@ -538,7 +538,7 @@ o = [
 				bndl = bndl.flop;
 				oscBundles = Array(bndl.size);
 				~syn = bndl.collect { |args|
-					var n = Syn.basicNew(instrumentName, args, ~group, ~addAction);
+					var n = Synth.basicNew(instrumentName, args, ~group, ~addAction);
 					oscBundles.add(n.prepareToBundle);
 					n.registerNodes  // returns n
 				};
@@ -1571,7 +1571,7 @@ o = [
 				bndl = bndl.flop;
 				oscBundles = Array(bndl.size);
 				~syn = bndl.collect { |args|
-					var n = Syn.basicNew(instrumentName, args, ~group, ~addAction);
+					var n = Synth.basicNew(instrumentName, args, ~group, ~addAction);
 					oscBundles.add(n.prepareToBundle);
 					n.registerNodes  // returns n
 				};
@@ -1780,7 +1780,7 @@ o = [
 				bndl = bndl.flop;
 				oscBundles = Array(bndl.size);
 				~syn = bndl.collect { |args|
-					var n = Syn.basicNew(instrumentName, args, ~group, ~addAction);
+					var n = Synth.basicNew(instrumentName, args, ~group, ~addAction);
 					oscBundles.add(n.prepareToBundle);
 					n.registerNodes  // returns n
 				};

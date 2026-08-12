@@ -1338,9 +1338,15 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 						e[k] = nil
 					}
 				};
-				e
+				// an event that was ever .play'ed has parent = defaultParentEvent;
+				// archiving that drags the ENTIRE default event — every play
+				// function's source — into the file. Those sources are then
+				// compiled on read, so a class that is missing here but present
+				// where the item was saved (ddwPlug's Syn, say) makes
+				// Object.readArchive fail and silently return nil.
+				e.parent_(nil).proto_(nil)
 			}
-			{ m.isKindOf(MicroKeys) } { m.asEvent }
+			{ m.isKindOf(MicroKeys) } { m.asEvent.parent_(nil).proto_(nil) }
 			{
 				"MIDIItem %: recordedMk is a live % — archived as nil".format(name, m.class).warn;
 				nil

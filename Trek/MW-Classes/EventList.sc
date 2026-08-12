@@ -97,20 +97,12 @@ EventList {
 	}
 
 	// class-level forwarding for common methods
+	// SC cannot splat kwargs through to another method, so the shapes are unpacked
+	// here and handed to the instance method as ONE event — which owns every
+	// inference and fan-out rule. Do not re-implement the array path here.
 	*add { |...args, kwargs|
 		var when = args[0];
 		args[1].isKindOf(Pattern).if { ^current.addPattern(when ? 0, args[1]) };
-		when.isKindOf(Array).if {
-			var whens = when;
-			var n = whens.size;
-			var base = (when: whens) ++ kwargs.asEvent;
-			var previewOffsets = current.nextPreviewOffset(whens);
-			^n.collect { |i|
-				var ev = current.getSlice(base, i, n);
-				current.dispatch(ev, { |e| current.storeAndPreview(e, previewOffsets[i]) });
-				ev
-			}
-		};
 		when.isKindOf(Event).if { ^current.add(when) };
 		^current.add((when: when ? 0) ++ kwargs.asEvent)
 	}
@@ -392,33 +384,44 @@ EventList {
 		}
 	}
 
+	/*
+	 Normalize the argument shapes into ONE event, apply the inferences to it, and
+	 only then decide the fan-out. Order matters: deciding fan-out from args[0]
+	 (as this did) meant `when` reaching the method as a KEYWORD never took the
+	 array path — it stayed in kwargs and stored a single event whose \when was an
+	 Array — and the array path returned before the eventList: inference, so
+	 add([0,1], eventList: \child) stamped defaultType instead of \eventList.
+
+	 Fan-out is checked on \when first, then \voice: parallel arrays ZIP through
+	 getSlice (when: [0,1], voice: [\a,\b] gives (0,\a) (1,\b)), whereas a voice
+	 array against a scalar when FANS OUT to one event per voice at that beat.
+	*/
 	add { |...args, kwargs|
 		var event, previewOffset, when = args[0];
 		args[1].isKindOf(Pattern).if { ^this.addPattern(when ? 0, args[1]) };
-		when.isKindOf(Array).if {
-			var whens = when;
-			var n = whens.size;
-			var base = (when: whens) ++ kwargs.asEvent;
-			var previewOffsets = this.nextPreviewOffset(whens);
-			^n.collect { |i|
-				var ev = this.getSlice(base, i, n);
-				this.dispatch(ev, { |e| this.storeAndPreview(e, previewOffsets[i]) });
-				ev
-			}
-		};
 		when.isKindOf(Event).if {
 			event = when
 		} {
 			event = kwargs.asEvent;
 			when.notNil.if { event[\when] = when }
 		};
-		event[\voice].isKindOf(Array).if {
-			^this.expandEvent(event[\voice].size, event)
-		};
 		// eventList: is only ever meaningful on an \eventList event, so infer the type
 		// rather than making every nesting call spell out newType:
 		(event[\eventList].notNil and: { event[\newType].isNil }).if {
 			event[\newType] = \eventList
+		};
+		event[\when].isKindOf(Array).if {
+			var whens = event[\when];
+			var n = whens.size;
+			var previewOffsets = this.nextPreviewOffset(whens);
+			^n.collect { |i|
+				var ev = this.getSlice(event, i, n);
+				this.dispatch(ev, { |e| this.storeAndPreview(e, previewOffsets[i]) });
+				ev
+			}
+		};
+		event[\voice].isKindOf(Array).if {
+			^this.expandEvent(event[\voice].size, event)
 		};
 		previewOffset = this.nextPreviewOffset(event[\when] ? 0);
 		this.dispatch(event, { |e| this.storeAndPreview(e, previewOffset) });
@@ -1572,6 +1575,8 @@ EventList {
 // Mirrors EventList *add's three branches (scalar/Array/Event when) since SC has no
 // way to splat kwargs through to another method.
 + Symbol {
+	// Stamps \name and hands one event to EventList.add, which owns every inference
+	// and fan-out rule. Do not re-implement the array path here.
 	add { |...args, kwargs|
 		var when = args[0];
 		var list = EventList.current;
@@ -1580,17 +1585,6 @@ EventList {
 		when.isKindOf(Event).if {
 			when[\name] = this;
 			^list.add(when)
-		};
-		when.isKindOf(Array).if {
-			var whens = when;
-			var n = whens.size;
-			var base = (when: whens) ++ kwargs.asEvent;
-			var previewOffsets = list.nextPreviewOffset(whens);
-			^n.collect { |i|
-				var ev = list.getSlice(base, i, n);
-				list.dispatch(ev, { |e| list.storeAndPreview(e, previewOffsets[i]) });
-				ev
-			}
 		};
 		^list.add((when: when ? 0) ++ kwargs.asEvent)
 	}

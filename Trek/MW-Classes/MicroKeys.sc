@@ -639,40 +639,85 @@ monitor { |offLatency = 0.02|
 		damperDown = false;
 		modState = (bend: 0, poly: 0, pressure: 0, expr: 0);
 	}
+	/*
+	 Tear this instance down. NOT `this.free` at the end — that IS this method, and
+	 the old line recursed until the stack blew. unmonitor deliberately frees only
+	 the note MIDIdefs (it also runs on Cmd-.), so the CC/bend/touch defs this
+	 instance owns are freed here instead. \setClassCCs is shared by every instance,
+	 so it is left alone.
+	*/
 	free {
-		this.unmonitor ; //remove MIDIdefs
-		CC.all[this.name].do{|i| i.bus.free; i.free}; //remove CC busses and CCs
-		this.free 
+		this.unmonitor;
+		this.clearVoiceState;
+		[\microCC, \microCC74, \microBend, \microTouch].do { |prefix|
+			MIDIdef(prefix ++ name => _.asSymbol) !? (_.free)
+		};
+		CC.all[name] !? { |instanceCCs|
+			instanceCCs.do { |cc|
+				CC.active.remove(cc);
+				cc.bus !? (_.free)
+			};
+			CC.all.removeAt(name)
+		};
+		all.removeAt(name);
+		(current === this).if { current = nil };
+		^this
 	}
+
+	/*
+	 Per-key SynthDef split: `array` is a list of [defName, testFunc, paramEvent]
+	 triples, where testFunc answers true for the midinotes that should sound
+	 defName and paramEvent is merged into that voice's args. First match wins; a
+	 nil testFunc is a catch-all, so it belongs last. A note matching nothing falls
+	 back to this instance's own defName.
+
+	 Inserts a \chooseDef step before \synth and REPLACES \synth with one that reads
+	 e.def. Both steps must answer the EVENT: doNoteOn hands the chain's result to
+	 register, and doNoteOff releases what register stored — the old version
+	 answered a bare Synth and called register itself, so every note both
+	 double-registered and hung. It also builds Synths, not Synth, because that is
+	 what release/set are called on downstream.
+	*/
 	split { |array|
 		var defNames, cases, paramEvents;
 		# defNames, cases, paramEvents = array.flop;
 		namedList.add( \chooseDef,
-			{|e|
-				cases.collect(_.value(e.num)).do{|i x|
-					i.if {
-						e.def_(defNames.[x]);
-						e.splitParams_(paramEvents[x] ? ())
-					}
-				};
-			e.postln
-			};
-		);
-		namedList.addAfter( \synth,
 			{ |e|
-				Synth(e.def ? \default, [\freq, e.num.midicps, \amp, e.vel, \num, e.num] 
-				// ++ params  TODO
-				++ ((e.splitParams ? ()) ++ (e.params ? ())).asKeyValuePairs)
-				=> this.register(_)
+				var i = cases.detectIndex { |test| test.isNil or: { test.value(e.num) } };
+				i !? {
+					e.def_(defNames[i]);
+					e.splitParams_(paramEvents[i] ? ())
+				};
+				e
 			},
-			\chooseDef
+			addAction: \addBefore,
+			otherName: \synth
 		);
-		namedList.dump;
-		// this.test.isNil.if{ "noteOnFunction isNil".warn }{}
-		this.test !? (_.release) ?? { "noteOnFunction isNil".warn }
+		namedList.add( \synth,
+			{ |e|
+				e.silent.isNil.if {
+					e.synths = Synths(
+						e.def ? defName ? \default,
+						[\freq, e.num.midicps, \amp, e.vel, \num, e.num]
+						++ ((e.splitParams ? ()) ++ (e.params ? ())).asKeyValuePairs
+					)
+				};
+				e
+			},
+			addAction: \addAfter,
+			otherName: \chooseDef
+		);
+		^this
 	}
+	/*
+	 Fire one voice (note 40) through the chain to check a chain edit still answers a
+	 playable event, and release it — the note bypasses doNoteOn, so nothing else
+	 holds a reference to release it later. Answers the event.
+	*/
 	test {
-		^try{ this.noteOnFunction.(40,40) }
+		var e = try { this.noteOnFunction.(40, 40) };
+		e !? { e[\synths] !? (_.release) };
+		^e
 	}
 	//
 	// auto-record items
@@ -713,10 +758,17 @@ monitor { |offLatency = 0.02|
 		^newInstance;
 
 	}
-	doesNotUnderstand {|selector ...args|
-		namedList.respondsto(selector).if{
+	/*
+	 Forward anything MicroKeys does not implement to the namedList. The test was
+	 `respondsto` (lowercase t), which is not a selector — so it raised inside
+	 doesNotUnderstand and NOTHING ever forwarded, and a plain typo on a MicroKeys
+	 (`a.activate`) died with a message about respondsto instead of about itself.
+	*/
+	doesNotUnderstand { |selector ...args|
+		namedList.respondsTo(selector).if{
 			^Message(namedList, selector, args).value
-		}
+		};
+		^this.superPerformList(\doesNotUnderstand, selector, args)
 	}
 }
 

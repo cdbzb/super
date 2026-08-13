@@ -133,7 +133,19 @@ ParamSpace {
 				{ tm.prAtExtrapolated(e.timestamp - tm.t0, tm.env) },
 				{ e.timestamp - (player.start ? 0) }
 			);
-			var copy = e.copy.put(\when, when);
+			var copy;
+			/*
+			 MIDIItem.record writes the take's setup (\setPoly, the recorded initial
+			 CC values, the leading \rest) at timestamp 0, but t0 is the first
+			 SELECTED note — so on a selection those land at a NEGATIVE beat and any
+			 prepare from beat 0 trims them: nested \eventList inserts (addItem's
+			 align: mode) lost setPoly and the recorded CC state while the flattening
+			 path, which never rebases, kept them. They set state rather than sounding
+			 at a time, so clamp them to the child's start; every other `when` is
+			 untouched.
+			*/
+			(e[\initialEvent] == true or: { e[\type] == \rest }).if { when = when.max(0) };
+			copy = e.copy.put(\when, when);
 			srcName !? { copy[\name] = copy[\name] ? srcName };
 			copy.put(\latency, Server.default.latency);
 			mk !? { copy.put(\mk, mk.name ? mk) };

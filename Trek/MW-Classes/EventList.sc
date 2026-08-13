@@ -268,12 +268,15 @@ EventList {
 	 note, tagged with the source name, so solo/mute and event surgery see the
 	 notes; nested gives one opaque event whose placement is recomputed every
 	 prepare.
+
+	 grid: <beats> — the subdivision align: snaps the entry to; nil auto-detects
+	 (prAlignGrid). Only align: reads it. grid: 1 is the pre-grid behaviour.
 	*/
-	addItem { |player, at, voice, mk, offset, align|
+	addItem { |player, at, voice, mk, offset, align, grid|
 		var tm, whenFn, ep, sl, env, fromWall, epoch;
 		(player.isNumber or: { player == \original }).if { var swap = player; player = at; at = swap };
 		player = player.player;
-		align.notNil.if { ^this.prAddItemNested(player, at, voice, mk, offset, align) };
+		align.notNil.if { ^this.prAddItemNested(player, at, voice, mk, offset, align, grid) };
 		(at == \original).if {
 			at = this.itemStartBeat(player) ?? {
 				^"EventList.addItem: at: \\original needs a take with a recordPlayEpoch (recorded against a playing list) — pass a beat instead".warn
@@ -320,17 +323,23 @@ EventList {
 	// the interior but not the entry, so to change align, re-insert.
 	// Returned as a one-element Array so removal reads the same in both modes:
 	// e.events.removeAll(a).
-	prAddItemNested { |player, at, voice, mk, offset, align|
+	prAddItemNested { |player, at, voice, mk, offset, align, grid|
 		var mkName = mk ?? { this.prItemMk(player) };
 		// anonymous child on purpose: EventList(name) ANSWERS an existing list of that
 		// name, and asEventList appends to it — so a named child silently doubles its
 		// events on a second call.
 		var child = player.asEventList(nil, mkName ? \default);
 		var when = at ?? {
-			var a = this.itemAnchorBeat(player) ?? {
+			/*
+			 The take's own tempomap rebases the child to its t0 (the first SELECTED
+			 note), so the entry has to be that note's performed beat, not the take's
+			 start.
+			*/
+			var tOff = { player.tempomap.t0 }.try;
+			var b = this.prItemEpochBeat(player, tOff ? 0) ?? {
 				^"EventList.addItem: align: needs a take with a recordPlayEpoch (recorded against a playing list) — pass at: as well".warn
 			};
-			a.blend(a.round(1), align)
+			b.blend(b.round(grid ?? { this.prAlignGrid(b) }), align)
 		};
 		voice !? { child.events.do { |e| e[\voice] = voice } };
 		^[this.add((
@@ -339,6 +348,56 @@ EventList {
 			eventList: child,
 			align: align,
 			name: player.source.tryPerform(\name) !? { |n| n.asString.asSymbol }))]
+	}
+
+	/*
+	 The subdivision `align:` snaps the entry to. align: 1 puts the take's first
+	 anchor ON a parent beat, but WHICH beat is not recoverable from the data: a take
+	 whose anchor was played on an offbeat sits a half-beat from the nearest integer,
+	 and rounding to 1 drops the whole take a half-beat early. The entry is a blend,
+	 so a wrong snap target skews every fractional align too — only align 0 escapes,
+	 since it never rounds. (The take's own map can't settle it: its `beats` are gaps
+	 between ITS anchors and averageOffset is its rubato against ITSELF, neither of
+	 which knows the phase against this list.)
+
+	 So answer the COARSEST subdivision the performance actually lands on: walk
+	 1, 1/2, 1/3, 1/4, 1/6, 1/8 and take the first whose residual is within `tol`
+	 beats. A take played near a whole beat still gets 1; one played on the `and`
+	 gets 1/2. Below 1/6 the tolerance exceeds half the grid so everything would
+	 match — those are reachable only as the coarser candidates fail, and 1 is the
+	 fallback when none fits. Pass grid: to override.
+	*/
+	prAlignGrid { |beat, tol = 0.12|
+		#[1, 0.5, 0.33333333333333, 0.25, 0.16666666666666, 0.125].do { |g|
+			((beat - beat.round(g)).abs <= tol).if { ^g }
+		};
+		^1
+	}
+
+	/*
+	 The beat at which the take's `tOff`-seconds mark was PERFORMED, resolved in the
+	 frame of the clock that was actually playing when it was recorded (ep[\list]) —
+	 the same arithmetic the flattening path stamps onto every event, so a nested
+	 insert enters exactly where a flattened one starts.
+
+	 NOT itemStartBeat/itemAnchorBeat: those answer the same wall moment through THIS
+	 list's map as it stands NOW, which is what `at: \original` wants (pin to the map
+	 you just changed) but wrong for a nested insert. The two frames diverge whenever
+	 the list's clock is not the one the take overdubbed against — a list built from
+	 some other selection, or a quantize between insert and play, since `when` is
+	 baked here — and the whole child then enters at a stale beat, offset rigidly
+	 against the guide.
+
+	 nil for takes without a recordPlayEpoch or recordEpoch.
+	*/
+	prItemEpochBeat { |player, tOff = 0|
+		var ep = player.tryPerform(\recordPlayEpoch) ? lastPlayEpoch;
+		var sl, env, epoch;
+		ep ?? { ^nil };
+		epoch = player.tryPerform(\recordEpoch) ?? { ^nil };
+		sl = ep[\list] ? this;   /* the epoch's detached clock, never the live list */
+		env = ep[\tempoEnv];
+		^sl.wallToBeat(epoch + tOff - ep[\seconds] + sl.beatToWall(ep[\fromBeat], env), env)
 	}
 
 	// beat in THIS list's CURRENT frame that sounds at the take's recorded wall
@@ -1560,7 +1619,16 @@ EventList {
 	fire { |sched|
 		var lat = Server.default.latency ? 0.2;
 		var gen, sorted;
-		sorted = sched.asArray.sort { |a, b| (a[\time] ? 0) < (b[\time] ? 0) };
+		/*
+		 `<=`, not `<`: SC's sort ties to the RIGHT operand (mergeTemp takes this[mid]
+		 when the comparator is false; insertionSortRange shifts past equals), so a
+		 strict comparator reorders same-time entries by data layout. State-setting
+		 sends (\setPoly, the recorded initial CCs) share an instant with the note they
+		 must precede — a selection's intro clamps to the first note's beat — and
+		 insertion order is the only thing that says which comes first. `<=` makes both
+		 of SC's sort paths keep it.
+		*/
+		sorted = sched.asArray.sort { |a, b| (a[\time] ? 0) <= (b[\time] ? 0) };
 		prPlayGen = prPlayGen + 1;
 		gen = prPlayGen;
 		Routine {

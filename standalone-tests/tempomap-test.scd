@@ -15,7 +15,7 @@ var h = (thisProcess.nowExecutingPath.dirname +/+ "test-helpers.scd").load;
 var assert = h[\assert];
 var assertClose = { |a, b, msg, tol = 1e-6| h[\assertClose].(a, b, msg, tol) };
 var assertArr = { |a, b, msg, tol = 1e-6| h[\assertArr].(a, b, msg, tol) };
-var t, r, warped, close, p, mt, am, placed, sourceMap, targetMap, warp, mkNote, notes, sweep;
+var t, r, warped, close, p, mt, am, placed, sourceMap, targetMap, warp, mkNote, notes, sweep, e;
 
 "== TempoMap / MIDIItemTempoMap tests ==".postln;
 
@@ -205,25 +205,49 @@ assertClose.(p.tempomap(1 ! 6).at(1), 1, "player scaleBeats: unscaled env unchan
 assertArr.(p.scaleBeats(2).scaleBeats(2).tempomap(1 ! 6).beats, 4 ! 6,
 	"player scaleBeats: composes");
 
-// -- 15. trim(from, to): beat-domain sub-map, re-zeroed, t0 preserves offset --
-r = mt.trim(1, 3);
-assertArr.(r.beats, [1,1], "trim: beats are the windowed gaps");
-assertArr.(r.times, [0,1,2], "trim: times re-zeroed to window start");
-assertClose.(r.t0, mt.t0 + 1, "trim: t0 absorbs the offset");
-assertArr.((1 ! 2).warpTo(r), [1,1], "trim: warpTo reproduces windowed spans");
+// -- 15. fromBeat(from, to): beat-domain sub-map, re-zeroed, t0 preserves offset --
+r = mt.fromBeat(1, 3);
+assertArr.(r.beats, [1,1], "fromBeat: beats are the windowed gaps");
+assertArr.(r.times, [0,1,2], "fromBeat: times re-zeroed to window start");
+assertClose.(r.t0, mt.t0 + 1, "fromBeat: t0 absorbs the offset");
+assertArr.((1 ! 2).warpTo(r), [1,1], "fromBeat: warpTo reproduces windowed spans");
 // absolute placement preserved: r's beat 0 == mt's beat 1
-assertClose.(r.timeAt(0) + r.t0, mt.timeAt(1) + mt.t0, "trim: absolute start preserved", 1e-4);
-assertArr.(mt.beats, [1,1,1,1,1], "trim: original map unchanged");
+assertClose.(r.timeAt(0) + r.t0, mt.timeAt(1) + mt.t0, "fromBeat: absolute start preserved", 1e-4);
+assertArr.(mt.beats, [1,1,1,1,1], "fromBeat: original map unchanged");
 // window crossing the fast final span (ideal beat 4->5 is 3 s/beat)
-r = mt.trim(3, 5);
-assertArr.((1 ! 2).warpTo(r), [1,3], "trim: fast final span captured", 1e-4);
+r = mt.fromBeat(3, 5);
+assertArr.((1 ! 2).warpTo(r), [1,3], "fromBeat: fast final span captured", 1e-4);
 // fractional / mid-span endpoints
-r = mt.trim(0.5, 2.5);
-assertClose.(r.beats.sum, 2, "trim: total beats == to - from");
+r = mt.fromBeat(0.5, 2.5);
+assertClose.(r.beats.sum, 2, "fromBeat: total beats == to - from");
 assertClose.(r.timeAt(r.beats.sum) + r.t0, mt.timeAt(2.5) + mt.t0,
-	"trim: window end preserved", 1e-4);
-// to defaults to the map end -> trim(0) is identity
-assertArr.(mt.trim(0).beats, mt.beats, "trim(0): identity");
+	"fromBeat: window end preserved", 1e-4);
+// to defaults to the map end -> fromBeat(0) is identity
+assertArr.(mt.fromBeat(0).beats, mt.beats, "fromBeat(0): identity");
+// the pre-rename name still answers
+assertArr.(mt.trim(1, 3).beats, mt.fromBeat(1, 3).beats, "trim: deprecated alias");
+
+// -- 15b. ++ : concatenation of two performed sections into one clock --
+r = mt.fromBeat(0, 2) ++ mt.fromBeat(3, 5);
+assert.(r.isKindOf(MonoMap), "++: answers a MonoMap (not the old plain TempoMap)");
+assertClose.(r.at(2), mt.timeAt(2) - mt.timeAt(0), "++: first section's seconds kept", 1e-4);
+assertClose.(r.at(4), (mt.timeAt(2) - mt.timeAt(0)) + (mt.timeAt(5) - mt.timeAt(3)),
+	"++: second section laid after the first on both axes", 1e-4);
+// old-world maps are cells without an explicit bridge
+assert.((mt.fromBeat(0, 2).asMonoMap ++ mt.fromBeat(3, 5)).isKindOf(MapSeq),
+	"++: MapSeq coerces a non-MonoMap cell through asMonoMap");
+assert.(MapSeq([mt.fromBeat(0, 2), TempoMap([1,1],[1,2])]).isKindOf(MapSeq),
+	"MapSeq: mixed old-world cells coerce");
+
+// -- 15c. EventList.tempoMap_ folds an Array of maps --
+e = EventList(\tempoMapArrayTest);
+e.tempoMap_([mt.fromBeat(0, 2), mt.fromBeat(3, 5)]);
+assert.(e.tempoMap.isKindOf(AnchorTempoMap), "tempoMap_ Array: baked to AnchorTempoMap");
+assertClose.(e.tempoMap.timeAt(4), r.at(4), "tempoMap_ Array: same clock as ++", 1e-4);
+e.tempoMap_([mt.fromBeat(0, 2)]);
+assertClose.(e.tempoMap.timeAt(2), mt.timeAt(2) - mt.timeAt(0),
+	"tempoMap_ Array: single element is the map itself", 1e-4);
+e.clear;
 
 // -- 16. clump: lower anchor resolution, pick placement, pinned endpoints --
 r = mt.clump(2);

@@ -719,7 +719,24 @@ EventList {
 	// map whose seconds start mid-take must not drag the whole list late.
 	// Anything else (a MIDIItemTempoMap, a TempoMap facade, nil) is stored exactly
 	// as it always was.
+	/*
+	 An ARRAY of maps is concatenated (MapSeq via ++) before that coercion, so
+	 sections butt end to end on both axes and the list's clock is the
+	 performance of each in turn:
+
+	   e.tempoMap_([a.tempomap.fromBeat(0, 8), b.tempomap.fromBeat(0, 4)])
+
+	 fromBeat is the caller's job, not this method's: a slice's raw map runs one
+	 span past its last mark (the closing anchor), and only the caller knows
+	 whether that span is the seam or a tail worth keeping.
+	*/
 	tempoMap_ { |map|
+		map.isArray.if {
+			map.isEmpty.if {
+				Error("EventList.tempoMap_: empty map array — pass nil to clear the clock").throw
+			};
+			map = map.reduce('++')
+		};
 		tempoMap = map.isKindOf(MonoMap).if { map.asAnchorTempoMap(rebase: true) } { map };
 		// The beat->wall integral is keyed on tempoEnv IDENTITY only, but its
 		// cumulative sums (prWallCum / prWallBase / prWallSubs) are integrals of

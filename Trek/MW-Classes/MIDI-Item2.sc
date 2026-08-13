@@ -2756,21 +2756,45 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 		^this
 	}
 
-	// Return a NEW map covering only ideal beats [from, to], re-zeroed so it starts at
-	// beat 0 / time 0; t0 absorbs the offset (t0' = t0 + timeAt(from)) so absolute
-	// placement is preserved. Endpoints are synthesized exactly at from/to via timeAt
-	// (interpolates mid-span, extrapolates past the ends); interior anchors are kept.
-	// `to` defaults to the map's end. Beat-domain analog of player.fromBeat;
-	// non-mutating; resets curvature (compose .trim(a, b).curve(amount)).
-	trim {|from = 0, to|
+	/*
+	 Return a NEW map covering only ideal beats [from, to], re-zeroed so it starts at
+	 beat 0 / time 0; t0 absorbs the offset (t0' = t0 + timeAt(from)) so absolute
+	 placement is preserved. Endpoints are synthesized exactly at from/to via timeAt
+	 (interpolates mid-span, extrapolates past the ends); interior anchors are kept.
+	 `to` defaults to the map's end. Non-mutating; resets curvature (compose
+	 .fromBeat(a, b).curve(amount)).
+
+	 Named for player.fromBeat, whose beat window this mirrors — the seconds-domain
+	 player.from is the one that takes times. THE call before concatenating two
+	 slices' maps: a slice's raw map runs one span PAST its last mark (the closing
+	 anchor), so `a.tempomap ++ b.tempomap` lands b that span late, while
+	 `a.tempomap.fromBeat(0, 8) ++ ...` seams exactly.
+	*/
+	fromBeat {|from = 0, to|
 		^this.copy.prTrim(from, to)
 	}
+	/* pre-rename name; player.trim(bool) means something else entirely */
+	trim {|from = 0, to| ^this.fromBeat(from, to) }
+
+	/*
+	 Concatenation: `other`'s shape laid after this one's, starting where this map
+	 ended on BOTH axes — two performed sections butted into one clock. Answers a
+	 MapSeq (a MonoMap), which EventList.tempoMap_ bakes to an AnchorTempoMap and
+	 Array.warpTo takes through its MonoMap branch.
+
+	 Was reaching doesNotUnderstand and forwarding to the inner TempoMap, which
+	 answered a plain TempoMap: correct seconds, but the beat<->sec anchors were
+	 rebuilt as spans, losing t0, curvature and the extension policy, and Env's
+	 endpoint CLAMP meant anything past the last beat piled up at one wall time.
+	 Trim to the beats you mean first — see fromBeat.
+	*/
+	++ { |other| ^this.asMonoMap ++ other }
 	prTrim {|from = 0, to|
 		var cum = [0] ++ beats.integrate;    // cumulative beat nodes, parallel to `times`
 		var lo = from, hi, keep, fromTime;
 		hi = to ? cum.last;
 		(hi <= lo).if {
-			("MIDIItemTempoMap.trim: to (%) must be > from (%)".format(hi, lo)).warn;
+			("MIDIItemTempoMap.fromBeat: to (%) must be > from (%)".format(hi, lo)).warn;
 			^this
 		};
 		keep     = (0 .. (cum.size - 1)).select { |i| (cum[i] > lo) and: { cum[i] < hi } };

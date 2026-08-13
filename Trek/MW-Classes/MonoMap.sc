@@ -98,10 +98,13 @@ MonoMap {
 	// f >> g : apply f, then g. Frame-checked in ComposedMap's constructor.
 	>> { |outer| ^ComposedMap([this, outer]) }
 
-	// f ++ g : concatenation, NOT composition — g's shape is laid after f's,
-	// starting where f ended on both axes. Sugar for the finite two-cell MapSeq;
-	// both operands must have finite domains (MapSeq validates). The result
-	// keeps THIS map's frames (g is a shape; its frames are ignored).
+	/*
+	 f ++ g : concatenation, NOT composition — g's shape is laid after f's,
+	 starting where f ended on both axes. Sugar for the finite two-cell MapSeq;
+	 both operands must have finite domains (MapSeq validates). The result
+	 keeps THIS map's frames (g is a shape; its frames are ignored). `other`
+	 may be an old-world map — MapSeq coerces cells through asMonoMap.
+	*/
 	++ { |other| ^MapSeq([this, other], 1, this.fromFrame, this.toFrame) }
 
 	// Same mapping, new axes. THE reuse mechanism: a map's shape (a swing
@@ -939,9 +942,19 @@ MapSeq : MonoMap {
 			fromFrame, toFrame)
 	}
 
+	/*
+	 Cells are coerced through asMonoMap, so every old-world map (TempoMap,
+	 MIDIItemTempoMap, an EventList's clock) is a cell without the caller
+	 spelling the bridge out: MapSeq([aTempoMap, anotherMap]) and
+	 `aMap ++ aTempoMap` both work. Anything with no bridge still raises the
+	 same "cells must be MonoMaps" error, naming ITS class rather than a
+	 doesNotUnderstand from inside the width arithmetic.
+	*/
 	initMapSeq { |someCells, someRepeats, inF, outF, below, above|
 		var inDims, outDims, inD, outD;
-		cells = someCells.asArray;
+		cells = someCells.asArray.collect { |c|
+			(c.isKindOf(MonoMap) or: { c.respondsTo(\asMonoMap).not }).if({ c }, { c.asMonoMap })
+		};
 		(cells.size < 1).if { Error("MapSeq: need at least one cell").throw };
 		cells.do { |c|
 			c.isKindOf(MonoMap).not.if {

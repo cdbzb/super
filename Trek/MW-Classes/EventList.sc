@@ -1113,16 +1113,41 @@ EventList {
 	 unfrozen one.
 	*/
 	prFreezeItemMap { |map|
-		var mm, frozen;
-		frozen = {
-			mm = map.asMonoMap;
-			AnchorTempoMap(mm.ys + (map.tryPerform(\t0) ? 0), mm.xs)
+		^this.prWithT0(map, map.tryPerform(\t0) ? 0) ? map
+	}
+
+	/*
+	 Coerce a map to an AnchorTempoMap that still knows its t0.
+
+	 Both bridges to the V2 side lose it and neither notices: asMonoMap expresses
+	 the seconds RELATIVE to t0 (they start at 0), and asAnchorTempoMap's rebase
+	 then stores that 0 as the origin. The shape and the frame are both intact —
+	 only the label saying where the frame starts is gone. prItemBeat reads exactly
+	 that label to place a take at: \original, so losing it moves the insert by t0.
+
+	 Rebuilt from the coerced map's own times/beats rather than by hand, so every
+	 check asAnchorTempoMap does — bake, axis orientation, degenerate anchors —
+	 still runs; only the origin moves back. initAnchors re-derives t0 from
+	 times.first and the per-span beats from the cumulative positions, so the two
+	 halves reproduce exactly.
+
+	 Answers nil (not a wrong map) if the round trip throws, leaving the caller to
+	 decide its own fallback.
+	*/
+	prWithT0 { |map, t0 = 0|
+		^{
+			// asMonoMap is the bridge FROM the item-map side; a MonoMap is already
+			// there and does not answer it (prMapEdit hands one straight in).
+			var mm = map.isKindOf(MonoMap).if { map } { map.asMonoMap };
+			var atm = mm.asAnchorTempoMap(rebase: true);
+			(t0 == 0).if { atm } {
+				AnchorTempoMap(atm.times + t0, [0] ++ atm.beats.integrate)
+			}
 		}.try { |err|
-			"EventList.tempoMap_: could not freeze % (%) — storing it as-is"
+			"EventList: could not re-attach t0 to % (%) — leaving it rebased to 0"
 				.format(map.class, err.errorString).warn;
 			nil
-		};
-		^frozen ? map
+		}
 	}
 
 	// Straighten this list's clock: amount 1 = one constant tempo, 0 = bit-exact
@@ -1141,6 +1166,20 @@ EventList {
 
 	// Straighten the beat span [from, to] only, leaving the rest of the clock alone.
 	quantizeSpan { |from, to, amount = 1| ^this.prMapEdit { |m| m.quantizeSpan(from, to, amount) } }
+
+	/*
+	 Set the beat span [from, to] to one flat tempo, leaving the rest of the clock
+	 where it is. quantizeSpan straightens a span toward the tempo it already
+	 averages; this straightens it to a tempo you name.
+
+	 Two spellings because the two conventions both exist here and mixing them is a
+	 factor-of-60 error: the map layer speaks bps (AnchorMap.setSpanTempo), the gui
+	 speaks bpm (MapEditor.setSpanBpm). Chainable, and non-destructive to
+	 everything outside the span — the map past `to` is shifted, not rescaled, so
+	 later material keeps its own tempo and only moves in time.
+	*/
+	setSpanTempo { |from, to, bps| ^this.prMapEdit { |m| m.setSpanTempo(from, to, bps) } }
+	setSpanBpm   { |from, to, bpm| ^this.prMapEdit { |m| m.setSpanTempo(from, to, bpm / 60) } }
 
 	// The knob from "as performed" (amount 0) to "every child beat on a parent beat"
 	// (amount 1) — same sense as the `align:` key on a nested \eventList event. NOT
@@ -1186,15 +1225,20 @@ EventList {
 	// so this must never touch the ivar. A flat list (nil map) is already straight,
 	// so it is a no-op. The guard is the point: without it a func that answers
 	// nil (a span op given a bad range) stores nil and the list silently goes flat.
+	// t0 is captured BEFORE the edit and re-attached after: the bridge out to a
+	// MonoMap drops it (prWithT0), so without this every span op and every
+	// quantize silently rebased the clock's origin to 0 and moved any later
+	// at: \original insert by t0. The edit itself only ever touches the SHAPE.
 	prMapEdit { |func|
-		var edited;
+		var edited, t0;
 		tempoMap.isNil.if { ^this };
+		t0 = tempoMap.tryPerform(\t0) ? 0;
 		edited = func.(tempoMap.asMonoMap);
 		edited.isKindOf(MonoMap).not.if {
 			Error("EventList.prMapEdit: map edit answered %, expected a MonoMap"
 				.format(edited.class)).throw
 		};
-		^this.tempoMap_(edited)
+		^this.tempoMap_(this.prWithT0(edited, t0) ? edited)
 	}
 
 	// Base wall-seconds elapsed across the beat interval [a, b], BEFORE any

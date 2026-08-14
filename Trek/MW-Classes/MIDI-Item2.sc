@@ -2504,15 +2504,42 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 	*fromAnchors {|anchorTimes, beatPositions|
 		^super.new.initAnchors(anchorTimes, beatPositions)
 	}
+	/*
+	 The map needs one more anchor than there are marks — the last mark has to be
+	 given an end for its own beat — and that closing anchor is INVENTED on both
+	 axes. prSelectionArgs invents the beats half by repeating the last beat-gap;
+	 this invents the seconds half, and the two must agree or the final span reports
+	 a tempo nobody played.
+
+	 Repeating the last measured span is that agreement: same beat-gap, same
+	 seconds, so the closing span carries the tempo of the last real one and adds no
+	 information. bounds.end — what this used to use — is the clip's end, i.e. the
+	 last note's RELEASE, which has nothing to do with where the next beat falls. On
+	 a take ending with any sustain that lands the closing anchor early and the final
+	 beat reads fast: on the take that prompted this, five measured spans averaged
+	 1.236 s/beat and the fabricated sixth came out at 1.087 (48.5 vs 55.2 bpm).
+
+	 That final slope is not a local matter — AnchorTempoMap carries it forward for
+	 every beat past the map's end, so anything placed beyond the last mark inherits
+	 the error (EventList.addItem, spanBps, timeAtBeat).
+
+	 fromBeat's explicit closingAnchor still wins: it knows the parent's actual next
+	 beat, which beats any extrapolation. bounds.end remains the last resort for a
+	 single-mark selection, where there is no span to repeat.
+	*/
 	init{|midiItem, choiceFunc, b|
-		var closeTime;
+		var closeTime, marks, lastSpan;
 		midiEvents = midiItem.midiEvents;
-		// closing anchor: fromBeat supplies the parent's next-beat time; else clip end
-		closeTime = (midiItem.tryPerform(\closingAnchor) !? (_[\time])) ? midiItem.bounds.end;
-		times = (choiceFunc ? I.d)
+		marks = (choiceFunc ? I.d)
 		.value( midiEvents.select({|e| e.midicmd == \noteOn}))
-		.collect{|e| e.timestamp }
-		++ closeTime;
+		.collect{|e| e.timestamp };
+		lastSpan = (marks.size >= 2).if { marks.last - marks[marks.size - 2] };
+		closeTime = (midiItem.tryPerform(\closingAnchor) !? (_[\time])) ?? {
+			(lastSpan.notNil and: { lastSpan > 0 }).if
+				{ marks.last + lastSpan }
+				{ midiItem.bounds.end }
+		};
+		times = marks ++ closeTime;
 		t0 = times[0];
 		times = times - t0; //relative to first anchor
 		beats = b;

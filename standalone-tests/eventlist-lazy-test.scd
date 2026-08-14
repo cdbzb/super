@@ -1,5 +1,5 @@
 (
-var e, r, ok, near, get, flat, cyc, threw, f, fired, ev, g, seen, forked, forked2, h;
+var e, r, ok, near, get, flat, cyc, threw, f, fired, ev, g, seen, forked, forked2, h, pv, pv2;
 near = { |a, b, tol = 1e-6| (a - b).abs < tol };
 ok = { |label, cond| ("%  %".format(cond.if("PASS","FAIL"), label)).postln };
 get = { |evts, name, key| evts.detect { |x| x[\name] == name }[key] };
@@ -118,6 +118,37 @@ ok.("~x at play time",   seen.collect { |p| p[0] } == [0, 1]);
 ok.("~n at play time",   seen.collect { |p| p[1] } == [2, 2]);
 ok.("~sliceIndex alias", seen.collect { |p| p[2] } == [0, 1]);
 ok.("~secsFor.(~x+1) per slice", seen.every { |p, i| near.(p[3], [1, 1][i]) });
+
+// --- preview delay honours the tempoMap (axis 1) ----------------------------
+// 8 beats at 2 s/beat: a 3-beat offset is 6 seconds of preview delay, not 3
+pv = EventList(nil, \note);
+pv.batchWindow_(-1);   // every nextPreviewOffset opens a fresh batch
+pv.tempoMap = TempoMap(1!8, 2!8);
+pv.nextPreviewOffset(0);                       // open a batch at beat 0
+ok.("preview delay uses tempoMap",  near.(pv.prPreviewDelay(3, pv.prPreviewTempoEnv), 6));
+ok.("preview delay 0 at origin",    near.(pv.prPreviewDelay(0, pv.prPreviewTempoEnv), 0));
+// non-constant map: the batch must skew INSIDE it, not just overall
+pv.tempoMap = TempoMap(1!8, [1,1,1,1,0.5,0.5,0.5,0.5]);
+pv.nextPreviewOffset(0);
+ok.("non-constant map skews within batch",
+	near.(pv.prPreviewDelay(4, pv.prPreviewTempoEnv), 4)
+	and: { near.(pv.prPreviewDelay(8, pv.prPreviewTempoEnv), 6) });
+// batch origin is not beat 0: absolute beats decide, not the delta
+pv.nextPreviewOffset(4);
+ok.("delay measured from batch origin",
+	near.(pv.prPreviewDelay(4, pv.prPreviewTempoEnv), 2));
+// \tempoTrack composes into the preview clock too
+pv.add(0, tempoTrack: 2);
+pv.nextPreviewOffset(0);
+ok.("tempoTrack composes into preview", near.(pv.prPreviewDelay(4, pv.prPreviewTempoEnv), 8));
+// events before the batch origin clamp instead of scheduling in the past
+pv.nextPreviewOffset(4);
+ok.("negative offset clamps to 0", pv.prPreviewDelay(-2, pv.prPreviewTempoEnv) == 0);
+// flat list (no tempoMap) is unchanged: delay == offset
+pv2 = EventList(nil, \note);
+pv2.batchWindow_(-1);
+pv2.nextPreviewOffset(0);
+ok.("flat list unchanged", near.(pv2.prPreviewDelay(3, pv2.prPreviewTempoEnv), 3));
 
 // --- does the context survive into a fork? ----------------------------------
 // Through the REAL path (play -> prepare -> fire), not a direct .play from the

@@ -12,7 +12,7 @@ EventList {
 	var <events, <preview, <>defaultType, <routes, <>addFunc, <>previewPrep;
 	var <>env, <>context;
 	var <>autoExpand = false;
-	var <>batchWindow = 0.05, batchEndTime = -1e9, batchFirstWhen = 0;
+	var <>batchWindow = 0.05, batchEndTime = -1e9, batchFirstWhen = 0, batchTempoEnv;
 	var <name, <>voiceSpace;
 	var <solo, <mute;
 	// tempoMap is getter-only here: the setter (tempoMap_) coerces V2 MonoMaps and
@@ -714,7 +714,9 @@ EventList {
 	nextPreviewOffset { |when|
 		var now = SystemClock.seconds;
 		var first = when.isKindOf(Array).if { when[0] } { when };
-		(now >= batchEndTime).if { batchFirstWhen = first };
+		// A new batch drops the cached tempo env: it is derived once per batch
+		// (prPreviewTempoEnv) so a 200-note addItem does not rebuild it per note.
+		(now >= batchEndTime).if { batchFirstWhen = first; batchTempoEnv = nil };
 		batchEndTime = now + batchWindow;
 		^when.isKindOf(Array).if {
 			when.collect { |w| w - batchFirstWhen }
@@ -885,14 +887,47 @@ EventList {
 	 solo/mute lets it through. previewOffset is in beats from the batch origin —
 	 see nextPreviewOffset — and 0 means "at the batch origin", not "no preview".
 	*/
+	/*
+	 The composed tempo env preview schedules against, cached for the batch.
+
+	 Derived from the RAW stored events (extractTempo only ever reads \tempoTrack,
+	 which resolveEvent never rewrites), so a per-note storm like addItem's does not
+	 pay a resolve sweep per note. Cached per batch for the same reason — and
+	 because beatToWall keys its integral cache on tempoEnv IDENTITY, so handing it
+	 a fresh-but-equal env every note would rebuild that cache every note too.
+
+	 Consequence: a \tempoTrack event added midway through a batch is not seen by
+	 the rest of that batch's previews. Playback is unaffected — prepare derives its
+	 own env at play time.
+	*/
+	prPreviewTempoEnv {
+		^batchTempoEnv ?? { batchTempoEnv = this.tempoEnv(events) }
+	}
+
+	/*
+	 Wall-seconds from the batch origin to `previewOffset` beats past it, through
+	 THIS list's clock.
+
+	 previewOffset is a beat delta, and beats are not seconds on any list with a
+	 tempoMap: reading it as one (the old `previewOffset * beatDur`) auditioned every
+	 such list at a flat 1 s/beat, so an addItem on a list averaging 1.25 s/beat
+	 played ~25% fast, and a non-constant map skewed the rhythm WITHIN the batch as
+	 well. beatToWall is the same conversion prepare uses, so preview and playback
+	 now agree. Absolute beats matter (the map is not uniform), hence the difference
+	 of two beatToWall calls rather than a scaling of the delta.
+	*/
+	prPreviewDelay { |previewOffset, tempoEnv|
+		^(this.beatToWall(batchFirstWhen + previewOffset, tempoEnv)
+			- this.beatToWall(batchFirstWhen, tempoEnv)).max(0)
+	}
+
 	storeAndPreview { |event, previewOffset|
 		events.add(event);
 		(preview.notNil and: { this.shouldPlay(event) }).if {
 			var resolved = this.resolveEvent(event);
-			var bd = beatDur ? TempoClock.default.beatDur;
+			var tempoEnv = this.prPreviewTempoEnv;
 			previewPrep !? { previewPrep.(resolved, this) };
 			this.prIsAudioFollow(resolved).if {
-				var tempoEnv = this.tempoEnv(this.resolvedEvents);
 				var actions;
 				resolved = this.prForwardAudioFollow(resolved);
 				actions = (resolved[\tempoFollowMode] == \env).if {
@@ -905,7 +940,7 @@ EventList {
 				}
 			} {
 				SystemClock.sched(
-					previewOffset * bd,
+					this.prPreviewDelay(previewOffset, tempoEnv),
 					{ resolved.play; nil }
 				)
 			}
@@ -1894,6 +1929,7 @@ EventList {
 		preview = nil;
 		this.tempoMap = nil;   // through the setter: also drops the beat->wall cache
 		beatDur = nil;
+		batchTempoEnv = nil;   // derived from events, which just went away
 	}
 
 	clearContext { context = List[] }

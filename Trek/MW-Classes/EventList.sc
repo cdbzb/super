@@ -1168,9 +1168,15 @@ EventList {
 	quantizeSpan { |from, to, amount = 1| ^this.prMapEdit { |m| m.quantizeSpan(from, to, amount) } }
 
 	/*
-	 Set the beat span [from, to] to one flat tempo, leaving the rest of the clock
-	 where it is. quantizeSpan straightens a span toward the tempo it already
-	 averages; this straightens it to a tempo you name.
+	 Move the beat span [from, to] to a MEAN tempo you name, keeping its internal
+	 variation — a pure y-scale of the span about its own start (setSpanSlope ->
+	 stretchSpan), so the anchors inside keep their relative proportions and the
+	 rubato survives intact. Only the median moves.
+
+	 That makes it the complement of quantizeSpan, not a stronger version of it:
+	 quantizeSpan REMOVES the variation and leaves the mean where it was; this
+	 moves the mean and leaves the variation. Reach for this to make a passage
+	 slower or faster as played, and for quantizeSpan to make it steadier.
 
 	 Two spellings because the two conventions both exist here and mixing them is a
 	 factor-of-60 error: the map layer speaks bps (AnchorMap.setSpanTempo), the gui

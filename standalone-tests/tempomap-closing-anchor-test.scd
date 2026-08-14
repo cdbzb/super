@@ -57,5 +57,22 @@ item = mk.([0, 1.2, 2.4, 3.6], 2.5);
 tm = MIDIItemTempoMap(item, nil, 1!4);
 ok.("beat 10 extrapolates at played tempo", near.(tm.timeAt(10), 12.0, 1e-6));
 
+
+// --- init guards ------------------------------------------------------------
+// one beat gap per MARK: 4 marks -> 5 anchors -> 4 spans, so 1!4 is right and
+// 1!5 (the "one per anchor" mistake) must be refused, not silently built
+item = mk.([0, 1.2, 2.4, 3.6], 0.2);
+ok.("correct size builds",       { MIDIItemTempoMap(item, nil, 1!4) }.try.notNil);
+ok.("too many beat gaps throws", { MIDIItemTempoMap(item, nil, 1!5) }.try { true } ? false);
+ok.("too few beat gaps throws",  { MIDIItemTempoMap(item, nil, 1!3) }.try { true } ? false);
+ok.("nil beats throws",          { MIDIItemTempoMap(item, nil, nil) }.try { true } ? false);
+ok.("no marks throws",
+	{ MIDIItemTempoMap(MIDIItem(\emptyProbe), nil, [1]) }.try { true } ? false);
+// a chord (two marks at one timestamp) still BUILDS — warns, and the degenerate
+// span reads as no tempo rather than a bogus one
+tm = { MIDIItemTempoMap(mk.([0, 1.2, 1.2, 2.4], 0.2), nil, 1!4) }.try;
+ok.("duplicate mark times still build", tm.notNil);
+ok.("degenerate span reads nil", tm.notNil and: { tm.tempoCurve.any(_.isNil) });
+
 "=== SENTINEL DONE ===".postln;
 )

@@ -2533,6 +2533,40 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 		marks = (choiceFunc ? I.d)
 		.value( midiEvents.select({|e| e.midicmd == \noteOn}))
 		.collect{|e| e.timestamp };
+		/*
+		 initAnchors validates its inputs; this path did not, and a bad `beats`
+		 built a map whose Env levels and times were different lengths. That does
+		 not fail here — it fails much later, somewhere unrelated, as a wrong tempo
+		 or a nil deep inside a reader.
+
+		 The size rule is one beat-gap per MARK, not per anchor: N marks get a
+		 closing anchor appended, so there are N+1 anchors and N spans. That off-by-
+		 one is the whole trap — prSelectionArgs gets it right by building
+		 marks.size - 1 gaps and appending the closing one.
+		*/
+		marks.isEmpty.if {
+			Error("%: no anchor notes — the selection (or choiceFunc) picked nothing"
+				.format(this.class)).throw
+		};
+		b.isNil.if {
+			Error("%: no beat gaps — load a selection, or pass beats explicitly"
+				.format(this.class)).throw
+		};
+		(b.size != marks.size).if {
+			Error("%: need one beat gap per mark (% marks -> % anchors -> % spans), got %"
+				.format(this.class, marks.size, marks.size + 1, marks.size, b.size)).throw
+		};
+		/*
+		 Non-increasing marks only WARN. A zero span is a real data condition — two
+		 selected notes of one chord share a timestamp — and takes carrying it
+		 already exist, so refusing to build would break them retroactively. The
+		 readers answer nil for a degenerate span rather than a bogus tempo
+		 (spanTempo, tempoCurve), which is the safer end to handle it at.
+		*/
+		(marks.differentiate.drop(1).every(_ > 0)).not.if {
+			"%: anchor times are not strictly increasing — spans of zero or negative "
+			"width will read as no tempo".format(this.class).warn
+		};
 		lastSpan = (marks.size >= 2).if { marks.last - marks[marks.size - 2] };
 		closeTime = (midiItem.tryPerform(\closingAnchor) !? (_[\time])) ?? {
 			(lastSpan.notNil and: { lastSpan > 0 }).if

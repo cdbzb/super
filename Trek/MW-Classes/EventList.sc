@@ -1181,6 +1181,17 @@ EventList {
 	setSpanTempo { |from, to, bps| ^this.prMapEdit { |m| m.setSpanTempo(from, to, bps) } }
 	setSpanBpm   { |from, to, bpm| ^this.prMapEdit { |m| m.setSpanTempo(from, to, bpm / 60) } }
 
+	/*
+	 Read back what those two set: e.setSpanBpm(a, b, x).spanBpm(a, b) is x.
+
+	 The BASE clock, matching the setters — the \tempoTrack multiplier is a
+	 separate layer and is not folded in here, so this answers what the map says
+	 rather than what the list will sound like if automation is also running. nil
+	 when there is no map, or when the span has no width.
+	*/
+	spanTempo { |from, to| ^tempoMap !? { tempoMap.spanTempo(from, to) } }
+	spanBpm   { |from, to| ^tempoMap !? { tempoMap.spanBpm(from, to) } }
+
 	// The knob from "as performed" (amount 0) to "every child beat on a parent beat"
 	// (amount 1) — same sense as the `align:` key on a nested \eventList event. NOT
 	// what quantize does: quantize straightens toward the CHILD's own mean tempo,

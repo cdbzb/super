@@ -2610,6 +2610,36 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 	bpm { ^this.bps !? (_ * 60) }
 
 	/*
+	 Mean tempo across a BEAT span — the inverse of AnchorMap.setSpanTempo, so
+	 setting a span and reading it back answers what you set.
+
+	 Where bps averages the whole map and tempoCurve reports every span
+	 separately, this answers one arbitrary range, whose ends need not fall on
+	 anchors. Read through timeAt, so it extrapolates past the map at the boundary
+	 tempo exactly like every other beat-addressed method here rather than
+	 clamping — asking about beats past the last mark answers what those beats will
+	 actually be played at.
+
+	 nil for a span with no width, where no tempo is defined. The 1e-9 is a
+	 near-zero guard, not a positivity test: a 1e-12 span would otherwise answer a
+	 1e12 tempo.
+	*/
+	spanTempo { |from, to|
+		var dt;
+		((from.isNumber.not) or: { to.isNumber.not }).if {
+			("spanTempo: from and to must be numbers, got % and %".format(from, to)).warn;
+			^nil
+		};
+		(from >= to).if {
+			("spanTempo: need from < to, got % and %".format(from, to)).warn;
+			^nil
+		};
+		dt = this.timeAt(to) - this.timeAt(from);
+		^(dt > 1e-9).if { (to - from) / dt }
+	}
+	spanBpm { |from, to| ^this.spanTempo(from, to) !? (_ * 60) }
+
+	/*
 	 Tempo as this map plays it, one bpm value per SPAN — the shape bps averages
 	 away, which is what you want when a single span is the suspect.
 

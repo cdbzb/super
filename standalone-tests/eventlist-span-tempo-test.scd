@@ -52,5 +52,22 @@ ok.("t0 0 stays 0 through quantize", el.quantize(1).tempoMap.t0 == 0);
 // --- guards -----------------------------------------------------------------
 ok.("bps 0 refused", { fresh.().setSpanTempo(1, 3, 0) }.try { true } ? false);
 
+
+// --- reading a span back ----------------------------------------------------
+ok.("map spanBpm inverts setSpanBpm",
+	near.(fresh.().setSpanBpm(1, 3, 44).tempoMap.spanBpm(1, 3), 44, 1e-9));
+ok.("list spanBpm inverts setSpanBpm",
+	near.(fresh.().setSpanBpm(1, 3, 44).spanBpm(1, 3), 44, 1e-9));
+ok.("list spanTempo is bpm/60",
+	near.(fresh.().setSpanBpm(1, 3, 44).spanTempo(1, 3), 44/60, 1e-9));
+ok.("span ends need not be anchors",
+	near.(fresh.().setSpanBpm(1, 4, 44).spanBpm(1.5, 3.25), 44, 1e-9));
+ok.("reads past the map end (extrapolates, not clamps)",
+	fresh.().spanBpm(5, 9).notNil);
+ok.("zero-width span answers nil", fresh.().spanBpm(2, 2).isNil);
+ok.("reversed span answers nil",   fresh.().spanBpm(3, 1).isNil);
+el = EventList(nil, \note);
+ok.("no map answers nil", el.spanBpm(0, 4).isNil);
+
 "=== SENTINEL DONE ===".postln;
 )

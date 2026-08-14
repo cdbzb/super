@@ -1052,7 +1052,17 @@ EventList {
 	// recurse straight back into this list. rebase: true, because a list clock is
 	// a SHAPE read from beat 0 — prBaseWallAt calls timeAt and never adds t0, so a
 	// map whose seconds start mid-take must not drag the whole list late.
-	// Anything else (a MIDIItemTempoMap, a TempoMap facade, nil) is stored exactly
+	// An init-built MIDIItemTempoMap is likewise FROZEN to an AnchorTempoMap (its
+	// own subclass, so every map method still answers). asEventList hands one
+	// straight over, and holding it means the list's clock is a live handle on the
+	// take: it retains the source midiEvents it will never read, and it answers
+	// AbstractMidiEvents.quantize — the TIMESTAMP-rewriting one, the exact meaning
+	// this class's own quantize is documented not to have. Freezing also makes the
+	// stored type consistent, since prMapEdit already coerces on any quantize.
+	// t0 is carried across explicitly (asAnchorTempoMap's rebase drops it, and
+	// asMonoMap has already zeroed the seconds): prItemBeat reads it to place a
+	// take at: \original, so losing it would shift every such insert by t0.
+	// Anything else (an AnchorTempoMap, a TempoMap facade, nil) is stored exactly
 	// as it always was.
 	/*
 	 An ARRAY of maps is concatenated (MapSeq via ++) before that coercion, so
@@ -1072,7 +1082,12 @@ EventList {
 			};
 			map = map.reduce('++')
 		};
-		tempoMap = map.isKindOf(MonoMap).if { map.asAnchorTempoMap(rebase: true) } { map };
+		tempoMap = case
+			{ map.isKindOf(MonoMap) }
+				{ map.asAnchorTempoMap(rebase: true) }
+			{ map.isKindOf(MIDIItemTempoMap) and: { map.isKindOf(AnchorTempoMap).not } }
+				{ this.prFreezeItemMap(map) }
+			{ map };
 		// The beat->wall integral is keyed on tempoEnv IDENTITY only, but its
 		// cumulative sums (prWallCum / prWallBase / prWallSubs) are integrals of
 		// the BASE clock — swapping that clock under a retained tempoEnv (which
@@ -1080,6 +1095,34 @@ EventList {
 		// serving the old map's seconds. Drop it; the next lookup rebuilds.
 		prWallEnv = nil;
 		^this
+	}
+
+	/*
+	 Freeze an init-built MIDIItemTempoMap into the anchor-only AnchorTempoMap that
+	 tempoMap_ stores. Shape-preserving and t0-preserving, so every reader
+	 (beatToWall, prItemBeat, alignTo, prEmitMi2Follow) sees the same numbers.
+
+	 asMonoMap has already expressed the seconds relative to t0, so t0 is added back
+	 onto the anchor times: initAnchors takes t0 from times.first and re-relativizes,
+	 which reproduces both halves exactly. Handing the relative seconds over directly
+	 (or going through asAnchorTempoMap, whose rebase does the same thing) would
+	 store t0 as 0 and silently move every at: \original insert.
+
+	 Falls back to the original map if anything about it resists the round trip —
+	 a curved map, a degenerate anchor table — since a wrong clock is worse than an
+	 unfrozen one.
+	*/
+	prFreezeItemMap { |map|
+		var mm, frozen;
+		frozen = {
+			mm = map.asMonoMap;
+			AnchorTempoMap(mm.ys + (map.tryPerform(\t0) ? 0), mm.xs)
+		}.try { |err|
+			"EventList.tempoMap_: could not freeze % (%) — storing it as-is"
+				.format(map.class, err.errorString).warn;
+			nil
+		};
+		^frozen ? map
 	}
 
 	// Straighten this list's clock: amount 1 = one constant tempo, 0 = bit-exact

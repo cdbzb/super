@@ -1127,11 +1127,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	// take(n) carries recordedMk/epochs, so addItem resolves mk and source-preferred
 	// position by itself; at: 0 is appended when no EventList was playing during
 	// the take (no play epoch for source-preferred position to resolve against).
-	//
-	// The played beat rides along as a COMMENT, not an argument: passing at: would
-	// switch addItem off the recorded-epoch path onto the take's own tempomap (and,
-	// for a take without one, onto a flat 1 s/beat reading of its timestamps). The
-	// comment documents where it landed without changing how it lands.
+	// Report the played beat in a comment; passing at: would change placement mode.
 	*prRegisterAddItemLine { |item|
 		var n = item.takes.size - 1;
 		var list = item.recordPlayEpoch !? { |ep| ep[\list] };
@@ -1338,12 +1334,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 						e[k] = nil
 					}
 				};
-				// an event that was ever .play'ed has parent = defaultParentEvent;
-				// archiving that drags the ENTIRE default event — every play
-				// function's source — into the file. Those sources are then
-				// compiled on read, so a class that is missing here but present
-				// where the item was saved (ddwPlug's Syn, say) makes
-				// Object.readArchive fail and silently return nil.
+				// Do not archive defaultParentEvent and its environment-dependent sources.
 				e.parent_(nil).proto_(nil)
 			}
 			{ m.isKindOf(MicroKeys) } { m.asEvent.parent_(nil).proto_(nil) }
@@ -2504,46 +2495,15 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 	*fromAnchors {|anchorTimes, beatPositions|
 		^super.new.initAnchors(anchorTimes, beatPositions)
 	}
-	/*
-	 The map needs one more anchor than there are marks — the last mark has to be
-	 given an end for its own beat — and that closing anchor is INVENTED on both
-	 axes. prSelectionArgs invents the beats half by repeating the last beat-gap;
-	 this invents the seconds half, and the two must agree or the final span reports
-	 a tempo nobody played.
-
-	 Repeating the last measured span is that agreement: same beat-gap, same
-	 seconds, so the closing span carries the tempo of the last real one and adds no
-	 information. bounds.end — what this used to use — is the clip's end, i.e. the
-	 last note's RELEASE, which has nothing to do with where the next beat falls. On
-	 a take ending with any sustain that lands the closing anchor early and the final
-	 beat reads fast: on the take that prompted this, five measured spans averaged
-	 1.236 s/beat and the fabricated sixth came out at 1.087 (48.5 vs 55.2 bpm).
-
-	 That final slope is not a local matter — AnchorTempoMap carries it forward for
-	 every beat past the map's end, so anything placed beyond the last mark inherits
-	 the error (EventList.addItem, spanBps, timeAtBeat).
-
-	 fromBeat's explicit closingAnchor still wins: it knows the parent's actual next
-	 beat, which beats any extrapolation. bounds.end remains the last resort for a
-	 single-mark selection, where there is no span to repeat.
-	*/
+	// Add one closing anchor. Prefer an explicit closingAnchor; otherwise repeat
+	// the last measured span so extrapolation keeps the last played tempo.
 	init{|midiItem, choiceFunc, b|
 		var closeTime, marks, lastSpan;
 		midiEvents = midiItem.midiEvents;
 		marks = (choiceFunc ? I.d)
 		.value( midiEvents.select({|e| e.midicmd == \noteOn}))
 		.collect{|e| e.timestamp };
-		/*
-		 initAnchors validates its inputs; this path did not, and a bad `beats`
-		 built a map whose Env levels and times were different lengths. That does
-		 not fail here — it fails much later, somewhere unrelated, as a wrong tempo
-		 or a nil deep inside a reader.
-
-		 The size rule is one beat-gap per MARK, not per anchor: N marks get a
-		 closing anchor appended, so there are N+1 anchors and N spans. That off-by-
-		 one is the whole trap — prSelectionArgs gets it right by building
-		 marks.size - 1 gaps and appending the closing one.
-		*/
+		// N marks plus a closing anchor require N beat gaps.
 		marks.isEmpty.if {
 			Error("%: no anchor notes — the selection (or choiceFunc) picked nothing"
 				.format(this.class)).throw
@@ -2556,13 +2516,7 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 			Error("%: need one beat gap per mark (% marks -> % anchors -> % spans), got %"
 				.format(this.class, marks.size, marks.size + 1, marks.size, b.size)).throw
 		};
-		/*
-		 Non-increasing marks only WARN. A zero span is a real data condition — two
-		 selected notes of one chord share a timestamp — and takes carrying it
-		 already exist, so refusing to build would break them retroactively. The
-		 readers answer nil for a degenerate span rather than a bogus tempo
-		 (spanTempo, tempoCurve), which is the safer end to handle it at.
-		*/
+		// Chord notes may share a timestamp; retain them and let tempo readers return nil.
 		(marks.differentiate.drop(1).every(_ > 0)).not.if {
 			"%: anchor times are not strictly increasing — spans of zero or negative "
 			"width will read as no tempo".format(this.class).warn
@@ -2643,21 +2597,7 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 	}
 	bpm { ^this.bps !? (_ * 60) }
 
-	/*
-	 Mean tempo across a BEAT span — the inverse of AnchorMap.setSpanTempo, so
-	 setting a span and reading it back answers what you set.
-
-	 Where bps averages the whole map and tempoCurve reports every span
-	 separately, this answers one arbitrary range, whose ends need not fall on
-	 anchors. Read through timeAt, so it extrapolates past the map at the boundary
-	 tempo exactly like every other beat-addressed method here rather than
-	 clamping — asking about beats past the last mark answers what those beats will
-	 actually be played at.
-
-	 nil for a span with no width, where no tempo is defined. The 1e-9 is a
-	 near-zero guard, not a positivity test: a 1e-12 span would otherwise answer a
-	 1e12 tempo.
-	*/
+	// Mean tempo over an arbitrary beat span, including boundary extrapolation.
 	spanTempo { |from, to|
 		var dt;
 		((from.isNumber.not) or: { to.isNumber.not }).if {
@@ -2673,20 +2613,8 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 	}
 	spanBpm { |from, to| ^this.spanTempo(from, to) !? (_ * 60) }
 
-	/*
-	 Tempo as this map plays it, one bpm value per SPAN — the shape bps averages
-	 away, which is what you want when a single span is the suspect.
-
-	 subdiv 1 on a piecewise-linear map reads the ANCHORS themselves rather than a
-	 resampled grid, so a span carrying a beat-gap other than 1 still reports its
-	 real tempo (60 * beats / seconds, per span). A curved map, or any subdiv above
-	 1, is sampled instead: tempo varies inside the span there, and the anchors
-	 alone would draw a staircase over a curve. Degenerate spans answer nil rather
-	 than a bogus number, and stay in place so the array lines up with the spans.
-
-	 Pure, so it is also the thing to print, diff or assert on — plotTempo is only
-	 this plus a window.
-	*/
+	// Return bpm per span. Curved maps and subdivisions are sampled uniformly;
+	// degenerate spans remain as nil to preserve alignment.
 	tempoCurve { |subdiv = 1|
 		var dom, step, n, ts, dts;
 		(subdiv.isNumber.not or: { subdiv <= 0 }).if {
@@ -2705,15 +2633,7 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 		^ts.differentiate.drop(1).collect { |dt| (dt > 1e-9).if { 60 * step / dt } }
 	}
 
-	/*
-	 Plot tempoCurve, stepped — a tempo held across a span IS a step, and \linear
-	 would draw ramps between values the map never passes through.
-
-	 The last value is the closing span, which no one played: it repeats the last
-	 measured span (init) unless fromBeat supplied a real closing anchor. It is
-	 plotted because it is what every reader past the last mark extrapolates from,
-	 so a wrong one should be visible — but read it as bookkeeping, not performance.
-	*/
+	// Plot as steps. The final value is the closing span used for extrapolation.
 	plotTempo { |subdiv = 1, name|
 		var bpms = this.tempoCurve(subdiv);
 		var bad = bpms.count(_.isNil);
@@ -2910,38 +2830,15 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 		^this
 	}
 
-	/*
-	 Return a NEW map covering only ideal beats [from, to], re-zeroed so it starts at
-	 beat 0 / time 0; t0 absorbs the offset (t0' = t0 + timeAt(from)) so absolute
-	 placement is preserved. Endpoints are synthesized exactly at from/to via timeAt
-	 (interpolates mid-span, extrapolates past the ends); interior anchors are kept.
-	 `to` defaults to the map's end. Non-mutating; resets curvature (compose
-	 .fromBeat(a, b).curve(amount)).
-
-	 Named for player.fromBeat, whose beat window this mirrors — the seconds-domain
-	 player.from is the one that takes times. THE call before concatenating two
-	 slices' maps: a slice's raw map runs one span PAST its last mark (the closing
-	 anchor), so `a.tempomap ++ b.tempomap` lands b that span late, while
-	 `a.tempomap.fromBeat(0, 8) ++ ...` seams exactly.
-	*/
+	// Return a re-zeroed map over [from, to], preserving absolute placement in t0.
+	// Trim closing spans before concatenating map slices.
 	fromBeat {|from = 0, to|
 		^this.copy.prTrim(from, to)
 	}
 	/* pre-rename name; player.trim(bool) means something else entirely */
 	trim {|from = 0, to| ^this.fromBeat(from, to) }
 
-	/*
-	 Concatenation: `other`'s shape laid after this one's, starting where this map
-	 ended on BOTH axes — two performed sections butted into one clock. Answers a
-	 MapSeq (a MonoMap), which EventList.tempoMap_ bakes to an AnchorTempoMap and
-	 Array.warpTo takes through its MonoMap branch.
-
-	 Was reaching doesNotUnderstand and forwarding to the inner TempoMap, which
-	 answered a plain TempoMap: correct seconds, but the beat<->sec anchors were
-	 rebuilt as spans, losing t0, curvature and the extension policy, and Env's
-	 endpoint CLAMP meant anything past the last beat piled up at one wall time.
-	 Trim to the beats you mean first — see fromBeat.
-	*/
+	// Concatenate maps on both axes. Trim intended sections first with fromBeat.
 	++ { |other| ^this.asMonoMap ++ other }
 	prTrim {|from = 0, to|
 		var cum = [0] ++ beats.integrate;    // cumulative beat nodes, parallel to `times`

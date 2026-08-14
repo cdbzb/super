@@ -43,16 +43,12 @@ TempoMap {
 	  ^ durs.sum / beats.sum
   }
 
-  /* Tempo per span in bpm. This class stores the spans directly (beats[i] ideal
-     beats performed in durs[i] seconds), so there is nothing to differentiate —
-     unlike MIDIItemTempoMap, whose anchors are cumulative. Degenerate spans
-     answer nil and hold their slot. */
+  // Tempo per span; degenerate spans remain nil to preserve alignment.
   tempoCurve {
 	  ^beats.collect { |b, i| ((durs[i] ? 0) > 1e-9).if { 60 * b / durs[i] } }
   }
 
-  // Stepped, because a tempo held across a span is a step — see
-  // MIDIItemTempoMap.plotTempo for the reasoning and the closing-span caveat.
+  // A span holds one tempo, so plot it as a step.
   plotTempo { |name|
 	  var bpms = this.tempoCurve;
 	  bpms.isEmpty.if { "plotTempo: no spans to plot".warn; ^nil };
@@ -298,5 +294,4 @@ TempoWarp {
 	}
 }
 
-// mapSpansFrom (the shared span-mapping helper) lives in plusArray.sc alongside
-// the other SequenceableCollection extensions — MonoMap and Groove use it too.
+// SequenceableCollection.mapSpansFrom is defined in plusArray.sc.

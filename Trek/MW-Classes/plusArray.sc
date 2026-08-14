@@ -1,21 +1,11 @@
 + SequenceableCollection {
 	ls { this.do(_.postln) }
 
-	// Gaps between consecutive elements — positions -> spans, size n-1.
-	// for round trip prepend origin: `([0] ++ spans.integrate).deltas == spans`
+	// Convert positions to spans.
 	deltas { ^this.differentiate.drop(1) }
 
-	/*
-	 Position-aware span mapping, shared by every span-mapping method in the
-	 codebase (MonoMap, Groove, TempoMap, MIDIItemTempoMap, PlacedTempoMap,
-	 TempoWarp): treat the receiver as consecutive spans starting at `origin`,
-	 map every boundary through `func`, and return the spans between the mapped
-	 boundaries. Spans are relative, hence the origin.
-
-	 Non-positive results clamp to epsilon rather than drop: dropping silently
-	 shortens the array, which desyncs a Pbind's \dur from its \midinote from
-	 that point on (quantize-tempomap-project.md §5).
-	*/
+	// Map consecutive span boundaries from origin. Clamp non-positive results so
+	// parallel event arrays remain aligned.
 	mapSpansFrom { |origin, func|
 		^([func.(origin)] ++ this.integrate.collect { |span| func.(origin + span) })
 			.deltas max: 1e-9

@@ -4,10 +4,7 @@ EventList {
 	// take so source-preferred addItem aligns to the playthrough the overdub actually
 	// heard — not this list's lastPlayEpoch, which any later replay would clobber.
 	classvar <currentPlayEpoch;
-	// §13 lazy values: event keys whose Function values are PAYLOAD (something to
-	// call later, or something the clock itself is built from) and so must never be
-	// resolved as a value. \tempoTrack is here because prLazyTempoEnv reads it —
-	// a lazy \tempoTrack would be the clock reading itself.
+	// Function-valued callbacks and clock inputs are not lazy event values.
 	classvar <>lazyExclude;
 	var <events, <preview, <>defaultType, <routes, <>addFunc, <>previewPrep;
 	var <>env, <>context;
@@ -38,23 +35,15 @@ EventList {
 	*initClass {
 		all = ();
 		lazyExclude = IdentitySet[
-			// callbacks the play path invokes itself
+			// callbacks invoked by the play path
 			\extra, \send, \func, \action, \callback, \finish, \filterFunc, \play,
 			\filter,
-			// the clock itself: prLazyTempoEnv reads \tempoTrack, and prTempoContext
-			// is built from \when, so neither can be resolved from that context
+			// inputs used to build the lazy-value clock context
 			\tempoTrack, \when
 		];
 		Class.initClassTree(Event);
-		/*
-		 §13 \func: run a Function at a beat, through the normal schedule — so it
-		 obeys from/to trimming, stop, nesting and the tempo map exactly like a note
-		 does. The event is passed as the argument AND is currentEnvironment, so the
-		 clock context resolveEvent hangs off the proto is reachable both ways:
-
-		   e.add(1, func: { ~secsFor.(3).postln })
-		   e.add(1, func: { |ev| ev.secsFor.(3).postln })
-		*/
+		// Run functions through the normal schedule and expose the event both as
+		// currentEnvironment and as the argument.
 		Event.addEventType(\func, { ~func.value(currentEnvironment) });
         Event.addEventType(\eventList, {
             ~eventList.isKindOf(EventList).if{
@@ -120,9 +109,7 @@ EventList {
 	}
 
 	// class-level forwarding for common methods
-	// SC cannot splat kwargs through to another method, so the shapes are unpacked
-	// here and handed to the instance method as ONE event — which owns every
-	// inference and fan-out rule. Do not re-implement the array path here.
+	// SC cannot forward kwargs directly; normalize them into one event.
 	*add { |...args, kwargs|
 		var when = args[0];
 		args[1].isKindOf(Pattern).if { ^current.addPattern(when ? 0, args[1]) };
@@ -158,20 +145,14 @@ EventList {
 	*voices { ^current.voices }
 	*resolvedEvents { ^current.resolvedEvents }
 
-	/*
-	 aName is the registry key under `all`, and the prefix voiceKey namespaces
-	 this list's voices with. Set here rather than by the caller so it stays
-	 getter-only: writing it later would desync the instance from its `all` key.
-	*/
+	// name is both the registry key and the voice namespace.
 	init { |defType, aName|
 		events = List[];
 		context = List[];
 		defaultType = defType;
 		name = aName;
 		routes = ();
-		// func: infers \func the way eventList: infers \eventList. Routes are checked
-		// before defaultType, so an event carrying func: is a \func event even if it
-		// also carries note keys — put the two on separate adds if you want both.
+		// Infer \func before applying defaultType.
 		routes[\func] = \func;
 		env = ();
 	}
@@ -187,11 +168,7 @@ EventList {
 		^v
 	}
 
-	/*
-	 Read-time view of a stored event: the voice namespaced, the voiceSpace
-	 attached. Copy only if something is actually rewritten — the stored event
-	 in `events` is never mutated.
-	*/
+	// Resolve a stored event without mutating it.
 	resolveEvent { |ev, tempoEnv|
 		var hasLazy = this.prHasLazy(ev);
 		var hasCallback = this.prHasCallback(ev);
@@ -199,34 +176,22 @@ EventList {
 		var proto;
 		name.notNil.if { res.put(\voice, this.voiceKey(ev[\voice] ? \default)) };
 		voiceSpace.notNil.if { proto = (voiceSpace: voiceSpace) };
-		/*
-		 A callback (\func, \extra, ...) runs at PLAY time, long after this method
-		 returned, so it cannot be handed the resolution envir the lazy values get.
-		 Hang the same clock context off the event's proto instead: Event lookup
-		 falls through to proto, so ~secsFor / ~wall / ~secPerBeat resolve inside the
-		 callback exactly as they do inside a lazy value. Only events that actually
-		 carry a callback pay for this — a plain note keeps no proto and, on an
-		 unnamed list, is not even copied.
-		*/
+		// Callbacks run later, so expose their clock context through the event proto.
 		hasCallback.if {
 			var ctx = this.prTempoContext(ev, tempoEnv ?? { this.prLazyTempoEnv });
 			proto = proto ? ();
-			// never shadow a key the event defines: proto WINS over own entries in
-			// an Environment lookup, so an unguarded merge would silently rewrite it
+			// Environment proto entries take precedence; preserve explicit event keys.
 			ctx.keysValuesDo { |k, v| res[k].isNil.if { proto[k] = v } };
 		};
 		proto !? { res.proto = proto };
-		// Lazy values LAST, so they see the namespaced voice. The gate matters as
-		// much as the feature: a list with no lazy values never touches tempoEnv,
-		// so this stays free on the prepare path (§10 budget).
+		// Resolve last so lazy values see the namespaced voice.
 		hasLazy.if {
 			res = this.prResolveLazy(res, tempoEnv ?? { this.prLazyTempoEnv })
 		};
 		^res
 	}
 
-	// tempoEnv is derived ONCE for the whole sweep and handed down — deriving it
-	// per event would be O(n^2) on any list that uses lazy values.
+	// Share one tempoEnv across the sweep to avoid O(n^2) derivation.
 	resolvedEvents { |tempoEnv|
 		tempoEnv = tempoEnv ?? {
 			events.any { |e|
@@ -236,29 +201,8 @@ EventList {
 		^events.collect { |e| this.resolveEvent(e, tempoEnv) }
 	}
 
-    /*
-	 §13 tempo-aware lazy event values.
-
-	 A Function stored as an event value is resolved at READ time (resolveEvent)
-	 against a context that knows where in THIS list's clock its own event sits.
-	 The context is both an envir and the Function's argument, so either reads:
-
-	   e.add(4, midinote: 60, amp: { ~secsFor.(1) * 0.5 })
-	   e.add(4, midinote: 60, amp: { |t| t.secsFor.(1) * 0.5 })   // same thing
-
-	 This does NOT collide with the older add-time resolution in getSlice: that
-	 runs on multi-`when` events only, and it resolves and FREEZES its Functions
-	 into the stored event, so nothing it handles ever reaches here. The two have
-	 different jobs — getSlice answers "where am I in this chord/roll?" (~x, ~n,
-	 ~whens) once, at add time; this answers "what does the clock do here?" on
-	 every read, which is the point: it must track a map that a later quantize or
-	 tempoMap_ replaces. The cost of that is that a lazy value is NOT frozen into
-	 history — a random-valued lazy Function gives a different answer on every
-	 playback, so anything that must replay identically wants a concrete value.
-
-	 Keys in lazyExclude are skipped: a Function on \extra or \filter is a callback
-	 the play path invokes itself, not a value to be resolved here.
-	*/
+	// Function-valued event fields resolve at read time against the event's current
+	// clock context. getSlice's zero-argument functions remain add-time operations.
 	prIsLazy { |key, val|
 		^val.isKindOf(Function) and: { lazyExclude.includes(key).not }
 	}
@@ -268,9 +212,7 @@ EventList {
 		^false
 	}
 
-	// A callback is the opposite of a lazy value: an excluded key holding a
-	// Function, i.e. something the play path will invoke later. Those are the
-	// events that need the clock context on their proto (see resolveEvent).
+	// Callbacks need their clock context on the event proto (see resolveEvent).
 	prHasCallback { |ev|
 		ev.keysValuesDo { |k, v|
 			(v.isKindOf(Function) and: { lazyExclude.includes(k) }).if { ^true }
@@ -278,46 +220,24 @@ EventList {
 		^false
 	}
 
-	/*
-	 The clock context, rebased on `when`. Concrete values — prResolveLazy wraps
-	 them in thunks for LambdaEnvir, and resolveEvent hangs them on a proto as-is.
-
-	 Reads go through beatToWall/wallToBeat, NOT tempoMap.timeAt — the composed
-	 clock is the base map times the \tempoTrack multiplier, and a Function that
-	 read the raw map would silently ignore every tempo automation in the list.
-	*/
+	// Clock context at `when`, including \tempoTrack via beatToWall/wallToBeat.
 	prTempoContext { |ev, tempoEnv|
 		var when = ev[\when] ? 0;
 		var wall = this.beatToWall(when, tempoEnv);
 		^(
 			list:       this,
-			// position within a multi-`when` add, for callbacks — nil (so absent)
-			// on a single event. ~x / ~n are the same names getSlice uses at add
-			// time; the long spellings are there when ~x would be ambiguous.
+			// slice position for callbacks from a multi-`when` add
 			x:          ev[\sliceIndex],
 			n:          ev[\sliceCount],
 			sliceIndex: ev[\sliceIndex],
 			sliceCount: ev[\sliceCount],
 			tempoMap:   tempoMap,
 			tempoEnv:   tempoEnv,
-			// this event's wall-seconds from list beat 0, and the composed local
-			// tempo at it
+			// wall time and local composed tempo at this event
 			wall:       wall,
 			secPerBeat: this.beatToWall(when + 1, tempoEnv) - wall,
-			/*
-			 The map REBASED on this event — the "tempoMap starting here" part.
-			 secsFor: how many seconds the next d beats take from here.
-			 beatsFor: how many beats fit in the next d seconds from here.
-			 Both are offset-free, so a Function reads its own neighbourhood
-			 without knowing where in the list it sits.
-
-			 The leading arg is swallowed because these are reached two ways with
-			 different calling conventions. `~secsFor.(3)` is a plain lookup, so the
-			 3 lands in the first slot; `ev.secsFor(3)` goes through Event's
-			 doesNotUnderstand, which calls a stored Function with the EVENT as its
-			 first argument (Dictionary.sc:547) and the 3 second. Detecting the
-			 environment is the only way to make both spellings mean the same thing.
-			*/
+			// Accept both ~secsFor.(d) and ev.secsFor(d); Event method dispatch inserts
+			// the environment as the first argument.
 			secsFor: { |a, b|
 				var d = a.isKindOf(Environment).if { b ? 1 } { a ? 1 };
 				this.beatToWall(when + d, tempoEnv) - wall
@@ -329,18 +249,11 @@ EventList {
 		)
 	}
 
-	// Sibling event keys are visible too (~amp, ~midinote, ...), so lazy values can
-	// read each other; LambdaEnvir throws on a cycle. Context keys never shadow a
-	// key the event actually defines.
+	// Lazy values can read sibling keys; LambdaEnvir detects cycles.
 	prResolveLazy { |ev, tempoEnv|
 		var scratch = ev.copy;
 		var out = ev.copy;
-		/*
-		 Context values go in as THUNKS: LambdaEnvir wraps whatever it is given in a
-		 LazyResult and resolves it with `.value(this)`, so a bare ~secsFor would be
-		 called with the envir as its first argument, and a map object would be
-		 called too if it ever gained a `value`. `{ v }` resolves to v exactly once.
-		*/
+		// Thunks prevent LambdaEnvir from invoking context values themselves.
 		this.prTempoContext(ev, tempoEnv).keysValuesDo { |k, v|
 			scratch[k].isNil.if { scratch[k] = { v } }
 		};
@@ -355,15 +268,7 @@ EventList {
 		^out
 	}
 
-	/*
-	 tempoEnv for lazy resolution, derived from the RAW stored events.
-
-	 It cannot come from prPlayTempoEnv: that goes through resolvedEvents, which is
-	 what asked for this — straight recursion. Filtering with shouldPlay on raw
-	 events matches prPlayEvents closely enough (solo/mute match by substring, and
-	 resolveEvent only PREFIXES the voice) that the composed clock a lazy Function
-	 reads is the clock its event will actually be placed on.
-	*/
+	// Derive from raw events to avoid recursion through resolvedEvents.
 	prLazyTempoEnv {
 		^this.tempoEnv(events.select { |e| this.shouldPlay(e) })
 	}
@@ -399,24 +304,7 @@ EventList {
 		^copies
 	}
 
-	/*
-	 §9a step 3 / §9b: shared insertion primitive. Copies a player's events into
-	 THIS list, `whenFn.(e)` supplying each event's `when:` in list beats. Tags
-	 mirror asEventList (ParamSpace.sc): source name for solo/mute isolation,
-	 server latency, optional voice/mk. Returns the added copies.
-
-	 The copies land through storeAndPreview rather than a bare events.addAll, so
-	 a FLATTENED insert auditions like every other add when preview is on. The
-	 nesting path (prAddItemNested) always did, since it ends in this.add — which
-	 is why addItem with align: sounded and addItem without it was silent.
-
-	 nextPreviewOffset is called ONLY when preview is on, and once for the whole
-	 take: it opens/extends the batch rather than querying it, so a silent insert
-	 of a few hundred notes must not reset batchFirstWhen out from under the adds
-	 around it. The single array call keeps the take in one batch with offsets
-	 measured from its own first event, so it previews with the rhythm it was
-	 performed at. Relies on midiEvents being in time order.
-	*/
+	// Copy and tag a player's events. Preview the flattened insert as one ordered batch.
 	prInsertItemEvents { |player, whenFn, voice, mk|
 		var srcName = player.source.tryPerform(\name) !? { |n| n.asString.asSymbol };
 		var offsets;
@@ -452,40 +340,10 @@ EventList {
 		}
 	}
 
-	/*
-	 §9a step 3 + §9b: insert a MIDI item/player/selection into this list.
-
-	 at: <beat> — item START lands there. Positions within it come from the
-	 selection tempomap when one exists; WITHOUT one, timestamps are read as flat
-	 seconds-as-beats from player.start, which misplaces the interior on any list
-	 whose tempoMap is not 1 s/beat.
-
-	 at: nil — SOURCE PREFERRED POSITION (REAPER's term): each event lands at the
-	 beat it was PERFORMED at. MIDIItem.record snapshots the play epoch
-	 (EventList.currentPlayEpoch) into the take, so a LATER replay of this list
-	 cannot misalign it; older takes without the snapshot fall back to
-	 lastPlayEpoch. Both epochs archive and the arithmetic differences them, so a
-	 later session still places correctly. Needs a take recorded while this list
-	 played.
-
-	 at: \original — sugar for at: this.itemStartBeat(player). THE sealed insert
-	 after a tempoMap change, and the order matters: change the map FIRST, then
-	 addItem(take, \original).
-
-	 offset: <beats> — additive nudge after position resolution, in beats, so it
-	 lands downstream of every wall<->beat conversion and never touches the map.
-	 Same meaning as copyVoice's offset. Consumed at insert: to change it,
-	 re-insert.
-
-	 align: 0..1 switches from FLATTENING to NESTING — see prAddItemNested. What
-	 differs is what lands in `events`: flattened gives one editable event per
-	 note, tagged with the source name, so solo/mute and event surgery see the
-	 notes; nested gives one opaque event whose placement is recomputed every
-	 prepare.
-
-	 grid: <beats> — the subdivision align: snaps the entry to; nil auto-detects
-	 (prAlignGrid). Only align: reads it. grid: 1 is the pre-grid behaviour.
-	*/
+	// Insert a MIDI item/player/selection. at: nil restores its recorded position;
+	// a beat places its start, and \original resolves its recorded wall time through
+	// the current map. offset nudges the result. align nests instead of flattening;
+	// grid controls its entry snap.
 	addItem { |player, at, voice, mk, offset, align, grid|
 		var tm, whenFn, ep, sl, env, fromWall, epoch;
 		(player.isNumber or: { player == \original }).if { var swap = player; player = at; at = swap };
@@ -526,29 +384,14 @@ EventList {
 		^this.prInsertItemEvents(player, whenFn, voice, mk ?? { this.prItemMk(player) })
 	}
 
-	// addItem's align: mode. Nests the take as a child \eventList rather than
-	// flattening it, so placement is recomputed every prepare. The entry beat is
-	// blended by the SAME amount as the interior: both endpoint placements pin child
-	// beat 0 to `when` (§12j), so a fixed entry would pull the interior toward a grid
-	// the take does not start on — at align 1 you would be locked to a grid offset by
-	// the whole rounding residual. Blending keeps both ends exact: 0 enters where it
-	// was played, 1 on the beat. An explicit at: wins over the computed entry.
-	// `when` is baked at INSERT time — editing \align on the stored event re-blends
-	// the interior but not the entry, so to change align, re-insert.
-	// Returned as a one-element Array so removal reads the same in both modes:
-	// e.events.removeAll(a).
+	// align mode nests the take and blends both its entry and interior placement.
+	// Entry placement is fixed at insert time; reinsert to change align.
 	prAddItemNested { |player, at, voice, mk, offset, align, grid|
 		var mkName = mk ?? { this.prItemMk(player) };
-		// anonymous child on purpose: EventList(name) ANSWERS an existing list of that
-		// name, and asEventList appends to it — so a named child silently doubles its
-		// events on a second call.
+		// Keep the child anonymous; named EventLists are reused and would accumulate events.
 		var child = player.asEventList(nil, mkName ? \default);
 		var when = at ?? {
-			/*
-			 The take's own tempomap rebases the child to its t0 (the first SELECTED
-			 note), so the entry has to be that note's performed beat, not the take's
-			 start.
-			*/
+			// The child starts at its tempomap t0, not the take start.
 			var tOff = { player.tempomap.t0 }.try;
 			var b = this.prItemEpochBeat(player, tOff ? 0) ?? {
 				^"EventList.addItem: align: needs a take with a recordPlayEpoch (recorded against a playing list) — pass at: as well".warn
@@ -564,23 +407,7 @@ EventList {
 			name: player.source.tryPerform(\name) !? { |n| n.asString.asSymbol }))]
 	}
 
-	/*
-	 The subdivision `align:` snaps the entry to. align: 1 puts the take's first
-	 anchor ON a parent beat, but WHICH beat is not recoverable from the data: a take
-	 whose anchor was played on an offbeat sits a half-beat from the nearest integer,
-	 and rounding to 1 drops the whole take a half-beat early. The entry is a blend,
-	 so a wrong snap target skews every fractional align too — only align 0 escapes,
-	 since it never rounds. (The take's own map can't settle it: its `beats` are gaps
-	 between ITS anchors and averageOffset is its rubato against ITSELF, neither of
-	 which knows the phase against this list.)
-
-	 So answer the COARSEST subdivision the performance actually lands on: walk
-	 1, 1/2, 1/3, 1/4, 1/6, 1/8 and take the first whose residual is within `tol`
-	 beats. A take played near a whole beat still gets 1; one played on the `and`
-	 gets 1/2. Below 1/6 the tolerance exceeds half the grid so everything would
-	 match — those are reachable only as the coarser candidates fail, and 1 is the
-	 fallback when none fits. Pass grid: to override.
-	*/
+	// Choose the coarsest common subdivision close to the performed entry beat.
 	prAlignGrid { |beat, tol = 0.12|
 		#[1, 0.5, 0.33333333333333, 0.25, 0.16666666666666, 0.125].do { |g|
 			((beat - beat.round(g)).abs <= tol).if { ^g }
@@ -588,22 +415,7 @@ EventList {
 		^1
 	}
 
-	/*
-	 The beat at which the take's `tOff`-seconds mark was PERFORMED, resolved in the
-	 frame of the clock that was actually playing when it was recorded (ep[\list]) —
-	 the same arithmetic the flattening path stamps onto every event, so a nested
-	 insert enters exactly where a flattened one starts.
-
-	 NOT itemStartBeat/itemAnchorBeat: those answer the same wall moment through THIS
-	 list's map as it stands NOW, which is what `at: \original` wants (pin to the map
-	 you just changed) but wrong for a nested insert. The two frames diverge whenever
-	 the list's clock is not the one the take overdubbed against — a list built from
-	 some other selection, or a quantize between insert and play, since `when` is
-	 baked here — and the whole child then enters at a stale beat, offset rigidly
-	 against the guide.
-
-	 nil for takes without a recordPlayEpoch or recordEpoch.
-	*/
+	// Resolve a take-relative time in the clock captured at recording, for nested inserts.
 	prItemEpochBeat { |player, tOff = 0|
 		var ep = player.tryPerform(\recordPlayEpoch) ? lastPlayEpoch;
 		var sl, env, epoch;
@@ -657,18 +469,8 @@ EventList {
 		}
 	}
 
-	/*
-	 Normalize the argument shapes into ONE event, apply the inferences to it, and
-	 only then decide the fan-out. Order matters: deciding fan-out from args[0]
-	 (as this did) meant `when` reaching the method as a KEYWORD never took the
-	 array path — it stayed in kwargs and stored a single event whose \when was an
-	 Array — and the array path returned before the eventList: inference, so
-	 add([0,1], eventList: \child) stamped defaultType instead of \eventList.
-
-	 Fan-out is checked on \when first, then \voice: parallel arrays ZIP through
-	 getSlice (when: [0,1], voice: [\a,\b] gives (0,\a) (1,\b)), whereas a voice
-	 array against a scalar when FANS OUT to one event per voice at that beat.
-	*/
+	// Normalize first, then infer type and fan out. \when arrays zip other arrays;
+	// a \voice array with scalar \when creates simultaneous events.
 	add { |...args, kwargs|
 		var event, previewOffset, when = args[0];
 		args[1].isKindOf(Pattern).if { ^this.addPattern(when ? 0, args[1]) };
@@ -701,21 +503,12 @@ EventList {
 		^event
 	}
 
-	/*
-	 Beats from the current batch's first event to `when` — the delay the preview
-	 is scheduled at, so evaluating several add lines together auditions them with
-	 their real rhythm instead of stacking them on one instant. A batch is inferred
-	 from evaluation speed, not from the selection: adds landing within batchWindow
-	 of each other share an origin, and each add extends the window.
-
-	 NOT a pure query, hence `next`: it opens or extends the batch. Calling it
-	 speculatively (or twice, or from a postln) shifts the batch's timing.
-	*/
+	// Return beat offsets from the current preview batch's first event. This mutates
+	// the batch window and must be called exactly once per add operation.
 	nextPreviewOffset { |when|
 		var now = SystemClock.seconds;
 		var first = when.isKindOf(Array).if { when[0] } { when };
-		// A new batch drops the cached tempo env: it is derived once per batch
-		// (prPreviewTempoEnv) so a 200-note addItem does not rebuild it per note.
+		// Cache the tempo environment once per preview batch.
 		(now >= batchEndTime).if { batchFirstWhen = first; batchTempoEnv = nil };
 		batchEndTime = now + batchWindow;
 		^when.isKindOf(Array).if {
@@ -725,42 +518,25 @@ EventList {
 		}
 	}
 
-	// Every slice of a multi-valued event, added. getSlice is the single-slice form.
+	// Add every slice of a multi-valued event.
 	expandEvent { |numSlices, event|
 		^numSlices.collect { |index| this.add(this.getSlice(event, index, numSlices)) }
 	}
 
-    /*
-	 Slice `index` of `numSlices` out of a multi-valued template event:
-	
-	 uses .clipAt, so a short array clamps to its last element: [60, 64] over 4 slices
-	 gives 60, 64, 64, 64. 
-	
-	 Zero-arg Function values are left unevaluated here and resolved through
-	 LambdaEnvir below, where they see their position as ~x / ~n (NB ~x, not ~i),
-	 the whole axis as ~whens, and each other. Those three helpers are stripped
-	 again so they never reach the played event.
-     */
+	// Slice arrays with clipAt. Zero-argument functions resolve at add time with
+	// ~x, ~n, ~whens and sibling values in scope.
 	getSlice { |event, index, numSlices|
 		var scratch = ();
 		var hasFunc = false;
 		var out = ();
 		var opaque = ();
 		event.keysValuesDo { |key, val|
-			// Env/Tuple values are whole objects, never sliced; everything else that
-			// is an array contributes one element per slice.
+			// Env and Tuple values are atomic; other arrays contribute one slice.
 			var v = (val.isKindOf(Env) or: { val.isKindOf(Tuple3) } or: { val.isKindOf(Tuple4) })
 				.if { val }
 				{ val.isArray.if { val.clipAt(index) } { val } };
 			case
-				/*
-				 A callback under an excluded key (\func, \extra, ...) fans out to
-				 every slice like any other value but is NEVER called here — invoking
-				 it is the play path's job, and resolving it would store its return
-				 value in place of the callback, silently turning
-				 `add([0,2], func: { ... })` into two events that already ran at add
-				 time and do nothing when played.
-				*/
+				// Preserve callbacks for the play path.
 				{ v.isKindOf(Function) and: { lazyExclude.includes(key) } }
 					{ scratch[key] = v; opaque[key] = v }
 				{ v.isKindOf(Function) and: { v.numArgs == 0 } }
@@ -769,13 +545,7 @@ EventList {
 				// lazy value, and resolveEvent gives it the clock context per slice
 				{ scratch[key] = v }
 		};
-		/*
-		 A slice carrying a callback keeps its position, because the callback runs at
-		 play time — long after ~x / ~n have been stripped — and "which slice am I?"
-		 is exactly what it wants to ask. Written only when there IS a callback, so
-		 ordinary slices are not given two extra keys they will never read. The
-		 clock context re-exposes these as ~x / ~n (see prTempoContext).
-		*/
+		// Retain slice position for callbacks, which run after ~x and ~n are removed.
 		opaque.notEmpty.if {
 			scratch[\sliceIndex] = index;
 			scratch[\sliceCount] = numSlices;
@@ -881,41 +651,13 @@ EventList {
 		^true
 	}
 
-	/*
-	 Terminal step of the add pipeline (add -> dispatch -> here): the event ALWAYS
-	 lands in `events`; it is additionally auditioned when preview is on and
-	 solo/mute lets it through. previewOffset is in beats from the batch origin —
-	 see nextPreviewOffset — and 0 means "at the batch origin", not "no preview".
-	*/
-	/*
-	 The composed tempo env preview schedules against, cached for the batch.
-
-	 Derived from the RAW stored events (extractTempo only ever reads \tempoTrack,
-	 which resolveEvent never rewrites), so a per-note storm like addItem's does not
-	 pay a resolve sweep per note. Cached per batch for the same reason — and
-	 because beatToWall keys its integral cache on tempoEnv IDENTITY, so handing it
-	 a fresh-but-equal env every note would rebuild that cache every note too.
-
-	 Consequence: a \tempoTrack event added midway through a batch is not seen by
-	 the rest of that batch's previews. Playback is unaffected — prepare derives its
-	 own env at play time.
-	*/
+	// Preview uses one raw-event tempo environment per batch. A \tempoTrack added
+	// mid-batch affects playback but not the rest of that batch's previews.
 	prPreviewTempoEnv {
 		^batchTempoEnv ?? { batchTempoEnv = this.tempoEnv(events) }
 	}
 
-	/*
-	 Wall-seconds from the batch origin to `previewOffset` beats past it, through
-	 THIS list's clock.
-
-	 previewOffset is a beat delta, and beats are not seconds on any list with a
-	 tempoMap: reading it as one (the old `previewOffset * beatDur`) auditioned every
-	 such list at a flat 1 s/beat, so an addItem on a list averaging 1.25 s/beat
-	 played ~25% fast, and a non-constant map skewed the rhythm WITHIN the batch as
-	 well. beatToWall is the same conversion prepare uses, so preview and playback
-	 now agree. Absolute beats matter (the map is not uniform), hence the difference
-	 of two beatToWall calls rather than a scaling of the delta.
-	*/
+	// Convert a preview beat offset through the list's position-dependent clock.
 	prPreviewDelay { |previewOffset, tempoEnv|
 		^(this.beatToWall(batchFirstWhen + previewOffset, tempoEnv)
 			- this.beatToWall(batchFirstWhen, tempoEnv)).max(0)
@@ -1052,29 +794,11 @@ EventList {
 	// recurse straight back into this list. rebase: true, because a list clock is
 	// a SHAPE read from beat 0 — prBaseWallAt calls timeAt and never adds t0, so a
 	// map whose seconds start mid-take must not drag the whole list late.
-	// An init-built MIDIItemTempoMap is likewise FROZEN to an AnchorTempoMap (its
-	// own subclass, so every map method still answers). asEventList hands one
-	// straight over, and holding it means the list's clock is a live handle on the
-	// take: it retains the source midiEvents it will never read, and it answers
-	// AbstractMidiEvents.quantize — the TIMESTAMP-rewriting one, the exact meaning
-	// this class's own quantize is documented not to have. Freezing also makes the
-	// stored type consistent, since prMapEdit already coerces on any quantize.
-	// t0 is carried across explicitly (asAnchorTempoMap's rebase drops it, and
-	// asMonoMap has already zeroed the seconds): prItemBeat reads it to place a
-	// take at: \original, so losing it would shift every such insert by t0.
+	// Freeze MIDIItemTempoMap to detach its source events while preserving t0 for
+	// at: \original placement.
 	// Anything else (an AnchorTempoMap, a TempoMap facade, nil) is stored exactly
 	// as it always was.
-	/*
-	 An ARRAY of maps is concatenated (MapSeq via ++) before that coercion, so
-	 sections butt end to end on both axes and the list's clock is the
-	 performance of each in turn:
-
-	   e.tempoMap_([a.tempomap.fromBeat(0, 8), b.tempomap.fromBeat(0, 4)])
-
-	 fromBeat is the caller's job, not this method's: a slice's raw map runs one
-	 span past its last mark (the closing anchor), and only the caller knows
-	 whether that span is the seam or a tail worth keeping.
-	*/
+	// Arrays concatenate maps in order. Callers trim closing spans with fromBeat.
 	tempoMap_ { |map|
 		map.isArray.if {
 			map.isEmpty.if {
@@ -1097,47 +821,16 @@ EventList {
 		^this
 	}
 
-	/*
-	 Freeze an init-built MIDIItemTempoMap into the anchor-only AnchorTempoMap that
-	 tempoMap_ stores. Shape-preserving and t0-preserving, so every reader
-	 (beatToWall, prItemBeat, alignTo, prEmitMi2Follow) sees the same numbers.
-
-	 asMonoMap has already expressed the seconds relative to t0, so t0 is added back
-	 onto the anchor times: initAnchors takes t0 from times.first and re-relativizes,
-	 which reproduces both halves exactly. Handing the relative seconds over directly
-	 (or going through asAnchorTempoMap, whose rebase does the same thing) would
-	 store t0 as 0 and silently move every at: \original insert.
-
-	 Falls back to the original map if anything about it resists the round trip —
-	 a curved map, a degenerate anchor table — since a wrong clock is worse than an
-	 unfrozen one.
-	*/
+	// Freeze source events while preserving the map shape and t0.
 	prFreezeItemMap { |map|
 		^this.prWithT0(map, map.tryPerform(\t0) ? 0) ? map
 	}
 
-	/*
-	 Coerce a map to an AnchorTempoMap that still knows its t0.
-
-	 Both bridges to the V2 side lose it and neither notices: asMonoMap expresses
-	 the seconds RELATIVE to t0 (they start at 0), and asAnchorTempoMap's rebase
-	 then stores that 0 as the origin. The shape and the frame are both intact —
-	 only the label saying where the frame starts is gone. prItemBeat reads exactly
-	 that label to place a take at: \original, so losing it moves the insert by t0.
-
-	 Rebuilt from the coerced map's own times/beats rather than by hand, so every
-	 check asAnchorTempoMap does — bake, axis orientation, degenerate anchors —
-	 still runs; only the origin moves back. initAnchors re-derives t0 from
-	 times.first and the per-span beats from the cumulative positions, so the two
-	 halves reproduce exactly.
-
-	 Answers nil (not a wrong map) if the round trip throws, leaving the caller to
-	 decide its own fallback.
-	*/
+	// The MonoMap bridge rebases seconds to zero; rebuild anchors to restore t0.
+	// Return nil on conversion failure so the caller can choose a fallback.
 	prWithT0 { |map, t0 = 0|
 		^{
-			// asMonoMap is the bridge FROM the item-map side; a MonoMap is already
-			// there and does not answer it (prMapEdit hands one straight in).
+			// prMapEdit may already supply a MonoMap.
 			var mm = map.isKindOf(MonoMap).if { map } { map.asMonoMap };
 			var atm = mm.asAnchorTempoMap(rebase: true);
 			(t0 == 0).if { atm } {
@@ -1167,36 +860,9 @@ EventList {
 	// Straighten the beat span [from, to] only, leaving the rest of the clock alone.
 	quantizeSpan { |from, to, amount = 1| ^this.prMapEdit { |m| m.quantizeSpan(from, to, amount) } }
 
-	/*
-	 Move the beat span [from, to] to a MEAN tempo you name, keeping its internal
-	 variation — a pure y-scale of the span about its own start (setSpanSlope ->
-	 stretchSpan), so the anchors inside keep their relative proportions and the
-	 rubato survives intact. Only the median moves.
-
-	 That makes it the complement of quantizeSpan, not a stronger version of it:
-	 quantizeSpan REMOVES the variation and leaves the mean where it was; this
-	 moves the mean and leaves the variation. Reach for this to make a passage
-	 slower or faster as played, and for quantizeSpan to make it steadier.
-
-	 Two spellings because the two conventions both exist here and mixing them is a
-	 factor-of-60 error: the map layer speaks bps (AnchorMap.setSpanTempo), the gui
-	 speaks bpm (MapEditor.setSpanBpm). Chainable, and non-destructive to
-	 everything outside the span — the map past `to` is shifted, not rescaled, so
-	 later material keeps its own tempo and only moves in time.
-
-	 Writing lives here and reading does not, deliberately. A setter has to go
-	 through tempoMap_, which owns the coercion, the t0 re-attach and dropping the
-	 beat->wall cache — MonoMap.setSpanTempo is non-mutating, so the map-level
-	 spelling (e.tempoMap.setSpanBpm(...)) would discard its own result and
-	 silently do nothing. Reading is a question about a map, so it is asked of the
-	 map: e.tempoMap.spanBpm(from, to), which inverts these exactly.
-
-	 There is deliberately no EventList.spanBpm. It would read as "how fast is this
-	 list here", but the list's playing tempo is this base map COMPOSED with the
-	 \tempoTrack multiplier, so the honest answer and the inverse-of-the-setter
-	 answer are two different numbers. A composed reader would be worth having; it
-	 is just not this method under this name.
-	*/
+	// Set a span's mean tempo without removing its internal variation. Material
+	// after `to` shifts in time but keeps its tempo. Read spans from tempoMap;
+	// EventList playback may also include \tempoTrack.
 	setSpanTempo { |from, to, bps| ^this.prMapEdit { |m| m.setSpanTempo(from, to, bps) } }
 	setSpanBpm   { |from, to, bpm| ^this.prMapEdit { |m| m.setSpanTempo(from, to, bpm / 60) } }
 
@@ -1244,10 +910,7 @@ EventList {
 	// so this must never touch the ivar. A flat list (nil map) is already straight,
 	// so it is a no-op. The guard is the point: without it a func that answers
 	// nil (a span op given a bad range) stores nil and the list silently goes flat.
-	// t0 is captured BEFORE the edit and re-attached after: the bridge out to a
-	// MonoMap drops it (prWithT0), so without this every span op and every
-	// quantize silently rebased the clock's origin to 0 and moved any later
-	// at: \original insert by t0. The edit itself only ever touches the SHAPE.
+	// MonoMap conversion drops t0, so restore it after editing the shape.
 	prMapEdit { |func|
 		var edited, t0;
 		tempoMap.isNil.if { ^this };
@@ -1888,11 +1551,7 @@ EventList {
 		player.isNil.if { ^out };
 		ev[\filter] !? { |f| player = f.(player) };
 		ev[\params] !? { |p| player = player.setParams(p) }; // \mi2 finish does this
-		// start BEFORE any trim. player.from does not rebase to 0: it shifts
-		// timestamps by tFrom and leaves start at the gap between the trim point and
-		// the first SURVIVING note. rel is measured from start, so that gap has to be
-		// added back or the take lands early by it (the useSrc branch gets this for
-		// free from its srcOrigin bookkeeping).
+		// Preserve the residual gap between a trim point and the first surviving note.
 		pstart0 = player.start ? 0;
 		tm = tempoMap;
 		// followTrack forwards non-boolean values to sourceTempoMap (followTrack: \eventList
@@ -2001,15 +1660,7 @@ EventList {
 	fire { |sched|
 		var lat = Server.default.latency ? 0.2;
 		var gen, sorted;
-		/*
-		 `<=`, not `<`: SC's sort ties to the RIGHT operand (mergeTemp takes this[mid]
-		 when the comparator is false; insertionSortRange shifts past equals), so a
-		 strict comparator reorders same-time entries by data layout. State-setting
-		 sends (\setPoly, the recorded initial CCs) share an instant with the note they
-		 must precede — a selection's intro clamps to the first note's beat — and
-		 insertion order is the only thing that says which comes first. `<=` makes both
-		 of SC's sort paths keep it.
-		*/
+		// `<=` keeps insertion order for equal times, so setup events precede notes.
 		sorted = sched.asArray.sort { |a, b| (a[\time] ? 0) <= (b[\time] ? 0) };
 		prPlayGen = prPlayGen + 1;
 		gen = prPlayGen;
@@ -2051,8 +1702,7 @@ EventList {
 // Mirrors EventList *add's three branches (scalar/Array/Event when) since SC has no
 // way to splat kwargs through to another method.
 + Symbol {
-	// Stamps \name and hands one event to EventList.add, which owns every inference
-	// and fan-out rule. Do not re-implement the array path here.
+	// Stamp \name, then let EventList.add infer and fan out.
 	add { |...args, kwargs|
 		var when = args[0];
 		var list = EventList.current;

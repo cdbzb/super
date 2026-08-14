@@ -4,6 +4,11 @@ EventList {
 	// take so source-preferred addItem aligns to the playthrough the overdub actually
 	// heard — not this list's lastPlayEpoch, which any later replay would clobber.
 	classvar <currentPlayEpoch;
+	// §13 lazy values: event keys whose Function values are PAYLOAD (something to
+	// call later, or something the clock itself is built from) and so must never be
+	// resolved as a value. \tempoTrack is here because prLazyTempoEnv reads it —
+	// a lazy \tempoTrack would be the clock reading itself.
+	classvar <>lazyExclude;
 	var <events, <preview, <>defaultType, <routes, <>addFunc, <>previewPrep;
 	var <>env, <>context;
 	var <>autoExpand = false;
@@ -32,7 +37,25 @@ EventList {
 
 	*initClass {
 		all = ();
+		lazyExclude = IdentitySet[
+			// callbacks the play path invokes itself
+			\extra, \send, \func, \action, \callback, \finish, \filterFunc, \play,
+			\filter,
+			// the clock itself: prLazyTempoEnv reads \tempoTrack, and prTempoContext
+			// is built from \when, so neither can be resolved from that context
+			\tempoTrack, \when
+		];
 		Class.initClassTree(Event);
+		/*
+		 §13 \func: run a Function at a beat, through the normal schedule — so it
+		 obeys from/to trimming, stop, nesting and the tempo map exactly like a note
+		 does. The event is passed as the argument AND is currentEnvironment, so the
+		 clock context resolveEvent hangs off the proto is reachable both ways:
+
+		   e.add(1, func: { ~secsFor.(3).postln })
+		   e.add(1, func: { |ev| ev.secsFor.(3).postln })
+		*/
+		Event.addEventType(\func, { ~func.value(currentEnvironment) });
         Event.addEventType(\eventList, {
             ~eventList.isKindOf(EventList).if{
                 ~eventList
@@ -146,6 +169,10 @@ EventList {
 		defaultType = defType;
 		name = aName;
 		routes = ();
+		// func: infers \func the way eventList: infers \eventList. Routes are checked
+		// before defaultType, so an event carrying func: is a \func event even if it
+		// also carries note keys — put the two on separate adds if you want both.
+		routes[\func] = \func;
 		env = ();
 	}
 
@@ -165,14 +192,181 @@ EventList {
 	 attached. Copy only if something is actually rewritten — the stored event
 	 in `events` is never mutated.
 	*/
-	resolveEvent { |ev|
-		var res = (name.notNil or: { voiceSpace.notNil }).if { ev.copy } { ev };
+	resolveEvent { |ev, tempoEnv|
+		var hasLazy = this.prHasLazy(ev);
+		var hasCallback = this.prHasCallback(ev);
+		var res = (name.notNil or: { voiceSpace.notNil } or: { hasCallback }).if { ev.copy } { ev };
+		var proto;
 		name.notNil.if { res.put(\voice, this.voiceKey(ev[\voice] ? \default)) };
-		voiceSpace.notNil.if { res.proto = (voiceSpace: voiceSpace) };
+		voiceSpace.notNil.if { proto = (voiceSpace: voiceSpace) };
+		/*
+		 A callback (\func, \extra, ...) runs at PLAY time, long after this method
+		 returned, so it cannot be handed the resolution envir the lazy values get.
+		 Hang the same clock context off the event's proto instead: Event lookup
+		 falls through to proto, so ~secsFor / ~wall / ~secPerBeat resolve inside the
+		 callback exactly as they do inside a lazy value. Only events that actually
+		 carry a callback pay for this — a plain note keeps no proto and, on an
+		 unnamed list, is not even copied.
+		*/
+		hasCallback.if {
+			var ctx = this.prTempoContext(ev, tempoEnv ?? { this.prLazyTempoEnv });
+			proto = proto ? ();
+			// never shadow a key the event defines: proto WINS over own entries in
+			// an Environment lookup, so an unguarded merge would silently rewrite it
+			ctx.keysValuesDo { |k, v| res[k].isNil.if { proto[k] = v } };
+		};
+		proto !? { res.proto = proto };
+		// Lazy values LAST, so they see the namespaced voice. The gate matters as
+		// much as the feature: a list with no lazy values never touches tempoEnv,
+		// so this stays free on the prepare path (§10 budget).
+		hasLazy.if {
+			res = this.prResolveLazy(res, tempoEnv ?? { this.prLazyTempoEnv })
+		};
 		^res
 	}
 
-	resolvedEvents { ^events.collect { |e| this.resolveEvent(e) } }
+	// tempoEnv is derived ONCE for the whole sweep and handed down — deriving it
+	// per event would be O(n^2) on any list that uses lazy values.
+	resolvedEvents { |tempoEnv|
+		tempoEnv = tempoEnv ?? {
+			events.any { |e|
+				this.prHasLazy(e) or: { this.prHasCallback(e) }
+			}.if { this.prLazyTempoEnv }
+		};
+		^events.collect { |e| this.resolveEvent(e, tempoEnv) }
+	}
+
+    /*
+	 §13 tempo-aware lazy event values.
+
+	 A Function stored as an event value is resolved at READ time (resolveEvent)
+	 against a context that knows where in THIS list's clock its own event sits.
+	 The context is both an envir and the Function's argument, so either reads:
+
+	   e.add(4, midinote: 60, amp: { ~secsFor.(1) * 0.5 })
+	   e.add(4, midinote: 60, amp: { |t| t.secsFor.(1) * 0.5 })   // same thing
+
+	 This does NOT collide with the older add-time resolution in getSlice: that
+	 runs on multi-`when` events only, and it resolves and FREEZES its Functions
+	 into the stored event, so nothing it handles ever reaches here. The two have
+	 different jobs — getSlice answers "where am I in this chord/roll?" (~x, ~n,
+	 ~whens) once, at add time; this answers "what does the clock do here?" on
+	 every read, which is the point: it must track a map that a later quantize or
+	 tempoMap_ replaces. The cost of that is that a lazy value is NOT frozen into
+	 history — a random-valued lazy Function gives a different answer on every
+	 playback, so anything that must replay identically wants a concrete value.
+
+	 Keys in lazyExclude are skipped: a Function on \extra or \filter is a callback
+	 the play path invokes itself, not a value to be resolved here.
+	*/
+	prIsLazy { |key, val|
+		^val.isKindOf(Function) and: { lazyExclude.includes(key).not }
+	}
+
+	prHasLazy { |ev|
+		ev.keysValuesDo { |k, v| this.prIsLazy(k, v).if { ^true } };
+		^false
+	}
+
+	// A callback is the opposite of a lazy value: an excluded key holding a
+	// Function, i.e. something the play path will invoke later. Those are the
+	// events that need the clock context on their proto (see resolveEvent).
+	prHasCallback { |ev|
+		ev.keysValuesDo { |k, v|
+			(v.isKindOf(Function) and: { lazyExclude.includes(k) }).if { ^true }
+		};
+		^false
+	}
+
+	/*
+	 The clock context, rebased on `when`. Concrete values — prResolveLazy wraps
+	 them in thunks for LambdaEnvir, and resolveEvent hangs them on a proto as-is.
+
+	 Reads go through beatToWall/wallToBeat, NOT tempoMap.timeAt — the composed
+	 clock is the base map times the \tempoTrack multiplier, and a Function that
+	 read the raw map would silently ignore every tempo automation in the list.
+	*/
+	prTempoContext { |ev, tempoEnv|
+		var when = ev[\when] ? 0;
+		var wall = this.beatToWall(when, tempoEnv);
+		^(
+			list:       this,
+			// position within a multi-`when` add, for callbacks — nil (so absent)
+			// on a single event. ~x / ~n are the same names getSlice uses at add
+			// time; the long spellings are there when ~x would be ambiguous.
+			x:          ev[\sliceIndex],
+			n:          ev[\sliceCount],
+			sliceIndex: ev[\sliceIndex],
+			sliceCount: ev[\sliceCount],
+			tempoMap:   tempoMap,
+			tempoEnv:   tempoEnv,
+			// this event's wall-seconds from list beat 0, and the composed local
+			// tempo at it
+			wall:       wall,
+			secPerBeat: this.beatToWall(when + 1, tempoEnv) - wall,
+			/*
+			 The map REBASED on this event — the "tempoMap starting here" part.
+			 secsFor: how many seconds the next d beats take from here.
+			 beatsFor: how many beats fit in the next d seconds from here.
+			 Both are offset-free, so a Function reads its own neighbourhood
+			 without knowing where in the list it sits.
+
+			 The leading arg is swallowed because these are reached two ways with
+			 different calling conventions. `~secsFor.(3)` is a plain lookup, so the
+			 3 lands in the first slot; `ev.secsFor(3)` goes through Event's
+			 doesNotUnderstand, which calls a stored Function with the EVENT as its
+			 first argument (Dictionary.sc:547) and the 3 second. Detecting the
+			 environment is the only way to make both spellings mean the same thing.
+			*/
+			secsFor: { |a, b|
+				var d = a.isKindOf(Environment).if { b ? 1 } { a ? 1 };
+				this.beatToWall(when + d, tempoEnv) - wall
+			},
+			beatsFor: { |a, b|
+				var d = a.isKindOf(Environment).if { b ? 1 } { a ? 1 };
+				this.wallToBeat(wall + d, tempoEnv) - when
+			}
+		)
+	}
+
+	// Sibling event keys are visible too (~amp, ~midinote, ...), so lazy values can
+	// read each other; LambdaEnvir throws on a cycle. Context keys never shadow a
+	// key the event actually defines.
+	prResolveLazy { |ev, tempoEnv|
+		var scratch = ev.copy;
+		var out = ev.copy;
+		/*
+		 Context values go in as THUNKS: LambdaEnvir wraps whatever it is given in a
+		 LazyResult and resolves it with `.value(this)`, so a bare ~secsFor would be
+		 called with the envir as its first argument, and a map object would be
+		 called too if it ever gained a `value`. `{ v }` resolves to v exactly once.
+		*/
+		this.prTempoContext(ev, tempoEnv).keysValuesDo { |k, v|
+			scratch[k].isNil.if { scratch[k] = { v } }
+		};
+		{
+			var le = LambdaEnvir(scratch);
+			le.use {
+				ev.keysValuesDo { |k, v|
+					this.prIsLazy(k, v).if { out[k] = le.at(k) }
+				}
+			};
+		}.value;
+		^out
+	}
+
+	/*
+	 tempoEnv for lazy resolution, derived from the RAW stored events.
+
+	 It cannot come from prPlayTempoEnv: that goes through resolvedEvents, which is
+	 what asked for this — straight recursion. Filtering with shouldPlay on raw
+	 events matches prPlayEvents closely enough (solo/mute match by substring, and
+	 resolveEvent only PREFIXES the voice) that the composed clock a lazy Function
+	 reads is the clock its event will actually be placed on.
+	*/
+	prLazyTempoEnv {
+		^this.tempoEnv(events.select { |e| this.shouldPlay(e) })
+	}
 
 	voices {
 		var seen = Set[];
@@ -529,15 +723,40 @@ EventList {
 		var scratch = ();
 		var hasFunc = false;
 		var out = ();
+		var opaque = ();
 		event.keysValuesDo { |key, val|
+			// Env/Tuple values are whole objects, never sliced; everything else that
+			// is an array contributes one element per slice.
+			var v = (val.isKindOf(Env) or: { val.isKindOf(Tuple3) } or: { val.isKindOf(Tuple4) })
+				.if { val }
+				{ val.isArray.if { val.clipAt(index) } { val } };
 			case
-				{ val.isKindOf(Env) or: { val.isKindOf(Tuple3) } or: { val.isKindOf(Tuple4) } }
-					{ scratch[key] = val }
-				{ val.isKindOf(Function) and: { val.numArgs == 0 } }
-					{ scratch[key] = val; hasFunc = true }
-				{ val.isArray }
-					{ scratch[key] = val.clipAt(index) }
-				{ scratch[key] = val }
+				/*
+				 A callback under an excluded key (\func, \extra, ...) fans out to
+				 every slice like any other value but is NEVER called here — invoking
+				 it is the play path's job, and resolving it would store its return
+				 value in place of the callback, silently turning
+				 `add([0,2], func: { ... })` into two events that already ran at add
+				 time and do nothing when played.
+				*/
+				{ v.isKindOf(Function) and: { lazyExclude.includes(key) } }
+					{ scratch[key] = v; opaque[key] = v }
+				{ v.isKindOf(Function) and: { v.numArgs == 0 } }
+					{ scratch[key] = v; hasFunc = true }
+				// a one-arg Function falls through unresolved on purpose: it is a
+				// lazy value, and resolveEvent gives it the clock context per slice
+				{ scratch[key] = v }
+		};
+		/*
+		 A slice carrying a callback keeps its position, because the callback runs at
+		 play time — long after ~x / ~n have been stripped — and "which slice am I?"
+		 is exactly what it wants to ask. Written only when there IS a callback, so
+		 ordinary slices are not given two extra keys they will never read. The
+		 clock context re-exposes these as ~x / ~n (see prTempoContext).
+		*/
+		opaque.notEmpty.if {
+			scratch[\sliceIndex] = index;
+			scratch[\sliceCount] = numSlices;
 		};
 		// nothing to resolve: skip LambdaEnvir entirely (hence scratch, not out)
 		hasFunc.not.if { ^scratch };
@@ -546,7 +765,9 @@ EventList {
 		scratch[\whens] = event[\when].asArray;
 		{
 			var le = LambdaEnvir(scratch);
-			le.use { scratch.keysDo { |key| out[key] = le.at(key) } };
+			le.use { scratch.keysDo { |key|
+				out[key] = opaque.includesKey(key).if { opaque[key] } { le.at(key) }
+			} };
 		}.value;
 		[\x, \n, \whens].do { |key| out.removeAt(key) };
 		^out

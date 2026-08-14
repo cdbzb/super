@@ -399,12 +399,27 @@ EventList {
 		^copies
 	}
 
-	// §9a step 3 / §9b: shared insertion primitive. Copies a player's events into
-	// THIS list, `whenFn.(e)` supplying each event's `when:` in list beats. Tags
-	// mirror asEventList (ParamSpace.sc): source name for solo/mute isolation,
-	// server latency, optional voice/mk. Returns the added copies.
+	/*
+	 §9a step 3 / §9b: shared insertion primitive. Copies a player's events into
+	 THIS list, `whenFn.(e)` supplying each event's `when:` in list beats. Tags
+	 mirror asEventList (ParamSpace.sc): source name for solo/mute isolation,
+	 server latency, optional voice/mk. Returns the added copies.
+
+	 The copies land through storeAndPreview rather than a bare events.addAll, so
+	 a FLATTENED insert auditions like every other add when preview is on. The
+	 nesting path (prAddItemNested) always did, since it ends in this.add — which
+	 is why addItem with align: sounded and addItem without it was silent.
+
+	 nextPreviewOffset is called ONLY when preview is on, and once for the whole
+	 take: it opens/extends the batch rather than querying it, so a silent insert
+	 of a few hundred notes must not reset batchFirstWhen out from under the adds
+	 around it. The single array call keeps the take in one batch with offsets
+	 measured from its own first event, so it previews with the rhythm it was
+	 performed at. Relies on midiEvents being in time order.
+	*/
 	prInsertItemEvents { |player, whenFn, voice, mk|
 		var srcName = player.source.tryPerform(\name) !? { |n| n.asString.asSymbol };
+		var offsets;
 		var added = player.midiEvents.collect { |e|
 			var c = e.copy.put(\when, whenFn.(e));
 			srcName !? { c[\name] = c[\name] ? srcName };
@@ -413,7 +428,12 @@ EventList {
 			mk !? { c.put(\mk, mk) };
 			c
 		};
-		events.addAll(added);
+		(preview.notNil and: { added.isEmpty.not }).if {
+			offsets = this.nextPreviewOffset(added.collect { |e| e[\when] });
+			added.do { |e, i| this.storeAndPreview(e, offsets[i]) }
+		} {
+			events.addAll(added)
+		};
 		^added
 	}
 

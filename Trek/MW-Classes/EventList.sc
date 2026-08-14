@@ -1177,20 +1177,22 @@ EventList {
 	 speaks bpm (MapEditor.setSpanBpm). Chainable, and non-destructive to
 	 everything outside the span — the map past `to` is shifted, not rescaled, so
 	 later material keeps its own tempo and only moves in time.
+
+	 Writing lives here and reading does not, deliberately. A setter has to go
+	 through tempoMap_, which owns the coercion, the t0 re-attach and dropping the
+	 beat->wall cache — MonoMap.setSpanTempo is non-mutating, so the map-level
+	 spelling (e.tempoMap.setSpanBpm(...)) would discard its own result and
+	 silently do nothing. Reading is a question about a map, so it is asked of the
+	 map: e.tempoMap.spanBpm(from, to), which inverts these exactly.
+
+	 There is deliberately no EventList.spanBpm. It would read as "how fast is this
+	 list here", but the list's playing tempo is this base map COMPOSED with the
+	 \tempoTrack multiplier, so the honest answer and the inverse-of-the-setter
+	 answer are two different numbers. A composed reader would be worth having; it
+	 is just not this method under this name.
 	*/
 	setSpanTempo { |from, to, bps| ^this.prMapEdit { |m| m.setSpanTempo(from, to, bps) } }
 	setSpanBpm   { |from, to, bpm| ^this.prMapEdit { |m| m.setSpanTempo(from, to, bpm / 60) } }
-
-	/*
-	 Read back what those two set: e.setSpanBpm(a, b, x).spanBpm(a, b) is x.
-
-	 The BASE clock, matching the setters — the \tempoTrack multiplier is a
-	 separate layer and is not folded in here, so this answers what the map says
-	 rather than what the list will sound like if automation is also running. nil
-	 when there is no map, or when the span has no width.
-	*/
-	spanTempo { |from, to| ^tempoMap !? { tempoMap.spanTempo(from, to) } }
-	spanBpm   { |from, to| ^tempoMap !? { tempoMap.spanBpm(from, to) } }
 
 	// The knob from "as performed" (amount 0) to "every child beat on a parent beat"
 	// (amount 1) — same sense as the `align:` key on a nested \eventList event. NOT

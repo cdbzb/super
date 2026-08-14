@@ -2601,12 +2601,69 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 	// average performed tempo of the selection, in beats per second. Full span:
 	// total beats over the whole mapped region (first onset -> closing anchor),
 	// since beats.sum maps to times.last. Playing the unit-beat quantize result
-	// on TempoClock(bps) reproduces this tempo. Note: times.last is the closing
-	// anchor (clip end when no closingAnchor), so a long final sustain skews this.
+	// on TempoClock(bps) reproduces this tempo. The closing anchor now repeats the
+	// last measured span (see init), so it no longer skews this the way a clip-end
+	// anchor after a long final sustain did.
 	bps {
 		^(times.last > 0).if { beats.sum / times.last }
 	}
 	bpm { ^this.bps !? (_ * 60) }
+
+	/*
+	 Tempo as this map plays it, one bpm value per SPAN — the shape bps averages
+	 away, which is what you want when a single span is the suspect.
+
+	 subdiv 1 on a piecewise-linear map reads the ANCHORS themselves rather than a
+	 resampled grid, so a span carrying a beat-gap other than 1 still reports its
+	 real tempo (60 * beats / seconds, per span). A curved map, or any subdiv above
+	 1, is sampled instead: tempo varies inside the span there, and the anchors
+	 alone would draw a staircase over a curve. Degenerate spans answer nil rather
+	 than a bogus number, and stay in place so the array lines up with the spans.
+
+	 Pure, so it is also the thing to print, diff or assert on — plotTempo is only
+	 this plus a window.
+	*/
+	tempoCurve { |subdiv = 1|
+		var dom, step, n, ts, dts;
+		(subdiv.isNumber.not or: { subdiv <= 0 }).if {
+			("tempoCurve: subdiv must be a positive number (%)".format(subdiv)).warn;
+			^[]
+		};
+		((subdiv == 1) and: { curved.not }).if {
+			dts = times.differentiate.drop(1);
+			^beats.collect { |b, i| (dts[i] > 1e-9).if { 60 * b / dts[i] } }
+		};
+		dom = this.beatDomain[1];
+		(dom.isNil or: { dom <= 0 }).if { ^[] };
+		step = 1 / subdiv;
+		n = ((dom / step) + 1e-9).floor.asInteger;
+		ts = (0 .. n).collect { |i| this.timeAt(i * step) };
+		^ts.differentiate.drop(1).collect { |dt| (dt > 1e-9).if { 60 * step / dt } }
+	}
+
+	/*
+	 Plot tempoCurve, stepped — a tempo held across a span IS a step, and \linear
+	 would draw ramps between values the map never passes through.
+
+	 The last value is the closing span, which no one played: it repeats the last
+	 measured span (init) unless fromBeat supplied a real closing anchor. It is
+	 plotted because it is what every reader past the last mark extrapolates from,
+	 so a wrong one should be visible — but read it as bookkeeping, not performance.
+	*/
+	plotTempo { |subdiv = 1, name|
+		var bpms = this.tempoCurve(subdiv);
+		var bad = bpms.count(_.isNil);
+		bpms.isEmpty.if {
+			"plotTempo: no spans to plot".warn;
+			^nil
+		};
+		(bad > 0).if {
+			"plotTempo: % degenerate span(s) drawn as 0".format(bad).warn
+		};
+		^bpms.collect { |b| b ? 0 }
+			.plot(name ?? { "% — tempo (bpm), % spans".format(this.class.name, bpms.size) })
+			.plotMode_(\steps)
+	}
 	at{|x|
 		^env[x]
 	}

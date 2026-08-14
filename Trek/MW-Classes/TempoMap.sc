@@ -43,6 +43,24 @@ TempoMap {
 	  ^ durs.sum / beats.sum
   }
 
+  /* Tempo per span in bpm. This class stores the spans directly (beats[i] ideal
+     beats performed in durs[i] seconds), so there is nothing to differentiate —
+     unlike MIDIItemTempoMap, whose anchors are cumulative. Degenerate spans
+     answer nil and hold their slot. */
+  tempoCurve {
+	  ^beats.collect { |b, i| ((durs[i] ? 0) > 1e-9).if { 60 * b / durs[i] } }
+  }
+
+  // Stepped, because a tempo held across a span is a step — see
+  // MIDIItemTempoMap.plotTempo for the reasoning and the closing-span caveat.
+  plotTempo { |name|
+	  var bpms = this.tempoCurve;
+	  bpms.isEmpty.if { "plotTempo: no spans to plot".warn; ^nil };
+	  ^bpms.collect { |b| b ? 0 }
+		  .plot(name ?? { "TempoMap — tempo (bpm), % spans".format(bpms.size) })
+		  .plotMode_(\steps)
+  }
+
   at { |beat|
 	  ^env[beat]
   }

@@ -120,15 +120,19 @@ assertClose.(t.interpolateBeatInverse(2), 1.5, "interpolateBeatInverse: mid-span
 
 // -------------------------------------------------------- MIDIItemTempoMap
 // Build a synthetic player so this is pure-language (no MIDI fixture).
-// 6 noteOns; first 5 are anchors, 6th + its dur sets the closing anchor.
+// 6 noteOns; the first 5 are the anchors, the 6th is there only to prove it is
+// IGNORED — the closing anchor is invented from the marks, not read off the clip.
 mkNote = { |ts, note = 60| (midicmd: \noteOn, type: \mk, timestamp: ts,
 	midinote: note, dur: 1, sustain: 1, amp: 0.5) };
-notes = [0, 1, 2, 3, 4, 6].collect { |ts| mkNote.(ts) };
+notes = [0, 1, 2, 3, 6, 7].collect { |ts| mkNote.(ts) };
 p  = MIDIItemPlayer(notes, nil);
 mt = MIDIItemTempoMap(p, { |n| n[0..4] }, [1,1,1,1,1]);
 
-// closing anchor: last note at 6 + dur 1 = 7, so the final span (ideal beat
-// 4->5) maps to performed 4->7 = 3 s/beat.
+// Marks at 0/1/2/3/6, so the four MEASURED spans are 1, 1, 1, 3 s per beat. The
+// closing anchor repeats the last measured span (fe898d18) — 6 + 3 = 9 — so the
+// performed spans are [1,1,1,3,3] and the final two are equal BY CONSTRUCTION.
+// That is the invariant to test against here: the closing span can no longer
+// differ from the one before it, whatever the clip's last note does.
 // -- 9. MIDIItemTempoMap env/invEnv (at <-> timeAt) round-trip -------------
 [0.5, 2.0, 3.5].do { |beat|
 	assertClose.(mt.at(mt.timeAt(beat)), beat,
@@ -144,21 +148,22 @@ assertClose.(mt.beatAt(mt.timeAt(7)), 7,
 // -- 10. mapBeats reproduces performed spans on the beat grid --------------
 warped = mt.mapBeats(1 ! 5);
 assert.(warped.size == 5, "mi2 mapBeats: length preserved");
-assertArr.(warped, [1,1,1,1,3], "mi2 mapBeats: reproduces performed spans", 1e-4);
+assertArr.(warped, [1,1,1,3,3], "mi2 mapBeats: reproduces performed spans", 1e-4);
 assertArr.(mt.mapDurs(warped), 1 ! 5,
 	"mi2 mapDurs maps second durs back to beats", 1e-4);
-assertArr.(mt.mapBeats([1,1], 3), [1,3],
+// beats 2..4 straddle the tempo change: 1 s/beat then 3 s/beat
+assertArr.(mt.mapBeats([1,1], 2), [1,3],
 	"mi2 mapBeats: nonzero beat origin selects local tempo", 1e-4);
-assertArr.(mt.mapDurs([1,3], 3), [1,1],
+assertArr.(mt.mapDurs([1,3], 2), [1,1],
 	"mi2 mapDurs: nonzero time origin selects local tempo", 1e-4);
 assertArr.(mt.mapBeats([1,1], 5), [3,3],
 	"mi2 mapBeats: nonzero origin carries final tempo past domain", 1e-3);
-assertArr.(mt.mapDurs([3,3], 7), [1,1],
+assertArr.(mt.mapDurs([3,3], 9), [1,1],
 	"mi2 mapDurs: nonzero origin carries final tempo past domain", 1e-3);
 assertArr.((1 ! 5).warpTo(mt), warped,
 	"legacy warpTo remains zero-origin mapBeats", 1e-4);
 assertArr.(mt.beatDomain, [0,5], "mi2 beatDomain reports relative extent");
-assertArr.(mt.timeDomain, [0,7], "mi2 timeDomain reports relative extent");
+assertArr.(mt.timeDomain, [0,9], "mi2 timeDomain reports relative extent");
 assert.(mt.extrapolation == \carry, "mi2 declares carry policy");
 assert.(mt.timeAt(6) > mt.timeDomain.last,
 	"mi2 carry policy continues beyond time domain");
@@ -171,13 +176,13 @@ assertArr.(mt.clump(2).timeDomain, mt.timeDomain,
 // final tempo (3 s/beat), and length is preserved (no drop).
 warped = (1 ! 8).warpTo(mt);
 assert.(warped.size == 8, "mi2 carry-forward: length preserved past domain");
-assertArr.(warped, [1,1,1,1,3,3,3,3], "mi2 carry-forward: final tempo held", 1e-3);
+assertArr.(warped, [1,1,1,3,3,3,3,3], "mi2 carry-forward: final tempo held", 1e-3);
 
 // -- 12. .curve preserves anchors -----------------------------------------
 // curve(0) == linear bit-for-similar; curve(1) still passes through anchors.
 assertArr.((1 ! 8).warpTo(mt.curve(0)), (1 ! 8).warpTo(mt),
 	"mi2 curve(0) == linear", 1e-4);
-assertArr.((1 ! 5).warpTo(mt.curve(1)), [1,1,1,1,3],
+assertArr.((1 ! 5).warpTo(mt.curve(1)), [1,1,1,3,3],
 	"mi2 curve(1) passes through anchors", 1e-3);
 
 // -- 13. scaleBeats: relabel the beat axis, non-mutating -------------------
@@ -189,7 +194,7 @@ assertClose.(r.timeAt(2), mt.timeAt(1), "scaleBeats: timeAt(k*b) == old timeAt(b
 // tempo scales by k
 assertClose.(r.bps, mt.bps * 2, "scaleBeats: bps scales by k", 1e-4);
 // to reproduce the anchor gaps you now feed k-beat spans
-assertArr.((2 ! 5).warpTo(r), [1,1,1,1,3],
+assertArr.((2 ! 5).warpTo(r), [1,1,1,3,3],
 	"scaleBeats: (k!n).warpTo reproduces performed spans", 1e-3);
 
 // -- 14. MIDIItemPlayer.scaleBeats flows into tempomap (what asEventList uses) --
@@ -214,9 +219,9 @@ assertArr.((1 ! 2).warpTo(r), [1,1], "fromBeat: warpTo reproduces windowed spans
 // absolute placement preserved: r's beat 0 == mt's beat 1
 assertClose.(r.timeAt(0) + r.t0, mt.timeAt(1) + mt.t0, "fromBeat: absolute start preserved", 1e-4);
 assertArr.(mt.beats, [1,1,1,1,1], "fromBeat: original map unchanged");
-// window crossing the fast final span (ideal beat 4->5 is 3 s/beat)
-r = mt.fromBeat(3, 5);
-assertArr.((1 ! 2).warpTo(r), [1,3], "fromBeat: fast final span captured", 1e-4);
+// window straddling the tempo change (beat 2->3 is 1 s/beat, 3->4 is 3 s/beat)
+r = mt.fromBeat(2, 4);
+assertArr.((1 ! 2).warpTo(r), [1,3], "fromBeat: slow final span captured", 1e-4);
 // fractional / mid-span endpoints
 r = mt.fromBeat(0.5, 2.5);
 assertClose.(r.beats.sum, 2, "fromBeat: total beats == to - from");
@@ -252,7 +257,7 @@ e.clear;
 // -- 16. clump: lower anchor resolution, pick placement, pinned endpoints --
 r = mt.clump(2);
 assertArr.(r.beats, [2,2,1], "clump(2): spans merged with remainder retained");
-assertArr.(r.times, [0,2,4,7], "clump(2): boundary anchor times picked verbatim");
+assertArr.(r.times, [0,2,6,9], "clump(2): boundary anchor times picked verbatim");
 assertClose.(r.timeAt(0), mt.timeAt(0), "clump(2): first endpoint pinned");
 assertClose.(r.timeAt(r.beats.sum), mt.timeAt(mt.beats.sum),
 	"clump(2): last endpoint pinned");
@@ -261,7 +266,7 @@ assertArr.(mt.beats, [1,1,1,1,1], "clump: original map unchanged");
 // array sizes cycle; [1,2] over five spans -> groups 1,2,1,1(remainder)
 r = mt.clump([1,2]);
 assertArr.(r.beats, [1,2,1,1], "clump(array): group sizes cycle");
-assertArr.(r.times, [0,1,3,4,7], "clump(array): correct picked anchors");
+assertArr.(r.times, [0,1,3,6,9], "clump(array): correct picked anchors");
 
 // arbitrary beat values are summed, rather than assuming unit beats
 r = MIDIItemTempoMap(p, { |n| n[0..4] }, [1,2,3,4,5]).clump([2,1]);
@@ -270,7 +275,7 @@ assertArr.(r.beats, [3,3,9], "clump: re-aggregates non-unit beat spans");
 // a transform after curve deliberately returns to linear; curvature composes after it
 r = mt.curve(1).clump(2);
 assert.(r.curved.not, "clump(curved map): rebuilds linear map");
-assertArr.(r.times, [0,2,4,7], "clump(curved map): picks original anchors");
+assertArr.(r.times, [0,2,6,9], "clump(curved map): picks original anchors");
 
 // -- 17. media-neutral anchor constructor ----------------------------------
 // Inputs may use nonzero source coordinates; the core map normalizes both axes

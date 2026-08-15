@@ -23,11 +23,13 @@ var tDir, stampList, stamp, aNoStamp, aStamped, aStampedFlat, aStamped2, tPath, 
 
 "== followTrack forwarding tests ==".postln;
 
-// Synthetic take: anchors at 1 s/beat for beats 0..4, closing anchor makes the
-// final span 3 s/beat — non-flat, so map and flat paths must disagree.
+// Synthetic take: anchors at 1 s/beat for beats 0..3, then a MEASURED span of
+// 3 s/beat (mark at 6, not 4). The closing anchor repeats that last measured
+// span (fe898d18) rather than reading the clip end, so the map is non-flat and
+// the map and flat paths must disagree.
 mkNote = { |ts, note = 60| (midicmd: \noteOn, type: \mk, timestamp: ts,
 	midinote: note, dur: 0.5, sustain: 0.5, amp: 0.5) };
-notes = [0, 1, 2, 3, 4, 6].collect { |ts| mkNote.(ts) };
+notes = [0, 1, 2, 3, 6, 7].collect { |ts| mkNote.(ts) };
 mkPlayer = { MIDIItemPlayer(notes.deepCopy, nil) };
 mt = MIDIItemTempoMap(mkPlayer.(), { |n| n[0..4] }, [1, 1, 1, 1, 1]);
 
@@ -87,13 +89,14 @@ assertArr.(sE, sT, "nested \\eventList: followTrack: \\eventList follows like tr
 // ------------------------------------------- \mi2 general case: map OBJECT
 // Flat list + stamped take map: recorded seconds invert through the map to
 // ideal beats, which the flat list renders 1:1 — so wall times ARE the ideal
-// beats. mt: 1 s/beat for beats 0..4, closing anchor 6.5 => 2.5 s/beat after,
-// so the note at recorded second 6 lands on beat 4 + (6-4)/2.5 = 4.8.
+// beats. mt: 1 s/beat for beats 0..3, then 3 s/beat for beat 3->4 and for the
+// closing span that repeats it, so the note at recorded second 7 lands on
+// beat 4 + (7-6)/3 = 4.3333.
 gSrc = flatTimesFor.((when: 0, type: \mi2, player: mkPlayer.(),
 	followTrack: true, sourceTempoMap: mt));
 gOneKey = flatTimesFor.((when: 0, type: \mi2, player: mkPlayer.(),
 	followTrack: mt));
-assertArr.(gSrc, [100, 101, 102, 103, 104, 104.8],
+assertArr.(gSrc, [100, 101, 102, 103, 104, 104 + (1/3)],
 	"mi2 map object: recorded seconds land on ideal beats", 1e-6);
 assertArr.(gOneKey, gSrc, "mi2: followTrack: <map> == true + sourceTempoMap: <map>");
 

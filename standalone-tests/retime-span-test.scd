@@ -122,7 +122,7 @@ assert.(m2.isKindOf(AnchorMap), "retimeSpan: answers a baked AnchorMap, got %".f
 assert.(m2.mapsDimensions(\beat, \sec), "retimeSpan: still a beat -> sec map");
 assertArr.(m2.xs, [0, 4, 4.75, 5, 6, 7.5, 8, 12],
 	"retimeSpan: the span's beats are now the cumulative dur positions");
-assertArr.(m2.ys, [0, 4, 4.9, 5.1, 6.1, 7.4, 8, 9],
+assertArr.(m2.ys, [0, 4, 4.9, 5.1, 6.1, 7.4, 8, 12],
 	"retimeSpan: paired with the performed onsets, boundaries from the map");
 // no ripple: both span boundaries, and everything outside, are the old map's
 assertClose.(m2.at(4), m0.at(4), "retimeSpan: the span's start time is unchanged");
@@ -199,7 +199,7 @@ assertArr.(stamps.(p.warpTo(tight)), [0, 1, 2, 3, 4, 4.75, 5, 6, 7.5, 8],
 // become a sixth event that no dur is waiting for
 assert.(chord.onsets(4, 8).size == 5, "canonical: the chord take still yields 5 events");
 tight = chord.retimeSpan(4, durs, chord.onsets(4, 8));
-assertArr.(tight.ys, [0, 4, 4.9, 5.1, 6.1, 7.4, 8, 9],
+assertArr.(tight.ys, [0, 4, 4.9, 5.1, 6.1, 7.4, 8, 12],
 	"canonical: the chord take re-anchors on the cluster's first onset");
 
 // ================================================ §12f: warpTo's sec -> sec branch
@@ -257,7 +257,7 @@ assertArr.(sOrig, [0, 1.25, 2.5, 3.75, 5, 5.7, 5.9, 6.6, 7.4, 8, 8.4, 8.7],
 	"fixture: the uneven take's performed onsets");
 sM0 = slow.tempomap.asMonoMap(origin: \absolute);
 assertArr.(sM0.xs, [0, 4, 8, 12], "fixture: the map's beats (bar lines + closing anchor)");
-assertArr.(sM0.ys, [0, 5, 8, 9], "fixture: bar 1 takes 5 s, bar 2 takes 3 s — NOT the identity");
+assertArr.(sM0.ys, [0, 5, 8, 11], "fixture: bar 1 takes 5 s, bar 2 takes 3 s — NOT the identity");
 sOns = slow.onsets(4, 8);
 assertArr.(sOns, [5, 5.7, 5.9, 6.6, 7.4], "fixture: the five performed onsets of bar 2");
 
@@ -267,7 +267,9 @@ assertArr.(sOns, [5, 5.7, 5.9, 6.6, 7.4], "fixture: the five performed onsets of
 // wrong for "fix bar 2".
 sM2 = slow.retimeSpan(4, sDurs, sOns);
 sFlat = stamps.(slow.warpTo(sM2));
-assertArr.(sFlat, [0, 1, 2, 3, 4, 4.75, 5, 6, 7.5, 8, 9.6, 10.8],
+// the last two events sit PAST the final mark, in the closing span: 3 performed
+// seconds carrying 4 beats, so 8.4 s -> 8 + 0.4*4/3 and 8.7 s -> 8 + 0.7*4/3
+assertArr.(sFlat, [0, 1, 2, 3, 4, 4.75, 5, 6, 7.5, 8, 8 + (0.4 * 4 / 3), 8 + (0.7 * 4 / 3)],
 	"warpTo(beat map): every event lands on its BEAT — the whole take is flattened");
 assert.((sFlat[1] - sOrig[1]).abs > 0.2,
 	"warpTo(beat map): even bar 1, which nobody edited, has moved");

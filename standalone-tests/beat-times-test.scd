@@ -115,10 +115,11 @@ assert.(p.beatTimes(-2) == [], "beatTimes: negative subdiv -> []");
 // ------------------------------------------- bpmFromTimes (§12D tempo lane)
 // the tempo lane is nothing but this over beatTimes / the gui's gridLines
 p = mkPlayer.([60, 62, 64], [1, 2, 1], [0, 1, 2], [0, 1, 2]);
-bt = p.beatTimes;                       // [0, 1, 3, 4] — 1s, 2s, 1s spans
+bt = p.beatTimes;                       // [0, 1, 3, 5] — 1s, 2s, then the
+                                        // closing span repeating the 2s one
 bpm = MIDIItemPlayer.bpmFromTimes(bt);
 assert.(bpm.size == (bt.size - 1), "bpmFromTimes: one bpm per span, got %".format(bpm.size));
-assertArr.(bpm, [60, 30, 60], "bpmFromTimes: 60/(span) per adjacent pair");
+assertArr.(bpm, [60, 30, 30], "bpmFromTimes: 60/(span) per adjacent pair");
 // subdiv: half-beat spacing at the same performed tempo reads the same bpm
 half = p.beatTimes(2);
 assertArr.(MIDIItemPlayer.bpmFromTimes(half, 2).keep(2), [60, 60],

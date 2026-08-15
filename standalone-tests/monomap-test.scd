@@ -782,11 +782,18 @@ assertArr.([0, 1, 2.5, 3].collect { |b| elT.tempoMap.timeAt(b) },
 	[0, 1, 2.5, 3].collect { |b| ad.at(b) - 10 },
 	"the stored clock agrees with the source map's values from beat 0");
 assertClose.(elT.baseWallDelta(0, 3), 4, "the coerced clock drives baseWallDelta");
-// non-MonoMap assignment behaves exactly as before
+// a plain MIDIItemTempoMap is FROZEN into an AnchorTempoMap (38bb1c33) rather
+// than stored by reference — same t0 and same anchors, but a new object, so the
+// list's clock can no longer be mutated behind its back through the caller's
+// handle. Only the anchor values are load-bearing here; identity is not.
 tmPass = MIDIItemTempoMap.fromAnchors([5, 6, 7], [0, 1, 2]);
 elT.tempoMap = tmPass;
-assert.(elT.tempoMap === tmPass, "a non-MonoMap tempoMap is stored exactly as given");
+assert.(elT.tempoMap.isKindOf(AnchorTempoMap),
+	"a plain MIDIItemTempoMap is frozen to an AnchorTempoMap");
+assert.((elT.tempoMap === tmPass).not, "freezing answers a NEW map, not the one given");
 assertClose.(elT.tempoMap.t0, 5, "and keeps its own t0 (no rebasing of old-world maps)");
+assertArr.(elT.tempoMap.times, [0, 1, 2], "freezing preserves the relative anchor times");
+assertArr.(elT.tempoMap.beats, [1, 1], "freezing preserves the beat gaps");
 elT.tempoMap = nil;
 assert.(elT.tempoMap.isNil, "nil still clears the clock");
 // swapping the clock invalidates the memoized beat->wall integral

@@ -208,6 +208,20 @@ MapEditor {
 		^this.prSpanEdit("curve %".format(amount),
 			{ |m, a, b| m.transformSpan(a, b, { |cell| cell.curve(amount) }) })
 	}
+	/*
+	 Reshape the span as a ritardando (w < 1) or accelerando (w > 1) from the
+	 Friberg & Sundberg q family; w is the tempo RATIO end / start, nil fits it
+	 from the span's own ends. q = 2 is constant deceleration, 3 gives way later.
+
+	 ripple defaults to TRUE here where the core method defaults to false: at the
+	 keyboard "rit." means the span takes longer and the tempo runs on
+	 continuously from what came before, so the take gets longer too. Pass false
+	 for the width-preserving redistribution instead.
+	*/
+	ritardSpan { |w, q = 2, amount = 1, ripple = true|
+		^this.prSpanEdit("rit % q=%".format(w.notNil.if { w.round(0.001) }{ "fit" }, q),
+			{ |m, a, b| m.ritardSpan(a, b, w, q, amount, ripple) })
+	}
 	// drop interior anchors, keeping every `groups`-th one — resolution reduction
 	clumpSpan { |groups = 2|
 		^this.prSpanEdit("clump %".format(groups),
@@ -354,6 +368,7 @@ MapEditor {
 		{ char == $Q } { this.quantizeSpan(1); true }
 		{ char == $V } { this.curveSpan(1); true }
 		{ char == $N } { this.clumpSpan(2); true }
+		{ char == $R } { this.ritardSpan(0.8, 2); true }
 		{ char == $S } { this.stretchSpan(1.05); true }
 		{ char == $F } { this.stretchSpan(1 / 1.05); true }
 		{ char == $B } { this.setSpanBpm(this.meanBpm ? 60); true }
@@ -541,7 +556,7 @@ MapEditor {
 		var bpm = b.isNil.if { "" }{ " · % bpm".format(b.round(0.1)) };
 		var flag = edited.if { " · edited" }{ "" };
 		^"MAP EDIT  " ++ span ++ bpm ++ flag
-		++ "   i/o span · drag lane · A all · Q straighten · V curve · N clump · "
+		++ "   i/o span · drag lane · A all · Q straighten · V curve · N clump · R rit · "
 		++ "S/F slower/faster · B mean bpm · P audition · u/U undo · Z revert · W commit"
 	}
 

@@ -376,6 +376,101 @@ AnchorMap : MonoMap {
 		^AnchorMap(xs, newYs, fromFrame, toFrame, extendBelow, extendAbove)
 	}
 
+	/*
+	 Replace the span's timing with the Friberg & Sundberg ritardando family
+	 (JASA 105(3), 1999; the q = 2 member is Todd's kinematic model). Unlike
+	 `curve`, which is an INTERPOLANT and passes through every anchor, this is a
+	 MODEL: it is a function of the cell's two ENDS only and overwrites the
+	 interior. That is the point — the q family is a claim about what the tempo
+	 did, so the measured interior deviation is exactly what it replaces.
+
+	 `w` is a tempo RATIO across the span, end / start — not a bpm. w < 1 is a
+	 ritardando, w > 1 an accelerando (same formula, no second method), w == 1
+	 is constant tempo and so agrees with quantize(1). nil fits w from the
+	 cell's own first and last span tempi, i.e. "regularize the rit already
+	 there" rather than assert one.
+
+	 `q` shapes WHERE the change happens, not how much: both ends are identical
+	 for every q. See prRitardV.
+
+	 Output width is PRESERVED — the span still takes as long as it did, and the
+	 rit is pure redistribution (start above the mean, end below). That keeps the
+	 house invariant (every transform here pins both ends on both axes), which in
+	 turn is what makes `amount` safe: a convex blend of two strictly increasing
+	 anchor sets sharing endpoints is strictly increasing and endpoint-exact.
+	 The cost is that the span's ENTRY tempo now sits above the previous span's
+	 exit tempo — a step up, then the rit. `ritardSpan(..., ripple: true)`
+	 removes that step by letting the width grow instead; it lives at the span
+	 level because it needs the neighbouring cell, which a cell transform cannot
+	 see.
+
+	 Sampled to PL like `curve`, on `oversample` subdivisions per original span
+	 UNIONED with the original interior anchor positions, so `amount` stays exact
+	 at every original corner instead of smearing it through the resampling.
+	*/
+	ritard { |w, q = 2, amount = 1, oversample = 32|
+		var x0 = xs.first, x1 = xs.last, y0 = ys.first, y1 = ys.last;
+		var span = x1 - x0, height = y1 - y0, nSpans = xs.size - 1;
+		var ratio, allXs, vs, cum, k, origYs, newYs;
+		this.mapsDimensions(\beat, \sec).not.if {
+			Error("AnchorMap.ritard: needs a beat -> sec map, this one maps % -> %"
+				.format(fromFrame.dimension, toFrame.dimension)).throw
+		};
+		q.isNumber.not.if {
+			Error("AnchorMap.ritard: q must be a number, got %".format(q)).throw
+		};
+		(oversample.isNumber.not
+			or: { oversample.asInteger != oversample }
+			or: { oversample < 1 }).if {
+				Error("AnchorMap.ritard: oversample must be a positive integer, got %"
+					.format(oversample)).throw
+		};
+		((amount < 0) or: { amount > 1 }).if {
+			"AnchorMap.ritard: amount % is outside [0, 1] — monotonicity is only "
+				"guaranteed inside it".format(amount).warn
+		};
+		// at amount 0 the model contributes nothing, so answer the receiver's own
+		// anchors rather than oversample-times-redundant collinear ones
+		(amount == 0).if {
+			^AnchorMap(xs, ys, fromFrame, toFrame, extendBelow, extendAbove)
+		};
+		ratio = w ?? { this.prFitTempoRatio };
+		((ratio.isNumber.not) or: { ratio <= 0 }).if {
+			Error("AnchorMap.ritard: w must be > 0 — it is a tempo RATIO (end / start), "
+				"not a bpm; got %".format(w)).throw
+		};
+		allXs = (0 .. (nSpans * oversample)).collect { |i|
+			x0 + (span * i / (nSpans * oversample))
+		};
+		(xs.size > 2).if { allXs = allXs ++ xs.copyRange(1, xs.size - 2) };
+		allXs = allXs.sort;
+		// drop duplicates: an original anchor landing on a grid point would give
+		// AnchorMap a repeat
+		allXs = allXs.select { |x, i|
+			(i == 0) or: { (x - allXs[i - 1]) > (1e-12 * max(1.0, x.abs)) }
+		};
+		allXs[0] = x0; allXs[allXs.size - 1] = x1;
+		vs = allXs.collect { |x| this.prRitardV((x - x0) / span, ratio, q) };
+		// seconds accumulate as the integral of 1/tempo. Trapezoid rather than the
+		// four analytic branches (q != 1, q == 1 log, w == 1, q == 0 exponential):
+		// the width normalisation below absorbs the quadrature error, and both ends
+		// land exactly whatever the rule.
+		cum = Array(allXs.size).add(0.0);
+		(allXs.size - 1).do { |i|
+			cum = cum.add(cum[i] + ((allXs[i + 1] - allXs[i]) * 0.5
+				* (vs[i].reciprocal + vs[i + 1].reciprocal)))
+		};
+		k = height / cum.last;
+		origYs = allXs.collect { |x| this.prAnchorY(x) };
+		newYs = cum.collect { |c, i|
+			(origYs[i] * (1 - amount)) + ((y0 + (c * k)) * amount)
+		};
+		// pin both ends bit-exact (the blend is already equal to within rounding)
+		newYs[0] = y0;
+		newYs[newYs.size - 1] = y1;
+		^AnchorMap(allXs, newYs, fromFrame, toFrame, extendBelow, extendAbove)
+	}
+
 	// Blend toward ANOTHER map on the same axes: amount 0 is this map (bit-exact),
 	// 1 is `other`, in between a convex blend and so strictly monotone, same argument
 	// as quantize. Sampled on the UNION of both breakpoint sets, because the maps
@@ -442,6 +537,52 @@ AnchorMap : MonoMap {
 		newYs = ([ys.first] ++ newW).integrate;
 		newYs[nSpans] = ys.last;
 		^AnchorMap(xs, newYs, fromFrame, toFrame, extendBelow, extendAbove)
+	}
+
+	/*
+	 Materialize the carry extrapolation as a real anchor, so the domain reaches
+	 `to`. A `to` already inside the domain is a no-op and answers the receiver,
+	 so this is free and bit-exact in the common case.
+
+	 VALUE-PRESERVING, not a reshape: the new end segment carries the SAME slope
+	 as the one it continues, which is exactly what `at(x)` already answers out
+	 there under \carry. The map is unchanged as a function; only its DOMAIN
+	 grows, which is the whole point — `slices` cuts at anchors, and an
+	 extrapolation is not one, so the span editors cannot reach past the last
+	 anchor until one exists.
+
+	 UPWARD ONLY, and the asymmetry is real rather than a missing feature.
+	 Appending an anchor leaves xs.first and ys.first alone; PREPENDING one moves
+	 the map's origin on both axes, and the origin is load-bearing —
+	 AnchorTempoMap.initAnchors takes t0 from the first anchor's time,
+	 asAnchorTempoMap(rebase: true) rebases to it, and transformSpan translates
+	 results back to it. Growing downward would silently renumber all of that, so
+	 it is not something to get as a side effect of asking for more room at the
+	 end. A span that starts BELOW the domain is a caller error and still throws.
+
+	 An \error high end is refused rather than grown: that policy is a
+	 declaration that the map has no opinion beyond its anchors, and inventing
+	 one here would silently overrule it.
+
+	 Caveat for the span editors: everything past the original last anchor is
+	 INVENTED. It is the honest continuation, but it is not evidence — a fitted
+	 `ritard(nil, ...)` over an extended span is partly measuring the
+	 extrapolation against itself.
+	*/
+	extendTo { |to|
+		to.isNumber.not.if {
+			Error("AnchorMap.extendTo: `to` must be a number, got %".format(to)).throw
+		};
+		(to <= xs.last).if { ^this };
+		(extendAbove == \error).if {
+			Error("AnchorMap.extendTo: cannot reach % — this map's high end is \\error, "
+				"so it has no extrapolation to materialize (domain %)"
+				.format(to, this.domain)).throw
+		};
+		^AnchorMap(
+			xs ++ [to],
+			ys ++ [ys.last + ((to - xs.last) * this.prSlope(xs.size - 2))],
+			fromFrame, toFrame, extendBelow, extendAbove)
 	}
 
 	// ---- Local editing (quantize-tempomap-project.md §12b A). A local edit is
@@ -519,6 +660,11 @@ AnchorMap : MonoMap {
 	// The OUTPUT width may change freely — everything after the span then shifts
 	// by the delta, which IS the wanted ripple ("bar 5 dragged" -> the take gets
 	// shorter and the following bars keep their shape, translated).
+	// A span outside the domain is REFUSED, not extrapolated into: `extendTo`
+	// exists for that and is deliberately opt-in, because inventing map out
+	// there is a decision (see ritardSpan, the one caller with an obvious
+	// answer). `map.extendTo(to).transformSpan(from, to, f)` is the
+	// explicit form.
 	transformSpan { |from, to, func|
 		var cells, mid, edited;
 		# cells, mid = this.prSpanCells(from, to, \transformSpan);
@@ -604,6 +750,49 @@ AnchorMap : MonoMap {
 	// the point of the whole exercise: a whole-map transform, applied to a span
 	quantizeSpan { |from, to, amount = 1|
 		^this.transformSpan(from, to, _.quantize(amount))
+	}
+
+	/*
+	 `ritard` applied to a span, plus the one option that needs the neighbours.
+
+	 ripple false (the default, matching the cell transform) keeps the span's
+	 output width, so nothing after it moves — but the span ENTERS faster than
+	 the previous span exited, a step up followed by the rit.
+
+	 ripple true removes that step: the span is stretched by exactly the factor
+	 that lands its entry tempo on the tempo arriving at `from`, so the tempo is
+	 continuous there and the span gets genuinely longer. Everything after it
+	 then shifts on the seconds axis — the same ripple stretchSpan makes (§12b A),
+	 and what a real rit does, since it takes more time. The factor is read off
+	 the SHAPED map rather than computed from the model, so it stays correct
+	 under an `amount` blend.
+
+	 A span running PAST the map's end is extended into rather than refused —
+	 this is the one span editor where that has an obvious answer, because a
+	 closing ritardando carries on past the last recorded note and the \carry
+	 slope is the honest continuation of it. See extendTo, including its warning
+	 that the material out there is invented (so a fitted `w` over an extended
+	 span is partly measuring the extrapolation). An \error end still refuses.
+	 Every other span editor keeps the strict check; call extendTo explicitly.
+	*/
+	ritardSpan { |from, to, w, q = 2, amount = 1, ripple = false|
+		var shaped;
+		var grown = this.extendTo(to);
+		(grown !== this).if { ^grown.ritardSpan(from, to, w, q, amount, ripple) };
+		this.prCheckSpan(from, to, \ritardSpan);
+		shaped = this.transformSpan(from, to, { |cell| cell.ritard(w, q, amount) });
+		ripple.not.if { ^shaped };
+		(from <= xs.first).if {
+			"AnchorMap.ritardSpan: ripple needs material before the span to take its "
+				"entry tempo from, but [%, %] starts at the domain edge"
+				.format(from, to).warn;
+			^shaped
+		};
+		// slope is sec/beat, so tempo is its reciprocal and stretching the span by
+		// `factor` divides its tempo by `factor`: factor = shapedEntryTempo /
+		// incomingTempo = incomingSlope / shapedEntrySlope.
+		^shaped.stretchSpan(from, to,
+			this.prSlopeBefore(from) / shaped.prSlopeAfter(from))
 	}
 
 	// value at a cut: bit-exact when the cut IS an anchor, the PL lerp otherwise
@@ -702,6 +891,56 @@ AnchorMap : MonoMap {
 		^m
 	}
 
+	/*
+	 Friberg & Sundberg's normalised tempo shape, v(0) = 1 and v(1) = w:
+
+	     v(u) = (1 + (w^q - 1) * u) ^ (1/q)
+
+	 q says WHERE the tempo goes, not how far — every q hits the same two ends.
+	 q = 1 is tempo linear in beats (an even, mechanical ramp), q = 2 is constant
+	 deceleration (Todd's kinematic model — a body coming to rest), q = 3 holds
+	 the tempo and gives way late. Measured ritardandi cluster around q = 2..3,
+	 hence the default of 2. Negative q mirrors the shape, front-loading the
+	 change. q = 0 is the removable singularity: the limit is the geometric
+	 w^u, a constant percentage per beat.
+
+	 The bracket is linear in u between 1 and w^q, both positive for any w > 0,
+	 so v is positive across the whole span and the map it integrates to cannot
+	 fail monotonicity — unlike a C1 piecewise-linear tempo, which can drive the
+	 tempo through zero. The max() is a denormal guard, not a positivity test.
+	*/
+	prRitardV { |u, w, q|
+		(q.abs < 1e-9).if { ^w ** u };
+		^(max(1 + (((w ** q) - 1) * u), 1e-12)) ** (q.reciprocal)
+	}
+	/*
+	 w read off the cell's own ends: the last measured span tempo over the first.
+	 `ritard(nil, 2)` then reads as "regularise the rit that is already there
+	 into a q = 2 shape" rather than asserting one — which is the more defensible
+	 call when the anchors came from a performance. A single-span cell has no
+	 interior to measure and answers 1 (constant tempo).
+	*/
+	prFitTempoRatio {
+		var nSpans = xs.size - 1;
+		(nSpans < 2).if {
+			"AnchorMap.ritard: cannot fit w from a single-span cell — using 1 "
+				"(constant tempo)".warn;
+			^1.0
+		};
+		^this.prSlope(0) / this.prSlope(nSpans - 1)
+	}
+	// Slope of the segment ARRIVING at x / LEAVING x, found by anchor position
+	// rather than by probing at(x +/- eps): the caller's x is a span boundary that
+	// has been through a slice/bake round trip, so it may miss its anchor by an
+	// ulp. Outside the domain both answer the end segment, i.e. the \carry slope.
+	prSlopeBefore { |x|
+		var i = xs.detectIndex { |v| v >= (x - 1e-9) };
+		^this.prSlope(max((i ? (xs.size - 1)) - 1, 0))
+	}
+	prSlopeAfter { |x|
+		var i = xs.detectIndex { |v| v > (x + 1e-9) };
+		^this.prSlope(min(max((i ? (xs.size - 1)) - 1, 0), xs.size - 2))
+	}
 	prSlope { |i| ^(ys[i + 1] - ys[i]) / (xs[i + 1] - xs[i]) }
 	// binary search: greatest i with a[i] <= x, in 0..size-2
 	prSegment { |a, x|

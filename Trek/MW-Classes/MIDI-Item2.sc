@@ -805,6 +805,24 @@ view.keyDownAction_({ |view char|
 		var marked = this.selectedNotes;
 		var sel;
 		(marked.size > 0).if {
+			/*
+			 One anchor is not a tempo map. The gap array below comes out empty and
+			 is padded to a single ideal beat, so everything else in the take is
+			 EXTRAPOLATED from that one point — typically to negative beats, where
+			 asEventList stores it and play(0) then trims it. The symptom is a list
+			 that sounds one note, with nothing anywhere reporting a problem.
+
+			 Nearly always this means a filter ran between .selection and here and
+			 took the anchors with it (select by pitch is the usual one). Warn rather
+			 than throw: passing a single anchor deliberately is a legitimate way to
+			 say "one beat, this long".
+			*/
+			(marked.size < 2 and: { beats.isNil }).if {
+				"MIDIItem tempo map: only % anchor(s) marked, so every other event is "
+					"extrapolated from it (often to negative beats, which play(0) drops). "
+					"A filter after .selection usually did this — reselect, or carry the "
+					"frame with tempoMap_.".format(marked.size).warn
+			};
 			choiceFunc = choiceFunc ?? { marked };
 			beats = beats ?? {
 				var b = marked.collect(_[\selBeat]).differentiate.drop(1);
@@ -875,7 +893,8 @@ view.keyDownAction_({ |view char|
                 averageOffset: tempoMap.averageOffset,
             ).use(func)
         }) => {|i|
-            recalcSustains.if { ^i.recalcSustains }{ ^i }
+            // timestamps rewritten — see prForgetTempoFrame
+            recalcSustains.if { ^i.recalcSustains.prForgetTempoFrame }{ ^i.prForgetTempoFrame }
         }
     }
 }
@@ -1425,8 +1444,9 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	var <>takeIndex, <>currentSelection; // set by MIDIItem.take / selection — not preserved through filters
 	var <>recordEpoch; // wall-clock sound epoch of the take (MIDIItem.recordEpochs) — carried through filters via copyBounds
 	var <>recordPlayEpoch; // the list-play epoch this take overdubbed against (MIDIItem.recordPlayEpochs) — carried through filters via copyBounds
-	var <>closingAnchor; // (time:, beats:) closing tempo-anchor from the parent's next selected beat; set by fromBeat
-	var <>beatScale; // ideal-beats-per-anchor multiplier (nil == 1); applied by tempomap, see scaleBeats
+	var <>closingAnchor; // (time:, beats:) closing tempo-anchor from the parent's next selected beat; set by fromBeat — carried through filters via copyBounds
+	var <>beatScale; // ideal-beats-per-anchor multiplier (nil == 1); applied by tempomap, see scaleBeats — carried through filters via copyBounds
+	var <>tempoMapOverride; // set by tempoMap_ / selection; consulted by tempomap before deriving — carried through filters via copyBounds
 
 	*new {| amidiEvents source |
 		var player, bounds;
@@ -1548,6 +1568,21 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		start = mi.start; end = mi.end;
 		recordEpoch = recordEpoch ? mi.tryPerform(\recordEpoch);
 		recordPlayEpoch = recordPlayEpoch ? mi.tryPerform(\recordPlayEpoch);
+		/*
+		 The beat frame travels with the CONTAINER, not with the notes. Marker-based
+		 anchors (\selBeat) ride through a filter on the events themselves, which
+		 survives retiming but not selection: filtering by pitch can delete most of
+		 the anchors and leave a map built from one, which is no map at all. These
+		 three are per-take facts that removing notes cannot invalidate, so a
+		 derived player inherits them.
+
+		 beatScale and closingAnchor were already read by tempomap/prSelectionArgs
+		 and already lost here — m.scaleBeats(2).select { ... } silently dropped the
+		 scale, and a fromBeat child lost its closing anchor to any later filter.
+		*/
+		tempoMapOverride = tempoMapOverride ? mi.tryPerform(\tempoMapOverride);
+		beatScale = beatScale ? mi.tryPerform(\beatScale);
+		closingAnchor = closingAnchor ? mi.tryPerform(\closingAnchor);
 	}
 	// wall offset (seconds from the recorded playthrough's beat-0 origin) at which
 	// the take's timestamp 0 sounded. Pure difference of same-session epochs, so it
@@ -1655,7 +1690,19 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		currentSelection.isNil.if {
 			"no saved selection (take %, version %)".format(takeIndex, version).postln
 		}{
-			this.prStampSelection(currentSelection) // ride markers through transforms
+			this.prStampSelection(currentSelection); // ride markers through transforms
+			/*
+			 Pin the frame the selection just established. The markers alone are not
+			 enough: they live on the events, so a later filter by pitch or range can
+			 delete most of the anchors and leave a map derived from what is left,
+			 which is a different map with no warning. Deriving it once here and
+			 letting copyBounds carry it means removing notes changes which notes
+			 play, not what the tempo was.
+
+			 Set AFTER stamping, since the derivation reads the markers. Cleared
+			 again by anything that rewrites timestamps (prForgetTempoFrame).
+			*/
+			tempoMapOverride = { this.tempomap }.try
 		};
 		^this
 	}
@@ -1698,7 +1745,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 				var remap = this.prSecMapForWarp(tempoMap);
 				^this.prDropBefore(dropBefore).collect({ |e|
 					e.timestamp_(remap.at(e.timestamp))
-				})
+				}).prForgetTempoFrame
 			};
 			// §12 seam: a V2 MonoMap is accepted here and converted ONCE, before
 			// anything reads t0, into the AnchorTempoMap the walk below already
@@ -1709,10 +1756,24 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			tempoMap.respondsTo(\prAtExtrapolated).if {
 				^src.collect({ |e|
 					e.timestamp_(tempoMap.prAtExtrapolated(e.timestamp - origin, tempoMap.env) + origin)
-				})
+				}).prForgetTempoFrame
 			};
 			^src.collect({ |e| e.timestamp_(tempoMap[e.timestamp - start] + start) })
+				.prForgetTempoFrame
 	}
+	/*
+	 Drop an inherited tempoMapOverride after the timestamps have been rewritten.
+	 The stored map is keyed to ABSOLUTE recorded times (t0, and env against
+	 them), so once warpTo has moved the events it describes a performance that
+	 no longer exists — silently, since every beat still resolves to a number.
+
+	 The \selBeat markers do NOT have this problem: they are beat coordinates and
+	 are exactly what survives a retiming, which is why falling back to the
+	 derivation is the correct answer here rather than a degradation. Filters that
+	 only remove or copy events keep the override (see copyBounds) — deleting
+	 notes cannot change what the tempo was.
+	*/
+	prForgetTempoFrame { tempoMapOverride = nil; ^this }
 	// The dropBefore policy, factored out so both warpTo branches share it (the
 	// comment above warpTo documents the policy itself). nil answers the receiver
 	// untouched, so the no-policy path allocates nothing and stays bit-identical
@@ -2036,6 +2097,12 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		).copyBounds(this)
 	}
 	tempomap {|beats choiceFunc|
+		// an override answers only the unparameterised question. Passing beats or
+		// choiceFunc is asking "what map do THESE anchors give", which is a
+		// different question and must still be derived.
+		(tempoMapOverride.notNil and: { beats.isNil } and: { choiceFunc.isNil }).if {
+			^tempoMapOverride
+		};
 		beats.isString.if{ beats = beats.beats };
 		#beats, choiceFunc = this.prSelectionArgs(beats, choiceFunc);
 		// player-level beat scale: each anchor gap counts as beatScale ideal beats
@@ -2043,6 +2110,52 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		^MIDIItemTempoMap(this, choiceFunc, beats * (beatScale ? 1))
 	}
 	tempoMap {|beats choiceFunc| ^this.tempomap(beats, choiceFunc) }
+	/*
+	 Set the beat frame explicitly instead of deriving it from the selection
+	 markers. Chainable, and the slot rides through filters via copyBounds, so
+	 this is how you keep a frame across a transform that would decimate the
+	 anchors:
+
+	   n = m.selection;
+	   n.select { |e| e.midinote > 60 }.fromNote(0)
+	     .tempoMap_(n.tempoMap).asEventList(\upper, \default)
+
+	 It has to be set on the PLAYER, before asEventList: the list bakes each
+	 event's \when at build time, so setting a map on the finished EventList
+	 changes only how those beats are read as seconds, not what they are.
+
+	 A MonoMap is coerced with rebase: false, because t0 must stay the ABSOLUTE
+	 timestamp at which the take's first anchor sounded — everything downstream
+	 does `timestamp - t0`. That is also why a map borrowed from a DIFFERENT
+	 recording is meaningless here, and why the t0 sanity check below warns
+	 rather than staying silent: the failure mode is a constant beat offset with
+	 no error anywhere.
+	*/
+	tempoMap_ { |aMap|
+		var lo, hi, t0;
+		aMap.isNil.if { tempoMapOverride = nil; ^this };
+		tempoMapOverride = aMap.isKindOf(MonoMap).if {
+			aMap.asAnchorTempoMap(false)
+		}{
+			aMap
+		};
+		tempoMapOverride.respondsTo(\prAtExtrapolated).not.if {
+			Error("MIDIItemPlayer.tempoMap_: % does not answer the tempo-map protocol "
+				"(t0 / env / prAtExtrapolated)".format(aMap.class)).throw
+		};
+		t0 = tempoMapOverride.tryPerform(\t0);
+		(t0.notNil and: { midiEvents.size > 0 }).if {
+			lo = midiEvents.first.timestamp;
+			hi = midiEvents.last.timestamp;
+			((t0 < (lo - 1e-6)) or: { t0 > (hi + 1e-6) }).if {
+				"MIDIItemPlayer.tempoMap_: the map's t0 (%) is outside this player's "
+					"timestamps [%, %] — t0 is an absolute recorded time, so a map from "
+					"another take (or an unplaced synthetic one) offsets every beat"
+					.format(t0.round(0.001), lo.round(0.001), hi.round(0.001)).warn
+			}
+		};
+		^this
+	}
 	// Return a COPY of this player whose tempomap treats each anchor gap as k ideal
 	// beats instead of 1 — so everything derived from the map picks it up, including
 	// asEventList (which builds its own map internally): pure relabel, playback is

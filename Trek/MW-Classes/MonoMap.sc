@@ -234,20 +234,8 @@ AnchorMap : MonoMap {
 			([y0] ++ spansOut).integrate,
 			fromFrame, toFrame, extendBelow, extendAbove)
 	}
-	/*
-	 The q family as a plain Array of durations, for use where there is no map:
-	 `AnchorMap.ritardDurs(0.25, 16, 0.4, 3).q` in a Pbind, or fed to .wait.
-
-	 `initialDur` is the FIRST duration and `w` is the tempo ratio end / start,
-	 exactly as in `ritard`, so the last duration comes out at initialDur / w.
-	 An array has no total to preserve, which makes this inherently the
-	 pinEntry: true case — the sequence keeps the tempo it started at and simply
-	 takes however long the rit costs. There is no width-preserving variant here;
-	 that only means anything against a span with fixed ends.
-
-	 Quadrature is the trapezoid `ritard` uses, on `oversample` subdivisions per
-	 duration, so an array and a map shaped with the same (w, q) agree.
-	*/
+	// Return q-family durations. initialDur is first; w is exit/entry tempo, so
+	// the final duration approaches initialDur/w. Uses ritard's quadrature.
 	*ritardDurs { |initialDur = 1, numDurs = 8, w = 0.5, q = 2, oversample = 32|
 		((numDurs.isNumber.not)
 			or: { numDurs.asInteger != numDurs }
@@ -426,38 +414,10 @@ AnchorMap : MonoMap {
 		^AnchorMap(xs, newYs, fromFrame, toFrame, extendBelow, extendAbove)
 	}
 
-	/*
-	 Replace the span's timing with the Friberg & Sundberg ritardando family
-	 (JASA 105(3), 1999; the q = 2 member is Todd's kinematic model). Unlike
-	 `curve`, which is an INTERPOLANT and passes through every anchor, this is a
-	 MODEL: it is a function of the cell's two ENDS only and overwrites the
-	 interior. That is the point — the q family is a claim about what the tempo
-	 did, so the measured interior deviation is exactly what it replaces.
-
-	 `w` is a tempo RATIO across the span, end / start — not a bpm. w < 1 is a
-	 ritardando, w > 1 an accelerando (same formula, no second method), w == 1
-	 is constant tempo and so agrees with quantize(1). nil fits w from the
-	 cell's own first and last span tempi, i.e. "regularize the rit already
-	 there" rather than assert one.
-
-	 `q` shapes WHERE the change happens, not how much: both ends are identical
-	 for every q. See prRitardV.
-
-	 Output width is PRESERVED — the span still takes as long as it did, and the
-	 rit is pure redistribution (start above the mean, end below). That keeps the
-	 house invariant (every transform here pins both ends on both axes), which in
-	 turn is what makes `amount` safe: a convex blend of two strictly increasing
-	 anchor sets sharing endpoints is strictly increasing and endpoint-exact.
-	 The cost is that the span's ENTRY tempo now sits above the previous span's
-	 exit tempo — a step up, then the rit. `ritardSpan(..., pinEntry: true)`
-	 removes that step by letting the width grow instead; it lives at the span
-	 level because it needs the neighbouring cell, which a cell transform cannot
-	 see.
-
-	 Sampled to PL like `curve`, on `oversample` subdivisions per original span
-	 UNIONED with the original interior anchor positions, so `amount` stays exact
-	 at every original corner instead of smearing it through the resampling.
-	*/
+	// Replace interior timing with the Friberg–Sundberg q family. w is exit/entry
+	// tempo (nil fits the existing ends); q controls where the change occurs.
+	// Endpoints and total width remain fixed. ritardSpan(pinEntry: true) instead
+	// preserves entry continuity by allowing the width to grow.
 	ritard { |w, q = 2, amount = 1, oversample = 32|
 		var x0 = xs.first, x1 = xs.last, y0 = ys.first, y1 = ys.last;
 		var span = x1 - x0, height = y1 - y0, nSpans = xs.size - 1;
@@ -479,8 +439,7 @@ AnchorMap : MonoMap {
 			"AnchorMap.ritard: amount % is outside [0, 1] — monotonicity is only "
 				"guaranteed inside it".format(amount).warn
 		};
-		// at amount 0 the model contributes nothing, so answer the receiver's own
-		// anchors rather than oversample-times-redundant collinear ones
+		// Preserve the original anchors for the identity case.
 		(amount == 0).if {
 			^AnchorMap(xs, ys, fromFrame, toFrame, extendBelow, extendAbove)
 		};
@@ -494,17 +453,13 @@ AnchorMap : MonoMap {
 		};
 		(xs.size > 2).if { allXs = allXs ++ xs.copyRange(1, xs.size - 2) };
 		allXs = allXs.sort;
-		// drop duplicates: an original anchor landing on a grid point would give
-		// AnchorMap a repeat
+		// Merge original anchors with the sampling grid without duplicates.
 		allXs = allXs.select { |x, i|
 			(i == 0) or: { (x - allXs[i - 1]) > (1e-12 * max(1.0, x.abs)) }
 		};
 		allXs[0] = x0; allXs[allXs.size - 1] = x1;
 		vs = allXs.collect { |x| this.prRitardV((x - x0) / span, ratio, q) };
-		// seconds accumulate as the integral of 1/tempo. Trapezoid rather than the
-		// four analytic branches (q != 1, q == 1 log, w == 1, q == 0 exponential):
-		// the width normalisation below absorbs the quadrature error, and both ends
-		// land exactly whatever the rule.
+		// Integrate reciprocal tempo by trapezoid; normalization pins both ends.
 		cum = Array(allXs.size).add(0.0);
 		(allXs.size - 1).do { |i|
 			cum = cum.add(cum[i] + ((allXs[i + 1] - allXs[i]) * 0.5
@@ -515,7 +470,7 @@ AnchorMap : MonoMap {
 		newYs = cum.collect { |c, i|
 			(origYs[i] * (1 - amount)) + ((y0 + (c * k)) * amount)
 		};
-		// pin both ends bit-exact (the blend is already equal to within rounding)
+		// Pin both ends bit-exactly.
 		newYs[0] = y0;
 		newYs[newYs.size - 1] = y1;
 		^AnchorMap(allXs, newYs, fromFrame, toFrame, extendBelow, extendAbove)
@@ -589,36 +544,9 @@ AnchorMap : MonoMap {
 		^AnchorMap(xs, newYs, fromFrame, toFrame, extendBelow, extendAbove)
 	}
 
-	/*
-	 Materialize the carry extrapolation as a real anchor, so the domain reaches
-	 `to`. A `to` already inside the domain is a no-op and answers the receiver,
-	 so this is free and bit-exact in the common case.
-
-	 VALUE-PRESERVING, not a reshape: the new end segment carries the SAME slope
-	 as the one it continues, which is exactly what `at(x)` already answers out
-	 there under \carry. The map is unchanged as a function; only its DOMAIN
-	 grows, which is the whole point — `slices` cuts at anchors, and an
-	 extrapolation is not one, so the span editors cannot reach past the last
-	 anchor until one exists.
-
-	 UPWARD ONLY, and the asymmetry is real rather than a missing feature.
-	 Appending an anchor leaves xs.first and ys.first alone; PREPENDING one moves
-	 the map's origin on both axes, and the origin is load-bearing —
-	 AnchorTempoMap.initAnchors takes t0 from the first anchor's time,
-	 asAnchorTempoMap(rebase: true) rebases to it, and transformSpan translates
-	 results back to it. Growing downward would silently renumber all of that, so
-	 it is not something to get as a side effect of asking for more room at the
-	 end. A span that starts BELOW the domain is a caller error and still throws.
-
-	 An \error high end is refused rather than grown: that policy is a
-	 declaration that the map has no opinion beyond its anchors, and inventing
-	 one here would silently overrule it.
-
-	 Caveat for the span editors: everything past the original last anchor is
-	 INVENTED. It is the honest continuation, but it is not evidence — a fitted
-	 `ritard(nil, ...)` over an extended span is partly measuring the
-	 extrapolation against itself.
-	*/
+	// Materialize high-end \carry extrapolation as an anchor without changing the
+	// map's values. Low-end growth would move the origin and is deliberately absent;
+	// \error policy refuses extension.
 	extendTo { |to|
 		to.isNumber.not.if {
 			Error("AnchorMap.extendTo: `to` must be a number, got %".format(to)).throw
@@ -710,11 +638,7 @@ AnchorMap : MonoMap {
 	// The OUTPUT width may change freely — everything after the span then shifts
 	// by the delta, which IS the wanted ripple ("bar 5 dragged" -> the take gets
 	// shorter and the following bars keep their shape, translated).
-	// A span outside the domain is REFUSED, not extrapolated into: `extendTo`
-	// exists for that and is deliberately opt-in, because inventing map out
-	// there is a decision (see ritardSpan, the one caller with an obvious
-	// answer). `map.extendTo(to).transformSpan(from, to, f)` is the
-	// explicit form.
+	// Out-of-domain edits require explicit extendTo; ritardSpan extends its high end.
 	transformSpan { |from, to, func|
 		var cells, mid, edited;
 		# cells, mid = this.prSpanCells(from, to, \transformSpan);
@@ -802,37 +726,9 @@ AnchorMap : MonoMap {
 		^this.transformSpan(from, to, _.quantize(amount))
 	}
 
-	/*
-	 `ritard` applied to a span, plus the one option that needs the neighbours.
-
-	 pinEntry false (the default, matching the cell transform) keeps the span's
-	 output width, so nothing after it moves — but the span ENTERS faster than
-	 the previous span exited, a step up followed by the rit.
-
-	 pinEntry true removes that step: the span is stretched by exactly the factor
-	 that lands its entry tempo on the tempo arriving at `from`, so the tempo is
-	 continuous there and the span gets genuinely longer. Everything after it
-	 then shifts on the seconds axis — the same ripple stretchSpan makes (§12b A),
-	 and what a real rit does, since it takes more time. The factor is read off
-	 the SHAPED map rather than computed from the model, so it stays correct
-	 under an `amount` blend.
-
-	 A span running PAST the map's end is extended into rather than refused —
-	 this is the one span editor where that has an obvious answer, because a
-	 closing ritardando carries on past the last recorded note and the \carry
-	 slope is the honest continuation of it. See extendTo, including its warning
-	 that the material out there is invented (so a fitted `w` over an extended
-	 span is partly measuring the extrapolation). An \error end still refuses.
-	 Every other span editor keeps the strict check; call extendTo explicitly.
-
-	 `toBpm` is `w` stated absolutely — "end at 40 bpm" rather than "end at 0.4
-	 of what you came in at" — and is resolved against the tempo ARRIVING at
-	 `from`, which is why it is legal only with pinEntry: true. Width-preserving
-	 rescales the whole span after the model runs, so its exit tempo is not
-	 w * entry and an absolute target would silently miss; better to refuse than
-	 to land somewhere near it. Both given at once is a conflict, not a
-	 precedence question.
-	*/
+	// Apply ritard to a span. pinEntry preserves incoming tempo by stretching the
+	// span and shifting later material; otherwise width stays fixed. High-end
+	// \carry is extended automatically. toBpm requires pinEntry and replaces w.
 	ritardSpan { |from, to, w, q = 2, amount = 1, pinEntry = false, toBpm|
 		var shaped;
 		var grown = this.extendTo(to);
@@ -858,17 +754,12 @@ AnchorMap : MonoMap {
 					"at %, and the span starts at the domain edge — there is none"
 					.format(from)).throw
 			};
-			// entry tempo after pinEntry IS the incoming tempo, so the model's
-			// w * entry lands on the target exactly
+			// With pinEntry, w times the incoming tempo is the requested exit tempo.
 			w = (toBpm / 60) * this.prSlopeBefore(from)
 		};
 		shaped = this.transformSpan(from, to, { |cell| cell.ritard(w, q, amount) });
 		pinEntry.not.if { ^shaped };
-		// amount 0 is the identity for the WHOLE editor, not just the cell. The
-		// stretch factor below is read off the shaped map, and at amount 0 that is
-		// the untouched map — so pinEntry would still stretch the span by whatever
-		// step happened to be at `from`, which is a tempo edit nobody asked for.
-		// stretchSpan is right there for anyone who did.
+		// amount 0 is identity for the entire edit, including pinEntry.
 		(amount == 0).if { ^shaped };
 		(from <= xs.first).if {
 			"AnchorMap.ritardSpan: pinEntry needs material before the span to take its "
@@ -876,40 +767,13 @@ AnchorMap : MonoMap {
 				.format(from, to).warn;
 			^shaped
 		};
-		// slope is sec/beat, so tempo is its reciprocal and stretching the span by
-		// `factor` divides its tempo by `factor`: factor = shapedEntryTempo /
-		// incomingTempo = incomingSlope / shapedEntrySlope.
+		// Slope is sec/beat, so this ratio matches the shaped entry to the incoming tempo.
 		^shaped.stretchSpan(from, to,
 			this.prSlopeBefore(from) / shaped.prSlopeAfter(from))
 	}
 
-	/*
-	 Concatenate `other` after this map and smooth the tempo step at the seam.
-
-	 This is sugar, not new machinery: it bakes the concatenation and applies ONE
-	 ritardSpan window straddling the join, with w taken from the two tempi
-	 outside the window. pinEntry: true holds the entry at the incoming tempo,
-	 and the model lands the exit at w * entry — which is by construction the
-	 tempo on the far side. So the window is continuous at BOTH ends, without a
-	 second mechanism: the exit step ritardSpan normally leaves behind exists
-	 only because w is usually unrelated to what follows.
-
-	 `before` beats are taken from the end of this map, `after` from the start of
-	 `other`. after: 0 is the classic case — the rit lands the new tempo exactly
-	 on the join. before: 0 is its mirror, the new tempo arriving gradually.
-
-	 w defaults to that fitted seam ratio; passing one overrides it, which is how
-	 you ease PAST the far side's tempo rather than onto it. `amount` blends the
-	 model back toward the performed tempo inside the window, and is the knob
-	 worth reaching for on a repeated take: the snap back to the opening tempo at
-	 a loop seam is often what makes the loop read as a loop, so smoothing it all
-	 the way can turn "again from the top" into one long drift.
-
-	 The seam matters even when `other` IS this map. The join puts this map's
-	 LAST span tempo against its FIRST, so a take that drifted by a factor W over
-	 its length has a step of 1/W at every repeat — the reciprocal of what
-	 prFitTempoRatio measures.
-	*/
+	// Concatenate maps and smooth their tempo seam with one pinEntry ritardSpan.
+	// before/after define the window; w defaults to the fitted outside-tempo ratio.
 	easeTo { |other, before = 1, after = 0, q = 2, amount = 1, w|
 		var joined, join, lo, hi, dx, dy;
 		other.isKindOf(AnchorMap).not.if {
@@ -942,15 +806,13 @@ AnchorMap : MonoMap {
 			Error("AnchorMap.easeTo: after % does not fit in other's % beats"
 				.format(after, other.xs.last - other.xs.first)).throw
 		};
-		// built explicitly rather than via ++, so this map's low policy and other's
-		// high policy survive instead of MapSeq's \carry defaults
+		// Preserve this map's low policy and other's high policy.
 		joined = MapSeq([this, other], 1, fromFrame, toFrame,
 			extendBelow, other.extendAbove).bake;
 		joined.isKindOf(AnchorMap).not.if {
 			Error("AnchorMap.easeTo: the concatenation did not bake to anchors").throw
 		};
-		// bake translates the tiling to (0, 0); put this map's origin back, since
-		// t0 is load-bearing downstream (see extendTo)
+		// bake translates to (0, 0); restore this map's origin.
 		dx = xs.first - joined.xs.first;
 		dy = ys.first - joined.ys.first;
 		((dx != 0) or: { dy != 0 }).if {
@@ -960,8 +822,7 @@ AnchorMap : MonoMap {
 		join = xs.last;
 		lo = join - before;
 		hi = join + after;
-		// read the two tempi from OUTSIDE the window — the window overwrites the
-		// spans at the join itself, so those are not evidence of anything
+		// Fit from tempos outside the region being replaced.
 		w = w ?? { joined.prSlopeBefore(lo) / joined.prSlopeAfter(hi) };
 		^joined.ritardSpan(lo, hi, w, q, amount, true)
 	}
@@ -1062,38 +923,14 @@ AnchorMap : MonoMap {
 		^m
 	}
 
-	/*
-	 Friberg & Sundberg's normalised tempo shape, v(0) = 1 and v(1) = w:
-
-	     v(u) = (1 + (w^q - 1) * u) ^ (1/q)
-
-	 q says WHERE the tempo goes, not how far — every q hits the same two ends.
-	 q = 1 is tempo linear in beats (an even, mechanical ramp), q = 2 is constant
-	 deceleration (Todd's kinematic model — a body coming to rest), q = 3 holds
-	 the tempo and gives way late. Measured ritardandi cluster around q = 2..3,
-	 hence the default of 2. Negative q mirrors the shape, front-loading the
-	 change. q = 0 is the removable singularity: the limit is the geometric
-	 w^u, a constant percentage per beat.
-
-	 The bracket is linear in u between 1 and w^q, both positive for any w > 0,
-	 so v is positive across the whole span and the map it integrates to cannot
-	 fail monotonicity — unlike a C1 piecewise-linear tempo, which can drive the
-	 tempo through zero. The max() is a denormal guard, not a positivity test.
-	*/
-	// class-side so ritardDurs shares the model with ritard rather than
-	// reimplementing it; the instance method is the in-map spelling of it
+	// Normalized Friberg–Sundberg tempo: v(0)=1, v(1)=w. q controls the timing of
+	// change; q=0 uses the geometric limit w**u. Class-side for ritardDurs reuse.
 	*prRitardV { |u, w, q|
 		(q.abs < 1e-9).if { ^w ** u };
 		^(max(1 + (((w ** q) - 1) * u), 1e-12)) ** (q.reciprocal)
 	}
 	prRitardV { |u, w, q| ^this.class.prRitardV(u, w, q) }
-	/*
-	 w read off the cell's own ends: the last measured span tempo over the first.
-	 `ritard(nil, 2)` then reads as "regularise the rit that is already there
-	 into a q = 2 shape" rather than asserting one — which is the more defensible
-	 call when the anchors came from a performance. A single-span cell has no
-	 interior to measure and answers 1 (constant tempo).
-	*/
+	// Fit exit/entry tempo from the cell; a single span implies ratio 1.
 	prFitTempoRatio {
 		var nSpans = xs.size - 1;
 		(nSpans < 2).if {
@@ -1103,10 +940,7 @@ AnchorMap : MonoMap {
 		};
 		^this.prSlope(0) / this.prSlope(nSpans - 1)
 	}
-	// Slope of the segment ARRIVING at x / LEAVING x, found by anchor position
-	// rather than by probing at(x +/- eps): the caller's x is a span boundary that
-	// has been through a slice/bake round trip, so it may miss its anchor by an
-	// ulp. Outside the domain both answer the end segment, i.e. the \carry slope.
+	// Find adjacent slopes by tolerant anchor position; outside uses the carry slope.
 	prSlopeBefore { |x|
 		var i = xs.detectIndex { |v| v >= (x - 1e-9) };
 		^this.prSlope(max((i ? (xs.size - 1)) - 1, 0))

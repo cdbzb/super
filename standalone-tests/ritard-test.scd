@@ -33,6 +33,7 @@ var r, r0, r1, acc, rq0, rq1, rq3, fit, sPin, sFree, tail, w0, w1;
 var ext, sOff, errMap;
 var tb, tbUp, durs, accDurs, durMap;
 var slow, fast, raw, ease, onJoin, onEntry, drift, selfRaw, selfEase, shifted, sEase;
+var foreign, foreignEase, mkNote, plr, mt, mtEase;
 
 "---- endpoints and structure ----".postln;
 r = flat.ritard(0.5, 2);
@@ -273,6 +274,35 @@ sEase = shifted.easeTo(fast, 1, 1);
 assert.(sEase.xs.first == 10, "easeTo keeps the receiver's origin (xs)");
 assert.(sEase.ys.first == 100, "easeTo keeps the receiver's origin (ys)");
 assertArr.(sEase.domain, [10, 16], "and lays other after it in the receiver's frame");
+
+// other is a SHAPE, like the right operand of ++: its frames are ignored, not
+// checked. Two takes mint their own axes, so a frame check here would refuse
+// the ordinary case (easing one recording into the next) while catching nothing
+// a MapSeq does not already discard.
+foreign = AnchorMap([0, 1, 2, 3, 4], [0, 0.5, 1.0, 1.5, 2.0],
+	MapFrame(\beat, \other), MapFrame(\sec, \other));
+foreignEase = slow.easeTo(foreign, 2, 2);
+assertArr.(foreignEase.domain, [0, 8], "easeTo takes an other on foreign frames");
+assertArr.(foreignEase.ys, ease.ys, "and answers exactly what the shared-frame call did");
+assert.(foreignEase.fromFrame == beatF and: { foreignEase.toFrame == secF },
+	"the result wears the RECEIVER's frames");
+// DIMENSIONS still have to agree: seconds-per-beat is what is being smoothed.
+assert.(throws.({ slow.easeTo(groove, 1, 1) }), "a beat -> beat other is a units error");
+// old-world maps coerce through asMonoMap, both as receiver and as other
+mkNote = { |ts| (midicmd: \noteOn, type: \mk, timestamp: ts, midinote: 60,
+	dur: 1, sustain: 1, amp: 0.5) };
+plr = MIDIItemPlayer((0..4).collect { |t| mkNote.(t) }, nil);
+mt = MIDIItemTempoMap(plr, { |n| n }, 1 ! 5);
+mtEase = mt.easeTo(fast, 2, 0);
+assert.(mtEase.isKindOf(AnchorMap), "MIDIItemTempoMap.easeTo bridges to the core");
+// mt is 5 beats (four measured spans plus the closing anchor), fast is 4
+assertArr.(mtEase.domain, [0, 9], "the bridged seam spans both maps");
+assertClose.(mtEase.spanTempo(4.9, 4.99), 2.0,
+	"and the ease lands other's tempo on the join", 0.05);
+assert.(slow.easeTo(mt, 1, 1).isKindOf(AnchorMap), "an old-world OTHER coerces too");
+// anything that bakes to anchors is acceptable as other
+assert.(slow.easeTo(fast ++ fast, 1, 1).isKindOf(AnchorMap), "a MapSeq other is baked");
+
 assert.(throws.({ slow.easeTo(fast, 0, 0) }), "easeTo needs a window with width");
 assert.(throws.({ slow.easeTo(fast, 4, 1) }),
 	"before must leave material ahead of the window");

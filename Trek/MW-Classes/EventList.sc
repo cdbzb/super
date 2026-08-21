@@ -860,6 +860,14 @@ EventList {
 	// Straighten the beat span [from, to] only, leaving the rest of the clock alone.
 	quantizeSpan { |from, to, amount = 1| ^this.prMapEdit { |m| m.quantizeSpan(from, to, amount) } }
 
+	// Run the whole list `k` times faster (k < 1 slower), beat numbering and rubato
+	// untouched. The events do not move in BEATS — their clock does — so this is the
+	// list-wide sibling of setSpanTempo, not a re-time. A flat list (no tempoMap) has
+	// no clock to scale: set beatDur instead.
+	scaleTempo { |k = 1| ^this.prMapEdit { |m| m.scaleTempo(k) } }
+	// Same, expressed as the mean tempo to land on.
+	toBpm { |bpm| ^this.prMapEdit { |m| m.toBpm(bpm) } }
+
 	// Set a span's mean tempo without removing its internal variation. Material
 	// after `to` shifts in time but keeps its tempo. Read spans from tempoMap;
 	// EventList playback may also include \tempoTrack.

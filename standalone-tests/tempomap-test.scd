@@ -16,6 +16,8 @@ var assert = h[\assert];
 var assertClose = { |a, b, msg, tol = 1e-6| h[\assertClose].(a, b, msg, tol) };
 var assertArr = { |a, b, msg, tol = 1e-6| h[\assertArr].(a, b, msg, tol) };
 var t, r, warped, close, p, mt, am, placed, sourceMap, targetMap, warp, mkNote, notes, sweep, e;
+var sc, ratios, before;
+var throws = { |fn| var caught = false; try { fn.value } { caught = true }; caught };
 
 "== TempoMap / MIDIItemTempoMap tests ==".postln;
 
@@ -231,6 +233,42 @@ assertClose.(r.timeAt(r.beats.sum) + r.t0, mt.timeAt(2.5) + mt.t0,
 assertArr.(mt.fromBeat(0).beats, mt.beats, "fromBeat(0): identity");
 // the pre-rename name still answers
 assertArr.(mt.trim(1, 3).beats, mt.fromBeat(1, 3).beats, "trim: deprecated alias");
+
+// -- 15a. scaleTempo / toBpm: the OTHER axis from scaleBeats --
+before = mt.tempoCurve.copy;
+sc = mt.scaleTempo(2);
+assertArr.(sc.beats, mt.beats, "scaleTempo: beat numbering untouched");
+assertClose.(sc.timeAt(sc.beats.sum), mt.timeAt(mt.beats.sum) / 2,
+	"scaleTempo(2): the take runs twice as fast");
+ratios = sc.tempoCurve.collect { |b, i| b / mt.tempoCurve[i] };
+assert.(ratios.every { |x| (x - 2).abs < 1e-9 },
+	"scaleTempo: EVERY span scales by k — the rubato survives");
+assertClose.(sc.t0, mt.t0, "scaleTempo: t0 (absolute placement) is left alone");
+assertArr.(mt.tempoCurve, before, "scaleTempo: original map unchanged (non-mutating)");
+assertArr.(mt.scaleTempo(2).scaleTempo(2).tempoCurve, mt.scaleTempo(4).tempoCurve,
+	"scaleTempo: composes");
+assertClose.(mt.scaleTempo(1).timeAt(3), mt.timeAt(3), "scaleTempo(1): identity");
+// toBpm lands the MEAN, keeping the shape
+sc = mt.toBpm(90);
+assertClose.(sc.spanBpm(0, sc.beats.sum), 90, "toBpm: mean tempo lands exactly", 1e-6);
+ratios = sc.tempoCurve.collect { |b, i| b / mt.tempoCurve[i] };
+assert.((ratios.maxItem - ratios.minItem) < 1e-9, "toBpm: one common factor, shape kept");
+assert.(throws.({ mt.scaleTempo(0) }), "scaleTempo: k must be > 0");
+assert.(throws.({ mt.toBpm(-1) }), "toBpm: bpm must be > 0");
+// the same pair on the core AnchorMap, and on an EventList's clock
+am = mt.asMonoMap;
+assertClose.(am.scaleTempo(2).at(am.xs.last), am.at(am.xs.last) / 2,
+	"AnchorMap.scaleTempo: same contract");
+assertClose.(am.toBpm(120).spanBpm(am.xs.first, am.xs.last), 120, "AnchorMap.toBpm: same", 1e-6);
+assert.(throws.({ am.scaleTempo(0) }), "AnchorMap.scaleTempo: k must be > 0");
+e = EventList(\zzScaleTempo, \eventList).clear;
+e.tempoMap = mt;
+e.scaleTempo(2);
+assertClose.(e.baseWallDelta(0, mt.beats.sum), mt.timeAt(mt.beats.sum) / 2,
+	"EventList.scaleTempo: the list's clock scales", 1e-6);
+e.toBpm(60);
+assertClose.(e.baseWallDelta(0, mt.beats.sum), mt.beats.sum,
+	"EventList.toBpm: 60 bpm means one second per beat", 1e-6);
 
 // -- 15b. ++ : concatenation of two performed sections into one clock --
 r = mt.fromBeat(0, 2) ++ mt.fromBeat(3, 5);

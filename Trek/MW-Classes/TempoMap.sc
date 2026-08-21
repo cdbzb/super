@@ -48,13 +48,28 @@ TempoMap {
 	  ^beats.collect { |b, i| ((durs[i] ? 0) > 1e-9).if { 60 * b / durs[i] } }
   }
 
-  // A span holds one tempo, so plot it as a step.
-  plotTempo { |name|
-	  var bpms = this.tempoCurve;
+  // Beat position where each tempoCurve value starts — the x axis for plotTempo.
+  tempoCurveBeats {
+	  ^([0] ++ beats.integrate).drop(-1)
+  }
+
+  // A span holds one tempo, so plot it as a step. domain: \beats (default) puts
+  // BEAT POSITION on the x axis, so an uneven span is as wide as the beats it
+  // covers; \index is the old one-slot-per-span axis.
+  plotTempo { |name, domain = \beats|
+	  var bpms = this.tempoCurve, xs, plotter;
 	  bpms.isEmpty.if { "plotTempo: no spans to plot".warn; ^nil };
-	  ^bpms.collect { |b| b ? 0 }
+	  #[\beats, \index].includes(domain).not.if {
+		  Error("plotTempo: domain must be \\beats or \\index, got %".format(domain)).throw
+	  };
+	  plotter = bpms.collect { |b| b ? 0 }
 		  .plot(name ?? { "TempoMap — tempo (bpm), % spans".format(bpms.size) })
-		  .plotMode_(\steps)
+		  .plotMode_(\steps);
+	  (domain == \index).if { ^plotter };
+	  xs = this.tempoCurveBeats;
+	  plotter.domainSpecs = ControlSpec(xs.first, beats.sum, units: "beats");
+	  plotter.domain = xs;
+	  ^plotter
   }
 
   at { |beat|

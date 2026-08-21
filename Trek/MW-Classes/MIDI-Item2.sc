@@ -2684,10 +2684,38 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 		^ts.differentiate.drop(1).collect { |dt| (dt > 1e-9).if { 60 * step / dt } }
 	}
 
+	// Beat position where each tempoCurve value STARTS — the x axis for plotTempo.
+	// Parallel to tempoCurve(subdiv), same size, so it can be handed to
+	// Plotter.domain directly.
+	tempoCurveBeats { |subdiv = 1|
+		var dom, step, n;
+		(subdiv.isNumber.not or: { subdiv <= 0 }).if {
+			("tempoCurveBeats: subdiv must be a positive number (%)".format(subdiv)).warn;
+			^[]
+		};
+		((subdiv == 1) and: { curved.not }).if {
+			^([0] ++ beats.integrate).drop(-1)
+		};
+		dom = this.beatDomain[1];
+		(dom.isNil or: { dom <= 0 }).if { ^[] };
+		step = 1 / subdiv;
+		n = ((dom / step) + 1e-9).floor.asInteger;
+		(n < 1).if { ^[] };
+		^(0 .. n - 1) * step
+	}
+
 	// Plot as steps. The final value is the closing span used for extrapolation.
-	plotTempo { |subdiv = 1, name|
+	// domain: \beats (default) puts BEAT POSITION on the x axis, so a step's width
+	// is the span it actually covers — with uneven spans (or a beatScale) the span
+	// INDEX is not the beat number, and reading a ritardando off an index axis
+	// misplaces it. \index restores the old evenly-spaced-per-span axis.
+	plotTempo { |subdiv = 1, name, domain = \beats|
 		var bpms = this.tempoCurve(subdiv);
 		var bad = bpms.count(_.isNil);
+		var xs, plotter;
+		#[\beats, \index].includes(domain).not.if {
+			Error("plotTempo: domain must be \\beats or \\index, got %".format(domain)).throw
+		};
 		bpms.isEmpty.if {
 			"plotTempo: no spans to plot".warn;
 			^nil
@@ -2695,9 +2723,22 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 		(bad > 0).if {
 			"plotTempo: % degenerate span(s) drawn as 0".format(bad).warn
 		};
-		^bpms.collect { |b| b ? 0 }
+		plotter = bpms.collect { |b| b ? 0 }
 			.plot(name ?? { "% — tempo (bpm), % spans".format(this.class.name, bpms.size) })
-			.plotMode_(\steps)
+			.plotMode_(\steps);
+		(domain == \index).if { ^plotter };
+		xs = this.tempoCurveBeats(subdiv);
+		// Sizes disagree only if tempoCurve and tempoCurveBeats fell down different
+		// branches; leave the index axis rather than mislabel it.
+		(xs.size != bpms.size).if {
+			"plotTempo: % beat positions for % spans — keeping the index axis"
+				.format(xs.size, bpms.size).warn;
+			^plotter
+		};
+		plotter.domainSpecs = ControlSpec(xs.first, this.beatDomain[1] ? xs.last,
+			units: "beats");
+		plotter.domain = xs;
+		^plotter
 	}
 	at{|x|
 		^env[x]
@@ -2881,6 +2922,42 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 		^this
 	}
 
+	// Return a NEW map running `k` times faster — every performed span divided by
+	// k, beat numbering untouched. The rubato is PRESERVED (each span keeps its
+	// share of the total), which is what separates this from setSpanTempo (mean
+	// tempo set, shape kept) and from quantize (shape removed, mean kept).
+	//
+	// NOT scaleBeats, which is the other axis: scaleBeats relabels beats and
+	// leaves the performance where it was recorded, so the take still lasts as
+	// long; scaleTempo moves the performance and leaves the beat numbers alone,
+	// so beat 6 is still beat 6 but arrives sooner. t0 is absolute placement and
+	// is left alone — the take starts where it started and runs faster.
+	// Resets curvature, like scaleBeats: compose as t.scaleTempo(k).curve(amount).
+	scaleTempo {|k = 1|
+		((k.isNumber.not) or: { k <= 0 }).if {
+			Error("MIDIItemTempoMap.scaleTempo: k must be > 0, got %".format(k)).throw
+		};
+		^this.copy.prScaleTempo(k)
+	}
+	scaleBpm {|k = 1| ^this.scaleTempo(k) }
+	// Set the whole map's mean tempo, keeping the rubato: the k that lands it there.
+	toBpm {|bpm|
+		var mean;
+		((bpm.isNumber.not) or: { bpm <= 0 }).if {
+			Error("MIDIItemTempoMap.toBpm: bpm must be > 0, got %".format(bpm)).throw
+		};
+		mean = this.spanBpm(0, beats.sum);
+		mean.isNil.if {
+			Error("MIDIItemTempoMap.toBpm: this map has no width to read a tempo from").throw
+		};
+		^this.scaleTempo(bpm / mean)
+	}
+	prScaleTempo {|k = 1|
+		times = times / k;   // new array — the original's times is left untouched
+		this.prBuildLinear;
+		^this
+	}
+
 	// Return a re-zeroed map over [from, to], preserving absolute placement in t0.
 	// Trim closing spans before concatenating map slices.
 	fromBeat {|from = 0, to|
@@ -2891,6 +2968,12 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 
 	// Concatenate maps on both axes. Trim intended sections first with fromBeat.
 	++ { |other| ^this.asMonoMap ++ other }
+
+	// Concatenate and smooth the tempo seam (AnchorMap.easeTo). Same bridge shape
+	// as ++: snapshot to anchors and hand `other` over as a shape.
+	easeTo { |other, before = 1, after = 0, q = 2, amount = 1, w|
+		^this.asMonoMap.easeTo(other, before, after, q, amount, w)
+	}
 	prTrim {|from = 0, to|
 		var cum = [0] ++ beats.integrate;    // cumulative beat nodes, parallel to `times`
 		var lo = from, hi, keep, fromTime;

@@ -774,19 +774,38 @@ AnchorMap : MonoMap {
 
 	// Concatenate maps and smooth their tempo seam with one pinEntry ritardSpan.
 	// before/after define the window; w defaults to the fitted outside-tempo ratio.
+	//
+	// `other` follows the ++ convention: it is a SHAPE, coerced through
+	// asMonoMap (so an old-world MIDIItemTempoMap / TempoMap works) and baked to
+	// anchors, and its FRAMES ARE IGNORED — rebound to this map's axes. A frame
+	// check here would buy nothing a MapSeq does not already discard (it re-zeros
+	// every cell, so other's origin never reaches the result) while refusing the
+	// ordinary case of easing one take into another. What still has to agree is
+	// the DIMENSIONS: seconds-per-beat is the quantity being smoothed, so a
+	// beat->beat groove is a units error, not an axis mismatch.
 	easeTo { |other, before = 1, after = 0, q = 2, amount = 1, w|
 		var joined, join, lo, hi, dx, dy;
-		other.isKindOf(AnchorMap).not.if {
-			Error("AnchorMap.easeTo: needs another AnchorMap, got %"
-				.format(other.class)).throw
+		(other.isKindOf(MonoMap).not and: { other.respondsTo(\asMonoMap) }).if {
+			other = other.asMonoMap
 		};
-		(fromFrame == other.fromFrame and: { toFrame == other.toFrame }).not.if {
-			Error("AnchorMap.easeTo: frame mismatch — % / % vs % / %"
-				.format(fromFrame, toFrame, other.fromFrame, other.toFrame)).throw
+		(other.isKindOf(AnchorMap).not and: { other.isKindOf(MonoMap) }).if {
+			other = other.bake
+		};
+		other.isKindOf(AnchorMap).not.if {
+			Error("AnchorMap.easeTo: needs a map that bakes to anchors, got %"
+				.format(other.class)).throw
 		};
 		this.mapsDimensions(\beat, \sec).not.if {
 			Error("AnchorMap.easeTo: needs a beat -> sec map, this one maps % -> %"
 				.format(fromFrame.dimension, toFrame.dimension)).throw
+		};
+		other.mapsDimensions(\beat, \sec).not.if {
+			Error("AnchorMap.easeTo: `other` must be a beat -> sec map, that one maps "
+				"% -> %".format(other.fromFrame.dimension, other.toFrame.dimension)).throw
+		};
+		// other is a shape: rebind it onto this map's axes rather than refusing.
+		(fromFrame == other.fromFrame and: { toFrame == other.toFrame }).not.if {
+			other = other.withFrames(fromFrame, toFrame)
 		};
 		((before.isNumber.not) or: { after.isNumber.not }
 			or: { before < 0 } or: { after < 0 }).if {
@@ -825,6 +844,34 @@ AnchorMap : MonoMap {
 		// Fit from tempos outside the region being replaced.
 		w = w ?? { joined.prSlopeBefore(lo) / joined.prSlopeAfter(hi) };
 		^joined.ritardSpan(lo, hi, w, q, amount, true)
+	}
+
+	// Whole-map tempo scale: `k` times faster, beat numbering untouched, rubato
+	// preserved (a pure y-scale about the map's own start, so t0-style placement
+	// on the input axis is untouched too). k > 1 is faster, k < 1 slower.
+	// The span-local form is stretchSpan(from, to, 1/k); setSpanTempo is the
+	// "land on exactly this tempo" version.
+	scaleTempo { |k = 1|
+		((k.isNumber.not) or: { k <= 0 }).if {
+			Error("AnchorMap.scaleTempo: k must be > 0, got %".format(k)).throw
+		};
+		^this.prScaledY(k.reciprocal)
+	}
+	// Set the whole map's MEAN tempo in bpm, keeping its rubato.
+	toBpm { |bpm|
+		var mean;
+		this.mapsDimensions(\beat, \sec).not.if {
+			Error("AnchorMap.toBpm: needs a beat -> sec map, this one maps % -> %"
+				.format(fromFrame.dimension, toFrame.dimension)).throw
+		};
+		((bpm.isNumber.not) or: { bpm <= 0 }).if {
+			Error("AnchorMap.toBpm: bpm must be > 0, got %".format(bpm)).throw
+		};
+		mean = this.spanBpm(xs.first, xs.last);
+		mean.isNil.if {
+			Error("AnchorMap.toBpm: this map has no width to read a tempo from").throw
+		};
+		^this.scaleTempo(bpm / mean)
 	}
 
 	// value at a cut: bit-exact when the cut IS an anchor, the PL lerp otherwise

@@ -249,24 +249,24 @@ assertArr.(mt.scaleTempo(2).scaleTempo(2).tempoCurve, mt.scaleTempo(4).tempoCurv
 	"scaleTempo: composes");
 assertClose.(mt.scaleTempo(1).timeAt(3), mt.timeAt(3), "scaleTempo(1): identity");
 // toBpm lands the MEAN, keeping the shape
-sc = mt.toBpm(90);
+sc = mt.setBpm(90);
 assertClose.(sc.spanBpm(0, sc.beats.sum), 90, "toBpm: mean tempo lands exactly", 1e-6);
 ratios = sc.tempoCurve.collect { |b, i| b / mt.tempoCurve[i] };
 assert.((ratios.maxItem - ratios.minItem) < 1e-9, "toBpm: one common factor, shape kept");
 assert.(throws.({ mt.scaleTempo(0) }), "scaleTempo: k must be > 0");
-assert.(throws.({ mt.toBpm(-1) }), "toBpm: bpm must be > 0");
+assert.(throws.({ mt.setBpm(-1) }), "toBpm: bpm must be > 0");
 // the same pair on the core AnchorMap, and on an EventList's clock
 am = mt.asMonoMap;
 assertClose.(am.scaleTempo(2).at(am.xs.last), am.at(am.xs.last) / 2,
 	"AnchorMap.scaleTempo: same contract");
-assertClose.(am.toBpm(120).spanBpm(am.xs.first, am.xs.last), 120, "AnchorMap.toBpm: same", 1e-6);
+assertClose.(am.setBpm(120).spanBpm(am.xs.first, am.xs.last), 120, "AnchorMap.toBpm: same", 1e-6);
 assert.(throws.({ am.scaleTempo(0) }), "AnchorMap.scaleTempo: k must be > 0");
 e = EventList(\zzScaleTempo, \eventList).clear;
 e.tempoMap = mt;
 e.scaleTempo(2);
 assertClose.(e.baseWallDelta(0, mt.beats.sum), mt.timeAt(mt.beats.sum) / 2,
 	"EventList.scaleTempo: the list's clock scales", 1e-6);
-e.toBpm(60);
+e.setBpm(60);
 assertClose.(e.baseWallDelta(0, mt.beats.sum), mt.beats.sum,
 	"EventList.toBpm: 60 bpm means one second per beat", 1e-6);
 

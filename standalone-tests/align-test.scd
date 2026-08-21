@@ -41,13 +41,13 @@ total = 3.2;
 assertArr.(walls.(q, (0..3)), [0, total/3, total*2/3, total],
 	"quantize(1): exactly even spacing, total preserved");
 
-// -- §12h quantizeSpan straightens only [from, to] ----------------------------
+// -- §12h quantize straightens only [from, to] ----------------------------
 q = mkClockList.();
-q.quantizeSpan(0, 2, 1);
+q.quantize(1, 0, 2);
 w = walls.(q, (0..3));
-assertClose.(w[1], 1.25, "quantizeSpan(0,2,1): interior of span evened");
-assertClose.(w[2], 2.5, "quantizeSpan: span end wall unchanged");
-assertClose.(w[3], 3.2, "quantizeSpan: wall past the span untouched");
+assertClose.(w[1], 1.25, "quantize(0,2,1): interior of span evened");
+assertClose.(w[2], 2.5, "quantize: span end wall unchanged");
+assertClose.(w[3], 3.2, "quantize: wall past the span untouched");
 
 // -- §12h quantizeWindow: identity at 0, monotone + endpoint-pinned at 1 ------
 q = mkClockList.();

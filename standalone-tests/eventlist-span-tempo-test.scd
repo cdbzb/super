@@ -17,8 +17,8 @@ fresh = { el = EventList(nil, \note); el.tempoMap = base; el };
 ok.("t0 on the stored map",     near.(fresh.().tempoMap.t0, 0.7));
 ok.("t0 survives quantize",       near.(fresh.().quantize(1).tempoMap.t0, 0.7));
 ok.("t0 survives quantizeWindow", near.(fresh.().quantizeWindow(1).tempoMap.t0, 0.7));
-ok.("t0 survives quantizeSpan",   near.(fresh.().quantizeSpan(1, 3, 1).tempoMap.t0, 0.7));
-ok.("t0 survives setSpanTempo",   near.(fresh.().setSpanTempo(1, 3, 1).tempoMap.t0, 0.7));
+ok.("t0 survives quantize",   near.(fresh.().quantize(1, 1, 3).tempoMap.t0, 0.7));
+ok.("t0 survives setTempo",   near.(fresh.().setTempo(1, 1, 3).tempoMap.t0, 0.7));
 
 // --- the restore must not disturb the shape --------------------------------
 a = fresh.().tempoMap;
@@ -27,17 +27,17 @@ ok.("quantize(0) leaves the shape alone",
 	(0, 0.25 .. 8).every { |x| near.(a.timeAt(x), b.timeAt(x), 1e-9) });
 ok.("quantize(0) leaves t0 alone", near.(b.t0, a.t0));
 
-// --- setSpanTempo / setSpanBpm on the list ---------------------------------
-el = fresh.().setSpanTempo(1, 3, 1);        // 1 bps = 60 bpm over beats 1..3
+// --- setTempo / setBpm on the list ---------------------------------
+el = fresh.().setTempo(1, 1, 3);        // 1 bps = 60 bpm over beats 1..3
 ok.("span set to the named tempo",
 	near.(el.tempoMap.timeAt(3) - el.tempoMap.timeAt(1), 2.0, 1e-9));
-ok.("setSpanBpm == setSpanTempo/60",
-	near.(fresh.().setSpanBpm(1, 3, 60).tempoMap.timeAt(3),
-	      fresh.().setSpanTempo(1, 3, 1).tempoMap.timeAt(3), 1e-9));
+ok.("setBpm == setTempo/60",
+	near.(fresh.().setBpm(60, 1, 3).tempoMap.timeAt(3),
+	      fresh.().setTempo(1, 1, 3).tempoMap.timeAt(3), 1e-9));
 
 // material before the span is untouched; after it is SHIFTED, not rescaled
 a = fresh.().tempoMap;
-b = fresh.().setSpanTempo(1, 3, 1).tempoMap;
+b = fresh.().setTempo(1, 1, 3).tempoMap;
 ok.("before the span: identical",
 	(0, 0.25 .. 1).every { |x| near.(a.timeAt(x), b.timeAt(x), 1e-9) });
 ok.("after the span: shifted, not rescaled",
@@ -50,21 +50,21 @@ el.tempoMap = AnchorTempoMap([0, 1.2, 2.4], [0, 1, 2]);
 ok.("t0 0 stays 0 through quantize", el.quantize(1).tempoMap.t0 == 0);
 
 // --- guards -----------------------------------------------------------------
-ok.("bps 0 refused", { fresh.().setSpanTempo(1, 3, 0) }.try { true } ? false);
+ok.("bps 0 refused", { fresh.().setTempo(0, 1, 3) }.try { true } ? false);
 
 
 // --- reading a span back ----------------------------------------------------
-ok.("map spanBpm inverts setSpanBpm",
-	near.(fresh.().setSpanBpm(1, 3, 44).tempoMap.spanBpm(1, 3), 44, 1e-9));
+ok.("map spanBpm inverts setBpm",
+	near.(fresh.().setBpm(44, 1, 3).tempoMap.spanBpm(1, 3), 44, 1e-9));
 ok.("map spanTempo is bpm/60",
-	near.(fresh.().setSpanBpm(1, 3, 44).tempoMap.spanTempo(1, 3), 44/60, 1e-9));
+	near.(fresh.().setBpm(44, 1, 3).tempoMap.spanTempo(1, 3), 44/60, 1e-9));
 // on a FLAT span any sub-range reads the same tempo; ends off the anchors are
 // fine either way, they just do not equal the span mean on a varying span
 ok.("span ends need not be anchors",
-	near.(fresh.().quantizeSpan(1, 4, 1).setSpanBpm(1, 4, 44).tempoMap.spanBpm(1.5, 3.25),
+	near.(fresh.().quantize(1, 1, 4).setBpm(44, 1, 4).tempoMap.spanBpm(1.5, 3.25),
 	      44, 1e-9));
 ok.("sub-range of a VARYING span differs from its mean",
-	near.(fresh.().setSpanBpm(1, 4, 44).tempoMap.spanBpm(1.5, 3.25), 44, 1e-9).not);
+	near.(fresh.().setBpm(44, 1, 4).tempoMap.spanBpm(1.5, 3.25), 44, 1e-9).not);
 ok.("reads past the map end (extrapolates, not clamps)",
 	fresh.().tempoMap.spanBpm(5, 9).notNil);
 ok.("zero-width span answers nil", fresh.().tempoMap.spanBpm(2, 2).isNil);
@@ -76,22 +76,22 @@ ok.("EventList does not answer spanTempo", EventList.findMethod(\spanTempo).isNi
 
 
 // --- the median moves, the variation does not -------------------------------
-// THE distinguishing property vs quantizeSpan: every span inside [1, 4] must be
+// THE distinguishing property vs quantize: every span inside [1, 4] must be
 // scaled by the SAME factor, so their bpm ratios to each other are untouched.
 a = fresh.().tempoMap.tempoCurve;
-b = fresh.().setSpanBpm(1, 4, 40).tempoMap.tempoCurve;
+b = fresh.().setBpm(40, 1, 4).tempoMap.tempoCurve;
 ok.("inner spans scale by one common factor",
 	(1..3).collect { |i| b[i] / a[i] }.every { |r| near.(r, b[1] / a[1], 1e-9) });
 ok.("the mean actually moved",
-	near.(fresh.().setSpanBpm(1, 4, 40).tempoMap.spanBpm(1, 4), 40, 1e-9));
+	near.(fresh.().setBpm(40, 1, 4).tempoMap.spanBpm(1, 4), 40, 1e-9));
 ok.("variation survived (spans still differ)",
 	(b[1] - b[2]).abs > 1e-6);
-// quantizeSpan is the complement: variation goes, mean stays
+// quantize is the complement: variation goes, mean stays
 a = fresh.().tempoMap.spanBpm(1, 4);
-b = fresh.().quantizeSpan(1, 4, 1);
-ok.("quantizeSpan keeps the mean", near.(b.tempoMap.spanBpm(1, 4), a, 1e-9));
+b = fresh.().quantize(1, 1, 4);
+ok.("quantize keeps the mean", near.(b.tempoMap.spanBpm(1, 4), a, 1e-9));
 c = (1..3).collect { |i| b.tempoMap.tempoCurve[i] };
-ok.("quantizeSpan removes the variation", c.every { |v| near.(v, c[0], 1e-6) });
+ok.("quantize removes the variation", c.every { |v| near.(v, c[0], 1e-6) });
 
 "=== SENTINEL DONE ===".postln;
 )

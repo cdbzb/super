@@ -850,29 +850,28 @@ EventList {
 	// their clock does, so this is NOT AbstractMidiEvents.quantize, which rewrites
 	// timestamps. Chainable. Cumulative: two 0.5 calls land near 0.75, so for a knob
 	// blend from a kept original rather than calling again.
-	quantize { |amount = 1| ^this.prMapEdit { |m| m.quantize(amount) } }
+	quantize { |amount = 1, from, to| ^this.prMapEdit { |m| m.quantize(amount, from, to) } }
 
 	// Straighten locally: each span blends toward the mean slope over a `window` of
 	// BEATS (default a quarter of the map's extent), so jitter goes and long-range
 	// shape stays.
 	quantizeWindow { |amount = 1, window| ^this.prMapEdit { |m| m.quantizeWindow(amount, window) } }
 
-	// Straighten the beat span [from, to] only, leaving the rest of the clock alone.
-	quantizeSpan { |from, to, amount = 1| ^this.prMapEdit { |m| m.quantizeSpan(from, to, amount) } }
+
 
 	// Run the whole list `k` times faster (k < 1 slower), beat numbering and rubato
 	// untouched. The events do not move in BEATS — their clock does — so this is the
-	// list-wide sibling of setSpanTempo, not a re-time. A flat list (no tempoMap) has
+	// list-wide sibling of setTempo, not a re-time. A flat list (no tempoMap) has
 	// no clock to scale: set beatDur instead.
-	scaleTempo { |k = 1| ^this.prMapEdit { |m| m.scaleTempo(k) } }
-	// Same, expressed as the mean tempo to land on.
-	toBpm { |bpm| ^this.prMapEdit { |m| m.toBpm(bpm) } }
+	scaleTempo { |k = 1, from, to, preserveTotal = false|
+		^this.prMapEdit { |m| m.scaleTempo(k, from, to, preserveTotal) }
+	}
 
 	// Set a span's mean tempo without removing its internal variation. Material
 	// after `to` shifts in time but keeps its tempo. Read spans from tempoMap;
 	// EventList playback may also include \tempoTrack.
-	setSpanTempo { |from, to, bps| ^this.prMapEdit { |m| m.setSpanTempo(from, to, bps) } }
-	setSpanBpm   { |from, to, bpm| ^this.prMapEdit { |m| m.setSpanTempo(from, to, bpm / 60) } }
+	setTempo { |bps, from, to| ^this.prMapEdit { |m| m.setTempo(bps, from, to) } }
+	setBpm   { |bpm, from, to| ^this.prMapEdit { |m| m.setBpm(bpm, from, to) } }
 
 	// The knob from "as performed" (amount 0) to "every child beat on a parent beat"
 	// (amount 1) — same sense as the `align:` key on a nested \eventList event. NOT

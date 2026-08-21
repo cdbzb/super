@@ -460,17 +460,17 @@ assert.(throws.({ m5.transformSpan(1, 4, { |c| 7 }) }),
 assert.(throws.({ m5.transformSpan(1, 4, { |c| MapSeq.swing(1.5) }) }),
 	"transformSpan rejects a result that does not bake to anchors");
 
-// ---- quantizeSpan ----
-qs = m5.quantizeSpan(1, 4);
-assertArr.(qs.xs, m5.xs, "quantizeSpan keeps the input anchors", 1e-12);
+// ---- quantize ----
+qs = m5.quantize(1, 1, 4);
+assertArr.(qs.xs, m5.xs, "quantize keeps the input anchors", 1e-12);
 assertArr.(widths.(qs)[1..3], (4/3) ! 3,
-	"quantizeSpan(1) gives the span's spans its mean slope", 1e-12);
+	"quantize(1) gives the span's spans its mean slope", 1e-12);
 assertArr.([widths.(qs)[0], widths.(qs)[4]], [1, 1],
 	"spans outside the quantized span keep their widths exactly", 1e-12);
 assertArr.(qs.ys[4..5], m5.ys[4..5],
 	"quantize preserves the span's output extent, so later anchors do not move", 1e-12);
-assertClose.(qs.ys.first, 0, "quantizeSpan leaves the origin alone", 1e-12);
-assertArr.(m5.quantizeSpan(1, 4, 0).ys, m5.ys, "quantizeSpan(amount 0) is the identity", 1e-12);
+assertClose.(qs.ys.first, 0, "quantize leaves the origin alone", 1e-12);
+assertArr.(m5.quantize(0, 1, 4).ys, m5.ys, "quantize(amount 0) is the identity", 1e-12);
 
 // ---- origin restoration on a map whose domain does not start at 0 ----
 mOff = AnchorMap([16, 17, 18, 20], [40, 41, 43, 44], beatF, secF);
@@ -479,17 +479,17 @@ assert.((sp.xs.first == 16) and: { sp.ys.first == 40 },
 	"transformSpan restores the receiver's origin exactly");
 assertArr.(sp.xs, mOff.xs, "off-origin identity keeps the xs", 1e-12);
 assertArr.(sp.ys, mOff.ys, "off-origin identity keeps the ys", 1e-12);
-sp = mOff.stretchSpan(17, 18, 2);
+sp = mOff.scaleTempo((2).reciprocal, 17, 18);
 assertClose.(sp.at(16), 40, "off-origin edit keeps the first anchor put", 1e-12);
 assertClose.(sp.at(17), 41, "material before the span is untouched", 1e-12);
 assertClose.(sp.at(18), 45, "the span's output width (2) doubled", 1e-12);
 assertClose.(sp.at(20), 46, "material after the span shifts by the delta (+2)", 1e-12);
 
-// ---- stretchSpan ----
+// ---- scaleTempo ----
 // span [1, 3]: output width 3.5 - 1 = 2.5
-st = m5.stretchSpan(1, 3, 2);
-assertArr.(st.xs, m5.xs, "stretchSpan never touches the input anchors", 1e-12);
-assertClose.(st.ys[1], 1, "stretchSpan leaves earlier anchors alone", 1e-12);
+st = m5.scaleTempo((2).reciprocal, 1, 3);
+assertArr.(st.xs, m5.xs, "scaleTempo never touches the input anchors", 1e-12);
+assertClose.(st.ys[1], 1, "scaleTempo leaves earlier anchors alone", 1e-12);
 assertClose.(st.ys[3] - st.ys[1], 5, "factor 2 doubles the span's output width", 1e-12);
 assertClose.(st.ys[2] - st.ys[1], 4,
 	"anchors inside keep their relative proportions (2 of 2.5 -> 4 of 5)", 1e-12);
@@ -497,50 +497,50 @@ assertClose.(st.ys.last - m5.ys.last, 2.5,
 	"later material shifts by the span's original output width", 1e-12);
 assertArr.(widths.(st)[3..4], widths.(m5)[3..4],
 	"spans after the stretched span keep their widths exactly", 1e-12);
-assertArr.(m5.stretchSpan(1, 3, 1).ys, m5.ys, "stretchSpan factor 1 is the identity", 1e-12);
-assert.(throws.({ m5.stretchSpan(1, 3, 0) }), "stretchSpan rejects factor 0");
-assert.(throws.({ m5.stretchSpan(1, 3, -1) }), "stretchSpan rejects a negative factor");
-assert.(throws.({ m5.stretchSpan(1, 3, \x) }), "stretchSpan rejects a non-numeric factor");
+assertArr.(m5.scaleTempo((1).reciprocal, 1, 3).ys, m5.ys, "scaleTempo factor 1 is the identity", 1e-12);
+assert.(throws.({ m5.scaleTempo((0).reciprocal, 1, 3) }), "scaleTempo rejects factor 0");
+assert.(throws.({ m5.scaleTempo((-1).reciprocal, 1, 3) }), "scaleTempo rejects a negative factor");
+assert.(throws.({ m5.scaleTempo((\x).reciprocal, 1, 3) }), "scaleTempo rejects a non-numeric factor");
 // preserveTotal: total 6, span 2.5 -> 5, so the remaining 3.5 must become 1
-pt = m5.stretchSpan(1, 3, 2, true);
+pt = m5.scaleTempo((2).reciprocal, 1, 3, true);
 assertClose.(pt.ys.last - pt.ys.first, m5.ys.last - m5.ys.first,
 	"preserveTotal pins the total output extent", 1e-12);
 assertClose.(pt.ys[3] - pt.ys[1], 5, "preserveTotal still stretches the span itself", 1e-12);
 assertArr.([widths.(pt)[0], widths.(pt)[3], widths.(pt)[4]], [1, 1.5, 1] * (1 / 3.5),
 	"everything outside is scaled by one common factor", 1e-12);
 assert.(widths.(pt).every { |v| v > 0 }, "preserveTotal stays strictly monotone");
-assert.(throws.({ m5.stretchSpan(0, 5, 2, true) }),
+assert.(throws.({ m5.scaleTempo((2).reciprocal, 0, 5, true) }),
 	"preserveTotal errors when the span is the whole domain");
-assert.(throws.({ m5.stretchSpan(1, 3, 3, true) }),
+assert.(throws.({ m5.scaleTempo((3).reciprocal, 1, 3, true) }),
 	"preserveTotal errors when the stretched span would exceed the total");
-assert.(m5.stretchSpan(1, 3, 2.3, true).notNil,
+assert.(m5.scaleTempo((2.3).reciprocal, 1, 3, true).notNil,
 	"preserveTotal fine right up to the limit (2.5 * 2.3 < 6)");
 
-// ---- setSpanSlope / setSpanTempo ----
-ssl = m5.setSpanSlope(1, 3, 1);
-assertClose.((ssl.ys[3] - ssl.ys[1]) / 2, 1, "setSpanSlope sets the mean slope exactly", 1e-12);
+// ---- setSlope / setTempo ----
+ssl = m5.setSlope(1, 1, 3);
+assertClose.((ssl.ys[3] - ssl.ys[1]) / 2, 1, "setSlope sets the mean slope exactly", 1e-12);
 assertClose.((ssl.ys[2] - ssl.ys[1]) / (ssl.ys[3] - ssl.ys[1]), 2 / 2.5,
-	"setSpanSlope preserves the span's internal shape", 1e-12);
-assertArr.(ssl.xs, m5.xs, "setSpanSlope never touches the input anchors", 1e-12);
-assertClose.(ssl.ys.first, 0, "setSpanSlope leaves the origin alone", 1e-12);
-assertClose.(ssl.ys.last, 6 - 0.5, "setSpanSlope ripples the rest (2.5 s of span -> 2)", 1e-12);
-assert.(throws.({ m5.setSpanSlope(1, 3, 0) }), "setSpanSlope rejects slope 0");
-assert.(throws.({ m5.setSpanSlope(1, 3, -2) }), "setSpanSlope rejects a negative slope");
-assert.(throws.({ m5.setSpanSlope(3, 1, 1) }), "setSpanSlope validates the span too");
-stm = m5.setSpanTempo(1, 3, 2);
-assertClose.(stm.ys[3] - stm.ys[1], 1, "setSpanTempo(2 bps): 2 beats take 1 second", 1e-12);
-assertClose.(m5.setSpanTempo(1, 3, 2).ys.last, m5.setSpanSlope(1, 3, 0.5).ys.last,
-	"setSpanTempo(bps) == setSpanSlope(1/bps)", 1e-12);
-assert.(throws.({ m5.setSpanTempo(1, 3, 0) }), "setSpanTempo rejects bps 0");
+	"setSlope preserves the span's internal shape", 1e-12);
+assertArr.(ssl.xs, m5.xs, "setSlope never touches the input anchors", 1e-12);
+assertClose.(ssl.ys.first, 0, "setSlope leaves the origin alone", 1e-12);
+assertClose.(ssl.ys.last, 6 - 0.5, "setSlope ripples the rest (2.5 s of span -> 2)", 1e-12);
+assert.(throws.({ m5.setSlope(0, 1, 3) }), "setSlope rejects slope 0");
+assert.(throws.({ m5.setSlope(-2, 1, 3) }), "setSlope rejects a negative slope");
+assert.(throws.({ m5.setSlope(1, 3, 1) }), "setSlope validates the span too");
+stm = m5.setTempo(2, 1, 3);
+assertClose.(stm.ys[3] - stm.ys[1], 1, "setTempo(2 bps): 2 beats take 1 second", 1e-12);
+assertClose.(m5.setTempo(2, 1, 3).ys.last, m5.setSlope(0.5, 1, 3).ys.last,
+	"setTempo(bps) == setSlope(1/bps)", 1e-12);
+assert.(throws.({ m5.setTempo(0, 1, 3) }), "setTempo rejects bps 0");
 assert.(throws.({ AnchorMap(m5.xs, m5.ys, MapFrame(\beat, \a), MapFrame(\beat, \b))
-		.setSpanTempo(1, 3, 2) }),
-	"setSpanTempo refuses a beat->beat map (a groove has no tempo)");
+		.setTempo(2, 1, 3) }),
+	"setTempo refuses a beat->beat map (a groove has no tempo)");
 assert.(throws.({ AnchorMap(m5.xs, m5.ys, MapFrame(\sec, \a), MapFrame(\beat, \b))
-		.setSpanTempo(1, 3, 2) }),
-	"setSpanTempo refuses a sec->beat map (wrong direction)");
+		.setTempo(2, 1, 3) }),
+	"setTempo refuses a sec->beat map (wrong direction)");
 assert.(AnchorMap(m5.xs, m5.ys, MapFrame(\beat, \a), MapFrame(\sec, \b))
-		.setSpanTempo(1, 3, 2).notNil,
-	"setSpanTempo accepts any beat->sec frames");
+		.setTempo(2, 1, 3).notNil,
+	"setTempo accepts any beat->sec frames");
 
 // ---- MapSeq.replaceCell / collectCells ----
 mcells = MapSeq([cellA, cellB], 2, beatF, listF, \error, \carry);

@@ -168,7 +168,7 @@ MonoMap {
 		^(this.at(to) - this.at(from)) / (to - from)
 	}
 	// beat -> sec only: the span's mean tempo in beats per second — exactly the
-	// quantity setSpanTempo sets, so `m.setSpanTempo(a, b, x).spanTempo(a, b)` is
+	// quantity setTempo sets, so `m.setTempo(x, a, b).spanTempo(a, b)` is
 	// x. Guarded on frame DIMENSIONS like timeAt/beatAt: asking a groove
 	// (beat->beat) for a tempo is a units error, not a shape error. nil when the
 	// span has no output width (a clamped region), where no tempo is defined.
@@ -402,7 +402,16 @@ AnchorMap : MonoMap {
 	// for free. amount 1 is the rigid constant-slope map. Strictly monotone for
 	// any amount in [0, 1]: a convex blend of two strictly increasing anchor
 	// sets. Total output extent is preserved exactly.
-	quantize { |amount = 1|
+	// Bounds are optional and trail the shape argument: omitted = the whole map,
+	// `from:` alone = from there to the domain end. Given bounds route through
+	// transformSpan, which does not cut where a boundary already IS a domain end —
+	// so quantize(a, from: xs.first, to: xs.last) is bit-exact against quantize(a).
+	quantize { |amount = 1, from, to|
+		(from.isNil and: { to.isNil }).if { ^this.prQuantizeAll(amount) };
+		^this.transformSpan(from ? xs.first, to ? xs.last, { |cell|
+			cell.prQuantizeAll(amount) })
+	}
+	prQuantizeAll { |amount = 1|
 		var x0 = xs.first, y0 = ys.first;
 		var slope = (ys.last - y0) / (xs.last - x0);
 		var newYs = xs.collect { |x, i|
@@ -418,10 +427,18 @@ AnchorMap : MonoMap {
 	// tempo (nil fits the existing ends); q controls where the change occurs.
 	// Endpoints and total width remain fixed. ritardSpan(pinEntry: true) instead
 	// preserves entry continuity by allowing the width to grow.
-	ritard { |w, q = 2, amount = 1, oversample = 32|
+	// MULTIPLICATIVE by default: the q curve scales the performance already here
+	// rather than replacing it, so rubato survives a tilt. `quantize` chooses the
+	// BASE the curve multiplies — 0 the performance as recorded, 1 the same map
+	// straightened first, which is bit-exactly what this method did before the
+	// change (the whole design rests on that identity: ritard(w, q) ==
+	// quantize(1).ritard(w, q)). In between is a real blend. It is not a mode flag,
+	// it is sugar for a pre-step that already exists as a method, and it takes
+	// quantize's own 0-1 amount rather than a boolean.
+	ritard { |w, q = 2, amount = 1, oversample = 32, quantize = 0|
 		var x0 = xs.first, x1 = xs.last, y0 = ys.first, y1 = ys.last;
 		var span = x1 - x0, height = y1 - y0, nSpans = xs.size - 1;
-		var ratio, allXs, vs, cum, k, origYs, newYs;
+		var ratio, allXs, vs, cum, k, origYs, baseYs, base, newYs;
 		this.mapsDimensions(\beat, \sec).not.if {
 			Error("AnchorMap.ritard: needs a beat -> sec map, this one maps % -> %"
 				.format(fromFrame.dimension, toFrame.dimension)).throw
@@ -443,6 +460,18 @@ AnchorMap : MonoMap {
 		(amount == 0).if {
 			^AnchorMap(xs, ys, fromFrame, toFrame, extendBelow, extendAbove)
 		};
+		((quantize.isNumber.not) or: { quantize < 0 } or: { quantize > 1 }).if {
+			Error("AnchorMap.ritard: quantize must be a number in [0, 1], got %"
+				.format(quantize)).throw
+		};
+		// A fitted w reads the trend off this map's own end slopes. Multiplying that
+		// back onto an unflattened base would apply the trend twice, so it is refused
+		// rather than silently doubled.
+		(w.isNil and: { quantize < 1 }).if {
+			Error("AnchorMap.ritard: w must be given when quantize < 1 — fitting it from "
+				"this map's ends and then multiplying it back on would double the trend "
+				"already in the performance").throw
+		};
 		ratio = w ?? { this.prFitTempoRatio };
 		((ratio.isNumber.not) or: { ratio <= 0 }).if {
 			Error("AnchorMap.ritard: w must be > 0 — it is a tempo RATIO (end / start), "
@@ -459,14 +488,19 @@ AnchorMap : MonoMap {
 		};
 		allXs[0] = x0; allXs[allXs.size - 1] = x1;
 		vs = allXs.collect { |x| this.prRitardV((x - x0) / span, ratio, q) };
+		origYs = allXs.collect { |x| this.prAnchorY(x) };
+		// The integrand is weighted by the BASE's performed durations, so the curve
+		// multiplies that base instead of replacing it. quantize 1 makes the base
+		// constant-slope, which is exactly the old "integrate over input width" path.
+		base = (quantize > 0).if { this.prQuantizeAll(quantize) };
+		baseYs = base.isNil.if { origYs } { allXs.collect { |x| base.prAnchorY(x) } };
 		// Integrate reciprocal tempo by trapezoid; normalization pins both ends.
 		cum = Array(allXs.size).add(0.0);
 		(allXs.size - 1).do { |i|
-			cum = cum.add(cum[i] + ((allXs[i + 1] - allXs[i]) * 0.5
+			cum = cum.add(cum[i] + ((baseYs[i + 1] - baseYs[i]) * 0.5
 				* (vs[i].reciprocal + vs[i + 1].reciprocal)))
 		};
 		k = height / cum.last;
-		origYs = allXs.collect { |x| this.prAnchorY(x) };
 		newYs = cum.collect { |c, i|
 			(origYs[i] * (1 - amount)) + ((y0 + (c * k)) * amount)
 		};
@@ -667,73 +701,87 @@ AnchorMap : MonoMap {
 	// itself must stay positive, i.e. the stretched span must still fit inside
 	// the original total. It is refused rather than fudged, and so is a span
 	// that covers the whole domain (nothing left to compensate with).
-	stretchSpan { |from, to, factor, preserveTotal = false|
+	// Private y-stretch by an OUTPUT factor (> 1 = slower). The public spelling is
+	// scaleTempo, whose k is a TEMPO multiplier — the reciprocal of this.
+	prStretchSpan { |from, to, factor, preserveTotal = false|
 		var cells, mid, spanW, total, k;
 		((factor.isNumber.not) or: { factor <= 0 }).if {
-			Error("AnchorMap.stretchSpan: factor must be > 0, got %".format(factor)).throw
+			Error("AnchorMap.scaleTempo: k must be > 0, got %".format(factor.reciprocal)).throw
 		};
-		# cells, mid = this.prSpanCells(from, to, \stretchSpan);
+		# cells, mid = this.prSpanCells(from, to, \scaleTempo);
 		spanW = cells[mid].ys.last - cells[mid].ys.first;
 		cells = cells.copy.put(mid, cells[mid].prScaledY(factor));
 		preserveTotal.if {
 			(cells.size < 2).if {
-				Error("AnchorMap.stretchSpan: preserveTotal needs material outside the "
+				Error("AnchorMap.scaleTempo: preserveTotal needs material outside the "
 					"span, but [%, %] covers the whole domain %"
 					.format(from, to, this.domain)).throw
 			};
 			total = ys.last - ys.first;
 			k = (total - (spanW * factor)) / (total - spanW);
 			(k <= 0).if {
-				Error("AnchorMap.stretchSpan: factor % leaves no room — the stretched "
-					"span (%) is not shorter than the whole output extent (%)"
-					.format(factor, spanW * factor, total)).throw
+				Error("AnchorMap.scaleTempo: k % leaves no room — the stretched span (%) "
+					"is not shorter than the whole output extent (%)"
+					.format(factor.reciprocal, spanW * factor, total)).throw
 			};
 			cells = cells.collect { |c, i| (i == mid).if { c } { c.prScaledY(k) } };
 		};
-		^this.prFromCells(cells, \stretchSpan)
+		^this.prFromCells(cells, \scaleTempo)
 	}
 
 	// Set the span's MEAN slope (output units per input unit) exactly while
-	// preserving its internal shape — the stretchSpan factor that lands the
+	// preserving its internal shape — the y-stretch factor that lands the
 	// span's output width on slope * input width.
-	setSpanSlope { |from, to, slope|
+	setSlope { |slope, from, to|
 		var outW;
 		((slope.isNumber.not) or: { slope <= 0 }).if {
-			Error("AnchorMap.setSpanSlope: slope must be > 0, got %".format(slope)).throw
+			Error("AnchorMap.setSlope: slope must be > 0, got %".format(slope)).throw
 		};
-		this.prCheckSpan(from, to, \setSpanSlope);
+		from = from ? xs.first; to = to ? xs.last;
+		this.prCheckSpan(from, to, \setSlope);
 		outW = this.prAnchorY(to) - this.prAnchorY(from);
-		^this.stretchSpan(from, to, slope * (to - from) / outW)
+		^this.prStretchSpan(from, to, slope * (to - from) / outW)
 	}
 
 	// beat -> sec only: bps is beats per second, so the target slope is 1/bps
 	// seconds per beat. Guarded on the frame DIMENSIONS rather than duck-typing,
 	// like timeAt/beatAt — asking a groove (beat->beat) for a tempo is a units
 	// error, not a shape error.
-	setSpanTempo { |from, to, bps|
+	// Sets the MEAN tempo over [from, to] (the whole map when the bounds are
+	// omitted), keeping the rubato: every span inside scales by one common factor.
+	// The mean here is total beats / total seconds — exactly what spanTempo reads
+	// back, NOT the arithmetic mean of the per-span tempi, which under rubato is a
+	// quite different number. Setter and reader are inverses:
+	// m.setTempo(x, a, b).spanTempo(a, b) == x.
+	setTempo { |bps, from, to|
 		this.mapsDimensions(\beat, \sec).not.if {
-			Error("AnchorMap.setSpanTempo: needs a beat -> sec map, this one maps % -> %"
+			Error("AnchorMap.setTempo: needs a beat -> sec map, this one maps % -> %"
 				.format(fromFrame.dimension, toFrame.dimension)).throw
 		};
 		((bps.isNumber.not) or: { bps <= 0 }).if {
-			Error("AnchorMap.setSpanTempo: bps must be > 0, got %".format(bps)).throw
+			Error("AnchorMap.setTempo: bps must be > 0, got %".format(bps)).throw
 		};
-		^this.setSpanSlope(from, to, bps.reciprocal)
+		^this.setSlope(bps.reciprocal, from, to)
 	}
-
-	// the point of the whole exercise: a whole-map transform, applied to a span
-	quantizeSpan { |from, to, amount = 1|
-		^this.transformSpan(from, to, _.quantize(amount))
+	// Same operation in bpm. setBpm is the ABSOLUTE form ("land on this value"),
+	// scaleTempo the relative one ("multiply by k").
+	setBpm { |bpm, from, to|
+		((bpm.isNumber.not) or: { bpm <= 0 }).if {
+			Error("AnchorMap.setBpm: bpm must be > 0, got %".format(bpm)).throw
+		};
+		^this.setTempo(bpm / 60, from, to)
 	}
 
 	// Apply ritard to a span. pinEntry preserves incoming tempo by stretching the
 	// span and shifting later material; otherwise width stays fixed. High-end
 	// \carry is extended automatically. toBpm requires pinEntry and replaces w.
-	ritardSpan { |from, to, w, q = 2, amount = 1, pinEntry = false, toBpm|
+	// `quantize` is ritard's, forwarded: 0 multiplies the performance in the span,
+	// 1 flattens it first (what this did before the change).
+	ritardSpan { |from, to, w, q = 2, amount = 1, pinEntry = false, toBpm, quantize = 0|
 		var shaped;
 		var grown = this.extendTo(to);
 		(grown !== this).if {
-			^grown.ritardSpan(from, to, w, q, amount, pinEntry, toBpm)
+			^grown.ritardSpan(from, to, w, q, amount, pinEntry, toBpm, quantize)
 		};
 		this.prCheckSpan(from, to, \ritardSpan);
 		toBpm.notNil.if {
@@ -757,7 +805,8 @@ AnchorMap : MonoMap {
 			// With pinEntry, w times the incoming tempo is the requested exit tempo.
 			w = (toBpm / 60) * this.prSlopeBefore(from)
 		};
-		shaped = this.transformSpan(from, to, { |cell| cell.ritard(w, q, amount) });
+		shaped = this.transformSpan(from, to, { |cell|
+			cell.ritard(w, q, amount, quantize: quantize) });
 		pinEntry.not.if { ^shaped };
 		// amount 0 is identity for the entire edit, including pinEntry.
 		(amount == 0).if { ^shaped };
@@ -768,7 +817,7 @@ AnchorMap : MonoMap {
 			^shaped
 		};
 		// Slope is sec/beat, so this ratio matches the shaped entry to the incoming tempo.
-		^shaped.stretchSpan(from, to,
+		^shaped.prStretchSpan(from, to,
 			this.prSlopeBefore(from) / shaped.prSlopeAfter(from))
 	}
 
@@ -841,37 +890,36 @@ AnchorMap : MonoMap {
 		join = xs.last;
 		lo = join - before;
 		hi = join + after;
-		// Fit from tempos outside the region being replaced.
+		// Fit from tempos outside the region being reshaped.
 		w = w ?? { joined.prSlopeBefore(lo) / joined.prSlopeAfter(hi) };
-		^joined.ritardSpan(lo, hi, w, q, amount, true)
+		// quantize: 1, and it has to be. The thing easeTo removes is the tempo STEP at
+		// the join, and the step is part of the joined map's SHAPE — a multiplicative
+		// ritard (quantize: 0) scales the step along with everything else and leaves it
+		// sitting there, exiting the window at the wrong tempo. Flattening the window
+		// first is the mechanism, not a wart: it costs the performance inside [lo, hi]
+		// and buys the continuity the whole method exists for. Narrow the window if
+		// that is too much rubato to give up.
+		^joined.ritardSpan(lo, hi, w, q, amount, true, quantize: 1)
 	}
 
-	// Whole-map tempo scale: `k` times faster, beat numbering untouched, rubato
-	// preserved (a pure y-scale about the map's own start, so t0-style placement
-	// on the input axis is untouched too). k > 1 is faster, k < 1 slower.
-	// The span-local form is stretchSpan(from, to, 1/k); setSpanTempo is the
-	// "land on exactly this tempo" version.
-	scaleTempo { |k = 1|
+	// Tempo scale: `k` times faster (k < 1 slower), beat numbering untouched and
+	// rubato preserved — every span scales by one common factor. Bounds are optional
+	// and trail, like quantize's: omitted = the whole map, in which case this is a
+	// pure y-scale about the map's own start, so placement on the input axis is
+	// untouched. Bounded, everything after `to` shifts by the delta (the wanted
+	// ripple); preserveTotal instead pins the map's total extent by rescaling what
+	// lies outside the span.
+	//
+	// This is the RELATIVE form; setBpm/setTempo are the absolute one. k is a TEMPO
+	// multiplier — the reciprocal of the output-width factor the old stretchSpan took.
+	scaleTempo { |k = 1, from, to, preserveTotal = false|
 		((k.isNumber.not) or: { k <= 0 }).if {
 			Error("AnchorMap.scaleTempo: k must be > 0, got %".format(k)).throw
 		};
-		^this.prScaledY(k.reciprocal)
-	}
-	// Set the whole map's MEAN tempo in bpm, keeping its rubato.
-	toBpm { |bpm|
-		var mean;
-		this.mapsDimensions(\beat, \sec).not.if {
-			Error("AnchorMap.toBpm: needs a beat -> sec map, this one maps % -> %"
-				.format(fromFrame.dimension, toFrame.dimension)).throw
+		(from.isNil and: { to.isNil } and: { preserveTotal.not }).if {
+			^this.prScaledY(k.reciprocal)
 		};
-		((bpm.isNumber.not) or: { bpm <= 0 }).if {
-			Error("AnchorMap.toBpm: bpm must be > 0, got %".format(bpm)).throw
-		};
-		mean = this.spanBpm(xs.first, xs.last);
-		mean.isNil.if {
-			Error("AnchorMap.toBpm: this map has no width to read a tempo from").throw
-		};
-		^this.scaleTempo(bpm / mean)
+		^this.prStretchSpan(from ? xs.first, to ? xs.last, k.reciprocal, preserveTotal)
 	}
 
 	// value at a cut: bit-exact when the cut IS an anchor, the PL lerp otherwise

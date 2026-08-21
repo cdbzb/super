@@ -34,6 +34,7 @@ var ext, sOff, errMap;
 var tb, tbUp, durs, accDurs, durMap;
 var slow, fast, raw, ease, onJoin, onEntry, drift, selfRaw, selfEase, shifted, sEase;
 var foreign, foreignEase, mkNote, plr, mt, mtEase;
+var qBase, qKept, qFlat;
 
 "---- endpoints and structure ----".postln;
 r = flat.ritard(0.5, 2);
@@ -56,7 +57,9 @@ assertClose.(endRatio.(acc), 1.5, "w > 1 is an accelerando, same formula", 0.03)
 assertClose.(acc.ys.last, 2.0, "an accel preserves the output width too");
 
 "---- w = 1 degenerates to constant tempo (agrees with quantize(1)) ----".postln;
-r1 = wob.ritard(1, 2);
+// quantize: 1 — this section is about the FLATTENED base, which is what ritard did
+// unconditionally before 2026-08-21 and is now opt-in.
+r1 = wob.ritard(1, 2, quantize: 1);
 assertClose.(r1.spanTempo(0, 1), r1.spanTempo(3, 4),
 	"w = 1 gives one tempo across the span");
 assertClose.(r1.spanTempo(0, 1), wob.spanTempo(0, 4),
@@ -68,10 +71,10 @@ assertClose.(wob.ritard(1, 2).ys.last, wob.quantize(1).ys.last,
 r0 = wob.ritard(0.5, 2, 0);
 assertArr.(r0.xs, wob.xs, "amount 0 answers the receiver's own anchors (xs)");
 assertArr.(r0.ys, wob.ys, "amount 0 answers the receiver's own anchors (ys)");
-w0 = wob.ritard(0.5, 2, 0.5);
+w0 = wob.ritard(0.5, 2, 0.5, quantize: 1);
 assert.(w0.ys.differentiate.drop(1).every(_ > 0), "a half blend is still monotone");
 assertClose.(w0.ys.last, 2.2, "a half blend still pins the output end");
-w1 = wob.ritard(0.5, 2, 1);
+w1 = wob.ritard(0.5, 2, 1, quantize: 1);
 assert.((endRatio.(w0) - 0.5).abs > (endRatio.(w1) - 0.5).abs,
 	"a half blend sits between the original and the full model");
 
@@ -100,7 +103,9 @@ assert.(relTempoAt.(rq1, 2) < relTempoAt.(rq3, 2),
 };
 
 "---- w = nil fits the ratio from the cell's own ends ----".postln;
-fit = drifting.ritard(nil, 2);
+// Fitting reads the trend off the map's ends and REPLACES the interior with it, so
+// it only makes sense against a flattened base — hence quantize: 1 (see §E).
+fit = drifting.ritard(nil, 2, quantize: 1);
 assertClose.(endRatio.(fit), 0.5,
 	"a fitted w reproduces the measured end/start tempo ratio", 0.03);
 assertClose.(fit.ys.last, 2.1, "a fitted ritard still preserves the output width");
@@ -228,6 +233,40 @@ assert.(throws.({ AnchorMap.ritardDurs(0.25, 4.5, 0.5) }), "numDurs must be an i
 assert.(throws.({ AnchorMap.ritardDurs(0, 8, 0.5) }), "initialDur must be > 0");
 assert.(throws.({ AnchorMap.ritardDurs(0.25, 8, 0) }), "ritardDurs w must be > 0");
 assert.(throws.({ AnchorMap.ritardDurs(0.25, 8, 0.5, \two) }), "ritardDurs q must be a number");
+
+"---- quantize: which base the curve multiplies (§E) ----".postln;
+// The identity the whole design rests on: the old flattening behaviour IS the new
+// multiplicative one applied to an already-straightened map.
+[[0.5, 2, 1], [0.5, 1, 4], [1.8, 2, 8]].do { |a|
+	var qw = a[0], qq = a[1], qos = a[2];
+	assert.(wob.ritard(qw, qq, 1, qos, 1).ys == wob.quantize(1).ritard(qw, qq, 1, qos, 0).ys,
+		"ritard(quantize: 1) == quantize(1).ritard(quantize: 0), w % q % os %"
+			.format(qw, qq, qos));
+};
+// quantize: 0 (the default) keeps the performance's per-span deviations
+qBase = wob.ys.differentiate.drop(1);
+qKept = wob.ritard(0.5, 2, 1, 1, 0).ys.differentiate.drop(1);
+qFlat = wob.ritard(0.5, 2, 1, 1, 1).ys.differentiate.drop(1);
+assert.((qKept / qBase).differentiate.drop(1).every { |d| d.abs > 1e-9 },
+	"quantize 0: each span keeps its own deviation, scaled by a ramping factor");
+assert.(((qKept[0] / qKept[1]) - (qBase[0] / qBase[1])).abs
+	< ((qFlat[0] / qFlat[1]) - (qBase[0] / qBase[1])).abs,
+	"quantize 0 stays closer to the performed span ratios than quantize 1");
+assert.(wob.ritard(0.5, 2, 1, 1, 0).ys.differentiate.drop(1).every(_ > 0),
+	"quantize 0: still strictly increasing");
+assert.(wob.ritard(0.5, 2, 0, 1, 0).ys == wob.ys, "quantize 0: amount 0 is the identity");
+assert.(wob.ritard(0.5, 2, 0, 1, 1).ys == wob.ys, "quantize 1: amount 0 is the identity too");
+assert.(throws.({ wob.ritard(nil, 2, 1, 1, 0) }),
+	"a fitted w with quantize < 1 is refused — it would double the trend");
+assert.(wob.ritard(nil, 2, 1, 1, 1).notNil, "...and is fine with quantize 1");
+assert.(throws.({ wob.ritard(0.5, 2, 1, 1, 1.5) }), "quantize must be within [0, 1]");
+// easeTo has to flatten INSIDE its window: the step it removes is part of the
+// joined map's shape, so a multiplicative ritard would scale the step and keep it.
+// Outside the window the performance is untouched — that is the guarantee.
+qKept = AnchorMap([0,1,2,3,4], [0, 0.4, 1.1, 1.6, 2.2], beatF, secF);
+qFlat = qKept.easeTo(flat, 1, 1).ys.differentiate.drop(1);
+assert.((qFlat[0] - 0.4).abs < 1e-9 and: { (qFlat[1] - 0.7).abs < 1e-9 },
+	"easeTo leaves the receiver's rubato alone OUTSIDE the ease window");
 
 "---- easeTo: smooth the tempo step at a seam ----".postln;
 // slow map (1 bps) then fast map (2 bps): a step UP at the join

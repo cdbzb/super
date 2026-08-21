@@ -5,7 +5,7 @@
 // MODEL — an IMMUTABLE AnchorMap (beat -> ABSOLUTE take seconds) plus an undo
 // stack, which immutability makes free: undo is an array of maps and every edit
 // is a fresh map, so nothing can be half-applied. Every edit is one of the §12b A
-// span operations (transformSpan / stretchSpan / setSpanTempo / quantizeSpan),
+// span operations (transformSpan / scaleTempo / setBpm / quantize, all bounded),
 // so "bar 5 sags" is an algebra expression rather than a new feature. The map
 // itself is never mutated and the source grid is never touched: `commit` hands
 // the result out (MapEditor.last, and the onSave hook) for the caller to apply
@@ -201,7 +201,7 @@ MapEditor {
 	// straighten the span toward one constant tempo; amount blends 0..1
 	quantizeSpan { |amount = 1|
 		^this.prSpanEdit("quantize %".format(amount),
-			{ |m, a, b| m.transformSpan(a, b, { |cell| cell.quantize(amount) }) })
+			{ |m, a, b| m.quantize(amount, a, b) })
 	}
 	// smooth the tempo through the span's anchors (monotone cubic, resampled)
 	curveSpan { |amount = 1|
@@ -224,11 +224,11 @@ MapEditor {
 	// (§12b A); preserveTotal pins the take's total length instead.
 	stretchSpan { |factor, preserveTotal = false|
 		^this.prSpanEdit("stretch x%".format(factor.round(0.001)),
-			{ |m, a, b| m.stretchSpan(a, b, factor, preserveTotal) })
+			{ |m, a, b| m.scaleTempo(factor.reciprocal, a, b, preserveTotal) })
 	}
 	setSpanBpm { |bpm|
 		^this.prSpanEdit("% bpm".format(bpm.round(0.1)),
-			{ |m, a, b| m.setSpanTempo(a, b, bpm / 60) })
+			{ |m, a, b| m.setBpm(bpm, a, b) })
 	}
 	// escape hatch: any AnchorMap -> MonoMap function, applied to the span's cell
 	applyToSpan { |func, name = "edit"|

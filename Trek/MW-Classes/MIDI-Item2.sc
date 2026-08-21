@@ -2279,7 +2279,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	//
 	// NO RIPPLE: both of the span's boundary times are read off the CURRENT map,
 	// not off the onsets, so only events inside the span move — displacing the
-	// bar itself stays stretchSpan's job. That falls out of the algebra rather
+	// bar itself stays scaleTempo's job. That falls out of the algebra rather
 	// than being imposed: the edited cell's output width is (map time of `to`)
 	// minus the first onset, and the first onset is required to sit at the span
 	// start (see the tolerance below), so the width is the one it replaced.
@@ -2924,7 +2924,7 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 
 	// Return a NEW map running `k` times faster — every performed span divided by
 	// k, beat numbering untouched. The rubato is PRESERVED (each span keeps its
-	// share of the total), which is what separates this from setSpanTempo (mean
+	// share of the total), which is what separates this from setBpm/setTempo (mean
 	// tempo set, shape kept) and from quantize (shape removed, mean kept).
 	//
 	// NOT scaleBeats, which is the other axis: scaleBeats relabels beats and
@@ -2939,18 +2939,26 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 		};
 		^this.copy.prScaleTempo(k)
 	}
-	scaleBpm {|k = 1| ^this.scaleTempo(k) }
-	// Set the whole map's mean tempo, keeping the rubato: the k that lands it there.
-	toBpm {|bpm|
+	// Set the map's mean tempo, keeping the rubato: the scaleTempo factor that lands
+	// it there. The mean is total beats / total seconds — what spanBpm reads back,
+	// not the arithmetic mean of the per-span tempi. Whole-map only here; span
+	// editing lives on the core (asMonoMap) and on EventList.
+	setBpm {|bpm|
 		var mean;
 		((bpm.isNumber.not) or: { bpm <= 0 }).if {
-			Error("MIDIItemTempoMap.toBpm: bpm must be > 0, got %".format(bpm)).throw
+			Error("MIDIItemTempoMap.setBpm: bpm must be > 0, got %".format(bpm)).throw
 		};
 		mean = this.spanBpm(0, beats.sum);
 		mean.isNil.if {
-			Error("MIDIItemTempoMap.toBpm: this map has no width to read a tempo from").throw
+			Error("MIDIItemTempoMap.setBpm: this map has no width to read a tempo from").throw
 		};
 		^this.scaleTempo(bpm / mean)
+	}
+	setTempo {|bps|
+		((bps.isNumber.not) or: { bps <= 0 }).if {
+			Error("MIDIItemTempoMap.setTempo: bps must be > 0, got %".format(bps)).throw
+		};
+		^this.setBpm(bps * 60)
 	}
 	prScaleTempo {|k = 1|
 		times = times / k;   // new array — the original's times is left untouched

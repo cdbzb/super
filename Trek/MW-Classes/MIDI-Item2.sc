@@ -1705,7 +1705,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			// i.e. warps the WHOLE take onto the ideal 1 s/beat grid — warpTo is
 			// quantize's engine. A sec -> sec map instead says "this played second
 			// becomes that played second", which is what lets an edit stay LOCAL and
-			// leave the performed feel everywhere else alone (see requantizeSpan).
+			// leave the performed feel everywhere else alone (see quantizeToRhythm).
 			(tempoMap.isKindOf(MonoMap) and: { tempoMap.mapsDimensions(\sec, \sec) }).if {
 				// Absolute in, absolute out: a sec -> sec map composed out of
 				// origin: \absolute snapshots already speaks take time, so there is
@@ -2240,12 +2240,12 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	// canonical call is the composition of the two halves:
 	//
 	//     o  = p.onsets(20, 24);
-	//     m2 = p.retimeSpan(20, "ex x q qe e".beats, o);
+	//     m2 = p.retimeSpan("ex x q qe e".beats, o, 20);
 	//
 	// followed by ONE of three applications, which say genuinely different things
 	// (§12f):
 	//
-	//     p.requantizeSpan(20, "ex x q qe e".beats, o)
+	//     p.quantizeToRhythm("ex x q qe e".beats, o, 20)
 	//         // DESTRUCTIVE and LOCAL — the whole flow in one call. Only the
 	//         // span's events move; every timestamp outside it is bit-identical,
 	//         // so the performed feel of the rest of the take survives.
@@ -2259,7 +2259,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	// NOT `p.warpTo(m2)`. warpTo drives a BEAT map by sending every event to its
 	// beat number, i.e. it flattens the ENTIRE take onto the ideal 1 s/beat grid —
 	// warpTo is quantize's engine, and the retimed span is then only the part of
-	// that flattening you steered. requantizeSpan is warpTo of the sec -> sec map
+	// that flattening you steered. quantizeToRhythm is warpTo of the sec -> sec map
 	// `(m2.inverse >> currentMap)`, which is the local statement instead.
 	//
 	// (the doc's "e. s q q. e" spelling is not in String.beats' vocabulary — it
@@ -2286,10 +2286,12 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	//
 	// Non-mutating: receiver, selection and map are untouched, and the result is
 	// a plain AnchorMap (beat -> absolute take seconds) for the caller to apply.
-	// `amount` as in requantizeSpan: 1 is the fully retimed map, 0 the map as it
+	// `amount` as in quantizeToRhythm: 1 is the fully retimed map, 0 the map as it
 	// stands, in between a blend. Needs its own snapshot to blend against, since the
 	// two must share a beat frame (see the ONE-call note below).
-	retimeSpan { |from, durs, onsets, to, amount = 1|
+	// The MAP form of quantizeToRhythm: same computation, handed back as an
+	// AnchorMap for the caller to apply (or not) instead of warping the take.
+	retimeSpan { |durs, onsets, from, to, amount = 1|
 		var mOld, mNew;
 		(amount == 1).if { ^this.prRetimeSpanMap(from, durs, onsets, to, \retimeSpan) };
 		mOld = this.tempomap.asMonoMap(origin: \absolute);
@@ -2329,11 +2331,18 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	// at every strength — outside the span the maps are the same anchors, so any blend
 	// of them is still the identity there and warpTo's sec -> sec branch hands those
 	// timestamps back untouched.
-	requantizeSpan { |from, durs, onsets, to, amount = 1|
+	// Named for the family it belongs to: MIDIItemPlayer.quantize is the WHOLE-take
+	// form (intended beats for the selection's anchors, rebuild the map, warp
+	// everything), this is the local one — "these events were meant to be THIS
+	// rhythm, move them there and leave the rest of the take alone". Cousins, not
+	// twins: different payload (durs + measured onsets vs anchor beats), different
+	// mechanism (one edited cell vs a rebuilt map), and the no-ripple guarantee is
+	// this one's alone, so they stay separate methods under one verb.
+	quantizeToRhythm { |durs, onsets, from, to, amount = 1|
 		var mOld, mNew;
-		this.prNeedSelection(\requantizeSpan);
+		this.prNeedSelection(\quantizeToRhythm);
 		mOld = this.tempomap.asMonoMap(origin: \absolute);
-		mNew = this.prRetimeSpanMap(from, durs, onsets, to, \requantizeSpan, mOld);
+		mNew = this.prRetimeSpanMap(from, durs, onsets, to, \quantizeToRhythm, mOld);
 		(amount != 1).if { mNew = mOld.blendWith(mNew, amount) };
 		^this.warpTo((mNew.inverse >> mOld).bake)
 	}
@@ -2345,7 +2354,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	}
 	// The retime builder both callers share: every guard, and the one edited cell.
 	// `who` names the caller in the error messages (the guards are the caller's,
-	// as far as the user is concerned). `map` lets requantizeSpan pass the
+	// as far as the user is concerned). `map` lets quantizeToRhythm pass the
 	// snapshot it already holds, so the two maps it composes share a beat frame;
 	// nil takes a fresh one, which is retimeSpan's case.
 	prRetimeSpanMap { |from, durs, onsets, to, who = \retimeSpan, map|

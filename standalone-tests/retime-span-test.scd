@@ -24,7 +24,7 @@ var errMsg;
 var secF, idMap, off, offOrig, tm, mRel, mAbs;
 var slow, sDurs, sOns, sOrig, sM0, sM2, sReq, sFlat, mFix, manual;
 
-"== onsets / retimeSpan (§12c') + requantizeSpan (§12f) tests ==".postln;
+"== onsets / retimeSpan (§12c') + quantizeToRhythm (§12f) tests ==".postln;
 
 // player from a pitch/dur spec, with a selection stamped on the HELD player.
 // indices/coords index the NOTES (noteOns), matching a saved selection.
@@ -117,7 +117,7 @@ assertArr.(durs, [0.75, 0.25, 1, 1.5, 0.5], "fixture: the intended rhythm of bar
 assertClose.(durs.sum, 4, "fixture: the durs fill the span exactly");
 
 m0 = p.tempomap.asMonoMap(origin: \absolute);   // the unedited map, for reference
-m2 = p.retimeSpan(4, durs, ons);
+m2 = p.retimeSpan(durs, ons, 4);
 assert.(m2.isKindOf(AnchorMap), "retimeSpan: answers a baked AnchorMap, got %".format(m2.class));
 assert.(m2.mapsDimensions(\beat, \sec), "retimeSpan: still a beat -> sec map");
 assertArr.(m2.xs, [0, 4, 4.75, 5, 6, 7.5, 8, 12],
@@ -149,48 +149,48 @@ sameArr.(stamps.(p), orig,
 	"retimeSpan + warpTo are non-mutating — the receiver still has its performed times");
 
 // String durs, same precedent as `tempomap`
-mStr = p.retimeSpan(4, "ex x q qe e", ons);
+mStr = p.retimeSpan("ex x q qe e", ons, 4);
 sameArr.(mStr.xs, m2.xs, "retimeSpan: a String dur spec is parsed with .beats (xs)");
 sameArr.(mStr.ys, m2.ys, "retimeSpan: a String dur spec is parsed with .beats (ys)");
 
 // `to` given: a CHECK, not a rescale
-mTo = p.retimeSpan(4, durs, ons, 8);
+mTo = p.retimeSpan(durs, ons, 4, 8);
 sameArr.(mTo.ys, m2.ys, "retimeSpan: a consistent `to` changes nothing");
-assert.(throws.({ p.retimeSpan(4, durs, ons, 9) }),
+assert.(throws.({ p.retimeSpan(durs, ons, 4, 9) }),
 	"retimeSpan: an inconsistent `to` is an error, not a stretch");
-assert.(throws.({ p.retimeSpan(4, durs, ons, 8 + 1e-12) }).not,
+assert.(throws.({ p.retimeSpan(durs, ons, 4, 8 + 1e-12) }).not,
 	"retimeSpan: `to` is checked to 1e-9, so float dust passes");
 
 // onsets: required, counted, ordered, and inside the span
-assert.(throws.({ p.retimeSpan(4, durs, nil) }),
+assert.(throws.({ p.retimeSpan(durs, nil, 4) }),
 	"retimeSpan: onsets is required — this method never picks");
-assert.(throws.({ p.retimeSpan(4, durs, ons.drop(1)) }),
+assert.(throws.({ p.retimeSpan(durs, ons.drop(1), 4) }),
 	"retimeSpan: fewer onsets than durs is an error");
-assert.(throws.({ p.retimeSpan(4, durs, ons ++ [7.8]) }),
+assert.(throws.({ p.retimeSpan(durs, ons ++ [7.8], 4) }),
 	"retimeSpan: more onsets than durs is an error");
-assert.(throws.({ p.retimeSpan(4, durs, [4, 5.1, 4.9, 6.1, 7.4]) }),
+assert.(throws.({ p.retimeSpan(durs, [4, 5.1, 4.9, 6.1, 7.4], 4) }),
 	"retimeSpan: onsets must be strictly increasing");
-assert.(throws.({ p.retimeSpan(4, durs, [4, 4.9, 5.1, 6.1, 8.5]) }),
+assert.(throws.({ p.retimeSpan(durs, [4, 4.9, 5.1, 6.1, 8.5], 4) }),
 	"retimeSpan: an onset at or past the span's end is an error");
 // misalignment: half the first dur's performed width (0.75 s -> 0.375 s) is the
 // tolerance. 0.5 s out is refused; 0.3 s out is absorbed.
-assert.(throws.({ p.retimeSpan(4, durs, [4.5, 4.9, 5.1, 6.1, 7.4]) }),
+assert.(throws.({ p.retimeSpan(durs, [4.5, 4.9, 5.1, 6.1, 7.4], 4) }),
 	"retimeSpan: a first onset off by more than half the first dur is an error");
-assert.(throws.({ p.retimeSpan(4, durs, [4.3, 4.9, 5.1, 6.1, 7.4]) }).not,
+assert.(throws.({ p.retimeSpan(durs, [4.3, 4.9, 5.1, 6.1, 7.4], 4) }).not,
 	"retimeSpan: a first onset inside the tolerance is accepted");
 // durs themselves
-assert.(throws.({ p.retimeSpan(4, [1, -1, 4], [4, 4.9, 5.1]) }),
+assert.(throws.({ p.retimeSpan([1, -1, 4], [4, 4.9, 5.1], 4) }),
 	"retimeSpan: a non-positive dur is an error");
-assert.(throws.({ p.retimeSpan(4, [], []) }), "retimeSpan: empty durs is an error");
-assert.(throws.({ bare.retimeSpan(0, [1, 1], [0, 1]) }),
+assert.(throws.({ p.retimeSpan([], [], 4) }), "retimeSpan: empty durs is an error");
+assert.(throws.({ bare.retimeSpan([1, 1], [0, 1], 0) }),
 	"retimeSpan: no loaded selection is an error");
 // span bounds are the algebra's business — [from, to] must be in the domain
-assert.(throws.({ p.retimeSpan(10, durs, [10, 10.9, 11.1, 12.1, 13.4]) }),
+assert.(throws.({ p.retimeSpan(durs, [10, 10.9, 11.1, 12.1, 13.4], 10) }),
 	"retimeSpan: a span running past the map's domain is refused by transformSpan");
 
 // -------------------------------------------------- the composed one-liner
 // what the doc pins as the canonical call: query, then re-anchor.
-tight = p.retimeSpan(4, "ex x q qe e".beats, p.onsets(4, 8));
+tight = p.retimeSpan("ex x q qe e".beats, p.onsets(4, 8), 4);
 sameArr.(tight.ys, m2.ys, "canonical: retimeSpan(from, durs, onsets(from, to)) composes");
 assertArr.(stamps.(p.warpTo(tight)), [0, 1, 2, 3, 4, 4.75, 5, 6, 7.5, 8],
 	"canonical: the one-liner warps the take onto its intended rhythm");
@@ -198,7 +198,7 @@ assertArr.(stamps.(p.warpTo(tight)), [0, 1, 2, 3, 4, 4.75, 5, 6, 7.5, 8],
 // and the chord take composes too — dedupe means the extra tone does not
 // become a sixth event that no dur is waiting for
 assert.(chord.onsets(4, 8).size == 5, "canonical: the chord take still yields 5 events");
-tight = chord.retimeSpan(4, durs, chord.onsets(4, 8));
+tight = chord.retimeSpan(durs, chord.onsets(4, 8), 4);
 assertArr.(tight.ys, [0, 4, 4.9, 5.1, 6.1, 7.4, 8, 12],
 	"canonical: the chord take re-anchors on the cluster's first onset");
 
@@ -244,7 +244,7 @@ assert.(errMsg.({ p.warpTo((mRel.inverse >> mRel).bake) }).contains("origin"),
 sameArr.(stamps.(p.warpTo((mAbs.inverse >> mAbs).bake)), orig,
 	"warpTo: the same composition on the ABSOLUTE axis is accepted, and is the identity");
 
-// ===================================================== §12f: requantizeSpan
+// ===================================================== §12f: quantizeToRhythm
 // A take whose map is NOT the identity, which is what makes the difference
 // visible: bar 1 is slow (4 beats over 5 s), bar 2 fast (4 beats over 3 s), and
 // two notes trail past the last anchor. Only the bar lines are selected (notes
@@ -265,7 +265,7 @@ assertArr.(sOns, [5, 5.7, 5.9, 6.6, 7.4], "fixture: the five performed onsets of
 // the ideal 1 s/beat grid (warpTo is quantize's engine) — bar 1 was played
 // 1.25 s to the beat and comes back at 1 s to the beat. Correct for quantize,
 // wrong for "fix bar 2".
-sM2 = slow.retimeSpan(4, sDurs, sOns);
+sM2 = slow.retimeSpan(sDurs, sOns, 4);
 sFlat = stamps.(slow.warpTo(sM2));
 // the last two events sit PAST the final mark, in the closing span: 3 performed
 // seconds carrying 4 beats, so 8.4 s -> 8 + 0.4*4/3 and 8.7 s -> 8 + 0.7*4/3
@@ -274,64 +274,64 @@ assertArr.(sFlat, [0, 1, 2, 3, 4, 4.75, 5, 6, 7.5, 8, 8 + (0.4 * 4 / 3), 8 + (0.
 assert.((sFlat[1] - sOrig[1]).abs > 0.2,
 	"warpTo(beat map): even bar 1, which nobody edited, has moved");
 
-// requantizeSpan instead: warpTo of (mNew.inverse >> mOld), the sec -> sec
+// quantizeToRhythm instead: warpTo of (mNew.inverse >> mOld), the sec -> sec
 // statement. Only bar 2's inner events move.
-sReq = slow.requantizeSpan(4, sDurs, sOns);
-assert.(sReq.isKindOf(MIDIItemPlayer), "requantizeSpan: answers a player, got %".format(sReq.class));
+sReq = slow.quantizeToRhythm(sDurs, sOns, 4);
+assert.(sReq.isKindOf(MIDIItemPlayer), "quantizeToRhythm: answers a player, got %".format(sReq.class));
 assertArr.(stamps.(sReq), [0, 1.25, 2.5, 3.75, 5, 5.5625, 5.75, 6.5, 7.625, 8, 8.4, 8.7],
-	"requantizeSpan: the span's onsets move, the performed take around them does not");
+	"quantizeToRhythm: the span's onsets move, the performed take around them does not");
 sameArr.(stamps.(sReq).keep(4), sOrig.keep(4),
-	"requantizeSpan: everything BEFORE the span is bit-identical");
+	"quantizeToRhythm: everything BEFORE the span is bit-identical");
 sameArr.(stamps.(sReq).drop(9), sOrig.drop(9),
-	"requantizeSpan: the span's end and everything AFTER it are bit-identical");
+	"quantizeToRhythm: the span's end and everything AFTER it are bit-identical");
 // where the moved events land: mOld's time for each cumulative-dur beat
 assertArr.(stamps.(sReq)[4..8], [4, 4.75, 5, 6, 7.5].collect { |b| sM0.at(b) },
-	"requantizeSpan: each onset lands where the OLD map puts its intended beat");
-sameArr.(stamps.(slow), sOrig, "requantizeSpan: the receiver keeps its performed times");
+	"quantizeToRhythm: each onset lands where the OLD map puts its intended beat");
+sameArr.(stamps.(slow), sOrig, "quantizeToRhythm: the receiver keeps its performed times");
 // a String dur spec, and `to` as a check, exactly as retimeSpan takes them
-sameArr.(stamps.(slow.requantizeSpan(4, "ex x q qe e", sOns)), stamps.(sReq),
-	"requantizeSpan: a String dur spec is parsed with .beats");
-sameArr.(stamps.(slow.requantizeSpan(4, sDurs, sOns, 8)), stamps.(sReq),
-	"requantizeSpan: a consistent `to` changes nothing");
+sameArr.(stamps.(slow.quantizeToRhythm("ex x q qe e", sOns, 4)), stamps.(sReq),
+	"quantizeToRhythm: a String dur spec is parsed with .beats");
+sameArr.(stamps.(slow.quantizeToRhythm(sDurs, sOns, 4, 8)), stamps.(sReq),
+	"quantizeToRhythm: a consistent `to` changes nothing");
 
 // ------------------------------------------------- the frame wart, and the manual form
 // Every `tempomap` call builds a fresh MIDIItemTempoMap, so asMonoMap mints a
 // fresh BEAT frame: two snapshots taken separately refuse to compose. That is
-// why requantizeSpan takes ONE snapshot and hands it to the shared builder.
+// why quantizeToRhythm takes ONE snapshot and hands it to the shared builder.
 assert.(throws.({
 	slow.tempomap.asMonoMap(origin: \absolute).inverse >> slow.tempomap.asMonoMap(origin: \absolute)
 }), "frames: two separate tempomap snapshots refuse to compose (a new beat axis per call)");
 // withFrames is the repair when the two maps DID come from separate calls —
-// and the hand-built composition reproduces requantizeSpan exactly
+// and the hand-built composition reproduces quantizeToRhythm exactly
 mFix = sM0.withFrames(sM2.fromFrame, sM2.toFrame);
 manual = stamps.(slow.warpTo((sM2.inverse >> mFix).bake));
 sameArr.(manual, stamps.(sReq),
-	"manual (mNew.inverse >> mOld.withFrames(...)) == requantizeSpan, timestamp for timestamp");
+	"manual (mNew.inverse >> mOld.withFrames(...)) == quantizeToRhythm, timestamp for timestamp");
 
 // -------------------------------------------------------------- shared guards
 // The guards live in the builder both methods call, so they fire identically —
 // only the name in the message changes.
-assert.(throws.({ slow.requantizeSpan(4, sDurs, nil) }),
-	"requantizeSpan: onsets is required here too");
-assert.(throws.({ slow.requantizeSpan(4, sDurs, sOns.drop(1)) }),
-	"requantizeSpan: one onset per dur");
-assert.(throws.({ slow.requantizeSpan(4, sDurs, [5, 5.9, 5.7, 6.6, 7.4]) }),
-	"requantizeSpan: onsets must be strictly increasing");
-assert.(throws.({ slow.requantizeSpan(4, sDurs, sOns, 9) }),
-	"requantizeSpan: an inconsistent `to` is an error, not a stretch");
-assert.(throws.({ slow.requantizeSpan(4, sDurs, [5.5, 5.7, 5.9, 6.6, 7.4]) }),
-	"requantizeSpan: a first onset outside the tolerance is an error");
-assert.(errMsg.({ slow.requantizeSpan(4, sDurs, sOns.drop(1)) }).contains("requantizeSpan:"),
-	"requantizeSpan: the guards name requantizeSpan, not retimeSpan");
-assert.(errMsg.({ slow.requantizeSpan(4, sDurs, sOns.drop(1)) }).contains("retimeSpan").not,
-	"requantizeSpan: retimeSpan is not mentioned at all");
-assert.(errMsg.({ bare.requantizeSpan(0, [1, 1], [0, 1]) })
-	.contains("requantizeSpan needs a loaded selection"),
-	"requantizeSpan: no loaded selection is an error, in its own name");
+assert.(throws.({ slow.quantizeToRhythm(sDurs, nil, 4) }),
+	"quantizeToRhythm: onsets is required here too");
+assert.(throws.({ slow.quantizeToRhythm(sDurs, sOns.drop(1), 4) }),
+	"quantizeToRhythm: one onset per dur");
+assert.(throws.({ slow.quantizeToRhythm(sDurs, [5, 5.9, 5.7, 6.6, 7.4], 4) }),
+	"quantizeToRhythm: onsets must be strictly increasing");
+assert.(throws.({ slow.quantizeToRhythm(sDurs, sOns, 4, 9) }),
+	"quantizeToRhythm: an inconsistent `to` is an error, not a stretch");
+assert.(throws.({ slow.quantizeToRhythm(sDurs, [5.5, 5.7, 5.9, 6.6, 7.4], 4) }),
+	"quantizeToRhythm: a first onset outside the tolerance is an error");
+assert.(errMsg.({ slow.quantizeToRhythm(sDurs, sOns.drop(1), 4) }).contains("quantizeToRhythm:"),
+	"quantizeToRhythm: the guards name quantizeToRhythm, not retimeSpan");
+assert.(errMsg.({ slow.quantizeToRhythm(sDurs, sOns.drop(1), 4) }).contains("retimeSpan").not,
+	"quantizeToRhythm: retimeSpan is not mentioned at all");
+assert.(errMsg.({ bare.quantizeToRhythm([1, 1], [0, 1], 0) })
+	.contains("quantizeToRhythm needs a loaded selection"),
+	"quantizeToRhythm: no loaded selection is an error, in its own name");
 // and retimeSpan's own messages are unchanged by the refactor
-assert.(errMsg.({ p.retimeSpan(4, durs, ons.drop(1)) }).contains("retimeSpan:"),
+assert.(errMsg.({ p.retimeSpan(durs, ons.drop(1), 4) }).contains("retimeSpan:"),
 	"retimeSpan: its messages still say retimeSpan");
-assert.(errMsg.({ bare.retimeSpan(0, [1, 1], [0, 1]) })
+assert.(errMsg.({ bare.retimeSpan([1, 1], [0, 1], 0) })
 	.contains("retimeSpan needs a loaded selection"),
 	"retimeSpan: the no-selection message is unchanged");
 

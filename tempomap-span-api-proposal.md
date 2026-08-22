@@ -40,7 +40,8 @@ Removed: `quantizeSpan`, `setSpanTempo`, `setSpanBpm`, `setSpanSlope`, `stretchS
 NOT renamed: `MapEditor`'s own `quantizeSpan` / `stretchSpan` / `setSpanBpm`. There "Span"
 means "the currently selected span" and there are no bounds arguments — a different concept
 that happens to share a suffix. Their internals move to the new API.
-`MIDIItemPlayer.requantizeSpan` / `retimeSpan` are unrelated (destructive note re-timing).
+`MIDIItemPlayer.requantizeSpan` / `retimeSpan` are a separate family — see §F, which
+corrects the "unrelated" call made here.
 `ritardSpan` keeps its name and leading bounds (out of §A, see Scope).
 
 **Verified bit-exact** (2026-08-21, `AnchorMap([0,1,2,3,4], [0,1.3,1.9,3.4,4.0])`):
@@ -177,11 +178,47 @@ Decision: `quantize:` on `ritard`/`ritardSpan` only; document `transformSpan` as
 bounds-once composition idiom. Adding the keyword to the setters later is backwards
 compatible, removing it is not — so defer, and revisit if the idiom grates in real use.
 
+### F. `requantizeSpan` -> `quantizeToRhythm`
+
+**Correction to an earlier reading in this doc.** `requantizeSpan` was first ruled out of
+scope as "unrelated — destructive note re-timing, no whole-take twin". Wrong: the twin is
+`MIDIItemPlayer.quantize` (`MIDI-Item2.sc:851`) on the SAME class, which takes intended
+`beats` for the selection's anchors, rebuilds the map and warps the whole take. The "re-" in
+`requantizeSpan` was pointing at exactly that. It belongs to the `quantize` family.
+
+```supercollider
+quantizeToRhythm { |durs, onsets, from, to, amount = 1|   // was requantizeSpan(from, durs, onsets, to, amount)
+retimeSpan       { |durs, onsets, from, to, amount = 1|   // the MAP form, args reordered to match
+```
+
+They still do NOT merge under §A — cousins, not twins. Different payload (durs + measured
+onsets vs anchor beats), different mechanism (one edited cell vs a rebuilt map), and the
+no-ripple guarantee belongs to the local one alone. Shared verb, separate methods.
+
+Name: `quantizeToRhythm` over `snapOnsets` (considered 2026-08-21). `snapOnsets` matches the
+time-snap vocabulary in `retune-project.md:194` and reads well, but it hides the family the
+correction above uncovered, and it suggests snap-to-GRID when the target is a rhythm you
+author. `quantizeToRhythm` names the target and keeps the family. Cost, stated plainly: it
+adds a fourth surface to a verb that already carries three senses here — straighten a tempo
+map (`AnchorMap.quantize`), rewrite timestamps (`MIDIItemPlayer.quantize`), choose a ritard's
+base (the `quantize:` keyword). That overload predates this work and is flagged in
+`EventList`'s docstring; the family relationship was judged worth more than avoiding it.
+
+`retimeSpan` keeps its name (its return type, an AnchorMap, is the difference) but takes the
+new argument order so the pair does not diverge. Bounds trail, per §A; the rhythm leads,
+because that is what the method names.
+
+Arg-swap hazard: `durs` and `onsets` are both same-length numeric arrays, so a swapped call
+is the one reorder that could pass quietly. In practice the existing guards fire —
+`onsets` must be strictly increasing performed seconds whose first sits at the span start
+(`retime-span-test.scd:316-323`).
+
 ## Scope
 
 - In: `quantize`, `scaleTempo`, `setTempo`, `setBpm` — the three clean pairs plus the rename (§A–C).
 - In: §E, which touches `ritard`/`ritardSpan`/`easeTo` but is a separate concern from the
   bounds work and can land independently (either order).
+- In: §F (`quantizeToRhythm`), likewise independent.
 - Out of §A: `ritard`/`ritardSpan` keep their separate names. They differ in more than bounds
   (`pinEntry`, `toBpm`, the automatic `extendTo`, `oversample` only on the whole-map form);
   merging makes those inert-but-accepted on the whole-map path and the signature long.

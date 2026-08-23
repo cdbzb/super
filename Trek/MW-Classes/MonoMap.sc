@@ -1,16 +1,9 @@
-// TempoMap V2 core (see tempomap-v2-design.md). A MonoMap is a strictly
-// increasing map between two named axes, with an inverse. Everything the old
-// map zoo did — TempoMap, PlacedTempoMap, TempoWarp, Groove — is one of these
-// plus combinators. This file is the core: frames, per-end extension,
-// compose / inverse / place, generic span mapping, the piecewise-linear
-// implementation with exact fusion, MapSeq tiling, the anchor transforms, the
-// function-backed escape hatch, and the bridges from the old classes.
+// TempoMap V2 core (see tempomap-v2-design.md). MonoMaps are strictly
+// increasing, invertible maps between named axes. This file defines the map
+// types, combinators, transforms, and legacy bridges.
 //
-// Frames: a MapFrame names a SPECIFIC axis (dimension + tag), not a dimension —
-// two maps compose only when the inner toFrame equals the outer fromFrame,
-// checked at construction, hard error on mismatch. Frames are load-bearing:
-// timeAt/beatAt dispatch on frame dimensions (\beat, \sec), replacing the old
-// respondsTo duck-typing.
+// A MapFrame identifies a specific axis by dimension and tag. Composition
+// requires matching frames; timeAt/beatAt dispatch on frame dimensions.
 //
 // Extension: per end, \carry (extend at the boundary slope) or \error.
 // No \clamp in the core — a clamped map is not invertible outside its domain.
@@ -26,15 +19,8 @@ MapFrame {
 	*mint { |dimension = \any| ^this.new(dimension) }
 	*prNextTag { ^("f" ++ UniqueID.next).asSymbol }
 
-	// A frame minted once per SOURCE OBJECT and cached, so that two maps derived
-	// from the same thing land on the SAME axis and therefore compose. This is
-	// how the bridges mint "producer" frames: a take's wall clock is one axis no
-	// matter how many tempo maps read it, while each map's beat reading is its
-	// own axis. `slot` separates several axes of the SAME dimension off one
-	// source (e.g. a take's relative and absolute seconds); it defaults to the
-	// dimension, so one source's beat and sec axes never collide.
-	// The cache holds its keys strongly — a source object stays alive as long as
-	// its frames are registered; clearSourceFrames drops the lot.
+	// Return the cached frame for (source, slot), minting it if needed. The slot
+	// defaults to dimension. The cache retains sources until cleared.
 	*forSource { |source, dimension = \any, slot|
 		var perSource;
 		slot = slot ? dimension;
@@ -50,11 +36,7 @@ MapFrame {
 			f
 		}
 	}
-	// Non-minting lookup: the frame ALREADY registered for (source, slot), or nil.
-	// forSource mints on a miss and retains the source strongly, so asking a mere
-	// question through it — "is this map's seconds axis that take's relative
-	// axis?" (the warpTo frame check) — would pollute the registry and pin an
-	// object alive for every comparison. `slot` defaults the way forSource's does.
+	// Return an existing source frame without minting or retaining a new source.
 	*peekSource { |source, slot = \any|
 		var perSource = prSourceFrames !? { prSourceFrames.at(source) };
 		^perSource !? { perSource.at(slot) }
@@ -98,18 +80,11 @@ MonoMap {
 	// f >> g : apply f, then g. Frame-checked in ComposedMap's constructor.
 	>> { |outer| ^ComposedMap([this, outer]) }
 
-	/*
-	 f ++ g : concatenation, NOT composition — g's shape is laid after f's,
-	 starting where f ended on both axes. Sugar for the finite two-cell MapSeq;
-	 both operands must have finite domains (MapSeq validates). The result
-	 keeps THIS map's frames (g is a shape; its frames are ignored). `other`
-	 may be an old-world map — MapSeq coerces cells through asMonoMap.
-	*/
+	// Concatenate two finite maps. `other` is treated as a shape and may be a
+	// legacy map supported by asMonoMap. Composition uses >> instead.
 	++ { |other| ^MapSeq([this, other], 1, this.fromFrame, this.toFrame) }
 
-	// Same mapping, new axes. THE reuse mechanism: a map's shape (a swing
-	// template, a metronome) is reusable, but only by explicit rebinding —
-	// there are no wildcard frames.
+	// Rebind the same shape to new axes.
 	withFrames { |fromFrame, toFrame| ^this.subclassResponsibility(thisMethod) }
 
 	// Collapse to a single concrete map. AffineMap and AnchorMap are already
@@ -151,11 +126,7 @@ MonoMap {
 			.format(this.class, fromFrame.dimension, toFrame.dimension)).throw
 	}
 
-	// Mean slope over [from, to] — output units per input unit.
-	// Defined here rather than on AnchorMap so a MapSeq or a ComposedMap answers
-	// it too; `at` applies whatever extension policy the map carries, so a span
-	// reaching outside the domain follows the same \carry / \error rule as any
-	// other lookup rather than inventing a third behaviour.
+	// Mean output units per input unit. Bounds follow the map's extension policy.
 	spanSlope { |from, to|
 		(from.isNumber and: to.isNumber).not.if {
 			Error("%.spanSlope: from and to must be numbers, got % and %"
@@ -167,11 +138,7 @@ MonoMap {
 		};
 		^(this.at(to) - this.at(from)) / (to - from)
 	}
-	// beat -> sec only: the span's mean tempo in beats per second — exactly the
-	// quantity setTempo sets, so `m.setTempo(x, a, b).spanTempo(a, b)` is
-	// x. Guarded on frame DIMENSIONS like timeAt/beatAt: asking a groove
-	// (beat->beat) for a tempo is a units error, not a shape error. nil when the
-	// span has no output width (a clamped region), where no tempo is defined.
+	// Mean beats per second for a beat -> sec map; nil for near-zero output width.
 	spanTempo { |from, to|
 		var slope;
 		this.mapsDimensions(\beat, \sec).not.if {
@@ -179,8 +146,7 @@ MonoMap {
 				.format(this.class, fromFrame.dimension, toFrame.dimension)).throw
 		};
 		slope = this.spanSlope(from, to);
-		// 1e-9 here is a near-zero guard, not a positivity test: isStrictlyPositive
-		// would let a 1e-12 slope through and return a 1e12 tempo.
+		// Avoid unstable reciprocals near zero.
 		^(slope > 1e-9).if { slope.reciprocal }
 	}
 	spanBpm { |from, to| ^this.spanTempo(from, to) !? (_ * 60) }
@@ -321,21 +287,11 @@ AnchorMap : MonoMap {
 	withFrames { |fromFrame, toFrame|
 		^AnchorMap(xs, ys, fromFrame, toFrame, extendBelow, extendAbove)
 	}
-	// ---- Transforms (design doc, "Transforms vs application"). Each returns a
-	// NEW AnchorMap and never mutates the receiver. A transform reinterprets the
-	// SAME two axes, so fromFrame/toFrame and the per-end extension policy carry
-	// over unchanged. MapSeq and ComposedMap deliberately have no transform
-	// methods: `.bake` to an AnchorMap first, then transform.
+	// ---- Non-mutating transforms. Frames and extension policies are preserved.
+	// Bake MapSeq or ComposedMap before applying them.
 
-	// Resample at lower anchor density ("pick" placement,
-	// quantize-tempomap-project.md §3a): keep each group's BOUNDARY anchors
-	// verbatim, drop the interior ones. `groups` is a positive integer (merge
-	// every n spans) or an array of them, CYCLED Pseq-style like
-	// Collection:clumps, so clump([4]) is "by 4-beat bars forever" and
-	// clump([2,4,6]) is mixed meter. The remainder group is always kept, so the
-	// first and last anchors survive (endpoint pinning) and both total extents
-	// are unchanged. Result always has >= 2 anchors. Compose curvature after:
-	// map.clump(4).curve(amount).
+	// Keep only group-boundary anchors. `groups` is a positive integer or a
+	// cyclic array of sizes. Endpoints and total extents are preserved.
 	clump { |groups = 2|
 		var sizes = groups.asArray, nSpans = xs.size - 1, keep = [0], pos = 0, gi = 0;
 		(sizes.isEmpty or: {
@@ -353,15 +309,8 @@ AnchorMap : MonoMap {
 			fromFrame, toFrame, extendBelow, extendAbove)
 	}
 
-	// Monotone cubic Hermite (PCHIP) through the anchors, SAMPLED back to a PL
-	// map with `oversample` segments per original span (ported from
-	// MIDIItemTempoMap.prCurve). Fritsch-Carlson tangent clamping keeps the
-	// underlying curve monotone, hence the sampled result too. The curve passes
-	// through every anchor, so anchors stay locked and only the shape between
-	// them bends; the original anchors are sample points and are snapped
-	// bit-exact. `amount` blends linear (0) to full curve (1). At amount 0 the
-	// curve IS the receiver, so we return its anchors rather than emit
-	// oversample-times-redundant collinear ones.
+	// Sample a monotone cubic Hermite curve at `oversample` points per span.
+	// Original anchors stay exact; `amount` blends linear (0) to curved (1).
 	curve { |amount = 1, oversample = 16|
 		var n = xs.size, m, bs, ts;
 		(oversample.isNumber.not
@@ -394,18 +343,8 @@ AnchorMap : MonoMap {
 		^AnchorMap(bs, ts, fromFrame, toFrame, extendBelow, extendAbove)
 	}
 
-	// Blend every span's OUTPUT width toward the width it would have at the
-	// uniform mean slope (total output extent / total input extent); input
-	// anchors are untouched. Same numbers as the old TempoMap.quantize. It is
-	// computed as a blend of the ANCHORS toward the straight line through the
-	// endpoints — the same map, but bit-exact at amount 0 and endpoint-pinning
-	// for free. amount 1 is the rigid constant-slope map. Strictly monotone for
-	// any amount in [0, 1]: a convex blend of two strictly increasing anchor
-	// sets. Total output extent is preserved exactly.
-	// Bounds are optional and trail the shape argument: omitted = the whole map,
-	// `from:` alone = from there to the domain end. Given bounds route through
-	// transformSpan, which does not cut where a boundary already IS a domain end —
-	// so quantize(a, from: xs.first, to: xs.last) is bit-exact against quantize(a).
+	// Blend output anchors toward the line through the endpoints. amount 0 is
+	// unchanged; 1 gives constant slope. Optional bounds limit the edit.
 	quantize { |amount = 1, from, to|
 		(from.isNil and: { to.isNil }).if { ^this.prQuantizeAll(amount) };
 		^this.transformSpan(from ? xs.first, to ? xs.last, { |cell|
@@ -423,18 +362,9 @@ AnchorMap : MonoMap {
 		^AnchorMap(xs, newYs, fromFrame, toFrame, extendBelow, extendAbove)
 	}
 
-	// Replace interior timing with the Friberg–Sundberg q family. w is exit/entry
-	// tempo (nil fits the existing ends); q controls where the change occurs.
-	// Endpoints and total width remain fixed. ritardSpan(pinEntry: true) instead
-	// preserves entry continuity by allowing the width to grow.
-	// MULTIPLICATIVE by default: the q curve scales the performance already here
-	// rather than replacing it, so rubato survives a tilt. `quantize` chooses the
-	// BASE the curve multiplies — 0 the performance as recorded, 1 the same map
-	// straightened first, which is bit-exactly what this method did before the
-	// change (the whole design rests on that identity: ritard(w, q) ==
-	// quantize(1).ritard(w, q)). In between is a real blend. It is not a mode flag,
-	// it is sugar for a pre-step that already exists as a method, and it takes
-	// quantize's own 0-1 amount rather than a boolean.
+	// Apply a Friberg–Sundberg tempo curve. `w` is exit/entry tempo and `q`
+	// positions the change. Endpoints stay fixed. `quantize` selects the base:
+	// 0 preserves recorded rubato; 1 first makes it constant-slope.
 	ritard { |w, q = 2, amount = 1, oversample = 32, quantize = 0|
 		var x0 = xs.first, x1 = xs.last, y0 = ys.first, y1 = ys.last;
 		var span = x1 - x0, height = y1 - y0, nSpans = xs.size - 1;
@@ -510,14 +440,8 @@ AnchorMap : MonoMap {
 		^AnchorMap(allXs, newYs, fromFrame, toFrame, extendBelow, extendAbove)
 	}
 
-	// Blend toward ANOTHER map on the same axes: amount 0 is this map (bit-exact),
-	// 1 is `other`, in between a convex blend and so strictly monotone, same argument
-	// as quantize. Sampled on the UNION of both breakpoint sets, because the maps
-	// generally differ in where their anchors sit — quantizeToRhythmMap's output is this map
-	// with one cell's anchors replaced, so the union keeps every corner of both. Where
-	// the two agree (outside an edited span) the blend is the identity by
-	// construction, at every amount. Frames must match: the whole point is that both
-	// describe the same axis, and a mismatch means one of them was minted separately.
+	// Blend with a map on the same frames, using the union of both anchor sets.
+	// amount 0 is this map; 1 is `other`.
 	blendWith { |other, amount = 1|
 		var us, ys2;
 		(fromFrame == other.fromFrame and: { toFrame == other.toFrame }).not.if {
@@ -535,18 +459,8 @@ AnchorMap : MonoMap {
 		^AnchorMap(us, ys2, fromFrame, toFrame, extendBelow, extendAbove)
 	}
 
-	// Local quantize: each span blends toward the mean slope over a window
-	// centred on that span. The window is `window` INPUT-AXIS units wide — NOT a
-	// count of anchors as the old TempoMap.quantizeWindow used, because with
-	// irregular anchors an index window covers inconsistent musical widths
-	// (quantize-tempomap-project.md §6a, "keep smoothing beat-domain aware").
-	// The local mean slope is input-overlap weighted, i.e. exactly (output
-	// covered by the window) / (input covered by the window), clipped at the
-	// domain ends. `window` defaults to a quarter of the input extent.
-	// Endpoints: the first anchor is fixed and interior anchors DRIFT (that is
-	// the smoothing); the far end is pinned by scaling every new width by one
-	// factor, so the total output extent is preserved exactly and monotonicity
-	// survives (a positive scale). O(spans^2) — anchor counts here are small.
+	// Smooth each span toward the overlap-weighted mean slope of a centered
+	// input-axis window. Endpoints and total output extent stay fixed. O(n^2).
 	quantizeWindow { |amount = 1, window|
 		var w = window ?? { (xs.last - xs.first) / 4 };
 		var nSpans = xs.size - 1, inW, outW, newW, newYs;
@@ -597,33 +511,10 @@ AnchorMap : MonoMap {
 			fromFrame, toFrame, extendBelow, extendAbove)
 	}
 
-	// ---- Local editing (quantize-tempomap-project.md §12b A). A local edit is
-	// an UNBAKE: `bake` already flattens a MapSeq into an AnchorMap exactly, so
-	// the only missing move is its inverse — cut an AnchorMap into cells, edit
-	// one, reconcatenate. Every transform above is then local for free
-	// (`map.transformSpan(16, 24, _.quantize(1))`) with no new map class. Like
-	// the transforms, these return NEW maps, never mutate, and carry the frames
-	// and the per-end extension policy over unchanged.
+	// ---- Local, non-mutating edits. Cut into cells, edit one, then reassemble.
 
-	// Cut the domain at `boundaries` (a number, or an array of them: strictly
-	// increasing and strictly inside the open interval (xs.first, xs.last)) and
-	// answer the cells. No boundaries answers one cell, the whole map.
-	//
-	// Cells are in ABSOLUTE coordinates — cell i starts where cell i-1 ended on
-	// both axes — which is what MapSeq wants: it reads a cell's domain[0] (and
-	// its value there) as that cell's local origin, so
-	// `MapSeq(map.slices(bars), 1, map.fromFrame, map.toFrame)` is the map
-	// again, up to the translation to (0, 0) that a MapSeq always imposes
-	// (transformSpan puts the origin back).
-	//
-	// A boundary that is not already an anchor synthesizes one via at(x). That
-	// is EXACT, not a resampling: the map is piecewise linear, so the new anchor
-	// lies on the segment it splits. A boundary that IS an anchor cuts there
-	// without duplicating it.
-	//
-	// Extension: the two outer ends keep the receiver's policy, every interior
-	// cut end is \carry. A cut is not a domain edge — an \error there would be a
-	// map that refuses to be put back together.
+	// Cut at strictly increasing interior boundaries. Cells retain absolute
+	// coordinates. New cut anchors are exact PL points; internal ends use \carry.
 	slices { |boundaries|
 		var raw = boundaries.asArray, cuts, edges, n;
 		raw.any { |x| x.isNumber.not }.if {
@@ -660,19 +551,8 @@ AnchorMap : MonoMap {
 		}
 	}
 
-	// Apply `func` to ONE span and put the result back. Slices at [from, to]
-	// (no cut where a boundary already IS a domain end), hands the middle cell —
-	// an AnchorMap in the receiver's absolute input coordinates — to func,
-	// reconcatenates, and translates the whole thing back so the first anchor
-	// sits exactly where it did. func may answer any MonoMap that bakes to an
-	// AnchorMap, so the shape can be authored from scratch, not only derived.
-	//
-	// The result's INPUT width may not change: on a beat->sec map the input axis
-	// carries beat NUMBERS, and moving them would relabel every later event.
-	// The OUTPUT width may change freely — everything after the span then shifts
-	// by the delta, which IS the wanted ripple ("bar 5 dragged" -> the take gets
-	// shorter and the following bars keep their shape, translated).
-	// Out-of-domain edits require explicit extendTo; ritardSpan extends its high end.
+	// Replace one span with func.(cell). The result must bake to an AnchorMap and
+	// keep the input width. Output-width changes shift later material.
 	transformSpan { |from, to, func|
 		var cells, mid, edited;
 		# cells, mid = this.prSpanCells(from, to, \transformSpan);
@@ -691,30 +571,10 @@ AnchorMap : MonoMap {
 	}
 
 
-	// Re-anchor ONE input span onto the output positions its events were actually
-	// played at — "this bar is five events, and here is when each of them
-	// sounded". `durs` are input-unit IOIs (a String is run through .beats), one
-	// per event; `onsets` are the performed positions on the OUTPUT axis, one per
-	// dur, the first sitting at the span's start. Bounds trail, per the span
-	// convention; `to` defaults to from + durs.sum and is a CHECK, not a rescale.
-	//
-	// NO RIPPLE: both of the span's output positions are read off THIS map, never
-	// off the onsets, so only anchors inside the span move — displacing the span
-	// itself stays scaleTempo's job. That falls out of the algebra rather than
-	// being imposed: the edited cell's output width is (this map at `to`) minus
-	// the first onset, and the first onset is required to sit at the span start
-	// (see the tolerance below), so the width is the one it replaced.
-	//
-	// `amount` is quantize STRENGTH: 1 puts every event on its intended input
-	// position, 0 answers this map bit-exactly, in between a blendWith. It is a
-	// blend of MAPS, not of positions, so the no-ripple guarantee holds at every
-	// strength — outside the span the two maps are the same anchors, so any blend
-	// of them is the identity there.
-	//
-	// MIDIItemPlayer.quantizeToRhythm is this method APPLIED: same arguments, but
-	// it snapshots its own tempomap, calls this, and warps the take through the
-	// resulting sec -> sec composition. Receiver decides the return, as with
-	// quantize / scaleTempo / setBpm.
+	// Re-anchor one span from input-unit IOIs (`durs`) and performed output-axis
+	// positions (`onsets`). `to` defaults to from + durs.sum and only validates
+	// the span. amount 0 is unchanged; 1 fully aligns events. Total width stays
+	// fixed, so later material does not move.
 	quantizeToRhythm { |durs, onsets, from, to, amount = 1|
 		var sum, edited;
 		durs.isString.if { durs = durs.beats };
@@ -756,16 +616,9 @@ AnchorMap : MonoMap {
 			Error("AnchorMap.quantizeToRhythm: onsets must be strictly increasing, "
 				"got %".format(onsets)).throw
 		};
-		// The committed algebra (§12b A): edit exactly one cell. transformSpan
-		// slices, hands the cell over, reconcatenates and restores the origin, so
-		// nothing outside [from, to] is touched.
+		// Edit one cell; transformSpan preserves everything outside it.
 		edited = this.transformSpan(from, to, { |cell|
-			// tolerance: HALF the first dur's performed width under the current
-			// map. Past that the first onset is nearer some other intended
-			// position than the span start — nearest-grid-point reasoning, the
-			// same half-a-gap boundary quantizing uses — which in practice means
-			// the wrong span, or a leading onset too many/few. Cheap to widen by
-			// asking for the right window; expensive to discover after a warp.
+			// Reject a first onset more than half a performed duration from the start.
 			var lo = cell.at(from), hi = cell.at(to);
 			var tol = 0.5 * (cell.at(from + durs[0]) - lo);
 			((onsets.first - lo).abs > tol).if {
@@ -780,11 +633,7 @@ AnchorMap : MonoMap {
 					"the span's end (% = %) — every onset must lie inside the span's "
 					"performed window.".format(onsets.last, to, hi)).throw
 			};
-			// input widths = durs; output widths = the gaps between the onsets,
-			// closed by the span's end position from the map (never from a note).
-			// x0/y0 keep the cell in the receiver's absolute coordinates like the
-			// one `slices` handed over — MapSeq re-glues either way, but an
-			// inspectable cell is worth the two keywords.
+			// Close the final output span at the map's end; retain absolute coordinates.
 			AnchorMap.fromSpans(durs, (onsets ++ [hi]).differentiate.drop(1),
 				x0: from, y0: onsets.first,
 				fromFrame: cell.fromFrame, toFrame: cell.toFrame)
@@ -792,19 +641,9 @@ AnchorMap : MonoMap {
 		^(amount == 1).if { edited } { this.blendWith(edited, amount) }
 	}
 
-	// Scale one span's output width by `factor`, keeping its internal shape: a
-	// pure y-scale of the cell about its own start, so anchors inside the span
-	// keep their relative output proportions. factor > 1 makes the span take
-	// longer (slower, on a beat->sec map).
-	//
-	// preserveTotal pins the map's TOTAL output extent by rescaling everything
-	// OUTSIDE the span by one common factor. Widths stay positive under a
-	// positive scale, so monotonicity survives — but the compensating factor
-	// itself must stay positive, i.e. the stretched span must still fit inside
-	// the original total. It is refused rather than fudged, and so is a span
-	// that covers the whole domain (nothing left to compensate with).
-	// Private y-stretch by an OUTPUT factor (> 1 = slower). The public spelling is
-	// scaleTempo, whose k is a TEMPO multiplier — the reciprocal of this.
+	// Scale a span's output width while preserving its internal proportions.
+	// preserveTotal compensates by uniformly scaling material outside the span.
+	// This private factor scales duration; public scaleTempo scales tempo.
 	prStretchSpan { |from, to, factor, preserveTotal = false|
 		var cells, mid, spanW, total, k;
 		((factor.isNumber.not) or: { factor <= 0 }).if {
@@ -831,9 +670,7 @@ AnchorMap : MonoMap {
 		^this.prFromCells(cells, \scaleTempo)
 	}
 
-	// Set the span's MEAN slope (output units per input unit) exactly while
-	// preserving its internal shape — the y-stretch factor that lands the
-	// span's output width on slope * input width.
+	// Set a span's mean slope while preserving its internal proportions.
 	setSlope { |slope, from, to|
 		var outW;
 		((slope.isNumber.not) or: { slope <= 0 }).if {
@@ -845,16 +682,8 @@ AnchorMap : MonoMap {
 		^this.prStretchSpan(from, to, slope * (to - from) / outW)
 	}
 
-	// beat -> sec only: bps is beats per second, so the target slope is 1/bps
-	// seconds per beat. Guarded on the frame DIMENSIONS rather than duck-typing,
-	// like timeAt/beatAt — asking a groove (beat->beat) for a tempo is a units
-	// error, not a shape error.
-	// Sets the MEAN tempo over [from, to] (the whole map when the bounds are
-	// omitted), keeping the rubato: every span inside scales by one common factor.
-	// The mean here is total beats / total seconds — exactly what spanTempo reads
-	// back, NOT the arithmetic mean of the per-span tempi, which under rubato is a
-	// quite different number. Setter and reader are inverses:
-	// m.setTempo(x, a, b).spanTempo(a, b) == x.
+	// Set mean beats per second on a beat -> sec map. Optional bounds default to
+	// the whole map; internal rubato is preserved by uniform scaling.
 	setTempo { |bps, from, to|
 		this.mapsDimensions(\beat, \sec).not.if {
 			Error("AnchorMap.setTempo: needs a beat -> sec map, this one maps % -> %"
@@ -923,17 +752,9 @@ AnchorMap : MonoMap {
 			this.prSlopeBefore(from) / shaped.prSlopeAfter(from))
 	}
 
-	// Concatenate maps and smooth their tempo seam with one pinEntry ritardSpan.
-	// before/after define the window; w defaults to the fitted outside-tempo ratio.
-	//
-	// `other` follows the ++ convention: it is a SHAPE, coerced through
-	// asMonoMap (so an old-world MIDIItemTempoMap / TempoMap works) and baked to
-	// anchors, and its FRAMES ARE IGNORED — rebound to this map's axes. A frame
-	// check here would buy nothing a MapSeq does not already discard (it re-zeros
-	// every cell, so other's origin never reaches the result) while refusing the
-	// ordinary case of easing one take into another. What still has to agree is
-	// the DIMENSIONS: seconds-per-beat is the quantity being smoothed, so a
-	// beat->beat groove is a units error, not an axis mismatch.
+	// Concatenate maps and smooth their tempo seam over `before` and `after`.
+	// `other` is treated as a shape and rebound to this map's axes; dimensions
+	// must still be beat -> sec. `w` defaults to the outside-tempo ratio.
 	easeTo { |other, before = 1, after = 0, q = 2, amount = 1, w|
 		var joined, join, lo, hi, dx, dy;
 		(other.isKindOf(MonoMap).not and: { other.respondsTo(\asMonoMap) }).if {
@@ -994,26 +815,13 @@ AnchorMap : MonoMap {
 		hi = join + after;
 		// Fit from tempos outside the region being reshaped.
 		w = w ?? { joined.prSlopeBefore(lo) / joined.prSlopeAfter(hi) };
-		// quantize: 1, and it has to be. The thing easeTo removes is the tempo STEP at
-		// the join, and the step is part of the joined map's SHAPE — a multiplicative
-		// ritard (quantize: 0) scales the step along with everything else and leaves it
-		// sitting there, exiting the window at the wrong tempo. Flattening the window
-		// first is the mechanism, not a wart: it costs the performance inside [lo, hi]
-		// and buys the continuity the whole method exists for. Narrow the window if
-		// that is too much rubato to give up.
+		// Flatten the window first; otherwise the existing seam is scaled, not removed.
 		^joined.ritardSpan(lo, hi, w, q, amount, true, quantize: 1)
 	}
 
-	// Tempo scale: `k` times faster (k < 1 slower), beat numbering untouched and
-	// rubato preserved — every span scales by one common factor. Bounds are optional
-	// and trail, like quantize's: omitted = the whole map, in which case this is a
-	// pure y-scale about the map's own start, so placement on the input axis is
-	// untouched. Bounded, everything after `to` shifts by the delta (the wanted
-	// ripple); preserveTotal instead pins the map's total extent by rescaling what
-	// lies outside the span.
-	//
-	// This is the RELATIVE form; setBpm/setTempo are the absolute one. k is a TEMPO
-	// multiplier — the reciprocal of the output-width factor the old stretchSpan took.
+	// Multiply tempo by `k`, preserving beat positions and rubato. Optional bounds
+	// ripple later material unless preserveTotal rescales the material outside.
+	// Use setBpm/setTempo for an absolute target.
 	scaleTempo { |k = 1, from, to, preserveTotal = false|
 		((k.isNumber.not) or: { k <= 0 }).if {
 			Error("AnchorMap.scaleTempo: k must be > 0, got %".format(k)).throw
@@ -1071,11 +879,7 @@ AnchorMap : MonoMap {
 		};
 		^edited
 	}
-	// Reassemble edited cells. A MapSeq of them IS the map again, and bake
-	// flattens it back to anchors — but a MapSeq starts at 0 on both axes, so
-	// the receiver's origin is added back here. Everything is revalidated on the
-	// way through the two constructors, so an edit that broke monotonicity
-	// errors here instead of yielding a bad map.
+	// Reassemble and validate cells, restoring the receiver's absolute origin.
 	prFromCells { |someCells, caller|
 		var baked = MapSeq(someCells, 1, fromFrame, toFrame, extendBelow, extendAbove).bake;
 		baked.isKindOf(AnchorMap).not.if {
@@ -1161,9 +965,8 @@ AnchorMap : MonoMap {
 	}
 }
 
-// Lazy composition, applied left to right. Frames checked here, at
-// construction; domain errors surface at apply time (checkComposable is the
-// opt-in early check, for authoring and tests).
+// Lazy left-to-right composition. Frames are checked at construction; call
+// checkComposable for an early domain check.
 ComposedMap : MonoMap {
 	var <maps;
 	*new { |maps|
@@ -1198,11 +1001,8 @@ ComposedMap : MonoMap {
 			++ middle
 			++ [maps.last.withFrames(maps.last.fromFrame, toFrame)])
 	}
-	// Exact PL fusion (design doc, Performance). PL composed with PL is PL, so
-	// the chain collapses with ZERO approximation error — no resampling, no
-	// anchor blowup. All-affine folds to one AffineMap; any AnchorMap in the
-	// chain gives one AnchorMap whose breakpoints are the union of every
-	// AnchorMap's xs pulled back to the chain's input axis.
+	// Fuse affine and piecewise-linear chains exactly. All-affine chains become
+	// one AffineMap; otherwise pulled-back breakpoints form one AnchorMap.
 	bake {
 		var bps, xs = [], ys = [];
 		// reserved: a link that is neither affine nor PL (Cyclic, curved) has
@@ -1282,20 +1082,9 @@ ComposedMap : MonoMap {
 	}
 }
 
-// Concatenation / tiling (design doc, "Cyclic maps (changing meters)").
-// Finite-domain maps ("cells") laid end to end, each starting where the
-// previous ended on BOTH axes, cycling the list Pseq-style for `repeats`
-// passes; `repeats: inf` tiles the whole real line (negative side included)
-// and the map is total. Continuous and monotone by construction; slope may
-// jump at a join (bar-line tempo change), position never does.
-//
-// Cells are SHAPES: their frames are ignored beyond a dimension-consistency
-// check, and the MapSeq binds its own frames like withFrames does. Cell
-// coordinates are relative — a cell's domain lo maps to the tile's start —
-// so the MapSeq itself starts at 0 on both axes; absolute placement is
-// `place`'s job. Drift (out width != in width) is allowed: it tiles into a
-// steady per-cycle stretch. Each MonoMap subclass is one evaluation
-// strategy; MapSeq's is "locate the tile, delegate to the cell".
+// Concatenate finite-domain cells for `repeats` passes. inf tiles the whole
+// real line. Cells are shapes: tags and origins are ignored, but dimensions
+// must agree. MapSeq begins at (0, 0); use place for absolute coordinates.
 //
 //   MapSeq([barIn5, barIn4], inf)                  // changing meter, forever
 //   MapSeq.swing(1.5)                              // Groove.swing as cells
@@ -1309,12 +1098,8 @@ MapSeq : MonoMap {
 		^super.new.initMapSeq(cells, repeats, fromFrame, toFrame, extendBelow, extendAbove)
 	}
 
-	// ---- cell sugar. The combinator proper knows nothing about music; these
-	// class methods are where swing ratios and wave shapes live. Cell builders
-	// return AnchorMaps (usable anywhere); the *swing / *modulate / *groove
-	// forms return ready infinite MapSeqs on a single shared beat axis, which
-	// is what a Groove is (design doc: "a total map whose two frames are the
-	// same beat axis").
+	// ---- Musical cell builders. Cell methods return AnchorMaps; swing,
+	// modulate, and groove return infinite beat-axis MapSeqs.
 
 	// Groove.swing semantics: the long note takes ratio/(ratio+1) of the
 	// period, so swing(1.5) over 2 beats puts straight beat 1 at grooved 1.2.
@@ -1386,14 +1171,7 @@ MapSeq : MonoMap {
 			fromFrame, toFrame)
 	}
 
-	/*
-	 Cells are coerced through asMonoMap, so every old-world map (TempoMap,
-	 MIDIItemTempoMap, an EventList's clock) is a cell without the caller
-	 spelling the bridge out: MapSeq([aTempoMap, anotherMap]) and
-	 `aMap ++ aTempoMap` both work. Anything with no bridge still raises the
-	 same "cells must be MonoMaps" error, naming ITS class rather than a
-	 doesNotUnderstand from inside the width arithmetic.
-	*/
+	// Coerce supported legacy cells through asMonoMap.
 	initMapSeq { |someCells, someRepeats, inF, outF, below, above|
 		var inDims, outDims, inD, outD;
 		cells = someCells.asArray.collect { |c|
@@ -1508,11 +1286,7 @@ MapSeq : MonoMap {
 		^MapSeq(cells, repeats, fromFrame, toFrame, extendBelow, extendAbove)
 	}
 
-	// ---- cell editing (quantize-tempomap-project.md §12b A). Non-mutating, so
-	// a bar list is directly editable: the new cell array goes back through the
-	// constructor, which revalidates widths, dimensions and repeats. Everything
-	// else — repeats, frames, per-end extension — is kept, since replacing a
-	// cell reinterprets the same two axes, exactly like AnchorMap's transforms.
+	// ---- Non-mutating cell editing. Reconstruction revalidates the new cells.
 	replaceCell { |i, cell|
 		((i.isNumber.not) or: { i.asInteger != i }
 			or: { i < 0 } or: { i >= cells.size }).if {
@@ -1581,23 +1355,10 @@ MapSeq : MonoMap {
 	}
 }
 
-// The analytic escape hatch (design doc, "Constructors": fromFunction), made
-// real for step 5d. The caller supplies BOTH directions and guarantees
-// monotonicity — nothing here can check it. Used to wrap a tempo source that
-// already answers both directions (EventList) instead of merging it into the
-// core.
-//
-// Extension policy reads differently here than on the PL maps: \carry means
-// "the wrapped function is trusted outside the domain" (it usually is — an
-// analytic map is defined everywhere, and EventList holds its final tempo past
-// the last event), \error refuses. So `domain` is a DECLARATION of the interval
-// the caller vouches for, not a table bound. It is the only way to fence off a
-// region where the wrapped function is NOT invertible — which is exactly why
-// EventList's map declares \error below beat 0.
-//
-// This map cannot fuse: `bake` returns it unchanged, and any chain containing
-// one stays symbolic, paying the wrapped function on every lookup. `sample` is
-// the explicit, approximate freeze.
+// Function-backed map. The caller supplies both directions and guarantees
+// monotonicity. The domain declares the trusted interval: \carry trusts calls
+// outside it; \error refuses them. FunctionMaps cannot fuse; sample explicitly
+// approximates one as anchors.
 FunctionMap : MonoMap {
 	var <func, <invFunc, prDomain, prRange;
 	*new { |func, invFunc, domain, fromFrame, toFrame, extendBelow, extendAbove|
@@ -1661,12 +1422,7 @@ FunctionMap : MonoMap {
 			extendBelow, extendAbove)
 	}
 
-	// Freeze to an AnchorMap by sampling n even steps across the domain.
-	// APPROXIMATE by construction — exact only where the wrapped map is
-	// piecewise linear with its breakpoints on the sample grid. Deliberately NOT
-	// called `bake`: bake is exact by contract, and a function map has no exact
-	// finite form. Frames and extension policy carry over, so the result drops
-	// into any chain the original fitted.
+	// Approximate the function with n uniform segments. Unlike bake, this is not exact.
 	sample { |n = 128|
 		var lo, hi, xs;
 		prDomain.isNil.if {
@@ -1694,12 +1450,9 @@ FunctionMap : MonoMap {
 	}
 }
 
-// V2 bridge (tempomap-v2-design.md step 5a): the old world enters the core at
-// explicit seams; TempoMap itself is frozen (see tempomap-compat-test.scd).
+// Legacy TempoMap bridge. The result is a snapshot with invertible extension.
 + TempoMap {
-	// Snapshot of beats/durs as an AnchorMap — later mutation of this TempoMap
-	// does not leak in. Boundary is \carry by default, deliberately NOT the old
-	// clamp: clamp is not invertible and the core refuses it.
+	// Snapshot beats/durs. Defaults to \carry because clamping is not invertible.
 	asMonoMap { |fromFrame, toFrame, extendBelow, extendAbove|
 		^AnchorMap.fromSpans(beats, durs,
 			fromFrame: fromFrame ? \beat, toFrame: toFrame ? \sec,
@@ -1707,31 +1460,12 @@ FunctionMap : MonoMap {
 	}
 }
 
-// Step 5c. A MIDIItemTempoMap is already an anchor map wearing a different
-// constructor: prBuildLinear builds env/invEnv from exactly `times` and
-// `beats`, so the snapshot below is EXACT, not a resampling. Its declared
-// extrapolation is already \carry, so unlike TempoMap there is no clamp to
-// argue with.
+// Exact linear-anchor snapshot of a MIDIItemTempoMap.
 + MIDIItemTempoMap {
-	// beat -> sec, snapshotted: later mutation of this map (scaleBeats, trim,
-	// curve) does not leak into the result.
-	//
-	// origin: \relative (default) matches `timeAt` — seconds from the first
-	//   anchor. \absolute adds t0, matching EventList.timeAtBeat's
-	//   `tm.timeAt(beat) + tm.t0`. These are DIFFERENT axes and get different
-	//   frames on purpose: composing a relative map with an absolute one is the
-	//   t0 bug the frame system exists to catch.
-	//
-	// Frames: the \sec frame is keyed on the TAKE (the midiEvents array), so two
-	// maps read off one recording — different choiceFunc, different beat
-	// spellings — share a single wall axis and compose. The \beat frame is keyed
-	// on THIS map, since a different choiceFunc is a different reading of the
-	// beats; repeated asMonoMap calls on one map still agree. Anchor-built maps
-	// (fromAnchors, no MIDI source) have no take and key both on themselves.
-	//
-	// Curved maps are refused rather than silently flattened (design doc: curved
-	// snapshot deferred). The linear anchors survive `curve` untouched, so
-	// allowCurved: true takes them and drops the curve, explicitly.
+	// Snapshot beat -> sec. \relative starts seconds at the first anchor;
+	// \absolute adds t0. Their frames intentionally differ. Seconds frames are
+	// shared per take; beat frames are per map. Curved maps require allowCurved,
+	// which explicitly discards the curve and keeps its linear anchors.
 	asMonoMap { |fromFrame, toFrame, origin = \relative, allowCurved = false,
 		extendBelow, extendAbove|
 		var ys = times.asArray;
@@ -1753,34 +1487,12 @@ FunctionMap : MonoMap {
 	}
 }
 
-// Step 5d. EventList's composed clock (recorded tempoMap x \tempoTrack
-// automation) answers both directions already, so it enters V2 by being
-// WRAPPED, not merged: the goal was "any tempo source answers the protocol",
-// not "one engine".
+// Live FunctionMap bridge for EventList's bidirectional clock.
 + EventList {
-	// beat -> sec, LIVE: the returned map reads this list, so later edits to
-	// events / tempoMap / beatDur show through. That is deliberate — an
-	// EventList is a live object and a silent stale snapshot would be worse —
-	// and it is the one place the bridges differ, since TempoMap.asMonoMap and
-	// MIDIItemTempoMap.asMonoMap both snapshot. Call `.sample(n)` on the result
-	// to freeze it.
-	//
-	// The tempoEnv is captured ONCE, here: beatToWall/wallToBeat take it as an
-	// argument and memoize against its identity, so rebuilding it per lookup
-	// would thrash that cache. useTempoTrack: false captures nil instead, which
-	// is the base-tempo-only map (a materially different map — nil there means
-	// "ignore \tempoTrack events", not "no tempo").
-	//
-	// Extension: \error below, because beatToWall CLAMPS at beat 0 (returns 0
-	// for any beat <= 0) and so does wallToBeat below 0 s. A clamped region is
-	// not invertible and the core does not carry one silently — a pickup before
-	// beat 0 now raises instead of quietly reading 0. Above the last event the
-	// wrapped function holds the final multiplier, which is honest \carry, so
-	// the upper bound only shapes `range` and checkComposable.
-	//
-	// Frames are minted per list, so composing two lists' maps is a hard error
-	// until an explicit rebase affine is inserted between them — the wall frames
-	// really are offset by their tempoMaps' t0 (see prBeatFromSource).
+	// Live beat -> sec map: later EventList edits remain visible. tempoEnv is
+	// captured once for memoization; false ignores tempo-track events. The lower
+	// end is \error because EventList clamps below beat 0 and is not invertible
+	// there. Frames are distinct per list.
 	asMonoMap { |fromFrame, toFrame, useTempoTrack = true, extendBelow, extendAbove|
 		var tEnv = useTempoTrack.if { this.tempoEnv };
 		^FunctionMap(
@@ -1802,32 +1514,11 @@ FunctionMap : MonoMap {
 	}
 }
 
-// §12 seam — the REVERSE bridge. Steps 5a-5d carry the old world INTO V2; this
-// carries a core map back OUT, once, at an explicit boundary, so the old
-// consumers (warpTo's env walk, EventList's beatToWall integral) keep running on
-// the object they already understand and never learn what a MonoMap is.
+// Reverse bridge for legacy consumers that require AnchorTempoMap.
 + MonoMap {
-	// This map's anchors as a concrete AnchorTempoMap.
-	//
-	// `.bake` first, always: the old engines look the map up per event and have
-	// no way to say "flatten yourself", so the exact PL fusion happens HERE,
-	// where it is still exact, rather than being paid per lookup forever. A map
-	// that cannot bake to finite anchors is refused with the way out named —
-	// guessing (sampling silently) would hand the old world an approximation it
-	// could never tell apart from a recording.
-	//
-	// Two placements, because the two consumers mean different things by the
-	// seconds axis, and AnchorTempoMap's t0 is exactly that difference:
-	//   rebase: false — times pass through, so t0 == the first anchor's sec
-	//     value. That is warpTo's contract: t0 is the ABSOLUTE timestamp at which
-	//     the take's first anchor was played, and warpTo maps around it
-	//     (`timestamp - origin` ... `+ origin`). Take-absolute placement.
-	//   rebase: true — times shift so the first anchor sits at 0 s, hence t0 == 0.
-	//     That is a list clock: an EventList's tempoMap is a SHAPE read from beat
-	//     0 (prBaseWallAt/baseWallDelta call timeAt and never add t0), so a map
-	//     that happens to start 40 s into a take must not push the whole list 40
-	//     s late.
-	// Non-mutating: the receiver is untouched and the result shares no state with it.
+	// Bake exact finite anchors into a new AnchorTempoMap. Symbolic or infinite
+	// maps are refused rather than sampled silently. rebase shifts the first
+	// seconds anchor to zero; otherwise its absolute placement becomes t0.
 	asAnchorTempoMap { |rebase = false|
 		var baked = this.bake, times, beats;
 		baked.isKindOf(AnchorMap).not.if {

@@ -513,7 +513,7 @@ AnchorMap : MonoMap {
 	// Blend toward ANOTHER map on the same axes: amount 0 is this map (bit-exact),
 	// 1 is `other`, in between a convex blend and so strictly monotone, same argument
 	// as quantize. Sampled on the UNION of both breakpoint sets, because the maps
-	// generally differ in where their anchors sit — retimeSpan's output is this map
+	// generally differ in where their anchors sit — quantizeToRhythmMap's output is this map
 	// with one cell's anchors replaced, so the union keeps every corner of both. Where
 	// the two agree (outside an edited span) the blend is the identity by
 	// construction, at every amount. Frames must match: the whole point is that both

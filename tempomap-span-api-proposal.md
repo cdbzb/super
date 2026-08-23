@@ -187,8 +187,8 @@ scope as "unrelated — destructive note re-timing, no whole-take twin". Wrong: 
 `requantizeSpan` was pointing at exactly that. It belongs to the `quantize` family.
 
 ```supercollider
-quantizeToRhythm { |durs, onsets, from, to, amount = 1|   // was requantizeSpan(from, durs, onsets, to, amount)
-retimeSpan       { |durs, onsets, from, to, amount = 1|   // the MAP form, args reordered to match
+quantizeToRhythm    { |durs, onsets, from, to, amount = 1|  // was requantizeSpan(from, durs, onsets, to, amount)
+quantizeToRhythmMap { |durs, onsets, from, to, amount = 1|  // was retimeSpan — the MAP form (§G)
 ```
 
 They still do NOT merge under §A — cousins, not twins. Different payload (durs + measured
@@ -204,14 +204,33 @@ map (`AnchorMap.quantize`), rewrite timestamps (`MIDIItemPlayer.quantize`), choo
 base (the `quantize:` keyword). That overload predates this work and is flagged in
 `EventList`'s docstring; the family relationship was judged worth more than avoiding it.
 
-`retimeSpan` keeps its name (its return type, an AnchorMap, is the difference) but takes the
-new argument order so the pair does not diverge. Bounds trail, per §A; the rhythm leads,
-because that is what the method names.
+`retimeSpan` was first kept under its own name (its return type, an AnchorMap, being the
+difference) with only the argument order brought into line. Superseded by §G.
 
 Arg-swap hazard: `durs` and `onsets` are both same-length numeric arrays, so a swapped call
 is the one reorder that could pass quietly. In practice the existing guards fire —
 `onsets` must be strictly increasing performed seconds whose first sits at the span start
-(`retime-span-test.scd:316-323`).
+(`quantize-to-rhythm-test.scd:316-323`).
+
+### G. `retimeSpan` -> `quantizeToRhythmMap`
+
+Same computation, two returns — so one name stem, one suffix for the return. The pair is now:
+
+```supercollider
+quantizeToRhythm    { |durs, onsets, from, to, amount = 1|  // -> warped MIDIItemPlayer
+quantizeToRhythmMap { |durs, onsets, from, to, amount = 1|  // -> AnchorMap (beat -> abs sec)
+```
+
+`retimeSpan` failed on two counts §F left standing: it carried the `Span` that §A removed
+everywhere else, and its name shared nothing with the method it is the map form of, so
+neither one led to the other by tab-completion or by eye.
+
+Not folded into one method with an `asMap:` flag — a flag that switches the return TYPE
+between a player and a map is worse to read at the call site than two names, and the whole
+point of the map form is that it is non-mutating, which a keyword buries.
+
+The private builder follows: `prRetimeSpanMap` -> `prQuantizeToRhythmMap`. Test file renamed
+`retime-span-test.scd` -> `quantize-to-rhythm-test.scd` (101 checks, 0 failures after).
 
 ## Scope
 

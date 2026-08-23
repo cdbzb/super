@@ -10,7 +10,7 @@
 // itself is never mutated and the source grid is never touched: `commit` hands
 // the result out (MapEditor.last, and the onSave hook) for the caller to apply
 // with warpTo (destructive) or sourceTempoMap: (non-destructive) — the same
-// choice §12c' gives retimeSpan.
+// choice §12c' gives quantizeToRhythmMap.
 //
 // VIEW — the tempo lane: instantaneous bpm as a step line (the honest
 // piecewise-constant reading of a PL map) with the whole-grid mean dashed

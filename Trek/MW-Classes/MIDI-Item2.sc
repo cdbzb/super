@@ -2178,16 +2178,16 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		}
 	}
 	// §12c': the PICKING half of the retime flow — performed onsets inside a
-	// BEAT window, deliberately kept out of retimeSpan (auto-picking judged too
-	// fragile to bury: grace notes, stray chord tones and a missed event all
+	// BEAT window, deliberately kept out of the retime methods (auto-picking
+	// judged too fragile to bury: grace notes, stray chord tones and a missed event all
 	// want an eye on the result, and a query you can print and edit is that eye).
 	// Needs a loaded selection, like every beat-addressed method here.
 	//
 	// The window is [fromBeat, toBeat) run through the selection's tempomap, so
 	// it is asked in beats and answered in ABSOLUTE performed seconds — which is
-	// exactly what retimeSpan's `onsets` argument takes. Half-open on purpose:
+	// exactly what the `onsets` argument takes. Half-open on purpose:
 	// onsets(0, 4) ++ onsets(4, 8) partitions the take with nothing counted
-	// twice, and the next bar's downbeat — which retimeSpan reads off the MAP,
+	// twice, and the next bar's downbeat — which the retime reads off the MAP,
 	// never off a played note — cannot sneak in as an extra event.
 	//
 	// `choiceFunc` is a picker, `{ |note, i| bool }` over the noteOn events —
@@ -2240,7 +2240,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	// canonical call is the composition of the two halves:
 	//
 	//     o  = p.onsets(20, 24);
-	//     m2 = p.retimeSpan("ex x q qe e".beats, o, 20);
+	//     m2 = p.quantizeToRhythmMap("ex x q qe e".beats, o, 20);
 	//
 	// followed by ONE of three applications, which say genuinely different things
 	// (§12f):
@@ -2291,14 +2291,14 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	// two must share a beat frame (see the ONE-call note below).
 	// The MAP form of quantizeToRhythm: same computation, handed back as an
 	// AnchorMap for the caller to apply (or not) instead of warping the take.
-	retimeSpan { |durs, onsets, from, to, amount = 1|
+	quantizeToRhythmMap { |durs, onsets, from, to, amount = 1|
 		var mOld, mNew;
-		(amount == 1).if { ^this.prRetimeSpanMap(from, durs, onsets, to, \retimeSpan) };
+		(amount == 1).if { ^this.prQuantizeToRhythmMap(from, durs, onsets, to, \quantizeToRhythmMap) };
 		mOld = this.tempomap.asMonoMap(origin: \absolute);
-		mNew = this.prRetimeSpanMap(from, durs, onsets, to, \retimeSpan, mOld);
+		mNew = this.prQuantizeToRhythmMap(from, durs, onsets, to, \quantizeToRhythmMap, mOld);
 		^mOld.blendWith(mNew, amount)
 	}
-	// §12f: retimeSpan APPLIED, locally and destructively — "these five events of
+	// §12f: the map APPLIED, locally and destructively — "these five events of
 	// bar 5 were meant to be this rhythm; move them there and leave the rest of
 	// the take exactly as played". Same arguments, same guards (they fire from the
 	// shared builder, so only the method name in the message changes), but it
@@ -2342,7 +2342,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		var mOld, mNew;
 		this.prNeedSelection(\quantizeToRhythm);
 		mOld = this.tempomap.asMonoMap(origin: \absolute);
-		mNew = this.prRetimeSpanMap(from, durs, onsets, to, \quantizeToRhythm, mOld);
+		mNew = this.prQuantizeToRhythmMap(from, durs, onsets, to, \quantizeToRhythm, mOld);
 		(amount != 1).if { mNew = mOld.blendWith(mNew, amount) };
 		^this.warpTo((mNew.inverse >> mOld).bake)
 	}
@@ -2356,8 +2356,8 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	// `who` names the caller in the error messages (the guards are the caller's,
 	// as far as the user is concerned). `map` lets quantizeToRhythm pass the
 	// snapshot it already holds, so the two maps it composes share a beat frame;
-	// nil takes a fresh one, which is retimeSpan's case.
-	prRetimeSpanMap { |from, durs, onsets, to, who = \retimeSpan, map|
+	// nil takes a fresh one, which is the Map form's case.
+	prQuantizeToRhythmMap { |from, durs, onsets, to, who = \quantizeToRhythmMap, map|
 		var sum;
 		this.prNeedSelection(who);
 		durs.isString.if { durs = durs.beats };

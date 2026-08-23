@@ -188,7 +188,7 @@ scope as "unrelated — destructive note re-timing, no whole-take twin". Wrong: 
 
 ```supercollider
 quantizeToRhythm    { |durs, onsets, from, to, amount = 1|  // was requantizeSpan(from, durs, onsets, to, amount)
-quantizeToRhythmMap { |durs, onsets, from, to, amount = 1|  // was retimeSpan — the MAP form (§G)
+AnchorMap.quantizeToRhythm { |durs, onsets, from, to, amount = 1|  // was retimeSpan (§G)
 ```
 
 They still do NOT merge under §A — cousins, not twins. Different payload (durs + measured
@@ -205,32 +205,54 @@ base (the `quantize:` keyword). That overload predates this work and is flagged 
 `EventList`'s docstring; the family relationship was judged worth more than avoiding it.
 
 `retimeSpan` was first kept under its own name (its return type, an AnchorMap, being the
-difference) with only the argument order brought into line. Superseded by §G.
+difference) with only the argument order brought into line. Superseded by §G, which moves it
+to `AnchorMap` under the same verb.
 
 Arg-swap hazard: `durs` and `onsets` are both same-length numeric arrays, so a swapped call
 is the one reorder that could pass quietly. In practice the existing guards fire —
 `onsets` must be strictly increasing performed seconds whose first sits at the span start
 (`quantize-to-rhythm-test.scd:316-323`).
 
-### G. `retimeSpan` -> `quantizeToRhythmMap`
+### G. `retimeSpan` -> `quantizeToRhythm` on the map (supersedes the `Map` suffix)
 
-Same computation, two returns — so one name stem, one suffix for the return. The pair is now:
+Same computation, two returns — and the receiver already tells you which. That is the
+convention everywhere else in this API: `quantize`, `scaleTempo`, `setBpm`, `setTempo` are
+each ONE verb defined on both the map class and the thing that carries a map, and each
+answers its own kind. `MIDIItemTempoMap.scaleTempo` answers a `MIDIItemTempoMap`;
+`AnchorMap.scaleTempo` answers an `AnchorMap`. No suffix distinguishes them.
+
+So the computation moves to where it always belonged — it never touched anything on the
+player except `this.tempomap` — and the player keeps the verb as the applied form:
 
 ```supercollider
-quantizeToRhythm    { |durs, onsets, from, to, amount = 1|  // -> warped MIDIItemPlayer
-quantizeToRhythmMap { |durs, onsets, from, to, amount = 1|  // -> AnchorMap (beat -> abs sec)
+AnchorMap.quantizeToRhythm      { |durs, onsets, from, to, amount = 1|  // -> AnchorMap
+MIDIItemPlayer.quantizeToRhythm { |durs, onsets, from, to, amount = 1|  // -> warped player
 ```
 
-`retimeSpan` failed on two counts §F left standing: it carried the `Span` that §A removed
-everywhere else, and its name shared nothing with the method it is the map form of, so
-neither one led to the other by tab-completion or by eye.
+The player's is now five lines: snapshot, call the map, warp through
+`(mNew.inverse >> mOld)`. Every guard, the one edited cell and the `amount` blend live on
+`AnchorMap`. `prRetimeSpanMap` and `prQuantizeToRhythmMap` are both gone — the shared
+builder WAS the map method, written in the wrong class.
 
-Not folded into one method with an `asMap:` flag — a flag that switches the return TYPE
-between a player and a map is worse to read at the call site than two names, and the whole
-point of the map form is that it is non-mutating, which a keyword buries.
+The map form on a player becomes explicit about the snapshot it was always taking:
 
-The private builder follows: `prRetimeSpanMap` -> `prQuantizeToRhythmMap`. Test file renamed
-`retime-span-test.scd` -> `quantize-to-rhythm-test.scd` (101 checks, 0 failures after).
+```supercollider
+m2 = p.tempomap.asMonoMap(origin: \absolute).quantizeToRhythm(durs, o, 20);
+```
+
+Rejected on the way here: `quantizeToRhythmMap` (briefly committed, `839f63f3`) — a `Map`
+suffix says with a name what the receiver already says, and it is the only such suffix in
+the API. Also rejected: one method with an `asMap:` flag — a keyword that switches the
+return TYPE between a player and a map reads worse at the call site than a second receiver.
+
+Not added: `MIDIItemTempoMap.quantizeToRhythm`. It would have to answer an `AnchorTempoMap`
+to keep the receiver convention, and no caller wants the old-world type here — the onsets
+come off the player and the result is fed to `warpTo` or to `tempoMap =`, both of which take
+V2 maps. Left out until something asks for it.
+
+Test file `retime-span-test.scd` -> `quantize-to-rhythm-test.scd`, 100 checks, 0 failures
+(the two assertions that policed the old name distinction are replaced by two that assert
+the receiver decides the return type).
 
 ## Scope
 

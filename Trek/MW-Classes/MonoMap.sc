@@ -690,6 +690,108 @@ AnchorMap : MonoMap {
 		^this.prFromCells(cells.copy.put(mid, edited), \transformSpan)
 	}
 
+
+	// Re-anchor ONE input span onto the output positions its events were actually
+	// played at — "this bar is five events, and here is when each of them
+	// sounded". `durs` are input-unit IOIs (a String is run through .beats), one
+	// per event; `onsets` are the performed positions on the OUTPUT axis, one per
+	// dur, the first sitting at the span's start. Bounds trail, per the span
+	// convention; `to` defaults to from + durs.sum and is a CHECK, not a rescale.
+	//
+	// NO RIPPLE: both of the span's output positions are read off THIS map, never
+	// off the onsets, so only anchors inside the span move — displacing the span
+	// itself stays scaleTempo's job. That falls out of the algebra rather than
+	// being imposed: the edited cell's output width is (this map at `to`) minus
+	// the first onset, and the first onset is required to sit at the span start
+	// (see the tolerance below), so the width is the one it replaced.
+	//
+	// `amount` is quantize STRENGTH: 1 puts every event on its intended input
+	// position, 0 answers this map bit-exactly, in between a blendWith. It is a
+	// blend of MAPS, not of positions, so the no-ripple guarantee holds at every
+	// strength — outside the span the two maps are the same anchors, so any blend
+	// of them is the identity there.
+	//
+	// MIDIItemPlayer.quantizeToRhythm is this method APPLIED: same arguments, but
+	// it snapshots its own tempomap, calls this, and warps the take through the
+	// resulting sec -> sec composition. Receiver decides the return, as with
+	// quantize / scaleTempo / setBpm.
+	quantizeToRhythm { |durs, onsets, from, to, amount = 1|
+		var sum, edited;
+		durs.isString.if { durs = durs.beats };
+		durs = durs.asArray;
+		(from.isNumber.not).if {
+			Error("AnchorMap.quantizeToRhythm: from must be an input-axis number, "
+				"got %".format(from)).throw
+		};
+		(durs.isEmpty or: { durs.every { |d| d.isNumber and: { d > 0 } }.not }).if {
+			Error("AnchorMap.quantizeToRhythm: durs must be a non-empty array of "
+				"positive input-unit IOIs, got %".format(durs)).throw
+		};
+		sum = durs.sum;
+		to = to ?? { from + sum };
+		(to.isNumber.not).if {
+			Error("AnchorMap.quantizeToRhythm: to must be an input-axis number, "
+				"got %".format(to)).throw
+		};
+		(((to - from) - sum).abs > 1e-9).if {
+			Error("AnchorMap.quantizeToRhythm: the durs span % but [%, %] is % — "
+				"`to` is a check, not a rescale, so fix the count or leave `to` out"
+				.format(sum, from, to, to - from)).throw
+		};
+		onsets.isNil.if {
+			Error("AnchorMap.quantizeToRhythm: onsets is required — % durs, no "
+				"onsets. This method never picks; query them first, e.g. "
+				"p.onsets(%, %)".format(durs.size, from, to)).throw
+		};
+		onsets = onsets.asArray;
+		onsets.every(_.isNumber).not.if {
+			Error("AnchorMap.quantizeToRhythm: onsets must be performed positions "
+				"on the output axis, got %".format(onsets)).throw
+		};
+		(onsets.size != durs.size).if {
+			Error("AnchorMap.quantizeToRhythm: % onsets for % durs — one onset per "
+				"rhythmic event. Got: %".format(onsets.size, durs.size, onsets)).throw
+		};
+		onsets.differentiate.drop(1).every(_ > 0).not.if {
+			Error("AnchorMap.quantizeToRhythm: onsets must be strictly increasing, "
+				"got %".format(onsets)).throw
+		};
+		// The committed algebra (§12b A): edit exactly one cell. transformSpan
+		// slices, hands the cell over, reconcatenates and restores the origin, so
+		// nothing outside [from, to] is touched.
+		edited = this.transformSpan(from, to, { |cell|
+			// tolerance: HALF the first dur's performed width under the current
+			// map. Past that the first onset is nearer some other intended
+			// position than the span start — nearest-grid-point reasoning, the
+			// same half-a-gap boundary quantizing uses — which in practice means
+			// the wrong span, or a leading onset too many/few. Cheap to widen by
+			// asking for the right window; expensive to discover after a warp.
+			var lo = cell.at(from), hi = cell.at(to);
+			var tol = 0.5 * (cell.at(from + durs[0]) - lo);
+			((onsets.first - lo).abs > tol).if {
+				Error("AnchorMap.quantizeToRhythm: % sits at % in the current map, "
+					"but the first onset is at % — off by %, more than half the "
+					"first dur's performed width (%). Wrong span, or a "
+					"missing/extra leading onset?"
+					.format(from, lo, onsets.first, onsets.first - lo, tol)).throw
+			};
+			(onsets.last >= (hi - 1e-9)).if {
+				Error("AnchorMap.quantizeToRhythm: the last onset (%) is at or past "
+					"the span's end (% = %) — every onset must lie inside the span's "
+					"performed window.".format(onsets.last, to, hi)).throw
+			};
+			// input widths = durs; output widths = the gaps between the onsets,
+			// closed by the span's end position from the map (never from a note).
+			// x0/y0 keep the cell in the receiver's absolute coordinates like the
+			// one `slices` handed over — MapSeq re-glues either way, but an
+			// inspectable cell is worth the two keywords.
+			AnchorMap.fromSpans(durs, (onsets ++ [hi]).differentiate.drop(1),
+				x0: from, y0: onsets.first,
+				fromFrame: cell.fromFrame, toFrame: cell.toFrame)
+		});
+		^(amount == 1).if { edited } { this.blendWith(edited, amount) }
+	}
+
 	// Scale one span's output width by `factor`, keeping its internal shape: a
 	// pure y-scale of the cell about its own start, so anchors inside the span
 	// keep their relative output proportions. factor > 1 makes the span take

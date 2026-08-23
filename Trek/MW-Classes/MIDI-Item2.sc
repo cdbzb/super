@@ -2240,10 +2240,12 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	// canonical call is the composition of the two halves:
 	//
 	//     o  = p.onsets(20, 24);
-	//     m2 = p.quantizeToRhythmMap("ex x q qe e".beats, o, 20);
+	//     m2 = p.tempomap.asMonoMap(origin: \absolute)
+	//              .quantizeToRhythm("ex x q qe e".beats, o, 20);
 	//
 	// followed by ONE of three applications, which say genuinely different things
-	// (§12f):
+	// (§12f). The first is the same verb on the PLAYER — receiver decides whether
+	// you get a map back or a warped take, as with quantize/scaleTempo/setBpm:
 	//
 	//     p.quantizeToRhythm("ex x q qe e".beats, o, 20)
 	//         // DESTRUCTIVE and LOCAL — the whole flow in one call. Only the
@@ -2284,25 +2286,11 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	// minus the first onset, and the first onset is required to sit at the span
 	// start (see the tolerance below), so the width is the one it replaced.
 	//
-	// Non-mutating: receiver, selection and map are untouched, and the result is
-	// a plain AnchorMap (beat -> absolute take seconds) for the caller to apply.
-	// `amount` as in quantizeToRhythm: 1 is the fully retimed map, 0 the map as it
-	// stands, in between a blend. Needs its own snapshot to blend against, since the
-	// two must share a beat frame (see the ONE-call note below).
-	// The MAP form of quantizeToRhythm: same computation, handed back as an
-	// AnchorMap for the caller to apply (or not) instead of warping the take.
-	quantizeToRhythmMap { |durs, onsets, from, to, amount = 1|
-		var mOld, mNew;
-		(amount == 1).if { ^this.prQuantizeToRhythmMap(from, durs, onsets, to, \quantizeToRhythmMap) };
-		mOld = this.tempomap.asMonoMap(origin: \absolute);
-		mNew = this.prQuantizeToRhythmMap(from, durs, onsets, to, \quantizeToRhythmMap, mOld);
-		^mOld.blendWith(mNew, amount)
-	}
-	// §12f: the map APPLIED, locally and destructively — "these five events of
-	// bar 5 were meant to be this rhythm; move them there and leave the rest of
-	// the take exactly as played". Same arguments, same guards (they fire from the
-	// shared builder, so only the method name in the message changes), but it
-	// answers a warped PLAYER rather than a map.
+	// §12f: AnchorMap.quantizeToRhythm APPLIED, locally and destructively — "these
+	// five events of bar 5 were meant to be this rhythm; move them there and leave
+	// the rest of the take exactly as played". Same name, same arguments, same
+	// guards (they fire from the map method), but it answers a warped PLAYER
+	// rather than a map.
 	//
 	// The composition is the whole idea. `warpTo(retimed beat map)` would flatten
 	// the entire take onto the ideal grid; what is wanted instead is a sec -> sec
@@ -2325,12 +2313,10 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	//
 	// Non-mutating in warpTo's sense: the receiver keeps its performed times and
 	// the warped copy is returned.
-	// `amount` is quantize STRENGTH: 1 puts every onset on its intended beat, 0 leaves
-	// the take as played, in between each onset moves that fraction of the way. It is
-	// a blend of the two MAPS, not of the timestamps, so the no-ripple guarantee holds
-	// at every strength — outside the span the maps are the same anchors, so any blend
-	// of them is still the identity there and warpTo's sec -> sec branch hands those
-	// timestamps back untouched.
+	// Every guard, the one edited cell and `amount` live on AnchorMap.quantizeToRhythm
+	// — this method is that one snapshotted and applied. `amount` blends the two MAPS,
+	// so warpTo's sec -> sec branch still hands back untouched timestamps outside the
+	// span at every strength.
 	// Named for the family it belongs to: MIDIItemPlayer.quantize is the WHOLE-take
 	// form (intended beats for the selection's anchors, rebuild the map, warp
 	// everything), this is the local one — "these events were meant to be THIS
@@ -2342,8 +2328,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		var mOld, mNew;
 		this.prNeedSelection(\quantizeToRhythm);
 		mOld = this.tempomap.asMonoMap(origin: \absolute);
-		mNew = this.prQuantizeToRhythmMap(from, durs, onsets, to, \quantizeToRhythm, mOld);
-		(amount != 1).if { mNew = mOld.blendWith(mNew, amount) };
+		mNew = mOld.quantizeToRhythm(durs, onsets, from, to, amount);
 		^this.warpTo((mNew.inverse >> mOld).bake)
 	}
 	prNeedSelection { |who|
@@ -2351,85 +2336,6 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			Error("% needs a loaded selection — use .selection first".format(who)).throw
 		};
 		^this
-	}
-	// The retime builder both callers share: every guard, and the one edited cell.
-	// `who` names the caller in the error messages (the guards are the caller's,
-	// as far as the user is concerned). `map` lets quantizeToRhythm pass the
-	// snapshot it already holds, so the two maps it composes share a beat frame;
-	// nil takes a fresh one, which is the Map form's case.
-	prQuantizeToRhythmMap { |from, durs, onsets, to, who = \quantizeToRhythmMap, map|
-		var sum;
-		this.prNeedSelection(who);
-		durs.isString.if { durs = durs.beats };
-		durs = durs.asArray;
-		(from.isNumber.not).if {
-			Error("%: from must be a beat number, got %".format(who, from)).throw
-		};
-		(durs.isEmpty or: { durs.every { |d| d.isNumber and: { d > 0 } }.not }).if {
-			Error("%: durs must be a non-empty array of positive beat-unit "
-				"IOIs, got %".format(who, durs)).throw
-		};
-		sum = durs.sum;
-		to = to ?? { from + sum };
-		(to.isNumber.not).if {
-			Error("%: to must be a beat number, got %".format(who, to)).throw
-		};
-		(((to - from) - sum).abs > 1e-9).if {
-			Error("%: the durs span % beats but [%, %] is % beats — `to` is a "
-				"check, not a rescale, so fix the count or leave `to` out"
-				.format(who, sum, from, to, to - from)).throw
-		};
-		onsets.isNil.if {
-			Error("%: onsets is required — % durs, no onsets. This method never "
-				"picks; query them first, e.g. p.onsets(%, %)"
-				.format(who, durs.size, from, to)).throw
-		};
-		onsets = onsets.asArray;
-		onsets.every(_.isNumber).not.if {
-			Error("%: onsets must be performed times in seconds, got %"
-				.format(who, onsets)).throw
-		};
-		(onsets.size != durs.size).if {
-			Error("%: % onsets for % durs — one onset per rhythmic event. "
-				"Got: %".format(who, onsets.size, durs.size, onsets)).throw
-		};
-		onsets.differentiate.drop(1).every(_ > 0).not.if {
-			Error("%: onsets must be strictly increasing, got %".format(who, onsets)).throw
-		};
-		// The committed algebra (§12b A): snapshot beat -> ABSOLUTE seconds (the
-		// axis the onsets live on), then edit exactly one cell. transformSpan
-		// slices, hands the cell over, reconcatenates and restores the origin, so
-		// nothing outside [from, to] is touched.
-		map = map ?? { this.tempomap.asMonoMap(origin: \absolute) };
-		^map.transformSpan(from, to, { |cell|
-			// tolerance: HALF the first dur's performed width under the current
-			// map. Past that the first onset is nearer some other intended
-			// position than the span start — nearest-grid-point reasoning, the
-			// same half-a-gap boundary quantizing uses — which in practice means
-			// the wrong span, or a leading onset too many/few. Cheap to widen by
-			// asking for the right window; expensive to discover after a warp.
-			var lo = cell.at(from), hi = cell.at(to);
-			var tol = 0.5 * (cell.at(from + durs[0]) - lo);
-			((onsets.first - lo).abs > tol).if {
-				Error("%: beat % sits at % s in the current map, but the first "
-					"onset is at % s — off by % s, more than half the first dur's "
-					"performed width (% s). Wrong span, or a missing/extra leading onset?"
-					.format(who, from, lo, onsets.first, onsets.first - lo, tol)).throw
-			};
-			(onsets.last >= (hi - 1e-9)).if {
-				Error("%: the last onset (% s) is at or past the span's end "
-					"(beat % = % s) — every onset must lie inside the span's performed "
-					"window.".format(who, onsets.last, to, hi)).throw
-			};
-			// beat widths = durs; performed widths = the gaps between the onsets,
-			// closed by the span's end time from the map (never from a note).
-			// x0/y0 keep the cell in the receiver's absolute coordinates like the
-			// one `slices` handed over — MapSeq re-glues either way, but an
-			// inspectable cell is worth the two keywords.
-			AnchorMap.fromSpans(durs, (onsets ++ [hi]).differentiate.drop(1),
-				x0: from, y0: onsets.first,
-				fromFrame: cell.fromFrame, toFrame: cell.toFrame)
-		})
 	}
 	// sub-player between two beat positions — beat-domain mirror of fromNote;
 	// needs a loaded selection (or explicit beats/choiceFunc via .tempomap first)

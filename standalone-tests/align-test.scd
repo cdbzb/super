@@ -200,17 +200,33 @@ assert.(EventList.all.values.includes(evd[\eventList]).not,
 assert.(evd[\eventList].events.size == 3, "addItem align: child got all 3 notes");
 assert.(evd[\eventList].events.every { |e| e[\voice] == \lead },
 	"addItem align: voice tag applied to child events");
-// entry blend: anchor 2.3 -> blend(2.3, round 2.0, 0.5) = 2.15
-assertClose.(evd[\when], 2.15, "addItem align: entry beat blended toward the grid");
+// entry blend: anchor 2.3, snapped to the subdivision the take lands on, not to
+// the whole beat — prAlignGrid picks 1/3 (0.033 away) over 1 (0.3 away), so the
+// blend is toward 2.3333, not toward 2.0.
+assertClose.(evd[\when], 2.3.blend(2.3.round(0.33333333333333), 0.5),
+	"addItem align: entry beat blended toward the auto-detected grid");
 assert.(list.events.size == (sizeBefore + 1), "addItem align: ONE event inserted");
 
 // explicit at: wins over the computed entry
 a = list.addItem(pfree, at: 7, align: 1);
 assertClose.(a[0][\when], 7, "addItem align: explicit at: wins");
 
-// selection t0 flows into the entry: anchor 2.8 -> blend(2.8, 3.0, 1) = 3.0
+// selection t0 flows into the entry: anchor 2.8, auto grid 0.25 -> 2.75 at align 1
 a = list.addItem(psel, align: 1);
-assertClose.(a[0][\when], 3.0, "addItem align: t0 anchor rounds onto the grid at align 1");
+assertClose.(a[0][\when], 2.75, "addItem align: t0 anchor snaps onto the grid at align 1");
+
+// grid: overrides the detection; grid: 1 is the pre-2026-08-13 whole-beat snap
+a = list.addItem(pfree, align: 0.5, grid: 1);
+assertClose.(a[0][\when], 2.15, "addItem align: grid: 1 restores the whole-beat blend");
+a = list.addItem(psel, align: 1, grid: 1);
+assertClose.(a[0][\when], 3.0, "addItem align: grid: 1 rounds the t0 anchor to the beat");
+
+// prAlignGrid itself: coarsest subdivision within tol of the performed beat.
+// NB with the default tol 0.12 the 1/6 row matches every beat (max distance to a
+// 1/6 grid is 1/12 = 0.083), so the 0.125 row and the ^1 fallback are unreachable.
+assertClose.(list.prAlignGrid(2.0), 1, "prAlignGrid: on the beat -> whole beats");
+assertClose.(list.prAlignGrid(2.3), 0.33333333333333, "prAlignGrid: triplet entry -> 1/3");
+assertClose.(list.prAlignGrid(2.8), 0.25, "prAlignGrid: 2.8 -> 1/4 (1/3 is 0.133 away)");
 
 // no epoch + no at: warns and inserts nothing
 sizeBefore = list.events.size;

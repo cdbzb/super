@@ -480,7 +480,7 @@ view.keyDownAction_({ |view char|
                     "e - Toggle extrapolate mode (tempo grid from last 2 selected notes)\n" ++
                     "E - Same, but DP beat tracker (globally optimal; j/k pin notes)\n" ++
                     "      h/l - previous/next grid line\n" ++
-                    "      j/k - pick earlier/later note at current line (re-extrapolates)\n" ++
+                    "      j/k - pick later/earlier note at current line (re-extrapolates)\n" ++
                     "m - Toggle MAP EDIT mode (edits the tempo map in the lane; the keys\n" ++
                     "      below act only while it is on — everything else is unchanged)\n" ++
                     "      i/o - span start/end at the cursor; drag across the lane also\n" ++

@@ -202,7 +202,7 @@ BeatMarkMode {
 		^this
 	}
 
-	// 'j': the note one earlier than the current line's pick (or the last note
+	// 'k': the note one earlier than the current line's pick (or the last note
 	// before the line, when the line is a ghost)
 	pickEarlier {
 		var line = gridLines[currentLine];
@@ -218,7 +218,7 @@ BeatMarkMode {
 		^this
 	}
 
-	// 'k': the note one later (or the first note after a ghost line)
+	// 'j': the note one later (or the first note after a ghost line)
 	pickLater {
 		var line = gridLines[currentLine];
 		var idx = line[\noteIndex];
@@ -400,8 +400,8 @@ BeatMarkMode {
 			^case
 			{ char == $h } { this.prevLine; true }
 			{ char == $l } { this.nextLine; true }
-			{ char == $j } { this.pickEarlier; true }
-			{ char == $k } { this.pickLater; true }
+			{ char == $j } { this.pickLater; true }
+			{ char == $k } { this.pickEarlier; true }
 			{ false }
 		};
 		^false

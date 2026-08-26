@@ -332,7 +332,7 @@ assertArr.(me.laneData[\bpms], MIDIItemPlayer.bpmFromTimes(src.beatTimes, 1),
 bm.selectedIndices = [0, 1];
 bm.startManual;
 bm.onGridChange = { me.invalidate };   // the gui's invalidateLane hook
-bm.keyDown($k);                        // a re-pick fires it
+bm.keyDown($j);                        // a re-pick fires it
 assert.(bm.gridTimes.notNil, "gui wiring: a live grid exists after 'e'");
 assertArr.(me.times, bm.gridTimes,
 	"gui wiring: the live e/E grid outranks the saved selection for the lane");
@@ -341,7 +341,7 @@ assertArr.(seen.value, bm.gridTimes, "gui wiring: ...and for the clicks");
 // and an edited map still survives the beat source moving under it
 me.quantizeSpan(1);
 m = me.times.copy;
-bm.keyDown($k);
+bm.keyDown($j);
 assertArr.(me.times, m, "gui wiring: a re-pick does not silently discard an edited map");
 
 } { |err|

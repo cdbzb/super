@@ -106,6 +106,16 @@ AudioItem {
 					currentEnvironment.play
 				} {
 					var nc = ~numChannels ? 1;
+					// roundTripLatency is per-machine (pinned in startup.scd, in no
+					// repo) and the stamp written below freezes it forever. Recording
+					// on an unmeasured machine therefore stamps 0 and the take plays
+					// uncompensated for the rest of its life, with nothing to show
+					// for it at record time. Say so once, while it is still cheap.
+					(roundTripLatency == 0).if {
+						"AudioItem: roundTripLatency is 0 — % will be stamped with no "
+						"latency compensation. Run AudioItem.measureRoundTrip on this "
+						"machine first.".format(name).warn
+					};
 					// restarting a name that is still recording closes the old take first
 					recorders[name.asSymbol] !? {|r| r.isRecording.if { r.stopRecording } };
 					recorders[name.asSymbol] = recorder;
@@ -136,6 +146,16 @@ AudioItem {
                 // allocates a Bus, sends its own SynthDef and spawns a synth, none of
                 // which can happen during this graph's compilation inside makeBundle.
                 var outBus = (~out ? 0).value;
+                // \raw latency convention (same as the tempoFollow path's `+ rt` in
+                // prSrcOffset): a mic take is never trimmed on disk, so its content
+                // sits roundTrip LATE in the file relative to the grid the record
+                // event fired on. Compensation is a READ-side offset, added to the
+                // user's ~start. Only takes carrying a record-time stamp are shifted
+                // — imported / hand-placed files have no stamp and stay at face value.
+                // recordedMapAt caches, so the archive read happens once per take.
+                var rt = (AudioItem.recordedMapAt(name, takeNum) !? { |st|
+                    st[\roundTrip] ? 0
+                }) ? 0;
                 // match \audioItemTempoFollow / Server.bind / note events: default the
                 // playback bundle to the real server latency, not a hardcoded 0.2, so
                 // audioItems stay aligned with voices under any s.latency setting.
@@ -147,7 +167,7 @@ AudioItem {
                                 ~numChannels ? 1,
                                 buffer.bufnum,
                                 rate: ~rate ? 1,
-                                startPos: ~startPos !? (_ * Server.default.sampleRate) ? 0
+                                startPos: ((~startPos ? 0) + rt) * Server.default.sampleRate
                             )
                             * (~amp ? 1)
                             => Out.ar(outBus, _)
@@ -323,6 +343,71 @@ AudioItem {
 			#["wav", "aif", "aiff", "flac", "caf"].includesEqual(p.splitext.last.asString.toLower)
 		};
 		^matches.notEmpty.if { matches.first } { directory +/+ takeNum ++ ".wav" }
+	}
+
+	// Correct the round trip baked into an already-recorded take. The \raw
+	// compensation reads roundTrip from the take's own record-time stamp, not from
+	// the current classvar — that is the point (a take recorded on one rig must
+	// keep playing right after the rig changes). So when roundTripLatency was WRONG
+	// at record time, the fix belongs in the stamp. Appends a new archive version
+	// with the anchors and every other recordedAgainst field carried over, and
+	// drops the in-memory cache so the next playback reloads. ^the new version id.
+	*repinRoundTrip { |name, takeNum, rt|
+		var found = RetuneArchive.latestWhere(name, takeNum, { |d|
+			d[\recordedAgainst].notNil and: { (d[\anchors] ? []).size >= 2 }
+		});
+		var d, ra, v;
+		found.isNil.if {
+			^"AudioItem.repinRoundTrip(%, %): no record stamp on disk"
+				.format(name, takeNum).warn
+		};
+		d = found[1].copy;
+		ra = d[\recordedAgainst].copy;
+		ra[\roundTrip] = rt;
+		d[\recordedAgainst] = ra;
+		d[\saved] = Date.getDate.stamp;
+		v = RetuneArchive.write(name, takeNum, d);
+		// force the next recordedMapAt to reload from disk
+		recordedMaps.put(name.asSymbol, takeNum, nil);
+		"AudioItem.repinRoundTrip(%, %): % -> % s (archive version %)"
+			.format(name, takeNum, found[1][\recordedAgainst][\roundTrip], rt, v).postln;
+		^v
+	}
+
+	// Empirical grid offset of a take: seconds from file start to its first
+	// transient. Record a take whose event list fires ONE click at the record
+	// event's own beat, then AudioItem.takeOnset(\latTest) — with the \raw
+	// convention the answer IS the device round trip, so it should agree with
+	// roundTripLatency. When it doesn't, roundTripLatency is stale (buffer size or
+	// interface changed) or was measured on a path other than the real monitoring
+	// chain. thresh is a fraction of the peak inside the scanned window; keep it
+	// low so the LEADING edge is found, not the reverberant build-up.
+	*takeOnset { |name, takeNum, thresh = 0.05, window = 1, action|
+		var dir = folder +/+ name.asString;
+		var server = Server.default;
+		var path;
+		takeNum = takeNum ?? { this.latestTake(dir) };
+		path = this.takePath(dir, takeNum);
+		File.exists(path).not.if {
+			^"AudioItem.takeOnset: no file at %".format(path).warn
+		};
+		Buffer.read(server, path, 0, (window * server.sampleRate).asInteger, { |b|
+			b.loadToFloatArray(action: { |d|
+				var peak = d.abs.maxItem;
+				var idx = d.detectIndex { |x| x.abs > (peak * thresh) };
+				var t = idx !? { idx / b.numChannels / server.sampleRate };
+				t.isNil.if {
+					"AudioItem.takeOnset(%, %): nothing above % of peak % in the first % s"
+						.format(name, takeNum, thresh, peak, window).warn
+				} {
+					"AudioItem.takeOnset(%, %): % s   (peak %, roundTripLatency %)"
+						.format(name, takeNum, t.round(1e-5), peak.round(1e-5),
+							roundTripLatency).postln
+				};
+				b.free;
+				action.value(t);
+			})
+		})
 	}
 
 	// flac caps at 24-bit int; otherwise keep the server's float32
@@ -732,15 +817,30 @@ Take : AudioItem {
         var newTake = super.newCopyArgs;
 		var directory = folder +/+ name;
         newTake.name = name; newTake.num = num;   // store identity (needed by .retune)
-        newTake.buffer = AudioItem.buffers[name.asSymbol][num].notNil.if {
-			 AudioItem.buffers[name.asSymbol][num] 
-		} {
+		// multi-key at: buffers[name][num] threw whenever `name` had no entry yet
+		// (the outer [] returns nil, and nil[num] is not a message) — i.e. every
+		// Take() in a fresh session, before anything had cached a buffer.
+        newTake.buffer = AudioItem.buffers.at(name.asSymbol, num) ?? {
 			 AudioItem.buffers.put(name.asSymbol, num, Buffer.read(Server.default, AudioItem.takePath(directory, num)));
-			 AudioItem.buffers[name.asSymbol][num]
+			 AudioItem.buffers.at(name.asSymbol, num)
 		} 
         ^newTake
     }
 	retune { ^RetuneItem(this) }   // -> RetuneItem (load-or-analyze-and-save)
+	// The round trip this take was recorded against — what playback compensates by
+	// (\raw convention). nil when the take carries no record stamp, e.g. an
+	// imported file: those are read at face value and never shifted.
+	roundTripLatency {
+		^AudioItem.recordedMapAt(this.name, num) !? { |st| st[\roundTrip] ? 0 }
+	}
+	// Correct it. Needed when AudioItem.roundTripLatency was wrong (unmeasured, or
+	// stale after a buffer-size/interface change) at the moment this take was cut:
+	// the stamp froze that value, and the stamp is what playback reads. Appends a
+	// new archive version, anchors untouched; ^the version id.
+	//   Take(\pf_260825_110649, 0).setRoundTripLatency(0.0514)
+	setRoundTripLatency { |rt|
+		^AudioItem.repinRoundTrip(this.name, num, rt)
+	}
 	playbuf {| amp out rate startPos dur |
 		^ 
 			PlayBuf.ar(

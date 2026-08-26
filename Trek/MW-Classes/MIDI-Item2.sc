@@ -1827,12 +1827,33 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			.select{|e| e.timestamp < time and: (e.timestamp + e.sustain > time )};
 	}
 
-	from {|from to trim=true| 
+	// A note already sounding when the slice starts is INCLUDED by default, and
+	// `trim` only decides how long it then lasts: clipped to its original release
+	// when true, full original sustain (so a NEGATIVE timestamp after the rebase)
+	// when false. Neither setting leaves it out — pass straddlers: false for that,
+	// which is what you want when the slice must begin cleanly on the boundary.
+	// The excluded note's release lands inside the slice, so its now-orphaned
+	// noteOff goes with it; left in, it would cut short a later voice of the same
+	// pitch that play() matched it to.
+	from {|from to trim=true straddlers=true| 
 		//makes a new player starting from from
 		//clips initial notes if trim==true 
 		//changes timestamps to start at 0
 		
-		var firstNotes = this.notesStraddling(from).deepCopy; // Array
+		var found = this.notesStraddling(from); // Array
+		var firstNotes = straddlers.if { found.deepCopy }{ [] };
+		var orphans = IdentitySet.new;
+
+		straddlers.not.if {
+			found.do{|e|
+				// same pairing rule as makeNotes/§ note-off matching: first noteOff
+				// of that pitch at or after the onset
+				midiEvents.detect{|o|
+					o.midicmd == \noteOff and: (o.midinote == e.midinote)
+						and: (o.timestamp >= e.timestamp)
+				} !? {|o| orphans.add(o) }
+			}
+		};
 
 		if (trim and: (firstNotes.size > 0)) {
 
@@ -1845,7 +1866,8 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		^(
 			(firstNotes ++
 			this.chaseCCs(from).deepCopy.do{|e| e.timestamp = from } ++ // chased CC state lands at the start
-			midiEvents.select{|i| i.timestamp >= from and: (i.timestamp <= (to ? inf)) }.deepCopy)
+			midiEvents.select{|i| i.timestamp >= from and: (i.timestamp <= (to ? inf))
+				and: (orphans.includes(i).not) }.deepCopy)
 			.do{|e| e.timestamp = e.timestamp - from} //adjust times to start at 0 (incl. straddlers/CCs)
 			// [(),(),()].do(_.dur = 3)
 			=> MIDIItemPlayer(_, this.source)
@@ -2339,13 +2361,16 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	}
 	// sub-player between two beat positions — beat-domain mirror of fromNote;
 	// needs a loaded selection (or explicit beats/choiceFunc via .tempomap first)
-	fromBeat { |from, to, trim = true|
+	// straddlers: false drops a note still sounding at `from` instead of carrying
+	// it over — see `from`, which does the work.
+	fromBeat { |from, to, trim = true, straddlers = true|
 		var tm, sub, next;
 		(this.selectedNotes.size > 0 or: { currentSelection.notNil }).not.if {
 			^"fromBeat needs a loaded selection — use .selection first".postln
 		};
 		tm = this.tempomap;
-		sub = this.from(this.timeAtBeat(from, tm), to !? { this.timeAtBeat(to, tm) }, trim);
+		sub = this.from(this.timeAtBeat(from, tm), to !? { this.timeAtBeat(to, tm) }, trim,
+			straddlers);
 		// Closing tempo-anchor: the parent's NEXT selected beat past `to`, so the final
 		// span follows the performed tempo at the boundary instead of bounds.end — which,
 		// when the last note sustains past the slice, collapses to a degenerate tiny beat.
@@ -2848,20 +2873,35 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 	// so beat 6 is still beat 6 but arrives sooner. t0 is absolute placement and
 	// is left alone — the take starts where it started and runs faster.
 	// Resets curvature, like scaleBeats: compose as t.scaleTempo(k).curve(amount).
-	scaleTempo {|k = 1|
+	scaleTempo {|k = 1, from, to|
 		((k.isNumber.not) or: { k <= 0 }).if {
 			Error("MIDIItemTempoMap.scaleTempo: k must be > 0, got %".format(k)).throw
+		};
+		(from.notNil or: { to.notNil }).if {
+			Error("MIDIItemTempoMap.%: whole-map only — a span needs the core. "
+				"Use t.asMonoMap(origin: \\absolute).%(..., from, to), or go through "
+				"EventList/MapEditor if you want a plottable map back.".format(
+					thisMethod.name, thisMethod.name)).throw
 		};
 		^this.copy.prScaleTempo(k)
 	}
 	// Set the map's mean tempo, keeping the rubato: the scaleTempo factor that lands
 	// it there. The mean is total beats / total seconds — what spanBpm reads back,
 	// not the arithmetic mean of the per-span tempi. Whole-map only here; span
-	// editing lives on the core (asMonoMap) and on EventList.
-	setBpm {|bpm|
+	// editing lives on the core (asMonoMap) and on EventList. from/to are declared
+	// only to REFUSE them: without the parameters SC drops the keyword args with a
+	// warning and silently rescales the whole map, which reads as "nothing happened"
+	// when the map's mean is already near the requested bpm.
+	setBpm {|bpm, from, to|
 		var mean;
 		((bpm.isNumber.not) or: { bpm <= 0 }).if {
 			Error("MIDIItemTempoMap.setBpm: bpm must be > 0, got %".format(bpm)).throw
+		};
+		(from.notNil or: { to.notNil }).if {
+			Error("MIDIItemTempoMap.%: whole-map only — a span needs the core. "
+				"Use t.asMonoMap(origin: \\absolute).%(..., from, to), or go through "
+				"EventList/MapEditor if you want a plottable map back.".format(
+					thisMethod.name, thisMethod.name)).throw
 		};
 		mean = this.spanBpm(0, beats.sum);
 		mean.isNil.if {
@@ -2869,9 +2909,15 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 		};
 		^this.scaleTempo(bpm / mean)
 	}
-	setTempo {|bps|
+	setTempo {|bps, from, to|
 		((bps.isNumber.not) or: { bps <= 0 }).if {
 			Error("MIDIItemTempoMap.setTempo: bps must be > 0, got %".format(bps)).throw
+		};
+		(from.notNil or: { to.notNil }).if {
+			Error("MIDIItemTempoMap.%: whole-map only — a span needs the core. "
+				"Use t.asMonoMap(origin: \\absolute).%(..., from, to), or go through "
+				"EventList/MapEditor if you want a plottable map back.".format(
+					thisMethod.name, thisMethod.name)).throw
 		};
 		^this.setBpm(bps * 60)
 	}

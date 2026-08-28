@@ -96,7 +96,9 @@ AudioItem {
 				buffer: buffer,
 				dur: ~dur ? 5,
                 record: ~record ? false,
-				startPos: ~start ? 0,
+				// start: is the documented read-offset knob; keep a user-supplied
+				// startPos: working too rather than silently overwriting it with 0.
+				startPos: ~start ?? { ~startPos ? 0 },
 
 			));
             ~record.if{
@@ -421,10 +423,22 @@ AudioItem {
 	// sclang restarts) and cached back here so the disk scan runs once per take.
 	*recordedMapAt { |name, takeNum|
 		^name !? {
-			recordedMaps.at(name.asSymbol, takeNum) ?? {
+			var hit = recordedMaps.at(name.asSymbol, takeNum);
+			// \none is the negative cache. loadStamp deserializes EVERY .retune
+			// version of the take newest-first looking for a \recordedAgainst, so a
+			// take with a long retune history and no stamp (recorded before stamping
+			// existed, 2026-07-13) costs hundreds of ms and answers nil. Caching only
+			// the hit meant that scan re-ran on every playback — and \audioItem calls
+			// this from inside its send, which EventList.fire runs only `latency`
+			// ahead of the sound, so the bundle went out late and the take played late.
+			(hit == \none).if { ^nil };
+			hit ?? {
 				RetuneArchive.loadStamp(name, takeNum) !? { |stamp|
 					recordedMaps.put(name.asSymbol, takeNum, stamp);
 					stamp
+				} ?? {
+					recordedMaps.put(name.asSymbol, takeNum, \none);
+					nil
 				}
 			}
 		}

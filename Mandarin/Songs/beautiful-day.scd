@@ -90,7 +90,7 @@ P(\click, music: { |p b e|
 });
 Song.quantizedKeysV1 = MIDIItem(\foo).take(1).fromNote(0, 100)
 	.quantize(
-		[ 0.57, 0.57 ].dup(9).flat, 
+		0.57 ! 17, 
 		nil, 
 		{|notes| [(timestamp:0)] ++ notes[[0, 9, 13, 19, 22, 31, 39, 44, 48, 55, 62,  70, 72, 80, 85, 94 ]] }
 	)

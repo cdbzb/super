@@ -188,8 +188,13 @@ Seg {
 			};
 		});
 	}
+    // extend: lengthens (or shortens) the seg. It may sit on the seg event itself
+    // (section: 3, extend: x) or on a nested section Event; the outer value is the
+    // fallback for the nested one. A Pseq of sections extends ONCE for the whole
+    // run — the expanded children carry the same event, so their own extend is
+    // cleared before summing or the offset would be applied per section.
     *durOf { |event|
-        var sections, firstSection, expand;
+        var sections, firstSection, expand, extend = event[\extend] ? 0;
         (event[\section].isKindOf(Pseq)).if {
             expand = { |ev, parent|
                 parent = parent ? ();
@@ -201,7 +206,7 @@ Seg {
                     }
                 }
             };
-            ^expand.(event).flat.sum { |e| Seg.durOf(e) }
+            ^expand.(event).flat.sum { |e| Seg.durOf(e.copy.put(\extend, nil)) } + extend
         };
         sections = event[\section].isKindOf(Event).if { event[\section].bubble } { event[\section].asArray };
         firstSection = sections[0];
@@ -209,13 +214,13 @@ Seg {
             firstSection[\dur] ??
             {
                 firstSection[\section].notNil.if {
-                    Song.secDur[Song.section(firstSection[\section])] + (firstSection[\extend] ? 0)
+                    Song.secDur[Song.section(firstSection[\section])] + (firstSection[\extend] ? extend)
                 } {
                     1
                 }
             }
         } {
-            Song.secDur[Song.section(firstSection)]
+            Song.secDur[Song.section(firstSection)] + extend
         }
     }
     *new {|section ...args, kwargs|

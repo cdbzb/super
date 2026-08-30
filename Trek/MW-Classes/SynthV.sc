@@ -871,6 +871,13 @@ SynthV {
 		var db = databaseLib.at(key);
 		var dbClean;
 		db.isNil.if {
+			/* nil KEY is the deliberate voiceless case; an unmatched key is a typo or a
+			   voice this install does not have, and silently rendering it voiceless is
+			   indistinguishable from the intended one. Warn only for the second. */
+			key.notNil.if {
+				"SynthV.setDatabase: no databaseLib entry for % — writing a nil database "
+				"(voiceless). Known keys: %".format(key, databaseLib.keys.asArray.sort).warn
+			};
 			case
 			{ appVersion == 1 } { project.tracks[0].mainRef.put(\database, nil) }
 			{ appVersion == 2 } {

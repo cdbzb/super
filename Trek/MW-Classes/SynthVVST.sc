@@ -405,7 +405,10 @@ SynthVVST {
 					sv.isMulti.if{
 						{
 							var bufs = sv.frozenBuffers;
-							var dur = bufs.collect{|b| BufDur.kr(b)}.maxItem + tail;
+							/* buffers exist at graph-build time, so take the max in the
+							   language: maxItem on BufDur UGens compares with `>`, which
+							   builds a BinaryOpUGen and throws Non Boolean in test. */
+							var dur = bufs.collect{|b| b.duration}.maxItem + tail;
 							Line.kr(0, 0, dur, doneAction: 2);
 							bufs.collect{|buf| PlayBuf.ar(2, buf, doneAction: 0) }
 						}

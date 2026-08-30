@@ -38,8 +38,10 @@ EventList {
 			// callbacks invoked by the play path
 			\extra, \send, \func, \action, \callback, \finish, \filterFunc, \play,
 			\filter,
-			// inputs used to build the lazy-value clock context
-			\tempoTrack, \when
+			// inputs used to build the lazy-value clock context, and the clock
+			// functions clockPattern puts ON the event (resolving them would call
+			// them with no args and replace each with a single number)
+			\tempoTrack, \when, \secsFor, \beatsFor
 		];
 		Class.initClassTree(Event);
 		// Run functions through the normal schedule and expose the event both as
@@ -634,6 +636,70 @@ EventList {
 		^this
 	}
 
+	/*
+	 addPattern with this list's clock injected into the pattern's OWN value
+	 expressions — the one thing the stamping routes cannot do, because addFunc runs
+	 after `stream.next` has already computed every key.
+
+	 Read the clock with Pfunc, not a bare Function: miSCellaneous's `.pa` wraps a
+	 Function value in Pfunc and evaluates it at drain time, before any of this
+	 exists, so `{ ~secPerBeat }` inside `[...].p` silently yields nil — and a nil
+	 from any key ends the Pbind, so the pattern stores NOTHING.
+
+		 e.addClockPattern(0, Pseq([2], 5), [
+		     instrument: \harp,
+		     delayTime: Pfunc { |ev| ev[\secsFor].(0.5) }
+		 ].p);
+
+	 `dur` drives both the beat walk and the emitted \dur. The supplier runs FIRST
+	 (Pchain feeds right-to-left) and accumulates the beat itself, while `pattern`
+	 runs last and wins key collisions — so `pattern` must not set \dur, or its walk
+	 and addPattern's `beat + (event[\dur] ? 1)` diverge.
+	*/
+	addClockPattern { |when = 0, dur, pattern, maxEvents, maxWhen = 300, eventName|
+		^this.addPattern(when, pattern <> this.clockPattern(when, dur),
+			maxEvents, maxWhen, eventName)
+	}
+
+	/*
+	 The clock supplier alone, for hand-built chains. Each event carries \beat, its
+	 \secPerBeat, and a \secsFor answering the seconds spanned by n beats FROM THAT
+	 EVENT — integrated through the tempo env, so under a ramp it is not
+	 secPerBeat * n. Both \secsFor forms of prTempoContext work: ev[\secsFor].(n)
+	 and ev.secsFor(n), the latter arriving with the environment prepended.
+
+	 The per-event event is built by CALLING `mk`: a function call is the one thing
+	 that guarantees a fresh frame, so each closure keeps the beat it was made with
+	 rather than the loop variable's final value.
+
+	 tempoEnv is read inside the Prout, so a map edited between building this
+	 pattern and draining it still applies.
+	*/
+	clockPattern { |startBeat = 0, dur|
+		^Prout({ |inev|
+			var env  = this.tempoEnv;
+			var beat = startBeat;
+			var ds   = dur.asStream;
+			var d;
+			var mk = { |b, dd|
+				var wall = this.beatToWall(b, env);
+				(
+					dur: dd,
+					beat: b,
+					secPerBeat: this.beatToWall(b + 1, env) - wall,
+					secsFor: { |a, c|
+						var n = a.isKindOf(Environment).if { c ? 1 } { a ? 1 };
+						this.beatToWall(b + n, env) - wall
+					}
+				)
+			};
+			while { (d = ds.next(inev)).notNil } {
+				inev = ((inev ? ()) ++ mk.(beat, d)).yield;
+				beat = beat + d;
+			}
+		})
+	}
+
 	solo_ { |val| solo = val.notNil.if { val.asArray.as(Set) } }
 	mute_ { |val| mute = val.notNil.if { val.asArray.as(Set) } }
 
@@ -785,6 +851,40 @@ EventList {
 			};
 			env
 		}
+	}
+
+	/*
+	 The COMPOSED clock read as a rate — tempoMap and \tempoTrack together, unlike
+	 tempoMap.spanTempo/spanBpm which see only the base map and answer a flat number
+	 through any \tempoTrack ramp.
+
+	 beatToWall answers POSITIONS, so a rate is a finite difference and `width` is the
+	 interval it is taken over: width 1 is "how long is the beat starting here" (what a
+	 metronome or a beat-synced delay wants), a small width approaches the instantaneous
+	 tempo (what a tempo lane wants). Over a constant-slope map every width agrees.
+
+	 For a DURATION rather than a rate, prefer secsFor/beatToWall differences directly —
+	 those integrate the ramp exactly instead of approximating it over one interval.
+
+	 tempoEnv defaults to prLazyTempoEnv: derived from RAW events, so calling this from
+	 inside a lazy value cannot recurse back through resolvedEvents, while solo/mute
+	 still scope it. Hoist it and pass it in when sweeping many beats.
+	*/
+	secPerBeatAt { |beat = 0, width = 1, tempoEnv|
+		((width.isNumber.not) or: { width <= 0 }).if {
+			Error("EventList.secPerBeatAt: width must be > 0, got %".format(width)).throw
+		};
+		tempoEnv = tempoEnv ?? { this.prLazyTempoEnv };
+		^(this.beatToWall(beat + width, tempoEnv) - this.beatToWall(beat, tempoEnv)) / width
+	}
+
+	/*
+	 secPerBeatAt as bpm. nil on a degenerate span rather than an infinity — same
+	 guard, and same answer shape, as MonoMap.spanTempo.
+	*/
+	bpmAt { |beat = 0, width = 1, tempoEnv|
+		var spb = this.secPerBeatAt(beat, width, tempoEnv);
+		^(spb > 1e-9).if { 60 / spb }
 	}
 
 	// §12 seam: this list's base clock. A V2 MonoMap is COERCED here, once, into a

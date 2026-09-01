@@ -493,7 +493,7 @@ P(\tamb, music: { |p b e|
 	{
 		var levels = [3,1,2,1] /3 => _.dq(inf);
 		var durs =  
-		1/8 ! 16 
+		1/8 ! 6 
 		* Song.quarter *2
 		+ ( [1, -1] /80 => _.dup(8) ) //swing amt
 		=> _.flat 
@@ -525,13 +525,13 @@ P(\tamb, music: { |p b e|
 P(\traps, music: { |p b e|
 	[
 		instrument: \hat_808,
-		dur: "x x e e e x x x x e e".beats.q(24) * Song.quarter,
+		dur: "x x e e e x x x x e e".beats.q(4) * Song.quarter,
 		out: Effect.bus( Phaser2.ar(_,depth:0.9,fb:-0.999,rate:0.13) ),
 		amp:0.2,
 	].pp;
 	[
 		instrument:\JWSnare,
-		dur:Song.quarter,
+		dur:Song.quarter.bubble.q(24),
 		amp:1,
 	].pp;
 	[

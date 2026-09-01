@@ -48,11 +48,13 @@ EventList {
 		// currentEnvironment and as the argument.
 		Event.addEventType(\func, { ~func.value(currentEnvironment) });
         Event.addEventType(\eventList, {
-            ~eventList.isKindOf(EventList).if{
+            var list = ~eventList.isKindOf(EventList).if{
                 ~eventList
             }{
                 EventList(~eventList)
-            }.play(~start ? 0, to: ~end)});
+            };
+            list.play(~start ? 0, to: ~end,
+                scope: EventList.prScope(currentEnvironment))});
 	}
 
 	*new { |name, defaultType|
@@ -821,16 +823,41 @@ EventList {
 	solo_ { |val| solo = val.notNil.if { val.asArray.as(Set) } }
 	mute_ { |val| mute = val.notNil.if { val.asArray.as(Set) } }
 
-	shouldPlay { |event|
+	/*
+	 A SCOPE is the transient (solo:, mute:) pair carried by a nested \eventList
+	 event: an insertion-local narrowing of the child, threaded through prepare
+	 rather than written into the child's own solo/mute. Nothing is mutated, so
+	 the same list can be nested twice under different scopes and replays repeat.
+
+	 `inherited` flows down through grandchildren, so mute: on a top-level nest
+	 silences that token through the whole subtree; a nested event naming either
+	 key replaces the inherited scope for its own subtree. nil = no narrowing.
+	*/
+	*prScope { |event, inherited|
+		var s = event[\solo], m = event[\mute];
+		(s.isNil and: { m.isNil }).if { ^inherited };
+		^(solo: s !? { s.asArray.as(Set) }, mute: m !? { m.asArray.as(Set) })
+	}
+
+	// An event must pass BOTH this list's own solo/mute and any scope narrowing it:
+	// a list muted in place stays muted when nested, and a scope's solo: can only
+	// narrow, never reveal. With no scope this is exactly the list's own filter.
+	shouldPlay { |event, scope|
+		^this.prPasses(event, solo, mute) and: {
+			scope.isNil or: { this.prPasses(event, scope[\solo], scope[\mute]) }
+		}
+	}
+
+	prPasses { |event, soloSet, muteSet|
 		// match solo/mute tokens against BOTH the event's name and its voice, so
 		// voices (\chords, \chords2, ...) can be muted/soloed even when name is nil.
 		var keys = [event[\name], event[\voice]].reject(_.isNil).collect(_.asString);
-		solo.notNil.if {
+		soloSet.notNil.if {
 			keys.isEmpty.if { ^false };
-			^solo.any { |s| keys.any { |k| k.contains(s.asString) } }
+			^soloSet.any { |s| keys.any { |k| k.contains(s.asString) } }
 		};
-		(mute.notNil and: { keys.isEmpty.not }).if {
-			^mute.any { |s| keys.any { |k| k.contains(s.asString) } }.not
+		(muteSet.notNil and: { keys.isEmpty.not }).if {
+			^muteSet.any { |s| keys.any { |k| k.contains(s.asString) } }.not
 		};
 		^true
 	}
@@ -1371,7 +1398,7 @@ EventList {
 	// window [from, to) in THIS list's frame — the counterpart to `from`. It is
 	// absolute (not shifted by fromEvent/fromSection). Reached from \eventList via
 	// end:. Ignored on the playFn override path.
-	play { |from=0, fromEvent, fromSection, to|
+	play { |from=0, fromEvent, fromSection, to, scope|
 		from = from ? 0;
 		fromEvent !? {
 			var ev = events[fromEvent];
@@ -1389,10 +1416,10 @@ EventList {
 			// No tempoMap on a VoiceSpace list => base of 1 s/beat, so \tempoTrack values
 			// read as absolute s/beat (identity = 1), matching pre-delegation behavior.
 			beatDur ?? { this.beatDur_(1) };
-			^this.prPlayPrepared(from, to)
+			^this.prPlayPrepared(from, to, scope)
 		};
 		playFn.notNil.if { ^playFn.(this, from) };
-		^this.prPlayPrepared(from, to)
+		^this.prPlayPrepared(from, to, scope)
 	}
 
 	// §10c: prepare (all language/allocation work, synchronous, before the epoch) then
@@ -1413,7 +1440,7 @@ EventList {
 	// logical time + latency, so every send then leaves with only latency - Δ of real
 	// headroom → server "late" storms whenever Δ > latency. (Found live 2026-07-06:
 	// lates until leadTime ≈ latency + Δ, misread as "2x latency".)
-	prPlayPrepared { |from = 0, to|
+	prPlayPrepared { |from = 0, to, scope|
 		var lat = Server.default.latency ? 0.2;
 		// The epoch anchors to LOGICAL time (thisThread.seconds), like everything else
 		// scheduled in sclang — so events co-evaluated with .play line up with the list
@@ -1426,9 +1453,10 @@ EventList {
 		var epoch = t0 + (leadTime ? 0) + lat;
 		// Select once; prepare reuses both the events and the env built from them
 		// instead of re-running the scoped/shouldPlay selection.
-		var evts = this.prPlayEvents;
+		var evts = this.prPlayEvents(scope);
 		var tempoEnv = this.tempoEnv(evts);
-		var sched = this.prepare(epoch, from, to: to, tempoEnv: tempoEnv, evts: evts);
+		var sched = this.prepare(epoch, from, to: to, tempoEnv: tempoEnv, evts: evts,
+			scope: scope);
 		// Sends fire `lat` early (they self-bundle at +lat), so the real deadline for
 		// the FIRST entry is epoch - lat = t0 + leadTime.
 		var d = (Main.elapsedTime + 0.02) - (epoch - lat);
@@ -1468,7 +1496,7 @@ EventList {
 	// `place` answers "what absolute wall-second does a beat in THIS list's frame land
 	// on?"; top-level lists get the default, nested lists get one from prExpandList.
 	// `seen` guards cyclic nesting.
-	prepare { |epoch, from = 0, place, seen, to, tempoEnv, evts|
+	prepare { |epoch, from = 0, place, seen, to, tempoEnv, evts, scope|
 		var sched = List[];
 		var fromWall, playable;
 		seen = seen ?? { IdentitySet[] };
@@ -1476,7 +1504,7 @@ EventList {
 			"EventList.prepare: cyclic \\eventList nesting at % — skipped".format(name).warn;
 			^sched
 		};
-		evts     = evts ?? { this.prPlayEvents };
+		evts     = evts ?? { this.prPlayEvents(scope) };
 		tempoEnv = tempoEnv ?? { this.tempoEnv(evts) };
 		fromWall = this.beatToWall(from, tempoEnv);
 		place    = place ?? { { |beat| epoch + (this.beatToWall(beat, tempoEnv) - fromWall) } };
@@ -1486,7 +1514,7 @@ EventList {
 		playable.do { |ev|
 			ev[\tempoTrack].isNil.if {
 				(ev[\type] == \eventList).if {
-					sched.addAll(this.prExpandList(ev, epoch, place, from, seen))
+					sched.addAll(this.prExpandList(ev, epoch, place, from, seen, scope))
 				} {
 					sched.addAll(this.prEmit(ev, place, tempoEnv, from))
 				}
@@ -1507,13 +1535,15 @@ EventList {
 	}
 
 	// The filtered (scoped + shouldPlay) events exactly as play/prepare uses them.
-	prPlayEvents {
-		^this.resolvedEvents.select { |e| this.shouldPlay(e) }
+	prPlayEvents { |scope|
+		^this.resolvedEvents.select { |e| this.shouldPlay(e, scope) }
 	}
 	// tempoEnv as play/prepare will actually use it: derived from the filtered
-	// events, so it matches what sounds.
-	prPlayTempoEnv {
-		^this.tempoEnv(this.prPlayEvents)
+	// events, so it matches what sounds — which is why the scope reaches here too:
+	// muting a \tempoTrack-bearing voice must change the child's clock the same way
+	// it does at top level.
+	prPlayTempoEnv { |scope|
+		^this.tempoEnv(this.prPlayEvents(scope))
 	}
 
 	// §10b: expand a nested \eventList event into schedule entries. followTrack: true
@@ -1521,7 +1551,7 @@ EventList {
 	// tempoTrack — same convention as \mi2 followTrack); otherwise the child keeps its
 	// own beat->wall map, shifted so child beat `start` lands at the parent's wall time
 	// for `when`. rate = tempo/stretch scales child beats per parent beat.
-	prExpandList { |ev, epoch, place, from = 0, seen|
+	prExpandList { |ev, epoch, place, from = 0, seen, scope|
 		var child = ev[\eventList].isKindOf(EventList).if { ev[\eventList] } { EventList.at(ev[\eventList]) };
 		var b0    = ev[\when] ? 0;
 		var cFrom = ev[\start] ? 0;
@@ -1536,6 +1566,8 @@ EventList {
 		// followTrack absent (child plays its own performed seconds), in between a
 		// blend of the two. Present => it decides, and followTrack is redundant.
 		var align = ev[\align];
+		// solo:/mute: on the nesting event narrow the CHILD for this insertion only.
+		var childScope = EventList.prScope(ev, scope);
 		var childPlace, childSeen, refG;
 		child.isNil.if {
 			"EventList.prepare: no list named %".format(ev[\eventList]).warn;
@@ -1544,7 +1576,7 @@ EventList {
 		childSeen = (seen ?? { IdentitySet[] }).copy;
 		childSeen.add(this);
 		align.notNil.if { ^this.prExpandBlended(ev, epoch, place, from, childSeen,
-			child, b0, cFrom, cTo, rate, gAt, align) };
+			child, b0, cFrom, cTo, rate, gAt, align, childScope) };
 		((ev[\followTrack] ? false) != false).if {
 			(ev[\followTrack] == true).not.if {
 				"EventList.prepare: followTrack:% on nested \\eventList — source-map values only apply to \\mi2; following track".format(ev[\followTrack]).warn
@@ -1562,12 +1594,12 @@ EventList {
 			};
 			childPlace = { |cBeat| place.(b0 + ((gAt.(cBeat) - refG) / rate)) };
 		} {
-			var cEnv = child.prPlayTempoEnv;
+			var cEnv = child.prPlayTempoEnv(childScope);
 			var anchor = place.(b0);
 			var cFromWall = child.beatToWall(gAt.(cFrom), cEnv);
 			childPlace = { |cBeat| anchor + (child.beatToWall(gAt.(cBeat), cEnv) - cFromWall) };
 		};
-		^child.prepare(epoch, cFrom, childPlace, childSeen, cTo)
+		^child.prepare(epoch, cFrom, childPlace, childSeen, cTo, scope: childScope)
 	}
 
 	// The `align:` blend. Both endpoint placements answer WALL times and both are
@@ -1577,8 +1609,8 @@ EventList {
 	// the child's tempoMap is untouched, so replays and nesting stay repeatable.
 	// The mid-list cut has no closed form here (the blend mixes two beat axes), so it
 	// is bisected — same move as Groove's inverse and wallToBeat's subsampled case.
-	prExpandBlended { |ev, epoch, place, from, childSeen, child, b0, cFrom, cTo, rate, gAt, align|
-		var cEnv      = child.prPlayTempoEnv;
+	prExpandBlended { |ev, epoch, place, from, childSeen, child, b0, cFrom, cTo, rate, gAt, align, scope|
+		var cEnv      = child.prPlayTempoEnv(scope);
 		var anchor    = place.(b0);
 		var refG      = gAt.(cFrom);
 		var cFromWall = child.beatToWall(refG, cEnv);
@@ -1591,7 +1623,7 @@ EventList {
 				.format(align).warn
 		};
 		(from > b0).if { cFrom = this.prBisectBeat(childPlace, place.(from), cFrom) };
-		^child.prepare(epoch, cFrom, childPlace, childSeen, cTo)
+		^child.prepare(epoch, cFrom, childPlace, childSeen, cTo, scope: scope)
 	}
 
 	// child beat whose placement reaches targetWall, never below `lo`. Bracket by

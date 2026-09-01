@@ -78,6 +78,87 @@ EventList {
 		^this.new(name, \keyFrame).voiceSpace_(voiceSpace ? VoiceSpace.default)
 	}
 
+	/*
+	 A list whose sections lay themselves end to end: each new section starts where
+	 the previous one ended, so inserting or dropping a section ripples the rest
+	 forward at add time (no resequence pass — this only ever looks backward).
+
+	 \section is the grouping key. Consecutive adds carrying the SAME \section value
+	 are LAYERS of one section: they share its start beat. The event that NAMED the
+	 section governs its length — layers do not extend it, so a layer that runs
+	 longer simply spills into the sections that follow. An add that names no
+	 section inherits the open one, so only the first layer has to say where it is —
+	   e.add(section: \verse, eventList: \band);
+	   e.add(eventList: \extraPercussion);   // layers onto \verse
+	 A list that never names a section has none open, so bare adds sequence instead
+	 (`e.add(eventList: \verse); e.add(eventList: \chorus)` still lays end to end).
+	 Non-consecutive repeats of a value are separate sections, so a form that comes
+	 back to \verse later still sequences; `again: true` starts a new section from an
+	 add that would otherwise layer — a back-to-back repeat, or a bare add meant to
+	 follow the open section rather than join it.
+
+	 The inherited key is used for grouping only: it is never written onto the event,
+	 so nothing downstream sees a \section it did not ask for.
+
+	 sectionDur answers "how many beats does this event occupy": a number makes the
+	 event a section (or a layer of one), nil means it does not occupy time and
+	 anchors to the current section's start instead (a one-off note, a callback).
+	 The default measures nested \eventList events and anything carrying \dur, so
+	 `e.add(eventList: \verse)` needs no length; a caller with its own notion of
+	 section length (Mandarin's Song sections) passes a function.
+
+	 quantum, when given, rounds MEASURED durations up to a multiple of it — a bar,
+	 a phrase, whatever this song counts in; there is no default. An explicit \dur
+	 on the event is taken as written.
+	*/
+	*sequenced { |name, defaultType, sectionDur, quantum|
+		var list = this.new(name, defaultType);
+		list.clear;
+		list.env[\nextWhen] = 0;
+		list.env[\cursor] = 0;
+		list.env[\section] = nil;
+		list.addFunc = { |ev, l|
+			/* an add that names no section joins the open one (nil while no
+			   section has been named — bare adds then sequence). */
+			var key = ev[\section] ?? { l.env[\section] };
+			var dur = sectionDur.notNil.if { sectionDur.(ev, l) } {
+				/* default: only events that occupy time are sections; a point event
+				   (a one-off note, a callback) anchors to the cursor instead. */
+				var d = l.prTailOf(ev);
+				(d > 0).if { d } { nil }
+			};
+			var layer = key.notNil
+				and: { l.env[\section].notNil }
+				and: { key == l.env[\section] }
+				and: { (ev[\again] ? false) != true };
+			(dur.notNil and: { quantum.notNil } and: { ev[\dur].isNil }).if {
+				dur = dur.roundUp(quantum)
+			};
+			(dur.isNil or: { layer }).if {
+				/* Anchored to the open section's start, any explicit \when being an
+				   offset from it: either the event occupies no time at all, or it is
+				   another layer of the section — and a layer has no say in where the
+				   section ends (the event that named it governs that), so one running
+				   longer just spills into what follows.  */
+				ev[\when] = (l.env[\cursor] ? 0) + (ev[\when] ? 0)
+			} {
+				/* a new section. An explicit \when is a gap relative to the previous
+				   section's start (the convention the Mandarin list has always used)
+				   and, as there, does not itself advance the running end. */
+				ev[\when].notNil.if {
+					var prev = l.events.last;
+					ev[\when] = (prev !? { prev[\when] } ? 0) + ev[\when]
+				} {
+					ev[\when] = l.env[\nextWhen] ? 0;
+					l.env[\nextWhen] = ev[\when] + dur
+				};
+				l.env[\cursor] = ev[\when];
+				l.env[\section] = key
+			}
+		};
+		^list
+	}
+
 	*newFrom { |other, name, newVoiceSpace=false|
 		var src = other.isKindOf(Symbol).if { all[other] } { other };
 		var instance;
@@ -201,6 +282,43 @@ EventList {
 			}.if { this.prLazyTempoEnv }
 		};
 		^events.collect { |e| this.resolveEvent(e, tempoEnv) }
+	}
+
+	/*
+	 Extent in beats: the last beat anything in this list still occupies. The tail
+	 is per type — a nested \eventList recurses (trimmed by its own start/end and
+	 scaled by its rate), anything carrying \dur occupies that, everything else is
+	 a point. `seen` guards cyclic nesting the same way prepare does.
+
+	 This is a floor, not an intent: a section that ends in a rest measures short.
+	 Put \dur on the nesting event where the musical end differs from the last note.
+	*/
+	span { |seen|
+		seen = seen ?? { IdentitySet[] };
+		seen.includes(this).if { ^0 };
+		seen = seen.copy.add(this);
+		^events.inject(0) { |acc, ev|
+			acc.max((ev[\when] ? 0) + this.prTailOf(ev, seen))
+		}
+	}
+
+	prTailOf { |ev, seen|
+		var child, rate;
+		ev[\dur] !? { |d| ^d };
+		((ev[\type] == \eventList) or: { ev[\eventList].notNil }).if {
+			child = ev[\eventList].isKindOf(EventList).if {
+				ev[\eventList]
+			} {
+				EventList.at(ev[\eventList])
+			};
+			child.isNil.if {
+				"EventList.span: no list named %".format(ev[\eventList]).warn;
+				^0
+			};
+			rate = (ev[\tempo] ? 1) / (ev[\stretch] ? 1);
+			^(((ev[\end] ?? { child.span(seen) }) - (ev[\start] ? 0)) / rate).max(0)
+		};
+		^0
 	}
 
 	// Function-valued event fields resolve at read time against the event's current

@@ -38,39 +38,29 @@ Mandarin {
         });
     }
     *setupEventList {
-        var list = EventList(\mandarin, \seg);
+        /* Sections lay end to end (EventList.sequenced); Mandarin only supplies the
+           measurement. A nested \eventList measures itself, so
+           `e.add(section: \verse, eventList: \perc)` layers a list onto the verse
+           without stating a length; a plain \section is a Song section, measured by
+           Seg.durOf in seconds and converted to beats. Anything else occupies no
+           time and anchors to the current section's start. */
+        var list = EventList.sequenced(\mandarin, \seg, { |ev, l|
+            case
+            { ev[\eventList].notNil or: { ev[\dur].notNil } } { l.prTailOf(ev) }
+            { ev[\section].notNil } { Seg.durOf(ev) / (l.beatDur ? 1) }
+            { true } { nil }
+        });
+        var place = list.addFunc;
         (topEnvironment != env).if { env.push };
-        list.clear;
         list.preview = nil;
         list.beatDur = Song.clock.notNil.if { Song.clock.beatDur } { Song.quarter ? 1 };
         list.addFunc = { |ev, l|
-            ev[\section].notNil.if {
-                var explicit = ev[\when].notNil;
-                explicit.if {
-                    var prev = l.events.last;
-                    ev[\when] = (prev !? { prev[\when] } ? 0) + ev[\when];
-                } {
-                    ev[\when] = Mandarin.env[\nextWhen] ? 0;
-                    Mandarin.env[\nextWhen] = ev[\when] + (Seg.durOf(ev) / (l.beatDur ? 1));
-                };
-                // only section events move the cursor — the anchor that
-                // non-section events align to.
-                Mandarin.env[\cursor] = ev[\when];
-                "  @ % beats : %".format(ev[\when].round(0.001), ev[\section]).postln;
-            } {
-                // non-section event (e.g. \audioItem): anchor to the cursor (the
-                // current section's start); any explicit \when is a relative offset.
-                // It does NOT advance the cursor, so chord voices and successive
-                // non-section events share one anchor instead of chaining.
-                var base = Mandarin.env[\cursor] ? 0;
-                ev[\when] = base + (ev[\when] ? 0);
-                "  @ % beats : %".format(ev[\when].round(0.001), ev[\type]).postln;
-            }
+            place.(ev, l);
+            "  @ % beats : %".format(ev[\when].round(0.001), ev[\section] ?? { ev[\type] }).postln
         };
-        env[\nextWhen] = 0;
-        env[\cursor] = 0;
         ^list
     }
+
     *doesNotUnderstand { |selector ...args|
         ^Message(event, selector).(*args)
     }

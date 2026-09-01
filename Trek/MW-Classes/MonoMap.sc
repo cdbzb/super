@@ -353,8 +353,13 @@ AnchorMap : MonoMap {
 	// equal to the full domain give the same exact result as an unbounded call.
 	quantize { |amount = 1, from, to|
 		(from.isNil and: { to.isNil }).if { ^this.prQuantizeAll(amount) };
-		^this.transformSpan(from ? xs.first, to ? xs.last, { |cell|
-			cell.prQuantizeAll(amount) })
+		^this.transformSpan(
+			from ? xs.first,
+			to ? xs.last, 
+			{ |cell|
+				cell.prQuantizeAll(amount) 
+			}
+		)
 	}
 	prQuantizeAll { |amount = 1|
 		var x0 = xs.first, y0 = ys.first;

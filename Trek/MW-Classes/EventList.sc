@@ -114,6 +114,13 @@ EventList {
 	 `e.add(eventList: \verse)` needs no length; a caller with its own notion of
 	 section length (Mandarin's Song sections) passes a function.
 
+	 An add that names a \section EXPLICITLY always occupies time: where nothing
+	 measures (an sv: take, a bare func, a child list of those — all span 0) it
+	 falls back to one beat rather than becoming a point event, so the section
+	 opens where it was written instead of collapsing onto the previous one. That
+	 beat is a placeholder, not a measurement — pass a \dur wherever the length
+	 matters. Applies to a custom sectionDur too, and never to a layer.
+
 	 quantum, when given, rounds MEASURED durations up to a multiple of it — a bar,
 	 a phrase, whatever this song counts in; there is no default. An explicit \dur
 	 on the event is taken as written.
@@ -138,6 +145,16 @@ EventList {
 				and: { l.env[\section].notNil }
 				and: { key == l.env[\section] }
 				and: { (ev[\again] ? false) != true };
+			/* Naming a \section is a statement that one opens HERE, so it occupies
+			   time even when nothing in it measures. An unmeasurable child — a list
+			   whose length lives inside a synth, an sv: take, a bare func — spans 0,
+			   and without this would fall through to the point-event branch and
+			   silently anchor to the PREVIOUS section's start, so play(fromSection:)
+			   would start on that one instead. One beat is the smallest length that
+			   still opens a section; give the add a real \dur (or the child a \dur
+			   on its last event) where the musical length matters. A layer is exempt:
+			   it joins an open section and has no say in where that section ends. */
+			(dur.isNil and: { ev[\section].notNil } and: { layer.not }).if { dur = 1 };
 			(dur.notNil and: { quantum.notNil } and: { ev[\dur].isNil }).if {
 				dur = dur.roundUp(quantum)
 			};
@@ -215,8 +232,9 @@ EventList {
 		};
 		^current.addContext(event)
 	}
-	*play { |from, fromEvent, fromSection|
-		^current.play(cursor.debug("CURSOR") ? from ? 0 => _.postln, fromEvent, fromSection)
+	*play { |from, fromEvent, fromSection, to, ctx, dur|
+		^current.play(cursor.debug("CURSOR") ? from ? 0 => _.postln, fromEvent, fromSection,
+			to, ctx, dur)
 	}
 	*clear { ^current.clear }
 	*clearContext { ^current.clearContext }
@@ -382,7 +400,10 @@ EventList {
 
 	// Lazy values can read sibling keys; LambdaEnvir detects cycles.
 	prResolveLazy { |ev, tempoEnv, outer|
-		var scratch = ev.copy;
+		// proto-free: with a callback present, resolveEvent has already put the clock
+		// context and outer on ev's proto, and a proto-aware scratch[k].isNil would
+		// then skip those keys — leaving LambdaEnvir (own entries only) without them.
+		var scratch = ev.copy.proto_(nil);
 		var out = ev.copy;
 		// Thunks prevent LambdaEnvir from invoking context values themselves.
 		this.prTempoContext(ev, tempoEnv).keysValuesDo { |k, v|
@@ -1449,18 +1470,34 @@ EventList {
 	// window [from, to) in THIS list's frame — the counterpart to `from`. It is
 	// absolute (not shifted by fromEvent/fromSection). Reached from \eventList via
 	// end:. Ignored on the playFn override path.
-	play { |from=0, fromEvent, fromSection, to, ctx|
+	//
+	// `dur` is the same bound stated as a LENGTH from wherever playback actually
+	// starts, so it composes with fromEvent/fromSection where absolute `to` cannot:
+	// play(fromSection: \verse2, dur: 24) is that section's first 24 beats without
+	// the caller having to know its start beat. It resolves once `from` is final;
+	// `to` wins if both are given, since it is the more specific statement.
+	play { |from=0, fromEvent, fromSection, to, ctx, dur|
 		from = from ? 0;
 		fromEvent !? {
 			var ev = events[fromEvent];
 			ev.notNil.if { from = (ev[\when] ? 0) + from }
 		};
+		/* Anchor to a named section: `from` becomes an offset into it. Only an
+		   explicitly named \section reaches the event (an inherited one is grouping
+		   state, never written), so this finds the add that OPENED the section — the
+		   right anchor, since its layers share that start beat. */
 		fromSection !? {
-			(defaultType == \seg).if {
-				var hit = events.detect { |e| e[\section] == fromSection };
-				hit.notNil.if { from = (hit[\when] ? 0) + from }
+			var hit = events.detect { |e| e[\section] == fromSection };
+			hit.notNil.if { from = (hit[\when] ? 0) + from } {
+				"EventList.play: no section % in %".format(fromSection, name ? this).warn
+			}
+		};
+		dur !? {
+			to.notNil.if {
+				"EventList.play: to: (%) and dur: (%) both given — using to:"
+					.format(to, dur).warn
 			} {
-				"EventList.play: fromSection ignored — defaultType is %".format(defaultType).warn
+				to = from + dur
 			}
 		};
 		voiceSpace.notNil.if {

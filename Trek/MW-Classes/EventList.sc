@@ -13,7 +13,8 @@ EventList {
 	var <events, <preview, <>defaultType, <routes, <>addFunc, <>previewPrep;
 	var <>env, <>context;
 	var <>autoExpand = false;
-	var <>batchWindow = 0.05, batchEndTime = -1e9, batchFirstWhen = 0, batchTempoEnv;
+	var <>batchWindow = 0.05, batchEndTime = -1e9, batchFirstWhen = 0, batchTempoEnv,
+		batchMonoStates;
 	var <name, <>voiceSpace;
 	var <solo, <mute;
 	// tempoMap is getter-only here: the setter (tempoMap_) coerces V2 MonoMaps and
@@ -24,7 +25,7 @@ EventList {
 	// adaptive ASAP start). prPlayGen = generation counter letting stop/replay
 	// cancel already-scheduled sends.
 	var <>leadTime, <lastPlayEpoch;
-	var prPlayGen = 0;
+	var prPlayGen = 0, prActiveMonos;
 	// Memoized beat->wall integral (see beatToWall): cumulative wall-seconds at each
 	// tempoEnv segment boundary, built once per tempoEnv so completed segments aren't
 	// re-integrated for every event. Keyed on tempoEnv identity.
@@ -263,6 +264,8 @@ EventList {
 		// Infer \func before applying defaultType.
 		routes[\func] = \func;
 		env = ();
+		batchMonoStates = IdentityDictionary.new;
+		prActiveMonos = IdentitySet.new;
 	}
 
 	addRoute { |key, type|
@@ -443,6 +446,7 @@ EventList {
 	// `dropTempoTrack` strips \tempoTrack so the copy doesn't duplicate tempo anchors.
 	// `offset` is a pure delta — to land a slice at beat X, use offset = X - from.
 	copyVoice { |voice, offset = 0, from, to, newVoice, dropTempoTrack = true|
+		var monoRuns = IdentityDictionary.new;
 		var copies = events
 			.select { |e|
 				var w = e[\when] ? 0;
@@ -451,8 +455,18 @@ EventList {
 					and: { to.isNil   or: { w <  to  } }
 			}
 			.collect { |e|
-				var c = e.copy;
+				var c = e.copy, fresh;
 				c[\when] = (c[\when] ? 0) + offset;
+				// A copy plays as an independent mono voice. Preserve grouping among
+				// the copied events, but never share playback state with the source.
+				c[\eventListMonoRun] !? { |old|
+					fresh = monoRuns[old];
+					fresh.isNil.if {
+						fresh = Ref(nil);
+						monoRuns[old] = fresh;
+					};
+					c[\eventListMonoRun] = fresh
+				};
 				newVoice       !? { c[\voice] = newVoice };
 				dropTempoTrack.if { c.removeAt(\tempoTrack) };
 				c
@@ -666,7 +680,11 @@ EventList {
 		var now = SystemClock.seconds;
 		var first = when.isKindOf(Array).if { when[0] } { when };
 		// Cache the tempo environment once per preview batch.
-		(now >= batchEndTime).if { batchFirstWhen = first; batchTempoEnv = nil };
+		(now >= batchEndTime).if {
+			batchFirstWhen = first;
+			batchTempoEnv = nil;
+			batchMonoStates = IdentityDictionary.new;
+		};
 		batchEndTime = now + batchWindow;
 		^when.isKindOf(Array).if {
 			when.collect { |w| w - batchFirstWhen }
@@ -754,105 +772,6 @@ EventList {
 		addFunc !? { addFunc.(event, this) };
 		sink.(event);
 		^this
-	}
-
-	/*
-	 Drain a pattern into stored events, walking `beat` forward by each event's
-	 \dur. Three independent stops: maxEvents (nil = uncapped), maxWhen as a beat
-	 ceiling, and the stream itself running out — so an endless pattern with no
-	 maxEvents still terminates at maxWhen. The count is checked before pulling,
-	 so maxEvents: 8 stores exactly 8.
-	*/
-	addPattern { |when=0, pattern, maxEvents, maxWhen=300, eventName|
-		var stream = pattern.asStream;
-		var beat = when;
-		var i = 0;
-		block { |break|
-			loop {
-				var event, previewOffset;
-				(maxEvents.notNil and: { i >= maxEvents }).if { break.value };
-				(beat > maxWhen).if { break.value };
-				event = stream.next(());
-				event.isNil.if { break.value };
-				event.put(\when, beat);
-				eventName !? { event.put(\name, eventName) };
-				previewOffset = this.nextPreviewOffset(beat);
-				// via dispatch, so pattern events get routes/addFunc/type stamping too.
-				// A \type the pattern set is promoted to \newType, else dispatch's
-				// fallback stamp overwrites it with defaultType.
-				(event[\type].notNil and: { event[\newType].isNil }).if {
-					event.put(\newType, event[\type])
-				};
-				this.dispatch(event, { |e| this.storeAndPreview(e, previewOffset) });
-				beat = beat + (event[\dur] ? 1);
-				i = i + 1;
-			}
-		};
-		^this
-	}
-
-	/*
-	 addPattern with this list's clock injected into the pattern's OWN value
-	 expressions — the one thing the stamping routes cannot do, because addFunc runs
-	 after `stream.next` has already computed every key.
-
-	 Read the clock with Pfunc, not a bare Function: miSCellaneous's `.pa` wraps a
-	 Function value in Pfunc and evaluates it at drain time, before any of this
-	 exists, so `{ ~secPerBeat }` inside `[...].p` silently yields nil — and a nil
-	 from any key ends the Pbind, so the pattern stores NOTHING.
-
-		 e.addClockPattern(0, Pseq([2], 5), [
-		     instrument: \harp,
-		     delayTime: Pfunc { |ev| ev[\secsFor].(0.5) }
-		 ].p);
-
-	 `dur` drives both the beat walk and the emitted \dur. The supplier runs FIRST
-	 (Pchain feeds right-to-left) and accumulates the beat itself, while `pattern`
-	 runs last and wins key collisions — so `pattern` must not set \dur, or its walk
-	 and addPattern's `beat + (event[\dur] ? 1)` diverge.
-	*/
-	addClockPattern { |when = 0, dur, pattern, maxEvents, maxWhen = 300, eventName|
-		^this.addPattern(when, pattern <> this.clockPattern(when, dur),
-			maxEvents, maxWhen, eventName)
-	}
-
-	/*
-	 The clock supplier alone, for hand-built chains. Each event carries \beat, its
-	 \secPerBeat, and a \secsFor answering the seconds spanned by n beats FROM THAT
-	 EVENT — integrated through the tempo env, so under a ramp it is not
-	 secPerBeat * n. Both \secsFor forms of prTempoContext work: ev[\secsFor].(n)
-	 and ev.secsFor(n), the latter arriving with the environment prepended.
-
-	 The per-event event is built by CALLING `mk`: a function call is the one thing
-	 that guarantees a fresh frame, so each closure keeps the beat it was made with
-	 rather than the loop variable's final value.
-
-	 tempoEnv is read inside the Prout, so a map edited between building this
-	 pattern and draining it still applies.
-	*/
-	clockPattern { |startBeat = 0, dur|
-		^Prout({ |inev|
-			var env  = this.tempoEnv;
-			var beat = startBeat;
-			var ds   = dur.asStream;
-			var d;
-			var mk = { |b, dd|
-				var wall = this.beatToWall(b, env);
-				(
-					dur: dd,
-					beat: b,
-					secPerBeat: this.beatToWall(b + 1, env) - wall,
-					secsFor: { |a, c|
-						var n = a.isKindOf(Environment).if { c ? 1 } { a ? 1 };
-						this.beatToWall(b + n, env) - wall
-					}
-				)
-			};
-			while { (d = ds.next(inev)).notNil } {
-				inev = ((inev ? ()) ++ mk.(beat, d)).yield;
-				beat = beat + d;
-			}
-		})
 	}
 
 	solo_ { |val| solo = val.notNil.if { val.asArray.as(Set) } }
@@ -964,10 +883,19 @@ EventList {
 					SystemClock.sched(pair[0], { pair[1].value; nil })
 				}
 			} {
-				SystemClock.sched(
-					this.prPreviewDelay(previewOffset, tempoEnv),
-					{ resolved.play; nil }
-				)
+				resolved[\eventListMonoRun].notNil.if {
+					var actions = this.prEmitMono(resolved, { |beat|
+						this.prPreviewDelay(beat - batchFirstWhen, tempoEnv)
+					}, batchFirstWhen, batchMonoStates);
+					actions.do { |item|
+						SystemClock.sched(item[\time], { item[\send].value; nil })
+					}
+				} {
+					SystemClock.sched(
+						this.prPreviewDelay(previewOffset, tempoEnv),
+						{ resolved.play; nil }
+					)
+				}
 			}
 		}
 	}
@@ -1586,7 +1514,7 @@ EventList {
 	// `seen` guards cyclic nesting.
 	prepare { |epoch, from = 0, place, seen, to, tempoEnv, evts, ctx|
 		var sched = List[];
-		var fromWall, playable;
+		var fromWall, playable, monoStates = IdentityDictionary.new;
 		seen = seen ?? { IdentitySet[] };
 		seen.includes(this).if {
 			"EventList.prepare: cyclic \\eventList nesting at % — skipped".format(name).warn;
@@ -1604,7 +1532,7 @@ EventList {
 				(ev[\type] == \eventList).if {
 					sched.addAll(this.prExpandList(ev, epoch, place, from, seen, ctx))
 				} {
-					sched.addAll(this.prEmit(ev, place, tempoEnv, from))
+					sched.addAll(this.prEmit(ev, place, tempoEnv, from, monoStates))
 				}
 			}
 		};
@@ -1615,9 +1543,24 @@ EventList {
 		// domain (place is monotonic in beat, so time >= place.(to) iff beat >= to) so
 		// one filter covers every branch — discrete, mi2/audioItem follow, voices — and
 		// applies per-list, so a nested child trims to its own end: in its own frame.
+		// Mono nodes whose natural release fell outside the window still need an off
+		// AT the boundary; append it after the half-open filter. Schedule entries carry
+		// their state, so this also closes a mono run prepared by a nested child.
 		to !? {
 			var toWall = place.(to);
-			sched = sched.reject { |i| i[\time] >= (toWall - 0.001) };
+			var kept = List[];
+			var cutoffStates = IdentitySet.new;
+			sched.do { |item|
+				(item[\time] < (toWall - 0.001)).if {
+					kept.add(item);
+					item[\monoState] !? { |state| cutoffStates.add(state) }
+				}
+			};
+			cutoffStates.do { |state|
+				kept.add((time: toWall, send: state[\off], label: \monoCutoff,
+					monoState: state))
+			};
+			sched = kept;
 		};
 		^sched
 	}
@@ -1828,8 +1771,11 @@ EventList {
 
 	// Per-type schedule builders (§10a). Sends must stay lightweight: everything
 	// expensive (warping, file reads, env math) happens here, at prepare time.
-	prEmit { |ev, place, tempoEnv, from = 0|
+	prEmit { |ev, place, tempoEnv, from = 0, monoStates|
 		var out = List[];
+		ev[\eventListMonoRun].notNil.if {
+			^this.prEmitMono(ev, place, from, monoStates)
+		};
 		this.prIsAudioFollow(ev).if {
 			var fromAbs = place.(from);
 			var actions;
@@ -2009,8 +1955,15 @@ EventList {
 		var gen, sorted;
 		// `<=` keeps insertion order for equal times, so setup events precede notes.
 		sorted = sched.asArray.sort { |a, b| (a[\time] ? 0) <= (b[\time] ? 0) };
+		// Replaying replaces the old transport. Release any mono synths it already
+		// created before installing the freshly prepared playback-local states.
+		this.prStopMonos;
 		prPlayGen = prPlayGen + 1;
 		gen = prPlayGen;
+		prActiveMonos = IdentitySet.new;
+		sorted.do { |item|
+			item[\monoState] !? { |state| prActiveMonos.add(state) }
+		};
 		Routine {
 			var t = thisThread.seconds;
 			block { |break|
@@ -2021,12 +1974,26 @@ EventList {
 					(gen != prPlayGen).if { break.value };
 					item[\send].value;
 				}
-			}
+			};
+			// Natural mono-off entries normally made every state inert already. This
+			// is also a final safety net for a malformed/truncated compiled run.
+			(gen == prPlayGen).if { this.prStopMonos }
 		}.play(SystemClock);
 	}
 
-	// Cancel anything scheduled by fire (pending sends check the generation first).
-	stop { prPlayGen = prPlayGen + 1 }
+	prStopMonos {
+		prActiveMonos.notNil.if {
+			prActiveMonos.do { |state| state[\off].value }
+		};
+		prActiveMonos = IdentitySet.new;
+	}
+
+	// Cancel anything scheduled by fire (pending sends check the generation first)
+	// and release mono nodes which have already been created.
+	stop {
+		prPlayGen = prPlayGen + 1;
+		this.prStopMonos
+	}
 
 	clear {
 		events = List[];
@@ -2034,6 +2001,7 @@ EventList {
 		this.tempoMap = nil;   // through the setter: also drops the beat->wall cache
 		beatDur = nil;
 		batchTempoEnv = nil;   // derived from events, which just went away
+		batchMonoStates = IdentityDictionary.new;
 	}
 
 	clearContext { context = List[] }

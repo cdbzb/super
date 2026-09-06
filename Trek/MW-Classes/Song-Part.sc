@@ -1031,27 +1031,38 @@ Part {
 		};
 		^switch (music.class,
 			Function,{
-				Server.default.bind{
-				try{
-					record.if{
-						\callFreeze.postln;
-						this.freeze(Song.frozenFolder +/+ this.parent.key ++ "_" ++ this.name ++ ".wav")
-						// Server.default.record( 
-						// 	bus: 0,
-						// 	duration: parent.durs[start].list.drop(syl ? 0).sum + 3 + (resources[\tail] ? 0),
-						// 	path: Song.frozenFolder +/+ this.parent.key ++ "_" ++ this.name ++ ".wav",
-						// 	numChannels: 5
-						// )
+				var playFunction = {
+					try{
+						record.if{
+							\callFreeze.postln;
+							this.freeze(Song.frozenFolder +/+ this.parent.key ++ "_" ++ this.name ++ ".wav")
+							// Server.default.record(
+							// 	bus: 0,
+							// 	duration: parent.durs[start].list.drop(syl ? 0).sum + 3 + (resources[\tail] ? 0),
+							// 	path: Song.frozenFolder +/+ this.parent.key ++ "_" ++ this.name ++ ".wav",
+							// 	numChannels: 5
+							// )
+						}
+					};
+					(topEnvironment ++ segParams).use {
+						music.value(
+							parent,
+							//durs from event start
+							parent.durs[start].list.drop(syl ? 0), //this is why you gotta use .drop(1) aaarg
+							this
+							// parent.mix[start]
+						)
 					}
 				};
-				(topEnvironment ++ segParams).use {music.value(
-					parent,
-					//durs from event start
-					parent.durs[start].list.drop(syl ? 0), //this is why you gotta use .drop(1) aaarg
-					this,
-					// parent.mix[start]
-				)}
-			}},
+				/* SynthVVST.prPerform owns separate early and nominal server
+				   timestamps for preroll. A surrounding bind folds both into its
+				   one timestamp, making the leadIn compensation ineffective. */
+				resources[\sv].isKindOf(SynthVVST).if {
+					playFunction.value
+				} {
+					Server.default.bind{ playFunction.value }
+				}
+			},
 			// Event,{ music.play},
 			Message,{Server.default.bind{music.value}},
 			Routine,{

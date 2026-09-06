@@ -434,7 +434,20 @@ SynthV {
 				english: "En", mandarin: "Zh", japanese: "Ja",
 				korean: "Ko", cantonese: "Yue", spanish: "Es"
 			);
-			keyOverrides = Dictionary["Mo Xu" -> "moXu"];
+			/* The <firstWord>2 rule collides wherever a vendor ships more than one
+			   voice under a shared given name. Where BOTH colliding entries carry an
+			   audioSampleUrl they both take the always-overwrite branch below, so the
+			   winner is decided by meta-file order — "Mo Yi" (f4532d68) landing after
+			   "Mo Chen 2" (7e266a9d) is what made \mo2 resolve to a voice this install
+			   does not have, with no warning (setDatabase only checks the KEY). Name
+			   the loser explicitly so each product keeps its own key.
+			   Still colliding, both sides with audio, if they ever matter here:
+			   anri2, asumi2, hanakuma2, natsuki2, shimon2, yi2, yun2.
+			   "Kasane Teto" is moved aside rather than renamed: kasane2 already lands
+			   on the AI 2 product by file order, and the V1 voice is reachable as
+			   \teto / \teto100, so pinning it only removes the coin flip. */
+			keyOverrides = Dictionary["Mo Xu" -> "moXu", "Mo Yi" -> "moYi",
+				"Kasane Teto" -> "kasaneTeto"];
 			raw = File.readAllString(jsonFile.fullPath);
 			meta = raw.parseJSON;
 			name = meta.at("name");

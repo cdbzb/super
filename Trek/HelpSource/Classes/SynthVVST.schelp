@@ -46,6 +46,11 @@ An Event of synthesis parameters. See link::#Params reference:: below.
 ARGUMENT:: version
 SynthV engine version. Default code::2::.
 
+ARGUMENT:: leadIn
+Preroll in seconds. Notes are shifted by this amount in SynthV, then live transport
+or frozen-buffer playback begins this amount before the nominal onset. This keeps
+the complete vocal attack without moving the note later. Default code::0.1::.
+
 returns:: A SynthVVST instance.
 
 METHOD:: freeAll
@@ -53,6 +58,17 @@ Free all cached VST instances (buses, controllers) and clear the cache.
 
 METHOD:: clearCache
 Alias for code::freeAll::.
+
+METHOD:: freeze
+Render currently open, unfrozen SynthVVST instances to the frozen cache in one Synthesizer V Studio batch. An optional SynthVVST or collection limits the operation to those instances. Duplicate takes are collapsed by cache key. The method returns the batch process ID, or code::nil:: when there is nothing to render.
+
+code::
+SynthVVST.freeze;              // every currently open take
+SynthVVST.freeze([lead, alto]); // an explicit subset
+::
+
+METHOD:: renderAll
+Compatibility method which freezes all cached instances. New code should normally use code::freeze::, whose default scope is the currently open instances.
 
 INSTANCEMETHODS::
 
@@ -63,8 +79,19 @@ A background notification code::"SynthVVST: <voice> ready":: posts to the post w
 
 returns:: this
 
+METHOD:: freeze
+Freeze this instance using the shared batch renderer. This replaces the old per-instance renderer while retaining its asynchronous behavior.
+
+returns:: this
+
+METHOD:: render
+Compatibility alias for the instance method code::freeze::.
+
 METHOD:: play
-Start VST transport and route audio through an optional processing function. Automatically stops transport and frees the synth after the duration completes. Safe to call multiple times -- previous cleanup routines are cancelled.
+Play the live VST or frozen buffer through an optional processing function. Frozen
+playback retains the rendered preroll and remains aligned with live playback.
+Automatically stops transport and frees the synth after the duration completes.
+Safe to call multiple times -- previous cleanup routines are cancelled.
 
 ARGUMENT:: func
 A signal processing function applied to the VST output. Default is identity (passthrough).
@@ -95,6 +122,9 @@ METHOD:: buses
 Access the raw audio bus(es).
 
 returns:: A Bus (single voice) or Array of Bus (multi-voice).
+
+METHOD:: isOpen
+Returns code::true:: while at least one underlying VST instance is allocated. For a multi-voice take, partially open state therefore counts as open.
 
 METHOD:: isMulti
 returns:: Boolean. code::true:: if multi-voice expansion is active.

@@ -70,12 +70,31 @@ VSTI {
 
 		CmdPeriod.add( cmdPeriodAction )
 	}
+
+	dispose {
+		/* A VSTI installs a permanent-looking CmdPeriod action and registers itself
+		   globally. Closing only its controller leaves both behind, so Cmd-. can
+		   unexpectedly recreate a VST which its owner considers freed. */
+		cmdPeriodAction.notNil.if {
+			CmdPeriod.remove(cmdPeriodAction);
+			cmdPeriodAction = nil;
+		};
+		controller.notNil.if {
+			try { controller.close };
+			controller = nil;
+		};
+		syn.notNil.if {
+			try { syn.free };
+			syn = nil;
+		};
+		id.notNil.if { vstis.removeAt(id) };
+		^this
+	}
+
 	*clearAll {
-		vstis.do{|i x| 
-			CmdPeriod.remove(i.cmdPeriodAction);
-			i.controller.free; i.syn.free; i.free;
-			vstis.removeAt(x)
-		}
+		// dispose mutates the registry, so walk a copy.
+		vstis.copy.do{|i| i.dispose };
+		vstis = Order.new;
 	}
 }
 

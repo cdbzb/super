@@ -26,6 +26,15 @@ SynthVVST {
 		}
 	}
 
+	isOpen {
+		/* synthV survives freezing so its project can still be inspected; the VSTI
+		   reference is the actual live-resource test. `any` also handles a partially
+		   opened multi-voice instance without declaring the whole take closed. */
+		^synthV.notNil and: {
+			synthV.asArray.any{|sv| sv.notNil and: { sv.vst.notNil } }
+		}
+	}
+
 	checkDirty { ^this.isFrozen.not }
 
 	svpPaths {
@@ -64,24 +73,22 @@ SynthVVST {
 		^this.svpPaths
 	}
 
-	render {
-		var script = SynthV.directory +/+ "SCRIPTS/renderSynthV-recompute_2.sh";
-		this.isFrozen.if{
-			"SynthVVST: % already frozen".format(voice).postln;
-			^this
-		};
-		this.prepareRender.do{|svpPath|
-			(script + svpPath).unixCmd;
-		};
+	freeze {
+		this.class.freeze([this]);
 		^this
 	}
+
+	// Compatibility name; all rendering now uses the single batch coordinator.
+	render { ^this.freeze }
 
 	freeVSTs {
 		synthV.asArray.do{|sv|
 			sv.notNil.if{
 				sv.vst.notNil.if{
 					try{ sv.vst.bus.free };
-					try{ sv.vst.controller.close };
+					/* dispose also removes VSTI's CmdPeriod callback and registry
+					   entry; controller.close alone allowed Cmd-. to reopen it. */
+					try{ sv.vst.dispose };
 					sv.vst = nil;
 				}
 			}
@@ -346,28 +353,25 @@ SynthVVST {
 	/*
 	 The one playback lifecycle: ready-gate, transport, cleanup. `makeSynth` builds
 	 and returns the Synth — play passes a filtered source, P.synthVVST passes the
-	 song's own music function, so both share this.
+	 song's own music function, so both share this. The caller must not wrap this in
+	 Server.bind: prPerform owns the two distinct timestamps below, and a nested
+	 makeBundle is folded into the outer bundle at the outer timestamp.
 
-	 Transport starts BEFORE the synth is made (a reader built first can sit ahead of
-	 the plugin's node and read the bus before it is written), and the not-ready path
-	 bundles, matching what P.synthVVST always did.
+	 The live reader is made immediately so it is already in the node graph when the
+	 timestamped transport starts. The frozen reader is itself timestamped early. The
+	 not-ready path waits, then uses the same scheduling logic.
 	*/
 	prPerform { |makeSynth, tail=1|
 		var lat = Server.default.latency ? 0.2;
 		/*
-		 The transport starts leadIn EARLY, in its own bundle: build shifted every onset
-		 by leadIn, so the plugin renders that much silence before the first attack and
-		 has had that long to spin up — which is what stops the first sound being
-		 clipped — while the singing still lands exactly on the beat, together with the
-		 reader synth that makeSynth bundles at plain latency.
+		 build shifted every onset by leadIn. Start the live transport, or the frozen
+		 reader, at latency - leadIn: the shifted note still lands at plain latency while
+		 the full preroll remains audible and the plugin has time to spin up.
 
 		 A bundle, not a sync: VSTPluginController.sendMsg goes through server.sendMsg,
 		 which openBundle collects, so /transport_play carries an exact timestamp.
 		 Server.sync waits on a round trip and would put back the nondeterminism the
 		 bundle exists to remove.
-
-		 The frozen path needs nothing extra: that wav carries the same leadIn of
-		 silence, so its PlayBuf lines up by the same arithmetic.
 		*/
 		var at = lat - leadIn;
 		var doIt;
@@ -380,7 +384,12 @@ SynthVVST {
 		doIt = {
 			var syn;
 			this.isFrozen.if{
-				syn = makeSynth.value;   /* Line.kr in `source` frees it */
+				/* Play from frame zero at the live transport's early timestamp. The
+				   rendered note was shifted by leadIn, so its nominal onset lands at
+				   plain latency while the complete preroll remains audible. */
+				Server.default.makeBundle(at, {
+					syn = makeSynth.value
+				});   /* Line.kr in `source` frees it */
 			}{
 				cleanup.notNil.if{ cleanup.stop };
 				syn = makeSynth.value;
@@ -398,7 +407,7 @@ SynthVVST {
 		/*
 		 `ready` is assigned only inside build, so a direct SynthVVST(...) that was
 		 never built has nil here and the fork below died on nil.wait with an error
-		 naming neither build nor this class. P.synthVVST always builds (:362), so
+		 naming neither build nor this class. P.synthVVST always calls build, so
 		 only the direct-construction route could reach it. build is idempotent on a
 		 cache hit, so recover rather than throw.
 		*/
@@ -409,7 +418,9 @@ SynthVVST {
 		ready.test.if{
 			doIt.value
 		}{
-			fork{ ready.wait; Server.default.bind { doIt.value } }
+			/* doIt applies latency itself. An outer bind would collapse its early
+			   bundle back to plain server latency. */
+			fork{ ready.wait; doIt.value }
 		};
 		^this
 	}
@@ -434,16 +445,7 @@ SynthVVST {
 	}
 
 	*freeAll {
-		cache.do{|item|
-			item.synthV.asArray.do{|sv|
-				sv.notNil.if{
-					sv.vst.notNil.if{
-						try{ sv.vst.bus.free };
-						try{ sv.vst.controller.close };
-					}
-				}
-			}
-		};
+		cache.do{|item| item.freeVSTs };
 		cache = IdentityDictionary.new;
 	}
 
@@ -451,20 +453,62 @@ SynthVVST {
 		this.freeAll;
 	}
 
-	*renderAll {
+	/*
+	 Freeze a collection in one SynthV Studio batch. With no argument, select only
+	 currently open SynthVVSTs. An explicit item or collection is accepted so other
+	 owners can provide a scope without duplicating the render coordinator.
+	*/
+	*freeze { |items|
 		var script = SynthV.directory +/+ "SCRIPTS/renderSynthV-batch.sh";
 		var paths = List.new;
-		cache.do{|item|
-			var prepared = item.prepareRender;
-			prepared.notNil.if{ paths.addAll(prepared) };
+		var selected = this.prFreezeItems(items);
+		var frozen = 0, unbuilt = 0, pid;
+		selected.do{|item|
+			item.isFrozen.if {
+				frozen = frozen + 1
+			} {
+				item.synthV.isNil.if {
+					unbuilt = unbuilt + 1;
+					"SynthVVST.freeze: % has not been built; skipping".format(item.voice).warn
+				} {
+					paths.addAll(item.prepareRender)
+				}
+			}
 		};
 		(paths.size > 0).if{
-			(script + paths.collect{|p| p.shellQuote}.join(" ")).unixCmd;
-			"SynthVVST.renderAll: % files queued".format(paths.size).postln;
+			pid = (script + paths.collect{|p| p.shellQuote}.join(" ")).unixCmd;
+			"SynthVVST.freeze: % files for % takes queued (pid %)"
+				.format(paths.size, selected.size - frozen - unbuilt, pid).postln;
 		}{
-			"SynthVVST.renderAll: all parts already frozen".postln;
-		}
+			(selected.isEmpty).if {
+				"SynthVVST.freeze: no instances selected".postln
+			} {
+				"SynthVVST.freeze: nothing queued (% already frozen, % not built)"
+					.format(frozen, unbuilt).postln
+			}
+		};
+		^pid
 	}
+
+	/* Normalize a single item or collection, prefer the cache's canonical wrapper,
+	   and submit a content hash once even if the input repeats it. */
+	*prFreezeItems { |items|
+		var byKey = IdentityDictionary.new;
+		items = items ?? { cache.values.select{|item| item.isOpen } };
+		items.asArray.do{|item|
+			item.isKindOf(SynthVVST).if {
+				item = cache[item.cacheKey] ? item;
+				byKey[item.cacheKey] = item
+			} {
+				"SynthVVST.freeze: expected SynthVVST, got %; skipping"
+					.format(item.class).warn
+			}
+		};
+		^byKey.values.asArray
+	}
+
+	// Compatibility name: preserve its old all-cached scope.
+	*renderAll { ^this.freeze(cache.values) }
 }
 + P {
 	*synthVVST { |voice start params syl lag=0 music song resources filters version=2 take tail=1 leadIn=0.1|
@@ -482,7 +526,8 @@ SynthVVST {
 		filters.do{|f| f.(sv) };
 		sv = sv.build;
 		sv.isFrozen.not.if{
-			"SynthVVST: % not frozen.\nSong.%.synthV.render".format(key, key).postln;
+			"SynthVVST: % not frozen. Call SynthVVST.freeze to render all open takes."
+				.format(key).postln;
 		};
 		/* lifecycle lives on the class now (prPerform); `music` keeps its (p, b, e)
 		   signature and still returns the Synth, so existing songs are unchanged. */

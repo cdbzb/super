@@ -2,6 +2,11 @@ SynthVVST {
 	classvar <>cache;
 	var <>synthV, <>params, <>voice, <>version, <cacheKey, <>voices, <>isMulti, <>cleanup, <ready, <>frozenBuffers;
 	var <leadIn;
+	/* nil = never built, \building = VSTs opening, \ready = usable,
+	   \failed = the plugin or its program did not load, \stale = invalidated by
+	   Cmd-.. `ready` alone cannot express these: it is down for all four of the
+	   non-ready states, which is why an in-flight build used to look broken. */
+	var <>buildState;
 
 	*initClass {
 		cache = IdentityDictionary.new;
@@ -93,6 +98,7 @@ SynthVVST {
 				}
 			}
 		};
+		buildState = nil;
 		"SynthVVST: % VSTs freed".format(voice).postln;
 	}
 
@@ -179,21 +185,53 @@ SynthVVST {
 		^this
 	}
 
+	/* Split out so the decision is testable without opening a plugin. */
+	prShouldRebuild { |cached|
+		^cached.notNil
+			and: { cached.buildState != \building }
+			and: { cached.ready.notNil }
+			and: { cached.ready.test.not }
+			and: { this.isFrozen.not }
+	}
+
+	/*
+	 Opening a VST is asynchronous: VSTI forks, syncs, opens the plugin, and only
+	 then does SV's action read the .fxp, so `ready` stays down for the whole
+	 bring-up. Rebuilding on a down `ready` therefore treated a build still in
+	 flight as a broken one — and since both takes name the same
+	 /private/tmp/<cacheKey>.fxp, the replacement opened a project the outgoing
+	 plugin had not released yet, which is exactly what makes Synthesizer V ask
+	 whether to save a copy. Loading a whole source file, or nesting one EventList
+	 under two parents, calls build for the same key several times in a row and hit
+	 this every time.
+
+	 So distinguish the states. Only a take that actually died (\failed) or was
+	 invalidated by Cmd-. (\stale) is rebuilt; one still opening is adopted by
+	 falling through to the ordinary cache hit below, where its Condition is shared
+	 and every waiter is released by the single build already running.
+
+	 A build wedged before either callback stays \building and is never rebuilt.
+	 That is deliberate: the old behaviour rebuilt it on every call, and each rebuild
+	 was another dialog. Call freeVSTs (or SynthVVST.freeAll) to clear it.
+	*/
 	build {
 		var readyCount = 0, targetCount;
-		(cache[cacheKey].notNil
-			and: { cache[cacheKey].ready.notNil }
-			and: { cache[cacheKey].ready.test.not }
-			and: { this.isFrozen.not }
-		).if{
-			"SynthVVST: % cached VST was not ready; rebuilding".format(voice).postln;
-			cache[cacheKey].freeVSTs;
+		var cached = cache[cacheKey];
+		var stale, openVSTs;
+		this.prShouldRebuild(cached).if{
+			"SynthVVST: % cached VST was %; rebuilding"
+				.format(voice, cached.buildState ? "not ready").postln;
+			/* Removed from the cache now, but freed later: the teardown has to
+			   complete before the replacement opens the same project. */
+			stale = cached;
+			cached = nil;
 			cache.removeAt(cacheKey);
 		};
-		cache[cacheKey].notNil.if{
-			synthV = cache[cacheKey].synthV;
-			ready = cache[cacheKey].ready;
-			frozenBuffers = cache[cacheKey].frozenBuffers;
+		cached.notNil.if{
+			synthV = cached.synthV;
+			ready = cached.ready;
+			buildState = cached.buildState;
+			frozenBuffers = cached.frozenBuffers;
 			this.isFrozen.if{
 				frozenBuffers.isNil.if{
 					this.freeVSTs;
@@ -219,9 +257,11 @@ SynthVVST {
 				*/
 				(ready.isNil or: { ready.test.not }).if{
 					ready = Condition(false);
+					buildState = \building;
 					cache[cacheKey] = this;
 					fork{
 						Server.default.sync;
+						buildState = \ready;
 						ready.test_(true).signal;
 						"SynthVVST: % ready (frozen)".format(voice).postln;
 					};
@@ -238,64 +278,91 @@ SynthVVST {
 			}{
 				frozenBuffers = Buffer.read(Server.default, this.frozenPath);
 			};
+			buildState = \building;
 			cache[cacheKey] = this;
 			fork{
 				Server.default.sync;
+				buildState = \ready;
 				ready.test_(true).signal;
 				"SynthVVST: % ready (frozen)".format(voice).postln;
 			};
 			^this
 		};
-		isMulti.if{
-			targetCount = voices.size;
-			synthV = voices.collect{|voiceParams, vi|
-				var path, sv, buildParams;
-				path = "/private/tmp/" ++ cacheKey.asHexString ++ "_" ++ vi;
-				sv = SynthV.newVST(voice, \default, nil, nil, version);
-				buildParams = voiceParams.copy;
+		buildState = \building;
+		/* Published BEFORE the asynchronous open, not after it: a second build of
+		   this key during the same source-file load has to find the in-flight take
+		   and adopt it, or it opens its own plugin on the same project. */
+		cache[cacheKey] = this;
+		openVSTs = {
+			isMulti.if{
+				targetCount = voices.size;
+				synthV = voices.collect{|voiceParams, vi|
+					var path, sv, buildParams;
+					path = "/private/tmp/" ++ cacheKey.asHexString ++ "_" ++ vi;
+					sv = SynthV.newVST(voice, \default, nil, nil, version);
+					buildParams = voiceParams.copy;
+					buildParams.lyrics = buildParams.lyrics.replace($, , "").split(Char.space).reject{|i| i.size==0};
+					buildParams.pitch = buildParams.midinote.asInteger;
+					sv.makeNotes(buildParams.dur.size);
+					sv.setDatabase(voice);
+					sv.set(buildParams);
+					/* silence for the plugin to spin up in — see prPerform */
+					(leadIn > 0).if{ sv.shiftNotes(leadIn) };
+					sv.writeProjectVST(path ++ ".svp");
+					sv.writeFxp(path);
+					sv.vst = SV(path ++ ".fxp", onReady: {|success|
+						success.if{
+							readyCount = readyCount + 1;
+							(readyCount >= targetCount).if {
+								buildState = \ready;
+								ready.test_(true).signal
+							};
+						}{
+							buildState = \failed;
+							"SynthVVST: % failed to load FXP %".format(voice, path ++ ".fxp").warn;
+						}
+					});
+					sv
+				};
+			}{
+				var path, buildParams;
+				targetCount = 1;
+				path = "/private/tmp/" ++ cacheKey.asHexString;
+				synthV = SynthV.newVST(voice, \default, nil, nil, version);
+				buildParams = params.copy;
 				buildParams.lyrics = buildParams.lyrics.replace($, , "").split(Char.space).reject{|i| i.size==0};
 				buildParams.pitch = buildParams.midinote.asInteger;
-				sv.makeNotes(buildParams.dur.size);
-				sv.setDatabase(voice);
-				sv.set(buildParams);
+				synthV.makeNotes(buildParams.dur.size);
+				synthV.setDatabase(voice);
+				synthV.set(buildParams);
 				/* silence for the plugin to spin up in — see prPerform */
-				(leadIn > 0).if{ sv.shiftNotes(leadIn) };
-				sv.writeProjectVST(path ++ ".svp");
-				sv.writeFxp(path);
-				sv.vst = SV(path ++ ".fxp", onReady: {|success|
+				(leadIn > 0).if{ synthV.shiftNotes(leadIn) };
+				synthV.writeProjectVST(path ++ ".svp");
+				synthV.writeFxp(path);
+				synthV.vst = SV(path ++ ".fxp", onReady: {|success|
 					success.if{
-						readyCount = readyCount + 1;
-						(readyCount >= targetCount).if { ready.test_(true).signal };
+						buildState = \ready;
+						ready.test_(true).signal;
 					}{
+						buildState = \failed;
 						"SynthVVST: % failed to load FXP %".format(voice, path ++ ".fxp").warn;
 					}
 				});
-				sv
 			};
-		}{
-			var path, buildParams;
-			targetCount = 1;
-			path = "/private/tmp/" ++ cacheKey.asHexString;
-			synthV = SynthV.newVST(voice, \default, nil, nil, version);
-			buildParams = params.copy;
-			buildParams.lyrics = buildParams.lyrics.replace($, , "").split(Char.space).reject{|i| i.size==0};
-			buildParams.pitch = buildParams.midinote.asInteger;
-			synthV.makeNotes(buildParams.dur.size);
-			synthV.setDatabase(voice);
-			synthV.set(buildParams);
-			/* silence for the plugin to spin up in — see prPerform */
-			(leadIn > 0).if{ synthV.shiftNotes(leadIn) };
-			synthV.writeProjectVST(path ++ ".svp");
-			synthV.writeFxp(path);
-			synthV.vst = SV(path ++ ".fxp", onReady: {|success|
-				success.if{
-					ready.test_(true).signal;
-				}{
-					"SynthVVST: % failed to load FXP %".format(voice, path ++ ".fxp").warn;
-				}
-			});
 		};
-		cache[cacheKey] = this;
+		stale.notNil.if{
+			/* The replacement writes the same .svp/.fxp the outgoing plugin still has
+			   open, and VSTI:dispose is asynchronous server traffic. Let the teardown
+			   land before reopening, or Synthesizer V finds its project open twice and
+			   asks the user to save a copy. */
+			fork{
+				stale.freeVSTs;
+				Server.default.sync;
+				openVSTs.value;
+			}
+		}{
+			openVSTs.value
+		};
 		fork{
 			ready.wait;
 			"SynthVVST: % ready".format(voice).postln;
@@ -441,6 +508,9 @@ SynthVVST {
 	*doOnCmdPeriod {
 		cache.do{|item|
 			item.ready.test_(false);
+			/* Down but not broken. Without the tag the next build cannot tell this
+			   apart from a build still opening, and rebuilds one of them wrongly. */
+			item.buildState_(\stale);
 		}
 	}
 

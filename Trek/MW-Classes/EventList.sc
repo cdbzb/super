@@ -1729,7 +1729,7 @@ EventList {
 				((ev[\record] ? false) != true) or: {
 					AudioItem.armed.not.if {
 						"AudioItem %: not armed — following track; will record if armed"
-							.format(ev[\name]).warn;
+							.format(AudioItem.eventItemName(ev)).warn;
 						true
 					} { false }
 				}
@@ -1808,7 +1808,7 @@ EventList {
 		((ev[\when] ? 0) >= from).if {
 			var send = (((ev[\type] == \audioItem) and: { (ev[\record] ? false) == true })).if {
 				// record-time clock stamp: the \audioItem record branch stores it
-				// under (name, take) so playback can resolve the true source clock
+				// under (item, take) so playback can resolve the true source clock
 				var stamped = ev.copy;
 				stamped[\recordedAgainst] = this.prRecordStamp(stamped, tempoEnv);
 				{ stamped.copy.play }

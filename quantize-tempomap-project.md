@@ -707,7 +707,7 @@ Missing primitives, in dependency order:
    (`AudioItem.sc:176-183`; flat `\sourceBeatDur` is the only escape). Sidecar Event next to
    the audio file: start beat, list name, tempoMap/tempoEnv snapshot, latency convention,
    sample rate. A captured audio fragment becomes
-   `(type: \audioItemTempoFollow, name:, take:, when: startBeat, ...)` that keeps
+   `(type: \audioItemTempoFollow, item:, take:, when: startBeat, ...)` that keeps
    re-stretching correctly after later tempo-track edits — the point of tempo-following
    playback. **Prereq: fix take-numbering-by-entries first (§5)** or every sidecar bumps the
    take count.

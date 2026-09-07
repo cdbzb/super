@@ -23,6 +23,11 @@ var tDir, stampList, stamp, aNoStamp, aStamped, aStampedFlat, aStamped2, tPath, 
 
 "== followTrack forwarding tests ==".postln;
 
+assert.(AudioItem.eventItemName((name: \eventLabel, item: \asset)) == \asset,
+	"audio identity: item wins over the EventList name");
+assert.(AudioItem.eventItemName((name: \legacyAsset)) == \legacyAsset,
+	"audio identity: legacy name remains supported");
+
 // Synthetic take: anchors at 1 s/beat for beats 0..3, then a MEASURED span of
 // 3 s/beat (mark at 6, not 4). The closing anchor repeats that last measured
 // span (fe898d18) rather than reading the clip end, so the map is non-flat and
@@ -125,10 +130,10 @@ sf.openWrite(aPath).if {
 	sf.close;
 } { h[\fail].("could not write audio fixture") };
 
-tBase   = timesFor.((when: 0, type: \audioItemTempoFollow, name: aName, dur: 6));
-tEvList = timesFor.((when: 0, type: \audioItem, followTrack: \eventList, name: aName, dur: 6));
-tAFlat  = timesFor.((when: 0, type: \audioItemTempoFollow, name: aName, dur: 6, sourceBeatDur: 1));
-tFtTrue = timesFor.((when: 0, type: \audioItem, followTrack: true, name: aName, dur: 6));
+tBase   = timesFor.((when: 0, type: \audioItemTempoFollow, item: aName, dur: 6));
+tEvList = timesFor.((when: 0, type: \audioItem, followTrack: \eventList, item: aName, dur: 6));
+tAFlat  = timesFor.((when: 0, type: \audioItemTempoFollow, item: aName, dur: 6, sourceBeatDur: 1));
+tFtTrue = timesFor.((when: 0, type: \audioItem, followTrack: true, item: aName, dur: 6));
 
 assert.(tBase.size > 0, "audio: tempo-follow produced a schedule (% entries)".format(tBase.size));
 assertArr.(tEvList, tBase, "audio: followTrack: \\eventList == \\audioItemTempoFollow");
@@ -136,15 +141,15 @@ assertArr.(tFtTrue, tAFlat, "audio: followTrack: true == sourceBeatDur: 1");
 assert.((tAFlat.size != tBase.size) or: { (tAFlat - tBase).abs.maxItem > 1e-6 },
 	"audio sanity: flat differs from base-map source (% vs % entries)".format(tAFlat.size, tBase.size));
 assert.(timesFor.((when: 0, type: \audioItem, name: aName)).size == 1,
-	"audio: plain \\audioItem stays sealed (1 entry)");
+	"audio: legacy name fallback stays sealed (1 entry)");
 // record: true only means record when ARMED: armed keeps the sealed path,
 // unarmed routes to follow playback (rapid record/play toggle workflow)
 AudioItem.armed = true;
-assert.(timesFor.((when: 0, type: \audioItem, name: aName, followTrack: \eventList,
+assert.(timesFor.((when: 0, type: \audioItem, item: aName, followTrack: \eventList,
 	record: true, dur: 6)).size == 1,
 	"audio: record: true + armed stays sealed (1 entry)");
 AudioItem.armed = false;
-assert.(timesFor.((when: 0, type: \audioItem, name: aName, followTrack: \eventList,
+assert.(timesFor.((when: 0, type: \audioItem, item: aName, followTrack: \eventList,
 	record: true, dur: 6)).size > 1,
 	"audio: record: true unarmed follows track");
 
@@ -154,14 +159,14 @@ assert.(timesFor.((when: 0, type: \audioItem, name: aName, followTrack: \eventLi
 // the flat source's 24. On the map-owning list the stamped map must reproduce
 // the base-map default exactly.
 aSrc = flatTimesFor.((when: 0, type: \audioItem, followTrack: true,
-	sourceTempoMap: mt, name: aName, dur: 6));
+	sourceTempoMap: mt, item: aName, dur: 6));
 aSrcOneKey = flatTimesFor.((when: 0, type: \audioItem, followTrack: mt,
-	name: aName, dur: 6));
+	item: aName, dur: 6));
 assert.((aSrc.size > 0) and: { aSrc.size < 24 },
 	"audio map object: source exhausts file early (% entries)".format(aSrc.size));
 assertArr.(aSrcOneKey, aSrc, "audio: followTrack: <map> == true + sourceTempoMap: <map>");
 aSrcOnMapList = timesFor.((when: 0, type: \audioItem, followTrack: true,
-	sourceTempoMap: mt, name: aName, dur: 6));
+	sourceTempoMap: mt, item: aName, dur: 6));
 assertArr.(aSrcOnMapList, tBase, "audio: stamped list-own map == base-map default");
 
 // ------------------------------------------- record-time clock stamp (§9a step 2)
@@ -169,21 +174,21 @@ assertArr.(aSrcOnMapList, tBase, "audio: stamped list-own map == base-map defaul
 // stamp (what the take was ACTUALLY recorded against) the same event resolves the
 // recorded map — the post-destructive-quantize "just works" path.
 aNoStamp = flatTimesFor.((when: 0, type: \audioItem, followTrack: \eventList,
-	name: aName, dur: 6));
+	item: aName, dur: 6));
 assert.(aNoStamp.size == 24, "stamp: absent — flat list base (% entries)".format(aNoStamp.size));
 stampList = EventList.new;
 stampList.tempoMap = mt;
 stamp = stampList.prRecordStamp((when: 0, start: 0), nil);
 AudioItem.recordedMaps.put(aName.asSymbol, 0, stamp);
 aStamped = flatTimesFor.((when: 0, type: \audioItem, followTrack: \eventList,
-	name: aName, dur: 6));
+	item: aName, dur: 6));
 assertArr.(aStamped, aSrc, "stamp: bare \\eventList resolves the recorded clock");
 aStampedFlat = flatTimesFor.((when: 0, type: \audioItem, followTrack: true,
-	name: aName, dur: 6));
+	item: aName, dur: 6));
 assert.(aStampedFlat.size == 24, "stamp: explicit flat source (followTrack: true) still wins");
 stampList.tempoMap = nil; // stamp must be detached from the source list
 aStamped2 = flatTimesFor.((when: 0, type: \audioItem, followTrack: \eventList,
-	name: aName, dur: 6));
+	item: aName, dur: 6));
 assertArr.(aStamped2, aSrc, "stamp: survives later source-list mutation");
 
 // round-trip compensation: a stamp carrying roundTrip reads the file later, so
@@ -196,7 +201,7 @@ assert.(stamp[\roundTrip] == 0.5, "stamp: captures AudioItem.roundTripLatency");
 assert.(stamp[\latencyConvention] == \raw, "stamp: tagged \\raw convention");
 AudioItem.recordedMaps.put(aName.asSymbol, 0, stamp);
 aStamped2 = flatTimesFor.((when: 0, type: \audioItem, followTrack: \eventList,
-	name: aName, dur: 6));
+	item: aName, dur: 6));
 assert.(aStamped2.size < aSrc.size,
 	"stamp: roundTrip shifts source reads later (% < % entries)".format(aStamped2.size, aSrc.size));
 AudioItem.recordedMaps.put(aName.asSymbol, 0, nil);

@@ -65,7 +65,7 @@ assert.(d[\anchors].collect(_[\key]) == (0..d[\anchors].size - 1),
 	"anchors: keys are 0..n-1 at birth");
 
 // --------------------------------- in-memory vs disk-resolved playback equivalence
-ev = (type: \audioItem, name: name);
+ev = (type: \audioItem, item: name);
 AudioItem.recordedMaps.put(name.asSymbol, 0, stamp);
 fMem = AudioItem.prSrcOffset(ev, list, 2, 0);
 endMem = AudioItem.prSrcEndBeat(ev, list, 2, 0, 6.0, 0);

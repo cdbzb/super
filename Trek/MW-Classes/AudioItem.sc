@@ -1,6 +1,6 @@
 AudioItem {
 	classvar <>all, <folder, <buffers, <recorders;
-	classvar <recordedMaps; // (name, take) -> record-time clock stamp (§9a step 2)
+	classvar <recordedMaps; // (item, take) -> record-time clock stamp (§9a step 2)
 	// Measured input+output round trip of the current audio-device configuration
 	// (seconds; set after a loopback measurement, re-measure on buffer-size or
 	// interface change). Mic overdubs land this LATE in the file relative to the
@@ -58,8 +58,11 @@ AudioItem {
 		});
 
 		Event.addEventType(\audioItem, {
-			var name = ~name ?? { Error("AudioItem requires a name").throw };
-			var directory = folder +/+ name;
+			/* `name` belongs to EventList's label/voice namespace (and Symbol.add
+			   always writes it). `item` is the audio asset; fall back to name so old
+			   event lists continue to play. */
+			var itemName = AudioItem.eventItemName(currentEnvironment);
+			var directory = folder +/+ itemName;
 			var recording = ~record ? false;
 			// recording always writes a fresh take — a specified ~take selects which
 			// take to PLAY, it never overwrites an existing recording
@@ -70,7 +73,7 @@ AudioItem {
 			var path = recording.if
 				{ directory +/+ takeNum ++ "." ++ format }
 				{ AudioItem.takePath(directory, takeNum) };
-			var buffer = buffers.at(name.asSymbol, takeNum);
+			var buffer = buffers.at(itemName.asSymbol, takeNum);
 			var recorder = Recorder(Server.default);
 			// dur the user actually set, ignoring the (dur: 5) parent default —
 			// own keys don't consult the parent chain
@@ -78,8 +81,8 @@ AudioItem {
 
 			// Create buffer if it doesn't exist
 			buffer = buffer ?? {
-				buffers.put(name.asSymbol, takeNum, Buffer());
-				buffers.at(name.asSymbol, takeNum);
+				buffers.put(itemName.asSymbol, takeNum, Buffer());
+				buffers.at(itemName.asSymbol, takeNum);
 			};
 
 			// Load audio file if it exists
@@ -116,31 +119,31 @@ AudioItem {
 					(roundTripLatency == 0).if {
 						"AudioItem: roundTripLatency is 0 — % will be stamped with no "
 						"latency compensation. Run AudioItem.measureRoundTrip on this "
-						"machine first.".format(name).warn
+						"machine first.".format(itemName).warn
 					};
-					// restarting a name that is still recording closes the old take first
-					recorders[name.asSymbol] !? {|r| r.isRecording.if { r.stopRecording } };
-					recorders[name.asSymbol] = recorder;
+					// restarting an item that is still recording closes the old take first
+					recorders[itemName.asSymbol] !? {|r| r.isRecording.if { r.stopRecording } };
+					recorders[itemName.asSymbol] = recorder;
 					~recorder.recHeaderFormat_(format).recSampleFormat_(AudioItem.sampleFormatFor(format));
 					~recorder.prepareForRecord(~path, nc);
 					Server.default.bind{
-						// no dur given -> record until AudioItem.stopRecording(name) or Cmd-.
+						// no dur given -> record until AudioItem.stopRecording(item) or Cmd-.
 						// dur given -> record recTail (default 5s) beyond it in case a tail is needed
 						~recorder.record(~path, ~in ? Server.default.options.numOutputBusChannels, nc,
 							duration: userDur !? (_ + (~recTail ? 5)))
 					};
 					// invalidate cached buffer so next playback reloads from disk
-					buffers.put(name.asSymbol, takeNum, Buffer());
+					buffers.put(itemName.asSymbol, takeNum, Buffer());
 					// record-time clock stamp from EventList.prEmit (§9a step 2):
 					// remembers what this take was recorded against, so playback
 					// can resolve the true source clock even after the list's map
 					// changes (e.g. destructive quantize)
 					~recordedAgainst !? { |stamp|
-						AudioItem.recordedMaps.put(name.asSymbol, takeNum, stamp);
+						AudioItem.recordedMaps.put(itemName.asSymbol, takeNum, stamp);
 						// persist as a v2 retune-archive version (anchors +
 						// recordedAgainst) so the stamp survives sclang restarts;
 						// a write failure only warns — never aborts the recording
-						RetuneArchive.writeStamp(name, takeNum, stamp);
+						RetuneArchive.writeStamp(itemName, takeNum, stamp);
 					};
 				}
             } {
@@ -155,7 +158,7 @@ AudioItem {
                 // user's ~start. Only takes carrying a record-time stamp are shifted
                 // — imported / hand-placed files have no stamp and stay at face value.
                 // recordedMapAt caches, so the archive read happens once per take.
-                var rt = (AudioItem.recordedMapAt(name, takeNum) !? { |st|
+                var rt = (AudioItem.recordedMapAt(itemName, takeNum) !? { |st|
                     st[\roundTrip] ? 0
                 }) ? 0;
                 // match \audioItemTempoFollow / Server.bind / note events: default the
@@ -180,9 +183,17 @@ AudioItem {
 		}, (dur:5)
 	);
 	}
-*cmdPeriod {
-	armed = false
-}
+	*cmdPeriod {
+		armed = false
+	}
+
+	/* Preferred AudioItem event identity. `name` remains a compatibility fallback
+	   for saved lists written before `item` separated the asset from the label. */
+	*eventItemName { |ev|
+		^ev[\item] ?? {
+			ev[\name] ?? { Error("AudioItem event requires item (or legacy name)").throw }
+		}
+	}
 
 	// Measure the device's input+output round trip by loopback and persist it.
 	// Physically route output channel `out` back into input channel `in` (cable,
@@ -462,7 +473,7 @@ AudioItem {
 		ev[\sourceBeatDur].notNil.if {
 			^{ |bt| (bt - b0) * ev[\sourceBeatDur] }
 		};
-		stamp = this.recordedMapAt(ev[\name], takeNum);
+		stamp = this.recordedMapAt(this.eventItemName(ev), takeNum);
 		stamp.notNil.if {
 			var rt = stamp[\roundTrip] ? 0; // mic content sits rt LATE in the file
 			var m = stamp[\map], sl, sEnv, sb0, w0;
@@ -487,7 +498,7 @@ AudioItem {
 		ev[\sourceBeatDur].notNil.if {
 			^b0 + (rel / ev[\sourceBeatDur])
 		};
-		stamp = this.recordedMapAt(ev[\name], takeNum);
+		stamp = this.recordedMapAt(this.eventItemName(ev), takeNum);
 		stamp.notNil.if {
 			var rt = stamp[\roundTrip] ? 0;
 			var m = stamp[\map], sl, sEnv, sb0, w0;
@@ -506,8 +517,8 @@ AudioItem {
 	// `place` seam. Returned delays stay relative to wallAt(from), so absolute-time
 	// callers (EventList.prEmit) add place.(from) back on.
 	*tempoFollowActions { |ev, list, tempoEnv, from = 0, wallAt|
-		var name = ev[\name] ?? { Error("AudioItem tempoFollow requires a name").throw };
-		var directory = folder +/+ name;
+		var itemName = this.eventItemName(ev);
+		var directory = folder +/+ itemName;
 		var takeNum = ev[\take] ?? { AudioItem.latestTake(directory) };
 		var path = AudioItem.takePath(directory, takeNum);
 		var buffer, sf, sourceDur, srcOffset, b0, startSec, endSec;
@@ -519,9 +530,9 @@ AudioItem {
 			^List[]
 		};
 
-		buffer = buffers.at(name.asSymbol, takeNum) ?? {
-			buffers.put(name.asSymbol, takeNum, Buffer());
-			buffers.at(name.asSymbol, takeNum)
+		buffer = buffers.at(itemName.asSymbol, takeNum) ?? {
+			buffers.put(itemName.asSymbol, takeNum, Buffer());
+			buffers.at(itemName.asSymbol, takeNum)
 		};
 		(buffer.numFrames.isNil or: { buffer.numFrames == 0 }).if {
 			buffer.allocRead(path).updateInfo
@@ -609,8 +620,8 @@ AudioItem {
 	// EnvGen's tempo-multiplier LEVELS still come from this list's own tempoEnv, so
 	// within-segment rates are approximate there; segment boundaries stay exact.
 	*tempoFollowEnvActions { |ev, list, tempoEnv, from = 0, wallAt|
-		var name = ev[\name] ?? { Error("AudioItem tempoFollow env mode requires a name").throw };
-		var directory = folder +/+ name;
+		var itemName = this.eventItemName(ev);
+		var directory = folder +/+ itemName;
 		var takeNum = ev[\take] ?? { AudioItem.latestTake(directory) };
 		var path = AudioItem.takePath(directory, takeNum);
 		var buffer, sf, sourceDur, srcOffset, b0, startSec, endSec;
@@ -622,9 +633,9 @@ AudioItem {
 			^List[]
 		};
 
-		buffer = buffers.at(name.asSymbol, takeNum) ?? {
-			buffers.put(name.asSymbol, takeNum, Buffer());
-			buffers.at(name.asSymbol, takeNum)
+		buffer = buffers.at(itemName.asSymbol, takeNum) ?? {
+			buffers.put(itemName.asSymbol, takeNum, Buffer());
+			buffers.at(itemName.asSymbol, takeNum)
 		};
 		(buffer.numFrames.isNil or: { buffer.numFrames == 0 }).if {
 			buffer.allocRead(path).updateInfo
@@ -763,7 +774,7 @@ AudioItem {
 		Nvim.replace("AudioItem(\"%\")".format(name ++ "_" ++ Date.getDate.stamp))
 	}
 	*insertEvent {|name|
-		Nvim.replace( "(type: \\audioItem, name: \"%\")".format(name ++ "_" ++  Date.getDate.stamp) )
+		Nvim.replace( "(type: \\audioItem, item: \"%\")".format(name ++ "_" ++  Date.getDate.stamp) )
 	}
 	// stop an event-started open-ended recording; no name stops all of them
 	*stopRecording { |name|

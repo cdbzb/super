@@ -281,7 +281,7 @@ P(\figureTranscribed, music: { |p b e|
 			48 
 		].q - 24,
 		legato: [
-			1,
+			0.8,
 			[1, 1, 1, 1, 0.8].q(8)
 		].q,
 		dur: "qq e e e e".beats.dup(10) / 2 * Song.tempo =>_.flat => _.q,
@@ -295,6 +295,7 @@ Song.lines = VoiceLeading(
 	[
 		[1,  \_, 4, \_, 5, 4.5, 4,  3,  2 ],
 		[-5, \_, 1, 2,  3, \_,  -6, -5, \_ ]
+
 	],
 	Song.tempo * [2, 2, 2, 2, 1, 1, 2, 2, 2, 2]
 ).dm(\c);
@@ -582,17 +583,6 @@ P(\chords, music: { |p b e|
 
 
 ["chorusFlat7","r",[16*Song.tempo]].addLine;
-( //synthDef \bar
-{ |gate=1 out=0 freq = 400|
-	var in=PinkNoise.ar(1);
-	var sig=Pluck.ar(in: in,  gate: gate,  maxdelaytime: 0.02,  delaytime: 1/freq,  decaytime: \decaytime.kr(10),  coef: \coef.kr(0.5),  mul: 0.7,  add: 0);
-	sig = sig * \amp.kr(0.1) * 10;
-	sig = LeakDC.ar(sig);
-	sig = sig * Env.asr.kr(2,gate:gate);
-	Out.ar(out,sig);
-	DetectSilence.ar(sig,doneAction:2);
-} => SynthDef(\bar, _) => _.add;
-);
 P.synthVs(\an, take: [ Song.takeChooser.(\lead), Song.takeChooser.(\dbl) ], 
 	 pbind: {
 		 [

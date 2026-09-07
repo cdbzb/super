@@ -91,7 +91,17 @@ EventList {
 	 the previous one ended, so inserting or dropping a section ripples the rest
 	 forward at add time (no resequence pass — this only ever looks backward).
 
-	 \section is the grouping key. Consecutive adds carrying the SAME \section value
+	 section opens a new section on every call; a positional Symbol names the child
+	 EventList and supplies the default navigation label:
+	   e.section(\verse);
+	   e.add(eventList: \extraPercussion);  // layer onto this verse
+	   e.section(\verse);                  // another verse, not another layer
+	   e.section(\verse, section: \verseInD, with: (tonic: \d));
+	 play(fromSection:) finds the first occurrence of a label. Anonymous sections
+	 (e.g. section(newType: \note, dur: 4)) group layers without a public label.
+
+	 Legacy add(section: ...) still uses \section as the grouping key.
+	 Consecutive adds carrying the SAME \section value
 	 are LAYERS of one section: they share its start beat. The event that NAMED the
 	 section governs its length — layers do not extend it, so a layer that runs
 	 longer simply spills into the sections that follow. An add that names no
@@ -133,16 +143,19 @@ EventList {
 		list.env[\cursor] = 0;
 		list.env[\section] = nil;
 		list.addFunc = { |ev, l|
+			var opening = ev.removeAt(\eventListSectionStart) == true;
 			/* an add that names no section joins the open one (nil while no
 			   section has been named — bare adds then sequence). */
-			var key = ev[\section] ?? { l.env[\section] };
+			var key = opening.if {
+				ev[\section] ?? { Ref(nil) }
+			} { ev[\section] ?? { l.env[\section] } };
 			var dur = sectionDur.notNil.if { sectionDur.(ev, l) } {
 				/* default: only events that occupy time are sections; a point event
 				   (a one-off note, a callback) anchors to the cursor instead. */
 				var d = l.prTailOf(ev);
 				(d > 0).if { d } { nil }
 			};
-			var layer = key.notNil
+			var layer = opening.not and: { key.notNil }
 				and: { l.env[\section].notNil }
 				and: { key == l.env[\section] }
 				and: { (ev[\again] ? false) != true };
@@ -155,7 +168,8 @@ EventList {
 			   still opens a section; give the add a real \dur (or the child a \dur
 			   on its last event) where the musical length matters. A layer is exempt:
 			   it joins an open section and has no say in where that section ends. */
-			(dur.isNil and: { ev[\section].notNil } and: { layer.not }).if { dur = 1 };
+			(dur.isNil and: { opening or: { ev[\section].notNil } }
+				and: { layer.not }).if { dur = 1 };
 			(dur.notNil and: { quantum.notNil } and: { ev[\dur].isNil }).if {
 				dur = dur.roundUp(quantum)
 			};
@@ -172,7 +186,12 @@ EventList {
 				   and, as there, does not itself advance the running end. */
 				ev[\when].notNil.if {
 					var prev = l.events.last;
-					ev[\when] = (prev !? { prev[\when] } ? 0) + ev[\when]
+					ev[\when] = (prev !? { prev[\when] } ? 0) + ev[\when];
+					/* section() is a sequencing verb, so its gap still advances the
+					   running end: what follows lands after this section instead of
+					   on top of it. Legacy add(section:, when:) keeps the Mandarin
+					   convention of a gap that does not advance. */
+					opening.if { l.env[\nextWhen] = ev[\when] + dur }
 				} {
 					ev[\when] = l.env[\nextWhen] ? 0;
 					l.env[\nextWhen] = ev[\when] + dur
@@ -182,6 +201,51 @@ EventList {
 			}
 		};
 		^list
+	}
+
+	/* Open a section independently of its navigation label. Positional arguments
+	   follow add's convention: a leading Number is the \when gap, and the child
+	   (Symbol or EventList) may take its place or follow it —
+	   section(\myList), section(4, \myList, dur: 8), section(4, dur: 8).
+	   Normalize to add's Event form so keyword-only calls do not acquire an
+	   implicit when: 0. */
+	section { |...args, kwargs|
+		var event = kwargs.asEvent;
+		var when, child;
+		env.includesKey(\nextWhen).not.if {
+			Error("EventList.section requires an EventList.sequenced list").throw
+		};
+		(args.size > 2).if {
+			Error("EventList.section accepts at most a when and a child").throw
+		};
+		args[0].isNumber.if { when = args[0]; child = args[1] } {
+			(args.size > 1).if {
+				Error("EventList.section: a second positional needs a numeric when first").throw
+			};
+			child = args[0]
+		};
+		when.notNil.if {
+			event.includesKey(\when).if {
+				Error("EventList.section: supply when positionally OR as when:").throw
+			};
+			event[\when] = when
+		};
+		child.notNil.if {
+			(child.isKindOf(Symbol) or: { child.isKindOf(EventList) }).not.if {
+				Error("EventList.section: child must be a Symbol or EventList").throw
+			};
+			event.includesKey(\eventList).if {
+				Error("EventList.section: supply the child positionally OR as eventList:").throw
+			};
+			event[\eventList] = child
+		};
+		child = event[\eventList];
+		event[\section].isNil.if {
+			child.isKindOf(Symbol).if { event[\section] = child };
+			child.isKindOf(EventList).if { event[\section] = child.name };
+		};
+		event[\eventListSectionStart] = true;
+		^this.add(event)
 	}
 
 	*newFrom { |other, name, newVoiceSpace=false|

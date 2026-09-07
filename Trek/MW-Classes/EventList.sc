@@ -929,12 +929,30 @@ EventList {
 			- this.beatToWall(batchFirstWhen, tempoEnv)).max(0)
 	}
 
+	// Use the normal nesting compiler for previews too. The insertion keeps its
+	// score beat (for followTrack and lazy clock context), but its onset is moved
+	// to the preview offset. Calling the child through Event.play loses that frame
+	// and starts a separate child transport which can replace another preview.
+	prPreviewListActions { |event, previewOffset, tempoEnv|
+		var when = event[\when] ? 0;
+		var onset = this.prPreviewDelay(previewOffset, tempoEnv);
+		var wall = this.beatToWall(when, tempoEnv);
+		var place = { |beat| onset + this.beatToWall(beat, tempoEnv) - wall };
+		^this.prExpandList(event, onset, place, when, IdentitySet[])
+	}
+
 	storeAndPreview { |event, previewOffset|
 		events.add(event);
 		(preview.notNil and: { this.shouldPlay(event) }).if {
 			var resolved = this.resolveEvent(event);
 			var tempoEnv = this.prPreviewTempoEnv;
 			previewPrep !? { previewPrep.(resolved, this) };
+			(resolved[\type] == \eventList).if {
+				this.prPreviewListActions(resolved, previewOffset, tempoEnv).do { |item|
+					SystemClock.sched(item[\time].max(0), { item[\send].value; nil })
+				};
+				^this
+			};
 			this.prIsAudioFollow(resolved).if {
 				var actions;
 				resolved = this.prForwardAudioFollow(resolved);

@@ -1,5 +1,5 @@
 EventList {
-	classvar <all, <>current, <>playFn, <>cursor;
+	classvar <all, current, <>playFn, <>cursor;
 	// §9b: the most recent list-play epoch, snapshotted by MIDIItem.record into the
 	// take so source-preferred addItem aligns to the playthrough the overdub actually
 	// heard — not this list's lastPlayEpoch, which any later replay would clobber.
@@ -63,24 +63,33 @@ EventList {
                 ctx: EventList.prNestCtx(currentEnvironment, nil, nil))});
 	}
 
+	/* Looking a list up NEVER makes it current — see the `current` instance method.
+	   *new used to do it as a side effect, so `EventList(\verse)` read anywhere
+	   (an argument list, say) silently redirected every following \symbol.add. */
 	*new { |name, defaultType|
 		var instance;
 		name.notNil.if {
 			all[name].notNil.if {
-				current = all[name];
-				defaultType !? { current.defaultType_(defaultType) };
-				^current
+				defaultType !? { all[name].defaultType_(defaultType) };
+				^all[name]
 			}
 		};
 		instance = super.new.init(defaultType, name);
-		name !? {
-			all[name] = instance;
-			current = instance;
-		};
+		name !? { all[name] = instance };
 		^instance
 	}
 
 	*at { |name| ^all[name] }
+
+	/* The list \symbol.add and the EventList class methods write to. Nothing sets
+	   it implicitly: say EventList(\verse2, \default).current.clear. */
+	*current {
+		^current ?? {
+			Error("EventList: no current list — call .current on one first "
+				"(EventList(\\name).current)").throw
+		}
+	}
+	*current_ { |list| current = list }
 
 	*kf { |name, voiceSpace|
 		^this.new(name, \keyFrame).voiceSpace_(voiceSpace ? VoiceSpace.default)
@@ -284,9 +293,9 @@ EventList {
 	// SC cannot forward kwargs directly; normalize them into one event.
 	*add { |...args, kwargs|
 		var when = args[0];
-		args[1].isKindOf(Pattern).if { ^current.addPattern(when ? 0, args[1]) };
-		when.isKindOf(Event).if { ^current.add(when) };
-		^current.add((when: when ? 0) ++ kwargs.asEvent)
+		args[1].isKindOf(Pattern).if { ^this.current.addPattern(when ? 0, args[1]) };
+		when.isKindOf(Event).if { ^this.current.add(when) };
+		^this.current.add((when: when ? 0) ++ kwargs.asEvent)
 	}
 	*addContext { |...args, kwargs|
 		var event;
@@ -295,28 +304,28 @@ EventList {
 		} {
 			event = (when: args[0] ? 0) ++ kwargs.asEvent
 		};
-		^current.addContext(event)
+		^this.current.addContext(event)
 	}
 	*play { |from, fromEvent, fromSection, to, ctx, dur|
-		^current.play(cursor.debug("CURSOR") ? from ? 0 => _.postln, fromEvent, fromSection,
+		^this.current.play(cursor.debug("CURSOR") ? from ? 0 => _.postln, fromEvent, fromSection,
 			to, ctx, dur)
 	}
-	*clear { ^current.clear }
-	*clearContext { ^current.clearContext }
-	*setupContext { ^current.setupContext }
-	*size { ^current.size }
-	*do { |func| ^current.do(func) }
-	*addRoute { |key, type| ^current.addRoute(key, type) }
-	*preview_ { |val| ^current.preview_(val) }
-	*preview { ^current.preview }
-	*addFunc_ { |val| ^current.addFunc_(val) }
-	*env { ^current.env }
-	*context { ^current.context }
-	*context_ { |list| ^current.context_(list) }
-	*previewPrep { ^current.previewPrep }
-	*previewPrep_ { |val| ^current.previewPrep_(val) }
-	*voices { ^current.voices }
-	*resolvedEvents { ^current.resolvedEvents }
+	*clear { ^this.current.clear }
+	*clearContext { ^this.current.clearContext }
+	*setupContext { ^this.current.setupContext }
+	*size { ^this.current.size }
+	*do { |func| ^this.current.do(func) }
+	*addRoute { |key, type| ^this.current.addRoute(key, type) }
+	*preview_ { |val| ^this.current.preview_(val) }
+	*preview { ^this.current.preview }
+	*addFunc_ { |val| ^this.current.addFunc_(val) }
+	*env { ^this.current.env }
+	*context { ^this.current.context }
+	*context_ { |list| ^this.current.context_(list) }
+	*previewPrep { ^this.current.previewPrep }
+	*previewPrep_ { |val| ^this.current.previewPrep_(val) }
+	*voices { ^this.current.voices }
+	*resolvedEvents { ^this.current.resolvedEvents }
 
 	// name is both the registry key and the voice namespace.
 	init { |defType, aName|
@@ -2076,6 +2085,10 @@ EventList {
 		prPlayGen = prPlayGen + 1;
 		this.prStopMonos
 	}
+
+	// Make this the list \symbol.add and the EventList class methods write to.
+	// Returns this, so it chains: EventList(\verse2, \default).current.clear.
+	current { ^current = this }
 
 	clear {
 		events = List[];

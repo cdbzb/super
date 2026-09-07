@@ -147,38 +147,47 @@ AudioItem {
 					};
 				}
             } {
-                // build the effect (if ~out is a thunk) BEFORE the bundle — Effect.bus
-                // allocates a Bus, sends its own SynthDef and spawns a synth, none of
-                // which can happen during this graph's compilation inside makeBundle.
-                var outBus = (~out ? 0).value;
-                // \raw latency convention (same as the tempoFollow path's `+ rt` in
-                // prSrcOffset): a mic take is never trimmed on disk, so its content
-                // sits roundTrip LATE in the file relative to the grid the record
-                // event fired on. Compensation is a READ-side offset, added to the
-                // user's ~start. Only takes carrying a record-time stamp are shifted
-                // — imported / hand-placed files have no stamp and stay at face value.
-                // recordedMapAt caches, so the archive read happens once per take.
-                var rt = (AudioItem.recordedMapAt(itemName, takeNum) !? { |st|
-                    st[\roundTrip] ? 0
-                }) ? 0;
-                // match \audioItemTempoFollow / Server.bind / note events: default the
-                // playback bundle to the real server latency, not a hardcoded 0.2, so
-                // audioItems stay aligned with voices under any s.latency setting.
-                Server.default.makeBundle(
-                    (~latency ? Server.default.latency) + (~lag ? 0),
-                    {
+                /* A take that is not on disk plays nothing: allocRead would fail
+                   on the server and PlayBuf would run on an empty buffer. Warn and
+                   skip rather than throw — this runs inside EventList.fire's
+                   unprotected Routine, where an error would strand the rest of the
+                   list and leak its mono synths (matches tempoFollowActions). */
+                File.exists(path).if {
+                    // build the effect (if ~out is a thunk) BEFORE the bundle — Effect.bus
+                    // allocates a Bus, sends its own SynthDef and spawns a synth, none of
+                    // which can happen during this graph's compilation inside makeBundle.
+                    var outBus = (~out ? 0).value;
+                    // \raw latency convention (same as the tempoFollow path's `+ rt` in
+                    // prSrcOffset): a mic take is never trimmed on disk, so its content
+                    // sits roundTrip LATE in the file relative to the grid the record
+                    // event fired on. Compensation is a READ-side offset, added to the
+                    // user's ~start. Only takes carrying a record-time stamp are shifted
+                    // — imported / hand-placed files have no stamp and stay at face value.
+                    // recordedMapAt caches, so the archive read happens once per take.
+                    var rt = (AudioItem.recordedMapAt(itemName, takeNum) !? { |st|
+                        st[\roundTrip] ? 0
+                    }) ? 0;
+                    // match \audioItemTempoFollow / Server.bind / note events: default the
+                    // playback bundle to the real server latency, not a hardcoded 0.2, so
+                    // audioItems stay aligned with voices under any s.latency setting.
+                    Server.default.makeBundle(
+                        (~latency ? Server.default.latency) + (~lag ? 0),
                         {
-                            PlayBuf.ar(
-                                ~numChannels ? 1,
-                                buffer.bufnum,
-                                rate: ~rate ? 1,
-                                startPos: ((~startPos ? 0) + rt) * Server.default.sampleRate
-                            )
-                            * (~amp ? 1)
-                            => Out.ar(outBus, _)
-                        }.play
-                    }
-                )
+                            {
+                                PlayBuf.ar(
+                                    ~numChannels ? 1,
+                                    buffer.bufnum,
+                                    rate: ~rate ? 1,
+                                    startPos: ((~startPos ? 0) + rt) * Server.default.sampleRate
+                                )
+                                * (~amp ? 1)
+                                => Out.ar(outBus, _)
+                            }.play
+                        }
+                    )
+                } {
+                    "AudioItem: no file for item % at %".format(itemName, path).warn
+                }
             }
 		}, (dur:5)
 	);

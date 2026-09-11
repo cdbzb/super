@@ -2,7 +2,6 @@ Monitors {  //setup monitoring for Trek piece
 	classvar <>decoder,k=0.5,<channels=5;
 	//classvar <>speakerOrder=#[0,2,4,3,1]; //for Trek
 	classvar <>speakerOrder=#[0,4,1,3,2]; //for Trek
-	classvar <>deviceChannels;
 	classvar <>foldDown,<bassManagementSynth, <bassManagement, <rearLevelAdj;
 	classvar <volume, <fader, <>level;
 
@@ -10,19 +9,7 @@ Monitors {  //setup monitoring for Trek piece
 		Class.initClassTree(StageLimiter);
 		foldDown=[nil,nil,nil];
 		decoder = FoaDecoderMatrix.newPanto(5,'flat','dual');
-		deviceChannels = Dictionary.newFrom(
-			[
-				"MacBook Pro Speakers",2,
-				"USBStreamer ", 8,
-				"Pro Ag",2,
-				"BlackHole 2ch",2,
-				"External Headphones",2,
-				"ZoomAudioD",2,
-				"BoseAg",2,
-				"Mobious Ag", 2
-			]
-		);
-		StartUp.add( 
+		StartUp.add(
 			{ 
 				bassManagementSynth = SynthDef(\bassManagement,
 					{In.ar(0, 5) => Mix.ar(_) * -6.dbamp => ReplaceOut.ar(6, _)}
@@ -39,11 +26,10 @@ Monitors {  //setup monitoring for Trek piece
 			
 			// volume = Server.default.volume;
 			// fader = MonitorController(volume, volume.window );
-		ServerTree.add ({ 
-			/* channel count now lives on AudioInterface, per rig; the old dictionary
-			   remains as a fallback for devices that were never registered */
-			var channels = (AudioInterface.current !? { |i| i.channels })
-				?? { deviceChannels.at(Server.default.options.outDevice) } ? channels;
+		ServerTree.add ({
+			/* the booted rig's channel count; `channels` (5) when the device is not
+			   registered — register it on AudioInterface rather than adding it here */
+			var channels = (AudioInterface.current !? { |i| i.channels }) ? channels;
 			(channels == 2).if{
 				fork{
 					{ StageLimiter.activeSynth.isRunning }.try.notNil.if{ StageLimiter.deactivate; };
@@ -72,6 +58,15 @@ Monitors {  //setup monitoring for Trek piece
 			}
 		});
 	}
+	/* Was a stored dictionary duplicating what AudioInterface already knows — every
+	   one of its eight entries matched a registered rig exactly. Derived now, so the
+	   two can no longer disagree. Add devices to AudioInterface, not here. */
+	*deviceChannels {
+		var d = Dictionary.new;
+		AudioInterface.all.do { |i| d.put(i.outName, i.channels) };
+		^d
+	}
+
 	*stopFoldDown{
 		foldDown.do(_ !? _.stop)
 	}

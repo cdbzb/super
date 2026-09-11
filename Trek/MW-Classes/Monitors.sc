@@ -40,7 +40,10 @@ Monitors {  //setup monitoring for Trek piece
 			// volume = Server.default.volume;
 			// fader = MonitorController(volume, volume.window );
 		ServerTree.add ({ 
-			var channels = deviceChannels.at(Server.default.options.outDevice) ? channels;
+			/* channel count now lives on AudioInterface, per rig; the old dictionary
+			   remains as a fallback for devices that were never registered */
+			var channels = (AudioInterface.current !? { |i| i.channels })
+				?? { deviceChannels.at(Server.default.options.outDevice) } ? channels;
 			(channels == 2).if{
 				fork{
 					{ StageLimiter.activeSynth.isRunning }.try.notNil.if{ StageLimiter.deactivate; };
@@ -105,18 +108,8 @@ Monitors {  //setup monitoring for Trek piece
 			=> {|i| i[speakerOrder]}
 		)
 	}
-	*mobius {
-		var o =Server.default.options;
-		o.inDevice_("Mobious Ag");
-		o.outDevice_("Mobious Ag");
-		Server.default.reboot
-	}
-	*streamer {
-		var o =Server.default.options;
-		o.inDevice_("USBStreamer ");
-		o.outDevice_("USBStreamer ");
-		Server.default.reboot
-	}
+	*mobius { ^AudioInterface(\mobius).select }
+	*streamer { ^AudioInterface(\streamer).select }
 
 	*az { | i angle=0 width=2 | ^PanAz.ar(5, i, angle, width: width, orientation:  0.5)[[0,4,1,3,2]] }
 
@@ -125,75 +118,18 @@ Monitors {  //setup monitoring for Trek piece
 		channels = 2;
 		speakerOrder = #[0,1]
 	}
-	*epos {
-		var o =Server.default.options;
-		o.inDevice_("EPOS PC 8 USB");
-		o.outDevice_("EPOS PC 8 USB");
-		Server.default.reboot
-	}
-	*obs {
-		var o =Server.default.options;
-		o.inDevice_("BlackHole 2ch");
-		o.outDevice_("OBS");
-		Server.default.reboot
-	}
-	*blackHole {
-		var o =Server.default.options;
-		o.inDevice_("BlackHole 2ch");
-		o.outDevice_("BlackHole 2ch");
-		Server.default.reboot
-	}
-	*blackHole16 {
-		var o =Server.default.options;
-		o.inDevice_("BlackHole 16ch");
-		o.outDevice_("BlackHole 16ch");
-		Server.default.reboot;
-		channels = 5
-	}
+	*epos { ^AudioInterface(\epos).select }
+	*obs { ^AudioInterface(\obs).select }
+	*blackHole { ^AudioInterface(\blackHole).select }
+	*blackHole16 { ^AudioInterface(\blackHole16).select }
 
-	*rme{
-		var o =Server.default.options;
-		o.inDevice_("Digiface USB (23953833)");
-		o.outDevice_("Digiface USB (23953833)");
-		Server.default.reboot
-	}
-	*macbook{
-		var o =Server.default.options;
-		o.inDevice_("MacBook Pro Microphone");
-		o.outDevice_("MacBook Pro Speakers");
-		Server.default.reboot
-	}
-	*headphones{
-		var o =Server.default.options;
-		o.inDevice_("MacBook Pro Microphone");
-		o.outDevice_("External Headphones");
-		Server.default.reboot
-	}
-	*bose{
-
-		var o =Server.default.options;
-		o.inDevice_("BoseAg");
-		o.outDevice_("BoseAg");
-		Server.default.reboot
-	}
-	*airpods {
-		var o =Server.default.options;
-		o.inDevice_("Pro Ag");
-		o.outDevice_("Pro Ag");
-		Server.default.reboot
-	}
-	*zoom{
-		var o =Server.default.options;
-		o.inDevice_("ZoomAudioD");
-		o.outDevice_("ZoomAudioD");
-		Server.default.reboot
-	}
-	*teams{
-		var o =Server.default.options;
-		o.inDevice_("MacBook Pro Microphone");
-		o.outDevice_("TeamsMulti");
-		Server.default.reboot
-	}
+	*rme { ^AudioInterface(\rme).select }
+	*macbook { ^AudioInterface(\macbook).select }
+	*headphones { ^AudioInterface(\headphones).select }
+	*bose { ^AudioInterface(\bose).select }
+	*airpods { ^AudioInterface(\airpods).select }
+	*zoom { ^AudioInterface(\zoom).select }
+	*teams { ^AudioInterface(\teams).select }
 
 }
 

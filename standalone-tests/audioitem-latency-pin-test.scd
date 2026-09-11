@@ -12,8 +12,16 @@
 (
 var h = (thisProcess.nowExecutingPath.dirname +/+ "test-helpers.scd").load;
 var assert = h[\assert];
+// prPinLine moved to AudioInterface and now takes the full left-hand side, so it
+// can pin per-device keys (AudioInterface('rme').roundTrip) as well as the legacy
+// machine-wide globals. §1-8 still exercise the legacy LHS; §9 covers per-device.
 var pin = { |text, name = "roundTripLatency", value = 0.1|
-	AudioItem.prPinLine(text.split(Char.nl), name, value, "260729_120000").join(Char.nl)
+	AudioInterface.prPinLine(text.split(Char.nl), "AudioItem." ++ name, value,
+		"loopback-measured 260729_120000").join(Char.nl)
+};
+var pinFor = { |text, key = 'rme', field = "roundTrip", value = 0.1|
+	AudioInterface.prPinLine(text.split(Char.nl), AudioInterface(key).prLhs(field),
+		value, "loopback-measured 260729_120000").join(Char.nl)
 };
 var parses = { |text| text.compile.notNil };
 var occurrences = { |text, needle|
@@ -74,6 +82,32 @@ assert.(pin.("// only a comment\n").contains("AudioItem.roundTripLatency"),
 	"comment-only file just gets the line");
 assert.(parses.(pin.("(\nvar files = 1;\no = files;\n) // trailing note")),
 	"a trailing inline comment after the paren does not break the detection");
+
+// -- 9. per-device pins: the whole point of AudioInterface -----------------
+// Each rig carries its own measurement, so switching interfaces must not clobber
+// another rig's number. Two keys have to coexist in one startup.scd.
+out = pinFor.(pinFor.(block, 'rme', "roundTrip", 0.098), 'macbook', "roundTrip", 0.069);
+assert.(parses.(out), "two per-device pins parse");
+assert.(occurrences.(out, "AudioInterface('rme').roundTrip") == 1, "rme pinned once");
+assert.(occurrences.(out, "AudioInterface('macbook').roundTrip") == 1, "macbook pinned once");
+assert.(out.contains("0.098") and: { out.contains("0.069") },
+	"pinning macbook did NOT overwrite rme — the bug the class exists to fix");
+assert.(out.split(Char.nl).last.stripWhiteSpace == ")", "both pins went inside the block");
+
+// re-measuring one rig replaces only that rig
+out = pinFor.(out, 'rme', "roundTrip", 0.101);
+assert.(occurrences.(out, "AudioInterface('rme').roundTrip") == 1, "rme still single");
+assert.(out.contains("0.101"), "rme updated");
+assert.(out.contains("0.098").not, "rme old value gone");
+assert.(out.contains("0.069"), "macbook untouched by rme's re-measure");
+
+// roundTrip and outputShare coexist for the same key — and the substring trap:
+// "AudioInterface('rme').roundTrip" must not match the outputShare line, nor the
+// other way round
+out = pinFor.(pinFor.(block, 'rme', "roundTrip", 0.098), 'rme', "outputShare", 0.396);
+assert.(parses.(out), "roundTrip and outputShare for one key parse");
+assert.(occurrences.(out, "AudioInterface('rme').roundTrip") == 1, "roundTrip kept");
+assert.(occurrences.(out, "AudioInterface('rme').outputShare") == 1, "outputShare added");
 
 // -- 8. end to end on the real startup.scd (read only, never written) ------
 realPath = Platform.userConfigDir +/+ "startup.scd";

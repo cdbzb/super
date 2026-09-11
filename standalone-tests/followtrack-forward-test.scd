@@ -20,6 +20,7 @@ var aName = "zzz-followtrack-test", aDir, aPath, sf;
 var tBase, tEvList, tAFlat, tFtTrue;
 var gSrc, gOneKey, gOnMapList, gTrimSrc, gTrimEvList, aSrc, aSrcOneKey, aSrcOnMapList;
 var tDir, stampList, stamp, aNoStamp, aStamped, aStampedFlat, aStamped2, tPath, tLines;
+var tOutDevice, tRig, tRig2;
 
 "== followTrack forwarding tests ==".postln;
 
@@ -194,6 +195,11 @@ assertArr.(aStamped2, aSrc, "stamp: survives later source-list mutation");
 // round-trip compensation: a stamp carrying roundTrip reads the file later, so
 // the 8 s file exhausts at an earlier beat than the uncompensated stamp
 stampList.tempoMap = mt;
+// AudioItem.roundTripLatency now reads AudioInterface.current first and only falls
+// back to this global. Point the server at an unregistered device so the fallback
+// path is what gets exercised here, whatever rig happens to be measured.
+tOutDevice = Server.default.options.outDevice;
+Server.default.options.outDevice_("zzz-no-such-interface");
 AudioItem.roundTripLatency = 0.5;
 stamp = stampList.prRecordStamp((when: 0, start: 0), nil);
 AudioItem.roundTripLatency = 0;
@@ -205,39 +211,60 @@ aStamped2 = flatTimesFor.((when: 0, type: \audioItem, followTrack: \eventList,
 assert.(aStamped2.size < aSrc.size,
 	"stamp: roundTrip shifts source reads later (% < % entries)".format(aStamped2.size, aSrc.size));
 AudioItem.recordedMaps.put(aName.asSymbol, 0, nil);
+Server.default.options.outDevice_(tOutDevice);
 
 // ------------------------------------------- startup.scd latency pinning
+// Pinning moved to AudioInterface and is now per-rig: each interface writes its own
+// roundTrip/outputShare lines, so re-measuring one rig leaves the others alone.
 tPath = AudioItem.folder +/+ "zzz-followtrack-startup.scd";
+tRig = AudioInterface(\zzzTestRig, "zzz-test-out", "zzz-test-in", 2);
 File.use(tPath, "w", { |f| f.write("s.boot;\n\"hello\".postln;\n") });
-AudioItem.writeStartupLatency(0.014, tPath);
+tRig.roundTrip = 0.014;
+tRig.writeStartup(tPath);
 tLines = File.readAllString(tPath).split(Char.nl);
-assert.(tLines.detect { |l| l.contains("AudioItem.roundTripLatency = 0.014;") }.notNil,
+assert.(tLines.detect { |l| l.contains("AudioInterface('zzzTestRig').roundTrip = 0.014;") }.notNil,
 	"startup: assignment appended");
 assert.(tLines[0] == "s.boot;" and: { tLines[1] == "\"hello\".postln;" },
 	"startup: existing content preserved");
-AudioItem.writeStartupLatency(0.021, tPath);
+tRig.roundTrip = 0.021;
+tRig.writeStartup(tPath);
 tLines = File.readAllString(tPath).split(Char.nl);
-assert.(tLines.count { |l| l.contains("AudioItem.roundTripLatency") } == 1,
+assert.(tLines.count { |l| l.contains("AudioInterface('zzzTestRig').roundTrip") } == 1,
 	"startup: re-measure replaces, never duplicates");
 assert.(tLines.detect { |l| l.contains("= 0.021;") }.notNil,
 	"startup: replaced with the new value");
-assert.(tLines.count { |l| l.contains("AudioItem.outputLatency") } == 0,
-	"startup: no outputLatency line when none passed");
-// outputLatency rides along on the same write — the MIDI-side term (§9a step 5)
-AudioItem.writeStartupLatency(0.021, tPath, 0.0105);
+assert.(tLines.count { |l| l.contains("outputShare") } == 0,
+	"startup: no outputShare line while the split is unknown");
+// outputShare rides along on the same write — it is what splits out the MIDI-side
+// term (§9a step 5), since the loopback can only ever measure the sum
+tRig.outputShare = 0.5;
+tRig.writeStartup(tPath);
 tLines = File.readAllString(tPath).split(Char.nl);
-assert.(tLines.detect { |l| l.contains("AudioItem.outputLatency = 0.0105;") }.notNil,
-	"startup: outputLatency pinned alongside the round trip");
-assert.(tLines.count { |l| l.contains("AudioItem.roundTripLatency") } == 1,
-	"startup: round trip still single after adding outputLatency");
-AudioItem.writeStartupLatency(0.03, tPath, 0.015);
+assert.(tLines.detect { |l| l.contains("AudioInterface('zzzTestRig').outputShare = 0.5;") }.notNil,
+	"startup: outputShare pinned alongside the round trip");
+assert.(tLines.count { |l| l.contains("AudioInterface('zzzTestRig').roundTrip") } == 1,
+	"startup: round trip still single after adding outputShare");
+assert.(tRig.outputLatency == 0.0105, "outputLatency = roundTrip * outputShare");
+tRig.roundTrip = 0.03; tRig.outputShare = 0.5;
+tRig.writeStartup(tPath);
 tLines = File.readAllString(tPath).split(Char.nl);
-assert.(tLines.count { |l| l.contains("AudioItem.outputLatency") } == 1,
-	"startup: outputLatency replaced, never duplicated");
-assert.(tLines.detect { |l| l.contains("AudioItem.outputLatency = 0.015;") }.notNil,
-	"startup: outputLatency replaced with the new value");
+assert.(tLines.count { |l| l.contains("AudioInterface('zzzTestRig').outputShare") } == 1,
+	"startup: outputShare replaced, never duplicated");
+assert.(tLines.detect { |l| l.contains("roundTrip = 0.03;") }.notNil,
+	"startup: round trip replaced with the new value");
 assert.(tLines[0] == "s.boot;" and: { tLines[1] == "\"hello\".postln;" },
 	"startup: existing content still preserved after two-line pin");
+// a SECOND rig's pins must not disturb the first — the per-device point
+tRig2 = AudioInterface(\zzzTestRig2, "zzz-test-out-2", nil, 2);
+tRig2.roundTrip = 0.077;
+tRig2.writeStartup(tPath);
+tLines = File.readAllString(tPath).split(Char.nl);
+assert.(tLines.count { |l| l.contains("AudioInterface('zzzTestRig').roundTrip") } == 1,
+	"startup: first rig's pin survives a second rig's write");
+assert.(tLines.detect { |l| l.contains("AudioInterface('zzzTestRig').roundTrip = 0.03;") }.notNil,
+	"startup: first rig kept its own value");
+assert.(tLines.detect { |l| l.contains("AudioInterface('zzzTestRig2').roundTrip = 0.077;") }.notNil,
+	"startup: second rig pinned independently");
 File.delete(tPath);
 
 // ------------------------------------------- take numbering ignores strays

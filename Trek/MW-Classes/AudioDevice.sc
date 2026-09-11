@@ -2,12 +2,9 @@
  An audio interface as an object: the CoreAudio device names, its channel count and
  speaker layout, and — the reason this class exists — its measured latency.
 
- Latency is a property of the RIG, not of the machine. The old shape kept one global
- AudioItem.roundTripLatency pinned in startup.scd, while Monitors carried a dozen
- methods that each rebooted onto a different interface. Every one of those switches
- silently invalidated the global: the number stayed pinned, the hardware under it
- changed, and nothing said so. Storing the measurement per device is the fix; the
- class is only how that storage gets a name.
+ Latency is a property of the RIG, not of the machine: Monitors can reboot onto a
+ different interface at any moment, so a measurement only means anything attached to
+ the device it was taken on.
 
  Registered rigs live in *initClass. Measurements are pinned per key into startup.scd
  (per-machine, deliberately outside version control):
@@ -15,12 +12,8 @@
      AudioInterface('rme').roundTrip = 0.098083333333333;    // loopback-measured ...
      AudioInterface('rme').outputShare = 0.396;              // CoreAudio-reported
 
- Switching rigs no longer throws calibration away — measure each once and they all
- stay correct.
-
- AudioItem.roundTripLatency / .outputLatency now read through AudioInterface.current,
- falling back to the old globals when the booted device is not registered, so existing
- startup pins and call sites keep working unchanged.
+ AudioItem.roundTripLatency / .outputLatency read through AudioInterface.current,
+ falling back to their own globals when the booted device is not registered.
 
  NB MIDI input latency does NOT belong here — it is a property of the controller
  (key scan, USB polling), not of the audio interface. Different registry.

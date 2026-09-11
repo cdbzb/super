@@ -7,12 +7,10 @@ AudioItem {
 	 Captured into each record-time stamp and applied by stamp-based playback resolution
 	 \raw convention: the file is never trimmed; compensation is a read-side offset.
 
-	 The value now lives on AudioInterface, per device — latency is a property of the
-	 rig, and Monitors can reboot onto a different one at any moment. These two
-	 accessors read through AudioInterface.current and fall back to the globals below
-	 when the booted device is unregistered or unmeasured, so old startup.scd pins
-	 (`AudioItem.roundTripLatency = ...`) and every existing call site keep working.
-	 Measure with AudioInterface.current.measure.
+	 The measurement is per-rig and lives on AudioInterface. The two accessors below
+	 read through AudioInterface.current and fall back to these globals when the
+	 booted device is unregistered or unmeasured. Measure with
+	 AudioInterface.current.measure.
 	 */
 	classvar <>fallbackRoundTrip = 0;
 	classvar <>fallbackOutputLatency = 0;

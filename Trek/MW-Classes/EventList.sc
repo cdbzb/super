@@ -306,9 +306,9 @@ EventList {
 		};
 		^this.current.addContext(event)
 	}
-	*play { |from, fromEvent, fromSection, to, ctx, dur|
+	*play { |from, fromEvent, fromSection, to, ctx, dur, solo, mute|
 		^this.current.play(cursor.debug("CURSOR") ? from ? 0 => _.postln, fromEvent, fromSection,
-			to, ctx, dur)
+			to, ctx, dur, solo, mute)
 	}
 	*clear { ^this.current.clear }
 	*clearContext { ^this.current.clearContext }
@@ -847,8 +847,10 @@ EventList {
 		^this
 	}
 
-	solo_ { |val| solo = val.notNil.if { val.asArray.as(Set) } }
-	mute_ { |val| mute = val.notNil.if { val.asArray.as(Set) } }
+	/* Answer this, not the Set the assignment evaluates to, so the setters chain:
+	   EventList(\chorus).solo_([\vox, \altVox]).play. */
+	solo_ { |val| solo = val.notNil.if { val.asArray.as(Set) }; ^this }
+	mute_ { |val| mute = val.notNil.if { val.asArray.as(Set) }; ^this }
 
 	/*
 	 A nesting CONTEXT is what a nested \eventList event hands its child: the
@@ -907,9 +909,30 @@ EventList {
 	// context's solo: can only narrow, never reveal. With no context this is exactly
 	// the list's own filter.
 	shouldPlay { |event, ctx|
-		^this.prPasses(event, solo, mute) and: {
-			ctx.isNil or: { this.prPasses(event, ctx[\solo], ctx[\mute]) }
+		^this.prPasses(event, solo, mute) and: { this.prCtxPasses(event, ctx) }
+	}
+
+	/* Contexts CHAIN through \next: a play(solo:) narrowing is stacked in front of
+	   whatever nesting context the list was already handed, and an event must pass
+	   every link. Stacking rather than overwriting keeps "narrow only, never
+	   reveal" true one level deeper — a nested list soloed in place stays narrowed
+	   when the outer play() also solos. A ctx with no \next behaves exactly as
+	   before. */
+	prCtxPasses { |event, ctx|
+		ctx ?? { ^true };
+		^this.prPasses(event, ctx[\solo], ctx[\mute]) and: {
+			this.prCtxPasses(event, ctx[\next])
 		}
+	}
+
+	/* Front a ctx with one more solo/mute narrowing. Answers the original ctx when
+	   there is nothing to narrow, so the common path allocates nothing. */
+	*prNarrowCtx { |ctx, solo, mute|
+		((solo.isNil) and: { mute.isNil }).if { ^ctx };
+		^(solo:  solo !? { solo.asArray.as(Set) },
+		  mute:  mute !? { mute.asArray.as(Set) },
+		  outer: ctx !? { |c| c[\outer] },
+		  next:  ctx)
 	}
 
 	prPasses { |event, soloSet, muteSet|
@@ -1495,8 +1518,14 @@ EventList {
 	// play(fromSection: \verse2, dur: 24) is that section's first 24 beats without
 	// the caller having to know its start beat. It resolves once `from` is final;
 	// `to` wins if both are given, since it is the more specific statement.
-	play { |from=0, fromEvent, fromSection, to, ctx, dur|
+	play { |from=0, fromEvent, fromSection, to, ctx, dur, solo, mute|
 		from = from ? 0;
+		/* solo:/mute: here narrow THIS playback only — they are stacked onto the
+		   nesting ctx, never written to the list, so the list's own solo_/mute_ state
+		   is untouched and a second play() is unfiltered again. Like every other
+		   narrowing they can only subtract: an event still has to pass the list's own
+		   filter first (shouldPlay). Ignored on the playFn override path, as ctx is. */
+		ctx = EventList.prNarrowCtx(ctx, solo, mute);
 		fromEvent !? {
 			var ev = events[fromEvent];
 			ev.notNil.if { from = (ev[\when] ? 0) + from }

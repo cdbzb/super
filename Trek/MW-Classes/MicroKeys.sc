@@ -6,6 +6,14 @@ MicroKeys {
 	var instanceCCs;
 	var <>synthFunc;
 	var <defName;
+	/*
+	 Hash of the (funcOrDefname, params) pair this instance's \synth step was last
+	 built from. `all` is keyed by name — and must stay that way, since MIDIdef
+	 names, the CC registry and cmdPeriod cleanup all key off name — so *new
+	 compares this hash instead of the key to decide whether a repeat call is a
+	 plain lookup or a request for a different configuration.
+	*/
+	var <configHash;
     var <>species;
 	// MonoKeys-specific variables
 	var <monosynth, <>constantVel=false;
@@ -189,6 +197,7 @@ MicroKeys {
 		}  
 	}
 	*new { |name func params species=\poly|
+		var cached, sig;
 		// A VSTI / VSTPluginController arg means "forward notes to the plugin", not
 		// "build a SynthDef from this". Route to VSTKeys so we don't feed it to
 		// asSynthDef (which yields a bogus def and a "SynthDef not found" at note time).
@@ -202,11 +211,50 @@ MicroKeys {
 			func = name;
 			name = func.cs.hash.asSymbol;
 		};
-		all[name].notNil.if {
-			^all[name]
-		} {
-			^super.new.init(name, func, params, species)
-		}
+		cached = all[name];
+		cached.notNil.if {
+			/*
+			 A bare MicroKeys(\name) is a lookup — answer the live instance untouched.
+			 A call that carries a func or params is asking for THAT configuration, so
+			 rebuild the \synth step when it differs from what the instance was built
+			 with; the old code returned the cached instance and dropped the new params
+			 on the floor. Rebuilding in place (rather than making a second instance)
+			 keeps everything keyed to the name: MIDIdefs, CC registry, monitor state,
+			 and any chain steps added with .add.
+			*/
+			(func ? params).notNil.if {
+				sig = this.prConfigHash(func ? name, params);
+				(sig != cached.configHash).if {
+					cached.prReconfigure(func ? name, params, sig)
+				}
+			};
+			^cached
+		};
+		^super.new.init(name, func, params, species)
+	}
+	/*
+	 A params value reaches us either as an Event — (rel: 0) — or already as a flat
+	 [\mix, 0, \release, 1] arg array, depending on the caller. Answer arg pairs for
+	 either. `array ++ anEvent` iterates the Event's VALUES only, which is how
+	 (rel: 0) used to append a bare 0 and let the SynthDef default win.
+	*/
+	*prAsPairs { |params|
+		^case
+			{ params.isNil } { [] }
+			{ params.isKindOf(Dictionary) } { params.asKeyValuePairs }
+			{ params.asArray }
+	}
+	/*
+	 Identity of a \synth-step configuration. Compile strings, not identityHash: a
+	 Function recompiles to a new object every evaluation, so identityHash would
+	 report "changed" on every identical call.
+	*/
+	*prConfigHash { |funcOrDefname params|
+		^(funcOrDefname.asCompileString ++ (params ? ()).asCompileString).hash
+	}
+	prReconfigure { |funcOrDefname params sig|
+		this.synth_(funcOrDefname, params);
+		configHash = sig ? this.class.prConfigHash(funcOrDefname, params)
 	}
 	*mono { |name func params|
 		^this.new(name, func, params, \mono)
@@ -229,6 +277,7 @@ MicroKeys {
 		namedList.add( \event, {|v n c r params| (vel: v/127, num: n, chan: c, src: r, raw: n, params: params) });
 
 		this.synth_(func ? name, params);
+		configHash = this.class.prConfigHash(func ? name, params);
 		// this.synth_(
 		// 	func !? {|i| (mk: name).use{ i.asDefName }} ? I.d);
 			
@@ -254,6 +303,9 @@ MicroKeys {
 		instanceCCs = ()
 	}
 	synth_ { |funcOrDefname params|
+		// Flattened once here, not per note. Constructor params go in FIRST so a
+		// per-note e.params wins on a key collision.
+		var pairs = MicroKeys.prAsPairs(params);
 		funcOrDefname.isKindOf(Symbol).if{
 			synthFunc.isKindOf(Function).not.if { synthFunc = funcOrDefname };
 			defName = funcOrDefname;
@@ -263,8 +315,8 @@ MicroKeys {
 						e.synths = Synths(
 							funcOrDefname, 
 							[\freq, e.num.midicps, \amp, e.vel, \num, e.num] 
-							++ params 
-							++ ( e.params ? () ).asKeyValuePairs
+							++ pairs
+							++ MicroKeys.prAsPairs(e.params)
 						)
 					};
 					e
@@ -273,7 +325,9 @@ MicroKeys {
 		}{ //otherwise should be a Function
 			//needs to return an Event with synth in synth:
 			synthFunc = funcOrDefname;
-			this.synth_((mk: name).use{ funcOrDefname.asSynthDef.add.name })
+			// forward params — the recursive call is what actually builds the \synth
+			// step, so dropping them here loses MicroKeys(\x, { ... }, params: ...)
+			this.synth_((mk: name).use{ funcOrDefname.asSynthDef.add.name }, params)
 		};
 		namedList.dump
 	}
@@ -699,7 +753,8 @@ monitor { |offLatency = 0.02|
 					e.synths = Synths(
 						e.def ? defName ? \default,
 						[\freq, e.num.midicps, \amp, e.vel, \num, e.num]
-						++ ((e.splitParams ? ()) ++ (e.params ? ())).asKeyValuePairs
+						++ MicroKeys.prAsPairs(e.splitParams)
+						++ MicroKeys.prAsPairs(e.params)
 					)
 				};
 				e

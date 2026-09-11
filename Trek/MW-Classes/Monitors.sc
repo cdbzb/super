@@ -58,9 +58,6 @@ Monitors {  //setup monitoring for Trek piece
 			}
 		});
 	}
-	/* Was a stored dictionary duplicating what AudioInterface already knows — every
-	   one of its eight entries matched a registered rig exactly. Derived now, so the
-	   two can no longer disagree. Add devices to AudioInterface, not here. */
 	*deviceChannels {
 		var d = Dictionary.new;
 		AudioInterface.all.do { |i| d.put(i.outName, i.channels) };

@@ -53,18 +53,42 @@ TempoMap {
 	  ^([0] ++ beats.integrate).drop(-1)
   }
 
-  // A span holds one tempo, so plot it as a step. domain: \beats (default) puts
-  // BEAT POSITION on the x axis, so an uneven span is as wide as the beats it
-  // covers; \index is the old one-slot-per-span axis.
-  plotTempo { |name, domain = \beats|
-	  var bpms = this.tempoCurve, xs, plotter;
+  /* The narrowest tempo window (bpm) worth drawing on a y axis, or nil to leave
+     Plotter's autoscale alone. Plotter only widens a flat axis when every value
+     is bit-identical (ControlSpec.looseRange tests newMin == newMax), so a
+     nominally constant tempo whose spans differ by float noise gets zoomed into
+     that noise and reads as a jagged staircase. Shared with
+     MIDIItemTempoMap.plotTempo, which has the same problem for the same reason.
+     `vals` is the array AS PLOTTED (degenerate spans already 0), so a real 0
+     among real tempi widens the spread and defeats the override, which is what
+     we want — that 0 is a genuine outlier, not noise. */
+  *prTempoSpec { |vals, minRange = 1|
+	  var lo, hi, mid;
+	  (minRange.isNumber.not or: { minRange <= 0 }).if { ^nil };
+	  vals.isEmpty.if { ^nil };
+	  lo = vals.minItem;
+	  hi = vals.maxItem;
+	  ((hi - lo) >= minRange).if { ^nil };
+	  mid = (lo + hi) * 0.5;
+	  ^ControlSpec(mid - (minRange * 0.5), mid + (minRange * 0.5), units: "bpm")
+  }
+
+  /* A span holds one tempo, so plot it as a step. domain: \beats (default) puts
+     BEAT POSITION on the x axis, so an uneven span is as wide as the beats it
+     covers; \index is the old one-slot-per-span axis.
+     minRange clamps how far the y axis may zoom in (see prTempoSpec); pass 0 to
+     restore the raw autoscale. */
+  plotTempo { |name, domain = \beats, minRange = 1|
+	  var bpms = this.tempoCurve, xs, plotter, vals;
 	  bpms.isEmpty.if { "plotTempo: no spans to plot".warn; ^nil };
 	  #[\beats, \index].includes(domain).not.if {
 		  Error("plotTempo: domain must be \\beats or \\index, got %".format(domain)).throw
 	  };
-	  plotter = bpms.collect { |b| b ? 0 }
+	  vals = bpms.collect { |b| b ? 0 };
+	  plotter = vals
 		  .plot(name ?? { "TempoMap — tempo (bpm), % spans".format(bpms.size) })
 		  .plotMode_(\steps);
+	  TempoMap.prTempoSpec(vals, minRange) !? { |sp| plotter.specs = sp };
 	  (domain == \index).if { ^plotter };
 	  xs = this.tempoCurveBeats;
 	  plotter.domainSpecs = ControlSpec(xs.first, beats.sum, units: "beats");

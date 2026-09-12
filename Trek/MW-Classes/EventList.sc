@@ -306,9 +306,9 @@ EventList {
 		};
 		^this.current.addContext(event)
 	}
-	*play { |from, fromEvent, fromSection, to, ctx, dur, solo, mute|
+	*play { |from, fromEvent, fromSection, to, ctx, dur, solo, mute, with|
 		^this.current.play(cursor.debug("CURSOR") ? from ? 0 => _.postln, fromEvent, fromSection,
-			to, ctx, dur, solo, mute)
+			to, ctx, dur, solo, mute, with)
 	}
 	*clear { ^this.current.clear }
 	*clearContext { ^this.current.clearContext }
@@ -1518,8 +1518,21 @@ EventList {
 	// play(fromSection: \verse2, dur: 24) is that section's first 24 beats without
 	// the caller having to know its start beat. It resolves once `from` is final;
 	// `to` wins if both are given, since it is the more specific statement.
-	play { |from=0, fromEvent, fromSection, to, ctx, dur, solo, mute|
+	play { |from=0, fromEvent, fromSection, to, ctx, dur, solo, mute, with|
 		from = from ? 0;
+		/* with: is the SAME authoring surface as section(with:) and add(with:) — one word
+		   for "bind these names for everything this reaches". Here it seeds the outer
+		   scope for the whole playback: every event's callbacks and lazy values read the
+		   bundle as ~key. It stacks in FRONT of any outer the caller's ctx already carried
+		   and BEHIND every nested with:, so a play-level value is a default that a
+		   section's own with: overrides — the same near-wins-over-far rule prNestCtx uses
+		   on the way down. Without this, play was the one insertion point that made you
+		   spell the plumbing (ctx: (outer: ...)) instead. */
+		with !? {
+			var base = ctx ?? { Event.new };
+			ctx = base.copy;
+			ctx[\outer] = EventList.prStackOuter(with, base[\outer]);
+		};
 		/* solo:/mute: here narrow THIS playback only — they are stacked onto the
 		   nesting ctx, never written to the list, so the list's own solo_/mute_ state
 		   is untouched and a second play() is unfiltered again. Like every other

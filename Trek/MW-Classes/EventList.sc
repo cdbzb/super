@@ -1508,6 +1508,57 @@ EventList {
 		^sum
 	}
 
+	/* The beat play(fromSection:) would anchor to — the `when` of the add that
+	   OPENED `key`, or nil if no section carries that name. Exposed because the
+	   span tempo edits (setBpm, setTempo, scaleTempo) and MonoMap's span ops all
+	   take BEATS, so without this you can audition a section but not address it. */
+	sectionBeat { |key|
+		^events.detect { |e| e[\section] == key } !? { |e| e[\when] ? 0 }
+	}
+
+	/* [startBeat, endBeat] for `key`, ready to splat into a span edit:
+	     f.setBpm(96, *f.sectionSpan(\chorus))
+	   End is where a DIFFERENT section opens. The scan has to test `!= key`, not
+	   merely non-nil: every add that explicitly names a section writes \section
+	   onto its event, so a section built from several adds (layers at the same
+	   beat, or an again: true continuation) repeats its own label, and a non-nil
+	   test would end the section on its own second add. Only an INHERITED label
+	   stays grouping state and never reaches the event. A key that recurs later in
+	   the form resolves to its FIRST opening, matching play(fromSection:). A final
+	   section runs to the list's write head (env[\nextWhen]) — the end of the last
+	   add that occupied time. nil if `key` is absent. */
+	sectionSpan { |key|
+		var i, next, end;
+		i = events.detectIndex { |e| e[\section] == key };
+		i ?? { ^nil };
+		/* (a..b) counts DOWN when a > b, so the LAST section — where i + 1 is past
+		   the end — would otherwise scan backwards over the whole list and end the
+		   section at some earlier label. Guard, don't rely on an empty range. */
+		((i + 1) < events.size).if {
+			next = (i + 1 .. events.size - 1).detect { |j|
+				var s = events[j][\section];
+				s.notNil and: { s != key }
+			}
+		};
+		end = next.notNil.if { events[next][\when] ? 0 } {
+			(env ?? { Event.new })[\nextWhen] ? 0
+		};
+		^[events[i][\when] ? 0, end]
+	}
+
+	/* Section names in the order they open — the discovery half of sectionBeat.
+	   Deduped against the PREVIOUS name only, not globally: a section spread over
+	   several adds repeats its label (see sectionSpan), but a form that genuinely
+	   returns to a name later must still show it twice. */
+	sectionNames {
+		var out = List[];
+		events.do { |e|
+			var s = e[\section];
+			(s.notNil and: { s != out.last }).if { out.add(s) }
+		};
+		^out.asArray
+	}
+
 	// `to` (nil = play to the end) upper-bounds playback to the half-open beat
 	// window [from, to) in THIS list's frame — the counterpart to `from`. It is
 	// absolute (not shifted by fromEvent/fromSection). Reached from \eventList via

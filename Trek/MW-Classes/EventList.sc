@@ -904,6 +904,111 @@ EventList {
 		^out
 	}
 
+	/*
+	 The pushed-durs protocol — two halves of one convention, so keep them together.
+
+	 A `durs:` key on an event is a RHYTHM in beats: a beats-string ("q e e") or a
+	 plain numeric array. Both halves turn it into the SECOND spans an event wants
+	 for `dur:`, and the only question is WHOSE clock does the conversion.
+
+	 Played on its own, a list converts through its own ~secsFor. Nested under
+	 followTrack: true, that is the wrong clock — followTrack moves a child's
+	 PLACEMENT to the parent (prExpandList passes childPlace) but not its tempoEnv,
+	 so every value the child derives from a clock still reads the child's map. The
+	 parent therefore publishes the durs it wants, keyed by event name, and the
+	 child prefers them:
+
+	   f.add(8, eventList: \chorus, followTrack: true,
+	         with: { EventList.pushDurs(\chorus) });
+	   g.add(2, name: \vox, durs: "e e e e e E X q",
+	         sv: { SynthVVST(\an2, [dur: EventList.pushedDurs, ...]).build });
+
+	 Both are called from INSIDE a lazy value, and that is load-bearing on the
+	 parent side: `with: { EventList.pushDurs(...) }` is resolved by the parent with
+	 the parent's ~secsFor in scope, while `with: EventList.pushDurs(...)` without
+	 the braces evaluates at add time with no clock context at all and silently
+	 answers nothing. A Function stored INSIDE a with: Event is the third spelling
+	 and the wrong one — outer entries are resolved in the CHILD's namespace, which
+	 is the clock we are trying to escape.
+	*/
+	*prDursKey { ^\parentDurs }
+
+	// A rhythm, or nil if this value is not one. A Function is deliberately NOT a
+	// rhythm: `durs: { ... ~secsFor ... }` is the older hand-written idiom that
+	// already answers seconds, and re-mapping it would apply the clock twice.
+	*prAsBeats { |val|
+		val.isString.if { ^val.beats };
+		(val.isSequenceableCollection and: { val.every(_.isNumber) }).if { ^val };
+		^nil
+	}
+
+	/*
+	 Parent half. Harvest every named event of `child` carrying a `durs:` rhythm and
+	 answer an outer bundle mapping name -> second spans on THIS event's clock.
+	 Call inside a lazy with: on the nesting event.
+
+	 The origin is the child's own beat divided by rate: ~secsFor is already
+	 anchored at the nesting event's when, and a lazy value can read its own
+	 event's sibling keys, so tempo:/stretch: are picked up here rather than being
+	 the caller's problem.
+
+	 One level only. A rhythm on a grandchild is not seen and that list keeps its
+	 own clock; recursing would mean composing rates down the chain.
+	*/
+	*pushDurs { |child|
+		var list = child.isKindOf(EventList).if { child } { EventList.at(child) };
+		var secsFor = ~secsFor, rate, seen, out = Event.new;
+		list ?? {
+			"EventList.pushDurs: no list named % — pushing nothing".format(child).warn;
+			^Event.new.put(this.prDursKey, out)
+		};
+		secsFor ?? {
+			"EventList.pushDurs: no ~secsFor in scope — call it inside a lazy with: "
+				"({ EventList.pushDurs(%) }), not as a bare value".format(child).warn;
+			^Event.new.put(this.prDursKey, out)
+		};
+		rate = (~tempo ? 1) / (~stretch ? 1);
+		seen = IdentitySet.new;
+		list.events.do { |ev|
+			var name = ev[\name];
+			var beats = this.prAsBeats(ev[\durs]);
+			(name.notNil and: { beats.notNil }).if {
+				seen.includes(name).if {
+					"EventList.pushDurs: % has more than one named % carrying durs: — "
+						"the later one wins; give them distinct names"
+						.format(list.name ? child, name).warn
+				};
+				seen.add(name);
+				out[name] = beats.mapSpansFrom((ev[\when] ? 0) / rate, secsFor)
+			}
+		};
+		^Event.new.put(this.prDursKey, out)
+	}
+
+	/*
+	 Child half. The durs this event should play: the parent's pushed spans when it
+	 is nested under a pushDurs bundle, else its own `durs:` rhythm through its own
+	 ~secsFor. `beats` overrides the event's durs: for a one-off.
+
+	 Answers nil when there is no rhythm to convert, so `dur: EventList.pushedDurs`
+	 on an event with no durs: leaves dur unset rather than inventing one.
+	*/
+	*pushedDurs { |beats|
+		var name = ~name, pushed = currentEnvironment.at(this.prDursKey);
+		var secsFor = ~secsFor;
+		(name.notNil and: { pushed.notNil }).if {
+			pushed[name] !? { |d| ^d }
+		};
+		beats = this.prAsBeats(beats ? ~durs);
+		beats ?? { ^nil };
+		secsFor ?? {
+			"EventList.pushedDurs: no ~secsFor in scope — call it inside a lazy "
+				"value (dur: { EventList.pushedDurs })".warn;
+			^nil
+		};
+		^beats.mapSpansFrom(0, secsFor)
+	}
+
 	// An event must pass BOTH this list's own solo/mute and any narrowing the
 	// nesting context carries: a list muted in place stays muted when nested, and a
 	// context's solo: can only narrow, never reveal. With no context this is exactly

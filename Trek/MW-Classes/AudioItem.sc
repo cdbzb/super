@@ -134,7 +134,7 @@ AudioItem {
 					buffers.put(itemName.asSymbol, takeNum, Buffer());
 					// record-time clock stamp from EventList.prEmit (§9a step 2):
 					// remembers what this take was recorded against, so playback
-					// can resolve the true source clock even after the list's map
+					// can resolve the true source clock even if the list's map
 					// changes (e.g. destructive quantize)
 					~recordedAgainst !? { |stamp|
 						AudioItem.recordedMaps.put(itemName.asSymbol, takeNum, stamp);
@@ -145,11 +145,6 @@ AudioItem {
 					};
 				}
             } {
-                /* A take that is not on disk plays nothing: allocRead would fail
-                   on the server and PlayBuf would run on an empty buffer. Warn and
-                   skip rather than throw — this runs inside EventList.fire's
-                   unprotected Routine, where an error would strand the rest of the
-                   list and leak its mono synths (matches tempoFollowActions). */
                 File.exists(path).if {
                     // build the effect (if ~out is a thunk) BEFORE the bundle — Effect.bus
                     // allocates a Bus, sends its own SynthDef and spawns a synth, none of

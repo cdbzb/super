@@ -859,22 +859,29 @@ EventList {
 	 resolveEvent). Threaded through prepare rather than written onto the child, so
 	 nothing is mutated and one list can be nested twice under different contexts.
 
-	 solo/mute NARROW, they do not replace: a nest's own pair is stacked IN FRONT of
+	 only/mute NARROW, they do not replace: a nest's own pair is stacked IN FRONT of
 	 whatever it inherited (\next), and prCtxPasses requires an event to pass every
-	 link. Mutes therefore UNION — silenced at any level stays silenced — and solo
-	 sets INTERSECT, which is the DAW reading and the one "narrow only, never
-	 reveal" already promised. The cost is that a nest can no longer re-reveal a
-	 token an outer level muted; mute it at the level that should hear it, or use
+	 link. Mutes therefore UNION — silenced at any level stays silenced — and the
+	 restrictive sets INTERSECT, which is the DAW reading and the one "narrow only,
+	 never reveal" already promised. The cost is that a nest can no longer re-reveal
+	 a token an outer level muted; mute it at the level that should hear it, or use
 	 the child list's own mute_ (shouldPlay checks list state and context
 	 separately).
 
-	 CAVEAT, and it is prPasses's, not this method's: a play-level SOLO does not
-	 reach into a nest today. prPasses answers false for an event with no \name and
-	 no \voice whenever a solo set is present, and a nesting event usually has
-	 neither (section() writes \section, not \name) — so the section is skipped
-	 before it can expand and the intersection never runs. Only a nest whose own
-	 name matches the solo survives. Fixing it means deciding what soloing a
-	 CONTAINER by name should mean versus soloing a voice inside it.
+	 `only:` is the nest-level restriction — "this insertion contributes only these
+	 voices". It is an ARRANGEMENT statement, not the transient exclusive solo, and
+	 the distinction is why it needed its own word: it applies to the SUBTREE and
+	 never to the nest carrying it (by construction — the carrier is tested against
+	 the PARENT's context, this one is handed to the child). `solo:` on a nesting
+	 event has always meant exactly this and stays as an alias, so existing songs
+	 are unchanged; prefer only: in new work. Naming both is a conflict — only:
+	 wins, with a warning.
+
+	 A play-level solo is the transient kind and is leaf-level: prPasses lets an
+	 \eventList event through any solo set unconditionally, so the narrowing reaches
+	 the voices inside instead of the section being skipped whole. Soloing a section
+	 AS A UNIT is play(fromSection:), which does it better anyway — so solo does not
+	 need to mean two things.
 
 	 Both branches carry \next. The no-pair branch used to copy only the inherited
 	 pair's FIRST link, which quietly flattened any chain deeper than one — invisible
@@ -885,8 +892,12 @@ EventList {
 	 therefore shadows a grandparent's entry key by key without hiding the rest of it.
 	*/
 	*prNestCtx { |event, list, inherited|
-		var s = event[\solo], m = event[\mute], w = event[\with];
+		var o = event[\only], s = o ? event[\solo], m = event[\mute], w = event[\with];
 		var outer = inherited !? { |i| i[\outer] };
+		((o.notNil) and: { event[\solo].notNil } and: { o != event[\solo] }).if {
+			"EventList: nest names both only: % and solo: % — they mean the same thing; "
+				"using only:".format(o, event[\solo]).warn
+		};
 		list !? { outer = this.prStackOuter(this.prEnvOuter(list), outer) };
 		w    !? { outer = this.prStackOuter(w, outer) };
 		((s.notNil) or: { m.notNil }).if {
@@ -1102,6 +1113,14 @@ EventList {
 		// voices (\chords, \chords2, ...) can be muted/soloed even when name is nil.
 		var keys = [event[\name], event[\voice]].reject(_.isNil).collect(_.asString);
 		soloSet.notNil.if {
+			/* A nest is a container, not a voice. Rejecting it here would skip the
+			   whole section before the narrowing could reach the voices inside — and
+			   a nesting event usually has neither key to match on, since section()
+			   writes \section, not \name. Let it through and filter its children one
+			   level down; soloing a section as a unit is play(fromSection:). Mute
+			   still applies to a nest, so muting a named section silences its
+			   subtree. */
+			(event[\type] == \eventList).if { ^true };
 			keys.isEmpty.if { ^false };
 			^soloSet.any { |s| keys.any { |k| k.contains(s.asString) } }
 		};

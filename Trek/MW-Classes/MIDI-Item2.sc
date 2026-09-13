@@ -2644,17 +2644,12 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 		^(0 .. n - 1) * step
 	}
 
-	/* Plot as steps. The final value is the closing span used for extrapolation.
-	   domain: \beats (default) puts BEAT POSITION on the x axis, so a step's width
-	   is the span it actually covers — with uneven spans (or a beatScale) the span
-	   INDEX is not the beat number, and reading a ritardando off an index axis
-	   misplaces it. \index restores the old evenly-spaced-per-span axis.
-	   minRange is the narrowest tempo window (bpm) the y axis will show: Plotter
-	   widens a flat axis only when every value is bit-identical, so a nominally
-	   constant tempo whose spans differ by float noise would otherwise be zoomed
-	   into that noise and read as a jagged staircase. Pass 0 for raw autoscale.
-	   A curved map sampled at subdiv > 1 is the worst case — every sample carries
-	   its own rounding. */
+	/* Plot as steps; the final value is the closing span used for extrapolation.
+	   domain: \beats (default) puts BEAT POSITION on x, so a step is as wide as the
+	   span it covers — with uneven spans the INDEX is not the beat number and a
+	   ritardando reads misplaced. \index restores the per-span axis. minRange
+	   clamps the y zoom (see TempoMap.prTempoSpec); 0 for raw autoscale. A curved
+	   map at subdiv > 1 is the worst case — every sample carries its own rounding. */
 	plotTempo { |subdiv = 1, name, domain = \beats, minRange = 1|
 		var bpms = this.tempoCurve(subdiv);
 		var bad = bpms.count(_.isNil);

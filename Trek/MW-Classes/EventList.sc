@@ -854,42 +854,26 @@ EventList {
 
 	/*
 	 A nesting CONTEXT is what a nested \eventList event hands its child: the
-	 transient (solo:, mute:) narrowing read by shouldPlay, and the `outer`
-	 environment its lazy values and callbacks may read (prResolveLazy /
-	 resolveEvent). Threaded through prepare rather than written onto the child, so
-	 nothing is mutated and one list can be nested twice under different contexts.
+	 (only:, mute:) narrowing read by shouldPlay, and the `outer` environment its
+	 lazy values and callbacks read. Threaded through prepare rather than written
+	 onto the child, so one list can be nested twice under different contexts.
 
-	 only/mute NARROW, they do not replace: a nest's own pair is stacked IN FRONT of
-	 whatever it inherited (\next), and prCtxPasses requires an event to pass every
-	 link. Mutes therefore UNION — silenced at any level stays silenced — and the
-	 restrictive sets INTERSECT, which is the DAW reading and the one "narrow only,
-	 never reveal" already promised. The cost is that a nest can no longer re-reveal
-	 a token an outer level muted; mute it at the level that should hear it, or use
-	 the child list's own mute_ (shouldPlay checks list state and context
-	 separately).
+	 only/mute NARROW rather than replace: a nest's pair stacks in front of what it
+	 inherited (\next) and prCtxPasses demands every link, so mutes union and
+	 restrictions intersect. Both branches must carry \next — the no-pair one used
+	 to copy the inherited pair's FIRST link only, flattening any deeper chain. A
+	 nest can no longer re-reveal what an outer level muted; mute at the level that
+	 should hear it, or use the child's own mute_.
 
-	 `only:` is the nest-level restriction — "this insertion contributes only these
-	 voices". It is an ARRANGEMENT statement, not the transient exclusive solo, and
-	 the distinction is why it needed its own word: it applies to the SUBTREE and
-	 never to the nest carrying it (by construction — the carrier is tested against
-	 the PARENT's context, this one is handed to the child). `solo:` on a nesting
-	 event has always meant exactly this and stays as an alias, so existing songs
-	 are unchanged; prefer only: in new work. Naming both is a conflict — only:
-	 wins, with a warning.
-
-	 A play-level solo is the transient kind and is leaf-level: prPasses lets an
-	 \eventList event through any solo set unconditionally, so the narrowing reaches
-	 the voices inside instead of the section being skipped whole. Soloing a section
-	 AS A UNIT is play(fromSection:), which does it better anyway — so solo does not
-	 need to mean two things.
-
-	 Both branches carry \next. The no-pair branch used to copy only the inherited
-	 pair's FIRST link, which quietly flattened any chain deeper than one — invisible
-	 from a top-level play (chain length 1) and wrong as soon as narrowings stack.
+	 `only:` is "this insertion contributes only these voices" — arrangement, not
+	 the transient solo. It applies to the subtree, never to its own carrier (which
+	 the PARENT's context tests). `solo:` on a nest has always meant this and stays
+	 an alias; naming both warns and takes only:. A play-level solo is leaf-level:
+	 prPasses passes \eventList events through, so it reaches the voices inside.
+	 Soloing a section whole is play(fromSection:).
 
 	 outer STACKS the same way, nearest first: with: beats the parent list's env,
-	 which beats whatever was inherited from further up. A grandchild's with:
-	 therefore shadows a grandparent's entry key by key without hiding the rest of it.
+	 which beats what was inherited further up, key by key.
 	*/
 	*prNestCtx { |event, list, inherited|
 		var o = event[\only], s = o ? event[\solo], m = event[\mute], w = event[\with];
@@ -935,58 +919,40 @@ EventList {
 	}
 
 	/*
-	 The pushed-durs protocol — two halves of one convention, so keep them together.
+	 The pushed-durs protocol, both halves — keep them together.
 
-	 A `durs:` key on an event is a RHYTHM in beats: a beats-string ("q e e") or a
-	 plain numeric array. Both halves turn it into the SECOND spans an event wants
-	 for `dur:`, and the only question is WHOSE clock does the conversion.
+	 `durs:` is a RHYTHM in beats: a beats-string ("q e e"), a numeric array, or
+	 rank 2 for one rhythm PER VOICE (as SynthVVST.isExpandable reads midinote).
+	 Both halves map it to second spans; the question is whose clock.
 
-	 Played on its own, a list converts through its own ~secsFor. Nested under
-	 followTrack: true, that is the wrong clock — followTrack moves a child's
-	 PLACEMENT to the parent (prExpandList passes childPlace) but not its tempoEnv,
-	 so every value the child derives from a clock still reads the child's map. The
-	 parent therefore publishes the durs it wants, keyed by event name, and the
-	 child prefers them:
+	 followTrack: true moves a child's PLACEMENT to the parent but not its tempoEnv
+	 (prExpandList passes childPlace, no env), so the child's own ~secsFor is the
+	 wrong clock. The parent publishes spans keyed by event name; the child prefers
+	 them, falling back to its own:
 
 	   f.add(8, eventList: \chorus, followTrack: true,
 	         with: { EventList.pushDurs(\chorus) });
 	   g.add(2, name: \vox, durs: "e e e e e E X q",
 	         sv: { SynthVVST(\an2, [dur: EventList.pushedDurs, ...]).build });
 
-	 A rank-2 durs: is one rhythm PER VOICE and answers per-voice spans, matching
-	 how SynthVVST.isExpandable reads midinote and its siblings.
-
-	 Both are called from INSIDE a lazy value, and that is load-bearing on the
-	 parent side: `with: { EventList.pushDurs(...) }` is resolved by the parent with
-	 the parent's ~secsFor in scope, while `with: EventList.pushDurs(...)` without
-	 the braces evaluates at add time with no clock context at all and silently
-	 answers nothing. A Function stored INSIDE a with: Event is the third spelling
-	 and the wrong one — outer entries are resolved in the CHILD's namespace, which
-	 is the clock we are trying to escape.
+	 The braces on with: are load-bearing: that Function is resolved by the PARENT,
+	 with its ~secsFor. Without them it evaluates at add time with no clock; a
+	 Function nested inside a with: Event resolves in the CHILD's namespace — the
+	 clock we are escaping.
 	*/
 	*prDursKey { ^\parentDurs }
 
-	// ONE rhythm, or nil if this value is not one. A Function is deliberately NOT a
-	// rhythm: `durs: { ... ~secsFor ... }` is the older hand-written idiom that
-	// already answers seconds, and re-mapping it would apply the clock twice.
+	// ONE rhythm, or nil. A Function is deliberately not one: `durs: { ...~secsFor }`
+	// is the older idiom that already answers seconds; re-mapping would double it.
 	*prAsBeats { |val|
 		val.isString.if { ^val.beats };
 		(val.isSequenceableCollection and: { val.every(_.isNumber) }).if { ^val };
 		^nil
 	}
 
-	/*
-	 A rhythm mapped to second spans through `secsFor`, SHAPE PRESERVED: a flat
-	 rhythm answers a flat array, and one rhythm per voice answers one mapped array
-	 per voice. Rank 2 means per-voice here for the same reason it does in
-	 SynthVVST.isExpandable, which reads `[[notes],[notes]]` that way for midinote
-	 and friends — durs: has to agree with its siblings or a two-voice take needs
-	 two spellings of the same idea.
-
-	 Answers nil when `val` is not a rhythm at all, so a Function, a ragged array,
-	 or one holding anything but numbers and strings is left alone rather than
-	 half-converted. One level of nesting only: voices do not nest.
-	*/
+	// A rhythm mapped to second spans, SHAPE PRESERVED: flat answers flat, rank 2
+	// (per voice) answers per voice. nil if `val` is not a rhythm at all — a
+	// Function, or a ragged array — rather than half-converting. One level only.
 	*prDursFor { |val, origin = 0, secsFor|
 		var flat = this.prAsBeats(val), rows;
 		flat.notNil.if { ^flat.mapSpansFrom(origin, secsFor) };
@@ -1005,13 +971,9 @@ EventList {
 	 answer an outer bundle mapping name -> second spans on THIS event's clock.
 	 Call inside a lazy with: on the nesting event.
 
-	 The origin is the child's own beat divided by rate: ~secsFor is already
-	 anchored at the nesting event's when, and a lazy value can read its own
-	 event's sibling keys, so tempo:/stretch: are picked up here rather than being
-	 the caller's problem.
-
-	 One level only. A rhythm on a grandchild is not seen and that list keeps its
-	 own clock; recursing would mean composing rates down the chain.
+	 Origin is the child's beat over rate — ~secsFor is already anchored at the
+	 nesting event's when, and reading our own sibling ~tempo/~stretch keeps that
+	 correction off the caller. One level: a grandchild's rhythm is not seen.
 	*/
 	*pushDurs { |child|
 		var list = child.isKindOf(EventList).if { child } { EventList.at(child) };
@@ -1044,22 +1006,17 @@ EventList {
 	}
 
 	/*
-	 Child half. The durs this event should play: the parent's pushed spans when it
-	 is nested under a pushDurs bundle, else its own `durs:` rhythm through its own
-	 ~secsFor. `beats` overrides the event's durs: for a one-off. Per-voice rhythms
-	 answer per-voice spans, so a multi-voice take indexes the result:
+	 Child half. The parent's pushed spans if nested under a pushDurs bundle, else
+	 this event's own `durs:` through its own ~secsFor; `beats` overrides durs:.
+	 Per-voice rhythms answer per-voice spans, so a multi-voice take indexes:
 
 	   sv: { var d = EventList.pushedDurs;
 	         2.collect { |v| SynthVVST(\mo2, [dur: d[v], ...]).build } }
 
-	 Call it DIRECTLY inside an already-lazy value, not wrapped in braces of its
-	 own: only keys ON the event are resolved, so a `dur: { EventList.pushedDurs }`
-	 sitting in a SynthVVST params array is never called and the Function itself
-	 reaches the render — where it silently freezes calcCacheKey and the take stops
-	 tracking the clock.
-
-	 Answers nil when there is no rhythm to convert, so `dur: EventList.pushedDurs`
-	 on an event with no durs: leaves dur unset rather than inventing one.
+	 Call it DIRECTLY inside an already-lazy value — only keys ON the event are
+	 resolved, so `dur: { EventList.pushedDurs }` in a params array is never called
+	 and the Function reaches the render, freezing calcCacheKey. nil when there is
+	 no rhythm, leaving dur unset rather than inventing one.
 	*/
 	*pushedDurs { |beats|
 		var name = ~name, pushed = currentEnvironment.at(this.prDursKey);
@@ -1113,13 +1070,10 @@ EventList {
 		// voices (\chords, \chords2, ...) can be muted/soloed even when name is nil.
 		var keys = [event[\name], event[\voice]].reject(_.isNil).collect(_.asString);
 		soloSet.notNil.if {
-			/* A nest is a container, not a voice. Rejecting it here would skip the
-			   whole section before the narrowing could reach the voices inside — and
-			   a nesting event usually has neither key to match on, since section()
-			   writes \section, not \name. Let it through and filter its children one
-			   level down; soloing a section as a unit is play(fromSection:). Mute
-			   still applies to a nest, so muting a named section silences its
-			   subtree. */
+			/* A nest is a container, not a voice, and usually has neither key
+			   (section() writes \section, not \name) — rejecting it would skip the
+			   section before the narrowing reached inside. Filter its children
+			   instead. Mute still applies, so muting a named section silences it. */
 			(event[\type] == \eventList).if { ^true };
 			keys.isEmpty.if { ^false };
 			^soloSet.any { |s| keys.any { |k| k.contains(s.asString) } }
@@ -1689,25 +1643,18 @@ EventList {
 		^sum
 	}
 
-	/* The beat play(fromSection:) would anchor to — the `when` of the add that
-	   OPENED `key`, or nil if no section carries that name. Exposed because the
-	   span tempo edits (setBpm, setTempo, scaleTempo) and MonoMap's span ops all
-	   take BEATS, so without this you can audition a section but not address it. */
+	/* The beat play(fromSection:) anchors to — the `when` of the add that OPENED
+	   `key`, or nil. Exposed because the span tempo edits all take BEATS. */
 	sectionBeat { |key|
 		^events.detect { |e| e[\section] == key } !? { |e| e[\when] ? 0 }
 	}
 
-	/* [startBeat, endBeat] for `key`, ready to splat into a span edit:
-	     f.setBpm(96, *f.sectionSpan(\chorus))
-	   End is where a DIFFERENT section opens. The scan has to test `!= key`, not
-	   merely non-nil: every add that explicitly names a section writes \section
-	   onto its event, so a section built from several adds (layers at the same
-	   beat, or an again: true continuation) repeats its own label, and a non-nil
-	   test would end the section on its own second add. Only an INHERITED label
-	   stays grouping state and never reaches the event. A key that recurs later in
-	   the form resolves to its FIRST opening, matching play(fromSection:). A final
-	   section runs to the list's write head (env[\nextWhen]) — the end of the last
-	   add that occupied time. nil if `key` is absent. */
+	/* [startBeat, endBeat] for `key`, to splat: f.setBpm(96, *f.sectionSpan(\x)).
+	   End is where a DIFFERENT section opens — the scan must test `!= key`, since a
+	   section built from several adds (layers, or an again: true continuation)
+	   repeats its own label and a non-nil test would end it on its second add. Only
+	   an INHERITED label stays grouping state. A recurring key resolves to its FIRST
+	   opening, as play(fromSection:) does; a final section runs to env[\nextWhen]. */
 	sectionSpan { |key|
 		var i, next, end;
 		i = events.detectIndex { |e| e[\section] == key };
@@ -1727,10 +1674,9 @@ EventList {
 		^[events[i][\when] ? 0, end]
 	}
 
-	/* Section names in the order they open — the discovery half of sectionBeat.
-	   Deduped against the PREVIOUS name only, not globally: a section spread over
-	   several adds repeats its label (see sectionSpan), but a form that genuinely
-	   returns to a name later must still show it twice. */
+	/* Section names in opening order. Deduped against the PREVIOUS name only: a
+	   section spread over several adds repeats its label (see sectionSpan), but a
+	   form that genuinely returns to a name must still show it twice. */
 	sectionNames {
 		var out = List[];
 		events.do { |e|

@@ -923,6 +923,9 @@ EventList {
 	   g.add(2, name: \vox, durs: "e e e e e E X q",
 	         sv: { SynthVVST(\an2, [dur: EventList.pushedDurs, ...]).build });
 
+	 A rank-2 durs: is one rhythm PER VOICE and answers per-voice spans, matching
+	 how SynthVVST.isExpandable reads midinote and its siblings.
+
 	 Both are called from INSIDE a lazy value, and that is load-bearing on the
 	 parent side: `with: { EventList.pushDurs(...) }` is resolved by the parent with
 	 the parent's ~secsFor in scope, while `with: EventList.pushDurs(...)` without
@@ -933,12 +936,37 @@ EventList {
 	*/
 	*prDursKey { ^\parentDurs }
 
-	// A rhythm, or nil if this value is not one. A Function is deliberately NOT a
+	// ONE rhythm, or nil if this value is not one. A Function is deliberately NOT a
 	// rhythm: `durs: { ... ~secsFor ... }` is the older hand-written idiom that
 	// already answers seconds, and re-mapping it would apply the clock twice.
 	*prAsBeats { |val|
 		val.isString.if { ^val.beats };
 		(val.isSequenceableCollection and: { val.every(_.isNumber) }).if { ^val };
+		^nil
+	}
+
+	/*
+	 A rhythm mapped to second spans through `secsFor`, SHAPE PRESERVED: a flat
+	 rhythm answers a flat array, and one rhythm per voice answers one mapped array
+	 per voice. Rank 2 means per-voice here for the same reason it does in
+	 SynthVVST.isExpandable, which reads `[[notes],[notes]]` that way for midinote
+	 and friends — durs: has to agree with its siblings or a two-voice take needs
+	 two spellings of the same idea.
+
+	 Answers nil when `val` is not a rhythm at all, so a Function, a ragged array,
+	 or one holding anything but numbers and strings is left alone rather than
+	 half-converted. One level of nesting only: voices do not nest.
+	*/
+	*prDursFor { |val, origin = 0, secsFor|
+		var flat = this.prAsBeats(val), rows;
+		flat.notNil.if { ^flat.mapSpansFrom(origin, secsFor) };
+		((val.isSequenceableCollection) and: { val.isString.not }
+			and: { val.isEmpty.not }).if {
+			rows = val.collect { |v| this.prAsBeats(v) };
+			rows.every(_.notNil).if {
+				^rows.collect { |r| r.mapSpansFrom(origin, secsFor) }
+			}
+		};
 		^nil
 	}
 
@@ -971,15 +999,15 @@ EventList {
 		seen = IdentitySet.new;
 		list.events.do { |ev|
 			var name = ev[\name];
-			var beats = this.prAsBeats(ev[\durs]);
-			(name.notNil and: { beats.notNil }).if {
+			var durs = this.prDursFor(ev[\durs], (ev[\when] ? 0) / rate, secsFor);
+			(name.notNil and: { durs.notNil }).if {
 				seen.includes(name).if {
 					"EventList.pushDurs: % has more than one named % carrying durs: — "
 						"the later one wins; give them distinct names"
 						.format(list.name ? child, name).warn
 				};
 				seen.add(name);
-				out[name] = beats.mapSpansFrom((ev[\when] ? 0) / rate, secsFor)
+				out[name] = durs
 			}
 		};
 		^Event.new.put(this.prDursKey, out)
@@ -988,25 +1016,35 @@ EventList {
 	/*
 	 Child half. The durs this event should play: the parent's pushed spans when it
 	 is nested under a pushDurs bundle, else its own `durs:` rhythm through its own
-	 ~secsFor. `beats` overrides the event's durs: for a one-off.
+	 ~secsFor. `beats` overrides the event's durs: for a one-off. Per-voice rhythms
+	 answer per-voice spans, so a multi-voice take indexes the result:
+
+	   sv: { var d = EventList.pushedDurs;
+	         2.collect { |v| SynthVVST(\mo2, [dur: d[v], ...]).build } }
+
+	 Call it DIRECTLY inside an already-lazy value, not wrapped in braces of its
+	 own: only keys ON the event are resolved, so a `dur: { EventList.pushedDurs }`
+	 sitting in a SynthVVST params array is never called and the Function itself
+	 reaches the render — where it silently freezes calcCacheKey and the take stops
+	 tracking the clock.
 
 	 Answers nil when there is no rhythm to convert, so `dur: EventList.pushedDurs`
 	 on an event with no durs: leaves dur unset rather than inventing one.
 	*/
 	*pushedDurs { |beats|
 		var name = ~name, pushed = currentEnvironment.at(this.prDursKey);
-		var secsFor = ~secsFor;
+		var secsFor = ~secsFor, raw;
 		(name.notNil and: { pushed.notNil }).if {
 			pushed[name] !? { |d| ^d }
 		};
-		beats = this.prAsBeats(beats ? ~durs);
-		beats ?? { ^nil };
+		raw = beats ? ~durs;
+		raw ?? { ^nil };
 		secsFor ?? {
-			"EventList.pushedDurs: no ~secsFor in scope — call it inside a lazy "
-				"value (dur: { EventList.pushedDurs })".warn;
+			"EventList.pushedDurs: no ~secsFor in scope — call it directly inside an "
+				"already-lazy value (dur: EventList.pushedDurs)".warn;
 			^nil
 		};
-		^beats.mapSpansFrom(0, secsFor)
+		^this.prDursFor(raw, 0, secsFor)
 	}
 
 	// An event must pass BOTH this list's own solo/mute and any narrowing the

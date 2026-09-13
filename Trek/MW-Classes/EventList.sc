@@ -859,13 +859,30 @@ EventList {
 	 resolveEvent). Threaded through prepare rather than written onto the child, so
 	 nothing is mutated and one list can be nested twice under different contexts.
 
-	 solo/mute REPLACE as a pair: an event naming either drops the inherited pair,
-	 so mute: on a top-level nest silences that token through the whole subtree
-	 until some nested event says otherwise.
+	 solo/mute NARROW, they do not replace: a nest's own pair is stacked IN FRONT of
+	 whatever it inherited (\next), and prCtxPasses requires an event to pass every
+	 link. Mutes therefore UNION — silenced at any level stays silenced — and solo
+	 sets INTERSECT, which is the DAW reading and the one "narrow only, never
+	 reveal" already promised. The cost is that a nest can no longer re-reveal a
+	 token an outer level muted; mute it at the level that should hear it, or use
+	 the child list's own mute_ (shouldPlay checks list state and context
+	 separately).
 
-	 outer STACKS instead, nearest first: with: beats the parent list's env, which
-	 beats whatever was inherited from further up. A grandchild's with: therefore
-	 shadows a grandparent's entry key by key without hiding the rest of it.
+	 CAVEAT, and it is prPasses's, not this method's: a play-level SOLO does not
+	 reach into a nest today. prPasses answers false for an event with no \name and
+	 no \voice whenever a solo set is present, and a nesting event usually has
+	 neither (section() writes \section, not \name) — so the section is skipped
+	 before it can expand and the intersection never runs. Only a nest whose own
+	 name matches the solo survives. Fixing it means deciding what soloing a
+	 CONTAINER by name should mean versus soloing a voice inside it.
+
+	 Both branches carry \next. The no-pair branch used to copy only the inherited
+	 pair's FIRST link, which quietly flattened any chain deeper than one — invisible
+	 from a top-level play (chain length 1) and wrong as soon as narrowings stack.
+
+	 outer STACKS the same way, nearest first: with: beats the parent list's env,
+	 which beats whatever was inherited from further up. A grandchild's with:
+	 therefore shadows a grandparent's entry key by key without hiding the rest of it.
 	*/
 	*prNestCtx { |event, list, inherited|
 		var s = event[\solo], m = event[\mute], w = event[\with];
@@ -875,12 +892,14 @@ EventList {
 		((s.notNil) or: { m.notNil }).if {
 			^(solo:  s !? { s.asArray.as(Set) },
 			  mute:  m !? { m.asArray.as(Set) },
-			  outer: outer)
+			  outer: outer,
+			  next:  inherited)
 		};
 		((inherited.isNil) and: { outer.isNil }).if { ^nil };
 		^(solo:  inherited !? { |i| i[\solo] },
 		  mute:  inherited !? { |i| i[\mute] },
-		  outer: outer)
+		  outer: outer,
+		  next:  inherited !? { |i| i[\next] })
 	}
 
 	// `near` wins key by key; neither input is mutated and neither may be a nil-free

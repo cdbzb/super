@@ -1943,7 +1943,41 @@ EventList {
 			var cFromWall = child.beatToWall(gAt.(cFrom), cEnv);
 			childPlace = { |cBeat| anchor + (child.beatToWall(gAt.(cBeat), cEnv) - cFromWall) };
 		};
+		childCtx = this.prPushDurs(ev, child, childPlace, childCtx);
 		^child.prepare(epoch, cFrom, childPlace, childSeen, cTo, ctx: childCtx)
+	}
+
+	/*
+	 Publish the child's `durs:` rhythms as second spans on the clock it will
+	 actually play on, so a nested take does not have to be told. Default is
+	 followTrack's own value: under followTrack the child rides the parent and its
+	 own ~secsFor is the wrong clock; without it childPlace IS the child's clock, so
+	 pushing would only recompute what pushedDurs already falls back to. pushDurs:
+	 overrides either way.
+
+	 childPlace is handed straight to prDursFor as the mapping function: it already
+	 composes rate, groove and the parent's map, and mapSpansFrom takes DELTAS, so
+	 the epoch cancels and no rate correction is needed here. This is why the key is
+	 more robust than the manual with: { EventList.pushDurs(...) } — that route goes
+	 through ~secsFor and has to divide by rate itself.
+
+	 Stacked BEHIND the existing outer, so an explicit with: still wins.
+	*/
+	prPushDurs { |ev, child, childPlace, childCtx|
+		var out, on = ev[\pushDurs] ?? { (ev[\followTrack] ? false) != false };
+		(on == false).if { ^childCtx };
+		child.events.do { |cev|
+			var name = cev[\name];
+			(name.notNil and: { cev[\durs].notNil }).if {
+				var durs = EventList.prDursFor(cev[\durs], cev[\when] ? 0, childPlace);
+				durs.notNil.if { out = (out ? Event.new).put(name, durs) }
+			}
+		};
+		out ?? { ^childCtx };
+		childCtx = (childCtx ? Event.new).copy;
+		childCtx[\outer] = EventList.prStackOuter(
+			childCtx[\outer], Event.new.put(EventList.prDursKey, out));
+		^childCtx
 	}
 
 	// The `align:` blend. Both endpoint placements answer WALL times and both are

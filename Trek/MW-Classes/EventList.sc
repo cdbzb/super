@@ -1823,7 +1823,7 @@ EventList {
 	// `place` answers "what absolute wall-second does a beat in THIS list's frame land
 	// on?"; top-level lists get the default, nested lists get one from prExpandList.
 	// `seen` guards cyclic nesting.
-	prepare { |epoch, from = 0, place, seen, to, tempoEnv, evts, ctx|
+	prepare { |epoch, from = 0, place, seen, to, tempoEnv, evts, ctx, wallAt|
 		var sched = List[];
 		var fromWall, playable, monoStates = IdentityDictionary.new;
 		seen = seen ?? { IdentitySet[] };
@@ -1835,13 +1835,18 @@ EventList {
 		tempoEnv = tempoEnv ?? { this.tempoEnv(evts) };
 		fromWall = this.beatToWall(from, tempoEnv);
 		place    = place ?? { { |beat| epoch + (this.beatToWall(beat, tempoEnv) - fromWall) } };
+		/* The same placement WITHOUT the epoch, threaded in parallel so a nested
+		   pushDurs composes up the chain (rate, groove, every ancestor's map) while
+		   staying a pure function of the score — see prPushDurs. */
+		wallAt   = wallAt ?? { { |beat| this.beatToWall(beat, tempoEnv) } };
 		playable = voiceSpace.notNil.if {
 			evts.reject { |e| (e[\type] ? \keyFrame) == \keyFrame }
 		} { evts };
 		playable.do { |ev|
 			ev[\tempoTrack].isNil.if {
 				(ev[\type] == \eventList).if {
-					sched.addAll(this.prExpandList(ev, epoch, place, from, seen, ctx))
+					sched.addAll(this.prExpandList(ev, epoch, place, from, seen, ctx,
+						wallAt))
 				} {
 					sched.addAll(this.prEmit(ev, place, tempoEnv, from, monoStates))
 				}
@@ -1894,7 +1899,7 @@ EventList {
 	// tempoTrack — same convention as \mi2 followTrack); otherwise the child keeps its
 	// own beat->wall map, shifted so child beat `start` lands at the parent's wall time
 	// for `when`. rate = tempo/stretch scales child beats per parent beat.
-	prExpandList { |ev, epoch, place, from = 0, seen, ctx|
+	prExpandList { |ev, epoch, place, from = 0, seen, ctx, wallAt|
 		var child = ev[\eventList].isKindOf(EventList).if { ev[\eventList] } { EventList.at(ev[\eventList]) };
 		var b0    = ev[\when] ? 0;
 		var cFrom = ev[\start] ? 0;
@@ -1912,7 +1917,7 @@ EventList {
 		// solo:/mute: narrow the CHILD for this insertion only; with: (plus this
 		// list's env) becomes the outer environment its lazy values read.
 		var childCtx = EventList.prNestCtx(ev, this, ctx);
-		var childPlace, childSeen, refG;
+		var childPlace, childSeen, refG, childWallAt;
 		child.isNil.if {
 			"EventList.prepare: no list named %".format(ev[\eventList]).warn;
 			^List[]
@@ -1920,7 +1925,7 @@ EventList {
 		childSeen = (seen ?? { IdentitySet[] }).copy;
 		childSeen.add(this);
 		align.notNil.if { ^this.prExpandBlended(ev, epoch, place, from, childSeen,
-			child, b0, cFrom, cTo, rate, gAt, align, childCtx) };
+			child, b0, cFrom, cTo, rate, gAt, align, childCtx, wallAt) };
 		((ev[\followTrack] ? false) != false).if {
 			(ev[\followTrack] == true).not.if {
 				"EventList.prepare: followTrack:% on nested \\eventList — source-map values only apply to \\mi2; following track".format(ev[\followTrack]).warn
@@ -1936,15 +1941,19 @@ EventList {
 				refG = cut;
 				b0 = from;
 			};
-			childPlace = { |cBeat| place.(b0 + ((gAt.(cBeat) - refG) / rate)) };
+			childPlace  = { |cBeat| place.(b0 + ((gAt.(cBeat) - refG) / rate)) };
+			childWallAt = { |cBeat| wallAt.(b0 + ((gAt.(cBeat) - refG) / rate)) };
 		} {
 			var cEnv = child.prPlayTempoEnv(childCtx);
 			var anchor = place.(b0);
+			var anchorW = wallAt.(b0);
 			var cFromWall = child.beatToWall(gAt.(cFrom), cEnv);
-			childPlace = { |cBeat| anchor + (child.beatToWall(gAt.(cBeat), cEnv) - cFromWall) };
+			childPlace  = { |cBeat| anchor + (child.beatToWall(gAt.(cBeat), cEnv) - cFromWall) };
+			childWallAt = { |cBeat| anchorW + (child.beatToWall(gAt.(cBeat), cEnv) - cFromWall) };
 		};
-		childCtx = this.prPushDurs(ev, child, childPlace, childCtx);
-		^child.prepare(epoch, cFrom, childPlace, childSeen, cTo, ctx: childCtx)
+		childCtx = this.prPushDurs(ev, child, childWallAt, childCtx);
+		^child.prepare(epoch, cFrom, childPlace, childSeen, cTo, ctx: childCtx,
+			wallAt: childWallAt)
 	}
 
 	/*
@@ -1955,21 +1964,23 @@ EventList {
 	 pushing would only recompute what pushedDurs already falls back to. pushDurs:
 	 overrides either way.
 
-	 childPlace is handed straight to prDursFor as the mapping function: it already
-	 composes rate, groove and the parent's map, and mapSpansFrom takes DELTAS, so
-	 the epoch cancels and no rate correction is needed here. This is why the key is
-	 more robust than the manual with: { EventList.pushDurs(...) } — that route goes
-	 through ~secsFor and has to divide by rate itself.
+	 The mapping function must be EPOCH-FREE, which is why this takes pushAt rather
+	 than childPlace. childPlace answers epoch + relative, and adding a small number
+	 to a large one loses low bits that mapSpansFrom's deltas cannot recover — the
+	 error tracks epoch magnitude (~7e-11 at epoch 1e6). thisThread.seconds climbs,
+	 so every play would hand SynthVVST slightly different durs, move calcCacheKey
+	 and re-render the take. pushAt composes rate, groove and the governing map with
+	 no epoch in it, so the durs are a pure function of the score.
 
 	 Stacked BEHIND the existing outer, so an explicit with: still wins.
 	*/
-	prPushDurs { |ev, child, childPlace, childCtx|
+	prPushDurs { |ev, child, pushAt, childCtx|
 		var out, on = ev[\pushDurs] ?? { (ev[\followTrack] ? false) != false };
 		(on == false).if { ^childCtx };
 		child.events.do { |cev|
 			var name = cev[\name];
 			(name.notNil and: { cev[\durs].notNil }).if {
-				var durs = EventList.prDursFor(cev[\durs], cev[\when] ? 0, childPlace);
+				var durs = EventList.prDursFor(cev[\durs], cev[\when] ? 0, pushAt);
 				durs.notNil.if { out = (out ? Event.new).put(name, durs) }
 			}
 		};
@@ -1987,21 +1998,27 @@ EventList {
 	// the child's tempoMap is untouched, so replays and nesting stay repeatable.
 	// The mid-list cut has no closed form here (the blend mixes two beat axes), so it
 	// is bisected — same move as Groove's inverse and wallToBeat's subsampled case.
-	prExpandBlended { |ev, epoch, place, from, childSeen, child, b0, cFrom, cTo, rate, gAt, align, ctx|
+	prExpandBlended { |ev, epoch, place, from, childSeen, child, b0, cFrom, cTo, rate, gAt, align, ctx, wallAt|
 		var cEnv      = child.prPlayTempoEnv(ctx);
 		var anchor    = place.(b0);
+		var anchorW   = wallAt.(b0);
 		var refG      = gAt.(cFrom);
 		var cFromWall = child.beatToWall(refG, cEnv);
 		var childPlace = { |cBeat|
 			(anchor + (child.beatToWall(gAt.(cBeat), cEnv) - cFromWall))
 				.blend(place.(b0 + ((gAt.(cBeat) - refG) / rate)), align)
 		};
+		var childWallAt = { |cBeat|
+			(anchorW + (child.beatToWall(gAt.(cBeat), cEnv) - cFromWall))
+				.blend(wallAt.(b0 + ((gAt.(cBeat) - refG) / rate)), align)
+		};
 		(((ev[\followTrack] ? false) != false) and: { align != 1 }).if {
 			"EventList.prepare: align:% on a nested \\eventList overrides followTrack"
 				.format(align).warn
 		};
 		(from > b0).if { cFrom = this.prBisectBeat(childPlace, place.(from), cFrom) };
-		^child.prepare(epoch, cFrom, childPlace, childSeen, cTo, ctx: ctx)
+		^child.prepare(epoch, cFrom, childPlace, childSeen, cTo, ctx: ctx,
+			wallAt: childWallAt)
 	}
 
 	// child beat whose placement reaches targetWall, never below `lo`. Bracket by

@@ -1105,7 +1105,10 @@ EventList {
 		var onset = this.prPreviewDelay(previewOffset, tempoEnv);
 		var wall = this.beatToWall(when, tempoEnv);
 		var place = { |beat| onset + this.beatToWall(beat, tempoEnv) - wall };
-		^this.prExpandList(event, onset, place, when, IdentitySet[])
+		// place carries the preview onset; wallAt must not (pushDurs needs a pure
+		// score function). nil here left every pushed dur nil.
+		var wallAt = { |beat| this.beatToWall(beat, tempoEnv) };
+		^this.prExpandList(event, onset, place, when, IdentitySet[], nil, wallAt)
 	}
 
 	storeAndPreview { |event, previewOffset|
@@ -1977,6 +1980,8 @@ EventList {
 	prPushDurs { |ev, child, pushAt, childCtx|
 		var out, on = ev[\pushDurs] ?? { (ev[\followTrack] ? false) != false };
 		(on == false).if { ^childCtx };
+		// No clock: push nothing, let pushedDurs use its own ~secsFor.
+		pushAt ?? { ^childCtx };
 		child.events.do { |cev|
 			var name = cev[\name];
 			(name.notNil and: { cev[\durs].notNil }).if {

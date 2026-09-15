@@ -34,6 +34,11 @@
 				(event[\type].notNil and: { event[\newType].isNil }).if {
 					event.put(\newType, event[\type])
 				};
+				// A pattern event is never a nest, so don't let an \eventList
+				// defaultType stamp one (child would be nil).
+				(event[\newType].isNil and: { this.defaultType == \eventList }).if {
+					event.put(\newType, \note)
+				};
 				this.dispatch(event, { |e| this.storeAndPreview(e, previewOffset) });
 				beat = beat + (event[\dur] ? 1);
 				i = i + 1;
@@ -110,6 +115,9 @@
 			eventName !? { event[\name] = eventName };
 			(event[\type].notNil and: { event[\newType].isNil }).if {
 				event[\newType] = event[\type]
+			};
+			(event[\newType].isNil and: { this.defaultType == \eventList }).if {
+				event[\newType] = \note
 			};
 			previewOffset = this.nextPreviewOffset(event[\when] ? 0);
 			this.dispatch(event, { |e| this.storeAndPreview(e, previewOffset) });

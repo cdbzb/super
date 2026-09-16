@@ -4,6 +4,11 @@ SynthV {
 	classvar <notePrototype, <databasePrototype, <databaseLib;
 	classvar <roles,<envelopes=#[ \toneShift, \pitchDelta, \voicing, \tension, \vibratoEnv, \loudness, \breathiness, \gender, \mouthOpening ];
 	classvar <vocalModes;
+	/* The phoneset each language is written in. A languageOverride without a
+	   matching phonesetOverride leaves the notes asking for the new language
+	   through the database's native phoneset: SynthV greys them out and renders
+	   silence. */
+	classvar <phonesetMap;
 	classvar <>buffers;
 	classvar <>synthVsToRender;
 	classvar <>current; 
@@ -47,6 +52,11 @@ SynthV {
 		buffers = MultiLevelIdentityDictionary.new();
 
 		roles = ();
+
+		phonesetMap = (
+			english: "arpabet", mandarin: "xsampa", japanese: "romaji",
+			korean: "xsampa", cantonese: "xsampa", spanish: "arpabet"
+		);
 
 		notePrototype = (
 			'onset': 88200000,
@@ -913,24 +923,31 @@ SynthV {
 			}
 		}
 	}
+	/* phonesetOverride is not optional once languageOverride is set. Without it the
+	   notes are asked to sing the new language through the database's NATIVE
+	   phoneset (english lyrics through Mo Chen's xsampa, say); SynthV greys the
+	   notes out and the plugin renders silence, with no warning anywhere. So derive
+	   it from the language whenever the caller did not spell a phoneset out.
+	   Toggling the language by hand in the plugin GUI is what used to "fix" an
+	   affected take — that is the editor writing the override we omitted. */
 	setLanguage { | array |
-		var where = case
+		var where, lang, phoneset;
+		where = case
 		{ appVersion == 1 } { project.tracks[0].mainRef.database }
 		{ appVersion == 2 } { project.tracks[0].groups[0].database }
 		;
-		[\languageOverride, \phonesetOverride].do{|i x|
-			var v = array[0][x];
-			(i == \languageOverride).if{
-				v = (chinese: "mandarin")[v.asSymbol] ? v;            // alias chinese→mandarin (SynthV 2 id)
-				(v.asString == where[\language].asString).if{ v = "" }; // redundant w/ DB native → clear
-			};
-			where.put(i, v)
+		where ?? { ^this };                                      // voiceless: nothing to override
+		lang = array[0][0];
+		phoneset = array[0][1];
+		lang.notNil.if{
+			lang = (chinese: "mandarin")[lang.asSymbol] ? lang;  // alias chinese→mandarin (SynthV 2 id)
+			phoneset = phoneset ?? { phonesetMap[lang.asSymbol] };
+			(lang.asString == where[\language].asString).if{ lang = "" }; // redundant w/ DB native → clear
 		};
-		// (appVersion == 2).if {
-		// 	where.put(\language, "");
-		// 	where.put(\phoneset, "");
-		// }
-
+		(phoneset.notNil and: { phoneset.asString == where[\phoneset].asString })
+			.if{ phoneset = "" };                                // ditto for the phoneset
+		where.put(\languageOverride, lang);
+		where.put(\phonesetOverride, phoneset);
 	}
 	makeNotes {|num track=0|
 		var prototype = notePrototype.copy;

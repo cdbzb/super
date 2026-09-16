@@ -111,7 +111,13 @@ METHOD:: morphPhonemes
 Apply cross-language phoneme substitution cipher to lyrics. Modifies params in place. In multi-voice mode, each voice gets a different random seed (code::randomSeed + voiceIndex::).
 
 ARGUMENT:: languages
-Array of language Symbols to draw phonemes from. Sorted internally. Options: code::\english::, code::\mandarin::, code::\korean::, code::\japanese::.
+Array of language Symbols to draw phonemes from. Sorted internally. Options: code::\english::, code::\mandarin::, code::\korean::, code::\japanese::. code::nil:: is a no-op, so the cipher can be toggled from an EventList strong::with:: bundle:
+
+code::
+sv: { SynthVVST(\an2, [ ... ]).morphPhonemes(~morphLangs, ~morphSeed ? 4).build }
+e.play(with: (morphLangs: [\korean, \english, \mandarin]));  // morphed
+e.play;                                                       // clean
+::
 
 ARGUMENT:: randomSeed
 Integer seed for deterministic phoneme substitution. Default code::12345::.

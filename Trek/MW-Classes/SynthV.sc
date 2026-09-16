@@ -4,6 +4,11 @@ SynthV {
 	classvar <notePrototype, <databasePrototype, <databaseLib;
 	classvar <roles,<envelopes=#[ \toneShift, \pitchDelta, \voicing, \tension, \vibratoEnv, \loudness, \breathiness, \gender, \mouthOpening ];
 	classvar <vocalModes;
+	/* Corners of the Synthesizer V 2 expression d-pad, as note attributes
+	   expValueX / expValueY. The geometry is the same for every voice; only
+	   Dreamtonics' corner NAMES vary, and those live in the encrypted voice
+	   database — nothing readable from a project file or either binary. */
+	classvar <expQuadrants;
 	/* The phoneset each language is written in. A languageOverride without a
 	   matching phonesetOverride leaves the notes asking for the new language
 	   through the database's native phoneset: SynthV greys them out and renders
@@ -57,6 +62,14 @@ SynthV {
 			english: "arpabet", mandarin: "xsampa", japanese: "romaji",
 			korean: "xsampa", cantonese: "xsampa", spanish: "arpabet"
 		);
+
+		expQuadrants = IdentityDictionary[
+			\refined -> [  1,  1 ],
+			\vibrant -> [ -1,  1 ],
+			\rigid   -> [ -1, -1 ],
+			\raw     -> [  1, -1 ],
+			\neutral -> [  0,  0 ]
+		];
 
 		notePrototype = (
 			'onset': 88200000,
@@ -789,6 +802,10 @@ SynthV {
 			{ i == \pitchSpread }            { this.setNoteAttributes(\cPitchDispersion, event.at(i)) }
 			{ i == \startSpread }            { this.setNoteAttributes(\cTimeDispersion, event.at(i)) }
 			{ i == \endSpread }              { this.setNoteAttributes(\cPhraseTailDispersion, event.at(i)) }
+			{ i == \expression }             { this.setExpression(event.at(i)) }
+			{ [\expValueX, \expValueY].includes(i) } {
+				this.setNoteAttributes(i, event.at(i))
+			}
 			{ [\languageOverride, \phonesetOverride].includes(i) } {
 				this.setNoteAttributes(i, event.at(i))
 			}
@@ -825,7 +842,36 @@ SynthV {
 			// ensure each note has its own attributes Event
 			note.put(\attributes, note.attributes.copy);
 			(val.notNil and: { val.isString.not or: { val.size > 0 } }).if{
-				note.attributes.put(key, val.asString)
+				note.attributes.put(key, val.isNumber.if{ val }{ val.asString })
+			}
+		}
+	}
+	/* expression: \rigid — or a per-note array of corner names, or an explicit
+	   [x, y] pair, or a per-note array of pairs. Writes the two numeric note
+	   attributes the d-pad uses. Values outside [-1, 1] are not clamped here;
+	   the pad itself never quite reaches a corner, so \rigid at exactly [-1, -1]
+	   is slightly further out than a hand drag. */
+	setExpression { |val|
+		var pairs, isPair;
+		isPair = { |v| v.isArray and: { v.size == 2 and: { v.every(_.isNumber) } } };
+		pairs = case
+			{ val.isKindOf(Symbol) } { [ expQuadrants[val] ] }
+			{ isPair.(val) }         { [ val ] }
+			{ true } {
+				val.asArray.collect{ |v|
+					v.isKindOf(Symbol).if{ expQuadrants[v] }{ isPair.(v).if{ v } }
+				}
+			};
+		this.notes.do{ |note, x|
+			var p = pairs.clipAt(x);
+			p.isNil.if{
+				"SynthV.setExpression: unknown corner % (have %)"
+					.format(val.asArray.clipAt(x), expQuadrants.keys.asArray).warn
+			}{
+				// ensure each note has its own attributes Event
+				note.put(\attributes, note.attributes.copy);
+				note.attributes.put(\expValueX, p[0].asFloat);
+				note.attributes.put(\expValueY, p[1].asFloat);
 			}
 		}
 	}

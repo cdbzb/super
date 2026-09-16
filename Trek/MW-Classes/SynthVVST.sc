@@ -163,7 +163,11 @@ SynthVVST {
 		^this
 	}
 
+	/* nil languages is a no-op, so a caller can toggle the cipher from an
+	   EventList `with:` bundle (morphPhonemes(~morphLangs)) without branching
+	   around the call — and an un-morphed build keeps its original cacheKey. */
 	morphPhonemes { |languages randomSeed=12345|
+		languages.isNil.if{ ^this };
 		isMulti.if{
 			voices.do{|p, i|
 				var morphed = p.lyrics.morphPhonemes(nil, languages.sort, randomSeed + i);

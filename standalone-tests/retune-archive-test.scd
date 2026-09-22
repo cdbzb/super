@@ -9,6 +9,7 @@
 var h = (thisProcess.nowExecutingPath.dirname +/+ "test-helpers.scd").load;
 var assert = h[\assert];
 var assertClose = h[\assertClose];
+var assertArr = h[\assertArr];
 var name = "zzz-retune-archive-test";
 var savedRt = AudioItem.roundTripLatency;
 var cleanup, mkNote, notes, mkPlayer, mt, env, list, stamp, v, d;
@@ -17,16 +18,17 @@ var cached, shiftEv, fShift, fShiftDisk, sVals, sValsDisk;
 var rtStamp, fRt, rtDiff;
 var flatList, flatStamp, fFlat;
 var mig, vNotes;
+var wild, wildStamp, savedTempo, fWildMem, fWildDisk, wildBeats, wildMem, wildDisk;
 
 "== RetuneArchive / stamp persistence tests ==".postln;
 
 cleanup = {
-	[0, 1, 2, 3].do { |num|
+	[0, 1, 2, 3, 4].do { |num|
 		var dir = RetuneArchive.dir(name, num);
 		(dir +/+ "*.retune").pathMatch.do(File.delete(_));
 		File.exists(dir).if { File.delete(dir) };
 	};
-	[0, 1, 2, 3].do { |num| AudioItem.recordedMaps.removeAt(name.asSymbol, num) };
+	[0, 1, 2, 3, 4].do { |num| AudioItem.recordedMaps.removeAt(name.asSymbol, num) };
 };
 cleanup.();
 AudioItem.roundTripLatency = 0;
@@ -112,6 +114,35 @@ flatStamp = flatList.prRecordStamp((when: 0), nil);
 RetuneArchive.writeStamp(name, 2, flatStamp);
 fFlat = AudioItem.prSrcOffset(ev, flatList, 0, 2);
 assertClose.(fFlat.(3), 6, "flat-list stamp: 2 s/beat from disk", 2e-3);
+
+// ---------------------- freeze-beatdur: a WILD list (EventList.new — no tempoMap
+// AND no beatDur) must freeze the default clock INTO the stamp. Copying nil made
+// the in-memory stamp resolve TempoClock.default.beatDur at playback time, so the
+// same take played at one rate in its recording session and another after the
+// default tempo moved — while the disk form (sampled at write time) stayed right.
+wild = EventList.new;
+assert.(wild.beatDur.isNil and: { wild.tempoMap.isNil }, "wild list: no clock of its own");
+savedTempo = TempoClock.default.tempo;
+TempoClock.default.tempo = 1;              // record-time default: 1 s/beat
+wildStamp = wild.prRecordStamp((when: 0), nil);
+// (== not assertClose: before the fix this is nil, and nil - 1 throws instead of failing)
+assert.((wildStamp[\list].beatDur ? -1) == 1,
+	"freeze-beatdur: nil beatDur frozen at record time (got %)"
+		.format(wildStamp[\list].beatDur));
+RetuneArchive.writeStamp(name, 4, wildStamp);
+AudioItem.recordedMaps.put(name.asSymbol, 4, wildStamp);
+fWildMem = AudioItem.prSrcOffset(ev, wild, 0, 4);
+TempoClock.default.tempo = 4;              // playback-time default: 4x faster
+wildBeats = (0, 0.5 .. 4);
+wildMem = wildBeats.collect(fWildMem);
+assertArr.(wildMem, wildBeats.asArray, "freeze-beatdur: in-memory stamp still 1 s/beat", 2e-3);
+AudioItem.recordedMaps.removeAt(name.asSymbol, 4);
+fWildDisk = AudioItem.prSrcOffset(ev, wild, 0, 4);
+wildDisk = wildBeats.collect(fWildDisk);
+assert.((wildMem - wildDisk).abs.maxItem < 2e-3,
+	"freeze-beatdur: in-memory stamp matches disk after a default-tempo change (max err %)"
+		.format((wildMem - wildDisk).abs.maxItem.round(1e-6)));
+TempoClock.default.tempo = savedTempo;
 
 // -------------------------- a newer notes-only version must not shadow the stamp
 vNotes = RetuneArchive.write(name, 0, (retuneVersion: 2,

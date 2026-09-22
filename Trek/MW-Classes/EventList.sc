@@ -2108,10 +2108,21 @@ EventList {
 	// tempoMap/beatDur, so later mutations of the live list (in-place durs_/beats_
 	// included: hence deepCopy, a shallow copy would share the beats/durs arrays)
 	// can't rewrite history. Used by prRecordStamp and lastPlayEpoch.
+	//
+	// A "wild" list — EventList.new, never given a clock — has BOTH tempoMap and
+	// beatDur nil. Copying that nil through made the snapshot a promise to resolve
+	// later, not a snapshot: baseWallDelta/prBaseWallAt fall back to
+	// TempoClock.default.beatDur, which they read at PLAYBACK time. The same take
+	// then played at one rate in the session it was cut in and another after
+	// TempoClock.default.tempo moved (or after a restart, where the disk stamp —
+	// sampled at write time by RetuneArchive.prStampAnchors — already had it
+	// right). Freeze the default here instead, so the snapshot answers the clock
+	// that was actually heard. Only when there is no tempoMap: with a map, beatDur
+	// is unused and a fabricated one would be misleading.
 	prClockSnapshot {
 		var snap = EventList.new;
 		snap.tempoMap = tempoMap.deepCopy;
-		snap.beatDur = beatDur;
+		snap.beatDur = beatDur ?? { tempoMap.isNil.if { TempoClock.default.beatDur } };
 		^snap
 	}
 

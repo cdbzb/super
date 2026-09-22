@@ -340,7 +340,7 @@ version counter (`folder`/`dir`/`path`/`versions`/`write`/`read`/`latestWhere`);
 anchors (≤0.25-beat grid + exact tempoEnv breakpoints + one padding beat so the \carry
 tail slope is right) and appends it as a v2 version from AudioItem's record branch;
 `loadStamp` rebuilds the newest recordedAgainst-bearing version into a map-form stamp
-(`AnchorTempoMap` over the anchors) which `AudioItem.recordedMapAt` falls back to and
+(`AnchorTempoMap` over the anchors) which `AudioItem.recordedMap` falls back to and
 caches when the in-memory stamp is gone — stamps now survive sclang restarts.
 `RetuneItem` carries `anchors`/`anchorSource`/`recordedAgainst` through load→save
 (newest-first scan; a stamp version never shadows an older edit's notes), and

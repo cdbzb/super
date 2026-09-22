@@ -152,15 +152,15 @@ AudioItem {
                     var outBus = (~out ? 0).value;
                     // \raw latency convention — the SAME origin the tempo-follow path
                     // now applies on every branch of prSrcOffset: a mic take is never
-                    // trimmed on disk, so its content sits zeroTime LATE in the file
+                    // trimmed on disk, so its content sits t0 LATE in the file
                     // relative to the grid the record event fired on. Compensation is a
                     // READ-side offset, added to the user's ~start. Only takes carrying
                     // a record-time stamp are shifted — imported / hand-placed files
-                    // have no stamp and stay at face value. zeroTimeFor reads through
-                    // recordedMapAt, which caches, so the archive read happens once per
+                    // have no stamp and stay at face value. t0 reads through
+                    // recordedMap, which caches, so the archive read happens once per
                     // take; it must not build a Take (Buffer.read inside this send is
                     // exactly the late-bundle bug that caching fixed).
-                    var zeroTime = AudioItem.zeroTimeFor(itemName, takeNum);
+                    var t0 = AudioItem.t0(itemName, takeNum);
                     // match \audioItemTempoFollow / Server.bind / note events: default the
                     // playback bundle to the real server latency, not a hardcoded 0.2, so
                     // audioItems stay aligned with voices under any s.latency setting.
@@ -172,7 +172,7 @@ AudioItem {
                                     ~numChannels ? 1,
                                     buffer.bufnum,
                                     rate: ~rate ? 1,
-                                    startPos: ((~startPos ? 0) + zeroTime) * Server.default.sampleRate
+                                    startPos: ((~startPos ? 0) + t0) * Server.default.sampleRate
                                 )
                                 * (~amp ? 1)
                                 => Out.ar(outBus, _)
@@ -288,7 +288,7 @@ AudioItem {
 		d[\recordedAgainst] = ra;
 		d[\saved] = Date.getDate.stamp;
 		v = RetuneArchive.write(name, takeNum, d);
-		// force the next recordedMapAt to reload from disk
+		// force the next recordedMap to reload from disk
 		recordedMaps.put(name.asSymbol, takeNum, nil);
 		"AudioItem.repinRoundTrip(%, %): % -> % s (archive version %)"
 			.format(name, takeNum, found[1][\recordedAgainst][\roundTrip], rt, v).postln;
@@ -340,7 +340,7 @@ AudioItem {
 	// stamps (this session's recordings) win; on a miss the persisted archive is
 	// consulted (RetuneArchive.loadStamp — the anchors-serialized form survives
 	// sclang restarts) and cached back here so the disk scan runs once per take.
-	*recordedMapAt { |name, takeNum|
+	*recordedMap { |name, takeNum|
 		^name !? {
 			var hit = recordedMaps.at(name.asSymbol, takeNum);
 			// \none is the negative cache. loadStamp deserializes EVERY .retune
@@ -370,30 +370,30 @@ AudioItem {
 	   and compensation is a read-side offset. 0 for an imported or hand-placed
 	   file with no stamp — those keep the face-value rule and are never shifted.
 
-	   Deliberately a CLASS method taking (name, takeNum), NOT Take.zeroTime: the
+	   Deliberately a CLASS method taking (name, takeNum), NOT Take.t0: the
 	   playback path must not construct a Take, because Take.new calls Buffer.read
 	   — an async server allocation — whenever the buffer is uncached, and the
 	   sealed \audioItem branch runs inside the event's send, which EventList.fire
-	   runs only `latency` ahead of the sound. recordedMapAt caches (negatively
+	   runs only `latency` ahead of the sound. recordedMap caches (negatively
 	   too), so after the first call this is a dictionary lookup.
 
 	   Take.roundTripLatency names the same number as the RIG measurement the
-	   stamp froze, and stays valid as such; zeroTime names the take's origin,
+	   stamp froze, and stays valid as such; t0 names the take's origin,
 	   which is what consumers actually want, and answers 0 rather than nil. */
-	*zeroTimeFor { |name, takeNum|
-		^(this.recordedMapAt(name, takeNum) !? { |st| st[\roundTrip] ? 0 }) ? 0
+	*t0 { |name, takeNum|
+		^(this.recordedMap(name, takeNum) !? { |st| st[\roundTrip] ? 0 }) ? 0
 	}
 
-	/* zeroTimeFor for an EVENT, honouring the provenance flag.
+	/* t0 for an EVENT, honouring the provenance flag.
 
 	   `sourceMapIsPhysical: true` says "the sourceTempoMap / sourceBeatDur on this
 	   event is already in PHYSICAL file coordinates". Such a description was
 	   authored from file positions, so it already contains the recording delay and
 	   shifting it again would double-count. The DEFAULT for an explicit map is to
 	   apply the origin, so the uniform rule holds unless a caller opts out. */
-	*prEventZeroTime { |ev, takeNum|
+	*prEventT0 { |ev, takeNum|
 		((ev[\sourceMapIsPhysical] ? false) == true).if { ^0 };
-		^this.zeroTimeFor(ev[\item] ?? { ev[\name] }, takeNum)
+		^this.t0(ev[\item] ?? { ev[\name] }, takeNum)
 	}
 
 	// Source-position seam shared by tempoFollowActions/tempoFollowEnvActions
@@ -405,7 +405,7 @@ AudioItem {
 	// identified across lists, so this survives a destructive quantize), then
 	// the list's base clock (recorded tempoMap, else flat beatDur).
 	//
-	// The take's frame ORIGIN (zeroTimeFor) is applied UNIFORMLY, on every branch,
+	// The take's frame ORIGIN (t0) is applied UNIFORMLY, on every branch,
 	// inside the returned closure. It used to be added as `+ rt` on the two stamp
 	// branches only, so `start:` meant a compensated read position there and a raw
 	// file offset everywhere else, with nothing at the call site to say which.
@@ -415,38 +415,38 @@ AudioItem {
 	// would leave every segment after the first uncompensated), plus the twin
 	// seams in tempoFollowEnvActions. prSrcEndBeat is the exact inverse.
 	//
-	// The sealed \audioItem path reads at (startPos + zeroTimeFor(...)), so the
+	// The sealed \audioItem path reads at (startPos + t0(...)), so the
 	// two playback paths now agree. Direct Take.play stays sealed and uncompensated
 	// — face-value audition, the precedent at EventList.sc:2055.
 	//
 	// BEHAVIOURAL BREAK: an ad-hoc tempo-follow event that hand-added the round
 	// trip to `start:` must drop it — it is applied here now. A sourceTempoMap
 	// authored from PHYSICAL file positions already includes the delay; mark that
-	// event `sourceMapIsPhysical: true` to suppress the origin (prEventZeroTime).
+	// event `sourceMapIsPhysical: true` to suppress the origin (prEventT0).
 	*prSrcOffset { |ev, list, b0, takeNum|
 		var sm = ev[\sourceTempoMap];
-		var zeroTime = this.prEventZeroTime(ev, takeNum);
+		var t0 = this.prEventT0(ev, takeNum);
 		var stamp;
 		(sm.notNil and: { sm.respondsTo(\timeAt) }).if {
-			var bd = sm.beatDomain.first, t0 = sm.timeDomain.first;
-			^{ |bt| zeroTime + (sm.timeAt(bd + (bt - b0)) - t0) }
+			var bd = sm.beatDomain.first, mapT0 = sm.timeDomain.first;
+			^{ |bt| t0 + (sm.timeAt(bd + (bt - b0)) - mapT0) }
 		};
 		ev[\sourceBeatDur].notNil.if {
-			^{ |bt| zeroTime + ((bt - b0) * ev[\sourceBeatDur]) }
+			^{ |bt| t0 + ((bt - b0) * ev[\sourceBeatDur]) }
 		};
-		stamp = this.recordedMapAt(this.eventItemName(ev), takeNum);
+		stamp = this.recordedMap(this.eventItemName(ev), takeNum);
 		stamp.notNil.if {
 			var m = stamp[\map], sl, sEnv, sb0, w0;
 			// disk-loaded form: an AnchorTempoMap over the serialized anchors, whose
 			// relative frame starts at the record-fire beat (src there == 0)
-			m.notNil.if { ^{ |bt| zeroTime + m.timeAt(bt - b0) } };
+			m.notNil.if { ^{ |bt| t0 + m.timeAt(bt - b0) } };
 			sl = stamp[\list]; sEnv = stamp[\tempoEnv]; sb0 = stamp[\when];
 			w0 = sl.beatToWall(sb0, sEnv);
-			^{ |bt| zeroTime + (sl.beatToWall(sb0 + (bt - b0), sEnv) - w0) }
+			^{ |bt| t0 + (sl.beatToWall(sb0 + (bt - b0), sEnv) - w0) }
 		};
-		// Reached only when there is NO stamp, so zeroTime is 0 here by
+		// Reached only when there is NO stamp, so t0 is 0 here by
 		// construction. Written out anyway so the rule reads the same on all five.
-		^{ |bt| zeroTime + list.baseWallDelta(b0, bt) }
+		^{ |bt| t0 + list.baseWallDelta(b0, bt) }
 	}
 	// Inverse of prSrcOffset for the no-\dur case: the beat at which the source
 	// position reaches endSec. The origin comes off the target ONCE, here, mirroring
@@ -454,7 +454,7 @@ AudioItem {
 	//     startSec + prSrcOffset.(prSrcEndBeat.(..., endSec)) == endSec.
 	*prSrcEndBeat { |ev, list, b0, startSec, endSec, takeNum|
 		var sm = ev[\sourceTempoMap];
-		var rel = endSec - startSec - this.prEventZeroTime(ev, takeNum);
+		var rel = endSec - startSec - this.prEventT0(ev, takeNum);
 		var stamp;
 		(sm.notNil and: { sm.respondsTo(\beatAt) }).if {
 			^b0 + (sm.beatAt(sm.timeDomain.first + rel) - sm.beatDomain.first)
@@ -462,7 +462,7 @@ AudioItem {
 		ev[\sourceBeatDur].notNil.if {
 			^b0 + (rel / ev[\sourceBeatDur])
 		};
-		stamp = this.recordedMapAt(this.eventItemName(ev), takeNum);
+		stamp = this.recordedMap(this.eventItemName(ev), takeNum);
 		stamp.notNil.if {
 			var m = stamp[\map], sl, sEnv, sb0, w0;
 			m.notNil.if { ^b0 + m.beatAt(rel) };
@@ -833,14 +833,14 @@ Take : AudioItem {
 	// (\raw convention). nil when the take carries no record stamp, e.g. an
 	// imported file: those are read at face value and never shifted.
 	roundTripLatency {
-		^AudioItem.recordedMapAt(this.name, num) !? { |st| st[\roundTrip] ? 0 }
+		^AudioItem.recordedMap(this.name, num) !? { |st| st[\roundTrip] ? 0 }
 	}
 	/* The file second at which this take's musical zero sits — the origin every
 	   list playback path reads from. Same number as roundTripLatency for a stamped
 	   mic take, but 0 (not nil) for an unstamped one, and named for what it means
 	   to a consumer rather than for how it was measured. The playback path calls
-	   AudioItem.zeroTimeFor directly: building a Take there would hit Buffer.read. */
-	zeroTime { ^AudioItem.zeroTimeFor(this.name, num) }
+	   AudioItem.t0 directly: building a Take there would hit Buffer.read. */
+	t0 { ^AudioItem.t0(this.name, num) }
 	// Correct it. Needed when AudioItem.roundTripLatency was wrong (unmeasured, or
 	// stale after a buffer-size/interface change) at the moment this take was cut:
 	// the stamp froze that value, and the stamp is what playback reads. Appends a

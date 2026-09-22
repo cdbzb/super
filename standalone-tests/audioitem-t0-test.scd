@@ -1,4 +1,4 @@
-// AudioItem.zeroTimeFor — the take's frame origin, applied UNIFORMLY by
+// AudioItem.t0 — the take's frame origin, applied UNIFORMLY by
 // prSrcOffset and removed again by prSrcEndBeat.
 //
 // Before this, `rt` (the stamped round trip) was added only on prSrcOffset's two
@@ -16,7 +16,7 @@
 //
 // Pure language; fixtures live under AudioItem.folder/_retune and are removed at
 // the end. No server, no audio.
-// Run: /Applications/SuperCollider.app/Contents/MacOS/sclang standalone-tests/audioitem-zerotime-test.scd
+// Run: /Applications/SuperCollider.app/Contents/MacOS/sclang standalone-tests/audioitem-t0-test.scd
 (
 var h = (thisProcess.nowExecutingPath.dirname +/+ "test-helpers.scd").load;
 var assert = h[\assert];
@@ -30,7 +30,7 @@ var cleanup, list, mapList, env, stamp, srcMap;
 var evMap, evFlat, evStamp, evPhys, evBare, evBareMap;
 var branches, originOf, invertsAt;
 
-"== AudioItem zeroTime tests ==".postln;
+"== AudioItem t0 tests ==".postln;
 
 cleanup = {
 	[name, bare].do { |n|
@@ -58,7 +58,7 @@ stamp = list.prRecordStamp((when: b0), env);
 AudioItem.roundTripLatency = 0;
 assertClose.(stamp[\roundTrip], rt, "fixture: the stamp froze roundTrip 0.05");
 // take 0 keeps the in-memory (list + tempoEnv) form; take 1 is disk only, so
-// recordedMapAt rebuilds it as the \map form
+// recordedMap rebuilds it as the \map form
 AudioItem.recordedMaps.put(name.asSymbol, 0, stamp);
 RetuneArchive.writeStamp(name, 1, stamp);
 
@@ -77,15 +77,15 @@ evPhys  = (type: \audioItemTempoFollow, item: name, sourceTempoMap: srcMap,
 evBare  = (type: \audioItemTempoFollow, item: bare);
 evBareMap = (type: \audioItemTempoFollow, item: bare, sourceTempoMap: srcMap);
 
-// ------------------------------------------------------- zeroTimeFor itself
-assertClose.(AudioItem.zeroTimeFor(name, 0), rt, "zeroTimeFor: in-memory stamp -> 0.05");
-assertClose.(AudioItem.zeroTimeFor(name, 1), rt, "zeroTimeFor: disk stamp -> 0.05");
-assertClose.(AudioItem.zeroTimeFor(bare, 0), 0, "zeroTimeFor: no stamp -> 0, not nil");
-assertClose.(AudioItem.zeroTimeFor(nil, 0), 0, "zeroTimeFor: nil name -> 0");
-assertClose.(AudioItem.prEventZeroTime(evPhys, 0), 0,
-	"prEventZeroTime: sourceMapIsPhysical suppresses the origin");
-assertClose.(AudioItem.prEventZeroTime(evMap, 0), rt,
-	"prEventZeroTime: an explicit map gets the origin by default");
+// ------------------------------------------------------- t0 itself
+assertClose.(AudioItem.t0(name, 0), rt, "t0: in-memory stamp -> 0.05");
+assertClose.(AudioItem.t0(name, 1), rt, "t0: disk stamp -> 0.05");
+assertClose.(AudioItem.t0(bare, 0), 0, "t0: no stamp -> 0, not nil");
+assertClose.(AudioItem.t0(nil, 0), 0, "t0: nil name -> 0");
+assertClose.(AudioItem.prEventT0(evPhys, 0), 0,
+	"prEventT0: sourceMapIsPhysical suppresses the origin");
+assertClose.(AudioItem.prEventT0(evMap, 0), rt,
+	"prEventT0: an explicit map gets the origin by default");
 
 // ------------------------------- the origin at bt == b0, on every branch
 // [label, event, takeNum, list, expected origin]

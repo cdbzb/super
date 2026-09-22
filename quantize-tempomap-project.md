@@ -721,7 +721,7 @@ Missing primitives, in dependency order:
    **Persisted half DONE (2026-07-13):** `RetuneArchive.writeStamp` (Retune.sc, schema
    owned by retune-project.md §2e) serializes the stamp's composed beat→wall map into
    (src, beat) anchors and appends it as a v2 archive version from the record branch;
-   `AudioItem.recordedMapAt` falls back to `RetuneArchive.loadStamp` (AnchorTempoMap
+   `AudioItem.recordedMap` falls back to `RetuneArchive.loadStamp` (AnchorTempoMap
    over the anchors) on an in-memory miss and caches it — stamps survive sclang
    restarts. Suite: `standalone-tests/retune-archive-test.scd` (26 checks). Remaining
    from STEP 5's latency compensation: the stamp carries `latency`/`lag`/`roundTrip`

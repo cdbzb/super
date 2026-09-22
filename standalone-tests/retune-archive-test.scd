@@ -1,7 +1,7 @@
 // Headless regression test for RetuneArchive (retune-project.md §2e, v2 schema):
 // record-time clock stamps serialized into (src, beat) anchors as append-only
 // archive versions under _retune/<name>_<num>/N.retune, and resolved back from
-// disk by AudioItem.recordedMapAt when the in-memory stamp is gone (the
+// disk by AudioItem.recordedMap when the in-memory stamp is gone (the
 // post-sclang-restart path). Pure language; fixtures live under
 // AudioItem.folder/_retune and are cleaned up at the end.
 // Run: /Applications/SuperCollider.app/Contents/MacOS/sclang standalone-tests/retune-archive-test.scd
@@ -83,7 +83,7 @@ assert.(maxErr < 2e-3,
 	"disk-resolved srcOffset matches in-memory stamp (max err % s)".format(maxErr.round(1e-6)));
 cached = AudioItem.recordedMaps.at(name.asSymbol, 0);
 assert.(cached.notNil and: { cached[\map].notNil },
-	"recordedMapAt caches the loaded (map-form) stamp");
+	"recordedMap caches the loaded (map-form) stamp");
 endDisk = AudioItem.prSrcEndBeat(ev, list, 2, 0, 6.0, 0);
 assertClose.(endDisk, endMem, "disk-resolved srcEndBeat matches in-memory", 2e-3);
 

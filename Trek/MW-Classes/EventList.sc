@@ -643,7 +643,7 @@ EventList {
 	//
 	// No sourceTempoMap: and start: 0 on purpose. The take's record stamp is its
 	// own clock — AudioItem.prSrcOffset's stamp branch supplies both the source
-	// tempo and the take's zeroTime origin, so the caller supplies neither a map
+	// tempo and the take's t0 origin, so the caller supplies neither a map
 	// nor a latency correction. Naming a map here would override the stamp.
 	//
 	// Numeric at: only. at: nil (recorded placement) and at: \original need a wall

@@ -1829,6 +1829,10 @@ EventList {
 	prepare { |epoch, from = 0, place, seen, to, tempoEnv, evts, ctx, wallAt|
 		var sched = List[];
 		var fromWall, playable, monoStates = IdentityDictionary.new;
+		// Internal: play supplies the epoch. Without one the default place answers
+		// nil + beat, which fails deep inside a nested send.
+		epoch ?? { Error("EventList.prepare: needs an epoch in absolute wall seconds "
+			"— call play, or prepare(thisThread.seconds)").throw };
 		seen = seen ?? { IdentitySet[] };
 		seen.includes(this).if {
 			"EventList.prepare: cyclic \\eventList nesting at % — skipped".format(name).warn;

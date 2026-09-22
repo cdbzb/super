@@ -114,10 +114,3 @@ KeyRecorder {
 	  ^out
   }
 }
-+Object {
-	registerD {
-	  "vim.fn.setreg('d',{\"%\"})".format(this.asString) // register 'd' for Durs
-	  => SCNvim.luaeval(_);
-	  "% yanked to register d".format(this.asString).postln
-	}
-}

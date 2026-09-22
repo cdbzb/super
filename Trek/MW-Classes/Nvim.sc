@@ -52,6 +52,12 @@ Nvim {
 		var code = "vim.fn.setreg('%', [=[%]=])".format(reg, this.sanitize(text));
 		this.send(code)
 	}
+	// paste an nvim register at the cursor, like `"dp` (after=false => `"dP`)
+	*pasteReg {|reg="d", after=true|
+		var code = "vim.api.nvim_put(vim.fn.getreg('%', 1, true), vim.fn.getregtype('%'), %, true)"
+			.format(reg, reg, after);
+		this.send(code)
+	}
 	*replace {|text|
 		var clean = this.sanitize(text);
 		var prefix = "local buf = vim.api.nvim_get_current_buf() "
@@ -121,4 +127,15 @@ Nvim {
         var code = this.cmd("e " ++ file);
         this.send(code)
     }
+}
+
++ Object {
+	// yank this value's asString into an nvim register; returns this so it chains
+	toReg {|reg="d"|
+		Nvim.setReg(reg, this.asString);
+		"% yanked to register %".format(this.asString, reg).postln;
+		^this
+	}
+	// short alias for the durs register, e.g. out.registerD / => _.registerD
+	registerD { ^this.toReg("d") }
 }

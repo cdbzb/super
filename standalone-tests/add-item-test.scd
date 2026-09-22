@@ -16,6 +16,7 @@ var mkPlayer = { |stamps, epoch|
 	MIDIItemPlayer(evts, nil).recordEpoch_(epoch)
 };
 var flat, tempo, ep, added, whens, sizeBefore, finish;
+var aName = "zzz-add-item-audio", take, aEv;
 
 "== addItem tests ==".postln;
 
@@ -108,6 +109,53 @@ assertArr.(whens, [9, 9.5], "swap: addItem(beat, player) places at beat");
 added = flat.addItem(mkPlayer.([1, 1.5], nil), 9);
 whens = added.collect(_[\when]).asArray;
 assertArr.(whens, [9, 9.5], "swap: addItem(player, beat) identical");
+
+// -- 9. audio takes: numeric placement -----------------------------------------
+//   e.addItem(AudioItem("tambo-test").take(0), at: 8)
+// Take.new falls back to Buffer.read (an async server allocation) when the buffer
+// is not cached, so pre-seed AudioItem.buffers — a MultiLevelIdentityDictionary
+// keyed (name.asSymbol, num) — with a placeholder. Pure language, no server.
+AudioItem.buffers.put(aName.asSymbol, 0, \placeholderBuffer);
+take = Take(aName, 0);
+assert.(take.player === take, "audio: Take.player answers the take itself");
+assert.(take.buffer == \placeholderBuffer,
+	"audio: Take.buffer reads the cache (one buffer slot, not a shadow)");
+
+flat = EventList.new;
+flat.beatDur = 1;
+sizeBefore = (flat.events ? []).size;
+added = flat.addItem(take, at: 8);
+assert.(added.isKindOf(Array) and: { added.size == 1 },
+	"audio: one event, array return contract preserved");
+aEv = added[0];
+assertClose.(aEv[\when], 8, "audio: at: lands on when");
+assert.(aEv[\newType] == \audioItemTempoFollow, "audio: newType \\audioItemTempoFollow");
+assert.(aEv[\type] == \audioItemTempoFollow, "audio: dispatch resolved the type");
+assert.(aEv[\item].asString == aName, "audio: item is the take's name");
+assert.(aEv[\take] == 0, "audio: take number carried");
+assertClose.(aEv[\start], 0, "audio: start 0 — the record stamp supplies the origin");
+assert.(aEv[\sourceTempoMap].isNil, "audio: no sourceTempoMap — the stamp is the clock");
+assert.(aEv[\sourceBeatDur].isNil, "audio: no sourceBeatDur either");
+assert.(flat.events.size == (sizeBefore + 1), "audio: inserted through add");
+assert.(flat.events.includes(aEv), "audio: the returned event IS the stored one");
+
+added = flat.addItem(take, at: 8, voice: \tam, offset: 0.5);
+assertClose.(added[0][\when], 8.5, "audio: offset nudges when");
+assert.(added[0][\voice] == \tam, "audio: voice tag applied");
+
+added = flat.addItem(12, take);
+assertClose.(added[0][\when], 12, "audio: addItem(beat, take) places at beat");
+
+// guards: recorded placement and nesting are out of scope for audio
+sizeBefore = flat.events.size;
+added = flat.addItem(take);
+assert.(added.isKindOf(String), "audio guard: at: nil warns, no insert");
+added = flat.addItem(take, at: \original);
+assert.(added.isKindOf(String), "audio guard: at: \\original warns, no insert");
+added = flat.addItem(take, at: 8, align: 0.5);
+assert.(added.isKindOf(String), "audio guard: align: warns, no insert");
+assert.(flat.events.size == sizeBefore, "audio guard: list untouched by refused inserts");
+AudioItem.buffers.removeAt(aName.asSymbol, 0);
 
 h[\report].();
 0.exit;

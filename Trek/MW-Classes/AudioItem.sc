@@ -744,7 +744,14 @@ AudioItem {
     }
 }
 Take : AudioItem {
-    var name, <>num, buffer;
+	/* `name` and `buffer` belong to AudioItem (`var <>name, <>buffer, ...`).
+	   Re-declaring them here allocated SECOND storage slots: Take.instVarNames
+	   answered ten names with `name` at 0 and 7 and `buffer` at 1 and 9. sclang
+	   resolves a bare instance-variable read to the FIRST match, so every read and
+	   write in the tree — including playbuf's bare `buffer` — already went to the
+	   inherited slots, and 7/9 were dead storage that only newCopyArgs, instVarAt,
+	   .copy and archiving could ever reach. Dropped: one name, one buffer. */
+	var <>num;
     *new { |name, num|
         var newTake = super.newCopyArgs;
 		var directory = folder +/+ name;
@@ -759,6 +766,13 @@ Take : AudioItem {
         ^newTake
     }
 	retune { ^RetuneItem(this) }   // -> RetuneItem (load-or-analyze-and-save)
+	/* A Take is its own player, so EventList.addItem's opening `player.player`
+	   accepts it — mirrors MIDIItemPlayer.player. Deliberately NO recordWall:
+	   EventList.prItemBeat calls recordPlayEpoch unconditionally once recordWall
+	   answers, so a scalar here would break itemStartBeat. Recorded placement
+	   (at: nil, at: \original) stays deferred — see
+	   audioitem-placement-proposal.md §3. */
+	player { ^this }
 	// The round trip this take was recorded against — what playback compensates by
 	// (\raw convention). nil when the take carries no record stamp, e.g. an
 	// imported file: those are read at face value and never shifted.

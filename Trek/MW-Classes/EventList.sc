@@ -584,14 +584,20 @@ EventList {
 		}
 	}
 
-	// Insert a MIDI item/player/selection. at: nil restores its recorded position;
-	// a beat places its start, and \original resolves its recorded wall time through
-	// the current map. offset nudges the result. align nests instead of flattening;
-	// grid controls its entry snap.
+	// Insert a MIDI item/player/selection, or an audio Take. at: nil restores its
+	// recorded position; a beat places its start, and \original resolves its
+	// recorded wall time through the current map. offset nudges the result. align
+	// nests instead of flattening; grid controls its entry snap.
+	//
+	//     e.addItem(AudioItem("tambo-test").take(0), at: 8)
+	//
+	// An audio Take takes a NUMERIC at: only (prAddAudioItem); mk: and grid: are
+	// MIDI-only and ignored for it.
 	addItem { |player, at, voice, mk, offset, align, grid|
 		var tm, whenFn, ep, sl, env, fromWall, epoch;
 		(player.isNumber or: { player == \original }).if { var swap = player; player = at; at = swap };
 		player = player.player;
+		player.isKindOf(Take).if { ^this.prAddAudioItem(player, at, voice, offset, align) };
 		align.notNil.if { ^this.prAddItemNested(player, at, voice, mk, offset, align, grid) };
 		(at == \original).if {
 			at = this.itemStartBeat(player) ?? {
@@ -626,6 +632,46 @@ EventList {
 		};
 		offset.notNil.if { var f = whenFn; whenFn = { |e| f.(e) + offset } };
 		^this.prInsertItemEvents(player, whenFn, voice, mk ?? { this.prItemMk(player) })
+	}
+
+	// Place an audio Take at an explicit beat: ONE \audioItemTempoFollow event,
+	// inserted through `add` so it shares the normal preview path
+	// (nextPreviewOffset -> storeAndPreview, which already routes audio-follow
+	// events through AudioItem.tempoFollowActions). prInsertItemEvents cannot be
+	// reused — it iterates player.midiEvents and reads player.source, and a Take
+	// has neither.
+	//
+	// No sourceTempoMap: and start: 0 on purpose. The take's record stamp is its
+	// own clock — AudioItem.prSrcOffset's stamp branch supplies both the source
+	// tempo and the take's zeroTime origin, so the caller supplies neither a map
+	// nor a latency correction. Naming a map here would override the stamp.
+	//
+	// Numeric at: only. at: nil (recorded placement) and at: \original need a wall
+	// reference that survives a restart, which the archive does not persist yet,
+	// and align: needs Take.asEventList; both are deferred — see
+	// audioitem-placement-proposal.md §3. Guards answer the warning String, the
+	// same contract as addItem's own guards.
+	prAddAudioItem { |player, at, voice, offset, align|
+		var ev;
+		align.notNil.if {
+			^"EventList.addItem: align: is not supported for audio takes yet — pass at: a beat".warn
+		};
+		(at == \original).if {
+			^"EventList.addItem: at: \\original is not supported for audio takes — pass at: a beat".warn
+		};
+		at.isNumber.not.if {
+			^"EventList.addItem: an audio take has no recorded placement — pass at: a beat".warn
+		};
+		ev = (
+			when: at + (offset ? 0),
+			newType: \audioItemTempoFollow,
+			item: player.name,
+			take: player.num,
+			start: 0
+		);
+		voice !? { ev[\voice] = voice };
+		// array return, matching addItem's other paths
+		^[this.add(ev)]
 	}
 
 	// align mode nests the take and blends both its entry and interior placement.

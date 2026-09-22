@@ -404,6 +404,15 @@ SynthVVST {
 				}
 			}
 		}{
+			var live = synthV.asArray;
+			// Neither rendered nor open: report and play silence rather than throwing
+			// nil.vst from inside SynthDef.build, which aborts the whole play.
+			(live.isEmpty or: { live.any{|sv| sv.isNil or: { sv.vst.isNil } } }).if{
+				"SynthVVST %: not frozen and no live VST — silent. Rebuild the take, "
+					"then SynthVVST.freeze.".format(voice).warn;
+				^{ isMulti.if({ live.size.max(1).collect{ Silent.ar(2) } },
+					{ Silent.ar(2) }) }
+			};
 			isMulti.if{
 				^{ synthV.collect{|sv| In.ar(sv.vst.bus, 2) } }
 			}{

@@ -14,8 +14,10 @@ schema; this plan adds one writer and one reader and fixes one filter.
 
 ## Status (2026-09-23, branch `audio-beat-marking`)
 
-M1 (steps 1–6) built; step 7 (DP time pins) not started; M3 (steps 8–11,
-interface cleanup, `align:`, `marks:` function, stamped-take repair) planned.
+M1 (steps 1–6) built; step 7 (DP time pins) not started; M3 (steps 8–11:
+interface cleanup with `sourceTempoMap:` as the one timing field, `align:`,
+named sources and functions over `~marks` / `~stamp`, stamped-take repair)
+planned.
 
 | Step | State | Suite |
 |---|---|---|
@@ -32,9 +34,9 @@ interface cleanup, `align:`, `marks:` function, stamped-take repair) planned.
 | 3′ NRT silent for clientID ≠ 0 | fixed (OfflineProcess default group) | `take-transients-test` (clientID-1 check) |
 | 6 `addItem(marks:)`, `prResolveMarks` | done — **no listening check yet** | `take-marks-playback-test` |
 | 7 DP time pins | not started | — |
-| 8 interface cleanup | planned | parity test (planned) |
+| 8 interface cleanup, one timing field (drop `marks:`) | planned | parity test (planned) |
 | 9 `align:` for audio | planned | — |
-| 10 `marks: { \|map\| … }` | planned | — |
+| 10 `sourceTempoMap:` names + functions (`~marks`, `~stamp`) | planned | — |
 | 11 stamp seeding + automatic `at:` | planned | — |
 
 Unverified by ear or eye: `TakeGui` interaction feel (drag, snap, lane), click
@@ -66,7 +68,7 @@ One word per concept. New names follow what the codebase already says
 | Committed map | `MapEditor.last`, converted where it is used | `MapEditor` |
 | Take's marked tempo map | `take.tempoMap(version)` → `AnchorTempoMap` | `Take` |
 | Take window | `take.gui` / `TakeGui` | new `TakeGui.sc` |
-| Event reference to a marks version | `marks: N` | `\audioItemTempoFollow` events |
+| Timing source of an audio event | `sourceTempoMap:` — a map, `\marks` / `\stamp` / `\eventList` / `\flat`, or a function over `~marks` `~stamp` `~list` `~flat` (step 10); `marksVersion: N`. (`marks:` from step 6 is removed in step 8.) | audio events |
 
 Notes:
 - **Words kept apart.** "Onset" keeps meaning a MIDI note-on (`MIDIItemPlayer.onsets`)
@@ -259,6 +261,7 @@ Tests (extend `map-editor-test.scd` or add `beat-mark-test.scd`):
   (newest by default).
   - `initAnchors` rebases both axes to 0 and keeps the first src time as `t0`
     (`MIDI-Item2.sc:2538`), so `timeDomain.first == 0` always.
+- *(Superseded by steps 8/10: `marks:` becomes `sourceTempoMap: \\marks` + `marksVersion:`.)*
 - **`EventList.addItem(take, at:, marks: N)`** (`marks: true` = newest) →
   `\audioItemTempoFollow` with `marks: N`. The map is resolved from the archive at
   prepare time, so the list survives a restart. `prAddAudioItem` sets these frame
@@ -298,7 +301,7 @@ Only needed for free pins inside **DP (E) mode**; pick mode already has them (4d
 
 ---
 
-## 8. Interface cleanup — one event dialect (before any new playback key)
+## 8. Interface cleanup — one event dialect, one timing field
 
 Drift found after M1 (2026-09-23): three surfaces play an audio take and disagree.
 
@@ -312,91 +315,140 @@ Drift found after M1 (2026-09-23): three surfaces play an audio take and disagre
 | `start:` | file seconds, `t0` added | file seconds, `t0` added | forced 0, **overwritten** by marks |
 | `align:` | no | no | refused for audio (works for MIDI) |
 
+And the keys that answer "where are the take's beats" are already spread out:
+
+| Key | What it is | Read by |
+|---|---|---|
+| `sourceTempoMap:` | a map object (MIDI events also take `\eventList`) | `prSrcOffset` / `prSrcEndBeat`, `prEmitMi2Follow` |
+| `sourceBeatDur:` | flat seconds per beat | `prSrcOffset` |
+| `sourceMapIsPhysical:` | "the map already includes the recording delay" | `prEventT0` |
+| `followTrack: <value>` | shorthand, forwards into the two above | `prForwardAudioFollow` |
+| `marks:` | which marks version (added in step 6) | `prResolveMarks` |
+| (record stamp) | implicit, found by take name | `prSrcOffset` fallback |
+
 Rules:
 1. **The event is the single source of truth.** Every feature is an event key,
    resolved at prepare time. `addItem` only fills keys (`when:` from `at:`,
-   `item`/`take` from the Take) and forwards every other keyword into the event,
-   so `addItem(take, at: 8, marks: true, align: 0.6, amp: 0.5)` ==
-   `add((when: 8, type: \audioItem, item:, take:, marks: true, align: 0.6, amp: 0.5))`.
+   `item`/`take` from the Take) and forwards every other keyword into the event, so
+   `addItem(take, at: 8, sourceTempoMap: \marks, align: 0.6, amp: 0.5)` ==
+   `add((when: 8, type: \audioItem, item:, take:, sourceTempoMap: \marks, align: 0.6, amp: 0.5))`.
    `addItem` never grows another parameter.
-2. **One type: `\audioItem`.** Following the list's tempo is decided by keys:
-   `followTrack:` as today, and any timing key (`marks:`, `sourceTempoMap:`,
+2. **One timing field: `sourceTempoMap:`.** It answers "where are the take's beats"
+   and nothing else does; its forms are step 10. **`marks:` is removed** — it exists
+   only on this unmerged branch; `sourceTempoMap: \marks` replaces it, and
+   `marksVersion: N` pins the version. `sourceBeatDur:` stays as convenience (a flat
+   map). `followTrack: <value>` keeps forwarding into `sourceTempoMap:`.
+   `sourceMapIsPhysical:` is user-facing only for a hand-given map object; for a
+   named source or a function the resolver sets it.
+3. **One type: `\audioItem`.** Following the list's tempo is decided by keys:
+   `followTrack:` as today, and any timing key (`sourceTempoMap:`,
    `sourceBeatDur:`, `align:`) implies following. `\audioItemTempoFollow` stays as
    an alias for `\audioItem` + `followTrack: \eventList` (its current default), so
    existing lists play unchanged.
-3. **One timing order, same on every path:** `marks:` → `sourceTempoMap:` →
-   `sourceBeatDur:` → record stamp → list clock. `align:` is a separate blend applied
-   on top of whichever wins.
-4. **One meaning for `start:`:** seconds after the take's origin — the first mark
-   when marks are in play, else `t0`. `start: 0` = from the first mark; a non-zero
-   `start:` is added to the origin, never discarded.
-5. **A key table for both media:** `align:`, `offset:` shared; `mk:`/`grid:`
-   MIDI-only; `marks:`/`marksVersion:` audio-only (the MIDI counterpart is a
-   selection).
-6. **Parity test:** for a set of keys, `addItem(take, at:, …)` and the hand-written
+4. **One timing order, same on every path:** `sourceTempoMap:` (any form) →
+   `sourceBeatDur:` → record stamp → list clock. Absent `sourceTempoMap:` still
+   means stamp if stamped, else the list clock — the default does not change.
+   `align:` is a blend applied on top of whichever wins, not a tier.
+5. **One meaning for `start:`:** seconds after the take's origin — the resolved
+   map's first anchor when a named source or function is in play, else `t0`.
+   `start: 0` = from the origin; a non-zero `start:` is added, never discarded.
+6. **A key table for both media:** `align:`, `offset:`, `sourceTempoMap:` shared;
+   `mk:`/`grid:` MIDI-only; `marksVersion:` and the `\marks` / `\stamp` names
+   audio-only (the MIDI counterpart of marks is a selection).
+7. **Parity test:** for a set of keys, `addItem(take, at:, …)` and the hand-written
    `add((…))` prepare the same schedule.
 
-Code: forwarding in `prAddAudioItem`; alias routing in `prIsAudioFollow`; `marks:`
-implies follow; `prResolveMarks` adds `start:` to the origin.
+Code: forwarding in `prAddAudioItem`; alias routing in `prIsAudioFollow`; timing
+keys imply follow; `prResolveMarks` becomes the resolver of step 10 (renamed, e.g.
+`prResolveSourceMap`), with `start:` added to the origin.
 
 ---
 
 ## 9. `align:` for audio — quantize strength
 
-`align: a` on an audio event: 0 = as performed, 1 = every marked beat on its list
-beat, in between a blend. Same key and sense as on nested `\eventList` events
-(`prExpandBlended`), and it blends toward the list's REAL clock, so it stays right
-under tempo changes — unlike `map.quantize(1 - s)`, which straightens toward the
-take's own mean and agrees only when the list tempo equals that mean.
+`align: a` on an audio event: 0 = as performed, 1 = every beat of the source map on
+its list beat, in between a blend. Same key and sense as on nested `\eventList`
+events (`prExpandBlended`), and it blends toward the list's REAL clock, so it stays
+right under tempo changes — unlike `map.quantize(1 - s)`, which straightens toward
+the take's own mean and agrees only when the list tempo equals that mean.
 
 Where: `AudioItem.tempoFollowActions` / `tempoFollowEnvActions` already hold both
 clocks — the source map (through `prSrcOffset`) and the list's `wallAt` — so the
-blend is per segment, weight `align`. Event key first (step 8 rule 1); `addItem`
-just forwards it.
+blend is per segment, weight `align`. Event key (step 8 rule 1); `addItem` just
+forwards it. Independent of which source step 10 resolves.
 
 ---
 
-## 10. `marks: { |map| … }` — edit the marked map in place
+## 10. `sourceTempoMap:` — names and functions over the take's sources
 
-`marks:` also accepts a Function, evaluated by `prResolveMarks` in
-`(map: m, take: …, list: …).use { func.value(m) }`, so `{ ~map.curve(1) }` and
-`{ |map| map.curve(1) }` are the same. `m` is the marks map already in the right
-form (`asMonoMap(origin: \absolute)`, done internally), so the whole MapEditor
-vocabulary is available: `quantize(amount, from, to)`, `curve`, `ritardSpan`,
-`setBpm(bpm, from, to)`, `transformSpan`. `start` / `sourceMapIsPhysical` are
-derived from the RESULT (its first anchor = its `t0`), so an edit that moves the
-first beat still starts in the right place.
+Three forms, one resolver, at prepare time:
 
-- `\marks` joins `EventList.lazyExclude`, or the generic lazy pass calls the
-  function first, with no `~map`.
-- A Function means the newest marks; pin a version with `marksVersion: N`.
-- Doc note — the INVERSE SENSE: the function edits where the beats ARE, not where
-  they land. `{ ~map.quantize }` pretends the beats were evenly spaced, which UNDOES
-  the correction. Quantize strength is `align:` (step 9), not this.
+```supercollider
+sourceTempoMap: aMap                            // a map object, as today
+sourceTempoMap: \marks                          // or \stamp, \eventList, \flat — a named source
+sourceTempoMap: { ~stamp.quantize(0.5) }        // a function over the named sources (.use)
+sourceTempoMap: { |env| env.marks.curve(1) }    // same, argument style
+```
+
+- **The environment** holds every candidate map: `~marks` (the marks version;
+  newest, or `marksVersion:`), `~stamp` (the record stamp), `~list` (the list's base
+  clock over the take's span), `~flat` (`sourceBeatDur:` or 1 s/beat), plus `~take`.
+  A candidate the take lacks is nil; naming a missing source warns and falls back to
+  the default order. Nothing privileges marks: `{ ~stamp.… }` edits the stamp.
+- **One frame for every candidate:** a MonoMap, beat → FILE seconds (physical), so
+  the whole MapEditor vocabulary works on each (`quantize(amount, from, to)`,
+  `curve`, `ritardSpan`, `setBpm(bpm, from, to)`, `transformSpan`).
+  - marks are stored in file seconds already;
+  - the stamp is stored relative to the record-fire moment WITHOUT the round trip
+    (\raw convention), so it is offered with `t0` added;
+  - so whatever the function returns is in file seconds, and the resolver sets
+    `sourceMapIsPhysical: true` and the origin (step 8 rule 5) from the RESULT's
+    first anchor — an edit that moves the first beat still starts in the right place.
+- **Beat frames differ and the resolver owns the alignment.** Stamp beats start at
+  the list beat the record event fired on; marks beats start at 0 at the first mark.
+  Used alone, either is fine: the result's first beat lands at `when:` (the existing
+  item-frame rule). Offered TOGETHER in the environment they must share a beat axis,
+  so the resolver re-bases `~marks` onto the stamp's list beats when the take has a
+  stamp (first mark's file second → stamp map → list beat, step 11.2), and a
+  function combining them never does that itself.
+- **Not a lazy value.** `\sourceTempoMap` joins `EventList.lazyExclude`, or the
+  generic lazy pass calls the function first, with no `~stamp` / `~marks`.
+- **The inverse sense, documented:** the function edits where the beats ARE, not
+  where they land. `{ ~stamp.quantize }` pretends the take was steadier than it was,
+  which corrects LESS. Quantize strength is `align:` (step 9), not this.
+- One place: the resolver is the only code that turns `sourceTempoMap:` into a map;
+  `prSrcOffset` / `prSrcEndBeat` / `prEmitMi2Follow` only ever see a map object.
+
+Tests: each form resolves to the same map as its hand-built equivalent; a function
+over `~stamp` on a stamped take reads file seconds with no double `t0`; a missing
+`\marks` warns and falls back; `marksVersion:` pins; `addItem` forwards the key.
 
 ---
 
 ## 11. Stamped takes — fix a sloppy take recorded against a list
 
 The stamp says where the beats SHOULD be (the clock the take was recorded
-against); marks say where they ARE. Marks already beat the stamp in playback, and
-`sourceMapIsPhysical` keeps the recording latency from being counted twice. Three
-gaps:
+against); marks say where they ARE. With step 10, `sourceTempoMap: \marks` plays
+the correction and `{ ~stamp.… }` edits the expectation. Gaps:
 
 1. **Seed the grid from the stamp.** In `TakeGui`, a key draws one line per stamped
    beat (the stamp's expected times, in file seconds) and snaps each to the nearest
    transient within tolerance (`BeatMarkMode.moveLine` logic); lines with nothing
-   near stay where the stamp puts them. For this case it's more robust than the DP
-   tracker — the expected beats are known in advance. Fix the few it gets wrong, `w`.
-   Includes the stamp-grid overlay the step-5 plan promised and M1 did not build.
-2. **Automatic `at:`.** The first mark's file second through the stamp map gives the
-   list beat it was played against; rounded, that is `at:`. So
-   `addItem(take, marks: true)` with no `at:` places a stamped take where it was
-   recorded. Unstamped takes still need `at:`.
-3. **Partial marks.** Marks replace the stamp entirely: outside the marked region
-   the map extrapolates at the last marked tempo, not the stamp. Stamp seeding (1)
-   covers the whole take, which makes this mostly moot; splicing stamp-outside /
-   marks-inside is deferred until a real case needs it.
+   near stay where the stamp puts them. For this case it is more robust than the DP
+   tracker — the expected beats are known in advance. Fix the few it gets wrong,
+   `w`. Includes the stamp-grid overlay step 5 promised and M1 did not build.
+2. **Beat alignment of marks to the stamp** — the resolver's job (step 10): the
+   first mark's file second through the stamp map gives the list beat it was played
+   against. That same number is an **automatic `at:`**, so
+   `addItem(take, sourceTempoMap: \marks)` with no `at:` places a stamped take
+   where it was recorded. Unstamped takes still need `at:`. Seeding (1) makes marks
+   and stamp beats identical by construction; the resolver's alignment covers marks
+   made by hand.
+3. **Partial marks.** Marks cover only what was marked; outside that the map
+   extrapolates at the last marked tempo, not the stamp. Stamp seeding (1) covers the
+   whole take, which makes this mostly moot; with both in one beat frame (2), a
+   function can splice them (`~stamp` outside, `~marks` inside) — a built-in splice
+   is deferred until a real case needs it.
 
 With `align:` (step 9) on top, you choose how much of the sloppiness to fix.
 
@@ -417,9 +469,9 @@ With `align:` (step 9) on top, you choose how much of the sloppiness to fix.
   it, and play the take on a list grid. This covers almost all of the goal.
 - 2, 3 and 4 are independent of each other.
 - **M2** = step 7. Only for hand pins that the DP tracker must respect.
-- **M3** = 8 → 9 → 10 → 11. The interface cleanup first, so `align:` and the
-  `marks:` function land as plain event keys; stamp seeding last (it uses both).
-  Independent of M2.
+- **M3** = 8 → 9 → 10 → 11. The cleanup first, so `align:` and the
+  `sourceTempoMap:` forms land as plain event keys on one timing field; stamp
+  seeding last (it uses the resolver's marks-to-stamp alignment). Independent of M2.
 
 ## Open decisions (recommended default in bold)
 

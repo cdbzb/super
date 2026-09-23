@@ -592,12 +592,16 @@ EventList {
 	//     e.addItem(AudioItem("tambo-test").take(0), at: 8)
 	//
 	// An audio Take takes a NUMERIC at: only (prAddAudioItem); mk: and grid: are
-	// MIDI-only and ignored for it.
-	addItem { |player, at, voice, mk, offset, align, grid|
+	// MIDI-only and ignored for it. marks: (audio only) plays the take through its
+	// beat-marked tempo map — true for the newest marks version, or a version
+	// number — with its first marked beat at `at`:
+	//
+	//     e.addItem(Take(\drums, 3), at: 8, marks: true)
+	addItem { |player, at, voice, mk, offset, align, grid, marks|
 		var tm, whenFn, ep, sl, env, fromWall, epoch;
 		(player.isNumber or: { player == \original }).if { var swap = player; player = at; at = swap };
 		player = player.player;
-		player.isKindOf(Take).if { ^this.prAddAudioItem(player, at, voice, offset, align) };
+		player.isKindOf(Take).if { ^this.prAddAudioItem(player, at, voice, offset, align, marks) };
 		align.notNil.if { ^this.prAddItemNested(player, at, voice, mk, offset, align, grid) };
 		(at == \original).if {
 			at = this.itemStartBeat(player) ?? {
@@ -644,14 +648,19 @@ EventList {
 	// No sourceTempoMap: and start: 0 on purpose. The take's record stamp is its
 	// own clock — AudioItem.prSrcOffset's stamp branch supplies both the source
 	// tempo and the take's t0 origin, so the caller supplies neither a map
-	// nor a latency correction. Naming a map here would override the stamp.
+	// nor a latency correction.
+	//
+	// marks: is the intended way to override the stamp: the take's beat-marked map
+	// (TakeGui) is truer than the clock it was recorded against. The event carries
+	// only `marks:`; AudioItem.prResolveMarks resolves the map from the archive at
+	// prepare time and sets start / sourceMapIsPhysical itself.
 	//
 	// Numeric at: only. at: nil (recorded placement) and at: \original need a wall
 	// reference that survives a restart, which the archive does not persist yet,
 	// and align: needs Take.asEventList; both are deferred — see
 	// audioitem-placement-proposal.md §3. Guards answer the warning String, the
 	// same contract as addItem's own guards.
-	prAddAudioItem { |player, at, voice, offset, align|
+	prAddAudioItem { |player, at, voice, offset, align, marks|
 		var ev;
 		align.notNil.if {
 			^"EventList.addItem: align: is not supported for audio takes yet — pass at: a beat".warn
@@ -670,6 +679,13 @@ EventList {
 			start: 0
 		);
 		voice !? { ev[\voice] = voice };
+		marks !? {
+			TakeArchive.loadMarks(player.name, player.num, (marks == true).if { nil } { marks }).isNil.if {
+				^"EventList.addItem: % take % has no marks version % — mark it in take.gui first"
+					.format(player.name, player.num, (marks == true).if { "" } { marks }).warn
+			};
+			ev[\marks] = marks
+		};
 		// array return, matching addItem's other paths
 		^[this.add(ev)]
 	}

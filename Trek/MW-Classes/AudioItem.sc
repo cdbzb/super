@@ -396,6 +396,37 @@ AudioItem {
 		^this.t0(ev[\item] ?? { ev[\name] }, takeNum)
 	}
 
+	/* marks: on a tempo-follow event plays the take through its beat-marked tempo
+	   map (TakeArchive marks, TakeGui w / W): true = the newest marks version, a
+	   number = that version. Resolved here, at prepare time, so a list survives a
+	   restart and a re-marked take is picked up on the next play. The frame rules
+	   are set here, never by the caller:
+	     sourceTempoMap      the AnchorTempoMap over the marks (beat -> file seconds,
+	                         rebased to its first anchor)
+	     start               map.t0 — the first mark's file second; NOT
+	                         timeDomain.first, which is always 0
+	     sourceMapIsPhysical true — marks are file positions, so they already contain
+	                         the recording delay; the take's t0 must not be added
+	   An explicit sourceTempoMap wins over marks. A take with no such version warns
+	   and plays as if marks were absent. Answers the event, or a resolved copy. */
+	*prResolveMarks { |ev, itemName, takeNum|
+		var m, map, out;
+		((ev[\marks] ? false) == false).if { ^ev };
+		ev[\sourceTempoMap].notNil.if { ^ev };
+		m = TakeArchive.loadMarks(itemName, takeNum, (ev[\marks] == true).if { nil } { ev[\marks] });
+		m.isNil.if {
+			"AudioItem: % take % has no marks version % — playing unmarked"
+				.format(itemName, takeNum, (ev[\marks] == true).if { "" } { ev[\marks] }).warn;
+			^ev
+		};
+		map = AnchorTempoMap(m[\anchors].collect(_[\src]), m[\anchors].collect(_[\beat]));
+		out = ev.copy;
+		out[\sourceTempoMap] = map;
+		out[\start] = map.t0;
+		out[\sourceMapIsPhysical] = true;
+		^out
+	}
+
 	// Source-position seam shared by tempoFollowActions/tempoFollowEnvActions
 	// (quantize-tempomap-project.md §9b, same convention as \mi2): ideal beat ->
 	// elapsed seconds into the source recording. Priority: \sourceTempoMap map
@@ -512,6 +543,7 @@ AudioItem {
 		};
 		sourceDur = sf.numFrames / sf.sampleRate;
 		sf.close;
+		ev = this.prResolveMarks(ev, itemName, takeNum);
 
 		wallAt = wallAt ?? { { |bt| list.beatToWall(bt, tempoEnv) } };
 		b0 = ev[\when] ? 0;
@@ -615,6 +647,7 @@ AudioItem {
 		};
 		sourceDur = sf.numFrames / sf.sampleRate;
 		sf.close;
+		ev = this.prResolveMarks(ev, itemName, takeNum);
 
 		wallAt = wallAt ?? { { |bt| list.beatToWall(bt, tempoEnv) } };
 		b0 = ev[\when] ? 0;

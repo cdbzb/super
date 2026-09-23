@@ -12,9 +12,10 @@ schema; this plan adds one writer and one reader and fixes one filter.
 
 ---
 
-## Status (2026-09-22, branch `audio-beat-marking`)
+## Status (2026-09-23, branch `audio-beat-marking`)
 
-M1 (steps 1–6) built; step 7 (DP time pins) not started.
+M1 (steps 1–6) built; step 7 (DP time pins) not started; M3 (steps 8–11,
+interface cleanup, `align:`, `marks:` function, stamped-take repair) planned.
 
 | Step | State | Suite |
 |---|---|---|
@@ -27,9 +28,14 @@ M1 (steps 1–6) built; step 7 (DP time pins) not started.
 | 4b `gridTimes` + picks | done — **changes MIDI gui clicks/lane** | `beat-mark-test`, `map-editor-test` |
 | 4c save/resume by times | done | `beat-mark-test` |
 | 4d free pins (pick mode) | done | `beat-mark-test` |
-| 5 `TakeGui`, marks API, `loadMap`, `take.tempoMap` | done — **needs a hands-on session** | `take-marks-test`, `take-gui-smoke` (opens a window) |
+| 5 `TakeGui`, marks API, `loadMap`, `take.tempoMap` | done — **needs a hands-on session**; key strip + `?` help window added | `take-marks-test`, `take-gui-smoke` (opens a window) |
+| 3′ NRT silent for clientID ≠ 0 | fixed (OfflineProcess default group) | `take-transients-test` (clientID-1 check) |
 | 6 `addItem(marks:)`, `prResolveMarks` | done — **no listening check yet** | `take-marks-playback-test` |
 | 7 DP time pins | not started | — |
+| 8 interface cleanup | planned | parity test (planned) |
+| 9 `align:` for audio | planned | — |
+| 10 `marks: { \|map\| … }` | planned | — |
+| 11 stamp seeding + automatic `at:` | planned | — |
 
 Unverified by ear or eye: `TakeGui` interaction feel (drag, snap, lane), click
 and playback alignment in the window, and a marked drum take playing on a list
@@ -292,6 +298,110 @@ Only needed for free pins inside **DP (E) mode**; pick mode already has them (4d
 
 ---
 
+## 8. Interface cleanup — one event dialect (before any new playback key)
+
+Drift found after M1 (2026-09-23): three surfaces play an audio take and disagree.
+
+| | `add(newType: \audioItem)` | `add(newType: \audioItemTempoFollow)` | `addItem(take, at:)` |
+|---|---|---|---|
+| Playback | one synth, plays straight (`PlayBuf`) | segment-by-segment, follows the list's tempo | builds the middle column |
+| Timing source | none, or what `followTrack:` routes to | `sourceTempoMap:` / `sourceBeatDur:` / stamp / list clock | same, plus `marks:` |
+| `followTrack: true` | follow, take seconds read as beats | n/a | n/a |
+| Bare default | plays straight | follows the list's map | stamp |
+| `marks:` | **silently ignored** | honoured | honoured |
+| `start:` | file seconds, `t0` added | file seconds, `t0` added | forced 0, **overwritten** by marks |
+| `align:` | no | no | refused for audio (works for MIDI) |
+
+Rules:
+1. **The event is the single source of truth.** Every feature is an event key,
+   resolved at prepare time. `addItem` only fills keys (`when:` from `at:`,
+   `item`/`take` from the Take) and forwards every other keyword into the event,
+   so `addItem(take, at: 8, marks: true, align: 0.6, amp: 0.5)` ==
+   `add((when: 8, type: \audioItem, item:, take:, marks: true, align: 0.6, amp: 0.5))`.
+   `addItem` never grows another parameter.
+2. **One type: `\audioItem`.** Following the list's tempo is decided by keys:
+   `followTrack:` as today, and any timing key (`marks:`, `sourceTempoMap:`,
+   `sourceBeatDur:`, `align:`) implies following. `\audioItemTempoFollow` stays as
+   an alias for `\audioItem` + `followTrack: \eventList` (its current default), so
+   existing lists play unchanged.
+3. **One timing order, same on every path:** `marks:` → `sourceTempoMap:` →
+   `sourceBeatDur:` → record stamp → list clock. `align:` is a separate blend applied
+   on top of whichever wins.
+4. **One meaning for `start:`:** seconds after the take's origin — the first mark
+   when marks are in play, else `t0`. `start: 0` = from the first mark; a non-zero
+   `start:` is added to the origin, never discarded.
+5. **A key table for both media:** `align:`, `offset:` shared; `mk:`/`grid:`
+   MIDI-only; `marks:`/`marksVersion:` audio-only (the MIDI counterpart is a
+   selection).
+6. **Parity test:** for a set of keys, `addItem(take, at:, …)` and the hand-written
+   `add((…))` prepare the same schedule.
+
+Code: forwarding in `prAddAudioItem`; alias routing in `prIsAudioFollow`; `marks:`
+implies follow; `prResolveMarks` adds `start:` to the origin.
+
+---
+
+## 9. `align:` for audio — quantize strength
+
+`align: a` on an audio event: 0 = as performed, 1 = every marked beat on its list
+beat, in between a blend. Same key and sense as on nested `\eventList` events
+(`prExpandBlended`), and it blends toward the list's REAL clock, so it stays right
+under tempo changes — unlike `map.quantize(1 - s)`, which straightens toward the
+take's own mean and agrees only when the list tempo equals that mean.
+
+Where: `AudioItem.tempoFollowActions` / `tempoFollowEnvActions` already hold both
+clocks — the source map (through `prSrcOffset`) and the list's `wallAt` — so the
+blend is per segment, weight `align`. Event key first (step 8 rule 1); `addItem`
+just forwards it.
+
+---
+
+## 10. `marks: { |map| … }` — edit the marked map in place
+
+`marks:` also accepts a Function, evaluated by `prResolveMarks` in
+`(map: m, take: …, list: …).use { func.value(m) }`, so `{ ~map.curve(1) }` and
+`{ |map| map.curve(1) }` are the same. `m` is the marks map already in the right
+form (`asMonoMap(origin: \absolute)`, done internally), so the whole MapEditor
+vocabulary is available: `quantize(amount, from, to)`, `curve`, `ritardSpan`,
+`setBpm(bpm, from, to)`, `transformSpan`. `start` / `sourceMapIsPhysical` are
+derived from the RESULT (its first anchor = its `t0`), so an edit that moves the
+first beat still starts in the right place.
+
+- `\marks` joins `EventList.lazyExclude`, or the generic lazy pass calls the
+  function first, with no `~map`.
+- A Function means the newest marks; pin a version with `marksVersion: N`.
+- Doc note — the INVERSE SENSE: the function edits where the beats ARE, not where
+  they land. `{ ~map.quantize }` pretends the beats were evenly spaced, which UNDOES
+  the correction. Quantize strength is `align:` (step 9), not this.
+
+---
+
+## 11. Stamped takes — fix a sloppy take recorded against a list
+
+The stamp says where the beats SHOULD be (the clock the take was recorded
+against); marks say where they ARE. Marks already beat the stamp in playback, and
+`sourceMapIsPhysical` keeps the recording latency from being counted twice. Three
+gaps:
+
+1. **Seed the grid from the stamp.** In `TakeGui`, a key draws one line per stamped
+   beat (the stamp's expected times, in file seconds) and snaps each to the nearest
+   transient within tolerance (`BeatMarkMode.moveLine` logic); lines with nothing
+   near stay where the stamp puts them. For this case it's more robust than the DP
+   tracker — the expected beats are known in advance. Fix the few it gets wrong, `w`.
+   Includes the stamp-grid overlay the step-5 plan promised and M1 did not build.
+2. **Automatic `at:`.** The first mark's file second through the stamp map gives the
+   list beat it was played against; rounded, that is `at:`. So
+   `addItem(take, marks: true)` with no `at:` places a stamped take where it was
+   recorded. Unstamped takes still need `at:`.
+3. **Partial marks.** Marks replace the stamp entirely: outside the marked region
+   the map extrapolates at the last marked tempo, not the stamp. Stamp seeding (1)
+   covers the whole take, which makes this mostly moot; splicing stamp-outside /
+   marks-inside is deferred until a real case needs it.
+
+With `align:` (step 9) on top, you choose how much of the sloppiness to fix.
+
+---
+
 ## Milestones
 
 ```
@@ -307,6 +417,9 @@ Only needed for free pins inside **DP (E) mode**; pick mode already has them (4d
   it, and play the take on a list grid. This covers almost all of the goal.
 - 2, 3 and 4 are independent of each other.
 - **M2** = step 7. Only for hand pins that the DP tracker must respect.
+- **M3** = 8 → 9 → 10 → 11. The interface cleanup first, so `align:` and the
+  `marks:` function land as plain event keys; stamp seeding last (it uses both).
+  Independent of M2.
 
 ## Open decisions (recommended default in bold)
 

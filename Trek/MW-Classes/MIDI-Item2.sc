@@ -29,7 +29,7 @@ gui { |take|
     var viewedPlayer, playFrom, stopPlay, togglePlay;
     var clickEnabled = false, clickClock, scheduleClicks, currentNoteTime;
     var contentStart; // §12B: "content starts here" — everything before it is throat clearing
-    var countInBeats = 0, clickTimes, beatGrid, localPeriod; // §12C: clicks/snap/count-in
+    var countInBeats = 0, clickTimes, beatGrid; // §12C: clicks/snap/count-in
     var beatMark, mapEd, laneSource, invalidateLane;
 
     this.respondsTo(\takes).if{
@@ -126,47 +126,27 @@ gui { |take|
     // an untouched lane re-reads its source
     invalidateLane = { mapEd.invalidate };
 
-    // grid spacing at (or just after) note-time `t` — the count-in's beat length.
-    // nil when there is no usable grid.
-    localPeriod = { |times, t|
-        var i, period;
-        (times.size >= 2).if {
-            i = (times.detectIndex { |gt| gt >= (t - 1e-9) } ? (times.size - 1))
-                .clip(0, times.size - 1);
-            period = (i < (times.size - 1)).if {
-                times[i + 1] - times[i]
-            }{
-                times[i] - times[i - 1]
-            };
-        };
-        (period.notNil and: { period > 0.001 }).if { period };
-    };
-
     // schedule a hihat click at every grid time from `fromTime` forward, on clickClock,
     // shifted `delay` seconds later (the count-in). (instrument:\hihat).play bundles
     // with Server latency, matching the note playback.
     scheduleClicks = { |fromTime, delay = 0, clear = true|
         clear.if { clickClock.clear };
-        clickTimes.().do { |gt|
-            (gt >= fromTime).if {
-                clickClock.sched(delay + (gt - fromTime), { (instrument: \hihat).play; nil })
-            }
+        BeatMarkMode.clickSchedule(clickTimes.(), fromTime)[\clicks].do { |c|
+            clickClock.sched(delay + c[0], { (instrument: \hihat).play; nil })
         }
     };
 
     // start playback from the cursor; tracks which MicroKeys we started so stop can release them
     playFrom = { |t|
-        var p, before, latency, times, period, offset = 0, startNotes;
+        var p, before, latency, times, sched, offset, startNotes;
         isPlaying.if { stopPlay.() };
         times = clickTimes.();
-        // §12C count-in: N clicks at the LOCAL beat length before the notes start
-        (countInBeats > 0).if {
-            period = localPeriod.(times, t);
-            period.isNil.if {
-                "count-in: no beat grid — starting immediately".postln
-            }{
-                offset = countInBeats * period
-            }
+        // §12C count-in: N clicks at the LOCAL beat length before the notes start,
+        // then the grid clicks (when enabled) — BeatMarkMode.clickSchedule
+        sched = BeatMarkMode.clickSchedule(times, t, countInBeats, clickEnabled);
+        offset = sched[\offset];
+        ((countInBeats > 0) and: { offset == 0 }).if {
+            "count-in: no beat grid — starting immediately".postln
         };
         p = viewedPlayer.();
         p.start = t; p.end = end;
@@ -186,15 +166,12 @@ gui { |take|
         // count-in clicks sound whether or not clicks are enabled during playback —
         // a count-in without clicks is nothing. Same event form as the notes, so they
         // bundle with the server latency identically.
-        (offset > 0).if {
-            countInBeats.do { |i|
-                clickClock.sched(i * period, {
-                    (instrument: \hihat, amp: (i == 0).if { 0.2 }{ 0.1 }).play; nil
-                })
-            }
-        };
-        (clickEnabled and: { times.size > 0 }).if {
-            scheduleClicks.(t, offset, false)   // count-in clicks are already queued
+        sched[\clicks].do { |c|
+            clickClock.sched(c[0], {
+                var ev = (instrument: \hihat);
+                c[1] !? { ev[\amp] = c[1] };
+                ev.play; nil
+            })
         };
         (offset > 0).if {
             playClock.sched(offset, { isPlaying.if { startNotes.() }; nil })

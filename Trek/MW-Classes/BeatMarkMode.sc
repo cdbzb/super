@@ -33,6 +33,48 @@ BeatMarkMode {
 	var <>onChange, <>onGridChange, <>ensureVisible, <>onSave;
 
 	*new { |notes, end| ^super.new.prInit(notes, end) }
+
+	// ---- click math, class-side so every host (MIDI roll, Take window) shares it.
+	// Pure: times in, numbers out; the host owns the clock and the synth.
+
+	// Grid spacing at (or just after) time `t` — the count-in's beat length. nil
+	// when there is no usable grid.
+	*localPeriod { |times, t|
+		var i, period;
+		(times.size >= 2).if {
+			i = (times.detectIndex { |gt| gt >= (t - 1e-9) } ? (times.size - 1))
+				.clip(0, times.size - 1);
+			period = (i < (times.size - 1)).if {
+				times[i + 1] - times[i]
+			}{
+				times[i] - times[i - 1]
+			};
+		};
+		^(period.notNil and: { period > 0.001 }).if { period }
+	}
+
+	// What to click when playback starts at `fromTime`: `countIn` clicks at the
+	// local beat length, then (when `clicks`) every grid time from `fromTime` on,
+	// shifted by the count-in. Answers (offset:, clicks: [[delay, amp], ...]) —
+	// offset is how long the media must wait for the count-in (0 when there is no
+	// grid to count in on); amp nil means the click's default level.
+	*clickSchedule { |times, fromTime, countIn = 0, clicks = true|
+		var period, offset = 0, out = [];
+		times = times ? [];
+		(countIn > 0).if {
+			period = this.localPeriod(times, fromTime);
+			period !? {
+				offset = countIn * period;
+				countIn.do { |i| out = out.add([i * period, (i == 0).if { 0.2 }{ 0.1 }]) };
+			}
+		};
+		clicks.if {
+			times.do { |gt|
+				(gt >= fromTime).if { out = out.add([offset + (gt - fromTime), nil]) }
+			}
+		};
+		^(offset: offset, clicks: out)
+	}
 	prInit { |someNotes, endTime|
 		notes = someNotes.asArray;
 		end = endTime;

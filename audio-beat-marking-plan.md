@@ -34,7 +34,7 @@ planned.
 | 3′ NRT silent for clientID ≠ 0 | fixed (OfflineProcess default group) | `take-transients-test` (clientID-1 check) |
 | 6 `addItem(marks:)`, `prResolveMarks` | done — **no listening check yet** | `take-marks-playback-test` |
 | 7 DP time pins | not started | — |
-| 8 interface cleanup, one timing field (drop `marks:`) | planned | parity test (planned) |
+| 8 interface cleanup, one timing field (drop `marks:`) | done — `\mi2` resolver unification deferred to step 10 | `source-map-resolver-test` (incl. parity) |
 | 9 `align:` for audio | planned | — |
 | 10 `sourceTempoMap:` names + functions (`~marks`, `~stamp`) | planned | — |
 | 11 stamp seeding + automatic `at:` | planned | — |
@@ -348,10 +348,11 @@ Rules:
    drawn on the waveform, so they already contain the recording delay. Written by
    hand only for a hand-built map object; for names and functions the resolver sets
    it. The old key is read as an alias.
-4. **`followTrack:` only turns following on.** `true` / `\eventList` forward NOTHING
-   — they mean "follow, default source" (today's `\eventList` meaning; forwarding it
-   as a named source would silently drop every take's stamp). A map value, or
-   `\flat`, forwards into `sourceTempoMap:`. `\mi2`'s direct read of `followTrack`
+4. **`followTrack:` only turns following on.** `\eventList` forwards NOTHING — it
+   means "follow, default source" (forwarding it as the named source would silently
+   drop every take's stamp). `true` / `\flat` keep their documented flat meaning
+   (`sourceBeatDur: 1`). A map value, or another name (`\marks`, `\stamp`),
+   forwards into `sourceTempoMap:`. `\mi2`'s direct read of `followTrack`
    (EventList.sc:2312) goes through the same resolver, so both media agree.
 5. **One type: `\audioItem`.** Following is decided by keys: `followTrack:`, and any
    timing key (`sourceTempoMap:`, `sourceBeatDur:`, `align:`) implies it — except
@@ -377,6 +378,21 @@ Rules:
 8. **Key table for both media**, and a **parity test**: for a set of keys,
    `addItem(take, at:, …)` and the hand-written event of rule 1 prepare the same
    schedule.
+
+| Key | MIDI (`\mi2` / addItem) | Audio (`\audioItem` / addItem) |
+|---|---|---|
+| `at:` / `when:` | both | both |
+| `offset:` | both | both |
+| `voice:` | both | both |
+| `mk:`, `grid:` | yes | — |
+| `align:` | yes (nested list) | step 9 |
+| `sourceTempoMap:` | map or `\eventList` | map, `\marks`, `\stamp`, `\eventList`, `\flat` |
+| `sourceBeatDur:` | — | flat source (`\flat`'s parameter) |
+| `marksVersion:` | — | pins `\marks` (MIDI counterpart: a selection version) |
+| `fromBeat:` / `toBeat:` | player method `fromBeat(from, to)` | event keys, same meaning |
+| `start:` | — | seconds; trims on `\marks` |
+| `sourceMapIncludesLatency:` | — | only for a hand-built map |
+| `followTrack:` | `true` / `\eventList` / map | same; `\eventList` = default source |
 
 Migration: `take-marks-playback-test.scd` and org.org:325-326 move off `marks:`; an
 unknown Symbol in `sourceTempoMap:` (e.g. the test's `\mine`) now warns.

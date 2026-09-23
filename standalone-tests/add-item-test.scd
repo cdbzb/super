@@ -129,8 +129,10 @@ assert.(added.isKindOf(Array) and: { added.size == 1 },
 	"audio: one event, array return contract preserved");
 aEv = added[0];
 assertClose.(aEv[\when], 8, "audio: at: lands on when");
-assert.(aEv[\newType] == \audioItemTempoFollow, "audio: newType \\audioItemTempoFollow");
-assert.(aEv[\type] == \audioItemTempoFollow, "audio: dispatch resolved the type");
+assert.(aEv[\newType] == \audioItem and: { aEv[\followTrack] == \eventList },
+	"audio: newType \\audioItem, following (step 8: one type, \\audioItemTempoFollow is its alias)");
+assert.(aEv[\type] == \audioItem, "audio: dispatch resolved the type");
+assert.(flat.prIsAudioFollow(aEv), "audio: routed to the follow path");
 assert.(aEv[\item].asString == aName, "audio: item is the take's name");
 assert.(aEv[\take] == 0, "audio: take number carried");
 assertClose.(aEv[\start], 0, "audio: start 0 — the record stamp supplies the origin");

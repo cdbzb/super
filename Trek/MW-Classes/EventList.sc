@@ -592,16 +592,19 @@ EventList {
 	//     e.addItem(AudioItem("tambo-test").take(0), at: 8)
 	//
 	// An audio Take takes a NUMERIC at: only (prAddAudioItem); mk: and grid: are
-	// MIDI-only and ignored for it. marks: (audio only) plays the take through its
-	// beat-marked tempo map — true for the newest marks version, or a version
-	// number — with its first marked beat at `at`:
+	// MIDI-only and ignored for it. Every OTHER keyword goes into the audio event
+	// unchanged — addItem only fills when:/item:/take: — so it and a hand-written
+	// add((type: \audioItem, followTrack: \eventList, ...)) are one dialect:
 	//
-	//     e.addItem(Take(\drums, 3), at: 8, marks: true)
-	addItem { |player, at, voice, mk, offset, align, grid, marks|
+	//     e.addItem(Take(\drums, 3), at: 8, sourceTempoMap: \marks, fromBeat: 8)
+	addItem { |player, at, voice, mk, offset, align, grid ...args, kwargs|
 		var tm, whenFn, ep, sl, env, fromWall, epoch;
 		(player.isNumber or: { player == \original }).if { var swap = player; player = at; at = swap };
 		player = player.player;
-		player.isKindOf(Take).if { ^this.prAddAudioItem(player, at, voice, offset, align, marks) };
+		player.isKindOf(Take).if { ^this.prAddAudioItem(player, at, voice, offset, align, kwargs) };
+		(kwargs.notNil and: { kwargs.notEmpty }).if {
+			"EventList.addItem: % ignored for a MIDI take".format(kwargs.clump(2).collect(_[0])).warn
+		};
 		align.notNil.if { ^this.prAddItemNested(player, at, voice, mk, offset, align, grid) };
 		(at == \original).if {
 			at = this.itemStartBeat(player) ?? {
@@ -638,29 +641,26 @@ EventList {
 		^this.prInsertItemEvents(player, whenFn, voice, mk ?? { this.prItemMk(player) })
 	}
 
-	// Place an audio Take at an explicit beat: ONE \audioItemTempoFollow event,
+	// Place an audio Take at an explicit beat: ONE tempo-follow \audioItem event,
 	// inserted through `add` so it shares the normal preview path
 	// (nextPreviewOffset -> storeAndPreview, which already routes audio-follow
 	// events through AudioItem.tempoFollowActions). prInsertItemEvents cannot be
 	// reused — it iterates player.midiEvents and reads player.source, and a Take
 	// has neither.
 	//
-	// No sourceTempoMap: and start: 0 on purpose. The take's record stamp is its
-	// own clock — AudioItem.prSrcOffset's stamp branch supplies both the source
-	// tempo and the take's t0 origin, so the caller supplies neither a map
-	// nor a latency correction.
-	//
-	// marks: is the intended way to override the stamp: the take's beat-marked map
-	// (TakeGui) is truer than the clock it was recorded against. The event carries
-	// only `marks:`; AudioItem.prResolveMarks resolves the map from the archive at
-	// prepare time and sets start / sourceMapIsPhysical itself.
+	// The event is exactly what a hand-written one would be: type \audioItem,
+	// followTrack: \eventList (follow, default source), start: 0, and every extra
+	// keyword the caller passed (kwargs) — sourceTempoMap:, fromBeat:, amp:, ...
+	// No source clock is chosen here: AudioItem.prResolveSourceMap does that at
+	// prepare time (default: the record stamp, else the list clock), and sets the
+	// origin / latency rules itself for named sources like \marks.
 	//
 	// Numeric at: only. at: nil (recorded placement) and at: \original need a wall
 	// reference that survives a restart, which the archive does not persist yet,
 	// and align: needs Take.asEventList; both are deferred — see
 	// audioitem-placement-proposal.md §3. Guards answer the warning String, the
 	// same contract as addItem's own guards.
-	prAddAudioItem { |player, at, voice, offset, align, marks|
+	prAddAudioItem { |player, at, voice, offset, align, kwargs|
 		var ev;
 		align.notNil.if {
 			^"EventList.addItem: align: is not supported for audio takes yet — pass at: a beat".warn
@@ -673,18 +673,22 @@ EventList {
 		};
 		ev = (
 			when: at + (offset ? 0),
-			newType: \audioItemTempoFollow,
+			newType: \audioItem,
+			followTrack: \eventList,
 			item: player.name,
 			take: player.num,
 			start: 0
 		);
 		voice !? { ev[\voice] = voice };
-		marks !? {
-			TakeArchive.loadMarks(player.name, player.num, (marks == true).if { nil } { marks }).isNil.if {
+		(kwargs ? []).pairsDo { |k, v| ev[k] = v };
+		// a named source the take lacks is a mistake worth refusing here, at the
+		// call, rather than a warning at every prepare
+		((ev[\sourceTempoMap] == \marks) or: { ev[\marks].notNil and: { ev[\marks] != false } }).if {
+			TakeArchive.loadMarks(player.name, player.num,
+				ev[\marksVersion] ?? { (ev[\marks].isNumber).if { ev[\marks] } }).isNil.if {
 				^"EventList.addItem: % take % has no marks version % — mark it in take.gui first"
-					.format(player.name, player.num, (marks == true).if { "" } { marks }).warn
-			};
-			ev[\marks] = marks
+					.format(player.name, player.num, ev[\marksVersion] ? "").warn
+			}
 		};
 		// array return, matching addItem's other paths
 		^[this.add(ev)]
@@ -2109,24 +2113,22 @@ EventList {
 	}
 
 	// \mi2 convention on \audioItem: followTrack routes to the tempo-follow path.
-	// true/\flat = flat source (sourceBeatDur: 1, recorded seconds as beats),
-	// \eventList = the list's base map (tempo-follow's native default), a map
-	// object = that map as the source (forwards to sourceTempoMap:, for takes
-	// whose map the list no longer owns — e.g. after a destructive quantize).
-	// Explicit sourceTempoMap/sourceBeatDur wins. \audioItemTempoFollow passes
-	// through unchanged. Only affects list playback — a direct .play stays sealed.
+	// \eventList = follow with the DEFAULT source (the record stamp, else the list
+	// clock) — it forwards nothing; forwarding it as the named source \eventList
+	// would silently drop every take's stamp. true/\flat = flat source
+	// (sourceBeatDur: 1, recorded seconds as beats). A map object, or any other
+	// named source (\marks, \stamp), forwards to sourceTempoMap:. Explicit
+	// sourceTempoMap/sourceBeatDur wins. Only affects list playback — a direct .play
+	// stays sealed.
 	prForwardAudioFollow { |ev|
-		(ev[\type] == \audioItem).if {
+		((ev[\type] == \audioItem) or: { ev[\type] == \audioItemTempoFollow }).if {
 			var ft = ev[\followTrack];
 			(ev[\sourceTempoMap].isNil and: { ev[\sourceBeatDur].isNil }).if {
-				ft.respondsTo(\timeAt).if {
-					ev = ev.copy;
-					ev[\sourceTempoMap] = ft;
-				} {
-					(ft != \eventList).if {
-						ev = ev.copy;
-						ev[\sourceBeatDur] = 1;
-					}
+				case
+				{ ft.isNil or: { ft == false } or: { ft == \eventList } } { }
+				{ (ft == true) or: { ft == \flat } } { ev = ev.copy; ev[\sourceBeatDur] = 1 }
+				{ ft.respondsTo(\timeAt) or: { ft.isKindOf(Symbol) } } {
+					ev = ev.copy; ev[\sourceTempoMap] = ft
 				}
 			}
 		};
@@ -2150,10 +2152,13 @@ EventList {
 	// true in the event, flip AudioItem.armed). The warning is a deliberate
 	// reminder that the item will record on the next armed play. Armed is
 	// sampled at prepare time, not mid-playback.
+	// One type, \audioItem: \audioItemTempoFollow is its alias with followTrack:
+	// \eventList. Any timing key (sourceTempoMap:, sourceBeatDur:, marksVersion:,
+	// fromBeat:, toBeat:) implies following too — the sealed path cannot honour them.
 	prIsAudioFollow { |ev|
 		^(ev[\type] == \audioItemTempoFollow) or: {
 			(ev[\type] == \audioItem)
-			and: { (ev[\followTrack] ? false) != false }
+			and: { ((ev[\followTrack] ? false) != false) or: { AudioItem.timingKeys.any { |k| ev[k].notNil } } }
 			and: {
 				((ev[\record] ? false) != true) or: {
 					AudioItem.armed.not.if {
@@ -2253,10 +2258,30 @@ EventList {
 				stamped[\recordedAgainst] = this.prRecordStamp(stamped, tempoEnv);
 				{ stamped.copy.play }
 			} {
-				{ ev.copy.play }
+				var played = this.prWallSustain(ev, place);
+				{ played.copy.play }
 			};
 			out.add((time: place.(ev[\when] ? 0), send: send, label: (ev[\type] ? \event)))
 		};
+		^out
+	}
+
+	/* fire plays events on SystemClock, where the note-off that \note and \mk
+	   schedule from ~sustain counts beats as seconds — so beatDur, the tempoMap
+	   and \tempoTrack moved the onsets but not the releases (legato came out as
+	   legato / beatDur). Resolve the sustain in list beats here and store its wall
+	   length through `place`, the way prEmitMi2Follow does for mi2 notes. Other
+	   types pass through untouched: their ~sustain may not mean note length. */
+	prWallSustain { |ev, place|
+		var probe, when, sus, out;
+		[\note, \mk].includes(ev[\type] ? \note).not.if { ^ev };
+		probe = ev.copy;
+		probe.parent ?? { probe.parent = Event.default.parent };
+		sus = try { probe.use { ~sustain.value } };
+		sus.isNumber.not.if { ^ev };
+		when = ev[\when] ? 0;
+		out = ev.copy;
+		out[\sustain] = place.(when + sus) - place.(when);
 		^out
 	}
 

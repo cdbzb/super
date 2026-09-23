@@ -1,6 +1,6 @@
-// Playback from marks (audio-beat-marking-plan.md step 6): addItem(take, at:,
-// marks:) and AudioItem.prResolveMarks, which turns `marks:` into the frame rules
-// at prepare time.
+// Playback from marks (audio-beat-marking-plan.md steps 6 and 8):
+// sourceTempoMap: \marks, resolved at prepare time by
+// AudioItem.prResolveSourceMap, which sets the frame rules itself.
 //
 // The acceptance math: through the resolved event, marked beat k (counted from
 // `at`) reads the take at exactly anchor k's file second — for an unstamped
@@ -42,10 +42,10 @@ TakeArchive.write(names[1], 0, (
 ));
 
 check = { |n|
-	var ev = (item: n, take: 0, when: at, start: 0, marks: true, newType: \audioItemTempoFollow);
-	var r = AudioItem.prResolveMarks(ev, n, 0);
+	var ev = (item: n, take: 0, when: at, start: 0, sourceTempoMap: \marks, type: \audioItem);
+	var r = AudioItem.prResolveSourceMap(ev, n, 0);
 	var f = AudioItem.prSrcOffset(r, list, at, 0);
-	assert.(r[\sourceMapIsPhysical] == true, "% resolve: physical".format(n));
+	assert.(r[\srcLatencyIncluded] == true, "% resolve: marks include the latency".format(n));
 	assertClose.(r[\start], srcs.first, "% resolve: start = first mark's file second".format(n));
 	srcs.do { |t, k|
 		assertClose.(r[\start] + f.(at + k), t,
@@ -61,22 +61,24 @@ check.(names[0]);
 assert.(AudioItem.t0(names[1], 0) == 0.05, "precondition: the stamped take has t0 0.05");
 check.(names[1]);
 
-// explicit sourceTempoMap wins; no marks key is a no-op
-res = AudioItem.prResolveMarks((marks: true, sourceTempoMap: \mine), names[0], 0);
-assert.(res[\sourceTempoMap] == \mine, "resolve: an explicit sourceTempoMap wins");
-res = (item: names[0]);
-assert.(AudioItem.prResolveMarks(res, names[0], 0) === res, "resolve: no marks -> event untouched");
-res = AudioItem.prResolveMarks((marks: 99), names[0], 0);
-assert.(res[\sourceTempoMap].isNil, "resolve: a missing version warns and plays unmarked");
+// an unknown name and a missing version fall back to the default source
+res = AudioItem.prResolveSourceMap((sourceTempoMap: \mine), names[1], 0);
+assert.(res[\srcName] != \marks and: { res[\srcMap].notNil },
+	"resolve: an unknown name warns and uses the default (the stamp)");
+res = AudioItem.prResolveSourceMap((sourceTempoMap: \marks, marksVersion: 99), names[0], 0);
+assert.(res[\srcName] != \marks, "resolve: a missing marks version warns and plays unmarked");
+// the old key still works, with a warning
+res = AudioItem.prResolveSourceMap((marks: true), names[0], 0);
+assert.(res[\srcName] == \marks, "resolve: legacy marks: true reads as sourceTempoMap: \\marks");
 
-// --------------------------------------------------------- addItem(marks:)
+// ------------------------------------------- addItem(sourceTempoMap: \marks)
 File.mkdir(AudioItem.folder +/+ names[0]);
-added = list.addItem(Take(names[0], 0), at: at, marks: true);
-assert.(added.isKindOf(Array) and: { added.first[\marks] == true },
-	"addItem: the event carries marks: true");
-assert.(added.first[\newType] == \audioItemTempoFollow, "addItem: a tempo-follow event");
-assert.(added.first[\sourceTempoMap].isNil, "addItem: the map is NOT frozen into the event");
-res = list.addItem(Take("zzz-marks-play-none", 0), at: at, marks: true);
+added = list.addItem(Take(names[0], 0), at: at, sourceTempoMap: \marks);
+assert.(added.isKindOf(Array) and: { added.first[\sourceTempoMap] == \marks },
+	"addItem: the event carries sourceTempoMap: \\marks (the name, not a frozen map)");
+assert.(added.first[\newType] == \audioItem and: { added.first[\followTrack] == \eventList },
+	"addItem: a following \\audioItem event");
+res = list.addItem(Take("zzz-marks-play-none", 0), at: at, sourceTempoMap: \marks);
 assert.(res.isString, "addItem: a take with no marks refuses with a warning");
 
 cleanup.();

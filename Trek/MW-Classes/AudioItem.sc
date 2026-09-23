@@ -384,131 +384,180 @@ AudioItem {
 		^(this.recordedMap(name, takeNum) !? { |st| st[\roundTrip] ? 0 }) ? 0
 	}
 
-	/* t0 for an EVENT, honouring the provenance flag.
-
-	   `sourceMapIsPhysical: true` says "the sourceTempoMap / sourceBeatDur on this
-	   event is already in PHYSICAL file coordinates". Such a description was
-	   authored from file positions, so it already contains the recording delay and
-	   shifting it again would double-count. The DEFAULT for an explicit map is to
-	   apply the origin, so the uniform rule holds unless a caller opts out. */
+	/* t0 for an EVENT: 0 when its map already includes the recording latency
+	   (sourceMapIncludesLatency: true — a map drawn on the waveform, i.e. in file
+	   positions), else the take's origin. `sourceMapIsPhysical:` is the old name,
+	   still read. The sealed \audioItem path uses this; the follow path gets the same
+	   answer from prResolveSourceMap. */
 	*prEventT0 { |ev, takeNum|
-		((ev[\sourceMapIsPhysical] ? false) == true).if { ^0 };
+		((ev[\sourceMapIncludesLatency] ?? { ev[\sourceMapIsPhysical] } ? false) == true).if { ^0 };
 		^this.t0(ev[\item] ?? { ev[\name] }, takeNum)
 	}
 
-	/* marks: on a tempo-follow event plays the take through its beat-marked tempo
-	   map (TakeArchive marks, TakeGui w / W): true = the newest marks version, a
-	   number = that version. Resolved here, at prepare time, so a list survives a
-	   restart and a re-marked take is picked up on the next play. The frame rules
-	   are set here, never by the caller:
-	     sourceTempoMap      the AnchorTempoMap over the marks (beat -> file seconds,
-	                         rebased to its first anchor)
-	     start               map.t0 — the first mark's file second; NOT
-	                         timeDomain.first, which is always 0
-	     sourceMapIsPhysical true — marks are file positions, so they already contain
-	                         the recording delay; the take's t0 must not be added
-	   An explicit sourceTempoMap wins over marks. A take with no such version warns
-	   and plays as if marks were absent. Answers the event, or a resolved copy. */
-	*prResolveMarks { |ev, itemName, takeNum|
-		var m, map, out;
-		((ev[\marks] ? false) == false).if { ^ev };
-		ev[\sourceTempoMap].notNil.if { ^ev };
-		m = TakeArchive.loadMarks(itemName, takeNum, (ev[\marks] == true).if { nil } { ev[\marks] });
-		m.isNil.if {
-			"AudioItem: % take % has no marks version % — playing unmarked"
-				.format(itemName, takeNum, (ev[\marks] == true).if { "" } { ev[\marks] }).warn;
-			^ev
-		};
-		map = AnchorTempoMap(m[\anchors].collect(_[\src]), m[\anchors].collect(_[\beat]));
+	/* The ONE place that decides a tempo-follow event's source clock — "which beat
+	   is at which file second" (audio-beat-marking-plan.md step 8). Everything
+	   downstream (prSrcOffset, prSrcEndBeat, the two tempoFollow builders) reads only
+	   what this answers. Order:
+	     sourceTempoMap: a map object      as given (a MonoMap is converted once)
+	     sourceTempoMap: \marks            the take's marks (TakeGui w / W); newest,
+	                                       or marksVersion: N
+	     sourceTempoMap: \stamp            the record stamp
+	     sourceTempoMap: \eventList        the list's base clock
+	     sourceTempoMap: \flat             sourceBeatDur (or 1 s/beat)
+	     no sourceTempoMap, sourceBeatDur:  \flat
+	     neither                           \stamp if the take has one, else \eventList
+	   A named source the take lacks warns and falls through to the default.
+	   `marks:` (step 6) is read as sourceTempoMap: \marks + marksVersion, with a
+	   warning.
+
+	   Answers a copy of the event with
+	     srcMap                an AnchorTempoMap-protocol map (item frame: its first
+	                           beat sounds at when:), or nil = the list's base clock
+	     srcLatencyIncluded    true when the map's seconds are file positions (marks),
+	                           so the take's t0 must not be added
+	     srcTrim               seconds after the origin to skip (start: on \marks)
+	   plus: start: = the origin (first mark's file second) for \marks, and dur: cut to
+	   toBeat - fromBeat. Idempotent (srcResolved). */
+	// Event keys that choose or shape the source clock. Any of them on an \audioItem
+	// event routes it to the tempo-follow path (EventList.prIsAudioFollow).
+	*timingKeys { ^#[\sourceTempoMap, \sourceBeatDur, \marksVersion, \fromBeat, \toBeat, \marks] }
+
+	*prResolveSourceMap { |ev, itemName, takeNum|
+		var out, sm, name, m, latIn = false, trimMode = false;
+		(ev[\srcResolved] == true).if { ^ev };
 		out = ev.copy;
-		out[\sourceTempoMap] = map;
-		out[\start] = map.t0;
-		out[\sourceMapIsPhysical] = true;
+		out[\srcResolved] = true;
+		itemName = itemName ?? { this.eventItemName(ev) };
+		sm = ev[\sourceTempoMap];
+		(ev[\marks].notNil and: { ev[\marks] != false }).if {
+			"AudioItem: marks: is replaced by sourceTempoMap: \\marks (and marksVersion: N)".warn;
+			sm = sm ? \marks;
+			(ev[\marks] != true).if { out[\marksVersion] = out[\marksVersion] ? ev[\marks] };
+		};
+		sm.isKindOf(Function).if {
+			"AudioItem: a Function sourceTempoMap: is not supported yet (plan step 10) — using the default"
+				.warn;
+			sm = nil
+		};
+		name = sm.isKindOf(Symbol).if { sm } {
+			sm.isNil.if {
+				ev[\sourceBeatDur].notNil.if { \flat } {
+					this.prStampMap(itemName, takeNum).notNil.if { \stamp } { \eventList }
+				}
+			}
+		};
+		name.isNil.if {
+			// a map object
+			m = sm.isKindOf(MonoMap).if { sm.asAnchorTempoMap } { sm };
+			latIn = (ev[\sourceMapIncludesLatency] ?? { ev[\sourceMapIsPhysical] } ? false) == true;
+		} {
+			switch(name,
+				\marks, {
+					var mk = TakeArchive.loadMarks(itemName, takeNum, out[\marksVersion]);
+					mk.isNil.if {
+						"AudioItem: % take % has no marks version % — using the default source"
+							.format(itemName, takeNum, out[\marksVersion] ? "").warn;
+					} {
+						m = AnchorTempoMap(mk[\anchors].collect(_[\src]), mk[\anchors].collect(_[\beat]));
+						latIn = true;
+						trimMode = true;
+					}
+				},
+				\stamp, {
+					m = this.prStampMap(itemName, takeNum);
+					m.isNil.if { "AudioItem: % take % has no record stamp — using the list clock"
+						.format(itemName, takeNum).warn };
+				},
+				\flat, { m = this.prFlatMap(ev[\sourceBeatDur] ? 1) },
+				\eventList, { m = nil },
+				{ "AudioItem: unknown sourceTempoMap: % — using the default".format(name.cs).warn;
+					name = \unknown }
+			);
+			// a named source that isn't there falls through to the default
+			(m.isNil and: { name != \eventList }).if {
+				ev[\sourceBeatDur].notNil.if {
+					m = this.prFlatMap(ev[\sourceBeatDur]); name = \flat
+				} {
+					m = this.prStampMap(itemName, takeNum);
+					name = m.notNil.if { \stamp } { \eventList }
+				};
+				latIn = false; trimMode = false;
+			};
+		};
+		out[\srcMap] = m;
+		out[\srcLatencyIncluded] = latIn;
+		out[\srcName] = name ? \map;   // what actually resolved (for warnings and tests)
+		trimMode.if {
+			// start: trims (seconds after the origin), never shifts the source against
+			// the beats; the origin is the first mark's file second
+			(ev[\start] ? ev[\startPos] ? 0) !? { |s| (s != 0).if { out[\srcTrim] = s } };
+			out[\start] = m.t0;
+			out[\startPos] = nil;
+		};
+		ev[\toBeat] !? { |t|
+			var d = t - (ev[\fromBeat] ? 0);
+			out[\dur] = ev[\dur].notNil.if { ev[\dur].min(d) } { d };
+		};
+		(ev[\fromBeat].notNil and: { out[\srcTrim].notNil }).if {
+			"AudioItem: both fromBeat: and start: on % — the later start point wins".format(itemName).warn
+		};
 		^out
 	}
 
-	// Source-position seam shared by tempoFollowActions/tempoFollowEnvActions
-	// (quantize-tempomap-project.md §9b, same convention as \mi2): ideal beat ->
-	// elapsed seconds into the source recording. Priority: \sourceTempoMap map
-	// object (the take's own map, item-frame coordinates — beat b0 == map domain
-	// start == ev[\start] seconds into the file), then flat \sourceBeatDur, then
-	// the take's record-time stamp (what it was ACTUALLY recorded against — beats
-	// identified across lists, so this survives a destructive quantize), then
-	// the list's base clock (recorded tempoMap, else flat beatDur).
-	//
-	// The take's frame ORIGIN (t0) is applied UNIFORMLY, on every branch,
-	// inside the returned closure. It used to be added as `+ rt` on the two stamp
-	// branches only, so `start:` meant a compensated read position there and a raw
-	// file offset everywhere else, with nothing at the call site to say which.
-	// Keeping it in the closure also means every consumer of this seam inherits it
-	// with no call-site edit: tempoFollowActions' endSec, fromSec AND its in-loop
-	// sourceBFull (whose value carries forward through srcCarry, so missing it
-	// would leave every segment after the first uncompensated), plus the twin
-	// seams in tempoFollowEnvActions. prSrcEndBeat is the exact inverse.
-	//
-	// The sealed \audioItem path reads at (startPos + t0(...)), so the
-	// two playback paths now agree. Direct Take.play stays sealed and uncompensated
-	// — face-value audition, the precedent at EventList.sc:2055.
-	//
-	// BEHAVIOURAL BREAK: an ad-hoc tempo-follow event that hand-added the round
-	// trip to `start:` must drop it — it is applied here now. A sourceTempoMap
-	// authored from PHYSICAL file positions already includes the delay; mark that
-	// event `sourceMapIsPhysical: true` to suppress the origin (prEventT0).
+	// The take's record stamp as a map (item frame: beat 0 = the record event's
+	// fire beat, seconds from there, latency NOT included). Disk stamps already
+	// carry one; an in-memory stamp (this session's recording) is sampled once
+	// through the same serializer the disk form was written with
+	// (TakeArchive.prStampAnchors) and cached on the stamp, so both forms answer
+	// the same map.
+	*prStampMap { |itemName, takeNum|
+		var st = this.recordedMap(itemName, takeNum), a;
+		st.isNil.if { ^nil };
+		st[\map].isNil.if {
+			a = TakeArchive.prStampAnchors(st);
+			st[\map] = AnchorTempoMap(a.collect(_[\src]), a.collect(_[\beat]));
+		};
+		^st[\map]
+	}
+
+	// d seconds per beat, as a two-anchor map (\carry extrapolates it forever)
+	*prFlatMap { |d| ^AnchorTempoMap([0, d], [0, 1]) }
+
+	// Ideal beat -> elapsed seconds into the source recording, for a tempo-follow
+	// event (quantize-tempomap-project.md §9b). The CLOCK comes from
+	// prResolveSourceMap — this only reads it. The take's frame origin (t0) is
+	// applied uniformly inside the returned closure unless the map includes the
+	// latency, so every consumer (tempoFollowActions' endSec, fromSec and its in-loop
+	// sourceBFull; the env twin) inherits it with no call-site edit. fromBeat: shifts
+	// the source's beat axis so source beat fromBeat sounds at when: (b0) — trim and
+	// rebase, as MIDI's player.fromBeat. prSrcEndBeat is the exact inverse.
 	*prSrcOffset { |ev, list, b0, takeNum|
-		var sm = ev[\sourceTempoMap];
-		var t0 = this.prEventT0(ev, takeNum);
-		var stamp;
-		// A V2 MonoMap (MapEditor.last) answers timeAt but has no beatDomain /
-		// timeDomain; convert it once, the same seam warpTo uses.
-		sm.isKindOf(MonoMap).if { sm = sm.asAnchorTempoMap };
-		(sm.notNil and: { sm.respondsTo(\timeAt) }).if {
+		var r = this.prResolveSourceMap(ev, nil, takeNum);
+		var sm = r[\srcMap], fb = r[\fromBeat] ? 0;
+		var t0 = r[\srcLatencyIncluded].if { 0 } { this.t0(this.eventItemName(r), takeNum) };
+		sm.notNil.if {
 			var bd = sm.beatDomain.first, mapT0 = sm.timeDomain.first;
-			^{ |bt| t0 + (sm.timeAt(bd + (bt - b0)) - mapT0) }
+			^{ |bt| t0 + (sm.timeAt(bd + fb + (bt - b0)) - mapT0) }
 		};
-		ev[\sourceBeatDur].notNil.if {
-			^{ |bt| t0 + ((bt - b0) * ev[\sourceBeatDur]) }
-		};
-		stamp = this.recordedMap(this.eventItemName(ev), takeNum);
-		stamp.notNil.if {
-			var m = stamp[\map], sl, sEnv, sb0, w0;
-			// disk-loaded form: an AnchorTempoMap over the serialized anchors, whose
-			// relative frame starts at the record-fire beat (src there == 0)
-			m.notNil.if { ^{ |bt| t0 + m.timeAt(bt - b0) } };
-			sl = stamp[\list]; sEnv = stamp[\tempoEnv]; sb0 = stamp[\when];
-			w0 = sl.beatToWall(sb0, sEnv);
-			^{ |bt| t0 + (sl.beatToWall(sb0 + (bt - b0), sEnv) - w0) }
-		};
-		// Reached only when there is NO stamp, so t0 is 0 here by
-		// construction. Written out anyway so the rule reads the same on all five.
-		^{ |bt| t0 + list.baseWallDelta(b0, bt) }
+		// the list's base clock (no stamp, so t0 is 0 here by construction)
+		^{ |bt| t0 + list.baseWallDelta(b0, bt + fb) }
 	}
 	// Inverse of prSrcOffset for the no-\dur case: the beat at which the source
 	// position reaches endSec. The origin comes off the target ONCE, here, mirroring
-	// prSrcOffset adding it once inside the closure — so for every branch
+	// prSrcOffset adding it once inside the closure — so
 	//     startSec + prSrcOffset.(prSrcEndBeat.(..., endSec)) == endSec.
 	*prSrcEndBeat { |ev, list, b0, startSec, endSec, takeNum|
-		var sm = ev[\sourceTempoMap];
-		var rel = endSec - startSec - this.prEventT0(ev, takeNum);
-		var stamp;
-		sm.isKindOf(MonoMap).if { sm = sm.asAnchorTempoMap };
-		(sm.notNil and: { sm.respondsTo(\beatAt) }).if {
-			^b0 + (sm.beatAt(sm.timeDomain.first + rel) - sm.beatDomain.first)
-		};
-		ev[\sourceBeatDur].notNil.if {
-			^b0 + (rel / ev[\sourceBeatDur])
-		};
-		stamp = this.recordedMap(this.eventItemName(ev), takeNum);
-		stamp.notNil.if {
-			var m = stamp[\map], sl, sEnv, sb0, w0;
-			m.notNil.if { ^b0 + m.beatAt(rel) };
-			sl = stamp[\list]; sEnv = stamp[\tempoEnv]; sb0 = stamp[\when];
-			w0 = sl.beatToWall(sb0, sEnv);
-			^b0 + (sl.wallToBeat(w0 + rel, sEnv) - sb0)
+		var r = this.prResolveSourceMap(ev, nil, takeNum);
+		var sm = r[\srcMap], fb = r[\fromBeat] ? 0;
+		var t0 = r[\srcLatencyIncluded].if { 0 } { this.t0(this.eventItemName(r), takeNum) };
+		var rel = endSec - startSec - t0;
+		sm.notNil.if {
+			^b0 + (sm.beatAt(sm.timeDomain.first + rel) - sm.beatDomain.first) - fb
 		};
 		list.tempoMap.notNil.if {
-			^list.tempoMap.beatAt(list.tempoMap.timeAt(b0) + rel)
+			^list.tempoMap.beatAt(list.tempoMap.timeAt(b0) + rel) - fb
 		};
-		^b0 + (rel / (list.beatDur ? TempoClock.default.beatDur))
+		^b0 + (rel / (list.beatDur ? TempoClock.default.beatDur)) - fb
 	}
 
 	// wallAt: optional { |beat| -> wall-seconds } overriding list.beatToWall — the §10
@@ -543,7 +592,7 @@ AudioItem {
 		};
 		sourceDur = sf.numFrames / sf.sampleRate;
 		sf.close;
-		ev = this.prResolveMarks(ev, itemName, takeNum);
+		ev = this.prResolveSourceMap(ev, itemName, takeNum);
 
 		wallAt = wallAt ?? { { |bt| list.beatToWall(bt, tempoEnv) } };
 		b0 = ev[\when] ? 0;
@@ -561,6 +610,11 @@ AudioItem {
 			sourceDur
 		};
 		fromBeat = from.max(b0);
+		// start: on a trim-mode source (\marks): skip the audio before origin + start,
+		// every beat staying where the map puts it
+		ev[\srcTrim] !? { |s|
+			fromBeat = fromBeat.max(AudioItem.prSrcEndBeat(ev, list, b0, startSec, startSec + s, takeNum))
+		};
 		fromSec = startSec + srcOffset.(fromBeat);
 		(fromSec >= endSec).if { ^List[] };
 
@@ -647,7 +701,13 @@ AudioItem {
 		};
 		sourceDur = sf.numFrames / sf.sampleRate;
 		sf.close;
-		ev = this.prResolveMarks(ev, itemName, takeNum);
+		ev = this.prResolveSourceMap(ev, itemName, takeNum);
+		// the env path uses the source map only at its two endpoints and takes its
+		// rate from tempoEnv, so a marked take's beat-to-beat corrections are lost
+		(ev[\srcName] == \marks).if {
+			"AudioItem: sourceTempoMap: \\marks is ignored between its endpoints on "
+			"tempoFollowMode: \\env — use the default segment mode".warn
+		};
 
 		wallAt = wallAt ?? { { |bt| list.beatToWall(bt, tempoEnv) } };
 		b0 = ev[\when] ? 0;
@@ -661,6 +721,11 @@ AudioItem {
 			sourceDur
 		};
 		fromBeat = from.max(b0);
+		// start: on a trim-mode source (\marks): skip the audio before origin + start,
+		// every beat staying where the map puts it
+		ev[\srcTrim] !? { |s|
+			fromBeat = fromBeat.max(AudioItem.prSrcEndBeat(ev, list, b0, startSec, startSec + s, takeNum))
+		};
 		fromSec = startSec + srcOffset.(fromBeat);
 		(fromSec >= endSec).if { ^List[] };
 

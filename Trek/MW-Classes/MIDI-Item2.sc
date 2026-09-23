@@ -1381,7 +1381,10 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 			// selections. Comparison is nil-safe by ordinary ==: legacy saves have
 			// the key on neither side (nil == nil, dedupes), and gaining a manual
 			// set (nil vs an Array) is correctly a new version.
-			[\indices, \beats, \pins, \periodPrior, \anchor, \contentStart, \manual]
+			// \anchors / \freePins: a free pin moves the grid without changing
+			// \indices, so the time-based marking must count as well.
+			[\indices, \beats, \pins, \periodPrior, \anchor, \contentStart, \manual,
+				\anchors, \freePins]
 				.every{ |k| last[k] == sel[k] }
 		};
 		same.if {

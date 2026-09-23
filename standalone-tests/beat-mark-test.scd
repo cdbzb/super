@@ -9,7 +9,7 @@ var h = (thisProcess.nowExecutingPath.dirname +/+ "test-helpers.scd").load;
 var assert = h[\assert];
 var assertClose = h[\assertClose];
 var assertArr = h[\assertArr];
-var sch, times;
+var sch, times, mkNotes, bm;
 
 "== BeatMarkMode tests ==".postln;
 
@@ -37,6 +37,23 @@ assert.(sch[\clicks].size == 2, "clickSchedule: clicks: false keeps only the cou
 sch = BeatMarkMode.clickSchedule([], 0, 4);
 assert.((sch[\offset] == 0) and: { sch[\clicks].isEmpty },
 	"clickSchedule: no grid, no count-in, no clicks");
+
+// ------------------------------------------- 4b. gridTimes includes the picks
+mkNotes = { |ts| ts.collect { |t| (midicmd: \noteOn, timestamp: t, midinote: 60, amp: 0.5) } };
+bm = BeatMarkMode(mkNotes.([0.3, 0.8, 1.3, 1.8, 2.3, 2.8]), 3);
+bm.selectedIndices = [0, 1];
+bm.startManual;
+assertClose.(bm.gridTimes.first, 0.3, "gridTimes (e): starts at the first pick, not the first line");
+assertArr.(bm.gridTimes, [0.3, 0.8, 1.3, 1.8, 2.3, 2.8], "gridTimes (e): picks then lines");
+assert.(MapEditor.mapFromTimes(bm.gridTimes).domain[0] == 0,
+	"gridTimes (e): a map read off it has beat 0 at the first pick");
+bm.exitMode;
+bm.selectedIndices = [0, 1];
+bm.startDP;
+assertClose.(bm.gridTimes.first, 0.3, "gridTimes (E): the DP seed and the pick before it are included");
+assert.(bm.gridTimes.differentiate.drop(1).every(_ > 0), "gridTimes (E): strictly increasing");
+assert.(bm.gridTimes.size == bm.selectionEvent[\indices].size,
+	"gridTimes agrees with selectionEvent on how many beats there are");
 
 h[\report].();
 0.exit;

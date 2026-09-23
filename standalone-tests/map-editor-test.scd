@@ -44,7 +44,8 @@ assertArr.(bm.gridLines.keep(4).collect(_[\noteIndex]), [2, 3, 4, 5],
 	"'e': each line adopts the note under it");
 assertArr.(bm.selectedIndices.copy.sort, [0, 1, 2, 3, 4, 5],
 	"'e': the selection is the hand picks plus every adopted note");
-assertArr.(bm.gridTimes.keep(4), [2, 3, 4, 5], "'e': gridTimes is the click source");
+assertArr.(bm.gridTimes.keep(6), [0, 1, 2, 3, 4, 5],
+	"'e': gridTimes is the click source — the hand picks, then the lines");
 
 // ------------------------------------------------- BeatMarkMode: the 'w' payload
 sel = bm.selectionEvent;

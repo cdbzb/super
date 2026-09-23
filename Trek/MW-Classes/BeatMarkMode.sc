@@ -285,13 +285,22 @@ BeatMarkMode {
 		^this
 	}
 
-	// The live grid's beat times, or nil when no grid is up. This is the host's
-	// FIRST choice of beat source for clicks / snapping / the tempo lane — what
-	// the eye is looking at beats what a saved selection remembers.
+	// The live grid's beat times — the hand picks, then every grid line — or nil
+	// when no grid is up. This is the host's FIRST choice of beat source for clicks /
+	// snapping / the tempo lane — what the eye is looking at beats what a saved
+	// selection remembers. The picks belong in it: grid lines only start AFTER the
+	// anchor pair (the DP tracker runs strictly forward from its seed), so a map
+	// read off the lines alone began one or more beats late, and disagreed with
+	// selectionEvent, which counts the picks.
 	gridTimes {
-		^(extrapolateMode and: { gridLines.notNil and: { gridLines.notEmpty } }).if {
-			gridLines.collect(_[\time])
-		}
+		var picks, out = [];
+		(extrapolateMode and: { gridLines.notNil and: { gridLines.notEmpty } }).not.if { ^nil };
+		picks = (manualIndices ? []).collect { |i| notes[i].timestamp }.sort;
+		// strictly increasing, or MapEditor.mapFromTimes refuses the whole grid
+		(picks ++ gridLines.collect(_[\time])).do { |t|
+			(out.isEmpty or: { t > (out.last + 1e-6) }).if { out = out.add(t) }
+		};
+		^out
 	}
 
 	// Resume beat-mark editing from a saved selection. DP saves (anchor + pins)

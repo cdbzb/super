@@ -32,6 +32,7 @@ BeatMarkMode {
 	var <anchorPair, <manualPicks, <pinSet, <beatTracker;
 	var sortedNotes = true;  // notes in time order -> binary-search nearest lookups
 	var <>onChange, <>onGridChange, <>ensureVisible, <>onSave;
+	var <>salienceFunc;      // handed to every MIDIBeatTracker this mode builds (nil = its default)
 
 	*new { |notes, end| ^super.new.prInit(notes, end) }
 
@@ -249,6 +250,7 @@ BeatMarkMode {
 		anchorPair = sorted.keep(-2).collect { |i| notes[i].timestamp };
 		pinSet = Set[];
 		beatTracker = MIDIBeatTracker(notes, anchorPair[1] - anchorPair[0], sorted.last);
+		beatTracker.salienceFunc = salienceFunc;
 		gridLines = beatTracker.track;
 		(gridLines.size == 0).if {
 			"Extrapolate (DP): no beats found after the anchor".postln;
@@ -371,6 +373,7 @@ BeatMarkMode {
 			pinSet = Set.newFrom(savedSel[\pins] ? []);
 			beatTracker = MIDIBeatTracker(notes, savedSel[\periodPrior],
 				savedSel[\anchor], pinSet.asArray);
+			beatTracker.salienceFunc = salienceFunc;
 			gridLines = beatTracker.track;
 			dpMode = gridLines.size > 0;
 			restored = dpMode;
@@ -448,6 +451,7 @@ BeatMarkMode {
 			pinSet = Set.newFrom((savedSel[\pinTimes] ? [])
 				.collect { |t| this.nearestIndex(t, tol) }.reject(_.isNil));
 			beatTracker = MIDIBeatTracker(notes, savedSel[\periodPrior], seed, pinSet.asArray);
+			beatTracker.salienceFunc = salienceFunc;
 			gridLines = beatTracker.track;
 			dpMode = true;
 		} {

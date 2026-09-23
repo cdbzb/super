@@ -35,9 +35,23 @@ MIDIBeatTracker {
 			+ ((note[\sustain] ? 0).clip(0, 1) * 0.3)         // longer
 			+ (((note[\midinote] ? 60) < 52).if { 0.2 }{ 0 }) // bass register
 		}};
-		saliences = notes.collect{ |n, i|
-			var cluster = notes.count{ |m| (m[\timestamp] - n[\timestamp]).abs < 0.03 };
-			func.(n, i, cluster)
+		saliences = notes.collect{ |n, i| func.(n, i, this.prClusterSizes[i]) }
+	}
+
+	// For each note, how many notes (itself included) lie within 30 ms of it.
+	// Two-pointer window over time-sorted notes, O(n); the full pairwise count is
+	// kept for unsorted input. Thousands of audio transients made the pairwise
+	// count the slow part of every E.
+	prClusterSizes {
+		var ts = notes.collect(_[\timestamp]), sorted = true, lo = 0, hi = 0;
+		ts.doAdjacentPairs { |a, b| (b < a).if { sorted = false } };
+		sorted.not.if {
+			^ts.collect { |t| ts.count { |u| (u - t).abs < 0.03 } }
+		};
+		^ts.collect { |t|
+			while { (ts[lo] <= (t - 0.03)) } { lo = lo + 1 };
+			while { (hi < ts.size) and: { ts[hi] < (t + 0.03) } } { hi = hi + 1 };
+			hi - lo
 		}
 	}
 

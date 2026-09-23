@@ -123,6 +123,18 @@ bm.exitMode; bm.selectedIndices = [0, 1]; bm.startDP;
 bm.pinLine(1, 1.9);
 assert.(bm.gridLines[1][\pinned] != true, "pinLine: refused in DP mode");
 
+// ------------------------------------------ tracker: cluster sizes + salience hook
+notesA = mkNotes.([0.3, 0.31, 0.32, 0.8, 1.3, 1.33, 1.8]);
+bm = MIDIBeatTracker(notesA, 0.5, 0);
+assertArr.(bm.prClusterSizes,
+	notesA.collect { |n| notesA.count { |m| (m[\timestamp] - n[\timestamp]).abs < 0.03 } },
+	"prClusterSizes: two-pointer count == pairwise count");
+bm = BeatMarkMode(notesA, 2);
+bm.salienceFunc = { |n| 7 };
+bm.selectedIndices = [0, 3];
+bm.startDP;
+assert.(bm.beatTracker.saliences.every(_ == 7), "salienceFunc: handed to the DP tracker");
+
 h[\report].();
 0.exit;
 )

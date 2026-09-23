@@ -321,7 +321,7 @@ Everything that decides the source clock today — more than one resolver:
 |---|---|---|
 | `sourceTempoMap:` | a map object; MIDI also `\eventList` | `prSrcOffset` / `prSrcEndBeat`, `prEmitMi2Follow` |
 | `sourceBeatDur:` | flat seconds per beat | `prSrcOffset` |
-| `sourceMapIsPhysical:` | the map already includes the recording delay | `prEventT0` |
+| `sourceMapIsPhysical:` | the map already includes the recording delay → renamed `sourceMapIncludesLatency:` (rule 3) | `prEventT0` |
 | `followTrack: <value>` | audio: map → `sourceTempoMap:`; `true`/`\flat` → `sourceBeatDur: 1`; `\eventList` → nothing (= default) | `prForwardAudioFollow` (EventList.sc:2118) |
 | `followTrack: <value>` on `\mi2` | read DIRECTLY as the source map | `prEmitMi2Follow` (EventList.sc:2312) |
 | `marks:` | which marks version (step 6) | `prResolveMarks` |
@@ -343,6 +343,11 @@ Rules:
 3. **One timing field: `sourceTempoMap:`.** **`marks:` is removed** (unmerged branch
    only) → `sourceTempoMap: \marks`, with `marksVersion: N`. `sourceBeatDur: d`
    becomes the parameter of `\flat` (kept as a key, read only by the resolver).
+   **`sourceMapIsPhysical:` → `sourceMapIncludesLatency:`** (boolean, same default
+   false = add the take's `t0`): true says the map's seconds are file positions,
+   drawn on the waveform, so they already contain the recording delay. Written by
+   hand only for a hand-built map object; for names and functions the resolver sets
+   it. The old key is read as an alias.
 4. **`followTrack:` only turns following on.** `true` / `\eventList` forward NOTHING
    — they mean "follow, default source" (today's `\eventList` meaning; forwarding it
    as a named source would silently drop every take's stamp). A map value, or
@@ -360,8 +365,13 @@ Rules:
    (the origin is the map's first anchor's file second, `t0`). Shifting source
    against beats would put no marked beat on a list beat. (Today `prResolveMarks`
    OVERWRITES a user `start:` — a live bug, e.g. org.org:325
-   `e.addItem(a, start:2, dur:4, at:-2, marks:true)`.) **Decision needed:** is
-   `start:` there meant in seconds (trim) or in marked beats (add `startBeat:`)?
+   `e.addItem(a, start:2, dur:4, at:-2, marks:true)`.)
+   **`startBeat: b`** (decided 2026-09-23): start playback at beat `b` of the source
+   map — the take's audio from that beat on, with beat `b` sounding at
+   `when: + (b - map's first beat)`, i.e. the map is NOT re-based; to put beat `b`
+   at list beat 8, use `at: 8 - b` or `offset:`. `dur:` still counts beats from where
+   playback starts. `start:` (seconds) and `startBeat:` together: the later of the
+   two wins, with a warning.
 8. **Key table for both media**, and a **parity test**: for a set of keys,
    `addItem(take, at:, …)` and the hand-written event of rule 1 prepare the same
    schedule.
@@ -408,7 +418,7 @@ sourceTempoMap: { ~stamp.quantize(0.5) }     // a function, evaluated with .use
   - stamp: src is 0 at record fire, round trip NOT baked (\raw), so offered as
     `src + t0`; beats are the list beats (`+ stamp[\when]` on the rebased disk form);
     `recordedAgainst.start` is the record event's own key and is NOT added.
-  - the resolver sets `sourceMapIsPhysical: true` itself for names and functions.
+  - the resolver sets `sourceMapIncludesLatency: true` itself for names and functions.
 - **Beat origin survives.** `AnchorTempoMap`'s `initAnchors` drops the first beat
   (keeps only the first time as `t0`), so the resolver reads the result's
   `xs.first` BEFORE converting. Placement rule: `when:` is the list beat of the

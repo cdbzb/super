@@ -12,6 +12,31 @@ schema; this plan adds one writer and one reader and fixes one filter.
 
 ---
 
+## Status (2026-09-22, branch `audio-beat-marking`)
+
+M1 (steps 1–6) built; step 7 (DP time pins) not started.
+
+| Step | State | Suite |
+|---|---|---|
+| 1 rename `TakeArchive` | done | `take-archive-stamp-test` (alias checks) |
+| 2a MonoMap as `sourceTempoMap:` | done | `source-map-monomap-test` |
+| 2b `isStamp` | done | `take-archive-stamp-test` |
+| 2c sealed-path `prEventT0` | done — **no test** (server-bound) | — |
+| 3 `TakeTransients` | done | `take-transients-test` (NRT, 5/5 hits, 0.04 ms) |
+| 4a click math | done | `beat-mark-test` |
+| 4b `gridTimes` + picks | done — **changes MIDI gui clicks/lane** | `beat-mark-test`, `map-editor-test` |
+| 4c save/resume by times | done | `beat-mark-test` |
+| 4d free pins (pick mode) | done | `beat-mark-test` |
+| 5 `TakeGui`, marks API, `loadMap`, `take.tempoMap` | done — **needs a hands-on session** | `take-marks-test`, `take-gui-smoke` (opens a window) |
+| 6 `addItem(marks:)`, `prResolveMarks` | done — **no listening check yet** | `take-marks-playback-test` |
+| 7 DP time pins | not started | — |
+
+Unverified by ear or eye: `TakeGui` interaction feel (drag, snap, lane), click
+and playback alignment in the window, and a marked drum take playing on a list
+grid (plan §6 acceptance, sealed vs follow).
+
+---
+
 ## Vocabulary
 
 One word per concept. New names follow what the codebase already says

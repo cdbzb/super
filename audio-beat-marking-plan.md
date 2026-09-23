@@ -35,7 +35,7 @@ planned.
 | 6 `addItem(marks:)`, `prResolveMarks` | done — **no listening check yet** | `take-marks-playback-test` |
 | 7 DP time pins | not started | — |
 | 8 interface cleanup, one timing field (drop `marks:`) | done — `\mi2` resolver unification deferred to step 10 | `source-map-resolver-test` (incl. parity) |
-| 9 `align:` for audio | planned | — |
+| 9 `align:` for audio | done (segment path; env path warns) | `align-audio-test` |
 | 10 `sourceTempoMap:` names + functions (`~marks`, `~stamp`) | planned | — |
 | 11 stamp seeding + automatic `at:` | planned | — |
 

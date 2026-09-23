@@ -656,15 +656,12 @@ EventList {
 	// origin / latency rules itself for named sources like \marks.
 	//
 	// Numeric at: only. at: nil (recorded placement) and at: \original need a wall
-	// reference that survives a restart, which the archive does not persist yet,
-	// and align: needs Take.asEventList; both are deferred — see
-	// audioitem-placement-proposal.md §3. Guards answer the warning String, the
+	// reference that survives a restart, which the archive does not persist yet —
+	// deferred, see audioitem-placement-proposal.md §3. align: is the audio
+	// quantize strength (AudioItem.tempoFollowActions), not a nested list. Guards answer the warning String, the
 	// same contract as addItem's own guards.
 	prAddAudioItem { |player, at, voice, offset, align, kwargs|
 		var ev;
-		align.notNil.if {
-			^"EventList.addItem: align: is not supported for audio takes yet — pass at: a beat".warn
-		};
 		(at == \original).if {
 			^"EventList.addItem: at: \\original is not supported for audio takes — pass at: a beat".warn
 		};
@@ -680,6 +677,7 @@ EventList {
 			start: 0
 		);
 		voice !? { ev[\voice] = voice };
+		align !? { ev[\align] = align };   // quantize strength, AudioItem.tempoFollowActions
 		(kwargs ? []).pairsDo { |k, v| ev[k] = v };
 		// a named source the take lacks is a mistake worth refusing here, at the
 		// call, rather than a warning at every prepare

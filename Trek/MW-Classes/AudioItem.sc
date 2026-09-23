@@ -420,7 +420,7 @@ AudioItem {
 	   toBeat - fromBeat. Idempotent (srcResolved). */
 	// Event keys that choose or shape the source clock. Any of them on an \audioItem
 	// event routes it to the tempo-follow path (EventList.prIsAudioFollow).
-	*timingKeys { ^#[\sourceTempoMap, \sourceBeatDur, \marksVersion, \fromBeat, \toBeat, \marks] }
+	*timingKeys { ^#[\sourceTempoMap, \sourceBeatDur, \marksVersion, \fromBeat, \toBeat, \align, \marks] }
 
 	*prResolveSourceMap { |ev, itemName, takeNum|
 		var out, sm, name, m, latIn = false, trimMode = false;
@@ -570,7 +570,7 @@ AudioItem {
 		var path = AudioItem.takePath(directory, takeNum);
 		var buffer, sf, sourceDur, srcOffset, b0, startSec, endSec;
 		var segBeats, fade, fromBeat, fromSec, actions, beat, lastBeat;
-		var wallFrom, srcCarry, wallCarry;
+		var wallFrom, srcCarry, wallCarry, align, baseWallAt;
 
 		File.exists(path).not.if {
 			"AudioItem tempoFollow: no file at %".format(path).warn;
@@ -610,6 +610,27 @@ AudioItem {
 			sourceDur
 		};
 		fromBeat = from.max(b0);
+		wallFrom = wallAt.(from);
+		/* align: 0..1 (audio-beat-marking-plan.md step 9) — the quantize strength.
+		   1 = every beat of the source map on its list beat (plain follow), 0 = the
+		   take as performed (source at rate 1 from the anchor), in between a blend.
+		   Same sense as prExpandBlended's align on nested lists: the WALL time of each
+		   source beat is blended — (anchor + its performed offset).blend(its list
+		   beat's wall time) — never the source position at a fixed list beat. */
+		align = ev[\align];
+		align.notNil.if {
+			var anchorW = wallAt.(b0), s0 = srcOffset.(b0), lo, hi;
+			baseWallAt = wallAt;
+			wallAt = { |bt| (anchorW + (srcOffset.(bt) - s0)).blend(baseWallAt.(bt), align) };
+			// mid-list start: the source beat whose BLENDED time is list beat `from`'s
+			// wall time — bisected, as prBisectBeat does (the blend has no closed form)
+			(from > b0).if {
+				lo = b0; hi = b0 + 1;
+				while { (wallAt.(hi) < wallFrom) and: { (hi - b0) < 1e6 } } { lo = hi; hi = b0 + ((hi - b0) * 2) };
+				40.do { var mid = (lo + hi) * 0.5; (wallAt.(mid) < wallFrom).if { lo = mid } { hi = mid } };
+				fromBeat = hi;
+			};
+		};
 		// start: on a trim-mode source (\marks): skip the audio before origin + start,
 		// every beat staying where the map puts it
 		ev[\srcTrim] !? { |s|
@@ -629,7 +650,8 @@ AudioItem {
 		// Loop-invariant / carried values: wallAt.(from) is fixed, and each iteration's
 		// (sourceA, wallA) is the previous one's (sourceBFull, wallB) — recomputing them
 		// tripled the beatToWall cost of this loop.
-		wallFrom  = wallAt.(from);
+		// wallFrom = the real wall time of list beat `from` (set above, before any
+		// align blend), so delays stay relative to where the list actually is
 		srcCarry  = fromSec; // == startSec + srcOffset.(fromBeat)
 		wallCarry = wallAt.(beat);
 		while { (beat < lastBeat) and: { srcCarry < endSec } } {
@@ -704,6 +726,9 @@ AudioItem {
 		ev = this.prResolveSourceMap(ev, itemName, takeNum);
 		// the env path uses the source map only at its two endpoints and takes its
 		// rate from tempoEnv, so a marked take's beat-to-beat corrections are lost
+		ev[\align].notNil.if {
+			"AudioItem: align: is ignored on tempoFollowMode: \\env — use the default segment mode".warn
+		};
 		(ev[\srcName] == \marks).if {
 			"AudioItem: sourceTempoMap: \\marks is ignored between its endpoints on "
 			"tempoFollowMode: \\env — use the default segment mode".warn

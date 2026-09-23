@@ -154,9 +154,10 @@ added = flat.addItem(take);
 assert.(added.isKindOf(String), "audio guard: at: nil warns, no insert");
 added = flat.addItem(take, at: \original);
 assert.(added.isKindOf(String), "audio guard: at: \\original warns, no insert");
-added = flat.addItem(take, at: 8, align: 0.5);
-assert.(added.isKindOf(String), "audio guard: align: warns, no insert");
 assert.(flat.events.size == sizeBefore, "audio guard: list untouched by refused inserts");
+added = flat.addItem(take, at: 8, align: 0.5);
+assert.(added.isKindOf(Array) and: { added.first[\align] == 0.5 },
+	"audio: align: is accepted now (step 9) and goes into the event");
 AudioItem.buffers.removeAt(aName.asSymbol, 0);
 
 h[\report].();

@@ -160,7 +160,9 @@ AudioItem {
                     // recordedMap, which caches, so the archive read happens once per
                     // take; it must not build a Take (Buffer.read inside this send is
                     // exactly the late-bundle bug that caching fixed).
-                    var t0 = AudioItem.t0(itemName, takeNum);
+                    // prEventT0, not t0: honours sourceMapIsPhysical like the
+                    // follow path, so the two paths agree on every event.
+                    var t0 = AudioItem.prEventT0(currentEnvironment, takeNum);
                     // match \audioItemTempoFollow / Server.bind / note events: default the
                     // playback bundle to the real server latency, not a hardcoded 0.2, so
                     // audioItems stay aligned with voices under any s.latency setting.
@@ -427,6 +429,9 @@ AudioItem {
 		var sm = ev[\sourceTempoMap];
 		var t0 = this.prEventT0(ev, takeNum);
 		var stamp;
+		// A V2 MonoMap (MapEditor.last) answers timeAt but has no beatDomain /
+		// timeDomain; convert it once, the same seam warpTo uses.
+		sm.isKindOf(MonoMap).if { sm = sm.asAnchorTempoMap };
 		(sm.notNil and: { sm.respondsTo(\timeAt) }).if {
 			var bd = sm.beatDomain.first, mapT0 = sm.timeDomain.first;
 			^{ |bt| t0 + (sm.timeAt(bd + (bt - b0)) - mapT0) }
@@ -456,6 +461,7 @@ AudioItem {
 		var sm = ev[\sourceTempoMap];
 		var rel = endSec - startSec - this.prEventT0(ev, takeNum);
 		var stamp;
+		sm.isKindOf(MonoMap).if { sm = sm.asAnchorTempoMap };
 		(sm.notNil and: { sm.respondsTo(\beatAt) }).if {
 			^b0 + (sm.beatAt(sm.timeDomain.first + rel) - sm.beatDomain.first)
 		};

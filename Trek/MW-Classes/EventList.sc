@@ -2276,6 +2276,9 @@ EventList {
 		srcMap = ev[\sourceTempoMap] ?? {
 			(ev[\followTrack] == true).if { nil } { ev[\followTrack] }
 		};
+		// A V2 MonoMap (MapEditor.last) has no beatDomain/timeDomain for
+		// prSrcTimeAt/prSrcBeatAt; convert it once, the same seam warpTo uses.
+		srcMap.isKindOf(MonoMap).if { srcMap = srcMap.asAnchorTempoMap };
 		useMap = (srcMap == \eventList) and: {
 			(tm.notNil and: { tm.respondsTo(\timeAt) } and: { tm.respondsTo(\beatAt) }).if { true } {
 				"prEmitMi2Follow: sourceTempoMap:\\eventList needs an invertible tempo-map base; using flat".warn;

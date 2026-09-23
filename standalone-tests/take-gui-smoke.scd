@@ -37,6 +37,10 @@ fork {
 		ok.(Take(name, 0).tempoMap.notNil, "TakeGui: take.tempoMap reads it back");
 		tg.prKey($m); tg.prKey($Q); tg.prKey($W);
 		ok.(TakeArchive.loadMarks(name, 0)[\edited] == true, "TakeGui: m Q W saves an edited map");
+		tg.prKey($t); tg.prKey($t);
+		tg.prKey($?);
+		ok.(Window.allWindows.any { |w| w.name == "Take Window Help" }, "TakeGui: ? opens the help window");
+		Window.allWindows.do { |w| (w.name == "Take Window Help").if { w.close } };
 		tg.refresh;
 	}.defer;
 	2.wait;

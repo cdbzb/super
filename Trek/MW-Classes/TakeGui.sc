@@ -17,8 +17,9 @@
 // Mouse, with a grid up: drag a line and release — it snaps to the nearest
 // transient within `snapPx` pixels (alt: no snap, a free pin); double-click puts a
 // free pin on the nearest line; right-click unpins the nearest line.
-// Keys: space play/stop · c clicks · C count-in · w save marks · r clear · 0 reset
-// view · h/l scroll, H/L zoom (outside a grid) · q close · ? help.
+// Keys: space play/stop · c clicks · C count-in · t tempo lane · w save marks ·
+// r clear · 0 reset view · h/l scroll, H/L zoom (outside a grid) · q close ·
+// ? help window (the full list, as in MIDIItem.gui).
 TakeGui {
 	classvar <>snapPx = 8;
 	var <take, <path, <sampleRate, <numFrames, <numChannels, <dur;
@@ -100,13 +101,17 @@ TakeGui {
 		v = TakeArchive.writeMarks(take.name, take.num, sel[\anchors], sel,
 			(transientParams: params));
 		savedTimes = sel[\anchors].collect(_[\src]);
+		marks = TakeArchive.loadMarks(take.name, take.num, v);
 		"TakeGui: saved marks version % (% beats)".format(v, sel[\anchors].size).postln;
+		this.refresh;
 	}
 
 	prSaveMap { |map|
 		var v = TakeArchive.writeMarks(take.name, take.num,
 			[map.ys, map.xs].flop, nil, (transientParams: params, edited: true));
+		marks = TakeArchive.loadMarks(take.name, take.num, v);
 		"TakeGui: saved edited map as marks version %".format(v).postln;
+		this.refresh;
 	}
 
 	// ---- peaks: min/max per `peakBin` frames of the analysed channel ----------
@@ -284,9 +289,67 @@ TakeGui {
 		Pen.line(xOf.(cursorTime) @ waveTop, xOf.(cursorTime) @ height); Pen.stroke;
 		playhead !? { Pen.color = Color.red; Pen.line(xOf.(playhead) @ 0, xOf.(playhead) @ height); Pen.stroke };
 		mapEd.drawEditOverlay(vs, ve, width, height);
-		Pen.stringAtPoint("space play · c clicks% · C count-in % · w save · e/E grid · m map edit · ?"
-			.format(clickEnabled.if(" on", ""), countIn), 10 @ (height - 16),
-			Font("Helvetica", 10), Color.grey(0.4));
+		// instruction strip, as in MIDIItem.gui
+		Pen.stringAtPoint(
+			"space play/stop · 'c' beat clicks · 'C' count-in · click ticks to pick · 'e' extrapolate · "
+			"'E' DP beat tracker · 'w' save · 'm' map edit · 'r' reset · '?' help",
+			Point(10, 10), Font("Helvetica", 14), Color.black);
+		// state line
+		Pen.stringAtPoint("clicks %  ·  count-in %  ·  %"
+			.format(clickEnabled.if("on", "off"), (countIn == 0).if("off", { "% beats".format(countIn) }),
+				marks.isNil.if("no saved marks", { "marks version %".format(marks[\version]) })),
+			10 @ (height - 16), Font("Helvetica", 10), Color.grey(0.4));
+	}
+
+	// the '?' window, as in MIDIItem.gui
+	prHelpWindow {
+		var win = Window("Take Window Help", Rect(200, 200, 480, 700)).front;
+		StaticText(win, Rect(10, 10, 460, 680))
+			.string_("Take Window Keyboard Shortcuts:\n\n" ++
+				"q - Close window\n" ++
+				"h/l - Scroll horizontally left/right (outside a grid)\n" ++
+				"H/L - Zoom out/in horizontally\n" ++
+				"0 - Reset the view\n" ++
+				"r - Clear the selection and the grid\n" ++
+				"w - Save the beat grid as a marks version (TakeArchive; take.tempoMap reads it)\n" ++
+				"space - Play/stop from the cursor\n" ++
+				"c - Toggle hihat clicks on the beat grid (the e/E grid if one is up,\n" ++
+				"      otherwise the saved marks)\n" ++
+				"C - Count-in before playback: cycles 0 / 2 / 4 beats (clicks at the\n" ++
+				"      local beat length; sounds even when 'c' clicks are off)\n" ++
+				"t - Toggle the tempo lane\n" ++
+				"e - Toggle extrapolate mode (beat grid from the last 2 picked transients)\n" ++
+				"E - Same, but DP beat tracker (globally optimal; j/k pin transients)\n" ++
+				"      h/l - previous/next grid line\n" ++
+				"      j/k - pick later/earlier transient at the current line\n" ++
+				"m - Toggle MAP EDIT mode (edits the tempo map in the lane; the keys\n" ++
+				"      below act only while it is on)\n" ++
+				"      i/o - span start/end at the cursor; drag across the lane also\n" ++
+				"      A   - select the whole map (the default span)\n" ++
+				"      Q   - straighten the span to one constant tempo (quantize)\n" ++
+				"      V   - curve the span (monotone cubic through its anchors)\n" ++
+				"      N   - clump: keep every 2nd anchor in the span\n" ++
+				"      R   - ritard the span\n" ++
+				"      S/F - slower/faster: stretch the span's time by ±5%\n" ++
+				"      B   - set the span to the grid's mean bpm\n" ++
+				"      P   - audition: click through the candidate map\n" ++
+				"      u/U - undo/redo    Z - back to the loaded map\n" ++
+				"      W   - commit and save the edited map as a marks version\n" ++
+				"? - Show this help menu\n\n" ++
+				"Mouse:\n" ++
+				"Click a transient tick to pick/unpick it (pick two, then e or E)\n" ++
+				"Click elsewhere to place the playback cursor\n" ++
+				"With a grid up: drag a line and release to move it — it snaps to the\n" ++
+				"      nearest transient; alt-drag places a free pin (no transient)\n" ++
+				"Double-click: free pin on the nearest line (pick mode only)\n" ++
+				"Right-click: unpin the nearest line\n" ++
+				"In map edit mode, drag across the tempo lane to select a beat span\n\n" ++
+				"Visual Guide:\n" ++
+				"Blue ticks = transients (darker = stronger); orange = picked\n" ++
+				"Green lines = beat grid; red = current line; blue = free pin\n" ++
+				"Faint green lines = saved marks (when no grid is up)")
+			.font_(Font("Helvetica", 12))
+			.align_(\left);
 	}
 
 	prMouseDown { |x, y, mod, btn, clicks|
@@ -353,11 +416,8 @@ TakeGui {
 			$r, { beatMark !? { beatMark.clear; mapEd.invalidate; "cleared".postln } },
 			$0, { nav.resetView },
 			$q, { window.close },
-			$?, { ("TakeGui keys: space play/stop · c clicks · C count-in · w save marks · r clear · "
-				"e/E beat grid (then h/l line, j/k re-pick) · m map edit (i/o span, Q V N R S F B, "
-				"P audition, u/U, Z, W commit+save) · h/l scroll, H/L zoom · 0 reset · q close\n"
-				"mouse: click tick = select · drag line = move (alt: free) · dbl-click = free pin · "
-				"right-click = unpin").postln }
+			$t, { mapEd.toggleLane },
+			$?, { this.prHelpWindow }
 		);
 		this.refresh;
 	}

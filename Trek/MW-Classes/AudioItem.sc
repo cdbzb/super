@@ -276,9 +276,7 @@ AudioItem {
 	// with the anchors and every other recordedAgainst field carried over, and
 	// drops the in-memory cache so the next playback reloads. ^the new version id.
 	*repinRoundTrip { |name, takeNum, rt|
-		var found = RetuneArchive.latestWhere(name, takeNum, { |d|
-			d[\recordedAgainst].notNil and: { (d[\anchors] ? []).size >= 2 }
-		});
+		var found = RetuneArchive.latestWhere(name, takeNum, { |d| RetuneArchive.isStamp(d) });
 		var d, ra, v;
 		found.isNil.if {
 			^"AudioItem.repinRoundTrip(%, %): no record stamp on disk"

@@ -134,11 +134,17 @@ RetuneArchive {
 	// map-based (AnchorTempoMap over the serialized anchors, relative frame starting
 	// at the record-fire beat) instead of list+tempoEnv; AudioItem.prSrcOffset/
 	// prSrcEndBeat accept both forms. ^nil when nothing usable is on disk.
+	// Is version `d` a record-time stamp? Beat-marked versions also carry anchors
+	// (anchorSource: \beatMark), and must never be adopted as the record clock.
+	// Versions written before anchorSource existed are stamps by construction.
+	*isStamp { |d|
+		^d[\recordedAgainst].notNil
+		and: { (d[\anchors] ? []).size >= 2 }
+		and: { (d[\anchorSource] ? \recordStamp) == \recordStamp }
+	}
 	*loadStamp { |name, num|
 		^try {
-			var found = this.latestWhere(name, num, { |d|
-				d[\recordedAgainst].notNil and: { (d[\anchors] ? []).size >= 2 }
-			});
+			var found = this.latestWhere(name, num, { |d| this.isStamp(d) });
 			found !? {
 				var d = found[1], ra = d[\recordedAgainst];
 				(
@@ -384,14 +390,15 @@ RetuneItem : AbstractRetune {
 		};
 		// newest-first scan: notes load from the newest version that HAS them (a
 		// record-time stamp version has anchors but no notes and must not shadow an
-		// older edit); anchors/provenance carry from the newest version bearing them.
+		// older edit); anchors/provenance carry from the newest record stamp
+		// (isStamp — beat-marked versions are not RetuneItem's business).
 		latest = this.splitTakes - 1;
 		(latest >= 0).if {
 			block { |break|
 				latest.forBy(0, -1) { |v|
 					var d = RetuneArchive.read(name, num, v);
 					d.notNil.if {
-						(anchors.isNil and: { d[\anchors].notNil }).if {
+						(anchors.isNil and: { RetuneArchive.isStamp(d) }).if {
 							anchors = d[\anchors];
 							anchorSource = d[\anchorSource];
 							recordedAgainst = d[\recordedAgainst];

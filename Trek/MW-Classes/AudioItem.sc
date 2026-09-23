@@ -434,12 +434,27 @@ AudioItem {
 			sm = sm ? \marks;
 			(ev[\marks] != true).if { out[\marksVersion] = out[\marksVersion] ? ev[\marks] };
 		};
+		// a Function: evaluated with .use in an environment offering the take's
+		// sources as file-seconds MonoMaps (prSourceEnvir); it answers the map
 		sm.isKindOf(Function).if {
-			"AudioItem: a Function sourceTempoMap: is not supported yet (plan step 10) — using the default"
-				.warn;
-			sm = nil
+			var fn = sm, envir = this.prSourceEnvir(ev, itemName, takeNum), result;
+			result = { envir.use { fn.value } }.try { |err|
+				"AudioItem: sourceTempoMap function failed (%) — using the default"
+					.format(err.errorString).warn;
+				nil
+			};
+			sm = nil;
+			(result.notNil and: { result.respondsTo(\timeAt) }).if {
+				m = result.isKindOf(MonoMap).if { result.asAnchorTempoMap } { result };
+				name = \function; latIn = true; trimMode = true;
+			} {
+				result.notNil.if {
+					"AudioItem: sourceTempoMap function answered % (not a map) — using the default"
+						.format(result.class).warn
+				}
+			}
 		};
-		name = sm.isKindOf(Symbol).if { sm } {
+		(name == \function).not.if { name = sm.isKindOf(Symbol).if { sm } {
 			sm.isNil.if {
 				ev[\sourceBeatDur].notNil.if { \flat } {
 					this.prStampMap(itemName, takeNum).notNil.if { \stamp } { \eventList }
@@ -484,6 +499,7 @@ AudioItem {
 				latIn = false; trimMode = false;
 			};
 		};
+		};   // end: not a function
 		out[\srcMap] = m;
 		out[\srcLatencyIncluded] = latIn;
 		out[\srcName] = name ? \map;   // what actually resolved (for warnings and tests)
@@ -502,6 +518,36 @@ AudioItem {
 			"AudioItem: both fromBeat: and start: on % — the later start point wins".format(itemName).warn
 		};
 		^out
+	}
+
+	/* The environment a Function sourceTempoMap: runs in (plan step 10). Every
+	   candidate is a MonoMap in ONE frame — beat -> FILE seconds — so the whole
+	   MapEditor vocabulary works on it (quantize(amount, from, to), curve,
+	   ritardSpan, setBpm(bpm, from, to), transformSpan) and whatever the function
+	   answers is already in file seconds:
+	     ~marks   the marks version (newest, or marksVersion:), beats from 0 at the
+	              first mark; nil when the take has none
+	     ~stamp   the record stamp, beats from 0 at the record event's fire beat,
+	              seconds plus the take's t0 (the stamp is stored without the
+	              recording latency, \raw); nil when unstamped
+	   The event's own keys (~item, ~take, ~when, ...) read through the proto.
+	   The two beat axes start at different places until marks on stamped takes
+	   are written in list beats (step 11) — combine them with that in mind. */
+	*prSourceEnvir { |ev, itemName, takeNum|
+		var envir = (), mk, st, mono;
+		mk = TakeArchive.loadMarks(itemName, takeNum, ev[\marksVersion]);
+		mk !? {
+			envir[\marks] = AnchorMap.fromAnchors(mk[\anchors].collect(_[\beat]),
+				mk[\anchors].collect(_[\src]), fromFrame: \beat, toFrame: \sec)
+		};
+		st = this.prStampMap(itemName, takeNum);
+		st !? {
+			mono = st.asMonoMap(origin: \absolute);
+			envir[\stamp] = AnchorMap.fromAnchors(mono.xs, mono.ys + this.t0(itemName, takeNum),
+				fromFrame: \beat, toFrame: \sec)
+		};
+		envir.proto = ev;
+		^envir
 	}
 
 	// The take's record stamp as a map (item frame: beat 0 = the record event's

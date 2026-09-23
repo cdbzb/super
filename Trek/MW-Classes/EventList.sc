@@ -46,7 +46,11 @@ EventList {
 			// inputs used to build the lazy-value clock context, and the clock
 			// functions clockPattern puts ON the event (resolving them would call
 			// them with no args and replace each with a single number)
-			\tempoTrack, \when, \secsFor, \beatsFor
+			\tempoTrack, \when, \secsFor, \beatsFor,
+			// a Function here is a source-map function, evaluated by the resolver
+			// (AudioItem.prResolveSourceMap / prEmitMi2Follow) with the take's
+			// sources in scope — never as a plain lazy value
+			\sourceTempoMap
 		];
 		envExclude = IdentitySet[\nextWhen, \cursor, \section];
 		Class.initClassTree(Event);
@@ -2315,6 +2319,8 @@ EventList {
 		srcMap = ev[\sourceTempoMap] ?? {
 			(ev[\followTrack] == true).if { nil } { ev[\followTrack] }
 		};
+		// a Function (excluded from the lazy pass): evaluate it in the event
+		srcMap.isKindOf(Function).if { var fn = srcMap; srcMap = ev.use { fn.value } };
 		// A V2 MonoMap (MapEditor.last) has no beatDomain/timeDomain for
 		// prSrcTimeAt/prSrcBeatAt; convert it once, the same seam warpTo uses.
 		srcMap.isKindOf(MonoMap).if { srcMap = srcMap.asAnchorTempoMap };

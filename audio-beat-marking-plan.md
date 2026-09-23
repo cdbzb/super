@@ -36,7 +36,7 @@ planned.
 | 7 DP time pins | not started | — |
 | 8 interface cleanup, one timing field (drop `marks:`) | done — `\mi2` resolver unification deferred to step 10 | `source-map-resolver-test` (incl. parity) |
 | 9 `align:` for audio | done (segment path; env path warns) | `align-audio-test` |
-| 10 `sourceTempoMap:` names + functions (`~marks`, `~stamp`) | planned | — |
+| 10 `sourceTempoMap:` functions (`~marks`, `~stamp`, event keys via proto) | done — `~stamp` beats still from the record beat (list beats come with step 11); `\mi2` evaluates a Function in the event | `source-map-function-test` |
 | 11 stamp seeding + automatic `at:` | planned | — |
 
 Unverified by ear or eye: `TakeGui` interaction feel (drag, snap, lane), click
@@ -452,6 +452,13 @@ sourceTempoMap: { ~stamp.quantize(0.5) }     // a function, evaluated with .use
 - **The inverse sense, documented:** the function edits where the beats ARE. 
   `{ ~stamp.quantize }` pretends the take was steadier, which corrects LESS.
   Quantize strength is `align:`.
+
+As built (2026-09-23): `~marks` beats from 0 at the first mark; `~stamp` beats
+from 0 at the record event's fire beat (today's stamp placement — moving both to
+list beats is step 11.2, so combining the two in one function waits for it). The
+event's own keys (`~item`, `~take`, `~when`, …) read through the environment's
+proto. A function that errors or answers a non-map warns and falls back to the
+default. `\mi2` evaluates a Function in the event (`ev.use`).
 
 Tests: each form = its hand-built equivalent; `~stamp` in file seconds, no double
 `t0`, both stamp forms identical; a missing `\marks` warns and falls back; a

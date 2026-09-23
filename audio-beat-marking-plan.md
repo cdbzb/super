@@ -366,12 +366,14 @@ Rules:
    against beats would put no marked beat on a list beat. (Today `prResolveMarks`
    OVERWRITES a user `start:` — a live bug, e.g. org.org:325
    `e.addItem(a, start:2, dur:4, at:-2, marks:true)`.)
-   **`startBeat: b`** (decided 2026-09-23): start playback at beat `b` of the source
-   map — the take's audio from that beat on, with beat `b` sounding at
-   `when: + (b - map's first beat)`, i.e. the map is NOT re-based; to put beat `b`
-   at list beat 8, use `at: 8 - b` or `offset:`. `dur:` still counts beats from where
-   playback starts. `start:` (seconds) and `startBeat:` together: the later of the
-   two wins, with a warning.
+   **`fromBeat: b` / `toBeat: c`** (decided 2026-09-23) — beats of the source map;
+   they trim AND rebase, exactly like MIDI's `player.fromBeat(from, to)`: beat `b`
+   sounds at `when:` (`at:`), every later beat stays on the grid, playback stops at
+   beat `c`. `addItem(take, at: 8, sourceTempoMap: \marks, fromBeat: 8)` puts marked
+   beat 8 on list beat 8. `dur:` counts beats from `fromBeat`. `start:` stays seconds
+   (every audio path, and PlayBuf on the sealed one): with no map it keeps today's
+   meaning (that file second at `when:`); with a map it trims only. `fromBeat:` and
+   `start:` together: the later start point wins, with a warning.
 8. **Key table for both media**, and a **parity test**: for a set of keys,
    `addItem(take, at:, …)` and the hand-written event of rule 1 prepare the same
    schedule.

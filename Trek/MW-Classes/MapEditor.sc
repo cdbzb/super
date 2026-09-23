@@ -94,6 +94,26 @@ MapEditor {
 		^this
 	}
 
+	// Load a map directly, as if it had been read off the source: it becomes the
+	// map, the revert target, and the undo stack starts over. For a host reopening
+	// a map it persisted (TakeGui: an edited map has no beat grid to re-read).
+	loadMap { |aMap|
+		var gaps = aMap !? { aMap.xs.differentiate.drop(1) } ? [];
+		loaded = true;
+		map = aMap; baseMap = aMap;
+		rawTimes = aMap !? { aMap.ys } ? [];
+		// the lane reads one bpm per span as `subdiv` spans per beat: recover it
+		// from evenly spaced beats (a curved map is resampled at 1/subdiv), else 1
+		subdiv = (gaps.notEmpty and: { (gaps.maxItem - gaps.minItem) < 1e-6 }).if {
+			(1 / gaps.first).round.max(1)
+		} { 1 };
+		undoStack = []; redoStack = [];
+		edited = false;
+		cache = nil;
+		onChange !? { onChange.value };
+		^this
+	}
+
 	// the beat source changed under us (a re-pick, a save, a cleared selection).
 	// An EDITED map is never dropped silently — the user's work outranks a
 	// cheaper redraw, and `reload` is the explicit way to throw it away.

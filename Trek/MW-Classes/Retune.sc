@@ -145,6 +145,46 @@ TakeArchive {
 		and: { (d[\anchors] ? []).size >= 2 }
 		and: { (d[\anchorSource] ? \recordStamp) == \recordStamp }
 	}
+	// ---- marks: beat-marked anchor sets (TakeGui's w / W). A marks version is
+	// anchorSource: \beatMark with >= 2 (src, beat) anchors, src in FILE seconds.
+	// It never carries recordedAgainst (isStamp must not adopt it). `selection` is
+	// BeatMarkMode's selectionEvent when the marking came from the beat grid — what
+	// resume needs to bring the grid back; an edited tempo map (MapEditor commit)
+	// has anchors only.
+	*isMarks { |d|
+		^(d[\anchorSource] == \beatMark) and: { (d[\anchors] ? []).size >= 2 }
+	}
+	// Append a marks version; ^its id. `anchors` are (src:, beat:) Events or
+	// [src, beat] pairs; extra (an Event) is merged in (e.g. transientParams:).
+	*writeMarks { |name, num, anchors, selection, extra|
+		var ev = (
+			retuneVersion: 2,
+			name: name.asString, num: num,
+			saved: Date.getDate.stamp,
+			anchorSource: \beatMark,
+			anchors: anchors.collect { |a, i|
+				a.isKindOf(Dictionary).if {
+					(key: i, src: a[\src], beat: a[\beat])
+				} {
+					(key: i, src: a[0], beat: a[1])
+				}
+			},
+			selection: selection
+		);
+		extra !? { extra.keysValuesDo { |k, v| ev[k] = v } };
+		^this.write(name, num, ev)
+	}
+	// The newest marks version (or version `v`, which must be one); the Event with
+	// its id at \version, or nil.
+	*loadMarks { |name, num, v|
+		var d, found;
+		v.notNil.if {
+			d = this.read(name, num, v);
+			^(d.notNil and: { this.isMarks(d) }).if { d[\version] = v; d }
+		};
+		found = this.latestWhere(name, num, { |d| this.isMarks(d) });
+		^found !? { found[1][\version] = found[0]; found[1] }
+	}
 	*loadStamp { |name, num|
 		^try {
 			var found = this.latestWhere(name, num, { |d| this.isStamp(d) });

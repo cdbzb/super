@@ -826,6 +826,15 @@ Take : AudioItem {
         ^newTake
     }
 	retune { ^RetuneItem(this) }   // -> RetuneItem (load-or-analyze-and-save)
+	/* The take's beat-marked tempo map: an AnchorTempoMap (beat -> FILE seconds)
+	   over the newest marks version (TakeGui w / W), or version `version`; nil when
+	   the take has none. Like every AnchorTempoMap it is rebased to 0 on both axes
+	   with the first anchor's file second kept as t0 — so a consumer reading the
+	   file must start at map.t0, not at timeDomain.first (always 0). */
+	tempoMap { |version|
+		var m = TakeArchive.loadMarks(this.name, num, version);
+		^m !? { AnchorTempoMap(m[\anchors].collect(_[\src]), m[\anchors].collect(_[\beat])) }
+	}
 	/* A Take is its own player, so EventList.addItem's opening `player.player`
 	   accepts it — mirrors MIDIItemPlayer.player. Deliberately NO recordWall:
 	   EventList.prItemBeat calls recordPlayEpoch unconditionally once recordWall

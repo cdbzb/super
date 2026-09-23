@@ -334,7 +334,7 @@ record against the list tempomap (record-start beat is already `ev[\when]`), sta
 here, the SEAM is owned there.)
 
 **Versioning — v2 schema DRAFTED (design pass 2026-07-13) and the archive I/O BUILT
-(2026-07-13): `RetuneArchive` (class-side, top of `Retune.sc`) owns the path scheme +
+(2026-07-13): `TakeArchive (née RetuneArchive)` (class-side, top of `Retune.sc`) owns the path scheme +
 version counter (`folder`/`dir`/`path`/`versions`/`write`/`read`/`latestWhere`);
 `writeStamp` serializes a record-time stamp's composed beat→wall map into (src, beat)
 anchors (≤0.25-beat grid + exact tempoEnv breakpoints + one padding beat so the \carry

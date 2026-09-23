@@ -141,7 +141,7 @@ AudioItem {
 						// persist as a v2 retune-archive version (anchors +
 						// recordedAgainst) so the stamp survives sclang restarts;
 						// a write failure only warns — never aborts the recording
-						RetuneArchive.writeStamp(itemName, takeNum, stamp);
+						TakeArchive.writeStamp(itemName, takeNum, stamp);
 					};
 				}
             } {
@@ -276,7 +276,7 @@ AudioItem {
 	// with the anchors and every other recordedAgainst field carried over, and
 	// drops the in-memory cache so the next playback reloads. ^the new version id.
 	*repinRoundTrip { |name, takeNum, rt|
-		var found = RetuneArchive.latestWhere(name, takeNum, { |d| RetuneArchive.isStamp(d) });
+		var found = TakeArchive.latestWhere(name, takeNum, { |d| TakeArchive.isStamp(d) });
 		var d, ra, v;
 		found.isNil.if {
 			^"AudioItem.repinRoundTrip(%, %): no record stamp on disk"
@@ -287,7 +287,7 @@ AudioItem {
 		ra[\roundTrip] = rt;
 		d[\recordedAgainst] = ra;
 		d[\saved] = Date.getDate.stamp;
-		v = RetuneArchive.write(name, takeNum, d);
+		v = TakeArchive.write(name, takeNum, d);
 		// force the next recordedMap to reload from disk
 		recordedMaps.put(name.asSymbol, takeNum, nil);
 		"AudioItem.repinRoundTrip(%, %): % -> % s (archive version %)"
@@ -338,7 +338,7 @@ AudioItem {
 
 	// Record-time clock stamp for (name, take), or nil (§9a step 2). In-memory
 	// stamps (this session's recordings) win; on a miss the persisted archive is
-	// consulted (RetuneArchive.loadStamp — the anchors-serialized form survives
+	// consulted (TakeArchive.loadStamp — the anchors-serialized form survives
 	// sclang restarts) and cached back here so the disk scan runs once per take.
 	*recordedMap { |name, takeNum|
 		^name !? {
@@ -352,7 +352,7 @@ AudioItem {
 			// ahead of the sound, so the bundle went out late and the take played late.
 			(hit == \none).if { ^nil };
 			hit ?? {
-				RetuneArchive.loadStamp(name, takeNum) !? { |stamp|
+				TakeArchive.loadStamp(name, takeNum) !? { |stamp|
 					recordedMaps.put(name.asSymbol, takeNum, stamp);
 					stamp
 				} ?? {

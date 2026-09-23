@@ -345,7 +345,7 @@ Found in the 2026-07-01 review (all four **[M0]** items FIXED 2026-07-07 — see
       re-measure keeps the old constant with no record of which — the same
       unattributable-constant problem the `roundTrip: 0` archives had. Add it to the
       `recordedAgainst` block alongside `roundTrip`.
-- [ ] **`recordedAgainst` has no device identity.** `RetuneArchive.writeStamp` persists
+- [ ] **`recordedAgainst` has no device identity.** `TakeArchive (née RetuneArchive).writeStamp` persists
       `saved`/`sampleRate`/`latency`/`lag`/`roundTrip` but nothing naming the machine,
       audio device, or buffer size — so a stamp cannot be attributed to a rig after the
       fact. `roundTrip` is a property of device + buffer, not of the host: add `device`,
@@ -718,10 +718,10 @@ Missing primitives, in dependency order:
    with priority explicit `sourceTempoMap` > `sourceBeatDur` > stamp > list base clock —
    so bare `followTrack: \eventList` plays a stamped take against its TRUE recorded clock
    even after a destructive quantize.
-   **Persisted half DONE (2026-07-13):** `RetuneArchive.writeStamp` (Retune.sc, schema
+   **Persisted half DONE (2026-07-13):** `TakeArchive.writeStamp` (Retune.sc, schema
    owned by retune-project.md §2e) serializes the stamp's composed beat→wall map into
    (src, beat) anchors and appends it as a v2 archive version from the record branch;
-   `AudioItem.recordedMap` falls back to `RetuneArchive.loadStamp` (AnchorTempoMap
+   `AudioItem.recordedMap` falls back to `TakeArchive.loadStamp` (AnchorTempoMap
    over the anchors) on an in-memory miss and caches it — stamps survive sclang
    restarts. Suite: `standalone-tests/retune-archive-test.scd` (26 checks). Remaining
    from STEP 5's latency compensation: the stamp carries `latency`/`lag`/`roundTrip`

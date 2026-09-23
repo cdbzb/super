@@ -1,4 +1,4 @@
-// Headless regression test for RetuneArchive (retune-project.md §2e, v2 schema):
+// Headless regression test for TakeArchive (retune-project.md §2e, v2 schema):
 // record-time clock stamps serialized into (src, beat) anchors as append-only
 // archive versions under _retune/<name>_<num>/N.retune, and resolved back from
 // disk by AudioItem.recordedMap when the in-memory stamp is gone (the
@@ -20,11 +20,11 @@ var flatList, flatStamp, fFlat;
 var mig, vNotes;
 var wild, wildStamp, savedTempo, fWildMem, fWildDisk, wildBeats, wildMem, wildDisk;
 
-"== RetuneArchive / stamp persistence tests ==".postln;
+"== TakeArchive / stamp persistence tests ==".postln;
 
 cleanup = {
 	[0, 1, 2, 3, 4].do { |num|
-		var dir = RetuneArchive.dir(name, num);
+		var dir = TakeArchive.dir(name, num);
 		(dir +/+ "*.retune").pathMatch.do(File.delete(_));
 		File.exists(dir).if { File.delete(dir) };
 	};
@@ -47,12 +47,12 @@ list.tempoMap = mt;
 
 // ------------------------------------------------- write a stamp, inspect the schema
 stamp = list.prRecordStamp((when: 2, start: 0.5, latency: 0.2, lag: 0), env);
-v = RetuneArchive.writeStamp(name, 0, stamp);
+v = TakeArchive.writeStamp(name, 0, stamp);
 assert.(v == 0, "writeStamp: first version id is 0 (got %)".format(v));
-assert.(File.exists(RetuneArchive.path(name, 0, 0)), "writeStamp: archive file exists");
-assert.(RetuneArchive.versions(name, 0) == 1, "versions counts the new archive");
+assert.(File.exists(TakeArchive.path(name, 0, 0)), "writeStamp: archive file exists");
+assert.(TakeArchive.versions(name, 0) == 1, "versions counts the new archive");
 
-d = RetuneArchive.read(name, 0, 0);
+d = TakeArchive.read(name, 0, 0);
 assert.(d[\retuneVersion] == 2, "schema: retuneVersion 2");
 assert.(d[\anchorSource] == \recordStamp, "schema: anchorSource \\recordStamp");
 assert.(d[\midiEvents].isNil, "schema: stamp version has no notes (structural, no kind flag)");
@@ -102,7 +102,7 @@ assert.((sVals - sValsDisk).abs.maxItem < 2e-3,
 AudioItem.roundTripLatency = 0.05;
 rtStamp = list.prRecordStamp((when: 2), env);
 AudioItem.roundTripLatency = 0;
-RetuneArchive.writeStamp(name, 1, rtStamp);
+TakeArchive.writeStamp(name, 1, rtStamp);
 fRt = AudioItem.prSrcOffset(ev, list, 2, 1);   // resolves from disk (nothing in memory)
 rtDiff = fRt.(4) - fDisk.(4);
 assertClose.(rtDiff, 0.05, "roundTrip persists and shifts the read position", 2e-3);
@@ -111,7 +111,7 @@ assertClose.(rtDiff, 0.05, "roundTrip persists and shifts the read position", 2e
 flatList = EventList.new;
 flatList.beatDur = 2;
 flatStamp = flatList.prRecordStamp((when: 0), nil);
-RetuneArchive.writeStamp(name, 2, flatStamp);
+TakeArchive.writeStamp(name, 2, flatStamp);
 fFlat = AudioItem.prSrcOffset(ev, flatList, 0, 2);
 assertClose.(fFlat.(3), 6, "flat-list stamp: 2 s/beat from disk", 2e-3);
 
@@ -129,7 +129,7 @@ wildStamp = wild.prRecordStamp((when: 0), nil);
 assert.((wildStamp[\list].beatDur ? -1) == 1,
 	"freeze-beatdur: nil beatDur frozen at record time (got %)"
 		.format(wildStamp[\list].beatDur));
-RetuneArchive.writeStamp(name, 4, wildStamp);
+TakeArchive.writeStamp(name, 4, wildStamp);
 AudioItem.recordedMaps.put(name.asSymbol, 4, wildStamp);
 fWildMem = AudioItem.prSrcOffset(ev, wild, 0, 4);
 TempoClock.default.tempo = 4;              // playback-time default: 4x faster
@@ -145,7 +145,7 @@ assert.((wildMem - wildDisk).abs.maxItem < 2e-3,
 TempoClock.default.tempo = savedTempo;
 
 // -------------------------- a newer notes-only version must not shadow the stamp
-vNotes = RetuneArchive.write(name, 0, (retuneVersion: 2,
+vNotes = TakeArchive.write(name, 0, (retuneVersion: 2,
 	midiEvents: [(timestamp: 0, dur: 1, midinote: 60)]));
 assert.(vNotes == 1, "write appends (version 1 after the stamp)");
 AudioItem.recordedMaps.removeAt(name.asSymbol, 0);
@@ -154,13 +154,13 @@ assert.((sampleBeats.collect(fDisk) - memVals).abs.maxItem < 2e-3,
 	"loadStamp skips newer versions without recordedAgainst");
 
 // ------------------------------------------------- v1 migration at read
-RetuneArchive.write(name, 3, (retuneVersion: 1,
+TakeArchive.write(name, 3, (retuneVersion: 1,
 	midiEvents: [(timestamp: 1.5, dur: 0.5, midinote: 60)]));
-mig = RetuneArchive.read(name, 3, 0);
+mig = TakeArchive.read(name, 3, 0);
 assertClose.(mig[\midiEvents].first[\srcStart], 1.5, "v1 read: srcStart = birth timestamp");
 assertClose.(mig[\midiEvents].first[\srcDur], 0.5, "v1 read: srcDur = birth dur");
-assert.(RetuneArchive.read(name, 9, 0).isNil, "read: missing version returns nil");
-assert.(RetuneArchive.loadStamp(name, 3).isNil, "loadStamp: nil when no stamp version exists");
+assert.(TakeArchive.read(name, 9, 0).isNil, "read: missing version returns nil");
+assert.(TakeArchive.loadStamp(name, 3).isNil, "loadStamp: nil when no stamp version exists");
 
 cleanup.();
 AudioItem.roundTripLatency = savedRt;

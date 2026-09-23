@@ -8,15 +8,18 @@
 //   aTake.retune.player.move(5,2).snapToScale([0,2,4,5,7,9]).play
 // Detection/segmentation and the \autotuneNotes SynthDef are reused from VocoderPattern.
 
-// Class-side archive I/O for the per-take retune history (retune-project.md §2e):
+// Class-side archive I/O for the per-take history (retune-project.md §2e):
 // one append-only directory of numbered v2 archives per (name, num) audio take,
 //   _retune/<name>_<num>/N.retune
+// Named for the take, not for retuning: a version may be a record stamp, a
+// beat-marked anchor set, or a tuning/edit snapshot. Formerly RetuneArchive; the
+// on-disk folder and the retuneVersion key keep their old names.
 // Owned here (not on RetuneItem) so AudioItem's record path can persist record-time
 // clock stamps and RetuneItem can persist analysis/edits through ONE path scheme and
 // version counter. v2 has no kind flag: a version with midiEvents is a tuning/edit
 // snapshot, one with only anchors + recordedAgainst is a record stamp — presence is
 // the discriminator.
-RetuneArchive {
+TakeArchive {
 	*folder { ^AudioItem.folder +/+ "_retune" }
 	*dir { |name, num| ^this.folder +/+ (name.asString ++ "_" ++ num.asString) }
 	*path { |name, num, v| ^this.dir(name, num) +/+ (v.asString ++ ".retune") }
@@ -93,7 +96,7 @@ RetuneArchive {
 				)
 			))
 		} { |err|
-			"RetuneArchive.writeStamp(%, %): % — stamp not persisted"
+			"TakeArchive.writeStamp(%, %): % — stamp not persisted"
 				.format(name, num, err.errorString).warn;
 			nil
 		}
@@ -159,11 +162,14 @@ RetuneArchive {
 				)
 			}
 		} { |err|
-			"RetuneArchive.loadStamp(%, %): %".format(name, num, err.errorString).warn;
+			"TakeArchive.loadStamp(%, %): %".format(name, num, err.errorString).warn;
 			nil
 		}
 	}
 }
+
+// Compatibility alias for the old name; every method is class-side, so it inherits.
+RetuneArchive : TakeArchive {}
 
 // Shared base: retune notes ARE the events; filters wrap RetunePlayer (not MIDIItemPlayer).
 AbstractRetune : AbstractMidiEvents {
@@ -340,7 +346,7 @@ AbstractRetune : AbstractMidiEvents {
 			c[\srcDur] = c[\srcDur] ? c[\dur];
 			c
 		};
-		n = RetuneArchive.write(src.name, src.num, (
+		n = TakeArchive.write(src.name, src.num, (
 			retuneVersion: 2, name: src.name, num: src.num,
 			saved: Date.getDate.stamp,
 			midiEvents: evts, smoothed: src.smoothed, conf: src.conf,
@@ -349,7 +355,7 @@ AbstractRetune : AbstractMidiEvents {
 			recordedAgainst: src.recordedAgainst
 		));
 		("Retune: saved split-take % (% notes) -> %".format(
-			n, evts.size, RetuneArchive.dir(src.name, src.num).basename)).postln;
+			n, evts.size, TakeArchive.dir(src.name, src.num).basename)).postln;
 		^n
 	}
 	// computed bounds (RetunePlayer overrides with stored vars)
@@ -396,9 +402,9 @@ RetuneItem : AbstractRetune {
 		(latest >= 0).if {
 			block { |break|
 				latest.forBy(0, -1) { |v|
-					var d = RetuneArchive.read(name, num, v);
+					var d = TakeArchive.read(name, num, v);
 					d.notNil.if {
-						(anchors.isNil and: { RetuneArchive.isStamp(d) }).if {
+						(anchors.isNil and: { TakeArchive.isStamp(d) }).if {
 							anchors = d[\anchors];
 							anchorSource = d[\anchorSource];
 							recordedAgainst = d[\recordedAgainst];
@@ -427,12 +433,12 @@ RetuneItem : AbstractRetune {
 	// split-takes live in a per-(name,num) directory of numbered archives, mirroring
 	// AudioItem's per-name take dir. Kept under _retune/ (a sibling of the take dirs) so it
 	// can't match AudioItem.takePath's "<num>.*" glob or inflate its entries-based count.
-	// Path scheme + version counter now live class-side on RetuneArchive (shared with
+	// Path scheme + version counter now live class-side on TakeArchive (shared with
 	// AudioItem's record-time stamp persistence); these delegate for existing callers.
-	retuneFolder { ^RetuneArchive.folder }
-	splitTakeDir  { ^RetuneArchive.dir(name, num) }
-	splitTakePath { |n| ^RetuneArchive.path(name, num, n) }
-	splitTakes { ^RetuneArchive.versions(name, num) }
+	retuneFolder { ^TakeArchive.folder }
+	splitTakeDir  { ^TakeArchive.dir(name, num) }
+	splitTakePath { |n| ^TakeArchive.path(name, num, n) }
+	splitTakes { ^TakeArchive.versions(name, num) }
 	splitTake { |n|   // load a specific version (default load is the most recent)
 		((n < 0) or: { n >= this.splitTakes }).if {
 			^("RetuneItem: split-take % out of range (0..%)".format(n, this.splitTakes - 1)).warn
@@ -455,7 +461,7 @@ RetuneItem : AbstractRetune {
 		// readiness is set by the caller once the voice buffer is confirmed loaded
 	}
 	prLoadSplitTake { |n|
-		var d = RetuneArchive.read(name, num, n);
+		var d = TakeArchive.read(name, num, n);
 		d.isNil.if {   // pruned/missing id inside the 0..max range
 			^("RetuneItem: %/%.retune not on disk"
 				.format(this.splitTakeDir.basename, n)).warn

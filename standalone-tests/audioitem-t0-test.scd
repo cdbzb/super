@@ -35,7 +35,7 @@ var branches, originOf, invertsAt;
 cleanup = {
 	[name, bare].do { |n|
 		[0, 1].do { |num|
-			var dir = RetuneArchive.dir(n, num);
+			var dir = TakeArchive.dir(n, num);
 			(dir +/+ "*.retune").pathMatch.do(File.delete(_));
 			File.exists(dir).if { File.delete(dir) };
 			AudioItem.recordedMaps.removeAt(n.asSymbol, num);
@@ -60,7 +60,7 @@ assertClose.(stamp[\roundTrip], rt, "fixture: the stamp froze roundTrip 0.05");
 // take 0 keeps the in-memory (list + tempoEnv) form; take 1 is disk only, so
 // recordedMap rebuilds it as the \map form
 AudioItem.recordedMaps.put(name.asSymbol, 0, stamp);
-RetuneArchive.writeStamp(name, 1, stamp);
+TakeArchive.writeStamp(name, 1, stamp);
 
 // A source map in the take's own item frame: 1 s/beat, domains starting at 0.
 srcMap = AnchorTempoMap([0, 8], [0, 8]);

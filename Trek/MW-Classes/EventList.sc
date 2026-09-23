@@ -2161,7 +2161,7 @@ EventList {
 	// TempoClock.default.beatDur, which they read at PLAYBACK time. The same take
 	// then played at one rate in the session it was cut in and another after
 	// TempoClock.default.tempo moved (or after a restart, where the disk stamp —
-	// sampled at write time by RetuneArchive.prStampAnchors — already had it
+	// sampled at write time by TakeArchive.prStampAnchors — already had it
 	// right). Freeze the default here instead, so the snapshot answers the clock
 	// that was actually heard. Only when there is no tempoMap: with a map, beatDur
 	// is unused and a fabricated one would be misleading.

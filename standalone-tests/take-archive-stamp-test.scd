@@ -23,7 +23,7 @@ var mkAnchors, stampV, marksV, legacyV, notesV, cleanup, st, v, d;
 "== TakeArchive stamp vs marks tests ==".postln;
 
 cleanup = {
-	var dir = RetuneArchive.dir(name, 0);
+	var dir = TakeArchive.dir(name, 0);
 	(dir +/+ "*.retune").pathMatch.do(File.delete(_));
 	File.exists(dir).if { File.delete(dir) };
 	AudioItem.recordedMaps.removeAt(name.asSymbol, 0);
@@ -48,15 +48,19 @@ legacyV.removeAt(\anchorSource);
 notesV = (retuneVersion: 2, midiEvents: []);
 
 // ------------------------------------------------------------- isStamp
-assert.(RetuneArchive.isStamp(stampV), "isStamp: a \\recordStamp version");
-assert.(RetuneArchive.isStamp(legacyV), "isStamp: a version without anchorSource (pre-marks)");
-assert.(RetuneArchive.isStamp(marksV).not, "isStamp: not a \\beatMark version");
-assert.(RetuneArchive.isStamp(notesV).not, "isStamp: not a notes-only version");
+assert.(TakeArchive.isStamp(stampV), "isStamp: a \\recordStamp version");
+assert.(TakeArchive.isStamp(legacyV), "isStamp: a version without anchorSource (pre-marks)");
+assert.(TakeArchive.isStamp(marksV).not, "isStamp: not a \\beatMark version");
+assert.(TakeArchive.isStamp(notesV).not, "isStamp: not a notes-only version");
+
+// --------------------------------------------- old name still answers (alias)
+assert.(RetuneArchive.dir(name, 0) == TakeArchive.dir(name, 0), "RetuneArchive alias: same dir");
+assert.(RetuneArchive.isStamp(stampV), "RetuneArchive alias: class methods inherited");
 
 // ------------------------------------------------------ loadStamp skips marks
-RetuneArchive.write(name, 0, stampV);
-RetuneArchive.write(name, 0, marksV);
-st = RetuneArchive.loadStamp(name, 0);
+TakeArchive.write(name, 0, stampV);
+TakeArchive.write(name, 0, marksV);
+st = TakeArchive.loadStamp(name, 0);
 assert.(st.notNil, "loadStamp finds the stamp under a newer marks version");
 st !? {
 	assertClose.(st[\map].timeAt(2), 2.0, "loadStamp answers the stamp's anchors, not the marks'");
@@ -69,7 +73,7 @@ assert.(st.notNil and: { (st[\map].timeAt(2) - 2.0).abs < 1e-6 },
 
 // ------------------------------------------ repinRoundTrip re-pins the stamp
 v = AudioItem.repinRoundTrip(name, 0, 0.07);
-d = RetuneArchive.read(name, 0, v);
+d = TakeArchive.read(name, 0, v);
 assert.(d[\anchorSource] == \recordStamp, "repinRoundTrip copies the stamp version");
 assertClose.(d[\anchors][2][\src], 2.0, "repinRoundTrip keeps the stamp's anchors");
 AudioItem.recordedMaps.removeAt(name.asSymbol, 0);

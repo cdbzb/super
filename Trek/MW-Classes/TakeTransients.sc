@@ -100,6 +100,14 @@ TakeTransients {
 				Amplitude.kr(sig, 0.001, 0.05)
 			]
 		});
+		// OfflineProcess targets its NRT synths at Server.default's default group.
+		// That group is 1 only for clientID 0; as any other client (e.g. a second
+		// sclang logged into a running server) it is clientID << 26 + 1, which the
+		// NRT server does not have — every /s_new fails and the render is silence.
+		// Create it first (baseScore precedes the quark's own time-0 messages).
+		(Server.default.defaultGroup.nodeID != 1).if {
+			proc.baseScore.add([0, ["/g_new", Server.default.defaultGroup.nodeID, 0, 0]])
+		};
 		run = proc.process(path);
 		fork {
 			var data, events;

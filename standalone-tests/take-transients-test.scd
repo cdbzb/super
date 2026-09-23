@@ -96,6 +96,22 @@ fork {
 	assertClose.(TakeTransients.salienceFor(result).(result.maxItem { |e| e[\strength] }), 1,
 		"salienceFor: the strongest hit has salience 1");
 
+	// a non-zero clientID: OfflineProcess targets Server.default's default group,
+	// which the NRT server lacks unless detect creates it (it rendered silence)
+	Server.default.serverRunning.not.if {
+		var savedId = Server.default.clientID, again;
+		Server.default.clientID = 1;
+		assert.(Server.default.defaultGroup.nodeID != 1, "precondition: clientID 1 moves the default group");
+		cond = Condition.new;
+		TakeTransients.forTake(name, 0, path, { |t| again = t; cond.unhang }, true);
+		cond.hang;
+		assert.(again.size == hits.size, "detect as clientID 1: still finds every hit (got %)".format(again.size));
+		Server.default.clientID = savedId;
+	} {
+		"  -- skipped clientID-1 check: this sclang is attached to a running server (clientID %)"
+			.format(Server.default.clientID).postln
+	};
+
 	cleanup.();
 	File.delete(path);
 	h[\report].();

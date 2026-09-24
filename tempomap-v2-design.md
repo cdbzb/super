@@ -134,8 +134,8 @@ Two separate vocabularies, never mixed:
 - **Transforms** take a map, return a new map: `clump`, `curve`, `smooth`,
   `quantize*`. They operate on the anchor representation.
 - **Application** pushes data through a map: scalar `at`/`invAt`, and span mapping
-  (`mapDeltas(deltas, from:)` / `unmapDeltas`) written ONCE generically as differences of
-  cumulative `at` — deleting the per-class `mapBeats`/`mapDeltas`/`warpDurs` copies.
+  (`warp(deltas, from:)` / `unwarp`) written ONCE generically as differences of
+  cumulative `at` — deleting the per-class `mapBeats`/`warp`/`warpDurs` copies.
   Rebasing, origin choice, and destructive timestamp rewrites happen here, explicitly.
 
 ## Performance
@@ -197,7 +197,7 @@ Two separate vocabularies, never mixed:
    a. `TempoMap.asMonoMap(fromFrame:, toFrame:)` — snapshot of beats/durs as an
       AnchorMap (immutable; later mutation of the TempoMap does not leak in).
       Deliberately `\carry`, not the old clamp.
-   b. `array.warpTo(aMonoMap)` → `mapDeltas` in the plusArray dispatch — the
+   b. `array.warpTo(aMonoMap)` → `warp` in the plusArray dispatch — the
       songs' central idiom accepts new maps with no facade surgery.
    c. `MIDIItemTempoMap.asMonoMap` — **DONE 2026-07-29.** Exact, not a
       resampling: `prBuildLinear` builds env/invEnv from precisely the `times`

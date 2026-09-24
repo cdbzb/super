@@ -10,7 +10,7 @@
 		^([func.(origin)] ++ this.integrate.collect { |offset| func.(origin + offset) })
 			.deltas max: 1e-9
 	}
-	// Pre-rename alias; org sources still call it.
+	// Pre-rename alias.
 	mapSpansFrom { |origin, func| ^this.mapDeltasFrom(origin, func) }
 
 	deltaAt { |x, last|
@@ -120,16 +120,28 @@
 		.collect{|i| 1e-9 max: i}
 	}
 
+	/*
+	 Warp these deltas through `quarters` and answer the warped deltas: a
+	 TempoMap/MIDIItemTempoMap, a MonoMap, a Function (position -> position), an
+	 array of quarter positions, or a Symbol/Pseq naming one. `from` lays the
+	 deltas end to end starting at that input position. nil keeps each path's
+	 historical behaviour: 0 for the maps and a Function, and for an array the
+	 original lookup, whose first delta is measured from output 0.
+	*/
 	warpTo {
-		| quarters |
+		| quarters, from |
 		quarters.isNil.if{^this};
 		quarters = this.pr_getQuarters(quarters);
+		quarters.isKindOf(Function).if{ ^this.mapDeltasFrom(from ? 0, quarters) };
 		( [TempoMap, MIDIItemTempoMap].includes(quarters.class) ).if{
-			^this.warpToTempoMap(quarters)
+			from.isNil.if{ ^this.warpToTempoMap(quarters) };
+			^quarters.mapBeats(this, from)
 		};
-		// V2 bridge (tempomap-v2-design.md step 5b): MonoMaps warp via mapDeltas
-		quarters.isKindOf(MonoMap).if{ ^quarters.mapDeltas(this) };
-		^this.warpToArray(quarters)
+		// V2 bridge (tempomap-v2-design.md step 5b)
+		quarters.isKindOf(MonoMap).if{ ^quarters.warp(this, from ? 0) };
+		from.isNil.if{ ^this.warpToArray(quarters) };
+		quarters = quarters ++ quarters.last;
+		^this.mapDeltasFrom(from, { |p| quarters.atInterpolated(p) })
 	}
 
 

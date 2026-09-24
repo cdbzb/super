@@ -631,7 +631,7 @@ do not change the song-facing API.
   (`:233-246`), `trackPitchOffline` harness (`:297`), `\retunePreview` (`:542`).
 - `Trek/MW-Classes/PianoRollNav.sc` — the shared-gui-extraction precedent for `BeatMarkMode`.
 - `Trek/MW-Classes/Groove.sc` — beat→beat reparametrization (§11); `swing`/`modulate`,
-  `mapBeat`/`unmapBeat`, `mapDeltas`/`unmapDeltas`.
+  `mapBeat`/`unmapBeat`, `warp`/`unwarp`.
 - `bin/audio-latency.swift` — CoreAudio per-direction latency, for the `L_out`/`L_in`
   split a loopback cannot measure (§9a step 5). `--list`, `--device`, `--roundtrip`.
 - Journal seed: `~/home/org_roam_files/org.org` (Jun 09, 2026).
@@ -1188,7 +1188,7 @@ and no extrapolation policy to reconcile when composed (see §6a).
   Phasing by subtraction keeps `Φ(0) = Φ(1) = 0` for every shape, so phase can never
   introduce an offset or break period preservation. Inverse by bisection, as in
   `wallToBeat`'s subsampled case.
-- `mapBeat`/`unmapBeat` (scalar), `mapDeltas`/`unmapDeltas` (position-aware with `from:`, same
+- `mapBeat`/`unmapBeat` (scalar), `warp`/`unwarp` (position-aware with `from:`, same
   contract as `mapBeats`/`mapDurs`; non-positive results clamp to 1e-9 rather than drop,
   preserving length).
 - `groove:` on a nested `\eventList` event, applied in BOTH `prExpandList` branches. The

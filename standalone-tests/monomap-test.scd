@@ -91,13 +91,13 @@ assert.(p.fromFrame != beatF and: { p.fromFrame.dimension == \beat },
 	"place mints a new frame, same dimension");
 
 // ---- span mapping ----
-spans = m1.mapDeltas([1, 1, 1, 1]);
-assertArr.(spans, [0.5, 0.5, 1.5, 1.5], "mapDeltas from 0");
-assertArr.(m1.mapDeltas([1, 1, 1, 1], from: 1), [0.5, 1.5, 1.5, 1.5],
-	"mapDeltas is position-dependent");
-assertArr.(m1.unmapDeltas(spans), [1, 1, 1, 1], "unmapDeltas inverts mapDeltas");
-assert.(m1.mapDeltas([1, 1, 1, 1, 1, 1]).size == 6, "mapDeltas preserves length past domain");
-assertArr.((m1 >> aff).mapDeltas([1, 1]), [1, 1], "span mapping through a composition");
+spans = m1.warp([1, 1, 1, 1]);
+assertArr.(spans, [0.5, 0.5, 1.5, 1.5], "warp from 0");
+assertArr.(m1.warp([1, 1, 1, 1], from: 1), [0.5, 1.5, 1.5, 1.5],
+	"warp is position-dependent");
+assertArr.(m1.unwarp(spans), [1, 1, 1, 1], "unwarp inverts warp");
+assert.(m1.warp([1, 1, 1, 1, 1, 1]).size == 6, "warp preserves length past domain");
+assertArr.((m1 >> aff).warp([1, 1]), [1, 1], "span mapping through a composition");
 
 // ---- frame-dispatched sugar ----
 assertClose.(m1.timeAt(3), 2.5, "timeAt on beat->sec = at");
@@ -211,10 +211,10 @@ assertArr.(
 	[0, 0.5, 1, 1.5, 2, 3, 3.5, -0.5, -1.5].collect { |x| sw.at(x) },
 	[0, 0.5, 1, 1.5, 2, 3, 3.5, -0.5, -1.5].collect { |x| gr.mapBeat(x) },
 	"swing MapSeq matches Groove.swing(1.5) exactly (PL vs PL)", 1e-12);
-assertArr.(sw.mapDeltas([1, 1, 1, 1]), [1.2, 0.8, 1.2, 0.8], "swing spans are 60:40");
-assertClose.(sw.mapDeltas([1, 1, 1, 1]).sum, 4,
+assertArr.(sw.warp([1, 1, 1, 1]), [1.2, 0.8, 1.2, 0.8], "swing spans are 60:40");
+assertClose.(sw.warp([1, 1, 1, 1]).sum, 4,
 	"mean span over a whole period == the straight span (no drift)");
-assert.(sw.mapDeltas([1, 1, 1, 1, 1]).size == 5, "mapDeltas through a MapSeq keeps length");
+assert.(sw.warp([1, 1, 1, 1, 1]).size == 5, "warp through a MapSeq keeps length");
 
 sn = MapSeq.modulate(4, 0.15, \sine);
 gsn = Groove.modulate(4, 0.15, \sine);
@@ -584,21 +584,30 @@ g = TempoMap([1, 1, 1, 1], [1, 1, 2, 2]);
 b = g.asMonoMap;
 assert.(b.isKindOf(AnchorMap), "asMonoMap returns an AnchorMap");
 assert.(b.mapsDimensions(\beat, \sec), "asMonoMap default frame dimensions");
-assertArr.(b.mapDeltas([1, 1, 1, 1]), g.mapBeats([1, 1, 1, 1]),
+assertArr.(b.warp([1, 1, 1, 1]), g.mapBeats([1, 1, 1, 1]),
 	"asMonoMap agrees with mapBeats inside the domain");
 assertClose.(b.at(6), 10, "bridged map carries past the end (old clamp would flatline at 6)");
 g.durs = [9, 9, 9, 9];
-assertArr.(b.mapDeltas([1, 1, 1, 1]), [1, 1, 2, 2],
+assertArr.(b.warp([1, 1, 1, 1]), [1, 1, 2, 2],
 	"asMonoMap is a snapshot — later TempoMap mutation does not leak in");
 b = g.asMonoMap(fromFrame: beatF, toFrame: secF);
 assert.(b.fromFrame == beatF, "asMonoMap binds given frames");
-assertArr.([1, 1, 1, 1].warpTo(g.asMonoMap), g.asMonoMap.mapDeltas([1, 1, 1, 1]),
-	"array warpTo dispatches MonoMap to mapDeltas");
+assertArr.([1, 1, 1, 1].warpTo(g.asMonoMap), g.asMonoMap.warp([1, 1, 1, 1]),
+	"array warpTo dispatches MonoMap to warp");
 g = TempoMap([1, 1, 1, 1], [1, 1, 2, 2]);
 assertArr.([1, 1, 1].warpTo(g), g.mapBeats([1, 1, 1]),
 	"array warpTo TempoMap path unchanged");
 assertArr.([1, 1].warpTo(MapSeq.swing(1.5)), [1.2, 0.8],
 	"warpTo works with any MonoMap (swing MapSeq)");
+
+// ---- warpTo(target, from) ----
+assertArr.([1, 1, 1, 1].warpTo(m1, 1), m1.warp([1, 1, 1, 1], 1),
+	"warpTo(MonoMap, from) == map.warp(deltas, from)");
+assertArr.([1, 1].warpTo(g, 1), [1, 2], "warpTo(TempoMap, from) starts at that beat");
+assertArr.([1, 2, 3.5, 2, 1].warpTo({ |p| Env([0, 10], [6])[p] }, from: 0.5),
+	[10/6, 20/6, 25/6, 1e-9, 1e-9], "warpTo(Function, from) == mapDeltasFrom(from, func)", 1e-9);
+assertArr.([1, 1].warpTo([0, 1, 3, 6], 1), [2, 3], "warpTo(Array, from) looks up from that position");
+assertArr.([1, 1].warpTo([0, 1, 3, 6]), [1, 2], "warpTo(Array) without from is unchanged");
 
 // ---- FunctionMap (the fromFunction escape hatch, step 5d's substrate) ----
 fm = FunctionMap({ |x| x * 3 }, { |y| y / 3 }, [0, 10], beatF, secF);

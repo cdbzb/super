@@ -104,13 +104,14 @@ MonoMap {
 			>> AffineMap(1, toOrigin, this.toFrame, outF)
 	}
 
-	// Delta mapping: differences of cumulative at/invAt. Contract (origin,
-	// length preservation, epsilon clamp) lives on mapDeltasFrom in plusArray.sc.
-	mapDeltas   { |deltas, from = 0| ^deltas.mapDeltasFrom(from, { |p| this.at(p)    }) }
-	unmapDeltas { |deltas, from = 0| ^deltas.mapDeltasFrom(from, { |p| this.invAt(p) }) }
-	// Pre-rename aliases; org sources still call them.
-	mapSpans   { |deltas, from = 0| ^this.mapDeltas(deltas, from) }
-	unmapSpans { |deltas, from = 0| ^this.unmapDeltas(deltas, from) }
+	// Warp deltas -> deltas: differences of cumulative at/invAt, laid end to end
+	// from `from`. Same as deltas.warpTo(map, from). Contract (origin, length
+	// preservation, epsilon clamp) lives on mapDeltasFrom in plusArray.sc.
+	warp   { |deltas, from = 0| ^deltas.mapDeltasFrom(from, { |p| this.at(p)    }) }
+	unwarp { |deltas, from = 0| ^deltas.mapDeltasFrom(from, { |p| this.invAt(p) }) }
+	// Pre-rename aliases.
+	mapSpans   { |deltas, from = 0| ^this.warp(deltas, from) }
+	unmapSpans { |deltas, from = 0| ^this.unwarp(deltas, from) }
 
 	mapsDimensions { |a, b|
 		^(fromFrame.dimension == a) and: { toFrame.dimension == b }

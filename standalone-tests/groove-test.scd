@@ -39,17 +39,17 @@ timesOf = { |list, from = 0|
 g = Groove.identity;
 assertClose.(g.mapBeat(3.7), 3.7, "identity: amount 0 is a no-op");
 assert.(g.isIdentity, "identity: reports isIdentity");
-assertArr.(g.mapDeltas([1, 1, 2]), [1, 1, 2], "identity: spans unchanged");
+assertArr.(g.warp([1, 1, 2]), [1, 1, 2], "identity: spans unchanged");
 
 // ---------------------------------------------------------------- swing values
 g = Groove.swing(1.5);            // amount 0.2 over 2 beats
 assertClose.(g.mapBeat(0), 0, "swing: downbeat unmoved");
 assertClose.(g.mapBeat(1), 1.2, "swing 1.5: offbeat lands at 1.2");
 assertClose.(g.mapBeat(2), 2, "swing: one period advances exactly one period");
-sp = g.mapDeltas([1, 1], 0);
+sp = g.warp([1, 1], 0);
 assertArr.(sp, [1.2, 0.8], "swing 1.5: spans are 60:40");
 assertClose.(sp[0] / sp[1], 1.5, "swing: span ratio round-trips to the ratio argument");
-sp = Groove.swing(2).mapDeltas([1, 1], 0);
+sp = Groove.swing(2).warp([1, 1], 0);
 assertClose.(sp[0] / sp[1], 2, "swing 2 (triplet): span ratio is 2");
 
 // ---------------------------------------------------------------- shape laws
@@ -62,8 +62,8 @@ assertClose.(sp[0] / sp[1], 2, "swing 2 (triplet): span ratio is 2");
 		"%: period preserved away from the origin".format(shape));
 	assert.(monotone.(gg), "%: strictly monotone (invertible)".format(shape));
 	assert.(roundTrips.(gg), "%: unmapBeat inverts mapBeat".format(shape));
-	assertClose.(gg.mapDeltas([1, 1]).sum, 2, "%: spans sum to the period".format(shape));
-	assert.(gg.mapDeltas([1, 1, 1]).size == 3, "%: mapDeltas preserves length".format(shape));
+	assertClose.(gg.warp([1, 1]).sum, 2, "%: spans sum to the period".format(shape));
+	assert.(gg.warp([1, 1, 1]).size == 3, "%: warp preserves length".format(shape));
 };
 
 // ---------------------------------------------------------------- phase

@@ -2099,37 +2099,29 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	// Return a COPY of this player whose tempomap treats each anchor gap as k ideal
 	// beats instead of 1 — so everything derived from the map picks it up, including
 	// asEventList (which builds its own map internally): pure relabel, playback is
-	// unchanged, but bps/bpm and the EventList's beat grid scale by k. Non-mutating,
+	// unchanged, but tempo/bpm and the EventList's beat grid scale by k. Non-mutating,
 	// so chain it — m.scaleBeats(2).asEventList(\x, \default) — or m = m.scaleBeats(2)
 	// to keep it. Composes: scaleBeats(2).scaleBeats(2) == 4.
 	scaleBeats {|k = 1| ^this.copy.prScaleBeats(k) }
 	prScaleBeats {|k = 1| beatScale = (beatScale ? 1) * k; ^this }
-	// measured tempo of the loaded selection (see MIDIItemTempoMap.bps).
-	// e.g. q = m.quantize; q.play(nil, TempoClock(m.bps)) -> original tempo.
-	bps {|beats choiceFunc| ^this.tempomap(beats, choiceFunc).bps }
-	bpm {|beats choiceFunc| ^this.tempomap(beats, choiceFunc).bpm }
-	// mean tempo over a BEAT span of the loaded selection — the reader that bps/bpm
-	// (whole selection) and MapEditor.spanBpm (gui, current span only) both left
-	// out. Goes through timeAtBeat, so it extrapolates past the selection at the
-	// boundary tempo like every other beat-addressed method here, and a subrange
-	// answers the tempo the MAP holds there — NOT fromBeat(from, to).bpm, which
-	// rebuilds a map from the slice and is skewed by its closing anchor (see
-	// MIDIItemTempoMap.bps). Pass `tempoMap` to reuse one across a sweep.
-	spanBps { |from, to, tempoMap|
-		var tm, dt;
-		((from.isNumber.not) or: { to.isNumber.not }).if {
-			("spanBps: from and to must be numbers, got % and %".format(from, to)).warn;
-			^nil
-		};
-		(from >= to).if {
-			("spanBps: need from < to, got % and %".format(from, to)).warn;
-			^nil
-		};
-		tm = tempoMap ?? { this.tempomap };
-		dt = this.timeAtBeat(to, tm) - this.timeAtBeat(from, tm);
-		^(dt > 1e-9).if { (to - from) / dt }
-	}
-	spanBpm { |from, to, tempoMap| ^this.spanBps(from, to, tempoMap) !? (_ * 60) }
+	/*
+	 Measured tempo (beats/sec, TempoClock's unit) of the loaded selection over the
+	 beat span [from, to], default the whole selection (see MIDIItemTempoMap.tempo).
+	 e.g. q = m.quantize; q.play(nil, TempoClock(m.tempo)) -> original tempo.
+	 The selection map's timeAt extrapolates past the selection at the boundary
+	 tempo like every other beat-addressed method here, and a subrange answers the
+	 tempo the MAP holds there — NOT fromBeat(from, to).bpm, which rebuilds a map
+	 from the slice and is skewed by its closing anchor. Pass `tempoMap` to reuse
+	 one across a sweep; for a different beat reading of the same notes, ask the
+	 map directly: m.tempomap(beats, choiceFunc).tempo.
+	*/
+	tempo { |from, to, tempoMap| ^(tempoMap ?? { this.tempomap }).tempo(from, to) }
+	bpm { |from, to, tempoMap| ^this.tempo(from, to, tempoMap) !? (_ * 60) }
+	// Pre-rename aliases.
+	bps { ^this.tempo }
+	spanTempo { |from, to, tempoMap| ^this.tempo(from, to, tempoMap) }
+	spanBpm   { |from, to, tempoMap| ^this.bpm(from, to, tempoMap) }
+	spanBps   { |from, to, tempoMap| ^this.tempo(from, to, tempoMap) }
 	// performed timestamp of an ideal beat position of the loaded selection
 	// (beat 0 = the first selected note); extrapolates beyond the selection
 	// at the boundary tempo, so negative beats address a pickup
@@ -2557,32 +2549,39 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 	averageOffset{
 		^this.offsets.mean
 	}
-	// average performed tempo of the selection, in beats per second. Full span:
-	// total beats over the whole mapped region (first onset -> closing anchor),
-	// since beats.sum maps to times.last. Playing the unit-beat quantize result
-	// on TempoClock(bps) reproduces this tempo. The closing anchor now repeats the
-	// last measured span (see init), so it no longer skews this the way a clip-end
-	// anchor after a long final sustain did.
-	bps {
-		^(times.last > 0).if { beats.sum / times.last }
-	}
-	bpm { ^this.bps !? (_ * 60) }
-
-	// Mean tempo over an arbitrary beat span, including boundary extrapolation.
-	spanTempo { |from, to|
+	/*
+	 Mean performed tempo in beats per second over the beat span [from, to],
+	 extrapolating past the boundaries. A missing bound defaults to that end of
+	 the map (0 or beats.sum). With neither, it is the whole selection: total beats
+	 over the whole mapped region (first onset -> closing anchor), since beats.sum
+	 maps to times.last. Playing the unit-beat quantize result on TempoClock(tempo)
+	 reproduces this tempo. The closing anchor repeats the last measured span (see
+	 init), so it no longer skews this the way a clip-end anchor after a long final
+	 sustain did.
+	*/
+	tempo { |from, to|
 		var dt;
+		(from.isNil and: { to.isNil }).if {
+			^(times.last > 0).if { beats.sum / times.last }
+		};
+		from = from ? 0;
+		to = to ? beats.sum;
 		((from.isNumber.not) or: { to.isNumber.not }).if {
-			("spanTempo: from and to must be numbers, got % and %".format(from, to)).warn;
+			("tempo: from and to must be numbers, got % and %".format(from, to)).warn;
 			^nil
 		};
 		(from >= to).if {
-			("spanTempo: need from < to, got % and %".format(from, to)).warn;
+			("tempo: need from < to, got % and %".format(from, to)).warn;
 			^nil
 		};
 		dt = this.timeAt(to) - this.timeAt(from);
 		^(dt > 1e-9).if { (to - from) / dt }
 	}
-	spanBpm { |from, to| ^this.spanTempo(from, to) !? (_ * 60) }
+	bpm { |from, to| ^this.tempo(from, to) !? (_ * 60) }
+	// Pre-rename aliases.
+	bps { ^this.tempo }
+	spanTempo { |from, to| ^this.tempo(from, to) }
+	spanBpm   { |from, to| ^this.bpm(from, to) }
 
 	// Return bpm per span. Curved maps and subdivisions are sampled uniformly;
 	// degenerate spans remain as nil to preserve alignment.
@@ -2778,12 +2777,12 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 		}
 	}
 	mapBeats{|b, fromBeat = 0|
-		^b.mapSpansFrom(fromBeat, { |beat| this.timeAt(beat) })
+		^b.mapDeltasFrom(fromBeat, { |beat| this.timeAt(beat) })
 	}
 	// `durs` always means elapsed seconds; map them into musical beat spans.
 	// mapBeats is the opposite direction: beat spans -> second durations.
 	mapDurs {|durs, fromTime = 0|
-		^durs.mapSpansFrom(fromTime, { |t| this.beatAt(t) })
+		^durs.mapDeltasFrom(fromTime, { |t| this.beatAt(t) })
 	}
 	dursToBeats{|a, fromTime = 0|
 		^this.mapDurs(a, fromTime)
@@ -2832,7 +2831,7 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 
 	// Return a NEW map with every ideal-beat span multiplied by `k` — i.e. each
 	// recorded anchor gap counts as k ideal beats instead of 1. Pure relabel of the
-	// beat axis: performed times are untouched, but bps/bpm scale by k and beat-domain
+	// beat axis: performed times are untouched, but tempo/bpm scale by k and beat-domain
 	// addressing rescales (timeAt(k*b) == old timeAt(b)). To reproduce the performance
 	// you now feed k-beat spans: (k ! n).warpTo(t.scaleBeats(k)). Resets curvature —
 	// compose it: t.scaleBeats(k).curve(amount).
@@ -2869,7 +2868,7 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 		^this.copy.prScaleTempo(k)
 	}
 	// Set the map's mean tempo, keeping the rubato: the scaleTempo factor that lands
-	// it there. The mean is total beats / total seconds — what spanBpm reads back,
+	// it there. The mean is total beats / total seconds — what bpm(0, beats.sum) reads back,
 	// not the arithmetic mean of the per-span tempi. Whole-map only here; span
 	// editing lives on the core (asMonoMap) and on EventList. from/to are declared
 	// only to REFUSE them: without the parameters SC drops the keyword args with a
@@ -2886,15 +2885,15 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 				"EventList/MapEditor if you want a plottable map back.".format(
 					thisMethod.name, thisMethod.name)).throw
 		};
-		mean = this.spanBpm(0, beats.sum);
+		mean = this.bpm(0, beats.sum);
 		mean.isNil.if {
 			Error("MIDIItemTempoMap.setBpm: this map has no width to read a tempo from").throw
 		};
 		^this.scaleTempo(bpm / mean)
 	}
-	setTempo {|bps, from, to|
-		((bps.isNumber.not) or: { bps <= 0 }).if {
-			Error("MIDIItemTempoMap.setTempo: bps must be > 0, got %".format(bps)).throw
+	setTempo {|tempo, from, to|
+		((tempo.isNumber.not) or: { tempo <= 0 }).if {
+			Error("MIDIItemTempoMap.setTempo: tempo must be > 0, got %".format(tempo)).throw
 		};
 		(from.notNil or: { to.notNil }).if {
 			Error("MIDIItemTempoMap.%: whole-map only — a span needs the core. "
@@ -2902,7 +2901,7 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 				"EventList/MapEditor if you want a plottable map back.".format(
 					thisMethod.name, thisMethod.name)).throw
 		};
-		^this.setBpm(bps * 60)
+		^this.setBpm(tempo * 60)
 	}
 	prScaleTempo {|k = 1|
 		times = times / k;   // new array — the original's times is left untouched

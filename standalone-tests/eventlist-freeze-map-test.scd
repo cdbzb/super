@@ -23,7 +23,7 @@ ok.("stored as AnchorTempoMap",  frozen.class == AnchorTempoMap);
 ok.("no retained midiEvents",    { frozen.midiEvents; false }.try { true });
 ok.("t0 preserved",              near.(frozen.t0, orig.t0));
 ok.("beatDomain preserved",      near.(frozen.beatDomain[1], orig.beatDomain[1]));
-ok.("bps preserved",             near.(frozen.bps, orig.bps));
+ok.("tempo preserved",             near.(frozen.tempo, orig.tempo));
 
 // the shape itself, at fine resolution, inside AND past the end (extrapolation)
 probes = (-20 .. 120).collect { |i| i * 0.1 };

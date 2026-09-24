@@ -25,7 +25,7 @@ spans = tm.times.differentiate.drop(1);
 ok.("4 marks -> 4 spans", spans.size == 4);
 ok.("closing span repeats the last measured span", near.(spans.last, 1.2));
 ok.("all spans equal on a steady take", spans.every { |s| near.(s, 1.2) });
-ok.("bps is the played tempo", near.(tm.bps, 1 / 1.2, 1e-9));
+ok.("tempo is the measured tempo", near.(tm.tempo, 1 / 1.2, 1e-9));
 ok.("bounds.end ignored", near.(tm.times.last, 4.8));
 
 // --- short tail: the original failure direction ----------------------------
@@ -39,6 +39,14 @@ item = mk.([0, 1.0, 2.0, 3.5], 1.0);
 tm = MIDIItemTempoMap(item, nil, 1!4);
 spans = tm.times.differentiate.drop(1);
 ok.("repeats last span (1.5), not the mean", near.(spans.last, 1.5));
+
+// --- tempo(from, to): bounds default to 0 and beats.sum --------------------
+// times 0 1 2 3.5 5 over beats 0..4
+ok.("explicit whole span == no-arg tempo", near.(tm.tempo(0, 4), tm.tempo, 1e-9));
+ok.("no-arg tempo is 4 beats / 5 s", near.(tm.tempo, 0.8, 1e-9));
+ok.("missing to: runs to the map end", near.(tm.tempo(from: 2), 2 / 3, 1e-9));
+ok.("missing from: starts at beat 0", near.(tm.tempo(to: 1), 1, 1e-9));
+ok.("bpm takes the same bounds", near.(tm.bpm(from: 2), 40, 1e-9));
 
 // --- explicit closingAnchor still wins -------------------------------------
 pl = mk.([0, 1.2, 2.4, 3.6], 0.3).player;   // closingAnchor lives on the PLAYER

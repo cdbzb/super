@@ -194,7 +194,7 @@ assertArr.(mt.beats, [1,1,1,1,1], "scaleBeats: original map unchanged");
 // pure relabel: same performed time, addressed at k*beat
 assertClose.(r.timeAt(2), mt.timeAt(1), "scaleBeats: timeAt(k*b) == old timeAt(b)", 1e-4);
 // tempo scales by k
-assertClose.(r.bps, mt.bps * 2, "scaleBeats: bps scales by k", 1e-4);
+assertClose.(r.tempo, mt.tempo * 2, "scaleBeats: tempo scales by k", 1e-4);
 // to reproduce the anchor gaps you now feed k-beat spans
 assertArr.((2 ! 5).warpTo(r), [1,1,1,3,3],
 	"scaleBeats: (k!n).warpTo reproduces performed spans", 1e-3);
@@ -250,7 +250,7 @@ assertArr.(mt.scaleTempo(2).scaleTempo(2).tempoCurve, mt.scaleTempo(4).tempoCurv
 assertClose.(mt.scaleTempo(1).timeAt(3), mt.timeAt(3), "scaleTempo(1): identity");
 // toBpm lands the MEAN, keeping the shape
 sc = mt.setBpm(90);
-assertClose.(sc.spanBpm(0, sc.beats.sum), 90, "toBpm: mean tempo lands exactly", 1e-6);
+assertClose.(sc.bpm(0, sc.beats.sum), 90, "toBpm: mean tempo lands exactly", 1e-6);
 ratios = sc.tempoCurve.collect { |b, i| b / mt.tempoCurve[i] };
 assert.((ratios.maxItem - ratios.minItem) < 1e-9, "toBpm: one common factor, shape kept");
 assert.(throws.({ mt.scaleTempo(0) }), "scaleTempo: k must be > 0");
@@ -259,7 +259,7 @@ assert.(throws.({ mt.setBpm(-1) }), "toBpm: bpm must be > 0");
 am = mt.asMonoMap;
 assertClose.(am.scaleTempo(2).at(am.xs.last), am.at(am.xs.last) / 2,
 	"AnchorMap.scaleTempo: same contract");
-assertClose.(am.setBpm(120).spanBpm(am.xs.first, am.xs.last), 120, "AnchorMap.toBpm: same", 1e-6);
+assertClose.(am.setBpm(120).bpm(am.xs.first, am.xs.last), 120, "AnchorMap.toBpm: same", 1e-6);
 assert.(throws.({ am.scaleTempo(0) }), "AnchorMap.scaleTempo: k must be > 0");
 e = EventList(\zzScaleTempo, \eventList).clear;
 e.tempoMap = mt;

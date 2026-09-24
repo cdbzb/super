@@ -123,13 +123,13 @@ TempoMap {
 	  ^this.mapDurs(array, fromTime)
   }
   mapBeats { | b, fromBeat = 0 |
-	  ^b.mapSpansFrom(fromBeat, { |beat| this.timeAt(beat) })
+	  ^b.mapDeltasFrom(fromBeat, { |beat| this.timeAt(beat) })
   }
   // Naming convention: `beats` are musical spans; `durs` are elapsed seconds.
   // Therefore mapDurs maps second durations -> beat spans (the inverse of
   // mapBeats, which maps beat spans -> second durations).
   mapDurs { |durs, fromTime = 0|
-	  ^durs.mapSpansFrom(fromTime, { |t| this.beatAt(t) })
+	  ^durs.mapDeltasFrom(fromTime, { |t| this.beatAt(t) })
   }
   mapRecordedDurs { | durs |
 	  ^this.mapBeats( durs/this.quarters.mean )
@@ -245,10 +245,10 @@ PlacedTempoMap {
 	  ^beatOrigin + (map.beatAt(td.first + (time - timeOrigin)) - bd.first)
   }
   mapBeats { |beats, fromBeat|
-	  ^beats.mapSpansFrom(fromBeat ? beatOrigin, { |beat| this.timeAt(beat) })
+	  ^beats.mapDeltasFrom(fromBeat ? beatOrigin, { |beat| this.timeAt(beat) })
   }
   mapDurs { |durs, fromTime|
-	  ^durs.mapSpansFrom(fromTime ? timeOrigin, { |t| this.beatAt(t) })
+	  ^durs.mapDeltasFrom(fromTime ? timeOrigin, { |t| this.beatAt(t) })
   }
   // Legacy protocol alias — TempoMap and MIDIItemTempoMap both answer it, so a
   // placed map must too or old callers get doesNotUnderstand.
@@ -300,11 +300,11 @@ TempoWarp {
   // selector returns beat spans, while a warp's output stays in seconds.
   // Origins are required for position-dependent tempo changes.
   warpDurs { |sourceDurs, fromTime|
-	  ^sourceDurs.mapSpansFrom(fromTime ? sourceMap.timeDomain.first,
+	  ^sourceDurs.mapDeltasFrom(fromTime ? sourceMap.timeDomain.first,
 		  { |t| this.mapTime(t) })
   }
   unwarpDurs { |targetDurs, fromTime|
-	  ^targetDurs.mapSpansFrom(fromTime ? targetMap.timeDomain.first,
+	  ^targetDurs.mapDeltasFrom(fromTime ? targetMap.timeDomain.first,
 		  { |t| this.unmapTime(t) })
   }
   sourceTimeDomain { ^sourceMap.timeDomain }
@@ -329,4 +329,4 @@ TempoWarp {
 	}
 }
 
-// SequenceableCollection.mapSpansFrom is defined in plusArray.sc.
+// SequenceableCollection.mapDeltasFrom is defined in plusArray.sc.

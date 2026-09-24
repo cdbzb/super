@@ -631,7 +631,7 @@ do not change the song-facing API.
   (`:233-246`), `trackPitchOffline` harness (`:297`), `\retunePreview` (`:542`).
 - `Trek/MW-Classes/PianoRollNav.sc` — the shared-gui-extraction precedent for `BeatMarkMode`.
 - `Trek/MW-Classes/Groove.sc` — beat→beat reparametrization (§11); `swing`/`modulate`,
-  `mapBeat`/`unmapBeat`, `mapSpans`/`unmapSpans`.
+  `mapBeat`/`unmapBeat`, `mapDeltas`/`unmapDeltas`.
 - `bin/audio-latency.swift` — CoreAudio per-direction latency, for the `L_out`/`L_in`
   split a loopback cannot measure (§9a step 5). `--list`, `--device`, `--roundtrip`.
 - Journal seed: `~/home/org_roam_files/org.org` (Jun 09, 2026).
@@ -838,7 +838,7 @@ Caveats = the work items:
   needs a listening check.
 - **No merge convenience** — `asEventList` builds a NEW list; want
   `list.addItem(player, at: beat, voice:)` (shared with §9a step 3).
-- Tempo matching is already handled: `mi.bps`/`bpm` (`MIDI-Item2.sc:1721-1724`) measures the
+- Tempo matching is already handled: `mi.tempo`/`bpm` (`MIDI-Item2.sc:1721-1724`) measures the
   wild tempo; `\mi2`'s `rate = tempo/stretch` scales fragment-beats to list-beats for
   half/double-time takes.
 
@@ -1188,7 +1188,7 @@ and no extrapolation policy to reconcile when composed (see §6a).
   Phasing by subtraction keeps `Φ(0) = Φ(1) = 0` for every shape, so phase can never
   introduce an offset or break period preservation. Inverse by bisection, as in
   `wallToBeat`'s subsampled case.
-- `mapBeat`/`unmapBeat` (scalar), `mapSpans`/`unmapSpans` (position-aware with `from:`, same
+- `mapBeat`/`unmapBeat` (scalar), `mapDeltas`/`unmapDeltas` (position-aware with `from:`, same
   contract as `mapBeats`/`mapDurs`; non-positive results clamp to 1e-9 rather than drop,
   preserving length).
 - `groove:` on a nested `\eventList` event, applied in BOTH `prExpandList` branches. The
@@ -1663,7 +1663,7 @@ leaves the take as played, in between each onset moves that fraction of the way.
     p.requantizeSpan(20, "ex x q qe e".beats, o, amount: 0.6)
     p.retimeSpan(20, durs, o, amount: 0.6)      // the blended map, unapplied
 
-It blends the two MAPS, not the timestamps: `mOld.blendWith(mNew, amount)`, then the
+It blends the two MAPS, not the timestamps: `mOld.blend(mNew, amount)`, then the
 existing `(mNew.inverse >> mOld)` composition. That is what keeps NO RIPPLE at every
 strength — outside the span the two maps are the same anchors, so any blend of them
 is still the identity there and warpTo's sec -> sec branch hands those timestamps
@@ -1672,7 +1672,7 @@ back untouched. Measured: the last note's delta is exactly 0.0 at amount 1, 0.5 
 confirms `(mOld.inverse >> mOld).bake` is the exact identity the PL-fusion comment
 claims).
 
-New primitive `AnchorMap.blendWith(other, amount)`: sampled on the UNION of both
+New primitive `AnchorMap.blend(other, amount)`: sampled on the UNION of both
 breakpoint sets, since retimeSpan's output is the old map with one cell's anchors
 replaced and the union keeps every corner of both. Convex blend of two increasing
 functions, so monotone by construction inside [0, 1]; outside it warns. Frames must
@@ -1684,5 +1684,5 @@ existing behaviour is untouched; only a non-1 amount takes the second snapshot i
 needs to blend against.
 
 Candidate cleanup: `alignTo` (§12i) open-codes this same blend for a different pair
-of maps and could route through `blendWith` — not done, since its pair is sampled on
+of maps and could route through `blend` — not done, since its pair is sampled on
 the child's anchors rather than a union.

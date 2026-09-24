@@ -1030,12 +1030,12 @@ EventList {
 	// Function, or a ragged array — rather than half-converting. One level only.
 	*prDursFor { |val, origin = 0, secsFor|
 		var flat = this.prAsBeats(val), rows;
-		flat.notNil.if { ^flat.mapSpansFrom(origin, secsFor) };
+		flat.notNil.if { ^flat.mapDeltasFrom(origin, secsFor) };
 		((val.isSequenceableCollection) and: { val.isString.not }
 			and: { val.isEmpty.not }).if {
 			rows = val.collect { |v| this.prAsBeats(v) };
 			rows.every(_.notNil).if {
-				^rows.collect { |r| r.mapSpansFrom(origin, secsFor) }
+				^rows.collect { |r| r.mapDeltasFrom(origin, secsFor) }
 			}
 		};
 		^nil
@@ -1327,7 +1327,7 @@ EventList {
 
 	/*
 	 The COMPOSED clock read as a rate — tempoMap and \tempoTrack together, unlike
-	 tempoMap.spanTempo/spanBpm which see only the base map and answer a flat number
+	 tempoMap.tempo/bpm which see only the base map and answer a flat number
 	 through any \tempoTrack ramp.
 
 	 beatToWall answers POSITIONS, so a rate is a finite difference and `width` is the
@@ -1352,7 +1352,7 @@ EventList {
 
 	/*
 	 secPerBeatAt as bpm. nil on a degenerate span rather than an infinity — same
-	 guard, and same answer shape, as MonoMap.spanTempo.
+	 guard, and same answer shape, as MonoMap.tempo.
 	*/
 	bpmAt { |beat = 0, width = 1, tempoEnv|
 		var spb = this.secPerBeatAt(beat, width, tempoEnv);
@@ -1442,7 +1442,7 @@ EventList {
 	// Set a span's mean tempo without removing its internal variation. Material
 	// after `to` shifts in time but keeps its tempo. Read spans from tempoMap;
 	// EventList playback may also include \tempoTrack.
-	setTempo { |bps, from, to| ^this.prMapEdit { |m| m.setTempo(bps, from, to) } }
+	setTempo { |tempo, from, to| ^this.prMapEdit { |m| m.setTempo(tempo, from, to) } }
 	setBpm   { |bpm, from, to| ^this.prMapEdit { |m| m.setBpm(bpm, from, to) } }
 
 	// The knob from "as performed" (amount 0) to "every child beat on a parent beat"
@@ -2044,7 +2044,7 @@ EventList {
 
 	 The mapping function must be EPOCH-FREE, which is why this takes pushAt rather
 	 than childPlace. childPlace answers epoch + relative, and adding a small number
-	 to a large one loses low bits that mapSpansFrom's deltas cannot recover — the
+	 to a large one loses low bits that mapDeltasFrom's deltas cannot recover — the
 	 error tracks epoch magnitude (~7e-11 at epoch 1e6). thisThread.seconds climbs,
 	 so every play would hand SynthVVST slightly different durs, move calcCacheKey
 	 and re-render the take. pushAt composes rate, groove and the governing map with

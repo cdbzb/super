@@ -60,10 +60,10 @@ Applies at all three levels: `AnchorMap`, `MIDIItemTempoMap`, `EventList`.
 `setTempo` (bps) and `setBpm` (bpm = bps × 60) are one operation in two units. Both set
 the mean and preserve the rubato — every span scales by one common factor.
 
-**Which mean:** total beats ÷ total seconds, i.e. exactly what `spanBpm`/`spanTempo` reads
+**Which mean:** total beats ÷ total seconds, i.e. exactly what `bpm`/`tempo` reads
 back, NOT the arithmetic mean of the per-span tempi. Setter and reader are inverses:
-`m.setBpm(x, from, to).spanBpm(from, to) == x`. Measured 2026-08-21 on spans of
-120/30/120/60 bpm — `setSpanTempo(90 bpm)` gives `spanBpm 90.0`, arithmetic mean 123.75,
+`m.setBpm(x, from, to).bpm(from, to) == x`. Measured 2026-08-21 on spans of
+120/30/120/60 bpm — `setSpanTempo(90 bpm)` gives `bpm 90.0`, arithmetic mean 123.75,
 span duration 2.666667 s = 4 beats at 90. The divergence is large under rubato, so the
 docstrings must say which one.
 
@@ -273,7 +273,7 @@ the receiver decides the return type).
   divides by 60 itself. One operation currently has three layers: `setSpanSlope` (sec/beat,
   any dimensions) → `setSpanTempo` (bps, guards beat→sec) → `setSpanBpm` (bpm). If one goes
   it should be the bps middle layer, not `setBpm`. Against cutting: the READERS are
-  `spanTempo`/`spanBpm`, so setters in one unit only breaks the symmetry; and
+  `tempo`/`bpm`, so setters in one unit only breaks the symmetry; and
   `TempoClock.tempo` is bps.
 - ~~`*Span` aliases~~ — DECIDED 2026-08-21: removed outright, see §A.
 

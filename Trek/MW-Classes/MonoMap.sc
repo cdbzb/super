@@ -104,10 +104,13 @@ MonoMap {
 			>> AffineMap(1, toOrigin, this.toFrame, outF)
 	}
 
-	// Span mapping: differences of cumulative at/invAt. Contract (origin,
-	// length preservation, epsilon clamp) lives on mapSpansFrom in plusArray.sc.
-	mapSpans   { |spans, from = 0| ^spans.mapSpansFrom(from, { |p| this.at(p)    }) }
-	unmapSpans { |spans, from = 0| ^spans.mapSpansFrom(from, { |p| this.invAt(p) }) }
+	// Delta mapping: differences of cumulative at/invAt. Contract (origin,
+	// length preservation, epsilon clamp) lives on mapDeltasFrom in plusArray.sc.
+	mapDeltas   { |deltas, from = 0| ^deltas.mapDeltasFrom(from, { |p| this.at(p)    }) }
+	unmapDeltas { |deltas, from = 0| ^deltas.mapDeltasFrom(from, { |p| this.invAt(p) }) }
+	// Pre-rename aliases; org sources still call them.
+	mapSpans   { |deltas, from = 0| ^this.mapDeltas(deltas, from) }
+	unmapSpans { |deltas, from = 0| ^this.unmapDeltas(deltas, from) }
 
 	mapsDimensions { |a, b|
 		^(fromFrame.dimension == a) and: { toFrame.dimension == b }
@@ -128,31 +131,52 @@ MonoMap {
 			.format(this.class, fromFrame.dimension, toFrame.dimension)).throw
 	}
 
-	// Mean output units per input unit. Bounds follow the map's extension policy.
-	spanSlope { |from, to|
+	/*
+	 Mean readers over [from, to], the getters matching setSlope/setTempo/setBpm.
+	 A missing bound defaults to that end of the domain; an unbounded map needs
+	 both. Bounds past the domain follow the map's extension policy.
+	*/
+	prMeanBounds { |from, to|
+		var d;
+		(from.isNil or: { to.isNil }).if {
+			d = this.domain;
+			d.isNil.if {
+				Error("%: unbounded map, pass from: and to:".format(this.class)).throw
+			};
+			from = from ? d[0];
+			to = to ? d[1]
+		};
 		(from.isNumber and: to.isNumber).not.if {
-			Error("%.spanSlope: from and to must be numbers, got % and %"
+			Error("%: from and to must be numbers, got % and %"
 				.format(this.class, from, to)).throw
 		};
 		(from >= to).if {
-			Error("%.spanSlope: need from < to, got % and %"
-				.format(this.class, from, to)).throw
+			Error("%: need from < to, got % and %".format(this.class, from, to)).throw
 		};
+		^[from, to]
+	}
+	// Mean output units per input unit.
+	slope { |from, to|
+		#from, to = this.prMeanBounds(from, to);
 		^(this.at(to) - this.at(from)) / (to - from)
 	}
 	// Mean beats per second for a beat -> sec map; nil for near-zero output width.
 	// This is the inverse of setTempo over the same span.
-	spanTempo { |from, to|
+	tempo { |from, to|
 		var slope;
 		this.mapsDimensions(\beat, \sec).not.if {
-			Error("%.spanTempo: needs a beat -> sec map, this one maps % -> %"
+			Error("%.tempo: needs a beat -> sec map, this one maps % -> %"
 				.format(this.class, fromFrame.dimension, toFrame.dimension)).throw
 		};
-		slope = this.spanSlope(from, to);
+		slope = this.slope(from, to);
 		// Avoid unstable reciprocals near zero.
 		^(slope > 1e-9).if { slope.reciprocal }
 	}
-	spanBpm { |from, to| ^this.spanTempo(from, to) !? (_ * 60) }
+	bpm { |from, to| ^this.tempo(from, to) !? (_ * 60) }
+	// Pre-rename aliases.
+	spanSlope { |from, to| ^this.slope(from, to) }
+	spanTempo { |from, to| ^this.tempo(from, to) }
+	spanBpm   { |from, to| ^this.bpm(from, to) }
 
 	prExtensionError { |x, end|
 		Error("%: % outside domain % (% end is \\error)"
@@ -176,6 +200,8 @@ AffineMap : MonoMap {
 	}
 	at { |x| ^(x * scale) + offset }
 	invAt { |y| ^(y - offset) / scale }
+	// Constant everywhere, so no bounds are needed (and domain is nil).
+	slope { |from, to| ^scale }
 	inverse { ^AffineMap(scale.reciprocal, offset.neg / scale, toFrame, fromFrame) }
 	withFrames { |fromFrame, toFrame| ^AffineMap(scale, offset, fromFrame, toFrame) }
 	printOn { |stream|
@@ -453,15 +479,15 @@ AnchorMap : MonoMap {
 	}
 
 	// Blend with a map on the same frames, using the union of both anchor sets.
-	// amount 0 is this map; 1 is `other`.
-	blendWith { |other, amount = 1|
+	// amount 0 is this map; 1 is `other`; the default 0.5 is halfway, as in Object.blend.
+	blend { |other, amount = 0.5|
 		var us, ys2;
 		(fromFrame == other.fromFrame and: { toFrame == other.toFrame }).not.if {
-			Error("AnchorMap.blendWith: frame mismatch — % / % vs % / %"
+			Error("AnchorMap.blend: frame mismatch — % / % vs % / %"
 				.format(fromFrame, toFrame, other.fromFrame, other.toFrame)).throw
 		};
 		((amount < 0) or: { amount > 1 }).if {
-			"AnchorMap.blendWith: amount % is outside [0, 1] — monotonicity is only "
+			"AnchorMap.blend: amount % is outside [0, 1] — monotonicity is only "
 				"guaranteed inside it".format(amount).warn
 		};
 		us = (xs ++ (other.tryPerform(\xs) ? []).asArray).sort;
@@ -653,7 +679,7 @@ AnchorMap : MonoMap {
 				x0: from, y0: onsets.first,
 				fromFrame: cell.fromFrame, toFrame: cell.toFrame)
 		});
-		^(amount == 1).if { edited } { this.blendWith(edited, amount) }
+		^(amount == 1).if { edited } { this.blend(edited, amount) }
 	}
 
 	// Scale a span's output width while preserving its internal proportions.
@@ -700,16 +726,16 @@ AnchorMap : MonoMap {
 
 	// Set mean beats per second on a beat -> sec map. Optional bounds default to
 	// the whole map; internal rubato is preserved by uniform scaling.
-	// m.setTempo(x, a, b).spanTempo(a, b) == x.
-	setTempo { |bps, from, to|
+	// m.setTempo(x, a, b).tempo(a, b) == x.
+	setTempo { |tempo, from, to|
 		this.mapsDimensions(\beat, \sec).not.if {
 			Error("AnchorMap.setTempo: needs a beat -> sec map, this one maps % -> %"
 				.format(fromFrame.dimension, toFrame.dimension)).throw
 		};
-		((bps.isNumber.not) or: { bps <= 0 }).if {
-			Error("AnchorMap.setTempo: bps must be > 0, got %".format(bps)).throw
+		((tempo.isNumber.not) or: { tempo <= 0 }).if {
+			Error("AnchorMap.setTempo: tempo must be > 0, got %".format(tempo)).throw
 		};
-		^this.setSlope(bps.reciprocal, from, to)
+		^this.setSlope(tempo.reciprocal, from, to)
 	}
 	// Same operation in bpm. setBpm is the ABSOLUTE form ("land on this value"),
 	// scaleTempo the relative one ("multiply by k").

@@ -180,13 +180,13 @@ MapEditor {
 	}
 
 	// mean bpm over the current span, read off the map (not off the notes).
-	// Degenerate spans answer nil here rather than reaching MonoMap.spanBpm, which
+	// Degenerate spans answer nil here rather than reaching MonoMap.bpm, which
 	// throws on from >= to: this is called from the draw path (drawEditOverlay),
 	// where i/o parked on one beat must not take the window down.
 	spanBpm {
 		var r = this.spanRange;
 		(r.isNil or: { r[1] <= r[0] }).if { ^nil };
-		^map.spanBpm(r[0], r[1])
+		^map.bpm(r[0], r[1])
 	}
 
 	selectSpan { |fromBeat, toBeat|

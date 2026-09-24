@@ -11,11 +11,11 @@ var beatF = MapFrame(\beat, \t), secF = MapFrame(\sec, \t);
 // local tempo at the near end, read off the first and last sampled segments
 var endRatio = { |m|
 	var x0 = m.xs.first, x1 = m.xs.last;
-	m.spanTempo(m.xs[m.xs.size - 2], x1) / m.spanTempo(x0, m.xs[1])
+	m.tempo(m.xs[m.xs.size - 2], x1) / m.tempo(x0, m.xs[1])
 };
 // local tempo at x, relative to the map's opening tempo
 var relTempoAt = { |m, x, eps = 0.005|
-	m.spanTempo(x - eps, x + eps) / m.spanTempo(m.xs.first, m.xs[1])
+	m.tempo(x - eps, x + eps) / m.tempo(m.xs.first, m.xs[1])
 };
 
 // steady 2 bps over 4 beats
@@ -60,9 +60,9 @@ assertClose.(acc.ys.last, 2.0, "an accel preserves the output width too");
 // quantize: 1 — this section is about the FLATTENED base, which is what ritard did
 // unconditionally before 2026-08-21 and is now opt-in.
 r1 = wob.ritard(1, 2, quantize: 1);
-assertClose.(r1.spanTempo(0, 1), r1.spanTempo(3, 4),
+assertClose.(r1.tempo(0, 1), r1.tempo(3, 4),
 	"w = 1 gives one tempo across the span");
-assertClose.(r1.spanTempo(0, 1), wob.spanTempo(0, 4),
+assertClose.(r1.tempo(0, 1), wob.tempo(0, 4),
 	"and that tempo is the span's mean, as quantize(1) would");
 assertClose.(wob.ritard(1, 2).ys.last, wob.quantize(1).ys.last,
 	"w = 1 and quantize(1) agree at the end");
@@ -114,14 +114,14 @@ assertClose.(fit.ys.last, 2.1, "a fitted ritard still preserves the output width
 sFree = host.ritardSpan(2, 4, 0.5, 2);
 assertClose.(sFree.at(4), 2.0, "without pinEntry the span's end time is unmoved");
 assertClose.(sFree.at(6), 3.0, "so nothing after the span moves");
-assert.(sFree.spanTempo(2, 2.05) > host.spanTempo(2, 2.05),
+assert.(sFree.tempo(2, 2.05) > host.tempo(2, 2.05),
 	"but the span now ENTERS faster than it did — the step up pinEntry removes");
 
 "---- ritardSpan(pinEntry: true): tempo continuous, the take gets longer ----".postln;
 sPin = host.ritardSpan(2, 4, 0.5, 2, 1, true);
-assertClose.(sPin.spanTempo(1.9, 1.99), sPin.spanTempo(2.01, 2.1),
+assertClose.(sPin.tempo(1.9, 1.99), sPin.tempo(2.01, 2.1),
 	"pinEntry matches the span's entry tempo to the incoming tempo", 0.02);
-assertClose.(sPin.spanTempo(1.9, 1.99), 2.0,
+assertClose.(sPin.tempo(1.9, 1.99), 2.0,
 	"and the incoming tempo is itself unchanged", 0.02);
 assert.(sPin.at(4) > 2.0, "the ritarded span takes genuinely longer");
 assert.(sPin.at(6) > 3.0, "everything after it shifts — the ripple");
@@ -167,7 +167,7 @@ assertArr.(sOff.domain, [0, 9], "ritardSpan past the end extends the map instead
 assertClose.(sOff.at(4), host.at(4), "...and everything before the span is unmoved");
 assert.(sOff.at(9) > host.at(9), "...while the ritarded tail takes longer than the carry did");
 assert.(sOff.ys.differentiate.drop(1).every(_ > 0), "...and the result is still monotone");
-assertClose.(sOff.spanTempo(3.9, 3.99), sOff.spanTempo(4.01, 4.1),
+assertClose.(sOff.tempo(3.9, 3.99), sOff.tempo(4.01, 4.1),
 	"pinEntry still matches the entry tempo when the span runs off the end", 0.02);
 // \error declares "no opinion out here" and is respected
 errMap = AnchorMap([0, 1, 2], [0, 1, 2], beatF, secF, \error, \error);
@@ -182,9 +182,9 @@ assertClose.(host.ritardSpan(0, 2, 0.5, 2, 1, true).at(6), 3.0,
 "---- toBpm: w stated absolutely ----".postln;
 // host runs at 2 bps = 120 bpm; ask the span to end at 60 bpm
 tb = host.ritardSpan(2, 4, nil, 2, 1, true, 60);
-assertClose.(tb.spanTempo(3.98, 3.999) * 60, 60,
+assertClose.(tb.tempo(3.98, 3.999) * 60, 60,
 	"toBpm lands the span's exit tempo on the requested bpm", 1.0);
-assertClose.(tb.spanTempo(1.9, 1.99), 2.0,
+assertClose.(tb.tempo(1.9, 1.99), 2.0,
 	"toBpm still enters at the incoming tempo", 0.02);
 assertArr.(tb.ys, host.ritardSpan(2, 4, 0.5, 2, 1, true).ys,
 	"toBpm 60 against an incoming 120 is exactly w = 0.5");
@@ -273,36 +273,36 @@ assert.((qFlat[0] - 0.4).abs < 1e-9 and: { (qFlat[1] - 0.7).abs < 1e-9 },
 slow = AnchorMap([0, 1, 2, 3, 4], [0, 1, 2, 3, 4], beatF, secF);
 fast = AnchorMap([0, 1, 2, 3, 4], [0, 0.5, 1.0, 1.5, 2.0], beatF, secF);
 raw = (slow ++ fast).bake;
-assertClose.(raw.spanTempo(3.5, 3.9), 1.0, "unassisted, the seam steps 1 bps...");
-assertClose.(raw.spanTempo(4.1, 4.5), 2.0, "...straight up to 2 bps");
+assertClose.(raw.tempo(3.5, 3.9), 1.0, "unassisted, the seam steps 1 bps...");
+assertClose.(raw.tempo(4.1, 4.5), 2.0, "...straight up to 2 bps");
 ease = slow.easeTo(fast, 2, 2);
 assertArr.(ease.domain, [0, 8], "easeTo answers one map spanning both");
 assert.(ease.ys.differentiate.drop(1).every(_ > 0), "the eased map is strictly increasing");
-assertClose.(ease.spanTempo(0, 1.9), 1.0, "material before the window is untouched");
+assertClose.(ease.tempo(0, 1.9), 1.0, "material before the window is untouched");
 assertClose.(ease.at(2), slow.at(2), "and so are its times");
-assertClose.(ease.spanTempo(1.9, 1.99), ease.spanTempo(2.01, 2.1),
+assertClose.(ease.tempo(1.9, 1.99), ease.tempo(2.01, 2.1),
 	"tempo is continuous entering the window", 0.02);
-assertClose.(ease.spanTempo(5.9, 5.99), ease.spanTempo(6.01, 6.1),
+assertClose.(ease.tempo(5.9, 5.99), ease.tempo(6.01, 6.1),
 	"tempo is continuous LEAVING the window — w was fitted to the far side", 0.05);
-assertClose.(ease.spanTempo(6.1, 8), 2.0, "and the far side runs at its own tempo");
+assertClose.(ease.tempo(6.1, 8), 2.0, "and the far side runs at its own tempo");
 // after: 0 lands the new tempo exactly on the join
 onJoin = slow.easeTo(fast, 2, 0);
-assertClose.(onJoin.spanTempo(3.9, 3.99), 2.0,
+assertClose.(onJoin.tempo(3.9, 3.99), 2.0,
 	"after: 0 reaches the new tempo at the join itself", 0.05);
-assertClose.(onJoin.spanTempo(1.9, 1.99), 1.0, "still entering at the old tempo", 0.02);
+assertClose.(onJoin.tempo(1.9, 1.99), 1.0, "still entering at the old tempo", 0.02);
 // before: 0 is the mirror
 onEntry = slow.easeTo(fast, 0.001, 2);
-assertClose.(onEntry.spanTempo(3.9, 3.99), 1.0,
+assertClose.(onEntry.tempo(3.9, 3.99), 1.0,
 	"an ease almost entirely after the join still leaves the old tempo alone", 0.05);
 // the seam of a map with itself is NOT trivial unless the map is flat
 drift = AnchorMap([0, 1, 2, 3], [0, 0.5, 0.9, 1.2], beatF, secF);
 selfRaw = (drift ++ drift).bake;
-assert.((selfRaw.spanTempo(2.5, 2.9) - selfRaw.spanTempo(3.1, 3.5)).abs > 0.5,
+assert.((selfRaw.tempo(2.5, 2.9) - selfRaw.tempo(3.1, 3.5)).abs > 0.5,
 	"a drifting map spliced to ITSELF has a real step at the seam");
 selfEase = drift.easeTo(drift, 1, 1);
-assertClose.(selfEase.spanTempo(1.9, 1.99), selfEase.spanTempo(2.01, 2.1),
+assertClose.(selfEase.tempo(1.9, 1.99), selfEase.tempo(2.01, 2.1),
 	"easeTo fits that seam without being told w", 0.05);
-assertClose.(selfEase.spanTempo(3.9, 3.99), selfEase.spanTempo(4.01, 4.1),
+assertClose.(selfEase.tempo(3.9, 3.99), selfEase.tempo(4.01, 4.1),
 	"...on both sides", 0.05);
 // amount blends back toward the performed tempo
 assertArr.(drift.easeTo(drift, 1, 1, 2, 0).ys, selfRaw.ys,
@@ -336,7 +336,7 @@ mtEase = mt.easeTo(fast, 2, 0);
 assert.(mtEase.isKindOf(AnchorMap), "MIDIItemTempoMap.easeTo bridges to the core");
 // mt is 5 beats (four measured spans plus the closing anchor), fast is 4
 assertArr.(mtEase.domain, [0, 9], "the bridged seam spans both maps");
-assertClose.(mtEase.spanTempo(4.9, 4.99), 2.0,
+assertClose.(mtEase.tempo(4.9, 4.99), 2.0,
 	"and the ease lands other's tempo on the join", 0.05);
 assert.(slow.easeTo(mt, 1, 1).isKindOf(AnchorMap), "an old-world OTHER coerces too");
 // anything that bakes to anchors is acceptable as other

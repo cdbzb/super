@@ -83,13 +83,16 @@ Groove {
 	}
 
 	/*
-	 Position-aware span mapping, same contract as mapBeats/mapDurs — see
-	 SequenceableCollection.mapSpansFrom (plusArray.sc). The epsilon clamp is not
+	 Position-aware delta mapping, same contract as mapBeats/mapDurs — see
+	 SequenceableCollection.mapDeltasFrom (plusArray.sc). The epsilon clamp is not
 	 belt-and-braces here: unmapBeat is bisection, so two grooved beats closer
-	 than the final bracket can return the same float and yield a zero span.
+	 than the final bracket can return the same float and yield a zero delta.
+	 mapSpans/unmapSpans are pre-rename aliases; org sources still call them.
 	*/
-	mapSpans   { |spans, from = 0| ^spans.mapSpansFrom(from, { |p| this.mapBeat(p)   }) }
-	unmapSpans { |spans, from = 0| ^spans.mapSpansFrom(from, { |p| this.unmapBeat(p) }) }
+	mapDeltas   { |deltas, from = 0| ^deltas.mapDeltasFrom(from, { |p| this.mapBeat(p)   }) }
+	unmapDeltas { |deltas, from = 0| ^deltas.mapDeltasFrom(from, { |p| this.unmapBeat(p) }) }
+	mapSpans    { |deltas, from = 0| ^this.mapDeltas(deltas, from) }
+	unmapSpans  { |deltas, from = 0| ^this.unmapDeltas(deltas, from) }
 
 	isIdentity { ^amount == 0 }
 	storeArgs { ^[periodBeats, amount, shape, phase] }

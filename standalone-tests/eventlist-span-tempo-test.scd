@@ -54,25 +54,25 @@ ok.("bps 0 refused", { fresh.().setTempo(0, 1, 3) }.try { true } ? false);
 
 
 // --- reading a span back ----------------------------------------------------
-ok.("map spanBpm inverts setBpm",
-	near.(fresh.().setBpm(44, 1, 3).tempoMap.spanBpm(1, 3), 44, 1e-9));
-ok.("map spanTempo is bpm/60",
-	near.(fresh.().setBpm(44, 1, 3).tempoMap.spanTempo(1, 3), 44/60, 1e-9));
+ok.("map bpm inverts setBpm",
+	near.(fresh.().setBpm(44, 1, 3).tempoMap.bpm(1, 3), 44, 1e-9));
+ok.("map tempo is bpm/60",
+	near.(fresh.().setBpm(44, 1, 3).tempoMap.tempo(1, 3), 44/60, 1e-9));
 // on a FLAT span any sub-range reads the same tempo; ends off the anchors are
 // fine either way, they just do not equal the span mean on a varying span
 ok.("span ends need not be anchors",
-	near.(fresh.().quantize(1, 1, 4).setBpm(44, 1, 4).tempoMap.spanBpm(1.5, 3.25),
+	near.(fresh.().quantize(1, 1, 4).setBpm(44, 1, 4).tempoMap.bpm(1.5, 3.25),
 	      44, 1e-9));
 ok.("sub-range of a VARYING span differs from its mean",
-	near.(fresh.().setBpm(44, 1, 4).tempoMap.spanBpm(1.5, 3.25), 44, 1e-9).not);
+	near.(fresh.().setBpm(44, 1, 4).tempoMap.bpm(1.5, 3.25), 44, 1e-9).not);
 ok.("reads past the map end (extrapolates, not clamps)",
-	fresh.().tempoMap.spanBpm(5, 9).notNil);
-ok.("zero-width span answers nil", fresh.().tempoMap.spanBpm(2, 2).isNil);
-ok.("reversed span answers nil",   fresh.().tempoMap.spanBpm(3, 1).isNil);
+	fresh.().tempoMap.bpm(5, 9).notNil);
+ok.("zero-width span answers nil", fresh.().tempoMap.bpm(2, 2).isNil);
+ok.("reversed span answers nil",   fresh.().tempoMap.bpm(3, 1).isNil);
 // reading is a question about a MAP: the list deliberately does not answer it,
-// since a list-level spanBpm would have to compose \tempoTrack to be honest
-ok.("EventList does not answer spanBpm", EventList.findMethod(\spanBpm).isNil);
-ok.("EventList does not answer spanTempo", EventList.findMethod(\spanTempo).isNil);
+// since a list-level bpm(from, to) would have to compose \tempoTrack to be honest
+ok.("EventList does not answer bpm", EventList.findMethod(\bpm).isNil);
+ok.("EventList does not answer tempo", EventList.findMethod(\tempo).isNil);
 
 
 // --- the median moves, the variation does not -------------------------------
@@ -83,13 +83,13 @@ b = fresh.().setBpm(40, 1, 4).tempoMap.tempoCurve;
 ok.("inner spans scale by one common factor",
 	(1..3).collect { |i| b[i] / a[i] }.every { |r| near.(r, b[1] / a[1], 1e-9) });
 ok.("the mean actually moved",
-	near.(fresh.().setBpm(40, 1, 4).tempoMap.spanBpm(1, 4), 40, 1e-9));
+	near.(fresh.().setBpm(40, 1, 4).tempoMap.bpm(1, 4), 40, 1e-9));
 ok.("variation survived (spans still differ)",
 	(b[1] - b[2]).abs > 1e-6);
 // quantize is the complement: variation goes, mean stays
-a = fresh.().tempoMap.spanBpm(1, 4);
+a = fresh.().tempoMap.bpm(1, 4);
 b = fresh.().quantize(1, 1, 4);
-ok.("quantize keeps the mean", near.(b.tempoMap.spanBpm(1, 4), a, 1e-9));
+ok.("quantize keeps the mean", near.(b.tempoMap.bpm(1, 4), a, 1e-9));
 c = (1..3).collect { |i| b.tempoMap.tempoCurve[i] };
 ok.("quantize removes the variation", c.every { |v| near.(v, c[0], 1e-6) });
 

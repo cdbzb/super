@@ -1,15 +1,17 @@
 + SequenceableCollection {
 	ls { this.do(_.postln) }
 
-	// Convert positions to spans.
+	// Convert positions to deltas.
 	deltas { ^this.differentiate.drop(1) }
 
 	// Map consecutive span boundaries from origin. Clamp non-positive results so
 	// parallel event arrays remain aligned.
-	mapSpansFrom { |origin, func|
-		^([func.(origin)] ++ this.integrate.collect { |span| func.(origin + span) })
+	mapDeltasFrom { |origin, func|
+		^([func.(origin)] ++ this.integrate.collect { |offset| func.(origin + offset) })
 			.deltas max: 1e-9
 	}
+	// Pre-rename alias; org sources still call it.
+	mapSpansFrom { |origin, func| ^this.mapDeltasFrom(origin, func) }
 
 	deltaAt { |x, last|
 		var d = this.differentiate.drop(1);
@@ -125,8 +127,8 @@
 		( [TempoMap, MIDIItemTempoMap].includes(quarters.class) ).if{
 			^this.warpToTempoMap(quarters)
 		};
-		// V2 bridge (tempomap-v2-design.md step 5b): MonoMaps warp via mapSpans
-		quarters.isKindOf(MonoMap).if{ ^quarters.mapSpans(this) };
+		// V2 bridge (tempomap-v2-design.md step 5b): MonoMaps warp via mapDeltas
+		quarters.isKindOf(MonoMap).if{ ^quarters.mapDeltas(this) };
 		^this.warpToArray(quarters)
 	}
 

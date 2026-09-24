@@ -423,7 +423,7 @@ AudioItem {
 	*timingKeys { ^#[\sourceTempoMap, \sourceBeatDur, \marksVersion, \fromBeat, \toBeat, \align, \marks] }
 
 	*prResolveSourceMap { |ev, itemName, takeNum|
-		var out, sm, name, m, latIn = false, trimMode = false;
+		var out, sm, name, m, latIn = false, trimMode = false, origin = 0;
 		(ev[\srcResolved] == true).if { ^ev };
 		out = ev.copy;
 		out[\srcResolved] = true;
@@ -445,8 +445,18 @@ AudioItem {
 			};
 			sm = nil;
 			(result.notNil and: { result.respondsTo(\timeAt) }).if {
-				m = result.isKindOf(MonoMap).if { result.asAnchorTempoMap } { result };
-				name = \function; latIn = true; trimMode = true;
+				{
+					// the result's first beat, read BEFORE the conversion rebases it away
+					result.isKindOf(MonoMap).if {
+						origin = result.bake.xs.first;
+						m = result.asAnchorTempoMap
+					} { m = result };
+					name = \function; latIn = true; trimMode = true;
+				}.try { |err|
+					"AudioItem: sourceTempoMap function's map cannot be used (%) — using the default"
+						.format(err.errorString).warn;
+					m = nil; origin = 0;
+				}
 			} {
 				result.notNil.if {
 					"AudioItem: sourceTempoMap function answered % (not a map) — using the default"
@@ -474,6 +484,7 @@ AudioItem {
 							.format(itemName, takeNum, out[\marksVersion] ? "").warn;
 					} {
 						m = AnchorTempoMap(mk[\anchors].collect(_[\src]), mk[\anchors].collect(_[\beat]));
+						origin = mk[\anchors].first[\beat];
 						latIn = true;
 						trimMode = true;
 					}
@@ -496,13 +507,17 @@ AudioItem {
 					m = this.prStampMap(itemName, takeNum);
 					name = m.notNil.if { \stamp } { \eventList }
 				};
-				latIn = false; trimMode = false;
+				latIn = false; trimMode = false; origin = 0;
 			};
 		};
 		};   // end: not a function
 		out[\srcMap] = m;
 		out[\srcLatencyIncluded] = latIn;
 		out[\srcName] = name ? \map;   // what actually resolved (for warnings and tests)
+		// the take-axis beat of the map's first anchor: when: is the axis's beat 0,
+		// so a map whose first beat is 3 plays that beat at when: + 3 (marks on a
+		// stamped take count from the record beat, step 11)
+		out[\srcBeatOrigin] = origin;
 		trimMode.if {
 			// start: trims (seconds after the origin), never shifts the source against
 			// the beats; the origin is the first mark's file second
@@ -566,6 +581,18 @@ AudioItem {
 		^st[\map]
 	}
 
+	/* The stamp-axis beat of a FILE second (0 = the beat the record event fired
+	   on), or nil for an unstamped take — the stamp's recording latency taken off
+	   first. TakeGui uses it to put marks on a stamped take on the stamp's axis. */
+	*stampBeatAt { |name, takeNum, fileSec|
+		var st = this.prStampMap(name, takeNum);
+		^st !? { st.beatAt(fileSec - this.t0(name, takeNum)) - st.beatDomain.first }
+	}
+	// The record event's list beat for a stamped take (recorded placement), or nil.
+	*stampWhen { |name, takeNum|
+		^this.recordedMap(name, takeNum) !? { |st| st[\when] }
+	}
+
 	// d seconds per beat, as a two-anchor map (\carry extrapolates it forever)
 	*prFlatMap { |d| ^AnchorTempoMap([0, d], [0, 1]) }
 
@@ -579,7 +606,7 @@ AudioItem {
 	// rebase, as MIDI's player.fromBeat. prSrcEndBeat is the exact inverse.
 	*prSrcOffset { |ev, list, b0, takeNum|
 		var r = this.prResolveSourceMap(ev, nil, takeNum);
-		var sm = r[\srcMap], fb = r[\fromBeat] ? 0;
+		var sm = r[\srcMap], fb = (r[\fromBeat] ? 0) - (r[\srcBeatOrigin] ? 0);
 		var t0 = r[\srcLatencyIncluded].if { 0 } { this.t0(this.eventItemName(r), takeNum) };
 		sm.notNil.if {
 			var bd = sm.beatDomain.first, mapT0 = sm.timeDomain.first;
@@ -594,7 +621,7 @@ AudioItem {
 	//     startSec + prSrcOffset.(prSrcEndBeat.(..., endSec)) == endSec.
 	*prSrcEndBeat { |ev, list, b0, startSec, endSec, takeNum|
 		var r = this.prResolveSourceMap(ev, nil, takeNum);
-		var sm = r[\srcMap], fb = r[\fromBeat] ? 0;
+		var sm = r[\srcMap], fb = (r[\fromBeat] ? 0) - (r[\srcBeatOrigin] ? 0);
 		var t0 = r[\srcLatencyIncluded].if { 0 } { this.t0(this.eventItemName(r), takeNum) };
 		var rel = endSec - startSec - t0;
 		sm.notNil.if {

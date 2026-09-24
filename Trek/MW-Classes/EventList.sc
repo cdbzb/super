@@ -666,11 +666,18 @@ EventList {
 	// same contract as addItem's own guards.
 	prAddAudioItem { |player, at, voice, offset, align, kwargs|
 		var ev;
-		(at == \original).if {
-			^"EventList.addItem: at: \\original is not supported for audio takes — pass at: a beat".warn
+		// at: nil / \original — the recorded placement: the list beat the record
+		// event fired on, which a stamped take carries (persisted in its archive).
+		// Its beat axis starts there, so marks written on it (TakeGui on a stamped
+		// take) land where they were played.
+		((at.isNil) or: { at == \original }).if {
+			at = AudioItem.stampWhen(player.name, player.num) ?? {
+				^"EventList.addItem: % take % has no record stamp, so no recorded placement — pass at: a beat"
+					.format(player.name, player.num).warn
+			}
 		};
 		at.isNumber.not.if {
-			^"EventList.addItem: an audio take has no recorded placement — pass at: a beat".warn
+			^"EventList.addItem: at: must be a beat, nil or \\original (got %)".format(at).warn
 		};
 		ev = (
 			when: at + (offset ? 0),

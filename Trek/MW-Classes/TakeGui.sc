@@ -26,6 +26,7 @@ TakeGui {
 	var <transients, <beatMark, <mapEd, <nav, <params;
 	var <marks;                  // the marks version loaded at open (nil = none)
 	var savedTimes;              // beat times from the loaded marks, when no grid is up
+	var <stampTimes;             // file seconds of the record stamp's whole beats (nil = unstamped)
 	var peakMin, peakMax, peakBin = 256;
 	var window, view, width = 1400, height = 520, waveTop = 130;
 	var <cursorTime = 0, playhead, isPlaying = false, playSynth, clickClock;
@@ -52,6 +53,7 @@ TakeGui {
 		clickClock = TempoClock(1, queueSize: 2048);
 		this.prPreviewDef;   // sent now, so play never has to wait on a sync
 		this.prReadPeaks;
+		this.prStampTimes;
 		this.prLoadMarks;
 		this.prOpen;
 		TakeTransients.forTake(take.name, take.num, path,
@@ -96,10 +98,11 @@ TakeGui {
 	}
 
 	prSaveSelection { |sel|
-		var v;
+		var v, pairs, shift;
 		sel[\anchors].isNil.if { ^"TakeGui: no beat grid up — nothing to save (e/E first)".postln };
-		v = TakeArchive.writeMarks(take.name, take.num, sel[\anchors], sel,
-			(transientParams: params));
+		#pairs, shift = this.prOnStampAxis(sel[\anchors].collect { |a| [a[\src], a[\beat]] });
+		v = TakeArchive.writeMarks(take.name, take.num, pairs, sel,
+			(transientParams: params, beatAxis: stampTimes.notNil.if(\stamp, \firstMark)));
 		savedTimes = sel[\anchors].collect(_[\src]);
 		marks = TakeArchive.loadMarks(take.name, take.num, v);
 		"TakeGui: saved marks version % (% beats)".format(v, sel[\anchors].size).postln;
@@ -107,11 +110,60 @@ TakeGui {
 	}
 
 	prSaveMap { |map|
-		var v = TakeArchive.writeMarks(take.name, take.num,
-			[map.ys, map.xs].flop, nil, (transientParams: params, edited: true));
+		var pairs, shift, v;
+		#pairs, shift = this.prOnStampAxis([map.ys, map.xs].flop);
+		v = TakeArchive.writeMarks(take.name, take.num, pairs, nil,
+			(transientParams: params, edited: true,
+				beatAxis: stampTimes.notNil.if(\stamp, \firstMark)));
 		marks = TakeArchive.loadMarks(take.name, take.num, v);
 		"TakeGui: saved edited map as marks version %".format(v).postln;
 		this.refresh;
+	}
+
+	// ---- the record stamp (step 11) ------------------------------------------
+
+	// File seconds of every whole stamp beat inside the file: where the take's beats
+	// SHOULD be, by the clock it was recorded against. nil when unstamped.
+	prStampTimes {
+		var st = AudioItem.prStampMap(take.name, take.num), lat, lo, hi;
+		st.isNil.if { ^stampTimes = nil };
+		lat = AudioItem.t0(take.name, take.num);
+		lo = (st.beatAt(0 - lat) - st.beatDomain.first).ceil.max(0);
+		hi = (st.beatAt(dur - lat) - st.beatDomain.first).floor;
+		(hi < lo).if { ^stampTimes = nil };   // (lo..hi) would count DOWN
+		stampTimes = (lo..hi).collect { |k| st.timeAt(st.beatDomain.first + k) + lat }
+			.select { |t| (t >= 0) and: { t <= dur } };
+	}
+
+	// 's': one grid line per stamped beat, snapped to the nearest transient
+	seedFromStamp {
+		stampTimes.isNil.if { ^"TakeGui: this take has no record stamp to seed from".postln };
+		beatMark.isNil.if { ^"TakeGui: transients not detected yet".postln };
+		beatMark.seedLines(stampTimes).if { mapEd.invalidate };
+		this.refresh;
+	}
+
+	// Anchors (src, beat) on a stamped take move onto the STAMP's beat axis (0 =
+	// the beat the record event fired on): the first anchor's beat becomes its file
+	// second's stamp beat, rounded to a whole beat, and the rest keep their spacing.
+	// The same axis ~stamp uses and addItem places the take on, so ~marks and
+	// ~stamp line up and marks land where they were played. Warns when the marks'
+	// beat span disagrees with the stamp's (e.g. half notes marked as beats).
+	prOnStampAxis { |pairs| ^TakeGui.onStampAxis(take.name, take.num, pairs) }
+	*onStampAxis { |name, num, pairs|
+		var first, last, sb0, sb1, shift, ratio;
+		sb0 = AudioItem.stampBeatAt(name, num, pairs.first[0]);
+		sb0.isNil.if { ^[pairs, 0] };   // unstamped: marks stay 0-based
+		first = pairs.first; last = pairs.last;
+		sb1 = AudioItem.stampBeatAt(name, num, last[0]);
+		shift = sb0.round - first[1];
+		ratio = (last[1] - first[1]) / (sb1 - sb0).max(1e-9);
+		((pairs.size > 2) and: { (ratio - 1).abs > 0.25 }).if {
+			("TakeGui: the marks span % beats where the stamp has % — did you mark "
+			"a different subdivision? (ratio %)").format((last[1] - first[1]).round(0.01),
+				(sb1 - sb0).round(0.01), ratio.round(0.01)).warn
+		};
+		^[pairs.collect { |p| [p[0], p[1] + shift] }, shift]
 	}
 
 	// ---- peaks: min/max per `peakBin` frames of the analysed channel ----------
@@ -272,6 +324,18 @@ TakeGui {
 		} {
 			Pen.stringAtPoint("detecting transients…", 10 @ 30, Font("Helvetica", 12), Color.grey(0.4));
 		};
+		// the record stamp's beats: where the take SHOULD be (dashed, purple)
+		stampTimes !? {
+			Pen.color = Color(0.5, 0.2, 0.7, 0.35);
+			stampTimes.do { |t| ((t >= vs) and: { t <= ve }).if {
+				var x = xOf.(t);
+				((height - waveTop) / 12).floor.asInteger.do { |k|
+					var y = waveTop + (k * 12);
+					Pen.line(x @ y, x @ (y + 6))
+				}
+			} };
+			Pen.stroke;
+		};
 		// saved marks, when no grid is up
 		(beatMark.isNil or: { beatMark.extrapolateMode.not }).if {
 			savedTimes !? {
@@ -292,7 +356,7 @@ TakeGui {
 		// instruction strip, as in MIDIItem.gui
 		Pen.stringAtPoint(
 			"space play/stop · 'c' beat clicks · 'C' count-in · click ticks to pick · 'e' extrapolate · "
-			"'E' DP beat tracker · 'w' save · 'm' map edit · 'r' reset · '?' help",
+			"'E' DP beat tracker · 's' seed from stamp · 'w' save · 'm' map edit · 'r' reset · '?' help",
 			Point(10, 10), Font("Helvetica", 14), Color.black);
 		// state line
 		Pen.stringAtPoint("clicks %  ·  count-in %  ·  %"
@@ -312,6 +376,9 @@ TakeGui {
 				"0 - Reset the view\n" ++
 				"r - Clear the selection and the grid\n" ++
 				"w - Save the beat grid as a marks version (TakeArchive; take.tempoMap reads it)\n" ++
+				"      on a stamped take the marks are saved on the stamp's beat axis\n" ++
+				"s - Seed the grid from the record stamp: one line per stamped beat, snapped\n" ++
+				"      to the nearest transient; edits stay local (right-click restores the stamp)\n" ++
 				"space - Play/stop from the cursor\n" ++
 				"c - Toggle hihat clicks on the beat grid (the e/E grid if one is up,\n" ++
 				"      otherwise the saved marks)\n" ++
@@ -347,7 +414,8 @@ TakeGui {
 				"Visual Guide:\n" ++
 				"Blue ticks = transients (darker = stronger); orange = picked\n" ++
 				"Green lines = beat grid; red = current line; blue = free pin\n" ++
-				"Faint green lines = saved marks (when no grid is up)")
+				"Faint green lines = saved marks (when no grid is up)\n" ++
+				"Dashed purple lines = the record stamp's beats (where the take should be)")
 			.font_(Font("Helvetica", 12))
 			.align_(\left);
 	}
@@ -413,6 +481,7 @@ TakeGui {
 				("Count-in " ++ (countIn == 0).if { "off" } { countIn.asString ++ " beats" }).postln;
 			},
 			$w, { beatMark !? { beatMark.save } },
+			$s, { this.seedFromStamp },
 			$r, { beatMark !? { beatMark.clear; mapEd.invalidate; "cleared".postln } },
 			$0, { nav.resetView },
 			$q, { window.close },

@@ -33,6 +33,10 @@ BeatMarkMode {
 	var sortedNotes = true;  // notes in time order -> binary-search nearest lookups
 	var <>onChange, <>onGridChange, <>ensureVisible, <>onSave;
 	var <>salienceFunc;      // handed to every MIDIBeatTracker this mode builds (nil = its default)
+	// A grid SEEDED from known beat times (seedLines — the record stamp's expected
+	// beats): edits are local — re-picking or pinning a line leaves the lines after
+	// it alone instead of re-extrapolating them, and unpinning restores the seed.
+	var <>localEdits = false;
 
 	*new { |notes, end| ^super.new.prInit(notes, end) }
 
@@ -171,7 +175,7 @@ BeatMarkMode {
 		line[\noteIndex] = newIdx;
 		line[\time] = notes[newIdx].timestamp;
 		line[\pinned] = nil;
-		this.rebuildGrid(currentLine);
+		localEdits.not.if { this.rebuildGrid(currentLine) };
 		this.updateSelection;
 		this.prGridChanged;
 		("Line %: note % at %".format(currentLine, newIdx, line[\time].round(0.001))).postln;
@@ -204,6 +208,7 @@ BeatMarkMode {
 	exitMode {
 		extrapolateMode = false;
 		dpMode = false;
+		localEdits = false;
 		gridLines = [];
 		this.prGridChanged;
 		("Extrapolate mode off. Selected: " ++ selectedIndices).postln;
@@ -219,6 +224,7 @@ BeatMarkMode {
 		};
 		sorted = selectedIndices.copy.sort { |a, b| notes[a].timestamp < notes[b].timestamp };
 		manualPicks = this.prPicks(sorted);
+		localEdits = false;
 		anchorPair = sorted.keep(-2).collect { |i| notes[i].timestamp };
 		gridLines = [];
 		this.rebuildGrid(-1);
@@ -247,6 +253,7 @@ BeatMarkMode {
 		};
 		sorted = selectedIndices.copy.sort { |a, b| notes[a].timestamp < notes[b].timestamp };
 		manualPicks = this.prPicks(sorted);
+		localEdits = false;
 		anchorPair = sorted.keep(-2).collect { |i| notes[i].timestamp };
 		pinSet = Set[];
 		beatTracker = MIDIBeatTracker(notes, anchorPair[1] - anchorPair[0], sorted.last);
@@ -456,6 +463,7 @@ BeatMarkMode {
 			dpMode = true;
 		} {
 			nPicks = manualPicks.size;
+			localEdits = savedSel[\local] == true;
 			gridLines = anchors.drop(nPicks).collect { |a|
 				var t = a[\src], i;
 				free.any { |f| (f - t).abs < 1e-9 }.if {
@@ -512,6 +520,7 @@ BeatMarkMode {
 			sel[\anchors] = this.gridTimes.collect { |t, i| (key: i, src: t, beat: i) };
 			sel[\manualTimes] = manualPicks.collect(_[\time]);
 			sel[\freePins] = gridLines.select { |l| l[\pinned] == true }.collect(_[\time]);
+			localEdits.if { sel[\local] = true };
 		};
 		dpMode.if {
 			sel[\pins] = pinSet.asArray.sort;
@@ -535,6 +544,37 @@ BeatMarkMode {
 		^sel
 	}
 
+	// ---- seeding from known beat times
+
+	// Build the grid from EXPECTED beat times (e.g. the record stamp's beats, in
+	// the notes' time frame): each line snaps to the nearest note within `tol`
+	// (default: a fifth of the local beat spacing, rebuildGrid's own tolerance) or
+	// stays at its expected time. The first two become the picks, the rest the grid
+	// lines, in pick mode with localEdits on — so fixing one line never moves the
+	// others. Each line remembers its expected time (\seed). Answers true when a
+	// grid came up (needs at least 3 times).
+	seedLines { |times, tol|
+		var lines, sorted = times.asArray.copy.sort;
+		(sorted.size < 3).if { ^false };
+		lines = sorted.collect { |t, k|
+			var gap = (k > 0).if { t - sorted[k - 1] } { sorted[1] - sorted[0] };
+			var i = this.nearestIndex(t, tol ?? { gap / 5 });
+			(time: i.notNil.if { notes[i].timestamp } { t }, noteIndex: i, seed: t)
+		};
+		manualPicks = lines.keep(2).collect { |l| (time: l[\time], noteIndex: l[\noteIndex]) };
+		anchorPair = manualPicks.collect(_[\time]);
+		gridLines = lines.drop(2);
+		extrapolateMode = true;
+		dpMode = false;
+		localEdits = true;
+		currentLine = 0;
+		this.updateSelection;
+		this.prGridChanged;
+		("Seeded % beats: % on transients".format(lines.size,
+			lines.count { |l| l[\noteIndex].notNil })).postln;
+		^true
+	}
+
 	// ---- free pins and line moves (the host's mouse: drag, double-click, right-click)
 
 	// Pin line `i` at `time` with no note under it, and re-extrapolate the lines
@@ -544,8 +584,8 @@ BeatMarkMode {
 		dpMode.if { ^this.prPost("free pins need pick mode (e), not DP (E)") };
 		(i.isNil or: { i < 0 } or: { i >= gridLines.size }).if { ^this };
 		currentLine = i;
-		gridLines[i] = (time: time, noteIndex: nil, pinned: true);
-		this.rebuildGrid(i);
+		gridLines[i] = (time: time, noteIndex: nil, pinned: true, seed: gridLines[i][\seed]);
+		localEdits.not.if { this.rebuildGrid(i) };
 		this.updateSelection;
 		this.prGridChanged;
 		^this.prPost("Line %: free pin at %".format(i, time.round(0.001)))
@@ -555,13 +595,18 @@ BeatMarkMode {
 	// beats before it, which recomputes it and everything after.
 	unpinLine { |i|
 		(i.isNil or: { i < 0 } or: { i >= gridLines.size }).if { ^this };
-		dpMode.if {
+		case
+		{ dpMode } {
 			gridLines[i][\noteIndex] !? { |idx| pinSet.remove(idx) };
 			beatTracker.pins = pinSet.asArray;
 			gridLines = beatTracker.track;
-		} {
-			this.rebuildGrid(i - 1);
-		};
+		}
+		{ localEdits } {
+			// back to the seed (the expected time), or just unpinned where it is
+			var l = gridLines[i];
+			gridLines[i] = (time: l[\seed] ? l[\time], noteIndex: nil, seed: l[\seed]);
+		}
+		{ this.rebuildGrid(i - 1) };
 		currentLine = i.min(gridLines.size - 1).max(0);
 		this.updateSelection;
 		this.prGridChanged;

@@ -14,10 +14,7 @@ schema; this plan adds one writer and one reader and fixes one filter.
 
 ## Status (2026-09-23, branch `audio-beat-marking`)
 
-M1 (steps 1–6) built; step 7 (DP time pins) not started; M3 (steps 8–11:
-interface cleanup with `sourceTempoMap:` as the one timing field, `align:`,
-named sources and functions over `~marks` / `~stamp`, stamped-take repair)
-planned.
+M1 (steps 1–6) and M3 (steps 8–11) built; step 7 (DP time pins) not started.
 
 | Step | State | Suite |
 |---|---|---|
@@ -37,7 +34,7 @@ planned.
 | 8 interface cleanup, one timing field (drop `marks:`) | done — `\mi2` resolver unification deferred to step 10 | `source-map-resolver-test` (incl. parity) |
 | 9 `align:` for audio | done (segment path; env path warns) | `align-audio-test` |
 | 10 `sourceTempoMap:` functions (`~marks`, `~stamp`, event keys via proto) | done — `~stamp` beats still from the record beat (list beats come with step 11); `\mi2` evaluates a Function in the event | `source-map-function-test` |
-| 11 stamp seeding + automatic `at:` | planned | — |
+| 11 stamp seeding, stamp-axis marks, automatic `at:`, overlay | done — **needs a hands-on session** | `stamped-take-test` |
 
 Unverified by ear or eye: `TakeGui` interaction feel (drag, snap, lane), click
 and playback alignment in the window, and a marked drum take playing on a list

@@ -1201,11 +1201,10 @@ EventList {
 			this.prIsAudioFollow(resolved).if {
 				var actions;
 				resolved = this.prForwardAudioFollow(resolved);
-				actions = (resolved[\tempoFollowMode] == \env).if {
-					AudioItem.tempoFollowEnvActions(resolved, this, tempoEnv, batchFirstWhen)
-				} {
-					AudioItem.tempoFollowActions(resolved, this, tempoEnv, batchFirstWhen)
-				};
+				actions = switch(resolved[\tempoFollowMode],
+					\env, { AudioItem.tempoFollowEnvActions(resolved, this, tempoEnv, batchFirstWhen) },
+					\notes, { AudioItem.tempoFollowNoteActions(resolved, this, tempoEnv, batchFirstWhen) },
+					{ AudioItem.tempoFollowActions(resolved, this, tempoEnv, batchFirstWhen) });
 				actions.do { |pair|
 					SystemClock.sched(pair[0], { pair[1].value; nil })
 				}
@@ -2167,7 +2166,9 @@ EventList {
 	prIsAudioFollow { |ev|
 		^(ev[\type] == \audioItemTempoFollow) or: {
 			(ev[\type] == \audioItem)
-			and: { ((ev[\followTrack] ? false) != false) or: { AudioItem.timingKeys.any { |k| ev[k].notNil } } }
+			and: { ((ev[\followTrack] ? false) != false)
+				or: { ev[\tempoFollowMode] == \notes }
+				or: { AudioItem.timingKeys.any { |k| ev[k].notNil } } }
 			and: {
 				((ev[\record] ? false) != true) or: {
 					AudioItem.armed.not.if {
@@ -2234,11 +2235,10 @@ EventList {
 			var fromAbs = place.(from);
 			var actions;
 			ev = this.prForwardAudioFollow(ev);
-			actions = (ev[\tempoFollowMode] == \env).if {
-				AudioItem.tempoFollowEnvActions(ev, this, tempoEnv, from, place)
-			} {
-				AudioItem.tempoFollowActions(ev, this, tempoEnv, from, place)
-			};
+			actions = switch(ev[\tempoFollowMode],
+				\env, { AudioItem.tempoFollowEnvActions(ev, this, tempoEnv, from, place) },
+				\notes, { AudioItem.tempoFollowNoteActions(ev, this, tempoEnv, from, place) },
+				{ AudioItem.tempoFollowActions(ev, this, tempoEnv, from, place) });
 			actions.do { |pair|
 				out.add((time: fromAbs + pair[0], send: pair[1], label: \audioItemTempoFollow))
 			};

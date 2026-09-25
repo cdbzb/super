@@ -420,7 +420,7 @@ AudioItem {
 	   toBeat - fromBeat. Idempotent (srcResolved). */
 	// Event keys that choose or shape the source clock. Any of them on an \audioItem
 	// event routes it to the tempo-follow path (EventList.prIsAudioFollow).
-	*timingKeys { ^#[\sourceTempoMap, \sourceBeatDur, \marksVersion, \fromBeat, \toBeat, \align, \marks] }
+	*timingKeys { ^#[\sourceTempoMap, \sourceBeatDur, \marksVersion, \fromBeat, \toBeat, \align, \marks, \notes, \rateLead] }
 
 	*prResolveSourceMap { |ev, itemName, takeNum|
 		var out, sm, name, m, latIn = false, trimMode = false, origin = 0;
@@ -901,6 +901,181 @@ AudioItem {
 		^actions
 	}
 
+	/* Note sources for tempoFollowMode: \notes (onset-gated-tempo-follow.md). Note
+	   starts in FILE seconds, chord clusters (within `cluster` s) merged to their
+	   earliest start; nil when nothing is cached. Cache-only: never detects.
+	     \transients  the TakeTransients cache for `params` (default: the marks
+	                  version's transientParams, so it hits the set TakeGui used)
+	     \keyboard    _notes/<name>_<num>/keyboard.mid (ByteDance, transcribe.py)
+	     \melody      the newest TUNED Retune version's notes (their source starts)
+	     an Array     file seconds as given */
+	*notesDir { |name, num| ^folder +/+ "_notes" +/+ (name.asString ++ "_" ++ num.asString) }
+	*keyboardNotesPath { |name, num| ^this.notesDir(name, num) +/+ "keyboard.mid" }
+	*noteStarts { |name, num, method = \transients, params, marksVersion, cluster = 0.04|
+		var times = case
+			{ method.isKindOf(SequenceableCollection) } { method }
+			{ method == \transients } {
+				params = params ?? {
+					TakeArchive.loadMarks(name, num, marksVersion) !? { |m| m[\transientParams] }
+				};
+				TakeTransients.load(name, num, this.takePath(folder +/+ name.asString, num), params)
+					!? { |t| t.collect(_[\timestamp]) }
+			}
+			{ method == \keyboard } {
+				var p = this.keyboardNotesPath(name, num);
+				File.exists(p).if {
+					SimpleMIDIFile.read(p).timeMode_(\seconds).noteSustainEvents.collect(_[1])
+				}
+			}
+			{ method == \melody } {
+				TakeArchive.latestWhere(name, num, { |d| d[\midiEvents].notNil and: { d[\smoothed].notNil } })
+					!? { |f| f[1][\midiEvents].collect { |e| e[\srcStart] ? e[\timestamp] } }
+			}
+			{ "AudioItem.noteStarts: unknown method %".format(method).warn; nil };
+		times.isNil.if { ^nil };
+		^times.asArray.sort.inject([], { |acc, t|
+			(acc.isEmpty or: { (t - acc.last) > cluster }).if { acc.add(t) } { acc }
+		})
+	}
+
+	/* The pure half of tempoFollowNoteActions: ONE RubberBand synth whose rate steps
+	   only near note starts (prototype 2026-09-25: per-segment crossfades were audible
+	   on every vibes note). Each step sits `rateLead` source-seconds BEFORE its note
+	   start (default 0.05: clearer attacks than stepping on the attack); starts closer
+	   than `noteMinGap` beats merge. A step's beat is prSrcEndBeat of its file second —
+	   the exact inverse of prSrcOffset. Boundaries are rounded to control blocks (`blk`
+	   s) and each rate computed from its ROUNDED wall duration, so the integrated source
+	   equals the source span exactly: no drift over a take. align:, srcTrim and a
+	   mid-list start behave as in tempoFollowActions.
+	   ^(levels, durs, srcStart, srcEnd, startBeat, lastBeat, delay, total, steps), or
+	   nil when nothing sounds. */
+	*prNotePlan { |ev, list, tempoEnv, starts, from = 0, wallAt, sourceDur, blk = 0.00133333|
+		var itemName = this.eventItemName(ev), takeNum, srcOffset, b0, startSec, endSec;
+		var fromBeat, fromSec, lastBeat, wallFrom, align, baseWallAt, beats, bounds;
+		var walls, srcs, w0, rounded, keep, durs, levels, lead, minGap;
+		takeNum = ev[\take] ?? { AudioItem.latestTake(folder +/+ itemName) };
+		ev = this.prResolveSourceMap(ev, itemName, takeNum);
+		wallAt = wallAt ?? { { |bt| list.beatToWall(bt, tempoEnv) } };
+		lead = ev[\rateLead] ? 0.05;
+		minGap = ev[\noteMinGap] ? 0.0625;
+		b0 = ev[\when] ? 0;
+		startSec = ev[\start] ? ev[\startPos] ? 0;
+		srcOffset = this.prSrcOffset(ev, list, b0, takeNum);
+		endSec = ev[\dur].notNil.if {
+			(startSec + srcOffset.(b0 + ev[\dur])).min(sourceDur)
+		} {
+			sourceDur
+		};
+		fromBeat = from.max(b0);
+		wallFrom = wallAt.(from);
+		align = ev[\align];
+		align.notNil.if {
+			var anchorW = wallAt.(b0), s0 = srcOffset.(b0), lo, hi;
+			baseWallAt = wallAt;
+			wallAt = { |bt| (anchorW + (srcOffset.(bt) - s0)).blend(baseWallAt.(bt), align) };
+			(from > b0).if {
+				lo = b0; hi = b0 + 1;
+				while { (wallAt.(hi) < wallFrom) and: { (hi - b0) < 1e6 } } { lo = hi; hi = b0 + ((hi - b0) * 2) };
+				40.do { var mid = (lo + hi) * 0.5; (wallAt.(mid) < wallFrom).if { lo = mid } { hi = mid } };
+				fromBeat = hi;
+			};
+		};
+		ev[\srcTrim] !? { |s|
+			fromBeat = fromBeat.max(this.prSrcEndBeat(ev, list, b0, startSec, startSec + s, takeNum))
+		};
+		fromSec = startSec + srcOffset.(fromBeat);
+		(fromSec >= endSec).if { ^nil };
+		lastBeat = ev[\dur].notNil.if { b0 + ev[\dur] } {
+			this.prSrcEndBeat(ev, list, b0, startSec, endSec, takeNum)
+		};
+
+		beats = starts.collect { |t| t - lead }
+			.select { |t| (t > fromSec) and: { t < endSec } }
+			.collect { |t| this.prSrcEndBeat(ev, list, b0, startSec, t, takeNum) }
+			.select { |b| (b > fromBeat) and: { b < lastBeat } };
+		beats = beats.inject([], { |acc, b|
+			(acc.isEmpty or: { (b - acc.last) >= minGap }).if { acc.add(b) } { acc }
+		});
+		bounds = [fromBeat] ++ beats ++ [lastBeat];
+
+		walls = bounds.collect(wallAt);
+		srcs = bounds.collect { |b| (startSec + srcOffset.(b)).min(endSec) };
+		w0 = walls.first;
+		rounded = walls.collect { |w| ((w - w0) / blk).round * blk };
+		// boundaries that collapse onto the last kept block drop out; the end always stays
+		keep = List[0];
+		(1..rounded.size - 1).do { |i| (rounded[i] > rounded[keep.last]).if { keep.add(i) } };
+		((keep.last != (rounded.size - 1)) and: { keep.size > 1 }).if { keep[keep.size - 1] = rounded.size - 1 };
+		(keep.size < 2).if { ^nil };
+		rounded = keep.collect { |i| rounded[i] }.asArray;
+		srcs = keep.collect { |i| srcs[i] }.asArray;
+		durs = rounded.differentiate.drop(1);
+		levels = durs.collect { |d, i| (srcs[i + 1] - srcs[i]) / d };
+		^(levels: levels, durs: durs, srcStart: srcs.first, srcEnd: srcs.last,
+			startBeat: fromBeat, lastBeat: lastBeat, delay: w0 - wallFrom,
+			total: rounded.last, steps: levels.size - 1)
+	}
+
+	// wallAt: same seam as tempoFollowActions. No cached notes -> the beat grid, warned.
+	*tempoFollowNoteActions { |ev, list, tempoEnv, from = 0, wallAt|
+		var itemName = this.eventItemName(ev);
+		var directory = folder +/+ itemName;
+		var takeNum = ev[\take] ?? { AudioItem.latestTake(directory) };
+		var path = AudioItem.takePath(directory, takeNum);
+		var method = ev[\notes] ? \transients;
+		var buffer, sf, sourceDur, starts, plan, blk, fade;
+
+		File.exists(path).not.if {
+			"AudioItem tempoFollow notes: no file at %".format(path).warn;
+			^List[]
+		};
+		starts = this.noteStarts(itemName, takeNum, method, ev[\transientParams], ev[\marksVersion]);
+		starts.isNil.if {
+			"AudioItem tempoFollow notes: no cached % notes for % take % — using the beat grid"
+				.format(method.isKindOf(Symbol).if { method } { "given" }, itemName, takeNum).warn;
+			^this.tempoFollowActions(ev, list, tempoEnv, from, wallAt)
+		};
+		buffer = buffers.at(itemName.asSymbol, takeNum) ?? {
+			buffers.put(itemName.asSymbol, takeNum, Buffer());
+			buffers.at(itemName.asSymbol, takeNum)
+		};
+		(buffer.numFrames.isNil or: { buffer.numFrames == 0 }).if {
+			buffer.allocRead(path).updateInfo
+		};
+		sf = SoundFile.openRead(path);
+		sf.isNil.if {
+			"AudioItem tempoFollow notes: cannot read %".format(path).warn;
+			^List[]
+		};
+		sourceDur = sf.numFrames / sf.sampleRate;
+		sf.close;
+		blk = Server.default.options.blockSize / (Server.default.sampleRate ? 48000);
+		plan = this.prNotePlan(ev, list, tempoEnv, starts, from, wallAt, sourceDur, blk);
+		plan.isNil.if { ^List[] };
+		fade = ev[\tempoFollowFade] ? 0.02;
+		^List[[plan[\delay], {
+			Server.default.makeBundle((ev[\latency] ? Server.default.latency) + (ev[\lag] ? 0), {
+				{
+					var rate = EnvGen.kr(Env.step(plan[\levels], plan[\durs])) * (ev[\rate] ? 1);
+					var sig = RubberBand.ar(1, buffer.bufnum,
+						rate: rate,
+						pitchShift: ev[\pitchShift] ? 1,
+						trig: 1,
+						startPos: plan[\srcStart] * BufSampleRate.kr(buffer.bufnum),
+						loop: 0,
+						doneAction: 0,
+						formant: ev[\formant] ? 1
+					);
+					var amp = EnvGen.kr(
+						Env([0, 1, 1, 0], [0.003, (plan[\total] - 0.003 - fade).max(0), fade]),
+						doneAction: 2
+					);
+					Out.ar((ev[\out] ? 0).value, Pan2.ar(sig * amp, ev[\pan] ? 0) * (ev[\amp] ? 1))
+				}.play
+			})
+		}]]
+	}
+
     *new {|name|
         var ret = super.new;
 
@@ -1050,6 +1225,8 @@ Take : AudioItem {
 	   to a consumer rather than for how it was measured. The playback path calls
 	   AudioItem.t0 directly: building a Take there would hit Buffer.read. */
 	t0 { ^AudioItem.t0(this.name, num) }
+	// Cached note starts (file seconds) for tempoFollowMode: \notes; see AudioItem.noteStarts.
+	noteStarts { |method = \transients| ^AudioItem.noteStarts(this.name, num, method) }
 	// Correct it. Needed when AudioItem.roundTripLatency was wrong (unmeasured, or
 	// stale after a buffer-size/interface change) at the moment this take was cut:
 	// the stamp froze that value, and the stamp is what playback reads. Appends a

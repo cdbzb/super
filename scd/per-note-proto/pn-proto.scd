@@ -104,7 +104,7 @@ topEnvironment[\pnActions] = { |ev, list, tempoEnv, starts, from = 0, pre = 0.00
 topEnvironment[\pnEvent] = {
 	var list = EventList.current;
 	var ev = list.events.detect { |e|
-		((e[\item] ? "").asString == "vibes-test-1201") and: { e[\followTrack] == \marks } and: { e[\tempoFollowMode] != \env }
+		((e[\item] ? "").asString == "vibes-test-1201") and: { e[\followTrack] == \marks } and: { AudioItem.stretchMode(e) != \env }
 	};
 	ev.isNil.if { Error("pnEvent: no vibes-test-1201 event with followTrack: \\marks in EventList.current").throw };
 	[list.prForwardAudioFollow(ev.copy), list, list.prLazyTempoEnv]

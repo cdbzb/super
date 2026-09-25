@@ -861,7 +861,7 @@ view.keyDownAction_({ |view char|
             ).use(func)
         }) => {|i|
             // timestamps rewritten — see prForgetTempoFrame
-            recalcSustains.if { ^i.recalcSustains.prForgetTempoFrame }{ ^i.prForgetTempoFrame }
+            recalcSustains.if { ^i.recalcSustains.prForgetTempoFrame.prMarkRetimed }{ ^i.prForgetTempoFrame.prMarkRetimed }
         }
     }
 }
@@ -1417,6 +1417,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	var <>closingAnchor; // (time:, beats:) closing tempo-anchor from the parent's next selected beat; set by fromBeat — carried through filters via copyBounds
 	var <>beatScale; // ideal-beats-per-anchor multiplier (nil == 1); applied by tempomap, see scaleBeats — carried through filters via copyBounds
 	var <>tempoMapOverride; // set by tempoMap_ / selection; consulted by tempomap before deriving — carried through filters via copyBounds
+	var <>retimed; // true after a beat-domain warp (prMarkRetimed) — carried through filters via copyBounds
 
 	*new {| amidiEvents source |
 		var player, bounds;
@@ -1542,6 +1543,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		tempoMapOverride = tempoMapOverride ? mi.tryPerform(\tempoMapOverride);
 		beatScale = beatScale ? mi.tryPerform(\beatScale);
 		closingAnchor = closingAnchor ? mi.tryPerform(\closingAnchor);
+		retimed = retimed ? mi.tryPerform(\retimed);
 	}
 	// wall offset (seconds from the recorded playthrough's beat-0 origin) at which
 	// the take's timestamp 0 sounded. Pure difference of same-session epochs, so it
@@ -1705,14 +1707,19 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			tempoMap.respondsTo(\prAtExtrapolated).if {
 				^src.collect({ |e|
 					e.timestamp_(tempoMap.prAtExtrapolated(e.timestamp - origin, tempoMap.env) + origin)
-				}).prForgetTempoFrame
+				}).prForgetTempoFrame.prMarkRetimed
 			};
 			^src.collect({ |e| e.timestamp_(tempoMap[e.timestamp - start] + start) })
-				.prForgetTempoFrame
+				.prForgetTempoFrame.prMarkRetimed
 	}
 	// Timestamp rewrites invalidate the absolute-time override; \selBeat markers
 	// remain valid for deriving a replacement.
 	prForgetTempoFrame { tempoMapOverride = nil; ^this }
+	// Beat-domain warps (quantize / warpTo with a tempo map) leave timestamps that ARE
+	// ideal beats: a follow source would invert them a second time, so followTrack's
+	// \auto plays a retimed player flat. A sec -> sec remap (quantizeToRhythm) stays
+	// performed time and is not marked.
+	prMarkRetimed { retimed = true; ^this }
 	// The dropBefore policy, factored out so both warpTo branches share it (the
 	// comment above warpTo documents the policy itself). nil answers the receiver
 	// untouched, so the no-policy path allocates nothing and stays bit-identical

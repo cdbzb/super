@@ -99,7 +99,7 @@ AudioItem {
                 record: ~record ? false,
 				// start: is the documented read-offset knob; keep a user-supplied
 				// startPos: working too rather than silently overwriting it with 0.
-				startPos: ~start ?? { ~startPos ? 0 },
+				startPos: AudioItem.startSec(currentEnvironment),
 
 			));
             ~record.if{
@@ -390,24 +390,22 @@ AudioItem {
 	   still read. The sealed \audioItem path uses this; the follow path gets the same
 	   answer from prResolveSourceMap. */
 	*prEventT0 { |ev, takeNum|
-		((ev[\sourceMapIncludesLatency] ?? { ev[\sourceMapIsPhysical] } ? false) == true).if { ^0 };
+		this.prMapIncludesLatency(ev).if { ^0 };
 		^this.t0(ev[\item] ?? { ev[\name] }, takeNum)
 	}
 
 	/* The ONE place that decides a tempo-follow event's source clock — "which beat
 	   is at which file second" (audio-beat-marking-plan.md step 8). Everything
 	   downstream (prSrcOffset, prSrcEndBeat, the two tempoFollow builders) reads only
-	   what this answers. Order:
-	     sourceTempoMap: a map object      as given (a MonoMap is converted once)
-	     sourceTempoMap: \marks            the take's marks (TakeGui w / W); newest,
-	                                       or marksVersion: N
-	     sourceTempoMap: \stamp            the record stamp
-	     sourceTempoMap: \eventList        the list's base clock
-	     sourceTempoMap: \flat             sourceBeatDur (or 1 s/beat)
-	     no sourceTempoMap, sourceBeatDur:  \flat
-	     neither                           \stamp if the take has one, else \eventList
+	   what this answers. The source is EventList.followSource(ev):
+	     a map object      as given (a MonoMap is converted once)
+	     \marks            the take's marks (TakeGui w / W); newest, or marksVersion: N
+	     \stamp            the record stamp
+	     \list             the list's base clock
+	     a Number          flat, that many seconds per beat
+	     \auto (default)   \marks if the take has them, else \stamp, else \list
 	   A named source the take lacks warns and falls through to the default.
-	   `marks:` (step 6) is read as sourceTempoMap: \marks + marksVersion, with a
+	   `marks:` (step 6) is read as followTrack: \marks + marksVersion, with a
 	   warning.
 
 	   Answers a copy of the event with
@@ -420,6 +418,49 @@ AudioItem {
 	   toBeat - fromBeat. Idempotent (srcResolved). */
 	// Event keys that choose or shape the source clock. Any of them on an \audioItem
 	// event routes it to the tempo-follow path (EventList.prIsAudioFollow).
+	/* How a following take is time-stretched (EventList.followSource decides WHERE
+	   its beats are; this decides how the audio gets there):
+	     \slices (default)  tempoFollowSegBeats-long RubberBand slices, crossfaded;
+	                        re-seeks the file every slice, follows the full map
+	     \env               one synth, rate from the list's \tempoTrack env; the
+	                        source map is used only at its endpoints
+	     \notes             one synth, rate steps at the take's note onsets,
+	                        computed from the full map (prNotePlan)
+	   tempoFollowMode: is the old name — still read, warns once per session. */
+	// The file-seconds read offset. startPos: is the old name — read, warns once.
+	*startSec { |ev|
+		^ev[\start] ?? {
+			ev[\startPos] !? { |sp|
+				EventList.prLegacyKey(\startPos, "startPos: is deprecated — use start:");
+				sp
+			}
+		} ? 0
+	}
+	// true when a source map's seconds are file positions (recording latency
+	// included). sourceMapIsPhysical: is the old name — read, warns once.
+	*prMapIncludesLatency { |ev|
+		^(ev[\sourceMapIncludesLatency] ?? {
+			ev[\sourceMapIsPhysical] !? { |v|
+				EventList.prLegacyKey(\sourceMapIsPhysical,
+					"sourceMapIsPhysical: is deprecated — use sourceMapIncludesLatency:");
+				v
+			}
+		} ? false) == true
+	}
+	*stretchMode { |ev|
+		var m = ev[\stretchMode];
+		m.isNil.if {
+			m = ev[\tempoFollowMode];
+			m.notNil.if { EventList.prLegacyKey(\tempoFollowMode,
+				"tempoFollowMode: is deprecated — use stretchMode:") }
+		};
+		m = m ? \slices;
+		[\slices, \env, \notes].includes(m).not.if {
+			"AudioItem: unknown stretchMode: % — using \\slices".format(m.cs).warn;
+			m = \slices
+		};
+		^m
+	}
 	*timingKeys { ^#[\sourceTempoMap, \sourceBeatDur, \marksVersion, \fromBeat, \toBeat, \align, \marks, \notes, \rateLead] }
 
 	*prResolveSourceMap { |ev, itemName, takeNum|
@@ -428,10 +469,10 @@ AudioItem {
 		out = ev.copy;
 		out[\srcResolved] = true;
 		itemName = itemName ?? { this.eventItemName(ev) };
-		sm = ev[\sourceTempoMap];
+		sm = EventList.followSource(ev) ? \auto;
 		(ev[\marks].notNil and: { ev[\marks] != false }).if {
-			"AudioItem: marks: is replaced by sourceTempoMap: \\marks (and marksVersion: N)".warn;
-			sm = sm ? \marks;
+			"AudioItem: marks: is replaced by followTrack: \\marks (and marksVersion: N)".warn;
+			(sm == \auto).if { sm = \marks };
 			(ev[\marks] != true).if { out[\marksVersion] = out[\marksVersion] ? ev[\marks] };
 		};
 		// a Function: evaluated with .use in an environment offering the take's
@@ -464,17 +505,22 @@ AudioItem {
 				}
 			}
 		};
-		(name == \function).not.if { name = sm.isKindOf(Symbol).if { sm } {
-			sm.isNil.if {
-				ev[\sourceBeatDur].notNil.if { \flat } {
-					this.prStampMap(itemName, takeNum).notNil.if { \stamp } { \eventList }
-				}
-			}
+		(name == \function).not.if {
+		name = case
+			{ sm.isNil } { \auto }   // a failed Function
+			{ sm.isNumber } { \flat }
+			{ sm.isKindOf(Symbol) } { sm };
+		// \auto: the take's marks (the deliberate act), else its stamp, else the list
+		(name == \auto).if {
+			name = case
+				{ TakeArchive.loadMarks(itemName, takeNum, out[\marksVersion]).notNil } { \marks }
+				{ this.prStampMap(itemName, takeNum).notNil } { \stamp }
+				{ \list }
 		};
 		name.isNil.if {
 			// a map object
 			m = sm.isKindOf(MonoMap).if { sm.asAnchorTempoMap } { sm };
-			latIn = (ev[\sourceMapIncludesLatency] ?? { ev[\sourceMapIsPhysical] } ? false) == true;
+			latIn = this.prMapIncludesLatency(ev);
 		} {
 			switch(name,
 				\marks, {
@@ -494,19 +540,15 @@ AudioItem {
 					m.isNil.if { "AudioItem: % take % has no record stamp — using the list clock"
 						.format(itemName, takeNum).warn };
 				},
-				\flat, { m = this.prFlatMap(ev[\sourceBeatDur] ? 1) },
-				\eventList, { m = nil },
-				{ "AudioItem: unknown sourceTempoMap: % — using the default".format(name.cs).warn;
+				\flat, { m = this.prFlatMap(sm.isNumber.if { sm } { 1 }) },
+				\list, { m = nil },
+				{ "AudioItem: unknown follow source % — using the default".format(name.cs).warn;
 					name = \unknown }
 			);
-			// a named source that isn't there falls through to the default
-			(m.isNil and: { name != \eventList }).if {
-				ev[\sourceBeatDur].notNil.if {
-					m = this.prFlatMap(ev[\sourceBeatDur]); name = \flat
-				} {
-					m = this.prStampMap(itemName, takeNum);
-					name = m.notNil.if { \stamp } { \eventList }
-				};
+			// a named source that isn't there falls through to the stamp, else the list
+			(m.isNil and: { name != \list }).if {
+				m = this.prStampMap(itemName, takeNum);
+				name = m.notNil.if { \stamp } { \list };
 				latIn = false; trimMode = false; origin = 0;
 			};
 		};
@@ -521,7 +563,7 @@ AudioItem {
 		trimMode.if {
 			// start: trims (seconds after the origin), never shifts the source against
 			// the beats; the origin is the first mark's file second
-			(ev[\start] ? ev[\startPos] ? 0) !? { |s| (s != 0).if { out[\srcTrim] = s } };
+			this.startSec(ev) !? { |s| (s != 0).if { out[\srcTrim] = s } };
 			out[\start] = m.t0;
 			out[\startPos] = nil;
 		};
@@ -669,7 +711,7 @@ AudioItem {
 
 		wallAt = wallAt ?? { { |bt| list.beatToWall(bt, tempoEnv) } };
 		b0 = ev[\when] ? 0;
-		startSec = ev[\start] ? ev[\startPos] ? 0;
+		startSec = this.startSec(ev);
 		// Map an ideal beat to elapsed seconds into the SOURCE recording. The default
 		// assumes the take was recorded on the list's base clock (recorded tempoMap,
 		// else flat beatDur), so source position advances with baseWallDelta — NOT a
@@ -800,16 +842,16 @@ AudioItem {
 		// the env path uses the source map only at its two endpoints and takes its
 		// rate from tempoEnv, so a marked take's beat-to-beat corrections are lost
 		ev[\align].notNil.if {
-			"AudioItem: align: is ignored on tempoFollowMode: \\env — use the default segment mode".warn
+			"AudioItem: align: is ignored on stretchMode: \\env — use \\slices or \\notes".warn
 		};
 		(ev[\srcName] == \marks).if {
-			"AudioItem: sourceTempoMap: \\marks is ignored between its endpoints on "
-			"tempoFollowMode: \\env — use the default segment mode".warn
+			"AudioItem: followTrack: \\marks is ignored between its endpoints on "
+			"stretchMode: \\env — use \\slices or \\notes".warn
 		};
 
 		wallAt = wallAt ?? { { |bt| list.beatToWall(bt, tempoEnv) } };
 		b0 = ev[\when] ? 0;
-		startSec = ev[\start] ? ev[\startPos] ? 0;
+		startSec = this.startSec(ev);
 		// beat -> elapsed seconds into the SOURCE recording; see prSrcOffset. Same
 		// rationale as the non-env tempoFollowActions.
 		srcOffset = AudioItem.prSrcOffset(ev, list, b0, takeNum);
@@ -901,7 +943,7 @@ AudioItem {
 		^actions
 	}
 
-	/* Note sources for tempoFollowMode: \notes (onset-gated-tempo-follow.md). Note
+	/* Note sources for stretchMode: \notes (onset-gated-tempo-follow.md). Note
 	   starts in FILE seconds, chord clusters (within `cluster` s) merged to their
 	   earliest start; nil when nothing is cached. Cache-only: never detects.
 	     \transients  the TakeTransients cache for `params` (default: the marks
@@ -959,7 +1001,7 @@ AudioItem {
 		lead = ev[\rateLead] ? 0.05;
 		minGap = ev[\noteMinGap] ? 0.0625;
 		b0 = ev[\when] ? 0;
-		startSec = ev[\start] ? ev[\startPos] ? 0;
+		startSec = this.startSec(ev);
 		srcOffset = this.prSrcOffset(ev, list, b0, takeNum);
 		endSec = ev[\dur].notNil.if {
 			(startSec + srcOffset.(b0 + ev[\dur])).min(sourceDur)
@@ -1225,7 +1267,7 @@ Take : AudioItem {
 	   to a consumer rather than for how it was measured. The playback path calls
 	   AudioItem.t0 directly: building a Take there would hit Buffer.read. */
 	t0 { ^AudioItem.t0(this.name, num) }
-	// Cached note starts (file seconds) for tempoFollowMode: \notes; see AudioItem.noteStarts.
+	// Cached note starts (file seconds) for stretchMode: \notes; see AudioItem.noteStarts.
 	noteStarts { |method = \transients| ^AudioItem.noteStarts(this.name, num, method) }
 	// Correct it. Needed when AudioItem.roundTripLatency was wrong (unmeasured, or
 	// stale after a buffer-size/interface change) at the moment this take was cut:

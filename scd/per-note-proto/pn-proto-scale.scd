@@ -7,7 +7,7 @@ topEnvironment[\pnBeatScale] = 2;
 topEnvironment[\pnEvent] = {
 	var list = EventList.current, k = topEnvironment[\pnBeatScale] ? 1, mk;
 	var ev = list.events.detect { |e|
-		((e[\item] ? "").asString == "vibes-test-1201") and: { e[\followTrack] == \marks } and: { e[\tempoFollowMode] != \env }
+		((e[\item] ? "").asString == "vibes-test-1201") and: { e[\followTrack] == \marks } and: { AudioItem.stretchMode(e) != \env }
 	};
 	ev.isNil.if { Error("pnEvent: no vibes-test-1201 event with followTrack: \\marks in EventList.current").throw };
 	ev = ev.copy;

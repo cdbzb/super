@@ -30,10 +30,15 @@ times.(parent.prPreviewListActions(own, 0, parent.tempoEnv).collect(_[\time]),
 times.(parent.prPreviewListActions(ev, 2, parent.tempoEnv).collect(_[\time]),
     [0.5, 1], "preview offset shifts onset without changing score tempo");
 own = ev.copy;
+own[\fromBeat] = 1;
+own[\toBeat] = 3;
+times.(parent.prPreviewListActions(own, 0, parent.tempoEnv).collect(_[\time]),
+    [0.25], "preview respects child fromBeat/toBeat trim");
+own = ev.copy;
 own[\start] = 1;
 own[\end] = 3;
 times.(parent.prPreviewListActions(own, 0, parent.tempoEnv).collect(_[\time]),
-    [0.25], "preview respects child start/end trim");
+    [0.25], "legacy start/end still trim (warns)");
 
 // Two insertions of the same child in one preview batch used to call child.play
 // twice. The second child.fire cancelled the first child's pending sends.

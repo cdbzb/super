@@ -1,12 +1,15 @@
-// Headless regression test for followTrack value-forwarding (§9b,
-// quantize-tempomap-project.md), same convention on both media:
-//   followTrack: true       = follow with the FLAT source (recorded seconds as beats;
-//                             on \audioItem this forwards to sourceBeatDur: 1)
-//   followTrack: \eventList = follow inverting through the list's own tempoMap
-//                             (on \audioItem this is the tempo-follow native default)
-// Explicit sourceTempoMap / sourceBeatDur wins over the forwarded value, and
-// \audioItemTempoFollow passes through unchanged. Pure language except an 8 s
-// fixture wav written under AudioItem.folder (cleaned up at the end).
+// Headless regression test for the ONE follow key (EventList.followSource),
+// same convention on both media:
+//   followTrack: \auto (or true) = the take's marks (MIDI: saved selection),
+//                             else its record stamp, else \list. Legacy
+//                             \eventList reads as \auto, with a warning
+//   followTrack: \list       = the list's live clock (recorded speed)
+//   followTrack: <number>    = flat, that many s/beat (\flat == 1)
+//   followTrack: <map>/\marks/\stamp = that source
+// Legacy sourceTempoMap / sourceBeatDur still work and win. A retimed (quantized)
+// \mi2 player plays flat under \auto; a sealed \mi2 before `from` is trimmed.
+// Pure language except an 8 s fixture wav written under AudioItem.folder
+// (cleaned up at the end).
 // Run: /Applications/SuperCollider.app/Contents/MacOS/sclang standalone-tests/followtrack-forward-test.scd
 (
 var h = (thisProcess.nowExecutingPath.dirname +/+ "test-helpers.scd").load;
@@ -21,6 +24,7 @@ var tBase, tEvList, tAFlat, tFtTrue;
 var gSrc, gOneKey, gOnMapList, gTrimSrc, gTrimEvList, aSrc, aSrcOneKey, aSrcOnMapList;
 var tDir, stampList, stamp, aNoStamp, aStamped, aStampedFlat, aStamped2, tPath, tLines;
 var tOutDevice, tRig, tRig2;
+var stampSnap, mkMarked, sAuto, sRetimed, sHalf, sSealed, mkStamped, stampSrcList, sDefault, sLive, sExplicit, sAlone, sTrim, sTrimMap, sNoStamp, halfList;
 
 "== followTrack forwarding tests ==".postln;
 
@@ -63,14 +67,18 @@ tA = timesFor.((when: 0, type: \mi2, player: mkPlayer.(),
 tB = timesFor.((when: 0, type: \mi2, player: mkPlayer.(),
 	followTrack: \eventList));
 tFlat = timesFor.((when: 0, type: \mi2, player: mkPlayer.(),
-	followTrack: true));
+	followTrack: 1));
 tOverride = timesFor.((when: 0, type: \mi2, player: mkPlayer.(),
 	followTrack: \flat, sourceTempoMap: \eventList));
 tFlatLabel = timesFor.((when: 0, type: \mi2, player: mkPlayer.(),
 	followTrack: \flat));
 
 assert.(tA.size == 6, "mi2: two-key form schedules all 6 notes (got %)".format(tA.size));
-assertArr.(tB, tA, "mi2: followTrack: \\eventList == true + sourceTempoMap: \\eventList");
+assertArr.(tB, tA, "mi2: unmarked, unstamped \\auto == legacy sourceTempoMap: \\eventList (the list)");
+assertArr.(timesFor.((when: 0, type: \mi2, player: mkPlayer.(), followTrack: \list)), tA,
+	"mi2: followTrack: \\list == legacy sourceTempoMap: \\eventList");
+assertArr.(timesFor.((when: 0, type: \mi2, player: mkPlayer.(), followTrack: true)), tA,
+	"mi2: followTrack: true == \\eventList (both \\auto)");
 assert.((tFlat.size != tA.size) or: { (tFlat - tA).abs.maxItem > 1e-6 },
 	"mi2 sanity: map path differs from flat path");
 assertArr.(tOverride, tA, "mi2: explicit sourceTempoMap wins over followTrack value");
@@ -117,6 +125,116 @@ gTrimEvList = timesFor.((when: 0, type: \mi2, player: mkPlayer.(),
 	followTrack: \eventList), 2.5);
 assertArr.(gTrimSrc, gTrimEvList, "mi2: map-object trim matches \\eventList trim");
 
+// ------------------------------------------- \mi2 record stamp (recordPlayEpoch)
+// A take overdubbed against a list playing mt: epoch at wall 0, beat 0, and the
+// take's timestamp 0 sounded at wall 0, so recorded beat == mt.beatAt(ts). The
+// epoch's list is a detached snapshot, so mutating stampSrcList afterwards must
+// not move the take.
+stampSrcList = EventList.new;
+stampSrcList.tempoMap = mt;
+stampSnap = stampSrcList.prClockSnapshot;   // taken ONCE, at "record time"
+mkStamped = {
+	mkPlayer.().recordEpoch_(0)
+	.recordPlayEpoch_((seconds: 0, fromBeat: 0, tempoEnv: nil, list: stampSnap))
+};
+sDefault = flatTimesFor.((when: 0, type: \mi2, player: mkStamped.(), followTrack: \eventList));
+assertArr.(sDefault, gSrc, "mi2 stamp: bare \\eventList resolves the recorded clock", 1e-6);
+sExplicit = flatTimesFor.((when: 0, type: \mi2, player: mkStamped.(), followTrack: \stamp));
+assertArr.(sExplicit, gSrc, "mi2 stamp: followTrack: \\stamp == default", 1e-6);
+stampSrcList.tempoMap = nil;
+assertArr.(flatTimesFor.((when: 0, type: \mi2, player: mkStamped.(), followTrack: \eventList)), gSrc,
+	"mi2 stamp: survives later source-list mutation", 1e-6);
+stampSrcList.tempoMap = mt;
+// The point of the stamp: after the list's map is changed (here to a flat
+// 0.5 s/beat), the take keeps its RECORDED beats and the new map re-places them;
+// the live \eventList source instead re-inverts through the new map.
+halfList = { |ev, from = 0|
+	var l = EventList.new;
+	l.beatDur = 0.5;
+	l.events.add(ev);
+	l.prepare(100, from).collect { |i| i[\time] }.asArray.sort
+};
+sDefault = halfList.((when: 0, type: \mi2, player: mkStamped.(), followTrack: \eventList));
+assertArr.(sDefault, 100 + ([0, 1, 2, 3, 4, 4 + (1/3)] * 0.5),
+	"mi2 stamp: edited map re-places recorded beats", 1e-6);
+sLive = halfList.((when: 0, type: \mi2, player: mkStamped.(), followTrack: \list));
+assertArr.(sLive, 100 + [0, 1, 2, 3, 6, 7],
+	"mi2: \\list on a map-less list plays recorded seconds through its beatDur", 1e-6);
+// sourceTempoMap alone (no followTrack) follows instead of falling to sealed
+sAlone = flatTimesFor.((when: 0, type: \mi2, player: mkPlayer.(), sourceTempoMap: mt));
+assertArr.(sAlone, gSrc, "mi2: legacy sourceTempoMap alone implies following", 1e-6);
+// trim: a mid-list `from` on a stamped take matches the same map as an object
+sTrim = flatTimesFor.((when: 0, type: \mi2, player: mkStamped.(), followTrack: \eventList), 2.5);
+sTrimMap = flatTimesFor.((when: 0, type: \mi2, player: mkPlayer.(), followTrack: mt), 2.5);
+assertArr.(sTrim, sTrimMap, "mi2 stamp: trim matches map-object trim", 1e-6);
+// \stamp on an unstamped take warns and falls back to \eventList
+sNoStamp = timesFor.((when: 0, type: \mi2, player: mkPlayer.(), followTrack: \stamp));
+assertArr.(sNoStamp, tA, "mi2: \\stamp without recordPlayEpoch == \\list");
+
+// ------------------------------------------- \mi2 \auto: marks, retimed, numbers
+// A player with a saved selection (here a tempoMap_ override) resolves \auto to
+// its own map — the doubling case: follow the notes asEventList already placed.
+mkMarked = { mkPlayer.().tempoMap_(mt) };
+sAuto = flatTimesFor.((when: 0, type: \mi2, player: mkMarked.(), followTrack: true));
+assertArr.(sAuto, gSrc, "mi2 \\auto: a marked player follows its own map", 1e-6);
+// marks beat the stamp (the deliberate act wins)
+// (a selection counting each anchor gap as 2 beats — distinct from the stamp's beats)
+sAuto = flatTimesFor.((when: 0, type: \mi2, followTrack: true,
+	player: mkStamped.().tempoMap_(MIDIItemTempoMap(mkPlayer.(), { |n| n[0..4] }, [2, 2, 2, 2, 2]))));
+assertArr.(sAuto, 100 + ((gSrc - 100) * 2), "mi2 \\auto: marks win over the stamp", 1e-6);
+// a retimed player (quantize / warpTo): timestamps already ARE beats — flat
+sRetimed = flatTimesFor.((when: 0, type: \mi2, followTrack: true,
+	player: mkStamped.().tempoMap_(mt).prMarkRetimed));
+assertArr.(sRetimed, 100 + [0, 1, 2, 3, 6, 7], "mi2 \\auto: a retimed player plays flat", 1e-6);
+assert.(mkPlayer.().prMarkRetimed.filter { |e| e }.retimed == true, "retimed rides through filters");
+// a number is seconds per beat
+sHalf = flatTimesFor.((when: 0, type: \mi2, player: mkPlayer.(), followTrack: 0.5));
+assertArr.(sHalf, 100 + ([0, 1, 2, 3, 6, 7] * 2), "mi2: followTrack: 0.5 = 0.5 s/beat", 1e-6);
+
+// ------------------------------------------- sealed \mi2 before `from` is trimmed
+sSealed = flatTimesFor.((when: 0, type: \mi2, player: mkPlayer.()), 2.5);
+assert.((sSealed.size == 1) and: { (sSealed[0] - 100).abs < 1e-6 },
+	"sealed mi2 started before from: one trimmed send at from (got %)".format(sSealed));
+assert.(flatTimesFor.((when: 0, type: \mi2, player: mkPlayer.()), 9).size == 0,
+	"sealed mi2 wholly before from: nothing");
+
+// ------------------------------------------- \mi2 fromBeat / toBeat / align
+// flat source (1 s/beat): item beats == recorded seconds [0, 1, 2, 3, 6, 7]
+assertArr.(flatTimesFor.((when: 0, type: \mi2, player: mkPlayer.(), followTrack: 1, fromBeat: 2)),
+	100 + [0, 1, 4, 5], "mi2 fromBeat: 2 — source beat 2 sounds at when:, earlier notes trimmed", 1e-6);
+assertArr.(flatTimesFor.((when: 3, type: \mi2, player: mkPlayer.(), followTrack: 1, fromBeat: 2)),
+	103 + [0, 1, 4, 5], "mi2 fromBeat: rebased onto a later when:", 1e-6);
+assertArr.(flatTimesFor.((when: 0, type: \mi2, player: mkPlayer.(), followTrack: 1, fromBeat: 2, toBeat: 6)),
+	100 + [0, 1], "mi2 toBeat: 6 — half-open, the note on beat 6 is cut", 1e-6);
+assertArr.(flatTimesFor.((when: 0, type: \mi2, player: mkPlayer.(), followTrack: mt, toBeat: 4)),
+	100 + [0, 1, 2, 3], "mi2 toBeat on a map source cuts in its beats", 1e-6);
+assert.(flatTimesFor.((when: 0, type: \mi2, player: mkPlayer.(), fromBeat: 0)).size == 6,
+	"mi2 fromBeat alone implies following");
+// align on the marked map: 1 = its beats (gSrc), 0 = as performed, 0.5 between
+assertArr.(flatTimesFor.((when: 0, type: \mi2, player: mkPlayer.(), followTrack: mt, align: 1)), gSrc,
+	"mi2 align: 1 == plain follow", 1e-6);
+assertArr.(flatTimesFor.((when: 0, type: \mi2, player: mkPlayer.(), followTrack: mt, align: 0)),
+	100 + [0, 1, 2, 3, 6, 7], "mi2 align: 0 == as performed", 1e-6);
+assertArr.(flatTimesFor.((when: 0, type: \mi2, player: mkPlayer.(), followTrack: mt, align: 0.5)),
+	(gSrc + (100 + [0, 1, 2, 3, 6, 7])) / 2, "mi2 align: 0.5 blends the wall times", 1e-6);
+assert.(flatTimesFor.((when: 0, type: \mi2, player: mkPlayer.(), align: 1)).size == 6,
+	"mi2 align alone implies following");
+
+// ------------------------------------------- renamed audio keys read their old names
+assert.(AudioItem.startSec((start: 1.5)) == 1.5, "startSec: start:");
+assert.(AudioItem.startSec((startPos: 2.5)) == 2.5, "startSec: legacy startPos: (warns)");
+assert.(AudioItem.startSec((start: 1, startPos: 2)) == 1, "startSec: start: wins");
+assert.(AudioItem.startSec(()) == 0, "startSec: default 0");
+assert.(AudioItem.prMapIncludesLatency((sourceMapIncludesLatency: true)), "latency flag");
+assert.(AudioItem.prMapIncludesLatency((sourceMapIsPhysical: true)), "legacy sourceMapIsPhysical: (warns)");
+assert.(AudioItem.prMapIncludesLatency(()).not, "latency flag default false");
+
+// ------------------------------------------- nested lists: fromBeat / toBeat
+assert.(EventList.listRange((fromBeat: 2, toBeat: 5)) == [2, 5], "listRange: fromBeat/toBeat");
+assert.(EventList.listRange((start: 2, end: 5)) == [2, 5], "listRange: legacy start/end (warns)");
+assert.(EventList.listRange((fromBeat: 1, start: 2)) == [1, nil], "listRange: fromBeat wins, open end");
+assert.(EventList.listRange(()) == [0, nil], "listRange: default whole child");
+
 // ---------------------------------------------------------------- \audioItem
 // 8 s fixture: short enough that the base-map source (10 s needed for dur: 6 on
 // this map) exhausts the file early while the flat source (6 s) does not, so the
@@ -134,11 +252,13 @@ sf.openWrite(aPath).if {
 tBase   = timesFor.((when: 0, type: \audioItemTempoFollow, item: aName, dur: 6));
 tEvList = timesFor.((when: 0, type: \audioItem, followTrack: \eventList, item: aName, dur: 6));
 tAFlat  = timesFor.((when: 0, type: \audioItemTempoFollow, item: aName, dur: 6, sourceBeatDur: 1));
-tFtTrue = timesFor.((when: 0, type: \audioItem, followTrack: true, item: aName, dur: 6));
+tFtTrue = timesFor.((when: 0, type: \audioItem, followTrack: 1, item: aName, dur: 6));
 
 assert.(tBase.size > 0, "audio: tempo-follow produced a schedule (% entries)".format(tBase.size));
 assertArr.(tEvList, tBase, "audio: followTrack: \\eventList == \\audioItemTempoFollow");
-assertArr.(tFtTrue, tAFlat, "audio: followTrack: true == sourceBeatDur: 1");
+assertArr.(tFtTrue, tAFlat, "audio: followTrack: 1 == legacy sourceBeatDur: 1");
+assertArr.(timesFor.((when: 0, type: \audioItem, followTrack: true, item: aName, dur: 6)), tBase,
+	"audio: followTrack: true == \\audioItemTempoFollow (\\auto)");
 assert.((tAFlat.size != tBase.size) or: { (tAFlat - tBase).abs.maxItem > 1e-6 },
 	"audio sanity: flat differs from base-map source (% vs % entries)".format(tAFlat.size, tBase.size));
 assert.(timesFor.((when: 0, type: \audioItem, name: aName)).size == 1,
@@ -184,9 +304,9 @@ AudioItem.recordedMaps.put(aName.asSymbol, 0, stamp);
 aStamped = flatTimesFor.((when: 0, type: \audioItem, followTrack: \eventList,
 	item: aName, dur: 6));
 assertArr.(aStamped, aSrc, "stamp: bare \\eventList resolves the recorded clock");
-aStampedFlat = flatTimesFor.((when: 0, type: \audioItem, followTrack: true,
+aStampedFlat = flatTimesFor.((when: 0, type: \audioItem, followTrack: 1,
 	item: aName, dur: 6));
-assert.(aStampedFlat.size == 24, "stamp: explicit flat source (followTrack: true) still wins");
+assert.(aStampedFlat.size == 24, "stamp: explicit flat source (followTrack: 1) still wins");
 stampList.tempoMap = nil; // stamp must be detached from the source list
 aStamped2 = flatTimesFor.((when: 0, type: \audioItem, followTrack: \eventList,
 	item: aName, dur: 6));
@@ -282,20 +402,6 @@ assert.(AudioItem.takePath(tDir, 2).endsWith("2.wav"),
 	"takes: takePath skips non-audio sidecar (got %)".format(AudioItem.takePath(tDir, 2)));
 [tDir +/+ "0.wav", tDir +/+ "2.wav", tDir +/+ "2.json", tDir +/+ "notes.txt"].do(File.delete(_));
 File.delete(tDir);
-
-// forwarding unit checks (wall times can't see sourceBeatDur when the file is long enough)
-assert.(EventList.new.prForwardAudioFollow((type: \audioItem, followTrack: true))[\sourceBeatDur] == 1,
-	"forward: true stamps sourceBeatDur: 1");
-assert.(EventList.new.prForwardAudioFollow((type: \audioItem, followTrack: \eventList))[\sourceBeatDur].isNil,
-	"forward: \\eventList keeps base-map source (no sourceBeatDur)");
-assert.(EventList.new.prForwardAudioFollow((type: \audioItem, followTrack: true, sourceBeatDur: 0.5))[\sourceBeatDur] == 0.5,
-	"forward: explicit sourceBeatDur wins");
-assert.(EventList.new.prForwardAudioFollow((type: \audioItemTempoFollow))[\sourceBeatDur].isNil,
-	"forward: \\audioItemTempoFollow untouched");
-assert.(EventList.new.prForwardAudioFollow((type: \audioItem, followTrack: mt))[\sourceTempoMap] === mt,
-	"forward: map value stamps sourceTempoMap");
-assert.(EventList.new.prForwardAudioFollow((type: \audioItem, followTrack: mt))[\sourceBeatDur].isNil,
-	"forward: map value does not stamp sourceBeatDur");
 
 File.delete(aPath);
 File.delete(aDir);

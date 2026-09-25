@@ -76,7 +76,7 @@ File.mkdir(AudioItem.folder +/+ names[0]);
 added = list.addItem(Take(names[0], 0), at: at, sourceTempoMap: \marks);
 assert.(added.isKindOf(Array) and: { added.first[\sourceTempoMap] == \marks },
 	"addItem: the event carries sourceTempoMap: \\marks (the name, not a frozen map)");
-assert.(added.first[\newType] == \audioItem and: { added.first[\followTrack] == \eventList },
+assert.(added.first[\newType] == \audioItem and: { added.first[\followTrack] == \auto },
 	"addItem: a following \\audioItem event");
 res = list.addItem(Take("zzz-marks-play-none", 0), at: at, sourceTempoMap: \marks);
 assert.(res.isString, "addItem: a take with no marks refuses with a warning");

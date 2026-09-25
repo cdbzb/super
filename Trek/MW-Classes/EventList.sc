@@ -4,6 +4,7 @@ EventList {
 	// take so source-preferred addItem aligns to the playthrough the overdub actually
 	// heard — not this list's lastPlayEpoch, which any later replay would clobber.
 	classvar <currentPlayEpoch;
+	classvar legacyWarned; // follow keys already warned about (followSource)
 	// Function-valued callbacks and clock inputs are not lazy event values.
 	classvar <>lazyExclude;
 	// A list's env is offered to nested children as an outer environment
@@ -50,7 +51,7 @@ EventList {
 			// a Function here is a source-map function, evaluated by the resolver
 			// (AudioItem.prResolveSourceMap / prEmitMi2Follow) with the take's
 			// sources in scope — never as a plain lazy value
-			\sourceTempoMap
+			\sourceTempoMap, \followTrack
 		];
 		envExclude = IdentitySet[\nextWhen, \cursor, \section];
 		Class.initClassTree(Event);
@@ -63,7 +64,8 @@ EventList {
             }{
                 EventList(~eventList)
             };
-            list.play(~start ? 0, to: ~end,
+            var range = EventList.listRange(currentEnvironment);
+            list.play(range[0], to: range[1],
                 ctx: EventList.prNestCtx(currentEnvironment, nil, nil))});
 	}
 
@@ -425,7 +427,7 @@ EventList {
 				^0
 			};
 			rate = (ev[\tempo] ? 1) / (ev[\stretch] ? 1);
-			^(((ev[\end] ?? { child.span(seen) }) - (ev[\start] ? 0)) / rate).max(0)
+			^(((EventList.listRange(ev)[1] ?? { child.span(seen) }) - EventList.listRange(ev)[0]) / rate).max(0)
 		};
 		^0
 	}
@@ -653,10 +655,10 @@ EventList {
 	// has neither.
 	//
 	// The event is exactly what a hand-written one would be: type \audioItem,
-	// followTrack: \eventList (follow, default source), start: 0, and every extra
-	// keyword the caller passed (kwargs) — sourceTempoMap:, fromBeat:, amp:, ...
+	// followTrack: \auto (follow, automatic source), start: 0, and every extra
+	// keyword the caller passed (kwargs) — followTrack: \marks, fromBeat:, amp:, ...
 	// No source clock is chosen here: AudioItem.prResolveSourceMap does that at
-	// prepare time (default: the record stamp, else the list clock), and sets the
+	// prepare time (\auto: the marks, else the record stamp, else the list clock), and sets the
 	// origin / latency rules itself for named sources like \marks.
 	//
 	// Numeric at: only. at: nil (recorded placement) and at: \original need a wall
@@ -682,7 +684,7 @@ EventList {
 		ev = (
 			when: at + (offset ? 0),
 			newType: \audioItem,
-			followTrack: \eventList,
+			followTrack: \auto,
 			item: player.name,
 			take: player.num,
 			start: 0
@@ -692,7 +694,7 @@ EventList {
 		(kwargs ? []).pairsDo { |k, v| ev[k] = v };
 		// a named source the take lacks is a mistake worth refusing here, at the
 		// call, rather than a warning at every prepare
-		((ev[\sourceTempoMap] == \marks) or: { ev[\marks].notNil and: { ev[\marks] != false } }).if {
+		((EventList.followSource(ev) == \marks) or: { ev[\marks].notNil and: { ev[\marks] != false } }).if {
 			TakeArchive.loadMarks(player.name, player.num,
 				ev[\marksVersion] ?? { (ev[\marks].isNumber).if { ev[\marks] } }).isNil.if {
 				^"EventList.addItem: % take % has no marks version % — mark it in take.gui first"
@@ -1200,8 +1202,7 @@ EventList {
 			};
 			this.prIsAudioFollow(resolved).if {
 				var actions;
-				resolved = this.prForwardAudioFollow(resolved);
-				actions = switch(resolved[\tempoFollowMode],
+				actions = switch(AudioItem.stretchMode(resolved),
 					\env, { AudioItem.tempoFollowEnvActions(resolved, this, tempoEnv, batchFirstWhen) },
 					\notes, { AudioItem.tempoFollowNoteActions(resolved, this, tempoEnv, batchFirstWhen) },
 					{ AudioItem.tempoFollowActions(resolved, this, tempoEnv, batchFirstWhen) });
@@ -1979,8 +1980,9 @@ EventList {
 	prExpandList { |ev, epoch, place, from = 0, seen, ctx, wallAt|
 		var child = ev[\eventList].isKindOf(EventList).if { ev[\eventList] } { EventList.at(ev[\eventList]) };
 		var b0    = ev[\when] ? 0;
-		var cFrom = ev[\start] ? 0;
-		var cTo   = ev[\end];  // child-frame half-open end (nil = to child's end)
+		var range = EventList.listRange(ev);
+		var cFrom = range[0];
+		var cTo   = range[1];  // child-frame half-open end (nil = to child's end)
 		var rate  = (ev[\tempo] ? 1) / (ev[\stretch] ? 1);
 		// groove: a Groove (beat->beat) applied in the CHILD's beat frame, before the
 		// conversion to parent beats — so the child swings on its own subdivisions
@@ -2120,27 +2122,75 @@ EventList {
 		^(lo + hi) * 0.5
 	}
 
-	// \mi2 convention on \audioItem: followTrack routes to the tempo-follow path.
-	// \eventList = follow with the DEFAULT source (the record stamp, else the list
-	// clock) — it forwards nothing; forwarding it as the named source \eventList
-	// would silently drop every take's stamp. true/\flat = flat source
-	// (sourceBeatDur: 1, recorded seconds as beats). A map object, or any other
-	// named source (\marks, \stamp), forwards to sourceTempoMap:. Explicit
-	// sourceTempoMap/sourceBeatDur wins. Only affects list playback — a direct .play
-	// stays sealed.
-	prForwardAudioFollow { |ev|
-		((ev[\type] == \audioItem) or: { ev[\type] == \audioItemTempoFollow }).if {
-			var ft = ev[\followTrack];
-			(ev[\sourceTempoMap].isNil and: { ev[\sourceBeatDur].isNil }).if {
-				case
-				{ ft.isNil or: { ft == false } or: { ft == \eventList } } { }
-				{ (ft == true) or: { ft == \flat } } { ev = ev.copy; ev[\sourceBeatDur] = 1 }
-				{ ft.respondsTo(\timeAt) or: { ft.isKindOf(Symbol) } } {
-					ev = ev.copy; ev[\sourceTempoMap] = ft
-				}
+	/* The ONE reading of the follow keys, shared by \mi2 and \audioItem: where does
+	   each of the take's notes get its beat? followTrack: answers it —
+	     absent / false          nil: sealed (recorded speed, no following)
+	     \auto (or true)         the take's marks (MIDI: its saved selection),
+	                             else its record stamp, else \list
+	     \marks (\selection)     the take's marked beats
+	     \stamp                  the clock the take was recorded against
+	     \list                   this list's live clock (recorded speed under map
+	                             edits; follows \tempoTrack only)
+	     a Number                flat, that many seconds per beat (\flat == 1)
+	     a map / a Function      that map (a Function answers one)
+	   Legacy spellings still work, win over followTrack, and warn once per session:
+	   sourceTempoMap: X, sourceBeatDur: d, and \eventList — which meant \auto on
+	   followTrack but \list on sourceTempoMap.
+	   Each medium resolves the answer against its own take (prEmitMi2Follow,
+	   AudioItem.prResolveSourceMap). Only list playback follows — a direct .play
+	   stays sealed. */
+	*followSource { |ev|
+		var sm = ev[\sourceTempoMap], bd = ev[\sourceBeatDur];
+		sm.notNil.if {
+			this.prLegacyKey(\sourceTempoMap);
+			bd.notNil.if { this.prLegacyKey(\sourceBeatDur) };
+			(sm == \flat).if { ^bd ? 1 };
+			(sm == \eventList).if {
+				this.prLegacyKey(\sourceTempoMapEventList, "sourceTempoMap: \\eventList is deprecated — use followTrack: \\list");
+				^\list
+			};
+			^this.prFollowValue(sm)
+		};
+		bd.notNil.if { this.prLegacyKey(\sourceBeatDur); ^bd };
+		(ev[\followTrack] == \eventList).if {
+			this.prLegacyKey(\followTrackEventList, "followTrack: \\eventList is deprecated — use followTrack: \\auto");
+			^\auto
+		};
+		^this.prFollowValue(ev[\followTrack])
+	}
+	/* Which part of a nested child list plays, in CHILD beats: fromBeat:/toBeat:
+	   (half-open; toBeat nil = to the child's end) — the same keys \audioItem and
+	   \mi2 use for their source beats. start:/end: are the old names (start: now
+	   means file seconds on \audioItem only) — read, warn once. ^[from, to] */
+	*listRange { |ev|
+		var f = ev[\fromBeat] ?? {
+			ev[\start] !? { |v|
+				this.prLegacyKey(\nestedStart, "start:/end: on a nested \\eventList are deprecated — use fromBeat:/toBeat:");
+				v
+			}
+		} ? 0;
+		var t = ev[\toBeat] ?? {
+			ev[\end] !? { |v|
+				this.prLegacyKey(\nestedStart, "start:/end: on a nested \\eventList are deprecated — use fromBeat:/toBeat:");
+				v
 			}
 		};
-		^ev
+		^[f, t]
+	}
+	*prFollowValue { |v|
+		^case
+		{ v.isNil or: { v == false } } { nil }
+		{ (v == true) or: { v == \auto } } { \auto }
+		{ v == \flat } { 1 }
+		{ v == \selection } { \marks }
+		{ v }
+	}
+	*prLegacyKey { |key, msg|
+		legacyWarned = legacyWarned ?? { IdentitySet[] };
+		legacyWarned.includes(key).not.if {
+			legacyWarned.add(key);
+			("EventList: " ++ (msg ?? { "% is deprecated — put the source in followTrack: (see EventList.followSource)".format(key) })).warn
+		}
 	}
 
 	// Item-frame accessors for a per-event source map (sourceTempoMap: <map>):
@@ -2166,8 +2216,8 @@ EventList {
 	prIsAudioFollow { |ev|
 		^(ev[\type] == \audioItemTempoFollow) or: {
 			(ev[\type] == \audioItem)
-			and: { ((ev[\followTrack] ? false) != false)
-				or: { ev[\tempoFollowMode] == \notes }
+			and: { EventList.followSource(ev).notNil
+				or: { AudioItem.stretchMode(ev) == \notes }
 				or: { AudioItem.timingKeys.any { |k| ev[k].notNil } } }
 			and: {
 				((ev[\record] ? false) != true) or: {
@@ -2214,7 +2264,7 @@ EventList {
 			list: this.prClockSnapshot,
 			tempoEnv: tempoEnv.copy,
 			when: ev[\when] ? 0,
-			start: ev[\start] ? ev[\startPos] ? 0,
+			start: AudioItem.startSec(ev),
 			latency: ev[\latency] ? Server.default.latency,
 			lag: ev[\lag] ? 0,
 			// measured device round trip at record time (\raw convention):
@@ -2234,8 +2284,7 @@ EventList {
 		this.prIsAudioFollow(ev).if {
 			var fromAbs = place.(from);
 			var actions;
-			ev = this.prForwardAudioFollow(ev);
-			actions = switch(ev[\tempoFollowMode],
+			actions = switch(AudioItem.stretchMode(ev),
 				\env, { AudioItem.tempoFollowEnvActions(ev, this, tempoEnv, from, place) },
 				\notes, { AudioItem.tempoFollowNoteActions(ev, this, tempoEnv, from, place) },
 				{ AudioItem.tempoFollowActions(ev, this, tempoEnv, from, place) });
@@ -2248,7 +2297,11 @@ EventList {
 		// \mi2 path (the event type does the recording — the follow path flattens
 		// events at prepare time and never runs it); unarmed it's playback intent
 		// and follows. Armed is sampled at prepare time, not mid-playback.
-		(((ev[\followTrack] ? false) != false) and: { ev[\type] == \mi2 } and: {
+		// Any follow source (followSource — incl. a legacy sourceTempoMap alone) follows.
+		((ev[\type] == \mi2) and: {
+			EventList.followSource(ev).notNil
+			or: { [\fromBeat, \toBeat, \align].any { |k| ev[k].notNil } }
+		} and: {
 			((ev[\record] ? false) != true) or: {
 				MIDIItem.armed.not.if {
 					"MIDIItem %: not armed — following track; will record if armed"
@@ -2258,6 +2311,22 @@ EventList {
 			}
 		}).if {
 			^this.prEmitMi2Follow(ev, tempoEnv, from, place)
+		};
+		// Sealed \mi2 started before `from`: trim it to the wall time already elapsed
+		// (it plays recorded seconds on its own clock) instead of dropping it. This is
+		// what the old live-\eventList follow source was mostly used for.
+		((ev[\type] == \mi2) and: { (ev[\when] ? 0) < from } and: { ev[\player].notNil }
+			and: { (ev[\record] ? false) != true }).if {
+			var trimmed = ev.copy, p = ev[\player], tFrom;
+			var clockRate = ev[\tempo] ?? { 1 / (ev[\stretch] ? 1) }; // the \mi2 type's clock
+			ev[\filter] !? { |f| p = f.(p); trimmed[\filter] = nil };
+			tFrom = (p.start ? 0) + ((place.(from) - place.(ev[\when] ? 0)) * clockRate);
+			(tFrom >= (p.end ? p.bounds.end)).if { ^out };
+			trimmed[\player] = p.from(tFrom);
+			trimmed[\when] = from;
+			trimmed[\dur] = nil; // \mi2 recomputes it from the trimmed bounds
+			out.add((time: place.(from), send: { trimmed.copy.play }, label: \mi2));
+			^out
 		};
 		((ev[\when] ? 0) >= from).if {
 			var send = (((ev[\type] == \audioItem) and: { (ev[\record] ? false) == true })).if {
@@ -2298,45 +2367,101 @@ EventList {
 	// list's tempo frame and flatten each note into the schedule — one (time, send) per
 	// event, no inner TempoClock (which retires the queueSize:65536 hack). The warp is
 	// done in the BEAT domain and placement goes through `place`, so it composes under
-	// nesting. sourceTempoMap: \eventList inverts recorded seconds through this list's
-	// own tempoMap (for takes recorded against it); a map OBJECT inverts through that
-	// map in item-frame coordinates (e.g. take.selection.tempomap, for takes whose map
-	// this list doesn't own); the default treats recorded seconds as beats (flat
-	// clock), scaled by rate. Shorthand: any non-boolean followTrack value forwards to
-	// sourceTempoMap, so followTrack: \eventList (or a map) is the one-key
-	// form. When `from` is past the item's onset the item is trimmed (player.from
-	// also chases CC state); emits nothing if `from` is past the whole item. A flat track reproduces the sealed \mi2 timing exactly.
+	// nesting. The source comes from EventList.followSource, resolved against the take:
+	//   \marks   player.tempomap — the saved selection (currentSelection or a
+	//            tempoMap_ override, carried through filters), item-frame
+	//   \stamp   the clock the take was RECORDED against — its recordPlayEpoch
+	//            snapshot, detached, so an edited list map re-places the recorded
+	//            beats instead of re-inverting through the new map
+	//   \auto    \marks, else \stamp, else \list. A retimed player (quantize /
+	//            warpTo — its timestamps already ARE beats) skips both: flat
+	//   \list    this list's live tempoMap (no map: its beatDur) — recorded speed
+	//   a Number flat, that many seconds per beat, scaled by rate
+	//   a map    that map in item-frame coordinates
+	// When `from` is past the item's
+	// onset the item is trimmed (player.from also chases CC state); emits nothing if
+	// `from` is past the whole item. A flat track reproduces the sealed \mi2 timing exactly.
 	// (\mi is excluded: its fromNote(~from,~to) sub-range isn't replicated here.)
+	// a saved selection to derive player.tempomap from (see \marks above)
+	prHasMarks { |player|
+		^player.tryPerform(\tempoMapOverride).notNil
+			or: { player.tryPerform(\currentSelection).notNil }
+			or: { (player.tryPerform(\selectedNotes).size) > 0 }
+	}
 	prEmitMi2Follow { |ev, tempoEnv, from = 0, place|
 		var out    = List[];
 		var player = ev[\player];
-		var b0     = ev[\when] ? 0;
 		var rate   = (ev[\tempo] ? 1) / (ev[\stretch] ? 1);
-		var originBeat = b0.max(from);
+		var when0  = ev[\when] ? 0;
+		// fromBeat: source (item) beat that sounds at when: — trim and rebase, as on
+		// \audioItem. Item beat 0 then sits fromBeat earlier, and `from` never
+		// reaches before when:, so the part before fromBeat is trimmed like a
+		// mid-list start (CC state chased). toBeat: half-open end, item beats.
+		var fromB  = ev[\fromBeat] ? 0;
+		var b0     = when0 - (fromB / rate);
+		var endBeat = ev[\toBeat] !? { |t| when0 + ((t - fromB) / rate) };
+		// align: 0..1 — 1 = on the source's beats (plain follow), 0 = as performed
+		// (recorded seconds from when:), in between a blend of the WALL times, as
+		// on \audioItem and nested lists
+		var align  = ev[\align];
+		var originBeat, tAt, tShift = 0, anchorTs, anchorW;
 		var pstart, beatOff, tm, wallBase, warped, wPlayer, useMap, useSrc, mapAnchor, srcMap, srcOrigin;
-		var pstart0;
+		var pstart0, retimed, useStamp, stampWall, stampEp, stampBeat, stampB0, stampShift = 0;
+		var secPerBeat = 1, wallOf;
 		player.isNil.if { ^out };
+		from = from.max(when0);
+		originBeat = b0.max(from);
 		ev[\filter] !? { |f| player = f.(player) };
 		ev[\params] !? { |p| player = player.setParams(p) }; // \mi2 finish does this
 		// Preserve the residual gap between a trim point and the first surviving note.
 		pstart0 = player.start ? 0;
 		tm = tempoMap;
-		// followTrack forwards non-boolean values to sourceTempoMap (followTrack: \eventList
-		// == followTrack: true, sourceTempoMap: \eventList); explicit sourceTempoMap wins.
-		srcMap = ev[\sourceTempoMap] ?? {
-			(ev[\followTrack] == true).if { nil } { ev[\followTrack] }
-		};
+		srcMap = EventList.followSource(ev) ? \auto;
 		// a Function (excluded from the lazy pass): evaluate it in the event
 		srcMap.isKindOf(Function).if { var fn = srcMap; srcMap = ev.use { fn.value } };
 		// A V2 MonoMap (MapEditor.last) has no beatDomain/timeDomain for
 		// prSrcTimeAt/prSrcBeatAt; convert it once, the same seam warpTo uses.
 		srcMap.isKindOf(MonoMap).if { srcMap = srcMap.asAnchorTempoMap };
-		useMap = (srcMap == \eventList) and: {
-			(tm.notNil and: { tm.respondsTo(\timeAt) } and: { tm.respondsTo(\beatAt) }).if { true } {
-				"prEmitMi2Follow: sourceTempoMap:\\eventList needs an invertible tempo-map base; using flat".warn;
-				false
+		// \stamp: recordWall is the take's timestamp-0 moment in the recorded
+		// playthrough's wall frame; the epoch's detached list inverts it to the beat
+		// the take heard. Filters carry both epochs (copyBounds).
+		stampWall = player.tryPerform(\recordWall);
+		retimed = player.tryPerform(\retimed) == true;
+		(srcMap == \auto).if {
+			srcMap = case
+			{ retimed } { 1 }
+			{ this.prHasMarks(player) } { \marks }
+			{ stampWall.notNil } { \stamp }
+			{ \list }
+		};
+		(srcMap == \marks).if {
+			srcMap = this.prHasMarks(player).if { { player.tempomap }.try } ?? {
+				"prEmitMi2Follow: followTrack: \\marks — player has no saved selection; using \\list".warn;
+				\list
 			}
 		};
+		((srcMap == \stamp) and: { stampWall.isNil }).if {
+			"prEmitMi2Follow: followTrack: \\stamp — take has no recordPlayEpoch (not recorded against a playing list); using \\list".warn;
+			srcMap = \list
+		};
+		(srcMap.isKindOf(Symbol) and: { [\stamp, \list].includes(srcMap).not }).if {
+			"prEmitMi2Follow: unknown follow source % — using flat".format(srcMap.cs).warn;
+			srcMap = 1
+		};
+		// \list on a list with no tempoMap: recorded speed through its beatDur
+		((srcMap == \list) and: { tm.isNil or: { tm.respondsTo(\beatAt).not } }).if {
+			srcMap = beatDur ? TempoClock.default.beatDur
+		};
+		srcMap.isNumber.if { secPerBeat = srcMap };
+		useStamp = srcMap == \stamp;
+		useStamp.if {
+			stampEp = player.recordPlayEpoch;
+			// NB wallToBeat clamps at 0 under a tempoEnv: notes played before the
+			// recorded playthrough's beat 0 collapse onto it.
+			stampBeat = { |ts| stampEp[\list].wallToBeat(stampWall + ts, stampEp[\tempoEnv]) };
+			stampB0 = stampBeat.(pstart0);   // recorded beat of the item's start
+		};
+		useMap = srcMap == \list;
 		// general case: a map OBJECT stamped on the event — the take's own map, in
 		// item-frame coordinates (independent of this list's tempoMap)
 		useSrc = useMap.not and: {
@@ -2359,24 +2484,36 @@ EventList {
 			var d = (srcMap.tryPerform(\timeDomain) !? (_.first)) ? 0;
 			(d != 0).if { d } { player.start ? 0 }
 		};
-		(from > b0).if {
-			// trim in the player's own time domain: recorded seconds through the map
-			// when one is in play, else flat beats-as-seconds — a beat-domain cut on
-			// a map source trims at the wrong recorded second AND shifts the
-			// inversion's rel-origin, skewing every note after a mid-list `from`.
-			var base = useSrc.if { srcOrigin } { player.start ? 0 };
-			var tFrom = base + (useMap.if {
-				tm.timeAt(mapAnchor) - tm.timeAt(b0)
+		// the ORIGINAL take timestamp that sounds at list beat lb — in the player's
+		// own time domain: recorded seconds through the map when one is in play,
+		// else flat beats-as-seconds (a beat-domain cut on a map source trims at the
+		// wrong recorded second AND shifts the inversion's rel-origin, skewing every
+		// note after a mid-list `from`)
+		tAt = { |lb|
+			var ma = b0 + ((lb - b0) * rate);
+			useStamp.if {
+				// the take timestamp that was heard at recorded beat stampB0 + item beat
+				stampEp[\list].beatToWall(stampB0 + (ma - b0), stampEp[\tempoEnv]) - stampWall
 			} {
-				useSrc.if {
-					this.prSrcTimeAt(srcMap, mapAnchor - b0)
+				useSrc.if { srcOrigin } { pstart0 } + (useMap.if {
+					tm.timeAt(ma) - tm.timeAt(b0)
 				} {
-					(from - b0) * rate
-				}
-			});
+					useSrc.if {
+						this.prSrcTimeAt(srcMap, ma - b0)
+					} {
+						(lb - b0) * rate * secPerBeat
+					}
+				})
+			}
+		};
+		align.notNil.if { anchorTs = tAt.(when0); anchorW = place.(when0) };
+		(from > b0).if {
+			var tFrom = tAt.(from);
 			(tFrom >= (player.end ? player.bounds.end)).if { ^out }; // fully before `from`
 			player = player.from(tFrom); // rebases to 0 and chases CC state to tFrom
 			srcOrigin = srcOrigin - tFrom; // timestamps moved, so the origin does too
+			tShift = tFrom;                // ... and stampBeat/align read ORIGINAL timestamps
+			stampShift = tFrom;
 		};
 		pstart = player.start ? 0;
 		beatOff = case
@@ -2399,18 +2536,39 @@ EventList {
 				};
 				{ |rel| (this.prSrcBeatAt(srcMap, rel + itemOff) - itemAnchor) / rate }
 			}
-			{ { |rel| rel / rate } };
+			{ useStamp } {
+				// item beat = recorded beat - recorded beat of the item's start, so
+				// when: places the take's start; a later edit to this list's map
+				// re-places those beats instead of re-inverting through the new map
+				var itemAnchor = mapAnchor - b0;
+				{ |rel| (stampBeat.(rel + pstart + stampShift) - stampB0 - itemAnchor) / rate }
+			}
+			{ { |rel| rel / (rate * secPerBeat) } };
 		wallBase = place.(originBeat);
-		warped = player.midiEvents.collect { |e|
+		// wall time of a note: its list beat's, blended toward as-performed by align
+		wallOf = { |rel, nb|
+			var w = place.(nb);
+			align.isNil.if { w } {
+				(anchorW + ((rel + pstart + tShift - anchorTs) / rate)).blend(w, align)
+			}
+		};
+		warped = List[];
+		player.midiEvents.do { |e|
 			var c   = e.copy;
 			var rel = (e[\timestamp] ? 0) - pstart;
 			var nb  = originBeat + beatOff.(rel);
-			var placedNb = place.(nb);
-			c[\timestamp] = placedNb - wallBase;
-			e[\sustain] !? { |sus|
-				c[\sustain] = place.(originBeat + beatOff.(rel + sus)) - placedNb
-			};
-			c
+			var w   = wallOf.(rel, nb);
+			var isOn = e[\midicmd] != \noteOff; // releases always pass: no hung notes
+			// toBeat cuts in list beats; under align a trimmed start can blend a note
+			// before `from` — drop it rather than fire it late
+			(isOn and: { (endBeat.notNil and: { nb >= endBeat })
+				or: { align.notNil and: { e[\midicmd] == \noteOn } and: { w < (wallBase - 1e-9) } } }).not.if {
+				c[\timestamp] = w - wallBase;
+				e[\sustain] !? { |sus|
+					c[\sustain] = wallOf.(rel + sus, originBeat + beatOff.(rel + sus)) - w
+				};
+				warped.add(c)
+			}
 		};
 		wPlayer = MIDIItemPlayer(warped, player.source);
 		wPlayer.start = 0; // timestamps are already wall-relative to wallBase

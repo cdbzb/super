@@ -53,12 +53,18 @@ r = res.((sourceTempoMap: MapEditor.mapFromTimes([0, 0.5, 1])));
 assert.(r[\srcMap].respondsTo(\beatDomain), "a MonoMap is converted once");
 assert.(res.((sourceTempoMap: \marks))[\srcName] == \marks, "\\marks");
 assert.(res.((sourceTempoMap: \stamp), stamped)[\srcName] == \stamp, "\\stamp on a stamped take");
-assert.(res.((sourceTempoMap: \stamp))[\srcName] == \eventList, "\\stamp on an unstamped take falls back to the list clock");
+assert.(res.((sourceTempoMap: \stamp))[\srcName] == \list, "\\stamp on an unstamped take falls back to the list clock");
 r = res.((sourceTempoMap: \eventList), stamped);
-assert.(r[\srcName] == \eventList and: { r[\srcMap].isNil }, "\\eventList = the list clock, even on a stamped take");
+assert.(r[\srcName] == \list and: { r[\srcMap].isNil }, "legacy sourceTempoMap: \\eventList = the list clock, even on a stamped take");
+r = res.((followTrack: \list), stamped);
+assert.(r[\srcName] == \list and: { r[\srcMap].isNil }, "followTrack: \\list = the list clock, even on a stamped take");
+assert.(res.((followTrack: 0.5))[\srcName] == \flat, "followTrack: <number> = \\flat");
 assert.(res.((sourceBeatDur: 0.5))[\srcName] == \flat, "sourceBeatDur alone = \\flat");
-assert.(res.((), stamped)[\srcName] == \stamp, "default on a stamped take: the stamp");
-assert.(res.(())[\srcName] == \eventList, "default on an unstamped take: the list clock");
+assert.(res.((), stamped)[\srcName] == \marks, "default on a marked, stamped take: the marks");
+assert.(res.(())[\srcName] == \marks, "default on a marked take: the marks");
+// no marks (a version that does not exist): the stamp, else the list clock
+assert.(res.((marksVersion: 99), stamped)[\srcName] == \stamp, "default without marks on a stamped take: the stamp");
+assert.(res.((marksVersion: 99))[\srcName] == \list, "default without marks or stamp: the list clock");
 r = res.((srcResolved: true, srcName: \x));
 assert.(r[\srcName] == \x, "idempotent: a resolved event is not resolved again");
 
@@ -67,10 +73,10 @@ ev = (item: stamped, take: 0, sourceTempoMap: \flat, sourceBeatDur: 0.5);
 f = AudioItem.prSrcOffset(ev, list, b0, 0);
 assertClose.(f.(b0 + 2), 0.05 + 1.0, "\\flat: 2 beats at 0.5 s/beat, plus the take's t0");
 // the stamp through the one builder: beat 1 at 0.5 s, plus t0
-f = AudioItem.prSrcOffset((item: stamped, take: 0), list, b0, 0);
+f = AudioItem.prSrcOffset((item: stamped, take: 0, followTrack: \stamp), list, b0, 0);
 assertClose.(f.(b0 + 1), 0.05 + 0.5, "stamp: read through its map, plus t0");
 // the list clock
-f = AudioItem.prSrcOffset((item: bare, take: 0), list, b0, 0);
+f = AudioItem.prSrcOffset((item: bare, take: 0, followTrack: \list), list, b0, 0);
 assertClose.(f.(b0 + 3), 3, "list clock: beatDur 1, no t0 on an unstamped take");
 
 // ------------------------------------------------------ fromBeat / toBeat
@@ -95,14 +101,21 @@ assert.(acts.size > 0, "tempoFollowActions builds segments");
 assertClose.(acts.first[0], b0 + 1 + (0.12 / 0.53),
 	"start: trims — nothing sounds before origin + start, beats stay put", 1e-3);
 
-// ------------------------------------------------------ followTrack forwarding
-r = list.prForwardAudioFollow((type: \audioItem, followTrack: \eventList));
-assert.(r[\sourceTempoMap].isNil and: { r[\sourceBeatDur].isNil },
-	"followTrack: \\eventList forwards nothing (default source — keeps the stamp)");
-assert.(list.prForwardAudioFollow((type: \audioItem, followTrack: true))[\sourceBeatDur] == 1,
-	"followTrack: true = flat");
-assert.(list.prForwardAudioFollow((type: \audioItem, followTrack: \marks))[\sourceTempoMap] == \marks,
-	"followTrack: \\marks forwards the name");
+// ------------------------------------------------------ EventList.followSource
+assert.(EventList.followSource(()).isNil, "followSource: absent = sealed");
+assert.(EventList.followSource((followTrack: false)).isNil, "followSource: false = sealed");
+assert.(EventList.followSource((followTrack: true)) == \auto, "followSource: true = \\auto");
+assert.(EventList.followSource((followTrack: \auto)) == \auto, "followSource: \\auto");
+assert.(EventList.followSource((followTrack: \eventList)) == \auto, "followSource: legacy \\eventList = \\auto (warns)");
+assert.(EventList.followSource((followTrack: \flat)) == 1, "followSource: \\flat = 1 s/beat");
+assert.(EventList.followSource((followTrack: 0.5)) == 0.5, "followSource: a number passes through");
+assert.(EventList.followSource((followTrack: \selection)) == \marks, "followSource: \\selection = \\marks");
+assert.(EventList.followSource((followTrack: \stamp)) == \stamp, "followSource: a name passes through");
+assert.(EventList.followSource((followTrack: true, sourceTempoMap: \eventList)) == \list,
+	"followSource: legacy sourceTempoMap: \\eventList = \\list, and wins");
+assert.(EventList.followSource((sourceTempoMap: \flat, sourceBeatDur: 0.5)) == 0.5,
+	"followSource: legacy \\flat + sourceBeatDur = that number");
+assert.(EventList.followSource((sourceBeatDur: 0.25)) == 0.25, "followSource: legacy sourceBeatDur alone");
 
 // ------------------------------------------------------ routing
 assert.(list.prIsAudioFollow((type: \audioItem, item: bare, sourceTempoMap: \marks)),

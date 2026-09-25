@@ -77,10 +77,11 @@ assert.(r[\srcName] == \function and: { r[\srcLatencyIncluded] }, "a function re
 r = AudioItem.prResolveSourceMap((item: stamped, take: 0, sourceTempoMap: { ~marks.quantize(1) }), stamped, 0);
 assert.(r[\srcName] == \stamp, "a function that errors (nil ~marks) warns and uses the default");
 r = AudioItem.prResolveSourceMap((item: bare, take: 0, sourceTempoMap: { 42 }), bare, 0);
-assert.(r[\srcName] == \eventList, "a function answering a non-map warns and uses the default");
+assert.(r[\srcName] == \marks, "a function answering a non-map warns and uses the default (the marks)");
 
 // ------------------------------------------------------ not a plain lazy value
 assert.(EventList.lazyExclude.includes(\sourceTempoMap), "\\sourceTempoMap is excluded from the lazy pass");
+assert.(EventList.lazyExclude.includes(\followTrack), "\\followTrack is excluded from the lazy pass");
 l = EventList.new; l.beatDur = 1;
 l.add((when: 0, newType: \audioItem, item: bare, take: 0, sourceTempoMap: { ~marks }));
 assert.(l.events.last[\sourceTempoMap].isKindOf(Function), "add() keeps the Function (not evaluated at add time)");
@@ -93,7 +94,7 @@ times = { |src|
 	var ll = EventList.new;
 	ll.beatDur = 1;
 	ll.events.add((when: 0, type: \mi2, player: MIDIItemPlayer(notes.deepCopy, nil),
-		followTrack: true, sourceTempoMap: src));
+		followTrack: src));
 	ll.prepare(100, 0).collect { |i| i[\time] }.asArray.sort
 };
 assertArr.(times.({ mt }), times.(mt), "\\mi2: { map } == the map object");

@@ -1,4 +1,4 @@
-// tempoFollowMode: \notes — the per-note rate plan (onset-gated-tempo-follow.md).
+// stretchMode: \notes — the per-note rate plan (onset-gated-tempo-follow.md).
 //
 // A take marked at irregular file seconds is played on a flat list (1 s/beat) from
 // list beat 8. The plan is ONE rate envelope: steps rateLead source-seconds before each
@@ -76,11 +76,19 @@ assertClose.(plan[\startBeat], 10, "from 10: plan starts at beat 10");
 assert.(plan[\steps] == 1, "from 10: only the note start after beat 10 remains (got %)".format(plan[\steps]));
 assertClose.(plan[\delay], 0, "from 10: sounds at once");
 
-// routing: tempoFollowMode: \notes alone follows; a bare \env still does not
+// routing: stretchMode: \notes alone follows; a bare \env still does not
+assert.(list.prIsAudioFollow((type: \audioItem, item: name, stretchMode: \notes)),
+	"stretchMode: \\notes routes to the follow path");
+assert.(list.prIsAudioFollow((type: \audioItem, item: name, stretchMode: \env)).not,
+	"bare stretchMode: \\env unchanged (sealed path)");
 assert.(list.prIsAudioFollow((type: \audioItem, item: name, tempoFollowMode: \notes)),
-	"tempoFollowMode: \\notes routes to the follow path");
-assert.(list.prIsAudioFollow((type: \audioItem, item: name, tempoFollowMode: \env)).not,
-	"bare tempoFollowMode: \\env unchanged (sealed path)");
+	"legacy tempoFollowMode: \\notes still routes (warns)");
+assert.(AudioItem.stretchMode(()) == \slices, "stretchMode default: \\slices");
+assert.(AudioItem.stretchMode((stretchMode: \env)) == \env, "stretchMode: \\env");
+assert.(AudioItem.stretchMode((tempoFollowMode: \env)) == \env, "legacy tempoFollowMode read");
+assert.(AudioItem.stretchMode((stretchMode: \notes, tempoFollowMode: \env)) == \notes,
+	"stretchMode wins over tempoFollowMode");
+assert.(AudioItem.stretchMode((stretchMode: \bogus)) == \slices, "unknown mode warns, uses \\slices");
 
 // no cached notes -> falls back to the grid builder (many segments, not one synth)
 assert.(AudioItem.tempoFollowNoteActions((type: \audioItem, item: name, take: 0, when: b0,

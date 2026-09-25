@@ -37,7 +37,7 @@ M1 (steps 1–6) and M3 (steps 8–11) built; step 7 (DP time pins) not started.
 | 9 `align:` for audio | done (segment path; env path warns) | `align-audio-test` |
 | 10 `sourceTempoMap:` functions (`~marks`, `~stamp`, event keys via proto) | done — `~stamp` beats still from the record beat (list beats come with step 11); `\mi2` evaluates a Function in the event | `source-map-function-test` |
 | 11 stamp seeding, stamp-axis marks, automatic `at:`, overlay | done — **needs a hands-on session** | `stamped-take-test` |
-| 12 onset-gated follow (rate changes only at note onsets; `\env` rate fix) | design — see `onset-gated-tempo-follow.md`; ByteDance checked by ear on vibes | — |
+| 12 per-note tempo follow (rate changes only at note starts; `\env` rate fix) | design — see `onset-gated-tempo-follow.md`; ByteDance checked by ear on vibes | — |
 
 Unverified by ear or eye: `TakeGui` interaction feel (drag, snap, lane), click
 and playback alignment in the window, and a marked drum take playing on a list
@@ -523,8 +523,9 @@ With `align:` on top, you choose how much of the sloppiness to fix.
    aubio (not installed).
 3. Marks beat origin: **0 at the first mark** / absolute list beats like stamps.
 4. `gridTimes` including picks in the MIDI gui: **yes (bug fix)** / audio host only.
-5. Step 12 open questions (anchor source per take, playback option A vs B, `\transients`
-   naming, cache vs versions): see `onset-gated-tempo-follow.md`.
+5. Step 12: detection and the event surface in `onset-gated-tempo-follow.md`; renderer,
+   note-timing editor and version key in `retune-project.md` §2e forks 3, 5, 6; note storage
+   and the Tune-ness rule in §2e build steps 4 and 4b.
 
 ## Review log
 

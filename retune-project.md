@@ -273,7 +273,7 @@ That difference IS a src↔output warp — i.e. a `MIDIItemTempoMap`. `moveNote`
 sources.** This is the "plays well with quantize/tempomaps" ask: they're not adjacent features, they
 are the same warp.
 
-**The renderer already exists.** `AudioItem.tempoFollowActions` (`AudioItem.sc:143`) already schedules
+**The renderer already exists.** `AudioItem.tempoFollowActions` (`AudioItem.sc:639`) already schedules
 ONE `\audioItemTempoFollowRB` synth **per segment**, each with its own `rate`, `startPos`, `delay`,
 off a tempo map. That is precisely the render a warped Tune needs. So:
 ```
@@ -324,7 +324,7 @@ the opt-in warp layer. (Open sub-q: do `ClipItem` and `TuneItem` stay separate c
 `WarpItem` with optional pitch? Subclass is cleaner since pitched adds methods meaningless without
 pitch — but revisit if the archive schemas want to converge; see versioning.)
 
-**EventList integration is ~80% built.** `AudioItem.tempoFollowActions` (`AudioItem.sc:143`) already
+**EventList integration is ~80% built.** `AudioItem.tempoFollowActions` (`AudioItem.sc:639`) already
 warps a take to an `EventList` tempomap, but with a UNIFORM src<->beat map
 (`srcOffset = sourceBeatDur ? baseWallDelta`). Markers generalize that to an *anchor map* interpolating
 `(srcTime<->beat)` through pinned points; `ClipItem` emits the `srcOffset`/tempomap that
@@ -382,7 +382,7 @@ Decisions taken 2026-07-13:
 
   // -- anchors: ALWAYS present. The src<->beat warp as pinned points.
   anchors: [ (key: 0, src: 0.0, beat: 0.0), (key: 1, src: 1.02, beat: 1.0), ... ],
-  anchorSource: \recordStamp,               // | \noteOnsets | \transients | \manual
+  anchorSource: \recordStamp,               // | \beatMark | \noteOnsets (v1 migration)
 
   // -- record-stamp block: OPTIONAL, present when recorded against an EventList.
   // The composed map itself is serialized INTO the anchors (tempoEnv breakpoints,
@@ -396,13 +396,15 @@ Decisions taken 2026-07-13:
     latencyConvention: \raw                 // \raw = file untrimmed (see below)
   ),
 
-  // -- note model: OPTIONAL (present once analysed/edited). Each note carries BOTH
+  // -- note model: OPTIONAL (present once analysed/edited, or from a note detector:
+  // notesSource: \melody | \keyboard; \keyboard notes are poly, no pitch block). Each note carries BOTH
   // spans (§2e): srcStart/srcDur fixed from the recording; timestamp/dur = OUTPUT,
   // editable by moveNote/quantize. Birth: srcStart == timestamp, srcDur == dur.
   midiEvents: [ (key: 0, srcStart: 0.62, srcDur: 0.41, timestamp: 0.62, dur: 0.41,
                  midinote: 58.3, ...), ... ],
 
-  // -- pitch block: OPTIONAL. Presence == "a tuning pass has run".
+  // -- pitch block: OPTIONAL. Presence == "a tuning pass has run" == what RetuneItem loads
+  // (build step 4b). midiEvents alone no longer means "tuning snapshot".
   smoothed: [...], conf: [...], analysisHop: 512, scale: nil
 )
 ```
@@ -452,10 +454,38 @@ differs (MIDIItem replays symbolic timestamps; Tune warps audio to them). Retune
 2. `moveNote` API: **`moveNote(key, startDelta, endDelta)` in seconds, key-based** (like `move`/`set`,
    survives split/merge) / `index`+seconds (as written, but positions renumber) / key+beats (needs the
    tempomap layer up front).
-3. Render: **per-segment RB now** (reuse `tempoFollowActions`; ships fast; RB-only) / unified 5th-channel
-   variable-rate Phasor (§2d; one synth, serves cepstral+quantize, but bigger and blocks `moveNote`).
+3. Render — **owned here; also decides per-note tempo follow** (`onset-gated-tempo-follow.md`).
+   Constraint from that doc: rate steps only at note starts (from `Take.notes(\transients | \keyboard | \melody)`), where
+   the attack masks them. Both options compute rate as Δ`srcOffset` / Δ`wallAt` per segment.
+   - **Per-segment RB** (reuse `tempoFollowActions`; RB-only): one synth per note
+     segment instead of the `segBeats` grid. Not "~20 lines": the SynthDef's fade-out must
+     end before the next note start (today each synth runs `2·fade` past it, `AudioItem.sc:751`),
+     plus a pre-roll, first/last boundaries that aren't note starts, and a non-rendering cache read
+     (details in that doc, "Playback").
+   - **One synth, stepped rate** (single RubberBand, `\step` rate Env at note-start output
+     times; or the §2d 5th-channel variable-rate Phasor, which also serves cepstral): no
+     overlaps. Correct kr-block drift (~1.45 ms per change) by computing levels from
+     block-rounded times, or run the rate at audio rate. Also the proper `\env`-mode fix
+     (levels from the source map, not `1/tempoMult`). Bigger; blocks `moveNote` until built.
+   **Decided 2026-09-25 by ear (vibes prototype): one synth, stepped rate**, rate steps 50 ms of
+   source before each note start. Per-segment crossfades were audible on every vibes note.
+   Details: `onset-gated-tempo-follow.md` "Prototype results".
 4. Filter-domain table (see "Prereq gap" above): confirm **output-time addressing for all
    user-facing filters, source immutable after birth**, or call out exceptions per filter.
+5. Note-timing editor (added 2026-09-25): **TakeGui** (transients, marks, tempo lane; add an
+   optional pitch lane) / the Retune piano roll (monophonic). One editor writes note timing,
+   the other shows it read-only.
+6. Event key for a pinned archive version (the "`version:` reference" still open above).
+   Marks, notes and hand-edited transients share one per-take version history but sit in
+   *different* versions, and `loadMarks(v)` answers nil for a non-marks version
+   (`Retune.sc:181–183`), so one number cannot pin all three directly. Options:
+   **`version: N` = "newest of each kind at or below N"** (one key, pins a moment in the
+   take's history) / separate keys per kind (`marksVersion:`, `notesVersion:`,
+   `transientsVersion:`). `marksVersion:` stays either way and **wins** over `version:`
+   (it means exactly version N; a non-marks N warns and falls through,
+   `AudioItem.sc:481–484`). Needs: an `atMost:` cap on `TakeArchive.latestWhere` (its
+   predicate sees only the snapshot, not the version id, `Retune.sc:66–70`), and the same
+   cap in RetuneItem's own scan (`Retune.sc:444–455`).
 
 **Additive build plan (each step reversible, testable headless for the model part):**
 1. Add `srcStart`/`srcDur` to the note Event (birth = current `timestamp`/`dur`); make `render`/`prPlay`
@@ -464,8 +494,19 @@ differs (MIDIItem replays symbolic timestamps; Tune warps audio to them). Retune
 3. Per-segment RB playback method (`playWarp`, or teach `playRB` to honour per-note rates) reusing the
    `\audioItemTempoFollowRB` scheduling; leave existing `play`/`playRB` paths untouched.
 4. Lift the symbolic MIDIItem filters onto `AbstractMidiEvents`; wire `quantize` on the Tune → warp.
-   **Prereq: the filter-domain table (open fork 4) must be decided first.**
-5. (later) `asClip` transient/manual anchors; `asTune` rename; gui drag = `moveNote`.
+   **Prereq: the filter-domain table (open fork 4) must be decided first.** Build `moveNote` /
+   `quantize` at the `AbstractWarp` level, not Tune-only: notes from `\keyboard` (poly) and
+   `\melody` use the same two-span model, stored poly in `midiEvents` with `notesSource:`;
+   `\transients` notes (starts only; hand edits in their own `transients:` block) get it as bare anchors
+   (`onset-gated-tempo-follow.md`). Snapping each note's beat (from marks) toward a
+   subdivision by an amount = the audio counterpart of MIDI `quantizeToRhythm`
+   (`MIDI-Item2.sc:2321`, `MonoMap.sc:620`); per-note tempo follow is `amount = 0`.
+4b. **Tune-ness = pitch block.** RetuneItem's scan (`Retune.sc:451`) requires `smoothed`
+   as well as `midiEvents`, so `\keyboard` note versions never load as Retune notes; update
+   the `Retune.sc:19` header comment to match. Safe today: the only `midiEvents` writer,
+   `AbstractRetune.save` (`Retune.sc:392`), always writes `smoothed`. Unverified: v1
+   archives on disk (migration assumes a pitch block) — scan `_retune/` before landing.
+5. (later) `asClip` transient/manual anchors; `asTune` rename; gui drag = `moveNote` (fork 5).
 
 ---
 

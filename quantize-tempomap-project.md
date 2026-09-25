@@ -1,5 +1,7 @@
 # Quantize / TempoMap overhaul — project notes
 
+Status: living project journal, not a spec. New core spec: `tempomap-v2-design.md`.
+
 Started 2026-06-09. Working branch: `guide-track-features`.
 
 **2026-07-28: V2 rebuild spec'd in `tempomap-v2-design.md`** — one monotone-map core

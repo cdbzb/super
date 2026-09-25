@@ -1,5 +1,7 @@
 # Audio beat marking — build plan (drafted 2026-09-22, two review passes)
 
+Status: in progress. Steps 1–6 and 8–11 built, 7 not started, 12 in design (table below).
+
 Goal: do for AudioItem takes what `AbstractMidiEvents.gui` already does for MIDI:
 mark beats, derive a tempo map, edit it on the tempo lane. This **includes
 non-melodic material** (drums, percussion, speech). Picks snap to detected transients
@@ -35,6 +37,7 @@ M1 (steps 1–6) and M3 (steps 8–11) built; step 7 (DP time pins) not started.
 | 9 `align:` for audio | done (segment path; env path warns) | `align-audio-test` |
 | 10 `sourceTempoMap:` functions (`~marks`, `~stamp`, event keys via proto) | done — `~stamp` beats still from the record beat (list beats come with step 11); `\mi2` evaluates a Function in the event | `source-map-function-test` |
 | 11 stamp seeding, stamp-axis marks, automatic `at:`, overlay | done — **needs a hands-on session** | `stamped-take-test` |
+| 12 onset-gated follow (rate changes only at note onsets; `\env` rate fix) | design — see `onset-gated-tempo-follow.md`; ByteDance checked by ear on vibes | — |
 
 Unverified by ear or eye: `TakeGui` interaction feel (drag, snap, lane), click
 and playback alignment in the window, and a marked drum take playing on a list
@@ -520,6 +523,8 @@ With `align:` on top, you choose how much of the sloppiness to fix.
    aubio (not installed).
 3. Marks beat origin: **0 at the first mark** / absolute list beats like stamps.
 4. `gridTimes` including picks in the MIDI gui: **yes (bug fix)** / audio host only.
+5. Step 12 open questions (anchor source per take, playback option A vs B, `\transients`
+   naming, cache vs versions): see `onset-gated-tempo-follow.md`.
 
 ## Review log
 

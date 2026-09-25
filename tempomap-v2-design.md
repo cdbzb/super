@@ -1,5 +1,8 @@
 # TempoMap V2 — core design
 
+Status: normative spec. Core built 2026-07-28/29 (`MonoMap.sc`); see the step list for
+what remains.
+
 Drafted 2026-07-28. Normative spec for the rebuilt tempo-map core. History, bug ledger,
 and the current system live in `quantize-tempomap-project.md`; this doc states what the
 new thing IS. Where the two disagree on the new core, this doc wins; the old doc's §6b

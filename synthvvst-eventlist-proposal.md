@@ -1,7 +1,6 @@
 # SynthVVST → EventList — proposal
 
-Drafted 2026-08-29; revised after review; **implemented 2026-08-30, uncommitted and
-not yet recompiled**. Branch: `guide-track-features`.
+Drafted 2026-08-29; revised after review; **implemented 2026-08-30, committed in 87df777b**. Branch: `guide-track-features`.
 
 ## Goal
 

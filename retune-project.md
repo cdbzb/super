@@ -1,5 +1,7 @@
 # Retune — project notes
 
+Status: living project journal, not a spec. Current state: §1.
+
 Started 2026-06-23. Working branch: `guide-track-features`.
 
 Goal: a formant-preserving, Melodyne-style pitch-correction system for recorded vocals,

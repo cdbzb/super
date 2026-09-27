@@ -33,6 +33,7 @@ BeatMarkMode {
 	var sortedNotes = true;  // notes in time order -> binary-search nearest lookups
 	var <>onChange, <>onGridChange, <>ensureVisible, <>onSave;
 	var <>salienceFunc;      // handed to every MIDIBeatTracker this mode builds (nil = its default)
+	var <>maxSpan;           // likewise its maxSpan (nil = the tracker's 4); audio raises it to bridge rests
 	// A grid SEEDED from known beat times (seedLines — the record stamp's expected
 	// beats): edits are local — re-picking or pinning a line leaves the lines after
 	// it alone instead of re-extrapolating them, and unpinning restores the seed.
@@ -258,6 +259,7 @@ BeatMarkMode {
 		pinSet = Set[];
 		beatTracker = MIDIBeatTracker(notes, anchorPair[1] - anchorPair[0], sorted.last);
 		beatTracker.salienceFunc = salienceFunc;
+		maxSpan !? { beatTracker.maxSpan = maxSpan };
 		gridLines = beatTracker.track;
 		(gridLines.size == 0).if {
 			"Extrapolate (DP): no beats found after the anchor".postln;
@@ -381,6 +383,7 @@ BeatMarkMode {
 			beatTracker = MIDIBeatTracker(notes, savedSel[\periodPrior],
 				savedSel[\anchor], pinSet.asArray);
 			beatTracker.salienceFunc = salienceFunc;
+			maxSpan !? { beatTracker.maxSpan = maxSpan };
 			gridLines = beatTracker.track;
 			dpMode = gridLines.size > 0;
 			restored = dpMode;
@@ -459,6 +462,7 @@ BeatMarkMode {
 				.collect { |t| this.nearestIndex(t, tol) }.reject(_.isNil));
 			beatTracker = MIDIBeatTracker(notes, savedSel[\periodPrior], seed, pinSet.asArray);
 			beatTracker.salienceFunc = salienceFunc;
+			maxSpan !? { beatTracker.maxSpan = maxSpan };
 			gridLines = beatTracker.track;
 			dpMode = true;
 		} {

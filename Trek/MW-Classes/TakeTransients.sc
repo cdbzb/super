@@ -196,11 +196,16 @@ TakeTransients {
 		^out
 	}
 
-	// A MIDIBeatTracker salienceFunc over these transients: strength normalised to
-	// 0..1 by the loudest hit (the default func would read amp and add chord bonuses).
+	// A MIDIBeatTracker salienceFunc over these transients: strength normalised by
+	// the MEDIAN hit, so a typical transient weighs about 1 — the scale the tracker's
+	// penalties were tuned on (MIDI amp + chord bonuses). Normalising by the loudest
+	// let one outlier squash every other hit to ~0.2, below skipPenalty, and the DP
+	// stopped at the first skipped beat. (The default func would read amp and add
+	// chord bonuses.)
 	*salienceFor { |transients|
-		var mx = (transients.collect { |e| e[\strength] ? 0 }.maxItem ? 1).max(1e-9);
-		^{ |note| (note[\strength] ? 0) / mx }
+		var st = transients.collect { |e| e[\strength] ? 0 }.sort;
+		var med = (st.isEmpty.not.if { st[st.size div: 2] } { 1 }).max(1e-9);
+		^{ |note| (note[\strength] ? 0) / med }
 	}
 }
 

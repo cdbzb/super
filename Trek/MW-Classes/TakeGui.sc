@@ -21,7 +21,7 @@
 // r clear · 0 reset view · h/l scroll, H/L zoom (outside a grid) · q close ·
 // ? help window (the full list, as in MIDIItem.gui).
 TakeGui {
-	classvar <>snapPx = 8;
+	classvar <>snapPx = 8, <>dpMaxSpan = 8;
 	var <take, <path, <sampleRate, <numFrames, <numChannels, <dur;
 	var <transients, <beatMark, <mapEd, <nav, <params;
 	var <marks;                  // the marks version loaded at open (nil = none)
@@ -71,6 +71,7 @@ TakeGui {
 		transients = t;
 		beatMark = BeatMarkMode(transients, dur);
 		beatMark.salienceFunc = TakeTransients.salienceFor(transients);
+		beatMark.maxSpan = dpMaxSpan;   // audio has rests longer than 4 beats with no hit
 		beatMark.onChange = { this.refresh };
 		beatMark.onGridChange = { mapEd.invalidate; this.refresh };
 		beatMark.ensureVisible = { |t| this.prEnsureVisible(t) };

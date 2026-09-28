@@ -209,7 +209,18 @@ assertArr.(flatTimesFor.((when: 0, type: \mi2, player: mkPlayer.(), followTrack:
 assertArr.(flatTimesFor.((when: 0, type: \mi2, player: mkPlayer.(), followTrack: mt, toBeat: 4)),
 	100 + [0, 1, 2, 3], "mi2 toBeat on a map source cuts in its beats", 1e-6);
 assert.(flatTimesFor.((when: 0, type: \mi2, player: mkPlayer.(), fromBeat: 0)).size == 6,
-	"mi2 fromBeat alone implies following");
+	"mi2 fromBeat alone routes to the flattened path (it needs a source to find the beat)");
+// ...but a range alone keeps recorded timing: the marks (\auto) only locate
+// beat 3 (recorded second 3); notes then play as performed from when:
+assertArr.(flatTimesFor.((when: 0, type: \mi2, player: mkPlayer.().tempoMap_(mt), fromBeat: 3)),
+	100 + [0, 3, 4], "mi2 range only: cut by the marks, played as recorded", 1e-6);
+assertArr.(flatTimesFor.((when: 0, type: \mi2, player: mkPlayer.().tempoMap_(mt), fromBeat: 3,
+	followTrack: \marks)), 100 + [0, 1, 1 + (1/3)], "mi2 range + followTrack: cut and follow the marks", 1e-6);
+assert.(EventList.rangeOnly((fromBeat: 2)), "rangeOnly: fromBeat alone");
+assert.(EventList.rangeOnly((toBeat: 2)), "rangeOnly: toBeat alone");
+assert.(EventList.rangeOnly((fromBeat: 2, followTrack: \auto)).not, "rangeOnly: not with followTrack");
+assert.(EventList.rangeOnly((fromBeat: 2, align: 1)).not, "rangeOnly: not with align");
+assert.(EventList.rangeOnly(()).not, "rangeOnly: not without a range");
 // align on the marked map: 1 = its beats (gSrc), 0 = as performed, 0.5 between
 assertArr.(flatTimesFor.((when: 0, type: \mi2, player: mkPlayer.(), followTrack: mt, align: 1)), gSrc,
 	"mi2 align: 1 == plain follow", 1e-6);

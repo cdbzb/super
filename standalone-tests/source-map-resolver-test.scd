@@ -65,6 +65,11 @@ assert.(res.(())[\srcName] == \marks, "default on a marked take: the marks");
 // no marks (a version that does not exist): the stamp, else the list clock
 assert.(res.((marksVersion: 99), stamped)[\srcName] == \stamp, "default without marks on a stamped take: the stamp");
 assert.(res.((marksVersion: 99))[\srcName] == \list, "default without marks or stamp: the list clock");
+// a range alone keeps recorded timing (align 0); followTrack or \env leave align alone
+assert.(res.((fromBeat: 2))[\align] == 0, "range only: align 0 (cut by beats, play as recorded)");
+assert.(res.((fromBeat: 2, followTrack: \marks))[\align].isNil, "range + followTrack: follows");
+assert.(res.((toBeat: 4, stretchMode: \env))[\align].isNil, "range only on \\env: no align there");
+assert.(res.((fromBeat: 2, align: 0.5))[\align] == 0.5, "range + explicit align: kept");
 r = res.((srcResolved: true, srcName: \x));
 assert.(r[\srcName] == \x, "idempotent: a resolved event is not resolved again");
 

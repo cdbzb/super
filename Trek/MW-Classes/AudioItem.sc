@@ -21,6 +21,11 @@ AudioItem {
 	*initClass {
 		all = Dictionary.new(512);
 		buffers = MultiLevelIdentityDictionary.new;
+		// A (re)booted server has no buffers, but a cached Buffer keeps its client-side
+		// numFrames, so the "numFrames nil or 0" reload check skips it and every synth
+		// reads silence ("Buffer UGen: no buffer data"). Start the cache over on boot.
+		Class.initClassTree(ServerBoot);
+		ServerBoot.add({ buffers = MultiLevelIdentityDictionary.new }, \all);
 		recordedMaps = MultiLevelIdentityDictionary.new;
 		recorders = Dictionary.new;
 		Class.initClassTree(Event);
@@ -468,6 +473,9 @@ AudioItem {
 		(ev[\srcResolved] == true).if { ^ev };
 		out = ev.copy;
 		out[\srcResolved] = true;
+		// a range alone (EventList.rangeOnly) cuts by beats but keeps recorded
+		// timing; \env has no align, so there it follows as before
+		(EventList.rangeOnly(ev) and: { this.stretchMode(ev) != \env }).if { out[\align] = 0 };
 		itemName = itemName ?? { this.eventItemName(ev) };
 		sm = EventList.followSource(ev) ? \auto;
 		(ev[\marks].notNil and: { ev[\marks] != false }).if {

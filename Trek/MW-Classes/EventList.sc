@@ -1393,6 +1393,10 @@ EventList {
 		^this
 	}
 
+    monoMap {
+        ^tempoMap.asMonoMap
+    }
+
 	// Freeze source events while preserving the map shape and t0.
 	prFreezeItemMap { |map|
 		^this.prWithT0(map, map.tryPerform(\t0) ? 0) ? map
@@ -2177,6 +2181,15 @@ EventList {
 		};
 		^[f, t]
 	}
+	/* A range without a follow request: fromBeat:/toBeat: with no followTrack source
+	   and no align:. The range is in the take's beats, so a source (\auto) is still
+	   needed to find it, but the timing stays as recorded — align: 0. followTrack
+	   alone decides whether the take follows the list. */
+	*rangeOnly { |ev|
+		^(ev[\fromBeat].notNil or: { ev[\toBeat].notNil })
+			and: { ev[\align].isNil }
+			and: { this.followSource(ev).isNil }
+	}
 	*prFollowValue { |v|
 		^case
 		{ v.isNil or: { v == false } } { nil }
@@ -2349,10 +2362,13 @@ EventList {
 	   and \tempoTrack moved the onsets but not the releases (legato came out as
 	   legato / beatDur). Resolve the sustain in list beats here and store its wall
 	   length through `place`, the way prEmitMi2Follow does for mi2 notes. Other
-	   types pass through untouched: their ~sustain may not mean note length. */
+	   types pass through untouched: their ~sustain may not mean note length. An
+	   unregistered type (e.g. defaultType \default) plays as \note — Event's own
+	   fallback — so it resolves like one. */
 	prWallSustain { |ev, place|
-		var probe, when, sus, out;
-		[\note, \mk].includes(ev[\type] ? \note).not.if { ^ev };
+		var probe, when, sus, out, type = ev[\type] ? \note;
+		Event.eventTypes[type].isNil.if { type = \note };
+		[\note, \mk].includes(type).not.if { ^ev };
 		probe = ev.copy;
 		probe.parent ?? { probe.parent = Event.default.parent };
 		sus = try { probe.use { ~sustain.value } };
@@ -2403,7 +2419,7 @@ EventList {
 		// align: 0..1 — 1 = on the source's beats (plain follow), 0 = as performed
 		// (recorded seconds from when:), in between a blend of the WALL times, as
 		// on \audioItem and nested lists
-		var align  = ev[\align];
+		var align  = ev[\align] ?? { EventList.rangeOnly(ev).if { 0 } };
 		var originBeat, tAt, tShift = 0, anchorTs, anchorW;
 		var pstart, beatOff, tm, wallBase, warped, wPlayer, useMap, useSrc, mapAnchor, srcMap, srcOrigin;
 		var pstart0, retimed, useStamp, stampWall, stampEp, stampBeat, stampB0, stampShift = 0;

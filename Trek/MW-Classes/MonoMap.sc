@@ -592,6 +592,14 @@ AnchorMap : MonoMap {
 		}
 	}
 
+    fromBeat { |from to|
+        ^(from == 0).if {
+            this.slices([to])[0]
+        } {
+            this.slices([from, to])[1]
+        }
+    }
+
 	// Replace one span with func.(cell). The result must bake to an AnchorMap and
 	// keep the input width. Output-width changes shift later material.
 	transformSpan { |from, to, func|

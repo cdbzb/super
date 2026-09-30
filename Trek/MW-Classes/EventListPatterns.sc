@@ -39,6 +39,13 @@
 				(event[\newType].isNil and: { this.defaultType == \eventList }).if {
 					event.put(\newType, \note)
 				};
+				// Same trap on a \keyFrame list: an untyped note pattern would turn into
+				// keyframes for voice \default. A pattern meant as keyframes addresses a
+				// voice (voice:/ndef:), so only those keep the list's default.
+				(event[\newType].isNil and: { this.defaultType == \keyFrame }
+					and: { event[\voice].isNil } and: { event[\ndef].isNil }).if {
+					event.put(\newType, \note)
+				};
 				this.dispatch(event, { |e| this.storeAndPreview(e, previewOffset) });
 				beat = beat + (event[\dur] ? 1);
 				i = i + 1;

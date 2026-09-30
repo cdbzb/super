@@ -920,8 +920,53 @@ EventList {
 		};
 		event.put(\type, event[\newType] ? defaultType);
 		addFunc !? { addFunc.(event, this) };
+		this.prStampNdef(event);
 		sink.(event);
 		^this
+	}
+
+	/*
+	 An Ndef keyframe (VoiceSpace drives the proxy — see VoiceSpace.sc) is addressed
+	 by its ndef:, so make that the whole address:
+	   - no voice: given -> the voice is the proxy's key (ndef: \verb => voice \verb)
+	   - voice: given but no ndef: -> inherit the ndef: of this list's latest earlier
+	     keyframe on that voice, so every keyframe of an Ndef voice carries ndef:
+	 The second is what lets shouldPlay recognise all of a voice's automation (solo
+	 ignores it) without scanning the list per event. It looks backward only: a
+	 voice's first keyframe must name ndef:.
+	*/
+	prStampNdef { |event|
+		((event[\type] ? \keyFrame) != \keyFrame).if { ^this };
+		event[\ndef].notNil.if {
+			event[\voice] ?? { event[\voice] = EventList.ndefVoiceKey(event[\ndef]) }
+		} {
+			event[\voice].notNil.if {
+				events.reverseDo { |e|
+					((e[\voice] == event[\voice]) and: { e[\ndef].notNil }).if {
+						event[\ndef] = e[\ndef];
+						^this
+					}
+				}
+			} {
+				/* No voice either: \verb.add(4, mix: 0) after \verb.add(0, ndef: \verb)
+				   — Symbol.add stamps name:, so inherit by name, voice included. */
+				event[\name] !? { |n|
+					events.reverseDo { |e|
+						((e[\name] == n) and: { e[\ndef].notNil }).if {
+							event[\ndef]  = e[\ndef];
+							event[\voice] = e[\voice];
+							^this
+						}
+					}
+				}
+			}
+		}
+	}
+
+	*ndefVoiceKey { |ndef|
+		^ndef.isKindOf(NodeProxy).if {
+			(ndef.tryPerform(\key) ? ndef.identityHash).asSymbol
+		} { ndef.asSymbol }
 	}
 
 	/* Answer this, not the Set the assignment evaluates to, so the setters chain:
@@ -1152,6 +1197,13 @@ EventList {
 			   section before the narrowing reached inside. Filter its children
 			   instead. Mute still applies, so muting a named section silences it. */
 			(event[\type] == \eventList).if { ^true };
+			/* Ndef automation is not a source: soloing an instrument should still
+			   hear the effects it plays through move as written. Solo ignores it;
+			   mute still applies — and for an Ndef voice mute skips the AUTOMATION
+			   only, the proxy keeps sounding (stop it to silence it). */
+			(event[\ndef].notNil and: { (event[\type] ? \keyFrame) == \keyFrame }).if {
+				^this.prPasses(event, nil, muteSet)
+			};
 			keys.isEmpty.if { ^false };
 			^soloSet.any { |s| keys.any { |k| k.contains(s.asString) } }
 		};
@@ -1255,7 +1307,7 @@ EventList {
 		var curBeat = 0, curLevel = initial;
 		timeline.do { |pair|
 			var beat = pair[0];
-			var val = pair[1];
+			var val = pair[1].asRamp;
 			var dt = beat - curBeat;
 			(dt > 0).if {
 				levels = levels.add(curLevel);

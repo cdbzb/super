@@ -6,10 +6,24 @@
 // to defaultDef (\graphSynth in SynthDefLibrary).
 //
 // Pairs with EventList: list.voiceSpace_(vs) routes list.play through vs.playFrom.
+//
+// Ndef voices: an event carrying ndef: (a Symbol naming an Ndef, or any NodeProxy)
+// makes its voice drive that proxy instead of a synth. The voice's busses are
+// allocated lazily, one per proxy control a keyframe names, seeded with the
+// proxy's current value and mapped onto the proxy (proxy.set(k, bus.asMap)); every
+// existing path (dispatch, ramps, timelines, plus) then writes those busses as
+// usual. The voice's `syn` is a Group, so everything placed \addBefore it still
+// lands. gate <= 0 (or release) ends the voice: each control still mapped to its
+// bus is set back to a plain number (the value it reached), then the busses are
+// freed. No lane fan-out for Ndef voices; audio-rate and multichannel controls are
+// not driven.
 
 VoiceSpace {
 	classvar default;
+	// proxy -> (control -> voice entry): the one voice allowed to drive each control
+	classvar ndefOwners;
 	var <voices, <aliveLanes, <lastScalar, <>voiceDefs, <>defaultDef;
+	var <voiceNdefs;
 	var <>scheduledRoutine;
 	// TODO: target/addAction are per-VoiceSpace, not per-voice. If a single VoiceSpace
 	// ever needs voices placed in different groups, add a voiceTargets dict mirroring voiceDefs.
@@ -19,6 +33,7 @@ VoiceSpace {
 	*resetDefault { default = nil }
 
 	*initClass {
+		ndefOwners = IdentityDictionary.new;
 		Class.initClassTree(Event);
 		Event.addEventType(\keyFrame, {
 			var ev = currentEnvironment;
@@ -34,17 +49,20 @@ VoiceSpace {
 		aliveLanes = ();
 		lastScalar = ();
 		voiceDefs = ();
+		voiceNdefs = ();
 		defaultDef = \graphSynth;
 	}
 
 	// ---- voice lifecycle ----------------------------------------------------
 
 	startVoice { |defName, voice|
-		var desc = SynthDescLib.global[defName];
+		var desc;
 		var args = [];
 		var busses = ();
 		var defaults = ();
 		var srv = Server.default;
+		voiceNdefs[voice] !? { |proxy| ^this.startNdefVoice(proxy, voice) };
+		desc = SynthDescLib.global[defName];
 		desc.isNil.if { Error("VoiceSpace.startVoice: no SynthDesc for %".format(defName)).throw };
 		desc.controls.do { |ctl|
 			var n  = ctl.name.asSymbol;
@@ -83,8 +101,113 @@ VoiceSpace {
 
 	release { |voiceList, gate = -1.05|
 		voiceList.asArray.do { |v|
-			voices[v] !? { |entry| entry.syn.set(\gate, gate) }
+			voiceNdefs[v].notNil.if { this.endNdefVoice(v) } {
+				voices[v] !? { |entry| entry.syn.set(\gate, gate) }
+			}
 		}
+	}
+
+	// ---- Ndef voices ----------------------------------------------------------
+
+	*prAsProxy { |n| ^n.isKindOf(NodeProxy).if { n } { Ndef(n.asSymbol) } }
+
+	isNdefVoice { |voice| ^voiceNdefs[voice].notNil }
+
+	// Remember which proxy a voice drives. Called wherever an event reaches a voice.
+	prNoteNdef { |ev, voice|
+		ev[\ndef] !? { |n| voiceNdefs[voice] = VoiceSpace.prAsProxy(n) }
+	}
+
+	// Voices named by ndef: events in a batch (plus any already known), so lane
+	// expansion can leave them alone.
+	prNdefVoicesIn { |events|
+		var set = voiceNdefs.keys.copy;
+		events.do { |ev| ev[\ndef] !? { set.add(ev[\voice] ? \default) } };
+		^set
+	}
+
+	startNdefVoice { |proxy, voice|
+		var grp = Group(target, addAction ? \addToHead);
+		var entry = (
+			syn: grp, proxy: proxy, ndef: true,
+			busses: (), defaults: (), lastVal: (),
+			envSyns: List[], plusSyns: (), rampSyns: (), rampBuses: (),
+			dispatchRamps: (), rampInfo: ()
+		);
+		voices[voice] = entry;
+		// Cmd-. frees the group too: end the voice then, but only if it is still
+		// this entry (a restarted voice of the same name must survive).
+		grp.register;
+		grp.onFree { (voices[voice] === entry).if { this.endNdefVoice(voice, false) } };
+	}
+
+	// Map each named proxy control that is not mapped yet. Keys that are not
+	// scalar control-rate controls of the proxy are ignored (dispatch skips keys
+	// without a bus, as for synth voices).
+	prNdefEnsure { |voice, keys|
+		var v = voices[voice], proxy, names;
+		(v.isNil or: { v[\ndef] != true }).if { ^this };
+		proxy = v[\proxy];
+		names = proxy.controlNames(nil, false);
+		keys.do { |k|
+			v.busses[k].isNil.if {
+				names.detect { |cn| cn.name.asSymbol == k } !? { |cn|
+					case
+						{ cn.rate == \audio } {
+							"VoiceSpace: % is audio-rate on % — not driven".format(k, proxy).warn
+						}
+						{ cn.defaultValue.isArray } {
+							"VoiceSpace: % is multichannel on % — not driven".format(k, proxy).warn
+						}
+						{ this.prNdefMap(voice, v, proxy, k, cn.defaultValue) }
+				}
+			}
+		}
+	}
+
+	prNdefMap { |voice, v, proxy, k, default|
+		var cur = proxy.nodeMap[k];
+		var val = cur.isNumber.if { cur } { default };
+		var bus = Bus.control(Server.default, 1);
+		var owners = ndefOwners[proxy] ?? { ndefOwners[proxy] = IdentityDictionary.new };
+		owners[k] !? { |other|
+			(other !== v).if {
+				"VoiceSpace: voice % takes over %.% from another voice".format(voice, proxy, k).warn
+			}
+		};
+		owners[k] = v;
+		bus.set(val);
+		v.busses[k] = bus;
+		v.defaults[k] = val;
+		v.lastVal[k] = val;
+		proxy.set(k, bus.asMap);
+	}
+
+	/* Unmap, then free. A control is handed back only while it still reads THIS
+	   voice's bus — a hand proxy.set or another voice's takeover already replaced
+	   the mapping, and must not be overwritten. The value handed back is what the
+	   bus holds now (shared memory, localhost), falling back to the last value
+	   written. freeGroup false = the group is already gone (Cmd-.). */
+	endNdefVoice { |voice, freeGroup = true|
+		var v = voices[voice], proxy, owners;
+		(v.isNil or: { v[\ndef] != true }).if { ^this };
+		voices[voice] = nil;
+		proxy = v[\proxy];
+		owners = ndefOwners[proxy];
+		v.busses.keysValuesDo { |k, bus|
+			(proxy.nodeMap[k] == bus.asMap).if {
+				// getSynchronous needs shared memory (local server); else last written
+				proxy.set(k, (try { bus.getSynchronous }) ? v.lastVal[k] ? v.defaults[k])
+			};
+			owners !? { (owners[k] === v).if { owners.removeAt(k) } };
+		};
+		v.envSyns.do { |syn| try { syn.free } };
+		v.plusSyns.do { |syn| try { syn.free } };
+		v.rampSyns.do { |syn| try { syn.free } };
+		v.dispatchRamps.do { |syn| try { syn.free } };
+		v.rampBuses.do { |b| b.free };
+		v.busses.do { |b| b.free };
+		freeGroup.if { try { v.syn.free } };
 	}
 
 	stop {
@@ -102,7 +225,10 @@ VoiceSpace {
 		}.play(target: syn, addAction: \addBefore)
 	}
 
-	// ---- plus: per-param Function synths layered onto busses ---------------
+	// ---- mod: per-param Function synths layered onto busses ----------------
+	// Authored as mod: (amp: { SinOsc.kr(1) * 0.1 }) — the Function is ADDED to the
+	// control's keyframed baseline. plus: is the original name and still works
+	// (mod: wins if an event names both); internally everything is still "plus".
 	// The plus synth uses ReplaceOut.kr and combines a baseline (named control
 	// "<param>_val") with the user's modulation function. dispatch routes
 	// scalar/Tuple/Env writes through that baseline control: scalars via .set,
@@ -274,7 +400,7 @@ VoiceSpace {
 		var v = voices[voice];
 		v.isNil.if { ^this };
 		ev.keys.do { |k|
-			var val = ev[k];
+			var val = ev[k].asRamp;
 			(k != \voice).if {
 				v.busses[k] !? { |bus|
 					var plus = v.plusSyns[k];
@@ -360,16 +486,21 @@ VoiceSpace {
 	// ---- live event firing (used by \keyFrame event type) -------------------
 
 	fireLive { |ev|
-		var plusEv = ev[\plus];
+		var plusEv = ev.modEvent;
 		var plusVoice = ev[\voice] ? \default;
+		this.prNoteNdef(ev, plusVoice);
 		this.fanLive(ev).do { |laneEv|
 			var voice = laneEv[\voice] ? \default;
 			var defName;
 			laneEv[\defName] !? { |d| voiceDefs[voice] = d };
 			defName = voiceDefs[voice] ? defaultDef;
 			Server.default.bind {
-				voices[voice].isNil.if { this.startVoice(defName, voice) };
+				var ending = this.isNdefVoice(voice) and: {
+					laneEv[\gate].isNumber and: { laneEv[\gate] <= 0 } };
+				voices[voice].isNil.if { ending.not.if { this.startVoice(defName, voice) } };
+				this.prNdefEnsure(voice, laneEv.keys);
 				this.dispatch(laneEv, voice);
+				ending.if { this.endNdefVoice(voice) };
 			}
 		};
 		plusEv !? {
@@ -384,6 +515,7 @@ VoiceSpace {
 				targets.do { |laneVoice|
 					var def = voiceDefs[laneVoice] ? voiceDefs[plusVoice] ? defaultDef;
 					voices[laneVoice].isNil.if { this.startVoice(def, laneVoice) };
+					this.prNdefEnsure(laneVoice, plusEv.keys);
 					this.applyPlus(laneVoice, plusEv);
 				}
 			}
@@ -393,7 +525,7 @@ VoiceSpace {
 	// ---- live fan-out: persistent per-voice lane state ---------------------
 
 	fanLive { |ev|
-		var skip = [\when, \voice, \type, \newType, \beat, \delta, \dur, \tempoTrack, \tempo, \defName, \server, \voiceSpace, \plus];
+		var skip = [\when, \voice, \type, \newType, \beat, \delta, \dur, \tempoTrack, \tempo, \defName, \server, \voiceSpace, \plus, \mod, \ndef];
 		var isLaneParam = { |v|
 			v.isArray
 				and: { v.isKindOf(Tuple3).not }
@@ -404,6 +536,8 @@ VoiceSpace {
 		var beat  = ev[\when] ? 0;
 		var eventWidth = 1;
 		var fanned, out;
+		// one proxy, one voice: an array value is not a lane request
+		this.isNdefVoice(voice).if { ^[ev] };
 		ev.keysValuesDo { |k, v|
 			(skip.includes(k).not and: { isLaneParam.(v) }).if { eventWidth = eventWidth.max(v.size) }
 		};
@@ -459,17 +593,20 @@ VoiceSpace {
 
 	// max lane-fan width per base voice across the event list. >1 means fanned.
 	computeLaneCounts { |events|
-		var skip = [\when, \voice, \type, \newType, \beat, \delta, \dur, \tempoTrack, \tempo, \defName, \plus];
+		var skip = [\when, \voice, \type, \newType, \beat, \delta, \dur, \tempoTrack, \tempo, \defName, \plus, \mod, \ndef];
 		var isLaneParam = { |v|
 			v.isArray and: { v.isKindOf(Tuple3).not }
 				and: { v.isKindOf(Tuple4).not } and: { v.isKindOf(Env).not }
 		};
 		var counts = ();
+		var ndefVoices = this.prNdefVoicesIn(events);
 		events.do { |ev|
 			var voice = ev[\voice] ? \default;
 			var w = 1;
-			ev.keysValuesDo { |k, v|
-				(skip.includes(k).not and: { isLaneParam.(v) }).if { w = w.max(v.size) }
+			ndefVoices.includes(voice).not.if {
+				ev.keysValuesDo { |k, v|
+					(skip.includes(k).not and: { isLaneParam.(v) }).if { w = w.max(v.size) }
+				}
 			};
 			counts[voice] = (counts[voice] ? 0).max(w);
 		};
@@ -489,8 +626,8 @@ VoiceSpace {
 	// ---- pre-baked-timeline expansion (playFrom path) ----------------------
 
 	expandLanes { |events|
-		var skip = [\when, \voice, \type, \newType, \beat, \delta, \dur, \tempoTrack, \tempo, \defName, \plus];
-		var isLaneParam, maxWidth, lastScalarLocal, aliveLanesLocal, out;
+		var skip = [\when, \voice, \type, \newType, \beat, \delta, \dur, \tempoTrack, \tempo, \defName, \plus, \mod, \ndef];
+		var isLaneParam, maxWidth, lastScalarLocal, aliveLanesLocal, out, ndefVoices;
 		isLaneParam = { |v|
 			v.isArray
 				and: { v.isKindOf(Tuple3).not }
@@ -501,11 +638,14 @@ VoiceSpace {
 		lastScalarLocal = ();
 		aliveLanesLocal = ();
 		out             = List[];
+		ndefVoices      = this.prNdefVoicesIn(events);
 		events.do { |ev|
 			var voice = ev[\voice] ? \default;
 			var w = 1;
-			ev.keysValuesDo { |k, v|
-				(skip.includes(k).not and: { isLaneParam.(v) }).if { w = w.max(v.size) }
+			ndefVoices.includes(voice).not.if {
+				ev.keysValuesDo { |k, v|
+					(skip.includes(k).not and: { isLaneParam.(v) }).if { w = w.max(v.size) }
+				}
 			};
 			maxWidth[voice] = (maxWidth[voice] ? 1).max(w);
 		};
@@ -561,7 +701,7 @@ VoiceSpace {
 	}
 
 	extractTimelines { |events|
-		var skip = [\when, \voice, \type, \newType, \beat, \delta, \dur, \tempoTrack, \tempo, \defName, \plus];
+		var skip = [\when, \voice, \type, \newType, \beat, \delta, \dur, \tempoTrack, \tempo, \defName, \plus, \mod, \ndef];
 		var tls = ();
 		events.do { |ev|
 			var voice = ev[\voice] ? \default;
@@ -623,7 +763,8 @@ VoiceSpace {
 		expanded.do { |e|
 			(e[\defName].notNil and: { e[\voice].notNil }).if {
 				voiceDefs[e[\voice]] = e[\defName]
-			}
+			};
+			this.prNoteNdef(e, e[\voice] ? \default);
 		};
 
 		// Pre-scan: which (voice, param) pairs will ever have a plus event?
@@ -631,7 +772,7 @@ VoiceSpace {
 		// can read the timeline env into its baseline (\<param>_val) and ride on top.
 		// Plus fans out across lanes for any base voice that was lane-expanded.
 		keyEvents.do { |ev|
-			ev[\plus] !? { |plusEv|
+			ev.modEvent !? { |plusEv|
 				var baseVoice = ev[\voice] ? \default;
 				this.laneVoicesFor(baseVoice, laneCounts).do { |laneVoice|
 					plusParams[laneVoice] ?? { plusParams[laneVoice] = Set[] };
@@ -647,6 +788,7 @@ VoiceSpace {
 				Server.default.bind {
 					var v;
 					voices[voice].isNil.if { this.startVoice(voiceDefs[voice] ? defaultDef, voice) };
+					this.prNdefEnsure(voice, params.keys);
 					v = voices[voice];
 					params.keysValuesDo { |param, tl|
 						v.busses[param] !? { |bus|
@@ -687,11 +829,24 @@ VoiceSpace {
 			}))
 		};
 
+		// Ndef voices end on gate <= 0. gate is not a proxy control, so the timeline
+		// never writes it anywhere; the end is its own schedule entry.
+		expanded.do { |ev|
+			var voice = ev[\voice] ? \default;
+			var beat  = ev[\when] ? 0;
+			(this.isNdefVoice(voice) and: { ev[\gate].isNumber } and: { ev[\gate] <= 0 }
+				and: { beat >= from }).if {
+				out.add((time: place.(beat), label: \ndefEnd, send: {
+					Server.default.bind { this.endNdefVoice(voice) }
+				}))
+			}
+		};
+
 		// Plus events: free the passthrough/old plus and spawn a new one carrying userFunc.
 		// rampBus mapping is restored so plus's baseline continues tracking the timeline env.
 		// Fans across lanes for any base voice that was lane-expanded.
 		keyEvents.do { |ev|
-			ev[\plus] !? { |plusEv|
+			ev.modEvent !? { |plusEv|
 				var baseVoice = ev[\voice] ? \default;
 				var beat  = ev[\when] ? 0;
 				var laneVoices = this.laneVoicesFor(baseVoice, laneCounts);
@@ -703,6 +858,7 @@ VoiceSpace {
 								voices[voice].isNil.if {
 									this.startVoice(voiceDefs[voice] ? defaultDef, voice)
 								};
+								this.prNdefEnsure(voice, plusEv.keys);
 								plusEv.keysValuesDo { |param, val|
 									var v = voices[voice];
 									var bus = v !? { v.busses[param] };
@@ -746,3 +902,24 @@ VoiceSpace {
 		^out
 	}
 }
+
+// Sugar: a \keyFrame list whose adds drive this proxy by default —
+//   k = Ndef(\verb).asEventList.clear;  k.add(4, mix: T(0.9, 2));  k.add(12, gate: 0);
+// Its events are ordinary Ndef-voice keyframes (voice: <proxy key>, ndef: proxy),
+// so they can equally be written into any other \keyFrame list by hand.
++ NodeProxy {
+	asEventList { |name, voiceSpace|
+		var key = (this.tryPerform(\key) ? this.identityHash).asSymbol;
+		var list = EventList.kf(name ?? { ("ndef_" ++ key).asSymbol }, voiceSpace);
+		list.addFunc = { |e|
+			((e[\type] ? \keyFrame) == \keyFrame).if {
+				e[\voice] = e[\voice] ? key;
+				e[\ndef]  = e[\ndef] ? this
+			}
+		};
+		^list
+	}
+}
+
+// mod: is the authoring name for VoiceSpace's plus-layers; plus: stays an alias.
++ Event { modEvent { ^this[\mod] ?? { this[\plus] } } }

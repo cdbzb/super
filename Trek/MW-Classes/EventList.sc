@@ -920,44 +920,39 @@ EventList {
 		};
 		event.put(\type, event[\newType] ? defaultType);
 		addFunc !? { addFunc.(event, this) };
-		this.prStampNdef(event);
+		this.prStampVoice(event);
 		sink.(event);
 		^this
 	}
 
 	/*
-	 An Ndef keyframe (VoiceSpace drives the proxy — see VoiceSpace.sc) is addressed
-	 by its ndef:, so make that the whole address:
-	   - no voice: given -> the voice is the proxy's key (ndef: \verb => voice \verb)
-	   - voice: given but no ndef: -> inherit the ndef: of this list's latest earlier
-	     keyframe on that voice, so every keyframe of an Ndef voice carries ndef:
-	 The second is what lets shouldPlay recognise all of a voice's automation (solo
-	 ignores it) without scanning the list per event. It looks backward only: a
-	 voice's first keyframe must name ndef:.
+	 Address a \keyFrame event's voice (VoiceSpace's persistent instance):
+	   voice:  as given, else
+	   name:   the part label — \pad.add(0, defName: ...) drives voice \pad, else
+	   ndef:   the proxy's key — k.add(0, ndef: \verb) drives voice \verb, else
+	   \default (left nil; resolveEvent fills it).
+	 name beats ndef: so a part keeps one voice: \fx.add(0, ndef: \verb) then
+	 \fx.add(4, mix: 0) both land on \fx. Note lists are untouched — there a voice
+	 has no lifecycle, so deriving it buys nothing.
+
+	 Then a keyframe without ndef: inherits the ndef: of this list's latest earlier
+	 keyframe on the same voice, so every keyframe of an Ndef voice carries ndef: —
+	 which is what lets shouldPlay recognise its automation (solo ignores it)
+	 without scanning the list per event. Backward only: a voice's first keyframe
+	 must name ndef:.
 	*/
-	prStampNdef { |event|
+	prStampVoice { |event|
 		((event[\type] ? \keyFrame) != \keyFrame).if { ^this };
-		event[\ndef].notNil.if {
-			event[\voice] ?? { event[\voice] = EventList.ndefVoiceKey(event[\ndef]) }
-		} {
-			event[\voice].notNil.if {
-				events.reverseDo { |e|
-					((e[\voice] == event[\voice]) and: { e[\ndef].notNil }).if {
-						event[\ndef] = e[\ndef];
-						^this
-					}
-				}
-			} {
-				/* No voice either: \verb.add(4, mix: 0) after \verb.add(0, ndef: \verb)
-				   — Symbol.add stamps name:, so inherit by name, voice included. */
-				event[\name] !? { |n|
-					events.reverseDo { |e|
-						((e[\name] == n) and: { e[\ndef].notNil }).if {
-							event[\ndef]  = e[\ndef];
-							event[\voice] = e[\voice];
-							^this
-						}
-					}
+		event[\voice] ?? {
+			event[\voice] = event[\name] ?? {
+				event[\ndef] !? { |n| EventList.ndefVoiceKey(n) }
+			}
+		};
+		(event[\ndef].isNil and: { event[\voice].notNil }).if {
+			events.reverseDo { |e|
+				((e[\voice] == event[\voice]) and: { e[\ndef].notNil }).if {
+					event[\ndef] = e[\ndef];
+					^this
 				}
 			}
 		}

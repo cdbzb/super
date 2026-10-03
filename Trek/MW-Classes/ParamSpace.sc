@@ -128,7 +128,7 @@ ParamSpace {
 	//   paramSpace — optional override; if given, used instead of the auto-built
 	//     one (or with a MicroKeys-typed mkOrDefName).
 	asEventList { |name mkOrDefName paramSpace|
-		var el = EventList(name);
+		var el = EventList(name).clear;
 		var mk, psEvent, tm, player, srcName;
 		case
 			{ mkOrDefName.isKindOf(MicroKeys) } {

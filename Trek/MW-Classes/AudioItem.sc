@@ -1285,7 +1285,8 @@ Take : AudioItem {
 	setRoundTripLatency { |rt|
 		^AudioItem.repinRoundTrip(this.name, num, rt)
 	}
-	playbuf {| amp out rate startPos dur |
+	playbuf {| amp out rate startPos dur func |
+        func = func ? I.d;
 		^ 
 			PlayBuf.ar(
 				buffer.numChannels max: 1,
@@ -1296,21 +1297,22 @@ Take : AudioItem {
 			)
 			* (amp ? 1)
             * EnvGen.cutoff(dur ? 1000, 0.0)
+            => func(_)
 			=> Out.ar(out ? 0, _);
 		
 	}
-	play { |amp out rate, startPos, latency, lag, dur|
+	play { |amp out rate startPos latency lag dur func|
 		// take.notNil.if { buffer = buffers[name][playTake] };
 
 		fork{
 			// get time to sync Server for buffer info
 			var syncTime = SystemClock.seconds;
-			buffer.updateInfo;Server.default.sync;
+			buffer.updateInfo; Server.default.sync;
 
 			Server.default.makeBundle(
 				(latency ? 0.2) + (lag ? 0) - (SystemClock.seconds - syncTime),
 				{
-					{this.playbuf(amp, out, rate, startPos, dur )}.play
+					{this.playbuf(amp, out, rate, startPos, dur, func )}.play
 
 				}
 			)

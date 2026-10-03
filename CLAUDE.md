@@ -6,14 +6,13 @@ This is the root of Michael's SuperCollider work. Yoeminrak (Korean shaman song 
 - Online docs: https://docs.supercollider.online
 - Local class library: inside the SuperCollider.app bundle (`/Applications/SuperCollider.app/Contents/Resources/SCClassLibrary/`)
 - sclang config (determines loaded paths): `/Users/michael/Library/Application Support/SuperCollider/sclang_conf.yaml`
-- Project-level sclang config also at: `/Users/michael/tank/super/sclang_conf.yaml`
 
 ## Class File Locations
 
 ### Yoeminrak music system
 - Main class: `Yoeminrak/Yoeminrak.sc`
 - Event types: `Yoeminrak/eventTypes/`
-- Songs: `Yoeminrak/songs/` — the source of the tangled file in here is `~/home/org_roam_files/yoeminrak-tangleDoc-12-25.org`; edit the org file, not the tangled `.sc`.
+- Songs: `Yoeminrak/songs/` — the source of the tangled file in here is `~/home/org_roam_files/yoeminrak-tangleDoc-12-25.org`; edit the org file, not the tangled `.scd`.
 - Ornaments: `Yoeminrak/ornaments/`
 
 ### MW extension classes (`Trek/MW-Classes/`)
@@ -24,8 +23,6 @@ This is the root of Michael's SuperCollider work. Yoeminrak (Korean shaman song 
 - `plusPseq.sc` — Pseq `.at` extension
 - `plusTempoClock.sc` — TempoClock extensions
 - `MicroKeys.sc` — MicroKeys class for MIDI
-
-Also check `Trek/MW-classes/` (lowercase c) — duplicate location for some files.
 
 ### Active Quarks (from sclang_conf.yaml)
 All in `/Users/michael/Library/Application Support/SuperCollider/downloaded-quarks/` unless noted:

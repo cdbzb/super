@@ -76,13 +76,19 @@ check.(k.events[2][\ndef].isNil, "other voices are not stamped");
 k.add(2, ndef: p, amp: 0.3);
 check.(k.events[3][\voice] == \zzzVsNdef, "a proxy object keys by its Ndef key");
 
-// Symbol.add: name-stamped, voiceless keyframes inherit ndef: and voice by name
+// Symbol.add: name is the voice (beats ndef:'s key), so later adds by name inherit ndef:
 EventList.current_(EventList.kf(\zzzVsNdefSym, VoiceSpace.new).clear);
 \zzzFx.add(0, ndef: \zzzVsNdef, amp: 0.1);
 \zzzFx.add(4, amp: 0.4);
+check.(EventList.current.events[0][\voice] == \zzzFx, "name beats the ndef: key as voice");
 check.(EventList.current.events[1][\ndef] == \zzzVsNdef
-	and: { EventList.current.events[1][\voice] == \zzzVsNdef },
-	"\\sym.add(4, ...) inherits ndef: and voice from \\sym.add(0, ndef: ...)");
+	and: { EventList.current.events[1][\voice] == \zzzFx },
+	"\\sym.add(4, ...) lands on the same voice and inherits ndef:");
+\zzzPad.add(0, defName: \default, freq: 220);
+check.(EventList.current.events.last[\voice] == \zzzPad, "\\sym.add on a keyFrame list: voice = name");
+check.(EventList.current.events.last[\ndef].isNil, "a plain synth voice is not stamped with ndef:");
+EventList.current.add(0, newType: \note, freq: 440, name: \zzzNote);
+check.(EventList.current.events.last[\voice].isNil, "non-keyframe events get no voice from name");
 
 // solo ignores Ndef automation; mute skips it
 k.solo_([\pad]);

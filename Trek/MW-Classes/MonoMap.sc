@@ -596,7 +596,11 @@ AnchorMap : MonoMap {
         ^(from == 0).if {
             this.slices([to])[0]
         } {
-            this.slices([from, to])[1]
+            to.isNil.if { 
+                this.slices([from])[1]
+            } {
+                this.slices([from, to])[1]
+            }
         }
     }
 

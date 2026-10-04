@@ -2073,6 +2073,9 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		#beats, choiceFunc = this.prSelectionArgs(beats, choiceFunc);
 		// player-level beat scale: each anchor gap counts as beatScale ideal beats
 		// (same as MIDIItemTempoMap.scaleBeats, folded in before construction).
+		// No selection and no beats => no tempo map: answer nil (callers treat it as
+		// "unwarped"). Multiplying nil threw '*' not understood, which asEventList hid.
+		beats ?? { ^nil };
 		^MIDIItemTempoMap(this, choiceFunc, beats * (beatScale ? 1))
 	}
 	tempoMap {|beats choiceFunc| ^this.tempomap(beats, choiceFunc) }

@@ -532,6 +532,32 @@ AnchorMap : MonoMap {
 		^AnchorMap(xs, newYs, fromFrame, toFrame, extendBelow, extendAbove)
 	}
 
+	// The high-pass twin of quantizeWindow: remove DRIFT (tempo movement slower than
+	// `window` input units, default a quarter of the extent) and keep the JITTER
+	// riding on it. quantizeWindow's local mean slope is the drift estimate; each
+	// span is rescaled by flat-slope / drift-slope, so its ratio to the local trend
+	// is what survives. Endpoints and total output extent stay fixed. amount blends
+	// from unchanged (0) to fully de-drifted (1). Limits: a window wider than the
+	// domain leaves the map unchanged (all of it counts as constant tempo), and one
+	// narrower than a span flattens it completely (nothing is slower than the window
+	// but nothing is jitter either), i.e. quantize(1). O(n^2).
+	detrend { |amount = 1, window|
+		var slow, inW, o, s, g, newW, newYs;
+		(amount == 0).if {
+			^AnchorMap(xs, ys, fromFrame, toFrame, extendBelow, extendAbove)
+		};
+		slow = this.quantizeWindow(1, window);
+		inW = xs.differentiate.drop(1);
+		o = ys.differentiate.drop(1);
+		s = slow.ys.differentiate.drop(1);
+		g = inW * ((ys.last - ys.first) / (xs.last - xs.first));
+		newW = o.collect { |ow, i| (ow * (1 - amount)) + ((ow * g[i] / s[i]) * amount) };
+		newW = newW * ((ys.last - ys.first) / newW.sum);
+		newYs = ([ys.first] ++ newW).integrate;
+		newYs[newYs.size - 1] = ys.last;
+		^AnchorMap(xs, newYs, fromFrame, toFrame, extendBelow, extendAbove)
+	}
+
 	// Materialize high-end \carry extrapolation as an anchor without changing the
 	// map's values. Low-end growth would move the origin and is deliberately absent;
 	// \error policy refuses extension.

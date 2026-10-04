@@ -15,7 +15,7 @@ var aff = AffineMap(2, 1, secF, listF);
 var wallF = MapFrame(\sec, \wall);
 var c, p, g, spans, b, ch, n2;
 var ms, ms2, cellA, cellB, sw, gr, sn, gsn, dr, cat;
-var m5, cv0, cv1, cv05, q0, q1, qw, qwd, jit, tm, varOf, widths;
+var m5, cv0, cv1, cv05, q0, q1, qw, qwd, jit, tm, varOf, widths, drifty, dd, jr, jdd;
 var fm, fmT, fmS, mkNote, fxNotes, fxPlayer, tk1, tk2, mit, mitM, mitA, mitC;
 var el, el2, elM, elFrozen, elFlat;
 var sl, sp, mOff, tsId, qs, st, pt, ssl, stm, msq, mcells;
@@ -379,6 +379,28 @@ assertClose.(qwd.ys.last - qwd.ys.first, jit.ys.last - jit.ys.first,
 	"quantizeWindow at the default window preserves the extent", 1e-12);
 assertArr.(widths.(jit.quantizeWindow(1, 1000)), widths.(jit.quantize(1)),
 	"a window wider than the domain reduces to the global quantize(1)", 1e-12);
+
+// ---- detrend: drop drift, keep jitter ----
+// tempo ramps 0.4 -> 0.8 s/beat (drift) under a +-10% alternating wobble (jitter)
+drifty = AnchorMap.fromSpans(1 ! 16,
+	16.collect { |i| (0.4 + (i * 0.4 / 15)) * ((i.even).if { 1.1 } { 0.9 }) },
+	fromFrame: beatF, toFrame: secF);
+jr = { |m| var w = widths.(m); w[w.size - 4..].mean / w[..3].mean };   // late/early width: 1 = no drift
+dd = drifty.detrend(1, 4);
+assert.(drifty.detrend(0).ys == drifty.ys, "detrend(0) is the identity, bit-exact");
+assertClose.(dd.ys.last - dd.ys.first, drifty.ys.last - drifty.ys.first,
+	"detrend preserves the total output extent", 1e-12);
+assert.(widths.(dd).every { |v| v > 0 }, "detrend stays strictly monotone");
+assert.(dd.fromFrame == beatF and: { dd.toFrame == secF }, "detrend carries the frames");
+assert.((jr.(dd) - 1).abs < ((jr.(drifty) - 1).abs * 0.5),
+	"detrend removes drift: late/early width % -> %".format(jr.(drifty).round(1e-3), jr.(dd).round(1e-3)));
+jdd = { |m| var w = widths.(m); (w[1..] / w[..w.size - 2]).collect(_.log).abs.mean };   // neighbour wobble
+assert.(jdd.(dd) > (jdd.(drifty) * 0.5),
+	"detrend keeps jitter: neighbour wobble % -> %".format(jdd.(drifty).round(1e-3), jdd.(dd).round(1e-3)));
+assertArr.(widths.(drifty.detrend(1, 1000)), widths.(drifty),
+	"a window wider than the domain leaves the map unchanged", 1e-12);
+assertArr.(widths.(drifty.detrend(1, 0.001)), widths.(drifty.quantize(1)),
+	"a window narrower than a span flattens fully (== quantize(1))", 1e-12);
 
 // ============ local editing: slices / span transforms (§12 step 1) ============
 // m5: xs [0,1,2,3,4,5], ys [0,1,3,3.5,5,6]

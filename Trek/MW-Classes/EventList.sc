@@ -1480,6 +1480,11 @@ EventList {
 	// shape stays.
 	quantizeWindow { |amount = 1, window| ^this.prMapEdit { |m| m.quantizeWindow(amount, window) } }
 
+	// Remove drift, keep jitter: the high-pass twin of quantizeWindow. Tempo movement
+	// slower than `window` BEATS (default a quarter of the extent) is flattened; the
+	// wobble on top of it stays. See AnchorMap.detrend.
+	detrend { |amount = 1, window| ^this.prMapEdit { |m| m.detrend(amount, window) } }
+
 
 
 	// Run the whole list `k` times faster (k < 1 slower), beat numbering and rubato

@@ -1527,6 +1527,54 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			e
 		}
 	}
+	// Edit the nth NOTE (numbered as at/this[n] does: noteOns only) and return a new
+	// player; the receiver is untouched. Changes come as key/value, an Event, or
+	// keywords:
+	//     m.setNote(52, \midinote, 60)
+	//     m.setNote([52, 34], (midinote: 62, amp: 0.4))
+	//     m.setNote([76, 54], midinote: [33, 34])       // parallel: 76 -> 33, 54 -> 34
+	// When index is an Array and a value is an Array of the SAME size, they pair off
+	// one-to-one; any other value goes to every listed note. (So a key that must take
+	// an array value on several notes needs it wrapped, [[a, b]] ! n.) A \midinote
+	// change also retargets the note's paired noteOff, which is matched by pitch (the
+	// first noteOff of the old pitch at or after the noteOn, the same rule removeNote
+	// uses) — otherwise the release no longer finds its note and it hangs.
+	// filter(key: \midinote) edits the noteOn only.
+	setNote { |index ...args, kwargs|
+		var changes = (args[0].isKindOf(Event)).if { args[0] } {
+			args[0].notNil.if { ().put(args[0], args[1]) } { () }
+		};
+		var out = midiEvents.copy;
+		var idx = index.asArray;
+		var onIdx = midiEvents.size.collect { |i| i }.select { |i| midiEvents[i].midicmd == \noteOn };
+		kwargs.notNil.if { changes = changes ++ kwargs.asEvent };
+		idx.do { |n, k|
+			var i = onIdx[n], on, offI, oldPitch, mine = ();
+			i.isNil.if {
+				Error("MIDIItemPlayer.setNote: no note % (this player has % notes)"
+					.format(n, onIdx.size)).throw
+			};
+			changes.keysValuesDo { |key, v|
+				mine[key] = (index.isArray and: { v.isArray } and: { v.size == idx.size }).if { v[k] } { v }
+			};
+			on = out[i];
+			oldPitch = on.midinote;
+			out[i] = on.copy.putAll(mine);
+			mine.includesKey(\midinote).if {
+				offI = midiEvents.size.collect { |j| j }.select { |j| j > i }.detect { |j|
+					out[j].midicmd == \noteOff and: { out[j].midinote == oldPitch }
+						and: { out[j].timestamp >= on.timestamp }
+				};
+				offI.isNil.if {
+					"MIDIItemPlayer.setNote: note % has no noteOff at pitch % — only the noteOn changed"
+						.format(n, oldPitch).warn
+				}{
+					out[offI] = out[offI].copy.put(\midinote, mine[\midinote])
+				}
+			}
+		};
+		^MIDIItemPlayer(out, this.source).copyBounds(this)
+	}
 	setBounds {|event|
 		start = event.start; end = event.end
 	}

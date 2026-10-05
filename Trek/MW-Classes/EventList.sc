@@ -2418,7 +2418,11 @@ EventList {
 	   when the list was built is gone by the next play and the voice goes silent.
 	   effectChannels: is the Effect's input width (default 1); effectTime: is the
 	   silence (seconds) before it frees itself (default 1 — raise it for reverb or
-	   delay tails, which would otherwise be cut when the dry signal stops). A mono run starts
+	   delay tails, which would otherwise be cut when the dry signal stops).
+	   Inside .p / .pm arrays write it as a Ref — effect: `{ |i| ... } — since those
+	   call a Function value once per event (building UGens in the language) and
+	   unwrap a Ref to the Function itself. Plain Pbind and .add pass it through.
+	   A mono run starts
 	   one Effect on its \on and keeps every \set on that bus (prEmitMono).
 	   Answers the event, ready to play. */
 	*prStartEffect { |event|

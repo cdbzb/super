@@ -248,6 +248,8 @@
 					var event = this.prMonoEvent(ev);
 					first.if {
 						var capture, original;
+						EventList.prStartEffect(event);
+						state[\effectOut] = event[\out];
 						event[\type] = \on;
 						capture = { |played|
 							state[\id] = played[\id];
@@ -274,6 +276,11 @@
 					} {
 						event[\type] = \set;
 						event[\id] = state[\id];
+						// stay on the run's Effect bus (\set with args [] resends \out)
+						event.removeAt(\effect);
+						event.removeAt(\effectChannels);
+						event.removeAt(\effectTime);
+						state[\effectOut] !? { |o| event[\out] = o };
 						state[\server] !? { |server| event[\server] = server };
 						// An inherited default args list updates only freq/amp/pan/trig;
 						// [] tells \set to derive every control from the SynthDesc,

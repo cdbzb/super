@@ -51,7 +51,9 @@ EventList {
 			// a Function here is a source-map function, evaluated by the resolver
 			// (AudioItem.prResolveSourceMap / prEmitMi2Follow) with the take's
 			// sources in scope — never as a plain lazy value
-			\sourceTempoMap, \followTrack
+			\sourceTempoMap, \followTrack,
+			// a UGen graph function ({ |in| ... }) the play path wraps in an Effect
+			\effect
 		];
 		envExclude = IdentitySet[\nextWhen, \cursor, \section];
 		Class.initClassTree(Event);
@@ -1267,7 +1269,7 @@ EventList {
 				} {
 					SystemClock.sched(
 						this.prPreviewDelay(previewOffset, tempoEnv),
-						{ resolved.play; nil }
+						{ EventList.prStartEffect(resolved.copy).play; nil }
 					)
 				}
 			}
@@ -2402,11 +2404,29 @@ EventList {
 				{ stamped.copy.play }
 			} {
 				var played = this.prWallSustain(ev, place);
-				{ played.copy.play }
+				{ EventList.prStartEffect(played.copy).play }
 			};
 			out.add((time: place.(ev[\when] ? 0), send: send, label: (ev[\type] ? \event)))
 		};
 		^out
+	}
+
+	/* effect: { |in| ... } starts an Effect when the event SOUNDS and points the
+	   event's \out at the Effect's input bus; the Effect writes to the event's
+	   original \out (default 0). Starting it at send time, not add time, is the
+	   point: Effect frees itself (and its bus) after 1 s of silence, so one made
+	   when the list was built is gone by the next play and the voice goes silent.
+	   effectChannels: is the Effect's input width (default 1); effectTime: is the
+	   silence (seconds) before it frees itself (default 1 — raise it for reverb or
+	   delay tails, which would otherwise be cut when the dry signal stops). A mono run starts
+	   one Effect on its \on and keeps every \set on that bus (prEmitMono).
+	   Answers the event, ready to play. */
+	*prStartEffect { |event|
+		var fx = event.removeAt(\effect) ?? { ^event };
+		var channels = event.removeAt(\effectChannels) ? 1;
+		var time = event.removeAt(\effectTime) ? 1;
+		event[\out] = Effect(fx.dereference, event[\out] ? 0, channels, time: time).bus.index;
+		^event
 	}
 
 	/* fire plays events on SystemClock, where the note-off that \note and \mk

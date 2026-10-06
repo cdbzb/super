@@ -295,7 +295,7 @@ MicroKeys {
 			sounding = Set[];
 		};
 		
-		heldNotes = Set[];
+		heldNotes = IdentitySet[];
 		polyFunc = {|k v| k.set(\poly, v)};
 		modState = (bend: 0, poly: 0, pressure: 0, expr: 0);
 
@@ -408,29 +408,30 @@ MicroKeys {
 		// .collect({|func| {|e| e.notNil.if{ func.(e) } } })
 		.inject(I.d, {|i j| i <> j  }) //this should return an event with and raw synth or Synths
 	}
+	// heldNotes holds the VOICES whose noteOff arrived under the pedal (taken
+	// out of keys, so later noteOffs on that pitch can't release a stale one);
+	// pedal-up releases them. Half-pedal convention: >= 64 is down.
 	setDamper {|num| 
-		(num == 127).if{
-			damperDown = true.postln 
-		}{ 
-			damperDown = false.postln; 
-			heldNotes.do(_.release); 
-			heldNotes = Set[] 
+		damperDown = num >= 64;
+		damperDown.not.if {
+			heldNotes.do { |voice| modMap.notNil.if { voice[\synth].release }{ voice.release } };
+			heldNotes = IdentitySet[] 
 		} 
 	}
 	doNoteOff {|midinote latency=0 channel=1| 
 		name.debug("noteOff");
 		case 
 		{ species == \poly } {
-			damperDown.not.if {
-				Server.default.makeBundle(
-					latency + 0.02, //TODO this should check to see if the note is sounding instead of 0.02 fudge factor
-					{ try {
-						var index = (channel.isNil or: (channel == 0)).if {midinote}{channel};
-						var voice = keys[index].removeAt(0);
+			Server.default.makeBundle(
+				latency + 0.02, //TODO this should check to see if the note is sounding instead of 0.02 fudge factor
+				{ try {
+					var index = (channel.isNil or: (channel == 0)).if {midinote}{channel};
+					var voice = keys[index].removeAt(0);
+					damperDown.if { voice !? { heldNotes.add(voice) } } {
 						modMap.notNil.if { voice[\synth].release }{ voice.release }
-					} }
-				)
-			} { heldNotes.add(keys[midinote]) }
+					}
+				} }
+			)
 		}
 		{ species == \mono } {
 			Server.default.makeBundle(latency + 0.02, {
@@ -689,7 +690,7 @@ monitor { |offLatency = 0.02|
 			currentChannel = nil;
 			monosynth = nil;
 		};
-		heldNotes = Set[];
+		heldNotes = IdentitySet[];
 		damperDown = false;
 		modState = (bend: 0, poly: 0, pressure: 0, expr: 0);
 	}

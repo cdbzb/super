@@ -927,8 +927,8 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	// event stream — paired \mk/\mkOff notes plus \setDamper for CC64 — so
 	// makeNotesFromMidiEvents/gui/play all behave exactly as with a recorded
 	// item. name defaults to the file's basename (sans extension).
-	*fromMIDIFile { |path name|
-		var f, events;
+	*fromMIDIFile { |path name mk|
+		var f, events, item;
 		path = path.standardizePath;
 		File.exists(path).not.if { ^"MIDIItem.fromMIDIFile: no file at %".format(path).warn };
 		name = (name ?? { PathName(path).fileNameWithoutExtension }).asSymbol;
@@ -953,9 +953,14 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 				channel: ev[3], timestamp: ev[1], control: ev[5]));
 		};
 		events = events.sort { |a, b| a.timestamp < b.timestamp };
+		// voice the take the way record does: given mk, else MicroKeys.current,
+		// stored as recordedMk so play/gui have a MicroKeys to drive.
+		mk = mk ? MicroKeys.current;
+		item = MIDIItem(name, false).midiEvents_(events);
+		item.recordedMk = mk.isKindOf(MicroKeys).if { mk.asEvent }{ mk };
 		// seal as a take, same as a recording's stop, so take(n)/insertTake/
-		// addItem work. No recordedMk or epochs: addItem needs at: explicitly.
-		^MIDIItem(name, false).midiEvents_(events).stop
+		// addItem work. No epochs: addItem needs at: explicitly.
+		^item.stop
 	}
 	*record {|name="item"|
 		var stamp = name ++ "_" ++ Date.getDate.stamp;
@@ -1639,13 +1644,21 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			}
 		};
 		// (mk.size > 1).if { 'play first'.postln; mk.do(this.play() };
+		// \mk events need a voice; without one every note throws doNoteOn on nil.
+		// Happens for imports (fromMIDIFile) made while no MicroKeys existed.
+		(mk.isNil and: { midiEvents.any { |e| e.type == \mk } }).if {
+			^"MIDIItemPlayer.play: no voice for % — pass mk: (e.g. play(MicroKeys(\\default))) or set the item's recordedMk"
+				.format(source !? _.name).warn
+		};
 		mk.notNil.if { playing.add(mk) };
 
 		(post.size > 0).if{
 			"# note amp sus".postln 
 		};
-		mk.storeCCValues;
-		mk.modState = (bend: 0, poly: 0, pressure: 0, expr: 0);
+		mk.notNil.if {
+			mk.storeCCValues;
+			mk.modState = (bend: 0, poly: 0, pressure: 0, expr: 0);
+		};
 		midiEvents.do{|e x|
 			var from = start ? 0;
 			var to = end ? midiEvents.last.timestamp;

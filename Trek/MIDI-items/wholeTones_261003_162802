@@ -22,7 +22,7 @@ o = [
 	Array.prNew(32),  Event.prNew,  Array.prNew(32),  Event.prNew,  
 	Array.prNew(32),  Event.prNew,  Array.prNew(32),  Event.prNew,  
 	Array.prNew(32),  "wholeTones_261003_162802",  Event.prNew,  Array.prNew(4),  
-	Array.prNew(1),  Event.prNew,  Array.prNew(8),  List.prNew,  
+	Array.prNew(1),  Event.prNew,  Array.prNew(16),  List.prNew,  
 	Array.prNew(10),  List.prNew,  Array.prNew(463),  Event.prNew,  
 	Array.prNew(32),  Event.prNew,  Array.prNew(32),  Event.prNew,  
 	Array.prNew(32),  Event.prNew,  Array.prNew(32),  Event.prNew,  
@@ -985,7 +985,14 @@ o = [
 	Array.prNew(32),  Event.prNew,  Array.prNew(32),  Event.prNew,  
 	Array.prNew(32),  Event.prNew,  Array.prNew(32),  Event.prNew,  
 	Array.prNew(32),  Array.prNew(10),  List.prNew,  Array.prNew(10),  
-	List.prNew,  Array.prNew(10)
+	List.prNew,  Array.prNew(10),  Dictionary.prNew,  Array.prNew(32),  
+	List.prNew,  Array.prNew(1),  Event.prNew,  Array.prNew(64),  
+	Array.prNew(7),  Array.prNew(2),  Array.prNew,  Array.prNew(2),  
+	Array.prNew(8),  Array.prNew,  Array.prNew,  Array.prNew(8),  
+	Event.prNew,  Array.prNew(12),  Event.prNew,  Array.prNew(12),  
+	Event.prNew,  Array.prNew(12),  Event.prNew,  Array.prNew(12),  
+	Event.prNew,  Array.prNew(12),  Event.prNew,  Array.prNew(12),  
+	Event.prNew,  Array.prNew(12),  Event.prNew,  Array.prNew(12)
 ];
 p = [
 	// MIDIItem
@@ -995,7 +1002,7 @@ p = [
 		takes: o[91],  recordedMks: o[3937],  
 		recordedMk: 'harp',  recordEpochs: o[3938],  
 		recordEpoch: 268.446342208,  recordPlayEpochs: o[3940],  
-		recordPlayEpoch: nil,  beatSelections: nil ],  
+		recordPlayEpoch: nil,  beatSelections: o[3942] ],  
 	// List
 	1, [ array: o[2] ],  
 	// Array
@@ -1552,12 +1559,14 @@ p = [
 	// Array
 	88, [ o[89] ],  
 	// Event
-	89, [ array: o[90],  size: 2,  
+	89, [ array: o[90],  size: 3,  
 		proto: nil,  parent: nil,  
 		know: true ],  
 	// Array
-	90, [ nil,  nil,  'type',  'rest',  
-		'timestamp',  0.0,  nil,  nil ],  
+	90, [ nil,  nil,  'timestamp',  0.0,  
+		nil,  nil,  'dur',  0.62998500000002,  
+		nil,  nil,  'type',  'rest',  
+		nil,  nil,  nil,  nil ],  
 	// List
 	91, [ array: o[92] ],  
 	// Array
@@ -26957,6 +26966,119 @@ p = [
 	// Array
 	3941, [ nil,  nil,  nil,  nil,  
 		nil,  nil,  nil,  nil,  
-		nil,  nil ]
+		nil,  nil ],  
+	// Dictionary
+	3942, [ array: o[3943],  size: 1 ],  
+	// Array
+	3943, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  9,  o[3944],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil ],  
+	// List
+	3944, [ array: o[3945] ],  
+	// Array
+	3945, [ o[3946] ],  
+	// Event
+	3946, [ array: o[3947],  size: 12,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	3947, [ nil,  nil,  'beats',  o[3948],  
+		'contentStart',  0.62998500000002,  'manual',  o[3949],  
+		'freePins',  o[3950],  'anchor',  2,  
+		nil,  nil,  'manualTimes',  o[3951],  
+		nil,  nil,  nil,  nil,  
+		'indices',  o[3952],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'pinTimes',  o[3953],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  'periodPrior',  0.54529779199998,  
+		nil,  nil,  nil,  nil,  
+		'seedTime',  1.175282792,  nil,  nil,  
+		'pins',  o[3954],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'anchors',  o[3955],  nil,  nil ],  
+	// Array
+	3948, [ 1,  1,  1,  1,  
+		1,  1,  1 ],  
+	// Array
+	3949, [ 0,  2 ],  
+	// Array
+	3951, [ 0.62998500000002,  1.175282792 ],  
+	// Array
+	3952, [ 0,  2,  4,  6,  
+		8,  10,  13,  17 ],  
+	// Array
+	3955, [ o[3956],  o[3958],  o[3960],  o[3962],  
+		o[3964],  o[3966],  o[3968],  o[3970] ],  
+	// Event
+	3956, [ array: o[3957],  size: 3,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	3957, [ 'beat',  0,  'src',  0.62998500000002,  
+		nil,  nil,  'key',  0,  
+		nil,  nil,  nil,  nil ],  
+	// Event
+	3958, [ array: o[3959],  size: 3,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	3959, [ 'beat',  1,  'src',  1.175282792,  
+		nil,  nil,  'key',  1,  
+		nil,  nil,  nil,  nil ],  
+	// Event
+	3960, [ array: o[3961],  size: 3,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	3961, [ 'beat',  2,  'src',  1.727327417,  
+		nil,  nil,  'key',  2,  
+		nil,  nil,  nil,  nil ],  
+	// Event
+	3962, [ array: o[3963],  size: 3,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	3963, [ 'beat',  3,  'src',  2.282634125,  
+		nil,  nil,  'key',  3,  
+		nil,  nil,  nil,  nil ],  
+	// Event
+	3964, [ array: o[3965],  size: 3,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	3965, [ 'beat',  4,  'src',  2.858603542,  
+		nil,  nil,  'key',  4,  
+		nil,  nil,  nil,  nil ],  
+	// Event
+	3966, [ array: o[3967],  size: 3,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	3967, [ 'beat',  5,  'src',  3.4346665,  
+		nil,  nil,  'key',  5,  
+		nil,  nil,  nil,  nil ],  
+	// Event
+	3968, [ array: o[3969],  size: 3,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	3969, [ 'beat',  6,  'src',  4.037392417,  
+		nil,  nil,  'key',  6,  
+		nil,  nil,  nil,  nil ],  
+	// Event
+	3970, [ array: o[3971],  size: 3,  
+		proto: nil,  parent: nil,  
+		know: true ],  
+	// Array
+	3971, [ 'beat',  7,  'src',  4.619205167,  
+		nil,  nil,  'key',  7,  
+		nil,  nil,  nil,  nil ]
 ];
 prUnarchive(o,p);

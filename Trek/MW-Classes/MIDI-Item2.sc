@@ -953,7 +953,9 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 				channel: ev[3], timestamp: ev[1], control: ev[5]));
 		};
 		events = events.sort { |a, b| a.timestamp < b.timestamp };
-		^MIDIItem(name, false).midiEvents_(events)
+		// seal as a take, same as a recording's stop, so take(n)/insertTake/
+		// addItem work. No recordedMk or epochs: addItem needs at: explicitly.
+		^MIDIItem(name, false).midiEvents_(events).stop
 	}
 	*record {|name="item"|
 		var stamp = name ++ "_" ++ Date.getDate.stamp;

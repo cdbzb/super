@@ -960,7 +960,9 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		item.recordedMk = mk.isKindOf(MicroKeys).if { mk.asEvent }{ mk };
 		// seal as a take, same as a recording's stop, so take(n)/insertTake/
 		// addItem work. No epochs: addItem needs at: explicitly.
-		^item.stop
+		// MIDIItem caches by name, so re-importing must not stack duplicate takes.
+		item.takes.isEmpty.if { item.stop };
+		^item
 	}
 	*record {|name="item"|
 		var stamp = name ++ "_" ++ Date.getDate.stamp;

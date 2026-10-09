@@ -34,7 +34,9 @@ SynthDef(\reedyTune,
     => Out.ar(\out.kr(0),_)
 }
 ).add.tag(\yoeminrak);
-SynthDef( \reedyAsr , { |freq = 400 amp = 0.1 attack=0.5 sustain=1 release=9| //	      var numberOfPartials = s.sampleRate/freq/2 => _.floor => _.asInteger;
+SynthDef( \reedyAsr , { |freq = 400 amp = 0.1 attack=0.5 sustain=1 release=9 seed = -1| //	      var numberOfPartials = s.sampleRate/freq/2 => _.floor => _.asInteger;
+	// seed >= 0: use private RNG slot 1 and reseed it, so Rand values repeat per seed. seed < 0: shared RNG, no reseed.
+	var seeding = [RandID.ir(seed >= 0), RandSeed.ir(seed >= 0, seed)];
 	var cents = {|i| i/100 => _.midiratio};
 	var numberOfPartials =120;
 	var nyquist = s.sampleRate.isNil.not.if  {s.sampleRate/2}{22050};

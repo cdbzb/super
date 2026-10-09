@@ -953,16 +953,36 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 				channel: ev[3], timestamp: ev[1], control: ev[5]));
 		};
 		events = events.sort { |a, b| a.timestamp < b.timestamp };
+		item = MIDIItem(name, false);
 		// voice the take the way record does: given mk, else MicroKeys.current,
-		// stored as recordedMk so play/gui have a MicroKeys to drive.
-		mk = mk ? MicroKeys.current;
-		item = MIDIItem(name, false).midiEvents_(events);
-		item.recordedMk = mk.isKindOf(MicroKeys).if { mk.asEvent }{ mk };
+		// stored as recordedMk so play/gui have a MicroKeys to drive. A re-import
+		// keeps the existing voice unless mk is passed.
+		(mk.notNil or: { item.recordedMk.isNil }).if {
+			mk = mk ? MicroKeys.current;
+			item.recordedMk = mk.isKindOf(MicroKeys).if { mk.asEvent }{ mk };
+		};
+		// idempotent: re-evaluating the import line must not stack duplicate takes
+		// (take numbers are what selections and insertTake lines point at).
+		item.takes.do { |take, i|
+			this.prSameEvents(take, events).if {
+				"MIDIItem.fromMIDIFile: % already has this file as take %".format(name, i).postln;
+				^item
+			}
+		};
 		// seal as a take, same as a recording's stop, so take(n)/insertTake/
 		// addItem work. No epochs: addItem needs at: explicitly.
-		// MIDIItem caches by name, so re-importing must not stack duplicate takes.
-		item.takes.isEmpty.if { item.stop };
-		^item
+		^item.midiEvents_(events).stop
+	}
+	// event-stream equality for fromMIDIFile's duplicate check. Timestamps compare
+	// with a tolerance: archive round-trips can perturb the last float bits.
+	*prSameEvents { |a b|
+		^(a.size == b.size) and: {
+			a.every { |e, i|
+				var o = b[i];
+				[\midicmd, \midinote, \channel, \control].every { |k| e[k] == o[k] }
+					and: { (e.timestamp - o.timestamp).abs < 1e-6 }
+			}
+		}
 	}
 	*record {|name="item"|
 		var stamp = name ++ "_" ++ Date.getDate.stamp;

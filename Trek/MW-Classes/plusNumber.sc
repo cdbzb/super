@@ -28,3 +28,16 @@
 /*
 301f:20
 */
+
++ Magnitude {
+	/* interval test; bounds: '[]' '[)' '(]' '()' — default '[)' (half-open, suits time windows) */
+	isBetween { |lo, hi, bounds = '[)'|
+		^switch(bounds,
+			'[)', { (lo <= this) and: { this < hi } },
+			'[]', { (lo <= this) and: { this <= hi } },
+			'(]', { (lo < this) and: { this <= hi } },
+			'()', { (lo < this) and: { this < hi } },
+			{ Error("isBetween: bounds must be one of '[]' '[)' '(]' '()', got %".format(bounds.cs)).throw }
+		)
+	}
+}

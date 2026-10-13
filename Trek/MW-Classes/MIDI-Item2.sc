@@ -2074,41 +2074,76 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	pickNotes { |list|
 		^MIDIItemPlayer( this.notes[list], source: this).copyBounds(this)
 	}
-	filter {|func, key, choice, onlyNotes=false, midicmd|
-		var choiceFunc, out, array, notes, evts;
-		// midicmd builds a choice function
-		midicmd.notNil.if {
-			choice.notNil.if { "filter: midicmd overrides choice".warn };
-			choiceFunc = case
+	/*
+	 filter selectors — midicmd, choice, from (secs), fromBeat, fromNote (note
+	 index) — are ANDed into one predicate. Windows take [lo, hi] or a bare lo
+	 (open-ended), named after the slicing methods but they SELECT rather than
+	 slice: func touches matching events, the rest pass through, no rebasing.
+	 bounds ('[)' '[]' '(]' '()') applies to every window. A window with no
+	 midicmd/choice matches noteOns only, so a timing edit can't move a noteOff
+	 that sits inside the window while its noteOn sits outside.
+	 Modes: key (func gets the matching events' values of key, written back),
+	 onlyNotes (func gets the matching notes, spliced back), otherwise func runs
+	 per matching event; with no selector at all func gets the whole midiEvents.
+	*/
+	filter {|func, key, choice, onlyNotes=false, midicmd, from, fromBeat, fromNote, bounds='[)'|
+		var tests = List.new, window, choiceFunc, indicesFor, idx, out, vals, notes, noteOf, count = 0, lo, hi;
+		window = {|w| w.isSequenceableCollection.if { [w[0], w[1] ? inf] } { [w, inf] } };
+		midicmd !? {
+			tests.add(case
 				{ midicmd.class == Symbol } {{ |e| e.midicmd == midicmd }}
-				{ midicmd.class == Integer } {{ |e| e.midicmd == \control and: (e.ctlNum == midicmd) }};
-		} {
-			choiceFunc = choice;
+				{ midicmd.class == Integer } {{ |e| e.midicmd == \control and: { e.ctlNum == midicmd } }})
 		};
-		// key: extract one param from notes, apply func, write back
+		choice !? { tests.add(choice) };
+		((from ? fromBeat ? fromNote).notNil and: { midicmd.isNil } and: { choice.isNil }).if {
+			tests.add({ |e| e.midicmd == \noteOn })
+		};
+		from !? {
+			#lo, hi = window.(from);
+			tests.add({ |e| e.timestamp.isBetween(lo, hi, bounds) })
+		};
+		fromBeat !? {
+			var w = window.(fromBeat);
+			var t0 = this.timeAtBeat(w[0]);
+			var t1 = (w[1] == inf).if { inf } { this.timeAtBeat(w[1]) };
+			tests.add({ |e| e.timestamp.isBetween(t0, t1, bounds) })
+		};
+		fromNote !? {
+			var w = window.(fromNote);
+			noteOf = midiEvents.collect {|e| (e.midicmd == \noteOn).if { count = count + 1; count - 1 } };
+			tests.add({ |e, x| noteOf[x] !? { |n| n.isBetween(w[0], w[1], bounds) } ? false })
+		};
+		(tests.size > 0).if {
+			choiceFunc = { |e, x| tests.every { |t| t.(e, x) } }
+		};
+		// indices of midiEvents a key/onlyNotes edit applies to
+		indicesFor = { |noteOnsOnly|
+			(0..midiEvents.size - 1).select {|x|
+				var e = midiEvents[x];
+				(noteOnsOnly.not or: { e.midicmd == \noteOn })
+					and: { choiceFunc.isNil or: { choiceFunc.(e, x) } }
+			}
+		};
+		// key: func gets the matching events' values of key, results written back
 		key.notNil.if {
-			(choiceFunc.notNil or: midicmd.notNil).if { "filter: key ignores choice/midicmd".warn };
+			onlyNotes.if { "filter: key ignores onlyNotes".warn };
 			out = midiEvents.deepCopy;
-			array = this[key];
-			func.(array).do{|i x| this.notes(out)[x].put(key, i)};
+			idx = indicesFor.(choiceFunc.isNil);
+			vals = func.(idx.collect {|x| out[x][key] });
+			vals.do {|v i| out[idx[i]].put(key, v) };
 			^MIDIItemPlayer(out, this.source).copyBounds(this)
 		};
-		// onlyNotes: func acts on notes array, spliced back in
+		// onlyNotes: func gets the matching notes, spliced back in
 		onlyNotes.if {
-			choiceFunc.notNil.if { "filter: onlyNotes ignores choice/midicmd".warn };
-			notes = func.(this.notes.copy);
-			evts = this.midiEvents.copy;
-			notes.do {|note index|
-				evts.put(this.noteIndices[index], note)
-			};
-			^MIDIItemPlayer(evts, this.source).copyBounds(this)
+			out = midiEvents.deepCopy;
+			idx = indicesFor.(true);
+			notes = func.(idx.collect {|x| out[x] });
+			notes.do {|note i| out.put(idx[i], note) };
+			^MIDIItemPlayer(out, this.source).copyBounds(this)
 		};
-		// choice/midicmd: apply func only where choiceFunc is true
+		// selectors: func runs per matching event
 		choiceFunc.notNil.if {
-			^this.collect(
-				{|e x| choiceFunc.(e, x).if { func.(e, x) } {e}},
-				midiEvents
-			)
+			^this.collect({|e x| choiceFunc.(e, x).if { func.(e, x) } {e}})
 		};
 		// base case: func receives full midiEvents array
 		^MIDIItemPlayer(func.(midiEvents), this.source).copyBounds(this)
@@ -2787,6 +2822,7 @@ MIDIItemTempoMap : AbstractMidiEvents { //this is almost the same as TempoMap bu
 		var at = c.notNil.if { { |xx| this.prEnvAtFastC(c, xx) } } { { |xx| anEnv.at(xx) } };
 		var domain = c.notNil.if { c[0].last } { anEnv.times.sum };
 		var eps, rate;
+		x.isSequenceableCollection.if { ^x.collect { |xx| this.prAtExtrapolated(xx, anEnv) } };
 		(domain <= 0).if { ^at.(x) };
 		eps = (domain * 1e-4) max: 1e-9;
 		(x < 0).if {

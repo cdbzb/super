@@ -37,11 +37,13 @@ AudioItem {
 
 		SynthDef(\audioItemTempoFollowRB, {
 			|out=0, bufnum=0, amp=1, rate=1, startPos=0, sustain=1, fade=0.02,
-			 pitchShift=1, formant=1, pan=0|
+			 pitchShift=1, formant=1, pan=0, rateMod=1|
 			var sig, env, safeFade;
 			safeFade = fade.min(sustain * 0.45);
 			sig = RubberBand.ar(1, bufnum,
-				rate: rate,
+				// rate is the slice's tempo-follow rate; rateMod the event's \rate
+				// (a plain number, or a bus-mapped Env/UGen source — see modKeys)
+				rate: rate * rateMod,
 				pitchShift: pitchShift,
 				trig: 1,
 				startPos: startPos * BufSampleRate.kr(bufnum),
@@ -178,7 +180,7 @@ AudioItem {
                                 PlayBuf.ar(
                                     ~numChannels ? 1,
                                     buffer.bufnum,
-                                    rate: ~rate ? 1,
+                                    rate: AudioItem.modIn(~rate),
                                     startPos: ((~startPos ? 0) + t0) * Server.default.sampleRate
                                 )
                                 * (~amp ? 1)
@@ -466,6 +468,21 @@ AudioItem {
 		};
 		^m
 	}
+	/* Playback keys whose value may be a UGen source: a number, an Env (runs from
+	   the synth's start, i.e. from where playback starts) or a UGen graph Function,
+	   e.g. pitchShift: { SinOsc.kr(5).range(0.98, 1.02) }. On \slices one synth
+	   renders them to control buses for the whole event; elsewhere they are inlined.
+	   EventList keeps Function values of these keys unresolved on \audioItem events
+	   (EventList.prKeepsFunction) instead of treating them as lazy values. */
+	*modKeys { ^#[\rate, \pitchShift, \formant] }
+	*isMod { |v| ^v.isKindOf(Env) or: { v.isKindOf(Function) } }
+	// inside a synth graph: the UGen for a mod value, else the value (or default)
+	*modIn { |v, default = 1|
+		^case
+			{ v.isKindOf(Env) } { v.kr }
+			{ v.isKindOf(Function) } { v.value }
+			{ v ? default }
+	}
 	*timingKeys { ^#[\sourceTempoMap, \sourceBeatDur, \marksVersion, \fromBeat, \toBeat, \align, \marks, \notes, \rateLead] }
 
 	*prResolveSourceMap { |ev, itemName, takeNum|
@@ -694,6 +711,7 @@ AudioItem {
 		var buffer, sf, sourceDur, srcOffset, b0, startSec, endSec;
 		var segBeats, fade, fromBeat, fromSec, actions, beat, lastBeat;
 		var wallFrom, srcCarry, wallCarry, align, baseWallAt;
+		var mods, modState, modSpan = 0, slot, modDef;
 
 		File.exists(path).not.if {
 			"AudioItem tempoFollow: no file at %".format(path).warn;
@@ -765,6 +783,28 @@ AudioItem {
 		segBeats = ev[\tempoFollowSegBeats] ? 0.25;
 		fade = ev[\tempoFollowFade] ? 0.03;
 		actions = List[];
+		/* Env / UGen-function mod keys (modKeys): each slice is its own synth, so an
+		   inline source would restart every slice. Instead ONE synth renders them onto
+		   control buses for the whole span, started by the first slice's send (so it
+		   exists only if the list actually plays) and each slice reads them mapped.
+		   modState is [bus, modSynth] once started. The def is added HERE, at prepare
+		   time: a Function.play inside the bundle would defer its s_new until the def
+		   loads, so the slices' Synth.after would find no node. The span is known only
+		   after the loop, hence modSpan read through the closure. */
+		mods = this.modKeys.select { |k| this.isMod(ev[k]) };
+		modState = Ref();
+		mods.notEmpty.if {
+			modDef = ("audioItemMod" ++ mods.collect { |k| ev[k].hash }.hash.abs).asSymbol;
+			SynthDef(modDef, { |bus = 0, span = 1|
+				Line.kr(0, 0, span, doneAction: 2);
+				Out.kr(bus, mods.collect { |k| AudioItem.modIn(ev[k]) })
+			}).add
+		};
+		// the slice-synth control for a mod key, and its plain value or bus mapping
+		slot = { |k, default|
+			var i = mods.indexOf(k);
+			i.isNil.if { ev[k] ? default } { ("c" ++ (modState.value[0].index + i)).asSymbol }
+		};
 		beat = fromBeat;
 		// With \dur the end beat is exact; otherwise iterate until the source position
 		// reaches the file end (avoids inverting the tempoMap to find the last beat).
@@ -790,20 +830,39 @@ AudioItem {
 			var wallDur = (wallB - wallA) * ((sourceB - sourceA) / (sourceBFull - sourceA).max(1e-9));
 			var delay = wallA - wallFrom;
 			(wallDur > 0).if {
+				// the first slice starts the mod synth afresh, so a replayed schedule
+				// never reuses a freed bus
+				var first = actions.isEmpty;
+				var modStart = first.if { delay.max(0) } { actions.first[0] };
+				modSpan = modSpan.max(delay.max(0) + wallDur + (fade * 2) - modStart);
 				actions.add([delay.max(0), {
 					Server.default.makeBundle((ev[\latency] ? Server.default.latency) + (ev[\lag] ? 0), {
-						Synth(\audioItemTempoFollowRB, [
+						var args;
+						(mods.notEmpty and: { first or: { modState.value.isNil } }).if {
+							var bus = Bus.control(Server.default, mods.size);
+							var synth = Synth(modDef, [\bus, bus, \span, modSpan], addAction: \addToHead);
+							synth.onFree { bus.free };
+							modState.value = [bus, synth];
+						};
+						args = [
 							\bufnum, buffer.bufnum,
 							\out, (ev[\out] ? 0).value,
 							\amp, ev[\amp] ? 1,
-							\rate, rate * (ev[\rate] ? 1),
+							\rate, rate,
+							\rateMod, slot.(\rate, 1),
 							\startPos, sourceA,
 							\sustain, wallDur + (fade * 2),
 							\fade, fade,
-							\pitchShift, ev[\pitchShift] ? 1,
-							\formant, ev[\formant] ? 1,
+							\pitchShift, slot.(\pitchShift, 1),
+							\formant, slot.(\formant, 1),
 							\pan, ev[\pan] ? 0
-						])
+						];
+						// after the mod synth, so a mapped bus is written before it's read
+						modState.value.notNil.if {
+							Synth.after(modState.value[1], \audioItemTempoFollowRB, args)
+						} {
+							Synth(\audioItemTempoFollowRB, args)
+						}
 					})
 				}])
 			};
@@ -928,15 +987,15 @@ AudioItem {
 			Server.default.makeBundle((ev[\latency] ? Server.default.latency) + (ev[\lag] ? 0), {
 				{
 					var tempoMult = EnvGen.kr(Env(levels, times, curves));
-						var rate = tempoMult.reciprocal * (ev[\rate] ? 1);
+						var rate = tempoMult.reciprocal * AudioItem.modIn(ev[\rate]);
 						var sig = RubberBand.ar(1, buffer.bufnum,
 							rate: rate,
-							pitchShift: ev[\pitchShift] ? 1,
+							pitchShift: AudioItem.modIn(ev[\pitchShift]),
 							trig: 1,
 							startPos: fromSec * BufSampleRate.kr(buffer.bufnum),
 							loop: 0,
 							doneAction: 0,
-							formant: ev[\formant] ? 1
+							formant: AudioItem.modIn(ev[\formant])
 						);
 						var ampEnv = EnvGen.kr(
 							Env.linen(ev[\tempoFollowFade] ? 0.03,
@@ -1106,15 +1165,15 @@ AudioItem {
 		^List[[plan[\delay], {
 			Server.default.makeBundle((ev[\latency] ? Server.default.latency) + (ev[\lag] ? 0), {
 				{
-					var rate = EnvGen.kr(Env.step(plan[\levels], plan[\durs])) * (ev[\rate] ? 1);
+					var rate = EnvGen.kr(Env.step(plan[\levels], plan[\durs])) * AudioItem.modIn(ev[\rate]);
 					var sig = RubberBand.ar(1, buffer.bufnum,
 						rate: rate,
-						pitchShift: ev[\pitchShift] ? 1,
+						pitchShift: AudioItem.modIn(ev[\pitchShift]),
 						trig: 1,
 						startPos: plan[\srcStart] * BufSampleRate.kr(buffer.bufnum),
 						loop: 0,
 						doneAction: 0,
-						formant: ev[\formant] ? 1
+						formant: AudioItem.modIn(ev[\formant])
 					);
 					var amp = EnvGen.kr(
 						Env([0, 1, 1, 0], [0.003, (plan[\total] - 0.003 - fade).max(0), fade]),

@@ -439,19 +439,31 @@ EventList {
 
 	// Function-valued event fields resolve at read time against the event's current
 	// clock context. getSlice's zero-argument functions remain add-time operations.
-	prIsLazy { |key, val|
-		^val.isKindOf(Function) and: { lazyExclude.includes(key).not }
+	prIsLazy { |key, val, ev|
+		^val.isKindOf(Function) and: { EventList.prKeepsFunction(ev, key).not }
+	}
+
+	/* A Function under `key` is passed through to the play path, never resolved as
+	   a lazy value: lazyExclude, plus an audio item's UGen-source keys
+	   (AudioItem.modKeys — rate: { SinOsc.kr(3).range(0.9, 1.1) }). Per event type,
+	   so a lazy rate: on any other event still resolves. */
+	*prKeepsFunction { |ev, key|
+		^lazyExclude.includes(key) or: {
+			ev.notNil
+			and: { [\audioItem, \audioItemTempoFollow].includes(ev[\type]) }
+			and: { AudioItem.modKeys.includes(key) }
+		}
 	}
 
 	prHasLazy { |ev|
-		ev.keysValuesDo { |k, v| this.prIsLazy(k, v).if { ^true } };
+		ev.keysValuesDo { |k, v| this.prIsLazy(k, v, ev).if { ^true } };
 		^false
 	}
 
 	// Callbacks need their clock context on the event proto (see resolveEvent).
 	prHasCallback { |ev|
 		ev.keysValuesDo { |k, v|
-			(v.isKindOf(Function) and: { lazyExclude.includes(k) }).if { ^true }
+			(v.isKindOf(Function) and: { EventList.prKeepsFunction(ev, k) }).if { ^true }
 		};
 		^false
 	}
@@ -505,7 +517,7 @@ EventList {
 			var le = LambdaEnvir(scratch);
 			le.use {
 				ev.keysValuesDo { |k, v|
-					this.prIsLazy(k, v).if { out[k] = le.at(k) }
+					this.prIsLazy(k, v, ev).if { out[k] = le.at(k) }
 				}
 			};
 		}.value;
@@ -867,7 +879,7 @@ EventList {
 				{ val.isArray.if { val.clipAt(index) } { val } };
 			case
 				// Preserve callbacks for the play path.
-				{ v.isKindOf(Function) and: { lazyExclude.includes(key) } }
+				{ v.isKindOf(Function) and: { EventList.prKeepsFunction(event, key) } }
 					{ scratch[key] = v; opaque[key] = v }
 				{ v.isKindOf(Function) and: { v.numArgs == 0 } }
 					{ scratch[key] = v; hasFunc = true }

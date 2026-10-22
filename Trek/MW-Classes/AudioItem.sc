@@ -1398,7 +1398,7 @@ Take : AudioItem {
 			)
 			* (amp ? 1)
             * EnvGen.cutoff(dur ? 1000, 0.0)
-            => func(_)
+            => func
 			=> Out.ar(out ? 0, _);
 		
 	}

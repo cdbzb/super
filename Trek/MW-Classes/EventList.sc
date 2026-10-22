@@ -90,9 +90,10 @@ EventList {
 	*at { |name| ^all[name] }
 
 	/* The list \symbol.add and the EventList class methods write to. Nothing sets
-	   it implicitly: say EventList(\verse2, \default).current.clear. */
+	   it implicitly: say EventList(\verse2, \default).current.clear. Inside a
+	   list.use { } block the innermost enclosing list answers first (see `use`). */
 	*current {
-		^current ?? {
+		^currentEnvironment[\prEventListUse] ?? { current } ?? {
 			Error("EventList: no current list — call .current on one first "
 				"(EventList(\\name).current)").throw
 		}
@@ -328,6 +329,8 @@ EventList {
 	*preview { ^this.current.preview }
 	*addFunc_ { |val| ^this.current.addFunc_(val) }
 	*env { ^this.current.env }
+	*tempoMap { ^this.current.tempoMap }
+	*tempoMap_ { |map| ^this.current.tempoMap_(map) }
 	*context { ^this.current.context }
 	*context_ { |list| ^this.current.context_(list) }
 	*previewPrep { ^this.current.previewPrep }
@@ -2727,6 +2730,36 @@ EventList {
 	// Make this the list \symbol.add and the EventList class methods write to.
 	// Returns this, so it chains: EventList(\verse2, \default).current.clear.
 	current { ^current = this }
+
+	/*
+	 Scope \symbol.add & co. to this list while func runs, so every add in the block
+	 visibly belongs to it (and folds with it):
+		EventList(\verse).clear.use { \bass.add(0, freq: 99); EventList.play(0) };
+	 func runs in a scratch Environment — env if given, else a fresh one — parented
+	 to the caller's, so outer ~vars still read through and ~writes stay in the
+	 scratch. *current answers the innermost enclosing use before the classvar. The
+	 list's own env is never pushed: it holds sequencing bookkeeping and is offered
+	 to nested children. Does not clear. Leaving a top-level use without error makes
+	 this the classvar current, so EventList.play and spot-evaluated .add lines
+	 target the list just built; a nested use leaves it alone. Answers this.
+	*/
+	use { |env, func|
+		var scratch, parented, prevOwner;
+		func.isNil.if { func = env; env = nil };
+		scratch = env ?? { Environment.new };
+		parented = scratch.parent.isNil and: { scratch !== currentEnvironment };
+		parented.if { scratch.parent = currentEnvironment };
+		prevOwner = scratch[\prEventListUse];
+		scratch[\prEventListUse] = this;
+		protect {
+			scratch.use { func.value(this) }
+		} {
+			scratch[\prEventListUse] = prevOwner;
+			parented.if { scratch.parent = nil }
+		};
+		currentEnvironment[\prEventListUse].isNil.if { current = this };
+		^this
+	}
 
 	clear {
 		events = List[];

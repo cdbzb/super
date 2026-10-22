@@ -275,6 +275,48 @@ AudioItem {
 		^matches.notEmpty.if { matches.first } { directory +/+ takeNum ++ ".wav" }
 	}
 
+	// Import an audio file as a take of item `name` (default: the file's base name).
+	// Idempotent: if a byte-identical file is already a take of that item, answer it
+	// instead of copying again. Otherwise copy to the next take number, keeping the
+	// extension. Imported takes carry no record-time stamp, so they play at face
+	// value (see prEventT0). ^the Take, or nil if the file can't be imported.
+	*fromFile { |path, name|
+		var src = path.standardizePath;
+		var ext = src.splitext.last.asString.toLower;
+		var directory, existing, takeNum, dest;
+		File.exists(src).not.if {
+			"AudioItem.fromFile: no file at %".format(src).warn;
+			^nil
+		};
+		#["wav", "aif", "aiff", "flac", "caf"].includesEqual(ext).not.if {
+			"AudioItem.fromFile: % is not a wav/aif/aiff/flac/caf file".format(src).warn;
+			^nil
+		};
+		name = (name ?? { PathName(src).fileNameWithoutExtension }).asSymbol;
+		directory = folder +/+ name;
+		File.exists(directory).not.if { File.mkdir(directory) };
+		// Array.series, not (0 .. n-1): with no takes that range counts DOWN to [0, -1]
+		existing = Array.series(this.nextTake(directory)).detect { |n|
+			var p = this.takePath(directory, n);
+			File.exists(p) and: {
+				"cmp -s % %".format(src.shellQuote, p.shellQuote).systemCmd == 0
+			}
+		};
+		existing.notNil.if {
+			"AudioItem.fromFile: % is already %, take %".format(src, name.cs, existing).postln;
+			^Take(name, existing)
+		};
+		takeNum = this.nextTake(directory);
+		dest = directory +/+ takeNum ++ "." ++ ext;
+		File.copy(src, dest);
+		File.exists(dest).not.if {
+			"AudioItem.fromFile: copy to % failed".format(dest).warn;
+			^nil
+		};
+		"AudioItem.fromFile: % -> %, take %".format(src, name.cs, takeNum).postln;
+		^Take(name, takeNum)
+	}
+
 	// Correct the round trip baked into an already-recorded take. The \raw
 	// compensation reads roundTrip from the take's own record-time stamp, not from
 	// the current classvar — that is the point (a take recorded on one rig must

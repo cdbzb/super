@@ -2814,4 +2814,22 @@ EventList {
 	addPattern { |when=0, pattern, maxEvents, maxWhen=300|
 		^EventList.current.addPattern(when, pattern, maxEvents, maxWhen, this)
 	}
+
+	addClockPattern { |when=0, dur, pattern, maxEvents, maxWhen=300|
+		^EventList.current.addClockPattern(when, dur, pattern, maxEvents, maxWhen, this)
+	}
+
+	// \piano.addItem(Take(\piano, 0), at: 8, followTrack: \marks). An audio Take's
+	// keywords go into its event, so \name rides along with them; a MIDI take
+	// ignores keywords, so its inserted events are named after the fact.
+	addItem { |...args, kwargs|
+		var isAudio = args.keep(2).any(_.isKindOf(Take));
+		var added;
+		isAudio.if { kwargs = (kwargs ? []) ++ [\name, this] };
+		added = EventList.current.performArgs(\addItem, args, kwargs ? #[]);
+		(isAudio.not and: { added.isKindOf(Collection) }).if {
+			added.do { |e| e.isKindOf(Event).if { e[\name] = this } }
+		};
+		^added
+	}
 }

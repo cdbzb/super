@@ -1567,8 +1567,9 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	// an array value on several notes needs it wrapped, [[a, b]] ! n.) A \midinote
 	// change also retargets the note's paired noteOff, which is matched by pitch (the
 	// first noteOff of the old pitch at or after the noteOn, the same rule removeNote
-	// uses) — otherwise the release no longer finds its note and it hangs.
-	// filter(key: \midinote) edits the noteOn only.
+	// uses) — otherwise the release no longer finds its note and it hangs. Pairing is
+	// done against the receiver's ORIGINAL pitches (prRetargetOffs), so transposing
+	// many notes at once can't hand one note's release to another.
 	setNote { |index ...args, kwargs|
 		var changes = (args[0].isKindOf(Event)).if { args[0] } {
 			args[0].notNil.if { ().put(args[0], args[1]) } { () }
@@ -1578,7 +1579,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		var onIdx = midiEvents.size.collect { |i| i }.select { |i| midiEvents[i].midicmd == \noteOn };
 		kwargs.notNil.if { changes = changes ++ kwargs.asEvent };
 		idx.do { |n, k|
-			var i = onIdx[n], on, offI, oldPitch, mine = ();
+			var i = onIdx[n], mine = ();
 			i.isNil.if {
 				Error("MIDIItemPlayer.setNote: no note % (this player has % notes)"
 					.format(n, onIdx.size)).throw
@@ -1586,23 +1587,49 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			changes.keysValuesDo { |key, v|
 				mine[key] = (index.isArray and: { v.isArray } and: { v.size == idx.size }).if { v[k] } { v }
 			};
-			on = out[i];
-			oldPitch = on.midinote;
-			out[i] = on.copy.putAll(mine);
-			mine.includesKey(\midinote).if {
-				offI = midiEvents.size.collect { |j| j }.select { |j| j > i }.detect { |j|
-					out[j].midicmd == \noteOff and: { out[j].midinote == oldPitch }
-						and: { out[j].timestamp >= on.timestamp }
+			out[i] = out[i].copy.putAll(mine);
+		};
+		^MIDIItemPlayer(this.prRetargetOffs(out, "setNote"), this.source).copyBounds(this)
+	}
+	/* Index of the noteOff paired with the noteOn at midiEvents[i]: the first noteOff
+	   of the same pitch after it and at or after its onset — the rule removeNote, from
+	   and play use. Always read from the receiver's own midiEvents, never from an
+	   edited copy, so an earlier retarget can't be mistaken for a later note's release. */
+	prOffFor { |i|
+		var on = midiEvents[i];
+		// (a..b) counts DOWN when a > b, so the last event needs its own exit
+		(i + 1 >= midiEvents.size).if { ^nil };
+		^((i + 1)..(midiEvents.size - 1)).detect { |j|
+			var e = midiEvents[j];
+			e.midicmd == \noteOff and: { e.midinote == on.midinote }
+				and: { e.timestamp >= on.timestamp }
+		}
+	}
+	/* `out` is an edited copy of midiEvents, index-aligned with it. Every noteOn whose
+	   \midinote changed takes its paired noteOff (prOffFor) to the new pitch, unless
+	   the edit already changed that noteOff's pitch itself. Otherwise the release
+	   targets a pitch that never sounded and the note hangs. Answers out. */
+	prRetargetOffs { |out, caller|
+		var count = 0, orphans = List[];
+		(out.size == midiEvents.size).not.if { ^out };
+		midiEvents.do { |e, i|
+			(e.midicmd == \noteOn).if {
+				(out[i].isKindOf(Event) and: { out[i][\midinote] != e.midinote }).if {
+					var j = this.prOffFor(i);
+					j.isNil.if { orphans.add(count) } {
+						(out[j][\midinote] == midiEvents[j].midinote).if {
+							out[j] = out[j].copy.put(\midinote, out[i][\midinote])
+						}
+					}
 				};
-				offI.isNil.if {
-					"MIDIItemPlayer.setNote: note % has no noteOff at pitch % — only the noteOn changed"
-						.format(n, oldPitch).warn
-				}{
-					out[offI] = out[offI].copy.put(\midinote, mine[\midinote])
-				}
+				count = count + 1
 			}
 		};
-		^MIDIItemPlayer(out, this.source).copyBounds(this)
+		orphans.notEmpty.if {
+			"MIDIItemPlayer.%: note(s) % have no noteOff — only the noteOn changed"
+				.format(caller, orphans.asArray).warn
+		};
+		^out
 	}
 	setBounds {|event|
 		start = event.start; end = event.end
@@ -2081,7 +2108,9 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	 slice: func touches matching events, the rest pass through, no rebasing.
 	 bounds ('[)' '[]' '(]' '()') applies to every window. A window with no
 	 midicmd/choice matches noteOns only, so a timing edit can't move a noteOff
-	 that sits inside the window while its noteOn sits outside.
+	 that sits inside the window while its noteOn sits outside. A \midinote
+	 change on a noteOn carries to its paired noteOff (prRetargetOffs) in every
+	 mode but the base case, so a transposed note still gets released.
 	 Modes: key (func gets the matching events' values of key, written back),
 	 onlyNotes (func gets the matching notes, spliced back), otherwise func runs
 	 per matching event; with no selector at all func gets the whole midiEvents.
@@ -2131,7 +2160,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			idx = indicesFor.(choiceFunc.isNil);
 			vals = func.(idx.collect {|x| out[x][key] });
 			vals.do {|v i| out[idx[i]].put(key, v) };
-			^MIDIItemPlayer(out, this.source).copyBounds(this)
+			^MIDIItemPlayer(this.prRetargetOffs(out, "filter"), this.source).copyBounds(this)
 		};
 		// onlyNotes: func gets the matching notes, spliced back in
 		onlyNotes.if {
@@ -2139,11 +2168,12 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 			idx = indicesFor.(true);
 			notes = func.(idx.collect {|x| out[x] });
 			notes.do {|note i| out.put(idx[i], note) };
-			^MIDIItemPlayer(out, this.source).copyBounds(this)
+			^MIDIItemPlayer(this.prRetargetOffs(out, "filter"), this.source).copyBounds(this)
 		};
 		// selectors: func runs per matching event
 		choiceFunc.notNil.if {
-			^this.collect({|e x| choiceFunc.(e, x).if { func.(e, x) } {e}})
+			out = midiEvents.deepCopy.collect {|e x| choiceFunc.(e, x).if { func.(e, x) } {e} };
+			^MIDIItemPlayer(this.prRetargetOffs(out, "filter"), this.source).copyBounds(this)
 		};
 		// base case: func receives full midiEvents array
 		^MIDIItemPlayer(func.(midiEvents), this.source).copyBounds(this)

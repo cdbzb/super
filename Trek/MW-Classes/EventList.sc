@@ -2805,7 +2805,10 @@ EventList {
 			when[\name] = this;
 			^list.add(when)
 		};
-		^list.add((when: when ? 0) ++ kwargs.asEvent)
+		// Leave \when unset when not given, as EventList.add does: a sequenced list
+		// reads an explicit when: as a gap from the previous section, so a forced 0
+		// would stack every section on beat 0.
+		^list.add(when.notNil.if { (when: when) } { () } ++ kwargs.asEvent)
 	}
 
 	addPattern { |when=0, pattern, maxEvents, maxWhen=300|

@@ -11,12 +11,17 @@ EventList {
 	// (prEnvOuter); these keys are *sequenced's own bookkeeping, and \section in
 	// particular would shadow a real musical key.
 	classvar <>envExclude;
+	// *load: where a list's file lives by default (loadDir +/+ name ++ ".scd").
+	classvar <>loadDir;
 	var <events, <preview, <>defaultType, <routes, <>addFunc, <>previewPrep;
 	var <>env, <>context;
 	var <>autoExpand = false;
 	var <>batchWindow = 0.05, batchEndTime = -1e9, batchFirstWhen = 0, batchTempoEnv,
 		batchMonoStates;
 	var <name, <>voiceSpace;
+	// The .scd file that built this list (see prStampSource), so *load can tell
+	// whether every list a file defines is still filled.
+	var <sourcePath;
 	var <solo, <mute;
 	// tempoMap is getter-only here: the setter (tempoMap_) coerces V2 MonoMaps and
 	// drops the beat->wall cache, so it must not be auto-generated.
@@ -56,6 +61,7 @@ EventList {
 			\effect
 		];
 		envExclude = IdentitySet[\nextWhen, \cursor, \section];
+		loadDir = "/tmp";
 		Class.initClassTree(Event);
 		// Run functions through the normal schedule and expose the event both as
 		// currentEnvironment and as the argument.
@@ -88,6 +94,48 @@ EventList {
 	}
 
 	*at { |name| ^all[name] }
+
+	/* Load the file that builds a list unless it is already built:
+	     EventList.load(\groove).tempoMap        // loads loadDir/groove.scd if needed
+	     EventList.load(\groove, "~/x/g.scd")     // explicit file
+	     EventList.load([\BflatFsharp, \groove], "~/x/dir")  // a directory: dir/name.scd
+	   A file is reloaded when the named list is empty, or when any other list that
+	   file built has since emptied; force: true reloads regardless. MyFree runs once
+	   afterwards if anything loaded (the files tend to play on load). Answers the
+	   EventList, or an Array of them for an Array of names. */
+	*load { |names, path, force = false|
+		var single = names.isKindOf(Symbol);
+		var loaded = false;
+		var lists = names.asArray.collect { |n|
+			var file = this.prLoadPath(n, path);
+			this.prNeedsLoad(n, file, force).if {
+				File.exists(file).if {
+					file.load;
+					loaded = true;
+					this.prNeedsLoad(n, file).if {
+						"EventList.load: % ran but \\% is still empty".format(file, n).warn
+					}
+				} {
+					"EventList.load: no file % for \\%".format(file, n).warn
+				}
+			};
+			this.new(n)
+		};
+		loaded.if { fork { MyFree() } };
+		^single.if { lists[0] } { lists }
+	}
+
+	*prLoadPath { |name, path|
+		path = (path ? loadDir).standardizePath;
+		^(PathName(path).isFolder).if { path +/+ name ++ ".scd" } { path }
+	}
+
+	*prNeedsLoad { |name, file, force = false|
+		var el = all[name];
+		^force or: { el.isNil } or: { el.events.isEmpty } or: {
+			all.any { |other| other.sourcePath == file and: { other.events.isEmpty } }
+		}
+	}
 
 	/* The list \symbol.add and the EventList class methods write to. Nothing sets
 	   it implicitly: say EventList(\verse2, \default).current.clear. Inside a
@@ -567,6 +615,7 @@ EventList {
 				dropTempoTrack.if { c.removeAt(\tempoTrack) };
 				c
 			};
+		this.prStampSource;
 		events.addAll(copies);
 		^copies
 	}
@@ -587,6 +636,7 @@ EventList {
 			offsets = this.nextPreviewOffset(added.collect { |e| e[\when] });
 			added.do { |e, i| this.storeAndPreview(e, offsets[i]) }
 		} {
+			this.prStampSource;
 			events.addAll(added)
 		};
 		^added
@@ -1253,6 +1303,7 @@ EventList {
 	}
 
 	storeAndPreview { |event, previewOffset|
+		this.prStampSource;
 		events.add(event);
 		(preview.notNil and: { this.shouldPlay(event) }).if {
 			var resolved = this.resolveEvent(event);
@@ -2774,12 +2825,23 @@ EventList {
 	}
 
 	clear {
+		this.prStampSource(true);
 		events = List[];
 		preview = nil;
 		this.tempoMap = nil;   // through the setter: also drops the beat->wall cache
 		beatDur = nil;
 		batchTempoEnv = nil;   // derived from events, which just went away
 		batchMonoStates = IdentityDictionary.new;
+	}
+
+	/* Record the file being loaded as this list's builder. clear claims the list
+	   outright; a first add claims it only if unclaimed, so a file merely reading
+	   another file's list (EventList(\groove).events) never claims it. */
+	prStampSource { |claim = false|
+		var path = thisProcess.nowExecutingPath;
+		(path.notNil and: { claim or: { sourcePath.isNil } }).if {
+			sourcePath = path.standardizePath
+		}
 	}
 
 	clearContext { context = List[] }

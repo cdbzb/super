@@ -78,6 +78,12 @@ MonoMap {
 	// Rebind the same shape to new axes.
 	withFrames { |fromFrame, toFrame| ^this.subclassResponsibility(thisMethod) }
 
+	/* Already a MonoMap. Takes (and ignores) the old maps' asMonoMap arguments so
+	   code written against a list's AnchorTempoMap (`e.tempoMap.asMonoMap(origin:
+	   \absolute).quantize(…)`) keeps working now that the list holds an AnchorMap.
+	   Spelled out rather than `...args` so keyword calls bind. */
+	asMonoMap { |fromFrame, toFrame, origin, allowCurved, extendBelow, extendAbove| ^this }
+
 	// Collapse to a single concrete map. AffineMap and AnchorMap are already
 	// their own baked form; only ComposedMap has work to do.
 	bake { ^this }
@@ -633,13 +639,16 @@ AnchorMap : MonoMap {
 	/* pre-rename name, kept so old MIDIItemTempoMap call sites read the same */
 	trim { |from, to| ^this.fromBeat(from, to) }
 
-	/* Legacy MIDIItemTempoMap readers, beat -> sec maps only. Both axes are
+	/* Legacy MIDIItemTempoMap readers, beat -> sec maps only. times and beats are
 	   measured from the first anchor, as the old map's were (its t0 held the
-	   offset; here ys.first does). */
+	   offset; here ys.first does). beatDomain and timeDomain are the real domain
+	   and range: the old map's always started at 0, and generic readers
+	   (prSrcTimeAt, prSrcOffset, addItem's source origin) subtract
+	   timeDomain.first, so a map whose anchors start elsewhere still reads right. */
 	times { this.prNeedBeatSec(\times); ^ys - ys.first }
 	beats { this.prNeedBeatSec(\beats); ^xs.differentiate.drop(1) }
-	beatDomain { this.prNeedBeatSec(\beatDomain); ^[0, xs.last - xs.first] }
-	timeDomain { this.prNeedBeatSec(\timeDomain); ^[0, ys.last - ys.first] }
+	beatDomain { this.prNeedBeatSec(\beatDomain); ^this.domain }
+	timeDomain { this.prNeedBeatSec(\timeDomain); ^this.range }
 	prNeedBeatSec { |caller|
 		this.mapsDimensions(\beat, \sec).not.if {
 			Error("AnchorMap.%: needs a beat -> sec map, this one maps % -> %"

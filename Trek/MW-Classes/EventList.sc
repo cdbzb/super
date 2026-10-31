@@ -23,9 +23,11 @@ EventList {
 	// whether every list a file defines is still filled.
 	var <sourcePath;
 	var <solo, <mute;
-	// tempoMap is getter-only here: the setter (tempoMap_) coerces V2 MonoMaps and
-	// drops the beat->wall cache, so it must not be auto-generated.
-	var <>beatDur, <tempoMap;
+	/* tempoMap is getter-only: the setter (tempoMap_) converts and normalizes
+	   whatever it is given and drops the beat->wall cache. t0 is the seconds
+	   offset the normalization removed (the absolute recorded time of the map's
+	   first anchor), read only for recorded-take placement. */
+	var <>beatDur, <tempoMap, <t0 = 0;
 	// §10 prepare/fire: leadTime = prepare budget; first sound lands at exactly
 	// leadTime + latency after play (deterministic — see prPlayPrepared; nil =
 	// adaptive ASAP start). prPlayGen = generation counter letting stop/replay
@@ -340,6 +342,7 @@ EventList {
 		// list plays flat at 1 s/beat and forgets its solo/mute scoping (§5).
 		beatDur     = other.beatDur;
 		tempoMap    = other.tempoMap;
+		t0          = this.prListT0(other) ? 0;
 		solo        = other.solo.copy;
 		mute        = other.mute.copy;
 		voiceSpace  = newVoiceSpace.if { VoiceSpace.new } { other.voiceSpace };
@@ -851,10 +854,16 @@ EventList {
 	prItemBeat { |player, tOff = 0|
 		^player.player.tryPerform(\recordWall) !? { |w|
 			var ep = player.player.recordPlayEpoch;
-			var srcT0 = (ep !? { ep[\list].tempoMap.tryPerform(\t0) }) ? 0;
-			var dstT0 = tempoMap.tryPerform(\t0) ? 0;
+			var srcT0 = (ep !? { this.prListT0(ep[\list]) }) ? 0;
+			var dstT0 = t0 ? 0;
 			this.wallToBeat(w + tOff + srcT0 - dstT0, this.tempoEnv)
 		}
+	}
+
+	/* A list's t0. Epoch snapshots archived before the AnchorMap migration hold
+	   an AnchorTempoMap that carries its own t0 and no list t0. */
+	prListT0 { |list|
+		^list.tempoMap.isKindOf(MonoMap).if { list.t0 } { list.tempoMap.tryPerform(\t0) }
 	}
 
 	// Normalize first, then infer type and fan out. \when arrays zip other arrays;
@@ -1474,31 +1483,33 @@ EventList {
 		^(spb > 1e-9).if { 60 / spb }
 	}
 
-	// §12 seam: this list's base clock. A V2 MonoMap is COERCED here, once, into a
-	// concrete AnchorTempoMap — the list must never HOLD a raw MonoMap: every
-	// beatToWall/prBaseWallAt lookup would then pay a symbolic chain's per-event
-	// cost, and a FunctionMap wrapping another EventList (the 5d bridge) would
-	// recurse straight back into this list. rebase: true, because a list clock is
-	// a SHAPE read from beat 0 — prBaseWallAt calls timeAt and never adds t0, so a
-	// map whose seconds start mid-take must not drag the whole list late.
-	// Freeze MIDIItemTempoMap to detach its source events while preserving t0 for
-	// at: \original placement.
-	// Anything else (an AnchorTempoMap, a TempoMap facade, nil) is stored exactly
-	// as it always was.
-	// Arrays concatenate maps in order. Callers trim closing spans with fromBeat.
+	/* §12 seam: this list's base clock. Stored as nil (flat, read through
+	   beatDur) or a concrete beat -> sec AnchorMap NORMALIZED to start at beat 0,
+	   second 0: a list clock is a shape read from beat 0, so prBaseWallAt answers
+	   timeAt(beat) with no origin to subtract. The seconds removed go to t0.
+	   Accepted: an AnchorMap; any MonoMap that bakes to one (a FunctionMap or an
+	   infinite MapSeq is refused: freeze it with .sample(n)); a MIDIItemTempoMap or
+	   AnchorTempoMap, curved ones included (read exactly from their breakpoints);
+	   a legacy TempoMap; an Array, concatenated in order (trim closing spans with
+	   fromBeat first). Anything else is refused. A concrete AnchorMap costs no
+	   more per lookup than the old AnchorTempoMap did. */
 	tempoMap_ { |map|
+		var m, x0, y0;
 		map.isArray.if {
 			map.isEmpty.if {
 				Error("EventList.tempoMap_: empty map array — pass nil to clear the clock").throw
 			};
 			map = map.reduce('++')
 		};
-		tempoMap = case
-			{ map.isKindOf(MonoMap) }
-				{ map.asAnchorTempoMap(rebase: true) }
-			{ map.isKindOf(MIDIItemTempoMap) and: { map.isKindOf(AnchorTempoMap).not } }
-				{ this.prFreezeItemMap(map) }
-			{ map };
+		map.isNil.if {
+			tempoMap = nil; t0 = 0
+		} {
+			m = this.prAsAnchorMap(map);
+			x0 = m.xs.first; y0 = m.ys.first;
+			tempoMap = AnchorMap(m.xs - x0, m.ys - y0,
+				m.fromFrame, MapFrame(\sec, \relative), m.extendBelow, m.extendAbove);
+			t0 = y0;
+		};
 		// The beat->wall integral is keyed on tempoEnv IDENTITY only, but its
 		// cumulative sums (prWallCum / prWallBase / prWallSubs) are integrals of
 		// the BASE clock — swapping that clock under a retained tempoEnv (which
@@ -1507,31 +1518,31 @@ EventList {
 		prWallEnv = nil;
 		^this
 	}
+	/* t0 without touching the clock: copies and snapshots carry it over, and the
+	   edit methods keep it across a reshape */
+	prSetT0 { |seconds| t0 = seconds ? 0 }
 
-    monoMap {
-        ^tempoMap.asMonoMap
-    }
-
-	// Freeze source events while preserving the map shape and t0.
-	prFreezeItemMap { |map|
-		^this.prWithT0(map, map.tryPerform(\t0) ? 0) ? map
-	}
-
-	// The MonoMap bridge rebases seconds to zero; rebuild anchors to restore t0.
-	// Return nil on conversion failure so the caller can choose a fallback.
-	prWithT0 { |map, t0 = 0|
-		^{
-			// prMapEdit may already supply a MonoMap.
-			var mm = map.isKindOf(MonoMap).if { map } { map.asMonoMap };
-			var atm = mm.asAnchorTempoMap(rebase: true);
-			(t0 == 0).if { atm } {
-				AnchorTempoMap(atm.times + t0, [0] ++ atm.beats.integrate)
+	prAsAnchorMap { |map|
+		var m = case
+			{ map.isKindOf(MonoMap) } { map.bake }
+			{ map.isKindOf(MIDIItemTempoMap) } {
+				map.curved.if {
+					/* the curve lives in invEnv's breakpoints (beat -> performed
+					   time); read them as anchors, exact at any oversample */
+					AnchorMap([0] ++ map.invEnv.times.integrate,
+						map.invEnv.levels + map.t0, \beat, \sec)
+				} { map.asMonoMap(origin: \absolute) }
 			}
-		}.try { |err|
-			"EventList: could not re-attach t0 to % (%) — leaving it rebased to 0"
-				.format(map.class, err.errorString).warn;
-			nil
-		}
+			{ map.isKindOf(TempoMap) } { map.asMonoMap }
+			{ Error("EventList.tempoMap_: % is not a tempo map (expected an AnchorMap, "
+				"another MonoMap, a MIDIItemTempoMap or a TempoMap)".format(map.class)).throw };
+		(m.isKindOf(AnchorMap) and: { m.mapsDimensions(\beat, \sec) }).not.if {
+			Error(("EventList.tempoMap_: a list clock is a concrete beat -> sec map; "
+				"% (% -> %) is not. Freeze a symbolic map with .sample(n), or bind "
+				"the axes with withFrames(\\beat, \\sec)").format(m.class,
+					m.fromFrame.dimension, m.toFrame.dimension)).throw
+		};
+		^m
 	}
 
 	// Straighten this list's clock: amount 1 = one constant tempo, 0 = bit-exact
@@ -1587,43 +1598,36 @@ EventList {
 	// at a different when:, or stack the align: key on top (a double blend) and it is
 	// silently wrong. Prefer the align: key unless standalone playback needs the bake.
 	alignTo { |parent, at = 0, amount = 1, scale = 1|
-		var m, xs, x0, y0, env, base;
+		var env, base;
 		tempoMap.isNil.if { ^this };
-		m = tempoMap.asMonoMap;
-		m.respondsTo(\xs).not.if {
-			Error("EventList.alignTo: need an anchor map, got %".format(m.class)).throw
-		};
-		xs = m.xs;
-		x0 = xs.first;
-		y0 = m.ys.first;
 		env = parent.tempoEnv;
 		base = parent.beatToWall(at, env);
-		^this.tempoMap_(AnchorMap(
-			xs,
-			xs.collect { |x, i|
-				(m.ys[i] - y0).blend(
-					parent.beatToWall(at + ((x - x0) * scale), env) - base,
-					amount)
-			},
-			m.fromFrame, m.toFrame, m.extendBelow, m.extendAbove))
+		^this.prMapEdit { |m|
+			AnchorMap(m.xs,
+				m.xs.collect { |x, i|
+					m.ys[i].blend(parent.beatToWall(at + (x * scale), env) - base, amount)
+				},
+				m.fromFrame, m.toFrame, m.extendBelow, m.extendAbove)
+		}
 	}
 
-	// Bridge out to a MonoMap, edit, and assign THROUGH tempoMap_ — the setter owns
-	// both the coercion back to an AnchorTempoMap and dropping the beat->wall cache,
-	// so this must never touch the ivar. A flat list (nil map) is already straight,
-	// so it is a no-op. The guard is the point: without it a func that answers
-	// nil (a span op given a bad range) stores nil and the list silently goes flat.
-	// MonoMap conversion drops t0, so restore it after editing the shape.
+	/* Edit the clock and assign THROUGH tempoMap_ (it normalizes and drops the
+	   beat->wall cache, so this must never touch the ivar). A flat list (nil map)
+	   is already straight, so it is a no-op. The guard is the point: without it a
+	   func that answers nil (a span op given a bad range) would store nil and the
+	   list would silently go flat. An edit reshapes the clock; t0, where the take
+	   was recorded, stays. */
 	prMapEdit { |func|
-		var edited, t0;
+		var edited, keep = t0;
 		tempoMap.isNil.if { ^this };
-		t0 = tempoMap.tryPerform(\t0) ? 0;
-		edited = func.(tempoMap.asMonoMap);
+		edited = func.(tempoMap);
 		edited.isKindOf(MonoMap).not.if {
 			Error("EventList.prMapEdit: map edit answered %, expected a MonoMap"
 				.format(edited.class)).throw
 		};
-		^this.tempoMap_(this.prWithT0(edited, t0) ? edited)
+		this.tempoMap_(edited);
+		t0 = keep;
+		^this
 	}
 
 	// Base wall-seconds elapsed across the beat interval [a, b], BEFORE any
@@ -2382,6 +2386,7 @@ EventList {
 	prClockSnapshot {
 		var snap = EventList.new;
 		snap.tempoMap = tempoMap.deepCopy;
+		snap.prSetT0(t0);
 		snap.beatDur = beatDur ?? { tempoMap.isNil.if { TempoClock.default.beatDur } };
 		^snap
 	}

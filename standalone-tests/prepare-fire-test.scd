@@ -106,10 +106,10 @@ assert.(copied.solo.notNil and: { copied.solo.includes(\bass) }, "copyFrom: solo
 // The cached sub-grid (prBuildRampSub/prRampSubAt) must agree with a fine
 // brute-force integral of multiplier(x) * baseSecPerBeat(x).
 ramp = EventList.new;
-ramp.tempoMap = (
-	timeAt: { |self, b| b + (0.05 * b * b) },
-	beatAt: { |self, t| ((1 + (0.2 * t)).sqrt - 1) / 0.1 }
-); // accelerating base clock, with its exact inverse
+// accelerating base clock t = b + 0.05 b^2, densely sampled: a list clock is a
+// concrete AnchorMap (a duck-typed Event is no longer accepted by tempoMap_)
+ramp.tempoMap = AnchorMap((0, 0.05 .. 20), (0, 0.05 .. 20).collect { |b| b + (0.05 * b * b) },
+	\beat, \sec);
 ramp.add(0, tempoTrack: 1);
 ramp.add(4, tempoTrack: Env([1, 2], [8], \lin)); // ramp over beats 4..12
 rampEnv = ramp.prPlayTempoEnv;

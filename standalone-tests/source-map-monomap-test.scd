@@ -1,9 +1,10 @@
 // A V2 MonoMap as sourceTempoMap: (audio-beat-marking-plan.md step 2a).
 //
-// MapEditor.last is a bare AnchorMap (beat -> absolute take seconds). It answers
-// timeAt/beatAt but has no beatDomain/timeDomain, so prSrcOffset / prSrcEndBeat
-// used to throw doesNotUnderstand on it. They now convert it once with
-// asAnchorTempoMap, the same seam warpTo uses.
+// MapEditor.last is a bare AnchorMap (beat -> absolute take seconds). It once
+// had no beatDomain/timeDomain, so prSrcOffset / prSrcEndBeat threw
+// doesNotUnderstand on it; they convert it once with asAnchorTempoMap, the same
+// seam warpTo uses. AnchorMap now answers its real domain and range too, so the
+// domain-relative readers agree on either form.
 //
 // Asserted:
 //   * prSrcOffset on a bare AnchorMap answers the anchor spacing, relative to the
@@ -29,8 +30,9 @@ list = EventList.new;
 ev = (item: "zzz-monomap-src-test", sourceTempoMap: mono, sourceMapIsPhysical: true);
 evConv = (item: "zzz-monomap-src-test", sourceTempoMap: converted, sourceMapIsPhysical: true);
 
-assert.(mono.respondsTo(\beatDomain).not,
-	"precondition: a bare AnchorMap has no beatDomain");
+assert.(((mono.timeAt(mono.beatDomain.first + 2) - mono.timeDomain.first)
+	- (converted.timeAt(converted.beatDomain.first + 2) - converted.timeDomain.first)).abs < 1e-12,
+	"domain-relative reads agree on the bare AnchorMap and its conversion");
 
 f = { AudioItem.prSrcOffset(ev, list, b0, 0) }.try { |e| e.errorString.postln; nil };
 assert.(f.notNil, "prSrcOffset accepts a bare AnchorMap");

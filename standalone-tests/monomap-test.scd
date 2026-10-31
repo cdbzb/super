@@ -705,7 +705,9 @@ assert.(throws.({ mit.asMonoMap(origin: \wall) }), "origin must be relative or a
 assertArr.(mitA.times, mit.times, "times: seconds from the first anchor, as the old map");
 assertArr.(mitA.beats, mit.beats, "beats: the beat gaps, as the old map");
 assertArr.(mitA.beatDomain, mit.beatDomain, "beatDomain matches the old map");
-assertArr.(mitA.timeDomain, mit.timeDomain, "timeDomain matches the old map");
+assertArr.(mitA.timeDomain, mit.timeDomain + mit.t0,
+	"timeDomain is the real range: the old map's, placed at t0");
+assertArr.(mitA.fromBeat(1, 3).beatDomain, [0, 2], "beatDomain of a re-zeroed slice starts at 0");
 assert.(throws.({ mitA.inverse.times }), "legacy readers refuse a sec -> beat map");
 lg = mitA.fromBeat(1, 3);
 lgOld = mit.fromBeat(1, 3);
@@ -796,29 +798,44 @@ assert.(mitM.inverse.fromFrame.isRelative, "inverse carries the note to the inpu
 assert.((mitM.inverse >> mitM).bake.toFrame.isRelative, "bake keeps the outer frames' note");
 assert.(mitM.deepCopy.toFrame.isRelative, "the note survives a deepCopy");
 
-// ---- §12 seam: EventList.tempoMap_ coercion (extends 5d) ----
+// ---- §12 seam: EventList.tempoMap_ holds a normalized AnchorMap ----
 elT = EventList.new;
 elT.tempoMap = ad;
-assert.(elT.tempoMap.isKindOf(AnchorTempoMap),
-	"a MonoMap assigned to tempoMap is coerced to a concrete AnchorTempoMap");
-assert.(elT.tempoMap.isKindOf(MonoMap).not, "the list never holds a raw MonoMap");
-assertClose.(elT.tempoMap.t0, 0, "a list clock is rebased: t0 == 0");
+assert.(elT.tempoMap.isKindOf(AnchorMap), "a MonoMap assigned to tempoMap is stored as an AnchorMap");
+assert.((elT.tempoMap.xs.first == 0) and: { elT.tempoMap.ys.first == 0 },
+	"the stored clock is normalized to beat 0, second 0");
+assertClose.(elT.t0, 10, "the removed seconds offset is the list's t0");
+assert.(elT.tempoMap.toFrame.isRelative, "the stored seconds are marked relative");
 assertArr.([0, 1, 2.5, 3].collect { |b| elT.tempoMap.timeAt(b) },
 	[0, 1, 2.5, 3].collect { |b| ad.at(b) - 10 },
 	"the stored clock agrees with the source map's values from beat 0");
-assertClose.(elT.baseWallDelta(0, 3), 4, "the coerced clock drives baseWallDelta");
-// a plain MIDIItemTempoMap is FROZEN into an AnchorTempoMap (38bb1c33) rather
-// than stored by reference — same t0 and same anchors, but a new object, so the
-// list's clock can no longer be mutated behind its back through the caller's
-// handle. Only the anchor values are load-bearing here; identity is not.
+assertClose.(elT.baseWallDelta(0, 3), 4, "the stored clock drives baseWallDelta");
+assert.(elT.tempoMap.asMonoMap === elT.tempoMap, "asMonoMap on the stored clock is itself");
+assert.(elT.tempoMap.quantizeWindow(0.5).isKindOf(AnchorMap),
+	"MonoMap methods work on the stored clock directly");
+// edits, copies and snapshots keep t0
+elT.quantize(0.5);
+assertClose.(elT.t0, 10, "an edit method keeps t0");
+assertClose.(elT.copy.t0, 10, "copy carries t0");
+assertClose.(elT.prClockSnapshot.t0, 10, "the clock snapshot carries t0");
+// old maps are converted, not stored by reference
 tmPass = MIDIItemTempoMap.fromAnchors([5, 6, 7], [0, 1, 2]);
 elT.tempoMap = tmPass;
-assert.(elT.tempoMap.isKindOf(AnchorTempoMap),
-	"a plain MIDIItemTempoMap is frozen to an AnchorTempoMap");
-assert.((elT.tempoMap === tmPass).not, "freezing answers a NEW map, not the one given");
-assertClose.(elT.tempoMap.t0, 5, "and keeps its own t0 (no rebasing of old-world maps)");
-assertArr.(elT.tempoMap.times, [0, 1, 2], "freezing preserves the relative anchor times");
-assertArr.(elT.tempoMap.beats, [1, 1], "freezing preserves the beat gaps");
+assert.(elT.tempoMap.isKindOf(AnchorMap), "a MIDIItemTempoMap is converted to an AnchorMap");
+assertClose.(elT.t0, 5, "and its t0 moves to the list");
+assertArr.(elT.tempoMap.times, [0, 1, 2], "conversion preserves the relative anchor times");
+assertArr.(elT.tempoMap.beats, [1, 1], "conversion preserves the beat gaps");
+tmPass = MIDIItemTempoMap.fromAnchors([5, 6, 7.5, 8, 9.5], [0, 1, 2, 3, 4]).curve(1, 8);
+elT.tempoMap = tmPass;
+assert.(h[\maxErrOver].(-1, 6, { |b| (elT.tempoMap.timeAt(b) - tmPass.timeAt(b)).abs }, 400) < 1e-9,
+	"a curved old map converts exactly, at any oversample");
+assertClose.(elT.t0, 5, "the curved map's t0 moves to the list");
+// refusals
+assert.(throws.({ elT.tempoMap = fm }), "a FunctionMap is refused (freeze it with .sample(n))");
+assert.(throws.({ elT.tempoMap = AffineMap(2, 0, beatF, secF) }), "a total AffineMap is refused");
+assert.(throws.({ elT.tempoMap = AnchorMap([0, 1], [0, 2], beatF, beatF) }),
+	"a beat -> beat map is refused");
+assert.(throws.({ elT.tempoMap = 42 }), "a non-map is refused");
 elT.tempoMap = nil;
 assert.(elT.tempoMap.isNil, "nil still clears the clock");
 // swapping the clock invalidates the memoized beat->wall integral

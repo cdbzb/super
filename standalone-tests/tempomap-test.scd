@@ -285,7 +285,7 @@ assert.(MapSeq([mt.fromBeat(0, 2), TempoMap([1,1],[1,2])]).isKindOf(MapSeq),
 // -- 15c. EventList.tempoMap_ folds an Array of maps --
 e = EventList(\tempoMapArrayTest);
 e.tempoMap_([mt.fromBeat(0, 2), mt.fromBeat(3, 5)]);
-assert.(e.tempoMap.isKindOf(AnchorTempoMap), "tempoMap_ Array: baked to AnchorTempoMap");
+assert.(e.tempoMap.isKindOf(AnchorMap), "tempoMap_ Array: baked to an AnchorMap");
 assertClose.(e.tempoMap.timeAt(4), r.at(4), "tempoMap_ Array: same clock as ++", 1e-4);
 e.tempoMap_([mt.fromBeat(0, 2)]);
 assertClose.(e.tempoMap.timeAt(2), mt.timeAt(2) - mt.timeAt(0),

@@ -332,7 +332,7 @@ AnchorMap : MonoMap {
 	// Sample a monotone cubic Hermite curve with `oversample` segments per span.
 	// Fritsch-Carlson tangent clamping preserves monotonicity. Original anchors
 	// stay exact; `amount` blends linear (0) to curved (1).
-	curve { |amount = 1, oversample = 16|
+	curve { |amount = 1, oversample = 32|
 		var n = xs.size, m, bs, ts;
 		(oversample.isNumber.not
 			or: { oversample.asInteger != oversample }
@@ -608,17 +608,44 @@ AnchorMap : MonoMap {
 		}
 	}
 
-    fromBeat { |from to|
-        ^(from == 0).if {
-            this.slices([to])[0]
-        } {
-            to.isNil.if { 
-                this.slices([from])[1]
-            } {
-                this.slices([from, to])[1]
-            }
-        }
-    }
+	/* The span [from, to] as its own map, beats re-zeroed: fromBeat(8) answers a
+	   map whose beat 0 is this map's beat 8 — the same contract as
+	   MIDIItemTempoMap.fromBeat, so `fromBeat(8).quantize(1, 0, 6)` addresses
+	   the trimmed map's beats. Seconds are NOT re-zeroed: the first anchor's
+	   output keeps the absolute placement that the old map kept in t0. from/to
+	   default to the ends and may lie outside the domain (read through the
+	   extension policy, like the old map's timeAt). slices is the form that
+	   keeps the original beat numbers. */
+	fromBeat { |from, to|
+		var lo = from ? xs.first, hi = to ? xs.last, cellXs, cellYs;
+		(hi <= lo).if {
+			Error("AnchorMap.fromBeat: need from < to, got % and %".format(lo, hi)).throw
+		};
+		cellXs = [lo]; cellYs = [this.prAnchorY(lo)];
+		xs.do { |x, i|
+			((x > lo) and: { x < hi }).if { cellXs = cellXs.add(x); cellYs = cellYs.add(ys[i]) }
+		};
+		cellXs = cellXs.add(hi); cellYs = cellYs.add(this.prAnchorY(hi));
+		^AnchorMap(cellXs - lo, cellYs, fromFrame, toFrame,
+			(lo <= xs.first).if { extendBelow } { \carry },
+			(hi >= xs.last).if { extendAbove } { \carry })
+	}
+	/* pre-rename name, kept so old MIDIItemTempoMap call sites read the same */
+	trim { |from, to| ^this.fromBeat(from, to) }
+
+	/* Legacy MIDIItemTempoMap readers, beat -> sec maps only. Both axes are
+	   measured from the first anchor, as the old map's were (its t0 held the
+	   offset; here ys.first does). */
+	times { this.prNeedBeatSec(\times); ^ys - ys.first }
+	beats { this.prNeedBeatSec(\beats); ^xs.differentiate.drop(1) }
+	beatDomain { this.prNeedBeatSec(\beatDomain); ^[0, xs.last - xs.first] }
+	timeDomain { this.prNeedBeatSec(\timeDomain); ^[0, ys.last - ys.first] }
+	prNeedBeatSec { |caller|
+		this.mapsDimensions(\beat, \sec).not.if {
+			Error("AnchorMap.%: needs a beat -> sec map, this one maps % -> %"
+				.format(caller, fromFrame.dimension, toFrame.dimension)).throw
+		}
+	}
 
 	// Replace one span with func.(cell). The result must bake to an AnchorMap and
 	// keep the input width. Output-width changes shift later material.
@@ -1559,6 +1586,11 @@ FunctionMap : MonoMap {
 
 // Reverse bridge for legacy consumers that require AnchorTempoMap.
 + MonoMap {
+	/* Plot through the legacy plotter: same arguments as
+	   MIDIItemTempoMap.plotTempo. Refuses what asAnchorTempoMap refuses. */
+	plotTempo { |subdiv = 1, name, domain = \beats, minRange = 1|
+		^this.asAnchorTempoMap.plotTempo(subdiv, name, domain, minRange)
+	}
 	// Bake exact finite anchors into a new AnchorTempoMap. Symbolic or infinite
 	// maps are refused rather than sampled silently. rebase shifts the first
 	// seconds anchor to zero for an EventList clock. Leave it false for warpTo,

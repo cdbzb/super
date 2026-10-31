@@ -17,6 +17,7 @@ var wallF = MapFrame(\sec);
 var c, p, g, spans, b, ch, n2;
 var ms, ms2, cellA, cellB, sw, gr, sn, gsn, dr, cat;
 var m5, cv0, cv1, cv05, q0, q1, qw, qwd, jit, tm, varOf, widths, drifty, dd, jr, jdd;
+var lg, lgOld, lgC;
 var fm, fmT, fmS, mkNote, fxNotes, fxPlayer, tk1, tk2, mit, mitM, mitA, mitC;
 var sl, sp, mOff, tsId, qs, st, pt, ssl, stm, msq, mcells;
 var ad, atm, atmInv, atmR, elT, tmPass, elC, tEnvC;
@@ -699,6 +700,33 @@ assert.(mitM.toFrame.isRelative and: { mitA.toFrame.isRelative.not },
 	"the seconds frame records relative vs absolute origin");
 assert.(mitM.toFrame.unifies(mitA.toFrame), "but both are \\sec and still compose");
 assert.(throws.({ mit.asMonoMap(origin: \wall) }), "origin must be relative or absolute");
+// legacy-compatible readers and trims: an absolute AnchorMap answers what the
+// old map does, so code written against MIDIItemTempoMap keeps its meaning
+assertArr.(mitA.times, mit.times, "times: seconds from the first anchor, as the old map");
+assertArr.(mitA.beats, mit.beats, "beats: the beat gaps, as the old map");
+assertArr.(mitA.beatDomain, mit.beatDomain, "beatDomain matches the old map");
+assertArr.(mitA.timeDomain, mit.timeDomain, "timeDomain matches the old map");
+assert.(throws.({ mitA.inverse.times }), "legacy readers refuse a sec -> beat map");
+lg = mitA.fromBeat(1, 3);
+lgOld = mit.fromBeat(1, 3);
+assertArr.(lg.xs, [0, 1, 2], "fromBeat re-zeroes the beats");
+assertArr.(lg.beats, lgOld.beats, "fromBeat beats match the old fromBeat");
+assertArr.(lg.times, lgOld.times, "fromBeat times match the old fromBeat");
+assertClose.(lg.ys.first, lgOld.t0, "fromBeat keeps the absolute start that the old map put in t0");
+assertArr.(mitA.fromBeat(2).xs, [0, 1], "fromBeat(from) runs to the end");
+assertArr.(mitA.fromBeat(nil, 2).xs, [0, 1, 2], "fromBeat(nil, to) starts at the first anchor");
+assertArr.(mitA.fromBeat(0.5, 2.5).xs, [0, 0.5, 1.5, 2], "fromBeat cuts between anchors");
+assertArr.(mitA.fromBeat(0, 3).xs, mitA.xs, "fromBeat over the whole domain is the map itself");
+assertClose.(mitA.fromBeat(2, 5).ys.last, mitA.at(5), "fromBeat past the end reads the extension");
+assert.(throws.({ mitA.fromBeat(2, 2) }), "fromBeat refuses an empty span");
+assertArr.(mitA.trim(1, 3).xs, lg.xs, "trim is fromBeat");
+assert.(mitA.fromBeat(1, 2).quantize(1, 0, 1).notNil,
+	"a span addressed in the trimmed map's own beats is inside it");
+// curve: same algorithm and default oversampling as the old map
+lgC = mitA.curve(1);
+assertArr.(lgC.xs.collect { |b| lgC.at(b) - mitA.ys.first },
+	lgC.xs.collect { |b| mit.curve(1).timeAt(b) }, "curve(1) matches the old curve at every node", 1e-6);
+assert.(lgC.xs.size == ((3 * 32) + 1), "curve oversamples 32 per span by default");
 // snapshot: no aliasing of the source arrays
 mit.beats = [5, 5, 5];
 assertArr.(mitM.ys, [0, 1, 2, 4], "5c is a snapshot — later mutation does not leak in");

@@ -58,3 +58,6 @@ Extensions/supercollider-sfz
 .aider.tags.cache.v4/cache.db
 .aider*
 Mandarin/Mandarin-tangled.scd
+
+# MIDIItems live in ~/tank/SC_midiItems (own repo); this path is a symlink to it
+Trek/MIDI-items

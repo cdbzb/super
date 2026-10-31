@@ -896,7 +896,9 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 	*initClass {
 		var parent;
 		all = Dictionary.new(256);
-		folder = this.filenameSymbol.asString.dirname.dirname +/+ "MIDI-items";
+		/* items are user data, kept in their own repo (cdbzb/SC_midiItems) so
+		they don't follow whichever super branch is checked out */
+		folder = "~/tank/SC_midiItems".standardizePath;
 		File.exists(folder).not.if{ "mkdir %".format(folder).unixCmd };
 		MyFree.add({ this.stopRecording; armed = false });
 		CmdPeriod.add(this);

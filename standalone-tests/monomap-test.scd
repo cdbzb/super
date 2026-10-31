@@ -18,7 +18,6 @@ var c, p, g, spans, b, ch, n2;
 var ms, ms2, cellA, cellB, sw, gr, sn, gsn, dr, cat;
 var m5, cv0, cv1, cv05, q0, q1, qw, qwd, jit, tm, varOf, widths, drifty, dd, jr, jdd;
 var fm, fmT, fmS, mkNote, fxNotes, fxPlayer, tk1, tk2, mit, mitM, mitA, mitC;
-var el, el2, elM, elFrozen, elFlat;
 var sl, sp, mOff, tsId, qs, st, pt, ssl, stm, msq, mcells;
 var ad, atm, atmInv, atmR, elT, tmPass, elC, tEnvC;
 
@@ -720,46 +719,6 @@ mitC = MIDIItemTempoMap.fromAnchors([0, 1, 2, 4], [0, 1, 2, 3]).curve(1);
 assert.(throws.({ mitC.asMonoMap }), "a curved map refuses to snapshot");
 assertArr.(mitC.asMonoMap(allowCurved: true).ys, [0, 1, 2, 4],
 	"allowCurved takes the linear anchors, explicitly dropping the curve");
-
-// ---- 5d: EventList.asMonoMap ----
-el = EventList.new;
-el.beatDur = 0.5;
-el.add(8, midinote: 60);
-elM = el.asMonoMap;
-assert.(elM.isKindOf(FunctionMap), "EventList.asMonoMap wraps, not merges");
-assert.(elM.mapsDimensions(\beat, \sec), "5d maps beat -> sec");
-assertClose.(elM.at(4), 2, "5d flat list: beat * beatDur");
-assertClose.(elM.invAt(2), 4, "5d inverts back to beats");
-assertArr.(elM.domain, [0, 8], "5d domain runs to the last event");
-// the clamp at 0 is fenced off rather than carried
-assert.(elM.extendBelow == \error, "5d declares \\error below (beatToWall clamps at 0)");
-assert.(throws.({ elM.at(-1) }), "5d refuses beats below 0 instead of reading a clamped 0");
-assertClose.(elM.at(20), 10, "5d carries above: the list holds its final tempo");
-// \tempoTrack is captured and honoured
-el2 = EventList.new;
-el2.beatDur = 0.5;
-el2.add(0, tempoTrack: 2);
-el2.add(8, midinote: 60);
-assertClose.(el2.asMonoMap.at(4), 4, "5d \\tempoTrack multiplier is in the map");
-assertClose.(el2.asMonoMap(useTempoTrack: false).at(4), 2,
-	"useTempoTrack: false is the base-tempo-only map");
-// live, not a snapshot — and sample is the freeze
-elFrozen = elM.sample(8);
-el.beatDur = 1;
-assertClose.(elM.at(4), 4, "5d is LIVE: a later beatDur change shows through");
-assertClose.(elFrozen.at(4), 2, "sample froze the map at capture time");
-el.beatDur = 0.5;
-// seconds are \sec, not relative: a list's wall time is its own origin
-assert.(elM.toFrame.isRelative.not, "5d seconds frame carries no relative note");
-assert.((el.asMonoMap >> el2.asMonoMap.inverse).isKindOf(ComposedMap),
-	"two lists' maps compose by dimension (placement is the caller's job)");
-// a list whose tempo track outruns its events still vouches for the whole span
-elFlat = EventList.new;
-elFlat.beatDur = 1;
-elFlat.add(0, tempoTrack: 1);
-elFlat.add(2, tempoTrack: Tuple3(2, 12, \lin));
-assert.(elFlat.asMonoMap.domain[1] >= 12,
-	"5d extent covers a \\tempoTrack ramp running past the last event");
 
 // ---- §12 seam: MonoMap -> AnchorTempoMap (the REVERSE bridge) ----
 // beats 0,1,2,3 played at 10, 11, 12, 14 s (the 5c fixture, the other way round)

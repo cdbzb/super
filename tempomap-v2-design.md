@@ -217,7 +217,9 @@ Two separate vocabularies, never mixed:
       (`allowCurved: true` takes the linear anchors on purpose) — curved
       snapshot is DEFERRED until a real need appears; the linear anchors survive
       `curve` untouched, so nothing is lost by waiting.
-   d. `list.asMonoMap` — **DONE 2026-07-29.** EventList's beatToWall/wallToBeat
+   d. `list.asMonoMap` — **REMOVED 2026-10-31** (no callers outside its tests,
+      and its `as` name collided with the `monoMap` snapshot; re-add it, e.g. as
+      `wallMap`, with composed-clock-monomap-proposal.md). Was **DONE 2026-07-29.** EventList's beatToWall/wallToBeat
       wrapped in `FunctionMap`, frames minted per list. Closes the "any tempo
       source answers the protocol" goal by wrapping, not merging. Three
       decisions worth remembering:

@@ -1502,7 +1502,7 @@ EventList {
 		// The beat->wall integral is keyed on tempoEnv IDENTITY only, but its
 		// cumulative sums (prWallCum / prWallBase / prWallSubs) are integrals of
 		// the BASE clock — swapping that clock under a retained tempoEnv (which
-		// every caller holds across a batch: prepare, asMonoMap, fire) would keep
+		// every caller holds across a batch: prepare, fire) would keep
 		// serving the old map's seconds. Drop it; the next lookup rebuilds.
 		prWallEnv = nil;
 		^this

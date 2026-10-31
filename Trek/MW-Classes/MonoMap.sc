@@ -1557,34 +1557,6 @@ FunctionMap : MonoMap {
 	}
 }
 
-// Live FunctionMap bridge for EventList's bidirectional clock.
-+ EventList {
-	// Live beat -> sec map: later EventList edits remain visible. tempoEnv is
-	// captured once for memoization; false ignores tempo-track events. The lower
-	// end is \error because EventList clamps below beat 0 and is not invertible
-	// there. Seconds are this list's wall time: compose with take-time maps
-	// through place, not directly.
-	asMonoMap { |fromFrame, toFrame, useTempoTrack = true, extendBelow, extendAbove|
-		var tEnv = useTempoTrack.if { this.tempoEnv };
-		^FunctionMap(
-			{ |beat| this.beatToWall(beat, tEnv) },
-			{ |sec| this.wallToBeat(sec, tEnv) },
-			[0, this.prMonoMapExtent(tEnv)],
-			fromFrame ? \beat,
-			toFrame ? \sec,
-			extendBelow ? \error,
-			extendAbove)
-	}
-	// Beat extent this list vouches for: its last event, or the end of the
-	// \tempoTrack automation when that runs past it.
-	prMonoMapExtent { |tEnv|
-		var hi = 0;
-		events.do { |e| hi = max(hi, e[\when] ? 0) };
-		tEnv !? { hi = max(hi, tEnv.times.sum) };
-		^hi
-	}
-}
-
 // Reverse bridge for legacy consumers that require AnchorTempoMap.
 + MonoMap {
 	// Bake exact finite anchors into a new AnchorTempoMap. Symbolic or infinite

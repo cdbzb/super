@@ -1,6 +1,6 @@
 # Plan: EventList.tempoMap holds an AnchorMap
 
-Status: decided, 2026-10-31. Branch `eventlist-anchormap`, cut from `audio-beat-marking` at `5d362df6`.
+Status: implemented 2026-10-31 on `eventlist-anchormap` (see "Outcome" at the end).
 
 ## Goal
 
@@ -64,11 +64,13 @@ down.
 recorded on `5d362df6`. A check run on the same code passes 98/98. Run it with
 `~eventListGoldenRecord = nil` in the live session (record mode is `true`).
 
-Differences already expected from decision 2 (an assigned MonoMap keeps its t0):
-`editAlign` and `editEase` record `t0: [0]` today, because `alignTo` and an
-`easeTo` result arrive as MonoMaps and are rebased. After the migration they
-should read 3.2, and their `place` values (`itemStartBeat`, `prItemBeat`) shift
-with it. Their schedules and grids should not change.
+Differences expected after the migration: `editAlign` records `t0: [0]` today,
+because `alignTo` assigns a fresh MonoMap and the setter rebases it. `alignTo` now
+goes through `prMapEdit`, like the other edit methods, so it keeps the list's t0
+(3.2). Its `place` values move with t0; its schedules and grids should not change.
+`editEase` keeps `t0: [0]`: it reassigns `a.tempoMap.fromBeat(…).easeTo(…)`, and the
+stored map is normalized, so its seconds start at 0 and carry no t0. That is
+decision 1's cost, the same as the list -> list copy in step 6.
 
 Recorded current behaviour worth knowing: assigning the curved map warns
 "could not re-attach t0 … leaving it rebased to 0", but the list still reads
@@ -218,3 +220,34 @@ About 60 lines changed in `EventList.sc` (`tempoMap_`, deleting `prWithT0` and
 `prFreezeItemMap`, the t0 ivar, `prMapEdit`, copy, snapshot, the hot-path
 readers). A new test suite of about 150 lines, plus the golden fixture, plus
 updates to roughly 10 assertions in existing suites.
+
+## Outcome (2026-10-31)
+
+Steps 2–8 are implemented. Every clock suite is green, plus `prepare-fire` and
+`eventlist-lazy`. The golden check differs from the pre-migration recording only
+in `editAlign.t0` (0 -> 3.2, intended); the data was re-recorded after that, and
+the remaining changes are float noise below 1e-10.
+
+Where the build differs from the plan:
+
+- **Readers keep `timeAt`/`beatAt`**, not `at`/`invAt`. Epoch snapshots archived
+  inside MIDIItems before the migration still hold an `AnchorTempoMap`, and both
+  forms answer `timeAt`/`beatAt`. The cost is negligible: on a 303-anchor map,
+  `AnchorMap.timeAt` takes 1.07 µs against 1.89 µs for `AnchorTempoMap.timeAt`
+  (beatAt: 1.34 vs 2.23), with identical results on 100k lookups.
+- **`prListT0`** reads t0 from a list either way: the list ivar for the new
+  form, or the stored map's own t0 for an archived snapshot.
+- **Curved old maps convert exactly** by reading `invEnv`'s breakpoints as
+  anchors, so none are refused. The probe showed V2 `curve` matching the old
+  curve to 1e-12 at the default oversample. Reading the breakpoints is exact at
+  any oversample.
+- **Stored seconds are marked `\relative`**, so `warpTo(e.tempoMap)` on a
+  player refuses a list clock (it has no t0) instead of shifting the take.
+- **`AnchorMap.beatDomain`/`timeDomain` answer the real domain and range**, not
+  ranges starting at 0 as `0529f65a` had them. Generic readers (`prSrcTimeAt`,
+  `prSrcOffset`, addItem's source-origin fallback) subtract `timeDomain.first`, so
+  only the real range reads right for maps whose anchors don't start at 0.
+- **Tests:** the new-contract assertions live in `monomap-test` §12, not in a
+  separate suite. `prepare-fire` 9b used a duck-typed Event as a clock, which
+  `tempoMap_` now refuses; it uses a densely sampled AnchorMap of the same curve.
+

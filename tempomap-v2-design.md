@@ -38,20 +38,26 @@ extendAbove    //   (a pickup before the first anchor and a run past the
 
 ### Frames
 
-A frame names a *specific* axis, not a dimension: `MapFrame(\beat, \take3)`,
-`MapFrame(\sec, \wall)`. Two maps compose only when the inner map's `toFrame` equals
-the outer's `fromFrame`; composition checks this at construction and hard-errors on
-mismatch. This is what makes "seconds to seconds but not the identity" (the old
-TempoWarp) representable, and it kills the `at`-direction ambiguity: with frames on
-the object, one `at` is enough. Frames are load-bearing, not metadata: `timeAt`/
-`beatAt` dispatch on frame dimensions (and refuse beat->beat maps), replacing
-respondsTo duck-typing.
+**Revised 2026-10-31 (`d8c05464`): frames are dimensions.** A frame names an axis
+by dimension: `MapFrame(\beat)`, `MapFrame(\sec)`, or the `\any` wildcard. Two maps
+compose when the inner map's output dimension meets the outer's input dimension
+(`MapFrame.unifies`); a mismatch hard-errors at construction. Frames are still
+load-bearing: `timeAt`/`beatAt` dispatch on dimensions (and refuse beat->beat maps),
+replacing respondsTo duck-typing, and sec -> sec maps (the old TempoWarp) stay
+representable.
 
-There are no wildcard frames, and no frame-free maps. `MapFrame.mint(dim)` makes a
-unique frame that composes with nothing — the template idiom: build a reusable shape
-(a swing cell, a metronome) on minted frames, then bind each use explicitly with
-`withFrames(from, to)` (same mapping, new axes; on a composition it rebinds only the
-outer ends). Reuse is by explicit rebinding, never by tag coincidence.
+The earlier design minted a unique tag per frame so that maps composed only by
+explicit binding. That forced `withFrames` ceremony on every independently built
+map, made two snapshots of one take refuse to compose, and caught no real bug:
+nothing numeric can say which recording an axis refers to, and minted tags did not
+survive a restart. Placement errors are `place`'s job.
+
+A `\sec` frame may carry an `origin` note, `MapFrame(\sec, \relative)`: seconds
+counted from the map's own first anchor. It rides through transforms, inverse,
+composition, bake and deepCopy, and `place` drops it. Only `warpTo` reads it: it
+refuses a relative map, because it needs absolute take time.
+
+`withFrames(from, to)` remains for binding `\any` to a real dimension.
 
 ### Extension
 
@@ -162,6 +168,14 @@ Two separate vocabularies, never mixed:
   any core work starts, and must pass unchanged when the facade later delegates to
   the core.
 - Deprecations only after the song corpus migrates; nothing removed mid-project.
+
+**EventList's clock (2026-10-31, eventlist-anchormap-migration-plan.md):**
+`EventList.tempoMap` is `nil` or a concrete beat -> sec `AnchorMap`, normalized to
+start at beat 0, second 0, with the removed seconds offset kept as the list's `t0`.
+`tempoMap_` converts everything else on the way in (old maps, curved ones exactly,
+`TempoMap`, any MonoMap that bakes to anchors) and refuses the rest. MonoMap
+methods work on `e.tempoMap` directly. The player side (`MIDIItemPlayer`,
+`Take.tempoMap`) still holds the old form.
 
 ## Build order
 

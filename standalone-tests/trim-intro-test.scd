@@ -207,19 +207,20 @@ sameArr.(stamps.(p.warpTo(mono, tm.t0)), stamps.(p.warpTo(manual, tm.t0)),
 
 // A map snapshotted with origin: \relative measures seconds from its OWN first
 // anchor. Warping absolute timestamps through it would subtract t0 twice, so the
-// seam refuses it — recognized by the take's registered relative seconds frame.
+// seam refuses it — recognized by the relative note on its seconds frame.
 monoRel = tm.asMonoMap(origin: \relative);
 assert.(throws.({ p.warpTo(monoRel) }),
 	"warpTo refuses a map built with origin: \\relative (t0 would be subtracted twice)");
 assert.(throws.({ p.warpTo(monoRel, tm.t0) }),
 	"the relative refusal does not depend on dropBefore");
-// ...but only for THIS take: a relative map off other events is foreign, and a
-// foreign map is trusted (player identity is not stable across deepCopy hops, so
-// a mismatch must never become a false error).
+// The note rides on the map, not on the take's identity, so a relative map off
+// another take — or through a deepCopy of this one — is refused just the same.
 other = mkPlayer.([60, 62, 64, 65], [1, 1, 1, 1], [0, 1, 2, 3]);
 otherRel = other.tempomap.asMonoMap(origin: \relative);
-assert.(throws.({ p.warpTo(otherRel) }).not,
-	"a map off ANOTHER take is foreign — trusted, not refused");
+assert.(throws.({ p.warpTo(otherRel) }),
+	"a relative map off ANOTHER take is refused too");
+assert.(throws.({ p.deepCopy.warpTo(monoRel) }),
+	"a deepCopied player still refuses a relative map");
 assert.(throws.({ p.warpTo(mono) }).not,
 	"the absolute map is still accepted after a relative one exists for the take");
 

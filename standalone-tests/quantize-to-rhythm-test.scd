@@ -233,7 +233,7 @@ sameArr.(stamps.(off), offOrig, "warpTo(sec->sec): the receiver is untouched");
 // ---------------------------------------------------------- the relative-axis trap
 // One tempomap object, two snapshots: the \relative one measures seconds from
 // its own first anchor, so a sec -> sec map built on THAT axis would shift the
-// take by t0 rather than remap it. Only an exact frame match is an error.
+// take by t0 rather than remap it. The relative note on the frame is the error.
 tm = p.tempomap;
 mRel = tm.asMonoMap(origin: \relative);
 mAbs = tm.asMonoMap(origin: \absolute);

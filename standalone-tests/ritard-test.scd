@@ -6,7 +6,7 @@ var h = (thisProcess.nowExecutingPath.dirname +/+ "test-helpers.scd").load;
 var assert = h[\assert], assertClose = h[\assertClose], assertArr = h[\assertArr];
 var throws = { |fn| var t = false; try { fn.value } { t = true }; t };
 
-var beatF = MapFrame(\beat, \t), secF = MapFrame(\sec, \t);
+var beatF = MapFrame(\beat), secF = MapFrame(\sec);
 // tempo ratio actually realised across a map: local tempo at the far end over
 // local tempo at the near end, read off the first and last sampled segments
 var endRatio = { |m|
@@ -24,7 +24,7 @@ var flat = AnchorMap([0, 1, 2, 3, 4], [0, 0.5, 1.0, 1.5, 2.0], beatF, secF);
 var wob = AnchorMap([0, 1, 2, 3, 4], [0, 0.4, 1.1, 1.6, 2.2], beatF, secF);
 // first span 2 bps, last span 1 bps -> a fit should read w = 0.5
 var drifting = AnchorMap([0, 1, 2, 3], [0, 0.5, 1.1, 2.1], beatF, secF);
-var groove = AnchorMap([0, 1, 2], [0, 1.2, 2], MapFrame(\beat, \a), MapFrame(\beat, \b));
+var groove = AnchorMap([0, 1, 2], [0, 1.2, 2], MapFrame(\beat), MapFrame(\beat));
 // steady 2 bps over 6 beats, for the span/pinEntry tests
 var host = AnchorMap([0, 1, 2, 3, 4, 5, 6],
 	[0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0], beatF, secF);
@@ -319,7 +319,7 @@ assertArr.(sEase.domain, [10, 16], "and lays other after it in the receiver's fr
 // the ordinary case (easing one recording into the next) while catching nothing
 // a MapSeq does not already discard.
 foreign = AnchorMap([0, 1, 2, 3, 4], [0, 0.5, 1.0, 1.5, 2.0],
-	MapFrame(\beat, \other), MapFrame(\sec, \other));
+	MapFrame(\beat), MapFrame(\sec));
 foreignEase = slow.easeTo(foreign, 2, 2);
 assertArr.(foreignEase.domain, [0, 8], "easeTo takes an other on foreign frames");
 assertArr.(foreignEase.ys, ease.ys, "and answers exactly what the shared-frame call did");

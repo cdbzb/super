@@ -1845,22 +1845,15 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		})
 		.collect({ |e| (e.timestamp < dropBefore).if { e.timestamp = dropBefore }; e })
 	}
-	// §12f: the sec -> sec half of the seam. `bake` first because the map is
-	// looked up once per event and PL fusion is exact and paid once; the frame
-	// check is prTempoMapFromMonoMap's, restated for the other orientation.
+	/* §12f: the sec -> sec half of the seam. `bake` first because the map is
+	   looked up once per event and PL fusion is exact and paid once. A sec -> sec
+	   map assembled from origin: \relative snapshots measures seconds from its
+	   own first anchor, while these timestamps are absolute take time: applying
+	   it would shift everything by t0 instead of remapping it. The relative note
+	   rides on the seconds frame, so it survives transforms and deepCopies. */
 	prSecMapForWarp { |map|
 		var baked = map.bake;
-		var relFrame = MapFrame.peekSource(this.midiEvents, \relative);
-		// A sec -> sec map assembled from origin: \relative snapshots measures
-		// seconds from its own first anchor on BOTH ends, while these timestamps
-		// are absolute take time: applying it would shift everything by t0 instead
-		// of remapping it. Only an EXACT match against the take's registered
-		// relative axis is an error (peekSource never mints, so a foreign map reads
-		// nil and is trusted) — same deliberate asymmetry, same player-identity
-		// reason, as the beat<->sec check.
-		(relFrame.notNil and: {
-			(baked.fromFrame == relFrame) or: { baked.toFrame == relFrame }
-		}).if {
+		(baked.fromFrame.isRelative or: { baked.toFrame.isRelative }).if {
 			Error("warpTo: this sec -> sec map is built on seconds RELATIVE to its own "
 				"first anchor (origin: \\relative), but warpTo needs absolute take time "
 				"— it would shift by t0 instead of remapping. Rebuild the pieces it was "
@@ -1868,9 +1861,12 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		};
 		^baked
 	}
-	// §12 seam (MonoMap.asAnchorTempoMap is the other half). rebase: false —
-	// warpTo's `origin` IS the map's t0, the absolute timestamp its first anchor
-	// was played at, so the seconds axis must pass through untouched.
+	/* §12 seam (MonoMap.asAnchorTempoMap is the other half). rebase: false —
+	   warpTo's `origin` IS the map's t0, the absolute timestamp its first anchor
+	   was played at, so the seconds axis must pass through untouched. The one
+	   mistake this seam can catch: a snapshot taken with origin: \relative
+	   measures seconds from its own first anchor, and warping through it would
+	   subtract t0 twice, silently. */
 	prTempoMapFromMonoMap { |map|
 		var baked = map.bake;
 		// sec-side frame, read off the BAKED orientation (a sec->beat map carries
@@ -1879,20 +1875,7 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		var secFrame = baked.mapsDimensions(\beat, \sec).if { baked.toFrame } {
 			baked.mapsDimensions(\sec, \beat).if { baked.fromFrame }
 		};
-		// The one mistake this seam can actually catch: a snapshot taken with
-		// origin: \relative measures seconds from its own first anchor, while
-		// these timestamps are absolute source time — warping through it would
-		// subtract t0 twice, silently. Only an EXACT match against the take's
-		// registered relative axis is an error; peekSource never mints, so a
-		// foreign map (anchor-built, another take, or these events after a
-		// deepCopy) reads nil and is trusted. Player identity is why that
-		// asymmetry is deliberate: MIDIItem.player hands back a fresh deepCopy on
-		// every call, so a take's arrays are not stable across hops and a
-		// mismatch must degrade to "foreign, trust the caller", never to a false
-		// error on a perfectly good absolute map.
-		(secFrame.notNil and: {
-			secFrame == MapFrame.peekSource(this.midiEvents, \relative)
-		}).if {
+		(secFrame.notNil and: { secFrame.isRelative }).if {
 			Error("warpTo: this map's seconds are RELATIVE to its own first anchor "
 				"(built with origin: \\relative), but warpTo needs absolute take time — "
 				"it would subtract t0 twice. Rebuild it with asMonoMap(origin: "
@@ -2459,11 +2442,9 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	// sec -> sec branch hands those timestamps back untouched to float precision.
 	// Inside, each onset lands on mOld's time for its cumulative-dur beat.
 	//
-	// Both maps come from ONE `tempomap.asMonoMap` call on purpose: `tempomap`
-	// builds a fresh MIDIItemTempoMap every time it is asked, so its \beat frame
-	// is minted anew per call and two snapshots taken separately REFUSE to compose
-	// (that is the frame system working). One call, one beat axis, no `withFrames`
-	// repair.
+	// Both maps come from ONE `tempomap.asMonoMap` call: `tempomap` derives a
+	// fresh map every time it is asked, and mNew must be an edit of exactly the
+	// anchors mOld holds for the identity-outside-[from, to] guarantee above.
 	//
 	// Non-mutating in warpTo's sense: the receiver keeps its performed times and
 	// the warped copy is returned.

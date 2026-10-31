@@ -5,27 +5,37 @@ var h = (thisProcess.nowExecutingPath.dirname +/+ "test-helpers.scd").load;
 var assert = h[\assert], assertClose = h[\assertClose], assertArr = h[\assertArr];
 var throws = { |fn| var t = false; try { fn.value } { t = true }; t };
 
-var beatF = MapFrame(\beat, \item);
-var secF = MapFrame(\sec, \perf);
-var listF = MapFrame(\beat, \list);
+// Frames are dimensions now: these names only document intent.
+var beatF = MapFrame(\beat);
+var secF = MapFrame(\sec);
+var listF = MapFrame(\beat);
 
 // m1: beat_item -> sec, anchors (0,2,4) -> (0,1,4); slopes 0.5 then 1.5
 var m1 = AnchorMap([0, 2, 4], [0, 1, 4], beatF, secF);
 var aff = AffineMap(2, 1, secF, listF);
-var wallF = MapFrame(\sec, \wall);
+var wallF = MapFrame(\sec);
 var c, p, g, spans, b, ch, n2;
 var ms, ms2, cellA, cellB, sw, gr, sn, gsn, dr, cat;
 var m5, cv0, cv1, cv05, q0, q1, qw, qwd, jit, tm, varOf, widths, drifty, dd, jr, jdd;
 var fm, fmT, fmS, mkNote, fxNotes, fxPlayer, tk1, tk2, mit, mitM, mitA, mitC;
 var el, el2, elM, elFrozen, elFlat;
 var sl, sp, mOff, tsId, qs, st, pt, ssl, stm, msq, mcells;
-var ad, atm, atmInv, atmR, pk, pkF, elT, tmPass, elC, tEnvC;
+var ad, atm, atmInv, atmR, elT, tmPass, elC, tEnvC;
 
 // ---- MapFrame ----
-assert.(MapFrame(\beat, \a) == MapFrame(\beat, \a), "frame value equality");
-assert.((MapFrame(\beat, \a) == MapFrame(\beat, \b)).not, "frames differ by tag");
-assert.((MapFrame(\beat, \a) == MapFrame(\sec, \a)).not, "frames differ by dimension");
-assert.(MapFrame.mint(\beat) != MapFrame.mint(\beat), "minted frames are unique");
+assert.(MapFrame(\beat) == MapFrame(\beat), "frame value equality");
+assert.((MapFrame(\beat) == MapFrame(\sec)).not, "frames differ by dimension");
+assert.((MapFrame(\sec, \relative) == MapFrame(\sec)).not, "frames differ by origin note");
+assert.(MapFrame(\sec, \relative).isRelative and: { MapFrame(\sec).isRelative.not },
+	"isRelative reads the origin note");
+assert.(MapFrame(\sec, \relative).unifies(MapFrame(\sec, \absolute)),
+	"unifies ignores the origin note");
+assert.(MapFrame(\any).unifies(MapFrame(\sec)) and: { MapFrame(\beat).unifies(MapFrame(\any)) },
+	"\\any unifies with any dimension");
+assert.(MapFrame(\beat).unifies(MapFrame(\sec)).not, "dimensions must agree to unify");
+assert.(throws.({ MapFrame(\beat, \take3) }), "a stale tag argument is refused loudly");
+assert.((AffineMap(2, 0, \beat, \beat) >> AffineMap(0.5, 1, \beat, \sec)).at(2) == 3,
+	"independently built maps compose when their dimensions meet");
 
 // ---- AffineMap ----
 assertClose.(aff.at(3), 7, "affine at");
@@ -74,7 +84,7 @@ assert.(throws.({ g.at(5) }), "fromSpans binds extendAbove passed as keyword arg
 assertClose.(g.at(3), 2.5, "keyword-built \\error map fine inside domain");
 
 // ---- compose ----
-assert.(throws.({ m1 >> AffineMap(1, 0, listF, secF) }), "frame mismatch refuses compose");
+assert.(throws.({ m1 >> AffineMap(1, 0, listF, secF) }), "dimension mismatch refuses compose");
 c = m1 >> aff;
 assertClose.(c.at(3), 6, "composed at (2.5 * 2 + 1)");
 assertClose.(c.invAt(6), 3, "composed invAt");
@@ -87,8 +97,10 @@ assert.((c >> AffineMap(1, 0, listF, beatF)).maps.size == 3,
 p = m1.place(10, 100);
 assertClose.(p.at(13), 102.5, "place shifts both origins");
 assertClose.(p.invAt(102.5), 13, "placed invAt");
-assert.(p.fromFrame != beatF and: { p.fromFrame.dimension == \beat },
-	"place mints a new frame, same dimension");
+assert.(p.fromFrame.dimension == \beat and: { p.toFrame.dimension == \sec },
+	"place keeps the dimensions");
+assert.(AnchorMap([0, 1], [0, 1], \beat, MapFrame(\sec, \relative)).place(0, 5)
+	.toFrame.isRelative.not, "place drops the relative note on its outer frame");
 
 // ---- span mapping ----
 spans = m1.warp([1, 1, 1, 1]);
@@ -113,13 +125,13 @@ g = m1.withFrames(listF, secF);
 assertClose.(g.at(3), m1.at(3), "withFrames keeps the mapping");
 assert.(g.fromFrame == listF, "withFrames rebinds the input axis");
 assert.(throws.({ m1 >> AffineMap(1, 0, listF, secF) }),
-	"original still refuses frames the rebound copy accepts");
+	"a sec output still refuses a beat input");
 assert.((g >> AffineMap(1, 0, secF, listF)).notNil, "rebound copy composes on new axes");
 g = AffineMap(2, 0, beatF, secF).withFrames(listF, secF);
 assertClose.(g.at(3), 6, "affine withFrames keeps scale/offset");
-g = (m1 >> aff).withFrames(listF, MapFrame(\sec, \other));
+g = (m1 >> aff).withFrames(listF, MapFrame(\sec, \relative));
 assertClose.(g.at(3), 6, "composed withFrames keeps the chain's values");
-assert.(g.fromFrame == listF and: { g.toFrame.tag == \other },
+assert.(g.fromFrame == listF and: { g.toFrame.isRelative },
 	"composed withFrames rebinds only the outer ends");
 
 // ---- checkComposable ----
@@ -282,11 +294,11 @@ assert.(throws.({ MapSeq([AffineMap(1, 0)]) }), "MapSeq refuses a total cell");
 assert.(throws.({ MapSeq([cellA], 0) }), "MapSeq refuses repeats 0");
 assert.(throws.({ MapSeq([cellA], 2.5) }), "MapSeq refuses fractional repeats");
 assert.(throws.({ MapSeq([
-		AnchorMap([0, 1], [0, 1], MapFrame(\beat, \x), MapFrame(\beat, \y)),
-		AnchorMap([0, 1], [0, 1], MapFrame(\beat, \z), MapFrame(\sec, \w))]) }),
+		AnchorMap([0, 1], [0, 1], MapFrame(\beat), MapFrame(\beat)),
+		AnchorMap([0, 1], [0, 1], MapFrame(\beat), MapFrame(\sec))]) }),
 	"MapSeq refuses cells that disagree on a frame dimension");
 assert.(MapSeq([
-		AnchorMap([0, 1], [0, 1], MapFrame(\beat, \x), MapFrame(\beat, \y)),
+		AnchorMap([0, 1], [0, 1], MapFrame(\beat), MapFrame(\beat)),
 		AnchorMap([0, 1], [0, 1])]).fromFrame.dimension == \beat,
 	"\\any-dimension cells mix in and the MapSeq takes the stated dimension");
 
@@ -554,13 +566,13 @@ assertClose.(stm.ys[3] - stm.ys[1], 1, "setTempo(2 bps): 2 beats take 1 second",
 assertClose.(m5.setTempo(2, 1, 3).ys.last, m5.setSlope(0.5, 1, 3).ys.last,
 	"setTempo(bps) == setSlope(1/bps)", 1e-12);
 assert.(throws.({ m5.setTempo(0, 1, 3) }), "setTempo rejects bps 0");
-assert.(throws.({ AnchorMap(m5.xs, m5.ys, MapFrame(\beat, \a), MapFrame(\beat, \b))
+assert.(throws.({ AnchorMap(m5.xs, m5.ys, MapFrame(\beat), MapFrame(\beat))
 		.setTempo(2, 1, 3) }),
 	"setTempo refuses a beat->beat map (a groove has no tempo)");
-assert.(throws.({ AnchorMap(m5.xs, m5.ys, MapFrame(\sec, \a), MapFrame(\beat, \b))
+assert.(throws.({ AnchorMap(m5.xs, m5.ys, MapFrame(\sec), MapFrame(\beat))
 		.setTempo(2, 1, 3) }),
 	"setTempo refuses a sec->beat map (wrong direction)");
-assert.(AnchorMap(m5.xs, m5.ys, MapFrame(\beat, \a), MapFrame(\sec, \b))
+assert.(AnchorMap(m5.xs, m5.ys, MapFrame(\beat), MapFrame(\sec))
 		.setTempo(2, 1, 3).notNil,
 	"setTempo accepts any beat->sec frames");
 
@@ -684,29 +696,25 @@ assertArr.(mitA.ys, [10, 11, 12, 14], "origin \\absolute adds t0");
 assertArr.([0, 1.5, 3].collect { |b| mitA.at(b) },
 	[0, 1.5, 3].collect { |b| mit.timeAt(b) + mit.t0 },
 	"origin \\absolute matches timeAt + t0 (EventList.timeAtBeat's idiom)");
-assert.((mitA.toFrame == mitM.toFrame).not,
-	"relative and absolute seconds are different axes");
+assert.(mitM.toFrame.isRelative and: { mitA.toFrame.isRelative.not },
+	"the seconds frame records relative vs absolute origin");
+assert.(mitM.toFrame.unifies(mitA.toFrame), "but both are \\sec and still compose");
 assert.(throws.({ mit.asMonoMap(origin: \wall) }), "origin must be relative or absolute");
 // snapshot: no aliasing of the source arrays
 mit.beats = [5, 5, 5];
 assertArr.(mitM.ys, [0, 1, 2, 4], "5c is a snapshot — later mutation does not leak in");
-// frames: shared per take, distinct per map
+// frames are dimensions: maps off one take, or off different sources, compose
 mkNote = { |ts, note = 60| (midicmd: \noteOn, type: \mk, timestamp: ts,
 	midinote: note, dur: 0.5, sustain: 0.5, amp: 0.5) };
 fxNotes = [0, 1, 2, 3, 4, 6].collect { |ts| mkNote.(ts) };
 fxPlayer = MIDIItemPlayer(fxNotes, nil);
 tk1 = MIDIItemTempoMap(fxPlayer, { |n| n[0..4] }, [1, 1, 1, 1, 1]);
 tk2 = MIDIItemTempoMap(fxPlayer, { |n| n[0..4] }, [2, 2, 2, 2, 2]);
-assert.(tk1.asMonoMap.toFrame == tk2.asMonoMap.toFrame,
-	"two maps off one take share the wall axis");
-assert.((tk1.asMonoMap.fromFrame == tk2.asMonoMap.fromFrame).not,
-	"different beat readings of one take are different beat axes");
-assert.(tk1.asMonoMap.fromFrame == tk1.asMonoMap.fromFrame,
-	"repeated asMonoMap on one map agrees with itself");
-assert.((tk1.asMonoMap.toFrame == mitM.toFrame).not,
-	"anchor-built maps have no take, so they mint their own wall axis");
 assert.((tk1.asMonoMap >> tk2.asMonoMap.inverse).isKindOf(ComposedMap),
-	"shared wall axis lets one take's maps compose (a beat->beat relabel)");
+	"one take's maps compose (a beat->beat relabel)");
+assert.((tk1.asMonoMap >> tk1.asMonoMap.inverse).isKindOf(ComposedMap),
+	"two separate snapshots of one map compose (no per-call frame minting)");
+assert.(throws.({ tk1.asMonoMap >> tk2.asMonoMap }), "beat->sec >> beat->sec still refuses");
 // curved maps are refused, not silently flattened
 mitC = MIDIItemTempoMap.fromAnchors([0, 1, 2, 4], [0, 1, 2, 3]).curve(1);
 assert.(throws.({ mitC.asMonoMap }), "a curved map refuses to snapshot");
@@ -741,18 +749,10 @@ el.beatDur = 1;
 assertClose.(elM.at(4), 4, "5d is LIVE: a later beatDur change shows through");
 assertClose.(elFrozen.at(4), 2, "sample froze the map at capture time");
 el.beatDur = 0.5;
-// frames are per list, so cross-list composition is refused until rebased
-assert.(throws.({ el.asMonoMap >> el2.asMonoMap.inverse }),
-	"two lists' wall axes do not compose by tag coincidence");
-assert.(el.asMonoMap.fromFrame == el.asMonoMap.fromFrame,
-	"repeated asMonoMap on one list agrees with itself");
-assert.((MapFrame.forSource(el, \beat) == MapFrame.forSource(el, \sec)).not,
-	"one source's beat and sec axes are different frames");
-assert.(MapFrame.forSource(el, \beat) == MapFrame.forSource(el, \beat),
-	"forSource is cached per source and slot");
-assert.((MapFrame.forSource(el, \sec, \relative)
-	== MapFrame.forSource(el, \sec, \absolute)).not,
-	"an explicit slot splits two axes of the same dimension");
+// seconds are \sec, not relative: a list's wall time is its own origin
+assert.(elM.toFrame.isRelative.not, "5d seconds frame carries no relative note");
+assert.((el.asMonoMap >> el2.asMonoMap.inverse).isKindOf(ComposedMap),
+	"two lists' maps compose by dimension (placement is the caller's job)");
 // a list whose tempo track outruns its events still vouches for the whole span
 elFlat = EventList.new;
 elFlat.beatDur = 1;
@@ -763,7 +763,7 @@ assert.(elFlat.asMonoMap.domain[1] >= 12,
 
 // ---- §12 seam: MonoMap -> AnchorTempoMap (the REVERSE bridge) ----
 // beats 0,1,2,3 played at 10, 11, 12, 14 s (the 5c fixture, the other way round)
-ad = AnchorMap([0, 1, 2, 3], [10, 11, 12, 14], MapFrame(\beat, \tk), MapFrame(\sec, \tk));
+ad = AnchorMap([0, 1, 2, 3], [10, 11, 12, 14], MapFrame(\beat), MapFrame(\sec));
 atm = ad.asAnchorTempoMap;
 assert.(atm.isKindOf(AnchorTempoMap), "asAnchorTempoMap returns a concrete AnchorTempoMap");
 assertClose.(atm.t0, 10, "rebase: false keeps the first anchor's seconds as t0 (take-absolute)");
@@ -790,7 +790,7 @@ assertArr.([10, 11.5, 14].collect { |t| atm.beatAt(t - atm.t0) },
 // refusals: nothing is guessed or silently approximated
 assert.(throws.({ AffineMap(2, 1, beatF, secF).asAnchorTempoMap }),
 	"an AffineMap is total — no finite anchors to hand over");
-assert.(throws.({ AnchorMap([0, 1], [0, 2], MapFrame(\beat, \x), MapFrame(\beat, \y))
+assert.(throws.({ AnchorMap([0, 1], [0, 2], MapFrame(\beat), MapFrame(\beat))
 	.asAnchorTempoMap }), "a beat->beat map (a groove) is not a tempo map");
 assert.(throws.({ AnchorMap([0, 1], [0, 2]).asAnchorTempoMap }),
 	"\\any dimensions refuse to guess an orientation (withFrames binds the real axes)");
@@ -803,14 +803,11 @@ assert.(throws.({ MapSeq([AnchorMap([0, 1], [0, 1], beatF, secF)], inf,
 assertArr.(fm.sample(4).asAnchorTempoMap.times, fm.sample(4).ys - fm.sample(4).ys.first,
 	"the named way out works: sample(n) then convert");
 
-// peekSource: a lookup that never mints
-pk = EventList.new;
-assert.(MapFrame.peekSource(pk, \beat).isNil, "peekSource on an unknown source is nil");
-assert.(MapFrame.peekSource(pk, \beat).isNil,
-	"peeking twice is still nil — the first peek minted nothing");
-pkF = MapFrame.forSource(pk, \beat);
-assert.(MapFrame.peekSource(pk, \beat) == pkF, "peekSource finds what forSource minted");
-assert.(MapFrame.peekSource(pk, \sec).isNil, "peekSource does not leak across slots");
+// the relative note survives transforms, inverse, composition and bake
+assert.(mitM.quantize(0.5).toFrame.isRelative, "transforms keep the relative note");
+assert.(mitM.inverse.fromFrame.isRelative, "inverse carries the note to the input side");
+assert.((mitM.inverse >> mitM).bake.toFrame.isRelative, "bake keeps the outer frames' note");
+assert.(mitM.deepCopy.toFrame.isRelative, "the note survives a deepCopy");
 
 // ---- §12 seam: EventList.tempoMap_ coercion (extends 5d) ----
 elT = EventList.new;
@@ -844,13 +841,9 @@ elC.add(8, midinote: 60);
 tEnvC = elC.tempoEnv;
 elC.tempoMap = ad;
 assertClose.(elC.beatToWall(3, tEnvC), 4, "beatToWall through the first coerced clock");
-elC.tempoMap = AnchorMap([0, 1, 2, 3], [0, 2, 4, 8], MapFrame(\beat, \tk2), MapFrame(\sec, \tk2));
+elC.tempoMap = AnchorMap([0, 1, 2, 3], [0, 2, 4, 8], MapFrame(\beat), MapFrame(\sec));
 assertClose.(elC.beatToWall(3, tEnvC), 8,
 	"assigning a new clock drops the cache keyed on the RETAINED tempoEnv");
-
-MapFrame.clearSourceFrames;
-assert.(MapFrame.forSource(el, \beat) != elM.fromFrame,
-	"clearSourceFrames drops the registry (frames are re-minted after)");
 
 (h[\report].() == 0).if { 0.exit } { 1.exit };
 )

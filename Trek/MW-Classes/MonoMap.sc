@@ -1,67 +1,56 @@
-// TempoMap V2 core (see tempomap-v2-design.md). MonoMaps are strictly
-// increasing, invertible maps between named axes. This file defines the map
-// types, combinators, transforms, and legacy bridges.
-//
-// A MapFrame identifies a specific axis by dimension and tag. Composition
-// requires matching frames; timeAt/beatAt dispatch on frame dimensions.
-//
-// Extension: per end, \carry (extend at the boundary slope) or \error.
-// No \clamp in the core — a clamped map is not invertible outside its domain.
-// Total maps (affine) have domain nil; their extension slots are inert.
+/* TempoMap V2 core (see tempomap-v2-design.md). MonoMaps are strictly
+   increasing, invertible maps between named axes. This file defines the map
+   types, combinators, transforms, and legacy bridges.
+
+   A MapFrame names an axis by dimension (\beat, \sec, or the \any wildcard).
+   Composition checks dimensions only: maps are shapes, and nothing numeric can
+   tell which recording an axis refers to, so frames do not try. timeAt/beatAt
+   dispatch on dimensions too. A \sec frame may also carry an `origin` note
+   (\relative: seconds counted from the map's own first anchor). It rides along
+   with the frame through transforms, inverse and composition, and is read only
+   by warpTo, which needs absolute take time.
+
+   Extension: per end, \carry (extend at the boundary slope) or \error.
+   No \clamp in the core — a clamped map is not invertible outside its domain.
+   Total maps (affine) have domain nil; their extension slots are inert. */
 
 MapFrame {
-	classvar prSourceFrames;
-	var <dimension, <tag;
-	*new { |dimension = \any, tag|
-		^super.newCopyArgs(dimension.asSymbol, (tag ?? { this.prNextTag }).asSymbol)
-	}
-	// auto-minted frames are unique: nothing composes with them by accident
-	*mint { |dimension = \any| ^this.new(dimension) }
-	*prNextTag { ^("f" ++ UniqueID.next).asSymbol }
-
-	// Return the cached frame for (source, slot), minting it if needed. Maps from
-	// the same source therefore share an axis and can compose. Bridges use this
-	// for take-wall frames. The slot defaults to dimension; the cache retains
-	// sources until cleared.
-	*forSource { |source, dimension = \any, slot|
-		var perSource;
-		slot = slot ? dimension;
-		prSourceFrames ?? { prSourceFrames = IdentityDictionary.new };
-		perSource = prSourceFrames.at(source) ?? {
-			var d = IdentityDictionary.new;
-			prSourceFrames.put(source, d);
-			d
+	var <dimension, <origin;
+	*new { |dimension = \any, origin|
+		[nil, \relative, \absolute].includes(origin).not.if {
+			Error("MapFrame: origin must be nil, \\relative or \\absolute, got %"
+				.format(origin)).throw
 		};
-		^perSource.at(slot) ?? {
-			var f = this.mint(dimension);
-			perSource.put(slot, f);
-			f
-		}
+		^super.newCopyArgs(dimension.asSymbol, origin)
 	}
-	// Return an existing source frame without minting or retaining a new source.
-	*peekSource { |source, slot = \any|
-		var perSource = prSourceFrames !? { prSourceFrames.at(source) };
-		^perSource !? { perSource.at(slot) }
+	isRelative { ^origin == \relative }
+	// composable: same dimension, or either side is the \any wildcard
+	unifies { |that|
+		^(dimension == \any) or: { that.dimension == \any }
+			or: { dimension == that.dimension }
 	}
-	*clearSourceFrames { prSourceFrames = nil }
 	== { |that|
 		^that.isKindOf(MapFrame) and: {
-			dimension == that.dimension and: { tag == that.tag }
+			dimension == that.dimension and: { origin == that.origin }
 		}
 	}
-	hash { ^dimension.hash bitXor: tag.hash }
-	printOn { |stream| stream << "MapFrame(" << dimension << ", " << tag << ")" }
-	storeArgs { ^[dimension, tag] }
+	hash { ^dimension.hash bitXor: origin.hash }
+	printOn { |stream|
+		stream << "MapFrame(" << dimension;
+		origin !? { stream << ", " << origin };
+		stream << ")"
+	}
+	storeArgs { ^origin.isNil.if { [dimension] } { [dimension, origin] } }
 }
 
 MonoMap {
 	var <fromFrame, <toFrame, <extendBelow = \carry, <extendAbove = \carry;
 
-	// nil frame arg mints a unique frame; a bare Symbol is taken as a dimension.
+	// a bare Symbol is taken as a dimension; nil gives the default dimension
 	prAsFrame { |frame, dimension = \any|
 		frame.isKindOf(MapFrame).if { ^frame };
-		frame.isKindOf(Symbol).if { ^MapFrame.mint(frame) };
-		^MapFrame.mint(dimension)
+		frame.isKindOf(Symbol).if { ^MapFrame(frame) };
+		^MapFrame(dimension)
 	}
 	prSetPolicy { |below, above|
 		extendBelow = below ? \carry; extendAbove = above ? \carry;
@@ -79,7 +68,7 @@ MonoMap {
 	domain { ^nil }
 	range { var d = this.domain; ^d !? { [this.at(d[0]), this.at(d[1])] } }
 
-	// f >> g : apply f, then g. Frame-checked in ComposedMap's constructor.
+	// f >> g : apply f, then g. Dimension-checked in ComposedMap's constructor.
 	>> { |outer| ^ComposedMap([this, outer]) }
 
 	// Concatenate two finite maps. `other` is treated as a shape and may be a
@@ -93,9 +82,10 @@ MonoMap {
 	// their own baked form; only ComposedMap has work to do.
 	bake { ^this }
 
-	// Absolute placement: at(x) == this.at(x - fromOrigin) + toOrigin.
-	// Replaces PlacedTempoMap and scattered `+ t0` arithmetic. New external
-	// frames are minted (same dimensions) unless given.
+	/* Absolute placement: at(x) == this.at(x - fromOrigin) + toOrigin.
+	   Replaces PlacedTempoMap and scattered `+ t0` arithmetic. The outer frames
+	   keep the dimensions but drop any origin note (placing re-origins the axis)
+	   unless given. */
 	place { |fromOrigin = 0, toOrigin = 0, fromFrame, toFrame|
 		var inF = this.prAsFrame(fromFrame, this.fromFrame.dimension);
 		var outF = this.prAsFrame(toFrame, this.toFrame.dimension);
@@ -219,7 +209,7 @@ AnchorMap : MonoMap {
 		^super.new.initAnchor(xs, ys, fromFrame, toFrame, extendBelow, extendAbove)
 	}
 	// args spelled out, not `... rest`: sclang cannot bind keyword args to a
-	// rest parameter and silently drops them (frames would be minted instead)
+	// rest parameter and silently drops them (frames would default to \any)
 	*fromAnchors { |xs, ys, fromFrame, toFrame, extendBelow, extendAbove|
 		^this.new(xs, ys, fromFrame, toFrame, extendBelow, extendAbove)
 	}
@@ -479,12 +469,12 @@ AnchorMap : MonoMap {
 		^AnchorMap(allXs, newYs, fromFrame, toFrame, extendBelow, extendAbove)
 	}
 
-	// Blend with a map on the same frames, using the union of both anchor sets.
+	// Blend with a map of the same dimensions, using the union of both anchor sets.
 	// amount 0 is this map; 1 is `other`; the default 0.5 is halfway, as in Object.blend.
 	blend { |other, amount = 0.5|
 		var us, ys2;
-		(fromFrame == other.fromFrame and: { toFrame == other.toFrame }).not.if {
-			Error("AnchorMap.blend: frame mismatch — % / % vs % / %"
+		(fromFrame.unifies(other.fromFrame) and: { toFrame.unifies(other.toFrame) }).not.if {
+			Error("AnchorMap.blend: dimension mismatch — % / % vs % / %"
 				.format(fromFrame, toFrame, other.fromFrame, other.toFrame)).throw
 		};
 		((amount < 0) or: { amount > 1 }).if {
@@ -857,10 +847,6 @@ AnchorMap : MonoMap {
 			Error("AnchorMap.easeTo: `other` must be a beat -> sec map, that one maps "
 				"% -> %".format(other.fromFrame.dimension, other.toFrame.dimension)).throw
 		};
-		// other is a shape: rebind it onto this map's axes rather than refusing.
-		(fromFrame == other.fromFrame and: { toFrame == other.toFrame }).not.if {
-			other = other.withFrames(fromFrame, toFrame)
-		};
 		((before.isNumber.not) or: { after.isNumber.not }
 			or: { before < 0 } or: { after < 0 }).if {
 				Error("AnchorMap.easeTo: before and after must be >= 0, got % and %"
@@ -1061,8 +1047,8 @@ ComposedMap : MonoMap {
 		}.flatten(1);
 		(maps.size < 1).if { Error("ComposedMap: empty chain").throw };
 		maps.doAdjacentPairs { |f, g|
-			(f.toFrame == g.fromFrame).not.if {
-				Error("ComposedMap: frame mismatch — % feeds % but % expects %"
+			f.toFrame.unifies(g.fromFrame).not.if {
+				Error("ComposedMap: dimension mismatch — % feeds % but % expects %"
 					.format(f, f.toFrame, g, g.fromFrame)).throw
 			}
 		};
@@ -1166,8 +1152,8 @@ ComposedMap : MonoMap {
 
 // Concatenate finite-domain cells for `repeats` passes. inf tiles the whole
 // real line. Joins are position-continuous, though slope may jump; differing
-// input/output widths intentionally accumulate drift. Cells are shapes: tags
-// and origins are ignored, but dimensions must agree. MapSeq begins at (0, 0);
+// input/output widths intentionally accumulate drift. Cells are shapes: their
+// origins are ignored, but dimensions must agree. MapSeq begins at (0, 0);
 // use place for absolute coordinates.
 //
 //   MapSeq([barIn5, barIn4], inf)                  // changing meter, forever
@@ -1242,7 +1228,7 @@ MapSeq : MonoMap {
 	}
 	// one or more cells tiled forever on a single beat axis == a Groove
 	*groove { |cells, fromFrame, toFrame|
-		var f = fromFrame ?? { MapFrame.mint(\beat) };
+		var f = fromFrame ?? { MapFrame(\beat) };
 		^MapSeq(cells.asArray, inf, f, toFrame ? f)
 	}
 	*swing { |ratio = 1.5, periodBeats = 2, fromFrame, toFrame|
@@ -1275,8 +1261,8 @@ MapSeq : MonoMap {
 			Error("MapSeq: repeats must be a positive integer or inf, got %"
 				.format(repeats)).throw
 		};
-		// cells are shapes, so their frame TAGS are ignored; only the
-		// dimensions have to agree (\any is the wildcard the minter uses)
+		// cells are shapes: only the dimensions have to agree (\any is the
+		// wildcard)
 		inDims = cells.collect { |c| c.fromFrame.dimension }.reject { |d| d == \any };
 		outDims = cells.collect { |c| c.toFrame.dimension }.reject { |d| d == \any };
 		(inDims.asSet.size > 1).if {
@@ -1546,10 +1532,10 @@ FunctionMap : MonoMap {
 
 // Exact linear-anchor snapshot of a MIDIItemTempoMap.
 + MIDIItemTempoMap {
-	// Snapshot beat -> sec. \relative starts seconds at the first anchor;
-	// \absolute adds t0. Their frames intentionally differ. Seconds frames are
-	// shared per take; beat frames are per map. Curved maps require allowCurved,
-	// which explicitly discards the curve and keeps its linear anchors.
+	/* Snapshot beat -> sec. \relative starts seconds at the first anchor;
+	   \absolute adds t0. The seconds frame records which, so warpTo can refuse
+	   a relative map. Curved maps require allowCurved, which explicitly discards
+	   the curve and keeps its linear anchors. */
 	asMonoMap { |fromFrame, toFrame, origin = \relative, allowCurved = false,
 		extendBelow, extendAbove|
 		var ys = times.asArray;
@@ -1565,8 +1551,8 @@ FunctionMap : MonoMap {
 		(origin == \absolute).if { ys = ys + t0 };
 		^AnchorMap.fromAnchors(
 			[0] ++ beats.asArray.integrate, ys,
-			fromFrame: fromFrame ?? { MapFrame.forSource(this, \beat) },
-			toFrame: toFrame ?? { MapFrame.forSource(midiEvents ? this, \sec, origin) },
+			fromFrame: fromFrame ? \beat,
+			toFrame: toFrame ?? { MapFrame(\sec, origin) },
 			extendBelow: extendBelow, extendAbove: extendAbove)
 	}
 }
@@ -1576,16 +1562,16 @@ FunctionMap : MonoMap {
 	// Live beat -> sec map: later EventList edits remain visible. tempoEnv is
 	// captured once for memoization; false ignores tempo-track events. The lower
 	// end is \error because EventList clamps below beat 0 and is not invertible
-	// there. Frames are distinct per list, so maps from different lists require
-	// an explicit rebase affine before composition.
+	// there. Seconds are this list's wall time: compose with take-time maps
+	// through place, not directly.
 	asMonoMap { |fromFrame, toFrame, useTempoTrack = true, extendBelow, extendAbove|
 		var tEnv = useTempoTrack.if { this.tempoEnv };
 		^FunctionMap(
 			{ |beat| this.beatToWall(beat, tEnv) },
 			{ |sec| this.wallToBeat(sec, tEnv) },
 			[0, this.prMonoMapExtent(tEnv)],
-			fromFrame ?? { MapFrame.forSource(this, \beat) },
-			toFrame ?? { MapFrame.forSource(this, \sec) },
+			fromFrame ? \beat,
+			toFrame ? \sec,
 			extendBelow ? \error,
 			extendAbove)
 	}

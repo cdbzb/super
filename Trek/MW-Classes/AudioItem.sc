@@ -15,6 +15,11 @@ AudioItem {
 	classvar <>fallbackRoundTrip = 0;
 	classvar <>fallbackOutputLatency = 0;
     classvar <>armed = false;
+	/* RubberBand construction options for every tempo-follow synth; an event's
+	   \rbEngine / \rbPitchMode override them. engine: 0 = R2 (Faster), 1 = R3
+	   (Finer). pitchMode: 0 = HighSpeed, 1 = HighQuality, 2 = HighConsistency
+	   (what the pre-engine UGen build hardcoded; right for moving pitch/rate). */
+	classvar <>rbEngine = 0, <>rbPitchMode = 2;
 	var <>name, <>buffer, <>path, <>recorder;
 	var <>directory, <>takes, stopFunc;
 
@@ -37,7 +42,7 @@ AudioItem {
 
 		SynthDef(\audioItemTempoFollowRB, {
 			|out=0, bufnum=0, amp=1, rate=1, startPos=0, sustain=1, fade=0.02,
-			 pitchShift=1, formant=1, pan=0, rateMod=1|
+			 pitchShift=1, formant=1, pan=0, rateMod=1, engine=0, pitchMode=2|
 			var sig, env, safeFade;
 			safeFade = fade.min(sustain * 0.45);
 			sig = RubberBand.ar(1, bufnum,
@@ -49,7 +54,9 @@ AudioItem {
 				startPos: startPos * BufSampleRate.kr(bufnum),
 				loop: 0,
 				doneAction: 0,
-				formant: formant
+				formant: formant,
+				pitchMode: pitchMode,
+				engine: engine
 			);
 			env = EnvGen.kr(
 				Env.linen(safeFade, (sustain - (safeFade * 2)).max(0), safeFade),
@@ -897,7 +904,9 @@ AudioItem {
 							\fade, fade,
 							\pitchShift, slot.(\pitchShift, 1),
 							\formant, slot.(\formant, 1),
-							\pan, ev[\pan] ? 0
+							\pan, ev[\pan] ? 0,
+							\engine, ev[\rbEngine] ? rbEngine,
+							\pitchMode, ev[\rbPitchMode] ? rbPitchMode
 						];
 						// after the mod synth, so a mapped bus is written before it's read
 						modState.value.notNil.if {
@@ -1037,7 +1046,9 @@ AudioItem {
 							startPos: fromSec * BufSampleRate.kr(buffer.bufnum),
 							loop: 0,
 							doneAction: 0,
-							formant: AudioItem.modIn(ev[\formant])
+							formant: AudioItem.modIn(ev[\formant]),
+							pitchMode: ev[\rbPitchMode] ? rbPitchMode,
+							engine: ev[\rbEngine] ? rbEngine
 						);
 						var ampEnv = EnvGen.kr(
 							Env.linen(ev[\tempoFollowFade] ? 0.03,
@@ -1215,7 +1226,9 @@ AudioItem {
 						startPos: plan[\srcStart] * BufSampleRate.kr(buffer.bufnum),
 						loop: 0,
 						doneAction: 0,
-						formant: AudioItem.modIn(ev[\formant])
+						formant: AudioItem.modIn(ev[\formant]),
+						pitchMode: ev[\rbPitchMode] ? rbPitchMode,
+						engine: ev[\rbEngine] ? rbEngine
 					);
 					var amp = EnvGen.kr(
 						Env([0, 1, 1, 0], [0.003, (plan[\total] - 0.003 - fade).max(0), fade]),

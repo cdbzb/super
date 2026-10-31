@@ -640,8 +640,8 @@ assertArr.([1, 1, 1, 1].warpTo(m1, 1), m1.warp([1, 1, 1, 1], 1),
 assertArr.([1, 1].warpTo(g, 1), [1, 2], "warpTo(TempoMap, from) starts at that beat");
 assertArr.([1, 2, 3.5, 2, 1].warpTo({ |p| Env([0, 10], [6])[p] }, from: 0.5),
 	[10/6, 20/6, 25/6, 1e-9, 1e-9], "warpTo(Function, from) == mapDeltasFrom(from, func)", 1e-9);
-assertArr.([1, 1].warpTo([0, 1, 3, 6], 1), [2, 3], "warpTo(Array, from) looks up from that position");
-assertArr.([1, 1].warpTo([0, 1, 3, 6]), [1, 2], "warpTo(Array) without from is unchanged");
+assertArr.([1, 1].warpTo([1, 2, 3], 1), [2, 3], "warpTo(Array, from) looks up from that position");
+assertArr.([1, 1].warpTo([1, 2, 3]), [1, 2], "warpTo(Array) without from is unchanged");
 
 // ---- FunctionMap (the fromFunction escape hatch, step 5d's substrate) ----
 fm = FunctionMap({ |x| x * 3 }, { |y| y / 3 }, [0, 10], beatF, secF);

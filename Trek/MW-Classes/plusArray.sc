@@ -123,7 +123,9 @@
 	/*
 	 Warp these deltas through `quarters` and answer the warped deltas: a
 	 TempoMap/MIDIItemTempoMap, a MonoMap, a Function (position -> position), an
-	 array of quarter positions, or a Symbol/Pseq naming one. `from` lays the
+	 array of per-quarter durations (deltas, as Song.quarters holds — read
+	 through atInterpolated, which integrates them), or a Symbol/Pseq naming
+	 one. `from` lays the
 	 deltas end to end starting at that input position. nil keeps each path's
 	 historical behaviour: 0 for the maps and a Function, and for an array the
 	 original lookup, whose first delta is measured from output 0.

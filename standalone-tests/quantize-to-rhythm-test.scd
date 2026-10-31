@@ -22,7 +22,7 @@ var throws = { |fn| var t = false; try { fn.value } { t = true }; t };
 var p, chord, bare, durs, ons, m0, m2, mStr, mTo, base, warped, tight, orig;
 var errMsg;
 var secF, idMap, off, offOrig, tm, mRel, mAbs;
-var slow, sDurs, sOns, sOrig, sM0, sM2, sReq, sFlat, mFix, manual;
+var slow, sDurs, sOns, sOrig, sM0, sM2, sReq, sFlat, manual;
 
 "== onsets + quantizeToRhythm, map form (§12c') and applied (§12f) ==".postln;
 
@@ -294,19 +294,15 @@ sameArr.(stamps.(slow.quantizeToRhythm("ex x q qe e", sOns, 4)), stamps.(sReq),
 sameArr.(stamps.(slow.quantizeToRhythm(sDurs, sOns, 4, 8)), stamps.(sReq),
 	"quantizeToRhythm: a consistent `to` changes nothing");
 
-// ------------------------------------------------- the frame wart, and the manual form
-// Every `tempomap` call builds a fresh MIDIItemTempoMap, so asMonoMap mints a
-// fresh BEAT frame: two snapshots taken separately refuse to compose. That is
-// why quantizeToRhythm takes ONE snapshot and hands it to the shared builder.
-assert.(throws.({
-	slow.tempomap.asMonoMap(origin: \absolute).inverse >> slow.tempomap.asMonoMap(origin: \absolute)
-}), "frames: two separate tempomap snapshots refuse to compose (a new beat axis per call)");
-// withFrames is the repair when the two maps DID come from separate calls —
-// and the hand-built composition reproduces quantizeToRhythm exactly
-mFix = sM0.withFrames(sM2.fromFrame, sM2.toFrame);
-manual = stamps.(slow.warpTo((sM2.inverse >> mFix).bake));
+// ----------------------------------------------------------- the manual form
+// Frames are dimensions, so two snapshots taken by separate `tempomap` calls
+// compose — and the hand-built composition reproduces quantizeToRhythm exactly.
+assert.((slow.tempomap.asMonoMap(origin: \absolute).inverse
+	>> slow.tempomap.asMonoMap(origin: \absolute)).isKindOf(ComposedMap),
+	"frames: two separate tempomap snapshots compose");
+manual = stamps.(slow.warpTo((sM2.inverse >> sM0).bake));
 sameArr.(manual, stamps.(sReq),
-	"manual (mNew.inverse >> mOld.withFrames(...)) == quantizeToRhythm, timestamp for timestamp");
+	"manual (mNew.inverse >> mOld) == quantizeToRhythm, timestamp for timestamp");
 
 // -------------------------------------------------------------- shared guards
 // The guards live on the map method, so they fire identically through the

@@ -54,10 +54,10 @@ TakeTransients {
 		^p
 	}
 
-	// Cached transients for a take, or nil. Never renders.
+	// Cached transients for a take, or nil. Never renders. Hand edits applied.
 	*load { |name, num, path, params|
 		var cp = this.cachePath(name, num, path, this.params(params));
-		^File.exists(cp).if { Object.readArchive(cp) }
+		^File.exists(cp).if { this.applyEdits(Object.readArchive(cp), this.loadEdits(name, num)) }
 	}
 
 	// Transients for (name, num) at `path`. On a cache hit `action` fires
@@ -67,7 +67,7 @@ TakeTransients {
 	*forTake { |name, num, path, action, force = false, params|
 		var p = this.params(params), cp = this.cachePath(name, num, path, p), cached;
 		(force.not and: { File.exists(cp) }).if {
-			cached = Object.readArchive(cp);
+			cached = this.applyEdits(Object.readArchive(cp), this.loadEdits(name, num));
 			action.value(cached);
 			^cached
 		};
@@ -75,7 +75,7 @@ TakeTransients {
 			File.exists(this.folder).not.if { File.mkdir(this.folder) };
 			File.exists(this.dir(name, num)).not.if { File.mkdir(this.dir(name, num)) };
 			result.writeArchive(cp);
-			action.value(result);
+			action.value(this.applyEdits(result, this.loadEdits(name, num)));
 		});
 		^nil
 	}
@@ -195,6 +195,86 @@ TakeTransients {
 		sf.close;
 		^out
 	}
+
+	// ---- hand edits (TakeGui: [ ] { } nudge, a add, x delete) ----------------
+	// Per take, not per parameter set, so a re-detection keeps them. The cache
+	// stays raw detector output; edits are re-applied on every load, by TIME (as
+	// marks resume): each one re-attaches to the nearest detected hit within
+	// editTol, and one with no hit near it is dropped.
+	//   (op: \move, from: <detected s>, to: <s>)
+	//   (op: \delete, at: <detected s>)
+	//   (op: \add, at: <s>)
+	// Applied events carry \detected (the time edits key on) or \added: true, and
+	// \edited: true when a hand put them where they are.
+
+	*editTol { ^0.01 }
+	*editsPath { |name, num| ^this.dir(name, num) +/+ "edits.archive" }
+	*loadEdits { |name, num|
+		var p = this.editsPath(name, num);
+		^File.exists(p).if { Object.readArchive(p) } { [] }
+	}
+	*writeEdits { |name, num, edits|
+		File.exists(this.folder).not.if { File.mkdir(this.folder) };
+		File.exists(this.dir(name, num)).not.if { File.mkdir(this.dir(name, num)) };
+		edits.writeArchive(this.editsPath(name, num));
+	}
+
+	// Pure: raw transients + edits -> new Array of new Events, time-sorted.
+	*applyEdits { |transients, edits|
+		var out = transients.collect { |e| e.copy.put(\detected, e[\timestamp]) };
+		var orig = transients.collect(_[\timestamp]), gone = Set[], added = [];
+		var near = { |t|
+			var best, bd = this.editTol;
+			orig.do { |o, i| var d = (o - t).abs; (d <= bd).if { bd = d; best = i } };
+			best
+		};
+		(edits ? []).do { |ed|
+			var i;
+			switch(ed[\op],
+				\move, {
+					i = near.(ed[\from]);
+					i !? { out[i][\timestamp] = ed[\to]; out[i][\detected] = ed[\from]; out[i][\edited] = true }
+				},
+				\delete, { i = near.(ed[\at]); i !? { gone.add(i) } },
+				\add, { added = added.add(ed[\at]) }
+			)
+		};
+		out = out.reject { |e, i| gone.includes(i) };
+		added.do { |t| out = out.add(this.addedEvent(transients, t)) };
+		^out.sort { |a, b| a[\timestamp] < b[\timestamp] }
+	}
+
+	// a hand-added hit: median strength, so the tracker weighs it like a typical one
+	*addedEvent { |transients, t|
+		var st = transients.collect { |e| e[\strength] ? 0 }.sort;
+		^(timestamp: t, amp: 0, strength: st.isEmpty.not.if { st[st.size div: 2] } { 1 },
+			added: true, edited: true)
+	}
+
+	// Pure: the edit list after the hand moves applied event `ev` (from its current
+	// timestamp) to `to`. Folds into the event's existing edit, so a run of nudges
+	// stays one entry. Mutates nothing but answers the new list.
+	*recordMove { |edits, ev, to|
+		var out = (edits ? []).copy, k;
+		(ev[\added] == true).if {
+			k = out.detectIndex { |ed| (ed[\op] == \add) and: { (ed[\at] - ev[\timestamp]).abs < 1e-9 } };
+			k.notNil.if { out[k] = (op: \add, at: to) } { out = out.add((op: \add, at: to)) };
+			^out
+		};
+		out = out.reject { |ed| (ed[\op] == \move) and: { (ed[\from] - ev[\detected]).abs < 1e-9 } };
+		^((to - ev[\detected]).abs < 1e-9).if { out } { out.add((op: \move, from: ev[\detected], to: to)) }
+	}
+
+	*recordDelete { |edits, ev|
+		var out = (edits ? []).copy;
+		(ev[\added] == true).if {
+			^out.reject { |ed| (ed[\op] == \add) and: { (ed[\at] - ev[\timestamp]).abs < 1e-9 } }
+		};
+		out = out.reject { |ed| (ed[\op] == \move) and: { (ed[\from] - ev[\detected]).abs < 1e-9 } };
+		^out.add((op: \delete, at: ev[\detected]))
+	}
+
+	*recordAdd { |edits, t| ^(edits ? []).copy.add((op: \add, at: t)) }
 
 	// A MIDIBeatTracker salienceFunc over these transients: strength normalised by
 	// the MEDIAN hit, so a typical transient weighs about 1 — the scale the tracker's

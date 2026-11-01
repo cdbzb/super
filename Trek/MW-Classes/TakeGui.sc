@@ -20,6 +20,9 @@
 // Keys: space play/stop · c clicks · C count-in · t tempo lane · w save marks ·
 // r clear · 0 reset view · h/l scroll, H/L zoom (outside a grid) · q close ·
 // ? help window (the full list, as in MIDIItem.gui).
+// Nudge, 1 px with [ ] and 10 px with { } at the current zoom: with a grid up the
+// current line (BeatMarkMode.nudgeLine); without one the picked transients, saved
+// per take as hand edits (TakeTransients.applyEdits) along with a / x add / delete.
 TakeGui {
 	classvar <>snapPx = 8, <>dpMaxSpan = 8;
 	var <take, <path, <sampleRate, <numFrames, <numChannels, <dur;
@@ -30,6 +33,7 @@ TakeGui {
 	var peakMin, peakMax, peakBin = 256;
 	var window, view, width = 1400, height = 520, waveTop = 130;
 	var <cursorTime = 0, playhead, isPlaying = false, playSynth, clickClock;
+	var <edits;                  // the take's transient hand edits (TakeTransients.loadEdits)
 	var playStartWall, playOrigin, clickEnabled = false, countIn = 0;
 	var dragLine, dragX;
 
@@ -68,19 +72,91 @@ TakeGui {
 	beatTimes { ^(beatMark !? { beatMark.gridTimes }) ?? { savedTimes } }
 
 	prSetTransients { |t|
-		transients = t;
-		beatMark = BeatMarkMode(transients, dur);
-		beatMark.salienceFunc = TakeTransients.salienceFor(transients);
-		beatMark.maxSpan = dpMaxSpan;   // audio has rests longer than 4 beats with no hit
-		beatMark.onChange = { this.refresh };
-		beatMark.onGridChange = { mapEd.invalidate; this.refresh };
-		beatMark.ensureVisible = { |t| this.prEnsureVisible(t) };
-		beatMark.onSave = { |sel| this.prSaveSelection(sel) };
+		edits = TakeTransients.loadEdits(take.name, take.num);
+		this.prMakeBeatMark(t);
 		(marks !? { marks[\selection] }).notNil.if {
 			beatMark.resume(marks[\selection]);
 			mapEd.invalidate;
 		};
-		"TakeGui: % transients".format(transients.size).postln;
+		"TakeGui: % transients%".format(transients.size,
+			edits.isEmpty.if("", { " (% hand edits)".format(edits.size) })).postln;
+		this.refresh;
+	}
+
+	prMakeBeatMark { |t|
+		transients = t;
+		beatMark = BeatMarkMode(transients, dur);
+		beatMark.salienceFunc = TakeTransients.salienceFor(transients);
+		beatMark.maxSpan = dpMaxSpan;   // audio has rests longer than 4 beats with no hit
+		beatMark.nudgeStep = { |coarse| this.nudgeStep(coarse) };
+		beatMark.onChange = { this.refresh };
+		beatMark.onGridChange = { mapEd.invalidate; this.refresh };
+		beatMark.ensureVisible = { |t| this.prEnsureVisible(t) };
+		beatMark.onSave = { |sel| this.prSaveSelection(sel) };
+	}
+
+	// ---- transient hand edits (no grid up: a grid's lines sit on these) --------
+
+	// seconds per nudge: one pixel, or ten, at the current zoom
+	nudgeStep { |coarse = false| ^nav.dur / width * coarse.if(10, 1) }
+
+	prCanEditTransients {
+		transients.isNil.if { "TakeGui: transients not detected yet".postln; ^false };
+		beatMark.extrapolateMode.if { "TakeGui: leave the grid (e) to edit transients".postln; ^false };
+		^true
+	}
+
+	// the picked transients, `delta` seconds; each stays 1 ms inside its
+	// neighbours, so indices (and the picks) survive and the order holds
+	nudgeTransients { |delta|
+		var sel;
+		this.prCanEditTransients.not.if { ^this };
+		sel = beatMark.selectedIndices.copy.sort;
+		sel.isEmpty.if { ^"TakeGui: pick transients to nudge (click a tick)".postln };
+		(delta > 0).if { sel = sel.reverse };
+		sel.do { |i|
+			var e = transients[i];
+			var lo = (i > 0).if { transients[i - 1][\timestamp] + 0.001 } { 0 };
+			var hi = (i < (transients.size - 1)).if { transients[i + 1][\timestamp] - 0.001 } { dur };
+			var t = (e[\timestamp] + delta).clip(lo, hi);
+			edits = TakeTransients.recordMove(edits, e, t);
+			e[\timestamp] = t;
+			e[\edited] = true;
+		};
+		this.prEditsChanged("nudged % transient% %% ms".format(sel.size, (sel.size == 1).if("", "s"),
+			(delta >= 0).if("+", ""), (delta * 1000).round(0.1)));
+	}
+
+	// 'x': drop the picked transients
+	deleteTransients {
+		var sel;
+		this.prCanEditTransients.not.if { ^this };
+		sel = beatMark.selectedIndices.asSet;
+		sel.isEmpty.if { ^"TakeGui: pick transients to delete (click a tick)".postln };
+		sel.do { |i| edits = TakeTransients.recordDelete(edits, transients[i]) };
+		this.prMakeBeatMark(transients.reject { |e, i| sel.includes(i) });
+		this.prEditsChanged("deleted % transient%".format(sel.size, (sel.size == 1).if("", "s")));
+	}
+
+	// 'a': a transient at the cursor, picked, ready to nudge
+	addTransient {
+		var t = cursorTime, ev, all;
+		this.prCanEditTransients.not.if { ^this };
+		transients.any { |e| (e[\timestamp] - t).abs < 0.001 }.if {
+			^"TakeGui: a transient already sits at the cursor".postln
+		};
+		edits = TakeTransients.recordAdd(edits, t);
+		ev = TakeTransients.addedEvent(transients, t);
+		all = (transients ++ [ev]).sort { |a, b| a[\timestamp] < b[\timestamp] };
+		this.prMakeBeatMark(all);
+		beatMark.selectedIndices = [all.indexOf(ev)];
+		this.prEditsChanged("added a transient at %".format(t.round(0.001)));
+	}
+
+	prEditsChanged { |msg|
+		TakeTransients.writeEdits(take.name, take.num, edits);
+		mapEd.invalidate;
+		"TakeGui: % (% hand edits)".format(msg, edits.size).postln;
 		this.refresh;
 	}
 
@@ -314,9 +390,10 @@ TakeGui {
 				var t = e[\timestamp], x;
 				((t >= vs) and: { t <= ve }).if {
 					x = xOf.(t);
-					Pen.color = sel.includes(i).if { Color(1, 0.5, 0, 0.95) } {
-						Color(0, 0.3, 0.8, 0.25 + (0.6 * sal.(e)))
-					};
+					Pen.color = case
+					{ sel.includes(i) } { Color(1, 0.5, 0, 0.95) }
+					{ e[\edited] == true } { Color(0, 0.6, 0.5, 0.9) }   // hand-edited
+					{ Color(0, 0.3, 0.8, 0.25 + (0.6 * sal.(e))) };
 					Pen.line(x @ (waveTop), x @ (waveTop + 14));
 					Pen.stroke;
 				}
@@ -357,12 +434,14 @@ TakeGui {
 		// instruction strip, as in MIDIItem.gui
 		Pen.stringAtPoint(
 			"space play/stop · 'c' beat clicks · 'C' count-in · click ticks to pick · 'e' extrapolate · "
-			"'E' DP beat tracker · 's' seed from stamp · 'w' save · 'm' map edit · 'r' reset · '?' help",
+			"'E' DP beat tracker · 's' seed from stamp · '[ ]' nudge · 'w' save · 'm' map edit · '?' help",
 			Point(10, 10), Font("Helvetica", 14), Color.black);
 		// state line
-		Pen.stringAtPoint("clicks %  ·  count-in %  ·  %"
+		Pen.stringAtPoint("clicks %  ·  count-in %  ·  %  ·  nudge % / % ms  ·  % transient edits"
 			.format(clickEnabled.if("on", "off"), (countIn == 0).if("off", { "% beats".format(countIn) }),
-				marks.isNil.if("no saved marks", { "marks version %".format(marks[\version]) })),
+				marks.isNil.if("no saved marks", { "marks version %".format(marks[\version]) }),
+				(this.nudgeStep(false) * 1000).round(0.01), (this.nudgeStep(true) * 1000).round(0.1),
+				(edits ? []).size),
 			10 @ (height - 16), Font("Helvetica", 10), Color.grey(0.4));
 	}
 
@@ -403,6 +482,14 @@ TakeGui {
 				"      P   - audition: click through the candidate map\n" ++
 				"      u/U - undo/redo    Z - back to the loaded map\n" ++
 				"      W   - commit and save the edited map as a marks version\n" ++
+				"[ / ] - Nudge 1 px left/right at the current zoom (zoom in with L for finer)\n" ++
+				"{ / } - Nudge 10 px\n" ++
+				"      grid up (pick mode, e): the current (red) line, as a free pin;\n" ++
+				"      only that line moves\n" ++
+				"      no grid: the picked (orange) transients, saved per take as\n" ++
+				"      hand edits (kept when detection re-runs)\n" ++
+				"a - Add a transient at the cursor (no grid; picked, ready to nudge)\n" ++
+				"x - Delete the picked transients (no grid)\n" ++
 				"? - Show this help menu\n\n" ++
 				"Mouse:\n" ++
 				"Click a transient tick to pick/unpick it (pick two, then e or E)\n" ++
@@ -413,7 +500,8 @@ TakeGui {
 				"Right-click: unpin the nearest line\n" ++
 				"In map edit mode, drag across the tempo lane to select a beat span\n\n" ++
 				"Visual Guide:\n" ++
-				"Blue ticks = transients (darker = stronger); orange = picked\n" ++
+				"Blue ticks = transients (darker = stronger); orange = picked;\n" ++
+				"      teal = hand-edited\n" ++
 				"Green lines = beat grid; red = current line; blue = free pin\n" ++
 				"Faint green lines = saved marks (when no grid is up)\n" ++
 				"Dashed purple lines = the record stamp's beats (where the take should be)")
@@ -483,6 +571,12 @@ TakeGui {
 			},
 			$w, { beatMark !? { beatMark.save } },
 			$s, { this.seedFromStamp },
+			$[, { this.nudgeTransients(this.nudgeStep(false).neg) },
+			$], { this.nudgeTransients(this.nudgeStep(false)) },
+			${, { this.nudgeTransients(this.nudgeStep(true).neg) },
+			$}, { this.nudgeTransients(this.nudgeStep(true)) },
+			$a, { this.addTransient },
+			$x, { this.deleteTransients },
 			$r, { beatMark !? { beatMark.clear; mapEd.invalidate; "cleared".postln } },
 			$0, { nav.resetView },
 			$q, { window.close },

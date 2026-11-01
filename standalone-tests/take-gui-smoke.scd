@@ -32,11 +32,38 @@ fork {
 		tg.prMouseDown(tg.nav.xOf(tg.beatMark.gridLines[2][\time]), 300, 0, 0, 1);
 		tg.prMouseUp(tg.nav.xOf(tg.beatMark.gridLines[2][\time] + 0.05), 300, 524288);
 		ok.(tg.beatMark.gridLines[2][\pinned] == true, "TakeGui: alt-drag makes a free pin");
+		// keyboard nudge of the current line: one pixel, only that line
+		{ var l3 = tg.beatMark.gridLines[3][\time], l4 = tg.beatMark.gridLines[4][\time];
+			while { tg.beatMark.currentLine < 3 } { tg.beatMark.nextLine };
+			tg.prKey($]);
+			ok.((tg.beatMark.gridLines[3][\time] - l3 - tg.nudgeStep).abs < 1e-9,
+				"TakeGui: ] nudges the current line one pixel");
+			ok.(tg.beatMark.gridLines[4][\time] == l4, "TakeGui: ] leaves the next line alone");
+		}.value;
 		tg.prKey($w);
 		ok.(TakeArchive.loadMarks(name, 0).notNil, "TakeGui: w writes a marks version");
 		ok.(Take(name, 0).tempoMap.notNil, "TakeGui: take.tempoMap reads it back");
 		tg.prKey($m); tg.prKey($Q); tg.prKey($W);
 		ok.(TakeArchive.loadMarks(name, 0)[\edited] == true, "TakeGui: m Q W saves an edited map");
+		// transient hand edits, no grid up
+		tg.prKey($m); tg.prKey($e); tg.prKey($r);
+		{ var t3 = tg.transients[3][\timestamp], n = tg.transients.size, mid;
+			tg.prMouseDown(tg.nav.xOf(t3), 300, 0, 0, 1);
+			tg.prKey($}); tg.prKey($});
+			ok.((tg.transients[3][\timestamp] - t3 - (2 * tg.nudgeStep(true))).abs < 1e-9,
+				"TakeGui: } nudges the picked transient ten pixels");
+			ok.(TakeTransients.loadEdits(name, 0).size == 1, "TakeGui: nudges saved as one hand edit");
+			ok.((TakeTransients.load(name, 0, tg.path)[3][\timestamp] - tg.transients[3][\timestamp]).abs < 1e-9,
+				"TakeGui: TakeTransients.load applies the edit");
+			mid = (tg.transients[4][\timestamp] + tg.transients[5][\timestamp]) / 2;
+			tg.prMouseDown(tg.nav.xOf(mid), 300, 0, 0, 1);
+			tg.prKey($a);
+			ok.(tg.transients.size == (n + 1) and: { tg.beatMark.selectedIndices == [5] },
+				"TakeGui: a adds a picked transient at the cursor");
+			tg.prKey($x);
+			ok.(tg.transients.size == n, "TakeGui: x deletes the picked transient");
+			ok.(TakeTransients.loadEdits(name, 0).size == 1, "TakeGui: add then delete leaves no edit");
+		}.value;
 		tg.prKey($t); tg.prKey($t);
 		tg.prKey($?);
 		ok.(Window.allWindows.any { |w| w.name == "Take Window Help" }, "TakeGui: ? opens the help window");

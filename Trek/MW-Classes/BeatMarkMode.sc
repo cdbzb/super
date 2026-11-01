@@ -23,7 +23,7 @@
 // the click schedule and the tempo lane are computed from (onGridChange), and
 // rebuilding those on every arrow press would re-derive a tempo map per keystroke.
 //
-// Keys owned (see keyDown): e / E always; h l j k only while a grid is up.
+// Keys owned (see keyDown): e / E always; h l j k [ ] { } only while a grid is up.
 BeatMarkMode {
 	var <notes, <>end;
 	var <>selectedIndices;
@@ -34,6 +34,7 @@ BeatMarkMode {
 	var <>onChange, <>onGridChange, <>ensureVisible, <>onSave;
 	var <>salienceFunc;      // handed to every MIDIBeatTracker this mode builds (nil = its default)
 	var <>maxSpan;           // likewise its maxSpan (nil = the tracker's 4); audio raises it to bridge rests
+	var <>nudgeStep;         // { |coarse| seconds } for [ ] { } (nil = 1 ms / 10 ms); a host sets it per zoom
 	// A grid SEEDED from known beat times (seedLines — the record stamp's expected
 	// beats): edits are local — re-picking or pinning a line leaves the lines after
 	// it alone instead of re-extrapolating them, and unpinning restores the seed.
@@ -95,6 +96,13 @@ BeatMarkMode {
 	// always sits on a note today, so this loses nothing). Kept for callers and
 	// for selectionEvent's \manual partition.
 	manualIndices { ^(manualPicks ? []).collect(_[\noteIndex]).reject(_.isNil) }
+
+	// h/l walk the hand picks too: currentLine runs from -manualPicks.size (the
+	// first pick) up through the grid lines, so the picks sit at negative line
+	// numbers and j/k re-pick them like any other line.
+	firstLine { ^(manualPicks ? []).size.neg }
+	pickAt { |line| ^(line < 0).if { manualPicks[manualPicks.size + line] } }
+	lineTime { |line| ^(this.pickAt(line) ?? { gridLines[line] }) !? (_[\time]) }
 
 	// picks from note indices, in time order
 	prPicks { |indices|
@@ -278,15 +286,15 @@ BeatMarkMode {
 	}
 
 	prevLine {
-		currentLine = (currentLine - 1).max(0);
-		ensureVisible !? { ensureVisible.value(gridLines[currentLine][\time]) };
+		currentLine = (currentLine - 1).max(this.firstLine);
+		ensureVisible !? { ensureVisible.value(this.lineTime(currentLine)) };
 		onChange !? { onChange.value };
 		^this
 	}
 
 	nextLine {
 		currentLine = (currentLine + 1).min(gridLines.size - 1);
-		ensureVisible !? { ensureVisible.value(gridLines[currentLine][\time]) };
+		ensureVisible !? { ensureVisible.value(this.lineTime(currentLine)) };
 		onChange !? { onChange.value };
 		^this
 	}
@@ -294,7 +302,7 @@ BeatMarkMode {
 	// 'k': the note one earlier than the current line's pick (or the last note
 	// before the line, when the line is a ghost)
 	pickEarlier {
-		var line = gridLines[currentLine];
+		var line = this.pickAt(currentLine) ?? { gridLines[currentLine] };
 		var idx = line[\noteIndex];
 		var newIdx;
 		newIdx = idx.notNil.if {
@@ -303,13 +311,12 @@ BeatMarkMode {
 			var after = notes.detectIndex { |e| e.timestamp > line[\time] };
 			after.isNil.if { notes.size - 1 }{ (after - 1).max(0) }
 		};
-		dpMode.if { this.repin(idx, newIdx) }{ this.applyManualPick(line, newIdx) };
-		^this
+		^this.prRepickLine(line, idx, newIdx)
 	}
 
 	// 'j': the note one later (or the first note after a ghost line)
 	pickLater {
-		var line = gridLines[currentLine];
+		var line = this.pickAt(currentLine) ?? { gridLines[currentLine] };
 		var idx = line[\noteIndex];
 		var newIdx;
 		newIdx = idx.notNil.if {
@@ -317,8 +324,98 @@ BeatMarkMode {
 		}{
 			notes.detectIndex { |e| e.timestamp > line[\time] } ? (notes.size - 1)
 		};
-		dpMode.if { this.repin(idx, newIdx) }{ this.applyManualPick(line, newIdx) };
-		^this
+		^this.prRepickLine(line, idx, newIdx)
+	}
+
+	prRepickLine { |line, idx, newIdx|
+		^case
+		{ currentLine < 0 } { this.repick(newIdx) }
+		{ dpMode } { this.repin(idx, newIdx) }
+		{ this.applyManualPick(line, newIdx) }
+	}
+
+	// j/k on a hand pick: move it to note newIdx, then rebuild what depends on it.
+	// Only the last two picks feed the grid (the anchor pair is the extrapolation's
+	// seed and the DP tracker's prior + start note); earlier picks just count as
+	// beats, so moving one of them leaves the grid alone.
+	repick { |newIdx|
+		var k = manualPicks.size + currentLine, pick;
+		manualPicks.any { |p, i| (i != k) and: { p[\noteIndex] == newIdx } }.if {
+			^this.prPost("Note % is already a pick".format(newIdx))
+		};
+		pick = (time: notes[newIdx].timestamp, noteIndex: newIdx);
+		manualPicks[k] = pick;
+		manualPicks = manualPicks.sort { |a, b| a[\time] < b[\time] };
+		ensureVisible !? { ensureVisible.value(pick[\time]) };
+		^this.prPicksChanged(manualPicks.indexOf(pick) - manualPicks.size,
+			"Pick %: note % at %".format(k + 1, newIdx, pick[\time].round(0.001)))
+	}
+
+	// A click on note idx. Without a grid it just toggles the selection; with one,
+	// the click edits the MAP, so the change survives a save + resume (resume
+	// rebuilds the selection from the picks and grid, not from \indices):
+	//   before the grid -> becomes a hand pick (removed again if it was one)
+	//   DP grid         -> pinned as a forced beat, tracker re-run
+	//   pick grid       -> the nearest line takes this note, re-extrapolated after
+	toggleNote { |idx|
+		var t = notes[idx].timestamp, k, line, newPair;
+		extrapolateMode.not.if {
+			selectedIndices.includes(idx).if {
+				selectedIndices.remove(idx)
+			}{
+				selectedIndices = selectedIndices.add(idx)
+			};
+			onChange !? { onChange.value };
+			^this
+		};
+		k = manualPicks.detectIndex { |p| p[\noteIndex] == idx };
+		k.notNil.if {
+			(manualPicks.size <= 2).if { ^this.prPost("Need at least 2 picks") };
+			manualPicks.removeAt(k);
+			^this.prPicksChanged(manualPicks.size.neg, "Removed pick note %".format(idx))
+		};
+		(gridLines.isEmpty or: { t < gridLines[0][\time] }).if {
+			manualPicks = manualPicks.add((time: t, noteIndex: idx))
+				.sort { |a, b| a[\time] < b[\time] };
+			k = manualPicks.detectIndex { |p| p[\noteIndex] == idx };
+			^this.prPicksChanged(k - manualPicks.size, "Added pick note %".format(idx))
+		};
+		line = gridLines.detectIndex { |l| l[\noteIndex] == idx };
+		line.notNil.if {
+			currentLine = line;
+			^dpMode.if {
+				pinSet.includes(idx).if { this.unpinLine(line) }
+					{ this.prPost("Note % is a DP beat, not pinned — pin a neighbour instead".format(idx)) }
+			}{
+				this.unpinLine(line)
+			}
+		};
+		dpMode.if {
+			^this.repin(nil, idx)
+		};
+		currentLine = this.lineNear(t);
+		^this.applyManualPick(gridLines[currentLine], idx)
+	}
+
+	// after adding/removing a hand pick: re-seed the grid if the anchor pair moved
+	prPicksChanged { |line, msg|
+		var newPair = manualPicks.keep(-2).collect(_[\time]);
+		(newPair != anchorPair).if {
+			anchorPair = newPair;
+			dpMode.if {
+				beatTracker = MIDIBeatTracker(notes, anchorPair[1] - anchorPair[0],
+					manualPicks.last[\noteIndex], (pinSet ? []).asArray);
+				beatTracker.salienceFunc = salienceFunc;
+				maxSpan !? { beatTracker.maxSpan = maxSpan };
+				gridLines = beatTracker.track;
+			}{
+				localEdits.not.if { gridLines = []; this.rebuildGrid(-1) }
+			}
+		};
+		currentLine = line.max(this.firstLine);
+		this.updateSelection;
+		this.prGridChanged;
+		^this.prPost("% — % picks, % lines".format(msg, manualPicks.size, gridLines.size))
 	}
 
 	// 'r': back to nothing marked. State only — the host posts and refreshes,
@@ -633,6 +730,29 @@ BeatMarkMode {
 		^this.pinLine(i, time)
 	}
 
+	// '[' / ']' (fine) and '{' / '}' (coarse): slide the current line `delta`
+	// seconds as a free pin. Local, unlike pinLine: only this line moves, so a run
+	// of nudges never re-extrapolates the lines after it. Clamped 1 ms inside its
+	// neighbours so gridTimes stays increasing. Pick mode, grid lines only.
+	nudgeLine { |delta|
+		var i = currentLine, l, lo, hi, t;
+		dpMode.if { ^this.prPost("nudge needs pick mode (e), not DP (E)") };
+		(i < 0).if { ^this.prPost("nudge moves grid lines, not hand picks — use j/k") };
+		(i >= gridLines.size).if { ^this };
+		l = gridLines[i];
+		lo = (this.lineTime(i - 1) ? 0) + 0.001;
+		hi = ((i < (gridLines.size - 1)).if { gridLines[i + 1][\time] } { end ? inf }) - 0.001;
+		t = (l[\time] + delta).clip(lo, hi);
+		gridLines[i] = (time: t, noteIndex: nil, pinned: true, seed: l[\seed]);
+		this.updateSelection;
+		ensureVisible !? { ensureVisible.value(t) };
+		this.prGridChanged;
+		^this.prPost("Line %: nudged to % (%% ms)".format(i, t.round(0.0001),
+			(t >= l[\time]).if("+", ""), ((t - l[\time]) * 1000).round(0.1)))
+	}
+
+	prNudgeStep { |coarse| ^nudgeStep.notNil.if { nudgeStep.value(coarse) } { coarse.if(0.01, 0.001) } }
+
 	// index of the grid line nearest `time` (for the host's hit-testing)
 	lineNear { |time|
 		var best, bd = inf;
@@ -657,6 +777,10 @@ BeatMarkMode {
 			{ char == $l } { this.nextLine; true }
 			{ char == $j } { this.pickLater; true }
 			{ char == $k } { this.pickEarlier; true }
+			{ char == $[ } { this.nudgeLine(this.prNudgeStep(false).neg); true }
+			{ char == $] } { this.nudgeLine(this.prNudgeStep(false)); true }
+			{ char == ${ } { this.nudgeLine(this.prNudgeStep(true).neg); true }
+			{ char == $} } { this.nudgeLine(this.prNudgeStep(true)); true }
 			{ false }
 		};
 		^false
@@ -680,6 +804,17 @@ BeatMarkMode {
 				Pen.stroke;
 			};
 		};
+		// the hand picks, at negative line numbers (see firstLine)
+		(manualPicks ? []).do { |p, k|
+			var t = p[\time], x, cur = (k - manualPicks.size) == currentLine;
+			visible.value(t).if {
+				x = xOf.value(t);
+				Pen.width = cur.if { 3 }{ 1 };
+				Pen.color = cur.if { Color.red(1, 0.9) }{ Color(1, 0.5, 0, 0.6) };
+				Pen.line(x@0, x@h);
+				Pen.stroke;
+			};
+		};
 		Pen.width = 1;
 		Pen.stringAtPoint(this.statusString, Point(10, 30),
 			Font("Helvetica", 14), Color.red);
@@ -687,10 +822,15 @@ BeatMarkMode {
 	}
 
 	statusString {
-		^"%  line %/%  h/l: move  j/k: %  w: write  e: exit".format(
+		var where = (currentLine < 0).if {
+			"pick %/%".format(manualPicks.size + currentLine + 1, manualPicks.size)
+		}{
+			"line %/%".format(currentLine + 1, gridLines.size)
+		};
+		^"%  %  h/l: move  j/k: %  [ ]/{ }: nudge  w: write  e: exit".format(
 			dpMode.if { "EXTRAPOLATE (DP)" }{ "EXTRAPOLATE" },
-			currentLine + 1, gridLines.size,
-			dpMode.if { "pin note" }{ "pick note" })
+			where,
+			(dpMode and: { currentLine >= 0 }).if { "pin note" }{ "pick note" })
 	}
 
 	prGridChanged {

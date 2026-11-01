@@ -539,14 +539,13 @@ view.keyDownAction_({ |view char|
         };
         
         // If we found a note, toggle its selection
+        // (with a grid up the click edits the beat map — BeatMarkMode.toggleNote)
         if(clickedNoteIndex.notNil) {
-            if(beatMark.selectedIndices.includes(clickedNoteIndex)) {
-                beatMark.selectedIndices.remove(clickedNoteIndex);
-                ("Note " ++ clickedNoteIndex ++ " deselected").postln;
-            } {
-                beatMark.selectedIndices = beatMark.selectedIndices.add(clickedNoteIndex);
-                ("Note " ++ clickedNoteIndex ++ " selected").postln;
+            beatMark.extrapolateMode.not.if {
+                ("Note " ++ clickedNoteIndex ++ beatMark.selectedIndices.includes(clickedNoteIndex)
+                    .if { " deselected" }{ " selected" }).postln;
             };
+            beatMark.toggleNote(clickedNoteIndex);
             view.refresh;
         };
         }; // end altDown.not

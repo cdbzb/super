@@ -959,7 +959,7 @@ MIDIItem : AbstractMidiEvents { //class to record, save, and retrieve MIDIEvents
 		// stored as recordedMk so play/gui have a MicroKeys to drive. A re-import
 		// keeps the existing voice unless mk is passed.
 		(mk.notNil or: { item.recordedMk.isNil }).if {
-			mk = mk ? MicroKeys.current;
+			mk = mk ? MicroKeys.current ? \default;
 			item.recordedMk = mk.isKindOf(MicroKeys).if { mk.asEvent }{ mk };
 		};
 		// idempotent: re-evaluating the import line must not stack duplicate takes
@@ -1465,8 +1465,8 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	}
 	player { ^this } // a player is already a player; lets asEventList etc. resolve uniformly
 	*stopAll {
-		playing.do({ |i| 
-			i.restoreCCValues;
+		playing.copy.do({ |i|
+			i.tryPerform(\restoreCCValues);
 			playing.remove(i)
 		})
 	}
@@ -1697,8 +1697,12 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 		// \mk events need a voice; without one every note throws doNoteOn on nil.
 		// Happens for imports (fromMIDIFile) made while no MicroKeys existed.
 		(mk.isNil and: { midiEvents.any { |e| e.type == \mk } }).if {
-			^"MIDIItemPlayer.play: no voice for % — pass mk: (e.g. play(MicroKeys(\\default))) or set the item's recordedMk"
-				.format(source !? _.name).warn
+			mk = MicroKeys(\default)
+		};
+		// e.g. play(0) meaning "take 0" — would land in `playing` and break stopAll
+		(mk.notNil and: { mk.respondsTo(\storeCCValues).not }).if {
+			^"MIDIItemPlayer.play: mk must be a MicroKeys (or Symbol/Event), got %"
+				.format(mk).warn
 		};
 		mk.notNil.if { playing.add(mk) };
 

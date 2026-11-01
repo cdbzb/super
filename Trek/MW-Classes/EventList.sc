@@ -1506,9 +1506,13 @@ EventList {
 		} {
 			m = this.prAsAnchorMap(map);
 			x0 = m.xs.first; y0 = m.ys.first;
+			// Another list's clock (or a slice / edit of one) carries its t0 as a
+			// Number origin on the seconds frame: add it, so the take recorded
+			// against that list still lands. An \absolute map's y0 already is
+			// take time; a hand-built one (origin nil) starts the list at its y0.
+			t0 = (m.secOrigin ? 0) + y0;
 			tempoMap = AnchorMap(m.xs - x0, m.ys - y0,
-				m.fromFrame, MapFrame(\sec, \relative), m.extendBelow, m.extendAbove);
-			t0 = y0;
+				m.fromFrame, MapFrame(\sec, t0), m.extendBelow, m.extendAbove);
 		};
 		// The beat->wall integral is keyed on tempoEnv IDENTITY only, but its
 		// cumulative sums (prWallCum / prWallBase / prWallSubs) are integrals of
@@ -1519,8 +1523,14 @@ EventList {
 		^this
 	}
 	/* t0 without touching the clock: copies and snapshots carry it over, and the
-	   edit methods keep it across a reshape */
-	prSetT0 { |seconds| t0 = seconds ? 0 }
+	   edit methods keep it across a reshape. The clock's seconds frame is
+	   restamped so the map handed out by the getter carries the same t0. */
+	prSetT0 { |seconds|
+		t0 = seconds ? 0;
+		tempoMap !? {
+			tempoMap = tempoMap.withFrames(tempoMap.fromFrame, MapFrame(\sec, t0))
+		}
+	}
 
 	prAsAnchorMap { |map|
 		var m = case
@@ -1626,7 +1636,7 @@ EventList {
 				.format(edited.class)).throw
 		};
 		this.tempoMap_(edited);
-		t0 = keep;
+		this.prSetT0(keep);
 		^this
 	}
 
@@ -2584,7 +2594,10 @@ EventList {
 		srcMap.isKindOf(Function).if { var fn = srcMap; srcMap = ev.use { fn.value } };
 		// A V2 MonoMap (MapEditor.last) has no beatDomain/timeDomain for
 		// prSrcTimeAt/prSrcBeatAt; convert it once, the same seam warpTo uses.
-		srcMap.isKindOf(MonoMap).if { srcMap = srcMap.asAnchorTempoMap };
+		// asAbsolute first: a list clock (or a copy of one, e.g. `t = e.tempoMap.copy`)
+		// counts seconds from the list's t0 — add it back, so srcOrigin below reads
+		// the take time the map starts at instead of falling back to player.start.
+		srcMap.isKindOf(MonoMap).if { srcMap = srcMap.asAbsolute.asAnchorTempoMap };
 		// \stamp: recordWall is the take's timestamp-0 moment in the recorded
 		// playthrough's wall frame; the epoch's detached list inverts it to the beat
 		// the take heard. Filters carry both epochs (copyBounds).

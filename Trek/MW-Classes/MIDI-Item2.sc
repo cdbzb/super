@@ -1854,7 +1854,15 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	   it would shift everything by t0 instead of remapping it. The relative note
 	   rides on the seconds frame, so it survives transforms and deepCopies. */
 	prSecMapForWarp { |map|
-		var baked = map.bake;
+		var baked = map.bake, abs = MapFrame(\sec, \absolute);
+		// a Number origin (an EventList clock's t0) is a known offset: shift that
+		// side into take time instead of applying the map off by t0
+		baked.fromFrame.isOffset.if {
+			baked = (AffineMap(1, baked.fromFrame.origin.neg, abs, baked.fromFrame) >> baked).bake
+		};
+		baked.toFrame.isOffset.if {
+			baked = (baked >> AffineMap(1, baked.toFrame.origin, baked.toFrame, abs)).bake
+		};
 		(baked.fromFrame.isRelative or: { baked.toFrame.isRelative }).if {
 			Error("warpTo: this sec -> sec map is built on seconds RELATIVE to its own "
 				"first anchor (origin: \\relative), but warpTo needs absolute take time "
@@ -1870,7 +1878,8 @@ MIDIItemPlayer : AbstractMidiEvents { //class to filter and play MIDIItems
 	   measures seconds from its own first anchor, and warping through it would
 	   subtract t0 twice, silently. */
 	prTempoMapFromMonoMap { |map|
-		var baked = map.bake;
+		// a Number origin (an EventList clock's t0) is added back first
+		var baked = map.asAbsolute.bake;
 		// sec-side frame, read off the BAKED orientation (a sec->beat map carries
 		// it on fromFrame); nil when the map is not beat<->sec at all, in which
 		// case asAnchorTempoMap below is the one that reports the dimensions.

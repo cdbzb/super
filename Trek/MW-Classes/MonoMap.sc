@@ -6,9 +6,12 @@
    Composition checks dimensions only: maps are shapes, and nothing numeric can
    tell which recording an axis refers to, so frames do not try. timeAt/beatAt
    dispatch on dimensions too. A \sec frame may also carry an `origin` note
-   (\relative: seconds counted from the map's own first anchor). It rides along
-   with the frame through transforms, inverse and composition, and is read only
-   by warpTo, which needs absolute take time.
+   (\relative: seconds counted from the map's own first anchor, offset unknown;
+   \absolute: take time; a Number: seconds counted from that absolute second —
+   an EventList clock stamps its t0 here). It rides along with the frame through
+   transforms, inverse and composition, so a list's clock keeps its place in
+   recorded time when it is copied, sliced or edited. asAbsolute adds a Number
+   origin back in; warpTo and the \mi2 follower read through it.
 
    Extension: per end, \carry (extend at the boundary slope) or \error.
    No \clamp in the core — a clamped map is not invertible outside its domain.
@@ -17,13 +20,19 @@
 MapFrame {
 	var <dimension, <origin;
 	*new { |dimension = \any, origin|
-		[nil, \relative, \absolute].includes(origin).not.if {
-			Error("MapFrame: origin must be nil, \\relative or \\absolute, got %"
-				.format(origin)).throw
+		([nil, \relative, \absolute].includes(origin) or: { origin.isNumber }).not.if {
+			Error("MapFrame: origin must be nil, \\relative, \\absolute or a Number "
+				"(seconds), got %".format(origin)).throw
 		};
 		^super.newCopyArgs(dimension.asSymbol, origin)
 	}
 	isRelative { ^origin == \relative }
+	// a known offset: seconds on this axis + origin = absolute take time
+	isOffset { ^origin.isNumber }
+	// the same axis with a Number origin moved by `by` (a rebase of `by` seconds)
+	shiftedBy { |by|
+		^this.isOffset.if { MapFrame(dimension, origin + by) } { this }
+	}
 	// composable: same dimension, or either side is the \any wildcard
 	unifies { |that|
 		^(dimension == \any) or: { that.dimension == \any }
@@ -73,7 +82,34 @@ MonoMap {
 
 	// Concatenate two finite maps. `other` is treated as a shape and may be a
 	// legacy map supported by asMonoMap. Composition uses >> instead.
-	++ { |other| ^MapSeq([this, other], 1, this.fromFrame, this.toFrame) }
+	// MapSeq lays its cells out from (0, 0), so a Number origin moves by where
+	// this map started — the concatenation keeps the first piece's place in time.
+	++ { |other|
+		var d = this.domain, r = this.range;
+		^MapSeq([this, other], 1,
+			d.notNil.if { this.fromFrame.shiftedBy(d[0]) } { this.fromFrame },
+			r.notNil.if { this.toFrame.shiftedBy(r[0]) } { this.toFrame })
+	}
+
+	// the frame of the seconds axis on a beat <-> sec map, else nil
+	prSecFrame {
+		this.mapsDimensions(\beat, \sec).if { ^toFrame };
+		this.mapsDimensions(\sec, \beat).if { ^fromFrame };
+		^nil
+	}
+	// the absolute second this map's seconds count from, when it carries one
+	secOrigin { ^this.prSecFrame !? { |f| f.isOffset.if { f.origin } } }
+	/* Seconds as take time: a Number origin is added back and the axis marked
+	   \absolute. Anything else answers the receiver (an \absolute map already is;
+	   a \relative one cannot be, and warpTo still refuses it). */
+	asAbsolute {
+		var o = this.secOrigin, abs = MapFrame(\sec, \absolute);
+		o.isNil.if { ^this };
+		this.mapsDimensions(\beat, \sec).if {
+			^this >> AffineMap(1, o, toFrame, abs)
+		};
+		^AffineMap(1, o.neg, abs, fromFrame) >> this
+	}
 
 	// Rebind the same shape to new axes.
 	withFrames { |fromFrame, toFrame| ^this.subclassResponsibility(thisMethod) }

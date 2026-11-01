@@ -805,7 +805,8 @@ assert.(elT.tempoMap.isKindOf(AnchorMap), "a MonoMap assigned to tempoMap is sto
 assert.((elT.tempoMap.xs.first == 0) and: { elT.tempoMap.ys.first == 0 },
 	"the stored clock is normalized to beat 0, second 0");
 assertClose.(elT.t0, 10, "the removed seconds offset is the list's t0");
-assert.(elT.tempoMap.toFrame.isRelative, "the stored seconds are marked relative");
+assert.(elT.tempoMap.toFrame.isOffset and: { elT.tempoMap.toFrame.origin == 10 },
+	"the stored seconds frame carries the list's t0 as its origin");
 assertArr.([0, 1, 2.5, 3].collect { |b| elT.tempoMap.timeAt(b) },
 	[0, 1, 2.5, 3].collect { |b| ad.at(b) - 10 },
 	"the stored clock agrees with the source map's values from beat 0");

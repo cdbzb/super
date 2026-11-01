@@ -532,10 +532,10 @@ AudioItem {
 			{ v.isKindOf(Function) } { v.value }
 			{ v ? default }
 	}
-	*timingKeys { ^#[\sourceTempoMap, \sourceBeatDur, \marksVersion, \fromBeat, \toBeat, \align, \marks, \notes, \rateLead] }
+	*timingKeys { ^#[\sourceTempoMap, \sourceBeatDur, \marksVersion, \fromBeat, \toBeat, \align, \marks, \notes, \rateLead, \beatScale] }
 
 	*prResolveSourceMap { |ev, itemName, takeNum|
-		var out, sm, name, m, latIn = false, trimMode = false, origin = 0;
+		var out, sm, name, m, latIn = false, trimMode = false, origin = 0, k;
 		(ev[\srcResolved] == true).if { ^ev };
 		out = ev.copy;
 		out[\srcResolved] = true;
@@ -627,6 +627,22 @@ AudioItem {
 			};
 		};
 		};   // end: not a function
+		/* beatScale: list beats per source beat, in MIDIItemPlayer.beatScale's sense —
+		   0.5 when the marks count quarters and the list counts halves. Applied to
+		   the resolved map (scaleBeats: timeAt(k * b) == the old timeAt(b)), so it
+		   works for every source and stretchMode. fromBeat:/toBeat: stay in the
+		   take's own beats; prSrcFromBeat and the toBeat dur below scale them. */
+		k = ev[\beatScale] ? 1;
+		case
+		{ k == 1 } { }
+		{ (k.isNumber and: { k > 0 }).not } {
+			"AudioItem: beatScale: must be a positive number, got % — ignored".format(k).warn; k = 1 }
+		{ m.isNil } {
+			"AudioItem: beatScale: needs a source map (marks, stamp or a map) — ignored on the list clock".warn; k = 1 }
+		{ m.respondsTo(\scaleBeats).not } {
+			"AudioItem: beatScale: cannot scale a % — ignored".format(m.class).warn; k = 1 }
+		{ m = m.scaleBeats(k) };
+		out[\srcBeatScale] = k;
 		out[\srcMap] = m;
 		out[\srcLatencyIncluded] = latIn;
 		out[\srcName] = name ? \map;   // what actually resolved (for warnings and tests)
@@ -642,7 +658,7 @@ AudioItem {
 			out[\startPos] = nil;
 		};
 		ev[\toBeat] !? { |t|
-			var d = t - (ev[\fromBeat] ? 0);
+			var d = (t - (ev[\fromBeat] ? 0)) * k;
 			out[\dur] = ev[\dur].notNil.if { ev[\dur].min(d) } { d };
 		};
 		(ev[\fromBeat].notNil and: { out[\srcTrim].notNil }).if {
@@ -720,9 +736,12 @@ AudioItem {
 	// sourceBFull; the env twin) inherits it with no call-site edit. fromBeat: shifts
 	// the source's beat axis so source beat fromBeat sounds at when: (b0) — trim and
 	// rebase, as MIDI's player.fromBeat. prSrcEndBeat is the exact inverse.
+	// fromBeat: (take beats, from the map's origin) in the resolved map's beats
+	*prSrcFromBeat { |r| ^((r[\fromBeat] ? 0) - (r[\srcBeatOrigin] ? 0)) * (r[\srcBeatScale] ? 1) }
+
 	*prSrcOffset { |ev, list, b0, takeNum|
 		var r = this.prResolveSourceMap(ev, nil, takeNum);
-		var sm = r[\srcMap], fb = (r[\fromBeat] ? 0) - (r[\srcBeatOrigin] ? 0);
+		var sm = r[\srcMap], fb = this.prSrcFromBeat(r);
 		var t0 = r[\srcLatencyIncluded].if { 0 } { this.t0(this.eventItemName(r), takeNum) };
 		sm.notNil.if {
 			var bd = sm.beatDomain.first, mapT0 = sm.timeDomain.first;
@@ -737,7 +756,7 @@ AudioItem {
 	//     startSec + prSrcOffset.(prSrcEndBeat.(..., endSec)) == endSec.
 	*prSrcEndBeat { |ev, list, b0, startSec, endSec, takeNum|
 		var r = this.prResolveSourceMap(ev, nil, takeNum);
-		var sm = r[\srcMap], fb = (r[\fromBeat] ? 0) - (r[\srcBeatOrigin] ? 0);
+		var sm = r[\srcMap], fb = this.prSrcFromBeat(r);
 		var t0 = r[\srcLatencyIncluded].if { 0 } { this.t0(this.eventItemName(r), takeNum) };
 		var rel = endSec - startSec - t0;
 		sm.notNil.if {

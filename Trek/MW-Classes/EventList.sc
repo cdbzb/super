@@ -678,6 +678,9 @@ EventList {
 		(player.isNumber or: { player == \original }).if { var swap = player; player = at; at = swap };
 		player = player.player;
 		player.isKindOf(Take).if { ^this.prAddAudioItem(player, at, voice, offset, align, kwargs) };
+		(kwargs.notNil and: { kwargs.clump(2).any { |kv| kv[0] == \followTrack } }).if {
+			^this.prAddItemMi2(player, at, voice, mk, offset, align, kwargs)
+		};
 		(kwargs.notNil and: { kwargs.notEmpty }).if {
 			"EventList.addItem: % ignored for a MIDI take".format(kwargs.clump(2).collect(_[0])).warn
 		};
@@ -715,6 +718,67 @@ EventList {
 		};
 		offset.notNil.if { var f = whenFn; whenFn = { |e| f.(e) + offset } };
 		^this.prInsertItemEvents(player, whenFn, voice, mk ?? { this.prItemMk(player) })
+	}
+
+	// followTrack: on a MIDI take: ONE \mi2 event instead of flattened notes, so
+	// the follow decision is made at play time and survives later edits to this
+	// list's map. followTrack: false plays the recorded seconds (sealed \mi2, the
+	// way a \track \mi2 does); \list / \stamp / \marks / \auto / a number / a map
+	// follow as on a hand-written \mi2 (prEmitMi2Follow). align: rides into the
+	// event as the \mi2 blend, not a nested list. Every other keyword goes into
+	// the event unchanged (fromBeat:, toBeat:, params:, tempo: ...).
+	//
+	//     \lick.addItem(MIDIItem(\x).take(2), followTrack: false)
+	//
+	// when: is the list beat of the take timestamp the source anchors on — the
+	// map's t0 for marks / a map, else the take's start — taken from the
+	// recorded placement (at: nil, the epoch's clock, like the flattened path),
+	// \original (this list's current clock) or a numeric at:. grid: is ignored.
+	prAddItemMi2 { |player, at, voice, mk, offset, align, kwargs|
+		var ev = (newType: \mi2, player: player), src, origin, when, m, d, tm;
+		player.isKindOf(MIDIItemPlayer).not.if {
+			^"EventList.addItem: % is not a MIDI take/player (still recording?)".format(player).warn
+		};
+		kwargs.pairsDo { |k, v| ev[k] = v };
+		align !? { ev[\align] = align };
+		voice !? { ev[\voice] = voice };
+		(mk ?? { this.prItemMk(player) }) !? { |k| ev[\mk] = k };
+		player.source.tryPerform(\name) !? { |n| ev[\name] = n.asString.asSymbol };
+		src = EventList.prFollowValue(ev[\followTrack]);
+		(src == \auto).if {
+			src = case
+			{ player.tryPerform(\retimed) == true } { 1 }
+			{ this.prHasMarks(player) } { \marks }
+			{ \stamp }
+		};
+		(src == \marks).if {
+			// split statements: see itemAnchorBeat's NB on the inlined .try
+			tm = { player.tempomap }.try;
+			src = tm
+		};
+		// prEmitMi2Follow's srcOrigin, for the sources whose item beat 0 is not the
+		// take's start; a Function source is only known at play time — start
+		origin = (src.notNil and: { src.isKindOf(Function).not } and: { src.respondsTo(\timeAt) }).if {
+			m = src.isKindOf(MonoMap).if { src.asAbsolute.asAnchorTempoMap } { src };
+			m.tryPerform(\t0) ?? {
+				d = (m.tryPerform(\timeDomain) !? (_.first)) ? 0;
+				(d != 0).if { d } { player.start ? 0 }
+			}
+		} { player.start ? 0 };
+		when = case
+		{ at.isNil } {
+			this.prItemEpochBeat(player, origin) ?? {
+				^"EventList.addItem: no play epoch — record the take while this list plays, or pass at:".warn
+			}
+		}
+		{ at == \original } {
+			this.prItemBeat(player, origin) ?? {
+				^"EventList.addItem: at: \\original needs a take with a recordPlayEpoch (recorded against a playing list) — pass a beat instead".warn
+			}
+		}
+		{ at };
+		ev[\when] = when + (offset ? 0);
+		^[this.add(ev)]
 	}
 
 	// Place an audio Take at an explicit beat: ONE tempo-follow \audioItem event,

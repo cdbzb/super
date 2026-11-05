@@ -1,0 +1,151 @@
+#!/usr/bin/env python3
+"""Write the AmpSim model catalogue that sclang reads instead of parsing the models.
+
+Usage: python3 -I bin/ampsim-index [MODEL_DIR]
+
+Indexes the models in each pack folder of MODEL_DIR. Loose files at the top
+level are ignored; they ship with the UGen and are copies of pack models. Run
+it again after adding a pack, then recompile sclang.
+
+Knob support comes from each model's input_size, because filenames are wrong
+about it in both directions. Kind and cab are guesses from pack and file names.
+
+Trim is the dB that brings a model to TARGET_DB for the reference tone, at knob
+0, 0.5 and 1. It comes from running every LSTM here in numpy, which matches the
+Proteus UGen sample for sample. It only levels models
+for inputs near the reference, because clean models track input level and
+high-gain ones don't.
+"""
+import json
+import re
+import sys
+from pathlib import Path
+
+import numpy as np
+
+DEFAULT_DIR = (
+    Path.home()
+    / "Library/Application Support/SuperCollider/Extensions/Proteus/Classes/example_models"
+)
+OUT = Path(__file__).resolve().parent.parent / "Trek/MW-Classes/ampsim-models.scd"
+BASS = re.compile(r"^Bass|_Bass$|Darkglass")
+AMP_PACK = re.compile(r"AmpPack")
+HAS_CAB = re.compile(r"with_cab|SM57mic", re.I)
+NO_CAB = re.compile(r"direct|preamp", re.I)
+SAMPLE_RATE = 44100
+HIDDEN = 40
+KNOBS = (0.0, 0.5, 1.0)
+TARGET_DB = -18.0
+REFERENCE_PEAK_DB = -18.0
+SETTLE_SECONDS = 0.1
+TONE_SECONDS = 0.35
+
+
+def kind(pack, name):
+    if BASS.search(name):
+        return "bass"
+    return "amp" if AMP_PACK.search(pack) else "pedal"
+
+
+def cab(model_kind, name):
+    """True, False, or None when the name doesn't say."""
+    if HAS_CAB.search(name):
+        return True
+    return False if model_kind == "pedal" or NO_CAB.search(name) else None
+
+
+def literal(value):
+    return {True: "true", False: "false", None: "nil"}[value]
+
+
+def reference_tone():
+    t = np.arange(int(SAMPLE_RATE * TONE_SECONDS)) / SAMPLE_RATE
+    tone = sum(np.sin(2 * np.pi * 110 * k * t) / k for k in range(1, 7))
+    return (tone / abs(tone).max() * 10 ** (REFERENCE_PEAK_DB / 20)).astype(np.float32)
+
+
+def load_weights(paths):
+    """Stacked weights for all models. Models without a knob get a zero column."""
+    weights = {"input": [], "recurrent": [], "bias": [], "out": [], "out_bias": []}
+    for path in paths:
+        state = json.loads(path.read_text())["state_dict"]
+        matrix = lambda key: np.array(state[key], dtype=np.float32)
+        input_weights = matrix("rec.weight_ih_l0")
+        if input_weights.shape[1] == 1:
+            input_weights = np.hstack([input_weights, np.zeros_like(input_weights)])
+        weights["input"].append(input_weights)
+        weights["recurrent"].append(matrix("rec.weight_hh_l0").T)
+        weights["bias"].append(matrix("rec.bias_ih_l0") + matrix("rec.bias_hh_l0"))
+        weights["out"].append(matrix("lin.weight")[0])
+        weights["out_bias"].append(matrix("lin.bias").ravel()[0])
+    return {key: np.stack(value) for key, value in weights.items()}
+
+
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+
+def output_db(weights, tone, knob):
+    """Each model's RMS for the tone, after it settles. Gates are PyTorch's i, f, g, o."""
+    count = len(weights["bias"])
+    hidden = np.zeros((count, HIDDEN), np.float32)
+    cell = np.zeros((count, HIDDEN), np.float32)
+    constant = weights["input"][:, :, 1] * knob + weights["bias"]
+    settle = int(SAMPLE_RATE * SETTLE_SECONDS)
+    power = np.zeros(count)
+    for step, sample in enumerate(tone):
+        gates = (
+            weights["input"][:, :, 0] * sample
+            + constant
+            + np.matmul(hidden[:, None, :], weights["recurrent"])[:, 0, :]
+        )
+        i, f, g, o = np.split(gates, 4, axis=1)
+        cell = sigmoid(f) * cell + sigmoid(i) * np.tanh(g)
+        hidden = sigmoid(o) * np.tanh(cell)
+        output = (hidden * weights["out"]).sum(1) + weights["out_bias"] + sample
+        if step >= settle:
+            power += output.astype(np.float64) ** 2
+    return 10 * np.log10(power / (len(tone) - settle) + 1e-18)
+
+
+def trims(paths):
+    """Array of shape (models, knobs)."""
+    weights, tone = load_weights(paths), reference_tone()
+    return np.stack([TARGET_DB - output_db(weights, tone, k) for k in KNOBS], axis=1)
+
+
+def row(path, trim):
+    name, pack = path.stem, path.parent.name
+    model_kind = kind(pack, name)
+    knob = json.loads(path.read_text())["model_data"]["input_size"] == 2
+    trim_literal = ", ".join(f"{value:.1f}" for value in trim)
+    return (
+        f'["{name}", "{pack}", \\{model_kind}, '
+        f"{literal(knob)}, {literal(cab(model_kind, name))}, [{trim_literal}]],"
+    )
+
+
+def main():
+    model_dir = Path(sys.argv[1]) if len(sys.argv) > 1 else DEFAULT_DIR
+    paths = sorted(
+        (p for p in model_dir.glob("*/*.json") if not p.name.startswith(".")),
+        key=lambda p: (p.parent.name, p.stem),
+    )
+    names = [p.stem for p in paths]
+    repeated = {n for n in names if names.count(n) > 1}
+    if repeated:
+        sys.exit(f"names must be unique across packs: {sorted(repeated)}")
+    lines = [
+        "// Generated by bin/ampsim-index. Do not edit.",
+        "// [name, pack, kind, hasKnob, hasCab, trim dB at knob 0, 0.5, 1]",
+        "// hasCab is nil when the name doesn't say",
+        "#[",
+        *map(row, paths, trims(paths)),
+        "]",
+    ]
+    OUT.write_text("\n".join(lines) + "\n")
+    print(f"{len(paths)} models written to {OUT}")
+
+
+if __name__ == "__main__":
+    main()

@@ -959,6 +959,17 @@ AnchorMap : MonoMap {
 		^joined.ritardSpan(lo, hi, w, q, amount, true, quantize: 1)
 	}
 
+	// Multiply the beat numbering by `k`, leaving performed times alone: tempo scales
+	// by k and timeAt(k * b) == the old timeAt(b). The beat-axis twin of scaleTempo,
+	// matching MIDIItemTempoMap.scaleBeats so an EventList clock takes the same call.
+	scaleBeats { |k = 1|
+		this.prNeedBeatSec(\scaleBeats);
+		((k.isNumber.not) or: { k <= 0 }).if {
+			Error("AnchorMap.scaleBeats: k must be > 0, got %".format(k)).throw
+		};
+		^AnchorMap(xs * k, ys, fromFrame, toFrame, extendBelow, extendAbove)
+	}
+
 	// Multiply tempo by `k`, preserving beat positions and rubato. Optional bounds
 	// ripple later material unless preserveTotal rescales the material outside.
 	// Use setBpm/setTempo for an absolute target.

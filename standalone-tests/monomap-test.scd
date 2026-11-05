@@ -21,6 +21,7 @@ var lg, lgOld, lgC;
 var fm, fmT, fmS, mkNote, fxNotes, fxPlayer, tk1, tk2, mit, mitM, mitA, mitC;
 var sl, sp, mOff, tsId, qs, st, pt, ssl, stm, msq, mcells;
 var ad, atm, atmInv, atmR, elT, tmPass, elC, tEnvC;
+var sb, elS;
 
 // ---- MapFrame ----
 assert.(MapFrame(\beat) == MapFrame(\beat), "frame value equality");
@@ -849,6 +850,25 @@ assertClose.(elC.beatToWall(3, tEnvC), 4, "beatToWall through the first coerced 
 elC.tempoMap = AnchorMap([0, 1, 2, 3], [0, 2, 4, 8], MapFrame(\beat), MapFrame(\sec));
 assertClose.(elC.beatToWall(3, tEnvC), 8,
 	"assigning a new clock drops the cache keyed on the RETAINED tempoEnv");
+
+// ---- scaleBeats ----
+sb = m1.scaleBeats(0.5);
+assertArr.(sb.xs, [0, 1, 2], "scaleBeats multiplies the beat axis", 1e-12);
+assertArr.(sb.ys, m1.ys, "scaleBeats leaves performed times alone", 1e-12);
+assertArr.(m1.xs, [0, 2, 4], "scaleBeats does not mutate the receiver", 1e-12);
+assertClose.(sb.timeAt(0.5), m1.timeAt(1), "scaleBeats: timeAt(k * b) == old timeAt(b)", 1e-12);
+assertClose.(sb.tempo, m1.tempo * 0.5, "scaleBeats: tempo scales by k", 1e-12);
+assert.((sb.fromFrame == m1.fromFrame) and: { sb.toFrame == m1.toFrame }, "scaleBeats keeps frames");
+assert.(sb.extendBelow == m1.extendBelow and: { sb.extendAbove == m1.extendAbove },
+	"scaleBeats keeps the extension policy");
+assert.(throws.({ m1.scaleBeats(0) }), "scaleBeats refuses k <= 0");
+assert.(throws.({ AnchorMap([0, 1], [0, 2], beatF, beatF).scaleBeats(2) }),
+	"scaleBeats refuses a map that is not beat -> sec");
+// the case that broke: a list clock is always an AnchorMap
+elS = EventList.new;
+elS.tempoMap = AnchorMap([0, 2, 4], [0, 1, 4], beatF, secF);
+assertClose.(elS.tempoMap.scaleBeats(0.5).scaleTempo(2).fromBeat(0, 1).timeAt(1), 0.5,
+	"a list clock chains scaleBeats into scaleTempo and fromBeat", 1e-12);
 
 (h[\report].() == 0).if { 0.exit } { 1.exit };
 )

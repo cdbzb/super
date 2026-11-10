@@ -2251,9 +2251,21 @@ EventList {
 			childWallAt = { |cBeat| wallAt.(b0 + ((gAt.(cBeat) - refG) / rate)) };
 		} {
 			var cEnv = child.prPlayTempoEnv(childCtx);
-			var anchor = place.(b0);
-			var anchorW = wallAt.(b0);
-			var cFromWall = child.beatToWall(gAt.(cFrom), cEnv);
+			var anchor, anchorW, cFromWall;
+			// Own-tempo child inserted before `from`: it has already played the wall
+			// seconds between its insert point and `from`, so start it that far in.
+			// Untrimmed, the whole child was placed before the epoch and fire sent
+			// every past entry at once (e.g. all of a nested \both on play(27)).
+			(from > b0).if {
+				var elapsed = wallAt.(from) - wallAt.(b0);
+				var cut = child.wallToBeat(child.beatToWall(gAt.(cFrom), cEnv) + elapsed, cEnv);
+				cFrom = groove.notNil.if({ groove.unmapBeat(cut) }, { cut });
+				b0 = from;
+				(cTo.notNil and: { cFrom >= cTo }).if { ^List[] };
+			};
+			anchor = place.(b0);
+			anchorW = wallAt.(b0);
+			cFromWall = child.beatToWall(gAt.(cFrom), cEnv);
 			childPlace  = { |cBeat| anchor + (child.beatToWall(gAt.(cBeat), cEnv) - cFromWall) };
 			childWallAt = { |cBeat| anchorW + (child.beatToWall(gAt.(cBeat), cEnv) - cFromWall) };
 		};

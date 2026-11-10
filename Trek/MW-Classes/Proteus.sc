@@ -36,7 +36,16 @@ AmpSim {
 	// knob, drive and amp can be UGens here; set them as controls on an Ndef.
 	// Use them rather than nesting Effect.bus: nested effects run in the wrong
 	// order, so the inner one hears nothing.
+	// The bus is a plain Integer, dead once the synth frees itself (or MyFree
+	// runs). To keep it in a score that is played more than once, use AmpSim.fx
+	// (FxBus.sc), which starts a fresh synth whenever the old one is gone.
 	*bus { |model, out = 0, inputChannels = 2, time = 10, knob, pre, post, drive = 1, amp = 1, trim = true|
+		^this.prEffect(model, out, inputChannels, time, knob, pre, post, drive, amp, trim).bus.index
+	}
+
+	// The Effect behind *bus and *fx: starts the synth now and loads the model
+	// into it once the server has it.
+	*prEffect { |model, out = 0, inputChannels = 2, time = 10, knob, pre, post, drive = 1, amp = 1, trim = true|
 		var effect, ugens, path = this.modelPath(model), server = Server.default;
 		var trims = this.prTrims(model, trim);
 		this.prWarnKnob(model, knob);
@@ -55,7 +64,7 @@ AmpSim {
 				server.sendMsg('/u_cmd', effect.synth.nodeID, ugen.synthIndex, 'load_model', path, true)
 			}
 		};
-		^effect.bus.index
+		^effect
 	}
 
 	*load { |name, model, verbose = true, trim = true|

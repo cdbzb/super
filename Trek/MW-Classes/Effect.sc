@@ -11,6 +11,8 @@
 
 		*new2 {|function out=0 inputChannels=1| ^super.new.init(function,out,inputChannels)}
 		*lfo {|function inputChannels=1 dur| ^super.new.initLfo(function,inputChannels,dur)}
+		// A plain Integer, dead once the synth frees itself. Effect.fx (FxBus.sc)
+		// is the replayable form.
 		*bus {|function out=0 inputChannels=1 target time=1 maxDur release=3| ^Effect.new(function , out,inputChannels, target, time, maxDur, release).bus.index}
 		*kbus {|function inputChannels=1 dur| ^super.new.initLfo(function,inputChannels,dur).bus.index}
 

@@ -1382,6 +1382,7 @@ EventList {
 			var resolved = this.resolveEvent(event);
 			var tempoEnv = this.prPreviewTempoEnv;
 			previewPrep !? { previewPrep.(resolved, this) };
+			EventList.prArmForPlay([resolved]);
 			(resolved[\type] == \eventList).if {
 				this.prPreviewListActions(resolved, previewOffset, tempoEnv).do { |item|
 					SystemClock.sched(item[\time].max(0), { item[\send].value; nil })
@@ -2145,6 +2146,7 @@ EventList {
 		playable = voiceSpace.notNil.if {
 			evts.reject { |e| (e[\type] ? \keyFrame) == \keyFrame }
 		} { evts };
+		EventList.prArmForPlay(playable);
 		playable.do { |ev|
 			ev[\tempoTrack].isNil.if {
 				(ev[\type] == \eventList).if {
@@ -2450,6 +2452,37 @@ EventList {
 	// \mi2 that must go through prEmitMi2Follow (follow source or a range/align key)
 	// rather than the sealed event type, which ignores followTrack/fromBeat/toBeat.
 	// Shared by prepare and preview so both honour the same keys.
+	/* Warm up whatever an event will send to before anything is sent: any value
+	   answering armForPlay (FxBus — see FxBus.sc) found in the events, their nested
+	   Events and Arrays (params:, .p arrays), and a take's per-note params
+	   (player.setParams bakes them into midiEvents). Done in prepare, outside the
+	   timestamped note bundles, so a fresh synth is started up front rather than
+	   folded into the first note's bundle. Duck-typed: EventList names no class.
+	   Skipped without a running server — the send-time fallback handles that, and
+	   headless tests stay pure language. Arms everything playable, including an
+	   event that sounds late in the list. */
+	*prArmForPlay { |items|
+		var seen, walk;
+		Server.default.serverRunning.not.if { ^this };
+		seen = IdentitySet[];
+		walk = { |v, depth|
+			(depth < 6 and: { v.notNil } and: { seen.includes(v).not }).if {
+				case
+				{ v.respondsTo(\armForPlay) } { seen.add(v); v.armForPlay }
+				{ v.isKindOf(Dictionary) } { seen.add(v); v.do { |x| walk.(x, depth + 1) } }
+				{ v.isKindOf(SequenceableCollection)
+					and: { v.isString.not } and: { v.isKindOf(RawArray).not } } {
+					seen.add(v); v.do { |x| walk.(x, depth + 1) }
+				}
+				{ v.respondsTo(\midiEvents) } {
+					seen.add(v);
+					v.midiEvents.do { |e| e[\params] !? { |p| walk.(p, depth + 1) } }
+				}
+			}
+		};
+		items.do { |ev| walk.(ev, 0) }
+	}
+
 	prIsMi2Follow { |ev|
 		^(ev[\type] == \mi2) and: {
 			EventList.followSource(ev).notNil

@@ -120,6 +120,7 @@ Monitors {  //setup monitoring for Trek piece
 	*headphones { ^AudioInterface(\headphones).select }
 	*bose { ^AudioInterface(\bose).select }
 	*airpods { ^AudioInterface(\airpods).select }
+	*moniqueAirpods { ^AudioInterface(\moniqueAirpods).select }
 	*zoom { ^AudioInterface(\zoom).select }
 	*teams { ^AudioInterface(\teams).select }
 

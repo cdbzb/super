@@ -68,6 +68,9 @@ AudioInterface {
 		this.new(\epos,        "EPOS PC 8 USB",              nil,                      2);
 		this.new(\bose,        "BoseAg",                     nil,                      2);
 		this.new(\airpods,     "Pro Ag",                     nil,                      2);
+		/* AirPods + built-in mic aggregate, like Pro Ag: opening the AirPods and the
+		   mic as separate devices boots and runs, but the AirPods stay silent. */
+		this.new(\moniqueAirpods, "Monique Ag",                 nil,                      2);
 		this.new(\zoom,        "ZoomAudioD",                 nil,                      2);
 	}
 

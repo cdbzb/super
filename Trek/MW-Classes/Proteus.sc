@@ -57,7 +57,7 @@ AmpSim {
 			sig = this.prFinish(ugens, knob, trims, amp);
 			sig = sig.isArray.if { sig } { sig ! 2 };
 			post.notNil.if { post.value(sig) } { sig }
-		}, out, inputChannels, time: time);
+		}, out, inputChannels, time: time, detectOutput: false); // input DetectSilence above
 		fork {
 			server.sync;
 			ugens.asArray.do { |ugen|

@@ -4,8 +4,11 @@
 		*newOld { |function out=0 inputChannels=1|
 			^super.new.init(function , out,inputChannels);
 		}
-		*new { |function out=0 inputChannels=1 target time=1 maxDur release=3|
-			^super.new.init(function , out,inputChannels, target, time, maxDur, release);
+		// detectOutput: false skips the output DetectSilence — for a function that
+		// watches its own input instead (AmpSim: a model's output blips at load and
+		// never quite settles, so the output check freed an idle one after `time`).
+		*new { |function out=0 inputChannels=1 target time=1 maxDur release=3 detectOutput=true|
+			^super.new.init(function , out,inputChannels, target, time, maxDur, release, detectOutput);
 		}
 		*newSidechain {|function out=0 inputChannels=1| ^super.new.initSidechain(function,out,inputChannels) }
 
@@ -46,7 +49,7 @@
 event.yield
 		}
 
-		init { |function out inputChannels=1 target time=1 maxDur release=3|
+		init { |function out inputChannels=1 target time=1 maxDur release=3 detectOutput=true|
 			var desc = SynthDef(\temp,{ In.ar(0, inputChannels) => function => Out.ar(0,_) });
 			numChannels=desc.asSynthDesc.outputData[0].at(\numChannels);
 			target = target ? Server.default;
@@ -54,7 +57,7 @@ event.yield
 			synth={|gate|
 				var sig = In.ar(bus.index, inputChannels) => function;
 				maxDur.notNil.if { sig = sig * EnvGen.kr(Env.linen(0, maxDur, release), doneAction: 2) };
-				DetectSilence.ar(sig.asArray.first, time: time, doneAction: 2);
+				detectOutput.if { DetectSilence.ar(sig.asArray.first, time: time, doneAction: 2) };
 				Out.ar(out, sig)
 			}.play(addAction:\addToTail, target: target);
 			NodeWatcher.register(synth, assumePlaying: true);

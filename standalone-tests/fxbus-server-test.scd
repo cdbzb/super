@@ -74,6 +74,17 @@ srv.waitForBoot {
 	assert.(amp.isLive and: { i1.isInteger }, "AmpSim.fx starts a Proteus Effect (bus %)".format(i1));
 	amp.free;
 
+	// An idle AmpSim must outlive its time: (armed at prepare, first note much
+	// later). Effect's output DetectSilence used to free it: the model blips at
+	// load, starting the countdown with no input at all. AmpSim watches its INPUT.
+	amp = AmpSim.fx("JoyoExtremeMetal", amp: 2, time: 1);
+	amp.arm; srv.sync; 2.5.wait;
+	assert.(amp.isLive, "idle AmpSim.fx survives past time: with no input");
+	{ Out.ar(amp.asControlInput, SinOsc.ar(220, 0, 0.1) * Line.kr(1, 1, 0.1, doneAction: 2)) }.play;
+	2.5.wait;
+	assert.(amp.isLive.not, "...and still frees itself once its input has sounded and gone quiet");
+	amp.free;
+
 	srv.sync;
 	h[\report].();
 	srv.quit;

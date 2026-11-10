@@ -1388,6 +1388,29 @@ EventList {
 				};
 				^this
 			};
+			// \mi2 follow: same compiler as prepare (fromBeat/toBeat/align/followTrack),
+			// placed at the preview onset. One Routine, not a sched per note — dense
+			// takes overflow SystemClock's queue (see fire). Sends self-bundle at
+			// +latency, so wake them latency early as fire does.
+			this.prIsMi2Follow(resolved).if {
+				var when = resolved[\when] ? 0;
+				var onset = this.prPreviewDelay(previewOffset, tempoEnv);
+				var wall = this.beatToWall(when, tempoEnv);
+				var lat = Server.default.latency ? 0.2;
+				var sorted = this.prEmitMi2Follow(resolved, tempoEnv, when,
+					{ |beat| onset + this.beatToWall(beat, tempoEnv) - wall })
+					.asArray.sort { |a, b| (a[\time] ? 0) <= (b[\time] ? 0) };
+				Routine {
+					var t = 0;
+					sorted.do { |item|
+						var due = ((item[\time] ? 0) - lat).max(0);
+						(due - t).max(0).wait;
+						t = t.max(due);
+						item[\send].value
+					}
+				}.play(SystemClock);
+				^this
+			};
 			this.prIsAudioFollow(resolved).if {
 				var actions;
 				actions = switch(AudioItem.stretchMode(resolved),
@@ -2424,6 +2447,24 @@ EventList {
 	// One type, \audioItem: \audioItemTempoFollow is its alias with followTrack:
 	// \eventList. Any timing key (sourceTempoMap:, sourceBeatDur:, marksVersion:,
 	// fromBeat:, toBeat:) implies following too — the sealed path cannot honour them.
+	// \mi2 that must go through prEmitMi2Follow (follow source or a range/align key)
+	// rather than the sealed event type, which ignores followTrack/fromBeat/toBeat.
+	// Shared by prepare and preview so both honour the same keys.
+	prIsMi2Follow { |ev|
+		^(ev[\type] == \mi2) and: {
+			EventList.followSource(ev).notNil
+			or: { [\fromBeat, \toBeat, \align].any { |k| ev[k].notNil } }
+		} and: {
+			((ev[\record] ? false) != true) or: {
+				MIDIItem.armed.not.if {
+					"MIDIItem %: not armed — following track; will record if armed"
+						.format(ev[\name]).warn;
+					true
+				} { false }
+			}
+		}
+	}
+
 	prIsAudioFollow { |ev|
 		^(ev[\type] == \audioItemTempoFollow) or: {
 			(ev[\type] == \audioItem)
@@ -2510,18 +2551,7 @@ EventList {
 		// events at prepare time and never runs it); unarmed it's playback intent
 		// and follows. Armed is sampled at prepare time, not mid-playback.
 		// Any follow source (followSource — incl. a legacy sourceTempoMap alone) follows.
-		((ev[\type] == \mi2) and: {
-			EventList.followSource(ev).notNil
-			or: { [\fromBeat, \toBeat, \align].any { |k| ev[k].notNil } }
-		} and: {
-			((ev[\record] ? false) != true) or: {
-				MIDIItem.armed.not.if {
-					"MIDIItem %: not armed — following track; will record if armed"
-						.format(ev[\name]).warn;
-					true
-				} { false }
-			}
-		}).if {
+		this.prIsMi2Follow(ev).if {
 			^this.prEmitMi2Follow(ev, tempoEnv, from, place)
 		};
 		// Sealed \mi2 started before `from`: trim it to the wall time already elapsed

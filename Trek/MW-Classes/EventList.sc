@@ -588,6 +588,10 @@ EventList {
 		^seen.asArray
 	}
 
+    names {
+        ^events.collect(_[\name]).reject(_.isNil).asSet.asArray
+    }
+
 	// Copy events of `voice` whose `when` is in [from, to) (nil bound = open),
 	// shift each by `offset` beats, and re-insert. `newVoice` retargets the copies;
 	// `dropTempoTrack` strips \tempoTrack so the copy doesn't duplicate tempo anchors.

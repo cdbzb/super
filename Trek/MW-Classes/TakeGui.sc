@@ -393,7 +393,9 @@ TakeGui {
 					Pen.color = case
 					{ sel.includes(i) } { Color(1, 0.5, 0, 0.95) }
 					{ e[\edited] == true } { Color(0, 0.6, 0.5, 0.9) }   // hand-edited
-					{ Color(0, 0.3, 0.8, 0.25 + (0.6 * sal.(e))) };
+					// clip: salience is strength / median, so strong hits exceed 1, and
+					// an alpha over 1.0 wraps in Qt and draws the strongest hits faintest
+					{ Color(0, 0.3, 0.8, (0.25 + (0.6 * sal.(e))).clip(0.25, 1)) };
 					Pen.line(x @ (waveTop), x @ (waveTop + 14));
 					Pen.stroke;
 				}

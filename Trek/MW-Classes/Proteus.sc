@@ -2,10 +2,9 @@
 //
 //   AmpSim(\amp, \gtr, "JoyoExtremeMetal").play;  // makes Ndef(\gtr) if needed
 //   Ndef(\gtr, { SoundIn.ar(0) });
-//   AmpSim(\amp, \gtr, "JoyoExtremeMetal", pan: -0.5);   // placed, as AmpSim.bus
+//   AmpSim(\amp, \gtr, "JoyoExtremeMetal", pan: -0.5);   // Pan2 to stereo, as AmpSim.bus
 // Mono by default, like AmpSim.bus / fx: inputChannels (1) channels of the input
-// run that many models; pan: / numChannels: / width: place the result
-// (AmpSim.place).
+// run that many models; pan: puts a mono model on 2 channels (AmpSim.place).
 //   AmpSim.load(\amp, "Fender_Bassman_JC");       // swap model, same synth
 //   Ndef(\amp).set(\knob, 0.7, \drive, 0.25, \amp, 0.7, \bypass, 1);
 //
@@ -18,20 +17,20 @@
 AmpSim {
 	classvar index;
 
-	*new { |name, input, model, inputChannels = 1, trim = true, pan, numChannels, width = 2|
-		var ndef = Ndef(name, this.prNdefFunc(name, input, inputChannels, pan, numChannels, width));
+	*new { |name, input, model, inputChannels = 1, trim = true, pan|
+		var ndef = Ndef(name, this.prNdefFunc(name, input, inputChannels, pan));
 		model !? { this.load(name, model, trim: trim) };
 		^ndef
 	}
 
 	// The Ndef's graph function (separate so it can be built without a server).
-	*prNdefFunc { |name, input, inputChannels = 1, pan, numChannels, width = 2|
+	*prNdefFunc { |name, input, inputChannels = 1, pan|
 		^{
 			var in = input.notNil.if { Ndef(input).ar(inputChannels) } { \in.ar(0 ! inputChannels) };
 			var bypass = \bypass.kr(0), on = 1 - bypass, knob = \knob.kr(0.5);
 			var trims = [\trim0.kr(0), \trim1.kr(0), \trim2.kr(0)] * on;
 			var sig = Proteus.ar(in * Select.kr(bypass, [\drive.kr(1), 1]), knob, name, bypass);
-			this.place(this.prFinish(sig, knob, trims, \amp.kr(1)), pan, numChannels, width)
+			this.place(this.prFinish(sig, knob, trims, \amp.kr(1)), pan)
 		}
 	}
 
@@ -43,13 +42,11 @@ AmpSim {
 	// Channels follow the signal, as Out.ar does: inputChannels channels in, one
 	// model per channel, that many out — mono in, mono out on channel 0. Nothing
 	// is spread unless asked:
-	//   pan:          place the result on numChannels outputs (default 2):
-	//                   2 outputs   one model: Pan2   two: Balance2   more: Splay
-	//                   n > 2       one model: PanAz  more: SplayAz
-	//                 pan 0 is the front (channel 0 for n > 2); 2/n moves one
-	//                 speaker round the ring. width: PanAz/SplayAz spread.
-	//   numChannels:  place on that many outputs (pan defaults to 0)
-	//   post:         anything else, e.g. post: { |s| Monitors.az(s, 0.3) }
+	//   pan:   a convenience for a mono model only: Pan2 (equal power) to 2
+	//          channels. With inputChannels > 1 it warns and is ignored.
+	//   post:  any other placement, explicitly (post runs after pan:):
+	//            post: { |s| Splay.ar(s) }            // k models to stereo
+	//            post: { |s| PanAz.ar(5, s, 0.4) }    // mono to 5 speakers
 	// The input bus is at least max(inputChannels, 2) wide, so a stereo writer
 	// into a mono model never spills into the next bus.
 	// pre and post are functions around the model, in the same synth:
@@ -61,38 +58,27 @@ AmpSim {
 	// runs). To keep it in a score that is played more than once, use AmpSim.fx
 	// (FxBus.sc), which starts a fresh synth whenever the old one is gone.
 	*bus { |model, out = 0, inputChannels = 1, time = 10, knob, pre, post, drive = 1, amp = 1, trim = true,
-			pan, numChannels, width = 2|
-		^this.prEffect(model, out, inputChannels, time, knob, pre, post, drive, amp, trim,
-			pan, numChannels, width).bus.index
+			pan|
+		^this.prEffect(model, out, inputChannels, time, knob, pre, post, drive, amp, trim, pan).bus.index
 	}
 
-	// Place `sig` (one or more model outputs) as asked: unchanged when neither pan
-	// nor numChannels is given, else on numChannels (default 2) outputs at pan
-	// (default 0) — see *bus. Pure UGen graph; usable in any synth.
-	*place { |sig, pan, numChannels, width = 2|
-		var k, n;
-		(pan.isNil and: { numChannels.isNil }).if { ^sig };
-		pan = pan ? 0; n = numChannels ? 2;
-		k = sig.asArray.size;
-		(n < 2).if { ^(k == 1).if { sig } { sig.asArray.sum } };
-		^(n == 2).if {
-			case
-			{ k == 1 } { Pan2.ar(sig.asArray[0], pan) }
-			{ k == 2 } { Balance2.ar(sig[0], sig[1], pan) }
-			{ Splay.ar(sig, center: pan) }
-		} {
-			(k == 1).if {
-				PanAz.ar(n, sig.asArray[0], pan, width: width, orientation: 0)
-			} {
-				SplayAz.ar(n, sig, center: pan, width: width, orientation: 0)
-			}
-		}
+	// `sig` unchanged without pan; with pan, a mono sig goes through Pan2 to 2
+	// channels. More than one channel: warn and ignore pan (place it in post:).
+	// Pure UGen graph; usable in any synth.
+	*place { |sig, pan|
+		var k = sig.asArray.size;
+		pan.isNil.if { ^sig };
+		(k > 1).if {
+			"AmpSim: pan: is for a mono model (inputChannels: 1); ignoring it for % channels. Place them in post:, e.g. post: { |s| Splay.ar(s) }".format(k).warn;
+			^sig
+		};
+		^Pan2.ar(sig.asArray[0], pan)
 	}
 
 	// The Effect behind *bus and *fx: starts the synth now and loads the model
 	// into it once the server has it.
 	*prEffect { |model, out = 0, inputChannels = 1, time = 10, knob, pre, post, drive = 1, amp = 1, trim = true,
-			pan, numChannels, width = 2|
+			pan|
 		var effect, ugens, path = this.modelPath(model), server = Server.default;
 		var trims = this.prTrims(model, trim);
 		this.prWarnKnob(model, knob);
@@ -102,7 +88,7 @@ AmpSim {
 			DetectSilence.ar(in.asArray.sum, time: time, doneAction: 2);
 			ugens = Proteus.ar((pre.notNil.if { pre.value(in) } { in }) * drive, knob, \amp);
 			sig = this.prFinish(ugens, knob, trims, amp);
-			sig = this.place(sig, pan, numChannels, width);
+			sig = this.place(sig, pan);
 			post.notNil.if { post.value(sig) } { sig }
 		}, out, inputChannels, time: time, detectOutput: false, // input DetectSilence above
 			busChannels: inputChannels.max(2));

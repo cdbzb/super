@@ -130,7 +130,7 @@ FxBus {
 + AmpSim {
 	/* AmpSim.bus's arguments; answers an FxBus instead of a bus Integer. */
 	*fx { |model, out = 0, inputChannels = 1, time = 10, knob, pre, post, drive = 1, amp = 1, trim = true,
-			pan, numChannels, width = 2|
+			pan|
 		^FxBus(
 			FxBus.prSource("AmpSim.fx", model, [
 				\out, out, 0,
@@ -142,12 +142,9 @@ FxBus {
 				\drive, drive, 1,
 				\amp, amp, 1,
 				\trim, trim, true,
-				\pan, pan, nil,
-				\numChannels, numChannels, nil,
-				\width, width, 2
+				\pan, pan, nil
 			]),
-			{ AmpSim.prEffect(model, out, inputChannels, time, knob, pre, post, drive, amp, trim,
-				pan, numChannels, width) }
+			{ AmpSim.prEffect(model, out, inputChannels, time, knob, pre, post, drive, amp, trim, pan) }
 		)
 	}
 }

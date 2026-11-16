@@ -35,7 +35,7 @@ TakeGui {
 	var <cursorTime = 0, playhead, isPlaying = false, playSynth, clickClock;
 	var <edits;                  // the take's transient hand edits (TakeTransients.loadEdits)
 	var playStartWall, playOrigin, clickEnabled = false, countIn = 0;
-	var dragLine, dragX;
+	var dragLine, dragX, dragStartX;
 
 	*new { |take, params| ^super.new.prInit(take, params) }
 
@@ -504,6 +504,8 @@ TakeGui {
 				"Click elsewhere to place the playback cursor\n" ++
 				"With a grid up: drag a line and release to move it — it snaps to the\n" ++
 				"      nearest transient; alt-drag places a free pin (no transient)\n" ++
+				"Alt-click: place the playback cursor anywhere, snapped to the nearest beat\n" ++
+				"      (the grid, else the saved marks); shift-alt-click places it freely\n" ++
 				"Double-click: free pin on the nearest line (pick mode only)\n" ++
 				"Right-click: unpin the nearest line\n" ++
 				"In map edit mode, drag across the tempo lane to select a beat span\n\n" ++
@@ -518,10 +520,6 @@ TakeGui {
 			.align_(\left);
 	}
 
-	prMouseDown { |x, y, mod, btn, clicks|
-		var t = nav.tOf(x), grid, hit;
-		mapEd.mouseDown(x, y, nav.viewStart, nav.viewEnd, width).if { ^this };
-		beatMark.isNil.if { cursorTime = t; ^this.refresh };
 	// p / P: pin the transient nearest the cursor (or the cursor itself, with none
 	// within snapPx) at its grid position rounded to an 8th / a 16th — for
 	// syncopated attacks with no beat of their own (BeatMarkMode.pinOffbeat).
@@ -549,12 +547,26 @@ TakeGui {
 
 		grid = beatMark.extrapolateMode;
 		grid.if {
+	prMouseDown { |x, y, mod, btn, clicks|
+		var t = nav.tOf(x), grid, hit;
+		mapEd.mouseDown(x, y, nav.viewStart, nav.viewEnd, width).if { ^this };
+		// alt-click: the playback cursor, as in MIDIItem.gui. On a grid line it may be
+		// an alt-drag (free pin) instead — prMouseUp decides by whether it moved.
+		mod.isAlt.if {
+			var li = beatMark !? { beatMark.extrapolateMode.if { beatMark.lineNear(t) } };
+			(li.notNil and: { (nav.xOf(beatMark.gridLines[li][\time]) - x).abs < 6 }).if {
+				dragLine = li; dragX = x; dragStartX = x;
+				^this.refresh
+			};
+			^this.prSetCursor(t, mod.isShift)
+		};
+		beatMark.isNil.if { cursorTime = t; ^this.refresh };
 			var li = beatMark.lineNear(t);
 			case
 			{ btn == 1 } { li !? { beatMark.unpinLine(li) } }
 			{ clicks >= 2 } { li !? { beatMark.pinLine(li, t) } }
 			{ li.notNil and: { (nav.xOf(beatMark.gridLines[li][\time]) - x).abs < 6 } } {
-				dragLine = li; dragX = x
+				dragLine = li; dragX = x; dragStartX = x
 			}
 			{ cursorTime = t };
 			^this.refresh
@@ -583,7 +595,12 @@ TakeGui {
 		dragLine !? {
 			snap = mod.isAlt.not.if { snapPx * nav.dur / width };
 			beatMark.moveLine(dragLine, nav.tOf(x), snap);
-			dragLine = nil; dragX = nil;
+			// an alt-click on a line that never moved: the cursor, not a free pin
+			(mod.isAlt and: { (x - (dragStartX ? x)).abs < 3 }).if {
+				dragLine = nil; dragX = nil; dragStartX = nil;
+				^this.prSetCursor(nav.tOf(x), mod.isShift)
+			};
+			dragLine = nil; dragX = nil; dragStartX = nil;
 			this.refresh;
 		};
 	}

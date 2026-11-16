@@ -72,13 +72,22 @@ AmpSim {
 		var trims = this.prTrims(model, trim);
 		ndef.set(\trim0, trims[0], \trim1, trims[1], \trim2, trims[2]);
 		fork {
+			var found = false;
 			server.sync;
 			server.latency.wait; // node proxies start their synths one latency late
 			ndef.objects.do { |ctl|
-				var def = ctl.synthDef, info = def.metadata[def.name.asSymbol][name.asSymbol];
-				info[\index].do { |index|
-					server.sendMsg('/u_cmd', ctl.nodeID, index, 'load_model', path, verbose)
+				var def = ctl.tryPerform(\synthDef);
+				var info = def !? { def.metadata } !? { |m| m[def.name.asSymbol] } !? { |m| m[name.asSymbol] };
+				info !? {
+					found = true;
+					info[\index].do { |index|
+						server.sendMsg('/u_cmd', ctl.nodeID, index, 'load_model', path, verbose)
+					}
 				}
+			};
+			found.not.if {
+				"AmpSim.load: Ndef(\\%) has no Proteus UGen with id \\%; source is %. Remake it with AmpSim(\\%, ...)."
+				.format(name, name, ndef.source, name).warn
 			}
 		}
 	}

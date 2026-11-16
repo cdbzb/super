@@ -1,7 +1,11 @@
 // Ndef wrapper around the Proteus UGen (neural amp and pedal models).
 //
 //   AmpSim(\amp, \gtr, "JoyoExtremeMetal").play;  // makes Ndef(\gtr) if needed
-//   Ndef(\gtr, { SoundIn.ar(0 ! 2) });
+//   Ndef(\gtr, { SoundIn.ar(0) });
+//   AmpSim(\amp, \gtr, "JoyoExtremeMetal", pan: -0.5);   // placed, as AmpSim.bus
+// Mono by default, like AmpSim.bus / fx: inputChannels (1) channels of the input
+// run that many models; pan: / numChannels: / width: place the result
+// (AmpSim.place).
 //   AmpSim.load(\amp, "Fender_Bassman_JC");       // swap model, same synth
 //   Ndef(\amp).set(\knob, 0.7, \drive, 0.25, \amp, 0.7, \bypass, 1);
 //
@@ -14,16 +18,21 @@
 AmpSim {
 	classvar index;
 
-	*new { |name, input, model, numChannels = 2, trim = true|
-		var ndef = Ndef(name, {
-			var in = input.notNil.if { Ndef(input).ar(numChannels) } { \in.ar(0 ! numChannels) };
+	*new { |name, input, model, inputChannels = 1, trim = true, pan, numChannels, width = 2|
+		var ndef = Ndef(name, this.prNdefFunc(name, input, inputChannels, pan, numChannels, width));
+		model !? { this.load(name, model, trim: trim) };
+		^ndef
+	}
+
+	// The Ndef's graph function (separate so it can be built without a server).
+	*prNdefFunc { |name, input, inputChannels = 1, pan, numChannels, width = 2|
+		^{
+			var in = input.notNil.if { Ndef(input).ar(inputChannels) } { \in.ar(0 ! inputChannels) };
 			var bypass = \bypass.kr(0), on = 1 - bypass, knob = \knob.kr(0.5);
 			var trims = [\trim0.kr(0), \trim1.kr(0), \trim2.kr(0)] * on;
 			var sig = Proteus.ar(in * Select.kr(bypass, [\drive.kr(1), 1]), knob, name, bypass);
-			this.prFinish(sig, knob, trims, \amp.kr(1))
-		});
-		model !? { this.load(name, model, trim: trim) };
-		^ndef
+			this.place(this.prFinish(sig, knob, trims, \amp.kr(1)), pan, numChannels, width)
+		}
 	}
 
 	// Effect.bus for a model: returns a bus index to use as an event's out.

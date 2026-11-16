@@ -56,6 +56,17 @@ assert.(AmpSim.fx("JoyoExtremeMetal", inputChannels: 2).source.contains("inputCh
 assert.(AmpSim.fx("JoyoExtremeMetal", pan: 0.3, numChannels: 5).source.contains("pan: 0.3, numChannels: 5"),
 	"fx: pan / numChannels are part of its identity");
 
+// ------------------------------------------------------------ the Ndef form matches
+// (its graph function inside a plain SynthDef + Out, as Ndef wraps it; input nil reads \in)
+assert.(SynthDef(\zzzAmpNdef, { Out.ar(0, AmpSim.prNdefFunc(\zzzAmp).value) }).asSynthDesc.outputData[0][\numChannels] == 1,
+	"Ndef form: mono by default");
+assert.(SynthDef(\zzzAmpNdef, { Out.ar(0, AmpSim.prNdefFunc(\zzzAmp, nil, 2).value) }).asSynthDesc.outputData[0][\numChannels] == 2,
+	"Ndef form: inputChannels: 2 -> two models, stereo");
+assert.(SynthDef(\zzzAmpNdef, { Out.ar(0, AmpSim.prNdefFunc(\zzzAmp, pan: 0.2).value) }).asSynthDesc.outputData[0][\numChannels] == 2,
+	"Ndef form: pan: -> 2 channels");
+assert.(SynthDef(\zzzAmpNdef, { Out.ar(0, AmpSim.prNdefFunc(\zzzAmp, numChannels: 5).value) }).asSynthDesc.outputData[0][\numChannels] == 5,
+	"Ndef form: numChannels: 5 -> PanAz to 5");
+
 h[\report].();
 0.exit;
 )

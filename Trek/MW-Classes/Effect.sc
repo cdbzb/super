@@ -1,5 +1,19 @@
 	Effect { //|function out=0| // node proxy version 
 		var <>numChannels,<>bus,<>node, <>sidechain, <>synth;
+		/* Narrow buses. The input bus is sized by the function's OUTPUT count, so a
+		   mono-output effect gets a 1-channel bus: a stereo writer (most voices,
+		   a panned \audioItem) puts its channel 1 on bus.index + 1 — the next
+		   bus, often another Effect's input — and an inputChannels wider than the
+		   output reads past its own bus the same way.
+		     wideBuses  true: such a bus is max(inputChannels, outputs, 2) wide, so
+		                nothing spills; the function still reads inputChannels
+		                (channel 0 of a stereo writer), so the effect itself
+		                sounds the same — only the leak into the neighbour stops
+		     logNarrow  true: post each narrow Effect once (its source) and count
+		                it; Effect.narrowReport lists them, Effect.clearNarrowLog
+		                resets — play a piece through to see what wideBuses changes
+		   Both default false: unchanged behaviour until a piece has been checked. */
+		classvar <>wideBuses = false, <>logNarrow = false, <narrowLog;
 		
 		*newOld { |function out=0 inputChannels=1|
 			^super.new.init(function , out,inputChannels);
@@ -18,6 +32,39 @@
 		// is the replayable form.
 		*bus {|function out=0 inputChannels=1 target time=1 maxDur release=3| ^Effect.new(function , out,inputChannels, target, time, maxDur, release).bus.index}
 		*kbus {|function inputChannels=1 dur| ^super.new.initLfo(function,inputChannels,dur).bus.index}
+
+		// ---- narrow-bus log (see wideBuses / logNarrow above)
+		// The input bus width for an Effect reading `inputChannels` and writing
+		// `outputs`: the output count, unless wideBuses widens a narrow one.
+		// Logs narrow ones when logNarrow. Pure (no server).
+		*busChannels { |function, inputChannels = 1, outputs = 1|
+			var narrow = (outputs < 2) or: { inputChannels > outputs };
+			narrow.not.if { ^outputs };
+			logNarrow.if { this.prLogNarrow(function, inputChannels, outputs) };
+			^wideBuses.if { [inputChannels, outputs, 2].maxItem } { outputs }
+		}
+		*prLogNarrow { |function, inputChannels, outputs|
+			var key = (function.tryPerform(\def) !? { |d| d.sourceCode } ?? { function.asString })
+				.asString.collect { |c| c.isSpace.if($ , c) }.split($ ).reject(_.isEmpty).join(" ");
+			var entry;
+			narrowLog = narrowLog ?? { Dictionary.new };
+			entry = narrowLog[key];
+			entry.isNil.if {
+				narrowLog[key] = (count: 1, in: inputChannels, out: outputs);
+				"Effect narrow bus (in %, out %%): %".format(inputChannels, outputs,
+					(inputChannels > outputs).if(", reads past its bus", ""), key.keep(100)).postln;
+			} {
+				entry[\count] = entry[\count] + 1
+			}
+		}
+		*narrowReport {
+			(narrowLog ? ()).isEmpty.if { ^"Effect.narrowReport: nothing logged (set Effect.logNarrow = true and play)".postln };
+			narrowLog.asSortedArray.sort { |a, b| a[1][\count] > b[1][\count] }.do { |kv|
+				"%x  in % out %  %".format(kv[1][\count], kv[1][\in], kv[1][\out], kv[0].keep(120)).postln
+			};
+			^narrowLog
+		}
+		*clearNarrowLog { narrowLog = nil }
 
 		initLfo { |function inputChannels=1 dur |
 			bus=Bus.control();
@@ -53,7 +100,7 @@ event.yield
 			var desc = SynthDef(\temp,{ In.ar(0, inputChannels) => function => Out.ar(0,_) });
 			numChannels=desc.asSynthDesc.outputData[0].at(\numChannels);
 			target = target ? Server.default;
-			bus=Bus.audio(numChannels:numChannels);
+			bus=Bus.audio(numChannels: Effect.busChannels(function, inputChannels, numChannels));
 			synth={|gate|
 				var sig = In.ar(bus.index, inputChannels) => function;
 				maxDur.notNil.if { sig = sig * EnvGen.kr(Env.linen(0, maxDur, release), doneAction: 2) };

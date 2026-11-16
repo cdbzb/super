@@ -436,7 +436,8 @@ TakeGui {
 		// instruction strip, as in MIDIItem.gui
 		Pen.stringAtPoint(
 			"space play/stop · 'c' beat clicks · 'C' count-in · click ticks to pick · 'e' extrapolate · "
-			"'E' DP beat tracker · 's' seed from stamp · '[ ]' nudge · 'w' save · 'm' map edit · '?' help",
+			"'E' DP beat tracker · 'p/P' off-beat pin 8th/16th · 's' seed from stamp · '[ ]' nudge · 'w' save · "
+			"'m' map edit · '?' help",
 			Point(10, 10), Font("Helvetica", 14), Color.black);
 		// state line
 		Pen.stringAtPoint("clicks %  ·  count-in %  ·  %  ·  nudge % / % ms  ·  % transient edits"
@@ -473,6 +474,11 @@ TakeGui {
 				"      j/k - pick later/earlier transient at the current line\n" ++
 				"m - Toggle MAP EDIT mode (edits the tempo map in the lane; the keys\n" ++
 				"      below act only while it is on)\n" ++
+				"      p/P - off-beat pin (pick mode): the transient nearest the cursor\n" ++
+				"            is pinned at its grid position rounded to an 8th / 16th\n" ++
+				"            (syncopation: an attack at beat 2.5 with none on 2 or 3);\n" ++
+				"            the lines after it re-seed. Pin left to right; again on\n" ++
+				"            the same transient removes it. Saved with w\n" ++
 				"      i/o - span start/end at the cursor; drag across the lane also\n" ++
 				"      A   - select the whole map (the default span)\n" ++
 				"      Q   - straighten the span to one constant tempo (quantize)\n" ++
@@ -504,8 +510,9 @@ TakeGui {
 				"Visual Guide:\n" ++
 				"Blue ticks = transients (darker = stronger); orange = picked;\n" ++
 				"      teal = hand-edited\n" ++
-				"Green lines = beat grid; red = current line; blue = free pin\n" ++
-				"Faint green lines = saved marks (when no grid is up)\n" ++
+				"Green lines = beat grid; red = current line; blue = free pin;\n" ++
+				"      dashed magenta = off-beat pin\n" ++
+				"Faint green lines = the loaded selection (when no grid is up)\n" ++
 				"Dashed purple lines = the record stamp's beats (where the take should be)")
 			.font_(Font("Helvetica", 12))
 			.align_(\left);
@@ -515,6 +522,31 @@ TakeGui {
 		var t = nav.tOf(x), grid, hit;
 		mapEd.mouseDown(x, y, nav.viewStart, nav.viewEnd, width).if { ^this };
 		beatMark.isNil.if { cursorTime = t; ^this.refresh };
+	// p / P: pin the transient nearest the cursor (or the cursor itself, with none
+	// within snapPx) at its grid position rounded to an 8th / a 16th — for
+	// syncopated attacks with no beat of their own (BeatMarkMode.pinOffbeat).
+	pinOffbeat { |div = 2|
+		var hit;
+		beatMark.isNil.if { ^this };
+		hit = beatMark.nearestIndex(cursorTime, snapPx * nav.dur / width);
+		beatMark.pinOffbeat(hit.notNil.if { beatMark.notes[hit].timestamp } { cursorTime }, div, hit);
+	}
+
+	// The playback cursor at `t`, snapped to the nearest beat (live grid, else the
+	// saved marks) unless `free` — MIDIItem.gui's alt-click / shift-alt-click.
+	prSetCursor { |t, free = false|
+		var times = free.if { [] } { this.beatTimes ? [] }, best;
+		t = t.clip(0, dur);
+		(times.size > 0).if {
+			best = 0;
+			times.do { |gt, i| ((gt - t).abs < (times[best] - t).abs).if { best = i } };
+			t = times[best];
+		};
+		cursorTime = t;
+		("Cursor at " ++ t.round(0.001) ++ (best.notNil.if { " (beat %)".format(best) } { "" })).postln;
+		^this.refresh
+	}
+
 		grid = beatMark.extrapolateMode;
 		grid.if {
 			var li = beatMark.lineNear(t);
@@ -596,5 +628,7 @@ TakeGui {
 		var params = ();
 		(kwargs ? []).pairsDo { |k, v| params[k] = v };
 		^TakeGui(this, params)
+			$p, { this.pinOffbeat(2) },
+			$P, { this.pinOffbeat(4) },
 	}
 }

@@ -30,6 +30,13 @@ BeatMarkMode {
 	var <extrapolateMode = false, <dpMode = false;
 	var <gridLines, <currentLine = 0;
 	var <anchorPair, <manualPicks, <pinSet, <beatTracker;
+	// Off-beat pins: (time:, beat:, noteIndex:) with a FRACTIONAL beat on the
+	// gridTimes axis (pick 0 = beat 0) — an attack known to sit at, say, beat 2.5
+	// when beats 2 and 3 have no attack of their own (syncopation). Pick mode only.
+	// The grid's integer lines stay the saved beats; pins only steer where they go:
+	// rebuildGrid re-seeds its tempo at each pin, and ghost lines next to a pin are
+	// interpolated between the known points around them.
+	var <offPins;
 	var sortedNotes = true;  // notes in time order -> binary-search nearest lookups
 	var <>onChange, <>onGridChange, <>ensureVisible, <>onSave;
 	var <>salienceFunc;      // handed to every MIDIBeatTracker this mode builds (nil = its default)
@@ -88,6 +95,7 @@ BeatMarkMode {
 		end = endTime;
 		gridLines = [];
 		selectedIndices = [];
+		offPins = [];
 		notes.doAdjacentPairs { |a, b| (b.timestamp < a.timestamp).if { sortedNotes = false } };
 		^this
 	}
@@ -156,18 +164,62 @@ BeatMarkMode {
 
 	// recompute every line after lineIdx from the pair (lineIdx-1, lineIdx):
 	// constant spacing forward, auto-adopting a note when one falls within a
-	// fifth of a beat of the extrapolated time.
+	// fifth of a beat of the extrapolated time. Passing an off-beat pin re-seeds
+	// the spacing from the last known point (lineIdx, or the previous pin) to the
+	// pin, as a re-pick would; then ghost lines beside pins are interpolated.
 	rebuildGrid { |lineIdx = -1|
 		var prevT = this.effTime(lineIdx - 1);
 		var curT = this.effTime(lineIdx);
 		var delta = curT - prevT;
 		var tol = delta / 5;
 		var t = curT + delta;
+		var kB = this.lineBeat(lineIdx), kT = curT, b = kB + 1;
+		var pins = (offPins ? []).select { |p| p[\beat] > kB };
 		gridLines = gridLines.keep(lineIdx + 1);
 		(delta > 0.001).if {
 			while { t <= end } {
+				while { pins.notEmpty and: { pins[0][\beat] < b } } {
+					var p = pins.removeAt(0), d = (p[\time] - kT) / (p[\beat] - kB);
+					(d > 0.001).if {
+						delta = d; tol = delta / 5;
+						kB = p[\beat]; kT = p[\time];
+						t = kT + ((b - kB) * delta);
+					} {
+						"off-beat pin at beat % (% s) is not after the point before it — ignored"
+							.format(p[\beat], p[\time].round(0.001)).postln
+					}
+				};
 				gridLines = gridLines.add((time: t, noteIndex: this.nearestIndex(t, tol)));
-				t = t + delta;
+				t = t + delta; b = b + 1;
+			}
+		};
+		(offPins ? []).notEmpty.if { this.prInterpolateOffPins };
+		^this
+	}
+
+	// gridTimes-axis beat of grid line i (hand picks are beats 0..picks-1)
+	lineBeat { |i| ^(manualPicks ? []).size + i }
+
+	// A ghost line (no note, not pinned) whose bracketing known points include an
+	// off-beat pin is put on the straight line between those two points.
+	prInterpolateOffPins {
+		var nP = (manualPicks ? []).size, known = List[];
+		(manualPicks ? []).do { |p, k| known.add([k, p[\time], false]) };
+		gridLines.do { |l, i|
+			(l[\noteIndex].notNil or: { l[\pinned] == true }).if { known.add([nP + i, l[\time], false]) }
+		};
+		offPins.do { |p| known.add([p[\beat], p[\time], true]) };
+		known = known.asArray.sort { |a, c| a[0] < c[0] };
+		gridLines.do { |l, i|
+			var b = nP + i, hiI, lo, hi;
+			(l[\noteIndex].isNil and: { l[\pinned] != true }).if {
+				hiI = known.detectIndex { |k| k[0] > b };
+				(hiI.notNil and: { hiI > 0 }).if {
+					lo = known[hiI - 1]; hi = known[hiI];
+					(lo[2] or: { hi[2] }).if {
+						l[\time] = lo[1] + ((hi[1] - lo[1]) * (b - lo[0]) / (hi[0] - lo[0]))
+					}
+				}
 			}
 		};
 		^this
@@ -219,6 +271,7 @@ BeatMarkMode {
 		dpMode = false;
 		localEdits = false;
 		gridLines = [];
+		offPins = [];
 		this.prGridChanged;
 		("Extrapolate mode off. Selected: " ++ selectedIndices).postln;
 		^this
@@ -234,6 +287,7 @@ BeatMarkMode {
 		sorted = selectedIndices.copy.sort { |a, b| notes[a].timestamp < notes[b].timestamp };
 		manualPicks = this.prPicks(sorted);
 		localEdits = false;
+		offPins = [];
 		anchorPair = sorted.keep(-2).collect { |i| notes[i].timestamp };
 		gridLines = [];
 		this.rebuildGrid(-1);
@@ -263,6 +317,7 @@ BeatMarkMode {
 		sorted = selectedIndices.copy.sort { |a, b| notes[a].timestamp < notes[b].timestamp };
 		manualPicks = this.prPicks(sorted);
 		localEdits = false;
+		offPins = [];
 		anchorPair = sorted.keep(-2).collect { |i| notes[i].timestamp };
 		pinSet = Set[];
 		beatTracker = MIDIBeatTracker(notes, anchorPair[1] - anchorPair[0], sorted.last);
@@ -426,6 +481,7 @@ BeatMarkMode {
 		dpMode = false;
 		pinSet = nil;
 		gridLines = [];
+		offPins = [];
 		^this
 	}
 
@@ -459,6 +515,7 @@ BeatMarkMode {
 	resume { |savedSel, tol = 0.015|
 		var restored = false, manual;
 		(savedSel.isNil or: { savedSel[\periodPrior].isNil }).if { ^false };
+		this.prRestoreOffPins(savedSel, tol);
 		savedSel[\anchors].notNil.if { ^this.prResumeAnchors(savedSel, tol) };
 		manual = savedSel[\manual] ?? {
 			savedSel[\anchor].notNil.if {
@@ -540,6 +597,15 @@ BeatMarkMode {
 	// no note near it comes back as a free pin. The saved grid comes back as it was
 	// drawn — lines are restored, not re-extrapolated — except for a DP save,
 	// which re-runs the (deterministic) tracker from its seed and pins.
+	// saved off-beat pins, each re-attached to the nearest note within tol (a free
+	// pin when none). Restored lines already sit where the pins put them.
+	prRestoreOffPins { |savedSel, tol|
+		offPins = (savedSel[\offPins] ? []).collect { |p|
+			var i = this.nearestIndex(p[\time], tol);
+			(time: i.notNil.if { notes[i].timestamp } { p[\time] }, beat: p[\beat], noteIndex: i)
+		}.sort { |a, c| a[\beat] < c[\beat] };
+	}
+
 	prResumeAnchors { |savedSel, tol|
 		var anchors = savedSel[\anchors], free = savedSel[\freePins] ? [];
 		var seed, nPicks;
@@ -621,6 +687,9 @@ BeatMarkMode {
 			sel[\anchors] = this.gridTimes.collect { |t, i| (key: i, src: t, beat: i) };
 			sel[\manualTimes] = manualPicks.collect(_[\time]);
 			sel[\freePins] = gridLines.select { |l| l[\pinned] == true }.collect(_[\time]);
+			offPins.notEmpty.if {
+				sel[\offPins] = offPins.collect { |p| (time: p[\time], beat: p[\beat]) }
+			};
 			localEdits.if { sel[\local] = true };
 		};
 		dpMode.if {
@@ -665,6 +734,7 @@ BeatMarkMode {
 		manualPicks = lines.keep(2).collect { |l| (time: l[\time], noteIndex: l[\noteIndex]) };
 		anchorPair = manualPicks.collect(_[\time]);
 		gridLines = lines.drop(2);
+		offPins = [];
 		extrapolateMode = true;
 		dpMode = false;
 		localEdits = true;
@@ -753,6 +823,69 @@ BeatMarkMode {
 
 	prNudgeStep { |coarse| ^nudgeStep.notNil.if { nudgeStep.value(coarse) } { coarse.if(0.01, 0.001) } }
 
+	// ---- off-beat pins (syncopation): an attack at a known fractional beat
+
+	// Fractional beat of `time` on the live grid (gridTimes axis), or nil outside it.
+	beatAtTime { |time|
+		var times = this.gridTimes, i;
+		(times.isNil or: { times.size < 2 }).if { ^nil };
+		((time < times.first) or: { time > times.last }).if { ^nil };
+		i = (times.indexOfGreaterThan(time) ? (times.size - 1)).max(1);
+		^(i - 1) + ((time - times[i - 1]) / (times[i] - times[i - 1]))
+	}
+
+	// The host's key: pin the note at `time` (index `noteIndex`, nil = a free time)
+	// at its position on the live grid rounded to 1/div beat (2 = 8ths, 4 = 16ths,
+	// 3 = triplets). Pin left to right: each pin re-seeds the lines after it, so the
+	// next attack's rounding reads a corrected grid.
+	pinOffbeat { |time, div = 2, noteIndex|
+		var b = this.beatAtTime(time), r;
+		b.isNil.if { ^this.prPost("off-beat pin: no grid at % s".format(time.round(0.001))) };
+		r = (b * div).round / div;
+		((r - r.round).abs < 1e-6).if {
+			^this.prPost("% s rounds to beat % — on the beat: drag the line or j/k instead"
+				.format(time.round(0.001), r.round.asInteger))
+		};
+		^this.pinAtBeat(time, r, noteIndex)
+	}
+
+	// Pin `time` at fractional `beat`. The same note (or, with no note, the same
+	// beat) again removes it; another note at an already pinned beat replaces it.
+	pinAtBeat { |time, beat, noteIndex|
+		var k, msg, known;
+		extrapolateMode.not.if { ^this.prPost("off-beat pins need a grid (e)") };
+		dpMode.if { ^this.prPost("off-beat pins need pick mode (e), not DP (E)") };
+		(beat <= this.lineBeat(-1)).if { ^this.prPost("off-beat pins go after the hand picks") };
+		k = offPins.detectIndex { |p|
+			noteIndex.notNil.if { p[\noteIndex] == noteIndex } { (p[\beat] - beat).abs < 1e-6 }
+		};
+		k.notNil.if {
+			beat = offPins[k][\beat];
+			offPins.removeAt(k);
+			msg = "Removed off-beat pin at beat %".format(beat);
+		} {
+			offPins = offPins.reject { |p| (p[\beat] - beat).abs < 1e-6 }
+				.add((time: time, beat: beat, noteIndex: noteIndex))
+				.sort { |a, c| a[\beat] < c[\beat] };
+			msg = "Off-beat pin: % s at beat %".format(time.round(0.001), beat);
+		};
+		localEdits.if {
+			// seeded grid: only the ghost lines beside pins move
+			this.prInterpolateOffPins
+		} {
+			// re-extrapolate from the last known line at or before the pin
+			known = (beat.floor.asInteger - this.lineBeat(0)).min(gridLines.size - 1);
+			while { (known >= 0) and: {
+				gridLines[known][\noteIndex].isNil and: { gridLines[known][\pinned] != true } }
+			} { known = known - 1 };
+			this.rebuildGrid(known.max(-1));
+		};
+		currentLine = (this.lineNear(time) ? 0).max(0);
+		this.updateSelection;
+		this.prGridChanged;
+		^this.prPost("% — % off-beat pins, % lines".format(msg, offPins.size, gridLines.size))
+	}
+
 	// index of the grid line nearest `time` (for the host's hit-testing)
 	lineNear { |time|
 		var best, bd = inf;
@@ -801,6 +934,17 @@ BeatMarkMode {
 				{ l[\pinned] == true } { Color.blue(0.8, 0.8) }   // free pin
 				{ Color.green(0.5, 0.6) };
 				Pen.line(x@0, x@h);
+				Pen.stroke;
+			};
+		};
+		// off-beat pins: dashed magenta, the upper half
+		offPins.do { |p|
+			var t = p[\time], x;
+			visible.value(t).if {
+				x = xOf.value(t);
+				Pen.width = 2;
+				Pen.color = Color(0.85, 0, 0.6, 0.85);
+				(h / 24).floor.asInteger.do { |k| Pen.line(x @ (k * 12), x @ ((k * 12) + 7)) };
 				Pen.stroke;
 			};
 		};

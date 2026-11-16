@@ -1,5 +1,6 @@
 AudioItem {
 	classvar <>all, <folder, <buffers, <recorders;
+	classvar <monitors; // item Symbol -> live monitor Synth (see *monitor)
 	classvar <recordedMaps; // (item, take) -> record-time clock stamp (§9a step 2)
 	/*
 	 Measured input+output round trip of the current audio-device configuration.
@@ -33,12 +34,13 @@ AudioItem {
 		ServerBoot.add({ buffers = MultiLevelIdentityDictionary.new }, \all);
 		recordedMaps = MultiLevelIdentityDictionary.new;
 		recorders = Dictionary.new;
+		monitors = IdentityDictionary.new;
 		Class.initClassTree(Event);
 		folder = "~/tank/SC_audiofiles".standardizePath;
 		File.exists(folder).not.if{ "mkdir %".format(folder).unixCmd };
 		CmdPeriod.add(this);
 		Class.initClassTree(MyFree);
-		MyFree.add({ this.stopRecording; armed = false });
+		MyFree.add({ this.stopRecording; this.unmonitor; armed = false });
 
 		SynthDef(\audioItemTempoFollowRB, {
 			|out=0, bufnum=0, amp=1, rate=1, startPos=0, sustain=1, fade=0.02,
@@ -118,9 +120,16 @@ AudioItem {
 			));
             ~record.if{
 				armed.not.if {
-					"AudioItem not armed! not recording".warn;
-					~record = false;
-					currentEnvironment.play
+					// monitor: true and unarmed = rehearsal: live input only, no
+					// fallback playback of the old take
+					(~monitor ? false).if {
+						"AudioItem not armed! monitoring % only".format(itemName).warn;
+						AudioItem.monitor(itemName, ~in, ~out, ~numChannels ? 1, userDur)
+					} {
+						"AudioItem not armed! not recording".warn;
+						~record = false;
+						currentEnvironment.play
+					}
 				} {
 					var nc = ~numChannels ? 1;
 					// the round trip is per-rig (pinned in startup.scd, in no repo) and
@@ -144,6 +153,10 @@ AudioItem {
 						~recorder.record(~path, ~in ? Server.default.options.numOutputBusChannels, nc,
 							duration: userDur !? (_ + (~recTail ? 5)))
 					};
+					// same lifetime as the recorder; stopRecording(item) also ends it
+					(~monitor ? false).if {
+						AudioItem.monitor(itemName, ~in, ~out, nc, userDur !? (_ + (~recTail ? 5)))
+					};
 					// invalidate cached buffer so next playback reloads from disk
 					buffers.put(itemName.asSymbol, takeNum, Buffer());
 					// record-time clock stamp from EventList.prEmit (§9a step 2):
@@ -159,11 +172,19 @@ AudioItem {
 					};
 				}
             } {
+                // play along: live input to the same out as the take (one FxBus,
+                // one amp). Started before the take so the FxBus is armed once.
+                (~monitor ? false).if {
+                    AudioItem.monitor(itemName, ~in, ~out, ~numChannels ? 1, userDur)
+                };
                 File.exists(path).if {
                     // build the effect (if ~out is a thunk) BEFORE the bundle — Effect.bus
                     // allocates a Bus, sends its own SynthDef and spawns a synth, none of
                     // which can happen during this graph's compilation inside makeBundle.
-                    var outBus = (~out ? 0).value;
+                    // An FxBus is resolved here too (asControlInput arms it): armed inside
+                    // the bundle, its s_new is delayed by latency while AmpSim's load_model
+                    // /u_cmd goes out at once, so the model never loads ("Node not found").
+                    var outBus = (~out ? 0).value.asControlInput;
                     // \raw latency convention — the SAME origin the tempo-follow path
                     // now applies on every branch of prSrcOffset: a mic take is never
                     // trimmed on disk, so its content sits t0 LATE in the file
@@ -203,7 +224,42 @@ AudioItem {
 	);
 	}
 	*cmdPeriod {
-		armed = false
+		armed = false;
+		monitors = IdentityDictionary.new // Cmd-. already freed the nodes
+	}
+
+	/* Live monitor for an item: a synth copying bus `in` (default: first hardware
+	   input) to `out`, outside any bundle so it is as live as the server allows.
+	   out may be an FxBus (AmpSim.fx, Effect.fx): resolved here, which arms it.
+	   One monitor per item; starting another replaces it. dur nil = until
+	   unmonitor(item), stopRecording(item), MyFree or Cmd-.
+	     AudioItem.monitor(\guit_1, 10, AmpSim.fx("PeaveyBandit_Chan1_saturated", inputChannels: 1));
+	     AudioItem.unmonitor(\guit_1);
+	   From an event: ev.monitor / ev.unmonitor, or the monitor: true key. */
+	*monitor { |name, in, out = 0, numChannels = 1, dur|
+		var key = name.asSymbol, server = Server.default, bus, synth;
+		this.unmonitor(key);
+		in = in ? server.options.numOutputBusChannels;
+		bus = (out ? 0).value.asControlInput;
+		synth = { Out.ar(bus, In.ar(in, numChannels) * EnvGate()) }.play(server, addAction: \addToHead);
+		synth.register(true);
+		synth.onFree { (monitors[key] === synth).if { monitors.removeAt(key) } };
+		monitors[key] = synth;
+		dur !? {
+			SystemClock.sched(dur, { (monitors[key] === synth).if { this.unmonitor(key) }; nil })
+		};
+		^synth
+	}
+
+	// nil = every monitor.
+	*unmonitor { |name|
+		name.isNil.if {
+			monitors.keys.copy.do { |k| this.unmonitor(k) }
+		} {
+			monitors.removeAt(name.asSymbol) !? { |synth|
+				synth.isPlaying.if { synth.release(0.05) }
+			}
+		}
 	}
 
 	/* Preferred AudioItem event identity. `name` remains a compatibility fallback
@@ -1304,7 +1360,8 @@ AudioItem {
 		} {
 			recorders.removeAt(name.asSymbol) !? { |r|
 				r.isRecording.if { r.stopRecording }
-			}
+			};
+			this.unmonitor(name)
 		}
 	}
 	record {
@@ -1451,4 +1508,19 @@ Take : AudioItem {
 			)
 		}
 	}
+}
+
++ Event {
+	/* Start monitoring an \audioItem event's live input now, through its out
+	   (an AmpSim.fx works), without playing it. Answers the event.
+	     ~ev = (type: \audioItem, item: "guit_1", in: 10, out: AmpSim.fx(...));
+	     ~ev.monitor;  ...  ~ev.unmonitor;
+	   For monitoring tied to .play (recording, rehearsal, play-along) set
+	   monitor: true in the event instead. */
+	monitor { |dur|
+		AudioItem.monitor(AudioItem.eventItemName(this), this[\in], this[\out],
+			this[\numChannels] ? 1, dur);
+	}
+
+	unmonitor { AudioItem.unmonitor(AudioItem.eventItemName(this)) }
 }

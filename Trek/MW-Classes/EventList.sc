@@ -829,14 +829,17 @@ EventList {
 		);
 		voice !? { ev[\voice] = voice };
 		align !? { ev[\align] = align };   // quantize strength, AudioItem.tempoFollowActions
+		// take.selection(n) chose a saved selection, as MIDIItemPlayer.selection does
+		player.tryPerform(\selectionIndex) !? { |i| ev[\selection] = i };
 		(kwargs ? []).pairsDo { |k, v| ev[k] = v };
 		// a named source the take lacks is a mistake worth refusing here, at the
 		// call, rather than a warning at every prepare
 		((EventList.followSource(ev) == \marks) or: { ev[\marks].notNil and: { ev[\marks] != false } }).if {
 			TakeArchive.loadMarks(player.name, player.num,
-				ev[\marksVersion] ?? { (ev[\marks].isNumber).if { ev[\marks] } }).isNil.if {
-				^"EventList.addItem: % take % has no marks version % — mark it in take.gui first"
-					.format(player.name, player.num, ev[\marksVersion] ? "").warn
+				AudioItem.marksVersionOf(ev, player.name, player.num)
+					?? { (ev[\marks].isNumber).if { ev[\marks] } }).isNil.if {
+				^"EventList.addItem: % take % has no selection % — mark it in take.gui first"
+					.format(player.name, player.num, ev[\selection] ?? { ev[\marksVersion] } ? "").warn
 			}
 		};
 		// array return, matching addItem's other paths
@@ -2370,7 +2373,8 @@ EventList {
 	     absent / false          nil: sealed (recorded speed, no following)
 	     \auto (or true)         the take's marks (MIDI: its saved selection),
 	                             else its record stamp, else \list
-	     \marks (\selection)     the take's marked beats
+	     \selection (\marks)     the take's saved selection (its marked beats): the
+	                             newest, or selection: N (MIDI: player.selection(N))
 	     \stamp                  the clock the take was recorded against
 	     \list                   this list's live clock (recorded speed under map
 	                             edits; follows \tempoTrack only)
@@ -2463,7 +2467,7 @@ EventList {
 	// reminder that the item will record on the next armed play. Armed is
 	// sampled at prepare time, not mid-playback.
 	// One type, \audioItem: \audioItemTempoFollow is its alias with followTrack:
-	// \eventList. Any timing key (sourceTempoMap:, sourceBeatDur:, marksVersion:,
+	// \eventList. Any timing key (sourceTempoMap:, sourceBeatDur:, selection:,
 	// fromBeat:, toBeat:) implies following too — the sealed path cannot honour them.
 	// \mi2 that must go through prEmitMi2Follow (follow source or a range/align key)
 	// rather than the sealed event type, which ignores followTrack/fromBeat/toBeat.

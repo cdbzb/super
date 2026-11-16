@@ -511,7 +511,8 @@ AudioItem {
 	   downstream (prSrcOffset, prSrcEndBeat, the two tempoFollow builders) reads only
 	   what this answers. The source is EventList.followSource(ev):
 	     a map object      as given (a MonoMap is converted once)
-	     \marks            the take's marks (TakeGui w / W); newest, or marksVersion: N
+	     \marks            the take's marks (TakeGui w / W) — its SELECTIONS: the
+	                       newest, or selection: N (see marksVersionOf)
 	     \stamp            the record stamp
 	     \list             the list's base clock
 	     a Number          flat, that many seconds per beat
@@ -588,7 +589,33 @@ AudioItem {
 			{ v.isKindOf(Function) } { v.value }
 			{ v ? default }
 	}
-	*timingKeys { ^#[\sourceTempoMap, \sourceBeatDur, \marksVersion, \fromBeat, \toBeat, \align, \marks, \notes, \rateLead, \beatScale] }
+	*timingKeys { ^#[\sourceTempoMap, \sourceBeatDur, \selection, \marksVersion, \fromBeat, \toBeat, \align, \marks, \notes, \rateLead, \beatScale] }
+
+	/* Which marks version an event means, as the TakeArchive id loadMarks takes
+	   (nil = the newest). The public key is selection: N — the take's Nth selection,
+	   numbered densely from 0 like MIDIItem.selections (negative counts from the
+	   newest; Take.selection(n) sets it through addItem). marksVersion: is the old
+	   key and is the raw ARCHIVE id (gappy: stamps and Retune versions share the
+	   counter) — still honoured, warns once. A selection the take lacks answers -1,
+	   which loadMarks reads as absent, so callers warn and fall back instead of
+	   silently taking the newest. A resolved event (srcResolved) already carries
+	   the id. */
+	*marksVersionOf { |ev, itemName, takeNum|
+		var sel = ev[\selection];
+		(ev[\srcResolved] == true).if { ^ev[\marksVersion] };
+		sel.isInteger.if {
+			^TakeArchive.selectionId(itemName, takeNum, sel) ?? {
+				"AudioItem: % take % has no selection %".format(itemName, takeNum, sel).warn;
+				-1
+			}
+		};
+		ev[\marksVersion] !? { |v|
+			EventList.prLegacyKey(\marksVersion,
+				"marksVersion: is deprecated (an archive id) — use selection: N (counts the take's selections, as MIDIItem does)");
+			^v
+		};
+		^nil
+	}
 
 	*prResolveSourceMap { |ev, itemName, takeNum|
 		var out, sm, name, m, latIn = false, trimMode = false, origin = 0, k;
@@ -599,16 +626,17 @@ AudioItem {
 		// timing; \env has no align, so there it follows as before
 		(EventList.rangeOnly(ev) and: { this.stretchMode(ev) != \env }).if { out[\align] = 0 };
 		itemName = itemName ?? { this.eventItemName(ev) };
+		out[\marksVersion] = this.marksVersionOf(ev, itemName, takeNum);
 		sm = EventList.followSource(ev) ? \auto;
 		(ev[\marks].notNil and: { ev[\marks] != false }).if {
-			"AudioItem: marks: is replaced by followTrack: \\marks (and marksVersion: N)".warn;
+			"AudioItem: marks: is replaced by followTrack: \\selection (and selection: N)".warn;
 			(sm == \auto).if { sm = \marks };
 			(ev[\marks] != true).if { out[\marksVersion] = out[\marksVersion] ? ev[\marks] };
 		};
 		// a Function: evaluated with .use in an environment offering the take's
 		// sources as file-seconds MonoMaps (prSourceEnvir); it answers the map
 		sm.isKindOf(Function).if {
-			var fn = sm, envir = this.prSourceEnvir(ev, itemName, takeNum), result;
+			var fn = sm, envir = this.prSourceEnvir(out, itemName, takeNum), result;
 			result = { envir.use { fn.value } }.try { |err|
 				"AudioItem: sourceTempoMap function failed (%) — using the default"
 					.format(err.errorString).warn;
@@ -656,8 +684,8 @@ AudioItem {
 				\marks, {
 					var mk = TakeArchive.loadMarks(itemName, takeNum, out[\marksVersion]);
 					mk.isNil.if {
-						"AudioItem: % take % has no marks version % — using the default source"
-							.format(itemName, takeNum, out[\marksVersion] ? "").warn;
+						"AudioItem: % take % has no selection % — using the default source"
+							.format(itemName, takeNum, ev[\selection] ?? { out[\marksVersion] } ? "").warn;
 					} {
 						m = AnchorTempoMap(mk[\anchors].collect(_[\src]), mk[\anchors].collect(_[\beat]));
 						origin = mk[\anchors].first[\beat];
@@ -728,7 +756,7 @@ AudioItem {
 	   MapEditor vocabulary works on it (quantize(amount, from, to), curve,
 	   ritardSpan, setBpm(bpm, from, to), transformSpan) and whatever the function
 	   answers is already in file seconds:
-	     ~marks   the marks version (newest, or marksVersion:), beats from 0 at the
+	     ~marks   the selection (newest, or selection: N), beats from 0 at the
 	              first mark; nil when the take has none
 	     ~stamp   the record stamp, beats from 0 at the record event's fire beat,
 	              seconds plus the take's t0 (the stamp is stored without the
@@ -738,7 +766,7 @@ AudioItem {
 	   are written in list beats (step 11) — combine them with that in mind. */
 	*prSourceEnvir { |ev, itemName, takeNum|
 		var envir = (), mk, st, mono;
-		mk = TakeArchive.loadMarks(itemName, takeNum, ev[\marksVersion]);
+		mk = TakeArchive.loadMarks(itemName, takeNum, this.marksVersionOf(ev, itemName, takeNum));
 		mk !? {
 			envir[\marks] = AnchorMap.fromAnchors(mk[\anchors].collect(_[\beat]),
 				mk[\anchors].collect(_[\src]), fromFrame: \beat, toFrame: \sec)
@@ -1266,7 +1294,8 @@ AudioItem {
 			"AudioItem tempoFollow notes: no file at %".format(path).warn;
 			^List[]
 		};
-		starts = this.noteStarts(itemName, takeNum, method, ev[\transientParams], ev[\marksVersion]);
+		starts = this.noteStarts(itemName, takeNum, method, ev[\transientParams],
+			this.marksVersionOf(ev, itemName, takeNum));
 		starts.isNil.if {
 			"AudioItem tempoFollow notes: no cached % notes for % take % — using the beat grid"
 				.format(method.isKindOf(Symbol).if { method } { "given" }, itemName, takeNum).warn;
@@ -1423,6 +1452,7 @@ Take : AudioItem {
 	   inherited slots, and 7/9 were dead storage that only newCopyArgs, instVarAt,
 	   .copy and archiving could ever reach. Dropped: one name, one buffer. */
 	var <>num;
+	var <selectionIndex;   // set by .selection(n): the selection addItem / tempoMap / gui use
     *new { |name, num|
         var newTake = super.newCopyArgs;
 		var directory = folder +/+ name;
@@ -1442,8 +1472,27 @@ Take : AudioItem {
 	   the take has none. Like every AnchorTempoMap it is rebased to 0 on both axes
 	   with the first anchor's file second kept as t0 — so a consumer reading the
 	   file must start at map.t0, not at timeDomain.first (always 0). */
+	// Saved selections (the marks versions, TakeGui w / W) — MIDIItemPlayer's pair:
+	// plural answers the data (marks Events, oldest first), singular chooses one
+	// and answers this take, chainable:
+	//     \lick.addItem(AudioItem(\gtr).take(3).selection(1))   // follows selection 1
+	//     AudioItem(\gtr).take(3).selection(-2).gui              // opens on it
+	selections { ^TakeArchive.selections(this.name, num) }
+	selection { |version = (-1)|
+		var n = TakeArchive.selectionIds(this.name, num).size;
+		var i = (version < 0).if { n + version } { version };
+		((i >= 0) and: { i < n }).if {
+			selectionIndex = i
+		} {
+			selectionIndex = nil;
+			"no saved selection (% take %, selection %)".format(this.name, num, version).postln
+		};
+		^this
+	}
+	// archive id of the chosen selection (nil = the newest)
+	prSelectionId { ^selectionIndex !? { |i| TakeArchive.selectionId(this.name, num, i) } }
 	tempoMap { |version|
-		var m = TakeArchive.loadMarks(this.name, num, version);
+		var m = TakeArchive.loadMarks(this.name, num, version ?? { this.prSelectionId });
 		^m !? { AnchorTempoMap(m[\anchors].collect(_[\src]), m[\anchors].collect(_[\beat])) }
 	}
 	/* A Take is its own player, so EventList.addItem's opening `player.player`

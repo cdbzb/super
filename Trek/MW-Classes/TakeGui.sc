@@ -27,7 +27,7 @@ TakeGui {
 	classvar <>snapPx = 8, <>dpMaxSpan = 8;
 	var <take, <path, <sampleRate, <numFrames, <numChannels, <dur;
 	var <transients, <beatMark, <mapEd, <nav, <params;
-	var <marks;                  // the marks version loaded at open (nil = none)
+	var <marks;                  // the selection loaded at open (nil = none)
 	var savedTimes;              // beat times from the loaded marks, when no grid is up
 	var <stampTimes;             // file seconds of the record stamp's whole beats (nil = unstamped)
 	var peakMin, peakMax, peakBin = 256;
@@ -161,7 +161,8 @@ TakeGui {
 	}
 
 	prLoadMarks {
-		marks = TakeArchive.loadMarks(take.name, take.num);
+		// the take's chosen selection (take.selection(n)), else the newest
+		marks = TakeArchive.loadMarks(take.name, take.num, take.tryPerform(\prSelectionId));
 		marks.isNil.if { ^this };
 		savedTimes = marks[\anchors].collect(_[\src]);
 		// an edited map has no beat grid to re-read: hand the map itself over
@@ -170,8 +171,8 @@ TakeGui {
 				marks[\anchors].collect(_[\beat]), savedTimes,
 				fromFrame: \beat, toFrame: \sec));
 		};
-		"TakeGui: loaded marks version % (% anchors)"
-			.format(marks[\version], marks[\anchors].size).postln;
+		"TakeGui: loaded selection % (% anchors)"
+			.format(marks[\selectionIndex], marks[\anchors].size).postln;
 	}
 
 	prSaveSelection { |sel|
@@ -182,7 +183,7 @@ TakeGui {
 			(transientParams: params, beatAxis: stampTimes.notNil.if(\stamp, \firstMark)));
 		savedTimes = sel[\anchors].collect(_[\src]);
 		marks = TakeArchive.loadMarks(take.name, take.num, v);
-		"TakeGui: saved marks version % (% beats)".format(v, sel[\anchors].size).postln;
+		"TakeGui: selection % (% beats)".format(marks[\selectionIndex], sel[\anchors].size).postln;
 		this.refresh;
 	}
 
@@ -193,7 +194,7 @@ TakeGui {
 			(transientParams: params, edited: true,
 				beatAxis: stampTimes.notNil.if(\stamp, \firstMark)));
 		marks = TakeArchive.loadMarks(take.name, take.num, v);
-		"TakeGui: saved edited map as marks version %".format(v).postln;
+		"TakeGui: edited map is selection %".format(marks[\selectionIndex]).postln;
 		this.refresh;
 	}
 
@@ -442,7 +443,7 @@ TakeGui {
 		// state line
 		Pen.stringAtPoint("clicks %  ·  count-in %  ·  %  ·  nudge % / % ms  ·  % transient edits"
 			.format(clickEnabled.if("on", "off"), (countIn == 0).if("off", { "% beats".format(countIn) }),
-				marks.isNil.if("no saved marks", { "marks version %".format(marks[\version]) }),
+				marks.isNil.if("no saved selection", { "selection %".format(marks[\selectionIndex]) }),
 				(this.nudgeStep(false) * 1000).round(0.01), (this.nudgeStep(true) * 1000).round(0.1),
 				(edits ? []).size),
 			10 @ (height - 16), Font("Helvetica", 10), Color.grey(0.4));
@@ -458,7 +459,8 @@ TakeGui {
 				"H/L - Zoom out/in horizontally\n" ++
 				"0 - Reset the view\n" ++
 				"r - Clear the selection and the grid\n" ++
-				"w - Save the beat grid as a marks version (TakeArchive; take.tempoMap reads it)\n" ++
+				"w - Save the beat grid as a new selection (take.selections; take.tempoMap\n" ++
+				"      and followTrack: \\selection read it; an unchanged grid is not re-saved)\n" ++
 				"      on a stamped take the marks are saved on the stamp's beat axis\n" ++
 				"s - Seed the grid from the record stamp: one line per stamped beat, snapped\n" ++
 				"      to the nearest transient; edits stay local (right-click restores the stamp)\n" ++
@@ -472,13 +474,13 @@ TakeGui {
 				"E - Same, but DP beat tracker (globally optimal; j/k pin transients)\n" ++
 				"      h/l - previous/next grid line\n" ++
 				"      j/k - pick later/earlier transient at the current line\n" ++
-				"m - Toggle MAP EDIT mode (edits the tempo map in the lane; the keys\n" ++
-				"      below act only while it is on)\n" ++
 				"      p/P - off-beat pin (pick mode): the transient nearest the cursor\n" ++
 				"            is pinned at its grid position rounded to an 8th / 16th\n" ++
 				"            (syncopation: an attack at beat 2.5 with none on 2 or 3);\n" ++
 				"            the lines after it re-seed. Pin left to right; again on\n" ++
 				"            the same transient removes it. Saved with w\n" ++
+				"m - Toggle MAP EDIT mode (edits the tempo map in the lane; the keys\n" ++
+				"      below act only while it is on)\n" ++
 				"      i/o - span start/end at the cursor; drag across the lane also\n" ++
 				"      A   - select the whole map (the default span)\n" ++
 				"      Q   - straighten the span to one constant tempo (quantize)\n" ++
@@ -489,7 +491,7 @@ TakeGui {
 				"      B   - set the span to the grid's mean bpm\n" ++
 				"      P   - audition: click through the candidate map\n" ++
 				"      u/U - undo/redo    Z - back to the loaded map\n" ++
-				"      W   - commit and save the edited map as a marks version\n" ++
+				"      W   - commit and save the edited map as a new selection\n" ++
 				"[ / ] - Nudge 1 px left/right at the current zoom (zoom in with L for finer)\n" ++
 				"{ / } - Nudge 10 px\n" ++
 				"      grid up (pick mode, e): the current (red) line, as a free pin;\n" ++
@@ -502,10 +504,10 @@ TakeGui {
 				"Mouse:\n" ++
 				"Click a transient tick to pick/unpick it (pick two, then e or E)\n" ++
 				"Click elsewhere to place the playback cursor\n" ++
-				"With a grid up: drag a line and release to move it — it snaps to the\n" ++
-				"      nearest transient; alt-drag places a free pin (no transient)\n" ++
 				"Alt-click: place the playback cursor anywhere, snapped to the nearest beat\n" ++
 				"      (the grid, else the saved marks); shift-alt-click places it freely\n" ++
+				"With a grid up: drag a line and release to move it — it snaps to the\n" ++
+				"      nearest transient; alt-drag places a free pin (no transient)\n" ++
 				"Double-click: free pin on the nearest line (pick mode only)\n" ++
 				"Right-click: unpin the nearest line\n" ++
 				"In map edit mode, drag across the tempo lane to select a beat span\n\n" ++
@@ -545,8 +547,6 @@ TakeGui {
 		^this.refresh
 	}
 
-		grid = beatMark.extrapolateMode;
-		grid.if {
 	prMouseDown { |x, y, mod, btn, clicks|
 		var t = nav.tOf(x), grid, hit;
 		mapEd.mouseDown(x, y, nav.viewStart, nav.viewEnd, width).if { ^this };
@@ -561,6 +561,8 @@ TakeGui {
 			^this.prSetCursor(t, mod.isShift)
 		};
 		beatMark.isNil.if { cursorTime = t; ^this.refresh };
+		grid = beatMark.extrapolateMode;
+		grid.if {
 			var li = beatMark.lineNear(t);
 			case
 			{ btn == 1 } { li !? { beatMark.unpinLine(li) } }
@@ -593,13 +595,13 @@ TakeGui {
 		var snap;
 		mapEd.mouseUp.if { ^this };
 		dragLine !? {
-			snap = mod.isAlt.not.if { snapPx * nav.dur / width };
-			beatMark.moveLine(dragLine, nav.tOf(x), snap);
 			// an alt-click on a line that never moved: the cursor, not a free pin
 			(mod.isAlt and: { (x - (dragStartX ? x)).abs < 3 }).if {
 				dragLine = nil; dragX = nil; dragStartX = nil;
 				^this.prSetCursor(nav.tOf(x), mod.isShift)
 			};
+			snap = mod.isAlt.not.if { snapPx * nav.dur / width };
+			beatMark.moveLine(dragLine, nav.tOf(x), snap);
 			dragLine = nil; dragX = nil; dragStartX = nil;
 			this.refresh;
 		};
@@ -626,6 +628,8 @@ TakeGui {
 			$], { this.nudgeTransients(this.nudgeStep(false)) },
 			${, { this.nudgeTransients(this.nudgeStep(true).neg) },
 			$}, { this.nudgeTransients(this.nudgeStep(true)) },
+			$p, { this.pinOffbeat(2) },
+			$P, { this.pinOffbeat(4) },
 			$a, { this.addTransient },
 			$x, { this.deleteTransients },
 			$r, { beatMark !? { beatMark.clear; mapEd.invalidate; "cleared".postln } },
@@ -645,7 +649,5 @@ TakeGui {
 		var params = ();
 		(kwargs ? []).pairsDo { |k, v| params[k] = v };
 		^TakeGui(this, params)
-			$p, { this.pinOffbeat(2) },
-			$P, { this.pinOffbeat(4) },
 	}
 }

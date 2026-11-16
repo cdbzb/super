@@ -154,10 +154,38 @@ TakeArchive {
 	*isMarks { |d|
 		^(d[\anchorSource] == \beatMark) and: { (d[\anchors] ? []).size >= 2 }
 	}
+	// ---- selections: the public, MIDIItem-shaped view of the marks versions.
+	// A take's selections are its marks versions in order, numbered densely from 0
+	// (negative counts from the newest), exactly like MIDIItem.selections — the
+	// archive ids underneath have gaps, because stamps and Retune snapshots share
+	// the counter. Selection n <-> archive id via selectionIds.
+	*selectionIds { |name, num|
+		^this.versionIds(name, num).select { |v|
+			var d = this.read(name, num, v);
+			d.notNil and: { this.isMarks(d) }
+		}
+	}
+	// archive id of selection n (nil = newest; negative counts back), or nil when
+	// the take has no such selection
+	*selectionId { |name, num, n|
+		var ids = this.selectionIds(name, num), i;
+		i = n ? -1;
+		(i < 0).if { i = ids.size + i };
+		^((i >= 0) and: { i < ids.size }).if { ids[i] }
+	}
+	// every selection, oldest first: the marks Events (\version = archive id,
+	// \selectionIndex = n)
+	*selections { |name, num|
+		^this.selectionIds(name, num).collect { |v| this.loadMarks(name, num, v) }
+	}
+
 	// Append a marks version; ^its id. `anchors` are (src:, beat:) Events or
 	// [src, beat] pairs; extra (an Event) is merged in (e.g. transientParams:).
+	// Selections are immutable and identical saves are no-ops, as in
+	// MIDIItem.addSelection: the same anchors, selection and extra as the newest
+	// selection answer that one's id instead of writing another.
 	*writeMarks { |name, num, anchors, selection, extra|
-		var ev = (
+		var last, ev = (
 			retuneVersion: 2,
 			name: name.asString, num: num,
 			saved: Date.getDate.stamp,
@@ -172,18 +200,36 @@ TakeArchive {
 			selection: selection
 		);
 		extra !? { extra.keysValuesDo { |k, v| ev[k] = v } };
+		last = this.loadMarks(name, num);
+		(last.notNil and: {
+			(last[\anchors].collect { |a| [a[\src], a[\beat]] } == ev[\anchors].collect { |a| [a[\src], a[\beat]] })
+			and: { last[\selection] == selection }
+			and: { (extra ? ()).keys.every { |k| last[k] == extra[k] } }
+		}).if {
+			"selection unchanged — % take % stays at selection %"
+				.format(name, num, last[\selectionIndex]).postln;
+			^last[\version]
+		};
 		^this.write(name, num, ev)
 	}
 	// The newest marks version (or version `v`, which must be one); the Event with
-	// its id at \version, or nil.
+	// its archive id at \version and its selection number at \selectionIndex, or nil.
 	*loadMarks { |name, num, v|
 		var d, found;
 		v.notNil.if {
 			d = this.read(name, num, v);
-			^(d.notNil and: { this.isMarks(d) }).if { d[\version] = v; d }
+			^(d.notNil and: { this.isMarks(d) }).if {
+				d[\version] = v;
+				d[\selectionIndex] = this.selectionIds(name, num).indexOf(v);
+				d
+			}
 		};
 		found = this.latestWhere(name, num, { |d| this.isMarks(d) });
-		^found !? { found[1][\version] = found[0]; found[1] }
+		^found !? {
+			found[1][\version] = found[0];
+			found[1][\selectionIndex] = this.selectionIds(name, num).indexOf(found[0]);
+			found[1]
+		}
 	}
 	*loadStamp { |name, num|
 		^try {

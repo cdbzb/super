@@ -21,8 +21,10 @@
 		// detectOutput: false skips the output DetectSilence — for a function that
 		// watches its own input instead (AmpSim: a model's output blips at load and
 		// never quite settles, so the output check freed an idle one after `time`).
-		*new { |function out=0 inputChannels=1 target time=1 maxDur release=3 detectOutput=true|
-			^super.new.init(function , out,inputChannels, target, time, maxDur, release, detectOutput);
+		// busChannels: a minimum input-bus width, whatever the output (AmpSim passes
+		// max(inputChannels, 2) so a mono model never spills a stereo writer).
+		*new { |function out=0 inputChannels=1 target time=1 maxDur release=3 detectOutput=true busChannels|
+			^super.new.init(function , out,inputChannels, target, time, maxDur, release, detectOutput, busChannels);
 		}
 		*newSidechain {|function out=0 inputChannels=1| ^super.new.initSidechain(function,out,inputChannels) }
 
@@ -96,11 +98,14 @@
 event.yield
 		}
 
-		init { |function out inputChannels=1 target time=1 maxDur release=3 detectOutput=true|
+		init { |function out inputChannels=1 target time=1 maxDur release=3 detectOutput=true busChannels|
 			var desc = SynthDef(\temp,{ In.ar(0, inputChannels) => function => Out.ar(0,_) });
 			numChannels=desc.asSynthDesc.outputData[0].at(\numChannels);
 			target = target ? Server.default;
-			bus=Bus.audio(numChannels: Effect.busChannels(function, inputChannels, numChannels));
+			// an explicit minimum covers the input: not narrow, nothing to log
+			bus=Bus.audio(numChannels: busChannels.notNil.if {
+				busChannels.max(inputChannels).max(numChannels)
+			} { Effect.busChannels(function, inputChannels, numChannels) });
 			synth={|gate|
 				var sig = In.ar(bus.index, inputChannels) => function;
 				maxDur.notNil.if { sig = sig * EnvGen.kr(Env.linen(0, maxDur, release), doneAction: 2) };

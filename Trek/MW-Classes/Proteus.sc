@@ -29,8 +29,20 @@ AmpSim {
 	// Effect.bus for a model: returns a bus index to use as an event's out.
 	//   Pbind(\instrument, \harpS, \out, AmpSim.bus("JoyoExtremeMetal")).play;
 	// Frees itself after time seconds of silent input. It watches the input
-	// because a model's output never quite reaches silence. Mono input comes
-	// out on both channels. Make one per pattern, not one per event.
+	// because a model's output never quite reaches silence. Make one per
+	// pattern, not one per event.
+	// Channels follow the signal, as Out.ar does: inputChannels channels in, one
+	// model per channel, that many out — mono in, mono out on channel 0. Nothing
+	// is spread unless asked:
+	//   pan:          place the result on numChannels outputs (default 2):
+	//                   2 outputs   one model: Pan2   two: Balance2   more: Splay
+	//                   n > 2       one model: PanAz  more: SplayAz
+	//                 pan 0 is the front (channel 0 for n > 2); 2/n moves one
+	//                 speaker round the ring. width: PanAz/SplayAz spread.
+	//   numChannels:  place on that many outputs (pan defaults to 0)
+	//   post:         anything else, e.g. post: { |s| Monitors.az(s, 0.3) }
+	// The input bus is at least max(inputChannels, 2) wide, so a stereo writer
+	// into a mono model never spills into the next bus.
 	// pre and post are functions around the model, in the same synth:
 	//   AmpSim.bus("JoyoExtremeMetal", post: { |i| FreeVerb.ar(i, 0.5, 0.9) })
 	// knob, drive and amp can be UGens here; set them as controls on an Ndef.
@@ -39,13 +51,39 @@ AmpSim {
 	// The bus is a plain Integer, dead once the synth frees itself (or MyFree
 	// runs). To keep it in a score that is played more than once, use AmpSim.fx
 	// (FxBus.sc), which starts a fresh synth whenever the old one is gone.
-	*bus { |model, out = 0, inputChannels = 2, time = 10, knob, pre, post, drive = 1, amp = 1, trim = true|
-		^this.prEffect(model, out, inputChannels, time, knob, pre, post, drive, amp, trim).bus.index
+	*bus { |model, out = 0, inputChannels = 1, time = 10, knob, pre, post, drive = 1, amp = 1, trim = true,
+			pan, numChannels, width = 2|
+		^this.prEffect(model, out, inputChannels, time, knob, pre, post, drive, amp, trim,
+			pan, numChannels, width).bus.index
+	}
+
+	// Place `sig` (one or more model outputs) as asked: unchanged when neither pan
+	// nor numChannels is given, else on numChannels (default 2) outputs at pan
+	// (default 0) — see *bus. Pure UGen graph; usable in any synth.
+	*place { |sig, pan, numChannels, width = 2|
+		var k, n;
+		(pan.isNil and: { numChannels.isNil }).if { ^sig };
+		pan = pan ? 0; n = numChannels ? 2;
+		k = sig.asArray.size;
+		(n < 2).if { ^(k == 1).if { sig } { sig.asArray.sum } };
+		^(n == 2).if {
+			case
+			{ k == 1 } { Pan2.ar(sig.asArray[0], pan) }
+			{ k == 2 } { Balance2.ar(sig[0], sig[1], pan) }
+			{ Splay.ar(sig, center: pan) }
+		} {
+			(k == 1).if {
+				PanAz.ar(n, sig.asArray[0], pan, width: width, orientation: 0)
+			} {
+				SplayAz.ar(n, sig, center: pan, width: width, orientation: 0)
+			}
+		}
 	}
 
 	// The Effect behind *bus and *fx: starts the synth now and loads the model
 	// into it once the server has it.
-	*prEffect { |model, out = 0, inputChannels = 2, time = 10, knob, pre, post, drive = 1, amp = 1, trim = true|
+	*prEffect { |model, out = 0, inputChannels = 1, time = 10, knob, pre, post, drive = 1, amp = 1, trim = true,
+			pan, numChannels, width = 2|
 		var effect, ugens, path = this.modelPath(model), server = Server.default;
 		var trims = this.prTrims(model, trim);
 		this.prWarnKnob(model, knob);
@@ -55,9 +93,10 @@ AmpSim {
 			DetectSilence.ar(in.asArray.sum, time: time, doneAction: 2);
 			ugens = Proteus.ar((pre.notNil.if { pre.value(in) } { in }) * drive, knob, \amp);
 			sig = this.prFinish(ugens, knob, trims, amp);
-			sig = sig.isArray.if { sig } { sig ! 2 };
+			sig = this.place(sig, pan, numChannels, width);
 			post.notNil.if { post.value(sig) } { sig }
-		}, out, inputChannels, time: time, detectOutput: false); // input DetectSilence above
+		}, out, inputChannels, time: time, detectOutput: false, // input DetectSilence above
+			busChannels: inputChannels.max(2));
 		fork {
 			server.sync;
 			ugens.asArray.do { |ugen|

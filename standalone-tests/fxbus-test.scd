@@ -14,7 +14,7 @@ var a, b, c, e, ev, notes, player, filtered, outs, chained;
 
 a = AmpSim.fx("Filmosound_with_cab", inputChannels: 1, drive: 0.8);
 assert.(a.isKindOf(FxBus), "AmpSim.fx answers an FxBus");
-assert.(a.asString == "AmpSim.fx(\"Filmosound_with_cab\", inputChannels: 1, drive: 0.8)",
+assert.(a.asString == "AmpSim.fx(\"Filmosound_with_cab\", drive: 0.8)",   // inputChannels: 1 is the default
 	"prints as its source, defaults left out (got %)".format(a.asString));
 assert.(a.asCompileString == a.asString, "stores as its source");
 assert.(a.asCompileString.interpret == a, "source round-trips to an equal FxBus");

@@ -309,7 +309,7 @@ P(\bass, music: { |p b e|
 			].df(\f, 2).q,
 			dur:  Song.quarter * div / 8 / 2 ,
 			instrument: i,
-			out: Effect.bus({|i| 2 * i/( [4,0.5][x] ) => Pan2.ar(_, x * 2 -1) },)
+			out: EffectNarrow.bus({|i| 2 * i/( [4,0.5][x] ) => Pan2.ar(_, x * 2 -1) },)
 		].ppm
 	}
 });
@@ -462,7 +462,7 @@ P(\line, music: { |p b e|
 		instrument: \stringyy,
 		wet: 0,
 		amp: 1,
-		out: Effect.bus({|i| Splay.ar(i, spread:0.5, center:1 ) })
+		out: EffectNarrow.bus({|i| Splay.ar(i, spread:0.5, center:1 ) })
 	].ppm;
 	[
 		freq: [\r, 4, 2, -6, -7, 6].df(\g, \mixolydian).q,
@@ -470,13 +470,13 @@ P(\line, music: { |p b e|
 		instrument: \harp,
 		coef:0.15,
 		amp: 0.05,
-		out: Effect.bus({|i| Splay.ar(i, spread:0.5, center:1 ) })
+		out: EffectNarrow.bus({|i| Splay.ar(i, spread:0.5, center:1 ) })
 	].pp;
 	[
 		freq: [\r, 2, 3, -7, 1, 3 ].df(\g, \mixolydian).q,
 		dur: b.parse([8, [3, 1/4], 1/4, 1/4, 1/4, 1]).q ,
 		instrument: \stringyy,
-		out: Effect.bus({|i| Splay.ar(i, spread:0.5, center:-1 ) }),
+		out: EffectNarrow.bus({|i| Splay.ar(i, spread:0.5, center:-1 ) }),
 		wet: 0,
 		amp: 1
 	].ppm;
@@ -484,7 +484,7 @@ P(\line, music: { |p b e|
 		freq: [\r, 2, 3, -7, 1, 3 ].df(\g, \mixolydian).q,
 		dur: b.parse([8, [3, 1/4], 1/4, 1/4, 1/4, 1]).q ,
 		instrument: \harp,
-		out: Effect.bus({|i| Splay.ar(i, spread:0.5, center:-1 ) }),
+		out: EffectNarrow.bus({|i| Splay.ar(i, spread:0.5, center:-1 ) }),
 		wet: 0,
 		coef:0.15,
 		amp: 0.05,
@@ -724,7 +724,7 @@ P(\line, music: { |p b e|
 		instrument: \stringyy,
 		wet: 0,
 		amp: 1,
-		out: Effect.bus({|i| Splay.ar(i, spread:0.5, center:1 ) })
+		out: EffectNarrow.bus({|i| Splay.ar(i, spread:0.5, center:1 ) })
 	].ppm;
 	[
 		freq: [\r, 4, 2, -6, -7, 6].df(\g, \mixolydian).q,
@@ -732,13 +732,13 @@ P(\line, music: { |p b e|
 		instrument: \harp,
 		coef:0.15,
 		amp: 0.05,
-		out: Effect.bus({|i| Splay.ar(i, spread:0.5, center:1 ) })
+		out: EffectNarrow.bus({|i| Splay.ar(i, spread:0.5, center:1 ) })
 	].pp;
 	[
 		freq: [\r, 2, 3, -7, 1, 3 ].df(\g, \mixolydian).q,
 		dur: b.parse([8, [3, 1/4], 1/4, 1/4, 1/4, 1]).q ,
 		instrument: \stringyy,
-		out: Effect.bus({|i| Splay.ar(i, spread:0.5, center:-1 ) }),
+		out: EffectNarrow.bus({|i| Splay.ar(i, spread:0.5, center:-1 ) }),
 		wet: 0,
 		amp: 1
 	].ppm;
@@ -746,7 +746,7 @@ P(\line, music: { |p b e|
 		freq: [\r, 2, 3, -7, 1, 3 ].df(\g, \mixolydian).q,
 		dur: b.parse([8, [3, 1/4], 1/4, 1/4, 1/4, 1]).q ,
 		instrument: \harp,
-		out: Effect.bus({|i| Splay.ar(i, spread:0.5, center:-1 ) }),
+		out: EffectNarrow.bus({|i| Splay.ar(i, spread:0.5, center:-1 ) }),
 		wet: 0,
 		coef:0.15,
 		amp: 0.05,

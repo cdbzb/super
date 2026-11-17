@@ -96,7 +96,7 @@ Song.quantizedKeysV1 = MIDIItem(\foo).take(1).fromNote(0, 100)
 	)
 	 .removeNote(59);
 P(\keys, lag: MIDIItem(\foo).take(1).initialRest, music: { |p b e|
-	var keyFX = Effect.bus(BPF.ar(_, 1100, rq: 3.0));
+	var keyFX = EffectNarrow.bus(BPF.ar(_, 1100, rq: 3.0));
 	p.quantizedKeysV1
 	 .collect{|i| i.params_((out: keyFX ))}
 	 .recalcSustains

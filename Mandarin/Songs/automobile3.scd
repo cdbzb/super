@@ -7,7 +7,7 @@ Song.clock.tempo_(Song.quarter.reciprocal);
 
 	// resources
 	//bass
-Song.bassTrackFunc = {Effect({|i| CrossoverDistortion.ar(i) => LeakDC.ar(_) => Limiter.ar(_, 0.05) /2 + i * (Song.bassTrackGain ? 1) => Pan2.ar(_, (Song.bassPan ? -1)) })};
+Song.bassTrackFunc = {EffectNarrow({|i| CrossoverDistortion.ar(i) => LeakDC.ar(_) => Limiter.ar(_, 0.05) /2 + i * (Song.bassTrackGain ? 1) => Pan2.ar(_, (Song.bassPan ? -1)) })};
 
 // Song.bassTrack = {Song.bassTrackFunc.()};
 // Song.bassTrack.free;
@@ -677,7 +677,7 @@ P(\guitFill,lag:Song.quarter * 30.5, music: { |p b e|
 		freq: "4 4 3 1".df([ \c, \G ]).q,
 		dur: "e e e qqqqqqqqqqqqqqqq".beats.q,
 		amp:1,
-		out: Effect.bus({|i| CrossoverDistortion.ar(i) =>Limiter.ar(_,level:0.1) * EnvGen.cutoff(4*Song.quarter, 4.00) })
+		out: EffectNarrow.bus({|i| CrossoverDistortion.ar(i) =>Limiter.ar(_,level:0.1) * EnvGen.cutoff(4*Song.quarter, 4.00) })
 	].p.play(clock:Song.clock)
 });
 )

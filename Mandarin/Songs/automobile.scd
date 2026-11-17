@@ -6,7 +6,7 @@
 ~song = (parent: ~parent);
 ~song.quarter = 132.reciprocal * 60;
 ( //bass
-~song.bassTrackFunc = {Effect({|i| 
+~song.bassTrackFunc = {EffectNarrow({|i| 
 	CrossoverDistortion.ar(i) 
 	=> Limiter.ar(_, 0.05) /2 + i
 	* \gain.kr(1, 0.05)

@@ -36,7 +36,7 @@ P(\bassShort,resources:(transpose:0), music: { |p b e |
 		dur: "q*16".beats * Song.tempo => _.q,
 		instrument: [\harp, \sawSynth ], 
 		coef:0.8, amp:[0.03, 0.1],
-		out: Effect.bus({|i| i + DelayN.ar(
+		out: EffectNarrow.bus({|i| i + DelayN.ar(
 			i, 
 			"e".beats.warpTo(e.tempoMap) /2, 
 			"e".beats.warpTo(e.tempoMap) /2, 
@@ -108,7 +108,7 @@ P(\bassShort, music: { |p b e|
 		dur: "q*16".beats * Song.tempo => _.q,
 		instrument: [\harp, \sawSynth ], 
 		coef:0.8, amp:[0.03, 0.1],
-		out: Effect.bus({|i| i + DelayN.ar(
+		out: EffectNarrow.bus({|i| i + DelayN.ar(
 			i, 
 			"e".beats.warpTo(e.tempoMap) /2, 
 			"e".beats.warpTo(e.tempoMap) /2, 
@@ -155,7 +155,7 @@ P(\claves, music: { |p b e|
 		dur: "x e e e e e e e e e e e e e e e e e".beats.q * Song.tempo,
 		rests: MuteFirst(),
 		amp: 0.02,
-		out: Effect.bus({|i| i => Pan2.ar(_, 1) },),
+		out: EffectNarrow.bus({|i| i => Pan2.ar(_, 1) },),
 		pan: -1
 	].pp
 });
@@ -178,7 +178,7 @@ P(\bassShort, music: { |p b e|
 		dur: "q*16".beats * Song.tempo => _.q,
 		instrument: [\harp, \sawSynth ], 
 		coef:0.8, amp:[0.03, 0.1] ,
-		out: Effect.bus({|i| i + DelayN.ar(
+		out: EffectNarrow.bus({|i| i + DelayN.ar(
 			i, 
 			"e".beats.warpTo(e.tempoMap) /2, 
 			"e".beats.warpTo(e.tempoMap) /2, 
@@ -285,7 +285,7 @@ P(\figureTranscribed, music: { |p b e|
 			[1, 1, 1, 1, 0.8].q(8)
 		].q,
 		dur: "qq e e e e".beats.dup(10) / 2 * Song.tempo =>_.flat => _.q,
-		out: Effect.bus({|i| i.tanh ! 2 => {|i| CrossoverDistortion.ar(i, smooth: 0.995)/3 + i} },),
+		out: EffectNarrow.bus({|i| i.tanh ! 2 => {|i| CrossoverDistortion.ar(i, smooth: 0.995)/3 + i} },),
 		instrument: \sawSynthSustain,
 		pulse: 0.5,
 		out: 3
@@ -495,7 +495,7 @@ P(\bassShort,resources: (transpose: Song.v2Transpose), music: { |p b e|
 		dur: "q*16".beats * Song.tempo => _.q,
 		instrument: [\harp, \sawSynth ], 
 		coef:0.8, amp:[0.03, 0.1] ,
-		out: Effect.bus({|i| i + DelayN.ar(
+		out: EffectNarrow.bus({|i| i + DelayN.ar(
 			i, 
 			"e".beats.warpTo(e.tempoMap) /2, 
 			"e".beats.warpTo(e.tempoMap) /2, 
@@ -508,7 +508,7 @@ P(\bass,resources: ( transpose: Song.v2Transpose ), music: { |p b e|
 		midinote: [ 11, 7, 6, 5, 4.5, 2, -7, -7, 4, 4  ].dm(p.keySig.(e.transpose).(), [2]) + 3 => _.dupEach(4) => _.q,
 		dur: Song.tempo/4,
 		legato: 0.7,
-		out: Effect.bus({|i| CrossoverDistortion.ar(i)/20 + i },)
+		out: EffectNarrow.bus({|i| CrossoverDistortion.ar(i)/20 + i },)
 	].pp
 });
 P.synthV(\mo,resources:(transpose:Song.v2Transpose), take: Song.takeChooser.(\lead), 
@@ -649,7 +649,7 @@ P(\bassline, music: { |p b e|
 // 			[1, 1, 1, 1, 0.8].q(8)
 // 		].q,
 // 		dur: "qq e e e e".beats.dup(10) / 2 * Song.tempo =>_.flat => _.q,
-// 		out: Effect.bus({|i| i.tanh ! 2 => {|i| CrossoverDistortion.ar(i, smooth: 0.995)/3 + i} },),
+// 		out: EffectNarrow.bus({|i| i.tanh ! 2 => {|i| CrossoverDistortion.ar(i, smooth: 0.995)/3 + i} },),
 // 		instrument: \sawSynthSustain,
 // 		pulse: 0.5,
 // 		out: 3

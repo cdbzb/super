@@ -98,7 +98,7 @@ P(\bass, music: { |p b e|
 		).q,
 		instrument: [\harp, \sawSynth ], 
 		coef:0.8, amp:[0.03, 0.1],
-		out: Effect.bus({|i| i + DelayN.ar(
+		out: EffectNarrow.bus({|i| i + DelayN.ar(
 			i, 
 			"e".beats.warpTo(e.tempoMap) /2, 
 			"e".beats.warpTo(e.tempoMap) /2, 

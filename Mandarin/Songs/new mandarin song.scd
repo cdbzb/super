@@ -74,7 +74,7 @@ P(\line, music: { |p b e|
 		dur: b.parse([1, 1, 1, 1, 1, 1, 1, 1, 1]).q, 
 		// instrument:\stringyy
 		amp:0.045,
-		out: Effect.bus({|i| i * [0.01,1] => FreeVerb.ar(_, 0.3, 1) },)
+		out: EffectNarrow.bus({|i| i * [0.01,1] => FreeVerb.ar(_, 0.3, 1) },)
 
 	] =>
 	{|i|
@@ -84,7 +84,7 @@ P(\line, music: { |p b e|
 			amp:0.04,
 			rest: [1, 1, 1, 1, 1, \r, \r, \r, 1].q,
 			coef:0.3,
-			out: Effect.bus({|i| Pan2.ar(i, Line.kr(1, -1, b.sum)) },)
+			out: EffectNarrow.bus({|i| Pan2.ar(i, Line.kr(1, -1, b.sum)) },)
 		] => _.p => _.trace => _.play;
 	}
 });
@@ -131,7 +131,7 @@ P(\line, music: { |p b e|
 		// instrument:\stringyy
 		instrument: \sawSynthSustain,
 		// amp:0.03,
-		out: Effect.bus({|i| i * [0.01,1] => FreeVerb.ar(_, 0.3, 1) },),
+		out: EffectNarrow.bus({|i| i * [0.01,1] => FreeVerb.ar(_, 0.3, 1) },),
 		pulse: 0.3
 
 	].ppm
@@ -159,11 +159,11 @@ P(\drum, music: { |p b e|
 		dur: "q qq qq qq qq qq qq qq q".beats.q * 1.2,
 		rest: MuteFirst(),
 		instrument: \JWSnare, amp:0.15,
-		out: Effect.bus({|i| CombN.ar(i,delaytime: 0.202, decaytime:5)/2 + i => _.dup }, time:1)
+		out: EffectNarrow.bus({|i| CombN.ar(i,delaytime: 0.202, decaytime:5)/2 + i => _.dup }, time:1)
 	].pp
 });
 P(\liveDrum, music: {|p b e|
-	var echo = Effect.bus({|i| CombN.ar(i, decaytime:5)/4 + i => _.dup }, time:1);
+	var echo = EffectNarrow.bus({|i| CombN.ar(i, decaytime:5)/4 + i => _.dup }, time:1);
 	MicroKeys(\sn).synth_(\bd_808).range_([60, 48]);
 	MicroKeys(\bd).synth_(\sn_808).range_([62,64, 50,52]);
 	MicroKeys(\hat).synth_(\hat_808).range_([67,69]);
@@ -186,7 +186,7 @@ P(\stringz, lag: 0.2, music: { |p b e|
 P(\testtt,lag:0.2, music: { |p b e|
 	var c = MicroKeys(\sn_808)	;
 	var m;
-	c.synth_(\default, [\out, Effect.bus({|i| FreeVerb.ar(i, 1, 1) /5 },)]);
+	c.synth_(\default, [\out, EffectNarrow.bus({|i| FreeVerb.ar(i, 1, 1) /5 },)]);
 	c.add(\quiet, {|e| e.vel = e.vel/ 100}, addAction: \addBefore, target: \synth);
 
 	m = MIDIItem("241114_124432");
@@ -274,7 +274,7 @@ P(\bassnote, music: { |p b e|
 	(
 		att:0,
 		freq: 1.df(\d, [3,4]),
-		out: Effect.bus({|i| DWGReverbC1C3.ar(i) },),
+		out: EffectNarrow.bus({|i| DWGReverbC1C3.ar(i) },),
 		instrument:\sawSynthSustain,
 		dur:2
 	).play
@@ -321,7 +321,7 @@ P(\drum, music: { |p b e|
 		dur: "q qq qq qq qq qq q".beats.q * 1.2,
 		rest: MuteFirst(),
 		instrument: \JWSnare, amp:0.15,
-		out: Effect.bus({|i| CombN.ar(i, decaytime:4)/2 + i => _.dup }, time:1)
+		out: EffectNarrow.bus({|i| CombN.ar(i, decaytime:4)/2 + i => _.dup }, time:1)
 	].pp
 });
 P(\chord, music: { |p b e|
@@ -335,7 +335,7 @@ P(\chord, music: { |p b e|
 P(\bassnote, music: { |p b e|
 	(
 		freq: [  2 ].df(\d, [3,4]),
-		out: Effect.bus({|i| DWGReverbC1C3.ar(i) + i * -3.dbamp },),
+		out: EffectNarrow.bus({|i| DWGReverbC1C3.ar(i) + i * -3.dbamp },),
 		instrument:\sawSynthSustain,
 		dur:2
 	).play
@@ -384,7 +384,7 @@ P(\monoDouble,lag: 0.2, music: { |p b e|
 P(\bassnote, music: { |p b e|
 	[
 		freq: [11, 2.5, 2].df(\f, [3, 2]).q,
-		out: Effect.bus({|i| DWGReverbC1C3.ar(i) + i * -3.dbamp },),
+		out: EffectNarrow.bus({|i| DWGReverbC1C3.ar(i) + i * -3.dbamp },),
 		instrument:\sawSynthSustain,
 		att: 2,
 		dur: "qq qq q".beats.q * 1.2,
@@ -566,7 +566,7 @@ P(\line, music: { |p b e|
 		// instrument:\stringyy
 		instrument: \sparkTriangle,
 		amp:0.03,
-		out: Effect.bus({|i| i * [0.01,1] => FreeVerb.ar(_, 0.3, 1) },)
+		out: EffectNarrow.bus({|i| i * [0.01,1] => FreeVerb.ar(_, 0.3, 1) },)
 
 	].ppm
 });
@@ -614,7 +614,7 @@ P(\line, music: { |p b e|
 		// instrument:\stringyy
 		instrument: \sawSynthSustain,
 		// amp:0.03,
-		out: Effect.bus({|i| i * [0.01,1] => FreeVerb.ar(_, 0.3, 1) },)
+		out: EffectNarrow.bus({|i| i * [0.01,1] => FreeVerb.ar(_, 0.3, 1) },)
 
 	].ppm
 });

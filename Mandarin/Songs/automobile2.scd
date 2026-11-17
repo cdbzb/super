@@ -32,7 +32,7 @@ var parent = (
 
 	// resources
 	//bass
-	~bassTrackFunc = {Effect({|i| CrossoverDistortion.ar(i) => Limiter.ar(_, 0.05) /2 + i })};
+	~bassTrackFunc = {EffectNarrow({|i| CrossoverDistortion.ar(i) => Limiter.ar(_, 0.05) /2 + i })};
 	~bassTrack = ~bassTrackFunc.();
 	~bassLines = [
 		[1!8, -7!3, -4!4, -3, -6!8,  3!3, -7!4, -6].df(\c, 3, \minor).flat.q,

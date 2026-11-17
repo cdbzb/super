@@ -82,7 +82,7 @@ P(\chords, music: { |p b e|
 	}.play
 });
 ["花 瓣 落 如 诗- 一- 样-", "-1 2 3 4 3 2 1 2 3 2 1".dm(\c), "q e e qqe e e e e e e e".beats * Song.quarter].addLine;
-Song.bassFxFunc = {Song.bassFx.notNil.if {Song.bassFx.synth.running.not.if {Song.bassFx = Effect.bus {|i| i/4}}{Song.bassFx}}{Song.bassFx = Effect.bus({|i| i/4})}};
+Song.bassFxFunc = {Song.bassFx.notNil.if {Song.bassFx.synth.running.not.if {Song.bassFx = EffectNarrow.bus {|i| i/4}}{Song.bassFx}}{Song.bassFx = EffectNarrow.bus({|i| i/4})}};
 
 P(\bass, music: { |p b e|
 	p.bassParams ++

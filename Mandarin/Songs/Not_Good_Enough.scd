@@ -166,7 +166,7 @@ P(\traps, music: { |p b e|
 	[
 		instrument: \hat_808,
 		dur: "e".beats.q(24) * Song.quarter * 2,
-		out: Effect.bus( Phaser2.ar(_,depth:0.9,fb:-0.999,rate:0.13) )
+		out: EffectNarrow.bus( Phaser2.ar(_,depth:0.9,fb:-0.999,rate:0.13) )
 	].pp
 });
 P.tune();
@@ -211,7 +211,7 @@ dur: "qq qq qq qq".beats * p.quarter => _.q,
 		instrument: Pfunc{( Song.oldGuit.debug("old?") ? false ).if{\harp}{\harpRelease.postln}},
 		legato:Pfunc{( Song.oldGuit ? false ).if{0.9}{1}},
 
-	    out: Effect.bus({|i| CrossoverDistortion.ar(i) /2  => Pan2.ar(_, 1)})
+	    out: EffectNarrow.bus({|i| CrossoverDistortion.ar(i) /2  => Pan2.ar(_, 1)})
 ].pp
 });
 P(\bass, music: { |p b e|
@@ -269,7 +269,7 @@ P(\guitar, music: { |p b e|
 } .q,
 dur: "qq qq qq qq".beats * p.quarter => _.q,
 	    instrument: \harp,
-	    out: Effect.bus({|i| CrossoverDistortion.ar(i) /2  => Pan2.ar(_, 1)})
+	    out: EffectNarrow.bus({|i| CrossoverDistortion.ar(i) /2  => Pan2.ar(_, 1)})
 ].pp
 });
 P(\bass, music: { |p b e|
@@ -327,7 +327,7 @@ P(\guitar, music: { |p b e|
 } .q,
 dur: "qq qq qq qq".beats * p.quarter => _.q,
 	    instrument: \harp,
-	    out: Effect.bus({|i| CrossoverDistortion.ar(i) /2  => Pan2.ar(_, 1)})
+	    out: EffectNarrow.bus({|i| CrossoverDistortion.ar(i) /2  => Pan2.ar(_, 1)})
 ].pp
 });
 P(\bass, music: { |p b e|
@@ -350,7 +350,7 @@ P(\linelet, music: { |p b e|
 		legato: 1.dup(19) ++ 0.95 => _.q(2), 
 		amp:0.5,
 		instrument:\reedy,
-		out: Effect.bus({|i| Pan2.ar(i,0) },)
+		out: EffectNarrow.bus({|i| Pan2.ar(i,0) },)
 	].ppma
 });
 P.synthVVST(\xuan2,lag:0.00, take: \lead, params: {|p b k| [
@@ -526,7 +526,7 @@ P(\traps, music: { |p b e|
 	[
 		instrument: \hat_808,
 		dur: "x x e e e x x x x e e".beats.q(4) * Song.quarter,
-		out: Effect.bus( Phaser2.ar(_,depth:0.9,fb:-0.999,rate:0.13) ),
+		out: EffectNarrow.bus( Phaser2.ar(_,depth:0.9,fb:-0.999,rate:0.13) ),
 		amp:0.2,
 	].pp;
 	[
@@ -580,7 +580,7 @@ P(\guitar, music: { |p b e|
 } .q,
 dur: "qq qq qq qq".beats * p.quarter => _.q,
 	    instrument: \harp,
-	    out: Effect.bus({|i| CrossoverDistortion.ar(i) /2  => Pan2.ar(_, 1)})
+	    out: EffectNarrow.bus({|i| CrossoverDistortion.ar(i) /2  => Pan2.ar(_, 1)})
 ].pp
 });
 P(\bass, music: { |p b e|
@@ -640,7 +640,7 @@ P(\guitar, music: { |p b e|
 } .q,
 dur: "qq qq qq qq".beats * p.quarter => _.q,
 	    instrument: \harp,
-	    out: Effect.bus({|i| CrossoverDistortion.ar(i) /2  => Pan2.ar(_, 1)})
+	    out: EffectNarrow.bus({|i| CrossoverDistortion.ar(i) /2  => Pan2.ar(_, 1)})
 ].pp
 });
 P(\bass, music: { |p b e|
@@ -698,7 +698,7 @@ P(\guitar, music: { |p b e|
 } .q,
 dur: "qq qq qq qq".beats * p.quarter => _.q,
 	    instrument: \harp,
-	    out: Effect.bus({|i| CrossoverDistortion.ar(i) /2  => Pan2.ar(_, 1)})
+	    out: EffectNarrow.bus({|i| CrossoverDistortion.ar(i) /2  => Pan2.ar(_, 1)})
 ].pp
 });
 P(\bass, music: { |p b e|

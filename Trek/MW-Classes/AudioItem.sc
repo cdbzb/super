@@ -42,7 +42,10 @@ AudioItem {
 		Class.initClassTree(MyFree);
 		MyFree.add({ this.stopRecording; this.unmonitor; armed = false });
 
-		SynthDef(\audioItemTempoFollowRB, {
+		// \audioItemTempoFollowRB: Pan2 on pan, for an event with its own pan:;
+		// \audioItemTempoFollowRBMono: mono on out, for one without (AudioItem.ownPan)
+		[[\audioItemTempoFollowRB, true], [\audioItemTempoFollowRBMono, false]].do { |pair|
+		SynthDef(pair[0], {
 			|out=0, bufnum=0, amp=1, rate=1, startPos=0, sustain=1, fade=0.02,
 			 pitchShift=1, formant=1, pan=0, rateMod=1, engine=0, pitchMode=2|
 			var sig, env, safeFade;
@@ -64,8 +67,9 @@ AudioItem {
 				Env.linen(safeFade, (sustain - (safeFade * 2)).max(0), safeFade),
 				doneAction: 2
 			);
-			Out.ar(out, Pan2.ar(sig * env, pan) * amp)
+			Out.ar(out, AudioItem.panned(sig * env, pair[1].if { pan }) * amp)
 		}).add;
+		};
 
 		Event.addEventType(\audioItemTempoFollow, {
 			"\\audioItemTempoFollow needs EventList playback; use EventList.add(... newType: \\audioItemTempoFollow ...)".warn
@@ -198,6 +202,7 @@ AudioItem {
                     // prEventT0, not t0: honours sourceMapIsPhysical like the
                     // follow path, so the two paths agree on every event.
                     var t0 = AudioItem.prEventT0(currentEnvironment, takeNum);
+                    var pan = AudioItem.ownPan(currentEnvironment);
                     // match \audioItemTempoFollow / Server.bind / note events: default the
                     // playback bundle to the real server latency, not a hardcoded 0.2, so
                     // audioItems stay aligned with voices under any s.latency setting.
@@ -205,12 +210,12 @@ AudioItem {
                         (~latency ? Server.default.latency) + (~lag ? 0),
                         {
                             {
-                                PlayBuf.ar(
+                                AudioItem.panned(PlayBuf.ar(
                                     ~numChannels ? 1,
                                     buffer.bufnum,
                                     rate: AudioItem.modIn(~rate),
                                     startPos: ((~startPos ? 0) + t0) * Server.default.sampleRate
-                                )
+                                ), pan)
                                 * (~amp ? 1)
                                 => Out.ar(outBus, _)
                             }.play
@@ -581,6 +586,24 @@ AudioItem {
 	   EventList keeps Function values of these keys unresolved on \audioItem events
 	   (EventList.prKeepsFunction) instead of treating them as lazy values. */
 	*modKeys { ^#[\rate, \pitchShift, \formant] }
+
+	/* Channels follow the take: an \audioItem plays mono on out (or
+	   numChannels: channels) unless it has its own pan:, which is a
+	   mono-to-stereo Pan2 (equal power) convenience. Any other placement goes in
+	   out: (an Effect / AmpSim.fx post:). Same rule as AmpSim.place.
+	   ownPan: the event's OWN pan (nil when unset) — Event's default parent
+	   carries pan: 0, so ev[\pan] alone can't tell centre from not asked. */
+	*ownPan { |ev| ^ev.keys.includes(\pan).if { ev[\pan] } }
+	*panned { |sig, pan|
+		var k = sig.asArray.size;
+		pan.isNil.if { ^sig };
+		(k > 1).if {
+			"AudioItem: pan: is for a mono take; ignoring it for % channels. Place them in out:, e.g. out: Effect.fx({ |s| Splay.ar(s) }, inputChannels: %)"
+			.format(k, k).warn;
+			^sig
+		};
+		^Pan2.ar(sig.asArray[0], pan)
+	}
 	*isMod { |v| ^v.isKindOf(Env) or: { v.isKindOf(Function) } }
 	// inside a synth graph: the UGen for a mod value, else the value (or default)
 	*modIn { |v, default = 1|
@@ -989,7 +1012,7 @@ AudioItem {
 				modSpan = modSpan.max(delay.max(0) + wallDur + (fade * 2) - modStart);
 				actions.add([delay.max(0), {
 					Server.default.makeBundle((ev[\latency] ? Server.default.latency) + (ev[\lag] ? 0), {
-						var args;
+						var args, def = AudioItem.ownPan(ev).isNil.if(\audioItemTempoFollowRBMono, \audioItemTempoFollowRB);
 						(mods.notEmpty and: { first or: { modState.value.isNil } }).if {
 							var bus = Bus.control(Server.default, mods.size);
 							var synth = Synth(modDef, [\bus, bus, \span, modSpan], addAction: \addToHead);
@@ -1007,15 +1030,15 @@ AudioItem {
 							\fade, fade,
 							\pitchShift, slot.(\pitchShift, 1),
 							\formant, slot.(\formant, 1),
-							\pan, ev[\pan] ? 0,
+							\pan, AudioItem.ownPan(ev) ? 0,
 							\engine, ev[\rbEngine] ? rbEngine,
 							\pitchMode, ev[\rbPitchMode] ? rbPitchMode
 						];
 						// after the mod synth, so a mapped bus is written before it's read
 						modState.value.notNil.if {
-							Synth.after(modState.value[1], \audioItemTempoFollowRB, args)
+							Synth.after(modState.value[1], def, args)
 						} {
-							Synth(\audioItemTempoFollowRB, args)
+							Synth(def, args)
 						}
 					})
 				}])
@@ -1159,7 +1182,7 @@ AudioItem {
 								ev[\tempoFollowFade] ? 0.03),
 							doneAction: 2
 						);
-						Out.ar((ev[\out] ? 0).value, Pan2.ar(sig * ampEnv, ev[\pan] ? 0) * (ev[\amp] ? 1))
+						Out.ar((ev[\out] ? 0).value, AudioItem.panned(sig * ampEnv, AudioItem.ownPan(ev)) * (ev[\amp] ? 1))
 					}.play
 				})
 		}]);
@@ -1338,7 +1361,7 @@ AudioItem {
 						Env([0, 1, 1, 0], [0.003, (plan[\total] - 0.003 - fade).max(0), fade]),
 						doneAction: 2
 					);
-					Out.ar((ev[\out] ? 0).value, Pan2.ar(sig * amp, ev[\pan] ? 0) * (ev[\amp] ? 1))
+					Out.ar((ev[\out] ? 0).value, AudioItem.panned(sig * amp, AudioItem.ownPan(ev)) * (ev[\amp] ? 1))
 				}.play
 			})
 		}]]

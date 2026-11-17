@@ -1,6 +1,6 @@
 MIDIIn.connectAll;
 (
-b = Effect.bus(FreeVerb.ar(_,CC(24).bus.kr,1), time: 3000);
+b = EffectNarrow.bus(FreeVerb.ar(_,CC(24).bus.kr,1), time: 3000);
 a = MicroKeys(
 {
 	Saw.ar( \freq.kr(400) * (
@@ -22,7 +22,7 @@ m.ppar.play
 MIDIIn.connectAll
 MIDIClient.sources
 (
-c = Effect.bus(DWGReverbC1C3.ar(_,CC(25).bus.kr * 2000, mix: 0.1), time: 3000);
+c = EffectNarrow.bus(DWGReverbC1C3.ar(_,CC(25).bus.kr * 2000, mix: 0.1), time: 3000);
 d = MicroKeys(
 {
 	Pulse.ar( \freq.kr(400) * [0.999,1, 1.0081] * (

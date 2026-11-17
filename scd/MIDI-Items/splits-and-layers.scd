@@ -28,7 +28,7 @@ MIDIItem("trashme_241209_091414")
 	MicroKeys(\b).add(\quiet, {|e| e.vel= ((e.vel/ 10) max: 0.02) }, \addBefore, \synth),
 	MicroKeys(\bar).synth_(\sawSynthSustain).add(\down,{|e| e.num.notNil.if { e.num= e.num- 12 + 0.1.rrand(-0.1)};e.silent=[nil,true].choose}, \addBefore, \synth),
 	// MicroKeys(\foo).synth_(\sawSynthSustain).add(\down,{|e| e.num.notNil.if { e.num= e.num- 12 };}, \addBefore, \synth),
-	MicroKeys(\d).synth_(\default, [out:Effect.bus({|i| Phaser2.ar(i, 0.9, 0.8)* 3 })]).add(\quiet, {|e| e.vel = e.vel / 4; }, \addBefore, \synth),
+	MicroKeys(\d).synth_(\default, [out:EffectNarrow.bus({|i| Phaser2.ar(i, 0.9, 0.8)* 3 })]).add(\quiet, {|e| e.vel = e.vel / 4; }, \addBefore, \synth),
 ]
 )
 

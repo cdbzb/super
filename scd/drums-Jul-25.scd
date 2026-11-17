@@ -12,6 +12,6 @@ var pat = [[ 2,1 ],[ 2,1 ],[ 2,1 ],[2,1,2]] ;
 [
 instrument: [\bd_808,\sn_808,\bd_808,\bd_808,\sn_808].q(inf),
 dur: [2,2,1,1,2].q(inf)/4,
-out: [0,0,0,0,Effect(TwoTube.ar(_, k:0.01, loss:0.98, d1length:[420,SinOsc.kr(0.1).range(380,390)], d2length:600, mul:0.8, add:0.0),inputChannels:2).bus.index].q(inf)
+out: [0,0,0,0,EffectNarrow(TwoTube.ar(_, k:0.01, loss:0.98, d1length:[420,SinOsc.kr(0.1).range(380,390)], d2length:600, mul:0.8, add:0.0),inputChannels:2).bus.index].q(inf)
 ].pp
 )

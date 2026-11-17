@@ -22,7 +22,7 @@ P(\tune, music:{ |p b e|
 		midinote: p.tune[e.start].list ++ -5.dm(\c) => _.q,
 		dur: e.bAll.q,
 		instrument: [\harp, \sparkTriangle, ],
-		out: Effect.bus({|i|
+		out: EffectNarrow.bus({|i|
 			i
 			// FreeVerb.ar(i,0.1,0.8) 
 			=> BPF.ar(_,800) 
@@ -53,7 +53,7 @@ P(\hornTwo, music: { |p b e|
 		instance: Song.horn,
 		patch: \horn,
 		amp:0.1,
-		out: Effect.bus({|i| DWGReverbC1C3.ar(i,mix:0.2) },)
+		out: EffectNarrow.bus({|i| DWGReverbC1C3.ar(i,mix:0.2) },)
 
 	].p.trace.play
 });
@@ -112,7 +112,7 @@ P(\clarinet, music: { |p b e|
 		patch: \clarinet,
 		legato:1,
 		expression:90,
-		out: Effect.bus({|i| i => FreeVerb.ar(_,0.2,1) * [0.1,1] },)
+		out: EffectNarrow.bus({|i| i => FreeVerb.ar(_,0.2,1) * [0.1,1] },)
 	].pp;
 	[
 		freq: [\r, 11, 5, 3, \r, 11, 6, 4].df(\c,5 ).q(2),
@@ -123,7 +123,7 @@ P(\clarinet, music: { |p b e|
 		patch: \clarinet,
 		legato:1,
 		expression:90,
-		// out: Effect.bus({|i| i => FreeVerb.ar(_,0.2,1) * [0.1,1] },)
+		// out: EffectNarrow.bus({|i| i => FreeVerb.ar(_,0.2,1) * [0.1,1] },)
 	].pp;
 	[
 		freq: [\r, 11, 5, 3, \r, 11, 6, 4].df(\c, 6 ).q(2),
@@ -134,7 +134,7 @@ P(\clarinet, music: { |p b e|
 		patch: \flute,
 		legato:1,
 		expression:120,
-		// out: Effect.bus({|i| i => FreeVerb.ar(_,0.2,1) * [0.1,1] },)
+		// out: EffectNarrow.bus({|i| i => FreeVerb.ar(_,0.2,1) * [0.1,1] },)
 	].pp;
 	[
 		freq: [\r, 11, 5, 3, \r, 11, 6, 4].df(\c, 5 ).q(2),
@@ -148,7 +148,7 @@ P(\triangle, music: { |p b e|
 		trig: 1,
 		dur: "q q q q q q q q q q q q q q q q ".asBeats.warpTo( e.tempoMap ).q,
 		rest: MuteFirst(),
-		out: Effect.bus({|i| i=> Pan2.ar(_,-0.75) },)
+		out: EffectNarrow.bus({|i| i=> Pan2.ar(_,-0.75) },)
 	].pp
 });
 P(\connector,syl:21, music: { |p b e|
@@ -198,7 +198,7 @@ P(\chords, music: { |p b e|
 		freq: [3, 4].df(\a,4) ++ [-7, 1].df(\c) => _.q,
 		dur: "q qex x qq".asBeats.warpTo( e.tempoMap ).q,
 		instrument: Song.hornDef, amp:0.1,
-		out: Effect.bus({|i| FreeVerb.ar(i,0.2,1) }),
+		out: EffectNarrow.bus({|i| FreeVerb.ar(i,0.2,1) }),
 		legato: [ 1, 0.9,1, 1 ].q
 
 	].pp;

@@ -20,8 +20,8 @@ m = MIDIItem("drumset_241119_155106")
 	params: p {
 		var tone = [500, 450, 600, 450 ].collect{|i| [i, 110, 100, 100, 100, 200 ]} 
 			=> _.q(inf) => _.collect({|e| e.q}) => _.asStream; 
-		var verb = Effect.bus({|i| FreeVerb.ar(i, 0.9, 1) => Pan2.ar(_,-0.9) }, time: 8);
-		var verbR = Effect.bus({|i| FreeVerb.ar(i, 0.9, 1) => Pan2.ar(_, 0.9) }, time: 8);
+		var verb = EffectNarrow.bus({|i| FreeVerb.ar(i, 0.9, 1) => Pan2.ar(_,-0.9) }, time: 8);
+		var verbR = EffectNarrow.bus({|i| FreeVerb.ar(i, 0.9, 1) => Pan2.ar(_, 0.9) }, time: 8);
 		var out = [verb, 0, verbR, 0].q(inf).collect({|e| e.q}).asStream; 
 		var amp = Pwhite(0.1, 1.0, inf).clump(12).collect{|e| e.q;
 		}.asStream;
@@ -66,8 +66,8 @@ m = MIDIItem("drumset_241119_155106")
 	params: [
 		// tone: [500, 450, 600, 450 ].collect{|i| [i, 200, 100, 200, 100, 100, 100].q}.q(inf),
 		tone: [[500,100,100,100,100, 100].q,[400,100,100,100,100, 100]].q(inf).asStream,
-		verb: Effect.bus({|i| FreeVerb.ar(i, 0.9, 1) => Pan2.ar(_,-0.9) }, time: 4),
-		verbR: Effect.bus({|i| FreeVerb.ar(i, 0.9, 1) => Pan2.ar(_, 0.9) }, time: 4),
+		verb: EffectNarrow.bus({|i| FreeVerb.ar(i, 0.9, 1) => Pan2.ar(_,-0.9) }, time: 4),
+		verbR: EffectNarrow.bus({|i| FreeVerb.ar(i, 0.9, 1) => Pan2.ar(_, 0.9) }, time: 4),
 		out: {|e| [e.verb, 0, e.verbR, 0].q(inf) },
 		params: [\tone,  ],
 	] => Params(_)
@@ -90,8 +90,8 @@ m = MIDIItem("drumset_241119_155106")
 	player: m.fromNoteTo(18, 23).reject(_.midicmd == \noteOff), type:\mi2, 
 	//params should be a 'Pbind' like Array
 	tone: [500, 450, 600, 450 ].collect{|i| [i, 200, 100, 200, 100, 100, 100].q}.q(inf), 
-	verb: Effect.bus({|i| FreeVerb.ar(i, 0.9, 1) => Pan2.ar(_,-0.9) }, time: 4),
-	verbR: Effect.bus({|i| FreeVerb.ar(i, 0.9, 1) => Pan2.ar(_, 0.9) }, time: 4),
+	verb: EffectNarrow.bus({|i| FreeVerb.ar(i, 0.9, 1) => Pan2.ar(_,-0.9) }, time: 4),
+	verbR: EffectNarrow.bus({|i| FreeVerb.ar(i, 0.9, 1) => Pan2.ar(_, 0.9) }, time: 4),
 	// out: {|e| [e.verb, 0, e.verbR, 0].q(inf) },
 	params: [\tone,  
 		// \out
@@ -119,9 +119,9 @@ t = MIDIItemTempoMap(m.fromNoteTo(18, 23), beats:"xe x q xe x q".beats);
 			.filter({|i| i.collect{|e| e.params = 
 				[
 <<<<<<< Updated upstream
-					out: ( [62, 64].includes(e.midinote) ).if{Effect.bus({|i| FreeVerb.ar(i, 0.5, 1) }, inputChannels:2)}{1}
+					out: ( [62, 64].includes(e.midinote) ).if{EffectNarrow.bus({|i| FreeVerb.ar(i, 0.5, 1) }, inputChannels:2)}{1}
 =======
-					out: ( [62, 64].includes(e.midinote) ).if{Effect.bus({|i| FreeVerb.ar(i, 0.5, 1) }, inputChannels:2)}{0}
+					out: ( [62, 64].includes(e.midinote) ).if{EffectNarrow.bus({|i| FreeVerb.ar(i, 0.5, 1) }, inputChannels:2)}{0}
 >>>>>>> Stashed changes
 				]
 			}})
@@ -132,9 +132,9 @@ t = MIDIItemTempoMap(m.fromNoteTo(18, 23), beats:"xe x q xe x q".beats);
 			.filter({|i| i.collect{|e| e.params = 
 				[
 <<<<<<< Updated upstream
-					out: ( [62, 64].includes(e.midinote) ).not.if{Effect.bus({|i| FreeVerb.ar(i, 0.5, 1) })}{1}
+					out: ( [62, 64].includes(e.midinote) ).not.if{EffectNarrow.bus({|i| FreeVerb.ar(i, 0.5, 1) })}{1}
 =======
-					out: ( [62, 64].includes(e.midinote) ).not.if{Effect.bus({|i| FreeVerb.ar(i, 0.5, 1) })}{0}
+					out: ( [62, 64].includes(e.midinote) ).not.if{EffectNarrow.bus({|i| FreeVerb.ar(i, 0.5, 1) })}{0}
 >>>>>>> Stashed changes
 				]
 			}})
@@ -158,7 +158,7 @@ t = MIDIItemTempoMap(m.fromNoteTo(18, 23), beats:"xe x q xe x q".beats);
 // 	amp: m.fromNoteTo(18, 23)[\amp].q(inf),
 // 	tone:[100, 100, 100].q(inf),
 // 	snEffect: Pswitch( [
-// 		Effect.bus({|i| FreeVerb.ar(i,0.5,1) }, inputChannels:2),
+// 		EffectNarrow.bus({|i| FreeVerb.ar(i,0.5,1) }, inputChannels:2),
 // 		0
 // 	],
 // 		Ptime(inf) / 2 % t.tempoMap[7] =>  _.floor,

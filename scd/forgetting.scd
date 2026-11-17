@@ -18,7 +18,7 @@ g=Group.new;
 
 b=[
 	freq:Prand([1,3,5,7].df('c',tuning:\sept1),inf),
-	out:Effect(FreeVerb.ar(_,1,1),inputChannels:4).bus.index+Pwhite(0,1),
+	out:EffectNarrow(FreeVerb.ar(_,1,1),inputChannels:4).bus.index+Pwhite(0,1),
 	dur:Pwhite(0.1,2),
 	].p;
 {

@@ -57,10 +57,10 @@ Reaper.sched(1649.375,{
 });
 // Line
 Reaper.sched( 1656.115,{
-	(type:\tuneUp,freq:440,amp:0.1,out:Effect(LPF.ar(_,700),out:0).bus.index).play
+	(type:\tuneUp,freq:440,amp:0.1,out:EffectNarrow(LPF.ar(_,700),out:0).bus.index).play
 });
 Reaper.sched( 1656.115,{
-	(type:\tuneUp,freq:440,amp:0.1,out:Effect(LPF.ar(_,700),out:1).bus.index).play
+	(type:\tuneUp,freq:440,amp:0.1,out:EffectNarrow(LPF.ar(_,700),out:1).bus.index).play
 });
 
 ~drawLine.(1651.666,1653.416);
@@ -91,7 +91,7 @@ Reaper.sched(812.333,{
 //Reaper.play(810,818);
 ~drawLine.(814.25,815.083);
 Reaper.sched( 817.932,{
-	(type:\tuneUp,freq:440,amp:0.1,out:Effect(LPF.ar(_,700),out:1).bus.index).play
+	(type:\tuneUp,freq:440,amp:0.1,out:EffectNarrow(LPF.ar(_,700),out:1).bus.index).play
 });
 ~drawLine.(818.041,818.5);
 ~drawLine.(827.375,828.166);
@@ -128,7 +128,7 @@ Reaper.sched(412.5,{
 ~drawLine.(414.4,416.166);
 Reaper.sched(419.166,{
 	//(type:\tuneUp,dur:4,freq:2.df(\g),amp:0.1).play
-	(type:\tuneUp,freq:440,amp:0.1,out:Effect(LPF.ar(_,700),out:1).bus.index).play
+	(type:\tuneUp,freq:440,amp:0.1,out:EffectNarrow(LPF.ar(_,700),out:1).bus.index).play
 });
 ~drawLine.(425.166,425.5);
 ~drawLine.(426.666,427.166);
@@ -184,7 +184,7 @@ Reaper.sched(1849.5,{
 	].p.fin(1).play
 });
 // Line
-Reaper.sched( 1852.6,{ (type:\tuneUp,freq:440,amp:0.07,out:Effect(LPF.ar(_,700),out:0).bus.index).play });
+Reaper.sched( 1852.6,{ (type:\tuneUp,freq:440,amp:0.07,out:EffectNarrow(LPF.ar(_,700),out:0).bus.index).play });
 
 ~drawLine.(1851.583,1852.666);
 

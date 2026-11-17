@@ -8,7 +8,7 @@ P(\bassline, music: { |p b e|
 		freq: [-1, -5, 1, 3, 5, 4, 3, 1, -6, -5, 1, -4, -2, 1, 5].df(\c).q,
 		dur: 0.5 ! 16 warpTo: e.tempoMap |> _.q,
 		legato: 2,
-		out: Effect.bus({|i| 
+		out: EffectNarrow.bus({|i| 
 		i |> FreeVerb.ar(_,0.8,1)
 		|> _.tanh |> _.tanh
 		|> Phaser2.ar(_,rate:0.14)

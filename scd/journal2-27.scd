@@ -22,7 +22,7 @@ a=Item('directory/test');
 	6.do{
 		a.play
 		.set(   \out,
-			Effect({|i| TwoTube.ar(i,d1length:SinOsc.ar(0.02).range(300,888))},out:[0,1].choose).bus.index
+			EffectNarrow({|i| TwoTube.ar(i,d1length:SinOsc.ar(0.02).range(300,888))},out:[0,1].choose).bus.index
 		).map( \rate,
 			Effect.lfo({SinOsc.kr(0.5.rand).unipolar}).bus.index
 		);
@@ -82,7 +82,7 @@ a=Routine{Synth(\default)}
 a.next
 
 a.map(\out,2)
-a.map(\out,Effect(FreeVerb.ar(_,1,1)).bus.index)
+a.map(\out,EffectNarrow(FreeVerb.ar(_,1,1)).bus.index)
 a=(:1..5)*2
 a.next
 (:[1,3,5])

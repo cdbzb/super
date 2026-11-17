@@ -10,7 +10,7 @@
 		legato:8,
 		instrument:\sawSynthSustain,
 		test:Toggle.new.mapToXTouch(\f5),
-		effect:Effect.new({|i|
+		effect:EffectNarrow.new({|i|
 			Vocoder.ar(i.tanh,
 			Item(\iUnderstand).playbuf(loop:1)*1!4=>EchoNone.ar(_,0.3,0.3,2)
 			,12,
@@ -41,7 +41,7 @@ out:Pfunc{|i|i.effect+3.rand},
 		legato:8,
 		instrument:\sawSynthSustain,
 		test:Toggle.new.mapToXTouch(\f5),
-		effect:Effect.new({|i|
+		effect:EffectNarrow.new({|i|
 			Vocoder.ar(i.tanh,
 			Item(\iUnderstand).playbuf(loop:1)*1!4=>EchoNone.ar(_,0.3,0.3,2)
 			,12,
@@ -68,7 +68,7 @@ out:Pfunc{|i|i.effect+3.rand},
 	=>
 	//this could be encapsulated
 	Pbindf(_,
-		\effect,Effect.new({|i|
+		\effect,EffectNarrow.new({|i|
 			Vocoder.ar(i.tanh,
 			Item(\iUnderstand).playbuf(loop:1)*1!4=>EchoNone.ar(_,0.3,0.3,2)
 			,12,

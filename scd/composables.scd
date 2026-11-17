@@ -21,7 +21,7 @@ c = {|ffreq=900 hi=65| [
 )
 (
 a = [ 
-	Effect.bus({|i| FreeVerb.ar(i,1,1) }, inputChannels:2) ,
+	EffectNarrow.bus({|i| FreeVerb.ar(i,1,1) }, inputChannels:2) ,
 	[freq: Pwhite(500, 700), out: _].pp
 ];
 a.insert(1, 0);
@@ -31,7 +31,7 @@ a.reduce( {|x y| x => y} );
 [
 	FreeVerb.ar(_,[ 1, 0.9 ],1),
 	_ * 0.9,
-	Effect.bus(_, out: 4.rrand(1)),
+	EffectNarrow.bus(_, out: 4.rrand(1)),
 	[out: _, freq: Pwhite(300,800)],
 	_.pp,
 ]
@@ -44,7 +44,7 @@ a.reduce( {|x y| x => y} );
 a =[
 	FreeVerb.ar(_,[ 1, 0.9 ],1),
 	_ * 0.9,
-	Effect(_, out: 4.rrand(1)),
+	EffectNarrow(_, out: 4.rrand(1)),
 	{|i| i.bus.index},
 	[out: _, freq: Pwhite(300,800)],
 	_.pp,

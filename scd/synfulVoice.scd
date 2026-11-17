@@ -11,7 +11,7 @@ b={|channel=0, inst=\violas, bank=\trem | Plazy({
 b.(1,\violins,\mute).play;
 b.(2,\horn).play;
 b.(3,\bass,\arco).play;
-a.setOut(Effect(FreeVerb.ar(_,1,1),inputChannels:2).bus.index)
+a.setOut(EffectNarrow(FreeVerb.ar(_,1,1),inputChannels:2).bus.index)
 )
 
 
@@ -49,7 +49,7 @@ a.expr[0].scope
 a.shuffle
 [amp:0.5,dur:Pwhite(0.01,0.3,inf),type:\synful,expression:Prand( [0.5,0.2,0.9], inf )=>Pstutter(10,_),expressionLag:1,freq:[1,3,5,7,11,13].df(\c).q(inf),channel:0.rand,instance:a,legato:Pwrand([1,0.1,0.5],[9,1,1]/11,inf)].pp
 
-a.setOut(Effect(FreeVerb.ar(_,0.8,0.8),inputChannels:2).bus.index)
+a.setOut(EffectNarrow(FreeVerb.ar(_,0.8,0.8),inputChannels:2).bus.index)
 a.expr[0].scope
 a.activate(0);
 a.shuffle

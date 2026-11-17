@@ -6,7 +6,7 @@ MicroKeys(\harp).synth_( \harp, [coef: 0.1, out: 1]).tuning_(\just).add(\quiet,{
 a = MIDIItem("241214_105959");
 a.take(0).recalcSustains.start_(~transport).play(\keys);
 a.take(2).start_(~transport).play(\harp);
-~tremolo = Effect.bus({|i| i => Pan2.ar(_, SinOsc.ar(0.4)) },time: 4);
+~tremolo = EffectNarrow.bus({|i| i => Pan2.ar(_, SinOsc.ar(0.4)) },time: 4);
 a.take(8).filter({|e| e.collect({|i| i.params = i.params ++ (out: ~tremolo)})}).start_(~transport).play(\harp);
 a.takes.do{|i| i.size.postln};
 

@@ -34,7 +34,7 @@
 			//	\fftsize,4096,
 			\hop,0.25,
 			\out,~synthOut,
-			//	\out,Effect(FreeVerb.ar(_,0.1,1),inputChannels:1).bus.index,
+			//	\out,EffectNarrow(FreeVerb.ar(_,0.1,1),inputChannels:1).bus.index,
 			//\modBuf, Item(\order).buffer , 
 			//default for smooth is *negative* 0.92
 			//positive numbers and zero are both interesting

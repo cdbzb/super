@@ -14,10 +14,10 @@ SynthDef(\shakem,{
 (
 
 Pdef(\shakem,[
-	0.0,(instrument:\shakem,out:Effect(DWGReverbC1C3.ar(_,mix:0.1)).bus.index),
+	0.0,(instrument:\shakem,out:EffectNarrow(DWGReverbC1C3.ar(_,mix:0.1)).bus.index),
 	//0.065,[dur:[2,2,2,0.5,1.5,2].q(inf),instrument:\bd_808,trig:1].pm(\abd),
 	0.075,[dur:1,instrument:\bd_808,trig:[0,1].q(inf)].pm(\asd),
-	//0.075,[dur:1,instrument:\bd_808,trig:[0,1].q(inf),out:Effect(EchoCubic.ar(_,0.3,0.166,3),inputChannels:2).bus.index].pm(\asd),
+	//0.075,[dur:1,instrument:\bd_808,trig:[0,1].q(inf),out:EffectNarrow(EchoCubic.ar(_,0.3,0.166,3),inputChannels:2).bus.index].pm(\asd),
 	0.065,[dur:2/8,instrument:\hat_808,amp:0.7,out:2].p,
 	0.065,[ 
 		freq:[1,1,3,5,6,5,6,5,5,5,5,6,11,6].df(\e,octave:2).q(inf),
@@ -86,7 +86,7 @@ SynthDef(\shakeEnv,{
 [time:[0.05,1,0.1].q(inf),amp:0.2,resonantFreq:60,dur:1/8,up:[1,0].q(inf),down:[0,1],q(inf)].pm(\shakeEnv).play;
 [instrument:\bd_808,amp:0.15].pp;
 [instrument:\hat_808,amp:[[1].q([3,5,6].q(1)),0].q(inf)/10,dur:1/16,out:Pwhite(0,5,inf)].pp;
-Pdef(\bassline,[freq:[1,4,6.5,12.5].df(\c,octave:[3,2]).q(inf).stutter(4),dur:0.25,legato:0.3,amp:0.15,out:Effect(DelayC.ar(_,0.1,SinOsc.ar(6).range(0,0.001)).tanh).bus.index].p);
+Pdef(\bassline,[freq:[1,4,6.5,12.5].df(\c,octave:[3,2]).q(inf).stutter(4),dur:0.25,legato:0.3,amp:0.15,out:EffectNarrow(DelayC.ar(_,0.1,SinOsc.ar(6).range(0,0.001)).tanh).bus.index].p);
 [instrument:\yowbass,freq:[1,4,6.5,12.5].df(\c,octave:[3,2]).q(inf).stutter(4),dur:0.25,legato:0.3,amp:0.015,out:2].pp;
 [freq:[\r,3,2,4,3,2,1].df(\c)++[3,2,4,3,2,1].df('f',octave:6)=>_.q(inf),dur:[2,1,1,1,1,1,3,1,1,1,1,1,1].q(inf)/4,instrument:\stringyy].pp;
 [freq:[\r,3,2,4,3,2,1].df(\f)++[3,2,4,3,2,1].df('b-',octave:6)=>_.q(inf),dur:[2,1,1,1,1,1,3,1,1,1,1,1,1].q(inf)/4,instrument:\stringyy,out:2].pp;
@@ -118,7 +118,7 @@ b.at(2)=3
 b.indices.do{|i| }
 
 (
-~bassLine=[midinote:[1,4,6.5,12.5].dm('b-',octave:[3,2]).q(inf).stutter(4),dur:0.25,legato:0.3,amp:0.15,out:Effect(DelayC.ar(_,0.1,SinOsc.ar(6).range(0,0.001)).tanh).bus.index].p;
+~bassLine=[midinote:[1,4,6.5,12.5].dm('b-',octave:[3,2]).q(inf).stutter(4),dur:0.25,legato:0.3,amp:0.15,out:EffectNarrow(DelayC.ar(_,0.1,SinOsc.ar(6).range(0,0.001)).tanh).bus.index].p;
 ~lick= [freq:[\r,3,2,4,3,2,1].df('e-')++[3,2,4,3,2,1].df('a-',octave:6)=>_.q(inf),dur:[2,1,1,1,1,1,3,1,1,1,1,1,1].q(inf)/4,instrument:\stringyy,amp:0.3].p.findur(6);
 ~lick2 = [freq:[5,4,2.5,2].df(\a).q,dur:[3,8,8,1].q/4,amp:0.9,instrument:\stringyy].p;
 ~lick2 = VoiceLeading(

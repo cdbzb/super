@@ -85,7 +85,7 @@ P(\swoosh,music:(
 		[
 			freq:~line.value.pfunc,
 			dur:~b[0]/6,
-			verb:Effect(FreeVerb.ar(_,1,1),out:2.rand).bus.index,
+			verb:EffectNarrow(FreeVerb.ar(_,1,1),out:2.rand).bus.index,
 			out:Pkey(\verb)
 		].p.fin(6).play;
 
@@ -110,7 +110,7 @@ P(\verb ,start:'verbfun',music:(
 		[
 			note:Pbrown(0,21!2,0.8),
 			dur:rrand(0.5,1),
-			out: Effect({|i|~early.(i)=>Mix.ar(_)=>~verb+~early.(i)=>~silence}).bus.index,
+			out: EffectNarrow({|i|~early.(i)=>Mix.ar(_)=>~verb+~early.(i)=>~silence}).bus.index,
 			amp:~line.value.pfunc
 		].pp;
 		//defer{s.plotTree}

@@ -6,7 +6,7 @@ a=LambdaEnvir((
 			out:~verb,
 			pan:Pbrown(-1,1)
 		].p },
-	effect: { Effect({|in | FreeVerb.ar(in,\mix.kr(1),1)},inputChannels:2) },
+	effect: { EffectNarrow({|in | FreeVerb.ar(in,\mix.kr(1),1)},inputChannels:2) },
 	verb: {~effect.bus.index},
 	pbind2: {
 		var verb= ~verb;
@@ -48,7 +48,7 @@ a=LambdaEnvir((
 	l: {{SinOsc.kr(5).range(100,500)}.play(s,~lfo)},
 	lfo:Bus.control(s,1),
 	play: {~f},
-	verb: Effect({|i| Allpass2.ar(i,SinOsc.kr(0.3!4).range(400,2000)) 
+	verb: EffectNarrow({|i| Allpass2.ar(i,SinOsc.kr(0.3!4).range(400,2000)) 
 	=> Pan2.ar(_,LFBrownNoise2.kr().range(-1,1))!2
 	=> CombC.ar(_,0.3,SinOsc.kr(0.34).range(0.05,0.2),decaytime:8)
 	//=> Pan2.ar(_,LFBrownNoise2.kr().range(-1,1))

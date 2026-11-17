@@ -120,7 +120,7 @@
 		release:4,instrument:\pluckDEnv,freq:[4.5].df('a-',octave:1),amp:0.03,
 		addAction:\addToHead,
 		dur: Song.currentSong.durs[15].list[8],
-		out:{ Effect(
+		out:{ EffectNarrow(
 			FreeVerb.ar(_,0.5,1),out:[0,1],inputChannels:2).bus.index 
 			 => DetectSilenceDry.ar(_,doneAction:2)
 		}
@@ -138,7 +138,7 @@
 		].q ,
 		dur: Song.parse(15,[4, 4,1]).q,
 		hifreq:8000,
-		effect:{ Effect({|i|
+		effect:{ EffectNarrow({|i|
 			MoogFF.ar(i,2000,2)
 			* 1.3
 			=>( CombC.ar(_,0.5,SinOsc.kr(0.3).range(0.4,0.405),decaytime:4)+Gain.ar(_,3) )
@@ -172,7 +172,7 @@ P(\tune16,start:16,music:Song.currentSong.pbind[16]=>Pbindf(_,\instrument,\strin
 			rel:3,
 			lofreq:5000,
 			hifreq:6000,
-			effect:{ Effect(MoogFF.ar(_,5000,3),out:2,inputChannels:2).bus.index },
+			effect:{ EffectNarrow(MoogFF.ar(_,5000,3),out:2,inputChannels:2).bus.index },
 			addAction:\addToHead,
 			out:Pkey(\effect),
 			//			out:2,
@@ -217,7 +217,7 @@ P(\bassnote17,start:17,syl:3,music:(degree:3,octave:[3,2],amp:0.4,dur:2,)
 	['diculous statement I`ve ever heard. An ',[5,2,1,4,3,1,2,3,4.5,].dm('b-')++[5].dm(\d)].addLine; //18
 	P(\chord18,start:18,music:[ 
 		strum:0.05,
-		effect:{ Effect(
+		effect:{ EffectNarrow(
 			{ |in|
 				EchoCubic.ar(in,1,SinOsc.kr(1/[22, 20 ],[0,pi]).range(0.2,0.3),5)
 				=> MoogFF.ar(_,SinOsc.kr(10).range(800,2000))
@@ -235,7 +235,7 @@ P(\bassnote17,start:17,syl:3,music:(degree:3,octave:[3,2],amp:0.4,dur:2,)
 );
 P(\bassNote18,start:18,syl:7,music:[ 
 	amp:0.3,
-	effect:{ Effect({|i| FreeVerb.ar(i,0.5,1)  =>  DetectSilenceDry.ar(_,doneAction:2) },inputChannels:2).bus.index },
+	effect:{ EffectNarrow({|i| FreeVerb.ar(i,0.5,1)  =>  DetectSilenceDry.ar(_,doneAction:2) },inputChannels:2).bus.index },
 	out:Pkey(\effect),
 	freq:[1,11].df(\g,octave:2),
 	dur: Song.parse(18,[2],8).q,
@@ -360,7 +360,7 @@ Song.resources.infrastructure.addFunc({
 P(\descant,start:24,music:[
 		freq:[[7, 12 ],[ 13,11 ],[ 11,5 ],[11,5.5]].df('g',octave: 5).q,
 		dur: Song.parse(24,[2,2,5,1]).q,
-		effect: { Effect(EchoNone.ar(_,1,[0.2, 0.3 ],3),inputChannels:2).bus.index },
+		effect: { EffectNarrow(EchoNone.ar(_,1,[0.2, 0.3 ],3),inputChannels:2).bus.index },
 		amp:0.01,
 		out:Pkey(\effect),
 ].pm(\sawSynthSustain)
@@ -432,7 +432,7 @@ P(\wobble25,start:25,music: [
 		amp:0.05,
 //		instrument:\tri,
 		freq:[3,4].df('b',octave:4 ).q(inf),
-		effect:{ Effect(EchoNone.ar(_,1,0.3,decaytime:5)).bus.index },
+		effect:{ EffectNarrow(EchoNone.ar(_,1,0.3,decaytime:5)).bus.index },
 		dur: Song.parse(25,1!4).q,
 		out:Pkey(\effect),
 ].pm(\sawSynth)
@@ -443,7 +443,7 @@ P(\wobble26,start:26,music: [
 		amp:0.05,
 //		instrument:\tri,
 		freq:[1,2].df('d',octave:4 ).q(inf),
-		effect:{ Effect(EchoNone.ar(_,1,0.3,decaytime:5),out:1).bus.index },
+		effect:{ EffectNarrow(EchoNone.ar(_,1,0.3,decaytime:5),out:1).bus.index },
 		dur: Song.parse(25,1!4).q,
 		out:Pkey(\effect),
 ].pm(\sawSynth)
@@ -513,7 +513,7 @@ P(\accompaniment,music:
 						midinote:[3,5,11,3,  4,6,11,3,  2,5,11,2,  4,6,11,2, [3,6]].dm('c#',octave:5 ).q,
 						position:Pwhite(0.1,0.16),
 						legato:1.55,
-						effect: Effect(DWGSoundBoard.ar(_)++DelayN.ar(_,0.1,0.1),inputChannels:2).bus.index,
+						effect: EffectNarrow(DWGSoundBoard.ar(_)++DelayN.ar(_,0.1,0.1),inputChannels:2).bus.index,
 						out:Pkey(\effect),
 						dur:parent.parse(29,[1/7,1/7,1/7,1/7,1/7,1/7,1/7,
 								1,1,1,

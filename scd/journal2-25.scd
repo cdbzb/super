@@ -1,7 +1,7 @@
 Item('directory/test').arm(length:5)
 Item('directory/mouth').bus_(1).play
 ( //hahaha
-a={|out| Effect({|i|
+a={|out| EffectNarrow({|i|
 	var chain = FFT(LocalBuf(2048),i);
 	chain =PV_RandComb(chain,SinOsc.kr(10.rand).unipolar);
 	chain = PV_BinScramble(chain,0.3,0.2);
@@ -25,7 +25,7 @@ a={|out| Effect({|i|
 )
 
 ( //noizzzz
-a={|out| Effect({|i|
+a={|out| EffectNarrow({|i|
 	var chain = FFT(LocalBuf(2048),i);
 	chain =PV_RandComb(chain,SinOsc.kr(100.rand.reciprocal,rrand(0,2*pi)).range(0.05,0.9));
 //	chain = PV_BinScramble(chain,0.3,0.2);
@@ -48,7 +48,7 @@ d={PinkNoise.ar(0.1)}.play(s,e);
 
 ( //glitchy invert
 Item('directory/moreTalking').bus_(
-	Effect({|i|
+	EffectNarrow({|i|
 		var chain = FFT(LocalBuf(2048),i);
 		chain = PV_Invert(chain);
 //		chain = PV_MagSmear(chain,18);

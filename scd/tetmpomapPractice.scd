@@ -8,7 +8,7 @@ u=t.quantize(1);
 [
 	dur: "q e e q e e e e q".asBeats .warpTo(q) .q,
 	freq: [1,3,4,5,2,4,6,7,5].df(\d,[3,4]).q,
-	out:Effect( { |i| i * 5 => SineShaper.ar(_,0.2) /2   => FreeVerb.ar(_,0.1,0.9)},inputChannels:2 ).bus.index
+	out:EffectNarrow( { |i| i * 5 => SineShaper.ar(_,0.2) /2   => FreeVerb.ar(_,0.1,0.9)},inputChannels:2 ).bus.index
 
 ].pp;
 [
@@ -25,8 +25,8 @@ u=t.quantize(1);
 	freq: "..x...x.".asDrumPat(4,4),
 	instrument:\sn_808,
 	dur:0.5!16=>_.warpTo(q)=>_.q,
-	out:Effect(DWGReverbC1C3.ar(_,mix:0.2)).bus.index,
-	out:Effect(DWGReverbC1C3.ar(_,mix:0.2)).bus.index
+	out:EffectNarrow(DWGReverbC1C3.ar(_,mix:0.2)).bus.index,
+	out:EffectNarrow(DWGReverbC1C3.ar(_,mix:0.2)).bus.index
 ].pp;
 [
 	

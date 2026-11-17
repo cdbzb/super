@@ -20,9 +20,9 @@ s.meter
 {SinOsc.ar(7500,0,0.1)!2}.play
 SynthDef(\saw,{Saw.ar(\freq.kr(300),\amp.kr(0.1))* Env.perc(0.05,\release.kr(0.5)).kr(2,gate:\gate.kr(1)) => Pan2.ar(_,\pan.kr(0))=>Out.ar(\out.kr(0)+Rand(0),_)}).add
 [instrument:\saw,amp:0.2,out:0,freq: [ Pxrand([7000,8000,6500,9000]*.t[0.5,1],4),Rest(2) ].q(inf),dur:0.4,pan:-1].pp
-[instrument:\saw,amp:0.2,pan:Prand([-1,1],inf),out:Effect(FreeVerb.ar(_,0.9,0.9),inputChannels:2).bus.index+Prand([0,1,[0,1]],inf),freq: [ Pxrand([7000,8000,6500,9000]/2,4),Rest(2) ].q(inf),dur:0.4,pan:-1].pp
+[instrument:\saw,amp:0.2,pan:Prand([-1,1],inf),out:EffectNarrow(FreeVerb.ar(_,0.9,0.9),inputChannels:2).bus.index+Prand([0,1,[0,1]],inf),freq: [ Pxrand([7000,8000,6500,9000]/2,4),Rest(2) ].q(inf),dur:0.4,pan:-1].pp
 (
-[instrument:\saw,amp:0.2,pan:Prand([-1,1],inf),out:Effect(FreeVerb.ar(_,0.5,0.9),inputChannels:2).bus.index+Prand([0,1,[0,1]],inf),freq: [ Pxrand([6000,7000,8000,6500,9000,10000],6),Rest(2) ].q(inf),dur:0.4,pan:-1].pp;
+[instrument:\saw,amp:0.2,pan:Prand([-1,1],inf),out:EffectNarrow(FreeVerb.ar(_,0.5,0.9),inputChannels:2).bus.index+Prand([0,1,[0,1]],inf),freq: [ Pxrand([6000,7000,8000,6500,9000,10000],6),Rest(2) ].q(inf),dur:0.4,pan:-1].pp;
 {In.ar(1)=>{|i| ReplaceOut.ar(1,i*0.2) }}.play(addAction:\addToTail);
 
 

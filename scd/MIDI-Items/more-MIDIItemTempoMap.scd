@@ -14,7 +14,7 @@ m = MIDIItem("drumset_241119_155106")
 [
 	player: m.fromNoteTo(18, 23).reject(_.midicmd == \noteOff), type:\mi2, 
 	tone: [500, 450, 600, 450 ].collect {|i| i.bubble ++ [200, 100, 200, 100, 100, 100] } => _.q(inf),
-	out: [ Effect.bus(FreeVerb.ar(_,0.5,1), out:1),Effect.bus(FreeVerb.ar(_,0.5,1))  ].q(inf),
+	out: [ EffectNarrow.bus(FreeVerb.ar(_,0.5,1), out:1),EffectNarrow.bus(FreeVerb.ar(_,0.5,1))  ].q(inf),
 	// amp: Pwhite(0.001,1.9,inf),
 	params: Pfunc( {|e| 
 		[\tone, \out].collect({|i| [ i, e.at(i).q ]}).flat

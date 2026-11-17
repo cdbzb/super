@@ -38,7 +38,7 @@ Environment
 ([
 	note:Prand([1,2,4,5,5.5],inf),
 	dur:Prand([1/2,1/4,1/8],inf),
-	effect: Effect({|i|EchoCubic.ar(i,1,
+	effect: EffectNarrow({|i|EchoCubic.ar(i,1,
 		SinOsc.kr(
 			1/6+(0.1.rand!2)
 			+(LFBrownNoise2.kr(1/2).range(-1,0)*0.2)
@@ -71,7 +71,7 @@ Environment
 		pan:-1,
 		legato:Pwhite(0.9,2),
 		legato:Pwhite(0.9,2),
-		effect:Effect.new({
+		effect:EffectNarrow.new({
 			|i| 
 			EchoNone.ar(i,1,1*LFBrownNoise2.kr(0.3).range(0.1,0.9),7).tanh 
 			=>Phaser2.ar(_,1,1/12,-2.9)

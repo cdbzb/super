@@ -196,7 +196,7 @@ SynthDef(\kaya,
 	octave:3,
 	root:8,
 	dur:Pwhite(1,3.0),
-	out: Effect(
+	out: EffectNarrow(
 		DWGSoundBoard.ar(_,10,80)
 		*3
 	).bus.index,
@@ -208,7 +208,7 @@ Synth(\kaya)
 
 Reaper.play(2102,2120);
 	Reaper.sched(2104.800,{
-		~soundBoard = Effect(
+		~soundBoard = EffectNarrow(
 		DWGSoundBoard.ar(_,[10,11],80)
 		*10,
 		inputChannels:2,out:[0,1]
@@ -243,7 +243,7 @@ Reaper.play(2102,2120);
 		];
 		(version == \pma).if{ 
 			pattern = keys ++ [ 
-				out: Effect( { |i|
+				out: EffectNarrow( { |i|
 					DetectSilence.ar(i,time:0.3,doneAction:2);
 					BPF.ar(i,Rand(1900,8000),2) => Pan2.ar(_,rrand(-1,1.0))},out:out  ).bus.index 
 			] => _.pma(\sawSynthSustain);
@@ -252,7 +252,7 @@ Reaper.play(2102,2120);
 
 				instrument:[ \default,\sparkTriangle ].choose,
 				legato:2,
-				out: Effect({ |i| DetectSilence.ar(i); Phaser2.ar(i,rate:0.1)},out:out  ).bus.index,
+				out: EffectNarrow({ |i| DetectSilence.ar(i); Phaser2.ar(i,rate:0.1)},out:out  ).bus.index,
 				amp:0.01
 			] => _.p;
 		};
@@ -278,7 +278,7 @@ Reaper.play(1016,1223);
 
 (//arirang down
 	~cloud.([\e,\a,\d].choose,0.01).();
-	~soundBoard = Effect(
+	~soundBoard = EffectNarrow(
 		DWGSoundBoard.ar(_,[10,11],80)
 		*10,
 		inputChannels:2,out:[0,1]

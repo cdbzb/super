@@ -67,7 +67,7 @@ MicroKeys.mono(\vocal).synth_(
 		* Env.asr(\attack.kr(0.5),1,\release.kr(8)).kr(2,gate:gate)
 		=>Out.ar(\out.kr(0),_)
 	}.asDefName
-	, [mix: 0.1, out: Effect.bus({|i| i * 9 },)]
+	, [mix: 0.1, out: EffectNarrow.bus({|i| i * 9 },)]
 );
 
 MIDIItem("vocalLine_241213_080701")

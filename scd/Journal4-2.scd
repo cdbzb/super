@@ -23,7 +23,7 @@
  a.fadeTime_(2);
  a.source_(
 	 "genderstra.wav".default.record(bus:0,numChannels:2,length:60);
-	 {var scale=2.8.rand;Gendy4.ar(0.1,0.1,durscale:0.0009,minfreq:[ 300,420,500,640 ]*.x scale,maxfreq:310*scale) *0.06 =>Pan2.ar(_,LFBrownNoise2.kr(0.3))}.play(s,Effect(MoogFF.ar(_,SinOsc.kr(\sweepRate.kr(0.1)).range(700,3000)),inputChannels:2).bus.index)
+	 {var scale=2.8.rand;Gendy4.ar(0.1,0.1,durscale:0.0009,minfreq:[ 300,420,500,640 ]*.x scale,maxfreq:310*scale) *0.06 =>Pan2.ar(_,LFBrownNoise2.kr(0.3))}.play(s,EffectNarrow(MoogFF.ar(_,SinOsc.kr(\sweepRate.kr(0.1)).range(700,3000)),inputChannels:2).bus.index)
 	 (note:[1,4,8,12],instrument:\stringyy,dur:200,amp:0.3).play
 )
 
@@ -39,7 +39,7 @@
 		*0.06 
 		=> Mix.ar(_)
 		=>Pan2.ar(_,LFBrownNoise2.kr(0.3))
-	}.play(s,Effect(
+	}.play(s,EffectNarrow(
 		MoogFF.ar(_,SinOsc.kr(\sweepRate.kr(0.1)).range(700,3000)),inputChannels:2).bus.index
 	);
 	fork{

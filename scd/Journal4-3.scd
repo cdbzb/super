@@ -34,7 +34,7 @@ Environment.new.use {
 	=>{|i|i.asMelody(2).dm(\c,octave:4)}
 	++[
 		pan:[1,-1].q(inf),
-		out:Effect(FreeVerb.ar(_,1,1),inputChannels:2).bus.index,
+		out:EffectNarrow(FreeVerb.ar(_,1,1),inputChannels:2).bus.index,
 		tempo:Pwhite(0.7,0.71).reciprocal,
 	]
 	=>{|i| i.p.play(~t=TempoClock.new)};
@@ -48,7 +48,7 @@ Environment.new.use {
 )
 (
 //Pfset(nil,[note:[1].q(3)].p,{\done.postln}).play
-[note:Pwhite(1,3,5),out:Pfunc{}].p=>Pfset({~effect=Effect(FreeVerb.ar(_,1,1))},_,\done.postln)=>_.play
+[note:Pwhite(1,3,5),out:Pfunc{}].p=>Pfset({~effect=EffectNarrow(FreeVerb.ar(_,1,1))},_,\done.postln)=>_.play
 )
 SimpleController
 EventStreamPlayer
@@ -113,7 +113,7 @@ MicroKeys.deviation(\just).(61)
 
 a={ |vel num | var i = num ; Synth(\sparkTriangle,[ \freq,i => MicroKeys.deviation(\pythagorean) => _.midicps ]).dur(2); i=>MicroKeys.deviation(\pythagorean)=>_.postln}
 
-a=Effect(FreeVerb.ar(_,1,1),out:1).bus.index;
+a=EffectNarrow(FreeVerb.ar(_,1,1),out:1).bus.index;
 MicroKeys.play2({|v n| Synth(\stringyy,[\out,a,\release,0.1,\freq,n.midicps,\amp,v/128])},\vallotti)
 
 a={SinOsc.ar(Phasor.kr(1,\rate.kr(0.0001),0.5,1)*\freq.kr(400),0.1)}.play

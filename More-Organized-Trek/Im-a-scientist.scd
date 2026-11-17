@@ -6,7 +6,7 @@
 		pan:Pwhite(-1,1)
 	].p
 	=>Pn(_,2)
-	//=>Effect.new(_,\phaserr2)=>_.play
+	//=>EffectNarrow.new(_,\phaserr2)=>_.play
 	=>Pfx(_,\phaserr2)
 	=>_.play
 )
@@ -20,7 +20,7 @@
 		root:11,
 	].p
 	=>Pn(_,39)
-	//=>Effect.new(_,\phaserr2)=>_.play
+	//=>EffectNarrow.new(_,\phaserr2)=>_.play
 	//=>Pfxb(_,\phaserr2)
 	=>Pfx(_,\phaserr2)
 	//=>_.play;

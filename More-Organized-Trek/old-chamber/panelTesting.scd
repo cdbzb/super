@@ -212,7 +212,7 @@ P(\tremoloSwell,music:
 
 		(type:\vst_midi,vst:~syn1.controller,midicmd:\allNotesOff).play;
 		~syn1.patch(\violas,\trem,0);
-		~syn1.setOut( ~verbchannels=Effect(FreeVerb.ar(_,1,1),out:0,inputChannels:4).bus.index) ;
+		~syn1.setOut( ~verbchannels=EffectNarrow(FreeVerb.ar(_,1,1),out:0,inputChannels:4).bus.index) ;
 		~syn1.expression(100,0);
 		~stringChords=[12,10,2,14,20,20,10];
 		~stringChords=[12,0,2,4,0,0,0]-1;
@@ -237,7 +237,7 @@ P(\tremoloSwell,music:
 		);
 		[
 			type:\vst_midi,vst:~syn1.controller,
-			//verb:{ ~syn1.setOut( ~verbchannels=Effect(FreeVerb.ar(_,1,1),out:0,inputChannels:4).bus.index) } ;
+			//verb:{ ~syn1.setOut( ~verbchannels=EffectNarrow(FreeVerb.ar(_,1,1),out:0,inputChannels:4).bus.index) } ;
 			//chords: [[5,7,11,15],[4,11,13,14]].stutter(8).q(16) ,
 			//chords: Pstep([[5,7,11,15],[4,11,13,14]],4)=>Pn(_,3),
 			chords: Pdefn(\swellChord),
@@ -319,7 +319,7 @@ P(\tune9,start:9,music:Song.currentSong.pbind[9]
 // Song.currentSong.play(\blood,\tune9,\pumping)
 P(\blood,start:9,syl:7,lag:-0.15,music:
 	{
-//		var distortion=Effect({|i|i.tanh});
+//		var distortion=EffectNarrow({|i|i.tanh});
 		[1,3,5,7,11,13,15].df('e').do({|i|
 			Synth('defaultPorto.clean',[
 				\attack,5,
@@ -364,7 +364,7 @@ P(\piano9,start:9,syl:7,music:
 			 ~quarters9[12..].q
 			 ++ Song.parse(10,[[1,1],[1,1],2],).q
 			 ,
-			 effect: Effect( {|i| 
+			 effect: EffectNarrow( {|i| 
 				 HPF.ar(i.tanh,1300)
 			 } ).bus.index,
 			 out: Pkey(\effect),
@@ -382,7 +382,7 @@ P(\lungsB10,start:10,music:
 	{
 		  [
 			flag:[0.1,0.2],
-			//effect:Effect({|i| i*Line.kr(1,0,3)},inputChannels:2).bus.index,
+			//effect:EffectNarrow({|i| i*Line.kr(1,0,3)},inputChannels:2).bus.index,
 		//	out:Pkey(\effect)+[0,1],
 		out:[0,1],
 			freq:  {
@@ -418,7 +418,7 @@ P(\lungsB10,start:10,music:
 			//MUTEDdur:Song.parse(10,[[1,1],[1,1],2],).q,
 			//MUTEDstrum:[0, 0, 0.05].q,
 			//MUTEDlegato:1.1,
-			//MUTEDeffect: Effect( {|i| 
+			//MUTEDeffect: EffectNarrow( {|i| 
 				//MUTEDHPF.ar(i.tanh,1300)
 			//MUTED},inputChannels:1 ).bus.index,
 			//MUTEDout: Pkey(\effect),
@@ -471,7 +471,7 @@ P(\accent14,start:14,syl:2,music:
 			instrument:\cymbal_808,
 			amp:0.25,
 			tone:0.01,
-			out:Effect({|i|TwoTube.ar(i,0.5,0.2,1300,1455)=>Decimator.ar(_,[9000,10000],8)*
+			out:EffectNarrow({|i|TwoTube.ar(i,0.5,0.2,1300,1455)=>Decimator.ar(_,[9000,10000],8)*
 			Env.linen(0,1,4).kr(2,gate:1)
 			=> DetectSilenceDry.ar(_,doneAction:2)}).bus.index
 		).play

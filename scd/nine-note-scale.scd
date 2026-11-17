@@ -3,8 +3,8 @@ Scale.all.put(\nineNote,a)
 a.semitones
 [note:a.semitones.q+[0,3],legato:3].pp
 (
-b=Effect(FreeVerb.ar(_,0.9,1),out:1).bus.index;
-b=Effect({|i|PlateReverb.ar(i,0.8,mix:Line.kr(0.5,1,30),decayTime:0.7*Gendy1.kr(minfreq:1/10,maxfreq:2).unipolar)[0]},inputChannels:2).bus.index;
+b=EffectNarrow(FreeVerb.ar(_,0.9,1),out:1).bus.index;
+b=EffectNarrow({|i|PlateReverb.ar(i,0.8,mix:Line.kr(0.5,1,30),decayTime:0.7*Gendy1.kr(minfreq:1/10,maxfreq:2).unipolar)[0]},inputChannels:2).bus.index;
 	[
 	degree:
 	Ptuple([

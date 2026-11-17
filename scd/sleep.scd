@@ -69,7 +69,7 @@ s.reboot
 		pan:Pwhite(-0.5,0.5,inf),
 		rawAmp:Pgauss(0.06,0.01),
 		amp:Pfunc{|e| e.rawAmp.min(0.12)},
-		out:Effect(FreeVerb.ar(_,1,1)*0.1,inputChannels:2)
+		out:EffectNarrow(FreeVerb.ar(_,1,1)*0.1,inputChannels:2)
 	].pp;
 
 

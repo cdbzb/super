@@ -95,7 +95,7 @@ a.map(\gate,b);
 )
 
 
-a=Synths(\strang_pos,\out,Effect(CrossoverDistortion.ar(_,smooth:0.98),out:[0,1]).bus.index,\mistune,1.508,\coupling,0.0008,\freq,[ 52,62, 69 ].midicps,\pos,[0.2,0.5,0.7],\gate,0)
+a=Synths(\strang_pos,\out,EffectNarrow(CrossoverDistortion.ar(_,smooth:0.98),out:[0,1]).bus.index,\mistune,1.508,\coupling,0.0008,\freq,[ 52,62, 69 ].midicps,\pos,[0.2,0.5,0.7],\gate,0)
 a.map(\gate,b);
 {SinOsc.kr(3,phase:pi)*3 =>Out.kr(b.index,_)}.play; "x.x.x.x.".asDrumPat(reps:inf)=>[dur:_,instrument:\sn_808]=>_.pp
 a.set(\freq,[300,150,720])

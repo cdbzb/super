@@ -128,7 +128,7 @@ Reaper.sched(305+(6/24),{
 	~bg= Synths(\stringyy,\freq,[3,6,12].df(\c,tuning:\pythagorean),\amp,0.07).dur(4,40)
 });
 Reaper.sched(309+(3/24),{
-	Synth(\default,[\freq,999,\out,Effect({|i|i*Line.kr(0,1,3)},out:[0,1]).bus.index]).dur(2,2)
+	Synth(\default,[\freq,999,\out,EffectNarrow({|i|i*Line.kr(0,1,3)},out:[0,1]).bus.index]).dur(2,2)
 });
 Reaper.sched(312f:10 
 	- s.latency,
@@ -164,7 +164,7 @@ Reaper.sched(319f:17,{
 });
 ~drawLine.(*million);
 Reaper.sched(million[0]-0.2,{
-	(type:\tuneUp,freq:640,amp:0.1,out:Effect(LPF.ar(_,700),out:1).bus).play
+	(type:\tuneUp,freq:640,amp:0.1,out:EffectNarrow(LPF.ar(_,700),out:1).bus).play
 
 });
 Reaper.sched(genesis,{
@@ -173,7 +173,7 @@ Reaper.sched(genesis,{
 		\amp,0.02,
 
 	]).dur(1,6);
-	(type:\tuneUp,freq:440,amp:0.1,out:Effect(LPF.ar(_,700),out:1).bus).play
+	(type:\tuneUp,freq:440,amp:0.1,out:EffectNarrow(LPF.ar(_,700),out:1).bus).play
 });
 ~blueJayWay.(335f:6,sustain:2f:9,release:0.05);
 ~drawLine.(341f:4,342);
@@ -213,7 +213,7 @@ Reaper.sched(404f:2,{ //RS Lending
 		\amp,0.02,
 
 	]).dur(1,6);
-	(type:\tuneUp,freq:440,amp:0.1,out:Effect(LPF.ar(_,700),out:1).bus).play
+	(type:\tuneUp,freq:440,amp:0.1,out:EffectNarrow(LPF.ar(_,700),out:1).bus).play
 });
 ~drawLine.(411f:19,412f:14);
 ~drawLine.(413f:16,414f:3);
@@ -290,12 +290,12 @@ Reaper.sched(1431f:3,{
 });
 ~drawLine.(1431+(10/24),1432+(18/24));
 Reaper.sched(1432+(19/24),
-	{[1,3,5,6].df(\c,octave:7)=>{|i|Synths(\default,\amp,0.2,\freq,i,\out,Effect({|i|Zita.ar(i,i,mix:0.9) },out:[0,1]).bus.index).dur(1,5)}}
+	{[1,3,5,6].df(\c,octave:7)=>{|i|Synths(\default,\amp,0.2,\freq,i,\out,EffectNarrow({|i|Zita.ar(i,i,mix:0.9) },out:[0,1]).bus.index).dur(1,5)}}
 );                                                                
 Reaper.sched(1437+(6/24),                                         
-	{[1,3,5,6].df(\b,octave:6)=>{|i|Synths(\default,\amp,0.2,\freq,i,\out,Effect({|i|Zita.ar(i,i,mix:0.9) },out:[0,1]).bus.index).dur(1,5)}});
+	{[1,3,5,6].df(\b,octave:6)=>{|i|Synths(\default,\amp,0.2,\freq,i,\out,EffectNarrow({|i|Zita.ar(i,i,mix:0.9) },out:[0,1]).bus.index).dur(1,5)}});
 Reaper.sched(1441+(5/24),                                         
-	{[1,3,5,6].df(\a,octave:6)=>{|i|Synths(\default,\amp,0.2,\freq,i,\out,Effect({|i|Zita.ar(i,i,mix:0.9) },out:[0,1]).bus.index).dur(1,5)}});
+	{[1,3,5,6].df(\a,octave:6)=>{|i|Synths(\default,\amp,0.2,\freq,i,\out,EffectNarrow({|i|Zita.ar(i,i,mix:0.9) },out:[0,1]).bus.index).dur(1,5)}});
 )
 
 (//Noir
@@ -390,7 +390,7 @@ Reaper.sched(1151f:04 -s.latency,{(note:9-1,octave:6,dur:5,rel:5,amp:0.03).play}
 ~drawLine.(1152f:13,1152f:22);
 Reaper.sched(1152f:23,{(note:9+7-1,octave:6,dur:5,amp:0.05).play});
 Reaper.sched( 1151f:04 -s.latency,{
-	(type:\tuneUp,freq:400,amp:0.1,out:Effect(LPF.ar(_,500),out:1).bus).play
+	(type:\tuneUp,freq:400,amp:0.1,out:EffectNarrow(LPF.ar(_,500),out:1).bus).play
 });
 ~drawLine.(1156f:17,1158f:13);
 //Residence

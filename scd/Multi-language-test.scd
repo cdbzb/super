@@ -125,7 +125,7 @@ P.synthV(\xuan2, take: \lead, version: 2, params: {|p b| [
 P(\bassNote,syl:6,lag:-0.2, music: { |p b e|
 	[
 		freq: [-5, 5, 7, 12].df(\d, 2),
-		out: Effect.bus({|i| FreeVerb.ar(i, 1, [0.9, 1 ]) },),
+		out: EffectNarrow.bus({|i| FreeVerb.ar(i, 1, [0.9, 1 ]) },),
 		instrument: \sawSynthSustain,
 		rel:5,
 		dur: 1.q

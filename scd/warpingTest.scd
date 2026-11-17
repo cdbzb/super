@@ -42,7 +42,7 @@ s.waitForBoot{
 			//dur: [ 1.23-0.2, 2.081, 1.381+0.2, 2.012, 1.597 ].warpTo(e.tempoMap).q,
 			dur: "q qq qEE EqQ E " .asBeats.warpTo(e.tempoMap).postln.q,
 			amp:[0,1,1,1,1].q /10,
-			out:Effect( { |i| TwoTube.ar(i,loss:0.96,d2length:SinOsc.ar(0.3).range(60,500),d1length:666) +i * [0.4,1]/2 },inputChannels:2  ).bus.index
+			out:EffectNarrow( { |i| TwoTube.ar(i,loss:0.96,d2length:SinOsc.ar(0.3).range(60,500),d1length:666) +i * [0.4,1]/2 },inputChannels:2  ).bus.index
 		].pp;
 	});
 

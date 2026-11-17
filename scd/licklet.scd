@@ -14,7 +14,7 @@ P(\lick, music: {|p b e|
 		legato:  phrase.collect{|i x| i-1 => 1.dup(_) ++ endLength[x]}.flat.postln.q,
 		instrument: \sawSynthSustain,
 		amp: amp.collect({|i| i / 10 * 0.8.rrand(1.2)}).q,
-		out:Effect.bus({|i| CombN.ar(i, 0.3,0.3)/3 ++ i },)
+		out:EffectNarrow.bus({|i| CombN.ar(i, 0.3,0.3)/3 ++ i },)
 	].ppma()
 });
 P(\traps, music: { |p b e|

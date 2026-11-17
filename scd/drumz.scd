@@ -63,7 +63,7 @@ fork{
 	dur: 12,
 	freqLag: 8,
 	mix: 0,
-	out: Effect.bus({|i| 
+	out: EffectNarrow.bus({|i| 
 		i
 		=> FoaPanB.ar(_, LFNoise1.ar(0.1, 0.11, 0.13, 0.17, 0.19).range(-pi,pi))
 		=> Mix.ar(_)

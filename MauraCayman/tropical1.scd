@@ -151,7 +151,7 @@ P(\offbeat, music: { |p b e|
 		freq: [\r, [1, 5, 11, 13] ].df(\c).q(inf),
 		dur: "e*16".beats.warpTo(e.tempoMap).q,
 		instrument:  \harp, 
-		out: Effect.bus({|i|  },)
+		out: EffectNarrow.bus({|i|  },)
 		// amp: [ 0.03,0.1 ]
 		
 	].pp
@@ -163,10 +163,10 @@ P(\bassline, music: { |p b e|
 		legato: [0.5, 0.8, 0.9, ].q(inf),
 		amp: [1, 1.2, 0.8].q(inf) /10,
 		instrument: \default,
-		out: Effect.bus({|i| i * 2.5 => _.tanh.tanh /2 },inputChannels:2)
+		out: EffectNarrow.bus({|i| i * 2.5 => _.tanh.tanh /2 },inputChannels:2)
 	].ppma
 });
-	// Song.guitarFx = {Effect.bus({|i| i/2.5 => BPF.ar(_,900,8) },out:3)};
+	// Song.guitarFx = {EffectNarrow.bus({|i| i/2.5 => BPF.ar(_,900,8) },out:3)};
 Song.guitar = ( ~guitar = ~guitar.isNil.if{ AAS_Strum() }{~guitar} );
 ( Song.guitarFx = Bus.audio(s,1);
 	Song.guitarFXSynthFunc = { In.ar(Song.guitarFx,1) / 2 => Out.ar(1,_)};
@@ -233,8 +233,8 @@ P(\hat, music: { |p b e|
 		dur: "q*12".beats.warpTo( e.tempoMap ).q,
 		instrument:\hihat,
 		pan: -0.5,
-		out: Effect.bus({|i| i=> Pan2.ar(_,-0.6) * -3.dbamp },)
-		// out: Effect.bus({|i| CombN.ar( i, 0.5,"E".asBeats.warpTo( e.tempoMap ) + 0.05, 2 ) /4 + i * [0.7,0.3] },inputChannels:2)
+		out: EffectNarrow.bus({|i| i=> Pan2.ar(_,-0.6) * -3.dbamp },)
+		// out: EffectNarrow.bus({|i| CombN.ar( i, 0.5,"E".asBeats.warpTo( e.tempoMap ) + 0.05, 2 ) /4 + i * [0.7,0.3] },inputChannels:2)
 	].pp
 });
 ["VerseTwo","5 6 5 4 3 3 2 1 2 ".dm(\c)].addLine;
@@ -245,7 +245,7 @@ P(\bassline, music: { |p b e|
 		legato: [0.5, 0.8, 0.9, ].q(inf),
 		amp: [1, 1.2, 0.8].q(inf) /10,
 		instrument: \default,
-		out: Effect.bus({|i| i.tanh.tanh },inputChannels:2)
+		out: EffectNarrow.bus({|i| i.tanh.tanh },inputChannels:2)
 	].ppma
 });
 Song.setTempoMap(\VerseTwo,"g Q Q E E Q Ee x x");
@@ -254,7 +254,7 @@ P(\click, music: { |p b e|
 		dur: "q*4".beats.warpTo( e.tempoMap ).q,
 		instrument:\hihat,
 		pan: -0.5,
-		out: Effect.bus({|i| CombN.ar( i, 0.5,"x".asBeats.warpTo( e.tempoMap ), 2 ) /4 + i * [0.7,0.3] },inputChannels:2)
+		out: EffectNarrow.bus({|i| CombN.ar( i, 0.5,"x".asBeats.warpTo( e.tempoMap ), 2 ) /4 + i * [0.7,0.3] },inputChannels:2)
 	].pp
 });
 // P.tune(_ <> [instrument:\defaultPiano].p);
@@ -489,7 +489,7 @@ P(\offbeat, music: { |p b e|
 		freq: [\r, [1, 5, 11, 13] ].df(\c).q(inf),
 		dur: "e*16".beats.warpTo(e.tempoMap).q,
 		instrument:  \harp, 
-		out: Effect.bus({|i| i },)
+		out: EffectNarrow.bus({|i| i },)
 		// amp: [ 0.03,0.1 ]
 		
 	]//.pp
@@ -501,7 +501,7 @@ P(\bassline, music: { |p b e|
 		legato: [0.5, 0.8, 0.9, ].q(inf),
 		amp: [1, 1.2, 0.8].q(inf) /10,
 		instrument: \default,
-		out: Effect.bus({|i| i.tanh.tanh },inputChannels:2)
+		out: EffectNarrow.bus({|i| i.tanh.tanh },inputChannels:2)
 	].ppma
 });
 P(\guitar, music: { |p b e|
@@ -566,7 +566,7 @@ P(\bassline, music: { |p b e|
 		legato: [0.5, 0.8, 0.9, ].q(inf),
 		amp: [1, 1.2, 0.8].q(inf) /10,
 		instrument: \default,
-		out: Effect.bus({|i| i.tanh.tanh },inputChannels:2)
+		out: EffectNarrow.bus({|i| i.tanh.tanh },inputChannels:2)
 	].ppma
 });
 Song.setTempoMap(\VerseTwo,"g Q Q E E Q Ee x x");
@@ -604,7 +604,7 @@ P(\bass, music: { |p b e|
 		dur: "qq qq qe e q".asBeats.warpTo( e.tempoMap ).q,
 		instrument: \sawSynthSustain,
 		pulse:0.6,
-		out:Effect.bus({|i| i=> Pan2.ar(_,0) },)
+		out:EffectNarrow.bus({|i| i=> Pan2.ar(_,0) },)
 	].ppm
 });
 Song.setTempoMap(\Ending,"e e e e eeee e e e e eeee");
@@ -664,7 +664,7 @@ P(\longNote, music: { |p b e|
 		freq:i.df(\c) =>_.q, 
 		dur: "e*16".beats.warpTo( e.tempoMap ).q,
 		instrument: \harp, coef:0.1,amp:0.02,
-		out: Effect.bus({|i| i=> Pan2.ar(_, -1) },)
+		out: EffectNarrow.bus({|i| i=> Pan2.ar(_, -1) },)
 	] => _.pp
 };
 	main = [1, 4, 5, 8, 9, 12, 13, 16] -1 
@@ -714,7 +714,7 @@ P(\longNote, music: { |p b e|
 		freq:i.df(\c) =>_.q, 
 		dur: "e*16".beats.warpTo( e.tempoMap ).q,
 		instrument: \harp, coef:0.1,amp:0.02,
-		out: Effect.bus({|i| i=> Pan2.ar(_, 1) },)
+		out: EffectNarrow.bus({|i| i=> Pan2.ar(_, 1) },)
 	] => _.pp
 };
 	main = [1, 4, 5, 8, 9, 12, 13, 16] -1 
@@ -756,7 +756,7 @@ P(\offbeat, music: { |p b e|
 		freq: [\r, [1, 5, 11, 13] ].df(\c).q(inf),
 		dur: "e*16".beats.warpTo(e.tempoMap).q,
 		instrument:  \harp, 
-		out: Effect.bus({|i|  },)
+		out: EffectNarrow.bus({|i|  },)
 		// amp: [ 0.03,0.1 ]
 		
 	].pp
@@ -768,10 +768,10 @@ P(\bassline, music: { |p b e|
 		legato: [0.5, 0.8, 0.9, ].q(inf),
 		amp: [1, 1.2, 0.8].q(inf) /10,
 		instrument: \default,
-		out: Effect.bus({|i| i * 2.5 => _.tanh.tanh /2 },inputChannels:2)
+		out: EffectNarrow.bus({|i| i * 2.5 => _.tanh.tanh /2 },inputChannels:2)
 	].ppma
 });
-	// Song.guitarFx = {Effect.bus({|i| i/2.5 => BPF.ar(_,900,8) },out:3)};
+	// Song.guitarFx = {EffectNarrow.bus({|i| i/2.5 => BPF.ar(_,900,8) },out:3)};
 P(\guitar, music: { |p b e|
 	var tm = e.tempoMap ++ p.tempoMap[e.start + 1];
 	p.setupGuitPart.(p);
@@ -808,7 +808,7 @@ P(\guitar, music: { |p b e|
 	=> _.play
 });
 P.tune(_<>[instrument:\defaultPiano,rel:0, rests:MuteFirst(), amp:0.1,t_trig:1,len:0.5, fatness:0.35, 
-out: Effect.bus({|i| i * SinOsc.ar(4.3) + (i/3) },)
+out: EffectNarrow.bus({|i| i * SinOsc.ar(4.3) + (i/3) },)
 ].p);
 P(\thirds, music: { |p b e|
 	[
@@ -821,8 +821,8 @@ P(\hat, music: { |p b e|
 		dur: "q*12".beats.warpTo( e.tempoMap ).q,
 		instrument:\hihat,
 		pan: -0.5,
-		out: Effect.bus({|i| i=> Pan2.ar(_,-0.6) * -3.dbamp },)
-		// out: Effect.bus({|i| CombN.ar( i, 0.5,"E".asBeats.warpTo( e.tempoMap ) + 0.05, 2 ) /4 + i * [0.7,0.3] },inputChannels:2)
+		out: EffectNarrow.bus({|i| i=> Pan2.ar(_,-0.6) * -3.dbamp },)
+		// out: EffectNarrow.bus({|i| CombN.ar( i, 0.5,"E".asBeats.warpTo( e.tempoMap ) + 0.05, 2 ) /4 + i * [0.7,0.3] },inputChannels:2)
 	].pp
 });
 ["VersTwoLoop","5 6 5 4 3 3 2 1 2 ".dm(\c)].addLine;
@@ -834,7 +834,7 @@ P(\bassline, music: { |p b e|
 		legato: [0.5, 0.8, 0.9, ].q(inf),
 		amp: [1, 1.2, 0.8].q(inf) /10,
 		instrument: \default,
-		out: Effect.bus({|i| i.tanh.tanh },inputChannels:2)
+		out: EffectNarrow.bus({|i| i.tanh.tanh },inputChannels:2)
 	].ppma
 });
 Song.setTempoMap(\VerseTwo,"g Q Q E E Q Ee x x");
@@ -843,7 +843,7 @@ P(\click, music: { |p b e|
 		dur: "q*4".beats.warpTo( e.tempoMap ).q,
 		instrument:\hihat,
 		pan: -0.5,
-		out: Effect.bus({|i| CombN.ar( i, 0.5,"x".asBeats.warpTo( e.tempoMap ), 2 ) /4 + i * [0.7,0.3] },inputChannels:2)
+		out: EffectNarrow.bus({|i| CombN.ar( i, 0.5,"x".asBeats.warpTo( e.tempoMap ), 2 ) /4 + i * [0.7,0.3] },inputChannels:2)
 	].pp
 });
 // P.tune(_ <> [instrument:\defaultPiano].p);
@@ -853,7 +853,7 @@ P(\TUNEAndConnector, music: { |p b e|
 		dur: e.bAll[..11].q,
 		instrument: \defaultPiano,
 		amp:0.1,
-		out: Effect.bus({|i| i * SinOsc.ar(4.3) + (i/3) },)
+		out: EffectNarrow.bus({|i| i * SinOsc.ar(4.3) + (i/3) },)
 
 	].pp
 });
@@ -873,7 +873,7 @@ P(\bassline, music: { |p b e|
 		legato: [0.5, 0.8, 0.9, ].q(inf),
 		amp: [1, 1.2, 0.8].q(inf) /10,
 		instrument: \default,
-		out: Effect.bus({|i| i * 2.5 => _.tanh.tanh /2 },inputChannels:2)
+		out: EffectNarrow.bus({|i| i * 2.5 => _.tanh.tanh /2 },inputChannels:2)
 	].ppma
 });
 P(\guitar, music: { |p b e|
@@ -917,7 +917,7 @@ P(\TUNEAndConnector, music: { |p b e|
 		freq: [\r, 1,2, 3, 4, 3, 2, 1, 3, [-7,2], [-3,-5], ].df(\c).q,
 		dur: "q E E E e x xx xx xqq qq q".asBeats.warpTo(tm).q,
 		instrument: \stringyy,
-		amp:0.25, wet: 0.1,release:3,out: Effect.bus({|i| i=> Pan2.ar(_,0.5) },)
+		amp:0.25, wet: 0.1,release:3,out: EffectNarrow.bus({|i| i=> Pan2.ar(_,0.5) },)
 
 	].p.play
 });

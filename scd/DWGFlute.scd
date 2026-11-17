@@ -19,12 +19,12 @@ a =Pmono(
 	\amp , Pseq([0.9,0.7,0.5],inf),
 	\legato , 1,
 	\out,
-	Effect({|i| EarlyRef.ar(i,#[0,0,0],#[1,10,18],roomsize:#[6,17,19])=> DWGReverbC1C3.ar(_,c1:1/1,c3:1)/3}).bus.index
+	EffectNarrow({|i| EarlyRef.ar(i,#[0,0,0],#[1,10,18],roomsize:#[6,17,19])=> DWGReverbC1C3.ar(_,c1:1/1,c3:1)/3}).bus.index
 )!2=>Ppar(_)=>_.play;
     )
 
 
-[note:Pwhite(-10,10),out:Effect({|i| EarlyRef.ar(i,#[0,0,0],#[6,7,18],roomsize:#[6,17,19])=> DWGReverbC1C3.ar(_,c1:1/1,c3:0.100)}).bus.index].pp
+[note:Pwhite(-10,10),out:EffectNarrow({|i| EarlyRef.ar(i,#[0,0,0],#[6,7,18],roomsize:#[6,17,19])=> DWGReverbC1C3.ar(_,c1:1/1,c3:0.100)}).bus.index].pp
 
 
 (

@@ -8,7 +8,7 @@
 				amp: 0.2, 
 				instrument: \sawSynth,
 				freq: [1, 3, 5].df(\d),
-				out: Effect.bus({|i| FreeVerb.ar(i, 1, 1) },)		
+				out: EffectNarrow.bus({|i| FreeVerb.ar(i, 1, 1) },)		
 			),
 			chord: (
 				amp:0.1,

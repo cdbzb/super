@@ -24,5 +24,5 @@ a=(
 		=>_.p})
 		=> Ppar(_,2) =>_.play
 	};
-	y.setOut(Effect({|i| FreeVerb.ar(i,0.7,0.7) => {|i|[i/8,BitCrusher.ar(i,32,40000)]}=>Mix.ar(_)=>MoogVCF2.ar(_,SinOsc.ar(0.2).range(600,3000),0.5) },inputChannels:2).bus.index)
+	y.setOut(EffectNarrow({|i| FreeVerb.ar(i,0.7,0.7) => {|i|[i/8,BitCrusher.ar(i,32,40000)]}=>Mix.ar(_)=>MoogVCF2.ar(_,SinOsc.ar(0.2).range(600,3000),0.5) },inputChannels:2).bus.index)
 )

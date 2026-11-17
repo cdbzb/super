@@ -5,7 +5,7 @@
         freq:Pwhite(100,1000,inf),
         dur:Pwhite(0.1,1),
         legato:8,
-        out:Effect({ 
+        out:EffectNarrow({ 
 		|i| 
 		SineShaper.ar(i,MouseX.kr(0,0.1))
 		=>FreeVerb.ar(_,0.5,1) 

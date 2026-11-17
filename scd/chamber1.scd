@@ -23,7 +23,7 @@ Pdefn(\lower,7.df.bubble.q(inf)); ///NOW WHAT?
 			pan:(-1).rrand(1.0),
 			amp:amp*3,
 			out: 
-			Effect({|i| i =>FreeVerb.ar(_,0.8,0.8)}).bus.index// * Env.linen(0,[9,8].sum,4).kr(2,gate:1) },inputChannels:2).bus.index
+			EffectNarrow({|i| i =>FreeVerb.ar(_,0.8,0.8)}).bus.index// * Env.linen(0,[9,8].sum,4).kr(2,gate:1) },inputChannels:2).bus.index
 
 		].pm(\default) //=> 
 		//Pfindur(b.sum,_) 
@@ -103,7 +103,7 @@ P(\crash,start:\measured,music:{|p b e|
 	(
 		instrument:\cymbalsDS,
 		amp:0.05,
-		out: Effect.new(Decimator.ar(_,20000),  out: 0,  inputChannels: 1,  target: nil).bus.index
+		out: EffectNarrow.new(Decimator.ar(_,20000),  out: 0,  inputChannels: 1,  target: nil).bus.index
 	).play
 });
 P(\measured,start:\measured,music:{|p b e| 
@@ -120,7 +120,7 @@ P(\bass,start:\measured,music:{|p b e|
 		[ 1.675, 0.838, 0.989, 0.686,	0.345,	 1.388 ]
 		+ [0,     0,     0,     (0.25-0.188) + 0.05, -0.7 * (0.25-0.188), 0]
 		=> _.warpTo(e.tempoMap)=>_.q,
-		out:Effect( { |i| SineShaper.ar(i,0.02).tanh !2 *0.6 },inputChannels:4  ).bus.index
+		out:EffectNarrow( { |i| SineShaper.ar(i,0.02).tanh !2 *0.6 },inputChannels:4  ).bus.index
 	].pp;
 	[
 		freq: "1 3 4  ".df('b-',3,\mixolydian) ++ "1 3 4".df('a-',3,\mixolydian) =>_.q * [1,3/2],
@@ -129,7 +129,7 @@ P(\bass,start:\measured,music:{|p b e|
 		[ 1.675, 0.838, 0.989, 0.686,	0.345,	 1.388 ]
 		+ [0,     0,     0,     (0.25-0.188) + 0.05, -0.7 * (0.25-0.188), 0]
 		=> _.warpTo(e.tempoMap)=>_.q,
-		out:Effect( { |i| SineShaper.ar(i,0.02).tanh !2 *0.6 },inputChannels:4  ).bus.index
+		out:EffectNarrow( { |i| SineShaper.ar(i,0.02).tanh !2 *0.6 },inputChannels:4  ).bus.index
 	].pp
 
 });
@@ -218,7 +218,7 @@ P(\chords,start:\Sargon,music: { |p b e|
 	[
 		freq: [[1, 2, 1, -7, -7],[11, 12, 11, 7, 7], 3, 5].flop.df(\b,\harmonicMinor) *.t [0.5,1] => _.q,
 		dur: b.q,
-		out: Effect( TwoTube.ar(_, k:0.01, loss:0.98, d1length:666, d2length:[ 412, 513 ], mul:1.0, add:0.0), inputChannels:4 ).bus.index
+		out: EffectNarrow( TwoTube.ar(_, k:0.01, loss:0.98, d1length:666, d2length:[ 412, 513 ], mul:1.0, add:0.0), inputChannels:4 ).bus.index
 	].pp
 });
 }

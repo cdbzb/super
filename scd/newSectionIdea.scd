@@ -139,7 +139,7 @@ var pitches2 = array2.flat;
 {
 	~voxamps=0.2;
 	~effect={|out|
-		Effect({|i|
+		EffectNarrow({|i|
 			HPF.ar(i,200)
 			=> BHiShelf.ar(_,db:12)
 			=> DCompressor.ar(_,ratio:8)

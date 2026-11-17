@@ -73,10 +73,10 @@
 				b=Synth(\default,[
 						\pan,-1,
 						\freq,300,
-						\out:Effect.new(FreeVerb.ar(_,0.7,1)).bus.index
+						\out:EffectNarrow.new(FreeVerb.ar(_,0.7,1)).bus.index
 				]);
 				c=Synth(\default,[
-						\out,Effect.new(FreeVerb.ar(_,0.6,1),out:1).bus.index,
+						\out,EffectNarrow.new(FreeVerb.ar(_,0.6,1),out:1).bus.index,
 						\pan,-1,
 						\freq,500
 				]);
@@ -127,10 +127,10 @@
 				b=Synth(\default,[
 						\pan,-1,
 						\freq,300,
-						\out:Effect.new(FreeVerb.ar(_,0.7,1)).bus.index
+						\out:EffectNarrow.new(FreeVerb.ar(_,0.7,1)).bus.index
 				]);
 				c=Synth(\default,[
-						\out,Effect.new(FreeVerb.ar(_,0.6,1),out:1).bus.index,
+						\out,EffectNarrow.new(FreeVerb.ar(_,0.6,1),out:1).bus.index,
 						\pan,-1,
 						\freq,500
 				]);
@@ -158,7 +158,7 @@
 		note:Pwhite(10,20.0,inf),
 		dur:Pwhite(0.01,0.1),
 		pan:Pwhite(-1,1),
-		effect: Effect({|i|EchoCubic.ar(i,0.5,\len.kr(0.01,1),8) => DetectSilenceDry.ar(_,doneAction:2)},inputChannels:2) ,
+		effect: EffectNarrow({|i|EchoCubic.ar(i,0.5,\len.kr(0.01,1),8) => DetectSilenceDry.ar(_,doneAction:2)},inputChannels:2) ,
 		out:Pfunc({|e| e.effect.bus.index}),
 		len:Pbrown(0.1,0.5,0.001),
 		env: Pseg([0.1,0.5,0.1],[5,4],\lin,inf),

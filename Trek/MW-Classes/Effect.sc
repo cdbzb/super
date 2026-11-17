@@ -5,15 +5,17 @@
 		   a panned \audioItem) puts its channel 1 on bus.index + 1 — the next
 		   bus, often another Effect's input — and an inputChannels wider than the
 		   output reads past its own bus the same way.
-		     wideBuses  true: such a bus is max(inputChannels, outputs, 2) wide, so
-		                nothing spills; the function still reads inputChannels
-		                (channel 0 of a stereo writer), so the effect itself
-		                sounds the same — only the leak into the neighbour stops
+		     wideBuses  true (the default): such a bus is max(inputChannels,
+		                outputs, 2) wide, so nothing spills; the function still
+		                reads inputChannels (channel 0 of a stereo writer), so the
+		                effect itself sounds the same — only the leak into the
+		                neighbour stops. false: the old sizing for every Effect.
+		                Legacy pieces (Trek, Yoeminrak, Mandarin, scd/) call
+		                EffectNarrow, which keeps the old sizing whatever this says
 		     logNarrow  true: post each narrow Effect once (its source) and count
 		                it; Effect.narrowReport lists them, Effect.clearNarrowLog
-		                resets — play a piece through to see what wideBuses changes
-		   Both default false: unchanged behaviour until a piece has been checked. */
-		classvar <>wideBuses = false, <>logNarrow = false, <narrowLog;
+		                resets (default false) */
+		classvar <>wideBuses = true, <>logNarrow = false, <narrowLog;
 		
 		*newOld { |function out=0 inputChannels=1|
 			^super.new.init(function , out,inputChannels);

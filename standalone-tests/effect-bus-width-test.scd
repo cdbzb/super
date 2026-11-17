@@ -11,6 +11,7 @@ var assert = h[\assert];
 var reverb = { |i| FreeVerb.ar(i, 0.5, 1) }, panned = { |i| Pan2.ar(i, 0.3) };
 
 "== Effect bus width tests ==".postln;
+assert.(Effect.wideBuses == true, "wideBuses defaults to true (legacy code uses EffectNarrow)");
 Effect.wideBuses = false; Effect.logNarrow = false; Effect.clearNarrowLog;
 
 // ------------------------------------------------------------ default: unchanged

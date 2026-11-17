@@ -114,7 +114,7 @@ FxBus {
 	/* Effect.bus's arguments; answers an FxBus instead of a bus Integer. */
 	*fx { |function out=0 inputChannels=1 target time=1 maxDur release=3|
 		^FxBus(
-			FxBus.prSource("Effect.fx", function, [
+			FxBus.prSource(this.name ++ ".fx", function, [
 				\out, out, 0,
 				\inputChannels, inputChannels, 1,
 				\target, target, nil,
@@ -122,7 +122,7 @@ FxBus {
 				\maxDur, maxDur, nil,
 				\release, release, 3
 			]),
-			{ Effect(function, out, inputChannels, target, time, maxDur, release) }
+			{ this.new(function, out, inputChannels, target, time, maxDur, release) }
 		)
 	}
 }

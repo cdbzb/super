@@ -32,7 +32,7 @@
 		*lfo {|function inputChannels=1 dur| ^super.new.initLfo(function,inputChannels,dur)}
 		// A plain Integer, dead once the synth frees itself. Effect.fx (FxBus.sc)
 		// is the replayable form.
-		*bus {|function out=0 inputChannels=1 target time=1 maxDur release=3| ^Effect.new(function , out,inputChannels, target, time, maxDur, release).bus.index}
+		*bus {|function out=0 inputChannels=1 target time=1 maxDur release=3| ^this.new(function , out,inputChannels, target, time, maxDur, release).bus.index}
 		*kbus {|function inputChannels=1 dur| ^super.new.initLfo(function,inputChannels,dur).bus.index}
 
 		// ---- narrow-bus log (see wideBuses / logNarrow above)
@@ -43,8 +43,10 @@
 			var narrow = (outputs < 2) or: { inputChannels > outputs };
 			narrow.not.if { ^outputs };
 			logNarrow.if { this.prLogNarrow(function, inputChannels, outputs) };
-			^wideBuses.if { [inputChannels, outputs, 2].maxItem } { outputs }
+			^this.wide.if { [inputChannels, outputs, 2].maxItem } { outputs }
 		}
+		// whether this class widens a narrow bus; EffectNarrow never does
+		*wide { ^wideBuses }
 		*prLogNarrow { |function, inputChannels, outputs|
 			var key = (function.tryPerform(\def) !? { |d| d.sourceCode } ?? { function.asString })
 				.asString.collect { |c| c.isSpace.if($ , c) }.split($ ).reject(_.isEmpty).join(" ");
@@ -105,7 +107,7 @@ event.yield
 			// an explicit minimum covers the input: not narrow, nothing to log
 			bus=Bus.audio(numChannels: busChannels.notNil.if {
 				busChannels.max(inputChannels).max(numChannels)
-			} { Effect.busChannels(function, inputChannels, numChannels) });
+			} { this.class.busChannels(function, inputChannels, numChannels) });
 			synth={|gate|
 				var sig = In.ar(bus.index, inputChannels) => function;
 				maxDur.notNil.if { sig = sig * EnvGen.kr(Env.linen(0, maxDur, release), doneAction: 2) };
@@ -164,6 +166,16 @@ event.yield
 			}
 		}
 	}
+
+/* EffectNarrow: Effect with the original bus sizing, whatever Effect.wideBuses
+   says — the input bus is as wide as the function's OUTPUT, so a stereo writer
+   into a mono effect spills its channel 1 into the next bus, as legacy pieces
+   (Trek, Yoeminrak, Mandarin, scd/) were written and mixed against. Those call
+   it explicitly so their sound is pinned; switch a call back to Effect once the
+   passage has been checked by ear. Same arguments as Effect (bus, fx, new). */
+EffectNarrow : Effect {
+	*wide { ^false }
+}
 
 FX { 
 	var <>bus;

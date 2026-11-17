@@ -41,6 +41,24 @@ Effect.clearNarrowLog;
 assert.(Effect.narrowLog.isNil, "clearNarrowLog");
 Effect.logNarrow = false;
 
+// ------------------------------------------------------------ EffectNarrow
+// the legacy sizing, pinned whatever wideBuses says
+Effect.wideBuses = true;
+assert.(EffectNarrow.busChannels(reverb, 1, 1) == 1, "EffectNarrow: mono stays 1 with wideBuses on");
+assert.(EffectNarrow.busChannels(reverb, 3, 1) == 1, "EffectNarrow: 3 in 1 out stays 1 (as before)");
+assert.(EffectNarrow.busChannels(panned, 1, 2) == 2, "EffectNarrow: stereo unchanged");
+assert.(Effect.busChannels(reverb, 1, 1) == 2, "Effect still widens alongside it");
+Effect.wideBuses = false;
+assert.(EffectNarrow.isKindOf(Class) and: { EffectNarrow.superclass == Effect }, "EffectNarrow is an Effect");
+Effect.logNarrow = true;
+EffectNarrow.busChannels(reverb, 1, 1);
+assert.(Effect.narrowLog.size == 1, "EffectNarrow is logged too (the Trek report still works)");
+Effect.clearNarrowLog; Effect.logNarrow = false;
+// .fx keeps its own class in the source, so the two never compare equal
+assert.(EffectNarrow.fx(reverb).source.beginsWith("EffectNarrow.fx("), "EffectNarrow.fx prints as EffectNarrow");
+assert.(Effect.fx(reverb).source.beginsWith("Effect.fx("), "Effect.fx unchanged");
+assert.(EffectNarrow.fx(reverb) != Effect.fx(reverb), "EffectNarrow.fx != Effect.fx of the same function");
+
 h[\report].();
 0.exit;
 )

@@ -60,10 +60,10 @@
 /*
 [
 		[1,3,2,[-2,2],T(2,3)!3,[T(3,4,21),T(3,5,17)]].melody++
-		[\legato,2.2,out:Effect( TwoTube.ar(_,0.1,0.8,2000,111,mul:3),out:1).bus.index]=>_ .p=>Pn(_,2) , 
+		[\legato,2.2,out:EffectNarrow( TwoTube.ar(_,0.1,0.8,2000,111,mul:3),out:1).bus.index]=>_ .p=>Pn(_,2) , 
 		[\r,\r,\r,\r,\r,\r,[17,[-17, 16]],15].melody++
 
-		[\legato,2.2,out:Effect( TwoTube.ar(_,0.1,0.8,2000,111,mul:3),out:1).bus.index]=>_ .p , 
+		[\legato,2.2,out:EffectNarrow( TwoTube.ar(_,0.1,0.8,2000,111,mul:3),out:1).bus.index]=>_ .p , 
 ] => Ppar(_,4)
 =>_.play
 Tuple2
@@ -81,7 +81,7 @@ Ref("aaa")
 	"....x...",\hihat,\amp,0.1,\rel,Pwhite(0.1,2),
 	"x.......x.x.x.x.x.......x.......",\kick3,
 	"x..x..x.",\MT_808,\amp,0.05,\pan,Pwhite(-1,1),
-	"x......x.........",\cymbalsDS,\amp,0.01,\out,Effect(Phaser1.ar(_,rate:0.05)).bus.index,
+	"x......x.........",\cymbalsDS,\amp,0.01,\out,EffectNarrow(Phaser1.ar(_,rate:0.05)).bus.index,
 ].dmx
 =>Ppar(_)=> Pfin(64*4*4,_) => _.play
 )

@@ -1,12 +1,12 @@
 // Drum EventTypes
 Event.addEventType(\yoeDrum0, {
 	~amp = ~amp ? 1;
-	~out = { Effect.bus({ |i| FreeVerb.ar(i, 1,1) * 8 }) };
+	~out = { EffectNarrow.bus({ |i| FreeVerb.ar(i, 1,1) * 8 }) };
 	currentEnvironment.copy.put(\type,\note).play;
 });
 Event.addEventType(\yoeDrum0Reverse, {
 	~amp = ~amp ? 1;
-	~out = { Effect.bus({ |i| FreeVerb.ar(i, 1,1)  * 8 => Pan2.ar(_,0.5) }, inputChannels:2) };
+	~out = { EffectNarrow.bus({ |i| FreeVerb.ar(i, 1,1)  * 8 => Pan2.ar(_,0.5) }, inputChannels:2) };
 	currentEnvironment.copy.put(\type,\note).play;
 });
 
@@ -16,10 +16,10 @@ Event.addEventType(\yoeDrum1, {
 
 Event.addEventType(\yoeDrum2, { 
 	(
-		instrument:\cymbalsDS, amp: ( ~amp ? 0.1 ) * 10 * [ 0.02, 0.021 ] , out:Effect.bus({|i| FreeVerb.ar(i, 1, 1) * [3,2]})
+		instrument:\cymbalsDS, amp: ( ~amp ? 0.1 ) * 10 * [ 0.02, 0.021 ] , out:EffectNarrow.bus({|i| FreeVerb.ar(i, 1, 1) * [3,2]})
 	).play
 });
 
 Event.addEventType(\yoeDrum3, { 
-	(instrument:[ \stringyy, \harpGendy ],freq:~freq, amp: 0.3 * 10 * ( ~amp ? 0.1 ), out: Effect.bus({|i| FreeVerb.ar(i, 1, 1) },)).play ;
+	(instrument:[ \stringyy, \harpGendy ],freq:~freq, amp: 0.3 * 10 * ( ~amp ? 0.1 ), out: EffectNarrow.bus({|i| FreeVerb.ar(i, 1, 1) },)).play ;
 });

@@ -30,7 +30,7 @@ Yoeminrak.env[\silent] = true;
        [ freq: [\a,\c].collect{
            |i| [1, 2, 1, -6, -6, -5, -6,  1.5].df(i)}.flop .q,
            dur: [0.33, 0.67+ 0.67,0.33, 2, 0.34, 1.33, 0.34, 2] * Yoeminrak.secDur[0] / 20 => _.q(inf),
-	   out: Effect.bus({|i| FreeVerb.ar(i,1,1) *4 }, inputChannels:2, time:12.5, maxDur:15), //was this better with time 1?
+	   out: EffectNarrow.bus({|i| FreeVerb.ar(i,1,1) *4 }, inputChannels:2, time:12.5, maxDur:15), //was this better with time 1?
            pan:1
        ].pp
    }, type:\addMe).play;
@@ -38,13 +38,13 @@ Yoeminrak.env[\silent] = true;
        (
            freq: [1, 3, 5, 7, 11, 13, 15, 17].df('c#'),
            strum: 0.05,
-           out: {Effect.bus({|i| FreeVerb.ar(i,1,1) }, inputChannels:2)},
+           out: {EffectNarrow.bus({|i| FreeVerb.ar(i,1,1) }, inputChannels:2)},
            amp:0.5,
            pan:1
        ).play
    }, type:\addMe).play;
    (beat: 7, extra:{[
-       out: Effect.bus({|i| FreeVerb.ar(i,1,1) }),
+       out: EffectNarrow.bus({|i| FreeVerb.ar(i,1,1) }),
        freq: [
            [ 7, 6.5, 7,7,6.5].df(\c),
            [ 1, 1.5, 1,1,1.5].df(\c),
@@ -57,7 +57,7 @@ Yoeminrak.env[\silent] = true;
        [ freq: [\a,\c].collect{
            |i| [1.5, 2.5, 1.5, 1, \r].df(i)}.flop .q,
            dur: [1 - 0.66, 2.66 + 0.66,0.33, 1, 1] * Yoeminrak.secDur[0] / 20 => _.q(inf),
-           out: Effect.bus({|i| FreeVerb.ar(i,1,1) *4 }, inputChannels:2),
+           out: EffectNarrow.bus({|i| FreeVerb.ar(i,1,1) *4 }, inputChannels:2),
            pan:1
        ].pp
    }, type:\addMe).play;
@@ -216,7 +216,7 @@ Yoeminrak.env[\silent] = true;
     dur: Yoeminrak.secDur[2] / 20,
     amp:[0.5].q ++ [0.5].q(inf),
     instrument:\default,coef:0.1,pedal:1,
-    out:Effect.bus({|i| EarlyRef.ar(i, [0,0,0], [3, 2, 1]) => DWGReverbC1C3.ar(_)}),
+    out:EffectNarrow.bus({|i| EarlyRef.ar(i, [0,0,0], [3, 2, 1]) => DWGReverbC1C3.ar(_)}),
     legato: [0.9, 0.9, 0.9, 1, 1].q,
 ].ppma
     },  type: \addMe).play;
@@ -328,10 +328,10 @@ Yoeminrak.moveMark(4, 16, -1.5);
 Yoeminrak.moveMark(4, 17, -1);
 Yoeminrak.moveMark(4, 18, -1);
 
- (beat:2,instrument:\sawSynth, coef:0.1,latency:0.12,type:\addMe, newType:\garlands2,totalDur: 2,freq: [1, 2, 3, 4, 2, 5, 5, 4, 2, 4, 3,1, 11].df('g#').q,amp:0.2, out:Effect.bus({|i| DWGReverbC1C3.ar(i,mix:0.2) },), extraDur:2).play;
- (beat:6,instrument:\sparkTriangle, coef:0.1,latency:0.12,type:\addMe, newType:\garlands2,totalDur: 2,freq: [1, 2, 3, 4, 2, 5, 5, 4, 2, 4, 3,1, 11].df('g#').q,amp:0.1, out:Effect.bus({|i| DWGReverbC1C3.ar(i,mix:0.2) },), extraDur:2).play;
-    (beat:3,latency:0.12,type:\addMe,numDivisions:22, newType:\garlands2,totalDur: 3,instrument:\bl,instrument:\reedy,initialDur:0.125 /2,freq: [1, 2, 3, 4, 2, 5, 5, 4, 2, 4, 3,1, 11].reverse.df('f', 4).q(inf),amp:0.1,totalDur:2, out:Effect.bus({|i| DWGReverbC1C3.ar(i,mix:0.2) },), extraDur:2).play;
-    (beat:8,latency:0.12,type:\addMe,numDivisions:22, newType:\garlands2,totalDur: 3,instrument:\bl,amp:0.9,initialDur:0.125 /2,freq: [1, 2, 3, 4, 2, 5, 5, 4, 2, 4, 3,1, 11].reverse.df('f', 4).q(inf),totalDur:2, out:Effect.bus({|i| DWGReverbC1C3.ar(i,mix:0.2) },),amp:0.3, extraDur:2).play;
+ (beat:2,instrument:\sawSynth, coef:0.1,latency:0.12,type:\addMe, newType:\garlands2,totalDur: 2,freq: [1, 2, 3, 4, 2, 5, 5, 4, 2, 4, 3,1, 11].df('g#').q,amp:0.2, out:EffectNarrow.bus({|i| DWGReverbC1C3.ar(i,mix:0.2) },), extraDur:2).play;
+ (beat:6,instrument:\sparkTriangle, coef:0.1,latency:0.12,type:\addMe, newType:\garlands2,totalDur: 2,freq: [1, 2, 3, 4, 2, 5, 5, 4, 2, 4, 3,1, 11].df('g#').q,amp:0.1, out:EffectNarrow.bus({|i| DWGReverbC1C3.ar(i,mix:0.2) },), extraDur:2).play;
+    (beat:3,latency:0.12,type:\addMe,numDivisions:22, newType:\garlands2,totalDur: 3,instrument:\bl,instrument:\reedy,initialDur:0.125 /2,freq: [1, 2, 3, 4, 2, 5, 5, 4, 2, 4, 3,1, 11].reverse.df('f', 4).q(inf),amp:0.1,totalDur:2, out:EffectNarrow.bus({|i| DWGReverbC1C3.ar(i,mix:0.2) },), extraDur:2).play;
+    (beat:8,latency:0.12,type:\addMe,numDivisions:22, newType:\garlands2,totalDur: 3,instrument:\bl,amp:0.9,initialDur:0.125 /2,freq: [1, 2, 3, 4, 2, 5, 5, 4, 2, 4, 3,1, 11].reverse.df('f', 4).q(inf),totalDur:2, out:EffectNarrow.bus({|i| DWGReverbC1C3.ar(i,mix:0.2) },),amp:0.3, extraDur:2).play;
  ///
     (beat: 0,harpAmp:0.15,strum:0.06,chord: [1,2, 3, 5, 6].df('c#'), type:\addMe, knum:6).play;
     (beat: 0,newType: \yoeDrum0,freq: 99 * 6.midiratio,amp:0.9, type: \addMe).play;
@@ -339,7 +339,7 @@ Yoeminrak.moveMark(4, 18, -1);
  (beat: 3, extra:{
      [
      freq: [ 1, 5, ].df(\f,4).q,
-     out: Effect.bus({|i| CombN.ar(i,0.5,0.3,3)/2 * [0,1] + (i * [1,0]) }),
+     out: EffectNarrow.bus({|i| CombN.ar(i,0.5,0.3,3)/2 * [0,1] + (i * [1,0]) }),
      amp:0.5,
      latency:0,
      instrument:\sawSynthSustain,
@@ -363,7 +363,7 @@ Yoeminrak.moveMark(4, 18, -1);
      freq: [1, 5, ].df(\f,4).q,
      lagTime:1,
      latency:0,
-     out: Effect.bus({|i| CombN.ar(i,0.5,0.3,3)/2 * [1,0] + (i * [0,1]) }),
+     out: EffectNarrow.bus({|i| CombN.ar(i,0.5,0.3,3)/2 * [1,0] + (i * [0,1]) }),
      amp:0.5,
      instrument:\sawSynthSustain,
      dur: Yoeminrak.secDur[4]/20 //* 3/4
@@ -390,7 +390,7 @@ Yoeminrak.moveMark(4, 18, -1);
     	freq:[-1, 3, -5,6].df(\d, 4),
 	strum:0.06,
 	instrument:\harp,
-	out: Effect.bus({|i| CombC.ar(i, 0.3,0.2, 5)/4+i => LPF.ar(_, 200) },)
+	out: EffectNarrow.bus({|i| CombC.ar(i, 0.3,0.2, 5)/4+i => LPF.ar(_, 200) },)
     ) .play},  type:\addMe, knum:T( 3, 2, \lin )).play;
     (beat:11,ornament:{DC.ar(0)!5}, newType:\garlands,totalDur:3, type:\addMe,useConvolution:false, gain:9,useGendy:true,ratio:0.25).play;
     (beat:12,extra:{(freq: [-5, 3].df('f#',4), amp:0.5, latency:0, instrument: \defaultPiano).play}, chord: [1,2,  4,5, 6].df('c#', 5), type:\addMe).play;
@@ -439,17 +439,17 @@ Yoeminrak.moveMark(4, 18, -1);
  (
      Yoeminrak.initSong(\five, 5, tempoEvents:true);
 
- (beat:2,instrument:\sawSynth, coef:0.1,latency:0.12,type:\addMe, newType:\garlands2,totalDur: 2,freq: [1, 2, 3, 4, 2, 5, 5, 4, 2, 4, 3,1, 11].df('g#').q,amp:0.2, out:Effect.bus({|i| DWGReverbC1C3.ar(i,mix:0.2) },), extraDur:2).play;
- (beat:6,instrument:\sparkTriangle, coef:0.1,latency:0.12,type:\addMe, newType:\garlands2,totalDur: 2,freq: [1, 2, 3, 4, 2, 5, 5, 4, 2, 4, 3,1, 11].df('g#').q,amp:0.1, out:Effect.bus({|i| DWGReverbC1C3.ar(i,mix:0.2) },), extraDur:2).play;
-    (beat:3,latency:0.12,type:\addMe,numDivisions:22, newType:\garlands2,totalDur: 3,instrument:\bl,instrument:\reedy,initialDur:0.125 /2,freq: [1, 2, 3, 4, 2, 5, 5, 4, 2, 4, 3,1, 11].reverse.df('f', 4).q(inf),amp:0.1,totalDur:2, out:Effect.bus({|i| DWGReverbC1C3.ar(i,mix:0.2) },), extraDur:2).play;
-    (beat:8,latency:0.12,type:\addMe,numDivisions:22, newType:\garlands2,totalDur: 3,instrument:\bl,amp:0.9,initialDur:0.125 /2,freq: [1, 2, 3, 4, 2, 5, 5, 4, 2, 4, 3,1, 11].reverse.df('f', 4).q(inf),totalDur:2, out:Effect.bus({|i| DWGReverbC1C3.ar(i,mix:0.2) },),amp:0.3, extraDur:2).play;
+ (beat:2,instrument:\sawSynth, coef:0.1,latency:0.12,type:\addMe, newType:\garlands2,totalDur: 2,freq: [1, 2, 3, 4, 2, 5, 5, 4, 2, 4, 3,1, 11].df('g#').q,amp:0.2, out:EffectNarrow.bus({|i| DWGReverbC1C3.ar(i,mix:0.2) },), extraDur:2).play;
+ (beat:6,instrument:\sparkTriangle, coef:0.1,latency:0.12,type:\addMe, newType:\garlands2,totalDur: 2,freq: [1, 2, 3, 4, 2, 5, 5, 4, 2, 4, 3,1, 11].df('g#').q,amp:0.1, out:EffectNarrow.bus({|i| DWGReverbC1C3.ar(i,mix:0.2) },), extraDur:2).play;
+    (beat:3,latency:0.12,type:\addMe,numDivisions:22, newType:\garlands2,totalDur: 3,instrument:\bl,instrument:\reedy,initialDur:0.125 /2,freq: [1, 2, 3, 4, 2, 5, 5, 4, 2, 4, 3,1, 11].reverse.df('f', 4).q(inf),amp:0.1,totalDur:2, out:EffectNarrow.bus({|i| DWGReverbC1C3.ar(i,mix:0.2) },), extraDur:2).play;
+    (beat:8,latency:0.12,type:\addMe,numDivisions:22, newType:\garlands2,totalDur: 3,instrument:\bl,amp:0.9,initialDur:0.125 /2,freq: [1, 2, 3, 4, 2, 5, 5, 4, 2, 4, 3,1, 11].reverse.df('f', 4).q(inf),totalDur:2, out:EffectNarrow.bus({|i| DWGReverbC1C3.ar(i,mix:0.2) },),amp:0.3, extraDur:2).play;
  ///
  (beat: 0,chord: [1,2, 3, 5, 6].df('c#'), type:\addMe, knum:6).play;
  // Yoeminrak.addDrum(\five,[freq: [99*6.midiratio,99,99*(6).midiratio]], 5);
     (beat: 0, newType:\yoeDrum0,amp:1, freq: 99*6.midiratio, type: \addMe).play;
  (beat: 3, extra:{[
      freq: [ 1, 5, ].df(\f,4).q,
-     out: Effect.bus({|i| CombN.ar(i,0.5,0.3,3)/2 * [0,1] + (i * [1,0]) }),
+     out: EffectNarrow.bus({|i| CombN.ar(i,0.5,0.3,3)/2 * [0,1] + (i * [1,0]) }),
      amp:0.5,
      latency:0,
      instrument:\sawSynthSustain,
@@ -461,7 +461,7 @@ Yoeminrak.moveMark(4, 18, -1);
      freq: [1, 5, ].df(\f,4).q,
      lagTime:1,
      latency:0,
-     out: Effect.bus({|i| CombN.ar(i,0.5,0.3,3)/2 * [1,0] + (i * [0,1]) }),
+     out: EffectNarrow.bus({|i| CombN.ar(i,0.5,0.3,3)/2 * [1,0] + (i * [0,1]) }),
      amp:0.5,
      instrument:\sawSynthSustain,
      dur: Yoeminrak.secDur[5]/20 //* 3/4
@@ -527,10 +527,10 @@ Yoeminrak.moveMark(4, 18, -1);
      Yoeminrak.initSong(\six, 6, tempoEvents:true); 
  // garlands!!
 
- (beat:2,instrument:\sawSynth, coef:0.1,latency:0.12,type:\addMe, newType:\garlands2,totalDur: 2,freq: [1, 2, 3, 4, 2, 5, 5, 4, 2, 4, 3,1, 11].df('g#').q,amp:0.2, out:Effect.bus({|i| DWGReverbC1C3.ar(i,mix:0.2) },), extraDur:2).play;
- (beat:6,instrument:\sparkTriangle, coef:0.1,latency:0.12,type:\addMe, newType:\garlands2,totalDur: 2,freq: [1, 2, 3, 4, 2, 5, 5, 4, 2, 4, 3,1, 11].df('g#').q,amp:0.1, out:Effect.bus({|i| DWGReverbC1C3.ar(i,mix:0.2) },), extraDur:2).play;
-    (beat:3,latency:0.12,type:\addMe,numDivisions:22, newType:\garlands2,totalDur: 3,instrument:\bl,instrument:\reedy,initialDur:0.125 /2,freq: [1, 2, 3, 4, 2, 5, 5, 4, 2, 4, 3,1, 11].reverse.df('f', 4).q(inf),amp:0.1,totalDur:2, out:Effect.bus({|i| DWGReverbC1C3.ar(i,mix:0.2) },), extraDur:2).play;
-    (beat:8,latency:0.12,type:\addMe,numDivisions:22, newType:\garlands2,totalDur: 3,instrument:\bl,amp:0.9,initialDur:0.125 /2,freq: [1, 2, 3, 4, 2, 5, 5, 4, 2, 4, 3,1, 11].reverse.df('f', 4).q(inf),totalDur:2, out:Effect.bus({|i| DWGReverbC1C3.ar(i,mix:0.2) },),amp:0.3, extraDur:2).play;
+ (beat:2,instrument:\sawSynth, coef:0.1,latency:0.12,type:\addMe, newType:\garlands2,totalDur: 2,freq: [1, 2, 3, 4, 2, 5, 5, 4, 2, 4, 3,1, 11].df('g#').q,amp:0.2, out:EffectNarrow.bus({|i| DWGReverbC1C3.ar(i,mix:0.2) },), extraDur:2).play;
+ (beat:6,instrument:\sparkTriangle, coef:0.1,latency:0.12,type:\addMe, newType:\garlands2,totalDur: 2,freq: [1, 2, 3, 4, 2, 5, 5, 4, 2, 4, 3,1, 11].df('g#').q,amp:0.1, out:EffectNarrow.bus({|i| DWGReverbC1C3.ar(i,mix:0.2) },), extraDur:2).play;
+    (beat:3,latency:0.12,type:\addMe,numDivisions:22, newType:\garlands2,totalDur: 3,instrument:\bl,instrument:\reedy,initialDur:0.125 /2,freq: [1, 2, 3, 4, 2, 5, 5, 4, 2, 4, 3,1, 11].reverse.df('f', 4).q(inf),amp:0.1,totalDur:2, out:EffectNarrow.bus({|i| DWGReverbC1C3.ar(i,mix:0.2) },), extraDur:2).play;
+    (beat:8,latency:0.12,type:\addMe,numDivisions:22, newType:\garlands2,totalDur: 3,instrument:\bl,amp:0.9,initialDur:0.125 /2,freq: [1, 2, 3, 4, 2, 5, 5, 4, 2, 4, 3,1, 11].reverse.df('f', 4).q(inf),totalDur:2, out:EffectNarrow.bus({|i| DWGReverbC1C3.ar(i,mix:0.2) },),amp:0.3, extraDur:2).play;
  ///
     (beat: 0,amp:[1, 1, 1, 1, 1]/1,chord: [1,2, 3, 5, 6].df('c#'), type:\addMe, knum:6).play;
     // (beat:3, type:\garlands2, freq: Yoeminrak.env[\chord].getnSynchronous.q(inf)).play;
@@ -543,7 +543,7 @@ Yoeminrak.moveMark(4, 18, -1);
     (beat: 2,amp:[1,1,1,1,1]/3,chord:[1,2,3,5,6].df('c#'),ornament:{0!5},  type:\addMe, knum:{Env.triangle(5!5).kr(2,1) * 4 + 4}).play;
  (beat: 3, extra:{[
      freq: [ 1, 5, ].df(\f,4).q,
-     out: Effect.bus({|i| CombN.ar(i,0.5,0.3,3)/2 * [0,1] + (i * [1,0]) }),
+     out: EffectNarrow.bus({|i| CombN.ar(i,0.5,0.3,3)/2 * [0,1] + (i * [1,0]) }),
      amp:0.5,
      latency:0,
      instrument:\sawSynthSustain,
@@ -566,7 +566,7 @@ Yoeminrak.moveMark(4, 18, -1);
      freq: [1, 5, ].df(\f,4).q,
      lagTime:1,
      latency:0,
-     out: Effect.bus({|i| CombN.ar(i,0.5,0.3,3)/2 * [1,0] + (i * [0,1]) }),
+     out: EffectNarrow.bus({|i| CombN.ar(i,0.5,0.3,3)/2 * [1,0] + (i * [0,1]) }),
      amp:0.5,
      instrument:\sawSynthSustain,
      dur: Yoeminrak.secDur[6]/20 //* 3/4
@@ -695,7 +695,7 @@ Yoeminrak.moveMark(4, 18, -1);
        ampScale: 0.5, chord: T(~middleChords[4][[0,1,2,0,2]]/2, 0.6,\lin ), type:\addMe).play;
 
        (beat:11.3 + 1.7, extra:{(type:\garlands2,freq:Pfunc({ Yoeminrak.env[\currentInstance][\chord].asMap * 2}),amp:0.2,initDur:0.3,numDivisions:20, instrument: \wash,rel:2, mono:false, totalDuration: 4 * Yoeminrak.secDur[8] / 20).play}, type:\addMe).play;
-   (beat:11.3 + 1.7, extra:{(type:\garlands2,freq:Pfunc({ Yoeminrak.env[\currentInstance][\chord].getnSynchronous.choose * 3 }),amp:0.1,out:Effect.bus({|i|DWGReverbC1C3.ar(i) / 3  },),initDur:0.033,numDivisions:20, instrument: \bl,amp:1, mono:false, totalDuration: 4 * Yoeminrak.secDur[8] / 20).play}, type:\addMe).play;
+   (beat:11.3 + 1.7, extra:{(type:\garlands2,freq:Pfunc({ Yoeminrak.env[\currentInstance][\chord].getnSynchronous.choose * 3 }),amp:0.1,out:EffectNarrow.bus({|i|DWGReverbC1C3.ar(i) / 3  },),initDur:0.033,numDivisions:20, instrument: \bl,amp:1, mono:false, totalDuration: 4 * Yoeminrak.secDur[8] / 20).play}, type:\addMe).play;
    (beat: 11.95,harp:false,amp:0.4, ampScale: 0.5, chord: T(~middleChords[4][[0,1,2,0,2]]/4, 0.1,\lin ), type:\addMe).play;
    (beat: 12, lag: 0.2,amp:[2, 2, 2, 1, 0.5], strum: 0.10, ampScale: 0.5, chord: T(~middleChords[4][[0,1,2,0,2]]/2, 0.6,\lin ), type:\addMe).play;
    (beat: 13, lag: 0.2, strum: 0.10, ampScale: 0.5, chord: T([1, 2, 3, 5, 6].df('f#'), 0.6,\lin ), type:\addMe).play;
@@ -721,7 +721,7 @@ Yoeminrak.moveMark(4, 18, -1);
    (beat: 18, lag: 0.2,select:{Env.triangle(3).kr(2) / 2 + 0.5}, strum: 0.08, amp:T( [1, 1, 1, 1, 1], 1, \lin), chord: T([-5, 1, 3, 5, 1].df(\a),1,\lin), type:\addMe).play;
    (beat: 19, lag: 0.2, strum: 0.07,  chord: T([1,3, 6, 1, 6].df('e',5), 0.1, \lin),ampScale:T( 1, 0.5, \lin ), type:\addMe).play;
 
-   (beat:19.7,ampScale:0.5, extra:{[amp:0.4,instrument:\harp,coef:0.5,decaytime:5.9,freq:"3 4 ".df(\d, [4, 5]).q, dur:0.3 * Yoeminrak.secDur[7]/20, out: Effect.bus({|i| CrossoverDistortion.ar(i, smooth:0.95) => Pan2.ar(_,0.8) },maxDur:2)].pp},type:\addMe).play;
+   (beat:19.7,ampScale:0.5, extra:{[amp:0.4,instrument:\harp,coef:0.5,decaytime:5.9,freq:"3 4 ".df(\d, [4, 5]).q, dur:0.3 * Yoeminrak.secDur[7]/20, out: EffectNarrow.bus({|i| CrossoverDistortion.ar(i, smooth:0.95) => Pan2.ar(_,0.8) },maxDur:2)].pp},type:\addMe).play;
    (beat: 19.7, lag: 0.2, strum: 0.10, ampScale: 0.8, chord: T([1,3, 5, 3, 5].df('f#',4), 0.1, \lin), type:\addMe).play;
    // 20
 
@@ -730,7 +730,7 @@ Yoeminrak.moveMark(4, 18, -1);
    freq: [-5, -6, 1, 2, 4,-4,  -5, -6, -4, -6, -4, -3, -4.5,-6].df('a-', [2]).q,
    instrument: \default,
    amp: 1,
-   out: Effect.bus({|i| CrossoverDistortion.ar(i)/3 + i }, maxDur:34*Yoeminrak.secDur[7]/20/4, inputChannels:2),
+   out: EffectNarrow.bus({|i| CrossoverDistortion.ar(i)/3 + i }, maxDur:34*Yoeminrak.secDur[7]/20/4, inputChannels:2),
    dur: Yoeminrak.secDur[7]/20/4
    // * tempoScale 
    * [3, 1, 3, 1,4, 3, 1, 3, 1, 3, 1, 4, 4, 2].q,
@@ -764,7 +764,7 @@ Yoeminrak.moveMark(4, 18, -1);
    dur: Yoeminrak.secDur[7]/20/3 + Pwhite(0.15,-0.15, inf),
    freq: [\r, 13, 12, 11, 7, 11, 4].df(\d, \minor).q,
    instrument: \sparkTriangle,
-   out: Effect.bus({ |i| i=> CrossoverDistortion.ar(_, smooth:0.9)/20=>Pan2.ar(_, 0.2.rrand(0.9)) }, maxDur: 3*Yoeminrak.secDur[7]/20),
+   out: EffectNarrow.bus({ |i| i=> CrossoverDistortion.ar(_, smooth:0.9)/20=>Pan2.ar(_, 0.2.rrand(0.9)) }, maxDur: 3*Yoeminrak.secDur[7]/20),
    amp:1.9
    ].pm
    };
@@ -801,13 +801,13 @@ Yoeminrak.moveMark(4, 18, -1);
    (beat:0, extra: { (type:\yoeString3) ++ Yoeminrak.terminalState(Yoeminrak.song.seven) => _.play },type:\addMe).play;
    (beat: 0.01, select:0, lag: 0.2, strum: 0.10, ampScale: 0.8,extra:{(type:\yoeDrum0, freq:99*0.midiratio).play}, chord: T([1, 11, 3, 5, 16].df('g', 4), 0.1, \lin), type:\addMe).play;
    (beat: 1  ,extra:{(type:\yoeDrum1).play}, lag: 0.2, strum: 0.10, ampScale: 0.8, chord: T([1,11, 3, 5, 6].df('f#',4), 0.1, \lin), type:\addMe).play;
-   (beat:1, extra:{[amp:0.4,instrument:\harp,coef:0.5,decaytime:5.9,freq:"3 4 1 -7".df(\d, [4, 5]).q, dur:0.33 * Yoeminrak.secDur[8]/20, out: Effect.bus({|i| CrossoverDistortion.ar(i, smooth:0.95) => Pan2.ar(_,0.8) },maxDur:3*Yoeminrak.secDur[8]/20)].pp},type:\addMe).play;
+   (beat:1, extra:{[amp:0.4,instrument:\harp,coef:0.5,decaytime:5.9,freq:"3 4 1 -7".df(\d, [4, 5]).q, dur:0.33 * Yoeminrak.secDur[8]/20, out: EffectNarrow.bus({|i| CrossoverDistortion.ar(i, smooth:0.95) => Pan2.ar(_,0.8) },maxDur:3*Yoeminrak.secDur[8]/20)].pp},type:\addMe).play;
    (beat: 1.33, lag: 0.2, strum: 0.07, ampScale: 0.8, chord: T([1, 11, 3, 5, 6].df('g', 4), 0.1, \lin), type:\addMe).play;
    (beat: 1.7, lag: 0.2, strum: 0.10, ampScale: 0.8, chord: T([1, 11, 3, 5, 6].df('d' ), 0.0, \lin), type:\addMe).play;
    (beat: 2, lag: 0.2, strum: 0.10,extra:{(amp:3,instrument:\defaultPiano,freq:-11.df('c#')).play}, ampScale: 0.5,chord: T([11, 11, 6, 15, 13].df('c#' ), 0.2, \lin), type:\addMe).play;
    (beat:2, type:\addMe, extra:{
        Yoeminrak.env[\reedyGroup] = Group();
-       (type:\garlands2,legato:0.1,instrument:\reedy,group:Yoeminrak.env[\reedyGroup],attack:0.3,out: Effect.bus(Pan2.ar(_, -0.5.rrand(0.5))),numDivisions:7, mono:false,totalDur:4, section:9,amp:0.6,freq:[11, 7, 5, 5, 4, 3, 2, 1].df('c#').q, ).play
+       (type:\garlands2,legato:0.1,instrument:\reedy,group:Yoeminrak.env[\reedyGroup],attack:0.3,out: EffectNarrow.bus(Pan2.ar(_, -0.5.rrand(0.5))),numDivisions:7, mono:false,totalDur:4, section:9,amp:0.6,freq:[11, 7, 5, 5, 4, 3, 2, 1].df('c#').q, ).play
    }
    ).play;
 
@@ -838,7 +838,7 @@ Yoeminrak.moveMark(4, 18, -1);
                type:\addMe
 	   ).play;
                // ~cursor=22;
-	       (beat:( 8 - 0.0 ), extra:{[latency:0.1,amp:0.4,instrument:\harp,coef:0.5,decaytime:5.9,freq:"3 4 ".df(\d, [4, 5]).q, dur:0.30 * Yoeminrak.secDur[8]/20, out: Effect.bus({|i| CrossoverDistortion.ar(i, smooth:0.95) => Pan2.ar(_,0.8) },maxDur:3*Yoeminrak.secDur[8]/20)].pp},type:\addMe).play;
+	       (beat:( 8 - 0.0 ), extra:{[latency:0.1,amp:0.4,instrument:\harp,coef:0.5,decaytime:5.9,freq:"3 4 ".df(\d, [4, 5]).q, dur:0.30 * Yoeminrak.secDur[8]/20, out: EffectNarrow.bus({|i| CrossoverDistortion.ar(i, smooth:0.95) => Pan2.ar(_,0.8) },maxDur:3*Yoeminrak.secDur[8]/20)].pp},type:\addMe).play;
    (beat:8, chord: [1, 3, 6, 1, 3].df('f#', 4),which:[0,2],strum:0.01, type:\addMe).play;
    (beat:8, extra:{(type:\garlands2,freq:Pfunc({ Yoeminrak.env[\currentInstance][\chord].getnSynchronous.choose * 2}),amp:0.2,initDur:1.2,numDivisions:20, instrument: \wash, mono:false, totalDuration: 4 * Yoeminrak.secDur[8] / 20).play}, type:\addMe).play;
    (beat:8.3, chord: [1, 3, 6, 1, 3].df('g', 4),which:[0,2], type:\addMe).play;
@@ -852,7 +852,7 @@ Yoeminrak.moveMark(4, 18, -1);
    (beat:12, newType:\garlands, type:\addMe).play;
    // (beat:13, newType:\garlands, type:\addMe).play;
 
-   (beat:10,extra:{(latency:0,freq:99, out: Effect.bus({|i| FreeVerb.ar(i, 1, 1) }), amp:2).play},knum:T( 2, 3, \lin ), chord: T([1, 3, 6, 1, 6].df('c',5), 1.2,\exp),strum:0.05, type:\addMe).play;
+   (beat:10,extra:{(latency:0,freq:99, out: EffectNarrow.bus({|i| FreeVerb.ar(i, 1, 1) }), amp:2).play},knum:T( 2, 3, \lin ), chord: T([1, 3, 6, 1, 6].df('c',5), 1.2,\exp),strum:0.05, type:\addMe).play;
    (beat:11, chord: T([1, 3, 6, 1, 6].df('b',4), 0.2,\lin),strum:0.05, type:\addMe).play;
    (beat:11.7, chord: T([1, 3, 6, 1, 6].df('c',5), 0.2,\lin),strum:0.05, type:\addMe).play;
    (beat:12, chord: T([1, 3, 6, 1, 6].df('f',5), 1.5,\lin),strum:0.05, type:\addMe).play;
@@ -860,7 +860,7 @@ Yoeminrak.moveMark(4, 18, -1);
    (beat:13.3, chord: T([1, 3, 6, 1, 6].df('d',5), 0.0,\lin),strum:0.05, type:\addMe).play;
    (beat:14, chord: T([1, 3, 6, 1, 6].df('c#',5), 0.0,\lin),strum:0.05, type:\addMe).play;
 
-   (beat: 15, extra:{[latency:0.1,amp:0.4,instrument:\harp,coef:0.5,decaytime:5.9,freq:"3 4 4 ".df(\d, [4, 5]).q, dur:[ 0.30, 0.7, 0.3].q * Yoeminrak.secDur[8]/20, out: Effect.bus({|i| CrossoverDistortion.ar(i, smooth:0.95) => Pan2.ar(_,0.8) },maxDur:3*Yoeminrak.secDur[8]/20)].pp},type:\addMe).play;
+   (beat: 15, extra:{[latency:0.1,amp:0.4,instrument:\harp,coef:0.5,decaytime:5.9,freq:"3 4 4 ".df(\d, [4, 5]).q, dur:[ 0.30, 0.7, 0.3].q * Yoeminrak.secDur[8]/20, out: EffectNarrow.bus({|i| CrossoverDistortion.ar(i, smooth:0.95) => Pan2.ar(_,0.8) },maxDur:3*Yoeminrak.secDur[8]/20)].pp},type:\addMe).play;
    (beat:15, chord: [1, 3, 6, 1, 3].df('f#', 4),which:[0,2],strum:0.01, type:\addMe).play;
    (beat:15, extra:{(type:\garlands2,freq:Pfunc({ Yoeminrak.env[\currentInstance][\chord].getnSynchronous.choose * 2}),amp:0.2,initDur:1.2,numDivisions:20, instrument: \wash, mono:false, totalDuration: 4 * Yoeminrak.secDur[8] / 20).play}, type:\addMe).play;
    (beat:15.3, chord: [1, 3, 6, 1, 3].df('g', 4),which:[0,2], type:\addMe).play;
@@ -923,11 +923,11 @@ Yoeminrak.moveMark(4, 18, -1);
            ).play
        }
    };
-   (beat: 0,strum:0.07,knum:5, extra:{(out: Effect.bus({|i| CrossoverDistortion.ar(i)/3 + i }, maxDur:0.625*Yoeminrak.secDur[9]/20),freq:1.df('e-',[3,4]), amp:0.5).play}, chord: [1, 2, 3, 5, 6].df('e-'), type: \addMe).play;
+   (beat: 0,strum:0.07,knum:5, extra:{(out: EffectNarrow.bus({|i| CrossoverDistortion.ar(i)/3 + i }, maxDur:0.625*Yoeminrak.secDur[9]/20),freq:1.df('e-',[3,4]), amp:0.5).play}, chord: [1, 2, 3, 5, 6].df('e-'), type: \addMe).play;
    (beat: 0, newType:\yoeDrum0,amp:1, freq: 99*( 3 + 5 ).midiratio, type: \addMe).play;
    (beat: 0.32, extra:~lineNote.(5.df('a-'))  , type: \addMe).play;
-   (beat: 0.625, extra:~lineNote.(4.df('a-')) ++ {(out: Effect.bus({|i| CrossoverDistortion.ar(i)/3 + i }, maxDur:0.375*Yoeminrak.secDur[9]/20),freq:2.df('e-', [3,4]), amp:0.5).play} , type: \addMe).play;
-   (beat: 1,strum:0.05, extra:~lineNote.(4.df('a-')) ++ {(dur:Yoeminrak.secDur[9]/20,out: Effect.bus({|i| CrossoverDistortion.ar(i)/4 + i }, maxDur:1*Yoeminrak.secDur[9]/20),freq:4.df('e-', [3, 4]), amp:0.5, ).play} ,knum:T(4, 2, \lin),chord:T([1, 2, 3, 5, 6].df('a-'), 1, \lin), type: \addMe).play;
+   (beat: 0.625, extra:~lineNote.(4.df('a-')) ++ {(out: EffectNarrow.bus({|i| CrossoverDistortion.ar(i)/3 + i }, maxDur:0.375*Yoeminrak.secDur[9]/20),freq:2.df('e-', [3,4]), amp:0.5).play} , type: \addMe).play;
+   (beat: 1,strum:0.05, extra:~lineNote.(4.df('a-')) ++ {(dur:Yoeminrak.secDur[9]/20,out: EffectNarrow.bus({|i| CrossoverDistortion.ar(i)/4 + i }, maxDur:1*Yoeminrak.secDur[9]/20),freq:4.df('e-', [3, 4]), amp:0.5, ).play} ,knum:T(4, 2, \lin),chord:T([1, 2, 3, 5, 6].df('a-'), 1, \lin), type: \addMe).play;
    (beat: 1, newType:\yoeDrum1, type: \addMe).play;
    (beat: 1.37, extra:~lineNote.(3.df('a-')) , type: \addMe).play;
    (beat: 1.7, extra:~lineNote.(1.df('a-')) , type: \addMe).play;
@@ -950,7 +950,7 @@ Yoeminrak.moveMark(4, 18, -1);
 
 
    (beat:5, chord: [1, 3, 6, 1, 3].df('f#', 4),which:[0,2],strum:0.01, type:\addMe).play;
-   (beat: 5, extra:{[laninecy:0.1,amp:0.4,instrument:\harp,coef:0.5,decaytime:5.9,freq:"3 4 4 ".df(\d, [4, 5]).q, dur:[ 0.30, 0.7, 0.3].q * Yoeminrak.secDur[9]/20,latency:0.1, out: Effect.bus({|i| CrossoverDistortion.ar(i, smooth:0.95) => Pan2.ar(_,0.8) },maxDur:3*Yoeminrak.secDur[9]/20)].pp},type:\addMe).play;
+   (beat: 5, extra:{[laninecy:0.1,amp:0.4,instrument:\harp,coef:0.5,decaytime:5.9,freq:"3 4 4 ".df(\d, [4, 5]).q, dur:[ 0.30, 0.7, 0.3].q * Yoeminrak.secDur[9]/20,latency:0.1, out: EffectNarrow.bus({|i| CrossoverDistortion.ar(i, smooth:0.95) => Pan2.ar(_,0.8) },maxDur:3*Yoeminrak.secDur[9]/20)].pp},type:\addMe).play;
    (beat:5, extra:{(type:\garlands2,freq:Pfunc({ Yoeminrak.env[\currentInstance][\chord].getnSynchronous.choose * 2}),amp:0.2,initDur:1.2,numDivisions:20, instrument: \wash, mono:false, totalDuration: 4 * Yoeminrak.secDur[9] / 20).play}, type:\addMe).play;
    (beat:5.3, chord: [1, 3, 6, 1, 3].df('g', 4),which:[0,2], type:\addMe).play;
    (beat:6, chord: [1, 3, 6, 1, 3].df('g', 4),which:[0,2],strum:0.01, type:\addMe).play;
@@ -978,7 +978,7 @@ Yoeminrak.moveMark(4, 18, -1);
    (beat: 17, chord: T([1, 2, 3, 5, 6].df('d#'), 1.4, \lin),strum:0.06, type: \addMe).play;
    (beat: 18,which:4, chord: T([1, 2, 3, 5, 6].df('d#'), 0.69, \lin),strum:0.08, type: \addMe).play;
    (beat: 19.0,which:nil,harp:false, chord: T([1, 2, 3, 5.5, 5.5].df('d#'), 0.69, \lin),strum:0.08, type: \addMe).play;
-   (beat: 19.7,which:[ 0, 3 ],extra:{[laninecy:0.1,amp:0.4,instrument:\harp,coef:0.5,decaytime:5.9,freq:"1 -7 ".df(\b, [4, 5]).q, dur:[ 0.30, 0.7, 0.3].q * Yoeminrak.secDur[9]/20,latency:0.1, out: Effect.bus({|i| CrossoverDistortion.ar(i, smooth:0.95) => Pan2.ar(_,0.8) },maxDur:1*Yoeminrak.secDur[9]/20)].pp}, chord: T([1, 2, 3, 5, 6].df('B'), 0.0, \lin),strum:0.08, type: \addMe).play;
+   (beat: 19.7,which:[ 0, 3 ],extra:{[laninecy:0.1,amp:0.4,instrument:\harp,coef:0.5,decaytime:5.9,freq:"1 -7 ".df(\b, [4, 5]).q, dur:[ 0.30, 0.7, 0.3].q * Yoeminrak.secDur[9]/20,latency:0.1, out: EffectNarrow.bus({|i| CrossoverDistortion.ar(i, smooth:0.95) => Pan2.ar(_,0.8) },maxDur:1*Yoeminrak.secDur[9]/20)].pp}, chord: T([1, 2, 3, 5, 6].df('B'), 0.0, \lin),strum:0.08, type: \addMe).play;
    ~preview=true;
    (type:\cycs, songs:[ \nine, \ten ], keepPlaying:true ).play;
    );
@@ -992,7 +992,7 @@ Yoeminrak.moveMark(4, 18, -1);
    // (beat:0, extra: { (type:\yoeString3) ++ Yoeminrak.terminalState(Yoeminrak.song.nine) => _.play },type:\addMe).play;
    (beat: 0.01, select:0, lag: 0.2, strum: 0.10, ampScale: 0.8,extra:{(type:\yoeDrum0,amp:1, freq:99*0.midiratio).play}, chord: T([1, 11, 3, 5, 16].df('c' ), 0.1, \lin), type:\addMe).play;
    (beat: 1  ,extra:{(type:\yoeDrum1).play}, lag: 0.2, strum: 0.10, ampScale: 0.8, chord: T([1,11, 3, 5, 6].df('f#',4), 0.1, \lin), type:\addMe).play;
-   (beat:1, extra:{[amp:0.4,instrument:\harp,coef:0.5,decaytime:5.9,freq:"3 4 1 -7".df(\d, [4, 5]).q, dur:0.33 * Yoeminrak.secDur[10]/20, out: Effect.bus({|i| CrossoverDistortion.ar(i, smooth:0.95) => Pan2.ar(_,0.8) }, maxDur: 3*Yoeminrak.secDur[10]/20)].pp},type:\addMe).play;
+   (beat:1, extra:{[amp:0.4,instrument:\harp,coef:0.5,decaytime:5.9,freq:"3 4 1 -7".df(\d, [4, 5]).q, dur:0.33 * Yoeminrak.secDur[10]/20, out: EffectNarrow.bus({|i| CrossoverDistortion.ar(i, smooth:0.95) => Pan2.ar(_,0.8) }, maxDur: 3*Yoeminrak.secDur[10]/20)].pp},type:\addMe).play;
    (beat: 1.33, lag: 0.2, strum: 0.07, ampScale: 0.8, chord: T([1, 11, 3, 5, 6].df('g', 4), 0.1, \lin), type:\addMe).play;
    (beat: 1.7, lag: 0.2, strum: 0.10, ampScale: 0.8, chord: T([1, 11, 3, 5, 6].df('d' ), 0.0, \lin), type:\addMe).play;
    (beat: 2, lag: 0.2, strum: 0.10,extra:{(amp:3,instrument:\defaultPiano,freq:-11.df('b')).play}, ampScale: 0.5,chord: T([11, 11, 6, 15, 13].df('b' ), 0.2, \lin), type:\addMe).play;
@@ -1006,7 +1006,7 @@ Yoeminrak.moveMark(4, 18, -1);
    },  type: \addMe).play;
    (beat:2, type:\addMe, extra:{
        Yoeminrak.env[\reedyGroup] = Group();
-       (type:\garlands2,legato:0.1,instrument:\reedy,group:Yoeminrak.env[\reedyGroup],attack:0.3,out: Effect.bus(Pan2.ar(_, -0.5.rrand(0.5))),numDivisions:7, mono:false,totalDur:4, section:9,amp:0.4,freq:[11, 7, 5, 5, 4, 3, 2, 1].df('b').q, ).play
+       (type:\garlands2,legato:0.1,instrument:\reedy,group:Yoeminrak.env[\reedyGroup],attack:0.3,out: EffectNarrow.bus(Pan2.ar(_, -0.5.rrand(0.5))),numDivisions:7, mono:false,totalDur:4, section:9,amp:0.4,freq:[11, 7, 5, 5, 4, 3, 2, 1].df('b').q, ).play
    }
    ).play;
 
@@ -1026,13 +1026,13 @@ Yoeminrak.moveMark(4, 18, -1);
        (beat: 8,strum:0.03, chord:T([1, 2, 3, 5, 6].df('e-'), 0.5, \lin) , type: \addMe).play;
        (beat: 9, which:[0,3], chord: [1, 2, 3, 5, 6].df(\d) , type: \addMe).play;
        (beat: 9.7, which: [0,3], chord: [1, 2, 3, 5, 6].df('e-') , type: \addMe).play;
-   (beat: 9, extra:{[latency:0.0,amp:0.4,instrument:\harp,coef:0.5,decaytime:5.9,freq:"2 2.5 1.5 ".df(\c, [4, 5]).q, dur:[ 0.70, 0.3, 0.3].q * Yoeminrak.secDur[9]/20, out: Effect.bus({|i| CrossoverDistortion.ar(i, smooth:0.95) => Pan2.ar(_,0.8) }, maxDur: 3*Yoeminrak.secDur[9]/20)].pp},type:\addMe).play;
+   (beat: 9, extra:{[latency:0.0,amp:0.4,instrument:\harp,coef:0.5,decaytime:5.9,freq:"2 2.5 1.5 ".df(\c, [4, 5]).q, dur:[ 0.70, 0.3, 0.3].q * Yoeminrak.secDur[9]/20, out: EffectNarrow.bus({|i| CrossoverDistortion.ar(i, smooth:0.95) => Pan2.ar(_,0.8) }, maxDur: 3*Yoeminrak.secDur[9]/20)].pp},type:\addMe).play;
        (beat: 10, chord: [1, 2, 3, 5, 6].df('c#'), type: \addMe).play;
        (beat: 10, newType: \yoeDrum1, type: \addMe).play;
 
        (beat: 11, which:[0,3], chord: [1, 2, 3, 5, 6].df('c#') , type: \addMe).play;
        (beat: 11.7, which: [0,3], chord: [1, 2, 3, 5, 6].df('e-') , type: \addMe).play;
-   (beat: 11, extra:{[latency:0.0,amp:0.4,instrument:\harp,coef:0.5,decaytime:5.9,freq:"1.5 2.5 3 ".df(\c, [4, 5]).q, dur:[ 0.70, 0.3, 0.3].q * Yoeminrak.secDur[9]/20, out: Effect.bus({|i| CrossoverDistortion.ar(i, smooth:0.95) => Pan2.ar(_,0.8) }, maxDur: 3*Yoeminrak.secDur[9]/20)].pp},type:\addMe).play;
+   (beat: 11, extra:{[latency:0.0,amp:0.4,instrument:\harp,coef:0.5,decaytime:5.9,freq:"1.5 2.5 3 ".df(\c, [4, 5]).q, dur:[ 0.70, 0.3, 0.3].q * Yoeminrak.secDur[9]/20, out: EffectNarrow.bus({|i| CrossoverDistortion.ar(i, smooth:0.95) => Pan2.ar(_,0.8) }, maxDur: 3*Yoeminrak.secDur[9]/20)].pp},type:\addMe).play;
        (beat: 12, chord: [1, 2, 3, 6, 6].df('e'), type: \addMe).play;
        (beat: 12.7, which:4, chord: [1, 2, 3, 5.5, 5.5].df('e'), type: \addMe).play;
        (beat: 13, chord: [1, 2, 3, 5, 6].df('d'), type: \addMe).play;
@@ -1079,8 +1079,8 @@ Yoeminrak.moveMark(4, 18, -1);
    (beat: 3.7, which: 3, chord: [-21, -11, -1, -3, 11].df(\b), type: \addMe).play;
    (beat: 4, which: [ 2,3 ], chord: [-21, -11, -2, -5.5, 11].df(\b), type: \addMe).play;
    (beat: 5, newType:\default,instrument:\defaultPorto,amp:0.2, freq: [-13, -3 ].df(\b),ratio:0.5,gain:1, type: \addMe).play;
-   (beat: 4, newType:\default,instrument:\defaultPiano, out:Effect.bus(FreeVerb.ar(_,0.4,1)),amp:0.3, freq: [-12,-2  ].df(\b),ratio:0.5,gain:1, type: \addMe).play;
-   (beat: 5, newType:\default,instrument:\defaultPiano, out:Effect.bus(FreeVerb.ar(_,0.4,1)),amp:0.3, freq: [-13,-3  ].df(\b),ratio:0.5,gain:1, type: \addMe).play;
+   (beat: 4, newType:\default,instrument:\defaultPiano, out:EffectNarrow.bus(FreeVerb.ar(_,0.4,1)),amp:0.3, freq: [-12,-2  ].df(\b),ratio:0.5,gain:1, type: \addMe).play;
+   (beat: 5, newType:\default,instrument:\defaultPiano, out:EffectNarrow.bus(FreeVerb.ar(_,0.4,1)),amp:0.3, freq: [-13,-3  ].df(\b),ratio:0.5,gain:1, type: \addMe).play;
 
 
    (beat: 5.05, newType:\garlands,ratio:0.5,gain:1, type: \addMe).play;
@@ -1096,7 +1096,7 @@ Yoeminrak.moveMark(4, 18, -1);
    (beat: 9,which:[0,4],strum:0.04, chord: [1, 2, 3, 5, 6].df('e'), type: \addMe).play;
    (beat: 9.7,which:[0,4],strum:0.04, chord: [1, 2, 3, 5, 6].df('d'), type: \addMe).play;
    
-   (beat: 9, extra:{[latency:0.0,amp:0.4,instrument:\harp,coef:0.5,decaytime:5.9,freq:"3 2 1 ".df(\c, [4, 5]).q, dur:[ 0.70, 0.3, 0.3].q * Yoeminrak.secDur[9]/20, out: Effect.bus({|i| CrossoverDistortion.ar(i, smooth:0.95) => Pan2.ar(_,0.8) }, maxDur: 3*Yoeminrak.secDur[9]/20)].pp},type:\addMe).play;
+   (beat: 9, extra:{[latency:0.0,amp:0.4,instrument:\harp,coef:0.5,decaytime:5.9,freq:"3 2 1 ".df(\c, [4, 5]).q, dur:[ 0.70, 0.3, 0.3].q * Yoeminrak.secDur[9]/20, out: EffectNarrow.bus({|i| CrossoverDistortion.ar(i, smooth:0.95) => Pan2.ar(_,0.8) }, maxDur: 3*Yoeminrak.secDur[9]/20)].pp},type:\addMe).play;
    (beat: 10, newType:\yoeDrum1,  type: \addMe).play;
 
    (beat: 10,strum:0.06, chord: [1, 2, 3, 5, 6].df('c#'), type: \addMe).play;
@@ -1165,8 +1165,8 @@ Yoeminrak.moveMark(4, 18, -1);
    (beat: 12.7,strum:0.05,which:4, chord: T([1, 2, 3, 5, 5].df(\e), 0.05,\exp), type: \addMe).play;
    (beat: 13,which:[0,4],strum:0.01, chord: [1, 2, 3, 5, 6].df(\d), type: \addMe).play;
 
-   (beat: 13, extra:{[latency:0.1,amp:0.4,instrument:\harp,coef:0.5,decaytime:5.9,freq:"1 2 -6 ".df(\d, [4, 5]).q, dur:[ 0.70, 0.35, 0.3].q * Yoeminrak.secDur[12]/20, out: Effect.bus({|i| CrossoverDistortion.ar(i, smooth:0.95) => Pan2.ar(_,0.8) }, maxDur: 3*Yoeminrak.secDur[12]/20)].pp},type:\addMe).play;
-   (beat: 13, extra:{[latency:0.1,amp:0.4,instrument:\harp,coef:0.5,decaytime:5.9,freq:"1 2 -6 ".df(\A, [4, 5]).q, dur:[ 0.70, 0.35, 0.3].q * Yoeminrak.secDur[12]/20, out: Effect.bus({|i| CrossoverDistortion.ar(i, smooth:0.95) => Pan2.ar(_,0.8) }, maxDur: 3*Yoeminrak.secDur[12]/20)].pp},type:\addMe).play;
+   (beat: 13, extra:{[latency:0.1,amp:0.4,instrument:\harp,coef:0.5,decaytime:5.9,freq:"1 2 -6 ".df(\d, [4, 5]).q, dur:[ 0.70, 0.35, 0.3].q * Yoeminrak.secDur[12]/20, out: EffectNarrow.bus({|i| CrossoverDistortion.ar(i, smooth:0.95) => Pan2.ar(_,0.8) }, maxDur: 3*Yoeminrak.secDur[12]/20)].pp},type:\addMe).play;
+   (beat: 13, extra:{[latency:0.1,amp:0.4,instrument:\harp,coef:0.5,decaytime:5.9,freq:"1 2 -6 ".df(\A, [4, 5]).q, dur:[ 0.70, 0.35, 0.3].q * Yoeminrak.secDur[12]/20, out: EffectNarrow.bus({|i| CrossoverDistortion.ar(i, smooth:0.95) => Pan2.ar(_,0.8) }, maxDur: 3*Yoeminrak.secDur[12]/20)].pp},type:\addMe).play;
    (beat: 13.7,which:[0,4],strum:0.01, chord: [1, 2, 3, 5, 6].df(\e), type: \addMe).play;
    (beat: 14,strum:0.05, chord: [1, 2, 3, 5, 6].df(\B), type: \addMe).play;
    (beat: 14, newType: \yoeDrum2 ,amp:0.15, type: \addMe).play;
@@ -1182,7 +1182,7 @@ Yoeminrak.moveMark(4, 18, -1);
 	   instrument:\bd_808,
 	   amp:1,
 	   latency:0.05,
-	   out: Effect.bus({|i| DWGReverbC1C3.ar(i) * 2 => TwoTube.ar(_,loss:0.9,d1length:3000,d2length:1131) },)
+	   out: EffectNarrow.bus({|i| DWGReverbC1C3.ar(i) * 2 => TwoTube.ar(_,loss:0.9,d1length:3000,d2length:1131) },)
    ).play}, type:\addMe).play;
    (beat: 16, lag:0.1,strum:0.05, chord: [1, 2, 3, 5, 6].df('c'), type: \addMe).play;
 
@@ -1193,7 +1193,7 @@ Yoeminrak.moveMark(4, 18, -1);
    (beat: 18,strum:0.05,width:T(1.015, 3,\lin), chord: T([-5, -7, -7, 3, 3].df(\e), 0.5, \lin), type: \addMe).play;
    (beat: 18.7,which:4,strum:0.015, chord: [-5, -7, -7, 2, 2].df(\e), type: \addMe).play;
 
-   (beat: 19, extra:{[latency:0.1,amp:0.4,instrument:\harp,coef:0.5,decaytime:5.9,freq:"1 3 2 ".df(\c, [4, 5]).q, dur:[ 0.70, 0.3, 0.3].q * Yoeminrak.secDur[12]/20, out: Effect.bus({|i| CrossoverDistortion.ar(i, smooth:0.95) => Pan2.ar(_,0.8) }, maxDur: 3*Yoeminrak.secDur[12]/20)].pp},type:\addMe).play;
+   (beat: 19, extra:{[latency:0.1,amp:0.4,instrument:\harp,coef:0.5,decaytime:5.9,freq:"1 3 2 ".df(\c, [4, 5]).q, dur:[ 0.70, 0.3, 0.3].q * Yoeminrak.secDur[12]/20, out: EffectNarrow.bus({|i| CrossoverDistortion.ar(i, smooth:0.95) => Pan2.ar(_,0.8) }, maxDur: 3*Yoeminrak.secDur[12]/20)].pp},type:\addMe).play;
    (beat: 19,width:1.2,select:{Line.kr(1, 0, 3)},strum:0.02,which:[1,4], chord: [1, 2, 3, 5, 6].df(\c), type: \addMe).play;
    (beat: 19.7,strum:0.02, extra:{
        (instrument:\cymbalsDSStereo, att:2, amp:0.01).play;
@@ -1305,7 +1305,7 @@ Yoeminrak.moveMark(4, 18, -1);
    	beat: 17.7 - 0.2 ,
    	strum:0.06,
    	which:[4],
-	extra: {(instrument:\harp,latency:0.05,freq:1.df(\d), out: Effect.bus({|i| TwoTube.ar(i, 1, 0.9, 1000, 3212) / 2 },)).play},
+	extra: {(instrument:\harp,latency:0.05,freq:1.df(\d), out: EffectNarrow.bus({|i| TwoTube.ar(i, 1, 0.9, 1000, 3212) / 2 },)).play},
    	chord: [1, 2, 3, 5, 6].df(\d),
    	type: \addMe
    ).play;
@@ -1317,7 +1317,7 @@ Yoeminrak.moveMark(4, 18, -1);
    	chord: [1, 2, 3, 5, 6].df(\c),
    	type: \addMe
    ).play;
-   (beat: 19.0   ,which:[0,3], extra:{[latency:0.1,amp:0.4,instrument:\harp,coef:0.5,decaytime:5.9,freq:"2 3 1 ".df(\c, [4, 5]).q, dur:[ 0.70, 0.3, 0.3]+ [0,-0.0,0.0] => _.q * Yoeminrak.secDur[12]/20, out: Effect.bus({|i| CrossoverDistortion.ar(i, smooth:0.95) => Pan2.ar(_,0.8) }, maxDur: 3*Yoeminrak.secDur[12]/20)].pp},chord:[1, -1, 3, 5, 6].df(\d),type:\addMe).play;
+   (beat: 19.0   ,which:[0,3], extra:{[latency:0.1,amp:0.4,instrument:\harp,coef:0.5,decaytime:5.9,freq:"2 3 1 ".df(\c, [4, 5]).q, dur:[ 0.70, 0.3, 0.3]+ [0,-0.0,0.0] => _.q * Yoeminrak.secDur[12]/20, out: EffectNarrow.bus({|i| CrossoverDistortion.ar(i, smooth:0.95) => Pan2.ar(_,0.8) }, maxDur: 3*Yoeminrak.secDur[12]/20)].pp},chord:[1, -1, 3, 5, 6].df(\d),type:\addMe).play;
    (beat: 19.7  ,which:[1, 2, 3],strum:0.02, chord: [1, -1, 3, 5, 6].df(\e), type: \addMe).play;
   
    (type:\cycs, songs:[ \thirteen, \fourteen ], keepPlaying:true).play;
@@ -1364,7 +1364,7 @@ Yoeminrak.moveMark(4, 18, -1);
    (beat: 7,strum:0.03, chord: T( [1, 2, 3, 5, -6].df('f'), 0.5, \lin ), type: \addMe).play;
    // (beat: 7,strum:0.03, chord: T([1, 2, 3, 5, 6].df('c#'), 1, \lin), type: \addMe).play;
    (beat: 8,strum:0.03,knum:T([2, 2, 2, 2, 8], 1, \lin), chord: [1, 2, 3, 5, 6].df('e'), type: \addMe).play;
-   (beat: 8,which:[0,3], extra:{[latency:0.1,amp:0.4,instrument:\harp,coef:0.5,decaytime:5.9,freq:"3 2, 1 ".df(\c, [4, 5]).q, dur:[ 0.70, 0.3, 0.3].q * Yoeminrak.secDur[12]/20,latency:0.05, out: Effect.bus({|i| CrossoverDistortion.ar(i, smooth:0.95) => Pan2.ar(_,0.8) }, maxDur: 3*Yoeminrak.secDur[12]/20)].pp},type:\addMe).play;
+   (beat: 8,which:[0,3], extra:{[latency:0.1,amp:0.4,instrument:\harp,coef:0.5,decaytime:5.9,freq:"3 2, 1 ".df(\c, [4, 5]).q, dur:[ 0.70, 0.3, 0.3].q * Yoeminrak.secDur[12]/20,latency:0.05, out: EffectNarrow.bus({|i| CrossoverDistortion.ar(i, smooth:0.95) => Pan2.ar(_,0.8) }, maxDur: 3*Yoeminrak.secDur[12]/20)].pp},type:\addMe).play;
    (beat: 8.4,which:4,strum:0.03, chord: [1, 2, 3, 5, 5.5].df('e'), type: \addMe).play;
    (beat: 8.7,which:[0,4],strum:0.03, chord: [1, 2, 3, 5, 6].df('d'), type: \addMe).play;
    (beat: 9,which:[0,4],strum:0.03, chord: [1, 2, 3, 5, 6].df('c'), type: \addMe).play;
@@ -1418,7 +1418,7 @@ Yoeminrak.moveMark(4, 18, -1);
    (beat: 15.7,which:4,strum:0.04, chord: [1, 2, 3, 5.5, 5.5].df(\f), type: \addMe).play;
    (beat: 16,strum:0.06,extra:{(freq:[-5, 1 ].df(\e,4),instrument:\defaultPiano, amp:0.3).play},which:[0,1,2,4], chord: [1, 2, 3, 5, 6].df(\e), type: \addMe).play;
    (beat: 18,strum:0.06,extra:{(freq:[ 1, -1 ].df(\e,4),instrument:\defaultPiano, amp:0.3).play},which:[0,1,2,4], chord: [1, 2, 3, 5, 6].df(\e), type: \addMe).play;
-   (beat: 19,which:[0,3], extra:{[latency:0.1,amp:0.4,instrument:\harp,coef:0.5,decaytime:5.9,freq:"2 3 -7 ".df(\c, [4, 5]).q, dur:[ 0.70, 0.3, 0.3].q * Yoeminrak.secDur[12]/20, out: Effect.bus({|i| CrossoverDistortion.ar(i, smooth:0.95) => Pan2.ar(_,0.8) }, maxDur: 3*Yoeminrak.secDur[12]/20)].pp},chord:[1, -1, 3, 5, 6].df(\d),type:\addMe).play;
+   (beat: 19,which:[0,3], extra:{[latency:0.1,amp:0.4,instrument:\harp,coef:0.5,decaytime:5.9,freq:"2 3 -7 ".df(\c, [4, 5]).q, dur:[ 0.70, 0.3, 0.3].q * Yoeminrak.secDur[12]/20, out: EffectNarrow.bus({|i| CrossoverDistortion.ar(i, smooth:0.95) => Pan2.ar(_,0.8) }, maxDur: 3*Yoeminrak.secDur[12]/20)].pp},chord:[1, -1, 3, 5, 6].df(\d),type:\addMe).play;
    (beat: 19.7,which:[0, 3],strum:0.04, chord: [1, 2, 3, 5, 6].df(\e), type: \addMe).play;
 
    (type:\cycs, songs:[ \fourteen, \fifteen ], keepPlaying:true).play;

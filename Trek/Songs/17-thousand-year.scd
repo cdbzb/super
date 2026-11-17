@@ -368,7 +368,7 @@ P.tune('lady', _ <> [ instrument: \stringyy ].pm); //cut this??
 P(\door, syl: 7, music: { |p b e|
 	(
 		instrument: \door,
-		out: Effect.bus({|i| Pan2.ar(i, -1) },)
+		out: EffectNarrow.bus({|i| Pan2.ar(i, -1) },)
 	).play
 });
 P.still(\lookingAtSpock,syl:7, timecode: 3617.seconds, music: { |p b e|
@@ -389,7 +389,7 @@ P(\chords, music: { |p b e|
 			freq: [\r, [-5, -7, 1, 3].df(\b, \mixolydian),[ 3, 5, 6, 11].df(\d), [3, 5, 6.5, 11].df(\d), [2.5, 5.5,11, 11 ].df(\d), [ 11, 6, 5, 13 ].df('b-', 4) ].q,
 			dur: "e qq qe e x" .asBeats.warpTo( e.tempoMap ).q,
 			instrument: \sparkTriangle, depth:0, freqLag: 1,
-			out: Effect.bus({|i| i => Convolution.ar(_, Gendy1.ar(1.df(\d,8))) /20 + i /3 => HPF.ar(_,400) /3 },inputChannels:2, out: [0,1])
+			out: EffectNarrow.bus({|i| i => Convolution.ar(_, Gendy1.ar(1.df(\d,8))) /20 + i /3 => HPF.ar(_,400) /3 },inputChannels:2, out: [0,1])
 		].ppm
 });
 P(\bass,start:\lady,syl:3, music:{|p b e| 
@@ -432,7 +432,7 @@ P(\chord,start:\twice,syl:2,music:{|p b e|
 			[5,3,5,13].df(\g,scale:\mixolydian),
 		].q,
 		dur:b.parse([2,3,6]).q,
-		out:Effect(FreeVerb.ar(_,0.9,0.9),inputChannels:2).bus.index,
+		out:EffectNarrow(FreeVerb.ar(_,0.9,0.9),inputChannels:2).bus.index,
 
 	].pp
 });
@@ -502,7 +502,7 @@ P(\chords, music: { |p b e|
 		dur: "e e e e e e e e e e e e".asBeats.warpTo( e.tempoMap.quantizeWindow(0.3) ).q,
 		instrument: \defaultPiano,
 		pan: [ 0.4,0.6,0.8 ],
-		out: Effect.bus({|i| i 
+		out: EffectNarrow.bus({|i| i 
 			// => AnalogVintageDistortion.ar(i) 
 			=> BPF.ar(_,2200) * 2 }, inputChannels:2)
 	].pp
@@ -512,7 +512,7 @@ P(\powerchords, music: { |p b e|
 		freq: [ [1, 5].df('c#'), [1,5].df('b',4), [1, 5].df('f#',4) ].dupEach.q /2,
 		dur: "qe e qe e qq".asBeats.warpTo( e.tempoMap ).q,
 		legato: [ 1, 1, 1, 1, 2 ]/2=>_.q,
-		out: Effect.bus({|i| i=> CrossoverDistortion.ar(_) /15 => LeakDC.ar(_) => Pan2.ar(_,-0.4) * EnvGen.cutoff(wait:b.sum, release:1, curve:nil, doneAction:2) },inputChannels:1),
+		out: EffectNarrow.bus({|i| i=> CrossoverDistortion.ar(_) /15 => LeakDC.ar(_) => Pan2.ar(_,-0.4) * EnvGen.cutoff(wait:b.sum, release:1, curve:nil, doneAction:2) },inputChannels:1),
 	].pp
 });
 P(\bass,start:\engineer,music:{|p b e|
@@ -528,8 +528,8 @@ P(\bass,start:\engineer,music:{|p b e|
 ["last a thousand years.",[2,1,2,3,1,2, 5.5].dm(\c,octave:6)].addLine;
 P(\cymbals, music: { |p b e|
 	var amp = 0.02;
-	( instrument:\cymbalsDS,amp:amp,out:Effect.bus({|i| Pan2.ar(i,-0.6) },)).play;
-	( lag:b.parse([6]).unbubble, instrument:\cymbalsDS,amp:amp, out:Effect.bus({|i| Pan2.ar(i,0.6) },)).play;
+	( instrument:\cymbalsDS,amp:amp,out:EffectNarrow.bus({|i| Pan2.ar(i,-0.6) },)).play;
+	( lag:b.parse([6]).unbubble, instrument:\cymbalsDS,amp:amp, out:EffectNarrow.bus({|i| Pan2.ar(i,0.6) },)).play;
 
 });
 P.still(\clear, timecode: 0.seconds, korean: "천 년을 지속할 것입니다", music: { |p b e|
@@ -696,7 +696,7 @@ P.still(\scottLeaves, timecode:
 });
 //set pause between sections
 // Song.durs[\laugh]=Song.durs[\laugh].list.put(Song.durs[\laugh].list.size - 1, 0.5).q;
-P.tune( { |i| i.fin(14) => Pmul(\freq, [0.25,0.5,1,2],_) <> [ instrument: \stringyy, out:Effect.bus({|i| [0.1,0.4] * CombN.ar(i, 0.4,0.4) + i },) ].pm} );
+P.tune( { |i| i.fin(14) => Pmul(\freq, [0.25,0.5,1,2],_) <> [ instrument: \stringyy, out:EffectNarrow.bus({|i| [0.1,0.4] * CombN.ar(i, 0.4,0.4) + i },) ].pm} );
 P.still(\leaving,syl:6, timecode: 3632.1.seconds, music: { |p b e|
 	 e.still.( 
 		// wait: b.sum,
@@ -739,14 +739,14 @@ P(\arpeggio,start:\prison,syl:3,lag:-0.15,music:{
 		scale:Scale.minor,
 		root:-3,
 		strum:0.04,
-		out: Effect.bus({|i| CombN.ar(i, 0.15, 0.15, 3)/2 ++ i },),
+		out: EffectNarrow.bus({|i| CombN.ar(i, 0.15, 0.15, 3)/2 ++ i },),
 		instrument: \defaultPiano, amp: 0.03
 	).play;
 });
 P(\stab,start:\prison,syl:3,music:{|p b e|
 	(
 		instrument:\cymbalsDS,amp:0.04,
-		out:Effect.bus({|i| CrossoverDistortion.ar(i)*0.01 * EnvGen.cutoff(wait:b.sum, release:4, curve:nil, doneAction:2)=> LeakDC.ar(_)}, )
+		out:EffectNarrow.bus({|i| CrossoverDistortion.ar(i)*0.01 * EnvGen.cutoff(wait:b.sum, release:4, curve:nil, doneAction:2)=> LeakDC.ar(_)}, )
 	).play;
 	(
 		instrument:\stringyy,
@@ -931,7 +931,7 @@ P(\sizzle,syl:9,start:'And another',music:{|p b e|
 		instrument:\sawSynthSustain,
 		freq:[1].dm('e-'),
 		att:2.5,
-		out:Effect( {|i| Phaser2.ar(i,rate:0.12) => TwoTube.ar(_,loss:0.8,d1length:410)} ).bus.index
+		out:EffectNarrow( {|i| Phaser2.ar(i,rate:0.12) => TwoTube.ar(_,loss:0.8,d1length:410)} ).bus.index
 	).play
 });
 P(\threeNoteFigure,start: 'And another',syl: 9,music:{|p b e|
@@ -1008,7 +1008,7 @@ P(\strum,start:\closed,music:{|p b e|
 		freq:[1,3,5,11].df(\c,scale:\minor,octave:4),
 		strum:0.05,
 		dur:b[0..9].sum,
-		out: Effect.bus({|i| RLPF.ar(i, Line.kr(4000,1000,b.sum /2),0.1) },)
+		out: EffectNarrow.bus({|i| RLPF.ar(i, Line.kr(4000,1000,b.sum /2),0.1) },)
 	).play
 });
 ["(boom) With these bodies. (la la la la la la  with the-- ese bodies)",[1,5,5.5,3,2,1,-7,1,2,1,-7,-6, ].dm(\d) ++ [7,11,5,5,4].dm(\c)].addLine;
@@ -1050,7 +1050,7 @@ P(\extraChords,start:'With these bodies',syl:11,music:{|p b e|
 	[
 		freq:[[5,7,12],[5,11,13],[3,5,11],[3,5,11],[1,4,6]].df(\c).q,
 		dur:b.drop(1).q,
-		out:Effect({|i| i.distort=>MoogLadder.ar(_,1800,1.0)*4=>DWGReverbC1C3.ar(_,mix:0.2)=>AnalogPhaserMod.ar(_).tanh/2}).bus.index,
+		out:EffectNarrow({|i| i.distort=>MoogLadder.ar(_,1800,1.0)*4=>DWGReverbC1C3.ar(_,mix:0.2)=>AnalogPhaserMod.ar(_).tanh/2}).bus.index,
 	].pp
 });
 P(\bass, music: { |p b e|
@@ -1060,7 +1060,7 @@ P(\bass, music: { |p b e|
 		    freq: [11, 11, 7, 7, 6, 6, 5, 5, 5, 4  ].df(\d,2).q,
 		    amp:0.2,
 			lag: [0.02, 0,0,0,0,0,0,0,0,0,0,0,0].q,
-		    out: Effect.bus( { |i|  AnalogVintageDistortion.ar(i) => HPF.ar(_,185) * EnvGen.cutoff(Song.durs['With these'].list.sum, 0.1) => Pan2.ar(_) /3  } )
+		    out: EffectNarrow.bus( { |i|  AnalogVintageDistortion.ar(i) => HPF.ar(_,185) * EnvGen.cutoff(Song.durs['With these'].list.sum, 0.1) => Pan2.ar(_) /3  } )
 
 	  ].pp
 });
@@ -1070,14 +1070,14 @@ P(\chords,start:'With these bodies',music:{|p b e|
 			freq:[
 				[1,3,5],[-7,3,5.5],[1,3,6],[1,3,6]
 			].stutter(2).df(\d).q,
-			out:Effect({|i| i.distort=>MoogLadder.ar(_,1800,1.0)*4=>DWGReverbC1C3.ar(_,mix:0.1)=>AnalogPhaserMod.ar(_).tanh}, out:2).bus.index,
+			out:EffectNarrow({|i| i.distort=>MoogLadder.ar(_,1800,1.0)*4=>DWGReverbC1C3.ar(_,mix:0.1)=>AnalogPhaserMod.ar(_).tanh}, out:2).bus.index,
 			lag:Ptuple([0,Pwhite(0.00,0.02)!2].flat,inf),
 		].p.trace,
 		[
 			freq:[ 1,-7,-6,-5 ].stutter(2).df(\d,octave:3).q,
 			dur:[3,1]/2=>_.q(4),
 			//instrument:\sawSynth,amp:0.06
-			out:Effect({ |i| CrossoverDistortion.ar(i,amp:0.01,smooth:0.1)/4 * EnvGen.cutoff(wait:b.sum, release:1, curve:nil, doneAction:2) => LeakDC.ar(_)}).bus.index,
+			out:EffectNarrow({ |i| CrossoverDistortion.ar(i,amp:0.01,smooth:0.1)/4 * EnvGen.cutoff(wait:b.sum, release:1, curve:nil, doneAction:2) => LeakDC.ar(_)}).bus.index,
 		].p,
 
 		"x.x.x.x.".asDrumPat(2,3)=>[dur:_,instrument:\sn_808]=>_.p,
@@ -1185,7 +1185,7 @@ P(\strum1, music: { |p b e|
 		amp:[0.2,0.2,0.1,0.2].q(inf) / 2
 	].p 
 	<> (
-		// \out: Effect.bus(FreeVerb.ar(_,0.4,1)),
+		// \out: EffectNarrow.bus(FreeVerb.ar(_,0.4,1)),
 		type: \strum,
 		instance: p.strum1
 	) => _.play;
@@ -1227,7 +1227,7 @@ P(\shaker, music: { |p b e|
 		* Env([0,0,1,1], "qqq".asBeats.warpTo(e.tempoMap) ++ [0],\step).kr(0)
 
 	}.play;
-	(lag: "qqq".asBeats.warpTo(e.tempoMap),instrument:\cymbalsDS,amp:0.02,out:Effect.bus(_*[0.1,0.8])).play
+	(lag: "qqq".asBeats.warpTo(e.tempoMap),instrument:\cymbalsDS,amp:0.02,out:EffectNarrow.bus(_*[0.1,0.8])).play
 });
 P.synthV(role: \henoch, take:\lead, params: {|p b| [
 	lyrics: "you said how good - it was - to breathe again +",
@@ -1318,7 +1318,7 @@ P(\tom, music: { |p b e|
 		// dur: b.parse([12,1,1]).q,
 		instrument: \LT_808,
 		mask: [\r, 1, 1 ].q,
-		out: Effect.bus({|i| Pan2.ar(i, SinOsc.ar(2)) /3 => FreeVerb.ar(_,0.2,1) },)
+		out: EffectNarrow.bus({|i| Pan2.ar(i, SinOsc.ar(2)) /3 => FreeVerb.ar(_,0.2,1) },)
 	].pp
 });
 P(\drums, music: { |p b e|
@@ -1366,14 +1366,14 @@ P(\chords,start:\mankind,music:{|p b e|
 		amp: 0.012,
 		decaytime: 20,
 		instrument: \harp,
-		out: Effect.bus({|i| DWGReverbC1C3.ar(i, mix:0.1) },)
+		out: EffectNarrow.bus({|i| DWGReverbC1C3.ar(i, mix:0.1) },)
 	].pp
 });
 P(\bass,start:\mankind,syl:2,music:{|p b e|
 	[		instrument:\harp,
 		freq:[ [1,11], [-5,5] ].df('a-',octave:[ 2,3 ]).q,
 		dur: b.parse([[1,1,1,1/3],[2/3,1,1,1]]).q,
-		out: Effect.bus({|i|
+		out: EffectNarrow.bus({|i|
 			 Splay.ar(i)
 			=> CrossoverDistortion.ar(_, smooth: 0.8 ) /3
 			=> LPF.ar(_,6000)
@@ -1423,7 +1423,7 @@ P(\bassline, music: { |p b e|
 		freq: [1, 3, 1, 4, 3].df(\e,3).q,
 		lag: [0.02, 0,0,0,0].q,
 		dur: "q e e q q".asBeats.warpTo( e.tempoMap ).q,
-		out: Effect.bus({|i| AnalogVintageDistortion.ar(i, gain:0.4) * EnvGen.cutoff(Song.durs[\return].list.sum, 0.1) },)
+		out: EffectNarrow.bus({|i| AnalogVintageDistortion.ar(i, gain:0.4) * EnvGen.cutoff(Song.durs[\return].list.sum, 0.1) },)
 	].ppm(\default)
 });
 P(\bass,start:\return,music:{|p b e| 
@@ -1431,7 +1431,7 @@ P(\bass,start:\return,music:{|p b e|
 		instrument:\sawSynth,
 		spread:0.25,
 		center:[-0.75,0.75].q,
-		out:Effect(EchoNone.ar(_,1,b[0]/2,5),inputChannels:2).bus.index,
+		out:EffectNarrow(EchoNone.ar(_,1,b[0]/2,5),inputChannels:2).bus.index,
 		freq:[1,11].df(\e,octave:3).q,
 		dur:b.parse([2,2]).q
 	].pp
@@ -1455,14 +1455,14 @@ P(\lick,start:\return,syl:3,music:{|p b e|
 		freq: [\r,1,1,1,1].df('a-',4).q,
 		dur: b.drop(1).parse([3,1,1,1,1]).q,
 		amp:Pgeom(0.5,0.55,5),
-		out: Effect.bus({|i| BPF.ar(i,900,0.3) *9 => Pan2.ar(_,SinOsc.ar(2.2)) },)
+		out: EffectNarrow.bus({|i| BPF.ar(i,900,0.3) *9 => Pan2.ar(_,SinOsc.ar(2.2)) },)
 	].pp;
 	(
 		lag: b[1..7].sum,
 		amp:0.5,
 		freq: [-1,1].df(\f,3),
 		dur: b.last + e.bNext[0..2].sum,
-		out: Effect.bus({|i| AnalogVintageDistortion.ar(i/2,amp:0.001,smooth:0.95) => DWGReverbC1C3.ar(_) /16 },)
+		out: EffectNarrow.bus({|i| AnalogVintageDistortion.ar(i/2,amp:0.001,smooth:0.95) => DWGReverbC1C3.ar(_) /16 },)
 
 	).play
 });
@@ -1490,7 +1490,7 @@ P.synthVs(role: \henoch, take:[ \lead, \double ], params: {|p b| [
 		=> p.synthVTracks.at(e.key).()
 	}.play
 });
-P.tune( _ <> (instrument: \sparkTriangle, out: Effect.bus( _ *[1,1]/3 )) );
+P.tune( _ <> (instrument: \sparkTriangle, out: EffectNarrow.bus( _ *[1,1]/3 )) );
 P(\chord,syl:4,music:{|p b e|
 	(
 		strum: 0.05,
@@ -1498,7 +1498,7 @@ P(\chord,syl:4,music:{|p b e|
 		([1,2.5,4.5,6.5] +.t [0,10,20] => _.flop =>_.flat)
 		.dm(\c,octave:4),
 		instrument:\sawSynthSustain, amp:0.05,
-		out:Effect({|i| Phaser2.ar(i) => EchoNone.ar(_,1,0.8,9) /3}).bus.index
+		out:EffectNarrow({|i| Phaser2.ar(i) => EchoNone.ar(_,1,0.8,9) /3}).bus.index
 
 	).play
 });
@@ -1573,7 +1573,7 @@ P(\bassnote, music: { |p b e|
 	(
 		freq:[-11,1].df(\b,3),
 		dur: 2,
-		out: Effect.bus({|i| i => DWGReverbC1C3.ar(_) },)
+		out: EffectNarrow.bus({|i| i => DWGReverbC1C3.ar(_) },)
 	).play
 });
 P.still(\departs, timecode: 3740.35.seconds, korean: "", music: { |p b e|

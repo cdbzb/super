@@ -205,8 +205,8 @@ P(\workChord,syl:1,start:'work, Sargon',music:{|p d|
 
 	var a=Scale.new((0..8),pitchesPerOctave:9);
 
-	//b=Effect(FreeVerb.ar(_,0.9,1),out:1).bus.index;
-	var b=Effect({|i|PlateReverb.ar(i,0.8,mix:Line.kr(0.5,1,30),decayTime:0.7*Gendy1.kr(minfreq:1/10,maxfreq:2).unipolar)[0]},inputChannels:2).bus.index;
+	//b=EffectNarrow(FreeVerb.ar(_,0.9,1),out:1).bus.index;
+	var b=EffectNarrow({|i|PlateReverb.ar(i,0.8,mix:Line.kr(0.5,1,30),decayTime:0.7*Gendy1.kr(minfreq:1/10,maxfreq:2).unipolar)[0]},inputChannels:2).bus.index;
 	var length = 2;
 	[
 		degree:
@@ -247,9 +247,9 @@ P(\baseNoteOut,syl:4,start:'get out',music:{|p b|
 }
 );
 P(\outChord,syl:4,start:'get out',music:{|p d|
-	//b=Effect(FreeVerb.ar(_,0.9,1),out:1).bus.index;
+	//b=EffectNarrow(FreeVerb.ar(_,0.9,1),out:1).bus.index;
 	var a=Scale.new((0..8),pitchesPerOctave:9);
-	var b=Effect({|i|PlateReverb.ar(i,0.8,mix:Line.kr(0.5,1,30),decayTime:0.7*Gendy1.kr(minfreq:1/10,maxfreq:2).unipolar)[0]},
+	var b=EffectNarrow({|i|PlateReverb.ar(i,0.8,mix:Line.kr(0.5,1,30),decayTime:0.7*Gendy1.kr(minfreq:1/10,maxfreq:2).unipolar)[0]},
 	out:2,
 	inputChannels:2).bus.index;
 	var length = 2;
@@ -276,7 +276,7 @@ P.tune('we will transfer');
 ["til you can administer the ",[7,6,5,4,7,11,6,5].dm('d')].addLine;//6
 P.tune('administer');
 ["(boom) metabolic reduction injection... a ",[11,15,14,15,12,14,12,11,14.5,11,7.5, 7].dm('a-',octave:4,scale:\mixolydian )].addLine;//7
-P.tune('injection',Pbindf(_,\legato,1.5,\out,Effect(PlateReverb.ar(_,decayTime:0.4,mix:0.6)).bus.index));
+P.tune('injection',Pbindf(_,\legato,1.5,\out,EffectNarrow(PlateReverb.ar(_,decayTime:0.4,mix:0.6)).bus.index));
 P(\baseNoteMetabolic,start:'metabolic',music:{|p b|
 	var length=b[0..(b.size-1)].sum;
 	var freq=[1,11].df('a-',octave:2 );

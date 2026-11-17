@@ -87,7 +87,7 @@
 		instrument: \harp,
 		amp:0.02, decaytime:[ 10 ],
 		coef:0.15,
-		out: Effect.bus( Phaser2.ar(_,rate:0.21,fb:-0.5), inputChannels:2 )
+		out: EffectNarrow.bus( Phaser2.ar(_,rate:0.21,fb:-0.5), inputChannels:2 )
 	].p);
 	[ "Do I list one death or two? " , [1,2,1,5,5,6,4.5].dm(\g,transpose: 6)].addLine;
 	P.still(\clear, timecode: 0.seconds, music: { |p b e|
@@ -117,7 +117,7 @@
 			amp:[0.2,0.2,0.1,0.2].q(inf) / 2
 		].p 
 		<> (
-			\out: Effect.bus(FreeVerb.ar(_,0.4,1)),
+			\out: EffectNarrow.bus(FreeVerb.ar(_,0.4,1)),
 			type: \strum,
 			instance: p.strum1
 		) => _.play;
@@ -218,7 +218,7 @@
 				legato:[0.9,0.9,1,1,1].q(inf),
 				instance: p.strum1,
 				dur:b.parse([1,1,1,5,2]) ++ 2 => _.q,
-				out: Effect.bus( 
+				out: EffectNarrow.bus( 
 					{ |i| CrossoverDistortion.ar(i, amp:0.5, smooth:0.5, mul:0.1, add:0)
 					* Env([1,1,0],[b.sum,4]).kr(2,gate:1)
 					/2
@@ -568,7 +568,7 @@ P.still(\mccoy, timecode:
 				dur: b.parse([2, 9, 3, 8]).q,
 				instrument: \sawSynthSustain,
 				att: 1,
-				out: Effect.bus(
+				out: EffectNarrow.bus(
 					{|i| i
 						=> HPF.ar(_,100)
 						=> {| i| CombN.ar(i, 0.4,0.4) /2 +i}

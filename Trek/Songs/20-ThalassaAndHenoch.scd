@@ -79,7 +79,7 @@ P(\dyads, music: { |p b e|
 		freq: [\r, [4,6],[3,5],  [2,4,7],[1,4,6], [-5,5,-15] ].df(\c,\mixolydian).q,
 		dur: e.bAll.parse([4, 1, 3, 1, 3, 1]).q,
 		instrument: \sawSynth,
-		out: Effect.bus({|i| i =>Pan2.ar(i,0.8) },)
+		out: EffectNarrow.bus({|i| i =>Pan2.ar(i,0.8) },)
 	].pp
 });
 P.synthV(role: \thalassa,lag:0, take: \lead, params: {|p b| [
@@ -206,7 +206,7 @@ P(\bassNotes,syl: 5, music: { |p b e|
 	[
 		freq: [ 1, -7, -6.5  ].df(\f,[3,4], \minor).q,
 		dur: b.drop(1).sum.bubble ++ e.bNext.parse([2,5]) => _.flat => _.q,
-		out: [0,0, Effect.bus({|i| DWGReverbC1C3.ar(i,mix:0.4) },)].q
+		out: [0,0, EffectNarrow.bus({|i| DWGReverbC1C3.ar(i,mix:0.4) },)].q
 	].p.trace.play
 });
 P.synthVs(role: \henoch, take: [\lead, \double], params: {|p b| [
@@ -244,13 +244,13 @@ P(\connector, music: { |p b e|
 		freq: [\r, 3,  4.5].df(\d,6).q,
 		dur: b.parse([2,3]) ++ e.bNext[..1].sum => _.q,
 		instrument: \sawSynthSustain,lagTime:0.7, att:1,
-		out: Effect.bus({|i| BRF.ar(i,1100,1/2) => HPF.ar(_,2000) => FreeVerb.ar(_,0.2,1) },)
+		out: EffectNarrow.bus({|i| BRF.ar(i,1100,1/2) => HPF.ar(_,2000) => FreeVerb.ar(_,0.2,1) },)
 	].ppm;
 	[
 		freq: [\r, 3, 2,1,-6].df(\d,6).q,
 		dur: b.parse([2,1, 1, 1]) ++ e.bNext[..1].sum => _.q,
 		instrument: \sawSynthSustain,lagTime:0.7, att:1,
-		out: Effect.bus({|i| BRF.ar(i,900,1/2) => HPF.ar(_,2000) => FreeVerb.ar(_,0.2,1) },out:3)
+		out: EffectNarrow.bus({|i| BRF.ar(i,900,1/2) => HPF.ar(_,2000) => FreeVerb.ar(_,0.2,1) },out:3)
 		
 	].ppm
 });
@@ -284,7 +284,7 @@ P(\roll,syl:1, music: { |p b e|
 		dur: b.drop(1).sum,
 
 
-		out: Effect.bus({|i| CombC.ar(i, 0.7,[ 0.65, 0.41 ]+SinOsc.ar(0.13).range(0.01,-0.01), 5) /2 + i / 10 },)
+		out: EffectNarrow.bus({|i| CombC.ar(i, 0.7,[ 0.65, 0.41 ]+SinOsc.ar(0.13).range(0.01,-0.01), 5) /2 + i / 10 },)
 	).play;
 });
 P.synthVs(role: \henoch, take: [\lead, \double],
@@ -353,7 +353,7 @@ fork{
 			dur: b.parse([1,2,1,3, 1, 1, 1, 1, 0.75, 1]).q,
 			// instrument: \sawSynthSustain, pulse: 0.7, amp: 0.04,
 			instrument: inst,
-			out: [2,Effect.bus({|i|DelayN.ar(i,0.1,SinOsc.ar(0.2).range(0.01,0.02)) },out: 4.rand)],
+			out: [2,EffectNarrow.bus({|i|DelayN.ar(i,0.1,SinOsc.ar(0.2).range(0.01,0.02)) },out: 4.rand)],
 			// lag: Ptuple([0, Pwhite(0,0.04, inf)])
 
 		].pp;
@@ -364,7 +364,7 @@ fork{
 			dur: b.parse([1,2,1,3, 1, 1, 1, 1, 0.75, 1]).q,
 			instrument: \sawSynthSustain, pulse: 0.7, amp: 0.04,
 			// instrumet: inst,
-			out: [2,Effect.bus({|i|DelayN.ar(i,0.1,SinOsc.ar(0.2).range(0.01,0.02)) },out: 4.rand)],
+			out: [2,EffectNarrow.bus({|i|DelayN.ar(i,0.1,SinOsc.ar(0.2).range(0.01,0.02)) },out: 4.rand)],
 			// lag: Ptuple([0, Pwhite(0,0.04, inf)])
 
 		].pp;
@@ -537,14 +537,14 @@ P(\line, music: { |p b e|
 		freq: [11, 11, 7].df('a-',4,\mixolydian) ++ [ 4, 3, 1, 2, 1,-4.5,5].df(\c,6) =>  _.q /[8,4],
 		dur: b.parse([1, 3, 4, 1, 1, 1,1, 1, 2]) ++ e.bNext[..4].sum => _.flat => _.q,
 		legato:0.99, instrument: \help_oteypiano,amp:0.2,
-		out: Effect.bus({|i| i =>CrossoverDistortion.ar(i,0.1,0.95 ) => LeakDC.ar(_) * EnvGen.cutoff(wait:b.sum, release:2, curve:nil, doneAction:2) },out:3)
+		out: EffectNarrow.bus({|i| i =>CrossoverDistortion.ar(i,0.1,0.95 ) => LeakDC.ar(_) * EnvGen.cutoff(wait:b.sum, release:2, curve:nil, doneAction:2) },out:3)
 	].pp;
 	[
 		freq: [11, 11, 7].df('a-',4,\mixolydian) ++ [ 4, 3, 1, 2, 1,-4.5,5].df(\c,6) =>  _.q /[2,4],
 		dur: b.parse([1, 3, 4, 1, 1, 1,1, 1, 2]) ++ e.bNext[..4].sum => _.flat => _.q,
 		legato:0.99,
 		// instrument: \help_oteypiano,amp:0.2,
-		out: Effect.bus({|i|  i => FreeVerb.ar(_,0.2,1) =>SineShaper.ar(i,0.1,0.95 ) },out:2)
+		out: EffectNarrow.bus({|i|  i => FreeVerb.ar(_,0.2,1) =>SineShaper.ar(i,0.1,0.95 ) },out:2)
 	].pp
 	;
 	[
@@ -606,7 +606,7 @@ P(\doubling, music: { |p b e|
 P(\chord, syl: 6, music: { |p b e|
 	(
 		freq: [1,3,5].df(\a, 4,\minor),
-		out: Effect.bus({|i| CrossoverDistortion.ar(i) => LeakDC.ar(_) / 10 + i => FreeVerb.ar(_,1,[ 1,0.8 ]) * EnvGen.cutoff(wait:b.sum + 2, release:1, curve:nil, doneAction:2) },)
+		out: EffectNarrow.bus({|i| CrossoverDistortion.ar(i) => LeakDC.ar(_) / 10 + i => FreeVerb.ar(_,1,[ 1,0.8 ]) * EnvGen.cutoff(wait:b.sum + 2, release:1, curve:nil, doneAction:2) },)
 
 	).play
 });
@@ -614,7 +614,7 @@ P(\chord, syl: 6, music: { |p b e|
 P(\boom, music: { |p b e|
 	(
 		freq: [-1,1,3].df(\c,3,\minor),
-		out: Effect.bus({|i| DWGReverbC1C3.ar(i) },)
+		out: EffectNarrow.bus({|i| DWGReverbC1C3.ar(i) },)
 	).play
 });
 )

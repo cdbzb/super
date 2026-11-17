@@ -183,7 +183,7 @@ P.synthVs(\an, take: [\ooh, \ooh2],
 Song.chankSwitch = \u;
 Song.chankOut = 2;
 P(\chank, music: { |p b e|
-	var out = Effect.bus({|i|
+	var out = EffectNarrow.bus({|i|
 		AnalogVintageDistortion.ar(i,drivegain: 1.8,bias:0.18,shelvingfreq:600,lowgain:0.00,highgain:0.8) / 25 
 		* -6.dbamp
 		// => Pan2.ar(_, Env([1, -1, 1, -1, 1, -1, 1, -1],"q q q q q q q q".asBeats.warpTo( e.tempoMap )).kr(2, gate:1))
@@ -298,7 +298,7 @@ P(\chords, music: { |p b e|
 		amp: 0.6,
 		instrument: \stringyy,
 		out: 4
-		// out: Effect.bus({|i| i },out:4) 
+		// out: EffectNarrow.bus({|i| i },out:4) 
 
 	].ppm;
 	
@@ -418,7 +418,7 @@ P(\bass,'bodily',music: {|p b e|
 		] ++ p.formulaBass => _.ppma
 });
 P(\chank, music: { |p b e|
-	var out = Effect.bus({|i|
+	var out = EffectNarrow.bus({|i|
 		AnalogVintageDistortion.ar(i,drivegain: 1.8,bias:0.18,shelvingfreq:600,lowgain:0.00,highgain:0.8) / 15 
 		* -6.dbamp
 		// => Pan2.ar(_, Env([1, -1, 1, -1, 1, -1, 1, -1],"q q q q q q q q".asBeats.warpTo( e.tempoMap )).kr(2, gate:1))
@@ -463,7 +463,7 @@ P(\chank, music: { |p b e|
 ["functions to normal. ",[7,6, 12,11,7 ].dm('d',octave:4 )].addLine;
 
 P(\chank, music: { |p b e|
-	var out = Effect.bus({|i|
+	var out = EffectNarrow.bus({|i|
 		AnalogVintageDistortion.ar(i,drivegain: 1.8,bias:0.18,shelvingfreq:600,lowgain:0.00,highgain:0.8) / 15 
 		* -6.dbamp
 		// => Pan2.ar(_, Env([1, -1, 1, -1, 1, -1, 1, -1],"q q q q q q q q".asBeats.warpTo( e.tempoMap )).kr(2, gate:1))
@@ -570,7 +570,7 @@ p.hatPattern.(e.tempoMap.quantizeDft(p.formulaQuantAmount), 16)// => Pfin(8,_)
 // P.tune( 'to normal',Pset(\dur, Song.tempoMap[ 'to normal' ] .beats.warpTo(Song.tempoMap[ 'to normal' ].quantizeDft).q,_));
 P.tune('to normal',  _ <> [instrument: [ \sawSynth, \harp ], coef:0.15, amp:[0.09,0.03]].p.fin(3)  ); 
 P(\chank, music: { |p b e|
-	var out = Effect.bus({|i|
+	var out = EffectNarrow.bus({|i|
 		AnalogVintageDistortion.ar(i,drivegain: 1.8,bias:0.18,shelvingfreq:600,lowgain:0.00,highgain:0.8) / 15 
 		* -6.dbamp
 		// => Pan2.ar(_, Env([1, -1, 1, -1, 1, -1, 1, -1],"q q q q q q q q".asBeats.warpTo( e.tempoMap )).kr(2, gate:1))
@@ -610,7 +610,7 @@ P(\chank, music: { |p b e|
 });
 ["(boom) While the bodies are occupied, ",[-15,-5,-6,-7,1,2,4,3,1].dm('c')].addLine;
 P(\chank, music: { |p b e|
-	var out = Effect.bus({|i|
+	var out = EffectNarrow.bus({|i|
 		AnalogVintageDistortion.ar(i,drivegain: 1.8,bias:0.18,shelvingfreq:600,lowgain:0.00,highgain:0.8) / 15 
 		* -6.dbamp
 		// => Pan2.ar(_, Env([1, -1, 1, -1, 1, -1, 1, -1],"q q q q q q q q".asBeats.warpTo( e.tempoMap )).kr(2, gate:1))
@@ -662,9 +662,9 @@ P(\chordsOccupied,start:\occupied,music:{|p b e|
 		freq:[[1,3,5],[1,4,6]].df('g',octave:4 ).stutter(2).q*[1,1.01],
 		//		out:1,
 		pan:0,
-		out:Effect({|i| MoogLadder.ar(i,1200,1) => EchoNone.ar(_, 0.2,  delaytime: 0.1,  decaytime: 2.0)},out:1, inputChannels:2).bus.index,
+		out:EffectNarrow({|i| MoogLadder.ar(i,1200,1) => EchoNone.ar(_, 0.2,  delaytime: 0.1,  decaytime: 2.0)},out:1, inputChannels:2).bus.index,
 		amp:0.2,
-		//		out:Effect(FreeVerb.ar(_,0.51,0.5),out:1).bus.index,
+		//		out:EffectNarrow(FreeVerb.ar(_,0.51,0.5),out:1).bus.index,
 		dur:"e e e e".asBeats.q*2,
 	].p.trace.play(Song.quarters[e.start].asTempoClock)
 }
@@ -702,9 +702,9 @@ P(\chords,start:\administer,music:{|p b e|
 freq:[[1,3,5],[-7,2,5]].df('a',4,\harmonicMinor ).stutter(2).q*[1,1.01],
 //		out:1,
 pan:0,
-out:Effect({|i| MoogLadder.ar(i,1200,1) => EchoNone.ar(_, 0.2,  delaytime: 0.1,  decaytime: 2.0)},out:1).bus.index,
+out:EffectNarrow({|i| MoogLadder.ar(i,1200,1) => EchoNone.ar(_, 0.2,  delaytime: 0.1,  decaytime: 2.0)},out:1).bus.index,
 amp:0.2,
-//		out:Effect(FreeVerb.ar(_,0.51,0.5),out:1).bus.index,
+//		out:EffectNarrow(FreeVerb.ar(_,0.51,0.5),out:1).bus.index,
 //dur:"e e e e".asBeats.q*2,
 dur:"q q qq ".asBeats.warpTo(e.tempoMap).q
 ].pp//.p.trace.play(Song.quarters[e.start].asTempoClock)
@@ -866,7 +866,7 @@ P.tune('hypo you will',  { |i| i
 	<>[
 		instrument: \sparkTriangle,
 		depth:0.01,
-		out: Effect.bus({|i| i=>Pan2.ar(_,1) }, out:2),
+		out: EffectNarrow.bus({|i| i=>Pan2.ar(_,1) }, out:2),
 		amp: 0.08
 	].pm
 	=> Pmul(\freq,0.5,_)
@@ -882,7 +882,7 @@ P(\hypoBase,'hypo you will', music:{|p b e|
 		smooth:0.1,
 		coef: 0.9,
 		drive: 0.94,
-		// out: Effect.bus({|i| AnalogTape.ar(i,drive:[ 0.5,0.5 ]) },)
+		// out: EffectNarrow.bus({|i| AnalogTape.ar(i,drive:[ 0.5,0.5 ]) },)
 	].pm(\pluckD)
 	.play
 	(
@@ -1064,7 +1064,7 @@ P(\chordsTwo, music: { |p b e|
 			[-7, 3, 5],
 		].df('f#',\minor).q,
 		dur: "q*6".beats.warpTo(e.tempoMap.quantizeDft(0.5)).q,
-		out: Effect.bus({|i| 
+		out: EffectNarrow.bus({|i| 
 			Phaser1.ar(input:i, depth:0.5, rate:0.19, fb:-0.7, cfb:0.1, rot:1.5707963267949)
 			=> MoogFF.ar(_, freq:2000, gain:2, reset:0)
 			* 5.dbamp
@@ -1271,7 +1271,7 @@ P(\accents, music: { |p b e|
 		dur: b.parse([6, 6]).q,
 		coef: 0.12,
 		out: 
-		[2, 3].collect{|p| Effect.bus({|i|i => Pan2.ar(_, 4 - p * 2 - 1) => DWGReverbC1C3.ar(_, mix: 1)  },out:p, inputChannels: 1) }
+		[2, 3].collect{|p| EffectNarrow.bus({|i|i => Pan2.ar(_, 4 - p * 2 - 1) => DWGReverbC1C3.ar(_, mix: 1)  },out:p, inputChannels: 1) }
 	] .pp;
 	{
 		Gendy3.arWidth(freq: Env([5, 5, 5.5].df('f#'), b.parse([5, 1]) + 0.05, curve: \exp).kr(0,gate:1))
@@ -1679,7 +1679,7 @@ P(\line, music: { |p b e|
 		dur: "e e e e e e e e e" .asBeats.warpTo( e.tempoMap ).q,
 		legato: 3,
 		instrument: \harp, coef: 0.1, amp: 0.02,
-		out: Effect.bus({|i| Phaser2.ar(i,rate:0.2) }, out: 2)
+		out: EffectNarrow.bus({|i| Phaser2.ar(i,rate:0.2) }, out: 2)
 	].pp
 });
 P(\tremoloYes,start:'that was it',music:{|p b e|
@@ -1741,7 +1741,7 @@ P(\bassline, music: { |p b e|
 		"qq q qq q q qq q".asBeats.warpTo( e.tempoMap ++ Song.tempoMap[e.start + 1] )
 		=> _.q
 		,
-		out: Effect.bus({|i| FreeVerb.ar(i,0.1,1) => SineShaper.ar(i,0.2)  }),
+		out: EffectNarrow.bus({|i| FreeVerb.ar(i,0.1,1) => SineShaper.ar(i,0.2)  }),
 		amp:0.6 * -3.dbamp
 	].pp;
 	[
@@ -1867,7 +1867,7 @@ P(\dyads, syl: 7,  music: { |p b e|
 		freq: [[1, 3], [1, 4],[1, 4],[1, 3]].df('b-').q,
 		dur: b.drop(1).q,
 		instrument: \defaultPiano,
-		out: Effect.bus({|i| FreeVerb.ar(i, 0.3, 0.9) => SineShaper.ar(_, 0.06) / 2 },out: 2)
+		out: EffectNarrow.bus({|i| FreeVerb.ar(i, 0.3, 0.9) => SineShaper.ar(_, 0.06) / 2 },out: 2)
 	].pp
 });
 P(\chords, music: { |p b e|
@@ -1922,7 +1922,7 @@ P(\keepThisOctaves,start:'keep this',music:{|p b e|
 freq: [\r,1,-6,-5].df('b-',octave:[2,3,1] ).q,
 dur: b.parse([2, 4,2,4]) + [0,0,0,1] =>_.q,
 legato:1,
-out:[ 0 ]++Effect(
+out:[ 0 ]++EffectNarrow(
 	{|i|
 
 		var chain = FFT({ LocalBuf(2048) }!2,i);
@@ -2008,7 +2008,7 @@ P(\triBass, music: { |p b e|
 P(\necessaryBaseNote,start:'necessary',music:{|p b e|
 [out:
 	[ 0 ]++
-	Effect(
+	EffectNarrow(
 		{|i|
 
 			var chain = FFT({ LocalBuf(2048) }!4,i);
@@ -2109,7 +2109,7 @@ P(\sargonMiddleVoice,start:'with him',music:{|p b e|
 	mix:0,
 	out:
 	//		[ 3 ]++
-	Effect(
+	EffectNarrow(
 		{|i|
 			var chain = FFT({ LocalBuf(2048) }!2,i);
 			chain = PV_MagSmear.new(chain,  bins: 10.0);
@@ -2144,7 +2144,7 @@ P(\sargonStrum,start:'with him',music:{|p b e|
 	freq: [\r,[5,11,13,15,21]].df('b',octave:4,scale:\minor,tuning:\sept1,).q,
 	lfo: Effect.lfo({ SinOsc.kr(3.5).range(0.02 , 0.1) * Env([1, 1],b).kr(2) }),
 	amp:Pfunc({|e|e.lfo}) ,
-	out:Effect({|i|i.distort => EarlyRef.ar(_,[1,1,1],[2,3,1],[5,6,4])=> DWGReverbC1C3.ar(_,2000,1,30,mix:0.5)},inputChannels:2,out:2,).bus.index,
+	out:EffectNarrow({|i|i.distort => EarlyRef.ar(_,[1,1,1],[2,3,1],[5,6,4])=> DWGReverbC1C3.ar(_,2000,1,30,mix:0.5)},inputChannels:2,out:2,).bus.index,
 	strum:0.06,
 	dur:b.parse([2,3]).q,
 

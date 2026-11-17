@@ -103,8 +103,8 @@ Trek.setTransition(3, -4,
 		 (instrument:\cymbalsDS, att:2.5, amp: 0.01, group: Trek.transitionGroup, freq: 1.df(\d, 4)).play;
 		 (instrument:\cymbalsDS, att:2.5, amp: 0.004, group: Trek.transitionGroup,sustain: 2, release: 4, type: \tuningGong, freq: -3.df(\d)).play;
 		 (instrument:\cymbalsDS, att:2.5, amp: 0.004, group: Trek.transitionGroup,sustain: 2, release: 4, type: \tuningGong, freq: -1.df(\d)).play;
-		 ( amp: 0.04, dur: 3,instrument: \defaultPiano, freq: [7, 11, 13].df(\d,  \mixolydian,), strum: 0.04, out: Effect.bus({|i| CombN.ar(i, 0.4, 0.4, 5)/2 ++ i }, time: 2) ).play;
-		 ( amp: 0.02,instrument: \defaultPiano, dur: 3,freq: [7, 11, 13].df(\d,4,  \mixolydian, ),  strum: 0.04, out: Effect.bus({|i| CombN.ar(i, 0.4, 0.4, 5)/2 ++ i },out: 2, time: 2) ).play;
+		 ( amp: 0.04, dur: 3,instrument: \defaultPiano, freq: [7, 11, 13].df(\d,  \mixolydian,), strum: 0.04, out: EffectNarrow.bus({|i| CombN.ar(i, 0.4, 0.4, 5)/2 ++ i }, time: 2) ).play;
+		 ( amp: 0.02,instrument: \defaultPiano, dur: 3,freq: [7, 11, 13].df(\d,4,  \mixolydian, ),  strum: 0.04, out: EffectNarrow.bus({|i| CombN.ar(i, 0.4, 0.4, 5)/2 ++ i },out: 2, time: 2) ).play;
 		 defer{ Stills.plotTitleCard("Sargon's Chamber", dur: 3)};
 		 // fork{0.9.wait; Server.default.freeMyDefaultGroup};
 		 s.defaultGroup.release(1);
@@ -268,14 +268,14 @@ Trek.setTransition(12, -1,dur: 5.5, func:{
 	defer{ a=Stills.plotTitleCard("Three Alien Minds", dur: 1, fade:4) };
 	fork{
 		(instrument: \harp, freq: [ 1, -11].df(\f), out: (..4), coef: 0.15, amp: 0.02,
-		// out: Effect.bus({|i| BPF.ar(i, 1200) * 2 },inputChannels:5)
+		// out: EffectNarrow.bus({|i| BPF.ar(i, 1200) * 2 },inputChannels:5)
 	).play;
 		[
 			instrument: \stringyy, 
 			freq: [1, 1.5].df(\f, [ 4, 5]).q,
 			dur: [1, 4.5].q,
 			freqLag: 8,
-			// out: Effect.bus({|i| BPF.ar(i, 1000) }, inputChannels:5)
+			// out: EffectNarrow.bus({|i| BPF.ar(i, 1000) }, inputChannels:5)
 		].ppm;
 	};
 	~activateFader.(13);
@@ -303,7 +303,7 @@ Trek.setTransition(15, -2,trimEnd:1, dur: 0, func:{
 	// 3.wait;
 	// defer{ a=Stills.plotTitleCard("With these bodies", dur: 2, fade:12) };
 	// (instrument: \stringyy, freq: [1, 2, 3 ].df(\c, 2), dur: 4, out: (..4), amp: 0.04).play;
-	// (instrument: \reedy, out:Effect.bus({|i| i/10 },)).play;
+	// (instrument: \reedy, out:EffectNarrow.bus({|i| i/10 },)).play;
 	Trek.faderSynths[15].release;
 })
 // .value

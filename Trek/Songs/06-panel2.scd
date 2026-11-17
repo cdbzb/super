@@ -494,7 +494,7 @@ P(\bassLine5,music:{|p b e|
 		freq: (\r!12++[11,11,7,7,6,6,5,5]).flatten.df('b',octave:2,scale:\minor ).q,
 		//	dur:Song.parse(5,[1/2,1/2,[1,1,1/3],[2/3,1] ],8).q,
 		dur:~eighths5.q.stutter(2)/2,
-		out: Effect.bus({|i| i => FreeVerb.ar(_,0.05,0.9)   => SineShaper.ar(_,0.1) => _.tanh  },inputChannels:2)
+		out: EffectNarrow.bus({|i| i => FreeVerb.ar(_,0.05,0.9)   => SineShaper.ar(_,0.1) => _.tanh  },inputChannels:2)
 	].pp
 });
 
@@ -743,7 +743,7 @@ P(\tremoloSwell,start:\Lungs,music:
 
 			(type:\vst_midi,vst:Song.synful1.controller,midicmd:\allNotesOff).play;
 			Song.synful1.patch(\violas,\trem,0);
-			Song.synful1.syn.set(\out,~verbchannels=Effect(FreeVerb.ar(_,1,1),out:0,inputChannels:4).bus.index) ;
+			Song.synful1.syn.set(\out,~verbchannels=EffectNarrow(FreeVerb.ar(_,1,1),out:0,inputChannels:4).bus.index) ;
 			Song.synful1.expression(100,0);
 			~stringChords=[12,10,2,14,20,20,10];
 			~stringChords=[12,0,2,4,0,0,0]-1;
@@ -768,7 +768,7 @@ P(\tremoloSwell,start:\Lungs,music:
 		);
 		[
 			type:\vst_midi,vst:Song.synful1.controller,
-			//verb:{ Song.synful1.setOut( ~verbchannels=Effect(FreeVerb.ar(_,1,1),out:0,inputChannels:4).bus.index) } ;
+			//verb:{ Song.synful1.setOut( ~verbchannels=EffectNarrow(FreeVerb.ar(_,1,1),out:0,inputChannels:4).bus.index) } ;
 			//chords: [[5,7,11,15],[4,11,13,14]].stutter(8).q(16) ,
 			//chords: Pstep([[5,7,11,15],[4,11,13,14]],4)=>Pn(_,3),
 			chords: Pdefn(\swellChord),
@@ -983,7 +983,7 @@ P(\pumping,start:\pumping,lag:-0.152,music:
 // Song.currentSong.play(\blood,\tune9,\pumping)
 P(\blood,start:\pumping,syl:7,lag:-0.15,music:
 	{
-		//		var distortion=Effect({|i|i.tanh});
+		//		var distortion=EffectNarrow({|i|i.tanh});
 		[1,3,5,7,11,13,15].df('e').do({|i|
 			Synth('defaultPorto.clean',[
 				\attack,5,
@@ -1028,7 +1028,7 @@ P(\piano9,syl:7,music:
 			~quarters9[12..].q
 			++ Song.parse(\million,[[1,1],[1,1],2],).q
 			,
-			out: Effect.bus( {|i| 
+			out: EffectNarrow.bus( {|i| 
 				HPF.ar(i.tanh,1300)
 			},  ),
 			amp:0.3,
@@ -1043,7 +1043,7 @@ P(\piano9,syl:7,music:
 P(\bass,music: {|b p e|
 		[
 			flag:[0.1,0.2],
-			//effect:Effect({|i| i*Line.kr(1,0,3)},inputChannels:2).bus.index,
+			//effect:EffectNarrow({|i| i*Line.kr(1,0,3)},inputChannels:2).bus.index,
 			//	out:Pkey(\effect)+[0,1],
 			// out:[0,1],
 			freq:  {
@@ -1055,7 +1055,7 @@ P(\bass,music: {|b p e|
 			freq: 5.df(\c,1),
 			decay:0.70,
 			out:[0,1],
-			// out: Effect.bus({|i| i * EnvGen.cutoff(0.02,8,curve:-4)   }, inputChannels:2, time: 2),
+			// out: EffectNarrow.bus({|i| i * EnvGen.cutoff(0.02,8,curve:-4)   }, inputChannels:2, time: 2),
 			pulse:1,
 			// fadeout:[1,0,0,0,0,0].q,
 			amp:0.20 * -6.dbamp,
@@ -1078,7 +1078,7 @@ P(\bass,music: {|b p e|
 //MUTEDdur:Song.parse(10,[[1,1],[1,1],2],).q,
 //MUTEDstrum:[0, 0, 0.05].q,
 //MUTEDlegato:1.1,
-//MUTEDeffect: Effect( {|i| 
+//MUTEDeffect: EffectNarrow( {|i| 
 //MUTEDHPF.ar(i.tanh,1300)
 //MUTED},inputChannels:1 ).bus.index,
 //MUTEDout: Pkey(\effect),
@@ -1334,7 +1334,7 @@ P(\connector, music: { |p b e|
 		instrument: \harp,
 		freq: [1,2,3, 5 ].df(\d,[5,3,1]).q,
 		dur: [b.sum] ++ e.bNext.parse([5, 2]) + ([0,0,  p.durs[e.start+2].list[0..2].sum  ]) ++ 1  => _.postln=>_.q,
-		out: Effect.bus({|i| i => RLPF.ar(_, Line.kr(133,277,b.sum + e.bNext.sum) )
+		out: EffectNarrow.bus({|i| i => RLPF.ar(_, Line.kr(133,277,b.sum + e.bNext.sum) )
 		=> {|i| i/100 + Monitors.az(i, Line.kr(0,4,b.sum + e.bNext.sum)) 
 	}		},time: 8),
 		amp:0.03
@@ -1411,7 +1411,7 @@ P(\strings, music: { |p b e|
 	[
 		instrument: \stringyy,
 		freq: [\r] ++ [-7, 3, 6].df(\f, \mixolydian).bubble => _.q,
-		out: Effect.bus({|i| i  
+		out: EffectNarrow.bus({|i| i  
 			* (TDuty.ar("x x x x x x x x x x x x x x x x x x x x x x x x x x x x x".asBeats.warpTo(e.tempoMap).dq(inf),0) => Decay.ar(_,0.2) )
 			* 2
 		},out:3),
@@ -1512,7 +1512,7 @@ P(\accent14,start:\aware,syl:2,music:
 			instrument:\cymbal_808,
 			amp:0.35,
 			tone:0.01,
-			out:Effect({|i|
+			out:EffectNarrow({|i|
 				TwoTube.ar(i,0.5,0.2,1300,1455)=>Decimator.ar(_,[9000,10000],8)*
 				Env.linen(0,1,4).kr(2,gate:1)
 				//	=> DetectSilenceDry.ar(_,doneAction:2)
@@ -1554,7 +1554,7 @@ P(\kick14,music: {|p b e|
 			dur: "e e e e e e e e e e e e e e e e e ".asBeats.warpTo( e.tempoMap.quantizeDft(0.2) ).q,
 			amp:[0.05,0.1].q(inf)  * 0.dbamp,
 			pan:-1,
-			out:Effect.bus( { |i| Phaser2.ar(i)[0] }, out: 0 ),
+			out:EffectNarrow.bus( { |i| Phaser2.ar(i)[0] }, out: 0 ),
 			// out:Pkey(\effect),
 			note:[\].q(3)++[1].q(inf),
 		].pp
@@ -1620,7 +1620,7 @@ P(\kick15,music:{|p b e|
 		dur: "e e e e e e e e e e e e e e e e e ".asBeats.warpTo( e.tempoMap.quantizeDft(q) ).q,
 		amp:[0.05,0.1].q(inf) * 0.dbamp,
 		pan:-1,
-		out:Effect.bus( { |i| Phaser2.ar(i)[0] }, out: 0 ),
+		out:EffectNarrow.bus( { |i| Phaser2.ar(i)[0] }, out: 0 ),
 		// out:Pkey(\effect),
 		// note:[\].q(3)++[1].q(inf),
 	].pp
@@ -1676,7 +1676,7 @@ P(\kick, music: { |p b e|
 		dur: "e e e e e e e e e e e e e e e  ".asBeats.warpTo( e.tempoMap.quantizeDft(0.3) ).q,
 		amp:[0.1, 0.05].q(inf) * 0.dbamp,
 		pan:-1,
-		out:Effect.bus( { |i| Phaser2.ar(i)[0] }, out: 0 ),
+		out:EffectNarrow.bus( { |i| Phaser2.ar(i)[0] }, out: 0 ),
 		// out:Pkey(\effect),
 		// note:[\].q(3)++[1].q(inf),
 	].pp
@@ -1694,7 +1694,7 @@ P(\traps, music: { |p b e|
 		instrument:\hat_808,
 		amp: 0.15,
 		// dur:Song.parse(\aware,[1,1,1,1/2,1/2,1,1,1,1,1/2,1/2,1,1,1/2,1/2,1/2,1/2]).q.quantize(q),
-		out:Effect.bus( { |i| Phaser2.ar(i)[0] }, out: 0 ),
+		out:EffectNarrow.bus( { |i| Phaser2.ar(i)[0] }, out: 0 ),
 	).play
 });
 
@@ -1733,7 +1733,7 @@ P.still(\mulhallWide, timecode: 1446.0.seconds, music: { |p b e|
 		[ 
 			freq:Prand([1,3,5,11,13,15,21].df('a-',scale:\minor),inf)*2,
 			dur:Pwhite(0.01,0.04,40),
-			effect: Effect(EchoCubic.ar(_,0.4,SinOsc.kr(1/20).range(0.21,0.22),5)).bus.index,
+			effect: EffectNarrow(EchoCubic.ar(_,0.4,SinOsc.kr(1/20).range(0.21,0.22),5)).bus.index,
 			amp:0.02,
 			out:Pkey(\effect),
 		].pp
@@ -1940,7 +1940,7 @@ P.synthV(\genbu,pbind: Song.enlarge(5), take: \lead,
 });
 P(\chordYouAnn,start:'nn Mulhall',music:
 	{ |p b|
-		var verb= Effect.new({|i | 
+		var verb= EffectNarrow.new({|i | 
 			FreeVerb.ar(i,0.7,0.9) 
 			=>BPF.ar(_,
 				Env.linen(8,level:4000).kr(gate:1)+300,
@@ -1992,7 +1992,7 @@ P(\continuedLineMisSpock,start:'you --',music:{|p b|
 P(\sparkBassNote,start:'you --',music:
 	{ |p b|
 		LambdaEnvir((
-			effect:  Effect.new(
+			effect:  EffectNarrow.new(
 				{ 
 					| i | 
 					FreeVerb.ar(i,0.7,\room.kr(0.9,0.5)) 
@@ -2125,7 +2125,7 @@ P(\liveChord,syl:10,start:'live again',music:{ |p b|
 		chord:Pxrand([5,11,13,15,17,22].df('a',scale:\mixolydian),inf),
 		freq:Pfunc({|e| e.chord * [1,2,0.5].choose }),
 		dur:0.1,
-		effect:Effect(FreeVerb.ar(_,0.9,1),inputChannels:4).bus.index,
+		effect:EffectNarrow(FreeVerb.ar(_,0.9,1),inputChannels:4).bus.index,
 		out:Pkey(\effect)+Pwhite(0,3),
 	].p
 	=> Pfindur(1,_)

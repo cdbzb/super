@@ -191,7 +191,7 @@ P(\collapseTremolo,start:'collapses',music:{|p b e|
 	~syn1.expression(127,1);
 //	~syn1.monitor.isRunning.not.if{~syn1.monitor=Synth(\syn1_Bus)};
 	~syn1.patch(\violas,\trem,0);
-	~syn1.setOut(Effect(FreeVerb.ar(_,0.8,0.8)).bus.index);
+	~syn1.setOut(EffectNarrow(FreeVerb.ar(_,0.8,0.8)).bus.index);
 //////////
 //idea delays without interpolation in the four channels
 //////////

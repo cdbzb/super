@@ -65,7 +65,7 @@ Song.preroll = 0.5;
 
 Song.xtremeBassFX = (s.options.outDevice == "MacBook Pro Speakers").if{
 	{
-		Effect.bus( {|i| 
+		EffectNarrow.bus( {|i| 
 			Decimator.ar(i,rate:8000,bits:4)*(-6.dbamp)
 			=> LeakDC.ar(_)
 			=>.first DetectSilence.ar(_, time:1, doneAction:2)
@@ -73,7 +73,7 @@ Song.xtremeBassFX = (s.options.outDevice == "MacBook Pro Speakers").if{
 	}
 }{
 	{
-		Effect.bus( {|i| Decimator.ar(i,rate:8000,bits:4)*(-6.dbamp) 
+		EffectNarrow.bus( {|i| Decimator.ar(i,rate:8000,bits:4)*(-6.dbamp) 
 		=> HPF.ar(_, 100)
 		=> LeakDC.ar(_)
 		=>.first DetectSilence.ar(_, time:1, doneAction:2)
@@ -105,7 +105,7 @@ P(\bassnote,   music:
 			amp:3,
 			sustain:0.5 + Song.secDur[0..1].sum,
 			dur:Song.secDur[1]+0.5,
-			out:Effect({
+			out:EffectNarrow({
 				|i| 
 				i * Env.asr(0.1,1,0).kr(0,gate:1)
 				=> PlateReverb.ar(_,mix:0.9) 
@@ -143,7 +143,7 @@ P(\strum1, syl:2, music: {|p b e|
 
 			amp: [0.02, 0.02], coef: 0.1,
 			sustain:2,
-		out: Effect.bus({|i| i => Phaser2.ar(i, depth:0.5, rate:0.177, fb:0.3, cfb:0.1, rot:1.5707963267949, rq:1) * SinOsc.ar(3.6).range(0.7,1.1) }, inputChannels: 2)
+		out: EffectNarrow.bus({|i| i => Phaser2.ar(i, depth:0.5, rate:0.177, fb:0.3, cfb:0.1, rot:1.5707963267949, rq:1) * SinOsc.ar(3.6).range(0.7,1.1) }, inputChannels: 2)
 		).play
 	}
 );
@@ -206,7 +206,7 @@ P(\strumTwo, syl:2, music: {|p b e |
 		instrument: [\harpS, Song.strum],
 		formfreq: 7502,
 		amp: [0.02, 0.02], coef: 0.1,
-		out: Effect.bus({|i| i => Phaser2.ar(i, depth:0.5, rate:0.177, fb:0.3, cfb:0.1, rot:1.5707963267949, rq:1) * SinOsc.ar(3.6).range(0.7,1.1) }, inputChannels: 2)
+		out: EffectNarrow.bus({|i| i => Phaser2.ar(i, depth:0.5, rate:0.177, fb:0.3, cfb:0.1, rot:1.5707963267949, rq:1) * SinOsc.ar(3.6).range(0.7,1.1) }, inputChannels: 2)
 	).play
 });
 
@@ -216,7 +216,7 @@ P(\bassnote2,  music: { |p b e|
 			amp:3,
 			sustain:Song.secDur[e.start],
 			//out:Song.bassBuss.index
-			out:Effect({
+			out:EffectNarrow({
 				|i| 
 				i * Env.asr(0.1,1,0).kr(0,gate:1)
 				=> PlateReverb.ar(_,mix:0.9) 
@@ -412,7 +412,7 @@ P(\guit, music: { |p b e|
 		freq: [\r, 3, 5, 1].df(\a,3, ).q,
 		dur: b.parse([1, 1, 1, 5]).q,
 		instrument: \pluckD,
-		out: Effect.bus({|i| Phaser1.ar(i,rate: 0.17) => Splay.ar(_, 0.5, 1,0.5 ) },),
+		out: EffectNarrow.bus({|i| Phaser1.ar(i,rate: 0.17) => Splay.ar(_, 0.5, 1,0.5 ) },),
 		amp: 0.01
 	].ppm
 });
@@ -465,7 +465,7 @@ P(\bass3, music: {|p b e|
 			dur: b.q,
 			amp: 0.8,
 			rest: MuteFirst(),
-			out: Effect.bus({|i| HPF.ar(i, 100) },inputChannels: 2)
+			out: EffectNarrow.bus({|i| HPF.ar(i, 100) },inputChannels: 2)
 		].pp
 });
 ["tabolism so we're going to have to", " f5 e d c r g#4 a b c5 d e ", ].addLine; 
@@ -517,7 +517,7 @@ P(\bass5, music: {|p b e|
 			\dur,Pseq(b[0..3]++b[4..6].sum++1),
 			\amp,0.8,
 			\lag,Pwhite(-0.02,0.02),
-			\out, Effect.bus({|i| HPF.ar(i, 120) },inputChannels: 2)
+			\out, EffectNarrow.bus({|i| HPF.ar(i, 120) },inputChannels: 2)
 		).play
 });
 P(\drums5,music: {|p b e|
@@ -545,7 +545,7 @@ P(\bassnote6,music: {|p b e|
 				freq: "3 2 1".df(\f, 2).q,
 				dur: b.parse([2, 1, 1]).q,
 				amp:0.8,
-				out: Effect.bus({|i| HPF.ar(i, 100) },inputChannels: 2)
+				out: EffectNarrow.bus({|i| HPF.ar(i, 100) },inputChannels: 2)
 			].pp
 });
 P.still(\mccoy, timecode: 2509.seconds, music: { |p b e|
@@ -642,7 +642,7 @@ P(\bass8,music: {|p b e|
 			\note, Pseq([5,4,2,1]-24),
 			\dur, b.q,
 			\amp, 0.5,
-			\out, Effect.bus({|i| HPF.ar(i, 100) },inputChannels: 2)
+			\out, EffectNarrow.bus({|i| HPF.ar(i, 100) },inputChannels: 2)
 		).play
 	}
 		);
@@ -765,8 +765,8 @@ P(\transform,start:'transformation!',music:{ |p b e|
 	////strings
 	//try{Song.synful1.monitor.free;};Song.synful1.monitor=Monitor.new;Song.synful1.monitor.play(Song.synful1.bus.index,2,0,2,fadeTime:0.05);
 	//try{Song.synful2.monitor.free;};Song.synful2.monitor=Monitor.new;Song.synful2.monitor.play(Song.synful2.bus.index,2,2,2,fadeTime:0.05);
-	Song.synful1.syn.set(\out,Effect(FreeVerb.ar(_,0.75,0.55)*3* gain).bus.index);
-	Song.synful2.syn.set(\out,Effect( { |i| PlateReverb.ar(i,mix:0.55)*2 * gain * Env.linen(0,b.sum,5).kr(doneAction:2,gate:1) } ,out:2).bus.index);
+	Song.synful1.syn.set(\out,EffectNarrow(FreeVerb.ar(_,0.75,0.55)*3* gain).bus.index);
+	Song.synful2.syn.set(\out,EffectNarrow( { |i| PlateReverb.ar(i,mix:0.55)*2 * gain * Env.linen(0,b.sum,5).kr(doneAction:2,gate:1) } ,out:2).bus.index);
 	//TODO these need to turn themselves off with DoneActions rather than routines
 
 	Song.synful1.setprog(3,5,0); Song.synful1.setprog(4,5,1);
@@ -1271,7 +1271,7 @@ P(\trombone,start:'what it fee',music:
 					chan:1,
 					patch: \trombone,
 					midinote: [5,1,-7].dm('c#',[2,4],\mixolydian).q,
-					out: Effect.bus( { |i| DWGReverbC1C3.ar(i,mix:0.9,c1:2)  } ),
+					out: EffectNarrow.bus( { |i| DWGReverbC1C3.ar(i,mix:0.9,c1:2)  } ),
 					// - [12,36]
 					// Pseq(~noteList.(["g#","c#","b3"]))-[12,36] ,
 					// dur:[Song.secDur['what it fee'],Song.secDur['even to br'],3].q,
@@ -1355,7 +1355,7 @@ P(\trill,start:'trill',lag:0.1,music: { |p b e|
 					patch:\clarinet,
 					// patch:\flute,
 					legato:1,
-					out: Effect.bus( { |i| PlateReverb.ar(i,mix:0.5,decayTime:0.55)  * Env.linen(0,trillLength,5).kr(2)})
+					out: EffectNarrow.bus( { |i| PlateReverb.ar(i,mix:0.5,decayTime:0.55)  * Env.linen(0,trillLength,5).kr(2)})
 				].p.findur(len).play;
 		//var reverbBus = Bus.audio(s,1);
 		//var reverb = Synth(\plate_phaser_insert,[\inBus,reverbBus.index,\gate,1]);
@@ -1435,7 +1435,7 @@ P(\chords, music: { |p b e|
 		dur: e.bAll.parse([1, 4, 1, 4, 2, 2, 2, 2, 2, 2, 2, 1]).q,
 		instrument: \default,
 		amp: 0.2,
-		out: Effect.bus({|i| BPF.ar(i,1900) => Pan2.ar(_, SinOsc.ar(0.1)) },)
+		out: EffectNarrow.bus({|i| BPF.ar(i,1900) => Pan2.ar(_, SinOsc.ar(0.1)) },)
 		// legato: [0.9, 0.9, 0.9, 0.9, 1, 1, 1, ].q,
 	].pp
 });
@@ -1465,7 +1465,7 @@ P('bass',start:\unlike,music: {|p b e|
 			[
 				freq:[1,\r,\r,-4,-4,\r,5].df('c#',[3,4]).q,
 				dur:b.parse([1,1,3, 1,1,3]) ++ e.bNext.sum => _.q,
-				out: Effect.bus({|i| 
+				out: EffectNarrow.bus({|i| 
 					Amplitude.kr(i) * 50 
 					*  CrossoverDistortion.ar(i,amp:0.1,smooth:0.9) 
 					=> DWGReverbC1C3.ar(_,mix:0.1)  
@@ -1560,7 +1560,7 @@ P(\innerTwo,syl:5, music: { |p b e|
 		dur: e.bAll.drop(1).q,
 		amp: 0.15,
 		instrument: \sparkTriangle,depth: 0.002,amp: 0.05,
-		out: Effect.bus({|i| HPF.ar(i,250) => Pan2.ar(_,0.2) }, )
+		out: EffectNarrow.bus({|i| HPF.ar(i,250) => Pan2.ar(_,0.2) }, )
 
 	].pp
 });
@@ -1620,7 +1620,7 @@ P(\afterSoLongSketch,start:'very long',music: {|p b e|
 				instrument:\sawSynthSustain,
 				degree:Pseq(afterSoLong)-1,
 				dur:b.q,
-				out: Effect.bus(PlateReverb.ar(_,mix:0.1),out:3, target:Trek.transitionGroup),
+				out: EffectNarrow.bus(PlateReverb.ar(_,mix:0.1),out:3, target:Trek.transitionGroup),
 				amp: 0.08,
 				group: Trek.transitionGroup
 			] => {|i| i.p => Pset(\amp,0.04,_);//=>_.play; 
@@ -1632,7 +1632,7 @@ P(\afterSoLongSketch,start:'very long',music: {|p b e|
 				instrument:\reedy,
 				release:3,
 				dur:b.parse([6,5]).q,
-				out: Effect.bus(PlateReverb.ar(_,mix:0.2),out:1, target: Trek.transitionGroup),
+				out: EffectNarrow.bus(PlateReverb.ar(_,mix:0.2),out:1, target: Trek.transitionGroup),
 				amp: 0.08,
 				group: Trek.transitionGroup
 			].pp
@@ -1646,7 +1646,7 @@ P(\bassNotes54,start:'very long',music: { |p b|
 				octave:3,
 				amp:0.5,
 				group: Trek.transitionGroup,
-				out: Effect.bus( {|i| SineShaper.ar(i,0.2) * Env([0,1,1],[0.05]).kr}, target: Trek.transitionGroup)
+				out: EffectNarrow.bus( {|i| SineShaper.ar(i,0.2) * Env([0,1,1],[0.05]).kr}, target: Trek.transitionGroup)
 			].pp
 		}
 	);
@@ -1672,7 +1672,7 @@ P(\bowedKissing, lag: 0.0,music: { |p b e|
 		legato:1,
 		// group: p.transitionItems,
 		group: Trek.transitionGroup,
-		out: Effect.bus({|i| PlateReverb.ar(i,mix:0.5)  * EnvGen.cutoff(b.sum,10, curve: -2) * 2 * 2.dbamp },inputChannels:2, target: Trek.transitionGroup),
+		out: EffectNarrow.bus({|i| PlateReverb.ar(i,mix:0.5)  * EnvGen.cutoff(b.sum,10, curve: -2) * 2 * 2.dbamp },inputChannels:2, target: Trek.transitionGroup),
 		mtranspose:Pseq([ [0,2,4,7],[0,3,5,7],[0,2,5,7],[0,2,4,7],[0,3,5,7],[0,4,6,7],[0,2,4,7],[0,3,5,7],[0,7] ].collect(_-7)),
 	].pp;
 });
@@ -1688,7 +1688,7 @@ P(\bassKissing, lag:0.0,start:'kissing',music: {|p b e|
 		mtranspose:[0,4,7],
 		dur:10,
 		group:Trek.transitionGroup,
-		out: Effect.bus({|i| PlateReverb.ar(i, mix:1) * 2 },target: Trek.transitionGroup),
+		out: EffectNarrow.bus({|i| PlateReverb.ar(i, mix:1) * 2 },target: Trek.transitionGroup),
 	).play
 });	
 [ "final rest","f#4",[5] ].addLine; 

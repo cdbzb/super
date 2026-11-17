@@ -82,7 +82,7 @@ P(\bassnote, music: { |p b e|
 P(\otherNote,syl:4, music: { |p b e|
 	(
 		freq: 1.df('c#',4),
-		out:Effect.bus({|i| DWGReverbC1C3.ar(i) }),
+		out:EffectNarrow.bus({|i| DWGReverbC1C3.ar(i) }),
 	).play
 });
 P(\shaking, music: { |p b e|
@@ -417,7 +417,7 @@ P.synthVs(role:\mulhall, take: [\lead, \double],
 		}.play
 });
 P(\bass,start:'own body',music:{|p b e| 
-		Synth(\cymbalsDS,[out:Effect(_*Line.kr(1,0,5)).bus.index,amp:0.01]);
+		Synth(\cymbalsDS,[out:EffectNarrow(_*Line.kr(1,0,5)).bus.index,amp:0.01]);
 		[instrument:\hihat,dur:1!15=>_.warpTo(Song.quarters['own body'].quantizeWindow)=>_.q].pp;
 		MegaBind(
 			[
@@ -478,7 +478,7 @@ P(\chord, music: { |p b e|
 			].q,
 
 			dur: b.parse([2, 2, 4]).q,
-			out: Effect.bus({|i| BPF.ar(i,[ 1100, 1000 ],0.15) * 4  },)
+			out: EffectNarrow.bus({|i| BPF.ar(i,[ 1100, 1000 ],0.15) * 4  },)
 		].pp
 });
 P(\answer,start:'own body',syl:7,music:{|p b e| 
@@ -545,7 +545,7 @@ P.synthV(\mo, take: \lead, params: {|p b| [
 		}.play
 });
 P(\bass, music: { |p b e|
-		Synth(\cymbalsDS,[out:Effect(_*Line.kr(1,0,5)).bus.index,amp:0.015]);
+		Synth(\cymbalsDS,[out:EffectNarrow(_*Line.kr(1,0,5)).bus.index,amp:0.015]);
 		[instrument:\hihat,dur:0.5!15=>_.warpTo(e.tempoMap.quantizeDft(0.99))=>_.q].pp;
 		MegaBind(
 			[
@@ -592,7 +592,7 @@ P(\cymbal, music: { |p b e|
 P(\clang,start:'broken',music:{|p b e| 
 			[
 				freq: [\f,\g,\A].collect{|i| [-21,-11].df(i)} => _.q,
-				out: Effect( { |i| PlateReverb.ar(i)  * Env.linen(0,b.sum,4).kr(gate:1) * 3}).bus.index,
+				out: EffectNarrow( { |i| PlateReverb.ar(i)  * Env.linen(0,b.sum,4).kr(gate:1) * 3}).bus.index,
 				dur: b ++ [1] => _.q
 			].pp;
 			{
@@ -657,7 +657,7 @@ P(\dyads, music: { |p b e|
 			legato: [1, 4, 1, 4, 1, 4, 3, 2].q,
 			amp:0.1,
 			pan: [-1,1].q(inf),
-			out: Effect.bus({|i| i=> SineShaper.ar(i,0.04)=>FreeVerb.ar(_, 0.3,0.9) * 2 
+			out: EffectNarrow.bus({|i| i=> SineShaper.ar(i,0.04)=>FreeVerb.ar(_, 0.3,0.9) * 2 
 			=> HPF.ar(_,400,1.5)
 		},inputChannels:2)
 		].pp
@@ -678,7 +678,7 @@ P(\bassNotesOne, music: { |p b e|
 			dur: b.parse([6,4,4,1]).q,
 			decaytime: b.sum,
 			legato: 1,
-			out: Effect.bus({|i| CrossoverDistortion.ar(i, gain: 0.2) / 15 => FreeVerb.ar(_,1,1) => LeakDC.ar(_) * EnvGen.cutoff(wait:b.sum , release:10, curve:nil, doneAction:2) },)
+			out: EffectNarrow.bus({|i| CrossoverDistortion.ar(i, gain: 0.2) / 15 => FreeVerb.ar(_,1,1) => LeakDC.ar(_) * EnvGen.cutoff(wait:b.sum , release:10, curve:nil, doneAction:2) },)
 		].pp
 });
 P.synthVs(role: \mccoy, take: [\lead, \double], params: {|p b| [
@@ -730,7 +730,7 @@ P(\bassnote, music: { |p b e|
 		instrument: \pluckD,
 		freq: [-12, -22].df(\c),
 		amp: 0.01,
-		out: Effect.bus({|i| FreeVerb.ar(i,1,[0.8,0.9,1],mix:0.5) * EnvGen.cutoff(0,8!3) },)
+		out: EffectNarrow.bus({|i| FreeVerb.ar(i,1,[0.8,0.9,1],mix:0.5) * EnvGen.cutoff(0,8!3) },)
 	).play
 });
 P(\chord, syl:2, music: { |p b e|
@@ -799,7 +799,7 @@ P(\dyad,start:\talking,music:{|p b e|
 			dur: b.parse([4,3,4,3, 3,2]).q,
 			amp: 0.05,
 			depth: 0.01,
-			out: Effect({|i| 
+			out: EffectNarrow({|i| 
 				FoaEncode.ar(i,Song.encoders.omni) 
 				=> FoaPush.ar(_,0.8,-pi/4)
 				=> FoaDecode.ar(_,Monitors.decoder)}
@@ -930,8 +930,8 @@ P(\figure, music: { |p b e|
 		dur: b.parse([1, 1, 1, 1, 1, 1, 1, 1, [1,2/3],[1/3,2] ,4, [1,1/3],[2/3,2],[1, 0.5],[0.5,1],2/3,[1/3,1] ]) ++ e.bNext[0..3].sum => _.q,
 		instrument: \harp,
 		amp: 0.05,coef:0.8,
-		// out: Effect.bus({|i| CrossoverDistortion.ar(i,mul:0.1) * EnvGen.cutoff(b[0..7].sum,0) },)
-		out: Effect.bus({|i| CrossoverDistortion.ar(i,mul:0.1) * EnvGen.cutoff(b.sum,0) /2 => Pan2.ar(_,-0.7) },)
+		// out: EffectNarrow.bus({|i| CrossoverDistortion.ar(i,mul:0.1) * EnvGen.cutoff(b[0..7].sum,0) },)
+		out: EffectNarrow.bus({|i| CrossoverDistortion.ar(i,mul:0.1) * EnvGen.cutoff(b.sum,0) /2 => Pan2.ar(_,-0.7) },)
 
 	].pma => _.play
 });

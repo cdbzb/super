@@ -118,7 +118,7 @@ P(\strum,syl:5, music: { |p b e|
 		freq: [2,4,5, -2,-4,-5].sort.df('a-',\whole),
 		strum: 0.05,
 		pan: {1.rrand(-1)}!6,
-		out: Effect.bus({|i| i * SinOsc.ar(2) => FreeVerb.ar(_,0.2,1) },inputChannels:2)
+		out: EffectNarrow.bus({|i| i * SinOsc.ar(2) => FreeVerb.ar(_,0.2,1) },inputChannels:2)
 	).play
 });
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
@@ -140,7 +140,7 @@ P(\wash, music: { |p b e|
 		// dur: e.bAll.parse([1, 2]).q,
 		dur: b.sum,
 		instrument: \wash,
-		out: Effect.bus({|i| 
+		out: EffectNarrow.bus({|i| 
 			Convolution.ar(i, Dust.ar(150)!2 ) 
 			* -3.dbamp
 			* EnvGen.cutoff(b.sum - 1, 1)
@@ -152,7 +152,7 @@ P(\note, music: { |p b e|
 		freq: [\r, 1].df('c#',3).q,
 		dur: b.parse([1, 2]).q,
 		instrument: \harp, coef: 0.9,
-		out: Effect.bus({|i| i => BPF.ar(_,900) },)
+		out: EffectNarrow.bus({|i| i => BPF.ar(_,900) },)
 
 	].pp
 });
@@ -234,7 +234,7 @@ P(\bassnote, syl:8, music: { |p b e|
 	(
 		instrument: \defaultPiano,
 		freq: 1.df(\d,[2,3]),
-		out: Effect.bus({|i| DWGReverbC1C3.ar(i.tanh.tanh) },)
+		out: EffectNarrow.bus({|i| DWGReverbC1C3.ar(i.tanh.tanh) },)
 	).play
 });
 P(\picked, music: { |p b e|
@@ -331,7 +331,7 @@ P(\wash, music: { |p b e|
 		dur: e.bAll.parse([3, 5, 1]).q,
 		instrument: \wash,
 		lag: [0,0,0.2].q,
-		out: Effect.bus({|i| 
+		out: EffectNarrow.bus({|i| 
 			Convolution.ar(i, Dust.ar(150)!2 )
 			* EnvGen.cutoff(b.sum -1, 3)
 		},out:2)
@@ -341,7 +341,7 @@ P(\accent,syl:6, music: { |p b e|
 	(
 		instrument: \cymbalsDS,
 		amp: 0.02,
-		out: Effect.bus({|i| i * EnvGen.cutoff(0.5, 0.1) },)
+		out: EffectNarrow.bus({|i| i * EnvGen.cutoff(0.5, 0.1) },)
 	).play
 });
 [ "KIRK: Scotty, I need your approval, too. Since you'll","3 1 4 3 3 2 1 -7 2 4.5 5".dm(\c) ].addLine;
@@ -368,7 +368,7 @@ P(\chords, music: { |p b e|
 			.quantizeDft()
 		) + [0,0,0,0,0,-0.1] => _.q,
 		rest: MuteFirst(),
-		out: Effect.bus({|i| SineShaper.ar(i,0.1,2) => BPF.ar(_,1100, 0.1) * 9 => FreeVerb.ar(_,0.1,0.9) },inputChannels:1).postln
+		out: EffectNarrow.bus({|i| SineShaper.ar(i,0.1,2) => BPF.ar(_,1100, 0.1) * 9 => FreeVerb.ar(_,0.1,0.9) },inputChannels:1).postln
 	].pp
 });
 P(\bassnotes, music: { |p b e|
@@ -520,7 +520,7 @@ P(\androidBass,syl:13, music: { |p b e|
 	[
 		freq: [11, 11, 7, 7, 4 ].df(\f,2).q,
 		dur: b.drop(1).parse([ 1, 1, 1, 2, 1]).q,
-		out: Effect.bus({|i| i ++ (CrossoverDistortion.ar(i) /30 
+		out: EffectNarrow.bus({|i| i ++ (CrossoverDistortion.ar(i) /30 
 		* EnvGen.cutoff(b.drop(1).sum, 0.5)
 	) },)
 	].pp;
@@ -546,7 +546,7 @@ P(\connector,syl:18, music: { |p b e|
 		freq: [1, 4].df(\f, 4).bubble ++ [1, 3].df(\g, 4).bubble => _.q,
 		dur: e.bAll.parse([2, 2]).q,
 		freqLag: e.bAll.parse([3]).sum + 1.5,
-		out: Effect.bus({|i| CombN.ar(i, 0.3, 0.25, 5)/4 ++ i },)
+		out: EffectNarrow.bus({|i| CombN.ar(i, 0.3, 0.25, 5)/4 ++ i },)
 	].ppm
 });
 [ "You won't be working with them, you'll be working with us, /*our bodies.*/","1 2 3 4 3 2 5 2 3 4 5 3 6".dm(\g,\whole) /*++ "4 3 2".dm(\c,6)*/ ].addLine;
@@ -583,14 +583,14 @@ P(\bassNote2,syl:10, music: { |p b e|
 	(
 
 		freq: 1.df(\b,4),
-		out: Effect.bus({|i| DWGReverbC1C3.ar(i) },out: 1)
+		out: EffectNarrow.bus({|i| DWGReverbC1C3.ar(i) },out: 1)
 	).play
 });
 P(\bassNote,syl:11, music: { |p b e|
 	(
 
 		freq: 1.df(\f,4),
-		out: Effect.bus({|i| DWGReverbC1C3.ar(i) },out: 0)
+		out: EffectNarrow.bus({|i| DWGReverbC1C3.ar(i) },out: 0)
 	).play
 });
 P(\basslineSimple, music: { |p b e|
@@ -615,7 +615,7 @@ P(\crunchyChords, music: { |p b e|
 		dur: b.parse([3, 3, 3, 3, 1]).q,
 		amp: 0.05,
 		instrument: \sawSynthSustain,
-		out: Effect.bus({|i| 
+		out: EffectNarrow.bus({|i| 
 			i * Gendy2.ar(minfreq:2, maxfreq:[4, 5, 7, 11])
 			* XLine.kr(1,2,b.sum)
 			* -2.dbamp
@@ -714,7 +714,7 @@ P(\bass, music: { |p b e|
 		dur: b.parse([3, 6, 1]).q,
 		legato: [2, 1, ].q,
 		instrument: \default,
-		out: Effect.bus({|i| i => SineShaper.ar(_,0.01) }, out: [0,1])
+		out: EffectNarrow.bus({|i| i => SineShaper.ar(_,0.01) }, out: [0,1])
 	].pp
 });
 P.synthV(role: \mccoy, take: \lead, params: {|p b| [
@@ -768,7 +768,7 @@ P(\connector,syl: 5, music: { |p b e|
 		legato: 3,
 		dur: e.bAll.drop(1).q,
 		amp: 0.05,
-		out: Effect.bus({|i| i * SinOsc.ar([3.3, 1]) },out:2)
+		out: EffectNarrow.bus({|i| i * SinOsc.ar([3.3, 1]) },out:2)
 	].pp
 });
 P.synthV(role: \mulhall, take: \lead, params: {|p b| [
@@ -807,14 +807,14 @@ P(\connectorChord,syl:7, music: { |p b e|
 	(
 		freq: [5, 1, 11].df(\e,6),
 		instrument: \stringyy,
-		out: Effect.bus({|i| DWGReverbC1C3.ar(i) },)
+		out: EffectNarrow.bus({|i| DWGReverbC1C3.ar(i) },)
 	).play;
 	[
 		freq: [ 4, 3, 2, 1 ].df(\e,[6,7]).q,
 		dur: b.drop(1).q,
 		amp: [0.1, 0.02],
 		instrument: \sawSynthSustain,
-		out: Effect.bus({|i| 
+		out: EffectNarrow.bus({|i| 
 			CombC.ar(i, 0.3, SinOsc.ar(0.1).range(0.2,0.22))/3
 			++ CombC.ar(i, 0.3, 0.3)/3
 			++ i
@@ -915,7 +915,7 @@ P(\figure, music: { |p b e|
 	[
 		freq: [1,5,11,12,11,12,13, 11, -5].df('a-').q,
 		dur:"q*9".beats.warpTo( e.tempoMap ).q,
-		instrument: [\stab, \sparkTriangle],depth: 0.005, amp: [0.3, 0.01] * 5.dbamp, coef:0.15, out: Effect.bus({|i| FreeVerb.ar(i, 0.1,1) }, out: 4.rand ) 
+		instrument: [\stab, \sparkTriangle],depth: 0.005, amp: [0.3, 0.01] * 5.dbamp, coef:0.15, out: EffectNarrow.bus({|i| FreeVerb.ar(i, 0.1,1) }, out: 4.rand ) 
 	].pp
 });
 P(\chords, music: { |p b e|
@@ -1120,7 +1120,7 @@ P(\moreChords, music: { |p b e|
 		dur: "e qq qq e".asBeats.warpTo( e.tempoMap ).q
 	]
 	<> (
-		\out: Effect.bus( { |i| 
+		\out: EffectNarrow.bus( { |i| 
 			FreeVerb.ar(i,0.4,0.8) 
 			=> SineShaper.ar(_,0.02,1)
 			* [0.5,2]
@@ -1137,7 +1137,7 @@ P(\bass, music: { |p b e|
 		=> _.q,
 		amp:0.35,
 
-		out: Effect.bus(DWGReverbC1C3.ar(_, mix: 0.25))
+		out: EffectNarrow.bus(DWGReverbC1C3.ar(_, mix: 0.25))
 		// dur: b.parse([1,[2, 0.5], [0.5,2,0.5 ],[0.5, 2 ],1, 1,1, 1,1, 1]).postln.q
 	].pp
 });
@@ -1407,7 +1407,7 @@ P(\chord, music: { |p b e|
 		dur: b.parse([1,1,2]).q,
 		decaytime: 5,
 		strum: -0.05,
-		out: Effect.bus({|i|
+		out: EffectNarrow.bus({|i|
 			i => Pan2.ar(i,0)
 			=> SineShaper.ar(_,0.05,4) 
 			* SinOsc.ar(3).range(0.5,1)
@@ -1448,7 +1448,7 @@ P(\chord, music: { |p b e|
 		dur: b.parse([1,1,2]).q,
 		decaytime: 5,
 		strum: -0.05,
-		out: Effect.bus({|i|
+		out: EffectNarrow.bus({|i|
 			i => Pan2.ar(i,0)
 			=> SineShaper.ar(_,0.05,4) 
 			* SinOsc.ar(3).range(0.5,1)
@@ -1465,7 +1465,7 @@ P(\chord, music: { |p b e|
 		dur: b.parse([1,1,2]).q,
 		decaytime: 5,
 		strum: -0.05,
-		out: Effect.bus({|i|
+		out: EffectNarrow.bus({|i|
 			i => Pan2.ar(i,0)
 			=> DWGReverbC1C3.ar(_,mix:0.2)
 			=> SineShaper.ar(_,0.05,4) 
@@ -1631,7 +1631,7 @@ P(\bassPad, music: { |p b e|
 		freq: [1,\r,2].df(\g,3) * [0.5,1,1,2] => _.q,
 		dur: b.parse([5,8]) ++ e.bNext.parse([8]) => _.q,
 		amp: 0.2,
-		out: Effect.bus({|i| i},inputChannels:4,out:2)
+		out: EffectNarrow.bus({|i| i},inputChannels:4,out:2)
 	].p.play
 });
 [" (boom) and our second in command, too. Coincidence? "," -6 7 11 6 7 11 12 13 15.5 13 16 14.5 15.5 ".dm(\c,\mixolydian) ].addLine;
@@ -1713,7 +1713,7 @@ P(\chords,start:\selected,syl:6,music:{|p b e|
 			"3 5 11".dm(\c), "2 5 7".dm(\c),"1 3 6".dm(\d)  ].q
 		,
 		dur: b.drop(1).parse([2,3,2]).q, 
-	out: Effect(FreeVerb.ar(_,0.6,[0.9, 1 ])).bus.index,
+	out: EffectNarrow(FreeVerb.ar(_,0.6,[0.9, 1 ])).bus.index,
 	strum:0.054
 ].pp
 });
@@ -1831,7 +1831,7 @@ P(\jank,start:\scientist,music:{|p b e|
 		pan: Prand([-1,1],inf),
 		legato: 0.125,
 		release:1.3,
-		out: Effect(
+		out: EffectNarrow(
 			{ |i| CombN.ar(i,1,(p.quarters[e.start].list.mean),4)
 			      + i
 			      *0.1
@@ -2139,7 +2139,7 @@ P(\lick,start:'to host',syl:5,music:{|p b e|
 P(\drumFade,start:'to host',lag:0.35,music:{|p b e| 
 	var clock;
 	p.willingDrum.( p, b, e, 4) => Pmul(\amp, Pgeom(0.8,0.9,32),_) 
-	 => Pset(\out,Effect.bus(FreeVerb.ar(_,XLine.kr(0.1,1,4),[1,0.81])),_)  
+	 => Pset(\out,EffectNarrow.bus(FreeVerb.ar(_,XLine.kr(0.1,1,4),[1,0.81])),_)  
 	 => _.play(clock: clock = TempoClock.new(1.5)) ;
 	 fork{
 		 8.do{|i|
@@ -2314,7 +2314,7 @@ P(\bass,start:\impossible,music:{|p b e|
 	[
 		freq: [\r] ++ "5 -5 4  3 -3 2".df(\a,3) ++ "5 1".df('a-',3) =>_.q,
 	dur:p.impossibleCurve.mapBeats(  "e eee e exx e e q ee e ".asBeats).q,
-	out: Effect( SineShaper.ar(_,limit:0.05) * 2, inputChannels:2).bus.index,
+	out: EffectNarrow( SineShaper.ar(_,limit:0.05) * 2, inputChannels:2).bus.index,
 	legato: [1,1,1,1,1,1,1,1,1.5].q
 	].pp//.findur(b.sum)
 	//.play
@@ -2476,7 +2476,7 @@ P(\hat,start:\involved,music:{|p b e|
 [
 	dur: e.tempoMap.mapBeats("ee e x x q e e x x x x q q q e x x ee e".asBeats).q,
 	instrument: \hat_808,
-	out: Effect.bus({|i|  EchoNone.ar(i,1, delaytime:0.5) /3 })
+	out: EffectNarrow.bus({|i|  EchoNone.ar(i,1, delaytime:0.5) /3 })
 ].pp;
 });
 P(\bass,start:\involved,music:{|p b e|  // passing tone right before end please
@@ -2484,7 +2484,7 @@ b.postln;
 [
 	freq: [1, 1,1, 1.5, 2.5, 4.5].df(\c,3).q,
 	dur: b.parse([ [1, 1, 0.5],[0.5, 1],[ 1,1,1,1],  [1,1,1, 1/3],[2/3,1], 3 ]).postln.q,
-	out: Effect({ |i| SineShaper.ar(i, 0.2) * 5 => FreeVerb.ar(_,0.05,1) * Env.linen(0.001,b.sum,1).kr(2,gate:1) }, out:[0,1]).bus.index ,
+	out: EffectNarrow({ |i| SineShaper.ar(i, 0.2) * 5 => FreeVerb.ar(_,0.05,1) * Env.linen(0.001,b.sum,1).kr(2,gate:1) }, out:[0,1]).bus.index ,
 ].pp; 
 
 });
@@ -2542,7 +2542,7 @@ P(\chords,start:\involved,music:{|p b e|
 			//dur: b.parse([1, [1, 1/2], [1/2, 1], 4, 5,3]).q,
 			dur: p.quarters[e.start].parse([1,1,1,1, 1,1, 2, 2, 8, 3]/2).q,
 			amp: 0.125,
-			out: Effect(PlateReverb.ar(_,mix:0.5,decayTime: 0.3,damping:0.7), out: 3).bus.index
+			out: EffectNarrow(PlateReverb.ar(_,mix:0.5,decayTime: 0.3,damping:0.7), out: 3).bus.index
 		].pma(\defaultRetrig).play
 
 });
@@ -2652,7 +2652,7 @@ P(\bass,start:'possible miracles',music:{|p b e|
 				freq: [1, 2, 1.5, 2.5, 1, -5].df('e-',3,\mixolydian).q,
 				dur: b.parse([1,2,2,3,3,3]).q,
 				//instrument:\sawSynthSustain
-				out: Effect( { |i|  SineShaper.ar(i*10,limit:0.1) => FreeVerb.ar(_,0.5,0.9) =>Mix.ar(_) => Pan2.ar(_,-0.6) }, inputChannels:2  ).bus.index
+				out: EffectNarrow( { |i|  SineShaper.ar(i*10,limit:0.1) => FreeVerb.ar(_,0.5,0.9) =>Mix.ar(_) => Pan2.ar(_,-0.6) }, inputChannels:2  ).bus.index
 			].pp
 });
 P(\strum,start:'possible miracles',music:{|p b e| 
@@ -2697,7 +2697,7 @@ var one, four, seven;
 	instrument:\defaultRetrig,
 	dur: p.quarters[e.start].list.gaussian(dev:0.004).quantizeWindow() ++ 0.2 =>_.q,
 	legato: [1, 1, 1, 1, 1, 1, 1, 6,] * 0.7 =>_.q,
-	out: Effect.bus({|i| SineShaper.ar(i, 0.1) => BPF.ar(_,1100) => Phaser2.ar(_,rate:0.016) * [0.1,0.9] })
+	out: EffectNarrow.bus({|i| SineShaper.ar(i, 0.1) => BPF.ar(_,1100) => Phaser2.ar(_,rate:0.016) * [0.1,0.9] })
 	// lag:0.1
 ].pp
 });
@@ -2744,7 +2744,7 @@ P(\bass,start:\understandable,music:{|p b e|
 				dur: p.quarters[\understandable],
 				//instrument:\sawSynth
 
-				out: Effect( { |i|  SineShaper.ar(i*10,limit:0.1) => FreeVerb.ar(_,0.5,0.9) }  ).bus.index
+				out: EffectNarrow( { |i|  SineShaper.ar(i*10,limit:0.1) => FreeVerb.ar(_,0.5,0.9) }  ).bus.index
 			].pp
 });
 [" why that overrides all danger. And let's not ", "6 5 12 11 7.5 6.5  12 13 11 3 4 5".dm(\d,5,\minor)].addLine;
@@ -2804,7 +2804,7 @@ P(\lineDouble, music: { |p b e|
 		freq: [11, 7, 5, 2].df(\c,\mixolydian).q,
 		legato: [4, 3, 2, 1, ].q,
 		dur: b.q,
-		out: Effect.bus({|i| i * SinOsc.ar(2) },out: 2),
+		out: EffectNarrow.bus({|i| i * SinOsc.ar(2) },out: 2),
 		instrument: \sawSynthSustain
 	].pp;
 	fork{
@@ -2813,7 +2813,7 @@ P(\lineDouble, music: { |p b e|
 			freq: [ 7, 5, 3, 1].df(\c,\mixolydian).q,
 			legato: [ 4, 3, 2, 1, ].q,
 			dur: b.parse([10,1, 1, 1, 1]).drop(1).q,
-			out: Effect.bus({|i| i * SinOsc.ar(2) },out: 3),
+			out: EffectNarrow.bus({|i| i * SinOsc.ar(2) },out: 3),
 			instrument: \sawSynthSustain
 		].pp
 	}

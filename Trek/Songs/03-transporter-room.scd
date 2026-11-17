@@ -427,7 +427,7 @@ P(\spazzPad,start:'like it',music:{|p b e|
 P(\crash, music: { |p b e|
 	(
 		instrument: \cymbalsDS,
-		out: Effect.bus({|i| i => FreqShift.ar(_, freq:-399, phase:0.0, mul:1.0, add:0.0) / 10 },out: 1)
+		out: EffectNarrow.bus({|i| i => FreqShift.ar(_, freq:-399, phase:0.0, mul:1.0, add:0.0) / 10 },out: 1)
 	).play
 });
 P.synthV(role: \scott, take:\lead, params: {|p b| [
@@ -466,7 +466,7 @@ P(\boomboom, music: { |p b e|
 		instrument: [k, k, sn].q,
 		dur: b[..2].q,
 		amp: 0.2,
-		out: [0, 0, Effect.bus({|i| CombN.ar(i)/3 + i },)].q
+		out: [0, 0, EffectNarrow.bus({|i| CombN.ar(i)/3 + i },)].q
 	].pp
 });
 P.still(\clear, timecode: 0.seconds, music: { |p b e|
@@ -803,7 +803,7 @@ P(\bass,start:\correspond,syl:0,music:{|p b e|
 			lag: 0.01,
 			freq: 1.df('c#',3) ,
 			amp:0.5,
-			out: Effect( { |i| SineShaper.ar(i,0.1) => FreeVerb.ar(i,0.01,1)}, inputChannels:2 ).bus.index
+			out: EffectNarrow( { |i| SineShaper.ar(i,0.1) => FreeVerb.ar(i,0.01,1)}, inputChannels:2 ).bus.index
 		].pp
 });
 P(\chords, music: { |p b e|
@@ -872,20 +872,20 @@ P(\figure, music: { |p b e|
 		instrument: \harp,
 		amp: 0.04,
 		lag:0.02,
-		out: Effect.bus({|i| CrossoverDistortion.ar(i) /50 => RHPF.ar(_, 300, 0.2) * EnvGen.cutoff(b.sum, 0.1)}, out: 2)
+		out: EffectNarrow.bus({|i| CrossoverDistortion.ar(i) /50 => RHPF.ar(_, 300, 0.2) * EnvGen.cutoff(b.sum, 0.1)}, out: 2)
 	].pp;
 	[
 		freq: [[-7, 2],[1, 3]].df(\g,3,\mixolydian).q,
 		dur: "qqqq qq".asBeats.warpTo( e.tempoMap ).q,
 		lag:0.02,
-		out: Effect.bus({|i| CrossoverDistortion.ar(i) /50 => RHPF.ar(_, 300, 0.2) * EnvGen.cutoff(b.sum - 1,1) }, out: 2)
+		out: EffectNarrow.bus({|i| CrossoverDistortion.ar(i) /50 => RHPF.ar(_, 300, 0.2) * EnvGen.cutoff(b.sum - 1,1) }, out: 2)
 	].pp;
 	[
 		freq: [[-7, 2],[1, 3]].df(\g,3,\mixolydian).q,
 		dur: "qqqq qq".asBeats.warpTo( e.tempoMap ).q,
 		lag:0.02,
-		out: Effect.bus({|i| Phaser1.ar(i,rate: 0.2) => HPF.ar(_, 175) }, 1)
-		// out: Effect.bus({|i| CrossoverDistortion.ar(i) /50 => RHPF.ar(_, 300, 0.2) }, out: 2)
+		out: EffectNarrow.bus({|i| Phaser1.ar(i,rate: 0.2) => HPF.ar(_, 175) }, 1)
+		// out: EffectNarrow.bus({|i| CrossoverDistortion.ar(i) /50 => RHPF.ar(_, 300, 0.2) }, out: 2)
 	].pp
 });
 P(\bassnotes,start:\subterranean,music:{|p b e| 
@@ -899,7 +899,7 @@ P(\bassConnector, music: { |p b e|
 	[
 		freq: [\r, 4, 2, 3, 4, 6].df(\d,4,\minor).q,
 		dur: b.parse([6, 2]) ++ e.bNext.parse([1, 1, 1, 3]) =>_.q,
-		out:Effect.bus({|i| i * 3 => SineShaper.ar(_,0.1) },inputChannels:2),
+		out:EffectNarrow.bus({|i| i * 3 => SineShaper.ar(_,0.1) },inputChannels:2),
 		instrument: \default
 	]//.ppm
 });
@@ -983,7 +983,7 @@ P.synthV(role: \mulhall, take: \lead, params: {|p b| [
 			
 		}.play
 });
-	Song.mulhallTune=Pbindf(_,\amp,0.08,\out,Effect({ |i| EchoNone.ar(i,0.3,0.3,4)*0.5 * Line.kr(0, 1, 1)}).bus.index);
+	Song.mulhallTune=Pbindf(_,\amp,0.08,\out,EffectNarrow({ |i| EchoNone.ar(i,0.3,0.3,4)*0.5 * Line.kr(0, 1, 1)}).bus.index);
 P.tune('it?',Song.mulhallTune);
 
 P(\pad, music: { |p b e|
@@ -991,7 +991,7 @@ P(\pad, music: { |p b e|
 		instrument:\stringyy,wet:0,
 		dur: b.sum,
 		midinote: p.tune[e.start].list.postln,
-		out: Effect.bus({|i| i=> BPF.ar(_, XLine.kr(1000,300, b.sum + 3), 0.2,mul:8.dbamp) },out:2)
+		out: EffectNarrow.bus({|i| i=> BPF.ar(_, XLine.kr(1000,300, b.sum + 3), 0.2,mul:8.dbamp) },out:2)
 	).play
 });
 [ "KIRK: Who are you? (boom) ","3 1 7 -6".dm(\f,5,\mixolydian) ].addLine;
@@ -1000,7 +1000,7 @@ P(\pad, music: { |p b e|
 		instrument:\stringyy,wet:0,
 		dur: b.sum,
 		midinote: p.tune[e.start].list[0..2],
-		out: Effect.bus({|i| i
+		out: EffectNarrow.bus({|i| i
 			=> BPF.ar(_, XLine.kr(1000,300, b.sum), 0.2, mul:8.dbamp)
 			// => Pan2.ar(_,1)
 		},out:3)
@@ -1039,7 +1039,7 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 			// => EarlyRef.ar(_, [0,0,0],[3,0,0],[3.5,4,5])
 		}.play
 });
-Song.kirkTune=Pbindf(_,\amp,0.08,\out,Effect.bus({ |i| EchoNone.ar(i,0.3,0.3,4)*0.5 * Line.kr(0, 1, 1) => Pan2.ar(_, 1) * -2.dbamp}));
+Song.kirkTune=Pbindf(_,\amp,0.08,\out,EffectNarrow.bus({ |i| EchoNone.ar(i,0.3,0.3,4)*0.5 * Line.kr(0, 1, 1) => Pan2.ar(_, 1) * -2.dbamp}));
 P.tune('you?', Song.kirkTune <> _.fin(3) );
 P(\chord,start:'you?',syl:2,music:{|p b e| 
 		[\stringyy,\sawSynthSustain].do
@@ -1169,7 +1169,7 @@ P.synthV(role: \kirk, take: \lead, params: {|p b| [
 			* 2.dbamp
 		}.play
 });
-P.tune( _ <> [instrument: \wash, amp: 0.02,freqLag:1, out: Effect.bus({|i| i + DelayN.ar(i,0.25,0.25) },inputChannels:2)].pm );
+P.tune( _ <> [instrument: \wash, amp: 0.02,freqLag:1, out: EffectNarrow.bus({|i| i + DelayN.ar(i,0.25,0.25) },inputChannels:2)].pm );
 P(\strum1,start:'whom?',syl:0,music:{|p b e| 
 fork{
 	var inst = Barrier.collect(
@@ -1414,7 +1414,7 @@ P(\bass,start:'get back',music:{|p b e|
 			freq: [1, -7, -5, -17, -1].df(\c, 4, \mixolydian).q,
 			dur: b.q,
 			amp: 0.2,
-			out: Effect.bus({|i| SoftKneeCompressor.ar(i) }, inputChannels:2)
+			out: EffectNarrow.bus({|i| SoftKneeCompressor.ar(i) }, inputChannels:2)
 		].pp	
 		
 		
@@ -1461,7 +1461,7 @@ P(\kick, music: { |p b e|
 			rest: [\r,1,1,1,1,1,1].q
 		].p,
 	] => Ppar(_)
-	=> Pset(\out, Effect.bus({|i| SineShaper.ar(i,0.09) /3 }, out: 3),_)
+	=> Pset(\out, EffectNarrow.bus({|i| SineShaper.ar(i,0.09) /3 }, out: 3),_)
 	=> _.play
 
 });
@@ -1510,7 +1510,7 @@ P(\harmony, music: { |p b e|
 		dur: b.parse([2, 1, 1, 2, 1, 1]).q,
 		rest: [\r,1,1,1,1,1].q,
 
-instrument: \reedy, freqLag:0.05, rel:8, out: Effect.bus( {|i| CombN.ar(i, 0.3, 0.3, 3)/2 + i},out: 3) ;
+instrument: \reedy, freqLag:0.05, rel:8, out: EffectNarrow.bus( {|i| CombN.ar(i, 0.3, 0.3, 3)/2 + i},out: 3) ;
 	].ppm
 });
 P(\bass, music: { |p b e|
@@ -1519,7 +1519,7 @@ P(\bass, music: { |p b e|
 		dur: "e e e e x x x x e x x ex x q".asBeats  =>_.warpTo(e.tempoMap) =>_.q,
 		instrument:\pluckDEnv, //try also without the effect
 		amp:0.006,
-		out: Effect.bus({|i| 
+		out: EffectNarrow.bus({|i| 
 			i * 3
 			=> FreeVerb.ar(_,0.0,1) => SineShaper.ar(_,0.05,mul:3)
 			++ 
@@ -1659,7 +1659,7 @@ P(\bass,start:\through,music:{|p b e|
 P(\crash, music: { |p b e|
 	(
 		instrument: \cymbalsDS,
-		out: Effect.bus({|i| FreqShift.ar(i, -599 + Gendy1.arWidth(freq:1).range(0, 20)) => {|i| CrossoverDistortion.ar(i)/20 + i /3} * EnvGen.cutoff(b.sum, 1) },inputChannels:2, out:2)
+		out: EffectNarrow.bus({|i| FreqShift.ar(i, -599 + Gendy1.arWidth(freq:1).range(0, 20)) => {|i| CrossoverDistortion.ar(i)/20 + i /3} * EnvGen.cutoff(b.sum, 1) },inputChannels:2, out:2)
 	).play
 });
 P.still(\spockTwoApprox, timecode: 808.354.seconds, music: { |p b e|

@@ -258,7 +258,7 @@ P(\bass,music:(
 ));
 P(\ooh, start:\moon,music: {
 	{ 
-		var effect = Effect.bus(FreeVerb.ar(_,0.6,0.9), out:0);// pan
+		var effect = EffectNarrow.bus(FreeVerb.ar(_,0.6,0.9), out:0);// pan
 		var choir=Synths(\ooh,
 			\freq,~moonChord.midicps,
 			\blend,0,
@@ -864,7 +864,7 @@ P(\harpy2,'be-',music: {|p m|
 					octave:5,
 					dur:Pwhite(0.02,0.03)*3,
 					legato:5,
-					out: Effect.bus({|i| CombL.ar(i, 1, 0.5+SinOsc.kr(0.1,pi,0.02), 6) },)
+					out: EffectNarrow.bus({|i| CombL.ar(i, 1, 0.5+SinOsc.kr(0.1,pi,0.02), 6) },)
 				].pp
 });
 
@@ -1438,9 +1438,9 @@ P(\chords12, start:\risk,syl:0,music: { |p b e| [
 	// freq:([5,11].degreescps(root:-4)!5).q,
 	freq: [5, 11].df('a-', 3)!5=> _.q,
 	dur:p.parse(e.start,1!5,1).q,
-	out: Effect.bus({|i| i=> BPF.ar(_,1400) => Pan2.ar(_,0) },)
+	out: EffectNarrow.bus({|i| i=> BPF.ar(_,1400) => Pan2.ar(_,0) },)
 	// instrument: \defaultPiano, 
-	// out: Effect.bus({|i| i => CrossoverDistortion.ar(_, smooth: 0.95) /2 + i * EnvGen.cutoff(b.drop(1).sum, 0.5) => Pan2.ar(_,0) },)
+	// out: EffectNarrow.bus({|i| i => CrossoverDistortion.ar(_, smooth: 0.95) /2 + i * EnvGen.cutoff(b.drop(1).sum, 0.5) => Pan2.ar(_,0) },)
 ].pp } ); 
 P.tune(_ <> [attack: 3, rest: MuteFirst(), instrument: \stringyy, out: 2].pm);
 P(\cymbal12,start:\risk,syl:0,music:(instrument:\cymbalsDS,att:0,amp:0.01));
@@ -1487,7 +1487,7 @@ P(\bassline, music: { |p b e|
 	[
 		freq: [\r, 4, 5, 1].df(\c,3).q,
 		dur: e.bAll.parse([2, 4, 2, 3]).q,
-		out: Effect.bus({|i| SineShaper.ar(i, 0.1) => Pan2.ar(_,0) },)
+		out: EffectNarrow.bus({|i| SineShaper.ar(i, 0.1) => Pan2.ar(_,0) },)
 	].pp
 });
 P.still(\clear,syl:0, timecode: 0.seconds, music: { |p b e|
@@ -1714,14 +1714,14 @@ P(\fifths, music: { |p b e|
 		dur: b.parse([[1, 1, 0.5], [0.5, 1, 1, 1, 1, 1, 1, 1], 2, 1]).q,
 		strum: 0.05,
 		instrument: \harp,
-		out: Effect.bus({|i| FreeVerb.ar(i, 0.05, 1) => CrossoverDistortion.ar(_, smooth: 0.99) + i  * EnvGen.cutoff(b.sum,1) },out: 4)
+		out: EffectNarrow.bus({|i| FreeVerb.ar(i, 0.05, 1) => CrossoverDistortion.ar(_, smooth: 0.99) + i  * EnvGen.cutoff(b.sum,1) },out: 4)
 	].pp
 });
 P(\innerVoice, syl: 5, music: { |p b e|
 	[
 		freq: [5, 12, [13, 16]].df(\d,4).q,
 		dur: b.drop(1).parse([2, 2, 3]).q, 
-		out: Effect.bus({|i| CrossoverDistortion.ar(i)/30 + i /5 * EnvGen.cutoff(b.sum,0.5) },out: 2),
+		out: EffectNarrow.bus({|i| CrossoverDistortion.ar(i)/30 + i /5 * EnvGen.cutoff(b.sum,0.5) },out: 2),
 		instrument: \harp,coef: 0.1,
 		// instrument: \sawSynthSustain, freqLag: 1,pulse:0.9
 	].ppm

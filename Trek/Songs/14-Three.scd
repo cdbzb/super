@@ -136,7 +136,7 @@ P.still(\space, timecode: 3244.seconds, korean: " ", music: { |p b e|
 //
 ~bass0quarters=Song.parse(0,[ [1,1],[1,1,1],1 ]);
 Song.strum1Fx={ |b|
-	var e = Effect( { |i|  
+	var e = EffectNarrow( { |i|  
 		PlateReverb.ar(i,mix:0.5,decayTime:0.5)  
 		=> Phaser2.ar(_,rate:0.1).distort(0.95) *0.3 
 		* Env.linen(0,b.sum,3).kr(2,gate:1)
@@ -193,7 +193,7 @@ P(\bass0,start:0,music: {
 	); 
 	["now inhabit the bodies of", "d5 c b4 a g f g a"].addLine;  //1
 	Song.setTempoMap(\inhabit,"e x e x e e e e");
-	Song.tomFx = {Effect.bus({|i| DWGReverbC1C3.ar(i, mix: 0.15) / 2.5 }, out: 2)};
+	Song.tomFx = {EffectNarrow.bus({|i| DWGReverbC1C3.ar(i, mix: 0.15) / 2.5 }, out: 2)};
 	P(\drums, music: { |p b e|
 		[
 			instrument: [\r, \MT_808, \LT_808].q,
@@ -299,7 +299,7 @@ P(\bass0,start:0,music: {
 	P(\chords,start:2,syl:2,music:{|p b e|
 
 		Song.piano.controller.synth.set(\out,
-			Effect(SineShaper.ar(_, limit:0.03, mul:3.0, add:0) * [0.8,0.2], inputChannels:2).bus.index
+			EffectNarrow(SineShaper.ar(_, limit:0.03, mul:3.0, add:0) * [0.8,0.2], inputChannels:2).bus.index
 		);
 
 		[
@@ -406,7 +406,7 @@ P.still(\mccoy, timecode: 3251.3.seconds,lag: -1, syl: 4, korean: "", music: { |
 				//dur:[b[0..1].sum]++((b[2]/7)!4)++2=>_.flat=>_.q,
 				legato:Pseq([1.5,1.5,1.5,1.5,0.9,2]),
 				instance:Song.strum1,
-				out:Effect( { |i| 
+				out:EffectNarrow( { |i| 
 					var env = Env.linen(0.5,b.drop(1).sum+3,1).kr(2,gate:1);
 					SmoothClipQ.ar(i*(env*5+1),lo:-1+( env*0.9 ),hi:1-( env*0.9 )) 
 					*0.6
@@ -572,7 +572,7 @@ P.still(\mccoy, timecode: 3251.3.seconds,lag: -1, syl: 4, korean: "", music: { |
 		var out;
 		p.strum2.setPlayMode(\pick);
 		p.strum2.controller.synth.set(\out,
-			out = Effect( { |i| 
+			out = EffectNarrow( { |i| 
 				SmoothClipQ.ar(i*8,lo:-0.1,hi:0.1) 
 				*0.5
 			}).bus.index);
